@@ -234,6 +234,110 @@
               "reading": "おろ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_1_0",
+              "line": 0,
+              "start": 12,
+              "end": 16,
+              "text": "御釈迦様",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_1",
+              "line": 2,
+              "start": 3,
+              "end": 7,
+              "text": "御釈迦様",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_2",
+              "line": 2,
+              "start": 98,
+              "end": 100,
+              "text": "三途",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_3",
+              "line": 4,
+              "start": 12,
+              "end": 14,
+              "text": "陀多",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_4",
+              "line": 4,
+              "start": 53,
+              "end": 55,
+              "text": "陀多",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_5",
+              "line": 4,
+              "start": 180,
+              "end": 182,
+              "text": "陀多",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_6",
+              "line": 6,
+              "start": 0,
+              "end": 4,
+              "text": "御釈迦様",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_7",
+              "line": 6,
+              "start": 23,
+              "end": 25,
+              "text": "陀多",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_8",
+              "line": 6,
+              "start": 155,
+              "end": 159,
+              "text": "御釈迦様",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -474,6 +578,143 @@
               "reading": "こま"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_2_0",
+              "line": 0,
+              "start": 38,
+              "end": 40,
+              "text": "陀多",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_1",
+              "line": 0,
+              "start": 270,
+              "end": 272,
+              "text": "陀多",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_2",
+              "line": 2,
+              "start": 21,
+              "end": 23,
+              "text": "陀多",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_3",
+              "line": 2,
+              "start": 130,
+              "end": 132,
+              "text": "陀多",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_4",
+              "line": 4,
+              "start": 10,
+              "end": 12,
+              "text": "陀多",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_5",
+              "line": 6,
+              "start": 68,
+              "end": 70,
+              "text": "陀多",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_6",
+              "line": 8,
+              "start": 135,
+              "end": 137,
+              "text": "陀多",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_7",
+              "line": 8,
+              "start": 216,
+              "end": 218,
+              "text": "数限",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_8",
+              "line": 8,
+              "start": 281,
+              "end": 283,
+              "text": "陀多",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_9",
+              "line": 10,
+              "start": 4,
+              "end": 6,
+              "text": "陀多",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_10",
+              "line": 12,
+              "start": 30,
+              "end": 32,
+              "text": "陀多",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_11",
+              "line": 12,
+              "start": 64,
+              "end": 66,
+              "text": "陀多",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -612,6 +853,77 @@
               "reading": "ひる"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_3_0",
+              "line": 0,
+              "start": 0,
+              "end": 4,
+              "text": "御釈迦様",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_1",
+              "line": 0,
+              "start": 45,
+              "end": 47,
+              "text": "陀多",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_2",
+              "line": 0,
+              "start": 121,
+              "end": 123,
+              "text": "陀多",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_3",
+              "line": 0,
+              "start": 162,
+              "end": 166,
+              "text": "御釈迦様",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_4",
+              "line": 2,
+              "start": 41,
+              "end": 45,
+              "text": "御釈迦様",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_5",
+              "line": 2,
+              "start": 46,
+              "end": 48,
+              "text": "御足",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     }
@@ -632,6 +944,7 @@
       809,
       1740,
       340
-    ]
+    ],
+    "boundaryMergeCount": 27
   }
 }

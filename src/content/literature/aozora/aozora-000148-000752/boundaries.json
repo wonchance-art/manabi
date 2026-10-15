@@ -1,0 +1,3087 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "7ffd998c742c72b524e8177884aa3b9b235b88e6580596718fb5ad5e65730097",
+      "edits": [
+        {
+          "line": 0,
+          "start": 8,
+          "end": 10,
+          "text": "小供",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 102,
+          "end": 105,
+          "text": "山城屋",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 406,
+          "end": 408,
+          "text": "足搦",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 422,
+          "end": 425,
+          "text": "山城屋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 515,
+          "end": 518,
+          "text": "山城屋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 17,
+          "end": 19,
+          "text": "兼公",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 20,
+          "end": 22,
+          "text": "肴屋",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 32,
+          "end": 35,
+          "text": "人参畠",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 150,
+          "end": 152,
+          "text": "一遍",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 179,
+          "end": 181,
+          "text": "待駒",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "9907b3b6e526aa4c806a59c9f8a03f98634bf476a3b53dd70b0cca175a0ec75f",
+      "edits": [
+        {
+          "line": 0,
+          "start": 25,
+          "end": 27,
+          "text": "小供",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 100,
+          "end": 103,
+          "text": "紅梅焼",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 121,
+          "end": 124,
+          "text": "蕎麦粉",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 162,
+          "end": 166,
+          "text": "鍋焼饂飩",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 188,
+          "end": 191,
+          "text": "靴足袋",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 508,
+          "end": 511,
+          "text": "壱円札",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 607,
+          "end": 610,
+          "text": "胡魔化",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 145,
+          "end": 147,
+          "text": "兄様",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 197,
+          "end": 201,
+          "text": "依怙贔負",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 124,
+          "end": 126,
+          "text": "麹町",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 207,
+          "end": 210,
+          "text": "日本建",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 86,
+          "end": 88,
+          "text": "小供",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 128,
+          "end": 131,
+          "text": "不仕合",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 296,
+          "end": 299,
+          "text": "瓦落多",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 309,
+          "end": 312,
+          "text": "家屋敷",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 385,
+          "end": 388,
+          "text": "小川町",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "textSha256": "7e58bdd4d2c67d00468cde38862150d99f60ed4320b136a60e23016d1ec82634",
+      "edits": [
+        {
+          "line": 0,
+          "start": 321,
+          "end": 324,
+          "text": "奉公易",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 331,
+          "end": 333,
+          "text": "気兼",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 31,
+          "end": 33,
+          "text": "商買",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 214,
+          "end": 216,
+          "text": "一遍",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 22,
+          "end": 24,
+          "text": "商買",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 57,
+          "end": 59,
+          "text": "商買",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 62,
+          "end": 64,
+          "text": "商買",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 105,
+          "end": 107,
+          "text": "麹町",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 143,
+          "end": 145,
+          "text": "喋舌",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 232,
+          "end": 234,
+          "text": "昔風",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 151,
+          "end": 154,
+          "text": "馬鹿気",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 14,
+          "start": 306,
+          "end": 308,
+          "text": "笹飴",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 322,
+          "end": 324,
+          "text": "笹飴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 14,
+          "start": 353,
+          "end": 355,
+          "text": "笹飴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 16,
+          "start": 50,
+          "end": 52,
+          "text": "革鞄",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "textSha256": "813d5291b1e7b3cc78b205aacf4ca3db732f59381c8fc1344a79a4df48e05b66",
+      "edits": [
+        {
+          "line": 0,
+          "start": 526,
+          "end": 528,
+          "text": "革鞄",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 210,
+          "end": 213,
+          "text": "山城屋",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 226,
+          "end": 229,
+          "text": "山城屋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 6,
+          "end": 9,
+          "text": "楷子段",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 71,
+          "end": 73,
+          "text": "革鞄",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 406,
+          "end": 408,
+          "text": "笹飴",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 93,
+          "end": 95,
+          "text": "革鞄",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 114,
+          "end": 117,
+          "text": "田舎者",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 234,
+          "end": 237,
+          "text": "田舎者",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 215,
+          "end": 217,
+          "text": "薄髯",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 3,
+          "end": 5,
+          "text": "控所",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 48,
+          "end": 50,
+          "text": "追々",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "textSha256": "882f070a8857c40842eae81ffa2a76b40c43e05c57a8ae433773b827354fc422",
+      "edits": [
+        {
+          "line": 0,
+          "start": 35,
+          "end": 37,
+          "text": "控所",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 59,
+          "end": 61,
+          "text": "控所",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 149,
+          "end": 153,
+          "text": "一人一人",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 100,
+          "end": 102,
+          "text": "襯衣",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 631,
+          "end": 635,
+          "text": "毬栗坊主",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 647,
+          "end": 649,
+          "text": "面構",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 655,
+          "end": 657,
+          "text": "叮寧",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 805,
+          "end": 807,
+          "text": "励精",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 953,
+          "end": 957,
+          "text": "一人一人",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 138,
+          "end": 141,
+          "text": "山城屋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 208,
+          "end": 211,
+          "text": "山城屋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 69,
+          "end": 71,
+          "text": "笹飴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 350,
+          "end": 352,
+          "text": "畳敷",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 637,
+          "end": 639,
+          "text": "通町",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 724,
+          "end": 727,
+          "text": "肝癪持",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "textSha256": "bb47013b5504ccf3d1cb8b705b2bc89e67acde7565265e61e206825b3e312d23",
+      "edits": [
+        {
+          "line": 0,
+          "start": 274,
+          "end": 276,
+          "text": "控所",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 11,
+          "end": 13,
+          "text": "控所",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 126,
+          "end": 128,
+          "text": "大僧",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 167,
+          "end": 170,
+          "text": "田舎者",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 413,
+          "end": 415,
+          "text": "君等",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 602,
+          "end": 604,
+          "text": "箆棒",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 678,
+          "end": 680,
+          "text": "控所",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 158,
+          "end": 161,
+          "text": "出席簿",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 389,
+          "end": 392,
+          "text": "随分妙",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 88,
+          "end": 91,
+          "text": "留守中",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 131,
+          "end": 135,
+          "text": "書画骨董",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 147,
+          "end": 149,
+          "text": "商買",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 301,
+          "end": 303,
+          "text": "見損",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 665,
+          "end": 667,
+          "text": "下読",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 627,
+          "end": 630,
+          "text": "好加減",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 806,
+          "end": 808,
+          "text": "大硯",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 985,
+          "end": 987,
+          "text": "支那",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 1068,
+          "end": 1071,
+          "text": "骨董責",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "textSha256": "f6aae2a9ecf257c330ae6db3c540bca00f9b94fdf545a81ad547815452561842",
+      "edits": [
+        {
+          "line": 0,
+          "start": 86,
+          "end": 89,
+          "text": "蕎麦屋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 287,
+          "end": 289,
+          "text": "油烟",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 319,
+          "end": 321,
+          "text": "麗々",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 164,
+          "end": 166,
+          "text": "控所",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 257,
+          "end": 259,
+          "text": "黒焦",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 275,
+          "end": 278,
+          "text": "田舎者",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 359,
+          "end": 361,
+          "text": "日露",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 385,
+          "end": 387,
+          "text": "小供",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 458,
+          "end": 460,
+          "text": "小供",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 509,
+          "end": 511,
+          "text": "君等",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 22,
+          "end": 24,
+          "text": "肝癪",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 172,
+          "end": 175,
+          "text": "団子屋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 368,
+          "end": 371,
+          "text": "赤手拭",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 620,
+          "end": 623,
+          "text": "赤手拭",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 623,
+          "end": 626,
+          "text": "赤手拭",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 767,
+          "end": 769,
+          "text": "湯壺",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 770,
+          "end": 773,
+          "text": "花崗石",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 782,
+          "end": 784,
+          "text": "畳敷",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 882,
+          "end": 884,
+          "text": "湯壺",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 987,
+          "end": 989,
+          "text": "貼札",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 1194,
+          "end": 1197,
+          "text": "骨董責",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "textSha256": "7d70eea8669815a1ee4bf229fa517d0757a4740dc65a58805dceb5439875dd7d",
+      "edits": [
+        {
+          "line": 0,
+          "start": 68,
+          "end": 72,
+          "text": "奏任待遇",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 430,
+          "end": 432,
+          "text": "疳性",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 467,
+          "end": 469,
+          "text": "小供",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 292,
+          "end": 295,
+          "text": "重禁錮",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 298,
+          "end": 300,
+          "text": "憂目",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 451,
+          "end": 454,
+          "text": "赤手拭",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 27,
+          "end": 30,
+          "text": "日暮方",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 342,
+          "end": 344,
+          "text": "竪町",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 99,
+          "end": 101,
+          "text": "尻持",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 125,
+          "end": 127,
+          "text": "尻持",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 132,
+          "end": 134,
+          "text": "小供",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 151,
+          "end": 154,
+          "text": "小川町",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 682,
+          "end": 684,
+          "text": "煤掃",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 980,
+          "end": 982,
+          "text": "間抜",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 1016,
+          "end": 1018,
+          "text": "椽側",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "textSha256": "8ff1f725b3385acd4d6458c1f1e6f7ca9627cf4fcb80b849eb1035c8af7b12a3",
+      "edits": [
+        {
+          "line": 0,
+          "start": 82,
+          "end": 84,
+          "text": "掃溜",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 368,
+          "end": 371,
+          "text": "胡魔化",
+          "reason": "ruby"
+        },
+        {
+          "line": 18,
+          "start": 89,
+          "end": 91,
+          "text": "横竪",
+          "reason": "ruby"
+        },
+        {
+          "line": 18,
+          "start": 236,
+          "end": 238,
+          "text": "辛防",
+          "reason": "ruby"
+        },
+        {
+          "line": 18,
+          "start": 330,
+          "end": 332,
+          "text": "難有",
+          "reason": "ruby"
+        },
+        {
+          "line": 18,
+          "start": 375,
+          "end": 377,
+          "text": "笹飴",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "textSha256": "c7fd7eb23195c553831f381efc327991b9656fb1adaf61d027ab9a2739f3994a",
+      "edits": [
+        {
+          "line": 0,
+          "start": 358,
+          "end": 361,
+          "text": "楷子段",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 362,
+          "end": 365,
+          "text": "三股半",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 555,
+          "end": 557,
+          "text": "小供",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 948,
+          "end": 950,
+          "text": "向脛",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 1541,
+          "end": 1545,
+          "text": "清和源氏",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 1550,
+          "end": 1552,
+          "text": "満仲",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 1810,
+          "end": 1812,
+          "text": "向脛",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 2014,
+          "end": 2016,
+          "text": "仰向",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 20,
+          "end": 22,
+          "text": "言草",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 101,
+          "end": 103,
+          "text": "手温",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 11,
+      "textSha256": "269794bc90c29c5ceba24aee437f85b6533c2c3c4a9dff80c85c1abc3ae3e10b",
+      "edits": [
+        {
+          "line": 2,
+          "start": 79,
+          "end": 82,
+          "text": "神楽坂",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 1016,
+          "end": 1018,
+          "text": "沖釣",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 51,
+          "end": 54,
+          "text": "高柏寺",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 80,
+          "end": 82,
+          "text": "向側",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 616,
+          "end": 618,
+          "text": "吾々",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 636,
+          "end": 638,
+          "text": "吾々",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 823,
+          "end": 826,
+          "text": "小旦那",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 12,
+      "textSha256": "7946244aea310fb62397ed8f60d8d2b3bf0a6ba26bbc5d9d1f3a201e31eee780",
+      "edits": [
+        {
+          "line": 0,
+          "start": 26,
+          "end": 28,
+          "text": "幾尋",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 42,
+          "end": 44,
+          "text": "六尋",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 52,
+          "end": 54,
+          "text": "六尋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 558,
+          "end": 560,
+          "text": "喋舌",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 304,
+          "end": 306,
+          "text": "難有",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 121,
+          "end": 124,
+          "text": "皺苦茶",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 183,
+          "end": 186,
+          "text": "凌雲閣",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 326,
+          "end": 329,
+          "text": "田舎者",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 13,
+      "textSha256": "938f93cc68920f6b0addd741a1004da18efc9651771ee52208f4c4935621854f",
+      "edits": [
+        {
+          "line": 2,
+          "start": 68,
+          "end": 71,
+          "text": "巻烟草",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 285,
+          "end": 287,
+          "text": "険呑",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 305,
+          "end": 307,
+          "text": "険呑",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 315,
+          "end": 317,
+          "text": "険呑",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 70,
+          "end": 72,
+          "text": "辛防",
+          "reason": "ruby"
+        },
+        {
+          "line": 20,
+          "start": 16,
+          "end": 19,
+          "text": "履歴書",
+          "reason": "ruby"
+        },
+        {
+          "line": 32,
+          "start": 80,
+          "end": 82,
+          "text": "僕等",
+          "reason": "ruby"
+        },
+        {
+          "line": 38,
+          "start": 215,
+          "end": 217,
+          "text": "奇絶",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 14,
+      "textSha256": "c9c6babdc955aa8ec9ac109350d821c5c07f75b5c45ae218fee7d73cc69b61eb",
+      "edits": [
+        {
+          "line": 0,
+          "start": 13,
+          "end": 16,
+          "text": "沢庵石",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 313,
+          "end": 315,
+          "text": "蔭口",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 104,
+          "end": 107,
+          "text": "詐欺師",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 464,
+          "end": 466,
+          "text": "難有",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 41,
+          "end": 43,
+          "text": "難有",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 157,
+          "end": 159,
+          "text": "控所",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 370,
+          "end": 373,
+          "text": "盤台面",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 17,
+          "end": 19,
+          "text": "控所",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 148,
+          "end": 150,
+          "text": "通町",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 15,
+      "textSha256": "e2db6119b68d74d42379f09f86cdf64df0bad861f5bcee588d3307eaf9ecab26",
+      "edits": [
+        {
+          "line": 22,
+          "start": 45,
+          "end": 47,
+          "text": "懸物",
+          "reason": "ruby"
+        },
+        {
+          "line": 32,
+          "start": 30,
+          "end": 32,
+          "text": "控所",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 32,
+          "start": 121,
+          "end": 123,
+          "text": "見巡",
+          "reason": "ruby"
+        },
+        {
+          "line": 36,
+          "start": 250,
+          "end": 253,
+          "text": "小日向",
+          "reason": "ruby"
+        },
+        {
+          "line": 36,
+          "start": 254,
+          "end": 257,
+          "text": "養源寺",
+          "reason": "ruby"
+        },
+        {
+          "line": 36,
+          "start": 266,
+          "end": 268,
+          "text": "懸物",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 36,
+          "start": 289,
+          "end": 292,
+          "text": "韋駄天",
+          "reason": "ruby"
+        },
+        {
+          "line": 38,
+          "start": 142,
+          "end": 144,
+          "text": "控所",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 38,
+          "start": 210,
+          "end": 212,
+          "text": "湯壺",
+          "reason": "ruby"
+        },
+        {
+          "line": 40,
+          "start": 111,
+          "end": 114,
+          "text": "袱紗包",
+          "reason": "ruby"
+        },
+        {
+          "line": 42,
+          "start": 181,
+          "end": 183,
+          "text": "寡徳",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 16,
+      "textSha256": "79caf9a5204b371e207867dfd79c96803302f5c1c4d17bd7afd539dfdb548181",
+      "edits": [
+        {
+          "line": 0,
+          "start": 445,
+          "end": 448,
+          "text": "馬鹿気",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 208,
+          "end": 210,
+          "text": "陥欠",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 443,
+          "end": 445,
+          "text": "取計",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 58,
+          "end": 60,
+          "text": "気狂",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 86,
+          "end": 88,
+          "text": "気狂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 98,
+          "end": 100,
+          "text": "難有",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 164,
+          "end": 166,
+          "text": "寝頸",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 138,
+          "end": 140,
+          "text": "喋舌",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 250,
+          "end": 252,
+          "text": "咄喊",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 255,
+          "end": 257,
+          "text": "吾々",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 270,
+          "end": 272,
+          "text": "吾校",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 300,
+          "end": 302,
+          "text": "吾々",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 328,
+          "end": 330,
+          "text": "振粛",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 301,
+          "end": 304,
+          "text": "穏便説",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 558,
+          "end": 560,
+          "text": "吾々",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 803,
+          "end": 805,
+          "text": "難有",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 17,
+      "textSha256": "b897003473ae76823b055c6520cd3a12dfcbbfd2a51d83f78ac5db45f6925e15",
+      "edits": [
+        {
+          "line": 4,
+          "start": 295,
+          "end": 298,
+          "text": "蕎麦屋",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 301,
+          "end": 304,
+          "text": "団子屋",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 29,
+          "end": 32,
+          "text": "蕎麦屋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 33,
+          "end": 36,
+          "text": "団子屋",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 18,
+      "textSha256": "7052ca180d866d66685a64871e3bdc2942c60b27ebbf685ce636df55df1d97c3",
+      "edits": [
+        {
+          "line": 0,
+          "start": 146,
+          "end": 148,
+          "text": "気狂",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 76,
+          "end": 79,
+          "text": "山城屋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 207,
+          "end": 211,
+          "text": "鍛冶屋町",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 21,
+          "end": 24,
+          "text": "世間並",
+          "reason": "ruby"
+        },
+        {
+          "line": 42,
+          "start": 56,
+          "end": 64,
+          "text": "マドンナマドンナ",
+          "reason": "katakana"
+        }
+      ]
+    },
+    {
+      "order": 19,
+      "textSha256": "c1d8e0744b6fe86c9093d746e914f3de7c044e53899b79172fe1eed4b5d44424",
+      "edits": [
+        {
+          "line": 2,
+          "start": 22,
+          "end": 24,
+          "text": "妲妃",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 26,
+          "end": 28,
+          "text": "艶福",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 117,
+          "end": 119,
+          "text": "好過",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 144,
+          "end": 146,
+          "text": "輿入",
+          "reason": "ruby"
+        },
+        {
+          "line": 38,
+          "start": 112,
+          "end": 114,
+          "text": "符箋",
+          "reason": "ruby"
+        },
+        {
+          "line": 38,
+          "start": 132,
+          "end": 135,
+          "text": "山城屋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 38,
+          "start": 744,
+          "end": 746,
+          "text": "椽鼻",
+          "reason": "ruby"
+        },
+        {
+          "line": 38,
+          "start": 756,
+          "end": 758,
+          "text": "鄭寧",
+          "reason": "ruby"
+        },
+        {
+          "line": 38,
+          "start": 903,
+          "end": 905,
+          "text": "肝癪",
+          "reason": "ruby"
+        },
+        {
+          "line": 38,
+          "start": 988,
+          "end": 991,
+          "text": "田舎者",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 38,
+          "start": 1044,
+          "end": 1046,
+          "text": "寝冷",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 20,
+      "textSha256": "58c7b390ee6aa09c2d81bae7c9e985d7828c3a3398fff63b3eca30ed0f192387",
+      "edits": [
+        {
+          "line": 0,
+          "start": 3,
+          "end": 5,
+          "text": "椽鼻",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 172,
+          "end": 174,
+          "text": "鄭寧",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 67,
+          "end": 70,
+          "text": "赤手拭",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 611,
+          "end": 618,
+          "text": "フロックコート",
+          "reason": "katakana"
+        },
+        {
+          "line": 2,
+          "start": 642,
+          "end": 644,
+          "text": "皆々",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 786,
+          "end": 789,
+          "text": "旦那様",
+          "reason": "ruby"
+        },
+        {
+          "line": 16,
+          "start": 124,
+          "end": 126,
+          "text": "金鎖",
+          "reason": "ruby"
+        },
+        {
+          "line": 16,
+          "start": 139,
+          "end": 141,
+          "text": "金鎖",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 16,
+          "start": 217,
+          "end": 220,
+          "text": "売下所",
+          "reason": "ruby"
+        },
+        {
+          "line": 18,
+          "start": 151,
+          "end": 154,
+          "text": "田舎者",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 21,
+      "textSha256": "8de516fb589a2ba85cb6ced347cd76072fdfc5246cf226eaf1d8040f2de2cbc5",
+      "edits": [
+        {
+          "line": 0,
+          "start": 18,
+          "end": 20,
+          "text": "湯壺",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 90,
+          "end": 92,
+          "text": "湯壺",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 49,
+          "end": 51,
+          "text": "湯壺",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 266,
+          "end": 269,
+          "text": "格子窓",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 291,
+          "end": 294,
+          "text": "丸提灯",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 288,
+          "end": 291,
+          "text": "胡魔化",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 295,
+          "end": 298,
+          "text": "胡魔化",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 4,
+          "end": 6,
+          "text": "性来",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 163,
+          "end": 166,
+          "text": "野芹川",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 218,
+          "end": 221,
+          "text": "相生村",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 228,
+          "end": 231,
+          "text": "観音様",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 22,
+      "textSha256": "638edb79e6b5c767f8fc7a6c8ec631cc9bf472edb68e1be16a1e3ba26dfe73cf",
+      "edits": [
+        {
+          "line": 0,
+          "start": 84,
+          "end": 87,
+          "text": "厳罰論",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 191,
+          "end": 194,
+          "text": "好加減",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 242,
+          "end": 245,
+          "text": "野芹川",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 456,
+          "end": 459,
+          "text": "回向院",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 497,
+          "end": 499,
+          "text": "控所",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 533,
+          "end": 536,
+          "text": "金壺眼",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 584,
+          "end": 587,
+          "text": "猫撫声",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 97,
+          "end": 99,
+          "text": "墻壁",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 54,
+          "end": 57,
+          "text": "野芹川",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 206,
+          "end": 209,
+          "text": "野芹川",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 394,
+          "end": 397,
+          "text": "随分妙",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 259,
+          "end": 262,
+          "text": "田舎者",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 22,
+          "start": 4,
+          "end": 6,
+          "text": "難有",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 23,
+      "textSha256": "8fa5c1eabc952c2260c15ad0c9a918b3e32d2db06ca344b9054529370f5c6caa",
+      "edits": [
+        {
+          "line": 6,
+          "start": 29,
+          "end": 32,
+          "text": "家屋敷",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 318,
+          "end": 321,
+          "text": "物数奇",
+          "reason": "ruby"
+        },
+        {
+          "line": 18,
+          "start": 20,
+          "end": 23,
+          "text": "物数奇",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 20,
+          "start": 12,
+          "end": 15,
+          "text": "勘五郎",
+          "reason": "ruby"
+        },
+        {
+          "line": 22,
+          "start": 1,
+          "end": 4,
+          "text": "勘五郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 22,
+          "start": 28,
+          "end": 31,
+          "text": "勘五郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 22,
+          "start": 42,
+          "end": 47,
+          "text": "法螺右衛門",
+          "reason": "ruby"
+        },
+        {
+          "line": 46,
+          "start": 19,
+          "end": 21,
+          "text": "作略",
+          "reason": "ruby"
+        },
+        {
+          "line": 46,
+          "start": 35,
+          "end": 37,
+          "text": "欺撃",
+          "reason": "ruby"
+        },
+        {
+          "line": 56,
+          "start": 149,
+          "end": 151,
+          "text": "難有",
+          "reason": "ruby"
+        },
+        {
+          "line": 60,
+          "start": 268,
+          "end": 272,
+          "text": "太宰権帥",
+          "reason": "ruby"
+        },
+        {
+          "line": 60,
+          "start": 289,
+          "end": 294,
+          "text": "河合又五郎",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 24,
+      "textSha256": "435438d3a9cb4baf9d5e7de10baef1c7fdb878c0357ec61ff09736a76c1b34aa",
+      "edits": [
+        {
+          "line": 0,
+          "start": 62,
+          "end": 64,
+          "text": "眼付",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 126,
+          "end": 128,
+          "text": "見損",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 233,
+          "end": 235,
+          "text": "万歳",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 136,
+          "end": 140,
+          "text": "双方合併",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 25,
+      "textSha256": "d7c4bd76b8f8cc0189de1dc0c9b5fc43df5869fd6cb7cadea7d40bb75fce922a",
+      "edits": [
+        {
+          "line": 0,
+          "start": 124,
+          "end": 127,
+          "text": "贋落款",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 161,
+          "end": 163,
+          "text": "懸物",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 222,
+          "end": 225,
+          "text": "胡魔化",
+          "reason": "ruby"
+        },
+        {
+          "line": 24,
+          "start": 25,
+          "end": 27,
+          "text": "軽跳",
+          "reason": "ruby"
+        },
+        {
+          "line": 30,
+          "start": 53,
+          "end": 56,
+          "text": "野芹川",
+          "reason": "ruby"
+        },
+        {
+          "line": 30,
+          "start": 68,
+          "end": 72,
+          "text": "馬鹿野郎",
+          "reason": "ruby"
+        },
+        {
+          "line": 30,
+          "start": 176,
+          "end": 178,
+          "text": "呆助",
+          "reason": "ruby"
+        },
+        {
+          "line": 34,
+          "start": 176,
+          "end": 179,
+          "text": "胡魔化",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 36,
+          "start": 125,
+          "end": 129,
+          "text": "鉄拳制裁",
+          "reason": "ruby"
+        },
+        {
+          "line": 44,
+          "start": 31,
+          "end": 34,
+          "text": "花晨亭",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 26,
+      "textSha256": "ac93e057fdbc876df8ee8310a902397375a816ddc9e1c7f2d67dcaec8bf0c969",
+      "edits": [
+        {
+          "line": 0,
+          "start": 61,
+          "end": 64,
+          "text": "山城屋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 71,
+          "end": 73,
+          "text": "畳敷",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 347,
+          "end": 349,
+          "text": "懸物",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 416,
+          "end": 418,
+          "text": "麗々",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 441,
+          "end": 443,
+          "text": "海屋",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 466,
+          "end": 468,
+          "text": "海屋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 45,
+          "end": 47,
+          "text": "海屋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 48,
+          "end": 50,
+          "text": "懸物",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 601,
+          "end": 603,
+          "text": "向側",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 227,
+          "end": 231,
+          "text": "上代樸直",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 306,
+          "end": 308,
+          "text": "篤厚",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 447,
+          "end": 449,
+          "text": "慚死",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 558,
+          "end": 560,
+          "text": "鄭寧",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 700,
+          "end": 702,
+          "text": "難有",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 838,
+          "end": 840,
+          "text": "一遍",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 4,
+          "end": 7,
+          "text": "燗徳利",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 74,
+          "end": 77,
+          "text": "一巡周",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 56,
+          "end": 60,
+          "text": "一人二人",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 81,
+          "end": 83,
+          "text": "昔風",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 27,
+      "textSha256": "e88667f7211933bbc0f935aec1258743c23d947f7a3f63200b2d142f18d20802",
+      "edits": [
+        {
+          "line": 0,
+          "start": 15,
+          "end": 19,
+          "text": "イカサマ",
+          "reason": "katakana"
+        },
+        {
+          "line": 2,
+          "start": 40,
+          "end": 42,
+          "text": "演舌",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 35,
+          "end": 37,
+          "text": "演舌",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 19,
+          "end": 21,
+          "text": "一遍",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 27,
+          "end": 31,
+          "text": "イカサマ",
+          "reason": "katakana"
+        },
+        {
+          "line": 8,
+          "start": 46,
+          "end": 48,
+          "text": "椽側",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 23,
+          "end": 26,
+          "text": "両人共",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 20,
+          "start": 73,
+          "end": 76,
+          "text": "居合抜",
+          "reason": "ruby"
+        },
+        {
+          "line": 20,
+          "start": 122,
+          "end": 125,
+          "text": "操人形",
+          "reason": "ruby"
+        },
+        {
+          "line": 26,
+          "start": 142,
+          "end": 145,
+          "text": "花月巻",
+          "reason": "ruby"
+        },
+        {
+          "line": 26,
+          "start": 175,
+          "end": 177,
+          "text": "半可",
+          "reason": "ruby"
+        },
+        {
+          "line": 28,
+          "start": 99,
+          "end": 106,
+          "text": "踏破千山万岳烟",
+          "reason": "ruby"
+        },
+        {
+          "line": 28,
+          "start": 178,
+          "end": 181,
+          "text": "棕梠箒",
+          "reason": "ruby"
+        },
+        {
+          "line": 30,
+          "start": 59,
+          "end": 61,
+          "text": "裸踴",
+          "reason": "ruby"
+        },
+        {
+          "line": 30,
+          "start": 209,
+          "end": 212,
+          "text": "気狂会",
+          "reason": "ruby"
+        },
+        {
+          "line": 30,
+          "start": 314,
+          "end": 316,
+          "text": "肝癪",
+          "reason": "ruby"
+        },
+        {
+          "line": 30,
+          "start": 524,
+          "end": 526,
+          "text": "頸筋",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 28,
+      "textSha256": "5470183bcc07730df459f2c56e8b5989811164c4fbf29d3092e336ccc0a0a0f3",
+      "edits": [
+        {
+          "line": 0,
+          "start": 12,
+          "end": 15,
+          "text": "練兵場",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 205,
+          "end": 207,
+          "text": "小供",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 358,
+          "end": 360,
+          "text": "喋舌",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 364,
+          "end": 366,
+          "text": "喋舌",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 418,
+          "end": 420,
+          "text": "喋舌",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 425,
+          "end": 427,
+          "text": "喋舌",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 441,
+          "end": 443,
+          "text": "喋舌",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 524,
+          "end": 527,
+          "text": "勘五郎",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 108,
+          "end": 112,
+          "text": "神経衰弱",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 282,
+          "end": 285,
+          "text": "樗蒲一",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 387,
+          "end": 389,
+          "text": "逆捩",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 553,
+          "end": 555,
+          "text": "見傚",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 582,
+          "end": 588,
+          "text": "愚迂多良童子",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 79,
+          "end": 82,
+          "text": "薬師町",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 141,
+          "end": 143,
+          "text": "念入",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 29,
+      "textSha256": "d85a217a4ce0346f18a237c1248d0a91f2d71f77aa8c7bab56f9c3a47f931412",
+      "edits": [
+        {
+          "line": 0,
+          "start": 22,
+          "end": 24,
+          "text": "肱枕",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 2,
+          "end": 4,
+          "text": "十坪",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 105,
+          "end": 107,
+          "text": "芋責",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 117,
+          "end": 120,
+          "text": "蕎麦屋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 123,
+          "end": 126,
+          "text": "団子屋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 167,
+          "end": 169,
+          "text": "煮方",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 81,
+          "end": 84,
+          "text": "蕎麦屋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 90,
+          "end": 93,
+          "text": "団子屋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 100,
+          "end": 103,
+          "text": "取締上",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 201,
+          "end": 205,
+          "text": "御殿女中",
+          "reason": "ruby"
+        },
+        {
+          "line": 24,
+          "start": 9,
+          "end": 11,
+          "text": "枡屋",
+          "reason": "ruby"
+        },
+        {
+          "line": 36,
+          "start": 3,
+          "end": 5,
+          "text": "枡屋",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 44,
+          "start": 322,
+          "end": 325,
+          "text": "八幡様",
+          "reason": "ruby"
+        },
+        {
+          "line": 46,
+          "start": 8,
+          "end": 11,
+          "text": "回向院",
+          "reason": "ruby"
+        },
+        {
+          "line": 46,
+          "start": 26,
+          "end": 28,
+          "text": "幾旒",
+          "reason": "ruby"
+        },
+        {
+          "line": 48,
+          "start": 34,
+          "end": 38,
+          "text": "帝国万歳",
+          "reason": "ruby"
+        },
+        {
+          "line": 48,
+          "start": 168,
+          "end": 170,
+          "text": "万歳",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 48,
+          "start": 197,
+          "end": 200,
+          "text": "相生村",
+          "reason": "ruby"
+        },
+        {
+          "line": 48,
+          "start": 212,
+          "end": 215,
+          "text": "観音様",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 30,
+      "textSha256": "d88c98e2c58b7eb613a4e70421a2bc7ccffd6a370e0eaf51db62172672ae63d0",
+      "edits": [
+        {
+          "line": 2,
+          "start": 271,
+          "end": 275,
+          "text": "三河万歳",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 276,
+          "end": 279,
+          "text": "普陀洛",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 117,
+          "end": 119,
+          "text": "冷々",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 189,
+          "end": 192,
+          "text": "同志撃",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 422,
+          "end": 424,
+          "text": "汐酌",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 129,
+          "end": 132,
+          "text": "田舎者",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 429,
+          "end": 432,
+          "text": "田舎者",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 16,
+          "end": 20,
+          "text": "一重羽織",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 31,
+      "textSha256": "ac2dc730a8b225c99fb6583d009008d9f1bd4ecaf7ad5cb834fceffcc31c1b8c",
+      "edits": [
+        {
+          "line": 0,
+          "start": 13,
+          "end": 16,
+          "text": "身体中",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 113,
+          "end": 115,
+          "text": "退儀",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 211,
+          "end": 214,
+          "text": "堀田某",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 370,
+          "end": 372,
+          "text": "吾校",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 400,
+          "end": 402,
+          "text": "吾人",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 424,
+          "end": 426,
+          "text": "吾人",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 430,
+          "end": 432,
+          "text": "吾人",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 59,
+          "end": 61,
+          "text": "無暗",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 47,
+          "end": 49,
+          "text": "自惚",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 252,
+          "end": 254,
+          "text": "万歳",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 305,
+          "end": 307,
+          "text": "焼点",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 348,
+          "end": 350,
+          "text": "君等",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 106,
+          "end": 108,
+          "text": "控所",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 84,
+          "end": 86,
+          "text": "僕等",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 32,
+      "textSha256": "c2cd297f8005663157d1b9fa51aee06956154b88277ad3facd7ed6d534286506",
+      "edits": [
+        {
+          "line": 0,
+          "start": 21,
+          "end": 23,
+          "text": "僕等",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 26,
+          "end": 31,
+          "text": "天道是耶非",
+          "reason": "ruby"
+        },
+        {
+          "line": 24,
+          "start": 397,
+          "end": 399,
+          "text": "泥鼈",
+          "reason": "ruby"
+        },
+        {
+          "line": 34,
+          "start": 24,
+          "end": 27,
+          "text": "胡魔化",
+          "reason": "ruby"
+        },
+        {
+          "line": 70,
+          "start": 43,
+          "end": 46,
+          "text": "可愛想",
+          "reason": "ruby"
+        },
+        {
+          "line": 72,
+          "start": 94,
+          "end": 96,
+          "text": "利巧",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 33,
+      "textSha256": "b2a6bdbab29cc19f675e8eeab5d08bc49cb89f43e0b6f62190b4d28f645dc3f9",
+      "edits": [
+        {
+          "line": 0,
+          "start": 58,
+          "end": 60,
+          "text": "枡屋",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 231,
+          "end": 234,
+          "text": "馬鹿気",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 509,
+          "end": 512,
+          "text": "瓦斯燈",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 615,
+          "end": 618,
+          "text": "可愛想",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 53,
+          "end": 55,
+          "text": "芋責",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 84,
+          "end": 87,
+          "text": "赤手拭",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 102,
+          "end": 104,
+          "text": "枡屋",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 105,
+          "end": 108,
+          "text": "楷子段",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 133,
+          "end": 136,
+          "text": "韋駄天",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 9,
+          "end": 11,
+          "text": "小鈴",
+          "reason": "ruby"
+        },
+        {
+          "line": 20,
+          "start": 41,
+          "end": 43,
+          "text": "洋燈",
+          "reason": "ruby"
+        },
+        {
+          "line": 22,
+          "start": 3,
+          "end": 6,
+          "text": "一貫張",
+          "reason": "ruby"
+        },
+        {
+          "line": 22,
+          "start": 16,
+          "end": 18,
+          "text": "洋燈",
+          "reason": "ruby"
+        },
+        {
+          "line": 22,
+          "start": 83,
+          "end": 86,
+          "text": "チーン",
+          "reason": "katakana"
+        },
+        {
+          "line": 40,
+          "start": 14,
+          "end": 18,
+          "text": "天網恢々",
+          "reason": "ruby"
+        },
+        {
+          "line": 42,
+          "start": 59,
+          "end": 62,
+          "text": "瓦斯燈",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 46,
+          "start": 199,
+          "end": 201,
+          "text": "辛防",
+          "reason": "ruby"
+        },
+        {
+          "line": 46,
+          "start": 218,
+          "end": 221,
+          "text": "瓦斯燈",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 34,
+      "textSha256": "a95828a1b04bbd9766ba4033aa8e4c949cf7396cc1c3028cc06891c2b0319230",
+      "edits": [
+        {
+          "line": 0,
+          "start": 80,
+          "end": 83,
+          "text": "杉並木",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 173,
+          "end": 176,
+          "text": "杉並木",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 36,
+          "end": 38,
+          "text": "鄭寧",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 1,
+          "end": 4,
+          "text": "取締上",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 11,
+          "end": 14,
+          "text": "蕎麦屋",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 15,
+          "end": 18,
+          "text": "団子屋",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 331,
+          "end": 333,
+          "text": "尻持",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 385,
+          "end": 387,
+          "text": "肝癪",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 421,
+          "end": 423,
+          "text": "尻持",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 29,
+          "end": 32,
+          "text": "胡魔化",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 22,
+          "start": 72,
+          "end": 75,
+          "text": "両人共",
+          "reason": "ruby"
+        },
+        {
+          "line": 22,
+          "start": 94,
+          "end": 96,
+          "text": "退儀",
+          "reason": "ruby"
+        },
+        {
+          "line": 26,
+          "start": 161,
+          "end": 163,
+          "text": "有之",
+          "reason": "ruby"
+        },
+        {
+          "line": 26,
+          "start": 172,
+          "end": 174,
+          "text": "申候",
+          "reason": "ruby"
+        },
+        {
+          "line": 26,
+          "start": 177,
+          "end": 186,
+          "text": "左様御承知被下度候",
+          "reason": "ruby"
+        },
+        {
+          "line": 32,
+          "start": 33,
+          "end": 35,
+          "text": "革鞄",
+          "reason": "ruby"
+        },
+        {
+          "line": 34,
+          "start": 10,
+          "end": 12,
+          "text": "街鉄",
+          "reason": "ruby"
+        },
+        {
+          "line": 34,
+          "start": 173,
+          "end": 176,
+          "text": "養源寺",
+          "reason": "ruby-repeat"
+        }
+      ]
+    }
+  ]
+}

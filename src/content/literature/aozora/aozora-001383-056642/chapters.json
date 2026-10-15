@@ -228,6 +228,22 @@
               "reading": "いんえい"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_2_0",
+              "line": 8,
+              "start": 548,
+              "end": 551,
+              "text": "佛蘭西",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -363,6 +379,44 @@
               "reading": "まきえ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_3_0",
+              "line": 0,
+              "start": 566,
+              "end": 573,
+              "text": "アルミニューム",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_3_1",
+              "line": 0,
+              "start": 1049,
+              "end": 1051,
+              "text": "智利",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_2",
+              "line": 0,
+              "start": 1073,
+              "end": 1075,
+              "text": "智利",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -484,6 +538,22 @@
               "end": 2972,
               "base": "果敢",
               "reading": "はか"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_4_0",
+              "line": 0,
+              "start": 258,
+              "end": 260,
+              "text": "温味",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -637,6 +707,44 @@
               "end": 3155,
               "base": "褪",
               "reading": "あ"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_5_0",
+              "line": 4,
+              "start": 221,
+              "end": 223,
+              "text": "落懸",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_5_1",
+              "line": 4,
+              "start": 627,
+              "end": 629,
+              "text": "落懸",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_2",
+              "line": 4,
+              "start": 1133,
+              "end": 1135,
+              "text": "縦繁",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -933,6 +1041,22 @@
               "reading": "かげ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_7_0",
+              "line": 0,
+              "start": 676,
+              "end": 678,
+              "text": "餘所",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -1078,6 +1202,33 @@
               "end": 2721,
               "base": "猶太",
               "reading": "ユダヤ"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_8_0",
+              "line": 8,
+              "start": 405,
+              "end": 407,
+              "text": "猶太",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_8_1",
+              "line": 8,
+              "start": 607,
+              "end": 616,
+              "text": "ムーンライトソナタ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
             }
           ]
         }
@@ -1275,6 +1426,44 @@
               "reading": "のき"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_9_0",
+              "line": 4,
+              "start": 12,
+              "end": 15,
+              "text": "英吉利",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_9_1",
+              "line": 4,
+              "start": 1072,
+              "end": 1074,
+              "text": "押蓋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_9_2",
+              "line": 4,
+              "start": 1749,
+              "end": 1751,
+              "text": "叱言",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     }
@@ -1302,6 +1491,7 @@
       3248,
       3709,
       3500
-    ]
+    ],
+    "boundaryMergeCount": 14
   }
 }

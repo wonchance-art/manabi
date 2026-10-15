@@ -136,7 +136,7 @@ describe('관리자 큐레이션 책 게시 API', () => {
     await post({ action: 'prepare', key: KEY });
     const response = await GET(new Request(`${URL_BASE}?ruby=${KEY}`));
     expect(await response.json()).toEqual({ key: KEY, coverage: ORDERS.map((order) => ({ order, rubyLocks: 0, applied: null,
-      hints: 0, hintsAttached: null, hintsMissed: [], remaining: null })) });
+      hints: 0, hintsAttached: null, hintsMissed: [], remaining: null, boundary: null, boundaryWords: [] })) });
   });
 
   it.each([

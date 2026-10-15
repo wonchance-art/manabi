@@ -450,6 +450,66 @@
               "reading": "はら"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_1_0",
+              "line": 20,
+              "start": 33,
+              "end": 35,
+              "text": "拾円",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_1",
+              "line": 74,
+              "start": 16,
+              "end": 19,
+              "text": "大歓迎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_2",
+              "line": 76,
+              "start": 3,
+              "end": 6,
+              "text": "大歓迎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_3",
+              "line": 78,
+              "start": 7,
+              "end": 10,
+              "text": "大歓迎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_4",
+              "line": 148,
+              "start": 6,
+              "end": 13,
+              "text": "オーバーコート",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            }
+          ]
         }
       }
     },
@@ -774,6 +834,44 @@
               "reading": "とちゅう"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_2_0",
+              "line": 76,
+              "start": 31,
+              "end": 33,
+              "text": "眼玉",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_1",
+              "line": 110,
+              "start": 58,
+              "end": 60,
+              "text": "眼玉",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_2",
+              "line": 132,
+              "start": 0,
+              "end": 3,
+              "text": "簔帽子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     }
@@ -793,6 +891,7 @@
     "chapterChars": [
       2874,
       2828
-    ]
+    ],
+    "boundaryMergeCount": 8
   }
 }

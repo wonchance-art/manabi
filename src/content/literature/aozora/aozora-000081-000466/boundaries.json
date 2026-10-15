@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "c059059a3acaf2bc837e6ae338ee55ba67804b60cfd1bb88359f4d167be1f0f6",
+      "edits": [
+        {
+          "line": 2,
+          "start": 15,
+          "end": 17,
+          "text": "稲扱",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 32,
+          "end": 34,
+          "text": "吹殻",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 27,
+          "end": 29,
+          "text": "稲扱",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 18,
+          "start": 11,
+          "end": 13,
+          "text": "片脚",
+          "reason": "ruby"
+        },
+        {
+          "line": 26,
+          "start": 15,
+          "end": 17,
+          "text": "稲扱",
+          "reason": "ruby"
+        },
+        {
+          "line": 30,
+          "start": 7,
+          "end": 15,
+          "text": "パチパチパチパチ",
+          "reason": "katakana"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "31779ca10dfc2a622a5d279e83664c0d32a856e0f0f41851b43310bc3ba17369",
+      "edits": [
+        {
+          "line": 0,
+          "start": 21,
+          "end": 23,
+          "text": "稲扱",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 52,
+          "start": 23,
+          "end": 26,
+          "text": "鍛冶場",
+          "reason": "ruby"
+        },
+        {
+          "line": 58,
+          "start": 6,
+          "end": 9,
+          "text": "鍛冶場",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "textSha256": "3ef8b0b44aad7e0563788d10530191cb0fc3e0a86790018c74ce1984c46507e4",
+      "edits": [
+        {
+          "line": 28,
+          "start": 0,
+          "end": 2,
+          "text": "赤衣",
+          "reason": "ruby"
+        },
+        {
+          "line": 28,
+          "start": 44,
+          "end": 47,
+          "text": "沙羅樹",
+          "reason": "ruby"
+        },
+        {
+          "line": 58,
+          "start": 52,
+          "end": 54,
+          "text": "片脚",
+          "reason": "ruby-repeat"
+        }
+      ]
+    }
+  ]
+}

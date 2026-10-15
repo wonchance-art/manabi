@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "2f7f258a3e6cabc374356e8ede41367b2f010ab1238ec1a386757eb1618d95a2",
+      "edits": [
+        {
+          "line": 20,
+          "start": 33,
+          "end": 35,
+          "text": "拾円",
+          "reason": "ruby"
+        },
+        {
+          "line": 74,
+          "start": 16,
+          "end": 19,
+          "text": "大歓迎",
+          "reason": "ruby"
+        },
+        {
+          "line": 76,
+          "start": 3,
+          "end": 6,
+          "text": "大歓迎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 78,
+          "start": 7,
+          "end": 10,
+          "text": "大歓迎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 148,
+          "start": 6,
+          "end": 13,
+          "text": "オーバーコート",
+          "reason": "katakana"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "b190766b7643eb9e757a5c94770aebadc39963dd3bc5790367a0ea90c01a41a0",
+      "edits": [
+        {
+          "line": 76,
+          "start": 31,
+          "end": 33,
+          "text": "眼玉",
+          "reason": "ruby"
+        },
+        {
+          "line": 110,
+          "start": 58,
+          "end": 60,
+          "text": "眼玉",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 132,
+          "start": 0,
+          "end": 3,
+          "text": "簔帽子",
+          "reason": "ruby"
+        }
+      ]
+    }
+  ]
+}

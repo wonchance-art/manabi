@@ -240,6 +240,77 @@
               "reading": "つぶや"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_1_0",
+              "line": 2,
+              "start": 839,
+              "end": 842,
+              "text": "ペテロ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_1_1",
+              "line": 2,
+              "start": 2198,
+              "end": 2201,
+              "text": "ペテロ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_1_2",
+              "line": 2,
+              "start": 2557,
+              "end": 2559,
+              "text": "桃畠",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_3",
+              "line": 2,
+              "start": 2669,
+              "end": 2672,
+              "text": "ペテロ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_1_4",
+              "line": 2,
+              "start": 2677,
+              "end": 2679,
+              "text": "漁人",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_5",
+              "line": 2,
+              "start": 2702,
+              "end": 2704,
+              "text": "漁人",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -696,6 +767,55 @@
               "reading": "さ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_3_0",
+              "line": 0,
+              "start": 481,
+              "end": 483,
+              "text": "愈愈",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_1",
+              "line": 0,
+              "start": 714,
+              "end": 716,
+              "text": "過越",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_2",
+              "line": 0,
+              "start": 1227,
+              "end": 1230,
+              "text": "ペテロ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_3_3",
+              "line": 0,
+              "start": 1331,
+              "end": 1334,
+              "text": "ペテロ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            }
+          ]
         }
       }
     },
@@ -856,6 +976,110 @@
               "end": 2214,
               "base": "潔",
               "reading": "きよ"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_4_0",
+              "line": 0,
+              "start": 71,
+              "end": 73,
+              "text": "哀哭",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_4_1",
+              "line": 2,
+              "start": 572,
+              "end": 574,
+              "text": "夕餐",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_4_2",
+              "line": 2,
+              "start": 1257,
+              "end": 1260,
+              "text": "ペテロ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_4_3",
+              "line": 2,
+              "start": 1515,
+              "end": 1518,
+              "text": "ペテロ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_4_4",
+              "line": 2,
+              "start": 1538,
+              "end": 1541,
+              "text": "ペテロ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_4_5",
+              "line": 2,
+              "start": 1681,
+              "end": 1684,
+              "text": "ペテロ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_4_6",
+              "line": 2,
+              "start": 1698,
+              "end": 1701,
+              "text": "ペテロ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_4_7",
+              "line": 2,
+              "start": 1855,
+              "end": 1858,
+              "text": "ペテロ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_4_8",
+              "line": 2,
+              "start": 1988,
+              "end": 1991,
+              "text": "ペテロ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
             }
           ]
         }
@@ -1038,6 +1262,22 @@
               "reading": "ふくしゅう"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_5_0",
+              "line": 0,
+              "start": 1508,
+              "end": 1510,
+              "text": "夕餐",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     }
@@ -1061,6 +1301,7 @@
       2718,
       2381,
       2532
-    ]
+    ],
+    "boundaryMergeCount": 20
   }
 }

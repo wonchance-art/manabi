@@ -65,6 +65,21 @@ function analyze(item, revision, { flagged = false } = {}) {
     metadata: { ...item.processed_json.metadata, viewerRevision: revision } };
 }
 
+/** 글자마다 토큰 하나로 「분석 완료」 — 저자 루비 낱말(2자 이상)이 모두 쪼개진 분석. merge: 한 토큰으로 둘 루비 기준 글자. */
+function analyzeByChar(item, revision, { merge = [] } = {}) {
+  const raw = item.raw_text, sequence = [], dictionary = {};
+  const locks = item.processed_json.metadata.literature.rubyLocks.filter((lock) => merge.includes(lock.base));
+  for (let at = 0; at < raw.length;) {
+    const lock = locks.find((candidate) => candidate.start === at);
+    const text = lock ? lock.base : String.fromCodePoint(raw.codePointAt(at));
+    const id = `c${at}`;
+    sequence.push(id);
+    dictionary[id] = text === '\n' ? { text, pos: '개행' } : { text, meaning: '뜻' };
+    at += text.length;
+  }
+  item.processed_json = { ...item.processed_json, status: 'completed', sequence, dictionary, metadata: { ...item.processed_json.metadata, viewerRevision: revision } };
+}
+
 const post = (body) => POST(new Request('http://localhost/api/admin/literature', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }));
 let db;
 beforeEach(() => {
@@ -161,6 +176,47 @@ describe('관리자 정본 문학책 게시 API', () => {
     expect((await post({ action: 'review', key: KEY, order: 9 })).status).toBe(400);
   });
 
+  it('검수: 저자 루비 낱말이 쪼개진 장은 검수자가 그대로 두겠다고 밝힐 때만(acceptBoundaries) 받는다(AOZORA-P1-10)', async () => {
+    await post({ action: 'prepare', key: KEY });
+    analyzeByChar(db.state.rows[0], 'r1');
+    const split = book.chapters[0].metadata.literature.rubyLocks.filter((lock) => lock.base.length >= 2);
+    const blocked = await post({ action: 'review', key: KEY, order: 1 });
+    expect(blocked.status).toBe(409);
+    const body = await blocked.json();
+    expect(body).toMatchObject({ boundary: split.length, boundaryWords: [...new Set(split.map((lock) => lock.base))].slice(0, 5) });
+    expect(body.error).toContain('禅智内供');
+    expect(db.state.updates).toEqual([]);
+    const { coverage } = await (await GET(new Request(`http://localhost/api/admin/literature?ruby=${KEY}`))).json();
+    expect(coverage[0]).toMatchObject({ remaining: 0, boundary: split.length });
+    expect((await post({ action: 'review', key: KEY, order: 1, acceptBoundaries: 'yes' })).status).toBe(409); // true만 확인으로 친다
+    expect((await post({ action: 'review', key: KEY, order: 1, acceptBoundaries: true })).status).toBe(200);
+    expect(db.state.rows[0].processed_json.metadata.literatureReview).toMatchObject({ viewerRevision: 'r1' });
+  });
+
+  it('묶음 검수: 장마다 다시 판정 — 깨끗한 장만 검수 완료, 쪼개진 낱말·남은 확인·이미 검수한 장은 이유와 함께 넘긴다', async () => {
+    await post({ action: 'prepare', key: KEY });
+    const bases = (order) => book.chapters[order - 1].metadata.literature.rubyLocks.map((lock) => lock.base);
+    analyzeByChar(db.state.rows[0], 'r1', { merge: bases(1) });
+    analyzeByChar(db.state.rows[1], 'r2', { merge: bases(2).slice(1) }); // 첫 루비 낱말만 쪼개짐
+    const response = await post({ action: 'reviewMany', key: KEY, orders: [1, 2] });
+    expect(response.status).toBe(200);
+    const { reviewed, skipped } = await response.json();
+    expect(reviewed).toEqual([{ id: 500, order: 1 }]);
+    expect(skipped).toEqual([{ order: 2, error: expect.stringContaining('쪼개진 낱말이 1곳') }]);
+    expect(db.state.rows[1].processed_json.metadata.literatureReview).toBeUndefined();
+    const again = await (await post({ action: 'reviewMany', key: KEY, orders: [1] })).json();
+    expect(again).toEqual({ ok: true, reviewed: [], skipped: [{ order: 1, error: '이미 검수 완료인 장이에요.' }] });
+    analyze(db.state.rows[1], 'r3', { flagged: true });
+    expect((await (await post({ action: 'reviewMany', key: KEY, orders: [2] })).json()).skipped[0].error).toContain('「뜻 확인 필요」가 1개');
+  });
+
+  it.each([[[]], [[1, 1]], [[9]], [['1']], [undefined]])('묶음 검수: 잘못된 장 목록 %j → 400, 아무것도 쓰지 않는다', async (orders) => {
+    await post({ action: 'prepare', key: KEY });
+    db.state.rows.forEach((item, index) => analyze(item, `r${index}`));
+    expect((await post({ action: 'reviewMany', key: KEY, orders })).status).toBe(400);
+    expect(db.state.updates).toEqual([]);
+  });
+
   it('공개: 검수하지 않은 장이 있으면 409, 모든 장을 검수하면 관리자 소유 비공개 장만 public으로', async () => {
     await post({ action: 'prepare', key: KEY });
     db.state.rows.forEach((item, index) => analyze(item, `r${index}`));
@@ -191,7 +247,7 @@ describe('관리자 정본 문학책 게시 API', () => {
     await post({ action: 'prepare', key: KEY });
     const response = await GET(new Request(`http://localhost/api/admin/literature?ruby=${KEY}`));
     expect(await response.json()).toEqual({ key: KEY, coverage: book.chapters.map((chapter) => ({ order: chapter.order, rubyLocks: chapter.metadata.literature.rubyLocks.length, applied: null,
-      hints: 0, hintsAttached: null, hintsMissed: [], remaining: null })) });
+      hints: 0, hintsAttached: null, hintsMissed: [], remaining: null, boundary: null, boundaryWords: [] })) });
     expect((await GET(new Request('http://localhost/api/admin/literature?ruby=nope'))).status).toBe(404);
   });
 });

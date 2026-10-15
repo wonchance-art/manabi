@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "6ab0fffa2d3017e717f975804e00e413c3e017041357c8ddb927094b5ffdba79",
+      "edits": []
+    },
+    {
+      "order": 2,
+      "textSha256": "066f1a0df1fab46a196490d1b0566b52fbf2ea7b81c3e4bb9ba4a69b122197e3",
+      "edits": [
+        {
+          "line": 8,
+          "start": 548,
+          "end": 551,
+          "text": "佛蘭西",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "textSha256": "91b57967f9f83d5f8cd5df545da5cb19bcdd6fd1bf946e3d8e651fc945483d49",
+      "edits": [
+        {
+          "line": 0,
+          "start": 566,
+          "end": 573,
+          "text": "アルミニューム",
+          "reason": "katakana"
+        },
+        {
+          "line": 0,
+          "start": 1049,
+          "end": 1051,
+          "text": "智利",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 1073,
+          "end": 1075,
+          "text": "智利",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "textSha256": "ee4836731825a57d6044faef983076c2431542b1b728a1d71347ff74727e078b",
+      "edits": [
+        {
+          "line": 0,
+          "start": 258,
+          "end": 260,
+          "text": "温味",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "textSha256": "8d385419934131c4b52d1f61ed95aeb59b03a201ea57896e8c8056eeaacfe991",
+      "edits": [
+        {
+          "line": 4,
+          "start": 221,
+          "end": 223,
+          "text": "落懸",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 627,
+          "end": 629,
+          "text": "落懸",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 1133,
+          "end": 1135,
+          "text": "縦繁",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "textSha256": "00b192fc05b85b3d8ad60966bf16af755cec68b93734bda869794997a29bb460",
+      "edits": []
+    },
+    {
+      "order": 7,
+      "textSha256": "e22fb2d5e0517a12608f27f531a8bc5bd53e9b21a228b74b4baa6c9d0d0abdcd",
+      "edits": [
+        {
+          "line": 0,
+          "start": 676,
+          "end": 678,
+          "text": "餘所",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "textSha256": "283a51bf13dcfca586d66d4206ef56530eb716628b8442b06ea69fbd641f9063",
+      "edits": [
+        {
+          "line": 8,
+          "start": 405,
+          "end": 407,
+          "text": "猶太",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 607,
+          "end": 616,
+          "text": "ムーンライトソナタ",
+          "reason": "katakana"
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "textSha256": "663552503993023fc750e85ec26e29d9d4b8a67cd40ebfeb032d5113f56ede69",
+      "edits": [
+        {
+          "line": 4,
+          "start": 12,
+          "end": 15,
+          "text": "英吉利",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 1072,
+          "end": 1074,
+          "text": "押蓋",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 1749,
+          "end": 1751,
+          "text": "叱言",
+          "reason": "ruby"
+        }
+      ]
+    }
+  ]
+}

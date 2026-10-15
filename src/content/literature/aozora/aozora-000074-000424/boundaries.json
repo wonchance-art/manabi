@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "2bcd1cade277960983791aeceb122dcd36970ef82867ecf1b373ff951a1c0c96",
+      "edits": [
+        {
+          "line": 6,
+          "start": 58,
+          "end": 61,
+          "text": "縞模様",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 92,
+          "end": 95,
+          "text": "鼠花火",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 84,
+          "end": 87,
+          "text": "翡翠色",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 88,
+          "end": 91,
+          "text": "香水壜",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 166,
+          "end": 168,
+          "text": "乾蝦",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 362,
+          "end": 365,
+          "text": "快速調",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 473,
+          "end": 476,
+          "text": "人参葉",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 483,
+          "end": 485,
+          "text": "素晴",
+          "reason": "ruby"
+        },
+        {
+          "line": 16,
+          "start": 242,
+          "end": 244,
+          "text": "眼深",
+          "reason": "ruby"
+        },
+        {
+          "line": 16,
+          "start": 410,
+          "end": 413,
+          "text": "螺旋棒",
+          "reason": "ruby"
+        },
+        {
+          "line": 16,
+          "start": 443,
+          "end": 445,
+          "text": "鎰屋",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "f5b2c495e453a0a7d31118b93f38f1cb77f370ee1a6910e3136241f4fb015bcd",
+      "edits": [
+        {
+          "line": 0,
+          "start": 33,
+          "end": 35,
+          "text": "檸檬",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 43,
+          "end": 45,
+          "text": "檸檬",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 126,
+          "end": 128,
+          "text": "檸檬",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 319,
+          "end": 321,
+          "text": "一顆",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 2,
+          "end": 4,
+          "text": "檸檬",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 72,
+          "end": 75,
+          "text": "諧謔心",
+          "reason": "ruby"
+        },
+        {
+          "line": 22,
+          "start": 19,
+          "end": 21,
+          "text": "檸檬",
+          "reason": "ruby"
+        },
+        {
+          "line": 22,
+          "start": 50,
+          "end": 52,
+          "text": "檸檬",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 26,
+          "start": 43,
+          "end": 45,
+          "text": "檸檬",
+          "reason": "ruby"
+        },
+        {
+          "line": 28,
+          "start": 8,
+          "end": 10,
+          "text": "檸檬",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 28,
+          "start": 80,
+          "end": 82,
+          "text": "檸檬",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 38,
+          "start": 31,
+          "end": 33,
+          "text": "粉葉",
+          "reason": "ruby"
+        }
+      ]
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { buildLiterature, LITERATURE_FILES, LITERATURE_OUTPUTS, LITERATURE_ROOT } from '../../../scripts/lib/literature-build.mjs';
+import { LITERATURE_BOUNDARY_FILE, LITERATURE_BOUNDARY_VERSION } from '../../../scripts/lib/literature-boundaries.mjs';
 import { aozoraFixture, sha256, sampleEntry } from './helpers/aozoraFixtures.js';
 import { literatureIncipit } from '../literatureDisplay.js';
 
@@ -96,6 +97,43 @@ describe('build-literature — 게시 목록·뷰어 대조표(AOZORA-P0-2)', ()
     writeFileSync(path.join(root, 'aozora-000001-000001', LITERATURE_FILES.source), source.replace('霧', '雲'));
     expect((await buildLiterature({ root })).errors).toEqual([expect.stringContaining('SHA-256')]);
     expect(readFileSync(path.join(root, LITERATURE_OUTPUTS.index), 'utf8')).toBe(before);
+  });
+});
+
+describe('build-literature — 단어 경계 미리 묶기(AOZORA-P1-10)', () => {
+  /** 빌드한 장들에서 장마다 첫 두 글자를 묶는 boundaries.json(경계 생성기 대신 — 형식·대조만 본다). */
+  async function withBoundaries(root, edit = (boundaries) => boundaries) {
+    await buildLiterature({ root });
+    const dir = path.join(root, 'aozora-000001-000001');
+    const { chapters } = JSON.parse(readFileSync(path.join(dir, LITERATURE_FILES.chapters), 'utf8'));
+    const boundaries = {
+      schemaVersion: LITERATURE_BOUNDARY_VERSION,
+      tokenizer: 'fake',
+      chapters: chapters.map((chapter) => {
+        const line = chapter.rawText.split('\n').findIndex((item) => item.replace(/\s+/gu, '').length >= 2);
+        const text = chapter.rawText.split('\n')[line].replace(/\s+/gu, '').slice(0, 2);
+        return { order: chapter.order, textSha256: sha256(chapter.rawText), edits: [{ line, start: 0, end: 2, text, reason: 'katakana' }] };
+      }),
+    };
+    writeFileSync(path.join(dir, LITERATURE_BOUNDARY_FILE), `${JSON.stringify(edit(boundaries), null, 2)}\n`);
+    return dir;
+  }
+
+  it('boundaries.json이 있으면 장 metadata.viewerBoundaries로 싣고(분석 요청에 실린다), --check 통과', async () => {
+    const root = workspace([sample()]);
+    const dir = await withBoundaries(root);
+    expect((await buildLiterature({ root })).works[0].status).toBe('written');
+    const { chapters, diagnostics } = JSON.parse(readFileSync(path.join(dir, LITERATURE_FILES.chapters), 'utf8'));
+    expect(chapters.map((chapter) => chapter.metadata.viewerBoundaries.edits.map((edit) => [edit.id, edit.status, edit.cuts])))
+      .toEqual([[['aozora_1_0', 'pending', []]], [['aozora_2_0', 'pending', []]]]);
+    expect(diagnostics.boundaryMergeCount).toBe(2);
+    expect((await buildLiterature({ root, check: true })).errors).toEqual([]);
+  });
+
+  it('원문과 어긋난 boundaries.json(낡은 해시)은 실패 — 엉뚱한 자리를 묶지 않는다', async () => {
+    const root = workspace([sample()]);
+    await withBoundaries(root, (boundaries) => ({ ...boundaries, chapters: boundaries.chapters.map((chapter) => ({ ...chapter, textSha256: '0'.repeat(64) })) }));
+    expect((await buildLiterature({ root })).errors.join('\n')).toContain('boundaries.mjs로 다시 만든다');
   });
 });
 

@@ -204,6 +204,110 @@
               "reading": "しもて"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_1_0",
+              "line": 4,
+              "start": 145,
+              "end": 148,
+              "text": "百姓家",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_1",
+              "line": 14,
+              "start": 1,
+              "end": 3,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_2",
+              "line": 14,
+              "start": 17,
+              "end": 19,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_3",
+              "line": 16,
+              "start": 8,
+              "end": 10,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_4",
+              "line": 16,
+              "start": 145,
+              "end": 147,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_5",
+              "line": 18,
+              "start": 0,
+              "end": 2,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_6",
+              "line": 20,
+              "start": 0,
+              "end": 2,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_7",
+              "line": 22,
+              "start": 124,
+              "end": 126,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_8",
+              "line": 26,
+              "start": 27,
+              "end": 29,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -402,6 +506,165 @@
               "reading": "とこ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_2_0",
+              "line": 0,
+              "start": 12,
+              "end": 14,
+              "text": "弥助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_1",
+              "line": 0,
+              "start": 49,
+              "end": 51,
+              "text": "弥助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_2",
+              "line": 0,
+              "start": 69,
+              "end": 72,
+              "text": "鍛冶屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_3",
+              "line": 0,
+              "start": 73,
+              "end": 76,
+              "text": "新兵衛",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_4",
+              "line": 0,
+              "start": 86,
+              "end": 89,
+              "text": "新兵衛",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_5",
+              "line": 6,
+              "start": 36,
+              "end": 38,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_6",
+              "line": 10,
+              "start": 1,
+              "end": 3,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_7",
+              "line": 12,
+              "start": 56,
+              "end": 59,
+              "text": "屋根瓦",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_8",
+              "line": 14,
+              "start": 39,
+              "end": 41,
+              "text": "話声",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_9",
+              "line": 16,
+              "start": 14,
+              "end": 16,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_10",
+              "line": 18,
+              "start": 10,
+              "end": 12,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_11",
+              "line": 24,
+              "start": 1,
+              "end": 3,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_12",
+              "line": 24,
+              "start": 39,
+              "end": 41,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_13",
+              "line": 24,
+              "start": 89,
+              "end": 91,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -534,6 +797,176 @@
               "reading": "ぬすびと"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_3_0",
+              "line": 0,
+              "start": 0,
+              "end": 2,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_1",
+              "line": 2,
+              "start": 0,
+              "end": 2,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_2",
+              "line": 4,
+              "start": 12,
+              "end": 14,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_3",
+              "line": 12,
+              "start": 30,
+              "end": 32,
+              "text": "弥助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_4",
+              "line": 14,
+              "start": 62,
+              "end": 64,
+              "text": "弥助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_5",
+              "line": 14,
+              "start": 131,
+              "end": 133,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_6",
+              "line": 14,
+              "start": 187,
+              "end": 189,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_7",
+              "line": 18,
+              "start": 31,
+              "end": 33,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_8",
+              "line": 18,
+              "start": 55,
+              "end": 57,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_9",
+              "line": 18,
+              "start": 59,
+              "end": 61,
+              "text": "午飯",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_10",
+              "line": 18,
+              "start": 68,
+              "end": 70,
+              "text": "茶椀",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_11",
+              "line": 18,
+              "start": 99,
+              "end": 101,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_12",
+              "line": 18,
+              "start": 140,
+              "end": 142,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_13",
+              "line": 22,
+              "start": 24,
+              "end": 26,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_14",
+              "line": 26,
+              "start": 25,
+              "end": 27,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -642,6 +1075,121 @@
               "reading": "ぼうずあたま"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_4_0",
+              "line": 0,
+              "start": 67,
+              "end": 69,
+              "text": "話声",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_1",
+              "line": 2,
+              "start": 25,
+              "end": 27,
+              "text": "話声",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_2",
+              "line": 2,
+              "start": 44,
+              "end": 46,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_3",
+              "line": 2,
+              "start": 47,
+              "end": 49,
+              "text": "加助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_4_4",
+              "line": 4,
+              "start": 8,
+              "end": 10,
+              "text": "加助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_5",
+              "line": 4,
+              "start": 13,
+              "end": 15,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_6",
+              "line": 28,
+              "start": 0,
+              "end": 2,
+              "text": "加助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_7",
+              "line": 28,
+              "start": 40,
+              "end": 42,
+              "text": "加助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_8",
+              "line": 28,
+              "start": 71,
+              "end": 74,
+              "text": "吉兵衛",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_4_9",
+              "line": 28,
+              "start": 142,
+              "end": 145,
+              "text": "坊主頭",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -712,6 +1260,77 @@
               "end": 85,
               "base": "影法師",
               "reading": "かげぼうし"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_5_0",
+              "line": 0,
+              "start": 31,
+              "end": 33,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_1",
+              "line": 0,
+              "start": 34,
+              "end": 36,
+              "text": "加助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_2",
+              "line": 0,
+              "start": 79,
+              "end": 81,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_3",
+              "line": 2,
+              "start": 11,
+              "end": 13,
+              "text": "加助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_4",
+              "line": 6,
+              "start": 7,
+              "end": 9,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_5",
+              "line": 6,
+              "start": 17,
+              "end": 19,
+              "text": "加助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
             }
           ]
         }
@@ -816,6 +1435,88 @@
               "reading": "つつぐち"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_6_0",
+              "line": 0,
+              "start": 17,
+              "end": 19,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_1",
+              "line": 0,
+              "start": 29,
+              "end": 31,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_2",
+              "line": 2,
+              "start": 4,
+              "end": 6,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_3",
+              "line": 6,
+              "start": 0,
+              "end": 2,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_4",
+              "line": 8,
+              "start": 56,
+              "end": 58,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_5",
+              "line": 10,
+              "start": 5,
+              "end": 7,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_6",
+              "line": 16,
+              "start": 0,
+              "end": 2,
+              "text": "兵十",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     }
@@ -839,6 +1540,7 @@
       690,
       403,
       419
-    ]
+    ],
+    "boundaryMergeCount": 61
   }
 }

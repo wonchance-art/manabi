@@ -1,0 +1,270 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "c688a85340f1659e907d00116b69b793fead2a4d85c4f72410918801c8e07f8c",
+      "edits": [
+        {
+          "line": 0,
+          "start": 0,
+          "end": 4,
+          "text": "禅智内供",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 18,
+          "end": 23,
+          "text": "内道場供奉",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 219,
+          "end": 222,
+          "text": "中童子",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 19,
+          "end": 23,
+          "text": "禅智内供",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 273,
+          "end": 276,
+          "text": "観音経",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 31,
+          "end": 35,
+          "text": "僧供講説",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 195,
+          "end": 198,
+          "text": "柑子色",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 203,
+          "end": 205,
+          "text": "椎鈍",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 257,
+          "end": 259,
+          "text": "鍵鼻",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 8,
+          "end": 12,
+          "text": "内典外典",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 66,
+          "end": 68,
+          "text": "目連",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 70,
+          "end": 73,
+          "text": "舎利弗",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 97,
+          "end": 99,
+          "text": "竜樹",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 100,
+          "end": 102,
+          "text": "馬鳴",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 122,
+          "end": 124,
+          "text": "震旦",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 129,
+          "end": 131,
+          "text": "蜀漢",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 132,
+          "end": 135,
+          "text": "劉玄徳",
+          "reason": "ruby"
+        },
+        {
+          "line": 16,
+          "start": 64,
+          "end": 66,
+          "text": "震旦",
+          "reason": "ruby"
+        },
+        {
+          "line": 16,
+          "start": 83,
+          "end": 85,
+          "text": "供僧",
+          "reason": "ruby"
+        },
+        {
+          "line": 32,
+          "start": 54,
+          "end": 56,
+          "text": "上眼",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "b267f45457f618f4b13f41ce9893ef68a419a62d60b6096b1a3de1f2c33af9f4",
+      "edits": [
+        {
+          "line": 0,
+          "start": 50,
+          "end": 52,
+          "text": "丸炙",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 5,
+          "end": 7,
+          "text": "鑷子",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 146,
+          "end": 148,
+          "text": "鑷子",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 44,
+          "end": 46,
+          "text": "鍵鼻",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 16,
+          "start": 47,
+          "end": 49,
+          "text": "残喘",
+          "reason": "ruby"
+        },
+        {
+          "line": 20,
+          "start": 124,
+          "end": 127,
+          "text": "中童子",
+          "reason": "ruby"
+        },
+        {
+          "line": 20,
+          "start": 209,
+          "end": 212,
+          "text": "下法師",
+          "reason": "ruby"
+        },
+        {
+          "line": 22,
+          "start": 64,
+          "end": 67,
+          "text": "中童子",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 22,
+          "start": 68,
+          "end": 71,
+          "text": "下法師",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 26,
+          "start": 68,
+          "end": 70,
+          "text": "普賢",
+          "reason": "ruby"
+        },
+        {
+          "line": 30,
+          "start": 63,
+          "end": 66,
+          "text": "法慳貪",
+          "reason": "ruby"
+        },
+        {
+          "line": 30,
+          "start": 106,
+          "end": 109,
+          "text": "中童子",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 30,
+          "start": 150,
+          "end": 153,
+          "text": "中童子",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 30,
+          "start": 256,
+          "end": 259,
+          "text": "中童子",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 34,
+          "start": 32,
+          "end": 34,
+          "text": "風鐸",
+          "reason": "ruby"
+        },
+        {
+          "line": 40,
+          "start": 103,
+          "end": 107,
+          "text": "禅智内供",
+          "reason": "ruby-repeat"
+        }
+      ]
+    }
+  ]
+}

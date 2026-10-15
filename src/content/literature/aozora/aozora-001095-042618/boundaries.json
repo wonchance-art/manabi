@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "1ded6a16b04874f79798fcfcfad6404adb4f8966597be1a64e0b32c5272db668",
+      "edits": []
+    },
+    {
+      "order": 2,
+      "textSha256": "802da60b6c4d9414f6f32f73ce476fc5a48815065cd4c8e88a786b8523d2fa89",
+      "edits": [
+        {
+          "line": 26,
+          "start": 32,
+          "end": 36,
+          "text": "ダンビラ",
+          "reason": "katakana"
+        },
+        {
+          "line": 30,
+          "start": 46,
+          "end": 50,
+          "text": "ダンビラ",
+          "reason": "katakana"
+        },
+        {
+          "line": 34,
+          "start": 95,
+          "end": 99,
+          "text": "ダンビラ",
+          "reason": "katakana"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "textSha256": "31448d25f0fbbc5aecd2d3060269e852e2f7908023e0287ccfd19d4e565acb4b",
+      "edits": [
+        {
+          "line": 0,
+          "start": 140,
+          "end": 142,
+          "text": "細紐",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 74,
+          "end": 76,
+          "text": "胡床",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 77,
+          "end": 79,
+          "text": "肱掛",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 83,
+          "end": 85,
+          "text": "胡床",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 140,
+          "end": 142,
+          "text": "肱掛",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "textSha256": "038a8b302f8766541ccb11eb857e2b07bded917ad0bc26f4cf05c49992932992",
+      "edits": [
+        {
+          "line": 20,
+          "start": 161,
+          "end": 163,
+          "text": "稚子",
+          "reason": "ruby"
+        },
+        {
+          "line": 24,
+          "start": 215,
+          "end": 219,
+          "text": "クリクリ",
+          "reason": "katakana"
+        },
+        {
+          "line": 30,
+          "start": 207,
+          "end": 209,
+          "text": "跣足",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "textSha256": "20984a6ba2e62004a7014a7993cdd3ec2e055c5a0d69cb3cf20805ea7cfc86a6",
+      "edits": []
+    },
+    {
+      "order": 6,
+      "textSha256": "a4df3f353a9f6440d4bdc43a4fa8219957d46b17588d2cace686f74a1bb88dd3",
+      "edits": [
+        {
+          "line": 38,
+          "start": 41,
+          "end": 43,
+          "text": "山径",
+          "reason": "ruby"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "d2e2f9306621d0ba90e0bfb12cf7e5d18c12e0631e21082f14d9b40c5706ada0",
+      "edits": [
+        {
+          "line": 2,
+          "start": 839,
+          "end": 842,
+          "text": "ペテロ",
+          "reason": "katakana"
+        },
+        {
+          "line": 2,
+          "start": 2198,
+          "end": 2201,
+          "text": "ペテロ",
+          "reason": "katakana"
+        },
+        {
+          "line": 2,
+          "start": 2557,
+          "end": 2559,
+          "text": "桃畠",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 2669,
+          "end": 2672,
+          "text": "ペテロ",
+          "reason": "katakana"
+        },
+        {
+          "line": 2,
+          "start": 2677,
+          "end": 2679,
+          "text": "漁人",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 2702,
+          "end": 2704,
+          "text": "漁人",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "ee6e7b8e8bb3447007ce0b7147900d639b907e6a0512887232422dd5187f16c8",
+      "edits": []
+    },
+    {
+      "order": 3,
+      "textSha256": "9896b6e29fbf53369ee6fe1a82fc65a1b3a3f6bc2084782eb48f2aec524c7593",
+      "edits": [
+        {
+          "line": 0,
+          "start": 481,
+          "end": 483,
+          "text": "愈愈",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 714,
+          "end": 716,
+          "text": "過越",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 1227,
+          "end": 1230,
+          "text": "ペテロ",
+          "reason": "katakana"
+        },
+        {
+          "line": 0,
+          "start": 1331,
+          "end": 1334,
+          "text": "ペテロ",
+          "reason": "katakana"
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "textSha256": "607244ee25a99b0d87f784fd8508d392aab765a0ec2a3515914cc4e0fa5ffa76",
+      "edits": [
+        {
+          "line": 0,
+          "start": 71,
+          "end": 73,
+          "text": "哀哭",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 572,
+          "end": 574,
+          "text": "夕餐",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 1257,
+          "end": 1260,
+          "text": "ペテロ",
+          "reason": "katakana"
+        },
+        {
+          "line": 2,
+          "start": 1515,
+          "end": 1518,
+          "text": "ペテロ",
+          "reason": "katakana"
+        },
+        {
+          "line": 2,
+          "start": 1538,
+          "end": 1541,
+          "text": "ペテロ",
+          "reason": "katakana"
+        },
+        {
+          "line": 2,
+          "start": 1681,
+          "end": 1684,
+          "text": "ペテロ",
+          "reason": "katakana"
+        },
+        {
+          "line": 2,
+          "start": 1698,
+          "end": 1701,
+          "text": "ペテロ",
+          "reason": "katakana"
+        },
+        {
+          "line": 2,
+          "start": 1855,
+          "end": 1858,
+          "text": "ペテロ",
+          "reason": "katakana"
+        },
+        {
+          "line": 2,
+          "start": 1988,
+          "end": 1991,
+          "text": "ペテロ",
+          "reason": "katakana"
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "textSha256": "fbc7451995b331b43aed7f9cf053fdfd974f4b004c4c75eb9f293624915de824",
+      "edits": [
+        {
+          "line": 0,
+          "start": 1508,
+          "end": 1510,
+          "text": "夕餐",
+          "reason": "ruby-repeat"
+        }
+      ]
+    }
+  ]
+}

@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { literatureBatchTargets,
+  literatureBoundaryIssues,
+  literatureResumeTargets,
   LITERATURE_PUBLISH_STATE,
   literatureBookPublishable,
   literatureBookSummary,
@@ -123,9 +125,10 @@ describe('관리자 화면 요약·루비 적용률', () => {
     const locks = (k) => book.chapters[k].metadata.literature.rubyLocks.length;
     expect(literatureRubyCoverage(book, [{ order: '1', processed_json: analyzed }, { order: '2', processed_json: { sequence: [] } }]).slice(0, 3))
       .toEqual([
-        { order: 1, rubyLocks: locks(0), applied: 2, hints: 0, hintsAttached: 0, hintsMissed: [], remaining: 0 },
-        { order: 2, rubyLocks: locks(1), applied: null, hints: 0, hintsAttached: null, hintsMissed: [], remaining: null },
-        { order: 3, rubyLocks: locks(2), applied: null, hints: 0, hintsAttached: null, hintsMissed: [], remaining: null },
+        // 토큰 글자가 원문 자리에 이어지지 않는 분석이라 쪼개진 낱말은 셀 수 없음(null — 0으로 속이지 않는다).
+        { order: 1, rubyLocks: locks(0), applied: 2, hints: 0, hintsAttached: 0, hintsMissed: [], remaining: 0, boundary: null, boundaryWords: [] },
+        { order: 2, rubyLocks: locks(1), applied: null, hints: 0, hintsAttached: null, hintsMissed: [], remaining: null, boundary: null, boundaryWords: [] },
+        { order: 3, rubyLocks: locks(2), applied: null, hints: 0, hintsAttached: null, hintsMissed: [], remaining: null, boundary: null, boundaryWords: [] },
       ]);
   });
 });
@@ -161,7 +164,7 @@ describe('큐레이션 책(ART-P0-3) — 같은 게시 계획, 출처별 판정�
   it('검수 보조도 던지지 않는다 — 루비·제안 0', () => {
     const analyzed = { sequence: ['a'], dictionary: { a: { text: '波' } } };
     expect(literatureRubyCoverage(art, [{ order: '1', processed_json: analyzed }])[0])
-      .toEqual({ order: 1, rubyLocks: 0, applied: 0, hints: 0, hintsAttached: 0, hintsMissed: [], remaining: 0 });
+      .toEqual({ order: 1, rubyLocks: 0, applied: 0, hints: 0, hintsAttached: 0, hintsMissed: [], remaining: 0, boundary: 0, boundaryWords: [] });
   });
 
   it('아오조라 요약은 그대로 — provenance 칸이 없다', () => {
@@ -186,6 +189,63 @@ describe('일괄 게시·분석 대상(설계 §4.1 — 오너 「권장대로�
   });
 });
 
+describe('쪼개진 저자 루비 낱말(AOZORA-P1-10 — 오너 「고유명사 … 형태소로 나눠버리는 상황 빈번함」 2026-10-15 KST)', () => {
+  const chapter = book.chapters[0];
+  /** 글자마다 토큰 하나 — merge에 든 루비 기준은 한 토큰으로. */
+  const analyzed = (merge = []) => {
+    const sequence = [], dictionary = {};
+    for (let at = 0; at < chapter.rawText.length;) {
+      const lock = chapter.metadata.literature.rubyLocks.find((item) => item.start === at && merge.includes(item.base));
+      const text = lock ? lock.base : String.fromCodePoint(chapter.rawText.codePointAt(at));
+      sequence.push(`t${at}`);
+      dictionary[`t${at}`] = text === '\n' ? { text, pos: '개행' } : { text };
+      at += text.length;
+    }
+    return { sequence, dictionary };
+  };
+  const multi = chapter.metadata.literature.rubyLocks.filter((lock) => lock.base.length >= 2);
+
+  it('2자 이상 루비 기준이 토큰 둘 이상에 걸친 자리를 센다 — 한 토큰으로 묶이면 빠진다(한 글자 루비는 세지 않는다)', () => {
+    expect(multi.length).toBeGreaterThan(2);
+    expect(literatureBoundaryIssues(chapter, analyzed())).toEqual({ count: multi.length, words: [...new Set(multi.map((lock) => lock.base))] });
+    const [first, ...rest] = multi;
+    expect(literatureBoundaryIssues(chapter, analyzed(rest.map((lock) => lock.base)))).toEqual({ count: 1, words: [first.base] });
+    expect(literatureBoundaryIssues(chapter, analyzed(multi.map((lock) => lock.base)))).toEqual({ count: 0, words: [] });
+  });
+
+  it('토큰이 루비 바깥에서 걸쳐 들어와도 쪼개짐이다(앞 글자와 붙은 토큰 + 뒤 토큰)', () => {
+    const lock = multi[0];
+    const json = analyzed(multi.slice(1).map((item) => item.base));
+    const at = json.sequence.indexOf(`t${lock.start - 1}`);
+    const head = chapter.rawText.slice(lock.start - 1, lock.start + 1);
+    json.sequence.splice(at, 2, 'joined');
+    json.dictionary.joined = { text: head };
+    expect(literatureBoundaryIssues(chapter, json).count).toBe(1);
+  });
+
+  it('분석 전·원문에 이어지지 않는 분석은 null(셀 수 없음), 루비 낱말이 없는 장은 0', () => {
+    expect(literatureBoundaryIssues(chapter, { sequence: [] })).toBe(null);
+    expect(literatureBoundaryIssues(chapter, { sequence: ['x'], dictionary: { x: { text: '存在しない語' } } })).toBe(null);
+    const plain = { ...chapter, metadata: { ...chapter.metadata, literature: { ...chapter.metadata.literature, rubyLocks: [] } } };
+    expect(literatureBoundaryIssues(plain, { sequence: ['x'], dictionary: { x: { text: '存在しない語' } } })).toEqual({ count: 0, words: [] });
+  });
+});
+
+describe('분석 이어하기 대상(AOZORA-P1-10)', () => {
+  const summary = (overrides) => ({ publishable: true, stage: 'preparing', plan: { conflicts: [], insert: [] }, ...overrides });
+  it('모든 장을 준비했고 분석만 멈춘 작품 — 준비가 끊긴 작품(쓰기 필요)·충돌·다른 단계는 사람이 누른다', () => {
+    const books = [
+      summary({ key: 'a' }),
+      summary({ key: 'b', plan: { conflicts: [], insert: [3] } }),
+      summary({ key: 'c', stage: 'unpublished', plan: { conflicts: [], insert: [1] } }),
+      summary({ key: 'd', plan: { conflicts: [{ id: 1, reason: 'text-differs' }], insert: [] } }),
+      summary({ key: 'e', publishable: false }),
+      summary({ key: 'f', stage: 'reviewing' }),
+    ];
+    expect(literatureResumeTargets(books).map((item) => item.key)).toEqual(['a']);
+  });
+});
+
 describe('관리자 화면 배선 — 게시 한 번에 준비·분석, 공개는 분석 뒤', () => {
   const panel = readFileSync(path.join(process.cwd(), 'src/components/LiteraturePublishPanel.jsx'), 'utf8');
 
@@ -200,7 +260,27 @@ describe('관리자 화면 배선 — 게시 한 번에 준비·분석, 공개�
     expect(batch).toContain("await post('prepare', book.key);");
     expect(batch).toContain('await analyzeChapters(book, controller);');
     expect(batch).not.toMatch(/'release'|'review'/u);
-    expect(panel).toContain("if (action === 'batch') runBatch(targets);");
+    expect(panel).toContain("else if (action === 'batch') runBatch(targets);");
+  });
+
+  it('화면을 열면 멈춘 분석을 한 번만 자동으로 잇는다 — 같은 일괄 경로(멈춤 그대로), 준비(쓰기)는 하지 않는 대상만', () => {
+    const resume = sliceBetween(panel, 'const resumedRef = useRef(false);', '}, [data]);');
+    expect(resume).toContain('if (!data?.books || resumedRef.current) return;');
+    expect(resume).toContain('resumedRef.current = true;');
+    expect(resume).toContain('const stopped = literatureResumeTargets(data.books);');
+    expect(resume).toContain('runBatch(stopped);');
+  });
+
+  it('묶음 검수는 확인 끝·쪼개진 낱말 0·검수 전 장만, 확인 창을 거쳐 reviewMany — 쪼개진 낱말이 남은 장은 확인 창 뒤 acceptBoundaries', () => {
+    const review = sliceBetween(panel, 'function ChapterReview', '\n}\n');
+    expect(review).toContain('return chapter.material && !chapter.material.reviewed && item?.remaining === 0 && item?.boundary === 0;');
+    expect(review).toContain('onClick={() => onReviewMany(book, clean)}');
+    expect(review).toContain('쪼개진 낱말 ${item.boundary}곳');
+    expect(panel).toContain("onReviewMany={(item, chapters) => setConfirm({ action: 'reviewMany', book: item, chapters })}");
+    expect(panel).toContain("? setConfirm({ action: 'review', book: item, chapter, item: coverage })");
+    expect(panel).toContain("if (action === 'review') review.mutate({ book, chapter, acceptBoundaries: true });");
+    expect(panel).toContain("else if (action === 'reviewMany') reviewMany.mutate({ book, chapters });");
+    expect(panel).toContain("post('reviewMany', book.key, { orders: chapters.map((chapter) => chapter.order) })");
   });
 
   it('「게시」(prepare) 성공 뒤 바로 분석을 시작하고, 「공개」(release)는 ready 단계에서만 보인다', () => {
@@ -223,7 +303,7 @@ describe('관리자 게시 화면 표지(오너 「게시 누르는 창에도 �
     expect(row).toContain("kind === 'literature' && <BookCover bookKey={book.key} scale={0.5} />");
     expect(sliceBetween(panel, '<ConfirmModal', '/>')).toContain('message={confirmMessage}');
     const message = sliceBetween(panel, 'const confirmMessage', '\n  );\n');
-    expect(message).toContain("kind !== 'literature' ? confirmText");
+    expect(message).toContain("kind !== 'literature' || !['prepare', 'batch', 'release'].includes(confirm.action) ? confirmText");
     expect(message).toContain("(confirm.action === 'batch' ? confirm.books : [confirm.book]).map((book) => (");
   });
 });

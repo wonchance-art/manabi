@@ -15,7 +15,7 @@
  *   ④ entry.json 초안 — 색인·원문에서 채울 수 있는 칸은 모두 채운다(제목·저자·연도·주소·해시·읽기, 같은 작가의 authorKo).
  *      권리는 근거·관할을 채운 「reviewing」으로 둔다. --approve <역할>이면 판정이 통과할 때만 approved로 기록한다
  *      (법률 판단을 대신하지 않는다 — 기록하는 사람이 도서 카드 근거를 본 뒤 붙이는 옵션이다).
- * 남는 사람 일: level · titleKo · cover(색) · motif(표지 문양) · (선택) review.json → node scripts/build-literature.mjs
+ * 남는 사람 일: level · titleKo · cover(색) · motif(표지 문양) · (선택) review.json → node scripts/literature/boundaries.mjs <작품 키>(경계 + 빌드)
  */
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
@@ -177,6 +177,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.log(`  ✓ ${path.relative(ROOT, base)}/ 에 source.txt·entry.json`);
     if (todo.length) console.log(`  남은 일: ${todo.join(' · ')}`);
   }
-  console.log('\n다음: 남은 칸을 채운 뒤 node scripts/build-literature.mjs → npm test');
+  console.log('\n다음: 남은 칸을 채운 뒤 node scripts/literature/boundaries.mjs <작품 키>(단어 경계 + 빌드) → npm test');
   process.exit(failed ? 1 : 0);
 }
