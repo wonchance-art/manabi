@@ -2,7 +2,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchWordFacets, setWordFacet, updateFacetRows } from './wordFacets';
 
-/** 탭별 O · X 읽기 · 쓰기(LEVEL-FACET-AO-001). 쓰기는 낙관적으로 바로 그리고, 실패하면 되돌린 뒤 onError로 알린다. */
+/** 탭별 O · X 읽기 · 쓰기(LEVEL-FACET-AO-001). 쓰기는 낙관적으로 바로 그리고, 실패하면 되돌린 뒤 onError로 알린다.
+ *  available = 표를 읽어 왔을 때만 true — 표가 아직 없거나(운영 미적용) 읽기에 실패하면 화면은 탭별 기록 없이 단어 단위 O · X로 돌아간다. */
 export function useWordFacets(userId, lang, enabled = true, { onError } = {}) {
   const client = useQueryClient();
   const key = ['word-facets', userId, lang];
@@ -17,5 +18,5 @@ export function useWordFacets(userId, lang, enabled = true, { onError } = {}) {
     },
     onError: (error, _body, context) => { client.setQueryData(key, context?.before); onError?.(error); },
   });
-  return { rows: query.data || [], mark: (body) => userId && mutation.mutate(body) };
+  return { available: query.isSuccess, rows: query.data || [], mark: (body) => userId && mutation.mutate(body) };
 }

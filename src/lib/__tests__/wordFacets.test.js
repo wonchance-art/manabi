@@ -59,7 +59,9 @@ describe('탭별 O · X 기록', () => {
     expect(x).toContain("facets.mark({ wordText: entry.key, facet: facetView, mark: 'x' });");
     expect(x).toContain('markX(entry);');
     expect(page).toContain("onO={() => (facetView ? markFacetO(e) : markO(e))} onX={() => (facetView ? markFacetX(e) : markX(e))}");
-    expect(page).toContain("const facetView = vocab && prefs.view !== 'all' ? prefs.view : null;");
+    // 표를 읽어 왔을 때만 탭별 기록 — 운영 미적용이면 모든 탭이 단어 단위 O · X(누를 때마다 저장 실패 금지)
+    expect(page).toContain("const facetView = vocab && prefs.view !== 'all' && facets.available ? prefs.view : null;");
+    expect(read('src/lib/useWordFacets.js')).toContain('available: query.isSuccess');
     expect(page).toContain('splitKnown(g.entries, hiddenSet)');
     // 표에 직접 쓰는 곳은 wordFacets.js 하나
     expect(page).not.toContain("from('user_word_facets')");
