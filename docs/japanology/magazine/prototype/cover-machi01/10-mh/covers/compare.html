@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>10-mh 표지 비교</title>
+<!-- 10-mh 표지 9장 비교 시트(build.mjs 생성, 2026-10-15 KST). 열 = 제호, 행 = 주인공. 각 칸은 표지 HTML을 그대로 iframe으로 띄운다(표지 폭 360px). -->
+<style>
+:root{--bg:#d9dce3;--ink:#151b2c;--muted:#4a5268}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0e1220;--ink:#eef0f4;--muted:#b4bccd}}
+:root[data-theme="dark"]{--bg:#0e1220;--ink:#eef0f4;--muted:#b4bccd}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,sans-serif}
+body{padding:24px 16px}
+h1{font-size:18px;margin:0 0 4px}
+p{margin:0 0 16px;color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:120px repeat(3,392px);gap:12px 20px;align-items:start;overflow-x:auto}
+.ch{font-size:14px;font-weight:600;padding-bottom:4px}
+.rh{font-size:14px;font-weight:600;padding-top:16px}
+iframe{width:392px;height:541px;border:0;display:block;background:transparent}
+</style>
+</head>
+<body>
+<h1>TONARI × 一つの町 01 富士吉田 — 제호 3 × 표지 3</h1>
+<p>열 = 제호(10-mh/mast, 폭 80%), 행 = 주인공(07-refine 원본에서 복사·재배치). 각 표지는 390px 폭 기준 check-cover 대상.</p>
+<div class="grid">
+<div></div><div class="ch">B1 굵은 세리프</div><div class="ch">B2 압축 그로테스크</div><div class="ch">B3 명조 + 세로 となり</div>
+<div class="rh">① 一本の線(밝음)</div><iframe src="ippon-B1.html" title="ippon-B1" loading="eager"></iframe><iframe src="ippon-B2.html" title="ippon-B2" loading="eager"></iframe><iframe src="ippon-B3.html" title="ippon-B3" loading="eager"></iframe>
+<div class="rh">⑤ 断面(밤)</div><iframe src="danmen-B1.html" title="danmen-B1" loading="eager"></iframe><iframe src="danmen-B2.html" title="danmen-B2" loading="eager"></iframe><iframe src="danmen-B3.html" title="danmen-B3" loading="eager"></iframe>
+<div class="rh">⑥ 活字</div><iframe src="katsuji-B1.html" title="katsuji-B1" loading="eager"></iframe><iframe src="katsuji-B2.html" title="katsuji-B2" loading="eager"></iframe><iframe src="katsuji-B3.html" title="katsuji-B3" loading="eager"></iframe>
+</div>
+</body>
+</html>
