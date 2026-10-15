@@ -66,6 +66,42 @@ const plover = (x, y, s) => `M${f1(x - 2.8 * s)} ${f1(y)}a${f1(2.8 * s)} ${f1(2.
 const star4 = (x, y, r) => `M${x} ${f1(y - r)}L${f1(x + r * 0.22)} ${f1(y - r * 0.22)} ${f1(x + r)} ${y} ${f1(x + r * 0.22)} ${f1(y + r * 0.22)} ${x} ${f1(y + r)} ${f1(x - r * 0.22)} ${f1(y + r * 0.22)} ${f1(x - r)} ${y} ${f1(x - r * 0.22)} ${f1(y - r * 0.22)}Z`;
 const dots = (seed, n, box, r0, r1) => scatter(n, seed, box).map(([x, y, k]) => { const r = f1(r0 + k * (r1 - r0)); return `M${f1(x - r)} ${y}a${r} ${r} 0 1 0 ${f1(r * 2)} 0a${r} ${r} 0 1 0 ${f1(-r * 2)} 0Z`; }).join('');
 const rain = (seed, n) => scatter(n, seed, [-10, -10, 124, 168]).map(([x, y, k]) => `M${x} ${y}l${f1(-3 - k * 2)} ${f1(14 + k * 10)}`).join('');
+// 地紋 — 천에 눌러 찍은(型押し) 바탕 무늬. 천 색과 거의 같은 색으로 아주 옅게, 그림 밑에 판면 전체.
+const R3 = Math.sqrt(3);
+const JIMON = {
+  // 麻の葉 — 정삼각 격자, 삼각형마다 무게중심에서 세 꼭짓점으로
+  asanoha: (() => {
+    const w = 12; const h = f1(w * R3); const d = [];
+    const P = (i, j) => [i * w + (j % 2 ? w / 2 : 0), (j * h) / 2];
+    for (let j = -1; j < 3; j += 1) {
+      for (let i = -1; i < 2; i += 1) {
+        for (const tri of [[P(i, j), P(i + 1, j), P(j % 2 ? i + 1 : i, j + 1)], [P(i + 1, j), P(j % 2 ? i + 1 : i, j + 1), P(j % 2 ? i + 2 : i + 1, j + 1)]]) {
+          const [cx, cy] = [(tri[0][0] + tri[1][0] + tri[2][0]) / 3, (tri[0][1] + tri[1][1] + tri[2][1]) / 3];
+          d.push(`M${f1(tri[0][0])} ${f1(tri[0][1])}L${f1(tri[1][0])} ${f1(tri[1][1])}L${f1(tri[2][0])} ${f1(tri[2][1])}Z`);
+          for (const [x, y] of tri) d.push(`M${f1(cx)} ${f1(cy)}L${f1(x)} ${f1(y)}`);
+        }
+      }
+    }
+    return { w, h, d: d.join('') };
+  })(),
+  // 七宝 — 모서리·가운데 원이 사분의 일씩 겹친다
+  shippo: { w: 10, h: 10, d: [[0, 0], [10, 0], [0, 10], [10, 10], [5, 5]].map(([x, y]) => `M${x - 5} ${y}a5 5 0 1 0 10 0a5 5 0 1 0 -10 0Z`).join('') },
+  // 亀甲 — 육각 벌집
+  kikko: { w: 15, h: f1(5 * R3), d: `M0 ${f1(2.5 * R3)}L2.5 0H7.5L10 ${f1(2.5 * R3)}L7.5 ${f1(5 * R3)}H2.5ZM10 ${f1(2.5 * R3)}H15` },
+  // 菱 — 두 겹 마름모
+  hishi: { w: 8, h: 12, d: 'M4 0L8 6L4 12L0 6ZM4 3L6 6L4 9L2 6Z' },
+  // 籠目 — 세 방향 줄이 한 점에서 만나지 않게 엇갈린 대바구니 눈
+  kagome: (() => {
+    const w = 12; const h = f1(w * R3); const d = [];
+    for (let k = -2; k <= 2; k += 1) d.push(`M${k * w - w} ${-h}L${k * w + 2 * w} ${2 * h}M${k * w + w} ${-h}L${k * w - 2 * w} ${2 * h}`);
+    d.push(`M-1 ${f1(h / 4)}H${w + 1}M-1 ${f1((3 * h) / 4)}H${w + 1}`);
+    return { w, h, d: d.join('') };
+  })(),
+};
+// 바탕이 빈 표지에만 깐다 — 그림이 이미 무늬인 표지(青海波·雪輪·비·별·물결·桜·물방울 점)는 겹치면 시끄럽다(2026-10-15 시안 비교, 오너 「추천대로」).
+// 무늬는 작품에서: 鼻 菱(寺) · 文鳥 籠目(새장) · 蜘蛛の糸 七宝(불교 칠보) · 山月記 亀甲(唐 고사) · ごん狐 麻の葉(마을 옷감) · 斜陽 七宝(몰락 귀족 집안의 길상 문양).
+const JIMON_OF = { 'ink-steam': 'hishi', birdcage: 'kagome', 'lotus-thread': 'shippo', 'moon-tiger': 'kikko', higanbana: 'asanoha', 'setting-sun': 'shippo' };
+
 // focal — 그 표지의 주제(題簽에 가리면 안 되는 것). 배경 문양은 題簽 밑으로 지나가도 된다(무늬 천 위에 題簽을 붙이는 실제 장정과 같다).
 const Fill = ({ c, d, focal }) => <path className={C(c)} d={d} fill="currentColor" data-focal={focal ? '' : undefined} />;
 const Line = ({ c, d, w = 0.6, cap, focal }) => <path className={C(c)} d={d} fill="none" stroke="currentColor" strokeWidth={w} strokeLinecap={cap ? 'round' : undefined} strokeLinejoin={cap ? 'round' : undefined} data-focal={focal ? '' : undefined} />;
@@ -522,9 +558,15 @@ function BlossomStorm() {
 }
 
 // 천결(布目)·종이결(和紙) — 모든 표지 공통 층. 숫자 행렬은 잡음→투명도 변환일 뿐 색이 아니다 — 색은 CSS(flood-color·color)가 정한다.
-function Surface({ id }) {
+function Surface({ id, jimon }) {
+  const ground = JIMON[jimon];
   return (
     <defs>
+      {ground && (
+        <pattern id={`${id}-jimon`} width={ground.w} height={ground.h} patternUnits="userSpaceOnUse">
+          <path className={C('jimon')} d={ground.d} fill="none" stroke="currentColor" strokeWidth="0.5" />
+        </pattern>
+      )}
       <pattern id={`${id}-cloth`} width="1.6" height="1.6" patternUnits="userSpaceOnUse">
         <path className={C('weave')} d="M0 0.4H1.6M0.4 0V1.6" stroke="currentColor" strokeWidth="0.3" />
         <path className={C('weave-hi')} d="M0 1.2H1.6M1.2 0V1.6" stroke="currentColor" strokeWidth="0.25" />
@@ -563,8 +605,9 @@ export default function LiteratureCoverArt({ motif }) {
   if (!Art) return null;
   return (
     <svg className={`lit-art lit-art--${motif}`} viewBox="0 0 120 168" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
-      <Surface id={id} />
+      <Surface id={id} jimon={JIMON_OF[motif]} />
       <rect width="120" height="168" fill={`url(#${id}-cloth)`} />
+      {JIMON_OF[motif] && <rect width="120" height="168" fill={`url(#${id}-jimon)`} />}
       <g filter={`url(#${id}-print)`}><Art /></g>
       <rect className="lit-paper" width="120" height="168" filter={`url(#${id}-paper)`} />
     </svg>

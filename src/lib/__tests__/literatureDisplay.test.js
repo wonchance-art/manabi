@@ -136,6 +136,22 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
     expect(read('src/components/books/literature-cover-art.css')).toMatch(/--lt:var\(--tone-soft\);--dk:var\(--tone-strong\);--dd:var\(--tone-deep\)/u);
   });
 
+  it('地紋은 바탕이 빈 표지에만, 정의된 무늬로 — 오타면 조용히 사라지지 않게(2026-10-15 시대감)', () => {
+    const art = read('src/components/books/LiteratureCoverArt.jsx');
+    const kinds = [...sliceBetween(art, 'const JIMON = {', '\n};').matchAll(/^ {2}([a-z]+): /gmu)].map((m) => m[1]);
+    expect(kinds.sort()).toEqual(['asanoha', 'hishi', 'kagome', 'kikko', 'shippo']);
+    const used = Object.fromEntries([...sliceBetween(art, 'const JIMON_OF = {', '};').matchAll(/'?([a-z-]+)'?: '([a-z]+)'/gu)].map((m) => [m[1], m[2]]));
+    expect(Object.keys(used).length).toBeGreaterThan(0);
+    for (const [motif, kind] of Object.entries(used)) {
+      expect(LITERATURE_COVER_MOTIFS).toContain(motif);
+      expect(kinds).toContain(kind);
+    }
+    // 그림이 이미 판면 전체 무늬인 표지에는 깔지 않는다(겹치면 시끄럽다)
+    for (const busy of ['kamakura-letter', 'snow-night', 'rain-gate', 'blossom-storm', 'umbrella-rose', 'clown-photos', 'steam-sea']) expect(used).not.toHaveProperty(busy);
+    // 地紋은 천 색 옅은 단에서만(새 색을 들이지 않는다)
+    expect(read('src/components/books/literature-cover-art.css')).toMatch(/\.lit-art__jimon\{color:var\(--tone-soft\);opacity:\.45\}/u);
+  });
+
   it('장 첫 문장(incipit) — 30자 이하 첫 문장은 통째로, 길면 「、」에서(낱말 한가운데·마침표 뒤에서 자르지 않는다)', () => {
     const incipits = (key) => manifest.works[key].chapters.map((chapter) => chapter.incipit);
     expect(incipits(KEYS.hana)).toEqual(['禅智内供の鼻と云えば、池の尾で知らない者はない。', 'しばらく踏んでいると、やがて、粟粒のようなものが…']);
