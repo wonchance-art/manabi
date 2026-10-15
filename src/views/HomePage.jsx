@@ -114,6 +114,9 @@ function materialItem(material, lang) {
     href: `/viewer/${m.id}`, cta: '이어서 읽기' };
 }
 
+const HSK_WORDS_ITEM = { key: 'hsk-words', href: '/chinese/vocab/h1', tone: 'progress',
+  kicker: '중국어 · HSK', title: 'HSK 단어 목록', meta: '1급부터 ↗' };
+
 export default function HomePage({ book = null }) {
   const { user, profile, loading: authLoading } = useAuth();
   const local = useReadingProgress(book?.edition);
@@ -216,5 +219,7 @@ export default function HomePage({ book = null }) {
     </div>
     {!local.storageAvailable && <p role="status" className="learn-note">이 브라우저에서는 읽던 위치를 저장할 수 없어요.</p>}
     {continueDeckItems.length > 0 && <section className="learn-more" aria-label="이어서"><ContinueDeck items={continueDeckItems} /></section>}
+    {/* 임시 입구(오너 지시 2026-10-15 KST) — HSK 단어 목록이 내비에 자리를 잡을 때까지. 덱과 같은 카드 양식. */}
+    <section className="learn-more" aria-label="HSK 단어"><ContinueDeck items={[HSK_WORDS_ITEM]} /></section>
   </div>;
 }
