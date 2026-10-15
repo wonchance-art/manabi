@@ -15,9 +15,11 @@ const [file, outDir = '.', profileName = 'v1'] = process.argv.slice(2);
 const PROFILES = {
   v1: { mPerMm: 12.9, topTargetY: 118, apexY: 46, flat: 8, lineW: 2.4, ridgeW: 1 },
   v2: { mPerMm: 11.3, topTargetY: 106, apexY: 56, flat: 7.7, lineW: 3, ridgeW: 1.4 },
+  // v3(07-refine ①, 2026-10-15 KST): 선 3.4·능선 1.6(굵기 비 2.1 유지), 평탄부 양 모서리 원호 필렛 반경 2.5mm. 기하·축척은 v2와 같다.
+  v3: { mPerMm: 11.3, topTargetY: 106, apexY: 56, flat: 7.7, lineW: 3.4, ridgeW: 1.6, filletR: 2.5 },
 };
 const PF = PROFILES[profileName];
-if (!PF) throw new Error('profile: v1 | v2');
+if (!PF) throw new Error('profile: v1 | v2 | v3');
 const data = JSON.parse(fs.readFileSync(file, 'utf8'));
 
 const ORIGIN = { lat: 35.4832112, lon: 138.7979629 }; // 金鳥居 — OSM way 1482786848 두 기둥 중점(04-factcheck §4)
@@ -248,8 +250,8 @@ const RIDGE = { ken: 126, cx: 126 - KEN_IN_FLAT_MM, y: PF.apexY, flat: PF.flat, 
 const t0 = Math.tan(30 * rad), t1 = Math.tan(12 * rad);
 const DL = (RIDGE.cx - RIDGE.flat / 2) - BLEED.x0; // ≈123
 const DR = BLEED.x1 - (RIDGE.cx + RIDGE.flat / 2); // ≈85
-const FIL = 1.2;
-const slope = (d, p) => { const sm = Math.min(1, d / FIL); const ss = sm * sm * (3 - 2 * sm); return ss * (t1 + (t0 - t1) * Math.pow(Math.max(0, 1 - d / DL), p)); };
+const FIL = PF.filletR ? 0 : 1.2; // v1·v2: 사면 기울기를 1.2mm에 걸쳐 smoothstep. v3: 각진 모서리를 만든 뒤 아래에서 원호 필렛
+const slope = (d, p) => { const sm = FIL ? Math.min(1, d / FIL) : 1; const ss = sm * sm * (3 - 2 * sm); return ss * (t1 + (t0 - t1) * Math.pow(Math.max(0, 1 - d / DL), p)); };
 const drop = (D, p, step = 0.05) => { let y = 0; for (let d = 0; d < D; d += step) y += slope(d + step / 2, p) * step; return y; };
 let lo = 0.05, hi = 5;
 for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; if (drop(DL, m) > RIDGE.leftBleedY - RIDGE.y) lo = m; else hi = m; } // p↑ → 낙차↓
@@ -259,11 +261,23 @@ const makeRidge = (pExp) => {
     while (d < D - 1e-9) { if (d >= next - 1e-9) { out.push({ d, y }); next += d < 6 ? 0.5 : 2; } y += slope(d + step / 2, pExp) * step; d += step; }
     out.push({ d: D, y }); return out.map((q) => ({ x: RIDGE.cx + sign * (RIDGE.flat / 2 + q.d), y: RIDGE.y + q.y })); };
   const left = sideTo(DL, -1).reverse(), rightSide = sideTo(DR, +1);
-  const d = [...left, ...rightSide].map((q, i) => `${i ? 'L' : 'M'}${r2(q.x)} ${r2(q.y)}`).join('');
+  let d = [...left, ...rightSide].map((q, i) => `${i ? 'L' : 'M'}${r2(q.x)} ${r2(q.y)}`).join('');
+  if (PF.filletR) {
+    // 평탄부 양 끝 꺾임(사면 테두리 30°)에 반경 R 원호. 접선 길이 t = R·tan(θ/2). 평탄부 폭·꼭짓점·剣ヶ峯 방위선은 그대로.
+    const R = PF.filletR, th = Math.atan(slope(1e-6, pExp)), t = R * Math.tan(th / 2);
+    const dCut = t * Math.cos(th);                       // 사면 쪽 접점의 수평 거리(사면은 0.6mm 안에서 사실상 직선)
+    const yCut = RIDGE.y + drop(dCut, pExp, 0.005);
+    const xl = RIDGE.cx - RIDGE.flat / 2, xr = RIDGE.cx + RIDGE.flat / 2;
+    const L0 = left.filter((q) => q.x < xl - dCut - 1e-9), R0 = rightSide.filter((q) => q.x > xr + dCut + 1e-9);
+    const pt = (x, y) => `${r2(x)} ${r2(y)}`;
+    d = L0.map((q, i) => `${i ? 'L' : 'M'}${pt(q.x, q.y)}`).join('') +
+      `L${pt(xl - dCut, yCut)}A${R} ${R} 0 0 1 ${pt(xl + t, RIDGE.y)}L${pt(xr - t, RIDGE.y)}A${R} ${R} 0 0 1 ${pt(xr + dCut, yCut)}` +
+      R0.map((q) => `L${pt(q.x, q.y)}`).join('');
+  }
   const slopeAt = (dd) => deg(Math.atan(slope(dd, pExp)));
   return { d, info: {
     kengamine: { x: RIDGE.ken, y: RIDGE.y }, kenRightOfCraterCenterM: r2(kenRightM, 0), flatCenterX: r2(RIDGE.cx), flat: [r2(RIDGE.cx - RIDGE.flat / 2), r2(RIDGE.cx + RIDGE.flat / 2)],
-    exponentP: r2(pExp, 3), leftBleed: { x: BLEED.x0, y: r2(left[0].y) }, rightBleed: { x: BLEED.x1, y: r2(rightSide.at(-1).y) },
+    ...(PF.filletR ? { filletR: PF.filletR } : {}), exponentP: r2(pExp, 3), leftBleed: { x: BLEED.x0, y: r2(left[0].y) }, rightBleed: { x: BLEED.x1, y: r2(rightSide.at(-1).y) },
     slopeDeg: { rim: 30, d10: r2(slopeAt(10), 1), d40: r2(slopeAt(40), 1), rightBleed: r2(slopeAt(DR), 1), leftBleed: r2(slopeAt(DL - 0.01), 1) },
     lineExtensionHitsRidge: (() => { const k = (126 - top.x) / (200 - top.y); for (let y = RIDGE.y; y < 120; y += 0.01) { const xx = 126 - (200 - y) * k; const d = xx - (RIDGE.cx + RIDGE.flat / 2); const ry = RIDGE.y + (d > 0 ? drop(d, pExp, 0.1) : 0); if (y >= ry) return { x: r2(xx), y: r2(y), rightOfKengamineMm: r2(xx - RIDGE.ken) }; } return null; })(),
     ridgeYAtLineTopEndX: r2(RIDGE.y + drop(Math.max(0, top.x - (RIDGE.cx + RIDGE.flat / 2)), pExp)),

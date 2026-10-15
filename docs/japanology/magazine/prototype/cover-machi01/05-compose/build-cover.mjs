@@ -2,6 +2,7 @@
 // 사용(이 폴더에서): node build-line.mjs ../../osm/fy.json line   ← 산정 = 국토지리원 剣ヶ峯로 바꾼 사본
 //                    node build-cover.mjs                         → cover.html, layout.json  (v1)
 //   v2(편집장 수정 지시 2026-10-15 KST): node build-line.mjs ../../osm/fy.json v2/line v2 && node build-cover.mjs v2 → v2/cover.html, v2/layout.json
+//   v3(07-refine ①): node build-line.mjs <fy.json> ../07-refine/01-ippon/line v3 && node build-cover.mjs v3 → ../07-refine/01-ippon/cover.html, layout.json
 // 입력: line/line.svg.txt · line/ridge.svg.txt(B안) · line/torii-bar.json · line/metrics.json · ../03-mast/mast-light.svg
 // 결정적: 시각·난수·환경값을 읽지 않는다. 같은 입력이면 같은 바이트.
 import fs from 'node:fs';
@@ -11,8 +12,10 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const rd = (p) => fs.readFileSync(path.join(here, p), 'utf8');
 const V = process.argv[2] || 'v1';
-if (!['v1', 'v2'].includes(V)) throw new Error('판본: v1 | v2');
-const D = V === 'v1' ? '' : 'v2/'; // v1 산출물은 그대로 보존, v2는 하위 폴더
+if (!['v1', 'v2', 'v3'].includes(V)) throw new Error('판본: v1 | v2 | v3');
+const V3 = V === 'v3';
+// v1 산출물은 그대로 보존, v2는 하위 폴더, v3(07-refine ① 다듬기)는 ../07-refine/01-ippon/
+const D = { v1: '', v2: 'v2/', v3: '../07-refine/01-ippon/' }[V];
 
 const BUILT = '2026-10-15 KST'; // 조립 날짜(고정 문자열 — 결정성 위해 실행 시각을 읽지 않는다)
 const metrics = JSON.parse(rd(D + 'line/metrics.json'));
@@ -26,17 +29,31 @@ const mast = rd('../03-mast/mast-light.svg').trim().replace('<svg ', '<svg class
 // ── 판면 좌표표(mm, 재단선 기준 왼쪽 위 원점). NOTES.md 좌표표와 1:1 ──
 const L = {
   mast: { x: 13, y: 13, w: 32.87, h: 16 },
-  no: { x: 12.57, y: 33.5, size: 5.64 },                    // 16pt. 「一」 잉크 왼끝을 『 바깥선 x13에 맞춤(곁 여백 0.43 보정)
+  no: V3
+    ? { x: 12.57, y: 30.31, size: 5.64, gap: 2.5 }         // v3 시리즈 규칙: 잉크 위끝 y31(제호 잉크 아래끝 26.9에서 4mm), 「町」–「01」 2.5mm(전각 공백 삭제)
+    : { x: 12.57, y: 33.5, size: 5.64 },                    // 16pt. 「一」 잉크 왼끝을 『 바깥선 x13에 맞춤(곁 여백 0.43 보정)
   title: V === 'v1'
     ? { x: 150, y: 117.67, size: 14.11, track: 0.04 }    // 40pt, 세로 1열. 「富」 잉크 위끝 = 선 위끝(上宿) y118.2
     : { x: 146, y: 94.3, size: 20, track: 0.04 },        // v2: 20mm(≈57pt), x146–166. 「田」 잉크 아래끝 ≈176.5 → 부제 위끝 178 직전
   sub: { right: 115.6, y: 178, size: 6.0, lh: 1.7 },         // 17pt, 세로 2열. 「鳥」 중심 ≈ 막대 왼끝 y199, 오른열 잉크 끝 ≈113.5 → 막대 왼끝(116.9)과 3.4mm
-  credit: { x: 12.81, bottom: 287, size: 3.4, lh: 1.5 },  // 잉크 왼끝 x13(곁 여백 0.19 보정)
+  credit: V3
+    ? { x: 12.82, bottom: 287, size: 3.24, lh: 1.42 }      // v3: 편집장 보충(세 안 공통) 3.24mm = 390px에서 6px 하한. 행간 1.4는 Zen Kaku 내용 영역 1.49em 때문에 행 상자가 겹쳐(check 실패 3건 실측) 통과하는 최소값 1.42. 5행, 오른끝 x≤85
+    : { x: 12.81, bottom: 287, size: 3.4, lh: 1.5 },  // 잉크 왼끝 x13(곁 여백 0.19 보정)
   bar: { x: torii.page.x, y: torii.page.y, w: torii.bar.w, h: torii.bar.h, rot: torii.bar.rotateDeg },
 };
 // v2: 金鳥居 = night 도리이 윤곽(정면, 지도기호 수준 일반형). 국소 좌표(mm), 원점 = 金鳥居 실측점, 도로 직교 회전.
 // 笠木 11mm(양끝 0.9mm 반림, 선 1.2) · 貫 8mm(선 1.1) · 기둥 둘 7mm(간격 5.8, 선 1.1 — 390px에서 3mm 주홍 선에 눌리지 않게). 주홍 선 위에 그린다(실물은 銅張り — 주홍 금지).
-const TORII = { kasagi: { w: 11, rise: 0.9, y: -3.6, sw: 1.2 }, nuki: { w: 8, y: -1.5, sw: 1.1 }, pillar: { dx: 2.9, y0: -3.6, y1: 3.4, sw: 1.1 } };
+const TORII = V3 // v3: 선 3.4mm에 눌리지 않게 笠木 1.3·貫/기둥 1.2(07-refine ①-1). 기둥 간격 5.8→6.4: 주홍 선과 기둥 안쪽 틈을 v2와 같은 0.9mm로 유지(5.8이면 0.6mm로 붙어 보임)
+  ? { kasagi: { w: 11, rise: 0.9, y: -3.6, sw: 1.3 }, nuki: { w: 8, y: -1.5, sw: 1.2 }, pillar: { dx: 3.2, y0: -3.6, y1: 3.4, sw: 1.2 } }
+  : { kasagi: { w: 11, rise: 0.9, y: -3.6, sw: 1.2 }, nuki: { w: 8, y: -1.5, sw: 1.1 }, pillar: { dx: 2.9, y0: -3.6, y1: 3.4, sw: 1.1 } };
+// v3 세로 제목 메트릭(시리즈 규칙): 같은 Shippori Mincho 800 woff2(Google Fonts v17 분할 파일 중 富·士·吉·田이 든 4개, 2026-10-15 15:03 KST CSS2 열람)를
+// 「Shippori Mincho Tate」로 다시 선언하고 ascent/descent-override로 세로 글자 상자 폭을 1em으로 맞춘다. 글리프·굵기는 그대로.
+// 첫 면에 U+20을 넣는 이유: 줄 상자의 기준(first available font)은 unicode-range에 U+0020을 포함한 첫 면이라, 없으면 원래 Shippori 메트릭(1.454em)이 쓰인다(실측).
+const TATE_SLICES = [['5bcc', 107], ['58eb', 108], ['5409', 103], ['7530', 114]]; // 富 士 吉 田
+const TATE_METRIC = { ascent: 88, descent: 12 };
+const tateCss = () => TATE_SLICES.map(([cp, n]) => `@font-face{font-family:'Shippori Mincho Tate';font-style:normal;font-weight:800;font-display:swap;` +
+  `src:url(https://fonts.gstatic.com/s/shipporimincho/v17/VdGDAZweH5EbgHY6YExcZfDoj0B4e9Om4fke5f7ErmwqJDbcxmkgTEWquC8NvBI.${n}.woff2) format('woff2');` +
+  `unicode-range:U+${cp}${cp === '5bcc' ? ',U+20' : ''};ascent-override:${TATE_METRIC.ascent}%;descent-override:${TATE_METRIC.descent}%;line-gap-override:0%}`).join('\n') + '\n';
 if (V !== 'v1') L.torii = { x: torii.page.x, y: torii.page.y, rot: torii.bar.rotateDeg, ...TORII };
 const toriiSvg = () => {
   const { kasagi: k, nuki: n, pillar: q } = TORII, hw = k.w / 2;
@@ -85,10 +102,12 @@ ${V === 'v1' ? `  - 金鳥居 막대: 판면 (${L.bar.x}, ${L.bar.y}), ${L.bar.w
   5 명조(제호 외 제목·부제)/고딕(호 표기·크레딧). 6 크레딧 3줄 내용(인쇄 URL 포함), 3.4mm.
   7 틀 없음·2색·주홍 글자 금지. 8 --mm = 100cqw/210(cqi 금지). 9 요소 7개.${V === 'v1' ? '' : `
   v2 수정 지시(비평 05-critic-ad·05-critic-readers 종합): 金鳥居 = night 도리이 윤곽 · 축척 ${metrics.scale.mPerMm}m/mm(上宿 y${metrics.lineTopEnd.page.y}) ·
-  산 꼭짓점 (126, ${metrics.ridge.B.kengamine.y}) 평탄 ${(metrics.ridge.B.flat[1] - metrics.ridge.B.flat[0]).toFixed(1)}mm 능선 1.4mm · 선 3.0mm · 제목 20mm. 선을 산정까지 늘리는 안은 사실 위반으로 기각.`}
+  산 꼭짓점 (126, ${metrics.ridge.B.kengamine.y}) 평탄 ${(metrics.ridge.B.flat[1] - metrics.ridge.B.flat[0]).toFixed(1)}mm 능선 1.4mm · 선 3.0mm · 제목 20mm. 선을 산정까지 늘리는 안은 사실 위반으로 기각.`}${V3 ? `
+  v3 다듬기(07-refine/critic.md ①·§3 시리즈 규칙, 오너 선택 2026-10-15 KST): 선 ${'3.4'}mm · 능선 1.6mm · 도리이 1.3/1.2mm · 평탄부 필렛 반경 ${metrics.ridge.B.filletR}mm ·
+  호 표기 잉크 위끝 y31·「町」–「01」 2.5mm · 크레딧 3.2mm/행간 1.4/5행 · 세로 제목 메트릭 override(상자 = 1em). 축척·선 형상·꼭짓점·평탄 폭은 v2 그대로(직선화·회전 금지).` : ''}
 -->
 <style>
-:root{--night:#151b2c;--vermilion:#d4462a;--snow:#eef0f4;--page:#d9dce3;--page-ink:#151b2c}
+${V3 ? tateCss() : ''}:root{--night:#151b2c;--vermilion:#d4462a;--snow:#eef0f4;--page:#d9dce3;--page-ink:#151b2c}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--page:#0e1220;--page-ink:#eef0f4}}
 :root[data-theme="dark"]{--page:#0e1220;--page-ink:#eef0f4}
 *{box-sizing:border-box}
@@ -104,7 +123,7 @@ body{padding:16px}
 .cover .mast{left:${mm(L.mast.x)};top:${mm(L.mast.y)};width:${mm(L.mast.w)};height:${mm(L.mast.h)}}
 .cover .no{left:${mm(L.no.x)};top:${mm(L.no.y)};font-family:'Zen Kaku Gothic New',sans-serif;font-weight:500;
   font-size:${mm(L.no.size)};line-height:1;letter-spacing:.08em;font-variant-numeric:tabular-nums;white-space:nowrap}
-.cover .ttl{left:${mm(L.title.x)};top:${mm(L.title.y)};writing-mode:vertical-rl;font-family:'Shippori Mincho',serif;font-weight:800;
+.cover .ttl{left:${mm(L.title.x)};top:${mm(L.title.y)};writing-mode:vertical-rl;font-family:${V3 ? "'Shippori Mincho Tate'," : ''}'Shippori Mincho',serif;font-weight:800;
   font-size:${mm(L.title.size)};line-height:1;letter-spacing:${L.title.track}em;white-space:nowrap}
 .cover .sub{right:${mm(210 - L.sub.right)};top:${mm(L.sub.y)};writing-mode:vertical-rl;font-family:'Shippori Mincho',serif;font-weight:500;
   font-size:${mm(L.sub.size)};line-height:${L.sub.lh};letter-spacing:0;white-space:nowrap}
@@ -112,7 +131,8 @@ body{padding:16px}
 .cover .credit{left:${mm(L.credit.x)};bottom:${mm(297 - L.credit.bottom)};font-family:'Zen Kaku Gothic New',sans-serif;font-weight:400;
   font-size:${mm(L.credit.size)};line-height:${L.credit.lh};white-space:nowrap;font-feature-settings:'palt'}
 .cover .credit span{display:block}
-.cover .credit .hang{text-indent:-.5em} /* 行頭の『 — 全角括弧の左アキ半角を詰め、잉크 왼끝을 x13에 맞춤(Zen Kaku는 palt 미적용 확인) */
+${V3 ? `.cover .no .n{margin-left:${mm(L.no.gap)}}
+` : ''}.cover .credit .hang{text-indent:-.5em} /* 行頭の『 — 全角括弧の左アキ半角を詰め、잉크 왼끝을 x13에 맞춤(Zen Kaku는 palt 미적용 확인) */
 </style>
 </head>
 <body>
@@ -124,18 +144,20 @@ body{padding:16px}
     <!-- 富士みち 중심선 · © OpenStreetMap contributors（ODbL） · vermilion 2.4mm -->
     ${linePath}
     <!-- 金鳥居 막대 · 도로 직교 -->
-    <rect x="${-L.bar.w / 2}" y="${-L.bar.h / 2}" width="${L.bar.w}" height="${L.bar.h}" transform="translate(${L.bar.x} ${L.bar.y}) rotate(${L.bar.rot})" fill="#d4462a"/>` : `<!-- 산 능선 略図 B안(축척 밖) · 剣ヶ峯 (126,${metrics.ridge.B.kengamine.y}) · night 1.4mm -->
+    <rect x="${-L.bar.w / 2}" y="${-L.bar.h / 2}" width="${L.bar.w}" height="${L.bar.h}" transform="translate(${L.bar.x} ${L.bar.y}) rotate(${L.bar.rot})" fill="#d4462a"/>` : `<!-- 산 능선 略図 B안(축척 밖) · 剣ヶ峯 (126,${metrics.ridge.B.kengamine.y}) · night ${V3 ? '1.6' : '1.4'}mm -->
     ${ridgePath}
-    <!-- 富士みち 중심선 · © OpenStreetMap contributors（ODbL） · vermilion 3.0mm -->
+    <!-- 富士みち 중심선 · © OpenStreetMap contributors（ODbL） · vermilion ${V3 ? '3.4' : '3.0'}mm -->
     ${linePath}
     <!-- 金鳥居 도리이 윤곽 · night · 도로 직교 · 선 위에 선다 -->
     ${toriiSvg()}`}
   </svg>
   ${mast}
-  <p class="no">一つの町　01</p>
+  <p class="no">${V3 ? '一つの町<span class="n">01</span>' : '一つの町　01'}</p>
   <h1 class="ttl">富士吉田</h1>
   <p class="sub">今の金鳥居は、もとの場所より<br><span class="tcy">30</span>メートルほど山に近い。</p>
-  <p class="credit"><span>地図　© OpenStreetMap contributors（ODbL）</span><span>openstreetmap.org/copyright</span><span>上は金鳥居から見た富士山頂（剣ヶ峯）の方角・山は略図</span><span class="hang">『となり』編集部</span></p>
+  <p class="credit">${V3
+    ? '<span>地図　© OpenStreetMap contributors（ODbL）</span><span>openstreetmap.org/copyright</span><span>上は金鳥居から見た</span><span>富士山頂（剣ヶ峯）の方角・山は略図</span><span class="hang">『となり』編集部</span>'
+    : '<span>地図　© OpenStreetMap contributors（ODbL）</span><span>openstreetmap.org/copyright</span><span>上は金鳥居から見た富士山頂（剣ヶ峯）の方角・山は略図</span><span class="hang">『となり』編集部</span>'}</p>
 </article>
 </div>
 </body>
