@@ -12,7 +12,7 @@
         "titleReading": "じょせいと",
         "titleKo": "여학생",
         "authorKo": "다자이 오사무",
-        "cover": "lilac",
+        "cover": "shiracha",
         "motif": "umbrella-rose"
       },
       "literature": {
@@ -135,7 +135,7 @@
         "titleReading": "にんげんしっかく",
         "titleKo": "인간 실격",
         "authorKo": "다자이 오사무",
-        "cover": "fog",
+        "cover": "usugaki",
         "motif": "clown-photos"
       },
       "literature": {
@@ -348,7 +348,7 @@
         "titleReading": "しゃよう",
         "titleKo": "사양",
         "authorKo": "다자이 오사무",
-        "cover": "apricot",
+        "cover": "kinari",
         "motif": "setting-sun"
       },
       "literature": {
@@ -604,7 +604,7 @@
         "titleReading": "はしれメロス",
         "titleKo": "달려라 메로스",
         "authorKo": "다자이 오사무",
-        "cover": "aegean",
+        "cover": "odo",
         "motif": "melos-run"
       },
       "literature": {
@@ -688,7 +688,7 @@
         "titleReading": "れもん",
         "titleKo": "레몬",
         "authorKo": "가지이 모토지로",
-        "cover": "dove",
+        "cover": "usunezumi",
         "motif": "lemon-books"
       },
       "literature": {
@@ -764,7 +764,7 @@
         "titleReading": "ぎんがてつどうのよる",
         "titleKo": "은하철도의 밤",
         "authorKo": "미야자와 겐지",
-        "cover": "ultramarine",
+        "cover": "ai",
         "motif": "night-train"
       },
       "literature": {
@@ -934,7 +934,7 @@
         "titleReading": "かぜのまたさぶろう",
         "titleKo": "바람의 마타사부로",
         "authorKo": "미야자와 겐지",
-        "cover": "meadow",
+        "cover": "moegi",
         "motif": "wind-hill"
       },
       "literature": {
@@ -1064,7 +1064,7 @@
         "titleReading": "セロひきのゴーシュ",
         "titleKo": "첼로 켜는 고슈",
         "authorKo": "미야자와 겐지",
-        "cover": "walnut",
+        "cover": "cha",
         "motif": "cello-night",
         "coverTitle": "セロ弾きの\nゴーシュ"
       },
@@ -1156,7 +1156,7 @@
         "titleReading": "よだかのほし",
         "titleKo": "쏙독새의 별",
         "authorKo": "미야자와 겐지",
-        "cover": "nightjar",
+        "cover": "nibi",
         "motif": "nightjar-star"
       },
       "literature": {
@@ -1235,7 +1235,7 @@
         "titleReading": "ちゅうもんのおおいりょうりてん",
         "titleKo": "주문이 많은 요리점",
         "authorKo": "미야자와 겐지",
-        "cover": "forest",
+        "cover": "sumi",
         "motif": "forest-doors",
         "coverTitle": "注文の多い\n料理店"
       },
@@ -1312,7 +1312,7 @@
         "titleReading": "やまなし",
         "titleKo": "돌배",
         "authorKo": "미야자와 겐지",
-        "cover": "pear",
+        "cover": "hanada",
         "motif": "crab-pear"
       },
       "literature": {
@@ -1388,7 +1388,7 @@
         "titleReading": "さんげつき",
         "titleKo": "산월기",
         "authorKo": "나카지마 아쓰시",
-        "cover": "twilight",
+        "cover": "torinoko",
         "motif": "moon-tiger"
       },
       "literature": {
@@ -1463,7 +1463,7 @@
         "titleReading": "ごんぎつね",
         "titleKo": "여우 곤",
         "authorKo": "니이미 난키치",
-        "cover": "vermilion",
+        "cover": "bengara",
         "motif": "higanbana"
       },
       "literature": {
@@ -1563,7 +1563,7 @@
         "titleReading": "てぶくろをかいに",
         "titleKo": "장갑을 사러",
         "authorKo": "니이미 난키치",
-        "cover": "snow",
+        "cover": "tetsukon",
         "motif": "snow-night"
       },
       "literature": {
@@ -1633,7 +1633,7 @@
         "titleReading": "たかせぶね",
         "titleKo": "다카세부네",
         "authorKo": "모리 오가이",
-        "cover": "river",
+        "cover": "fukamidori",
         "motif": "night-boat"
       },
       "literature": {
@@ -1716,7 +1716,7 @@
         "titleReading": "ぼっちゃん",
         "titleKo": "도련님",
         "authorKo": "나쓰메 소세키",
-        "cover": "sky",
+        "cover": "haimidori",
         "motif": "steam-sea"
       },
       "literature": {
@@ -1986,7 +1986,7 @@
         "titleReading": "ぶんちょう",
         "titleKo": "문조",
         "authorKo": "나쓰메 소세키",
-        "cover": "cream",
+        "cover": "karashi",
         "motif": "birdcage"
       },
       "literature": {
@@ -2076,7 +2076,7 @@
         "titleReading": "こころ",
         "titleKo": "마음",
         "authorKo": "나쓰메 소세키",
-        "cover": "mustard",
+        "cover": "shu",
         "motif": "kamakura-letter"
       },
       "literature": {
@@ -2800,7 +2800,7 @@
         "titleReading": "はな",
         "titleKo": "코",
         "authorKo": "아쿠타가와 류노스케",
-        "cover": "ink",
+        "cover": "yamabuki",
         "motif": "ink-steam"
       },
       "literature": {
@@ -2879,7 +2879,7 @@
         "titleReading": "くものいと",
         "titleKo": "거미줄",
         "authorKo": "아쿠타가와 류노스케",
-        "cover": "abyss",
+        "cover": "uguisu",
         "motif": "lotus-thread"
       },
       "literature": {
@@ -2961,7 +2961,7 @@
         "titleReading": "らしょうもん",
         "titleKo": "라쇼몬",
         "authorKo": "아쿠타가와 류노스케",
-        "cover": "rust",
+        "cover": "kon",
         "motif": "rain-gate"
       },
       "literature": {
@@ -3040,7 +3040,7 @@
         "titleReading": "とししゅん",
         "titleKo": "두자춘",
         "authorKo": "아쿠타가와 류노스케",
-        "cover": "peach",
+        "cover": "haijiro",
         "motif": "peach-house"
       },
       "literature": {
@@ -3140,7 +3140,7 @@
         "titleReading": "トロッコ",
         "titleKo": "광차",
         "authorKo": "아쿠타가와 류노스케",
-        "cover": "olive",
+        "cover": "kogecha",
         "motif": "dusk-rails"
       },
       "literature": {
@@ -3217,7 +3217,7 @@
         "titleReading": "さくらのもりのまんかいのした",
         "titleKo": "만개한 벚꽃 숲 아래",
         "authorKo": "사카구치 안고",
-        "cover": "cherry",
+        "cover": "ebi",
         "motif": "blossom-storm",
         "coverTitle": "桜の森の\n満開の下"
       },
@@ -3319,7 +3319,7 @@
         "titleReading": "しせい",
         "titleKo": "문신",
         "authorKo": "다니자키 준이치로",
-        "cover": "amber",
+        "cover": "kaki",
         "motif": "spider-web"
       },
       "literature": {
@@ -3397,7 +3397,7 @@
         "titleReading": "にんげんいす",
         "titleKo": "인간 의자",
         "authorKo": "에도가와 란포",
-        "cover": "jet",
+        "cover": "enji",
         "motif": "deco-chair"
       },
       "literature": {

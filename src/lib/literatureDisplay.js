@@ -9,13 +9,16 @@
 // 이 모듈은 빌드(scripts/lib/literature-build.mjs)도 쓰므로 대조표를 import하지 않는다 — 작품 찾기는 literatureCanonical.literatureWork.
 
 /**
- * 표지 바탕 — 작품과 그 시대 장정에서 고른 이름(쪽빛 눈밤·여우 주홍·숲·먹 천·메이지 生成り · 2차: 해 질 녘 녹·심연·
- * 달밤 보라·바다 하늘·잿빛 비둘기·밤 보라·강·호두). CSS `.lit-cover--<name>`이
- * 값을 갖는다. 앱 주색·일본어 서재 표지(로즈 #994a5a)와 같은 색상 계열은 피한다(디자이너 검토).
+ * 표지 바탕(천·종이 색) — 일본 전통색 이름. 明治 말~昭和 전기 문예서 실물(초판 고서 사진·복각본 50여 장, 2026-10-15 KST 조사)에서
+ * 보이는 색 계열만 쓴다: 생지·크림·회백 종이, 朱·柿(朱橙)·弁柄, 山吹·黄土·芥子, 紺·藍·縹 천, 臙脂, 짙은 녹·鶯, 茶, 墨, 鈍色.
+ * 보라·마젠타·선명한 군청·파스텔은 그 시대 문예서에 거의 없어 쓰지 않는다(葡萄 하나만 — 아닐린 보라가 있던 시대).
+ * 초판 색이 확인된 작품은 그 계열을 따른다(羅生門 紺 천 · 鼻 같은 책 함의 山吹 · 刺青 朱橙 · こころ 朱 · 人間失格 薄柿 ·
+ * 注文の多い料理店 墨 · 山月記 鳥の子 · 斜陽 生成り). 새 책의 색이다 — 남은 고서의 바랜 색(황갈·적갈)이 아니다.
+ * 어떤 두 권도 CIELAB 색차 12 미만이 아니다(literatureDisplay.test.js). CSS `.lit-cover--<name>`이 값을 갖는다.
  */
-export const LITERATURE_COVER_COLORS = Object.freeze(['snow', 'vermilion', 'forest', 'ink', 'cream',
-  'rust', 'abyss', 'twilight', 'sky', 'dove', 'nightjar', 'river', 'walnut', 'ultramarine',
-  'mustard', 'pear', 'meadow', 'olive', 'peach', 'jet', 'amber', 'aegean', 'fog', 'apricot', 'lilac', 'cherry']);
+export const LITERATURE_COVER_COLORS = Object.freeze(['ai', 'bengara', 'cha', 'ebi', 'enji', 'fukamidori', 'haijiro',
+  'haimidori', 'hanada', 'kaki', 'karashi', 'kinari', 'kogecha', 'kon', 'moegi', 'nibi', 'odo', 'shiracha', 'shu', 'sumi',
+  'tetsukon', 'torinoko', 'uguisu', 'usugaki', 'usunezumi', 'yamabuki']);
 
 /**
  * 표지 그림(모티프) — 작품 분위기에서 고른 자작 SVG(LiteratureCoverArt). 원서 표지·삽화·알려진 캐릭터를 옮기지 않는다

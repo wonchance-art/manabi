@@ -160,9 +160,9 @@ describe('표기 함수', () => {
 
   it.each([
     [{ titleReading: 'はな', titleKo: '코', authorKo: '아', cover: 'gold', motif: 'ink-steam' }, 'display.cover'],
-    [{ titleReading: 'hana', titleKo: '코', authorKo: '아', cover: 'ink', motif: 'ink-steam' }, 'kana'],
-    [{ titleReading: 'はな', titleKo: ' ', authorKo: '아', cover: 'ink', motif: 'ink-steam' }, 'titleKo'],
-    [{ titleReading: 'はな', titleKo: '코', authorKo: '아', cover: 'ink' }, 'display.motif'],
+    [{ titleReading: 'hana', titleKo: '코', authorKo: '아', cover: 'yamabuki', motif: 'ink-steam' }, 'kana'],
+    [{ titleReading: 'はな', titleKo: ' ', authorKo: '아', cover: 'yamabuki', motif: 'ink-steam' }, 'titleKo'],
+    [{ titleReading: 'はな', titleKo: '코', authorKo: '아', cover: 'yamabuki' }, 'display.motif'],
   ])('검사 실패 %j', (display, message) => {
     expect(() => validateLiteratureDisplay(display, '鼻')).toThrow(message);
   });
@@ -171,7 +171,7 @@ describe('표기 함수', () => {
     ['한 줄에 드는 제목을 반반 나눔(아래가 비어 보인다)', '手袋を買いに', '手袋を\n買いに'],
     ['첫 줄이 짧은 계단(둘째 줄이 더 길다)', '注文の多い料理店', '注文の\n多い料理店'],
   ])('표지 제목 줄바꿈 거부 — %s', (_, title, coverTitle) => {
-    const display = { titleReading: 'て', titleKo: '가', authorKo: '아', cover: 'ink', motif: 'ink-steam', coverTitle };
+    const display = { titleReading: 'て', titleKo: '가', authorKo: '아', cover: 'yamabuki', motif: 'ink-steam', coverTitle };
     expect(() => validateLiteratureDisplay(display, title)).toThrow('display.coverTitle breaks only');
   });
 });

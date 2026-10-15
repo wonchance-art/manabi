@@ -7,32 +7,32 @@
    여섯 자를 넘는 제목만 둘째 줄을 한 글자 내려 붙인다(--stepped). 셸은 늘 밝은 화면이라 표지는 테마를 따라 바뀌지 않는다(책은 물건이다).
    서재 표지(.shelf-cover)와 같은 문법: 왼쪽 책등 홈 그림자. */
 .lit-cover{--cover-color:#2f2c2b;display:block;width:60px;height:84px;flex:none;background:var(--cover-color);position:relative;box-sizing:border-box;border-radius:1px 2px 2px 1px;box-shadow:inset 3px 0 0 color-mix(in srgb,var(--ink) 16%,transparent),inset 3.6px 0 0 color-mix(in srgb,#fff 6%,transparent);overflow:hidden}
-.lit-cover--snow{--cover-color:#263a63}
-.lit-cover--vermilion{--cover-color:#a33a26}
-.lit-cover--forest{--cover-color:#2f5a3f}
-.lit-cover--ink{--cover-color:#343a46}
-.lit-cover--cream{--cover-color:#ece3cc}
-.lit-cover--rust{--cover-color:#5b2e24}
-.lit-cover--abyss{--cover-color:#16302a}
-.lit-cover--twilight{--cover-color:#4a4a68}
-.lit-cover--sky{--cover-color:#cfe0e6}
-.lit-cover--dove{--cover-color:#545b69}
-.lit-cover--nightjar{--cover-color:#2a1f52}
-.lit-cover--river{--cover-color:#234a52}
-.lit-cover--walnut{--cover-color:#6e4420}
-.lit-cover--ultramarine{--cover-color:#2b3a96}
-.lit-cover--mustard{--cover-color:#665012}
-.lit-cover--pear{--cover-color:#e6dc9e}
-.lit-cover--meadow{--cover-color:#c9d9b0}
-.lit-cover--olive{--cover-color:#4d5222}
-.lit-cover--peach{--cover-color:#efd3cf}
-.lit-cover--jet{--cover-color:#1d1a17}
-.lit-cover--amber{--cover-color:#8a4313}
-.lit-cover--aegean{--cover-color:#1f5f8b}
-.lit-cover--fog{--cover-color:#bdbab4}
-.lit-cover--apricot{--cover-color:#f3c08a}
-.lit-cover--lilac{--cover-color:#ddd3e8}
-.lit-cover--cherry{--cover-color:#8c3d5b}
+.lit-cover--ai{--cover-color:#2c5374} /* 藍 */
+.lit-cover--bengara{--cover-color:#8c3a25} /* 弁柄 */
+.lit-cover--cha{--cover-color:#6e4420} /* 茶 */
+.lit-cover--ebi{--cover-color:#5a3047} /* 葡萄 */
+.lit-cover--enji{--cover-color:#6b2232} /* 臙脂 */
+.lit-cover--fukamidori{--cover-color:#2d4b37} /* 深緑 */
+.lit-cover--haijiro{--cover-color:#cfd2cf} /* 灰白 */
+.lit-cover--haimidori{--cover-color:#bfc6a4} /* 灰緑 */
+.lit-cover--hanada{--cover-color:#4f84a0} /* 縹 */
+.lit-cover--kaki{--cover-color:#d8692c} /* 柿 */
+.lit-cover--karashi{--cover-color:#b3973a} /* 芥子 */
+.lit-cover--kinari{--cover-color:#eee5cd} /* 生成り */
+.lit-cover--kogecha{--cover-color:#3f2b1f} /* 焦茶 */
+.lit-cover--kon{--cover-color:#283453} /* 紺 */
+.lit-cover--moegi{--cover-color:#7a9246} /* 萌黄 */
+.lit-cover--nibi{--cover-color:#57565a} /* 鈍色 */
+.lit-cover--odo{--cover-color:#a8813a} /* 黄土 */
+.lit-cover--shiracha{--cover-color:#d4b294} /* 白茶 */
+.lit-cover--shu{--cover-color:#bf3f2a} /* 朱 */
+.lit-cover--sumi{--cover-color:#24211e} /* 墨 */
+.lit-cover--tetsukon{--cover-color:#2f3f4c} /* 鉄紺 */
+.lit-cover--torinoko{--cover-color:#e4d099} /* 鳥の子 */
+.lit-cover--uguisu{--cover-color:#6a6834} /* 鶯 */
+.lit-cover--usugaki{--cover-color:#e7a881} /* 薄柿 */
+.lit-cover--usunezumi{--cover-color:#a5a49e} /* 薄鼠 */
+.lit-cover--yamabuki{--cover-color:#d6a234} /* 山吹 */
 .lit-cover__slip{position:absolute;z-index:1;top:5px;right:4px;display:flex;flex-direction:row-reverse;align-items:flex-start;gap:1.2px;padding:2.4px 1.9px;background:#f3ead4;color:#231f1b;box-shadow:inset 0 0 0 .9px #3a322a,inset 0 0 0 1.5px #f3ead4,inset 0 0 0 1.9px #3a322a,.4px .6px .8px color-mix(in srgb,#000 35%,transparent)}
 .lit-cover__title{display:flex;flex-direction:row-reverse;gap:1px;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-weight:500;font-size:11px;line-height:1;letter-spacing:.04em}
 .lit-cover__line{display:block;writing-mode:vertical-rl;white-space:nowrap}
