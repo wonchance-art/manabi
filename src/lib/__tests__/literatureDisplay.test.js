@@ -25,6 +25,17 @@ const kanjiNumber = (n) => `${n >= 20 ? DIGITS[Math.floor(n / 10)] : ''}${n >= 1
 const parts = (heading, n) => Array.from({ length: n }, (_, k) => `${heading} (${k + 1}/${n})`);
 const KEYS = { gon: 'aozora-000121-000628', hana: 'aozora-000879-000042', tebukuro: 'aozora-000121-000637' };
 
+// sRGB 16진 → CIELAB(D65). 표지 색차·명도 단계 계약이 같이 쓴다.
+const cielab = (value) => {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(value.slice(i, i + 2), 16) / 255)
+    .map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+  const f = (t) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+  const x = f((r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047);
+  const y = f(r * 0.2126 + g * 0.7152 + b * 0.0722);
+  const z = f((r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883);
+  return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+};
+
 describe('정본 작품 표기 — 대조표가 싣는다', () => {
   it('목차: 見出し 그대로 · 나눈 장은 1/N · 한 장이면 전문 — 「과」·「편」이 없다', () => {
     const labels = Object.fromEntries(Object.entries(manifest.works).map(([key, work]) => [key, [work.division, work.chapters.map((chapter) => chapter.title)]]));
@@ -96,25 +107,33 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
     // 이름만 다르고 눈으로는 같은 색(檸檬 회색 ↔ こころ 회색, よだかの星 ↔ 銀河鉄道の夜 보라)을 새 작품 추가 때 다시 만들지 않게.
     const css = read('src/components/books/literature-cover.css');
     const hex = Object.fromEntries([...css.matchAll(/\.lit-cover--([a-z]+)\{--cover-color:(#[0-9a-f]{6})/gu)].map((m) => [m[1], m[2]]));
-    const lab = (value) => {
-      const [r, g, b] = [1, 3, 5].map((i) => parseInt(value.slice(i, i + 2), 16) / 255)
-        .map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
-      const f = (t) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
-      const x = f((r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047);
-      const y = f(r * 0.2126 + g * 0.7152 + b * 0.0722);
-      const z = f((r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883);
-      return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
-    };
     const works = Object.values(manifest.works);
     const close = [];
     for (const [i, a] of works.entries()) {
       for (const b of works.slice(i + 1)) {
-        const [p, q] = [lab(hex[a.display.cover]), lab(hex[b.display.cover])];
+        const [p, q] = [cielab(hex[a.display.cover]), cielab(hex[b.display.cover])];
         const distance = Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
         if (distance < 12) close.push(`${a.title}(${a.display.cover}) ↔ ${b.title}(${b.display.cover}) ${distance.toFixed(1)}`);
       }
     }
     expect(close).toEqual([]);
+  });
+
+  it('그림 명도 단계는 실제 크기에서 보여야 한다 — 바탕 대비 soft ≥12 · strong ≥22 · deep ≥10, strong이 soft보다 멀다(2026-10-15 표지 평가)', () => {
+    // 옛 단계(lt ΔL 2–9)는 60×84에서 안 보여 무늬가 바탕에 묻혔다. 밝은 바탕은 셋 다 어둡게, 어두운 바탕은 soft·strong을 밝게 민다.
+    const css = read('src/components/books/literature-cover.css');
+    const rules = [...css.matchAll(/\.lit-cover--([a-z]+)\{--cover-color:(#[0-9a-f]{6});--tone-soft:(#[0-9a-f]{6});--tone-strong:(#[0-9a-f]{6});--tone-deep:(#[0-9a-f]{6})\}/gu)];
+    expect(rules.map((m) => m[1]).sort()).toEqual([...LITERATURE_COVER_COLORS].sort());
+    const weak = [];
+    for (const [, key, ground, soft, strong, deep] of rules) {
+      const [g, s, t, d] = [ground, soft, strong, deep].map((value) => cielab(value)[0]);
+      const [ds, dt, dd] = [s - g, t - g, d - g];
+      if (Math.abs(ds) < 12 || Math.abs(dt) < 22 || Math.abs(dd) < 10 || Math.abs(dt) <= Math.abs(ds) || Math.sign(ds) !== Math.sign(dt)) {
+        weak.push(`${key} soft ${ds.toFixed(1)} strong ${dt.toFixed(1)} deep ${dd.toFixed(1)}`);
+      }
+    }
+    expect(weak).toEqual([]);
+    expect(read('src/components/books/literature-cover-art.css')).toMatch(/--lt:var\(--tone-soft\);--dk:var\(--tone-strong\);--dd:var\(--tone-deep\)/u);
   });
 
   it('장 첫 문장(incipit) — 30자 이하 첫 문장은 통째로, 길면 「、」에서(낱말 한가운데·마침표 뒤에서 자르지 않는다)', () => {

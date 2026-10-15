@@ -3,7 +3,7 @@ import { LITERATURE_COVER_MOTIFS } from '../../lib/literatureDisplay';
 import './literature-cover-art.css';
 
 // 정본 문학책 표지 그림 — 시리즈 A 「布装·型押し + 題簽」(오너 선택 2026-10-15 KST, 「A가 전반적으로 낫네」).
-// 明治 말~昭和 초 문예서의 천 장정(クロス装)처럼, 표지는 작품 색의 천이고 그 위에 같은 색 계열 두 단(짙은 --dk · 옅은 --lt)으로
+// 明治 말~昭和 초 문예서의 천 장정(クロス装)처럼, 표지는 작품 색의 천이고 그 위에 같은 색 계열 판 셋(옅은 --lt · 짙은 --dk · 실루엣 --dd — 천 색마다 밝기 차를 정한 tone, literature-cover-art.css)으로
 // 문양·장면을 찍는다(型押し·色版). 밝은 점은 강조색 하나(많아야 둘 — --acc·--acc2)뿐이다. 제목·작가는 그림 위가 아니라
 // 따로 붙인 題簽(LiteratureCover) 위에 있어서 그림이 판면 전체를 쓴다. 원본 장정·삽화를 옮기거나 본뜨지 않는다(IP 정책 §2.1) —
 // 시대 관례(布装·題簽·전통 문양)만 빌리고 장면은 작품 속에서 새로 고른다. 사람 몸은 그리지 않는다.
@@ -170,19 +170,25 @@ function RainGate() {
   );
 }
 
-// 蜘蛛の糸(1918) — 극락 연못의 연잎·연꽃을 두 단으로 아래에 깔고, 위에서 곧게 내려오는 은빛 실 한 가닥과 작은 거미.
+// 蜘蛛の糸(1918) — 위는 극락 연못(연잎 두 단과 흰 연꽃), 아래는 지옥의 피 연못과 바늘산 실루엣, 그 사이를 곧게 잇는 은빛 실 한 가닥과 작은 거미.
 function LotusThread() {
-  const pads = [[20, 128, 14], [62, 146, 12], [100, 160, 13], [6, 154, 9], [44, 104, 9], [86, 122, 8]];
+  const pads = [[2, 40, 16, 5], [44, 46, 13, 4.4], [20, 16, 11, 3.6]];
+  const lotus = [[-52, 13], [-26, 17], [0, 19], [26, 17], [52, 13]].map(([deg, r]) => {
+    const a = ((deg - 90) * Math.PI) / 180; const tip = [f1(26 + Math.cos(a) * r), f1(46 + Math.sin(a) * r)];
+    return `M26 46Q${f1(26 + Math.cos(a - 0.62) * r * 0.66)} ${f1(46 + Math.sin(a - 0.62) * r * 0.66)} ${tip[0]} ${tip[1]}Q${f1(26 + Math.cos(a + 0.62) * r * 0.66)} ${f1(46 + Math.sin(a + 0.62) * r * 0.66)} 26 46Z`;
+  }).join('');
   return (
     <>
-      <Fill c="lt" d={pads.map(([x, y, r]) => `M${x} ${y}L${f1(x + r)} ${f1(y - r * 0.18)}A${r} ${f1(r * 0.42)} 0 1 1 ${f1(x + r * 0.96)} ${f1(y + r * 0.22)}Z`).join('')} />
-      <Line c="dk" d={pads.map(([x, y, r]) => Array.from({ length: 5 }, (_, i) => { const a = Math.PI * (0.25 + i * 0.35); return `M${x} ${y}l${f1(Math.cos(a) * r * 0.9)} ${f1(Math.sin(a) * r * 0.38)}`; }).join('')).join('')} w={0.4} />
-      <Fill c="dk" d="M30 110C26 102 28 94 34 90C34 96 36 100 34 104C38 98 42 96 46 96C44 102 40 106 34 110ZM34 110V128" />
-      <Line c="dk" d="M34 110V128" w={0.8} />
-      <Line c="acc" d="M50 0V138" w={0.5} focal />
-      <Fill c="acc" d="M48.6 140a1.6 1.9 0 1 0 2.8 0a1.6 1.9 0 1 0 -2.8 0Z" focal />
-      <Line c="acc" d="M47 138.6l-2 -1.6M47 141l-2.4 0.4M53 138.6l2 -1.6M53 141l2.4 0.4" w={0.4} />
-      <Fill c="lt" d={dots(7, 26, [2, 6, 118, 90], 0.25, 0.6)} />
+      <Fill c="lt" d={dots(7, 22, [2, 60, 118, 120], 0.25, 0.55)} />
+      <Fill c="lt" d={pads.map(([x, y, r, h]) => `M${f1(x - r)} ${y}a${r} ${h} 0 1 0 ${r * 2} 0a${r} ${h} 0 1 0 ${-r * 2} 0Z`).join('')} />
+      <Line c="dk" d={pads.map(([x, y, r, h]) => `M${f1(x - r * 0.8)} ${f1(y - h * 0.3)}Q${x} ${f1(y + h * 0.6)} ${f1(x + r * 0.8)} ${f1(y - h * 0.3)}`).join('')} w={0.5} />
+      <Fill c="paper" d={lotus} focal />
+      <Fill c="acc2" d={[[-52, 13], [-26, 17], [0, 19], [26, 17], [52, 13]].map(([deg, r]) => { const a = ((deg - 90) * Math.PI) / 180; const [x, y] = [f1(26 + Math.cos(a) * r * 0.82), f1(46 + Math.sin(a) * r * 0.82)]; return `M${f1(x - 1.4)} ${y}a1.4 1.4 0 1 0 2.8 0a1.4 1.4 0 1 0 -2.8 0Z`; }).join('')} />
+      <Fill c="dd" d="M0 168V150L6 136 10 148 16 128 22 146 28 134 34 150 40 130 46 146 54 138 60 152 68 140 74 154 82 144 90 156 100 146 108 158 120 150V168Z" />
+      <Line c="dk" d="M0 160Q20 156 40 160T80 160T120 160M6 165Q26 162 46 165T86 165" w={0.5} />
+      <Line c="acc" d="M38 50V158" w={0.55} focal />
+      <Fill c="dd" d="M36.4 72a1.6 2 0 1 0 3.2 0a1.6 2 0 1 0 -3.2 0ZM36.8 69.6a1.2 1.2 0 1 0 2.4 0a1.2 1.2 0 1 0 -2.4 0Z" focal />
+      <Line c="dd" d="M36.6 71l-2.6 -2M36.4 72.6l-3 0.2M36.6 74l-2.4 2M39.4 71l2.6 -2M39.6 72.6l3 0.2M39.4 74l2.4 2" w={0.45} />
     </>
   );
 }
@@ -203,19 +209,22 @@ function MoonTiger() {
   );
 }
 
-// 坊っちゃん(1906) — 하늘색 천에 이불 속 메뚜기(バッタ)를 흩뿌리고, 아래에 松山 바다 물결, 강조색은 坊っちゃん団子 꼬치 하나.
+// 坊っちゃん(1906) — 松山 바다(青海波) 수평선을 달리는 성냥갑 같은 기차와 연기, 앞에는 큼직한 団子 꼬치 하나(세 알).
 function SteamSea() {
-  const hoppers = scatter(11, 13, [4, 8, 116, 120]);
-  const hopper = ([x, y, k]) => { const s = 0.9 + k * 0.45; const P = (dx, dy) => `${f1(x + dx * s)} ${f1(y + dy * s)}`; return `M${P(0, 0)}C${P(2, -2)} ${P(8, -2.4)} ${P(11, -0.8)}L${P(12.4, 0)}C${P(9, 1.4)} ${P(3, 1.4)} ${P(0, 0)}ZM${P(6, -1.2)}L${P(9.4, -5.6)} ${P(3.6, 2.6)}M${P(11, -0.8)}L${P(14.6, -4.4)}M${P(4, 0.8)}L${P(2.4, 3.6)}`; };
+  const puffs = [[44, 108, 0.7], [34, 98, 0.9], [20, 86, 1.1], [4, 72, 1.3]];
   return (
     <>
-      <Fill c="lt" d={dots(14, 50, [2, 2, 118, 126], 0.3, 0.7)} />
-      <Line c="dk" d={hoppers.map(hopper).join('')} w={0.9} cap />
-      <Line c="dk" d={seigaiha(-4, 134, 124, 172, 6)} w={0.6} />
-      <Line c="dd" d="M14 128L34 108" w={0.8} cap />
-      <Fill c="acc" d="M17 125a2.6 2.6 0 1 0 0.1 0Z" focal />
-      <Fill c="paper" d="M21.6 120.4a2.6 2.6 0 1 0 0.1 0Z" />
-      <Fill c="acc2" d="M26.2 115.8a2.6 2.6 0 1 0 0.1 0Z" focal />
+      <Fill c="lt" d={dots(14, 40, [2, 2, 118, 112], 0.3, 0.7)} />
+      <Line c="dk" d={seigaiha(-4, 136, 124, 172, 6)} w={0.6} />
+      <Line c="dk" d="M0 133H120" w={0.6} />
+      <Fill c="lt" d={puffs.map(([x, y, s]) => cloud(x, y, s)).join('')} />
+      <Fill c="dd" d="M40 124h14v-8h4v8h4v8h-22ZM42 118h3v6h-3ZM10 124h12v8h-12ZM24 124h13v8h-13Z" focal />
+      <Fill c="paper" d="M12 125.6h3v2.4h-3ZM17 125.6h3v2.4h-3ZM26 125.6h3v2.4h-3ZM31 125.6h3v2.4h-3ZM55.4 117.6h2v3h-2Z" />
+      <Fill c="dd" d={[13, 19, 27, 34, 44, 51, 58].map((x) => `M${x - 1.6} 132.6a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0 -3.2 0Z`).join('')} />
+      <Line c="dd" d="M10 104L44 60" w={1.1} cap />
+      <Fill c="acc" d="M15.4 96.6a6 6 0 1 0 12 0a6 6 0 1 0 -12 0Z" focal />
+      <Fill c="paper" d="M22.6 87.4a6 6 0 1 0 12 0a6 6 0 1 0 -12 0Z" focal />
+      <Fill c="acc2" d="M29.8 78.2a6 6 0 1 0 12 0a6 6 0 1 0 -12 0Z" focal />
     </>
   );
 }
@@ -240,8 +249,8 @@ function NightjarStar() {
   return (
     <>
       <Fill c="lt" d={scatter(36, 3, [2, 2, 118, 166]).map(([x, y, k]) => star4(x, y, 1 + k * 2.4)).join('')} />
-      <Line c="dk" d="M0 150C20 140 30 146 46 138S80 136 120 128M0 160C24 152 50 158 72 150S104 148 120 144" w={1.2} />
-      <Fill c="dk" d="M0 150C20 140 30 146 46 138S80 136 120 128V168H0Z" />
+      <Line c="dd" d="M0 150C20 140 30 146 46 138S80 136 120 128M0 160C24 152 50 158 72 150S104 148 120 144" w={1.2} />
+      <Fill c="dd" d="M0 150C20 140 30 146 46 138S80 136 120 128V168H0Z" />
       <Fill c="dd" d="M40 82l3 -6 3 6 10 -4 -9 8 -1 8 -3 -4 -3 4 -1 -8 -9 -8Z" focal />
       <Fill c="acc" d={star4(22, 26, 9)} focal />
       <Fill c="acc2" d="M18.6 26a3.4 3.4 0 1 0 6.8 0a3.4 3.4 0 1 0 -6.8 0Z" />
@@ -272,11 +281,11 @@ function CelloNight() {
     <>
       <Line c="lt" d={staff} w={0.45} />
       <Fill c="lt" d={[[10, 46], [24, 43], [70, 98], [96, 92], [14, 142], [60, 140], [86, 146]].map(([x, y]) => `M${x} ${y}a2 1.5 0 1 0 4 0a2 1.5 0 1 0 -4 0ZM${x + 3.6} ${y}v-9h0.8v9Z`).join('')} />
-      <g transform="translate(-4 0) rotate(-18 30 100)" data-focal="">
+      <g transform="translate(-9 4) rotate(-18 30 100) scale(1.1)" data-focal="">
         <Fill c="dk" d="M30 70C23 70 19 75 20 82C20.6 86 23 88 23 90S19 94 19 101C19 111 24 118 30 118S41 111 41 101C41 94 37 92 37 90S39.4 86 40 82C41 75 37 70 30 70ZM28.6 30h2.8v42h-2.8ZM28 30c-1 -3 0 -6 2 -6s3 2 2 4.6l-0.6 1.4ZM30 118v8" />
         <Line c="lt" d="M25.6 86c-1.4 2.6 -1 5.4 0.4 7.4M34.4 86c1.4 2.6 1 5.4 -0.4 7.4M25.6 100h8.8M29.2 34V108M30.8 34V108" w={0.4} />
       </g>
-      <g transform="translate(-2 80)"><Fill c="paper" d="M60 72c-3 -2 -6 -1 -6.6 2c3 0 5 1 6 3c2 0.4 5 0 6 -2c-1.6 -2 -3.4 -2.6 -5.4 -3ZM66 75l4 -1.6 -3.4 3.2Z" focal /></g>
+      <g transform="translate(-66 22) scale(1.8)"><Fill c="paper" d="M60 72c-3 -2 -6 -1 -6.6 2c3 0 5 1 6 3c2 0.4 5 0 6 -2c-1.6 -2 -3.4 -2.6 -5.4 -3ZM66 75l4 -1.6 -3.4 3.2Z" focal /></g>
     </>
   );
 }
@@ -290,8 +299,8 @@ function NightTrain() {
   const windows = [0, 14, 28].map((dx) => `M${14.4 + dx} 114.4h3v2.6h-3ZM${19.4 + dx} 114.4h3v2.6h-3Z`).join('');
   return (
     <>
-      <Fill c="dk" d={band} />
-      <Fill c="lt" d={core} />
+      <Fill c="lt" d={band} />
+      <Fill c="dk" d={core} />
       <Fill c="lt" d={dots(31, 46, [0, 0, 120, 168], 0.25, 0.9)} />
       <Fill c="paper" d={inBand.map(([x, y, k]) => { const r = f1(0.25 + k * 0.5); return `M${f1(x - r)} ${y}a${r} ${r} 0 1 0 ${f1(r * 2)} 0a${r} ${r} 0 1 0 ${f1(-r * 2)} 0Z`; }).join('')} />
       <g transform="translate(-10 10) rotate(-52 40 122)" data-focal="">
@@ -350,30 +359,42 @@ function WindHill() {
   );
 }
 
-// トロッコ(1922) — 귤밭 비탈을 내리꽂는 두 줄 레일과 침목, 귤나무 둥근 잎 덩이를 두 단으로, 익은 귤만 주황.
+// トロッコ(1922) — 귤밭 비탈을 내리닫는 토롯코 한 대: 비탈 아래는 짙은 땅, 레일과 침목은 옅게, 위쪽 귤나무 덩이에 익은 귤만 주황.
 function DuskRails() {
-  const trees = scatter(16, 19, [2, 8, 118, 160]);
+  const rail = (x) => 100 + x * 0.45;
+  const trees = scatter(14, 19, [-4, 4, 66, 150]).filter(([x, y]) => y < rail(x) - 12);
+  const low = [[70, 158, 9], [100, 164, 8], [10, 160, 7]];
   return (
     <>
-      <Fill c="lt" d={trees.map(([x, y, k]) => { const r = f1(6 + k * 5); return `M${f1(x - r)} ${y}a${r} ${f1(r * 0.8)} 0 1 0 ${f1(r * 2)} 0a${r} ${f1(r * 0.8)} 0 1 0 ${f1(-r * 2)} 0Z`; }).join('')} />
-      <Line c="dk" d="M24 168L58 0M50 168L66 0" w={1.1} />
-      <Line c="dk" d={Array.from({ length: 16 }, (_, i) => { const t = i / 16; return `M${f1(24 + 34 * t - 1)} ${f1(168 - 168 * t)}H${f1(50 + 16 * t + 1)}`; }).join('')} w={0.7} />
-      <Fill focal c="acc" d={trees.flatMap(([x, y, k], i) => (i % 2 || (x > 62 && y < 124) ? [] : [[x - 3, y - 1], [x + 2.4, y + 1.6]])).map(([x, y]) => `M${f1(x - 1.5)} ${f1(y)}a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0 -3 0Z`).join('')} />
+      <Fill c="lt" d={trees.map(([x, y, k]) => { const r = f1(6 + k * 4); return `M${f1(x - r)} ${y}a${r} ${f1(r * 0.82)} 0 1 0 ${f1(r * 2)} 0a${r} ${f1(r * 0.82)} 0 1 0 ${f1(-r * 2)} 0Z`; }).join('')} />
+      <Fill c="acc" d={trees.flatMap(([x, y, k], i) => (i % 4 === 3 ? [] : [[x - 3.4 + k * 2, y - 2.4], [x + 2.8, y + 0.4 - k], [x - 1.2, y + 2.8]])).map(([x, y]) => `M${f1(x - 1.5)} ${f1(y)}a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0 -3 0Z`).join('')} />
+      <Fill c="dd" d={`M0 ${rail(0)}L120 ${rail(120)}V168H0Z`} />
+      <Fill c="dk" d={low.map(([x, y, r]) => `M${x - r} ${y}a${r} ${f1(r * 0.8)} 0 1 0 ${r * 2} 0a${r} ${f1(r * 0.8)} 0 1 0 ${-r * 2} 0Z`).join('')} />
+      <Line c="lt" d={`M0 ${rail(0)}L120 ${f1(rail(120))}${Array.from({ length: 14 }, (_, i) => { const x = i * 9 + 2; return `M${x} ${f1(rail(x) + 1)}l-1.4 3.2`; }).join('')}`} w={1.2} />
+      <g transform="translate(26 106.4) rotate(24.2)" data-focal="">
+        <Fill c="acc2" d="M-1 -11H27L24 1H2Z" />
+        <Line c="dd" d="M1 -7H25M3 -3H23" w={0.6} />
+        <Fill c="dd" d="M4 2.4a3 3 0 1 0 6 0a3 3 0 1 0 -6 0ZM16 2.4a3 3 0 1 0 6 0a3 3 0 1 0 -6 0Z" />
+      </g>
     </>
   );
 }
 
-// 杜子春(1920) — 仙人의 瑞雲이 판면을 떠가고, 이야기 끝 泰山 기슭의 복숭아꽃과 열매 하나.
+// 杜子春(1920) — 仙人의 瑞雲이 峨眉山 바위 봉우리를 감싸고, 이야기 끝 泰山 기슭의 복숭아 가지(꽃과 열매)가 앞을 가로지른다.
 function PeachHouse() {
-  const clouds = [[4, 40, 1.4], [48, 70, 1], [10, 98, 1.2], [60, 124, 1.1], [20, 150, 1]];
+  const clouds = [[2, 46, 1.5], [36, 88, 1.1], [-6, 118, 1.3], [62, 140, 1.2]];
+  const blossoms = [[10, 146, 0], [24, 138, 30], [46, 130, 50], [58, 122, 10], [36, 146, 70]];
   return (
     <>
+      <Fill c="dk" d="M0 132L8 104 14 110 22 70 30 84 36 58 44 92 52 100 60 132Z" />
+      <Line c="lt" d="M22 70L24 96M36 58L34 90M8 104L12 124" w={0.6} />
       <Fill c="lt" d={clouds.map(([x, y, s]) => cloud(x, y, s)).join('')} />
       <Line c="dk" d={clouds.map(([x, y, s]) => cloud(x, y, s)).join('')} w={0.6} />
-      <Line c="dd" d="M0 140C14 132 22 136 30 128S44 122 52 116" w={1.2} cap />
-      <Fill c="dk" d={[[12, 134], [26, 128], [40, 120], [50, 114], [20, 142]].map(([x, y], i) => sakura(x, y, 3, i * 30)).join('')} />
-      <Fill c="acc" d="M34 136c-4 0 -6 4 -5 7c2 4 8 4 10 0c1 -3 -1 -7 -5 -7Z" focal />
-      <Fill c="acc2" d="M34 136c2 -3 5 -4 8 -3c-2 2 -5 3 -8 3Z" />
+      <Line c="dd" d="M-2 160C12 150 22 150 32 142S50 128 66 118M32 142L40 152" w={1.8} cap />
+      <Fill c="acc" d={blossoms.map(([x, y, r]) => sakura(x, y, 3.6, r)).join('')} />
+      <Fill c="dd" d={blossoms.map(([x, y]) => `M${x - 0.8} ${y}a0.8 0.8 0 1 0 1.6 0a0.8 0.8 0 1 0 -1.6 0Z`).join('')} />
+      <Fill c="acc" d="M40 152c-5.6 0 -8.4 5.4 -7 9.4c2.4 5.4 11.6 5.4 14 0c1.4 -4 -1.4 -9.4 -7 -9.4Z" focal />
+      <Fill c="acc2" d="M40 152c2.4 -4 6.4 -5.4 10.4 -4c-2.6 2.8 -6.4 4 -10.4 4Z" />
     </>
   );
 }
@@ -408,17 +429,19 @@ function SpiderWeb() {
   );
 }
 
-// 走れメロス(1940) — 범람한 강의 荒波(말린 물결)를 두 단으로, 먼 성벽 도시, 다리 기둥 사이를 뛰어 건너는 생지색 그림자.
+// 走れメロス(1940) — 지는 해(日没 기한)를 등진 王城 シラクス, 거기로 굽이쳐 오르는 길, 그 길을 끊고 넘치는 강의 荒波.
 function MelosRun() {
-  const curls = scatter(22, 23, [-4, 84, 124, 150]);
+  const curls = scatter(16, 23, [-4, 118, 124, 140]);
   return (
     <>
-      <Fill c="dk" d="M0 44h6v-6h3v6h9v-10h4v-4h3v4h4v10h9v-8h4v-4h4v4h4v8h8v-6h3v6h9v-10h4v-4h3v4h4v10h12v6H0Z" />
-      <Fill c="dk" d="M0 84Q20 78 34 84T70 82T120 84V150H0Z" />
-      <Line c="lt" d={curls.map(([x, y, k]) => { const r = 3 + k * 4; return `M${f1(x - r * 1.6)} ${y}Q${f1(x - r)} ${f1(y - r * 1.2)} ${f1(x + r * 0.2)} ${f1(y - r * 0.6)}Q${f1(x + r * 0.6)} ${f1(y + r * 0.2)} ${f1(x - r * 0.1)} ${f1(y + r * 0.3)}`; }).join('')} w={0.9} cap />
-      <Fill c="dd" d="M6 80h4v14h-4ZM50 78h4v14h-4ZM0 150Q30 144 60 150T120 148V168H0Z" />
-      <Fill c="paper" d="M29.4 62a2.6 2.6 0 1 0 5.2 0a2.6 2.6 0 1 0 -5.2 0Z" focal />
-      <Line c="paper" d="M31 65L27 74 20 78M29 70L36 76 41 74M30 67L24 64 20 66M31 67L37 64 41 60" w={1.8} cap />
+      <Fill c="acc" d="M8 84a24 24 0 1 1 48 0Z" focal />
+      <Line c="lt" d="M0 66H6M58 70H68M2 58H8" w={0.7} />
+      <Fill c="dd" d="M2 84V76h3v-2h3v2h4V62h-1l4 -5 4 5h-1v14h4v-2h3v2h3V50h-1l5 -7 5 7h-1v26h3v-2h3v2h3V64h-1l4 -5 4 5h-1v12h4v-2h3v2h3v8Z" focal />
+      <Fill c="dk" d="M0 84H120V168H0Z" />
+      <Fill c="paper" d="M12 168C28 146 10 116 26 86L30 86C20 116 40 146 40 168Z" />
+      <Fill c="dd" d="M0 116Q20 110 40 116T80 114T120 116V142Q100 138 80 142T40 140T0 142Z" />
+      <Line c="lt" d={curls.map(([x, y, k]) => { const r = 2.6 + k * 3; return `M${f1(x - r * 1.6)} ${y}Q${f1(x - r)} ${f1(y - r * 1.2)} ${f1(x + r * 0.2)} ${f1(y - r * 0.6)}Q${f1(x + r * 0.6)} ${f1(y + r * 0.2)} ${f1(x - r * 0.1)} ${f1(y + r * 0.3)}`; }).join('')} w={0.8} cap />
+      <Fill c="dd" d="M14 110h3v10h-3ZM36 108h3v12h-3Z" />
     </>
   );
 }
@@ -448,18 +471,18 @@ function ClownPhotos() {
   );
 }
 
-// 斜陽(1947) — 이즈 산장의 지는 해를 크게 두 단으로, 비스듬히 기운 햇살 선, 아래 언덕과 산장, 그리고 검은 뱀 한 마리.
+// 斜陽(1947) — 이즈 바다로 지는 큰 해(朱) 반원과 햇살 선, 수면의 빛 줄, 아래 언덕의 산장, 그리고 검은 뱀 한 마리.
 function SettingSun() {
   return (
     <>
-      <Line c="lt" d="M30 104L-10 60M30 104L0 40M30 104L16 26M30 104L36 24M30 104L56 30M30 104L76 44M30 104L96 64" w={0.8} />
-      <Fill c="dk" d="M6 104A24 24 0 0 1 54 104Z" focal />
-      <Fill c="lt" d="M14 104A16 16 0 0 1 46 104Z" />
-      <Line c="dk" d="M0 110H120M8 118H52M14 126H46M20 134H40" w={0.8} />
+      <Line c="lt" d="M32 112L-10 64M32 112L2 40M32 112L18 22M32 112L38 18M32 112L58 24M32 112L80 40M32 112L100 62" w={0.9} />
+      <Fill c="acc" d="M4 112A28 28 0 0 1 60 112Z" focal />
+      <Line c="dk" d="M0 112H120" w={0.8} />
+      <Line c="acc" d="M14 118H50M20 124H44M26 130H38" w={1.2} />
       <Fill c="dk" d="M0 150Q30 136 60 144T120 140V168H0Z" />
-      <Fill c="dd" d="M10 146l8 -6 8 6ZM12 146h12v6h-12Z" focal />
-      <Line c="acc" d="M64 160c6 -4 10 0 14 -2s6 -6 10 -4 4 4 8 2" w={1.6} cap focal />
-      <Fill c="acc" d="M95.4 156.4a2 1.4 0 1 0 4 0a2 1.4 0 1 0 -4 0Z" />
+      <Fill c="dd" d="M10 146l8 -6 8 6ZM12 146h12v6h-12Z" />
+      <Line c="dd" d="M58 160c6 -5 11 0 16 -2.4s7 -7 12 -4.6 4.6 5 9.4 2.4" w={2.2} cap focal />
+      <Fill c="dd" d="M93.6 154.6a2.6 1.8 0 1 0 5.2 0a2.6 1.8 0 1 0 -5.2 0Z" />
     </>
   );
 }

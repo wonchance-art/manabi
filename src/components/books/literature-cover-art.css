@@ -1,9 +1,10 @@
-/* 정본 문학책 표지 그림(LiteratureCoverArt) — 시리즈 A 「布装·型押し」. 천 위에 같은 색 계열로 찍는 판 둘(짙은 --dk·더 짙은 --dd ·
-   옅은 --lt)은 천 색(--cover-color)에서 섞어 만든다 — 천 색을 바꾸면 무늬도 따라온다. 밝은 점은 작품마다 강조색 --acc(·--acc2) 하나
+/* 정본 문학책 표지 그림(LiteratureCoverArt) — 시리즈 A 「布装·型押し」. 천 위에 같은 색 계열로 찍는 판 셋은 천 색마다 정한다
+   (literature-cover.css --tone-soft·--tone-strong·--tone-deep): 옅은 단(--lt=soft, 밝기 차 12 이상) · 짙은 단(--dk=strong, 22 이상)
+   · 실루엣(--dd=deep, 10 이상). 밝은 천은 세 단 모두 어둡게, 어두운 천은 soft·strong을 밝게(실루엣만 어둡게) — 한 방향으로만 섞으면
+   밝은 천의 옅은 단·어두운 천의 짙은 단이 바탕에 묻혀 주제가 사라졌다(2026-10-15 평가, 밝기 차 2–11 실측). 밝은 점은 작품마다 강조색 --acc(·--acc2) 하나
    (둘)와 생지색 --paper뿐이다(色版 2–3도 + 강조 1). 왼쪽 3px은 책등 홈 자리라 잘라 낸다. 題簽은 literature-cover.css(z-index:1). */
 .lit-art{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;clip-path:inset(0 0 0 3px);
-  --dk:color-mix(in srgb,var(--cover-color) 70%,#000);--dd:color-mix(in srgb,var(--cover-color) 42%,#000);
-  --lt:color-mix(in srgb,var(--cover-color) 76%,#fff);--paper:#ede3c9;--acc:#b8452c;--acc2:#e9dcbf}
+  --lt:var(--tone-soft);--dk:var(--tone-strong);--dd:var(--tone-deep);--paper:#ede3c9;--acc:#b8452c;--acc2:#e9dcbf}
 .lit-art__dk{color:var(--dk)}
 .lit-art__dd{color:var(--dd)}
 .lit-art__lt{color:var(--lt)}
@@ -23,7 +24,7 @@
 .lit-art--ink-steam{--acc:#b03a2a}
 .lit-art--birdcage{--acc:#c8402c}
 .lit-art--rain-gate{--acc:#9b4a2c}
-.lit-art--lotus-thread{--acc:#d3d8d6}
+.lit-art--lotus-thread{--acc:#d3d8d6;--acc2:#e3b8b4}
 .lit-art--moon-tiger{--acc:#8a7a3a}
 .lit-art--steam-sea{--acc:#d98a9a;--acc2:#7fa36a}
 .lit-art--lemon-books{--acc:#e8c43a;--acc2:#fbeea0}
@@ -34,12 +35,12 @@
 .lit-art--kamakura-letter{--acc:#ede3c9}
 .lit-art--crab-pear{--acc:#e0b53a;--acc2:#f2e6c4}
 .lit-art--wind-hill{--acc:#c4562a}
-.lit-art--dusk-rails{--acc:#e88a2a}
+.lit-art--dusk-rails{--acc:#e88a2a;--acc2:#d9c39a}
 .lit-art--peach-house{--acc:#cf5f66;--acc2:#6f8a4f}
 .lit-art--deco-chair{--acc:#c9a24a}
 .lit-art--spider-web{--acc:#e3b23c}
-.lit-art--melos-run{--acc:#ede3c9}
+.lit-art--melos-run{--acc:#c64a2b}
 .lit-art--clown-photos{--acc:#b8452c}
-.lit-art--setting-sun{--acc:#2d1f2c}
+.lit-art--setting-sun{--acc:#c4482c}
 .lit-art--umbrella-rose{--acc:#c2405a}
 .lit-art--blossom-storm{--acc:#f2d0da}
