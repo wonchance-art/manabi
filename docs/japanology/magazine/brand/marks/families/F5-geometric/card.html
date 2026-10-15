@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>F5 기하 패밀리</title>
+<style>
+  :root { --night:#151b2c; --snow:#eef0f4; --ver:#d4462a; --paper:#d9dce4; --mute:#5a6275; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--paper); color:var(--night); width:1500px; padding:28px 26px 34px;
+         font-family:"Noto Sans KR","Hiragino Sans","Apple SD Gothic Neo",system-ui,sans-serif; }
+  h1 { font-size:20px; font-weight:700; letter-spacing:.01em; }
+  h1 b { display:inline-block; background:var(--night); color:var(--snow); font-size:13px; padding:2px 8px; margin-right:8px; vertical-align:3px; }
+  .lede { font-size:14px; color:#2a3142; margin-top:6px; }
+  .rule { margin:14px 0 14px; padding:10px 14px; background:var(--snow); border-left:4px solid var(--ver); font-size:12.5px; line-height:1.6; color:#2a3142; }
+  .row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:10px; }
+  .cell { position:relative; height:190px; display:flex; align-items:center; justify-content:center; background:var(--snow); }
+  .cell.dark { background:var(--night); }
+  .cell img { display:block; }
+  .tag { position:absolute; left:10px; top:8px; font-size:11px; font-weight:700; padding:1px 6px; background:var(--night); color:var(--snow); }
+  .dark .tag { background:var(--snow); color:var(--night); }
+  .cell.grid { height:210px; background:#f7f8fa; }
+  .cap { font-size:11.5px; color:var(--mute); margin:2px 0 14px; }
+  h2 { font-size:14px; margin:18px 0 8px; }
+  .sizes { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
+  .col { display:flex; flex-direction:column; gap:6px; }
+  .hdr { height:48px; display:flex; align-items:center; justify-content:space-between; padding:0 14px; background:var(--snow); border-bottom:1px solid #c7ccd6; }
+  .hdr.dark { background:var(--night); border-bottom-color:#2b344a; }
+  .hdr img { height:24px; }
+  .hdr span { font-size:11px; color:var(--mute); }
+  .hdr.dark span { color:#a3abbd; }
+  .cover { width:390px; height:150px; background:var(--snow); display:flex; align-items:center; justify-content:center; }
+  .cover.dark { background:var(--night); }
+  .cover img { width:312px; }
+  .small { font-size:11px; color:var(--mute); }
+</style>
+</head>
+<body>
+  <h1><b>F5</b>기하·모더니즘 — 서체 없이 원·직선만으로 작도한 TONARI · となり · トナリ</h1>
+  <p class="lede">한 줄 콘셉트: 「이웃」을 자로 그린다 — 획·속공간·자간이 모두 1u인 격자에서, 글자는 원과 직선, 주홍은 격자 단위 그 자체(지름 1u 마침점 하나).</p>
+  <div class="rule">원리(숫자): 단위 u · 획 굵기 W = 1u(끝은 획 방향에 직각 절단) · 글자 높이 H = 5u(라틴 대문자·가나 같은 5u 칸) ·
+    원호 중심선 반지름 3종만 — R<sub>big</sub> = 2u(O 바깥 지름 5u = H) · R<sub>mid</sub> = 1.5u · R<sub>small</sub> = 1u(최소 속공간 = 1u = W) ·
+    사선은 직각 두께가 1u가 되게 수평 폭 계산 · 자간(잉크 사이) 기본 1u, 예외 8쌍만 0.55–0.9u · 주홍 = 지름 1u 원 하나, 마지막 잉크에서 1u 뒤 기준선 위.</div>
+
+  <div class="row">
+    <div class="cell"><span class="tag">우산·국제</span><img src="svg/F5-up-light.svg" alt="TONARI"></div>
+    <div class="cell"><span class="tag">일본 시리즈</span><img src="svg/F5-hira-light.svg" alt="となり"></div>
+    <div class="cell"><span class="tag">하이브리드·경계</span><img src="svg/F5-kata-light.svg" alt="トナリ"></div>
+  </div>
+  <div class="row">
+    <div class="cell dark"><span class="tag">우산·국제</span><img src="svg/F5-up-dark.svg" alt="TONARI"></div>
+    <div class="cell dark"><span class="tag">일본 시리즈</span><img src="svg/F5-hira-dark.svg" alt="となり"></div>
+    <div class="cell dark"><span class="tag">하이브리드·경계</span><img src="svg/F5-kata-dark.svg" alt="トナリ"></div>
+  </div>
+  <p class="cap">세 칸 모두 같은 배율(1u = 14px). 위 밝은 바탕(밤 글자), 아래 밤 바탕(눈 글자).</p>
+
+  <div class="row">
+    <div class="cell grid"><span class="tag">작도 격자</span><img src="svg/F5-up-grid.svg" alt=""></div>
+    <div class="cell grid"><span class="tag">작도 격자</span><img src="svg/F5-hira-grid.svg" alt=""></div>
+    <div class="cell grid"><span class="tag">작도 격자</span><img src="svg/F5-kata-grid.svg" alt=""></div>
+  </div>
+  <p class="cap">굵은 선 = 1u, 가는 선 = ¼u. 주홍 점 = 원호 중심(모든 곡선이 이 중심들에서 R<sub>big</sub>·R<sub>mid</sub>·R<sub>small</sub>로 그려짐).</p>
+
+  <h2>작은 크기 — 웹 헤더 마크 높이 24px · 표지 제호 폭 80%(390px 표지에서 312px)</h2>
+  <div class="sizes">
+    <div class="col">
+      <div class="hdr"><img src="svg/F5-up-light.svg" alt="TONARI"><span>（ダミー）見出し</span></div>
+      <div class="hdr dark"><img src="svg/F5-up-dark.svg" alt="TONARI"><span>（ダミー）見出し</span></div>
+      <div class="cover"><img src="svg/F5-up-light.svg" alt="TONARI"></div>
+      <div class="cover dark"><img src="svg/F5-up-dark.svg" alt="TONARI"></div>
+    </div>
+    <div class="col">
+      <div class="hdr"><img src="svg/F5-hira-light.svg" alt="となり"><span>（ダミー）見出し</span></div>
+      <div class="hdr dark"><img src="svg/F5-hira-dark.svg" alt="となり"><span>（ダミー）見出し</span></div>
+      <div class="cover"><img src="svg/F5-hira-light.svg" alt="となり"></div>
+      <div class="cover dark"><img src="svg/F5-hira-dark.svg" alt="となり"></div>
+    </div>
+    <div class="col">
+      <div class="hdr"><img src="svg/F5-kata-light.svg" alt="トナリ"><span>（ダミー）見出し</span></div>
+      <div class="hdr dark"><img src="svg/F5-kata-dark.svg" alt="トナリ"><span>（ダミー）見出し</span></div>
+      <div class="cover"><img src="svg/F5-kata-light.svg" alt="トナリ"></div>
+      <div class="cover dark"><img src="svg/F5-kata-dark.svg" alt="トナリ"></div>
+    </div>
+  </div>
+  <p class="cap" style="margin-top:6px">헤더: 마크 SVG 높이 24px(잉크 높이 기준). 표지: 마크 폭 312px.</p>
+<script>
+// 같은 배율: SVG 1u = 20 단위 → 카드 1u = 14px
+document.querySelectorAll('.cell img').forEach(function (im) {
+  function set() { im.style.height = (im.naturalHeight * 0.7) + 'px'; }
+  if (im.complete) set(); else im.onload = set;
+});
+</script>
+</body>
+</html>
