@@ -4141,7 +4141,10 @@ export default function ViewerPage() {
                 onDelete={user?.id === material?.owner_id ? deleteConversation : null}
                 onFilled={user?.id === material?.owner_id ? handleConversationFill : null}
                 outputWords={outputWords}
-                backLink={<LibraryReturnLink aria-label={vt(readerReturnLabel(originalParams.get('returnTo')))} title={vt(readerReturnLabel(originalParams.get('returnTo')))} data-icon-action><ActionIcon name="back"/></LibraryReturnLink>}
+                // 뒤로 = 들어온 곳. 서재에서 열었으면 서재, 그 밖(대화 방 목록·홈·직접 주소)은 방 목록(메신저의 채팅 탭).
+                backLink={originalParams.get('returnTo')
+                  ? <LibraryReturnLink aria-label={vt(readerReturnLabel(originalParams.get('returnTo')))} title={vt(readerReturnLabel(originalParams.get('returnTo')))} data-icon-action><ActionIcon name="back"/></LibraryReturnLink>
+                  : <Link href="/conversation/new" aria-label="대화방 목록" title="대화방 목록" data-icon-action><ActionIcon name="back"/></Link>}
                 menuExtras={[
                   { label: vt('읽기 설정'), onSelect: () => setSettingsOpen(true) },
                   { label: vt('학습'), onSelect: () => changeModal('activities', true) },

@@ -39,17 +39,20 @@ describe('입구와 머리 ⋯(정적 계약)', () => {
   it('새 대화 화면 경로가 있고 서버 시작 경로를 쓴다', () => {
     expect(existsSync(new URL('../../../app/(app)/conversation/new/page.jsx', import.meta.url))).toBe(true);
     const page = read('views/NewConversationPage.jsx');
-    expect(page).toContain('startTopicConversation({ topic: chosenTopic, language, level');
-    expect(page).toContain('대화는 내 서재에 비공개로 남아요. 언제든 지울 수 있어요.');
+    // CONV-CHAT-001 2차: 첫 화면 = 방 목록. 언어·수준 선택 칸 없이 학습 언어·학습 수준 정본으로 연다.
+    expect(page).toContain('startTopicConversation({ topic: chosen, language, level');
+    expect(page).toContain('const level = recommendedLevel(language, profileLevel(profile, language));');
+    expect(page).toContain('useLearnLanguage(profile)');
+    expect(page).not.toMatch(/말 수준|conversationLevels/);
   });
   it('홈·자료 추가·서재에 「새 대화」 입구', () => {
     expect(read('views/HomePage.jsx')).toContain("key: 'conversation', href: newConversationHref({ language: lang })");
     expect(read('components/materials/MaterialEntry.jsx')).toContain('<Link href="/conversation/new">자료 없이 대화하기 ↗</Link>');
     expect(read('components/library/ConversationShelf.jsx')).toContain('/conversation/new?returnTo=%2Fmaterials');
   });
-  it('머리 ⋯ = 주제·수준 바꾸기 · 새 대화 · 지우기(서재 휴지통, 무엇이 남는지 먼저)', () => {
+  it('머리 ⋯ = 다른 대화방 · 새 대화 · 지우기(서재 휴지통, 무엇이 남는지 먼저)', () => {
     const thread = read('components/conversation/ConversationThread.jsx');
-    for (const label of ['주제·수준 바꾸기', '새 대화', '지우기', '이 대화를 휴지통으로 옮길까요?', '담은 단어와 복습 일정은 단어장에 그대로 남아요.']) {
+    for (const label of ['다른 대화방', '새 대화', '지우기', '이 대화를 휴지통으로 옮길까요?', '담은 단어와 복습 일정은 단어장에 그대로 남아요.']) {
       expect(thread).toContain(label);
     }
     expect(read('lib/conversation/conversationClient.js')).toContain("runLibraryOperation(supabase, 'trash', [target])");

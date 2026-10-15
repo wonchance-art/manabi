@@ -35,6 +35,31 @@ export async function fetchConversations(client, userId, { limit = CONVERSATION_
   }));
 }
 
+/**
+ * 대화 방 목록(CONV-CHAT-001 2차) — 내 대화 + 마지막 활동 계산용 턴·미리보기. 본문(raw_text)은 읽지 않는다.
+ * 휴지통으로 옮긴 대화는 뺀다(서재 「대화」 묶음과 같은 규칙).
+ */
+export async function fetchConversationRooms(client, userId, { limit = 60 } = {}) {
+  const { data, error } = await client.from('reading_materials')
+    .select([COLUMNS, 'turns:processed_json->metadata->conversation->turns', 'preview:processed_json->metadata->conversation->>preview'].join(','))
+    .eq('owner_id', userId)
+    .not('processed_json->metadata->conversation', 'is', null)
+    .order('id', { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  const active = await filterActiveSources(client, userId, (data || []).filter((row) => row.marker != null));
+  return active.map((row) => ({
+    id: String(row.id),
+    title: row.title || row.topic || '대화',
+    topic: row.topic || null,
+    language: row.language || null,
+    parentId: row.parentId || null,
+    createdAt: row.created_at || null,
+    turns: Array.isArray(row.turns) ? row.turns : [],
+    preview: row.preview || '',
+  }));
+}
+
 /** 대화 한 줄의 보조 정보 — 「중국어 · 자료로 시작한 대화 · 10월 14일」. 날짜는 KST.
  * 턴 수는 싣지 않는다 — turnCount는 낙관 잠금 값이라(답 보기도 1 올린다) 「말한 횟수」가 아니다. */
 export function conversationShelfMeta(row, { languageName = (l) => l } = {}) {

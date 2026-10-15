@@ -10,7 +10,7 @@
 // - 말풍선은 분석이 붙은 완성본을 한 번만 그린다(기다리는 동안은 「입력 중」 점, 입력 칸은 열려 있다).
 // - 채팅앱 껍데기(CONV-CHAT-001 ②, notes/conversation-chat-shell.md): 뷰어 상단바·제목·쪽 넘김 없이 화면 전체 높이.
 //   머리 한 줄 · 혼자 스크롤하는 대화 목록 · 맨 아래 입력창. 키보드가 열리면 visualViewport 높이에 맞춰 입력창이 키보드 위에 붙는다.
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import {
   conversationItems, openRetryOf, missingConversationLines, CONVERSATION_ERRORS, CONVERSATION_MAX_TURNS, CONVERSATION_ANALYZED_LANGUAGES, countMyTurns,
 } from '../../lib/conversation/turnModel';
@@ -23,6 +23,7 @@ import { isImeComposing } from '../../lib/imeComposing';
 import { bcp47ForLanguage } from '../../lib/speechLang';
 import { langNameKo } from '../../lib/constants';
 import OutputWordChips from '../OutputWordChips';
+import { chatDateLabel, kstDateKey } from '../../lib/conversation/chatView';
 import './conversation.css';
 
 /** 요청이 아직 이 화면(같은 자료·마지막 요청)의 것인가 — 옛 회화 패널 계약 그대로(자료를 바꾸면 늦은 응답을 버린다). */
@@ -345,11 +346,99 @@ export default function ConversationThread({
     return `${what} ${open ? '접기 ▾' : '보기 ▸'}`;
   };
 
+  const renderItem = (item) => {
+    if (item.kind === 'tutor') {
+      const lines = item.turn.lines || [];
+      const sentence = lines.map((l) => rawLines[l]).join(' ');
+      const ko = lines.map((l) => translations[rawLines[l]]).filter(Boolean);
+      const txOpen = openTx.has(item.index);
+      const actions = (ttsSupported || ko.length > 0) && (
+        <div className="conv-bubble__actions">
+          {ttsSupported && (
+            <button type="button" className="conv-act" onClick={() => speak(sentence, language)} aria-label="튜터 말 듣기" title="듣기">🔊</button>
+          )}
+          {ko.length > 0 && (
+            <button type="button" className="conv-act" aria-expanded={txOpen} onClick={() => toggleTx(item.index)} aria-label="번역" title="번역">文</button>
+          )}
+        </div>
+      );
+      // 메신저처럼 문장마다 말풍선 — 같은 턴은 한 묶음(프로필·이름은 첫 말풍선에만, 듣기·번역은 마지막 말풍선 옆).
+      return (
+        <div className="conv__row conv__row--tutor">
+          <span className="conv-avatar" aria-hidden="true">튜</span>
+          <div className="conv__stack">
+            <p className="conv__name">튜터</p>
+            {lines.map((line, k) => (
+              <div key={line} className="conv__line">
+                <div className="conv-bubble conv-bubble--tutor" lang={bcp47ForLanguage(language)}>{lineView(line)}</div>
+                {k === lines.length - 1 && actions}
+              </div>
+            ))}
+            {txOpen && <p className="conv-bubble__tx" lang="ko">{ko.join(' ')}</p>}
+          </div>
+        </div>
+      );
+    }
+    const { turn } = item;
+    const fbId = `${listId}-fb-${item.index}`;
+    const hasFeedback = turn.feedback || item.fixed || Number.isInteger(item.answerLine) || item.openRetry;
+    // 다시 말하기가 열려 있으면(힌트·답 보기) 펼쳐 둔다 — 학습자가 할 일이 있다. 그 밖의 피드백은 한 줄로 접는다.
+    const onlyFixed = item.fixed && !Number.isInteger(item.answerLine);
+    const fbOpen = item.openRetry || onlyFixed || openFb.has(item.index);
+    return (
+      <div className="conv__row conv__row--me">
+        <div className="conv-bubble conv-bubble--me" lang={bcp47ForLanguage(language)} aria-describedby={hasFeedback && fbOpen ? fbId : undefined}>
+          <MyText text={turn.text} focus={turn.focus} />
+        </div>
+        {hasFeedback && !item.openRetry && !onlyFixed && (
+          <button type="button" className="conv-fb-toggle" aria-expanded={fbOpen} aria-controls={fbId} onClick={() => toggleFb(item.index)}>
+            {fbLabel(item, fbOpen)}
+          </button>
+        )}
+        {hasFeedback && fbOpen && (
+          <div className="conv-feedback" id={fbId} lang="ko">
+            {item.fixed && <p className="conv-feedback__ok">✓ 스스로 고쳤어요</p>}
+            {turn.feedback && !item.fixed && <p>{turn.feedback}</p>}
+            {item.openRetry && turn.focus?.hint && (
+              <p className="conv-feedback__hint">힌트 <span lang={bcp47ForLanguage(language)}>{turn.focus.hint}</span></p>
+            )}
+            {item.openRetry && (
+              <button type="button" className="conv-chip" disabled={loading} onClick={() => send({ action: 'reveal' })}>답 보기</button>
+            )}
+            {Number.isInteger(item.answerLine) && (
+              <div className="conv-feedback__answer">
+                <p className="conv-feedback__label">이렇게 말해요</p>
+                <div className="conv-answer" lang={bcp47ForLanguage(language)}>{lineView(item.answerLine)}</div>
+                <div className="conv-bubble__actions">
+                  {ttsSupported && (
+                    <button type="button" className="conv-act" onClick={() => speak(rawLines[item.answerLine], language)} aria-label="정답 문장 듣기" title="듣기">🔊</button>
+                  )}
+                  {sttSupported && (
+                    <button type="button" className="conv-chip" disabled={shadow?.listening} onClick={() => startShadow(item.index)}>
+                      {shadow?.index === item.index && shadow.listening ? '듣는 중…' : '따라 말해 보기'}
+                    </button>
+                  )}
+                </div>
+                {shadow?.index === item.index && shadow.heard && (
+                  <p className="conv-feedback__heard">들린 말 <span lang={bcp47ForLanguage(language)}>{shadow.heard}</span></p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="conv" ref={shellRef}>
       <div className="conv__head">
         {backLink}
-        <p className="conv__meta">{[conversation.topic, langKo, conversation.level].filter(Boolean).join(' · ')}</p>
+        <span className="conv-avatar conv-avatar--head" aria-hidden="true">튜</span>
+        <div className="conv__title">
+          <p className="conv__meta">{conversation.topic || '대화'}</p>
+          <p className="conv__sub">{[langKo, conversation.level].filter(Boolean).join(' · ')}</p>
+        </div>
         <div className="conv-menu">
           <button type="button" className="conv__icon conv__icon--bare" aria-label="대화 메뉴" aria-haspopup="menu" aria-expanded={menuOpen}
             onClick={() => setMenuOpen((v) => !v)}>⋯</button>
@@ -359,8 +448,7 @@ export default function ConversationThread({
               {onNewConversation && (
                 <button type="button" role="menuitem" className="conv-menu__item" onClick={() => { setMenuOpen(false); onNewConversation(); }}>새 대화</button>
               )}
-              <Link role="menuitem" className="conv-menu__item"
-                href={newConversationHref({ language, level: conversation.level, topic: conversation.topic })}>주제·수준 바꾸기</Link>
+              <Link role="menuitem" className="conv-menu__item" href={newConversationHref({ language })}>다른 대화방</Link>
               {menuExtras.map((extra) => (
                 <button key={extra.label} type="button" role="menuitem" className="conv-menu__item" onClick={() => { setMenuOpen(false); extra.onSelect(); }}>{extra.label}</button>
               ))}
@@ -371,85 +459,12 @@ export default function ConversationThread({
       </div>
       <OutputWordChips words={outputWords} usedSet={usedWordSet} />
       <div className="conv__log" role="log" aria-live="polite" aria-relevant="additions" id={listId} ref={logRef} onScroll={onLogScroll}>
-        {items.map((item) => {
-          if (item.kind === 'tutor') {
-            const lines = item.turn.lines || [];
-            const sentence = lines.map((l) => rawLines[l]).join(' ');
-            const ko = lines.map((l) => translations[rawLines[l]]).filter(Boolean);
-            const txOpen = openTx.has(item.index);
-            return (
-              <div key={item.index} className="conv__row conv__row--tutor">
-                <div className="conv-bubble conv-bubble--tutor" lang={bcp47ForLanguage(language)}>
-                  {lines.map((line, k) => (
-                    <span key={line} className="conv-bubble__line">
-                      {lineView(line)}
-                      {k < lines.length - 1 && <span className="line-break" />}
-                    </span>
-                  ))}
-                </div>
-                {(ttsSupported || ko.length > 0) && (
-                  <div className="conv-bubble__actions">
-                    {ttsSupported && (
-                      <button type="button" className="conv-act" onClick={() => speak(sentence, language)} aria-label="튜터 말 듣기" title="듣기">🔊</button>
-                    )}
-                    {ko.length > 0 && (
-                      <button type="button" className="conv-act" aria-expanded={txOpen} onClick={() => toggleTx(item.index)} aria-label="번역" title="번역">文</button>
-                    )}
-                  </div>
-                )}
-                {txOpen && <p className="conv-bubble__tx" lang="ko">{ko.join(' ')}</p>}
-              </div>
-            );
-          }
-          const { turn } = item;
-          const fbId = `${listId}-fb-${item.index}`;
-          const hasFeedback = turn.feedback || item.fixed || Number.isInteger(item.answerLine) || item.openRetry;
-          // 다시 말하기가 열려 있으면(힌트·답 보기) 펼쳐 둔다 — 학습자가 할 일이 있다. 그 밖의 피드백은 한 줄로 접는다.
-          const onlyFixed = item.fixed && !Number.isInteger(item.answerLine);
-          const fbOpen = item.openRetry || onlyFixed || openFb.has(item.index);
-          return (
-            <div key={item.index} className="conv__row conv__row--me">
-              <div className="conv-bubble conv-bubble--me" lang={bcp47ForLanguage(language)} aria-describedby={hasFeedback && fbOpen ? fbId : undefined}>
-                <MyText text={turn.text} focus={turn.focus} />
-              </div>
-              {hasFeedback && !item.openRetry && !onlyFixed && (
-                <button type="button" className="conv-fb-toggle" aria-expanded={fbOpen} aria-controls={fbId} onClick={() => toggleFb(item.index)}>
-                  {fbLabel(item, fbOpen)}
-                </button>
-              )}
-              {hasFeedback && fbOpen && (
-                <div className="conv-feedback" id={fbId} lang="ko">
-                  {item.fixed && <p className="conv-feedback__ok">✓ 스스로 고쳤어요</p>}
-                  {turn.feedback && !item.fixed && <p>{turn.feedback}</p>}
-                  {item.openRetry && turn.focus?.hint && (
-                    <p className="conv-feedback__hint">힌트 <span lang={bcp47ForLanguage(language)}>{turn.focus.hint}</span></p>
-                  )}
-                  {item.openRetry && (
-                    <button type="button" className="conv-chip" disabled={loading} onClick={() => send({ action: 'reveal' })}>답 보기</button>
-                  )}
-                  {Number.isInteger(item.answerLine) && (
-                    <div className="conv-feedback__answer">
-                      <p className="conv-feedback__label">이렇게 말해요</p>
-                      <div className="conv-answer" lang={bcp47ForLanguage(language)}>{lineView(item.answerLine)}</div>
-                      <div className="conv-bubble__actions">
-                        {ttsSupported && (
-                          <button type="button" className="conv-act" onClick={() => speak(rawLines[item.answerLine], language)} aria-label="정답 문장 듣기" title="듣기">🔊</button>
-                        )}
-                        {sttSupported && (
-                          <button type="button" className="conv-chip" disabled={shadow?.listening} onClick={() => startShadow(item.index)}>
-                            {shadow?.index === item.index && shadow.listening ? '듣는 중…' : '따라 말해 보기'}
-                          </button>
-                        )}
-                      </div>
-                      {shadow?.index === item.index && shadow.heard && (
-                        <p className="conv-feedback__heard">들린 말 <span lang={bcp47ForLanguage(language)}>{shadow.heard}</span></p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
+        {items.map((item, n) => {
+          // 날짜가 바뀌면 가운데 구분선(KST) — 메신저 관례.
+          const day = kstDateKey(item.turn.at);
+          const prevDay = n > 0 ? kstDateKey(items[n - 1].turn.at) : null;
+          const sep = day && day !== prevDay ? <p className="conv__date" role="separator">{chatDateLabel(item.turn.at)}</p> : null;
+          return <Fragment key={item.index}>{sep}{renderItem(item)}</Fragment>;
         })}
         {pending && (
           <div className="conv__row conv__row--me">
@@ -463,7 +478,10 @@ export default function ConversationThread({
         )}
         {loading && (
           <div className="conv__row conv__row--tutor" aria-label="입력 중">
-            <div className="conv-bubble conv-bubble--tutor conv-bubble--typing"><span /><span /><span /></div>
+            <span className="conv-avatar" aria-hidden="true">튜</span>
+            <div className="conv__stack">
+              <div className="conv-bubble conv-bubble--tutor conv-bubble--typing"><span /><span /><span /></div>
+            </div>
           </div>
         )}
         {error && (

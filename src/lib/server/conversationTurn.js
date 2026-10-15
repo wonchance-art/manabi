@@ -2,6 +2,7 @@
 // 새 이음새는 이 경로 하나뿐이다(새 표·새 이벤트 0). 순서: 검증 → 한도 → 프롬프트 → AI 1회 → 검증 →
 // 교정 상태 머신(서버 강제) → 새 문단 분석(예산 2.5초) → 낙관 잠금 기록 → 새 문단 토큰만 응답.
 // 의존성(supabase·callLLM·analyzeLines)은 주입받는다 — 단위 테스트가 네트워크 없이 전 경로를 돈다.
+import { ROOM_PREVIEW_CHARS } from '../conversation/chatView';
 import {
   CONVERSATION_VERSION, CONVERSATION_DAILY_TURN_LIMIT, CONVERSATION_MAX_TURNS, CONVERSATION_RECENT_TURNS,
   CONVERSATION_EXCERPT_CHARS, CONVERSATION_MAX_INPUT_CHARS, CONVERSATION_MAX_TOPIC_CHARS, CONVERSATION_ANALYZE_BUDGET_MS,
@@ -152,7 +153,13 @@ export function promptForTurn({ conv, rawText, text, inputMode = 'text', action 
   });
 }
 
-function nextConversation(conv, { meTurn, closeRetry, tutorTurn, now }) {
+// 방 목록 미리보기(CONV-CHAT-001 2차) — 튜터의 마지막 말 한 줄. 목록이 대화 본문(raw_text)을 읽지 않게 메타에 남긴다.
+function tutorPreview(lines) {
+  const last = [...(lines || [])].reverse().find((l) => String(l || '').trim());
+  return last ? String(last).trim().slice(0, ROOM_PREVIEW_CHARS) : '';
+}
+
+function nextConversation(conv, { meTurn, closeRetry, tutorTurn, now, preview }) {
   const turns = (conv.turns || []).map((t, i) => (closeRetry && i === closeRetry.index && t.focus
     ? { ...t, focus: { ...t.focus, state: closeRetry.state } }
     : t));
@@ -163,6 +170,7 @@ function nextConversation(conv, { meTurn, closeRetry, tutorTurn, now }) {
     ...conv,
     turns,
     turnCount: (conv.turnCount || 0) + 1,
+    ...(preview ? { preview } : {}),
     day: today,
     dayTurns: countTodayMyTurns(turns, now),
   };
@@ -274,6 +282,7 @@ export async function runConversationTurn({ userId, body, deps, now = Date.now()
       ...(parent ? { parentId: String(parent.id) } : {}),
       turnCount: 1, day: kstDateString(now), dayTurns: 0,
       turns: [{ who: 'tutor', lines: lines.map((_, i) => startLine + i), at: now }],
+      preview: tutorPreview(lines),
       ...(reask ? { reask: [{ ...reask, ok: null }] } : {}),
     };
     const translations = Object.fromEntries(ai.lines.filter((l) => l.ko).map((l) => [l.t, l.ko]));
@@ -362,7 +371,7 @@ export async function runConversationTurn({ userId, body, deps, now = Date.now()
   };
   const reaskNow = pendingReask(conv);
   const reaskOk = !!reaskNow && !!policy.meTurn && reaskSucceeded(reaskNow, text, policy.meTurn);
-  let conversation = nextConversation(conv, { meTurn: policy.meTurn, closeRetry: policy.closeRetry, tutorTurn, now });
+  let conversation = nextConversation(conv, { meTurn: policy.meTurn, closeRetry: policy.closeRetry, tutorTurn, now, preview: tutorPreview(tutorTexts) });
   if (reaskOk) conversation = { ...conversation, reask: (conv.reask || []).map((r) => (r === reaskNow ? { ...r, ok: true, at: now } : r)) };
   const newTranslations = Object.fromEntries(ai.lines.filter((l) => l.ko).map((l) => [l.t, l.ko]));
   const prevJson = material.processed_json || {};
