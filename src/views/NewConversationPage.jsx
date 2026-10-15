@@ -4,6 +4,7 @@
 // - 언어는 배움에서 고른 학습 언어(useLearnLanguage, 같은 저장 키), 수준은 내 학습 수준 정본(recommendedLevel)으로 정한다.
 //   언어·수준을 고르는 칸은 없다. 언어가 둘 이상이면 머리의 칩으로만 바꾼다.
 // - 한 주제 = 한 방: 같은 주제(·자료)의 대화가 여럿이면 가장 최근 것 하나만 방으로 보인다. 나머지는 서재 「대화」 묶음에 그대로 있다.
+// - 맨 위에는 모두의 대화방(CONV-LOBBY-001) — 같은 언어를 배우는 사람끼리의 방. 마지막 말·시각이 보인다.
 // - 「써 볼 말」은 화면에 따로 늘어놓지 않고 첫 질문 프롬프트에만 넘긴다(표시 전용이던 칸 — 목록을 방으로 비운다).
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
@@ -19,6 +20,8 @@ import { startTopicConversation } from '@/lib/conversation/conversationClient';
 import { fetchConversationRooms, conversationHref } from '@/lib/conversation/conversationLibrary';
 import { CONVERSATION_TOPICS, recommendedLevel } from '@/lib/conversation/newConversation';
 import { conversationRooms, roomTimeLabel } from '@/lib/conversation/chatView';
+import { fetchLobby, isLobbyMissing, lobbyHref, lobbyKey } from '@/lib/conversation/lobby';
+import { isMuted } from '@/lib/world/muteStore';
 import { friendlyToastMessage } from '@/lib/errorMessage';
 import '@/components/conversation/conversation.css';
 
@@ -41,6 +44,14 @@ export default function NewConversationPage() {
     queryKey: ['conversation-rooms', user?.id], enabled: !!user, staleTime: 15000,
     queryFn: () => fetchConversationRooms(supabase, user.id),
   });
+  // 모두의 대화방 미리보기 — 마지막 말 하나만 읽는다(방에 들어가면 100개).
+  const lobbyQuery = useQuery({
+    queryKey: [...lobbyKey(language), 'last'], enabled: !!user, staleTime: 15000,
+    retry: (count, cause) => !isLobbyMissing(cause) && count < 2,
+    queryFn: () => fetchLobby(supabase, language, { limit: 1 }),
+  });
+  const lobbySoon = isLobbyMissing(lobbyQuery.error);
+  const lobbyLast = (lobbyQuery.data || []).find((row) => row.user_id === user?.id || !isMuted(row.user_id)) || null;
   const rooms = useMemo(() => conversationRooms(roomsQuery.data || [], { language, topics: CONVERSATION_TOPICS }),
     [roomsQuery.data, language]);
   const now = Date.now();
@@ -84,6 +95,19 @@ export default function NewConversationPage() {
       </header>
       {error && <p className="conv-new__error" role="alert">{error}</p>}
       <ul className="conv-rooms__list" aria-label={`${langNameKo(language)} 대화방`} aria-busy={roomsQuery.isLoading || undefined}>
+        <li>
+          <Link className="conv-rooms__row conv-rooms__row--lobby" href={lobbyHref(language)}>
+            <span className="conv-rooms__avatar conv-rooms__avatar--lobby" aria-hidden="true">👥</span>
+            <span className="conv-rooms__text">
+              <span className="conv-rooms__name">모두의 대화방</span>
+              <span className="conv-rooms__preview" lang={lobbyLast ? 'und' : 'ko'}>
+                {lobbyLast ? `${String(lobbyLast.author?.display_name || '').trim() || '학습자'}: ${lobbyLast.body.replace(/\s+/g, ' ')}`
+                  : lobbySoon ? '곧 열려요' : `${langNameKo(language)}를 배우는 사람들과 이야기해요`}
+              </span>
+            </span>
+            {lobbyLast && <span className="conv-rooms__time">{roomTimeLabel(lobbyLast.created_at, now)}</span>}
+          </Link>
+        </li>
         {rooms.map((room) => {
           const busy = opening && opening === room.topic;
           const body = (

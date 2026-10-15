@@ -10,7 +10,7 @@
 // - 말풍선은 분석이 붙은 완성본을 한 번만 그린다(기다리는 동안은 「입력 중」 점, 입력 칸은 열려 있다).
 // - 채팅앱 껍데기(CONV-CHAT-001 ②, notes/conversation-chat-shell.md): 뷰어 상단바·제목·쪽 넘김 없이 화면 전체 높이.
 //   머리 한 줄 · 혼자 스크롤하는 대화 목록 · 맨 아래 입력창. 키보드가 열리면 visualViewport 높이에 맞춰 입력창이 키보드 위에 붙는다.
-import { Fragment, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useId, useRef, useState } from 'react';
 import {
   conversationItems, openRetryOf, missingConversationLines, CONVERSATION_ERRORS, CONVERSATION_MAX_TURNS, CONVERSATION_ANALYZED_LANGUAGES, countMyTurns,
 } from '../../lib/conversation/turnModel';
@@ -24,6 +24,7 @@ import { bcp47ForLanguage } from '../../lib/speechLang';
 import { langNameKo } from '../../lib/constants';
 import OutputWordChips from '../OutputWordChips';
 import { chatDateLabel, kstDateKey } from '../../lib/conversation/chatView';
+import { CHAT_COMPOSER_MAX_LINES, CHAT_NEAR_BOTTOM_PX, useAutoGrow, useChatScroll, useChatViewport } from './useChatShell';
 import './conversation.css';
 
 /** 요청이 아직 이 화면(같은 자료·마지막 요청)의 것인가 — 옛 회화 패널 계약 그대로(자료를 바꾸면 늦은 응답을 버린다). */
@@ -45,9 +46,9 @@ export function handleConversationKeyDown(e, send, touch = isTouchComposer()) {
 }
 
 // 입력창은 한 줄에서 시작해 다섯 줄까지 자라고, 그 위로는 입력창 안에서 스크롤한다.
-export const CONVERSATION_COMPOSER_MAX_LINES = 5;
+export const CONVERSATION_COMPOSER_MAX_LINES = CHAT_COMPOSER_MAX_LINES;
 // 맨 아래에서 이만큼(px) 안이면 「맨 아래에 있다」 — 새 말을 따라 내려간다. 위를 보고 있으면 자리를 지킨다.
-export const CONVERSATION_NEAR_BOTTOM_PX = 100;
+export const CONVERSATION_NEAR_BOTTOM_PX = CHAT_NEAR_BOTTOM_PX;
 
 /** 실패 응답 → 화면 문구. 내 말은 입력 칸에 남겨 둔다(다시 보내기). */
 export function conversationErrorView(error) {
@@ -108,7 +109,6 @@ export default function ConversationThread({
   const [shadow, setShadow] = useState(null); // { index, heard, listening } — [따라 말해 보기](채점 없음)
   const [fillTick, setFillTick] = useState(0);
   const [openFb, setOpenFb] = useState(() => new Set());
-  const [jump, setJump] = useState(false); // 위를 보는 동안 새 말이 왔다 → 「새 메시지 ↓」
   const fillAttemptsRef = useRef(new Map());
   const requestRef = useRef(0);
   const materialRef = useRef(materialId);
@@ -116,8 +116,6 @@ export default function ConversationThread({
   const shellRef = useRef(null);
   const logRef = useRef(null);
   const inputRef = useRef(null);
-  const nearBottomRef = useRef(true);
-  const sentRef = useRef(false);
   materialRef.current = materialId;
 
   useEffect(() => {
@@ -134,67 +132,12 @@ export default function ConversationThread({
   }, [materialId]);
 
   const turnCount = conversation.turnCount || 0;
-  const toBottom = (smooth) => {
-    const log = logRef.current;
-    if (!log) return;
-    log.scrollTo?.({ top: log.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
-    nearBottomRef.current = true;
-    setJump(false);
-  };
-  const onLogScroll = () => {
-    const log = logRef.current;
-    if (!log) return;
-    nearBottomRef.current = log.scrollHeight - log.scrollTop - log.clientHeight < CONVERSATION_NEAR_BOTTOM_PX;
-    if (nearBottomRef.current) setJump(false);
-  };
-  // 처음 열면 마지막 말에서 시작한다(채팅앱).
-  useLayoutEffect(() => { toBottom(false); }, [materialId]);
-  // 새 말: 내가 보냈으면 항상 맨 아래로, 맨 아래 근처였으면 따라가고, 위를 보고 있었으면 자리를 지키고 알린다.
-  useEffect(() => {
-    if (sentRef.current || nearBottomRef.current) toBottom(true);
-    else setJump(true);
-    sentRef.current = false;
-  }, [turnCount, loading, pending]);
-
-  // 키보드 — Android는 interactive-widget=resizes-content로 화면이 줄고, iOS는 visualViewport 높이에 맞춘다.
-  // viewport 메타는 이 화면에서만 바꾸고 나가면 되돌린다(다른 화면 영향 0).
-  useEffect(() => {
-    const meta = typeof document !== 'undefined' ? document.querySelector('meta[name="viewport"]') : null;
-    const before = meta?.getAttribute('content');
-    if (meta && before != null && !/interactive-widget/.test(before)) {
-      meta.setAttribute('content', `${before}, interactive-widget=resizes-content, viewport-fit=cover`);
-    }
-    const vv = typeof window !== 'undefined' ? window.visualViewport : null;
-    const shell = shellRef.current;
-    if (!vv || !shell) return () => { if (meta && before != null) meta.setAttribute('content', before); };
-    const fit = () => {
-      const stick = nearBottomRef.current;
-      shell.style.setProperty('--conv-vh', `${Math.round(vv.height)}px`);
-      // iOS는 키보드가 열려도 레이아웃을 줄이지 않고 화면을 밀어 올린다 — 밀린 만큼 껍데기를 따라 내린다.
-      shell.style.setProperty('--conv-top', `${Math.max(0, Math.round(vv.offsetTop))}px`);
-      if (stick) requestAnimationFrame(() => toBottom(false));
-    };
-    fit();
-    vv.addEventListener('resize', fit);
-    vv.addEventListener('scroll', fit);
-    return () => {
-      vv.removeEventListener('resize', fit);
-      vv.removeEventListener('scroll', fit);
-      if (meta && before != null) meta.setAttribute('content', before);
-    };
-  }, []);
-
-  // 입력창 자동 높이(최대 다섯 줄).
-  useLayoutEffect(() => {
-    const el = inputRef.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    const cs = getComputedStyle(el);
-    const px = (k) => parseFloat(cs[k]) || 0;
-    const border = px('borderTopWidth') + px('borderBottomWidth');
-    const max = (px('lineHeight') || 24) * CONVERSATION_COMPOSER_MAX_LINES + px('paddingTop') + px('paddingBottom') + border;
-    el.style.height = `${Math.min(el.scrollHeight + border, max)}px`;
-  }, [input]);
+  // 스크롤·키보드·입력창 높이는 모두의 대화방과 같은 부품(useChatShell)을 쓴다.
+  const { jump, onScroll: onLogScroll, toBottom, nearBottomRef, markSent } = useChatScroll(logRef, {
+    resetKey: materialId, changeKey: `${turnCount}|${loading}|${pending ? pending.text : ''}`,
+  });
+  useChatViewport(shellRef, { nearBottomRef, toBottom });
+  useAutoGrow(inputRef, input);
 
   // 못 한 줄 자동 채우기 — 소유자 화면에서만(onFilled가 있을 때), 턴을 기다리는 동안은 쉬었다가 이어 한다.
   const missingKey = onFilled && CONVERSATION_ANALYZED_LANGUAGES.includes(language)
@@ -226,7 +169,7 @@ export default function ConversationThread({
     const requestId = ++requestRef.current;
     const requestMaterialId = materialId;
     const mode = retryText != null ? pending?.inputMode || 'text' : inputMode;
-    if (!action) { sentRef.current = true; setPending({ text, inputMode: mode }); setInput(''); setInputMode('text'); }
+    if (!action) { markSent(); setPending({ text, inputMode: mode }); setInput(''); setInputMode('text'); }
     setLoading(true); setError(null);
     try {
       const body = await postConversationTurn({

@@ -35,8 +35,10 @@ describe('입력창', () => {
 describe('대화 목록', () => {
   it('맨 아래 근처일 때만 따라가고, 위를 보면 「새 메시지 ↓」', () => {
     const thread = read('components/conversation/ConversationThread.jsx');
+    const shell = read('components/conversation/useChatShell.js');
     expect(CONVERSATION_NEAR_BOTTOM_PX).toBe(100);
-    expect(thread).toContain('if (sentRef.current || nearBottomRef.current) toBottom(true);');
+    expect(shell).toContain('if (sentRef.current || nearBottomRef.current) toBottom(true);');
+    expect(thread).toContain('useChatScroll(logRef');
     expect(thread).toContain('새 메시지 ↓');
   });
   it('듣기·번역은 말풍선 아래 작은 아이콘 — 문자 칩이 아니다', () => {
@@ -71,8 +73,10 @@ describe('화면 틀', () => {
   });
   it('viewport 메타는 이 화면에서만 바꾸고 나가면 되돌린다', () => {
     const thread = read('components/conversation/ConversationThread.jsx');
-    expect(thread).toContain('interactive-widget=resizes-content, viewport-fit=cover');
-    expect(thread).toContain("if (meta && before != null) meta.setAttribute('content', before);");
-    expect(thread).toContain("vv.addEventListener('resize', fit);");
+    const shell = read('components/conversation/useChatShell.js');
+    expect(shell).toContain('interactive-widget=resizes-content, viewport-fit=cover');
+    expect(shell).toContain("if (meta && before != null) meta.setAttribute('content', before);");
+    expect(shell).toContain("vv.addEventListener('resize', fit);");
+    expect(thread).toContain('useChatViewport(shellRef');
   });
 });

@@ -22,16 +22,21 @@ export function chatDateLabel(ms) {
   return `${d.getUTCFullYear()}년 ${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일 ${WEEKDAYS[d.getUTCDay()]}요일`;
 }
 
+/** 말풍선 옆 시각 — 「오후 3:07」(KST). */
+export function clockLabel(ms) {
+  const d = kst(ms);
+  if (!d) return '';
+  const h = d.getUTCHours();
+  return `${h < 12 ? '오전' : '오후'} ${h % 12 || 12}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
+}
+
 /** 방 목록 시각 — 오늘은 「오후 3:07」, 어제는 「어제」, 그 전은 「10월 12일」, 다른 해는 「2025. 10. 12.」. */
 export function roomTimeLabel(ms, nowMs = Date.now()) {
   const d = kst(ms);
   const now = kst(nowMs);
   if (!d || !now) return '';
   const key = kstDateKey(ms);
-  if (key === kstDateKey(nowMs)) {
-    const h = d.getUTCHours();
-    return `${h < 12 ? '오전' : '오후'} ${h % 12 || 12}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
-  }
+  if (key === kstDateKey(nowMs)) return clockLabel(ms);
   if (key === kstDateKey(nowMs - 86400e3)) return '어제';
   if (d.getUTCFullYear() === now.getUTCFullYear()) return `${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일`;
   return `${d.getUTCFullYear()}. ${d.getUTCMonth() + 1}. ${d.getUTCDate()}.`;

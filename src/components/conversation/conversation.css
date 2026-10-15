@@ -70,8 +70,11 @@
 /* 뷰어 안에서 대화 자료를 열면(data-chat) 읽기 화면의 틀을 걷어 낸다 — 전역 메뉴·하단 탭·여백·쪽 넘김 없음.
    개인 노트(study-notes.css)의 :has() 숨김 선례. 읽기 자료에는 data-chat이 없어 아무 영향이 없다. */
 .manabi-app:has(.viewer-layout[data-chat="true"]) > .gnb,
-.manabi-app:has(.viewer-layout[data-chat="true"]) > .mobile-nav { display: none; }
-.manabi-app:has(.viewer-layout[data-chat="true"]) > .app-layout { padding-top: 0; padding-bottom: 0; }
+.manabi-app:has(.viewer-layout[data-chat="true"]) > .mobile-nav,
+.manabi-app:has(.conv-page[data-chat="true"]) > .gnb,
+.manabi-app:has(.conv-page[data-chat="true"]) > .mobile-nav { display: none; }
+.manabi-app:has(.viewer-layout[data-chat="true"]) > .app-layout,
+.manabi-app:has(.conv-page[data-chat="true"]) > .app-layout { padding-top: 0; padding-bottom: 0; }
 .manabi-app .viewer-layout[data-chat="true"] { min-height: 0; padding: 0; gap: 0; }
 .manabi-app .viewer-layout[data-chat="true"] .viewer-center { padding: 0; }
 .manabi-app .viewer-layout[data-chat="true"] .reader-pages { padding: 0; overflow: visible; }
@@ -138,3 +141,23 @@
 .conv-rooms__own input { width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 22px; background: var(--bg-card); color: var(--text-primary); font: inherit; }
 .conv-rooms .conv-new__note { padding: 8px 16px; }
 .conv-rooms .conv-new__error { padding: 0 16px; }
+
+/* 모두의 대화방(CONV-LOBBY-001) — 튜터 대화방 껍데기(.conv) 그대로. 데스크톱은 가운데 한 줄(메신저 웹). */
+.conv-page { width: 100%; max-width: 760px; margin: 0 auto; }
+.conv-page .conv__log { gap: 2px; }
+.conv-avatar--lobby, .conv-rooms__avatar--lobby { background: color-mix(in srgb, var(--primary) 22%, var(--bg-card)); }
+.conv-lobby__row { display: flex; align-items: flex-start; gap: 8px; }
+.conv-lobby__row--first { margin-top: 10px; }
+.conv-lobby__row--me { flex-direction: column; align-items: flex-end; gap: 2px; }
+.conv-lobby__gap { flex: none; width: 36px; }
+.conv-lobby__line { display: flex; align-items: flex-end; gap: 6px; width: 100%; }
+.conv-lobby__row--me .conv-lobby__line { justify-content: flex-end; }
+.conv-lobby__line > .conv-bubble { max-width: min(calc(100% - 64px), 520px); }
+.conv-lobby__bubble { min-height: 40px; font: inherit; text-align: left; white-space: pre-wrap; cursor: pointer; }
+.conv-lobby__bubble.conv-bubble--me { border: 0; }
+.conv-lobby__time { flex: none; font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap; }
+.conv-lobby__actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.conv-lobby__hidden { margin: 0; font-size: 0.75rem; color: var(--text-secondary); }
+.conv-lobby__empty { margin: auto 0; padding: 24px 16px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.conv-rooms__row--lobby { border-bottom: 1px solid var(--border); }
+.conv-page .conv__date { margin: 14px 0 6px; }
