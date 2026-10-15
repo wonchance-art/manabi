@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>11-center 표지 비교</title>
+<!-- 11-center 비교 시트(build.mjs 생성, 2026-10-15 KST). 행 = 표지, 열 = 서체 조합. 각 칸은 표지 HTML을 iframe으로 띄운다(표지 폭 360px). -->
+<style>
+:root{--bg:#d9dce3;--ink:#151b2c;--muted:#4a5268}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0e1220;--ink:#eef0f4;--muted:#b4bccd}}
+:root[data-theme="dark"]{--bg:#0e1220;--ink:#eef0f4;--muted:#b4bccd}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,sans-serif}
+body{padding:24px 16px}
+h1{font-size:18px;margin:0 0 4px}
+p{margin:0 0 16px;color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:110px repeat(3,392px);gap:12px 20px;align-items:start;overflow-x:auto}
+.ch{font-size:14px;font-weight:600}
+.ch small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+.rh{font-size:14px;font-weight:600;padding-top:16px}
+iframe{width:392px;height:541px;border:0;display:block}
+</style>
+</head>
+<body>
+<h1>11-center — 가운데 정렬 · 좌우 여백 14mm 대칭 · 서체 조합 3</h1>
+<p>제호 B3c(B3 글자 패스 재배치: TONARI 아래 가운데 가로 となり). 행 = 표지, 열 = 서체 조합.</p>
+<div class="grid">
+<div></div><div class="ch">T1 명조 중심<small>Shippori Mincho B1(제목) · Zen Old Mincho(문구) · Zen Kaku Gothic New(호 표기·크레딧)</small></div><div class="ch">T2 명조+고딕 대비<small>Zen Kaku Gothic New 900(제목)·400(크레딧) · Shippori Mincho(문구·호 표기) · EB Garamond(호수 01)</small></div><div class="ch">T3 개성 제목 + 고딕 문구<small>Kaisei Decol(제목) · Zen Kaku Gothic New(문구·호 표기·크레딧) · Klee One(그림 곁 문장 — 교과서체 획)</small></div>
+<div class="rh">① 一本の線</div><iframe src="covers/ippon-T1.html" title="ippon-T1"></iframe><iframe src="covers/ippon-T2.html" title="ippon-T2"></iframe><iframe src="covers/ippon-T3.html" title="ippon-T3"></iframe>
+<div class="rh">⑤ 断面</div><iframe src="covers/danmen-T1.html" title="danmen-T1"></iframe><iframe src="covers/danmen-T2.html" title="danmen-T2"></iframe><iframe src="covers/danmen-T3.html" title="danmen-T3"></iframe>
+</div>
+</body>
+</html>

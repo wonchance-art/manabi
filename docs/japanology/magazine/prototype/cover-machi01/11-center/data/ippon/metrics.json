@@ -1,0 +1,292 @@
+{
+  "scale": {
+    "mPerMm": 11.3,
+    "ratio": "1:11300",
+    "fitFromPositions": 11.297
+  },
+  "origin": {
+    "geo": {
+      "lat": 35.4832112,
+      "lon": 138.7979629
+    },
+    "page": {
+      "x": 126,
+      "y": 247.698
+    },
+    "note": "金鳥居(35.4832112,138.7979629)가 판면 (126,200)"
+  },
+  "summitBearingDeg": 205.14,
+  "summitDistM": 15046,
+  "summitBearingGcDeg": 205.18,
+  "craterCenterBearingDeg": 204.38,
+  "craterVsKengamineDeg": -0.8,
+  "lineTopEnd": {
+    "node": 2097712407,
+    "geo": {
+      "lat": 35.4750708,
+      "lon": 138.7918346
+    },
+    "page": {
+      "x": 136.42,
+      "y": 154.32
+    },
+    "note": "OSM 富士みち 남단 = 国道138号와 만나는 교차점(上宿)"
+  },
+  "kitaguchiPin": {
+    "page": {
+      "x": 113.6,
+      "y": 120.89
+    },
+    "distFromTopEndM": 457
+  },
+  "bottomClip": {
+    "page": {
+      "x": 123.35,
+      "y": 300
+    },
+    "between": "clip(2769327985→1090946746)",
+    "upM": -591
+  },
+  "shimoyoshidaBend": {
+    "node": 286755062,
+    "geo": {
+      "lat": 35.4948725,
+      "lon": 138.8044326
+    },
+    "page": {
+      "x": 127.82,
+      "y": 373.6
+    },
+    "note": "下吉田停車場線 교차, 여기서 富士みち가 북동으로 꺾임 — 판면 밖"
+  },
+  "toriiOnCenterline": {
+    "page": {
+      "x": 126.006,
+      "y": 247.698
+    },
+    "offsetFromToriiPointM": 0.07
+  },
+  "bearings": {
+    "overallDrawn_bottomToTop": 210.27,
+    "overallDrawn_tls": 210.67,
+    "toriiToTop_chord": 211.51,
+    "toriiToTop_tls": 211.42,
+    "bottomToTorii_chord": 208.04,
+    "bottomToTorii_tls": 208.15,
+    "shimoBendToTorii_chord_osm": 204.31,
+    "editor_408_to_topEnd_osm": 208.73,
+    "editor_408_to_topEnd_gc": 208.73,
+    "toriiToTop_gc": 211.51
+  },
+  "diffFromSummit": {
+    "overallDrawn_bottomToTop": 5.13,
+    "overallDrawn_tls": 5.53,
+    "toriiToTop_chord": 6.37,
+    "toriiToTop_tls": 6.28,
+    "bottomToTorii_chord": 2.9,
+    "bottomToTorii_tls": 3.01,
+    "shimoBendToTorii_chord_osm": -0.83,
+    "editor_408_to_topEnd_osm": 3.59,
+    "editor_408_to_topEnd_gc": 3.59,
+    "toriiToTop_gc": 6.37
+  },
+  "apexMiss": {
+    "apex": {
+      "x": 126,
+      "y": 140.298
+    },
+    "topEndOffsetX": 10.42,
+    "extend_overallChord_atY46": 11.68,
+    "extend_toriiToTop_atY46": 11.98,
+    "extend_lastSegment_atY46": 12.27,
+    "note": "+ = 꼭짓점 오른쪽(mm). 略図이므로 y=46은 실거리 15.06km가 아님 — 각도만 같다고 가정한 외삽"
+  },
+  "bottomTail": {
+    "fromY260MaxDevMm": 0.15,
+    "points": [
+      [
+        123.98,
+        266.32
+      ],
+      [
+        123.85,
+        267.71
+      ],
+      [
+        123.77,
+        269.76
+      ],
+      [
+        123.73,
+        274.42
+      ],
+      [
+        123.68,
+        281.79
+      ],
+      [
+        123.67,
+        282.6
+      ],
+      [
+        123.65,
+        283.36
+      ],
+      [
+        123.61,
+        284.7
+      ],
+      [
+        123.53,
+        287.67
+      ],
+      [
+        123.48,
+        291.15
+      ],
+      [
+        123.35,
+        300
+      ]
+    ],
+    "firstOutsideNode": {
+      "node": 1090946746,
+      "page": [
+        123.34,
+        300.95
+      ]
+    },
+    "nextNodes": [
+      {
+        "node": 1090946746,
+        "page": [
+          123.34,
+          300.95
+        ]
+      },
+      {
+        "node": 2771851173,
+        "page": [
+          123.15,
+          306.84
+        ]
+      },
+      {
+        "node": 2771851290,
+        "page": [
+          123.05,
+          310.18
+        ]
+      },
+      {
+        "node": 2771851302,
+        "page": [
+          123.04,
+          310.55
+        ]
+      }
+    ]
+  },
+  "simplify": {
+    "eps": 0.03,
+    "nOrig": 29,
+    "nSimp": 15,
+    "maxDevMm": 0.018,
+    "maxDevM": 0.201,
+    "maxSpanAngDeg": 0.037,
+    "maxLongSegAngDeg": 0.133
+  },
+  "ridge": {
+    "recommended": "B",
+    "A": {
+      "kengamine": {
+        "x": 126,
+        "y": 140.298
+      },
+      "kenRightOfCraterCenterM": 205,
+      "flatCenterX": 124.03,
+      "flat": [
+        120.18,
+        127.88
+      ],
+      "filletR": 2.5,
+      "exponentP": 0.412,
+      "leftBleed": {
+        "x": -3,
+        "y": 198.3
+      },
+      "rightBleed": {
+        "x": 213,
+        "y": 184.16
+      },
+      "slopeDeg": {
+        "rim": 30,
+        "d10": 29.5,
+        "d40": 27.6,
+        "rightBleed": 23.6,
+        "leftBleed": 12.4
+      },
+      "lineExtensionHitsRidge": {
+        "x": 137.38,
+        "y": 145.73,
+        "rightOfKengamineMm": 11.38
+      },
+      "ridgeYAtLineTopEndX": 145.19
+    },
+    "B": {
+      "kengamine": {
+        "x": 126,
+        "y": 140.298
+      },
+      "kenRightOfCraterCenterM": 205,
+      "flatCenterX": 124.03,
+      "flat": [
+        120.18,
+        127.88
+      ],
+      "filletR": 2.5,
+      "exponentP": 1,
+      "leftBleed": {
+        "x": -3,
+        "y": 188.95
+      },
+      "rightBleed": {
+        "x": 213,
+        "y": 178.72
+      },
+      "slopeDeg": {
+        "rim": 30,
+        "d10": 28.7,
+        "d40": 24.7,
+        "rightBleed": 18,
+        "leftBleed": 12
+      },
+      "lineExtensionHitsRidge": {
+        "x": 137.38,
+        "y": 145.71,
+        "rightOfKengamineMm": 11.38
+      },
+      "ridgeYAtLineTopEndX": 145.13
+    }
+  },
+  "osm": {
+    "ways": [
+      169802151,
+      93860688,
+      110252410,
+      1383654947,
+      110253316,
+      1185885234,
+      110253372,
+      110252217,
+      1534791928,
+      40796636,
+      653388309
+    ],
+    "unchained": [
+      167641344
+    ],
+    "nodesChained": 104,
+    "south": 2097712407
+  }
+}
