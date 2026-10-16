@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "provider": "standardebooks",
+  "repo": "standardebooks/marcus-aurelius_meditations_george-long",
+  "commit": "3a47d37d9f1df94de235d53839f4b254ce2953d5",
+  "url": "https://standardebooks.org/ebooks/marcus-aurelius/meditations/george-long",
+  "title": "Meditations",
+  "author": "Marcus Aurelius",
+  "publishedYear": 180,
+  "authorDeathYear": 180,
+  "countryOfOrigin": "IT",
+  "translator": {
+    "name": "George Long",
+    "deathYear": 1879,
+    "publishedYear": 1862,
+    "countryOfOrigin": "GB"
+  },
+  "level": "C1 고급",
+  "display": {
+    "titleKo": "명상록",
+    "authorKo": "마르쿠스 아우렐리우스"
+  },
+  "files": [
+    {
+      "path": "book-1.xhtml",
+      "sha256": "e0cbbcdbedfb9bc1c495bdbfc28a71cde28a3a367e3690445613b23e5a61f236"
+    },
+    {
+      "path": "book-2.xhtml",
+      "sha256": "e3a9afab24ce370ce28a9bfc6ef2cb108cd9995866d51ea17c980af63f739714"
+    },
+    {
+      "path": "book-3.xhtml",
+      "sha256": "4657ce577927522c92a6a2d5cd30c4d4576e53f4c2d2086aec222a18330849ab"
+    },
+    {
+      "path": "book-4.xhtml",
+      "sha256": "a9f1bee25bea606aa0f86334de946013c7bace8bf923cf46663811eb6d5f13bc"
+    },
+    {
+      "path": "book-5.xhtml",
+      "sha256": "ad5ba17c239997dd4e805a507ecc82c90e2d9c655c31044a690c80d56c5045e0"
+    },
+    {
+      "path": "book-6.xhtml",
+      "sha256": "73c93faa0a14d4e48825cc90f818683ea8803a652fc78360d8408529d927e303"
+    },
+    {
+      "path": "book-7.xhtml",
+      "sha256": "3df16bdb27dc08657ac937757b52545d02b6e0f88b4561e75d19c98168ccf461"
+    },
+    {
+      "path": "book-8.xhtml",
+      "sha256": "0e1cb27d1f4ea65a24cb70487bf839fd2c137b49d04edb31d6d47415e93d661e"
+    },
+    {
+      "path": "book-9.xhtml",
+      "sha256": "1a8a9f25cb53899678f3e45e80e198642ce26ada7bad616433019f304d0ed92d"
+    },
+    {
+      "path": "book-10.xhtml",
+      "sha256": "fea905282e22045ebd89ac11f629a0dcbad7e56fe85b468f5c04b2962533ad89"
+    },
+    {
+      "path": "book-11.xhtml",
+      "sha256": "a56191508494509646988687706e1736b118217ca620381e2708eeb509a49092"
+    },
+    {
+      "path": "book-12.xhtml",
+      "sha256": "ee438faa3d5dc3b06bfad44784a40140afaa91f265dfc5ae174211ca233ec6de"
+    }
+  ],
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-17",
+    "reviewedJurisdictions": [
+      "IT",
+      "GB",
+      "KR"
+    ],
+    "evidenceUrl": "https://standardebooks.org/ebooks/marcus-aurelius/meditations/george-long"
+  }
+}

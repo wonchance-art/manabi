@@ -3859,6 +3859,7 @@ export default function ViewerPage() {
         return (
           <p className="viewer-attribution">{vt("출처:")} Standard Ebooks
             {se.author && <> · <span lang="en">{se.author}{se.publishedYear ? `, ${se.publishedYear}` : ''}</span></>}
+            {se.translator && <> · {vt("번역")} <span lang="en">{se.translator.name}{se.translator.publishedYear ? `, ${se.translator.publishedYear}` : ''}</span></>}
             {se.publicDomain && <> · <span className="viewer-attribution__license">{vt("원작 퍼블릭 도메인")}</span></>}
             {se.url && <> · <a href={se.url} target="_blank" rel="noopener noreferrer">{vt("판 보기")}</a></>}
             {se.editNote && <span className="viewer-attribution__muted"> · {vt(se.notesNote ? "장 분할·글자 정리는 manabi 편집, 삽화·미주는 싣지 않음" : "장 분할·글자 정리는 manabi 편집, 삽화는 싣지 않음")}</span>}
@@ -3874,7 +3875,8 @@ export default function ViewerPage() {
         if (!ws) return null;
         return (
           <p className="viewer-attribution">{vt("출처:")} {vt("위키문헌")}
-            {ws.author && <> · <span lang={{ zh: 'zh-Hans', fr: 'fr', ko: 'ko' }[ws.wiki]}>{ws.author}{ws.publishedYear ? `, ${ws.publishedYear}` : ''}</span></>}
+            {ws.author && <> · <span lang={{ zh: 'zh-Hans', fr: 'fr', ko: 'ko', en: 'en' }[ws.wiki]}>{ws.author}{ws.publishedYear ? `, ${ws.publishedYear}` : ''}</span></>}
+            {ws.translator && <> · {vt("번역")} <span lang={{ zh: 'zh-Hans', fr: 'fr', ko: 'ko', en: 'en' }[ws.wiki]}>{ws.translator.name}{ws.translator.publishedYear ? `, ${ws.translator.publishedYear}` : ''}</span></>}
             {ws.publicDomain && <> · <span className="viewer-attribution__license">{vt("원작 퍼블릭 도메인")}</span></>}
             {ws.ccBySa && <> · <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ko" target="_blank" rel="noopener noreferrer license">{vt("전사 CC BY-SA 4.0")}</a></>}
             {ws.url && <> · <a href={ws.url} target="_blank" rel="noopener noreferrer">{vt("원문 보기")}</a></>}
@@ -3892,6 +3894,7 @@ export default function ViewerPage() {
         return (
           <p className="viewer-attribution">{vt("출처:")} {pd.siteName}
             {pd.author && <> · <span lang={material?.processed_json?.metadata?.language === 'French' ? 'fr' : 'en'}>{pd.author}{pd.publishedYear ? `, ${pd.publishedYear}` : ''}</span></>}
+            {pd.translator && <> · {vt("번역")} <span lang={material?.processed_json?.metadata?.language === 'French' ? 'fr' : 'en'}>{pd.translator.name}{pd.translator.publishedYear ? `, ${pd.translator.publishedYear}` : ''}</span></>}
             {pd.publicDomain && <> · <span className="viewer-attribution__license">{vt("한국에서 퍼블릭 도메인")}</span></>}
             {pd.url && <> · <a href={pd.url} target="_blank" rel="noopener noreferrer">{vt("책 쪽 보기")}</a></>}
             {pd.editNote && <span className="viewer-attribution__muted"> · {vt(pd.notesNote ? "장 분할·글자 정리는 manabi 편집, 삽화·미주는 싣지 않음" : "장 분할·글자 정리는 manabi 편집, 삽화는 싣지 않음")}</span>}

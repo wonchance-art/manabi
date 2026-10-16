@@ -39,9 +39,29 @@ describe('한국 공개 가능 = ① 또는 ②', () => {
     expect(at({ authorDeathYear: 1970, countryOfOrigin: 'GB' }).ok).toBe(false); // 버트런드 러셀형 — 두 쪽 모두 보호 중
     expect(at({ authorDeathYear: 2000, countryOfOrigin: 'KR' }).ok).toBe(false); // 황순원
   });
-  it('기록 누락 · 번역본은 불가(fail-closed)', () => {
+  it('기록 누락 · 이름뿐인 번역자는 불가(fail-closed)', () => {
     expect(at({ authorDeathYear: 1900, countryOfOrigin: 'GB', translator: 'X' }).ok).toBe(false);
+    expect(at({ authorDeathYear: 1900, countryOfOrigin: 'GB', translator: { name: 'X', deathYear: 1900 } }).reasons.join(' ')).toMatch(/publishedYear.*countryOfOrigin/u);
     expect(at({ authorDeathYear: 1900, countryOfOrigin: 'GB', rights: {} }).ok).toBe(false);
     expect(at({ authorDeathYear: 1900 }).ok).toBe(false);
+  });
+});
+
+describe('번역본 = 원작 만료 그리고 번역 만료(오너 「되는 언어로만」 2026-10-17 KST)', () => {
+  const long = { name: 'George Long', deathYear: 1879, publishedYear: 1862, countryOfOrigin: 'GB' };
+  it('고전 원작 + 만료된 영어 번역은 된다', () => {
+    expect(at({ authorDeathYear: 180, publishedYear: 180, countryOfOrigin: 'IT', translator: long })).toMatchObject({ ok: true, basis: 'korea-term' }); // 『명상록』 롱 역
+  });
+  it('번역자가 아직 보호 중이면 원작이 아무리 오래돼도 막힌다', () => {
+    const verdict = at({ authorDeathYear: 180, publishedYear: 180, countryOfOrigin: 'IT', translator: { ...long, deathYear: 1990 } });
+    expect(verdict.ok).toBe(false);
+    expect(verdict.reasons[0]).toMatch(/^번역자 George Long 1990 사망/u);
+  });
+  it('원작이 보호 중이면 번역이 만료여도 막힌다', () => {
+    expect(at({ authorDeathYear: 1990, countryOfOrigin: 'GB', translator: long }).ok).toBe(false);
+  });
+  it('번역 쪽이 본국 상호주의로만 끝났으면 근거는 origin-term', () => {
+    expect(at({ authorDeathYear: 1883, countryOfOrigin: 'GB', translator: { name: 'Y', deathYear: 1970, publishedYear: 1925, countryOfOrigin: 'US' } }))
+      .toMatchObject({ ok: true, basis: 'origin-term' });
   });
 });

@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "fr",
+  "key": "ws-fr-rainer-maria-rilke_poemes-dedies-aux-amis-francais",
+  "main": "Poèmes français (Rilke)/Carnet de poche",
+  "url": "https://fr.wikisource.org/wiki/Po%C3%A8mes_fran%C3%A7ais_(Rilke)%2FCarnet_de_poche",
+  "title": "Poèmes dédiés aux amis français",
+  "author": "Rainer Maria Rilke",
+  "level": "C1 고급",
+  "publishedYear": 1935,
+  "authorDeathYear": 1926,
+  "countryOfOrigin": "FR",
+  "mortPourLaFrance": false,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "FR",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "프랑스 벗들에게 바치는 시",
+    "authorKo": "라이너 마리아 릴케"
+  },
+  "collection": true,
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "Poèmes français (Rilke)/Carnet de poche/Poèmes dédiés aux amis français/À Madame la Baronne de Brimont",
+      "revid": 15168445,
+      "timestamp": "2025-06-10T11:42:23Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "prp",
+          "sha256": "2a2ab67653540030f185c4b2d3808e11160a777bdf6a9f1ff805b71f8ed267cb"
+        }
+      ]
+    },
+    {
+      "page": "Poèmes français (Rilke)/Carnet de poche/Poèmes dédiés aux amis français/Vergers",
+      "revid": 15168450,
+      "timestamp": "2025-06-10T11:44:27Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "002.html",
+          "extract": "prp",
+          "sha256": "7a7eb743c872b3606e385099dcd2884bd0b05bdc57ef14c6c4ad4a8edc233301"
+        }
+      ]
+    },
+    {
+      "page": "Poèmes français (Rilke)/Carnet de poche/Poèmes dédiés aux amis français/Le Grand Pardon",
+      "revid": 15168457,
+      "timestamp": "2025-06-10T11:45:41Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "003.html",
+          "extract": "prp",
+          "sha256": "6684ad4dd1adf37eef9f57cd165fa5d02dc249558e844a4b4601c15221b05e0a"
+        }
+      ]
+    },
+    {
+      "page": "Poèmes français (Rilke)/Carnet de poche/Poèmes dédiés aux amis français/À Jules Supervielle",
+      "revid": 15168465,
+      "timestamp": "2025-06-10T11:50:24Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "004.html",
+          "extract": "prp",
+          "sha256": "904ebf2ac274b468a1e544b68a416005a21f4eb47439afe4bb1a74882fed03d9"
+        }
+      ]
+    },
+    {
+      "page": "Poèmes français (Rilke)/Carnet de poche/Poèmes dédiés aux amis français/Border un enfant dans son lit",
+      "revid": 15168470,
+      "timestamp": "2025-06-10T11:52:21Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "005.html",
+          "extract": "prp",
+          "sha256": "1850d3cc873f3abe7d6d8772d38599b3b3ccb23b4db6e91142c41cb0dc85ee7a"
+        }
+      ]
+    }
+  ]
+}

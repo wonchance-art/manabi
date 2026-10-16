@@ -19,7 +19,7 @@ export const SE_TARGET_WORDS = 2200;
 export const SE_LICENSE = 'CC0-1.0';
 export const SE_EDITS = Object.freeze(['chapter-split-by-manabi', 'typography-normalized', 'illustrations-omitted']);
 
-const KEY_PATTERN = /^se-[a-z0-9]+(?:-[a-z0-9]+)*_[a-z0-9]+(?:-[a-z0-9]+)*$/u;
+const KEY_PATTERN = /^se-[a-z0-9]+(?:-[a-z0-9]+)*(?:_[a-z0-9]+(?:-[a-z0-9]+)*){1,2}$/u; // 번역본은 _<번역자>가 붙는다(명상록 george-long)
 const SHA256 = /^[0-9a-f]{64}$/u;
 const COMMIT = /^[0-9a-f]{40}$/u;
 
@@ -40,10 +40,10 @@ function normalizeTypography(text) {
   return text.replace(/[⁠­​ ]/gu, '').replace(/[   ]/gu, ' ');
 }
 
-/** 요소 안쪽 → 글자(줄바꿈 <br/>만 살린다). 태그가 남으면 throw(모르는 구조를 글자로 흘리지 않는다). */
+/** 요소 안쪽 → 글자(줄바꿈 <br/>만 살린다). 태그가 남으면 throw(모르는 구조를 글자로 흘리지 않는다). 책 안 상호참조 <a>(명상록 「[Book IV]」)는 글자만. */
 function blockText(inner) {
   const flat = inner.replace(/\s+/gu, ' ').replace(/<br\s*\/>/gu, '\n');
-  const stripped = flat.replace(/<\/?(?:span|em|i|b|strong|abbr|time|q|cite|small|sup|sub|var|code|bdi|dfn|s|u)\b[^>]*>/gu, '');
+  const stripped = flat.replace(/<\/?(?:span|em|i|b|strong|abbr|time|q|cite|small|sup|sub|var|code|bdi|dfn|s|u|a)\b[^>]*>/gu, '');
   if (/[<>]/u.test(stripped)) throw new Error(`본문 블록에 모르는 태그가 있다: ${stripped.slice(0, 80)}`);
   return normalizeTypography(decodeEntities(stripped)).split('\n').map((line) => line.replace(/ {2,}/gu, ' ').trim()).filter(Boolean).join('\n');
 }
@@ -136,7 +136,7 @@ export function standardEbooksRightsPublishable(literature) {
   if (literature?.provider !== SE_PROVIDER || rights?.status !== 'approved' || rights?.basis !== 'public-domain') return false;
   if (literature.license !== SE_LICENSE) return false;
   const jurisdictions = Array.isArray(rights.reviewedJurisdictions) ? rights.reviewedJurisdictions : [];
-  if (![literature.countryOfOrigin, 'KR'].every((code) => jurisdictions.includes(code))) return false;
+  if (![literature.countryOfOrigin, literature.translator?.countryOfOrigin, 'KR'].filter(Boolean).every((code) => jurisdictions.includes(code))) return false;
   return standardEbooksRightsVerdict(literature).ok;
 }
 
@@ -144,7 +144,7 @@ function validateEntry(entry) {
   const problems = [];
   if (entry?.schemaVersion !== SE_BOOK_VERSION) problems.push(`schemaVersion ${SE_BOOK_VERSION}`);
   if (entry?.provider !== SE_PROVIDER) problems.push(`provider '${SE_PROVIDER}'`);
-  if (!/^standardebooks\/[a-z0-9-]+_[a-z0-9-]+$/u.test(entry?.repo ?? '')) problems.push('repo(standardebooks/<작가>_<작품>)');
+  if (!/^standardebooks\/[a-z0-9-]+(?:_[a-z0-9-]+){1,2}$/u.test(entry?.repo ?? '')) problems.push('repo(standardebooks/<작가>_<작품>[_<번역자>])');
   if (!COMMIT.test(entry?.commit ?? '')) problems.push('commit(40자 SHA)');
   if (!/^https:\/\/standardebooks\.org\/ebooks\//u.test(entry?.url ?? '')) problems.push('url(standardebooks.org/ebooks/…)');
   for (const field of ['title', 'author', 'level']) if (typeof entry?.[field] !== 'string' || !entry[field].trim()) problems.push(field);
@@ -193,7 +193,7 @@ export function createStandardEbooksDraft(entry, files, { targetWords = SE_TARGE
     publishedYear: entry.publishedYear,
     authorDeathYear: entry.authorDeathYear,
     countryOfOrigin: entry.countryOfOrigin,
-    translator: null,
+    translator: entry.translator ?? null,
     repo: entry.repo,
     commit: entry.commit,
     url: entry.url,

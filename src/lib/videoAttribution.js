@@ -139,6 +139,14 @@ function standardEbooksHref(value) {
  * Standard Ebooks 장의 출처 줄 재료 — 「원작 퍼블릭 도메인」은 권리 기록이 approved·public-domain일 때만.
  * @returns {{author:string, publishedYear:number|null, url:string, publicDomain:boolean, editNote:boolean, notesNote:boolean}|null}
  */
+/* 번역본 정본(오너 「되는 언어로만」 2026-10-17 KST)의 번역 크레딧 — 권리 기록이 구조화된 번역자({name, publishedYear})일 때만.
+ * 출처 줄에 「번역 George Long, 1862」로 원작 크레딧 뒤에 붙는다. 없으면 null(원어 원문). */
+export function translatorCredit(literature) {
+  const t = literature && typeof literature === 'object' ? literature.translator : null;
+  if (!t || typeof t !== 'object' || typeof t.name !== 'string' || !t.name.trim()) return null;
+  return { name: t.name.trim(), publishedYear: Number.isInteger(t.publishedYear) ? t.publishedYear : null };
+}
+
 export function standardEbooksAttributionParts(literature) {
   if (!literature || typeof literature !== 'object' || literature.provider !== 'standardebooks') return null;
   const rights = literature.rights && typeof literature.rights === 'object' ? literature.rights : {};
@@ -150,12 +158,13 @@ export function standardEbooksAttributionParts(literature) {
     publicDomain: rights.status === 'approved' && rights.basis === LICENSE_PUBLIC_DOMAIN,
     editNote: ['chapter-split-by-manabi', 'typography-normalized', 'illustrations-omitted'].every((code) => edits.includes(code)),
     notesNote: edits.includes('notes-omitted'), // 미주를 뺀 판(모비 딕 등)
+    translator: translatorCredit(literature),
   };
 }
 
 /* Wikisource 정본 책(LIT-SRC-WS-1) — 같은 「출처 한 줄」 문법. 원작은 퍼블릭 도메인이지만 위키문헌의 전사·교정은 CC BY-SA 4.0이라
  * 출처(위키문헌) · 원문 링크 · 라이선스 링크 · 우리가 바꾼 점을 밝힌다(저작자 표시 — 제목·출처·라이선스). 원문 링크는 zh/fr 위키문헌 HTTPS만. */
-const WIKISOURCE_HOSTS = Object.freeze({ zh: 'zh.wikisource.org', fr: 'fr.wikisource.org', ko: 'ko.wikisource.org' });
+const WIKISOURCE_HOSTS = Object.freeze({ zh: 'zh.wikisource.org', fr: 'fr.wikisource.org', ko: 'ko.wikisource.org', en: 'en.wikisource.org' });
 function wikisourceHref(value, wiki) {
   try {
     const url = new URL(String(value || ''));
@@ -182,6 +191,7 @@ export function wikisourceAttributionParts(literature) {
     ccBySa: literature.license === 'CC-BY-SA-4.0',
     editNote: ['chapter-split-by-manabi', 'typography-normalized', 'illustrations-omitted', 'notes-omitted'].every((code) => edits.includes(code)),
     scriptNote: edits.includes('script-variant-by-wikisource'),
+    translator: translatorCredit(literature),
   };
 }
 
@@ -207,6 +217,7 @@ export function pdSiteAttributionParts(literature) {
     publicDomain: rights.status === 'approved' && rights.basis === LICENSE_PUBLIC_DOMAIN,
     editNote: ['chapter-split-by-manabi', 'typography-normalized', 'illustrations-omitted'].every((code) => edits.includes(code)),
     notesNote: edits.includes('notes-omitted'),
+    translator: translatorCredit(literature),
   };
 }
 

@@ -51,7 +51,9 @@ describe('parseStandardEbooksXhtml — 판 XHTML → 문단', () => {
 
   it('모르는 구조는 흘려보내지 않는다(fail-closed) — 블록 밖 글자·모르는 태그·모르는 문자 참조·빈 본문', () => {
     expect(() => parseStandardEbooksXhtml(xhtml('<div>stray text</div><p>ok</p>'))).toThrow(/블록 밖/u);
-    expect(() => parseStandardEbooksXhtml(xhtml('<p>see <a href="#n1">note</a></p>'))).toThrow(/모르는 태그/u);
+    expect(() => parseStandardEbooksXhtml(xhtml('<p>see <object data="x">note</object></p>'))).toThrow(/모르는 태그/u);
+    // 책 안 상호참조(명상록 「[Book IV]」)는 글자만 — 고리는 뷰어에서 갈 데가 없다
+    expect(parseStandardEbooksXhtml(xhtml('<p>a director [<a href="book-4.xhtml">Book <span epub:type="z3998:roman">IV</span></a>].</p>')).blocks).toEqual(['a director [Book IV].']);
     expect(() => parseStandardEbooksXhtml(xhtml('<p>&nbsp;x</p>'))).toThrow(/문자 참조/u);
     expect(() => parseStandardEbooksXhtml(xhtml('<figure><img src="x"/></figure>'))).toThrow(/본문 문단이 없다/u);
     expect(() => parseStandardEbooksXhtml('<html></html>')).toThrow(/<title>/u);
@@ -166,8 +168,12 @@ describe('뷰어 대조·출처 줄 · 게시', () => {
   it('출처 줄 재료 — 작가·출판 연도·퍼블릭 도메인(승인일 때만)·판 링크(standardebooks.org HTTPS만)·바꾼 점', () => {
     const literature = manifest.works[book.book.key].literature;
     expect(standardEbooksAttributionParts(literature)).toEqual({
-      author: 'Lewis Carroll', publishedYear: 1865, url: 'https://standardebooks.org/ebooks/lewis-carroll/alices-adventures-in-wonderland/john-tenniel', publicDomain: true, editNote: true, notesNote: false,
+      author: 'Lewis Carroll', publishedYear: 1865, url: 'https://standardebooks.org/ebooks/lewis-carroll/alices-adventures-in-wonderland/john-tenniel', publicDomain: true, editNote: true, notesNote: false, translator: null,
     });
+    // 번역본(명상록 롱 역) — 출처 줄에 「번역 George Long, 1862」
+    expect(standardEbooksAttributionParts({ ...literature, translator: { name: ' George Long ', deathYear: 1879, publishedYear: 1862, countryOfOrigin: 'GB' } }).translator)
+      .toEqual({ name: 'George Long', publishedYear: 1862 });
+    expect(standardEbooksAttributionParts({ ...literature, translator: 'George Long' }).translator).toBe(null); // 이름뿐인 기록은 크레딧이 아니다
     expect(standardEbooksAttributionParts({ ...literature, url: 'javascript:alert(1)' }).url).toBe('');
     expect(standardEbooksAttributionParts({ ...literature, rights: { status: 'reviewing' } }).publicDomain).toBe(false);
     expect(standardEbooksAttributionParts({ ...literature, provider: 'aozora' })).toBe(null);

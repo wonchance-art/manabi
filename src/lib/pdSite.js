@@ -76,9 +76,13 @@ export function parsePdSiteHtml(html, parse) {
     .replace(/<!--[\s\S]*?-->/gu, '')
     .replace(/<(script|style|noscript|iframe)\b[\s\S]*?<\/\1>/giu, '')
     .replace(/<table\b[\s\S]*?<\/table>/giu, (table) => { const block = tableToBlock(table); if (!block) notesOmitted = true; return block; })
+    // 장 끝 각주 상자(국화와 칼 <div class='footnote'><p class='footnote'>[1] Reported in …</p></div>) — 각주는 싣지 않는다
+    .replace(/<div\b[^>]*class=['"]footnote['"][^>]*>(?:(?!<\/?div\b)[\s\S])*<\/div>/giu, () => { notesOmitted = true; return ''; })
     // 각주 번호 — 각주로 가는 고리(<a href="#f12"><sup>[12]</sup></a>)와 홀로 선 위첨자 번호
     .replace(/<a\b[^>]*href=['"]#f\d+['"][^>]*>[\s\S]*?<\/a>/giu, () => { notesOmitted = true; return ''; })
     .replace(/<sup\b[^>]*>(?:\s*<[^>]+>)*\s*\[?\d+\]?\s*(?:<\/[^>]+>\s*)*<\/sup>/giu, () => { notesOmitted = true; return ''; })
+    // 번호 목록·문답(국화와 칼 「1) As ‘a complete man’ …」 「Monk: …」) — Faded Page는 머리표를 문단 앞 span에 둔다. 문단 머리로 붙인다.
+    .replace(/<span\b[^>]*class=['"]listTag['"][^>]*>((?:(?!<\/?span\b)[\s\S]|<span\b[^>]*>[^<]*<\/span>)*)<\/span>\s*<p\b[^>]*>/giu, '<p>$1 ')
     .replace(/<img\b[^>]*>/giu, '')
     .replace(/<hr\b[^>]*>/giu, '');
   const items = [];
@@ -112,12 +116,17 @@ export function pdSiteSections(blocks, parse, workTitle) {
   const part = parse.part ? new RegExp(parse.part, 'u') : null;
   const chapter = parse.chapter ? new RegExp(parse.chapter, 'u') : null;
   const tidy = (text) => text.replace(/\n+/gu, ' ').replace(/\.$/u, '');
+  // subtitle: 장 번호 바로 다음 머리글이 장 이름인 판(국화와 칼 「1」 + 「Assignment: Japan」) — 「1: Assignment: Japan」로 합친다.
+  const subtitle = parse.subtitle ? new RegExp(parse.subtitle, 'u') : null;
   const sections = [];
   let prefix = null;
+  let awaitingSubtitle = false;
   for (const block of blocks) {
     const label = `${block.tag}:${block.text}`;
+    if (awaitingSubtitle && subtitle?.test(label)) { sections.at(-1).title += `: ${tidy(block.text)}`; awaitingSubtitle = false; continue; }
+    awaitingSubtitle = false;
     if (part?.test(label)) { prefix = tidy(block.text); sections.push({ title: prefix, part: true, blocks: [] }); continue; }
-    if (chapter?.test(label)) { sections.push({ title: prefix ? `${prefix} · ${tidy(block.text)}` : tidy(block.text), blocks: [] }); continue; }
+    if (chapter?.test(label)) { sections.push({ title: prefix ? `${prefix} · ${tidy(block.text)}` : tidy(block.text), blocks: [] }); awaitingSubtitle = true; continue; }
     if (!sections.length) sections.push({ title: workTitle, blocks: [] });
     sections.at(-1).blocks.push(block.text);
   }
@@ -135,7 +144,7 @@ export function pdSiteRightsPublishable(literature) {
   const rights = literature?.rights;
   if (literature?.provider !== PD_PROVIDER || rights?.status !== 'approved' || rights?.basis !== 'public-domain') return false;
   const jurisdictions = Array.isArray(rights.reviewedJurisdictions) ? rights.reviewedJurisdictions : [];
-  if (![literature.countryOfOrigin, 'KR'].every((code) => jurisdictions.includes(code))) return false;
+  if (![literature.countryOfOrigin, literature.translator?.countryOfOrigin, 'KR'].filter(Boolean).every((code) => jurisdictions.includes(code))) return false;
   return pdSiteRightsVerdict(literature).ok;
 }
 
@@ -183,7 +192,7 @@ export function createPdSiteDraft(entry, html) {
     authorDeathYear: entry.authorDeathYear,
     countryOfOrigin: entry.countryOfOrigin,
     ...(entry.countryOfOrigin === 'FR' ? { mortPourLaFrance: entry.mortPourLaFrance } : {}),
-    translator: null,
+    translator: entry.translator ?? null,
     url: entry.url,
     fetchedAt: entry.file.fetchedAt,
     rights: entry.rights,

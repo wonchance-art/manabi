@@ -76,7 +76,7 @@ describe('권리 — 원산국 만료(한국은 상호주의), 기준 연도는 
     // 생텍쥐페리형 — 프랑스에선 전쟁 연장으로 보호 중이지만 한국은 1962년 이전 사망이라 만료(2013 연장 전 끝남)
     expect(wikisourceRightsVerdict({ ...fr, authorDeathYear: 1944, publishedYear: 1943, mortPourLaFrance: true })).toMatchObject({ ok: true, basis: 'korea-term' });
     expect(wikisourceRightsVerdict({ ...fr, authorDeathYear: 1990, countryOfOrigin: 'DE' }).reasons.join()).toMatch(/판정 규칙이 없다/u);
-    expect(wikisourceRightsVerdict({ ...fr, translator: 'X' }).reasons.join()).toMatch(/번역본/u);
+    expect(wikisourceRightsVerdict({ ...fr, translator: 'X' }).reasons.join()).toMatch(/번역자는 \{name/u); // 이름뿐인 번역자는 검토 기록이 아니다
   });
   it('게시 가능 = 승인 · 퍼블릭 도메인 · 원산국/한국 검토 · 위키문헌 라이선스 · 판정 통과', () => {
     const literature = { ...base, provider: 'wikisource', license: WS_LICENSE, rights: { status: 'approved', basis: 'public-domain', reviewedJurisdictions: ['CN', 'KR'], reviewedAt: '2026-10-17' } };
@@ -153,7 +153,8 @@ describe('한국 근대 문학(오너 「한국 근대 문학도 추가」 → �
   it('리포 7편(소설 5 · 시집 2) — 원문 고정 · 권리 통과 · 장은 글자 수(공백 뺌) 3,000자 안팎 · 초판 장정 표지', async () => {
     const { readFileSync, readdirSync } = await import('node:fs');
     const root = 'src/content/literature/wikisource';
-    const keys = readdirSync(root).filter((name) => name.startsWith('ws-ko-')).sort();
+    // 기미독립선언서(3차 묶음)는 1919년 국한문 원문 그대로라 옛한글 자모·짧은 한 장 — 아래 3차 묶음 계약에서 따로 본다
+    const keys = readdirSync(root).filter((name) => name.startsWith('ws-ko-') && name !== 'ws-ko-choe-nam-seon_gimi-dongnip-seoneonseo').sort();
     expect(keys).toEqual(['ws-ko-hyeon-jin-geon_unsu-joeun-nal', 'ws-ko-kim-dong-in_gamja', 'ws-ko-kim-so-wol_jindallaekkot', 'ws-ko-kim-yu-jeong_dongbaekkkot', 'ws-ko-yi-hyo-seok_memilkkot-pil-muryeop', 'ws-ko-yi-sang_nalgae', 'ws-ko-yun-dong-ju_haneulgwa-baramgwa-byeolgwa-si']);
     const manifest = JSON.parse(readFileSync(`${root}/manifest.generated.json`, 'utf8'));
     for (const key of keys) {
@@ -169,5 +170,52 @@ describe('한국 근대 문학(오너 「한국 근대 문학도 추가」 → �
       expect(typeof entry.display.binding).toBe('string'); // 초판 장정(오너 「원본 책 재구성 … 표지 만들기까지 완성」)
       expect(manifest.works[key].display.binding).toBe(entry.display.binding);
     }
+  });
+});
+
+describe('3차 묶음(오너 「되는 언어로만 ㄱㄱ」 2026-10-17 KST) — 영어 위키문헌 · 절 하나 · 수식 · 헌사 있는 시', () => {
+  const enFragment = (inner) => `<div class="prp-pages-output" lang="en">\n${inner}\n</div>\n`;
+  const mw = (src) => `data-mw='${JSON.stringify({ name: 'math', attrs: {}, body: { extsrc: src } })}'`;
+  it('Parsoid 판(영어 위키문헌): 틀 기록(data-mw)·각주(mw-ref reference) 빼고 · 분수 수식은 ½ · 빈 묶음 괄호는 지운다 · 다른 수식은 throw', () => {
+    const { blocks } = parseWikisourceFragment(enFragment([
+      `<p>we should have 20 yards of linen = <math class="mwe-math-element" ${mw('\\scriptstyle{ \\frac{ 1 }{ 2 } }')}><mn>1</mn></math> coat.<sup class="mw-ref reference" id="cite_ref-19" data-mw='{"parts":["&lt;span>"]}'><a href="#cite_note-19"><span class="mw-reflink-text">[19]</span></a></sup></p>`,
+      `<p>20 yards of linen <math ${mw('\\scriptstyle{\n\\left.\n\\begin{matrix}\n\\ \\\\ \\ \n\\end{matrix}\n\\right\\}\\, } ')}><mrow/></math>= 1 coat</p>`,
+      '<ol class="mw-references references"><li>note</li></ol>',
+    ].join('\n')));
+    expect(blocks.map((block) => block.text)).toEqual(['we should have 20 yards of linen = ½ coat.', '20 yards of linen = 1 coat']);
+    expect(() => parseWikisourceFragment(enFragment(`<p>x <math ${mw('\\sqrt{2}')}></math></p>`))).toThrow(/모르는 수식/u);
+  });
+  it('리포 4편 — 원문 고정 · 권리 통과(번역본은 번역자까지) · 장 제목 · 판 이름 절만', async () => {
+    const { readFileSync } = await import('node:fs');
+    const root = 'src/content/literature/wikisource';
+    const draftOf = (key) => {
+      const entry = JSON.parse(readFileSync(`${root}/${key}/entry.json`, 'utf8'));
+      const files = entry.files.flatMap((file) => file.variants).map((item) => ({ path: item.path, text: readFileSync(`${root}/${key}/source/${item.path}`, 'utf8') }));
+      return { entry, draft: createWikisourceDraft(entry, files) };
+    };
+    // 『자본론』 1권 — 무어·에이블링 역(1887) · 운터만 교정(1906, 1956 사망): 원작·번역 둘 다 한국 만료. 장 제목은 「CHAPTER II.」 문단에서
+    const capital = draftOf('ws-en-karl-marx_capital');
+    expect(capital.entry.translator).toMatchObject({ deathYear: 1956, publishedYear: 1906 });
+    expect(wikisourceRightsVerdict(capital.entry)).toMatchObject({ ok: true, basis: 'korea-term' });
+    expect(capital.draft.chapters[0].metadata.literature.translator.name).toMatch(/Moore.*Aveling.*Untermann/u);
+    expect(capital.draft.chapters[0].metadata.language).toBe('English');
+    expect([...new Set(capital.draft.chapters.map((chapter) => chapter.title.replace(/ \(\d+\/\d+\)$/u, '')))].slice(0, 3)).toEqual(['Chapter I: Commodities', 'Chapter II: Exchange', 'Chapter III: Money, or the Circulation of Commodities']);
+    expect(capital.draft.chapters.some((chapter) => /^CHAPTER [IVXLC]+\.$|\d\[\d{1,3}\]/mu.test(chapter.rawText))).toBe(false);
+    // 기미독립선언서 — 1919 국한문 원문 절만(현대어 · 「쉽고 바르게 읽는」은 권리 선이 달라 싣지 않는다) · 公約三章 · 민족 대표 33인
+    const kimi = draftOf('ws-ko-choe-nam-seon_gimi-dongnip-seoneonseo');
+    expect(kimi.entry.section).toBe('원문');
+    expect(kimi.draft.chapters).toHaveLength(1);
+    expect(kimi.draft.chapters[0].title).toBe('宣言書');
+    expect(kimi.draft.chapters[0].rawText).toMatch(/^宣言書\n\n吾等은 玆에 我 朝鮮의 獨立國임과/u);
+    expect(kimi.draft.chapters[0].rawText).toMatch(/公約三章[\s\S]*韓龍雲, 洪秉箕, 洪其兆$/u);
+    expect(kimi.draft.chapters[0].rawText).not.toMatch(/현대어|우리는|쉽고 바르게/u);
+    // 릴케 — 다섯 편 한 장, 헌사(「À Madame …」) 위에 시 제목
+    const rilke = draftOf('ws-fr-rainer-maria-rilke_poemes-dedies-aux-amis-francais');
+    expect(rilke.draft.chapters).toHaveLength(1);
+    expect(rilke.draft.chapters[0].rawText).toMatch(/\n\nVergers\n\nÀ Madame Jeanne-René Dubost\./u);
+    // 루소 — 열 산책(위키 쪽 이름의 오타 「Dixème」도 그대로 받는다)
+    const reveries = draftOf('ws-fr-jean-jacques-rousseau_les-reveries-du-promeneur-solitaire');
+    expect(reveries.entry.files).toHaveLength(10);
+    expect(reveries.draft.chapters.at(-1).title).toMatch(/^DIXIEME PROMENADE/u);
   });
 });

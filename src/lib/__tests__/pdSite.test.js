@@ -41,6 +41,22 @@ describe('parsePdSiteHtml — 본문 시작부터 끝 앞까지, 모르는 구�
   });
 });
 
+describe('3차 묶음 — 국화와 칼(Faded Page): 번호 목록·문답 머리표 · 장 번호 다음 장 이름', () => {
+  it('listTag 머리표(「1)」 · 「Monk:」)는 문단 머리로 붙는다', () => {
+    const { blocks } = parsePdSiteHtml(page([
+      '<h1>1</h1><h3>Assignment: Japan</h3>',
+      "<div class='listEntry'><span class='listTag'>1)</span><p class='listPara'>As ‘a complete man’ cut off the girl.</p></div>",
+      "<div class='listEntry'><span class='listTag'><span class='it'>Monk</span>:</span><p class='listPara'>What is this power?</p></div>",
+      '<h2>Glossary</h2>',
+    ].join('')), { chapter: '^h1:\\d+$', start: '^h1:1$', stop: '^h2:Glossary$' });
+    expect(blocks.map((block) => block.text)).toEqual(['1', 'Assignment: Japan', '1) As ‘a complete man’ cut off the girl.', 'Monk: What is this power?']);
+  });
+  it('subtitle: 장 번호 바로 다음 머리글은 장 이름 — 「1: Assignment: Japan」 · 본문 사이의 같은 머리글은 본문', () => {
+    const blocks = [{ tag: 'h1', text: '1' }, { tag: 'h3', text: 'Assignment: Japan' }, { tag: 'p', text: 'a' }, { tag: 'h3', text: 'Aside' }, { tag: 'p', text: 'b' }];
+    expect(pdSiteSections(blocks, { chapter: '^h1:\\d+$', subtitle: '^h3:' }, 'W')).toEqual([{ title: '1: Assignment: Japan', blocks: ['a', 'Aside', 'b'] }]);
+  });
+});
+
 describe('pdSiteSections — 부(part) 제목은 다음 장 앞머리, 본문이 붙은 부 제목은 그 자체로 장', () => {
   it('1984형(PART ONE · Chapter 1) · 시지프형(부 바로 뒤 본문) · 장 제목 없는 중편(노인과 바다)', () => {
     const parse = { part: '^h1:(PART ONE|PART TWO|Le mythe)$', chapter: '^h[12]:', stop: 'x' };
@@ -59,7 +75,7 @@ describe('리포 7편 — 원문 고정 · 한국 법 권리 · 장 모양', () 
   const keys = readdirSync(ROOT).filter((name) => name.startsWith('pd-')).sort();
   it('작품 목록 · 권리 근거(헤밍웨이·카뮈·생텍쥐페리·오웰·울프 — 한국 보호기간 만료)', () => {
     expect(keys).toEqual([
-      'pd-fp-albert-camus_l-etranger', 'pd-fp-albert-camus_le-mythe-de-sisyphe', 'pd-fp-ernest-hemingway_the-old-man-and-the-sea', 'pd-fp-virginia-woolf_a-room-of-ones-own',
+      'pd-fp-albert-camus_l-etranger', 'pd-fp-albert-camus_le-mythe-de-sisyphe', 'pd-fp-ernest-hemingway_the-old-man-and-the-sea', 'pd-fp-ruth-benedict_the-chrysanthemum-and-the-sword', 'pd-fp-virginia-woolf_a-room-of-ones-own',
       'pd-gau-antoine-de-saint-exupery_le-petit-prince', 'pd-gau-george-orwell_animal-farm', 'pd-gau-george-orwell_nineteen-eighty-four',
     ]);
     for (const key of keys) {

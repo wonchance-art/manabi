@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "provider": "standardebooks",
+  "repo": "standardebooks/benjamin-franklin_the-autobiography-of-benjamin-franklin",
+  "commit": "9e71f1cca87cf88649de02668ccbdd9c1cf582b3",
+  "url": "https://standardebooks.org/ebooks/benjamin-franklin/the-autobiography-of-benjamin-franklin",
+  "title": "The Autobiography of Benjamin Franklin",
+  "author": "Benjamin Franklin",
+  "publishedYear": 1791,
+  "authorDeathYear": 1790,
+  "countryOfOrigin": "US",
+  "level": "C1 고급",
+  "display": {
+    "titleKo": "프랭클린 자서전",
+    "authorKo": "벤저민 프랭클린"
+  },
+  "files": [
+    {
+      "path": "chapter-1.xhtml",
+      "sha256": "fc77b528e76258f4fa00e18ef6cfc6fd0aa9d3f98ee0b4591be62884ef1d44da"
+    },
+    {
+      "path": "chapter-2.xhtml",
+      "sha256": "610cc44ba8b3122c0f8ecc368ab21af34467b622ba2beb390681a787b884e870"
+    },
+    {
+      "path": "chapter-3.xhtml",
+      "sha256": "7675e175d6510889da39343cba0a755b2ced9b7e4a3a925d2592c9354d15911b"
+    },
+    {
+      "path": "chapter-4.xhtml",
+      "sha256": "d20029d50a9cd29425f0341f524d4c3a90ace5c63cb1a7b252e524ec12fa9aa6"
+    },
+    {
+      "path": "chapter-5.xhtml",
+      "sha256": "89f67f2e237f5516a71935afdf978ab083e21f0861248e5eb3f8c4264dd4b39a"
+    },
+    {
+      "path": "chapter-6.xhtml",
+      "sha256": "b31ebf4671ca0cdc6fdc7f90deac97a6b26df2238aa317d2a238daeb50e7917f"
+    },
+    {
+      "path": "chapter-7.xhtml",
+      "sha256": "205a3b472d2e69a6456fd57716cd9f3b4a0ec585c9ebebbdc4efae6db1f475b7"
+    },
+    {
+      "path": "chapter-8.xhtml",
+      "sha256": "2386fe99cd0ca00a312f5045e61efbde34c17888a27c3439954c524cfc315e69"
+    },
+    {
+      "path": "chapter-9.xhtml",
+      "sha256": "c5b420f5189af29cbe77d1109fe403b4fa3eadf96a053872e032292cc98390dc"
+    },
+    {
+      "path": "chapter-10.xhtml",
+      "sha256": "4b37cbc964988569958feb9f9c3bf1530be01d6c79efad4c479cbe3cada39338"
+    },
+    {
+      "path": "chapter-11.xhtml",
+      "sha256": "ab6652cb0a40bc42d0e8a977addad25459fc06d18b5576745c215a099dd74ed6"
+    },
+    {
+      "path": "chapter-12.xhtml",
+      "sha256": "683bb105d24a2e9df233ebb73602bce5f0953add07aa20e0223ea08dc5de147f"
+    },
+    {
+      "path": "chapter-13.xhtml",
+      "sha256": "47bdbdd9073f25bebc5cf1bf6aca67839ed1fb6829e7277297dc9351837cb4ba"
+    },
+    {
+      "path": "chapter-14.xhtml",
+      "sha256": "c362e84976e78b3b23b66578125147d10d98158fc47faf83c5527e65f1bd4a49"
+    },
+    {
+      "path": "chapter-15.xhtml",
+      "sha256": "776549fbeea988e7700e02c95cbf15176900d5084f0dc2faf7552e660e651e25"
+    },
+    {
+      "path": "chapter-16.xhtml",
+      "sha256": "f4f80ddb740a015c06564008317e017f0e00cce268b3a34e3eb6bcc8c9cbd115"
+    },
+    {
+      "path": "chapter-17.xhtml",
+      "sha256": "25e702c7e9e7ce9df2342e88927645fc17f3579aa507dae0a7bc40211ccaea56"
+    },
+    {
+      "path": "chapter-18.xhtml",
+      "sha256": "048591f1004d4df8fbff1ae9dbdcf8839638f6d236e76cf411b4aaf0d4cf1da0"
+    },
+    {
+      "path": "chapter-19.xhtml",
+      "sha256": "e6ea6e0749e13ba9c19ce9ee86a371bc6734a3c645a2673ed85c400fc9246d38"
+    }
+  ],
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-17",
+    "reviewedJurisdictions": [
+      "US",
+      "KR"
+    ],
+    "evidenceUrl": "https://standardebooks.org/ebooks/benjamin-franklin/the-autobiography-of-benjamin-franklin"
+  }
+}

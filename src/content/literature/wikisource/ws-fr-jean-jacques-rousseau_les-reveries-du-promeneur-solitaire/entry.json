@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "fr",
+  "key": "ws-fr-jean-jacques-rousseau_les-reveries-du-promeneur-solitaire",
+  "main": "Les Rêveries du promeneur solitaire",
+  "url": "https://fr.wikisource.org/wiki/Les_R%C3%AAveries_du_promeneur_solitaire",
+  "title": "Les Rêveries du promeneur solitaire",
+  "author": "Jean-Jacques Rousseau",
+  "level": "C1 고급",
+  "publishedYear": 1782,
+  "authorDeathYear": 1778,
+  "countryOfOrigin": "CH",
+  "mortPourLaFrance": null,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "CH",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "고독한 산책자의 몽상",
+    "authorKo": "장 자크 루소"
+  },
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "Les Rêveries du promeneur solitaire/Première Promenade",
+      "revid": 14609578,
+      "timestamp": "2024-10-06T06:55:16Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "prp",
+          "sha256": "d23bdb0ed0834c0234fa67516614cae22c13490ff5ba60e46b6129d5e9dcc2c1"
+        }
+      ]
+    },
+    {
+      "page": "Les Rêveries du promeneur solitaire/Deuxième Promenade",
+      "revid": 14609594,
+      "timestamp": "2024-10-06T07:01:41Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "002.html",
+          "extract": "prp",
+          "sha256": "ad903dedf6623ca307df3fe2a696278147a9990cec65732df54c1d1a9a735604"
+        }
+      ]
+    },
+    {
+      "page": "Les Rêveries du promeneur solitaire/Troisième Promenade",
+      "revid": 14609593,
+      "timestamp": "2024-10-06T07:01:24Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "003.html",
+          "extract": "prp",
+          "sha256": "19ad15bc7e995527654c6a709cff923b401fa7b10193fa1220276c2a093e005f"
+        }
+      ]
+    },
+    {
+      "page": "Les Rêveries du promeneur solitaire/Quatrième Promenade",
+      "revid": 14609582,
+      "timestamp": "2024-10-06T06:57:44Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "004.html",
+          "extract": "prp",
+          "sha256": "7baee74aeb810fa53aaff20b1ce8687838a27ca337834b03a74136fc2f67f681"
+        }
+      ]
+    },
+    {
+      "page": "Les Rêveries du promeneur solitaire/Cinquième Promenade",
+      "revid": 14609586,
+      "timestamp": "2024-10-06T06:58:14Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "005.html",
+          "extract": "prp",
+          "sha256": "d13717a9ca1dab59fa3af52093d3ee4ab5e14d584569b53461c6fb6aaf5b6a13"
+        }
+      ]
+    },
+    {
+      "page": "Les Rêveries du promeneur solitaire/Sixième Promenade",
+      "revid": 14609588,
+      "timestamp": "2024-10-06T06:58:54Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "006.html",
+          "extract": "prp",
+          "sha256": "c3c66dffefc41fea11c3859f5e29744bfbd3a3aa8a8f8339fceca4e6628c6d3f"
+        }
+      ]
+    },
+    {
+      "page": "Les Rêveries du promeneur solitaire/Septième Promenade",
+      "revid": 14609589,
+      "timestamp": "2024-10-06T06:59:21Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "007.html",
+          "extract": "prp",
+          "sha256": "8d498b82661afa168568f4b55bbf2cfe0a0d123a6ada8b8fe65849af891ca8d8"
+        }
+      ]
+    },
+    {
+      "page": "Les Rêveries du promeneur solitaire/Huitième Promenade",
+      "revid": 14609590,
+      "timestamp": "2024-10-06T06:59:46Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "008.html",
+          "extract": "prp",
+          "sha256": "abec9accb1048e91e35b54811c33dde7d6567786962e18ec5cdd9e66ece759f7"
+        }
+      ]
+    },
+    {
+      "page": "Les Rêveries du promeneur solitaire/Neuvième Promenade",
+      "revid": 14609591,
+      "timestamp": "2024-10-06T07:00:17Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "009.html",
+          "extract": "prp",
+          "sha256": "c2ed8beddc83527caead6d69adcd901196f95c37b335d712c6cb30588154602d"
+        }
+      ]
+    },
+    {
+      "page": "Les Rêveries du promeneur solitaire/Dixème Promenade",
+      "revid": 14609592,
+      "timestamp": "2024-10-06T07:00:47Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "010.html",
+          "extract": "prp",
+          "sha256": "5e09e64e9f7437272d3345714c5012649e3b5b928a56346bd19f0cff94d7702a"
+        }
+      ]
+    }
+  ]
+}

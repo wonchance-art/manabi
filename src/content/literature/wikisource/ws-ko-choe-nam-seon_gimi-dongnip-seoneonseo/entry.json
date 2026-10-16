@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "ko",
+  "key": "ws-ko-choe-nam-seon_gimi-dongnip-seoneonseo",
+  "main": "3·1독립선언서",
+  "section": "원문",
+  "url": "https://ko.wikisource.org/wiki/3%C2%B71%EB%8F%85%EB%A6%BD%EC%84%A0%EC%96%B8%EC%84%9C",
+  "title": "宣言書",
+  "author": "崔南善",
+  "level": "고급",
+  "publishedYear": 1919,
+  "authorDeathYear": 1957,
+  "countryOfOrigin": "KR",
+  "mortPourLaFrance": null,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "기미독립선언서",
+    "authorKo": "최남선 기초 · 민족 대표 33인"
+  },
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "3·1독립선언서",
+      "revid": 459928,
+      "timestamp": "2026-09-24T00:47:34Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "section:원문",
+          "sha256": "f996726caac3a74b1d09cc45677f70e2a345748be1371a352461b3191a1b7a7a"
+        }
+      ]
+    }
+  ]
+}

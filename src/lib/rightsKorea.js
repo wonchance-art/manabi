@@ -49,7 +49,9 @@ export function originTermExpired({ publishedYear, authorDeathYear, countryOfOri
 
 /**
  * 한국 공개 가능 판정 — ① 한국 만료 또는 ② 본국 만료. 기준 연도는 검토일(rights.reviewedAt)의 해라 결정적이다.
- * 번역자가 있으면 불가(원어 원문만), 연도 기록이 없으면 불가(fail-closed).
+ * 번역본(오너 「되는 언어로만」 2026-10-17 KST)은 원작과 번역 둘 다 한국에서 만료여야 한다 — 번역은 그 자체로 저작물이라
+ * translator를 {name, deathYear, publishedYear, countryOfOrigin}로 적고 같은 두 갈래(①·②)로 따로 본다. 문자열 하나뿐인
+ * translator는 검토 기록이 아니라 불가다. 연도 기록이 없으면 불가(fail-closed).
  * @returns {{ok: boolean, reasons: string[], reviewYear: number|null, basis: 'korea-term'|'origin-term'|null}}
  */
 export function koreaPublicDomainVerdict({ publishedYear, authorDeathYear, countryOfOrigin, mortPourLaFrance = null, translator = null, rights } = {}) {
@@ -59,10 +61,39 @@ export function koreaPublicDomainVerdict({ publishedYear, authorDeathYear, count
   if (!Number.isInteger(publishedYear)) reasons.push('publishedYear가 필요하다');
   if (!Number.isInteger(authorDeathYear)) reasons.push('authorDeathYear가 필요하다');
   if (typeof countryOfOrigin !== 'string' || !countryOfOrigin) reasons.push('countryOfOrigin이 필요하다');
-  if (translator) reasons.push('번역본은 넣지 않는다(원어 원문만)');
+  if (translator != null) reasons.push(...translatorRecordReasons(translator));
   if (reasons.length) return { ok: false, reasons, reviewYear, basis: null };
-  if (koreaTermExpired(authorDeathYear, reviewYear)) return { ok: true, reasons: [], reviewYear, basis: 'korea-term' };
+  const original = termVerdict({ publishedYear, authorDeathYear, countryOfOrigin, mortPourLaFrance }, reviewYear, '작가');
+  if (!original.ok) return { ok: false, reasons: original.reasons, reviewYear, basis: null };
+  if (translator == null) return { ok: true, reasons: [], reviewYear, basis: original.basis };
+  const translation = termVerdict({
+    publishedYear: translator.publishedYear,
+    authorDeathYear: translator.deathYear,
+    countryOfOrigin: translator.countryOfOrigin,
+    mortPourLaFrance: translator.mortPourLaFrance ?? null,
+  }, reviewYear, `번역자 ${translator.name}`);
+  if (!translation.ok) return { ok: false, reasons: translation.reasons, reviewYear, basis: null };
+  // 둘 중 늦게 끝난 쪽이 근거다 — 한국 만료끼리면 korea-term, 하나라도 본국 상호주의면 origin-term.
+  const basis = original.basis === 'origin-term' || translation.basis === 'origin-term' ? 'origin-term' : 'korea-term';
+  return { ok: true, reasons: [], reviewYear, basis };
+}
+
+/** 번역 기록의 모양 — 이름·몰년·번역 출판 연도·번역 원산국. 빠지면 그 사유들. */
+export function translatorRecordReasons(translator) {
+  if (!translator || typeof translator !== 'object' || Array.isArray(translator)) {
+    return ['번역자는 {name, deathYear, publishedYear, countryOfOrigin}로 적는다(문자열 하나는 검토 기록이 아니다)'];
+  }
+  const reasons = [];
+  if (typeof translator.name !== 'string' || !translator.name.trim()) reasons.push('translator.name이 필요하다');
+  if (!Number.isInteger(translator.deathYear)) reasons.push('translator.deathYear가 필요하다');
+  if (!Number.isInteger(translator.publishedYear)) reasons.push('translator.publishedYear(번역 출판)가 필요하다');
+  if (typeof translator.countryOfOrigin !== 'string' || !translator.countryOfOrigin) reasons.push('translator.countryOfOrigin이 필요하다');
+  return reasons;
+}
+
+function termVerdict({ publishedYear, authorDeathYear, countryOfOrigin, mortPourLaFrance }, reviewYear, who) {
+  if (koreaTermExpired(authorDeathYear, reviewYear)) return { ok: true, reasons: [], basis: 'korea-term' };
   const origin = originTermExpired({ publishedYear, authorDeathYear, countryOfOrigin, mortPourLaFrance }, reviewYear);
-  if (origin.expired) return { ok: true, reasons: [], reviewYear, basis: 'origin-term' };
-  return { ok: false, reasons: [`작가 ${authorDeathYear} 사망 — 한국 보호기간이 끝나지 않았다(1962년 이전 사망 또는 사후 70년)`, origin.reason], reviewYear, basis: null };
+  if (origin.expired) return { ok: true, reasons: [], basis: 'origin-term' };
+  return { ok: false, reasons: [`${who} ${authorDeathYear} 사망 — 한국 보호기간이 끝나지 않았다(1962년 이전 사망 또는 사후 70년)`, origin.reason], basis: null };
 }

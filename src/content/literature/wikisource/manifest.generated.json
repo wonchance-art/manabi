@@ -2714,7 +2714,7 @@
       "level": "고급",
       "total": 6,
       "language": "Korean",
-      "size": 18210,
+      "size": 18218,
       "unit": "chars",
       "display": {
         "titleKo": "진달래꽃",
@@ -2757,7 +2757,7 @@
         {
           "order": 1,
           "title": "먼 후일 외 21편",
-          "sha256": "fac37a036f88f14ff64fa6963225da71b545bcb62a6d10c54267771d9d81e0ef"
+          "sha256": "48dbd5866173e399296e55fcfbe1ca76045d2b41501d6f84f593f485a4a9dfe6"
         },
         {
           "order": 2,

@@ -24,13 +24,14 @@ export const WS_WIKIS = Object.freeze({
   fr: { language: 'French', host: 'fr.wikisource.org' },
   // 한국 근대 문학(오너 「한국 근대 문학도 추가」 → 「베스트 5만」 2026-10-17 KST) — 현대 맞춤법 전사본(한자는 괄호 병기 그대로)
   ko: { language: 'Korean', host: 'ko.wikisource.org' },
+  en: { language: 'English', host: 'en.wikisource.org' }, // 영어 번역본(『자본론』 무어·에이블링 역) — 원어 영어 정본은 Standard Ebooks가 먼저
 });
 // 장 하나 분량 — 프랑스어 단어 수 · 중국어·한국어 글자 수(공백 뺌)
-export const WS_TARGET = Object.freeze({ French: 2200, Chinese: 2500, Korean: 3000 });
+export const WS_TARGET = Object.freeze({ French: 2200, Chinese: 2500, Korean: 3000, English: 2200 });
 export const WS_EDITS = Object.freeze(['chapter-split-by-manabi', 'typography-normalized', 'illustrations-omitted', 'notes-omitted']);
 export const WS_SCRIPT = Object.freeze({ canonical: 'zh-hans', alternate: 'zh-hant' });
 
-const KEY_PATTERN = /^ws-(zh|fr|ko)-[a-z0-9]+(?:-[a-z0-9]+)*_[a-z0-9]+(?:-[a-z0-9]+)*$/u;
+const KEY_PATTERN = /^ws-(zh|fr|ko|en)-[a-z0-9]+(?:-[a-z0-9]+)*_[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 const SHA256 = /^[0-9a-f]{64}$/u;
 const NAME_OPEN = '';
 const NAME_CLOSE = '';
@@ -98,10 +99,28 @@ function blockText(inner) {
  * (가운데 줄 「VIVE LA FRANCE !」·날짜 서명). 블록마다 이름 표시(中 专名线)는 {start, end} 자리로 돌려준다(블록 글자 좌표).
  * 알려진 블록 밖에 글자가 남으면 throw — 모르는 구조의 본문이 조용히 사라지지 않게(fail-closed).
  */
-export function parseWikisourceFragment(fragment) {
+const VULGAR = Object.freeze({ '1/2': '½', '1/3': '⅓', '2/3': '⅔', '1/4': '¼', '3/4': '¾' });
+/**
+ * 수식(<math>, 『자본론』 영어 위키문헌) → 글자. 본문에 나오는 것은 두 가지뿐이다: 분수(「½ coat」)는 분수 글자로, 표 옆 묶음 괄호
+ * (\left\{ … \right. — 빈 행렬)는 글자가 없으니 지운다. 그 밖의 수식은 모르는 구조라 throw(fail-closed).
+ */
+function mathText(dataMw) {
+  const source = String(JSON.parse(dataMw.replace(/&quot;/gu, '"').replace(/&#39;/gu, "'").replace(/&amp;/gu, '&'))?.body?.extsrc ?? '');
+  const fraction = /^\\scriptstyle\s*\{\s*\\frac\s*\{\s*(\d+)\s*\}\s*\{\s*(\d+)\s*\}\s*\}\s*$/u.exec(source);
+  if (fraction) return VULGAR[`${fraction[1]}/${fraction[2]}`] ?? `${fraction[1]}⁄${fraction[2]}`;
+  const residue = source.replace(/\\(?:scriptstyle|left|right|begin\{matrix\}|end\{matrix\})|\\[{}]|\\[,\\ ]|[{}.\s]/gu, '');
+  if (!residue) return '';
+  throw new Error(`모르는 수식: ${source.slice(0, 60)}`);
+}
+
+export function parseWikisourceFragment(fragment, { upperSmallCaps = false } = {}) {
   if (!/^<div class="(?:prp-pages-output|mw-content-ltr mw-parser-output)"/u.test(fragment.trim())) throw new Error('위키문헌 본문 조각이 아니다');
   let html = fragment.trim().replace(/^<div[^>]*>/u, '').replace(/<\/div>\s*$/u, '');
+  // 영어 위키문헌은 작은 대문자(smallcaps)를 소문자 글자로 적는다(『자본론』 「exchange.」) — 화면 그대로 대문자로. 다른 위키는 그대로.
+  if (upperSmallCaps) html = html.replace(/<span class="smallcaps"[^>]*>([^<]*)<\/span>/gu, (_, text) => text.replace(/&[#a-z0-9]+;|[^&]+/giu, (part) => (part[0] === '&' ? part : part.toLocaleUpperCase('en'))));
   html = html
+    .replace(/<math\b[^>]*?\sdata-mw='([^']*)'[^>]*>[\s\S]*?<\/math>/gu, (_, mw) => mathText(mw))
+    .replace(/\sdata-mw='[^']*'/gu, '') // Parsoid 틀 기록(『자본론』 영어 위키문헌) — 속에 「<span>」 같은 위키 글자가 있다. 본문이 아니다
     .replace(/<style\b[\s\S]*?<\/style>/gu, '')
     .replace(/<(?:link|meta)\b[^>]*>/gu, '')
     .replace(/<!--[\s\S]*?-->/gu, '')
@@ -110,9 +129,11 @@ export function parseWikisourceFragment(fragment) {
     .replace(/<span class="pagenum ws-pagenum"[^>]*>(?:<span[^>]*>[^<]*<\/span>)?<\/span>/gu, '')
     .replace(/<span itemprop="associatedMedia"[^>]*><\/span>/gu, '')
     .replace(/<span style="font-size:0; line-height:0; display:block" class="lettrine"><br\s*\/?><\/span>/gu, '');
+  // 각주 번호·목록 — 옛 파서는 class="reference", Parsoid(영어 위키문헌)는 class="mw-ref reference" · "mw-references references".
+  // 표보다 먼저 뺀다(『자본론』 통계표 칸 안 각주 번호 「642,607[143]」).
+  html = removeElements(html, 'sup', (open) => /class="(?:[^"]*\s)?reference(?:\s[^"]*)?"/u.test(open));
+  html = removeElements(html, 'ol', (open) => /class="(?:[^"]*\s)?references(?:\s[^"]*)?"/u.test(open));
   html = html.replace(/<table\b[\s\S]*?<\/table>/gu, tableToBlock);
-  html = removeElements(html, 'sup', (open) => /class="reference"/u.test(open));
-  html = removeElements(html, 'ol', (open) => /class="references"/u.test(open));
   html = removeElements(html, 'div', (open) => NOISE_DIV.test(open));
   const headings = [];
   // 제목 안 간격 div(쥘 베른 「I<div/>dans lequel…」)는 줄바꿈, 작은 대문자(sc)는 실제 대문자로 — 화면의 제목 그대로
@@ -219,7 +240,7 @@ export function wikisourceRightsPublishable(literature) {
   if (literature?.provider !== WS_PROVIDER || rights?.status !== 'approved' || rights?.basis !== 'public-domain') return false;
   if (literature.license !== WS_LICENSE) return false;
   const jurisdictions = Array.isArray(rights.reviewedJurisdictions) ? rights.reviewedJurisdictions : [];
-  if (![literature.countryOfOrigin, 'KR'].every((code) => jurisdictions.includes(code))) return false;
+  if (![literature.countryOfOrigin, literature.translator?.countryOfOrigin, 'KR'].filter(Boolean).every((code) => jurisdictions.includes(code))) return false;
   return wikisourceRightsVerdict(literature).ok;
 }
 
@@ -246,6 +267,22 @@ function validateEntry(entry) {
 }
 
 /** 쪽의 제목 → 장 제목. 쪽 안 제목(h2–h6)을 「 · 」로 잇되 작품 제목과 같은 것은 뺀다. 없으면 작품 제목. */
+const MINOR_WORDS = new Set(['a', 'an', 'and', 'as', 'at', 'by', 'for', 'in', 'of', 'on', 'or', 'the', 'to']);
+const titleCase = (text) => text.toLocaleLowerCase('en').replace(/[a-z][a-z’'-]*/gu, (word, at) => (at > 0 && MINOR_WORDS.has(word) ? word : word[0].toUpperCase() + word.slice(1)));
+
+/**
+ * 장 제목이 머리글이 아니라 가운데 문단인 판(『자본론』 영어 위키문헌 「CHAPTER II.」 + 「EXCHANGE.」) — entry.chapterHeading(장 번호 문단
+ * 정규식)에 맞는 문단과 그다음 문단을 머리글로 옮기고, 그 앞의 부·편 표제 문단(「BOOK I.」 「PART I.」)과 함께 본문에서 뺀다.
+ * 「Chapter II: Exchange」. 쪽에 맞는 문단이 없으면 throw(모르는 구조).
+ */
+function takeChapterHeading(parsed, pattern, page) {
+  const at = parsed.blocks.findIndex((block) => new RegExp(pattern, 'u').test(block.text));
+  if (at < 0 || !parsed.blocks[at + 1]) throw new Error(`${page}: 장 번호 문단(${pattern})이 없다`);
+  const number = parsed.blocks[at].text.replace(/\.$/u, '').replace(/^CHAPTER\b/u, 'Chapter');
+  parsed.headings.push(`${number}: ${titleCase(parsed.blocks[at + 1].text.replace(/\.$/u, ''))}`);
+  parsed.blocks.splice(0, at + 2);
+}
+
 function pageTitle(headings, workTitle) {
   const own = headings.filter((heading) => heading.replace(/\s+/gu, ' ').toLowerCase() !== workTitle.toLowerCase());
   // 「I\nCE QU’ON RENCONTRE…」 → 「I. CE QU’ON RENCONTRE…」(장 번호 줄 뒤에 마침표) · 나머지 줄은 공백으로 잇는다
@@ -267,16 +304,18 @@ export function createWikisourceDraft(entry, files) {
   const byPath = new Map(files.map((file) => [file.path, file.text]));
   const expected = entry.files.flatMap((file) => file.variants.map((item) => item.path));
   if (files.length !== expected.length || expected.some((name) => !byPath.has(name))) throw new Error('쪽 조각이 entry.files와 다르다');
-  const measure = entry.wiki === 'fr' ? wordCount : charCount;
+  const measure = entry.wiki === 'fr' || entry.wiki === 'en' ? wordCount : charCount;
   const target = WS_TARGET[language];
   const pieces = [];
   // 시집(entry.collection) — 쪽 하나가 시 한 편이라 쪽마다 장을 만들면 너무 잘다. 시를 단위로 분량 목표까지 이어 묶는다(시 한가운데는 자르지 않는다).
   if (entry.collection === true) {
     const poems = entry.files.map((file) => {
-      const { blocks } = parseWikisourceFragment(byPath.get(file.variants[0].path));
+      const { blocks, headings } = parseWikisourceFragment(byPath.get(file.variants[0].path));
       const name = file.page.slice(file.page.lastIndexOf('/') + 1);
-      // 시 제목 — 쪽 첫 블록이 시 행(여러 줄 · 긴 줄)이면 제목 줄이 없는 쪽이라 쪽 이름을 제목 블록으로 넣는다(장 안에서 시가 갈려 보이게)
-      const titled = blocks[0] && !blocks[0].text.includes('\n') && blocks[0].text.length <= 30 ? blocks : [{ text: name, names: [] }, ...blocks];
+      // 시 제목 — 쪽 첫 블록이 시 행(여러 줄 · 긴 줄)이면 제목 줄이 없는 쪽이라 쪽 이름을 제목 블록으로 넣는다(장 안에서 시가 갈려 보이게).
+      // 제목이 머리글(h2–h6)로 따로 있는 쪽(릴케 「VERGERS」)은 첫 블록이 짧아도 헌사(「À Madame …」)라 쪽 이름을 넣는다.
+      const ownLine = blocks[0] && !blocks[0].text.includes('\n') && blocks[0].text.length <= 30 && !headings.length;
+      const titled = ownLine ? blocks : [{ text: name, names: [] }, ...blocks];
       return { name, blocks: titled.map((block) => ({ ...block, alternate: null })), file };
     });
     const groups = splitBlocks(poems, target, (poem) => poem.blocks.reduce((sum, block) => sum + measure(block.text), 0));
@@ -290,7 +329,8 @@ export function createWikisourceDraft(entry, files) {
     }
   }
   for (const file of entry.collection === true ? [] : entry.files) {
-    const canonical = parseWikisourceFragment(byPath.get(file.variants[0].path));
+    const canonical = parseWikisourceFragment(byPath.get(file.variants[0].path), { upperSmallCaps: entry.wiki === 'en' });
+    if (entry.chapterHeading && !canonical.headings.length) takeChapterHeading(canonical, entry.chapterHeading, file.page);
     let alternate = null;
     if (zh) {
       alternate = parseWikisourceFragment(byPath.get(file.variants[1].path));
@@ -322,7 +362,7 @@ export function createWikisourceDraft(entry, files) {
     authorDeathYear: entry.authorDeathYear,
     countryOfOrigin: entry.countryOfOrigin,
     ...(entry.countryOfOrigin === 'FR' ? { mortPourLaFrance: entry.mortPourLaFrance } : {}),
-    translator: null,
+    translator: entry.translator ?? null,
     url: entry.url,
     fetchedAt: entry.fetchedAt,
     license: WS_LICENSE,
@@ -359,6 +399,6 @@ export function createWikisourceDraft(entry, files) {
     schemaVersion: WS_BOOK_VERSION,
     book,
     chapters,
-    diagnostics: { pageCount: entry.files.length, chapterCount: total, size: sizes.reduce((sum, value) => sum + value, 0), unit: entry.wiki === 'fr' ? 'words' : 'chars', minChapter: Math.min(...sizes), maxChapter: Math.max(...sizes) },
+    diagnostics: { pageCount: entry.files.length, chapterCount: total, size: sizes.reduce((sum, value) => sum + value, 0), unit: entry.wiki === 'fr' || entry.wiki === 'en' ? 'words' : 'chars', minChapter: Math.min(...sizes), maxChapter: Math.max(...sizes) },
   };
 }

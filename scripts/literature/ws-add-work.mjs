@@ -15,8 +15,8 @@ import path from 'node:path';
 
 const ROOT = 'src/content/literature/wikisource';
 const UA = 'manabi-literature/1.0 (non-commercial language-learning reader; https://manabi.co.kr)';
-const WIKIS = { zh: 'https://zh.wikisource.org', fr: 'https://fr.wikisource.org', ko: 'https://ko.wikisource.org' };
-const KEY = /^ws-(zh|fr|ko)-[a-z0-9]+(?:-[a-z0-9]+)*_[a-z0-9]+(?:-[a-z0-9]+)*$/u;
+const WIKIS = { zh: 'https://zh.wikisource.org', fr: 'https://fr.wikisource.org', ko: 'https://ko.wikisource.org', en: 'https://en.wikisource.org' };
+const KEY = /^ws-(zh|fr|ko|en)-[a-z0-9]+(?:-[a-z0-9]+)*_[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 
 const args = process.argv.slice(2);
 const flag = (name) => { const index = args.indexOf(`--${name}`); return index >= 0 ? args[index + 1] : null; };
@@ -48,7 +48,7 @@ export function balancedDiv(html, start) {
 }
 
 /** 렌더 HTML → 본문 조각. 교정본(prp-pages-output)이 있으면 그것, 없으면 parser-output에서 머리·꼬리 틀을 뺀 것. */
-export function extractFragment(html) {
+export function extractFragment(html, { section = null } = {}) {
   const prp = html.search(/<div class="prp-pages-output"/u);
   if (prp >= 0) return { extract: 'prp', html: balancedDiv(html, prp) };
   const root = html.search(/<div class="mw-content-ltr mw-parser-output"/u);
@@ -78,7 +78,24 @@ export function extractFragment(html) {
   body = body.replace(/<center><b>현대어<\/b>\s*<\/center>\n?/gu, '');
   // 본문 뒤 꼬리 제목(한국어 위키문헌 「바깥 고리」 · 「라이선스」 — 저작권 틀 위 h1/h2)은 본문이 아니다
   body = body.replace(/<div class="mw-heading mw-heading[1-6]"><h([1-6]) id="(?:라이선스|바깥_고리)">[\s\S]*?<\/h\1><\/div>\n?/gu, '');
+  if (section) return { extract: `section:${section}`, html: sectionOf(body, section) };
   return { extract: 'body', html: body };
+}
+
+/**
+ * 한 쪽에 판이 여럿 실린 문서(3·1독립선언서 「원문 · 현대어 · 쉽고 바르게 읽는」)에서 h2 한 절만 — 그 제목부터 다음 h2 앞까지.
+ * 퍼블릭 도메인인 1919년 원문만 싣는다(현대어 판은 출처 미상 · 「쉽고 바르게」는 공공누리라 권리 선이 다르다).
+ */
+export function sectionOf(body, id) {
+  const heading = (name) => new RegExp(`<div class="mw-heading mw-heading2"><h2 id="${name}">`, 'u');
+  const start = body.search(heading(id.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')));
+  if (start < 0) throw new Error(`절이 없다: ${id}`);
+  const rest = body.slice(start + 1);
+  const next = rest.search(heading('[^"]+'));
+  // 본문 조각 모양(parser-output 한 div)을 지킨다 — 빌드 파서는 그 뿌리로 위키문헌 조각을 알아본다
+  // 절 제목(「원문」)은 판 이름이라 본문·장 제목이 아니다 — 걷어 낸다.
+  const part = (next < 0 ? body.slice(start) : body.slice(start, start + 1 + next)).replace(/^<div class="mw-heading mw-heading2">[\s\S]*?<\/div>\n?/u, '');
+  return `<div class="mw-content-ltr mw-parser-output">${part}</div>`;
 }
 
 async function main() {
@@ -88,7 +105,7 @@ async function main() {
   const pattern = flag('pattern');
   const variants = (flag('variants') || '').split(',').filter(Boolean);
   if (!WIKIS[wiki] || !KEY.test(key ?? '') || !key.startsWith(`ws-${wiki}-`) || !mainTitle) {
-    throw new Error('--wiki zh|fr|ko --key ws-<wiki>-<작가>_<작품> --main <쪽 제목> [--pattern <장 쪽 정규식>] [--variants zh-hans,zh-hant]');
+    throw new Error('--wiki zh|fr|ko|en --key ws-<wiki>-<작가>_<작품> --main <쪽 제목> [--pattern <장 쪽 정규식>] [--variants zh-hans,zh-hant]');
   }
   if (wiki === 'zh' && variants.join(',') !== 'zh-hans,zh-hant') throw new Error('중국어는 --variants zh-hans,zh-hant(간체 정본 + 번체 보기)');
   if (wiki !== 'zh' && variants.length) throw new Error('글자 변환은 중국어만');
@@ -138,7 +155,7 @@ async function main() {
         page.variants.push({ variant, path: file, extract: previous.files.find((item) => item.page === title).variants.find((item) => item.path === file)?.extract ?? 'body', sha256: sha256(kept) });
         continue;
       }
-      const { extract, html } = extractFragment(await get(render(title, variant)));
+      const { extract, html } = extractFragment(await get(render(title, variant)), { section: flag('section') });
       if (!html) throw new Error(`본문 조각을 닫지 못했다: ${title}`);
       writeFileSync(path.join(out, 'source', file), `${html}\n`);
       page.variants.push({ variant, path: file, extract, sha256: sha256(`${html}\n`) });
@@ -155,6 +172,7 @@ async function main() {
     wiki,
     key,
     main: mainTitle,
+    ...(flag('section') ? { section: flag('section') } : {}),
     url: `${base}/wiki/${encodeURIComponent(mainTitle.replace(/ /gu, '_'))}`,
     title: previous.title ?? '', author: previous.author ?? '', level: previous.level ?? '',
     publishedYear: previous.publishedYear ?? null, authorDeathYear: previous.authorDeathYear ?? null,
