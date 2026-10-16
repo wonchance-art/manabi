@@ -13,6 +13,7 @@ import ConfirmModal from '../components/ConfirmModal';
 import StudyPlanPanel from './StudyPlanPanel';
 import BookRefinePanel from '../components/BookRefinePanel';
 import LiteraturePublishPanel from '../components/LiteraturePublishPanel';
+import BulkAnalysisPanel from '../components/admin/BulkAnalysisPanel';
 import { failureMessage } from '../lib/errorMessage';
 import { LANG_NAME_KO } from '../lib/constants';
 
@@ -445,6 +446,8 @@ export default function AdminPage() {
       {tab === 'materials' && (
         matsLoading ? <Spinner message="자료 목록 불러오는 중…" /> : materialsError ? <AdminLoadError what="자료" onRetry={refetchMaterials} /> : (
           <div className="admin-table-wrap">
+            {/* 분석 전 공개 자료 일괄 분석(BULK-ANALYZE-001) — 뷰어와 같은 정본 분석 경로, 내 소유만(저장 RPC가 소유자만 받는다) */}
+            <BulkAnalysisPanel ownerId={user?.id} toast={toast} />
             {/* 책 단위 정제(v2-AB R0) — 내 책 묶음만 후보로 보인다(RPC가 소유자만 받는다) */}
             <BookRefinePanel
               materials={materials}
