@@ -27,9 +27,9 @@ export function useGoalCatalog(enabled = true) {
   return useQuery({ queryKey: ['goal-catalog'], queryFn: fetchGoalCatalog, enabled, staleTime: Infinity, gcTime: Infinity });
 }
 
-/** 목표 궤도 — { status: 'none' | 'loading' | 'ready', view } */
+/** 목표 궤도 — { status: 'none' | 'loading' | 'error' | 'ready', view, retry? } */
 export function useGoalTrack() {
-  const { user, profile } = useAuth();
+  const { user, profile, loading: authLoading, profileLoading } = useAuth();
   const goalLang = profile?.goal_lang;
   const goalLevel = profile?.goal_level;
   const goalDate = profile?.dday_date;
@@ -39,12 +39,13 @@ export function useGoalTrack() {
     () => (hasGoal && catalog.data ? buildPlan({ languages: catalog.data }, goalLang, { upto: goalLevel }) : null),
     [hasGoal, catalog.data, goalLang, goalLevel],
   );
-  const { data: rows, isLoading } = useQuery({
+  const progress = useQuery({
     queryKey: ['goal-progress', user?.id, goalLang],
     enabled: hasGoal && !!plan,
     queryFn: () => fetchGoalProgressRows(user.id, goalLang),
     staleTime: 1000 * 60 * 5,
   });
+  const rows = progress.data;
   const view = useMemo(() => {
     if (!plan || !rows) return null;
     const marked = markProgress(plan, rows);
@@ -54,9 +55,15 @@ export function useGoalTrack() {
     const goalName = profile?.dday_label || plan.levels[plan.levels.length - 1]?.label || goalLevel;
     return goalTrackView({ marked, p, goalName, goalDate });
   }, [plan, rows, goalDate, goalLevel, profile?.dday_label]);
+  // 받는 중 · 없음 · 실패를 가른다(LOADING-SKELETON-001 리뷰). 로그인 확인 · 프로필 받는 중에 profile이 비어 있다고
+  // 「목표를 정하면」(거짓 빈 상태)을 보이지 않고, 실패 · 셀 수 없음을 「불러오는 중」으로 영원히 두지도 않는다.
+  if (authLoading || (user?.id && profileLoading)) return { status: 'loading', view: null };
   if (!hasGoal || catalog.isError) return { status: 'none', view: null };
-  if (!view) return { status: catalog.isLoading || isLoading || !rows ? 'loading' : 'none', view: null };
-  return { status: 'ready', view };
+  if (view) return { status: 'ready', view };
+  if (!catalog.data) return { status: 'loading', view: null };
+  if (!plan) return { status: 'none', view: null }; // 목표 언어 · 과정이 목록에 없다 — 궤도를 셀 수 없다
+  if (progress.isError) return { status: 'error', view: null, retry: () => progress.refetch() };
+  return { status: 'loading', view: null };
 }
 
 /** 칸 겉 — 배움에서는 링크(현황으로), 현황에서는 목표 편집을 여는 버튼(onOpen). */
@@ -78,8 +85,17 @@ export function GoalTrackSkeleton({ className = '' }) {
 }
 
 export default function GoalTrackTile({ className = '', href = '/progress', editHref = '/progress?goal=edit', onOpen }) {
-  const { status, view } = useGoalTrack();
+  const { status, view, retry } = useGoalTrack();
   if (status === 'loading') return <GoalTrackSkeleton className={className} />;
+  // 진도를 받지 못했다 — 링크 칸 안에 버튼을 둘 수 없어 칸 자체는 링크가 아니다(문구 표준 「…지 못했어요.」 + 「다시 시도」).
+  if (status === 'error') {
+    return (
+      <div className={`learn-tile learn-goal learn-goal--empty ${className}`.trim()}>
+        <span><span className="learn-goal__line">목표 진도를 불러오지 못했어요.</span></span>
+        <button type="button" className="learn-button-s" onClick={retry}>다시 시도</button>
+      </div>
+    );
+  }
   if (!view) {
     return (
       <Shell onOpen={onOpen} href={editHref} className={`learn-tile learn-goal learn-goal--empty ${className}`.trim()}>

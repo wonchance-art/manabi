@@ -12,7 +12,7 @@ import { ReviewTile, StatTile } from '@/components/learn/LearnTiles';
  */
 export default function Loading() {
   return (
-    <SkeletonRegion className="manabi-page learn-page" label="배움 화면">
+    <SkeletonRegion className="manabi-page learn-page" label="배움 화면" announce>
       <div className="learn-top" aria-hidden="true">
         <div className="learn-top__title"><h1>배움</h1></div>
         <span className="learn-toplink">현황 전체 →</span>

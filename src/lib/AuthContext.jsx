@@ -29,6 +29,8 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  // 프로필 읽기가 끝난(성공 · 실패 모두) 계정 — profile이 null인 것이 「아직 받는 중」인지 「없음」인지 가른다(profileLoading).
+  const [profileSettledFor, setProfileSettledFor] = useState(null);
   const toast = useToast();
   const explicitSignOutRef = useRef(false);
   const hadSessionRef = useRef(false);
@@ -65,6 +67,7 @@ export function AuthProvider({ children }) {
         const previous = observedProfileRef.current;
         observedProfileRef.current = nextProfile;
         setProfile(nextProfile);
+        setProfileSettledFor(actorId);
         // 첫 조회는 보상 이벤트가 아니다. 확정된 같은 계정의 증가만 기존 토스트로 알린다.
         const count = nextProfile?.streak_count;
         const message = previous && count > previous.streak_count && STREAK_MILESTONES[count];
@@ -85,8 +88,9 @@ export function AuthProvider({ children }) {
   async function refreshProfileReadOnly(userId) {
     try { return await profileReaderRef.current.refresh(userId); }
     catch (err) {
-      if (!unloadingRef.current && mountedRef.current && actorRef.current === userId) {
-        console.error('프로필 로드/갱신 실패:', err.message);
+      if (mountedRef.current && actorRef.current === userId) {
+        setProfileSettledFor(userId); // 실패도 끝 — 받는 중으로 영원히 두지 않는다
+        if (!unloadingRef.current) console.error('프로필 로드/갱신 실패:', err.message);
       }
       return null;
     }
@@ -104,6 +108,7 @@ export function AuthProvider({ children }) {
         await refreshProfileReadOnly(userId);
       }
     } catch (err) {
+      if (current()) setProfileSettledFor(userId); // 로그인 기록이 실패해도 받는 중으로 남기지 않는다
       if (current() && !unloadingRef.current) console.error('프로필 로드/갱신 실패:', err.message);
     }
   }
@@ -333,6 +338,8 @@ export function AuthProvider({ children }) {
     user,
     profile,
     loading,
+    // 로그인했는데 프로필을 아직 받지 못했다 — profile null을 「목표 없음」 같은 빈 상태로 읽지 않게(LOADING-SKELETON-001).
+    profileLoading: !!user && profileSettledFor !== user.id,
     isAdmin,
     signUp,
     signIn,

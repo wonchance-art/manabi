@@ -6,9 +6,10 @@ import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
  * 읽던 곳 카드(RecentReads)와 같은 치수 규칙(library.css가 .shelf-row-skeleton · .shelf-recent-skeleton을 함께 받는다)으로 그려
  * 자리 높이를 맞춘다. 줄 · 카드 클래스 자체는 다르게 둔다 — 실제 자료 줄(.shelf-row)을 세는 곳이 골격을 자료로 세지 않게. 표지는 같은 크기의 회색 칸(.shelf-cover 치수).
  */
-export function ShelfRowsSkeleton({ count = 4 }) {
+/** 자료 목록 받는 중 — 서재 안에서는 이 목록이 알림 하나를 맡는다(announce). 서재 전체 골격 안에서는 바깥이 맡는다. */
+export function ShelfRowsSkeleton({ count = 4, announce = true }) {
   return (
-    <SkeletonRegion label="자료 목록">
+    <SkeletonRegion label="자료 목록" announce={announce}>
       <ul className="shelf-rows" aria-hidden="true">
         {Array.from({ length: count }, (_, i) => <li key={i} className="shelf-row-skeleton">
           <div className="shelf-row-main"><div className="shelf-row-link">
@@ -45,7 +46,7 @@ export function RecentReadsSkeleton() {
 /** 로그인 확인 중(LibraryPage) — 머리줄 · 위치 목록 · 읽던 곳 · 목록 골격. 머리 글(「내 서재」)은 늘 같아서 글자 그대로. */
 export function LibraryShelfSkeleton() {
   return (
-    <SkeletonRegion className="shelf-layout shelf-managed" label="서재">
+    <SkeletonRegion className="shelf-layout shelf-managed" label="서재" announce>
       <header className="shelf-header" aria-hidden="true">
         <h1>내 서재</h1>
         <form><SkeletonLine width="100%" height="20px" /></form>
@@ -58,7 +59,7 @@ export function LibraryShelfSkeleton() {
           <section className="shelf-list-section">
             {/* 도구(정렬 · 필터 · 선택)는 44px 단추라 머리줄 높이를 정한다 — 같은 높이 칸을 둬야 목록이 밀리지 않는다(실측 +17px). */}
             <div className="shelf-section-heading"><h2>전체</h2><div className="shelf-list-tools"><SkeletonLine width="12em" height="44px" /></div></div>
-            <ShelfRowsSkeleton />
+            <ShelfRowsSkeleton announce={false} />
           </section>
         </div>
       </div>
