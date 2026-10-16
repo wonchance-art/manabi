@@ -5796,6 +5796,12 @@ a.viewer-badge:hover {
   cursor: pointer;
 }
 .toast__close:hover { color: var(--text-primary); }
+/* 퇴장(TOAST-MOTION-001): ToastContext가 toast--leaving을 단 뒤 TOAST_LEAVE_MS(160ms)에 지운다 — 투명도 · 4px 아래로. */
+.toast { transition: opacity var(--transition-fast), transform var(--transition-fast); }
+.toast--leaving { animation: none; opacity: 0; transform: translateY(4px); pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  .toast, .toast--leaving { animation: none; transition: none; }
+}
 
 /* 종류별 색은 불투명한 --bg-elevated 위에 얹는다(M09 실측 2026-10-13). .toast-container는 body 직속이라 밝은 셸(.manabi-app)
    밖의 루트 토큰을 받는데, 예전처럼 배경이 반투명이면 밝은 본문이 비쳐 루트의 밝은 --text-primary가 그 위에서 거의 안 보였다.

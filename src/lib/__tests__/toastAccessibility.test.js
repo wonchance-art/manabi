@@ -21,7 +21,7 @@ vi.mock('react', async (importOriginal) => {
   };
 });
 
-const { ToastProvider, TOAST_STACK_LIMIT, toastRole } = await import('../ToastContext');
+const { ToastProvider, TOAST_STACK_LIMIT, TOAST_LEAVE_MS, toastRole } = await import('../ToastContext');
 
 function render() {
   h.index = 0;
@@ -30,7 +30,7 @@ function render() {
   const toasts = (container.props.children || []).map((el) => {
     const [body, close] = el.props.children;
     const message = body.props.children[1].props.children;
-    return { className: el.props.className, role: body.props.role, message, close };
+    return { className: el.props.className, role: body.props.role, message, close, el };
   });
   return { toast: tree.props.value, container, toasts };
 }
@@ -71,9 +71,48 @@ describe('WALL-STATES-001 ⑦ 토스트 접근성', () => {
     expect(first.close.props.type).toBe('button');
     expect(first.close.props['aria-label']).toBe('알림 닫기');
     first.close.props.onClick();
+    // 퇴장(TOAST-MOTION-001): 그 토스트만 leaving으로 빠지고 TOAST_LEAVE_MS 뒤에 지워진다.
+    expect(render().toasts.map((t) => [t.message, t.className.includes('toast--leaving')])).toEqual([['첫째', true], ['둘째', false]]);
+    vi.advanceTimersByTime(TOAST_LEAVE_MS);
     expect(render().toasts.map((t) => t.message)).toEqual(['둘째']);
-    vi.advanceTimersByTime(4000);
+    vi.advanceTimersByTime(4000 - TOAST_LEAVE_MS);
+    expect(render().toasts.map((t) => t.className)).toEqual(['toast toast--error toast--leaving']);
+    vi.advanceTimersByTime(TOAST_LEAVE_MS);
     expect(render().toasts).toEqual([]);
+  });
+
+  it('동작 줄이기면 퇴장 효과 없이 바로 지운다', () => {
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: true }) });
+    try {
+      const { toast } = render();
+      toast('바로', 'info');
+      render().toasts[0].close.props.onClick();
+      expect(render().toasts).toEqual([]);
+    } finally { vi.unstubAllGlobals(); }
+  });
+
+  it('포인터가 올라가 있거나 안에 포커스가 있는 동안은 저절로 닫히지 않고, 떠나면 남은 시간으로 다시 건다', () => {
+    const { toast } = render();
+    toast('읽는 중', 'info', 4000);
+    vi.advanceTimersByTime(1000);
+    render().toasts[0].el.props.onPointerEnter();
+    vi.advanceTimersByTime(10000);
+    expect(render().toasts.map((t) => t.className)).toEqual(['toast toast--info']);
+    // 포커스도 잡았다가 — 포인터만 떠나도 포커스가 남아 있으면 계속 멈춘다
+    render().toasts[0].el.props.onFocus();
+    render().toasts[0].el.props.onPointerLeave();
+    vi.advanceTimersByTime(10000);
+    expect(render().toasts[0].className).not.toContain('toast--leaving');
+    // 토스트 안에서 포커스가 옮겨 가는 blur는 떠난 것이 아니다
+    const inside = {};
+    render().toasts[0].el.props.onBlur({ currentTarget: { contains: (node) => node === inside }, relatedTarget: inside });
+    vi.advanceTimersByTime(10000);
+    expect(render().toasts[0].className).not.toContain('toast--leaving');
+    render().toasts[0].el.props.onBlur({ currentTarget: { contains: () => false }, relatedTarget: null });
+    vi.advanceTimersByTime(2999);
+    expect(render().toasts[0].className).not.toContain('toast--leaving'); // 남은 3000ms
+    vi.advanceTimersByTime(1);
+    expect(render().toasts[0].className).toContain('toast--leaving');
   });
 
   it('토스트 안의 버튼은 호출부 인라인 없이 눌리고, 닫기 버튼은 44px 터치 타깃이다', () => {
@@ -82,6 +121,10 @@ describe('WALL-STATES-001 ⑦ 토스트 접근성', () => {
     // 컨테이너는 아래 화면을 막지 않고(none), 토스트 자체는 눌린다(auto).
     expect(block).toMatch(/\.toast-container\s*\{[^}]*pointer-events:\s*none/);
     expect(block).toMatch(/\.toast\s*\{\s*pointer-events:\s*auto;\s*\}/);
+    // 퇴장은 같은 블록 안 — 토큰(--transition-fast) · 4px · 동작 줄이기 분기(TOAST-MOTION-001).
+    expect(block).toMatch(/\.toast--leaving\s*\{[^}]*opacity:\s*0;[^}]*translateY\(4px\)/);
+    expect(block).toMatch(/\.toast\s*\{\s*transition:\s*opacity var\(--transition-fast\), transform var\(--transition-fast\);\s*\}/);
+    expect(block).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{\s*\.toast, \.toast--leaving \{ animation: none; transition: none; \}/);
     const close = block.match(/\.toast__close\s*\{([^}]*)\}/)?.[1] || '';
     expect(close).toMatch(/min-width:\s*44px/);
     expect(close).toMatch(/min-height:\s*44px/);
