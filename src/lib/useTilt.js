@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { reducedMotion } from './reducedMotion';
 
 // 마우스 위치 기반 카드 tilt — 데스크탑 한정.
 // 호버 lift(translateY)는 룰북 위반이라 안 함. perspective rotation만.
@@ -9,7 +10,7 @@ export function useTilt({ max = 4, scale = 1, disabled = false } = {}) {
 
   useEffect(() => {
     if (disabled || typeof window === 'undefined') return;
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    if (reducedMotion()) return;
     if (window.matchMedia?.('(hover: none)').matches) return; // 터치 디바이스 skip
     const el = ref.current;
     if (!el) return;

@@ -170,7 +170,7 @@ describe('⑹ O · X 빠른 암기 보기 옵션(LEVEL-OX-AN-001)', () => {
     expect(sliceBetween(page, 'const togglePeek = ', ';\n')).toContain("peekRef.current.get(key)?.phase === 'open' ? closePeek(key) : openPeek(key)");
     expect(sliceBetween(page, 'const openPeek = ', '\n  }, [')).toContain('setTimeout(() => closePeek(key), LEVEL_PEEK_MS)');
     const close = sliceBetween(page, 'const closePeek = ', '\n  }, [');
-    expect(close).toContain("(prefers-reduced-motion: reduce)");
+    expect(close).toContain('if (reducedMotion()) { timers.delete(key); return setPhase(key, null); }'); // 판정은 정본 reducedMotion(N2)
     expect(close).toContain('LEVEL_PEEK_CLOSE_MS');
     expect(LEVEL_PEEK_CLOSE_MS).toBe(200);
     expect(css).toContain('animation:lv-close .2s ease-in');

@@ -16,10 +16,9 @@ const walk = (dir, out = []) => {
   }
   return out;
 };
-// 예외 — 이유와 함께. 같은 판정(matchMedia reduce)을 자체로 한다.
-const ALLOW = Object.freeze({
-  'src/views/ViewerPage.jsx': '뷰어는 자체 matchMedia(reduce) 검사 2곳(1183 · 1435 부근)으로 같은 판정 — 뷰어 분할 작업 중이라 손대지 않는다',
-});
+// 예외 — 이유와 함께. 지금은 없다: 뷰어 · 단어 목록 · 축하 효과 · 기울기 · 숫자 올리기의 자체 matchMedia(reduce) 7곳을
+// reducedMotion()으로 모았다(N2 교차 검토 2026-10-17 KST). 예외가 생기면 이 목록이 신호다.
+const ALLOW = Object.freeze({});
 
 describe('reducedMotion()', () => {
   afterEach(() => vi.unstubAllGlobals());
@@ -56,6 +55,16 @@ describe("behavior: 'smooth'를 쓰는 화면은 동작 줄이기를 따른다",
   it('배움의 단어 복습 칸 — 동작 줄이기면 자동 순환하지 않고 첫 단어를 고정한다', () => {
     const tiles = fs.readFileSync('src/components/learn/LearnTiles.jsx', 'utf8');
     expect(tiles).toMatch(/if \(pool\.length < 2 \|\| reducedMotion\(\)\) return undefined;\s*const t = setInterval/);
+  });
+
+  it("동작 줄이기 판정은 reducedMotion 한 곳 — 화면 · 훅이 matchMedia('(prefers-reduced-motion…)')를 직접 묻지 않는다", () => {
+    const direct = files.filter((f) => f !== 'src/lib/reducedMotion.js' && !f.startsWith('src/components/world/') && !ALLOW[f])
+      .flatMap((f) => fs.readFileSync(f, 'utf8').split('\n').map((line, i) => [line, i + 1])
+        .filter(([line]) => /matchMedia\??\.?\(\s*['"`]\(prefers-reduced-motion/.test(line)).map(([, n]) => `${f}:${n}`));
+    expect(direct).toEqual([]);
+    for (const f of ['src/views/ViewerPage.jsx', 'src/views/LevelListPage.jsx', 'src/lib/celebration.js', 'src/lib/useTilt.js', 'src/lib/useCountUp.js']) {
+      expect(fs.readFileSync(f, 'utf8'), f).toMatch(/import \{ reducedMotion \} from '[^']*reducedMotion';/);
+    }
   });
 
   it('예외 목록의 파일은 실제로 smooth를 쓰고 자체 판정이 있다', () => {

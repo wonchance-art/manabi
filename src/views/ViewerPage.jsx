@@ -202,6 +202,7 @@ import { isArtBookMaterial } from '../lib/artBookProvider';
 import { useArtBookChapter } from '../lib/useArtBookChapter';
 import ViewerArtCard from '../components/viewer/ViewerArtCard';
 import { logReviewEvents } from '../lib/reviewEvents';
+import { reducedMotion } from '../lib/reducedMotion';
 
 // 공부 모드 지원 언어 키 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
 // 실사용은 '이 자료 언어로 세션 생성 가능한가' 멤버십 체크 1곳뿐이라 정적 키 집합으로 대체한다.
@@ -1240,7 +1241,7 @@ export default function ViewerPage() {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', `M ${a.x} ${a.y} L ${a.x} ${top} L ${b.x} ${top} L ${b.x} ${b.y}`);
     svg.appendChild(path);
-    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (!reducedMotion()) {
       const len = path.getTotalLength();
       path.style.strokeDasharray = String(len);
       path.style.strokeDashoffset = String(len);
@@ -1502,12 +1503,11 @@ export default function ViewerPage() {
     const paged = el && pagerFor(el);
     if (paged) { requestAnimationFrame(() => { if (el.isConnected) paged.reveal(el, { user: true }); }); return; }
     if (el) {
-      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
       requestAnimationFrame(()=>{
         if(!el.isConnected)return;
         const bounds=readerVisibleBounds(readerRef.current),rect=el.getBoundingClientRect();
         const top=bounds.top+Math.max(0,(bounds.bottom-bounds.top-rect.height)/3);
-        window.scrollBy({top:rect.top-top,behavior:reduce?'instant':'smooth'});
+        window.scrollBy({top:rect.top-top,behavior:reducedMotion()?'instant':'smooth'});
       });
     }
   };

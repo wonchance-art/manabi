@@ -246,8 +246,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
   const closePeek = useCallback((key) => {
     const timers = peekTimers.current;
     clearTimeout(timers.get(key));
-    const reduced = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    if (reduced) { timers.delete(key); return setPhase(key, null); }
+    if (reducedMotion()) { timers.delete(key); return setPhase(key, null); }
     setPhase(key, 'closing');
     timers.set(key, setTimeout(() => { timers.delete(key); setPhase(key, null); }, LEVEL_PEEK_CLOSE_MS));
   }, [setPhase]);
