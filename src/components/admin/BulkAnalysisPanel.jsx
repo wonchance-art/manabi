@@ -79,7 +79,7 @@ export default function BulkAnalysisPanel({ ownerId, toast }) {
         : <>
           <p>내가 공개한 자료 중 아직 분석하지 않은 글 {targets.length}편이에요. 분석하면 뷰어에서 단어를 눌러 뜻을 보고 담을 수 있어요.</p>
           {running
-            ? <p role="status" aria-live="polite">{running.done}/{running.total}편 분석 중… <Button variant="secondary" size="sm" onClick={() => abortRef.current?.abort()}>멈추기</Button></p>
+            ? <p role="status" aria-live="polite">{running.done}/{running.total}편 분석하고 있어요… <Button variant="secondary" size="sm" onClick={() => abortRef.current?.abort()}>멈추기</Button></p>
             : <Button disabled={targets.length === 0} onClick={() => setConfirming(true)}>{targets.length}편 분석하기</Button>}
           {failed.length > 0 && <details><summary>건너뛴 {failed.length}편</summary><ul>{failed.map((item) => <li key={item.id}>{item.title} — {item.message}</li>)}</ul></details>}
         </>}
