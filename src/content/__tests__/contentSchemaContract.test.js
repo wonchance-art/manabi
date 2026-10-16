@@ -115,7 +115,22 @@ function expectGrammarExample(example, flatFields, label) {
   }
 }
 
-async function loadActiveModules(loaders, sources) {
+/**
+ * 콘텐츠 데이터 모듈(import · 부수효과 없는 `const … ; export default …;`)을 이미 읽은 원문(?raw)에서 평가한다(CONTENT-SCHEMA-SPEED-001).
+ * 152개 · 9.7MB를 vite 모듈 변환으로 하나씩 적재하면 단독 5.6s(부하 평균 8)였고, 병렬 실행에서는 변환이 한 프로세스에 몰려
+ * 60s 훅 제한을 넘었다(2026-10-17 KST 여러 세션 재현). 같은 원문을 엄격 모드 함수로 평가하면 0.3s 안팎이다.
+ * 데이터 모듈 모양을 벗어나면(import · 다른 export) 평가하지 않고 실패한다 — 그때는 모듈 적재로 되돌린다.
+ * 모듈 적재와 같은 값인지는 아래 「모듈 적재 대조」가 트랙 · 종류마다 하나씩 확인한다.
+ */
+function evaluateDataModule(modulePath, source) {
+  expect(/^\s*import\b/m.test(source), `${modulePath}: 데이터 모듈은 import가 없다`).toBe(false);
+  expect((source.match(/^export default /gm) || []).length, `${modulePath}: export default는 하나`).toBe(1);
+  expect(source.match(/^export (?!default |const )/gm), `${modulePath}: export default · export const 밖의 export 없음`).toBe(null);
+  const body = source.replace(/^export const /gm, 'const ').replace(/^export default /m, 'return ');
+  return new Function(`"use strict";\n${body}`)();
+}
+
+function loadActiveModules(loaders, sources) {
   const entries = [];
   for (const [modulePath, source] of Object.entries(sources)) {
     if (isDraftModule(modulePath, source)) continue;
@@ -123,7 +138,7 @@ async function loadActiveModules(loaders, sources) {
     entries.push({
       modulePath,
       track: moduleTrack(modulePath),
-      value: (await loaders[modulePath]()).default,
+      value: evaluateDataModule(modulePath, source),
     });
   }
   return entries.sort((a, b) => a.modulePath.localeCompare(b.modulePath));
@@ -144,16 +159,31 @@ function vocabThemes(value) {
 let grammarModules;
 let vocabModules;
 
-// 4트랙 문법·어휘 모듈을 전량 로드하는 무거운 훅 — 단독 실행 실측 9.96s로 기본 제한
-// 10s와 사실상 같아, 병렬 실행의 CPU 경합에서는 반드시 초과한다(2026-08-19 world 스위트
-// 분리 후 남은 파일이 촘촘히 병렬화되며 드러남). 게이트 규약의 '단독 재실행 확인 후
-// 명시 timeout' 선례대로 실측의 여섯 배 여유를 둔다 — 테스트 내용·계약 무변경.
-beforeAll(async () => {
-  [grammarModules, vocabModules] = await Promise.all([
-    loadActiveModules(grammarLoaders, grammarSources),
-    loadActiveModules(vocabLoaders, vocabSources),
-  ]);
+// 4트랙 문법·어휘 모듈 전량 — 원문(?raw)에서 평가한다(evaluateDataModule). 예전 모듈 적재는 단독 9.96s(2026-08-19) · 5.6s(10-17)로
+// 무거워 60s를 주었고, 병렬 부하에서는 그래도 넘었다. 제한은 그대로 둔다(늘리지 않는다).
+beforeAll(() => {
+  grammarModules = loadActiveModules(grammarLoaders, grammarSources);
+  vocabModules = loadActiveModules(vocabLoaders, vocabSources);
 }, 60000);
+
+describe('content data evaluation matches module loading', () => {
+  // 트랙(4) × 종류(문법 · 어휘)마다 가장 작은 활성 모듈 하나를 실제 모듈 적재로 받아 평가값과 대조한다 — 평가 경로가 모듈 시스템과
+  // 같은 값을 낸다는 근거(작은 파일이라 적재 비용이 작다).
+  const samples = (loaders, sources) => Object.values(Object.entries(sources)
+    .filter(([modulePath, source]) => !isDraftModule(modulePath, source))
+    .reduce((smallest, [modulePath, source]) => {
+      const track = moduleTrack(modulePath);
+      if (!smallest[track] || source.length < smallest[track].source.length) smallest[track] = { modulePath, source, loader: loaders[modulePath] };
+      return smallest;
+    }, {}));
+  const cases = [...samples(grammarLoaders, grammarSources), ...samples(vocabLoaders, vocabSources)];
+  it('표본이 트랙 · 종류마다 있다', () => {
+    expect(cases.length).toBe(8);
+  });
+  it.each(cases.map(sample => [sample.modulePath, sample]))('%s', async (_, sample) => {
+    expect((await sample.loader()).default).toStrictEqual(evaluateDataModule(sample.modulePath, sample.source));
+  });
+});
 
 describe('content draft exclusion rule', () => {
   it('excludes *_draft* files and uppercase DRAFT comments only', () => {
