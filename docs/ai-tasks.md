@@ -921,7 +921,7 @@
     1000행 상한에 잘리던 브라우저 조회 5곳(맞춤도 · PDF 담김 · 노트 담김 · 주간 담은 말 · 데이터 내보내기)을 정본 완전 조회로. review_events 3곳 · 공개 목록 페이지네이션은 남김.
   · 같은 PR(PERF-BUNDLE-005): /vocab 둘러보기 목록 · 상세 카드 지연 로드(유휴 미리 받기) · 뜻 정리 작은 모듈. 계약 `vocabPageSplit.test.js`.
   · 같은 PR(MOTION-R2 · CONFIRM-FOCUS-001 · TOAST-MOTION-001 · CONV-TURN-IN-001): 동작 줄이기 공용 `reducedMotion()`(smooth 스크롤 7곳 · 배움 단어 자동 순환 정지),
-    확인창 닫으면 연 버튼으로 포커스 복귀, 토스트 퇴장 0.15s · 손을 올리거나 포커스하면 멈춤, 대화 새 턴 등장. 계약 `reducedMotion.test.js` 외.
+    확인창 닫으면 연 버튼으로 포커스 복귀, 토스트 퇴장 0.15s · 안의 버튼(×·되돌리기)에 손을 올리거나 포커스하면 멈춤(토스트 바탕은 아래 화면을 가로채지 않음 — 글자 위 멈춤은 없음), 대화 새 턴 등장. 계약 `reducedMotion.test.js` 외.
   · studiesRefs 준비 단계 timeout 60 → 120초(단독 46~55초 실측, 병렬 4회 연속 초과).
   · 같은 PR(리뷰 4차): 서가 책 장 수 head 개수만 · 교재 연결 목록 GET 판본 실패 시 과 목록만 비움 · 새 노트 서재 무효화 · /vocab 상세 카드 누르면 미리 받기.
   · 같은 PR(VIEWER-FIRST-TOKEN-001): 뷰어 자료 조회를 하이드레이션 전(모듈 평가)에 시작 · Supabase preconnect. 운영 첫 단어 2.9~3.4s(미국 측정) → Preview 재측정.
@@ -935,18 +935,22 @@
   · PROFILES-PRIVACY-001 ①(운영 view 20261016165910 + 앱 embed 3곳): 남의 프로필은 public_profiles(id · display_name · avatar_url).
     ②(전원 공개 정책 제거 · UPDATE 열 제한 · activity 지문 재고정)는 이 PR 배포 뒤. 관리자 역할 변경 버튼 무음 실패(RLS + 'user' CHECK 위반) — admin_set_user_role RPC 초안.
   · 같은 PR(STUDY-RELIABLE-001): /study 문법 재스케줄이 오프라인 · 저장 실패 때 보류함에 남아 다시 보냄 · 문항 전환 효과 · 진행 막대 progressbar 접근성 ·
-    세션 도중 로그아웃 · 계정 바뀜이면 기록을 멈추고 「로그인이 필요해요」 안내(유실 문항만 한 줄).
+    세션 도중 로그인이 풀리면 「로그인이 필요해요」 안내 + 기록은 보류했다가 같은 계정이 돌아오면 보냄(다른 계정은 받지 않음 · 메모리 보류 = 같은 화면 안).
+    문법 일정은 시작 행과 같을 때만 쓰는 비교 후 쓰기(기기 시계 무관) · 탭 닫힘은 keepalive best-effort · 떠날 때 남으면 토스트.
   · 같은 PR(LEVEL-KEYS-001, 오너 승인 목업): HSK 단어 목록 키보드 — roving 카드 · ↑↓ 이동(끝이면 150개 더) · O · X 뒤 다음 카드 · Space 펼치기 · Esc.
-    입력기 조합 · 입력 칸 · 수정키 · 진행 중 카드는 무시. 단어 탭만. 남은 확인: 로그인 O · X 실저장(Preview).
+    입력기 조합 · 입력 칸 · 수정키 · 진행 중 카드 · 키 반복(↑↓ 제외)은 무시. 키보드 O는 켜기만(해제 없음) · 지금 카드 안 버튼만 Tab ·
+    게스트는 제자리 + 로그인 안내. 단어 탭만. 남은 확인: 로그인 O · X 실저장(실계정).
   · 같은 PR(LOADING-SKELETON-001, 오너 승인 목업): 발견 · 배움 라우트 loading.jsx + 서재 골격(Skeleton 부품 재사용 · aria-busy · 모션 축소 정지).
     실빌드 CLS 발견 0 · 배움 0.00002 · 서재 0.032(읽던 곳 없는 첫 사용자 0.130 — 남은 한계). 배움 받는 중 거짓 빈 상태 제거.
   · 같은 PR(ROW-CAP-SWEEP-001): 1000행 잘림 전수 조사 — 지금 넘는 미수리 경로 0. 새 기기 만남 끌어오기만 1000행 page로(계약 ⑦).
     관찰: 내 자료 목록(최대 253) · public_book_catalog(공개 책 장 0) · 주간 만난 단어(14일 72).
   · 같은 PR(PROFILES-PRIVACY-001 ② 선행): 관리자 판별을 service role 헬퍼로(backfill-ipa · seed-starters, anon 폴백 제거) · 관리자 역할 변경 =
-    admin_set_user_role RPC(마지막 관리자 강등 거부 · 'user'→'student') — 마이그레이션 20261016171800은 병합 때 db push로 적용, 그 전엔 안내 토스트.
+    admin_set_user_role RPC(마지막 관리자 강등 거부 · 'user'→'student') — 마이그레이션 20261016171800은 병합 때 db push로 운영 적용되므로
+    **병합 전 오너 명시 승인 필요**(대기). 그 전엔 안내 토스트. backfill-ipa · seed-starters는 서비스 키 없으면 503.
     ② 본 적용(전원 공개 정책 제거 · UPDATE 14열 · activity + admission 지문 재고정)은 배포 · 역할 변경 실계정 검수 뒤.
   · 같은 PR(APP-FEEL-003, 운영 손맛 점검 7건 중 4건): 탭 이동 대기 밑줄(useLinkStatus · 100ms 지연 · prefetch:false 유지) · 이동 뒤 포커스를
-    본문으로(살아 있는 포커스는 그대로) · 주요 카드 눌림(:active scale .985 · 모션 축소 제외). 나머지 = 뷰어 다음 편 유지 · 목록 뒤로가기 · 교재 골격(진행).
+    새 화면 첫 제목(없으면 본문 · 살아 있는 포커스는 그대로) · 주요 카드 눌림(:active scale .985 · 모션 축소 제외) · 대기 밑줄 = 지금 탭 밑줄 자리.
+    목록 뒤로가기 자리 복원(LEVEL-RESTORE-001 — h1 2500px −437 → 0 · h4 80,063px 0) · 교재 대기 골격(BOOK-SKELETON-001, CLS 0). 뷰어 다음 편 유지(진행).
   · 같은 PR(CI e2e 수리): 토스트 바탕은 아래 화면을 가로채지 않음(안의 조작 요소만 눌림 — 포인터 위 멈춤이 카드 버튼을 영영 막던 것) ·
     서재 골격 줄 클래스 분리 · N3 「저장됨」 예산 · 번체 글꼴 단언 · 뷰어 아는 단어 낙관 표시 단언.
   · 같은 PR(LIBRARY-PREFETCH-001): 서재 첫 화면을 서버가 미리 받음(같은 키 · 같은 가져오기 + HydrationBoundary, 800ms 예산 · 실패면 기존 골격) —
