@@ -19,6 +19,10 @@ describe('뷰어 — 미분석 상태 판정', () => {
     for (const status of ['pending', 'saved', 'idle']) expect(pendingLine).toContain(`status === '${status}'`);
   });
 
+  it('수업 팀 설정 행(idle)은 미분석 자료로 보지 않는다 — 「이 챕터 분석하기」가 설정 행을 분석하지 않게', () => {
+    expect(pendingLine).toContain('!isTeamRoot(material)');
+  });
+
   it('미분석이면 원문 줄을 그린다(showRaw가 isPending을 쓴다)', () => {
     expect(sliceBetween(viewer, 'const showRaw = ', ';')).toContain('isPending');
   });

@@ -42,7 +42,8 @@ export default function DiscoverShelf({ suggestions = [], publicCount = 0, date 
       <div className="discover-shelf__label">
         <h3>오늘의 소식</h3>
         <small>{shelfDateLabel(date)}</small>
-        <Link className="manabi-link" href="/discover?view=reading">전체 보기 ({readable.length})</Link>
+        {/* 숫자는 달지 않는다 — 열린 목록은 로그인하면 학습 언어 · 레벨로 걸러져 개수가 달라진다(리뷰 2026-10-17 KST). */}
+        <Link className="manabi-link" href="/discover?view=reading">전체 보기</Link>
       </div>
       <ul className="discover-shelf__items">
         {news.map((s) => <li key={s.id}>

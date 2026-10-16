@@ -24,7 +24,6 @@ import ActionIcon from '../components/ActionIcon';
 import ViewerReferenceExample from '../components/viewer/ViewerReferenceExample';
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
-import { authEntryHref } from '../lib/authRedirect';
 import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
 import { buildVocabularyWordIndex, countVocabularyDueInMaterial, findIndexedVocabulary, isIndexedVocabularyDue } from '../lib/vocabularyDueIndex';
 import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
@@ -137,7 +136,7 @@ import { SENTENCE_TX_LOGIN_REQUIRED, SENTENCE_TX_QUERY, canonicalSentence, class
   sentenceBookMeaning, sentencePrefetchLimiter, sentenceTranslationKey, sentenceTranslationQuery, sentenceTxStats } from '../lib/sentenceTranslation';
 import { sentencePanelOriginal, sentencePanelTokenIds, sentencePatternHits, sentenceWordGlosses } from '../lib/viewerSentenceGlosses';
 import { useSentencePrefetch } from '../lib/useSentencePrefetch';
-import { isLocalId, parseLocalId, chaptersForLocalNav } from '../lib/classBoard';
+import { isLocalId, parseLocalId, chaptersForLocalNav, isTeamRoot } from '../lib/classBoard';
 import { getSharedCopy } from '../lib/sharedStore';
 import { readIndexCache } from '../lib/classClient';
 import { useRefVocabEntry, useRefVocabIndex } from '../lib/refVocabIndex';
@@ -2718,7 +2717,8 @@ export default function ViewerPage() {
   const isAnalyzing = (status === 'analyzing' && !isStaleAnalysis) || reanalyzeMutation.isPending;
   // 미분석 — 원문 열람 가능, 분석은 온디맨드. 'idle'은 시드 · 수업판이 쓰는 미분석 표지(seed-starters · classBoard ·
   // bookMeta 기본값)인데 빠져 있어 공개 시리즈 118편이 제목만 있고 본문이 빈 화면이었다(2026-10-17 KST 운영 /viewer/169).
-  const isPending = !isAnalyzing && (status === 'pending' || status === 'saved' || status === 'idle');
+  // 수업 팀 설정 행(isTeamRoot)도 'idle'이지만 자료가 아니다 — 직접 주소로 열어도 「이 챕터 분석하기」를 띄우지 않는다(리뷰 2026-10-17 KST).
+  const isPending = !isAnalyzing && !isTeamRoot(material) && (status === 'pending' || status === 'saved' || status === 'idle');
   const isFailed = status === 'failed';
   const isDone = status === 'completed' || status === 'partial';
   const needsRecovery = !passageOf(material) && (isStaleAnalysis || (isDone && missingLineCount > 0));

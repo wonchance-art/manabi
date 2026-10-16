@@ -23,7 +23,8 @@ describe('오늘의 소식 칸', () => {
     const html = renderToStaticMarkup(createElement(DiscoverShelf, {
       suggestions: [row(1, 'Japanese'), row(2, 'English', { transcript: null })], publicCount: 0, date: '2026-10-16' }));
     expect(html).toContain('오늘의 소식');
-    expect(html).toContain('전체 보기 (1)');
+    expect(html).toContain('>전체 보기</a>');
+    expect(html).not.toMatch(/전체 보기 \(\d+\)/);
     expect(html).toContain('제목 1');
     expect(html).not.toContain('제목 2');
     expect(html).toContain('lang="ja"');
@@ -54,6 +55,10 @@ describe('발견 화면 배선', () => {
       expect(read(file)).toContain('<LazyMaterialsPage libraryView=');
     }
     expect(read('src/components/web/LazyMaterialsPage.jsx')).toContain("dynamic(() => import('@/views/MaterialsPage')");
+  });
+  it('「함께 읽는 글」 목록의 추천 카드도 발견으로 돌아간다(서재 목록은 서재로)', () => {
+    expect(read('src/views/MaterialsPage.jsx')).toContain("from={libraryView === 'public' ? 'discover' : 'materials'}");
+    expect(read('src/views/MaterialsPage.jsx')).toContain('router.push(suggestionHref(s, from))');
   });
   it('비로그인 서재는 서가로 안내한다', () => {
     expect(read('src/components/web/LibraryPage.jsx')).toContain('href="/discover">서가에서 읽어 보기</Link>');

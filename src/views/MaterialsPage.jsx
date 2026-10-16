@@ -47,10 +47,10 @@ async function fetchTodaySuggestions() {
   return res.json();
 }
 
-function SuggestionCard({ suggestion: s, router }) {
+function SuggestionCard({ suggestion: s, router, from = 'materials' }) {
   const canStudy = canReadSuggestion(s);
   const source = suggestionSource(s);
-  function handleStudy() { router.push(suggestionHref(s)); }
+  function handleStudy() { router.push(suggestionHref(s, from)); }
 
   return (
     <div className="suggestion-card">
@@ -1028,7 +1028,7 @@ export default function MaterialsPage({ libraryView = null }) {
             <h2 className="suggestions-section__title">오늘의 추천 자료</h2>
             <div className="suggestions-grid">
               {filteredSuggestions.map(s => (
-                <SuggestionCard key={s.id} suggestion={s} router={router} />
+                <SuggestionCard key={s.id} suggestion={s} router={router} from={libraryView === 'public' ? 'discover' : 'materials'} />
               ))}
             </div>
           </section>
