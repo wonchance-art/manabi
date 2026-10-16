@@ -1,8 +1,6 @@
 'use client';
-import ClassroomReader from '../components/classroom/ClassroomReader';
 import TeachingWord,{WordDisplayControls,useWordAppearance} from '../components/classroom/TeachingWord';
 import TextbookAnnotations from '../components/classroom/TextbookAnnotations';
-import ClassCopyNotice from '../components/classroom/ClassCopyNotice';
 import {createClassSaveIntent} from '../lib/classSaveIntent';
 import {classStudyContext,classStudyNeighborHref,studySelection} from '../lib/classStudy';
 
@@ -10,7 +8,6 @@ import { useState, useRef, useEffect, useMemo, useCallback, cloneElement, isVali
 import { useParams, useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { authEntryHref } from '../lib/authRedirect';
 import {isStudyNote} from '@/lib/studyNoteIdentity';
-import OriginalMaterialReader from '@/components/materials/OriginalMaterialReader';
 import useLibraryActivity from '@/components/library/useLibraryActivity';
 import LibrarySaveButton from '@/components/library/LibrarySaveButton';
 import {materialActivity} from '@/lib/libraryActivity';
@@ -30,7 +27,6 @@ import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
 import SaveContextButton, { saveContext } from '../components/learning/SaveContextButton';
 import MaterialChapterLinks from '../components/learning/MaterialChapterLinks';
 import ReadingSourceFocus from '../components/learning/ReadingSourceFocus';
-import ClassSourceFocus from '../components/classroom/ClassSourceFocus';
 import { classSentenceEnd, classAnchorAt } from '../lib/classSource';
 import { textbookStream } from '../lib/textbookAnnotations';
 import OfflineNotice from '../components/OfflineNotice';
@@ -87,8 +83,6 @@ import { fitDivisor, isFitLang } from '../lib/fitWord';
 import { charDetail, charEtym, isInspectableChar, materialWordsWithChar, wordsWithChar } from '../lib/charInspect';
 import { fetchSynAnt, peekSynAnt, synAntEligible } from '../lib/synAnt';
 import ReportMaterialButton from '../components/ReportMaterialButton';
-import ReadingTest from '../components/ReadingTest';
-import ConversationThread from '../components/conversation/ConversationThread';
 import { conversationOf, tokensByLineIndex, applyTurnResult } from '../lib/conversation/turnModel';
 import { openConversationFor, startTopicConversation, trashConversation } from '../lib/conversation/conversationClient';
 import { invalidateLibrary } from '../lib/libraryOperations';
@@ -112,13 +106,34 @@ import { zhKinsokuMarks, zhKinsokuStyle } from '../lib/zhGrid';
 import { ZhText, useZhGridRuns } from '../components/viewer/ZhText';
 import { readerFontFamily } from '../lib/viewerPreferences';
 import { textbookThemeStyle } from '../lib/textbookTheme';
-import ViewerSettings from '../components/viewer/ViewerSettings';
 import HunCell from '../components/viewer/HunCell';
 import ViewerModal from '../components/viewer/ViewerModal';
 import dynamic from 'next/dynamic';
+import { lazyPanel } from '../lib/lazyPanel';
 import '../components/viewer/reader-controls.css';
 import '../components/viewer/sentence-move-bar.css';
 const ChineseSerif = dynamic(() => import('../components/viewer/ChineseSerif'), {ssr:false});
+// 조건부 패널은 열 때만 받는다(VIEWER-LAZY-PANELS-001) — 첫 로드 page 청크에서 뺀다. 목록·조건은 viewerLazyPanels.test.js가 고정.
+// 자료 본문(문장·단어창·시트)은 정적 그대로다. 자료는 클라이언트에서 받으므로 아래 패널 중 서버 렌더되는 것은 없다.
+// next/dynamic이 아니라 lazyPanel — Suspense fallback 뒤 내용 공개가 약 300ms 묶여 첫 열림이 늦어지는 것을 피한다(lazyPanel.js 실측).
+// 받는 동안: 창·패널은 null(열린 뒤 그려지므로 빈 자리 0), 화면 전체를 바꾸는 둘(원문 보기·대화)은 직전과 같은 「불러오는 중」.
+const ViewerSettings = lazyPanel(() => import('../components/viewer/ViewerSettings'));
+const ViewerHanjaPopover = lazyPanel(() => import('../components/viewer/ViewerHanjaPopover'));
+const ReadingTest = lazyPanel(() => import('../components/ReadingTest'));
+const DictationPicker = lazyPanel(() => import('../components/DictationPicker'));
+const DictationPanel = lazyPanel(() => import('../components/DictationPanel'));
+const ConversationThread = lazyPanel(() => import('../components/conversation/ConversationThread'), {fallback:<Spinner message="자료 불러오는 중…" />});
+const OriginalMaterialReader = lazyPanel(() => import('@/components/materials/OriginalMaterialReader'), {fallback:<div className="page-container"><Spinner message="자료 불러오는 중…" /></div>});
+// 수업 기능(숨김) — 일반 독자는 받지 않는다. 각 문은 그 부품이 스스로 null/fallback을 내는 필요조건만 본다(정밀 판정은 부품 안).
+// 수업 부품을 받는 동안에도 일반 단어창 시트(fallback)를 그대로 그린다 — 부품이 판정 전에 내는 것과 같다.
+const ClassroomReaderPanel = lazyPanel(() => import('../components/classroom/ClassroomReader'), {fallback:props=>props.fallback()});
+const ClassSourceFocus = lazyPanel(() => import('../components/classroom/ClassSourceFocus'));
+const ClassCopyNotice = lazyPanel(() => import('../components/classroom/ClassCopyNotice'));
+// ClassroomReader는 수업 맥락(context)과 로그인 사용자가 없으면 판정 없이 fallback(일반 단어창 시트)을 그린다 — 그 경우를 여기서 바로 그린다.
+function ClassroomReader(props) {
+  if (props.context && props.user?.id) return <ClassroomReaderPanel {...props} />;
+  return typeof props.fallback === 'function' ? props.fallback() : props.fallback;
+}
 import { hunRubyCells } from '../lib/viewerHunRuby';
 import { sentenceAroundToken, sentenceAroundTerm, clipSentenceToBudget, SENTENCE_LINE_BUDGET_TIGHT } from '../lib/viewerSentenceLine';
 import { buildSenseList, senseListCount } from '../lib/viewerSenseList';
@@ -150,8 +165,6 @@ import { useKnownWords } from '../lib/useKnownWords';
 import { knownWordKeys, normalizeKnownWord, knownWordSetOf } from '../lib/knownWordControl';
 import { mergeKnownIntoIndex } from '../lib/knownWords';
 import { materialFit, FIT_MIN_TYPES } from '../lib/materialFit';
-import DictationPanel from '../components/DictationPanel';
-import DictationPicker from '../components/DictationPicker';
 import { recordVocabEncounters } from '../components/world/vocabEncounters';
 import { syncVocabEncounters } from '../components/world/vocabEncounterSync';
 import { encounterLookupLang, loadMetWordKeys, loadRefVocabLookup } from '../lib/refVocabLookup';
@@ -160,7 +173,6 @@ import { isWordToken, wordStateOf, wordStateExtraClass } from '../lib/wordState'
 import { TTS_RATES, ttsOptsFor, pronHiddenFor } from '../lib/readingSheet';
 import { getBook } from '../lib/bookMeta';
 import ViewerGlyphColumn from '../components/viewer/ViewerGlyphColumn';
-import ViewerHanjaPopover from '../components/viewer/ViewerHanjaPopover';
 import ViewerJapaneseMore from '../components/viewer/ViewerJapaneseMore';
 import TokenEditPanel from './TokenEditPanel';
 import { senseCorrectionFor, revertCorrections, applyTokenCorrections } from '../lib/tokenEditOptions';
@@ -2184,6 +2196,11 @@ export default function ViewerPage() {
     const cancel = prefetchHanjaPanel({ onLoad: (t) => { if (alive && t) setHanjaPanelTable((cur) => cur || t); } });
     return () => { alive = false; cancel(); };
   }, [materialLang, hanjaPanelTable]);
+  // 한자 창 부품(지연 청크)도 같은 유휴 시점에 받아 둔다 — 중국어 일반 모드에서만, 첫 글자 탭에 내려받기를 기다리지 않게.
+  useEffect(() => {
+    if (!hanjaPopoverMode) return undefined;
+    return onIdle(() => { ViewerHanjaPopover.preload().catch(() => {}); });
+  }, [hanjaPopoverMode]);
   // 미리 받기 전에 창이 열리면 바로 받는다.
   useEffect(() => {
     if (!hanjaPopoverMode || !inspectChar || hanjaPanelTable) return undefined;
@@ -3793,12 +3810,12 @@ export default function ViewerPage() {
           나뉜다. 스크롤 보기(data-reader-pages="scroll")에서는 아무 규칙도 없는 평범한 블록이다(지금 그대로). */}
       <div className="reader-pages-frame">
       <div ref={setPagesEl} className="reader-pages" data-reader-pages={pagedActive?'paged':'scroll'}>
-      <ClassSourceFocus material={material} user={user} params={originalParams} tokenRefs={tokenRefs} onResolve={(target,source)=>{
+      {(originalParams.has('sourceEntry')||originalParams.has('sourceQuote'))&&<ClassSourceFocus material={material} user={user} params={originalParams} tokenRefs={tokenRefs} onResolve={(target,source)=>{
         closeWordCard();clearAnalysisPanels();tokenRange.clearRange();setPickedLineIdx(null);setSelectedRangeText(source.quote);
         if(target.first===target.last&&json.dictionary[target.first]?.text===source.quote){setSelectedToken({...json.dictionary[target.first],id:target.first});setIsSheetOpen(true);setRightSheetSignal(v=>v+1);}
         else {tokenRange.restoreRange(target.first,target.last);setRestoredClassSource({materialId:String(material.id),quote:source.quote,anchor:classAnchorAt(textbookStream(json).text,target.start,target.end,source.quote)});setLeftPanelText(source.quote);const from=json.sequence.indexOf(target.first),to=json.sequence.indexOf(target.last);setDragTokens(json.sequence.slice(from,to+1).filter(tid=>json.dictionary[tid]?.pos!=='개행').map(tid=>({...json.dictionary[tid],id:tid})));setRightSheetSignal(v=>v+1);}
-      }}/>
-      <ClassCopyNotice key={String(id)} material={material} user={user} returnTo={originalParams.get('returnTo')}/>
+      }}/>}
+      {user&&originalParams.get('returnTo')?.startsWith('/class/')&&<ClassCopyNotice key={String(id)} material={material} user={user} returnTo={originalParams.get('returnTo')}/>}
       <header className="page-header viewer-header">
         <p className="reader-metadata reader-edition">{vt(languageInfo?.labelKo || langNameKo(materialLang))}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {vt(material.visibility === 'public' ? '공개 읽기' : '내 자료')}</p>
         {composerOf(material) && <p className="reader-metadata">{passageOf(material)?`${passageLocation(passageOf(material))}에서 고른 학습 구간이에요. 원본은 위의 링크에서 열 수 있어요.`:'학습에 사용한 본문이에요. 현재 글은 위의 링크에서 열 수 있어요.'}</p>}

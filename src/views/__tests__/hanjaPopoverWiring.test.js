@@ -26,7 +26,8 @@ describe('⑴ 중국어 일반 모드만 한자 창 — 일본어·수업 판서
     expect(viewer).toContain("const hanjaPopoverMode = materialLang === 'Chinese' && !classStudyActive;");
     expect(viewer).toContain('{inspectChar && !hanjaPopoverMode && (() => {');
     expect(viewer).toMatch(/\{inspectChar && hanjaPopoverMode && <div className="hanja-pop-layer">\s*<ViewerHanjaPopover inspect=\{inspectChar\} word=\{headText\}/);
-    expect(viewer).toContain("import ViewerHanjaPopover from '../components/viewer/ViewerHanjaPopover';");
+    // 한자 창은 열 때 받는 지연 청크(VIEWER-LAZY-PANELS-001 — viewerLazyPanels.test.js), 부품·배선은 그대로.
+    expect(viewer).toContain("const ViewerHanjaPopover = lazyPanel(() => import('../components/viewer/ViewerHanjaPopover'));");
   });
   it('수업 판서 글자 탭은 지금대로 글자 카드 키(teaching:) — 한자 창으로 바꾸지 않는다(설계서 Q2)', () => {
     expect(viewer).toContain("onChar={(ch,index)=>toggleInspectChar(ch,`teaching:${index}`,null)}");
