@@ -28,8 +28,10 @@ import HunCell from '@/components/viewer/HunCell';
 import { alignFurigana } from '@/views/refShared';
 import {
   LEVEL_LIST_LANGS, LEVEL_KIND_LABEL, levelKinds, levelLabel, levelPill, levelListHref, jaHeadMode, matchesLevelQuery, splitKnown, fetchSavedLevelKeys,
-  LEVEL_PEEK_CLOSE_MS, LEVEL_PEEK_MS, LEVEL_PREFS_DEFAULT, LEVEL_VIEWS, normalizeLevelPrefs,
+  LEVEL_PEEK_CLOSE_MS, LEVEL_PEEK_MS, LEVEL_PREFS_DEFAULT, LEVEL_VIEWS, normalizeLevelPrefs, levelProgress, pinyinSyllables, writeLevelSnapshot,
 } from '@/lib/levelList';
+import { pinyinToneNumber } from '@/lib/pinyinTone';
+import { ZH_SCOPE_LEVELS, serializeReviewScope } from '@/lib/reviewScopeUrl';
 import HanziBoard from '@/components/levels/HanziBoard';
 import '@/components/levels/level-list.css';
 
@@ -40,7 +42,19 @@ const SpinIcon = () => <svg {...svg} width={20} height={20} strokeWidth={2.2}><p
 const CrossIcon = () => <svg {...svg} strokeWidth={2}><path d="M6 6l12 12M18 6 6 18" /></svg>;
 const GearIcon = () => <svg {...svg} width={19} height={19} strokeWidth={1.6}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" /></svg>;
 const CircleIcon = () => <svg {...svg} strokeWidth={2.2}><circle cx="12" cy="12" r="7" /></svg>;
+const ChevronIcon = () => <svg {...svg} width={16} height={16} strokeWidth={2}><path d="m6 9 6 6 6-6" /></svg>;
 const PREFS_KEY = 'manabi:level-list-view';
+// 「복습하기」 알림은 하루 한 번(KST 날짜) — X를 연달아 누를 때마다 뜨지 않게.
+const NUDGE_KEY = 'manabi:level-review-nudge';
+const kstDay = () => new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);
+const HAN = /\p{Script=Han}/u;
+
+/** 병음 — 성조 색(⚙ 「성조 색」, 기본 끔 — 성조 색은 옵트인, 오너 확정 2026-08-19)을 켜면 음절마다 pinyinTone 색. 음절이 글자 수와 안 맞으면(儿화 등) 색 없이. */
+function Pinyin({ text, word, tone, className = 'lv-py' }) {
+  const parts = tone ? pinyinSyllables(text, [...String(word || '')].filter((c) => HAN.test(c)).length) : null;
+  if (!parts) return <span className={className}>{text}</span>;
+  return <span className={className}>{parts.map((p, i) => <span key={i} className={`lv-tone lv-tone--${pinyinToneNumber(p) ?? 0}`}>{p}</span>)}</span>;
+}
 
 const newId = () => globalThis.crypto.randomUUID();
 // 처음엔 150개만 그린다(N3 2,108개를 한 번에 그리면 DOM 예산 초과 — smoke e2e 「vocab performance」). 찾기는 레벨 전체에서 한다.
@@ -54,8 +68,8 @@ function Ruby({ text, reading }) {
 }
 
 /** 표제어. bare = 읽기(병음 · 후리가나) 없이 글자만 — 「단어」만 볼 때 발음은 스스로 떠올린다. */
-function Headword({ entry, lang, levelKey, hunCells, bare = false }) {
-  const py = !bare && entry.reading && <span className="lv-py">{entry.reading}</span>;
+function Headword({ entry, lang, levelKey, hunCells, bare = false, tone = false }) {
+  const py = !bare && entry.reading && (lang === 'chinese' ? <Pinyin text={entry.reading} word={entry.word} tone={tone} /> : <span className="lv-py">{entry.reading}</span>);
   if (lang === 'chinese' && hunCells) return <><span className="lv-hw lv-hw--hun" lang="zh-CN">{hunCells.map((c, i) => <span key={i} className="lv-hc">
     <span className="lv-hc__ch">{c.ch}</span><HunCell cell={c} /></span>)}</span>{py}</>;
   if (lang === 'chinese') return <><span className="lv-hw" lang="zh-CN">{entry.word}</span>{py}</>;
@@ -96,8 +110,8 @@ function GlyphLine({ rows }) {
 }
 
 /** 읽기 한 줄 — 표제어에서 읽기를 뺀 「단어」 보기를 펼쳤을 때. 중국어 = 병음, 일본어 = 표제어에 안 보인 쪽(가나 ↔ 한자). */
-function readingLine(entry, lang, levelKey) {
-  if (lang === 'chinese') return entry.reading ? <span className="lv-py">{entry.reading}</span> : null;
+function readingLine(entry, lang, levelKey, tone = false) {
+  if (lang === 'chinese') return entry.reading ? <Pinyin text={entry.reading} word={entry.word} tone={tone} /> : null;
   if (!entry.reading || entry.reading === entry.word || !alignFurigana(entry.word, entry.reading)) return null;
   return jaHeadMode(levelKey) === 'kana' ? <span className="lv-kj" lang="ja">{entry.word}</span> : <span className="lv-kj" lang="ja">{entry.reading}</span>;
 }
@@ -109,12 +123,15 @@ function readingLine(entry, lang, levelKey) {
  * 카드를 누르면 고른 것은 제자리에 둔 채 나머지가 그 아래로 펼쳐지고, 다시 누르면 접힌다. 그대로 두면 10초 뒤 접힌다
  * (4판 — 오너 2026-10-15 「다시 클릭하면 닫히게 · 애니메이션 · 닫히면서 단어 위치 변하는 것 개선」). peek = 'open' | 'closing'.
  */
-export function VocabCard({ entry: e, lang, levelKey, view, scoped = true, peek, peekEpoch = 0, onPeek, onRenew, speak, hunCells, glyph, known, studying, saving, pendingKnown, onO, onX }) {
+export function VocabCard({ entry: e, lang, levelKey, view, scoped = true, peek, peekEpoch = 0, onPeek, onRenew, speak, hunCells, glyph, tone = false, known, studying, saving, pendingKnown, onO, onX }) {
   const scope = view === 'all' || !scoped ? null : LEVEL_VIEWS.find((v) => v.id === view)?.label;
-  const ox = <OxButtons scope={scope} showLabels={lang === 'chinese'} known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} />;
-  if (view === 'all') return <li className="lv-entry" data-known={known || undefined}>
+  // 이름표(안다 · 모른다)는 전체 보기 카드에만 — 탭 보기는 한 줄 카드라 동그라미만(디자인 검토 A안, 화면 읽기 이름은 그대로).
+  const ox = <OxButtons scope={scope} showLabels={lang === 'chinese' && view === 'all'} known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} />;
+  // 상태는 카드 자체에 — 아는 단어는 흐리게, 공부 중은 왼쪽 줄(점선 테두리는 「임시」로 읽혀 뺐다).
+  const state = { 'data-known': known || undefined, 'data-studying': (!known && studying) || undefined };
+  if (view === 'all') return <li className="lv-entry" {...state}>
     <div className="lv-entry__top">
-      <div className="lv-entry__word"><Headword entry={e} lang={lang} levelKey={levelKey} hunCells={hunCells} />
+      <div className="lv-entry__word"><Headword entry={e} lang={lang} levelKey={levelKey} hunCells={hunCells} tone={tone} />
         {speak && <button type="button" className="lv-snd" aria-label="듣기" title="듣기" onClick={() => speak(e.word)}><SpeakerIcon /></button>}</div>
       {ox}
     </div>
@@ -131,10 +148,10 @@ export function VocabCard({ entry: e, lang, levelKey, view, scoped = true, peek,
   // 펼친 안에서 듣기를 누르면 10초를 다시 센다 — 듣는 중에 접히지 않게.
   const say = speak && ((text) => { onRenew?.(); speak(text); });
   const sndWord = say && <button type="button" className="lv-snd" aria-label="듣기" title="듣기" onClick={() => say(e.word)}><SpeakerIcon /></button>;
-  const head = <div className="lv-entry__word"><Headword entry={e} lang={lang} levelKey={levelKey} hunCells={hunCells} />{sndWord}</div>;
+  const head = <div className="lv-entry__word"><Headword entry={e} lang={lang} levelKey={levelKey} hunCells={hunCells} tone={tone} />{sndWord}</div>;
   const mean = <p className="lv-mean">{e.meaning}</p>;
   const example = e.ex && <Example ex={e.ex} lang={lang} speak={say} />;
-  const rest = view === 'word' ? <><p className="lv-reveal__line">{readingLine(e, lang, levelKey)}{sndWord}</p>{mean}{example}</>
+  const rest = view === 'word' ? <><p className="lv-reveal__line">{readingLine(e, lang, levelKey, tone)}{sndWord}</p>{mean}{example}</>
     : view === 'sentence' ? <>{e.ex && <p className="lv-ex lv-ex--tail">
       {say && <button type="button" className="lv-snd" aria-label="예문 듣기" title="예문 듣기" onClick={() => say(e.ex.text)}><SpeakerIcon /></button>}
       {zh && e.ex.reading && <span className="lv-ex__py">{e.ex.reading}</span>}
@@ -143,7 +160,7 @@ export function VocabCard({ entry: e, lang, levelKey, view, scoped = true, peek,
         : <>{head}<GlyphLine rows={glyph} />{mean}{example}</>;
   // 카드 어디를 눌러도(버튼 밖) 펼치기 · 접기 — 키보드 · 화면 읽기는 숨은 버튼으로 같은 동작.
   const tap = (event) => { if (!event.target.closest('button, a')) onPeek(); };
-  return <li className="lv-entry lv-entry--solo" data-known={known || undefined} data-view={view} data-peek={peek || undefined} onClick={tap}>
+  return <li className="lv-entry lv-entry--solo" {...state} data-view={view} data-peek={peek || undefined} onClick={tap}>
     <div className="lv-solo__row"><div className="lv-solo">{solo}</div>{ox}</div>
     <button type="button" className="lv-sr" aria-expanded={peek === 'open'} onClick={onPeek}>{peek === 'open' ? '접기' : '펼쳐 보기'}</button>
     {peek && <div className="lv-reveal"><div className="lv-reveal__in"><div className="lv-reveal__body">{rest}</div>
@@ -167,6 +184,9 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
   const [prefs, setPrefsState] = useState(LEVEL_PREFS_DEFAULT);
   const [peek, setPeek] = useState(() => new Map()); // 단어 키 → { phase: 'open' | 'closing', epoch }
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // 머리 접기(디자인 검토 A안) — 단어 목록은 레벨 · 목록 종류를 ▾ 안에 접고 찾기는 돋보기로 연다. 문형 · 한자는 지금처럼 펼친 채.
+  const [navOpen, setNavOpen] = useState(kind !== 'vocab');
+  const [searchOpen, setSearchOpen] = useState(false);
   const [tables, setTables] = useState({});
   const [saved, setSaved] = useState(() => new Set());
   const [saving, setSaving] = useState(() => new Set());
@@ -176,6 +196,8 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
   const [limit, setLimit] = useState(LEVEL_LIST_PAGE);
   const [jumpTo, setJumpTo] = useState(null);
   const moreRef = useRef(null);
+  const pageRef = useRef(null);
+  const barRef = useRef(null);
   const pendingExclude = useRef(null);
   const pendingStudy = useRef(null);
   const peekTimers = useRef(new Map());
@@ -244,6 +266,14 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
   [zhVocab, prefs.hun, tables]);
   const glyphOf = useCallback((word) => (zhVocab && prefs.glyph && (tables.trad || tables.ja)
     ? glyphRows({ word, tradTable: tables.trad || null, jaTable: tables.ja || null }) : null), [zhVocab, prefs.glyph, tables]);
+  // 붙어 다니는 머리 높이 → 목차 · 묶음 이동이 그 아래에 서게(--lv-bar-h).
+  useEffect(() => {
+    const bar = barRef.current, page = pageRef.current;
+    if (!vocab || !bar || !page || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(() => page.style.setProperty('--lv-bar-h', `${Math.round(bar.getBoundingClientRect().height)}px`));
+    ro.observe(bar);
+    return () => ro.disconnect();
+  }, [vocab]);
   useEffect(() => { if (!toast) return undefined; const t = setTimeout(() => setToast(null), 6000); return () => clearTimeout(t); }, [toast]);
 
   const allEntries = useMemo(() => groups.flatMap((g) => g.entries), [groups]);
@@ -291,6 +321,15 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
   }, [userId, conf.language]);
 
   const loginToast = (message) => setToast({ message, href: authEntryHref(pathname), action: '로그인' });
+  // 복습으로 가는 길(디자인 검토 B안) — 이 레벨 범위의 복습. 중국어 = HSK 급수 범위(serializeReviewScope 정본), 일본어 = 언어 범위.
+  const levelScope = String(levelKey || '').toUpperCase();
+  const reviewHref = serializeReviewScope(lang === 'chinese' && ZH_SCOPE_LEVELS.includes(levelScope)
+    ? { lang: 'Chinese', level: levelScope } : { lang: conf.language });
+  // 처음 공부 중에 담은 날만 한 번 알린다.
+  const nudgeReview = () => {
+    try { if (localStorage.getItem(NUDGE_KEY) === kstDay()) return; localStorage.setItem(NUDGE_KEY, kstDay()); } catch { return; }
+    setToast({ message: '공부 중에 담았어요. 복습에서 다시 만나요', href: reviewHref, action: '복습하기' });
+  };
 
   const save = async (entry) => {
     if (!userId) return loginToast('로그인하면 단어를 저장할 수 있어요');
@@ -306,7 +345,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
       const vocabulary = { language: conf.language, word_text: entry.key, base_form: entry.key,
         meaning: entry.fullMeaning.slice(0, 2000), furigana: entry.reading.slice(0, 500), pos: entry.pos.slice(0, 80) };
       const response = await client.save({ action: 'save', accountId: userId, operationId: newId(), cardId: newId(), vocabulary });
-      if (response?.ok === true || response?.status === 'pending' || response?.status === 'applied' || response?.status === 'replayed') return done(true);
+      if (response?.ok === true || response?.status === 'pending' || response?.status === 'applied' || response?.status === 'replayed') { nudgeReview(); return done(true); }
       done(false);
       setToast({ message: /excluded|known/.test(response?.blockReason || '') ? '아는 단어로 옮긴 단어라 저장하지 않았어요' : '저장하지 못했어요. 잠시 후 다시 시도해 주세요' });
     } catch {
@@ -339,6 +378,8 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
   const markO = (entry) => (knownSet.has(entry.key) ? unmark(entry.key) : exclude(entry));
   const markX = (entry) => {
     if (!userId) return loginToast('로그인하면 단어를 저장할 수 있어요');
+    // 모른다고 한 바로 그때 답을 본다(디자인 검토 B안) — 탭 보기에서 X를 누르면 그 카드를 펼친다(접기 · 10초는 그대로).
+    if (prefs.view !== 'all') openPeek(entry.key);
     if (!knownSet.has(entry.key)) return save(entry);
     pendingStudy.current = entry;
     unmark(entry.key);
@@ -364,6 +405,19 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
     facets.mark({ wordText: entry.key, facet: facetView, mark: 'x' });
     markX(entry);
   };
+
+  // 진도(지금 탭) — 아는 = 숨김 기준과 같은 집합, 공부 중 = 전체 탭은 단어장 저장, 탭 보기는 그 탭의 X.
+  const progress = useMemo(() => {
+    if (!vocab || !mounted || !userId || !allEntries.length) return null;
+    const studying = facetView ? new Set([...facetIdx].filter(([, m]) => m[facetView] === 'x').map(([w]) => w)) : saved;
+    return levelProgress(allEntries, hiddenSet, studying);
+  }, [vocab, mounted, userId, allEntries, facetView, facetIdx, hiddenSet, saved]);
+  // 이어 하기 — 배움 입구 카드가 읽는 이 기기의 사본(전체 기준 개수 + 마지막 보기).
+  useEffect(() => {
+    if (!vocab || !mounted || !userId || !allEntries.length) return;
+    const p = levelProgress(allEntries, knownSet, saved);
+    try { writeLevelSnapshot(localStorage, lang, levelKey, { ...p, view: prefs.view, at: Date.now() }); } catch { /* 저장소 없음 */ }
+  }, [vocab, mounted, userId, allEntries, knownSet, saved, lang, levelKey, prefs.view]);
 
   const hideKnown = vocab && prefs.hideKnown;
   const { shown, knownCount } = useMemo(() => {
@@ -427,41 +481,59 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
   const nav = shown.map((g, i) => ({ i, name: g.name, href: `#${groupId(i)}`, current: i === activeGroup }));
   const speakOk = mounted && ttsSupported;
 
-  return <div className={`manabi-page lv-page lv-page--${kind}`} data-language={conf.langCode}>
-    <p className="lv-crumb"><Link href={`/lessons?lang=${conf.language}`}>← 교재</Link></p>
-    <div className="lv-head">
-      <h1>{title}</h1>
-      <nav className="lv-pills" aria-label="레벨">
-        {conf.levels.map((key) => <Link key={key} href={levelListHref(lang, levelKinds(lang, key).includes(kind) ? kind : 'vocab', key)} aria-current={key === levelKey ? 'page' : undefined}
-          aria-label={levelLabel(key)}>{levelPill(key)}</Link>)}
-      </nav>
+  return <div ref={pageRef} className={`manabi-page lv-page lv-page--${kind}`} data-language={conf.langCode}>
+    <div ref={barRef} className={vocab ? 'lv-bar lv-bar--sticky' : 'lv-bar'}>
+      <div className="lv-head">
+        <h1>{title}</h1>
+        {vocab && <button type="button" className="lv-navbtn" aria-label="레벨 · 목록 바꾸기" title="레벨 · 목록 바꾸기" aria-expanded={navOpen} aria-controls="lv-nav"
+          onClick={() => setNavOpen((v) => !v)}><ChevronIcon /></button>}
+        {vocab && <span className="lv-head__tools">
+          <button type="button" className="lv-gear" aria-label="찾기" title="찾기" aria-expanded={searchOpen || !!query} aria-controls="lv-find"
+            onClick={() => setSearchOpen((v) => !v)}><SearchIcon /></button>
+          <button type="button" className="lv-gear" aria-label="설정" title="설정" aria-expanded={settingsOpen} aria-controls="lv-settings"
+            onClick={() => setSettingsOpen((v) => !v)}><GearIcon /></button>
+        </span>}
+      </div>
+      <div className="lv-nav" id="lv-nav" hidden={!navOpen}>
+        <p className="lv-crumb"><Link href={`/lessons?lang=${conf.language}`}>← 교재</Link></p>
+        <nav className="lv-pills" aria-label="레벨">
+          {conf.levels.map((key) => <Link key={key} href={levelListHref(lang, levelKinds(lang, key).includes(kind) ? kind : 'vocab', key)} aria-current={key === levelKey ? 'page' : undefined}
+            aria-label={levelLabel(key)}>{levelPill(key)}</Link>)}
+        </nav>
+        <nav className="lv-tabs" aria-label="목록 종류">
+          {levelKinds(lang, levelKey).map((k) => <Link key={k} href={levelListHref(lang, k, levelKey)} aria-current={k === kind ? 'page' : undefined}>{LEVEL_KIND_LABEL[k]}</Link>)}
+        </nav>
+      </div>
+      {vocab && (searchOpen || query) && <div className="lv-tools" id="lv-find">
+        <label className="lv-search"><SearchIcon /><input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="찾기" aria-label={`${title}에서 찾기`} autoFocus={searchOpen} /></label>
+      </div>}
+      {vocab && settingsOpen && <div className="lv-settings" id="lv-settings">
+        {[['hideKnown', '아는 단어 숨기기', knownCount > 0 ? `${facetView ? `${LEVEL_VIEWS.find((v) => v.id === facetView)?.label} 탭 ` : ''}${knownCount}개` : null],
+          ...(zhVocab ? [['hun', '훈음', '한자마다 뜻과 소리'], ['tone', '성조 색', '병음 1성 빨강 · 2성 초록 · 3성 파랑 · 4성 보라'], ['glyph', '한자 대조', '正 대만 정체 · 日 일본어 표기']] : [])]
+          .map(([key, label, note]) => <button key={key} type="button" role="switch" className="lv-switch" aria-checked={prefs[key]}
+            onClick={() => setPrefs({ [key]: !prefs[key] })}><span>{label}{note && <small>{note}</small>}</span><i aria-hidden="true" /></button>)}
+      </div>}
+      {/* 진도 — 공부 화면에는 숫자 하나만(오너 2026-10-16 「숫자가 대거 적히면 시선이 분산」). 자세한 개수는 배움 입구 카드. */}
+      {progress && <div className="lv-prog">
+        <span className="lv-meter" aria-hidden="true"><i className="lv-meter__k" style={{ width: `${(progress.known / progress.total) * 100}%` }} />
+          <i className="lv-meter__s" style={{ width: `${(progress.studying / progress.total) * 100}%` }} /></span>
+        <span className="lv-prog__left">{progress.left > 0 ? `${progress.left.toLocaleString('en-US')}개 남음` : '다 봤어요'}</span>
+        {progress.studying > 0 && <Link className="lv-prog__review" href={reviewHref} prefetch={false}>복습하기 →</Link>}
+      </div>}
+      {vocab && <div className="lv-view" role="group" aria-label="보기">
+        {LEVEL_VIEWS.map((v) => <button key={v.id} type="button" aria-pressed={prefs.view === v.id}
+          onClick={() => setPrefs({ view: v.id })}>{v.label}</button>)}
+      </div>}
     </div>
-    <nav className="lv-tabs" aria-label="목록 종류">
-      {levelKinds(lang, levelKey).map((k) => <Link key={k} href={levelListHref(lang, k, levelKey)} aria-current={k === kind ? 'page' : undefined}>{LEVEL_KIND_LABEL[k]}</Link>)}
-    </nav>
+    {!vocab && !hanzi && <div className="lv-tools">
+      <label className="lv-search"><SearchIcon /><input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="찾기" aria-label={`${title}에서 찾기`} /></label>
+    </div>}
     {hanzi ? <HanziBoard levelKey={levelKey} groups={groups} userId={mounted ? userId : null} mounted={mounted} say={speakOk ? say : null}
       loginHref={authEntryHref(pathname)} words={{
         knownSet, save, exclude, loadSaved,
         isSaved: (key) => saved.has(key), isSaving: (key) => saving.has(key),
         isPendingKnown: (key) => mounted && !!userId && known.isPendingWord(conf.langCode, key),
       }} /> : <>
-    <div className="lv-tools">
-      <label className="lv-search"><SearchIcon /><input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="찾기" aria-label={`${title}에서 찾기`} /></label>
-      {vocab && <button type="button" className="lv-gear" aria-label="설정" title="설정" aria-expanded={settingsOpen} aria-controls="lv-settings"
-        onClick={() => setSettingsOpen((v) => !v)}><GearIcon /></button>}
-    </div>
-    {vocab && settingsOpen && <div className="lv-settings" id="lv-settings">
-      {[['hideKnown', '아는 단어 숨기기', knownCount > 0 ? `${facetView ? `${LEVEL_VIEWS.find((v) => v.id === facetView)?.label} 탭 ` : ''}${knownCount}개` : null],
-        ...(zhVocab ? [['hun', '훈음', '한자마다 뜻과 소리'], ['glyph', '한자 대조', '正 대만 정체 · 日 일본어 표기']] : [])]
-        .map(([key, label, note]) => <button key={key} type="button" role="switch" className="lv-switch" aria-checked={prefs[key]}
-          onClick={() => setPrefs({ [key]: !prefs[key] })}><span>{label}{note && <small>{note}</small>}</span><i aria-hidden="true" /></button>)}
-    </div>}
-    {vocab && <div className="lv-view" role="group" aria-label="보기">
-      {LEVEL_VIEWS.map((v) => <button key={v.id} type="button" aria-pressed={prefs.view === v.id}
-        onClick={() => setPrefs({ view: v.id })}>{v.label}</button>)}
-    </div>}
-    {vocab && prefs.view !== 'all' && <p className="lv-view__hint">카드를 누르면 펼쳐져요. 다시 누르거나 10초가 지나면 접혀요</p>}
-
       <nav className="lv-chips" aria-label="주제">{nav.map((n) => <a key={n.href} href={n.href} aria-current={n.current || undefined} onClick={(e) => openGroup(e, n.i)}>{n.name}</a>)}</nav>
       <div className={vocab ? 'lv-split' : 'lv-split lv-split--wide'}>
         {vocab && <nav className="lv-tocnav" aria-label="주제 목차"><ul className="lv-toc">{nav.map((n) => <li key={n.href}><a href={n.href} aria-current={n.current || undefined} onClick={(e) => openGroup(e, n.i)}>{n.name}</a></li>)}</ul></nav>}
@@ -472,7 +544,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
             <ul className="lv-entries">{g.entries.map((e) => vocab ? <VocabCard key={e.key} entry={e} lang={lang} levelKey={levelKey}
               view={prefs.view} scoped={!!facetView} peek={peek.get(e.key)?.phase} peekEpoch={peek.get(e.key)?.epoch} onPeek={() => togglePeek(e.key)} onRenew={() => renewPeek(e.key)}
               speak={speakOk ? say : null}
-              hunCells={hunOf(e.word)} glyph={glyphOf(e.word)}
+              hunCells={hunOf(e.word)} glyph={glyphOf(e.word)} tone={zhVocab && prefs.tone}
               known={facetView ? facetMark(facetIdx, e.key, facetView) === 'o' : knownSet.has(e.key)}
               studying={facetView ? facetMark(facetIdx, e.key, facetView) === 'x' : saved.has(e.key)} saving={saving.has(e.key)}
               pendingKnown={mounted && !!userId && known.isPendingWord(conf.langCode, e.key)}
@@ -483,7 +555,8 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
               {e.exs.length > 0 && <div className="lv-pat__exs">{e.exs.map((ex, i) => <Example key={i} ex={ex} lang={lang} speak={speakOk ? say : null} />)}</div>}
             </li>)}</ul>
           </section>)}
-          {rest > 0 && <div ref={moreRef} className="lv-more"><button type="button" onClick={() => setLimit((n) => n + LEVEL_LIST_PAGE)}>더 보기 · {rest.toLocaleString('en-US')}개 남음</button></div>}
+          {/* 단어 목록은 「N개 남음」이 진도 줄 하나뿐이다 — 더 보기에 같은 말로 다른 숫자를 두지 않는다. */}
+          {rest > 0 && <div ref={moreRef} className="lv-more"><button type="button" onClick={() => setLimit((n) => n + LEVEL_LIST_PAGE)}>{vocab ? '더 보기' : `더 보기 · ${rest.toLocaleString('en-US')}개 남음`}</button></div>}
           <p className="lv-src">{conf.source}</p>
         </div>
       </div>

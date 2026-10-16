@@ -4,7 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { sliceBetween } from './helpers/sliceBetween.js';
 import { levelListData, levelTileCounts, ZH_POS_GROUPS } from '../levelListData.js';
 import { LEVEL_LIST_LANGS, shortMeaning, levelWordKey, matchesLevelQuery, splitKnown, levelLabel, levelPill, levelListHref, jaHeadMode,
-  LEVEL_PEEK_CLOSE_MS, LEVEL_PEEK_MS, LEVEL_VIEWS, normalizeLevelPrefs } from '../levelList.js';
+  LEVEL_PEEK_CLOSE_MS, LEVEL_PEEK_MS, LEVEL_VIEWS, normalizeLevelPrefs, levelProgress, pinyinSyllables, writeLevelSnapshot, readLevelSnapshot,
+  levelResumeCard, LEVEL_SNAPSHOT_KEY } from '../levelList.js';
 import { knownWordSetOf, normalizeKnownWord } from '../knownWordControl.js';
 import { exclusionWord } from '../vocabularyExclusion.js';
 import { JAPANESE_VOCAB_REF } from '../japaneseVocabRegistry.js';
@@ -152,7 +153,7 @@ describe('⑷ 표기 규칙', () => {
 
 describe('⑹ O · X 빠른 암기 보기 옵션(LEVEL-OX-AN-001)', () => {
   it('보기 탭: 하나만 고른다 — 전체 · 단어 · 문장 · 뜻 · 소리, 카드를 누르면 10초 동안 전부', () => {
-    expect(LEVEL_VIEWS.map((v) => v.label)).toEqual(['전체', '단어', '문장', '뜻', '소리']);
+    expect(LEVEL_VIEWS.map((v) => v.label)).toEqual(['전체', '글자', '문장', '뜻', '소리']); // 「단어」 → 「글자」(위 줄 목록 종류 「단어」와 겹침 — 디자인 검토 A안)
     expect(LEVEL_PEEK_MS).toBe(10_000);
   });
 
@@ -171,9 +172,9 @@ describe('⑹ O · X 빠른 암기 보기 옵션(LEVEL-OX-AN-001)', () => {
   });
 
   it('저장된 설정 검증: 보기 전체 · 훈음 켬 · 한자 대조 · 숨기기 끔이 기본, 모르는 값은 버린다', () => {
-    expect(normalizeLevelPrefs(null)).toEqual({ view: 'all', hideKnown: false, hun: true, glyph: false });
+    expect(normalizeLevelPrefs(null)).toEqual({ view: 'all', hideKnown: false, hun: true, glyph: false, tone: false }); // 성조 색은 옵트인(오너 2026-08-19)
     expect(normalizeLevelPrefs({ view: 'grade', hideKnown: true, hun: 'yes', glyph: true }))
-      .toEqual({ view: 'all', hideKnown: true, hun: true, glyph: true });
+      .toEqual({ view: 'all', hideKnown: true, hun: true, glyph: true, tone: false });
     expect(normalizeLevelPrefs({ view: 'audio' }).view).toBe('audio');
   });
 
@@ -232,5 +233,54 @@ describe('⑸ 저장 · 제외 · 링크 배선', () => {
       expect(legacyTextbookTarget(href), href).toBeNull();
       expect(learnerHref(href)).toBe(href);
     }
+  });
+});
+
+describe('⑹ 진도 · 이어 하기 · 성조 색(LEVEL-FLOW-001 — 디자인 검토 2026-10-16 KST, 오너 「숫자가 대거 적히면 시선이 분산」)', () => {
+  const memory = () => { const m = new Map(); return { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, String(v)) }; };
+
+  it('진도: 아는 쪽이 먼저 — 저장돼 있어도 아는 단어면 아는 쪽으로만 센다', () => {
+    const entries = ['a', 'b', 'c', 'd'].map((key) => ({ key }));
+    expect(levelProgress(entries, new Set(['a', 'b']), new Set(['b', 'c']))).toEqual({ total: 4, known: 2, studying: 1, left: 1 });
+    expect(levelProgress([], null, null)).toEqual({ total: 0, known: 0, studying: 0, left: 0 });
+  });
+
+  it('병음 음절: 글자 수와 맞을 때만 가른다 — n · ng 뒤 모음은 「\'」 없으면 앞 자음을 성모로', () => {
+    expect(pinyinSyllables('xuéxí', 2)).toEqual(['xué', 'xí']);
+    expect(pinyinSyllables('píngguǒ', 2)).toEqual(['píng', 'guǒ']);
+    expect(pinyinSyllables('dàngāo', 2)).toEqual(['dàn', 'gāo']); // 蛋糕 — 「dàng|āo」가 아니다
+    expect(pinyinSyllables('Xī\'ān', 2)).toEqual(['Xī', 'ān']);
+    expect(pinyinSyllables('tiān ānmén', 3)).toEqual(['tiān', 'ān', 'mén']);
+    expect(pinyinSyllables('xuéxí', 3)).toBeNull(); // 儿화 · 다음자 등 수가 안 맞으면 색 없이
+    expect(pinyinSyllables('', 1)).toBeNull();
+  });
+
+  it('성조 색은 기본 끔(옵트인 — 오너 확정 2026-08-19)', () => {
+    expect(normalizeLevelPrefs({}).tone).toBe(false);
+    expect(normalizeLevelPrefs({ tone: true }).tone).toBe(true);
+  });
+
+  it('이어 하기 사본: 레벨마다 쌓고 마지막 레벨 · 보기를 남긴다 — 깨진 값은 버린다', () => {
+    const st = memory();
+    writeLevelSnapshot(st, 'chinese', 'h1', { known: 182, studying: 47, total: 832, left: 603, view: 'meaning', at: 1 });
+    writeLevelSnapshot(st, 'chinese', 'h2', { known: 3, studying: 0, total: 900, left: 897, view: 'all', at: 2 });
+    const snap = readLevelSnapshot(st, 'chinese');
+    expect(snap.last).toEqual({ level: 'H2', view: 'all' });
+    expect(snap.levels.H1).toMatchObject({ known: 182, studying: 47, total: 832 });
+    expect(readLevelSnapshot(st, 'japanese')).toBeNull();
+    st.setItem(LEVEL_SNAPSHOT_KEY, JSON.stringify({ chinese: { last: { level: '<x>' }, levels: {} } }));
+    expect(readLevelSnapshot(st, 'chinese')).toBeNull();
+    st.setItem(LEVEL_SNAPSHOT_KEY, '{');
+    expect(readLevelSnapshot(st, 'chinese')).toBeNull();
+  });
+
+  it('배움 입구 카드: 마지막 레벨로 · 자세한 개수는 여기에만 · 기록 없으면 1급부터 그대로', () => {
+    const st = memory();
+    writeLevelSnapshot(st, 'chinese', 'h1', { known: 1182, studying: 47, total: 1832, view: 'all', at: 1 });
+    expect(levelResumeCard(readLevelSnapshot(st, 'chinese'))).toEqual({ href: '/chinese/vocab/h1', title: 'HSK 1 단어',
+      chips: ['알아요 1,182 / 1,832', '공부 중 47'], meta: '이어 하기 ↗' });
+    writeLevelSnapshot(st, 'chinese', 'h3', { known: 0, studying: 0, total: 900, view: 'all', at: 2 });
+    expect(levelResumeCard(readLevelSnapshot(st, 'chinese')).chips).toEqual(['알아요 0 / 900']);
+    expect(levelResumeCard(null)).toBeNull();
   });
 });
