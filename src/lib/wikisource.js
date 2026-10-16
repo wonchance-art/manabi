@@ -195,10 +195,11 @@ export function splitBlocks(blocks, target, measure) {
 }
 
 /**
- * 권리 판정(원산국 + 미국 + 한국) — 기준 연도는 검토일(rights.reviewedAt)의 해라 결정적이다.
- *   원산국: 사후 WS_ORIGIN_TERMS[원산국]년(중국 50 · 프랑스 70). 프랑스는 mortPourLaFrance를 true/false로 꼭 적고, true면 +30년.
- *   한국: 사후 70년 — 작가가 기준 연도 - 71년 이전 사망(2026년이면 1955년 이전).
- *   미국: 출판이 기준 연도 - 96년 이전(2026년이면 1930년 이전 출판).
+ * 권리 판정(원산국 만료 = 한국 공개 가능) — 기준 연도는 검토일(rights.reviewedAt)의 해라 결정적이다.
+ *   원산국: 사후 WS_ORIGIN_TERMS[원산국]년(중국 50 · 프랑스 70 · 한국 70). 프랑스는 mortPourLaFrance를 true/false로 꼭 적고, true면 +30년.
+ *   한국: 저작권법 제3조 제4항(보호기간 상호주의) — 본국에서 만료된 외국 저작물은 한국에서도 보호하지 않는다(아오조라 D5와 같은 선).
+ *         한국 원산은 한국 사후 70년 그 자체.
+ *   미국 기준은 보지 않는다(오너 「미국 기준 없애」 2026-10-17 KST — 아오조라 D5 「일본에서만 끝나면 그만」의 연장).
  *   번역자가 있으면 불가(원어 원문만). 판정 규칙이 없는 원산국은 불가(fail-closed).
  * @returns {{ok: boolean, reasons: string[], reviewYear: number|null}}
  */
@@ -215,19 +216,17 @@ export function wikisourceRightsVerdict({ publishedYear, authorDeathYear, countr
   if (reviewYear != null && Number.isInteger(authorDeathYear)) {
     const originTerm = (term ?? 0) + (countryOfOrigin === 'FR' && mortPourLaFrance === true ? 30 : 0);
     if (term != null && authorDeathYear > reviewYear - originTerm - 1) reasons.push(`작가 ${authorDeathYear} 사망 — 원산국 보호기간(사후 ${originTerm}년)이 끝나지 않았다`);
-    if (authorDeathYear > reviewYear - 71) reasons.push(`작가 ${authorDeathYear} 사망 — 한국 보호기간(사후 70년)이 끝나지 않았다`);
   }
-  if (reviewYear != null && Number.isInteger(publishedYear) && publishedYear > reviewYear - 96) reasons.push(`${publishedYear} 발표 — 미국 보호기간이 끝나지 않았다`);
   return { ok: reasons.length === 0, reasons, reviewYear };
 }
 
-/** 게시 가능한 권리 기록인가 — 승인 · 퍼블릭 도메인 · 원산국 · 미국 · 한국 검토 · 판정 통과 · 위키문헌 라이선스. */
+/** 게시 가능한 권리 기록인가 — 승인 · 퍼블릭 도메인 · 원산국 · 한국 검토 · 판정 통과 · 위키문헌 라이선스. */
 export function wikisourceRightsPublishable(literature) {
   const rights = literature?.rights;
   if (literature?.provider !== WS_PROVIDER || rights?.status !== 'approved' || rights?.basis !== 'public-domain') return false;
   if (literature.license !== WS_LICENSE) return false;
   const jurisdictions = Array.isArray(rights.reviewedJurisdictions) ? rights.reviewedJurisdictions : [];
-  if (!['US', 'KR', literature.countryOfOrigin].every((code) => jurisdictions.includes(code))) return false;
+  if (![literature.countryOfOrigin, 'KR'].every((code) => jurisdictions.includes(code))) return false;
   return wikisourceRightsVerdict(literature).ok;
 }
 

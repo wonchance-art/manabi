@@ -70,6 +70,8 @@ import { literatureWork } from '../lib/literatureCanonical';
 import LiteratureCover from './books/LiteratureCover';
 import VictorianCover from './books/VictorianCover';
 import { standardEbooksWork } from '../lib/standardEbooksCanonical';
+import WikisourceCover from './books/WikisourceCover';
+import { wikisourceWork } from '../lib/wikisourceCanonical';
 
 const LITERATURE_API = '/api/admin/literature';
 const FAILURE_STOP = 3; // 연달아 이만큼 실패하면 공통 원인(할당량·네트워크)으로 보고 멈춘다
@@ -80,11 +82,12 @@ const CONFLICT_LABEL = { 'text-differs': '정본과 원문이 다름', 'duplicat
 export function BookCover({ bookKey, scale = 1 }) {
   const work = literatureWork(bookKey);
   const english = work ? null : standardEbooksWork(bookKey); // 영어 정본 — 빅토리아 천 장정(LIT-SRC-EN-1)
-  if (!work?.display && !english?.display) return null;
+  const world = work || english ? null : wikisourceWork(bookKey); // 중국어·프랑스어 정본 — 초판 장정(LIT-SRC-WS-1)
+  if (!work?.display && !english?.display && !world?.display) return null;
   return (
     <span style={{ display: 'inline-block', width: 60 * scale, height: 84 * scale, overflow: 'hidden', verticalAlign: 'middle', flex: 'none' }}>
       <span style={{ display: 'block', width: 60, transform: `scale(${scale})`, transformOrigin: '0 0' }}>
-        {work ? <LiteratureCover work={work} /> : <VictorianCover work={english} />}
+        {work ? <LiteratureCover work={work} /> : english ? <VictorianCover work={english} /> : <WikisourceCover work={world} />}
       </span>
     </span>
   );

@@ -121,12 +121,12 @@ describe('배선 — 서재 카드·게시 화면', () => {
     expect(page).toContain('const english = work ? null : standardEbooksWorkOfBook(b);');
     expect(page).toContain('art: <VictorianCover work={english} />,');
     expect(page).toContain("english.words && `${english.words.toLocaleString()}단어`");
-    expect(page).toContain(') : !work && !english && b.chapters[0]?.owner_id === user.id ? (');
+    expect(page).toContain(') : !work && !english && !world && b.chapters[0]?.owner_id === user.id ? (');
   });
 
   it('게시 화면 표지: 아오조라는 시리즈 A, 영어 정본은 빅토리아 표지', () => {
     const cover = sliceBetween(read('src/components/LiteraturePublishPanel.jsx'), 'export function BookCover', '\n}\n');
     expect(cover).toContain('const english = work ? null : standardEbooksWork(bookKey);');
-    expect(cover).toContain('{work ? <LiteratureCover work={work} /> : <VictorianCover work={english} />}');
+    expect(cover).toContain('{work ? <LiteratureCover work={work} /> : english ? <VictorianCover work={english} /> : <WikisourceCover work={world} />}');
   });
 });

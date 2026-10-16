@@ -231,7 +231,7 @@ describe('배선 — 기본 꺼짐, 켜야 로드', () => {
     expect(css).toContain('.word-token--picked:has(+ .word-token--picked) .surface::after {');
     expect(card).toContain(`const patternMark = visibleScan?.byToken.has(tokenId) ? <span className="pattern-mark" aria-hidden="true" /> : null;`);
     // 단어 조작은 .surface(#1323). 중국어 격자(ZH-GRID-001)는 글자를 칸으로 나눌 뿐 밑줄 요소의 자리(.surface 안 마지막)는 그대로다.
-    expect(card).toContain('<span className="surface" {...wordAction}>{zhGrid ? <ZhText text={token.text} /> : token.text}{patternMark}</span>');
+    expect(card).toContain('<span className="surface" {...wordAction}>{zhGrid ? <ZhText text={shownText} /> : shownText}{patternMark}</span>'); // 번체로 읽기는 화면 글자만(LIT-SRC-WS-1)
     expect(card).toMatch(/: zhGrid \? <ZhText key=\{i\} text=\{seg\.plain\} \/> : <span key=\{i\}>\{seg\.plain\}<\/span>\s*\)\}\{patternMark\}\s*<\/span>/);
   });
 

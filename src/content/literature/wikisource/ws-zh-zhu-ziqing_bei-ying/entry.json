@@ -16,7 +16,6 @@
     "basis": "public-domain",
     "reviewedJurisdictions": [
       "CN",
-      "US",
       "KR"
     ],
     "reviewer": "claude",
@@ -24,7 +23,11 @@
   },
   "display": {
     "titleKo": "아버지의 뒷모습",
-    "authorKo": "주쯔칭"
+    "authorKo": "주쯔칭",
+    "binding": "kaiming",
+    "coverTitle": "背影",
+    "coverAuthor": "朱自清",
+    "coverImprint": "开明书店"
   },
   "fetchedAt": "2026-10-16",
   "files": [

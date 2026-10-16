@@ -4,7 +4,7 @@ import {
 } from '../wikisource.js';
 
 // Wikisource 정본 책(LIT-SRC-WS-1, 오너 「같이해. 위 3편+3편+1편(레미제라블 추가). 간체와 번체 옵션 같이」 2026-10-17 KST) —
-// 본문 조각 파서(fail-closed) · 고유명사 밑줄 · 장 나눔 · 간체/번체 대조 · 권리 판정(중국 50 · 프랑스 70(+전쟁 30) · 미국 · 한국).
+// 본문 조각 파서(fail-closed) · 고유명사 밑줄 · 장 나눔 · 간체/번체 대조 · 권리 판정(원산국 만료 — 중국 50 · 프랑스 70(+전쟁 30) · 한국은 상호주의 · 미국 기준 없음).
 
 const wrap = (inner) => `<div class="prp-pages-output" lang="fr">\n${inner}\n</div>\n`;
 const pagenum = '<span><span class="pagenum ws-pagenum" id="2" title="Page:x.djvu/14"></span></span>';
@@ -63,12 +63,13 @@ describe('splitBlocks — 블록 경계로 고르게', () => {
   });
 });
 
-describe('권리 — 원산국 + 미국 + 한국, 기준 연도는 검토일', () => {
+describe('권리 — 원산국 만료(한국은 상호주의), 기준 연도는 검토일', () => {
   const base = { publishedYear: 1921, authorDeathYear: 1936, countryOfOrigin: 'CN', rights: { reviewedAt: '2026-10-17' } };
-  it('중국(사후 50년) · 프랑스(사후 70년, 전쟁 연장 +30) · 한국(사후 70년) · 미국(1930년 이전 발표)', () => {
+  it('중국(사후 50년) · 프랑스(사후 70년, 전쟁 연장 +30) — 본국에서 끝나면 한국도 끝(상호주의) · 미국 기준 없음', () => {
     expect(wikisourceRightsVerdict(base).ok).toBe(true);
-    expect(wikisourceRightsVerdict({ ...base, authorDeathYear: 1960 }).reasons.join()).toMatch(/한국/u); // 중국은 끝났어도 한국 70년
-    expect(wikisourceRightsVerdict({ ...base, publishedYear: 1931 }).reasons.join()).toMatch(/미국/u);
+    expect(wikisourceRightsVerdict({ ...base, authorDeathYear: 1966 }).ok).toBe(true); // 중국 사후 50년 만료 → 한국 상호주의(老舍 1966)
+    expect(wikisourceRightsVerdict({ ...base, authorDeathYear: 1976 }).reasons.join()).toMatch(/원산국/u);
+    expect(wikisourceRightsVerdict({ ...base, publishedYear: 1940 }).ok).toBe(true); // 출판 연도로 막지 않는다(미국 선 없음)
     const fr = { publishedYear: 1884, authorDeathYear: 1893, countryOfOrigin: 'FR', mortPourLaFrance: false, rights: { reviewedAt: '2026-10-17' } };
     expect(wikisourceRightsVerdict(fr).ok).toBe(true);
     expect(wikisourceRightsVerdict({ ...fr, mortPourLaFrance: null }).reasons.join()).toMatch(/mortPourLaFrance/u);
@@ -76,10 +77,10 @@ describe('권리 — 원산국 + 미국 + 한국, 기준 연도는 검토일', (
     expect(wikisourceRightsVerdict({ ...fr, countryOfOrigin: 'DE' }).reasons.join()).toMatch(/판정 규칙이 없다/u);
     expect(wikisourceRightsVerdict({ ...fr, translator: 'X' }).reasons.join()).toMatch(/번역본/u);
   });
-  it('게시 가능 = 승인 · 퍼블릭 도메인 · 원산국/미국/한국 검토 · 위키문헌 라이선스 · 판정 통과', () => {
-    const literature = { ...base, provider: 'wikisource', license: WS_LICENSE, rights: { status: 'approved', basis: 'public-domain', reviewedJurisdictions: ['CN', 'US', 'KR'], reviewedAt: '2026-10-17' } };
+  it('게시 가능 = 승인 · 퍼블릭 도메인 · 원산국/한국 검토 · 위키문헌 라이선스 · 판정 통과', () => {
+    const literature = { ...base, provider: 'wikisource', license: WS_LICENSE, rights: { status: 'approved', basis: 'public-domain', reviewedJurisdictions: ['CN', 'KR'], reviewedAt: '2026-10-17' } };
     expect(wikisourceRightsPublishable(literature)).toBe(true);
-    expect(wikisourceRightsPublishable({ ...literature, rights: { ...literature.rights, reviewedJurisdictions: ['CN', 'US'] } })).toBe(false);
+    expect(wikisourceRightsPublishable({ ...literature, rights: { ...literature.rights, reviewedJurisdictions: ['CN'] } })).toBe(false);
     expect(wikisourceRightsPublishable({ ...literature, license: 'CC0-1.0' })).toBe(false);
     expect(wikisourceRightsPublishable({ ...literature, provider: 'aozora' })).toBe(false);
   });
@@ -89,7 +90,7 @@ describe('createWikisourceDraft — 장 모양 · 간체/번체 · 이름 자리
   const zhEntry = (files) => ({
     schemaVersion: 1, provider: 'wikisource', wiki: 'zh', key: 'ws-zh-lu-xun_kong-yi-ji', main: '孔乙己', url: 'https://zh.wikisource.org/wiki/%E5%AD%94%E4%B9%99%E5%B7%B1',
     title: '孔乙己', author: '鲁迅', level: 'H5 고급', publishedYear: 1919, authorDeathYear: 1936, countryOfOrigin: 'CN', fetchedAt: '2026-10-17',
-    rights: { status: 'approved', basis: 'public-domain', reviewedJurisdictions: ['CN', 'US', 'KR'], reviewer: 'claude', reviewedAt: '2026-10-17' },
+    rights: { status: 'approved', basis: 'public-domain', reviewedJurisdictions: ['CN', 'KR'], reviewer: 'claude', reviewedAt: '2026-10-17' },
     display: { titleKo: '쿵이지', authorKo: '루쉰' },
     files,
   });

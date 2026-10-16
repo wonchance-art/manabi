@@ -55,7 +55,7 @@ try {
       basis: 'public-domain',
       reviewedBy: flag('approve') || '',
       reviewedAt: todayKst,
-      reviewedJurisdictions: [...new Set([flag('origin'), 'US', 'KR'].filter(Boolean))],
+      reviewedJurisdictions: [...new Set([flag('origin'), 'KR'].filter(Boolean))],
       evidenceUrl: url,
     },
   };
@@ -64,7 +64,7 @@ try {
   const texts = files.map((file) => ({ path: file, text: readFileSync(path.join(work, 'src/epub/text', file), 'utf8') }));
   const key = standardEbooksBookKey(repo);
   console.log(`■ ${key} — ${entry.title} · ${entry.author} (${entry.publishedYear} · 몰 ${entry.authorDeathYear} · ${entry.countryOfOrigin})`);
-  console.log(`  권리 ${verdict.ok ? '만료(원산국·US·KR)' : `불가 — ${verdict.reasons.join(' / ')}`} · 본문 ${files.length}파일 · 커밋 ${commit.slice(0, 12)}`);
+  console.log(`  권리 ${verdict.ok ? '만료(원산국 — 한국은 상호주의)' : `불가 — ${verdict.reasons.join(' / ')}`} · 본문 ${files.length}파일 · 커밋 ${commit.slice(0, 12)}`);
   if (entry.rights.status === 'approved') {
     const draft = createStandardEbooksDraft(entry, texts);
     console.log(`  장 ${draft.book.total}개 · 단어 ${draft.diagnostics.words} (장당 ${draft.diagnostics.minChapterWords}–${draft.diagnostics.maxChapterWords})`);

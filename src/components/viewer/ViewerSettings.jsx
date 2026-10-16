@@ -61,7 +61,7 @@ function ToneLegend({uiLocale}) {
 function LocaleText({uiLocale='ko',message,values,children}) {
   return uiLocale==='ko'?children:t(uiLocale,message,values);
 }
-export default function ViewerSettings({settings:s,language,languageSettings,onClose,keepPosition,onReaderView,previewTokens=[],paceTargetCpm,paceEstimate,myCpm,patternNote,ttsSupported,fontStatus,initialTab='type'}) {
+export default function ViewerSettings({settings:s,language,languageSettings,onClose,keepPosition,onReaderView,previewTokens=[],paceTargetCpm,paceEstimate,myCpm,patternNote,ttsSupported,fontStatus,zhScriptAvailable=false,initialTab='type'}) {
   const snapshot=useRef(s.snapshot());
   const localeSnapshot=useRef(languageSettings?{uiLocale:languageSettings.uiLocale,explanationLocale:languageSettings.explanationLocale}:null);
   const [tab,setTab]=useState(initialTab),[preview,setPreview]=useState(true);
@@ -96,6 +96,9 @@ export default function ViewerSettings({settings:s,language,languageSettings,onC
         {/* 보기(READER-PAGED-001 목업 E) — 기본은 쪽 넘김, 스크롤은 지금 그대로의 대안. 위치는 보기 쪽이 기준 글자로 지킨다
             (keepPosition의 화면 좌표 기준점은 다단 쪽에서 맞지 않는다). */}
         <Choices label="보기" uiLocale={uiLocale} value={s.readerView||'paged'} items={choices([['paged','쪽 넘김'],['scroll','스크롤']])} onChange={v=>onReaderView?onReaderView(v):s.setReaderView?.(v)}/>
+        {/* 글자 모양(LIT-SRC-WS-1, 시안 B) — 번체 사본이 정본과 맞는 중국어 정본 책에서만. 바뀌는 것은 화면 글자뿐이다. */}
+        {language==='Chinese'&&zhScriptAvailable&&<Choices label="글자 모양" uiLocale={uiLocale} value={s.zhScript||'hans'} items={choices([['hans','간체'],['hant','번체']])} onChange={v=>set('zhScript',v)}
+          help={<Help uiLocale={uiLocale}><p className="reader-setting-note">{tr('단어 카드·단어장·복습은 간체로 이어져요.')}</p></Help>}/>}
         {s.fontFamily==='serif'&&fontStatus!=='ready'&&<p role="status">{tr(fontStatus==='error'?'명조를 불러오지 못해 고딕으로 표시하고 있어요.':'명조 글꼴을 불러오는 중이에요.')}</p>}
         <More uiLocale={uiLocale} count={changed(['pinyinSize','lineGap','charGap','fontFamily'])}>
         {language==='Chinese'&&<Slider uiLocale={uiLocale} label="병음 크기" value={s.pinyinSize} min={0.75} max={1} step={0.0625} display={`${Math.round(s.pinyinSize*16)}px`} onChange={v=>set('pinyinSize',v)}/>}

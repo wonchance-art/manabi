@@ -25,12 +25,6 @@ export function serializeWikisourceIndex(keys) {
   return `${lines.join('\n')}\n`;
 }
 
-/** 표지·카드 표기 — 한국어 제목·작가는 필수. 표지 문법 키는 시리즈 모듈이 따로 검사한다(validateCover). */
-function validateDisplay(display, validateCover) {
-  const problems = ['titleKo', 'authorKo'].filter((field) => typeof display?.[field] !== 'string' || !display[field].trim());
-  if (problems.length) throw new Error(`display: ${problems.join(' · ')}`);
-  return validateCover ? validateCover(display) : { titleKo: display.titleKo, authorKo: display.authorKo };
-}
 
 /** 뷰어 대조표 — 작품 key → 크레딧(책 단위 literature) + 표기 + 분량 + 장마다 제목·원문 SHA-256(중국어는 번체 SHA-256도). */
 export function createWikisourceManifest(entries) {
@@ -59,11 +53,12 @@ export function createWikisourceManifest(entries) {
 }
 
 /**
- * @param {{root?: string, check?: boolean, validateCover?: (display) => object}} options
+ * @param {{root?: string, check?: boolean, validateCover?: (display) => object}} options — validateCover 기본은 초판 장정 표기 검사(wikisourceCover)
  * @returns {Promise<{works: Array<{key, chapters, status}>, errors: string[]}>}
  */
 export async function buildWikisource({ root = WIKISOURCE_ROOT, check = false, validateCover = null } = {}) {
   const { createWikisourceDraft } = await import('../../src/lib/wikisource.js');
+  const validate = validateCover ?? (await import('../../src/lib/wikisourceCover.js')).validateWikisourceDisplay;
   const works = [];
   const errors = [];
   if (!existsSync(root)) return { works, errors };
@@ -86,7 +81,7 @@ export async function buildWikisource({ root = WIKISOURCE_ROOT, check = false, v
       // 고유명사 밑줄 → 「한 단어로 묶기」 기록(boundaries.json — scripts/literature/boundaries.mjs가 분석기와 같은 토크나이저로 만든다)
       const boundaryPath = path.join(base, LITERATURE_BOUNDARY_FILE);
       const draft = withBoundaryMerges(createWikisourceDraft(entry, files), existsSync(boundaryPath) ? JSON.parse(readFileSync(boundaryPath, 'utf8')) : null, 'wikisource');
-      const display = validateDisplay(entry.display, validateCover);
+      const display = validate(entry.display); // 표지 표기(초판 장정 — 없거나 틀리면 그 작품은 쓰지 않는다)
       const output = serialize(draft);
       const target = path.join(base, WIKISOURCE_FILES.chapters);
       const current = existsSync(target) ? readFileSync(target, 'utf8') : null;

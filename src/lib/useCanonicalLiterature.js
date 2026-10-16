@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { verifiedCanonicalLiterature } from './literatureCanonical';
 import { verifiedStandardEbooksLiterature } from './standardEbooksCanonical';
-import { verifiedWikisourceLiterature } from './wikisourceCanonical';
+import { verifiedScriptVariant, verifiedWikisourceLiterature } from './wikisourceCanonical';
 
 // 출처별 대조 — 青空文庫 · Standard Ebooks(LIT-SRC-EN-1) · Wikisource(LIT-SRC-WS-1). 모두 원문 해시가 정본과 같을 때만 크레딧을 준다.
 const VERIFY = { aozora: verifiedCanonicalLiterature, standardebooks: verifiedStandardEbooksLiterature, wikisource: verifiedWikisourceLiterature };
@@ -24,4 +24,24 @@ export function useCanonicalLiterature(material) {
     return () => { live = false; };
   }, [rawText, provider, key, order]);
   return literature;
+}
+
+/** 번체로 읽기(LIT-SRC-WS-1) — 정본 대조를 통과한 번체 사본(없거나 다르면 null). 원문·책 위치·사본이 바뀌면 다시 대조한다. */
+export function useScriptVariant(material) {
+  const rawText = material?.raw_text;
+  const metadata = material?.processed_json?.metadata;
+  const provider = metadata?.literature?.provider;
+  const key = metadata?.book?.key;
+  const order = metadata?.book?.order;
+  const variants = metadata?.scriptVariants;
+  const [text, setText] = useState(null);
+  useEffect(() => {
+    let live = true;
+    setText(null);
+    if (provider !== 'wikisource' || !variants) return undefined;
+    verifiedScriptVariant({ raw_text: rawText, processed_json: { metadata: { literature: { provider }, book: { key, order }, scriptVariants: variants } } })
+      .then((value) => { if (live) setText(value); });
+    return () => { live = false; };
+  }, [rawText, provider, key, order, variants]);
+  return text;
 }

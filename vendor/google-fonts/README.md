@@ -27,5 +27,5 @@ node scripts/fonts/vendor-google-fonts.mjs --refresh       # 전체를 다시 �
 - `scripts/next-build.test.js`도 CI에서 src의 모든 호출이 사본에 있는지 검사한다.
 
 ## 라이선스
-Inter, Manrope, Noto Sans, Noto Sans KR/JP/SC/TC, Noto Serif KR/JP/SC, Shippori Mincho B1, Libre Caslon Display는 모두 SIL Open Font License 1.1이다.
+Inter, Manrope, Noto Sans, Noto Sans KR/JP/SC/TC, Noto Serif KR/JP/SC, Shippori Mincho B1, Libre Caslon Display, Bodoni Moda, Metamorphous, Rye는 모두 SIL Open Font License 1.1이다.
 수정 없이 재배포하며, 패밀리별 저작권 표기와 라이선스 원문은 `licenses/`에 있다.

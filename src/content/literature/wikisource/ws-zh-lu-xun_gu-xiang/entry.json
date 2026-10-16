@@ -16,7 +16,6 @@
     "basis": "public-domain",
     "reviewedJurisdictions": [
       "CN",
-      "US",
       "KR"
     ],
     "reviewer": "claude",
@@ -24,7 +23,10 @@
   },
   "display": {
     "titleKo": "고향",
-    "authorKo": "루쉰"
+    "authorKo": "루쉰",
+    "binding": "nahan",
+    "coverTitle": "故乡",
+    "coverAuthor": "鲁迅"
   },
   "fetchedAt": "2026-10-16",
   "files": [

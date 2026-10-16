@@ -106,10 +106,11 @@ export function splitBlocksByWords(blocks, target = SE_TARGET_WORDS) {
 }
 
 /**
- * 권리 판정(원산국 만료 + 미국 + 한국) — 기준 연도는 검토일(rights.reviewedAt)의 해라 결정적이다.
- *   사후 70년: 작가가 기준 연도 - 71년 이전 사망(2026년 검토면 1955년 이전 사망) — 영국 원산·한국 모두 이 선(한국은 1962년 이전
- *              사망 작품이 이미 만료라 더 이르다).
- *   미국: 출판이 기준 연도 - 96년 이전(2026년이면 1930년 이전 출판 — 1930년 출판작은 2026-01-01 만료).
+ * 권리 판정(원산국 만료 = 한국 공개 가능) — 기준 연도는 검토일(rights.reviewedAt)의 해라 결정적이다.
+ *   영국 원산: 사후 70년 — 작가가 기준 연도 - 71년 이전 사망(2026년 검토면 1955년 이전 사망).
+ *   미국 원산: 미국이 본국이라 본국 선(출판 95년 — 기준 연도 - 96년 이전 출판)을 쓴다. 다른 나라 원산에는 미국 선을 쓰지 않는다
+ *             (오너 「미국 기준 없애」 2026-10-17 KST).
+ *   한국: 저작권법 제3조 제4항(보호기간 상호주의) — 본국에서 만료된 외국 저작물은 한국에서도 보호하지 않는다(아오조라 D5와 같은 선).
  *   번역자가 있으면 불가(원어 원문만), 원산국이 SE_SUPPORTED_ORIGINS 밖이면 불가(나라별 예외를 먼저 적는다 — fail-closed).
  * @returns {{ok: boolean, reasons: string[], reviewYear: number|null}}
  */
@@ -121,18 +122,18 @@ export function standardEbooksRightsVerdict({ publishedYear, authorDeathYear, co
   if (!Number.isInteger(authorDeathYear)) reasons.push('authorDeathYear가 필요하다');
   if (!SE_SUPPORTED_ORIGINS.includes(countryOfOrigin)) reasons.push(`원산국 ${countryOfOrigin ?? '없음'}은 아직 판정 규칙이 없다(${SE_SUPPORTED_ORIGINS.join('·')})`);
   if (translator) reasons.push('번역본은 넣지 않는다(원어 원문만)');
-  if (reviewYear != null && Number.isInteger(authorDeathYear) && authorDeathYear > reviewYear - 71) reasons.push(`작가 ${authorDeathYear} 사망 — 사후 70년이 끝나지 않았다`);
-  if (reviewYear != null && Number.isInteger(publishedYear) && publishedYear > reviewYear - 96) reasons.push(`${publishedYear} 출판 — 미국 보호기간이 끝나지 않았다`);
+  if (reviewYear != null && countryOfOrigin === 'GB' && Number.isInteger(authorDeathYear) && authorDeathYear > reviewYear - 71) reasons.push(`작가 ${authorDeathYear} 사망 — 영국 보호기간(사후 70년)이 끝나지 않았다`);
+  if (reviewYear != null && countryOfOrigin === 'US' && Number.isInteger(publishedYear) && publishedYear > reviewYear - 96) reasons.push(`${publishedYear} 출판 — 미국(본국) 보호기간이 끝나지 않았다`);
   return { ok: reasons.length === 0, reasons, reviewYear };
 }
 
-/** 게시 가능한 권리 기록인가 — 승인·퍼블릭 도메인 · 원산국·미국·한국 검토 · 판정 통과 · 판 라이선스 CC0. */
+/** 게시 가능한 권리 기록인가 — 승인·퍼블릭 도메인 · 원산국·한국 검토 · 판정 통과 · 판 라이선스 CC0. */
 export function standardEbooksRightsPublishable(literature) {
   const rights = literature?.rights;
   if (literature?.provider !== SE_PROVIDER || rights?.status !== 'approved' || rights?.basis !== 'public-domain') return false;
   if (literature.license !== SE_LICENSE) return false;
   const jurisdictions = Array.isArray(rights.reviewedJurisdictions) ? rights.reviewedJurisdictions : [];
-  if (!['US', 'KR', literature.countryOfOrigin].every((code) => jurisdictions.includes(code))) return false;
+  if (![literature.countryOfOrigin, 'KR'].every((code) => jurisdictions.includes(code))) return false;
   return standardEbooksRightsVerdict(literature).ok;
 }
 

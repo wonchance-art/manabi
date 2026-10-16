@@ -17,7 +17,6 @@
     "basis": "public-domain",
     "reviewedJurisdictions": [
       "FR",
-      "US",
       "KR"
     ],
     "reviewer": "claude",
@@ -25,7 +24,16 @@
   },
   "display": {
     "titleKo": "레 미제라블 1부",
-    "authorKo": "빅토르 위고"
+    "authorKo": "빅토르 위고",
+    "binding": "pagnerre",
+    "coverAuthor": "Victor Hugo",
+    "coverTitle": "Les\nMisérables",
+    "coverPart": "Première partie",
+    "coverPartTitle": "Fantine",
+    "coverTome": "Tome premier",
+    "coverPlace": "Paris",
+    "coverImprint": "Pagnerre, libraire-éditeur",
+    "coverYear": 1862
   },
   "fetchedAt": "2026-10-16",
   "files": [

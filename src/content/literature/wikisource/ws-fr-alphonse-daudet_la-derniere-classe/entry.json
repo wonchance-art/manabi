@@ -17,7 +17,6 @@
     "basis": "public-domain",
     "reviewedJurisdictions": [
       "FR",
-      "US",
       "KR"
     ],
     "reviewer": "claude",
@@ -25,7 +24,14 @@
   },
   "display": {
     "titleKo": "마지막 수업",
-    "authorKo": "알퐁스 도데"
+    "authorKo": "알퐁스 도데",
+    "binding": "lemerre",
+    "coverAuthor": "Alphonse Daudet",
+    "coverTitle": "La dernière\nClasse",
+    "coverSubtitle": "Récit d’un petit Alsacien.",
+    "coverPlace": "Paris",
+    "coverImprint": "Alphonse Lemerre, éditeur",
+    "coverYear": 1873
   },
   "fetchedAt": "2026-10-16",
   "files": [

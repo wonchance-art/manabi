@@ -184,7 +184,8 @@ import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constant
 import { attributionParts, literatureAttributionParts, materialSource, standardEbooksAttributionParts, wikisourceAttributionParts } from '../lib/videoAttribution';
 import { isCanonicalLiteratureMaterial, literatureWork } from '../lib/literatureCanonical';
 import { literatureChapterLabel, literatureChapterTitle } from '../lib/literatureDisplay';
-import { useCanonicalLiterature } from '../lib/useCanonicalLiterature';
+import { useCanonicalLiterature, useScriptVariant } from '../lib/useCanonicalLiterature';
+import { scriptVariantSurfaces, variantPieces } from '../lib/scriptVariant';
 import { isArtBookMaterial } from '../lib/artBookProvider';
 import { useArtBookChapter } from '../lib/useArtBookChapter';
 import ViewerArtCard from '../components/viewer/ViewerArtCard';
@@ -800,6 +801,12 @@ export default function ViewerPage() {
   // 중국어 격자(ZH-GRID-001): 낱말 사이 간격 없이 칸마다 같은 자간, 반각 묶음은 칸 수로 올림.
   const zhGrid = materialLang === 'Chinese';
   useZhGridRuns(readerRef, zhGrid);
+  // 번체로 읽기(LIT-SRC-WS-1) — 정본 대조를 통과한 번체 사본이 있는 책에서만. 토큰 자리마다 같은 길이의 번체 글자를 보인다
+  // (단어 카드·저장·복습·문장 지정은 간체 token.text 그대로). 어긋나면 null — 간체로 보인다.
+  const zhHant = useScriptVariant(material);
+  const scriptSurfaces = useMemo(() => (zhGrid && zhHant && settings.zhScript === 'hant'
+    ? scriptVariantSurfaces(material?.processed_json, material?.raw_text, zhHant) : null),
+  [zhGrid, zhHant, settings.zhScript, material?.processed_json, material?.raw_text]);
   useEffect(()=>{
     let live=true;
     const measure=()=>{
@@ -4099,6 +4106,7 @@ export default function ViewerPage() {
                 }}
               />
             ) : null;
+            const shownText = scriptSurfaces?.get(tokenId) ?? token.text; // 번체로 읽기 — 화면 글자만(LIT-SRC-WS-1)
             if (token.failed) {
               return (
                 <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
@@ -4108,7 +4116,7 @@ export default function ViewerPage() {
                   className={`word-token word-token--failed${pickedClass}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}`} style={paceStyle} title={vt("분석하지 못했어요. 재분석 버튼을 눌러 주세요")}>
                   {linePick}
                   <span className="furigana" />
-                  <span className="surface">{zhGrid ? <ZhText text={token.text} /> : token.text}</span>
+                  <span className="surface">{zhGrid ? <ZhText text={shownText} /> : shownText}</span>
                   <span className="failed-marker">!</span>
                 </div>
               );
@@ -4152,7 +4160,7 @@ export default function ViewerPage() {
                 {linePick}
                 {rubySegments ? (
                   <span className={`surface${furiOff ? ' surface--furi-off' : ''}`} {...wordAction}>
-                    {rubySegments.map((seg, i) =>
+                    {variantPieces(rubySegments, scriptSurfaces?.get(tokenId)).map((seg, i) =>
                       seg.kanji
                         // 병음 rt는 CSS가 전 음절 단일 크기(최장 병음이 1em 셀에 들어가는
                         // 크기)로 조판한다 — 글자별 속성이 더 필요 없다(오너 확정 2026-08-19).
@@ -4167,7 +4175,7 @@ export default function ViewerPage() {
                     )}{patternMark}
                   </span>
                 ) : (
-                  <span className="surface" {...wordAction}>{zhGrid ? <ZhText text={token.text} /> : token.text}{patternMark}</span>
+                  <span className="surface" {...wordAction}>{zhGrid ? <ZhText text={shownText} /> : shownText}{patternMark}</span>
                 )}
               </div>
             );
@@ -4480,7 +4488,7 @@ export default function ViewerPage() {
       </TextbookAnnotations>
       {paceFloatShown&&<div className={`viewer-pace-float${sheetStripShown?' viewer-pace-float--wide':''}`}>{paceToggle('viewer-pace-float__btn',true)}</div>}
 
-      {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} languageSettings={languageSettings} onClose={closeReadingSettings} keepPosition={pagedActive?change=>change():keepReadingPosition} onReaderView={changeReaderView} previewTokens={previewTokens} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus}/>}
+      {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} languageSettings={languageSettings} onClose={closeReadingSettings} keepPosition={pagedActive?change=>change():keepReadingPosition} onReaderView={changeReaderView} previewTokens={previewTokens} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus} zhScriptAvailable={!!zhHant}/>}
       {modal('activities')&&<ViewerModal uiLocale={uiLocale} title={vt("학습")} onClose={()=>setActiveModal(null)}><div className="reader-activity-menu">
         {user&&!String(id).startsWith('local:')&&<Link className="btn btn--secondary" href={`/notes/new?${new URLSearchParams({material:String(id),language:materialLang})}`}>{vt("내 학습 노트 펼치기 ↗")}</Link>}
         {ttsSupported&&sentences.length>0&&<button onClick={()=>setDictationPickerOpen(true)}><b>{vt("받아쓰기")}</b><span>{vt("추천 문장 하나를 골라 듣고 써요")}</span></button>}

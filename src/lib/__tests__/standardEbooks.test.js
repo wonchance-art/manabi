@@ -71,14 +71,16 @@ describe('splitBlocksByWords — 문단 경계로 고르게', () => {
   });
 });
 
-describe('권리 선(원산국 사후 70년 + 미국 출판 95년 + 한국) — 검토 연도 기준, 결정적', () => {
+describe('권리 선(원산국 만료 — 한국은 상호주의 · 미국 선은 미국 원산에만) — 검토 연도 기준, 결정적', () => {
   const base = { publishedYear: 1865, authorDeathYear: 1898, countryOfOrigin: 'GB', rights: { reviewedAt: '2026-10-16' } };
-  it('2026년 검토: 1955년 이전 사망 · 1930년 이전 출판만', () => {
+  it('2026년 검토: 영국 원산은 1955년 이전 사망만(출판 연도로 막지 않는다) · 미국 원산은 1930년 이전 출판', () => {
     expect(standardEbooksRightsVerdict(base)).toEqual({ ok: true, reasons: [], reviewYear: 2026 });
     expect(standardEbooksRightsVerdict({ ...base, authorDeathYear: 1955 }).ok).toBe(true);
-    expect(standardEbooksRightsVerdict({ ...base, authorDeathYear: 1956 }).reasons).toEqual(['작가 1956 사망 — 사후 70년이 끝나지 않았다']);
-    expect(standardEbooksRightsVerdict({ ...base, publishedYear: 1930 }).ok).toBe(true);
-    expect(standardEbooksRightsVerdict({ ...base, publishedYear: 1931 }).ok).toBe(false); // 미국 보호 중
+    expect(standardEbooksRightsVerdict({ ...base, authorDeathYear: 1956 }).reasons).toEqual(['작가 1956 사망 — 영국 보호기간(사후 70년)이 끝나지 않았다']);
+    expect(standardEbooksRightsVerdict({ ...base, publishedYear: 1940, authorDeathYear: 1950 }).ok).toBe(true); // 미국 선 없음(오너 2026-10-17)
+    const us = { ...base, countryOfOrigin: 'US' };
+    expect(standardEbooksRightsVerdict({ ...us, publishedYear: 1930 }).ok).toBe(true);
+    expect(standardEbooksRightsVerdict({ ...us, publishedYear: 1931 }).ok).toBe(false); // 미국 원산 — 본국 보호 중
   });
   it('번역본·판정 규칙 없는 원산국(프랑스 전쟁 연장 등)·기록 누락은 불가(fail-closed)', () => {
     expect(standardEbooksRightsVerdict({ ...base, translator: 'X' }).ok).toBe(false);

@@ -34,6 +34,8 @@ import LiteratureCover from '../components/books/LiteratureCover';
 import { literatureWorkOfBook } from '../lib/literatureCanonical';
 import VictorianCover from '../components/books/VictorianCover';
 import { standardEbooksWorkOfBook } from '../lib/standardEbooksCanonical';
+import WikisourceCover from '../components/books/WikisourceCover';
+import { wikisourceWorkOfBook } from '../lib/wikisourceCanonical';
 import { literatureChapterLabel, literatureDivisionLabel } from '../lib/literatureDisplay';
 import SuggestionArtwork from '../components/SuggestionArtwork';
 import { failureMessage } from '@/lib/errorMessage';
@@ -719,6 +721,17 @@ export default function MaterialsPage({ libraryView = null }) {
                 meta: [english.level, english.words && `${english.words.toLocaleString()}단어`, `${english.total}장`, `읽음 ${readDone}/${b.chapters.length}`].filter(Boolean).join(' · ') + pendingNote,
                 fitLine: fitLineOf(bf, '장'),
               } : null;
+              // 중국어·프랑스어 정본(LIT-SRC-WS-1, 위키문헌) — 초판 장정 표지 + 원제·한국어 제목 + 장 제목. 분량은 중국어 글자 · 프랑스어 단어.
+              const world = work || english ? null : wikisourceWorkOfBook(b);
+              const worldLang = world?.language === 'Chinese' ? 'zh-Hans' : 'fr';
+              const worldChapterOf = (c) => world?.chapters.find((item) => item.order === c._bookOrder);
+              const worldProps = world ? {
+                art: <WikisourceCover work={world} />,
+                title: <span lang={worldLang}>{world.title}</span>,
+                subtitle: [world.display?.titleKo, world.display?.authorKo, world.literature?.publishedYear && `${world.literature.publishedYear}년 발표`].filter(Boolean).join(' · '),
+                meta: [world.level, world.size && `${world.size.toLocaleString()}${world.unit === 'chars' ? '자' : '단어'}`, `${world.total}장`, `읽음 ${readDone}/${b.chapters.length}`].filter(Boolean).join(' · ') + pendingNote,
+                fitLine: fitLineOf(bf, '장'),
+              } : null;
               return (
                 <MaterialGroupCard
                   key={b.key}
@@ -729,12 +742,14 @@ export default function MaterialsPage({ libraryView = null }) {
                   fitLine={fitLineOf(bf, '과')}
                   {...literatureProps}
                   {...englishProps}
+                  {...worldProps}
                   rows={b.chapters.map((c) => ({
                     key: c.id,
                     onClick: () => openReader(`/viewer/${c.id}`),
                     lead: work ? literatureLead(c._bookOrder) : c._bookOrder,
                     title: work ? <span lang="ja">{chapterOf(c)?.incipit || c.title}</span>
                       : english ? <span lang="en">{englishChapterOf(c)?.title || c.title}</span>
+                      : world ? <span lang={worldLang}>{worldChapterOf(c)?.title || c.title}</span>
                       : c.title.includes(' — ') ? c.title.split(' — ').slice(1).join(' — ') : c.title,
                     right: chapterTags(c),
                   }))}
@@ -742,7 +757,7 @@ export default function MaterialsPage({ libraryView = null }) {
                   // 비로그인(BOOK-GUEST-GATE-1) — 목록만 보이고 여는 것은 로그인 뒤. 로그인하면 첫 장으로 돌아온다.
                   footer={!user ? (
                     <Link href={authEntryHref(`/viewer/${b.chapters[0]?.id}`)} className="btn btn--primary btn--sm">로그인하고 읽기</Link>
-                  ) : !work && !english && b.chapters[0]?.owner_id === user.id ? (
+                  ) : !work && !english && !world && b.chapters[0]?.owner_id === user.id ? (
                     <Link href={`/materials/add?book=${encodeURIComponent(b.key)}`} className="btn btn--secondary btn--sm">+ 다음 과 적기</Link>
                   ) : null}
                 />

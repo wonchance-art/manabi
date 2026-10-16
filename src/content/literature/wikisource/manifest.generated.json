@@ -11,7 +11,14 @@
       "unit": "words",
       "display": {
         "titleKo": "마지막 수업",
-        "authorKo": "알퐁스 도데"
+        "authorKo": "알퐁스 도데",
+        "binding": "lemerre",
+        "coverTitle": "La dernière\nClasse",
+        "coverAuthor": "Alphonse Daudet",
+        "coverPlace": "Paris",
+        "coverImprint": "Alphonse Lemerre, éditeur",
+        "coverSubtitle": "Récit d’un petit Alsacien.",
+        "coverYear": 1873
       },
       "literature": {
         "schemaVersion": 1,
@@ -33,7 +40,6 @@
           "basis": "public-domain",
           "reviewedJurisdictions": [
             "FR",
-            "US",
             "KR"
           ],
           "reviewer": "claude",
@@ -64,7 +70,13 @@
       "unit": "words",
       "display": {
         "titleKo": "목걸이",
-        "authorKo": "기 드 모파상"
+        "authorKo": "기 드 모파상",
+        "binding": "marpon",
+        "coverTitle": "La\nParure",
+        "coverAuthor": "Guy de Maupassant",
+        "coverPlace": "Paris",
+        "coverImprint": "C. Marpon & E. Flammarion",
+        "coverEdition": "Sixième mille"
       },
       "literature": {
         "schemaVersion": 1,
@@ -86,7 +98,6 @@
           "basis": "public-domain",
           "reviewedJurisdictions": [
             "FR",
-            "US",
             "KR"
           ],
           "reviewer": "claude",
@@ -117,7 +128,11 @@
       "unit": "words",
       "display": {
         "titleKo": "80일간의 세계 일주",
-        "authorKo": "쥘 베른"
+        "authorKo": "쥘 베른",
+        "binding": "hetzel",
+        "coverTitle": "Le\nTour du monde\nen\n80 jours",
+        "coverAuthor": "Jules Verne",
+        "coverEdition": "Illustré"
       },
       "literature": {
         "schemaVersion": 1,
@@ -139,7 +154,6 @@
           "basis": "public-domain",
           "reviewedJurisdictions": [
             "FR",
-            "US",
             "KR"
           ],
           "reviewer": "claude",
@@ -350,7 +364,16 @@
       "unit": "words",
       "display": {
         "titleKo": "레 미제라블 1부",
-        "authorKo": "빅토르 위고"
+        "authorKo": "빅토르 위고",
+        "binding": "pagnerre",
+        "coverTitle": "Les\nMisérables",
+        "coverAuthor": "Victor Hugo",
+        "coverPart": "Première partie",
+        "coverPartTitle": "Fantine",
+        "coverTome": "Tome premier",
+        "coverPlace": "Paris",
+        "coverImprint": "Pagnerre, libraire-éditeur",
+        "coverYear": 1862
       },
       "literature": {
         "schemaVersion": 1,
@@ -372,7 +395,6 @@
           "basis": "public-domain",
           "reviewedJurisdictions": [
             "FR",
-            "US",
             "KR"
           ],
           "reviewer": "claude",
@@ -778,7 +800,16 @@
       "unit": "words",
       "display": {
         "titleKo": "레 미제라블 2부",
-        "authorKo": "빅토르 위고"
+        "authorKo": "빅토르 위고",
+        "binding": "pagnerre",
+        "coverTitle": "Les\nMisérables",
+        "coverAuthor": "Victor Hugo",
+        "coverPart": "Deuxième partie",
+        "coverPartTitle": "Cosette",
+        "coverTome": "Tome deuxième",
+        "coverPlace": "Paris",
+        "coverImprint": "Pagnerre, libraire-éditeur",
+        "coverYear": 1862
       },
       "literature": {
         "schemaVersion": 1,
@@ -800,7 +831,6 @@
           "basis": "public-domain",
           "reviewedJurisdictions": [
             "FR",
-            "US",
             "KR"
           ],
           "reviewer": "claude",
@@ -1211,7 +1241,16 @@
       "unit": "words",
       "display": {
         "titleKo": "레 미제라블 3부",
-        "authorKo": "빅토르 위고"
+        "authorKo": "빅토르 위고",
+        "binding": "pagnerre",
+        "coverTitle": "Les\nMisérables",
+        "coverAuthor": "Victor Hugo",
+        "coverPart": "Troisième partie",
+        "coverPartTitle": "Marius",
+        "coverTome": "Tome troisième",
+        "coverPlace": "Paris",
+        "coverImprint": "Pagnerre, libraire-éditeur",
+        "coverYear": 1862
       },
       "literature": {
         "schemaVersion": 1,
@@ -1233,7 +1272,6 @@
           "basis": "public-domain",
           "reviewedJurisdictions": [
             "FR",
-            "US",
             "KR"
           ],
           "reviewer": "claude",
@@ -1659,7 +1697,16 @@
       "unit": "words",
       "display": {
         "titleKo": "레 미제라블 4부",
-        "authorKo": "빅토르 위고"
+        "authorKo": "빅토르 위고",
+        "binding": "pagnerre",
+        "coverTitle": "Les\nMisérables",
+        "coverAuthor": "Victor Hugo",
+        "coverPart": "Quatrième partie",
+        "coverPartTitle": "L’Idylle rue Plumet\net l’Épopée rue Saint-Denis",
+        "coverTome": "Tome quatrième",
+        "coverPlace": "Paris",
+        "coverImprint": "Pagnerre, libraire-éditeur",
+        "coverYear": 1862
       },
       "literature": {
         "schemaVersion": 1,
@@ -1681,7 +1728,6 @@
           "basis": "public-domain",
           "reviewedJurisdictions": [
             "FR",
-            "US",
             "KR"
           ],
           "reviewer": "claude",
@@ -2127,7 +2173,16 @@
       "unit": "words",
       "display": {
         "titleKo": "레 미제라블 5부",
-        "authorKo": "빅토르 위고"
+        "authorKo": "빅토르 위고",
+        "binding": "pagnerre",
+        "coverTitle": "Les\nMisérables",
+        "coverAuthor": "Victor Hugo",
+        "coverPart": "Cinquième partie",
+        "coverPartTitle": "Jean Valjean",
+        "coverTome": "Tome cinquième",
+        "coverPlace": "Paris",
+        "coverImprint": "Pagnerre, libraire-éditeur",
+        "coverYear": 1862
       },
       "literature": {
         "schemaVersion": 1,
@@ -2149,7 +2204,6 @@
           "basis": "public-domain",
           "reviewedJurisdictions": [
             "FR",
-            "US",
             "KR"
           ],
           "reviewer": "claude",
@@ -2540,7 +2594,10 @@
       "unit": "chars",
       "display": {
         "titleKo": "고향",
-        "authorKo": "루쉰"
+        "authorKo": "루쉰",
+        "binding": "nahan",
+        "coverTitle": "故乡",
+        "coverAuthor": "鲁迅"
       },
       "literature": {
         "schemaVersion": 1,
@@ -2561,7 +2618,6 @@
           "basis": "public-domain",
           "reviewedJurisdictions": [
             "CN",
-            "US",
             "KR"
           ],
           "reviewer": "claude",
@@ -2608,7 +2664,10 @@
       "unit": "chars",
       "display": {
         "titleKo": "쿵이지",
-        "authorKo": "루쉰"
+        "authorKo": "루쉰",
+        "binding": "nahan",
+        "coverTitle": "孔乙己",
+        "coverAuthor": "鲁迅"
       },
       "literature": {
         "schemaVersion": 1,
@@ -2629,7 +2688,6 @@
           "basis": "public-domain",
           "reviewedJurisdictions": [
             "CN",
-            "US",
             "KR"
           ],
           "reviewer": "claude",
@@ -2668,7 +2726,11 @@
       "unit": "chars",
       "display": {
         "titleKo": "아버지의 뒷모습",
-        "authorKo": "주쯔칭"
+        "authorKo": "주쯔칭",
+        "binding": "kaiming",
+        "coverTitle": "背影",
+        "coverAuthor": "朱自清",
+        "coverImprint": "开明书店"
       },
       "literature": {
         "schemaVersion": 1,
@@ -2689,7 +2751,6 @@
           "basis": "public-domain",
           "reviewedJurisdictions": [
             "CN",
-            "US",
             "KR"
           ],
           "reviewer": "claude",
