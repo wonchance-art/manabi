@@ -942,6 +942,9 @@
     실빌드 CLS 발견 0 · 배움 0.00002 · 서재 0.032(읽던 곳 없는 첫 사용자 0.130 — 남은 한계). 배움 받는 중 거짓 빈 상태 제거.
   · 같은 PR(ROW-CAP-SWEEP-001): 1000행 잘림 전수 조사 — 지금 넘는 미수리 경로 0. 새 기기 만남 끌어오기만 1000행 page로(계약 ⑦).
     관찰: 내 자료 목록(최대 253) · public_book_catalog(공개 책 장 0) · 주간 만난 단어(14일 72).
+  · 같은 PR(PROFILES-PRIVACY-001 ② 선행): 관리자 판별을 service role 헬퍼로(backfill-ipa · seed-starters, anon 폴백 제거) · 관리자 역할 변경 =
+    admin_set_user_role RPC(마지막 관리자 강등 거부 · 'user'→'student') — 마이그레이션 20261016171800은 병합 때 db push로 적용, 그 전엔 안내 토스트.
+    ② 본 적용(전원 공개 정책 제거 · UPDATE 14열 · activity + admission 지문 재고정)은 배포 · 역할 변경 실계정 검수 뒤.
   · 보류: CJK 가변 weight(@font-face −67%, brotli 전송 −2%) — 600 · 650 · 800 · 300 굵기가 실제 값으로 바뀌는 시각 변경이라 오너 확인 뒤.
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
