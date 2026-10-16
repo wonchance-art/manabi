@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { introduceFsrsCard } from '../fsrsScheduler';
+import { sliceBetween } from './helpers/sliceBetween';
 // /study 조립(assembleStudyMaterials)의 DB 읽기 묶음(PERF-STUDY-001) — 최근 주제 · 최근 사용 문단은 첫 병렬 묶음에서 함께 읽는다.
 // 읽기만 앞당긴다: 같은 재료(avoidThemes · 연재 prevArc/episode), 조회 실패는 지금처럼 조용히 빈 값.
 // 모듈 대역은 learningRemainingReaders.test.js와 같은 경계(스냅숏 RPC · 레지스트리 · 문항 조립만 대역).
@@ -92,7 +93,7 @@ describe('/study 조립 — 최근 문단 읽기를 첫 병렬 묶음에', () =>
   it('사용 처리(status=used 쓰기)는 조립 안에서 하지 않는다 — 읽기만 앞당겼다', () => {
     const source = read('src/lib/studyMaterials.js');
     expect(source).not.toMatch(/from\('study_paragraphs'\)[^;]*\.(update|insert|upsert)\(/);
-    const assemble = source.slice(source.indexOf('export async function assembleStudyMaterials'));
+    const assemble = sliceBetween(source, 'export async function assembleStudyMaterials');
     expect(assemble).not.toMatch(/await supabase\.from\('study_paragraphs'\)/);
   });
 });
