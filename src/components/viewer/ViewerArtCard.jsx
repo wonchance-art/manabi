@@ -1,20 +1,24 @@
 'use client';
-// 「그림 한 장 읽기」 큐레이션 책 장의 작품 정보 카드(ART-P0-3, 목업 2026-10-14 KST 오너 합의) — 본문 위, 출처 줄과 함께.
+// 「그림 한 장 읽기」 큐레이션 책 장의 작품 정보(ART-P0-3) — 기사형 배치(ART-READ-001, 2026-10-15 KST 오너 「권장대로 ㄱㄱ」 목업).
 //
-//   [그림]  (캡션: image.credit — 미술관이 요청한 캡션, 작게)
-//   冨嶽三十六景 神奈川沖浪裏 · 후가쿠 36경 — 가나가와 앞바다 파도 아래
-//   가쓰시카 호쿠사이(1760–1849) · 1830–33년 · 에도 시대 · 가로로 긴 오반 크기 니시키에
-//   소장처  도쿄 국립박물관 ↗ · 시카고 미술관 ↗
-//   그림 속 장소  도쿄만 · 후지산
-//   찾아볼 것  ① … ② … ③ …
-//   ▸ 작가 소개
-//   출처: <credit> · <license> · 출처 페이지 ↗   ← 본문 바로 위 한 줄(유튜브·PDF·아오조라와 같은 viewer-attribution 문법)
+//   part="head" — 본문 위(기사 머리):
+//     [그림 — 폭 가득]  (캡션: image.credit — 미술관이 요청한 캡션, 작게)
+//     冨嶽三十六景 神奈川沖浪裏 · 후가쿠 36경 — 가나가와 앞바다 파도 아래
+//     가쓰시카 호쿠사이(1760–1849) · 1830–33년 · 에도 시대 · 가로로 긴 오반 크기 니시키에
+//   ──── 본문(일본어 해설, 단어 탭 그대로) ────
+//   part="facts" — 본문 뒤(기사 꼬리):
+//     소장처  도쿄 국립박물관 ↗ · 시카고 미술관 ↗
+//     그림 속 장소  도쿄만 · 후지산
+//     찾아볼 것  ① … ② … ③ …
+//     ▸ 작가 소개
+//     출처: <credit> · <license> · 출처 페이지 ↗   ← 해설 출처 한 줄(유튜브·PDF·아오조라와 같은 viewer-attribution 문법)
 //
 // 날짜는 artInfoCard의 date.display — 일본어 원문 표기는 그대로, 출처의 영어 약식 표기(「c. 1830/33」)는 한국어 연도로.
+// 그림 불러오기 실패는 두 자리가 함께 알아야 한다(찾아볼 것은 그림을 보며 하는 질문) — 뷰어가 failedImage를 들고 둘에 넘긴다.
 //
 // 값은 useArtBookChapter(카탈로그 해시 대조를 통과한 장)에서만 온다 — 자료 metadata를 직접 읽지 않는다(가짜 크레딧 차단).
 // 화면 문구는 vt(뷰어 화면 언어, viewerMessages.js)로, 작품·장소 이름과 해설 크레딧은 학습 내용이라 그대로 둔다.
-import { Fragment, useState } from 'react';
+import { Fragment } from 'react';
 import Link from 'next/link';
 import './art-card.css';
 
@@ -37,9 +41,11 @@ const imageSize = (image) => (Number.isInteger(image?.width) && image.width > 0 
  * @param {object} p
  * @param {null | {card: object, credit: {credit: string, license: string|null, sourceUrl: string}}} p.chapter verifiedArtChapter 결과
  * @param {(text: string, values?: object) => string} p.vt 뷰어 화면 문구 번역(ViewerPage의 vt)
+ * @param {'head' | 'facts'} p.part 기사 머리(본문 위) | 기사 꼬리(본문 뒤)
+ * @param {string} p.failedImage 불러오지 못한 그림 주소(뷰어가 들고 두 자리에 같이 넘긴다)
+ * @param {(url: string) => void} p.setFailedImage
  */
-export default function ViewerArtCard({ chapter, vt }) {
-  const [failedImage, setFailedImage] = useState('');
+export default function ViewerArtCard({ chapter, vt, part, failedImage, setFailedImage }) {
   const card = chapter?.card;
   if (!card) return null;
   const imageUrl = selfHostedImage(card.image?.url);
@@ -60,9 +66,9 @@ export default function ViewerArtCard({ chapter, vt }) {
   const credit = chapter.credit;
   const sourceUrl = httpsUrl(credit?.sourceUrl);
 
-  return (
-    <>
-      <section className="viewer-art-card" aria-label={vt('작품 정보')}>
+  if (part === 'head') {
+    return (
+      <section className="viewer-art-card viewer-art-card--head" aria-label={vt('작품 정보')}>
         {image && (
           <figure className="viewer-art-card__figure">
             {/* 미술관 IIIF 이미지를 그대로 — next/image 최적화 경유 없이(원격 도메인 설정·변환 없이 한 장).
@@ -83,6 +89,12 @@ export default function ViewerArtCard({ chapter, vt }) {
             {meta.map((piece, index) => <Fragment key={index}>{index > 0 && ' · '}{piece}</Fragment>)}
           </p>
         )}
+      </section>
+    );
+  }
+  return (
+    <>
+      <section className="viewer-art-card viewer-art-card--facts" aria-label={vt('작품 이야기')}>
         <dl className="viewer-art-card__facts">
           {holdings.length > 0 && (
             <div className="viewer-art-card__fact">

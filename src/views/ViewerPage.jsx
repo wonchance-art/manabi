@@ -341,6 +341,8 @@ export default function ViewerPage() {
   // 「그림 한 장 읽기」 큐레이션 책(ART-P0-3) — 작품 카드는 카탈로그 해시 대조를 통과한 장만, 원문 수정은 정본 책처럼 막는다.
   // 아오조라 잠금과 따로 둔다: canonicalLiteratureLocked는 일본어 「뜻 확인 필요」 검수도 켜는데, 그건 큐레이션 책 범위가 아니다.
   const artBookChapter = useArtBookChapter(material);
+  // 그림 불러오기 실패는 기사 머리(그림)와 꼬리(찾아볼 것)가 함께 안다 — 그림이 안 보이면 찾아볼 것도 숨긴다.
+  const [artImageFailed, setArtImageFailed] = useState('');
   const artBookLocked = isArtBookMaterial(material);
   const [koreanSources, setKoreanSources] = useState({ scope: '', byToken: {} });
   const koreanSourceScope = useMemo(() => materialLang === 'Korean' ? JSON.stringify([id, material?.raw_text, material?.processed_json]) : '',
@@ -813,7 +815,8 @@ export default function ViewerPage() {
   const [pagesEl,setPagesEl] = useState(null);
   const pageBarRef = useRef(null), pagedGuard = useRef({}), pagedInitialAnchor = useRef(null);
   const readerView = settings.readerView === 'scroll' ? 'scroll' : 'paged';
-  const pagedActive = readerView === 'paged' && !classStudyActive;
+  // 「그림 한 장 읽기」(ART-READ-001, 오너 2026-10-15 「뉴스 기사처럼 — 스크롤로 통일」)는 해설이 짧아 쪽으로 나누면 어색하다 — 스크롤 고정.
+  const pagedActive = readerView === 'paged' && !classStudyActive && !artBookLocked;
   // 자동 진행은 세로 흐름(휠·터치 감지·문장 스크롤)에 맞춘 기능이라 쪽 넘김 보기에서는 끈다(설계 §4 P0) — 스크롤 보기는 그대로.
   const autoPaceOn = autoPace && !pagedActive;
   const pager = usePagedReader({
@@ -3826,7 +3829,7 @@ export default function ViewerPage() {
 
       {/* 「그림 한 장 읽기」 작품 정보 카드(ART-P0-3 목업) — 그림 · 제목 · 작가 · 소장 · 그림 속 장소 · 찾아볼 것, 그 아래 해설 출처 한 줄.
           값은 카탈로그 해시 대조를 통과한 장(useArtBookChapter)에서만 온다 — 남의 공개 자료에 꾸며 넣은 provider 'art' metadata로는 생기지 않는다. */}
-      <ViewerArtCard chapter={artBookChapter} vt={vt} />
+      <ViewerArtCard chapter={artBookChapter} vt={vt} part="head" failedImage={artImageFailed} setFailedImage={setArtImageFailed} />
 
       {/* Reading Progress Bar */}
       {isDone && (
@@ -4252,6 +4255,9 @@ export default function ViewerPage() {
 
       </div>
 
+      {/* 「그림 한 장 읽기」 기사 꼬리(ART-READ-001) — 소장처 · 그림 속 장소 · 찾아볼 것 · 작가 소개 · 해설 출처 한 줄. 본문을 다 읽은 자리. */}
+      <ViewerArtCard chapter={artBookChapter} vt={vt} part="facts" failedImage={artImageFailed} setFailedImage={setArtImageFailed} />
+
       {/* 다 읽었다면(뷰어 정돈 A안) — **끝의 행동은 끝에**. 읽기 완료(누르면 퀴즈·완독 화면)·오늘 학습은
           예전에 본문 **위** 액션바에 상시로 있었고, 리딩 테스트·회화는 아래에 있어 두 자리로 갈려 있었다.
           한 줄로 모은다. 이벤트·퀴즈·오늘 학습 핸드오프(study_source_*)는 그대로 — 자리만 옮겼다. */}
@@ -4308,8 +4314,8 @@ export default function ViewerPage() {
         if (bookNav?.next) {
           return (
             <Link href={classStudyNeighborHref(bookNav.next,studyContext,originalParams.get('returnTo'))} className="next-lesson-card">
-              <div className="next-lesson-card__hint">{literatureBook ? vt("이어 읽기 ·") : vt("다음 과 ·")}{literatureBook?.division === 'heading' ? literatureChapterLabel(literatureBook, bookNav.next.order) : `${bookNav.pos + 1}/${bookNav.total}`}</div>
-              <div className="next-lesson-card__title" lang={contentLangTag}>{literatureTitleOf(bookNav.next.order) || bookNav.next.title}</div>
+              <div className="next-lesson-card__hint">{artBookLocked ? vt("다음 작품 ·") : literatureBook ? vt("이어 읽기 ·") : vt("다음 과 ·")}{literatureBook?.division === 'heading' ? literatureChapterLabel(literatureBook, bookNav.next.order) : `${bookNav.pos + 1}/${bookNav.total}`}</div>
+              <div className="next-lesson-card__title" lang={contentLangTag}>{literatureTitleOf(bookNav.next.order) || (artBookLocked ? String(bookNav.next.title || '').split(' — ').pop() : bookNav.next.title)}</div>
             </Link>
           );
         }
@@ -4417,7 +4423,7 @@ export default function ViewerPage() {
       </TextbookAnnotations>
       {paceFloatShown&&<div className={`viewer-pace-float${sheetStripShown?' viewer-pace-float--wide':''}`}>{paceToggle('viewer-pace-float__btn',true)}</div>}
 
-      {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} languageSettings={languageSettings} onClose={closeReadingSettings} keepPosition={pagedActive?change=>change():keepReadingPosition} onReaderView={changeReaderView} previewTokens={previewTokens} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus}/>}
+      {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} languageSettings={languageSettings} onClose={closeReadingSettings} keepPosition={pagedActive?change=>change():keepReadingPosition} onReaderView={changeReaderView} previewTokens={previewTokens} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus} scrollOnly={artBookLocked}/>}
       {modal('activities')&&<ViewerModal uiLocale={uiLocale} title={vt("학습")} onClose={()=>setActiveModal(null)}><div className="reader-activity-menu">
         {user&&!String(id).startsWith('local:')&&<Link className="btn btn--secondary" href={`/notes/new?${new URLSearchParams({material:String(id),language:materialLang})}`}>{vt("내 학습 노트 펼치기 ↗")}</Link>}
         {ttsSupported&&sentences.length>0&&<button onClick={()=>setDictationPickerOpen(true)}><b>{vt("받아쓰기")}</b><span>{vt("추천 문장 하나를 골라 듣고 써요")}</span></button>}

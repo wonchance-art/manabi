@@ -9,10 +9,13 @@ import { sliceBetween } from './helpers/sliceBetween';
 
 // 「그림 한 장 읽기」 작품 정보 카드(ART-P0-3) — 배선 계약. 동작(실렌더)은 e2e 몫이고, 여기서는 「코드가 이렇게 쓰여 있다」를 묶는다.
 //
-// 기대 화면(오너 합의 목업, 본문 바로 위):
+// 기대 화면(기사형 배치 ART-READ-001, 2026-10-15 KST 오너 「권장대로 ㄱㄱ」 — 예전 「전부 본문 위」 목업을 대체):
+//   본문 위(part="head"):
 //   [그림]  (캡션: image.credit — 작게)
 //   冨嶽三十六景 神奈川沖浪裏 · 후가쿠 36경 — 가나가와 앞바다 파도 아래
 //   가쓰시카 호쿠사이(1760–1849) · 1830–33년 · 에도 시대 · 가로로 긴 오반 크기 니시키에(다색 목판화)
+//   ── 본문 ──
+//   본문 뒤(part="facts"):
 //   소장처  도쿄 국립박물관 ↗ · 시카고 미술관 ↗
 //   그림 속 장소  도쿄만 · 후지산
 //   찾아볼 것  ① … ② … ③ …
@@ -31,7 +34,10 @@ describe('뷰어 배선 — 카드는 대조를 통과한 장에서만', () => {
     expect(viewer).toContain("import { useArtBookChapter } from '../lib/useArtBookChapter';");
     expect(viewer).toContain("import ViewerArtCard from '../components/viewer/ViewerArtCard';");
     expect(viewer).toContain('const artBookChapter = useArtBookChapter(material);');
-    expect(viewer.match(/<ViewerArtCard\b[^>]*\/>/g)).toEqual(['<ViewerArtCard chapter={artBookChapter} vt={vt} />']);
+    expect(viewer.match(/<ViewerArtCard\b[^>]*\/>/g)).toEqual([
+      '<ViewerArtCard chapter={artBookChapter} vt={vt} part="head" failedImage={artImageFailed} setFailedImage={setArtImageFailed} />',
+      '<ViewerArtCard chapter={artBookChapter} vt={vt} part="facts" failedImage={artImageFailed} setFailedImage={setArtImageFailed} />',
+    ]);
     const card = read(CARD);
     expect(card, '카드가 자료(material)·processed_json을 직접 읽으면 가짜 metadata로 카드가 생긴다').not.toMatch(/\bmaterial\b|processed_json|raw_text/);
   });
@@ -52,13 +58,39 @@ describe('뷰어 배선 — 카드는 대조를 통과한 장에서만', () => {
     for (const dep of ['rawText', 'provider', 'key', 'order', 'work']) expect(deps, `의존 배열 누락: ${dep}`).toMatch(new RegExp(`\\b${dep}\\b`));
   });
 
-  it('자리: 헤더 밖, 출처 줄(유튜브·아오조라·PDF) 다음, 읽기 진행 막대·본문 앞', () => {
+  it('자리: 머리는 헤더 밖 · 출처 줄(유튜브·아오조라·PDF) 다음 · 본문 앞, 꼬리는 본문 뒤 · 「다 읽었다면」 앞', () => {
     expect(sliceBetween(viewer, '<header className="page-header viewer-header">', '</header>')).not.toContain('ViewerArtCard');
     // 아오조라 출처 슬라이스(literatureAttribution.test.js)를 건드리지 않는다.
     expect(sliceBetween(viewer, '아오조라 정본 책 출처', 'PDF 출처 —')).not.toContain('ViewerArtCard');
     const afterPdf = sliceBetween(viewer, 'PDF 출처 —', '{/* Reading Progress Bar */}');
-    expect(afterPdf).toContain('<ViewerArtCard chapter={artBookChapter} vt={vt} />');
+    expect(afterPdf).toContain('part="head"');
     expect(afterPdf.match(/<ViewerArtCard\b/g)).toHaveLength(1);
+    const tail = sliceBetween(viewer, '{/* 지정 범위 양끝 그립', '{/* 다 읽었다면(뷰어 정돈 A안)');
+    expect(tail).toContain('part="facts"');
+    expect(tail.match(/<ViewerArtCard\b/g)).toHaveLength(1);
+  });
+
+  it('그림 불러오기 실패는 뷰어가 하나로 든다 — 머리(그림)와 꼬리(찾아볼 것)가 같은 값을 본다', () => {
+    expect(viewer).toContain("const [artImageFailed, setArtImageFailed] = useState('');");
+    const card = read(CARD);
+    expect(card).toContain('export default function ViewerArtCard({ chapter, vt, part, failedImage, setFailedImage })');
+    expect(card, '카드 안에 따로 상태를 두면 두 자리가 어긋난다').not.toMatch(/useState/);
+    expect(sliceBetween(card, "if (part === 'head') {", '  return (\n    <>')).not.toContain('viewer-art-card__facts');
+  });
+
+  it('스크롤 고정(오너 「옆으로 넘기지 않게」) — 미술 장은 쪽 넘김을 끄고 Aa 「보기」를 숨긴다, 저장된 보기 설정은 그대로', () => {
+    expect(viewer).toContain("const pagedActive = readerView === 'paged' && !classStudyActive && !artBookLocked;");
+    expect(viewer).toContain('scrollOnly={artBookLocked}');
+    const settings = read('src/components/viewer/ViewerSettings.jsx');
+    expect(settings).toContain("const pagedView=!scrollOnly&&(s.readerView||'paged')==='paged';");
+    expect(settings).toContain("{scrollOnly\n          ?<p className=\"reader-setting-note\">{tr('그림 읽기는 스크롤로 읽어요')}</p>");
+    expect(settings, '자동 진행 허용 판정도 실제 보기 기준').not.toMatch(/s\.readerView[!=]==['"]paged['"]/);
+    for (const locale of VIEWER_MESSAGE_LOCALES) expect(Object.hasOwn(VIEWER_MESSAGES[locale], '그림 읽기는 스크롤로 읽어요')).toBe(true);
+  });
+
+  it('다음 장 카드는 「다음 작품」 — 제목은 책 제목을 뺀 작품 제목', () => {
+    expect(viewer).toContain('artBookLocked ? vt("다음 작품 ·")');
+    expect(viewer).toContain("artBookLocked ? String(bookNav.next.title || '').split(' — ').pop()");
   });
 });
 
