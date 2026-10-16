@@ -56,30 +56,51 @@ describe('누르고 있는 키(ignoreHeldKey)', () => {
 });
 
 describe('배선 — 세 자리', () => {
-  it('C1 읽기 화면: 등급(저장 · 본문 안 복습)이 저장 줄로 바뀌면 그 줄의 첫 활성 버튼으로 — 같은 단어 · 시한 안 · 카드 영역', () => {
+  it('C1 읽기 화면: 등급(저장 · 본문 안 복습)이 저장 줄로 바뀌면 줄 자체로 — 버튼(이 문맥 추가 · 아는 단어)이 아니다 · 같은 단어 · 시한 안', () => {
     const viewer = read('src/views/ViewerPage.jsx');
-    expect(viewer).toContain("import { focusIfFree, ignoreHeldKey } from '../lib/focusAfterAction';");
+    expect(viewer).toContain("import { focusIfFree } from '../lib/focusAfterAction';");
     expect(viewer).toMatch(/const SAVED_ROW_FOCUS_MS = 10000;/);
     const hook = sliceBetween(viewer, 'const savedRowFocus = useRef(null);', '// W R3㉮ 인라인 복습');
-    expect(hook).toContain("pending.key !== savedRowFocusKey(selectedToken) || Date.now() - pending.at > SAVED_ROW_FOCUS_MS");
-    expect(hook).toContain("'#inspector-word .save-grade__saved button:not(:disabled)'");
+    expect(hook).toContain('pending.key !== savedRowFocusKey(selectedToken) || Date.now() - pending.at > SAVED_ROW_FOCUS_MS');
+    expect(hook).toContain(`'#inspector-word .save-grade__saved[tabindex="-1"]'`);
+    expect(hook).not.toMatch(/button/); // 한 번 더 누른 Enter가 문맥 추가 · 아는 단어 표시를 쓰지 않는다
     expect(hook).toContain("focusIfFree(target, target.closest('#inspector-word'))");
-    // 훅은 이른 return(불러오는 중 화면)보다 앞이다 — 훅 순서가 바뀌지 않는다.
-    expect(viewer.indexOf('const savedRowFocus = useRef(null);')).toBeLessThan(viewer.indexOf('if (isLoading) return <div className="page-container">'));
+    // 훅(useId 포함)은 이른 return(불러오는 중 화면)보다 앞이다 — 훅 순서가 바뀌지 않는다.
+    expect(viewer.indexOf('const savedRowId = useId();')).toBeLessThan(viewer.indexOf('if (isLoading) return <div className="page-container">'));
     // 두 등급 경로가 모두 표식을 남긴다.
     expect(sliceBetween(viewer, 'const gradeInline = (rating) => {', 'const handlers = {')).toContain('armSavedRowFocus(selectedToken);');
     expect(sliceBetween(viewer, 'const addToVocab = async (grade) => {', 'const action = ++gradeAction.current;')).toContain('armSavedRowFocus(selectedToken);');
-    expect(sliceBetween(viewer, 'word-detail-card__actrow save-grade__saved', '</div>')).toContain('onKeyDown={ignoreHeldKey}');
+    // 줄 = 묶음(tabIndex -1 · role=group). 이름은 이미 보이는 글(✓ 담은 표현에 있음 · 다음 복습)에서 — 새 문구 없음.
+    const row = sliceBetween(viewer, 'word-detail-card__actrow save-grade__saved', '{koreanSaveReady(selectedToken) && <SaveContextButton');
+    expect(row).toContain('role="group" tabIndex={-1} aria-labelledby={`${savedRowId}-in${nextReview ? ` ${savedRowId}-next` : \'\'}`}>');
+    expect(row).toContain("<button id={`${savedRowId}-in`} disabled className=\"btn btn--ghost btn--sm save-grade__in\">{vt('✓ 담은 표현에 있음')}</button>");
+    expect(row).toContain('<span id={`${savedRowId}-next`} className="save-grade__next">');
   });
-  it('C2 복습 카드: 잠김 → 풀림(뒷면 + armed) 한 번만 첫 버튼(다시)으로 — 복습 화면 영역', () => {
-    const review = read('src/views/VocabReview.jsx');
-    const section = sliceBetween(review, 'function ScoreSection(', '\n}\n');
-    expect(section).toContain('if (locked) { sawLocked.current = true; return; }');
-    expect(section).toContain('if (!armed || !sawLocked.current) return;');
-    expect(section).toContain("focusIfFree(first, first?.closest('.review-room-session'));");
-    expect(section).toContain('}, [locked, armed]);');
-    expect(section).toMatch(/<button ref=\{firstRef\} onClick=\{\(\) => onScore\(1\)\}/);
-    expect(section).toContain('role="group" aria-label="기억 채점" onKeyDown={ignoreHeldKey}');
+  it('C2 복습 카드: 잠김 → 풀림 한 번만 채점 막대 자체로 — 「다시」 버튼이 아니다', () => {
+    const parts = read('src/components/vocab/ReviewCardParts.jsx');
+    const hook = sliceBetween(parts, 'export function useGradeBarFocus(locked, armed) {', '\n}\n');
+    expect(hook).toContain('if (locked) { sawLocked.current = true; return; }');
+    expect(hook).toContain('if (!armed || !sawLocked.current) return;');
+    expect(hook).toContain("focusIfFree(bar.current, bar.current?.closest('.review-room-session'));");
+    expect(hook).toContain('}, [locked, armed]);');
+    const bar = '<div ref={bar} tabIndex={-1} className={`review-grade-bar';
+    const review = sliceBetween(read('src/views/VocabReview.jsx'), 'function ScoreSection(', '\n}\n');
+    expect(review).toContain('const bar = useGradeBarFocus(locked, armed);');
+    expect(review).toContain(bar + "${locked ? ' is-locked' : ''}`} role=\"group\" aria-label=\"기억 채점\">");
+    expect(review).not.toMatch(/<button ref=/); // 초점이 채점 버튼에 앉지 않는다
+  });
+  it('묶음에 둔 초점은 고리를 그리지 않는다(#main-content 선례) — 안의 버튼은 각자 :focus-visible', () => {
+    const css = read('src/components/web/web-shell.css');
+    expect(css).toContain('#main-content:focus{outline:none}');
+    expect(css).toContain('.review-grade-bar[tabindex="-1"]:focus,.save-grade__saved[tabindex="-1"]:focus{outline:none}');
+  });
+  it('전역 키(1~4 · Space · ⌘Z)는 묶음에 초점이 있어도 body와 같은 갈래 — 입력칸 판정만 본다', () => {
+    // 복습방 두 리스너: 입력 요소(INPUT · TEXTAREA · SELECT · contentEditable)만 거른다 — div 묶음은 body와 같다.
+    expect(read('src/views/VocabPage.jsx')).toContain("const inField = !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);");
+    expect(read('src/components/vocab/FsrsReviewSession.jsx')).toContain("if (target?.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName) || busy) return;");
+    // 읽기 화면: 1~4는 카드(.word-detail-card) 안에서, ⌘Z는 .viewer-3col 안(또는 body)에서 받는다 — 저장 줄은 둘 다의 안이다.
+    expect(read('src/views/ViewerPage.jsx')).toContain("const inViewer = e.target?.closest?.('.viewer-3col, .toast-container')");
+    expect(read('src/lib/viewerReliability.js')).toContain("const card = target?.closest?.('.word-detail-card');");
   });
   it('C3 오늘 학습: 피드백에 들어서면 「계속 →」/「결과 보기 →」로 — 산출 문항 제외 · 세션 화면 영역', () => {
     const study = read('src/views/StudySessionPage.jsx');

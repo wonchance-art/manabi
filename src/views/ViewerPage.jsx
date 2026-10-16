@@ -4,10 +4,10 @@ import TextbookAnnotations from '../components/classroom/TextbookAnnotations';
 import {createClassSaveIntent} from '../lib/classSaveIntent';
 import {classStudyContext,classStudyNeighborHref,studySelection} from '../lib/classStudy';
 
-import { useState, useRef, useEffect, useMemo, useCallback, cloneElement, isValidElement } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback, useId, cloneElement, isValidElement } from 'react';
 import { useParams, useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { authEntryHref } from '../lib/authRedirect';
-import { focusIfFree, ignoreHeldKey } from '../lib/focusAfterAction';
+import { focusIfFree } from '../lib/focusAfterAction';
 import {isStudyNote} from '@/lib/studyNoteIdentity';
 import useLibraryActivity from '@/components/library/useLibraryActivity';
 import LibrarySaveButton from '@/components/library/LibrarySaveButton';
@@ -2543,8 +2543,11 @@ export default function ViewerPage() {
   };
 
   // FOCUS-AFTER-ACTION-001 C1 — 등급(저장 · 본문 안 복습)을 누르면 그 버튼이 「저장 중…」을 거쳐 저장 줄(save-grade__saved)로
-  // 바뀌며 사라지고, 초점이 body로 떨어졌다. 저장 줄이 그려지면 그 줄의 첫 활성 컨트롤(이 문맥 추가 · 아는 단어)로 잇는다.
-  // 같은 자료 · 같은 단어 · SAVED_ROW_FOCUS_MS 안에서만. 초점이 카드 밖(본문 낱말 · 다른 패널)에 있으면 뺏지 않는다(focusIfFree).
+  // 바뀌며 사라지고, 초점이 body로 떨어졌다. 저장 줄이 그려지면 **그 줄 자체**(tabIndex -1 · role=group, 이름 = 줄의
+  // 「✓ 담은 표현에 있음 · 다음 복습」 글)로 잇는다. 버튼(이 문맥 추가 · 아는 단어)이 아니므로 Enter를 한 번 더 눌러도 쓰지 않는다.
+  // Tab을 누르면 그 버튼들로 들어간다. 같은 자료 · 같은 단어 · SAVED_ROW_FOCUS_MS 안에서만.
+  // 초점이 카드 밖(본문 낱말 · 다른 패널)에 있으면 뺏지 않는다(focusIfFree).
+  const savedRowId = useId();
   const savedRowFocus = useRef(null);
   const savedRowFocusKey = (token) => `${saveScopeRef.current}:${token?.id ?? token?.text ?? ''}`;
   const armSavedRowFocus = (token) => { savedRowFocus.current = { key: savedRowFocusKey(token), at: Date.now() }; };
@@ -2552,7 +2555,7 @@ export default function ViewerPage() {
     const pending = savedRowFocus.current;
     if (!pending) return;
     if (pending.key !== savedRowFocusKey(selectedToken) || Date.now() - pending.at > SAVED_ROW_FOCUS_MS) { savedRowFocus.current = null; return; }
-    const target = [...document.querySelectorAll('#inspector-word .save-grade__saved button:not(:disabled)')].find((el) => el.getClientRects().length);
+    const target = [...document.querySelectorAll('#inspector-word .save-grade__saved[tabindex="-1"]')].find((el) => el.getClientRects().length);
     if (!target) return;
     savedRowFocus.current = null;
     focusIfFree(target, target.closest('#inspector-word'));
@@ -3487,10 +3490,11 @@ export default function ViewerPage() {
           {knownToggle}
         </div>;
         return (
-          <div className={`word-detail-card__actrow save-grade__saved${justSaved && justSaved === selectedToken?.id ? ' save-grade__saved--fresh' : ''}`} onKeyDown={ignoreHeldKey}>
+          <div className={`word-detail-card__actrow save-grade__saved${justSaved && justSaved === selectedToken?.id ? ' save-grade__saved--fresh' : ''}`}
+            role="group" tabIndex={-1} aria-labelledby={`${savedRowId}-in${nextReview ? ` ${savedRowId}-next` : ''}`}>
             <span className="save-grade__status">
-              <button disabled className="btn btn--ghost btn--sm save-grade__in">{vt('✓ 담은 표현에 있음')}</button>
-              {nextReview && <span className="save-grade__next">{nextReview.due ? vt('복습 차례') : vt('다음 복습 {date}', { date: nextReview.label })}</span>}
+              <button id={`${savedRowId}-in`} disabled className="btn btn--ghost btn--sm save-grade__in">{vt('✓ 담은 표현에 있음')}</button>
+              {nextReview && <span id={`${savedRowId}-next`} className="save-grade__next">{nextReview.due ? vt('복습 차례') : vt('다음 복습 {date}', { date: nextReview.label })}</span>}
             </span>
             {koreanSaveReady(selectedToken) && <SaveContextButton key={`${id}:${selectedToken.id || selectedToken.text}:${leftPanelText}:${materialLang === 'Korean' ? `${effectiveExplanationLocale}:${readingContextSource(selectedToken)?.sourceRevision}` : ''}`}
               label={vt("이 문맥 추가")} word={contextWord(selectedToken)} source={readingContextSource(selectedToken)} />}

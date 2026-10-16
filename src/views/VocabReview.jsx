@@ -3,11 +3,10 @@ import Link from 'next/link';
 import Button from '../components/Button';
 import { detectLang, splitSentenceAroundWord } from '../lib/constants';
 import VocabularyContexts from '../components/learning/VocabularyContexts';
-import { ReviewCardMeta, ReviewHeadword, ReviewReadingRow, langTag } from '../components/vocab/ReviewCardParts';
+import { ReviewCardMeta, ReviewHeadword, ReviewReadingRow, langTag, useGradeBarFocus } from '../components/vocab/ReviewCardParts';
 import { gradeGuide, isCardRevealClick, revealTrigger } from '../lib/reviewCard';
 import { wordStage } from '../lib/growthStats';
 import { vocabularyReviewCalendar } from '../lib/vocabularyLearningRows';
-import { focusIfFree, ignoreHeldKey } from '../lib/focusAfterAction';
 
 /**
  * 채점 막대(REV-SCOPE-R1B-1 §5-3) — 하단 고정, 뒷면 전엔 잠금, 펼친 뒤 0.3초 입력 무시(armed). 버튼은 넷뿐이다.
@@ -15,23 +14,13 @@ import { focusIfFree, ignoreHeldKey } from '../lib/focusAfterAction';
  */
 function ScoreSection({ word, onScore, armed = true, locked = false }) {
   const off = locked || !armed;
-  // FOCUS-AFTER-ACTION-001 C2 — 「정답 확인하기」는 누르면 사라져 초점이 body로 떨어졌다. 이 막대에서 잠김 → 풀림(뒷면 + armed)이
-  // 일어난 그 한 번만 첫 버튼(다시)으로 잇는다. 막 열린 화면(처음부터 풀린 상태)은 건드리지 않고, 초점이 복습 화면 밖이면 뺏지 않는다.
-  const firstRef = useRef(null);
-  const sawLocked = useRef(false);
-  useEffect(() => {
-    if (locked) { sawLocked.current = true; return; }
-    if (!armed || !sawLocked.current) return;
-    sawLocked.current = false;
-    const first = firstRef.current;
-    focusIfFree(first, first?.closest('.review-room-session'));
-  }, [locked, armed]);
+  const bar = useGradeBarFocus(locked, armed); // 뒷면이 열리면 막대(버튼 아님)로 초점 — FOCUS-AFTER-ACTION-001 C2
   return (
-    <div className={`review-grade-bar${locked ? ' is-locked' : ''}`} role="group" aria-label="기억 채점" onKeyDown={ignoreHeldKey}>
+    <div ref={bar} tabIndex={-1} className={`review-grade-bar${locked ? ' is-locked' : ''}`} role="group" aria-label="기억 채점">
       {!locked && <p className="review-score-guide review-grade-guide">{gradeGuide(word)}<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span></p>}
       {/* 숫자 배지 = 키 안내(W R2) — 라벨 텍스트는 버튼 첫 자식 그대로(saveGrade 계약이 이 소스에서 라벨을 뽑는다) */}
       <div className="review-score-grid" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
-        <button ref={firstRef} onClick={() => onScore(1)} className="review-score-btn review-score-btn--again" disabled={off} title="오늘 다시 나와요">다시<span className="save-grade__key" aria-hidden="true">1</span></button>
+        <button onClick={() => onScore(1)} className="review-score-btn review-score-btn--again" disabled={off} title="오늘 다시 나와요">다시<span className="save-grade__key" aria-hidden="true">1</span></button>
         <button onClick={() => onScore(2)} className="review-score-btn review-score-btn--hard" disabled={off} title="간격이 짧아져요">어려움<span className="save-grade__key" aria-hidden="true">2</span></button>
         <button onClick={() => onScore(3)} className="review-score-btn review-score-btn--good" disabled={off} title="정확히 기억했다면 이걸로">알맞음<span className="save-grade__key" aria-hidden="true">3</span></button>
         <button onClick={() => onScore(4)} className="review-score-btn review-score-btn--easy" disabled={off} title="간격이 많이 늘어나요">쉬움<span className="save-grade__key" aria-hidden="true">4</span></button>

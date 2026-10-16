@@ -255,3 +255,6 @@
 #main-content:focus{outline:none}
 /* 같은 이유로 포커스 되찾기가 tabindex -1을 붙인 제목(h1)도 — 제목은 누르는 자리가 아니라 「어디에 왔는지」 읽는 자리다. */
 #main-content h1[tabindex="-1"]:focus{outline:none}
+/* 같은 이유로 동작 뒤 초점 이어받기(FOCUS-AFTER-ACTION-001)가 초점을 두는 묶음(tabindex -1)도 — 복습 채점 막대 · 읽기 저장 줄.
+   누르는 자리가 아니라 다음 Tab의 출발점이다. 안의 버튼은 각자의 :focus-visible 고리를 그대로 그린다. */
+.review-grade-bar[tabindex="-1"]:focus,.save-grade__saved[tabindex="-1"]:focus{outline:none}
