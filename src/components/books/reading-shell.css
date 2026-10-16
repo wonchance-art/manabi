@@ -15,8 +15,9 @@
 .manabi-page,.manabi-reader-page{max-width:1192px;margin:0 auto;padding:43px 28px 54px}
 .manabi-page *,.manabi-reader-page *{box-sizing:border-box}
 .manabi-page a,.manabi-reader-page a{text-decoration:none}
-/* 글자색 상속은 일반 링크만 — .btn 링크(주 버튼 등)는 버튼 자신의 글자색을 쓴다(로즈 바탕 어두운 글자 2.50:1 실측, 2026-10-16). */
-.manabi-page a:not(.btn),.manabi-reader-page a:not(.btn){color:inherit}
+/* 글자색 상속은 일반 링크만 — .btn 링크(주 버튼 등)는 버튼 자신의 글자색을 쓴다(로즈 바탕 어두운 글자 2.50:1 실측, 2026-10-16).
+   :where()로 우선순위를 (0,1,1)에 묶는다 — :not(.btn) 단독은 (0,2,1)이 되어 .manabi-button · .manabi-link 글자색까지 덮었다(2026-10-17 리뷰). */
+.manabi-page a:where(:not(.btn)),.manabi-reader-page a:where(:not(.btn)){color:inherit}
 .manabi-page button,.manabi-reader-page button,.manabi-reading-dialog button{font:inherit;cursor:pointer}
 .manabi-page button:focus-visible,.manabi-page a:focus-visible,.manabi-reader-page button:focus-visible,.manabi-reader-page a:focus-visible,.manabi-reading-dialog :focus-visible{outline:2px solid #994a5a;outline-offset:4px}
 .manabi-eyebrow{font-size:10px;font-weight:700;letter-spacing:1.8px;color:#796d70;margin:0 0 9px;line-height:1.8}
