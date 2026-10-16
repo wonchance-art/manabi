@@ -355,8 +355,18 @@ function VocabWorkspace({ reviewScope }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [learningAvailable, projections, scopeKey, scopeLevels, scopeSourceIds, reviewSupported, Math.floor(effectiveNow / 60000)]);
   const fsrsControllerRef = useRef(null), quotaSignature = useRef(null);
+  // 입장 한도가 **바뀌면** FSRS 목록을 다시 읽는다. 첫 한도는 바뀐 것이 아니다 — FSRS 목록은 마운트 때 이미 같은 서버 상태
+  // (입장 상태 포함)를 읽고 있어, 첫 한도에 다시 읽으면 fsrs_capabilities · fsrs_list_states · learning_admission_status가
+  // 한 번씩 더 나갔다(응답 순서에 따라 — 능력 RPC 중복 조사 2026-10-17 KST). 다만 FSRS 첫 읽기가 실패해 있으면 예전처럼
+  // 그 김에 다시 읽는다(진행 중이면 refresh가 같은 약속을 돌려준다). 계정이 바뀌면 처음부터 센다.
+  const quotaOwner = useRef(null);
   const admission = useLearningAdmission({ accountId: user?.id, onQuota: quota => {
     const signature = JSON.stringify([quota.learningDay, quota.policyRevision, quota.used, quota.active, quota.fsrsEnabled]);
+    if (quotaOwner.current !== quota.actorId) {
+      quotaOwner.current = quota.actorId; quotaSignature.current = signature;
+      if (fsrsControllerRef.current?.getSnapshot?.().status === 'error') fsrsControllerRef.current.refresh();
+      return;
+    }
     if (signature !== quotaSignature.current) {
       quotaSignature.current = signature;
       fsrsControllerRef.current?.refresh();

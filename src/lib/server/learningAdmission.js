@@ -39,8 +39,18 @@ async function capability(authClient) {
 
 export async function readLearningAdmissionStatus({ authClient, serviceClient, userId, knownFsrsEnabled, now = new Date() }) {
   authenticated(userId);
-  const fsrsEnabled = typeof knownFsrsEnabled === 'boolean' ? knownFsrsEnabled : await capability(authClient);
-  const response = await call(serviceClient, 'learning_admission_status', { p_actor: userId });
+  // 능력(fsrs_capabilities)과 입장 상태(learning_admission_status)는 서로 기다리지 않는다(둘 다 읽기 — readFsrsStatus PERF-FSRS-001과 같은 결).
+  // 둘 다 받은 뒤 능력 오류를 먼저 판정한다 — 순차일 때와 같은 오류 우선순위. 호출 수는 그대로, 대기만 합(약 1.3초) → 큰 쪽(약 0.75초).
+  // knownFsrsEnabled = 이미 아는 값(boolean) 또는 진행 중인 능력 읽기의 약속(readFsrsStatus가 같은 읽기를 나눠 준다 — 두 번 부르지 않는다).
+  const known = typeof knownFsrsEnabled === 'boolean' || typeof knownFsrsEnabled?.then === 'function';
+  const [capabilityRead, statusRead] = await Promise.allSettled([
+    known ? knownFsrsEnabled : capability(authClient),
+    call(serviceClient, 'learning_admission_status', { p_actor: userId }),
+  ]);
+  if (capabilityRead.status === 'rejected') throw capabilityRead.reason;
+  if (statusRead.status === 'rejected') throw statusRead.reason;
+  const fsrsEnabled = capabilityRead.value, response = statusRead.value;
+  if (typeof fsrsEnabled !== 'boolean') reject(undefined, undefined, 'fsrs_capabilities: contract mismatch');
   if (response?.error) {
     // 정확한 구 설치 + 확인된 FSRS 비활성만 호환이다. 네트워크/권한/기타 함수 오류는 대체하지 않는다.
     if (!fsrsEnabled && exactMissingRpc(response.error, 'learning_admission_status')) {
