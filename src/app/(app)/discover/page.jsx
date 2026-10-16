@@ -22,6 +22,6 @@ export default async function Page({searchParams}) {
   ]);
   return <div className="manabi-page manabi-discover"><header className="manabi-page-heading"><h1>발견</h1></header>
     <DiscoverShelf suggestions={suggestions} publicCount={publicCount} date={kstDateString()} />
-    {book && book.cultures.length > 0 && <section><div className="manabi-section-heading"><h2>일본어 N5 · 문화 읽기</h2><Link className="manabi-link" href={`/books/japanese-n5/materials?edition=${book.edition}`}>모두 읽기</Link></div><div className="discover-cultures">{book.cultures.slice(0, 3).map((culture, index) => <Link href={bookHref(book.edition, culture.id)} key={culture.id}><span>0{index + 1}</span><h3>{culture.title}</h3><p>{culture.lead}</p></Link>)}</div></section>}
+    {book && book.cultures.length > 0 && <section><div className="manabi-section-heading"><h2>일본어 N5 · 문화 읽기</h2><Link className="manabi-link" href={`/books/japanese-n5/materials?edition=${book.edition}`}>전체 보기</Link></div><div className="discover-cultures">{book.cultures.slice(0, 3).map((culture, index) => <Link href={bookHref(book.edition, culture.id)} key={culture.id}><span>0{index + 1}</span><h3>{culture.title}</h3><p>{culture.lead}</p></Link>)}</div></section>}
   </div>;
 }

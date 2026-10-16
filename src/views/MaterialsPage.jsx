@@ -262,7 +262,7 @@ export default function MaterialsPage({ libraryView = null }) {
       if (error || !data) throw error || new Error('NOT_FOUND');
       await cache.pinMaterial(data);
       setPinnedIds((prev) => new Set(prev).add(id));
-      toast('받아뒀어요 — 연결이 없어도 열립니다.', 'success');
+      toast('받아뒀어요 — 연결이 없어도 열려요.', 'success');
     } catch {
       toast('받아 두지 못했어요. 연결을 확인해 주세요.', 'error');
     } finally {
@@ -545,7 +545,7 @@ export default function MaterialsPage({ libraryView = null }) {
         <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
           <Link href="/quick" className="btn btn--ghost btn--md">⚡ 빠른 분석</Link>
           <Link href="/materials/add" className="btn btn--primary btn--md">
-            새 자료 추가
+            자료 추가
           </Link>
         </div>
       </div>
@@ -600,7 +600,7 @@ export default function MaterialsPage({ libraryView = null }) {
               onClick={() => setUnreadOnly(v => !v)}
               aria-pressed={unreadOnly}
               className={`chip ${unreadOnly ? 'chip--active' : ''}`}
-              title="완독한 자료를 목록에서 숨깁니다"
+              title="완독한 자료를 목록에서 숨겨요"
             >
               안 읽은 것만
             </button>
@@ -612,7 +612,7 @@ export default function MaterialsPage({ libraryView = null }) {
               onClick={() => setPinnedOnly(v => !v)}
               aria-pressed={pinnedOnly}
               className={`chip ${pinnedOnly ? 'chip--active' : ''}`}
-              title="연결이 없어도 열리는 자료만 봅니다"
+              title="연결이 없어도 열리는 자료만 봐요"
             >
               받아둔 것만
             </button>
@@ -828,7 +828,7 @@ export default function MaterialsPage({ libraryView = null }) {
               if (isCompleted) return <span className="mat-state mat-state--done">✓ 완독</span>;
               const lastIdx = progressMap.inProgress.get(m.id);
               if (lastIdx && tokens > 0) {
-                return <span className="mat-state mat-state--progress" title="이어서 읽기">{Math.min(100, Math.round((lastIdx / tokens) * 100))}%</span>;
+                return <span className="mat-state mat-state--progress" title="이어 읽기">{Math.min(100, Math.round((lastIdx / tokens) * 100))}%</span>;
               }
               if (status === 'analyzing') return <span className="mat-state mat-state--busy">분석 중</span>;
               if (status === 'failed') return <span className="mat-state mat-state--danger">실패</span>;
@@ -879,7 +879,7 @@ export default function MaterialsPage({ libraryView = null }) {
                         onClick={(e) => { e.stopPropagation(); togglePin(m.id); }}
                         disabled={pinBusy === m.id}
                         aria-checked={isPinned}
-                        title={isPinned ? '받아둠 — 연결이 없어도 열립니다 (눌러서 해제)' : '받아두기 — 연결이 없어도 열립니다'}
+                        title={isPinned ? '받아둠 — 연결이 없어도 열려요 (눌러서 해제)' : '받아두기 — 연결이 없어도 열려요'}
                       >
                         {pinBusy === m.id ? '…' : isPinned ? '✓ 받아둠 — 해제' : documentOf(m)?.assets?.length ? '⬇ 작성한 본문 받아두기' : '⬇ 받아두기'}
                       </button>}
@@ -935,7 +935,7 @@ export default function MaterialsPage({ libraryView = null }) {
                     {dueCount > 0 && <span className="tag tag--due" title="이 자료를 읽으면 복습 처리됨">{dueCount} 복습</span>}
                     {/* 우리 그룹이 이번 주 읽는 자료(v2-F R3) — 무그룹·게스트는 빈 Set이라 자연히 안 뜬다 */}
                     {groupReadIds.has(m.id) && <span className="tag tag--group" title="우리 그룹의 이번 주 같이 읽기">같이 읽기</span>}
-                    {isPinned && <span className="tag" title="받아둠 — 연결이 없어도 열립니다">받아둠</span>}
+                    {isPinned && <span className="tag" title="받아둠 — 연결이 없어도 열려요">받아둠</span>}
                     {score && <span className="tag tag--score" title="리딩 테스트 최고 점수">{score.score}/{score.total}</span>}
                     {stateBadge}
                   </div>
@@ -1005,7 +1005,7 @@ export default function MaterialsPage({ libraryView = null }) {
             </div>
           ) : (
             <Link href="/materials/add" className="empty-state__link">
-              새 자료 작성 →
+              자료 추가 →
             </Link>
           )}
         </div>

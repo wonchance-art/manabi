@@ -104,7 +104,7 @@ export default function EmbedReviewClient() {
       <div style={SCREEN}>
         <div style={CENTER}>
           <div style={{ ...PANEL, textAlign: 'center' }}>
-            <p style={{ margin: 0, color: GBC.inkSoft, fontSize: '0.86rem' }}>불러오는 중…</p>
+            <p style={{ margin: 0, color: GBC.inkSoft, fontSize: '0.86rem' }}>복습 불러오는 중…</p>
           </div>
         </div>
       </div>

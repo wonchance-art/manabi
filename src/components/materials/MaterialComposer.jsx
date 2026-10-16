@@ -221,7 +221,7 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
       queryClient.invalidateQueries({ queryKey: ['library-reading-v2'] });
       await queryClient.invalidateQueries({ queryKey: ['material', String(record.id)] });
       if (!alive.current) return;
-      draftRef.current = saved; setDraft(saved); setDraftStatus('서재에 저장됨'); setStage(study ? '저장했어요. 학습 화면을 엽니다…' : '저장했어요. 자료를 엽니다…');
+      draftRef.current = saved; setDraft(saved); setDraftStatus('서재에 저장됨'); setStage(study ? '저장했어요. 학습 화면을 열고 있어요…' : '저장했어요. 자료를 열고 있어요…');
       if(saved.collectionId){
         try { await addToCollection(supabase,ownerId,saved.collectionId,{target_kind:'material',target_id:String(record.id)}); }
         catch { if(alive.current)setError('자료는 저장했지만 모음집에 담지 못했어요. 자료를 다시 저장할 필요는 없어요.'); return; }
@@ -231,7 +231,7 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
         // 원본 화면 「이 글로 공부하기」와 같은 openDocumentStudy. 열지 못해도 자료는 저장됐으니 원본으로 간다.
         const next = await openStudyOrOriginal(supabase, record, current.language, { explanationLocale, returnTo });
         if (next.study) await queryClient.invalidateQueries({ queryKey: ['material', String(next.study.id)] });
-        else toast('자료는 저장했어요. 학습 화면을 열지 못해 원본으로 엽니다.', 'warning', 8000);
+        else toast('자료는 저장했어요. 학습 화면을 열지 못해 원본으로 열어요.', 'warning', 8000);
         router.push(next.href);
         return;
       }
@@ -278,7 +278,7 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
 
   if (anotherTab) return <section className="composer-gate"><h1>다른 탭에서 작성 중이에요.</h1><p>초안이 서로 덮어써지지 않도록 한 탭에서 작성해 주세요.</p><button className="manabi-button" onClick={() => window.location.reload()}>다른 편집기를 닫고 다시 열기</button><Link className="manabi-link" href="/materials?view=owned">내 서재로</Link></section>;
   if (!draft) return <div className="composer-gate" role="status">{draftStatus}</div>;
-  if (draft.savedId) return <section className="composer-gate"><p className="manabi-eyebrow">SAVED TO YOUR LIBRARY</p><h1>{composerTitle(draft)}</h1><p>서재에 저장된 자료예요.</p>{error&&<p role="alert">{error}</p>}{draft.collectionId&&<button className="manabi-button" disabled={busy} onClick={retryMembership}>{busy?'담는 중…':'모음집에 담기 다시 시도'}</button>}<Link className="manabi-button" href={`/viewer/${draft.savedId}?returnTo=${encodeURIComponent(returnTo)}`}>자료 열기 ↗</Link><button className="manabi-link" onClick={startNew}>새 자료 작성</button></section>;
+  if (draft.savedId) return <section className="composer-gate"><p className="manabi-eyebrow">SAVED TO YOUR LIBRARY</p><h1>{composerTitle(draft)}</h1><p>서재에 저장된 자료예요.</p>{error&&<p role="alert">{error}</p>}{draft.collectionId&&<button className="manabi-button" disabled={busy} onClick={retryMembership}>{busy?'담는 중…':'모음집에 담기 다시 시도'}</button>}<Link className="manabi-button" href={`/viewer/${draft.savedId}?returnTo=${encodeURIComponent(returnTo)}`}>자료 열기 ↗</Link><button className="manabi-link" onClick={startNew}>자료 추가</button></section>;
   const locked = busy || draft.frozen;
   return <section className="material-composer" aria-labelledby="composer-heading">
     <div className="composer-top"><Link href={editing ? `/viewer/${scope}?returnTo=${encodeURIComponent(returnTo)}` : returnTo}>{editing ? '← 자료로 돌아가기' : '← 내 서재'}</Link><span>PRIVATE / 나만 보기</span></div>

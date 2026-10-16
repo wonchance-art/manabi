@@ -13,7 +13,7 @@ function ContinueBook({ book }) {
   const local = useReadingProgress(book.edition);
   const resume = bookResume(book, local.progress, local.hasProgress);
   if (!resume) return null;
-  return <section className="shelf-resume" aria-label="읽던 교재"><span className="shelf-resume__mark" aria-hidden="true">あ</span><div><p className="manabi-eyebrow">일본어 N5</p><h2>{String(resume.lesson.number).padStart(2, '0')}과 · {resume.lesson.title}</h2><p>{resume.completed} / {resume.total}과 학습 · 이 브라우저의 기록</p></div><Link className="manabi-button" href={bookHref(book.edition, resume.page)}>{resume.started ? '이어서 읽기' : '공부 시작하기'} →</Link></section>;
+  return <section className="shelf-resume" aria-label="읽던 교재"><span className="shelf-resume__mark" aria-hidden="true">あ</span><div><p className="manabi-eyebrow">일본어 N5</p><h2>{String(resume.lesson.number).padStart(2, '0')}과 · {resume.lesson.title}</h2><p>{resume.completed} / {resume.total}과 학습 · 이 브라우저의 기록</p></div><Link className="manabi-button" href={bookHref(book.edition, resume.page)}>{resume.started ? '이어 읽기' : '공부 시작하기'} →</Link></section>;
 }
 export default function Bookshelf({ book, initialLang, levelTiles = {} }) {
   const { profile } = useAuth();

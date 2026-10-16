@@ -42,7 +42,7 @@ export default function DiscoverShelf({ suggestions = [], publicCount = 0, date 
       <div className="discover-shelf__label">
         <h3>오늘의 소식</h3>
         <small>{shelfDateLabel(date)}</small>
-        <Link className="manabi-link" href="/discover?view=reading">모두 보기 ({readable.length})</Link>
+        <Link className="manabi-link" href="/discover?view=reading">전체 보기 ({readable.length})</Link>
       </div>
       <ul className="discover-shelf__items">
         {news.map((s) => <li key={s.id}>
@@ -58,7 +58,7 @@ export default function DiscoverShelf({ suggestions = [], publicCount = 0, date 
       <div className="discover-shelf__label">
         <h3>함께 읽는 글</h3>
         <small>공개 글 {publicCount.toLocaleString()}편</small>
-        <Link className="manabi-link" href="/discover?view=reading">모두 보기</Link>
+        <Link className="manabi-link" href="/discover?view=reading">전체 보기</Link>
       </div>
     </div>}
   </section>;

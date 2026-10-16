@@ -36,6 +36,12 @@ const RULES = [
   { form: '로딩 중...', re: /로딩 중\.\.\./g },
   { form: '...', re: /[가-힣]\s?\.\.\.|\.\.\.\s?[가-힣]|'\.\.\.'|>\s*\.\.\.\s*</g },
   { form: '저장!', re: /저장!/g },
+  // 실패는 「…지 못했어요」(§2) — 「가져올 수 없었어요」처럼 「…ㄹ 수 없었어요」로 쓰지 않는다(「…ㄹ 수 없어요」는 규칙상 못 하는 일 전용).
+  { form: '할 수 없었어요', re: /수 없었어요/g },
+  // 같은 동작을 다시 할 때는 「다시 시도」(§2) — 대화의 「다시 받기」가 남아 있었다(2026-10-17 KST).
+  { form: '다시 받기', re: /다시 받기/g },
+  // 옛 메뉴 이름 — 지금은 「서재」(메뉴 정본 src/lib/webNavigation.js). 코드 주석은 검사 밖이다.
+  { form: '자료실', re: /자료실/g },
 ];
 
 const ALLOWLIST = [
@@ -88,6 +94,11 @@ describe('문구 린트 — 화면 코드의 금지 형태(copy-standard.md §4)
     expect(hit("const next = { ...prev, [key]: true }; <Card {...props} />")).toEqual([]);
     expect(hit("toast('다시 시도해 주세요.') // 다시 시도해주세요... 저장!")).toEqual([]);
     expect(hit("{busy ? '저장 중…' : '저장했어요'}")).toEqual([]);
+    expect(hit("detail: '설명을 가져올 수 없었어요.'")).toEqual(['할 수 없었어요']);
+    expect(hit("<button>다시 받기</button>")).toEqual(['다시 받기']);
+    expect(hit("a: '자료실에서 글을 올려요'")).toEqual(['자료실']);
+    expect(hit("detail: '설명을 가져오지 못했어요.' // 자료실 · 다시 받기")).toEqual([]);
+    expect(hit("'줄을 넘어서는 묶을 수 없어요'")).toEqual([]);
   });
 
   it('허용 목록의 각 줄은 지금도 그 파일에 있다(고쳐진 예외를 목록에 남기지 않는다)', () => {

@@ -107,7 +107,7 @@ export default function QuickPage() {
       setWordDetail((prev) => (prev?.token === token ? { ...prev, detail, loading: false } : prev));
     } catch {
       setWordDetail((prev) => (prev?.token === token
-        ? { ...prev, detail: '설명을 가져올 수 없었어요.', loading: false } : prev));
+        ? { ...prev, detail: '설명을 가져오지 못했어요.', loading: false } : prev));
     }
   }
 

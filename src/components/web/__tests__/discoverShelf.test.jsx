@@ -23,7 +23,7 @@ describe('오늘의 소식 칸', () => {
     const html = renderToStaticMarkup(createElement(DiscoverShelf, {
       suggestions: [row(1, 'Japanese'), row(2, 'English', { transcript: null })], publicCount: 0, date: '2026-10-16' }));
     expect(html).toContain('오늘의 소식');
-    expect(html).toContain('모두 보기 (1)');
+    expect(html).toContain('전체 보기 (1)');
     expect(html).toContain('제목 1');
     expect(html).not.toContain('제목 2');
     expect(html).toContain('lang="ja"');

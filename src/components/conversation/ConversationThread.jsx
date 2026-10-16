@@ -38,9 +38,9 @@ export function conversationErrorView(error) {
   if (error?.code === 'daily_limit') return { text: CONVERSATION_ERRORS.dailyLimit, blocked: true };
   if (error?.code === 'conversation_full') return { text: CONVERSATION_ERRORS.conversationFull, full: true };
   if (error?.status === 409) return { text: CONVERSATION_ERRORS.conflict, reload: true };
-  if (error?.status === 0) return { text: '연결이 끊겼어요 · 다시 받기', retry: true };
-  if (error?.status === 429) return { text: '요청이 너무 많아요 · 잠시 뒤 다시 받기', retry: true };
-  return { text: `${CONVERSATION_ERRORS.noReply} · 다시 받기`, retry: true };
+  if (error?.status === 0) return { text: '연결이 끊겼어요 · 다시 시도', retry: true };
+  if (error?.status === 429) return { text: '요청이 너무 많아요 · 잠시 후 다시 시도', retry: true };
+  return { text: `${CONVERSATION_ERRORS.noReply} · 다시 시도`, retry: true };
 }
 
 /** 내 말에서 짚은 곳(focus.from)에 물결 밑줄. */
@@ -340,7 +340,7 @@ export default function ConversationThread({
           <div className="conv__notice" role="status">
             <span>{error.text}</span>
             {error.retry && pending && (
-              <button type="button" className="conv-chip" disabled={loading} onClick={() => send({ retryText: pending.text })}>다시 받기</button>
+              <button type="button" className="conv-chip" disabled={loading} onClick={() => send({ retryText: pending.text })}>다시 시도</button>
             )}
           </div>
         )}

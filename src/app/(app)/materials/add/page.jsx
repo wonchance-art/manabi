@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import MaterialEntry from '@/components/materials/MaterialEntry';
 
 export const metadata = {
-  title: '새 자료 추가',
+  title: '새 자료',
 };
 
 export default async function Page({ searchParams }) {

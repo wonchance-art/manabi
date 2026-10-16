@@ -89,10 +89,10 @@ export default function LibraryShelf({user}){
  {filters.collection&&collections.isSuccess&&!currentCollection&&<p role="status">폴더가 없어요. <button onClick={()=>change({collection:''})}>전체</button></p>}
  {(filters.query||filters.language||filters.kind||filters.state)&&<div className="shelf-result-summary"><span>{filters.query||filters.language||filters.kind||filters.state}</span><button onClick={()=>change({q:'',lang:'',kind:'',state:'',view:'',unread:''})}>조건 지우기</button></div>}
  {selecting&&<div className="shelf-selection-heading"><label><input type="checkbox" aria-label="현재 표시된 자료 선택" checked={items.length>0&&items.every(r=>selectedKeys.has(libraryKey(r)))} disabled={busy} onChange={e=>setSelected(e.target.checked?[...new Map([...selected,...items.map(operationTarget)].map(r=>[libraryKey(r),r])).values()]:selected.filter(r=>!items.some(x=>libraryKey(r)===libraryKey(x))))}/>현재 목록</label><span>{selected.length}개 선택</span>{total>items.length&&<button disabled={busy} onClick={selectAll}>검색 결과 {total}개 선택</button>}</div>}
- {list.isPending&&<p role="status" className="shelf-muted">불러오는 중…</p>}
+ {list.isPending&&<p role="status" className="shelf-muted">자료 목록 불러오는 중…</p>}
  <div ref={listRef} tabIndex={-1} className="shelf-list-focus" onKeyDown={e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='a'&&!['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)){e.preventDefault();setSelecting(true);setSelected(items.map(operationTarget));}}}>
  {!!items.length&&<ul className="shelf-rows">{items.map(row=><LibraryRow key={libraryKey(row)} row={row.target_kind==='material'&&conversationIds.has(String(row.material_id))?{...row,conversation:true}:row} ownerId={user.id} selecting={selecting} selected={selectedKeys.has(libraryKey(row))} disabled={busy} onSelect={toggle} onMenu={value=>{setMenu(value);setError('');}}/>)}</ul>}
- {list.isSuccess&&!items.length&&<div className="shelf-empty"><h3>{trash?'휴지통이 비어 있어요.':'자료가 없어요.'}</h3>{!trash&&<Link className="manabi-button" href={libraryComposerHref(returnTo,filters.collection)}>자료 추가</Link>}</div>}
+ {list.isSuccess&&!items.length&&<div className="shelf-empty"><h3>{trash?'휴지통이 비어 있어요.':'아직 자료가 없어요.'}</h3>{!trash&&<Link className="manabi-button" href={libraryComposerHref(returnTo,filters.collection)}>자료 추가</Link>}</div>}
  </div>
  {list.hasNextPage&&<button className="shelf-load-more" disabled={list.isFetchingNextPage} onClick={()=>{change({shown:items.length+20});list.fetchNextPage();}}>{list.isFetchingNextPage?'불러오는 중…':'더 보기'}</button>}
  </section>

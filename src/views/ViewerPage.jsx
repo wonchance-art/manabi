@@ -1206,7 +1206,7 @@ export default function ViewerPage() {
       } else detail = await fetchWordDetailText(token, materialLang);
       if (detailGate.current.isCurrent(request)) setWordDetail({ detail, loading: false });
     } catch {
-      if (detailGate.current.isCurrent(request)) setWordDetail({ detail: '설명을 가져올 수 없었어요.', loading: false });
+      if (detailGate.current.isCurrent(request)) setWordDetail({ detail: '설명을 가져오지 못했어요.', loading: false });
     } finally { clearTimeout(deadline); }
   }
 
@@ -2539,7 +2539,7 @@ export default function ViewerPage() {
     if (!learningStorageSupported) return;
     if (user && (selectedExcluded || !wordStateReady || knownPending || exclusionState.mutation.isPending)) return;
     if (!user) {
-      if (material?.__local) { toast('로그인하면 담겨요 — 카드의 「로그인 · 가입」으로 가세요.', 'info'); return; }
+      if (material?.__local) { toast('로그인하면 담겨요 — 카드의 「로그인 · 가입」으로 가 주세요.', 'info'); return; }
       toast('로그인이 필요해요.', 'warning');
       return;
     }
@@ -3320,7 +3320,7 @@ export default function ViewerPage() {
           한국어 나눈 조각(§7.5)은 기존 형태 분석 설명만 쓴다 — AI 요청 버튼을 두지 않는다. */}
       {!koreanPieceSelected && <section ref={learnRef} className="reader-card-learn" aria-label={vt('더 알아보기')} key={`learn:${selectedToken.id||selectedToken.text}`}>
         <h3 className="reader-card-section__label">{vt('더 알아보기')}</h3>
-        {synAntEligible(selectedToken,materialLang) && (synAnt?.loading ? <p role="status">{vt("불러오는 중…")}</p>
+        {synAntEligible(selectedToken,materialLang) && (synAnt?.loading ? <p role="status">{vt("비슷한 말 불러오는 중…")}</p>
           : synAnt && !synAnt.error ? <div className="syn-ant"><div className="syn-ant__row"><span>{vt("유의어")}</span>{renderSynAntChips(synAnt.syn)}</div><div className="syn-ant__row"><span>{vt("반의어")}</span>{renderSynAntChips(synAnt.ant)}</div>{!synAnt.syn.length&&!synAnt.ant.length&&<p>{vt("표시할 항목이 없어요.")}</p>}</div>
           : <>{synAnt?.error && <p role="status">{vt("불러오지 못했어요.")}</p>}<button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" onClick={() => setSynAntRequest(n => n + 1)}>{vt("✦ 비슷한 말 찾기")}</button></>)}
         {wordDetail?.loading ? <p role="status">{vt("상세 설명 만드는 중…")}</p>
@@ -3973,7 +3973,7 @@ export default function ViewerPage() {
 
         {isPending && (
           <div className="analyzing-banner">
-            <span>{composerOf(material) ? '저장한 본문이에요. 표현을 공부할 때 분석을 시작하세요.' : '이 챕터는 아직 분석 전이에요 — 원문은 그대로 읽을 수 있어요.'}</span>
+            <span>{composerOf(material) ? '저장한 본문이에요. 표현을 공부할 때 분석을 시작해 주세요.' : '이 챕터는 아직 분석 전이에요 — 원문은 그대로 읽을 수 있어요.'}</span>
             {user?.id === material?.owner_id && (
               reanalyzeMutation.isPending
                 ? <button onClick={stopReanalysis} disabled={reanalyze.committing} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>{vt("⏹ 중단")}</button>

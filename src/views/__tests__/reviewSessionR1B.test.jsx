@@ -168,7 +168,7 @@ describe('세션 · 끝 화면 · 상태 문구(§5-5 · §5-6)', () => {
     const bar = read('src/components/vocab/ReviewScopeBar.jsx');
     const notice = read('src/components/OfflineNotice.jsx');
     const copies = [
-      [bar, '이 범위엔 오늘 복습할 표현이 없어요'], [bar, "empty ? '집중 연습' : '지금 집중 연습으로 보기'"],
+      [bar, '이 범위에는 지금 복습할 표현이 없어요'], [bar, "empty ? '집중 연습' : '지금 집중 연습으로 보기'"],
       [page, '<h2>범위를 불러오지 못했어요.</h2><p>전체로 바꾸지 않았어요.'],
       [bar, '(새 표현 한도) · 나머지 ${count.newLocked}개는 내일'],
       [bar, '밀린 복습부터 — 잊기 쉬운 순서로.'],

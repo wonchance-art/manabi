@@ -56,7 +56,7 @@ export default function NoteVocabulary({saved, noteId, note, onChange, onFocus, 
   const inkCount = note.board.pages.reduce((count, page) => count + page.elements.filter(el => !el.isDeleted && el.type === 'freedraw').length, 0);
   return <aside className="note-review" tabIndex={-1} aria-label="노트 단어 정리" aria-busy={busy} onKeyDown={event=>{if(event.key==='Escape'&&!event.nativeEvent.isComposing&&!busy){event.preventDefault();event.stopPropagation();onClose();}}}>
     <header><div><small>MY WORDS</small><h2>단어 정리<span>.</span></h2></div><button className="note-icon" aria-label="단어 정리 닫기" disabled={busy} onClick={onClose}><BoardIcon name="close"/></button></header>
-    <p className="note-review-intro">표기와 뜻을 확인한 표현을 선택하세요. 필기 원본은 그대로 남아요.</p>
+    <p className="note-review-intro">표기와 뜻을 확인한 표현을 선택해 주세요. 필기 원본은 그대로 남아요.</p>
     <div className="note-review-actions"><button disabled={busy} onClick={()=>onChange(current=>current.map(row=>!row.excluded&&!row.vocabularyId&&row.text.trim()&&row.meaning.trim()?{...row,reviewed:true}:row))}>뜻 있는 항목 모두 선택</button><label><input type="checkbox" checked={showExcluded} onChange={event=>setShowExcluded(event.target.checked)}/>제외한 항목</label></div>
     <div className="note-review-scroll">
       {!rows.length&&<div className="note-review-empty"><h3>노트에서 표현을 모아 보세요.</h3><p>＋로 놓은 단어와 글자 도구로 적은 내용을 정리할 수 있어요. ‘표현 → 뜻’으로 적으면 한 줄씩 연결돼요.</p></div>}

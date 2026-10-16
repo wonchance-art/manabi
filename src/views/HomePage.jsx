@@ -103,7 +103,7 @@ function bookItem(book, resume) {
     // 원어 제목이 비면 한국어 제목이 주 제목(지금 동작과 같음) — 42과 원어 제목 저작은 별도 콘텐츠 작업.
     title: titleJa || lesson.title, titleLang: titleJa ? 'ja' : 'ko', sub: titleJa ? lesson.title : lesson.subtitle,
     count: { done: resume.completed, total: resume.total }, href: bookHref(book.edition, resume.page),
-    cta: resume.started ? '이어서 읽기' : '첫 페이지 열기' };
+    cta: resume.started ? '이어 읽기' : '첫 페이지 열기' };
 }
 
 function materialItem(material, lang) {
@@ -113,7 +113,7 @@ function materialItem(material, lang) {
     // 서재에 예전 표기(「鼻 — 1편」)로 옮겨 둔 정본 문학책도 정본 표기(「鼻 (1/2)」)로(AOZORA-P0-5 — 다시 받지 않아도 된다)
     title: literatureDisplayTitle({ book: m.book, literature: { provider: m.provider } }, m.title),
     titleLang: encounterLookupLang(materialLang) || undefined, sub: m.level || null,
-    href: `/viewer/${m.id}`, cta: '이어서 읽기' };
+    href: `/viewer/${m.id}`, cta: '이어 읽기' };
 }
 
 const HSK_WORDS_ITEM = { key: 'hsk-words', href: '/chinese/vocab/h1', tone: 'progress',

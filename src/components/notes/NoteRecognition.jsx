@@ -38,7 +38,7 @@ export default function NoteRecognition({noteId,capture,sync,current,onApply,onC
     event.preventDefault();const index=items.indexOf(document.activeElement);items[(index+(event.shiftKey?-1:1)+items.length)%items.length].focus();
   }}>
     <header><div><small>HANDWRITING → WORDS</small><h2 id="note-recognition-title">선택한 필기 읽기<span>.</span></h2></div><button className="note-icon" aria-label={busy?'필기 인식 취소':'필기 인식 닫기'} onClick={onClose}><BoardIcon name="close"/></button></header>
-    <div className="note-recognition-body"><p>아래에 보이는 부분만 <strong>Google Gemini</strong>로 보냅니다.</p>
+    <div className="note-recognition-body"><p>아래에 보이는 부분만 <strong>Google Gemini</strong>로 보내요.</p>
       {/* Local PNG generated from the explicitly selected elements. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={capture.image} alt="인식할 선택 영역의 필기"/>

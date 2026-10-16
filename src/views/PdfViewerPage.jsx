@@ -116,7 +116,7 @@ export default function PdfViewerPage() {
       const detail = await fetchWordDetailText(token, language);
       setWordDetail({ token, detail, loading: false });
     } catch {
-      setWordDetail(prev => prev ? { ...prev, detail: '설명을 가져올 수 없었어요.', loading: false } : null);
+      setWordDetail(prev => prev ? { ...prev, detail: '설명을 가져오지 못했어요.', loading: false } : null);
     }
   }
   const [hideKnown, setHideKnown] = useState(true);

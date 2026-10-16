@@ -119,7 +119,7 @@ function MaterialAddForm() {
     if (pdf.language) setLanguage(pdf.language);
     if (pdf.level) setLevel(pdf.level);
     setVisibility('private'); // PDF 출처는 항상 private
-    toast('추출 완료! 아래에서 확인 후 분석을 시작하세요.', 'success');
+    toast('본문을 추출했어요. 아래에서 확인한 뒤 분석을 시작해 주세요.', 'success');
     // 스크롤 텍스트 영역으로
     setTimeout(() => {
       const el = document.querySelector('.form-textarea');
@@ -409,7 +409,7 @@ function MaterialAddForm() {
         setIsProcessing(false); busyRef.current = false;
         return;
       }
-      setStatus('원문 저장 완료. 읽기 도구를 준비하고 있어요…');
+      setStatus('원문을 저장했어요. 읽기 도구를 준비하고 있어요…');
       setProgress(0);
       startAnalysis();
     } catch (err) {
@@ -462,7 +462,7 @@ function MaterialAddForm() {
       analysisJsonRef.current = finalJson;
       setAnalysisState(finalJson.status);
       setStatus(finalJson.status === 'failed' ? '원문은 저장됐어요. 분석을 다시 시도할 수 있어요.'
-        : finalJson.status === 'partial' ? `원문 저장 완료 · ${finalJson.failed_indices?.length || 0}개 줄 재시도 필요` : '원문과 읽기 도구가 준비됐어요.');
+        : finalJson.status === 'partial' ? `원문을 저장했어요 · ${finalJson.failed_indices?.length || 0}개 줄 재시도 필요` : '원문과 읽기 도구가 준비됐어요.');
       setProgress(100);
 
     } catch (err) {
@@ -803,7 +803,7 @@ function MaterialAddForm() {
       </div>
       </fieldset>
       <div className="import-result" aria-live="polite">
-        {completedId && <p className="import-saved-label">✓ 원문 저장 완료 · {isNote ? '비공개 노트' : visibility === 'public' && !pdfSource && !epubSource ? '공개 자료' : '비공개 자료'}</p>}
+        {completedId && <p className="import-saved-label">✓ 원문을 저장했어요 · {isNote ? '비공개 노트' : visibility === 'public' && !pdfSource && !epubSource ? '공개 자료' : '비공개 자료'}</p>}
         {!isProcessing && status && <p className="import-status">{status}</p>}
         {/* Progress */}
         {isProcessing && (

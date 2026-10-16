@@ -55,7 +55,7 @@ export default function ViewerSenseReview({ rows, remaining, busy, onChoose, onK
               </p>
               <p className="viewer-sense-review__now">{vt('지금: {meaning}', { meaning: token.meaning || vt('(뜻 없음)') })}</p>
               {token.meaningNote && <p className="viewer-sense-review__note">{token.meaningNote}</p>}
-              {options === null ? <p className="viewer-sense-review__loading" role="status">{vt('불러오는 중…')}</p>
+              {options === null ? <p className="viewer-sense-review__loading" role="status">{vt('사전 뜻 불러오는 중…')}</p>
                 : options.length > 0 && (
                   <div className="viewer-sense-review__options" role="group" aria-label={vt('사전 뜻 · {count}개', { count: options.length })}>
                     {options.map((option) => (
