@@ -13,7 +13,7 @@ import { pickRereadCandidates } from './rereadSchedule';
 import { fetchMaterialRoundRows } from './readingSpeedRows';
 import { lastRoundCpm } from './readingSpeedHistory';
 import { encounterLookupLang } from './refVocabLookup';
-import { literatureDisplayTitle } from './literatureCanonical';
+import { literatureDisplayTitle } from './literatureWorks'; // 표시용 대조표만(LIT-DISPLAY-001) — 전체 대조표를 홈 번들에 싣지 않는다
 
 async function fetchCompletedRows(userId) {
   const { data, error } = await supabase

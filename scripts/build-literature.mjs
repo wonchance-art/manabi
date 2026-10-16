@@ -7,7 +7,8 @@
  *   node scripts/build-literature.mjs           chapters.json 쓰기(바뀐 것만)
  *   node scripts/build-literature.mjs --check   쓰지 않고 검사만 — 권리 미승인·원문 해시 불일치·미해결 외자·파서 경고·
  *                                               chapters.json 낡음이면 exit 1. 작품 0편이면 통과(no-op).
- * 루트에 index.generated.js(게시 API용 책 목록)·manifest.generated.json(뷰어 정본 대조표)도 만든다(--check가 함께 검사).
+ * 루트에 index.generated.js(게시 API용 책 목록)·manifest.generated.json(뷰어 정본 대조표)·manifest.display.generated.json(화면 표지·제목용,
+ *   manifest에서 파생)·manifest.incipits.generated.json(아오조라 장 첫 문장)도 만든다(--check가 함께 검사).
  * 게시(공개 reading_materials 삽입·관리자 1회 분석)는 이 스크립트가 하지 않는다 — 관리자 → 📚 정본 문학책(/api/admin/literature).
  */
 // 제품 모듈(src/lib)은 번들러식 확장자 없는 import를 쓴다 — Node가 풀 수 있게 훅을 먼저 등록한다(eval 스크립트와 같은 훅 재사용).

@@ -31,9 +31,11 @@ import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
 import MaterialGroupCard from '../components/MaterialGroupCard';
 import LiteratureCover from '../components/books/LiteratureCover';
-import { literatureWorkOfBook } from '../lib/literatureCanonical';
+// 표지 · 제목은 표시용 대조표만(LIT-DISPLAY-001) — 전체 대조표(해시 · 크레딧)는 뷰어 출처 줄 몫이라 서재 번들에 싣지 않는다.
+import { literatureWorkOfBook } from '../lib/literatureWorks';
+import { literatureChapterIncipit } from '../lib/literatureIncipits';
 import VictorianCover from '../components/books/VictorianCover';
-import { standardEbooksWorkOfBook } from '../lib/standardEbooksCanonical';
+import { standardEbooksWorkOfBook } from '../lib/standardEbooksWorks';
 import { isCanonicalBookKey } from '../lib/canonicalBookKey';
 import { literatureChapterLabel, literatureDivisionLabel } from '../lib/literatureDisplay';
 import SuggestionArtwork from '../components/SuggestionArtwork';
@@ -723,7 +725,6 @@ export default function MaterialsPage({ libraryView = null }) {
               const pendingNote = pendingCount > 0 ? ` · 분석 전 ${pendingCount}` : '';
               // 정본 문학책(AOZORA-P0-5) — 타이포그래피 표지 + 작가 목차(一·二) / 나눈 위치(1/2) + 장 첫 문장. 교재의 「과」를 쓰지 않는다.
               const work = canonicalCovers ? literatureWorkOfBook(b) : null;
-              const chapterOf = (c) => work?.chapters.find((item) => item.order === c._bookOrder);
               // 장 표지 — 작가 見出し(一·二)는 일본어로, 「1/2」는 날짜로 읽히지 않게 화면 읽기용 「2부분 중 1」을 따로 둔다.
               const literatureLead = (order) => {
                 const label = literatureChapterLabel(work, order);
@@ -764,7 +765,7 @@ export default function MaterialsPage({ libraryView = null }) {
                     key: c.id,
                     onClick: () => openReader(`/viewer/${c.id}`),
                     lead: work ? literatureLead(c._bookOrder) : c._bookOrder,
-                    title: work ? <span lang="ja">{chapterOf(c)?.incipit || c.title}</span>
+                    title: work ? <span lang="ja">{literatureChapterIncipit(b.key, c._bookOrder) || c.title}</span>
                       : english ? <span lang="en">{englishChapterOf(c)?.title || c.title}</span>
                       : c.title.includes(' — ') ? c.title.split(' — ').slice(1).join(' — ') : c.title,
                     right: chapterTags(c),

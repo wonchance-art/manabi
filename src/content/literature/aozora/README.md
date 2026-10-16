@@ -5,9 +5,11 @@
 `chapters.json`(장별 `rawText`·저자 루비 잠금·크레딧)을 만든다. 게시(공개 `reading_materials` 삽입 →
 관리자 1회 분석)는 별도 관리자 단계다 — 이 폴더의 파일만으로는 아무것도 공개되지 않는다.
 
-같은 빌드가 루트에 두 파일을 더 만든다(손으로 고치지 않는다 — `--check`가 낡음을 잡는다):
+같은 빌드가 루트에 네 파일을 더 만든다(손으로 고치지 않는다 — `--check`가 낡음을 잡는다):
 - `index.generated.js` — 관리자 게시 API(`/api/admin/literature`)가 정적 import하는 책 목록(장 원문 포함, 서버 전용).
 - `manifest.generated.json` — 뷰어 정본 대조표(장 원문 SHA-256 + 크레딧). 뷰어 출처 줄은 이 표로 그린다.
+- `manifest.display.generated.json` — 화면 표지·제목용(위 표에서 파생 — 해시·크레딧·장 첫 문장 없음). 홈·서재가 `src/lib/literatureWorks.js`로 읽는다.
+- `manifest.incipits.generated.json` — 장 첫 문장(위 표에서 파생). 서재 책 카드 목차 줄만 `src/lib/literatureIncipits.js`로 읽는다.
 
 ## 게시 (관리자) — 분석 → 검수·편집 → 공개 (P0-3 · P0-4)
 

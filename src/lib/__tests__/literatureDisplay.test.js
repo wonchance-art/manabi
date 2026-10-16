@@ -12,6 +12,8 @@ import {
 } from '../literatureDisplay.js';
 import { literatureWork, literatureWorkOfBook } from '../literatureCanonical.js';
 import manifest from '../../content/literature/aozora/manifest.generated.json';
+// 화면 표지·목차는 표시용 표에서 읽는다(LIT-DISPLAY-001 — 전체 표에서 파생, literatureDisplayManifest.test.js). 장 첫 문장 규칙은 전체 표로 본다.
+import display from '../../content/literature/aozora/manifest.display.generated.json';
 import { sliceBetween } from './helpers/sliceBetween';
 
 // 정본 문학책 표지·목차 표기(AOZORA-P0-5, 오너 확정 2026-10-14 「표지 직접 만들기 · 1과 2과 개편」).
@@ -38,7 +40,7 @@ const cielab = (value) => {
 
 describe('정본 작품 표기 — 대조표가 싣는다', () => {
   it('목차: 見出し 그대로 · 나눈 장은 1/N · 한 장이면 전문 — 「과」·「편」이 없다', () => {
-    const labels = Object.fromEntries(Object.entries(manifest.works).map(([key, work]) => [key, [work.division, work.chapters.map((chapter) => chapter.title)]]));
+    const labels = Object.fromEntries(Object.entries(display.works).map(([key, work]) => [key, [work.division, work.chapters.map((chapter) => chapter.title)]]));
     expect(labels).toEqual({
       'aozora-000081-043754': ['split', ['1/2', '2/2']],
       'aozora-000121-000628': ['heading', ['一', '二', '三', '四', '五', '六']],
@@ -95,10 +97,11 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
       'aozora-000148-000799': ['heading', ['第一夜', '第二夜', '第三夜', '第四夜', '第五夜', '第六夜', '第七夜', '第八夜', '第九夜', '第十夜']],
     });
     expect(JSON.stringify(manifest)).not.toMatch(/\d+(과|편)"|전편/u);
+    expect(JSON.stringify(display)).not.toMatch(/\d+(과|편)"|전편/u);
   });
 
   it('표지 표기: 읽기(가나)·한국어 제목·작가 한국어 이름·팔레트 색·문양 — 작품마다 서로 다른 색·문양', () => {
-    const works = Object.values(manifest.works);
+    const works = Object.values(display.works);
     for (const work of works) expect(validateLiteratureDisplay(work.display, work.title)).toEqual(work.display);
     expect(Object.fromEntries(works.map((work) => [work.title, work.display.titleKo])))
       .toEqual({ '注文の多い料理店': '주문이 많은 요리점', 'ごん狐': '여우 곤', '手袋を買いに': '장갑을 사러', '文鳥': '문조', '鼻': '코',
@@ -127,7 +130,7 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
     // 이름만 다르고 눈으로는 같은 색(檸檬 회색 ↔ こころ 회색, よだかの星 ↔ 銀河鉄道の夜 보라)을 새 작품 추가 때 다시 만들지 않게.
     const css = read('src/components/books/literature-cover.css');
     const hex = Object.fromEntries([...css.matchAll(/\.lit-cover--([a-z]+)\{--cover-color:(#[0-9a-f]{6})/gu)].map((m) => [m[1], m[2]]));
-    const works = Object.values(manifest.works);
+    const works = Object.values(display.works);
     const close = [];
     for (const [i, a] of works.entries()) {
       for (const b of works.slice(i + 1)) {

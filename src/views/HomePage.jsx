@@ -19,7 +19,7 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
-import { literatureDisplayTitle } from '@/lib/literatureCanonical';
+import { literatureDisplayTitle } from '@/lib/literatureWorks'; // 표시용 대조표만(LIT-DISPLAY-001) — 전체 대조표를 홈 번들에 싣지 않는다
 import { bookHref } from '@/lib/textbook/contract';
 import { bookResume, chooseResume, recentMaterial } from '@/lib/webNavigation';
 import useReadingProgress from '@/components/books/useReadingProgress';
