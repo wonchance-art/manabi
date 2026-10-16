@@ -892,6 +892,11 @@
     공개 목록에서는 정본 표지 · 제목을 닫음(fail closed — 발행 기록 C안 canonical_book_releases, 오너 결정 대기 뒤 재개). 계약 `bookMeta.test.js`.
   · 같은 PR(UX-AUDIT-AUTH-001): `scripts/ux-audit-auth.mjs` — e2e 합성 로그인으로 복습 진행 · 끝, 서재 목록, 뷰어를 캡처 · 판정.
     실행 결과 PASS 40 · FAIL 0 — 복습 카드 넘김(실측 235ms) · 앞면 클릭 펼치기 실브라우저 확인(예전 일정 엔진). FSRS 활성 화면 · /study · 대화는 미검증.
+  · 같은 PR(COPY-FIX-001, /ux-review 문구 점검): 화면 문구 67곳(38파일) — 옛 이름(자료실 → 서재 · 지난 이야기) · 대상 없는 「불러오는 중…」 ·
+    「가져오지 못했어요」 · 해요체 · 안내 「…해 주세요」 · 버튼(전체 보기 · 이어 읽기 · 자료 추가) · OG description 일치. 계약 `copyStandard.test.js` 규칙 3개 추가.
+    오너 결정 대기 문구(나의 책장/교재 · 담은 표현 등)는 그대로.
+  · 같은 PR(SUSPENSE-FALLBACK-001, 스켈레톤 실측 §3): fallback 없는 페이지 Suspense 5곳에 앱 대기 화면 — /conversation/new 직접 진입 빈 화면
+    (BAILOUT_TO_CLIENT_SIDE_RENDERING) 제거. 계약 `suspenseFallback.test.js`. 라우트 스켈레톤(산책 1순위 · 배움 2순위)은 목업 승인 대기.
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
   제안안 중 웹 몫만(스와이프 · 진동 · 아이폰 안전 여백은 모바일이라 보류). 두 복습 카드(예전 · 새 일정) 공통 `review-card--turn`(0.24초,
