@@ -889,6 +889,9 @@
   · **DEPLOY-PREVIEW-001(같은 PR, 오너 「ㄱㄱ」 — 자동 배포 권장안)**: `vercel.json`에서 `claude/*` Git 배포 차단만 해제. 빌드 조건
     (`scripts/vercel-ignore.sh` — main 또는 커밋 메시지 `[preview]`)과 codex 계열 차단은 그대로. Claude는 검수 시점에만 `[preview]` 커밋.
     계약 `scripts/vercel-deploy-policy.test.js`.
+  · **PERF-TAB-001(같은 PR, 오너 「다음 ㄱㄱ」 — 탭 전환 끊김 실측)**: Preview 실측에서 배움(`/home`) · 산책(`/discover`) RSC 응답 전체 2.1~2.7초
+    (서재 0.24초). 원인 = 발행 확인(`publishedReading`)이 판본 원고 jsonb(텍스트 약 700KB)를 매 요청 도쿄 DB에서 통째로 받음 — 쓰는 건 해시 두 개뿐.
+    `readEditionStamp`(원고 제외 열)로 교체(교재 표현 저장 경로 포함). 화면 결과 불변. 계약 `editionStamp.test.js`. 전후 수치는 Preview에서.
 - **REV-SCOPE-R1B-2 학습 단계 정책 SQL (2026-10-14 12:40 KST~, 오너 「여기서 진행」 — 인계 [#1337 R1-B](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6106712130), R1-B-1 #1450 위에서)** `claude/project-thread-jqlex2`:
   anki-v2(학습 1분 · 10분, 재학습 10분) — `valid_card`가 anki-seconds-v1 · anki-v2 둘 다 받고 New 검사는 카드 정책 첫 단계로 · `fsrs_capabilities` 정책값 · 지문 재게시 SQL + 복원 SQL ·
   PGlite(M09 fixture) 검증 · 코드는 받은 정책값을 따른다. **운영 미적용** — SQL 검수 · 오너 확인 뒤 별도. 결과는 #1337 보고.
