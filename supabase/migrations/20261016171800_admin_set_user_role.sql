@@ -1,4 +1,7 @@
--- 관리자 역할 변경 RPC(PROFILES-PRIVACY-001 ② 선행). 아직 운영 미적용 — 오너 승인 뒤 apply_migration으로 같은 본문을 적용한다.
+-- 관리자 역할 변경 RPC(PROFILES-PRIVACY-001 ② 선행). 적용 경로 = PR이 main에 병합되면 supabase-migrations.yml(db push)이
+--   운영에 바로 적용한다(별도 apply_migration 없음). 그래서 병합 승인 = 이 함수의 운영 적용 승인이다.
+-- 남는 구멍: 마지막 관리자 거부는 이 RPC 안에서만 막는다 — 본인 행 직접 UPDATE(role 열 권한 · 본인 행 정책)는 ② 본 적용이
+--   role 열 UPDATE 권한을 회수할 때 닫힌다(그 전까지는 관리자 본인만 스스로 강등할 수 있는 상태 그대로).
 -- AdminPage 역할 버튼이 profiles를 직접 update하던 것(본인 행 RLS에 0행 무음 실패 · 강등 값 'user'는 CHECK 23514)을 대신한다.
 -- 실측(2026-10-17 KST, 읽기 전용): CHECK profiles_role_check = student · host · admin · 관리자 1명.
 -- trg_enforce_role_change(enforce_role_change_by_admin, SECURITY DEFINER)는 is_admin() = auth.uid() 기준이라
