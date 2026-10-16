@@ -4,14 +4,18 @@
  * 한 처리를 같이 쓴다 — 라우트마다 다른 것은 정본 책 목록(getBooks)과 게시 불가 안내 문구뿐이다.
  *
  *  GET                → { books: 요약[] }  근거(rights | provenance) · 단계(stage) · 장별 게시/분석 상태(원문 없음)
- *  GET ?ruby=<key>    → { key, coverage }   장별 저자 루비 적용 수 · 검수 힌트 수 · 남은 「뜻 확인 필요」 수
+ *  GET ?ruby=<key>    → { key, coverage }   장별 저자 루비 적용 수 · 검수 힌트 수 · 남은 「뜻 확인 필요」 수 · 쪼개진 루비 낱말
  *  POST { action:'prepare', key }
  *                     → 정본 장 중 아직 없는 장만 **비공개** reading_materials로 넣는다(book key + 장 순서 멱등).
  *                       원문이 다른 장·중복 장이 있으면 409로 아무것도 넣지 않는다(덮어쓰기·삭제 없음).
  *                       분석은 관리자 화면이 장마다 뷰어와 같은 경로로 한다(이 API는 분석하지 않는다).
- *  POST { action:'review', key, order }
+ *                       이미 준비한 분석 전(pending) 장은 metadata를 정본에 맞춘다(경계 기록·검수 힌트 — AOZORA-P1-12, {synced}).
+ *  POST { action:'review', key, order, acceptBoundaries? }
  *                     → 그 장의 「검수 완료」(AOZORA-P0-4). 분석 완료이고 남은 「뜻 확인 필요」가 0일 때만
  *                       metadata.literatureReview {reviewedAt, viewerRevision}을 쓴다(그 revision일 때만 — 동시 재분석이면 409).
+ *                       쪼개진 저자 루비 낱말(AOZORA-P1-10)이 남은 장은 acceptBoundaries: true(검수자 확인)일 때만 받는다.
+ *  POST { action:'reviewMany', key, orders }
+ *                     → 묶음 검수 — 장마다 같은 판정을 다시 하되 쪼개진 낱말이 하나라도 있으면 넘긴다. {reviewed, skipped}.
  *  POST { action:'release', key }
  *                     → 모든 장이 있고 모두 분석·검수 완료일 때만 비공개 장을 공개로 바꾼다. 아니면 409.
  *
@@ -22,7 +26,7 @@
  */
 import { requireAdmin } from '@/lib/supabaseServer';
 import {
-  literatureBookPublishable, literatureBookSummary, literaturePublishRows, literatureReviewRemaining, literatureRubyCoverage,
+  chapterReviewed, literatureBookPublishable, literatureBoundaryIssues, planLiteratureMetadataSync, literatureBookSummary, literaturePublishRows, literatureReviewRemaining, literatureRubyCoverage,
   planLiteraturePublish, planLiteratureRelease,
 } from '@/lib/literaturePublish';
 
@@ -83,7 +87,7 @@ export function createBookPublishHandlers(getBooks, { notPublishableError = DEFA
     if (auth.error) return respond({ error: auth.error }, auth.status);
     let body;
     try { body = await request.json(); } catch { return respond({ error: '입력 형식을 확인해 주세요.' }, 400); }
-    if (!body || typeof body !== 'object' || !['prepare', 'review', 'release'].includes(body.action) || typeof body.key !== 'string') {
+    if (!body || typeof body !== 'object' || !['prepare', 'review', 'reviewMany', 'release'].includes(body.action) || typeof body.key !== 'string') {
       return respond({ error: '작업할 책을 선택해 주세요.' }, 400);
     }
     const books = loadBooks();
@@ -93,7 +97,8 @@ export function createBookPublishHandlers(getBooks, { notPublishableError = DEFA
     if (!literatureBookPublishable(book)) return respond({ error: notPublishableError }, 422);
 
     const { supabase, user } = auth;
-    if (body.action === 'review') return reviewChapter(supabase, user, book, body.order);
+    if (body.action === 'review') return reviewChapter(supabase, user, book, body.order, body.acceptBoundaries);
+    if (body.action === 'reviewMany') return reviewChapters(supabase, user, book, body.orders);
     let rows;
     try {
       rows = await publishedRows(supabase, user.id, [book.book.key]);
@@ -121,41 +126,107 @@ export function createBookPublishHandlers(getBooks, { notPublishableError = DEFA
     if (plan.conflicts.length) {
       return respond({ error: '이미 준비된 장 중 정본과 다른 장이 있어 넣지 않았어요. 자료 관리에서 확인해 주세요.', plan }, 409);
     }
-    if (plan.insert.length === 0) return respond({ ok: true, inserted: [], plan });
+    const synced = await syncPendingMetadata(supabase, user, book, rows);
+    if (synced.error) return respond({ error: '준비한 장을 정본에 맞추지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503);
+    if (plan.insert.length === 0) return respond({ ok: true, inserted: [], synced: synced.ids, plan });
 
     const { data, error } = await supabase.from('reading_materials')
       .insert(literaturePublishRows(book, plan.insert, user.id))
       .select('id, order:processed_json->metadata->book->>order');
     if (error) return respond({ error: '책을 준비하지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503);
-    return respond({ ok: true, inserted: data || [], plan });
+    return respond({ ok: true, inserted: data || [], synced: synced.ids, plan });
   }
 
   return { GET, POST };
 }
 
-/** 장 「검수 완료」 — 분석 완료 · 남은 「뜻 확인 필요」 0 · 그 분석 revision에 기록(재분석하면 다시 검수). */
-async function reviewChapter(supabase, user, book, order) {
-  if (!Number.isInteger(order) || !book.chapters.some((chapter) => chapter.order === order)) {
-    return respond({ error: '검수할 장을 선택해 주세요.' }, 400);
+/**
+ * 분석 전 장의 metadata를 정본에 맞춘다(AOZORA-P1-12, planLiteratureMetadataSync) — 준비 뒤 빌드가 늘린 경계 기록·검수 힌트가
+ * 분석 요청에 실리게. status 'pending'인 장만, 그 상태일 때만 쓴다(그사이 분석이 시작됐으면 건드리지 않는다). → {ids} | {error}
+ */
+async function syncPendingMetadata(supabase, user, book, rows) {
+  const pending = rows.filter((row) => row.status === 'pending');
+  if (pending.length === 0) return { ids: [] };
+  const { data, error } = await supabase.from('reading_materials').select(`id, order:${ORDER_PATH}, raw_text, processed_json`)
+    .eq('owner_id', user.id).in('id', pending.map((row) => row.id));
+  if (error) return { error };
+  const full = (data || []).map((row) => ({ ...row, status: row.processed_json?.status, metadata: row.processed_json?.metadata }));
+  const ids = [];
+  for (const { id, metadata } of planLiteratureMetadataSync(book, full)) {
+    const current = full.find((row) => row.id === id).processed_json;
+    const { data: saved, error: saveError } = await supabase.from('reading_materials').update({ processed_json: { ...current, metadata } })
+      .eq('id', id).eq('owner_id', user.id).eq('processed_json->>status', 'pending').select('id');
+    if (saveError) return { error: saveError };
+    if (saved?.length) ids.push(id);
   }
+  return { ids };
+}
+
+/**
+ * 장 하나 「검수 완료」 판정·저장 → {status, body}. 분석 완료 · 정본 원문 · 남은 「뜻 확인 필요」 0 · 쪼개진 저자 루비 낱말
+ * (literatureBoundaryIssues — 苦沙弥 → 苦|沙弥 같은 자리, AOZORA-P1-10)은 검수자가 확인했다고 밝힐 때만(acceptBoundaries) ·
+ * 그 분석 revision에 기록(재분석하면 다시 검수). strict(묶음 검수)면 경계를 셀 수 없거나 한 곳이라도 있는 장은 넘기지 않는다.
+ */
+async function reviewOne(supabase, user, book, order, { acceptBoundaries = false, strict = false } = {}) {
+  const fail = (status, body) => ({ status, body });
+  if (!Number.isInteger(order) || !book.chapters.some((chapter) => chapter.order === order)) {
+    return fail(400, { error: '검수할 장을 선택해 주세요.' });
+  }
+  const chapter = book.chapters.find((item) => item.order === order);
   const { data, error } = await supabase.from('reading_materials')
     .select(`id, raw_text, order:${ORDER_PATH}, processed_json`)
     .eq('owner_id', user.id).eq(KEY_PATH, book.book.key).eq(ORDER_PATH, String(order));
-  if (error) return respond({ error: '장 상태를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503);
-  if (!data || data.length !== 1) return respond({ error: '준비한 장을 찾지 못했어요. 게시 상태를 확인해 주세요.' }, 409);
+  if (error) return fail(503, { error: '장 상태를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.' });
+  if (!data || data.length !== 1) return fail(409, { error: '준비한 장을 찾지 못했어요. 게시 상태를 확인해 주세요.' });
   const row = data[0];
   const json = row.processed_json || {};
   const revision = json.metadata?.viewerRevision;
-  if (json.status !== 'completed' || typeof revision !== 'string') return respond({ error: '분석을 마친 장만 검수 완료로 표시할 수 있어요.' }, 409);
-  if (row.raw_text !== book.chapters.find((chapter) => chapter.order === order).rawText) {
-    return respond({ error: '정본과 원문이 다른 장이에요. 자료 관리에서 확인해 주세요.' }, 409);
-  }
+  if (json.status !== 'completed' || typeof revision !== 'string') return fail(409, { error: '분석을 마친 장만 검수 완료로 표시할 수 있어요.' });
+  if (row.raw_text !== chapter.rawText) return fail(409, { error: '정본과 원문이 다른 장이에요. 자료 관리에서 확인해 주세요.' });
   const remaining = literatureReviewRemaining(json);
-  if (remaining > 0) return respond({ error: `「뜻 확인 필요」가 ${remaining}개 남아 있어요. 모두 확인한 뒤 검수 완료로 표시해 주세요.`, remaining }, 409);
+  if (remaining > 0) return fail(409, { error: `「뜻 확인 필요」가 ${remaining}개 남아 있어요. 모두 확인한 뒤 검수 완료로 표시해 주세요.`, remaining });
+  const issues = literatureBoundaryIssues(chapter, json);
+  if (strict && !issues) return fail(409, { error: '단어 경계를 확인하지 못한 장이에요. 장을 열어 확인해 주세요.' });
+  if (issues?.count > 0 && (strict || !acceptBoundaries)) {
+    const words = issues.words.slice(0, 5).join('·');
+    return fail(409, { error: `쪼개진 낱말이 ${issues.count}곳 있어요(${words}). 뷰어에서 묶거나 그대로 둘지 확인해 주세요.`, boundary: issues.count, boundaryWords: issues.words.slice(0, 5) });
+  }
   const next = { ...json, metadata: { ...json.metadata, literatureReview: { reviewedAt: new Date().toISOString(), viewerRevision: revision } } };
   const { data: saved, error: saveError } = await supabase.from('reading_materials').update({ processed_json: next })
     .eq('id', row.id).eq('owner_id', user.id).eq('processed_json->metadata->>viewerRevision', revision).select('id');
-  if (saveError) return respond({ error: '검수 완료를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503);
-  if (!saved?.length) return respond({ error: '그사이 장이 다시 분석됐어요. 다시 확인해 주세요.' }, 409);
-  return respond({ ok: true, reviewed: { id: row.id, order } });
+  if (saveError) return fail(503, { error: '검수 완료를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.' });
+  if (!saved?.length) return fail(409, { error: '그사이 장이 다시 분석됐어요. 다시 확인해 주세요.' });
+  return { status: 200, body: { ok: true, reviewed: { id: row.id, order } } };
+}
+
+/** 장 「검수 완료」 — reviewOne 그대로. */
+async function reviewChapter(supabase, user, book, order, acceptBoundaries) {
+  const { status, body } = await reviewOne(supabase, user, book, order, { acceptBoundaries: acceptBoundaries === true });
+  return respond(body, status);
+}
+
+/**
+ * 묶음 검수(「N장 검수 완료」) — 사람이 누른 장 목록을 장마다 reviewOne(strict)으로 **다시** 판정한다. 화면이 낡았거나
+ * 그사이 바뀐 장은 건너뛰고 이유를 돌려준다(부분 성공 — 저장한 장은 저장된 채). 이미 검수 완료인 장은 다시 쓰지 않는다.
+ */
+async function reviewChapters(supabase, user, book, orders) {
+  if (!Array.isArray(orders) || orders.length === 0 || orders.length > book.chapters.length
+    || new Set(orders).size !== orders.length || !orders.every((order) => book.chapters.some((chapter) => chapter.order === order))) {
+    return respond({ error: '검수할 장을 선택해 주세요.' }, 400);
+  }
+  let rows;
+  try {
+    rows = await publishedRows(supabase, user.id, [book.book.key]);
+  } catch {
+    return respond({ error: '게시 상태를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503);
+  }
+  const reviewed = [], skipped = [];
+  for (const order of orders) {
+    const row = rows.find((item) => Number(item.order) === order);
+    if (row && chapterReviewed(row)) { skipped.push({ order, error: '이미 검수 완료인 장이에요.' }); continue; }
+    const { status, body } = await reviewOne(supabase, user, book, order, { strict: true });
+    if (status === 200) reviewed.push(body.reviewed);
+    else skipped.push({ order, error: body.error });
+  }
+  return respond({ ok: true, reviewed, skipped });
 }

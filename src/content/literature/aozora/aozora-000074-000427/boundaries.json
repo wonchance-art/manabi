@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "968547a3216d1e5228622d4cced8df8a3090e1e3acf2eb10d2ac2bb2b2a3e6cf",
+      "edits": []
+    }
+  ]
+}

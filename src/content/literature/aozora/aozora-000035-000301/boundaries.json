@@ -1,0 +1,813 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "5545cd80fbf6bc8d6e6b10885ae0c7527992ea84067f92cd9ff04447e3411a28",
+      "edits": [
+        {
+          "line": 18,
+          "start": 0,
+          "end": 2,
+          "text": "所謂",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "7effade3e2c633dd17785565d4f46b8662b636c93899a7ce7464e229b2a51a69",
+      "edits": [
+        {
+          "line": 16,
+          "start": 103,
+          "end": 105,
+          "text": "転輾",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "textSha256": "c68dabace04513ed7181f31a7946b60d3405149a52b8fc4dc034960dac6bb29e",
+      "edits": [
+        {
+          "line": 2,
+          "start": 54,
+          "end": 56,
+          "text": "霹靂",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 38,
+          "end": 40,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 24,
+          "start": 235,
+          "end": 237,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 40,
+          "start": 168,
+          "end": 172,
+          "text": "シシマイ",
+          "reason": "katakana"
+        },
+        {
+          "line": 44,
+          "start": 30,
+          "end": 34,
+          "text": "シシマイ",
+          "reason": "katakana"
+        },
+        {
+          "line": 46,
+          "start": 200,
+          "end": 203,
+          "text": "チンポ",
+          "reason": "katakana"
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "textSha256": "e6087d5b159b23075fcdc9626f5e8c3b8b1821646254b3f952327f229050edd9",
+      "edits": [
+        {
+          "line": 6,
+          "start": 155,
+          "end": 157,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 261,
+          "end": 264,
+          "text": "滑稽噺",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 313,
+          "end": 316,
+          "text": "滑稽噺",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 390,
+          "end": 392,
+          "text": "痰壺",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 418,
+          "end": 420,
+          "text": "痰壺",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 600,
+          "end": 604,
+          "text": "クスクス",
+          "reason": "katakana"
+        },
+        {
+          "line": 10,
+          "start": 4,
+          "end": 6,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 16,
+          "start": 27,
+          "end": 33,
+          "text": "クリスチャン",
+          "reason": "katakana"
+        },
+        {
+          "line": 16,
+          "start": 325,
+          "end": 329,
+          "text": "クソミソ",
+          "reason": "katakana"
+        },
+        {
+          "line": 16,
+          "start": 411,
+          "end": 413,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 16,
+          "start": 577,
+          "end": 579,
+          "text": "途々",
+          "reason": "ruby"
+        },
+        {
+          "line": 18,
+          "start": 485,
+          "end": 489,
+          "text": "クリスト",
+          "reason": "katakana"
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "textSha256": "a6cecb4a439abc9d7205f8904de33b08d4c9e95d9ade172b9abd459104da34bc",
+      "edits": [
+        {
+          "line": 18,
+          "start": 256,
+          "end": 258,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 20,
+          "start": 35,
+          "end": 37,
+          "text": "媚笑",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "textSha256": "a6e9b06e6a69480255794686fdbad30b3f4f53863d7c4e1ab84cabd07916c9f9",
+      "edits": [
+        {
+          "line": 0,
+          "start": 125,
+          "end": 127,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 20,
+          "start": 21,
+          "end": 24,
+          "text": "滑稽噺",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "textSha256": "7c9bb4a9639905d7068adba75d023e13b69ba2b6086ced52164a9bd059e43921",
+      "edits": [
+        {
+          "line": 0,
+          "start": 115,
+          "end": 117,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 22,
+          "start": 495,
+          "end": 500,
+          "text": "マイスター",
+          "reason": "katakana"
+        },
+        {
+          "line": 38,
+          "start": 124,
+          "end": 127,
+          "text": "楠正成",
+          "reason": "ruby"
+        },
+        {
+          "line": 40,
+          "start": 24,
+          "end": 27,
+          "text": "淫売婦",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "textSha256": "ff8584005a9b2333070ee48747bd46f5ce38b2ae2623454ab9bb74ff7ef5bc27",
+      "edits": [
+        {
+          "line": 4,
+          "start": 35,
+          "end": 37,
+          "text": "脊広",
+          "reason": "ruby"
+        },
+        {
+          "line": 18,
+          "start": 133,
+          "end": 136,
+          "text": "淫売婦",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 20,
+          "start": 42,
+          "end": 44,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 22,
+          "start": 5,
+          "end": 8,
+          "text": "淫売婦",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 24,
+          "start": 5,
+          "end": 8,
+          "text": "淫売婦",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 24,
+          "start": 151,
+          "end": 154,
+          "text": "淫売婦",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 24,
+          "start": 232,
+          "end": 235,
+          "text": "淫売婦",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 26,
+          "start": 54,
+          "end": 57,
+          "text": "淫売婦",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 26,
+          "start": 131,
+          "end": 133,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 26,
+          "start": 226,
+          "end": 229,
+          "text": "淫売婦",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 26,
+          "start": 262,
+          "end": 265,
+          "text": "淫売婦",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 26,
+          "start": 329,
+          "end": 332,
+          "text": "淫売婦",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "textSha256": "19fdbf30490fc0403fee0e52a3aae4a33b66af166e784b980cdc70acfbd1448e",
+      "edits": [
+        {
+          "line": 0,
+          "start": 482,
+          "end": 485,
+          "text": "淫売婦",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 181,
+          "end": 183,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 448,
+          "end": 450,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 0,
+          "end": 3,
+          "text": "日蔭者",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 65,
+          "end": 68,
+          "text": "日蔭者",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 87,
+          "end": 90,
+          "text": "日蔭者",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 792,
+          "end": 794,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "textSha256": "252998bc7a63f750eb1b17b2618e4122a7aa7f638522a71026ae3aa34af3b601",
+      "edits": [
+        {
+          "line": 4,
+          "start": 111,
+          "end": 113,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 420,
+          "end": 422,
+          "text": "所謂",
+          "reason": "ruby"
+        },
+        {
+          "line": 40,
+          "start": 18,
+          "end": 20,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 11,
+      "textSha256": "c88b717017847651a8ff336284802d59bd2fa44ddbc30edd8478032359788231",
+      "edits": [
+        {
+          "line": 30,
+          "start": 5,
+          "end": 8,
+          "text": "淫売婦",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 12,
+      "textSha256": "cfaa8ed978bf468ba77c0a84121fd0a434fceffdc122fe092f23063c3d802f2f",
+      "edits": [
+        {
+          "line": 24,
+          "start": 12,
+          "end": 14,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 44,
+          "start": 39,
+          "end": 41,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 44,
+          "start": 106,
+          "end": 108,
+          "text": "霹靂",
+          "reason": "ruby"
+        },
+        {
+          "line": 72,
+          "start": 27,
+          "end": 29,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 13,
+      "textSha256": "f6b0592587f20594695c4a462fe469ef05cf894052ebdeac9d2ed620bb5c60c8",
+      "edits": [
+        {
+          "line": 30,
+          "start": 284,
+          "end": 286,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 44,
+          "start": 52,
+          "end": 54,
+          "text": "赤痣",
+          "reason": "ruby"
+        },
+        {
+          "line": 78,
+          "start": 72,
+          "end": 74,
+          "text": "脊中",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 14,
+      "textSha256": "d1cc8880f54b41a8b214a2d5e8dd4dbf126a620773d1712f87f0cc525da5a16b",
+      "edits": [
+        {
+          "line": 12,
+          "start": 139,
+          "end": 141,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 155,
+          "end": 157,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 440,
+          "end": 442,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 16,
+          "start": 178,
+          "end": 180,
+          "text": "賞讃",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 15,
+      "textSha256": "0c472dd5299d5724115d09480fa99d3706de979288fdfa7dfbdf534fd73a8a99",
+      "edits": [
+        {
+          "line": 26,
+          "start": 8,
+          "end": 10,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 26,
+          "start": 550,
+          "end": 552,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 28,
+          "start": 344,
+          "end": 346,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 34,
+          "start": 255,
+          "end": 257,
+          "text": "脊筋",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 16,
+      "textSha256": "8ac9c6008fb8c26b4c64bc96e654558e4d6dc1cbef43feec81ef34273e3cc78b",
+      "edits": [
+        {
+          "line": 0,
+          "start": 22,
+          "end": 24,
+          "text": "綴糸",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 367,
+          "end": 369,
+          "text": "塗箸",
+          "reason": "ruby"
+        },
+        {
+          "line": 74,
+          "start": 43,
+          "end": 45,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 88,
+          "start": 64,
+          "end": 67,
+          "text": "編輯長",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 17,
+      "textSha256": "112b326fce3315a3a59d9b2e61917d07eecf2472936b321e96bcbed4afb621e4",
+      "edits": [
+        {
+          "line": 0,
+          "start": 204,
+          "end": 206,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 72,
+          "start": 23,
+          "end": 25,
+          "text": "妖婆",
+          "reason": "ruby"
+        },
+        {
+          "line": 82,
+          "start": 50,
+          "end": 54,
+          "text": "トウサン",
+          "reason": "katakana"
+        }
+      ]
+    },
+    {
+      "order": 18,
+      "textSha256": "b5d543716f3f2e84c316346c09f0ce61e15af706ac59db582a6048ba486d8926",
+      "edits": [
+        {
+          "line": 70,
+          "start": 60,
+          "end": 62,
+          "text": "得態",
+          "reason": "ruby"
+        },
+        {
+          "line": 72,
+          "start": 135,
+          "end": 137,
+          "text": "吊皮",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 19,
+      "textSha256": "e4cff70fe42cfca8dc51b3bb8c7176af4803fc4ab52acf2d086b5f16510152c4",
+      "edits": [
+        {
+          "line": 4,
+          "start": 131,
+          "end": 133,
+          "text": "插入",
+          "reason": "ruby"
+        },
+        {
+          "line": 42,
+          "start": 4,
+          "end": 6,
+          "text": "切尖",
+          "reason": "ruby"
+        },
+        {
+          "line": 134,
+          "start": 5,
+          "end": 9,
+          "text": "ゲンマン",
+          "reason": "katakana"
+        },
+        {
+          "line": 162,
+          "start": 54,
+          "end": 58,
+          "text": "ゲンマン",
+          "reason": "katakana"
+        },
+        {
+          "line": 164,
+          "start": 225,
+          "end": 227,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 20,
+      "textSha256": "fcc60ff243dd93918ede58272ed4be439537b9b0cf1df43013129f6907729479",
+      "edits": [
+        {
+          "line": 2,
+          "start": 41,
+          "end": 43,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 20,
+          "end": 23,
+          "text": "義侠心",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 34,
+          "end": 37,
+          "text": "義侠心",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 94,
+          "end": 97,
+          "text": "義侠心",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 21,
+      "textSha256": "c62033447062316e8dc366be3fbd37be8507d689b92d44a35398b48d56c7bfae",
+      "edits": [
+        {
+          "line": 24,
+          "start": 13,
+          "end": 15,
+          "text": "仰向",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 22,
+      "textSha256": "98722dc015f5b1e245ccddd562834e4450b613130861e5fcb7b4f63a151fd418",
+      "edits": [
+        {
+          "line": 0,
+          "start": 423,
+          "end": 425,
+          "text": "所謂",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 112,
+          "end": 114,
+          "text": "猥画",
+          "reason": "ruby"
+        },
+        {
+          "line": 40,
+          "start": 28,
+          "end": 32,
+          "text": "クスクス",
+          "reason": "katakana"
+        },
+        {
+          "line": 50,
+          "start": 603,
+          "end": 606,
+          "text": "ドテラ",
+          "reason": "katakana"
+        }
+      ]
+    },
+    {
+      "order": 23,
+      "textSha256": "2c697f13917f60f21612b10c10191dc60942d7074fbfb1fe7fbf22f03dd87f52",
+      "edits": [
+        {
+          "line": 6,
+          "start": 92,
+          "end": 94,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 24,
+          "start": 85,
+          "end": 87,
+          "text": "痲痺",
+          "reason": "ruby"
+        },
+        {
+          "line": 48,
+          "start": 30,
+          "end": 33,
+          "text": "日蔭者",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 24,
+      "textSha256": "ec951259543284fb81781f8337c7076798b68cb66fcced76c948290a75e3c23f",
+      "edits": [
+        {
+          "line": 30,
+          "start": 52,
+          "end": 56,
+          "text": "ガチャン",
+          "reason": "katakana"
+        },
+        {
+          "line": 66,
+          "start": 17,
+          "end": 19,
+          "text": "所謂",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 25,
+      "textSha256": "dbc59c1fc5cfa0997f9c904d67ca4ea9deb95ccc9b288eec9297d0cac9c2e37d",
+      "edits": []
+    }
+  ]
+}

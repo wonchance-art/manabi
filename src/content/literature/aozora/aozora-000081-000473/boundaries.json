@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "58b633adbcec7f10e91a3efbf926c5d35778a6316f3a28d9ca529b95ff507da1",
+      "edits": []
+    },
+    {
+      "order": 2,
+      "textSha256": "1ed56a943f6cbf79811613ee58764b42b4195c29152dd07ed08c9521bc6a9c3a",
+      "edits": [
+        {
+          "line": 2,
+          "start": 16,
+          "end": 18,
+          "text": "蜂雀",
+          "reason": "ruby"
+        },
+        {
+          "line": 36,
+          "start": 48,
+          "end": 51,
+          "text": "大熊星",
+          "reason": "ruby"
+        },
+        {
+          "line": 40,
+          "start": 0,
+          "end": 3,
+          "text": "大熊星",
+          "reason": "ruby-repeat"
+        }
+      ]
+    }
+  ]
+}

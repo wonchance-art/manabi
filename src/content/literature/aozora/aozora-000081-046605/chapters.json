@@ -276,6 +276,33 @@
               "reading": "いっしょ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_1_0",
+              "line": 0,
+              "start": 16,
+              "end": 18,
+              "text": "幻燈",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_1",
+              "line": 64,
+              "start": 33,
+              "end": 36,
+              "text": "鉄砲弾",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -474,6 +501,44 @@
               "reading": "こんごうせき"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_2_0",
+              "line": 2,
+              "start": 5,
+              "end": 7,
+              "text": "円石",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_1",
+              "line": 2,
+              "start": 28,
+              "end": 31,
+              "text": "金雲母",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_2",
+              "line": 64,
+              "start": 2,
+              "end": 4,
+              "text": "幻燈",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     }
@@ -493,6 +558,7 @@
     "chapterChars": [
       1540,
       1205
-    ]
+    ],
+    "boundaryMergeCount": 5
   }
 }

@@ -1,42 +1,48 @@
-/* 정본 문학책 표지(AOZORA-P0-5) — 타이포그래피 표지. 색은 작품 이미지에서 고른 팔레트 이름 다섯(literatureDisplay
-   LITERATURE_COVER_COLORS)만 쓴다. 바탕 위 글자는 --sheet(#fffefb), 밝은 바탕(cream = 메이지 生成り)과 鼻의 題簽 위 제목만 짙은 먹 — 글자 뒤 실제 바탕 기준 모두 대비 4.5:1 이상(AA).
-   배치는 모든 작품이 같다(오너 지시 2026-10-14 KST 「편차 없이 · 균형」): 제목 11px이 오른쪽 위에서 한 줄로(여섯 자까지
-   높이 69px 안 — 11×1.02×6≈67), 작가 6px이 그 왼쪽 아래(문고본의 대각선 짝). 여섯 자를 넘는 제목만 둘째 줄을 아래에
-   붙인다(--stepped: 첫 줄 위·끝 줄 아래 — 반반 떠서 아래가 비지 않게). 줄은 블록 둘(강제 줄바꿈은 줄마다 「끝 줄」 정렬을 받는다).
-   작가 끝은 아래 선(i — 바닥에서 8px)보다 3px 위에서 멈춘다 — 두 줄 제목이면 작가가 선 바로 위로 밀려 끝 글자(治)가 선에 닿았다(10-14 실측).
-   셸은 늘 밝은 화면이라 표지는 테마를 따라 바뀌지 않는다(책은 물건이다). 서재 표지(.shelf-cover)와 같은 문법:
-   왼쪽 책등 그림자 · 아래 짧은 선. */
-.lit-cover{--cover-color:#2f2c2b;width:60px;height:84px;flex:none;background:var(--cover-color);color:var(--sheet);position:relative;box-sizing:border-box;display:flex;flex-direction:row-reverse;justify-content:flex-start;padding:7px 8px 8px 12px;border-radius:1px 3px 3px 1px;box-shadow:inset 4px 0 0 color-mix(in srgb,var(--ink) 18%,transparent);overflow:hidden}
-.lit-cover--snow{--cover-color:#263a63}
-.lit-cover--vermilion{--cover-color:#a33a26}
-.lit-cover--forest{--cover-color:#2f5a3f}
-.lit-cover--ink{--cover-color:#343a46}
-.lit-cover--cream{--cover-color:#ece3cc;color:#27324a}
-.lit-cover--rust{--cover-color:#5b2e24}
-.lit-cover--abyss{--cover-color:#16302a}
-.lit-cover--twilight{--cover-color:#4a4a68}
-.lit-cover--sky{--cover-color:#cfe0e6;color:#1f3346}
-.lit-cover--dove{--cover-color:#545b69}
-.lit-cover--nightjar{--cover-color:#2a1f52}
-.lit-cover--river{--cover-color:#234a52}
-.lit-cover--walnut{--cover-color:#6e4420}
-.lit-cover--ultramarine{--cover-color:#2b3a96}
-.lit-cover--mustard{--cover-color:#665012}
-.lit-cover--pear{--cover-color:#e6dc9e;color:#3a3a1c}
-.lit-cover--meadow{--cover-color:#c9d9b0;color:#26361e}
-.lit-cover--olive{--cover-color:#4d5222}
-.lit-cover--peach{--cover-color:#efd3cf;color:#4f1f2b}
-.lit-cover--jet{--cover-color:#1d1a17}
-.lit-cover--amber{--cover-color:#8a4313}
-.lit-cover--aegean{--cover-color:#1f5f8b}
-.lit-cover--fog{--cover-color:#bdbab4;color:#2a2a2a}
-.lit-cover--apricot{--cover-color:#f3c08a;color:#4a2c1a}
-.lit-cover--lilac{--cover-color:#ddd3e8;color:#3b2a4f}
-.lit-cover--cherry{--cover-color:#8c3d5b}
-.lit-cover__title{position:relative;z-index:1;writing-mode:vertical-rl;white-space:nowrap;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-weight:500;font-size:11px;line-height:1.25;letter-spacing:.02em}
-.lit-cover__line{display:block}
-.lit-cover[data-motif=ink-steam] .lit-cover__title{color:#2b2724}
-.lit-cover[data-motif=snow-night] i{background:var(--cover-color);opacity:.8}
-.lit-cover__title--stepped .lit-cover__line:last-child{text-align:end}
-.lit-cover__author{position:relative;z-index:1;align-self:flex-end;height:max-content;margin:0 2px 3px 0;writing-mode:vertical-rl;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-weight:500;font-size:6px;line-height:1;letter-spacing:.12em;opacity:.82}
-.lit-cover i{position:absolute;z-index:1;left:12px;bottom:8px;width:14px;height:1px;background:currentColor;opacity:.55}
+/* 정본 문학책 표지(AOZORA-P0-5 → 시리즈 A 개편 2026-10-15 KST, 오너 선택 「A가 전반적으로 낫네」) — 明治 말~昭和 초 문예서의
+   천 장정(クロス装) + 따로 붙인 題簽. 표지는 작품 색의 천(LITERATURE_COVER_COLORS — 어떤 두 권도 CIELAB 색차 12 미만이 아니다,
+   literatureDisplay.test.js)이고, 그림(LiteratureCoverArt)은 그 천 위에 같은 색 계열로 찍힌다. 제목·작가는 題簽 위에만 있다 —
+   생지 종이(#f3ead4)에 먹(#231f1b) = 대비 약 14:1이라 어떤 천·그림 위에서도 읽힌다.
+   題簽 규격은 모든 작품이 같다(오너 지시 2026-10-14 KST 「편차 없이 · 균형」): 오른쪽 위(위 5px · 오른쪽 4px), 子持ち罫(굵은 바깥 줄 +
+   가는 안쪽 줄), 제목 11px 한 줄(여섯 자까지 — 6×11×1.04 ≈ 69px, 題簽 아래 끝이 표지 아래에서 5px 이상 위), 작가 6px은 그 왼쪽 아래.
+   여섯 자를 넘는 제목만 둘째 줄을 한 글자 내려 붙인다(--stepped). 셸은 늘 밝은 화면이라 표지는 테마를 따라 바뀌지 않는다(책은 물건이다).
+   서재 표지(.shelf-cover)와 같은 문법: 왼쪽 책등 홈 그림자. */
+.lit-cover{--cover-color:#2f2c2b;display:block;width:60px;height:84px;flex:none;background:var(--cover-color);position:relative;box-sizing:border-box;border-radius:1px 2px 2px 1px;box-shadow:inset 3px 0 0 color-mix(in srgb,var(--ink) 16%,transparent),inset 3.6px 0 0 color-mix(in srgb,#fff 6%,transparent);overflow:hidden}
+.lit-cover--ai{--cover-color:#2c5374;--tone-soft:#5c7793;--tone-strong:#8198b2;--tone-deep:#002744} /* 藍 */
+.lit-cover--bengara{--cover-color:#8c3a25;--tone-soft:#ad6551;--tone-strong:#cd8976;--tone-deep:#530400} /* 弁柄 */
+.lit-cover--cha{--cover-color:#6e4420;--tone-soft:#916a4c;--tone-strong:#b18c70;--tone-deep:#3e1a00} /* 茶 */
+.lit-cover--ebi{--cover-color:#5a3047;--tone-soft:#7a5669;--tone-strong:#997889;--tone-deep:#360f26} /* 葡萄 */
+.lit-cover--enji{--cover-color:#6b2232;--tone-soft:#8a4d56;--tone-strong:#a97077;--tone-deep:#440014} /* 臙脂 */
+.lit-cover--fukamidori{--cover-color:#2d4b37;--tone-soft:#556e5d;--tone-strong:#788e7e;--tone-deep:#082514} /* 深緑 */
+.lit-cover--haijiro{--cover-color:#cfd2cf;--tone-soft:#a9aca9;--tone-strong:#878987;--tone-deep:#575a57} /* 灰白 */
+.lit-cover--haimidori{--cover-color:#bfc6a4;--tone-soft:#99a07f;--tone-strong:#777e5f;--tone-deep:#495033} /* 灰緑 */
+.lit-cover--hanada{--cover-color:#4f84a0;--tone-soft:#83aac2;--tone-strong:#abcde2;--tone-deep:#003a53} /* 縹 */
+.lit-cover--kaki{--cover-color:#d8692c;--tone-soft:#ad4504;--tone-strong:#862400;--tone-deep:#530000} /* 柿 */
+.lit-cover--karashi{--cover-color:#b3973a;--tone-soft:#8b7313;--tone-strong:#685400;--tone-deep:#3b2900} /* 芥子 */
+.lit-cover--kinari{--cover-color:#eee5cd;--tone-soft:#c6bea7;--tone-strong:#a39b85;--tone-deep:#726a55} /* 生成り */
+.lit-cover--kogecha{--cover-color:#3f2b1f;--tone-soft:#604e43;--tone-strong:#7f6d64;--tone-deep:#97877e} /* 焦茶 */
+.lit-cover--kon{--cover-color:#283453;--tone-soft:#4f5671;--tone-strong:#70768f;--tone-deep:#091935} /* 紺 */
+.lit-cover--moegi{--cover-color:#7a9246;--tone-soft:#566e24;--tone-strong:#364f02;--tone-deep:#162400} /* 萌黄 */
+.lit-cover--nibi{--cover-color:#57565a;--tone-soft:#7c7b7e;--tone-strong:#9e9da0;--tone-deep:#27262a} /* 鈍色 */
+.lit-cover--odo{--cover-color:#a8813a;--tone-soft:#815e17;--tone-strong:#5e4000;--tone-deep:#341700} /* 黄土 */
+.lit-cover--shiracha{--cover-color:#d4b294;--tone-soft:#ad8d70;--tone-strong:#8a6c50;--tone-deep:#593f25} /* 白茶 */
+.lit-cover--shu{--cover-color:#bf3f2a;--tone-soft:#df725b;--tone-strong:#fe9a82;--tone-deep:#700000} /* 朱 */
+.lit-cover--sumi{--cover-color:#24211e;--tone-soft:#44423f;--tone-strong:#63605e;--tone-deep:#7b7977} /* 墨 */
+.lit-cover--tetsukon{--cover-color:#2f3f4c;--tone-soft:#55626d;--tone-strong:#77828c;--tone-deep:#0e1f2b} /* 鉄紺 */
+.lit-cover--torinoko{--cover-color:#e4d099;--tone-soft:#bcaa75;--tone-strong:#988854;--tone-deep:#665828} /* 鳥の子 */
+.lit-cover--uguisu{--cover-color:#6a6834;--tone-soft:#918d62;--tone-strong:#b3b089;--tone-deep:#2e2e00} /* 鶯 */
+.lit-cover--usugaki{--cover-color:#e7a881;--tone-soft:#be835e;--tone-strong:#99623f;--tone-deep:#653614} /* 薄柿 */
+.lit-cover--usunezumi{--cover-color:#a5a49e;--tone-soft:#807f7a;--tone-strong:#605f5a;--tone-deep:#34332e} /* 薄鼠 */
+.lit-cover--yamabuki{--cover-color:#d6a234;--tone-soft:#ac7e02;--tone-strong:#875e00;--tone-deep:#553200} /* 山吹 */
+.lit-cover--nezumi{--cover-color:#7b7c7d;--tone-soft:#a2a3a4;--tone-strong:#c6c6c7;--tone-deep:#343435} /* 鼠 */
+.lit-cover--susutake{--cover-color:#6f514c;--tone-soft:#917773;--tone-strong:#b29a95;--tone-deep:#3a211d} /* 煤竹 */
+.lit-cover--nando{--cover-color:#2b6b7c;--tone-soft:#62909e;--tone-strong:#8ab1be;--tone-deep:#003241} /* 納戸 */
+.lit-cover--namakabe{--cover-color:#94846a;--tone-soft:#706148;--tone-strong:#50422b;--tone-deep:#251a00} /* 生壁 */
+.lit-cover--suou{--cover-color:#9e3d3f;--tone-soft:#be6b69;--tone-strong:#dd908d;--tone-deep:#5d000e} /* 蘇芳 */
+.lit-cover--umenezumi{--cover-color:#c099a0;--tone-soft:#9a757c;--tone-strong:#78555c;--tone-deep:#492930} /* 梅鼠 */
+.lit-cover--kobicha{--cover-color:#716246;--tone-soft:#968870;--tone-strong:#b7aa95;--tone-deep:#352a11} /* 媚茶 */
+.lit-cover--fujinezumi{--cover-color:#a6a5c4;--tone-soft:#81809e;--tone-strong:#60607c;--tone-deep:#34344e} /* 藤鼠 */
+.lit-cover__slip{position:absolute;z-index:1;top:5px;right:4px;display:flex;flex-direction:row-reverse;align-items:flex-start;gap:1.2px;padding:2.4px 1.9px;background:#f3ead4;color:#231f1b;box-shadow:inset 0 0 0 .9px #3a322a,inset 0 0 0 1.5px #f3ead4,inset 0 0 0 1.9px #3a322a,.4px .6px .8px color-mix(in srgb,#000 35%,transparent)}
+.lit-cover__title{display:flex;flex-direction:row-reverse;gap:1px;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-weight:500;font-size:11px;line-height:1;letter-spacing:.04em}
+.lit-cover__line{display:block;writing-mode:vertical-rl;white-space:nowrap}
+.lit-cover__title--stepped .lit-cover__line:last-child{padding-top:11px}
+.lit-cover__author{align-self:flex-end;writing-mode:vertical-rl;white-space:nowrap;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-weight:500;font-size:6px;line-height:1;letter-spacing:.12em;color:#4a4038}

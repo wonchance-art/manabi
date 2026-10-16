@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "provider": "standardebooks",
+  "repo": "standardebooks/lewis-carroll_alices-adventures-in-wonderland",
+  "commit": "9ecdf2ffa23098e7cb3c72157d7c3031b6f59903",
+  "url": "https://standardebooks.org/ebooks/lewis-carroll/alices-adventures-in-wonderland/john-tenniel",
+  "title": "Alice’s Adventures in Wonderland",
+  "author": "Lewis Carroll",
+  "publishedYear": 1865,
+  "authorDeathYear": 1898,
+  "countryOfOrigin": "GB",
+  "level": "B1 중급",
+  "display": {
+    "titleKo": "이상한 나라의 앨리스",
+    "authorKo": "루이스 캐럴",
+    "coverTitle": "Alice in\nWonderland",
+    "cloth": "madder-red",
+    "binding": "medallion"
+  },
+  "files": [
+    {
+      "path": "chapter-1.xhtml",
+      "sha256": "a006f6595337f1a3b35e46676352200514f1a50511125edda6bf898f83027486"
+    },
+    {
+      "path": "chapter-2.xhtml",
+      "sha256": "8da2811b383d846ef601d2a8a1b48d151f88dbb707dcbc18991ce5af7222f4ac"
+    },
+    {
+      "path": "chapter-3.xhtml",
+      "sha256": "2cc3e7f446b97a674961319697552d7ada2d48f23865c516c3e8038fb91ab42b"
+    },
+    {
+      "path": "chapter-4.xhtml",
+      "sha256": "87174c0007490c8bde0991e97d77fb3334b8cfcb7b93a7b5912ad8e6d000a301"
+    },
+    {
+      "path": "chapter-5.xhtml",
+      "sha256": "d2a6c805bf8cad6f5631f552b7390f4cd3ab5ef6a93551c49b04753231099471"
+    },
+    {
+      "path": "chapter-6.xhtml",
+      "sha256": "e8d9376e33e57085b90a830f7aecacc6fae8eb1a439186d8c6cb9a1033c59934"
+    },
+    {
+      "path": "chapter-7.xhtml",
+      "sha256": "0c88a01606bb2fa8447e7f01c3f311aea91853339ae14b9c5aa2b8c2b50ce1a7"
+    },
+    {
+      "path": "chapter-8.xhtml",
+      "sha256": "6bd55fbfb1c392427d63693a0b2f9121a8edccd1cc1dbecc61843182e2919379"
+    },
+    {
+      "path": "chapter-9.xhtml",
+      "sha256": "00ec54aa8e0a3ef1db3c84d05bf95b8d5030924552f78cbce65956ad89b021be"
+    },
+    {
+      "path": "chapter-10.xhtml",
+      "sha256": "b7e15f3a02c8e99a911027a21e4f2501f62787d22194a09f52819315ee3c59ce"
+    },
+    {
+      "path": "chapter-11.xhtml",
+      "sha256": "15c5479366bfe103062ea382a50237d7933b9762d6327c59c4f4a6da3201d9b3"
+    },
+    {
+      "path": "chapter-12.xhtml",
+      "sha256": "d977322adcaf0e0cc2bfbe6dd1335df6699656fb456a4307c3fe48e37f9d0dbe"
+    }
+  ],
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-16",
+    "reviewedJurisdictions": [
+      "GB",
+      "US",
+      "KR"
+    ],
+    "evidenceUrl": "https://standardebooks.org/ebooks/lewis-carroll/alices-adventures-in-wonderland/john-tenniel"
+  }
+}

@@ -37,6 +37,7 @@ import { fetchVocabularyLearningRows } from '@/lib/vocabularyLearningRows';
 import { countReviewScope, reviewScopeQuota, serializeReviewScope } from '@/lib/reviewScope';
 import { useLearningAdmission } from '@/lib/useLearningAdmission';
 import { DEFAULT_NEW_PER_DAY, NEW_PER_DAY_OPTIONS, loadIntroIds } from '@/lib/vocabStudy';
+import { levelResumeCard, readLevelSnapshot } from '@/lib/levelList';
 import { LEARN_LANGS, PREFETCH_WINDOW_MS, learnLangLabel, materialInLang, paragraphState } from '@/lib/learnDashboard';
 import { encounterLookupLang } from '@/lib/refVocabLookup';
 import useLearnLanguage from '@/components/learn/useLearnLanguage';
@@ -153,6 +154,10 @@ export default function HomePage({ book = null }) {
   const conversationItem = { key: 'conversation', href: newConversationHref({ language: lang }), tone: 'progress',
     kicker: '말해 보기', title: 'AI 튜터와 목표어로 대화', meta: '새 대화 ↗' };
   const continueDeckItems = [rereadItem, conversationItem, groupItem].filter(Boolean);
+  // HSK 단어 — 이 기기에 남은 진도가 있으면 마지막 레벨로 이어 하기(붙은 뒤에 읽는다 — 서버 렌더와 첫 렌더는 「1급부터」로 같다).
+  const [hskResume, setHskResume] = useState(null);
+  useEffect(() => { try { setHskResume(levelResumeCard(readLevelSnapshot(localStorage, 'chinese'))); } catch { /* 저장소 차단 — 1급부터 */ } }, []);
+  const hskItem = hskResume ? { ...HSK_WORDS_ITEM, ...hskResume } : HSK_WORDS_ITEM;
 
   // 이어 읽기 — 일본어는 교재 기록과 서재 자료를 실제 시각으로 비교, 다른 언어는 그 언어의 서재 자료 → 산책 추천.
   const pending = authLoading || (!!book && !local.ready) || (!!user && isLoading);
@@ -220,6 +225,6 @@ export default function HomePage({ book = null }) {
     {!local.storageAvailable && <p role="status" className="learn-note">이 브라우저에서는 읽던 위치를 저장할 수 없어요.</p>}
     {continueDeckItems.length > 0 && <section className="learn-more" aria-label="이어서"><ContinueDeck items={continueDeckItems} /></section>}
     {/* 임시 입구(오너 지시 2026-10-15 KST) — HSK 단어 목록이 내비에 자리를 잡을 때까지. 덱과 같은 카드 양식. */}
-    <section className="learn-more" aria-label="HSK 단어"><ContinueDeck items={[HSK_WORDS_ITEM]} /></section>
+    <section className="learn-more" aria-label="HSK 단어"><ContinueDeck items={[hskItem]} /></section>
   </div>;
 }

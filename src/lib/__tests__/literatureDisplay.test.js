@@ -25,6 +25,17 @@ const kanjiNumber = (n) => `${n >= 20 ? DIGITS[Math.floor(n / 10)] : ''}${n >= 1
 const parts = (heading, n) => Array.from({ length: n }, (_, k) => `${heading} (${k + 1}/${n})`);
 const KEYS = { gon: 'aozora-000121-000628', hana: 'aozora-000879-000042', tebukuro: 'aozora-000121-000637' };
 
+// sRGB 16진 → CIELAB(D65). 표지 색차·명도 단계 계약이 같이 쓴다.
+const cielab = (value) => {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(value.slice(i, i + 2), 16) / 255)
+    .map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+  const f = (t) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+  const x = f((r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047);
+  const y = f(r * 0.2126 + g * 0.7152 + b * 0.0722);
+  const z = f((r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883);
+  return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+};
+
 describe('정본 작품 표기 — 대조표가 싣는다', () => {
   it('목차: 見出し 그대로 · 나눈 장은 1/N · 한 장이면 전문 — 「과」·「편」이 없다', () => {
     const labels = Object.fromEntries(Object.entries(manifest.works).map(([key, work]) => [key, [work.division, work.chapters.map((chapter) => chapter.title)]]));
@@ -66,6 +77,22 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
       'aozora-000035-001565': ['heading', [...parts('一', 5), ...parts('二', 5), ...parts('三', 5), ...parts('四', 4), ...parts('五', 5), ...parts('六', 4), ...parts('七', 3), '八']],
       'aozora-000035-001567': ['split', ['1/3', '2/3', '3/3']],
       'aozora-001095-042618': ['split', Array.from({ length: 6 }, (_, k) => `${k + 1}/6`)],
+      // 5차 묶음(2026-10-15) — 吾輩は猫である는 一–十一 見出し를 고르게, 学問のすすめ는 編 見出し와 中見出し를 이어 붙인 작가 목차 그대로,
+      // ドグラ・マグラ(見出し 없음)는 146장, 桜の樹の下には는 한 장
+      'aozora-000148-000789': ['heading', [['一', 4], ['二', 14], ['三', 12], ['四', 8], ['五', 8], ['六', 9], ['七', 9], ['八', 10], ['九', 10], ['十', 13], ['十一', 16]]
+        .flatMap(([heading, count]) => parts(heading, count))],
+      'aozora-000296-047061': ['heading', [...parts('初編', 2), '端書', '二編　端書', '人は同等なること', '三編　国は同等なること', '一身独立して一国独立すること',
+        ...parts('四編　学者の職分を論ず', 2), '付録', '五編', ...parts('明治七年一月一日の詞', 2), ...parts('六編　国法の貴きを論ず', 2),
+        ...parts('七編　国民の職分を論ず', 2), ...parts('八編　わが心をもって他人の身を制すべからず', 2), ...parts('九編　学問の旨を二様に記して　中津の旧友に贈る文', 2),
+        ...parts('十編　前編のつづき、中津の旧友に贈る', 2), ...parts('十一編　名分をもって偽君子を生ずるの論', 2), '十二編　演説の法を勧むるの説',
+        '人の品行は高尚ならざるべからざるの論', ...parts('十三編　怨望の人間に害あるを論ず', 2), '十四編　心事の棚卸し', '世話の字の義',
+        ...parts('十五編　事物を疑いて取捨を断ずること', 2), '十六編　手近く独立を守ること', '心事と働きと相当すべきの論', ...parts('十七編　人望論', 2)]],
+      'aozora-000081-000466': ['heading', ['第一日曜', '第二日曜', '第五日曜']],
+      'aozora-000035-000277': ['split', Array.from({ length: 5 }, (_, k) => `${k + 1}/5`)],
+      'aozora-000074-000427': ['whole', ['전문']],
+      'aozora-000096-002093': ['split', Array.from({ length: 146 }, (_, k) => `${k + 1}/146`)],
+      'aozora-001383-056642': ['split', Array.from({ length: 9 }, (_, k) => `${k + 1}/9`)],
+      'aozora-000148-000799': ['heading', ['第一夜', '第二夜', '第三夜', '第四夜', '第五夜', '第六夜', '第七夜', '第八夜', '第九夜', '第十夜']],
     });
     expect(JSON.stringify(manifest)).not.toMatch(/\d+(과|편)"|전편/u);
   });
@@ -79,7 +106,9 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
         '坊っちゃん': '도련님', '蜘蛛の糸': '거미줄', '羅生門': '라쇼몬',
         '銀河鉄道の夜': '은하철도의 밤', 'こころ': '마음', 'やまなし': '돌배', '風の又三郎': '바람의 마타사부로', 'トロッコ': '광차',
         '杜子春': '두자춘', '人間椅子': '인간 의자', '刺青': '문신',
-        '走れメロス': '달려라 메로스', '人間失格': '인간 실격', '斜陽': '사양', '女生徒': '여학생', '桜の森の満開の下': '만개한 벚꽃 숲 아래' });
+        '走れメロス': '달려라 메로스', '人間失格': '인간 실격', '斜陽': '사양', '女生徒': '여학생', '桜の森の満開の下': '만개한 벚꽃 숲 아래',
+        '吾輩は猫である': '나는 고양이로소이다', 'ドグラ・マグラ': '도구라 마구라', '学問のすすめ': '학문의 권장', 'オツベルと象': '오츠베르와 코끼리',
+        '駈込み訴え': '직소', '桜の樹の下には': '벚나무 아래에는', '陰翳礼讃': '그늘에 대하여', '夢十夜': '몽십야' });
     expect(new Set(works.map((work) => work.display.cover)).size).toBe(works.length);
     // 문양은 작품 분위기에서, 작품마다 새로(오너 지시 2026-10-14 KST 「작품마다 새 문양」) — 같은 문양을 두 작품이 쓰지 않는다
     expect(Object.fromEntries(works.map((work) => [work.title, work.display.motif])))
@@ -88,7 +117,9 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
         '坊っちゃん': 'steam-sea', '蜘蛛の糸': 'lotus-thread', '羅生門': 'rain-gate',
         '銀河鉄道の夜': 'night-train', 'こころ': 'kamakura-letter', 'やまなし': 'crab-pear', '風の又三郎': 'wind-hill', 'トロッコ': 'dusk-rails',
         '杜子春': 'peach-house', '人間椅子': 'deco-chair', '刺青': 'spider-web',
-        '走れメロス': 'melos-run', '人間失格': 'clown-photos', '斜陽': 'setting-sun', '女生徒': 'umbrella-rose', '桜の森の満開の下': 'blossom-storm' });
+        '走れメロス': 'melos-run', '人間失格': 'clown-photos', '斜陽': 'setting-sun', '女生徒': 'umbrella-rose', '桜の森の満開の下': 'blossom-storm',
+        '吾輩は猫である': 'cat-study', 'ドグラ・マグラ': 'clock-spiral', '学問のすすめ': 'lamp-book', 'オツベルと象': 'white-elephant',
+        '駈込み訴え': 'silver-coins', '桜の樹の下には': 'sakura-roots', '陰翳礼讃': 'lacquer-candle', '夢十夜': 'lily-dream' });
     expect(new Set(works.map((work) => work.display.motif)).size).toBe(works.length);
   });
 
@@ -96,25 +127,49 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
     // 이름만 다르고 눈으로는 같은 색(檸檬 회색 ↔ こころ 회색, よだかの星 ↔ 銀河鉄道の夜 보라)을 새 작품 추가 때 다시 만들지 않게.
     const css = read('src/components/books/literature-cover.css');
     const hex = Object.fromEntries([...css.matchAll(/\.lit-cover--([a-z]+)\{--cover-color:(#[0-9a-f]{6})/gu)].map((m) => [m[1], m[2]]));
-    const lab = (value) => {
-      const [r, g, b] = [1, 3, 5].map((i) => parseInt(value.slice(i, i + 2), 16) / 255)
-        .map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
-      const f = (t) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
-      const x = f((r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047);
-      const y = f(r * 0.2126 + g * 0.7152 + b * 0.0722);
-      const z = f((r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883);
-      return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
-    };
     const works = Object.values(manifest.works);
     const close = [];
     for (const [i, a] of works.entries()) {
       for (const b of works.slice(i + 1)) {
-        const [p, q] = [lab(hex[a.display.cover]), lab(hex[b.display.cover])];
+        const [p, q] = [cielab(hex[a.display.cover]), cielab(hex[b.display.cover])];
         const distance = Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
         if (distance < 12) close.push(`${a.title}(${a.display.cover}) ↔ ${b.title}(${b.display.cover}) ${distance.toFixed(1)}`);
       }
     }
     expect(close).toEqual([]);
+  });
+
+  it('그림 명도 단계는 실제 크기에서 보여야 한다 — 바탕 대비 soft ≥12 · strong ≥22 · deep ≥10, strong이 soft보다 멀다(2026-10-15 표지 평가)', () => {
+    // 옛 단계(lt ΔL 2–9)는 60×84에서 안 보여 무늬가 바탕에 묻혔다. 밝은 바탕은 셋 다 어둡게, 어두운 바탕은 soft·strong을 밝게 민다.
+    const css = read('src/components/books/literature-cover.css');
+    const rules = [...css.matchAll(/\.lit-cover--([a-z]+)\{--cover-color:(#[0-9a-f]{6});--tone-soft:(#[0-9a-f]{6});--tone-strong:(#[0-9a-f]{6});--tone-deep:(#[0-9a-f]{6})\}/gu)];
+    expect(rules.map((m) => m[1]).sort()).toEqual([...LITERATURE_COVER_COLORS].sort());
+    const weak = [];
+    for (const [, key, ground, soft, strong, deep] of rules) {
+      const [g, s, t, d] = [ground, soft, strong, deep].map((value) => cielab(value)[0]);
+      const [ds, dt, dd] = [s - g, t - g, d - g];
+      if (Math.abs(ds) < 12 || Math.abs(dt) < 22 || Math.abs(dd) < 10 || Math.abs(dt) <= Math.abs(ds) || Math.sign(ds) !== Math.sign(dt)) {
+        weak.push(`${key} soft ${ds.toFixed(1)} strong ${dt.toFixed(1)} deep ${dd.toFixed(1)}`);
+      }
+    }
+    expect(weak).toEqual([]);
+    expect(read('src/components/books/literature-cover-art.css')).toMatch(/--lt:var\(--tone-soft\);--dk:var\(--tone-strong\);--dd:var\(--tone-deep\)/u);
+  });
+
+  it('地紋은 바탕이 빈 표지에만, 정의된 무늬로 — 오타면 조용히 사라지지 않게(2026-10-15 시대감)', () => {
+    const art = read('src/components/books/LiteratureCoverArt.jsx');
+    const kinds = [...sliceBetween(art, 'const JIMON = {', '\n};').matchAll(/^ {2}([a-z]+): /gmu)].map((m) => m[1]);
+    expect(kinds.sort()).toEqual(['asanoha', 'hishi', 'kagome', 'kikko', 'shippo']);
+    const used = Object.fromEntries([...sliceBetween(art, 'const JIMON_OF = {', '};').matchAll(/'?([a-z-]+)'?: '([a-z]+)'/gu)].map((m) => [m[1], m[2]]));
+    expect(Object.keys(used).length).toBeGreaterThan(0);
+    for (const [motif, kind] of Object.entries(used)) {
+      expect(LITERATURE_COVER_MOTIFS).toContain(motif);
+      expect(kinds).toContain(kind);
+    }
+    // 그림이 이미 판면 전체 무늬인 표지에는 깔지 않는다(겹치면 시끄럽다)
+    for (const busy of ['kamakura-letter', 'snow-night', 'rain-gate', 'blossom-storm', 'umbrella-rose', 'clown-photos', 'steam-sea']) expect(used).not.toHaveProperty(busy);
+    // 地紋은 천 색 옅은 단에서만(새 색을 들이지 않는다)
+    expect(read('src/components/books/literature-cover-art.css')).toMatch(/\.lit-art__jimon\{color:var\(--tone-soft\);opacity:\.45\}/u);
   });
 
   it('장 첫 문장(incipit) — 30자 이하 첫 문장은 통째로, 길면 「、」에서(낱말 한가운데·마침표 뒤에서 자르지 않는다)', () => {
@@ -160,9 +215,9 @@ describe('표기 함수', () => {
 
   it.each([
     [{ titleReading: 'はな', titleKo: '코', authorKo: '아', cover: 'gold', motif: 'ink-steam' }, 'display.cover'],
-    [{ titleReading: 'hana', titleKo: '코', authorKo: '아', cover: 'ink', motif: 'ink-steam' }, 'kana'],
-    [{ titleReading: 'はな', titleKo: ' ', authorKo: '아', cover: 'ink', motif: 'ink-steam' }, 'titleKo'],
-    [{ titleReading: 'はな', titleKo: '코', authorKo: '아', cover: 'ink' }, 'display.motif'],
+    [{ titleReading: 'hana', titleKo: '코', authorKo: '아', cover: 'yamabuki', motif: 'ink-steam' }, 'kana'],
+    [{ titleReading: 'はな', titleKo: ' ', authorKo: '아', cover: 'yamabuki', motif: 'ink-steam' }, 'titleKo'],
+    [{ titleReading: 'はな', titleKo: '코', authorKo: '아', cover: 'yamabuki' }, 'display.motif'],
   ])('검사 실패 %j', (display, message) => {
     expect(() => validateLiteratureDisplay(display, '鼻')).toThrow(message);
   });
@@ -171,7 +226,7 @@ describe('표기 함수', () => {
     ['한 줄에 드는 제목을 반반 나눔(아래가 비어 보인다)', '手袋を買いに', '手袋を\n買いに'],
     ['첫 줄이 짧은 계단(둘째 줄이 더 길다)', '注文の多い料理店', '注文の\n多い料理店'],
   ])('표지 제목 줄바꿈 거부 — %s', (_, title, coverTitle) => {
-    const display = { titleReading: 'て', titleKo: '가', authorKo: '아', cover: 'ink', motif: 'ink-steam', coverTitle };
+    const display = { titleReading: 'て', titleKo: '가', authorKo: '아', cover: 'yamabuki', motif: 'ink-steam', coverTitle };
     expect(() => validateLiteratureDisplay(display, title)).toThrow('display.coverTitle breaks only');
   });
 });
@@ -202,15 +257,26 @@ describe('화면 배선', () => {
     expect(css).toContain('font-family:var(--font-lit-serif)');
     expect(css.match(/font-weight:500/gu)).toHaveLength(2);
     expect(css).not.toMatch(/font-weight:(?!500)/u);
-    // 작가 끝은 아래 선(bottom:8px)보다 위에서 멈춘다 — 두 줄 제목이면 작가가 선 바로 위로 와 끝 글자가 선에 닿았다
-    expect(css).toMatch(/\.lit-cover__author\{[^}]*margin:0 2px 3px 0/u);
+    // 시리즈 A(오너 선택 2026-10-15 KST) — 제목·작가는 따로 붙인 題簽 위에만 있다: 자리(위 5px·오른쪽 4px)·子持ち罫(굵은 바깥 줄 +
+    // 가는 안쪽 줄)가 모든 작품 같고, 생지 종이 위 먹 글자라 천·그림 색과 상관없이 대비 7:1 이상이다.
+    const slip = css.match(/\.lit-cover__slip\{([^}]*)\}/u)[1];
+    expect(slip).toContain('top:5px;right:4px');
+    expect(slip).toMatch(/box-shadow:inset 0 0 0 \.9px (#[0-9a-f]{6}),inset 0 0 0 1\.5px #f3ead4,inset 0 0 0 1\.9px \1/u);
+    const [paper, ink] = [slip.match(/background:(#[0-9a-f]{6})/u)[1], slip.match(/;color:(#[0-9a-f]{6})/u)[1]];
+    const lum = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+      .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)).reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+    expect((lum(paper) + 0.05) / (lum(ink) + 0.05)).toBeGreaterThan(7);
+    // 제목은 題簽 위쪽에서, 작가는 그 왼쪽 아래 끝에 — 작가가 제목보다 길어도 제목이 아래로 밀리지 않는다(檸檬·刺青 실측)
+    expect(slip).toContain('align-items:flex-start');
+    expect(css).toMatch(/\.lit-cover__author\{align-self:flex-end;/u);
     // 시리즈: 제목 크기는 한 값뿐 — 글자 수로 크기를 바꾸지 않는다(오너 지시 「서적마다 편차 없이」)
     expect(css.match(/\.lit-cover__title\{[^}]*font-size:11px/u)).toBeTruthy();
     expect(css.match(/font-size:/gu)).toHaveLength(2); // 제목 하나 + 작가 하나 — 작품마다 다른 크기가 없다
     expect(cover).not.toMatch(/longest|lit-cover__title--(xl|l|m|s)\b/u);
-    // 균형: 작가는 제목 왼쪽 아래(대각선 짝) · 긴 제목만 둘째 줄을 아래에 붙인다(반반 떠서 아래가 비지 않게)
+    // 균형: 작가는 제목 왼쪽 아래(대각선 짝) · 긴 제목만 둘째 줄을 한 글자 내려 붙인다
     expect(cover).toContain('<span lang="ja" className="lit-cover__author">{work.author}</span>');
-    expect(css).toContain('.lit-cover__title--stepped .lit-cover__line:last-child{text-align:end}');
+    expect(css).toContain('.lit-cover__title--stepped .lit-cover__line:last-child{padding-top:11px}'); // 둘째 줄은 한 글자 내려 붙인다
+    expect(cover).toContain('<span className="lit-cover__slip">');
     expect(css).not.toMatch(/url\(/u);
   });
 
@@ -222,7 +288,7 @@ describe('화면 배선', () => {
     expect(block).toContain('lead: work ? literatureLead(c._bookOrder) : c._bookOrder');
     expect(block).toContain('<span className="group-card__sr">{`${work.total}부분 중 ${order}`}</span>'); // 「1/2」를 날짜로 읽지 않게
     expect(block).toContain("fitLine: fitLineOf(bf, '장')");
-    expect(block).toContain('footer={!work && b.chapters[0]?.owner_id === user?.id');
+    expect(block).toContain(') : !work && !english && b.chapters[0]?.owner_id === user.id'); // 영어 정본도 이어 적기 없음(LIT-SRC-EN-1)
   });
 
   it('뷰어 — 대조된 정본 장만 제목·형제 이름을 표에서, 「과」 대신 장/부분, 이어 적기·제목 편집 없음', () => {

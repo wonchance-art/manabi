@@ -246,6 +246,88 @@
               "reading": "こうもり"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_1_0",
+              "line": 4,
+              "start": 5,
+              "end": 8,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_1",
+              "line": 6,
+              "start": 98,
+              "end": 101,
+              "text": "土耳古",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_2",
+              "line": 8,
+              "start": 3,
+              "end": 6,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_3",
+              "line": 12,
+              "start": 0,
+              "end": 3,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_4",
+              "line": 14,
+              "start": 64,
+              "end": 67,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_5",
+              "line": 20,
+              "start": 14,
+              "end": 17,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_6",
+              "line": 30,
+              "start": 0,
+              "end": 3,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -538,6 +620,176 @@
               "end": 1384,
               "base": "夥",
               "reading": "おびただ"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_2_0",
+              "line": 0,
+              "start": 0,
+              "end": 3,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_1",
+              "line": 2,
+              "start": 7,
+              "end": 10,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_2",
+              "line": 2,
+              "start": 24,
+              "end": 26,
+              "text": "玄宗",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_3",
+              "line": 2,
+              "start": 49,
+              "end": 51,
+              "text": "蘭陵",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_4",
+              "line": 2,
+              "start": 61,
+              "end": 63,
+              "text": "桂州",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_5",
+              "line": 2,
+              "start": 97,
+              "end": 100,
+              "text": "白孔雀",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_6",
+              "line": 4,
+              "start": 132,
+              "end": 135,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_7",
+              "line": 4,
+              "start": 172,
+              "end": 174,
+              "text": "中々",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_8",
+              "line": 4,
+              "start": 200,
+              "end": 203,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_9",
+              "line": 4,
+              "start": 214,
+              "end": 217,
+              "text": "葡萄酒",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_10",
+              "line": 6,
+              "start": 34,
+              "end": 37,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_11",
+              "line": 6,
+              "start": 133,
+              "end": 136,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_12",
+              "line": 12,
+              "start": 0,
+              "end": 3,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_13",
+              "line": 20,
+              "start": 0,
+              "end": 3,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_14",
+              "line": 20,
+              "start": 72,
+              "end": 75,
+              "text": "白孔雀",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
             }
           ]
         }
@@ -850,6 +1102,242 @@
               "end": 1567,
               "base": "洞庭湖",
               "reading": "どうていこ"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_3_0",
+              "line": 2,
+              "start": 10,
+              "end": 13,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_1",
+              "line": 8,
+              "start": 14,
+              "end": 17,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_2",
+              "line": 14,
+              "start": 20,
+              "end": 23,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_3",
+              "line": 18,
+              "start": 0,
+              "end": 3,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_4",
+              "line": 24,
+              "start": 3,
+              "end": 6,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_5",
+              "line": 28,
+              "start": 0,
+              "end": 3,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_6",
+              "line": 34,
+              "start": 18,
+              "end": 21,
+              "text": "鉄冠子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_7",
+              "line": 36,
+              "start": 0,
+              "end": 3,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_8",
+              "line": 36,
+              "start": 51,
+              "end": 54,
+              "text": "鉄冠子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_9",
+              "line": 36,
+              "start": 55,
+              "end": 58,
+              "text": "御時宜",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_10",
+              "line": 38,
+              "start": 108,
+              "end": 110,
+              "text": "竹杖",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_11",
+              "line": 40,
+              "start": 0,
+              "end": 3,
+              "text": "鉄冠子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_12",
+              "line": 40,
+              "start": 26,
+              "end": 28,
+              "text": "咒文",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_13",
+              "line": 40,
+              "start": 35,
+              "end": 38,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_14",
+              "line": 40,
+              "start": 78,
+              "end": 80,
+              "text": "竹杖",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_15",
+              "line": 42,
+              "start": 0,
+              "end": 3,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_16",
+              "line": 42,
+              "start": 96,
+              "end": 99,
+              "text": "鉄冠子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_17",
+              "line": 46,
+              "start": 0,
+              "end": 2,
+              "text": "袖裏",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_18",
+              "line": 46,
+              "start": 3,
+              "end": 5,
+              "text": "青蛇",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_19",
+              "line": 46,
+              "start": 6,
+              "end": 9,
+              "text": "胆気粗",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_20",
+              "line": 50,
+              "start": 8,
+              "end": 11,
+              "text": "洞庭湖",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -1356,6 +1844,275 @@
               "reading": "あおむ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_4_0",
+              "line": 4,
+              "start": 13,
+              "end": 16,
+              "text": "鉄冠子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_1",
+              "line": 4,
+              "start": 17,
+              "end": 20,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_2",
+              "line": 12,
+              "start": 3,
+              "end": 6,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_3",
+              "line": 12,
+              "start": 18,
+              "end": 20,
+              "text": "竹杖",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_4",
+              "line": 14,
+              "start": 0,
+              "end": 3,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_5",
+              "line": 18,
+              "start": 3,
+              "end": 6,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_6",
+              "line": 24,
+              "start": 0,
+              "end": 3,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_7",
+              "line": 26,
+              "start": 40,
+              "end": 43,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_8",
+              "line": 26,
+              "start": 108,
+              "end": 111,
+              "text": "四斗樽",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_4_9",
+              "line": 28,
+              "start": 0,
+              "end": 3,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_10",
+              "line": 30,
+              "start": 54,
+              "end": 57,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_11",
+              "line": 30,
+              "start": 88,
+              "end": 91,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_12",
+              "line": 30,
+              "start": 172,
+              "end": 175,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_13",
+              "line": 32,
+              "start": 117,
+              "end": 120,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_14",
+              "line": 32,
+              "start": 244,
+              "end": 247,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_15",
+              "line": 34,
+              "start": 0,
+              "end": 3,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_16",
+              "line": 34,
+              "start": 118,
+              "end": 121,
+              "text": "鉄冠子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_17",
+              "line": 34,
+              "start": 145,
+              "end": 148,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_18",
+              "line": 36,
+              "start": 94,
+              "end": 97,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_19",
+              "line": 40,
+              "start": 3,
+              "end": 6,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_20",
+              "line": 46,
+              "start": 7,
+              "end": 10,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_21",
+              "line": 46,
+              "start": 33,
+              "end": 36,
+              "text": "鉄冠子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_22",
+              "line": 50,
+              "start": 26,
+              "end": 29,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_23",
+              "line": 52,
+              "start": 54,
+              "end": 57,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -1860,6 +2617,418 @@
               "reading": "っか"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_5_0",
+              "line": 0,
+              "start": 0,
+              "end": 3,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_1",
+              "line": 0,
+              "start": 24,
+              "end": 27,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_2",
+              "line": 2,
+              "start": 12,
+              "end": 15,
+              "text": "闇穴道",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_5_3",
+              "line": 2,
+              "start": 61,
+              "end": 64,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_4",
+              "line": 2,
+              "start": 103,
+              "end": 106,
+              "text": "森羅殿",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_5_5",
+              "line": 4,
+              "start": 13,
+              "end": 16,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_6",
+              "line": 4,
+              "start": 107,
+              "end": 109,
+              "text": "閻魔",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_5_7",
+              "line": 4,
+              "start": 120,
+              "end": 123,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_8",
+              "line": 8,
+              "start": 0,
+              "end": 2,
+              "text": "閻魔",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_9",
+              "line": 8,
+              "start": 24,
+              "end": 27,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_10",
+              "line": 8,
+              "start": 69,
+              "end": 72,
+              "text": "鉄冠子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_11",
+              "line": 8,
+              "start": 109,
+              "end": 111,
+              "text": "閻魔",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_12",
+              "line": 10,
+              "start": 55,
+              "end": 58,
+              "text": "威丈高",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_5_13",
+              "line": 12,
+              "start": 2,
+              "end": 5,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_14",
+              "line": 12,
+              "start": 25,
+              "end": 27,
+              "text": "閻魔",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_15",
+              "line": 12,
+              "start": 70,
+              "end": 73,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_16",
+              "line": 12,
+              "start": 82,
+              "end": 85,
+              "text": "森羅殿",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_17",
+              "line": 14,
+              "start": 82,
+              "end": 85,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_18",
+              "line": 14,
+              "start": 98,
+              "end": 101,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_19",
+              "line": 14,
+              "start": 241,
+              "end": 244,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_20",
+              "line": 16,
+              "start": 43,
+              "end": 46,
+              "text": "森羅殿",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_21",
+              "line": 16,
+              "start": 62,
+              "end": 65,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_22",
+              "line": 16,
+              "start": 83,
+              "end": 85,
+              "text": "閻魔",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_23",
+              "line": 20,
+              "start": 0,
+              "end": 2,
+              "text": "閻魔",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_24",
+              "line": 24,
+              "start": 54,
+              "end": 57,
+              "text": "森羅殿",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_25",
+              "line": 24,
+              "start": 74,
+              "end": 77,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_26",
+              "line": 28,
+              "start": 0,
+              "end": 3,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_27",
+              "line": 32,
+              "start": 0,
+              "end": 2,
+              "text": "閻魔",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_28",
+              "line": 32,
+              "start": 5,
+              "end": 8,
+              "text": "森羅殿",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_29",
+              "line": 36,
+              "start": 45,
+              "end": 47,
+              "text": "未釈",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_5_30",
+              "line": 40,
+              "start": 0,
+              "end": 2,
+              "text": "閻魔",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_31",
+              "line": 40,
+              "start": 26,
+              "end": 29,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_32",
+              "line": 42,
+              "start": 0,
+              "end": 3,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_33",
+              "line": 42,
+              "start": 11,
+              "end": 14,
+              "text": "鉄冠子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_34",
+              "line": 44,
+              "start": 76,
+              "end": 78,
+              "text": "御出",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_5_35",
+              "line": 46,
+              "start": 22,
+              "end": 25,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_36",
+              "line": 46,
+              "start": 207,
+              "end": 210,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -2004,6 +3173,99 @@
               "reading": "ふもと"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_6_0",
+              "line": 0,
+              "start": 13,
+              "end": 16,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_1",
+              "line": 8,
+              "start": 0,
+              "end": 3,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_2",
+              "line": 10,
+              "start": 22,
+              "end": 25,
+              "text": "森羅殿",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_3",
+              "line": 12,
+              "start": 16,
+              "end": 19,
+              "text": "鉄冠子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_4",
+              "line": 12,
+              "start": 33,
+              "end": 36,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_5",
+              "line": 18,
+              "start": 0,
+              "end": 3,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_6",
+              "line": 22,
+              "start": 0,
+              "end": 3,
+              "text": "鉄冠子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_7",
+              "line": 22,
+              "start": 33,
+              "end": 36,
+              "text": "杜子春",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     }
@@ -2027,6 +3289,7 @@
       2387,
       2244,
       710
-    ]
+    ],
+    "boundaryMergeCount": 112
   }
 }

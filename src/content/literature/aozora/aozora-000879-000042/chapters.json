@@ -543,6 +543,231 @@
               "reading": "あかぎれ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_1_0",
+              "line": 0,
+              "start": 0,
+              "end": 4,
+              "text": "禅智内供",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_1",
+              "line": 2,
+              "start": 18,
+              "end": 23,
+              "text": "内道場供奉",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_2",
+              "line": 4,
+              "start": 219,
+              "end": 222,
+              "text": "中童子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_3",
+              "line": 6,
+              "start": 19,
+              "end": 23,
+              "text": "禅智内供",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_4",
+              "line": 8,
+              "start": 273,
+              "end": 276,
+              "text": "観音経",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_5",
+              "line": 10,
+              "start": 31,
+              "end": 35,
+              "text": "僧供講説",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_6",
+              "line": 10,
+              "start": 195,
+              "end": 198,
+              "text": "柑子色",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_7",
+              "line": 10,
+              "start": 203,
+              "end": 205,
+              "text": "椎鈍",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_8",
+              "line": 10,
+              "start": 257,
+              "end": 259,
+              "text": "鍵鼻",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_9",
+              "line": 12,
+              "start": 8,
+              "end": 12,
+              "text": "内典外典",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_10",
+              "line": 12,
+              "start": 66,
+              "end": 68,
+              "text": "目連",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_11",
+              "line": 12,
+              "start": 70,
+              "end": 73,
+              "text": "舎利弗",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_12",
+              "line": 12,
+              "start": 97,
+              "end": 99,
+              "text": "竜樹",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_13",
+              "line": 12,
+              "start": 100,
+              "end": 102,
+              "text": "馬鳴",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_14",
+              "line": 12,
+              "start": 122,
+              "end": 124,
+              "text": "震旦",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_15",
+              "line": 12,
+              "start": 129,
+              "end": 131,
+              "text": "蜀漢",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_16",
+              "line": 12,
+              "start": 132,
+              "end": 135,
+              "text": "劉玄徳",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_17",
+              "line": 16,
+              "start": 64,
+              "end": 66,
+              "text": "震旦",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_18",
+              "line": 16,
+              "start": 83,
+              "end": 85,
+              "text": "供僧",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_19",
+              "line": 32,
+              "start": 54,
+              "end": 56,
+              "text": "上眼",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -1014,6 +1239,187 @@
               "reading": "ささや"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_2_0",
+              "line": 0,
+              "start": 50,
+              "end": 52,
+              "text": "丸炙",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_1",
+              "line": 2,
+              "start": 5,
+              "end": 7,
+              "text": "鑷子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_2",
+              "line": 4,
+              "start": 146,
+              "end": 148,
+              "text": "鑷子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_3",
+              "line": 14,
+              "start": 44,
+              "end": 46,
+              "text": "鍵鼻",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_4",
+              "line": 16,
+              "start": 47,
+              "end": 49,
+              "text": "残喘",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_5",
+              "line": 20,
+              "start": 124,
+              "end": 127,
+              "text": "中童子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_6",
+              "line": 20,
+              "start": 209,
+              "end": 212,
+              "text": "下法師",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_7",
+              "line": 22,
+              "start": 64,
+              "end": 67,
+              "text": "中童子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_8",
+              "line": 22,
+              "start": 68,
+              "end": 71,
+              "text": "下法師",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_9",
+              "line": 26,
+              "start": 68,
+              "end": 70,
+              "text": "普賢",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_10",
+              "line": 30,
+              "start": 63,
+              "end": 66,
+              "text": "法慳貪",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_11",
+              "line": 30,
+              "start": 106,
+              "end": 109,
+              "text": "中童子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_12",
+              "line": 30,
+              "start": 150,
+              "end": 153,
+              "text": "中童子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_13",
+              "line": 30,
+              "start": 256,
+              "end": 259,
+              "text": "中童子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_14",
+              "line": 34,
+              "start": 32,
+              "end": 34,
+              "text": "風鐸",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_15",
+              "line": 40,
+              "start": 103,
+              "end": 107,
+              "text": "禅智内供",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     }
@@ -1033,6 +1439,7 @@
     "chapterChars": [
       2994,
       2827
-    ]
+    ],
+    "boundaryMergeCount": 36
   }
 }

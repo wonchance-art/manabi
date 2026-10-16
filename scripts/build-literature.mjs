@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 정본 문학책(아오조라) 빌드 — 설계 §3.1. 작품 폴더 src/content/literature/aozora/<workKey>/의
+ * 정본 문학책 빌드 — 青空文庫(설계 §3.1)와 Standard Ebooks(LIT-SRC-EN-1, scripts/lib/standard-ebooks-build.mjs). 아오조라 작품 폴더 src/content/literature/aozora/<workKey>/의
  * source.txt(UTF-8 변환본) + entry.json(카탈로그·권리)을 chapters.json(장별 raw_text·루비 잠금·크레딧)으로 만든다.
  *
  * 실행(리포 루트):
@@ -15,12 +15,21 @@ import './eval/productImportHooks.mjs';
 
 const check = process.argv.includes('--check');
 const { buildLiterature, LITERATURE_ROOT } = await import('./lib/literature-build.mjs');
-const { works, errors } = await buildLiterature({ check });
-
-for (const work of works) console.log(`  ${work.key}: ${work.chapters}장 (${work.status})`);
-if (errors.length) {
-  console.error(`✗ 문학책 빌드 실패 ${errors.length}건`);
-  for (const error of errors) console.error(`  - ${error}`);
-  process.exit(1);
+const { buildStandardEbooks, STANDARD_EBOOKS_ROOT } = await import('./lib/standard-ebooks-build.mjs');
+// 정본 문학책은 출처마다 폴더·빌드가 따로다(青空文庫 · Standard Ebooks — LIT-SRC-EN-1). prebuild --check가 둘 다 본다.
+const runs = [
+  [LITERATURE_ROOT, await buildLiterature({ check })],
+  [STANDARD_EBOOKS_ROOT, await buildStandardEbooks({ check })],
+];
+let failed = false;
+for (const [root, { works, errors }] of runs) {
+  for (const work of works) console.log(`  ${work.key}: ${work.chapters}장 (${work.status})`);
+  if (errors.length) {
+    failed = true;
+    console.error(`✗ 문학책 빌드 실패 ${errors.length}건 — ${root}`);
+    for (const error of errors) console.error(`  - ${error}`);
+  } else {
+    console.log(`✓ 문학책 ${check ? '검사' : '빌드'} 통과 — ${root} ${works.length}편`);
+  }
 }
-console.log(`✓ 문학책 ${check ? '검사' : '빌드'} 통과 — ${LITERATURE_ROOT} ${works.length}편`);
+if (failed) process.exit(1);

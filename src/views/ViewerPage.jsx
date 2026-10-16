@@ -23,6 +23,7 @@ import ActionIcon from '../components/ActionIcon';
 import ViewerReferenceExample from '../components/viewer/ViewerReferenceExample';
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { authEntryHref } from '../lib/authRedirect';
 import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
 import { buildVocabularyWordIndex, countVocabularyDueInMaterial, findIndexedVocabulary, isIndexedVocabularyDue } from '../lib/vocabularyDueIndex';
 import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
@@ -180,7 +181,7 @@ import TokenRangeGrips from './TokenRangeGrips';
 import ViewerComments from './ViewerComments';
 import ViewerQuizModal from './ViewerQuizModal';
 import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constants';
-import { attributionParts, literatureAttributionParts, materialSource } from '../lib/videoAttribution';
+import { attributionParts, literatureAttributionParts, materialSource, standardEbooksAttributionParts } from '../lib/videoAttribution';
 import { isCanonicalLiteratureMaterial, literatureWork } from '../lib/literatureCanonical';
 import { literatureChapterLabel, literatureChapterTitle } from '../lib/literatureDisplay';
 import { useCanonicalLiterature } from '../lib/useCanonicalLiterature';
@@ -233,6 +234,8 @@ async function fetchMaterial(id) {
     if (err?.code === 'NOT_FOUND') throw err;
     const cached = await getCachedMaterial(id);
     if (!cached) throw err;   // 캐시가 없으면 기존 에러 화면 그대로(계약 5)
+    // 비로그인에게 책 장 본문은 없다(BOOK-GUEST-GATE-1) — 로그인했을 때 받아 둔 사본도 로그아웃 뒤에는 열지 않는다.
+    if (getBook(cached.processed_json?.metadata) && !(await supabase.auth.getSession()).data?.session) throw err;
     return { ...cached, __offline: true };
   }
 }
@@ -321,6 +324,19 @@ export default function ViewerPage() {
       return s === 'analyzing' ? 4000 : false;
     },
   });
+
+  // 비로그인 책 장(BOOK-GUEST-GATE-1) — DB가 anon에게 책 장 행을 숨겨 NOT_FOUND가 된다. 공개 책 장이면 「로그인이 필요해요」로
+  // 안내한다(목록용 함수는 제목·책 정보만 준다 — 본문 없음). 로그인하고 돌아오면 같은 장을 다시 읽어 온다.
+  const guestBookGate = !user && error?.code === 'NOT_FOUND' && /^\d+$/.test(String(id));
+  const { data: guestBook, isLoading: guestBookLoading } = useQuery({
+    queryKey: ['guest-book-chapter', id],
+    enabled: guestBookGate,
+    queryFn: async () => {
+      const { data, error: catalogError } = await supabase.rpc('public_book_catalog', { p_id: Number(id) });
+      return catalogError ? null : data?.[0] || null;
+    },
+  });
+  useEffect(() => { if (user?.id && error?.code === 'NOT_FOUND') refetch(); }, [user?.id, error?.code, refetch]);
 
   const materialLang = material?.processed_json?.metadata?.language || 'Japanese';
   // The legacy editor writes one unlocalized meaning into the document/dictionary.
@@ -2631,6 +2647,20 @@ export default function ViewerPage() {
       </div>
     );
   }
+  if (guestBookGate && guestBookLoading) return <div className="page-container"><Spinner message="자료 불러오는 중…" /></div>;
+  if (guestBookGate && guestBook) {
+    return (
+      <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: 8 }}>{guestBook.title}</p>
+        <h2 style={{ color: 'var(--text-primary)', marginBottom: 8 }}>{vt("로그인이 필요해요")}</h2>
+        <p style={{ color: 'var(--text-secondary)', maxWidth: 400, margin: '0 auto 20px' }}>{vt("로그인하면 이 장을 읽고 단어를 저장할 수 있어요.")}</p>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          <Link href={authEntryHref(`/viewer/${id}`)} className="btn btn--primary">{vt("로그인")}</Link>
+          <LibraryReturnLink className="btn btn--secondary" aria-label={vt(readerReturnLabel(originalParams.get('returnTo')))}><span aria-hidden="true">←</span></LibraryReturnLink>
+        </div>
+      </div>
+    );
+  }
   if (error) {
     const isNotFound = error.code === 'NOT_FOUND' || /not.*found|no.*rows|multiple.*rows/i.test(error.message || '');
     return (
@@ -3822,6 +3852,22 @@ export default function ViewerPage() {
             {lit.cardUrl && <> · <a href={lit.cardUrl} target="_blank" rel="noopener noreferrer">{vt("도서 카드 보기")}</a></>}
             {lit.editNote && <span className="viewer-attribution__muted"> · {vt("루비는 독음 보조, 장 분할은 manabi 편집")}</span>}
             {lit.smallKanaNote && <span className="viewer-attribution__muted"> · {vt("글꼴에 없는 작은 가나는 보통 크기로")}</span>}
+            {lit.unproofreadNote && <span className="viewer-attribution__muted"> · {vt("青空文庫 교정 전 입력본")}</span>}
+          </p>
+        );
+      })()}
+
+      {/* Standard Ebooks 정본 책 출처(LIT-SRC-EN-1) — 같은 한 줄 문법. 크레딧은 정본 대조표(standardebooks/manifest.generated.json)에서,
+          자료 원문이 그 장의 정본과 같을 때만:  출처: Standard Ebooks · Lewis Carroll, 1865 · 원작 퍼블릭 도메인 · 판 보기 · 장 분할·글자 정리는 … */}
+      {(() => {
+        const se = standardEbooksAttributionParts(canonicalLiterature);
+        if (!se) return null;
+        return (
+          <p className="viewer-attribution">{vt("출처:")} Standard Ebooks
+            {se.author && <> · <span lang="en">{se.author}{se.publishedYear ? `, ${se.publishedYear}` : ''}</span></>}
+            {se.publicDomain && <> · <span className="viewer-attribution__license">{vt("원작 퍼블릭 도메인")}</span></>}
+            {se.url && <> · <a href={se.url} target="_blank" rel="noopener noreferrer">{vt("판 보기")}</a></>}
+            {se.editNote && <span className="viewer-attribution__muted"> · {vt("장 분할·글자 정리는 manabi 편집, 삽화는 싣지 않음")}</span>}
           </p>
         );
       })()}

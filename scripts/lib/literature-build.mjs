@@ -4,6 +4,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { LITERATURE_BOUNDARY_FILE, withBoundaryMerges } from './literature-boundaries.mjs';
 
 export const LITERATURE_ROOT = 'src/content/literature/aozora';
 export const LITERATURE_FILES = Object.freeze({ source: 'source.txt', entry: 'entry.json', chapters: 'chapters.json', review: 'review.json' });
@@ -107,8 +108,10 @@ export async function buildLiterature({ root = LITERATURE_ROOT, check = false } 
       if (dir !== key) throw new Error(`폴더 이름은 작품 키 ${key}여야 한다`);
       if (sha256(sourceBytes) !== entry.textSha256) throw new Error(`${LITERATURE_FILES.source}의 SHA-256이 entry.textSha256과 다르다(원문이 바뀌었다)`);
       const review = has(LITERATURE_FILES.review) ? JSON.parse(readFileSync(path.join(base, LITERATURE_FILES.review), 'utf8')) : null;
+      // 단어 경계 미리 묶기(AOZORA-P1-10, 선택) — scripts/literature/boundaries.mjs가 분석기 토크나이저로 만든 「한 단어로 묶기」 기록
+      const boundaries = has(LITERATURE_BOUNDARY_FILE) ? JSON.parse(readFileSync(path.join(base, LITERATURE_BOUNDARY_FILE), 'utf8')) : null;
       const display = validateLiteratureDisplay(entry.display, entry.title); // 표지 표기(AOZORA-P0-5) — 없으면 그 작품은 쓰지 않는다
-      loaded.push({ dir, base, entry, review, display, source: new TextDecoder('utf-8', { fatal: true }).decode(sourceBytes) });
+      loaded.push({ dir, base, entry, review, boundaries, display, source: new TextDecoder('utf-8', { fatal: true }).decode(sourceBytes) });
     } catch (error) {
       errors.push(`${dir}: ${error.message}`);
     }
@@ -123,7 +126,7 @@ export async function buildLiterature({ root = LITERATURE_ROOT, check = false } 
   const drafts = [];
   for (const work of loaded) {
     try {
-      const draft = withReviewHints(createAozoraMaterialDraft(work.entry, parseAozoraText(work.source)), work.review, resolveReviewHints);
+      const draft = withBoundaryMerges(withReviewHints(createAozoraMaterialDraft(work.entry, parseAozoraText(work.source)), work.review, resolveReviewHints), work.boundaries);
       // 한 문단이 장 상한보다 길면 글자 수로 잘려 문장(때로 루비 기준)이 두 장으로 찢긴다 — 공개하지 않는다.
       const { midParagraphSplitCount, droppedRubyCount } = draft.diagnostics;
       if (midParagraphSplitCount > 0 || droppedRubyCount > 0) {

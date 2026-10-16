@@ -216,6 +216,165 @@
               "reading": "お"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_1_0",
+              "line": 16,
+              "start": 92,
+              "end": 94,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_1",
+              "line": 22,
+              "start": 52,
+              "end": 54,
+              "text": "一郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_2",
+              "line": 32,
+              "start": 36,
+              "end": 38,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_3",
+              "line": 38,
+              "start": 60,
+              "end": 62,
+              "text": "半靴",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_4",
+              "line": 40,
+              "start": 57,
+              "end": 59,
+              "text": "一郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_5",
+              "line": 56,
+              "start": 14,
+              "end": 17,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_6",
+              "line": 62,
+              "start": 18,
+              "end": 20,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_7",
+              "line": 62,
+              "start": 38,
+              "end": 40,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_8",
+              "line": 62,
+              "start": 56,
+              "end": 58,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_9",
+              "line": 66,
+              "start": 17,
+              "end": 19,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_10",
+              "line": 66,
+              "start": 46,
+              "end": 48,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_11",
+              "line": 74,
+              "start": 16,
+              "end": 19,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_12",
+              "line": 78,
+              "start": 11,
+              "end": 14,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_13",
+              "line": 88,
+              "start": 8,
+              "end": 11,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -396,6 +555,55 @@
               "reading": "おとな"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_2_0",
+              "line": 18,
+              "start": 57,
+              "end": 60,
+              "text": "下駄箱",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_1",
+              "line": 20,
+              "start": 13,
+              "end": 16,
+              "text": "下駄箱",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_2",
+              "line": 62,
+              "start": 16,
+              "end": 19,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_3",
+              "line": 72,
+              "start": 68,
+              "end": 70,
+              "text": "勇治",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -546,6 +754,121 @@
               "reading": "と"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_3_0",
+              "line": 20,
+              "start": 4,
+              "end": 7,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_1",
+              "line": 22,
+              "start": 1,
+              "end": 4,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_2",
+              "line": 24,
+              "start": 1,
+              "end": 4,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_3",
+              "line": 24,
+              "start": 5,
+              "end": 8,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_4",
+              "line": 34,
+              "start": 3,
+              "end": 5,
+              "text": "一郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_5",
+              "line": 34,
+              "start": 83,
+              "end": 85,
+              "text": "一郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_6",
+              "line": 34,
+              "start": 131,
+              "end": 133,
+              "text": "一郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_7",
+              "line": 48,
+              "start": 126,
+              "end": 128,
+              "text": "一郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_8",
+              "line": 52,
+              "start": 14,
+              "end": 16,
+              "text": "何間",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_9",
+              "line": 62,
+              "start": 12,
+              "end": 15,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -688,6 +1011,99 @@
               "end": 2821,
               "base": "春日明神",
               "reading": "かすがみょうじん"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_4_0",
+              "line": 14,
+              "start": 14,
+              "end": 16,
+              "text": "甲助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_4_1",
+              "line": 38,
+              "start": 25,
+              "end": 27,
+              "text": "一郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_2",
+              "line": 46,
+              "start": 75,
+              "end": 77,
+              "text": "一郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_3",
+              "line": 54,
+              "start": 1,
+              "end": 4,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_4",
+              "line": 56,
+              "start": 8,
+              "end": 11,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_5",
+              "line": 62,
+              "start": 1,
+              "end": 4,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_6",
+              "line": 94,
+              "start": 1,
+              "end": 5,
+              "text": "春日明神",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_4_7",
+              "line": 98,
+              "start": 1,
+              "end": 5,
+              "text": "春日明神",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
             }
           ]
         }
@@ -888,6 +1304,66 @@
               "reading": "さお"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_5_0",
+              "line": 42,
+              "start": 28,
+              "end": 30,
+              "text": "一郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_1",
+              "line": 46,
+              "start": 4,
+              "end": 7,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_2",
+              "line": 50,
+              "start": 5,
+              "end": 8,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_3",
+              "line": 94,
+              "start": 24,
+              "end": 26,
+              "text": "一郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_4",
+              "line": 96,
+              "start": 30,
+              "end": 32,
+              "text": "一郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -1000,6 +1476,143 @@
               "end": 2137,
               "base": "栗",
               "reading": "くり"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_6_0",
+              "line": 20,
+              "start": 10,
+              "end": 14,
+              "text": "パチパチ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_6_1",
+              "line": 24,
+              "start": 76,
+              "end": 79,
+              "text": "シイン",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_6_2",
+              "line": 46,
+              "start": 17,
+              "end": 20,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_3",
+              "line": 52,
+              "start": 1,
+              "end": 4,
+              "text": "伊佐戸",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_6_4",
+              "line": 62,
+              "start": 2,
+              "end": 5,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_5",
+              "line": 64,
+              "start": 0,
+              "end": 3,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_6",
+              "line": 64,
+              "start": 22,
+              "end": 25,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_7",
+              "line": 66,
+              "start": 0,
+              "end": 3,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_8",
+              "line": 66,
+              "start": 58,
+              "end": 61,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_9",
+              "line": 78,
+              "start": 11,
+              "end": 13,
+              "text": "一郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_10",
+              "line": 90,
+              "start": 1,
+              "end": 4,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_11",
+              "line": 92,
+              "start": 4,
+              "end": 6,
+              "text": "一郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
             }
           ]
         }
@@ -1224,6 +1837,275 @@
               "reading": "そで"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_7_0",
+              "line": 12,
+              "start": 1,
+              "end": 4,
+              "text": "笹長根",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_7_1",
+              "line": 38,
+              "start": 9,
+              "end": 11,
+              "text": "一郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_2",
+              "line": 48,
+              "start": 6,
+              "end": 9,
+              "text": "葡萄蔓",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_7_3",
+              "line": 48,
+              "start": 19,
+              "end": 21,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_4",
+              "line": 50,
+              "start": 26,
+              "end": 28,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_5",
+              "line": 56,
+              "start": 22,
+              "end": 24,
+              "text": "承吉",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_7_6",
+              "line": 60,
+              "start": 43,
+              "end": 45,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_7",
+              "line": 64,
+              "start": 26,
+              "end": 28,
+              "text": "一郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_8",
+              "line": 66,
+              "start": 4,
+              "end": 7,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_9",
+              "line": 66,
+              "start": 34,
+              "end": 37,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_10",
+              "line": 80,
+              "start": 8,
+              "end": 10,
+              "text": "小助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_7_11",
+              "line": 80,
+              "start": 40,
+              "end": 42,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_12",
+              "line": 80,
+              "start": 56,
+              "end": 59,
+              "text": "葡萄藪",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_7_13",
+              "line": 88,
+              "start": 40,
+              "end": 42,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_14",
+              "line": 88,
+              "start": 66,
+              "end": 69,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_15",
+              "line": 88,
+              "start": 115,
+              "end": 117,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_16",
+              "line": 92,
+              "start": 29,
+              "end": 31,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_17",
+              "line": 100,
+              "start": 4,
+              "end": 6,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_18",
+              "line": 100,
+              "start": 60,
+              "end": 62,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_19",
+              "line": 100,
+              "start": 86,
+              "end": 88,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_20",
+              "line": 102,
+              "start": 5,
+              "end": 8,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_21",
+              "line": 102,
+              "start": 13,
+              "end": 15,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_22",
+              "line": 106,
+              "start": 0,
+              "end": 2,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_23",
+              "line": 106,
+              "start": 31,
+              "end": 33,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -1360,6 +2242,253 @@
               "end": 2825,
               "base": "淵",
               "reading": "ふち"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_8_0",
+              "line": 0,
+              "start": 15,
+              "end": 17,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_1",
+              "line": 2,
+              "start": 4,
+              "end": 6,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_2",
+              "line": 2,
+              "start": 31,
+              "end": 33,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_3",
+              "line": 4,
+              "start": 47,
+              "end": 49,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_4",
+              "line": 6,
+              "start": 4,
+              "end": 7,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_5",
+              "line": 12,
+              "start": 4,
+              "end": 7,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_6",
+              "line": 16,
+              "start": 3,
+              "end": 5,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_7",
+              "line": 18,
+              "start": 4,
+              "end": 7,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_8",
+              "line": 22,
+              "start": 3,
+              "end": 5,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_9",
+              "line": 24,
+              "start": 0,
+              "end": 2,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_10",
+              "line": 26,
+              "start": 10,
+              "end": 13,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_11",
+              "line": 28,
+              "start": 40,
+              "end": 44,
+              "text": "パチパチ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_8_12",
+              "line": 28,
+              "start": 63,
+              "end": 65,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_13",
+              "line": 30,
+              "start": 4,
+              "end": 7,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_14",
+              "line": 36,
+              "start": 0,
+              "end": 2,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_15",
+              "line": 74,
+              "start": 0,
+              "end": 2,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_16",
+              "line": 80,
+              "start": 0,
+              "end": 2,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_17",
+              "line": 92,
+              "start": 0,
+              "end": 2,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_18",
+              "line": 94,
+              "start": 1,
+              "end": 3,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_19",
+              "line": 106,
+              "start": 1,
+              "end": 4,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_20",
+              "line": 112,
+              "start": 3,
+              "end": 6,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_21",
+              "line": 118,
+              "start": 1,
+              "end": 4,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
             }
           ]
         }
@@ -1620,6 +2749,66 @@
               "reading": "ざる"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_9_0",
+              "line": 16,
+              "start": 32,
+              "end": 34,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_9_1",
+              "line": 34,
+              "start": 59,
+              "end": 61,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_9_2",
+              "line": 50,
+              "start": 1,
+              "end": 4,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_9_3",
+              "line": 54,
+              "start": 4,
+              "end": 7,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_9_4",
+              "line": 96,
+              "start": 61,
+              "end": 64,
+              "text": "赤砂利",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -1822,6 +3011,66 @@
               "end": 2694,
               "base": "淵",
               "reading": "ふち"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_10_0",
+              "line": 10,
+              "start": 51,
+              "end": 53,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_10_1",
+              "line": 12,
+              "start": 24,
+              "end": 26,
+              "text": "一郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_10_2",
+              "line": 30,
+              "start": 15,
+              "end": 17,
+              "text": "耕助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_10_3",
+              "line": 54,
+              "start": 1,
+              "end": 4,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_10_4",
+              "line": 60,
+              "start": 106,
+              "end": 108,
+              "text": "一郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
             }
           ]
         }
@@ -2046,6 +3295,132 @@
               "reading": "な"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_11_0",
+              "line": 0,
+              "start": 8,
+              "end": 11,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_11_1",
+              "line": 6,
+              "start": 8,
+              "end": 11,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_11_2",
+              "line": 32,
+              "start": 19,
+              "end": 21,
+              "text": "一郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_11_3",
+              "line": 56,
+              "start": 4,
+              "end": 7,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_11_4",
+              "line": 58,
+              "start": 1,
+              "end": 4,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_11_5",
+              "line": 60,
+              "start": 4,
+              "end": 7,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_11_6",
+              "line": 60,
+              "start": 55,
+              "end": 58,
+              "text": "油合羽",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_11_7",
+              "line": 72,
+              "start": 48,
+              "end": 50,
+              "text": "単衣",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_11_8",
+              "line": 80,
+              "start": 4,
+              "end": 7,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_11_9",
+              "line": 84,
+              "start": 1,
+              "end": 4,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_11_10",
+              "line": 94,
+              "start": 18,
+              "end": 21,
+              "text": "又三郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     }
@@ -2074,6 +3449,7 @@
       2805,
       2857,
       2549
-    ]
+    ],
+    "boundaryMergeCount": 120
   }
 }

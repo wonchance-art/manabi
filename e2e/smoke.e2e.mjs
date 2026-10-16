@@ -612,6 +612,8 @@ test('vocab performance: N3 초기 DOM과 savedSet 요청을 예산 안에 유�
       `savedSet URL exceeded 8000 chars: ${Math.max(...savedRequests.map(url => url.length))}`
     );
 
+    // LEVEL-FLOW-001: 찾기 칸은 붙는 머리의 찾기 버튼을 눌러야 열린다.
+    await page.getByRole('button', { name: '찾기', exact: true }).click();
     await page.getByRole('searchbox', { name: 'N3 단어에서 찾기' }).fill('頬');
     await assertVisible(page.locator('.lv-entry').filter({ hasText: '頬' }), 'word beyond initial slice remains searchable');
   });

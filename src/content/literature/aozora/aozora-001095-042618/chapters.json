@@ -296,6 +296,44 @@
               "reading": "ののし"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_2_0",
+              "line": 26,
+              "start": 32,
+              "end": 36,
+              "text": "ダンビラ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_2_1",
+              "line": 30,
+              "start": 46,
+              "end": 50,
+              "text": "ダンビラ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_2_2",
+              "line": 34,
+              "start": 95,
+              "end": 99,
+              "text": "ダンビラ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            }
+          ]
         }
       }
     },
@@ -465,6 +503,66 @@
               "reading": "お"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_3_0",
+              "line": 0,
+              "start": 140,
+              "end": 142,
+              "text": "細紐",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_1",
+              "line": 2,
+              "start": 74,
+              "end": 76,
+              "text": "胡床",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_2",
+              "line": 2,
+              "start": 77,
+              "end": 79,
+              "text": "肱掛",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_3",
+              "line": 2,
+              "start": 83,
+              "end": 85,
+              "text": "胡床",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_4",
+              "line": 2,
+              "start": 140,
+              "end": 142,
+              "text": "肱掛",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -620,6 +718,44 @@
               "end": 2833,
               "base": "嫉",
               "reading": "ねた"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_4_0",
+              "line": 20,
+              "start": 161,
+              "end": 163,
+              "text": "稚子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_4_1",
+              "line": 24,
+              "start": 215,
+              "end": 219,
+              "text": "クリクリ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_4_2",
+              "line": 30,
+              "start": 207,
+              "end": 209,
+              "text": "跣足",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -858,6 +994,22 @@
               "reading": "したい"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_6_0",
+              "line": 38,
+              "start": 41,
+              "end": 43,
+              "text": "山径",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     }
@@ -881,6 +1033,7 @@
       2933,
       2943,
       2860
-    ]
+    ],
+    "boundaryMergeCount": 12
   }
 }

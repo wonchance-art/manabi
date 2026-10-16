@@ -233,6 +233,44 @@
               "reading": "おおわらわ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_1_0",
+              "line": 0,
+              "start": 449,
+              "end": 451,
+              "text": "上澄",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_1",
+              "line": 6,
+              "start": 286,
+              "end": 289,
+              "text": "ポカン",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_1_2",
+              "line": 6,
+              "start": 339,
+              "end": 342,
+              "text": "ポカン",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            }
+          ]
         }
       }
     },
@@ -392,6 +430,44 @@
               "end": 2792,
               "base": "口惜",
               "reading": "くや"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_2_0",
+              "line": 0,
+              "start": 379,
+              "end": 381,
+              "text": "道傍",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_1",
+              "line": 2,
+              "start": 60,
+              "end": 63,
+              "text": "ポカン",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_2_2",
+              "line": 4,
+              "start": 62,
+              "end": 66,
+              "text": "カラッポ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
             }
           ]
         }
@@ -662,6 +738,33 @@
               "reading": "わ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_4_0",
+              "line": 4,
+              "start": 385,
+              "end": 387,
+              "text": "永々",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_4_1",
+              "line": 6,
+              "start": 28,
+              "end": 30,
+              "text": "一高",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -835,6 +938,55 @@
               "reading": "こうごう"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_5_0",
+              "line": 4,
+              "start": 155,
+              "end": 157,
+              "text": "雌鶏",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_5_1",
+              "line": 14,
+              "start": 489,
+              "end": 491,
+              "text": "雌鶏",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_2",
+              "line": 18,
+              "start": 192,
+              "end": 196,
+              "text": "ボーボー",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_5_3",
+              "line": 20,
+              "start": 517,
+              "end": 519,
+              "text": "道傍",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -970,6 +1122,22 @@
               "end": 3172,
               "base": "粉",
               "reading": "こ"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_6_0",
+              "line": 12,
+              "start": 69,
+              "end": 72,
+              "text": "ポカン",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
             }
           ]
         }
@@ -1151,6 +1319,44 @@
               "reading": "とうかい"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_7_0",
+              "line": 2,
+              "start": 410,
+              "end": 412,
+              "text": "花瓣",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_7_1",
+              "line": 2,
+              "start": 669,
+              "end": 674,
+              "text": "デリカシイ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_7_2",
+              "line": 6,
+              "start": 640,
+              "end": 643,
+              "text": "御相伴",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -1328,6 +1534,22 @@
               "end": 3065,
               "base": "力",
               "reading": "りき"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_8_0",
+              "line": 6,
+              "start": 40,
+              "end": 43,
+              "text": "蜜柑箱",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -1509,6 +1731,99 @@
               "reading": "かみしも"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_9_0",
+              "line": 0,
+              "start": 278,
+              "end": 282,
+              "text": "パチクリ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_9_1",
+              "line": 2,
+              "start": 28,
+              "end": 30,
+              "text": "百合",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_9_2",
+              "line": 2,
+              "start": 46,
+              "end": 48,
+              "text": "百合",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_9_3",
+              "line": 2,
+              "start": 93,
+              "end": 95,
+              "text": "百合",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_9_4",
+              "line": 2,
+              "start": 192,
+              "end": 194,
+              "text": "百合",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_9_5",
+              "line": 2,
+              "start": 313,
+              "end": 315,
+              "text": "百合",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_9_6",
+              "line": 2,
+              "start": 476,
+              "end": 478,
+              "text": "百合",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_9_7",
+              "line": 2,
+              "start": 712,
+              "end": 714,
+              "text": "百合",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -1604,6 +1919,44 @@
               "reading": "ふな"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_10_0",
+              "line": 4,
+              "start": 963,
+              "end": 967,
+              "text": "刹那主義",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_10_1",
+              "line": 6,
+              "start": 41,
+              "end": 43,
+              "text": "百合",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_10_2",
+              "line": 18,
+              "start": 14,
+              "end": 22,
+              "text": "パタパタパタパタ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            }
+          ]
         }
       }
     }
@@ -1631,6 +1984,7 @@
       3088,
       3043,
       2839
-    ]
+    ],
+    "boundaryMergeCount": 28
   }
 }

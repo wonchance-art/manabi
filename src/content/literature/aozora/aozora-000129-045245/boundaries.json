@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "039d25e894ad8ac7800b1ef4a4322c22352d157fdf52b6bf8d25f4af32317257",
+      "edits": [
+        {
+          "line": 0,
+          "start": 49,
+          "end": 52,
+          "text": "牢屋敷",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 120,
+          "end": 123,
+          "text": "町奉行",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 146,
+          "end": 149,
+          "text": "相対死",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 152,
+          "end": 156,
+          "text": "親戚眷族",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 11,
+          "end": 15,
+          "text": "町奉行所",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 17,
+          "end": 22,
+          "text": "白河楽翁侯",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 23,
+          "end": 25,
+          "text": "政柄",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 46,
+          "end": 49,
+          "text": "智恩院",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 22,
+          "end": 26,
+          "text": "住所不定",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 36,
+          "end": 39,
+          "text": "牢屋敷",
+          "reason": "ruby"
+        },
+        {
+          "line": 16,
+          "start": 23,
+          "end": 28,
+          "text": "羽田庄兵衛",
+          "reason": "ruby"
+        },
+        {
+          "line": 16,
+          "start": 58,
+          "end": 61,
+          "text": "牢屋敷",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 16,
+          "start": 63,
+          "end": 65,
+          "text": "棧橋",
+          "reason": "ruby"
+        },
+        {
+          "line": 16,
+          "start": 76,
+          "end": 78,
+          "text": "痩肉",
+          "reason": "ruby"
+        },
+        {
+          "line": 22,
+          "start": 0,
+          "end": 2,
+          "text": "夜舟",
+          "reason": "ruby"
+        },
+        {
+          "line": 26,
+          "start": 100,
+          "end": 103,
+          "text": "遊山船",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "29535dce9c5b5e14180ceae22c4fb9d90a34b48d020e69d0cb38c90d2a1d79db",
+      "edits": [
+        {
+          "line": 4,
+          "start": 168,
+          "end": 171,
+          "text": "扶持米",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 143,
+          "end": 146,
+          "text": "扶持米",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 50,
+          "end": 53,
+          "text": "扶持米",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 93,
+          "end": 96,
+          "text": "一人者",
+          "reason": "ruby"
+        },
+        {
+          "line": 18,
+          "start": 46,
+          "end": 48,
+          "text": "毫光",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "textSha256": "14a28fd0e27ce49f6b06e42e931300c36f9fcf8fc54348e79e173f178d1f8921",
+      "edits": [
+        {
+          "line": 0,
+          "start": 156,
+          "end": 158,
+          "text": "時疫",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 347,
+          "end": 349,
+          "text": "織場",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 416,
+          "end": 420,
+          "text": "掘立小屋",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 443,
+          "end": 445,
+          "text": "織場",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 2337,
+          "end": 2340,
+          "text": "年寄衆",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 81,
+          "end": 85,
+          "text": "町奉行所",
+          "reason": "ruby"
+        }
+      ]
+    }
+  ]
+}

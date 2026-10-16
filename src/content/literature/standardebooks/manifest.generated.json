@@ -1,0 +1,513 @@
+{
+  "schemaVersion": 1,
+  "works": {
+    "se-arthur-conan-doyle_the-adventures-of-sherlock-holmes": {
+      "title": "The Adventures of Sherlock Holmes",
+      "author": "Arthur Conan Doyle",
+      "level": "B2 상급",
+      "total": 47,
+      "words": 104582,
+      "display": {
+        "titleKo": "셜록 홈즈의 모험",
+        "authorKo": "아서 코넌 도일",
+        "coverTitle": "Sherlock\nHolmes",
+        "coverKicker": "The Adventures of",
+        "coverAuthor": "A. Conan Doyle",
+        "cloth": "pale-blue",
+        "binding": "pictorial"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-arthur-conan-doyle_the-adventures-of-sherlock-holmes",
+        "title": "The Adventures of Sherlock Holmes",
+        "author": "Arthur Conan Doyle",
+        "publishedYear": 1892,
+        "authorDeathYear": 1930,
+        "countryOfOrigin": "GB",
+        "translator": null,
+        "repo": "standardebooks/arthur-conan-doyle_the-adventures-of-sherlock-holmes",
+        "commit": "48ec456ea50987a81f564821457b9fb32cc2bfc6",
+        "url": "https://standardebooks.org/ebooks/arthur-conan-doyle/the-adventures-of-sherlock-holmes",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-16",
+          "reviewedJurisdictions": [
+            "GB",
+            "US",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/arthur-conan-doyle/the-adventures-of-sherlock-holmes"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "A Scandal in Bohemia (1/4)",
+          "sha256": "77f41fa08d89a34243923c936452ce8e041bd87bdd068a664d03fe533a385099"
+        },
+        {
+          "order": 2,
+          "title": "A Scandal in Bohemia (2/4)",
+          "sha256": "04e84e87c150e6c9e9b92523e4104f65ced066f8d17085698a1c82a33c85afce"
+        },
+        {
+          "order": 3,
+          "title": "A Scandal in Bohemia (3/4)",
+          "sha256": "9267de78481c07fa3c07a12cf53ec6855ec4f5c441f2d195f3c869bf07073177"
+        },
+        {
+          "order": 4,
+          "title": "A Scandal in Bohemia (4/4)",
+          "sha256": "11b433acdfd8b30e59a700fb7f1ddfaecabbd97a932c64db20ba4cc2cea37375"
+        },
+        {
+          "order": 5,
+          "title": "The Redheaded League (1/4)",
+          "sha256": "b4ee8c0fe3399ec7dedd8dd0d9cc1b2742cc7e5db715ac9bffba95438ab95252"
+        },
+        {
+          "order": 6,
+          "title": "The Redheaded League (2/4)",
+          "sha256": "959a1ebb25e56d7d579966b3447360ed7c98578f19e099580fe468059b5b2b3c"
+        },
+        {
+          "order": 7,
+          "title": "The Redheaded League (3/4)",
+          "sha256": "1a1ca6260dbeab28265f3c78414c575691545c05044e3d6f757cfb709465fbaa"
+        },
+        {
+          "order": 8,
+          "title": "The Redheaded League (4/4)",
+          "sha256": "9385dbb3ad1a2c3ab91af72cec15e977bea948388f698efd8d4a0f861e217a26"
+        },
+        {
+          "order": 9,
+          "title": "A Case of Identity (1/3)",
+          "sha256": "a5d10bdc7b944bdd1cc2bab42ed145926eaf1d6ba9cbf95355e24e6dd0316c62"
+        },
+        {
+          "order": 10,
+          "title": "A Case of Identity (2/3)",
+          "sha256": "16248ad250992beebe7477ae59569f8a8983b4a252e96abc10f59536840ecbac"
+        },
+        {
+          "order": 11,
+          "title": "A Case of Identity (3/3)",
+          "sha256": "cfdbfc2d37d130436c36814901a06e7947baa42fb6776584eff92e90ed7029be"
+        },
+        {
+          "order": 12,
+          "title": "The Boscombe Valley Mystery (1/4)",
+          "sha256": "585deb24aa4df391573cecf950f1b7cbb8170477e95d6c7693c5d9a1dab82dcd"
+        },
+        {
+          "order": 13,
+          "title": "The Boscombe Valley Mystery (2/4)",
+          "sha256": "eed1c4482a0660647d011b9664353c2cb2a15c0ca37c120da44c922b834c1321"
+        },
+        {
+          "order": 14,
+          "title": "The Boscombe Valley Mystery (3/4)",
+          "sha256": "72506e080ae746e9869f970a1939a496a23100c6aeae06b7c22cdb8318558efb"
+        },
+        {
+          "order": 15,
+          "title": "The Boscombe Valley Mystery (4/4)",
+          "sha256": "d1702b16000c8f18fad3b4d2a9c392b7720f7827ff71f52cf86822f663676c98"
+        },
+        {
+          "order": 16,
+          "title": "The Five Orange Pips (1/3)",
+          "sha256": "33fa901550aa6a1b17ba8afb96be37c1dde85b2dc79a5dcc265dda34d0e486d5"
+        },
+        {
+          "order": 17,
+          "title": "The Five Orange Pips (2/3)",
+          "sha256": "551b6cb585f6c84ed8bd9bd8be4aa4442c562ba92e58d6bf451cd7555a68dc91"
+        },
+        {
+          "order": 18,
+          "title": "The Five Orange Pips (3/3)",
+          "sha256": "315f8d308cc2d5e6fb09bd2428a78599389c20de710b3f38328887ecefafa23b"
+        },
+        {
+          "order": 19,
+          "title": "The Man with the Twisted Lip (1/4)",
+          "sha256": "6f79d4bf20cbc488b8d3a830c6d08f4844fa7d2df6da5dda7d3c85fcba0cc624"
+        },
+        {
+          "order": 20,
+          "title": "The Man with the Twisted Lip (2/4)",
+          "sha256": "6f6ca810b56006943562eca96d234a01f88308d3b1f7d44b87feb63ef3732815"
+        },
+        {
+          "order": 21,
+          "title": "The Man with the Twisted Lip (3/4)",
+          "sha256": "77c72ef32a6d162b7f9ad82e564905245e97e7e09434f19e92b4605b3d0fb4ee"
+        },
+        {
+          "order": 22,
+          "title": "The Man with the Twisted Lip (4/4)",
+          "sha256": "44a5f708c6835e8ba7d9dbb83bd3fdd80ef309f190059e5519ec245224e4ee7a"
+        },
+        {
+          "order": 23,
+          "title": "The Adventure of the Blue Carbuncle (1/4)",
+          "sha256": "f04e551e58876677afcae8afcaf361fac462f886be40c98012705323a2ed7fb7"
+        },
+        {
+          "order": 24,
+          "title": "The Adventure of the Blue Carbuncle (2/4)",
+          "sha256": "a1e9bc9f726bdf9a6bee0312bdf405813243cefeb1dc2ef777b8b8ff0c1ffb02"
+        },
+        {
+          "order": 25,
+          "title": "The Adventure of the Blue Carbuncle (3/4)",
+          "sha256": "9df99d0ce956ebbc5a16669ba25e1b0bd3c5eb03926a24f88b57cf653c78a6cd"
+        },
+        {
+          "order": 26,
+          "title": "The Adventure of the Blue Carbuncle (4/4)",
+          "sha256": "31ad95ba26067397b49dfda4cf70d1eff3c4bf12eb5fdb042676dcc1acd823af"
+        },
+        {
+          "order": 27,
+          "title": "The Adventure of the Speckled Band (1/4)",
+          "sha256": "a73a2cadc4a2a2c43883aa30d91d11e79295fb1d71c2f56d098f90a9e3ab8cbd"
+        },
+        {
+          "order": 28,
+          "title": "The Adventure of the Speckled Band (2/4)",
+          "sha256": "6f4cd017040eee7233353bf805c198eb3d6e7ebab818359cd9ee529c4c178eb6"
+        },
+        {
+          "order": 29,
+          "title": "The Adventure of the Speckled Band (3/4)",
+          "sha256": "4afe27c1a93c347e4e7df9c5cf2873f703d7122904446dad8afded75005ce7c2"
+        },
+        {
+          "order": 30,
+          "title": "The Adventure of the Speckled Band (4/4)",
+          "sha256": "2dd258c5ab6b49a7a5bf4439f1acd1f909c881dc11c29a2219dc48e4df2ff49c"
+        },
+        {
+          "order": 31,
+          "title": "The Adventure of the Engineer’s Thumb (1/4)",
+          "sha256": "fcc6ab42f1667c7548867a5823a65b3972473eae59e483d3a94aa1496def4c30"
+        },
+        {
+          "order": 32,
+          "title": "The Adventure of the Engineer’s Thumb (2/4)",
+          "sha256": "f5d4f1006d781feae48260a925e031902425ffef0ae68f41eedd8951035ce277"
+        },
+        {
+          "order": 33,
+          "title": "The Adventure of the Engineer’s Thumb (3/4)",
+          "sha256": "3f62ff34b7a5712806b6079e2febfcd713632886ff773d637767c7ac69cf20bd"
+        },
+        {
+          "order": 34,
+          "title": "The Adventure of the Engineer’s Thumb (4/4)",
+          "sha256": "4b6511d6e5c2d0ddade9460bcbd447ced363026d1e45b3959d22ddc9ab6c3b4f"
+        },
+        {
+          "order": 35,
+          "title": "The Adventure of the Noble Bachelor (1/4)",
+          "sha256": "7ec2e698ef63437d9ce4286c47d369d07dd563b08e565766bbab12799c0c69d6"
+        },
+        {
+          "order": 36,
+          "title": "The Adventure of the Noble Bachelor (2/4)",
+          "sha256": "0b7bb977fa9abe6a886c80f7e3f9297fb260bdb7253223f705455b064b0c9c90"
+        },
+        {
+          "order": 37,
+          "title": "The Adventure of the Noble Bachelor (3/4)",
+          "sha256": "91dc7f9a8f9bcd1ec22a40c40cf7d632a631150603ba4bf3cecd3cfca1ba9980"
+        },
+        {
+          "order": 38,
+          "title": "The Adventure of the Noble Bachelor (4/4)",
+          "sha256": "cae6769111d56ff740b330898286a1e5ecfa8780665ea9632f53d18fd71f5c74"
+        },
+        {
+          "order": 39,
+          "title": "The Adventure of the Beryl Coronet (1/4)",
+          "sha256": "1d07fdf1eb4d26dedec878f10d30f7f070fc9d314491491b33c30051ed210413"
+        },
+        {
+          "order": 40,
+          "title": "The Adventure of the Beryl Coronet (2/4)",
+          "sha256": "7e2b262830c4ecf43b4ae85bde960fecdd20b21e3dddedc2e26b0f0d3f4d247e"
+        },
+        {
+          "order": 41,
+          "title": "The Adventure of the Beryl Coronet (3/4)",
+          "sha256": "f792c2e858ca79de46afbb086b87b17fa19314b6534300d638b682ac876f4aac"
+        },
+        {
+          "order": 42,
+          "title": "The Adventure of the Beryl Coronet (4/4)",
+          "sha256": "cea617b734726ea1487d58bcc04c2a9f756d1de2e715bc16416feb6b3e019a19"
+        },
+        {
+          "order": 43,
+          "title": "The Adventure of the Copper Beeches (1/5)",
+          "sha256": "2ad46ecdc14434dd7e46ea6d37136669f2e7606e1836e9ff1fb5abd59fff2e7f"
+        },
+        {
+          "order": 44,
+          "title": "The Adventure of the Copper Beeches (2/5)",
+          "sha256": "4d9be2933fae4e890fb8d80eb3a2a0ab33e84a7b536b121ad576ff893b739760"
+        },
+        {
+          "order": 45,
+          "title": "The Adventure of the Copper Beeches (3/5)",
+          "sha256": "ac6f384099ed5e95bdffefae7b9bfffc33b76c9a670f901773e4fe6840f4c916"
+        },
+        {
+          "order": 46,
+          "title": "The Adventure of the Copper Beeches (4/5)",
+          "sha256": "1f3318ead33d0827738e8eb2427ff58ca2113364fc76feca42344fd0f2d1f60d"
+        },
+        {
+          "order": 47,
+          "title": "The Adventure of the Copper Beeches (5/5)",
+          "sha256": "31fae422436d31f6eacf2f2ac43ebfea5484914630795784a21a514c1db436c9"
+        }
+      ]
+    },
+    "se-charles-dickens_a-christmas-carol": {
+      "title": "A Christmas Carol",
+      "author": "Charles Dickens",
+      "level": "B2 상급",
+      "total": 13,
+      "words": 28442,
+      "display": {
+        "titleKo": "크리스마스 캐럴",
+        "authorKo": "찰스 디킨스",
+        "coverTitle": "Christmas\nCarol",
+        "coverKicker": "A",
+        "coverAuthor": "Charles Dickens",
+        "cloth": "cinnamon",
+        "binding": "wreath"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-charles-dickens_a-christmas-carol",
+        "title": "A Christmas Carol",
+        "author": "Charles Dickens",
+        "publishedYear": 1843,
+        "authorDeathYear": 1870,
+        "countryOfOrigin": "GB",
+        "translator": null,
+        "repo": "standardebooks/charles-dickens_a-christmas-carol",
+        "commit": "dd1fb9f80b0c3fcfa2686449468f094eeadb3ff4",
+        "url": "https://standardebooks.org/ebooks/charles-dickens/a-christmas-carol",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-16",
+          "reviewedJurisdictions": [
+            "GB",
+            "US",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/charles-dickens/a-christmas-carol"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Stave I: Marley’s Ghost (1/3)",
+          "sha256": "1f3d5e0101bd5a93731ee34c133448c54673b7c91004b01182b84037687a4fda"
+        },
+        {
+          "order": 2,
+          "title": "Stave I: Marley’s Ghost (2/3)",
+          "sha256": "17a47450de80408c7b14feaa4bf1270e2fe9679adf18f1ba2145d126a6c7860a"
+        },
+        {
+          "order": 3,
+          "title": "Stave I: Marley’s Ghost (3/3)",
+          "sha256": "0971e282d2572d7c06b69206fc067de017c54f4524b9ad2f09a7ff7cf0441875"
+        },
+        {
+          "order": 4,
+          "title": "Stave II: The First of the Three Spirits (1/3)",
+          "sha256": "e27290dd1766feca7d9645310ed5ea3e2fcc88aba7b71a39c2ab8b8732be5d5f"
+        },
+        {
+          "order": 5,
+          "title": "Stave II: The First of the Three Spirits (2/3)",
+          "sha256": "e4acd1be11322f566106c9fa44869083d124700e873faf6e4ea99df8c5ff0a67"
+        },
+        {
+          "order": 6,
+          "title": "Stave II: The First of the Three Spirits (3/3)",
+          "sha256": "883d42bd9e575cc337b122e2c5f3d454405b04eb10c28f38ce1446d47e0aeb65"
+        },
+        {
+          "order": 7,
+          "title": "Stave III: The Second of the Three Spirits (1/4)",
+          "sha256": "edaba363143631d1538177fa80c6ce95cf7df159bcd13a0d44b20e7f3aed2f38"
+        },
+        {
+          "order": 8,
+          "title": "Stave III: The Second of the Three Spirits (2/4)",
+          "sha256": "b11a7d5c8e78ff1dcdd3757861eda2a4f5e0a9a6f2f2a01fce3722834616020f"
+        },
+        {
+          "order": 9,
+          "title": "Stave III: The Second of the Three Spirits (3/4)",
+          "sha256": "f9bd708fbc04ee37f82e39db0b06463f1ab91ee9f4c29cd1846b1d3398b4326f"
+        },
+        {
+          "order": 10,
+          "title": "Stave III: The Second of the Three Spirits (4/4)",
+          "sha256": "5f0c8b5fe34273343bc577a3e8c15147b9bc2709e3dc43415b5d0c846de80cd3"
+        },
+        {
+          "order": 11,
+          "title": "Stave IV: The Last of the Spirits (1/2)",
+          "sha256": "5c225347f3c1a675dbbff17c354ada8b91203a813ca65d9bc6e03764fba3fe62"
+        },
+        {
+          "order": 12,
+          "title": "Stave IV: The Last of the Spirits (2/2)",
+          "sha256": "a2b328b977452d5cb57e47192ab4e65c061037acbb9d405591fd1580f17e3ef6"
+        },
+        {
+          "order": 13,
+          "title": "Stave V: The End of It",
+          "sha256": "6e9ff0e380268cc93e1a810b8931ad53404049c4a3b393d03f11b7a6d67319c9"
+        }
+      ]
+    },
+    "se-lewis-carroll_alices-adventures-in-wonderland": {
+      "title": "Alice’s Adventures in Wonderland",
+      "author": "Lewis Carroll",
+      "level": "B1 중급",
+      "total": 12,
+      "words": 26325,
+      "display": {
+        "titleKo": "이상한 나라의 앨리스",
+        "authorKo": "루이스 캐럴",
+        "coverTitle": "Alice in\nWonderland",
+        "cloth": "madder-red",
+        "binding": "medallion"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-lewis-carroll_alices-adventures-in-wonderland",
+        "title": "Alice’s Adventures in Wonderland",
+        "author": "Lewis Carroll",
+        "publishedYear": 1865,
+        "authorDeathYear": 1898,
+        "countryOfOrigin": "GB",
+        "translator": null,
+        "repo": "standardebooks/lewis-carroll_alices-adventures-in-wonderland",
+        "commit": "9ecdf2ffa23098e7cb3c72157d7c3031b6f59903",
+        "url": "https://standardebooks.org/ebooks/lewis-carroll/alices-adventures-in-wonderland/john-tenniel",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-16",
+          "reviewedJurisdictions": [
+            "GB",
+            "US",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/lewis-carroll/alices-adventures-in-wonderland/john-tenniel"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: Down the Rabbit-Hole",
+          "sha256": "a205e2614377dddc7413150aeddc4aced6453dd3670547e65fb70b009661843b"
+        },
+        {
+          "order": 2,
+          "title": "II: The Pool of Tears",
+          "sha256": "79cab5e7ea862744b699869d52714346dda29b5108a0c139cdd5b79986e5858a"
+        },
+        {
+          "order": 3,
+          "title": "III: A Caucus-Race and a Long Tale",
+          "sha256": "72d99db6299d9f7dedd4502cfa5fa14348630eb30a597131999696e3efaa6cd5"
+        },
+        {
+          "order": 4,
+          "title": "IV: The Rabbit Sends in a Little Bill",
+          "sha256": "f38b252155e509eccd37bb7167b1d4ce1063338328423d2d60ca8fa99d79dbb3"
+        },
+        {
+          "order": 5,
+          "title": "V: Advice from a Caterpillar",
+          "sha256": "3a6d0e704ae1b69d1832ae06a2566629bb58b253e2d822f1017b49c793a244cc"
+        },
+        {
+          "order": 6,
+          "title": "VI: Pig and Pepper",
+          "sha256": "75d327ce3cb8925259e464e63bb4a298b6a71c9a9607a19585effec5b1ccb375"
+        },
+        {
+          "order": 7,
+          "title": "VII: A Mad Tea-Party",
+          "sha256": "9a7284a88cae1390f723505fa7c0060d4b5ca2836327e9def1ebff39f74630ec"
+        },
+        {
+          "order": 8,
+          "title": "VIII: The Queen’s Croquet-Ground",
+          "sha256": "33a67fa687cad1693c597385700b3b178584901eeb68514a4e045989d5873233"
+        },
+        {
+          "order": 9,
+          "title": "IX: The Mock Turtle’s Story",
+          "sha256": "a7464b9652899a7053f8d3edddd9b6c340961b8ae3682340698865b537d197fc"
+        },
+        {
+          "order": 10,
+          "title": "X: The Lobster Quadrille",
+          "sha256": "ef2661c1cf4e0aaee368655c4162907d1d2b4ce2053e4d9c9d87ac4d9816098c"
+        },
+        {
+          "order": 11,
+          "title": "XI: Who Stole the Tarts?",
+          "sha256": "8d0f8531f7b1d6e9697f93c583b85e2cf65d3912a8a6c10d42b962b45c2d0db1"
+        },
+        {
+          "order": 12,
+          "title": "XII: Alice’s Evidence",
+          "sha256": "3761d99e1e2ab658355c55fd37cc545f1ebf7b9dc14b171f94800b56bc7cb598"
+        }
+      ]
+    }
+  }
+}

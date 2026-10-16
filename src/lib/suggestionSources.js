@@ -142,3 +142,26 @@ export function groupByLanguage(sources) {
   }
   return byLang;
 }
+
+/** 영상 소스인가 — 영상 하나당 왕복이 여러 번이라 글 소스보다 훨씬 느리다. */
+export function isVideoSource(s) {
+  return String(s?.source_type || '').startsWith('youtube_');
+}
+
+/**
+ * 언어별 묶음 → 이번 실행의 순서. **글 소스 전부 → 영상 소스** 순이다.
+ *
+ * 예전엔 언어 순서대로(일·영 → 프) 돌고 언어 하나를 다 모은 뒤에 저장했다. 프랑스어
+ * 차례에 영상 수집이 함수 시간을 넘기면 그 언어의 글 기사까지 함께 사라진다(운영 실측
+ * 2026-10-16: 9-15 이후 프랑스어 카드가 영상 2건뿐, wikinews_fr 0건 — 원인 후보 중 하나).
+ * 느린 영상을 뒤로 빼고 소스마다 바로 저장하면, 시간이 모자라도 잃는 건 남은 영상뿐이다.
+ * @returns {Array<{language:string, src:object}>}
+ */
+export function planCronRun(byLang) {
+  const text = [];
+  const video = [];
+  for (const [language, list] of byLang || []) {
+    for (const src of list || []) (isVideoSource(src) ? video : text).push({ language, src });
+  }
+  return [...text, ...video];
+}

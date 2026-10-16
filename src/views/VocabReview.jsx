@@ -4,7 +4,7 @@ import Button from '../components/Button';
 import { detectLang, splitSentenceAroundWord } from '../lib/constants';
 import VocabularyContexts from '../components/learning/VocabularyContexts';
 import { ReviewCardMeta, ReviewHeadword, ReviewReadingRow, langTag } from '../components/vocab/ReviewCardParts';
-import { gradeGuide, revealTrigger } from '../lib/reviewCard';
+import { gradeGuide, isCardRevealClick, revealTrigger } from '../lib/reviewCard';
 import { wordStage } from '../lib/growthStats';
 import { vocabularyReviewCalendar } from '../lib/vocabularyLearningRows';
 
@@ -196,7 +196,8 @@ export default function VocabReview({
       ) : reviewWords.length > 0 && currentWord ? (
         <>
           {practice && <p className="review-practice-banner" role="note">집중 연습 · 일정은 바뀌지 않아요</p>}
-          <div className="card review-card" style={{ padding: 0 }}>
+          {/* key = 카드마다 새로 그려 넘김 효과(review-card--turn)가 한 장마다 한 번 돈다. */}
+          <div key={currentWord.id} className="card review-card review-card--turn" style={{ padding: 0 }}>
             <div className="review-card__progress review-card__progress--tools">
               <div className="review-card__tools">
                 {mode === 'flash' && !showAnswer && currentWord?.source_sentence && (
@@ -217,7 +218,8 @@ export default function VocabReview({
               </div>
             </div>
 
-            <div className="review-card__body">
+            <div className={`review-card__body${mode === 'flash' && !showAnswer ? ' review-card__body--front' : ''}`}
+              onClick={event => { if (mode === 'flash' && !showAnswer && isCardRevealClick(event)) reveal(event); }}>
               <ReviewCardMeta label={metaLabel} word={currentWord} />
               {mode !== 'flash' && <p className="review-room-prompt">{showAnswer ? '뜻을 확인했어요.' : mode === 'typing' ? '이 표현의 뜻을 써 보세요.' : mode === 'context' ? '문장 속 표현의 뜻을 골라 보세요.' : '듣고, 뜻을 골라 보세요.'}</p>}
               {/* 표제어 — 앞면은 글자만(읽기 · 소리 없음). 문맥 · 듣기 갈래는 답을 보기 전까지 숨긴다(예문이 없으면 단어가 문제). */}

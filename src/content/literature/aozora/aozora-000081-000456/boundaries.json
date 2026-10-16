@@ -1,0 +1,483 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "c3fd7304bcaf180210b1f364dcef5d674b6523430a59351527c4cfae62dd6ec7",
+      "edits": [
+        {
+          "line": 26,
+          "start": 126,
+          "end": 128,
+          "text": "脂油",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "795ef67838e26a41b4bf2a9e63b0f2e88a7f0d26558beb9a69bbcdfa2bf1713a",
+      "edits": []
+    },
+    {
+      "order": 3,
+      "textSha256": "e8f85dad7cf1ce77b25a2697642380fe119697e09dbd1bfb3f1af1b47eca7973",
+      "edits": []
+    },
+    {
+      "order": 4,
+      "textSha256": "82191272e3c79cc433bcd32e57f26f560d06967bcfa6ba753fac86cfef1c9afc",
+      "edits": [
+        {
+          "line": 4,
+          "start": 54,
+          "end": 58,
+          "text": "コムパス",
+          "reason": "katakana"
+        },
+        {
+          "line": 22,
+          "start": 61,
+          "end": 64,
+          "text": "楕円形",
+          "reason": "ruby"
+        },
+        {
+          "line": 26,
+          "start": 77,
+          "end": 80,
+          "text": "豆電燈",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 46,
+          "start": 89,
+          "end": 91,
+          "text": "燈火",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "textSha256": "703ecf49fade0fd37b5679953ca16c7df693d84ea4ced7a48e9714cfbab05007",
+      "edits": [
+        {
+          "line": 0,
+          "start": 29,
+          "end": 32,
+          "text": "大熊星",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "textSha256": "f33c9c6ee4ade6e539ef989cd789054ef2cb4895a9e5a922cc3fbea45e96592b",
+      "edits": [
+        {
+          "line": 0,
+          "start": 30,
+          "end": 33,
+          "text": "三角標",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 108,
+          "end": 110,
+          "text": "鋼青",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 118,
+          "end": 121,
+          "text": "天蚕絨",
+          "reason": "ruby"
+        },
+        {
+          "line": 24,
+          "start": 232,
+          "end": 235,
+          "text": "三角標",
+          "reason": "ruby"
+        },
+        {
+          "line": 40,
+          "start": 269,
+          "end": 272,
+          "text": "三角標",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 40,
+          "start": 448,
+          "end": 451,
+          "text": "三角標",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 60,
+          "start": 60,
+          "end": 63,
+          "text": "三角標",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "textSha256": "48c4d0ddcfa94a31542af94a1677bf79be0a5f6ffee887337aa22353dd5ec303",
+      "edits": [
+        {
+          "line": 6,
+          "start": 38,
+          "end": 41,
+          "text": "三角標",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 16,
+          "start": 85,
+          "end": 87,
+          "text": "珠数",
+          "reason": "ruby"
+        },
+        {
+          "line": 38,
+          "start": 20,
+          "end": 23,
+          "text": "改札口",
+          "reason": "ruby"
+        },
+        {
+          "line": 38,
+          "start": 37,
+          "end": 40,
+          "text": "改札口",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "textSha256": "d97d28bc663c71a217b36210b9c395267cc9df5b05ae24e52268b7e926c4e718",
+      "edits": [
+        {
+          "line": 4,
+          "start": 36,
+          "end": 38,
+          "text": "皺曲",
+          "reason": "ruby"
+        },
+        {
+          "line": 44,
+          "start": 17,
+          "end": 20,
+          "text": "改札口",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "textSha256": "bfdf80f3fef9bf7bd52fbf08e8a18be6ee00763a66f04cc6c86e936490e730f9",
+      "edits": [
+        {
+          "line": 4,
+          "start": 45,
+          "end": 47,
+          "text": "赤髯",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "textSha256": "e0a621718d83a41c6f9c69c1db3e270dff5c2108386a97ccc990029cf5bf5d2d",
+      "edits": [
+        {
+          "line": 0,
+          "start": 128,
+          "end": 131,
+          "text": "菓子屋",
+          "reason": "ruby"
+        },
+        {
+          "line": 28,
+          "start": 14,
+          "end": 16,
+          "text": "奇体",
+          "reason": "ruby"
+        },
+        {
+          "line": 30,
+          "start": 33,
+          "end": 36,
+          "text": "鉄砲弾",
+          "reason": "ruby"
+        },
+        {
+          "line": 32,
+          "start": 17,
+          "end": 19,
+          "text": "恰度",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 11,
+      "textSha256": "4bffc23f101c1b4bf5e4a769384e8c57e9301b7369237018a3d65ce790408506",
+      "edits": [
+        {
+          "line": 2,
+          "start": 68,
+          "end": 71,
+          "text": "青宝玉",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 252,
+          "end": 254,
+          "text": "叮寧",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 12,
+          "end": 15,
+          "text": "南十字",
+          "reason": "ruby"
+        },
+        {
+          "line": 22,
+          "start": 39,
+          "end": 42,
+          "text": "三角標",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 12,
+      "textSha256": "737ccfb5150889d7b5d97c73b17ab56030f4e836c45e716e4ca65fef94e5a750",
+      "edits": [
+        {
+          "line": 6,
+          "start": 91,
+          "end": 94,
+          "text": "タダシ",
+          "reason": "katakana"
+        },
+        {
+          "line": 12,
+          "start": 36,
+          "end": 38,
+          "text": "姉弟",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 18,
+          "start": 728,
+          "end": 733,
+          "text": "ライフブイ",
+          "reason": "katakana"
+        },
+        {
+          "line": 32,
+          "start": 5,
+          "end": 7,
+          "text": "姉弟",
+          "reason": "ruby"
+        },
+        {
+          "line": 34,
+          "start": 47,
+          "end": 49,
+          "text": "幻燈",
+          "reason": "ruby"
+        },
+        {
+          "line": 34,
+          "start": 68,
+          "end": 71,
+          "text": "三角標",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 13,
+      "textSha256": "203cce1dfc53a1a7a6486aec0d586ab45f7ab8eb6ce41a4d6b8140b87eaf060b",
+      "edits": [
+        {
+          "line": 14,
+          "start": 8,
+          "end": 10,
+          "text": "両腕",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 32,
+          "end": 34,
+          "text": "姉弟",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 34,
+          "start": 55,
+          "end": 58,
+          "text": "三角標",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 34,
+          "start": 69,
+          "end": 77,
+          "text": "オーケストラベル",
+          "reason": "katakana"
+        },
+        {
+          "line": 46,
+          "start": 9,
+          "end": 12,
+          "text": "三角標",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 46,
+          "start": 63,
+          "end": 66,
+          "text": "讃美歌",
+          "reason": "ruby"
+        },
+        {
+          "line": 62,
+          "start": 236,
+          "end": 239,
+          "text": "鉄砲丸",
+          "reason": "ruby"
+        },
+        {
+          "line": 62,
+          "start": 327,
+          "end": 329,
+          "text": "幾組",
+          "reason": "ruby"
+        },
+        {
+          "line": 62,
+          "start": 330,
+          "end": 332,
+          "text": "幾組",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 14,
+      "textSha256": "2f03681e58094c18f4f49d559c5964e42633c932fa9918f89f00700570ec2fdd",
+      "edits": []
+    },
+    {
+      "order": 15,
+      "textSha256": "bdda19da9ffaf052d4e1b525343d1aaae92ea37f23d7e0decbd94e84d4b22730",
+      "edits": [
+        {
+          "line": 0,
+          "start": 20,
+          "end": 22,
+          "text": "室中",
+          "reason": "ruby"
+        },
+        {
+          "line": 76,
+          "start": 14,
+          "end": 17,
+          "text": "三角標",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 78,
+          "start": 23,
+          "end": 26,
+          "text": "三角標",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 78,
+          "start": 47,
+          "end": 50,
+          "text": "三角標",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 84,
+          "start": 6,
+          "end": 14,
+          "text": "クリスマストリイ",
+          "reason": "katakana"
+        },
+        {
+          "line": 84,
+          "start": 22,
+          "end": 24,
+          "text": "唐檜",
+          "reason": "ruby"
+        },
+        {
+          "line": 84,
+          "start": 48,
+          "end": 51,
+          "text": "豆電燈",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 16,
+      "textSha256": "41cf7378397e453b3eaeb10dd9947761739f9bba4c67fe9b27f6d61a92737b00",
+      "edits": [
+        {
+          "line": 68,
+          "start": 108,
+          "end": 111,
+          "text": "鉄砲丸",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 17,
+      "textSha256": "c1606ed6b7e9249b6bec0fa7c7368805fd040bb1df309e1ea0fc0b8c4a49c96b",
+      "edits": [
+        {
+          "line": 2,
+          "start": 144,
+          "end": 146,
+          "text": "蠍座",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 26,
+          "end": 29,
+          "text": "牛乳瓶",
+          "reason": "ruby"
+        },
+        {
+          "line": 54,
+          "start": 66,
+          "end": 74,
+          "text": "アセチレンランプ",
+          "reason": "katakana"
+        }
+      ]
+    }
+  ]
+}

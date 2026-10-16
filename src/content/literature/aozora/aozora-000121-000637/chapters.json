@@ -688,6 +688,88 @@
               "meaning": "어이없어하다, 기가 막히다"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_1_0",
+              "line": 2,
+              "start": 0,
+              "end": 2,
+              "text": "或朝",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_1",
+              "line": 18,
+              "start": 34,
+              "end": 37,
+              "text": "牡丹色",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_2",
+              "line": 20,
+              "start": 46,
+              "end": 48,
+              "text": "霜焼",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_3",
+              "line": 50,
+              "start": 64,
+              "end": 67,
+              "text": "白銅貨",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_4",
+              "line": 70,
+              "start": 30,
+              "end": 33,
+              "text": "白銅貨",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_5",
+              "line": 70,
+              "start": 78,
+              "end": 82,
+              "text": "チンチン",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_1_6",
+              "line": 84,
+              "start": 5,
+              "end": 7,
+              "text": "唄声",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     }
@@ -707,6 +789,7 @@
     "chapterChars": [
       3603
     ],
-    "reviewHintCount": 34
+    "reviewHintCount": 34,
+    "boundaryMergeCount": 7
   }
 }

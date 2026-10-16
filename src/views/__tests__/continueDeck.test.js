@@ -89,9 +89,9 @@ describe('홈 알림 덱 계약', () => {
   it('HSK 단어 임시 입구는 덱과 같은 카드 양식으로 배움 맨 아래에 있다(오너 지시 2026-10-15 KST)', () => {
     const home = read('src/views/HomePage.jsx');
     expect(home).toContain("href: '/chinese/vocab/h1'");
-    expect(home).toContain('<ContinueDeck items={[HSK_WORDS_ITEM]} />');
+    expect(home).toContain('<ContinueDeck items={[hskItem]} />');
     // 맨 아래 — 이어서 덱보다 뒤에 온다.
-    expect(home.indexOf('<ContinueDeck items={[HSK_WORDS_ITEM]} />')).toBeGreaterThan(home.indexOf('<ContinueDeck items={continueDeckItems} />'));
+    expect(home.indexOf('<ContinueDeck items={[hskItem]} />')).toBeGreaterThan(home.indexOf('<ContinueDeck items={continueDeckItems} />'));
   });
 
   it('예보의 침묵 계약은 유지된다 — 흐려질 단어가 0이면 항목 자체가 없다', () => {
