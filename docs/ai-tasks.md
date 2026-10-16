@@ -910,6 +910,12 @@
   · 같은 PR(리뷰 2차): 정본 책 key 판정 공용화 `isCanonicalBookKey`(aozora- · se- · art-) — 서재 목차 「+ 과 추가」 · 「과 번호 수정」도 막음(정본 게시 409 예방).
     문구 변경으로 깨진 e2e 선택자 4파일 · smoke 오류 단언 복구 + `retiredCopyE2e.test.js`. 팀 설정 행은 미분석 아님. 미분석 자료 게스트 배너 문구.
   · 같은 PR(PERF-QUERY-001): 서재 목록 5초 통째 폴링 → 내 분석 중 행의 상태만 · 오늘의 추천 키 하나로 · 아는 단어 60초 · 읽던 곳 30초. 계약 `browserQueryTrim.test.js`.
+  · 같은 PR(PERF-TAB-003 · PERF-STUDY-001 · PERF-FSRS-001 · PERF-ANNOT-001): 교재 asset 경로 해시만 발행 확인 · 판본 재사용 · 공개 판본 immutable,
+    교재 목록 원고 jsonb 없이, /study 조립 순차 왕복 5 → 3, FSRS 상태 RPC 병렬, 주의점 GET은 metadata만.
+  · 같은 PR(APP-FEEL-002): `--ease-settle` 토큰 · 담기 순간(형광 긋기 · 담은 줄 · 수집 숫자 팝) · 복습 끝 막대 barGrow · learnIn .24s — 모두 0.3초 이하 · 전용 모션 축소.
+    계약 `appFeel.test.js`. 실빌드 탐침으로 움직임 · 모션 축소 확인(Chromium). 체감은 오너 검수.
+  · 같은 PR(리뷰 3차): 서가 공개 글 수에 책 장 포함(public_book_catalog) · 함께 읽는 글 인증 확인 뒤 조회 · 정본 책 직접 주소 이어 적기 차단.
+  · 보류: CJK 가변 weight(@font-face −67%, brotli 전송 −2%) — 600 · 650 · 800 · 300 굵기가 실제 값으로 바뀌는 시각 변경이라 오너 확인 뒤.
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
   제안안 중 웹 몫만(스와이프 · 진동 · 아이폰 안전 여백은 모바일이라 보류). 두 복습 카드(예전 · 새 일정) 공통 `review-card--turn`(0.24초,
