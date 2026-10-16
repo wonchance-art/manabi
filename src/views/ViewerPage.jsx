@@ -3891,7 +3891,9 @@ export default function ViewerPage() {
         )}
       </header>
       {!originalParams.get('sourceEntry')&&!originalParams.get('sourceQuote')&&<ReadingSourceFocus rawText={material?.raw_text} materialId={id} ready={!!material?.processed_json?.sequence?.length} json={material?.processed_json} onTarget={setSourceFocusId} />}
-      {positionError && <div className="error-banner" role="status">{vt("읽기 위치를 저장하지 못했어요.")}<button type="button" className="btn btn--ghost" onClick={retryPosition}>{vt("다시 저장")}</button></div>}
+      {/* 위치 저장 실패 알림 — 영역은 늘 두고 내용만 넣는다. 보이는 줄의 글은 한 번만 읽히게 숨기고 「다시 저장」이 이유를 가리킨다. */}
+      <span className="sr-only" role="status" id="viewer-position-notice">{positionError ? vt("읽기 위치를 저장하지 못했어요.") : ''}</span>
+      {positionError && <div className="error-banner"><span aria-hidden="true">{vt("읽기 위치를 저장하지 못했어요.")}</span><button type="button" className="btn btn--ghost" aria-describedby="viewer-position-notice" onClick={retryPosition}>{vt("다시 저장")}</button></div>}
 
       {/* 출처 표기(v2-F R5) — CC BY는 **표기가 라이선스 조건**이다. `metadata.source`가
           저장만 되고 어디에도 안 보이던 것을 여기서 드러낸다(저장은 표기가 아니다).

@@ -5,6 +5,7 @@ import { JaText } from './refShared';
 import { buildReadingEvents, accumulateAnswer } from '../lib/readingProgress';
 import { seededShuffle } from '../lib/seededShuffle';
 import { reducedMotion } from '../lib/reducedMotion';
+import { useDialogReturn } from '../lib/useDialogReturn';
 
 /**
  * 독해 글 뷰어 + 문항 흐름 (신규 컴포넌트).
@@ -544,9 +545,18 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
 /** 신규 문형 사전 카드 팝오버 — bunkei explain·contrast·ex 이관분 표시 */
 function PatternCard({ card, onClose }) {
   if (!card) return null;
+  return <PatternCardDialog card={card} onClose={onClose} />;
+}
+
+function PatternCardDialog({ card, onClose }) {
+  // 열면 창 안으로 · Esc로 닫기 · 닫으면 연 문형 칩으로 포커스(useDialogReturn).
+  const dialogRef = useDialogReturn(onClose);
   return (
     <div
+      ref={dialogRef}
+      tabIndex={-1}
       role="dialog"
+      aria-modal="true"
       aria-label={`문형 ${card.pattern}`}
       onClick={onClose}
       className="scrim scrim--bottom"

@@ -251,7 +251,7 @@ Rules:
 
         <div className="reading-test__header">
           <h2 style={{ margin: 0, fontSize: '1.1rem' }}>{english ? 'IELTS Reading Test' : '읽기 확인'}</h2>
-          {onClose && <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>}
+          {onClose && <button type="button" aria-label="닫기" onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'var(--text-muted)' }}><span aria-hidden="true">✕</span></button>}
         </div>
 
         {/* idle */}

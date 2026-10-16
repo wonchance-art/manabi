@@ -39,6 +39,7 @@ import LevelVocabCard from '../components/learn/LevelVocabCard';
 import MemoryHealthCard from '../components/learn/MemoryHealthCard';
 import '../components/learn/learn.css';
 import { authEntryHref } from '../lib/authRedirect';
+import { useDialogReturn } from '../lib/useDialogReturn';
 
 /** 히트맵 — 최근 24주(168일), 가장 오른쪽 아래가 오늘. */
 export const HEATMAP_DAYS = 168;
@@ -380,8 +381,10 @@ function GoalEditor({ catalog, openSignal = 0 }) {
 
 /** 타일 공용 미니 모달 */
 function TileModal({ title, onClose, children }) {
+  // 열면 창 안으로 · Esc로 닫기 · 닫으면 연 타일로 포커스(useDialogReturn — ConfirmModal 선례).
+  const dialogRef = useDialogReturn(onClose);
   return (
-    <div className="tile-modal__overlay" onClick={onClose} role="dialog" aria-label={title}>
+    <div className="tile-modal__overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label={title} ref={dialogRef} tabIndex={-1}>
       <div className="card tile-modal" onClick={e => e.stopPropagation()}>
         <div className="tile-modal__head">
           <h3 className="tile-modal__title">{title}</h3>
