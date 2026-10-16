@@ -54,10 +54,12 @@ describe('대기 밑줄 자리 = 지금 탭 밑줄 자리(두 번째 줄로 보�
 
 describe('이동 뒤 포커스 — 잃었을 때만 새 화면의 첫 제목(없으면 본문)으로', () => {
   /** 제목 대역 — 초점을 받으면 activeElement가 된다(focusable=false면 받지 못한다). */
-  const heading = (d, { hidden = false, tabindex = null, focusable = true } = {}) => {
+  // drawn=false = display:none(그린 상자 0개), visibility='hidden' = 감춤 style(BOOK-HASH-ENTRY-001 표지) 아래.
+  const heading = (d, { hidden = false, tabindex = null, focusable = true, drawn = true, visibility = 'visible' } = {}) => {
     const attrs = new Map(tabindex === null ? [] : [['tabindex', tabindex]]);
     const h = {
-      hidden, attrs,
+      hidden, attrs, drawn, visibility,
+      getClientRects: () => (h.drawn ? [{}] : []),
       closest: (sel) => (hidden && sel.includes('[aria-hidden="true"]') ? {} : null),
       hasAttribute: (k) => attrs.has(k), setAttribute: vi.fn((k, v) => attrs.set(k, v)),
       focus: vi.fn(() => { if (focusable) d.activeElement = h; }),
@@ -65,7 +67,7 @@ describe('이동 뒤 포커스 — 잃었을 때만 새 화면의 첫 제목(없
     return h;
   };
   const doc = (active, { connected = true, headings = [] } = {}) => {
-    const d = { body: {} };
+    const d = { body: {}, defaultView: { getComputedStyle: (el) => ({ visibility: el.visibility }) } };
     const main = { focus: vi.fn(() => { d.activeElement = main; }), querySelectorAll: (sel) => (sel === 'h1' ? d.headings : []) };
     d.main = main;
     d.activeElement = active === 'body' ? d.body : active ? { isConnected: connected } : null;
@@ -90,7 +92,13 @@ describe('이동 뒤 포커스 — 잃었을 때만 새 화면의 첫 제목(없
     expect(focusPageIfLost(skip)).toBe('heading');
     expect(skip.headings[0].focus).not.toHaveBeenCalled();
     expect(skip.headings[1].focus).toHaveBeenCalled();
-    for (const d of [doc('body'), doc('body', { headings: [{ hidden: true }] }), doc('body', { headings: [{ focusable: false }] })]) {
+    // 그려지지 않은(display:none) · 감춘(visibility:hidden) 제목도 건너뛴다 — 교재 hash 진입의 감춘 표지 h1.
+    const invisible = doc('body', { headings: [{ drawn: false }, { visibility: 'hidden' }, {}] });
+    expect(focusPageIfLost(invisible)).toBe('heading');
+    expect(invisible.headings[0].focus).not.toHaveBeenCalled();
+    expect(invisible.headings[1].focus).not.toHaveBeenCalled();
+    expect(invisible.headings[2].focus).toHaveBeenCalled();
+    for (const d of [doc('body'), doc('body', { headings: [{ hidden: true }] }), doc('body', { headings: [{ focusable: false }] }), doc('body', { headings: [{ drawn: false }, { visibility: 'hidden' }] })]) {
       expect(focusPageIfLost(d)).toBe('main');
       expect(d.main.focus).toHaveBeenCalledWith({ preventScroll: true });
     }
@@ -116,9 +124,14 @@ describe('이동 뒤 포커스 — 잃었을 때만 새 화면의 첫 제목(없
     expect(t.timers[0].ms).toBe(HEADING_WATCH_MS);
     t.mutate(); // 아직 숨긴 제목뿐 — 그대로
     expect(d.activeElement).toBe(d.main);
-    d.headings.push(heading(d)); // 실제 화면이 들어왔다
+    d.headings.push(heading(d, { visibility: 'hidden' })); // 감춘 제목 — 아직 아니다
+    t.mutate();
+    expect(d.activeElement).toBe(d.main);
+    d.headings[1].visibility = 'visible'; // 실제 화면이 보였다
     t.mutate();
     expect(d.activeElement).toBe(d.headings[1]);
+    expect(t.observers[0].on).toBe(true); // 옮긴 제목을 2초 창 끝까지 계속 지킨다
+    t.timers[0].fn();
     expect(t.observers[0].on).toBe(false);
     expect(t.listeners).toEqual({});
     // ② 그사이 포커스가 다른 데로 갔으면 빼앗지 않는다
@@ -145,6 +158,58 @@ describe('이동 뒤 포커스 — 잃었을 때만 새 화면의 첫 제목(없
     }
   });
 
+  it('옮긴 제목이 빠지거나 감춰져 포커스가 떨어지면 다음 보이는 제목(없으면 본문)으로 — 다른 데로 갔으면 빼앗지 않는다', () => {
+    const harness = (d) => {
+      const listeners = {}, observers = [];
+      d.addEventListener = vi.fn((type, fn) => { listeners[type] = fn; });
+      d.removeEventListener = vi.fn((type, fn) => { if (listeners[type] === fn) delete listeners[type]; });
+      class Observer { constructor(cb) { this.cb = cb; this.on = false; observers.push(this); } observe(node, opts) { this.on = true; this.node = node; this.opts = opts; } disconnect() { this.on = false; } }
+      const timers = [];
+      const opts = { Observer, schedule: (fn, ms) => { timers.push({ fn, ms }); return timers.length; }, cancel: vi.fn() };
+      return { listeners, observers, timers, opts, mutate: () => observers.forEach((o) => o.on && o.cb([])) };
+    };
+    const remove = (d, h) => { h.isConnected = false; d.headings.splice(d.headings.indexOf(h), 1); };
+    // ① 교재 실측: 표지 h1에 닿은 뒤 그 h1이 빠지고 body로 → 본문 h1이 들어오면 그리로
+    const d = doc('body', { headings: [{}] });
+    expect(focusPageIfLost(d)).toBe('heading');
+    d.head = {};
+    const t = harness(d);
+    watchPageHeading(d, t.opts);
+    expect(t.observers.map((o) => o.node)).toEqual([d.main, d.head]); // 감춤 style을 넣고 빼는 head도 본다
+    const cover = d.headings[0];
+    remove(d, cover); d.activeElement = d.body;
+    t.mutate();
+    expect(d.main.focus).toHaveBeenCalledTimes(1); // 다음 제목이 아직 없다 — 본문으로
+    expect(d.activeElement).toBe(d.main);
+    d.headings.push(heading(d));
+    t.mutate();
+    expect(d.activeElement).toBe(d.headings[0]);
+    expect(t.observers[0].on).toBe(true);
+    // ② 지키던 제목이 감춰졌다(포커스는 그 자리에 남음) → 다음 보이는 제목으로 바로
+    const lesson = d.headings[0];
+    d.headings.push(heading(d));
+    lesson.visibility = 'hidden';
+    t.mutate();
+    expect(d.activeElement).toBe(d.headings[1]);
+    // ③ 그사이 사용자가 다른 데로 옮겼으면 제목이 빠져도 빼앗지 않고 멈춘다
+    const e = doc('body', { headings: [{}] });
+    focusPageIfLost(e);
+    const t2 = harness(e);
+    watchPageHeading(e, t2.opts);
+    const elsewhere = { isConnected: true };
+    e.activeElement = elsewhere;
+    remove(e, e.headings[0]); e.headings.push(heading(e));
+    t2.mutate();
+    expect(e.activeElement).toBe(elsewhere);
+    expect(e.headings[0].focus).not.toHaveBeenCalled();
+    expect(t2.observers[0].on).toBe(false);
+    // ④ 처음부터 포커스가 우리 자리(본문 · 제목)가 아니면 지켜보지 않는다
+    const f = doc('el', { headings: [{}] });
+    const t3 = harness(f);
+    watchPageHeading(f, t3.opts);
+    expect(t3.observers).toHaveLength(0);
+  });
+
   it('살아 있는 포커스(누른 GNB 탭 등)는 빼앗지 않는다', () => {
     const d = doc('el', { headings: [{}] });
     expect(focusPageIfLost(d)).toBeNull();
@@ -154,7 +219,7 @@ describe('이동 뒤 포커스 — 잃었을 때만 새 화면의 첫 제목(없
   it('Layout 배선 — 첫 마운트 · 같은 pathname(해시만 바뀜)은 건너뛰고, 다음 프레임에 판정', () => {
     const effect = sliceBetween(read('src/components/Layout.jsx'), 'const lastPathname = useRef(null);', '}, [pathname]);');
     expect(effect).toContain('if (lastPathname.current === null || lastPathname.current === pathname) { lastPathname.current = pathname; return undefined; }');
-    expect(effect).toContain("const frame = requestAnimationFrame(() => { if (focusPageIfLost(document) === 'main') stopWatch = watchPageHeading(document); });");
+    expect(effect).toContain("const frame = requestAnimationFrame(() => { if (focusPageIfLost(document)) stopWatch = watchPageHeading(document); });");
     expect(effect).toContain('return () => { cancelAnimationFrame(frame); stopWatch?.(); };');
     expect(read('src/components/Layout.jsx')).toContain('<main className="app-layout" role="main" id="main-content" tabIndex={-1}>');
 

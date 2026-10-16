@@ -69,9 +69,10 @@ export default function Layout({ children }) {
   useEffect(() => {
     if (lastPathname.current === null || lastPathname.current === pathname) { lastPathname.current = pathname; return undefined; }
     lastPathname.current = pathname;
-    // 대기 화면이라 제목이 아직 없어 본문으로 보냈으면, 실제 제목이 나타날 때 한 번 그리로(watchPageHeading — 2초 · 사용자 조작 · 다음 이동에 끝).
+    // 옮긴 자리를 2초 지킨다(watchPageHeading — 사용자 조작 · 다음 이동에 끝): 본문이면 실제 제목이 보일 때 그리로,
+    // 제목이면 그 제목이 빠지거나 감춰져 포커스가 body로 떨어질 때 다음 제목(없으면 본문)으로.
     let stopWatch = null;
-    const frame = requestAnimationFrame(() => { if (focusPageIfLost(document) === 'main') stopWatch = watchPageHeading(document); });
+    const frame = requestAnimationFrame(() => { if (focusPageIfLost(document)) stopWatch = watchPageHeading(document); });
     return () => { cancelAnimationFrame(frame); stopWatch?.(); };
   }, [pathname]);
   const [isOffline, setIsOffline] = useState(false);
