@@ -45,6 +45,11 @@
 //   토스트 「3편을 준비·분석했어요. 2장은 건너뛰었어요(こころ 上 三·こころ 中 七 — 분석하지 못했어요). 다시 열면 그 장부터 이어요.」
 //   연달아 3장 실패면 「연달아 3장을 분석하지 못해 멈췄어요 — …」(할당량·네트워크 같은 공통 원인 — 남은 장을 헛되이 돌리지 않는다)
 //
+// 영어 정본(LIT-SRC-EN-1, Standard Ebooks) — 같은 표에 섞인다. 권리 근거 칸은 같은 모양, 링크만 판 페이지, 루비 없는 장은 루비 칸을 감춘다:
+//   Alice’s Adventures in Wonderland · Lewis Carroll   B1 중급   퍼블릭 도메인 · 초출 1865 · 작가 1898 사망 · Standard Ebooks · CC0-1.0
+//                                                                · GB·US·KR 검토(claude, 2026-10-16) · Standard Ebooks 판      [게시]
+//   표지는 아직 없다(영어 표지 시리즈는 목업 합의 뒤).
+//
 // 기대 화면(kind="art", 출처 칸):
 //   北斎と広重の風景版画 · 葛飾北斎・歌川広重   N2 상급   ColBase · 정부표준이용규약 2.0 · 8장
 //                                                        출처: ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · …
@@ -63,6 +68,8 @@ import { failureMessage, friendlyToastMessage } from '../lib/errorMessage';
 import { literatureBatchTargets, literatureResumeTargets } from '../lib/literaturePublish';
 import { literatureWork } from '../lib/literatureCanonical';
 import LiteratureCover from './books/LiteratureCover';
+import VictorianCover from './books/VictorianCover';
+import { standardEbooksWork } from '../lib/standardEbooksCanonical';
 
 const LITERATURE_API = '/api/admin/literature';
 const FAILURE_STOP = 3; // 연달아 이만큼 실패하면 공통 원인(할당량·네트워크)으로 보고 멈춘다
@@ -72,11 +79,12 @@ const CONFLICT_LABEL = { 'text-differs': '정본과 원문이 다름', 'duplicat
 /** 정본 표지 — 서재 카드와 같은 그림을 배율만 줄여서(60×84 기준). 정본 대조표에 없는 책(그림 책)은 그리지 않는다. */
 export function BookCover({ bookKey, scale = 1 }) {
   const work = literatureWork(bookKey);
-  if (!work?.display) return null;
+  const english = work ? null : standardEbooksWork(bookKey); // 영어 정본 — 빅토리아 천 장정(LIT-SRC-EN-1)
+  if (!work?.display && !english?.display) return null;
   return (
     <span style={{ display: 'inline-block', width: 60 * scale, height: 84 * scale, overflow: 'hidden', verticalAlign: 'middle', flex: 'none' }}>
       <span style={{ display: 'block', width: 60, transform: `scale(${scale})`, transformOrigin: '0 0' }}>
-        <LiteratureCover work={work} />
+        {work ? <LiteratureCover work={work} /> : <VictorianCover work={english} />}
       </span>
     </span>
   );
@@ -131,7 +139,7 @@ function EvidenceCell({ book, kind }) {
     <td className="admin-table__muted">
       {rights.basis === 'public-domain' ? '퍼블릭 도메인' : rights.basis} · 초출 {rights.publishedYear} · 작가 {rights.authorDeathYear} 사망 · {rights.charset}
       {' · '}{rights.reviewedJurisdictions.join('·')} 검토({rights.reviewedBy}, {rights.reviewedAt})
-      {' · '}<a href={rights.evidenceUrl} target="_blank" rel="noopener noreferrer">도서 카드</a>
+      {' · '}<a href={rights.evidenceUrl} target="_blank" rel="noopener noreferrer">{rights.evidenceLabel || '도서 카드'}</a>
     </td>
   );
 }
@@ -195,7 +203,7 @@ function ChapterReview({ api, queryKey, kind, book, onReview, onReviewMany, revi
         return (
           <li key={chapter.order}>
             {material ? <Link href={`/viewer/${material.id}`}>{chapter.title} ↗</Link> : chapter.title}
-            {KIND[kind].ruby && item.applied != null && ` · 루비 ${item.applied}/${item.rubyLocks}`}
+            {KIND[kind].ruby && item.applied != null && item.rubyLocks > 0 && ` · 루비 ${item.applied}/${item.rubyLocks}`}
             {item.hints > 0 && ` · 제안 ${item.hints}개`}
             {item.hintsMissed?.length > 0 && ` · 안 붙은 제안 ${item.hintsMissed.length}개(${item.hintsMissed.join('·')} — 장에서 직접 확인)`}
             {item.remaining != null && (item.remaining > 0 ? ` · 확인 ${item.remaining}개 남음` : ' · 확인 끝')}
@@ -396,7 +404,7 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
         </p>
       ) : (
         <p className="admin-table__muted" style={{ margin: '0 0 12px' }}>
-          青空文庫 퍼블릭 도메인 원작(리포 <code>src/content/literature/aozora</code>). 「게시」를 누르면 장들을 비공개로 준비하고 이 화면에서
+          青空文庫·Standard Ebooks 퍼블릭 도메인 원작(리포 <code>src/content/literature</code>). 「게시」를 누르면 장들을 비공개로 준비하고 이 화면에서
           한 번씩 분석해요. 장을 열어 「뜻 확인 필요」(문맥 뜻 제안)를 확정하고 장마다 「검수 완료」를 누른 뒤 「공개」하면 산책에 보여요.
           분석과 검수 결과는 모든 사용자가 같이 쓰고, 단어 상태만 사람마다 따로예요.
         </p>

@@ -187,7 +187,11 @@ group by 1 order by 1;
 - `literatureDisplay.test.js` — 33편 목차·한국어 제목·문양(작품마다 다름)
 - `aozoraParser.test.js` · `literatureAttribution.test.js` — 작은 가나 대체 표(fail-closed)·편집 기록·출처 줄 표기
 
-## 8. 아오조라 밖 출처·다른 나라 고전 — 제안 (오너 결정 필요, 2026-10-16 KST)
+## 8. 아오조라 밖 출처·다른 나라 고전 (2026-10-16 KST — 영어 시범 착수)
+
+> **진행**: 오너 「ㄱㄱ」(2026-10-16 KST)로 **영어 시범 3편**(Alice’s Adventures in Wonderland · The Adventures of Sherlock Holmes ·
+> A Christmas Carol, Standard Ebooks) 착수 — LIT-SRC-EN-1. 구현·절차는 `src/content/literature/standardebooks/README.md`.
+> 첫 묶음 후보는 「유명한 작가·유명한 책 위주」(오너)로 다시 골랐다(구텐베르크 30일 다운로드 순위 실측 기준). 중·불은 시범 결과를 본 뒤.
 
 오너 「아오조라 이외 다른 사이트 혹은 다른 나라 고전 책도 가져올 것 고려」. 앱이 이미 다루는 학습 언어(영어·중국어·프랑스어)의
 퍼블릭 도메인 고전을 같은 「정본 책」 흐름(빌드 → 비공개 준비 → 분석 → 검수 → 공개)에 싣는 안. **새 과정·새 출처는 지속 실행
@@ -200,7 +204,7 @@ group by 1 order by 1;
 | **Standard Ebooks** | 영어 | Gutenberg 등 PD 원문을 다시 교정·구조화한 EPUB/XHTML | 교정·서식은 CC0, 원문은 미국 PD 기준(다른 나라는 각자 확인) | **채택(1순위)** | 교정 품질·장 구조(XHTML 섹션)가 아오조라 판권 수준. 출처 표기·교정 이력이 명확 |
 | Project Gutenberg | 영·불·중 일부 | 최대 PD 원문 모음(텍스트·HTML) | 라이선스·상표 표기를 떼면 미국법상 제약 없음. 판정은 미국 기준 | 부분 채택(보조) | 교정 품질이 고르지 않음 — Standard Ebooks에 없는 작품만. 머리말·꼬리말 제거 규칙 필요 |
 | **Wikisource**(zh·fr) | 중·불 | 공동 전사본 | PD 원문은 PD. fr은 전사본을 CC BY-SA 4.0으로 둔다 → 출처·라이선스 표기 | **채택(중·불 1순위)** | 중국어 근대 백화문·프랑스 단편이 장 단위로 정리돼 있음. 판정은 미국 기준이라 우리 기준으로 다시 본다 |
-| Gallica(BnF) | 불 | 국립도서관 디지털 사본 | 비상업 무료, **상업 재이용은 유료 라이선스** | 배제 | 서비스 성격상 상업 이용으로 볼 여지 — 같은 작품을 Wikisource·Gutenberg에서 받는다 |
+| Gallica(BnF) | 불 | 국립도서관 디지털 사본 | 비상업 무료(출처 표기), **상업 재이용은 유료 라이선스** | 부분 채택(보조) | 오너 확인(2026-10-16 KST): manabi는 **비상업** — 출처 표기 조건으로 쓸 수 있다. 전사 텍스트가 고르지 않아 Wikisource에 없는 작품만 |
 | Chinese Text Project(ctext) | 고전 한문 | 선진~청 문헌 | 학술·교육 이용, 대량 복제·대체 서비스 금지, 텍스트 BY-NC-SA라는 2차 기록 | 배제 | 비상업 조건 + 고전 한문은 HSK 학습자 수준 밖 |
 | LibriVox | 영·불 | PD 낭독 음성 | PD | 보류 | 음성은 오너 보류 범위(새 과정·음성) |
 
@@ -212,20 +216,34 @@ group by 1 order by 1;
   작품마다 기록하고, 걸리면 넣지 않는다(fail-closed). 번역본은 번역자 권리가 따로라 **원어 원문만**(아오조라와 같은 원칙).
 - 중국어는 하드리밋 ⑷ **중화권 정치 서술 완전 배제** — 작품 선정 단계에서 정치 서술이 없는 산문·소설만(아래 후보도 그 기준).
 
-### 8.3 첫 묶음 후보 (언어별 3편 안팎 — 오너 선택)
+### 8.3 첫 묶음 후보 (오너 「유명한 작가, 유명한 책 위주로」 2026-10-16 KST — 구텐베르크 30일 다운로드 순위 실측 + 한국 인지도)
 
-| 언어 | 작품 | 작가(몰년) | 출처 | 이유 |
-|---|---|---|---|---|
-| 영어 | The Gift of the Magi | O. Henry(1910) | Standard Ebooks | 짧은 단편, 반전 구조 — 첫 영어 정본으로 분량·난이도 적당 |
-| 영어 | The Happy Prince | Oscar Wilde(1900) | Standard Ebooks | 동화체·반복 구조로 중급 학습자에 맞음 |
-| 영어 | Alice's Adventures in Wonderland | Lewis Carroll(1898) | Standard Ebooks | 장 구조가 뚜렷한 대표 고전(12장) |
-| 중국어 | 背影 · 春 | 朱自清(1948) | zh.wikisource | 근대 백화문 교과서 명문, 짧고 정치 서술 없음 |
-| 중국어 | 落花生 | 许地山(1941) | zh.wikisource | 아주 짧은 산문 — HSK 4–5급 입문 |
-| 중국어 | 故乡 | 鲁迅(1936) | zh.wikisource | 대표 단편. 정치 서술 여부는 선정 때 다시 검토(걸리면 社戏로 대체) |
-| 프랑스어 | La Parure | Maupassant(1893) | fr.wikisource | 짧은 대표 단편, 반전 구조 |
-| 프랑스어 | La Chèvre de M. Seguin | Alphonse Daudet(1897) | fr.wikisource | 「풍차 방앗간 편지」 속 동화 — 입문 |
+| 언어 | ⭐ 1차(시범) | 그다음 후보 |
+|---|---|---|
+| 영어 | **Alice’s Adventures in Wonderland**(Carroll 1898) · **The Adventures of Sherlock Holmes**(Doyle 1930) · **A Christmas Carol**(Dickens 1870) — 착수 | Anne of Green Gables(Montgomery 1942) · The Great Gatsby(Fitzgerald 1940, 미국 2021 만료) · Pride and Prejudice · Dr Jekyll and Mr Hyde |
+| 중국어 | 唐诗三百首(구텐베르크 중국어 1위) · 鲁迅 「孔乙己」·「故乡」·「社戏」(정치 서술 없는 단편만 — 「阿Q正传」·「狂人日记」 제외) · 「从百草园到三味书屋」 | 朱自清 背影 · 西游记(몇 회만) · 红楼梦 — 三国演义는 정치·전쟁 서사라 하드리밋 ⑷로 제외 |
+| 프랑스어 | La Dernière Classe(Daudet) · La Parure(Maupassant) · Le Tour du monde en quatre-vingts jours(Verne) | Arsène Lupin(Leblanc 1941) · Fables(La Fontaine) · Le Fantôme de l’Opéra · Les Misérables(일부) — 「어린 왕자」는 프랑스 전쟁 연장으로 2032년까지 보호라 제외 |
 
-### 8.4 이식 비용 (재사용 vs 신규)
+### 8.4 영어 표지 — 「빅토리아 천 장정」 (오너 「현실 고증은 B?」 → 「그럼 B로」 → 「실물에 가깝게」 2026-10-16 KST)
+
+시안 A(시리즈 A 틀 + 가로 題簽)와 B(빅토리아 천 장정)를 비교한 뒤 **B**로 정했고, 이어서 초판 앞표지 **실물 사진·서지 기록과 대조**해
+구성을 맞췄다(1차 시안은 천 색·찍는 방식만 기록을 따르고 배치·문양은 관례로 지어낸 것이었다 — 실물과 달랐던 점: Holmes 먹 판·먹 테두리·
+돋보기, Carol 촛불·위쪽 제목 판, Alice 위쪽 제목). 세 장정 모두 퍼블릭 도메인이라 구조·화풍을 반영하되(IP §2.1 퍼블릭 도메인 표지 예외),
+원본을 옮겨 붙이지 않고 코드 SVG로 새로 그린다. 사람 몸·출판사 표지(총서 이름)는 그리지 않는다.
+구현: `src/lib/victorianCover.js`(천·장정 구성 키) · `src/components/books/VictorianCover.jsx`.
+
+| 작품 | 초판 앞표지 실물 | 이 표지 | 근거 |
+|---|---|---|---|
+| Alice’s Adventures in Wonderland | Macmillan 1866 — 붉은 천, 금박 삼중 줄 테두리, 가운데 작은 금박 원형 그림(앞 앨리스와 돼지·뒤 체셔 고양이), **앞표지 글자 없음** | `medallion` — 붉은 천 · 금박 삼중 줄 · 원형 안 돼지만(사람 없음) · 글자 없음 | UMD 「Alice 150」, Bonhams, Morgan |
+| The Adventures of Sherlock Holmes | George Newnes 1892 — 연파랑(실물 사진은 청록빛, 실측 #5a999e) 천, 경사진 판, 테두리 없음, 위 금박 제목, 오른쪽 아래 먹 테 거리 그림(위 간판 「The Strand Library」, 그림 속 거리 표지판은 첫 쇄만 빈칸), 아래 금박 작가 | `pictorial` — 같은 자리 · 거리 그림 새로 · 위 간판 비움 · 금박 글자에 짙은 청록 테(밝은 천 위 대비 6.6:1) | Bauman Rare Books 사진, ABAA |
+| A Christmas Carol | Chapman & Hall 1843 — 계피색 세로 골 천, 민압 호랑가시·담쟁이 테두리, 가운데 금박 호랑가시 화환(아래 리본) 안에 「A CHRISTMAS CAROL BY CHARLES DICKENS」 | `wreath` — 같은 구성 · 화환은 60px 글자 자리 때문에 실물(약 1/2 폭)보다 조금 큼(약 2/3 폭) | Bauman Rare Books 사진, Sotheby’s |
+
+- 남은 차이: 그림 내용은 새 도안, 제목 글자는 Caslon(Libre Caslon Display, OFL — 실물은 판마다 장식 글자), 책등은 그리지 않는다.
+- 천 색은 일본 책(시리즈 A) 천 색과도 CIELAB 색차 12 이상, 금박 글자는 천과 3:1 이상이거나 글자 테와 3:1 이상(`victorianCover.test.js`).
+- 사진은 대조용으로만 봤다 — 저장소·화면에 싣지 않는다(고서점 사진 저작권).
+- 중·불 원작을 넣을 때는 그 나라·시대의 초판 실물을 같은 방식(사진·기록 대조 → 새로 그림)으로 따로 정한다.
+
+### 8.5 이식 비용 (재사용 vs 신규)
 
 - **그대로 쓰는 것**: 게시 흐름 전체(준비·분석·검수·묶음 검수·공개, provider 분기 — 그림 책 ART-P0-3이 이미 두 번째 provider),
   표지 시리즈 A(새 색·문양만), 경계 미리 묶기 틀(literature-boundaries — 토크나이저만 언어별), 분석기(영·중·불 경로가 이미 있다).

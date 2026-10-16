@@ -18,6 +18,7 @@ import { ART_BOOK_PROVIDER, artBookPublishable } from './artBook.js';
 import { ART_TEXT_LICENSE_LABEL } from './artCatalog.js';
 import { countAttachedReviewHints, reviewHintCoverage } from './literatureReviewHints.js';
 import { senseReviewItems } from './viewerSenseReview.js';
+import { SE_PROVIDER, standardEbooksRightsPublishable } from './standardEbooks.js';
 
 /** 분석 전이거나 검수 기록이 한 번도 없는데 공개된 장 — 사용자에게 「분석 전」·「검수 전」 장이 보이는 상태. rows: {visibility, status, review} */
 export const literatureExposedRows = (rows = []) => rows.filter((row) => row.visibility === 'public' && (row.status !== 'completed' || !row.review));
@@ -37,7 +38,8 @@ export const LITERATURE_PUBLISH_STATE = Object.freeze({
 
 /**
  * 빌드 산출물이 여전히 공개 가능한 기록인가 — 게시 직전에 한 번 더(fail-closed). 출처별 판정:
- * 'aozora' → 권리 기록(aozoraRightsPublishable) · 'art' → 카탈로그 대조(artBookPublishable) · 그 밖 → 불가.
+ * 'aozora' → 권리 기록(aozoraRightsPublishable) · 'art' → 카탈로그 대조(artBookPublishable)
+ * · 'standardebooks' → 권리 기록(standardEbooksRightsPublishable — 원산국·미국·한국, LIT-SRC-EN-1) · 그 밖 → 불가.
  */
 export function literatureBookPublishable(book) {
   if (!Array.isArray(book?.chapters) || book.chapters.length === 0) return false;
@@ -45,6 +47,7 @@ export function literatureBookPublishable(book) {
   switch (literature?.provider) {
     case 'aozora': return aozoraRightsPublishable(literature.rights, literature.attribution, literature);
     case ART_BOOK_PROVIDER: return artBookPublishable(book);
+    case SE_PROVIDER: return standardEbooksRightsPublishable(literature);
     default: return false;
   }
 }
@@ -63,6 +66,22 @@ function aozoraRightsSummary(literature) {
     publishedYear: literature.publishedYear,
     authorDeathYear: literature.authorDeathYear,
     charset: literature.charset,
+    evidenceLabel: '도서 카드',
+  };
+}
+
+/** Standard Ebooks 권리 근거 — 아오조라와 같은 칸 모양(charset 자리에 판 라이선스). 근거 링크는 판 페이지. */
+function standardEbooksRightsSummary(literature) {
+  return {
+    basis: literature.rights.basis,
+    reviewedBy: literature.rights.reviewedBy,
+    reviewedAt: literature.rights.reviewedAt,
+    reviewedJurisdictions: literature.rights.reviewedJurisdictions,
+    evidenceUrl: literature.url,
+    publishedYear: literature.publishedYear,
+    authorDeathYear: literature.authorDeathYear,
+    charset: `Standard Ebooks · ${literature.license}`,
+    evidenceLabel: 'Standard Ebooks 판',
   };
 }
 
@@ -205,6 +224,7 @@ export function literatureBookSummary(book, rows = []) {
     total: book.book.total,
     publishable: literatureBookPublishable(book),
     ...(provider === 'aozora' ? { rights: aozoraRightsSummary(literature) } : {}),
+    ...(provider === SE_PROVIDER ? { rights: standardEbooksRightsSummary(literature) } : {}),
     ...(provider === ART_BOOK_PROVIDER ? { provenance: artProvenanceSummary(book) } : {}),
     plan,
     stage: literatureStage(book, rows),

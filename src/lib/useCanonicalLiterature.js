@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import { verifiedCanonicalLiterature } from './literatureCanonical';
+import { verifiedStandardEbooksLiterature } from './standardEbooksCanonical';
 
-/** 뷰어 출처 줄용 — 정본과 대조된 아오조라 크레딧(없거나 다르면 null). 원문·책 위치가 바뀌면 다시 대조한다. */
+// 출처별 대조 — 青空文庫 · Standard Ebooks(LIT-SRC-EN-1). 둘 다 원문 해시가 정본과 같을 때만 크레딧을 준다.
+const VERIFY = { aozora: verifiedCanonicalLiterature, standardebooks: verifiedStandardEbooksLiterature };
+
+/** 뷰어 출처 줄용 — 정본과 대조된 정본 책 크레딧(青空文庫·Standard Ebooks, 없거나 다르면 null). 원문·책 위치가 바뀌면 다시 대조한다. */
 export function useCanonicalLiterature(material) {
   const rawText = material?.raw_text;
   const metadata = material?.processed_json?.metadata;
@@ -12,8 +16,9 @@ export function useCanonicalLiterature(material) {
   useEffect(() => {
     let live = true;
     setLiterature(null);
-    if (provider !== 'aozora') return undefined;
-    verifiedCanonicalLiterature({ raw_text: rawText, processed_json: { metadata: { literature: { provider }, book: { key, order } } } })
+    const verify = Object.hasOwn(VERIFY, provider) ? VERIFY[provider] : null;
+    if (!verify) return undefined;
+    verify({ raw_text: rawText, processed_json: { metadata: { literature: { provider }, book: { key, order } } } })
       .then((value) => { if (live) setLiterature(value); });
     return () => { live = false; };
   }, [rawText, provider, key, order]);

@@ -124,6 +124,34 @@ function aozoraCardHref(value) {
   }
 }
 
+/* Standard Ebooks 정본 책(LIT-SRC-EN-1) — 같은 「출처 한 줄」 문법. 판 기여는 CC0라 표기 의무는 없지만, 출처·판 링크·우리가 바꾼 점을
+ * 밝힌다(아오조라와 같은 원칙). 판 링크는 standardebooks.org HTTPS 주소일 때만 건다. */
+function standardEbooksHref(value) {
+  try {
+    const url = new URL(String(value || ''));
+    return url.protocol === 'https:' && url.hostname === 'standardebooks.org' ? url.href : '';
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Standard Ebooks 장의 출처 줄 재료 — 「원작 퍼블릭 도메인」은 권리 기록이 approved·public-domain일 때만.
+ * @returns {{author:string, publishedYear:number|null, url:string, publicDomain:boolean, editNote:boolean}|null}
+ */
+export function standardEbooksAttributionParts(literature) {
+  if (!literature || typeof literature !== 'object' || literature.provider !== 'standardebooks') return null;
+  const rights = literature.rights && typeof literature.rights === 'object' ? literature.rights : {};
+  const edits = Array.isArray(literature.edits) ? literature.edits : [];
+  return {
+    author: typeof literature.author === 'string' ? literature.author.trim() : '',
+    publishedYear: Number.isInteger(literature.publishedYear) ? literature.publishedYear : null,
+    url: standardEbooksHref(literature.url),
+    publicDomain: rights.status === 'approved' && rights.basis === LICENSE_PUBLIC_DOMAIN,
+    editNote: ['chapter-split-by-manabi', 'typography-normalized', 'illustrations-omitted'].every((code) => edits.includes(code)),
+  };
+}
+
 /**
  * 아오조라 장의 출처 줄 재료. 「원작 퍼블릭 도메인」은 권리 기록이 approved·public-domain일 때만 쓴다(없는 권리를 주장하지 않는다).
  * 底本은 첫 줄(서명·출판사)만 — 들여쓴 연속 줄(발행일·판차)은 metadata에 남고 한 줄 표기에는 넣지 않는다.
