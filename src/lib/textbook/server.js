@@ -24,9 +24,18 @@ export async function readRelease(supabase) {
  const {data,error}=await supabase.from('textbook_book_releases').select('book_id,edition_id,version').eq('book_id',BOOK_ID).maybeSingle();
  if(error)throw textbookError(503,'발행 정보를 불러오지 못했어요.');return data;
 }
+const EDITION_STAMP='book_id,edition_id,content_hash,artifact_manifest,published_at';
 export async function readEdition(supabase,edition) {
  if(!EDITION_ID.test(edition||''))throw textbookError(404,'판본을 찾을 수 없어요.');
- const {data,error}=await supabase.from('textbook_book_editions').select('book_id,edition_id,content_hash,manuscript,artifact_manifest,published_at').eq('book_id',BOOK_ID).eq('edition_id',edition).maybeSingle();
+ const {data,error}=await supabase.from('textbook_book_editions').select(`${EDITION_STAMP},manuscript`).eq('book_id',BOOK_ID).eq('edition_id',edition).maybeSingle();
+ if(error)throw textbookError(503,'교재 판본을 불러오지 못했어요.');return data;
+}
+// 발행 확인만 하는 곳(배움 · 산책 · 교재 화면, 교재 표현 저장)은 원고를 받지 않는다 — 원고 jsonb는 약 700KB(텍스트, 2026-10-16
+// 실측)라 화면마다 도쿄 DB에서 통째로 받으면 배움 · 산책 탭 전환이 2초를 넘었다. 본문은 판본 파일(candidate)이 정본이고
+// 여기서는 해시 두 개(content_hash · artifact_manifest)만 대조한다.
+export async function readEditionStamp(supabase,edition) {
+ if(!EDITION_ID.test(edition||''))throw textbookError(404,'판본을 찾을 수 없어요.');
+ const {data,error}=await supabase.from('textbook_book_editions').select(EDITION_STAMP).eq('book_id',BOOK_ID).eq('edition_id',edition).maybeSingle();
  if(error)throw textbookError(503,'교재 판본을 불러오지 못했어요.');return data;
 }
 // 가변 파일명 읽기(verifiedAsset)는 asset 경로 전용 ./assetFile에 있다. 여기서는 이미 읽은 바이트만 검증한다.

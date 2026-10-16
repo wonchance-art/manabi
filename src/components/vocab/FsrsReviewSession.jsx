@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import Button from '../Button';
 import { canAutoStartFsrsReview, fsrsIntervalLabel } from '../../lib/useFsrsReview';
-import { gradeGuide, revealTrigger } from '../../lib/reviewCard';
+import { gradeGuide, isCardRevealClick, revealTrigger } from '../../lib/reviewCard';
 import { ReviewBack, ReviewCardMeta, ReviewHeadword, useScoreArmed } from './ReviewCardParts';
 
 const RATINGS = [
@@ -79,11 +79,13 @@ export default function FsrsReviewSession({ review, onExit, embedded = false, ca
       <button type="button" disabled={busy} onClick={() => current && !current.attempt ? controller.question(embedded ? cardId : undefined) : controller.refresh()}>다시 시도</button>
     </p>}
     {word ? <>
-      <div className="card review-card" aria-busy={busy} style={{ padding: 0 }}>
+      {/* key = 카드마다 새로 그려 넘김 효과(review-card--turn)가 한 장마다 한 번 돈다. */}
+      <div key={current.cardId} className="card review-card review-card--turn" aria-busy={busy} style={{ padding: 0 }}>
         {onKnown && <div className="review-card__progress review-card__progress--tools"><div className="review-card__tools">
           <button type="button" className="review-known-btn" disabled={knownDisabled || busy} onClick={() => onKnown(word)}>아는 단어</button>
         </div></div>}
-        <div className="review-card__body">
+        <div className={`review-card__body${revealed ? '' : ' review-card__body--front'}`}
+          onClick={event => { if (!revealed && !disabled && current.attempt && isCardRevealClick(event)) reveal(revealTrigger(event)); }}>
           <ReviewCardMeta label="복습" word={word} />
           <ReviewHeadword word={word} revealed={revealed} />
           {revealed ? <ReviewBack word={word} speak={speak} ttsSupported={ttsSupported} />
