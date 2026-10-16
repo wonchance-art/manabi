@@ -7,12 +7,19 @@ export const runtime='nodejs';
 const headers={'Cache-Control':'private, no-store'};
 const respond=(data,status=200)=>Response.json(data,{status,headers});
 const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+// 주의점 목록(GET)은 권한 판정에 metadata만 쓴다 — 자료 원고(processed_json 전체: 본문 sequence · dictionary)를 받지 않는다.
+// 저장(POST)은 위치 검증 · 저장 대조에 전체가 필요하므로 그대로 받는다.
+const FULL='id,owner_id,processed_json';
+const LIGHT='id,owner_id,metadata:processed_json->metadata';
+const lightRow=row=>{if(!row)return row;const {metadata,...rest}=row;return {...rest,processed_json:{metadata}};};
 async function access(request,id,write=false) {
  if(!/^\d+$/.test(id))return {error:respond({error:'자료를 찾을 수 없어요.'},404)};
+ const columns=write?FULL:LIGHT;
+ const read=async query=>{const result=await query;return write||result.error?result:{...result,data:lightRow(result.data)};};
  const auth=request.headers.get('authorization')?await requireUser(request):{};
  if(auth.error)return {error:respond({error:auth.error},auth.status)};
  const scoped=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,{auth:{persistSession:false},global:{headers:auth.user?{Authorization:request.headers.get('authorization')}:{}}});
- const result=await scoped.from('reading_materials').select('id,owner_id,processed_json').eq('id',id).maybeSingle();
+ const result=await read(scoped.from('reading_materials').select(columns).eq('id',id).maybeSingle());
  if(result.error)throw result.error;
  let material=result.data;
  const admin=serviceClient();
@@ -20,7 +27,7 @@ async function access(request,id,write=false) {
  const mapping=auth.user?await admin.from('class_material_copies').select('source_material_id').eq('owner_id',auth.user.id).eq('copy_material_id',id).maybeSingle():{data:null};
  if(mapping.error)throw mapping.error;
  let sourceReadable=false;
- if(mapping.data){const sourceRead=await scoped.from('reading_materials').select('id,owner_id,processed_json').eq('id',mapping.data.source_material_id).maybeSingle();if(sourceRead.error)throw sourceRead.error;
+ if(mapping.data){const sourceRead=await read(scoped.from('reading_materials').select(columns).eq('id',mapping.data.source_material_id).maybeSingle());if(sourceRead.error)throw sourceRead.error;
   if(sourceRead.data&&String(sourceRead.data.id)===String(mapping.data.source_material_id)){material=sourceRead.data;sourceReadable=true;}
  }
  if(!material||(mapping.data&&!sourceReadable)){
@@ -28,7 +35,7 @@ async function access(request,id,write=false) {
   if(!team||write)return {error:respond({error:'수업 페이지에서 교재를 다시 열어 주세요.'},403)};
   const capability=await authorizeTeamRequest(request,team);
   if(capability.error)return {error:capability.error};
-  const source=await admin.from('reading_materials').select('id,owner_id,processed_json').eq('id',mapping.data?.source_material_id||id).maybeSingle();
+  const source=await read(admin.from('reading_materials').select(columns).eq('id',mapping.data?.source_material_id||id).maybeSingle());
   if(source.error)throw source.error;
   if(!materialBelongsToTeam(source.data,capability.team,capability.root))return {error:respond({error:'교재 접근 권한이 없어요.'},403)};
   material=source.data;
@@ -36,9 +43,9 @@ async function access(request,id,write=false) {
  let canEdit=!!auth.user&&material.owner_id===auth.user.id&&!mapping.data;
  const teamKey=new URL(request.url).searchParams.get('team');
  if(canEdit&&teamKey){
-  const teacher=await scoped.from('reading_materials').select('id,owner_id,processed_json')
+  const teacher=await read(scoped.from('reading_materials').select(columns)
    .eq('owner_id',auth.user.id).eq('processed_json->metadata->team->>key',teamKey)
-   .eq('processed_json->metadata->team->>root','true').maybeSingle();
+   .eq('processed_json->metadata->team->>root','true').maybeSingle());
   if(teacher.error)throw teacher.error;
   const classroom=teacher.data?.processed_json?.metadata?.team;
   canEdit=teacher.data?.owner_id===auth.user.id&&classroom?.root===true&&classroom.key===teamKey&&materialBelongsToTeam(material,classroom,teacher.data);
