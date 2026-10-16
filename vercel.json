@@ -2,10 +2,10 @@
   "git": {
     "deploymentEnabled": {
       "codex/*": false,
-      "codex2/*": false,
-      "claude/*": false
+      "codex2/*": false
     }
   },
+  "regions": ["hnd1"],
   "ignoreCommand": "bash scripts/vercel-ignore.sh",
   "crons": [
     {

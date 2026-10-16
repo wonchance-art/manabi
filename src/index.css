@@ -1441,6 +1441,19 @@ body.is-review-session .page-container { padding-top: 8px; }
   text-align: center;
 }
 
+/* 카드 넘김 — 다음 카드가 오른쪽에서 짧게 들어온다(복습 손맛 실험실 제안안, 2026-10-16).
+   key로 카드마다 새로 그려지므로 한 장마다 한 번만 돈다. 0.3초 이하 · 감속 곡선. */
+.review-card--turn { animation: reviewCardTurn 0.24s cubic-bezier(0.23, 1, 0.32, 1); }
+@keyframes reviewCardTurn {
+  from { opacity: 0.35; transform: translateX(14px); }
+  to { opacity: 1; transform: none; }
+}
+/* 앞면 몸통은 눌러서 펼칠 수 있다(정본 입력은 「정답 확인하기」 버튼). */
+.review-card__body--front { cursor: pointer; }
+@media (prefers-reduced-motion: reduce) {
+  .review-card--turn { animation: none; }
+}
+
 .review-card--center {
   align-items: center;
   justify-content: center;

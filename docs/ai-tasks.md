@@ -878,6 +878,23 @@
 
 ## Claude (claude/*)
 ### doing
+- **WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)** `claude/beautiful-lamport-po6fv0`:
+  앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
+  제안안 중 웹 몫만(스와이프 · 진동 · 아이폰 안전 여백은 모바일이라 보류). 두 복습 카드(예전 · 새 일정) 공통 `review-card--turn`(0.24초,
+  모션 감소 분기) + `isCardRevealClick`(카드 안 조작은 가로채지 않음, 정본 입력은 「정답 확인하기」 버튼 유지) · 404 돌아갈 곳 = `MAIN_NAV`
+  (옛 「자료실 · 단어장」 실측 정정). 계약 `reviewCardFeel.test.js`. 남은 것: Preview 실계정 복습 한 판 확인.
+  · **UX-REVIEW-001(같은 PR, 오너 「지금처럼 검토하고 나에게 제안하는 과정 자동화」)**: `/ux-review` 명령(점검 절차만 — 제안 형식은
+    `/design-bank` 정본) + `scripts/ux-audit.mjs`(웹 화면 캡처 · 넘침 · 빈 화면 · 대기 표시 · 콘솔 오류 · 메뉴 누락 기계 측정, 로그인 화면은
+    「미검증」 명시) + 계약 `scripts/ux-audit.test.js`. 정기 실행(예약 작업 → #1077 코멘트)은 오너 주기 결정 뒤.
+  · **DEPLOY-PREVIEW-001(같은 PR, 오너 「ㄱㄱ」 — 자동 배포 권장안)**: `vercel.json`에서 `claude/*` Git 배포 차단만 해제. 빌드 조건
+    (`scripts/vercel-ignore.sh` — main 또는 커밋 메시지 `[preview]`)과 codex 계열 차단은 그대로. Claude는 검수 시점에만 `[preview]` 커밋.
+    계약 `scripts/vercel-deploy-policy.test.js`.
+  · **PERF-TAB-001(같은 PR, 오너 「다음 ㄱㄱ」 — 탭 전환 끊김 실측)**: Preview 실측에서 배움(`/home`) · 산책(`/discover`) RSC 응답 전체 2.1~2.7초
+    (서재 0.24초). 원인 = 발행 확인(`publishedReading`)이 판본 원고 jsonb(텍스트 약 700KB)를 매 요청 도쿄 DB에서 통째로 받음 — 쓰는 건 해시 두 개뿐.
+    `readEditionStamp`(원고 제외 열)로 교체(교재 표현 저장 경로 포함). 화면 결과 불변. 계약 `editionStamp.test.js`.
+    실측(10회 중앙값, 운영→Preview): 배움 1.84→0.73초 · 산책 2.32→1.08초 · 교재 1.59→1.14초(대조 서재 0.39→0.21초).
+  · **REGION-HND1-001(같은 PR, 오너 「도쿄 ㄱㄱ」)**: 서버 함수가 iad1(미국 동부), DB가 도쿄 — 조회마다 태평양 왕복. `vercel.json`
+    `regions: ["hnd1"]`(Hobby는 단일 지역 지정 가능 — Vercel 문서). cron도 도쿄에서 돈다. 계약 `vercel-deploy-policy.test.js`.
 - **REV-SCOPE-R1B-2 학습 단계 정책 SQL (2026-10-14 12:40 KST~, 오너 「여기서 진행」 — 인계 [#1337 R1-B](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6106712130), R1-B-1 #1450 위에서)** `claude/project-thread-jqlex2`:
   anki-v2(학습 1분 · 10분, 재학습 10분) — `valid_card`가 anki-seconds-v1 · anki-v2 둘 다 받고 New 검사는 카드 정책 첫 단계로 · `fsrs_capabilities` 정책값 · 지문 재게시 SQL + 복원 SQL ·
   PGlite(M09 fixture) 검증 · 코드는 받은 정책값을 따른다. **운영 미적용** — SQL 검수 · 오너 확인 뒤 별도. 결과는 #1337 보고.

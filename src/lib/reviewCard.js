@@ -89,3 +89,11 @@ export function shouldAutoplay({ soundOn, ttsSupported, trigger }) {
 
 /** click 이벤트 → 펼친 방법. detail 0 = 보조기술 · 키보드 활성화. */
 export const revealTrigger = event => (event && typeof event.detail === 'number' && event.detail > 0 ? 'pointer' : 'assistive');
+
+/**
+ * 앞면 카드 몸통을 눌러 펼치기(복습 손맛 실험실 제안안 — 오너 「웹 위주로 ㄱㄱ」 2026-10-16). 「정답 확인하기」 버튼이
+ * 정본 입력이고(키보드 · 보조기술), 몸통 클릭은 마우스 편의다. 카드 안의 다른 조작(버튼 · 링크 · 입력)은 가로채지 않는다.
+ */
+const CARD_CONTROLS = 'button, a, input, textarea, select, summary, label, [role="button"]';
+export const isCardRevealClick = event => !!event?.target && typeof event.target.closest === 'function'
+  && !event.target.closest(CARD_CONTROLS);
