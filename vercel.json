@@ -5,6 +5,7 @@
       "codex2/*": false
     }
   },
+  "regions": ["hnd1"],
   "ignoreCommand": "bash scripts/vercel-ignore.sh",
   "crons": [
     {

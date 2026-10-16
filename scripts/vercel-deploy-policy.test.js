@@ -19,6 +19,10 @@ describe('Vercel 배포 정책', () => {
     expect(enabled['codex2/*']).toBe(false);
     expect(vercel.ignoreCommand).toBe('bash scripts/vercel-ignore.sh');
   });
+  it('서버 함수는 DB(Supabase ap-northeast-1)와 같은 도쿄(hnd1)에서 돈다 — 오너 「도쿄 ㄱㄱ」 2026-10-16', () => {
+    // 기본 iad1(미국 동부)에서는 DB 조회마다 태평양 왕복이었다(PERF-TAB-001 실측).
+    expect(vercel.regions).toEqual(['hnd1']);
+  });
   it('빌드는 main이거나 [preview] 커밋일 때만(exit 1 = 빌드, 0 = 건너뜀)', () => {
     expect(ignore('main', 'fix: anything')).toBe(1);
     expect(ignore('claude/x', 'feat: 화면 [preview]')).toBe(1);
