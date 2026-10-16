@@ -971,7 +971,9 @@
   · 같은 PR: 이동 뒤 포커스 — 보이는 제목만 · 사라진 제목은 2초 안에 다시 옮김(교재 카드 표지→본문) · 단어 목록 pagehide 기록은 bfcache 아닐 때만
     (즉시 뒤로가기 회귀 수리) · viewer-reading-controls 실제 글꼴 전 구간 34/34. bfcache: 나머지 화면은 RSC prefetch no-store가 막음(오너 결정).
   · 같은 PR(BOOK-ENTRY-SKELETON-001): 교재 본문 hash 하드 로드 빈 자리 → 본문 골격(빈 프레임 0 · 표지 0) · 교재 pagehide 기록도 bfcache 아닐 때만 ·
-    자료 추가 beforeunload는 초안이 있을 때만. 남음: 교재 읽기 API no-store(사용자별 진도 섞임 확인 뒤 결정).
+    자료 추가 beforeunload는 초안이 있을 때만. 교재 읽기 API = 사용자 값 없음 확인 → 공개 판본만 `private, no-cache` + ETag/304
+    (미리보기 · 오류는 no-store 그대로, bookReadingCache.test.js) — 헤더 흉내 Preview 실측 bfcache 복원 2/2, 실배포 재측정 대기.
+    과가 아닌 쪽(찾기 · 책 사용법 · 문화 읽기) 골격 머리는 갈래 · 제목만(실제와 같은 높이 160/131px, CLS 0). #u29 늦은 CLS는 e2e 대역 글꼴 탓 — 운영 ≤0.0013.
   · 같은 PR(ADMIN-EDIT-STABLE-001): 인라인 편집 연필이 늦게 붙어도 내용 재마운트 0(관리자 장면 「확정」 입력 소실 4/20 → 0/20 · smoke 간헐 원인) ·
     문구 표준 1건(일괄 분석 진행). 오너 판단 문구 6건은 보고(재시도 필요 · 받아뒀어요 · 연결 끊김 · Esc 안내 · 대기 이름 · 마침표).
   · 같은 PR(KO-CAP-REPIN-001 · FINGERPRINT-REPIN-001): **운영 한국어 학습이 #1504 병합(10-17 00:00 KST) 뒤 꺼져 있음** — 그 PR의 RESTRICTIVE
