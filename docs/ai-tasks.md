@@ -883,6 +883,9 @@
   제안안 중 웹 몫만(스와이프 · 진동 · 아이폰 안전 여백은 모바일이라 보류). 두 복습 카드(예전 · 새 일정) 공통 `review-card--turn`(0.24초,
   모션 감소 분기) + `isCardRevealClick`(카드 안 조작은 가로채지 않음, 정본 입력은 「정답 확인하기」 버튼 유지) · 404 돌아갈 곳 = `MAIN_NAV`
   (옛 「자료실 · 단어장」 실측 정정). 계약 `reviewCardFeel.test.js`. 남은 것: Preview 실계정 복습 한 판 확인.
+  · **UX-REVIEW-001(같은 PR, 오너 「지금처럼 검토하고 나에게 제안하는 과정 자동화」)**: `/ux-review` 명령(점검 절차만 — 제안 형식은
+    `/design-bank` 정본) + `scripts/ux-audit.mjs`(웹 화면 캡처 · 넘침 · 빈 화면 · 대기 표시 · 콘솔 오류 · 메뉴 누락 기계 측정, 로그인 화면은
+    「미검증」 명시) + 계약 `scripts/ux-audit.test.js`. 정기 실행(예약 작업 → #1077 코멘트)은 오너 주기 결정 뒤.
 - **REV-SCOPE-R1B-2 학습 단계 정책 SQL (2026-10-14 12:40 KST~, 오너 「여기서 진행」 — 인계 [#1337 R1-B](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6106712130), R1-B-1 #1450 위에서)** `claude/project-thread-jqlex2`:
   anki-v2(학습 1분 · 10분, 재학습 10분) — `valid_card`가 anki-seconds-v1 · anki-v2 둘 다 받고 New 검사는 카드 정책 첫 단계로 · `fsrs_capabilities` 정책값 · 지문 재게시 SQL + 복원 SQL ·
   PGlite(M09 fixture) 검증 · 코드는 받은 정책값을 따른다. **운영 미적용** — SQL 검수 · 오너 확인 뒤 별도. 결과는 #1337 보고.
