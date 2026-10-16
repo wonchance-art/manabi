@@ -628,6 +628,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.875rem;
 }
 
+/* 라우트 대기(app/(app)/loading.jsx): 0.4초 뒤에야 보인다 — 짧은 대기에서 스피너가 골격 앞에 깜빡이지 않게.
+   opacity만 바꾼다(글은 화면 읽기에 그대로). 동작 줄이기면 서서히 대신 0.4초 뒤 한 번에. */
+.route-loading .spinner-wrap {
+  animation: route-loading-in 0.16s ease-out 0.4s both;
+}
+@keyframes route-loading-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-loading .spinner-wrap { animation: route-loading-in 1ms 0.4s both; }
+}
+
 /* ========= Button ========= */
 .btn {
   display: inline-flex;

@@ -1,4 +1,7 @@
 import { SkeletonRegion } from '@/components/Skeleton';
+// 칸 모양 CSS는 이 대기 화면이 직접 부른다 — 화면(HomePage)만 부르면 첫 방문 때 페이지 코드보다 대기 화면이 먼저 그려져
+// 골격이 스타일 없이(목록처럼) 0.3초 보였다(/ux-review Preview b5d2fc7 · 2026-10-17 KST).
+import '@/components/learn/learn.css';
 import ResumeTile from '@/components/learn/ResumeTile';
 import ParagraphTile from '@/components/learn/ParagraphTile';
 import { GoalTrackSkeleton } from '@/components/learn/GoalTrackTile';

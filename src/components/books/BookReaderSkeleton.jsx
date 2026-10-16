@@ -1,4 +1,7 @@
 import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
+// 「참고 자료」 메뉴 모양(.manabi-reference-menu)은 본문 CSS에만 있다 — BookReader보다 먼저 그려지는 골격이 직접 부른다
+// (없으면 첫 진입 때 회색 「▶ 참고 자료」가 보였다가 「참고 자료 ⌄」로 바뀐다 · /ux-review 2026-10-17 KST).
+import './reading-content.css';
 
 /**
  * 본문 첫 그림 골격(BOOK-ENTRY-SKELETON-001). 본문 위치(#u01-…)로 바로 열 때 붙기 전 빈 자리(110–340ms)를 메운다.

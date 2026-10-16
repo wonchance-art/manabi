@@ -14,6 +14,8 @@ vi.mock('@tanstack/react-query', () => ({
 }));
 
 import DiscoverLoading from '../../app/(app)/discover/loading';
+import AppLoading from '../../app/(app)/loading';
+import BookReaderSkeleton from '../../components/books/BookReaderSkeleton';
 import HomeLoading from '../../app/(app)/home/loading';
 import ResumeTile from '../../components/learn/ResumeTile';
 import ParagraphTile from '../../components/learn/ParagraphTile';
@@ -197,5 +199,49 @@ describe('④ 목표 칸 — 받는 중 · 없음 · 실패를 가른다', () =>
     expect(statuses(failed)).toHaveLength(1);
     expect(failed).toContain(`aria-describedby="${id}"`);
     expect(failed).toContain('<span aria-hidden="true"><span class="learn-goal__line">목표 진도를 불러오지 못했어요.</span></span>');
+  });
+});
+
+// 대기 화면 회귀(/ux-review Preview b5d2fc7 · 2026-10-17 KST) — 운영엔 없던, 이 PR이 만든 네 가지.
+describe('⑤ 대기 화면 회귀 — 스타일 · 두 번 바뀜 · 비로그인 버튼 · 튀는 줄', () => {
+  /** 렌더된 골격에서 접두어가 같은 클래스를 모은다. */
+  const classes = (html, prefix) => [...new Set([...html.matchAll(/class="([^"]+)"/g)].flatMap(m => m[1].split(/\s+/)).filter(c => c.startsWith(prefix)))];
+  it('A1 배움 대기 화면이 칸 CSS를 직접 부른다 — 첫 방문에 페이지 코드보다 먼저 그려져도 스타일이 있다', () => {
+    expect(read('src/app/(app)/home/loading.jsx')).toContain("import '@/components/learn/learn.css';");
+    const css = read('src/components/learn/learn.css');
+    // learn-order-*는 휴대폰 순서 표식(필요한 것만 규칙이 있다) — 모양 클래스만 본다.
+    const used = classes(render(createElement(HomeLoading)), 'learn-').filter(c => !c.startsWith('learn-order-'));
+    expect(used.length).toBeGreaterThan(5);
+    for (const c of used) expect(css, c).toContain(`.${c}`);
+  });
+  it('A1 교재 본문 골격이 「참고 자료」 메뉴 CSS(본문 CSS에만 있음)를 직접 부른다', () => {
+    expect(read('src/components/books/BookReaderSkeleton.jsx')).toContain("import './reading-content.css';");
+    expect(render(createElement(BookReaderSkeleton, { announce: true }))).toContain('class="manabi-reference-menu"');
+    expect(read('src/components/books/reading-content.css')).toContain('.book-reader .manabi-reference-menu>summary::after{content:\'⌄\'');
+    // 같은 실수가 다른 대기 화면에 없다: 발견 골격 클래스는 전역(web-shell.css · Layout)에 있다.
+    const shell = read('src/components/web/web-shell.css');
+    for (const c of classes(render(createElement(DiscoverLoading)), 'discover-')) expect(shell, c).toContain(`.${c}`);
+  });
+  it('A2 전역 대기 스피너는 0.4초 뒤에야 보인다 — CSS만(타이머 없음), opacity만(글은 화면 읽기에 그대로), 동작 줄이기는 한 번에', () => {
+    const html = render(createElement(AppLoading));
+    expect(html).toBe('<div class="page-container route-loading"><div class="spinner-wrap"><div class="spinner"></div><p class="spinner-msg">화면 불러오는 중…</p></div></div>');
+    expect(read('src/app/(app)/loading.jsx')).not.toMatch(/setTimeout|useEffect|useState/);
+    const css = read('src/index.css');
+    expect(css).toContain('.route-loading .spinner-wrap {\n  animation: route-loading-in 0.16s ease-out 0.4s both;\n}');
+    expect(sliceBetween(css, '@keyframes route-loading-in {', '}\n@media')).not.toMatch(/visibility|display/);
+    expect(css).toContain('@media (prefers-reduced-motion: reduce) {\n  .route-loading .spinner-wrap { animation: route-loading-in 1ms 0.4s both; }\n}');
+  });
+  it('A3 비로그인 빈 공개 목록 — 「첫 번째 자료 공유하기」 대신 운영과 같은 두 갈래(로그인하고 올리기 · 교재부터)', () => {
+    const page = read('src/views/MaterialsPage.jsx');
+    const empty = sliceBetween(page, '{/* 게스트에게 빈 목록만 보여 주지 않는다', '첫 번째 자료 공유하기');
+    expect(empty).toContain('{!user && !anyFilter ? (');
+    expect(empty).not.toContain("tab !== 'public' ? (");
+    expect(empty).toContain('>로그인하고 자료 올리기 →</Link>');
+    expect(empty).toContain('<Link href="/lessons" className="empty-state__link">로그인 없이 교재부터 보기 →</Link>');
+    expect(page).toContain("? '아직 함께 읽는 글이 없어요.\\n오늘의 추천 자료부터 읽어 보세요.'"); // 안내 문구는 그대로
+  });
+  it('A4 발견 골격은 데이터에 달린 「함께 읽는 글」 줄을 그리지 않는다(실제 화면은 publicCount > 0일 때만)', () => {
+    expect(render(createElement(DiscoverLoading))).not.toContain('함께 읽는 글');
+    expect(read('src/components/web/DiscoverShelf.jsx')).toContain('{publicCount > 0 && <div className="discover-shelf__row">');
   });
 });

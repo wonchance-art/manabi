@@ -1015,8 +1015,9 @@ export default function MaterialsPage({ libraryView = null }) {
                   : libraryView === 'notes' ? '아직 작성한 노트가 없어요.' : '아직 보관된 개인 자료가 없어요.'}
           </p>
           {/* 게스트에게 빈 목록만 보여 주지 않는다 — 왜 비어 있는지와 다음 행동을 함께 준다. */}
-          {/* 공개 서가가 비었을 때는 로그인 권유가 아니라 아래 오늘의 추천으로 안내한다(/ux-review 2026-10-16). */}
-          {!user && !anyFilter && tab !== 'public' ? (
+          {/* 비로그인은 공개 목록이 비어도 운영과 같은 두 갈래(로그인하고 올리기 · 교재부터)를 준다 — 공유 버튼(자료 올리기 화면)은
+              로그인 없이 못 하는 행동이었다(/ux-review Preview 2026-10-17 KST). 안내 문구(오늘의 추천부터)는 그대로. */}
+          {!user && !anyFilter ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
               <Link href={signInHref} className="btn btn--primary btn--md">로그인하고 자료 올리기 →</Link>
               <Link href="/lessons" className="empty-state__link">로그인 없이 교재부터 보기 →</Link>
