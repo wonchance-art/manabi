@@ -12,7 +12,7 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
@@ -40,6 +40,7 @@ import {
 } from '../lib/world/pet';
 import { DEFAULT_AVATAR, loadWorldAvatar, saveWorldAvatar } from '../lib/world/avatar';
 import { ensureStorageSchema } from '../lib/world/storageSchema';
+import { authEntryHref } from '../lib/authRedirect';
 
 const TILE = 32;             // GameCanvas와 동일 — peers:dist(px)→타일 변환에 사용
 const PEER_STALE_MS = 10000; // 이 시간 넘게 소식 없는 peer는 유령으로 보고 정리
@@ -429,6 +430,8 @@ function NearPeoplePanel({ peers, selfId, mutedSet, onToggleMute, onReport }) {
 }
 
 export default function WorldPage() {
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInHref = authEntryHref(usePathname());
   const { user, profile, loading } = useAuth();
   const router = useRouter();
   const toast = useToast();
@@ -917,7 +920,7 @@ export default function WorldPage() {
         <p style={{ color: 'var(--text-muted)', marginBottom: 20, fontSize: '0.9rem' }}>
           로그인하면 학습 월드에 들어올 수 있어요.
         </p>
-        <Link href="/auth" className="btn btn--primary">로그인하기</Link>
+        <Link href={signInHref} className="btn btn--primary">로그인하기</Link>
       </div>
     );
   }

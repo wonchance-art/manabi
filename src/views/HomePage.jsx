@@ -47,6 +47,7 @@ import ParagraphTile from '@/components/learn/ParagraphTile';
 import GoalTrackTile from '@/components/learn/GoalTrackTile';
 import { ReviewTile, StreakTile, TodayGoalTile } from '@/components/learn/LearnTiles';
 import '@/components/learn/learn.css';
+import { authEntryHref } from '../lib/authRedirect';
 
 export async function fetchHomeData(userId, nowMs = Date.now()) {
   // 전체 두 코호트를 같은 snapshot에서 합친 뒤 센다. 구형 due WHERE로 먼저 자르지 않는다.
@@ -194,7 +195,7 @@ export default function HomePage({ book = null }) {
       <div className="learn-grid">
         <ResumeTile item={resumeItem} pending={resumePending} />
         <ParagraphTile state={{ kind: 'ready', sentence: GUEST_SAMPLE }} lang="Japanese" href="/study" kicker="오늘 문단 · 맛보기" />
-        <Link href="/auth" prefetch={false} className="learn-tile learn-goal--empty learn-guest">
+        <Link href={authEntryHref('/home')} prefetch={false} className="learn-tile learn-goal--empty learn-guest">
           <span>
             <span className="learn-goal__title">로그인하면 여기에 쌓여요</span>
             <span className="learn-goal__line">단어 복습 · 오늘 목표 · 레벨 어휘 · 기록</span>

@@ -10,7 +10,7 @@
  */
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { supabase } from '../lib/supabase';
 import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { useAuth } from '../lib/AuthContext';
@@ -22,6 +22,7 @@ import { formatDetail } from '../lib/wordDetailFormat';
 import Button from '../components/Button';
 import TokenPosLabel from './TokenPosLabel';
 import { friendlyToastMessage } from '../lib/errorMessage';
+import { authEntryHref } from '../lib/authRedirect';
 
 // 서버 캡 미러 — route.js의 MAX_LINES·MAX_LINE_LEN과 같은 값(계약 테스트로 핀).
 const QUICK_MAX_LINES = 100;
@@ -37,6 +38,8 @@ const htmlLang = (language) =>
   language === 'Japanese' ? 'ja' : language === 'Chinese' ? 'zh' : 'en';
 
 export default function QuickPage() {
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInHref = authEntryHref(usePathname());
   const { user } = useAuth();
   const toast = useToast();
   const router = useRouter();
@@ -170,7 +173,7 @@ export default function QuickPage() {
           <p style={{ margin: '0 0 16px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
             분석 서버가 로그인 사용자만 받아요 (남용 방지 정책).
           </p>
-          <Link href="/auth" className="btn btn--primary btn--md">로그인하러 가기 →</Link>
+          <Link href={signInHref} className="btn btn--primary btn--md">로그인하러 가기 →</Link>
         </div>
       ) : (
         <>

@@ -8,7 +8,7 @@ import { conversationOf } from '@/lib/conversation/turnModel';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import LibraryReaderLink, { useLibraryReader } from '@/components/web/LibraryReaderLink';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '../lib/supabase';
@@ -37,6 +37,7 @@ import { standardEbooksWorkOfBook } from '../lib/standardEbooksCanonical';
 import { literatureChapterLabel, literatureDivisionLabel } from '../lib/literatureDisplay';
 import SuggestionArtwork from '../components/SuggestionArtwork';
 import { failureMessage } from '@/lib/errorMessage';
+import { authEntryHref } from '../lib/authRedirect';
 
 
 async function fetchTodaySuggestions() {
@@ -190,6 +191,10 @@ export default function MaterialsPage({ libraryView = null }) {
     onError: (err) => toast(failureMessage('공개 범위를 바꾸지 못했어요.', err), 'error'),
   });
   const searchParams = useSearchParams();
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInPath = usePathname();
+  const signInQuery = searchParams?.toString();
+  const signInHref = authEntryHref(signInQuery ? `${signInPath}?${signInQuery}` : signInPath);
   // 기본 탭(v2-P, 오너 지시 「내 자료가 먼저」) — 로그인 `private` / 비로그인 `public`.
   // ⚠ 게스트 분기가 **필수**다: `내 자료` 쿼리는 `if (!userId) return []`이라 게스트에게
   // 무조건 빈 목록이다. 그냥 뒤집으면 게스트 첫 화면이 빈다.
@@ -974,7 +979,7 @@ export default function MaterialsPage({ libraryView = null }) {
           {/* 공개 서가가 비었을 때는 로그인 권유가 아니라 아래 오늘의 추천으로 안내한다(/ux-review 2026-10-16). */}
           {!user && !anyFilter && tab !== 'public' ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-              <Link href="/auth" className="btn btn--primary btn--md">로그인하고 자료 올리기 →</Link>
+              <Link href={signInHref} className="btn btn--primary btn--md">로그인하고 자료 올리기 →</Link>
               <Link href="/lessons" className="empty-state__link">로그인 없이 교재부터 보기 →</Link>
             </div>
           ) : anyFilter ? (

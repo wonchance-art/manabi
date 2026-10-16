@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -105,6 +106,8 @@ function readSavedScope() {
 }
 
 function VocabWorkspace({ reviewScope }) {
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInHref = authEntryHref(usePathname());
   const { user, profile, refreshProfileReadOnly } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -1319,7 +1322,7 @@ function VocabWorkspace({ reviewScope }) {
         </p>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <Link href="/review/grammar" className="btn btn--primary btn--md">문법 복습 이어가기 →</Link>
-          <Link href="/auth" className="btn btn--ghost btn--md">로그인하고 단어장 쓰기</Link>
+          <Link href={signInHref} className="btn btn--ghost btn--md">로그인하고 단어장 쓰기</Link>
         </div>
       </div>
     );

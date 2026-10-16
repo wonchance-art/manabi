@@ -1,9 +1,11 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import GrammarReviewSession from './GrammarReviewSession';
 import { loadGuestDrillQueue } from '../lib/drillSrs';
+import { authEntryHref } from '../lib/authRedirect';
 
 /**
  * 비로그인 복습 — 기기(localStorage) 큐로 세션을 돌린다.
@@ -15,6 +17,8 @@ import { loadGuestDrillQueue } from '../lib/drillSrs';
  * 저장은 이 기기에만 남는다. 그 사실과 로그인 이점은 세션 위에 한 줄로 알린다.
  */
 export default function GuestGrammarReview() {
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInHref = authEntryHref(usePathname());
   const [state, setState] = useState({ phase: 'loading', items: [] });
 
   useEffect(() => {
@@ -72,7 +76,7 @@ export default function GuestGrammarReview() {
         }}
       >
         이 기기에 쌓인 복습이에요.{' '}
-        <Link href="/auth" prefetch={false} style={{ fontWeight: 600, color: 'var(--accent-text)' }}>
+        <Link href={signInHref} prefetch={false} style={{ fontWeight: 600, color: 'var(--accent-text)' }}>
           로그인하면 기기 간에 이어집니다 →
         </Link>
       </p>

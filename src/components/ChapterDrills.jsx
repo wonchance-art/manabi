@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
@@ -10,6 +11,7 @@ import { recordChapterDrillResult, loadGuestDrillQueue, DRILL_ENCOUNTER_LANGS } 
 import { countDueGrammar } from '../lib/grammarSrs';
 import { encounterLookupLang } from '../lib/refVocabLookup';
 import { syncVocabEncounters } from './world/vocabEncounterSync';
+import { authEntryHref } from '../lib/authRedirect';
 
 /** 딕테 채점 — 구두점·아포스트로피 변형에는 관대, 철자·악상에는 엄격 */
 // 힌트는 클릭해야 열린다 — 먼저 스스로 생각해 보게 하는 장치
@@ -265,6 +267,8 @@ function countGuestDueDrills() {
 
 /** 드릴 완주 직후 복습 동선 연결 — 방금 푼 문항은 미래 due라 '대기'엔 기존 카드만 잡힌다. */
 function ReviewNudge({ userId }) {
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInHref = authEntryHref(usePathname());
   const [due, setDue] = useState(null);
   useEffect(() => {
     let alive = true;
@@ -282,7 +286,7 @@ function ReviewNudge({ userId }) {
     return (
       <p role="status" aria-live="polite" style={{ marginTop: 6, fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
         풀이 기록은 이 기기에 쌓였어요.{' '}
-        <Link href="/auth" prefetch={false} style={{ fontWeight: 600, color: 'var(--accent-text)' }}>
+        <Link href={signInHref} prefetch={false} style={{ fontWeight: 600, color: 'var(--accent-text)' }}>
           로그인하면 며칠 뒤 복습 큐로 돌아와요 →
         </Link>
       </p>

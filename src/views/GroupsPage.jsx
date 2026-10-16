@@ -6,6 +6,7 @@
  * R2: 이번 주 같이 읽기(공개 자료 지정·멤버 진도 바) + 진도 게이트 토론(내가 읽은
  * 데까지만 열림 — 원문이 공개 자료라 보안 아닌 UX 게이트). R3(공동 목표)는 후속.
  */
+import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -38,6 +39,7 @@ import {
   sumGroupSnapshots,
 } from '../lib/studyGroups';
 import Button from '../components/Button';
+import { authEntryHref } from '../lib/authRedirect';
 
 const LANG_KO = { Japanese: '일본어', English: '영어', Chinese: '중국어', French: '프랑스어' };
 
@@ -497,6 +499,8 @@ function GroupCard({ group, snapshotRows, snapshotSum, read, goal, weekStart, us
 }
 
 export default function GroupsPage() {
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInHref = authEntryHref(usePathname());
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [showForms, setShowForms] = useState(false);
@@ -577,7 +581,7 @@ export default function GroupsPage() {
         <p style={{ color: 'var(--text-secondary)', marginBottom: 20 }}>
           로그인하면 그룹을 만들어 같은 자료를 함께 읽을 수 있어요.
         </p>
-        <Link href="/auth" className="btn btn--primary btn--md">로그인하러 가기</Link>
+        <Link href={signInHref} className="btn btn--primary btn--md">로그인하러 가기</Link>
       </div>
     );
   }

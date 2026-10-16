@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { seededShuffle } from '../lib/seededShuffle';
@@ -24,6 +25,7 @@ import { fetchWeeklyReportRows } from '../lib/weeklyReportRows';
 import { splitSentenceAroundWord } from '../lib/constants';
 import { mapParagraphToItems } from '../lib/studyParagraph';
 import { ARCHIVED_TEXTBOOK_NOTICE, learnerHref } from '../lib/bookNavigation';
+import { authEntryHref } from '../lib/authRedirect';
 
 /** 로컬 날짜 YYYY-MM-DD — 격일 산출 문항 노출 판정용 */
 function ymdLocal(d) {
@@ -51,6 +53,8 @@ export default function StudySessionPage({
   lang, langCode, langName, readKey,
   band = 'beginner', languages = [], signedOut = false, shuffleSeed = '',
 }) {
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInHref = authEntryHref(usePathname());
   // 입문 레벨(N5 등) 일본어 배려 — 답변 중에도 요미가나·후리가나를 보여준다.
   const kanjiCare = band === 'beginner' && langCode === 'ja';
   // 문단 발음 상시 노출은 입문에 한정 — 비입문은 문장 탭으로 지연 공개(한자 읽기 인출 기회 확보).
@@ -844,7 +848,7 @@ export default function StudySessionPage({
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20 }}>
           로그인하면 어휘·문법·독해가 섞인 맞춤 세션으로 매일 이어서 학습할 수 있어요.
         </p>
-        <Link href="/auth" className="btn btn--primary btn--md">로그인 →</Link>
+        <Link href={signInHref} className="btn btn--primary btn--md">로그인 →</Link>
         <p style={{ marginTop: 14 }}>
           <Link href="/lessons" className="study-textlink">로그인 없이 교재 둘러보기 →</Link>
         </p>

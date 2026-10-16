@@ -7,7 +7,8 @@ import {createClassSaveIntent} from '../lib/classSaveIntent';
 import {classStudyContext,classStudyNeighborHref,studySelection} from '../lib/classStudy';
 
 import { useState, useRef, useEffect, useMemo, useCallback, cloneElement, isValidElement } from 'react';
-import { useParams, useSearchParams, useRouter } from 'next/navigation';
+import { useParams, useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { authEntryHref } from '../lib/authRedirect';
 import {isStudyNote} from '@/lib/studyNoteIdentity';
 import OriginalMaterialReader from '@/components/materials/OriginalMaterialReader';
 import useLibraryActivity from '@/components/library/useLibraryActivity';
@@ -298,6 +299,10 @@ export default function ViewerPage() {
   const { id } = useParams();
   const noteRouter = useRouter();
   const originalParams = useSearchParams();
+  // 로그인 뒤 이 자료 · 이 위치(returnTo 등 질의 포함)로 돌아온다 — 검증은 authEntryHref 규칙에 맡긴다.
+  const viewerPath = usePathname();
+  const viewerQuery = originalParams?.toString();
+  const signInHref = authEntryHref(viewerQuery ? `${viewerPath}?${viewerQuery}` : viewerPath);
   const studyContext=classStudyContext(originalParams);
   const classToolbarTarget=useRef(null);
   const [classStudyActive,setClassStudyActive]=useState(false);
@@ -3509,7 +3514,7 @@ export default function ViewerPage() {
             <>
               <div className="pdf-context__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(head) }} />
               {leftPanelResult === SENTENCE_TX_LOGIN_REQUIRED
-                ? <Link href="/auth" className="reader-sentence__login">{vt('로그인하면 이 문장의 번역을 볼 수 있어요 →')}</Link>
+                ? <Link href={signInHref} className="reader-sentence__login">{vt('로그인하면 이 문장의 번역을 볼 수 있어요 →')}</Link>
                 : <p className="reader-sentence__pending" role="status">{vt('번역 중…')}</p>}
             </>
           )}
@@ -3648,7 +3653,7 @@ export default function ViewerPage() {
       {!user && (
         <div className="viewer-guest-banner">
           <span>{vt("단어를 클릭해 뜻을 확인할 수 있어요.")}</span>
-          <Link href="/auth" className="viewer-guest-banner__cta">{vt("로그인하면 단어장에 저장하고 복습할 수 있어요 →")}</Link>
+          <Link href={signInHref} className="viewer-guest-banner__cta">{vt("로그인하면 단어장에 저장하고 복습할 수 있어요 →")}</Link>
         </div>
       )}
 
@@ -4380,6 +4385,7 @@ export default function ViewerPage() {
           user={user} comments={comments} commentInput={commentInput}
           setCommentInput={setCommentInput} addCommentMutation={addCommentMutation}
           deleteCommentMutation={deleteCommentMutation}
+          signInHref={signInHref}
         />
       )}
 

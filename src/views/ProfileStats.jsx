@@ -14,6 +14,7 @@
  * 언어 칩은 레벨 어휘 · 기억 건강 · 아는 단어를 그 언어로 거른다. 복습 개수 칸은 없다(진입 링크만 범위 주소).
  * 휴대폰은 한 격자를 펴고 클래스 order로 순서를 정한다(진행바 → 오늘 목표 · 연속 → 이번 주 · 아는 단어 → 히트맵 → 레벨 어휘 → 기억 건강).
  */
+import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
@@ -35,6 +36,7 @@ import { StatTile, StreakTile, TodayGoalTile } from '../components/learn/LearnTi
 import LevelVocabCard from '../components/learn/LevelVocabCard';
 import MemoryHealthCard from '../components/learn/MemoryHealthCard';
 import '../components/learn/learn.css';
+import { authEntryHref } from '../lib/authRedirect';
 
 /** 히트맵 — 최근 24주(168일), 가장 오른쪽 아래가 오늘. */
 export const HEATMAP_DAYS = 168;
@@ -54,6 +56,8 @@ export async function fetchProfileStats(userId, now = Date.now()) {
 }
 
 export default function ProfileStats() {
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInHref = authEntryHref(usePathname());
   const { user, profile, loading: authLoading } = useAuth();
   const catalog = useGoalCatalog(!!user);
   const [goalSignal, setGoalSignal] = useState(0);
@@ -101,7 +105,7 @@ export default function ProfileStats() {
       <div className="manabi-page learn-page">
         <Link href="/home" prefetch={false} className="learn-crumb">← 배움</Link>
         <div className="learn-top"><div className="learn-top__title"><h1>현황</h1></div></div>
-        <div className="manabi-inline-state learn-login" role="status"><span>로그인이 필요해요.</span><Link href="/auth" prefetch={false} className="learn-button-s">로그인</Link></div>
+        <div className="manabi-inline-state learn-login" role="status"><span>로그인이 필요해요.</span><Link href={signInHref} prefetch={false} className="learn-button-s">로그인</Link></div>
       </div>
     );
   }

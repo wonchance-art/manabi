@@ -3,7 +3,7 @@ import Button from '../components/Button';
 
 export default function ViewerComments({
   user, comments, commentInput, setCommentInput,
-  addCommentMutation, deleteCommentMutation,
+  addCommentMutation, deleteCommentMutation, signInHref,
 }) {
   return (
     <div className="card" style={{ marginTop: '24px', padding: '24px' }}>
@@ -73,7 +73,7 @@ export default function ViewerComments({
           </Button>
         </div>
       ) : (
-        <Link href="/auth" className="btn btn--secondary btn--sm">
+        <Link href={signInHref} className="btn btn--secondary btn--sm">
           로그인하고 댓글 남기기
         </Link>
       )}
