@@ -882,6 +882,10 @@
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로
   /api/suggestions/today와 공용화. 지역학은 발견에서만 내림(/studies · 콘텐츠 보존). 비로그인 서재 → 「서가에서 읽어 보기」.
   문학 · 그림 한 장 읽기 · 매거진(별도 세션 제작 중, 첫 호 전) 칸은 공개 결정 + 정본 판정(공개 metadata 위조 방어) 뒤. 계약 `discoverShelf.test.jsx`.
+  · 같은 PR(/ux-review 운영 점검 2026-10-16): 「공개 글 123편」→ 열면 0편(공개 123편이 전부 시리즈 제목) 실측 → 서가 · 목록 · 스터디 그룹이
+    `SERIES_TITLE_ILIKE` 하나로 같은 조건을 쓰고 0편이면 칸을 숨김 · 공개 목록 빈 상태를 로그인 권유 대신 「아직 함께 읽는 글이 없어요」로 ·
+    `.manabi-page a` 글자색 상속이 `.btn--primary` 흰 글자를 덮던 대비 2.50:1 수정(`a:not(.btn)`).
+  · 같은 PR(PERF): 공개 읽기 경로 판본 검증 재사용 `cachedCandidate` · 장 목록 `readingSections` 인스턴스 기억(관리자 경로는 매번 검증).
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
   제안안 중 웹 몫만(스와이프 · 진동 · 아이폰 안전 여백은 모바일이라 보류). 두 복습 카드(예전 · 새 일정) 공통 `review-card--turn`(0.24초,
