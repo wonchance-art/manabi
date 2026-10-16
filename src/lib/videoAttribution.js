@@ -185,6 +185,31 @@ export function wikisourceAttributionParts(literature) {
   };
 }
 
+/* 퍼블릭 도메인 전자책 사이트 정본 책(LIT-SRC-PD-1) — 같은 「출처 한 줄」 문법. 사이트 이름 · 작가 · 「한국에서 퍼블릭 도메인」 · 책 쪽 링크 ·
+ * 우리가 바꾼 점. 사이트 저작권 표시는 그 나라 기준이라 우리는 한국 판정만 밝힌다. 링크는 그 사이트 HTTPS만. */
+const PD_SITE_HOSTS = Object.freeze({ fp: 'www.fadedpage.com', gau: 'gutenberg.net.au' });
+const PD_SITE_NAMES = Object.freeze({ fp: 'Faded Page', gau: 'Project Gutenberg Australia' });
+/**
+ * @returns {{site:string, siteName:string, author:string, publishedYear:number|null, url:string, publicDomain:boolean, editNote:boolean, notesNote:boolean}|null}
+ */
+export function pdSiteAttributionParts(literature) {
+  if (!literature || typeof literature !== 'object' || literature.provider !== 'pdsite' || !Object.hasOwn(PD_SITE_HOSTS, literature.site)) return null;
+  const rights = literature.rights && typeof literature.rights === 'object' ? literature.rights : {};
+  const edits = Array.isArray(literature.edits) ? literature.edits : [];
+  let url = '';
+  try { const parsed = new URL(String(literature.url || '')); url = parsed.protocol === 'https:' && parsed.hostname === PD_SITE_HOSTS[literature.site] ? parsed.href : ''; } catch { url = ''; }
+  return {
+    site: literature.site,
+    siteName: PD_SITE_NAMES[literature.site],
+    author: typeof literature.author === 'string' ? literature.author.trim() : '',
+    publishedYear: Number.isInteger(literature.publishedYear) ? literature.publishedYear : null,
+    url,
+    publicDomain: rights.status === 'approved' && rights.basis === LICENSE_PUBLIC_DOMAIN,
+    editNote: ['chapter-split-by-manabi', 'typography-normalized', 'illustrations-omitted'].every((code) => edits.includes(code)),
+    notesNote: edits.includes('notes-omitted'),
+  };
+}
+
 /**
  * 아오조라 장의 출처 줄 재료. 「원작 퍼블릭 도메인」은 권리 기록이 approved·public-domain일 때만 쓴다(없는 권리를 주장하지 않는다).
  * 底本은 첫 줄(서명·출판사)만 — 들여쓴 연속 줄(발행일·판차)은 metadata에 남고 한 줄 표기에는 넣지 않는다.

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "provider": "pdsite",
+  "site": "fp",
+  "key": "pd-fp-virginia-woolf_a-room-of-ones-own",
+  "url": "https://www.fadedpage.com/showbook.php?pid=201410N3",
+  "title": "A Room of One’s Own",
+  "author": "Virginia Woolf",
+  "language": "English",
+  "level": "C1 고급",
+  "publishedYear": 1929,
+  "authorDeathYear": 1941,
+  "countryOfOrigin": "GB",
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "GB",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "자기만의 방",
+    "authorKo": "버지니아 울프"
+  },
+  "parse": {
+    "chapter": "^h1:CHAPTER [IVX]+$",
+    "stop": "^p:THE END$"
+  },
+  "file": {
+    "path": "201410N3.html",
+    "url": "https://www.fadedpage.com/books/201410N3/html.php",
+    "encoding": "utf-8",
+    "sha256": "f35531ec2ea82d9d1131922849812e58f0e444f673bba78b508d9302e70c3089",
+    "fetchedAt": "2026-10-17"
+  }
+}

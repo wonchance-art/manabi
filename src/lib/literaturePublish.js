@@ -20,6 +20,7 @@ import { countAttachedReviewHints, reviewHintCoverage } from './literatureReview
 import { senseReviewItems } from './viewerSenseReview.js';
 import { SE_PROVIDER, standardEbooksRightsPublishable } from './standardEbooks.js';
 import { WS_PROVIDER, wikisourceRightsPublishable } from './wikisource.js';
+import { PD_PROVIDER, PD_SITES, pdSiteRightsPublishable } from './pdSite.js';
 
 /** 분석 전이거나 검수 기록이 한 번도 없는데 공개된 장 — 사용자에게 「분석 전」·「검수 전」 장이 보이는 상태. rows: {visibility, status, review} */
 export const literatureExposedRows = (rows = []) => rows.filter((row) => row.visibility === 'public' && (row.status !== 'completed' || !row.review));
@@ -41,7 +42,8 @@ export const LITERATURE_PUBLISH_STATE = Object.freeze({
  * 빌드 산출물이 여전히 공개 가능한 기록인가 — 게시 직전에 한 번 더(fail-closed). 출처별 판정:
  * 'aozora' → 권리 기록(aozoraRightsPublishable) · 'art' → 카탈로그 대조(artBookPublishable)
  * · 'standardebooks' → 권리 기록(standardEbooksRightsPublishable — 원산국·미국·한국, LIT-SRC-EN-1)
- * · 'wikisource' → 권리 기록(wikisourceRightsPublishable — 원산국(중국·프랑스)·미국·한국, LIT-SRC-WS-1) · 그 밖 → 불가.
+ * · 'wikisource' → 권리 기록(wikisourceRightsPublishable — 한국 법: 한국 만료 또는 본국 만료, LIT-SRC-WS-1)
+ * · 'pdsite' → 권리 기록(pdSiteRightsPublishable — 같은 판정, LIT-SRC-PD-1) · 그 밖 → 불가.
  */
 export function literatureBookPublishable(book) {
   if (!Array.isArray(book?.chapters) || book.chapters.length === 0) return false;
@@ -51,6 +53,7 @@ export function literatureBookPublishable(book) {
     case ART_BOOK_PROVIDER: return artBookPublishable(book);
     case SE_PROVIDER: return standardEbooksRightsPublishable(literature);
     case WS_PROVIDER: return wikisourceRightsPublishable(literature);
+    case PD_PROVIDER: return pdSiteRightsPublishable(literature);
     default: return false;
   }
 }
@@ -100,6 +103,21 @@ function wikisourceRightsSummary(literature) {
     authorDeathYear: literature.authorDeathYear,
     charset: `Wikisource(${literature.wiki}) · ${literature.license}`,
     evidenceLabel: '위키문헌 원문',
+  };
+}
+
+/** 전자책 사이트 권리 근거 — 같은 칸 모양(charset 자리에 사이트 이름 · 한국 판정 근거). 근거 링크는 사이트 책 쪽. */
+function pdSiteRightsSummary(literature) {
+  return {
+    basis: literature.rights.basis,
+    reviewedBy: literature.rights.reviewedBy ?? literature.rights.reviewer,
+    reviewedAt: literature.rights.reviewedAt,
+    reviewedJurisdictions: literature.rights.reviewedJurisdictions,
+    evidenceUrl: literature.url,
+    publishedYear: literature.publishedYear,
+    authorDeathYear: literature.authorDeathYear,
+    charset: `${PD_SITES[literature.site]?.name ?? literature.site} · ${literature.rightsBasis === 'korea-term' ? '한국 보호기간 만료' : '본국 보호기간 만료'}`,
+    evidenceLabel: '사이트 책 쪽',
   };
 }
 
@@ -244,6 +262,7 @@ export function literatureBookSummary(book, rows = []) {
     ...(provider === 'aozora' ? { rights: aozoraRightsSummary(literature) } : {}),
     ...(provider === SE_PROVIDER ? { rights: standardEbooksRightsSummary(literature) } : {}),
     ...(provider === WS_PROVIDER ? { rights: wikisourceRightsSummary(literature) } : {}),
+    ...(provider === PD_PROVIDER ? { rights: pdSiteRightsSummary(literature) } : {}),
     ...(provider === ART_BOOK_PROVIDER ? { provenance: artProvenanceSummary(book) } : {}),
     plan,
     stage: literatureStage(book, rows),

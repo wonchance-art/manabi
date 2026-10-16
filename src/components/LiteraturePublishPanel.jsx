@@ -72,6 +72,7 @@ import { standardEbooksWork } from '../lib/standardEbooksCanonical';
 import FirstEditionCover from './books/FirstEditionCover';
 import CanonicalCover from './books/CanonicalCover';
 import { wikisourceWork } from '../lib/wikisourceCanonical';
+import { pdSiteWork } from '../lib/pdSiteCanonical';
 
 const LITERATURE_API = '/api/admin/literature';
 const FAILURE_STOP = 3; // 연달아 이만큼 실패하면 공통 원인(할당량·네트워크)으로 보고 멈춘다
@@ -82,7 +83,7 @@ const CONFLICT_LABEL = { 'text-differs': '정본과 원문이 다름', 'duplicat
 export function BookCover({ bookKey, scale = 1 }) {
   const work = literatureWork(bookKey);
   const english = work ? null : standardEbooksWork(bookKey); // 영어 정본 — 빅토리아 천 장정(LIT-SRC-EN-1)
-  const world = work || english ? null : wikisourceWork(bookKey); // 중국어·프랑스어 정본 — 초판 장정(LIT-SRC-WS-1)
+  const world = work || english ? null : wikisourceWork(bookKey) || pdSiteWork(bookKey); // 위키문헌 · 전자책 사이트 정본 — 초판 장정(LIT-SRC-WS-1 · PD-1)
   if (!work?.display && !english?.display && !world?.display) return null;
   return (
     <span style={{ display: 'inline-block', width: 60 * scale, height: 84 * scale, overflow: 'hidden', verticalAlign: 'middle', flex: 'none' }}>

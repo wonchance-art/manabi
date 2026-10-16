@@ -36,6 +36,7 @@ import { standardEbooksWorkOfBook } from '../lib/standardEbooksCanonical';
 import FirstEditionCover from '../components/books/FirstEditionCover';
 import CanonicalCover from '../components/books/CanonicalCover';
 import { wikisourceWorkOfBook } from '../lib/wikisourceCanonical';
+import { pdSiteWorkOfBook } from '../lib/pdSiteCanonical';
 import { literatureChapterLabel, literatureDivisionLabel } from '../lib/literatureDisplay';
 import SuggestionArtwork from '../components/SuggestionArtwork';
 import { failureMessage } from '@/lib/errorMessage';
@@ -721,9 +722,10 @@ export default function MaterialsPage({ libraryView = null }) {
                 meta: [english.level, english.words && `${english.words.toLocaleString()}단어`, `${english.total}장`, `읽음 ${readDone}/${b.chapters.length}`].filter(Boolean).join(' · ') + pendingNote,
                 fitLine: fitLineOf(bf, '장'),
               } : null;
-              // 중국어·프랑스어 정본(LIT-SRC-WS-1, 위키문헌) — 초판 장정 표지 + 원제·한국어 제목 + 장 제목. 분량은 중국어 글자 · 프랑스어 단어.
-              const world = work || english ? null : wikisourceWorkOfBook(b);
-              const worldLang = { Chinese: 'zh-Hans', French: 'fr', Korean: 'ko' }[world?.language] || undefined;
+              // 위키문헌(LIT-SRC-WS-1 — 중·불·한) · 전자책 사이트(LIT-SRC-PD-1 — 영·불) 정본 — 초판 장정 표지 + 원제·한국어 제목 + 장 제목.
+              // 분량은 중국어·한국어 글자 · 영어·프랑스어 단어.
+              const world = work || english ? null : wikisourceWorkOfBook(b) || pdSiteWorkOfBook(b);
+              const worldLang = { Chinese: 'zh-Hans', French: 'fr', Korean: 'ko', English: 'en' }[world?.language] || undefined;
               const worldChapterOf = (c) => world?.chapters.find((item) => item.order === c._bookOrder);
               const worldProps = world ? {
                 art: <FirstEditionCover work={world} />,

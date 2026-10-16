@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "provider": "pdsite",
+  "site": "gau",
+  "key": "pd-gau-george-orwell_nineteen-eighty-four",
+  "url": "https://gutenberg.net.au/ebooks01/0100021h.html",
+  "title": "Nineteen Eighty-Four",
+  "author": "George Orwell",
+  "language": "English",
+  "level": "B2 상급",
+  "publishedYear": 1949,
+  "authorDeathYear": 1950,
+  "countryOfOrigin": "GB",
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "GB",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "1984",
+    "authorKo": "조지 오웰"
+  },
+  "parse": {
+    "part": "^h1:PART (ONE|TWO|THREE)$",
+    "chapter": "^h2:(Chapter \\d+|APPENDIX\\.)$",
+    "start": "^h1:PART ONE$",
+    "stop": "^h2:THE END$"
+  },
+  "file": {
+    "path": "0100021h.html",
+    "url": "https://gutenberg.net.au/ebooks01/0100021h.html",
+    "encoding": "utf-8",
+    "sha256": "b73b496bb1d887bb3dee041d6fd117323742b91a4678dd61ff491c9626f84e9f",
+    "fetchedAt": "2026-10-17"
+  }
+}

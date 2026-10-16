@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "provider": "pdsite",
+  "site": "gau",
+  "key": "pd-gau-george-orwell_animal-farm",
+  "url": "https://gutenberg.net.au/ebooks01/0100011h.html",
+  "title": "Animal Farm",
+  "author": "George Orwell",
+  "language": "English",
+  "level": "B1 중급",
+  "publishedYear": 1945,
+  "authorDeathYear": 1950,
+  "countryOfOrigin": "GB",
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "GB",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "동물농장",
+    "authorKo": "조지 오웰"
+  },
+  "parse": {
+    "chapter": "^h2:Chapter [IVX]+$",
+    "stop": "^h2:THE END$"
+  },
+  "file": {
+    "path": "0100011h.html",
+    "url": "https://gutenberg.net.au/ebooks01/0100011h.html",
+    "encoding": "utf-8",
+    "sha256": "61a65efdecdf1bc950af7314819e5aebf63c1e8efa12d31440e0500d46657587",
+    "fetchedAt": "2026-10-17"
+  }
+}

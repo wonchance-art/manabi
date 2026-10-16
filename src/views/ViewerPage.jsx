@@ -181,7 +181,7 @@ import TokenRangeGrips from './TokenRangeGrips';
 import ViewerComments from './ViewerComments';
 import ViewerQuizModal from './ViewerQuizModal';
 import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constants';
-import { attributionParts, literatureAttributionParts, materialSource, standardEbooksAttributionParts, wikisourceAttributionParts } from '../lib/videoAttribution';
+import { attributionParts, literatureAttributionParts, materialSource, pdSiteAttributionParts, standardEbooksAttributionParts, wikisourceAttributionParts } from '../lib/videoAttribution';
 import { isCanonicalLiteratureMaterial, literatureWork } from '../lib/literatureCanonical';
 import { literatureChapterLabel, literatureChapterTitle } from '../lib/literatureDisplay';
 import { useCanonicalLiterature, useScriptVariant } from '../lib/useCanonicalLiterature';
@@ -3874,12 +3874,27 @@ export default function ViewerPage() {
         if (!ws) return null;
         return (
           <p className="viewer-attribution">{vt("출처:")} {vt("위키문헌")}
-            {ws.author && <> · <span lang={ws.wiki === 'zh' ? 'zh-Hans' : 'fr'}>{ws.author}{ws.publishedYear ? `, ${ws.publishedYear}` : ''}</span></>}
+            {ws.author && <> · <span lang={{ zh: 'zh-Hans', fr: 'fr', ko: 'ko' }[ws.wiki]}>{ws.author}{ws.publishedYear ? `, ${ws.publishedYear}` : ''}</span></>}
             {ws.publicDomain && <> · <span className="viewer-attribution__license">{vt("원작 퍼블릭 도메인")}</span></>}
             {ws.ccBySa && <> · <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ko" target="_blank" rel="noopener noreferrer license">{vt("전사 CC BY-SA 4.0")}</a></>}
             {ws.url && <> · <a href={ws.url} target="_blank" rel="noopener noreferrer">{vt("원문 보기")}</a></>}
             {ws.editNote && <span className="viewer-attribution__muted"> · {vt("장 분할·글자 정리는 manabi 편집, 삽화·주석은 싣지 않음")}</span>}
             {ws.scriptNote && <span className="viewer-attribution__muted"> · {vt("간체·번체는 위키문헌 글자 변환")}</span>}
+          </p>
+        );
+      })()}
+
+      {/* 퍼블릭 도메인 전자책 사이트 정본 책 출처(LIT-SRC-PD-1) — 같은 한 줄 문법. 사이트의 저작권 표시는 그 나라 기준이라 한국 판정을 적는다:
+          출처: Faded Page · Albert Camus, 1942 · 한국에서 퍼블릭 도메인 · 책 쪽 보기 · 장 분할·글자 정리는 manabi 편집, 삽화는 싣지 않음 */}
+      {(() => {
+        const pd = pdSiteAttributionParts(canonicalLiterature);
+        if (!pd) return null;
+        return (
+          <p className="viewer-attribution">{vt("출처:")} {pd.siteName}
+            {pd.author && <> · <span lang={material?.processed_json?.metadata?.language === 'French' ? 'fr' : 'en'}>{pd.author}{pd.publishedYear ? `, ${pd.publishedYear}` : ''}</span></>}
+            {pd.publicDomain && <> · <span className="viewer-attribution__license">{vt("한국에서 퍼블릭 도메인")}</span></>}
+            {pd.url && <> · <a href={pd.url} target="_blank" rel="noopener noreferrer">{vt("책 쪽 보기")}</a></>}
+            {pd.editNote && <span className="viewer-attribution__muted"> · {vt(pd.notesNote ? "장 분할·글자 정리는 manabi 편집, 삽화·미주는 싣지 않음" : "장 분할·글자 정리는 manabi 편집, 삽화는 싣지 않음")}</span>}
           </p>
         );
       })()}

@@ -98,7 +98,7 @@ describe('그리기', () => {
 describe('배선 — 서재 카드·게시 화면·빌드', () => {
   it('서재 카드: 위키문헌 책은 초판 장정 표지 + 원제 + 한국어 제목 · 글자/단어 수 · 장 제목, 「다음 과 적기」 없음', () => {
     const page = read('src/views/MaterialsPage.jsx');
-    const props = sliceBetween(page, 'const world = work || english ? null : wikisourceWorkOfBook(b);', '} : null;');
+    const props = sliceBetween(page, 'const world = work || english ? null : wikisourceWorkOfBook(b) || pdSiteWorkOfBook(b);', '} : null;');
     expect(props).toContain('art: <FirstEditionCover work={world} />');
     expect(props).toContain("world.unit === 'chars' ? '자' : '단어'");
     expect(page).toContain('{...worldProps}');
@@ -107,7 +107,7 @@ describe('배선 — 서재 카드·게시 화면·빌드', () => {
   });
   it('게시 화면 표지: 위키문헌 책은 초판 장정', () => {
     const cover = sliceBetween(read('src/components/LiteraturePublishPanel.jsx'), 'export function BookCover', '\n}\n');
-    expect(cover).toContain('wikisourceWork(bookKey)');
+    expect(cover).toContain('wikisourceWork(bookKey) || pdSiteWork(bookKey)');
     expect(cover).toContain('<FirstEditionCover work={world} />');
   });
   it('빌드는 기본으로 초판 장정 표기를 검사한다', () => {

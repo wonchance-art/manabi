@@ -7,12 +7,13 @@
 import { LITERATURE_BOOKS } from '@/content/literature/aozora/index.generated.js';
 import { STANDARD_EBOOKS_BOOKS } from '@/content/literature/standardebooks/index.generated.js';
 import { WIKISOURCE_BOOKS } from '@/content/literature/wikisource/index.generated.js';
+import { PDSITE_BOOKS } from '@/content/literature/pdsite/index.generated.js';
 import { createBookPublishHandlers } from '@/lib/server/bookPublishRoute';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const BOOKS = Object.freeze([...LITERATURE_BOOKS, ...STANDARD_EBOOKS_BOOKS, ...WIKISOURCE_BOOKS]);
+const BOOKS = Object.freeze([...LITERATURE_BOOKS, ...STANDARD_EBOOKS_BOOKS, ...WIKISOURCE_BOOKS, ...PDSITE_BOOKS]);
 const handlers = createBookPublishHandlers(() => BOOKS);
 
 export const GET = (request) => handlers.GET(request);

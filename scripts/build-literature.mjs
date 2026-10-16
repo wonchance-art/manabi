@@ -17,11 +17,14 @@ const check = process.argv.includes('--check');
 const { buildLiterature, LITERATURE_ROOT } = await import('./lib/literature-build.mjs');
 const { buildStandardEbooks, STANDARD_EBOOKS_ROOT } = await import('./lib/standard-ebooks-build.mjs');
 const { buildWikisource, WIKISOURCE_ROOT } = await import('./lib/wikisource-build.mjs');
-// 정본 문학책은 출처마다 폴더·빌드가 따로다(青空文庫 · Standard Ebooks — LIT-SRC-EN-1 · Wikisource — LIT-SRC-WS-1). prebuild --check가 모두 본다.
+const { buildPdSite, PDSITE_ROOT } = await import('./lib/pdsite-build.mjs');
+// 정본 문학책은 출처마다 폴더·빌드가 따로다(青空文庫 · Standard Ebooks — LIT-SRC-EN-1 · Wikisource — LIT-SRC-WS-1 ·
+// 퍼블릭 도메인 전자책 사이트 — LIT-SRC-PD-1). prebuild --check가 모두 본다.
 const runs = [
   [LITERATURE_ROOT, await buildLiterature({ check })],
   [STANDARD_EBOOKS_ROOT, await buildStandardEbooks({ check })],
   [WIKISOURCE_ROOT, await buildWikisource({ check })],
+  [PDSITE_ROOT, await buildPdSite({ check })],
 ];
 let failed = false;
 for (const [root, { works, errors }] of runs) {

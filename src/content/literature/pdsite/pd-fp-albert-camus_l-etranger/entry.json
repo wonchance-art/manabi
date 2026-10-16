@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "provider": "pdsite",
+  "site": "fp",
+  "key": "pd-fp-albert-camus_l-etranger",
+  "url": "https://www.fadedpage.com/showbook.php?pid=20150715",
+  "title": "L’Étranger",
+  "author": "Albert Camus",
+  "language": "French",
+  "level": "B1 중급",
+  "publishedYear": 1942,
+  "authorDeathYear": 1960,
+  "countryOfOrigin": "FR",
+  "mortPourLaFrance": false,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "FR",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "이방인",
+    "authorKo": "알베르 카뮈"
+  },
+  "parse": {
+    "part": "^p:(PREMIÈRE|DEUXIÈME) PARTIE$",
+    "chapter": "^h1:[IVX]+$",
+    "start": "^p:PREMIÈRE PARTIE$",
+    "stop": "^p:BRODARD ET TAUPIN"
+  },
+  "file": {
+    "path": "20150715.html",
+    "url": "https://www.fadedpage.com/books/20150715/html.php",
+    "encoding": "utf-8",
+    "sha256": "7f503291eed9e77c32c704c328e0224197e691af1e68c6a0ce611720d13b8ede",
+    "fetchedAt": "2026-10-17"
+  }
+}

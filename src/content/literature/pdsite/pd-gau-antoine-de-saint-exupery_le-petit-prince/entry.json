@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "provider": "pdsite",
+  "site": "gau",
+  "key": "pd-gau-antoine-de-saint-exupery_le-petit-prince",
+  "url": "https://gutenberg.net.au/ebooks03/0300771h.html",
+  "title": "Le Petit Prince",
+  "author": "Antoine de Saint-Exupéry",
+  "language": "French",
+  "level": "A2 초급",
+  "publishedYear": 1943,
+  "authorDeathYear": 1944,
+  "countryOfOrigin": "FR",
+  "mortPourLaFrance": true,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "FR",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "어린 왕자",
+    "authorKo": "앙투안 드 생텍쥐페리"
+  },
+  "parse": {
+    "chapter": "^h2:(DEDICACE|PREMIER CHAPITRE|CHAPITRE [IVXL]+)$",
+    "stop": "^h2:THE END$"
+  },
+  "file": {
+    "path": "0300771h.html",
+    "url": "https://gutenberg.net.au/ebooks03/0300771h.html",
+    "encoding": "windows-1252",
+    "sha256": "be4b35be4e4fea4a55c48a9e68f5d8a183d71817c4579f280af7f3919caf3e4e",
+    "fetchedAt": "2026-10-17"
+  }
+}
