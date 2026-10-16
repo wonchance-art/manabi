@@ -31,3 +31,26 @@ describe('판본 발행 확인 — 원고 없이 해시만', () => {
     expect(read('src/lib/server/learningContext.js')).toMatch(/await readEditionStamp\(supabase,source\.editionId\)/);
   });
 });
+
+describe('공개 읽기 경로의 판본 재사용(cachedCandidate)', () => {
+  it('같은 판본은 한 번 검증한 결과를 다시 쓴다', async () => {
+    const { cachedCandidate } = await import('../server');
+    const first = await cachedCandidate(EDITION);
+    expect(await cachedCandidate(EDITION)).toBe(first);
+    expect(first.editionId).toBe(EDITION);
+  });
+  it('실패는 담아 두지 않는다 — 다음 요청이 다시 시도한다', async () => {
+    const { cachedCandidate } = await import('../server');
+    const missing = 'ffffffffffffffffffffffff';
+    const a = cachedCandidate(missing);
+    await expect(a).rejects.toMatchObject({ status: 404 });
+    const b = cachedCandidate(missing);
+    expect(b).not.toBe(a);
+    await expect(b).rejects.toMatchObject({ status: 404 });
+  });
+  it('원고를 다루는 관리자 경로는 매번 새로 검증한다(candidate)', () => {
+    const admin = read('src/app/api/admin/books/japanese-n5/route.js');
+    expect(admin).not.toContain('cachedCandidate');
+    expect(read('src/lib/server/bookReading.js')).toMatch(/await cachedCandidate\(id\)/);
+  });
+});
