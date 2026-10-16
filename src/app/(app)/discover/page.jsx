@@ -1,6 +1,7 @@
 import MaterialsPage from '@/views/MaterialsPage';
 import DiscoverShelf from '@/components/web/DiscoverShelf';
 import Link from 'next/link';
+import { SERIES_TITLE_ILIKE } from '@/lib/constants';
 import { kstDateString } from '@/lib/growthStats';
 import { publishedReading, readingCatalog } from '@/lib/server/bookReading';
 import { suggestionClient, todaySuggestions } from '@/lib/server/suggestionReading';
@@ -16,6 +17,7 @@ export default async function Page({searchParams}) {
     publishedReading().then(published => readingCatalog(published.book)).catch(() => null), // Shelf remains available.
     todaySuggestions(client),
     client.from('reading_materials').select('id', { count: 'exact', head: true }).eq('visibility', 'public')
+      .not('title', 'ilike', SERIES_TITLE_ILIKE) // 목록(/discover?view=reading)과 같은 조건으로 센다
       .then(({ count, error }) => (error ? 0 : count || 0)),
   ]);
   return <div className="manabi-page manabi-discover"><header className="manabi-page-heading"><h1>발견</h1></header>

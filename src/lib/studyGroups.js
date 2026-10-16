@@ -6,6 +6,7 @@
  */
 import { supabase } from './supabase';
 import { kstWeekStartMs } from './growthStats';
+import { SERIES_TITLE_ILIKE } from './constants';
 
 /** 그룹 상한(§9-2 오너 확정) — 서버 RPC와 같은 값(계약 테스트로 동치 핀). */
 export const MAX_GROUPS_PER_USER = 3;
@@ -190,7 +191,7 @@ export async function fetchPublicMaterials(lang, search) {
     .from('reading_materials')
     .select('id, title, level:processed_json->metadata->>level')
     .eq('visibility', 'public')
-    .not('title', 'ilike', '[%#%]%')
+    .not('title', 'ilike', SERIES_TITLE_ILIKE)
     .order('created_at', { ascending: false })
     .limit(30);
   if (lang) query = query.eq('processed_json->metadata->>language', lang);

@@ -23,7 +23,7 @@ import { groupByBook } from '../lib/bookMeta';
 import { isTeamRoot } from '../lib/classBoard';
 import { groupByPdf, pageRangeLabel, readProgressLabel } from '../lib/pdfGroups';
 import { useGroupReadIds } from '../lib/useGroupReadIds';
-import { LEVELS, langNameKo, levelRank, profileLevel, isWriteMaterial } from '../lib/constants';
+import { LEVELS, SERIES_TITLE_ILIKE, langNameKo, levelRank, profileLevel, isWriteMaterial } from '../lib/constants';
 import { canReadSuggestion, suggestionHref, suggestionSource } from '../lib/suggestionReading';
 import { encounterLookupLang } from '../lib/refVocabLookup';
 import { isLibraryNote, materialLibraryFilters } from '../lib/libraryDiscovery';
@@ -89,7 +89,7 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
   if (withDocument) query = query.select(`${MATERIAL_LIST_COLS}${withDirection ? ', direction' : ''}, document_revision:document_json->>revision, document_language:document_json->>language, document_excerpt:document_json->>excerpt, document_assets:document_json->assets, document_has_body:document_json->hasBody`);
 
   // 자료실은 현지 언어 콘텐츠만 — 시리즈 패턴 [* #N] 자료는 /lessons로 분리
-  query = query.not('title', 'ilike', '[%#%]%');
+  query = query.not('title', 'ilike', SERIES_TITLE_ILIKE);
 
   if (tab === 'public') {
     query = query.eq('visibility', 'public');
@@ -962,14 +962,17 @@ export default function MaterialsPage({ libraryView = null }) {
           <p className="empty-state__msg">
             {anyFilter
               ? '조건에 맞는 자료가 없어요.'
-              : !user
+              : tab === 'public' && !user
+                ? '아직 함께 읽는 글이 없어요.\n오늘의 추천 자료부터 읽어 보세요.'
+                : !user
                 ? '자료는 계정에 저장돼요.\n로그인하면 텍스트를 올려 해부하고 단어장에 모을 수 있어요.'
                 : tab === 'public'
                   ? '아직 공유된 공용 자료가 없어요.'
                   : libraryView === 'notes' ? '아직 작성한 노트가 없어요.' : '아직 보관된 개인 자료가 없어요.'}
           </p>
           {/* 게스트에게 빈 목록만 보여 주지 않는다 — 왜 비어 있는지와 다음 행동을 함께 준다. */}
-          {!user && !anyFilter ? (
+          {/* 공개 서가가 비었을 때는 로그인 권유가 아니라 아래 오늘의 추천으로 안내한다(/ux-review 2026-10-16). */}
+          {!user && !anyFilter && tab !== 'public' ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
               <Link href="/auth" className="btn btn--primary btn--md">로그인하고 자료 올리기 →</Link>
               <Link href="/lessons" className="empty-state__link">로그인 없이 교재부터 보기 →</Link>
