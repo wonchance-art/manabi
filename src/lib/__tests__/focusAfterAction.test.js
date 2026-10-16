@@ -35,6 +35,19 @@ describe('뺏지 않기 판정(canTakeFocus · focusIfFree)', () => {
     expect(focusIfFree(world('inside').button, null)).toBe(false);
     expect(focusIfFree(world('body').button, null)).toBe(true);
   });
+  it('늦게 끝나는 동작(읽기 저장 줄): 영역 = 누른 요소 — 그 자리 그대로이거나 잃었을 때만, 카드 안 다른 컨트롤로 옮겼으면 그대로', () => {
+    const doc = { body: { isConnected: true } };
+    const pressed = { isConnected: true, contains: (el) => el === pressed };
+    const other = { isConnected: true }; // 같은 카드의 「✦ 비슷한 말 찾기」 등
+    const target = { isConnected: true, disabled: false, ownerDocument: doc, focus: vi.fn(() => { doc.activeElement = target; }) };
+    doc.activeElement = other;
+    expect(focusIfFree(target, pressed)).toBe(false);
+    expect(target.focus).not.toHaveBeenCalled();
+    doc.activeElement = pressed; // 「저장 중…」으로 바뀐 그 버튼에 그대로
+    expect(focusIfFree(target, pressed)).toBe(true);
+    doc.activeElement = { isConnected: false }; // 버튼이 저장 줄로 바뀌며 사라짐
+    expect(focusIfFree(target, pressed)).toBe(true);
+  });
   it('대상이 없거나 · 잠겼거나 · 떨어져 나갔으면 아무것도 하지 않는다', () => {
     const { scope, button } = world('body');
     expect(focusIfFree(null, scope)).toBe(false);
@@ -64,7 +77,10 @@ describe('배선 — 세 자리', () => {
     expect(hook).toContain('pending.key !== savedRowFocusKey(selectedToken) || Date.now() - pending.at > SAVED_ROW_FOCUS_MS');
     expect(hook).toContain(`'#inspector-word .save-grade__saved[tabindex="-1"]'`);
     expect(hook).not.toMatch(/button/); // 한 번 더 누른 Enter가 문맥 추가 · 아는 단어 표시를 쓰지 않는다
-    expect(hook).toContain("focusIfFree(target, target.closest('#inspector-word'))");
+    // 늦은 저장 동안 카드 안 다른 컨트롤로 옮긴 초점은 뺏지 않는다 — 누른 자리 그대로이거나 잃었을 때만(scope = 누른 요소)
+    expect(hook).toContain('focusIfFree(target, pending.from);');
+    // 누른 요소가 카드 밖(본문 낱말에서 단축키 · body)이면 영역 없음 = 잃었을 때만 — 본문 낱말의 초점을 뺏지 않는다(예전 영역 판정과 같다)
+    expect(viewer).toContain("savedRowFocus.current = { key: savedRowFocusKey(token), at: Date.now(), from: from?.closest?.('#inspector-word') ? from : null };");
     // 훅(useId 포함)은 이른 return(불러오는 중 화면)보다 앞이다 — 훅 순서가 바뀌지 않는다.
     expect(viewer.indexOf('const savedRowId = useId();')).toBeLessThan(viewer.indexOf('if (isLoading) return <div className="page-container">'));
     // 두 등급 경로가 모두 표식을 남긴다.

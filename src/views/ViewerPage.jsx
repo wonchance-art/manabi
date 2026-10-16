@@ -2550,7 +2550,13 @@ export default function ViewerPage() {
   const savedRowId = useId();
   const savedRowFocus = useRef(null);
   const savedRowFocusKey = (token) => `${saveScopeRef.current}:${token?.id ?? token?.text ?? ''}`;
-  const armSavedRowFocus = (token) => { savedRowFocus.current = { key: savedRowFocusKey(token), at: Date.now() }; };
+  // 저장은 늦게 끝날 수 있다(최대 SAVED_ROW_FOCUS_MS). 그 사이 사용자가 카드 안 다른 컨트롤(비슷한 말 · 뜻 편집 등)로 옮겼다면
+  // 뺏지 않는다 — 누른 자리(카드 안 등급 버튼)에 그대로 있거나 초점을 잃었을 때만 잇는다. 단축키(1~4)를 카드 밖(본문 낱말 · body)에서
+  // 눌렀다면 잃었을 때만 — 본문 낱말의 초점은 그대로 둔다.
+  const armSavedRowFocus = (token) => {
+    const from = typeof document === 'undefined' ? null : document.activeElement;
+    savedRowFocus.current = { key: savedRowFocusKey(token), at: Date.now(), from: from?.closest?.('#inspector-word') ? from : null };
+  };
   useEffect(() => {
     const pending = savedRowFocus.current;
     if (!pending) return;
@@ -2558,7 +2564,7 @@ export default function ViewerPage() {
     const target = [...document.querySelectorAll('#inspector-word .save-grade__saved[tabindex="-1"]')].find((el) => el.getClientRects().length);
     if (!target) return;
     savedRowFocus.current = null;
-    focusIfFree(target, target.closest('#inspector-word'));
+    focusIfFree(target, pending.from);
   });
 
   // W R3㉮ 인라인 복습 — 4등급 정본. 스냅샷은 훅이 돌려준 prev·reviewedAt으로 호출부가 만든다.
