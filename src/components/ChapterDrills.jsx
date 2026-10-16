@@ -191,16 +191,22 @@ export default function ChapterDrills({ lang, drills, title, intro }) {
   useEffect(() => {
     if (!user?.id || !Array.isArray(drills) || drills.length === 0) return undefined;
     let alive = true;
-    supabase
-      .from('review_events')
-      .select('item_key, correct')
-      .eq('user_id', user.id)
-      .in('item_key', drills.map((d) => d.id))
-      .limit(2000)
-      .then(({ data }) => {
-        if (!alive || !Array.isArray(data) || data.length === 0) return;
-        setPastStat({ tries: data.length, right: data.filter((r) => r.correct).length });
-      }, () => {});
+    // 개수만 필요하다 — 행을 받지 않고 건수(head)로 센다(REVIEW-ROWS-CAP-001, 2026-10-17 KST). 행으로 받던 때는
+    // PostgREST 1000행 상한에 말없이 잘려 「n회 풀이」가 1000에서 멈췄다. 두 건수는 같은 시각 상한(untilIso)을 쓴다.
+    const untilIso = new Date().toISOString();
+    const countTries = (onlyCorrect) => {
+      const query = supabase
+        .from('review_events')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .in('item_key', drills.map((d) => d.id))
+        .lte('created_at', untilIso);
+      return onlyCorrect ? query.eq('correct', true) : query;
+    };
+    Promise.all([countTries(false), countTries(true)]).then(([all, right]) => {
+      if (!alive || all.error || right.error || !Number.isSafeInteger(all.count) || all.count === 0) return;
+      setPastStat({ tries: all.count, right: Number.isSafeInteger(right.count) ? right.count : 0 });
+    }, () => {});
     return () => { alive = false; };
   }, [user?.id, drills]);
 
