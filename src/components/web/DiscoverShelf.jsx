@@ -46,7 +46,7 @@ export default function DiscoverShelf({ suggestions = [], publicCount = 0, date 
       </div>
       <ul className="discover-shelf__items">
         {news.map((s) => <li key={s.id}>
-          <Link href={suggestionHref(s)}>
+          <Link href={suggestionHref(s, 'discover')}>
             <small>{[langNameKo(s.language), s.level].filter(Boolean).join(' · ')}</small>
             <strong lang={encounterLookupLang(s.language) || undefined}>{s.title}</strong>
             <span>{s.channel_name}</span>

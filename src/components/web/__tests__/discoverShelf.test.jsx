@@ -27,6 +27,7 @@ describe('오늘의 소식 칸', () => {
     expect(html).toContain('제목 1');
     expect(html).not.toContain('제목 2');
     expect(html).toContain('lang="ja"');
+    expect(html).toContain('?from=discover');
   });
   it('소식도 공개 글도 없으면 서가를 그리지 않는다 — 빈 칸 안내를 만들지 않는다', () => {
     expect(renderToStaticMarkup(createElement(DiscoverShelf, { suggestions: [], publicCount: 0 }))).toBe('');

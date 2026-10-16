@@ -10,9 +10,17 @@ export function canReadSuggestion(s) {
     (!!s.transcript?.trim() || !!s.material_id);
 }
 
+// 추천 본문의 돌아갈 곳(?from=) — 들어온 화면으로. 목록 밖 값은 서재로.
+export const SUGGESTION_BACK = Object.freeze({
+  home: { href: '/home', label: '← 오늘로' },
+  discover: { href: '/discover', label: '← 발견으로' },
+  materials: { href: '/materials', label: '← 내 서재로' },
+});
+export const suggestionBackKey = (from) => (Object.hasOwn(SUGGESTION_BACK, from) ? from : 'materials');
+
 export function suggestionHref(s, from = 'materials') {
   if (/^[1-9]\d*$/.test(String(s.material_id || ''))) return `/viewer/${s.material_id}`;
-  return `/suggestions/${encodeURIComponent(s.id)}?from=${from === 'home' ? 'home' : 'materials'}`;
+  return `/suggestions/${encodeURIComponent(s.id)}?from=${suggestionBackKey(from)}`;
 }
 
 export function suggestionSource(s) {

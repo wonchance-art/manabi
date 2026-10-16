@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { canReadSuggestion, createSuggestionSave, suggestionHref, suggestionSource, suggestionSections } from '../suggestionReading';
+import { SUGGESTION_BACK, canReadSuggestion, createSuggestionSave, suggestionBackKey, suggestionHref, suggestionSource, suggestionSections } from '../suggestionReading';
 import { publicSuggestionTargets, readSuggestion } from '../server/suggestionReading';
 import { saveComposerOnce } from '../materialComposer';
 import { isFocusedReadingRoute, navigationOwner } from '../webNavigation';
@@ -12,6 +12,11 @@ describe('finished recommendation reading', () => {
   it('opens a stable reading address and keeps the referring screen', () => {
     expect(suggestionHref(s, 'home')).toBe(`/suggestions/${s.id}?from=home`);
     expect(suggestionHref(s)).toBe(`/suggestions/${s.id}?from=materials`);
+    // 발견 서가에서 열면 발견으로 돌아간다(2026-10-17 Preview 검수 — 「← 내 서재로」로 나오던 것). 목록 밖 값은 서재.
+    expect(suggestionHref(s, 'discover')).toBe(`/suggestions/${s.id}?from=discover`);
+    expect(suggestionHref(s, 'https://evil.example')).toBe(`/suggestions/${s.id}?from=materials`);
+    expect(SUGGESTION_BACK[suggestionBackKey('discover')]).toEqual({ href: '/discover', label: '← 발견으로' });
+    expect(SUGGESTION_BACK[suggestionBackKey('constructor')].href).toBe('/materials');
     expect(suggestionHref({ ...s, material_id: 51 })).toBe('/viewer/51');
     expect(isFocusedReadingRoute(`/suggestions/${s.id}`)).toBe(true);
     expect(navigationOwner(`/suggestions/${s.id}`)).toBe('/discover');

@@ -23,7 +23,7 @@ export const VIEWPORTS = Object.freeze({
 // 메뉴 넷 + 메뉴 밖 입구 · 오류 화면. 로그인 전용 화면은 넣지 않는다(게스트로는 다른 화면이 보인다).
 export const MISSING_ROUTE = '/__ux-audit-missing__';
 export const ROUTES = Object.freeze([...MAIN_NAV.map(item => item.href), '/vocab', '/auth', '/offline', MISSING_ROUTE]);
-// 앞의 넷은 ux-audit-auth.mjs가 합성 로그인으로 잰다(AUTH_COVERED) — 이 스크립트 보고서에서는 그쪽 보고서를 가리킨다.
+// 아래 셋은 ux-audit-auth.mjs가 합성 로그인으로 잰다(AUTH_COVERED) — 이 스크립트 보고서에서는 그쪽 보고서를 가리킨다.
 export const AUTH_COVERED = Object.freeze(['복습 진행 · 끝 화면', '뷰어(읽기)', '서재 목록(자료 있음)']);
 const LOGIN_ONLY = Object.freeze(['학습 세션(/study)', '대화 진행']);
 

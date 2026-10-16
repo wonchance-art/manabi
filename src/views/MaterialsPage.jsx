@@ -31,9 +31,9 @@ import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
 import MaterialGroupCard from '../components/MaterialGroupCard';
 import LiteratureCover from '../components/books/LiteratureCover';
-import { literatureWorkOfBook } from '../lib/literatureCanonical';
+import { literatureWork, literatureWorkOfBook } from '../lib/literatureCanonical';
 import VictorianCover from '../components/books/VictorianCover';
-import { standardEbooksWorkOfBook } from '../lib/standardEbooksCanonical';
+import { standardEbooksWork, standardEbooksWorkOfBook } from '../lib/standardEbooksCanonical';
 import { literatureChapterLabel, literatureDivisionLabel } from '../lib/literatureDisplay';
 import SuggestionArtwork from '../components/SuggestionArtwork';
 import { failureMessage } from '@/lib/errorMessage';
@@ -744,8 +744,9 @@ export default function MaterialsPage({ libraryView = null }) {
                       : c.title.includes(' — ') ? c.title.split(' — ').slice(1).join(' — ') : c.title,
                     right: chapterTags(c),
                   }))}
-                  // 이어 적기(#1077 5520128974) — 내 책에만 「다음 과 적기」(PDF 카드 「이어 읽기」와 같은 자리)
-                  footer={!work && !english && b.chapters[0]?.owner_id === user?.id ? (
+                  // 이어 적기(#1077 5520128974) — 내 책에만 「다음 과 적기」(PDF 카드 「이어 읽기」와 같은 자리).
+                  // 정본 key는 표지와 따로 key만으로 막는다 — 공개 목록에서 표지를 닫아도(work=null) 정본 책에 가짜 장이 끼지 않게(2026-10-17 리뷰).
+                  footer={!literatureWork(b.key) && !standardEbooksWork(b.key) && b.chapters[0]?.owner_id === user?.id ? (
                     <Link href={`/materials/add?book=${encodeURIComponent(b.key)}`} className="btn btn--secondary btn--sm">+ 다음 과 적기</Link>
                   ) : null}
                 />

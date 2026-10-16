@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { langNameKo } from '@/lib/constants';
-import { canReadSuggestion, createSuggestionSave, suggestionSource, suggestionSections } from '@/lib/suggestionReading';
+import { SUGGESTION_BACK, canReadSuggestion, createSuggestionSave, suggestionBackKey, suggestionSource, suggestionSections } from '@/lib/suggestionReading';
 import { saveComposerOnce } from '@/lib/materialComposer';
 import { authEntryHref } from '@/lib/authRedirect';
 import { attributionParts, licenseForSource } from '@/lib/videoAttribution';
@@ -35,8 +35,8 @@ export default function SuggestionReader({ id }) {
   const source = s ? suggestionSource(s) : null;
   const license = source?.kind === 'video' ? attributionParts({ kind: 'youtube', channel: s.channel_name, url: source.url, license: licenseForSource(s.source) })?.license : '';
   const readable = canReadSuggestion(s);
-  const back = params.get('from') === 'home' ? '/home' : '/materials';
-  const backLabel = back === '/home' ? '← 오늘로' : '← 내 서재로';
+  const from = suggestionBackKey(params.get('from'));
+  const { href: back, label: backLabel } = SUGGESTION_BACK[from];
   const savedId = saved?.ownerId === user?.id ? saved?.id : null;
   const studyId = savedId || s?.material_id;
   async function keep() {
@@ -72,7 +72,7 @@ export default function SuggestionReader({ id }) {
         <h1 id="suggestion-title" lang={contentLang}>{s.title}</h1>
         <p className="suggestion-reader__byline">{s.channel_name}{license && <span>{license}</span>}{s.date && <span>자료 수집 {s.date.replaceAll('-', '.')}</span>}</p>
         <div className="suggestion-reader__actions">
-          {readable && s.transcript?.trim() && (authLoading ? <span role="status">서재 확인 중…</span> : !user ? <Link className="manabi-link" href={authEntryHref(`/suggestions/${id}?from=${back === '/home' ? 'home' : 'materials'}`)}>로그인하고 서재에 담기</Link> : <button className="btn btn--sm" onClick={keep} disabled={saving || !!savedId}>{savedId ? '✓ 서재에 담았어요' : saving ? '담는 중…' : '내 서재에 담기'}</button>)}
+          {readable && s.transcript?.trim() && (authLoading ? <span role="status">서재 확인 중…</span> : !user ? <Link className="manabi-link" href={authEntryHref(`/suggestions/${id}?from=${from}`)}>로그인하고 서재에 담기</Link> : <button className="btn btn--sm" onClick={keep} disabled={saving || !!savedId}>{savedId ? '✓ 서재에 담았어요' : saving ? '담는 중…' : '내 서재에 담기'}</button>)}
           {studyId && <Link className="manabi-link" href={`/viewer/${studyId}?study=1`}>단어 학습 ↗</Link>}
           {source.url && <a className="manabi-link" href={source.url} target="_blank" rel="noopener noreferrer">{source.label} ↗</a>}
         </div>
