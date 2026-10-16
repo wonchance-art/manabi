@@ -9,6 +9,7 @@
 .lv-shelf h2{margin:0 0 16px;font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--muted)}
 .lv-tiles{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
 .lv-tiles--6{grid-template-columns:repeat(6,minmax(0,1fr))}
+.lv-tiles--7{grid-template-columns:repeat(7,minmax(0,1fr))}
 .lv-tile{background:var(--lv-card);border:1px solid var(--lv-line);border-radius:12px;padding:18px 18px 10px;display:flex;flex-direction:column;min-width:0}
 .lv-tile__lv{font:700 26px/1 var(--font-manrope),sans-serif;letter-spacing:-.02em;margin-bottom:12px;color:var(--ink)}
 .lv-tile__go{display:flex;justify-content:space-between;align-items:center;min-height:44px;border-top:1px solid var(--lv-line);font-size:13px;color:var(--ink);text-decoration:none}
@@ -176,7 +177,7 @@
 @container manabi-shell (max-width:900px){
   .lv-split{margin-top:22px}
   .lv-chips{display:flex}
-  .lv-tiles,.lv-tiles--6{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .lv-tiles,.lv-tiles--6,.lv-tiles--7{grid-template-columns:repeat(2,minmax(0,1fr))}
   .lv-bar:not(.lv-bar--sticky){grid-template-columns:minmax(0,1fr)}
   .lv-head h1{font-size:30px}
   .lv-bar--sticky .lv-head h1{font-size:21px}

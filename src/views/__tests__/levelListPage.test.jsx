@@ -260,8 +260,8 @@ describe('한자 목록(HANZI-TAB-AL-001)', () => {
     expect(html).not.toContain('모름만'); // 로그인 전 · 표시 0
     expect(html).not.toContain('class="lv-search"');
     // 알약: 한자 탭이 있는 급수(1 · 2)는 한자로, 없는 급수(3–6)는 단어로 — 없는 주소(404) 0
-    const pills = [...html.matchAll(/href="(\/chinese\/[a-z]+\/h\d)" aria-label="HSK \d"|aria-label="HSK \d" href="(\/chinese\/[a-z]+\/h\d)"/g)].map((m) => m[1] || m[2]);
-    expect(pills).toEqual(['/chinese/hanzi/h1', '/chinese/hanzi/h2', '/chinese/vocab/h3', '/chinese/vocab/h4', '/chinese/vocab/h5', '/chinese/vocab/h6']);
+    const pills = [...html.matchAll(/href="(\/chinese\/[a-z]+\/h\d)" aria-label="HSK [\d–]+"|aria-label="HSK [\d–]+" href="(\/chinese\/[a-z]+\/h\d)"/g)].map((m) => m[1] || m[2]);
+    expect(pills).toEqual(['/chinese/hanzi/h1', '/chinese/hanzi/h2', '/chinese/vocab/h3', '/chinese/vocab/h4', '/chinese/vocab/h5', '/chinese/vocab/h6', '/chinese/vocab/h7']);
   });
 
   it('한자 탭은 HSK 1–2급만 — 3급 이상 · 일본어에는 없다', async () => {
@@ -269,6 +269,25 @@ describe('한자 목록(HANZI-TAB-AL-001)', () => {
     expect(await render('chinese', 'vocab', 'h3')).not.toContain('/chinese/hanzi/');
     expect(await levelListData('chinese', 'hanzi', 'h3')).toBeNull();
     expect(await levelListData('japanese', 'hanzi', 'n5')).toBeNull();
+  });
+});
+
+describe('HSK 7–9(단어 탭 하나)', () => {
+  it('알약 「7–9」 · 제목 「HSK 7–9 단어」, 종류 탭을 그리지 않는다', async () => {
+    const html = await render('chinese', 'vocab', 'h7');
+    expect(html).toContain('<h1>HSK 7–9 단어</h1>');
+    expect(html).toMatch(/aria-label="HSK 7–9"[^>]*>7–9</);
+    expect(html).not.toContain('class="lv-tabs"');
+    expect(html).not.toContain('/chinese/bunkei/h7');
+    expect(await render('chinese', 'vocab', 'h6')).toContain('class="lv-tabs"');
+  });
+
+  it('타일은 「단어 N」 한 줄 — 문형 줄 · 0 링크 없음', () => {
+    const html = renderToStaticMarkup(<LevelTiles language="Chinese" tiles={[{ levelKey: 'H6', vocab: 1777, bunkei: 59 }, { levelKey: 'H7', vocab: 1332 }]} />);
+    expect(html).toContain('<span class="lv-tile__lv">HSK 7–9</span>');
+    expect(html).toContain('href="/chinese/vocab/h7"');
+    expect(html).not.toContain('/chinese/bunkei/h7');
+    expect(html).not.toContain('문형<b>0</b>');
   });
 });
 
