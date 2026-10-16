@@ -1,12 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 import { STARTER_MATERIALS } from '../../../../lib/starter-content.js';
-import { requireAdmin } from '@/lib/server/auth';
+import { requireAdmin, SERVICE_KEY_MISSING_MESSAGE } from '@/lib/server/auth';
 
 export async function POST(request) {
   // 관리자 판별과 시드 쓰기는 service-role로만 — anon 키로 떨어지면 profiles 조회가 anon으로 돌아
   // 프로필 공개 범위 2단계(PROFILES-PRIVACY-001 ②) 뒤 관리자도 403이 된다. 키가 없으면 닫힌 채 503.
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return Response.json({ error: '서버 설정이 끝나지 않아 지금은 실행할 수 없어요.' }, { status: 503 });
+    return Response.json({ error: SERVICE_KEY_MISSING_MESSAGE }, { status: 503 });
   }
   const auth = await requireAdmin(request);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });

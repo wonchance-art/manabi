@@ -5,6 +5,9 @@
 
 import { createClient } from '@supabase/supabase-js';
 
+// service-role 키가 없는 배포(Preview 등)에서 관리자 · cron 라우트가 닫힌 채 돌려주는 안내 — 두 라우트가 같은 문구를 쓴다.
+export const SERVICE_KEY_MISSING_MESSAGE = '서버 설정이 끝나지 않아 지금은 실행할 수 없어요.';
+
 function anonClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,

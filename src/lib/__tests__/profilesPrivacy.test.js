@@ -64,6 +64,30 @@ describe('profiles 공개 범위 2단계 선행 — 서버 관리자 판별 · �
     expect(seed).not.toMatch(/NEXT_PUBLIC_SUPABASE_ANON_KEY/u);
     expect(seed).toMatch(/if \(!process\.env\.SUPABASE_SERVICE_ROLE_KEY\) \{\s*return Response\.json\([^)]*\{ status: 503 \}\);/u);
     expect(seed.indexOf('SUPABASE_SERVICE_ROLE_KEY)')).toBeLessThan(seed.indexOf('requireAdmin(request)'));
+    // backfill-ipa도 키가 없으면 판별 · 쓰기 전에 닫힌 채 503 — 두 라우트가 같은 안내(SERVICE_KEY_MISSING_MESSAGE)
+    const closed = /if \(!process\.env\.SUPABASE_SERVICE_ROLE_KEY\) \{\s*return Response\.json\(\{ error: SERVICE_KEY_MISSING_MESSAGE \}, \{ status: 503 \}\);/u;
+    expect(ipa).toMatch(closed);
+    expect(seed).toMatch(closed);
+    expect(ipa.indexOf('SUPABASE_SERVICE_ROLE_KEY)')).toBeLessThan(ipa.indexOf('requireUser(request)'));
+  });
+
+  it('service-role 키가 없으면 backfill-ipa는 cron · 관리자 요청 모두 503(seed-starters와 같은 안내)', async () => {
+    const { SERVICE_KEY_MISSING_MESSAGE } = await import('../server/auth.js');
+    expect(SERVICE_KEY_MISSING_MESSAGE).toBe('서버 설정이 끝나지 않아 지금은 실행할 수 없어요.');
+    const saved = { key: process.env.SUPABASE_SERVICE_ROLE_KEY, cron: process.env.CRON_SECRET };
+    try {
+      delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+      process.env.CRON_SECRET = 'cron-test';
+      const { GET } = await import('../../app/api/cron/backfill-ipa/route.js');
+      for (const authorization of ['Bearer cron-test', 'Bearer user-token', null]) {
+        const res = await GET(new Request('https://x.test/api/cron/backfill-ipa', { headers: authorization ? { authorization } : {} }));
+        expect(res.status).toBe(503);
+        expect(await res.json()).toEqual({ error: SERVICE_KEY_MISSING_MESSAGE });
+      }
+    } finally {
+      if (saved.key === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY; else process.env.SUPABASE_SERVICE_ROLE_KEY = saved.key;
+      if (saved.cron === undefined) delete process.env.CRON_SECRET; else process.env.CRON_SECRET = saved.cron;
+    }
   });
 
   it('AdminPage 역할 변경은 admin_set_user_role RPC만 부르고, 강등 값은 CHECK 집합(student · host · admin) 안이다', () => {

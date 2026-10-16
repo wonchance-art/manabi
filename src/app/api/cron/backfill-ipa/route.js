@@ -1,10 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 import { callGemini, parseGeminiJSON } from '../../../../lib/gemini.js';
-import { requireUser, isAdminUser } from '@/lib/server/auth';
+import { requireUser, isAdminUser, SERVICE_KEY_MISSING_MESSAGE } from '@/lib/server/auth';
 
 export const maxDuration = 60;
 
 export async function GET(request) {
+  // 관리자 판별(isAdminUser)과 보충 쓰기는 service-role로만 — 키가 없으면 판별이 예외로 꺼져 관리자도 401이 되고
+  // cron 경로는 쓰기 클라이언트를 만들지 못한다. seed-starters와 같이 닫힌 채 503(같은 안내)으로 돌려준다.
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return Response.json({ error: SERVICE_KEY_MISSING_MESSAGE }, { status: 503 });
+  }
   // 인증: CRON_SECRET (Vercel cron) OR 관리자 세션 (대시보드 수동 실행)
   // CRON_SECRET 미설정 시 "Bearer undefined" 통과 방지 — isCron은 시크릿이 있을 때만 참.
   const authHeader = request.headers.get('authorization');
