@@ -8,18 +8,18 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, 'out'); DEM = os.path.join(HERE, 'data', 'dem')
+OUT = os.path.join(HERE, os.environ.get('VIEW_OUT', 'out')); DEM = os.path.join(HERE, 'data', 'dem')
 os.makedirs(OUT, exist_ok=True); os.makedirs(DEM, exist_ok=True)
 R = 6371000.0; K_REFR = 0.13
 Z = 14
 
 # ── 상수(구도) — 바꾸면 guide.json에 그대로 남는다
-VIEW_BACK_M = 100.0     # 金鳥居에서 도로를 따라 북쪽으로 물러선 거리
+VIEW_BACK_M = float(os.environ.get('VIEW_BACK_M', 100.0))  # 金鳥居에서 도로를 따라 북쪽으로 물러선 거리
 EYE_M = 1.6             # 눈높이(지면 위)
 W, H = 1024, 1536       # 생성기 세로 출력(2:3). 표지는 가운데 1024×1448(210:297)을 잘라 쓴다
 HFOV = 26.0             # 수평 화각(도) — 망원(후지를 크게 당겨 보는 통상 구도)
 PITCH = 1.8             # 위로 든 각(도) — 剣ヶ峰이 위에서 1/4 지점에 오도록
-YAW_OFFSET = 3.0        # 시점→剣ヶ峰 방위에 더할 값(도) — 산(왼쪽)과 길(오른쪽)이 가운데를 나눠 갖게
+YAW_OFFSET = float(os.environ.get('YAW_OFFSET', 3.0))  # 시점→剣ヶ峰 방위에 더할 값(도) — 기본: 산(왼쪽)과 길(오른쪽)이 가운데를 나눠 갖게
 
 road = json.load(open(os.path.join(HERE, 'data', 'road.json'), encoding='utf-8'))
 
@@ -126,7 +126,7 @@ for p in ahead:
     q = proj_geo(p, elev(*p))
     if q: road_px.append([round(q[0], 2), round(q[1], 2)])
 # 시점 바로 앞 5m 지점도(화면 아래 밖일 수 있음)
-near = dest(cam, bearing(cam, pts[ti]), 6); qn = proj_geo(near, elev(*near))
+near = dest(cam, bearing(cam, pts[i]), 6); qn = proj_geo(near, elev(*near))  # 도로 방향(다음 노드)으로 6m — 金鳥居 방향이 아니다
 torii_px = proj_geo(pts[ti], elev(*pts[ti]))
 ken_px = proj_geo(KEN, elev(*KEN))
 
@@ -162,7 +162,7 @@ def draw(notes):
         g.ellipse([kx - 8, ky - 8, kx + 8, ky + 8], outline='red', width=3)
         g.text((kx + 14, ky - 40), f"剣ヶ峰 {guide['kengamine_dist_m']/1000:.1f}km", fill='red', font=font)
         g.text((tx + 20, ty - 10), '金鳥居の位置（高さ・形は未検証）', fill='red', font=font)
-        g.text((20, H - 120), f"視点: 金鳥居の北{VIEW_BACK_M:.0f}m 富士みち上・目の高さ{EYE_M}m（地面{ground0:.0f}m）", fill='red', font=font)
+        g.text((20, H - 120), f"視点: 金鳥居の北{VIEW_BACK_M:.0f}m（道沿い） 富士みち上・目の高さ{EYE_M}m（地面{ground0:.0f}m）", fill='red', font=font)
         g.text((20, H - 90), f"方位{yaw:.2f}° 仰角{PITCH}° 水平画角{HFOV}° 標高:国土地理院DEM10B 道:OSM", fill='red', font=font)
         g.text((20, H - 60), '太線=稜線（実測） 点線=道の中心（実測） ＋=金鳥居の地点', fill='red', font=font)
     return im

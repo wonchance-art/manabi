@@ -7,9 +7,9 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-G = json.load(open(os.path.join(HERE, 'out', 'guide.json')))
+G = json.load(open(os.path.join(HERE, os.environ.get('VIEW_OUT', 'out'), 'guide.json')))
 W, H = G['camera']['size']
-os.makedirs(os.path.join(HERE, 'verify'), exist_ok=True)
+os.makedirs(os.path.join(HERE, 'verify'), exist_ok=True)  # VIEW_OUT=out-honcho 로 다른 가이드를 고른다
 
 def check(path):
     im = Image.open(path).convert('RGB')
