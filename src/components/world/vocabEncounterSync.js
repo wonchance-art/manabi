@@ -8,6 +8,11 @@
 import { isEncounterLang, loadVocabEncounters, loadVocabEncounterContexts, recordVocabEncounters } from './vocabEncounters.js';
 
 const PULL_THROTTLE_MS = 5 * 60 * 1000;
+// PostgREST 최대 행 수(1000)에 맞춘 페이지(ROW-CAP-SWEEP-001, 2026-10-17 KST) — 한 번에 받으면 1000행에서 말없이 잘려,
+// 그 언어 만남이 1000개를 넘으면 새 기기로 끌어오는 몫이 빠졌다(빠진 단어는 push 쪽에서 다시 보내는 헛걸음도 생긴다).
+// 표는 PK(user_id, lang, word_text) — id가 없어 정본 완전 조회(readCompleteLegacyRows, id 정렬 필수)를 쓸 수 없고,
+// 같은 표의 유일 키 word_text로 정렬해 아는 단어 로더(knownWords.loadKnownWords)와 같은 순차 페이지로 읽는다.
+export const ENCOUNTER_PULL_PAGE = 1000;
 
 /** 언어별 pull 스로틀 마커(sessionStorage) — refProgress 의 ref_pull_at 선례를 언어 축만 더해 따른다. */
 export function encounterPullThrottleKey(lang) {
@@ -51,16 +56,19 @@ export async function syncVocabEncounters(client, userId, lang, {
       throttleStorage.setItem(encounterPullThrottleKey(lang), String(Date.now()));
     }
 
-    const { data, error } = await client
-      .from('user_vocab_encounters')
-      .select('word_text')
-      .eq('user_id', userId)
-      .eq('lang', lang);
-    if (error) return false;
-
-    const remote = new Set(
-      (data || []).map((r) => r?.word_text).filter((w) => typeof w === 'string' && w.length > 0),
-    );
+    const remote = new Set();
+    for (let from = 0; ; from += ENCOUNTER_PULL_PAGE) {
+      const { data, error } = await client
+        .from('user_vocab_encounters')
+        .select('word_text')
+        .eq('user_id', userId)
+        .eq('lang', lang)
+        .order('word_text', { ascending: true })
+        .range(from, from + ENCOUNTER_PULL_PAGE - 1);
+      if (error) return false; // 한 페이지라도 실패면 로컬 무변경 · push 없음(부분 집합으로 판단하지 않는다)
+      for (const r of data || []) if (typeof r?.word_text === 'string' && r.word_text.length > 0) remote.add(r.word_text);
+      if ((data || []).length < ENCOUNTER_PULL_PAGE) break;
+    }
 
     // pull — 합집합 기록은 §4.2 recordVocabEncounters 그대로(멱등·정렬 저장).
     const before = loadVocabEncounters(lang, storage);

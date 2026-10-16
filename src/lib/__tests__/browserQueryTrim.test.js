@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadKnownWords } from '../knownWords';
 import { fetchTodaySuggestions, TODAY_SUGGESTIONS_KEY } from '../suggestionReading';
+import { sliceBetween } from './helpers/sliceBetween';
 
 // 계약: 브라우저 조회 감사(작고 안전한 4건) — 화면은 그대로, 같은 데이터를 덜 받는다.
 // ① 자료실 분석 중 폴링은 상태 한 칸만(목록 통짜 재조회 금지), 내 소유 행만.
@@ -243,30 +244,32 @@ describe('API로 만드는 서재 항목도 30초 캐시를 무효화한다(리�
   });
 });
 
+// ⑥ · ⑦ 공용 판정 — 한 읽기 체인이 1000행 상한에 잘리지 않는 형태인가.
+const PAGE_CAP = 1000; // PostgREST max-rows — 이보다 큰 .limit은 말없이 이 값에서 잘린다(⑤의 「.limit(이 있으면 통과」 빈틈)
+
+/** 한 읽기 체인의 판정 — 완전 조회 · head:true · .range( · .limit(n ≤ 1000) 중 하나. n이 이름이면 같은 파일의 기본값(name = N). */
+function verdict(src, index) {
+  let end = src.indexOf(';', index);
+  if (end < 0 || end - index > 700) end = index + 700;
+  const chain = src.slice(index, end);
+  const head = chain.split('.select(')[0];
+  if (!chain.includes('.select(') || /\.(insert|update|upsert|delete)\(/.test(head)) return 'write';
+  if (/(?:readCompleteLegacyRows|completeRows)\(\(\) =>\s*(?:client|supabase)?\s*$/.test(src.slice(Math.max(0, index - 80), index))) return 'complete';
+  if (/head:\s*true/.test(chain)) return 'head';
+  if (/\.range\(/.test(chain)) return 'range';
+  const limits = [...chain.matchAll(/\.limit\(\s*([\w.]+)\s*\)/g)].map(([, arg]) => {
+    if (/^\d+$/.test(arg)) return Number(arg);
+    const fallback = new RegExp(`\\b${arg}\\s*=\\s*(\\d+)\\b`).exec(src);
+    return fallback ? Number(fallback[1]) : Infinity;
+  });
+  if (limits.length && limits.every((n) => n <= PAGE_CAP)) return 'limit';
+  return 'unbounded';
+}
+
+
 describe('⑥ review_events 1000행 상한 — 브라우저 조회가 조용히 잘리지 않는다(REVIEW-ROWS-CAP-001)', () => {
   const clientFiles = fs.readdirSync('src', { recursive: true }).map((f) => path.join('src', String(f)).split(path.sep).join('/'))
     .filter((f) => /\.(jsx?|tsx?)$/.test(f) && !f.includes('__tests__') && !f.startsWith('src/app/api/') && !f.startsWith('src/lib/server/'));
-  const PAGE_CAP = 1000; // PostgREST max-rows — 이보다 큰 .limit은 말없이 이 값에서 잘린다(⑤의 「.limit(이 있으면 통과」 빈틈)
-
-  /** 한 읽기 체인의 판정 — 완전 조회 · head:true · .range( · .limit(n ≤ 1000) 중 하나. n이 이름이면 같은 파일의 기본값(name = N). */
-  function verdict(src, index) {
-    let end = src.indexOf(';', index);
-    if (end < 0 || end - index > 700) end = index + 700;
-    const chain = src.slice(index, end);
-    const head = chain.split('.select(')[0];
-    if (!chain.includes('.select(') || /\.(insert|update|upsert|delete)\(/.test(head)) return 'write';
-    if (/(?:readCompleteLegacyRows|completeRows)\(\(\) =>\s*(?:client|supabase)?\s*$/.test(src.slice(Math.max(0, index - 80), index))) return 'complete';
-    if (/head:\s*true/.test(chain)) return 'head';
-    if (/\.range\(/.test(chain)) return 'range';
-    const limits = [...chain.matchAll(/\.limit\(\s*([\w.]+)\s*\)/g)].map(([, arg]) => {
-      if (/^\d+$/.test(arg)) return Number(arg);
-      const fallback = new RegExp(`\\b${arg}\\s*=\\s*(\\d+)\\b`).exec(src);
-      return fallback ? Number(fallback[1]) : Infinity;
-    });
-    if (limits.length && limits.every((n) => n <= PAGE_CAP)) return 'limit';
-    return 'unbounded';
-  }
-
   it('클라이언트의 모든 review_events 읽기는 완전 조회 · head:true · .range( · .limit(n≤1000) 중 하나다', () => {
     const reads = [], unbounded = [];
     for (const f of clientFiles) {
@@ -300,5 +303,37 @@ describe('⑥ review_events 1000행 상한 — 브라우저 조회가 조용히 
     expect(read('src/components/levels/HanziBoard.jsx')).toContain('fetchLastHanziMarks(supabase, userId, allChars)');
     expect(read('src/lib/hanziSession.js')).toContain('.range(from, from + page - 1)');
     expect(read('src/components/ChapterDrills.jsx')).toContain(".select('id', { count: 'exact', head: true })");
+  });
+});
+
+describe('⑦ 늘어나는 개인 표 — 만남(user_vocab_encounters) 읽기도 잘리지 않는다(ROW-CAP-SWEEP-001)', () => {
+  const clientFiles = fs.readdirSync('src', { recursive: true }).map((f) => path.join('src', String(f)).split(path.sep).join('/'))
+    .filter((f) => /\.(jsx?|tsx?)$/.test(f) && !f.includes('__tests__') && !f.startsWith('src/app/api/') && !f.startsWith('src/lib/server/'));
+  // 예외 — 실측과 이유. 2주 창이라 1000을 넘기기 어렵다(2026-10-17 KST 운영 읽기: 14일 첫 만남 사용자 최대 72).
+  const ALLOW = Object.freeze({ 'src/lib/weeklyReportRows.js': '주간 리포트 — first_met_at 2주 창, 실측 최대 72행' });
+
+  it('클라이언트의 만남 읽기는 완전 조회 · head · range · limit(≤1000) · .in(묶음) 중 하나다(예외는 이유 목록)', () => {
+    const reads = [], unbounded = [];
+    for (const f of clientFiles) {
+      const src = read(f);
+      for (const m of src.matchAll(/\.from\(\s*'user_vocab_encounters'\s*\)/g)) {
+        const v = verdict(src, m.index);
+        if (v === 'write') continue;
+        const end = src.indexOf(';', m.index);
+        const chunked = /\.in\(/.test(src.slice(m.index, end < 0 ? m.index + 700 : end));
+        reads.push(`${f}:${v}`);
+        if (v === 'unbounded' && !chunked && !ALLOW[f]) unbounded.push(`${f}:${src.slice(0, m.index).split('\n').length}`);
+      }
+    }
+    expect(reads.length, '스캔 대상이 실제로 있다').toBeGreaterThanOrEqual(3);
+    expect(unbounded).toEqual([]);
+  });
+
+  it('새 기기로 끌어오기(vocabEncounterSync)는 word_text 정렬 range 페이지 루프다 — 1000개를 넘는 만남도 빠지지 않는다', () => {
+    const pull = sliceBetween(read('src/components/world/vocabEncounterSync.js'), 'const remote = new Set();', 'const before = loadVocabEncounters(lang, storage);');
+    expect(pull).toContain(".order('word_text', { ascending: true })");
+    expect(pull).toContain('.range(from, from + ENCOUNTER_PULL_PAGE - 1)');
+    expect(pull).toContain('if ((data || []).length < ENCOUNTER_PULL_PAGE) break;');
+    expect(pull).toContain('if (error) return false;');
   });
 });
