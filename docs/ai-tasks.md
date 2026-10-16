@@ -1004,9 +1004,10 @@
   - #1344 교재 피드백 잔여: **PR-B**(10-13 목업 게시 → `claude/project-thread-l70fv5` — 같은 문구 부제만 숨김·회화 [해석 보기/가리기] 유지·읽기/듣기 물음에 그 과 해답 이름 표지·39과 제목 재노출 방지, e2e `textbook-reading-clarity` 추가) · PR-C(활용 안내, 오너 문구).
     #1345 후속: PR-0(팀 없는 교재 설명 집계)은 **완료** — M09 운영 READ ONLY 0건([6036231612](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036231612)), 따라서 PR-2b 불요. PR-3 대기.
   - 튜터 프롬프트의 중화권 정치 서술 배제(하드리밋 ⑷) → #1389 `conversationSafetyRules`(두 프롬프트 주입) — 병합 `85f59a77`(10-09, 오너 예외 승인).
-  - ⚠ 운영 마이그레이션 이력 ≠ main `supabase/migrations` — 운영 READ ONLY 확인 완료(10-07, [6036231612](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036231612)):
-    운영에만 있는 버전 11개(teaching_board_cloud·classroom_direct_vocabulary·viewer_token_correction_atomic·10월 활성화 이력 등), main에만 있는 버전 0.
-    다음 `supabase/migrations` 병합 시 `supabase-migrations.yml` 실패 가능 — DB 변경은 `docs/sql` + M09 적용으로 낸다. 스택 #1316~#1321은 유지.
+  - ✅ 운영 마이그레이션 이력 = main `supabase/migrations` (MIGRATION-HISTORY-SYNC-1, #1507, 2026-10-17 KST 오너 승인):
+    운영에만 있던 13개 버전을 같은 버전 접두로 편입(12개 운영 statements md5/정규화 일치, 20261016075000 FK 이동은 pg_constraint 실측 재구성),
+    운영에 살아 있으나 미기록이던 20261016150000_anon_book_catalog는 `repair --status applied`로 기록 → 양쪽 109건. 스키마 변경 0.
+    앞으로 MCP/수동 적용 시에도 같은 버전 파일을 `supabase/migrations`에 함께 넣는다(어긋나면 db push가 다시 멈춘다).
   - 이 컨테이너에서 불가(오너/M09): 운영 DB 조회·적용, 정상 실계정 검수(10-06 04:00 경계 이후 학습 검수 = CLAUDE-M09-001-2 진행 중).
 - **뷰어 v2 (2026-10-07 21:10 KST~, 오너 지시 「이 세션이 뷰어 v2 맡아」)** — 구현 큐 전부 병합·운영 배포(2026-10-08 16:50 KST, done 참조).
   정본 = [R0 버그](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6031758159) · [v2 라운드](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036574287).
