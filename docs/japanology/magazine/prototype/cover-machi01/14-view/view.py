@@ -16,7 +16,7 @@ Z = 14
 # ── 상수(구도) — 바꾸면 guide.json에 그대로 남는다
 VIEW_BACK_M = float(os.environ.get('VIEW_BACK_M', 100.0))  # 金鳥居에서 도로를 따라 북쪽으로 물러선 거리
 EYE_M = 1.6             # 눈높이(지면 위)
-W, H = 1024, 1536       # 생성기 세로 출력(2:3). 표지는 가운데 1024×1448(210:297)을 잘라 쓴다
+W, H = int(os.environ.get('VIEW_W', 1024)), int(os.environ.get('VIEW_H', 1536))  # 기본 = 생성기 세로 출력(2:3)
 HFOV = 26.0             # 수평 화각(도) — 망원(후지를 크게 당겨 보는 통상 구도)
 PITCH = 1.8             # 위로 든 각(도) — 剣ヶ峰이 위에서 1/4 지점에 오도록
 YAW_OFFSET = float(os.environ.get('YAW_OFFSET', 3.0))  # 시점→剣ヶ峰 방위에 더할 값(도) — 기본: 산(왼쪽)과 길(오른쪽)이 가운데를 나눠 갖게
