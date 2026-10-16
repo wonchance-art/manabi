@@ -10,7 +10,7 @@ import { knownWordSetOf, normalizeKnownWord } from '../knownWordControl.js';
 import { exclusionWord } from '../vocabularyExclusion.js';
 import { JAPANESE_VOCAB_REF } from '../japaneseVocabRegistry.js';
 import { countBunkei as countJaBunkei } from '../../content/japanese/index.js';
-import { countBunkei as countZhBunkei, getVocab as getZhVocab, ZH_LEVEL_META } from '../../content/chinese/index.js';
+import { countBunkei as countZhBunkei, getVocab as getZhVocab, ZH_LEVEL_META, ZH_HSK79_VOCAB } from '../../content/chinese/index.js';
 import { loadZhHskLevels, zhHskLevelOf } from '../zhHskLevel.js';
 import { legacyTextbookTarget, learnerHref } from '../bookNavigation.js';
 
@@ -61,7 +61,8 @@ describe('⑴ 숫자 = 데이터 개수', () => {
 describe('⑵ 중국어 단어 = 우리 사전 ∩ HSK 2026 급수', () => {
   it('각 레벨의 단어는 2026 표 급수가 그 레벨이고, 우리 사전에 있으며, 두 레벨에 겹치지 않는다', async () => {
     const table = await loadZhHskLevels();
-    const dict = new Set(ZH_LEVEL_META.flatMap((m) => (getZhVocab(m.key)?.themes || []).flatMap((t) => t.words.map((w) => w.zh))));
+    const sets = [...ZH_LEVEL_META.map((m) => getZhVocab(m.key)), ...ZH_HSK79_VOCAB]; // 7–9 보강은 레지스트리 밖 세트
+    const dict = new Set(sets.flatMap((set) => (set?.themes || []).flatMap((t) => t.words.map((w) => w.zh))));
     const seen = new Map();
     for (const key of LEVEL_LIST_LANGS.chinese.levels) {
       const data = await levelListData('chinese', 'vocab', key);
@@ -303,7 +304,7 @@ describe('⑺ HSK 7–9 통합 밴드(오너 2026-10-16 「7~9를 통째로」)'
     const table = await loadZhHskLevels();
     const data = await levelListData('chinese', 'vocab', 'h7');
     const keys = data.groups.flatMap((g) => g.entries.map((e) => e.key));
-    expect(keys.length).toBeGreaterThan(1300);
+    expect(keys.length).toBeGreaterThan(5500); // 대강 7–9 표제어 5,562(1–6급과 겹친 것 제외) — 빠짐은 zhHsk2026Fill 계약
     expect(keys.filter((k) => zhHskLevelOf(k, table) !== 7)).toEqual([]);
     const h6 = new Set((await levelListData('chinese', 'vocab', 'h6')).groups.flatMap((g) => g.entries.map((e) => e.key)));
     expect(keys.filter((k) => h6.has(k))).toEqual([]);
