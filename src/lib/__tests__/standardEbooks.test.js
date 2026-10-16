@@ -99,18 +99,22 @@ describe('리포 정본 3편 — 산출물·장 모양', () => {
   it('build-literature --check와 같은 검사가 통과한다(원문 해시·chapters.json·목록·대조표)', async () => {
     const { works, errors } = await buildStandardEbooks({ root: STANDARD_EBOOKS_ROOT, check: true });
     expect(errors).toEqual([]);
-    // 1차 3편 + 2차 묶음 5편(오너 2026-10-17 KST — 초판 장정 표지)
-    expect(works.map((work) => [work.key, work.chapters])).toEqual([
-      ['se-arthur-conan-doyle_the-adventures-of-sherlock-holmes', 47],
-      ['se-charles-dickens_a-christmas-carol', 13],
-      ['se-f-scott-fitzgerald_the-great-gatsby', 22],
-      ['se-henry-david-thoreau_walden', 50],
-      ['se-herman-melville_moby-dick', 150],
-      ['se-james-joyce_a-portrait-of-the-artist-as-a-young-man', 39],
-      ['se-jane-austen_pride-and-prejudice', 65],
-      ['se-lewis-carroll_alices-adventures-in-wonderland', 12],
+    // 1차 3편 + 2차 묶음 5편(오너 2026-10-17 KST — 초판 장정 표지) + 3차 묶음 5편(「되는 언어로만」 — 표지 대기 동안은 목록 밖)
+    expect(works.map((work) => [work.key, work.chapters, work.status])).toEqual([
+      ['se-adam-smith_the-theory-of-moral-sentiments', 86, 'cover-pending'],
+      ['se-adam-smith_the-wealth-of-nations', 173, 'cover-pending'],
+      ['se-arthur-conan-doyle_the-adventures-of-sherlock-holmes', 47, 'checked'],
+      ['se-benjamin-franklin_the-autobiography-of-benjamin-franklin', 28, 'cover-pending'],
+      ['se-charles-dickens_a-christmas-carol', 13, 'checked'],
+      ['se-f-scott-fitzgerald_the-great-gatsby', 22, 'checked'],
+      ['se-henry-david-thoreau_walden', 50, 'checked'],
+      ['se-herman-melville_moby-dick', 150, 'checked'],
+      ['se-james-joyce_a-portrait-of-the-artist-as-a-young-man', 39, 'checked'],
+      ['se-jane-austen_pride-and-prejudice', 65, 'checked'],
+      ['se-john-stuart-mill_on-liberty', 22, 'cover-pending'],
+      ['se-lewis-carroll_alices-adventures-in-wonderland', 12, 'checked'],
+      ['se-marcus-aurelius_meditations_george-long', 20, 'cover-pending'],
     ]);
-    expect(works.every((work) => work.status === 'checked')).toBe(true);
   });
 
   it('장: 영어 · 레벨 · 책 묶음 · 출처 기록, 원문은 문단 사이 빈 줄 · 장당 1,500–3,000단어', () => {
