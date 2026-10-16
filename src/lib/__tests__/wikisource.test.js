@@ -125,3 +125,46 @@ describe('createWikisourceDraft — 장 모양 · 간체/번체 · 이름 자리
     expect(() => createWikisourceDraft({ ...zhEntry(files), key: 'zh-lu-xun' }, texts)).toThrow(/key/u);
   });
 });
+
+describe('한국 근대 문학(오너 「한국 근대 문학도 추가」 → 「베스트 5만」 2026-10-17 KST) — ko.wikisource', () => {
+  const koFragment = (inner) => `<div class="mw-content-ltr mw-parser-output" lang="ko" dir="ltr">\n${inner}\n</div>\n`;
+  it('장식 줄(🙝🙟 · ⁂)은 「⁂」 한 글자 문단 — 쪽 맨 앞·맨 뒤는 뺀다 · 위키백과 상자(noprint)·라이선스 틀은 본문이 아니다', () => {
+    const { blocks } = parseWikisourceFragment(koFragment([
+      '<center>🙝🙟</center>',
+      '<p>새침하게 흐린 품이 눈이 올 듯하더니\n</p>',
+      '<center>🙝🙟</center>',
+      '<p>“설렁탕을 사다놓았는데 왜 먹지를 못하니”\n</p>',
+      '<center>⁂</center>',
+      '<div class="noprint" style="float: right;"><div><b>위키백과</b>에 이 글과 관련된<br>자료가 있습니다.</div></div>',
+      '<div class="licenseContainer licenseBanner"><div><p>이 저작물은 퍼블릭 도메인입니다.</p></div></div>',
+      '<div class="licensetpl"><p><span class="licensetpl_short">Public domain</span></p></div>',
+    ].join('\n')));
+    expect(blocks.map((block) => block.text)).toEqual(['새침하게 흐린 품이 눈이 올 듯하더니', '⁂', '“설렁탕을 사다놓았는데 왜 먹지를 못하니”']);
+  });
+  it('한국 원산 = 한국 사후 70년(1955년 이전 사망) · 검토 관할 KR 하나', () => {
+    const ko = { publishedYear: 1936, authorDeathYear: 1937, countryOfOrigin: 'KR', rights: { reviewedAt: '2026-10-17' } };
+    expect(wikisourceRightsVerdict(ko).ok).toBe(true); // 이상 「날개」 — 1936 발표도 막지 않는다(미국 선 없음)
+    expect(wikisourceRightsVerdict({ ...ko, authorDeathYear: 1956 }).reasons.join()).toMatch(/사후 70년/u);
+    expect(wikisourceRightsVerdict({ ...ko, authorDeathYear: 2000 }).ok).toBe(false); // 황순원 「소나기」형
+    expect(wikisourceRightsPublishable({ ...ko, provider: 'wikisource', license: WS_LICENSE, rights: { status: 'approved', basis: 'public-domain', reviewedJurisdictions: ['KR'], reviewedAt: '2026-10-17' } })).toBe(true);
+  });
+  it('리포 5편 — 원문 고정 · 권리 통과 · 장은 글자 수(공백 뺌) 3,000자 안팎 · 표지 대기(목록·대조표에 아직 없음)', async () => {
+    const { readFileSync, readdirSync } = await import('node:fs');
+    const root = 'src/content/literature/wikisource';
+    const keys = readdirSync(root).filter((name) => name.startsWith('ws-ko-')).sort();
+    expect(keys).toEqual(['ws-ko-hyeon-jin-geon_unsu-joeun-nal', 'ws-ko-kim-dong-in_gamja', 'ws-ko-kim-yu-jeong_dongbaekkkot', 'ws-ko-yi-hyo-seok_memilkkot-pil-muryeop', 'ws-ko-yi-sang_nalgae']);
+    const manifest = JSON.parse(readFileSync(`${root}/manifest.generated.json`, 'utf8'));
+    for (const key of keys) {
+      const entry = JSON.parse(readFileSync(`${root}/${key}/entry.json`, 'utf8'));
+      const files = entry.files.flatMap((file) => file.variants).map((item) => ({ path: item.path, text: readFileSync(`${root}/${key}/source/${item.path}`, 'utf8') }));
+      const draft = createWikisourceDraft(entry, files);
+      expect(draft.chapters[0].metadata.language).toBe('Korean');
+      expect(draft.diagnostics.unit).toBe('chars');
+      expect(draft.chapters[0].rawText.startsWith('⁂')).toBe(false);
+      expect(draft.chapters.every((chapter) => charCount(chapter.rawText) > 2000 && charCount(chapter.rawText) < 3600)).toBe(true);
+      expect(draft.chapters.some((chapter) => /라이선스|퍼블릭 도메인|위키백과/u.test(chapter.rawText))).toBe(false);
+      expect(entry.display.binding).toBeUndefined(); // 표지 시안을 오너가 고르기 전(UI 목업 우선)
+      expect(Object.hasOwn(manifest.works, key)).toBe(false);
+    }
+  });
+});

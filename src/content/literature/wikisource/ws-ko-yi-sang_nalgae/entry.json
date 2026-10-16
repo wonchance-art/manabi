@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "ko",
+  "key": "ws-ko-yi-sang_nalgae",
+  "main": "날개",
+  "url": "https://ko.wikisource.org/wiki/%EB%82%A0%EA%B0%9C",
+  "title": "날개",
+  "author": "이상",
+  "level": "고급",
+  "publishedYear": 1936,
+  "authorDeathYear": 1937,
+  "countryOfOrigin": "KR",
+  "mortPourLaFrance": null,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "날개",
+    "authorKo": "이상"
+  },
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "날개",
+      "revid": 221326,
+      "timestamp": "2021-06-25T17:50:58Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "body",
+          "sha256": "a7b35bf37ad04d9bbf0b6f089b16740331333835362ae3de1ef0958f0558f761"
+        }
+      ]
+    }
+  ]
+}

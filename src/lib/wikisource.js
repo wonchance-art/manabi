@@ -1,7 +1,7 @@
 // Wikisource 정본 책(LIT-SRC-WS-1, 오너 「같이해. 위 3편+3편+1편(레미제라블 추가). 간체와 번체 옵션 같이」 2026-10-17 KST)
 // — 저장·네트워크 없는 순수 함수.
 //
-// 출처: 위키문헌(zh.wikisource.org · fr.wikisource.org)의 교정본. 원문은 퍼블릭 도메인이고, 위키문헌의 전사·교정 기여는
+// 출처: 위키문헌(zh · fr · ko.wikisource.org)의 교정본. 원문은 퍼블릭 도메인이고, 위키문헌의 전사·교정 기여는
 // CC BY-SA 4.0이라 출처 줄에 위키문헌과 라이선스를 밝힌다. 원문은 리포에 고정한다: 쪽마다 렌더된 본문 조각을 source/에 두고
 // SHA-256과 위키 판 번호(revid)를 entry.json에 적는다(scripts/literature/ws-add-work.mjs) — 바뀌면 빌드가 실패한다.
 //
@@ -17,14 +17,20 @@
 export const WS_PROVIDER = 'wikisource';
 export const WS_BOOK_VERSION = 1;
 export const WS_LICENSE = 'CC-BY-SA-4.0';
-export const WS_WIKIS = Object.freeze({ zh: { language: 'Chinese', host: 'zh.wikisource.org' }, fr: { language: 'French', host: 'fr.wikisource.org' } });
-export const WS_TARGET = Object.freeze({ French: 2200, Chinese: 2500 });
+export const WS_WIKIS = Object.freeze({
+  zh: { language: 'Chinese', host: 'zh.wikisource.org' },
+  fr: { language: 'French', host: 'fr.wikisource.org' },
+  // 한국 근대 문학(오너 「한국 근대 문학도 추가」 → 「베스트 5만」 2026-10-17 KST) — 현대 맞춤법 전사본(한자는 괄호 병기 그대로)
+  ko: { language: 'Korean', host: 'ko.wikisource.org' },
+});
+// 장 하나 분량 — 프랑스어 단어 수 · 중국어·한국어 글자 수(공백 뺌)
+export const WS_TARGET = Object.freeze({ French: 2200, Chinese: 2500, Korean: 3000 });
 export const WS_EDITS = Object.freeze(['chapter-split-by-manabi', 'typography-normalized', 'illustrations-omitted', 'notes-omitted']);
 export const WS_SCRIPT = Object.freeze({ canonical: 'zh-hans', alternate: 'zh-hant' });
 // 판정 규칙이 있는 원산국 — 보호기간(사후 n년). 프랑스는 「mort pour la France」면 +30년(전쟁 연장 — 작품마다 적는다, fail-closed).
-export const WS_ORIGIN_TERMS = Object.freeze({ CN: 50, FR: 70 });
+export const WS_ORIGIN_TERMS = Object.freeze({ CN: 50, FR: 70, KR: 70 });
 
-const KEY_PATTERN = /^ws-(zh|fr)-[a-z0-9]+(?:-[a-z0-9]+)*_[a-z0-9]+(?:-[a-z0-9]+)*$/u;
+const KEY_PATTERN = /^ws-(zh|fr|ko)-[a-z0-9]+(?:-[a-z0-9]+)*_[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 const SHA256 = /^[0-9a-f]{64}$/u;
 const NAME_OPEN = '';
 const NAME_CLOSE = '';
@@ -69,7 +75,10 @@ function removeElements(html, tag, test) {
   }
 }
 
-const NOISE_DIV = /\b(?:id="(?:headertemplate|subheader|ws-data)"|class="[^"]*\b(?:ws-noexport|skin-invert|mw-references-wrap|references)\b)/u;
+const NOISE_DIV = /\b(?:id="(?:headertemplate|subheader|ws-data)"|class="[^"]*\b(?:ws-noexport|skin-invert|mw-references-wrap|references|noprint|licenseContainer|licensetpl)\b)/u;
+// 장면 바꿈 장식 줄(한국어 위키문헌 「🙝🙟」 · 「＊ ＊ ＊」 · 프랑스어 「⁂」) — 모두 「⁂」 한 글자 문단으로 맞춘다(글자 정리)
+const ORNAMENT_ONLY = /^[\s\u{1F650}-\u{1F67F}*＊⁂]+$/u;
+const SCENE_BREAK = '⁂';
 const INLINE_TAGS = 'span|i|b|em|strong|small|big|abbr|sup|sub|a|time|u|s|q|cite|var|dfn|bdi|font';
 
 /** 블록 안쪽 → 글자(<br>만 줄바꿈으로 살린다). 남은 태그가 있으면 throw — 모르는 구조를 글자로 흘리지 않는다. */
@@ -127,10 +136,13 @@ export function parseWikisourceFragment(fragment) {
   for (const match of html.matchAll(pattern)) {
     pushGap(html.slice(last, match.index));
     const text = blockText(match[2]);
-    if (text) blocks.push(text);
+    if (text) blocks.push(ORNAMENT_ONLY.test(text) ? SCENE_BREAK : text);
     last = match.index + match[0].length;
   }
   pushGap(html.slice(last));
+  // 쪽 맨 앞·맨 뒤의 장면 바꿈(제목 아래 장식 줄)은 바꿈이 아니다
+  while (blocks[0] === SCENE_BREAK) blocks.shift();
+  while (blocks.at(-1) === SCENE_BREAK) blocks.pop();
   if (blocks.length === 0) throw new Error('본문 문단이 없다');
   return { headings, blocks: blocks.map(unmark) };
 }
@@ -274,7 +286,7 @@ export function createWikisourceDraft(entry, files) {
   const byPath = new Map(files.map((file) => [file.path, file.text]));
   const expected = entry.files.flatMap((file) => file.variants.map((item) => item.path));
   if (files.length !== expected.length || expected.some((name) => !byPath.has(name))) throw new Error('쪽 조각이 entry.files와 다르다');
-  const measure = zh ? charCount : wordCount;
+  const measure = entry.wiki === 'fr' ? wordCount : charCount;
   const target = WS_TARGET[language];
   const pieces = [];
   for (const file of entry.files) {
@@ -347,6 +359,6 @@ export function createWikisourceDraft(entry, files) {
     schemaVersion: WS_BOOK_VERSION,
     book,
     chapters,
-    diagnostics: { pageCount: entry.files.length, chapterCount: total, size: sizes.reduce((sum, value) => sum + value, 0), unit: zh ? 'chars' : 'words', minChapter: Math.min(...sizes), maxChapter: Math.max(...sizes) },
+    diagnostics: { pageCount: entry.files.length, chapterCount: total, size: sizes.reduce((sum, value) => sum + value, 0), unit: entry.wiki === 'fr' ? 'words' : 'chars', minChapter: Math.min(...sizes), maxChapter: Math.max(...sizes) },
   };
 }

@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "ko",
+  "key": "ws-ko-kim-dong-in_gamja",
+  "main": "감자",
+  "url": "https://ko.wikisource.org/wiki/%EA%B0%90%EC%9E%90",
+  "title": "감자",
+  "author": "김동인",
+  "level": "고급",
+  "publishedYear": 1925,
+  "authorDeathYear": 1951,
+  "countryOfOrigin": "KR",
+  "mortPourLaFrance": null,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "감자",
+    "authorKo": "김동인"
+  },
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "감자",
+      "revid": 250692,
+      "timestamp": "2022-08-11T04:26:45Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "body",
+          "sha256": "2ff43a5a373f1214ca8fd82ccbda5a7510e526e7345438ff0a86e64ea5c55375"
+        }
+      ]
+    }
+  ]
+}

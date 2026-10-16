@@ -154,7 +154,7 @@ export function standardEbooksAttributionParts(literature) {
 
 /* Wikisource 정본 책(LIT-SRC-WS-1) — 같은 「출처 한 줄」 문법. 원작은 퍼블릭 도메인이지만 위키문헌의 전사·교정은 CC BY-SA 4.0이라
  * 출처(위키문헌) · 원문 링크 · 라이선스 링크 · 우리가 바꾼 점을 밝힌다(저작자 표시 — 제목·출처·라이선스). 원문 링크는 zh/fr 위키문헌 HTTPS만. */
-const WIKISOURCE_HOSTS = Object.freeze({ zh: 'zh.wikisource.org', fr: 'fr.wikisource.org' });
+const WIKISOURCE_HOSTS = Object.freeze({ zh: 'zh.wikisource.org', fr: 'fr.wikisource.org', ko: 'ko.wikisource.org' });
 function wikisourceHref(value, wiki) {
   try {
     const url = new URL(String(value || ''));

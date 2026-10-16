@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "ko",
+  "key": "ws-ko-kim-yu-jeong_dongbaekkkot",
+  "main": "동백꽃",
+  "url": "https://ko.wikisource.org/wiki/%EB%8F%99%EB%B0%B1%EA%BD%83",
+  "title": "동백꽃",
+  "author": "김유정",
+  "level": "고급",
+  "publishedYear": 1936,
+  "authorDeathYear": 1937,
+  "countryOfOrigin": "KR",
+  "mortPourLaFrance": null,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "동백꽃",
+    "authorKo": "김유정"
+  },
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "동백꽃",
+      "revid": 465103,
+      "timestamp": "2026-10-06T05:28:11Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "body",
+          "sha256": "9e501619b57e384ea287408e0822d3f0523135113869dbfefc442963938121b9"
+        }
+      ]
+    }
+  ]
+}

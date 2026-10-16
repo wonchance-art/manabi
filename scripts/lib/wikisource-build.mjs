@@ -81,6 +81,12 @@ export async function buildWikisource({ root = WIKISOURCE_ROOT, check = false, v
       // 고유명사 밑줄 → 「한 단어로 묶기」 기록(boundaries.json — scripts/literature/boundaries.mjs가 분석기와 같은 토크나이저로 만든다)
       const boundaryPath = path.join(base, LITERATURE_BOUNDARY_FILE);
       const draft = withBoundaryMerges(createWikisourceDraft(entry, files), existsSync(boundaryPath) ? JSON.parse(readFileSync(boundaryPath, 'utf8')) : null, 'wikisource');
+      // 표지 대기 — 원문·권리는 검사를 마쳤지만 표지 시안을 오너가 아직 고르지 않은 작품(UI 목업 우선). 목록·대조표에 싣지 않는다.
+      if (entry.display && typeof entry.display === 'object' && entry.display.binding === undefined) {
+        if (existsSync(path.join(base, WIKISOURCE_FILES.chapters))) throw new Error(`표지 대기 작품에 ${WIKISOURCE_FILES.chapters}가 있다 — 지운다`);
+        works.push({ key: entry.key, chapters: draft.chapters.length, status: 'cover-pending' });
+        continue;
+      }
       const display = validate(entry.display); // 표지 표기(초판 장정 — 없거나 틀리면 그 작품은 쓰지 않는다)
       const output = serialize(draft);
       const target = path.join(base, WIKISOURCE_FILES.chapters);

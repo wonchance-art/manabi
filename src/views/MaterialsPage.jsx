@@ -723,7 +723,7 @@ export default function MaterialsPage({ libraryView = null }) {
               } : null;
               // 중국어·프랑스어 정본(LIT-SRC-WS-1, 위키문헌) — 초판 장정 표지 + 원제·한국어 제목 + 장 제목. 분량은 중국어 글자 · 프랑스어 단어.
               const world = work || english ? null : wikisourceWorkOfBook(b);
-              const worldLang = world?.language === 'Chinese' ? 'zh-Hans' : 'fr';
+              const worldLang = { Chinese: 'zh-Hans', French: 'fr', Korean: 'ko' }[world?.language] || undefined;
               const worldChapterOf = (c) => world?.chapters.find((item) => item.order === c._bookOrder);
               const worldProps = world ? {
                 art: <WikisourceCover work={world} />,

@@ -15,8 +15,8 @@ import path from 'node:path';
 
 const ROOT = 'src/content/literature/wikisource';
 const UA = 'manabi-literature/1.0 (non-commercial language-learning reader; https://manabi.co.kr)';
-const WIKIS = { zh: 'https://zh.wikisource.org', fr: 'https://fr.wikisource.org' };
-const KEY = /^ws-(zh|fr)-[a-z0-9]+(?:-[a-z0-9]+)*_[a-z0-9]+(?:-[a-z0-9]+)*$/u;
+const WIKIS = { zh: 'https://zh.wikisource.org', fr: 'https://fr.wikisource.org', ko: 'https://ko.wikisource.org' };
+const KEY = /^ws-(zh|fr|ko)-[a-z0-9]+(?:-[a-z0-9]+)*_[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 
 const args = process.argv.slice(2);
 const flag = (name) => { const index = args.indexOf(`--${name}`); return index >= 0 ? args[index + 1] : null; };
@@ -54,13 +54,15 @@ export function extractFragment(html) {
   const root = html.search(/<div class="mw-content-ltr mw-parser-output"/u);
   if (root < 0) throw new Error('본문(mw-parser-output)이 없다');
   let body = balancedDiv(html, root);
-  for (const name of ['headertemplate', 'footertemplate', 'licenseContainer', 'ws-noexport']) {
+  for (const name of ['headertemplate', 'footertemplate', 'licenseContainer', 'licensetpl', 'noprint', 'ws-noexport']) {
     for (let at = body.search(new RegExp(`<div class="[^"]*\\b${name}\\b`, 'u')); at >= 0; at = body.search(new RegExp(`<div class="[^"]*\\b${name}\\b`, 'u'))) {
       const block = balancedDiv(body, at);
       if (!block) break;
       body = body.slice(0, at) + body.slice(at + block.length);
     }
   }
+  // 본문 뒤 꼬리 제목(한국어 위키문헌 「바깥 고리」 · 「라이선스」 — 저작권 틀 위 h1/h2)은 본문이 아니다
+  body = body.replace(/<div class="mw-heading mw-heading[1-6]"><h([1-6]) id="(?:라이선스|바깥_고리)">[\s\S]*?<\/h\1><\/div>\n?/gu, '');
   return { extract: 'body', html: body };
 }
 
@@ -71,7 +73,7 @@ async function main() {
   const pattern = flag('pattern');
   const variants = (flag('variants') || '').split(',').filter(Boolean);
   if (!WIKIS[wiki] || !KEY.test(key ?? '') || !key.startsWith(`ws-${wiki}-`) || !mainTitle) {
-    throw new Error('--wiki zh|fr --key ws-<wiki>-<작가>_<작품> --main <쪽 제목> [--pattern <장 쪽 정규식>] [--variants zh-hans,zh-hant]');
+    throw new Error('--wiki zh|fr|ko --key ws-<wiki>-<작가>_<작품> --main <쪽 제목> [--pattern <장 쪽 정규식>] [--variants zh-hans,zh-hant]');
   }
   if (wiki === 'zh' && variants.join(',') !== 'zh-hans,zh-hant') throw new Error('중국어는 --variants zh-hans,zh-hant(간체 정본 + 번체 보기)');
   if (wiki !== 'zh' && variants.length) throw new Error('글자 변환은 중국어만');
