@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { literatureBatchTargets,
+  planLiteratureMetadataSync,
   literatureExposedRows,
   literatureBoundaryIssues,
   literatureResumeTargets,
@@ -244,6 +245,24 @@ describe('쪼개진 저자 루비 낱말(AOZORA-P1-10 — 오너 「고유명사
   });
 });
 
+describe('분석 전 장 metadata 맞추기(AOZORA-P1-12)', () => {
+  const pendingRow = (order, metadata, overrides = {}) => ({ ...row(order), status: 'pending', metadata, ...overrides });
+  const reorder = (value) => JSON.parse(JSON.stringify(Object.fromEntries(Object.entries(value).reverse())));
+
+  it('분석 전·원문 같은 장 중 정본과 다른 장만 — 키 순서·updated_at은 차이로 보지 않는다', () => {
+    const stale = { ...book.chapters[0].metadata };
+    delete stale.viewerBoundaries;
+    const plan = planLiteratureMetadataSync(book, [
+      pendingRow(1, stale),
+      pendingRow(2, reorder({ ...book.chapters[1].metadata, updated_at: '2026-10-14T00:00:00Z' })),
+      pendingRow(3, stale, { status: 'completed' }), // 분석한 장은 덮지 않는다
+      pendingRow(4, stale, { raw_text: '書き換え' }), // 원문이 다른 장은 충돌 — 맞추지 않는다
+    ], '2026-10-16T00:00:00Z');
+    expect(plan).toEqual([{ id: 101, order: 1, metadata: { ...book.chapters[0].metadata, updated_at: '2026-10-16T00:00:00Z' } }]);
+    expect(planLiteratureMetadataSync(book, [])).toEqual([]);
+  });
+});
+
 describe('분석 이어하기 대상(AOZORA-P1-10)', () => {
   const summary = (overrides) => ({ publishable: true, stage: 'preparing', plan: { conflicts: [], insert: [] }, ...overrides });
   it('모든 장을 준비했고 분석만 멈춘 작품 — 준비가 끊긴 작품(쓰기 필요)·충돌·다른 단계는 사람이 누른다', () => {
@@ -294,6 +313,12 @@ describe('관리자 화면 배선 — 게시 한 번에 준비·분석, 공개�
     expect(panel).toContain("if (action === 'review') review.mutate({ book, chapter, acceptBoundaries: true });");
     expect(panel).toContain("else if (action === 'reviewMany') reviewMany.mutate({ book, chapters });");
     expect(panel).toContain("post('reviewMany', book.key, { orders: chapters.map((chapter) => chapter.order) })");
+  });
+
+  it('분석 전에 먼저 prepare로 분석 전 장의 metadata를 정본에 맞춘다(AOZORA-P1-12)', () => {
+    const analyze = sliceBetween(panel, 'async function analyzeChapters', '\n  }\n');
+    expect(analyze.indexOf("if (targets.length) await post('prepare', book.key);")).toBeGreaterThan(-1);
+    expect(analyze.indexOf("await post('prepare', book.key);")).toBeLessThan(analyze.indexOf('runPreservedReanalysis'));
   });
 
   it('「게시」(prepare) 성공 뒤 바로 분석을 시작하고, 「공개」(release)는 ready 단계에서만 보인다', () => {

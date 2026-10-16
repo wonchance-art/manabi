@@ -115,6 +115,30 @@ export function literaturePublishRows(book, orders, ownerId, now = new Date().to
   }));
 }
 
+/** 키 순서와 무관한 JSON 비교(jsonb는 키 순서를 바꿔 돌려준다). */
+const stableJson = (value) => (Array.isArray(value) ? `[${value.map(stableJson).join(',')}]`
+  : value && typeof value === 'object' ? `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stableJson(value[key])}`).join(',')}}`
+    : JSON.stringify(value));
+const withoutStamp = ({ updated_at: _stamp, ...metadata } = {}) => metadata;
+
+/**
+ * 준비만 하고 아직 분석하지 않은 장의 metadata 맞추기(AOZORA-P1-12) — 준비 뒤에 정본 빌드가 늘린 칸(단어 경계 미리 묶기
+ * viewerBoundaries · 검수 힌트 reviewHints 등)이 그 장의 분석 요청에 실리게 한다. 운영 실측(2026-10-16 KST): 10-14·15에 준비한
+ * 6편 40장에 경계 기록·힌트가 없어 분석해도 미리 묶기가 걸리지 않을 상태였다.
+ * 대상은 status 'pending'(분석 전 — 단어·교정·경계 기록이 아직 없다)이고 원문이 정본과 같은 장뿐 — 분석한 장은 건드리지 않는다
+ * (거기 쌓인 경계 정산·교정을 덮지 않게, 바꾸려면 다시 분석). rows: [{id, order, raw_text, status, metadata}]
+ * @returns {Array<{id, order, metadata}>} 정본 metadata로 바꿀 장(같으면 빈 배열 — 멱등)
+ */
+export function planLiteratureMetadataSync(book, rows = [], now = new Date().toISOString()) {
+  const byOrder = new Map(book.chapters.map((chapter) => [chapter.order, chapter]));
+  return rows.flatMap((row) => {
+    const chapter = byOrder.get(Number(row.order));
+    if (!chapter || row.status !== 'pending' || row.raw_text !== chapter.rawText) return [];
+    if (stableJson(withoutStamp(row.metadata)) === stableJson(withoutStamp(chapter.metadata))) return [];
+    return [{ id: row.id, order: chapter.order, metadata: { ...chapter.metadata, updated_at: now } }];
+  });
+}
+
 /**
  * 공개 계획 — 모든 장이 있고(충돌 없음) 모두 분석·검수 완료일 때만, 아직 비공개인 장들을 공개한다.
  * rows: [{id, raw_text, order, status, visibility, review, revision}]

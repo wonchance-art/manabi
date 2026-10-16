@@ -237,6 +237,8 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
   // 장마다 뷰어와 같은 분석 경로(runPreservedReanalysis — 분석 말미에 저자 루비 잠금)로 한 번씩.
   async function analyzeChapters(book, controller) {
     const targets = book.chapters.filter((chapter) => chapter.material && chapter.material.status !== 'completed');
+    // 준비 뒤 정본 빌드가 늘린 칸(단어 경계 미리 묶기·검수 힌트)을 분석 전 장에 먼저 맞춘다(AOZORA-P1-12 — prepare는 멱등).
+    if (targets.length) await post('prepare', book.key);
     for (const [index, chapter] of targets.entries()) {
       setRunning({ key: book.key, done: index, total: targets.length });
       const { data: row, error } = await supabase.from('reading_materials').select('*').eq('id', chapter.material.id).single();

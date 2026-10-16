@@ -15,6 +15,7 @@ const PATHS = {
   'processed_json->metadata->book->>key': (item) => item.processed_json.metadata.book.key,
   'processed_json->metadata->book->>order': (item) => String(item.processed_json.metadata.book.order),
   'processed_json->metadata->>viewerRevision': (item) => item.processed_json.metadata?.viewerRevision ?? null,
+  'processed_json->>status': (item) => item.processed_json.status,
 };
 const field = (item, key) => (PATHS[key] ? PATHS[key](item) : item[key]);
 const matches = (item, filters) => filters.every(([kind, key, value]) => (kind === 'eq' ? field(item, key) === value : value.includes(field(item, key))));
@@ -113,6 +114,21 @@ describe('관리자 정본 문학책 게시 API', () => {
     const again = await post({ action: 'prepare', key: KEY });
     expect(await again.json()).toMatchObject({ ok: true, inserted: [], plan: { state: 'published' } });
     expect(db.state.inserts).toHaveLength(1);
+  });
+
+  it('준비 뒤 정본이 늘린 칸(경계 기록·검수 힌트)은 다시 「게시」·분석 전에 분석 전 장에만 맞춘다(AOZORA-P1-12) — 분석한 장은 그대로', async () => {
+    await post({ action: 'prepare', key: KEY });
+    const [first, second] = db.state.rows;
+    // 10-14 운영처럼 경계 기록이 생기기 전에 준비된 장
+    delete first.processed_json.metadata.viewerBoundaries;
+    delete second.processed_json.metadata.viewerBoundaries;
+    analyze(second, 'r1');
+    const response = await post({ action: 'prepare', key: KEY });
+    expect(await response.json()).toMatchObject({ ok: true, inserted: [], synced: [500] });
+    expect(first.processed_json.metadata.viewerBoundaries).toEqual(book.chapters[0].metadata.viewerBoundaries);
+    expect(first.processed_json).toMatchObject({ status: 'pending', sequence: [] });
+    expect(second.processed_json.metadata.viewerBoundaries).toBeUndefined(); // 분석한 장 — 덮지 않는다
+    expect((await (await post({ action: 'prepare', key: KEY })).json()).synced).toEqual([]); // 멱등
   });
 
   it('정본과 다른 장이 이미 있으면 409, 아무것도 넣지 않는다', async () => {
