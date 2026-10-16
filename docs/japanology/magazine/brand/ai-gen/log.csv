@@ -1,1 +1,5 @@
 file,tool,model,plan,generated_kst,seed,prompt_id,prompt_extra,human_edit,note
+TONARI-gpt-01c.svg,chatgpt,(오너 기재 필요),(오너 기재 필요),2026-10-16,,CONCEPT,정리판 SVG(TONARI_master.svg),,오너 수렴안 — 버블 글자·이웃 글자 틈 약 2%H
+TONARI-gpt-01o.webp,chatgpt,(오너 기재 필요),(오너 기재 필요),2026-10-16,,CONCEPT,원본 래스터,,01c와 같은 형태
+hira-gpt-01c.webp,chatgpt,(오너 기재 필요),(오너 기재 필요),2026-10-16,,PASTE ⑤-2,패밀리 확장,,첫 업로드본(と 첫 획 분리) — 오너 정정본으로 교체 예정
+kata-gpt-01c.webp,chatgpt,(오너 기재 필요),(오너 기재 필요),2026-10-16,,PASTE ⑤-3,패밀리 확장,,
