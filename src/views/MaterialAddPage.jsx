@@ -24,6 +24,7 @@ import BookDraftPanel from '../components/BookDraftPanel';
 import { friendlyToastMessage, failureMessage } from '../lib/errorMessage';
 import { titleFromBody } from '../lib/materialTitle';
 import { useQueryClient } from '@tanstack/react-query';
+import { invalidateLibrary } from '../lib/libraryOperations';
 import { createImportAttempt, saveImportOnce, interruptedImportJson, persistImportAnalysis } from '../lib/materialImport';
 import { useViewerLanguage } from '../lib/useViewerLanguage';
 import { VIEWER_LANGUAGES, viewerLanguageInfo } from '../lib/viewerLanguage';
@@ -280,6 +281,7 @@ function MaterialAddForm() {
         if (error) throw error;
         inserted = data;
       }
+      refreshLibrary();
       setBookDoneCount(bookDraft.chapters.length);
       setBookFirstNewId(inserted?.[0]?.id ?? null);
       toast(bookDraft.append
@@ -361,10 +363,9 @@ function MaterialAddForm() {
     return () => { aliveRef.current = false; abortControllerRef.current?.abort(); };
   }, []);
 
-  const refreshLibrary = () => {
-    queryClient.invalidateQueries({ queryKey: ['materials'] });
-    queryClient.invalidateQueries({ queryKey: ['library-reading-v2', user?.id] });
-  };
+  // 서재(personal-library·읽던 곳·my-pdfs)와 자료실 목록을 함께 무효화한다 — 서재 목록이 30초 캐시라
+  // 방금 더한 자료가 늦게 뜨지 않게 하는 정본 경로(libraryOperations.invalidateLibrary).
+  const refreshLibrary = () => { if (user?.id) invalidateLibrary(queryClient, user.id); };
 
   async function handleStart() {
     if (busyRef.current || savedRecordRef.current) return;
@@ -401,11 +402,12 @@ function MaterialAddForm() {
         importAttemptRef.current = { signature, attempt: createImportAttempt(materialRow, crypto.randomUUID()) };
       }
       const record = await saveImportOnce(supabase, importAttemptRef.current.attempt);
+      // 저장은 끝났다 — 화면을 떠났어도 서재는 새 자료를 봐야 한다.
+      refreshLibrary();
       if (!aliveRef.current) return;
       savedRecordRef.current = record;
       analysisJsonRef.current = record.processed_json;
       setCompletedId(record.id);
-      refreshLibrary();
       // Saving an extracted range does not mean the reader has read its final page.
       // PDF page progress remains owned by the PDF reader.
       if (isNote) {
@@ -480,7 +482,8 @@ function MaterialAddForm() {
       setStatus(signal.aborted ? '분석을 멈췄어요. 원문은 서재에 남아 있어요.' : '원문은 저장됐어요. 분석을 다시 시도할 수 있어요.');
       if (!signal.aborted) setError('분석 오류 — ' + friendlyToastMessage(err));
     } finally {
-      if (aliveRef.current) { setIsProcessing(false); refreshLibrary(); }
+      if (aliveRef.current) setIsProcessing(false);
+      refreshLibrary();
     }
   }
 

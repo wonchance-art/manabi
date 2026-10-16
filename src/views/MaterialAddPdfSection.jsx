@@ -162,6 +162,8 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
         .select()
         .single();
       if (insertErr) throw insertErr;
+      // 서재 목록(30초 캐시)도 새 PDF를 바로 보게 정본 경로로 무효화한다.
+      invalidateLibrary(queryClient, user.id);
 
       toast(`"${title}" 업로드 완료 (${pageCount}페이지)`, 'success');
       refetch();

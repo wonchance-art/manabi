@@ -8,7 +8,8 @@ import { fetchTodaySuggestions, TODAY_SUGGESTIONS_KEY } from '../suggestionReadi
 // ① 자료실 분석 중 폴링은 상태 한 칸만(목록 통짜 재조회 금지), 내 소유 행만.
 // ② 오늘의 추천은 키·조회 함수 하나(홈·자료실 공용 캐시).
 // ③ 아는 단어는 60초 캐시 + 1000행 페이지 — 표시·해제가 setQueryData·무효화로 반영되기 때문.
-// ④ 서재 「읽던 곳」은 30초 캐시 — 열람·서재 작업이 무효화하기 때문. 무효화 경로가 없는 쿼리는 0 유지.
+// ④ 서재 쿼리(읽던 곳·목록·받아두기 목록)는 30초 캐시 — 열람·읽은 위치·서재 작업·자료 추가·공개 범위·받아두기가
+//    모두 무효화하기 때문. 쓰기 지점이 늘면 아래 전수 단언이 무효화 누락을 잡는다.
 
 const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
 
@@ -104,18 +105,66 @@ describe('③ 아는 단어 — 60초 캐시 · 1000행 페이지', () => {
   });
 });
 
-describe('④ 서재 — 무효화 경로가 있는 쿼리만 30초', () => {
+describe('④ 서재 — 쓰기 지점이 무효화하므로 30초 캐시', () => {
   const shelf = read('src/components/library/LibraryShelf.jsx');
+  const clientFiles = fs.readdirSync('src', { recursive: true }).map((f) => path.join('src', String(f)).split(path.sep).join('/'))
+    .filter((f) => /\.(jsx?|tsx?)$/.test(f) && !f.includes('__tests__') && !f.startsWith('src/app/api/') && !f.startsWith('src/lib/server/'));
 
-  it('읽던 곳(library-recent)은 30초 캐시', () => {
+  it('읽던 곳·목록·받아두기 목록은 30초 캐시', () => {
     expect(shelf).toContain("queryKey:['library-recent',user.id],staleTime:30000,");
+    expect(shelf).toMatch(/queryKey:\['library-pinned',user\.id\][^\n]*staleTime:30000\}/);
+    expect(shelf).toMatch(/queryKey:\['personal-library',user\.id,[\s\S]{0,400}?staleTime:30000\}\);/);
+    expect(shelf).not.toMatch(/staleTime:0\b/);
   });
 
-  it('무효화 경로가 없는 personal-library·library-pinned는 0 유지', () => {
-    // 자료 추가(MaterialAddPage)는 personal-library를, 받아두기(offlineCache)는 library-pinned를 무효화하지 않는다.
-    // 경로가 생기기 전에 캐시를 늘리면 방금 더한 자료가 서재에 늦게 뜬다.
-    expect(shelf).toMatch(/queryKey:\['library-pinned',user\.id\][^\n]*staleTime:0\}/);
-    expect(shelf).toMatch(/queryKey:\['personal-library',user\.id,[\s\S]{0,400}?staleTime:0\}\);/);
+  it('invalidateLibrary가 서재 목록·읽던 곳을 함께 무효화한다', () => {
+    const ops = read('src/lib/libraryOperations.js');
+    const keys = ops.match(/export async function invalidateLibrary\(cache,owner\)\{\s*await Promise\.all\(\[([^\]]*)\]/)?.[1] || '';
+    expect(keys).toContain("'personal-library'");
+    expect(keys).toContain("'library-recent'");
+  });
+
+  it('화면의 자료·PDF 쓰기 지점(insert/update/delete)은 모두 서재를 무효화한다', () => {
+    // src/lib의 저장 도우미는 캐시를 모른다 — 무효화는 그것을 부르는 화면이 맡는다(아래 개별 단언).
+    const writers = clientFiles.filter((f) => !f.startsWith('src/lib/'))
+      .filter((f) => /from\('(reading_materials|uploaded_pdfs)'\)\s*\.(insert|update|delete|upsert)\(/.test(read(f)));
+    expect(writers.length).toBeGreaterThan(0);
+    for (const f of writers) expect(read(f), f).toMatch(/invalidateLibrary\(|queryKey: ?\['personal-library'/);
+  });
+
+  it('자료 추가 — 본문 저장·분석 종료·책 챕터 일괄 등록·PDF 업로드가 invalidateLibrary를 탄다', () => {
+    const add = read('src/views/MaterialAddPage.jsx');
+    expect(add).toContain('const refreshLibrary = () => { if (user?.id) invalidateLibrary(queryClient, user.id); };');
+    // 책: insert/RPC 직후, 본문: 저장 직후(화면을 떠났어도), 분석 종료: finally에서 무조건.
+    expect(add).toMatch(/inserted = data;\n {6}\}\n {6}refreshLibrary\(\);/);
+    expect(add).toMatch(/await saveImportOnce\([^)]*\);\n(?:\s*\/\/[^\n]*\n)?\s*refreshLibrary\(\);\n\s*if \(!aliveRef\.current\) return;/);
+    expect(add).toMatch(/if \(aliveRef\.current\) setIsProcessing\(false\);\n\s*refreshLibrary\(\);/);
+    const pdf = read('src/views/MaterialAddPdfSection.jsx');
+    expect(pdf).toMatch(/if \(insertErr\) throw insertErr;[\s\S]{0,120}invalidateLibrary\(queryClient, user\.id\);/);
+  });
+
+  it('자료실 공개 범위 토글이 invalidateLibrary를 탄다', () => {
+    const page = read('src/views/MaterialsPage.jsx');
+    const toggle = page.match(/const toggleVisibilityMutation = useMutation\(\{[\s\S]*?\n {2}\}\);/)?.[0];
+    expect(toggle, '공개 범위 토글을 못 찾았다').toBeTruthy();
+    expect(toggle).toMatch(/onSuccess:[\s\S]*invalidateLibrary\(queryClient, user\.id\)/);
+  });
+
+  it('받아두기·해제 호출마다 library-pinned를 무효화한다', () => {
+    const callers = clientFiles.filter((f) => f !== 'src/lib/offlineCache.js' && /\.(pinMaterial|unpinMaterial)\(/.test(read(f)));
+    expect(callers).toEqual(['src/views/MaterialsPage.jsx']);
+    for (const f of callers) {
+      const calls = [...read(f).matchAll(/await cache\.(?:pin|unpin)Material\([^)]*\);\n\s*([^\n]*)/g)];
+      expect(calls).toHaveLength(2);
+      for (const [, next] of calls) expect(next, f).toBe("queryClient.invalidateQueries({ queryKey: ['library-pinned', user?.id] });");
+    }
+  });
+
+  it('읽은 위치 저장이 서재 목록·읽던 곳을 무효화하고, 정의 없는 옛 키는 남지 않았다', () => {
+    const scroll = read('src/lib/useScrollRestore.js');
+    expect(scroll).toContain("queryClient.invalidateQueries({ queryKey: ['library-recent', owner] });");
+    expect(scroll).toContain("queryClient.invalidateQueries({ queryKey: ['personal-library', owner] });");
+    expect(clientFiles.filter((f) => read(f).includes('library-reading-v2'))).toEqual([]);
   });
 
   it('열람 기록과 서재 작업이 library-recent를 무효화한다', () => {

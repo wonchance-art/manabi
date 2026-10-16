@@ -19,8 +19,9 @@ import {operationTarget,currentLibraryTarget,selectedRange,folderPaths,prepareOp
 import './library.css';
 
 function QueryFailure({query,label}){return query.isError?<div className="shelf-query-error" role="alert"><p>{label} · {libraryError(query.error)}</p><button onClick={()=>query.refetch()}>다시 시도</button></div>:null;}
-// 읽던 곳은 열람 기록(useLibraryActivity — 뷰어·PDF·교재·원본)과 서재 작업(invalidateLibrary)이 무효화하므로 30초 캐시한다.
-// personal-library·library-pinned는 0 유지: 자료 추가(MaterialAddPage)·받아두기(offlineCache)에 무효화 경로가 없다.
+// 서재 쿼리는 30초 캐시한다 — 쓰기 지점이 모두 무효화한다(browserQueryTrim.test.js가 지킨다).
+// 읽던 곳·목록: 열람 기록(useLibraryActivity)·읽은 위치(useScrollRestore)·서재 작업과 자료 추가·공개 범위(invalidateLibrary).
+// 받아두기 목록(library-pinned): 자료실의 받아두기 토글이 무효화한다.
 function RecentReads({user}){
  const [more,setMore]=useState(false),[rows,setRows]=useState([]);
  const recent=useQuery({queryKey:['library-recent',user.id],staleTime:30000,queryFn:()=>fetchLibraryPage(supabase,{},0,{recent:true})});
@@ -51,10 +52,10 @@ export default function LibraryShelf({user}){
  const anchor=useRef(null),attempt=useRef(null),listRef=useRef(null);
  const collections=useCollections(user.id),folders=folderPaths(collections.data||[]);
  const currentCollection=folders.find(c=>c.id===filters.collection),returnTo=safeLibraryReturn(`/materials?${params}`);
- const pinned=useQuery({queryKey:['library-pinned',user.id],enabled:filters.pinned,queryFn:pinnedMaterialIds,staleTime:0});
+ const pinned=useQuery({queryKey:['library-pinned',user.id],enabled:filters.pinned,queryFn:pinnedMaterialIds,staleTime:30000});
  const keyFilters={...filters};delete keyFilters.shown;
  const list=useInfiniteQuery({queryKey:['personal-library',user.id,keyFilters,pinned.data],enabled:!filters.pinned||pinned.isSuccess,initialPageParam:0,
- queryFn:({pageParam})=>fetchLibraryPage(supabase,filters,pageParam,{pinned:pinned.data}),getNextPageParam:(last,pages)=>{const length=pages.reduce((n,p)=>n+p.items.length,0);return length<last.total?length:undefined;},staleTime:0});
+ queryFn:({pageParam})=>fetchLibraryPage(supabase,filters,pageParam,{pinned:pinned.data}),getNextPageParam:(last,pages)=>{const length=pages.reduce((n,p)=>n+p.items.length,0);return length<last.total?length:undefined;},staleTime:30000});
  const {hasNextPage,isFetching,isError,fetchNextPage}=list;
  const items=list.data?.pages.flatMap(p=>p.items)||[],total=list.data?.pages[0]?.total||0;
  // 대화(v2-Z): 목록에 그대로 두되 「대화」 표시를 달고, 전체 보기 위에 따로 모은다. 실패해도 서재는 그대로 — 묶음만 숨는다.

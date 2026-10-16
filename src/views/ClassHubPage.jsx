@@ -12,6 +12,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { invalidateLibrary } from '../lib/libraryOperations';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import Button from '../components/Button';
@@ -107,7 +108,7 @@ export default function ClassHubPage() {
       if(existing.error) throw existing.error;
       const existingTeam=existing.data?.processed_json?.metadata?.team;
       if(existingTeam && await hashPassword(draft.password,existingTeam.pwSalt)!==existingTeam.pwHash) { refresh(); throw new Error('이전 요청으로 이미 만들어진 수업이에요. 목록에서 공유 암호를 변경해 주세요.'); }
-      if(!existing.data){const {error}=await supabase.from('reading_materials').insert(row);if(error)throw error;}
+      if(!existing.data){const {error}=await supabase.from('reading_materials').insert(row);if(error)throw error;invalidateLibrary(queryClient,user.id);}
       setRevealed({ key, name: existingTeam?.name || row.processed_json.metadata.team.name, password: draft.password });
       setDraft(EMPTY_DRAFT);
       setCreating(false);

@@ -218,7 +218,6 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
       await persistDraft(saved).catch(() => {});
       queryClient.invalidateQueries({ queryKey: ['personal-library',ownerId] });
       queryClient.invalidateQueries({ queryKey: ['materials'] });
-      queryClient.invalidateQueries({ queryKey: ['library-reading-v2'] });
       await queryClient.invalidateQueries({ queryKey: ['material', String(record.id)] });
       if (!alive.current) return;
       draftRef.current = saved; setDraft(saved); setDraftStatus('서재에 저장됨'); setStage(study ? '저장했어요. 학습 화면을 열고 있어요…' : '저장했어요. 자료를 열고 있어요…');

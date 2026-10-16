@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { invalidateLibrary } from '../lib/libraryOperations';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
@@ -185,7 +186,7 @@ export default function AdminPage() {
       const { error } = await supabase.from('reading_materials').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-materials'] }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-materials'] }); if (user?.id) invalidateLibrary(queryClient, user.id); },
     onError: (err) => toast(failureMessage('삭제하지 못했어요.', err), 'error'),
   });
 

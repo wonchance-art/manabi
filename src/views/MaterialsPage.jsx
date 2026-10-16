@@ -185,7 +185,8 @@ export default function MaterialsPage({ libraryView = null }) {
       if (error) throw error;
     },
     onSuccess: (_, { newVisibility }) => {
-      queryClient.invalidateQueries({ queryKey: ['materials'] });
+      // 서재 목록도 공개 범위를 보인다 — 자료실 목록만이 아니라 서재 캐시까지 정본 경로로 무효화한다.
+      invalidateLibrary(queryClient, user.id);
       toast(newVisibility === 'public' ? '공용으로 공개했어요.' : '비공개로 바꿨어요.', 'success');
     },
     onError: (err) => toast(failureMessage('공개 범위를 바꾸지 못했어요.', err), 'error'),
@@ -253,6 +254,7 @@ export default function MaterialsPage({ libraryView = null }) {
       const cache = await import('../lib/offlineCache');
       if (pinnedIds.has(id)) {
         await cache.unpinMaterial(id);
+        queryClient.invalidateQueries({ queryKey: ['library-pinned', user?.id] });
         setPinnedIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
         toast('받아두기를 해제했어요.', 'info');
         return;
@@ -261,6 +263,7 @@ export default function MaterialsPage({ libraryView = null }) {
         .from('reading_materials').select('*').eq('id', id).maybeSingle();
       if (error || !data) throw error || new Error('NOT_FOUND');
       await cache.pinMaterial(data);
+      queryClient.invalidateQueries({ queryKey: ['library-pinned', user?.id] });
       setPinnedIds((prev) => new Set(prev).add(id));
       toast('받아뒀어요 — 연결이 없어도 열려요.', 'success');
     } catch {
