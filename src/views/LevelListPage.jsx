@@ -27,7 +27,7 @@ import { loadJaWordsTable, loadZhengTable } from '@/lib/glyphTables';
 import HunCell from '@/components/viewer/HunCell';
 import { alignFurigana } from '@/views/refShared';
 import {
-  LEVEL_LIST_LANGS, LEVEL_KIND_LABEL, levelKinds, levelLabel, levelPill, levelListHref, jaHeadMode, matchesLevelQuery, splitKnown, fetchSavedLevelKeys,
+  LEVEL_LIST_LANGS, LEVEL_KIND_LABEL, levelKinds, levelLabel, levelPill, levelListHref, jaHeadMode, matchesLevelQuery, splitKnown, fetchSavedLevelKeys, levelGroupsOf,
   LEVEL_PEEK_CLOSE_MS, LEVEL_PEEK_MS, LEVEL_PREFS_DEFAULT, LEVEL_VIEWS, normalizeLevelPrefs, levelProgress, pinyinSyllables, writeLevelSnapshot,
 } from '@/lib/levelList';
 import { pinyinToneNumber } from '@/lib/pinyinTone';
@@ -171,8 +171,10 @@ export function VocabCard({ entry: e, lang, levelKey, view, scoped = true, peek,
   </li>;
 }
 
-export default function LevelListPage({ lang, kind, levelKey, groups }) {
+export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups }) {
   const conf = LEVEL_LIST_LANGS[lang];
+  // 서버가 줄여 보낸 항목(compactLevelEntry)을 여기 한 곳에서 되살린다 — 아래는 늘 key · fullMeaning이 있는 항목만 본다.
+  const groups = useMemo(() => levelGroupsOf(rawGroups), [rawGroups]);
   const vocab = kind === 'vocab';
   const hanzi = kind === 'hanzi';
   const wordsOn = vocab || hanzi; // 단어 저장 · 제외를 쓰는 탭
@@ -368,7 +370,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
       if (!client) return done(false); // 받는 사이 계정이 바뀌었다 — 새 계정으로 저장하지 않는다.
       // 예문은 붙이지 않는다(인계 §5 — 저장 카드 예문은 보류). 뜻 · 읽기는 새 카드에만 쓰이고, 있던 카드는 그대로다.
       const vocabulary = { language: conf.language, word_text: entry.key, base_form: entry.key,
-        meaning: entry.fullMeaning.slice(0, 2000), furigana: entry.reading.slice(0, 500), pos: entry.pos.slice(0, 80) };
+        meaning: (entry.fullMeaning ?? entry.meaning).slice(0, 2000), furigana: entry.reading.slice(0, 500), pos: entry.pos.slice(0, 80) };
       const response = await client.save({ action: 'save', accountId: userId, operationId: newId(), cardId: newId(), vocabulary });
       if (response?.ok === true || response?.status === 'pending' || response?.status === 'applied' || response?.status === 'replayed') { nudgeReview(); return done(true); }
       done(false);

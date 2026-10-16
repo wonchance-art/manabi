@@ -9,7 +9,7 @@ import { JAPANESE_VOCAB_REF } from './japaneseVocabRegistry';
 import { getBunkei as getJaBunkei, countBunkei as countJaBunkei } from '../content/japanese';
 import { getVocab as getZhVocab, getBunkei as getZhBunkei, countBunkei as countZhBunkei, ZH_LEVEL_META } from '../content/chinese';
 import { loadZhHskLevels, zhHskLevelOf } from './zhHskLevel';
-import { LEVEL_LIST_LANGS, levelKinds, levelWordKey, shortMeaning } from './levelList';
+import { LEVEL_LIST_LANGS, compactLevelEntry, levelKinds, levelWordKey, shortMeaning } from './levelList';
 import { loadHanziTable } from './zhHanzi';
 
 const bunkeiOf = { japanese: getJaBunkei, chinese: getZhBunkei };
@@ -44,7 +44,8 @@ function japaneseVocabGroups(levelKey) {
       const key = levelWordKey(w.ja);
       if (!key || seen.has(key)) return [];
       seen.add(key);
-      return [{ key, word: w.ja, reading: w.yomi || '', meaning: shortMeaning(w.ko), fullMeaning: w.ko || '', pos: w.pos || '', ex: jaExample(w.ex) }];
+      // 화면 전달 크기 — 표제어와 같은 key · 짧은 뜻과 같은 전체 뜻은 생략(화면이 levelEntry로 되살린다).
+      return [compactLevelEntry({ key, word: w.ja, reading: w.yomi || '', meaning: shortMeaning(w.ko), fullMeaning: w.ko || '', pos: w.pos || '', ex: jaExample(w.ex) })];
     }),
   })).filter((g) => g.entries.length);
 }
@@ -72,7 +73,7 @@ async function chineseVocabGroups(levelKey) {
   const groups = ZH_POS_GROUPS.map((g) => ({ name: g.name, entries: [] }));
   for (const [key, w] of chineseDictionary()) {
     if (zhHskLevelOf(key, table) !== level) continue;
-    groups[zhGroupOf(w.pos)].entries.push({ key, word: w.zh, reading: w.pinyin || '', meaning: shortMeaning(w.ko), fullMeaning: w.ko || '', pos: w.pos || '', ex: zhExample(w.ex) });
+    groups[zhGroupOf(w.pos)].entries.push(compactLevelEntry({ key, word: w.zh, reading: w.pinyin || '', meaning: shortMeaning(w.ko), fullMeaning: w.ko || '', pos: w.pos || '', ex: zhExample(w.ex) }));
   }
   for (const g of groups) g.entries.sort((a, b) => pinyinOrder(a.reading).localeCompare(pinyinOrder(b.reading)) || a.word.localeCompare(b.word, 'zh'));
   return groups.filter((g) => g.entries.length);
@@ -108,7 +109,7 @@ async function hanziGroups(levelKey) {
     .map(([set, entries]) => ({ name: set === 0 ? '문법 글자' : `묶음 ${set}`, set, entries }));
 }
 
-/** 한 화면의 목록 — { lang, kind, levelKey, groups:[{name, entries}] }. 없는 레벨이면 null. */
+/** 한 화면의 목록 — { lang, kind, levelKey, groups:[{name, entries}] }. 없는 레벨이면 null. 단어 항목은 줄인 꼴(compactLevelEntry). */
 export async function levelListData(lang, kind, levelParam) {
   const conf = LEVEL_LIST_LANGS[lang];
   const levelKey = String(levelParam || '').toUpperCase();

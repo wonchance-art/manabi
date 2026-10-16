@@ -58,6 +58,22 @@ export function levelWordKey(word) {
     .replace(/\s+/g, ''));
 }
 
+/**
+ * 서버 → 화면으로 넘기는 단어 항목을 줄인다 — 대조 키가 표제어와 같으면 key를, 전체 뜻이 짧은 뜻과 같으면
+ * fullMeaning을 뺀다(HSK 6 1,777개 중 1,775개가 같다). 화면은 levelEntry로 되살려 쓴다(값 손실 0 — 왕복 동치).
+ */
+export function compactLevelEntry(entry) {
+  const { key, fullMeaning, ...rest } = entry;
+  return { ...(key === entry.word ? {} : { key }), ...rest, ...(fullMeaning === entry.meaning ? {} : { fullMeaning }) };
+}
+/** compactLevelEntry를 되돌린다 — key 없으면 표제어, fullMeaning 없으면 짧은 뜻. 문형 · 한자 항목(뜻 없음)은 그대로. */
+export function levelEntry(entry) {
+  if (!entry || ('key' in entry && ('fullMeaning' in entry || !('meaning' in entry)))) return entry;
+  return { ...entry, key: entry.key ?? entry.word, ...('meaning' in entry ? { fullMeaning: entry.fullMeaning ?? entry.meaning } : {}) };
+}
+/** 화면이 받은 묶음 전체를 한 번에 되살린다(LevelListPage 진입점 한 곳). */
+export const levelGroupsOf = (groups) => (groups || []).map((g) => ({ ...g, entries: (g.entries || []).map(levelEntry) }));
+
 /** 일본어 표제어 표기 — N5 · N4는 가나 먼저 크게 + 한자 작게, N3부터 한자 위 읽기. */
 export function jaHeadMode(levelKey) {
   return ['N5', 'N4'].includes(String(levelKey || '').toUpperCase()) ? 'kana' : 'ruby';

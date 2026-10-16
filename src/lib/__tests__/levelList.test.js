@@ -5,7 +5,7 @@ import { sliceBetween } from './helpers/sliceBetween.js';
 import { levelListData, levelTileCounts, ZH_POS_GROUPS } from '../levelListData.js';
 import { LEVEL_LIST_LANGS, shortMeaning, levelWordKey, matchesLevelQuery, splitKnown, levelLabel, levelPill, levelListHref, jaHeadMode,
   LEVEL_PEEK_CLOSE_MS, LEVEL_PEEK_MS, LEVEL_VIEWS, normalizeLevelPrefs, levelProgress, pinyinSyllables, writeLevelSnapshot, readLevelSnapshot,
-  levelResumeCard, LEVEL_SNAPSHOT_KEY } from '../levelList.js';
+  levelResumeCard, LEVEL_SNAPSHOT_KEY, levelGroupsOf } from '../levelList.js';
 import { knownWordSetOf, normalizeKnownWord } from '../knownWordControl.js';
 import { exclusionWord } from '../vocabularyExclusion.js';
 import { JAPANESE_VOCAB_REF } from '../japaneseVocabRegistry.js';
@@ -60,7 +60,8 @@ describe('⑵ 중국어 단어 = 우리 사전 ∩ HSK 2026 급수', () => {
     const seen = new Map();
     for (const key of LEVEL_LIST_LANGS.chinese.levels) {
       const data = await levelListData('chinese', 'vocab', key);
-      for (const e of data.groups.flatMap((g) => g.entries)) {
+      // 서버 조립은 줄인 꼴(compactLevelEntry) — 화면과 같은 복원(levelGroupsOf)으로 대조 키를 본다.
+      for (const e of levelGroupsOf(data.groups).flatMap((g) => g.entries)) {
         expect(zhHskLevelOf(e.word, table), e.word).toBe(Number(key.slice(1)));
         expect(dict.has(e.word), e.word).toBe(true);
         expect(seen.has(e.key), `${e.word}: ${seen.get(e.key)} · ${key}`).toBe(false);
