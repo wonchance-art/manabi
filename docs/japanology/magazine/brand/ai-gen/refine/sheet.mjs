@@ -21,7 +21,7 @@ section{background:#f7f5f0;border-radius:6px;padding:16px;margin-bottom:16px}h2{
 .pair{display:flex;gap:32px;align-items:flex-start}figure{margin:0}figcaption{font-size:11px;color:#555;margin-top:6px;max-width:520px}
 .sizes{display:flex;gap:22px;align-items:flex-end;margin:8px 0}.sizes b{width:110px;font-size:12px}.sizes i{display:block;font-size:10px;color:#777;font-style:normal}
 .tiles{display:flex;gap:12px}.tile{padding:22px 28px;border-radius:4px}.night{background:#151b2c;color:#eef0f4}.verm{background:#d4462a;color:#fff}.snow{background:#eef0f4;color:#151b2c}
-</style></head><body><h1>마크 정밀화 v1 — 받은 그대로 vs 정리</h1><p class="lead">%H = 잉크 높이 대비. 결정적 빌드(refine/build.py). 히라가나는 첫 업로드본(と 첫 획 분리) 기준 — 정정본 파일을 받으면 다시 만든다.</p>
+</style></head><body><h1>마크 정밀화 v1 — 받은 그대로 vs 정리</h1><p class="lead">%H = 잉크 높이 대비. 결정적 빌드(refine/build.py). となり는 오너 정정본(と 첫 획이 이어진 판, 2026-10-16 KST 수령) 기준.</p>
 ${row('TONARI 원판 — 틈 균일·가장자리 정리', T('TONARI-gpt-01c.svg'), V('TONARI-master.svg'), R.TONARI_before, R.TONARI_master)}
 ${row('TONARI 소형판 — 48px 이하 전용', V('TONARI-master.svg'), V('TONARI-small.svg'), R.TONARI_master, R.TONARI_small)}
 ${row('となり — 획 굵게·간격 조임', T('hira-gpt-01c.svg'), V('hira-v1.svg'), R.hira_before, R.hira_v1)}

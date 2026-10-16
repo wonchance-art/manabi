@@ -48,13 +48,13 @@
  },
  "hira_before": {
   "gap%H": [
-   10.41,
-   6.14
+   10.45,
+   6.23
   ],
   "hole%H": [
    8.7
   ],
-  "stroke%H": 18.3
+  "stroke%H": 19.1
  },
  "hira_v1": {
   "gap%H": [
@@ -64,7 +64,7 @@
   "hole%H": [
    6.3
   ],
-  "stroke%H": 21.3,
+  "stroke%H": 21.9,
   "W/H": 2.583
  },
  "kata_before": {

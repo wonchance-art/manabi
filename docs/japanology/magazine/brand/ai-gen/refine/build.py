@@ -93,7 +93,7 @@ def kana(name, groups, grow):
     after = {'gap%H': gaps(kg), 'hole%H': holes(out), 'stroke%H': stroke(out), 'W/H': round(out.bounds[2] / UNIT, 3)}
     return out, before, after
 
-hira, hb, ha = kana('hira-gpt-01c.svg', [[0, 1], [2, 3, 4], [5, 6]], 12)
+hira, hb, ha = kana('hira-gpt-01c.svg', [[0], [1, 2, 3], [4, 5]], 12)
 report['hira_before'], report['hira_v1'] = hb, ha
 svg(hira, 'hira-v1.svg', 'となり v1 — 획 +2.4%H(な 고리 속공간 유지), 틈 4%H. 원본 hira-gpt-01c(추적본)')
 kata, kb, ka = kana('kata-gpt-01c.svg', [[0], [1], [2, 3]], 30)
