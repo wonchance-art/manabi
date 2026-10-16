@@ -50,6 +50,25 @@ describe('낙관 반영 · 되돌리기', () => {
     expect(toast).not.toHaveBeenCalled();
   });
 
+  it('쓰기가 나가 있는 동안만 track되고 응답 뒤(성공 · 실패) 빠진다', async () => {
+    const live = new Set();
+    const track = vi.fn((body) => { live.add(body.wordText); return () => live.delete(body.wordText); });
+    const obs = new MutationObserver(client, knownWordsMutationOptions({ client, toast, isActiveOwner: () => true, track }));
+    const ok = obs.mutate({ accountId: 'u1', lang: 'ja', wordText: '犬', known: true });
+    await flush();
+    expect([...live]).toEqual(['犬']);
+    gates[0].resolve();
+    await ok;
+    expect(live.size).toBe(0);
+    const bad = obs.mutate({ accountId: 'u1', lang: 'ja', wordText: '猫', known: false, removeKeys: ['猫'] }).catch((e) => e);
+    await flush();
+    expect([...live]).toEqual(['猫']);
+    gates[1].reject(new Error('offline'));
+    await bad;
+    expect(live.size).toBe(0);
+    expect(track).toHaveBeenCalledTimes(2);
+  });
+
   it('실패하면 되돌리고 한 번 알린다 — 해제 실패면 지운 줄이 돌아온다', async () => {
     client.setQueryData(ja, [{ lang: 'ja', word_text: '猫' }, { lang: 'ja', word_text: '犬' }]);
     const done = observer().mutate({ accountId: 'u1', lang: 'ja', wordText: '犬', known: false, removeKeys: ['犬'] }).catch((e) => e);

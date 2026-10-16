@@ -3,23 +3,30 @@ import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
-import { fetchKnownWords, markKnown, unmarkKnown } from './knownWords';
+import { createKnownWordBeacon, fetchKnownWords, markKnown, unmarkKnown } from './knownWords';
 import { revertKnownWords, updateKnownWords } from './knownWordControl';
 import { friendlyToastMessage } from './errorMessage';
 
 const cacheKeys = body => [['known-words', body.accountId, body.lang], ['known-words-all', body.accountId]];
 const requestKey = body => `${body.accountId}:${body.lang}:${body.wordText}`;
 const busy = code => Object.assign(new Error(code), { code });
+// 응답을 기다리는 쓰기의 닫힘 대비(pagehide keepalive) — 화면 하나에 훅이 여럿이어도 목록과 리스너는 하나다.
+let beacon = null;
+const knownWordBeacon = () => (beacon ||= createKnownWordBeacon());
 
 /**
  * 아는 단어 표시 · 해제 mutation 옵션 — 누른 순간 두 캐시(known-words · known-words-all)에 반영하고(낙관적),
  * 실패하면 그 요청이 바꾼 것만 되돌린 뒤 알린다. 성공 후 동작(캐시 확정 + 실제 출제 소비자 재조회)은 그대로다.
  */
-export function knownWordsMutationOptions({ client, toast, isActiveOwner }) {
+export function knownWordsMutationOptions({ client, toast, isActiveOwner, track = () => () => {} }) {
   return {
+    // 쓰기가 나가 있는 동안만 track — 화면은 이미 바뀌었으니, 응답 전에 탭이 닫히면 pagehide에서 같은 요청을 keepalive로 다시 보낸다.
     mutationFn: async body => {
-      if (body.known) await markKnown(body.accountId, body.lang, body.wordText);
-      else await unmarkKnown(body.accountId, body.lang, body.removeKeys);
+      const untrack = track(body);
+      try {
+        if (body.known) await markKnown(body.accountId, body.lang, body.wordText);
+        else await unmarkKnown(body.accountId, body.lang, body.removeKeys);
+      } finally { untrack(); }
     },
     // 진행 중인 재조회가 낙관 반영을 덮어쓰지 않게 멈춘다. 아직 받지 않은 캐시는 만들지 않는다(그 한 줄만 든 목록이 생긴다).
     onMutate: async body => {
@@ -82,7 +89,8 @@ export function useKnownWords(lang = null, enabled = true) {
   const query = useQuery({ queryKey: lang ? ['known-words', owner, lang] : ['known-words-all', owner],
     // 표시·해제는 onSuccess의 setQueryData + 무효화로 즉시 반영된다 — 재마운트마다 다시 받을 필요가 없다.
     queryFn: () => fetchKnownWords(owner, lang), enabled: !!owner && enabled, staleTime: 60 * 1000 });
-  const mutation = useMutation(knownWordsMutationOptions({ client, toast, isActiveOwner: id => activeOwner.current === id }));
+  const mutation = useMutation(knownWordsMutationOptions({ client, toast, isActiveOwner: id => activeOwner.current === id,
+    track: body => knownWordBeacon().track(body) }));
   const mutationRef = useRef(mutation); mutationRef.current = mutation;
   const requests = useRef(null);
   if (!requests.current) requests.current = createKnownWordRequests({ getOwner: () => activeOwner.current,
