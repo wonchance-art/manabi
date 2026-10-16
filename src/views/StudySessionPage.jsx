@@ -12,7 +12,7 @@ import { JaText } from './refShared';
 import { supabase } from '../lib/supabase';
 import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { useAuth } from '../lib/AuthContext';
-import { gradeGrammarReview, ratingFromScore } from '../lib/grammarSrs';
+import { createGrammarRetry, gradeGrammarReview, ratingFromScore } from '../lib/grammarSrs';
 import { createReviewEventBatcher, logReviewEvents } from '../lib/reviewEvents';
 import { hasVapidKey, isPushSupported, isIosNeedsInstall, getSubscriptionState, subscribePush } from '../lib/push';
 import { sentenceIncludesWord } from '../lib/skillRung';
@@ -122,6 +122,9 @@ export default function StudySessionPage({
   // 문항 확정(settle) 시점 사이드이펙트용 refs (렌더 유발 없이 동기 접근)
   const batcherRef = useRef(null);                 // review_events 마이크로배치 큐
   const grammarAggRef = useRef(new Map());         // slug → { srs, right, total } 챕터별 누적
+  // 문법 재스케줄 보류함 — 저장 실패(오프라인 등)한 챕터 채점을 남겨 online · 세션 종료 · pagehide 때 다시 보낸다.
+  const pendingGrammarRef = useRef(null);
+  if (!pendingGrammarRef.current) pendingGrammarRef.current = createGrammarRetry({ grade: gradeGrammarReview });
   const recordedRef = useRef(new Set());           // 이미 기록한 orig uid (중복 방지)
   const itemShownAtRef = useRef(Date.now());       // 현재 문항 표시 시각 (rt_ms 계산)
   const assistSeenRef = useRef(new Set());         // 재료 단어 어시스트 열람 기록(세션당 단어별 1회)
@@ -349,6 +352,7 @@ export default function StudySessionPage({
   useEffect(() => {
     function onPageHide() {
       batcherRef.current?.flush();
+      retryPendingGrammar();
       // 1문항 이상 답변했고 아직 fireEffects 전이면 활동 기록 시도(스트릭 RPC는 멱등).
       if (!streakSentRef.current && recordedRef.current.size > 0 && user?.id) {
         streakSentRef.current = true;
@@ -357,6 +361,13 @@ export default function StudySessionPage({
     }
     window.addEventListener('pagehide', onPageHide);
     return () => window.removeEventListener('pagehide', onPageHide);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  // ── 연결이 돌아오면 보류한 문법 재스케줄을 다시 보낸다 ──
+  useEffect(() => {
+    window.addEventListener('online', retryPendingGrammar);
+    return () => window.removeEventListener('online', retryPendingGrammar);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
@@ -557,7 +568,8 @@ export default function StudySessionPage({
       agg.total++; if (ok) agg.right++;
       grammarAggRef.current.set(slug, agg);
       if (agg.total >= (grammarCounts[slug] || 0)) {
-        gradeGrammarReview({ ...agg.srs, user_id: user.id }, ratingFromScore(agg.right, agg.total));
+        // 실패하면 보류함에 남는다(같은 챕터는 마지막 채점만) — 결과를 버리면 일정이 조용히 사라진다.
+        pendingGrammarRef.current.submit({ ...agg.srs, user_id: user.id }, ratingFromScore(agg.right, agg.total));
       }
     }
   }
@@ -775,6 +787,13 @@ export default function StudySessionPage({
    * 여기선 세션 전체로만 판정 가능한 것들만 남긴다:
    *  신규 챕터 통과 판정 · 새 단어 자동 등록 · 잔여 이벤트 flush · 활동 기록.
    */
+  /** 보류한 문법 재스케줄 재시도 — 지금 로그인한 그 계정의 채점만 보낸다. */
+  function retryPendingGrammar() {
+    const owner = user?.id;
+    if (!owner) return;
+    pendingGrammarRef.current.retry(row => row.user_id === owner).catch(() => {});
+  }
+
   function fireEffects() {
     if (effectsFired.current || !user?.id) return;
     effectsFired.current = true;
@@ -819,8 +838,9 @@ export default function StudySessionPage({
       }
     }
 
-    // 잔여 이벤트 flush (마지막 마이크로배치)
+    // 잔여 이벤트 flush (마지막 마이크로배치) · 보류한 문법 재스케줄 재시도
     batcherRef.current?.flush();
+    retryPendingGrammar();
     // recordActivity는 progressStore 내부에서 처리됨
     fetchProfile?.(user.id);
   }

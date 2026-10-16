@@ -132,6 +132,49 @@ export async function gradeGrammarReview(row, rating) {
   }
 }
 
+/** 보류한 문법 재채점을 다시 보내는 최대 횟수(첫 시도 제외). 넘으면 버리고 알린다 — 끝없이 붙잡지 않는다. */
+export const GRAMMAR_RETRY_LIMIT = 3;
+
+/**
+ * 문법 재스케줄 보류함 — gradeGrammarReview가 실패(null)하면 그 챕터 채점을 남겨 두었다가
+ * retry()(온라인 복귀 · 세션 종료 · 페이지 숨김)에서 같은 정본 함수로 다시 보낸다.
+ * review_events는 오프라인 큐로 살아남는데 grammar_review 일정만 조용히 사라지던 틈을 메운다.
+ * 같은 챕터(사용자 · 언어 · slug)가 다시 들어오면 마지막 채점만 남긴다.
+ * @param {{grade?: Function, limit?: number, onGiveUp?: Function}} [options]
+ */
+export function createGrammarRetry({ grade = gradeGrammarReview, limit = GRAMMAR_RETRY_LIMIT, onGiveUp = () => {} } = {}) {
+  const pending = new Map(); // key → { row, rating, retries }
+  let running = null;
+  const keyOf = row => `${row.user_id}:${row.lang}:${row.slug}`;
+  const attempt = async (key, entry) => {
+    let saved = null;
+    try { saved = await grade(entry.row, entry.rating); } catch { saved = null; }
+    if (pending.get(key) !== entry) return; // 그사이 같은 챕터의 새 채점이 들어왔다 — 그쪽이 정본이다.
+    if (saved) { pending.delete(key); return; }
+    if (entry.retries >= limit) { pending.delete(key); onGiveUp(entry.row); }
+  };
+  return {
+    /** 첫 시도 — 성공하면 보류할 것이 없다. 실패하면 보류(같은 챕터는 덮어쓴다). */
+    async submit(row, rating) {
+      if (!row?.user_id || !row?.slug) return null;
+      const key = keyOf(row), entry = { row, rating, retries: 0 };
+      pending.set(key, entry);
+      await attempt(key, entry);
+      return pending.get(key) === entry ? null : true;
+    },
+    /** 보류분을 다시 보낸다. 겹쳐 부르면 진행 중인 한 번을 같이 기다린다. accept로 계정이 바뀐 보류분은 건너뛴다. */
+    retry(accept = () => true) {
+      if (running) return running;
+      const entries = [...pending].filter(([, entry]) => accept(entry.row));
+      if (!entries.length) return Promise.resolve();
+      running = Promise.all(entries.map(([key, entry]) => { entry.retries += 1; return attempt(key, entry); }))
+        .finally(() => { running = null; });
+      return running;
+    },
+    size: () => pending.size,
+  };
+}
+
 /**
  * 단일 문법 카드의 즉시 채점 등록/갱신.
  *
