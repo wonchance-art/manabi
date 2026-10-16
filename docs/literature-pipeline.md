@@ -111,6 +111,28 @@
 | Sudachi(Mode C)·MeCab+NEologd | 고유명사에 강한 분석기·사전 | Apache-2.0 / NEologd 2020 정지 | 배제(관찰) | 분석기 교체는 전 언어 경로·읽기 보정(jaReadingFix)·기존 정본 재검증 비용. 근대 문학 인명은 NEologd에도 드물다 |
 | 저자 루비 = 낱말 경계 단서 | 青空文庫 루비는 저자가 밝힌 한 낱말 | — | **채택** | 이미 rubyLocks로 갖고 있는 정답 신호. 같은 작품 안 반복(루비는 처음에만)까지 넓힌다 |
 
+### 4.2b 분석 실패 건너뛰기·배포 뒤 점검 (오너 「권장대로」 2026-10-16 KST, AOZORA-P1-13)
+
+- **실패 건너뛰기**: 한 장이 실패해도 다음 장을 잇고 끝에 건너뛴 장을 한 번 알린다(실패한 장은 분석 전으로 남아 다음 이어하기에서
+  다시 시도). 연달아 3장 실패하면 할당량·네트워크 같은 공통 원인으로 보고 멈춘다. 멈춤(Abort)은 그대로 멈춘다.
+- **배포 뒤 점검(Claude 절차 — 조회만)**: 게시 흐름을 바꾸는 PR을 병합하면 Claude가 ① Vercel 운영 배포가 그 커밋 SHA로 READY인지
+  ② 최근 24시간 런타임 오류(특히 `/api/admin/literature`·`/api/admin/art-books`) ③ 운영 DB 정본 행 상태를 실측해 보고한다.
+  운영 DB는 아래 조회만 쓴다(쓰기는 오너 승인 범위 안에서 따로). 첫 실측(2026-10-16)이 P0-3 이전 공개 15장(AOZORA-P1-11)과
+  준비 뒤 빠진 경계 기록 40장(AOZORA-P1-12)을 잡았다.
+
+```sql
+-- 정본 책 단계 실측(작품별 장 · 분석 · 검수 기록 · 공개 · 경계 기록 실린 장)
+select processed_json->'metadata'->'book'->>'key' as key, min(processed_json->'metadata'->'book'->>'title') as title,
+       count(*) as chapters,
+       count(*) filter (where processed_json->>'status' = 'completed') as analyzed,
+       count(*) filter (where processed_json->'metadata'->'literatureReview' is not null) as reviewed,
+       count(*) filter (where visibility = 'public') as public,
+       count(*) filter (where processed_json->'metadata'->'viewerBoundaries' is not null) as with_boundaries
+from reading_materials
+where processed_json->'metadata'->'book'->>'key' like 'aozora-%' or processed_json->'metadata'->'book'->>'key' like 'art-%'
+group by 1 order by 1;
+```
+
 ### 4.3 서버 백그라운드 분석 (인프라 — 별도 승인 필요)
 
 - 작업 표(`literature_jobs`: book key · 장 · 상태 · 시도 수) + 예약 실행(Vercel Cron 1분 간격)이 분석을 이어서 한다.
@@ -164,3 +186,49 @@
 - `aozoraRealWorks.test.js` — 33편 고정 표(장 수·루비 수·장 ≤ 4,000자), 羅生門 실물 외자 3자 해결, 작은 가나 대체는 銀河鉄道の夜 한 곳, 짧은 머리말은 첫 장 머리(やまなし)
 - `literatureDisplay.test.js` — 33편 목차·한국어 제목·문양(작품마다 다름)
 - `aozoraParser.test.js` · `literatureAttribution.test.js` — 작은 가나 대체 표(fail-closed)·편집 기록·출처 줄 표기
+
+## 8. 아오조라 밖 출처·다른 나라 고전 — 제안 (오너 결정 필요, 2026-10-16 KST)
+
+오너 「아오조라 이외 다른 사이트 혹은 다른 나라 고전 책도 가져올 것 고려」. 앱이 이미 다루는 학습 언어(영어·중국어·프랑스어)의
+퍼블릭 도메인 고전을 같은 「정본 책」 흐름(빌드 → 비공개 준비 → 분석 → 검수 → 공개)에 싣는 안. **새 과정·새 출처는 지속 실행
+승인 밖**이라 출처·첫 묶음을 오너가 고른 뒤에 착수한다.
+
+### 8.1 출처 조사 (선례·라이선스·이식 비용)
+
+| 출처 | 언어 | 무엇 | 라이선스·조건 | 판정 | 근거 |
+|---|---|---|---|---|---|
+| **Standard Ebooks** | 영어 | Gutenberg 등 PD 원문을 다시 교정·구조화한 EPUB/XHTML | 교정·서식은 CC0, 원문은 미국 PD 기준(다른 나라는 각자 확인) | **채택(1순위)** | 교정 품질·장 구조(XHTML 섹션)가 아오조라 판권 수준. 출처 표기·교정 이력이 명확 |
+| Project Gutenberg | 영·불·중 일부 | 최대 PD 원문 모음(텍스트·HTML) | 라이선스·상표 표기를 떼면 미국법상 제약 없음. 판정은 미국 기준 | 부분 채택(보조) | 교정 품질이 고르지 않음 — Standard Ebooks에 없는 작품만. 머리말·꼬리말 제거 규칙 필요 |
+| **Wikisource**(zh·fr) | 중·불 | 공동 전사본 | PD 원문은 PD. fr은 전사본을 CC BY-SA 4.0으로 둔다 → 출처·라이선스 표기 | **채택(중·불 1순위)** | 중국어 근대 백화문·프랑스 단편이 장 단위로 정리돼 있음. 판정은 미국 기준이라 우리 기준으로 다시 본다 |
+| Gallica(BnF) | 불 | 국립도서관 디지털 사본 | 비상업 무료, **상업 재이용은 유료 라이선스** | 배제 | 서비스 성격상 상업 이용으로 볼 여지 — 같은 작품을 Wikisource·Gutenberg에서 받는다 |
+| Chinese Text Project(ctext) | 고전 한문 | 선진~청 문헌 | 학술·교육 이용, 대량 복제·대체 서비스 금지, 텍스트 BY-NC-SA라는 2차 기록 | 배제 | 비상업 조건 + 고전 한문은 HSK 학습자 수준 밖 |
+| LibriVox | 영·불 | PD 낭독 음성 | PD | 보류 | 음성은 오너 보류 범위(새 과정·음성) |
+
+### 8.2 권리 기준 (안)
+
+- 아오조라 D5(일본 보호기간 만료 + 한국 상호주의)를 출처 국가로 넓힌다: **원산국 만료 + 한국 만료**를 함께 본다.
+  가장 단순하고 보수적인 공통선은 **작가 1955년 이전 사망**(사후 70년이 2025년 말 만료 — 70년 관할 어디서든 만료).
+  미국 원산은 출판 1930년 이전도 함께. 프랑스의 전쟁 연장(「mort pour la France」 +30년 — 예: 생텍쥐페리)처럼 나라별 예외는
+  작품마다 기록하고, 걸리면 넣지 않는다(fail-closed). 번역본은 번역자 권리가 따로라 **원어 원문만**(아오조라와 같은 원칙).
+- 중국어는 하드리밋 ⑷ **중화권 정치 서술 완전 배제** — 작품 선정 단계에서 정치 서술이 없는 산문·소설만(아래 후보도 그 기준).
+
+### 8.3 첫 묶음 후보 (언어별 3편 안팎 — 오너 선택)
+
+| 언어 | 작품 | 작가(몰년) | 출처 | 이유 |
+|---|---|---|---|---|
+| 영어 | The Gift of the Magi | O. Henry(1910) | Standard Ebooks | 짧은 단편, 반전 구조 — 첫 영어 정본으로 분량·난이도 적당 |
+| 영어 | The Happy Prince | Oscar Wilde(1900) | Standard Ebooks | 동화체·반복 구조로 중급 학습자에 맞음 |
+| 영어 | Alice's Adventures in Wonderland | Lewis Carroll(1898) | Standard Ebooks | 장 구조가 뚜렷한 대표 고전(12장) |
+| 중국어 | 背影 · 春 | 朱自清(1948) | zh.wikisource | 근대 백화문 교과서 명문, 짧고 정치 서술 없음 |
+| 중국어 | 落花生 | 许地山(1941) | zh.wikisource | 아주 짧은 산문 — HSK 4–5급 입문 |
+| 중국어 | 故乡 | 鲁迅(1936) | zh.wikisource | 대표 단편. 정치 서술 여부는 선정 때 다시 검토(걸리면 社戏로 대체) |
+| 프랑스어 | La Parure | Maupassant(1893) | fr.wikisource | 짧은 대표 단편, 반전 구조 |
+| 프랑스어 | La Chèvre de M. Seguin | Alphonse Daudet(1897) | fr.wikisource | 「풍차 방앗간 편지」 속 동화 — 입문 |
+
+### 8.4 이식 비용 (재사용 vs 신규)
+
+- **그대로 쓰는 것**: 게시 흐름 전체(준비·분석·검수·묶음 검수·공개, provider 분기 — 그림 책 ART-P0-3이 이미 두 번째 provider),
+  표지 시리즈 A(새 색·문양만), 경계 미리 묶기 틀(literature-boundaries — 토크나이저만 언어별), 분석기(영·중·불 경로가 이미 있다).
+- **새로 만드는 것**: 출처별 받기·파서(Standard Ebooks XHTML · Wikisource 위키문법/HTML), 권리 판정 모듈(출처 국가별),
+  출처 표기(뷰어 출처 줄 — CC BY-SA 표기 포함), 장 나눔 기준(언어별 분량 — 영어는 단어 수, 중국어는 글자 수).
+- 추정: 첫 언어(영어 Standard Ebooks) 1 PR + 작품 3편 1 PR. 중·불은 Wikisource 파서를 같이 쓰므로 한 번 더.

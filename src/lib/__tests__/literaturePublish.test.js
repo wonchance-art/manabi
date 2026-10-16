@@ -290,7 +290,7 @@ describe('관리자 화면 배선 — 게시 한 번에 준비·분석, 공개�
     const batch = sliceBetween(panel, 'async function runBatch', '\n  }\n');
     expect(panel).toContain('const pending = literatureBatchTargets(books);');
     expect(batch).toContain("await post('prepare', book.key);");
-    expect(batch).toContain('await analyzeChapters(book, controller);');
+    expect(batch).toContain('await analyzeChapters(book, controller)');
     expect(batch).not.toMatch(/'release'|'review'/u);
     expect(panel).toContain("else if (action === 'batch') runBatch(targets);");
   });
@@ -319,6 +319,17 @@ describe('관리자 화면 배선 — 게시 한 번에 준비·분석, 공개�
     const analyze = sliceBetween(panel, 'async function analyzeChapters', '\n  }\n');
     expect(analyze.indexOf("if (targets.length) await post('prepare', book.key);")).toBeGreaterThan(-1);
     expect(analyze.indexOf("await post('prepare', book.key);")).toBeLessThan(analyze.indexOf('runPreservedReanalysis'));
+  });
+
+  it('분석 실패는 장마다 건너뛰고 잇는다 — 멈춤은 그대로 멈추고, 연달아 실패하면 공통 원인으로 보고 멈춘다(AOZORA-P1-13)', () => {
+    const analyze = sliceBetween(panel, 'async function analyzeChapters', '\n  }\n');
+    expect(analyze).toContain("if (error?.name === 'AbortError') throw error;");
+    expect(analyze).toContain('failed.push({ title: chapter.title,');
+    expect(analyze).toContain('if (streak >= FAILURE_STOP) throw');
+    expect(analyze).toContain('return failed;');
+    expect(panel).toContain('const FAILURE_STOP = 3;');
+    const batch = sliceBetween(panel, 'async function runBatch', '\n  }\n');
+    expect(batch).toContain('failed.push(...(await analyzeChapters(book, controller))');
   });
 
   it('「게시」(prepare) 성공 뒤 바로 분석을 시작하고, 「공개」(release)는 ready 단계에서만 보인다', () => {

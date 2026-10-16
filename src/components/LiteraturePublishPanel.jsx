@@ -41,6 +41,10 @@
 //     · 一 ↗ · 루비 140/145 · 확인 끝 · 쪼개진 낱말 2곳(苦沙弥·迷亭 — 뷰어에서 묶기)   [검수 완료] → 확인 창(그대로 둘지)
 //     · 二 ↗ · 루비 136/138 · 확인 끝                                                  [검수 완료]
 //
+// 분석 실패 건너뛰기(AOZORA-P1-13, 오너 「권장대로」 2026-10-16 KST) — 한 장이 실패해도 다음 장을 잇고 끝에 한 번 알린다:
+//   토스트 「3편을 준비·분석했어요. 2장은 건너뛰었어요(こころ 上 三·こころ 中 七 — 분석하지 못했어요). 다시 열면 그 장부터 이어요.」
+//   연달아 3장 실패면 「연달아 3장을 분석하지 못해 멈췄어요 — …」(할당량·네트워크 같은 공통 원인 — 남은 장을 헛되이 돌리지 않는다)
+//
 // 기대 화면(kind="art", 출처 칸):
 //   北斎と広重の風景版画 · 葛飾北斎・歌川広重   N2 상급   ColBase · 정부표준이용규약 2.0 · 8장
 //                                                        출처: ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · …
@@ -61,6 +65,7 @@ import { literatureWork } from '../lib/literatureCanonical';
 import LiteratureCover from './books/LiteratureCover';
 
 const LITERATURE_API = '/api/admin/literature';
+const FAILURE_STOP = 3; // 연달아 이만큼 실패하면 공통 원인(할당량·네트워크)으로 보고 멈춘다
 const CONFIRM_LABEL = { release: '공개', batch: '모두 게시·분석', review: '그대로 검수 완료', reviewMany: '모두 검수 완료' };
 const CONFLICT_LABEL = { 'text-differs': '정본과 원문이 다름', 'duplicate-order': '같은 장이 둘', 'unknown-order': '정본에 없는 장' };
 
@@ -235,18 +240,35 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
   }, [data]);
 
   // 장마다 뷰어와 같은 분석 경로(runPreservedReanalysis — 분석 말미에 저자 루비 잠금)로 한 번씩.
+  // 한 장이 실패해도 건너뛰고 다음 장을 잇는다(AOZORA-P1-13 — 621장 일괄에서 한 장 때문에 전체가 멈추지 않게). 실패한 장은
+  // 분석 전으로 남아 다음 이어하기에서 다시 시도된다. 연달아 FAILURE_STOP장 실패하면 장 문제가 아니라 할당량·네트워크 같은
+  // 공통 원인으로 보고 멈춘다(남은 장을 헛되이 돌리지 않게). → 실패한 장 [{title, message}]
   async function analyzeChapters(book, controller) {
     const targets = book.chapters.filter((chapter) => chapter.material && chapter.material.status !== 'completed');
     // 준비 뒤 정본 빌드가 늘린 칸(단어 경계 미리 묶기·검수 힌트)을 분석 전 장에 먼저 맞춘다(AOZORA-P1-12 — prepare는 멱등).
     if (targets.length) await post('prepare', book.key);
+    const failed = [];
+    let streak = 0;
     for (const [index, chapter] of targets.entries()) {
       setRunning({ key: book.key, done: index, total: targets.length });
-      const { data: row, error } = await supabase.from('reading_materials').select('*').eq('id', chapter.material.id).single();
-      if (error) throw error;
-      await runPreservedReanalysis(supabase, row, controller.signal, analyzeText, { fullReset: true });
+      try {
+        const { data: row, error } = await supabase.from('reading_materials').select('*').eq('id', chapter.material.id).single();
+        if (error) throw error;
+        await runPreservedReanalysis(supabase, row, controller.signal, analyzeText, { fullReset: true });
+        streak = 0;
+      } catch (error) {
+        if (error?.name === 'AbortError') throw error;
+        failed.push({ title: chapter.title, message: friendlyToastMessage(error, '분석하지 못했어요.') });
+        streak += 1;
+        if (streak >= FAILURE_STOP) throw Object.assign(new Error(`연달아 ${streak}장을 분석하지 못해 멈췄어요 — ${failed.at(-1).message}`), { failed });
+      }
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     }
+    return failed;
   }
+
+  /** 건너뛴 장 안내 — 앞 3장 이름과 첫 이유. */
+  const failedNote = (failed) => `${failed.length}장은 건너뛰었어요(${failed.slice(0, 3).map((item) => item.title).join('·')}${failed.length > 3 ? ' …' : ''} — ${failed[0].message}). 다시 열면 그 장부터 이어요.`;
 
   // 한 작품 — 「게시」 뒤·「이어서 분석」.
   async function analyzeBook(book) {
@@ -254,8 +276,9 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
     const controller = new AbortController();
     abortRef.current = controller;
     try {
-      await analyzeChapters(book, controller);
-      toast(`「${book.title}」 모든 장을 분석했어요. 장을 열어 검수해 주세요.`, 'success');
+      const failed = await analyzeChapters(book, controller);
+      if (failed.length) toast(`「${book.title}」 ${failedNote(failed)}`, 'error');
+      else toast(`「${book.title}」 모든 장을 분석했어요. 장을 열어 검수해 주세요.`, 'success');
     } catch (error) {
       if (error?.name !== 'AbortError') toast(failureMessage('장을 분석하지 못했어요.', error), 'error');
     } finally {
@@ -273,6 +296,7 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
     abortRef.current = controller;
     const titles = books.map((book) => book.title);
     let done = 0;
+    const failed = [];
     try {
       for (const [index, target] of books.entries()) {
         if (controller.signal.aborted) break;
@@ -285,10 +309,13 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
           book = await find();
         }
         if (!book || book.plan.conflicts.length > 0) continue;
-        await analyzeChapters(book, controller);
+        failed.push(...(await analyzeChapters(book, controller)).map((item) => ({ ...item, title: `${book.title} ${item.title}` })));
         done += 1;
       }
-      if (!controller.signal.aborted) toast(`${done}편을 준비·분석했어요. 작품마다 장을 열어 검수해 주세요.`, 'success');
+      if (!controller.signal.aborted) {
+        toast(failed.length ? `${done}편을 준비·분석했어요. ${failedNote(failed)}` : `${done}편을 준비·분석했어요. 작품마다 장을 열어 검수해 주세요.`,
+          failed.length ? 'error' : 'success');
+      }
     } catch (error) {
       if (error?.name !== 'AbortError') toast(failureMessage('일괄 게시·분석을 마치지 못했어요. 다시 누르면 남은 장부터 이어요.', error), 'error');
     } finally {
