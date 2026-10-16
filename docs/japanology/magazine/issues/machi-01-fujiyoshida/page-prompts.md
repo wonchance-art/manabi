@@ -10,6 +10,7 @@
 | v1 | 초안 |
 | v2 | 에이전트 5종 검토 반영. 방위·시점·후반 재배열·본문 RESERVE·로고 RESERVED |
 | v3 | 에이전트 2종 재검토 반영 |
+| v3.1 | 오너 기준 반영: 학습자 배려 없이 실제 일본 매거진 기준. 루비는 일본 잡지 관행대로, 쪽 참조는 「→P.n」. 金鳥居에 「富士山」 현판이 실제로 있다(山梨県立富士山世界遺産センター 리플릿)는 확인에 따라 현판은 그리되 글자는 읽히지 않게 |
 
 v3에서 고친 것:
 - **SERIES 공통 모순 4개.** 안전 띠 문구가 반대로 읽혔고, 폴리오가 「한 번만」 규칙과 충돌했고, 어두운 면 RESERVE가 정의되지 않았고, 회색 글자색이 없었다.
@@ -102,7 +103,7 @@ TYPE: Japanese headlines in a bold, high-contrast Mincho (serif). Captions, labe
 
 GRID: outer margins about 7% of the page width. Text areas: 2 columns per single page; 4 columns across a spread, with an empty gutter at the centre fold. Align every block to the grid. Nothing crowded.
 
-ILLUSTRATION: calm editorial gouache illustration, flat colour areas, soft natural light, no outlines, not photographic. People only as small distant figures or silhouettes, no recognisable faces. Every surface that could carry writing (shop fronts, signs, posters, banners, number plates, bowls, packaging, gate tablets) is plain and blank.
+ILLUSTRATION: calm editorial gouache illustration, flat colour areas, soft natural light, no outlines, not photographic. People only as small distant figures or silhouettes, no recognisable faces. Every surface that could carry writing (shop fronts, signs, posters, banners, number plates, bowls, packaging) is plain and blank. A gate tablet, where a PAGE block asks for one, is drawn small with indistinct, unreadable marks.
 
 HOW TEXT IS GIVEN:
 - Every string to render has an ID in the PAGE block: T1, T2 … display text; B1, B2 … text set in RENDER mode; F = folio.
@@ -142,7 +143,7 @@ PAGE 12 — closing page. Portrait 2:3.
 BODY MODE: RENDER
 ATTACHMENTS: none (this page becomes the STYLE REFERENCE for all others).
 
-ILLUSTRATION (top 58% of the page, full bleed top and sides): We stand on the town street close to a large torii gate, near the west side of the road, looking south-southwest. The two copper-clad pillars of the gate (dark weathered-copper colour, NOT vermilion or red) rise as dark vertical bands near the left and right edges of the picture, and the crossbeams cross the top. Between the pillars, small and clear in the distance, Mount Fuji with NO snow (late August). Upper half mostly pale sky. Soft early-morning light. No people. If the gate has a tablet, it is blank.
+ILLUSTRATION (top 58% of the page, full bleed top and sides): We stand on the town street close to a large torii gate, near the west side of the road, looking south-southwest. The two copper-clad pillars of the gate (dark weathered-copper colour, NOT vermilion or red) rise as dark vertical bands near the left and right edges of the picture, and the crossbeams cross the top. Between the pillars, small and clear in the distance, Mount Fuji with NO snow (late August). Upper half mostly pale sky. Soft early-morning light. No people. Between its top beams the gate carries a framed tablet; keep the tablet small and its characters indistinct — no legible text.
 
 BELOW THE ILLUSTRATION (snow paper):
 T1 (left column, Gothic numerals, ink): "1788"
@@ -178,7 +179,7 @@ PAGE 8 — "本町通り". Portrait 2:3.
 BODY MODE: RESERVE
 ATTACHMENTS: Image 1 = GEOMETRY GUIDE (same canvas: the drawing occupies the top two-thirds, down to a thin grey line; the bottom third is blank and is the text area). Image 2 = STYLE REFERENCE.
 
-ILLUSTRATION (top two-thirds, full bleed top and sides, bottom edge exactly at the grey line in Image 1): follow Image 1 exactly. The thick curve is the true skyline of Mount Fuji from this spot — same shape, height and position; do not make it taller, steeper or more symmetrical. The dashed line is the centre of a two-lane town street running straight away toward the mountain; in the near and middle distance it points almost exactly at the summit — keep it so. Far away, the dashed line jogs a little to the right just before the small cross and continues to the right beyond it — follow it exactly. At the small cross, a torii gate spans the street: copper-clad, dark weathered-copper colour, NOT red; any tablet blank. Low shop buildings, utility poles and wires on both sides. Mid-morning light, late summer, NO snow on the summit. A few tiny distant figures on the pavements only, never in the roadway, no faces.
+ILLUSTRATION (top two-thirds, full bleed top and sides, bottom edge exactly at the grey line in Image 1): follow Image 1 exactly. The thick curve is the true skyline of Mount Fuji from this spot — same shape, height and position; do not make it taller, steeper or more symmetrical. The dashed line is the centre of a two-lane town street running straight away toward the mountain; in the near and middle distance it points almost exactly at the summit — keep it so. Far away, the dashed line jogs a little to the right just before the small cross and continues to the right beyond it — follow it exactly. At the small cross, a torii gate spans the street: copper-clad, dark weathered-copper colour, NOT red. Between its top beams the gate carries a framed tablet; keep the tablet small and its characters indistinct — no legible text. Low shop buildings, utility poles and wires on both sides. Mid-morning light, late summer, NO snow on the summit. A few tiny distant figures on the pavements only, never in the roadway, no faces.
 
 CAPTION ON THE ILLUSTRATION (lower-left of the picture, small Gothic, snow colour):
 T1 "正面に富士山が続くように見える"
@@ -496,11 +497,11 @@ MAP (upper 60% of the page): hand-drawn style schematic on snow paper, ink line 
 
 BOX (lower part, thin ink outline; title in bold Mincho; five lines of small Gothic, each starting with a small vermilion dot and ending with a tiny grey page reference):
 T14 (title): "歩くなら"
-T15 "下吉田駅から富士山駅まで、県の散策コースは約8キロ、高低差は約125メートル　→5"
-T16 "毎月第3土曜日には、工場を開いて見学者を迎えている　→7"
-T17 "吉田のうどんの店の多くは、昼だけ開く　→7"
-T18 "本町通りでは、車道に出て撮るのは危ない（地元の観光案内の呼びかけ）　→8"
-T19 "8月26日の夜は、吉田の火祭　→10"
+T15 "下吉田駅から富士山駅まで、県の散策コースは約8キロ、高低差は約125メートル　→P.5"
+T16 "毎月第3土曜日には、工場を開いて見学者を迎えている　→P.7"
+T17 "吉田のうどんの店の多くは、昼だけ開く　→P.7"
+T18 "本町通りでは、車道に出て撮るのは危ない（地元の観光案内の呼びかけ）　→P.8"
+T19 "8月26日の夜は、吉田の火祭　→P.10"
 
 T20 (bottom, tiny grey Gothic, two lines, just above the bottom 7% strip): "地図は概念図です。道の位置関係はOpenStreetMapによる|上は金鳥居から見た山頂（剣ヶ峯）の方角"
 
@@ -530,7 +531,7 @@ PAGE 1 — COVER. Portrait 2:3.
 BODY MODE: (none)
 ATTACHMENTS: Image 1 = GEOMETRY GUIDE (same canvas). Image 2 = STYLE REFERENCE.
 
-ILLUSTRATION (whole page, edge to edge): Use Image 1 as the exact composition. The thick black curve is the true skyline of Mount Fuji from this spot, computed from elevation data — follow it exactly (same shape, height and position); do not make it taller, steeper or more symmetrical. The dashed line is the centre line of a two-lane town street running away toward the mountain — in the near and middle distance it points almost exactly at the summit; far away it jogs a little to the right just before the small cross and continues right beyond it — follow it exactly. At the small cross stands a torii gate across the street: copper-clad, dark weathered-copper colour, NOT vermilion or red; any tablet blank. Low two- and three-storey shop buildings with utility poles and wires line both sides. Clear morning, pale sky, late summer, NO snow on the summit. Do not draw the guide lines.
+ILLUSTRATION (whole page, edge to edge): Use Image 1 as the exact composition. The thick black curve is the true skyline of Mount Fuji from this spot, computed from elevation data — follow it exactly (same shape, height and position); do not make it taller, steeper or more symmetrical. The dashed line is the centre line of a two-lane town street running away toward the mountain — in the near and middle distance it points almost exactly at the summit; far away it jogs a little to the right just before the small cross and continues right beyond it — follow it exactly. At the small cross stands a torii gate across the street: copper-clad, dark weathered-copper colour, NOT vermilion or red. Between its top beams the gate carries a framed tablet; keep the tablet small and its characters indistinct — no legible text. Low two- and three-storey shop buildings with utility poles and wires line both sides. Clear morning, pale sky, late summer, NO snow on the summit. Do not draw the guide lines.
 
 MASTHEAD: RESERVED — x 20–80%, y 7–20% of the page: plain sky (a logo is added later).
 
@@ -573,11 +574,11 @@ B6 "構成資産" / "世界遺産「富士山」を形づくる個々の資産�
 B7 "取り次ぎ" / "御師の仕事の一つ。本文では北口本宮冨士浅間神社の説明の言葉（「取次」）をそのまま使った"
 B8 "ガチャマン" / "戦後の織物の好景気を指すことば"
 B9 "吉田のうどん" / "太く硬い麺を味噌や醤油の汁で食べる郷土料理"
-After the meanings of B3 and B4 only, a tiny grey "→3" (this mark appears exactly twice).
+After the meanings of B3 and B4 only, a tiny grey "→P.3" (this mark appears exactly twice).
 
 FOLIO: bottom-right: "13" then F.
 F "となり　一つの町　01　富士吉田"
-This page contains exactly these strings: T1, the 18 strings of B1–B9, "→3" twice, and the folio.
+This page contains exactly these strings: T1, the 18 strings of B1–B9, "→P.3" twice, and the folio.
 ```
 
 ```
@@ -598,7 +599,7 @@ FOLIO: bottom-left: "16" then F.
 F "となり　一つの町　01　富士吉田"
 This page contains exactly these strings: T1–T7 and the folio.
 ```
-[신규] 13쪽 「→3」, 16쪽 전체.
+[신규] 13쪽 「→P.3」, 16쪽 전체.
 - 16쪽 T7은 원고 출처표의 1차·2차 행(공적 기관·神社·관광재단·보도)에 맞춘 문장이다.
 - 결정 ③에서 단락을 삭제하면 「・報道」를 뺀다.
 - 결정 ④에서 1B를 고르면 T3을 「表紙と8ページの構図は」로 바꾼다.
@@ -612,11 +613,8 @@ This page contains exactly these strings: T1–T7 and the folio.
 | 본문 조판 | 2–3·4–5·6–7·8·9·10–11쪽의 빈 자리를 실측해, 원고 원문을 그대로 넣는다. Shippori Mincho / Zen Kaku Gothic New(OFL). 기존 `05-compose` 경로를 쓴다 |
 | 12쪽 본문 | 생성된 글자가 틀리면 원문 조판으로 덮는다 |
 | 로고 | 1A 표지 조판, 또는 1B의 RESERVED 자리에 SVG 합성 |
-| 루비 | 첫 등장에만 붙인다. 御師·禊(2–3), 雪代(4–5), 機(6–7), 講社·祈祷(9), 筍·点される(10–11). 고유명사 독음(金鳥居·上宿·甲斐絹·大松明·馬返し)은 출처 확인 전까지 붙이지 않는다 |
-| 학습 순환 | 각 쪽에 「이 쪽 본문 읽기」를 두어 뷰어의 원고 장으로 연결한다. 13쪽 표제어는 탭하면 단어 저장(`save_vocabulary_context`)으로 이어진다 |
+| 루비 | **일본 잡지 관행**(오너 기준 2026-10-16 KST: 학습자 배려 없이 실제 일본 매거진으로): 표지·제목에는 달지 않는다. 본문에서 일본 성인 독자에게도 어려운 말이나 고유한 읽기에만, 첫 등장 때 한 번 단다(パラルビ). 출처로 읽기를 확인한 것만: 御師（おし, 원고）·雪代（ゆきしろ, A07 1次）·金鳥居（かなどりい, 山梨県立富士山世界遺産センター 리플릿 r1kikakuten1）·甲斐絹（かいき, 山梨県立博物館 「甲斐絹物語」）·点（とも）される(표외 읽기). 間の川·上宿은 읽기 출처를 찾을 때까지 달지 않는다. 禊·筍·郡内·馬返し·大松明·講社·祈祷는 일본 성인이 읽는 말이라 달지 않는다 |
+| 앱 연동 | 지면에는 학습 장치를 넣지 않는다(오너 기준). 앱 쪽에서 뷰어의 원고 장으로 이어지는 연동은 지면 밖 UI의 일이다 |
 | 검수 | 표시 문구를 한 자씩 대조하고, `visual-review.md`로 본다. 8쪽은 `VIEW_OUT=out-honcho-p8 CROP_TOP_SQUARE=1 python3 -I …/14-view/verify.py`, 1B는 `VIEW_OUT=out-honcho …/verify.py` |
 
-**남은 원고 쪽 판단 (프롬프트 범위 밖, 편집장)**
-- 「もとの場所より30メートルほど」의 원 출처(B93)는 「古い鳥居があったと歴史学者が考えている位置より」라고 쓴다.
-- 04-factcheck §6이 본문 수정을 권고했지만 아직 반영되지 않았다.
-- 원고를 고치면 표지·12·14쪽 문구도 함께 바꾼다.
+**정리된 판단**: 표지 문장 「もとの場所より30メートルほど」는 그대로 둔다(오너 2026-10-16 KST: 처음 접하는 독자에게 추정 여부는 중요하지 않다). 원 출처(B93)의 「歴史学者が考えている位置」는 원고 출처표 기록으로 남긴다.
