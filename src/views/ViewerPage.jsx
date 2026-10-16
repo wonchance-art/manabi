@@ -2686,7 +2686,9 @@ export default function ViewerPage() {
   })() : [];
   const status = material?.processed_json?.status || material?.status;
   const isAnalyzing = (status === 'analyzing' && !isStaleAnalysis) || reanalyzeMutation.isPending;
-  const isPending = !isAnalyzing && (status === 'pending' || status === 'saved'); // 책 챕터 미분석 — 원문 열람 가능, 분석은 온디맨드
+  // 미분석 — 원문 열람 가능, 분석은 온디맨드. 'idle'은 시드 · 수업판이 쓰는 미분석 표지(seed-starters · classBoard ·
+  // bookMeta 기본값)인데 빠져 있어 공개 시리즈 118편이 제목만 있고 본문이 빈 화면이었다(2026-10-17 KST 운영 /viewer/169).
+  const isPending = !isAnalyzing && (status === 'pending' || status === 'saved' || status === 'idle');
   const isFailed = status === 'failed';
   const isDone = status === 'completed' || status === 'partial';
   const needsRecovery = !passageOf(material) && (isStaleAnalysis || (isDone && missingLineCount > 0));
