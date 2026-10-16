@@ -6,6 +6,7 @@
  */
 import { supabase } from './supabase';
 import { encounterLookupLang } from './refVocabLookup';
+import { postgrestKeepalive, sessionTokenFor } from './keepalive';
 
 /** 표기 언어 코드 — 만남 기록과 같은 매핑('Japanese'→'ja' 등). 미지원 언어는 null. */
 export function knownWordsLang(materialLang, koreanStorageSupported = false) {
@@ -77,42 +78,27 @@ const knownWriteKeys = body => (body.known ? [body.wordText] : body.removeKeys |
 const postgrestQuote = value => `"${String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
 
 /**
- * 탭이 닫히는 순간(pagehide)의 아는 단어 쓰기 — markKnown · unmarkKnown과 같은 PostgREST 요청을 keepalive fetch로 보낸다.
- * supabase-js는 요청마다 keepalive를 줄 수 없고 인증 헤더를 비동기로 붙여, 닫히는 탭에서는 요청이 나가기 전에 끊긴다.
+ * 탭이 닫히는 순간(pagehide)의 아는 단어 쓰기 — markKnown · unmarkKnown과 같은 PostgREST 요청을 정본 전송
+ * (keepalive.postgrestKeepalive — 왜 · best-effort 한계는 거기)으로 보낸다.
  * 둘 다 다시 보내도 같은 결과다: 표시는 upsert(on_conflict user_id,lang,word_text · ignore-duplicates), 해제는 키로 지우기.
- * best-effort — 다른 출처 요청이라 사전 요청(preflight)이 붙는 keepalive를 거절하는 브라우저도 있다(그때는 false).
  * @param {{accountId:string, lang:string, wordText:string, known:boolean, removeKeys?:string[]}} body mutation 본문
+ * @param {{accessToken: string, url?: string, apiKey?: string, fetchImpl?: Function}} transport 전송 옵션은 그대로 넘긴다
  * @returns {Promise<boolean>}
  */
-export function sendKnownWordKeepalive(body, {
-  accessToken,
-  url = process.env.NEXT_PUBLIC_SUPABASE_URL, apiKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  fetchImpl = typeof fetch === 'function' ? fetch : null,
-} = {}) {
-  if (!body?.accountId || !body?.lang || !accessToken || !url || !apiKey || !fetchImpl) return Promise.resolve(false);
-  const headers = { apikey: apiKey, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' };
+export function sendKnownWordKeepalive(body, transport = {}) {
+  if (!body?.accountId || !body?.lang) return Promise.resolve(false);
   let request;
   if (body.known) {
     if (!body.wordText) return Promise.resolve(false);
-    request = [`${url}/rest/v1/user_known_words?${new URLSearchParams({ on_conflict: 'user_id,lang,word_text' })}`, {
-      method: 'POST', keepalive: true, headers: { ...headers, Prefer: 'resolution=ignore-duplicates,return=minimal' },
-      body: JSON.stringify({ user_id: body.accountId, lang: body.lang, word_text: body.wordText }),
-    }];
+    request = { path: 'user_known_words', method: 'POST', query: { on_conflict: 'user_id,lang,word_text' },
+      prefer: 'resolution=ignore-duplicates,return=minimal', body: { user_id: body.accountId, lang: body.lang, word_text: body.wordText } };
   } else {
     const keys = body.removeKeys || [];
     if (!keys.length) return Promise.resolve(false);
-    const params = new URLSearchParams({ user_id: `eq.${body.accountId}`, lang: `eq.${body.lang}`, word_text: `in.(${keys.map(postgrestQuote).join(',')})` });
-    request = [`${url}/rest/v1/user_known_words?${params}`, { method: 'DELETE', keepalive: true, headers: { ...headers, Prefer: 'return=minimal' } }];
+    request = { path: 'user_known_words', method: 'DELETE', prefer: 'return=minimal',
+      query: { user_id: `eq.${body.accountId}`, lang: `eq.${body.lang}`, word_text: `in.(${keys.map(postgrestQuote).join(',')})` } };
   }
-  try { return Promise.resolve(fetchImpl(...request)).then(res => !!res?.ok, () => false); }
-  catch { return Promise.resolve(false); }
-}
-
-/** 지금 로그인한 세션이 그 계정일 때만 토큰을 준다 — 다른 계정의 토큰으로 이 계정의 쓰기를 보내지 않는다. */
-async function sessionTokenFor(accountId) {
-  const { data } = await supabase.auth.getSession();
-  const session = data?.session;
-  return session?.access_token && session.user?.id === accountId ? session.access_token : null;
+  return postgrestKeepalive({ ...transport, ...request }).then(res => !!res?.ok, () => false);
 }
 
 /**

@@ -14,6 +14,7 @@ import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { createGrammarRetry, gradeGrammarReview, ratingFromScore, sendGrammarGradeKeepalive } from '../lib/grammarSrs';
+import { sessionTokenFor } from '../lib/keepalive';
 import { createReviewEventBatcher, logReviewEvents } from '../lib/reviewEvents';
 import { hasVapidKey, isPushSupported, isIosNeedsInstall, getSubscriptionState, subscribePush } from '../lib/push';
 import { sentenceIncludesWord } from '../lib/skillRung';
@@ -863,13 +864,10 @@ export default function StudySessionPage({
     return pendingGrammarRef.current.retry(row => row.user_id === owner).catch(() => {});
   }
 
-  /** keepalive용 토큰을 미리 받아 둔다 — pagehide에서는 기다릴 수 없다. 세션 계정의 토큰일 때만. */
+  /** keepalive용 토큰을 미리 받아 둔다 — pagehide에서는 기다릴 수 없다. 세션 계정의 토큰일 때만(정본 sessionTokenFor). */
   function rememberGrammarToken(owner) {
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      const { id: signedIn } = s?.user || {}; // 받은 토큰의 계정 — 세션 계정과 같을 때만 붙잡는다
-      if (s?.access_token && signedIn === owner && recorderRef.current === owner) {
-        grammarTokenRef.current = { userId: owner, token: s.access_token };
-      }
+    sessionTokenFor(owner).then((token) => {
+      if (token && recorderRef.current === owner) grammarTokenRef.current = { userId: owner, token };
     }, () => {});
   }
 

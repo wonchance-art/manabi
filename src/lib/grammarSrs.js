@@ -7,6 +7,7 @@
  * (배포와 마이그레이션 적용 순서에 독립).
  */
 import { supabase } from './supabase.js';
+import { postgrestKeepalive } from './keepalive.js';
 
 /** 정답률 → FSRS rating (1 Again / 2 Hard / 3 Good / 4 Easy) */
 export function ratingFromScore(right, total) {
@@ -171,39 +172,27 @@ export async function gradeGrammarReview(row, rating, { reviewedAt = null, compa
 }
 
 /**
- * 페이지가 닫히는 순간(pagehide)의 마지막 시도 — supabase-js는 요청마다 keepalive를 줄 수 없고 인증 헤더도
- * 비동기로 붙여, 탭을 닫으면 요청이 나가기 전에 끊긴다. 그래서 같은 PostgREST UPDATE(같은 값 · 같은 비교 후 쓰기 조건
- * grammarCasPredicate)를 keepalive fetch로 그 자리에서 보낸다. 토큰은 세션 계정의 것을 호출부가 미리 받아 둔다.
+ * 페이지가 닫히는 순간(pagehide)의 마지막 시도 — 같은 PostgREST UPDATE(같은 값 · 같은 비교 후 쓰기 조건 grammarCasPredicate)를
+ * 정본 전송(keepalive.postgrestKeepalive — 왜 · best-effort 한계는 거기)으로 보낸다. 토큰은 세션 계정의 것을 호출부가 미리 받아 둔다.
  * FSRS 모듈이 아직 없으면 보내지 않는다.
- * best-effort다: 다른 출처로 가는 PATCH에 Authorization · JSON 헤더가 붙어 사전 요청(preflight)이 필요한 keepalive라,
- * 일부 브라우저는 이 요청을 거절할 수 있다(그러면 false — 보류분은 bfcache 복귀 시 다음 retry가 보낸다).
+ * @param {{reviewedAt: string, accessToken: string, url?: string, apiKey?: string, fetchImpl?: Function}} options 전송 옵션은 그대로 넘긴다
  * @returns {Promise<false | object>} 반영됐거나(행) 0행(conflict)이면 끝난 채점, 실패는 false.
  */
-export function sendGrammarGradeKeepalive(row, rating, {
-  reviewedAt, accessToken,
-  url = process.env.NEXT_PUBLIC_SUPABASE_URL, apiKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  fetchImpl = typeof fetch === 'function' ? fetch : null,
-} = {}) {
-  if (!row?.user_id || !row?.slug || !reviewedAt || !accessToken || !url || !apiKey || !fetchImpl || !fsrsModule) {
-    return Promise.resolve(false);
-  }
+export function sendGrammarGradeKeepalive(row, rating, { reviewedAt, ...transport } = {}) {
+  if (!row?.user_id || !row?.slug || !reviewedAt || !fsrsModule) return Promise.resolve(false);
   try {
-    const params = { user_id: `eq.${row.user_id}`, lang: `eq.${row.lang}`, slug: `eq.${row.slug}` };
+    const query = { user_id: `eq.${row.user_id}`, lang: `eq.${row.lang}`, slug: `eq.${row.slug}` };
     const cas = grammarCasPredicate(row);
-    if (cas) params.last_reviewed_at = casParam(cas);
-    params.select = 'slug'; // 바뀐 행을 돌려받아 0행(이미 반영 · 다른 곳 채점)을 가른다 — gradeGrammarReview와 같다
+    if (cas) query.last_reviewed_at = casParam(cas);
+    query.select = 'slug'; // 바뀐 행을 돌려받아 0행(이미 반영 · 다른 곳 채점)을 가른다 — gradeGrammarReview와 같다
     const updates = grammarGradeUpdates(row, rating, reviewedAt);
-    return fetchImpl(`${url}/rest/v1/grammar_review?${new URLSearchParams(params)}`, {
-      method: 'PATCH',
-      keepalive: true,
-      headers: { apikey: apiKey, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-      body: JSON.stringify(updates),
-    }).then(async (res) => {
-      if (!res?.ok) return false;
-      const rows = await res.json().catch(() => null);
-      if (!Array.isArray(rows)) return false;
-      return rows.length ? { ...row, ...updates } : { ...row, conflict: true };
-    }, () => false);
+    return postgrestKeepalive({ ...transport, path: 'grammar_review', method: 'PATCH', query, body: updates, prefer: 'return=representation' })
+      .then(async (res) => {
+        if (!res?.ok) return false;
+        const rows = await res.json().catch(() => null);
+        if (!Array.isArray(rows)) return false;
+        return rows.length ? { ...row, ...updates } : { ...row, conflict: true };
+      }, () => false);
   } catch {
     return Promise.resolve(false);
   }

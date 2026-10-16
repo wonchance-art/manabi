@@ -299,7 +299,8 @@ describe('세션 화면 배선', () => {
     expect(beacon).toContain('pendingGrammarRef.current.beacon(row => row.user_id === owner,');
     expect(beacon).toContain('sendGrammarGradeKeepalive(row, rating, { reviewedAt, accessToken: held.token })');
     const token = sliceBetween(page, 'function rememberGrammarToken(owner) {', '\n  }\n');
-    expect(token).toContain('signedIn === owner && recorderRef.current === owner');
+    expect(token).toContain('sessionTokenFor(owner).then((token) => {');
+    expect(token).toContain('if (token && recorderRef.current === owner) grammarTokenRef.current = { userId: owner, token };');
     const fire = sliceBetween(page, 'function fireEffects() {', '\n  }\n');
     expect(fire).toContain('retryPendingGrammar();');
   });
