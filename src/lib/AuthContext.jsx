@@ -157,6 +157,8 @@ export function AuthProvider({ children }) {
     // SDK 조각을 못 받으면(오프라인 · 배포 교체 직후 등) 쿠키가 있는데도 user가 비어 로그아웃처럼 보인다.
     // 로그아웃으로 굳히지 않고 연결이 돌아올 때 · 잠시 뒤 다시 복원한다 — 같은 계정이 돌아오면 /study처럼
     // 세션 계정을 고정한 화면이 멈춰 둔 기록을 이어 보낸다(getSupabase는 실패하면 다음 호출에서 다시 받는다).
+    // 복원 재시도가 남아 있는 동안은 loading=true(「확인 중」)다 — 소비자(서재 serverUserId · /study authLost · 배움 손님 분기 ·
+    // 목표 칸)는 loading만 보면 되고, 따로 「복원 중」 값을 읽지 않는다.
     let restored = false;
     let retryTimer;
     let retries = 0;
@@ -189,8 +191,12 @@ export function AuthProvider({ children }) {
         })
         .catch(() => {
           if (cancelled) return;
+          // 다시 해 볼 차례가 남았으면 loading을 그대로 둔다 — 쿠키가 있는데 아직 확인 못 했을 뿐이라, 그동안 user=null을
+          // 「로그아웃」으로 읽으면 서재는 서버가 확인한 계정 대신 손님 화면, /study는 「로그인이 필요해요」, 배움은 손님 분기로
+          // 뒤집혔다가 돌아온다(병합 전 교차 리뷰 S1). 차례를 다 쓰면(2 · 8 · 30초) 그때 확정(loading=false · user=null)이다.
+          // 그 뒤에도 online이 오면 다시 복원한다(복원되면 user가 들어온다).
+          if (!restored && retries < AUTH_RESTORE_RETRY_MS.length) { retryTimer = setTimeout(restore, AUTH_RESTORE_RETRY_MS[retries++]); return; }
           setLoading(false);
-          if (!restored && retries < AUTH_RESTORE_RETRY_MS.length) retryTimer = setTimeout(restore, AUTH_RESTORE_RETRY_MS[retries++]);
         });
     };
     window.addEventListener('online', restore);

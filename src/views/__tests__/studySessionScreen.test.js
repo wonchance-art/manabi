@@ -99,7 +99,8 @@ describe('로그아웃 · 계정 바뀜 감지', () => {
   it('SDK를 못 받아 user가 빈 것은 로그아웃으로 굳히지 않는다 — 연결이 돌아오거나 잠시 뒤 세션을 다시 복원한다', () => {
     const auth = read('src/lib/AuthContext.jsx');
     const restore = sliceBetween(auth, 'const restore = () => {', 'return () => {');
-    expect(restore).toMatch(/\.catch\(\(\) => \{\s*if \(cancelled\) return;\s*setLoading\(false\);\s*if \(!restored && retries < AUTH_RESTORE_RETRY_MS\.length\) retryTimer = setTimeout\(restore, AUTH_RESTORE_RETRY_MS\[retries\+\+\]\);/);
+    // 다시 해 볼 차례가 남았으면 loading을 내리지 않는다(확인 중) — 차례를 다 쓴 뒤에만 확정(병합 전 교차 리뷰 S1).
+    expect(restore).toMatch(/\.catch\(\(\) => \{\s*if \(cancelled\) return;(?:\s*\/\/[^\n]*)*\s*if \(!restored && retries < AUTH_RESTORE_RETRY_MS\.length\) \{ retryTimer = setTimeout\(restore, AUTH_RESTORE_RETRY_MS\[retries\+\+\]\); return; \}\s*setLoading\(false\);/);
     expect(restore).toContain("window.addEventListener('online', restore);");
     expect(restore).toContain("window.removeEventListener('online', restore);");
     expect(auth).toContain('const AUTH_RESTORE_RETRY_MS = [2000, 8000, 30000];');
