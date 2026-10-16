@@ -180,7 +180,7 @@ import TokenRangeGrips from './TokenRangeGrips';
 import ViewerComments from './ViewerComments';
 import ViewerQuizModal from './ViewerQuizModal';
 import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constants';
-import { attributionParts, literatureAttributionParts, materialSource } from '../lib/videoAttribution';
+import { attributionParts, literatureAttributionParts, materialSource, standardEbooksAttributionParts } from '../lib/videoAttribution';
 import { isCanonicalLiteratureMaterial, literatureWork } from '../lib/literatureCanonical';
 import { literatureChapterLabel, literatureChapterTitle } from '../lib/literatureDisplay';
 import { useCanonicalLiterature } from '../lib/useCanonicalLiterature';
@@ -3810,6 +3810,21 @@ export default function ViewerPage() {
             {lit.editNote && <span className="viewer-attribution__muted"> · {vt("루비는 독음 보조, 장 분할은 manabi 편집")}</span>}
             {lit.smallKanaNote && <span className="viewer-attribution__muted"> · {vt("글꼴에 없는 작은 가나는 보통 크기로")}</span>}
             {lit.unproofreadNote && <span className="viewer-attribution__muted"> · {vt("青空文庫 교정 전 입력본")}</span>}
+          </p>
+        );
+      })()}
+
+      {/* Standard Ebooks 정본 책 출처(LIT-SRC-EN-1) — 같은 한 줄 문법. 크레딧은 정본 대조표(standardebooks/manifest.generated.json)에서,
+          자료 원문이 그 장의 정본과 같을 때만:  출처: Standard Ebooks · Lewis Carroll, 1865 · 원작 퍼블릭 도메인 · 판 보기 · 장 분할·글자 정리는 … */}
+      {(() => {
+        const se = standardEbooksAttributionParts(canonicalLiterature);
+        if (!se) return null;
+        return (
+          <p className="viewer-attribution">{vt("출처:")} Standard Ebooks
+            {se.author && <> · <span lang="en">{se.author}{se.publishedYear ? `, ${se.publishedYear}` : ''}</span></>}
+            {se.publicDomain && <> · <span className="viewer-attribution__license">{vt("원작 퍼블릭 도메인")}</span></>}
+            {se.url && <> · <a href={se.url} target="_blank" rel="noopener noreferrer">{vt("판 보기")}</a></>}
+            {se.editNote && <span className="viewer-attribution__muted"> · {vt("장 분할·글자 정리는 manabi 편집, 삽화는 싣지 않음")}</span>}
           </p>
         );
       })()}

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "provider": "standardebooks",
+  "repo": "standardebooks/charles-dickens_a-christmas-carol",
+  "commit": "dd1fb9f80b0c3fcfa2686449468f094eeadb3ff4",
+  "url": "https://standardebooks.org/ebooks/charles-dickens/a-christmas-carol",
+  "title": "A Christmas Carol",
+  "author": "Charles Dickens",
+  "publishedYear": 1843,
+  "authorDeathYear": 1870,
+  "countryOfOrigin": "GB",
+  "level": "B2 상급",
+  "display": {
+    "titleKo": "크리스마스 캐럴",
+    "authorKo": "찰스 디킨스"
+  },
+  "files": [
+    {
+      "path": "chapter-1.xhtml",
+      "sha256": "2390fc9d0ced003cf444cf419b0fc5bdf11bdd0d456bb4d57c01b80a9055fb81"
+    },
+    {
+      "path": "chapter-2.xhtml",
+      "sha256": "78163d92e97d2ec1f5b311425ea104ae33f95489d6cde05de33b40d05eb958cb"
+    },
+    {
+      "path": "chapter-3.xhtml",
+      "sha256": "e77400171dc0f234e246d7e27d60619cdc7682ed571ac4a9bcf06030cc8d624a"
+    },
+    {
+      "path": "chapter-4.xhtml",
+      "sha256": "395493ffde632f37ca1b73cefb2553e4713206a2e131e6b672436f9b86f05f17"
+    },
+    {
+      "path": "chapter-5.xhtml",
+      "sha256": "e7a9388f6ffabda99614babff8fab11c6726069ccb3cad11bf1fbcc772ba6ec8"
+    }
+  ],
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-16",
+    "reviewedJurisdictions": [
+      "GB",
+      "US",
+      "KR"
+    ],
+    "evidenceUrl": "https://standardebooks.org/ebooks/charles-dickens/a-christmas-carol"
+  }
+}
