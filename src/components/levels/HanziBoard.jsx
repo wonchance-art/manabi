@@ -117,7 +117,8 @@ function WordCard({ ch, zh, dict, tables, words, onBack, say }) {
       <button type="button" className="lv-fab lv-fab--ex" aria-label="제외 — 아는 단어로 옮기기" title="제외" onClick={() => words.exclude(entry)} disabled={words.isPendingKnown(key)}><CrossIcon /></button>
       {state === 'saved' ? <button type="button" className="lv-fab lv-fab--have" aria-label="저장됨" title="저장됨" aria-disabled="true"><CheckIcon /></button>
         : <button type="button" className={`lv-fab ${state === 'saving' ? 'lv-fab--busy' : 'lv-fab--save'}`} aria-label={state === 'saving' ? '저장 중' : '저장'} title="저장"
-          aria-disabled={state === 'saving' || undefined} onClick={() => state === 'idle' && words.save(entry)}><PlusIcon /></button>}
+          aria-disabled={state === 'saving' || undefined} onClick={() => state === 'idle' && words.save(entry)}
+          onPointerEnter={words.prepare} onFocus={words.prepare}><PlusIcon /></button>}
     </div>
   </div>;
 }
@@ -143,7 +144,7 @@ function PatternCard({ ch, fn, patterns, onBack }) {
  * @param {{name: string, set: number, entries: {key: string}[]}[]} p.groups
  * @param {string|null} p.userId
  * @param {boolean} p.mounted
- * @param {object} p.words - AJ 단어 동작 {knownSet, isSaved, isSaving, isPendingKnown, save, exclude, loadSaved}
+ * @param {object} p.words - AJ 단어 동작 {knownSet, isSaved, isSaving, isPendingKnown, save, exclude, loadSaved, prepare(저장 코드 미리 받기)}
  * @param {Function|null} p.say - 듣기(TTS)
  * @param {string} p.loginHref
  */

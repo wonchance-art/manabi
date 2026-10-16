@@ -10,6 +10,7 @@
 // 훈음 · 正日은 뷰어 부품을 그대로 쓴다(hunRubyCells + HunCell — 정체 꼴로 찾기, glyphRows — 正 대만 정체 · 日 일본어 표기).
 // 한자(중국어 HSK 1–2): HanziBoard — 답 카드의 단어 칩이 같은 저장 · 제외 함수를 쓴다(HANZI-TAB-AL-001).
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
@@ -19,7 +20,6 @@ import { useKnownWords } from '@/lib/useKnownWords';
 import { knownWordKeys, knownWordSetOf, normalizeKnownWord } from '@/lib/knownWordControl';
 import { allFacetsKnown, facetIndex, facetMark } from '@/lib/wordFacets';
 import { useWordFacets } from '@/lib/useWordFacets';
-import { createFsrsLearningClient } from '@/lib/fsrsLearningClient';
 import { authEntryHref } from '@/lib/authRedirect';
 import { hunRubyCells } from '@/lib/viewerHunRuby';
 import { glyphRows } from '@/lib/glyphColumn';
@@ -32,7 +32,10 @@ import {
 } from '@/lib/levelList';
 import { pinyinToneNumber } from '@/lib/pinyinTone';
 import { ZH_SCOPE_LEVELS, serializeReviewScope } from '@/lib/reviewScopeUrl';
-import HanziBoard from '@/components/levels/HanziBoard';
+// 한자판은 HSK 1 · 2 「한자」 탭에서만 쓴다 — 단어 · 문형 목록 번들에 싣지 않는다.
+const HanziBoard = dynamic(() => import('@/components/levels/HanziBoard'), {
+  loading: () => <p className="lv-empty" role="status">한자판 불러오는 중…</p>,
+});
 import '@/components/levels/level-list.css';
 
 const svg = { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true };
@@ -89,13 +92,13 @@ function Example({ ex, lang, speak, hideTranslation }) {
 }
 
 /** [O] 안다(아는 단어) · [X] 모른다(공부 중인 단어) — 누른 쪽이 채워진다. 아는 단어가 먼저다(저장돼 있어도 O면 O만). */
-function OxButtons({ scope, known, studying, saving, pendingKnown, onO, onX, showLabels = false }) {
+function OxButtons({ scope, known, studying, saving, pendingKnown, onO, onX, onPrepareX, showLabels = false }) {
   return <div className="lv-acts">
     <button type="button" className="lv-fab lv-fab--o" aria-pressed={known} aria-label={scope ? `${scope} 탭에서 안다` : '안다 — 아는 단어로'} title="안다"
       onClick={onO} disabled={pendingKnown}><CircleIcon />{showLabels && <span>안다</span>}</button>
     <button type="button" className={`lv-fab lv-fab--x${saving ? ' lv-fab--busy' : ''}`} aria-pressed={!known && studying}
       aria-label={saving ? '공부 중인 단어로 담는 중' : `${scope ? `${scope} 탭에서 ` : ''}모른다 — 공부 중인 단어로`} title="모른다"
-      aria-disabled={saving || undefined} onClick={saving ? undefined : onX} disabled={pendingKnown}>{saving ? <SpinIcon /> : <CrossIcon />}{showLabels && <span>모른다</span>}</button>
+      aria-disabled={saving || undefined} onClick={saving ? undefined : onX} onPointerEnter={onPrepareX} onFocus={onPrepareX} disabled={pendingKnown}>{saving ? <SpinIcon /> : <CrossIcon />}{showLabels && <span>모른다</span>}</button>
   </div>;
 }
 
@@ -123,10 +126,10 @@ function readingLine(entry, lang, levelKey, tone = false) {
  * 카드를 누르면 고른 것은 제자리에 둔 채 나머지가 그 아래로 펼쳐지고, 다시 누르면 접힌다. 그대로 두면 10초 뒤 접힌다
  * (4판 — 오너 2026-10-15 「다시 클릭하면 닫히게 · 애니메이션 · 닫히면서 단어 위치 변하는 것 개선」). peek = 'open' | 'closing'.
  */
-export function VocabCard({ entry: e, lang, levelKey, view, scoped = true, peek, peekEpoch = 0, onPeek, onRenew, speak, hunCells, glyph, tone = false, known, studying, saving, pendingKnown, onO, onX }) {
+export function VocabCard({ entry: e, lang, levelKey, view, scoped = true, peek, peekEpoch = 0, onPeek, onRenew, speak, hunCells, glyph, tone = false, known, studying, saving, pendingKnown, onO, onX, onPrepareX }) {
   const scope = view === 'all' || !scoped ? null : LEVEL_VIEWS.find((v) => v.id === view)?.label;
   // 이름표(안다 · 모른다)는 전체 보기 카드에만 — 탭 보기는 한 줄 카드라 동그라미만(디자인 검토 A안, 화면 읽기 이름은 그대로).
-  const ox = <OxButtons scope={scope} showLabels={lang === 'chinese' && view === 'all'} known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} />;
+  const ox = <OxButtons scope={scope} showLabels={lang === 'chinese' && view === 'all'} known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} onPrepareX={onPrepareX} />;
   // 상태는 카드 자체에 — 아는 단어는 흐리게, 공부 중은 왼쪽 줄(점선 테두리는 「임시」로 읽혀 뺐다).
   const state = { 'data-known': known || undefined, 'data-studying': (!known && studying) || undefined };
   if (view === 'all') return <li className="lv-entry" {...state}>
@@ -201,7 +204,9 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
   const pendingExclude = useRef(null);
   const pendingStudy = useRef(null);
   const peekTimers = useRef(new Map());
-  const fsrs = useRef(null);
+  const fsrs = useRef(null); // { accountId, client }
+  const fsrsLoad = useRef(null); // { accountId, promise } — 받는 중
+  const fsrsEpoch = useRef(0);
   const userRef = useRef(userId);
   userRef.current = userId;
 
@@ -303,14 +308,33 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
     return () => { alive = false; };
   }, [vocab, userId, conf.language, allEntries]);
 
-  // FSRS 저장 클라이언트 — 계정마다 하나, 계정이 바뀌면 버린다.
-  useEffect(() => {
-    if (!wordsOn || !userId) return undefined;
-    const client = createFsrsLearningClient({ accountId: userId, getAccountId: () => userRef.current });
-    client.start();
-    fsrs.current = client;
-    return () => { client.dispose?.(); if (fsrs.current === client) fsrs.current = null; };
-  }, [wordsOn, userId]);
+  // FSRS 저장 클라이언트 — 처음 저장할 때(또는 X에 손이 갈 때) 받아 만든다. 목록만 보는 화면은 저장 코드를 받지 않는다.
+  // 계정마다 하나: 같은 계정이면 다시 쓰고, 계정이 바뀌거나 화면을 떠나면 버린다(받는 중이던 것도 만들지 않는다).
+  const ensureFsrs = useCallback(() => {
+    const account = userRef.current;
+    if (!account) return Promise.resolve(null);
+    if (fsrs.current?.accountId === account) return Promise.resolve(fsrs.current.client);
+    if (fsrsLoad.current?.accountId === account) return fsrsLoad.current.promise;
+    const epoch = fsrsEpoch.current;
+    const promise = import('@/lib/fsrsLearningClient').then(({ createFsrsLearningClient }) => {
+      if (fsrsEpoch.current !== epoch || userRef.current !== account) return null;
+      if (fsrs.current?.accountId === account) return fsrs.current.client;
+      const client = createFsrsLearningClient({ accountId: account, getAccountId: () => userRef.current });
+      client.start();
+      fsrs.current = { accountId: account, client };
+      return client;
+    }).finally(() => { if (fsrsLoad.current?.promise === promise) fsrsLoad.current = null; });
+    fsrsLoad.current = { accountId: account, promise };
+    return promise;
+  }, []);
+  useEffect(() => () => {
+    fsrsEpoch.current += 1;
+    fsrsLoad.current = null;
+    const current = fsrs.current;
+    fsrs.current = null;
+    current?.client.dispose?.();
+  }, [userId]);
+  const prepareSave = useCallback(() => { if (userRef.current) ensureFsrs().catch(() => {}); }, [ensureFsrs]);
 
   // 한자 탭 — 답 카드를 열 때 그 칩 단어들의 「저장됨」만 받아 합친다.
   const loadSaved = useCallback((keys) => {
@@ -333,14 +357,15 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
 
   const save = async (entry) => {
     if (!userId) return loginToast('로그인하면 단어를 저장할 수 있어요');
-    const client = fsrs.current;
-    if (!client || saving.has(entry.key) || saved.has(entry.key)) return;
+    if (saving.has(entry.key) || saved.has(entry.key)) return;
     setSaving((s) => new Set(s).add(entry.key));
     const done = (ok) => {
       setSaving((s) => { const n = new Set(s); n.delete(entry.key); return n; });
       if (ok) setSaved((s) => new Set(s).add(entry.key));
     };
     try {
+      const client = await ensureFsrs();
+      if (!client) return done(false); // 받는 사이 계정이 바뀌었다 — 새 계정으로 저장하지 않는다.
       // 예문은 붙이지 않는다(인계 §5 — 저장 카드 예문은 보류). 뜻 · 읽기는 새 카드에만 쓰이고, 있던 카드는 그대로다.
       const vocabulary = { language: conf.language, word_text: entry.key, base_form: entry.key,
         meaning: entry.fullMeaning.slice(0, 2000), furigana: entry.reading.slice(0, 500), pos: entry.pos.slice(0, 80) };
@@ -530,7 +555,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
     </div>}
     {hanzi ? <HanziBoard levelKey={levelKey} groups={groups} userId={mounted ? userId : null} mounted={mounted} say={speakOk ? say : null}
       loginHref={authEntryHref(pathname)} words={{
-        knownSet, save, exclude, loadSaved,
+        knownSet, save, exclude, loadSaved, prepare: prepareSave,
         isSaved: (key) => saved.has(key), isSaving: (key) => saving.has(key),
         isPendingKnown: (key) => mounted && !!userId && known.isPendingWord(conf.langCode, key),
       }} /> : <>
@@ -547,7 +572,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
               known={facetView ? facetMark(facetIdx, e.key, facetView) === 'o' : knownSet.has(e.key)}
               studying={facetView ? facetMark(facetIdx, e.key, facetView) === 'x' : saved.has(e.key)} saving={saving.has(e.key)}
               pendingKnown={mounted && !!userId && known.isPendingWord(conf.langCode, e.key)}
-              onO={() => (facetView ? markFacetO(e) : markO(e))} onX={() => (facetView ? markFacetX(e) : markX(e))} /> : <li key={e.key} className="lv-pat">
+              onO={() => (facetView ? markFacetO(e) : markO(e))} onX={() => (facetView ? markFacetX(e) : markX(e))} onPrepareX={mounted && userId ? prepareSave : undefined} /> : <li key={e.key} className="lv-pat">
               <div className="lv-pat__head"><span className="lv-hw" lang={lang === 'chinese' ? 'zh-CN' : 'ja'}>{e.pattern}</span>{e.ko && <span className="lv-pat__ko">{e.ko}</span>}</div>
               {e.conn && <p className="lv-formula">{e.conn}</p>}
               {e.note && <p className="lv-note">{e.note}</p>}

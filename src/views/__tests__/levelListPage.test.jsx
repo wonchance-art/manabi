@@ -11,6 +11,12 @@ vi.mock('@/lib/supabase', () => ({ supabase: {} }));
 vi.mock('@/lib/useTTS', () => ({ useTTS: () => ({ speak: () => {}, supported: true }) }));
 vi.mock('@/lib/useKnownWords', () => ({ useKnownWords: () => ({ rows: [], isPendingWord: () => false, mutation: { mutate: () => {} } }) }));
 vi.mock('@/lib/useWordFacets', () => ({ useWordFacets: () => ({ available: true, rows: [], mark: () => {} }) }));
+// 한자판은 next/dynamic으로 지연 로드한다(levelListLazy 계약). 기본값(ssr)이라 Next 서버 렌더는 한자판을 그려 보낸다 —
+// 동기 renderToStaticMarkup에서도 같은 마크업을 보도록, 불러올 모듈을 미리 받아 돌려준다.
+vi.mock('next/dynamic', async () => {
+  const board = await import('../../components/levels/HanziBoard.jsx');
+  return { default: () => board.default };
+});
 
 const { default: LevelListPage, VocabCard } = await import('../LevelListPage.jsx');
 const { levelListData } = await import('../../lib/levelListData.js');
