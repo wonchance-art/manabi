@@ -7,6 +7,9 @@
 .conv {
   --chat-bg: #BACEE0; --chat-other: #FFFFFF; --chat-me: #FEE94E; --chat-ink: #191919; --chat-meta: #4E5D6C;
   --chat-name: #3A4652; --chat-bar: #FFFFFF; --chat-field: #F3F4F6; --chat-line: #A9BCCD;
+  /* 프로필 바탕 8색(파스텔) + 튜터 — 사람마다 아이디로 고정(chatView profileLook). */
+  --chat-av-1: #FFD3D3; --chat-av-2: #FFE0BD; --chat-av-3: #FFF0AE; --chat-av-4: #D3F0C2;
+  --chat-av-5: #C2ECE4; --chat-av-6: #DCE8FF; --chat-av-7: #E2D6FF; --chat-av-8: #F7D0EA; --chat-av-tutor: #FFFFFF;
   position: relative; display: flex; flex-direction: column; width: 100%; height: 100vh; height: var(--conv-vh, 100dvh); top: var(--conv-top, 0);
   font-family: var(--font-noto-kr, 'Noto Sans KR'), sans-serif;
   font-size: 1rem; line-height: 1.5; background: var(--chat-bg); color: var(--chat-ink);
@@ -21,6 +24,8 @@
 .viewer-layout[data-reader-theme="dark"] .conv {
   --chat-bg: #1E2932; --chat-other: #2E3A44; --chat-me: #E5CF3C; --chat-ink: #F1F3F5; --chat-meta: #A7B4C0;
   --chat-name: #C9D3DC; --chat-bar: #26313A; --chat-field: #33404B; --chat-line: #33404B;
+  --chat-av-1: #5C3639; --chat-av-2: #5C4631; --chat-av-3: #57502E; --chat-av-4: #35502F;
+  --chat-av-5: #2B504A; --chat-av-6: #2F4467; --chat-av-7: #463A61; --chat-av-8: #573653; --chat-av-tutor: #3A4652;
 }
 .viewer-layout[data-reader-theme="dark"] .conv .conv-bubble--me { color: #191919; }
 .conv__head { flex: none; display: flex; align-items: center; gap: 4px; min-height: 52px; padding: 4px 4px; background: var(--chat-bg); }
@@ -31,6 +36,18 @@
 /* 튜터 프로필 — 메신저처럼 상대 말 묶음의 첫 말풍선 옆에 동그라미 하나. 그림 대신 글자(국기·캐릭터 그림 금지). */
 .conv-avatar { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 15px; background: color-mix(in srgb, var(--primary) 22%, var(--chat-other)); color: var(--chat-ink); font-size: 0.9rem; font-weight: 700; }
 .conv-avatar--head { width: 36px; height: 36px; border-radius: 13px; margin-right: 6px; }
+/* 프로필 그림·색(CONV-CHAT-001 7차) — 동물 그림 기호 + 사람마다 다른 바탕. 튜터는 늘 같은 그림·흰 바탕. */
+.conv-avatar:is(.conv-avatar--tutor, [class*="conv-avatar--tone"]) { font-size: 1.35rem; font-weight: 400; line-height: 1; }
+.conv-avatar--head.conv-avatar--tutor { font-size: 1.2rem; }
+.conv-avatar--tutor { background: var(--chat-av-tutor); }
+.conv-avatar--tone1 { background: var(--chat-av-1); }
+.conv-avatar--tone2 { background: var(--chat-av-2); }
+.conv-avatar--tone3 { background: var(--chat-av-3); }
+.conv-avatar--tone4 { background: var(--chat-av-4); }
+.conv-avatar--tone5 { background: var(--chat-av-5); }
+.conv-avatar--tone6 { background: var(--chat-av-6); }
+.conv-avatar--tone7 { background: var(--chat-av-7); }
+.conv-avatar--tone8 { background: var(--chat-av-8); }
 /* 날짜 구분선 — 바탕 위 반투명 알약, 흰 글자(메신저 관례). */
 .conv__date { align-self: center; margin: 10px 0 4px; padding: 3px 12px; border-radius: 999px; background: color-mix(in srgb, var(--chat-ink) 18%, transparent); color: #fff; font-size: 0.75rem; }
 .conv__log { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 12px; padding: 8px 12px 16px; }

@@ -67,6 +67,22 @@ export function roomLastAt({ lastAt = null, turns = [], createdAt = null } = {})
   return Number.isFinite(t) ? t : null;
 }
 
+// 프로필 그림·색(CONV-CHAT-001 7차, 오너 「프로필 다른 색과 이미지로 구분」 2026-10-17) — 사진이 없는 사람도
+// 한눈에 구분되게 아이디로 동물 그림 16가지 × 바탕색 8가지 중 하나를 고정한다(Google 문서 익명 동물 선례,
+// notes/conv-avatar-precedents.md). 같은 사람은 어느 방에서나 같다. 그림 기호만 쓴다(캐릭터·로고 그림 아님).
+export const PROFILE_ANIMALS = Object.freeze(['🦊', '🐼', '🐨', '🐯', '🦁', '🐸', '🐵', '🐰', '🐻', '🐱', '🐶', '🐹', '🐧', '🐙', '🦉', '🐢']);
+export const PROFILE_TONES = 8;
+export const TUTOR_LOOK = Object.freeze({ icon: '🧑‍🏫', tone: 'tutor' });
+
+/** 아이디 → { icon, tone(1~8) }. 색과 그림은 해시의 다른 자리에서 골라 서로 묶이지 않는다. */
+export function profileLook(id) {
+  let h = 0x811c9dc5; // FNV-1a 32비트
+  for (const ch of String(id ?? '')) { h ^= ch.codePointAt(0); h = Math.imul(h, 0x01000193) >>> 0; }
+  // 끝 글자만 다른 아이디(…0001, …0002)도 고르게 퍼지도록 섞는다(murmur3 마무리).
+  h = Math.imul(h ^ (h >>> 16), 0x85ebca6b) >>> 0; h = (h ^ (h >>> 13)) >>> 0; h = Math.imul(h, 0xc2b2ae35) >>> 0; h = (h ^ (h >>> 16)) >>> 0;
+  return { icon: PROFILE_ANIMALS[(h >>> 8) % PROFILE_ANIMALS.length], tone: (h % PROFILE_TONES) + 1 };
+}
+
 // 주제 방의 프로필 글자 — 그림 기호 하나(상표·국기 그림 아님). 모르는 주제는 말풍선.
 export const ROOM_ICONS = Object.freeze({ '오늘 하루': '☀️', '주말 계획': '📅', '여행': '✈️', '음식': '🍜', '학교·일': '🏫', '취미': '🎨' });
 

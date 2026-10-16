@@ -16,7 +16,7 @@ import useLearnLanguage from '@/components/learn/useLearnLanguage';
 import ConfirmModal from '@/components/ConfirmModal';
 import { CONVERSATION_LANGUAGES } from '@/lib/conversation/turnModel';
 import { newConversationHref } from '@/lib/conversation/newConversation';
-import { chatDateLabel } from '@/lib/conversation/chatView';
+import { chatDateLabel, profileLook } from '@/lib/conversation/chatView';
 import {
   LOBBY_MAX_CHARS, LOBBY_SOON_TEXT, cleanLobbyText, isLobbyMissing, deleteLobby, fetchLobby, lobbyErrorText, lobbyKey, lobbyMessages,
   lobbyRateGate, lobbyThread, postLobby, reportLobby, subscribeLobby,
@@ -184,7 +184,7 @@ export default function ConversationLobbyPage() {
                 ) : (
                   <div className={`conv-lobby__row${m.first ? ' conv-lobby__row--first' : ''}${arrived(m.id) ? ' conv-anim-in' : ''}`}>
                     {m.first
-                      ? <span className="conv-avatar" aria-hidden="true">{m.name.slice(0, 1)}</span>
+                      ? <span className={`conv-avatar conv-avatar--tone${profileLook(m.userId).tone}`} aria-hidden="true">{profileLook(m.userId).icon}</span>
                       : <span className="conv-lobby__gap" aria-hidden="true" />}
                     <div className="conv__stack">
                       {m.first && <p className="conv__name">{m.name}</p>}

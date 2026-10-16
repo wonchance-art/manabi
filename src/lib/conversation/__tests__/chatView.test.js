@@ -1,7 +1,7 @@
 // CONV-CHAT-001 2차 — 방 목록·날짜 구분선 표시 규칙(KST).
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { chatDateLabel, conversationRooms, kstDateKey, roomLastAt, roomPreview, roomTimeLabel, ROOM_PREVIEW_CHARS } from '../chatView';
+import { chatDateLabel, conversationRooms, kstDateKey, PROFILE_ANIMALS, PROFILE_TONES, profileLook, roomLastAt, roomPreview, roomTimeLabel, ROOM_PREVIEW_CHARS, TUTOR_LOOK } from '../chatView';
 
 const read = (rel) => readFileSync(new URL(`../../../${rel}`, import.meta.url), 'utf8');
 // 2026-10-15 15:07 KST = 06:07Z
@@ -55,5 +55,40 @@ describe('방 목록', () => {
     const server = read('lib/server/conversationTurn.js');
     expect(server).toContain('lastAt: tutorTurn?.at ?? now,');
     expect(server).toContain('lastAt: now,');
+  });
+});
+
+describe('프로필 그림·색(7차, 오너 「다른 색과 이미지로 구분」)', () => {
+  const ids = Array.from({ length: 40 }, (_, i) => `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`);
+  it('같은 사람은 늘 같은 그림·색, 동물 16 × 색 8', () => {
+    expect(profileLook(ids[3])).toEqual(profileLook(ids[3]));
+    expect(PROFILE_ANIMALS).toHaveLength(16);
+    expect(new Set(PROFILE_ANIMALS).size).toBe(16);
+    for (const id of ids) {
+      const look = profileLook(id);
+      expect(PROFILE_ANIMALS).toContain(look.icon);
+      expect(look.tone).toBeGreaterThanOrEqual(1);
+      expect(look.tone).toBeLessThanOrEqual(PROFILE_TONES);
+    }
+    expect(profileLook(null)).toEqual(profileLook(''));
+  });
+  it('사람이 늘어도 고르게 퍼진다 — 40명에 색 8가지·그림 12가지 이상, 그림과 색 조합이 거의 겹치지 않는다', () => {
+    const looks = ids.map(profileLook);
+    expect(new Set(looks.map((l) => l.tone)).size).toBe(PROFILE_TONES);
+    expect(new Set(looks.map((l) => l.icon)).size).toBeGreaterThanOrEqual(12);
+    expect(new Set(looks.map((l) => `${l.icon}${l.tone}`)).size).toBeGreaterThanOrEqual(30);
+  });
+  it('튜터는 사람 그림과 겹치지 않는 고정 그림', () => {
+    expect(PROFILE_ANIMALS).not.toContain(TUTOR_LOOK.icon);
+  });
+  it('화면은 토큰 색만 — 밝은 8색 · 어두운 8색 · 튜터, 대화방 두 곳이 같은 함수를 쓴다', () => {
+    const css = read('components/conversation/conversation.css');
+    for (let i = 1; i <= PROFILE_TONES; i++) {
+      expect(css).toContain(`.conv-avatar--tone${i} { background: var(--chat-av-${i}); }`);
+      expect(css.match(new RegExp(`--chat-av-${i}: #`, 'g'))).toHaveLength(2);
+    }
+    expect(css.match(/--chat-av-tutor: #/g)).toHaveLength(2);
+    expect(read('views/ConversationLobbyPage.jsx')).toContain('conv-avatar--tone${profileLook(m.userId).tone}');
+    expect(read('components/conversation/ConversationThread.jsx')).not.toContain('>튜</span>');
   });
 });

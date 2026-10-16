@@ -23,7 +23,7 @@ import { isImeComposing } from '../../lib/imeComposing';
 import { bcp47ForLanguage } from '../../lib/speechLang';
 import { langNameKo } from '../../lib/constants';
 import OutputWordChips from '../OutputWordChips';
-import { chatDateLabel, clockLabel, kstDateKey } from '../../lib/conversation/chatView';
+import { chatDateLabel, clockLabel, kstDateKey, TUTOR_LOOK } from '../../lib/conversation/chatView';
 import { CHAT_COMPOSER_MAX_LINES, CHAT_NEAR_BOTTOM_PX, useArrivals, useAutoGrow, useChatScroll, useChatViewport } from './useChatShell';
 import './conversation.css';
 
@@ -310,7 +310,7 @@ export default function ConversationThread({
       // 메신저처럼 문장마다 말풍선 — 같은 턴은 한 묶음(프로필·이름은 첫 말풍선에만, 듣기·번역은 마지막 말풍선 옆).
       return (
         <div className={`conv__row conv__row--tutor${arrived(item.index) ? ' conv-anim-in' : ''}`}>
-          <span className="conv-avatar" aria-hidden="true">튜</span>
+          <span className="conv-avatar conv-avatar--tutor" aria-hidden="true">{TUTOR_LOOK.icon}</span>
           <div className="conv__stack">
             <p className="conv__name">튜터</p>
             {lines.map((line, k) => (
@@ -383,7 +383,7 @@ export default function ConversationThread({
     <div className="conv" ref={shellRef}>
       <div className="conv__head">
         {backLink}
-        <span className="conv-avatar conv-avatar--head" aria-hidden="true">튜</span>
+        <span className="conv-avatar conv-avatar--head conv-avatar--tutor" aria-hidden="true">{TUTOR_LOOK.icon}</span>
         <div className="conv__title">
           <p className="conv__meta">{conversation.topic || '대화'}</p>
           <p className="conv__sub">{[langKo, conversation.level].filter(Boolean).join(' · ')}</p>
@@ -427,7 +427,7 @@ export default function ConversationThread({
         )}
         {loading && (
           <div className="conv__row conv__row--tutor conv-anim-fade" aria-label="입력 중">
-            <span className="conv-avatar" aria-hidden="true">튜</span>
+            <span className="conv-avatar conv-avatar--tutor" aria-hidden="true">{TUTOR_LOOK.icon}</span>
             <div className="conv__stack">
               <div className="conv-bubble conv-bubble--tutor conv-bubble--tail conv-bubble--typing"><span /><span /><span /></div>
             </div>
