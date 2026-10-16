@@ -13,7 +13,8 @@ export function useKnownWords(lang = null, enabled = true) {
   const pending = useRef(new Set()), [pendingKeys, setPendingKeys] = useState(new Set());
   const requestKey = body => `${body.accountId}:${body.lang}:${body.wordText}`;
   const query = useQuery({ queryKey: lang ? ['known-words', owner, lang] : ['known-words-all', owner],
-    queryFn: () => fetchKnownWords(owner, lang), enabled: !!owner && enabled, staleTime: 0 });
+    // 표시·해제는 onSuccess의 setQueryData + 무효화로 즉시 반영된다 — 재마운트마다 다시 받을 필요가 없다.
+    queryFn: () => fetchKnownWords(owner, lang), enabled: !!owner && enabled, staleTime: 60 * 1000 });
   const mutation = useMutation({
     mutationFn: async body => {
       if (body.known) await markKnown(body.accountId, body.lang, body.wordText);

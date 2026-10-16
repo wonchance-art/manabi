@@ -17,15 +17,17 @@ export function knownWordsLang(materialLang, koreanStorageSupported = false) {
 export async function fetchKnownWords(userId, langCode) {
   return loadKnownWords(supabase, userId, langCode);
 }
+const KNOWN_WORDS_PAGE = 1000;
 export async function loadKnownWords(client, userId, langCode) {
   const rows = [];
-  for (let offset = 0; ; offset += 200) {
+  // PostgREST 기본 최대 행 수(1000)에 맞춘 페이지 — 순차 루프라 실패한 페이지를 숨기지 않는다.
+  for (let offset = 0; ; offset += KNOWN_WORDS_PAGE) {
     let query = client.from('user_known_words').select('word_text, lang').eq('user_id', userId);
     if (langCode) query = query.eq('lang', langCode);
-    const { data, error } = await query.order('lang').order('word_text').range(offset, offset + 199);
+    const { data, error } = await query.order('lang').order('word_text').range(offset, offset + KNOWN_WORDS_PAGE - 1);
     if (error) throw error;
     rows.push(...(data || []));
-    if ((data || []).length < 200) return rows;
+    if ((data || []).length < KNOWN_WORDS_PAGE) return rows;
   }
 }
 

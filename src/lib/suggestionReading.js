@@ -5,6 +5,16 @@ import { licenseForSource } from './videoAttribution';
 export const SUGGESTION_ID = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 export const SUGGESTION_FIELDS = 'id, date, language, source, video_id, title, channel_name, thumbnail_url, level, transcript, material_id';
 
+// 오늘의 추천(/api/suggestions/today) — 홈과 자료실이 같은 캐시 한 칸을 읽는다. 키·조회를 화면마다
+// 따로 두면 같은 응답을 두 번 받는다(브라우저 조회 감사). 실패는 던져서 빈 목록을 캐시하지 않는다.
+export const TODAY_SUGGESTIONS_KEY = ['today-suggestions'];
+export async function fetchTodaySuggestions() {
+  const response = await fetch('/api/suggestions/today');
+  if (!response.ok) throw new Error('추천을 불러오지 못했어요.');
+  const rows = await response.json();
+  return Array.isArray(rows) ? rows : [];
+}
+
 export function canReadSuggestion(s) {
   return !!s?.title?.trim() && !isOnDemandSuggestion(s) &&
     (!!s.transcript?.trim() || !!s.material_id);

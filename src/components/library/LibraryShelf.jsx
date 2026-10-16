@@ -19,9 +19,11 @@ import {operationTarget,currentLibraryTarget,selectedRange,folderPaths,prepareOp
 import './library.css';
 
 function QueryFailure({query,label}){return query.isError?<div className="shelf-query-error" role="alert"><p>{label} · {libraryError(query.error)}</p><button onClick={()=>query.refetch()}>다시 시도</button></div>:null;}
+// 읽던 곳은 열람 기록(useLibraryActivity — 뷰어·PDF·교재·원본)과 서재 작업(invalidateLibrary)이 무효화하므로 30초 캐시한다.
+// personal-library·library-pinned는 0 유지: 자료 추가(MaterialAddPage)·받아두기(offlineCache)에 무효화 경로가 없다.
 function RecentReads({user}){
  const [more,setMore]=useState(false),[rows,setRows]=useState([]);
- const recent=useQuery({queryKey:['library-recent',user.id],staleTime:0,queryFn:()=>fetchLibraryPage(supabase,{},0,{recent:true})});
+ const recent=useQuery({queryKey:['library-recent',user.id],staleTime:30000,queryFn:()=>fetchLibraryPage(supabase,{},0,{recent:true})});
  useEffect(()=>{
   const items=[...(recent.data?.items||[])];
   const ordered=items.sort((a,b)=>Date.parse(b.opened_at)-Date.parse(a.opened_at)).slice(0,3);

@@ -24,7 +24,7 @@ import { isTeamRoot } from '../lib/classTeamRoot';
 import { groupByPdf, pageRangeLabel, readProgressLabel } from '../lib/pdfGroups';
 import { useGroupReadIds } from '../lib/useGroupReadIds';
 import { LEVELS, SERIES_TITLE_ILIKE, langNameKo, levelRank, profileLevel, isWriteMaterial } from '../lib/constants';
-import { canReadSuggestion, suggestionHref, suggestionSource } from '../lib/suggestionReading';
+import { canReadSuggestion, suggestionHref, suggestionSource, TODAY_SUGGESTIONS_KEY, fetchTodaySuggestions } from '../lib/suggestionReading';
 import { encounterLookupLang } from '../lib/refVocabLookup';
 import { isLibraryNote, materialLibraryFilters } from '../lib/libraryDiscovery';
 import ConfirmModal from '../components/ConfirmModal';
@@ -41,12 +41,6 @@ import { failureMessage } from '@/lib/errorMessage';
 import { authEntryHref } from '@/lib/authRedirect';
 import { withGuestBookCatalog } from '@/lib/guestBookCatalog';
 
-
-async function fetchTodaySuggestions() {
-  const res = await fetch('/api/suggestions/today');
-  if (!res.ok) return [];
-  return res.json();
-}
 
 function SuggestionCard({ suggestion: s, router, from = 'materials' }) {
   const canStudy = canReadSuggestion(s);
@@ -312,7 +306,7 @@ export default function MaterialsPage({ libraryView = null }) {
   }, [libraryView, searchQuery, langFilter, levelFilter, sortBy, unreadOnly, pinnedOnly, visibleCount]);
 
   const { data: suggestions = [] } = useQuery({
-    queryKey: ['suggestions-today'],
+    queryKey: TODAY_SUGGESTIONS_KEY,
     enabled: !libraryView || libraryView === 'public',
     queryFn: fetchTodaySuggestions,
     staleTime: 60 * 60 * 1000, // 1시간 캐시
@@ -407,13 +401,38 @@ export default function MaterialsPage({ libraryView = null }) {
     queryFn: () => fetchMaterials({ tab, userId: user?.id, langFilter, levelFilter, searchQuery, includeOwnedPublic: !!libraryView }),
     // 기본 탭이 로그인 여부로 갈리므로 auth 확정 전에 쏘면 버릴 쿼리가 된다.
     enabled: !!tab,
-    refetchInterval: (query) => {
-      const hasAnalyzing = query.state.data?.some(
-        m => m.processed_json?.status === 'analyzing'
-      );
-      return hasAnalyzing ? 5000 : false;
-    },
   });
+
+  // 분석 중 자료는 상태 한 칸만 5초마다 본다 — 목록 전체(processed_json 통짜)를 다시 받지 않는다.
+  // 대상은 내 소유 행뿐이다: 공개 화면의 남의 분석 중 자료 때문에 내 화면이 폴링하지 않는다.
+  // 상태가 바뀐(또는 사라진) 행이 있을 때만 목록을 무효화해, 다시 받은 목록이 평소처럼 그린다.
+  const analyzingIds = useMemo(() => (user?.id ? materials
+    .filter(m => m.processed_json?.status === 'analyzing' && m.owner_id === user.id)
+    .map(m => m.id) : []), [materials, user?.id]);
+  const { data: analyzingStatus, dataUpdatedAt: analyzingCheckedAt } = useQuery({
+    queryKey: ['materials-analyzing-status', user?.id, analyzingIds],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('reading_materials')
+        .select('id, status:processed_json->>status')
+        .in('id', analyzingIds);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: analyzingIds.length > 0,
+    refetchInterval: 5000,
+    staleTime: 0,
+  });
+  const handledStatusAt = useRef(0);
+  useEffect(() => {
+    // 한 번의 폴링 결과에 한 번만 반응한다 — 목록 재조회로 id 배열만 새로 만들어져도 다시 무효화하지 않는다.
+    if (!analyzingStatus || !analyzingIds.length || handledStatusAt.current === analyzingCheckedAt) return;
+    handledStatusAt.current = analyzingCheckedAt;
+    const statusById = new Map(analyzingStatus.map(row => [String(row.id), row.status]));
+    if (analyzingIds.some(id => statusById.get(String(id)) !== 'analyzing')) {
+      queryClient.invalidateQueries({ queryKey: ['materials'] });
+    }
+  }, [analyzingStatus, analyzingCheckedAt, analyzingIds, queryClient]);
 
   // 레벨 목록도 정본에서. 삼항 체인이라 프랑스어를 고르면 **전체 목록**이 나왔다.
   // '전체'는 네 언어를 합치되 중복을 지운다 — 영어와 프랑스어가 CEFR 급수를 공유해서,

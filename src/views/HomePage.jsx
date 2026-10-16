@@ -32,7 +32,7 @@ import { logReviewEvents } from '@/lib/reviewEvents';
 import { getIdealLevel } from '@/lib/levels';
 import { rankSuggestions } from '@/lib/suggestionRank';
 import { detectLang, langNameKo } from '@/lib/constants';
-import { canReadSuggestion, suggestionHref } from '@/lib/suggestionReading';
+import { canReadSuggestion, suggestionHref, TODAY_SUGGESTIONS_KEY, fetchTodaySuggestions } from '@/lib/suggestionReading';
 import { fetchVocabularyLearningRows } from '@/lib/vocabularyLearningRows';
 import { countReviewScope, reviewScopeQuota, serializeReviewScope } from '@/lib/reviewScope';
 import { useLearningAdmission } from '@/lib/useLearningAdmission';
@@ -84,13 +84,6 @@ export async function fetchPrefetchedSentence(userId, lang, nowMs = Date.now()) 
     .order('created_at', { ascending: false }).limit(1);
   if (error) return null;
   return data?.[0]?.sentence || null;
-}
-
-async function fetchSuggestions() {
-  const response = await fetch('/api/suggestions/today');
-  if (!response.ok) throw new Error('추천을 불러오지 못했어요.');
-  const rows = await response.json();
-  return Array.isArray(rows) ? rows : [];
 }
 
 const GLYPH = { Japanese: 'あ', Chinese: '汉', English: 'A', French: 'É' };
@@ -172,7 +165,7 @@ export default function HomePage({ book = null }) {
   if (!pending && !choice.current) choice.current = { key: choiceKey, kind: chooseResume(bookForLang, local.updatedAt, material), material };
   const kind = choice.current?.kind || null;
   const needSuggestion = !pending && !kind && !(lang === 'Japanese' && !book);
-  const recommendations = useQuery({ queryKey: ['today-suggestions'], queryFn: fetchSuggestions, staleTime: 300000, enabled: needSuggestion });
+  const recommendations = useQuery({ queryKey: TODAY_SUGGESTIONS_KEY, queryFn: fetchTodaySuggestions, staleTime: 300000, enabled: needSuggestion });
   const suggestion = useMemo(() => rankSuggestions((recommendations.data || []).filter(canReadSuggestion), {
     langs: [lang], fitOf: () => null,
     levelOf: s => getIdealLevel(s.language, data?.vocabByLang?.[s.language] || 0),
