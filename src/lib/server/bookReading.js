@@ -1,13 +1,13 @@
 import { cache } from 'react';
 import { createSupabaseServerClient, requireAdmin } from '@/lib/supabaseServer';
-import { candidate, currentCandidate, readEdition, readRelease, verifiedReadingHtml, textbookError } from '@/lib/textbook/server';
+import { candidate, currentCandidate, readEditionStamp, readRelease, verifiedReadingHtml, textbookError } from '@/lib/textbook/server';
 import { extractReadingSections, readingSectionLabel } from '@/lib/bookReadingHtml';
 
 export async function publishedReading(editionId, allowPreview = false) {
   const db = await createSupabaseServerClient();
   const release = await readRelease(db);
   const id = editionId || release?.edition_id;
-  const published = id ? await readEdition(db, id) : null;
+  const published = id ? await readEditionStamp(db, id) : null;
   if (!published) {
     if (!allowPreview) throw textbookError(404, '공개된 교재를 준비하고 있어요.');
     const auth = await requireAdmin();

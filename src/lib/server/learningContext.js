@@ -106,8 +106,8 @@ export async function resolveSave(supabase, userId, payload) {
     resolved = { kind: 'pdf', pdfId: pdf.id, quote, translation: '', locator: { page, userSelected: true } };
   } else if (source.kind === 'textbook' && source.bookId) {
     if(lang !== 'Japanese') fail(400,'교재 언어를 확인해 주세요.');
-    const {candidate,readEdition} = await import('@/lib/textbook/server');
-    const edition=await readEdition(supabase,source.editionId);
+    const {candidate,readEditionStamp} = await import('@/lib/textbook/server');
+    const edition=await readEditionStamp(supabase,source.editionId);
     if(!edition) fail(404,'발행된 교재에서 표현을 선택해 주세요.');
     const bundle=await candidate(source.editionId);
     if(edition.content_hash!==bundle.contentHash) fail(503,'교재 판본을 확인하지 못했어요.');
