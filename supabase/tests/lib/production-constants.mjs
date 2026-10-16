@@ -9,18 +9,28 @@ export const PROD = Object.freeze({
   admission: 'af33cb37ca276d0b23af51f0f46c012b', profile: 'e892069f4a99f5ba9565c54d72226740',
 });
 
+/**
+ * 운영이 나중 상태로 옮긴 뒤의 같은 양(量) — 그 상태를 전제로 쓴 마이그레이션(예: PERF-SNAPSHOT P2 · P3 초안)용.
+ * core: 191500(KO-CAP-REPIN-001) 적용 뒤 운영 core 게시값. capability는 그 뒤 게시 = 실제 = PROD.live(da2c…)라 따로 없다.
+ */
+export const PROD_LATER = Object.freeze({
+  core: Object.freeze(['b2771b0426e2cb6aefe776edc9d0f108']),
+});
+const productionValues = key => [PROD[key], ...(PROD_LATER[key] || [])];
+const allProductionValues = () => Object.keys(PROD).flatMap(productionValues);
+
 /** 운영 상수를 지역값으로 바꾼다 — 바꾼 뒤 운영 상수가 남아 있으면 던진다(일부만 바꾸면 검사가 엉뚱한 이유로 실패한다). */
 export function localize(sql, local) {
   let out = sql;
   for (const key of Object.keys(PROD)) {
     if (typeof local[key] !== 'string' || !/^[0-9a-f]{32}$/.test(local[key])) throw new Error(`localize: 지역값 ${key} 없음`);
-    out = out.replaceAll(PROD[key], local[key]);
+    for (const value of productionValues(key)) out = out.replaceAll(value, local[key]);
   }
-  for (const value of Object.values(PROD)) if (out.includes(value)) throw new Error(`localize: 운영 상수 ${value}가 남았다`);
+  for (const value of allProductionValues()) if (out.includes(value)) throw new Error(`localize: 운영 상수 ${value}가 남았다`);
   return out;
 }
 
-export const containsProductionConstants = sql => Object.values(PROD).some(value => sql.includes(value));
+export const containsProductionConstants = sql => allProductionValues().some(value => sql.includes(value));
 
 /**
  * 지금 DB(관측 fixture 위)의 여섯 값 — 게시 capability 상수, 실제 capability 지문(capability 함수 본문의 그 SELECT를 search_path=''에서),
