@@ -83,8 +83,17 @@ describe('③ 서재 — 대기 문구 세 줄이 골격으로', () => {
     region(render(createElement(RecentReadsSkeleton)), '읽던 곳');
     const rows = render(createElement(ShelfRowsSkeleton));
     region(rows, '자료 목록');
-    expect(rows.match(/<li class="shelf-row">/g)).toHaveLength(4);
+    expect(rows.match(/<li class="shelf-row-skeleton">/g)).toHaveLength(4);
     expect(rows).toContain('shelf-cover shelf-cover--skeleton skeleton');
+  });
+  it('골격은 실제 자료 줄 · 읽던 곳 카드 클래스를 쓰지 않는다 — 줄을 세는 곳(e2e · 선택 · 키보드)이 골격을 자료로 세지 않게', () => {
+    const all = render(createElement(LibraryShelfSkeleton));
+    expect(all).not.toMatch(/class="shelf-row"|class="shelf-row /);
+    expect(all).not.toMatch(/class="shelf-recent-card[" ]/);
+    // 치수는 같은 규칙에서 받는다(자리 높이 = 실측 CLS 0.032 근거).
+    const css = read('src/components/library/library.css');
+    expect(css).toContain('.shelf-row,.shelf-row-skeleton{');
+    expect(css).toContain(':is(.shelf-recent-card,.shelf-recent-skeleton){display:flex');
   });
   it('화면이 그 골격을 실제로 쓰고, 옛 대기 문구는 남지 않는다', () => {
     const page = read('src/components/web/LibraryPage.jsx');
