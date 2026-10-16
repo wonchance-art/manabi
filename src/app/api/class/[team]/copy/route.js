@@ -2,6 +2,7 @@ import {createHash} from 'node:crypto';
 import {authorizeTeamRequest} from '../route';
 import {requireUser} from '@/lib/server/auth';
 import {classCopyUpdatePlan,stableJson} from '@/lib/classCopyModel';
+import {isProtectedBookMetadata} from '@/lib/server/classIndex';
 
 export const runtime='nodejs';
 const headers={'Cache-Control':'private, no-store'};
@@ -16,6 +17,9 @@ export async function POST(request,{params}){
     if(!body||typeof body!=='object'||Array.isArray(body))return reply({error:'요청을 확인해 주세요.'},400);
     if(!/^[1-9][0-9]{0,15}$/.test(String(body.sourceId||''))||!['open','inspect','update'].includes(body.action))return reply({error:'자료를 다시 선택해 주세요.'},400);
     if(body.preferred!=null&&!/^[1-9][0-9]{0,15}$/.test(String(body.preferred)))return reply({error:'사본을 다시 선택해 주세요.'},400);
+    // 정본 책은 수업 사본으로도 내주지 않는다(BOOK-GUEST-GATE-1 — 팀 목차 · 장 열기와 같은 판정).
+    const {data:source,error:sourceError}=await access.admin.from('reading_materials').select('metadata:processed_json->metadata').eq('id',String(body.sourceId)).maybeSingle();if(sourceError)throw sourceError;
+    if(source&&isProtectedBookMetadata(source.metadata))return reply({error:'정본 책은 수업 자료로 열 수 없어요.'},403);
     const args={p_owner:auth.user.id,p_root:access.root.id,p_generation:access.team.pwGen,p_source:String(body.sourceId),p_create:body.action==='open',p_preferred:body.preferred||null};
     const {data:state,error}=await access.admin.rpc('classroom_copy_state',args);if(error)throw error;
     if(!state)return reply({error:'자료를 확인하지 못했어요.'},503);
