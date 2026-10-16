@@ -886,6 +886,10 @@
     `SERIES_TITLE_ILIKE` 하나로 같은 조건을 쓰고 0편이면 칸을 숨김 · 공개 목록 빈 상태를 로그인 권유 대신 「아직 함께 읽는 글이 없어요」로 ·
     `.manabi-page a` 글자색 상속이 `.btn--primary` 흰 글자를 덮던 대비 2.50:1 수정(`a:not(.btn)`).
   · 같은 PR(PERF): 공개 읽기 경로 판본 검증 재사용 `cachedCandidate` · 장 목록 `readingSections` 인스턴스 기억(관리자 경로는 매번 검증).
+  · 같은 PR(AUTH-RETURN-001, /ux-review 3번): 화면의 맨 `/auth` 18곳(17파일)을 정본 `authEntryHref`로 — 로그인 뒤 누른 화면으로 복귀
+    (뷰어 게스트 배너 → 단어 저장 이음새 포함). 계약 `authReturnLinks.test.js`(맨 /auth href 금지). 실계정 복귀는 Preview 확인 대상.
+  · 같은 PR(UX-AUDIT-AUTH-001): `scripts/ux-audit-auth.mjs` — e2e 합성 로그인으로 복습 진행 · 끝, 서재 목록, 뷰어를 캡처 · 판정.
+    실행 결과 PASS 40 · FAIL 0 — 복습 카드 넘김(실측 235ms) · 앞면 클릭 펼치기 실브라우저 확인(예전 일정 엔진). FSRS 활성 화면 · /study · 대화는 미검증.
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
   제안안 중 웹 몫만(스와이프 · 진동 · 아이폰 안전 여백은 모바일이라 보류). 두 복습 카드(예전 · 새 일정) 공통 `review-card--turn`(0.24초,
