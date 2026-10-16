@@ -131,6 +131,6 @@ describe('책 묶음 배선 계약', () => {
     // 「다음 과 적기」는 표지 판정(work · english)에 기대지 않는다 — 공개 목록에서 표지를 닫으면 정본 책 소유자에게 다시 떠서
     // 같은 key로 비공개 장이 끼어 정본 게시가 409로 막혔다(2026-10-17 리뷰). key만으로 막는다(fail closed).
     expect(src).not.toMatch(/footer=\{!work && !english/);
-    expect(src).toContain('footer={!literatureWork(b.key) && !standardEbooksWork(b.key) && b.chapters[0]?.owner_id === user?.id');
+    expect(src).toContain(') : !literatureWork(b.key) && !standardEbooksWork(b.key) && b.chapters[0]?.owner_id === user.id ? (');
   });
 });

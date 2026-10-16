@@ -37,7 +37,8 @@ import { standardEbooksWork, standardEbooksWorkOfBook } from '../lib/standardEbo
 import { literatureChapterLabel, literatureDivisionLabel } from '../lib/literatureDisplay';
 import SuggestionArtwork from '../components/SuggestionArtwork';
 import { failureMessage } from '@/lib/errorMessage';
-import { authEntryHref } from '../lib/authRedirect';
+import { authEntryHref } from '@/lib/authRedirect';
+import { withGuestBookCatalog } from '@/lib/guestBookCatalog';
 
 
 async function fetchTodaySuggestions() {
@@ -121,9 +122,11 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
     }
     throw error;
   }
+  // 비로그인은 책 장을 읽지 못한다(BOOK-GUEST-GATE-1 — DB 제한 정책). 책 카드는 메타만 주는 함수로 채운다.
+  const rows = tab === 'public' && !userId ? await withGuestBookCatalog(supabase, data || [], { langFilter, levelFilter, searchQuery }) : data || [];
   // 팀 루트(수업 설정 행, v2-AB R1)는 자료가 아니다 — 목록에서 숨긴다(정리본은 자료로 보인다).
   // 대화(v2-Z)도 고르는 읽을거리가 아니다 — 서재의 「대화」 묶음에만 모인다.
-  return (tab==='private'?await filterActiveSources(supabase,userId,data||[]):data||[]).map(documentListRow).filter(material => !isStudySnapshot(material) && !isTeamRoot(material) && !conversationOf(material) && (langFilter === 'all' || (documentOf(material)?.language ?? material.processed_json?.metadata?.language) === langFilter));
+  return (tab==='private'?await filterActiveSources(supabase,userId,rows):rows).map(documentListRow).filter(material => !isStudySnapshot(material) && !isTeamRoot(material) && !conversationOf(material) && (langFilter === 'all' || (documentOf(material)?.language ?? material.processed_json?.metadata?.language) === langFilter));
 }
 
 const PAGE_SIZE = 12;
@@ -746,7 +749,10 @@ export default function MaterialsPage({ libraryView = null }) {
                   }))}
                   // 이어 적기(#1077 5520128974) — 내 책에만 「다음 과 적기」(PDF 카드 「이어 읽기」와 같은 자리).
                   // 정본 key는 표지와 따로 key만으로 막는다 — 공개 목록에서 표지를 닫아도(work=null) 정본 책에 가짜 장이 끼지 않게(2026-10-17 리뷰).
-                  footer={!literatureWork(b.key) && !standardEbooksWork(b.key) && b.chapters[0]?.owner_id === user?.id ? (
+                  // 비로그인(BOOK-GUEST-GATE-1) — 목록만 보이고 여는 것은 로그인 뒤. 로그인하면 첫 장으로 돌아온다.
+                  footer={!user ? (
+                    <Link href={authEntryHref(`/viewer/${b.chapters[0]?.id}`)} className="btn btn--primary btn--sm">로그인하고 읽기</Link>
+                  ) : !literatureWork(b.key) && !standardEbooksWork(b.key) && b.chapters[0]?.owner_id === user.id ? (
                     <Link href={`/materials/add?book=${encodeURIComponent(b.key)}`} className="btn btn--secondary btn--sm">+ 다음 과 적기</Link>
                   ) : null}
                 />

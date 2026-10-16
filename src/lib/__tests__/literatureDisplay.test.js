@@ -288,7 +288,7 @@ describe('화면 배선', () => {
     expect(block).toContain('lead: work ? literatureLead(c._bookOrder) : c._bookOrder');
     expect(block).toContain('<span className="group-card__sr">{`${work.total}부분 중 ${order}`}</span>'); // 「1/2」를 날짜로 읽지 않게
     expect(block).toContain("fitLine: fitLineOf(bf, '장')");
-    expect(block).toContain('footer={!literatureWork(b.key) && !standardEbooksWork(b.key) && b.chapters[0]?.owner_id === user?.id'); // 영어 정본도 이어 적기 없음(LIT-SRC-EN-1)
+    expect(block).toContain(') : !literatureWork(b.key) && !standardEbooksWork(b.key) && b.chapters[0]?.owner_id === user.id'); // 영어 정본도 이어 적기 없음(LIT-SRC-EN-1)
   });
 
   it('뷰어 — 대조된 정본 장만 제목·형제 이름을 표에서, 「과」 대신 장/부분, 이어 적기·제목 편집 없음', () => {
