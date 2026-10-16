@@ -230,3 +230,12 @@ describe('⑤ 단어장 1000행 상한 — 브라우저 조회가 조용히 잘�
     expect(ranges).toEqual([[0, 999], [1000, 1999]]);
   });
 });
+
+describe('API로 만드는 서재 항목도 30초 캐시를 무효화한다(리뷰 2026-10-17 KST)', () => {
+  it('새 노트 · 초안 복제(POST /api/notes) 직후 invalidateLibrary', () => {
+    const note = fs.readFileSync('src/components/notes/StudyNotePage.jsx', 'utf8');
+    const posts = note.match(/requestNote\('\/api\/notes',\{method:'POST'[^;]*\}\);[^;]*;/g) || [];
+    expect(posts).toHaveLength(2);
+    for (const call of posts) expect(call).toContain('void invalidateLibrary(queryClient,user?.id)');
+  });
+});

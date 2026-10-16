@@ -1545,6 +1545,8 @@ function VocabWorkspace({ reviewScope }) {
                         key={v.id}
                         type="button"
                         className="review-sec__row"
+                        onPointerDown={loadVocabDetailCard}
+                        onFocus={loadVocabDetailCard}
                         onClick={() => setDetailWord(v)}
                         aria-label={`${v.word_text} — ${v.meaning} 상세 열기`}
                       >

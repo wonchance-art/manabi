@@ -20,6 +20,11 @@ describe('/vocab 페이지 청크 나누기', () => {
     expect(warm).toContain('loadVocabList()');
     expect(warm).toContain('loadVocabDetailCard()');
   });
+  it('단어 행을 누르거나 포커스하면 상세 카드를 미리 받는다 — 유휴 미리 받기 전 첫 클릭이 무반응이 되지 않게', () => {
+    const row = sliceBetween(page, 'className="review-sec__row"', 'aria-label=');
+    expect(row).toContain('onPointerDown={loadVocabDetailCard}');
+    expect(row).toContain('onFocus={loadVocabDetailCard}');
+  });
   it('뜻 정리는 작은 모듈에서 — studySession을 싣지 않는다(다시 내보내기로 같은 함수)', () => {
     expect(page).toContain("import { stripSourceLangInMeaning } from '../lib/meaningClean';");
     expect(page).not.toContain("from '../lib/studySession'");

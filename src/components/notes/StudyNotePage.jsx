@@ -3,9 +3,10 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import {useRouter, useSearchParams} from 'next/navigation';
-import {useQuery} from '@tanstack/react-query';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {fetchVocab} from '@/lib/vocabIO';
 import {useAuth} from '@/lib/AuthContext';
+import {invalidateLibrary} from '@/lib/libraryOperations';
 import {BOARD_LANGUAGES} from '@/lib/teachingBoard';
 import {newStudyNote, noteScope, collectNoteExpressions, mergeNoteCandidates} from '@/lib/studyNotes';
 import useStudyNote, {requestNote} from '@/lib/useStudyNote';
@@ -23,6 +24,8 @@ const noop=()=>{};
 
 export default function StudyNotePage({id}) {
   const {user,loading}=useAuth();
+  // 새 노트 · 초안 복제는 API로 만든다 — 서재 목록 30초 캐시가 새 노트를 놓치지 않게 만든 직후 무효화(리뷰 2026-10-17 KST).
+  const queryClient=useQueryClient();
   if(loading)return <p className="manabi-page" role="status">내 노트를 확인하고 있어요…</p>;
   if(!user)return <section className="manabi-page note-gate"><h1>나만의 학습 노트<span>.</span></h1><p>듣고 적은 표현을 모아 내 단어장으로 이어가세요.</p><Link className="manabi-button" href={`/auth?from=${encodeURIComponent(`/notes/${id}`)}`}>로그인하고 노트 열기 ↗</Link></section>;
   return id==='new'?<CreateNote key={user.id}/>:<NoteEditor key={`${user.id}:${id}`} owner={user.id} id={id}/>;
@@ -35,7 +38,7 @@ function CreateNote() {
     event.preventDefault();if(busy)return;setBusy(true);setError('');
     try{
       if(!attempt.current){const document=newStudyNote(crypto.randomUUID(),crypto.randomUUID(),language);if(/^\d+$/.test(params.get('material')||''))document.origin={materialId:params.get('material'),title:''};attempt.current={title:title.trim()||'새 학습 노트',document};}
-      const result=await requestNote('/api/notes',{method:'POST',body:JSON.stringify(attempt.current)});router.replace(`/notes/${result.id}`);
+      const result=await requestNote('/api/notes',{method:'POST',body:JSON.stringify(attempt.current)});void invalidateLibrary(queryClient,user?.id);router.replace(`/notes/${result.id}`);
     }catch(cause){if([400,403,404,413].includes(cause.status))attempt.current=null;setError(friendlyToastMessage(cause));setBusy(false);}
   }
   return <main className="manabi-page note-create" style={textbookThemeStyle(language)}><Link className="manabi-link" href="/materials">← 내 서재</Link><small>PERSONAL NOTEBOOK</small><h1>듣고, 적고.<br/>내 것으로<span>.</span></h1><p>자유롭게 필기하고, 배운 표현은 한 번에 정리하세요.</p><form onSubmit={create}><label>노트 제목<input autoFocus maxLength={200} placeholder="오늘 배운 일본어" value={title} disabled={busy||!!attempt.current} onChange={event=>setTitle(event.target.value)}/></label><label>공부하는 언어<select value={language} disabled={busy||!!attempt.current} onChange={event=>setLanguage(event.target.value)}>{BOARD_LANGUAGES.map(lang=><option key={lang} value={lang}>{langNameKo(lang)}</option>)}</select></label>{params.get('material')&&<p>열어 둔 교재를 이 노트의 출처로 연결해요.</p>}<button className="manabi-button" disabled={busy}>{busy?'노트 만드는 중…':error?'같은 노트 다시 저장':'노트 펼치기 ↗'}</button>{error&&<p role="alert">{error}</p>}</form><small>내 계정에만 보관돼요. 수업 팀에 자동 공유되지 않아요.</small></main>;
@@ -76,7 +79,7 @@ function NoteEditor({owner,id}) {
   },[ready,store.value,params,focus]);
   const team=useMemo(()=>({key:`personal-${id}`,name:store.value?.title||'내 학습 노트',lang:store.value?.document.language||'Japanese'}),[id,store.value?.title,store.value?.document.language]);
   function backup(){const current=store.current();if(!current)return;actions.current?.flush();const blob=new Blob([JSON.stringify({format:'manabi-personal-note',...store.current()})],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`manabi-note-${id}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-  async function fork(){if(forking)return;setForking(true);try{actions.current?.flush();const current=store.current();const document={...current.document,key:crypto.randomUUID()};const result=await requestNote('/api/notes',{method:'POST',body:JSON.stringify({title:`${current.title} · 내 초안`,document})});router.push(`/notes/${result.id}`);}catch(error){setMessage(friendlyToastMessage(error));}finally{setForking(false);}}
+  async function fork(){if(forking)return;setForking(true);try{actions.current?.flush();const current=store.current();const document={...current.document,key:crypto.randomUUID()};const result=await requestNote('/api/notes',{method:'POST',body:JSON.stringify({title:`${current.title} · 내 초안`,document})});void invalidateLibrary(queryClient,user?.id);router.push(`/notes/${result.id}`);}catch(error){setMessage(friendlyToastMessage(error));}finally{setForking(false);}}
   const leave=async()=>{actions.current?.flush();try{await store.sync();router.push('/materials?view=notes');}catch(error){setMessage(`${friendlyToastMessage(error)} 노트 정보에서 백업하거나 다시 저장해 주세요.`);}};
   if(!store.ready)return <section className="manabi-page note-gate"><p role={store.error?'alert':'status'}>{store.error||'개인 노트를 불러오고 있어요…'}</p><Link href="/materials">내 서재</Link><button onClick={()=>window.location.reload()}>다시 시도</button></section>;
   const value=store.value,saveLabel=store.error?'저장 확인 필요':store.saving?'저장 중…':'계정에 저장됨';

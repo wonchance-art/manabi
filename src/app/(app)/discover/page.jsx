@@ -21,8 +21,9 @@ export default async function Page({searchParams}) {
       .then(({ count, error }) => (error ? 0 : count || 0)),
     // 비로그인(anon)은 책 장 행을 못 센다(anon_book_chapters_hidden, #1504) — 목록이 책 카드를 채우는 것과 같은
     // public_book_catalog로 책 장을 따로 더한다. 안 더하면 정본 책 공개 뒤 「함께 읽는 글」 칸이 사라진다(리뷰 2026-10-17 KST).
-    client.rpc('public_book_catalog').then(({ data, error }) => (error || !Array.isArray(data) ? 0
-      : data.filter(row => !/^\[.*#/u.test(String(row.title || ''))).length)),
+    // 개수만 받는다(head) — 행을 받으면 장마다 책 · 문학 메타가 붙어 정본 공개 뒤 요청마다 MB 단위가 되고 1000행에서 잘린다(리뷰 2026-10-17 KST).
+    client.rpc('public_book_catalog', {}, { count: 'exact', head: true }).not('title', 'ilike', SERIES_TITLE_ILIKE)
+      .then(({ count, error }) => (error ? 0 : count || 0)),
   ]);
   const publicCount = looseCount + bookChapterCount;
   return <div className="manabi-page manabi-discover"><header className="manabi-page-heading"><h1>발견</h1></header>

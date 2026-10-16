@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { readEdition, readEditionStamp } from '../server';
+import { sliceBetween } from '../../__tests__/helpers/sliceBetween.js';
 
 // 발행 확인 경로는 원고 jsonb(약 700KB)를 받지 않는다(2026-10-16 실측 — 배움 · 산책 탭 전환 2초 초과의 원인).
 const EDITION = '7f572327dc67893e9453246c';
@@ -85,5 +86,14 @@ describe('교재 목록(publishedBookCatalog) — 원고 없이 해시 대조 + 
     expect(await publishedBookCatalog(catalogDb({ stamp: null }))).toEqual([]);
     for (const code of ['42P01', 'PGRST205']) expect(await publishedBookCatalog(catalogDb({ release: null, releaseError: { code } }))).toEqual([]);
     await expect(publishedBookCatalog(catalogDb({ release: null, releaseError: { code: '57014' } }))).rejects.toMatchObject({ status: 503 });
+  });
+});
+
+describe('교재 과 연결 목록(GET)의 판본 대조 실패', () => {
+  it('목록은 과 목록만 비우고(404 · 503), 연결을 만드는 POST는 그대로 엄격하다', () => {
+    const route = read('src/app/api/learning/material-links/route.js');
+    const get = sliceBetween(route, 'export async function GET', 'export async function POST');
+    expect(get).toContain('publishedBookCatalog(auth.supabase).catch(error => { if ([404, 503].includes(error?.status)) return []; throw error; })');
+    expect(sliceBetween(route, 'export async function POST', 'export async function DELETE')).toContain('const chapters=await publishedBookCatalog(auth.supabase);');
   });
 });
