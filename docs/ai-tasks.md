@@ -917,6 +917,9 @@
   · 같은 PR(리뷰 3차): 서가 공개 글 수에 책 장 포함(public_book_catalog) · 함께 읽는 글 인증 확인 뒤 조회 · 정본 책 직접 주소 이어 적기 차단.
   · 같은 PR(PERF-LIT-DISPLAY-001): 정본 대조표를 화면용(manifest.display · incipits)으로 파생 — 배움 · 서재가 전체 표(해시 · 크레딧) 대신 표시용만.
     데이터 gzip 배움 59.7 → 7.1KB · 서재 64.5 → 25.8KB. 해시 대조는 전체 표 그대로. 계약 `literatureDisplayManifest.test.js`(import 그래프 검사).
+  · 같은 PR(PERF-QUERY-002): 서재 쓰기 지점 무효화 보강(자료 추가 · PDF 업로드 · 공개 토글 · 받아두기) → personal-library · library-pinned 30초.
+    1000행 상한에 잘리던 브라우저 조회 5곳(맞춤도 · PDF 담김 · 노트 담김 · 주간 담은 말 · 데이터 내보내기)을 정본 완전 조회로. review_events 3곳 · 공개 목록 페이지네이션은 남김.
+  · 같은 PR(PERF-BUNDLE-005): /vocab 둘러보기 목록 · 상세 카드 지연 로드(유휴 미리 받기) · 뜻 정리 작은 모듈. 계약 `vocabPageSplit.test.js`.
   · 보류: CJK 가변 weight(@font-face −67%, brotli 전송 −2%) — 600 · 650 · 800 · 300 굵기가 실제 값으로 바뀌는 시각 변경이라 오너 확인 뒤.
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
