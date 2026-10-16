@@ -8,14 +8,10 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { runInNewContext } from 'node:vm';
 import { PGlite } from '@electric-sql/pglite';
+import { PROD, localize } from './lib/production-constants.mjs'; // post-observation-migrations.mjs와 같은 치환
 
 const read = path => readFile(new URL(path, import.meta.url), 'utf8');
 const MIGRATION = './../migrations/20261016191500_korean_capability_repin.sql';
-const PROD = {
-  pin: '1c25422cdd5f6be088ac624e8858cb3d', live: 'da2c7548aa782ebb81d55e69d913cd52',
-  core: '9dcbdd2614642e67911d4fcf2055b42d', manual: 'edef271bed593ff8cec045bb5661fde3',
-  admission: 'af33cb37ca276d0b23af51f0f46c012b', profile: 'e892069f4a99f5ba9565c54d72226740',
-};
 const A = '00000000-0000-4000-8000-0000000000a1'; // synthetic local learners
 const B = '00000000-0000-4000-8000-0000000000b2';
 
@@ -105,9 +101,7 @@ try {
     assert.equal(await koreanReady(), false);
   });
 
-  let local = migration;
-  for (const k of Object.keys(PROD)) local = local.replaceAll(PROD[k], LOCAL[k]);
-  for (const v of Object.values(PROD)) assert.ok(!local.includes(v));
+  const local = localize(migration, LOCAL);
 
   await check('refuses (and changes nothing) when the drift is more than the #1504 policy', async () => {
     await expectFail(`CREATE POLICY extra_drift ON public.reading_materials FOR SELECT TO anon USING (false);\n${local}`, /live value is not the reviewed #1504 state/);

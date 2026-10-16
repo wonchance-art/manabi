@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { sliceBetween } from './helpers/sliceBetween';
 
 /**
  * 학습 계약 지문 재게시 계약(FINGERPRINT-REPIN-001, docs/architecture-and-handoff.md §4.9-1).
@@ -284,9 +285,13 @@ describe('동적 짝(FINGERPRINT-REPIN-002) — 관측 fixture 위 실제 적용
   it('CI가 관측 뒤 마이그레이션 적용 검사를 돌리고, 정적 허용 목록의 위반은 동적 기대 깨짐에도 적혀 있다', () => {
     expect(read('.github/workflows/ci.yml')).toContain('node supabase/tests/post-observation-migrations.mjs');
     const dynamic = read('supabase/tests/post-observation-migrations.mjs');
-    for (const [file, { ticket }] of Object.entries(KNOWN_VIOLATIONS)) {
+    for (const [file, { ticket, fixedBy }] of Object.entries(KNOWN_VIOLATIONS)) {
       expect(dynamic, file).toContain(`'${file}': {`);
       expect(dynamic, file).toContain(ticket.split(' — ')[0]);
+      // 정적 fixedBy = 동적 healedBy — 고친 파일이 실제로 상태를 되돌린다는 것을 동적 검사가 확인한다.
+      const entry = sliceBetween(dynamic, `'${file}': {`, '\n  },');
+      if (fixedBy) expect(entry, file).toContain(`healedBy: '${fixedBy}'`);
+      else expect(entry, file).not.toContain('healedBy:');
     }
   });
 });

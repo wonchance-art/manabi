@@ -13,6 +13,7 @@ import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { runInNewContext } from 'node:vm';
 import { PGlite } from '@electric-sql/pglite';
+import { containsProductionConstants, localConstants, localize } from './lib/production-constants.mjs';
 
 const read = path => readFile(new URL(path, import.meta.url), 'utf8');
 const OBSERVED_AFTER = '20261010999999';
@@ -33,11 +34,12 @@ const EXPECTED_BREAKS = {
     healedBy: '20261016075000_conversation_lobby_fk_auth_users.sql',
   },
   '20261016150000_anon_book_catalog.sql': {
-    ticket: 'KO-CAP-REPIN-001 — reading_materials 정책 anon_book_chapters_hidden 뒤 capability 상수 · FSRS core 재게시 대기',
+    ticket: 'KO-CAP-REPIN-001 — reading_materials 정책 anon_book_chapters_hidden 뒤 capability 상수 · FSRS core 재게시',
     state: {
       pins: { core: true, manual: true, admission: true, activity: true },
       languages: { Korean: { save: false, review: false, known: false, exclude: false } },
     },
+    healedBy: '20261016191500_korean_capability_repin.sql',
   },
 };
 
@@ -86,7 +88,10 @@ try {
   let broken = null; // { file, state }
   const seen = new Set(), resolved = [];
   for (const file of files) {
-    const sql = await readFile(candidates.includes(file) ? file : new URL(file, MIGRATIONS), 'utf8');
+    const raw = await readFile(candidates.includes(file) ? file : new URL(file, MIGRATIONS), 'utf8');
+    // 운영 상태를 상수로 박은 수리 마이그레이션(예: 191500 재게시)은 그 여섯 상수만 같은 순간의 fixture 값으로 바꿔 실행한다.
+    const sql = containsProductionConstants(raw) ? localize(raw, await localConstants(db)) : raw;
+    if (sql !== raw) console.log(`LOCALIZE ${file} — 운영 상수 여섯을 fixture 지역값으로`);
     try {
       await db.exec('BEGIN');
       await db.exec(sql);
