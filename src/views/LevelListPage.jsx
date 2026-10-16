@@ -27,7 +27,7 @@ import { loadJaWordsTable, loadZhengTable } from '@/lib/glyphTables';
 import HunCell from '@/components/viewer/HunCell';
 import { alignFurigana } from '@/views/refShared';
 import {
-  LEVEL_LIST_LANGS, LEVEL_KIND_LABEL, levelKinds, levelLabel, levelPill, levelListHref, jaHeadMode, matchesLevelQuery, splitKnown, fetchSavedLevelKeys, levelGroupsOf,
+  LEVEL_LIST_LANGS, LEVEL_KIND_LABEL, levelKinds, levelLabel, levelPill, levelListHref, jaHeadMode, matchesLevelQuery, splitKnown, fetchSavedLevelKeys, fetchSavedLevelKeysAll, levelGroupsOf,
   LEVEL_PEEK_CLOSE_MS, LEVEL_PEEK_MS, LEVEL_PREFS_DEFAULT, LEVEL_VIEWS, normalizeLevelPrefs, levelProgress, pinyinSyllables, writeLevelSnapshot,
 } from '@/lib/levelList';
 import { pinyinToneNumber } from '@/lib/pinyinTone';
@@ -304,7 +304,8 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
     setSaved(new Set());
     if (!vocab || !userId) return undefined;
     let alive = true;
-    fetchSavedLevelKeys(supabase, userId, conf.language, allEntries.map((e) => e.key))
+    // 목록 전체는 그 언어 단어장을 한 번에(1000행 page) 받아 대조한다 — 키 묶음마다 묻지 않는다.
+    fetchSavedLevelKeysAll(supabase, userId, conf.language, allEntries.map((e) => e.key))
       .then((set) => { if (alive) setSaved((prev) => new Set([...prev, ...set])); })
       .catch(() => {});
     return () => { alive = false; };

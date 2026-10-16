@@ -2,6 +2,7 @@
 // 인계 #1337 6119208984(8판) · 보완 6146777048(중국어 급수 = HSK 2026).
 // 데이터 조립(무거운 콘텐츠 import)은 levelListData.js(서버 전용), 여기는 표기 · 대조 규칙만 둔다.
 import { normalizeKnownWord } from './knownWordControl';
+import { readCompleteLegacyRows } from './legacyReviewSync';
 
 /** 주소의 언어 조각 → 화면 설정. 일본어 · 중국어만 연다(영어 AJ-2 · 프랑스어 FLELex 결정 전). */
 export const LEVEL_LIST_LANGS = {
@@ -113,9 +114,26 @@ export async function fetchSavedLevelKeys(client, userId, language, keys, chunkS
     .eq('user_id', userId).eq('language', language).in(column, chunk))));
   const failed = results.find((r) => r.error);
   if (failed?.error) throw failed.error;
-  const wanted = new Set(unique);
+  return savedKeysOf(results.flatMap((r) => r.data || []), new Set(unique));
+}
+
+/**
+ * 레벨 목록 전체의 「저장됨」 — 그 언어 단어장을 id 순 1000행 page로 한 번에 읽어 대조한다(정본 완전 조회
+ * readCompleteLegacyRows — exact count · 연속 range · 실패는 던짐). 키 150개씩 표기 · 기본형 두 번 묻던
+ * fetchSavedLevelKeys는 HSK 6에서 요청 24개였다. 한자 탭 칩처럼 몇 단어만 볼 때는 fetchSavedLevelKeys를 쓴다.
+ */
+export async function fetchSavedLevelKeysAll(client, userId, language, keys) {
+  if (!client || !userId) return new Set();
+  const wanted = new Set((keys || []).filter(Boolean));
+  if (!wanted.size) return new Set();
+  const rows = await readCompleteLegacyRows(() => client.from('user_vocabulary')
+    .select('id, word_text, base_form', { count: 'exact' }).eq('user_id', userId).eq('language', language));
+  return savedKeysOf(rows, wanted);
+}
+
+function savedKeysOf(rows, wanted) {
   const saved = new Set();
-  for (const row of results.flatMap((r) => r.data || [])) {
+  for (const row of rows) {
     for (const v of [row.word_text, row.base_form]) {
       const k = normalizeKnownWord(v);
       if (wanted.has(k)) saved.add(k);
