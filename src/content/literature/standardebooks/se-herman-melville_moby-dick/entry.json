@@ -12,7 +12,9 @@
   "level": "C1 고급",
   "display": {
     "titleKo": "모비 딕",
-    "authorKo": "허먼 멜빌"
+    "authorKo": "허먼 멜빌",
+    "binding": "harper-blind",
+    "coverTitle": "Moby-Dick"
   },
   "files": [
     {

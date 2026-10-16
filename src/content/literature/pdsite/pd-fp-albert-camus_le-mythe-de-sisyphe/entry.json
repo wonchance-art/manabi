@@ -24,7 +24,12 @@
   },
   "display": {
     "titleKo": "시지프 신화",
-    "authorKo": "알베르 카뮈"
+    "authorKo": "알베르 카뮈",
+    "binding": "gallimard-essais",
+    "coverTitle": "Le Mythe\nde Sisyphe",
+    "coverAuthor": "Albert Camus",
+    "coverEdition": "Les Essais XII",
+    "coverImprint": "Gallimard"
   },
   "parse": {
     "part": "^h1:(Un raisonnement absurde|L’homme absurde|La création absurde|Le mythe de Sisyphe|L’espoir et l’absurde dans l’œuvre de Franz Kafka)$",

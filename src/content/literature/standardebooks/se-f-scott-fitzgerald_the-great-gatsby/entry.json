@@ -12,7 +12,10 @@
   "level": "B2 상급",
   "display": {
     "titleKo": "위대한 개츠비",
-    "authorKo": "F. 스콧 피츠제럴드"
+    "authorKo": "F. 스콧 피츠제럴드",
+    "binding": "scribner-blind",
+    "coverTitle": "The Great\nGatsby",
+    "coverAuthor": "By F. Scott Fitzgerald"
   },
   "files": [
     {

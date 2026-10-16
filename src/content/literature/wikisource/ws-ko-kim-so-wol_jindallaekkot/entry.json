@@ -23,7 +23,10 @@
   },
   "display": {
     "titleKo": "진달래꽃",
-    "authorKo": "김소월"
+    "authorKo": "김소월",
+    "binding": "jindallae",
+    "coverTitle": "진달래꽃",
+    "coverSubtitle": "詩集"
   },
   "collection": true,
   "fetchedAt": "2026-10-16",

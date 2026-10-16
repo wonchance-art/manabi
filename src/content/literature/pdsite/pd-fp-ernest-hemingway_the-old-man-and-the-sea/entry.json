@@ -23,7 +23,9 @@
   },
   "display": {
     "titleKo": "노인과 바다",
-    "authorKo": "어니스트 헤밍웨이"
+    "authorKo": "어니스트 헤밍웨이",
+    "binding": "scribner-plain",
+    "coverTitle": "The Old Man\nand the Sea"
   },
   "parse": {
     "start": "^p:He was an old man who fished alone",

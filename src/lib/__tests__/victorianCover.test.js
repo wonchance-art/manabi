@@ -26,7 +26,7 @@ const cielab = (value) => {
   const x = f((r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047); const y = f(r * 0.2126 + g * 0.7152 + b * 0.0722); const z = f((r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883);
   return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
 };
-const works = Object.values(manifest.works);
+const works = Object.values(manifest.works).filter((work) => Object.hasOwn(VICTORIAN_BINDINGS, work.display.binding)); // 빅토리아 천 장정 3편(2차 묶음은 초판 장정)
 
 describe('표지 표기 — 빌드가 entry.json display를 검사한다', () => {
   const alice = { titleKo: '이상한 나라의 앨리스', authorKo: '루이스 캐럴', coverTitle: 'Alice in\nWonderland', cloth: 'madder-red', binding: 'medallion' };

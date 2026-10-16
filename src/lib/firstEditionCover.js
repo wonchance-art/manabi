@@ -9,9 +9,9 @@
 /** 표지 글자 칸 — 칸마다 최대 글자 수, lines: 줄 수(없으면 한 줄). 장정마다 이 중 무엇을 쓰는지(required·optional)를 정한다. */
 const FIELDS = Object.freeze({
   coverTitle: { max: 16, lines: 4 },
-  coverAuthor: { max: 22 },
+  coverAuthor: { max: 26 },
   coverSubtitle: { max: 32 },
-  coverEdition: { max: 16 },
+  coverEdition: { max: 28 },
   coverPart: { max: 20 },
   coverPartTitle: { max: 30, lines: 2 },
   coverTome: { max: 18 },
@@ -19,21 +19,69 @@ const FIELDS = Object.freeze({
   coverPlace: { max: 10 },
 });
 
-/** 장정 구성 — 앞표지에 어떤 글자가 어디 있는가(실물대로). script: 표지 글자 언어. year: 앞표지에 판 연도(로마 숫자)가 있는가. */
+/**
+ * 장정 구성 — 앞표지에 어떤 글자가 어디 있는가(실물대로). script: 표지 글자 언어. year: 앞표지에 판 연도(로마 숫자)가 있는가.
+ * material: 앞표지 재질(paper 종이 표지·재킷 · cloth 천 장정 · board 종이 보드 · burlap 갈포) — 시리즈 공통 결·낡음의 세기를 정한다(FirstEditionCover).
+ */
+export const FIRST_EDITION_MATERIALS = Object.freeze(['paper', 'cloth', 'board', 'burlap']);
+
 export const FIRST_EDITION_BINDINGS = Object.freeze({
   // 新潮社 1923 『呐喊』 초판(루쉰 직접 설계): 통째 붉은 바탕 · 가운데 위 검은 판 · 붉은 가는 테 · 바탕색으로 뚫린 글자 가로 오른쪽→왼쪽 · 물결줄 · 작가 · 짧은 줄.
   // 두 작품(孔乙己·故乡) 모두 『呐喊』 수록이라 같은 장정에 판 안 제목만 작품 이름.
-  nahan: Object.freeze({ script: 'zh-Hans', required: ['coverTitle', 'coverAuthor'], optional: [], titleLines: 1, titleMax: 3, authorMax: 3, year: false, note: 'Xinchao she 1923 Nahan — red ground, black panel, right-to-left cut-out lettering' }),
+  nahan: Object.freeze({ material: 'paper', script: 'zh-Hans', required: ['coverTitle', 'coverAuthor'], optional: [], titleLines: 1, titleMax: 3, authorMax: 3, year: false, note: 'Xinchao she 1923 Nahan — red ground, black panel, right-to-left cut-out lettering' }),
   // 开明书店 1928 『背影』 — 표지 실물 사진 미확인. 같은 시대 신문학 단행본 관례(생지 종이 · 세로 제목 · 가는 이중 테 · 아래 출판사).
-  kaiming: Object.freeze({ script: 'zh-Hans', required: ['coverTitle', 'coverAuthor', 'coverImprint'], optional: [], titleLines: 1, titleMax: 3, authorMax: 4, year: false, note: 'Kaiming 1928 era convention — vertical title, double rule' }),
+  kaiming: Object.freeze({ material: 'paper', script: 'zh-Hans', required: ['coverTitle', 'coverAuthor', 'coverImprint'], optional: [], titleLines: 1, titleMax: 3, authorMax: 4, year: false, note: 'Kaiming 1928 era convention — vertical title, double rule' }),
   // Lemerre 1873 『Contes du lundi』 인쇄 표지: 담황색 종이 · 검은 활자 가운데 정렬 · 테 없음 · (출판사 도안 → 덩굴) · 아래 PARIS·출판사·연도.
-  lemerre: Object.freeze({ script: 'fr', required: ['coverTitle', 'coverAuthor', 'coverPlace', 'coverImprint'], optional: ['coverSubtitle'], titleLines: 2, titleMax: 12, year: true, note: 'Lemerre 1873 buff printed wrapper' }),
+  lemerre: Object.freeze({ material: 'paper', script: 'fr', required: ['coverTitle', 'coverAuthor', 'coverPlace', 'coverImprint'], optional: ['coverSubtitle'], titleLines: 2, titleMax: 12, year: true, note: 'Lemerre 1873 buff printed wrapper' }),
   // Marpon & Flammarion 1885 『Contes du jour et de la nuit』 그림 표지: 크림 종이 · 위 작가 · 크게 뾰족한 손글씨 제목(계단식) · 왼쪽 꽃덩굴 · 아래 두루마리.
-  marpon: Object.freeze({ script: 'fr', required: ['coverTitle', 'coverAuthor', 'coverPlace', 'coverImprint'], optional: ['coverEdition'], titleLines: 2, titleMax: 10, year: false, note: 'Marpon & Flammarion 1885 illustrated wrapper' }),
+  marpon: Object.freeze({ material: 'paper', script: 'fr', required: ['coverTitle', 'coverAuthor', 'coverPlace', 'coverImprint'], optional: ['coverEdition'], titleLines: 2, titleMax: 10, year: false, note: 'Marpon & Flammarion 1885 illustrated wrapper' }),
   // Hetzel 붉은 천 「aux initiales JV-JH」: 먹 뇌문 띠 → 금박 넝쿨 띠 → 뇌문 · 가운데 큰 원에 금박 제목 · 위아래 작은 원(모노그램 → 별).
-  hetzel: Object.freeze({ script: 'fr', required: ['coverTitle', 'coverAuthor', 'coverEdition'], optional: [], titleLines: 4, titleMax: 14, year: false, note: 'Hetzel percaline “aux initiales JV-JH” — Greek-key and vine bands, central gilt roundel' }),
+  hetzel: Object.freeze({ material: 'cloth', script: 'fr', required: ['coverTitle', 'coverAuthor', 'coverEdition'], optional: [], titleLines: 4, titleMax: 14, year: false, note: 'Hetzel percaline “aux initiales JV-JH” — Greek-key and vine bands, central gilt roundel' }),
   // Pagnerre 1862 『Les Misérables』 — 같은 판 표제지 구성을 푸른 회색 표지 종이(경매 기록 「couverture bleu-gris」)에: 검정·빨강 활자 · 굵고 가는 줄 · 이중 테.
-  pagnerre: Object.freeze({ script: 'fr', required: ['coverTitle', 'coverAuthor', 'coverPart', 'coverPartTitle', 'coverTome', 'coverPlace', 'coverImprint'], optional: [], titleLines: 2, titleMax: 12, year: true, note: 'Pagnerre 1862 title-page layout on blue-grey wrapper' }),
+  pagnerre: Object.freeze({ material: 'paper', script: 'fr', required: ['coverTitle', 'coverAuthor', 'coverPart', 'coverPartTitle', 'coverTome', 'coverPlace', 'coverImprint'], optional: [], titleLines: 2, titleMax: 12, year: true, note: 'Pagnerre 1862 title-page layout on blue-grey wrapper' }),
+  // ── 2차 묶음(오너 「원본 책 재구성하는 방식으로 표지 만들기까지 완성」 2026-10-17 KST) — 근거는 docs/literature-pipeline.md §8.7 ──
+  // 한국어
+  // 『開闢』 1924.6(48호) 첫 발표 — 『조선의 얼골』(1926) 표지 사진 미확인. 개벽 후기 표지 기록(검정 바탕 · 빨강·흰 음각 제호)을 따르는 관례안.
+  gaebyeok: Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle', 'coverAuthor', 'coverImprint', 'coverEdition'], optional: [], titleLines: 1, titleMax: 8, year: false, note: 'Gaebyeok 1924 — black ground, red/white incised masthead (record, no photo)' }),
+  // 『이효석단편선』 박문문고 1941(A6, 레클람 문고 본뜸) — 표지 사진 미확인. 문고 관례(가는 이중 테 · 세로 제목 · 아래 출판사).
+  bakmun: Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle', 'coverAuthor', 'coverImprint'], optional: ['coverEdition'], titleLines: 1, titleMax: 10, year: false, note: 'Bakmun bunko 1941 — series convention (no photo)' }),
+  // 『동백꽃』 1938 속표지 — 회베이지 종이 · 붓글씨 세로 제목 · 왼쪽 위 「短篇集」 · 오른쪽 아래 「金裕貞 著」(장정 하드커버는 무지).
+  dongbaek: Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle', 'coverAuthor', 'coverSubtitle'], optional: [], titleLines: 1, titleMax: 4, year: false, note: 'Dongbaekkot 1938 title page — brush vertical title' }),
+  // 『이상선집』 백양당 1949 — 바랜 크림 종이 · 붓글씨 세로 제목(적갈) · 오른쪽에 날아가는 초록 새와 가는 물결선. 판 안 제목만 작품 이름.
+  isang: Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle'], optional: [], titleLines: 1, titleMax: 4, year: false, note: 'Yi Sang seonjip 1949 — brush title, green bird' }),
+  // 『감자』 한성도서 1935 — 주황 종이 · 위·좌·우 먹 덩굴 테 · 큰 붓글씨 세로 제목 · 오른쪽 「金東仁 作」 · 왼쪽 「短篇小說集」 · 아래 먹 꽃.
+  gamja: Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle', 'coverAuthor', 'coverSubtitle'], optional: [], titleLines: 1, titleMax: 3, year: false, note: 'Gamja 1935 — orange paper, ink vine border and flowers' }),
+  // 『진달내꽃』 매문사 1925(등록문화재 470-4) — 황갈 종이 · 위 짙은 붓띠 안에 밝게 빠진 제목(가로 오른쪽→왼쪽) · 「詩集」 · 진달래 가지와 바위 선화 · 아래 짙은 띠.
+  jindallae: Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle', 'coverSubtitle'], optional: [], titleLines: 1, titleMax: 5, year: false, note: 'Jindallaekkot 1925 (470-4) — brush band, azalea and rock drawing' }),
+  // 『하늘과 바람과 별과 시』 정음사 1948 — 갈포(거친 베) 위 흰 종이 제첨 · 둥근 모서리 테 안 3줄(유고집 · 제목 · 출판사).
+  // 이정(1924–1995)의 청색 목판화 표지는 한국에서 보호 중이라 쓰지 않는다.
+  jeongeum: Object.freeze({ material: 'burlap', script: 'ko', required: ['coverTitle', 'coverSubtitle', 'coverImprint'], optional: [], titleLines: 1, titleMax: 12, year: false, note: 'Jeongeumsa 1948 — burlap with white paper label' }),
+  // 영어
+  // Secker & Warburg 1945 재킷 — 왼쪽 아래→오른쪽 위 대각선(위 회베이지 · 아래 초록) · 크림 손글씨풍 기울임 대문자 · 「by」 필기체 · 굵은 작가.
+  'secker-diagonal': Object.freeze({ material: 'paper', script: 'en', required: ['coverTitle', 'coverSubtitle', 'coverAuthor'], optional: [], titleLines: 2, titleMax: 8, year: false, note: 'Secker & Warburg 1945 Animal Farm jacket' }),
+  // Secker & Warburg 1949 적색 재킷 — 가운데 크고 옅은 세리프 숫자 · 흰 붓 필기체 작가·제목·「a novel」(띠지는 그리지 않는다).
+  'secker-numerals': Object.freeze({ material: 'paper', script: 'en', required: ['coverTitle', 'coverAuthor', 'coverSubtitle', 'coverEdition'], optional: [], titleLines: 2, titleMax: 12, year: false, note: 'Secker & Warburg 1949 Nineteen Eighty-Four red jacket' }),
+  // Scribner 1925 진녹색 천 — 위 민압 세리프 대문자 제목 두 줄 · 아래 민압 작가(재킷은 얼굴 그림이라 천 장정).
+  'scribner-blind': Object.freeze({ material: 'cloth', script: 'en', required: ['coverTitle', 'coverAuthor'], optional: [], titleLines: 2, titleMax: 10, year: false, note: 'Scribner 1925 The Great Gatsby green cloth, blind-stamped' }),
+  // Scribner 1952 하늘색 천 — 앞면 무지(오른쪽 아래 서명 민압은 실존 인물 서명이라 흘림선으로만).
+  'scribner-plain': Object.freeze({ material: 'cloth', script: 'en', required: ['coverTitle'], optional: [], titleLines: 2, titleMax: 16, year: false, note: 'Scribner 1952 The Old Man and the Sea blue cloth' }),
+  // Hogarth 1929 재킷(Vanessa Bell, 1961 사망 — 한국 만료) — 버프 바탕 · 남흑 한 색 · 손글씨 소문자 제목 · 아치 벽감 안 벽난로 선반과 시계 · 술 장식 띠.
+  'hogarth-bell': Object.freeze({ material: 'paper', script: 'en', required: ['coverTitle', 'coverAuthor'], optional: [], titleLines: 2, titleMax: 12, year: false, note: 'Hogarth Press 1929 A Room of One’s Own jacket (Vanessa Bell)' }),
+  // B. W. Huebsch 1916 청색 천 — 위 민압 혼합 대소문자 세리프 세 줄 · 물결표 · 작가.
+  huebsch: Object.freeze({ material: 'cloth', script: 'en', required: ['coverTitle', 'coverAuthor'], optional: [], titleLines: 3, titleMax: 14, year: false, note: 'B. W. Huebsch 1916 A Portrait of the Artist blue cloth' }),
+  // Harper 1851 자줏빛 갈색 천 — 민압 굵은 괘선 테두리, 앞면 글자 없음(가운데 출판사 문장은 그리지 않는다).
+  'harper-blind': Object.freeze({ material: 'cloth', script: 'en', required: ['coverTitle'], optional: [], titleLines: 2, titleMax: 12, year: false, note: 'Harper & Brothers 1851 Moby-Dick cloth, blind rules' }),
+  // Ticknor and Fields 1854 갈색 세로결 천 — 민압 삼중 괘선 · 네 모서리 꽃장식 · 가운데 큰 아라베스크 마름모, 앞면 글자 없음.
+  'ticknor-arabesque': Object.freeze({ material: 'cloth', script: 'en', required: ['coverTitle'], optional: [], titleLines: 1, titleMax: 12, year: false, note: 'Ticknor and Fields 1854 Walden brown cloth, blind arabesque' }),
+  // T. Egerton 1813 원판 보드(drab) — 앞면 무지.
+  'egerton-boards': Object.freeze({ material: 'board', script: 'en', required: ['coverTitle'], optional: [], titleLines: 2, titleMax: 12, year: false, note: 'T. Egerton 1813 Pride and Prejudice drab boards' }),
+  // 프랑스어
+  // Gallimard 1942 collection blanche — 크림 종이 · 검정 단선 + 빨강 이중선 테 · 작가 · 빨강 제목 · 「ROMAN」 · 아래 출판사(nrf 모노그램은 그리지 않는다).
+  'gallimard-blanche': Object.freeze({ material: 'paper', script: 'fr', required: ['coverTitle', 'coverAuthor', 'coverSubtitle', 'coverImprint'], optional: [], titleLines: 1, titleMax: 12, year: false, note: 'Gallimard 1942 L’Étranger, collection blanche' }),
+  // Gallimard 1942 「Les Essais」 XII — 테 없는 레이드지 · 빨강 제목 두 줄 · 「PAR ALBERT CAMUS」 · 빨강 총서 이름(포도잎 목판 문장 · nrf는 그리지 않는다).
+  'gallimard-essais': Object.freeze({ material: 'paper', script: 'fr', required: ['coverTitle', 'coverAuthor', 'coverEdition', 'coverImprint'], optional: [], titleLines: 2, titleMax: 12, year: false, note: 'Gallimard 1942 Le Mythe de Sisyphe, Les Essais XII' }),
+  // Reynal & Hitchcock 1943 재킷 배치 — 크림 · 위 청회 대문자 작가 · 검정 제목 · 노란 별들 · 왼쪽 아래 작은 글씨(왕자 그림 · 소행성은 그리지 않는다 — 캐릭터 그림).
+  reynal: Object.freeze({ material: 'paper', script: 'fr', required: ['coverTitle', 'coverAuthor', 'coverEdition'], optional: [], titleLines: 1, titleMax: 16, year: false, note: 'Reynal & Hitchcock 1943 Le Petit Prince jacket layout, without the figure' }),
 });
 
 const ROMAN = [[1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];

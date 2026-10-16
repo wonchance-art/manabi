@@ -23,7 +23,12 @@
   },
   "display": {
     "titleKo": "운수 좋은 날",
-    "authorKo": "현진건"
+    "authorKo": "현진건",
+    "binding": "gaebyeok",
+    "coverTitle": "운수 좋은 날",
+    "coverAuthor": "玄鎭健",
+    "coverImprint": "開闢",
+    "coverEdition": "第四十八號"
   },
   "fetchedAt": "2026-10-16",
   "files": [

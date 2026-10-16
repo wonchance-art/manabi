@@ -1,4 +1,1110 @@
 {
   "schemaVersion": 1,
-  "works": {}
+  "works": {
+    "pd-fp-albert-camus_l-etranger": {
+      "title": "L’Étranger",
+      "author": "Albert Camus",
+      "level": "B1 중급",
+      "total": 15,
+      "language": "French",
+      "size": 32050,
+      "unit": "words",
+      "display": {
+        "titleKo": "이방인",
+        "authorKo": "알베르 카뮈",
+        "binding": "gallimard-blanche",
+        "coverTitle": "L’Étranger",
+        "coverAuthor": "Albert Camus",
+        "coverSubtitle": "Roman",
+        "coverImprint": "Gallimard"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "pdsite",
+        "workKey": "pd-fp-albert-camus_l-etranger",
+        "site": "fp",
+        "title": "L’Étranger",
+        "author": "Albert Camus",
+        "publishedYear": 1942,
+        "authorDeathYear": 1960,
+        "countryOfOrigin": "FR",
+        "mortPourLaFrance": false,
+        "translator": null,
+        "url": "https://www.fadedpage.com/showbook.php?pid=20150715",
+        "fetchedAt": "2026-10-17",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "FR",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "rightsBasis": "korea-term",
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "site-front-matter-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "PREMIÈRE PARTIE · I (1/2)",
+          "sha256": "6ad81c31c8eb88e85eeecf106d6b024c994240502ee97ed29255f878fdd912b4"
+        },
+        {
+          "order": 2,
+          "title": "PREMIÈRE PARTIE · I (2/2)",
+          "sha256": "fbddf3d4c2dd6a14ba74ca0c0e245818499b0b1b5cfdedbf6065f45429ffb4a6"
+        },
+        {
+          "order": 3,
+          "title": "PREMIÈRE PARTIE · II",
+          "sha256": "5055c4dcce9c22fa50c0318290934bdc65d5d4909af2391f59bd1cb9aa9956be"
+        },
+        {
+          "order": 4,
+          "title": "PREMIÈRE PARTIE · III",
+          "sha256": "a4e4f4ac7218bf0158bde7ae505dfa0fb7a53c9c687ca7b549276612cb06cea1"
+        },
+        {
+          "order": 5,
+          "title": "PREMIÈRE PARTIE · IV",
+          "sha256": "3e4fbf50f86624a80d3de74a330e2795b47e8effe62454425da3448690710660"
+        },
+        {
+          "order": 6,
+          "title": "PREMIÈRE PARTIE · V",
+          "sha256": "57a624dfda02b32ac02c249d66525cac1018a569175e0af1aaa2ce0eab339567"
+        },
+        {
+          "order": 7,
+          "title": "PREMIÈRE PARTIE · VI (1/2)",
+          "sha256": "4ee585d153d4db43715e99afce6b2b4f573d41283fd7bac8ab331293d3d5054c"
+        },
+        {
+          "order": 8,
+          "title": "PREMIÈRE PARTIE · VI (2/2)",
+          "sha256": "b5446c99e38d8c4e673f5ae3d75a0e45e5228d2bea23c4839ee3818a1461e6ab"
+        },
+        {
+          "order": 9,
+          "title": "DEUXIÈME PARTIE · I",
+          "sha256": "ceb493aaabb8e96319b804be5576f2d5ead15ceba8cf9015ee350d4e1dc5d14b"
+        },
+        {
+          "order": 10,
+          "title": "DEUXIÈME PARTIE · II",
+          "sha256": "8886ed2c4a454522518be7402804b3ca0c2a54b25cad5682b6aa470688961ed5"
+        },
+        {
+          "order": 11,
+          "title": "DEUXIÈME PARTIE · III (1/2)",
+          "sha256": "c7bf12c0a1b54bed8953feaaff4bd69278e0290bc886d8ec34407f91a5f782b4"
+        },
+        {
+          "order": 12,
+          "title": "DEUXIÈME PARTIE · III (2/2)",
+          "sha256": "da2c0940c31cb800f66db2ec41659c91eabe658f967fdb1a8f0c33a513421d56"
+        },
+        {
+          "order": 13,
+          "title": "DEUXIÈME PARTIE · IV",
+          "sha256": "d3cd5a770ad7f6fd29c99c362330a53c752121045ddfff94b1e23ab3e8675300"
+        },
+        {
+          "order": 14,
+          "title": "DEUXIÈME PARTIE · V (1/2)",
+          "sha256": "8fb11fbe2d38dfee8efbec0d82589289ecf1f9390ebcb2248d0bf6158c13f7d9"
+        },
+        {
+          "order": 15,
+          "title": "DEUXIÈME PARTIE · V (2/2)",
+          "sha256": "4c16a76c12007d830fb45dfe2f004165084febc8b4a9f7420368048531242206"
+        }
+      ]
+    },
+    "pd-fp-albert-camus_le-mythe-de-sisyphe": {
+      "title": "Le Mythe de Sisyphe",
+      "author": "Albert Camus",
+      "level": "C1 고급",
+      "total": 18,
+      "language": "French",
+      "size": 35477,
+      "unit": "words",
+      "display": {
+        "titleKo": "시지프 신화",
+        "authorKo": "알베르 카뮈",
+        "binding": "gallimard-essais",
+        "coverTitle": "Le Mythe\nde Sisyphe",
+        "coverAuthor": "Albert Camus",
+        "coverEdition": "Les Essais XII",
+        "coverImprint": "Gallimard"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "pdsite",
+        "workKey": "pd-fp-albert-camus_le-mythe-de-sisyphe",
+        "site": "fp",
+        "title": "Le Mythe de Sisyphe",
+        "author": "Albert Camus",
+        "publishedYear": 1942,
+        "authorDeathYear": 1960,
+        "countryOfOrigin": "FR",
+        "mortPourLaFrance": false,
+        "translator": null,
+        "url": "https://www.fadedpage.com/showbook.php?pid=20160912",
+        "fetchedAt": "2026-10-17",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "FR",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "rightsBasis": "korea-term",
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "site-front-matter-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Un raisonnement absurde · L’ABSURDE ET LE SUICIDE",
+          "sha256": "c0b13ff5208b9555ad01f338166aca5137dfd6670d4ec1f4070b127e2cec7394"
+        },
+        {
+          "order": 2,
+          "title": "Un raisonnement absurde · LES MURS ABSURDES (1/2)",
+          "sha256": "6a8f629de5ff50d9a8d9d92aa7bed6f28ce1c5e5e7dc0149b251b52a0ae300d8"
+        },
+        {
+          "order": 3,
+          "title": "Un raisonnement absurde · LES MURS ABSURDES (2/2)",
+          "sha256": "a60165c3668023d6610cc83dc2a30bd2f43a85fddc9c7db3a91b5619833536cf"
+        },
+        {
+          "order": 4,
+          "title": "Un raisonnement absurde · LE SUICIDE PHILOSOPHIQUE (1/3)",
+          "sha256": "3a76f08c28776af8ce806075f28c353877abb04afce5fd571ecb3ee8e7592646"
+        },
+        {
+          "order": 5,
+          "title": "Un raisonnement absurde · LE SUICIDE PHILOSOPHIQUE (2/3)",
+          "sha256": "5eb92b31a1dc621bb615910ff3656bb1e4e737d721544c283934b2fc66e19894"
+        },
+        {
+          "order": 6,
+          "title": "Un raisonnement absurde · LE SUICIDE PHILOSOPHIQUE (3/3)",
+          "sha256": "eae5cfdef09ec086a7925ede0f08515284676238e5a266826e6d0165ee07b92a"
+        },
+        {
+          "order": 7,
+          "title": "Un raisonnement absurde · LA LIBERTÉ ABSURDE (1/2)",
+          "sha256": "38f93fe3efcf3f409ea374014cf0882158f495f4600764dcd5c62dfdee43ed89"
+        },
+        {
+          "order": 8,
+          "title": "Un raisonnement absurde · LA LIBERTÉ ABSURDE (2/2)",
+          "sha256": "ae4cf47101e69bd197336259eacd72bbf22b21e66aa30a563342c7e0a07a1f65"
+        },
+        {
+          "order": 9,
+          "title": "L’homme absurde",
+          "sha256": "66120489ac57e0dfad19b0c444991c3af0f56baa97dca56863ee97690bac1015"
+        },
+        {
+          "order": 10,
+          "title": "L’homme absurde · LE DON JUANISME",
+          "sha256": "ac77fb643c264542625ee22c84e908d95c658f8c7aa02418e9d4789061eead46"
+        },
+        {
+          "order": 11,
+          "title": "L’homme absurde · LA COMÉDIE",
+          "sha256": "d9e14a06aa1285518671d3bbdfff416398b0e5cc005607ddd535e73476f83560"
+        },
+        {
+          "order": 12,
+          "title": "L’homme absurde · LA CONQUÊTE",
+          "sha256": "808e3079019cd8c512113e80106e2c1e8879f8ccdfc7f29a04ca2b051ff7a380"
+        },
+        {
+          "order": 13,
+          "title": "La création absurde · PHILOSOPHIE ET ROMAN",
+          "sha256": "fc5fe9d4e653cb9869a9e64a4af5e6f6cc1e98c7c007ec97089ddec8ca7042ac"
+        },
+        {
+          "order": 14,
+          "title": "La création absurde · KIRILOV",
+          "sha256": "8994d4d8167befc2efff0649826dd35f847582cf304d66174466f5bd001c49dd"
+        },
+        {
+          "order": 15,
+          "title": "La création absurde · LA CRÉATION SANS LENDEMAIN",
+          "sha256": "f1928224155bafecb788a8ffd5f73cd161864c11602e14a64efa82b4fe6e7a67"
+        },
+        {
+          "order": 16,
+          "title": "Le mythe de Sisyphe",
+          "sha256": "b571e0daa756c0e30f2fbfabb2febe56b925070b72ce36508fd5f81e719fa7aa"
+        },
+        {
+          "order": 17,
+          "title": "L’espoir et l’absurde dans l’œuvre de Franz Kafka (1/2)",
+          "sha256": "d36bae559e0cba3b1c9e819299b2b3be098f9409ed2b4d662379d35f1f3f0388"
+        },
+        {
+          "order": 18,
+          "title": "L’espoir et l’absurde dans l’œuvre de Franz Kafka (2/2)",
+          "sha256": "60e2a37d2885c569e44fbfb57f308c3e6284082f74fc5dc1b83fc27eec2e882c"
+        }
+      ]
+    },
+    "pd-fp-ernest-hemingway_the-old-man-and-the-sea": {
+      "title": "The Old Man and the Sea",
+      "author": "Ernest Hemingway",
+      "level": "B1 중급",
+      "total": 12,
+      "language": "English",
+      "size": 26584,
+      "unit": "words",
+      "display": {
+        "titleKo": "노인과 바다",
+        "authorKo": "어니스트 헤밍웨이",
+        "binding": "scribner-plain",
+        "coverTitle": "The Old Man\nand the Sea"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "pdsite",
+        "workKey": "pd-fp-ernest-hemingway_the-old-man-and-the-sea",
+        "site": "fp",
+        "title": "The Old Man and the Sea",
+        "author": "Ernest Hemingway",
+        "publishedYear": 1952,
+        "authorDeathYear": 1961,
+        "countryOfOrigin": "US",
+        "translator": null,
+        "url": "https://www.fadedpage.com/showbook.php?pid=20141070",
+        "fetchedAt": "2026-10-17",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "US",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "rightsBasis": "korea-term",
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "site-front-matter-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "The Old Man and the Sea (1/12)",
+          "sha256": "5597f96c98f4ae8654f659167f594bc232528ed5cc46560d493ec50fb868f388"
+        },
+        {
+          "order": 2,
+          "title": "The Old Man and the Sea (2/12)",
+          "sha256": "b878a8823cb4bf158a52b0fff7221eff79bde643df2ec0c8946903439fdc0f73"
+        },
+        {
+          "order": 3,
+          "title": "The Old Man and the Sea (3/12)",
+          "sha256": "c610b8c00a593b019a25ff80abc319232cfa7f6fbcb3121968cc6e419893f345"
+        },
+        {
+          "order": 4,
+          "title": "The Old Man and the Sea (4/12)",
+          "sha256": "9e81d09f94e19a69df71bd7d05eab1514de0ccda27d4a887a60ccaecbead0ade"
+        },
+        {
+          "order": 5,
+          "title": "The Old Man and the Sea (5/12)",
+          "sha256": "d117a0f6a349077ed832a0199c4c7615af4312d62f3e554d953c30fe628a44d7"
+        },
+        {
+          "order": 6,
+          "title": "The Old Man and the Sea (6/12)",
+          "sha256": "8121ddaf61e31f59ab2187a881567391255fe3ff0d7a544135b902a141127060"
+        },
+        {
+          "order": 7,
+          "title": "The Old Man and the Sea (7/12)",
+          "sha256": "5defd3b560042c1d6e74e9739ef19bb927f06a713dd9aa89a1af6ba3eabd68d5"
+        },
+        {
+          "order": 8,
+          "title": "The Old Man and the Sea (8/12)",
+          "sha256": "4d2106be98aa9386fc83496dc7fa86c9659d8c15ab951e9421e72532468b714f"
+        },
+        {
+          "order": 9,
+          "title": "The Old Man and the Sea (9/12)",
+          "sha256": "7bc1685d35f35bbd7c20425c76d98f2b7601964cc648b56f801a9b0c45491e71"
+        },
+        {
+          "order": 10,
+          "title": "The Old Man and the Sea (10/12)",
+          "sha256": "fb088381dc33e78336c93aa01bc891c54eaa547202bcfd316d5a845b6c86715a"
+        },
+        {
+          "order": 11,
+          "title": "The Old Man and the Sea (11/12)",
+          "sha256": "9331b0ce38d17d621f9b2c325fa40776540b31175a9b67dfe41c07a94675667d"
+        },
+        {
+          "order": 12,
+          "title": "The Old Man and the Sea (12/12)",
+          "sha256": "b5b42278ab2af896a705d2596236abd8236dd348d22c308abb3c47a4c0b3908c"
+        }
+      ]
+    },
+    "pd-fp-virginia-woolf_a-room-of-ones-own": {
+      "title": "A Room of One’s Own",
+      "author": "Virginia Woolf",
+      "level": "C1 고급",
+      "total": 15,
+      "language": "English",
+      "size": 37197,
+      "unit": "words",
+      "display": {
+        "titleKo": "자기만의 방",
+        "authorKo": "버지니아 울프",
+        "binding": "hogarth-bell",
+        "coverTitle": "a room\nof one’s own",
+        "coverAuthor": "Virginia Woolf"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "pdsite",
+        "workKey": "pd-fp-virginia-woolf_a-room-of-ones-own",
+        "site": "fp",
+        "title": "A Room of One’s Own",
+        "author": "Virginia Woolf",
+        "publishedYear": 1929,
+        "authorDeathYear": 1941,
+        "countryOfOrigin": "GB",
+        "translator": null,
+        "url": "https://www.fadedpage.com/showbook.php?pid=201410N3",
+        "fetchedAt": "2026-10-17",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "GB",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "rightsBasis": "korea-term",
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "site-front-matter-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "CHAPTER I (1/3)",
+          "sha256": "7238f168bd6fd206af90ba99984142a212924b7e4cdf6b863858e81b330f0b8a"
+        },
+        {
+          "order": 2,
+          "title": "CHAPTER I (2/3)",
+          "sha256": "296243723f0db8f1b95dfa8898b6f5a084f584cd81fdf15f17f0677a00446fe9"
+        },
+        {
+          "order": 3,
+          "title": "CHAPTER I (3/3)",
+          "sha256": "031a6e93a45dd687ce37648f0e5ab73f74c6ee2cef213d968ecee452c82df55a"
+        },
+        {
+          "order": 4,
+          "title": "CHAPTER II (1/2)",
+          "sha256": "bedef2d31e89c5cf1d3730b8071b667476fc726b81ffbcf61dac38b1e8649cc8"
+        },
+        {
+          "order": 5,
+          "title": "CHAPTER II (2/2)",
+          "sha256": "424f2b82e2c83dca99da5e9806a18d96edf62107c14ed45a26eecd081cd76813"
+        },
+        {
+          "order": 6,
+          "title": "CHAPTER III (1/2)",
+          "sha256": "ac3842c3dbcb960d59f939f67ed4586bdc91299d294f3461cda2a66de410af3f"
+        },
+        {
+          "order": 7,
+          "title": "CHAPTER III (2/2)",
+          "sha256": "230353c0bc3450334dac3dd03cfee9dc07afe85cb0bb30768b43c4106953b2e6"
+        },
+        {
+          "order": 8,
+          "title": "CHAPTER IV (1/3)",
+          "sha256": "a54c06d45162df08bbf48a9e5ad25706d3cb4c4c9b586117bc44164066b7c96c"
+        },
+        {
+          "order": 9,
+          "title": "CHAPTER IV (2/3)",
+          "sha256": "e39d90581f74cde427d6d12590e89b3438722e5e8dab8559c8ef60a3b7c7e7e5"
+        },
+        {
+          "order": 10,
+          "title": "CHAPTER IV (3/3)",
+          "sha256": "3737a1af1b61c2f9c543622687971a71cf6602a678fe3d2f0b9918ce5ca130cd"
+        },
+        {
+          "order": 11,
+          "title": "CHAPTER V (1/2)",
+          "sha256": "73e82b00f180fed0707a5153d0db9a7c5f92b55dab81de565d8d596a53414435"
+        },
+        {
+          "order": 12,
+          "title": "CHAPTER V (2/2)",
+          "sha256": "4fa0c2c39f189ba0e04e524e465bd9b802416631d49581bc4c959db09d4e5ccd"
+        },
+        {
+          "order": 13,
+          "title": "CHAPTER VI (1/3)",
+          "sha256": "0f385b8a051ed4b1375a9b2215dde37b8ff319b89988c05315f855ae5fbddac3"
+        },
+        {
+          "order": 14,
+          "title": "CHAPTER VI (2/3)",
+          "sha256": "861496944b4980f53a3fdcee43268657b5ac5d4ee379e1fa1e8496b3dbfdf29f"
+        },
+        {
+          "order": 15,
+          "title": "CHAPTER VI (3/3)",
+          "sha256": "5bcdee392731986b6613aec95de65ba6d0630a588b5522e321f2cce8648458de"
+        }
+      ]
+    },
+    "pd-gau-antoine-de-saint-exupery_le-petit-prince": {
+      "title": "Le Petit Prince",
+      "author": "Antoine de Saint-Exupéry",
+      "level": "A2 초급",
+      "total": 28,
+      "language": "French",
+      "size": 14114,
+      "unit": "words",
+      "display": {
+        "titleKo": "어린 왕자",
+        "authorKo": "앙투안 드 생텍쥐페리",
+        "binding": "reynal",
+        "coverTitle": "Le Petit Prince",
+        "coverAuthor": "Antoine de Saint-Exupery",
+        "coverEdition": "Avec dessins par l’auteur"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "pdsite",
+        "workKey": "pd-gau-antoine-de-saint-exupery_le-petit-prince",
+        "site": "gau",
+        "title": "Le Petit Prince",
+        "author": "Antoine de Saint-Exupéry",
+        "publishedYear": 1943,
+        "authorDeathYear": 1944,
+        "countryOfOrigin": "FR",
+        "mortPourLaFrance": true,
+        "translator": null,
+        "url": "https://gutenberg.net.au/ebooks03/0300771h.html",
+        "fetchedAt": "2026-10-17",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "FR",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "rightsBasis": "korea-term",
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "site-front-matter-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "DEDICACE",
+          "sha256": "36375d0cb1a1aeae3c95fdd81c0bec47b136c47191bb1dccffd310ba6c61bbb6"
+        },
+        {
+          "order": 2,
+          "title": "PREMIER CHAPITRE",
+          "sha256": "4cb034825533e1594dc6b13c29ed96e335fd5d46f915a2cbe173dff597926b6e"
+        },
+        {
+          "order": 3,
+          "title": "CHAPITRE II",
+          "sha256": "b8873158a7ce138a9ff1ec631ccc204a812b475d39c6634258c4212df4b70f70"
+        },
+        {
+          "order": 4,
+          "title": "CHAPITRE III",
+          "sha256": "72f063e08ec62a36803f6f908d8ff01018e5827e08ef4e413efa66321552bed8"
+        },
+        {
+          "order": 5,
+          "title": "CHAPITRE IV",
+          "sha256": "02f75408d03fedece8ecf38e8cdc5621f4a71c74b2954c4794ff048e1e5a5029"
+        },
+        {
+          "order": 6,
+          "title": "CHAPITRE V",
+          "sha256": "6ef73aee7289d3aabb21b48dc80771e68d461d600e50807d0e6f8a52a9e7135f"
+        },
+        {
+          "order": 7,
+          "title": "CHAPITRE VI",
+          "sha256": "92126ab2f316f098ea490668b12329703aa74a7916c4ed8c3b216390ea47ef6e"
+        },
+        {
+          "order": 8,
+          "title": "CHAPITRE VII",
+          "sha256": "2764ecec29fcb3b482d43e02bd95918574b7b4f19a1b378eaaa0d16b5392fd85"
+        },
+        {
+          "order": 9,
+          "title": "CHAPITRE VIII",
+          "sha256": "07299a21aebe3948238352a4895688bf60ea2e7e3d92dd2de8f1de9c53f993f5"
+        },
+        {
+          "order": 10,
+          "title": "CHAPITRE IX",
+          "sha256": "52d2120998885002eac6454a1a0528bb37b75d96789a02a4f72b8826fbaaab60"
+        },
+        {
+          "order": 11,
+          "title": "CHAPITRE X",
+          "sha256": "61b8913d32e72860d99d1188a7f64f5ed820e9b435214fb3977bdea6b66b0259"
+        },
+        {
+          "order": 12,
+          "title": "CHAPITRE XI",
+          "sha256": "6d7959e2877580a5c69f4aad920ca23834c8210ec8fe3cad37ba2b19979b6ee3"
+        },
+        {
+          "order": 13,
+          "title": "CHAPITRE XII",
+          "sha256": "df0c2cf0ad74bbda9a794da753ef058e0e7ff4aebead7ce1423b0d6208084e4e"
+        },
+        {
+          "order": 14,
+          "title": "CHAPITRE XIII",
+          "sha256": "677307d4c8a443eb813a3eadfe0d918cb3f8dd23c8f79a72546e6c2ffe52d103"
+        },
+        {
+          "order": 15,
+          "title": "CHAPITRE XIV",
+          "sha256": "532c4ee8e7f3e5498e824027aa61d1ce6f60adb04b7f816f58a45c8da9cc2768"
+        },
+        {
+          "order": 16,
+          "title": "CHAPITRE XV",
+          "sha256": "b589f35757d4ee5ddbb237353f820f69935065ef2ed1dbdca7fa2828ea1b491e"
+        },
+        {
+          "order": 17,
+          "title": "CHAPITRE XVI",
+          "sha256": "c0b53b8ae5449ed51d38d9043fa1636370832b358a532454017bf0f37ba0b77b"
+        },
+        {
+          "order": 18,
+          "title": "CHAPITRE XVII",
+          "sha256": "3bfa9a1a9c1a667150313ddd2f54100662a5aeedfbefb0e4c253f786477829f5"
+        },
+        {
+          "order": 19,
+          "title": "CHAPITRE XVIII",
+          "sha256": "6147844b0c9f2e76f04fc229ecbfbc05eec5d1ce80df3eacd83168e60b3c8c9b"
+        },
+        {
+          "order": 20,
+          "title": "CHAPITRE XIX",
+          "sha256": "c0ebaf4f512420ab7058f26eb59cbcc6024de72588b1f0bd63b9ffd01af31479"
+        },
+        {
+          "order": 21,
+          "title": "CHAPITRE XX",
+          "sha256": "b8bf40cf6600fa4cd3495a32e71462d6aca17c724dd4b5d44e84db88a850edc0"
+        },
+        {
+          "order": 22,
+          "title": "CHAPITRE XXI",
+          "sha256": "3a352277804a5bb1a462a1daa57552c7800ec9b3f1e6d3ed64a87bd9846843ae"
+        },
+        {
+          "order": 23,
+          "title": "CHAPITRE XXII",
+          "sha256": "110012fd4af6dbd9bd09aff477050b794738de547bfb29e05efdbcb23a0e90c0"
+        },
+        {
+          "order": 24,
+          "title": "CHAPITRE XXIII",
+          "sha256": "16b81925d7624f68d08a5bde8946edf04e887afc43e0968af7cbb00ee15cd907"
+        },
+        {
+          "order": 25,
+          "title": "CHAPITRE XXIV",
+          "sha256": "5caa8b3357381b8c81faed13ea10fdb2edba698936af6d254993755322b3c483"
+        },
+        {
+          "order": 26,
+          "title": "CHAPITRE XXV",
+          "sha256": "27439b21eb49a4efc47ce9dfcc5bb04702975acfea540fea50062434f481b641"
+        },
+        {
+          "order": 27,
+          "title": "CHAPITRE XXVI",
+          "sha256": "48d25e3caccf70e384ca714f72cf211531137611a37298dfe7dc492f56d223f1"
+        },
+        {
+          "order": 28,
+          "title": "CHAPITRE XXVII",
+          "sha256": "ab53cd14112056ad7d133deacf278f8912daf66c1a09921929f60b0434760af3"
+        }
+      ]
+    },
+    "pd-gau-george-orwell_animal-farm": {
+      "title": "Animal Farm",
+      "author": "George Orwell",
+      "level": "B1 중급",
+      "total": 14,
+      "language": "English",
+      "size": 30003,
+      "unit": "words",
+      "display": {
+        "titleKo": "동물농장",
+        "authorKo": "조지 오웰",
+        "binding": "secker-diagonal",
+        "coverTitle": "Animal\nFarm",
+        "coverSubtitle": "A Fairy Story",
+        "coverAuthor": "George Orwell"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "pdsite",
+        "workKey": "pd-gau-george-orwell_animal-farm",
+        "site": "gau",
+        "title": "Animal Farm",
+        "author": "George Orwell",
+        "publishedYear": 1945,
+        "authorDeathYear": 1950,
+        "countryOfOrigin": "GB",
+        "translator": null,
+        "url": "https://gutenberg.net.au/ebooks01/0100011h.html",
+        "fetchedAt": "2026-10-17",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "GB",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "rightsBasis": "korea-term",
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "site-front-matter-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Chapter I",
+          "sha256": "7195ff1090602e02b2c59c2bc2fac87106f24d72dd4525ba818ae1509b1339c2"
+        },
+        {
+          "order": 2,
+          "title": "Chapter II",
+          "sha256": "02c8000d2ac07d5df5eaa21d3cf5c17b88e0ab64a9f8acc6e475c46784196f66"
+        },
+        {
+          "order": 3,
+          "title": "Chapter III",
+          "sha256": "c9ccde6a8062d322e6f9004ddb43d7e50dbcd30922e7c9888aa93b74231b6c06"
+        },
+        {
+          "order": 4,
+          "title": "Chapter IV",
+          "sha256": "7c66973fff697ba0ba798dc51f1076996a50b26982daee0711aa594d9b89b301"
+        },
+        {
+          "order": 5,
+          "title": "Chapter V",
+          "sha256": "e6bb7d859235b4c74b2917773a2a41e34ecad80ad24a53797c888b261dd8bc64"
+        },
+        {
+          "order": 6,
+          "title": "Chapter VI",
+          "sha256": "aa9f07c5e349d2a062042e8eda6581cbc3819f5097f4241b7070174c7997fc7f"
+        },
+        {
+          "order": 7,
+          "title": "Chapter VII (1/2)",
+          "sha256": "e9787199ce2b89028902d95c8a7217c51298a420d1d18a39a690c640c5175f1c"
+        },
+        {
+          "order": 8,
+          "title": "Chapter VII (2/2)",
+          "sha256": "95ea301ab112eb7242ebc55ae13d4e08887e4fd6552bdc34d3b6003983046b36"
+        },
+        {
+          "order": 9,
+          "title": "Chapter VIII (1/2)",
+          "sha256": "45c10522d3ec34b550155fe9f883641628212c8d491a72895b028e12f2767dc8"
+        },
+        {
+          "order": 10,
+          "title": "Chapter VIII (2/2)",
+          "sha256": "f641610412b825d92cf6280663d9430189d4f8a08b90ccf29aa9be36b5a6e01f"
+        },
+        {
+          "order": 11,
+          "title": "Chapter IX (1/2)",
+          "sha256": "bf8b99eb58c34eff7d2287f88adc69365a5bd08a00dd7dda432dbba45746b6d3"
+        },
+        {
+          "order": 12,
+          "title": "Chapter IX (2/2)",
+          "sha256": "44398be62e82a020e477e3f9ffbf50f1dee5d4cca9a715ca920a2dbbc24d14b9"
+        },
+        {
+          "order": 13,
+          "title": "Chapter X (1/2)",
+          "sha256": "2b5ca9d57d25e8105a2acfdff9cd1dd992da3f90b0ca4d215a4628fa3c9866f0"
+        },
+        {
+          "order": 14,
+          "title": "Chapter X (2/2)",
+          "sha256": "4727b9384662bd65dbef9d6bd4c1e94d3dde0337d43709c4c082bdb1afc09d1b"
+        }
+      ]
+    },
+    "pd-gau-george-orwell_nineteen-eighty-four": {
+      "title": "Nineteen Eighty-Four",
+      "author": "George Orwell",
+      "level": "B2 상급",
+      "total": 48,
+      "language": "English",
+      "size": 103310,
+      "unit": "words",
+      "display": {
+        "titleKo": "1984",
+        "authorKo": "조지 오웰",
+        "binding": "secker-numerals",
+        "coverTitle": "nineteen\neighty-four",
+        "coverAuthor": "George Orwell",
+        "coverSubtitle": "a novel",
+        "coverEdition": "1984"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "pdsite",
+        "workKey": "pd-gau-george-orwell_nineteen-eighty-four",
+        "site": "gau",
+        "title": "Nineteen Eighty-Four",
+        "author": "George Orwell",
+        "publishedYear": 1949,
+        "authorDeathYear": 1950,
+        "countryOfOrigin": "GB",
+        "translator": null,
+        "url": "https://gutenberg.net.au/ebooks01/0100021h.html",
+        "fetchedAt": "2026-10-17",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "GB",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "rightsBasis": "korea-term",
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "site-front-matter-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "PART ONE · Chapter 1 (1/3)",
+          "sha256": "61bd536151485118a8a02d1414a04ef101bbc2277812cc5b3a39b0d934361d4c"
+        },
+        {
+          "order": 2,
+          "title": "PART ONE · Chapter 1 (2/3)",
+          "sha256": "34576f65ddd7d7b9154b73c3fa21e19a5cb4a17d529af9ae0cf3fdafe7ff9ee4"
+        },
+        {
+          "order": 3,
+          "title": "PART ONE · Chapter 1 (3/3)",
+          "sha256": "e28ffc38a30c90a6d6e04cce538ab75f43e0ddec3753934390c82c11b08e9290"
+        },
+        {
+          "order": 4,
+          "title": "PART ONE · Chapter 2",
+          "sha256": "70967d9c0aad5913e8c1859019c490f200d7167ab2d7e88b389f5abd64d129fa"
+        },
+        {
+          "order": 5,
+          "title": "PART ONE · Chapter 3",
+          "sha256": "203fdd650e95d589fbf3eca1ee28a9faa61601dde9da95fb04efb56511feb490"
+        },
+        {
+          "order": 6,
+          "title": "PART ONE · Chapter 4 (1/2)",
+          "sha256": "399498c2855164864817761c43c443d824baae8491fe86bce43bc6a79c4d5296"
+        },
+        {
+          "order": 7,
+          "title": "PART ONE · Chapter 4 (2/2)",
+          "sha256": "c91b39d1c4f0e72ac15549a5d1820b3658b1823c62e2cc9e6ede0840b0308136"
+        },
+        {
+          "order": 8,
+          "title": "PART ONE · Chapter 5 (1/2)",
+          "sha256": "bbc7d59483b27a490bce3b3d3190444afe380a54cd0b6a4ec8ce9eed6c434863"
+        },
+        {
+          "order": 9,
+          "title": "PART ONE · Chapter 5 (2/2)",
+          "sha256": "1c0798798347842ca5df963d16034b9a9f756d405cf6cbe5155722a22979c766"
+        },
+        {
+          "order": 10,
+          "title": "PART ONE · Chapter 6",
+          "sha256": "f26ee5d0d064cffd003cea7ae5bcefb45e4d30025edb73da86241bcd999f963e"
+        },
+        {
+          "order": 11,
+          "title": "PART ONE · Chapter 7 (1/2)",
+          "sha256": "1f807d389384108f79d76d70c51f337f28fbb2c10329ab1455c5a3f44d527016"
+        },
+        {
+          "order": 12,
+          "title": "PART ONE · Chapter 7 (2/2)",
+          "sha256": "c3f0250fc119ff7fcaf946de882d71e4ca85c760fec508f2603a4c1c5880570b"
+        },
+        {
+          "order": 13,
+          "title": "PART ONE · Chapter 8 (1/4)",
+          "sha256": "3b390cb8a4855c244a5b4297959d706e3f86404f85a797b1b13963893df79388"
+        },
+        {
+          "order": 14,
+          "title": "PART ONE · Chapter 8 (2/4)",
+          "sha256": "cb6187164e4487413cb8aae355cfef30024a5d05e31d9d5f94bc1afcde780911"
+        },
+        {
+          "order": 15,
+          "title": "PART ONE · Chapter 8 (3/4)",
+          "sha256": "5493b457808a0b49c52bfdc1ad2afe8b1b18a9821dbc8ca1ec3412df3187520a"
+        },
+        {
+          "order": 16,
+          "title": "PART ONE · Chapter 8 (4/4)",
+          "sha256": "654255062b072327213cdef0f582108821b70a0d5db834776d8b986565d76e0e"
+        },
+        {
+          "order": 17,
+          "title": "PART TWO · Chapter 1 (1/2)",
+          "sha256": "ed7dad71f91801d169f2a9e6b8c51cd957654f6606b11c52d033cffb913ca551"
+        },
+        {
+          "order": 18,
+          "title": "PART TWO · Chapter 1 (2/2)",
+          "sha256": "161d9f6e9d75fadaf138d005ca996f5ac6485589d1023093542aa15e145986bd"
+        },
+        {
+          "order": 19,
+          "title": "PART TWO · Chapter 2",
+          "sha256": "1dc71ba120c07766a65adead30f231631a3fb15b19d5f736ca040d59b28cb47f"
+        },
+        {
+          "order": 20,
+          "title": "PART TWO · Chapter 3 (1/2)",
+          "sha256": "828897171d76cc88a535d3b9b2e2c31689019d218114ce091d031fda39dbf9b8"
+        },
+        {
+          "order": 21,
+          "title": "PART TWO · Chapter 3 (2/2)",
+          "sha256": "db5f27eba4dde128c4ea328868ddad7041d5fe7ddef323fa5f5d037522f21842"
+        },
+        {
+          "order": 22,
+          "title": "PART TWO · Chapter 4 (1/2)",
+          "sha256": "5d4d79968f4ae2ad772b359c29e61fdb41fdede7d9e939e4c5b5456863148020"
+        },
+        {
+          "order": 23,
+          "title": "PART TWO · Chapter 4 (2/2)",
+          "sha256": "6c6dd619573cbcac7462a008d765517319367bd39fd20226914571a961b97f5a"
+        },
+        {
+          "order": 24,
+          "title": "PART TWO · Chapter 5",
+          "sha256": "17757594bc51a50c7dad93df476c44be377137bdd22e1ab8f28ac0e1a8cbe1c4"
+        },
+        {
+          "order": 25,
+          "title": "PART TWO · Chapter 6",
+          "sha256": "91191f48385cdf0b2a45ab81ca0382e9e77c83e8518e3c924979ca113b452ae0"
+        },
+        {
+          "order": 26,
+          "title": "PART TWO · Chapter 7",
+          "sha256": "15eb054b087a3245e14965f5fce67f76908b39aa820418f95d4bee02fa8c4edd"
+        },
+        {
+          "order": 27,
+          "title": "PART TWO · Chapter 8 (1/2)",
+          "sha256": "ca6b532347b5581f862cc00f84248b1f2075381a6a81b4237ce47d44d991d28a"
+        },
+        {
+          "order": 28,
+          "title": "PART TWO · Chapter 8 (2/2)",
+          "sha256": "38e4e6c2314f48cc03990d588fda443d1ae5c4361975c7f9cb65960d34b65588"
+        },
+        {
+          "order": 29,
+          "title": "PART TWO · Chapter 9 (1/7)",
+          "sha256": "b252fe18c86a07e2e5a52347236f3d8f50cf77f0e11960bd2471ee66888de097"
+        },
+        {
+          "order": 30,
+          "title": "PART TWO · Chapter 9 (2/7)",
+          "sha256": "7d22488deef4e17533bcb98d1503a1bd49d1a63ff3fb19716d629554bade78f3"
+        },
+        {
+          "order": 31,
+          "title": "PART TWO · Chapter 9 (3/7)",
+          "sha256": "e15261261f724653303862c0079a71aa1a899211070dde5361e64d790e08d676"
+        },
+        {
+          "order": 32,
+          "title": "PART TWO · Chapter 9 (4/7)",
+          "sha256": "60c22022600d81240de606274def10b12298c46ae90e69116e82a0da50e73f61"
+        },
+        {
+          "order": 33,
+          "title": "PART TWO · Chapter 9 (5/7)",
+          "sha256": "9af354dac96b9c15dcda60fb1538a0ca5d7905763ac242b4264ae3c85625a0c7"
+        },
+        {
+          "order": 34,
+          "title": "PART TWO · Chapter 9 (6/7)",
+          "sha256": "3b6e6671408e03152c573cf1707344ab691eef277f1b8890dc9edd59a9cbd992"
+        },
+        {
+          "order": 35,
+          "title": "PART TWO · Chapter 9 (7/7)",
+          "sha256": "d50e60045378e0a0b240e88bcd126cfb88425b53a5d260824a490fabaded83c9"
+        },
+        {
+          "order": 36,
+          "title": "PART THREE · Chapter 1 (1/2)",
+          "sha256": "d2d53d1495fd66f9c425e9b42a76ef8ce8bb4495f51fda1d3cc2149b717e0463"
+        },
+        {
+          "order": 37,
+          "title": "PART THREE · Chapter 1 (2/2)",
+          "sha256": "f64033e631b84ef6d8d650c865e8f7b80ba6f03f68cae2d8d112b4a2a23d547e"
+        },
+        {
+          "order": 38,
+          "title": "PART THREE · Chapter 2 (1/3)",
+          "sha256": "6f346d9699b6a643a5ca4582893a347324e636e483b1d1b3f8538cf7145296a9"
+        },
+        {
+          "order": 39,
+          "title": "PART THREE · Chapter 2 (2/3)",
+          "sha256": "da575250ad7cd72539a1bce56cd4bc170c05b90102cdda02d2cc4b082cf882d1"
+        },
+        {
+          "order": 40,
+          "title": "PART THREE · Chapter 2 (3/3)",
+          "sha256": "6011050d5d7cb53bffa09567665728ec88ccf3319bc7df51bc3017973747ab46"
+        },
+        {
+          "order": 41,
+          "title": "PART THREE · Chapter 3 (1/2)",
+          "sha256": "34b1cb7be6a89cef1dd113046c5f2cf7e4c6d0d8a2e3f3f0f5bc987d0e21b084"
+        },
+        {
+          "order": 42,
+          "title": "PART THREE · Chapter 3 (2/2)",
+          "sha256": "57e82323d03fe03ad4b96fd6fa9d362c0e725c9989a08f0897a70573afd12ae3"
+        },
+        {
+          "order": 43,
+          "title": "PART THREE · Chapter 4",
+          "sha256": "e45bd3ae6a3454f1b2ac855c95b8bc84f400ecb6675fa5a260684edde912c523"
+        },
+        {
+          "order": 44,
+          "title": "PART THREE · Chapter 5",
+          "sha256": "01771556ab533f91a1a9f2c3bc367964495bc5bedaec380d96fcb705850ee80b"
+        },
+        {
+          "order": 45,
+          "title": "PART THREE · Chapter 6 (1/2)",
+          "sha256": "29d45c4986f2c716493e43b58d7f1086bd6c5d801558a02097aea97aff2f63ab"
+        },
+        {
+          "order": 46,
+          "title": "PART THREE · Chapter 6 (2/2)",
+          "sha256": "7e888dbe8a9baafe4b2555a32440ceba7a424e908e3f96f5cb9e747a9629eb56"
+        },
+        {
+          "order": 47,
+          "title": "PART THREE · APPENDIX (1/2)",
+          "sha256": "3fd22956005f68f6c457c3b65e6d2efbd23ba26874649ea30953b1fae80808b0"
+        },
+        {
+          "order": 48,
+          "title": "PART THREE · APPENDIX (2/2)",
+          "sha256": "7ebe76da723162570fe2026351c45a2c5cc3f1c5eb742c6bf3f10ed6266d7d8e"
+        }
+      ]
+    }
+  }
 }

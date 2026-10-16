@@ -23,7 +23,11 @@
   },
   "display": {
     "titleKo": "하늘과 바람과 별과 시",
-    "authorKo": "윤동주"
+    "authorKo": "윤동주",
+    "binding": "jeongeum",
+    "coverTitle": "하늘과바람과별과詩",
+    "coverSubtitle": "尹東柱遺稿集",
+    "coverImprint": "正音社"
   },
   "collection": true,
   "fetchedAt": "2026-10-16",

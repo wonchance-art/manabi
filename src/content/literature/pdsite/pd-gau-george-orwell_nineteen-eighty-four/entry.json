@@ -23,7 +23,12 @@
   },
   "display": {
     "titleKo": "1984",
-    "authorKo": "조지 오웰"
+    "authorKo": "조지 오웰",
+    "binding": "secker-numerals",
+    "coverTitle": "nineteen\neighty-four",
+    "coverAuthor": "George Orwell",
+    "coverSubtitle": "a novel",
+    "coverEdition": "1984"
   },
   "parse": {
     "part": "^h1:PART (ONE|TWO|THREE)$",

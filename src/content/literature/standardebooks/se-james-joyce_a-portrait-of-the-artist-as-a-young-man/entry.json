@@ -12,7 +12,10 @@
   "level": "C1 고급",
   "display": {
     "titleKo": "젊은 예술가의 초상",
-    "authorKo": "제임스 조이스"
+    "authorKo": "제임스 조이스",
+    "binding": "huebsch",
+    "coverTitle": "A Portrait of\nthe Artist as\na Young Man",
+    "coverAuthor": "James Joyce"
   },
   "files": [
     {

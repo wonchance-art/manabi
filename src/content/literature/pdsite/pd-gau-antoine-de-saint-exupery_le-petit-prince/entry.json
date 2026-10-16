@@ -24,7 +24,11 @@
   },
   "display": {
     "titleKo": "어린 왕자",
-    "authorKo": "앙투안 드 생텍쥐페리"
+    "authorKo": "앙투안 드 생텍쥐페리",
+    "binding": "reynal",
+    "coverTitle": "Le Petit Prince",
+    "coverAuthor": "Antoine de Saint-Exupery",
+    "coverEdition": "Avec dessins par l’auteur"
   },
   "parse": {
     "chapter": "^h2:(DEDICACE|PREMIER CHAPITRE|CHAPITRE [IVXL]+)$",

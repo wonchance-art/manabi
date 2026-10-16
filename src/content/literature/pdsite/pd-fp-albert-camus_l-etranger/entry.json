@@ -24,7 +24,12 @@
   },
   "display": {
     "titleKo": "이방인",
-    "authorKo": "알베르 카뮈"
+    "authorKo": "알베르 카뮈",
+    "binding": "gallimard-blanche",
+    "coverTitle": "L’Étranger",
+    "coverAuthor": "Albert Camus",
+    "coverSubtitle": "Roman",
+    "coverImprint": "Gallimard"
   },
   "parse": {
     "part": "^p:(PREMIÈRE|DEUXIÈME) PARTIE$",

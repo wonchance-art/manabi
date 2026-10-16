@@ -7,10 +7,7 @@ import { FIRST_EDITION_BINDINGS, romanYear, validateFirstEditionDisplay } from '
 import manifest from '../../content/literature/wikisource/manifest.generated.json';
 import { sliceBetween } from './helpers/sliceBetween';
 
-vi.mock('next/font/google', () => ({
-  Noto_Serif_SC: () => ({ variable: 'ws-song' }), Bodoni_Moda: () => ({ variable: 'ws-didone' }),
-  Metamorphous: () => ({ variable: 'ws-pointed' }), Rye: () => ({ variable: 'ws-ornate' }),
-}));
+vi.mock('next/font/google', () => new Proxy({}, { get: (_, name) => (name === 'then' ? undefined : () => ({ variable: `fe-${String(name).toLowerCase()}` })), has: () => true }));
 const { default: FirstEditionCover, FIRST_EDITION_GROUNDS } = await import('../../components/books/FirstEditionCover.jsx');
 
 // 중국어·프랑스어 정본 책 표지 「초판 장정」(LIT-SRC-WS-1, 오너 「권장대로」 2026-10-17 KST) — 표기 검사 · 초판 구성 · 그리기 · 배선.
@@ -51,7 +48,7 @@ describe('표지 표기 — 빌드가 entry.json display를 검사한다', () =>
     expect(byBinding('pagnerre')).toHaveLength(5);
     for (const [, work] of works) {
       expect(validateFirstEditionDisplay(work.display)).toEqual(work.display);
-      expect(FIRST_EDITION_BINDINGS[work.display.binding].script.startsWith(work.language === 'Chinese' ? 'zh' : 'fr')).toBe(true);
+      expect(FIRST_EDITION_BINDINGS[work.display.binding].script.startsWith({ Chinese: 'zh', French: 'fr', Korean: 'ko', English: 'en' }[work.language])).toBe(true);
     }
     // 레미제라블 다섯 권은 같은 장정 · 부(part)만 다르다
     const tomes = works.filter(([, work]) => work.display.binding === 'pagnerre').map(([, work]) => work.display.coverPart);
@@ -63,7 +60,7 @@ describe('그리기', () => {
   it('장식(aria-hidden) · 글자 언어 · 『呐喊』은 실물대로 오른쪽→왼쪽(「己乙孔」)', () => {
     const [, kongYiJi] = works.find(([key]) => key === 'ws-zh-lu-xun_kong-yi-ji');
     const html = draw(kongYiJi.display);
-    expect(html).toMatch(/^<span class="fe-cover[^"]*" style="--fe-ground:#b5462f" data-binding="nahan" aria-hidden="true">/u);
+    expect(html).toMatch(/^<span class="fe-cover[^"]*" style="--fe-ground:#b5462f" data-binding="nahan" data-material="paper" aria-hidden="true">/u);
     expect(html).toContain('lang="zh-Hans"');
     expect(html).toContain('己　乙　孔');
     expect(html).toContain('迅　鲁');
@@ -112,5 +109,54 @@ describe('배선 — 서재 카드·게시 화면·빌드', () => {
   });
   it('빌드는 기본으로 초판 장정 표기를 검사한다', () => {
     expect(read('scripts/lib/wikisource-build.mjs')).toContain("validateCover ?? (await import('../../src/lib/firstEditionCover.js')).validateFirstEditionDisplay");
+  });
+});
+
+describe('2차 묶음(오너 「원본 책 재구성 … 표지 만들기까지 완성」 · 「당시 글꼴로, 원본 대조하면서」 2026-10-17 KST)', () => {
+  it('19권이 저마다 초판 장정 하나 · 빅토리아 키와 겹치지 않는다 · 모두 그린다', async () => {
+    const { VICTORIAN_BINDINGS } = await import('../victorianCover.js');
+    const se = (await import('../../content/literature/standardebooks/manifest.generated.json')).default;
+    const pd = (await import('../../content/literature/pdsite/manifest.generated.json')).default;
+    const second = [
+      ...works.filter(([, work]) => work.language === 'Korean'),
+      ...Object.entries(se.works).filter(([, work]) => !Object.hasOwn(VICTORIAN_BINDINGS, work.display.binding)),
+      ...Object.entries(pd.works),
+    ];
+    expect(second).toHaveLength(19);
+    expect(new Set(second.map(([, work]) => work.display.binding)).size).toBe(19);
+    for (const key of Object.keys(FIRST_EDITION_BINDINGS)) expect(Object.hasOwn(VICTORIAN_BINDINGS, key)).toBe(false);
+    for (const [, work] of second) {
+      expect(validateFirstEditionDisplay(work.display)).toEqual(work.display);
+      expect(draw(work.display)).toContain(`data-binding="${work.display.binding}"`);
+    }
+  });
+  it('그리지 않는 것 — 왕자 그림 · 소행성 · 출판사 문장 · nrf · 실존 인물 서명 · 이정 목판화(근거를 코드 주석에 남긴다)', () => {
+    const source = read('src/components/books/FirstEditionCoverSecond.jsx');
+    for (const note of ['왕자 그림 · 소행성은 그리지 않는다', '가운데 출판사 문장은 그리지 않는다', 'nrf 모노그램은 그리지 않는다', '실존 인물 서명이라 형태 없는 흘림으로만']) expect(source).toContain(note);
+    expect(read('src/lib/firstEditionCover.js')).toContain('이정(1924–1995)의 청색 목판화 표지는 한국에서 보호 중이라 쓰지 않는다');
+  });
+  it('글꼴 — 실물과 대조해 고른 당시 글꼴 · 글꼴 변수는 늘 대체 이름을 품는다(정의 안 된 var()는 font-family 전체를 무효로 만든다)', () => {
+    const source = read('src/components/books/FirstEditionCoverSecond.jsx') + read('src/components/books/FirstEditionCover.jsx');
+    for (const family of ['Kirang_Haerang', 'Song_Myung', 'East_Sea_Dokdo', 'Dokdo', 'Nanum_Myeongjo', 'Josefin_Sans', 'Jost', 'Kaushan_Script', 'Yellowtail', 'Gochi_Hand', 'Goudy_Bookletter_1911', 'IM_Fell_English', 'GFS_Didot']) expect(source).toContain(`${family}(`);
+    const bare = [...source.matchAll(/var\((--font-[a-z-]+)\)/gu)].map((match) => match[1]);
+    expect(bare).toEqual([]);
+  });
+});
+
+describe('시리즈 공통 원칙 · 빈티지(오너 「일관성 줄 수 있는 원칙 일부와 빈티지 효과」 2026-10-17 KST)', () => {
+  it('장정마다 재질 하나 · 낡음 네 겹(가장자리 바램 · 얼룩 · 모서리 닳음 · 인쇄 번짐)은 모든 책에 같고, 같은 책은 늘 같게 그린다', async () => {
+    const { FIRST_EDITION_MATERIALS } = await import('../firstEditionCover.js');
+    for (const binding of Object.values(FIRST_EDITION_BINDINGS)) expect(FIRST_EDITION_MATERIALS).toContain(binding.material);
+    const [, gamja] = works.find(([key]) => key === 'ws-ko-kim-dong-in_gamja');
+    const first = draw(gamja.display);
+    expect(first).toBe(draw(gamja.display)); // 결정적
+    expect(first).toContain('-toning)'); expect(first).toContain('-ink)'); expect(first).toContain('fill="#7a4a1e"'); // 종이라 얼룩이 있다
+    const [, verne] = works.find(([key]) => key.includes('jules-verne'));
+    expect(draw(verne.display)).not.toContain('fill="#7a4a1e"'); // 천 장정은 얼룩 대신 닳음만
+  });
+  it('왼쪽 접힘 그림자는 시리즈 A와 같은 값(CSS 한 곳) — 장정마다 따로 그린 책등 띠가 없다', () => {
+    const css = read('src/components/books/first-edition-cover.css');
+    expect(css).toContain('inset 3px 0 0 color-mix(in srgb,#000 16%,transparent),inset 3.6px 0 0 color-mix(in srgb,#fff 6%,transparent)');
+    expect(read('src/components/books/literature-cover.css')).toContain('inset 3px 0 0 color-mix(in srgb,var(--ink) 16%,transparent),inset 3.6px 0 0 color-mix(in srgb,#fff 6%,transparent)');
   });
 });

@@ -150,7 +150,7 @@ describe('한국 근대 문학(오너 「한국 근대 문학도 추가」 → �
     expect(wikisourceRightsVerdict({ ...ko, authorDeathYear: 2000 }).ok).toBe(false); // 황순원 「소나기」형
     expect(wikisourceRightsPublishable({ ...ko, provider: 'wikisource', license: WS_LICENSE, rights: { status: 'approved', basis: 'public-domain', reviewedJurisdictions: ['KR'], reviewedAt: '2026-10-17' } })).toBe(true);
   });
-  it('리포 7편(소설 5 · 시집 2) — 원문 고정 · 권리 통과 · 장은 글자 수(공백 뺌) 3,000자 안팎 · 표지 대기(목록·대조표에 아직 없음)', async () => {
+  it('리포 7편(소설 5 · 시집 2) — 원문 고정 · 권리 통과 · 장은 글자 수(공백 뺌) 3,000자 안팎 · 초판 장정 표지', async () => {
     const { readFileSync, readdirSync } = await import('node:fs');
     const root = 'src/content/literature/wikisource';
     const keys = readdirSync(root).filter((name) => name.startsWith('ws-ko-')).sort();
@@ -166,8 +166,8 @@ describe('한국 근대 문학(오너 「한국 근대 문학도 추가」 → �
       expect(draft.chapters.every((chapter) => charCount(chapter.rawText) > 2000 && charCount(chapter.rawText) < 3600)).toBe(true);
       expect(draft.chapters.some((chapter) => /라이선스|퍼블릭 도메인|위키백과|현대어|원문|옛한글/u.test(chapter.rawText))).toBe(false);
       expect(draft.chapters.some((chapter) => /[\u1100-\u11FF]/u.test(chapter.rawText))).toBe(false); // 옛한글 자모 없음(진달래꽃은 현대어 칸)
-      expect(entry.display.binding).toBeUndefined(); // 표지 시안을 오너가 고르기 전(UI 목업 우선)
-      expect(Object.hasOwn(manifest.works, key)).toBe(false);
+      expect(typeof entry.display.binding).toBe('string'); // 초판 장정(오너 「원본 책 재구성 … 표지 만들기까지 완성」)
+      expect(manifest.works[key].display.binding).toBe(entry.display.binding);
     }
   });
 });

@@ -401,6 +401,1869 @@
         }
       ]
     },
+    "se-f-scott-fitzgerald_the-great-gatsby": {
+      "title": "The Great Gatsby",
+      "author": "F. Scott Fitzgerald",
+      "level": "B2 상급",
+      "total": 22,
+      "words": 48105,
+      "display": {
+        "titleKo": "위대한 개츠비",
+        "authorKo": "F. 스콧 피츠제럴드",
+        "binding": "scribner-blind",
+        "coverTitle": "The Great\nGatsby",
+        "coverAuthor": "By F. Scott Fitzgerald"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-f-scott-fitzgerald_the-great-gatsby",
+        "title": "The Great Gatsby",
+        "author": "F. Scott Fitzgerald",
+        "publishedYear": 1925,
+        "authorDeathYear": 1940,
+        "countryOfOrigin": "US",
+        "translator": null,
+        "repo": "standardebooks/f-scott-fitzgerald_the-great-gatsby",
+        "commit": "fe47c8c04f5175d45f9410f4e3ca64c257ae0acc",
+        "url": "https://standardebooks.org/ebooks/f-scott-fitzgerald/the-great-gatsby",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "US",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/f-scott-fitzgerald/the-great-gatsby"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I (1/3)",
+          "sha256": "34b6318e4769422004be9757336a8c26accd4e5319ced21dac4d30b77682533d"
+        },
+        {
+          "order": 2,
+          "title": "I (2/3)",
+          "sha256": "3a8f4c5970fc2f7a219da6085a377d6c11385c6fd5b18c37066de96d3a71c729"
+        },
+        {
+          "order": 3,
+          "title": "I (3/3)",
+          "sha256": "b5d4f69c853211d357e3e6cb66f9a67757e1f776327c2288d8dcb0c95f63361d"
+        },
+        {
+          "order": 4,
+          "title": "II (1/2)",
+          "sha256": "ac7593667e61448ee9ca7acc938fbc116354794673b667096901443c487f6f0d"
+        },
+        {
+          "order": 5,
+          "title": "II (2/2)",
+          "sha256": "41310bfcd5d42f7d2bc0e06d1eb046241aaba1d5e9b8f0c9c1b67ec1854a4770"
+        },
+        {
+          "order": 6,
+          "title": "III (1/3)",
+          "sha256": "639868e32e86612b41b07182d5c0b550f7888a179329a8466145dce228308c5f"
+        },
+        {
+          "order": 7,
+          "title": "III (2/3)",
+          "sha256": "ac47a13a1285385ce66e1e8ee7d0aef0fb0f8e9a101e3e02e2aa9bf095842e92"
+        },
+        {
+          "order": 8,
+          "title": "III (3/3)",
+          "sha256": "9e19134d2ed24e868b5b0bc425f0eea635e04b79e71952997018353183a70cd6"
+        },
+        {
+          "order": 9,
+          "title": "IV (1/2)",
+          "sha256": "e143660006eea7ab7fc198d4d7f41e2e0f5e39189c6af93e7b53b47a99aa3c7d"
+        },
+        {
+          "order": 10,
+          "title": "IV (2/2)",
+          "sha256": "c0c5bb191acb2d4cb61b1a7d4c0e7c38eb4fa8d2d082267cdfd32463735e0642"
+        },
+        {
+          "order": 11,
+          "title": "V (1/2)",
+          "sha256": "7e96c7bff9fca6372e96c7fa694e1fefbfde89d9e9405adebc90c98e798ac2d9"
+        },
+        {
+          "order": 12,
+          "title": "V (2/2)",
+          "sha256": "46808df0bd1b118101157b723794db2d4f3e8d0496fad0876d6ebef290bbace9"
+        },
+        {
+          "order": 13,
+          "title": "VI (1/2)",
+          "sha256": "1004284fee30f13c536492b43f4aa169675950c491a3a69f45f080e393791c81"
+        },
+        {
+          "order": 14,
+          "title": "VI (2/2)",
+          "sha256": "1cd1537b4ebd6e4753d024ba486e47468ef76b8c5486cb9a093cb0635e3fbab3"
+        },
+        {
+          "order": 15,
+          "title": "VII (1/4)",
+          "sha256": "51f51b94078178220f4ea948e2875a824821aac611d3b8c1c0b05b9fa3fd6502"
+        },
+        {
+          "order": 16,
+          "title": "VII (2/4)",
+          "sha256": "7c436f67c7c5ceb0a17ce7ed4d1198e1507ebab365724cd1e4c41a2b483aad65"
+        },
+        {
+          "order": 17,
+          "title": "VII (3/4)",
+          "sha256": "2ff4f4266d378df46de4f13cd30522b991d3b992a9bdb44186939e997ef1eeec"
+        },
+        {
+          "order": 18,
+          "title": "VII (4/4)",
+          "sha256": "8cf613df154179d3bc1952e87a13260b2c4e0385e687acac82a5ba893e0ca78f"
+        },
+        {
+          "order": 19,
+          "title": "VIII (1/2)",
+          "sha256": "a22010810f9c2d6bd9df85d71c68efd6b54c5803a641dcd67aa7291dda64f38f"
+        },
+        {
+          "order": 20,
+          "title": "VIII (2/2)",
+          "sha256": "0db5be191f10094afa8be9dade12a645bbe747b1e4a2878dd640274c9493a1f8"
+        },
+        {
+          "order": 21,
+          "title": "IX (1/2)",
+          "sha256": "c6a8019745eae3adbd413b6bfb2bc282dd7cc344b58d1b4ff031b3e5b522a9c2"
+        },
+        {
+          "order": 22,
+          "title": "IX (2/2)",
+          "sha256": "3c12f8efa31eda6d1a48165b17cba454a6a53417a8afbbbe0a9c753c419bd112"
+        }
+      ]
+    },
+    "se-henry-david-thoreau_walden": {
+      "title": "Walden",
+      "author": "Henry David Thoreau",
+      "level": "C1 고급",
+      "total": 50,
+      "words": 106216,
+      "display": {
+        "titleKo": "월든",
+        "authorKo": "헨리 데이비드 소로",
+        "binding": "ticknor-arabesque",
+        "coverTitle": "Walden"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-henry-david-thoreau_walden",
+        "title": "Walden",
+        "author": "Henry David Thoreau",
+        "publishedYear": 1854,
+        "authorDeathYear": 1862,
+        "countryOfOrigin": "US",
+        "translator": null,
+        "repo": "standardebooks/henry-david-thoreau_walden",
+        "commit": "af72c4ac0793569939ab3d038cbda440b60da940",
+        "url": "https://standardebooks.org/ebooks/henry-david-thoreau/walden",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "US",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/henry-david-thoreau/walden"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Economy (1/12)",
+          "sha256": "bac8b5339438c3cdb5c884f5e8f2e336005baddabeaf44190e45f6159ed2e256"
+        },
+        {
+          "order": 2,
+          "title": "Economy (2/12)",
+          "sha256": "b13722723c7cd045703ddf9183cf3ac50195cdfd7c07e385c3ae15bf1729d3fd"
+        },
+        {
+          "order": 3,
+          "title": "Economy (3/12)",
+          "sha256": "e83b3592c9b6ad0fb14b53687424458b77e6a7f281ae591ed5103deb98719cbb"
+        },
+        {
+          "order": 4,
+          "title": "Economy (4/12)",
+          "sha256": "7ab040c3e2640cff656534f2569ab0babb05986d7bd0ced281fe6734780e761d"
+        },
+        {
+          "order": 5,
+          "title": "Economy (5/12)",
+          "sha256": "d48fcaf606a39f63cb274dc7022b6abc1cb35c64dbd1721873a8245a07fb0b05"
+        },
+        {
+          "order": 6,
+          "title": "Economy (6/12)",
+          "sha256": "3bb80fa7fb66be6729ff42a0e0523b1abf7aa74bc4c37558956c977661be67aa"
+        },
+        {
+          "order": 7,
+          "title": "Economy (7/12)",
+          "sha256": "4b8a57c7610b7b4c74d6e98c27db46044fda3252f966ff2b2e781e7f524f8e1c"
+        },
+        {
+          "order": 8,
+          "title": "Economy (8/12)",
+          "sha256": "a367136fd8677e7fd71932121e2a716c191018766eea083ac0f914229f26c3ba"
+        },
+        {
+          "order": 9,
+          "title": "Economy (9/12)",
+          "sha256": "05dc4cdc489ec25f11c670bbd695fdceee8837e5f8473e9ccaeddf352b42ba61"
+        },
+        {
+          "order": 10,
+          "title": "Economy (10/12)",
+          "sha256": "c53e0c9d4782a533d98a91267d88740f6b48e8cd4a92c8b84c3bc7188aad651e"
+        },
+        {
+          "order": 11,
+          "title": "Economy (11/12)",
+          "sha256": "8bbd10650dba9f3cd1b7533a1af3fe6cc545e396c5765a4d39b89dfd44bca341"
+        },
+        {
+          "order": 12,
+          "title": "Economy (12/12)",
+          "sha256": "39753e84be51239d81babcc3c41e1fd03e00cf7e4e03f5a6f92ea83c2fa34230"
+        },
+        {
+          "order": 13,
+          "title": "Where I Lived, and What I Lived For (1/3)",
+          "sha256": "a219641cf3c277be89da38c76712f597c386a55a260e758591f78fd3a4401e0a"
+        },
+        {
+          "order": 14,
+          "title": "Where I Lived, and What I Lived For (2/3)",
+          "sha256": "ebfdf3e2b3da4a8cd45df4194a1cfbc9197761cd97c15da66cdf0e4a915f11dc"
+        },
+        {
+          "order": 15,
+          "title": "Where I Lived, and What I Lived For (3/3)",
+          "sha256": "b3e37992c44dc5c32b308e634c7baa2a436991d57e36f325dd8c4de7cd2984f1"
+        },
+        {
+          "order": 16,
+          "title": "Reading (1/2)",
+          "sha256": "82d671839b3dc025c184d8763f080f5af558b1f4808242a941aae7fdc6ef3c1d"
+        },
+        {
+          "order": 17,
+          "title": "Reading (2/2)",
+          "sha256": "7c0b1765f8fc222d66da8aaa0b84dcd5b9046b15aa6282cfed7ef0d7a216fccf"
+        },
+        {
+          "order": 18,
+          "title": "Sounds (1/3)",
+          "sha256": "8569ccd126310ec7a40a04ff64ec5dc2522ae9637ac2c017d7cd05d8673342ce"
+        },
+        {
+          "order": 19,
+          "title": "Sounds (2/3)",
+          "sha256": "eaf4e183da3507ce3e968fa711ae08a08ad111bf4cd1633e64519dc48ac29e15"
+        },
+        {
+          "order": 20,
+          "title": "Sounds (3/3)",
+          "sha256": "f7bd4924c94a1206e402a63742c068553129f3ef6106085f57f8e900b27a0e11"
+        },
+        {
+          "order": 21,
+          "title": "Solitude (1/2)",
+          "sha256": "84d461c0e572eca2796cf7e00502fd2a113e8d8066d550703fedbad379be94bd"
+        },
+        {
+          "order": 22,
+          "title": "Solitude (2/2)",
+          "sha256": "0f122ebefab54c14326aaebabf9b1a10ec588c573ea768e90020e69e954bade8"
+        },
+        {
+          "order": 23,
+          "title": "Visitors (1/2)",
+          "sha256": "117a1a55e90cdf2cf0a4b18647164772d2e47eec29be7dbfda2de33b9aed5d16"
+        },
+        {
+          "order": 24,
+          "title": "Visitors (2/2)",
+          "sha256": "b30125850c563e2739dbbc5eff27069062ac0c6f120693dcb381285dfe68a225"
+        },
+        {
+          "order": 25,
+          "title": "The Bean-Field (1/2)",
+          "sha256": "95069235c183c2a920ddfede918e016f82bf1f65a8f1a31e9a647caa0f7bb04c"
+        },
+        {
+          "order": 26,
+          "title": "The Bean-Field (2/2)",
+          "sha256": "a7b84e9d92cc216359411ea74e9e345128f9fe2f7133b52c2706e78b778125e9"
+        },
+        {
+          "order": 27,
+          "title": "The Village",
+          "sha256": "f38ad0767503c177b71ec8e9f08ad6226778af1d1320b2ace45b7f3f5f7c0a12"
+        },
+        {
+          "order": 28,
+          "title": "The Ponds (1/4)",
+          "sha256": "af00400c240f80a1b88e02d2dfea8538470f62ac962c929ff7c45924dd37bac1"
+        },
+        {
+          "order": 29,
+          "title": "The Ponds (2/4)",
+          "sha256": "9e01aa679d4c36e04c481c18dce24d204a4a838ba14e7fa643a2931f011ec712"
+        },
+        {
+          "order": 30,
+          "title": "The Ponds (3/4)",
+          "sha256": "b04d21f6a5b3cb9ad9f763d1b0af8a3ad89ab85e6efa9aea6504aee66fffef7e"
+        },
+        {
+          "order": 31,
+          "title": "The Ponds (4/4)",
+          "sha256": "03df5b2cf5b75b7b8cd9ef2be15301b892dd7e029ab326f707121616fb604277"
+        },
+        {
+          "order": 32,
+          "title": "Baker Farm",
+          "sha256": "875c85e6fe61a340e8a844c04efb2b0c6fae3ea2e8f11cef37a3b81eed5f7a09"
+        },
+        {
+          "order": 33,
+          "title": "Higher Laws (1/2)",
+          "sha256": "69ffa3371c44aa34c8e5923bf4d9c3db38eb365ede47e02f33825b9a236210c1"
+        },
+        {
+          "order": 34,
+          "title": "Higher Laws (2/2)",
+          "sha256": "499441ed53e979a28e0972084b241b962924cde60abe0c043c8a303a98a1af09"
+        },
+        {
+          "order": 35,
+          "title": "Brute Neighbors (1/2)",
+          "sha256": "3afe7a20505e9c0b8e89cf109e130897933b472a43c8e7ccfce46f339826389f"
+        },
+        {
+          "order": 36,
+          "title": "Brute Neighbors (2/2)",
+          "sha256": "776bcfb883ddb8cbbed52d6e74e0a5b58e3f66f6536e37abfe615f9fde83b6ae"
+        },
+        {
+          "order": 37,
+          "title": "House-Warming (1/3)",
+          "sha256": "b21dc5f2e6fe8822300226e4950f92eb8b773153b709d15eb15f5ca49f8b231e"
+        },
+        {
+          "order": 38,
+          "title": "House-Warming (2/3)",
+          "sha256": "be5096c2862cdbbe2ef42fcee96c6eea8a0b044df3f67a8a42e9cdd60f3f0156"
+        },
+        {
+          "order": 39,
+          "title": "House-Warming (3/3)",
+          "sha256": "a36d395b1122bbbdae9474226aa368e6ed3ef665f737e8db5170576879887d19"
+        },
+        {
+          "order": 40,
+          "title": "Former Inhabitants and Winter Visitors (1/2)",
+          "sha256": "6c1fd28e575db183d9e290865dc1f03a546121b7a93b98b27dc6f3bbd3c6298c"
+        },
+        {
+          "order": 41,
+          "title": "Former Inhabitants and Winter Visitors (2/2)",
+          "sha256": "d0d060e97bb59a404a0f93d47512e27795c78fd5d4a1c7d45eb7428acf2f4d96"
+        },
+        {
+          "order": 42,
+          "title": "Winter Animals (1/2)",
+          "sha256": "2af49e54e0391175c57dfe6911cc7a42a48d81190ee3c487964fd9417dd421d6"
+        },
+        {
+          "order": 43,
+          "title": "Winter Animals (2/2)",
+          "sha256": "f5edac8a7c2f62279fc58a5fbd60b562f7886916e2e8380f0b911c0b2bf182be"
+        },
+        {
+          "order": 44,
+          "title": "The Pond in Winter (1/2)",
+          "sha256": "fe067ce60dece1c0f86ca3d014305db7310e47cc5ae0b64c52306ecdb90c6e74"
+        },
+        {
+          "order": 45,
+          "title": "The Pond in Winter (2/2)",
+          "sha256": "3427c766275bd52e034b70973b216abca97f95454ba8041113a9a0920122979a"
+        },
+        {
+          "order": 46,
+          "title": "Spring (1/3)",
+          "sha256": "8e6d45fcbbb40b3cbd4fdf9e215579ba33d97a0b7f7add50ad12617e58fcd71b"
+        },
+        {
+          "order": 47,
+          "title": "Spring (2/3)",
+          "sha256": "bf6c6c57a00f1cb36d416524b42b4fcda19851c2f19f04d459202d70deba44b7"
+        },
+        {
+          "order": 48,
+          "title": "Spring (3/3)",
+          "sha256": "ba9df5e97a25b27647e0d95387fa097da4867163450faeed74c506b7d7f90ed3"
+        },
+        {
+          "order": 49,
+          "title": "Conclusion (1/2)",
+          "sha256": "99bbf278596fb9533a1634e663435d4e5ddc50f0ddaf21be4a39d2d54a3eb0d7"
+        },
+        {
+          "order": 50,
+          "title": "Conclusion (2/2)",
+          "sha256": "8b6c7840954e41e8d9f4fec8877261840d7fffac306f58f5c833791342593d3c"
+        }
+      ]
+    },
+    "se-herman-melville_moby-dick": {
+      "title": "Moby Dick",
+      "author": "Herman Melville",
+      "level": "C1 고급",
+      "total": 150,
+      "words": 205458,
+      "display": {
+        "titleKo": "모비 딕",
+        "authorKo": "허먼 멜빌",
+        "binding": "harper-blind",
+        "coverTitle": "Moby-Dick"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-herman-melville_moby-dick",
+        "title": "Moby Dick",
+        "author": "Herman Melville",
+        "publishedYear": 1851,
+        "authorDeathYear": 1891,
+        "countryOfOrigin": "US",
+        "translator": null,
+        "repo": "standardebooks/herman-melville_moby-dick",
+        "commit": "013b51e2d9d6bb28b1d054bfc30beeeff4b85480",
+        "url": "https://standardebooks.org/ebooks/herman-melville/moby-dick",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "US",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/herman-melville/moby-dick"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: Loomings",
+          "sha256": "7992fab6fe0626a1c3010c89a006d798c9f649fc83f15bf896dd301f8f108e90"
+        },
+        {
+          "order": 2,
+          "title": "II: The Carpetbag",
+          "sha256": "da2724bc54278ab8924272a9734f771fee78207cfe55e41f8722b66f7c2b4fee"
+        },
+        {
+          "order": 3,
+          "title": "III: The Spouter-Inn (1/3)",
+          "sha256": "989b87668c56cc1a550c416e0fca5d2a041adcb9519d49da3f1c7f90a2a34acc"
+        },
+        {
+          "order": 4,
+          "title": "III: The Spouter-Inn (2/3)",
+          "sha256": "762cf0979599d2eb972ae96b3e65742864ca3739e216d14eb04834a0848e7b04"
+        },
+        {
+          "order": 5,
+          "title": "III: The Spouter-Inn (3/3)",
+          "sha256": "5d2a0dd69586f6e8932c306923526426bd21833eab5e7a691fdc517355960ff9"
+        },
+        {
+          "order": 6,
+          "title": "IV: The Counterpane",
+          "sha256": "47454be50e8dafab009637e5163183c81471757c1b5586bfc674513b5168a636"
+        },
+        {
+          "order": 7,
+          "title": "V: Breakfast",
+          "sha256": "bf2e532a60305d9ccf6a684818de30ee6b1df98e4c0762d16659da0314a6a535"
+        },
+        {
+          "order": 8,
+          "title": "VI: The Street",
+          "sha256": "47262dff4bc22a65856607d145ebea4d062e2ab91823ffde386c3368f0f6ce83"
+        },
+        {
+          "order": 9,
+          "title": "VII: The Chapel",
+          "sha256": "4a3e6a961a8e9b0e6f7dff5943a42aacbd4d8c202240602bd94698ec97027fab"
+        },
+        {
+          "order": 10,
+          "title": "VIII: The Pulpit",
+          "sha256": "448d22c082da6a2c840e882c7536a5af646563c1702cc4b908b12235ed675d0d"
+        },
+        {
+          "order": 11,
+          "title": "IX: The Sermon (1/2)",
+          "sha256": "155804aead015afaa6e762f21d9a47217c9fd5cd1eb32a0fa8afd2493a6d0563"
+        },
+        {
+          "order": 12,
+          "title": "IX: The Sermon (2/2)",
+          "sha256": "7113b52d08b7448b8cdd0df756748ee88daf05aa9b17c73a01a5d4d40626f092"
+        },
+        {
+          "order": 13,
+          "title": "X: A Bosom Friend",
+          "sha256": "0b49f78241eec7f9e02245d72a5f6465474f622666d8e652d231551ed1c53d4b"
+        },
+        {
+          "order": 14,
+          "title": "XI: Nightgown",
+          "sha256": "b666d0d76568c25dc58739c3bf6464b0e5518bd34b8e32c6c587063aade43196"
+        },
+        {
+          "order": 15,
+          "title": "XII: Biographical",
+          "sha256": "c960a84e92a01a906586a6f8f32c3075a2125921e259a1585c5c971dd25aca94"
+        },
+        {
+          "order": 16,
+          "title": "XIII: Wheelbarrow",
+          "sha256": "db6cbb69214593268dcb0c90c0dd49c1df9df350bd1a64ae9dd71dbb6cb6a8b9"
+        },
+        {
+          "order": 17,
+          "title": "XIV: Nantucket",
+          "sha256": "5ce20fa5b1c4871f5efa6c40562995da4e31b1adacfa087cfb00de3acd94ef22"
+        },
+        {
+          "order": 18,
+          "title": "XV: Chowder",
+          "sha256": "2652fce98d01f7a9fab9093e9a151c64e1b47b2306ab26ad3175c8a4412ac3ff"
+        },
+        {
+          "order": 19,
+          "title": "XVI: The Ship (1/2)",
+          "sha256": "54e5695fe24b0795dc6ab4ddaed3989cde183ae7274e14ca0b56de99bdf2b20c"
+        },
+        {
+          "order": 20,
+          "title": "XVI: The Ship (2/2)",
+          "sha256": "d343aedb509d426cf65ca3a9d0ef06314336358460305cc739af6923de99b281"
+        },
+        {
+          "order": 21,
+          "title": "XVII: The Ramadan",
+          "sha256": "14209d4b4b01b8886abff1e25d7b0f7f2c21438a66f153702c660a3553f6a3d3"
+        },
+        {
+          "order": 22,
+          "title": "XVIII: His Mark",
+          "sha256": "2a2db873336b0f6aa0df02bb0e74a5d1ca5ed2016d37c29601b88eed2a1bbcd8"
+        },
+        {
+          "order": 23,
+          "title": "XIX: The Prophet",
+          "sha256": "bde7ed4f3e81e0b4dfc69bcc6d4ec69e68793acc1a3344d0d9c20f0b99b1f32f"
+        },
+        {
+          "order": 24,
+          "title": "XX: All Astir",
+          "sha256": "07c6cdd40ac35084bf76b7b1303d5d9dd27824dd0378c3248d30bc551c4d64da"
+        },
+        {
+          "order": 25,
+          "title": "XXI: Going Aboard",
+          "sha256": "7e22409ba2a5b21cb52d3531810ba0a1d16661d042094e07819375299adad36a"
+        },
+        {
+          "order": 26,
+          "title": "XXII: Merry Christmas",
+          "sha256": "d8e8471014762ce9c2cb905a8f0a5ec53161792d0dce286655e2dcbc43f3ae78"
+        },
+        {
+          "order": 27,
+          "title": "XXIII: The Lee Shore",
+          "sha256": "ec1c570eed4ed454a3fb053a1ff04fed50d5dc2742b1660437e9836570a5aa95"
+        },
+        {
+          "order": 28,
+          "title": "XXIV: The Advocate",
+          "sha256": "b265a69d6d93835e58285d4bdcc6eb229381870ada8a579f7554e6d6abc5064f"
+        },
+        {
+          "order": 29,
+          "title": "XXV: Postscript",
+          "sha256": "9b22aab82c40e70539becd36658dcaad412b080be530cc593ef80723a2f4d7da"
+        },
+        {
+          "order": 30,
+          "title": "XXVI: Knights and Squires",
+          "sha256": "908c6666d331cd729306c78f441b9b559b058a32c43e6877159989bf74381a93"
+        },
+        {
+          "order": 31,
+          "title": "XXVII: Knights and Squires",
+          "sha256": "4b207408a2045067493c4f7bb15df1d17aa7a8df9cc665d2d98f6bf870f796f9"
+        },
+        {
+          "order": 32,
+          "title": "XXVIII: Ahab",
+          "sha256": "cc435c83a88a6c6cdce11232d27a69ee464311f4054a6ca9a2eca2b353d2064c"
+        },
+        {
+          "order": 33,
+          "title": "XXIX: Enter Ahab; To Him, Stubb",
+          "sha256": "d218448b8955f458be392255fef57597d5f2aa72e5897f237e744c35ba40b087"
+        },
+        {
+          "order": 34,
+          "title": "XXX: The Pipe",
+          "sha256": "e5a6e146aaf9ae782665abc0bed09d6766b831b3cab276e2d7c89183a5e7666c"
+        },
+        {
+          "order": 35,
+          "title": "XXXI: Queen Mab",
+          "sha256": "e3779dd23534ec3861a74dd35583635c408075a1c5d5f8d7f241138b01203fbb"
+        },
+        {
+          "order": 36,
+          "title": "XXXII: Cetology (1/2)",
+          "sha256": "d6592d8e683ceaaccf705edb1b4ff7d37666ffef8638817d0910d20ee9eddab2"
+        },
+        {
+          "order": 37,
+          "title": "XXXII: Cetology (2/2)",
+          "sha256": "3f9df904ab2d061bfbb61896ad7d80c1f7da83d3feba9e14f89d5854da68a516"
+        },
+        {
+          "order": 38,
+          "title": "XXXIII: The Specksnyder",
+          "sha256": "d291d4a1445bd44ac8711df27f3967eea0f6880108c3306324ed0fcae9ca12f0"
+        },
+        {
+          "order": 39,
+          "title": "XXXIV: The Cabin-Table",
+          "sha256": "f16cb79da8fe2865c027b5808931a3e5bfee805723bff3369426747778f6d55c"
+        },
+        {
+          "order": 40,
+          "title": "XXXV: The Masthead",
+          "sha256": "c285c4298f2bb27d315d6a62633cab5848445acf0fc57edc6e25057480e5fc9c"
+        },
+        {
+          "order": 41,
+          "title": "XXXVI: The Quarterdeck",
+          "sha256": "ef18ae19bdea31a20d7d8052ee5b809c4bf4dc199b057897f23598c26d739f26"
+        },
+        {
+          "order": 42,
+          "title": "XXXVII: Sunset",
+          "sha256": "e4b9f9dadcb8a237a9060b4b769ebee518576e430f12b3806c918b9b17755498"
+        },
+        {
+          "order": 43,
+          "title": "XXXVIII: Dusk",
+          "sha256": "0d006ca9857bbb14a5ffa40772b108fa80141a078213d5495da6263f450bfc06"
+        },
+        {
+          "order": 44,
+          "title": "XXXIX: First Night-Watch",
+          "sha256": "0e3e8364cd63a383a75df827fd63afe94860fea07dfb96af4f49eaec5ca53103"
+        },
+        {
+          "order": 45,
+          "title": "XL: Midnight, Forecastle",
+          "sha256": "dfafd079a4944c4f37443c84397b4bb7d984bfc6441298213d066814fb591b22"
+        },
+        {
+          "order": 46,
+          "title": "XLI: Moby Dick (1/2)",
+          "sha256": "0fa04d93423e48498944c5488e8d4f37d162bfde4e1d790a4a8edecddb3e33ba"
+        },
+        {
+          "order": 47,
+          "title": "XLI: Moby Dick (2/2)",
+          "sha256": "7b15ad48617f466a4ed80a9ac69dba4391250e39d0865b87ff28d8913a997eca"
+        },
+        {
+          "order": 48,
+          "title": "XLII: The Whiteness of the Whale",
+          "sha256": "2351fa979151a321ca0dbc1568bb4def593bf557a146926d41e6fc81b602371b"
+        },
+        {
+          "order": 49,
+          "title": "XLIII: Hark!",
+          "sha256": "aa6fadad8361f9d216f97d88b0a1113ca32ec75df7cadc28c7bdb508fb1f7d64"
+        },
+        {
+          "order": 50,
+          "title": "XLIV: The Chart",
+          "sha256": "58241d2e69f8889d8c7fc906dc0937cc4c97f781461556f26be703c59a39b32a"
+        },
+        {
+          "order": 51,
+          "title": "XLV: The Affidavit",
+          "sha256": "0c942eba33293e45f8aedf6e1061fa07765490cbb6c97fe2acd6a266c0452120"
+        },
+        {
+          "order": 52,
+          "title": "XLVI: Surmises",
+          "sha256": "2d3cd838b9c675a5b038bf9b9ff5eb483e2bb10720f6b091b9f5bebf9fbcbcdc"
+        },
+        {
+          "order": 53,
+          "title": "XLVII: The Mat-Maker",
+          "sha256": "33e7b4289247e4e94c7b3a588ee2d1c1ff673af00a41a6bf005f2ad37703e180"
+        },
+        {
+          "order": 54,
+          "title": "XLVIII: The First Lowering (1/2)",
+          "sha256": "fe895714fdc1f7ee574bcaa322fc40e51748b5ec2481a4d0175a316cffab5635"
+        },
+        {
+          "order": 55,
+          "title": "XLVIII: The First Lowering (2/2)",
+          "sha256": "96f861254240f475997419e3b6778febed61e4119ddbf9b7a9ddf1d9d5fcc7fa"
+        },
+        {
+          "order": 56,
+          "title": "XLIX: The Hyena",
+          "sha256": "b1133138b0ad5cc8051dc3f7c81fa3be4f45698f92134baa991f6b72686cd805"
+        },
+        {
+          "order": 57,
+          "title": "L: Ahab’s Boat and Crew. Fedallah",
+          "sha256": "ca1ea0ea1f848a7d61b0fd7b9adfd9a74160bd1f241108444af1885d8ff2f757"
+        },
+        {
+          "order": 58,
+          "title": "LI: The Spirit-Spout",
+          "sha256": "7da1f178acb08357910c9c526516726d49747debf1d432b93c6a2ada3605b5a2"
+        },
+        {
+          "order": 59,
+          "title": "LII: The Albatross",
+          "sha256": "8619ea2ccc022e305aab06d9c2fc29fe0f2ec976efc14442f6c03e7e4db33df6"
+        },
+        {
+          "order": 60,
+          "title": "LIII: The Gam",
+          "sha256": "a344665db07f8bec9515445edba90ee91ed77265254b26fe39d1452c223422d1"
+        },
+        {
+          "order": 61,
+          "title": "LIV: The Town-Ho’s Story (1/4)",
+          "sha256": "0dcb4a6446f1fd953c246f73e831e41cd0e3bfa191b93681814a3f7a46153d88"
+        },
+        {
+          "order": 62,
+          "title": "LIV: The Town-Ho’s Story (2/4)",
+          "sha256": "bb2edbc8ace9bcb41bad0d48821f80f3daaa6d30651d445bd2e1693f51146896"
+        },
+        {
+          "order": 63,
+          "title": "LIV: The Town-Ho’s Story (3/4)",
+          "sha256": "861d1bcd8ecee30c0c52b2c5afcaff19f053dffd99d1a30cba0e30b74f80d0f8"
+        },
+        {
+          "order": 64,
+          "title": "LIV: The Town-Ho’s Story (4/4)",
+          "sha256": "9e0fd3df80dd16bde3afc34930ea5ac73fc3d35c2a9e5cb8ebb2ab254373a6b8"
+        },
+        {
+          "order": 65,
+          "title": "LV: Of the Monstrous Pictures of Whales",
+          "sha256": "ec54eec189ea9719a97a027c8330b100ac11c072cce35ebdefa13fc1dbb8e04c"
+        },
+        {
+          "order": 66,
+          "title": "LVI: Of the Less Erroneous Pictures of Whales, and the True Pictures of Whaling Scenes",
+          "sha256": "b3b690ccedb4a5d6c37e506b340afaa986382bdb2d60e23ade2720ac5ec6b1f6"
+        },
+        {
+          "order": 67,
+          "title": "LVII: Of Whales in Paint; in Teeth; in Wood; in Sheet-Iron; in Stone; in Mountains; in Stars",
+          "sha256": "591b8cbd122f4fb96dffde0f7e9aeabe73c306bff0b27ecb3c5adc5840627586"
+        },
+        {
+          "order": 68,
+          "title": "LVIII: Brit",
+          "sha256": "cdbb62cb24b1e9aec7b2ebcc968f649d6cf74d96137d7c7546a838dfb25186fa"
+        },
+        {
+          "order": 69,
+          "title": "LIX: Squid",
+          "sha256": "68a23a42695fc77c810b6db4fb69c803d9e7bb85aecb5660752349549e80e36e"
+        },
+        {
+          "order": 70,
+          "title": "LX: The Line",
+          "sha256": "01a9ed52cfbeea302aa6b152c073b3a4eea8046ea7d5e8d5c95cdc06a3538511"
+        },
+        {
+          "order": 71,
+          "title": "LXI: Stubb Kills a Whale",
+          "sha256": "981dbe05dc4057dabd7fb4dca7742f7b21f585fc99740b64177f5b4ce492df3a"
+        },
+        {
+          "order": 72,
+          "title": "LXII: The Dart",
+          "sha256": "3649cae44082c704c9fe269ba2978716601fdf2203c899364c366c9874f49747"
+        },
+        {
+          "order": 73,
+          "title": "LXIII: The Crotch",
+          "sha256": "58f4cf4295750a817611bf8d8d089905961b2e19a71bd8e7ab37576cf2183d5b"
+        },
+        {
+          "order": 74,
+          "title": "LXIV: Stubb’s Supper",
+          "sha256": "555fe587e2914c72b1cc495861395b45b704ffde773e649d6abae9204624e0e4"
+        },
+        {
+          "order": 75,
+          "title": "LXV: The Whale as a Dish",
+          "sha256": "ed9b5fd5d48c28cd39a6a81014b7151f016efebdf2821a3e17fc03c4d7989d41"
+        },
+        {
+          "order": 76,
+          "title": "LXVI: The Shark Massacre",
+          "sha256": "dbe11cc75cef548d7856338e93740a75da09a965c9b3936d635df8f3f6d9c667"
+        },
+        {
+          "order": 77,
+          "title": "LXVII: Cutting In",
+          "sha256": "d5de4d73656a40e39b6bab1df743b7ec381bfb2f52adb2430f2037126ae6b354"
+        },
+        {
+          "order": 78,
+          "title": "LXVIII: The Blanket",
+          "sha256": "6c1fbbec7b2bbda9fe6ce01f728c381d18bcfae0e55eb9f669bc8ba056fe002e"
+        },
+        {
+          "order": 79,
+          "title": "LXIX: The Funeral",
+          "sha256": "596fcdf5d01d25bf30f96ef38e8f4b78629190da470f351b393ad44a0fce0e06"
+        },
+        {
+          "order": 80,
+          "title": "LXX: The Sphynx",
+          "sha256": "0dc3cd10f65ddfe0e6a17cdc599c54dcb951dfcc73c4fc2a02ce866e53cd0e4d"
+        },
+        {
+          "order": 81,
+          "title": "LXXI: The Jeroboam’s Story",
+          "sha256": "01a13d99457db06a62ba85361693b096ace3bdb7ee03887929cd60a52b8a2d88"
+        },
+        {
+          "order": 82,
+          "title": "LXXII: The Monkey-Rope",
+          "sha256": "3eee130b4e8e5cc99b306a0cbe72a9fd890edfc960d1229b7324641ff2187720"
+        },
+        {
+          "order": 83,
+          "title": "LXXIII: Stubb and Flask Kill a Right Whale; and Then Have a Talk Over Him",
+          "sha256": "448c65b81657c12fa46fc6aa22aae74278add236c85d56177324ebf09dfb79e1"
+        },
+        {
+          "order": 84,
+          "title": "LXXIV: The Sperm Whale’s Head—Contrasted View",
+          "sha256": "848c7d9336b0f67e0801cfa5fd29b36f1c13cbc0802705648a68ee81d78876c2"
+        },
+        {
+          "order": 85,
+          "title": "LXXV: The Right Whale’s Head—Contrasted View",
+          "sha256": "af9dae6e99366d8dbd4ec8011e4e14c0c9a7555a91c01ed4561388e8ebebeffc"
+        },
+        {
+          "order": 86,
+          "title": "LXXVI: The Battering-Ram",
+          "sha256": "d318af99c9e8f1e9082eefdece21a63ba273cb73a90449869887faa533b4e699"
+        },
+        {
+          "order": 87,
+          "title": "LXXVII: The Great Heidelburgh Tun",
+          "sha256": "2be98ea81e11c82870a4a7f707875b849355c419c03c9ca4c744d55922752365"
+        },
+        {
+          "order": 88,
+          "title": "LXXVIII: Cistern and Buckets",
+          "sha256": "9ea5a2871e2e7d2b1ac7569a0a064c7cf87511f893313e1edc913033af1872ca"
+        },
+        {
+          "order": 89,
+          "title": "LXXIX: The Prairie",
+          "sha256": "2a855a9a9ea8b8bb213fc12d67f90d379296a579e9bf33d1b1c2f3133191bc17"
+        },
+        {
+          "order": 90,
+          "title": "LXXX: The Nut",
+          "sha256": "699740a2525e34a4aadb9a4ce98d1a2c8ecb26a4d7d8a74a251ba7c37cae770c"
+        },
+        {
+          "order": 91,
+          "title": "LXXXI: The Pequod Meets the Virgin (1/2)",
+          "sha256": "6b702b6208b4ca71e0d1b7bcd17faaa912946b5fac282c1ef9feda1e8a507549"
+        },
+        {
+          "order": 92,
+          "title": "LXXXI: The Pequod Meets the Virgin (2/2)",
+          "sha256": "f66008e2101d2f01f9d2715bcd3243b3408acd4302ae43c1dc66367c974e3a2f"
+        },
+        {
+          "order": 93,
+          "title": "LXXXII: The Honor and Glory of Whaling",
+          "sha256": "136bbd3665167b5a7ff04a56ea376dc5763e7462a2fa0c7a2848d3d60f47d36b"
+        },
+        {
+          "order": 94,
+          "title": "LXXXIII: Jonah Historically Regarded",
+          "sha256": "14200b3e8ecb3046ed4ba07424589abd84a078bec342f17c2f3236a61ba59b0d"
+        },
+        {
+          "order": 95,
+          "title": "LXXXIV: Pitchpoling",
+          "sha256": "f8379fbcbdce41d7507386ca147b71ee82816bfebfe487f28464ebb0587b01ab"
+        },
+        {
+          "order": 96,
+          "title": "LXXXV: The Fountain",
+          "sha256": "1f1af7aaa844f03b3e93fc561f912d9f89544c855fa55ec464572c754795773b"
+        },
+        {
+          "order": 97,
+          "title": "LXXXVI: The Tail",
+          "sha256": "42733c41418d7843e5afaf3bc595e11c4797c47549d44e753ad48386aab7cc10"
+        },
+        {
+          "order": 98,
+          "title": "LXXXVII: The Grand Armada (1/2)",
+          "sha256": "eafbca6fa53fc15c0b25ff47bf6b9ad9151ff36be2f57c73de6fe5c9805b9af2"
+        },
+        {
+          "order": 99,
+          "title": "LXXXVII: The Grand Armada (2/2)",
+          "sha256": "498e7b3b3712e623ac52780f697a449f14b94f59e54dda90b1553ff1716285be"
+        },
+        {
+          "order": 100,
+          "title": "LXXXVIII: Schools and Schoolmasters",
+          "sha256": "4130dc168ce15c25c32b59584c6d7691f1878578cc0259308c94a1d0970ad502"
+        },
+        {
+          "order": 101,
+          "title": "LXXXIX: Fast-Fish and Loose-Fish",
+          "sha256": "e6da53e61518bd8c2f735673e179dd34beb6593f29ddd6ee58bbc3597f038859"
+        },
+        {
+          "order": 102,
+          "title": "XC: Heads or Tails",
+          "sha256": "ec03a6d5f50aac937b9bd50ffcead93eee3fb802b3ca55748803bb210905a0a5"
+        },
+        {
+          "order": 103,
+          "title": "XCI: The Pequod Meets the Rose-Bud",
+          "sha256": "cffdb27a7e873762ecadf075f7be0b381bf45e8b6ac79f5d1759bb7eb927b896"
+        },
+        {
+          "order": 104,
+          "title": "XCII: Ambergris",
+          "sha256": "458501528f1bec222619fc1a37ef61f05b4d1706fd19c322fe0c91e832b51006"
+        },
+        {
+          "order": 105,
+          "title": "XCIII: The Castaway",
+          "sha256": "0ac975d07d40466b4d5895a5a75274bf76a17990661b1fb799d19d20da0f0457"
+        },
+        {
+          "order": 106,
+          "title": "XCIV: A Squeeze of the Hand",
+          "sha256": "286073309a09058feb6e685dca53b91939b26c77141ef12afb093cb9e945d90e"
+        },
+        {
+          "order": 107,
+          "title": "XCV: The Cassock",
+          "sha256": "2966c967f1eb08aeaa43251f9cab5e06b402bc7f62c5f82efaf96da28a58a487"
+        },
+        {
+          "order": 108,
+          "title": "XCVI: The Try-Works",
+          "sha256": "0d5d9e4fa19974797b6679388c25bbcad30c749594c920bdf79595105a6e25f0"
+        },
+        {
+          "order": 109,
+          "title": "XCVII: The Lamp",
+          "sha256": "d903164ddbb7c0d4fd44af183d2c3e025d4e93049c02eef6e1204cfc1a10c437"
+        },
+        {
+          "order": 110,
+          "title": "XCVIII: Stowing Down and Clearing Up",
+          "sha256": "f52bd5b1e196a4129a76f054708eda666e24772e3ba4484f3d35833f59dcabf5"
+        },
+        {
+          "order": 111,
+          "title": "XCIX: The Doubloon",
+          "sha256": "be5cb7e594c08f7d6199cbd52993d4ea615d3a26a573cfdaf31268385b50c45a"
+        },
+        {
+          "order": 112,
+          "title": "C: Leg and Arm",
+          "sha256": "13c8947e0039eb0c01a83a970ce4446a9c6dabe5697b33f6e7c41fb546646897"
+        },
+        {
+          "order": 113,
+          "title": "CI: The Decanter",
+          "sha256": "f1a4b2eb9c20a984c1ac68748aa2645e33b88866e8ce3351794bf17bcb946295"
+        },
+        {
+          "order": 114,
+          "title": "CII: A Bower in the Arsacides",
+          "sha256": "11d61368cc5fdec246baa5857c849d298015293227e7b2c9bd93707a58921a02"
+        },
+        {
+          "order": 115,
+          "title": "CIII: Measurement of the Whale’s Skeleton",
+          "sha256": "c673ee1f28d8cc5c8f510e39195568175a6de721803b842ebcf02c0134439a82"
+        },
+        {
+          "order": 116,
+          "title": "CIV: The Fossil Whale",
+          "sha256": "21f1622810a7b6f3dff213b381ef1e5544d2b40f200ccbccbd8920b7c00c5d7f"
+        },
+        {
+          "order": 117,
+          "title": "CV: Does the Whale’s Magnitude Diminish?—Will He Perish?",
+          "sha256": "58f0cd2e73ea5311d9ef1e417c20d20905652f7018eb837c0cbd9b7ee1292818"
+        },
+        {
+          "order": 118,
+          "title": "CVI: Ahab’s Leg",
+          "sha256": "5399fedb940ee08f8037525025ae869a7bc14b8dc44945e771027d6de693c845"
+        },
+        {
+          "order": 119,
+          "title": "CVII: The Carpenter",
+          "sha256": "0e70c2d630881669005c27268c90d0d079df059787387a8f577dfa5f11336ecc"
+        },
+        {
+          "order": 120,
+          "title": "CVIII: Ahab and the Carpenter",
+          "sha256": "44ff4e250d1a5ee0d6ef278610c9a4223b387dea4f7f7323d6372553ce68a9f5"
+        },
+        {
+          "order": 121,
+          "title": "CIX: Ahab and Starbuck in the Cabin",
+          "sha256": "1a5dab6fda97dd279fb63bfe9be99b0e0cdfb7b8f88eaf7fb6366e4acc28159e"
+        },
+        {
+          "order": 122,
+          "title": "CX: Queequeg in His Coffin",
+          "sha256": "26238f5204d754f05ceeb8b9a78954236fc6322df3e803467d69b769f307c71e"
+        },
+        {
+          "order": 123,
+          "title": "CXI: The Pacific",
+          "sha256": "2b4caf5e616110936cf9dd29917b0452cccaee5ec1852ab76f3e0a6f5f324f66"
+        },
+        {
+          "order": 124,
+          "title": "CXII: The Blacksmith",
+          "sha256": "b4950207fe6a6b88b4408740dd02b267c5c266b7f90c8fd5eb2a6482b1285b06"
+        },
+        {
+          "order": 125,
+          "title": "CXIII: The Forge",
+          "sha256": "46b2e79a7ef90c9807b02961ba0a6aa8e59130431a7a773fb282d8530f8b437f"
+        },
+        {
+          "order": 126,
+          "title": "CXIV: The Gilder",
+          "sha256": "058d4ec1d1570dbc62f3b0fb32c4baf50c3645e62d63c0d18106a1ab1b80cad7"
+        },
+        {
+          "order": 127,
+          "title": "CXV: The Pequod Meets the Bachelor",
+          "sha256": "775bbe625af6c59ce45064eca5d642f4f0517e07496c6d2f1a6d25a0b70bc1ab"
+        },
+        {
+          "order": 128,
+          "title": "CXVI: The Dying Whale",
+          "sha256": "5b296b9286ffa539cdb1bcf4532f2ad3f6e15ef0b7db75aa295df1f08b0dec5b"
+        },
+        {
+          "order": 129,
+          "title": "CXVII: The Whale Watch",
+          "sha256": "179a4928dd597e8c0a55924250fda19bc3cbce504a8b37da05ef3b775b56dd1f"
+        },
+        {
+          "order": 130,
+          "title": "CXVIII: The Quadrant",
+          "sha256": "15fc711178b36401410b4c66d8885f3a6af0a340edf16a613de6833f221991f5"
+        },
+        {
+          "order": 131,
+          "title": "CXIX: The Candles",
+          "sha256": "33b60fabc229f97d6020a0cd1ea362ba42c6c182ace4dca570593ede6cbbe431"
+        },
+        {
+          "order": 132,
+          "title": "CXX: The Deck Towards the End of the First Night Watch",
+          "sha256": "c1703518bd2454c4a4a61e81fc91f44f111bdb9e4355f66afa920783933bc870"
+        },
+        {
+          "order": 133,
+          "title": "CXXI: Midnight.—The Forecastle Bulwarks",
+          "sha256": "f7e7a2bd269df746b8e197d4bcce70ebbbf8550142ac1073ea244cb97f3a3758"
+        },
+        {
+          "order": 134,
+          "title": "CXXII: Midnight Aloft.—Thunder and Lightning",
+          "sha256": "3ab4d25bde3f33c022844d479afb38bdfe140a0748bf30ed76430605d96a6498"
+        },
+        {
+          "order": 135,
+          "title": "CXXIII: The Musket",
+          "sha256": "80468e3003523e564ce1a6005b8b43719bda2f39a6695dd5733efe0e8d5b4832"
+        },
+        {
+          "order": 136,
+          "title": "CXXIV: The Needle",
+          "sha256": "4e51fe99c78521d6a0259b0246b140f4356850db0797db52b0a6ae84999a05e0"
+        },
+        {
+          "order": 137,
+          "title": "CXXV: The Log and Line",
+          "sha256": "7af270fab0e0afa53879324305fe88f0fa410f822d3095745e326f8856099630"
+        },
+        {
+          "order": 138,
+          "title": "CXXVI: The Life-Buoy",
+          "sha256": "e01be846ea3abd71455bb77e1250de1251b628c95b647f8adc3e126bfaeb0d98"
+        },
+        {
+          "order": 139,
+          "title": "CXXVII: The Deck",
+          "sha256": "196166cc347ce2558ff278d83f07ed76089dd81283897107c39066035586ac51"
+        },
+        {
+          "order": 140,
+          "title": "CXXVIII: The Pequod Meets the Rachel",
+          "sha256": "21bb6e0c6a402c3d9d2b2c14c488eaa77aad7530d771bb49d174fb5b24e49a01"
+        },
+        {
+          "order": 141,
+          "title": "CXXIX: The Cabin",
+          "sha256": "510340d1a5ab5e0c6b2cb2c869cbdc8ae4a6212bd2fe63b45216d3500114fc5d"
+        },
+        {
+          "order": 142,
+          "title": "CXXX: The Hat",
+          "sha256": "cfde87812c26de57e41a32ecb7ec204b7beacb27c221090e41254b891756858b"
+        },
+        {
+          "order": 143,
+          "title": "CXXXI: The Pequod Meets the Delight",
+          "sha256": "2522533e737a01c9f87b675f4f817d4f34679fedabd594b5c00b95a1d2cb100b"
+        },
+        {
+          "order": 144,
+          "title": "CXXXII: The Symphony",
+          "sha256": "68ec796e96c14e7e3d9a51c5aae2e2670effd605a93dda76459f0a10db86e26f"
+        },
+        {
+          "order": 145,
+          "title": "CXXXIII: The Chase—First Day (1/2)",
+          "sha256": "c1121b93e5cfbcc823df795c741787a539f0e87f0b13206fdf03b6a8f998f031"
+        },
+        {
+          "order": 146,
+          "title": "CXXXIII: The Chase—First Day (2/2)",
+          "sha256": "744f79d116679e18bec626adcfd65981d6b8ecd0d782a180958204260a15ebf7"
+        },
+        {
+          "order": 147,
+          "title": "CXXXIV: The Chase—Second Day",
+          "sha256": "83673e4e43cd2af7c8c5925af9391e431ee533cd70c30ddf4e6a8dae51930b93"
+        },
+        {
+          "order": 148,
+          "title": "CXXXV: The Chase—Third Day (1/2)",
+          "sha256": "41a60628d747e1769f3802380b4825932b414f45f08ace849fd91a4e8767b63c"
+        },
+        {
+          "order": 149,
+          "title": "CXXXV: The Chase—Third Day (2/2)",
+          "sha256": "6701261ef507adbce1bb6d1c21d55257752db651140d07c5b4671be7c4cb84b1"
+        },
+        {
+          "order": 150,
+          "title": "Epilogue",
+          "sha256": "b0355e2e87ed5fad4dc18862716d4514e3efe6b91f3fc6011ffa1dd9ef546184"
+        }
+      ]
+    },
+    "se-james-joyce_a-portrait-of-the-artist-as-a-young-man": {
+      "title": "A Portrait of the Artist as a Young Man",
+      "author": "James Joyce",
+      "level": "C1 고급",
+      "total": 39,
+      "words": 84801,
+      "display": {
+        "titleKo": "젊은 예술가의 초상",
+        "authorKo": "제임스 조이스",
+        "binding": "huebsch",
+        "coverTitle": "A Portrait of\nthe Artist as\na Young Man",
+        "coverAuthor": "James Joyce"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-james-joyce_a-portrait-of-the-artist-as-a-young-man",
+        "title": "A Portrait of the Artist as a Young Man",
+        "author": "James Joyce",
+        "publishedYear": 1916,
+        "authorDeathYear": 1941,
+        "countryOfOrigin": "IE",
+        "translator": null,
+        "repo": "standardebooks/james-joyce_a-portrait-of-the-artist-as-a-young-man",
+        "commit": "e0e2424279c6465074eff58b4a5238d210a99de4",
+        "url": "https://standardebooks.org/ebooks/james-joyce/a-portrait-of-the-artist-as-a-young-man",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "IE",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/james-joyce/a-portrait-of-the-artist-as-a-young-man"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I (1/8)",
+          "sha256": "f36655be32ea5889129023327103ca9180abfb5519597029722780621ca0f75b"
+        },
+        {
+          "order": 2,
+          "title": "I (2/8)",
+          "sha256": "add77e1d9a54d4e1d93563b8264c482f9d9a837c074014c2463e38eb39a13d15"
+        },
+        {
+          "order": 3,
+          "title": "I (3/8)",
+          "sha256": "07caa11841491a171573d03a00332e38deee8f9621f10c99b7973725f65e77a3"
+        },
+        {
+          "order": 4,
+          "title": "I (4/8)",
+          "sha256": "a5e2303fc6ff09fe99efb9a49fab59ed08a4b3006b7db66f6115d9e5ce93e094"
+        },
+        {
+          "order": 5,
+          "title": "I (5/8)",
+          "sha256": "7fa46f9c2dea5ec9b2f27cd6da7f97355df4e5ff061fc80b3c1cace70b0310fb"
+        },
+        {
+          "order": 6,
+          "title": "I (6/8)",
+          "sha256": "c5d70ba7eca36c8e9a4acc340a363b3d509e144517b36ab823e4e050996263e9"
+        },
+        {
+          "order": 7,
+          "title": "I (7/8)",
+          "sha256": "abec6fc5900b0633ebfcb5b0e39629a59b256c4b46d82c38ad08c8f9dd9f14a6"
+        },
+        {
+          "order": 8,
+          "title": "I (8/8)",
+          "sha256": "30c6ee0906735dfc4d6e1d2b5b7fd87334c66ee12d8e7012776994df67bdc74c"
+        },
+        {
+          "order": 9,
+          "title": "II (1/7)",
+          "sha256": "23cd3d43458c9d7c12d7ab3c2f783e3a263285c5761aa5c56d041cd06889098f"
+        },
+        {
+          "order": 10,
+          "title": "II (2/7)",
+          "sha256": "28421c5a1bf3f72c98e5cec918c171533e24295ea8d618e6d326403c6ac4d6a8"
+        },
+        {
+          "order": 11,
+          "title": "II (3/7)",
+          "sha256": "43de42485a21102a07e458b43d72eeba670f477ed88bfbdba71396c953921a9d"
+        },
+        {
+          "order": 12,
+          "title": "II (4/7)",
+          "sha256": "51d019037e0bfced453a864181ac200071b3b8550876e9898e477780e7196156"
+        },
+        {
+          "order": 13,
+          "title": "II (5/7)",
+          "sha256": "45ca059c33c084530aa4ba0703b2933d68e7cc0a3a1cd2e78eea913a679d80dc"
+        },
+        {
+          "order": 14,
+          "title": "II (6/7)",
+          "sha256": "f0c09e3b0276188cc9e6b7773a225b12dea5447eb9891b1cb6034dd89ca3cf66"
+        },
+        {
+          "order": 15,
+          "title": "II (7/7)",
+          "sha256": "5b23ecb1ed2d390fd07fba645fd29c3f9e94ec086fc588bab8420c809fcea544"
+        },
+        {
+          "order": 16,
+          "title": "III (1/8)",
+          "sha256": "55a59b942b93f118ea97868c9c32d484c659b1447ae33290fb6b1b16839f3d5d"
+        },
+        {
+          "order": 17,
+          "title": "III (2/8)",
+          "sha256": "83c6ffd9c9b7099717d7d69d9edd9373a4b727a40d4fb31e6f74b1d1efaf8921"
+        },
+        {
+          "order": 18,
+          "title": "III (3/8)",
+          "sha256": "920426aec3d83aa6ba0a27986a1b5c551d1057ada6ce5babc43fcbad7366eff1"
+        },
+        {
+          "order": 19,
+          "title": "III (4/8)",
+          "sha256": "ad16d0353c3145e617b0bb8911b2129f35baf29cdc9a9e0ba11390d78015987f"
+        },
+        {
+          "order": 20,
+          "title": "III (5/8)",
+          "sha256": "043717a963a352f17c6c5b8aefb6f363cfee1162da6ab4f7578110acfc8dd2cc"
+        },
+        {
+          "order": 21,
+          "title": "III (6/8)",
+          "sha256": "ba870087e0123c72e70ab92625afb7e97ef756a1efa9476fe07abe9ac8652a1f"
+        },
+        {
+          "order": 22,
+          "title": "III (7/8)",
+          "sha256": "b3b01f47abbd1375bf68869c74febf2a7246324582a45a5dfcef48a7da321c76"
+        },
+        {
+          "order": 23,
+          "title": "III (8/8)",
+          "sha256": "4e62206fc6850e4b08769dbdb5e2a3b5b097fdb0e3db69179e571cbbba26bfa4"
+        },
+        {
+          "order": 24,
+          "title": "IV (1/4)",
+          "sha256": "92f7ee9030a9175c6b585064bf095617cc4b698539c9c1824de65e9194760a9c"
+        },
+        {
+          "order": 25,
+          "title": "IV (2/4)",
+          "sha256": "38963a060e6038f6d33457946160747b42d81cce0e3e00e2ff8c497b60ffe8de"
+        },
+        {
+          "order": 26,
+          "title": "IV (3/4)",
+          "sha256": "1a64bd211b28706b328371ac8251e82707cb21254b659fa483df918381e8fd8d"
+        },
+        {
+          "order": 27,
+          "title": "IV (4/4)",
+          "sha256": "cdc150b7deb1d5f1cf103eb0c9ba661cfb401d561f0ece31e3ff5b612be56004"
+        },
+        {
+          "order": 28,
+          "title": "V (1/12)",
+          "sha256": "4b971e3259ad75d625a0c49e875a0c1f21a33db6cc985cda449b7adb65839092"
+        },
+        {
+          "order": 29,
+          "title": "V (2/12)",
+          "sha256": "128dbe7cf26d248011aba123e0ebd7ec1743d059dcb18293670d6ffe83f5bb1b"
+        },
+        {
+          "order": 30,
+          "title": "V (3/12)",
+          "sha256": "65e6a9f2e06a6647d92daaa9f0419725fc466e1f5dbba2273721f7c1a670690d"
+        },
+        {
+          "order": 31,
+          "title": "V (4/12)",
+          "sha256": "5a62dc2ee06aba60369d5c4c327518730af775c56738417d0e2733e4fa1f1406"
+        },
+        {
+          "order": 32,
+          "title": "V (5/12)",
+          "sha256": "8c289202fcf3f247f648f3d776866fa61931927b27690f66cfb6f4ff38661a7c"
+        },
+        {
+          "order": 33,
+          "title": "V (6/12)",
+          "sha256": "41e8531437430cb4982dd52a43d4f1028bc9951a91ba6afd95bcd4a215a2e4d0"
+        },
+        {
+          "order": 34,
+          "title": "V (7/12)",
+          "sha256": "5b18eb8c6a75ce9fb9e730dbad7c3e2285f8fb9db60053f0fb91d434c9746339"
+        },
+        {
+          "order": 35,
+          "title": "V (8/12)",
+          "sha256": "4188cead4574202f7d46b90ce01e08c97b29484988caa9cfd0a3757a09aeb1e3"
+        },
+        {
+          "order": 36,
+          "title": "V (9/12)",
+          "sha256": "5bf2482a6f213de42831c464702d1e1704d5c25f4107a296aaacb39ee8e248ea"
+        },
+        {
+          "order": 37,
+          "title": "V (10/12)",
+          "sha256": "fa9192d733f4ce4d99f5d0821418f3fd21fd70025be04588db486971f361a535"
+        },
+        {
+          "order": 38,
+          "title": "V (11/12)",
+          "sha256": "dfd987ffa547ba9714dd9d7ad55aa4c03e406227d2ec81954ae3770300a748a9"
+        },
+        {
+          "order": 39,
+          "title": "V (12/12)",
+          "sha256": "19299093e4e3560793bfa122d156c4611f94a2896f0a52339f944e28003b5525"
+        }
+      ]
+    },
+    "se-jane-austen_pride-and-prejudice": {
+      "title": "Pride and Prejudice",
+      "author": "Jane Austen",
+      "level": "B2 상급",
+      "total": 65,
+      "words": 121497,
+      "display": {
+        "titleKo": "오만과 편견",
+        "authorKo": "제인 오스틴",
+        "binding": "egerton-boards",
+        "coverTitle": "Pride and\nPrejudice"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-jane-austen_pride-and-prejudice",
+        "title": "Pride and Prejudice",
+        "author": "Jane Austen",
+        "publishedYear": 1813,
+        "authorDeathYear": 1817,
+        "countryOfOrigin": "GB",
+        "translator": null,
+        "repo": "standardebooks/jane-austen_pride-and-prejudice",
+        "commit": "ed94a32be3e875c0814568050c7544e03aad3ef5",
+        "url": "https://standardebooks.org/ebooks/jane-austen/pride-and-prejudice",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "GB",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/jane-austen/pride-and-prejudice"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I",
+          "sha256": "8247e3d5899e87358dabefb88ed5ee536de220f17f7d029b0665f982a9e6cfc3"
+        },
+        {
+          "order": 2,
+          "title": "II",
+          "sha256": "2fb5072a2b9fa32eaf4d2739a75f1139b80db566cc6092a008627949258b7122"
+        },
+        {
+          "order": 3,
+          "title": "III",
+          "sha256": "8b5c5a8efc6a40adb19e4cd4d9f716e4c0ce7ebf7b966a04863b045d1701b28a"
+        },
+        {
+          "order": 4,
+          "title": "IV",
+          "sha256": "3cc97a4886b13c1d2f3e5589bc777dc2d78b3eb624d85514ab675021dde5ca80"
+        },
+        {
+          "order": 5,
+          "title": "V",
+          "sha256": "888cfa03cdbecbd82f9c9e293c6089a39b6aaeb052cf8c24ad4037fa45425010"
+        },
+        {
+          "order": 6,
+          "title": "VI",
+          "sha256": "65a3764a7cc73440a097c54ad2c676bd6ea0324b7eb28ab8358c7939d585e6b6"
+        },
+        {
+          "order": 7,
+          "title": "VII",
+          "sha256": "bfb677eff064a1c4033043a9582e5627734afda0e9f41577a433374b1c44adcd"
+        },
+        {
+          "order": 8,
+          "title": "VIII",
+          "sha256": "49ba904ef567fc6aa954206d2d3ae94893337c9dc34b7b81beb100dd7083f836"
+        },
+        {
+          "order": 9,
+          "title": "IX",
+          "sha256": "ef97e1147ee6e4d15ac2bcb48a979aebccddc2ccb178fcaf54c4b5468cdb13b8"
+        },
+        {
+          "order": 10,
+          "title": "X",
+          "sha256": "14aa8d68c9f77c4150bae0174a4ee41d3b63db16960fe27234fe0bf54cb47fe7"
+        },
+        {
+          "order": 11,
+          "title": "XI",
+          "sha256": "8e091c475a2388b6cf348b36242cc5063c4268cc11a85382aa093e94f67fda18"
+        },
+        {
+          "order": 12,
+          "title": "XII",
+          "sha256": "4f8d36ebf9b42d3faac43a5f0b8177a5a1fcb32309c62912366821b01f009d51"
+        },
+        {
+          "order": 13,
+          "title": "XIII",
+          "sha256": "592b3c769861482001f951223dc3009583a85be1d16c8d79300c4285841af35c"
+        },
+        {
+          "order": 14,
+          "title": "XIV",
+          "sha256": "be69d2304e2c68290b0c893e05dc80aabd3e79b4390e4b11adff619761421f06"
+        },
+        {
+          "order": 15,
+          "title": "XV",
+          "sha256": "dc96fd07c99645294f86e51bf4922cf87476eaddb6cefe79ccb2df5981320643"
+        },
+        {
+          "order": 16,
+          "title": "XVI (1/2)",
+          "sha256": "2a4d5b15c49cd482dfb2c56fc0cdca59188c84133b5b28d3c6c686e8deb79e93"
+        },
+        {
+          "order": 17,
+          "title": "XVI (2/2)",
+          "sha256": "3176215d1cbe6788d5d93a1b0cc30da280335bedb15c3cbcb923f51c19435f98"
+        },
+        {
+          "order": 18,
+          "title": "XVII",
+          "sha256": "c0cc8fa0782b60d2e16f1244ce8ad624a759d8637855b984c316147a3150cd6e"
+        },
+        {
+          "order": 19,
+          "title": "XVIII (1/2)",
+          "sha256": "cc031ad7f1b98de38b5683a549e4f87864b907c0193454b8c71a5a94880db3a9"
+        },
+        {
+          "order": 20,
+          "title": "XVIII (2/2)",
+          "sha256": "1e8da4f057e48e638b0e850ead165e49a360d98d43df3f04c83d7691c0e20c9e"
+        },
+        {
+          "order": 21,
+          "title": "XIX",
+          "sha256": "af0971ae69cdd51b25f397a70b7435b711137bbd4143d956be791d3656b990f7"
+        },
+        {
+          "order": 22,
+          "title": "XX",
+          "sha256": "25d0860093cd3d91f159edd5cc1eef59fddfd42fca1f4f36533eb016dc003a15"
+        },
+        {
+          "order": 23,
+          "title": "XXI",
+          "sha256": "a9369112ce1aa164c0834e939fff90760a4d85b60a0ab56e2c8de77aad4ed5ab"
+        },
+        {
+          "order": 24,
+          "title": "XXII",
+          "sha256": "fa29c4a64a54e2ff850f73521bddd8018e2731f7f39b1c3d5eae6ce457acdf3e"
+        },
+        {
+          "order": 25,
+          "title": "XXIII",
+          "sha256": "db7e1711cdd339f9656da8abdfc535426518dbd9b3cbfebdef05f0a4de4b9fff"
+        },
+        {
+          "order": 26,
+          "title": "XXIV",
+          "sha256": "d474b13300d9371c805b60c268fa932644ca482370db243101f063d18636a930"
+        },
+        {
+          "order": 27,
+          "title": "XXV",
+          "sha256": "3c8e288f8c3732f2062682235ca9eeb01a0b8fa0c52a237de486a4755199290d"
+        },
+        {
+          "order": 28,
+          "title": "XXVI",
+          "sha256": "db6179b0f3350a856ecfc21ebcfdcd31c47932f75b84a586b2ce8567b90380e9"
+        },
+        {
+          "order": 29,
+          "title": "XXVII",
+          "sha256": "768ea4ead3c39379ada1322646594254831d876cb0c3ea92650c4affc0224be7"
+        },
+        {
+          "order": 30,
+          "title": "XXVIII",
+          "sha256": "24c7114c667288d54178d43755af643195eb418b64d98bc2fe99f59b9c79a547"
+        },
+        {
+          "order": 31,
+          "title": "XXIX",
+          "sha256": "60fa110f9f2fecdd50778b8dc2fcc5f3978bec51311e4e442260b389ffe9ab95"
+        },
+        {
+          "order": 32,
+          "title": "XXX",
+          "sha256": "51d6b131ed9549eb44745eba77aff124dc2c9fe3fc19435a00e4eda315a17127"
+        },
+        {
+          "order": 33,
+          "title": "XXXI",
+          "sha256": "ebfbf2a3a960693e2f9af24d0c3b35d989d775a16c1f33c71de1c110158f0e2c"
+        },
+        {
+          "order": 34,
+          "title": "XXXII",
+          "sha256": "bedd4cb25b230042b35daebc36cb184a2afd24862bdb188b2bbc1ccd7d781ccb"
+        },
+        {
+          "order": 35,
+          "title": "XXXIII",
+          "sha256": "a6803bfb7590c1957cde4eb6a25f47892e6d56e8e45b67fcf9fbaa0ccee9ec55"
+        },
+        {
+          "order": 36,
+          "title": "XXXIV",
+          "sha256": "20d35b929a3dc2eb13aa65d78d7968c65eef602bebc6b41335634e20963651ba"
+        },
+        {
+          "order": 37,
+          "title": "XXXV",
+          "sha256": "6d942a0628603befb76bd16a159ba6159a9ba5b2748f0f7746cd0db9fdc7a799"
+        },
+        {
+          "order": 38,
+          "title": "XXXVI",
+          "sha256": "5b634983c989b497184dd26fd08c7c5dd6514d5971ce560ffdfc56ef248a6f27"
+        },
+        {
+          "order": 39,
+          "title": "XXXVII",
+          "sha256": "fed6232206951f720e968770db20a91e703c2021a229a49994ab5eca2627df31"
+        },
+        {
+          "order": 40,
+          "title": "XXXVIII",
+          "sha256": "32675d16df8625433dd493a7799ef99e215c1bc3925ae712ada1eee299b52210"
+        },
+        {
+          "order": 41,
+          "title": "XXXIX",
+          "sha256": "f3539d6a2aa2afacb9fda052a00b884a9c49c02f13f33d9a606ab128d55dfc39"
+        },
+        {
+          "order": 42,
+          "title": "XL",
+          "sha256": "bbb1a808c49691137039481b9e2937fec9e361ed55ecb76f3cb79b071fe664f6"
+        },
+        {
+          "order": 43,
+          "title": "XLI",
+          "sha256": "1ebce1fbca5c43ed9166542a44078b04bfbdb4fd452fa73d80d0ac721e3ca230"
+        },
+        {
+          "order": 44,
+          "title": "XLII",
+          "sha256": "255cb628f8f3e374f6624ba568b0db106a8a86bfd95e804f47a8c5bfef0bc8bb"
+        },
+        {
+          "order": 45,
+          "title": "XLIII (1/2)",
+          "sha256": "9da9948e7b287ea2e066cb97e1e7547eff3569cdfd0e957c6cf2d523495081e3"
+        },
+        {
+          "order": 46,
+          "title": "XLIII (2/2)",
+          "sha256": "8b59fbcf3c39940007b9b1918b7ab6c5912af8ea27ab1b9693693891a71392d1"
+        },
+        {
+          "order": 47,
+          "title": "XLIV",
+          "sha256": "0e56ae6a862dd7df77d527a6662c287e8e04d0be52e7452f28871216d0ed4ad6"
+        },
+        {
+          "order": 48,
+          "title": "XLV",
+          "sha256": "6f75becac80ca2b20cad5a5c3a379e9dd431ddaaf29b1f71193ef3700350cad4"
+        },
+        {
+          "order": 49,
+          "title": "XLVI",
+          "sha256": "6a02f47947e4226139e92538a2b253b7e919561005613e8576ede9e53e35ea00"
+        },
+        {
+          "order": 50,
+          "title": "XLVII (1/2)",
+          "sha256": "09ca2620da2451aaff076d170e3c9a400e10125f3c1d004d6f44dcf2222e6560"
+        },
+        {
+          "order": 51,
+          "title": "XLVII (2/2)",
+          "sha256": "3dae805ac60d20c6b113a92b71f8754055fa70aa1b35081c1ca4155b9593e173"
+        },
+        {
+          "order": 52,
+          "title": "XLVIII",
+          "sha256": "ed36260cc7c7f40d355e79b7ac6c5787859eef23bc378e3f8fbd2cc312cea36d"
+        },
+        {
+          "order": 53,
+          "title": "XLIX",
+          "sha256": "2ea90968a7bf7fc8483aeea38d7b95815e44697e7edd78eacd2a13d0e80afdea"
+        },
+        {
+          "order": 54,
+          "title": "L",
+          "sha256": "0907c06c3bcd1fb9e77c6c7a14b3917bcd8b824262b40af4263105989fa715d8"
+        },
+        {
+          "order": 55,
+          "title": "LI",
+          "sha256": "e173c54243b019f556bc6038687931c336ee87fad3697dc308b958fb1e50fb52"
+        },
+        {
+          "order": 56,
+          "title": "LII",
+          "sha256": "6d11e38d096e4280126500f2d33e88a8b898332011abcd160369fbe328fd7605"
+        },
+        {
+          "order": 57,
+          "title": "LIII",
+          "sha256": "b33db12d6368e625e221bebfbbcbb43efd51bed91788cdc44c587687fd29e4d0"
+        },
+        {
+          "order": 58,
+          "title": "LIV",
+          "sha256": "fdc09e23f525a51b56233363f983540663c32bb503873133baa2bceb1a252974"
+        },
+        {
+          "order": 59,
+          "title": "LV",
+          "sha256": "ea112f3f0486dd888c774ef81ff5cea8fa53d0c04054a2e68c731685fdb0a911"
+        },
+        {
+          "order": 60,
+          "title": "LVI",
+          "sha256": "2032f148b58adb13a51a0eae046af1bce21f36c0f498026663c07422b1d112d3"
+        },
+        {
+          "order": 61,
+          "title": "LVII",
+          "sha256": "f50b2fe8732025c9e419d8c38fc1214796afac9f6ca2c1cff2c185c8fd75565f"
+        },
+        {
+          "order": 62,
+          "title": "LVIII",
+          "sha256": "b8060bcc864658ec4ffe4e13a5a76256b1b5b06ecf5205dfbee05c6bf4d608e5"
+        },
+        {
+          "order": 63,
+          "title": "LIX",
+          "sha256": "427c6ae9191d65995e10dcaf035cbaa24114bebdc63b7b005801c999b91219ac"
+        },
+        {
+          "order": 64,
+          "title": "LX",
+          "sha256": "14ddbbb05dcaa5d1ca85fbc1df5ffaf26afecab0a64dd270c42f670571fdc686"
+        },
+        {
+          "order": 65,
+          "title": "LXI",
+          "sha256": "6daba046032df5abd817fc08cd7ff726377d70dd8e7a64df14e82867c53c7000"
+        }
+      ]
+    },
     "se-lewis-carroll_alices-adventures-in-wonderland": {
       "title": "Alice’s Adventures in Wonderland",
       "author": "Lewis Carroll",

@@ -23,7 +23,10 @@
   },
   "display": {
     "titleKo": "자기만의 방",
-    "authorKo": "버지니아 울프"
+    "authorKo": "버지니아 울프",
+    "binding": "hogarth-bell",
+    "coverTitle": "a room\nof one’s own",
+    "coverAuthor": "Virginia Woolf"
   },
   "parse": {
     "chapter": "^h1:CHAPTER [IVX]+$",

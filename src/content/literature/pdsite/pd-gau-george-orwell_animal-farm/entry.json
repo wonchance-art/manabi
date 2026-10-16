@@ -23,7 +23,11 @@
   },
   "display": {
     "titleKo": "동물농장",
-    "authorKo": "조지 오웰"
+    "authorKo": "조지 오웰",
+    "binding": "secker-diagonal",
+    "coverTitle": "Animal\nFarm",
+    "coverSubtitle": "A Fairy Story",
+    "coverAuthor": "George Orwell"
   },
   "parse": {
     "chapter": "^h2:Chapter [IVX]+$",

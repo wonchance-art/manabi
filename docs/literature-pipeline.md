@@ -265,7 +265,7 @@ group by 1 order by 1;
 
 - 원문: 위키문헌 렌더 조각을 판 번호(revid)·SHA-256으로 고정(`scripts/literature/ws-add-work.mjs`, `src/content/literature/wikisource/`).
   전사는 CC BY-SA 4.0이라 뷰어 출처 줄에 라이선스·원문 링크·편집 내역을 적는다. 고유명사 밑줄(专名线)은 「한 단어로 묶기」 기록이 된다.
-- 표지(`src/lib/wikisourceCover.js` · `src/components/books/WikisourceCover.jsx`) — 시안 아티팩트 18rS1ovq5NURKm1vSzsYTU를 그대로 옮겼다.
+- 표지(`src/lib/firstEditionCover.js` · `src/components/books/FirstEditionCover.jsx`) — 시안 아티팩트 18rS1ovq5NURKm1vSzsYTU를 그대로 옮겼다.
   사람 몸·출판사 도안·모노그램은 그리지 않는다.
 
 | 장정 | 작품 | 실물 | 이 표지 |
@@ -283,6 +283,62 @@ group by 1 order by 1;
   정본 대조표의 번체 해시와 같을 때만 쓴다(`verifiedScriptVariant`). 단어 카드·저장·복습·문장 지정은 간체 token.text 그대로 — 단어장이 둘로
   갈라지지 않는다. 설정 Aa 「글자 모양 간체 | 번체」는 번체 사본이 있는 중국어 책에서만 보이고 기기에 기억된다(`zhScript`).
   하나라도 어긋나면 간체로 보인다(fail-closed).
+
+### 8.7 2차 묶음 — 한·영·불 19권 · 출처 셋 · 초판 장정 · 당시 글꼴 (오너 2026-10-17 KST, LIT-SRC-WS-1 · LIT-SRC-PD-1)
+
+오너 「날개, 진달래꽃, 하늘과 바람과 별과 시 / 동물농장, 1984, 위대한 개츠비, 노인과 바다, 자기만의 방, 젊은 예술가의 초상, 모비 딕, 월든,
+오만과 편견 / 어린 왕자, 이방인, 시지프 신화 — 이전과 같이 원본 책 재구성하는 방식으로 표지 만들기까지 완성」 → 「폰트 구해가면서 적용시켜봐
+당시 글꼴로. 원본 대조하면서」.
+
+**출처** — 한국 법(§8.2)으로 7권이 「1962년 이전 사망」에 걸려 한국에서 열린다(헤밍웨이 1961 · 카뮈 1960 · 생텍쥐페리 1944 · 오웰 1950 · 울프 1941).
+미국에선 아직 보호라 Standard Ebooks에 없는 책은 그 나라에서 퍼블릭 도메인인 전자책 사이트 판을 쓴다(`src/lib/pdSite.js`).
+
+| 출처 | 책 | 비고 |
+|---|---|---|
+| Standard Ebooks | The Great Gatsby · Moby Dick · Walden · Pride and Prejudice · A Portrait of the Artist as a Young Man | 파서 보강: 표 · 글 속 작은 그림(대체 글자) · 제사 출처 · 미주 번호 |
+| Faded Page(캐나다 DP Canada) | The Old Man and the Sea · A Room of One’s Own · L’Étranger · Le Mythe de Sisyphe | 책 쪽 세션 뒤 내려받기 · 각주 표는 싣지 않음 |
+| Project Gutenberg Australia | Animal Farm · Nineteen Eighty-Four · Le Petit Prince | 사이트 머리말·「Project Gutenberg」 이름은 본문에 싣지 않는다(사이트 조건) |
+| 위키문헌 ko | 진달래꽃(1925 — 현대어 칸 126편) · 하늘과 바람과 별과 시(1948 초판 31편 — 정지용 서문·강처중 발문 제외) | 시집 모드(시 단위로 3,000자 안팎 묶음 · 연마다 문단) |
+
+두 전자책 사이트는 「화면에 맞춘 바꿈 밖의 수정이면 사이트 머리말·표지를 떼라」는 조건이다 — 우리는 본문만 싣고(장 분할 · 보이지 않는 조판 문자 정리 ·
+삽화·각주 생략 = 화면에 맞춘 바꿈), 출처 줄은 사이트 이름 · 책 쪽 링크 · 「한국에서 퍼블릭 도메인」(사이트 저작권 표시는 그 나라 기준이라 한국 판정만)이다.
+
+**표지(초판 장정 19종)** — 실물 사진·서지 기록 대조(조사 보고 두 건, 사진은 대조용으로만). 사람 몸 · 출판사 문장·모노그램(nrf · Harper) · 캐릭터 그림
+(어린 왕자 · 소행성) · 실존 인물 서명(헤밍웨이)은 그리지 않는다. 한국에서 보호 중인 그림(『하늘과 바람과 별과 시』 이정 1995 사망 목판화)은 쓰지 않고
+같은 판의 갈포 + 흰 제첨 판을 쓴다. Vanessa Bell(1961 사망) 재킷은 한국 만료라 구성을 따른다. 실물 사진이 없는 둘(『조선의 얼골』 · 박문문고)은
+같은 잡지·문고의 기록 관례안(『開闢』 후기 표지 · 문고 이중 테)이다. 제목 글자는 현대 표기(실물 「진달내ᄭᅩᆺ」 · 「동배꼿」의 옛 글자는 글꼴·분석이
+다루지 못한다), 글자 방향은 실물대로(진달래꽃 · 開闢 가로 오른쪽→왼쪽).
+
+**글꼴 — 실물 글자와 나란히 놓고 고른 당시 글꼴의 가장 가까운 공개 글꼴**(대조 견본을 만들어 후보 4개씩 비교):
+
+| 표지 | 실물 글자 | 고른 글꼴(라이선스) |
+|---|---|---|
+| 감자(1935) | 굵은 붓 | Kirang Haerang(OFL) |
+| 동백꽃(1938) | 해서 붓 | Song Myung(OFL) |
+| 날개(이상선집 1949) | 가는 행서 붓 | East Sea Dokdo(OFL) |
+| 진달래꽃(1925) | 거친 손글씨 띠 | Dokdo(OFL) |
+| 하늘과 바람과 별과 시 · 작은 한자 | 옛 금속활자 명조 | Song Myung(OFL) |
+| 開闢 · 박문문고 | 굵은 명조 활자 | Nanum Myeongjo 700/800(OFL) |
+| Animal Farm(1945) | 손그림 기울임 대문자 · 붓 「by」 · 굵은 그로테스크 | Josefin Sans · Kaushan Script · Jost(OFL) |
+| Nineteen Eighty-Four(1949) | 1940년대 붓 필기체 | Yellowtail(Apache 2.0) |
+| A Room of One’s Own(1929) | Bell의 둥근 손글씨 | Gochi Hand(OFL) |
+| A Portrait of the Artist(1916) | 아츠앤크래프츠 세리프 | Goudy Bookletter 1911(OFL — Goudy 1911 Kennerley) |
+| The Great Gatsby(1925) | 고전 세리프 민압 | Libre Caslon Display(OFL) |
+| Le Petit Prince(1943) | 손으로 쓴 로만 · 가는 기하 대문자 | IM Fell English · Josefin Sans(OFL) |
+| Gallimard(1942) · Pagnerre(1862) · Marpon(1885) | 디도 | GFS Didot(OFL) |
+| Lemerre(1873) | 엘제비르(옛 로만) | IM Fell English(OFL) |
+
+**시리즈 공통 원칙 · 빈티지**(오너 「초판본 알아보고 다시 만들어줘. 폰트 비슷한거 구해서 사용. 이전에 커버 만들었던 것처럼 일관성 줄 수 있는 원칙
+일부와 빈티지 효과」) — 초판 장정 25종(1차 6 + 2차 19)이 같은 원칙을 따른다(`FirstEditionCover.jsx`).
+1. 틀: 60×84 · 왼쪽 접힘(경첩) 그림자 하나 — 시리즈 A(.lit-cover)와 같은 값을 CSS 한 곳에(장정마다 그리던 책등 띠는 뺐다).
+2. 재질: 장정마다 `material` 하나(paper · cloth · board · burlap) — 결과 낡음의 세기는 재질로만 정한다.
+3. 낡음 네 겹 — 가장자리 바램(테두리 쪽 갈변) · 얼룩(종이·보드만) · 앞쪽 모서리 닳음과 위아래 가장자리 닳음 · 인쇄 번짐(글자·그림 가장자리를 살짝 흔듦).
+   위치·모양은 장정 이름에서 나온 씨앗으로 정해져 같은 책은 늘 같게 그려진다(결정적).
+4. 글꼴: 실물 글자와 대조한 당시 글꼴(위 표).
+
+- 1차에서 쓰던 Bodoni Moda는 디도·엘제비르로 바꿔 뺐다. 글꼴 사본은 `vendor/google-fonts`(라이선스 원문 동봉).
+- 글꼴 변수는 늘 대체 이름을 품는다(`var(--font-x, "Family")`) — 정의되지 않은 `var()`는 font-family 선언 전체를 무효로 만들어 상속 글꼴로 떨어진다
+  (앱 레이아웃 밖 화면에서 실측 · `firstEditionCover.test.js`가 잡는다).
 
 ### 8.5 이식 비용 (재사용 vs 신규)
 

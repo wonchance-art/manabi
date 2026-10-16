@@ -23,7 +23,11 @@
   },
   "display": {
     "titleKo": "감자",
-    "authorKo": "김동인"
+    "authorKo": "김동인",
+    "binding": "gamja",
+    "coverTitle": "감자",
+    "coverAuthor": "金東仁 作",
+    "coverSubtitle": "短篇小說集"
   },
   "fetchedAt": "2026-10-16",
   "files": [

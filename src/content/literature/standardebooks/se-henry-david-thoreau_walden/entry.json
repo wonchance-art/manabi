@@ -12,7 +12,9 @@
   "level": "C1 고급",
   "display": {
     "titleKo": "월든",
-    "authorKo": "헨리 데이비드 소로"
+    "authorKo": "헨리 데이비드 소로",
+    "binding": "ticknor-arabesque",
+    "coverTitle": "Walden"
   },
   "files": [
     {
