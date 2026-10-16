@@ -19,7 +19,7 @@ export default function Loading() {
   useLayoutEffect(() => { setReader(/^#(?!cover$)./.test(window.location.hash)); }, [pathname]);
   if (pathname !== '/books/japanese-n5' || reader) return <AppLoading />;
   return (
-    <SkeletonRegion className="manabi-page manabi-book-home" label="교재">
+    <SkeletonRegion className="manabi-page manabi-book-home" label="교재" announce>
       <p className="manabi-breadcrumb" aria-hidden="true"><a>교재</a><span>/</span>일본어 · N5</p>
       <section className="manabi-book-hero" aria-hidden="true">
         <BookCover />
