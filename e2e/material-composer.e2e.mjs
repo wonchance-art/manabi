@@ -231,7 +231,7 @@ test('original screen: a text-only item studies from the top; attachments keep t
   const entry=f.page.getByRole('button',{name:'이 글로 공부하기 ↗',exact:true});assert.equal(await entry.isDisabled(),true);
   await languageGroup(f.page).getByRole('radio',{name:'영어',exact:true}).click();await entry.click();
   await f.page.waitForURL(/\/viewer\/94000\?study=1/);assert.equal(f.rows.length,1);assert.equal(f.rows[0].processed_json.metadata.language,'English');assert.equal(f.analysisCalls,0);
-  await f.page.goto('/materials/add');await f.page.getByRole('button',{name:'새 자료 작성'}).click();await f.page.locator('#composer-body').fill('Bonjour.');
+  await f.page.goto('/materials/add');await f.page.getByRole('button',{name:'자료 추가'}).click();await f.page.locator('#composer-body').fill('Bonjour.');
   await f.page.locator('input[type=file]').setInputFiles({name:'reading.pdf',mimeType:'application/pdf',buffer:bytes.pdf});await f.page.locator('.composer-attachment').waitFor();
   await f.page.getByRole('button',{name:'저장만',exact:true}).click();await f.page.locator('.original-reader').waitFor();
   await f.page.getByRole('button',{name:'학습할 부분 고르기',exact:true}).waitFor();assert.equal(await f.page.locator('.original-study summary').innerText(),'자료 도구 · 본문 전체 학습');

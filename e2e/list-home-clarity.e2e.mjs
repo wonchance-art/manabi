@@ -33,7 +33,7 @@ test('new guest can start the published book and use its tools without two ident
 test('returning reader keeps exact edition/page and can restart only when that is a different destination',async()=>{
  const f=await fixture({guest:true,width:390});try{
   await f.context.addInitScript(({edition})=>localStorage.setItem(`manabi-book-progress:${edition}:guest`,JSON.stringify({page:'u42-message-reading',completed:['u01'],updatedAt:new Date().toISOString()})),{edition});
-  await go(f,'/home');const next=f.page.locator('a.learn-resume').filter({hasText:'이어서 읽기'});await next.waitFor();
+  await go(f,'/home');const next=f.page.locator('a.learn-resume').filter({hasText:'이어 읽기'});await next.waitFor();
   assert.match(await next.getAttribute('href'),new RegExp(`${edition}#u42-message-reading`));await capture(f,'home-returning-390');
   await go(f,`/books/japanese-n5?edition=${edition}`);
   const resume=f.page.getByRole('link',{name:'42과 이어 읽기 →',exact:true});await resume.waitFor();

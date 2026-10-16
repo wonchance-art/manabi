@@ -412,7 +412,7 @@ test('review access: 비로그인 사용자는 복습방에서 오류 대신 로
     await assertVisible(page.getByRole('link', { name: '로그인하고 단어장 쓰기', exact: true }), 'signed-out review room login link');
     await page.goto('/vocab?lang=Chinese', { waitUntil: 'domcontentloaded' });
     await assertVisible(page.getByRole('link', { name: '로그인하고 이어가기 →', exact: true }), 'signed-out scoped review login link');
-    assert.equal(await page.getByText('단어장을 불러오지 못했어요').count(), 0);
+    assert.equal(await page.getByText('복습 화면을 불러오지 못했어요').count(), 0);
   });
 });
 

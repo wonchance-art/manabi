@@ -76,7 +76,7 @@ test('concurrent device conflict retains local draft and requires latest-version
 test('new draft and saved editing can coexist; another editor for same item is locked',async()=>{
  const f=await fixture();try{
   const id=await seed(f);await edit(f);await f.page.locator('#composer-body').fill('Editing this material.');await f.page.getByText('이 기기에 초안 보관됨',{exact:true}).waitFor();
-  const newPage=await f.context.newPage();await newPage.goto('/materials/add');await newPage.getByRole('button',{name:'새 자료 작성',exact:true}).click();await newPage.locator('#composer-body').fill('A separate new draft.');await newPage.getByText('이 기기에 초안 보관됨',{exact:true}).waitFor();
+  const newPage=await f.context.newPage();await newPage.goto('/materials/add');await newPage.getByRole('button',{name:'자료 추가',exact:true}).click();await newPage.locator('#composer-body').fill('A separate new draft.');await newPage.getByText('이 기기에 초안 보관됨',{exact:true}).waitFor();
   const second=await f.context.newPage();await second.goto(`/materials/${id}/edit`);await second.getByRole('heading',{name:'다른 탭에서 작성 중이에요.'}).waitFor();await second.close();
   await save(f);await newPage.reload();assert.equal(await newPage.locator('#composer-body').inputValue(),'A separate new draft.');await newPage.close();
  }finally{await f.context.close();}
