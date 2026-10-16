@@ -36,6 +36,7 @@
 .lv-navbtn[aria-expanded=true] svg{transform:rotate(180deg)}
 .lv-head__tools{margin-left:auto;display:flex;gap:6px}
 .lv-nav{display:grid;gap:10px;justify-items:start}
+.lv-nav[hidden]{display:none} /* 위 display가 hidden 속성을 이기지 않게 — 접힌 ▾ */
 .lv-prog{display:flex;align-items:center;gap:12px;font-size:12.5px;color:var(--muted);min-height:24px}
 .lv-meter{flex:1 1 auto;min-width:60px;height:6px;border-radius:999px;background:var(--lv-chip);display:flex;overflow:hidden}
 .lv-meter i{display:block;height:100%;transition:width .3s ease}
@@ -71,7 +72,7 @@
 .lv-view button:hover{color:var(--ink)}
 .lv-view button[aria-pressed=true]{background:var(--lv-card);color:var(--ink);font-weight:700;box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 12%,transparent)}
 /* 고른 것 하나만 — 가린 칸 없이 그 줄만 크게(3판). 누르면 그 줄은 제자리, 나머지만 아래로 펼친다(4판). */
-.lv-entry--solo{cursor:pointer;padding:8px 10px 8px 18px}
+.lv-entry.lv-entry--solo{cursor:pointer;padding:8px 10px 8px 18px} /* .lv-entry 기본 여백(아래 정의)을 이긴다 */
 .lv-solo__row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px}
 .lv-solo{flex:1 1 auto;min-width:0}
 .lv-solo__mean{margin:0;font-size:18px;line-height:1.5;color:var(--ink)}
@@ -232,6 +233,7 @@
 .lv-page--vocab[data-language="zh"] .lv-solo__row{flex-wrap:nowrap}
 /* 탭 보기 한 줄 카드 — O · X는 이름표 없는 44px 동그라미(전체 보기의 이름표 버튼은 그대로). */
 .lv-page--vocab[data-language="zh"] .lv-entry--solo .lv-fab{min-width:0;width:44px;height:44px;padding:0;border-radius:50%}
+.lv-page--vocab[data-language="zh"] .lv-entry--solo{padding:8px 10px 8px 18px}
 .lv-page--vocab[data-language="zh"] .lv-solo>.lv-entry__word{display:block}
 .lv-page--vocab[data-language="zh"] .lv-solo__ex{font-size:22px;line-height:1.8}
 .lv-page--vocab[data-language="zh"] .lv-solo__mean{font-size:20px;line-height:1.7;overflow-wrap:anywhere}

@@ -183,6 +183,8 @@ describe('머리 · 진도 · X 펼침(LEVEL-FLOW-001 — 디자인 검토 2026-
     expect(html).toContain('aria-label="찾기" title="찾기" aria-expanded="false" aria-controls="lv-find"');
     expect(html).not.toContain('class="lv-search"'); // 찾기 칸은 눌러야 열린다
     expect(html).not.toContain('lv-view__hint');
+    // 접힘은 hidden 속성 — .lv-nav의 display가 그것을 이기지 않아야 한다(실브라우저 390에서 실측된 빈틈)
+    expect(fs.readFileSync('src/components/levels/level-list.css', 'utf8')).toContain('.lv-nav[hidden]{display:none}');
   });
 
   it('문형 · 한자는 그대로 펼친 머리(붙지 않음 · ▾ 없음)', async () => {
