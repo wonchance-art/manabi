@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import BookCover from '@/components/books/BookCover';
 import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
 import BookReaderSkeleton from '@/components/books/BookReaderSkeleton';
-import { HASH_GATE, hashGate, readerEntry } from '@/components/books/bookEntryGate';
+import { HASH_GATE, hashGate, lessonEntry, readerEntry } from '@/components/books/bookEntryGate';
 import AppLoading from '../loading';
 
 /**
@@ -19,12 +19,12 @@ import AppLoading from '../loading';
  */
 export default function Loading() {
   const pathname = usePathname();
-  const [reader, setReader] = useState(false);
-  useLayoutEffect(() => { setReader(readerEntry()); }, [pathname]);
+  const [reader, setReader] = useState(false), [lesson, setLesson] = useState(true);
+  useLayoutEffect(() => { setReader(readerEntry()); setLesson(lessonEntry()); }, [pathname]);
   // 교재가 아닌 화면(오류 등)으로 끝나도 감춤을 남기지 않는다 — 교재가 그려지면 BookReader가 같은 그림에서 다시 정한다.
   useLayoutEffect(() => () => hashGate(false), []);
   if (pathname !== '/books/japanese-n5') return <AppLoading />;
-  if (reader) return <div className="book-reader"><BookReaderSkeleton announce /></div>;
+  if (reader) return <div className="book-reader"><BookReaderSkeleton announce lesson={lesson} /></div>;
   return (<>
     <script dangerouslySetInnerHTML={{ __html: HASH_GATE }} />
     <div className="book-reader"><BookReaderSkeleton gated /></div>

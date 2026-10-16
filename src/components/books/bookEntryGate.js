@@ -6,6 +6,8 @@
 // 서버 · 하이드레이션 첫 그림은 늘 같은 마크업(표지 + 그 한 줄 + 꺼진 본문 골격)이라 불일치가 없다.
 export const HASH_GATE_ID = 'book-hash-gate';
 export const HASH_GATE_CSS = ':root .book-reader>.manabi-book-home,:root .manabi-book-home[aria-busy]{display:none}:root .book-entry-skeleton{display:block}';
+// 과가 아닌 쪽(책 사용법 guide- · 찾기 reference- · 문화 읽기 culture- …)은 과 머리에 부제 · 목표 · 과 번호가 없다 — 본문 골격의 그 칸을 뺀다.
+export const HASH_GATE_PLAIN_CSS = ':root .book-entry-skeleton .book-entry-lesson{display:none}';
 
 /** 주소 hash → 쪽 id(web- · pdf- · audio- 접두는 같은 쪽). 비었거나 깨졌으면 'cover'. */
 export const pageFromHash = (hash) => {
@@ -14,15 +16,21 @@ export const pageFromHash = (hash) => {
   return id.replace(/^(?:web|pdf|audio)-/, '');
 };
 export const coverPage = (id) => !id || id === 'cover' || id.startsWith('toc');
+/** 과 본문 쪽인가(u01-… ~ u42-…). 아니면 과 머리가 단순하다. 읽던 자리(hash 없음)는 과로 둔다. */
+export const lessonPage = (id) => coverPage(id) || /^u\d{2}/.test(id);
 
 /** 지금 주소가 본문으로 열리는가 — 본문 hash, 또는 이 기록에 남긴 읽던 자리(계정 대조는 BookReader sync가 한다). */
+/** 지금 주소의 본문이 과 본문인가 — 링크 이동 때 본문 골격의 머리 모양. */
+export function lessonEntry() {
+  return typeof window === 'undefined' || lessonPage(pageFromHash(window.location.hash));
+}
 export function readerEntry() {
   if (typeof window === 'undefined') return false;
   return !coverPage(pageFromHash(window.location.hash)) || window.history.state?.manabiBookPosition?.href === window.location.href;
 }
 
 // 같은 판정의 하드 로드판 — 교재 대기 골격과 BookReader가 둘 다 보낼 수 있어 이미 있으면 다시 넣지 않는다.
-export const HASH_GATE = `(function(){try{if(document.getElementById('${HASH_GATE_ID}'))return;var h='';try{h=decodeURIComponent(location.hash.slice(1))}catch(e){}h=h.replace(/^(?:web|pdf|audio)-/,'');var s=history.state&&history.state.manabiBookPosition;if((h&&h!=='cover'&&h.indexOf('toc')!==0)||(s&&s.href===location.href)){var g=document.createElement('style');g.id='${HASH_GATE_ID}';g.textContent='${HASH_GATE_CSS}';document.head.appendChild(g)}}catch(e){}})()`;
+export const HASH_GATE = `(function(){try{if(document.getElementById('${HASH_GATE_ID}'))return;var h='';try{h=decodeURIComponent(location.hash.slice(1))}catch(e){}h=h.replace(/^(?:web|pdf|audio)-/,'');var s=history.state&&history.state.manabiBookPosition;if((h&&h!=='cover'&&h.indexOf('toc')!==0)||(s&&s.href===location.href)){var g=document.createElement('style');g.id='${HASH_GATE_ID}';g.textContent='${HASH_GATE_CSS}'+(h&&h!=='cover'&&h.indexOf('toc')!==0&&!/^u\\d{2}/.test(h)?'${HASH_GATE_PLAIN_CSS}':'');document.head.appendChild(g)}}catch(e){}})()`;
 
 export function hashGate(on) {
   const current = document.getElementById(HASH_GATE_ID);

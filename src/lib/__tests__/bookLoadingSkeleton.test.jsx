@@ -9,6 +9,7 @@ let pathname = '/books/japanese-n5';
 vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
 
 import BookLoading from '../../app/(app)/books/loading';
+import BookReaderSkeleton from '../../components/books/BookReaderSkeleton';
 
 // 교재 첫 화면 대기(BOOK-SKELETON-001 — LOADING-SKELETON-001 연장): /books/japanese-n5에 들어오면 전역 스피너 뒤
 // 빈 화면(~0.4초)이 이어지던 자리를 실제 화면(BookHome)의 책 머리 · 목차 골격으로. 높이(CLS)는 빌드 프레임 측정이 본다.
@@ -78,8 +79,7 @@ describe('본문 위치 진입 — 감춤 한 줄 · 본문 골격', () => {
     expect(html.match(/role="status"/g)).toHaveLength(1); // 알림은 표지 골격의 한 줄뿐 — 꺼진 본문 골격은 알리지 않는다
   });
   it('붙은 뒤(링크 이동)는 그리기 전에 판정해 본문 골격만, 교재가 아닌 화면으로 끝나도 감춤을 남기지 않는다', () => {
-    expect(source).toContain('useLayoutEffect(() => { setReader(readerEntry()); }, [pathname]);');
-    expect(source).toContain('if (reader) return <div className="book-reader"><BookReaderSkeleton announce /></div>;');
+        expect(source).toContain('if (reader) return <div className="book-reader"><BookReaderSkeleton announce lesson={lesson} /></div>;');
     expect(source).toContain('useLayoutEffect(() => () => hashGate(false), []);');
   });
   it('본문 골격은 실제 본문 화면과 같은 클래스 · 같은 고정 글, 이동 · 초점 0, 색 리터럴 0', () => {
@@ -97,5 +97,22 @@ describe('본문 위치 진입 — 감춤 한 줄 · 본문 골격', () => {
     expect(skeleton).toMatch(/import \{ SkeletonLine, SkeletonRegion \} from '@\/components\/Skeleton';/);
     expect(skeleton).not.toMatch(/#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(|style=/i);
     expect(body).toContain('skeleton-line'); // 모션 축소 정지는 .skeleton-line 공통 블록
+  });
+  it('과가 아닌 쪽(책 사용법 · 찾기 · 문화 읽기)은 실제 화면처럼 갈래 · 제목만 — 부제 · 목표 · 과 번호 · 「/ N과」 칸이 없다', () => {
+    const body = sliceBetween(html, '<div class="manabi-reader-page book-entry-skeleton"', 'class="manabi-page manabi-book-home"');
+    // 하드 로드는 hash를 모르므로 과 칸을 .book-entry-lesson으로 함께 보내고 HASH_GATE가 끈다.
+    for (const cls of ['manabi-chapter-subtitle book-entry-lesson', 'manabi-chapter-goal book-entry-lesson', 'manabi-chapter-number book-entry-lesson']) expect(body).toContain(`class="${cls}"`);
+    expect(body).toContain('일본어 · N5<span class="book-entry-lesson"> / ');
+    expect(reader).toContain("{lesson?.subtitle && <p className=\"manabi-chapter-subtitle\">");
+    expect(reader).toContain("{lesson && <span className=\"manabi-chapter-number\" aria-hidden=\"true\">");
+    // 링크 이동(붙은 뒤)은 그 칸을 아예 그리지 않는다.
+    const plain = renderToStaticMarkup(createElement(BookReaderSkeleton, { lesson: false }));
+    for (const cls of ['manabi-chapter-subtitle', 'manabi-chapter-goal', 'manabi-chapter-number', 'book-entry-lesson']) expect(plain).not.toContain(cls);
+    expect(plain).toContain('<span>일본어 · N5</span>');
+    const full = renderToStaticMarkup(createElement(BookReaderSkeleton, {}));
+    for (const cls of ['manabi-chapter-subtitle', 'manabi-chapter-goal', 'manabi-chapter-number']) expect(full).toContain(`class="${cls}"`);
+    expect(full).not.toContain('book-entry-lesson');
+    expect(source).toContain('useLayoutEffect(() => { setReader(readerEntry()); setLesson(lessonEntry()); }, [pathname]);');
+    expect(source).toContain('<BookReaderSkeleton announce lesson={lesson} />');
   });
 });

@@ -6,7 +6,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { describe, expect, it } from 'vitest';
 import { sliceBetween } from './helpers/sliceBetween';
-import { HASH_GATE, HASH_GATE_CSS, HASH_GATE_ID, coverPage, pageFromHash } from '../../components/books/bookEntryGate';
+import { HASH_GATE, HASH_GATE_CSS, HASH_GATE_ID, HASH_GATE_PLAIN_CSS, coverPage, lessonPage, pageFromHash } from '../../components/books/bookEntryGate';
 
 const ROOT = path.resolve(__dirname, '../../..');
 const source = fs.readFileSync(path.join(ROOT, 'src/components/books/BookReader.jsx'), 'utf8');
@@ -23,7 +23,8 @@ describe('하드 로드 감춤 한 줄 — HASH_GATE', () => {
     for (const hash of ['#u01-start', '#u29-patterns', '#reference-start', '#web-u02-start', '#%75%30%31-start']) {
       const nodes = gateFor(hash);
       expect(nodes).toHaveLength(1);
-      expect(nodes[0]).toEqual({ id: HASH_GATE_ID, textContent: HASH_GATE_CSS });
+      expect(nodes[0].id).toBe(HASH_GATE_ID);
+      expect(nodes[0].textContent.startsWith(HASH_GATE_CSS)).toBe(true); // 과가 아닌 쪽은 아래에서 본다(+ HASH_GATE_PLAIN_CSS)
     }
   });
   it('표지 · 목차 · hash 없음 · 깨진 hash는 그대로(표지가 첫 화면)', () => {
@@ -33,6 +34,14 @@ describe('하드 로드 감춤 한 줄 — HASH_GATE', () => {
     const href = 'https://manabi.test/books/japanese-n5?edition=x';
     expect(gateFor('', { manabiBookPosition: { href } }, href)).toHaveLength(1);
     expect(gateFor('', { manabiBookPosition: { href: href + '&other' } }, href)).toHaveLength(0);
+  });
+  it('과가 아닌 쪽이면 과 머리 칸(부제 · 목표 · 과 번호)도 끈다 — 과 · 읽던 자리(hash 없음)는 그대로', () => {
+    for (const hash of ['#reference-start', '#guide-start', '#culture-1']) expect(gateFor(hash)[0].textContent).toBe(HASH_GATE_CSS + HASH_GATE_PLAIN_CSS);
+    for (const hash of ['#u01-start', '#u29-patterns', '#web-u02-start']) expect(gateFor(hash)[0].textContent).toBe(HASH_GATE_CSS);
+    const href = 'https://manabi.test/books/japanese-n5';
+    expect(gateFor('', { manabiBookPosition: { href } }, href)[0].textContent).toBe(HASH_GATE_CSS);
+    expect(HASH_GATE_PLAIN_CSS).toBe(':root .book-entry-skeleton .book-entry-lesson{display:none}');
+    for (const [id, lesson] of [['u01-start', true], ['u42-review', true], ['reference-start', false], ['guide-start', false], ['culture-1', false], ['cover', true]]) expect(lessonPage(id)).toBe(lesson);
   });
   it('이미 넣었으면 다시 넣지 않는다(교재 대기 골격과 BookReader가 둘 다 보낸다)', () => {
     expect(gateFor('#u01-start', null, undefined, true)).toHaveLength(0);
