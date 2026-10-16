@@ -535,8 +535,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
         isPendingKnown: (key) => mounted && !!userId && known.isPendingWord(conf.langCode, key),
       }} /> : <>
       <nav className="lv-chips" aria-label="주제">{nav.map((n) => <a key={n.href} href={n.href} aria-current={n.current || undefined} onClick={(e) => openGroup(e, n.i)}>{n.name}</a>)}</nav>
-      <div className={vocab ? 'lv-split' : 'lv-split lv-split--wide'}>
-        {vocab && <nav className="lv-tocnav" aria-label="주제 목차"><ul className="lv-toc">{nav.map((n) => <li key={n.href}><a href={n.href} aria-current={n.current || undefined} onClick={(e) => openGroup(e, n.i)}>{n.name}</a></li>)}</ul></nav>}
+      <div className="lv-split">
         <div className="lv-col">
           {shown.length === 0 && <p className="lv-empty" role="status">{query ? '이 레벨에서 찾지 못했어요' : '모든 단어를 아는 단어로 옮겼어요. 「아는 단어 숨기기」를 끄면 다시 보여요'}</p>}
           {visible.map((g, gi) => g.entries.length > 0 && <section key={g.name} className="lv-group" id={groupId(gi)} data-lv-group={gi} aria-labelledby={`${groupId(gi)}-h`}>
