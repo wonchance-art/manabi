@@ -1,0 +1,6 @@
+{
+  "ttl": "left:calc(var(--mm)*180);top:calc(var(--mm)*73.72)",
+  "ttlSize": 13,
+  "sub": "left:calc(var(--mm)*46);top:calc(var(--mm)*100)",
+  "subText": "富士吉田に入った道は、<br>富士山へまっすぐ延びる。"
+}

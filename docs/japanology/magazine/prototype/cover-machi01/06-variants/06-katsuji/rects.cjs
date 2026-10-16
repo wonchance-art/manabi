@@ -1,0 +1,5 @@
+// 표지 안 글자 상자를 mm로 출력(디버그). node rects.cjs cover.html
+const path=require('path');const {createRequire}=require('module');const req=createRequire('/home/user/manabi/package.json');const {chromium}=req('playwright');
+(async()=>{const [f]=process.argv.slice(2);const b=await chromium.launch();const p=await b.newPage({viewport:{width:422,height:900}});await p.goto('file://'+path.resolve(f));await p.waitForTimeout(2500);
+const r=await p.evaluate(()=>{const c=document.querySelector('.cover').getBoundingClientRect();const mm=c.width/210;const o=[];const w=document.createTreeWalker(document.querySelector('.cover'),NodeFilter.SHOW_TEXT);
+while(w.nextNode()){const n=w.currentNode;if(!n.textContent.trim())continue;const rg=document.createRange();rg.selectNodeContents(n);for(const x of rg.getClientRects()){if(!x.width)continue;o.push(`${n.textContent.trim().slice(0,10)} x${((x.left-c.left)/mm).toFixed(1)}-${((x.right-c.left)/mm).toFixed(1)} y${((x.top-c.top)/mm).toFixed(1)}-${((x.bottom-c.top)/mm).toFixed(1)}`)}}return o});console.log(r.join('\n'));await b.close();})();

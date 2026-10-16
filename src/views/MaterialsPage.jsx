@@ -721,7 +721,7 @@ export default function MaterialsPage({ libraryView = null }) {
               } : null;
               return (
                 <MaterialGroupCard
-                  key={b.key}
+                  key={b.groupKey}
                   icon="📖"
                   title={b.title || '제목 없는 책'}
                   lang={b.title ? contentLangOf(b.chapters[0]) : undefined}

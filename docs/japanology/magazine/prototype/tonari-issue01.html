@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>となり 창간호 시안</title>
+<meta name="description" content="manabi 매거진 『となり』 시각 프로토타입 — 매거진 표지, 창간사, 1호 표지, 01 첫 장면, 이 호의 일본어.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- 표지 디스플레이 명조: 오너 결정 2 — Shippori Mincho 1종 1굵기(700), 고정 문구라 text= 서브셋 -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@700&display=swap&text=%E3%80%8E%E3%80%8F%E3%81%A8%E3%81%AA%E3%82%8A%E3%81%BE%E3%81%A1">
+<!-- 본문: 앱이 이미 쓰는 Noto Serif KR/JP 재사용 -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Serif+KR:wght@400;700&display=swap">
+<style>
+/* ── 토큰: 앱 v2 셸 값(web-shell.css 4행) 그대로. 새 hex 없음 ── */
+:root{
+  --paper:#f6f4ee; --sheet:#fffefb; --ink:#252721; --muted:#65675f; --rule:#d7d5cd; --ja:#994a5a;
+  --ja-wash:color-mix(in srgb, var(--ja) 7%, var(--sheet));
+  --font-ko:'Noto Serif KR', serif;
+  --font-ja:'Noto Serif JP', 'Noto Serif KR', serif;
+  --font-display:'Shippori Mincho', 'Noto Serif JP', serif;
+  --gutter:16px;
+  --measure:34rem;
+  --rail:9.5rem;
+  --head-h:44px;
+  color-scheme:light;
+}
+/* 다크: 앱 다크 토큰(index.css — 에스프레소 배경·본문·보조, 로즈는 --primary-light) 재사용 */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#1a1410; --sheet:#231c15; --ink:#f4ede4; --muted:#c4a98e; --ja:#d9909e;
+    --rule:color-mix(in srgb, var(--ink) 20%, var(--paper));
+    --ja-wash:color-mix(in srgb, var(--ja) 9%, var(--sheet));
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#1a1410; --sheet:#231c15; --ink:#f4ede4; --muted:#c4a98e; --ja:#d9909e;
+  --rule:color-mix(in srgb, var(--ink) 20%, var(--paper));
+  --ja-wash:color-mix(in srgb, var(--ja) 9%, var(--sheet));
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-ko);font-size:17px;line-height:1.85;overflow-wrap:break-word}
+:lang(ko){word-break:keep-all;line-break:strict}
+:lang(ja){font-family:var(--font-ja)}
+p:lang(ja),span:lang(ja){text-autospace:normal}
+h1,h2,h3{text-wrap:balance;line-height:1.35;margin:0;font-weight:700}
+p,li{text-wrap:pretty}
+p{margin:0 0 1.1em}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--ja);outline-offset:3px;border-radius:2px}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* 루비: 요미 = 본체의 절반(ui-conventions §1 JLReq) */
+ruby{ruby-position:over}
+rt{font-size:.5em;font-family:var(--font-ja);color:var(--muted);line-height:1}
+
+/* ── 구획 번호판: 장 번호 01–08은 동네 블록 번호(「2丁目 3」) 표지처럼 네모 판에 ── */
+.plate{display:inline-flex;align-items:center;justify-content:center;min-width:2.3em;padding:0 .35em;border:1.5px solid var(--ja);border-radius:2px;color:var(--ja);font-variant-numeric:tabular-nums lining-nums;font-weight:700;line-height:1.5;letter-spacing:.02em}
+
+/* ── 프로토타입 주석(검수자용, 디자인 바깥) ── */
+.proto{padding:12px var(--gutter);color:var(--muted);font-size:13px;line-height:1.6;border-bottom:1px dashed var(--rule);display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.proto p{margin:0;max-width:52rem}
+.proto button{font:inherit;color:var(--ink);background:var(--sheet);border:1px solid var(--rule);border-radius:4px;min-height:44px;min-width:44px;padding:0 14px;cursor:pointer}
+.screen-label{margin:0;padding:10px var(--gutter);font-size:12px;line-height:1.5;color:var(--muted);border-top:1px dashed var(--rule)}
+
+/* ── 공통 화면 틀 ── */
+.screen{position:relative}
+/* 화면 폭 기준 좌우 여백: 표지는 자기 자신이, 기사는 柱·본문이 각각 같은 식으로 잡는다(柱 괘선은 화면 끝까지) */
+.cover,.icover,.hashira,.article,.kw{padding-inline:max(var(--gutter), (100% - 1120px) / 2)}
+
+/* 柱(running head): 화면마다 sticky 한 줄 — 그 화면이 보이는 동안만 붙는다(JS 0) */
+.hashira{position:sticky;top:0;z-index:5;background:var(--paper);min-height:var(--head-h);display:flex;align-items:center;gap:.5em;font-size:13px;line-height:1.4;color:var(--muted);border-bottom:1px solid var(--rule)}
+.hashira .plate{font-size:12px}
+.hashira b{font-weight:400;color:var(--ink)}
+.hashira .mast{font-family:var(--font-ja);color:var(--ink)}
+
+/* ── 1. 매거진 표지 ── */
+.cover{min-height:min(100svh, 980px);display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto 1fr auto;grid-template-areas:"mast mast" "blurb word" "list word";gap:24px 40px;padding-block:28px 40px}
+.masthead{grid-area:mast;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px}
+.masthead .title{margin:0;font-family:var(--font-display);font-weight:700;font-size:clamp(1.75rem, 1.2rem + 2vw, 2.6rem);line-height:1.1;font-feature-settings:'palt'}
+.masthead .series{margin:0;font-size:15px;color:var(--muted)}
+.vword{writing-mode:vertical-rl;font-family:var(--font-display);font-weight:700;font-feature-settings:'vpal';line-height:1.25;letter-spacing:0;margin:0;color:var(--ink);font-size:clamp(4.25rem, min(26vw, 19svh), 12rem);justify-self:end;align-self:start;user-select:none}
+.cover .vword{grid-area:word}
+.cover .blurb{grid-area:blurb;align-self:end}
+.cover .list{grid-area:list;max-width:30rem}
+.blurb{margin:0;font-size:15px;line-height:1.7;color:var(--muted)}
+.blurb strong{display:block;color:var(--ink);font-size:17px;font-weight:700}
+.issues{list-style:none;margin:0;padding:0;font-size:15px;line-height:1.5}
+.issues li{display:grid;grid-template-columns:2.6em minmax(0,1fr);gap:0 .5em;padding:5px 0}
+.issues .n{color:var(--ja);font-variant-numeric:tabular-nums;font-weight:700;text-align:right}
+.issues .n::after{content:"호";font-weight:400;font-size:.8em;margin-left:1px}
+.issues .now{font-weight:700}
+.issues .now .tag{font-weight:400;font-size:12px;color:var(--muted);margin-left:.4em;white-space:nowrap}
+
+/* ── 기사 공통: 왼쪽 레일(번호판·시각) + 본문 한 단 ── */
+.article{padding-block:40px 64px}
+.head{display:grid;grid-template-columns:var(--rail) minmax(0,var(--measure));gap:0 32px;margin-bottom:36px}
+.head .rail{padding-top:.35em}
+.head h1,.head h2{font-size:clamp(1.65rem, 1.2rem + 1.6vw, 2.35rem)}
+.kicker{display:block;font-size:15px;font-weight:400;color:var(--muted);margin:.5em 0 0;line-height:1.5}
+.body{display:grid;grid-template-columns:var(--rail) minmax(0,var(--measure));gap:0 32px}
+.body > *{grid-column:2}
+.body > .aside{grid-column:1;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:.45em;line-height:1.5}
+.sub-h{font-size:19px;margin:2em 0 .8em}
+.plate--lg{font-size:20px}
+.rec{margin:16px 0 0}
+.kw-h{font-size:clamp(1.5rem, 1.2rem + 1.2vw, 2rem)}
+.chip{display:inline-flex;align-items:center;min-height:32px;padding:2px 12px;border:1px solid var(--rule);border-radius:999px;background:var(--sheet);font-size:13px;line-height:1.4;color:var(--muted)}
+.chip--rec{border-color:var(--ja);color:var(--ja);background:var(--ja-wash)}
+
+/* 창간사 */
+.onum{list-style:none;padding:0;margin:0 0 1.2em;counter-reset:o}
+.onum > li{counter-increment:o;display:grid;grid-template-columns:2em minmax(0,1fr);gap:0 .4em;margin-bottom:.5em}
+.onum > li::before{content:counter(o);color:var(--ja);font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+.closing{margin-top:1.6em}
+details.note{margin-top:2.2em;background:var(--sheet);border:1px solid var(--rule);border-radius:6px}
+details.note summary{min-height:48px;display:flex;align-items:center;gap:.6em;padding:8px 16px;cursor:pointer;font-weight:700;font-size:16px;list-style:none}
+details.note summary::-webkit-details-marker{display:none}
+details.note summary::before{content:"";flex:none;width:.55em;height:.55em;border-right:2px solid var(--ja);border-bottom:2px solid var(--ja);transform:rotate(-45deg);transition:transform .15s ease}
+details.note[open] summary::before{transform:rotate(45deg)}
+details.note summary .hint{font-weight:400;font-size:13px;color:var(--muted);margin-left:auto}
+details.note[open] summary .hint{display:none}
+details.note .inner{padding:4px 20px 12px 20px;font-size:16px}
+
+/* ── 3. 1호 표지(扉) ── */
+.icover{min-height:min(100svh, 940px);display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto 1fr;grid-template-areas:"ihead word" "toc word";gap:32px 48px;padding-block:28px 40px}
+.icover .ihead{grid-area:ihead}
+.icover nav{grid-area:toc;align-self:end}
+.icover .vword{grid-area:word;align-self:start}
+.icover .no{margin:0;font-size:15px;color:var(--muted)}
+.icover .no .mast{font-family:var(--font-ja);color:var(--ink)}
+.icover h1{font-size:clamp(2rem, 1.4rem + 2.4vw, 3rem);margin:.25em 0 .35em;font-feature-settings:'palt'}
+.icover .sub{font-size:17px;margin:0 0 18px;color:var(--ink)}
+.toc{list-style:none;margin:0;padding:0;font-size:15px;line-height:1.5}
+.toc li{display:flex;gap:.7em;align-items:center;min-height:36px;color:var(--muted)}
+.toc li .plate{font-size:12px;border-color:var(--rule);color:var(--muted)}
+.toc li.live{color:var(--ink)}
+.toc li.live .plate{border-color:var(--ja);color:var(--ja)}
+.toc a{display:inline-flex;align-items:center;min-height:44px;text-underline-offset:4px;text-decoration-thickness:1px}
+.toc .soon{font-size:12px}
+.toc-note{font-size:12px;color:var(--muted);margin:10px 0 0}
+
+/* ── 4. 첫 장면 ── */
+.scene p{margin-bottom:1.4em}
+.scene .end{margin-top:.6em}
+.scene .aside{white-space:nowrap}
+
+/* ── 5. 이 호의 일본어 ── */
+.kw{padding-block:40px 72px}
+.kw .lead{max-width:var(--measure);color:var(--muted);font-size:15px;line-height:1.7;margin:.5em 0 24px}
+.chips{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill, minmax(min(100%, 15rem), 1fr));gap:12px;max-width:66rem}
+.kchip{display:flex;flex-direction:column;gap:2px;min-height:44px;height:100%;padding:14px 16px 12px;border:1px solid var(--rule);border-radius:10px;background:var(--sheet);text-decoration:none;color:var(--ink);transition:border-color .15s ease, background-color .15s ease}
+.kchip:hover{border-color:var(--ja);background:var(--ja-wash)}
+.kchip .w{font-family:var(--font-ja);font-size:26px;line-height:1.3;font-weight:700;margin-bottom:4px}
+.kchip .r{font-size:14px;color:var(--ink);line-height:1.5}
+.kchip .m{font-size:14px;color:var(--muted);line-height:1.5}
+.kchip .to{margin-top:auto;padding-top:10px;font-size:13px;color:var(--ja);line-height:1.5}
+.kchip .to::after{content:" →" / ""}
+.kw .proto-note{margin:16px 0 0;font-size:13px;color:var(--muted);max-width:var(--measure)}
+
+/* ── 태블릿 세로 이하: 레일을 본문 위로 접는다 ── */
+@media (max-width: 768px){
+  .head,.body{grid-template-columns:minmax(0,1fr);gap:0}
+  .head .rail{padding-top:0;margin-bottom:12px}
+  .body > *,.body > .aside{grid-column:1}
+  .body > .aside{padding-top:0;margin-bottom:2px}
+  .article{padding-block:28px 48px}
+  .cover{grid-template-areas:"mast mast" "blurb word" "list list";grid-template-rows:auto auto 1fr;min-height:0}
+  .cover .list{align-self:start}
+  .icover{grid-template-areas:"ihead word" "toc toc";grid-template-rows:auto auto;gap:28px 16px;min-height:0}
+  .head{margin-bottom:28px}
+}
+/* ── 작은 폰 ── */
+@media (max-width: 480px){
+  body{font-size:16.5px}
+  .cover{gap:20px 12px;padding-block:20px 28px}
+  .issues{font-size:14px}
+  .issues li{grid-template-columns:2.4em minmax(0,1fr);padding:3px 0}
+  .icover{gap:12px;padding-block:20px 28px}
+  details.note .inner{padding:2px 14px 8px}
+  details.note summary{padding:8px 14px}
+}
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="proto" role="note">
+  <p>『<span lang="ja">となり</span>』 시각 프로토타입 — 화면 다섯 장(매거진 표지 · 창간사 · 1호 표지 · 01 첫 장면 · 이 호의 일본어)을 위에서 아래로 이어 붙였어요. 본문은 승인 표본(2026-10-14 KST) 그대로예요.</p>
+  <button type="button" id="theme" aria-live="polite">테마: 자동</button>
+</div>
+
+<!-- ═════════ 화면 1 · 매거진 표지(창간호) ═════════ -->
+<p class="screen-label" aria-hidden="true">화면 1 · 매거진 표지 (창간호)</p>
+<section class="screen cover" aria-labelledby="c0-h">
+  <header class="masthead">
+    <p class="title" lang="ja">『となり』</p>
+    <p class="series">일본, 사람의 일생</p>
+  </header>
+  <h1 id="c0-h" class="sr-only">『<span lang="ja">となり</span>』 창간호 — <span lang="ja">となり</span></h1>
+  <p class="vword" lang="ja" aria-hidden="true">となり</p>
+  <p class="blurb"><strong>창간호의 단어, <span lang="ja">となり</span>(도나리)</strong>옆, 이웃이라는 뜻</p>
+  <div class="list">
+    <h2 class="sr-only">여덟 개의 호</h2>
+    <ol class="issues">
+      <li class="now"><span class="n">0</span><span>창간사 <span lang="ja">はじめまして</span> 다음에<span class="tag">지금 이 호</span></span></li>
+      <li><span class="n">1</span><span>땅과 동네</span></li>
+      <li><span class="n">2</span><span>배우다</span></li>
+      <li><span class="n">3</span><span>일하다</span></li>
+      <li><span class="n">4</span><span>태어나고 가족이 되다</span></li>
+      <li><span class="n">5</span><span>늙고 떠나고 기억하다</span></li>
+      <li><span class="n">6</span><span>이야기하고 그리다</span></li>
+      <li><span class="n">7</span><span>노래하다</span></li>
+      <li><span class="n">8</span><span>유행을 따르다</span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═════════ 화면 2 · 창간사 ═════════ -->
+<p class="screen-label" aria-hidden="true">화면 2 · 창간사 (편집자의 말)</p>
+<article class="screen" aria-labelledby="ed-h">
+  <div class="hashira" aria-label="현재 위치"><span class="mast" lang="ja">となり</span> · <span>창간호</span> · <b>편집자의 말</b></div>
+  <div class="article">
+    <header class="head">
+      <div class="rail"><span class="chip">창간사</span></div>
+      <div><h1 id="ed-h"><span lang="ja">はじめまして</span> 다음에</h1><p class="kicker">창간사 · 같은 질문, 다른 조건</p></div>
+    </header>
+    <div class="body">
+      <p>일본어 교재의 첫 과는 이름을 말하는 법에서 시작해요. <span lang="ja">はじめまして</span>(하지메마시테). 처음 뵙겠습니다.</p>
+      <p>인사는 금방 배워요. 그다음부터 궁금한 게 생겨요. 이 사람은 어떤 동네에서 자랐는지, 학교는 몇 월에 시작했는지, 일을 마치면 어디로 돌아가는지.</p>
+      <p>그런 궁금증 하나를 골라 한 호를 만들어요. 질문은 서울에서 물어도 같은 질문이에요. 일본의 답은 그 답이 나온 땅과 제도, 역사와 함께 읽어요.</p>
+      <p>이 매거진의 이름은 『<span lang="ja">となり</span>』(도나리)예요. 옆, 이웃이라는 뜻이에요. 이 앱의 일본어 교재 9과 「내 가방은 어디에?」에서 배우는 말이기도 해요. 가까운 나라 사람들의 생활을 옆자리에서 보듯 읽어 보려고 지은 이름이에요.</p>
+
+      <h2 class="sub-h">여덟 개의 호</h2>
+      <p>태어나서 떠날 때까지 겪는 일과, 그 사이 함께 즐기는 일에서 여덟 장면을 골랐어요.</p>
+      <ol class="onum">
+        <li><span>땅과 동네 — 사람들이 어디에, 어떻게 모여 사는지. 여행에서 걷게 될 동네 이야기예요.</span></li>
+        <li><span>배우다 — 일본의 초·중·고 학년은 4월에 시작해요. 교실과 부카쓰(<span lang="ja">部活</span>, 동아리 활동) 이야기예요.</span></li>
+        <li><span>일하다 — 무엇으로 먹고살고, 일을 마치면 어디로 가는지.</span></li>
+        <li><span>태어나고 가족이 되다 — 이름을 짓고, 가족을 이루는 방식.</span></li>
+        <li><span>늙고 떠나고 기억하다 — 나이 드는 일과 떠난 사람을 기억하는 방식.</span></li>
+        <li><span>이야기하고 그리다 — 만화와 애니메이션, 출판과 그림.</span></li>
+        <li><span>노래하다 — 엔카부터 애니송까지, 일본 사람들이 함께 부른 노래.</span></li>
+        <li><span>유행을 따르다 — 남들처럼 하고 싶은 마음과 다르고 싶은 마음.</span></li>
+      </ol>
+
+      <h2 class="sub-h">호마다 있는 코너</h2>
+      <p>「해 보기」는 여행에서 돈 들이지 않고 직접 해 볼 일이에요. 다음 달 떠나는 분이라면 여기부터 보세요. 「살게 된다면」은 일본에서 공부하거나 일하게 될 때 마주칠 제도를 정리해요. 「더 읽고 보기」에서는 책과 영화, 만화와 노래를 제목으로 소개해요.</p>
+      <p>호마다 끝에는 그 호의 일본어 단어를 모아요. 단어를 누르면 이 앱의 일본어 교재 중 그 단어가 나오는 과로, 또는 원문으로 이어져요.</p>
+      <p class="closing">창간호의 단어는 <span lang="ja">となり</span>예요. 첫 호 「땅과 동네」에서 이웃들을 만나요.</p>
+
+      <details class="note">
+        <summary>편집 노트 — 이렇게 만들어요<span class="hint">펼치기</span></summary>
+        <div class="inner">
+          <p>『국화와 칼』(1946)처럼 한 나라 사람의 성격을 하나로 묶어 설명하는 글은 많아요. 주로 일본 안에서 일본을 이렇게 설명한 글들을 일본인론(<span lang="ja">日本人論</span>, 니혼진론)이라고 불러요. 인류학자 하루미 베후는 이런 글의 역사를 연구했어요(『<span lang="en">Hegemony of Homogeneity</span>』, 2001). 그는 일본인론이 국제 관계에 따라 달라져 왔다고 보았어요. 이 매거진은 성격 대신 질문으로 시작해요. 일본의 답은 그 답이 나온 땅, 제도, 역사와 함께 읽어요.</p>
+          <ol class="onum">
+            <li><span>가상의 인물을 쓰지 않아요. 인터뷰는 실제로 만난 사람의 말만 실어요.</span></li>
+            <li><span>여러 사실을 모아 다시 그린 장면에는 「재구성 장면」이라고 적어요.</span></li>
+            <li><span>숫자와 제도에는 출처를 달고, 호마다 맨 끝 「출처·검증 노트」에 모아요. 확인하지 못한 것은 그렇다고 적어요.</span></li>
+            <li><span>물건과 장소를 고르면 고른 이유와 아쉬운 점을 한 줄씩 적어요.</span></li>
+            <li><span>한국과 나란히 놓되, 어느 쪽이 낫다고 하지 않아요.</span></li>
+          </ol>
+          <p>독자를 부르는 말로는 일본 지역 정책의 관계인구(<span lang="ja">関係人口</span>, 간케이진코)를 빌렸어요. 한 지역에 살지도 않고 잠깐 들르지도 않으면서, 그 지역과 꾸준히 이어진 사람을 가리키는 말이에요. 원래는 한 지역을 두고 쓰는 말이라, 일본 전체로 넓혀 쓰는 것은 이 매거진의 해석이에요.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</article>
+
+<!-- ═════════ 화면 3 · 1호 표지(扉) ═════════ -->
+<p class="screen-label" aria-hidden="true">화면 3 · 1호 표지</p>
+<section class="screen icover" aria-labelledby="i1-h">
+    <div class="ihead">
+      <p class="no"><span class="mast" lang="ja">『となり』</span> 1호</p>
+      <h1 id="i1-h"><span class="sr-only"><span lang="ja">まち</span>(마치) — </span>땅과 동네</h1>
+      <p class="sub">사람들이 어디에, 어떻게 모여 사는지.</p>
+      <span class="chip">먼저 읽을 분 · 일본 여행 입문</span>
+    </div>
+  <p class="vword" lang="ja" aria-hidden="true">まち</p>
+    <nav aria-label="1호 차례">
+      <ol class="toc">
+        <li class="live"><span class="plate">01</span><a href="#s01">첫 장면 — 오후 다섯 시의 노래</a></li>
+        <li><span class="plate">02</span>숫자로 보기<span class="sr-only">(원고 전)</span></li>
+        <li><span class="plate">03</span>짧은 꼭지 3편<span class="sr-only">(원고 전)</span></li>
+        <li><span class="plate">04</span><span lang="ja">モノ・コト・ヒト</span><span class="sr-only">(원고 전)</span></li>
+        <li><span class="plate">05</span>지도<span class="sr-only">(원고 전)</span></li>
+        <li><span class="plate">06</span>살게 된다면<span class="sr-only">(원고 전)</span></li>
+        <li><span class="plate">07</span>한국과 나란히<span class="sr-only">(원고 전)</span></li>
+        <li><span class="plate">08</span>해 보기<span class="sr-only">(원고 전)</span></li>
+      </ol>
+      <p class="toc-note">프로토타입에는 01만 있어요. 02–08은 원고 전.</p>
+    </nav>
+</section>
+
+<!-- ═════════ 화면 4 · 01 첫 장면 ═════════ -->
+<p class="screen-label" aria-hidden="true">화면 4 · 1호 01 첫 장면</p>
+<article class="screen" id="s01" aria-labelledby="s01-h">
+  <div class="hashira" aria-label="현재 위치"><span class="mast" lang="ja">となり</span> · <span>1호 땅과 동네</span> · <span class="plate">01</span><b>첫 장면</b></div>
+  <div class="article scene">
+    <header class="head">
+      <div class="rail"><span class="plate plate--lg">01</span></div>
+      <div>
+        <h2 id="s01-h"><span class="sr-only">01 첫 장면 — </span>오후 다섯 시의 노래<span class="kicker" aria-hidden="true">첫 장면</span></h2>
+        <p class="rec"><span class="chip chip--rec">재구성 장면 · 공식 자료로 다시 그림</span></p>
+      </div>
+    </header>
+    <div class="body">
+      <span class="aside" aria-hidden="true">16:58</span>
+      <p>오후 4시 58분, 도쿄의 한 주택가. 전신주에 작은 표지판이 붙어 있다. 동네 이름 옆에 「<span lang="ja">2<ruby>丁目<rp aria-hidden="true">(</rp><rt aria-hidden="true">ちょうめ</rt><rp aria-hidden="true">)</rp></ruby> 3</span>」<span class="sr-only">(읽기: <span lang="ja">にちょうめ さん</span>)</span>이라고 적혀 있다. <span lang="ja">丁目</span>(초메)는 동네를 나눈 구역이고, 3은 그 안의 한 블록이다. 길 이름 표지판은 보이지 않는다. 이곳 주소는 길 이름 대신 이런 번호로 적는다.</p>
+
+      <p>모퉁이에 쓰레기 내놓는 자리가 있다. 지금은 비어 있다. 내일 아침 8시까지 봉투가 하나둘 모일 것이다. 전날 밤에는 내놓지 않는다.</p>
+
+      <span class="aside" aria-hidden="true">17:00</span>
+      <p>5시 정각, 동네 스피커에서 느린 노래가 흘러나온다. 동요 「<span lang="ja"><ruby>夕<rp aria-hidden="true">(</rp><rt aria-hidden="true">ゆう</rt><rp aria-hidden="true">)</rp>焼<rp aria-hidden="true">(</rp><rt aria-hidden="true">や</rt><rp aria-hidden="true">)</rp></ruby>け<ruby>小<rp aria-hidden="true">(</rp><rt aria-hidden="true">こ</rt><rp aria-hidden="true">)</rp>焼<rp aria-hidden="true">(</rp><rt aria-hidden="true">や</rt><rp aria-hidden="true">)</rp></ruby>け</span><span class="sr-only">(읽기: <span lang="ja">ゆうやけこやけ</span>)</span>(유야케코야케, 저녁노을)」의 가락이다. 재난 때 쓰는 스피커가 고장 나지 않았는지, 매일 같은 시각에 시험하는 방송이다. 아이들에게는 이제 집에 갈 시간이라는 신호이기도 하다.</p>
+
+      <p class="end">노래가 끝난다. 전신주의 번호는 그대로다.</p>
+    </div>
+  </div>
+</article>
+
+<!-- ═════════ 화면 5 · 이 호의 일본어 ═════════ -->
+<p class="screen-label" aria-hidden="true">화면 5 · 1호 이 호의 일본어 (키워드 칩)</p>
+<section class="screen" aria-labelledby="kw-h">
+  <div class="hashira" aria-label="현재 위치"><span class="mast" lang="ja">となり</span> · <span>1호 땅과 동네</span> · <b>이 호의 일본어</b></div>
+  <div class="kw">
+    <h2 id="kw-h" class="kw-h">이 호의 일본어</h2>
+    <p class="lead">단어를 누르면 이 앱의 일본어 교재 중 그 단어가 나오는 과로 이어져요.</p>
+    <ul class="chips">
+      <li><a class="kchip" href="#" data-proto aria-describedby="kw-note">
+        <span class="w" lang="ja">となり</span>
+        <span class="r">읽기 <span lang="ja">となり</span> · 도나리</span>
+        <span class="m">옆, 이웃 · 한자 <span lang="ja">隣</span></span>
+        <span class="to">교재 9과 「내 가방은 어디에?」</span>
+      </a></li>
+      <li><a class="kchip" href="#" data-proto aria-describedby="kw-note">
+        <span class="w" lang="ja">丁目</span>
+        <span class="r">읽기 <span lang="ja">ちょうめ</span> · 초메</span>
+        <span class="m">○번가(주소 단위)</span>
+        <span class="to">교재에 없는 말 · 01 첫 장면으로</span>
+      </a></li>
+      <li><a class="kchip" href="#" data-proto aria-describedby="kw-note">
+        <span class="w" lang="ja">夕焼け</span>
+        <span class="r">읽기 <span lang="ja">ゆうやけ</span> · 유야케</span>
+        <span class="m">저녁노을</span>
+        <span class="to">교재 과 확인 전 · 01 첫 장면으로</span>
+      </a></li>
+      <li><a class="kchip" href="#" data-proto aria-describedby="kw-note">
+        <span class="w" lang="ja">まち</span>
+        <span class="r">읽기 <span lang="ja">まち</span> · 마치</span>
+        <span class="m">동네, 읍·정 · 한자 <span lang="ja">町</span></span>
+        <span class="to">교재 12과 「어떤 동네예요?」</span>
+      </a></li>
+    </ul>
+    <p class="proto-note" id="kw-note">프로토타입: 칩은 아직 연결 전(#). 실제로는 교재 해당 과로 이어지고, 단어 저장은 그쪽의 기존 저장 경로를 탄다.</p>
+  </div>
+</section>
+
+<script>
+/* 프로토타입 전용: 테마 미리보기 전환(자동 → 밝게 → 어둡게) · 연결 전 칩의 # 이동 막기 */
+(function(){
+  var b=document.getElementById('theme'), root=document.documentElement;
+  var order=['auto','light','dark'], name={auto:'자동',light:'밝게',dark:'어둡게'}, i=0;
+  b.addEventListener('click',function(){
+    i=(i+1)%3; var t=order[i];
+    if(t==='auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme',t);
+    b.textContent='테마: '+name[t];
+  });
+  document.querySelectorAll('[data-proto]').forEach(function(a){
+    a.addEventListener('click',function(e){e.preventDefault();});
+  });
+})();
+</script>
+</body>
+</html>

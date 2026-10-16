@@ -1,0 +1,42 @@
+{
+ "k": 10.9936,
+ "mPerMm": 90.96,
+ "shimoyoshida": {
+  "x": 13,
+  "y": 241.72,
+  "h": 753.2
+ },
+ "kanadorii": {
+  "x": 31.59,
+  "y": 241.17,
+  "h": 802.8,
+  "d": 1691.3
+ },
+ "kengamine": {
+  "x": 197,
+  "y": 208.58,
+  "h": 3767.4,
+  "d": 16737
+ },
+ "base": 250,
+ "title": {
+  "x": 14.47,
+  "size": 20,
+  "inkDrop": 1.59
+ },
+ "sub": {
+  "x": 38.75,
+  "size": 6,
+  "lh": 1.7,
+  "inkDrop": 3.63
+ },
+ "credit": {
+  "x": 12.81,
+  "bottom": 287,
+  "size": 3.4,
+  "lh": 1.5
+ },
+ "inkBottom": 237.22,
+ "subGroundGap": 2.62,
+ "redThickness": 2.6
+}

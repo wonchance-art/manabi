@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>12-hip 표지 비교</title>
+<!-- 12-hip 비교 시트(build.mjs 생성, 2026-10-15 KST). 행 = 표지, 열 = 서체 체계 5. 각 칸은 표지 HTML을 iframe으로 띄운다(표지 폭 360px). -->
+<style>
+:root{--bg:#d9dce3;--ink:#151b2c;--muted:#4a5268}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0e1220;--ink:#eef0f4;--muted:#b4bccd}}
+:root[data-theme="dark"]{--bg:#0e1220;--ink:#eef0f4;--muted:#b4bccd}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,sans-serif}
+body{padding:24px 16px}
+h1{font-size:18px;margin:0 0 4px}
+p{margin:0 0 16px;color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:110px repeat(5,392px);gap:12px 20px;align-items:start;overflow-x:auto}
+.ch{font-size:14px;font-weight:600}
+.ch small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+.rh{font-size:14px;font-weight:600;padding-top:16px}
+iframe{width:392px;height:541px;border:0;display:block}
+</style>
+</head>
+<body>
+<h1>12-hip — 11-center 레이아웃(가운데·좌우 14mm) × 서체 체계 5</h1>
+<p>제호 TONARI·となり도 체계별 서체(탐색 단계 라이브 텍스트). 모든 서체 SIL OFL 1.1. 행 = 표지, 열 = 체계.</p>
+<div class="grid">
+<div></div><div class="ch">H1 レトロ・ディスプレイ<small>Dela Gothic One · Zen Kaku Gothic New</small></div><div class="ch">H2 エディトリアル<small>Instrument Serif · Kaisei Tokumin · Zen Kaku Gothic New</small></div><div class="ch">H3 ドット<small>DotGothic16 · Zen Kaku Gothic New · Space Grotesk</small></div><div class="ch">H4 筆<small>Yuji Syuku · Zen Maru Gothic · Klee One</small></div><div class="ch">H5 コンデンス・グロテスク<small>Big Shoulders Display · Murecho</small></div>
+<div class="rh">① 一本の線</div><iframe src="covers/ippon-H1.html" title="ippon-H1"></iframe><iframe src="covers/ippon-H2.html" title="ippon-H2"></iframe><iframe src="covers/ippon-H3.html" title="ippon-H3"></iframe><iframe src="covers/ippon-H4.html" title="ippon-H4"></iframe><iframe src="covers/ippon-H5.html" title="ippon-H5"></iframe>
+<div class="rh">⑤ 断面</div><iframe src="covers/danmen-H1.html" title="danmen-H1"></iframe><iframe src="covers/danmen-H2.html" title="danmen-H2"></iframe><iframe src="covers/danmen-H3.html" title="danmen-H3"></iframe><iframe src="covers/danmen-H4.html" title="danmen-H4"></iframe><iframe src="covers/danmen-H5.html" title="danmen-H5"></iframe>
+</div>
+</body>
+</html>

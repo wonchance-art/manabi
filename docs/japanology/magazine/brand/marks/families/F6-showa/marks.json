@@ -1,0 +1,186 @@
+{
+ "family": "F6 쇼와 레트로",
+ "font": {
+  "copyright": "Copyright 2020 The Mochiypop Project Authors",
+  "license": "SIL OFL 1.1",
+  "name": "Mochiy Pop One 2.000",
+  "sha256": "9e009430e1316c271a5f34759c6b65fc343c4e806f193042528887e7235a92c6",
+  "url": "https://raw.githubusercontent.com/google/fonts/67bc647ce1910e92f461bcc82aae30f21d21a9cc/ofl/mochiypopone/MochiyPopOne-Regular.ttf"
+ },
+ "kern_hand_edits": {
+  "AR": -24,
+  "NA": -38,
+  "ON": -6,
+  "TO": -70,
+  "とな": -10,
+  "なり": -14,
+  "トナ": -36,
+  "ナリ": -26
+ },
+ "principles": {
+  "cap_ink": 872.0,
+  "gap_over_stem": 0.62,
+  "gap_units": 110.45,
+  "kana_grow": 6.62,
+  "kana_ink_over_cap": 1.03,
+  "kana_scale": 0.9673,
+  "kana_stem_after": 178.15,
+  "kana_stem_raw_scaled": 164.77,
+  "shadow_angle_deg": -45.0,
+  "shadow_crumb_side_over_stem": 0.35,
+  "shadow_depth_over_stem": 0.7,
+  "shadow_depth_units": 124.71,
+  "shadow_min_width_over_stem": 0.12,
+  "small_depth_over_stem": 0.7,
+  "small_depth_units": 124.71,
+  "split_over_stem": 0.11,
+  "split_units": 19.6,
+  "stem_I": 178.15
+ },
+ "svg": {
+  "F6-TONARI-dark": {
+   "file": "svg/F6-TONARI-dark.svg",
+   "role": "우산·국제",
+   "small": false,
+   "theme": "dark",
+   "viewBox": [
+    -6,
+    -820,
+    4737,
+    990
+   ]
+  },
+  "F6-TONARI-light": {
+   "file": "svg/F6-TONARI-light.svg",
+   "role": "우산·국제",
+   "small": false,
+   "theme": "light",
+   "viewBox": [
+    -6,
+    -820,
+    4737,
+    990
+   ]
+  },
+  "F6-TONARI-s-dark": {
+   "file": "svg/F6-TONARI-s-dark.svg",
+   "role": "우산·국제",
+   "small": true,
+   "theme": "dark",
+   "viewBox": [
+    -6,
+    -820,
+    4737,
+    990
+   ]
+  },
+  "F6-TONARI-s-light": {
+   "file": "svg/F6-TONARI-s-light.svg",
+   "role": "우산·국제",
+   "small": true,
+   "theme": "light",
+   "viewBox": [
+    -6,
+    -820,
+    4737,
+    990
+   ]
+  },
+  "F6-tonari-hira-dark": {
+   "file": "svg/F6-tonari-hira-dark.svg",
+   "role": "일본 시리즈",
+   "small": false,
+   "theme": "dark",
+   "viewBox": [
+    -6,
+    -840,
+    2666,
+    1021
+   ]
+  },
+  "F6-tonari-hira-light": {
+   "file": "svg/F6-tonari-hira-light.svg",
+   "role": "일본 시리즈",
+   "small": false,
+   "theme": "light",
+   "viewBox": [
+    -6,
+    -840,
+    2666,
+    1021
+   ]
+  },
+  "F6-tonari-hira-s-dark": {
+   "file": "svg/F6-tonari-hira-s-dark.svg",
+   "role": "일본 시리즈",
+   "small": true,
+   "theme": "dark",
+   "viewBox": [
+    -6,
+    -840,
+    2666,
+    1022
+   ]
+  },
+  "F6-tonari-hira-s-light": {
+   "file": "svg/F6-tonari-hira-s-light.svg",
+   "role": "일본 시리즈",
+   "small": true,
+   "theme": "light",
+   "viewBox": [
+    -6,
+    -840,
+    2666,
+    1022
+   ]
+  },
+  "F6-tonari-kata-dark": {
+   "file": "svg/F6-tonari-kata-dark.svg",
+   "role": "하이브리드·경계",
+   "small": false,
+   "theme": "dark",
+   "viewBox": [
+    -6,
+    -815,
+    2492,
+    1001
+   ]
+  },
+  "F6-tonari-kata-light": {
+   "file": "svg/F6-tonari-kata-light.svg",
+   "role": "하이브리드·경계",
+   "small": false,
+   "theme": "light",
+   "viewBox": [
+    -6,
+    -815,
+    2492,
+    1001
+   ]
+  },
+  "F6-tonari-kata-s-dark": {
+   "file": "svg/F6-tonari-kata-s-dark.svg",
+   "role": "하이브리드·경계",
+   "small": true,
+   "theme": "dark",
+   "viewBox": [
+    -6,
+    -815,
+    2492,
+    1002
+   ]
+  },
+  "F6-tonari-kata-s-light": {
+   "file": "svg/F6-tonari-kata-s-light.svg",
+   "role": "하이브리드·경계",
+   "small": true,
+   "theme": "light",
+   "viewBox": [
+    -6,
+    -815,
+    2492,
+    1002
+   ]
+  }
+ }
+}

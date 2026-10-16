@@ -1,0 +1,670 @@
+{
+ "cells": [
+  {
+   "name": "A-15-ippon",
+   "key": "A",
+   "pct": 15,
+   "which": "ippon",
+   "w": 31.5,
+   "h": 14.8,
+   "px": [
+    58.5,
+    27.4
+   ],
+   "em": 16.31,
+   "min_em": 16.31,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "A-15-danmen",
+   "key": "A",
+   "pct": 15,
+   "which": "danmen",
+   "w": 31.5,
+   "h": 14.8,
+   "px": [
+    58.5,
+    27.4
+   ],
+   "em": 16.31,
+   "min_em": 16.31,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "A-25-ippon",
+   "key": "A",
+   "pct": 25,
+   "which": "ippon",
+   "w": 52.5,
+   "h": 27.4,
+   "px": [
+    97.5,
+    50.8
+   ],
+   "em": 29.61,
+   "min_em": 29.61,
+   "plate_clear_mm": 42.6,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "A-25-danmen",
+   "key": "A",
+   "pct": 25,
+   "which": "danmen",
+   "w": 52.5,
+   "h": 27.4,
+   "px": [
+    97.5,
+    50.8
+   ],
+   "em": 29.61,
+   "min_em": 29.61,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "A-40-ippon",
+   "key": "A",
+   "pct": 40,
+   "which": "ippon",
+   "w": 84.0,
+   "h": 43.8,
+   "px": [
+    156.0,
+    81.3
+   ],
+   "em": 47.38,
+   "min_em": 47.38,
+   "plate_clear_mm": 17.0,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "A-40-danmen",
+   "key": "A",
+   "pct": 40,
+   "which": "danmen",
+   "w": 84.0,
+   "h": 43.8,
+   "px": [
+    156.0,
+    81.3
+   ],
+   "em": 47.38,
+   "min_em": 47.38,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "B-15-ippon",
+   "key": "B",
+   "pct": 15,
+   "which": "ippon",
+   "w": 32.1,
+   "h": 5.3,
+   "px": [
+    59.6,
+    9.9
+   ],
+   "em": 2.58,
+   "min_em": 3.96,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "B-15-danmen",
+   "key": "B",
+   "pct": 15,
+   "which": "danmen",
+   "w": 32.1,
+   "h": 5.3,
+   "px": [
+    59.6,
+    9.9
+   ],
+   "em": 2.58,
+   "min_em": 3.96,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "B-25-ippon",
+   "key": "B",
+   "pct": 25,
+   "which": "ippon",
+   "w": 52.7,
+   "h": 6.0,
+   "px": [
+    97.8,
+    11.2
+   ],
+   "em": 5.49,
+   "min_em": 6.0,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "B-25-danmen",
+   "key": "B",
+   "pct": 25,
+   "which": "danmen",
+   "w": 52.7,
+   "h": 6.0,
+   "px": [
+    97.8,
+    11.2
+   ],
+   "em": 5.49,
+   "min_em": 6.0,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "B-40-ippon",
+   "key": "B",
+   "pct": 40,
+   "which": "ippon",
+   "w": 84.0,
+   "h": 10.3,
+   "px": [
+    156.0,
+    19.1
+   ],
+   "em": 9.64,
+   "min_em": 6.0,
+   "plate_clear_mm": 40.0,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "B-40-danmen",
+   "key": "B",
+   "pct": 40,
+   "which": "danmen",
+   "w": 84.0,
+   "h": 10.3,
+   "px": [
+    156.0,
+    19.1
+   ],
+   "em": 9.64,
+   "min_em": 6.0,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "C1-15-ippon",
+   "key": "C1",
+   "pct": 15,
+   "which": "ippon",
+   "w": 31.5,
+   "h": 24.6,
+   "px": [
+    58.5,
+    45.7
+   ],
+   "em": 26.11,
+   "min_em": 8.36,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "C1-15-danmen",
+   "key": "C1",
+   "pct": 15,
+   "which": "danmen",
+   "w": 31.5,
+   "h": 24.6,
+   "px": [
+    58.5,
+    45.7
+   ],
+   "em": 26.11,
+   "min_em": 8.36,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "C1-25-ippon",
+   "key": "C1",
+   "pct": 25,
+   "which": "ippon",
+   "w": 52.5,
+   "h": 45.5,
+   "px": [
+    97.5,
+    84.6
+   ],
+   "em": 49.07,
+   "min_em": 7.36,
+   "plate_clear_mm": 28.6,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "C1-25-danmen",
+   "key": "C1",
+   "pct": 25,
+   "which": "danmen",
+   "w": 52.5,
+   "h": 45.5,
+   "px": [
+    97.5,
+    84.6
+   ],
+   "em": 49.07,
+   "min_em": 7.36,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "C1-40-ippon",
+   "key": "C1",
+   "pct": 40,
+   "which": "ippon",
+   "w": 84.0,
+   "h": 72.9,
+   "px": [
+    156.0,
+    135.3
+   ],
+   "em": 78.51,
+   "min_em": 11.78,
+   "plate_clear_mm": 0.5,
+   "halo": true,
+   "note": "제호가 판면 지물과 0.5mm → 제호 둘레 0.8mm 바탕색 테로 지물을 끊고 앞에 얹음. 호 표기가 제호 아래에서 능선에 걸려 제호 오른쪽 위(101.0, 13.4)로 옮김."
+  },
+  {
+   "name": "C1-40-danmen",
+   "key": "C1",
+   "pct": 40,
+   "which": "danmen",
+   "w": 84.0,
+   "h": 72.9,
+   "px": [
+    156.0,
+    135.3
+   ],
+   "em": 78.51,
+   "min_em": 11.78,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "C2-15-ippon",
+   "key": "C2",
+   "pct": 15,
+   "which": "ippon",
+   "w": 31.5,
+   "h": 45.7,
+   "px": [
+    58.5,
+    84.8
+   ],
+   "em": 35.39,
+   "min_em": 10.62,
+   "plate_clear_mm": 32.8,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "C2-15-danmen",
+   "key": "C2",
+   "pct": 15,
+   "which": "danmen",
+   "w": 31.5,
+   "h": 45.7,
+   "px": [
+    58.5,
+    84.8
+   ],
+   "em": 35.39,
+   "min_em": 10.62,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "C2-25-ippon",
+   "key": "C2",
+   "pct": 25,
+   "which": "ippon",
+   "w": 52.5,
+   "h": 68.1,
+   "px": [
+    97.5,
+    126.5
+   ],
+   "em": 59.9,
+   "min_em": 8.98,
+   "plate_clear_mm": 8.5,
+   "halo": false,
+   "note": "호 표기가 제호 아래에서 능선에 걸려 제호 오른쪽 위(69.5, 13.4)로 옮김."
+  },
+  {
+   "name": "C2-25-danmen",
+   "key": "C2",
+   "pct": 25,
+   "which": "danmen",
+   "w": 52.5,
+   "h": 68.1,
+   "px": [
+    97.5,
+    126.5
+   ],
+   "em": 59.9,
+   "min_em": 8.98,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "C2-40-ippon",
+   "key": "C2",
+   "pct": 40,
+   "which": "ippon",
+   "w": 84.0,
+   "h": 109.0,
+   "px": [
+    156.0,
+    202.4
+   ],
+   "em": 95.84,
+   "min_em": 14.38,
+   "plate_clear_mm": -0.8,
+   "halo": true,
+   "note": "제호가 판면 지물과 겹침 → 제호 둘레 0.8mm 바탕색 테로 지물을 끊고 앞에 얹음."
+  },
+  {
+   "name": "C2-40-danmen",
+   "key": "C2",
+   "pct": 40,
+   "which": "danmen",
+   "w": 84.0,
+   "h": 109.0,
+   "px": [
+    156.0,
+    202.4
+   ],
+   "em": 95.84,
+   "min_em": 14.38,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "D-15-ippon",
+   "key": "D",
+   "pct": 15,
+   "which": "ippon",
+   "w": 11.3,
+   "h": 44.5,
+   "px": [
+    20.9,
+    82.7
+   ],
+   "em": 15.6,
+   "min_em": 15.6,
+   "plate_clear_mm": 39.8,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "D-15-danmen",
+   "key": "D",
+   "pct": 15,
+   "which": "danmen",
+   "w": 11.3,
+   "h": 44.5,
+   "px": [
+    20.9,
+    82.7
+   ],
+   "em": 15.6,
+   "min_em": 15.6,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "D-25-ippon",
+   "key": "D",
+   "pct": 25,
+   "which": "ippon",
+   "w": 18.7,
+   "h": 74.2,
+   "px": [
+    34.7,
+    137.9
+   ],
+   "em": 26.29,
+   "min_em": 26.29,
+   "plate_clear_mm": 10.5,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "D-25-danmen",
+   "key": "D",
+   "pct": 25,
+   "which": "danmen",
+   "w": 18.7,
+   "h": 74.2,
+   "px": [
+    34.7,
+    137.9
+   ],
+   "em": 26.29,
+   "min_em": 26.29,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "D-40-ippon",
+   "key": "D",
+   "pct": 40,
+   "which": "ippon",
+   "w": 29.9,
+   "h": 118.8,
+   "px": [
+    55.5,
+    220.6
+   ],
+   "em": 42.07,
+   "min_em": 42.07,
+   "plate_clear_mm": -0.8,
+   "halo": true,
+   "note": "제호가 판면 지물과 겹침 → 제호 둘레 0.8mm 바탕색 테로 지물을 끊고 앞에 얹음."
+  },
+  {
+   "name": "D-40-danmen",
+   "key": "D",
+   "pct": 40,
+   "which": "danmen",
+   "w": 29.9,
+   "h": 118.8,
+   "px": [
+    55.5,
+    220.6
+   ],
+   "em": 42.07,
+   "min_em": 42.07,
+   "plate_clear_mm": null,
+   "halo": false,
+   "note": ""
+  },
+  {
+   "name": "C1-25-ippon-name",
+   "key": "C1",
+   "pct": 25,
+   "which": "ippon",
+   "w": 52.5,
+   "h": 45.5,
+   "px": [
+    97.5,
+    84.6
+   ],
+   "line": "name",
+   "line_text": "一つの町　富士吉田",
+   "halo": false,
+   "min_em": 7.36,
+   "line_plate_clear_mm": 36.4
+  },
+  {
+   "name": "C1-25-danmen-name",
+   "key": "C1",
+   "pct": 25,
+   "which": "danmen",
+   "w": 52.5,
+   "h": 45.5,
+   "px": [
+    97.5,
+    84.6
+   ],
+   "line": "name",
+   "line_text": "一つの町　富士吉田",
+   "halo": false,
+   "min_em": 7.36,
+   "line_plate_clear_mm": 211.0
+  },
+  {
+   "name": "C1-25-ippon-quote",
+   "key": "C1",
+   "pct": 25,
+   "which": "ippon",
+   "w": 52.5,
+   "h": 45.5,
+   "px": [
+    97.5,
+    84.6
+   ],
+   "line": "quote",
+   "line_text": "「聖なる町と俗なる町」が隣り合う",
+   "halo": false,
+   "min_em": 7.36,
+   "line_plate_clear_mm": 36.2
+  },
+  {
+   "name": "C1-25-danmen-quote",
+   "key": "C1",
+   "pct": 25,
+   "which": "danmen",
+   "w": 52.5,
+   "h": 45.5,
+   "px": [
+    97.5,
+    84.6
+   ],
+   "line": "quote",
+   "line_text": "「聖なる町と俗なる町」が隣り合う",
+   "halo": false,
+   "min_em": 7.36,
+   "line_plate_clear_mm": 201.5
+  },
+  {
+   "name": "A-40-ippon-quote",
+   "key": "A",
+   "pct": 40,
+   "which": "ippon",
+   "w": 84.0,
+   "h": 43.8,
+   "px": [
+    156.0,
+    81.3
+   ],
+   "line": "quote",
+   "line_text": "「聖なる町と俗なる町」が隣り合う",
+   "halo": false,
+   "min_em": 47.38,
+   "line_plate_clear_mm": 36.2
+  },
+  {
+   "name": "A-40-danmen-quote",
+   "key": "A",
+   "pct": 40,
+   "which": "danmen",
+   "w": 84.0,
+   "h": 43.8,
+   "px": [
+    156.0,
+    81.3
+   ],
+   "line": "quote",
+   "line_text": "「聖なる町と俗なる町」が隣り合う",
+   "halo": false,
+   "min_em": 47.38,
+   "line_plate_clear_mm": 197.9
+  }
+ ],
+ "log": {
+  "A": {
+   "small": [
+    "03-mast 작은 크기 수정 8곳(T1–T3·N1–N3·R1·R2), 잉크 사이 0.131em"
+   ],
+   "display": [
+    "작은 크기용 처리 해제: な 교차부 바늘구멍(N1)·원래 고리 속공간(N2 해제)·り 바늘 꼬리(R2 해제)·이음선 보강(R1 해제)을 서체 원형으로 되돌림 — 큰 크기에서는 세부가 보이고 막히지 않는다",
+    "윤곽 −6단위(디스플레이 광학 보정): ExtraBold를 크게 쓰면 획이 둔하고 속공간이 좁아 보인다 → 획을 얇혀 굵기 대비를 키움",
+    "と 맺음 연장(T1)·첫 획 보강(T3), な 삐침 연장(N3)은 유지 — 가로 이웃을 향한 몸짓",
+    "り 꼬리 끝을 아래로 26·왼쪽 6 늘임 — 큰 글자에서 줄 끝을 길게 끊음",
+    "자간: 잉크 사이 0.072·0.068em(작은 크기 0.131em보다 조임 — 큰 글자는 빈자리가 커 보인다)"
+   ]
+  },
+  "B": {
+   "small": [
+    "08-mast B 수정(T 세리프 솟음 35%·A 꼭짓점 45%·R 다리 +34), Garamond 600, 자간 0.32 cap",
+    "となり = A안 SemiBold 작은 크기 수정본, em 0.87 cap"
+   ],
+   "display": [
+    "같은 수정에 Garamond 500 인스턴스(큰 크기에서 600은 무겁다)",
+    "자간 0.22 cap으로 조임(T–O 0.15·A–R 0.19 광학 보정)",
+    "となり 부 = em 0.5 cap(최소 6mm) — 라틴 주의 읽기 보조로 낮춤"
+   ]
+  },
+  "C1": {
+   "small": [
+    "隣 속공간 4곳 열기(08-mast C: 夕 122%·舛 틈 135%/115×106%·阝 106×104%)",
+    "읽기 가나 = 작은 크기 수정(T2·T3·N1·N2·R1·R2)"
+   ],
+   "display": [
+    "隣 속공간 열기 해제(서체 원형) + 윤곽 −6단위 — 큰 한자는 획 대비가 살아야 마크가 선다",
+    "읽기 가나 em 0.15×隣(최소 5.9mm)"
+   ]
+  },
+  "C2": {
+   "small": [
+    "隣 속공간 4곳 열기(08-mast C: 夕 122%·舛 틈 135%/115×106%·阝 106×104%)",
+    "읽기 가나 = 작은 크기 수정(T2·T3·N1·N2·R1·R2)"
+   ],
+   "display": [
+    "隣 속공간 열기 해제(서체 원형) + 윤곽 −6단위 — 큰 한자는 획 대비가 살아야 마크가 선다",
+    "읽기 가나 em 0.15×隣(최소 5.9mm)"
+   ]
+  },
+  "D": {
+   "small": [
+    "08-mast D 그대로(T2·T3·N1·N2·R1·R2 + り 꼬리 아래로 46)"
+   ],
+   "display": [
+    "작은 크기용 N1·N2·R1·R2 해제(서체 원형), と 첫 획 보강(T3)과 り 꼬리 연장만 유지",
+    "윤곽 −6단위(디스플레이 광학 보정)"
+   ]
+  }
+ }
+}

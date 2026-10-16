@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>F3 둥글고 다정한</title>
+<style>
+:root{--night:#151b2c;--snow:#eef0f4;--ver:#d4462a;--paper:#dfe2e8;--ink2:#4a5163}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--night);font-family:"Pretendard","Noto Sans KR","Hiragino Sans",sans-serif;width:1500px}
+.wrap{padding:44px 40px 48px}
+h1{font-size:30px;margin:0 0 6px;letter-spacing:-.01em}
+h1 small{font-size:15px;color:var(--ink2);font-weight:500;margin-left:10px}
+.lead{font-size:17px;margin:0 0 4px}
+.meta{font-size:12.5px;color:var(--ink2);margin:0 0 26px}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+.cell{height:190px;display:flex;align-items:center;justify-content:center;position:relative}
+.cell.light{background:var(--snow)} .cell.dark{background:var(--night)}
+.role{position:absolute;left:12px;top:10px;font-size:12px;font-weight:700;padding:2px 7px;border-radius:3px}
+.light .role{background:var(--night);color:var(--snow)} .dark .role{color:var(--snow);opacity:.8}
+.rule{border-left:4px solid var(--ver);background:var(--snow);padding:12px 16px;font-size:13px;margin:16px 0 30px;line-height:1.6}
+h2{font-size:15px;margin:0 0 10px} h2 span{font-weight:400;color:var(--ink2);font-size:12.5px;margin-left:8px}
+.hdrs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 10px;margin-bottom:30px}
+.hdr{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:12px}
+.hdr.light{background:var(--snow);color:var(--ink2);border-bottom:1px solid #c9cdd6} .hdr.dark{background:var(--night);color:#aab1c2}
+.hdrs .col{display:flex;flex-direction:column;gap:6px}
+.covers{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.cover{width:390px;height:560px;transform-origin:0 0;transform:scale(.5768);display:flex;flex-direction:column;align-items:center;padding-top:28px}
+.cover.light{background:var(--snow)} .cover.dark{background:var(--night)}
+.covwrap{width:225px;height:323px;overflow:hidden}
+.mast{width:312px}
+.ph{margin-top:22px;width:342px;flex:1;background:repeating-linear-gradient(135deg,#c7ccd6 0 8px,#d3d7df 8px 16px);display:flex;align-items:center;justify-content:center;font-size:13px;color:#59607a}
+.dark .ph{background:repeating-linear-gradient(135deg,#252d42 0 8px,#2b3449 8px 16px);color:#8b93a8}
+.foot{height:52px;display:flex;align-items:center;font-size:13px;color:var(--ink2)} .dark .foot{color:#8b93a8}
+.note{font-size:12px;color:var(--ink2);margin-top:8px}
+</style></head><body><div class="wrap">
+<h1>F3 둥글고 다정한 <small>Rounded Neighbor — TONARI · となり · トナリ</small></h1>
+<p class="lead">모서리를 깎아 낸 차분한 굵기와 넉넉한 자간, 그리고 글자 곁에 하나 더 앉은 주홍 ‘이웃 점’ — 말을 거는 옆집 같은 마크.</p>
+<p class="meta">출발 서체 M PLUS Rounded 1c Medium(SIL OFL 1.1, google/fonts 고정 커밋) → 아웃라인 SVG · 색 밤 #151b2c · 눈 #eef0f4 · 주홍 #d4462a(이웃 점, 비글자) · 2026-10-15 KST</p>
+<div class="row"><div class="cell light"><span class="role">우산 · 국제</span><img src="svg/TONARI-light.svg" alt="TONARI" style="height:82.5px;display:block"></div><div class="cell light"><span class="role">일본 시리즈</span><img src="svg/tonari-hira-light.svg" alt="となり" style="height:87.89px;display:block"></div><div class="cell light"><span class="role">하이브리드 · 경계</span><img src="svg/tonari-kata-light.svg" alt="トナリ" style="height:85.32px;display:block"></div></div><div class="row"><div class="cell dark"><span class="role">우산 · 국제</span><img src="svg/TONARI-dark.svg" alt="TONARI" style="height:82.5px;display:block"></div><div class="cell dark"><span class="role">일본 시리즈</span><img src="svg/tonari-hira-dark.svg" alt="となり" style="height:87.89px;display:block"></div><div class="cell dark"><span class="role">하이브리드 · 경계</span><img src="svg/tonari-kata-dark.svg" alt="トナリ" style="height:85.32px;display:block"></div></div>
+<div class="rule"><b>가족 원리</b> — 기둥 W = 120단위(라틴 I) · 평균 획 굵기(2×면적÷둘레) 세 마크 같음 = 103.9 · 획 끝 = 반원(그 획 굵기×0.5) · 바깥 모서리 반경 = W×0.30 · 안쪽 필렛 = W×0.20 · 가나 잉크 높이 = 대문자×1.06 · 글자 사이 = 면적식 평균 W×1.80, 2D 최소 W×1.15 · 이웃 점 지름 = W×1.45, 바닥선에 앉음</div>
+<h2>웹 헤더 24px <span>마크 높이 24px(실제 크기)</span></h2>
+<div class="hdrs"><div class="hdr light"><img src="svg/TONARI-light.svg" alt="TONARI" style="height:24px;display:block"><span>（ダミー）見出し</span></div><div class="hdr light"><img src="svg/tonari-hira-light.svg" alt="となり" style="height:24px;display:block"><span>（ダミー）見出し</span></div><div class="hdr light"><img src="svg/tonari-kata-light.svg" alt="トナリ" style="height:24px;display:block"><span>（ダミー）見出し</span></div><div class="hdr dark"><img src="svg/TONARI-dark.svg" alt="TONARI" style="height:24px;display:block"><span>（ダミー）見出し</span></div><div class="hdr dark"><img src="svg/tonari-hira-dark.svg" alt="となり" style="height:24px;display:block"><span>（ダミー）見出し</span></div><div class="hdr dark"><img src="svg/tonari-kata-dark.svg" alt="トナリ" style="height:24px;display:block"><span>（ダミー）見出し</span></div></div>
+<h2>표지 제호 폭 80% <span>390px 표지에서 312px — 견본은 57.7% 축소 표시</span></h2>
+<div class="covers"><div class="covwrap"><div class="cover light"><div class="mast"><img src="svg/TONARI-light.svg" alt="TONARI" style="width:312px;display:block"></div><div class="ph">写真ダミー</div><div class="foot">No.00（ダミー）</div></div></div><div class="covwrap"><div class="cover dark"><div class="mast"><img src="svg/TONARI-dark.svg" alt="TONARI" style="width:312px;display:block"></div><div class="ph">写真ダミー</div><div class="foot">No.00（ダミー）</div></div></div><div class="covwrap"><div class="cover light"><div class="mast"><img src="svg/tonari-hira-light.svg" alt="となり" style="width:312px;display:block"></div><div class="ph">写真ダミー</div><div class="foot">No.00（ダミー）</div></div></div><div class="covwrap"><div class="cover dark"><div class="mast"><img src="svg/tonari-hira-dark.svg" alt="となり" style="width:312px;display:block"></div><div class="ph">写真ダミー</div><div class="foot">No.00（ダミー）</div></div></div><div class="covwrap"><div class="cover light"><div class="mast"><img src="svg/tonari-kata-light.svg" alt="トナリ" style="width:312px;display:block"></div><div class="ph">写真ダミー</div><div class="foot">No.00（ダミー）</div></div></div><div class="covwrap"><div class="cover dark"><div class="mast"><img src="svg/tonari-kata-dark.svg" alt="トナリ" style="width:312px;display:block"></div><div class="ph">写真ダミー</div><div class="foot">No.00（ダミー）</div></div></div></div>
+<p class="note">더미 글자 「（ダミー）」「写真ダミー」「No.00（ダミー）」는 자리 표시다. 마크 외 글자는 견본용 시스템 서체.</p>
+</div></body></html>

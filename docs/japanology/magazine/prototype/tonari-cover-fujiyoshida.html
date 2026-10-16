@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>となり 表紙試作</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Noto+Serif+JP:wght@400;600&display=swap">
+<!--
+  表紙試作 — 『となり』 一つの町 第1回 富士吉田（2026-10-15 KST）
+  決定: README「짧은 호 축 조정」、原稿 ja/machi-fujiyoshida.md (4)「扉の視覚」。
+  判面の根拠（主題から導いた理由、1行）:
+    地は火祭の夜（8月26日の大松明, A45–A48）の暗い藍、線と枠は北口本宮の丹塗りの大鳥居（A38）の朱。
+    クリーム地・細罫・多段という既定値は使わない。大胆さは縦の表紙語ひとつに集める。
+  シリーズの固定枠: 朱の内枠・左上の誌名・右の縦語・下の副題。号ごとに変わるのは地図（または図版）と色だけ。
+  地図は編集部の模式図（縮尺なし、上が南）。駅・鳥居・神社の並び順と標高は出典表の値（A16・A18・A56・A57・B69）。
+-->
+<style>
+:root{
+  --night:#151b2c;          /* 火祭の夜 */
+  --night-2:#1d2540;
+  --vermilion:#d4462a;      /* 丹塗りの鳥居 */
+  --ember:#f08a4b;          /* 松明の火 */
+  --snow:#eef0f4;
+  --mist:#9aa3b8;
+  --backdrop:#2a2a2a;
+  --font-display:'Shippori Mincho','Noto Serif JP',serif;
+  --font-ja:'Noto Serif JP',serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--backdrop);}
+body{min-height:100vh;display:grid;place-items:center;padding:24px 16px;font-family:var(--font-ja);color:var(--snow)}
+.cover{
+  width:min(560px, 100%);
+  aspect-ratio:1/1.414;               /* A判比 */
+  background:radial-gradient(120% 80% at 50% 8%, var(--night-2), var(--night) 60%);
+  position:relative;overflow:hidden;
+  box-shadow:0 18px 50px rgba(0,0,0,.45);
+  container-type:inline-size;
+}
+/* シリーズ固定の内枠 */
+.cover::before{content:"";position:absolute;inset:3.2cqw;border:.55cqw solid var(--vermilion);pointer-events:none}
+.mast{position:absolute;left:7cqw;top:6.2cqw;margin:0;font-family:var(--font-display);font-weight:800;font-size:7.4cqw;letter-spacing:-.04em;font-feature-settings:'palt';line-height:1}
+.mast .br{color:var(--vermilion);font-weight:700}
+.issue{position:absolute;left:7.4cqw;top:15.2cqw;margin:0;font-size:2.5cqw;letter-spacing:.18em;color:var(--mist)}
+.issue b{color:var(--snow);font-weight:600;letter-spacing:.08em}
+.vword{position:absolute;right:7.2cqw;top:7cqw;margin:0;writing-mode:vertical-rl;font-family:var(--font-display);font-weight:800;font-size:13.6cqw;line-height:1;letter-spacing:.06em;font-feature-settings:'vpal';color:var(--snow)}
+.map{position:absolute;left:5cqw;top:20.5cqw;width:62cqw;height:92cqw}
+.sub{position:absolute;left:7.4cqw;right:7.4cqw;bottom:13.4cqw;margin:0;font-family:var(--font-display);font-weight:700;font-size:4.3cqw;line-height:1.55;font-feature-settings:'palt'}
+.title{position:absolute;left:7.4cqw;bottom:7cqw;margin:0;font-size:2.7cqw;letter-spacing:.14em;color:var(--mist)}
+.title b{color:var(--snow);font-weight:600}
+.credit{position:absolute;right:7.4cqw;bottom:7.1cqw;margin:0;font-size:1.75cqw;color:var(--mist);text-align:right;line-height:1.5}
+svg text{font-family:var(--font-ja)}
+</style>
+</head>
+<body>
+<article class="cover" aria-label="『となり』一つの町 第1回 富士吉田 表紙">
+  <p class="mast"><span class="br">『</span>となり<span class="br">』</span></p>
+  <p class="issue">一つの町　<b>01</b></p>
+  <h1 class="vword">富士みち</h1>
+
+  <svg class="map" viewBox="0 0 660 1030" role="img" aria-label="富士みちの模式図。上が南。下から本町通り（下吉田）、金鳥居、御師町（上吉田）、北口本宮冨士浅間神社と並び、その先に富士山がある。">
+    <!-- 富士山（一般的な山容の線画） -->
+    <path d="M70 250 L250 70 Q270 55 290 70 L470 250" fill="none" stroke="var(--snow)" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M205 115 L250 70 Q270 55 290 70 L335 115 L310 128 L290 112 L270 130 L250 112 L230 128 Z" fill="var(--snow)" opacity=".92"/>
+    <text x="70" y="294" font-size="26" fill="var(--mist)" letter-spacing="6">富士山</text>
+
+    <!-- 富士みち：下（北）から上（南）へ一直線 -->
+    <line x1="270" y1="985" x2="270" y2="330" stroke="var(--vermilion)" stroke-width="9" stroke-linecap="round"/>
+    <!-- 吉田口登山道へ続く破線 -->
+    <line x1="270" y1="330" x2="270" y2="250" stroke="var(--vermilion)" stroke-width="5" stroke-dasharray="4 14" stroke-linecap="round"/>
+
+    <!-- 地点 -->
+    <g font-size="27" fill="var(--snow)">
+      <!-- 北口本宮 -->
+      <circle cx="270" cy="360" r="13" fill="var(--night)" stroke="var(--ember)" stroke-width="6"/>
+      <text x="300" y="352">北口本宮</text>
+      <text x="300" y="384" font-size="20" fill="var(--mist)">冨士浅間神社　標高872m</text>
+      <!-- 御師町 -->
+      <rect x="252" y="510" width="36" height="120" rx="6" fill="none" stroke="var(--ember)" stroke-width="4" stroke-dasharray="8 7"/>
+      <text x="300" y="560">御師町</text>
+      <text x="300" y="592" font-size="20" fill="var(--mist)">上吉田　タツミチと間の川</text>
+      <!-- 金鳥居（一ノ鳥居） -->
+      <g transform="translate(270 700)">
+        <rect x="-34" y="-30" width="68" height="9" fill="var(--vermilion)"/>
+        <rect x="-26" y="-17" width="52" height="5" fill="var(--vermilion)"/>
+        <rect x="-22" y="-30" width="7" height="48" fill="var(--vermilion)"/>
+        <rect x="15" y="-30" width="7" height="48" fill="var(--vermilion)"/>
+      </g>
+      <text x="322" y="694">金鳥居</text>
+      <text x="322" y="726" font-size="20" fill="var(--mist)">一ノ鳥居　ここから先が神域</text>
+      <!-- 本町通り -->
+      <circle cx="270" cy="900" r="11" fill="var(--snow)"/>
+      <text x="300" y="892">本町通り</text>
+      <text x="300" y="924" font-size="20" fill="var(--mist)">下吉田　機の町</text>
+    </g>
+
+    <!-- 聖・俗 -->
+    <g font-size="21" fill="var(--mist)" letter-spacing="4">
+      <text x="236" y="560" text-anchor="end">聖なる町</text>
+      <text x="236" y="900" text-anchor="end">俗なる町</text>
+    </g>
+
+    <!-- 高低差 -->
+    <g stroke="var(--mist)" stroke-width="2" fill="none">
+      <line x1="40" y1="960" x2="40" y2="420"/>
+      <path d="M30 440 L40 420 L50 440"/>
+    </g>
+    <text transform="translate(26 940) rotate(-90)" font-size="19" fill="var(--mist)" letter-spacing="2">下吉田駅→富士山駅　高低差 約125m　山へ上る</text>
+    <text x="640" y="1010" font-size="17" fill="var(--mist)" text-anchor="end">上が南・縮尺なし</text>
+  </svg>
+
+  <p class="sub">今の金鳥居は、もとの場所より30メートル山に近い。</p>
+  <p class="title">一つの町　<b>富士吉田</b></p>
+  <p class="credit">地図　編集部作成（模式図）<br>『となり』編集部</p>
+</article>
+</body>
+</html>

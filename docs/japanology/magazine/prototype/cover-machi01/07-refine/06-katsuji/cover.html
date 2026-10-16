@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>富士吉田 表紙 活字</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;800&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap">
+<!--
+  『となり』 一つの町 01 富士吉田 표지 ⑥「活字」 다듬기판 — 생성 파일(07-refine/06-katsuji/build.mjs). 손으로 고치지 말 것. 2026-10-15 KST.
+  검사: node docs/japanology/magazine/prototype/check-cover.cjs cover.html
+
+  색(바탕 + 2색)
+  - 바탕 snow #eef0f4 — 재단까지. 틀 없음. 빈 곳 = 글자의 여백(종이)이므로 snow(critic §3 바탕 규칙).
+  - night #151b2c(吉田の火祭 밤·먹): 모든 글자. night/snow 15.0:1.
+  - vermilion #d4462a(北口本宮冨士浅間神社 大鳥居의 丹塗り): 지평선 한 줄(비글자)·제호 괄호만. 글자 금지(3.91:1).
+
+  주인공: 원고 (1)扉 「縦の表紙語: 富士みち」. 그림 없음 → 略図·OSM 크레딧 없음.
+  구성: 같은 활자(Shippori Mincho 500) 네 글자를 등비 r=1.9로 쌓음. 상자 모서리의 연장선이 (105, 72)에서 만난다(원근 구성, 실측 아님).
+  상자: 富 14.641mm@(97.68,88.268) / 士 27.817mm@(91.091,102.908) / み 52.853mm@(78.573,130.726) / ち 100.421mm@(54.789,183.579)
+  제목: Shippori 800 20mm 자간 .04em, 「ち」 곁 오른쪽 아래, 잉크 아래 끝 = 「ち」 상자 아래 끝 y284.
+  부제(편집장 결정 유지): 「富士吉田に入った道は、富士山へまっすぐ延びる。」
+        ← 원고 本文 46행 「富士吉田に入った富士道は下吉田のあたりで南へ向きを変え、富士山へまっすぐ延びる」 ← 取材 A16 山梨県 「富士道モデルコース④」(1次).
+-->
+<style>
+@font-face{font-family:'Shippori Mincho Tate';font-style:normal;font-weight:500;font-display:block;src:url(https://fonts.gstatic.com/l/font?kit=VdGDAZweH5EbgHY6YExcZfDoj0B4L9am4YkZzw0vbv_K9bY_KtPngsZkQaTtHA&skey=29e0a978c4dc8f62&v=v17) format('woff2');ascent-override:88%;descent-override:12%;line-gap-override:0%;unicode-range:U+0020,U+3061,U+307F,U+5409,U+58EB,U+5BCC,U+7530}
+@font-face{font-family:'Shippori Mincho Tate';font-style:normal;font-weight:800;font-display:block;src:url(https://fonts.gstatic.com/l/font?kit=VdGDAZweH5EbgHY6YExcZfDoj0B4e9Om4YkZzw0vbv_K9bY_KtPngsZkQaTtHA&skey=83f0168429c2df65&v=v17) format('woff2');ascent-override:88%;descent-override:12%;line-gap-override:0%;unicode-range:U+0020,U+3061,U+307F,U+5409,U+58EB,U+5BCC,U+7530}
+:root{--night:#151b2c;--vermilion:#d4462a;--snow:#eef0f4;--page:#d9dce3;--page-ink:#151b2c}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--page:#0e1220;--page-ink:#eef0f4}}
+:root[data-theme="dark"]{--page:#0e1220;--page-ink:#eef0f4}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--page);color:var(--page-ink)}
+body{padding:16px}
+.wrap{max-width:860px;margin:0 auto;container-type:inline-size}
+
+/* ── 표지: A4 210×297mm, 1mm = 100cqw/210 ── */
+.cover{--mm:calc(100cqw / 210);--cover-bg:#eef0f4;
+  width:100%;aspect-ratio:210/297;position:relative;overflow:hidden;background:var(--cover-bg);color:var(--night)}
+.cover > *{position:absolute;margin:0}
+.cover .plate{inset:0;width:100%;height:100%;display:block}
+.cover .mast{left:calc(var(--mm)*13);top:calc(var(--mm)*13);width:calc(var(--mm)*32.87);height:calc(var(--mm)*16)}
+.cover .no{left:calc(var(--mm)*12.57);top:calc(var(--mm)*30.3);font-family:'Zen Kaku Gothic New',sans-serif;font-weight:500;
+  font-size:calc(var(--mm)*5.64);line-height:1;letter-spacing:.08em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cover .no .n{margin-left:calc(var(--mm)*2.5)}
+.cover .hero{inset:0}
+.cover .k{position:absolute;display:block;writing-mode:vertical-rl;font-family:'Shippori Mincho Tate','Shippori Mincho',serif;font-weight:500;
+  line-height:1;width:1em;height:1em;white-space:nowrap}
+.cover .k0{left:calc(var(--mm)*97.68);top:calc(var(--mm)*88.268);font-size:calc(var(--mm)*14.641)}
+.cover .k1{left:calc(var(--mm)*91.091);top:calc(var(--mm)*102.908);font-size:calc(var(--mm)*27.817)}
+.cover .k2{left:calc(var(--mm)*78.573);top:calc(var(--mm)*130.726);font-size:calc(var(--mm)*52.853)}
+.cover .k3{left:calc(var(--mm)*54.789);top:calc(var(--mm)*183.579);font-size:calc(var(--mm)*100.421)}
+.cover .ttl{left:calc(var(--mm)*176);top:calc(var(--mm)*197.56);writing-mode:vertical-rl;font-family:'Shippori Mincho Tate','Shippori Mincho',serif;font-weight:800;
+  font-size:calc(var(--mm)*20);line-height:1;letter-spacing:.04em;white-space:nowrap}
+.cover .sub{left:calc(var(--mm)*46);top:calc(var(--mm)*102.9);writing-mode:vertical-rl;font-family:'Shippori Mincho',serif;font-weight:500;
+  font-size:calc(var(--mm)*6);line-height:1.7;letter-spacing:0;white-space:nowrap}
+.cover .credit{left:calc(var(--mm)*12.81);bottom:calc(var(--mm)*10);font-family:'Zen Kaku Gothic New',sans-serif;font-weight:400;
+  font-size:calc(var(--mm)*3.24);line-height:1.4;white-space:nowrap;font-feature-settings:'palt'}
+.cover .credit span{display:block}
+.cover .credit .hang{text-indent:-.5em}
+</style>
+</head>
+<body>
+<div class="wrap">
+<article class="cover" lang="ja" aria-label="『となり』一つの町 01 富士吉田 表紙">
+  <svg class="plate" viewBox="0 0 210 297" preserveAspectRatio="none" aria-hidden="true">
+    <!-- 지평 = 소실점 높이 · vermilion · 재단에서 재단까지 -->
+    <path d="M-3 72H213" stroke="#d4462a" stroke-width="0.9" fill="none"/>
+  </svg>
+  <svg class="mast" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32.87 16" role="img" aria-label="となり"><title>『となり』</title><path fill="#d4462a" d="M0 0h0.75v8.4h-0.75ZM0.75 0h3.25v0.75h-3.25ZM1.4 1.4h0.75v7h-0.75ZM2.15 1.4h1.85v0.75h-1.85Z"/><path fill="#151b2c" d="M4.562 11.119Q4.562 10.14 5.038 9.386Q5.513 8.631 6.615 7.856Q6.125 7.435 5.908 6.993Q5.69 6.551 5.69 5.899Q5.69 5.341 5.908 4.471Q5.921 4.403 5.996 4.063Q6.071 3.723 6.071 3.451Q6.071 3.098 5.969 2.785Q5.867 2.472 5.69 2.241Q5.622 2.146 5.52 2.064Q5.418 1.983 5.418 1.956Q5.418 1.86 5.704 1.86Q5.935 1.86 6.343 1.942Q6.941 2.051 7.396 2.425Q7.852 2.799 7.852 3.41Q7.852 3.696 7.75 3.934Q7.648 4.172 7.539 4.471L7.471 4.743Q7.281 5.056 7.159 5.497Q7.036 5.939 7.036 6.266Q7.036 6.619 7.111 6.959Q7.186 7.299 7.376 7.204Q7.553 7.204 7.716 7.17Q7.879 7.136 8.205 6.945Q8.505 6.769 8.736 6.667Q8.967 6.565 9.184 6.565Q9.674 6.565 10.041 6.823Q10.408 7.081 10.408 7.421Q10.408 7.693 10.211 7.836Q10.014 7.979 9.667 8.06Q9.32 8.142 8.586 8.264Q6.9 8.536 6.302 9.189Q5.704 9.841 5.704 10.657Q5.704 11.31 6.057 11.643Q6.411 11.976 7.172 11.976Q7.675 11.976 8.722 11.731Q9.66 11.5 10.082 11.5Q10.626 11.5 10.918 11.724Q11.21 11.949 11.21 12.343Q11.21 12.996 10.313 13.193Q9.415 13.39 7.988 13.499Q4.562 13.499 4.562 11.119ZM15.725 5.559Q15.387 6.508 14.711 8.276Q14.035 10.045 13.879 10.396Q13.709 10.747 13.443 10.929Q13.176 11.111 12.903 11.111Q12.552 11.111 12.429 10.773Q12.305 10.435 12.305 9.797Q12.305 9.524 12.39 9.375Q12.474 9.225 12.721 8.926Q12.76 8.874 12.832 8.803Q12.903 8.731 12.994 8.614Q13.449 8.055 13.807 7.386Q14.165 6.716 14.477 5.832Q13.709 5.793 13.306 5.318Q12.903 4.844 12.747 4.415Q12.682 4.259 12.682 4.207Q12.682 4.155 12.721 4.155Q12.76 4.155 12.903 4.272Q13.111 4.454 13.475 4.577Q13.84 4.701 14.204 4.701Q14.347 4.701 14.802 4.636Q14.854 4.415 14.854 4.103Q14.854 3.453 14.49 3.205Q14.347 3.114 14.249 3.062Q14.152 3.01 14.106 2.978Q14.061 2.945 14.061 2.906Q14.061 2.828 14.217 2.776Q14.373 2.724 14.62 2.724Q14.945 2.724 15.335 2.841Q15.933 3.036 16.076 3.492L16.414 3.492Q16.492 3.492 17.038 3.414Q17.233 3.375 17.324 3.375Q17.571 3.375 17.714 3.557Q17.87 3.752 17.87 3.973Q17.87 4.22 17.688 4.454Q17.506 4.688 17.298 4.831Q16.713 5.221 15.725 5.559ZM18.546 7.821Q18.546 8.237 18.618 8.731Q18.689 9.225 18.832 9.915Q18.858 10.058 18.884 10.181Q18.91 10.305 18.923 10.422Q19.963 10.656 20.705 11.059Q21.134 11.28 21.303 11.54Q21.472 11.8 21.472 12.06Q21.472 12.333 21.296 12.547Q21.121 12.762 20.861 12.762Q20.497 12.736 20.145 12.567Q19.794 12.398 19.352 12.112Q19.261 12.047 19.079 11.943Q19.014 12.723 18.39 13.191Q17.766 13.659 16.895 13.659Q16.388 13.659 15.92 13.484Q15.452 13.308 15.153 12.957Q14.854 12.606 14.854 12.112Q14.854 11.215 15.66 10.74Q16.466 10.266 17.584 10.266Q17.61 8.991 17.675 8.38Q17.74 7.678 17.974 7.223Q18.208 6.768 18.644 6.469Q19.079 6.17 19.794 5.91Q19.963 5.858 19.963 5.715Q19.963 5.442 19.248 4.844Q19.092 4.714 19.092 4.675Q19.092 4.597 19.274 4.597Q19.339 4.597 19.547 4.623Q20.38 4.74 21.043 5.208Q21.706 5.676 21.706 6.313Q21.706 6.69 21.498 6.918Q21.29 7.145 20.978 7.145Q20.757 7.145 20.581 7.061Q20.406 6.976 20.08 6.742Q19.638 6.443 19.287 6.443Q18.91 6.443 18.728 6.814Q18.546 7.184 18.546 7.821ZM17.571 11.371Q17.116 11.137 16.687 11.137Q16.18 11.137 15.803 11.345Q15.426 11.553 15.426 11.917Q15.426 12.411 15.764 12.612Q16.102 12.814 16.531 12.814Q17.142 12.814 17.35 12.404Q17.558 11.995 17.571 11.371ZM29.32 7.81Q29.32 10.595 27.947 12.067Q26.574 13.538 24.476 13.921L24.33 13.948Q24.291 13.948 24.264 13.908Q24.238 13.868 24.238 13.842Q24.238 13.789 24.383 13.67Q26.099 13.063 26.845 11.453Q27.591 9.842 27.591 7.862Q27.591 6.608 27.333 5.803Q27.076 4.998 26.548 4.998Q26.033 4.998 25.637 5.552Q25.241 6.107 25.023 6.846Q24.806 7.585 24.806 8.034Q24.806 8.338 24.891 8.569Q24.977 8.8 25.149 9.103Q25.294 9.367 25.373 9.565Q25.452 9.763 25.452 9.988Q25.452 10.291 25.274 10.45Q25.096 10.608 24.845 10.608Q24.383 10.608 24.027 10.265Q23.67 9.922 23.479 9.367Q23.288 8.813 23.288 8.219Q23.288 7.572 23.406 6.886Q23.525 6.199 23.75 5.262Q23.921 4.536 24.007 4.074Q24.093 3.612 24.093 3.242Q24.093 3.005 24.053 2.84Q24.014 2.675 23.882 2.543Q23.736 2.398 23.618 2.345Q23.499 2.292 23.499 2.266Q23.499 2.186 23.644 2.087Q23.789 1.988 24.093 1.988Q24.726 1.988 25.056 2.457Q25.386 2.926 25.386 3.586Q25.386 4.008 25.327 4.279Q25.268 4.549 25.122 4.945Q24.938 5.394 24.819 5.922L24.674 6.635Q25.043 5.632 25.439 5.104Q25.835 4.576 26.205 4.358Q26.574 4.14 27.076 4.14Q27.578 4.14 28.099 4.556Q28.62 4.972 28.97 5.803Q29.32 6.635 29.32 7.81Z"/><path fill="#d4462a" d="M32.12 7.6h0.75v8.4h-0.75ZM28.87 15.25h3.25v0.75h-3.25ZM30.72 7.6h0.75v7h-0.75ZM28.87 13.85h1.85v0.75h-1.85Z"/></svg>
+  <p class="no">一つの町<span class="n">01</span></p>
+  <p class="hero" role="img" aria-label="富士みち"><span class="k k0">富</span><span class="k k1">士</span><span class="k k2">み</span><span class="k k3">ち</span></p>
+  <h1 class="ttl">富士吉田</h1>
+  <p class="sub">富士吉田に入った道は、<br>富士山へまっすぐ延びる。</p>
+  <p class="credit"><span class="hang">『となり』編集部</span></p>
+</article>
+</div>
+</body>
+</html>

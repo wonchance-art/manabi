@@ -1,0 +1,26 @@
+{
+  "geo": {
+    "lat": 35.4832112,
+    "lon": 138.7979629
+  },
+  "page": {
+    "x": 126,
+    "y": 261.66
+  },
+  "roadBearingDeg": {
+    "localSegment": 212.25,
+    "window150m": 211.65
+  },
+  "roadAngleFromVerticalDeg": {
+    "localSegment": 7.11,
+    "window150m": 6.51,
+    "sense": "+ = 위로 갈수록 오른쪽"
+  },
+  "bar": {
+    "w": 18,
+    "h": 2.4,
+    "rotateDeg": 6.5,
+    "svg": "<rect x=\"-9\" y=\"-1.2\" width=\"18\" height=\"2.4\" transform=\"translate(126 261.66) rotate(6.5)\" fill=\"#d4462a\"/>",
+    "note": "SVG rotate(+θ)=시계 방향. 막대 방향 = 도로 방위−90°(지리 방위 121.6°↔301.6°)"
+  }
+}

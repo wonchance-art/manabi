@@ -1,0 +1,152 @@
+{
+ "source": "M PLUS Rounded 1c Medium 1.059 (SIL OFL 1.1)",
+ "H": 730.0,
+ "family": {
+  "W": 120.0,
+  "kana_h": 1.06,
+  "r_out": 0.3,
+  "r_in": 0.2,
+  "gap": 1.8,
+  "gap_min": 1.15,
+  "depth": 1.25,
+  "dot": 1.45,
+  "dot_gap": 0.55
+ },
+ "kana": {
+  "scale": 0.9127,
+  "stem_before": 113.2,
+  "embolden": 6.785,
+  "thickness_target": 103.91,
+  "thickness_kana": 103.91
+ },
+ "shapely": "2.2.0",
+ "geos": "3.14.1",
+ "marks": {
+  "TONARI": {
+   "label": "TONARI",
+   "script": "latin",
+   "viewBox": [
+    384.49,
+    75.0
+   ],
+   "body_box": [
+    0.0,
+    -10.0,
+    3552.1,
+    740.0
+   ],
+   "glyphs": [
+    {
+     "ch": "T"
+    },
+    {
+     "ch": "O",
+     "gap_mean": 261.9,
+     "gap_2d": 138.0
+    },
+    {
+     "ch": "N",
+     "gap_mean": 201.5,
+     "gap_2d": 155.6
+    },
+    {
+     "ch": "A",
+     "gap_mean": 227.9,
+     "gap_2d": 138.0
+    },
+    {
+     "ch": "R",
+     "gap_mean": 227.9,
+     "gap_2d": 138.0
+    },
+    {
+     "ch": "I",
+     "gap_mean": 205.5,
+     "gap_2d": 160.3
+    }
+   ],
+   "sha256": {
+    "light": "48f436d1172bb52a3e9b3a64c1f53058dcba08e82375abcdd3fe8be5972ebb90",
+    "dark": "c4e3d8311d0d50f784a1602a2c83c5474afafb27a53c6bd1b6f58fb96905eee8"
+   }
+  },
+  "tonari-hira": {
+   "label": "となり",
+   "script": "kana",
+   "viewBox": [
+    255.51,
+    79.9
+   ],
+   "body_box": [
+    0.0,
+    -52.4,
+    2329.3,
+    746.6
+   ],
+   "glyphs": [
+    {
+     "ch": "と",
+     "scale": 0.9127,
+     "embolden": 6.79
+    },
+    {
+     "ch": "な",
+     "scale": 0.9127,
+     "embolden": 6.79,
+     "gap_mean": 266.0,
+     "gap_2d": 138.0
+    },
+    {
+     "ch": "り",
+     "scale": 0.9127,
+     "embolden": 6.79,
+     "gap_mean": 254.5,
+     "gap_2d": 138.0
+    }
+   ],
+   "sha256": {
+    "light": "603cb0bb3ffa5cec766516a57cec84d34d0f900f92a8464170e04d850c4e2502",
+    "dark": "bced6a85f15730ed8ab68ef4d9f25d17ec3c4a3d30300f93ddf02deec6847d6e"
+   }
+  },
+  "tonari-kata": {
+   "label": "トナリ",
+   "script": "kana",
+   "viewBox": [
+    230.17,
+    77.56
+   ],
+   "body_box": [
+    0.0,
+    -52.4,
+    2097.0,
+    723.2
+   ],
+   "glyphs": [
+    {
+     "ch": "ト",
+     "scale": 0.9127,
+     "embolden": 6.79
+    },
+    {
+     "ch": "ナ",
+     "scale": 0.9127,
+     "embolden": 6.79,
+     "gap_mean": 270.0,
+     "gap_2d": 146.4
+    },
+    {
+     "ch": "リ",
+     "scale": 0.9127,
+     "embolden": 6.79,
+     "gap_mean": 253.4,
+     "gap_2d": 138.0
+    }
+   ],
+   "sha256": {
+    "light": "07df1ad74c92593678570606c099282da0c865cd386994b27b49d0919a06e323",
+    "dark": "9908e2e801bad650b6d1afb44cd4bbf64f07e4333eab0dcf9679aa1a65b5d57a"
+   }
+  }
+ }
+}

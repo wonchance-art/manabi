@@ -1,0 +1,62 @@
+{
+ "tonari": {
+  "W": 10.0,
+  "R": 10.0,
+  "gap_fold": 10.0,
+  "gap_knot": 5.0,
+  "knots": 2,
+  "length": 1713.1,
+  "width": 508.0,
+  "height": 110.0
+ },
+ "tonari-hira": {
+  "W": 10.0,
+  "R": 10.0,
+  "gap_fold": 10.0,
+  "gap_knot": 5.0,
+  "knots": 1,
+  "length": 1143.4,
+  "width": 280.0,
+  "height": 140.2
+ },
+ "tonari-kata": {
+  "W": 10.0,
+  "R": 10.0,
+  "gap_fold": 10.0,
+  "gap_knot": 5.0,
+  "knots": 1,
+  "length": 820.8,
+  "width": 244.0,
+  "height": 148.0
+ },
+ "tonari-small": {
+  "W": 13.0,
+  "R": 13.0,
+  "gap_fold": 13.0,
+  "gap_knot": 6.5,
+  "knots": 2,
+  "length": 1706.2,
+  "width": 517.0,
+  "height": 113.0
+ },
+ "tonari-hira-small": {
+  "W": 13.0,
+  "R": 13.0,
+  "gap_fold": 13.0,
+  "gap_knot": 6.5,
+  "knots": 1,
+  "length": 1114.4,
+  "width": 283.0,
+  "height": 143.8
+ },
+ "tonari-kata-small": {
+  "W": 13.0,
+  "R": 13.0,
+  "gap_fold": 13.0,
+  "gap_knot": 6.5,
+  "knots": 1,
+  "length": 816.2,
+  "width": 253.0,
+  "height": 151.0
+ }
+}

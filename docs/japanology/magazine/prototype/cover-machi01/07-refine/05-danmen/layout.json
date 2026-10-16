@@ -1,0 +1,64 @@
+{
+ "k": 10.9936,
+ "mPerMm": 90.96,
+ "base": 258,
+ "shimoyoshida": {
+  "x": 13,
+  "y": 249.72,
+  "h": 753.2
+ },
+ "kanadorii": {
+  "x": 31.59,
+  "y": 249.17,
+  "h": 802.8,
+  "d": 1691.3
+ },
+ "kengamine": {
+  "x": 197,
+  "y": 216.58,
+  "h": 3767.4,
+  "d": 16737
+ },
+ "peakOnLine": {
+  "x": 197.22,
+  "y": 216.53,
+  "h": 3771.9,
+  "d": 16757.1,
+  "beyondKengamine_m": 20.1
+ },
+ "rightEnd": {
+  "x": 213.05,
+  "y": 226.56,
+  "h": 2859.6,
+  "beyondKengamine_m": 1460.1
+ },
+ "redMidX": 22.3,
+ "title": {
+  "left": 12.08,
+  "size": 20
+ },
+ "sub": {
+  "left": 36.6,
+  "size": 6,
+  "lh": 1.7
+ },
+ "no": {
+  "left": 12.57,
+  "top": 30.31,
+  "gap": 2.5
+ },
+ "credit": {
+  "left": 12.88,
+  "bottom": 287,
+  "size": 3.25,
+  "lh": 1.45
+ },
+ "inkBottom": 245.22,
+ "inkDrop": {
+  "ttl": 1.56,
+  "sub": 3.62
+ },
+ "subGroundGap": 2.8,
+ "redThickness": 2.6,
+ "samplesDrawn": 298
+}

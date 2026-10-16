@@ -1,0 +1,39 @@
+{
+"ox": 128,
+"oy": 216,
+"mpm": 7.6,
+"maxBend": 40,
+"minLen": 12,
+"w": 4.6,
+"gap": 0.9,
+"plies": 3,
+"ply": 0.5,
+"band": [
+50.5,
+216
+],
+"fringe": [
+7,
+8
+],
+"highways": [
+"trunk",
+"primary",
+"secondary",
+"tertiary",
+"unclassified",
+"residential",
+"living_street",
+"pedestrian",
+"secondary_link",
+"tertiary_link",
+"trunk_link"
+],
+"bg": "#151b2c",
+"ink": "#eef0f4",
+"warpColor": "#eef0f4",
+"weftColor": "#d4462a",
+"css": "\n.cover .no{left:calc(var(--mm)*12.57);top:calc(var(--mm)*33.5);font-family:'Zen Kaku Gothic New',sans-serif;font-weight:500;\n  font-size:calc(var(--mm)*5.64);line-height:1;letter-spacing:.08em;font-variant-numeric:tabular-nums;white-space:nowrap}\n.cover .sub{left:calc(var(--mm)*13);top:calc(var(--mm)*230);font-family:'Shippori Mincho',serif;font-weight:500;\n  font-size:calc(var(--mm)*6);line-height:1.2;white-space:nowrap;font-feature-settings:'palt'}\n.cover .ttl{left:calc(var(--mm)*12);top:calc(var(--mm)*245);font-family:'Shippori Mincho',serif;font-weight:800;\n  font-size:calc(var(--mm)*22);line-height:1;letter-spacing:.02em;white-space:nowrap}\n.cover .credit{left:calc(var(--mm)*12.81);bottom:calc(var(--mm)*10);font-family:'Zen Kaku Gothic New',sans-serif;font-weight:400;\n  font-size:calc(var(--mm)*3.4);line-height:1.5;white-space:nowrap;font-feature-settings:'palt'}\n.cover .credit span{display:block}\n.cover .credit .hang{text-indent:-.5em}\n",
+"text": "  <p class=\"no\">一つの町　01</p>\n  <p class=\"sub\">国産ネクタイ生地の4割に、ここの生地が使われている。</p>\n  <h1 class=\"ttl\">富士吉田</h1>\n  <p class=\"credit\"><span>地図　© OpenStreetMap contributors（ODbL）　openstreetmap.org/copyright</span><span>金鳥居から本町二丁目までの通り。上は本町二丁目から見た富士山頂（剣ヶ峯）の方角。糸の上下は模式</span><span class=\"hang\">『となり』編集部</span></p>",
+"dupDist": 3.2
+}

@@ -39,6 +39,14 @@ describe('groupByBook — 그룹·정렬', () => {
     expect(books[0].chapters.map((c) => c.id)).toEqual([3, 1, 5]);
     expect(singles.map((m) => m.id)).toEqual([2]);
   });
+
+  it('공개 탭: 같은 key라도 소유자가 다르면 다른 책이다 — 남의 장이 공식 책 카드에 끼지 않는다', () => {
+    const own = (id, owner, order) => ({ ...mat(id, { key: 'aozora-000121-000628', title: 'ごん狐', order, total: 2 }), owner_id: owner });
+    const { books } = groupByBook([own(1, 'admin', 1), own(2, 'stranger', 1), own(3, 'admin', 2)]);
+    expect(books.map((b) => [b.ownerId, b.chapters.map((c) => c.id)])).toEqual([['admin', [1, 3]], ['stranger', [2]]]);
+    expect(books.map((b) => b.key)).toEqual(['aozora-000121-000628', 'aozora-000121-000628']);
+    expect(new Set(books.map((b) => b.groupKey)).size).toBe(2);
+  });
 });
 
 describe('makeBookKey · analysisStateOf', () => {

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>富士吉田 表紙 ippon-H4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&family=Zen+Maru+Gothic:wght@400;500&family=Klee+One:wght@600&display=swap">
+<!--
+  『となり』 一つの町 01 富士吉田 — 12-hip 표지 ippon-H4 · 생성 파일(12-hip/build.mjs). 손으로 고치지 말 것. 2026-10-15 KST.
+  레이아웃은 11-center와 같다: 모든 글자 상자 left 14mm · right 14mm · text-align center(축 x105).
+  서체 체계 H4 筆(붓글씨 한 벌(제호·제목) + 둥근 고딕 + 교과서체): Yuji Syuku · Zen Maru Gothic · Klee One — 모두 Google Fonts, SIL OFL 1.1(확인 표 NOTES.md).
+  제호(탐색 단계 라이브 텍스트): TONARI 35.972mm(잉크 폭 151.585mm) · となり 10.455mm. 큰 글자 3역할은 같은 woff2를 ascent/descent-override로 다시 선언(상자 = 잉크 높이).
+  색: 바탕 #eef0f4 · 글자 #151b2c · 주홍 #d4462a는 그림의 한 곳(비글자)에만.
+  주인공 ①一本の線: 10-mh와 같은 투영(축척 11.3m/mm·剣ヶ峯 방위가 위·직선화/회전/좌우 이동 없음), 金鳥居 y247.698·꼭짓점 y140.298로 평행 이동.
+    선은 上宿 (136.42, 154.32)에서 金鳥居 아래 y251.098까지만 그린다 — 가운데 정렬한 문장·크레딧이 선과 겹치지 않게 데이터를 자른 것(형상 불변).
+    © OpenStreetMap contributors（ODbL）, osm_base 2026-07-28 11:16 KST.
+  문구: 聖なる町と俗なる町 = 원고 46행(A17 山梨県) · 金鳥居 30メートルほど = 20·74행(B93 観光庁, 도리이 바로 아래).
+-->
+<style>
+@font-face{font-family:'Hip Mast';font-style:normal;font-weight:400;font-display:block;src:url(https://fonts.gstatic.com/l/font?kit=BngNUXdTV3vO6Lw5ApOPqPL42oDAqFbNKawLxW9V6e6F_1pDRV9G1vDbUxftV2o&skey=9ffd14150d67040a&v=v9) format('woff2');ascent-override:68.5%;descent-override:2.5%;line-gap-override:0%}
+@font-face{font-family:'Hip Kana';font-style:normal;font-weight:400;font-display:block;src:url(https://fonts.gstatic.com/l/font?kit=BngNUXdTV3vO6Lw5ApOPqPL42oDAqFbNKawLxW9V6e6F_1pDRV9G1vDbUxftV2o&skey=9ffd14150d67040a&v=v9) format('woff2');ascent-override:81.5%;descent-override:7.5%;line-gap-override:0%}
+@font-face{font-family:'Hip Title';font-style:normal;font-weight:400;font-display:block;src:url(https://fonts.gstatic.com/l/font?kit=BngNUXdTV3vO6Lw5ApOPqPL42oDAqFbNKawLxW9V6e6F_1pDRV9G1vDbUxftV2o&skey=9ffd14150d67040a&v=v9) format('woff2');ascent-override:84.5%;descent-override:8.5%;line-gap-override:0%}
+:root{--night:#151b2c;--vermilion:#d4462a;--snow:#eef0f4;--page:#d9dce3;--page-ink:#151b2c}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--page:#0e1220;--page-ink:#eef0f4}}
+:root[data-theme="dark"]{--page:#0e1220;--page-ink:#eef0f4}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--page);color:var(--page-ink)}
+body{padding:16px}
+.wrap{max-width:860px;margin:0 auto;container-type:inline-size}
+.cover{--mm:calc(100cqw / 210);--cover-bg:#eef0f4;--m:calc(var(--mm)*14);width:100%;aspect-ratio:210/297;position:relative;overflow:hidden;background:var(--cover-bg);color:#151b2c}
+.cover > *{position:absolute;margin:0}
+.cover .plate{inset:0;width:100%;height:100%;display:block}
+.cover .mast{top:calc(var(--mm)*13);font-family:'Hip Mast';font-style:normal;font-weight:400;font-size:calc(var(--mm)*35.972);line-height:0.71;letter-spacing:0.04em}
+.cover .mast > span:first-child{display:inline-block;transform:translateX(0.015em)}
+.cover .kana{top:calc(var(--mm)*41.18);font-family:'Hip Kana';font-style:normal;font-weight:400;font-size:calc(var(--mm)*10.455);line-height:0.89;letter-spacing:0.08em}
+.cover .kana > span:first-child{display:inline-block;transform:translateX(0.025em)}
+.cover .c{left:var(--m);right:var(--m);text-align:center;white-space:nowrap}
+.cover .kick{top:calc(var(--mm)*58.298);font-family:'Zen Maru Gothic',sans-serif;font-weight:500;font-size:calc(var(--mm)*6.4);line-height:1;letter-spacing:.1em}
+.cover .kick .no{font-family:'Zen Maru Gothic',sans-serif;font-weight:500;font-size:calc(var(--mm)*6.4);margin-left:calc(var(--mm)*2.5);letter-spacing:.04em}
+.cover .ttl{font-family:'Hip Title';font-style:normal;font-weight:400;line-height:1;letter-spacing:0.06em}
+.cover .ttl > span:first-child{display:inline-block;transform:translateX(0.01em)} /* 광학 중심 보정(fit.json 잉크 실측) — 상자는 M·M 그대로 */
+.cover .z{letter-spacing:0}
+.cover .hr{margin-right:-.5em}
+.cover .hl{margin-left:-.5em}
+.cover .line{font-family:'Zen Maru Gothic',sans-serif;font-weight:500;font-size:calc(var(--mm)*5.6);line-height:1.6}
+.cover .story{font-family:'Klee One',cursive;font-weight:600;font-size:calc(var(--mm)*6);line-height:1.6}
+.cover .line > span,.cover .story > span,.cover .credit > span{display:block}
+.cover .credit{bottom:calc(var(--mm)*10);font-family:'Zen Maru Gothic',sans-serif;font-weight:400;font-size:calc(var(--mm)*3.24);line-height:1.42;font-feature-settings:'palt'}
+.cover .ttl{top:calc(var(--mm)*76.478);font-size:calc(var(--mm)*30)}
+.cover .l2{top:calc(var(--mm)*116.378)}
+.cover .story{top:calc(var(--mm)*256.098)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<article class="cover" lang="ja" aria-label="TONARI となり 一つの町 01 富士吉田 表紙">
+  <svg class="plate" viewBox="0 0 210 297" preserveAspectRatio="none" role="img" aria-label="富士山の略図と、金鳥居から上宿へのびる富士みちの線。上は金鳥居から見た富士山頂の方角。">
+    <path d="M-3 188.95L-2.32 188.8L-0.32 188.37L1.68 187.92L3.68 187.46L5.68 186.99L7.68 186.51L9.68 186.02L11.68 185.51L13.68 184.99L15.68 184.46L17.68 183.92L19.68 183.37L21.68 182.8L23.68 182.22L25.68 181.63L27.68 181.03L29.68 180.42L31.68 179.8L33.68 179.16L35.68 178.51L37.68 177.85L39.68 177.18L41.68 176.5L43.68 175.8L45.68 175.09L47.68 174.37L49.68 173.64L51.68 172.9L53.68 172.14L55.68 171.38L57.68 170.6L59.68 169.81L61.68 169.01L63.68 168.19L65.68 167.37L67.68 166.53L69.68 165.68L71.68 164.82L73.68 163.94L75.68 163.06L77.68 162.16L79.68 161.25L81.68 160.33L83.68 159.4L85.68 158.45L87.68 157.5L89.68 156.53L91.68 155.55L93.68 154.56L95.68 153.55L97.68 152.54L99.68 151.51L101.68 150.47L103.68 149.42L105.68 148.36L107.68 147.28L109.68 146.2L111.68 145.1L113.68 143.99L114.18 143.71L114.68 143.43L115.18 143.15L115.68 142.87L116.18 142.58L116.68 142.3L117.18 142.02L117.68 141.73L118.18 141.45L118.68 141.16L119.18 140.87L119.6 140.64A2.5 2.5 0 0 1 120.85 140.3L127.21 140.3A2.5 2.5 0 0 1 128.46 140.64L128.88 140.87L129.38 141.16L129.88 141.45L130.38 141.73L130.88 142.02L131.38 142.3L131.88 142.58L132.38 142.87L132.88 143.15L133.38 143.43L133.88 143.71L134.38 143.99L136.38 145.1L138.38 146.2L140.38 147.28L142.38 148.36L144.38 149.42L146.38 150.47L148.38 151.51L150.38 152.54L152.38 153.55L154.38 154.56L156.38 155.55L158.38 156.53L160.38 157.5L162.38 158.45L164.38 159.4L166.38 160.33L168.38 161.25L170.38 162.16L172.38 163.06L174.38 163.94L176.38 164.82L178.38 165.68L180.38 166.53L182.38 167.37L184.38 168.19L186.38 169.01L188.38 169.81L190.38 170.6L192.38 171.38L194.38 172.14L196.38 172.9L198.38 173.64L200.38 174.37L202.38 175.09L204.38 175.8L206.38 176.5L208.38 177.18L210.38 177.85L212.38 178.51L213 178.72" fill="none" stroke="#151b2c" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="butt"/>
+    <path d="M125.6 251.098L125.68 250.34L126.01 247.7L126.45 244.13L127.18 237.4L127.82 232.01L129.2 219.18L131.62 197.7L133.99 174.88L135.58 160.71L136.42 154.32" fill="none" stroke="#d4462a" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="butt"/>
+    <g transform="translate(126 247.698) rotate(6.5)" fill="none" stroke="#151b2c" stroke-linecap="butt">
+      <path d="M-3.2 -3.6V3.4M3.2 -3.6V3.4" stroke-width="1.2"/>
+      <path d="M-4 -1.5H4" stroke-width="1.2"/>
+      <path d="M-5.5 -4.5Q0 -2.7 5.5 -4.5" stroke-width="1.3"/>
+    </g>
+  </svg>
+  <p class="c mast" aria-label="TONARI"><span>TONAR<span class="z">I</span></span></p>
+  <p class="c kana"><span>とな<span class="z">り</span></span></p>
+  <p class="c kick">一つの町<span class="no">0<span class="z">1</span></span></p>
+  <h1 class="c ttl"><span>富士吉<span class="z">田</span></span></h1>
+  <p class="c line l2"><span>富士に真向かう一直線の道に沿って<span class="hr">、</span></span><span><span class="hl">「</span>聖なる町と俗なる町」が隣り合う<span class="hr">。</span></span></p>
+  <p class="c story"><span>今の金鳥居は、もとの場所より30メートルほど山に近い<span class="hr">。</span></span></p>
+  <p class="c credit"><span>地図　© OpenStreetMap contributors（ODbL）openstreetmap.org/copyright</span><span>上は金鳥居から見た富士山頂（剣ヶ峯）の方角・山は略図</span><span>となり編集部</span></p>
+</article>
+</div>
+</body>
+</html>
