@@ -102,6 +102,8 @@
   --lv-card: #26231f; --lv-line: #3a352e; --lv-chip: #34302a; --lv-chip-hover: #3f3a33; --lv-field: #2e2a25;
   --lv-have: #4a2c33; --lv-busy: #8c5462; --lv-formula: #332f28; --lv-ex-rule: #6b4a52; --lv-warn: #e1b36a; --lv-faint: #8a877e;
   --lv-miss: #3d262c; --lv-warnbg: #352c1d; --lv-ok: #8cc7a6; /* 한자 탭(HANZI-TAB-AL-001) */
+  /* 단어 목록 병음 성조 색(⚙ 옵트인) — 뷰어 성조 색과 같은 값(--tone-*) */
+  --lv-tone-1: #e8705f; --lv-tone-2: #6fbf73; --lv-tone-3: #6aa9e8; --lv-tone-4: #b48ae8; --lv-tone-0: #9a9a9a;
 }
 
 /* ========= Light Theme (warm cream) ========= */
@@ -131,6 +133,7 @@
   --lv-card: #fffdf9; --lv-line: #e2ddd2; --lv-chip: #ece8df; --lv-chip-hover: #e2ddd2; --lv-field: #ede9e0;
   --lv-have: #f3e4e7; --lv-busy: #b77885; --lv-formula: #efeae0; --lv-ex-rule: #d9c4c9; --lv-warn: #8a5a12; --lv-faint: #a3a399;
   --lv-miss: #fbf1f3; --lv-warnbg: #f6eedd; --lv-ok: #2f6b4f;
+  --lv-tone-1: #c0392b; --lv-tone-2: #2e7d32; --lv-tone-3: #1565c0; --lv-tone-4: #6a3fb5; --lv-tone-0: #7a7a72;
 }
 
 /* ========= Reset ========= */
