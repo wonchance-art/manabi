@@ -139,7 +139,10 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
       if (traversedHref === window.location.href) { traversedHref = null; return; }
       traversedHref = null; sync(false);
     };
-    const release = () => { rememberPosition(); window.history.scrollRestoration = restoration; };
+    // 떠날 때 자리 남기기는 bfcache로 들어가지 않는 길(새로 고침 등)에서만 — pagehide 안의 history.replaceState는 Chromium이
+    // 그 페이지를 bfcache에서 내쫓는다(IgnoreEventAndEvict, 실측 2026-10-17 KST). bfcache로 돌아오면 화면 · 스크롤이 그대로고,
+    // 굴리기(120ms) · 이동(go) · 첫 쪽 맞춤이 이미 이 기록에 자리를 남긴다. scrollRestoration 되돌리기는 내쫓지 않아 그대로 둔다.
+    const release = event => { if (!event?.persisted) rememberPosition(); window.history.scrollRestoration = restoration; };
     const acquire = event => { window.history.scrollRestoration = 'manual'; if (event.persisted) sync(true); };
     window.addEventListener('hashchange', hash); window.addEventListener('popstate', pop);
     window.addEventListener('pagehide', release); window.addEventListener('pageshow', acquire);

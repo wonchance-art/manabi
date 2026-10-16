@@ -139,16 +139,19 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
     if (patch) change(patch);
   }, [languages, editing, change, draftId]);
 
+  // 떠나기 확인은 지킬 초안이 있을 때만 붙인다 — 늘 붙어 있는 beforeunload는 Firefox에서 그 화면을 bfcache(즉시 뒤로가기)에서
+  // 뺀다. 붙어 있는 동안의 판정은 그대로 최신 초안(draftRef)으로 한다(상태 반영 전 한 프레임도 놓치지 않게).
+  const unsaved = value => !!(value && !value.savedId && (!editing || value.dirty || value.frozen) && (value.body || value.title || value.files.length || value.links.length));
+  const leaveGuard = unsaved(draft);
   useEffect(() => {
+    if (!leaveGuard) return undefined;
     const protect = event => {
-      const value = draftRef.current;
-      if (value && !value.savedId && (!editing || value.dirty || value.frozen) && (value.body || value.title || value.files.length || value.links.length)) {
-        event.preventDefault(); event.returnValue = '';
-      }
+      if (unsaved(draftRef.current)) { event.preventDefault(); event.returnValue = ''; }
     };
     window.addEventListener('beforeunload', protect);
     return () => window.removeEventListener('beforeunload', protect);
-  }, [editing]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leaveGuard, editing]);
 
   useEffect(() => { if (linkOpen) linkField.current?.focus(); }, [linkOpen]);
 
