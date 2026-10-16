@@ -903,8 +903,13 @@
   · 같은 PR(VIEWER-IDLE-001): 미분석 표지 'idle'을 뷰어가 몰라 공개 시리즈 118편(id 50~177)이 제목만 있고 본문이 빈 화면 → `isPending`에 'idle'.
     원문 + 분석 전 안내. 계약 `viewerIdleStatus.test.js`. 118편 일괄 분석 여부는 운영 DB 쓰기라 오너 결정.
   · 같은 PR(PERF-BUNDLE-001, 번들 조사): 산책 · 서재 기본 화면이 그리지 않는 MaterialsPage를 정적 import → `LazyMaterialsPage`(next/dynamic,
-    운영 약 119KB 전송분). `isTeamRoot`를 의존성 없는 `classTeamRoot.js`로(수업 일정 · 공휴일 묶음 제외). 운영 기준 산책 353KB · 서재 379KB · 배움 330KB(JS 압축 전송)
-    → Preview 대조 예정. 다음: 문학 대조표 표시용 축소(/home 64KB) · Noto Sans TC 뷰어 한정(전 페이지 CSS gz 36KB) — 에이전트 진행 중.
+    운영 약 119KB 전송분). `isTeamRoot`를 의존성 없는 `classTeamRoot.js`로(수업 일정 · 공휴일 묶음 제외).
+    Preview(da5b8ba) 대조 실측(JS 압축 전송): 산책 360 → 199KB(청크 27 → 15) · 서재 379 → 247KB(29 → 21) · 함께 읽는 글은 청크 비교로 약 7KB 감소.
+  · 같은 PR(FONT-TC-SCOPE-001): Noto Sans TC를 번체 화면 세그먼트(viewer · pdf · suggestions · chinese, `TcFontScope`)로 — 그 밖 페이지 head CSS에서
+    @font-face 325면(brotli 약 35KB) 제거. `var(--font-noto-tc)` 폴백 없던 2곳 수리. 계약 `fontScope.test.js`. 빌드 확인은 Preview.
+  · 같은 PR(리뷰 2차): 정본 책 key 판정 공용화 `isCanonicalBookKey`(aozora- · se- · art-) — 서재 목차 「+ 과 추가」 · 「과 번호 수정」도 막음(정본 게시 409 예방).
+    문구 변경으로 깨진 e2e 선택자 4파일 · smoke 오류 단언 복구 + `retiredCopyE2e.test.js`. 팀 설정 행은 미분석 아님. 미분석 자료 게스트 배너 문구.
+  · 같은 PR(PERF-QUERY-001): 서재 목록 5초 통째 폴링 → 내 분석 중 행의 상태만 · 오늘의 추천 키 하나로 · 아는 단어 60초 · 읽던 곳 30초. 계약 `browserQueryTrim.test.js`.
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
   제안안 중 웹 몫만(스와이프 · 진동 · 아이폰 안전 여백은 모바일이라 보류). 두 복습 카드(예전 · 새 일정) 공통 `review-card--turn`(0.24초,
