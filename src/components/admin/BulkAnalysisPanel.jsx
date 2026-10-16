@@ -85,7 +85,7 @@ export default function BulkAnalysisPanel({ ownerId, toast }) {
         </>}
       <ConfirmModal open={confirming} title={`${targets.length}편을 분석할까요?`}
         message="한 편씩 차례로 분석해요. 원문 · 제목 · 공개 범위는 그대로이고, 실패한 편은 지금 상태로 남아요."
-        confirmLabel="분석하기" onConfirm={run} onCancel={() => setConfirming(false)} />
+        confirmLabel="분석하기" variant="primary" onConfirm={run} onCancel={() => setConfirming(false)} />
     </section>
   );
 }
