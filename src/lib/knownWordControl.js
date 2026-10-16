@@ -20,6 +20,19 @@ export function updateKnownWords(rows, { lang, wordText, known, removeKeys = [] 
   if (known && !next.some(row => row.lang === lang && row.word_text === wordText)) next.push({ lang, word_text: wordText });
   return next;
 }
+/**
+ * updateKnownWords(낙관 반영)를 그 요청 몫만 되돌린다 — 표시였으면 새로 넣은 줄을 빼고(원래 있던 줄은 둔다),
+ * 해제였으면 지운 줄을 원래 행(before)에서 되살린다. 그사이 다른 단어 요청이 바꾼 줄은 그대로 둔다.
+ */
+export function revertKnownWords(rows, before, { lang, wordText, known, removeKeys = [] }) {
+  if (rows === undefined) return before;
+  const had = row => (before || []).some(old => old.lang === row.lang && old.word_text === row.word_text);
+  let next = known ? rows.filter(row => !(row.lang === lang && row.word_text === wordText) || had(row)) : [...rows];
+  const removed = (before || []).filter(row => row.lang === lang && removeKeys.includes(row.word_text)
+    && !next.some(cur => cur.lang === row.lang && cur.word_text === row.word_text));
+  if (removed.length) next = [...next, ...removed];
+  return next;
+}
 export function scopedKnownWords(rows, exclusions, vocab, scopeIds) {
   if (!scopeIds) return rows || [];
   const scoped = scopedVocabularyExclusions(exclusions, vocab, scopeIds);

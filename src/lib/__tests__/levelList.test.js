@@ -193,7 +193,8 @@ describe('⑹ O · X 빠른 암기 보기 옵션(LEVEL-OX-AN-001)', () => {
     expect(sliceBetween(page, 'const markO = ', ';\n')).toContain('knownSet.has(entry.key) ? unmark(entry.key) : exclude(entry)');
     const markX = sliceBetween(page, 'const markX = ', '\n  };');
     expect(markX).toContain('return save(entry);');
-    expect(markX).toContain('pendingStudy.current = entry;');
+    // 아는 단어면 서버가 풀어 준 뒤에만 담는다(낙관 갱신이라 화면 상태로 기다리지 않는다) — 풀지 못하면 담지 않는다.
+    expect(markX).toMatch(/try \{ await known\.mutation\.mutateAsync\(unmarkRequest\(entry\.key\)\); \} catch \{ return undefined; \}\n\s*return save\(entry\);/);
     expect(page).toContain("import { hunRubyCells } from '@/lib/viewerHunRuby';");
     expect(page).toContain("import HunCell from '@/components/viewer/HunCell';");
     expect(page).toContain("import { glyphRows } from '@/lib/glyphColumn';");
@@ -213,7 +214,7 @@ describe('⑸ 저장 · 제외 · 링크 배선', () => {
   });
 
   it('제외 = 아는 단어 표시(useKnownWords), 되돌리기 = 해제 — 로그인 전에는 둘 다 안내만', () => {
-    expect(page).toContain('known.mutation.mutate({ lang: conf.langCode, wordText: entry.key, known: true });');
+    expect(page).toContain('known.mutation.mutateAsync({ lang: conf.langCode, wordText: key, known: true }).then(() => {');
     expect(page).toContain('known: false');
     expect(page).toMatch(/if \(!userId\) return loginToast\('로그인하면 단어를 저장할 수 있어요'\);/);
     expect(page).toMatch(/if \(!userId\) return loginToast\('로그인하면 아는 단어로 옮길 수 있어요'\);/);

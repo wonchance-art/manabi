@@ -224,7 +224,7 @@ describe('머리 · 진도 · X 펼침(LEVEL-FLOW-001 — 디자인 검토 2026-
   });
 
   it('탭 보기에서 X = 그 카드를 펼쳐 답을 본다 · 「복습하기」 알림은 KST 하루 한 번', () => {
-    const markX = sliceBetween(page, 'const markX = (entry) => {', '};');
+    const markX = sliceBetween(page, 'const markX = async (entry) => {', '};'); // 아는 단어 풀기를 기다리므로 async
     expect(markX).toContain("if (prefs.view !== 'all') openPeek(entry.key);");
     const nudge = sliceBetween(page, 'const nudgeReview = () => {', '};');
     expect(nudge).toContain('if (localStorage.getItem(NUDGE_KEY) === kstDay()) return; localStorage.setItem(NUDGE_KEY, kstDay());');

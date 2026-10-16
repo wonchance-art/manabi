@@ -203,8 +203,6 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
   const moreRef = useRef(null);
   const pageRef = useRef(null);
   const barRef = useRef(null);
-  const pendingExclude = useRef(null);
-  const pendingStudy = useRef(null);
   const peekTimers = useRef(new Map());
   const fsrs = useRef(null); // { accountId, client }
   const fsrsLoad = useRef(null); // { accountId, promise } — 받는 중
@@ -219,6 +217,8 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
     if (!vocab) return;
     try { const raw = localStorage.getItem(PREFS_KEY); if (raw) setPrefsState(normalizeLevelPrefs(JSON.parse(raw))); } catch { /* 저장소 없음 — 기본값 */ }
   }, [vocab]);
+  const prefsRef = useRef(prefs);
+  prefsRef.current = prefs;
   const setPrefs = (patch) => setPrefsState((cur) => {
     const next = normalizeLevelPrefs({ ...cur, ...patch });
     try { localStorage.setItem(PREFS_KEY, JSON.stringify(next)); } catch { /* 저장소 없음 — 이번 화면만 */ }
@@ -382,35 +382,27 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
     }
   };
 
-  const unmark = (key) => known.mutation.mutate({ lang: conf.langCode, wordText: key, known: false,
+  // 아는 단어 표시 · 해제는 누른 순간 화면에 반영된다(useKnownWords 낙관 갱신). 실패하면 그쪽이 되돌리고 알린다.
+  const unmarkRequest = (key) => ({ lang: conf.langCode, wordText: key, known: false,
     removeKeys: knownWordKeys(known.rows, conf.langCode, { text: key }, []) });
+  const unmark = (key) => known.mutation.mutate(unmarkRequest(key));
   const exclude = (entry) => {
     if (!userId) return loginToast('로그인하면 아는 단어로 옮길 수 있어요');
-    pendingExclude.current = entry.key;
-    known.mutation.mutate({ lang: conf.langCode, wordText: entry.key, known: true });
+    const key = entry.key;
+    // 서버가 받은 뒤에만 — 숨기기를 켰을 때만 카드가 사라지므로 그때만 되돌리기 토스트.
+    known.mutation.mutateAsync({ lang: conf.langCode, wordText: key, known: true }).then(() => {
+      if (prefsRef.current.hideKnown) setToast({ message: '아는 단어로 옮겼어요', action: '되돌리기', onAction: () => { unmark(key); setToast(null); } });
+    }, () => { /* 실패 알림 · 되돌리기는 useKnownWords가 맡는다. */ });
   };
-  // O가 반영되면(아는 단어에 들어오면) — 숨기기를 켰을 때만 카드가 사라지므로 그때만 되돌리기 토스트. 실패는 useKnownWords가 알린다.
-  // 아는 단어에 X를 누르면 먼저 아는 단어를 풀고, 풀린 뒤에 공부 중으로 담는다(아는 단어는 저장이 막힌다).
-  useEffect(() => {
-    const key = pendingExclude.current;
-    if (key && knownSet.has(key)) {
-      pendingExclude.current = null;
-      if (prefs.hideKnown) setToast({ message: '아는 단어로 옮겼어요', action: '되돌리기', onAction: () => { unmark(key); setToast(null); } });
-    }
-    const study = pendingStudy.current;
-    if (study && !knownSet.has(study.key)) {
-      pendingStudy.current = null;
-      save(study);
-    }
-  }, [knownSet]); // eslint-disable-line react-hooks/exhaustive-deps
   const markO = (entry) => (knownSet.has(entry.key) ? unmark(entry.key) : exclude(entry));
-  const markX = (entry) => {
+  const markX = async (entry) => {
     if (!userId) return loginToast('로그인하면 단어를 저장할 수 있어요');
     // 모른다고 한 바로 그때 답을 본다(디자인 검토 B안) — 탭 보기에서 X를 누르면 그 카드를 펼친다(접기 · 10초는 그대로).
     if (prefs.view !== 'all') openPeek(entry.key);
     if (!knownSet.has(entry.key)) return save(entry);
-    pendingStudy.current = entry;
-    unmark(entry.key);
+    // 아는 단어면 먼저 풀고, 서버가 풀어 준 뒤에만 공부 중으로 담는다(아는 단어는 저장이 막힌다). 풀지 못하면 담지 않는다.
+    try { await known.mutation.mutateAsync(unmarkRequest(entry.key)); } catch { return undefined; }
+    return save(entry);
   };
   // 탭별 O — 그 탭 기록만 켜고 끈다(아는 단어 · 복습은 그대로). 네 탭이 모두 O면 아는 단어로 옮길지 한 번 묻는다.
   const markFacetO = (entry) => {
