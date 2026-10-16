@@ -12,7 +12,7 @@
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { useTTS } from '@/lib/useTTS';
@@ -29,6 +29,7 @@ import { alignFurigana } from '@/views/refShared';
 import {
   LEVEL_LIST_LANGS, LEVEL_KIND_LABEL, levelKinds, levelLabel, levelPill, levelListHref, jaHeadMode, matchesLevelQuery, splitKnown, fetchSavedLevelKeys, fetchSavedLevelKeysAll, levelGroupsOf,
   LEVEL_PEEK_CLOSE_MS, LEVEL_PEEK_MS, LEVEL_PREFS_DEFAULT, LEVEL_VIEWS, normalizeLevelPrefs, levelProgress, pinyinSyllables, writeLevelSnapshot,
+  levelPlaceOf, withLevelPlace,
 } from '@/lib/levelList';
 import { pinyinToneNumber } from '@/lib/pinyinTone';
 import { ZH_SCOPE_LEVELS, serializeReviewScope } from '@/lib/reviewScopeUrl';
@@ -221,8 +222,9 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
 
   // 하이드레이션: 서버 렌더와 첫 화면을 같게 — 계정 상태(저장됨 · 아는 단어)는 붙은 뒤에만 그린다.
   useEffect(() => setMounted(true), []);
-  // 보기 설정은 이 기기에 기억한다(붙은 뒤에 읽는다 — 서버 렌더는 기본값).
-  useEffect(() => {
+  // 보기 설정은 이 기기에 기억한다(붙은 뒤에 읽는다 — 서버 렌더는 기본값). 그리기 전(layout effect)에 읽어
+  // 뒤로 가기 자리 복원(아래)이 기본 보기가 아니라 고른 보기의 카드 높이로 맞춘다.
+  useLayoutEffect(() => {
     if (!vocab) return;
     try { const raw = localStorage.getItem(PREFS_KEY); if (raw) setPrefsState(normalizeLevelPrefs(JSON.parse(raw))); } catch { /* 저장소 없음 — 기본값 */ }
   }, [vocab]);
@@ -458,7 +460,13 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
     });
     return { shown: filtered.filter((g) => g.entries.length), knownCount: known };
   }, [groups, vocab, hiddenSet, query, hideKnown]);
-  useEffect(() => setLimit(LEVEL_LIST_PAGE), [query]);
+  // 찾기 말을 바꿀 때만 처음 150개로 — 첫 그리기 · 뒤로 가기 복원(찾던 말을 되살림)에서는 그린 개수를 그대로 둔다.
+  const lastQuery = useRef(query);
+  useEffect(() => {
+    if (lastQuery.current === query) return;
+    lastQuery.current = query;
+    setLimit(LEVEL_LIST_PAGE);
+  }, [query]);
   // 점진 그리기 — 묶음 순서대로 limit개까지만. 묶음 제목의 개수는 전체 개수다.
   const { visible, total } = useMemo(() => {
     let budget = limit;
@@ -568,6 +576,104 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
     setJumpTo(null);
   }, [jumpTo, kind]);
 
+  // 뒤로 가기 자리(LEVEL-RESTORE-001 — levelPlaceOf). 남기기: 굴리기를 멈췄을 때 · 링크를 누를 때(GNB 포함) · 페이지를 떠날 때
+  // 이 기록에 { 그린 개수 · 세로 위치 · 기준 카드 · 찾던 말 }을 쓴다. 되살리기: 처음 그린 직후(그리기 전) 그 개수만큼 그리고,
+  // 묶음 생략(content-visibility)을 잠시 끈 채 그 자리로 옮긴다 — 생략된 묶음의 어림 높이(1200px)로 맞추면 다른 줄에 선다.
+  // 서버 렌더 · 하이드레이션은 늘 150개(불일치 0)이고, 늘리는 것은 붙은 뒤 layout effect다. 한자판은 목록이 아니라 쓰지 않는다.
+  const limitRef = useRef(limit);
+  limitRef.current = limit;
+  const queryRef = useRef(query);
+  queryRef.current = query;
+  const placeRef = useRef(null); // 되살리는 중인 자리 — 끝나면 null
+  const [restoring, setRestoring] = useState(false);
+  useLayoutEffect(() => {
+    if (hanzi) return;
+    const place = levelPlaceOf(window.history.state, window.location.pathname);
+    if (!place) return;
+    placeRef.current = place;
+    lastQuery.current = place.query; // 찾던 말을 되살려도 그린 개수를 150으로 되돌리지 않는다
+    setQuery(place.query);
+    setLimit(Math.max(LEVEL_LIST_PAGE, place.limit));
+    setRestoring(true);
+  }, [hanzi]);
+  useLayoutEffect(() => {
+    const place = placeRef.current;
+    if (!restoring || !place) return undefined;
+    const started = performance.now();
+    let frame = 0, settled = started, done = false;
+    const card = () => (place.key && listRef.current
+      ? listRef.current.querySelector(`[data-lv-card="${CSS.escape(place.key)}"]`) : null);
+    // 기준 카드가 있으면 그 카드를 남길 때의 높이에, 없으면(문형 · 숨긴 카드) 남긴 세로 위치에.
+    const apply = () => {
+      const node = card();
+      const top = node ? window.scrollY + node.getBoundingClientRect().top - place.top : place.y;
+      if (Math.abs(window.scrollY - top) < 1) return false;
+      window.scrollTo({ top, behavior: 'instant' });
+      return true;
+    };
+    const finish = () => {
+      if (done) return;
+      done = true;
+      cancelAnimationFrame(frame);
+      off();
+      // 생략을 다시 켜기 전에 묶음마다 실제 높이를 어림값으로 박는다 — 화면 밖 묶음이 1200px로 돌아가 줄이 튀지 않게.
+      for (const group of pageRef.current?.querySelectorAll('[data-lv-group]') || []) {
+        group.style.containIntrinsicSize = `auto ${Math.round(group.getBoundingClientRect().height)}px`;
+      }
+      placeRef.current = null;
+      setRestoring(false);
+    };
+    // 계정 상태(진도 줄 · 아는 단어 숨기기 · 듣기 버튼)는 붙은 뒤 늦게 그려진다 — 0.6초 동안 더 고칠 것이 없을 때까지(최대 4초) 맞춘다.
+    const tick = () => {
+      const now = performance.now();
+      if (apply()) settled = now;
+      if (now - settled > 600 || now - started > 4000) finish(); else frame = requestAnimationFrame(tick);
+    };
+    // 사용자가 먼저 움직이면(굴리기 · 누르기 · 키) 거기서 멈춘다(useRestoreScroll과 같은 규칙).
+    const stop = () => finish();
+    const events = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
+    const off = () => events.forEach((name) => window.removeEventListener(name, stop));
+    events.forEach((name) => window.addEventListener(name, stop, { passive: true }));
+    apply(); // 첫 그림부터 그 자리
+    frame = requestAnimationFrame(tick);
+    return () => { done = true; cancelAnimationFrame(frame); off(); };
+  }, [restoring]);
+  useEffect(() => {
+    if (hanzi) return undefined;
+    const path = window.location.pathname;
+    let timer = 0;
+    // 기준 카드 = 붙어 다니는 머리 바로 밑에 걸친 첫 카드(이분 탐색 — 카드는 문서 순서대로 위에서 아래).
+    const anchor = () => {
+      const cards = listRef.current?.querySelectorAll('[data-lv-card]');
+      if (!cards?.length) return {};
+      const edge = barRef.current && vocab ? barRef.current.getBoundingClientRect().bottom : 0;
+      let low = 0, high = cards.length - 1;
+      while (low < high) {
+        const mid = (low + high) >> 1;
+        if (cards[mid].getBoundingClientRect().bottom <= edge) low = mid + 1; else high = mid;
+      }
+      return { key: cards[low].dataset.lvCard, top: Math.round(cards[low].getBoundingClientRect().top * 10) / 10 };
+    };
+    const remember = () => {
+      clearTimeout(timer);
+      // 되살리는 중에는 덮어쓰지 않고, 이미 다른 주소로 떠났으면(새 기록) 쓰지 않는다.
+      if (placeRef.current || window.location.pathname !== path) return;
+      const place = { path, limit: limitRef.current, query: queryRef.current, y: Math.round(window.scrollY), ...anchor() };
+      try { window.history.replaceState(withLevelPlace(window.history.state, place), '', window.location.href); } catch { /* 기록 쓰기 제한 — 자리만 잃는다 */ }
+    };
+    const scroll = () => { clearTimeout(timer); timer = setTimeout(remember, 200); };
+    const click = (event) => { if (event.target?.closest?.('a[href]')) remember(); };
+    window.addEventListener('scroll', scroll, { passive: true });
+    document.addEventListener('click', click, true);
+    window.addEventListener('pagehide', remember);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', scroll);
+      document.removeEventListener('click', click, true);
+      window.removeEventListener('pagehide', remember);
+    };
+  }, [hanzi, vocab]);
+
   // 목차 — 보이는 묶음을 따라간다.
   useEffect(() => {
     if (typeof IntersectionObserver === 'undefined') return undefined;
@@ -585,7 +691,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
   const nav = shown.map((g, i) => ({ i, name: g.name, href: `#${groupId(i)}`, current: i === activeGroup }));
   const speakOk = mounted && ttsSupported;
 
-  return <div ref={pageRef} className={`manabi-page lv-page lv-page--${kind}`} data-language={conf.langCode}>
+  return <div ref={pageRef} className={`manabi-page lv-page lv-page--${kind}`} data-language={conf.langCode} data-lv-restoring={restoring || undefined}>
     <div ref={barRef} className={vocab ? 'lv-bar lv-bar--sticky' : 'lv-bar'}>
       <div className="lv-head">
         <h1>{title}</h1>

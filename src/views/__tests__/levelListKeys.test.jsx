@@ -20,6 +20,8 @@ vi.mock('react', async (importOriginal) => {
     useMemo(fn, deps) { if (!on()) return actual.useMemo(fn, deps); h.index++; return fn(); },
     useCallback(fn, deps) { if (!on()) return actual.useCallback(fn, deps); h.index++; return fn; },
     useEffect(fn, deps) { if (!on()) return actual.useEffect(fn, deps); h.index++; h.effects.push(fn); },
+    // 보기 설정 읽기 · 뒤로 가기 자리(LEVEL-RESTORE-001)는 그리기 전 효과다 — 대역에서는 useEffect와 같이 모아 둔다.
+    useLayoutEffect(fn, deps) { if (!on()) return actual.useLayoutEffect(fn, deps); h.index++; h.effects.push(fn); },
   };
 });
 vi.mock('next/navigation', () => ({ usePathname: () => '/chinese/vocab/h1' }));

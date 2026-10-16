@@ -163,6 +163,30 @@ export function normalizeLevelPrefs(raw) {
     hideKnown: flag('hideKnown'), hun: flag('hun'), glyph: flag('glyph'), tone: flag('tone') };
 }
 
+// ── 뒤로 가기 자리(LEVEL-RESTORE-001) ──
+// 긴 목록은 처음 150개만 그린다(LEVEL_LIST_PAGE). 1,000번째 카드까지 내렸다가 다른 화면에 다녀오면 150개만 다시 그려져
+// 브라우저가 옛 높이로 맞추지 못한다(운영 실측: h1 2500px → 돌아오면 2231px, 다른 줄). 그래서 이 기록(history entry)에
+// 「몇 개까지 그렸고 어디였나」를 남겨 두고, 돌아오면 그만큼 그린 뒤 그 자리로 옮긴다. 기록마다 따로라 새로 들어온 목록
+// (링크 · 주소 입력)은 늘 맨 위 150개에서 시작한다 — Next는 이동(traversal)에서만 우리 값을 보존하고 새 이동에서는 지운다.
+// 학습 기록이 아니라 화면 자리다(DiscoveryExplorer manabiDiscoveryScroll · BookReader manabiBookPosition과 같은 방식).
+export const LEVEL_PLACE_KEY = 'manabiLevelList';
+const LEVEL_PLACE_MAX = 20000; // 가장 긴 목록(N1 · HSK 7-9)보다 넉넉히 — 그 이상은 망가진 값
+/** history.state → 이 주소의 자리 { limit, y, query, key?, top? }. 다른 주소 · 망가진 값이면 null. */
+export function levelPlaceOf(state, pathname) {
+  const p = state && typeof state === 'object' ? state[LEVEL_PLACE_KEY] : null;
+  if (!p || typeof p !== 'object' || p.path !== pathname) return null;
+  const { limit, y } = p;
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > LEVEL_PLACE_MAX || !Number.isFinite(y) || y < 0 || y > 1e7) return null;
+  const place = { limit, y, query: typeof p.query === 'string' ? p.query.slice(0, 200) : '' };
+  // 기준 카드 — 위쪽 높이가 계정 상태(진도 줄 · 아는 단어 숨기기)로 늦게 바뀌어도 같은 카드를 같은 높이에 둔다.
+  if (typeof p.key === 'string' && p.key && Number.isFinite(p.top)) Object.assign(place, { key: p.key, top: p.top });
+  return place;
+}
+/** Next의 기록 값(__NA · 트리)을 그대로 두고 우리 자리만 바꾼 새 state. */
+export function withLevelPlace(state, place) {
+  return { ...(state && typeof state === 'object' ? state : {}), [LEVEL_PLACE_KEY]: place };
+}
+
 // ── 진도 · 이어 하기(LEVEL-FLOW-001, 디자인 검토 2026-10-16 · /mnt/project-files/notes/design-review-1016) ──
 
 /**

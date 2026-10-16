@@ -113,6 +113,8 @@
 .lv-entry[data-lv-card]{scroll-margin-top:calc(var(--gnb-height,78px) + var(--lv-bar-h,0px) + 12px);scroll-margin-bottom:12px}
 .lv-group{content-visibility:auto;contain-intrinsic-size:auto 1200px;scroll-margin-top:calc(var(--gnb-height,78px) + var(--lv-bar-h,0px) + 12px)}
 .lv-group+.lv-group{margin-top:44px}
+/* 뒤로 가기 자리 되살리는 동안(LEVEL-RESTORE-001)만 묶음 생략을 끈다 — 어림 높이(1200px)가 아니라 실제 높이로 그 자리에 서게. */
+.lv-page[data-lv-restoring] .lv-group{content-visibility:visible}
 .lv-group h2{margin:0;font-size:12.5px;font-weight:700;letter-spacing:.04em;color:var(--muted);display:flex;gap:8px;align-items:baseline}
 .lv-group h2 span{font-weight:500;color:var(--lv-faint)}
 .lv-entries{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
