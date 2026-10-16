@@ -77,6 +77,15 @@ export const metadata = {
   },
 };
 
+// 미리 열 Supabase 출처 — 값이 없거나 주소가 아니면 힌트를 빼고 넘어간다(힌트 하나 때문에 모든 화면이 깨지지 않게).
+const SUPABASE_ORIGIN = (() => {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin;
+  } catch {
+    return null;
+  }
+})();
+
 export default function RootLayout({ children }) {
   return (
     <html lang="ko" suppressHydrationWarning>
@@ -88,6 +97,10 @@ export default function RootLayout({ children }) {
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.webmanifest" />
+        {/* Supabase 연결을 HTML을 읽는 동안 미리 연다(VIEWER-FIRST-TOKEN-001). 첫 조회(뷰어 자료 등)가 CORS 사전 요청 앞에서 TCP·TLS를
+            새로 맺느라 389ms를 썼다(운영 /viewer/45 실측, 2026-10-17 KST). supabase-js는 자격 증명 없이 보내므로 crossOrigin="anonymous"여야
+            그 연결을 다시 쓴다. */}
+        {SUPABASE_ORIGIN && <link rel="preconnect" href={SUPABASE_ORIGIN} crossOrigin="anonymous" />}
         {/* 테마 깜빡임 방지 + SW 등록 */}
         <script
           dangerouslySetInnerHTML={{

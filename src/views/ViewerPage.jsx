@@ -241,6 +241,35 @@ async function fetchMaterial(id) {
   }
 }
 
+// 직접 진입 첫 조회(VIEWER-FIRST-TOKEN-001) — 자료 조회는 하이드레이션이 끝나고 useQuery가 붙은 뒤에야 떠났다(그 사이 supabase-js
+// 청크도 그제야 받는다). 운영 /viewer/45에서 조회 시작 1.79s · 첫 단어 2.9s(2026-10-17 KST 실측). 이 모듈이 평가되는 순간(하이드레이션 전)
+// 주소의 자료 조회를 먼저 띄우고, useQuery가 같은 id로 한 번만 받아 쓴다. 같은 fetchMaterial이라 결과 · 오류 · 오프라인 폴백이 그대로다.
+// 늦게 쓰면(EARLY_MATERIAL_MAX_AGE_MS) 버리고 새로 받는다 — 오래된 응답을 화면에 내지 않는다. 팀 사본(local:)은 네트워크가 없어 띄우지 않는다.
+export const EARLY_MATERIAL_MAX_AGE_MS = 10000;
+let earlyMaterial = null;
+
+export function startEarlyMaterial(pathname, now = Date.now()) {
+  const match = /^\/viewer\/([^/?#]+)\/?$/.exec(pathname || '');
+  if (!match) return null;
+  let id;
+  try { id = decodeURIComponent(match[1]); } catch { return null; }
+  if (isLocalId(id)) return null;
+  const promise = fetchMaterial(id);
+  promise.catch(() => {}); // 쓰는 쪽(useQuery)이 오류를 받는다 — 여기서는 처리되지 않은 거부로 남기지 않는다
+  earlyMaterial = { id, promise, at: now };
+  return earlyMaterial;
+}
+
+/** 같은 id로 띄워 둔 조회를 한 번만 넘긴다(다시 받기 · 재시도는 새로 조회). 없거나 늦었으면 null. */
+export function takeEarlyMaterial(id, now = Date.now()) {
+  const early = earlyMaterial;
+  if (!early || early.id !== String(id)) return null;
+  earlyMaterial = null;
+  return now - early.at <= EARLY_MATERIAL_MAX_AGE_MS ? early.promise : null;
+}
+
+if (typeof window !== 'undefined') startEarlyMaterial(window.location.pathname);
+
 // 단어창 훈음 루비 셀의 기준 칸 — 카드 병음 칸 폭(reader-controls.css `.word-fit ruby[data-pinyin] {width:max(1em,3.1rem)}`
 // = 3.1rem ≈ 49.6px). 이 폭 안에 드는 훈음은 한 줄 그대로, 넘으면 그 칸만 벌리고(--hun-n) ×1.6을 넘으면 훈/음 두 줄.
 const HUN_RUBY_CELL = Object.freeze({ glyphPx: 49.6 });
@@ -330,7 +359,7 @@ export default function ViewerPage() {
 
   const { data: material, isLoading, error, refetch } = useQuery({
     queryKey: ['material', id],
-    queryFn: () => fetchMaterial(id),
+    queryFn: () => takeEarlyMaterial(id) ?? fetchMaterial(id),
     refetchInterval: (query) => {
       const d = query.state.data;
       const s = d?.processed_json?.status || d?.status;
