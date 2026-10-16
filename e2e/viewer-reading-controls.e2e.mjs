@@ -180,7 +180,8 @@ const dialog=()=>page.getByRole('dialog',{name:'읽기 설정',exact:true});
 const panel=()=>page.locator('.viewer-inspector');
 const pref=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('viewer_preferences_v2')));
 // 병음 크기 · 줄 사이 · 글자 사이 · 서체는 「세부 설정」(details) 안이다(AD-R2 Aa) — 닫혀 있으면 사람처럼 연다.
-async function range(name,value){const input=page.getByRole('slider',{name,exact:true});if(!await input.count()){const more=page.locator('.reader-settings details.reader-settings__more:not([open]) > summary');if(await more.count())await more.first().click();}await input.evaluate((el,v)=>{const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;setter.call(el,String(v));el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},value);}
+async function openMore(){const more=page.locator('.reader-settings details.reader-settings__more:not([open]) > summary');if(await more.count())await more.first().click();}
+async function range(name,value){const input=page.getByRole('slider',{name,exact:true});if(!await input.count())await openMore();await input.evaluate((el,v)=>{const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;setter.call(el,String(v));el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},value);}
 const selectedLine=()=>page.locator('.reader-area .word-token--picked').first().getAttribute('data-tid');
 try {
  await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last().click();await page.waitForURL('**/home');
@@ -350,6 +351,10 @@ try {
  await page.getByRole('tab',{name:'학습 표시',exact:true}).click();await page.getByRole('checkbox',{name:'단어 상태',exact:false}).check();await page.getByRole('button',{name:'이번 변경 되돌리기',exact:true}).click();assert.equal((await pref()).languages.Chinese.fontSize,1.6);assert.equal((await pref()).languages.Chinese.wordStateHl,false);pass('opening snapshot survives tab changes and restores all preferences');
  await page.getByRole('checkbox',{name:'단어 상태',exact:false}).check();await page.getByRole('tab',{name:'글자·배경',exact:true}).click();await range('본문 크기',2.4);await page.getByRole('button',{name:'이 탭 기본값',exact:true}).click();assert.equal((await pref()).languages.Chinese.fontSize,1.6);assert.equal((await pref()).languages.Chinese.wordStateHl,true);await closeAa();assert(await panel().isVisible());pass('tab reset leaves another tab intact; inspector resumes');
  // Pinyin is readable and identical across syllables; revealing never changes widths.
+ // 글꼴 전제(2026-10-17 KST 실측): 이 단계는 진짜 Noto Sans가 실린 빌드에서만 뜻이 있다. e2e:build의 대역 글꼴
+ // (e2e/fixtures/google-fonts-mock.cjs — 라틴 글리프 없는 woff2)이면 본문은 글자별 폴백(시스템 sans)으로 그리고 칸 폭을 재는
+ // canvas는 다른 폴백으로 재서 zhuāng이 DOM 52.5px · canvas 46.2px → 칸 49px를 넘는다. 진짜 글꼴(vendor/google-fonts, scripts/next-build.mjs)
+ // 빌드에서는 DOM = canvas = 56.2px · 칸 59px로 넘침 0. 대역 빌드에서 이 단언이 실패하면 제품 결함이 아니라 빌드 글꼴을 먼저 본다.
  await fresh(390,844);await aa('글자·배경');await range('본문 크기',.8);await range('병음 크기',1);await closeAa();
  const metrics=await page.locator('.reader-area ruby[data-pinyin]').evaluateAll(nodes=>nodes.map(n=>{const a=n.querySelector('.rt-an'),r=n.getBoundingClientRect(),ar=a.getBoundingClientRect();return {cell:r.width,font:parseFloat(getComputedStyle(a).fontSize),width:ar.width};}));
  assert(metrics.length>20);assert(metrics.every(m=>m.font>=15.9&&m.width<=m.cell+1));assert.equal(new Set(metrics.map(m=>Math.round(m.cell))).size,1);await shotAt('mobile-pinyin-large');pass('16px pinyin stays uniform and contained with minimum body size');
@@ -426,7 +431,7 @@ try {
   await fresh(1440,1000);const cdp=await context.newCDPSession(page);await cdp.send('DOM.enable');await cdp.send('CSS.enable');
   const fontEvidence=async(selector='[data-tid="id_0_2_audit"] .surface ruby[data-pinyin]')=>{const {root}=await cdp.send('DOM.getDocument');const {nodeId}=await cdp.send('DOM.querySelector',{nodeId:root.nodeId,selector});return (await cdp.send('CSS.getPlatformFontsForNode',{nodeId})).fonts;};
   const sans=await fontEvidence();assert(sans.some(f=>/Noto ?Sans ?SC/i.test(f.familyName)),JSON.stringify(sans));
-  await aa();await page.getByRole('button',{name:'명조',exact:true}).click();await page.waitForFunction(()=>[...document.fonts].some(f=>/Noto.*Serif.*SC/i.test(f.family)&&f.status==='loaded'),null,{timeout:60000});await page.evaluate(()=>document.fonts.ready);
+  await aa();await openMore();/* 서체는 「세부 설정」 안(AD-R2 Aa) */await page.getByRole('button',{name:'명조',exact:true}).click();await page.waitForFunction(()=>[...document.fonts].some(f=>/Noto.*Serif.*SC/i.test(f.family)&&f.status==='loaded'),null,{timeout:60000});await page.evaluate(()=>document.fonts.ready);
   const previewSerif=await fontEvidence('.reader-settings__preview .surface ruby[data-pinyin]');assert(previewSerif.some(f=>/Noto ?Serif ?SC/i.test(f.familyName)),JSON.stringify(previewSerif));await shotAt('desktop-aa-serif-real');await closeAa();await page.evaluate(()=>document.fonts.ready);
   const serif=await fontEvidence();assert(serif.some(f=>/Noto ?Serif ?SC/i.test(f.familyName)),JSON.stringify(serif));await shotAt('desktop-serif-real');
   fs.writeFileSync(out+'/real-fonts.json',JSON.stringify({sans,serif,previewSerif},null,2));await cdp.detach();pass('deployed Chinese glyphs use real Noto Sans SC and Noto Serif SC faces');
