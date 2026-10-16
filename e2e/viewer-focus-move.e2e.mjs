@@ -196,7 +196,7 @@ test('saved pronReveal is ignored: a hidden-reading word opens its card on the f
 // AD-R2 Aa(정본 §5 Aa · 설계 §6.1 viewerSettingsMinimal ③ · §6.2 「Aa 창 높이 고정」「표시 탭 평평 · 범례」 · Q6~Q8 제안값).
 // R0 버그 10의 「성조·문법·한자 표시」 묶음 개수 뱃지는 묶음과 함께 사라진다 — 숨기는 곳이 없어 셀 것도 없다.
 // 설정 저장 경로·키는 그대로다: 쓰기 뒤에도 언어별 키 집합이 같고, 쓸 수 없는 옵션 뒤의 저장값(범위 「복습할 것」)이 남는다.
-const STORED_KEYS=['autoPace','autoSpeakOnClick','charGap','focusMode','fontFamily','fontSize','lineGap','paceCpm','paceStep','patternFilter','pinyinSize','pronDisplay','showHanjaKo','showPatterns','showToneColors','wordStateHl'];
+const STORED_KEYS=['autoPace','autoSpeakOnClick','charGap','focusMode','fontFamily','fontSize','lineGap','paceCpm','paceStep','patternFilter','pinyinSize','pronDisplay','showHanjaKo','showPatterns','showToneColors','wordStateHl','zhScript'];
 for(const [width,height] of [[390,844],[1280,900],[320,640]])test(`${width}px: Aa — tabs on top, one window height for every tab, a flat display tab with legends and reasons`,{timeout:180000},async()=>{
  const f=await open(width,height,{focusMode:true,showToneColors:true,showPatterns:false,patternFilter:'due',autoSpeakOnClick:false});
  try{
