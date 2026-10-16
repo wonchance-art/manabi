@@ -7569,7 +7569,16 @@ a.viewer-badge:hover {
 .fr-quiz__opt:hover:not(:disabled) { border-color: var(--primary); color: var(--text-primary); }
 .fr-quiz__opt.is-correct { border-color: var(--accent); color: var(--accent-text); font-weight: 700; }
 /* 정답 피드백 — 색상 외 기호 표시(색각 보조) */
-.fr-quiz__opt.is-correct::after { content: '✓'; margin-left: auto; padding-left: 8px; font-weight: 700; }
+.fr-quiz__opt.is-correct::after { content: '✓'; margin-left: auto; padding-left: 8px; font-weight: 700;
+  /* 채점 도장(앱 손맛) — ✓만 제자리에서 찍힌다. 칸 색 · 테두리는 원래대로 바로 바뀌고, 끝 상태는 그대로 남는다. */
+  transform-origin: 70% 50%; animation: stampIn 0.16s var(--ease-settle) both; }
+@keyframes stampIn {
+  from { opacity: 0; transform: scale(0.4); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fr-quiz__opt.is-correct::after { animation: none; animation-delay: 0s; }
+}
 .fr-quiz__opt.is-wrong { border-color: var(--danger); color: var(--danger); }
 .fr-quiz__opt.is-locked { opacity: 0.5; }
 .fr-quiz__opt:disabled { cursor: default; }

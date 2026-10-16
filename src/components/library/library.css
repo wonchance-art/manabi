@@ -185,6 +185,10 @@
 .shelf-create-collection select{margin-top:10px}
 .shelf-managed :is(button,a,input,select):focus-visible,.shelf-dialog :is(button,a,input,select):focus-visible{outline:2px solid var(--ink);outline-offset:3px}
 .shelf-list-focus:focus{outline:none}
+/* 새 조건을 받는 동안(LIST-KEEP) — 이전 목록을 자리 그대로 흐리게 둔다. 머리줄(폴더 이름)은 새 조건을 바로 보인다. */
+.shelf-list-focus{transition:opacity var(--transition-fast)}
+.shelf-list-focus[aria-busy="true"]{opacity:.6}
+@media (prefers-reduced-motion:reduce){.shelf-list-focus{transition:none}}
 @container(max-width:760px){
  .shelf-workspace{grid-template-columns:1fr;gap:0}
  .shelf-folder-nav{flex-direction:row;align-items:center;overflow-x:auto;white-space:nowrap;gap:4px;padding-top:10px;padding-bottom:5px}

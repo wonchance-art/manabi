@@ -44,6 +44,7 @@ import useLearnLanguage from '@/components/learn/useLearnLanguage';
 import LangChips from '@/components/learn/LangChips';
 import ResumeTile from '@/components/learn/ResumeTile';
 import ParagraphTile from '@/components/learn/ParagraphTile';
+import { keepPreviousForUser } from '@/lib/keepPreviousForUser';
 import GoalTrackTile from '@/components/learn/GoalTrackTile';
 import { ReviewTile, StreakTile, TodayGoalTile } from '@/components/learn/LearnTiles';
 import '@/components/learn/learn.css';
@@ -121,9 +122,11 @@ export default function HomePage({ book = null }) {
     enabled: !!user && !authLoading, staleTime: 60000, refetchOnWindowFocus: true,
   });
   const { langs, lang, choose } = useLearnLanguage(profile, data?.vocabByLang);
+  // 언어 칩을 바꾸는 동안 이전 언어의 문단을 흐리게 남긴다(LIST-KEEP — 「시작하면 오늘 문단을 만들어요」 거짓 빈 상태가
+  // 잠깐 끼던 것). 결과에 언어를 함께 담아, 남긴 문장의 lang 속성이 그 문장의 언어를 따른다. 같은 계정일 때만.
   const paragraph = useQuery({
-    queryKey: ['learn-paragraph', user?.id, lang], queryFn: () => fetchPrefetchedSentence(user.id, lang),
-    enabled: !!user && !authLoading, staleTime: 300000,
+    queryKey: ['learn-paragraph', user?.id, lang], queryFn: async () => ({ lang, sentence: await fetchPrefetchedSentence(user.id, lang) }),
+    enabled: !!user && !authLoading, staleTime: 300000, placeholderData: keepPreviousForUser(user?.id),
   });
   // 새 표현 한도 — 복습방과 같은 입력(reviewScopeQuota): 서버 한도, 호환 모드면 이 기기의 하루 한도 − 오늘 시작한 수.
   const admission = useLearningAdmission({ accountId: user?.id });
@@ -139,6 +142,7 @@ export default function HomePage({ book = null }) {
 
   const forecast = data?.forecastByLang?.[lang];
   const forecastWords = forecast?.count > 0 && forecast.top3?.length > 0 && forecast.top3.map(w => w.word_text);
+  const paragraphTileState = paragraphState({ sentence: paragraph.data?.sentence, forecastWords });
   const onForecastTap = () => {
     if (user?.id && forecast) { try { logReviewEvents(user.id, [buildForecastTapEvent(lang, forecast)]); } catch { /* Existing optional telemetry. */ } }
   };
@@ -214,7 +218,8 @@ export default function HomePage({ book = null }) {
         <StreakTile profile={profile} />
       </div>
       <ReviewTile projections={data?.learning?.projections || []} lang={lang} count={reviewCount} href={reviewHref} className="learn-order-review" />
-      <ParagraphTile state={paragraphState({ sentence: paragraph.data, forecastWords })} lang={lang} href={`/study?lang=${lang}`} onForecastTap={onForecastTap} />
+      <ParagraphTile state={paragraphTileState} lang={paragraphTileState.kind === 'ready' ? paragraph.data?.lang || lang : lang} busy={paragraph.isPlaceholderData}
+        href={`/study?lang=${lang}`} onForecastTap={onForecastTap} />
     </div>
     {!local.storageAvailable && <p role="status" className="learn-note">이 브라우저에서는 읽던 위치를 저장할 수 없어요.</p>}
     {continueDeckItems.length > 0 && <section className="learn-more" aria-label="이어서"><ContinueDeck items={continueDeckItems} /></section>}

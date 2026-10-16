@@ -6,13 +6,14 @@
 import Link from 'next/link';
 import { encounterLookupLang } from '@/lib/refVocabLookup';
 
-export default function ParagraphTile({ state, lang, href, kicker = '오늘 문단', onForecastTap }) {
+// busy = 새 언어의 문단을 받는 동안 이전 내용을 흐리게 남긴 상태(LIST-KEEP). 머리줄 · 시작하기는 새 언어 그대로.
+export default function ParagraphTile({ state, lang, href, kicker = '오늘 문단', onForecastTap, busy = false }) {
   const code = encounterLookupLang(lang) || undefined;
   return (
     <Link href={href} prefetch={false} className="learn-tile learn-paragraph learn-order-paragraph" aria-label={`${kicker} · 시작하기`}
       onClick={state.kind === 'forecast' ? onForecastTap : undefined}>
       <span className="learn-tile__head"><span className="learn-kick">{kicker}</span></span>
-      <span className="learn-paragraph__cycle">
+      <span className="learn-paragraph__cycle" aria-busy={busy || undefined}>
         {state.kind === 'ready' && <span className="learn-paragraph__sentence" lang={code}>{state.sentence}</span>}
         {state.kind === 'forecast' && <>
           <span className="learn-paragraph__words" lang={code}>{state.words.join(' · ')}</span>
