@@ -14,6 +14,8 @@
 // 장 나눔: 위키문헌의 쪽 하나(단편 · 장)가 기본 단위. 학습 한 번 분량을 넘으면 그 쪽 안에서 문단 경계로 고르게 나눈다 — 프랑스어는
 // 단어 수(WS_TARGET.French), 중국어는 글자 수(WS_TARGET.Chinese). 문단 한가운데는 자르지 않는다.
 
+import { koreaPublicDomainVerdict } from './rightsKorea.js';
+
 export const WS_PROVIDER = 'wikisource';
 export const WS_BOOK_VERSION = 1;
 export const WS_LICENSE = 'CC-BY-SA-4.0';
@@ -27,8 +29,6 @@ export const WS_WIKIS = Object.freeze({
 export const WS_TARGET = Object.freeze({ French: 2200, Chinese: 2500, Korean: 3000 });
 export const WS_EDITS = Object.freeze(['chapter-split-by-manabi', 'typography-normalized', 'illustrations-omitted', 'notes-omitted']);
 export const WS_SCRIPT = Object.freeze({ canonical: 'zh-hans', alternate: 'zh-hant' });
-// 판정 규칙이 있는 원산국 — 보호기간(사후 n년). 프랑스는 「mort pour la France」면 +30년(전쟁 연장 — 작품마다 적는다, fail-closed).
-export const WS_ORIGIN_TERMS = Object.freeze({ CN: 50, FR: 70, KR: 70 });
 
 const KEY_PATTERN = /^ws-(zh|fr|ko)-[a-z0-9]+(?:-[a-z0-9]+)*_[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 const SHA256 = /^[0-9a-f]{64}$/u;
@@ -86,7 +86,7 @@ function blockText(inner) {
   const marked = inner
     .replace(/<span style="text-decoration:\s*underline[^"]*"[^>]*>([^<]*)<\/span>/gu, `${NAME_OPEN}$1${NAME_CLOSE}`)
     .replace(/\s+/gu, ' ')
-    .replace(/<br\s*\/?>/gu, '\n')
+    .replace(/<br\b[^>]*>/gu, '\n')
     .replace(new RegExp(`</?(?:${INLINE_TAGS})\\b[^>]*>`, 'gu'), '');
   if (/[<>]/u.test(marked)) throw new Error(`본문 블록에 모르는 태그가 있다: ${marked.slice(0, 80)}`);
   return normalizeTypography(decodeEntities(marked)).split('\n').map((line) => line.replace(/ {2,}/gu, ' ').trim()).filter(Boolean).join('\n');
@@ -120,6 +120,8 @@ export function parseWikisourceFragment(fragment) {
     .replace(/<div\b[^>]*>\s*<\/div>/gu, '<br>')
     .replace(/<span class="sc">([^<]*)<\/span>/gu, (_, text) => text.replace(/&[#a-z0-9]+;|[^&]+/giu, (part) => (part[0] === '&' ? part : part.toLocaleUpperCase('fr'))))).replace(/[\uE000\uE001]/gu, '');
   html = html.replace(/<(h[2-6])\b[^>]*>([\s\S]*?)<\/\1>/gu, (_, __, inner) => { const text = headingText(inner); if (text) headings.push(text); return ''; });
+  // 시(div.poem) — 빈 줄(<br><br>)이 연 나눔이라 연마다 문단으로(행은 문단 안 줄바꿈). 시집(진달래꽃 · 하늘과 바람과 별과 시)
+  html = html.replace(/<div class="poem">([\s\S]*?)<\/div>/gu, (_, inner) => `<div class="poem">${inner.replace(/<br\b[^>]*>\s*<br\b[^>]*>/gu, '</p><p>')}</div>`);
   // <center>(가운데 줄 — 벽의 서명 「BRUJON, 1811.」 · 쪽 안에 이어 붙은 장 표제)는 글자 블록으로
   html = html.replace(/<center\b[^>]*>/gu, '<div>').replace(/<\/center>/gu, '</div>');
   // 목록 항목(dl/dd · ul/li — 레 미제라블의 암호 명단 등)은 한 줄 문단으로
@@ -206,30 +208,9 @@ export function splitBlocks(blocks, target, measure) {
   return bounds.slice(1).map((end, index) => blocks.slice(bounds[index], end)).filter((group) => group.length > 0);
 }
 
-/**
- * 권리 판정(원산국 만료 = 한국 공개 가능) — 기준 연도는 검토일(rights.reviewedAt)의 해라 결정적이다.
- *   원산국: 사후 WS_ORIGIN_TERMS[원산국]년(중국 50 · 프랑스 70 · 한국 70). 프랑스는 mortPourLaFrance를 true/false로 꼭 적고, true면 +30년.
- *   한국: 저작권법 제3조 제4항(보호기간 상호주의) — 본국에서 만료된 외국 저작물은 한국에서도 보호하지 않는다(아오조라 D5와 같은 선).
- *         한국 원산은 한국 사후 70년 그 자체.
- *   미국 기준은 보지 않는다(오너 「미국 기준 없애」 2026-10-17 KST — 아오조라 D5 「일본에서만 끝나면 그만」의 연장).
- *   번역자가 있으면 불가(원어 원문만). 판정 규칙이 없는 원산국은 불가(fail-closed).
- * @returns {{ok: boolean, reasons: string[], reviewYear: number|null}}
- */
-export function wikisourceRightsVerdict({ publishedYear, authorDeathYear, countryOfOrigin, mortPourLaFrance = null, translator = null, rights } = {}) {
-  const reasons = [];
-  const reviewYear = /^\d{4}-\d{2}-\d{2}$/u.test(rights?.reviewedAt ?? '') ? Number(rights.reviewedAt.slice(0, 4)) : null;
-  if (reviewYear == null) reasons.push('rights.reviewedAt(YYYY-MM-DD)가 필요하다');
-  if (!Number.isInteger(publishedYear)) reasons.push('publishedYear가 필요하다');
-  if (!Number.isInteger(authorDeathYear)) reasons.push('authorDeathYear가 필요하다');
-  const term = Object.hasOwn(WS_ORIGIN_TERMS, countryOfOrigin) ? WS_ORIGIN_TERMS[countryOfOrigin] : null;
-  if (term == null) reasons.push(`원산국 ${countryOfOrigin ?? '없음'}은 아직 판정 규칙이 없다(${Object.keys(WS_ORIGIN_TERMS).join('·')})`);
-  if (countryOfOrigin === 'FR' && typeof mortPourLaFrance !== 'boolean') reasons.push('프랑스 원산은 mortPourLaFrance(true/false)를 적는다');
-  if (translator) reasons.push('번역본은 넣지 않는다(원어 원문만)');
-  if (reviewYear != null && Number.isInteger(authorDeathYear)) {
-    const originTerm = (term ?? 0) + (countryOfOrigin === 'FR' && mortPourLaFrance === true ? 30 : 0);
-    if (term != null && authorDeathYear > reviewYear - originTerm - 1) reasons.push(`작가 ${authorDeathYear} 사망 — 원산국 보호기간(사후 ${originTerm}년)이 끝나지 않았다`);
-  }
-  return { ok: reasons.length === 0, reasons, reviewYear };
+/** 권리 판정 — 한국 공개 가능(① 한국 만료 · ② 본국 만료, 공통 정본 rightsKorea). 판정 규칙이 없는 원산국은 ①로만 열린다. */
+export function wikisourceRightsVerdict(literature = {}) {
+  return koreaPublicDomainVerdict(literature);
 }
 
 /** 게시 가능한 권리 기록인가 — 승인 · 퍼블릭 도메인 · 원산국 · 한국 검토 · 판정 통과 · 위키문헌 라이선스. */
@@ -289,7 +270,26 @@ export function createWikisourceDraft(entry, files) {
   const measure = entry.wiki === 'fr' ? wordCount : charCount;
   const target = WS_TARGET[language];
   const pieces = [];
-  for (const file of entry.files) {
+  // 시집(entry.collection) — 쪽 하나가 시 한 편이라 쪽마다 장을 만들면 너무 잘다. 시를 단위로 분량 목표까지 이어 묶는다(시 한가운데는 자르지 않는다).
+  if (entry.collection === true) {
+    const poems = entry.files.map((file) => {
+      const { blocks } = parseWikisourceFragment(byPath.get(file.variants[0].path));
+      const name = file.page.slice(file.page.lastIndexOf('/') + 1);
+      // 시 제목 — 쪽 첫 블록이 시 행(여러 줄 · 긴 줄)이면 제목 줄이 없는 쪽이라 쪽 이름을 제목 블록으로 넣는다(장 안에서 시가 갈려 보이게)
+      const titled = blocks[0] && !blocks[0].text.includes('\n') && blocks[0].text.length <= 30 ? blocks : [{ text: name, names: [] }, ...blocks];
+      return { name, blocks: titled.map((block) => ({ ...block, alternate: null })), file };
+    });
+    const groups = splitBlocks(poems, target, (poem) => poem.blocks.reduce((sum, block) => sum + measure(block.text), 0));
+    for (const group of groups) {
+      pieces.push({
+        title: group.length > 1 ? `${group[0].name} 외 ${group.length - 1}편` : group[0].name,
+        blocks: group.flatMap((poem) => poem.blocks),
+        sourcePage: group[0].file.page,
+        revid: group[0].file.revid,
+      });
+    }
+  }
+  for (const file of entry.collection === true ? [] : entry.files) {
     const canonical = parseWikisourceFragment(byPath.get(file.variants[0].path));
     let alternate = null;
     if (zh) {

@@ -1,0 +1,274 @@
+{
+  "schemaVersion": 1,
+  "provider": "standardebooks",
+  "repo": "standardebooks/jane-austen_pride-and-prejudice",
+  "commit": "ed94a32be3e875c0814568050c7544e03aad3ef5",
+  "url": "https://standardebooks.org/ebooks/jane-austen/pride-and-prejudice",
+  "title": "Pride and Prejudice",
+  "author": "Jane Austen",
+  "publishedYear": 1813,
+  "authorDeathYear": 1817,
+  "countryOfOrigin": "GB",
+  "level": "B2 상급",
+  "display": {
+    "titleKo": "오만과 편견",
+    "authorKo": "제인 오스틴"
+  },
+  "files": [
+    {
+      "path": "chapter-1.xhtml",
+      "sha256": "78e777101e7a3d6dc723dbf6df5d851ae1ba6fd1ebaad29264b14607c9e23214"
+    },
+    {
+      "path": "chapter-2.xhtml",
+      "sha256": "c5676c9d0b4ff82acea89cf03adbcec402dfa0f1be4fac1bf33c02fab3370db1"
+    },
+    {
+      "path": "chapter-3.xhtml",
+      "sha256": "1b3f3ea948d2051b31b653e91a2d81c07689ebce5ff7cac554b322b9f1c4ab44"
+    },
+    {
+      "path": "chapter-4.xhtml",
+      "sha256": "80455e033b965ce8f13db270bf839728d17ac31604b16e4251d443472304899e"
+    },
+    {
+      "path": "chapter-5.xhtml",
+      "sha256": "3de78d2f926fa02ffd599c721847884ae5e9c278647c81ecf8a5156000e5b464"
+    },
+    {
+      "path": "chapter-6.xhtml",
+      "sha256": "abb38f83382c5a8ffcf7e26653cff869549d75b0cc1cec9b5815ccb344b96e2c"
+    },
+    {
+      "path": "chapter-7.xhtml",
+      "sha256": "c23dfd04c31bb28d0a203b6582605c965d597f9e845774a5a2aa910daeb00531"
+    },
+    {
+      "path": "chapter-8.xhtml",
+      "sha256": "67dee293952ab2498f25505eccd129b2f07d3b16a3ab7c45935117fac6154a31"
+    },
+    {
+      "path": "chapter-9.xhtml",
+      "sha256": "b34c75be3b5d9daec2befa1e5210076b6b9cec2a40f67a46bf24007e7b2cc5ad"
+    },
+    {
+      "path": "chapter-10.xhtml",
+      "sha256": "6a766c8df48203478b58c01fa771ffab722524c16236f249254073b1b0630e04"
+    },
+    {
+      "path": "chapter-11.xhtml",
+      "sha256": "265256c8e542912cafeca1d769dfd72effbfff193c9e34310b1e0d8a38bb17c1"
+    },
+    {
+      "path": "chapter-12.xhtml",
+      "sha256": "50369fe46c7064cdf2f5ce861ad6d55704fa058b5f0ee7ce22ba16b631693415"
+    },
+    {
+      "path": "chapter-13.xhtml",
+      "sha256": "1ace0b6df210e94c71ca81c3066705618c5e12cf8500a28b99240e0d7ced2cd4"
+    },
+    {
+      "path": "chapter-14.xhtml",
+      "sha256": "36976697c7ec97fd145cf89559a013955bb9e6c3e900995957e6756173dc73c5"
+    },
+    {
+      "path": "chapter-15.xhtml",
+      "sha256": "2f2906aca7542cc7becde9853cec79f74e30d8ca3592508edb229ac3999c26e2"
+    },
+    {
+      "path": "chapter-16.xhtml",
+      "sha256": "82fc6002f077872a2c6e62637acbfa5e775f02c371fc2a551798d9574a6f5649"
+    },
+    {
+      "path": "chapter-17.xhtml",
+      "sha256": "6b5e27e722c8bcd90e52a2a8a5a34352a97b72b8b0f70d37e2d40df589af5161"
+    },
+    {
+      "path": "chapter-18.xhtml",
+      "sha256": "a86d9dcca9e12b50d72c1449790340f401caaeae1af03004d6b980c98b336dd2"
+    },
+    {
+      "path": "chapter-19.xhtml",
+      "sha256": "a287b373972b9f3f18f718eeb6d9bef971cbf66e39856bc2536b1f392dfe632c"
+    },
+    {
+      "path": "chapter-20.xhtml",
+      "sha256": "393ccd920966790f7687ee6a9698da0d7d7cbdc47039090a5e080a210699e757"
+    },
+    {
+      "path": "chapter-21.xhtml",
+      "sha256": "748005c8aa49e0735d5e95c709b79b5655a053243b869e55b4aeccd87104598d"
+    },
+    {
+      "path": "chapter-22.xhtml",
+      "sha256": "b00dd64d8ebfd753a6d8fcd1552c1558edc75b48bf50f6abe2733304fdaa9bf6"
+    },
+    {
+      "path": "chapter-23.xhtml",
+      "sha256": "8671d70ec9c21479ca3f47af476cc5ac1af9ddd3556da9a3cba3764e6709e4e4"
+    },
+    {
+      "path": "chapter-24.xhtml",
+      "sha256": "5e91952a29d99a491bbe8f355e42e21307b8b405196b234ca0f295e68fbbf9ed"
+    },
+    {
+      "path": "chapter-25.xhtml",
+      "sha256": "67f9fee0058be3203b08aed3c69664ad2399a6d41aee57160e08d4c0f4d5ba95"
+    },
+    {
+      "path": "chapter-26.xhtml",
+      "sha256": "434122c097ed8bea37798aebe843928f38305b9c0800dbb26d274b4203fb5abe"
+    },
+    {
+      "path": "chapter-27.xhtml",
+      "sha256": "828b2c183fbc4f5f944684c149b7f787cc836fa2ee4da5b3d5c63229934b07f0"
+    },
+    {
+      "path": "chapter-28.xhtml",
+      "sha256": "bd24356c3201e51333884c136b80cf4f58587bd6ef057d5466e78aa1427b1125"
+    },
+    {
+      "path": "chapter-29.xhtml",
+      "sha256": "6b5c3794e2a106367fa9585aaf88b6895797823ed66a4499e671f0d5ff677830"
+    },
+    {
+      "path": "chapter-30.xhtml",
+      "sha256": "05274643bae7ef84e90049a75b8d563570b5e44abe97c05ff82484f9b78509ac"
+    },
+    {
+      "path": "chapter-31.xhtml",
+      "sha256": "275aab2c9397a7f88c7c20dab369308b1fbd4eb7097fcc4b5e3e7174ff398cc2"
+    },
+    {
+      "path": "chapter-32.xhtml",
+      "sha256": "760bdef49d88b39f4a02891bd39a2c3894cf6bbc50fddc053c836738a0f3dfe8"
+    },
+    {
+      "path": "chapter-33.xhtml",
+      "sha256": "265f8fb0fb603fbdd1c77b810f45d550a0aa6f725168e56451d7617a248e6063"
+    },
+    {
+      "path": "chapter-34.xhtml",
+      "sha256": "e69f7e761a1143e22f3640e0ef46908f831ea4b48b0c25e74d6fa198330722df"
+    },
+    {
+      "path": "chapter-35.xhtml",
+      "sha256": "54f4af760339b35940809e1dec9955fa92a199871e6ed2b70508afc307bfb8e2"
+    },
+    {
+      "path": "chapter-36.xhtml",
+      "sha256": "11f726d7e066f0a1a2db933571957eac9e3c4fc982134f8cbcc5dfbb58d75505"
+    },
+    {
+      "path": "chapter-37.xhtml",
+      "sha256": "af18be0bd2a1ac21035dad44e2b80d9beeacbc6543656a63ac4d3796bc32b317"
+    },
+    {
+      "path": "chapter-38.xhtml",
+      "sha256": "1a98a6fa04f567e49edd9cd48ac5ed62d9f9bb5102003f718e2b0c70687903a1"
+    },
+    {
+      "path": "chapter-39.xhtml",
+      "sha256": "e73aebfb96d127672877b323e49ad65f26a7b7816efe9fe9285dbb156591ccfd"
+    },
+    {
+      "path": "chapter-40.xhtml",
+      "sha256": "1776fcebb142b4e4ccf8d684c060eb1300c0e8b852fbac1f38aa75790cad26cf"
+    },
+    {
+      "path": "chapter-41.xhtml",
+      "sha256": "2719d05dc65a90c19511c36846a86135ae5496269a0d8615a2aeafab54ddf9bf"
+    },
+    {
+      "path": "chapter-42.xhtml",
+      "sha256": "dd41a1b0220d625be354f5af415f823b3dece349a0e217d96aac23244e159d9e"
+    },
+    {
+      "path": "chapter-43.xhtml",
+      "sha256": "16945f18da2200ecc4aaefa67d360e5706e3980141ee2cc08945650ac63afc6a"
+    },
+    {
+      "path": "chapter-44.xhtml",
+      "sha256": "3dc66d911a5aa921e8d4a84de07b0a84b0c87e787d13520049503cf546c56190"
+    },
+    {
+      "path": "chapter-45.xhtml",
+      "sha256": "f95c3861b243ed4bb26557b83934969c605a2108e0e66c5f02585f7d1ddb0dad"
+    },
+    {
+      "path": "chapter-46.xhtml",
+      "sha256": "5fc03ad75b62f15067441afaeda11fb158cc4075842a47fc5f3f64ae0b42da02"
+    },
+    {
+      "path": "chapter-47.xhtml",
+      "sha256": "92f71491579009f24108cf323eceafdfa31a9a91068dede607b0cd4e2afad00b"
+    },
+    {
+      "path": "chapter-48.xhtml",
+      "sha256": "ae7e0c14f8e3112953bea72593029951e5d1d7659909a5a180844c43a5346c44"
+    },
+    {
+      "path": "chapter-49.xhtml",
+      "sha256": "1cd39638d6f513d4da1805e8921f173c94326ebec72458bf5a6d81eab7cd63f9"
+    },
+    {
+      "path": "chapter-50.xhtml",
+      "sha256": "d4a62aace286b619dbc8988d9242fe040c436b9d0e9e3f5b6fc7f17f041ff9a5"
+    },
+    {
+      "path": "chapter-51.xhtml",
+      "sha256": "642f374f1de8c91d23a3570440162f40eeeaa5d373eee7c8c8d12ea3901d26ca"
+    },
+    {
+      "path": "chapter-52.xhtml",
+      "sha256": "58289ebe09ff33b552b738f22003997a57542295a47faf9ae58a2be687300a8a"
+    },
+    {
+      "path": "chapter-53.xhtml",
+      "sha256": "7ac0e84338885ec2a10622aadc22b46f43d7fd0249dda931c56073f3dd3bed27"
+    },
+    {
+      "path": "chapter-54.xhtml",
+      "sha256": "0cae8d826b98a3df8c42b1036f3c209c1b9bca83f66e39b8005bd8c1bd2fd811"
+    },
+    {
+      "path": "chapter-55.xhtml",
+      "sha256": "fa531b146e8a1b13f6e68a92bf630c3bc6947d25240a7044db86d687e71ae5f1"
+    },
+    {
+      "path": "chapter-56.xhtml",
+      "sha256": "8f3608413c70c4d62291997eaf5eeba4f7f1173bc0f61216021d4f7b1e76b445"
+    },
+    {
+      "path": "chapter-57.xhtml",
+      "sha256": "7a4bb2dce8e7025032f7bd30f1d68861a82488b8812888afb488e4dc64234184"
+    },
+    {
+      "path": "chapter-58.xhtml",
+      "sha256": "95be56d24df391a5414e009df47ed9b54c390751e6b00c6775c5bf77a8202f7b"
+    },
+    {
+      "path": "chapter-59.xhtml",
+      "sha256": "ecd5795d9a772f48ade3a0e6f40f9869a955d8a310885f22d50b4155bfadb55b"
+    },
+    {
+      "path": "chapter-60.xhtml",
+      "sha256": "be7c90259a03f54295cbdffc51a31e31690f6a7958b8afa848455d971804a9ad"
+    },
+    {
+      "path": "chapter-61.xhtml",
+      "sha256": "da154fb6cbc0fdec240a3edcd9a72ce4c5664989246d07ab67be6f65b59a8f96"
+    }
+  ],
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-17",
+    "reviewedJurisdictions": [
+      "GB",
+      "KR"
+    ],
+    "evidenceUrl": "https://standardebooks.org/ebooks/jane-austen/pride-and-prejudice"
+  }
+}

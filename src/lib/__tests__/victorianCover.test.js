@@ -119,7 +119,7 @@ describe('배선 — 서재 카드·게시 화면', () => {
   it('서재 카드: Standard Ebooks 책은 빅토리아 표지 + 원제(영어) + 한국어 제목 · 단어 수 · 장 이름, 「다음 과 적기」 없음', () => {
     const page = read('src/views/MaterialsPage.jsx');
     expect(page).toContain('const english = work ? null : standardEbooksWorkOfBook(b);');
-    expect(page).toContain('art: <VictorianCover work={english} />,');
+    expect(page).toContain('art: <CanonicalCover work={english} />,'); // 빅토리아 · 초판 장정을 binding으로 가른다
     expect(page).toContain("english.words && `${english.words.toLocaleString()}단어`");
     expect(page).toContain(') : !work && !english && !world && b.chapters[0]?.owner_id === user.id ? (');
   });
@@ -127,6 +127,6 @@ describe('배선 — 서재 카드·게시 화면', () => {
   it('게시 화면 표지: 아오조라는 시리즈 A, 영어 정본은 빅토리아 표지', () => {
     const cover = sliceBetween(read('src/components/LiteraturePublishPanel.jsx'), 'export function BookCover', '\n}\n');
     expect(cover).toContain('const english = work ? null : standardEbooksWork(bookKey);');
-    expect(cover).toContain('{work ? <LiteratureCover work={work} /> : english ? <VictorianCover work={english} /> : <WikisourceCover work={world} />}');
+    expect(cover).toContain('{work ? <LiteratureCover work={work} /> : english ? <CanonicalCover work={english} /> : <FirstEditionCover work={world} />}');
   });
 });

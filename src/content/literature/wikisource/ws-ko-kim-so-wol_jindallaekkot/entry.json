@@ -1,0 +1,1670 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "ko",
+  "key": "ws-ko-kim-so-wol_jindallaekkot",
+  "main": "진달래꽃 (시집)",
+  "url": "https://ko.wikisource.org/wiki/%EC%A7%84%EB%8B%AC%EB%9E%98%EA%BD%83_(%EC%8B%9C%EC%A7%91)",
+  "title": "진달래꽃",
+  "author": "김소월",
+  "level": "고급",
+  "publishedYear": 1925,
+  "authorDeathYear": 1934,
+  "countryOfOrigin": "KR",
+  "mortPourLaFrance": null,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "진달래꽃",
+    "authorKo": "김소월"
+  },
+  "collection": true,
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "진달래꽃 (시집)/먼 후일",
+      "revid": 430584,
+      "timestamp": "2026-06-15T14:54:20Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "body",
+          "sha256": "ac9a842d6a0975cbc8613486c53f8daffc47a0abee3571038d84c1cc8c01653b"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/풀 따기",
+      "revid": 203568,
+      "timestamp": "2019-11-23T15:39:56Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "002.html",
+          "extract": "body",
+          "sha256": "a77654581de22d5bb111c6689399aec1d6b0870dcbd86e9cb7463e76e581d618"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/바다",
+      "revid": 203569,
+      "timestamp": "2019-11-23T15:40:00Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "003.html",
+          "extract": "body",
+          "sha256": "0747baa9a0013a8878b79599c1b6aa2e6754eb4c361a9599b04078c2cba4867f"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/산 위에",
+      "revid": 430970,
+      "timestamp": "2026-06-15T15:20:14Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "004.html",
+          "extract": "body",
+          "sha256": "30a943a7975d2e0fb0f44661a4df4c879453fbdf379362e724298d3da0f05c3b"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/옛이야기",
+      "revid": 324293,
+      "timestamp": "2024-05-08T00:16:55Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "005.html",
+          "extract": "body",
+          "sha256": "ffaa2bc1cfc1bf7f1925c9b559891a06eba26c6f21800f07e153cd6e0021402e"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/님의 노래",
+      "revid": 203572,
+      "timestamp": "2019-11-23T15:40:10Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "006.html",
+          "extract": "body",
+          "sha256": "a9fe4103e54c7b17b7eb4c0534ca1bb254f59494634486bfe388893a0e1705dd"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/실제 1",
+      "revid": 203573,
+      "timestamp": "2019-11-23T15:40:14Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "007.html",
+          "extract": "body",
+          "sha256": "0526cc40cdeed2fbe492e83762defa8f754841f584ea5bc5bf2dda018d731cd3"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/님의 말씀",
+      "revid": 203574,
+      "timestamp": "2019-11-23T15:40:16Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "008.html",
+          "extract": "body",
+          "sha256": "afdf0f9df864a375600d65f719d751d03526eba2d2cc576ae8a0fe76de5ac29f"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/님에게",
+      "revid": 203575,
+      "timestamp": "2019-11-23T15:40:20Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "009.html",
+          "extract": "body",
+          "sha256": "4ee6f0ccab555050996edd46d40b705ebc9640cf3cd3260febaa517d06a4e07e"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/마른강 두덕에서",
+      "revid": 203576,
+      "timestamp": "2019-11-23T15:40:22Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "010.html",
+          "extract": "body",
+          "sha256": "5e46de4791500def0015690c556a5089166f770dbcb0d5896a69de918e074409"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/봄 밤",
+      "revid": 430586,
+      "timestamp": "2026-06-15T14:54:24Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "011.html",
+          "extract": "body",
+          "sha256": "7dd10b4fe2f6a18907e2673cc4f7d5be477cde8caf436b04e0ea36664945b75d"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/밤",
+      "revid": 203578,
+      "timestamp": "2019-11-23T15:41:03Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "012.html",
+          "extract": "body",
+          "sha256": "b796f2487d3e450375eb5670649744993df4a352c181c919fb949f872a5c8c6b"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/꿈꾼 그 옛날",
+      "revid": 203579,
+      "timestamp": "2019-11-23T15:41:07Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "013.html",
+          "extract": "body",
+          "sha256": "ad6a302a707088169431490067bb72fc42fad44c15c1dac96dfcd74a89975102"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/꿈으로 오는 한 사람",
+      "revid": 430971,
+      "timestamp": "2026-06-15T15:20:21Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "014.html",
+          "extract": "body",
+          "sha256": "7313df6ac940c10e3d8c46cefc839dc108f61231bb65dc40941f3b724d8c6708"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/눈 오는 저녁",
+      "revid": 201672,
+      "timestamp": "2019-09-16T11:01:56Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "015.html",
+          "extract": "body",
+          "sha256": "2745255f37a28ab7a239416a2d01b7b580e41063d99037cd59e190c8979d4ea5"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/자주 구름",
+      "revid": 430972,
+      "timestamp": "2026-06-15T15:20:28Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "016.html",
+          "extract": "body",
+          "sha256": "ea4e744510358d25db08747ef6cbfb15078cfc1a492a1ec91590ad2fec6628a3"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/두 사람",
+      "revid": 203582,
+      "timestamp": "2019-11-23T15:41:37Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "017.html",
+          "extract": "body",
+          "sha256": "1c6920f2a985d942429d0cc1e0528c4d9cf27c05c698dc877cfe9c7a9658fb39"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/닭소리",
+      "revid": 203583,
+      "timestamp": "2019-11-23T15:41:39Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "018.html",
+          "extract": "body",
+          "sha256": "c9f593f7e9645f7c9e291b759e629e8942577349ddae2511ce899d7dfc5ac4ff"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/못 잊어",
+      "revid": 203584,
+      "timestamp": "2019-11-23T15:41:42Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "019.html",
+          "extract": "body",
+          "sha256": "583d17bbb0bfd27f9ab77ac83e35162d516f9ffefa75fb86e71fc6fac7bb2354"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/예전엔 미처 몰랐어요",
+      "revid": 203585,
+      "timestamp": "2019-11-23T15:41:44Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "020.html",
+          "extract": "body",
+          "sha256": "3b15608637b7b443040cd6fe0bacc6da50c0bcbb703b4454713b6a3fd6917cfb"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/자나 깨나 앉으나 서나",
+      "revid": 203586,
+      "timestamp": "2019-11-23T15:41:48Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "021.html",
+          "extract": "body",
+          "sha256": "3fe2fa1a8e1000e50129e94950733424ed4df82393192b730a176f875b802901"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/해가 산마루에 저물어도",
+      "revid": 203587,
+      "timestamp": "2019-11-23T15:41:50Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "022.html",
+          "extract": "body",
+          "sha256": "a677f831af54a3dc34733d28241b28b2d293deb9cd1786a04d0236ea1a77ca2a"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/꿈 1",
+      "revid": 203588,
+      "timestamp": "2019-11-23T15:42:15Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "023.html",
+          "extract": "body",
+          "sha256": "31a7b9835a17d6a448b2b3a58815332a342a5d6de846f3869c8960722fe6c64c"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/맘 켕기는 날",
+      "revid": 203589,
+      "timestamp": "2019-11-23T15:42:18Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "024.html",
+          "extract": "body",
+          "sha256": "126a38f8dad2eb215edc5a6762e47d6419afc918a93ad315849254ba3f582b2f"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/하늘 끝",
+      "revid": 203590,
+      "timestamp": "2019-11-23T15:42:21Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "025.html",
+          "extract": "body",
+          "sha256": "daeb201b3509332a26a4a2d7f833817227264a6015488b16ad3736d51d66fa5d"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/개아미",
+      "revid": 203591,
+      "timestamp": "2019-11-23T15:42:25Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "026.html",
+          "extract": "body",
+          "sha256": "efb904cd88ccd83e3f12947527bcdd9db5cddb1f39c9b346155b23f6f32625c0"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/제비",
+      "revid": 203592,
+      "timestamp": "2019-11-23T15:42:28Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "027.html",
+          "extract": "body",
+          "sha256": "f44e5bc7cecca6ae1a60691d594bba21c13840ade7da6aca5288cc9770e3f971"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/부헝새",
+      "revid": 203593,
+      "timestamp": "2019-11-23T15:42:30Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "028.html",
+          "extract": "body",
+          "sha256": "acfec7034be346850292ad725d8692aaaadb1b0e0a3e34b22a74fe6313d3495d"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/만리성",
+      "revid": 203594,
+      "timestamp": "2019-11-23T15:42:32Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "029.html",
+          "extract": "body",
+          "sha256": "08463e2857060bd79f9ec0fbb62ea6a473512c6f4e61a14e82eff35620c68b4f"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/수아",
+      "revid": 203595,
+      "timestamp": "2019-11-23T15:42:36Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "030.html",
+          "extract": "body",
+          "sha256": "7164cbfea51992d99092d4d549cc12e4bdfd8b302866a371706c433520729b69"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/담배",
+      "revid": 430974,
+      "timestamp": "2026-06-15T15:20:42Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "031.html",
+          "extract": "body",
+          "sha256": "6e67223be555728ecb39313470a619b43c1e3e6e51c91365a3a741769e1fa613"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/실제 2",
+      "revid": 203597,
+      "timestamp": "2019-11-23T15:43:12Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "032.html",
+          "extract": "body",
+          "sha256": "21069e5f1040ba194300e4a9adb02d3347fb0e9aa499214758a163d440444733"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/어버이",
+      "revid": 203598,
+      "timestamp": "2019-11-23T15:43:16Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "033.html",
+          "extract": "body",
+          "sha256": "b02b2de9ef91f7b5b3ff537be1a19b81a28ada64fe075c83dd986571908a485f"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/부모",
+      "revid": 203599,
+      "timestamp": "2019-11-23T15:43:19Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "034.html",
+          "extract": "body",
+          "sha256": "a38c226222cf3910ef8ff0f3aa4a0abc0c2cdb04ff615ff38d0a7a367b0fee4c"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/후살이",
+      "revid": 203600,
+      "timestamp": "2019-11-23T15:43:23Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "035.html",
+          "extract": "body",
+          "sha256": "5b40b40827956c468f5f229c85fb51eca0dea63f242b35c19d7c5ee5763f8058"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/잊었던 맘",
+      "revid": 203601,
+      "timestamp": "2019-11-23T15:43:28Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "036.html",
+          "extract": "body",
+          "sha256": "6be4157bcf93cd850993616a5b253fc3fb581a8cab785fb670c2d6aa10bf5548"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/봄비",
+      "revid": 203602,
+      "timestamp": "2019-11-23T15:43:32Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "037.html",
+          "extract": "body",
+          "sha256": "a2c38ca6bb3f7c03a4c998d018cbd88a96879db9c6b2f5040b22b72726f4f45c"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/비단 안개",
+      "revid": 269762,
+      "timestamp": "2023-05-22T13:56:15Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "038.html",
+          "extract": "body",
+          "sha256": "cb2159007f32cefb78b0021a94eafb2dee7fb983ba2743a1dc0fefe99dd2ed03"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/기억",
+      "revid": 203604,
+      "timestamp": "2019-11-23T15:43:38Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "039.html",
+          "extract": "body",
+          "sha256": "254eab731bc6b4874c448a591c665e50da28d1beb46a9dc2cdbdec8d5d8dfca8"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/애모",
+      "revid": 203605,
+      "timestamp": "2019-11-23T15:43:42Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "040.html",
+          "extract": "body",
+          "sha256": "20b7e8aa8999aa19cadc80b67d9d512eed48bbd1b1c414a99aa27a3c10b9a7e3"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/몹쓸 꿈",
+      "revid": 203606,
+      "timestamp": "2019-11-23T15:43:47Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "041.html",
+          "extract": "body",
+          "sha256": "ac795ba36b17fb8ecfee761af79fe2c1cf91c5f616cbe24d3582f46cf47f90e6"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/그를 꿈꾼 밤",
+      "revid": 203607,
+      "timestamp": "2019-11-23T15:43:55Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "042.html",
+          "extract": "body",
+          "sha256": "eec5c954a729e3d0a779648c627c29365a345ebd0f203139c589a82b800c4ca4"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/여자의 냄새",
+      "revid": 203608,
+      "timestamp": "2019-11-23T15:43:59Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "043.html",
+          "extract": "body",
+          "sha256": "aa1ead817d92698f6b944384a68a8ed5a72a09c6d91351680a3c322165972374"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/분 얼굴",
+      "revid": 203609,
+      "timestamp": "2019-11-23T15:44:02Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "044.html",
+          "extract": "body",
+          "sha256": "1fc59b2bc3f37828941eda95ec0d7a75ad22eb3fd1dee1a0b5dcf12649cefed2"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/아내 몸",
+      "revid": 203610,
+      "timestamp": "2019-11-23T15:44:05Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "045.html",
+          "extract": "body",
+          "sha256": "f898841c46f5ba825575594b88374d87d6ed2b37424f3fc4a723dd56bcd775e6"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/서울 밤",
+      "revid": 203611,
+      "timestamp": "2019-11-23T15:44:09Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "046.html",
+          "extract": "body",
+          "sha256": "d44ca729069187293f156cfbae68c9ef26af8c466cadb8d85d9104761b6f4ed7"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/가을 아침에",
+      "revid": 203612,
+      "timestamp": "2019-11-23T15:44:42Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "047.html",
+          "extract": "body",
+          "sha256": "f1bd974a93575db8ab74e67e5ff3af89007ca3af27fd729aa105618168dd809e"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/가을 저녁에",
+      "revid": 203613,
+      "timestamp": "2019-11-23T15:44:45Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "048.html",
+          "extract": "body",
+          "sha256": "b0a48cbe253d34ffa7cb41ee640f551d7255d63b144075af612b338e676a8e76"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/반달",
+      "revid": 203614,
+      "timestamp": "2019-11-23T15:44:47Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "049.html",
+          "extract": "body",
+          "sha256": "af2a3ddfb576bff6c27775c484cf53f7c63bf4fa7d7a1004875d8c376aec0d18"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/만나려는 심사",
+      "revid": 150850,
+      "timestamp": "2016-04-01T00:58:03Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "050.html",
+          "extract": "body",
+          "sha256": "956b792a11c197eab6d9a93cf036eff5d8330624d25c4f159cc022e7df89e8e1"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/옛날",
+      "revid": 200303,
+      "timestamp": "2019-07-22T02:02:20Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "051.html",
+          "extract": "body",
+          "sha256": "2beca93e4591d07a39d206d3c87b96ad17591f66dda4ece2050cf84afe180ccb"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/깊이 믿던 심성",
+      "revid": 200274,
+      "timestamp": "2019-07-21T05:10:10Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "052.html",
+          "extract": "body",
+          "sha256": "964b373664727260c0ec8d925a2a28e9d950690a3247cbe29113c73e89e0830a"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/꿈 2",
+      "revid": 200275,
+      "timestamp": "2019-07-21T05:13:43Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "053.html",
+          "extract": "body",
+          "sha256": "af4ccbfd94f34d5e84e8c5e9c273e0fafdaeed8dc4cfe55f17587fa804b45b30"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/님과 벗",
+      "revid": 202186,
+      "timestamp": "2019-10-20T07:41:07Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "054.html",
+          "extract": "body",
+          "sha256": "aa8d4151f0c9e98469fdcc7d9505bb841b5ec353e922cf5c1b48ae93c376ab14"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/지연",
+      "revid": 200276,
+      "timestamp": "2019-07-21T05:17:31Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "055.html",
+          "extract": "body",
+          "sha256": "9c6ffc75635e394b58f42b3f6f876debc10046f63c28aecaf16b2a17c5881a35"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/오시는 눈",
+      "revid": 200277,
+      "timestamp": "2019-07-21T05:22:31Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "056.html",
+          "extract": "body",
+          "sha256": "21cee638bafbfe0735003972741574279c65a1269ae3bf7fde49792043e71a12"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/설움의 덩이",
+      "revid": 150995,
+      "timestamp": "2016-04-01T01:55:21Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "057.html",
+          "extract": "body",
+          "sha256": "d56b51d97f215588a8a0a9cd6f22412391a8c39a7997a780ce0a9d185042edba"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/낙천",
+      "revid": 201542,
+      "timestamp": "2019-09-14T10:14:53Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "058.html",
+          "extract": "body",
+          "sha256": "4956d6d5735f8b096e10a5c07dec807d768898ab016ebfd96adbb80f407abc39"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/바람과 봄",
+      "revid": 150932,
+      "timestamp": "2016-04-01T01:23:58Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "059.html",
+          "extract": "body",
+          "sha256": "c93206ece4e33e9dd766283466f526dfdeb49b735043ef2da8f2ad8da1415210"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/눈",
+      "revid": 200359,
+      "timestamp": "2019-07-23T02:28:33Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "060.html",
+          "extract": "body",
+          "sha256": "b8607743c224c5bbe6e5828cfb87064cefd50c78b18767aecf94b7caa0602478"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/깊고 깊은 언약",
+      "revid": 200832,
+      "timestamp": "2019-08-07T14:24:42Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "061.html",
+          "extract": "body",
+          "sha256": "7565d287fc6c501d068981bb56491ad9dedadba3cf5683062945e7ea3bd6d2ed"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/붉은 조수",
+      "revid": 200282,
+      "timestamp": "2019-07-21T05:44:30Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "062.html",
+          "extract": "body",
+          "sha256": "0f316c0381519a06e4c90002aa0b323f63b72ebc794aeeb3a9670bae6673835b"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/남의 나라 땅",
+      "revid": 150989,
+      "timestamp": "2016-04-01T01:43:46Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "063.html",
+          "extract": "body",
+          "sha256": "27e294c7a5f972ebcc2e0aeb13dcfc23f0f615d7846969c2bd05e1f49cf810aa"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/천리만리",
+      "revid": 200283,
+      "timestamp": "2019-07-21T05:55:39Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "064.html",
+          "extract": "body",
+          "sha256": "e73e5d0ddd78d791f675240cef250d193b7044295a1b29505b46960af806ba97"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/생과 사",
+      "revid": 150985,
+      "timestamp": "2016-04-01T01:42:55Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "065.html",
+          "extract": "body",
+          "sha256": "4651945fb140db17389ce3618412d01533308f0454040cca3a671c1ad89e6a68"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/어인",
+      "revid": 200949,
+      "timestamp": "2019-08-15T07:53:10Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "066.html",
+          "extract": "body",
+          "sha256": "521f1d3abc25ca2516c274026b960c52320943fb30f1683193d6101a7ac81b19"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/귀뚜라미",
+      "revid": 200286,
+      "timestamp": "2019-07-21T06:01:56Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "067.html",
+          "extract": "body",
+          "sha256": "6b73a8c91aec01ddc2126f4d19788f9171d8ffd9046ac26eb9e6214cc356acfc"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/월색",
+      "revid": 200287,
+      "timestamp": "2019-07-21T06:04:37Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "068.html",
+          "extract": "body",
+          "sha256": "d30d38e5cb37bcc46da5d06c347da588da53e16e1c986b2ca4803819dfcd2f7a"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/불운에 우는 그대여",
+      "revid": 200300,
+      "timestamp": "2019-07-22T01:58:12Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "069.html",
+          "extract": "body",
+          "sha256": "3d0a7552dfb42151000577b4d5005818daa80befb157e900e70dcbe0ce6d28b0"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/바다가 변하야 뽕나무밭 된다고",
+      "revid": 200364,
+      "timestamp": "2019-07-23T02:36:22Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "070.html",
+          "extract": "body",
+          "sha256": "1af31357d98396a1b77fbaac726ade559d22042cd8a58e128f276929182fac41"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/황촉불",
+      "revid": 200304,
+      "timestamp": "2019-07-22T02:04:44Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "071.html",
+          "extract": "body",
+          "sha256": "9b2cb1e20cce61b835599cb86e6a5b9459713f3490aafc82f7c5f6d93d793f97"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/맘에 있는 말이라고 다 할까 보냐",
+      "revid": 200532,
+      "timestamp": "2019-07-28T01:08:12Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "072.html",
+          "extract": "body",
+          "sha256": "41e6a2b20b03b99259e4672b8170c67b728a49efacdae308a32e99f7870c9c85"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/훗길",
+      "revid": 200307,
+      "timestamp": "2019-07-22T02:12:50Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "073.html",
+          "extract": "body",
+          "sha256": "a147d275b6ed9f2073d443723c1b25f3a891b246da0e53bac4ccfcecd8284911"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/부부",
+      "revid": 200308,
+      "timestamp": "2019-07-22T02:14:30Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "074.html",
+          "extract": "body",
+          "sha256": "a023f197bfd15705608ecb9fa0611794bdc4ff0f24946a5150d02cc30c0e9faa"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/나의 집",
+      "revid": 200309,
+      "timestamp": "2019-07-22T02:16:24Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "075.html",
+          "extract": "body",
+          "sha256": "f2a1d7183f0e60b90751d305179f5523ad8150dc45b21d49b22c78b79e48a7f0"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/새벽",
+      "revid": 202023,
+      "timestamp": "2019-10-08T09:45:28Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "076.html",
+          "extract": "body",
+          "sha256": "8d29fc6501d38122eebf691de8d95040505f0cd2ab1141a418d12db4cb752240"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/구름",
+      "revid": 200312,
+      "timestamp": "2019-07-22T02:23:23Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "077.html",
+          "extract": "body",
+          "sha256": "85a7523ce7afba8f47db8b5908efde0ccd3fb37e8d900e6b0707fc31f4cd9b20"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/여름의 달밤",
+      "revid": 200921,
+      "timestamp": "2019-08-13T09:59:21Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "078.html",
+          "extract": "body",
+          "sha256": "68a298b65cbfa24438d059356cdc48f5bc247f0851182363064c0cbd309e7259"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/오는 봄",
+      "revid": 200489,
+      "timestamp": "2019-07-24T22:42:10Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "079.html",
+          "extract": "body",
+          "sha256": "b9c51260117b1c91c391badeca9407ec34fa6486b44852f5536c6df8ea8e91ab"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/물마름",
+      "revid": 202010,
+      "timestamp": "2019-10-06T02:59:35Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "080.html",
+          "extract": "body",
+          "sha256": "96cbef0f8f070c5329a54dfe537124fbb5893f3111a1887c9085adb32fc5ea4e"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/우리 집",
+      "revid": 203674,
+      "timestamp": "2019-11-27T12:03:07Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "081.html",
+          "extract": "body",
+          "sha256": "6a0b5465545c6dc79fa94cc9e56b9e8b9555ab9466c719fab92033cca12d2774"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/들돌이",
+      "revid": 203666,
+      "timestamp": "2019-11-27T12:02:42Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "082.html",
+          "extract": "body",
+          "sha256": "0cbe6144c2d7fd7591b91c0ab4f6dea22f19c19adfe4cef38f26a22120129ab5"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/바리운 몸",
+      "revid": 203667,
+      "timestamp": "2019-11-27T12:02:46Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "083.html",
+          "extract": "body",
+          "sha256": "ad53bda714dd1c93e7a99827909345c6471b06dba5dda4e88ae9c98ab4970a05"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/엄숙",
+      "revid": 203668,
+      "timestamp": "2019-11-27T12:02:49Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "084.html",
+          "extract": "body",
+          "sha256": "5585f2d8eec197129b3561373a52fa108726d4eeb87319cf8b604d6621423303"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/바라건대는 우리에게 우리의 보습 대일 땅이 있었더면",
+      "revid": 217777,
+      "timestamp": "2021-01-23T08:24:39Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "085.html",
+          "extract": "body",
+          "sha256": "460f1a0ef69be8d7b939154b5f952aaab5395275ecd3f9d94e4dd8876aadaac1"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/밭고랑 위에서",
+      "revid": 203670,
+      "timestamp": "2019-11-27T12:02:54Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "086.html",
+          "extract": "body",
+          "sha256": "45a773074685efea4d41059bb9869cde5c06b6e5af12d791152ffc2e41addeb6"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/저녁때",
+      "revid": 203671,
+      "timestamp": "2019-11-27T12:02:57Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "087.html",
+          "extract": "body",
+          "sha256": "a9c31d1ed7b18d11556cda2e1f1eef1d9b750ab3417bef463efdcdf1f4b57575"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/합장",
+      "revid": 203672,
+      "timestamp": "2019-11-27T12:03:01Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "088.html",
+          "extract": "body",
+          "sha256": "9232fab4b7da980c30d716331a0e646c22be958cc9cea581f08d610470f63298"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/묵념",
+      "revid": 203673,
+      "timestamp": "2019-11-27T12:03:03Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "089.html",
+          "extract": "body",
+          "sha256": "f650f4a4fc0645dd2e3705f967771f05a0bf4174ad9c3c00ecaa93dc0404b7ee"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/열락",
+      "revid": 203675,
+      "timestamp": "2019-11-27T12:03:28Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "090.html",
+          "extract": "body",
+          "sha256": "658050c309c35693520da6a3b6d013c8bed06322cce55fd993b02a7e031ba6bb"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/무덤",
+      "revid": 203676,
+      "timestamp": "2019-11-27T12:03:32Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "091.html",
+          "extract": "body",
+          "sha256": "e18d38068fd49fe05dd06e9049ae18c92ee29fb7845bfc9172f97fe1d6c8a293"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/비난수 하는 맘",
+      "revid": 203677,
+      "timestamp": "2019-11-27T12:03:35Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "092.html",
+          "extract": "body",
+          "sha256": "e19535e70f6240dfbaa2d30b9302dc0af5c41303118a0f222efaf7b8f86aaf6f"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/찬 저녁",
+      "revid": 203678,
+      "timestamp": "2019-11-27T12:03:38Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "093.html",
+          "extract": "body",
+          "sha256": "a8083826a01ba21ebba72c8b28eb2c6e4ac21aa1ce568d52da95d9dec65bdb84"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/초혼",
+      "revid": 203679,
+      "timestamp": "2019-11-27T12:03:40Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "094.html",
+          "extract": "body",
+          "sha256": "576b71a0e23457923918491e39f39e79afae7f2586508576b1465ad47df5694a"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/여수",
+      "revid": 430587,
+      "timestamp": "2026-06-15T14:54:26Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "095.html",
+          "extract": "body",
+          "sha256": "74933ada40c8e76e1d28364a8353869557fd1b97af7010a8363c668ce19afe5c"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/개여울의 노래",
+      "revid": 203681,
+      "timestamp": "2019-11-27T12:04:38Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "096.html",
+          "extract": "body",
+          "sha256": "a16619c0a8909081b75414c5ee01fcc99e0c0363fe5be1ea3997214d8f97773f"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/길",
+      "revid": 203682,
+      "timestamp": "2019-11-27T12:04:44Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "097.html",
+          "extract": "body",
+          "sha256": "56fdeda18bf349cd120560a1078a14b7e497acef25ee51ca46fe69edd57680be"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/개여울",
+      "revid": 203683,
+      "timestamp": "2019-11-27T12:04:54Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "098.html",
+          "extract": "body",
+          "sha256": "20da605fd95a7a9dd236b01d4babf07d78af06dccbd9977ce63f5feb8f62f419"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/가는 길",
+      "revid": 203684,
+      "timestamp": "2019-11-27T12:05:03Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "099.html",
+          "extract": "body",
+          "sha256": "d1c1245b06e1ec0859045c2a8833c44c51b7dc8eb9c5a27da33f01674a366255"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/왕십리",
+      "revid": 203685,
+      "timestamp": "2019-11-27T12:05:09Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "100.html",
+          "extract": "body",
+          "sha256": "1a77c8357846e16fca592cc2c585724f37d6cf8632a6a17f2aed84b2af386280"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/원앙침",
+      "revid": 203686,
+      "timestamp": "2019-11-27T12:05:11Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "101.html",
+          "extract": "body",
+          "sha256": "43ab26dedf5f606a99be1705a792d52472c079a27f288b069e2fc6c68c59c24a"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/무심",
+      "revid": 203687,
+      "timestamp": "2019-11-27T12:05:15Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "102.html",
+          "extract": "body",
+          "sha256": "3b78434c61c120ec62bb5b35ef3fa9bde06bef46ddba00b0b6bdab4b406c6fb6"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/산",
+      "revid": 203688,
+      "timestamp": "2019-11-27T12:05:22Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "103.html",
+          "extract": "body",
+          "sha256": "b15bf05b206316a93251140c4561472596521a8251b2885b0edf4271c502d411"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/진달래꽃",
+      "revid": 430575,
+      "timestamp": "2026-06-15T14:53:59Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "104.html",
+          "extract": "body",
+          "sha256": "5d113d66d72d3cd7b97c5ed36cb36f0a9d18cb86ffebc3d0ffdab97a60c3be80"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/삭주구성",
+      "revid": 203690,
+      "timestamp": "2019-11-27T12:05:32Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "105.html",
+          "extract": "body",
+          "sha256": "ac407578e15b6112bcb062d628ea232e3b70d5306cb5df1c71345d0a5e06fd40"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/널",
+      "revid": 203691,
+      "timestamp": "2019-11-27T12:05:48Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "106.html",
+          "extract": "body",
+          "sha256": "d598933dab8d885a0a25cdc5efbd15b6e0c10e23e2d0e24609db80c1b1af80a6"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/춘향과 이도령",
+      "revid": 203692,
+      "timestamp": "2019-11-27T12:05:50Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "107.html",
+          "extract": "body",
+          "sha256": "2c0ceafc91a946d49aff21038bc9e29f8a94f30acaacc7d4df86a745fad344e8"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/접동새",
+      "revid": 430975,
+      "timestamp": "2026-06-15T15:20:49Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "108.html",
+          "extract": "body",
+          "sha256": "e743abd8df5f13709090e9eb51a31b138f906a85ab6d54ef817556e201f4861e"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/집생각",
+      "revid": 203694,
+      "timestamp": "2019-11-27T12:05:57Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "109.html",
+          "extract": "body",
+          "sha256": "7c46880a29a242ccaba22e8b0b59bf8d22a6f8d855b96cb80f092cf85aeb25ac"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/산유화",
+      "revid": 430577,
+      "timestamp": "2026-06-15T14:54:03Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "110.html",
+          "extract": "body",
+          "sha256": "2dc725e86af12a209cf53636f9b81f348b0e9e199365e59e435c43d73548ec6f"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/꽃촉불 켜는 밤",
+      "revid": 203746,
+      "timestamp": "2019-11-30T11:19:33Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "111.html",
+          "extract": "body",
+          "sha256": "2c7671042ca9c9d86656e346f03695c1325997c7ee89f3087915150540233648"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/부귀공명",
+      "revid": 203747,
+      "timestamp": "2019-11-30T11:19:37Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "112.html",
+          "extract": "body",
+          "sha256": "9a21569a282c3d285d6214db53aeb643b12d56cc1f52d8274d35de106a4a4c44"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/추회",
+      "revid": 203748,
+      "timestamp": "2019-11-30T11:19:39Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "113.html",
+          "extract": "body",
+          "sha256": "dad2570b2e83452ac0495bab9dfd3777427ea01253a76b4ff8ef55ca9806ee0b"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/무신",
+      "revid": 203749,
+      "timestamp": "2019-11-30T11:19:42Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "114.html",
+          "extract": "body",
+          "sha256": "c929311c4f8f771773d881dd004043dc665f6f13e9fb0936128e42090fbb0f30"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/꿈길",
+      "revid": 203750,
+      "timestamp": "2019-11-30T11:19:46Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "115.html",
+          "extract": "body",
+          "sha256": "e307e8e5ad7f918df9bea6430d33a79afe4762e4e41d2dd9087d429e83a6e5d8"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/사노라면 사람은 죽는 것을",
+      "revid": 203751,
+      "timestamp": "2019-11-30T11:19:48Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "116.html",
+          "extract": "body",
+          "sha256": "8817cfc9ddeaf1362e7f0d1d6ddf14c330e5aec6318e7838e0c6aaa5de6fe92b"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/하다못해 죽어 달려가 올라",
+      "revid": 203752,
+      "timestamp": "2019-11-30T11:19:51Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "117.html",
+          "extract": "body",
+          "sha256": "734b88d5182aac2e20d6e03cc634811785bc3730ff68f9e4d98830ad36bd39e4"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/희망",
+      "revid": 203753,
+      "timestamp": "2019-11-30T11:19:54Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "118.html",
+          "extract": "body",
+          "sha256": "16046856271d70d6245261dee4857e70e8094089d149408489d0aef15a814276"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/전망",
+      "revid": 203754,
+      "timestamp": "2019-11-30T11:19:57Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "119.html",
+          "extract": "body",
+          "sha256": "5486dc22eccd6095b87264b8455dddc326c32ae5d3b66857251bd187f4bfb3d5"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/나는 세상모르고 살았노라",
+      "revid": 203756,
+      "timestamp": "2019-11-30T11:20:21Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "120.html",
+          "extract": "body",
+          "sha256": "a2012e36b5497107e750ec1d369831d9c894016b829a0ec1c4bf1eec87b29ce5"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/금잔디",
+      "revid": 204518,
+      "timestamp": "2020-01-12T04:24:33Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "121.html",
+          "extract": "body",
+          "sha256": "0ce9e1e52ec3ba5546dbd2450a73e9f433d873ce4e770779dac8bd254ed7d7d7"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/강촌",
+      "revid": 203758,
+      "timestamp": "2019-11-30T11:20:45Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "122.html",
+          "extract": "body",
+          "sha256": "5d9b4ab01690c73aa2db6d214b2c55229987aa3e1dcf4dad9c30a3a8e2eab38f"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/첫 치마",
+      "revid": 203759,
+      "timestamp": "2019-11-30T11:20:47Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "123.html",
+          "extract": "body",
+          "sha256": "02efd173918594a0f4b50de7aaa5dc7a57f3b2fc3fcbe0a35318a293fe1800cf"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/달맞이",
+      "revid": 430599,
+      "timestamp": "2026-06-15T14:55:06Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "124.html",
+          "extract": "body",
+          "sha256": "6d3907823f638d0a4133e9021fc3c4428d4a6da4c27f998051070c8968461fb1"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/엄마야 누나야",
+      "revid": 203761,
+      "timestamp": "2019-11-30T11:20:55Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "125.html",
+          "extract": "body",
+          "sha256": "f378443466a03b727bcb6f933918b7566ee4e6ed4f3eb33468eaa393eb7b6ed9"
+        }
+      ]
+    },
+    {
+      "page": "진달래꽃 (시집)/닭은 꼬꾸요",
+      "revid": 203762,
+      "timestamp": "2019-11-30T11:20:58Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "126.html",
+          "extract": "body",
+          "sha256": "4773b9f26d4d00e52ad757f099a84b8d8ebc5a810184d78a71970c0f5b36ffdf"
+        }
+      ]
+    }
+  ]
+}

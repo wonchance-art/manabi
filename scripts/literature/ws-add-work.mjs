@@ -61,6 +61,21 @@ export function extractFragment(html) {
       body = body.slice(0, at) + body.slice(at + block.length);
     }
   }
+  // 한국어 시집(진달래꽃 1925): 「현대어 | 원문」 두 칸 표 — 원문 칸은 옛한글(ᄭᅩᆺ 등)이라 읽기·분석에 쓰지 않고 현대어 칸만 남긴다.
+  // 「옛한글을 포함하고 있습니다」 안내 상자(messagebox)도 본문이 아니다.
+  body = body.replace(/<table class="messagebox"[\s\S]*?<\/table>\n?/gu, '');
+  body = body.replace(/<table class="multicol"[\s\S]*?<\/table>/gu, (table) => {
+    const modern = /<td\b[^>]*>\s*<p><b>현대어<\/b>\s*<\/p>([\s\S]*?)<\/td>/u.exec(table);
+    if (!modern) throw new Error('두 칸 표에서 현대어 칸을 찾지 못했다');
+    return modern[1];
+  });
+  // 같은 두 칸을 표 대신 나란한 div 두 개로 둔 쪽(먼 후일 등) — 「원문」 칸 div를 통째로 빼고 「현대어」 머리글만 걷는다
+  for (let at = body.search(/<div style="[^"]*float:left[^"]*">\s*<center><b>원문<\/b>/u); at >= 0; at = body.search(/<div style="[^"]*float:left[^"]*">\s*<center><b>원문<\/b>/u)) {
+    const block = balancedDiv(body, at);
+    if (!block) throw new Error('원문 칸 div를 닫지 못했다');
+    body = body.slice(0, at) + body.slice(at + block.length);
+  }
+  body = body.replace(/<center><b>현대어<\/b>\s*<\/center>\n?/gu, '');
   // 본문 뒤 꼬리 제목(한국어 위키문헌 「바깥 고리」 · 「라이선스」 — 저작권 틀 위 h1/h2)은 본문이 아니다
   body = body.replace(/<div class="mw-heading mw-heading[1-6]"><h([1-6]) id="(?:라이선스|바깥_고리)">[\s\S]*?<\/h\1><\/div>\n?/gu, '');
   return { extract: 'body', html: body };
@@ -105,26 +120,35 @@ async function main() {
 
   const out = path.join(ROOT, key);
   mkdirSync(path.join(out, 'source'), { recursive: true });
+  const entryPath = path.join(out, 'entry.json');
+  const previous = existsSync(entryPath) ? JSON.parse(readFileSync(entryPath, 'utf8')) : {};
   const files = [];
+  // 받는 중에 끊겨도 이어 갈 수 있게 쪽마다 진행을 entry.json에 적는다(--resume이 읽는다)
+  const progress = () => writeFileSync(entryPath, `${JSON.stringify({ ...previous, files: [...files] }, null, 2)}\n`);
   for (const [index, title] of titles.entries()) {
     const revision = revisions.get(title);
     if (!revision) throw new Error(`판 번호가 없다: ${title}`);
     const stem = String(index + 1).padStart(3, '0');
     const page = { page: title, revid: revision.revid, timestamp: revision.timestamp, variants: [] };
     for (const variant of variants.length ? variants : [null]) {
+      const file = `${stem}${variant ? `.${variant}` : ''}.html`;
+      // --resume: 한도(429)로 끊긴 받기를 이어 간다 — 이번에 이미 저장한 쪽 조각은 다시 받지 않는다(판 번호는 위에서 새로 받았다)
+      if (args.includes('--resume') && existsSync(path.join(out, 'source', file)) && previous.files?.some((item) => item.page === title && item.revid === revision.revid)) {
+        const kept = readFileSync(path.join(out, 'source', file), 'utf8');
+        page.variants.push({ variant, path: file, extract: previous.files.find((item) => item.page === title).variants.find((item) => item.path === file)?.extract ?? 'body', sha256: sha256(kept) });
+        continue;
+      }
       const { extract, html } = extractFragment(await get(render(title, variant)));
       if (!html) throw new Error(`본문 조각을 닫지 못했다: ${title}`);
-      const file = `${stem}${variant ? `.${variant}` : ''}.html`;
       writeFileSync(path.join(out, 'source', file), `${html}\n`);
       page.variants.push({ variant, path: file, extract, sha256: sha256(`${html}\n`) });
       process.stdout.write(`  ${file} ← ${title}${variant ? ` (${variant})` : ''}\n`);
       await sleep(1000);
     }
     files.push(page);
+    if (args.includes('--resume')) progress();
   }
 
-  const entryPath = path.join(out, 'entry.json');
-  const previous = existsSync(entryPath) ? JSON.parse(readFileSync(entryPath, 'utf8')) : {};
   const entry = {
     schemaVersion: 1,
     provider: 'wikisource',
@@ -137,6 +161,7 @@ async function main() {
     countryOfOrigin: previous.countryOfOrigin ?? null, mortPourLaFrance: previous.mortPourLaFrance ?? null,
     rights: previous.rights ?? { status: 'pending', basis: 'public-domain', reviewedJurisdictions: [], reviewer: null, reviewedAt: null },
     display: previous.display ?? {},
+    ...(args.includes('--collection') || previous.collection ? { collection: true } : {}), // 시집 — 시 한 편 = 쪽 하나(빌드가 이어 묶는다)
     fetchedAt: new Date().toISOString().slice(0, 10),
     files,
   };

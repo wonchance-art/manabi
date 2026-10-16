@@ -1,4 +1,0 @@
-/* 중국어·프랑스어 정본 책 표지 「초판 장정」(LIT-SRC-WS-1) — 서재 표지 규격 60×84(.lit-cover · .vic-cover와 같다). 책은 물건이라 테마를 따라 바뀌지 않는다.
-   바탕·테·글자는 모두 SVG 한 장(WikisourceCover.jsx) — 장정마다 초판 앞표지의 자리를 따른다. */
-.ws-cover{--ws-ground:#b5462f;display:block;width:60px;height:84px;flex:none;position:relative;background:var(--ws-ground);border-radius:1px 2px 2px 1px;overflow:hidden;box-shadow:inset 3px 0 0 color-mix(in srgb,#000 12%,transparent)}
-.ws-cover__art{position:absolute;inset:0;width:100%;height:100%;display:block}

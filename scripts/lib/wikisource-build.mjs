@@ -53,12 +53,12 @@ export function createWikisourceManifest(entries) {
 }
 
 /**
- * @param {{root?: string, check?: boolean, validateCover?: (display) => object}} options — validateCover 기본은 초판 장정 표기 검사(wikisourceCover)
+ * @param {{root?: string, check?: boolean, validateCover?: (display) => object}} options — validateCover 기본은 초판 장정 표기 검사(firstEditionCover)
  * @returns {Promise<{works: Array<{key, chapters, status}>, errors: string[]}>}
  */
 export async function buildWikisource({ root = WIKISOURCE_ROOT, check = false, validateCover = null } = {}) {
   const { createWikisourceDraft } = await import('../../src/lib/wikisource.js');
-  const validate = validateCover ?? (await import('../../src/lib/wikisourceCover.js')).validateWikisourceDisplay;
+  const validate = validateCover ?? (await import('../../src/lib/firstEditionCover.js')).validateFirstEditionDisplay;
   const works = [];
   const errors = [];
   if (!existsSync(root)) return { works, errors };

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "provider": "standardebooks",
+  "repo": "standardebooks/james-joyce_a-portrait-of-the-artist-as-a-young-man",
+  "commit": "e0e2424279c6465074eff58b4a5238d210a99de4",
+  "url": "https://standardebooks.org/ebooks/james-joyce/a-portrait-of-the-artist-as-a-young-man",
+  "title": "A Portrait of the Artist as a Young Man",
+  "author": "James Joyce",
+  "publishedYear": 1916,
+  "authorDeathYear": 1941,
+  "countryOfOrigin": "IE",
+  "level": "C1 고급",
+  "display": {
+    "titleKo": "젊은 예술가의 초상",
+    "authorKo": "제임스 조이스"
+  },
+  "files": [
+    {
+      "path": "chapter-1.xhtml",
+      "sha256": "050106d98a37b5b55f794163682d8f78ac5361e5936c7592c7bc81a349c69df0"
+    },
+    {
+      "path": "chapter-2.xhtml",
+      "sha256": "4e8c4fe88e362857b2d7bb502d11b2912a9fd10dca65d127e3c1e36247304701"
+    },
+    {
+      "path": "chapter-3.xhtml",
+      "sha256": "4bd5945a5e0ef7d880abb4978098aa7423f8bd7b79254184a6bcf4f58cc4fa26"
+    },
+    {
+      "path": "chapter-4.xhtml",
+      "sha256": "a3070a6e72373bebfc6802bcba77f462603186c2b82fd26e13be4e77eb2f0d1a"
+    },
+    {
+      "path": "chapter-5.xhtml",
+      "sha256": "88dbb8890896c074995841fbc709cc7f870d0f860882a880c3c4c6fc50d0e637"
+    }
+  ],
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-17",
+    "reviewedJurisdictions": [
+      "IE",
+      "KR"
+    ],
+    "evidenceUrl": "https://standardebooks.org/ebooks/james-joyce/a-portrait-of-the-artist-as-a-young-man"
+  }
+}

@@ -74,17 +74,18 @@ describe('splitBlocksByWords — 문단 경계로 고르게', () => {
 describe('권리 선(원산국 만료 — 한국은 상호주의 · 미국 선은 미국 원산에만) — 검토 연도 기준, 결정적', () => {
   const base = { publishedYear: 1865, authorDeathYear: 1898, countryOfOrigin: 'GB', rights: { reviewedAt: '2026-10-16' } };
   it('2026년 검토: 영국 원산은 1955년 이전 사망만(출판 연도로 막지 않는다) · 미국 원산은 1930년 이전 출판', () => {
-    expect(standardEbooksRightsVerdict(base)).toEqual({ ok: true, reasons: [], reviewYear: 2026 });
+    expect(standardEbooksRightsVerdict(base)).toEqual({ ok: true, reasons: [], reviewYear: 2026, basis: 'korea-term' });
     expect(standardEbooksRightsVerdict({ ...base, authorDeathYear: 1955 }).ok).toBe(true);
-    expect(standardEbooksRightsVerdict({ ...base, authorDeathYear: 1956 }).reasons).toEqual(['작가 1956 사망 — 영국 보호기간(사후 70년)이 끝나지 않았다']);
+    expect(standardEbooksRightsVerdict({ ...base, authorDeathYear: 1956 }).ok).toBe(true); // 영국은 보호 중이어도 한국은 1962년 이전 사망 만료
+    expect(standardEbooksRightsVerdict({ ...base, authorDeathYear: 1970 }).reasons).toEqual(['작가 1970 사망 — 한국 보호기간이 끝나지 않았다(1962년 이전 사망 또는 사후 70년)', '작가 1970 사망 — 원산국 보호기간(사후 70년)이 끝나지 않았다']);
     expect(standardEbooksRightsVerdict({ ...base, publishedYear: 1940, authorDeathYear: 1950 }).ok).toBe(true); // 미국 선 없음(오너 2026-10-17)
-    const us = { ...base, countryOfOrigin: 'US' };
-    expect(standardEbooksRightsVerdict({ ...us, publishedYear: 1930 }).ok).toBe(true);
-    expect(standardEbooksRightsVerdict({ ...us, publishedYear: 1931 }).ok).toBe(false); // 미국 원산 — 본국 보호 중
+    const us = { ...base, countryOfOrigin: 'US', authorDeathYear: 1970 };
+    expect(standardEbooksRightsVerdict({ ...us, publishedYear: 1930 }).ok).toBe(true); // 미국 원산 — 본국 출판 95년 만료
+    expect(standardEbooksRightsVerdict({ ...us, publishedYear: 1931 }).ok).toBe(false); // 본국 보호 중 · 한국도 보호 중(1970 사망)
   });
   it('번역본·판정 규칙 없는 원산국(프랑스 전쟁 연장 등)·기록 누락은 불가(fail-closed)', () => {
     expect(standardEbooksRightsVerdict({ ...base, translator: 'X' }).ok).toBe(false);
-    expect(standardEbooksRightsVerdict({ ...base, countryOfOrigin: 'FR' }).ok).toBe(false);
+    expect(standardEbooksRightsVerdict({ ...base, countryOfOrigin: 'DE', authorDeathYear: 1990 }).ok).toBe(false);
     expect(standardEbooksRightsVerdict({ ...base, rights: {} }).ok).toBe(false);
     expect(standardEbooksRightsVerdict({ ...base, authorDeathYear: undefined }).ok).toBe(false);
   });
@@ -94,10 +95,15 @@ describe('리포 정본 3편 — 산출물·장 모양', () => {
   it('build-literature --check와 같은 검사가 통과한다(원문 해시·chapters.json·목록·대조표)', async () => {
     const { works, errors } = await buildStandardEbooks({ root: STANDARD_EBOOKS_ROOT, check: true });
     expect(errors).toEqual([]);
-    expect(works.map((work) => [work.key, work.chapters])).toEqual([
+    expect(works.filter((work) => work.status !== 'cover-pending').map((work) => [work.key, work.chapters])).toEqual([
       ['se-arthur-conan-doyle_the-adventures-of-sherlock-holmes', 47],
       ['se-charles-dickens_a-christmas-carol', 13],
       ['se-lewis-carroll_alices-adventures-in-wonderland', 12],
+    ]);
+    // 2차 묶음(오너 2026-10-17 KST) — 원문·권리는 검사를 마쳤고 표지 표기를 기다린다(목록·대조표에 아직 없음)
+    expect(works.filter((work) => work.status === 'cover-pending').map((work) => work.key)).toEqual([
+      'se-f-scott-fitzgerald_the-great-gatsby', 'se-henry-david-thoreau_walden', 'se-herman-melville_moby-dick',
+      'se-james-joyce_a-portrait-of-the-artist-as-a-young-man', 'se-jane-austen_pride-and-prejudice',
     ]);
   });
 
@@ -154,7 +160,7 @@ describe('뷰어 대조·출처 줄 · 게시', () => {
   it('출처 줄 재료 — 작가·출판 연도·퍼블릭 도메인(승인일 때만)·판 링크(standardebooks.org HTTPS만)·바꾼 점', () => {
     const literature = manifest.works[book.book.key].literature;
     expect(standardEbooksAttributionParts(literature)).toEqual({
-      author: 'Lewis Carroll', publishedYear: 1865, url: 'https://standardebooks.org/ebooks/lewis-carroll/alices-adventures-in-wonderland/john-tenniel', publicDomain: true, editNote: true,
+      author: 'Lewis Carroll', publishedYear: 1865, url: 'https://standardebooks.org/ebooks/lewis-carroll/alices-adventures-in-wonderland/john-tenniel', publicDomain: true, editNote: true, notesNote: false,
     });
     expect(standardEbooksAttributionParts({ ...literature, url: 'javascript:alert(1)' }).url).toBe('');
     expect(standardEbooksAttributionParts({ ...literature, rights: { status: 'reviewing' } }).publicDomain).toBe(false);

@@ -1,0 +1,435 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "ko",
+  "key": "ws-ko-yun-dong-ju_haneulgwa-baramgwa-byeolgwa-si",
+  "main": "하늘과 바람과 별과 시 (1948년)",
+  "url": "https://ko.wikisource.org/wiki/%ED%95%98%EB%8A%98%EA%B3%BC_%EB%B0%94%EB%9E%8C%EA%B3%BC_%EB%B3%84%EA%B3%BC_%EC%8B%9C_(1948%EB%85%84)",
+  "title": "하늘과 바람과 별과 시",
+  "author": "윤동주",
+  "level": "고급",
+  "publishedYear": 1948,
+  "authorDeathYear": 1945,
+  "countryOfOrigin": "KR",
+  "mortPourLaFrance": null,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "하늘과 바람과 별과 시",
+    "authorKo": "윤동주"
+  },
+  "collection": true,
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/서시",
+      "revid": 387685,
+      "timestamp": "2025-04-25T03:11:37Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "prp",
+          "sha256": "1253efe57528abe9e74e44c94343b081fc5145335551afc4bfbb599d8e0abe17"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/자화상",
+      "revid": 387749,
+      "timestamp": "2025-04-25T11:50:45Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "002.html",
+          "extract": "prp",
+          "sha256": "e225d421e09bd4a380a63de9bf34874bb783d4eafbb56c3c0accd132d5906515"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/소년",
+      "revid": 387750,
+      "timestamp": "2025-04-25T11:54:35Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "003.html",
+          "extract": "prp",
+          "sha256": "4223e9229fad8c700f70f3fd377be4705c316271ce01335d7df0520aa0fe2636"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/눈 오는 지도",
+      "revid": 387751,
+      "timestamp": "2025-04-25T11:56:56Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "004.html",
+          "extract": "prp",
+          "sha256": "941be00dc522787af126fad8e67aa963ec14eebf68f03577bb9b07e7ef757bf7"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/돌아와 보는 밤",
+      "revid": 387752,
+      "timestamp": "2025-04-25T12:00:53Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "005.html",
+          "extract": "prp",
+          "sha256": "79b777c61e3227d633857904d6f27c781c67f0f7685c85a050e6dbe5fffa5a1e"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/병원",
+      "revid": 387755,
+      "timestamp": "2025-04-25T12:15:13Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "006.html",
+          "extract": "prp",
+          "sha256": "00127c7231ccdf4e0bf62c31fb52f2f781a98d406186ba622c10abab0f661cc5"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/새로운 길",
+      "revid": 387756,
+      "timestamp": "2025-04-25T12:16:54Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "007.html",
+          "extract": "prp",
+          "sha256": "2724d1fa66f70a9ee96766dcde4ce1723602d529c3edd0a3b02d248a4ba9cad6"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/간판 없는 거리",
+      "revid": 387757,
+      "timestamp": "2025-04-25T12:19:56Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "008.html",
+          "extract": "prp",
+          "sha256": "51f1b34c88b4dbaa7b05377026133bd78674f76e2d2f4287e3ebdaf4069dc05a"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/태초의 아침",
+      "revid": 387758,
+      "timestamp": "2025-04-25T12:24:10Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "009.html",
+          "extract": "prp",
+          "sha256": "407ff2f18231b434ab3bc50759562fd8f43bf701691c0200e18f7e7792aad50f"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/또 태초의 아침",
+      "revid": 387759,
+      "timestamp": "2025-04-25T12:27:39Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "010.html",
+          "extract": "prp",
+          "sha256": "35afd1e8444a6e70cc52d0f1929d1b46fcf097cd349defd895ee279f90350cdb"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/새벽이 올 때까지",
+      "revid": 387760,
+      "timestamp": "2025-04-25T12:29:52Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "011.html",
+          "extract": "prp",
+          "sha256": "9a0fc20abca1e7dac451f1e0cac130325c246fd1f3d39c2f562795c437a9fa27"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/무서운 시간",
+      "revid": 387761,
+      "timestamp": "2025-04-25T12:31:10Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "012.html",
+          "extract": "prp",
+          "sha256": "23b2d7f4938b789aa49c7b35dc4e0a93ae4f4f8e4b8e2840c455167cbf05352b"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/십자가",
+      "revid": 387762,
+      "timestamp": "2025-04-25T12:31:48Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "013.html",
+          "extract": "prp",
+          "sha256": "17fbc817032d1fd805a8d8d13817bd7e8b6c9d1bb168328e7e7090baf0761969"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/바람이 불어",
+      "revid": 387763,
+      "timestamp": "2025-04-25T12:32:57Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "014.html",
+          "extract": "prp",
+          "sha256": "39603997ff3e4bc2824cb101855f227171cec436136ce12450aac1de22999351"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/슬픈 족속",
+      "revid": 387764,
+      "timestamp": "2025-04-25T12:34:27Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "015.html",
+          "extract": "prp",
+          "sha256": "25576808d35cd7222c69119a478ecd6e55c93328e6240c64817208e88c69001f"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/눈감고 간다",
+      "revid": 387766,
+      "timestamp": "2025-04-25T12:35:52Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "016.html",
+          "extract": "prp",
+          "sha256": "38e162f468643052025638e63ebcdedd02007d36bb3763eed00c80f1a06be5b5"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/또 다른 고향",
+      "revid": 387767,
+      "timestamp": "2025-04-25T12:36:49Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "017.html",
+          "extract": "prp",
+          "sha256": "92fb862a4ffc860cacdbe74ef8a1ce62ba7bc0f7de5210dff20bc3669ab0d3e4"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/길",
+      "revid": 387768,
+      "timestamp": "2025-04-25T12:38:15Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "018.html",
+          "extract": "prp",
+          "sha256": "cd38a46d8acde5cb05c3d558494bc06fe85581dd315280730ef30dfa54567b72"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/별 헤는 밤",
+      "revid": 387769,
+      "timestamp": "2025-04-25T12:40:11Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "019.html",
+          "extract": "prp",
+          "sha256": "354086c3d86f435bf0198ab2c486c942e5b75da5819e8c182a9ff315a2ccfc7b"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/흰 그림자",
+      "revid": 387783,
+      "timestamp": "2025-04-25T13:49:04Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "020.html",
+          "extract": "prp",
+          "sha256": "58df076cd55540d90a4dc50ecf35c37cc85116681990f8835ce32186cdf660a3"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/사랑스런 추억",
+      "revid": 387784,
+      "timestamp": "2025-04-25T13:50:33Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "021.html",
+          "extract": "prp",
+          "sha256": "559bd64719d0b5fb2d1af0ec33c7bef4446eed61018197ba185ec19fd95143e8"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/흐르는 거리",
+      "revid": 387785,
+      "timestamp": "2025-04-25T13:51:39Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "022.html",
+          "extract": "prp",
+          "sha256": "b7fa787a2e3c8ad613beab7944630f7139edca65d2fb2b454d838cffa6bf215d"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/쉽게 씨워진 시",
+      "revid": 387786,
+      "timestamp": "2025-04-25T13:52:29Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "023.html",
+          "extract": "prp",
+          "sha256": "77b1dd1f71f95e6d4730003617e20cb39e736273440254670c57f4541c87a24a"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/봄",
+      "revid": 387787,
+      "timestamp": "2025-04-25T13:52:59Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "024.html",
+          "extract": "prp",
+          "sha256": "635c4bf6f799ce038708cfb285aa39aba9dc8aded9aed3aed32833926ed789d4"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/밤",
+      "revid": 387797,
+      "timestamp": "2025-04-25T14:23:34Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "025.html",
+          "extract": "prp",
+          "sha256": "f1aa7a3ca01c8d82601066aa156dc69f0ce421c91229835b330e756138667906"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/유언",
+      "revid": 387798,
+      "timestamp": "2025-04-25T14:24:14Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "026.html",
+          "extract": "prp",
+          "sha256": "2b602b29b0d94610ed619095e68e86d14abe4ceac01463bc396a426d62dc9c57"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/아우의 인상화",
+      "revid": 387799,
+      "timestamp": "2025-04-25T14:25:01Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "027.html",
+          "extract": "prp",
+          "sha256": "177a814547969d1c51ad4a59996fe51eb0a2e8076857359cd13db417bde44c28"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/위로",
+      "revid": 387800,
+      "timestamp": "2025-04-25T14:25:38Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "028.html",
+          "extract": "prp",
+          "sha256": "f497d5e4a753398ed72bd5b1d25b12ce40ea3728beb8e0ddc1eed1a9f9eb8220"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/간",
+      "revid": 387801,
+      "timestamp": "2025-04-25T14:26:32Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "029.html",
+          "extract": "prp",
+          "sha256": "2c50ded4710823e62e3222c01ad8549cac3d7a66dc76267cc24324e76fe26363"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/산골물",
+      "revid": 387802,
+      "timestamp": "2025-04-25T14:27:09Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "030.html",
+          "extract": "prp",
+          "sha256": "36ead124fafa975ebe7e173326c9a614a5f62cb87022da46ce3fb94fb267192a"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1948년)/참회록",
+      "revid": 387804,
+      "timestamp": "2025-04-25T14:30:16Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "031.html",
+          "extract": "prp",
+          "sha256": "479d21dfa3c9bb6b59d39310712e5d3e59230efb6e728de909e3160ff756246e"
+        }
+      ]
+    }
+  ]
+}

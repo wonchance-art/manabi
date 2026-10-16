@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "provider": "standardebooks",
+  "repo": "standardebooks/henry-david-thoreau_walden",
+  "commit": "af72c4ac0793569939ab3d038cbda440b60da940",
+  "url": "https://standardebooks.org/ebooks/henry-david-thoreau/walden",
+  "title": "Walden",
+  "author": "Henry David Thoreau",
+  "publishedYear": 1854,
+  "authorDeathYear": 1862,
+  "countryOfOrigin": "US",
+  "level": "C1 고급",
+  "display": {
+    "titleKo": "월든",
+    "authorKo": "헨리 데이비드 소로"
+  },
+  "files": [
+    {
+      "path": "economy.xhtml",
+      "sha256": "d8bf2989cda63443562a4951d3980cd96f2d983c9064dcccc7c5857619700f1e"
+    },
+    {
+      "path": "where-i-lived-and-what-i-lived-for.xhtml",
+      "sha256": "535f196347d6ded4c93b1597e26600587240fa43daeb8f883bdb4cd47dccff9e"
+    },
+    {
+      "path": "reading.xhtml",
+      "sha256": "db97f59d5ae73e2ecdeafbc594adfb62a4e64f664962e17aa18f08147a272974"
+    },
+    {
+      "path": "sounds.xhtml",
+      "sha256": "37195b3a0fd077d52d87e5075b1ab398147bcd28ebd5ff0ff0fa08ce818728d8"
+    },
+    {
+      "path": "solitude.xhtml",
+      "sha256": "805fe7399d8c3fcdec47a2c7655e45fdfa299203cbcb7c00d24f6391b39c249f"
+    },
+    {
+      "path": "visitors.xhtml",
+      "sha256": "881769812fe78c558a1c71d932df407f69bb58702bbed4cd012a547cb95d6fda"
+    },
+    {
+      "path": "the-bean-field.xhtml",
+      "sha256": "8823b3d4c295d0798e935a71f321337c029a730a5e2a7a1dfc4b36d8e766ee42"
+    },
+    {
+      "path": "the-village.xhtml",
+      "sha256": "3a3a0fc0d38544b79a806645b805ef3f1f4c0a0cf351c7494b335db79d0100c2"
+    },
+    {
+      "path": "the-ponds.xhtml",
+      "sha256": "62eaf9ae98c2d2ea633004df55577a3ca3eb22216029649c4f52d453f04b45c4"
+    },
+    {
+      "path": "baker-farm.xhtml",
+      "sha256": "55ca1e8669f9ff861eda6143d65d250e1cce4caeb6fa12fd86ccccd7e41a356a"
+    },
+    {
+      "path": "higher-laws.xhtml",
+      "sha256": "892f1d59d5196ae919e75fe2ed34e05852f2b31317429033aa500cf7feda37a9"
+    },
+    {
+      "path": "brute-neighbors.xhtml",
+      "sha256": "3de4e25f6abf8ec20ad5c3a401211fc2a8614b9c17d6a408d28b803a4c3e3a2a"
+    },
+    {
+      "path": "house-warming.xhtml",
+      "sha256": "972195ccc53d548b6a72ebabcfda552606e1ca4317dd737873a02edd920ae8dc"
+    },
+    {
+      "path": "former-inhabitants-and-winter-visitors.xhtml",
+      "sha256": "c0d5c645faf3368dceb6a503c159a9ceaf974a943b90c525c29502c47c9be505"
+    },
+    {
+      "path": "winter-animals.xhtml",
+      "sha256": "03ffc5a70c4239800e3b0e631651d87d52c9bbb8802ebebf73b3bf83acb72cc0"
+    },
+    {
+      "path": "the-pond-in-winter.xhtml",
+      "sha256": "b00f305a5e6779b772ada9a6290a28fee814c0a0be678343f8e6222aa7c51996"
+    },
+    {
+      "path": "spring.xhtml",
+      "sha256": "2d1d6042bb2ebe0746c38583b1b7503dea11dfc7bd61a2fcf25a0716f5616ffb"
+    },
+    {
+      "path": "conclusion.xhtml",
+      "sha256": "bf15e053f9f8b17859d0a02039d38d28b46bed10801d1b9a42e7b88a280bc821"
+    }
+  ],
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-17",
+    "reviewedJurisdictions": [
+      "US",
+      "KR"
+    ],
+    "evidenceUrl": "https://standardebooks.org/ebooks/henry-david-thoreau/walden"
+  }
+}

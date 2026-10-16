@@ -32,9 +32,9 @@ import { CardGridSkeleton } from '../components/Skeleton';
 import MaterialGroupCard from '../components/MaterialGroupCard';
 import LiteratureCover from '../components/books/LiteratureCover';
 import { literatureWorkOfBook } from '../lib/literatureCanonical';
-import VictorianCover from '../components/books/VictorianCover';
 import { standardEbooksWorkOfBook } from '../lib/standardEbooksCanonical';
-import WikisourceCover from '../components/books/WikisourceCover';
+import FirstEditionCover from '../components/books/FirstEditionCover';
+import CanonicalCover from '../components/books/CanonicalCover';
 import { wikisourceWorkOfBook } from '../lib/wikisourceCanonical';
 import { literatureChapterLabel, literatureDivisionLabel } from '../lib/literatureDisplay';
 import SuggestionArtwork from '../components/SuggestionArtwork';
@@ -715,7 +715,7 @@ export default function MaterialsPage({ libraryView = null }) {
               const english = work ? null : standardEbooksWorkOfBook(b);
               const englishChapterOf = (c) => english?.chapters.find((item) => item.order === c._bookOrder);
               const englishProps = english ? {
-                art: <VictorianCover work={english} />,
+                art: <CanonicalCover work={english} />,
                 title: <span lang="en">{english.title}</span>,
                 subtitle: [english.display?.titleKo, english.display?.authorKo, english.literature?.publishedYear && `${english.literature.publishedYear}년 발표`].filter(Boolean).join(' · '),
                 meta: [english.level, english.words && `${english.words.toLocaleString()}단어`, `${english.total}장`, `읽음 ${readDone}/${b.chapters.length}`].filter(Boolean).join(' · ') + pendingNote,
@@ -726,7 +726,7 @@ export default function MaterialsPage({ libraryView = null }) {
               const worldLang = { Chinese: 'zh-Hans', French: 'fr', Korean: 'ko' }[world?.language] || undefined;
               const worldChapterOf = (c) => world?.chapters.find((item) => item.order === c._bookOrder);
               const worldProps = world ? {
-                art: <WikisourceCover work={world} />,
+                art: <FirstEditionCover work={world} />,
                 title: <span lang={worldLang}>{world.title}</span>,
                 subtitle: [world.display?.titleKo, world.display?.authorKo, world.literature?.publishedYear && `${world.literature.publishedYear}년 발표`].filter(Boolean).join(' · '),
                 meta: [world.level, world.size && `${world.size.toLocaleString()}${world.unit === 'chars' ? '자' : '단어'}`, `${world.total}장`, `읽음 ${readDone}/${b.chapters.length}`].filter(Boolean).join(' · ') + pendingNote,

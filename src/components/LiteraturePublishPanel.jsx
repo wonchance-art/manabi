@@ -68,9 +68,9 @@ import { failureMessage, friendlyToastMessage } from '../lib/errorMessage';
 import { literatureBatchTargets, literatureResumeTargets } from '../lib/literaturePublish';
 import { literatureWork } from '../lib/literatureCanonical';
 import LiteratureCover from './books/LiteratureCover';
-import VictorianCover from './books/VictorianCover';
 import { standardEbooksWork } from '../lib/standardEbooksCanonical';
-import WikisourceCover from './books/WikisourceCover';
+import FirstEditionCover from './books/FirstEditionCover';
+import CanonicalCover from './books/CanonicalCover';
 import { wikisourceWork } from '../lib/wikisourceCanonical';
 
 const LITERATURE_API = '/api/admin/literature';
@@ -87,7 +87,7 @@ export function BookCover({ bookKey, scale = 1 }) {
   return (
     <span style={{ display: 'inline-block', width: 60 * scale, height: 84 * scale, overflow: 'hidden', verticalAlign: 'middle', flex: 'none' }}>
       <span style={{ display: 'block', width: 60, transform: `scale(${scale})`, transformOrigin: '0 0' }}>
-        {work ? <LiteratureCover work={work} /> : english ? <VictorianCover work={english} /> : <WikisourceCover work={world} />}
+        {work ? <LiteratureCover work={work} /> : english ? <CanonicalCover work={english} /> : <FirstEditionCover work={world} />}
       </span>
     </span>
   );

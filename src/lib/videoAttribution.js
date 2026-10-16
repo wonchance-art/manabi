@@ -137,7 +137,7 @@ function standardEbooksHref(value) {
 
 /**
  * Standard Ebooks 장의 출처 줄 재료 — 「원작 퍼블릭 도메인」은 권리 기록이 approved·public-domain일 때만.
- * @returns {{author:string, publishedYear:number|null, url:string, publicDomain:boolean, editNote:boolean}|null}
+ * @returns {{author:string, publishedYear:number|null, url:string, publicDomain:boolean, editNote:boolean, notesNote:boolean}|null}
  */
 export function standardEbooksAttributionParts(literature) {
   if (!literature || typeof literature !== 'object' || literature.provider !== 'standardebooks') return null;
@@ -149,6 +149,7 @@ export function standardEbooksAttributionParts(literature) {
     url: standardEbooksHref(literature.url),
     publicDomain: rights.status === 'approved' && rights.basis === LICENSE_PUBLIC_DOMAIN,
     editNote: ['chapter-split-by-manabi', 'typography-normalized', 'illustrations-omitted'].every((code) => edits.includes(code)),
+    notesNote: edits.includes('notes-omitted'), // 미주를 뺀 판(모비 딕 등)
   };
 }
 

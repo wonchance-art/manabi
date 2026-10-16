@@ -72,9 +72,10 @@ describe('권리 — 원산국 만료(한국은 상호주의), 기준 연도는 
     expect(wikisourceRightsVerdict({ ...base, publishedYear: 1940 }).ok).toBe(true); // 출판 연도로 막지 않는다(미국 선 없음)
     const fr = { publishedYear: 1884, authorDeathYear: 1893, countryOfOrigin: 'FR', mortPourLaFrance: false, rights: { reviewedAt: '2026-10-17' } };
     expect(wikisourceRightsVerdict(fr).ok).toBe(true);
-    expect(wikisourceRightsVerdict({ ...fr, mortPourLaFrance: null }).reasons.join()).toMatch(/mortPourLaFrance/u);
-    expect(wikisourceRightsVerdict({ ...fr, authorDeathYear: 1944, publishedYear: 1929, mortPourLaFrance: true }).reasons.join()).toMatch(/사후 100년/u); // 생텍쥐페리형
-    expect(wikisourceRightsVerdict({ ...fr, countryOfOrigin: 'DE' }).reasons.join()).toMatch(/판정 규칙이 없다/u);
+    expect(wikisourceRightsVerdict({ ...fr, authorDeathYear: 1990, mortPourLaFrance: null }).reasons.join()).toMatch(/mortPourLaFrance/u);
+    // 생텍쥐페리형 — 프랑스에선 전쟁 연장으로 보호 중이지만 한국은 1962년 이전 사망이라 만료(2013 연장 전 끝남)
+    expect(wikisourceRightsVerdict({ ...fr, authorDeathYear: 1944, publishedYear: 1943, mortPourLaFrance: true })).toMatchObject({ ok: true, basis: 'korea-term' });
+    expect(wikisourceRightsVerdict({ ...fr, authorDeathYear: 1990, countryOfOrigin: 'DE' }).reasons.join()).toMatch(/판정 규칙이 없다/u);
     expect(wikisourceRightsVerdict({ ...fr, translator: 'X' }).reasons.join()).toMatch(/번역본/u);
   });
   it('게시 가능 = 승인 · 퍼블릭 도메인 · 원산국/한국 검토 · 위키문헌 라이선스 · 판정 통과', () => {
@@ -141,18 +142,19 @@ describe('한국 근대 문학(오너 「한국 근대 문학도 추가」 → �
     ].join('\n')));
     expect(blocks.map((block) => block.text)).toEqual(['새침하게 흐린 품이 눈이 올 듯하더니', '⁂', '“설렁탕을 사다놓았는데 왜 먹지를 못하니”']);
   });
-  it('한국 원산 = 한국 사후 70년(1955년 이전 사망) · 검토 관할 KR 하나', () => {
+  it('한국 원산 = 한국 보호기간(1962년 이전 사망 또는 사후 70년) · 검토 관할 KR 하나', () => {
     const ko = { publishedYear: 1936, authorDeathYear: 1937, countryOfOrigin: 'KR', rights: { reviewedAt: '2026-10-17' } };
     expect(wikisourceRightsVerdict(ko).ok).toBe(true); // 이상 「날개」 — 1936 발표도 막지 않는다(미국 선 없음)
-    expect(wikisourceRightsVerdict({ ...ko, authorDeathYear: 1956 }).reasons.join()).toMatch(/사후 70년/u);
+    expect(wikisourceRightsVerdict({ ...ko, authorDeathYear: 1962 }).ok).toBe(true); // 2013 연장 전에 끝났다
+    expect(wikisourceRightsVerdict({ ...ko, authorDeathYear: 1963 }).reasons.join()).toMatch(/한국 보호기간/u); // 이양하 「신록예찬」형
     expect(wikisourceRightsVerdict({ ...ko, authorDeathYear: 2000 }).ok).toBe(false); // 황순원 「소나기」형
     expect(wikisourceRightsPublishable({ ...ko, provider: 'wikisource', license: WS_LICENSE, rights: { status: 'approved', basis: 'public-domain', reviewedJurisdictions: ['KR'], reviewedAt: '2026-10-17' } })).toBe(true);
   });
-  it('리포 5편 — 원문 고정 · 권리 통과 · 장은 글자 수(공백 뺌) 3,000자 안팎 · 표지 대기(목록·대조표에 아직 없음)', async () => {
+  it('리포 7편(소설 5 · 시집 2) — 원문 고정 · 권리 통과 · 장은 글자 수(공백 뺌) 3,000자 안팎 · 표지 대기(목록·대조표에 아직 없음)', async () => {
     const { readFileSync, readdirSync } = await import('node:fs');
     const root = 'src/content/literature/wikisource';
     const keys = readdirSync(root).filter((name) => name.startsWith('ws-ko-')).sort();
-    expect(keys).toEqual(['ws-ko-hyeon-jin-geon_unsu-joeun-nal', 'ws-ko-kim-dong-in_gamja', 'ws-ko-kim-yu-jeong_dongbaekkkot', 'ws-ko-yi-hyo-seok_memilkkot-pil-muryeop', 'ws-ko-yi-sang_nalgae']);
+    expect(keys).toEqual(['ws-ko-hyeon-jin-geon_unsu-joeun-nal', 'ws-ko-kim-dong-in_gamja', 'ws-ko-kim-so-wol_jindallaekkot', 'ws-ko-kim-yu-jeong_dongbaekkkot', 'ws-ko-yi-hyo-seok_memilkkot-pil-muryeop', 'ws-ko-yi-sang_nalgae', 'ws-ko-yun-dong-ju_haneulgwa-baramgwa-byeolgwa-si']);
     const manifest = JSON.parse(readFileSync(`${root}/manifest.generated.json`, 'utf8'));
     for (const key of keys) {
       const entry = JSON.parse(readFileSync(`${root}/${key}/entry.json`, 'utf8'));
@@ -162,7 +164,8 @@ describe('한국 근대 문학(오너 「한국 근대 문학도 추가」 → �
       expect(draft.diagnostics.unit).toBe('chars');
       expect(draft.chapters[0].rawText.startsWith('⁂')).toBe(false);
       expect(draft.chapters.every((chapter) => charCount(chapter.rawText) > 2000 && charCount(chapter.rawText) < 3600)).toBe(true);
-      expect(draft.chapters.some((chapter) => /라이선스|퍼블릭 도메인|위키백과/u.test(chapter.rawText))).toBe(false);
+      expect(draft.chapters.some((chapter) => /라이선스|퍼블릭 도메인|위키백과|현대어|원문|옛한글/u.test(chapter.rawText))).toBe(false);
+      expect(draft.chapters.some((chapter) => /[\u1100-\u11FF]/u.test(chapter.rawText))).toBe(false); // 옛한글 자모 없음(진달래꽃은 현대어 칸)
       expect(entry.display.binding).toBeUndefined(); // 표지 시안을 오너가 고르기 전(UI 목업 우선)
       expect(Object.hasOwn(manifest.works, key)).toBe(false);
     }

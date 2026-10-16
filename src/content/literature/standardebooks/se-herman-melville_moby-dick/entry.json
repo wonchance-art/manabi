@@ -1,0 +1,574 @@
+{
+  "schemaVersion": 1,
+  "provider": "standardebooks",
+  "repo": "standardebooks/herman-melville_moby-dick",
+  "commit": "013b51e2d9d6bb28b1d054bfc30beeeff4b85480",
+  "url": "https://standardebooks.org/ebooks/herman-melville/moby-dick",
+  "title": "Moby Dick",
+  "author": "Herman Melville",
+  "publishedYear": 1851,
+  "authorDeathYear": 1891,
+  "countryOfOrigin": "US",
+  "level": "C1 고급",
+  "display": {
+    "titleKo": "모비 딕",
+    "authorKo": "허먼 멜빌"
+  },
+  "files": [
+    {
+      "path": "chapter-1.xhtml",
+      "sha256": "f8e8fae47616167274c293f0c0de27e51706f15c5e3ef9a980b4cb81a2c574e9"
+    },
+    {
+      "path": "chapter-2.xhtml",
+      "sha256": "f182f6f32b75fc85ad5095d0e43a4db63471242f4a21a5a874683586c60ae9a2"
+    },
+    {
+      "path": "chapter-3.xhtml",
+      "sha256": "d4d9220cf2108de750d5587413f6466370153c1ec0a54571ceb829bcd407dd97"
+    },
+    {
+      "path": "chapter-4.xhtml",
+      "sha256": "85cf0fd6989833234db83981b9a5842e2247d38d7785e996d47ccaf72d027e96"
+    },
+    {
+      "path": "chapter-5.xhtml",
+      "sha256": "66827405971effb2521173ed0a3f41dfe44b0e8d546215561d01a44a7ac29a0c"
+    },
+    {
+      "path": "chapter-6.xhtml",
+      "sha256": "92dd78ce8d1a4ce6376a6a60a8784e6552556f15238c744a329bc8c9cf4d487f"
+    },
+    {
+      "path": "chapter-7.xhtml",
+      "sha256": "a4016e5fa9b1d47337a84c769c859c70f06880a368e0efe5dfcadd8e14a71254"
+    },
+    {
+      "path": "chapter-8.xhtml",
+      "sha256": "a76e921c8731574febf71ea6c9270b45a1730aae1ebbd2ee8f9be9960681bbeb"
+    },
+    {
+      "path": "chapter-9.xhtml",
+      "sha256": "830fbe2c9dc31797da7b7bd4af12c4fd20b5459e1b4880a7060efba3501e2dee"
+    },
+    {
+      "path": "chapter-10.xhtml",
+      "sha256": "1dbe3d9fbf13f593d66a3732c0f5be40b8bc68e8951e38c7f118560a08f6061e"
+    },
+    {
+      "path": "chapter-11.xhtml",
+      "sha256": "c28acc4e3e6159c27d27c3a3710f92172863b7fa2d4dd28afcec659f40b6f732"
+    },
+    {
+      "path": "chapter-12.xhtml",
+      "sha256": "6b47cd8f99d672e44cceec33afdfea13d5f5f4f9edc547c52a3476759c6ff92d"
+    },
+    {
+      "path": "chapter-13.xhtml",
+      "sha256": "bf052ab136d5d1eba3e50eac70e360d90624fb0c1c67d13196a6bcdf43647580"
+    },
+    {
+      "path": "chapter-14.xhtml",
+      "sha256": "7c4ef183a85c382589f8cbb1690f2062ee07f0f1ae7cfabe2f8c3682aac918e5"
+    },
+    {
+      "path": "chapter-15.xhtml",
+      "sha256": "8748778e840353f7f20473c010ca15632300664d468130049fd8b545d70d445f"
+    },
+    {
+      "path": "chapter-16.xhtml",
+      "sha256": "efb97f855b4cb7806976f42f9ac72b4201e13e3f13871612f0dea9bd80eeb787"
+    },
+    {
+      "path": "chapter-17.xhtml",
+      "sha256": "1901d41a1a0eba6f4bf3c0e55d0766c05f75ca5ca0669068651e15aa5dcd87a0"
+    },
+    {
+      "path": "chapter-18.xhtml",
+      "sha256": "372dc98c60ada6a04428f72a7b27f6936387c23dbace7b1d88a46e45234db20a"
+    },
+    {
+      "path": "chapter-19.xhtml",
+      "sha256": "f0f63bd3045398c13d819b8f956738976caeed19ef854775087118a4616678d4"
+    },
+    {
+      "path": "chapter-20.xhtml",
+      "sha256": "4256e24d0ec3bc62c6886d5ac3c40b94d7aba16db946de98e6605e571481d8ca"
+    },
+    {
+      "path": "chapter-21.xhtml",
+      "sha256": "46ad4deba78c475ac328c25fb774b89ec56eac2c5996c3afad16acc43c24dd3b"
+    },
+    {
+      "path": "chapter-22.xhtml",
+      "sha256": "60fe3e414af76f6de908ee04d0bfc4815492a157d503d3c25c67f039c59c9705"
+    },
+    {
+      "path": "chapter-23.xhtml",
+      "sha256": "298ec86d671d3f62074be0108a05eb24a3959bf1c6448d6b098314a0f88849ef"
+    },
+    {
+      "path": "chapter-24.xhtml",
+      "sha256": "92b538de7799de9fc59c1c0410acc9940e6bbd2ea3765c001f132f6f51ca2d18"
+    },
+    {
+      "path": "chapter-25.xhtml",
+      "sha256": "be491e62666255306fb99ee5f8fce68188399522b6e28bfe29d224c0a78ccae3"
+    },
+    {
+      "path": "chapter-26.xhtml",
+      "sha256": "d9e460767c62006cfe098434dd4f197445b0afa2f2e9f78ab888fb175699306e"
+    },
+    {
+      "path": "chapter-27.xhtml",
+      "sha256": "7a48eab16ab4243eaf6b076ce5b6dc26fc361326a5044ed5a93340d609e5a8bb"
+    },
+    {
+      "path": "chapter-28.xhtml",
+      "sha256": "df3448c8d042c580f6394b5ab736403b4bf9c3f82c6e35e7d347192e4ca424e8"
+    },
+    {
+      "path": "chapter-29.xhtml",
+      "sha256": "b7bc5685ad9d9a80e4c4edeaa940506f31a65ae190f7d305932b631ea0b17a4a"
+    },
+    {
+      "path": "chapter-30.xhtml",
+      "sha256": "30ecd189c16a112b7a14f92a650a3a09bd02b5a2ca92e6ee23d12af1ef15010d"
+    },
+    {
+      "path": "chapter-31.xhtml",
+      "sha256": "776b2eff53a98da10c204962adab64e87b4bd95c600d2e9a5c42bd5740277ee2"
+    },
+    {
+      "path": "chapter-32.xhtml",
+      "sha256": "3ae6c077dace77b0a16c23bb1fa15194a74c378ad826e22f183388e5e98152dc"
+    },
+    {
+      "path": "chapter-33.xhtml",
+      "sha256": "8c408e1ac3b2aea18990c2cbbc7f3a9730d243797e75932308dcd12da810653b"
+    },
+    {
+      "path": "chapter-34.xhtml",
+      "sha256": "20fee680e4ba17b84010287e0489f7808bd61d4effe796ac9c48d9ddfe372ddd"
+    },
+    {
+      "path": "chapter-35.xhtml",
+      "sha256": "1ce6be196fbc8bb4f7223de906d5fe0fcff4ecf3ebdb510fe16b1f25532a9f54"
+    },
+    {
+      "path": "chapter-36.xhtml",
+      "sha256": "e336868f5298be29db2ed2229fc40de6a0b02fda9e2620be8f78113eb006da76"
+    },
+    {
+      "path": "chapter-37.xhtml",
+      "sha256": "db5f61744a223179b72ba8b0e29536b8232e069ee05a04106c3f5b77410694d1"
+    },
+    {
+      "path": "chapter-38.xhtml",
+      "sha256": "739571311920a9863dcf4c6f4f08ea390dc11e4406ba388a714595644cf2abc6"
+    },
+    {
+      "path": "chapter-39.xhtml",
+      "sha256": "50968f47c2c57c0ab4c6eada784b73c7209efda6fb687342a7234eb4fbd63e12"
+    },
+    {
+      "path": "chapter-40.xhtml",
+      "sha256": "48357c99da979732619321c4c547cb1503878556c49277ba69ede340dae1e337"
+    },
+    {
+      "path": "chapter-41.xhtml",
+      "sha256": "a7dd90690d5b9d2a4d5d113ad692efc73f2e40fb2e4a3bb07dd187aa8e6b2664"
+    },
+    {
+      "path": "chapter-42.xhtml",
+      "sha256": "03560264ff8cfe7c6ed6ae20a77e77e07489aec92a6d29a65136afd5c01b9df9"
+    },
+    {
+      "path": "chapter-43.xhtml",
+      "sha256": "42ce6c6f30c4ed977724ef5b38d42dc10c1bfed242cb140ae0418ac9b8d6af64"
+    },
+    {
+      "path": "chapter-44.xhtml",
+      "sha256": "d9fe927b2948f077c4342040044b59a12d691323dd39ca75cd9560818516cfff"
+    },
+    {
+      "path": "chapter-45.xhtml",
+      "sha256": "0e060128c9805384cfd25f938b991ab6325d54bdf82ee2b8e3566dc3510b75e5"
+    },
+    {
+      "path": "chapter-46.xhtml",
+      "sha256": "c9ff080456b49ed9f3901ac88c1c9da017eb78eff613f4ae3e35704d267efc15"
+    },
+    {
+      "path": "chapter-47.xhtml",
+      "sha256": "a9419278fa2154097efb52ce6d183aaa00ba9a6d27d5244c3252b30225a73f65"
+    },
+    {
+      "path": "chapter-48.xhtml",
+      "sha256": "64cd2baac2a3d52c49ed6f6bb84cc16642b3495f33da73c4b08d5209e4212f4e"
+    },
+    {
+      "path": "chapter-49.xhtml",
+      "sha256": "f9bb45b7087fbcd9f1260b434e2013ed3ce00a19ea47677ea56a332219aeebd8"
+    },
+    {
+      "path": "chapter-50.xhtml",
+      "sha256": "66a89e9888481ca9a49fadacaa1f878b45245c59e49b45a318a0416a68c6f51a"
+    },
+    {
+      "path": "chapter-51.xhtml",
+      "sha256": "5f958f100cafed07342bb5ad940496a3c3885bb134369d99d11f70a2f8cb0df0"
+    },
+    {
+      "path": "chapter-52.xhtml",
+      "sha256": "ccf182e9f5741b9e7e1976dbb2b61174be53e9b5f3d63e7e55eb2dfd90a6a6bc"
+    },
+    {
+      "path": "chapter-53.xhtml",
+      "sha256": "17b22b0d665f207899886fd656f67b32d90c64d06c93853cc29883de701f6d1d"
+    },
+    {
+      "path": "chapter-54.xhtml",
+      "sha256": "9855416acec83472e759840c104adc338cbdfda546c40d1f24587d81c4de54cf"
+    },
+    {
+      "path": "chapter-55.xhtml",
+      "sha256": "c8bea0194af9651452a94e86378f089f01eb25711a6cc8de5ce2971982dfa53e"
+    },
+    {
+      "path": "chapter-56.xhtml",
+      "sha256": "9a0db256d4f7f9db68ccfab71c2cfe7a92235e33093976e52526f1d9947b86fb"
+    },
+    {
+      "path": "chapter-57.xhtml",
+      "sha256": "8c8044acee80c12030e84487eefb94788d1fdefa3f7aaab2d5fe5e5f23f2de34"
+    },
+    {
+      "path": "chapter-58.xhtml",
+      "sha256": "2f4376cc1edf9949c96513fec5a1f6d67a04f71d322fc137b8d9a4419abf62fe"
+    },
+    {
+      "path": "chapter-59.xhtml",
+      "sha256": "78ca48debce56bf4c1b589f06696d83a1f8405f7e94946c2832e56385b738323"
+    },
+    {
+      "path": "chapter-60.xhtml",
+      "sha256": "325efc495a83962da889f2aa898f60c394c39f1910f25a240993f3ba00a60425"
+    },
+    {
+      "path": "chapter-61.xhtml",
+      "sha256": "e6e87fe10403e30316032cf83d02db7c39243107c06f30729f768b34458f9973"
+    },
+    {
+      "path": "chapter-62.xhtml",
+      "sha256": "2a7c39904d8a565efa5e7b5bb64c5d09adff470f553a704a42f5e2479f3dd93a"
+    },
+    {
+      "path": "chapter-63.xhtml",
+      "sha256": "f89d7838e0c78e7884e624eeeab1f1994e046d829a32d6f2c64f235a388fd2ec"
+    },
+    {
+      "path": "chapter-64.xhtml",
+      "sha256": "9eb72080646686ccf31fb30936705049eb82002a738eaec6f75d5e5fe1485316"
+    },
+    {
+      "path": "chapter-65.xhtml",
+      "sha256": "779f11afefafdcec623099567e622fd063010bb61578f56f12569442364607a9"
+    },
+    {
+      "path": "chapter-66.xhtml",
+      "sha256": "238415b9e8cd4219387cc5aa93e36c46009d0ff395aa807655c88fa92428ea40"
+    },
+    {
+      "path": "chapter-67.xhtml",
+      "sha256": "315dad218c6fce0df7f62f098be6f005c9442b55a656c0adc317a35d3868004c"
+    },
+    {
+      "path": "chapter-68.xhtml",
+      "sha256": "712ab26b8e9a30a70c2fa33309564b202fc871d40e0c9b3e98a6daff7f042afb"
+    },
+    {
+      "path": "chapter-69.xhtml",
+      "sha256": "007bfd3ca4e6d0b1916d04b4228d3b1f2a98bffa6c1adf40043c017392be63da"
+    },
+    {
+      "path": "chapter-70.xhtml",
+      "sha256": "ebcc9dbdd1169b445c5a075c1772ee43fee34ebb2623cb61842eb41952150e5b"
+    },
+    {
+      "path": "chapter-71.xhtml",
+      "sha256": "c7a071d702fa21517659edb270c47993fe8cf1ccee3c9722f07c2a985cc2dbbb"
+    },
+    {
+      "path": "chapter-72.xhtml",
+      "sha256": "6981e13ce0a4129c32b0cfee56f11134ecf47d303c8d6662026ba41d5dbdb50f"
+    },
+    {
+      "path": "chapter-73.xhtml",
+      "sha256": "02f693de350f8b478df02315a7dd32e874fe3800c7cf63d4c7908dffcf9460ce"
+    },
+    {
+      "path": "chapter-74.xhtml",
+      "sha256": "8934a78a5a7b5c5fd86c0b7436162c6bae37df30d11d934d514108d146d0ddbc"
+    },
+    {
+      "path": "chapter-75.xhtml",
+      "sha256": "ded69b0aba150d28dfbb1bcbd77fcb60f5b34cdb0f155ab8f6a90856bbacf52b"
+    },
+    {
+      "path": "chapter-76.xhtml",
+      "sha256": "4e9e0cd196301a8d98d0fb55353dbd43d158c10fdf41b76058b5692464432ada"
+    },
+    {
+      "path": "chapter-77.xhtml",
+      "sha256": "7605847afe7d733014e5c24dcf4fcb1a03176f8a432a5169fbcdbeaa86ca7ed9"
+    },
+    {
+      "path": "chapter-78.xhtml",
+      "sha256": "db53bbf6fad0103542de99edc2a6b4f80984dac921c87dc8b1222c84632565db"
+    },
+    {
+      "path": "chapter-79.xhtml",
+      "sha256": "4bb61fb59bcf5bb659f1203af830e2873b36bb01ff2e4f6606e997adad007834"
+    },
+    {
+      "path": "chapter-80.xhtml",
+      "sha256": "4cb22e4fa2824d4f21e86de9cf56f26fb3b293f0ab7764f11de813928ba9df25"
+    },
+    {
+      "path": "chapter-81.xhtml",
+      "sha256": "0b4b464fce0e01f0b5f146a54ba9316f2aefeb24ac231fc391dc3f2a493cd814"
+    },
+    {
+      "path": "chapter-82.xhtml",
+      "sha256": "70dcb433f708670a6b2118cea0c3c65336ca96851d9a29e664caadfeda1bfe80"
+    },
+    {
+      "path": "chapter-83.xhtml",
+      "sha256": "21e436a69a0747e8a0c97e6540f23edeffc67f9e73b1f6f06d79bbc33aae6b46"
+    },
+    {
+      "path": "chapter-84.xhtml",
+      "sha256": "f85c114abcc3ed9f803718ef701f0dab4ab8995030e3b5e3237c7cf209683850"
+    },
+    {
+      "path": "chapter-85.xhtml",
+      "sha256": "6c18b10a4efc4e2b3e218b03e9e611272a7f90f71ffa52453e8fe5d2632523ee"
+    },
+    {
+      "path": "chapter-86.xhtml",
+      "sha256": "da50a40c1df82cb54dd36152fa2260575b81b59fb256e6e890b1dbef439e2c54"
+    },
+    {
+      "path": "chapter-87.xhtml",
+      "sha256": "f8bc10a0667e79500c21aefb7d5dcd60bee385a21e699624003bbe099f77b114"
+    },
+    {
+      "path": "chapter-88.xhtml",
+      "sha256": "49f4d2664be9c05880b56029fa29a78f4b09061c8a5f7ae17af8ecfabf6dc845"
+    },
+    {
+      "path": "chapter-89.xhtml",
+      "sha256": "f7224adc4a3358d42ef94d4ac918305e14a1f7db6d09af81401c478a38019457"
+    },
+    {
+      "path": "chapter-90.xhtml",
+      "sha256": "900d7e8c073a3e402702842ce2ec5a926edf5c15b54f1d25e7235714d93ce52a"
+    },
+    {
+      "path": "chapter-91.xhtml",
+      "sha256": "a9ae1724f6494c3074635d7607305bd0821ce97d1c6ed902b6029ec370055325"
+    },
+    {
+      "path": "chapter-92.xhtml",
+      "sha256": "5702a3de776337cb8c9a5cc5eb890cfce252c8966a11f93bf1c56510e6e0f9be"
+    },
+    {
+      "path": "chapter-93.xhtml",
+      "sha256": "e742dda67f5d1f3e69acd89b2ad70addc25fcf730085ccdd137c9208f9e7c9d3"
+    },
+    {
+      "path": "chapter-94.xhtml",
+      "sha256": "aaba5c6ab116db6d91fd0f1341d889db23a2c988f7d6aad8b290732ddc0fdeef"
+    },
+    {
+      "path": "chapter-95.xhtml",
+      "sha256": "0527ec7f5966d239bb22543b8387cd2369b2e8db69da632296e8146935ae3673"
+    },
+    {
+      "path": "chapter-96.xhtml",
+      "sha256": "6fd2aed9e5c8b421a0bec54d75a196ed63428e21948ae335c885aab47c5b33d9"
+    },
+    {
+      "path": "chapter-97.xhtml",
+      "sha256": "bca817d7c144a54ecf52b260da76c90ab833e8ee4aa78949980fcbb2b4c699a4"
+    },
+    {
+      "path": "chapter-98.xhtml",
+      "sha256": "fc995b0276fcc384a17d3b8b3d7783cf05af4249097e0426e272d4e368334f58"
+    },
+    {
+      "path": "chapter-99.xhtml",
+      "sha256": "94305f4c08c6e9b03f26c158533a94e6d1f237d2dce2926178b6e07f276744dc"
+    },
+    {
+      "path": "chapter-100.xhtml",
+      "sha256": "42370b7a8f50f9ff14b68427849933f075ac7a4ca65b16fb496a63c1378703e1"
+    },
+    {
+      "path": "chapter-101.xhtml",
+      "sha256": "fb322d3db807b20396d95abac949023ab86f691f2893202115ffd65b796d67b9"
+    },
+    {
+      "path": "chapter-102.xhtml",
+      "sha256": "ac6494e00237fe45deb246a2a55a2ac6c9fa35fb0e1fd001f17209b2464ff96e"
+    },
+    {
+      "path": "chapter-103.xhtml",
+      "sha256": "1537bccf49fe367954db32cf4531272f66531101117584842c2b3dc92251d588"
+    },
+    {
+      "path": "chapter-104.xhtml",
+      "sha256": "e2c5525956babc28bf12b8436ed51a73966bed970e9fd16f46d83b4d8afa31d1"
+    },
+    {
+      "path": "chapter-105.xhtml",
+      "sha256": "8c2e784d78f87ec27fe1d64d9c470671737872ab55ad1f158ae89b44eeb36349"
+    },
+    {
+      "path": "chapter-106.xhtml",
+      "sha256": "001aa5417c0ff5243868912f198751ef97632503c7e85ff44c0bc7f8096f5a95"
+    },
+    {
+      "path": "chapter-107.xhtml",
+      "sha256": "61b5202557ce033288b25af5102d3f71afe21371a13e33af9a517b6d88b38235"
+    },
+    {
+      "path": "chapter-108.xhtml",
+      "sha256": "1c13bba85e392c92545bd9952637c6bd1d0b042f45c604cd3e64875efe3c21d4"
+    },
+    {
+      "path": "chapter-109.xhtml",
+      "sha256": "a8d5e83cb33ac1e94c7480e2fa786c7860aaa94eb89a75f5ae3d1db203537f6e"
+    },
+    {
+      "path": "chapter-110.xhtml",
+      "sha256": "193d455e1e0fba7202c2b9595e1e622dbfaf640941c3f77afb00ebdfed46b158"
+    },
+    {
+      "path": "chapter-111.xhtml",
+      "sha256": "bd563518058db10203d6176f6e0bfb1861658f44026cd7d3c6df39a36ba0b143"
+    },
+    {
+      "path": "chapter-112.xhtml",
+      "sha256": "f8aea329bb2ab4770536a327a516cba9282910bc98b5fc1362617fb011c80b05"
+    },
+    {
+      "path": "chapter-113.xhtml",
+      "sha256": "30da1401a28fb426ac0b8550f1f83397718bdfe88cbc0beeeed7addc7f51c5ab"
+    },
+    {
+      "path": "chapter-114.xhtml",
+      "sha256": "c165c36dc14c7485524012bccf9617020537c1d5d3cf1ffbbb000779945e3f66"
+    },
+    {
+      "path": "chapter-115.xhtml",
+      "sha256": "0bb0074e18adee2402dbe0c99c8b54f343d9906b975c4ef3433f521d6b3d5ac3"
+    },
+    {
+      "path": "chapter-116.xhtml",
+      "sha256": "bbc6138e0129b2a8ee4e2bfe1c2cfb13733d7e24f53eaccee6dff12cd5c15697"
+    },
+    {
+      "path": "chapter-117.xhtml",
+      "sha256": "bf23983079c6f5d8113526cfeb1b3de29c8b9e975d0a2612248c7b41ada5615e"
+    },
+    {
+      "path": "chapter-118.xhtml",
+      "sha256": "ff0c54097d591ed716be520e5ab609f177f3bd9560acadd7807310dfe5a9ee35"
+    },
+    {
+      "path": "chapter-119.xhtml",
+      "sha256": "c3ca0b018874497182c631a3cbf5ef37954e29fa42c0ce95821918a7d27afb2c"
+    },
+    {
+      "path": "chapter-120.xhtml",
+      "sha256": "aee154f2b1a9f55c7c2e2355e2608fe95a5ec556a3f3838164278ce61fc852fe"
+    },
+    {
+      "path": "chapter-121.xhtml",
+      "sha256": "f9f4c6479abebc9a8aa49bd5fb62039bab6761f6f712e5ec8fa8cd22f878bd76"
+    },
+    {
+      "path": "chapter-122.xhtml",
+      "sha256": "d685d9e509d6f5096170ae275c5c40d7f3dc23dea090cc3def78d3c3081077fc"
+    },
+    {
+      "path": "chapter-123.xhtml",
+      "sha256": "5df0670b0d0aef03db973a584c311f019c95d095b9243e6da5dddea13d00501e"
+    },
+    {
+      "path": "chapter-124.xhtml",
+      "sha256": "2ebfd88c01f4bb59a6c7c8f86bfd8ad217ff3234f669eedac3e8505f68a48f4f"
+    },
+    {
+      "path": "chapter-125.xhtml",
+      "sha256": "8c80b02006c0c54a22ffec20813c50ad27c83637bb8599ed301162e8a429651d"
+    },
+    {
+      "path": "chapter-126.xhtml",
+      "sha256": "181291f6c4ad76bc5373a01018889779ecc8b2ede84c9d3e6a923c56d87e0a50"
+    },
+    {
+      "path": "chapter-127.xhtml",
+      "sha256": "d3c79232f706bb6396771b2f02b9a147367bf76117cff7c1cfb67a944b27c66e"
+    },
+    {
+      "path": "chapter-128.xhtml",
+      "sha256": "abcf26675b92b020d00dc63cc56fe920887a886dab0c95516d24d19e9c211e3b"
+    },
+    {
+      "path": "chapter-129.xhtml",
+      "sha256": "924491770c4f60447ad31ddd858793a77e7b53c4ca676aca27f9aeb6975d0d89"
+    },
+    {
+      "path": "chapter-130.xhtml",
+      "sha256": "4b398229cce901312d246fed156056009ae49f33e6c2cbdc663d63012135f8ce"
+    },
+    {
+      "path": "chapter-131.xhtml",
+      "sha256": "d06f90a74d169860e2aab71c1c4583a6e44017b955b718997ddc7693ce18f3d1"
+    },
+    {
+      "path": "chapter-132.xhtml",
+      "sha256": "130c7ee91cbca429a3e495d39245f2c8b348b3a6cf2a1bd31a509c6eb4cdced7"
+    },
+    {
+      "path": "chapter-133.xhtml",
+      "sha256": "d82597dc1af64b569a86185514ddb1250a85e1a426f0444a2161a9a0ec5eaad9"
+    },
+    {
+      "path": "chapter-134.xhtml",
+      "sha256": "f4afe28a5cd2ed984a70c16d4b91682e399e93add350ac269f7f5e7e70e93a58"
+    },
+    {
+      "path": "chapter-135.xhtml",
+      "sha256": "b315594a9ecd4e788b32db7fdbda0b0cad98c0383a12881e8b0f310f0edb7bb2"
+    },
+    {
+      "path": "epilogue.xhtml",
+      "sha256": "2fdeb8cc8b2de85a140ed529ef5f5884583d2bca8a61d4d6313c763d656eb149"
+    }
+  ],
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-17",
+    "reviewedJurisdictions": [
+      "US",
+      "KR"
+    ],
+    "evidenceUrl": "https://standardebooks.org/ebooks/herman-melville/moby-dick"
+  }
+}
