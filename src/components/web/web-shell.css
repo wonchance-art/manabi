@@ -248,3 +248,6 @@
   .manabi-app .lv-entry--solo:active:not(:has(button:active)),
   .manabi-app .suggestion-card:has(:is(a, button):active){transform:none}
 }
+/* 이동 뒤 포커스 되찾기(APP-FEEL-003 #3 — routeFocus.js)는 본문 전체(#main-content)에 초점을 둔다. 건너뛰기 링크 대상과 같은
+   자리라 본문 둘레 테두리는 그리지 않는다(.completion-modal:focus 선례) — 다음 Tab이 본문 첫 요소로 가는 것이 목적이다. */
+#main-content:focus{outline:none}

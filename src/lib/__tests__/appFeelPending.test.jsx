@@ -62,6 +62,9 @@ describe('이동 뒤 포커스 — 잃었을 때만 본문으로', () => {
     expect(effect).toContain('const frame = requestAnimationFrame(() => focusMainIfLost(document));');
     expect(effect).toContain('return () => cancelAnimationFrame(frame);');
     expect(read('src/components/Layout.jsx')).toContain('<main className="app-layout" role="main" id="main-content" tabIndex={-1}>');
+
+    // 본문 전체가 초점을 받으므로 둘레 테두리는 그리지 않는다(키보드 이동 때 화면 전체 테두리 방지).
+    expect(read('src/components/web/web-shell.css')).toContain('#main-content:focus{outline:none}');
   });
 });
 
