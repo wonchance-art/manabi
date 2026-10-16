@@ -138,8 +138,11 @@ function result(raw, userId, now, operationId, duplicate = false, policyVersion 
 
 export async function readFsrsStatus({ authClient, serviceClient, userId, now = new Date() }) {
   if (!UUID.test(userId || '')) reject('fsrs_auth_required', 401);
-  const contract = await capabilities(authClient);
-  const rows = await rpc(serviceClient, 'fsrs_list_states', { p_actor: userId });
+  // 능력 · 등록 목록은 서로 기다리지 않는다(둘 다 읽기). 둘 다 받은 뒤 능력 오류를 먼저 판정한다 — 순차일 때와 같은 우선순위.
+  const [contractRead, rowsRead] = await Promise.allSettled([capabilities(authClient), rpc(serviceClient, 'fsrs_list_states', { p_actor: userId })]);
+  if (contractRead.status === 'rejected') throw contractRead.reason;
+  if (rowsRead.status === 'rejected') throw rowsRead.reason;
+  const contract = contractRead.value, rows = rowsRead.value;
   if (!Array.isArray(rows)) reject('fsrs_storage_unavailable', 503, 'fsrs_list_states: not an array');
   const cards = rows.map(row => publicState(checkedState(row, userId)));
   if (new Set(cards.map(card => card.cardId)).size !== cards.length) reject('fsrs_storage_unavailable', 503, 'fsrs_list_states: duplicate card');
