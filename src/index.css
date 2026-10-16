@@ -7486,6 +7486,22 @@ a.viewer-badge:hover {
   text-underline-offset: 4px;
 }
 .study-sent--tap { cursor: pointer; }
+
+/* ── 세션 진행 막대 · 문항 전환 ── */
+.study-progress {
+  flex: 1; height: 10px; overflow: hidden;
+  border-radius: var(--radius-full); background: var(--bg-secondary);
+}
+.study-progress__fill {
+  height: 100%; border-radius: var(--radius-full); background: var(--accent);
+  transition: width 0.3s ease;
+}
+/* 문항 한 장이 제자리에 내려앉는다 — key(uid)로 문항마다 한 번만, 4px · 0.16초(settleIn 재사용). */
+.study-item { animation: settleIn 0.16s var(--ease-settle) both; }
+@media (prefers-reduced-motion: reduce) {
+  .study-progress__fill { transition: none; }
+  .study-item { animation: none; }
+}
 /* 비-ja 문장 속 재료 단어 — 탭 가능(미묘한 밑줄) */
 .study-word {
   cursor: pointer;

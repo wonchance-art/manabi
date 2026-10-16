@@ -1067,11 +1067,9 @@ export default function StudySessionPage({
       {/* 헤더 — 나가기 · 진행바 · 언어 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '10px 0 20px' }}>
         <Link href="/home" aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem', padding: '6px 10px', margin: '-6px -4px -6px -10px' }}>✕</Link>
-        <div style={{ flex: 1, height: 10, borderRadius: 'var(--radius-full)', background: 'var(--bg-secondary)', overflow: 'hidden' }}>
-          <div style={{
-            height: '100%', borderRadius: 'var(--radius-full)', background: 'var(--accent)',
-            width: `${progressPct}%`, transition: 'width 0.3s ease',
-          }} />
+        <div className="study-progress" role="progressbar" aria-label="세션 진행" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPct}
+          aria-valuetext={`${progressDone}/${progressTotal}`}>
+          <div className="study-progress__fill" style={{ width: `${progressPct}%` }} />
         </div>
         <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700, flexShrink: 0 }}>
           {isRetry ? '오답 다시 풀기'
@@ -1080,6 +1078,8 @@ export default function StudySessionPage({
         </span>
       </div>
 
+      {/* 문항 한 장 — uid마다 새로 그려 짧게 내려앉는다(.study-item, 0.16초 · 모션 축소 시 없음). */}
+      <div key={item.uid} className="study-item">
       {isRetry && (
         <div style={{ fontSize: '0.75rem', color: 'var(--warning)', fontWeight: 700, marginBottom: 8 }}>↻ 다시 도전</div>
       )}
@@ -1513,6 +1513,7 @@ export default function StudySessionPage({
           </Button>
         </div>
       )}
+      </div>
 
       {/* 언어 전환 (세션 시작 전 첫 문항에서만) */}
       {idx === 0 && phase === 'answer' && languages.length > 1 && (
