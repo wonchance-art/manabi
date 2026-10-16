@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   pageStep, pageCountFor, pageOfOffset, nearestPage, pageProgress, pageLabel, pageHeightFor,
   pageKeyAction, swipeDirection, firstIndexAtOrAfter, createPagedController, overlayOrigin,
+  fontFamilyNames, fontsAffectReader,
 } from '../usePagedReader';
 import { compactSheetHeight } from '../readingViewport';
 
@@ -252,5 +253,51 @@ describe('paged controller', () => {
     const reader = { closest: () => pages, getBoundingClientRect: () => ({ left: 5, top: 5 }) };
     expect(overlayOrigin(reader)).toEqual({ left: 20 - 696, top: 100 });
     expect(overlayOrigin({ closest: () => null, getBoundingClientRect: () => ({ left: 5, top: 7 }) })).toEqual({ left: 5, top: 7 });
+  });
+});
+
+// 글꼴 받기가 끝날 때 다시 재기(READER-FONT-REMEASURE-001) — 본문 글꼴에 속한 글꼴일 때만. 판단할 수 없으면 전처럼 잰다.
+// 운영 실측(2026-10-17 KST): 읽기 설정 창의 글꼴이 받아질 때마다 본문 쪽을 통째로 다시 쟀다(390폭 · CPU 4배 46ms).
+describe('re-measure on fonts loadingdone only for reader fonts', () => {
+  it('normalizes computed font-family names', () => {
+    expect(fontFamilyNames('"Noto Sans JP", "Noto Sans JP Fallback", sans-serif, \'Noto Sans KR\'')).toEqual(['noto sans jp', 'noto sans jp fallback', 'sans-serif', 'noto sans kr']);
+    expect(fontFamilyNames('')).toEqual([]);
+  });
+  it('decides by family; undecidable → re-measure', () => {
+    const body = fontFamilyNames('"Noto Sans JP", sans-serif, "Noto Sans KR"');
+    expect(fontsAffectReader([{ family: 'Manrope' }, { family: '"Noto Serif KR"' }], body)).toBe(false);
+    expect(fontsAffectReader([{ family: 'Manrope' }, { family: '"Noto Sans JP"' }], body)).toBe(true);
+    expect(fontsAffectReader([{ family: 'NOTO SANS KR' }], body)).toBe(true);
+    expect(fontsAffectReader(undefined, body)).toBe(true);
+    expect(fontsAffectReader([], body)).toBe(true);
+    expect(fontsAffectReader([{ family: 'Manrope' }], [])).toBe(true);
+    expect(fontsAffectReader([{ family: '' }], body)).toBe(true);
+  });
+  it('the attached controller schedules a relayout only when a loaded face is in the box or probe font stack', () => {
+    const reader = fakeReader();
+    const listeners = {};
+    const fonts = { addEventListener: (type, fn) => { listeners[type] = fn; }, removeEventListener: (type) => { delete listeners[type]; }, ready: null };
+    const doc = { activeElement: null, querySelector: () => null, addEventListener() {}, removeEventListener() {}, fonts };
+    const probe = { nodeType: 1, font: '"Noto Sans JP", "Noto Sans JP Fallback", sans-serif, "Noto Sans KR", sans-serif' };
+    Object.assign(reader.pages, { addEventListener() {}, removeEventListener() {}, parentElement: null, ownerDocument: doc, font: '"Noto Sans KR", sans-serif' });
+    const tokens = reader.pages.querySelectorAll;
+    reader.pages.querySelectorAll = (selector) => (selector === '[data-page-probe]' ? [probe] : tokens(selector));
+    const frames = vi.fn(() => 1);
+    reader.win.visualViewport = { height: 844, scale: 1, addEventListener() {}, removeEventListener() {} };
+    Object.assign(reader.win, { addEventListener() {}, removeEventListener() {}, requestAnimationFrame: frames, ResizeObserver: undefined, MutationObserver: undefined,
+      getComputedStyle: (node) => ({ columnGap: '48px', fontFamily: node.font || '' }) });
+    const c = createPagedController(reader.pages, () => ({ window: reader.win, document: doc, reducedMotion: () => true }));
+    const detach = c.attach();
+    expect(typeof listeners.loadingdone).toBe('function');
+    listeners.loadingdone({ fontfaces: [{ family: 'Manrope' }, { family: 'Noto Serif KR' }] });
+    expect(frames).not.toHaveBeenCalled(); // 화면 글꼴만 받았다 — 본문 쪽은 그대로
+    listeners.loadingdone({ fontfaces: [{ family: 'Noto Sans JP' }] });
+    expect(frames).toHaveBeenCalledTimes(1); // 본문 글꼴(탐침) — 다시 잰다
+    c.relayout(); frames.mockClear();
+    reader.win.getComputedStyle = () => ({ columnGap: '48px' });
+    listeners.loadingdone({ fontfaces: [{ family: 'Manrope' }] });
+    expect(frames).toHaveBeenCalledTimes(1); // 본문 글꼴을 모르면 전처럼 잰다
+    detach();
+    expect(listeners.loadingdone).toBeUndefined();
   });
 });

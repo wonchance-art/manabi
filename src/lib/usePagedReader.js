@@ -66,6 +66,21 @@ export function swipeDirection({ dx, dy, dt }, { min = 48, ratio = 1.5, maxTime 
   return dx < 0 ? 1 : -1;
 }
 /** 문서 순서 목록에서 쪽 번호가 page 이상인 첫 항목(다단은 문서 순서대로 채우므로 쪽 번호가 단조 증가). */
+/** CSS font-family 값 → 비교용 이름 목록(따옴표 · 공백 · 대소문자를 뗀다). */
+export function fontFamilyNames(value) {
+  return String(value || '').split(',').map(name => name.trim().replace(/^["']|["']$/g, '').trim().toLowerCase()).filter(Boolean);
+}
+/**
+ * 글꼴 받기가 끝났을 때 쪽을 다시 잴지(READER-FONT-REMEASURE-001). 받은 글꼴 중 하나라도 본문 글꼴 목록(families)에 있으면 잰다.
+ * 판단할 수 없으면(받은 글꼴 목록 · 본문 글꼴 목록이 없거나 이름이 없는 글꼴) 전처럼 잰다 — 쪽이 틀린 채 남는 쪽보다 한 번 더 재는 쪽이 낫다.
+ * 운영 실측(2026-10-17 KST): 뷰어 읽기 설정을 열면 창 글꼴이 받아지며 본문 쪽을 통째로 다시 쟀다(390폭 · CPU 4배 46ms).
+ */
+export function fontsAffectReader(faces, families) {
+  const list = faces ? [...faces] : [];
+  if (!list.length || !families?.length) return true;
+  const names = new Set(families);
+  return list.some(face => { const name = fontFamilyNames(face?.family)[0]; return !name || names.has(name); });
+}
 export function firstIndexAtOrAfter(length, page, pageAt) {
   let low = 0, high = length;
   while (low < high) { const mid = (low + high) >> 1; if (pageAt(mid) < page) low = mid + 1; else high = mid; }
@@ -295,7 +310,14 @@ export function createPagedController(pages, options = () => ({})) {
     w.addEventListener('resize', schedule);
     w.addEventListener('orientationchange', schedule);
     w.visualViewport?.addEventListener('resize', schedule);
-    doc.fonts?.addEventListener?.('loadingdone', schedule);
+    // 본문 글꼴 = 상자와 1em 탐침(본문 글자와 같은 글꼴)의 font-family. 상자는 화면 글꼴, 글자는 언어별 글꼴이라 둘을 함께 본다.
+    const readerFamilies = () => {
+      if (typeof w.getComputedStyle !== 'function') return [];
+      const nodes = [pages, ...(pages.querySelectorAll?.('[data-page-probe]') || [])];
+      return [...new Set(nodes.flatMap(node => { try { return fontFamilyNames(w.getComputedStyle(node)?.fontFamily); } catch { return []; } }))];
+    };
+    const onFontsLoaded = event => { if (fontsAffectReader(event?.fontfaces, readerFamilies())) schedule(); };
+    doc.fonts?.addEventListener?.('loadingdone', onFontsLoaded);
     doc.fonts?.ready?.then(() => schedule());
     const resize = typeof w.ResizeObserver === 'function' ? new w.ResizeObserver(schedule) : null;
     // 상자 자신·위 머리글(상단 막대가 접혀 늘면 상자 위가 내려간다)·문서(200% 글자 등 rem 변화)의 크기 변화.
@@ -318,7 +340,7 @@ export function createPagedController(pages, options = () => ({})) {
       w.removeEventListener('resize', schedule);
       w.removeEventListener('orientationchange', schedule);
       w.visualViewport?.removeEventListener('resize', schedule);
-      doc.fonts?.removeEventListener?.('loadingdone', schedule);
+      doc.fonts?.removeEventListener?.('loadingdone', onFontsLoaded);
       resize?.disconnect(); mutation?.disconnect();
     };
   }
