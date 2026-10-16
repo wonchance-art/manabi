@@ -45,10 +45,9 @@ describe('입구와 머리 ⋯(정적 계약)', () => {
     expect(page).toContain('useLearnLanguage(profile)');
     expect(page).not.toMatch(/말 수준|conversationLevels/);
   });
-  it('홈·자료 추가·서재에 「새 대화」 입구', () => {
+  it('홈·자료 추가에 「새 대화」 입구(서재에는 대화를 두지 않는다 — 2026-10-17)', () => {
     expect(read('views/HomePage.jsx')).toContain("key: 'conversation', href: newConversationHref({ language: lang })");
     expect(read('components/materials/MaterialEntry.jsx')).toContain('<Link href="/conversation/new">자료 없이 대화하기 ↗</Link>');
-    expect(read('components/library/ConversationShelf.jsx')).toContain('/conversation/new?returnTo=%2Fmaterials');
   });
   it('머리 ⋯ = 다른 대화방 · 새 대화 · 지우기(서재 휴지통, 무엇이 남는지 먼저)', () => {
     const thread = read('components/conversation/ConversationThread.jsx');

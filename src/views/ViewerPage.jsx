@@ -739,7 +739,7 @@ export default function ViewerPage() {
     try {
       await trashConversation(id);
       await invalidateLibrary(queryClient, user?.id);
-      queryClient.invalidateQueries({ queryKey: ['library-conversations', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['conversation-rooms', user?.id] });
       toast('휴지통으로 옮겼어요.', 'success');
       noteRouter.push(safeReaderReturn(originalParams.get('returnTo')));
     } catch (cause) {
