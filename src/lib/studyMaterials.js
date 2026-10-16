@@ -341,7 +341,9 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   const vocabPoolRows = legacyRows.slice(0, 60);
 
   // ── 재료 조회 (병렬) ──
-  const [{ data: dueGrammarRows }, { data: progressRows }, { data: reviewEventRowsRaw }, { data: encounterRows }] = await Promise.all([
+  // 최근 주제 · 최근 사용 문단(아래 주제 로테이션 · 연재)도 이 묶음에서 읽는다 — 읽기만 앞당긴다(사용 처리는 조립 밖, 시점 불변).
+  // 테이블 부재 · 실패는 지금처럼 조용히 빈 값(주제 [] · 연재 null).
+  const [{ data: dueGrammarRows }, { data: progressRows }, { data: reviewEventRowsRaw }, { data: encounterRows }, avoidThemes, latestUsedRow] = await Promise.all([
     supabase.from('grammar_review')
       .select('*')
       .eq('user_id', userId).eq('lang', lang)
@@ -365,6 +367,19 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
       .select('word_text')
       .eq('user_id', userId).eq('lang', ref.langCode)
       .order('first_met_at', { ascending: false }).limit(40),
+    // 주제 로테이션 — 최근 study_paragraphs 3행 theme
+    supabase.from('study_paragraphs')
+      .select('theme')
+      .eq('user_id', userId).eq('lang', lang)
+      .order('created_at', { ascending: false }).limit(3)
+      .then(({ data }) => (data || []).map(r => r.theme).filter(Boolean), () => []),
+    // 연재 — 가장 최근 used 문단 1행
+    supabase.from('study_paragraphs')
+      .select('paragraph, materials, used_at, created_at')
+      .eq('user_id', userId).eq('lang', lang).eq('status', 'used')
+      .order('used_at', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false }).limit(1)
+      .then(({ data }) => (data && data[0]) || null, () => null),
   ]);
 
   // 되돌린 채점 제외(W 후속 ②) — lang 필터뿐이라 undo 마커가 같은 표본에 들어 있다.
@@ -540,24 +555,8 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   const knownWords = sample(myWordList, 30);
   const whitelistWords = sample(levelVocabWords, 40).map(w => refMain(w)).filter(Boolean);
 
-  // ── 주제 로테이션 — 최근 study_paragraphs 3행 theme을 피해 하나 고름 (테이블 부재 시 빈 배열) ──
-  let avoidThemes = [];
-  await supabase.from('study_paragraphs')
-    .select('theme')
-    .eq('user_id', userId).eq('lang', lang)
-    .order('created_at', { ascending: false }).limit(3)
-    .then(({ data }) => {
-      avoidThemes = (data || []).map(r => r.theme).filter(Boolean);
-    }, () => {});
-
-  // ── 연재 — 가장 최근 used 문단 1행에서 다음 화를 이어갈지 판정 (테이블 부재 시 null → 새 이야기) ──
-  let latestUsedRow = null;
-  await supabase.from('study_paragraphs')
-    .select('paragraph, materials, used_at, created_at')
-    .eq('user_id', userId).eq('lang', lang).eq('status', 'used')
-    .order('used_at', { ascending: false, nullsFirst: false })
-    .order('created_at', { ascending: false }).limit(1)
-    .then(({ data }) => { latestUsedRow = (data && data[0]) || null; }, () => {});
+  // ── 주제 로테이션 — 최근 study_paragraphs 3행 theme(위 병렬 묶음에서 읽음)을 피해 하나 고름 (테이블 부재 시 빈 배열) ──
+  // ── 연재 — 가장 최근 used 문단 1행(latestUsedRow, 위 묶음)에서 다음 화를 이어갈지 판정 (테이블 부재 시 null → 새 이야기) ──
   // 관심사 그룹(쿠키)이 있으면 그 그룹 테마를 70% 가중, 없으면 기존 로테이션 그대로.
   const theme = pickTheme(THEMES, avoidThemes, interestGroup);
 
