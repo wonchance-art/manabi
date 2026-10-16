@@ -61,7 +61,7 @@ describe('settleHeight — 점프 대신 짧게 옮기기', () => {
     const log = [];
     const el = { style: {}, classList: { add: (c) => log.push(`+${c}`), remove: (c) => log.push(`-${c}`) },
       getBoundingClientRect: () => { log.push(`measure ${el.style.height}`); return { height: 0 }; },
-      addEventListener: (type, fn) => { el.end = fn; }, removeEventListener: () => {} };
+      addEventListener: (type, fn) => { el.end = fn; }, removeEventListener: (type, fn) => { if (el.end === fn) el.end = null; } };
     return { el, log };
   };
   it('이전 높이에 고정 → 확정 → 새 높이, 끝나면 원래대로(인라인 높이 · 클래스 제거)', () => {
@@ -69,10 +69,35 @@ describe('settleHeight — 점프 대신 짧게 옮기기', () => {
     const cleanup = settleHeight(el, 186, 111, false);
     expect(log).toEqual(['+is-height-settling', 'measure 186px']);
     expect(el.style.height).toBe('111px');
-    el.end();
+    el.end({ target: el, propertyName: 'height' });
     expect(el.style.height).toBe('');
     expect(log.at(-1)).toBe('-is-height-settling');
+    expect(el.end).toBeNull(); // 끝나면 듣기도 뗀다
     cleanup();
+  });
+  it('안쪽 요소의 전이 · 이 칸의 다른 속성 전이가 끝나도 고정을 풀지 않는다 — 이 칸의 height 전이만', () => {
+    vi.useFakeTimers();
+    try {
+      const { el, log } = fake();
+      settleHeight(el, 186, 111, false);
+      const end = el.end;
+      end({ target: { tagName: 'A' }, propertyName: 'color' }); // 안쪽 링크 hover 전이가 거품으로 올라옴
+      end({ target: { tagName: 'A' }, propertyName: 'height' });
+      end({ target: el, propertyName: 'opacity' });
+      expect(el.style.height).toBe('111px');
+      expect(log).not.toContain('-is-height-settling');
+      expect(el.end).toBe(end); // 듣기가 아직 살아 있다(once로 써 버리지 않음)
+      end({ target: el, propertyName: 'height' });
+      expect(el.style.height).toBe('');
+      // transitionend가 끝내 안 오면 400ms 뒤 원래대로
+      const again = fake();
+      settleHeight(again.el, 186, 111, false);
+      vi.advanceTimersByTime(400);
+      expect(again.el.style.height).toBe('');
+      expect(again.log.at(-1)).toBe('-is-height-settling');
+    } finally {
+      vi.useRealTimers();
+    }
   });
   it('첫 측정 · 1px 미만 차이 · 동작 줄이기면 아무것도 안 한다', () => {
     for (const [prev, next, reduce] of [[null, 111, false], [111, 111.5, false], [186, 111, true]]) {

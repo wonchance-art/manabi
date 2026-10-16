@@ -33,8 +33,16 @@ export function settleHeight(el, prev, next, reduce) {
   el.classList.add('is-height-settling');
   el.getBoundingClientRect(); // 이전 높이를 한 번 확정해야 전이가 그 높이에서 시작한다
   el.style.height = `${next}px`;
-  const done = () => { el.style.height = ''; el.classList.remove('is-height-settling'); };
-  el.addEventListener('transitionend', done, { once: true });
-  const timer = setTimeout(done, 400); // transitionend가 안 오는 경우(숨김 · 탭 전환)도 원래대로
-  return () => { clearTimeout(timer); el.removeEventListener('transitionend', done); done(); };
+  let timer = null;
+  const done = () => {
+    clearTimeout(timer);
+    el.removeEventListener('transitionend', onEnd);
+    el.style.height = ''; el.classList.remove('is-height-settling');
+  };
+  // 이 칸 자체의 height 전이가 끝났을 때만 — transitionend는 거품처럼 올라와, 안쪽 링크 hover 전이 등이 끝나도 여기 닿는다.
+  // (once로 받으면 그런 자식 이벤트가 듣기를 써 버려 0.2초 전에 고정이 풀린다.)
+  function onEnd(event) { if (event?.target === el && event.propertyName === 'height') done(); }
+  el.addEventListener('transitionend', onEnd);
+  timer = setTimeout(done, 400); // transitionend가 안 오는 경우(숨김 · 탭 전환)도 원래대로
+  return done;
 }
