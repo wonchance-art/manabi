@@ -20,7 +20,10 @@ const REF_READ_KEYS = {
   Chinese: 'zh_read_chapters',
 };
 
-const STREAK_MILESTONES = { 7: '🔥 7일 연속 학습 달성!', 30: '🏆 30일 연속 학습 달성!', 100: '🌟 100일 연속 학습 달성!' };
+// 세션 쿠키가 있는데 SDK 조각을 못 받았을 때 다시 복원하는 간격(그 밖에는 online 이벤트에서).
+const AUTH_RESTORE_RETRY_MS = [2000, 8000, 30000];
+
+const STREAK_MILESTONES ={ 7: '🔥 7일 연속 학습 달성!', 30: '🏆 30일 연속 학습 달성!', 100: '🌟 100일 연속 학습 달성!' };
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -143,34 +146,50 @@ export function AuthProvider({ children }) {
       return () => { cancelled = true; };
     }
 
-    getSupabase()
-      .then((client) => {
-        if (cancelled) return;
+    // SDK 조각을 못 받으면(오프라인 · 배포 교체 직후 등) 쿠키가 있는데도 user가 비어 로그아웃처럼 보인다.
+    // 로그아웃으로 굳히지 않고 연결이 돌아올 때 · 잠시 뒤 다시 복원한다 — 같은 계정이 돌아오면 /study처럼
+    // 세션 계정을 고정한 화면이 멈춰 둔 기록을 이어 보낸다(getSupabase는 실패하면 다음 호출에서 다시 받는다).
+    let restored = false;
+    let retryTimer;
+    let retries = 0;
+    const restore = () => {
+      if (cancelled || restored) return;
+      clearTimeout(retryTimer);
+      getSupabase()
+        .then((client) => {
+          if (cancelled || restored) return;
+          restored = true;
+          window.removeEventListener('online', restore);
 
-        // 기존 순서 유지: 세션 조회를 먼저 시작한 뒤 auth listener를 즉시 등록한다.
-        // listener는 동기 반환 API라 lazy facade 대신 실제 client가 필요하다.
-        const sessionGeneration = authGenerationRef.current;
-        const sessionRequest = client.auth.getSession();
-        subscription = attachAuthListener(client, () => cancelled);
+          // 기존 순서 유지: 세션 조회를 먼저 시작한 뒤 auth listener를 즉시 등록한다.
+          // listener는 동기 반환 API라 lazy facade 대신 실제 client가 필요하다.
+          const sessionGeneration = authGenerationRef.current;
+          const sessionRequest = client.auth.getSession();
+          subscription = attachAuthListener(client, () => cancelled);
 
-        return sessionRequest.then(({ data: { session } }) => {
-          if (cancelled || authGenerationRef.current !== sessionGeneration) return;
-          adoptUser(session?.user ?? null);
-          if (session?.user) {
-            hadSessionRef.current = true;
-            fetchProfile(session.user.id, session.user.user_metadata);
-          }
+          return sessionRequest.then(({ data: { session } }) => {
+            if (cancelled || authGenerationRef.current !== sessionGeneration) return;
+            adoptUser(session?.user ?? null);
+            if (session?.user) {
+              hadSessionRef.current = true;
+              fetchProfile(session.user.id, session.user.user_metadata);
+            }
+            setLoading(false);
+          });
+        })
+        .catch(() => {
+          if (cancelled) return;
           setLoading(false);
+          if (!restored && retries < AUTH_RESTORE_RETRY_MS.length) retryTimer = setTimeout(restore, AUTH_RESTORE_RETRY_MS[retries++]);
         });
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      });
+    };
+    window.addEventListener('online', restore);
+    restore();
 
     return () => {
       cancelled = true;
+      clearTimeout(retryTimer);
+      window.removeEventListener('online', restore);
       subscription?.unsubscribe();
     };
     // 마운트 1회 세션 복원. attachAuthListener·fetchProfile은 매 렌더 새 함수라 의존성에 넣으면

@@ -224,17 +224,34 @@ describe('세션 화면 배선', () => {
   const page = read('src/views/StudySessionPage.jsx');
 
   it('챕터 마지막 문항은 보류함으로 보낸다(결과를 버리지 않는다)', () => {
-    // user_id는 세션 계정(recorder — 로그아웃 · 계정 바뀜이면 기록 자체를 멈춘다, studySessionScreen 계약).
-    expect(page).toContain('pendingGrammarRef.current.submit({ ...agg.srs, user_id: recorder }, ratingFromScore(agg.right, agg.total));');
+    // user_id는 세션 계정(recorder — 로그아웃 · 계정 바뀜이면 기록을 멈추고 보류한다, studySessionScreen 계약).
+    const write = sliceBetween(page, 'function writeSettle(recorder,', '\n  }\n');
+    expect(write).toContain('pendingGrammarRef.current.submit({ ...chapter.srs, user_id: recorder }, chapter.rating)');
+    expect(write).toContain('if (!saved) rememberGrammarToken(recorder);');
     expect(page).not.toMatch(/^\s*gradeGrammarReview\(/m);
-    expect(page).toContain('createGrammarRetry({ grade: gradeGrammarReview })');
+    expect(page).toContain('createGrammarRetry({ grade: gradeGrammarReview, onGiveUp: () => setGrammarGaveUp(true) })');
   });
 
-  it('online · pagehide · 세션 종료(fireEffects)에서 다시 보낸다', () => {
-    expect(page).toContain("window.addEventListener('online', retryPendingGrammar);");
-    expect(page).toContain("window.removeEventListener('online', retryPendingGrammar);");
-    expect(page).toMatch(/function onPageHide\(\) \{\s*batcherRef\.current\?\.flush\(\);\s*retryPendingGrammar\(\);/);
-    const fire = page.match(/function fireEffects\(\) \{[\s\S]*?\n {2}\}/)?.[0];
+  it('online · 화면 떠남 · 세션 종료(fireEffects)에서 다시 보내고, pagehide는 keepalive로 보낸다', () => {
+    const online = sliceBetween(page, "window.addEventListener('online', retryPendingGrammar);", '}, []);');
+    expect(online).toContain("window.removeEventListener('online', retryPendingGrammar);");
+    // 떠날 때 한 번 더 — 그래도 오프라인이면 사라질 보류분을 알린다
+    expect(online).toMatch(/retryPendingGrammar\(\);\s*if \(pendingGrammarRef\.current\.size\(\) > 0 && typeof navigator !== 'undefined' && navigator\.onLine === false\) \{\s*toast\(GRAMMAR_NOT_SAVED, 'warning', 6000\);/);
+    const hide = sliceBetween(page, 'function onPageHide() {', "window.addEventListener('pagehide', onPageHide);");
+    expect(hide).toMatch(/if \(!recorder\) return;\s*batcherRef\.current\?\.flush\(\);\s*beaconPendingGrammar\(recorder\);/);
+    const beacon = sliceBetween(page, 'function beaconPendingGrammar(owner) {', '\n  }\n');
+    expect(beacon).toContain('if (held?.userId !== owner) { retryPendingGrammar(); return; }');
+    expect(beacon).toContain('pendingGrammarRef.current.beacon(row => row.user_id === owner,');
+    expect(beacon).toContain('sendGrammarGradeKeepalive(row, rating, { reviewedAt, accessToken: held.token })');
+    const token = sliceBetween(page, 'function rememberGrammarToken(owner) {', '\n  }\n');
+    expect(token).toContain('signedIn === owner && recorderRef.current === owner');
+    const fire = sliceBetween(page, 'function fireEffects() {', '\n  }\n');
     expect(fire).toContain('retryPendingGrammar();');
+  });
+
+  it('재시도 상한을 넘기면 한 줄 알림 — 알림 영역은 늘 있고 내용만 바뀐다(진행 · 결과 화면 같은 자리)', () => {
+    expect(page).toContain("const GRAMMAR_NOT_SAVED = '문법 복습 일정을 저장하지 못했어요. 이 문법은 다음 학습에 다시 나와요.';");
+    expect(page).toMatch(/const grammarNotice = \(\s*<div role="status" aria-live="polite">\s*\{grammarGaveUp && <p className="study-record-lost">\{GRAMMAR_NOT_SAVED\}<\/p>\}\s*<\/div>\s*\);/);
+    expect(page.match(/<div className="page-container" style=\{\{ maxWidth: 640 \}\}>\s*\{grammarNotice\}\s*\{authBanner\}/g)).toHaveLength(2);
   });
 });

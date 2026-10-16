@@ -12,7 +12,8 @@ import { JaText } from './refShared';
 import { supabase } from '../lib/supabase';
 import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { useAuth } from '../lib/AuthContext';
-import { createGrammarRetry, gradeGrammarReview, ratingFromScore } from '../lib/grammarSrs';
+import { useToast } from '../lib/ToastContext';
+import { createGrammarRetry, gradeGrammarReview, ratingFromScore, sendGrammarGradeKeepalive } from '../lib/grammarSrs';
 import { createReviewEventBatcher, logReviewEvents } from '../lib/reviewEvents';
 import { hasVapidKey, isPushSupported, isIosNeedsInstall, getSubscriptionState, subscribePush } from '../lib/push';
 import { sentenceIncludesWord } from '../lib/skillRung';
@@ -26,6 +27,9 @@ import { splitSentenceAroundWord } from '../lib/constants';
 import { mapParagraphToItems } from '../lib/studyParagraph';
 import { ARCHIVED_TEXTBOOK_NOTICE, learnerHref } from '../lib/bookNavigation';
 import { authEntryHref } from '../lib/authRedirect';
+
+/** 문법 일정을 끝내 못 보냈다(재시도 상한 · 오프라인으로 화면 떠남) — copy-standard 실패 + 보존 여부 한 문장. */
+const GRAMMAR_NOT_SAVED = '문법 복습 일정을 저장하지 못했어요. 이 문법은 다음 학습에 다시 나와요.';
 
 /** 로컬 날짜 YYYY-MM-DD — 격일 산출 문항 노출 판정용 */
 function ymdLocal(d) {
@@ -67,7 +71,9 @@ export default function StudySessionPage({
   const authLost = !!sessionUserRef.current && !authLoading && user?.id !== sessionUserRef.current;
   const recorderRef = useRef(null);
   recorderRef.current = authLost ? null : sessionUserRef.current;
-  const [lostRecordUid, setLostRecordUid] = useState(null); // 큐에도 못 담은 문항(원본 uid) — 인라인 한 줄
+  const [lostRecordUid, setLostRecordUid] = useState(null); // 큐에도 못 담은 문항(첫 시도 uid — 재출제 -r에는 다시 띄우지 않는다) — 인라인 한 줄
+  const [grammarGaveUp, setGrammarGaveUp] = useState(false); // 문법 일정 재시도 상한을 넘겨 버렸다 — 한 줄 알림
+  const toast = useToast();
   const { speak: ttsSpeak, supported: ttsSupported } = useTTS();
   // 프리페치된 문단이 있으면 API 없이 즉시 매핑 (마운트 전 결정) — 로딩 화면 스킵.
   const pregenMapped = useMemo(
@@ -130,10 +136,20 @@ export default function StudySessionPage({
   // 문항 확정(settle) 시점 사이드이펙트용 refs (렌더 유발 없이 동기 접근)
   const batcherRef = useRef(null);                 // review_events 마이크로배치 큐
   const grammarAggRef = useRef(new Map());         // slug → { srs, right, total } 챕터별 누적
-  // 문법 재스케줄 보류함 — 저장 실패(오프라인 등)한 챕터 채점을 남겨 online · 세션 종료 · pagehide 때 다시 보낸다.
+  // 문법 재스케줄 보류함 — 저장 실패(오프라인 등)한 챕터 채점을 남겨 online · 세션 종료 · 화면 떠남 · pagehide 때 다시 보낸다.
+  // 같은 화면 안(메모리)까지다. 기기 큐(reviewOutbox · fsrsOperationOutbox)를 검토했지만 싣지 않았다 — reviewOutbox는
+  // 어휘 이벤트 행(flush가 review_events로 insert) · user_vocabulary FSRS 전용이고 같은 저장소의 다른 형식을 kind 제외 목록으로
+  // 거르는 소비자(pendingReviews · flush · 단어장 대기 수)가 여럿이라 새 형식이 이벤트로 새고, fsrsOperationOutbox는 서버 FSRS
+  // 작업(UUID 어휘 카드) 계약이다. 대신 오프라인이면 횟수를 쓰지 않고, 닫힐 때는 keepalive로 보내고, 못 보내고 떠나면 알린다.
   const pendingGrammarRef = useRef(null);
-  if (!pendingGrammarRef.current) pendingGrammarRef.current = createGrammarRetry({ grade: gradeGrammarReview });
-  const recordedRef = useRef(new Set());           // 이미 기록한 orig uid (중복 방지)
+  if (!pendingGrammarRef.current) {
+    pendingGrammarRef.current = createGrammarRetry({ grade: gradeGrammarReview, onGiveUp: () => setGrammarGaveUp(true) });
+  }
+  const grammarTokenRef = useRef(null);            // keepalive용 세션 계정 토큰 { userId, token } — 보류가 생길 때 받아 둔다
+  const heldSettlesRef = useRef([]);               // 로그인이 풀린 동안 확정한 문항 — 같은 세션 계정이 돌아오면 그때 기록한다
+  const heldEventsRef = useRef([]);                // 같은 이유로 멈춰 둔 review_events(어시스트 · 해설 · 산출)
+  const effectsHeldRef = useRef(false);            // 로그인이 풀린 채 끝나 못 한 세션 종료 이펙트
+  const recordedRef = useRef(new Set());           // 이미 확정한 orig uid (중복 방지) — 기록했거나, 로그인이 풀려 heldSettlesRef에 보류했다
   const itemShownAtRef = useRef(Date.now());       // 현재 문항 표시 시각 (rt_ms 계산)
   const assistSeenRef = useRef(new Set());         // 재료 단어 어시스트 열람 기록(세션당 단어별 1회)
   const listenAutoRef = useRef(null);              // 듣기 자동재생 1회 가드(uid 기준)
@@ -356,14 +372,16 @@ export default function StudySessionPage({
     return () => clearTimeout(t);
   }, [parking]);
 
-  // ── 탭 닫힘·백그라운드 전환 시 잔여 이벤트 flush + 중도 이탈 스트릭(best-effort) ──
+  // ── 탭 닫힘·백그라운드 전환 시 잔여 이벤트 flush + 문법 보류분 keepalive + 중도 이탈 스트릭(best-effort) ──
   useEffect(() => {
     function onPageHide() {
-      batcherRef.current?.flush();
-      retryPendingGrammar();
-      // 1문항 이상 답변했고 아직 fireEffects 전이면 활동 기록 시도(스트릭 RPC는 멱등).
+      // 세션 계정일 때만 — 계정이 바뀐 뒤 flush하면 A의 이벤트가 B의 토큰으로 나가 RLS에 막혀 조용히 사라진다.
       const recorder = recorderRef.current;
-      if (!streakSentRef.current && recordedRef.current.size > 0 && recorder) {
+      if (!recorder) return;
+      batcherRef.current?.flush();
+      beaconPendingGrammar(recorder);
+      // 1문항 이상 답변했고 아직 fireEffects 전이면 활동 기록 시도(스트릭 RPC는 멱등).
+      if (!streakSentRef.current && recordedRef.current.size > 0) {
         streakSentRef.current = true;
         recordActivity(recorder, () => fetchProfile?.(recorder));
       }
@@ -373,11 +391,32 @@ export default function StudySessionPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  // ── 연결이 돌아오면 보류한 문법 재스케줄을 다시 보낸다 ──
+  // ── 연결이 돌아오면 보류한 문법 재스케줄을 다시 보낸다. 화면을 떠날 때(「홈으로」 등)도 한 번 —
+  // 그때도 못 보내면(오프라인) 보류함은 이 화면과 함께 사라지므로 조용히 버리지 않고 알린다. ──
+  // retryPendingGrammar는 ref만 읽어 첫 렌더의 함수로도 지금 계정을 본다.
   useEffect(() => {
     window.addEventListener('online', retryPendingGrammar);
-    return () => window.removeEventListener('online', retryPendingGrammar);
-  }, [user?.id]);
+    return () => {
+      window.removeEventListener('online', retryPendingGrammar);
+      retryPendingGrammar();
+      if (pendingGrammarRef.current.size() > 0 && typeof navigator !== 'undefined' && navigator.onLine === false) {
+        toast(GRAMMAR_NOT_SAVED, 'warning', 6000);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── 로그인이 풀렸다가 같은 세션 계정이 돌아왔다 — 멈춰 둔 기록을 그 계정에 보낸다 ──
+  // recorderRef는 세션 계정이 아니면 null이라, 다른 계정으로 로그인해서는 여기 오지 않는다(A의 기록이 B에 가지 않는다).
+  useEffect(() => {
+    const recorder = recorderRef.current;
+    if (authLost || !recorder) return;
+    for (const entry of heldSettlesRef.current.splice(0)) writeSettle(recorder, entry);
+    const events = heldEventsRef.current.splice(0);
+    if (events.length) { const batcher = getBatcher(); for (const event of events) batcher.add(event); }
+    if (effectsHeldRef.current) { effectsHeldRef.current = false; fireEffects(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLost]);
 
   // 문법 due 챕터별 문항 수 (재출제 제외) — 챕터 마지막 문항 판정에 사용
   const grammarCounts = useMemo(
@@ -437,13 +476,15 @@ export default function StudySessionPage({
     next();
   }
 
-  /** review_events 마이크로배치 큐 — user 확정 후 1회 생성 */
+  /** review_events 마이크로배치 큐 — 세션 계정으로 1회 생성 */
   function getBatcher() {
     const recorder = recorderRef.current;
-    if (!recorder) return null; // 로그인이 풀렸거나 계정이 바뀌었다 — 이벤트를 쌓지 않는다.
+    // 로그인이 풀렸거나 계정이 바뀌었다 — 보내지 않고 멈춰 둔다(같은 세션 계정이 돌아오면 복귀 효과가 보낸다).
+    if (!recorder) return sessionUserRef.current ? heldEventsBox : null;
     if (!batcherRef.current) batcherRef.current = createReviewEventBatcher(recorder, { size: 4 });
     return batcherRef.current;
   }
+  const heldEventsBox = { add: event => { if (event) heldEventsRef.current.push(event); } };
 
   /**
    * 세션에 등장한 어휘 단어(word_text) 목록 — 산출 문장 포함 판정용.
@@ -554,38 +595,50 @@ export default function StudySessionPage({
    */
   function recordSettle(ok, it, result = null, response = null) {
     if (!it?.effect) return;
-    // 세션 계정이 아니면(로그아웃 · 계정 바뀜) 기록하지 않는다 — 기기 로컬 · 남의 계정으로 새지 않게.
+    // 문법 챕터 정답 누적은 기록 여부와 무관하게 먼저 센다 — 로그인이 풀린 동안의 문항도 챕터 분모를 채워야
+    // 돌아왔을 때 그 챕터가 재스케줄된다.
+    const entry = { ok, it, result, response, rtMs: Date.now() - itemShownAtRef.current, chapter: tallyGrammar(ok, it) };
+    // 세션 계정이 아니면(로그아웃 · 계정 바뀜) 지금은 쓰지 않는다 — 기기 로컬 · 남의 계정으로 새지 않게.
+    // 버리지도 않는다: 같은 세션 계정이 돌아오면 복귀 효과가 writeSettle로 그 계정에 기록한다.
     const recorder = recorderRef.current;
-    if (!recorder) return;
-    const rt_ms = Date.now() - itemShownAtRef.current;
-    const eff = it.effect;
-    const orig = baseUid(it.uid);
+    if (!recorder) { heldSettlesRef.current.push(entry); return; }
+    writeSettle(recorder, entry);
+  }
 
-    // 답안 완료 기록은 F2 단일 경계로 보낸다. 게스트도 같은 호출을 거쳐 로컬 폴백한다.
+  /** 문법 due 문항 정답 누적 — 챕터 마지막 문항이면 그 챕터의 재스케줄 채점({ srs, rating })을 돌려준다. */
+  function tallyGrammar(ok, it) {
+    if (it.effect.kind !== 'grammar-due') return null;
+    const slug = it.effect.srs.slug;
+    // 챕터별 정답 누적 → 마지막 문항에서 챕터 정답률로 재스케줄
+    const agg = grammarAggRef.current.get(slug) || { srs: it.effect.srs, right: 0, total: 0 };
+    agg.total++; if (ok) agg.right++;
+    grammarAggRef.current.set(slug, agg);
+    if (agg.total < (grammarCounts[slug] || 0)) return null;
+    return { srs: agg.srs, rating: ratingFromScore(agg.right, agg.total) };
+  }
+
+  /** 확정한 문항을 세션 계정에 기록한다(recordSettle · 복귀 효과 공통). */
+  function writeSettle(recorder, { ok, it, result, response, rtMs, chapter }) {
+    // 답안 완료 기록은 F2 단일 경계로 보낸다. recorder는 세션 계정뿐이다 — 게스트 · 로그인 풀림은 여기 오지 않는다
+    // (게스트는 이 화면 대신 signedOut 안내를 본다).
     // response는 settle의 pickedValue다 — 여기까지 오지 않아 v2-A R1 진단이 유형까지만
     // 볼 수 있었다(글자 어긋남은 응답이 있어야 난다). 오답 적재는 브리지가 판단한다.
     recordStudyReviewCompleted(recorder, {
       correct: ok,
       item: it,
       lang,
-      rtMs: rt_ms,
+      rtMs,
       result,
       response,
     }).then(saved => {
-      // 서버에도 큐에도 못 담았을 때만 알린다(큐에 담긴 기록은 연결이 돌아오면 간다).
-      if (saved?.lost) setLostRecordUid(orig);
+      // 서버에도 큐에도 못 담았을 때만 알린다(큐에 담긴 기록은 연결이 돌아오면 간다). 첫 시도 uid로 — 재출제(-r)에는 띄우지 않는다.
+      if (saved?.lost) setLostRecordUid(it.uid);
     }, () => { /* 저장 거절(아는 단어 등)은 기존처럼 조용히 — 세션은 이어진다. */ });
 
-    if (eff.kind === 'grammar-due') {
-      const slug = eff.srs.slug;
-      // 챕터별 정답 누적 → 마지막 문항에서 챕터 정답률로 재스케줄
-      const agg = grammarAggRef.current.get(slug) || { srs: eff.srs, right: 0, total: 0 };
-      agg.total++; if (ok) agg.right++;
-      grammarAggRef.current.set(slug, agg);
-      if (agg.total >= (grammarCounts[slug] || 0)) {
-        // 실패하면 보류함에 남는다(같은 챕터는 마지막 채점만) — 결과를 버리면 일정이 조용히 사라진다.
-        pendingGrammarRef.current.submit({ ...agg.srs, user_id: recorder }, ratingFromScore(agg.right, agg.total));
-      }
+    if (chapter) {
+      // 실패하면 보류함에 남는다(같은 챕터는 마지막 채점만) — 결과를 버리면 일정이 조용히 사라진다.
+      pendingGrammarRef.current.submit({ ...chapter.srs, user_id: recorder }, chapter.rating)
+        .then(saved => { if (!saved) rememberGrammarToken(recorder); }, () => {});
     }
   }
 
@@ -604,7 +657,7 @@ export default function StudySessionPage({
         setQueue(prev => [...prev, { ...item, uid: `${orig}-r` }]);
       }
     }
-    // 재출제(-r)는 기록·SRS 제외. 첫 시도만 1회 기록.
+    // 재출제(-r)는 기록·SRS 제외. 첫 시도만 1회 — 로그인이 풀렸으면 recordSettle이 버리지 않고 보류한다.
     if (!isRetryItem && !recordedRef.current.has(orig)) {
       recordedRef.current.add(orig);
       recordSettle(ok, item, result, pickedValue);
@@ -797,22 +850,43 @@ export default function StudySessionPage({
     next();
   }
 
-  /**
-   * 세션 종료 사이드이펙트 — 1회.
-   * 문항별 기록(이벤트·어휘 FSRS·문법 재스케줄)은 settle 시점에 이미 처리됐고,
-   * 여기선 세션 전체로만 판정 가능한 것들만 남긴다:
-   *  신규 챕터 통과 판정 · 새 단어 자동 등록 · 잔여 이벤트 flush · 활동 기록.
-   */
-  /** 보류한 문법 재스케줄 재시도 — 지금 로그인한 그 계정의 채점만 보낸다. */
+  /** 보류한 문법 재스케줄 재시도 — 세션 계정의 채점만 보낸다(오프라인이면 보류함이 횟수를 쓰지 않고 기다린다). */
   function retryPendingGrammar() {
     const owner = recorderRef.current;
     if (!owner) return;
     pendingGrammarRef.current.retry(row => row.user_id === owner).catch(() => {});
   }
 
+  /** keepalive용 토큰을 미리 받아 둔다 — pagehide에서는 기다릴 수 없다. 세션 계정의 토큰일 때만. */
+  function rememberGrammarToken(owner) {
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      const { id: signedIn } = s?.user || {}; // 받은 토큰의 계정 — 세션 계정과 같을 때만 붙잡는다
+      if (s?.access_token && signedIn === owner && recorderRef.current === owner) {
+        grammarTokenRef.current = { userId: owner, token: s.access_token };
+      }
+    }, () => {});
+  }
+
+  /** 페이지가 닫힐 때 문법 보류분을 keepalive로 — 토큰이 없으면 보통 재시도로. 둘 다 세션 계정 몫만. */
+  function beaconPendingGrammar(owner) {
+    const held = grammarTokenRef.current;
+    if (held?.userId !== owner) { retryPendingGrammar(); return; }
+    pendingGrammarRef.current.beacon(row => row.user_id === owner,
+      (row, rating, { reviewedAt }) => sendGrammarGradeKeepalive(row, rating, { reviewedAt, accessToken: held.token }))
+      .catch(() => {});
+  }
+
+  /**
+   * 세션 종료 사이드이펙트 — 1회.
+   * 문항별 기록(이벤트·어휘 FSRS·문법 재스케줄)은 settle 시점에 이미 처리됐고,
+   * 여기선 세션 전체로만 판정 가능한 것들만 남긴다:
+   *  신규 챕터 통과 판정 · 새 단어 자동 등록 · 잔여 이벤트 flush · 활동 기록.
+   */
   function fireEffects() {
     const recorder = recorderRef.current;
-    if (effectsFired.current || !recorder) return;
+    if (effectsFired.current) return;
+    // 로그인이 풀린 채 끝났다 — 버리지 않고 같은 세션 계정이 돌아오면 복귀 효과가 한 번 다시 부른다.
+    if (!recorder) { effectsHeldRef.current = true; return; }
     effectsFired.current = true;
     const results = Object.values(firstResults);
 
@@ -926,6 +1000,14 @@ export default function StudySessionPage({
     );
   }
 
+  // 문법 일정 포기 한 줄 — 알림 영역은 늘 그려 두고 내용만 바꾼다(내용과 함께 생기는 role=status는 화면 낭독기가 놓칠 수 있다).
+  // 진행 · 결과 화면 루트의 같은 자리(첫 자식)에 두어 화면이 바뀌어도 같은 영역이 이어진다.
+  const grammarNotice = (
+    <div role="status" aria-live="polite">
+      {grammarGaveUp && <p className="study-record-lost">{GRAMMAR_NOT_SAVED}</p>}
+    </div>
+  );
+
   // 로그인이 풀렸거나 다른 계정이 됐다 — 기록은 멈췄다. 세션 화면 · 결과 화면 맨 위에 안내(copy-standard 「로그인 필요」).
   const authBanner = authLost && (
     <div className="study-auth-lost" role="alert">
@@ -969,6 +1051,7 @@ export default function StudySessionPage({
 
     return (
       <div className="page-container" style={{ maxWidth: 640 }}>
+        {grammarNotice}
         {authBanner}
         {/* 1. 요약 */}
         <div style={{ textAlign: 'center', margin: '28px 0 20px' }}>
@@ -1090,6 +1173,7 @@ export default function StudySessionPage({
   // ── 진행 화면 ──
   return (
     <div className="page-container" style={{ maxWidth: 640 }}>
+      {grammarNotice}
       {authBanner}
       {/* 헤더 — 나가기 · 진행바 · 언어 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '10px 0 20px' }}>
@@ -1532,10 +1616,13 @@ export default function StudySessionPage({
         </div>
       )}
 
-      {/* 서버에도 기기 큐에도 못 담은 기록 — 그 문항에만 한 줄(세션은 막지 않는다). */}
-      {phase === 'feedback' && lostRecordUid === baseUid(item.uid) && (
-        <p className="study-record-lost" role="status">이 문항 기록을 저장하지 못했어요. 세션은 계속할 수 있어요.</p>
-      )}
+      {/* 서버에도 기기 큐에도 못 담은 기록 — 그 문항 첫 시도에만 한 줄(세션은 막지 않는다). 재출제(-r)는 uid가 달라 다시 띄우지 않는다.
+          알림 영역은 문항마다 먼저 그려 두고 내용만 넣는다 — 내용과 함께 생기는 role=status는 화면 낭독기가 놓칠 수 있다. */}
+      <div role="status" aria-live="polite">
+        {phase === 'feedback' && lostRecordUid === item.uid && (
+          <p className="study-record-lost">이 문항 기록을 저장하지 못했어요. 세션은 계속할 수 있어요.</p>
+        )}
+      </div>
 
       {/* 계속 버튼 (산출 문항은 자체 버튼 사용) */}
       {phase === 'feedback' && item.type !== 'produce-writing' && (

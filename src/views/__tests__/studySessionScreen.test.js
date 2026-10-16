@@ -51,18 +51,58 @@ describe('로그아웃 · 계정 바뀜 감지', () => {
   });
 
   it('기록하는 곳은 세션 계정(recorder)만 쓴다 — 로그아웃이면 아무것도 쓰지 않는다(기기 로컬로 새지 않게)', () => {
-    const settle = session.match(/function recordSettle\(ok, it, result = null, response = null\) \{[\s\S]*?\n {2}\}/)?.[0];
-    expect(settle).toMatch(/const recorder = recorderRef\.current;\s*if \(!recorder\) return;/);
-    expect(settle).toContain('recordStudyReviewCompleted(recorder, {');
-    expect(settle).not.toMatch(/user\?\.id|user\.id/);
-    const fire = session.match(/function fireEffects\(\) \{[\s\S]*?\n {2}\}/)?.[0];
-    expect(fire).toMatch(/const recorder = recorderRef\.current;\s*if \(effectsFired\.current \|\| !recorder\) return;/);
+    const settle = sliceBetween(session, 'function recordSettle(ok, it, result = null, response = null) {', '\n  }\n');
+    expect(settle).toMatch(/const recorder = recorderRef\.current;\s*if \(!recorder\) \{ heldSettlesRef\.current\.push\(entry\); return; \}\s*writeSettle\(recorder, entry\);/);
+    const write = sliceBetween(session, 'function writeSettle(recorder,', '\n  }\n');
+    expect(write).toContain('recordStudyReviewCompleted(recorder, {');
+    for (const body of [settle, write, sliceBetween(session, 'function tallyGrammar(ok, it) {', '\n  }\n')]) {
+      expect(body).not.toMatch(/user\?\.id|user\.id/);
+    }
+    const fire = sliceBetween(session, 'function fireEffects() {', '\n  }\n');
+    expect(fire).toMatch(/const recorder = recorderRef\.current;\s*if \(effectsFired\.current\) return;[\s\S]*?if \(!recorder\) \{ effectsHeldRef\.current = true; return; \}\s*effectsFired\.current = true;/);
     expect(fire).not.toMatch(/user\?\.id|user\.id/);
-    expect(session).toMatch(/function getBatcher\(\) \{\s*const recorder = recorderRef\.current;\s*if \(!recorder\) return null;/);
-    // 기록 경로(담기 · 산출 · 문법 재시도 · 스트릭)에 user.id가 남지 않는다 — 읽기 전용 효과(예고 · 주간 회고 · 푸시)만 남는다.
-    for (const head of ['async function saveEncounterWord', 'async function saveUserNext', 'function retryPendingGrammar', 'function onPageHide']) {
+    expect(session).toMatch(/function getBatcher\(\) \{\s*const recorder = recorderRef\.current;[^\n]*\n[^\n]*\n\s*if \(!recorder\) return sessionUserRef\.current \? heldEventsBox : null;/);
+    // 기록 경로(담기 · 산출 · 문법 재시도 · keepalive · 스트릭)에 user.id가 남지 않는다 — 읽기 전용 효과(예고 · 주간 회고 · 푸시)만 남는다.
+    for (const head of ['async function saveEncounterWord', 'async function saveUserNext', 'function retryPendingGrammar',
+      'function rememberGrammarToken', 'function beaconPendingGrammar', 'function onPageHide']) {
       expect(sliceBetween(session, head, '\n  }'), head).not.toMatch(/user\?\.id|user\.id/);
     }
+  });
+
+  it('로그인이 풀린 동안 확정한 문항도 문법 챕터 누적은 먼저 센다(기록 확인보다 앞)', () => {
+    const settle = sliceBetween(session, 'function recordSettle(ok, it, result = null, response = null) {', '\n  }\n');
+    expect(settle).toContain('chapter: tallyGrammar(ok, it)');
+    expect(settle.indexOf('tallyGrammar(ok, it)')).toBeLessThan(settle.indexOf('if (!recorder)'));
+    const tally = sliceBetween(session, 'function tallyGrammar(ok, it) {', '\n  }\n');
+    expect(tally).toContain('agg.total++; if (ok) agg.right++;');
+    expect(tally).not.toContain('recorder');
+  });
+
+  it('같은 세션 계정이 돌아오면 멈춰 둔 기록 · 이벤트 · 종료 이펙트를 그 계정에 보낸다(다른 계정은 recorder가 null이라 오지 않는다)', () => {
+    const back = sliceBetween(session, '// ── 로그인이 풀렸다가 같은 세션 계정이 돌아왔다', '}, [authLost]);');
+    expect(back).toMatch(/const recorder = recorderRef\.current;\s*if \(authLost \|\| !recorder\) return;/);
+    expect(back).toContain('for (const entry of heldSettlesRef.current.splice(0)) writeSettle(recorder, entry);');
+    expect(back).toContain('const events = heldEventsRef.current.splice(0);');
+    expect(back).toContain('if (effectsHeldRef.current) { effectsHeldRef.current = false; fireEffects(); }');
+    // 순서: 문항 기록(문법 보류함 제출 포함) → 종료 이펙트(문법 재시도 · flush)
+    expect(back.indexOf('writeSettle(recorder, entry)')).toBeLessThan(back.indexOf('fireEffects()'));
+    expect(back).not.toMatch(/user\?\.id|user\.id/);
+    // recorder는 세션 계정이 아니면 null — 다른 계정의 id가 기록 주체가 될 길이 없다.
+    expect(session).toContain('recorderRef.current = authLost ? null : sessionUserRef.current;');
+  });
+
+  it('pagehide는 세션 계정일 때만 flush한다 — 계정이 바뀐 뒤 A의 이벤트를 B의 토큰으로 보내지 않는다', () => {
+    const hide = sliceBetween(session, 'function onPageHide() {', "window.addEventListener('pagehide', onPageHide);");
+    expect(hide).toMatch(/const recorder = recorderRef\.current;\s*if \(!recorder\) return;\s*batcherRef\.current\?\.flush\(\);/);
+  });
+
+  it('SDK를 못 받아 user가 빈 것은 로그아웃으로 굳히지 않는다 — 연결이 돌아오거나 잠시 뒤 세션을 다시 복원한다', () => {
+    const auth = read('src/lib/AuthContext.jsx');
+    const restore = sliceBetween(auth, 'const restore = () => {', 'return () => {');
+    expect(restore).toMatch(/\.catch\(\(\) => \{\s*if \(cancelled\) return;\s*setLoading\(false\);\s*if \(!restored && retries < AUTH_RESTORE_RETRY_MS\.length\) retryTimer = setTimeout\(restore, AUTH_RESTORE_RETRY_MS\[retries\+\+\]\);/);
+    expect(restore).toContain("window.addEventListener('online', restore);");
+    expect(restore).toContain("window.removeEventListener('online', restore);");
+    expect(auth).toContain('const AUTH_RESTORE_RETRY_MS = [2000, 8000, 30000];');
   });
 
   it('상단 안내는 copy-standard 「로그인이 필요해요」 + 「로그인」 버튼(authEntryHref) — 진행 · 결과 화면 둘 다', () => {
@@ -71,8 +111,14 @@ describe('로그아웃 · 계정 바뀜 감지', () => {
     expect(session.match(/\{authBanner\}/g)).toHaveLength(2);
   });
 
-  it('큐에도 못 담은 문항에만 인라인 한 줄', () => {
-    expect(session).toContain('if (saved?.lost) setLostRecordUid(orig);');
-    expect(session).toMatch(/phase === 'feedback' && lostRecordUid === baseUid\(item\.uid\) && \(\s*<p className="study-record-lost" role="status">이 문항 기록을 저장하지 못했어요\. 세션은 계속할 수 있어요\.<\/p>/);
+  it('큐에도 못 담은 문항에만 인라인 한 줄 — 첫 시도 uid로(재출제 -r에는 다시 띄우지 않는다), 알림 영역은 먼저 그려 둔다', () => {
+    expect(session).toContain('if (saved?.lost) setLostRecordUid(it.uid);');
+    expect(session).toMatch(/<div role="status" aria-live="polite">\s*\{phase === 'feedback' && lostRecordUid === item\.uid && \(\s*<p className="study-record-lost">이 문항 기록을 저장하지 못했어요\. 세션은 계속할 수 있어요\.<\/p>\s*\)\}\s*<\/div>/);
+    expect(session).not.toContain('lostRecordUid === baseUid(');
+    expect(session).not.toContain('<p className="study-record-lost" role="status">');
+  });
+
+  it('게스트는 기록 경로를 지나지 않는다 — 옛 주석(「게스트도 같은 호출」)을 남기지 않는다', () => {
+    expect(session).not.toContain('게스트도 같은 호출');
   });
 });
