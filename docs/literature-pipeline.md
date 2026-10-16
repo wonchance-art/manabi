@@ -133,6 +133,20 @@ where processed_json->'metadata'->'book'->>'key' like 'aozora-%' or processed_js
 group by 1 order by 1;
 ```
 
+### 4.2c 「공개」의 뜻 — 목록은 누구나, 본문은 로그인 뒤 (오너 「권장대로 진행」 2026-10-16 KST, BOOK-GUEST-GATE-1)
+
+- 책 장은 관리자 소유 행 하나를 모든 독자가 같이 읽는다(사본 아님 — 분석은 책당 한 번, 교정·재분석은 모두에게 반영).
+  독자 각자의 것은 저장 단어·FSRS·읽은 기록·책갈피뿐이다.
+- 비로그인(anon)은 **책 목록만** 본다. 책 = `processed_json.metadata.book.key`가 있는 자료 전부(정본 문학·그림책·사용자가
+  공개한 책). 낱개 공개 글은 그대로 열린다.
+- 막는 자리는 DB다 — anon SELECT 제한 정책 `anon_book_chapters_hidden` + 메타만 주는 `public_book_catalog(p_id)`
+  (`supabase/migrations/20261016150000_anon_book_catalog.sql`, 실제 PostgreSQL 검증 `supabase/tests/anon-book-catalog.mjs`).
+  화면만 막으면 목록 조회가 내려받는 분석 전체로 본문이 보인다.
+- 화면: 「함께 읽는 글」 책 카드에 「로그인하고 읽기」(로그인 후 첫 장), 뷰어에서 책 장을 열면 「로그인이 필요해요」(로그인 후 같은 장).
+  로그아웃한 기기의 오프라인 사본도 책 장은 열지 않는다. 계약 `src/lib/__tests__/bookGuestGate.test.js`.
+- 남은 구멍(의도): 수업 암호로 여는 팀 화면(`/api/class/...`)은 암호가 열쇠라 로그인 없이 읽는다 — 관리자가 정본 책으로 수업을
+  만들면 암호를 가진 사람은 읽을 수 있다.
+
 ### 4.3 서버 백그라운드 분석 (인프라 — 별도 승인 필요)
 
 - 작업 표(`literature_jobs`: book key · 장 · 상태 · 시도 수) + 예약 실행(Vercel Cron 1분 간격)이 분석을 이어서 한다.

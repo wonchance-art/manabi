@@ -23,6 +23,7 @@ import ActionIcon from '../components/ActionIcon';
 import ViewerReferenceExample from '../components/viewer/ViewerReferenceExample';
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { authEntryHref } from '../lib/authRedirect';
 import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
 import { buildVocabularyWordIndex, countVocabularyDueInMaterial, findIndexedVocabulary, isIndexedVocabularyDue } from '../lib/vocabularyDueIndex';
 import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
@@ -233,6 +234,8 @@ async function fetchMaterial(id) {
     if (err?.code === 'NOT_FOUND') throw err;
     const cached = await getCachedMaterial(id);
     if (!cached) throw err;   // 캐시가 없으면 기존 에러 화면 그대로(계약 5)
+    // 비로그인에게 책 장 본문은 없다(BOOK-GUEST-GATE-1) — 로그인했을 때 받아 둔 사본도 로그아웃 뒤에는 열지 않는다.
+    if (getBook(cached.processed_json?.metadata) && !(await supabase.auth.getSession()).data?.session) throw err;
     return { ...cached, __offline: true };
   }
 }
@@ -321,6 +324,19 @@ export default function ViewerPage() {
       return s === 'analyzing' ? 4000 : false;
     },
   });
+
+  // 비로그인 책 장(BOOK-GUEST-GATE-1) — DB가 anon에게 책 장 행을 숨겨 NOT_FOUND가 된다. 공개 책 장이면 「로그인이 필요해요」로
+  // 안내한다(목록용 함수는 제목·책 정보만 준다 — 본문 없음). 로그인하고 돌아오면 같은 장을 다시 읽어 온다.
+  const guestBookGate = !user && error?.code === 'NOT_FOUND' && /^\d+$/.test(String(id));
+  const { data: guestBook, isLoading: guestBookLoading } = useQuery({
+    queryKey: ['guest-book-chapter', id],
+    enabled: guestBookGate,
+    queryFn: async () => {
+      const { data, error: catalogError } = await supabase.rpc('public_book_catalog', { p_id: Number(id) });
+      return catalogError ? null : data?.[0] || null;
+    },
+  });
+  useEffect(() => { if (user?.id && error?.code === 'NOT_FOUND') refetch(); }, [user?.id, error?.code, refetch]);
 
   const materialLang = material?.processed_json?.metadata?.language || 'Japanese';
   // The legacy editor writes one unlocalized meaning into the document/dictionary.
@@ -2617,6 +2633,20 @@ export default function ViewerPage() {
         <h2 style={{ color: 'var(--text-primary)', marginBottom: 8 }}>{vt("사본이 없어요")}</h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: 20, maxWidth: 400, margin: '0 auto 20px' }}>{vt("이 기기에 받아 둔 사본이 지워졌어요 — 7일이 지났거나 다른 기기예요. 팀 페이지에서 다시 열면 받아요.")}</p>
         <Link href={teamKey ? `/class/${teamKey}` : '/class'} className="btn btn--primary">{vt("팀 페이지로 →")}</Link>
+      </div>
+    );
+  }
+  if (guestBookGate && guestBookLoading) return <div className="page-container"><Spinner message="자료 불러오는 중…" /></div>;
+  if (guestBookGate && guestBook) {
+    return (
+      <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: 8 }}>{guestBook.title}</p>
+        <h2 style={{ color: 'var(--text-primary)', marginBottom: 8 }}>{vt("로그인이 필요해요")}</h2>
+        <p style={{ color: 'var(--text-secondary)', maxWidth: 400, margin: '0 auto 20px' }}>{vt("로그인하면 이 장을 읽고 단어를 저장할 수 있어요.")}</p>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          <Link href={authEntryHref(`/viewer/${id}`)} className="btn btn--primary">{vt("로그인")}</Link>
+          <LibraryReturnLink className="btn btn--secondary" aria-label={vt(readerReturnLabel(originalParams.get('returnTo')))}><span aria-hidden="true">←</span></LibraryReturnLink>
+        </div>
       </div>
     );
   }
