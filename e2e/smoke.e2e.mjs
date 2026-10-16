@@ -596,17 +596,20 @@ test('vocab performance: N3 초기 DOM과 savedSet 요청을 예산 안에 유�
     assert.equal(rows, 150, `N3 initial rows should be progressive, got ${rows}`);
     assert.ok(nodes < 10000, `N3 initial DOM ${nodes} nodes exceeded 10000`);
 
+    // a9dc9f51: 목록 전체 「저장됨」은 키 150개씩 표기 · 기본형으로 묻던 분할(N3 30요청) 대신 그 언어 단어장을
+    // id 순 1000행 page로 읽는다. 예산 = 키 목록을 주소에 싣는 요청 0 · 언어 단어장 읽기 1회 이상 · 주소 8000자 미만.
     const deadline = Date.now() + config.timeout;
+    const vocabReads = () => restRequests.filter(url => new URL(url).pathname.endsWith('/user_vocabulary'));
     let savedRequests = [];
     while (Date.now() < deadline) {
-      savedRequests = restRequests.filter(url => {
-        const parsed = new URL(url);
-        return parsed.pathname.endsWith('/user_vocabulary') && parsed.searchParams.has('word_text');
-      });
-      if (savedRequests.length > 1) break;
+      savedRequests = vocabReads().filter(url => new URL(url).searchParams.get('language') === 'eq.Japanese');
+      if (savedRequests.length > 0) break;
       await page.waitForTimeout(50);
     }
-    assert.ok(savedRequests.length > 1, 'savedSet lookup should be split into multiple requests');
+    assert.ok(savedRequests.length > 0, 'savedSet should read the Japanese vocabulary list');
+    assert.ok(savedRequests.every(url => !new URL(url).searchParams.has('word_text')),
+      'savedSet must not put level keys into the URL (old per-chunk fan-out)');
+    assert.ok(savedRequests.length <= 3, `savedSet issued ${savedRequests.length} requests (budget 3)`);
     assert.ok(
       Math.max(...savedRequests.map(url => url.length)) < 8000,
       `savedSet URL exceeded 8000 chars: ${Math.max(...savedRequests.map(url => url.length))}`
