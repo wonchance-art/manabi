@@ -14,7 +14,7 @@ import { librarySearchHref } from '@/lib/libraryReturn';
 import { authEntryHref } from '@/lib/authRedirect';
 import VersionBadge from './VersionBadge';
 import NavPendingMark from './NavPendingMark';
-import { focusPageIfLost } from '@/lib/routeFocus';
+import { focusPageIfLost, watchPageHeading } from '@/lib/routeFocus';
 import { intentPrefetchProps } from '@/lib/intentPrefetch';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
@@ -69,8 +69,10 @@ export default function Layout({ children }) {
   useEffect(() => {
     if (lastPathname.current === null || lastPathname.current === pathname) { lastPathname.current = pathname; return undefined; }
     lastPathname.current = pathname;
-    const frame = requestAnimationFrame(() => focusPageIfLost(document));
-    return () => cancelAnimationFrame(frame);
+    // 대기 화면이라 제목이 아직 없어 본문으로 보냈으면, 실제 제목이 나타날 때 한 번 그리로(watchPageHeading — 2초 · 사용자 조작 · 다음 이동에 끝).
+    let stopWatch = null;
+    const frame = requestAnimationFrame(() => { if (focusPageIfLost(document) === 'main') stopWatch = watchPageHeading(document); });
+    return () => { cancelAnimationFrame(frame); stopWatch?.(); };
   }, [pathname]);
   const [isOffline, setIsOffline] = useState(false);
   const [resendingConfirm, setResendingConfirm] = useState(false);

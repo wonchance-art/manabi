@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { sliceBetween } from './helpers/sliceBetween.js';
-import { focusPageIfLost } from '../routeFocus';
+import { focusPageIfLost, HEADING_WATCH_MS, watchPageHeading } from '../routeFocus';
 
 const h = vi.hoisted(() => ({ pending: false }));
 vi.mock('next/link', async (importOriginal) => ({ ...(await importOriginal()), useLinkStatus: () => ({ pending: h.pending }) }));
@@ -58,7 +58,7 @@ describe('이동 뒤 포커스 — 잃었을 때만 새 화면의 첫 제목(없
     const attrs = new Map(tabindex === null ? [] : [['tabindex', tabindex]]);
     const h = {
       hidden, attrs,
-      closest: (sel) => (hidden && sel === '[aria-hidden="true"]' ? {} : null),
+      closest: (sel) => (hidden && sel.includes('[aria-hidden="true"]') ? {} : null),
       hasAttribute: (k) => attrs.has(k), setAttribute: vi.fn((k, v) => attrs.set(k, v)),
       focus: vi.fn(() => { if (focusable) d.activeElement = h; }),
     };
@@ -95,6 +95,56 @@ describe('이동 뒤 포커스 — 잃었을 때만 새 화면의 첫 제목(없
       expect(d.main.focus).toHaveBeenCalledWith({ preventScroll: true });
     }
   });
+  it('대기 화면이라 본문으로 보냈으면 실제 제목이 나타날 때 한 번 그리로 — 포커스가 본문에 있을 때만 · 2초 · 조작 · 다음 이동에 끝', () => {
+    // MutationObserver · 이벤트 대역 — 변화를 손으로 흘린다.
+    const harness = (d) => {
+      const listeners = {}, observers = [];
+      d.addEventListener = vi.fn((type, fn) => { listeners[type] = fn; });
+      d.removeEventListener = vi.fn((type, fn) => { if (listeners[type] === fn) delete listeners[type]; });
+      class Observer { constructor(cb) { this.cb = cb; this.on = false; observers.push(this); } observe(node, opts) { this.on = true; this.node = node; this.opts = opts; } disconnect() { this.on = false; } }
+      const timers = [];
+      const opts = { Observer, schedule: (fn, ms) => { timers.push({ fn, ms }); return timers.length; }, cancel: vi.fn() };
+      return { listeners, observers, timers, opts, mutate: () => observers.forEach((o) => o.on && o.cb([])) };
+    };
+    // ① 대기 화면(숨긴 제목만) → 본문 → 실제 제목 등장 → 그 제목으로, 지켜보기 끝
+    const d = doc('body', { headings: [{ hidden: true }] });
+    expect(focusPageIfLost(d)).toBe('main');
+    const t = harness(d);
+    watchPageHeading(d, t.opts);
+    expect(t.observers[0].node).toBe(d.main);
+    expect(t.observers[0].opts).toMatchObject({ childList: true, subtree: true });
+    expect(t.timers[0].ms).toBe(HEADING_WATCH_MS);
+    t.mutate(); // 아직 숨긴 제목뿐 — 그대로
+    expect(d.activeElement).toBe(d.main);
+    d.headings.push(heading(d)); // 실제 화면이 들어왔다
+    t.mutate();
+    expect(d.activeElement).toBe(d.headings[1]);
+    expect(t.observers[0].on).toBe(false);
+    expect(t.listeners).toEqual({});
+    // ② 그사이 포커스가 다른 데로 갔으면 빼앗지 않는다
+    const moved = doc('body', { headings: [] });
+    focusPageIfLost(moved);
+    const t2 = harness(moved);
+    watchPageHeading(moved, t2.opts);
+    moved.activeElement = { isConnected: true };
+    moved.headings.push(heading(moved));
+    t2.mutate();
+    expect(moved.headings[0].focus).not.toHaveBeenCalled();
+    expect(t2.observers[0].on).toBe(false);
+    // ③ 사용자가 누르거나 키를 쓰면 · 시간이 다 되면 · 정리 함수(다음 이동)로 멈춘다
+    for (const end of [(t3) => t3.listeners.pointerdown(), (t3) => t3.listeners.keydown(), (t3) => t3.timers[0].fn(), (t3, stop) => stop()]) {
+      const e = doc('body', { headings: [] });
+      focusPageIfLost(e);
+      const t3 = harness(e);
+      const stop = watchPageHeading(e, t3.opts);
+      end(t3, stop);
+      e.headings.push(heading(e));
+      t3.mutate();
+      expect(e.activeElement).toBe(e.main);
+      expect(t3.observers[0].on).toBe(false);
+    }
+  });
+
   it('살아 있는 포커스(누른 GNB 탭 등)는 빼앗지 않는다', () => {
     const d = doc('el', { headings: [{}] });
     expect(focusPageIfLost(d)).toBeNull();
@@ -104,8 +154,8 @@ describe('이동 뒤 포커스 — 잃었을 때만 새 화면의 첫 제목(없
   it('Layout 배선 — 첫 마운트 · 같은 pathname(해시만 바뀜)은 건너뛰고, 다음 프레임에 판정', () => {
     const effect = sliceBetween(read('src/components/Layout.jsx'), 'const lastPathname = useRef(null);', '}, [pathname]);');
     expect(effect).toContain('if (lastPathname.current === null || lastPathname.current === pathname) { lastPathname.current = pathname; return undefined; }');
-    expect(effect).toContain('const frame = requestAnimationFrame(() => focusPageIfLost(document));');
-    expect(effect).toContain('return () => cancelAnimationFrame(frame);');
+    expect(effect).toContain("const frame = requestAnimationFrame(() => { if (focusPageIfLost(document) === 'main') stopWatch = watchPageHeading(document); });");
+    expect(effect).toContain('return () => { cancelAnimationFrame(frame); stopWatch?.(); };');
     expect(read('src/components/Layout.jsx')).toContain('<main className="app-layout" role="main" id="main-content" tabIndex={-1}>');
 
     // 본문 전체가 초점을 받으므로 둘레 테두리는 그리지 않는다(키보드 이동 때 화면 전체 테두리 방지).
