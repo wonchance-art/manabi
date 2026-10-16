@@ -6,8 +6,13 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { sliceBetween } from './helpers/sliceBetween';
 
 vi.mock('next/link', () => ({ default: ({ children, prefetch, ...props }) => createElement('a', props, children) }));
+vi.mock('../AuthContext', () => ({ useAuth: () => ({ user: null, loading: true }) }));
 
 import DiscoverLoading from '../../app/(app)/discover/loading';
+import HomeLoading from '../../app/(app)/home/loading';
+import ResumeTile from '../../components/learn/ResumeTile';
+import ParagraphTile from '../../components/learn/ParagraphTile';
+import { ReviewTile } from '../../components/learn/LearnTiles';
 
 // 로딩 스켈레톤(LOADING-SKELETON-001 — 오너 승인 2026-10-17 KST): 대기 화면을 스피너 · 대기 문구 대신 실제 화면의 칸 모양으로.
 // 실측 우선순위 ① 산책 /discover(탭 전환 스피너 0.25~0.4초) ② 배움 /home(라우트 0.15초 · 「읽던 위치 불러오는 중…」)
@@ -38,9 +43,43 @@ describe('① 발견 대기 화면 — src/app/(app)/discover/loading.jsx', () =
   });
 });
 
+describe('② 배움 — home/loading.jsx와 화면 안 골격이 같은 칸', () => {
+  it('home/loading.jsx: 배움 칸 배치 그대로(이어 읽기 · 목표 · 오늘 목표 · 연속 · 단어 복습 · 오늘 문단)', () => {
+    expect(fs.existsSync(path.join(ROOT, 'src/app/(app)/home/loading.jsx'))).toBe(true);
+    const html = render(createElement(HomeLoading));
+    region(html, '배움 화면');
+    for (const cls of ['learn-grid', 'learn-resume', 'learn-quad', 'learn-goal', 'learn-stat', 'learn-review', 'learn-paragraph']) expect(html).toContain(cls);
+    expect(html).not.toContain('아직 수집한 단어가 없어요');
+    expect(html).not.toContain('시작하면 오늘 문단을 만들어요');
+  });
+  it('이어 읽기 받는 중: 「읽던 위치 불러오는 중…」은 화면 읽기용 한 줄, 칸은 골격', () => {
+    const html = render(createElement(ResumeTile, { pending: true }));
+    region(html, '읽던 위치');
+    expect(html).toContain('skeleton-line');
+    expect(html).not.toContain('class="learn-resume__sub">읽던 위치 불러오는 중…');
+  });
+  it('단어 복습 · 오늘 문단 받는 중에는 거짓 빈 상태를 보이지 않는다', () => {
+    const review = render(createElement(ReviewTile, { pending: true }));
+    region(review, '단어 복습');
+    expect(review).not.toContain('아직 수집한 단어가 없어요');
+    expect(review).not.toContain('href='); // 갈 곳을 아직 모른다
+    const paragraph = render(createElement(ParagraphTile, { state: { kind: 'empty' }, href: '/study', pending: true }));
+    region(paragraph, '오늘 문단');
+    expect(paragraph).not.toContain('시작하면 오늘 문단을 만들어요');
+    expect(render(createElement(ParagraphTile, { state: { kind: 'empty' }, href: '/study' }))).toContain('시작하면 오늘 문단을 만들어요');
+  });
+  it('HomePage가 처음 받는 중일 때 골격을 켠다', () => {
+    const home = read('src/views/HomePage.jsx');
+    expect(home).toContain('pending={!data && (authLoading || isLoading)} />');
+    expect(home).toContain('pending={paragraph.isPending} href={`/study?lang=${lang}`}');
+    expect(read('src/components/learn/GoalTrackTile.jsx')).toContain("if (status === 'loading') return <GoalTrackSkeleton className={className} />;");
+  });
+});
+
 describe('부품 · 토큰 · 모션 축소', () => {
   it('골격 부품은 Skeleton.jsx 한 곳(재사용) — 새 화면은 거기서 가져온다', () => {
-    for (const file of ['src/app/(app)/discover/loading.jsx']) {
+    for (const file of ['src/app/(app)/discover/loading.jsx', 'src/components/learn/ResumeTile.jsx',
+      'src/components/learn/ParagraphTile.jsx', 'src/components/learn/LearnTiles.jsx', 'src/components/learn/GoalTrackTile.jsx']) {
       expect(read(file)).toMatch(/import \{ SkeletonLine(?:, SkeletonRegion)? \} from '@\/components\/Skeleton';/);
     }
     const skeleton = read('src/components/Skeleton.jsx');
@@ -56,5 +95,6 @@ describe('부품 · 토큰 · 모션 축소', () => {
   it('반짝임은 전용 모션 축소 블록에서 정지 회색 칸', () => {
     const css = read('src/index.css');
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*\.skeleton, \.skeleton-line \{ animation: none; \}\s*\}/);
+    expect(read('src/components/learn/learn.css')).toContain('.learn-review__cycle--skeleton{animation:none}');
   });
 });

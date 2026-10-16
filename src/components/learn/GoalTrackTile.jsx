@@ -15,6 +15,7 @@ import { buildPlan, markProgress } from '@/lib/studyPlan';
 import { countRecentDone, pace } from '@/lib/goalPace';
 import { fetchGoalProgressRows } from '@/lib/goalRows';
 import { goalTrackView } from '@/lib/learnDashboard';
+import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
 
 export async function fetchGoalCatalog() {
   const response = await fetch('/api/goal-catalog');
@@ -64,11 +65,21 @@ function Shell({ onOpen, href, className, children, ...rest }) {
   return <Link href={href} prefetch={false} className={className} {...rest}>{children}</Link>;
 }
 
+/** 목표 칸 골격(LOADING-SKELETON-001) — 받는 중 · 배움 대기 화면(home/loading.jsx)이 같은 칸을 쓴다. */
+export function GoalTrackSkeleton({ className = '' }) {
+  return (
+    <SkeletonRegion className={`learn-tile learn-goal learn-goal--empty ${className}`.trim()} label="목표">
+      <span aria-hidden="true">
+        <span className="learn-goal__title"><SkeletonLine width="7em" /></span>
+        <span className="learn-goal__line"><SkeletonLine width="14em" /></span>
+      </span>
+    </SkeletonRegion>
+  );
+}
+
 export default function GoalTrackTile({ className = '', href = '/progress', editHref = '/progress?goal=edit', onOpen }) {
   const { status, view } = useGoalTrack();
-  if (status === 'loading') {
-    return <div className={`learn-tile learn-goal learn-goal--empty ${className}`.trim()} role="status"><span className="learn-goal__line">목표 불러오는 중…</span></div>;
-  }
+  if (status === 'loading') return <GoalTrackSkeleton className={className} />;
   if (!view) {
     return (
       <Shell onOpen={onOpen} href={editHref} className={`learn-tile learn-goal learn-goal--empty ${className}`.trim()}>

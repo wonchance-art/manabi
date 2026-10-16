@@ -217,9 +217,11 @@ export default function HomePage({ book = null }) {
         <TodayGoalTile vocab={data?.vocab || []} projections={data?.learning?.projections || []} profile={profile} empty={!data} />
         <StreakTile profile={profile} />
       </div>
-      <ReviewTile projections={data?.learning?.projections || []} lang={lang} count={reviewCount} href={reviewHref} className="learn-order-review" />
+      {/* 처음 받는 중에는 빈 상태(「아직 수집한 단어가 없어요」 · 「시작하면 오늘 문단을 만들어요」) 대신 골격(LOADING-SKELETON-001). */}
+      <ReviewTile projections={data?.learning?.projections || []} lang={lang} count={reviewCount} href={reviewHref} className="learn-order-review"
+        pending={!data && (authLoading || isLoading)} />
       <ParagraphTile state={paragraphTileState} lang={paragraphTileState.kind === 'ready' ? paragraph.data?.lang || lang : lang} busy={paragraph.isPlaceholderData}
-        href={`/study?lang=${lang}`} onForecastTap={onForecastTap} />
+        pending={paragraph.isPending} href={`/study?lang=${lang}`} onForecastTap={onForecastTap} />
     </div>
     {!local.storageAvailable && <p role="status" className="learn-note">이 브라우저에서는 읽던 위치를 저장할 수 없어요.</p>}
     {continueDeckItems.length > 0 && <section className="learn-more" aria-label="이어서"><ContinueDeck items={continueDeckItems} /></section>}

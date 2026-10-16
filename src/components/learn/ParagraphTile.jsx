@@ -5,10 +5,23 @@
  */
 import Link from 'next/link';
 import { encounterLookupLang } from '@/lib/refVocabLookup';
+import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
 
 // busy = 새 언어의 문단을 받는 동안 이전 내용을 흐리게 남긴 상태(LIST-KEEP). 머리줄 · 시작하기는 새 언어 그대로.
-export default function ParagraphTile({ state, lang, href, kicker = '오늘 문단', onForecastTap, busy = false }) {
+// pending = 처음 받는 중(LOADING-SKELETON-001) — 「시작하면 오늘 문단을 만들어요」(거짓 빈 상태) 대신 문장 두 줄 골격.
+export default function ParagraphTile({ state, lang, href, kicker = '오늘 문단', onForecastTap, busy = false, pending = false }) {
   const code = encounterLookupLang(lang) || undefined;
+  if (pending) {
+    return (
+      <Link href={href} prefetch={false} className="learn-tile learn-paragraph learn-order-paragraph" aria-label={`${kicker} · 시작하기`}>
+        <span className="learn-tile__head"><span className="learn-kick">{kicker}</span></span>
+        <SkeletonRegion as="span" className="learn-paragraph__cycle" label={kicker}>
+          <span className="learn-paragraph__sentence" aria-hidden="true"><SkeletonLine width="12em" /><br /><SkeletonLine width="8em" /></span>
+        </SkeletonRegion>
+        <span className="learn-tile__cta">시작하기 →</span>
+      </Link>
+    );
+  }
   return (
     <Link href={href} prefetch={false} className="learn-tile learn-paragraph learn-order-paragraph" aria-label={`${kicker} · 시작하기`}
       onClick={state.kind === 'forecast' ? onForecastTap : undefined}>
