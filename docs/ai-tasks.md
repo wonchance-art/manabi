@@ -952,6 +952,8 @@
   · 같은 PR(LIBRARY-PREFETCH-001): 서재 첫 화면을 서버가 미리 받음(같은 키 · 같은 가져오기 + HydrationBoundary, 800ms 예산 · 실패면 기존 골격) —
     로그인 서재 직접 진입 CLS 0.032~0.183 → 0 · 첫 줄 0.22~0.36초. 대화 묶음 자리. 아는 단어 낙관 쓰기는 응답 전 이탈 때 keepalive로 한 번 더(실기기 확인 중).
     Preview 8c06c1b 검증 스크립트 통과(대기 밑줄 · 포커스 · 눌림 6곳 · 키보드 · 골격 CLS 0 · 콘솔 0). 배움 골격은 첫 클릭 1.57초(prefetch:false) — 의도 prefetch 진행.
+  · 같은 PR(APP-FEEL-004): 배움 탭 의도 prefetch — prefetch:false 유지 + 마우스 80ms 머묾 · 키보드 focus-visible 때만 router.prefetch(kind auto, 4분 중복 방지).
+    터치 · 서재 제외(서재는 서버 미리 받기). 병합 전 확인: 서재 미리 받기가 만료 토큰으로 서버 갱신을 일으키지 않게(진행).
   · 보류: CJK 가변 weight(@font-face −67%, brotli 전송 −2%) — 600 · 650 · 800 · 300 굵기가 실제 값으로 바뀌는 시각 변경이라 오너 확인 뒤.
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
