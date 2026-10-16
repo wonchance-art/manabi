@@ -10,6 +10,7 @@
 | v1 | 초안 |
 | v2 | 에이전트 5종 검토 반영. 방위·시점·후반 재배열·본문 RESERVE·로고 RESERVED |
 | v3 | 에이전트 2종 재검토 반영 |
+| v3.2 | 내지에 제호·로고가 붙는 문제 대응: SERIES에 INSIDE PAGES 규칙, 12쪽에 내지 명시. 생성은 ChatGPT 임시 채팅(메모리·대화 기록 미사용) 권장 |
 | v3.1 | 오너 기준 반영: 학습자 배려 없이 실제 일본 매거진 기준. 루비는 일본 잡지 관행대로, 쪽 참조는 「→P.n」. 金鳥居에 「富士山」 현판이 실제로 있다(山梨県立富士山世界遺産センター 리플릿)는 확인에 따라 현판은 그리되 글자는 읽히지 않게 |
 
 v3에서 고친 것:
@@ -107,6 +108,7 @@ ChatGPT가 주는 것은 글자까지 구워진 한 장짜리 래스터 이미�
 - 받은 이미지는 **새 메시지에 첨부**해서 Claude에게 보내고 쪽 번호를 적는다. 작업 도중에 보낸 이미지는 파일로 저장되지 않는다.
 - 고칠 때는 같은 대화에서 `Keep everything identical except: ___`로 한 군데씩 고친다. 3번 안에 안 되면 Claude에게 넘긴다.
 - **그림 쪽은 시안을 받아 Claude 승인 → 같은 대화에서 플레이트 요청**(§A2 블록). 두 장 모두 Claude에게 보낸다.
+- **ChatGPT는 임시 채팅으로 연다**(메모리·이전 대화 참고를 쓰지 않게). 계정에 TONARI 로고 생성 기록이 있어, 내지에 제호를 멋대로 붙이는 원인이 된다.
 - **첨부 금지 파일**: `guide-notes.png`(빨간 글자 있음), `14-view/out/guide.png`(v1 시점), `out-honcho-p8/guide.png`(1:1).
 
 첨부 파일은 모두 이 폴더에 있다: **`docs/japanology/magazine/issues/machi-01-fujiyoshida/attach/`**
@@ -138,6 +140,8 @@ DELIVERABLE: one finished page image of a printed Japanese editorial magazine (a
 
 FORMAT: use the aspect ratio stated in the PAGE block (single pages portrait 2:3; spreads landscape 3:2, where the left page is the left half and the right page is the right half). The page fills the whole canvas: no mock-up, no photographed paper, no page curl, no drop shadow, no border.
 SAFE AREA: no type in the top 7% or the bottom 7% of the canvas height. On spreads, also keep type at least 5% of the canvas width away from the left and right edges.
+
+INSIDE PAGES: every page except PAGE 1 is an inside page. Inside pages have NO masthead and NO logo: never draw the word TONARI, the title となり in large type, or any wordmark or emblem, at the top or anywhere. The magazine name appears only inside the tiny folio at the bottom corner.
 
 ATTACHMENTS — each one has a single role, named in the PAGE block:
 - STYLE REFERENCE = an approved earlier page of this series. Match its paper colour, ink colours, typefaces, type sizes, rules, margins and illustration style. Do not copy its text, layout or picture content.
@@ -187,6 +191,7 @@ FINAL CHECK before you output: every T and B string appears exactly once (or as 
 
 ```
 PAGE 12 — closing page. Portrait 2:3.
+This is an INSIDE page — the last page of a feature article — not a cover. No masthead, no logo, no magazine title at the top.
 BODY MODE: RENDER
 ATTACHMENTS: none (this page becomes the STYLE REFERENCE for all others).
 
