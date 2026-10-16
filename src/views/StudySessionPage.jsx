@@ -28,6 +28,7 @@ import { splitSentenceAroundWord } from '../lib/constants';
 import { mapParagraphToItems } from '../lib/studyParagraph';
 import { ARCHIVED_TEXTBOOK_NOTICE, learnerHref } from '../lib/bookNavigation';
 import { authEntryHref } from '../lib/authRedirect';
+import { focusIfFree, ignoreHeldKey } from '../lib/focusAfterAction';
 
 /** 문법 일정을 끝내 못 보냈다(재시도 상한 · 오프라인으로 화면 떠남) — copy-standard 실패 + 보존 여부 한 문장. */
 const GRAMMAR_NOT_SAVED = '문법 복습 일정을 저장하지 못했어요. 이 문법은 다음 학습에 다시 나와요.';
@@ -235,6 +236,14 @@ export default function StudySessionPage({
 
   // 문항 전환 시 팝오버·듣기 실패표시·오답 해설 리셋
   useEffect(() => { setActiveWord(null); setListenFailed(false); setExplainState(null); }, [item?.uid]);
+  // FOCUS-AFTER-ACTION-001 C3 — 답하면 보기 · 입력칸이 잠겨 초점이 사라졌다. 피드백에 들어서면 「계속 →」/「결과 보기 →」로 잇는다
+  // (산출 문항은 자체 버튼이라 제외). 초점이 세션 화면 밖이면 뺏지 않는다. 화면 아래쪽 버튼이라 preventScroll(focusIfFree).
+  const continueRef = useRef(null);
+  useEffect(() => {
+    if (phase !== 'feedback' || item?.type === 'produce-writing') return;
+    const button = continueRef.current;
+    focusIfFree(button, button?.closest('.page-container'));
+  }, [phase, item?.uid, item?.type]);
 
   // 재료 단어 팝오버 — 바깥 탭 시 닫기(트리거·팝오버는 stopPropagation으로 유지)
   useEffect(() => {
@@ -1630,8 +1639,8 @@ export default function StudySessionPage({
 
       {/* 계속 버튼 (산출 문항은 자체 버튼 사용) */}
       {phase === 'feedback' && item.type !== 'produce-writing' && (
-        <div style={{ marginTop: 18 }}>
-          <Button onClick={next} style={{ width: '100%' }}>
+        <div style={{ marginTop: 18 }} onKeyDown={ignoreHeldKey}>
+          <Button ref={continueRef} onClick={next} style={{ width: '100%' }}>
             {idx + 1 >= queue.length ? '결과 보기 →' : '계속 →'}
           </Button>
         </div>

@@ -7,6 +7,7 @@ import {classStudyContext,classStudyNeighborHref,studySelection} from '../lib/cl
 import { useState, useRef, useEffect, useMemo, useCallback, cloneElement, isValidElement } from 'react';
 import { useParams, useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { authEntryHref } from '../lib/authRedirect';
+import { focusIfFree, ignoreHeldKey } from '../lib/focusAfterAction';
 import {isStudyNote} from '@/lib/studyNoteIdentity';
 import useLibraryActivity from '@/components/library/useLibraryActivity';
 import LibrarySaveButton from '@/components/library/LibrarySaveButton';
@@ -124,6 +125,7 @@ const DictationPicker = lazyPanel(() => import('../components/DictationPicker'))
 const DictationPanel = lazyPanel(() => import('../components/DictationPanel'));
 const ConversationThread = lazyPanel(() => import('../components/conversation/ConversationThread'), {fallback:<Spinner message="자료 불러오는 중…" />});
 const OriginalMaterialReader = lazyPanel(() => import('@/components/materials/OriginalMaterialReader'), {fallback:<div className="page-container"><Spinner message="자료 불러오는 중…" /></div>});
+const SAVED_ROW_FOCUS_MS = 10000; // 등급을 누른 뒤 저장 줄로 초점을 잇는 시한(FOCUS-AFTER-ACTION-001 C1) — 느린 저장도 덮고, 오래 지난 뒤 끼어들지 않는다.
 // 수업 기능(숨김) — 일반 독자는 받지 않는다. 각 문은 그 부품이 스스로 null/fallback을 내는 필요조건만 본다(정밀 판정은 부품 안).
 // 수업 부품을 받는 동안에도 일반 단어창 시트(fallback)를 그대로 그린다 — 부품이 판정 전에 내는 것과 같다.
 const ClassroomReaderPanel = lazyPanel(() => import('../components/classroom/ClassroomReader'), {fallback:props=>props.fallback()});
@@ -2540,6 +2542,22 @@ export default function ViewerPage() {
     } finally { undoBusy.current = false; }
   };
 
+  // FOCUS-AFTER-ACTION-001 C1 — 등급(저장 · 본문 안 복습)을 누르면 그 버튼이 「저장 중…」을 거쳐 저장 줄(save-grade__saved)로
+  // 바뀌며 사라지고, 초점이 body로 떨어졌다. 저장 줄이 그려지면 그 줄의 첫 활성 컨트롤(이 문맥 추가 · 아는 단어)로 잇는다.
+  // 같은 자료 · 같은 단어 · SAVED_ROW_FOCUS_MS 안에서만. 초점이 카드 밖(본문 낱말 · 다른 패널)에 있으면 뺏지 않는다(focusIfFree).
+  const savedRowFocus = useRef(null);
+  const savedRowFocusKey = (token) => `${saveScopeRef.current}:${token?.id ?? token?.text ?? ''}`;
+  const armSavedRowFocus = (token) => { savedRowFocus.current = { key: savedRowFocusKey(token), at: Date.now() }; };
+  useEffect(() => {
+    const pending = savedRowFocus.current;
+    if (!pending) return;
+    if (pending.key !== savedRowFocusKey(selectedToken) || Date.now() - pending.at > SAVED_ROW_FOCUS_MS) { savedRowFocus.current = null; return; }
+    const target = [...document.querySelectorAll('#inspector-word .save-grade__saved button:not(:disabled)')].find((el) => el.getClientRects().length);
+    if (!target) return;
+    savedRowFocus.current = null;
+    focusIfFree(target, target.closest('#inspector-word'));
+  });
+
   // W R3㉮ 인라인 복습 — 4등급 정본. 스냅샷은 훅이 돌려준 prev·reviewedAt으로 호출부가 만든다.
   const gradeInline = (rating) => {
     if (koreanPieceSelected) return; // AD-R3 §7.5: 한국어 나눈 조각은 등급 대상이 아니다(키 1~4 포함)
@@ -2549,6 +2567,7 @@ export default function ViewerPage() {
     if (inlineGradeRequests.current.has(requestKey)) return;
     inlineGradeRequests.current.add(requestKey);
     setPendingInlineGrades(prev => new Set(prev).add(requestKey));
+    armSavedRowFocus(selectedToken);
     const action = ++gradeAction.current;
     lastInlineGradeRef.current = null;
     lastSaveRef.current = null;
@@ -2639,6 +2658,7 @@ export default function ViewerPage() {
     if (savingGrade.current.has(saveKey)) return;
     savingGrade.current.add(saveKey);
     setPendingGradeSaves(prev => new Set(prev).add(saveKey));
+    armSavedRowFocus(selectedToken);
     const action = ++gradeAction.current;
     const g = Number.isInteger(grade) && grade >= 1 && grade <= 4 ? grade : undefined;
 
@@ -3467,7 +3487,7 @@ export default function ViewerPage() {
           {knownToggle}
         </div>;
         return (
-          <div className={`word-detail-card__actrow save-grade__saved${justSaved && justSaved === selectedToken?.id ? ' save-grade__saved--fresh' : ''}`}>
+          <div className={`word-detail-card__actrow save-grade__saved${justSaved && justSaved === selectedToken?.id ? ' save-grade__saved--fresh' : ''}`} onKeyDown={ignoreHeldKey}>
             <span className="save-grade__status">
               <button disabled className="btn btn--ghost btn--sm save-grade__in">{vt('✓ 담은 표현에 있음')}</button>
               {nextReview && <span className="save-grade__next">{nextReview.due ? vt('복습 차례') : vt('다음 복습 {date}', { date: nextReview.label })}</span>}

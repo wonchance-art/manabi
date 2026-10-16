@@ -27,11 +27,16 @@ function focusHeading(doc, heading) {
   return doc.activeElement === heading;
 }
 
+/** 초점을 잃었나 — 없음 · body · 사라진(연결 끊긴) 요소. 화면 이동(여기)과 화면 안 동작 뒤(focusAfterAction)가 같은 판정을 쓴다. */
+export function focusIsLost(doc = globalThis.document) {
+  const active = doc?.activeElement;
+  return !active || active === doc.body || !active.isConnected;
+}
+
 /** @returns {'heading' | 'main' | null} 옮긴 곳(옮기지 않았으면 null) */
 export function focusPageIfLost(doc = globalThis.document) {
   if (!doc) return null;
-  const active = doc.activeElement;
-  if (active && active !== doc.body && active.isConnected) return null;
+  if (!focusIsLost(doc)) return null;
   const main = doc.getElementById?.('main-content');
   if (!main) return null;
   const heading = pageHeading(main, doc);
