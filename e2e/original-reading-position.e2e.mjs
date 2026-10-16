@@ -38,11 +38,12 @@ test('two independent devices restore PDF page and offer a later remote position
 });
 
 test('EPUB last attachment and chapter sync; an explicit PDF URL remains explicit',async()=>{
- const a=await fixture(options);let b;
+ // 서재 「읽던 곳에서」는 personal_library_page_v2(서재 관리 마이그레이션)로 읽는다 — fixture의 management가 그 RPC를 실 Postgres로 돌린다.
+ const a=await fixture({...options,management:true});let b;
  try{
   const root=await create(a);await pdfPage(a,1);await a.page.locator('#original-file-select').selectOption('1');await a.page.locator('.original-epub').waitFor();await a.page.locator('.original-chapter-nav button').last().click();
   await position(a,r=>r[0]?.source.kind==='epub'&&r[0].locator.chapter===2);
-  b=await fixture({...options,shared:a.shared,width:390});await b.page.goto(`/viewer/${root.id}`);await b.page.locator('.original-epub').waitFor();assert.equal(await b.page.locator('.original-chapter-nav').innerText(),'← 이전 장\n2 / 2\n다음 장 →');
+  b=await fixture({...options,management:true,shared:a.shared,width:390});await b.page.goto(`/viewer/${root.id}`);await b.page.locator('.original-epub').waitFor();assert.equal(await b.page.locator('.original-chapter-nav').innerText(),'← 이전 장\n2 / 2\n다음 장 →');
   const pdf=root.processed_json.metadata.composer.assets.find(a=>a.kind==='pdf');await b.page.goto(`/viewer/${root.id}?asset=${pdf.hash}`);await pdfPage(b,1);assert.equal(await b.page.locator('.original-epub').count(),0);
   await a.page.goto('/materials');await a.page.locator('.shelf-recent-card').waitFor();assert.match(await a.page.locator('.shelf-recent-card').innerText(),/읽던 위치에서 이어 읽기/);await a.page.locator('.shelf-recent-card').click();await a.page.locator('.original-epub').waitFor();assert.equal(a.rows.length,1);await noOverflow(a);await noOverflow(b);
  }finally{await b?.close();await a.close();}
