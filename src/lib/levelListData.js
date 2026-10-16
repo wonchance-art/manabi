@@ -7,7 +7,7 @@
 // 옛 급수라 레벨이 아니다. 중국어 문형은 2026 문법 자료가 없어 콘텐츠 레벨(H1~H6) 그대로다.
 import { JAPANESE_VOCAB_REF } from './japaneseVocabRegistry';
 import { getBunkei as getJaBunkei, countBunkei as countJaBunkei } from '../content/japanese';
-import { getVocab as getZhVocab, getBunkei as getZhBunkei, countBunkei as countZhBunkei, ZH_LEVEL_META } from '../content/chinese';
+import { getVocab as getZhVocab, getBunkei as getZhBunkei, countBunkei as countZhBunkei, ZH_LEVEL_META, ZH_HSK79_VOCAB } from '../content/chinese';
 import { loadZhHskLevels, zhHskLevelOf } from './zhHskLevel';
 import { LEVEL_LIST_LANGS, compactLevelEntry, levelKinds, levelWordKey, shortMeaning } from './levelList';
 import { loadHanziTable } from './zhHanzi';
@@ -51,12 +51,13 @@ function japaneseVocabGroups(levelKey) {
 }
 
 let zhDictionary = null;
-/** 우리 사전 표제어 → 첫 항목(콘텐츠 레벨 낮은 순, 생활 어휘 마지막). */
+/** 우리 사전 표제어 → 첫 항목(콘텐츠 레벨 낮은 순, 생활 어휘 다음, 7–9 통합 밴드 보강 마지막). */
 function chineseDictionary() {
   if (zhDictionary) return zhDictionary;
   const map = new Map();
-  for (const meta of ZH_LEVEL_META) {
-    for (const theme of getZhVocab(meta.key)?.themes || []) {
+  const sets = [...ZH_LEVEL_META.map((meta) => getZhVocab(meta.key)), ...ZH_HSK79_VOCAB];
+  for (const set of sets) {
+    for (const theme of set?.themes || []) {
       for (const w of theme.words || []) {
         const key = levelWordKey(w.zh);
         if (key && !map.has(key)) map.set(key, w);
