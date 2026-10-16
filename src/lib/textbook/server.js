@@ -63,6 +63,10 @@ export async function publishedBookCatalog(db) {
  // The existing materials feature remains usable while the additive migration awaits deployment.
  if(error&&['42P01','PGRST205'].includes(error.code))return [];
  if(error)throw textbookError(503,'교재 목록을 확인하지 못했어요.');if(!release)return [];
- const edition=await readEdition(db,release.edition_id);if(!edition)return [];
- return edition.manuscript.lessons.map(l=>({slug:`n5-book-${l.id}`,title:`${String(l.number).padStart(2,'0')}과 · ${l.title}`,href:`/books/${BOOK_ID}?edition=${release.edition_id}#${l.id}`}));
+ // 원고 jsonb는 받지 않는다 — 발행 확인은 해시 두 개(readEditionStamp), 과 목록은 같은 판본 파일(cachedCandidate)에서.
+ // 대조는 publishedReading과 같은 판정이다(content_hash · bundleHash 불일치 → 503).
+ const edition=await readEditionStamp(db,release.edition_id);if(!edition)return [];
+ const book=await cachedCandidate(release.edition_id);
+ if(edition.content_hash!==book.contentHash||edition.artifact_manifest?.bundleHash!==book.artifactManifest.bundleHash)throw textbookError(503,'교재 판본을 확인하지 못했어요.');
+ return book.manuscript.lessons.map(l=>({slug:`n5-book-${l.id}`,title:`${String(l.number).padStart(2,'0')}과 · ${l.title}`,href:`/books/${BOOK_ID}?edition=${release.edition_id}#${l.id}`}));
 }

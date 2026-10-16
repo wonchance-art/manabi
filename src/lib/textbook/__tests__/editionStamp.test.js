@@ -54,3 +54,36 @@ describe('공개 읽기 경로의 판본 재사용(cachedCandidate)', () => {
     expect(read('src/lib/server/bookReading.js')).toMatch(/await cachedCandidate\(id\)/);
   });
 });
+
+describe('교재 목록(publishedBookCatalog) — 원고 없이 해시 대조 + 판본 파일', () => {
+  const catalogDb = ({ release = { edition_id: EDITION }, stamp, releaseError = null } = {}) => {
+    const calls = [];
+    return { calls, from: (table) => ({ select: (columns) => { calls.push({ table, columns }); const q = { eq: () => q,
+      maybeSingle: async () => (table === 'textbook_book_releases' ? { data: release, error: releaseError } : { data: stamp, error: null }) }; return q; } }) };
+  };
+  it('판본은 원고 열 없이 고르고, 과 목록은 같은 판본 파일의 과와 같다', async () => {
+    const { candidate, publishedBookCatalog } = await import('../server');
+    const book = await candidate(EDITION);
+    const db = catalogDb({ stamp: { content_hash: book.contentHash, artifact_manifest: book.artifactManifest } });
+    const list = await publishedBookCatalog(db);
+    const editions = db.calls.filter(call => call.table === 'textbook_book_editions');
+    expect(editions).toHaveLength(1);
+    expect(editions[0].columns.split(',')).not.toContain('manuscript');
+    expect(list).toEqual(book.manuscript.lessons.map(l => ({ slug: `n5-book-${l.id}`, title: `${String(l.number).padStart(2, '0')}과 · ${l.title}`,
+      href: `/books/japanese-n5?edition=${EDITION}#${l.id}` })));
+    expect(list).toHaveLength(42);
+  });
+  it('발행 해시와 판본 파일이 다르면 목록을 만들지 않는다(503 — publishedReading과 같은 판정)', async () => {
+    const { candidate, publishedBookCatalog } = await import('../server');
+    const book = await candidate(EDITION);
+    await expect(publishedBookCatalog(catalogDb({ stamp: { content_hash: 'f'.repeat(64), artifact_manifest: book.artifactManifest } }))).rejects.toMatchObject({ status: 503 });
+    await expect(publishedBookCatalog(catalogDb({ stamp: { content_hash: book.contentHash, artifact_manifest: { bundleHash: 'x' } } }))).rejects.toMatchObject({ status: 503 });
+  });
+  it('발행 없음 · 판본 행 없음 · 마이그레이션 전(42P01 · PGRST205)은 빈 목록', async () => {
+    const { publishedBookCatalog } = await import('../server');
+    expect(await publishedBookCatalog(catalogDb({ release: null }))).toEqual([]);
+    expect(await publishedBookCatalog(catalogDb({ stamp: null }))).toEqual([]);
+    for (const code of ['42P01', 'PGRST205']) expect(await publishedBookCatalog(catalogDb({ release: null, releaseError: { code } }))).toEqual([]);
+    await expect(publishedBookCatalog(catalogDb({ release: null, releaseError: { code: '57014' } }))).rejects.toMatchObject({ status: 503 });
+  });
+});
