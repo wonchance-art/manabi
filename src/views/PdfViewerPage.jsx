@@ -24,6 +24,7 @@ import { formatDetail } from '../lib/wordDetailFormat';
 import { langNameKo } from '../lib/constants';
 import { usePdfRangeMutation } from '../lib/usePdfRangeMutation';
 import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
+import { readCompleteLegacyRows } from '../lib/legacyReviewSync';
 import SaveContextButton, { saveContext } from '../components/learning/SaveContextButton';
 import MaterialChapterLinks from '../components/learning/MaterialChapterLinks';
 import TokenPosLabel from './TokenPosLabel';
@@ -136,8 +137,9 @@ export default function PdfViewerPage() {
   const { data: savedVocab } = useQuery({
     queryKey: ['pdf-saved-vocab', user?.id, language],
     queryFn: async () => {
-      const { data, error } = await supabase.from('user_vocabulary').select('word_text, base_form').eq('user_id', user.id).eq('language', language);
-      if (error) throw error;
+      // 1000행 상한에 잘리지 않게 정본 완전 조회로 — 잘리면 담은 말이 「새 말」로 보인다.
+      const data = await readCompleteLegacyRows(() => supabase.from('user_vocabulary')
+        .select('id, word_text, base_form', { count: 'exact' }).eq('user_id', user.id).eq('language', language));
       const set = new Set();
       for (const v of (data || [])) { if (v.word_text) set.add(v.word_text); if (v.base_form) set.add(v.base_form); }
       return set;

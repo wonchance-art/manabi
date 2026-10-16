@@ -4,6 +4,7 @@
  * 실패한 조회는 빈 배열로 흘러 그 축이 0이 될 뿐(무해성 — 엔진의 0 무표기가 흡수).
  */
 import { supabase } from './supabase';
+import { readCompleteLegacyRows } from './legacyReviewSync';
 import { kstWeekStartMs } from './growthStats';
 import { dropUndoneEvents } from './undoneReviews';
 import { fetchUndoMarkers } from './undoneReviewsRows';
@@ -14,8 +15,9 @@ export async function fetchWeeklyReportRows(userId) {
     // item_key는 되돌린 채점 대조 키(W 후속 ②) — detail은 얹지 않고 마커만 아래 전용 조회로 붙인다
     supabase.from('review_events').select('source, item_key, correct, created_at')
       .eq('user_id', userId).gte('created_at', prevStartIso).limit(2000),
-    supabase.from('user_vocabulary').select('created_at')
-      .eq('user_id', userId).gte('created_at', prevStartIso),
+    // 1000행 상한에 잘리지 않게 정본 완전 조회(가져오기로 2주에 1000개 넘게 담을 수 있다). 실패는 기존대로 빈 축.
+    readCompleteLegacyRows(() => supabase.from('user_vocabulary').select('id, created_at', { count: 'exact' })
+      .eq('user_id', userId).gte('created_at', prevStartIso)).then(data => ({ data }), () => ({ data: [] })),
     supabase.from('user_vocab_encounters').select('first_met_at')
       .eq('user_id', userId).gte('first_met_at', prevStartIso),
     supabase.from('reading_progress').select('completed_at')

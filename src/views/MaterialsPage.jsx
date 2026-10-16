@@ -13,6 +13,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '../lib/supabase';
 import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
+import { readCompleteLegacyRows } from '../lib/legacyReviewSync';
 import { buildVocabularyWordIndex, countVocabularyDueInMaterial } from '../lib/vocabularyDueIndex';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
@@ -372,11 +373,11 @@ export default function MaterialsPage({ libraryView = null }) {
   const { data: savedVocabIndex } = useQuery({
     queryKey: ['saved-vocab-index', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // PostgREST 기본 상한(1000행)에 잘리지 않게 정본 완전 조회(id 순 page · exact count)로 읽는다.
+      const data = await readCompleteLegacyRows(() => supabase
         .from('user_vocabulary')
-        .select('word_text, base_form')
-        .eq('user_id', user.id);
-      if (error) throw error;
+        .select('id, word_text, base_form', { count: 'exact' })
+        .eq('user_id', user.id));
       const surfaces = new Set();
       const bases = new Set();
       for (const v of data || []) {

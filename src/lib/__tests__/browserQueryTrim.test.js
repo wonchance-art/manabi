@@ -181,3 +181,52 @@ describe('④ 서재 — 쓰기 지점이 무효화하므로 30초 캐시', () =
     }
   });
 });
+
+describe('⑤ 단어장 1000행 상한 — 브라우저 조회가 조용히 잘리지 않는다', () => {
+  const clientFiles = fs.readdirSync('src', { recursive: true }).map((f) => path.join('src', String(f)).split(path.sep).join('/'))
+    .filter((f) => /\.(jsx?|tsx?)$/.test(f) && !f.includes('__tests__') && !f.startsWith('src/app/api/') && !f.startsWith('src/lib/server/'));
+
+  it('user_vocabulary·vocabulary_with_exclusions 읽기는 모두 범위가 있거나 정본 완전 조회를 탄다', () => {
+    // 실측 최대 1,232행 — PostgREST 기본 상한(1000) 아래로 범위를 두지 않은 select는 뒤쪽 행을 말없이 버린다.
+    const unbounded = [];
+    for (const f of clientFiles) {
+      const src = read(f);
+      for (const m of src.matchAll(/\.from\(\s*'(user_vocabulary|vocabulary_with_exclusions)'\s*\)/g)) {
+        let end = src.indexOf(';', m.index);
+        if (end < 0 || end - m.index > 700) end = m.index + 700;
+        const chain = src.slice(m.index, end);
+        const head = chain.split('.select(')[0];
+        if (!chain.includes('.select(') || /\.(insert|update|upsert|delete)\(/.test(head)) continue;
+        const complete = /readCompleteLegacyRows\(\(\) =>\s*(?:client|supabase)?\s*$/.test(src.slice(Math.max(0, m.index - 80), m.index));
+        const bounded = /\.range\(|\.limit\(|\.single\(|\.maybeSingle\(|head:\s*true|\.in\(|\.eq\(\s*'id'/.test(chain);
+        if (!complete && !bounded) unbounded.push(`${f}:${src.slice(0, m.index).split('\n').length}`);
+      }
+    }
+    expect(unbounded).toEqual([]);
+  });
+
+  it('맞춤도 담김 인덱스·PDF 담김 표시·단어장 본체·주간 리포트·내보내기가 정본 완전 조회를 쓴다', () => {
+    expect(read('src/views/MaterialsPage.jsx')).toMatch(/readCompleteLegacyRows\(\(\) => supabase\s*\.from\('user_vocabulary'\)\s*\.select\('id, word_text, base_form', \{ count: 'exact' \}\)/);
+    expect(read('src/views/PdfViewerPage.jsx')).toMatch(/readCompleteLegacyRows\(\(\) => supabase\.from\('user_vocabulary'\)\s*\.select\('id, word_text, base_form', \{ count: 'exact' \}\)/);
+    expect(read('src/lib/vocabIO.js')).toMatch(/readCompleteLegacyRows\(\(\) => supabase\s*\.from\('vocabulary_with_exclusions'\)\s*\.select\('\*', \{ count: 'exact' \}\)/);
+    expect(read('src/lib/weeklyReportRows.js')).toMatch(/readCompleteLegacyRows\(\(\) => supabase\.from\('user_vocabulary'\)\.select\('id, created_at', \{ count: 'exact' \}\)/);
+    const account = read('src/components/AccountSettings.jsx');
+    for (const table of ['user_vocabulary', 'reading_materials', 'reading_progress', 'grammar_notes', 'writing_practice', 'uploaded_pdfs']) {
+      expect(account, table).toMatch(new RegExp(`exportRows\\('${table}', '(user_id|owner_id)', user\\.id`));
+    }
+    expect(account).not.toMatch(/supabase\.from\('(user_vocabulary|reading_materials|reading_progress|grammar_notes|writing_practice|uploaded_pdfs)'\)\.select\('\*'\)/);
+  });
+
+  it('정본 완전 조회는 1000행을 넘는 단어장을 끝까지 읽는다', async () => {
+    const { readCompleteLegacyRows } = await import('../legacyReviewSync');
+    const all = Array.from({ length: 1232 }, (_, i) => ({ id: `v${String(i).padStart(4, '0')}`, word_text: `w${i}`, base_form: null }));
+    const ranges = [];
+    // 서버처럼 한 응답은 1000행에서 잘린다.
+    const query = () => {
+      const q = { order: () => q, range: async (from, to) => { ranges.push([from, to]); return { data: all.slice(from, Math.min(to, from + 999) + 1), count: all.length }; } };
+      return q;
+    };
+    expect(await readCompleteLegacyRows(query)).toHaveLength(1232);
+    expect(ranges).toEqual([[0, 999], [1000, 1999]]);
+  });
+});
