@@ -132,8 +132,9 @@ test('실패/중복/이동 뒤 늦은 표시 응답은 현재 단어를 바꾸�
   await f.page.getByRole('alert').filter({ hasText: '잠시 후 다시 시도해 주세요.' }).waitFor();
   assert.equal(await f.page.getByText('fixture write failure').count(), 0);
   assert.equal(f.exclusions.length, 0); assert.equal(await f.gradesUI.first().isEnabled(), true);
+  // 아는 단어는 누른 순간 반영된다(낙관 갱신 42d6ece9) — 응답을 기다리는 동안 표시는 「✓ 아는 단어」이고 비활성이다.
   f.hold(); await f.toggle('아는 단어').click(); await delay(100);
-  assert.equal(await f.toggle('아는 단어').isDisabled(), true);
+  assert.equal(await f.toggle('✓ 아는 단어').isDisabled(), true);
   await f.select(1); f.release(); await delay(400);
   assert.equal(await f.toggle('아는 단어').isEnabled(), true); assert.equal(await f.gradesUI.first().isEnabled(), true);
   await f.select(0); await f.toggle('✓ 아는 단어').waitFor(); assert.equal(await f.gradesUI.first().isDisabled(), true);
