@@ -17,6 +17,9 @@ describe('finished recommendation reading', () => {
     expect(suggestionHref(s, 'https://evil.example')).toBe(`/suggestions/${s.id}?from=materials`);
     expect(SUGGESTION_BACK[suggestionBackKey('discover')]).toEqual({ href: '/discover', label: '← 발견으로' });
     expect(SUGGESTION_BACK[suggestionBackKey('constructor')].href).toBe('/materials');
+    // 함께 읽는 글 목록에서 연 추천은 그 목록으로(READER-RETURN-001).
+    expect(suggestionHref(s, 'reading')).toBe(`/suggestions/${s.id}?from=reading`);
+    expect(SUGGESTION_BACK[suggestionBackKey('reading')]).toEqual({ href: '/discover?view=reading', label: '← 발견' });
     expect(suggestionHref({ ...s, material_id: 51 })).toBe('/viewer/51');
     expect(isFocusedReadingRoute(`/suggestions/${s.id}`)).toBe(true);
     expect(navigationOwner(`/suggestions/${s.id}`)).toBe('/discover');

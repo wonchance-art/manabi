@@ -1055,7 +1055,7 @@ export default function MaterialsPage({ libraryView = null }) {
             <h2 className="suggestions-section__title">오늘의 추천 자료</h2>
             <div className="suggestions-grid">
               {filteredSuggestions.map(s => (
-                <SuggestionCard key={s.id} suggestion={s} router={router} from={libraryView === 'public' ? 'discover' : 'materials'} />
+                <SuggestionCard key={s.id} suggestion={s} router={router} from={libraryView === 'public' ? 'reading' : 'materials'} />
               ))}
             </div>
           </section>

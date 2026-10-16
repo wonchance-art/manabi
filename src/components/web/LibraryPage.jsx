@@ -5,34 +5,13 @@ import {useRouter,useSearchParams} from 'next/navigation';
 import {useAuth} from '@/lib/AuthContext';
 import LazyMaterialsPage from '@/components/web/LazyMaterialsPage';
 import LibraryShelf from '@/components/library/LibraryShelf';
+import {useRestoreScroll} from '@/lib/useRestoreScroll';
 import '@/components/library/library.css';
 export default function LibraryPage(){
  const params=useSearchParams(),router=useRouter();
  const publicView=params.get('tab')==='public';
  useEffect(()=>{if(publicView){const query=new URLSearchParams(params.toString());query.delete('tab');query.set('view','reading');router.replace(`/discover?${query}`);}},[publicView,params,router]);
-  const restoreY = params.get('restoreY');
-  useEffect(() => {
-    const y = Number(restoreY);
-    if (restoreY === null || !Number.isFinite(y) || y < 0 || y > 1000000) return;
-    let frame, done = false;
-    const started = performance.now();
-    const stop = () => { done = true; cancelAnimationFrame(frame); };
-    const restore = () => {
-      if (done) return;
-      const height = document.documentElement.scrollHeight - window.innerHeight;
-      if (height >= y || performance.now() - started > 10000) {
-        window.scrollTo({ top: Math.min(y, height), behavior: 'instant' });
-        const url = new URL(window.location.href); url.searchParams.delete('restoreY');
-        window.history.replaceState({ ...window.history.state }, '', url.pathname + url.search);
-        stop();
-      } else frame = requestAnimationFrame(restore);
-    };
-    frame = requestAnimationFrame(restore);
-    window.addEventListener('wheel', stop, { passive: true });
-    window.addEventListener('touchstart', stop, { passive: true });
-    window.addEventListener('keydown', stop);
-    return () => { stop(); window.removeEventListener('wheel', stop); window.removeEventListener('touchstart', stop); window.removeEventListener('keydown', stop); };
-  }, [restoreY]);
+ useRestoreScroll(params.get('restoreY'));
  const {user,loading}=useAuth();
  if(publicView)return <p className="manabi-page" role="status">공개 읽을거리로 이동하고 있어요…</p>;
  if(params.get('tools')==='1'||params.get('sort')==='fit')return <div className="manabi-page"><Link className="manabi-link" href="/materials">← 내 서재</Link><LazyMaterialsPage libraryView="allOwned"/></div>;

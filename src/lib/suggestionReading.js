@@ -24,6 +24,8 @@ export function canReadSuggestion(s) {
 export const SUGGESTION_BACK = Object.freeze({
   home: { href: '/home', label: '← 오늘로' },
   discover: { href: '/discover', label: '← 발견으로' },
+  // 「함께 읽는 글」 목록에서 연 추천은 그 목록으로(READER-RETURN-001).
+  reading: { href: '/discover?view=reading', label: '← 발견' },
   materials: { href: '/materials', label: '← 내 서재로' },
 });
 export const suggestionBackKey = (from) => (Object.hasOwn(SUGGESTION_BACK, from) ? from : 'materials');

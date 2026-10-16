@@ -19,7 +19,7 @@ import { takePassageAnalysis } from '@/lib/passageAnalysis';
 import { composerOf, shouldReadComposerOriginal } from '@/lib/materialComposer';
 import Link from 'next/link';
 import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
-import { readerReturnLabel, safeReaderReturn } from '../lib/libraryReturn';
+import { readerReturnHref, readerReturnLabel } from '../lib/libraryReturn';
 import ActionIcon from '../components/ActionIcon';
 import ViewerReferenceExample from '../components/viewer/ViewerReferenceExample';
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -793,7 +793,7 @@ export default function ViewerPage() {
       await invalidateLibrary(queryClient, user?.id);
       queryClient.invalidateQueries({ queryKey: ['library-conversations', user?.id] });
       toast('휴지통으로 옮겼어요.', 'success');
-      noteRouter.push(safeReaderReturn(originalParams.get('returnTo')));
+      noteRouter.push(readerReturnHref(originalParams.get('returnTo')));
     } catch (cause) {
       toast(friendlyToastMessage(cause), 'error');
     }

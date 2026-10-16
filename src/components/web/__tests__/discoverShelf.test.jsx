@@ -61,8 +61,8 @@ describe('발견 화면 배선', () => {
     }
     expect(read('src/components/web/LazyMaterialsPage.jsx')).toContain("dynamic(() => import('@/views/MaterialsPage')");
   });
-  it('「함께 읽는 글」 목록의 추천 카드도 발견으로 돌아간다(서재 목록은 서재로)', () => {
-    expect(read('src/views/MaterialsPage.jsx')).toContain("from={libraryView === 'public' ? 'discover' : 'materials'}");
+  it('「함께 읽는 글」 목록의 추천 카드는 그 목록으로 돌아간다(서재 목록은 서재로 — READER-RETURN-001)', () => {
+    expect(read('src/views/MaterialsPage.jsx')).toContain("from={libraryView === 'public' ? 'reading' : 'materials'}");
     expect(read('src/views/MaterialsPage.jsx')).toContain('router.push(suggestionHref(s, from))');
   });
   it('비로그인 서재는 서가로 안내한다', () => {
