@@ -1,5 +1,6 @@
 # 14-view ③단계 — 생성 이미지를 실측 뼈대와 겹쳐 검수한다.
 # 사용(리포 루트): python3 -I docs/japanology/magazine/prototype/cover-machi01/14-view/verify.py <생성 이미지> [...]
+# 8쪽: VIEW_OUT=out-honcho-p8 CROP_TOP_SQUARE=1 python3 -I …/verify.py <8쪽 이미지>
 # 능선: 열마다 실측 y 위아래 ±60px에서 세로 밝기 변화가 가장 큰 곳을 찾아 어긋남(px)을 잰다.
 # 판정: 중앙값 ≤ 6px 그리고 95% ≤ 15px(화면 높이 1536의 1%)이면 「능선 통과」. 도로·金鳥居 지점은 겹친 그림으로 사람이 본다.
 import json, os, sys
@@ -13,6 +14,8 @@ os.makedirs(os.path.join(HERE, 'verify'), exist_ok=True)  # VIEW_OUT=out-honcho 
 
 def check(path):
     im = Image.open(path).convert('RGB')
+    if os.environ.get('CROP_TOP_SQUARE'):  # 8쪽: 2:3 지면의 위 정사각(그림 영역)만 잰다 — VIEW_OUT=out-honcho-p8와 함께
+        im = im.crop((0, 0, im.width, im.width))
     ar, ar0 = im.width / im.height, W / H
     if abs(ar / ar0 - 1) > 0.02:
         return {'file': os.path.basename(path), 'error': f'비율 {im.width}x{im.height}가 가이드 {W}x{H}와 다르다 — 같은 비율로 다시 받는다'}
