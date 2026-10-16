@@ -81,13 +81,20 @@ export function lobbyErrorText(error) {
   return '보내지 못했어요. 쓰던 말은 입력창에 남겨 두었어요.';
 }
 
-const SELECT = 'id,language,user_id,body,created_at,hidden_at,author:profiles(display_name)';
+// 작성자 이름은 profiles에서 따로 읽는다 — 대화방 표는 profiles를 참조하지 않는다(FK가 profiles에 내부 트리거를 붙이면
+// FSRS 보호 계약 activity_profile_hash가 어긋나 학습 조회가 멈춘다, 2026-10-16 KST 운영 사고).
+const SELECT = 'id,language,user_id,body,created_at,hidden_at';
 
 export async function fetchLobby(client, language, { limit = LOBBY_PAGE } = {}) {
   const { data, error } = await client.from(LOBBY_TABLE).select(SELECT)
     .eq('language', language).order('created_at', { ascending: false }).limit(limit);
   if (error) throw error;
-  return data || [];
+  const rows = data || [];
+  const ids = [...new Set(rows.map((r) => r.user_id).filter(Boolean))];
+  if (!ids.length) return rows;
+  const { data: people } = await client.from('profiles').select('id,display_name').in('id', ids);
+  const names = new Map((people || []).map((p) => [p.id, p.display_name]));
+  return rows.map((r) => ({ ...r, author: { display_name: names.get(r.user_id) || '' } }));
 }
 
 export async function postLobby(client, { language, text }) {

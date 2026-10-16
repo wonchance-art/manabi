@@ -18,12 +18,21 @@ const fails = async (p, re) => { await assert.rejects(p, re); };
 try {
   await db.exec(`create role anon;create role authenticated;create schema auth;
   create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+  create table auth.users(id uuid primary key);
   create table public.profiles(id uuid primary key, display_name text, role text default 'student');
   grant usage on schema public to anon,authenticated;
   create function public.is_admin() returns boolean language sql security definer stable set search_path=public as $$select exists(select 1 from public.profiles where id=auth.uid() and role='admin')$$;
+  insert into auth.users values('${a}'),('${b}'),('${c}'),('${d}'),('${admin}');
   insert into public.profiles(id,display_name,role) values('${a}','민지','student'),('${b}','B','student'),('${c}','C','student'),('${d}','D','student'),('${admin}','관리자','admin');`);
   const sql = (name) => fs.readFile(new URL(`../../docs/sql/${name}`, import.meta.url), 'utf8');
   await db.exec(await sql('conversation-lobby.sql'));
+
+  await check('profiles에 트리거를 붙이지 않는다(FSRS 보호 계약 activity_profile_hash)', async () => {
+    const [{ n }] = await rows("select count(*)::int n from pg_trigger where tgrelid='public.profiles'::regclass");
+    assert.equal(n, 0);
+    const [{ m }] = await rows("select count(*)::int m from pg_constraint where contype='f' and confrelid='public.profiles'::regclass");
+    assert.equal(m, 0);
+  });
 
   let first;
   await check('로그인한 사람은 자기 이름으로 쓰고, 공백은 다듬어진다', async () => {

@@ -10,6 +10,9 @@
 --     (보낸 값은 무시 — 과거 시각으로 써서 도배 막기를 피하던 길을 막는다, M09 #1337 6208592951)
 --   · 새 말 실시간 알림: supabase_realtime 발행에 이 표를 더한다(접근 규칙이 그대로 걸린다)
 --
+-- profiles를 참조하지 않는다: FK는 참조 표(profiles)에 내부 트리거를 붙이고, FSRS 보호 계약(fsrs_private.activity_profile_hash)이
+--   profiles의 트리거까지 지문으로 대조하므로 학습 입장·단어 조회가 learning_admission_unavailable로 멈춘다(2026-10-16 KST 운영 사고).
+--   작성자 이름은 화면이 profiles에서 따로 읽는다(lobby.js fetchLobby).
 -- 적용: 운영은 #1337로 M09가 적용한다(supabase/migrations 자동 적용 경로는 쓰지 않는다). 한 번만 실행한다(새 표 생성).
 -- 되돌리기: docs/sql/conversation-lobby-rollback.sql(이 두 표·두 함수만 지운다. 다른 표 영향 없음).
 -- 적용 전에는 화면이 「아직 준비 중」으로 물러선다(src/lib/conversation/lobby.js isLobbyMissing) — 저장 오류를 보이지 않는다.
@@ -19,7 +22,7 @@ BEGIN;
 CREATE TABLE public.conversation_lobby_messages (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   language text NOT NULL CHECK (language IN ('Chinese', 'Japanese', 'English', 'French')),
-  user_id uuid NOT NULL DEFAULT auth.uid() REFERENCES public.profiles(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE CASCADE,
   body text NOT NULL CHECK (char_length(btrim(body)) BETWEEN 1 AND 300),
   created_at timestamptz NOT NULL DEFAULT now(),
   hidden_at timestamptz
@@ -29,7 +32,7 @@ CREATE INDEX conversation_lobby_messages_author ON public.conversation_lobby_mes
 
 CREATE TABLE public.conversation_lobby_reports (
   message_id bigint NOT NULL REFERENCES public.conversation_lobby_messages(id) ON DELETE CASCADE,
-  reporter_id uuid NOT NULL DEFAULT auth.uid() REFERENCES public.profiles(id) ON DELETE CASCADE,
+  reporter_id uuid NOT NULL DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (message_id, reporter_id)
 );
