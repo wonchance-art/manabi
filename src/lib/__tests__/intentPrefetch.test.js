@@ -1,8 +1,8 @@
-// 의도 prefetch(APP-FEEL-004, 2026-10-17 KST) — 배움 · 서재의 대기 화면을 첫 클릭에 띄우되 P5(뷰포트 prefetch 끔)는 지킨다.
+// 의도 prefetch(APP-FEEL-004, 2026-10-17 KST) — 배움의 대기 화면을 첫 클릭에 띄우되 P5(뷰포트 prefetch 끔)는 지킨다.
 import fs from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import { sliceBetween } from './helpers/sliceBetween.js';
-import { INTENT_PREFETCH_TTL_MS, intentPrefetchProps, prefetchOnIntent } from '../intentPrefetch';
+import { INTENT_DWELL_MS, INTENT_PREFETCH_TTL_MS, intentPrefetchProps, prefetchOnIntent } from '../intentPrefetch';
 import { MAIN_NAV } from '../webNavigation';
 
 const read = (f) => fs.readFileSync(f, 'utf8');
@@ -40,25 +40,67 @@ describe('prefetchOnIntent', () => {
 });
 
 describe('intentPrefetchProps', () => {
-  it('intentPrefetch 항목에만 포인터 · 포커스 · 터치 의도를 붙인다', () => {
-    const router = fakeRouter();
-    expect(intentPrefetchProps(router, { href: '/discover' }, false)).toBeNull();
-    const props = intentPrefetchProps(router, { href: '/x-intent-test', intentPrefetch: true }, false);
-    expect(Object.keys(props).sort()).toEqual(['onFocus', 'onPointerEnter', 'onTouchStart']);
-    props.onTouchStart();
-    props.onPointerEnter(); // 터치 뒤 따라오는 pointerenter는 중복으로 걸러진다
-    expect(router.prefetch).toHaveBeenCalledTimes(1);
-    const currentProps = intentPrefetchProps(router, { href: '/x-intent-current', intentPrefetch: true }, true);
-    currentProps.onFocus();
-    expect(router.prefetch).toHaveBeenCalledTimes(1);
+  // 가짜 타이머 — 머무름(dwell)을 손으로 진행한다.
+  const harness = () => {
+    const queue = new Map(); let id = 0;
+    const prefetch = vi.fn();
+    const opts = { timers: new Map(), dwellMs: INTENT_DWELL_MS, prefetch, schedule: (fn) => { queue.set(++id, fn); return id; }, cancel: (t) => queue.delete(t) };
+    const flush = () => { for (const [t, fn] of [...queue]) { queue.delete(t); fn(); } };
+    return { opts, prefetch, flush, pending: () => queue.size };
+  };
+  const item = { href: '/home', intentPrefetch: true };
+  const mouse = { pointerType: 'mouse' };
+
+  it('intentPrefetch 항목에만, 터치 이벤트 없이 붙인다', () => {
+    expect(intentPrefetchProps({}, { href: '/discover' }, false)).toBeNull();
+    const props = intentPrefetchProps({}, item, false, harness().opts);
+    expect(Object.keys(props).sort()).toEqual(['onFocus', 'onPointerDown', 'onPointerEnter', 'onPointerLeave']);
+    expect(props).not.toHaveProperty('onTouchStart');
+  });
+
+  it('마우스는 머문 뒤에만 받는다 — 지나가기(pointerleave) · 바로 누르기(pointerdown)는 요청 0', () => {
+    expect(INTENT_DWELL_MS).toBe(80);
+    const h = harness();
+    const router = {};
+    const props = intentPrefetchProps(router, item, false, h.opts);
+    props.onPointerEnter(mouse);
+    expect(h.prefetch).not.toHaveBeenCalled(); // 바로 받지 않는다
+    props.onPointerLeave(mouse);
+    h.flush();
+    expect(h.prefetch).not.toHaveBeenCalled();
+    props.onPointerEnter(mouse); props.onPointerDown(mouse); h.flush();
+    expect(h.prefetch).not.toHaveBeenCalled();
+    props.onPointerEnter(mouse); h.flush();
+    expect(h.prefetch).toHaveBeenCalledTimes(1);
+    expect(h.prefetch).toHaveBeenCalledWith(router, '/home', { current: false });
+  });
+
+  it('터치 포인터는 받지 않는다(touchstart → click 붙잡힘)', () => {
+    const h = harness();
+    intentPrefetchProps({}, item, false, h.opts).onPointerEnter({ pointerType: 'touch' });
+    expect(h.pending()).toBe(0);
+    h.flush();
+    expect(h.prefetch).not.toHaveBeenCalled();
+  });
+
+  it('키보드 포커스(:focus-visible)는 바로, 마우스로 누를 때의 포커스는 건너뛴다', () => {
+    const h = harness();
+    const props = intentPrefetchProps({}, item, true, h.opts);
+    props.onFocus({ currentTarget: { matches: () => false } });
+    expect(h.prefetch).not.toHaveBeenCalled();
+    props.onFocus({ currentTarget: { matches: (sel) => sel === ':focus-visible' } });
+    expect(h.prefetch).toHaveBeenCalledWith({}, '/home', { current: true }); // 지금 화면 여부는 prefetchOnIntent가 거른다
+    props.onFocus({ currentTarget: { matches: () => { throw new Error('old browser'); } } });
+    expect(h.prefetch).toHaveBeenCalledTimes(1);
   });
 });
 
 describe('메뉴 배선', () => {
-  it('배움 · 서재만 의도 prefetch — 뷰포트 prefetch(P5)는 계속 끈다', () => {
+  it('배움만 의도 prefetch — 뷰포트 prefetch(P5)는 계속 끄고, 서재(자체 loading 없음 → 라우터 상태만)는 붙이지 않는다', () => {
     const intent = MAIN_NAV.filter(item => item.intentPrefetch).map(item => item.href);
-    expect(intent).toEqual(['/home', '/materials']);
-    for (const href of intent) expect(MAIN_NAV.find(item => item.href === href).prefetch).toBe(false);
+    expect(intent).toEqual(['/home']);
+    for (const href of ['/home', '/materials']) expect(MAIN_NAV.find(item => item.href === href).prefetch).toBe(false);
+    expect(fs.existsSync('src/app/(app)/home/loading.jsx')).toBe(true); // 받을 골격이 있어야 의미가 있다
   });
 
   it('GNB · 휴대폰 탭 막대 · 읽기 화면 메뉴의 MAIN_NAV Link 셋 모두에 붙는다', () => {
