@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 
 // 항목의 level은 세트 파일 위치(옛 급수) — 중복 정리·정렬용이고 화면 급수가 아니다. 화면의 HSK 급수는
 // zhHskLevel.js(HSK 2026 표)가 정본이다(ZH-LEVEL-2026-001).
-const LEVEL_RANK = { H1: 1, H2: 2, H3: 3, H4: 4, H5: 5, H6: 6 }; // 그 외(LIFE 등) = 9
+const LEVEL_RANK = { H1: 1, H2: 2, H3: 3, H4: 4, H5: 5, H6: 6, H7: 7 }; // 그 외(LIFE 등) = 9
 
 /** 세트 배열 → word 인덱스. 중복 단어는 낮은 급수(먼저 배우는 쪽)가 이긴다. */
 export function buildVocabIndex(sets) {
@@ -70,6 +70,11 @@ export function loadRefVocabIndex(language) {
     import('../content/chinese/vocab/h6_hsk_d').then((m) => ({ level: 'H6', mod: m })),
     import('../content/chinese/vocab/h6_hsk_e').then((m) => ({ level: 'H6', mod: m })),
     import('../content/chinese/vocab/expansion').then((m) => ({ level: 'LIFE', mod: m })),
+    import('../content/chinese/vocab/h7_hsk2026_a').then((m) => ({ level: 'H7', mod: m })), // 7–9 통합 밴드 보강(level H7) — 목표 레벨(H1~H6) 커버리지에 세지 않는다
+    import('../content/chinese/vocab/h7_hsk2026_b').then((m) => ({ level: 'H7', mod: m })),
+    import('../content/chinese/vocab/h7_hsk2026_c').then((m) => ({ level: 'H7', mod: m })),
+    import('../content/chinese/vocab/h7_hsk2026_d').then((m) => ({ level: 'H7', mod: m })),
+    import('../content/chinese/vocab/h7_hsk2026_e').then((m) => ({ level: 'H7', mod: m })),
   ]).then(buildVocabIndex);
   return zhIndexPromise;
 }
