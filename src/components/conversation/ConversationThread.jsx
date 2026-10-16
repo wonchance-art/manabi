@@ -28,6 +28,12 @@ export function isConversationRequestCurrent(requestRef, requestId, materialRef,
 }
 
 // Enter = 전송, Shift+Enter = 줄바꿈. IME 후보 확정 Enter는 조합 중이므로 보내지 않는다(#1381).
+// 대화 새 턴 등장(CONV-TURN-IN-001, 2026-10-17 KST): 가장 새 턴(목록의 마지막)에만 등장 효과 클래스를 단다.
+// 클래스는 key가 같은 요소에서 한 번만 재생되고, 다음 턴이 오면 그쪽으로 옮겨 간다. 동작 줄이기는 CSS 분기가 끈다.
+export function turnRowClass(base, item, items) {
+  return item === items[items.length - 1] ? `${base} conv__row--new` : base;
+}
+
 export function handleConversationKeyDown(e, send) {
   if (e.key !== 'Enter' || e.shiftKey || isImeComposing(e)) return;
   e.preventDefault();
@@ -259,7 +265,7 @@ export default function ConversationThread({
             const ko = lines.map((l) => translations[rawLines[l]]).filter(Boolean);
             const txOpen = openTx.has(item.index);
             return (
-              <div key={item.index} className="conv__row conv__row--tutor">
+              <div key={item.index} className={turnRowClass('conv__row conv__row--tutor', item, items)}>
                 <div className="conv-bubble conv-bubble--tutor" lang={bcp47ForLanguage(language)}>
                   {lines.map((line, k) => (
                     <span key={line} className="conv-bubble__line">
@@ -289,7 +295,7 @@ export default function ConversationThread({
           const fbId = `${listId}-fb-${item.index}`;
           const hasFeedback = turn.feedback || item.fixed || Number.isInteger(item.answerLine) || item.openRetry;
           return (
-            <div key={item.index} className="conv__row conv__row--me">
+            <div key={item.index} className={turnRowClass('conv__row conv__row--me', item, items)}>
               <div className="conv-bubble conv-bubble--me" lang={bcp47ForLanguage(language)} aria-describedby={hasFeedback ? fbId : undefined}>
                 <MyText text={turn.text} focus={turn.focus} />
               </div>

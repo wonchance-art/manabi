@@ -18,6 +18,10 @@
 .conv-bubble--typing span:nth-child(3) { animation-delay: 0.3s; }
 @keyframes conv-dot { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .conv-bubble--typing span { animation: none; opacity: 0.6; } }
+/* 가장 새 턴 등장(CONV-TURN-IN-001) — 투명도 · 4px 위로, --transition-fast. 클래스는 turnRowClass가 마지막 턴에만 단다. */
+.conv__row--new { animation: conv-turn-in var(--transition-fast) both; }
+@keyframes conv-turn-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .conv__row--new { animation: none; } }
 .conv-wavy { text-decoration: underline wavy var(--warning); text-underline-offset: 4px; }
 .conv-feedback { align-self: stretch; border-left: 3px solid var(--warning); padding: 6px 10px; font-size: 0.9rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 6px; }
 .conv-feedback p { margin: 0; }
