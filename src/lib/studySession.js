@@ -14,28 +14,12 @@
 
 import { vocabTypeForRung } from './skillRung';
 import { normalizeRecall } from './answerNormalize';
+import { stripSourceLangInMeaning } from './meaningClean';
 
 const MAX_ITEMS = 10; // 예산제 하드캡 (기획 H3)
 
-/**
- * 뜻 문자열에서 원어 병기 괄호 제거 — 보기 텍스트 정화.
- * user_vocabulary.meaning에 "일하다 (働く)"처럼 원어(가나·한자·라틴)를 병기해 저장한 데이터가
- * 4지선다 보기에 그대로 나오면 정답이 시각적으로 새므로, 사용 시점에 정리한다.
- * 판정: 괄호(반각 `()`·전각 `（）`) 안에 한글이 하나라도 있으면 보존("달리다 (과거형)"),
- *       없고 가나/한자/라틴문자가 있으면 원어 병기로 보고 괄호째 제거. 그 외(숫자·기호)는 보존.
- * 순수 함수·멱등. 남은 공백은 정리해 trim.
- */
-const MEANING_HANGUL = /[가-힣ㄱ-ㅎㅏ-ㅣ]/;
-const MEANING_SOURCE_SCRIPT = /[ぁ-ゟゔァ-ヿーｦ-ﾟ々〆〤ヶ一-鿿a-zA-Z]/; // 가나·장음·반각가나·한자·라틴
-export function stripSourceLangInMeaning(meaning) {
-  if (typeof meaning !== 'string' || !meaning) return meaning;
-  const out = meaning.replace(/\s*[（(]\s*([^（()）]*?)\s*[)）]/g, (m, inner) => {
-    if (MEANING_HANGUL.test(inner)) return m;          // 한글 설명 괄호 → 보존
-    if (MEANING_SOURCE_SCRIPT.test(inner)) return '';  // 원어(가나·한자·라틴)만 → 제거
-    return m;                                          // 숫자·기호 등 → 보존
-  });
-  return out.replace(/\s{2,}/g, ' ').trim();
-}
+// stripSourceLangInMeaning의 정본은 meaningClean.js(의존성 없음) — 여기서는 다시 내보낸다.
+export { stripSourceLangInMeaning };
 
 /** 타이핑 판정용 정규화 — 정본 인출 모드(v2-M): 악상·성조 폴딩 + 공백·구두점 제거 + 소문자.
     prefere=préfère, hanyu=hànyǔ — 인출이 목적이지 철자 정밀도가 아니다. 정본 표기는
