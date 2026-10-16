@@ -118,9 +118,13 @@ describe('WALL-STATES-001 ⑦ 토스트 접근성', () => {
   it('토스트 안의 버튼은 호출부 인라인 없이 눌리고, 닫기 버튼은 44px 터치 타깃이다', () => {
     const css = readFileSync('src/index.css', 'utf8');
     const block = sliceBetween(css, '/* ========= Toast Notifications ========= */', '/* ========= 오늘의 추천 자료 ========= */');
-    // 컨테이너는 아래 화면을 막지 않고(none), 토스트 자체는 눌린다(auto).
+    // 컨테이너도 토스트 바탕도 아래 화면을 막지 않고(none) — 하단 토스트가 카드의 주 동작 위에 얹혀도 탭이 그 동작에 닿는다 —
+    // 토스트 안의 조작 요소만 눌린다(auto). 바탕이 auto면 390px 뷰어에서 「아는 단어」를 가로챘다(e2e viewer-exclusion).
     expect(block).toMatch(/\.toast-container\s*\{[^}]*pointer-events:\s*none/);
-    expect(block).toMatch(/\.toast\s*\{\s*pointer-events:\s*auto;\s*\}/);
+    expect(block).toMatch(/\.toast\s*\{\s*pointer-events:\s*none;\s*\}/);
+    expect(block).not.toMatch(/\.toast\s*\{\s*pointer-events:\s*auto;/);
+    const interactive = block.match(/\.toast :is\(([^)]*)\)\s*\{\s*pointer-events:\s*auto;\s*\}/)?.[1] || '';
+    for (const sel of ['button', 'a', 'input', 'select', 'textarea', 'summary']) expect(interactive.split(/,\s*/)).toContain(sel);
     // 퇴장은 같은 블록 안 — 토큰(--transition-fast) · 4px · 동작 줄이기 분기(TOAST-MOTION-001).
     expect(block).toMatch(/\.toast--leaving\s*\{[^}]*opacity:\s*0;[^}]*translateY\(4px\)/);
     expect(block).toMatch(/\.toast\s*\{\s*transition:\s*opacity var\(--transition-fast\), transform var\(--transition-fast\);\s*\}/);

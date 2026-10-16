@@ -5795,8 +5795,12 @@ a.viewer-badge:hover {
 
 .toast__icon { font-size: 1.1rem; flex-shrink: 0; }
 .toast__msg  { line-height: 1.4; }
-/* 컨테이너는 아래 화면 클릭을 막지 않도록 none, 토스트 자체는 눌린다 — 액션 버튼이 호출부 인라인 없이도 동작(WALL-STATES-001). */
-.toast { pointer-events: auto; }
+/* 컨테이너도 토스트 바탕도 아래 화면 클릭을 막지 않는다(none) — 안의 조작 요소만 눌린다(auto). 액션 버튼은 호출부 인라인 없이도
+   동작한다(WALL-STATES-001). 바탕까지 auto였을 때는 좁은 화면에서 하단 토스트가 단어 카드의 「아는 단어」 같은 주 동작 위에
+   얹혀 그 탭을 가로챘고, 포인터가 올라가 있는 동안 멈추는 자동 닫힘(TOAST-MOTION-001)과 겹쳐 마우스로는 끝내 누를 수 없었다
+   (e2e viewer-exclusion 「실패/중복/이동 뒤…」 390px 실측 2026-10-17 KST). 멈춤은 이제 토스트 안 버튼에 포인터를 올렸을 때 · 포커스로. */
+.toast { pointer-events: none; }
+.toast :is(button, a, input, select, textarea, summary, [role="button"]) { pointer-events: auto; }
 .toast__body { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
 .toast__close {
   flex-shrink: 0;
