@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { getSupabase, supabase } from '../lib/supabase';
 import { hasSupabaseSessionCookie } from './authCookie';
+import { whenDocumentParsed } from './documentParsed';
 import { authCallbackUrl } from './authRedirect';
 import { isRepeatedSignup } from './authErrors';
 import { migrateGuestDrillQueue } from './drillSrs';
@@ -146,11 +147,13 @@ export function AuthProvider({ children }) {
     const hasSessionCookie =
       typeof document !== 'undefined' && hasSupabaseSessionCookie(document.cookie);
     if (!hasSessionCookie) {
-      setLoading(false);
       guestConfirmedRef.current = true;
-      return () => { cancelled = true; };
+      // 게스트 확정도 Provider 값을 바꾼다 — 스트리밍 본문이 다 온 뒤에(whenDocumentParsed).
+      const stopWaiting = whenDocumentParsed(() => { if (!cancelled) setLoading(false); });
+      return () => { cancelled = true; stopWaiting(); };
     }
 
+    let stopWaiting = () => {};
     // SDK 조각을 못 받으면(오프라인 · 배포 교체 직후 등) 쿠키가 있는데도 user가 비어 로그아웃처럼 보인다.
     // 로그아웃으로 굳히지 않고 연결이 돌아올 때 · 잠시 뒤 다시 복원한다 — 같은 계정이 돌아오면 /study처럼
     // 세션 계정을 고정한 화면이 멈춰 둔 기록을 이어 보낸다(getSupabase는 실패하면 다음 호출에서 다시 받는다).
@@ -161,6 +164,8 @@ export function AuthProvider({ children }) {
       if (cancelled || restored) return;
       clearTimeout(retryTimer);
       getSupabase()
+        // SDK는 지금 받고, 세션 복원(값 변경)은 스트리밍 본문이 다 온 뒤에 한다(whenDocumentParsed — HYDRATION-AUTH-001).
+        .then((client) => new Promise((resolve) => { stopWaiting(); stopWaiting = whenDocumentParsed(() => resolve(client)); }))
         .then((client) => {
           if (cancelled || restored) return;
           restored = true;
@@ -195,6 +200,7 @@ export function AuthProvider({ children }) {
       cancelled = true;
       clearTimeout(retryTimer);
       window.removeEventListener('online', restore);
+      stopWaiting();
       subscription?.unsubscribe();
     };
     // 마운트 1회 세션 복원. attachAuthListener·fetchProfile은 매 렌더 새 함수라 의존성에 넣으면
