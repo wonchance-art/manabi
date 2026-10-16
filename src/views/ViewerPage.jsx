@@ -179,6 +179,7 @@ import SourceEditModal from './SourceEditModal';
 import TokenPosLabel from './TokenPosLabel';
 import TokenRangeGrips from './TokenRangeGrips';
 import ViewerComments from './ViewerComments';
+import ViewerGuestBanner from '../components/viewer/ViewerGuestBanner';
 import ViewerQuizModal from './ViewerQuizModal';
 import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constants';
 import { attributionParts, literatureAttributionParts, materialSource, standardEbooksAttributionParts } from '../lib/videoAttribution';
@@ -3682,12 +3683,7 @@ export default function ViewerPage() {
       <div ref={classBoardTarget} className="teaching-board-host" hidden={!classStudyActive||!classBoardLayout}/>
       <div className="viewer-center" inert={dictationPickerOpen||!!dictationSentence?true:undefined} aria-hidden={dictationPickerOpen||!!dictationSentence?true:undefined} data-answer-hidden={dictationPickerOpen||!!dictationSentence}>
       {explanationLocale !== effectiveExplanationLocale && <p role="status">{vt('이 자료의 설명 언어는 한국어로 제공돼요.')}</p>}
-      {!user && (
-        <div className="viewer-guest-banner">
-          <span>{vt("단어를 클릭해 뜻을 확인할 수 있어요.")}</span>
-          <Link href={signInHref} className="viewer-guest-banner__cta">{vt("로그인하면 단어장에 저장하고 복습할 수 있어요 →")}</Link>
-        </div>
-      )}
+      {!user && <ViewerGuestBanner vt={vt} signInHref={signInHref} pending={isPending} />}
 
         {/* 경로 줄(뷰어 정돈 A안) — 왼쪽 [← 자료실 · 형제 내비], 오른쪽 [도구]. 본문 위에는 경로·제목·도구만
             남고, 끝의 행동(읽기 완료·오늘 학습·다음 범위)은 본문 **아래**로 갔다(「끝은 끝에」). 예전 액션바는
