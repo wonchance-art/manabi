@@ -19,6 +19,9 @@ import { ART_TEXT_LICENSE_LABEL } from './artCatalog.js';
 import { countAttachedReviewHints, reviewHintCoverage } from './literatureReviewHints.js';
 import { senseReviewItems } from './viewerSenseReview.js';
 
+/** 분석 전이거나 검수 기록이 한 번도 없는데 공개된 장 — 사용자에게 「분석 전」·「검수 전」 장이 보이는 상태. rows: {visibility, status, review} */
+export const literatureExposedRows = (rows = []) => rows.filter((row) => row.visibility === 'public' && (row.status !== 'completed' || !row.review));
+
 /** 장 검수 완료인가 — 검수 때의 분석 revision이 지금과 같아야 한다(재분석하면 다시 검수). rows: {review, revision} */
 export const chapterReviewed = (row) => typeof row?.review?.viewerRevision === 'string' && row.review.viewerRevision === row.revision;
 
@@ -129,11 +132,15 @@ export function planLiteratureRelease(book, rows = []) {
 /**
  * 작품 단계 — unpublished(행 없음) · preparing(준비·분석 중) · reviewing(분석 완료·검수 중) · ready(검수 완료·비공개)
  * · released(전 장 공개) · conflict. 이미 공개된 책은 재분석으로 검수가 낡아도 released로 둔다(공개 상태가 사실).
+ * exposed: 분석 전이거나 한 번도 검수하지 않은 장이 공개돼 있다 — 「비공개 준비 → 분석·검수 → 공개」(P0-3) 이전 방식으로
+ * 바로 공개된 장(운영 실측 2026-10-16 KST 5편 15장, 비공개로 되돌림). 화면은 경고만 하고 분석·공개를 이어 가지 않는다 —
+ * 공개 상태로 분석하면 검수 없이 「공개됨」이 되므로(사람이 비공개로 돌린 뒤 정상 흐름으로).
  */
 export function literatureStage(book, rows = []) {
   const plan = planLiteraturePublish(book, rows);
   if (plan.conflicts.length) return 'conflict';
   if (rows.length === 0) return 'unpublished';
+  if (literatureExposedRows(rows).length) return 'exposed';
   if (plan.insert.length || rows.some((row) => row.status !== 'completed')) return 'preparing';
   if (rows.every((row) => row.visibility === 'public')) return 'released';
   return rows.every(chapterReviewed) ? 'ready' : 'reviewing';
