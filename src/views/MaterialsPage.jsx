@@ -20,7 +20,7 @@ import { parseTitle } from '../lib/seriesMeta';
 import { materialFit, fitBand, sortByFit, bookFit, FIT_MIN_TYPES } from '../lib/materialFit';
 import { fetchKnownWords, mergeKnownIntoIndex } from '../lib/knownWords';
 import { groupByBook } from '../lib/bookMeta';
-import { isTeamRoot } from '../lib/classBoard';
+import { isTeamRoot } from '../lib/classTeamRoot';
 import { groupByPdf, pageRangeLabel, readProgressLabel } from '../lib/pdfGroups';
 import { useGroupReadIds } from '../lib/useGroupReadIds';
 import { LEVELS, SERIES_TITLE_ILIKE, langNameKo, levelRank, profileLevel, isWriteMaterial } from '../lib/constants';
