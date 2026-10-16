@@ -1,0 +1,514 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "fr",
+  "key": "ws-fr-jules-verne_le-tour-du-monde-en-quatre-vingts-jours",
+  "main": "Le Tour du monde en quatre-vingts jours",
+  "url": "https://fr.wikisource.org/wiki/Le_Tour_du_monde_en_quatre-vingts_jours",
+  "title": "Le Tour du monde en quatre-vingts jours",
+  "author": "Jules Verne",
+  "level": "B2 상급",
+  "publishedYear": 1872,
+  "authorDeathYear": 1905,
+  "countryOfOrigin": "FR",
+  "mortPourLaFrance": false,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "FR",
+      "US",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "80일간의 세계 일주",
+    "authorKo": "쥘 베른"
+  },
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 1",
+      "revid": 12868439,
+      "timestamp": "2022-12-09T16:36:08Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "prp",
+          "sha256": "1748d215103cab514d4ac9074563a971bdc850bd105ab2f46bc1fd7acc8812d4"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 2",
+      "revid": 3362595,
+      "timestamp": "2012-03-24T14:52:15Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "002.html",
+          "extract": "prp",
+          "sha256": "8c54a92c9a69d8eb4b3833ec0a42fc199f093fde20d4ef6b820f764754aaa60a"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 3",
+      "revid": 3362598,
+      "timestamp": "2012-03-24T14:54:50Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "003.html",
+          "extract": "prp",
+          "sha256": "ddf30636480b95ef4ea80a9cca1d75308266064c48166ba04a715f38c820cfed"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 4",
+      "revid": 14611602,
+      "timestamp": "2024-10-06T17:55:13Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "004.html",
+          "extract": "prp",
+          "sha256": "a7530c66046f8938ab20572f85ee06cbc312998dead400a4abf9126d27f27f2c"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 5",
+      "revid": 3362606,
+      "timestamp": "2012-03-24T14:58:08Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "005.html",
+          "extract": "prp",
+          "sha256": "aee1244b8375f6db29e6b9cc927d11ffdb8ebb2fec516c393e3a9ec3a3c1effd"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 6",
+      "revid": 3365114,
+      "timestamp": "2012-03-25T11:44:25Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "006.html",
+          "extract": "prp",
+          "sha256": "ceaa881ac74911bb2fef9558cccda030245ecb856474f43faee70746d0055a58"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 7",
+      "revid": 3365119,
+      "timestamp": "2012-03-25T11:47:44Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "007.html",
+          "extract": "prp",
+          "sha256": "624c531243e8bbdd4c90ec6d7b73c9ddbdea456d3d11a0bc545dbab8428da859"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 8",
+      "revid": 12528556,
+      "timestamp": "2022-06-18T13:22:49Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "008.html",
+          "extract": "prp",
+          "sha256": "1b03fde2a074d109c10a7499d4630659a410127748ebe1ac5689d8490badb148"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 9",
+      "revid": 11144120,
+      "timestamp": "2021-02-28T17:06:11Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "009.html",
+          "extract": "prp",
+          "sha256": "35ded232f2cf19c526b5392035e4a02d3f6ea48bfac6fad93b5bb7100e0fb4d3"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 10",
+      "revid": 3365163,
+      "timestamp": "2012-03-25T12:06:45Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "010.html",
+          "extract": "prp",
+          "sha256": "21f04cf0e9d57ca6abe0724b8159474a8996eb5998b8000a7a84cc3228ddac0c"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 11",
+      "revid": 13774710,
+      "timestamp": "2023-12-07T08:23:53Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "011.html",
+          "extract": "prp",
+          "sha256": "a9f452ef57f4cea720740c61cf15daf6c51fb1f384ae5d683ca3f3d2a7c2725e"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 12",
+      "revid": 3372966,
+      "timestamp": "2012-03-28T20:39:00Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "012.html",
+          "extract": "prp",
+          "sha256": "a38e08d3c30c23ab696b98af91d45508a9a2dd3f0d1d51aabb55fbdfdfaa2e72"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 13",
+      "revid": 12749832,
+      "timestamp": "2022-10-11T08:36:25Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "013.html",
+          "extract": "prp",
+          "sha256": "7937ed1c843460be407d091e2bc9d67317559f33eb2338163ca080237d806a1d"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 14",
+      "revid": 3372978,
+      "timestamp": "2012-03-28T20:51:10Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "014.html",
+          "extract": "prp",
+          "sha256": "66a8a01f03d883ba516234d1cbbf8bc6f2db1885b1d7005f2889069f8fb0074a"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 15",
+      "revid": 12537739,
+      "timestamp": "2022-06-25T06:15:05Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "015.html",
+          "extract": "prp",
+          "sha256": "7379a1e188de0051cf67f8a27daaf53469834d53e014179d944607dd8ed8a3b2"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 16",
+      "revid": 3375131,
+      "timestamp": "2012-03-29T20:24:54Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "016.html",
+          "extract": "prp",
+          "sha256": "52a64da5d8e55dfcd684bd6a464eab073e3990507681a6138175f559ac45a627"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 17",
+      "revid": 9355582,
+      "timestamp": "2019-01-13T06:53:37Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "017.html",
+          "extract": "prp",
+          "sha256": "4fef5fd21a3060922a44c31557174d436a2f089b34a68e4c8109918b70844f87"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 18",
+      "revid": 12022467,
+      "timestamp": "2021-11-23T07:36:32Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "018.html",
+          "extract": "prp",
+          "sha256": "5286f56dca9a6cb78f58f1d72c6d76957a50ffbc261243b25c185fd65a7291bf"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 19",
+      "revid": 11346582,
+      "timestamp": "2021-05-08T13:33:20Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "019.html",
+          "extract": "prp",
+          "sha256": "70a5785d6d8b46d8f86d778d771863c199bcae97990a623b594c77539797f6ee"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 20",
+      "revid": 3375242,
+      "timestamp": "2012-03-29T20:40:38Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "020.html",
+          "extract": "prp",
+          "sha256": "46f659b24b211a7dbece5535628f51fb70f28522292473fbeb6d4a44bd1429cd"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 21",
+      "revid": 3375256,
+      "timestamp": "2012-03-29T20:43:41Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "021.html",
+          "extract": "prp",
+          "sha256": "8beb68b91b68b3030a5908d5efb2fdee3cef2e4dab81878ef4e71b1b06b505f3"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 22",
+      "revid": 3375300,
+      "timestamp": "2012-03-29T20:48:01Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "022.html",
+          "extract": "prp",
+          "sha256": "511523ad0865f3a0718486213ea2d236bf7c4f65703743c408891f92e416e85a"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 23",
+      "revid": 3375403,
+      "timestamp": "2012-03-29T20:54:41Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "023.html",
+          "extract": "prp",
+          "sha256": "268b3a7a2891ea99596e4ef144003163199f5ce58b8b84b93e326e218f73e8c7"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 24",
+      "revid": 5568141,
+      "timestamp": "2016-01-28T18:07:30Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "024.html",
+          "extract": "prp",
+          "sha256": "b182c0d13d406d447cd4f4265ad7e3780cb2c149be3c41005a5923cdb1ffa196"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 25",
+      "revid": 3375482,
+      "timestamp": "2012-03-29T20:59:45Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "025.html",
+          "extract": "prp",
+          "sha256": "65fb070075e0300073e66422616ab44ec7a59243670a927dcf386e5c51e0c4a5"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 26",
+      "revid": 3377429,
+      "timestamp": "2012-03-30T11:48:52Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "026.html",
+          "extract": "prp",
+          "sha256": "ef17599c35af9403aa6d0e75d7adee3e9b9423719cd30911a501b5f2e73ae0c2"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 27",
+      "revid": 3377433,
+      "timestamp": "2012-03-30T11:52:08Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "027.html",
+          "extract": "prp",
+          "sha256": "1a4131cd17b314528d786bbcd10cd4d456c36b53025b3a50a6422336be185737"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 28",
+      "revid": 3377448,
+      "timestamp": "2012-03-30T11:59:03Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "028.html",
+          "extract": "prp",
+          "sha256": "aab0cb7b627ae977be91b7ec168837f5e98b28e62c93037490823a60223730d3"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 29",
+      "revid": 14687973,
+      "timestamp": "2024-11-11T18:44:01Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "029.html",
+          "extract": "prp",
+          "sha256": "261b43324731520981a92c4936ba25fe399fc6a672ecab95d61ca64f6277822b"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 30",
+      "revid": 3377458,
+      "timestamp": "2012-03-30T12:04:58Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "030.html",
+          "extract": "prp",
+          "sha256": "6f7d0c8c5c00a5417288d3cefb230884ec76732bc3f3a8d5f92791c6f8f9e4de"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 31",
+      "revid": 3379372,
+      "timestamp": "2012-03-31T12:03:25Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "031.html",
+          "extract": "prp",
+          "sha256": "349cbf816ca0c875eaaefe02aa4b750c8d8eb8eb4c2047a85308b6cba66e1081"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 32",
+      "revid": 3379382,
+      "timestamp": "2012-03-31T12:05:19Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "032.html",
+          "extract": "prp",
+          "sha256": "8a84cc661139029effe9911b1d64ef26e4d4f4fc30abb7aa1bd38494bc6f8415"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 33",
+      "revid": 3379394,
+      "timestamp": "2012-03-31T12:08:54Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "033.html",
+          "extract": "prp",
+          "sha256": "801120b84f1a72c290f229dbc33f4d4b05c5731ac34b949d5634fbebb68a7ed3"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 34",
+      "revid": 3379407,
+      "timestamp": "2012-03-31T12:12:18Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "034.html",
+          "extract": "prp",
+          "sha256": "2e69afca84a90b8b5a1fa9be93c790d0e7ab9a7843e670ceb0885587ca230138"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 35",
+      "revid": 3379395,
+      "timestamp": "2012-03-31T12:09:38Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "035.html",
+          "extract": "prp",
+          "sha256": "1bd9e4f23db1178741b937bcdce266fd404ec268fa93d12c5e72ad0bc074213f"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 36",
+      "revid": 3379427,
+      "timestamp": "2012-03-31T12:17:41Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "036.html",
+          "extract": "prp",
+          "sha256": "5781c9d5bba00477a71185f44cc28eb5e2cb571ba632024f291b1048b9487a12"
+        }
+      ]
+    },
+    {
+      "page": "Le Tour du monde en quatre-vingts jours/Chapitre 37",
+      "revid": 10008355,
+      "timestamp": "2019-11-03T16:03:15Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "037.html",
+          "extract": "prp",
+          "sha256": "8c81c950c5bb1d0c995e6d3166cd23b79c16ad47e0018e58d0271ad529300a69"
+        }
+      ]
+    }
+  ]
+}

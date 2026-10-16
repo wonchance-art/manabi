@@ -152,6 +152,38 @@ export function standardEbooksAttributionParts(literature) {
   };
 }
 
+/* Wikisource 정본 책(LIT-SRC-WS-1) — 같은 「출처 한 줄」 문법. 원작은 퍼블릭 도메인이지만 위키문헌의 전사·교정은 CC BY-SA 4.0이라
+ * 출처(위키문헌) · 원문 링크 · 라이선스 링크 · 우리가 바꾼 점을 밝힌다(저작자 표시 — 제목·출처·라이선스). 원문 링크는 zh/fr 위키문헌 HTTPS만. */
+const WIKISOURCE_HOSTS = Object.freeze({ zh: 'zh.wikisource.org', fr: 'fr.wikisource.org' });
+function wikisourceHref(value, wiki) {
+  try {
+    const url = new URL(String(value || ''));
+    return url.protocol === 'https:' && Object.hasOwn(WIKISOURCE_HOSTS, wiki) && url.hostname === WIKISOURCE_HOSTS[wiki] ? url.href : '';
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Wikisource 장의 출처 줄 재료 — 「원작 퍼블릭 도메인」은 권리 기록이 approved·public-domain일 때만. license는 CC BY-SA 4.0일 때만 링크.
+ * @returns {{wiki:string, author:string, publishedYear:number|null, url:string, publicDomain:boolean, ccBySa:boolean, editNote:boolean, scriptNote:boolean}|null}
+ */
+export function wikisourceAttributionParts(literature) {
+  if (!literature || typeof literature !== 'object' || literature.provider !== 'wikisource' || !Object.hasOwn(WIKISOURCE_HOSTS, literature.wiki)) return null;
+  const rights = literature.rights && typeof literature.rights === 'object' ? literature.rights : {};
+  const edits = Array.isArray(literature.edits) ? literature.edits : [];
+  return {
+    wiki: literature.wiki,
+    author: typeof literature.author === 'string' ? literature.author.trim() : '',
+    publishedYear: Number.isInteger(literature.publishedYear) ? literature.publishedYear : null,
+    url: wikisourceHref(literature.url, literature.wiki),
+    publicDomain: rights.status === 'approved' && rights.basis === LICENSE_PUBLIC_DOMAIN,
+    ccBySa: literature.license === 'CC-BY-SA-4.0',
+    editNote: ['chapter-split-by-manabi', 'typography-normalized', 'illustrations-omitted', 'notes-omitted'].every((code) => edits.includes(code)),
+    scriptNote: edits.includes('script-variant-by-wikisource'),
+  };
+}
+
 /**
  * 아오조라 장의 출처 줄 재료. 「원작 퍼블릭 도메인」은 권리 기록이 approved·public-domain일 때만 쓴다(없는 권리를 주장하지 않는다).
  * 底本은 첫 줄(서명·출판사)만 — 들여쓴 연속 줄(발행일·판차)은 metadata에 남고 한 줄 표기에는 넣지 않는다.

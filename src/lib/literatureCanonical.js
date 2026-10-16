@@ -13,8 +13,8 @@ import { literatureChapterTitle } from './literatureDisplay';
 
 export const CANONICAL_LITERATURE_EDIT_BLOCKED = '정본 책의 원문은 고칠 수 없어요. 단어 뜻·발음 교정과 다시 분석은 그대로 쓸 수 있어요.';
 
-/** 원문 수정을 막는 정본 문학책 출처 — 青空文庫 · Standard Ebooks(LIT-SRC-EN-1). 큐레이션 책('art')은 artBookProvider가 따로 막는다. */
-export const CANONICAL_LITERATURE_PROVIDERS = Object.freeze(['aozora', 'standardebooks']);
+/** 원문 수정을 막는 정본 문학책 출처 — 青空文庫 · Standard Ebooks(LIT-SRC-EN-1) · Wikisource(LIT-SRC-WS-1). 큐레이션 책('art')은 artBookProvider가 따로 막는다. */
+export const CANONICAL_LITERATURE_PROVIDERS = Object.freeze(['aozora', 'standardebooks', 'wikisource']);
 
 /** 정본 문학책 자료인가(원문 수정 차단 판정) — metadata만 본다(동기). */
 export function isCanonicalLiteratureMaterial(material) {

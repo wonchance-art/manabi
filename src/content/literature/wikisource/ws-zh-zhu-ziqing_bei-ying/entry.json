@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "zh",
+  "key": "ws-zh-zhu-ziqing_bei-ying",
+  "main": "背影",
+  "url": "https://zh.wikisource.org/wiki/%E8%83%8C%E5%BD%B1",
+  "title": "背影",
+  "author": "朱自清",
+  "level": "H4 상급",
+  "publishedYear": 1925,
+  "authorDeathYear": 1948,
+  "countryOfOrigin": "CN",
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "CN",
+      "US",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "아버지의 뒷모습",
+    "authorKo": "주쯔칭"
+  },
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "背影",
+      "revid": 2570094,
+      "timestamp": "2025-06-16T09:15:00Z",
+      "variants": [
+        {
+          "variant": "zh-hans",
+          "path": "001.zh-hans.html",
+          "extract": "prp",
+          "sha256": "7e6c54bad0a85bb40132d08e743a297919568a586498960944cf119778572480"
+        },
+        {
+          "variant": "zh-hant",
+          "path": "001.zh-hant.html",
+          "extract": "prp",
+          "sha256": "69886771ec4b7308fa50e635cc96ba19e25e0be7e9897ad9be0a5d157f4aca1c"
+        }
+      ]
+    }
+  ]
+}

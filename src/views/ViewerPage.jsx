@@ -181,7 +181,7 @@ import TokenRangeGrips from './TokenRangeGrips';
 import ViewerComments from './ViewerComments';
 import ViewerQuizModal from './ViewerQuizModal';
 import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constants';
-import { attributionParts, literatureAttributionParts, materialSource, standardEbooksAttributionParts } from '../lib/videoAttribution';
+import { attributionParts, literatureAttributionParts, materialSource, standardEbooksAttributionParts, wikisourceAttributionParts } from '../lib/videoAttribution';
 import { isCanonicalLiteratureMaterial, literatureWork } from '../lib/literatureCanonical';
 import { literatureChapterLabel, literatureChapterTitle } from '../lib/literatureDisplay';
 import { useCanonicalLiterature } from '../lib/useCanonicalLiterature';
@@ -3855,6 +3855,24 @@ export default function ViewerPage() {
             {se.publicDomain && <> · <span className="viewer-attribution__license">{vt("원작 퍼블릭 도메인")}</span></>}
             {se.url && <> · <a href={se.url} target="_blank" rel="noopener noreferrer">{vt("판 보기")}</a></>}
             {se.editNote && <span className="viewer-attribution__muted"> · {vt("장 분할·글자 정리는 manabi 편집, 삽화는 싣지 않음")}</span>}
+          </p>
+        );
+      })()}
+
+      {/* Wikisource 정본 책 출처(LIT-SRC-WS-1) — 같은 한 줄 문법. 크레딧은 정본 대조표(wikisource/manifest.generated.json)에서, 자료 원문이
+          그 장의 정본과 같을 때만. 전사·교정은 CC BY-SA 4.0이라 라이선스 링크를 함께 건다:
+          출처: 위키문헌 · 鲁迅, 1919 · 원작 퍼블릭 도메인 · 전사 CC BY-SA 4.0 · 원문 보기 · 장 분할·글자 정리는 … */}
+      {(() => {
+        const ws = wikisourceAttributionParts(canonicalLiterature);
+        if (!ws) return null;
+        return (
+          <p className="viewer-attribution">{vt("출처:")} {vt("위키문헌")}
+            {ws.author && <> · <span lang={ws.wiki === 'zh' ? 'zh-Hans' : 'fr'}>{ws.author}{ws.publishedYear ? `, ${ws.publishedYear}` : ''}</span></>}
+            {ws.publicDomain && <> · <span className="viewer-attribution__license">{vt("원작 퍼블릭 도메인")}</span></>}
+            {ws.ccBySa && <> · <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ko" target="_blank" rel="noopener noreferrer license">{vt("전사 CC BY-SA 4.0")}</a></>}
+            {ws.url && <> · <a href={ws.url} target="_blank" rel="noopener noreferrer">{vt("원문 보기")}</a></>}
+            {ws.editNote && <span className="viewer-attribution__muted"> · {vt("장 분할·글자 정리는 manabi 편집, 삽화·주석은 싣지 않음")}</span>}
+            {ws.scriptNote && <span className="viewer-attribution__muted"> · {vt("간체·번체는 위키문헌 글자 변환")}</span>}
           </p>
         );
       })()}

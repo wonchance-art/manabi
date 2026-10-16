@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "jieba-wasm + fixZhTagged (src/lib/server/tokenizeZh.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "6f691e371502b4c8f1daacf998476f4e0fcc8e67ac81677ae64bbe9a8ada6e66",
+      "edits": []
+    }
+  ]
+}

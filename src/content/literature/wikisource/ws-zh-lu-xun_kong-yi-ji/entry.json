@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "zh",
+  "key": "ws-zh-lu-xun_kong-yi-ji",
+  "main": "孔乙己",
+  "url": "https://zh.wikisource.org/wiki/%E5%AD%94%E4%B9%99%E5%B7%B1",
+  "title": "孔乙己",
+  "author": "鲁迅",
+  "level": "H5 고급",
+  "publishedYear": 1919,
+  "authorDeathYear": 1936,
+  "countryOfOrigin": "CN",
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "CN",
+      "US",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "쿵이지",
+    "authorKo": "루쉰"
+  },
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "孔乙己",
+      "revid": 2605389,
+      "timestamp": "2025-10-12T03:55:07Z",
+      "variants": [
+        {
+          "variant": "zh-hans",
+          "path": "001.zh-hans.html",
+          "extract": "prp",
+          "sha256": "46c7dce88c5d619b21ab36fed80bd63b8e7a0bf50d9a18de9bc05c0da380a162"
+        },
+        {
+          "variant": "zh-hant",
+          "path": "001.zh-hant.html",
+          "extract": "prp",
+          "sha256": "15bb3c3e97a838bbc383cecf51b6e513d094899c86fab354bb44b92e9b44c6b7"
+        }
+      ]
+    }
+  ]
+}

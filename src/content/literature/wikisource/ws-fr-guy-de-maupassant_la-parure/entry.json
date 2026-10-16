@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "fr",
+  "key": "ws-fr-guy-de-maupassant_la-parure",
+  "main": "Contes du jour et de la nuit (éd. Flammarion, 1885)/La Parure",
+  "url": "https://fr.wikisource.org/wiki/Contes_du_jour_et_de_la_nuit_(%C3%A9d._Flammarion%2C_1885)%2FLa_Parure",
+  "title": "La Parure",
+  "author": "Guy de Maupassant",
+  "level": "B1 중급",
+  "publishedYear": 1884,
+  "authorDeathYear": 1893,
+  "countryOfOrigin": "FR",
+  "mortPourLaFrance": false,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "FR",
+      "US",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "목걸이",
+    "authorKo": "기 드 모파상"
+  },
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "Contes du jour et de la nuit (éd. Flammarion, 1885)/La Parure",
+      "revid": 15482941,
+      "timestamp": "2025-12-15T20:30:27Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "prp",
+          "sha256": "050936f3ca62bb633188341dfa273898d2d8d29a630b84fd58e6344444f6c8dd"
+        }
+      ]
+    }
+  ]
+}

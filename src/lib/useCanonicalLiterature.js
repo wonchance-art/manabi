@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { verifiedCanonicalLiterature } from './literatureCanonical';
 import { verifiedStandardEbooksLiterature } from './standardEbooksCanonical';
+import { verifiedWikisourceLiterature } from './wikisourceCanonical';
 
-// 출처별 대조 — 青空文庫 · Standard Ebooks(LIT-SRC-EN-1). 둘 다 원문 해시가 정본과 같을 때만 크레딧을 준다.
-const VERIFY = { aozora: verifiedCanonicalLiterature, standardebooks: verifiedStandardEbooksLiterature };
+// 출처별 대조 — 青空文庫 · Standard Ebooks(LIT-SRC-EN-1) · Wikisource(LIT-SRC-WS-1). 모두 원문 해시가 정본과 같을 때만 크레딧을 준다.
+const VERIFY = { aozora: verifiedCanonicalLiterature, standardebooks: verifiedStandardEbooksLiterature, wikisource: verifiedWikisourceLiterature };
 
 /** 뷰어 출처 줄용 — 정본과 대조된 정본 책 크레딧(青空文庫·Standard Ebooks, 없거나 다르면 null). 원문·책 위치가 바뀌면 다시 대조한다. */
 export function useCanonicalLiterature(material) {
