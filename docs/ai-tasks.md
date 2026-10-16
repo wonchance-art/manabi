@@ -945,6 +945,8 @@
   · 같은 PR(PROFILES-PRIVACY-001 ② 선행): 관리자 판별을 service role 헬퍼로(backfill-ipa · seed-starters, anon 폴백 제거) · 관리자 역할 변경 =
     admin_set_user_role RPC(마지막 관리자 강등 거부 · 'user'→'student') — 마이그레이션 20261016171800은 병합 때 db push로 적용, 그 전엔 안내 토스트.
     ② 본 적용(전원 공개 정책 제거 · UPDATE 14열 · activity + admission 지문 재고정)은 배포 · 역할 변경 실계정 검수 뒤.
+  · 같은 PR(APP-FEEL-003, 운영 손맛 점검 7건 중 4건): 탭 이동 대기 밑줄(useLinkStatus · 100ms 지연 · prefetch:false 유지) · 이동 뒤 포커스를
+    본문으로(살아 있는 포커스는 그대로) · 주요 카드 눌림(:active scale .985 · 모션 축소 제외). 나머지 = 뷰어 다음 편 유지 · 목록 뒤로가기 · 교재 골격(진행).
   · 보류: CJK 가변 weight(@font-face −67%, brotli 전송 −2%) — 600 · 650 · 800 · 300 굵기가 실제 값으로 바뀌는 시각 변경이라 오너 확인 뒤.
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
