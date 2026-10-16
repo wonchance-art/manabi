@@ -12,7 +12,13 @@
   "level": "C1 고급",
   "display": {
     "titleKo": "프랭클린 자서전",
-    "authorKo": "벤저민 프랭클린"
+    "authorKo": "벤저민 프랭클린",
+    "binding": "buisson-1791",
+    "coverTitle": "Mémoires\nde la vie privée\nde Benjamin Franklin,\nécrits par lui-même,\net adressés a son fils;",
+    "coverPartTitle": "Suivis d’un Précis historique\nde sa Vie politique,",
+    "coverPlace": "A Paris,",
+    "coverImprint": "Chez Buisson, Libraire",
+    "coverEdition": "1791."
   },
   "files": [
     {

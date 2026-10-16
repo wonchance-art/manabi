@@ -24,7 +24,9 @@
   },
   "display": {
     "titleKo": "기미독립선언서",
-    "authorKo": "최남선 기초 · 민족 대표 33인"
+    "authorKo": "최남선 기초 · 민족 대표 33인",
+    "binding": "boseongsa-1919",
+    "coverTitle": "宣言書"
   },
   "fetchedAt": "2026-10-16",
   "files": [

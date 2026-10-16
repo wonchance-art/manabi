@@ -340,6 +340,62 @@ group by 1 order by 1;
 - 글꼴 변수는 늘 대체 이름을 품는다(`var(--font-x, "Family")`) — 정의되지 않은 `var()`는 font-family 선언 전체를 무효로 만들어 상속 글꼴로 떨어진다
   (앱 레이아웃 밖 화면에서 실측 · `firstEditionCover.test.js`가 잡는다).
 
+### 8.8 3차 묶음 — 비문학 · 번역본 10권 · 초판 속표지·천 장정 (오너 「되는 언어로만 ㄱㄱ」 2026-10-17 KST, LIT-SRC-WS-1 · LIT-SRC-PD-1)
+
+**번역본 권리 선** — 번역은 그 자체로 저작물이다. 원작과 번역이 **둘 다** 한국에서 만료여야 싣는다(`rightsKorea.js` — 같은 두 갈래:
+① 한국 보호기간 만료 · ② 본국 상호주의). 번역자는 `translator: {name, deathYear, publishedYear, countryOfOrigin}`로 적고, 검토 관할에
+번역 원산국을 더한다. 이름 문자열 하나뿐인 번역자는 검토 기록이 아니라 불가(fail-closed). 출처 줄은 「… · 번역 George Long, 1862」.
+
+| 작품 | 출처 · 판 | 권리 근거 |
+|---|---|---|
+| 프랭클린 자서전 | Standard Ebooks | 1790 사망 — 한국 만료 |
+| 자유론 · 국부론 · 도덕감정론 | Standard Ebooks | 밀 1873 · 스미스 1790 — 한국 만료 |
+| 명상록 | Standard Ebooks — George Long 역(1862) | 원작 고대 · 번역자 1879 사망 — 둘 다 한국 만료 |
+| 국화와 칼 | Faded Page | 베네딕트 1948 사망 — 한국 만료(1962년 이전) |
+| 자본론 1권 | 영어 위키문헌 「Das Kapital (Moore, 1906)」 — 무어·에이블링 역(1887) · 운터만 교정(Kerr 1906) | 원작 1883 · 번역 쪽 가장 늦은 사망 1956(운터만) — 둘 다 한국 만료 |
+| 고독한 산책자의 몽상 | 프랑스어 위키문헌(1782 판 — 10번째 쪽 이름 「Dixème」 오타 그대로) | 루소 1778 사망 |
+| 프랑스 벗들에게 바치는 시(릴케) | 프랑스어 위키문헌 「Poèmes français (Rilke)/Carnet de poche/…」 5편 | 릴케 1926 사망 |
+| 기미독립선언서 | 한국어 위키문헌 「3·1독립선언서」의 **원문(1919 국한문) 절만** | 최남선(기초) 1957 사망 |
+| 陰翳礼讃 | (이미 리포 — 아오조라) | — |
+
+넣지 않은 것과 이유:
+- 니코마코스 윤리학(F. H. Peters 역 1881) — 번역자 몰년을 확인하지 못했다(옥스퍼드 졸업생 명부에 이름만). 기록이 없으면 불가.
+- 기미독립선언서 현대어판(출처 미상) · 「쉽고 바르게 읽는 3·1독립선언서」(공공누리 제1유형 — 퍼블릭 도메인이 아닌 이용 허락) — 권리 선이 달라 싣지 않는다.
+  공공누리 판을 실으려면 퍼블릭 도메인 밖 이용 허락 근거(출처 표시 의무 포함)를 새로 두어야 한다(오너 결정).
+- 원문의 옛한글(ᄲᅮᆫ · ᄯᅩ · ᄭᅡ 등 9곳)은 그대로 둔다 — 고치면 원문이 아니다. 글꼴에 따라 자모가 풀려 보일 수 있다.
+- 릴케 『젊은 시인에게 보내는 편지』 · 반 고흐 편지 · 일·중·한 번역본 대부분 — 공개된 퍼블릭 도메인 판(또는 몰년이 확인되는 번역자)이 없다.
+
+파이프라인 보완(모두 계약 테스트):
+- Standard Ebooks: 부·편 칸막이 파일(머리 밖에 문단 없음) 건너뛰기 · 책 안 상호참조 고리는 글자만 · 번역자 저장소 이름(`<작가>_<작품>_<번역자>`).
+- Faded Page: 번호 목록·문답 머리표(listTag) · 장 번호 다음 장 이름(`parse.subtitle` — 「1: Assignment: Japan」) · 장 끝 각주 상자.
+- 위키문헌: 영어 위키(en) · Parsoid 틀 기록(data-mw)·각주(mw-ref) · 수식(분수는 ½, 빈 묶음 괄호는 지움, 그 밖은 throw) · 표 안 각주 번호 ·
+  문단형 장 제목(`chapterHeading` — 「Chapter II: Exchange」) · 영어 위키 작은 대문자 · 한 쪽에 판이 여럿인 문서의 절 하나(`--section`) ·
+  머리글 있는 시 쪽의 시 제목(헌사 「À Madame …」를 제목으로 오인하지 않는다 — 진달래꽃 「꿈으로 오는 한 사람」도 바로잡혔다).
+
+**표지 10종**(`FirstEditionCoverThird.jsx` · 공통 원칙은 §8.7 그대로) — 근거는 실물 사진·경매·서점 기록(아래). 18세기 책(1759 · 1776 · 1782 · 1791)은
+출판사 표지가 없었다(민짜 종이 표지·보드로 팔리고 산 사람이 가죽으로 장정) → 그 판의 얼굴인 **속표지**를 레이드지 위에 그린다. 19세기 천 장정은 앞면 민압만(글자는 책등).
+
+| 장정 | 실물 | 글꼴 | 확신 |
+|---|---|---|---|
+| buisson-1791 | Buisson 1791 『Mémoires de la vie privée de Benjamin Franklin』 속표지(자서전의 첫 판 — 프랑스어) | GFS Didot · EB Garamond 이탤릭 | 높음(표지 색 기록 없음 → 속표지) |
+| parker-1859 | John W. Parker 1859 초콜릿 갈색 천 · 민압 세 줄 테 + 계단 모서리 판 | — | 높음 |
+| bell-daldy-1862 | Bell and Daldy 1862 자줏빛 적갈색 천(앞면 무지 · 가는 민압 테는 관례) | — | 낮음~중간 |
+| strahan-1776 | Strahan & Cadell 1776 1권 속표지 | Libre Caslon Display | 높음 |
+| millar-1759 | Millar 1759 속표지 | Libre Caslon Display | 높음 |
+| houghton-1946 | Houghton Mifflin 1946 재킷(청록→복숭아빛 · 국화와 칼 · 흰 손글씨 제목) | Yellowtail · GFS Didot 좁힘 · Josefin Sans · Caslon | 높음(초판 재킷 상태는 중간) |
+| sonnenschein-1887 | Swan Sonnenschein 1887 적갈색 천 · 민압 두 줄 테 + 판 | — | 높음 |
+| geneve-1782 | 제네바 1782 『Les Confessions … suivies des Rêveries』 2권 속표지 | GFS Didot · EB Garamond 이탤릭 | 중간~높음 |
+| hartmann-1935 | Paul Hartmann 1935 『Poèmes français』 크림 표지 · 두 색 가라몽 | EB Garamond(Deberny & Peignot 「Garamont」 대역) | 높음 |
+| boseongsa-1919 | 보성사 1919 인쇄 『宣言書』(20.5×45.8cm 한 장)의 오른쪽 첫머리 · 세로줄 | Noto Serif KR(명조 활자 대역 — Song Myung은 한자 수록이 모자람) | 높음 |
+
+- 그리지 않는 것: 출판사 도안(Bell and Daldy 종 · Swan Sonnenschein 문장) · 초상(프랭클린 권두 초상 · 베네딕트 사진) · 속표지 목판 도안(종려·리라 ·
+  항아리 → 줄인 꽃 장식) · 일본 황실 16엽 국화 문장 모양(재킷의 국화는 원근으로 기운 헝클어진 꽃 — 꽃잎 수·길이·각도를 고르지 않게 흩는다).
+- 18세기 긴 s(ſ)는 읽기 쉽게 보통 s. 보성사판의 오식 「我鮮朝」는 싣는 정본 글자 「我朝鮮」으로 쓴다.
+- 새 글꼴: EB Garamond(OFL) — `vendor/google-fonts`(라이선스 원문 동봉). Noto Serif KR 400은 이미 사본에 있다.
+- 근거: Raptis Rare Books · Bauman Rare Books(Franklin 85270 · 130807, Mill 109840, Marx 105946, Rousseau 120943) · Sotheby's(Franklin 1793, Wealth of Nations 2026) ·
+  Christie's(Wealth of Nations boards) · Jonkers(On Liberty, Capital) · The Morgan(TMS 109008, Capital 115332) · Internet Archive thoughtsofempero00marcrich ·
+  AbeBooks(Chrysanthemum jacket) · Le Francophile(Rilke 1935) · 국가유산포털 등록문화유산 664-1·664-2 · 국가기록원.
+
 ### 8.5 이식 비용 (재사용 vs 신규)
 
 - **그대로 쓰는 것**: 게시 흐름 전체(준비·분석·검수·묶음 검수·공개, provider 분기 — 그림 책 ART-P0-3이 이미 두 번째 provider),

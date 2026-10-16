@@ -18,7 +18,9 @@
   "level": "C1 고급",
   "display": {
     "titleKo": "명상록",
-    "authorKo": "마르쿠스 아우렐리우스"
+    "authorKo": "마르쿠스 아우렐리우스",
+    "binding": "bell-daldy-1862",
+    "coverTitle": "Thoughts"
   },
   "files": [
     {

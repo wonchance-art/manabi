@@ -12,7 +12,14 @@
   "level": "C1 고급",
   "display": {
     "titleKo": "국부론",
-    "authorKo": "애덤 스미스"
+    "authorKo": "애덤 스미스",
+    "binding": "strahan-1776",
+    "coverTitle": "An\nInquiry\ninto the\nNature and Causes\nof the\nWealth of Nations.",
+    "coverAuthor": "By ADAM SMITH, LL.D. and F.R.S.",
+    "coverTome": "Vol. I.",
+    "coverPlace": "London:",
+    "coverImprint": "W. Strahan; and T. Cadell",
+    "coverYear": 1776
   },
   "files": [
     {

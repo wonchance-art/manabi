@@ -25,7 +25,9 @@
   },
   "display": {
     "titleKo": "자본론 1권",
-    "authorKo": "카를 마르크스"
+    "authorKo": "카를 마르크스",
+    "binding": "sonnenschein-1887",
+    "coverTitle": "Capital."
   },
   "fetchedAt": "2026-10-16",
   "translator": {

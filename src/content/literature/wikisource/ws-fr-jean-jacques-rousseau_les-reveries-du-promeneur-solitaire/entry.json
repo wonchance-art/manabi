@@ -24,7 +24,14 @@
   },
   "display": {
     "titleKo": "고독한 산책자의 몽상",
-    "authorKo": "장 자크 루소"
+    "authorKo": "장 자크 루소",
+    "binding": "geneve-1782",
+    "coverTitle": "Les\nConfessions\nde\nJ. J. Rousseau,",
+    "coverPartTitle": "Suivies\ndes Rêveries",
+    "coverSubtitle": "Du Promeneur Solitaire.",
+    "coverTome": "Tome second.",
+    "coverPlace": "A Geneve.",
+    "coverYear": 1782
   },
   "fetchedAt": "2026-10-16",
   "files": [

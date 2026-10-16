@@ -99,21 +99,21 @@ describe('리포 정본 3편 — 산출물·장 모양', () => {
   it('build-literature --check와 같은 검사가 통과한다(원문 해시·chapters.json·목록·대조표)', async () => {
     const { works, errors } = await buildStandardEbooks({ root: STANDARD_EBOOKS_ROOT, check: true });
     expect(errors).toEqual([]);
-    // 1차 3편 + 2차 묶음 5편(오너 2026-10-17 KST — 초판 장정 표지) + 3차 묶음 5편(「되는 언어로만」 — 표지 대기 동안은 목록 밖)
+    // 1차 3편 + 2차 묶음 5편(오너 2026-10-17 KST — 초판 장정 표지) + 3차 묶음 5편(「되는 언어로만」 — 초판 속표지·천 장정)
     expect(works.map((work) => [work.key, work.chapters, work.status])).toEqual([
-      ['se-adam-smith_the-theory-of-moral-sentiments', 86, 'cover-pending'],
-      ['se-adam-smith_the-wealth-of-nations', 173, 'cover-pending'],
+      ['se-adam-smith_the-theory-of-moral-sentiments', 86, 'checked'],
+      ['se-adam-smith_the-wealth-of-nations', 173, 'checked'],
       ['se-arthur-conan-doyle_the-adventures-of-sherlock-holmes', 47, 'checked'],
-      ['se-benjamin-franklin_the-autobiography-of-benjamin-franklin', 28, 'cover-pending'],
+      ['se-benjamin-franklin_the-autobiography-of-benjamin-franklin', 28, 'checked'],
       ['se-charles-dickens_a-christmas-carol', 13, 'checked'],
       ['se-f-scott-fitzgerald_the-great-gatsby', 22, 'checked'],
       ['se-henry-david-thoreau_walden', 50, 'checked'],
       ['se-herman-melville_moby-dick', 150, 'checked'],
       ['se-james-joyce_a-portrait-of-the-artist-as-a-young-man', 39, 'checked'],
       ['se-jane-austen_pride-and-prejudice', 65, 'checked'],
-      ['se-john-stuart-mill_on-liberty', 22, 'cover-pending'],
+      ['se-john-stuart-mill_on-liberty', 22, 'checked'],
       ['se-lewis-carroll_alices-adventures-in-wonderland', 12, 'checked'],
-      ['se-marcus-aurelius_meditations_george-long', 20, 'cover-pending'],
+      ['se-marcus-aurelius_meditations_george-long', 20, 'checked'],
     ]);
   });
 
@@ -122,7 +122,9 @@ describe('리포 정본 3편 — 산출물·장 모양', () => {
       expect(literatureBookPublishable(book)).toBe(true);
       for (const chapter of book.chapters) {
         expect(chapter.metadata).toMatchObject({ language: 'English', level: book.book.level, book: { key: book.book.key, order: chapter.order, total: book.book.total } });
-        expect(chapter.metadata.literature).toMatchObject({ provider: SE_PROVIDER, license: 'CC0-1.0', translator: null, rights: { status: 'approved' } });
+        // 번역본(명상록 롱 역)만 번역자 기록 — 나머지는 원어 원문
+        const translator = book.book.key.endsWith('_george-long') ? { name: 'George Long', deathYear: 1879, publishedYear: 1862, countryOfOrigin: 'GB' } : null;
+        expect(chapter.metadata.literature).toMatchObject({ provider: SE_PROVIDER, license: 'CC0-1.0', translator, rights: { status: 'approved' } });
         expect(chapter.materialTitle).toBe(`${book.book.title} — ${chapter.title}`);
         expect(chapter.rawText).not.toMatch(/[<>⁠ ]|\n{3}/u);
         const words = wordCount(chapter.rawText);

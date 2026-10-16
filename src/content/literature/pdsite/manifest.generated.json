@@ -379,6 +379,246 @@
         }
       ]
     },
+    "pd-fp-ruth-benedict_the-chrysanthemum-and-the-sword": {
+      "title": "The Chrysanthemum and the Sword",
+      "author": "Ruth Benedict",
+      "level": "C1 고급",
+      "total": 38,
+      "language": "English",
+      "size": 88886,
+      "unit": "words",
+      "display": {
+        "titleKo": "국화와 칼",
+        "authorKo": "루스 베네딕트",
+        "binding": "houghton-1946",
+        "coverTitle": "The\nChrysanthemum\nand the Sword",
+        "coverAuthor": "Ruth Benedict"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "pdsite",
+        "workKey": "pd-fp-ruth-benedict_the-chrysanthemum-and-the-sword",
+        "site": "fp",
+        "title": "The Chrysanthemum and the Sword",
+        "author": "Ruth Benedict",
+        "publishedYear": 1946,
+        "authorDeathYear": 1948,
+        "countryOfOrigin": "US",
+        "translator": null,
+        "url": "https://www.fadedpage.com/showbook.php?pid=20190750",
+        "fetchedAt": "2026-10-17",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "US",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "rightsBasis": "korea-term",
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "site-front-matter-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1: Assignment: Japan (1/2)",
+          "sha256": "a1da7d10d7af8a9586038f9b54cc916128a39da08148d1a7c314c96d5901fc81"
+        },
+        {
+          "order": 2,
+          "title": "1: Assignment: Japan (2/2)",
+          "sha256": "182d1da92c1990fd3d544e3f5075972453b25dcb170f9505067a5852922145e3"
+        },
+        {
+          "order": 3,
+          "title": "2: The Japanese in the War (1/3)",
+          "sha256": "a5373059e3531e9037ef274aef4d8edb0b88612e56d89f8504b638285e956e8b"
+        },
+        {
+          "order": 4,
+          "title": "2: The Japanese in the War (2/3)",
+          "sha256": "af7abd480729f4ab6f7e9ad9c59985338129664d27eecd2baf59d40fb3a0265b"
+        },
+        {
+          "order": 5,
+          "title": "2: The Japanese in the War (3/3)",
+          "sha256": "b32302aaccb41680e84c14f2406196b7847af1b8908e3c8c8adb577dc4041653"
+        },
+        {
+          "order": 6,
+          "title": "3: Taking One’s Proper Station (1/4)",
+          "sha256": "627599b9fa1f941e166305bb9933cddb868e7a2f2e9e459b2f8af1ec77f738e0"
+        },
+        {
+          "order": 7,
+          "title": "3: Taking One’s Proper Station (2/4)",
+          "sha256": "5386d42d41740d1c68e5303c43437e6a32794ad676856d014e3e2c06a5d11a5b"
+        },
+        {
+          "order": 8,
+          "title": "3: Taking One’s Proper Station (3/4)",
+          "sha256": "ca4130283c78fcfa3f3b3ab5dbe3a6685a6c3dd0d01d4cab1c10f87eddd1d487"
+        },
+        {
+          "order": 9,
+          "title": "3: Taking One’s Proper Station (4/4)",
+          "sha256": "c31d1f8b3f9863558db8b9fa4352b9bd9182d99d93c3a16bd6224cb03071539a"
+        },
+        {
+          "order": 10,
+          "title": "4: The Meiji Reform (1/3)",
+          "sha256": "84abe3d2b6d2acfed0cb7bddb7248d46777a017e025bd84f31a2109003395e2f"
+        },
+        {
+          "order": 11,
+          "title": "4: The Meiji Reform (2/3)",
+          "sha256": "d87197b53ee64d1fad731841bd8befba9f6f4a8b54e280d5bb58060a1d2559e7"
+        },
+        {
+          "order": 12,
+          "title": "4: The Meiji Reform (3/3)",
+          "sha256": "498f4a23cca17d0ab4876111826a4469c1f7688a6df53c59ee68dd42c71e32a3"
+        },
+        {
+          "order": 13,
+          "title": "5: Debtor to the Ages and the World (1/2)",
+          "sha256": "b6b81018dc1673fb62deb9b551731e7ef16622755a61938aec62fe1e30e6e7db"
+        },
+        {
+          "order": 14,
+          "title": "5: Debtor to the Ages and the World (2/2)",
+          "sha256": "fc25a9e1ad32bcf02d8e0ae2d7aa88b24d556ac28a08ca2dbc02a83e2d7fd0d7"
+        },
+        {
+          "order": 15,
+          "title": "6: Repaying One-Ten-Thousandth (1/2)",
+          "sha256": "351e68e643e7cc9a2f0cfb71629e968a048c9a4056affa4863846b8aa74ad59a"
+        },
+        {
+          "order": 16,
+          "title": "6: Repaying One-Ten-Thousandth (2/2)",
+          "sha256": "70ca5a115780e869322fb887cef75d9394199fd1fb06ab8ee5b4037e59834341"
+        },
+        {
+          "order": 17,
+          "title": "7: The Repayment ‘Hardest to Bear’",
+          "sha256": "93ff792354452b88d7212187c6377b993c5a3591333f4d8a7c350e16f50448ca"
+        },
+        {
+          "order": 18,
+          "title": "8: Clearing One’s Name (1/4)",
+          "sha256": "20d99f38147d9d26598899d701003fa7adc44a1ff2689e114b1445894b0aa7ad"
+        },
+        {
+          "order": 19,
+          "title": "8: Clearing One’s Name (2/4)",
+          "sha256": "563303a3ec73c421c26b1119fcfefaeb16980c94a78fb859d6e29f882e4b6a53"
+        },
+        {
+          "order": 20,
+          "title": "8: Clearing One’s Name (3/4)",
+          "sha256": "caa882033990c9de6a601a2404361e09128b90077b9bb7267245508249a45dd7"
+        },
+        {
+          "order": 21,
+          "title": "8: Clearing One’s Name (4/4)",
+          "sha256": "af4fc902a5366cfb7840a968f6204d90876453fc6c2c9318dbba2ae76f0f0f75"
+        },
+        {
+          "order": 22,
+          "title": "9: The Circle of Human Feelings (1/2)",
+          "sha256": "bc87b0d0396e47c62edb0f33ddff517f47ffd6ad07bd6c2e9be06e08a1e7d7ab"
+        },
+        {
+          "order": 23,
+          "title": "9: The Circle of Human Feelings (2/2)",
+          "sha256": "706baf6f4793b5ce4f224544263f416729da8f2653424a9b8d0ee6929fa67ed3"
+        },
+        {
+          "order": 24,
+          "title": "10: The Dilemma of Virtue (1/4)",
+          "sha256": "671e56dec76522b91d632929d65e1566ab9b11a3490843d6969ce11046c0b1a2"
+        },
+        {
+          "order": 25,
+          "title": "10: The Dilemma of Virtue (2/4)",
+          "sha256": "5672b2d3ca5ea2549f915234322f055b4d7031562408d6da8a35a24f4b262edc"
+        },
+        {
+          "order": 26,
+          "title": "10: The Dilemma of Virtue (3/4)",
+          "sha256": "f28adb760348bf7ebe740fb1c3bf37e3ed9d3c62a67f557efa6a138665f976f5"
+        },
+        {
+          "order": 27,
+          "title": "10: The Dilemma of Virtue (4/4)",
+          "sha256": "a54a40db3dcd4a55895e0b3fd0c32a7ec053258610bd978f2820c97d2464588c"
+        },
+        {
+          "order": 28,
+          "title": "11: Self-Discipline (1/3)",
+          "sha256": "3f8385aa8d4eb22894b2b1efde978c7f7c9cd9040a44ea2cd2c7336273c789b4"
+        },
+        {
+          "order": 29,
+          "title": "11: Self-Discipline (2/3)",
+          "sha256": "ac9e6fabf04c4b0a106c2c4995e735fee614bfb02eb4076dea0057eea8cd1e62"
+        },
+        {
+          "order": 30,
+          "title": "11: Self-Discipline (3/3)",
+          "sha256": "85899d3c6590fbade1d7d60c6a426d2088b3e541761522a8128691cae0a56ff5"
+        },
+        {
+          "order": 31,
+          "title": "12: The Child Learns (1/6)",
+          "sha256": "c71f41e775dcf731b0b61bac4f2eab52360dfefaa74a5fe6480ef9cfe7a4b30a"
+        },
+        {
+          "order": 32,
+          "title": "12: The Child Learns (2/6)",
+          "sha256": "fcf9eb9375f599667465f999f555cf17384d685e158b49c468e7b59b992e99ce"
+        },
+        {
+          "order": 33,
+          "title": "12: The Child Learns (3/6)",
+          "sha256": "532221b68cf8053e0af85c8aa8a131d55a1c336bed547eb42e4ed7ad40d91527"
+        },
+        {
+          "order": 34,
+          "title": "12: The Child Learns (4/6)",
+          "sha256": "e4574481667fe1390925d503ab3faf87982659ac1192e8e70494bd279e111aef"
+        },
+        {
+          "order": 35,
+          "title": "12: The Child Learns (5/6)",
+          "sha256": "bbc365386772a51abc36fb31da2710d9a29a5f04573021dc23169863c5ab76ef"
+        },
+        {
+          "order": 36,
+          "title": "12: The Child Learns (6/6)",
+          "sha256": "c615ac0add1bb6a3d56f5be5bb4222417025e598cbf8d70bca5e1ecfabc1f317"
+        },
+        {
+          "order": 37,
+          "title": "13: The Japanese Since VJ-Day (1/2)",
+          "sha256": "41cf3ed884f26aa79b0f872dcb45918dc5d11de5b0d3903904987a34832cf611"
+        },
+        {
+          "order": 38,
+          "title": "13: The Japanese Since VJ-Day (2/2)",
+          "sha256": "e9377977c97d901c96886533ded9a6ab93fd009c88393c4e88e60fdd19c06ccf"
+        }
+      ]
+    },
     "pd-fp-virginia-woolf_a-room-of-ones-own": {
       "title": "A Room of One’s Own",
       "author": "Virginia Woolf",

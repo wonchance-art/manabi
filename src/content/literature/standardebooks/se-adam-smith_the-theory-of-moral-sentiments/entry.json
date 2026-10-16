@@ -12,7 +12,14 @@
   "level": "C1 고급",
   "display": {
     "titleKo": "도덕감정론",
-    "authorKo": "애덤 스미스"
+    "authorKo": "애덤 스미스",
+    "binding": "millar-1759",
+    "coverTitle": "The\nTheory\nof\nMoral Sentiments.",
+    "coverAuthor": "By Adam Smith,",
+    "coverSubtitle": "PROFESSOR of MORAL PHILOSOPHY",
+    "coverPlace": "London:",
+    "coverImprint": "Printed for A. MILLAR",
+    "coverYear": 1759
   },
   "files": [
     {

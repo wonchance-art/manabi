@@ -23,7 +23,10 @@
   },
   "display": {
     "titleKo": "국화와 칼",
-    "authorKo": "루스 베네딕트"
+    "authorKo": "루스 베네딕트",
+    "binding": "houghton-1946",
+    "coverTitle": "The\nChrysanthemum\nand the Sword",
+    "coverAuthor": "Ruth Benedict"
   },
   "parse": {
     "chapter": "^h1:\\d+$",

@@ -2,6 +2,7 @@ import { useId } from 'react';
 import { Metamorphous, Noto_Serif_SC, Rye } from 'next/font/google';
 import { FIRST_EDITION_BINDINGS, romanYear } from '../../lib/firstEditionCover';
 import { PERIOD_FONTS, SECOND_DRAW, SECOND_FONT_CLASS, SECOND_GROUNDS } from './FirstEditionCoverSecond';
+import { THIRD_DRAW, THIRD_FONT_CLASS, THIRD_GROUNDS } from './FirstEditionCoverThird';
 import './first-edition-cover.css';
 
 // 중국어·프랑스어 정본 책 표지 — 「초판 장정」 시리즈(LIT-SRC-WS-1, 오너 「권장대로」 2026-10-17 KST). 규칙·근거는 lib/firstEditionCover.js.
@@ -18,7 +19,7 @@ const ELZEVIR = PERIOD_FONTS.FELL;
 const DIDONE = PERIOD_FONTS.DIDOT;
 const POINTED = 'var(--font-ws-pointed, Metamorphous), Metamorphous, Georgia, serif';
 const ORNATE = 'var(--font-ws-ornate, Rye), Rye, Georgia, serif';
-const FONT_CLASS = [song.variable, pointed.variable, ornate.variable, SECOND_FONT_CLASS].filter(Boolean).join(' ');
+const FONT_CLASS = [song.variable, pointed.variable, ornate.variable, SECOND_FONT_CLASS, THIRD_FONT_CLASS].filter(Boolean).join(' ');
 
 /** 바탕 색 — 장정마다 실물 사진에서 잰 값(『呐喊』은 바랜 벽돌색을 원래 색에 가깝게 되돌린 값). 책은 물건이라 테마를 따라 바뀌지 않는다. */
 export const FIRST_EDITION_GROUNDS = Object.freeze({
@@ -29,6 +30,7 @@ export const FIRST_EDITION_GROUNDS = Object.freeze({
   hetzel: { ground: '#bb4630', ink: '#1d1716' },
   pagnerre: { ground: '#b9c2c3', ink: '#1d2124', red: '#8a1f1b' },
   ...SECOND_GROUNDS,
+  ...THIRD_GROUNDS,
 });
 
 function T({ x, y, size, font, fill, spacing, italic, weight, children, ...rest }) {
@@ -197,7 +199,7 @@ function Pagnerre({ display, tone }) {
   );
 }
 
-const DRAW = { nahan: Nahan, kaiming: Kaiming, lemerre: Lemerre, marpon: Marpon, hetzel: Hetzel, pagnerre: Pagnerre, ...SECOND_DRAW };
+const DRAW = { nahan: Nahan, kaiming: Kaiming, lemerre: Lemerre, marpon: Marpon, hetzel: Hetzel, pagnerre: Pagnerre, ...SECOND_DRAW, ...THIRD_DRAW };
 
 // ── 시리즈 공통 원칙(오너 「이전에 커버 만들었던 것처럼 일관성 줄 수 있는 원칙 일부와 빈티지 효과」 2026-10-17 KST) ──
 // ① 틀: 60×84 · 왼쪽 접힘(경첩) 그림자 하나 — 시리즈 A(일본 책) · 빅토리아 천 장정과 같은 자리(CSS .fe-cover).

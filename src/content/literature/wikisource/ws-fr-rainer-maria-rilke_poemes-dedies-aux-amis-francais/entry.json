@@ -24,7 +24,13 @@
   },
   "display": {
     "titleKo": "프랑스 벗들에게 바치는 시",
-    "authorKo": "라이너 마리아 릴케"
+    "authorKo": "라이너 마리아 릴케",
+    "binding": "hartmann-1935",
+    "coverTitle": "Poèmes\nfrançais",
+    "coverAuthor": "Rainer Maria Rilke",
+    "coverImprint": "Paul Hartmann, éditeur",
+    "coverEdition": "11, rue Cujas – Paris Vᵉ",
+    "coverYear": 1935
   },
   "collection": true,
   "fetchedAt": "2026-10-16",

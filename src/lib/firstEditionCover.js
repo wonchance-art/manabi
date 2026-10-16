@@ -82,6 +82,28 @@ export const FIRST_EDITION_BINDINGS = Object.freeze({
   'gallimard-essais': Object.freeze({ material: 'paper', script: 'fr', required: ['coverTitle', 'coverAuthor', 'coverEdition', 'coverImprint'], optional: [], titleLines: 2, titleMax: 12, year: false, note: 'Gallimard 1942 Le Mythe de Sisyphe, Les Essais XII' }),
   // Reynal & Hitchcock 1943 재킷 배치 — 크림 · 위 청회 대문자 작가 · 검정 제목 · 노란 별들 · 왼쪽 아래 작은 글씨(왕자 그림 · 소행성은 그리지 않는다 — 캐릭터 그림).
   reynal: Object.freeze({ material: 'paper', script: 'fr', required: ['coverTitle', 'coverAuthor', 'coverEdition'], optional: [], titleLines: 1, titleMax: 16, year: false, note: 'Reynal & Hitchcock 1943 Le Petit Prince jacket layout, without the figure' }),
+  // ── 3차 묶음(오너 「되는 언어로만 ㄱㄱ」 2026-10-17 KST — FirstEditionCoverThird) ──
+  // 18세기 책은 출판사 표지가 없었다(민짜 종이 표지·보드로 팔림) → 앞면은 그 판의 속표지. 19세기 천 장정은 앞면 민압만(글자는 책등).
+  // Buisson 1791 — 자서전의 첫 판(프랑스어). 속표지: 대문자 다섯 줄 · 이탤릭 두 줄 · 꽃 · A PARIS · 출판사 · 이중 괘선 · 연도.
+  'buisson-1791': Object.freeze({ material: 'paper', script: 'fr', required: ['coverTitle', 'coverPartTitle', 'coverPlace', 'coverImprint', 'coverEdition'], optional: [], titleLines: 5, titleMax: 24, year: false, note: 'Buisson 1791 Mémoires de la vie privée de Benjamin Franklin — title page (issued in plain wrappers)' }),
+  // John W. Parker and Son 1859 — 초콜릿 갈색 천 · 민압 세 줄 테 + 계단 모서리 판, 앞면 글자 없음.
+  'parker-1859': Object.freeze({ material: 'cloth', script: 'en', required: ['coverTitle'], optional: [], titleLines: 2, titleMax: 12, year: false, note: 'John W. Parker and Son 1859 On Liberty brown cloth, blind panel' }),
+  // Bell and Daldy 1862 — 자줏빛 적갈색 알갱이 결 천, 앞면 무지(가는 민압 테는 관례 — 확신 낮음).
+  'bell-daldy-1862': Object.freeze({ material: 'cloth', script: 'en', required: ['coverTitle'], optional: [], titleLines: 2, titleMax: 12, year: false, note: 'Bell and Daldy 1862 Thoughts of M. Aurelius Antoninus (Long) plum cloth' }),
+  // Strahan & Cadell 1776 — 속표지(캐즐론) 여섯 줄 제목 · 저자 · 권 · 이중 괘선 · LONDON · 출판사 · 연도(띄우지 않은 로마 숫자).
+  'strahan-1776': Object.freeze({ material: 'paper', script: 'en', required: ['coverTitle', 'coverAuthor', 'coverTome', 'coverPlace', 'coverImprint'], optional: [], titleLines: 6, titleMax: 18, authorMax: 32, year: true, note: 'W. Strahan and T. Cadell 1776 Wealth of Nations vol. I — title page (issued in plain boards)' }),
+  // A. Millar 1759 — 속표지(캐즐론): THE · THEORY · OF · MORAL SENTIMENTS · 저자 · 직함 · 꽃 · LONDON · 출판사 · 띄운 로마 숫자 연도.
+  'millar-1759': Object.freeze({ material: 'paper', script: 'en', required: ['coverTitle', 'coverAuthor', 'coverSubtitle', 'coverPlace', 'coverImprint'], optional: [], titleLines: 4, titleMax: 18, year: true, note: 'A. Millar 1759 Theory of Moral Sentiments — title page (issued in plain boards)' }),
+  // Houghton Mifflin 1946 재킷 — 청록→복숭아빛 · 헝클어진 국화와 칼 · 흰 손글씨 제목 · 소개 글 · 로만 대문자 작가(뒷날개 사진은 그리지 않는다).
+  'houghton-1946': Object.freeze({ material: 'paper', script: 'en', required: ['coverTitle', 'coverAuthor'], optional: [], titleLines: 3, titleMax: 14, year: false, note: 'Houghton Mifflin 1946 The Chrysanthemum and the Sword jacket' }),
+  // Swan Sonnenschein, Lowrey & Co. 1887 — 적갈색 천 · 민압 두 줄 테 + 두 줄 판, 앞면 글자 없음(출판사 문장은 그리지 않는다).
+  'sonnenschein-1887': Object.freeze({ material: 'cloth', script: 'en', required: ['coverTitle'], optional: [], titleLines: 2, titleMax: 12, year: false, note: 'Swan Sonnenschein, Lowrey & Co. 1887 Capital (Moore and Aveling) maroon cloth, blind rules' }),
+  // 제네바 1782 『Les Confessions … suivies des Rêveries』 2권 — 속표지: LES · CONFESSIONS · DE · 그림자 대문자 작가 · Suivies DES RÊVERIES · 권 · A GENEVE · 연도.
+  'geneve-1782': Object.freeze({ material: 'paper', script: 'fr', required: ['coverTitle', 'coverPartTitle', 'coverSubtitle', 'coverTome', 'coverPlace'], optional: [], titleLines: 4, titleMax: 16, year: true, note: 'Geneva 1782 Les Confessions suivies des Rêveries du promeneur solitaire, tome II — title page' }),
+  // Paul Hartmann 1935 『Poèmes français』 — 크림 종이 표지 · 두 색 가라몽 대문자(작가 · 빨강 제목 · 실린 시집 · 연도 · 빨강 출판사 · 주소).
+  'hartmann-1935': Object.freeze({ material: 'paper', script: 'fr', required: ['coverTitle', 'coverAuthor', 'coverImprint', 'coverEdition'], optional: [], titleLines: 2, titleMax: 10, year: true, note: 'Paul Hartmann 1935 Rilke, Poèmes français wrapper' }),
+  // 1919 보성사 『宣言書』 — 가로 긴 한 장의 오른쪽 첫머리: 큰 「宣言書」 + 본문 세로줄 오른쪽→왼쪽.
+  'boseongsa-1919': Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle'], optional: [], titleLines: 1, titleMax: 3, year: false, note: 'Boseongsa 1919 Declaration of Independence sheet, right-hand opening' }),
 });
 
 const ROMAN = [[1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];

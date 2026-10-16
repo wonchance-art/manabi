@@ -36,8 +36,8 @@ const GOUDY = stack('--font-fe-goudy', 'Goudy Bookletter 1911', 'Georgia', 'seri
 const FELL = stack('--font-fe-fell', 'IM Fell English', 'Georgia', 'serif');
 const DIDOT = stack('--font-fe-didot', 'GFS Didot', 'Didot', 'serif');
 const CASLON = stack('--font-fe-caslon', 'Libre Caslon Display', '"Big Caslon"', 'Georgia', 'serif');
-/** 1차 장정(FirstEditionCover)도 같은 당시 글꼴을 쓴다 — Lemerre 엘제비르 활자 · Pagnerre·Marpon 디도. */
-export const PERIOD_FONTS = Object.freeze({ FELL, DIDOT });
+/** 1차 장정(FirstEditionCover)도 같은 당시 글꼴을 쓴다 — Lemerre 엘제비르 활자 · Pagnerre·Marpon 디도. 3차(FirstEditionCoverThird)는 캐즐론·기하 산세리프·붓 필기체도. */
+export const PERIOD_FONTS = Object.freeze({ FELL, DIDOT, CASLON, JOSEFIN, YELLOWTAIL });
 
 /** 바탕 색 — 실물 사진에서 잰 값(빛바램은 조금 되돌림). 책은 물건이라 테마를 따라 바뀌지 않는다. */
 export const SECOND_GROUNDS = Object.freeze({
@@ -62,7 +62,7 @@ export const SECOND_GROUNDS = Object.freeze({
   reynal: { ground: '#f1e9d5', ink: '#1b1a18', blue: '#7f8fa0', star: '#efd56b' },
 });
 
-function T({ x, y, size, font, fill, spacing, italic, weight, anchor = 'middle', children, ...rest }) {
+export function T({ x, y, size, font, fill, spacing, italic, weight, anchor = 'middle', children, ...rest }) {
   return <text x={x} y={y} fontSize={size} textAnchor={anchor} fill={fill} letterSpacing={spacing} fontStyle={italic ? 'italic' : undefined} fontWeight={weight} style={{ fontFamily: font }} {...rest}>{children}</text>;
 }
 
@@ -81,7 +81,7 @@ function V({ x, y, size, step, font, fill, weight, text }) {
 const rtl = (text) => [...text].reverse().join('');
 
 /** 천 결 무늬 — 고운 평직(rotate 45) · 세로 골(rotate 90). */
-function Weave({ id, color, ribbed = false }) {
+export function Weave({ id, color, ribbed = false }) {
   return (
     <>
       <defs>
@@ -96,7 +96,7 @@ function Weave({ id, color, ribbed = false }) {
 }
 
 /** 민압(blind stamp) — 판에 눌린 자국: 짙은 글자 + 아래로 반 픽셀 밝은 테. */
-function Blind({ tone, children }) {
+export function Blind({ tone, children }) {
   return (
     <g>
       <g transform="translate(0 .45)" fill={tone.light} stroke={tone.light} strokeWidth=".2" opacity=".8">{children}</g>

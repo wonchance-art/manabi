@@ -1,6 +1,1405 @@
 {
   "schemaVersion": 1,
   "works": {
+    "se-adam-smith_the-theory-of-moral-sentiments": {
+      "title": "The Theory of Moral Sentiments",
+      "author": "Adam Smith",
+      "level": "C1 고급",
+      "total": 86,
+      "words": 159744,
+      "display": {
+        "titleKo": "도덕감정론",
+        "authorKo": "애덤 스미스",
+        "binding": "millar-1759",
+        "coverTitle": "The\nTheory\nof\nMoral Sentiments.",
+        "coverAuthor": "By Adam Smith,",
+        "coverSubtitle": "PROFESSOR of MORAL PHILOSOPHY",
+        "coverPlace": "London:",
+        "coverImprint": "Printed for A. MILLAR",
+        "coverYear": 1759
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-adam-smith_the-theory-of-moral-sentiments",
+        "title": "The Theory of Moral Sentiments",
+        "author": "Adam Smith",
+        "publishedYear": 1759,
+        "authorDeathYear": 1790,
+        "countryOfOrigin": "GB",
+        "translator": null,
+        "repo": "standardebooks/adam-smith_the-theory-of-moral-sentiments",
+        "commit": "1a94d8d93245868d08d895d4fc26a2e50db9855a",
+        "url": "https://standardebooks.org/ebooks/adam-smith/the-theory-of-moral-sentiments",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "GB",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/adam-smith/the-theory-of-moral-sentiments"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: Of Sympathy",
+          "sha256": "d7598547962c98e8a827fdbab97e0a8e488aaff9725b43b53555b0678d4aa917"
+        },
+        {
+          "order": 2,
+          "title": "II: Of the Pleasure of Mutual Sympathy",
+          "sha256": "a84d4ae2c2ab1607686e48b139be8b4b4bb599aab5b87076c3f2a9d0c83124b6"
+        },
+        {
+          "order": 3,
+          "title": "III: Of the Manner in Which We Judge of the Propriety or Impropriety of the Affections of Other Men, by Their Concord or Dissonance with Our Own",
+          "sha256": "3b88758c5a3271e877034b33d0e764fec16e441eb3a462abade7f596cefa39f6"
+        },
+        {
+          "order": 4,
+          "title": "IV: The Same Subject Continued",
+          "sha256": "008b985171dd0672514c456defb9094c9b38e94707579a03c449549db674eb8a"
+        },
+        {
+          "order": 5,
+          "title": "V: Of the Amiable and Respectable Virtues",
+          "sha256": "526886753785e6f910df995a557a6752efa84a0212bdc518c5da9ac41dc4ac1b"
+        },
+        {
+          "order": 6,
+          "title": "Section II: Of the Degrees of the Different Passions Which Are Consistent with Propriety",
+          "sha256": "7641fdde1d3196eb452e2fc67e5b95c34aa974a6b8caeb5e6a31ec9aceeeb2ed"
+        },
+        {
+          "order": 7,
+          "title": "I: Of the Passions Which Take Their Origin from the Body",
+          "sha256": "958a75ac12f02091dd7f75d8a2a14644a4e4ff4d9614a7d1b3d2518042327d6c"
+        },
+        {
+          "order": 8,
+          "title": "II: Of Those Passions Which Take Their Origin from a Particular Turn or Habit of the Imagination",
+          "sha256": "e6772c9a211833f76b4f55059e5aca2e488de25ce4a80744c2beb8bdfdc7139a"
+        },
+        {
+          "order": 9,
+          "title": "III: Of the Unsocial Passions",
+          "sha256": "27082d7ee45aed81626b509216d24846334389790f1a3f2f47316bdeca40a62e"
+        },
+        {
+          "order": 10,
+          "title": "IV: Of the Social Passions",
+          "sha256": "d9172b2cd534dcfe63c5fc071103929574cbfea2a94a3239afa3f47fb87fcafe"
+        },
+        {
+          "order": 11,
+          "title": "V: Of the Selfish Passions",
+          "sha256": "33b0e7de891febac0c346cee96715599441f9e3cc35afadb1d5e9c853126c795"
+        },
+        {
+          "order": 12,
+          "title": "I: That Though Our Sympathy with Sorrow Is Generally a More Lively Sensation Than Our Sympathy with Joy, It Commonly Falls Much More Short of the Violence of What Is Naturally Felt by the Person Principally Concerned",
+          "sha256": "5c5f0cc87a3ee311fe3db6ce4455389f22c3aa905c7a20c09ca0be4fc06f6c8d"
+        },
+        {
+          "order": 13,
+          "title": "II: Of the Origin of Ambition, and of the Distinction of Ranks (1/2)",
+          "sha256": "4850690f7b2692e07fd306b9e1bd823b88c1fb1dbda998bc8c3c57d6bef87054"
+        },
+        {
+          "order": 14,
+          "title": "II: Of the Origin of Ambition, and of the Distinction of Ranks (2/2)",
+          "sha256": "a18dd33a05da0bface8defd2c5b3bbdc626301702734d6b0281b07d696b02f5d"
+        },
+        {
+          "order": 15,
+          "title": "III: Of the Corruption of Our Moral Sentiments, Which Is Occasioned by This Disposition to Admire the Rich and the Great, and to Despise or Neglect Persons of Poor and Mean Condition",
+          "sha256": "8f8d3d11e7979e0c2c4a3da5bf3d2d85ff0d44c7536f760cafec358bf28eefbc"
+        },
+        {
+          "order": 16,
+          "title": "Section I: Of the Sense of Merit and Demerit",
+          "sha256": "2f478ec3802939886890a7086dceace0b3391d14305a6ee480d70100e379b326"
+        },
+        {
+          "order": 17,
+          "title": "I: That Whatever Appears to Be the Proper Object of Gratitude, Appears to Deserve Reward; and That, in the Same Manner, Whatever Appears to Be the Proper Object of Resentment, Appears to Deserve Punishment",
+          "sha256": "9b4a7ce0c29cfb6241cf91c433e49d832fd33f1688ae2c570edbae297892dfd4"
+        },
+        {
+          "order": 18,
+          "title": "II: Of the Proper Objects of Gratitude and Resentment",
+          "sha256": "46f246f7db44dfac23b85cde3f78a554a747ebd1f74865603a49a44d6e5cc96e"
+        },
+        {
+          "order": 19,
+          "title": "III: That Where There Is No Approbation of the Conduct of the Person Who Confers the Benefit, There Is Little Sympathy with the Gratitude of Him Who Receives It: And That, on the Contrary, Where There Is No Disapprobation of the Motives of the Person Who Does the Mischief, There Is No Sort of Sympathy with the Resentment of Him Who Suffers It",
+          "sha256": "518a9990da7868edf556c3a0933e207739a0d592366345c5a4a2a3f0d7f9701f"
+        },
+        {
+          "order": 20,
+          "title": "IV: Recapitulation of the Foregoing Chapters",
+          "sha256": "921d0e8b4dd39d16fd15ddf571e49de0b61c8b930074ffab6db4f9165685ac04"
+        },
+        {
+          "order": 21,
+          "title": "V: The Analysis of the Sense of Merit and Demerit",
+          "sha256": "573e55cf9919b1eae38c506d0568f9d3e3f1e1892e8a09f31dfb83dc41bc71f7"
+        },
+        {
+          "order": 22,
+          "title": "I: Comparison of Those Two Virtues",
+          "sha256": "98691368e514eb44ee00647a7748ccfd7201d6bbcfeef870e38094417aa9f905"
+        },
+        {
+          "order": 23,
+          "title": "II: Of the Sense of Justice, of Remorse, and of the Consciousness of Merit",
+          "sha256": "76f0c9f34f3b2f1186e1000f7b4710b9f57ce9aab6d3da6a414bfd64d6ea3bf9"
+        },
+        {
+          "order": 24,
+          "title": "III: Of the Utility of This Constitution of Nature",
+          "sha256": "4ccaab3984a9baf589d9fc13a04630b1a8c4162f7106657fb3b5c68c43631a8a"
+        },
+        {
+          "order": 25,
+          "title": "Section III: Of the Influence of Fortune Upon the Sentiments of Mankind, with Regard to the Merit or Demerit of Their Actions",
+          "sha256": "aa1eca9f4235b289fa25c2b69c1ebdfcc765390fdf2648d6478de512f53b11a5"
+        },
+        {
+          "order": 26,
+          "title": "I: Of the Causes of This Influence of Fortune",
+          "sha256": "acbea0fd8b5e0f40d01a1b809cc1a6d6360ced3a24ef1967888bc1f416c7fb0a"
+        },
+        {
+          "order": 27,
+          "title": "II: Of the Extent of This Influence of Fortune (1/2)",
+          "sha256": "eb8bbf140ce7f4277e949f06400da41afa366fe42b38f4ddc77ad020963483ca"
+        },
+        {
+          "order": 28,
+          "title": "II: Of the Extent of This Influence of Fortune (2/2)",
+          "sha256": "c4afca1cb2bc7bc8d7449ed1626ec36fe00203ad08ae122c40e651b6c2ef641c"
+        },
+        {
+          "order": 29,
+          "title": "III: Of the Final Cause of This Irregularity of Sentiments",
+          "sha256": "0d33d9c75cc0740bf84fe3a66c9323c23c3441081339aca498c324a88a622a41"
+        },
+        {
+          "order": 30,
+          "title": "I: Of the Principle of Self-Approbation and of Self-Disapprobation",
+          "sha256": "ec55c8aa498ee93c1e0136ad42f1790b483b16097a2220102ef78415e0186d36"
+        },
+        {
+          "order": 31,
+          "title": "II: Of the Love of Praise, and of That of Praiseworthiness; and of the Dread of Blame, and of That of Blameworthiness (1/4)",
+          "sha256": "7ef4d4ed1e7639c504031bddcc28e9efb5f4648d21ccb105971f5a2f2d65b0e8"
+        },
+        {
+          "order": 32,
+          "title": "II: Of the Love of Praise, and of That of Praiseworthiness; and of the Dread of Blame, and of That of Blameworthiness (2/4)",
+          "sha256": "249fa4078f1e761c4ca8bd57b03d8172de140448ece61b0b485cc6605b72264e"
+        },
+        {
+          "order": 33,
+          "title": "II: Of the Love of Praise, and of That of Praiseworthiness; and of the Dread of Blame, and of That of Blameworthiness (3/4)",
+          "sha256": "7c0112562dc23f470aaff2e07d936ccce0ca39fceb977b72cd3d0660820a5f0f"
+        },
+        {
+          "order": 34,
+          "title": "II: Of the Love of Praise, and of That of Praiseworthiness; and of the Dread of Blame, and of That of Blameworthiness (4/4)",
+          "sha256": "666b527392651a0085cbff8518bfdb7e70b583e93da8d6da6efed1cc68e5e781"
+        },
+        {
+          "order": 35,
+          "title": "III: Of the Influence and Authority of Conscience (1/5)",
+          "sha256": "de4b778b993069d08a424bb15fea156fe2ae56f32f0d681d44ae67c278d305ab"
+        },
+        {
+          "order": 36,
+          "title": "III: Of the Influence and Authority of Conscience (2/5)",
+          "sha256": "d661ada44e80b42e6a9fff7890df90c6b5644687dd3940afc36081a69ac8d16d"
+        },
+        {
+          "order": 37,
+          "title": "III: Of the Influence and Authority of Conscience (3/5)",
+          "sha256": "047a0658bddeb24e40f08355baa4e537f7e4e6b1a990bd88ce5cb9fca40a3ea7"
+        },
+        {
+          "order": 38,
+          "title": "III: Of the Influence and Authority of Conscience (4/5)",
+          "sha256": "57dce13c6643b06d92453dc980da69fdc50eccb462a4ea3176102e193be96a10"
+        },
+        {
+          "order": 39,
+          "title": "III: Of the Influence and Authority of Conscience (5/5)",
+          "sha256": "8151f90ee1bdf86df8a85dd25890e7ec05d019442aafc1548ad9f88d54e4ae32"
+        },
+        {
+          "order": 40,
+          "title": "IV: Of the Nature of Self-Deceit, and of the Origin and Use of General Rules",
+          "sha256": "84aeb057fbfa17e96c859046d79f2ffae3f05ea8acbb3eb267260f5dab4a3b37"
+        },
+        {
+          "order": 41,
+          "title": "V: Of the Influence and Authority of the General Rules of Morality, and That They Are Justly Regarded as the Laws of the Deity (1/2)",
+          "sha256": "ddcc627d51d24670be470854894bf431d0c7ef121c88183f07b7b58a0d95f1bc"
+        },
+        {
+          "order": 42,
+          "title": "V: Of the Influence and Authority of the General Rules of Morality, and That They Are Justly Regarded as the Laws of the Deity (2/2)",
+          "sha256": "b36520bacafa1ff9c5a2a93ca6dbdce86bd4cc8bea1d3fab5745bc5e95d9455f"
+        },
+        {
+          "order": 43,
+          "title": "VI: In What Cases the Sense of Duty Ought to Be the Sole Principle of Our Conduct; and in What Cases It Ought to Concur with Other Motives (1/2)",
+          "sha256": "444e119933ecbab47a2478052eba9f10500a56acad8aebd9f0718d153b0b9b86"
+        },
+        {
+          "order": 44,
+          "title": "VI: In What Cases the Sense of Duty Ought to Be the Sole Principle of Our Conduct; and in What Cases It Ought to Concur with Other Motives (2/2)",
+          "sha256": "a2a6996518179eae4248a966f077b0a04ff3d55126a43f09ed4908bbd2d876f9"
+        },
+        {
+          "order": 45,
+          "title": "I: Of the Beauty Which the Appearance of Utility Bestows Upon All the Productions of Art, and of the Extensive Influence of This Species of Beauty (1/2)",
+          "sha256": "5512254b0271aa6c1b7d39b85866c50c6f28752262e3261d7cb84d9ca15ea89a"
+        },
+        {
+          "order": 46,
+          "title": "I: Of the Beauty Which the Appearance of Utility Bestows Upon All the Productions of Art, and of the Extensive Influence of This Species of Beauty (2/2)",
+          "sha256": "feb51e2389b731d9b2a80bf89370a9faaf974ed7dca0ab13e1c7f310843c24e6"
+        },
+        {
+          "order": 47,
+          "title": "II: Of the Beauty Which the Appearance of Utility Bestows Upon the Characters and the Actions of Men; and How Far the Perception of This Beauty May Be Regarded as One of the Original Principles of Approbation",
+          "sha256": "29a930386bf1081f4300f3753d7bbb09014c511734cd2f0cebf02aae4d08b5c2"
+        },
+        {
+          "order": 48,
+          "title": "I: Of the Influence of Custom and Fashion Upon Our Notions of Beauty and Deformity",
+          "sha256": "033d1d6a219da5a63a39d4dfe678c01de66ee861608f3d76231e29a936cb5b32"
+        },
+        {
+          "order": 49,
+          "title": "II: Of the Influence of Custom and Fashion Upon Moral Sentiments (1/2)",
+          "sha256": "a5504f5309b9734ca7317616414180e461ee1cae667148ee43ac0ac4d21a19c5"
+        },
+        {
+          "order": 50,
+          "title": "II: Of the Influence of Custom and Fashion Upon Moral Sentiments (2/2)",
+          "sha256": "f76751dbf1c123ceabd562cc963b2e8862a3856d678b0e6132a75c3b0afbdd37"
+        },
+        {
+          "order": 51,
+          "title": "Part VI: Of the Character of Virtue",
+          "sha256": "c1d6b16b1dcb06fda57e67ee1c94ce3cbef2a0e56d8c425bdc14881cd9a6a80e"
+        },
+        {
+          "order": 52,
+          "title": "Section I: Of the Character of the Individual, So Far as It Affects His Own Happiness; or of Prudence",
+          "sha256": "dab53d7536b391c7034e42a73c38465633d80346ffbd5af8af942daf729a8d5a"
+        },
+        {
+          "order": 53,
+          "title": "Section II: Of the Character of the Individual, So Far as It Can Affect the Happiness of Other People",
+          "sha256": "d193437a51c0f59b33c2aed080be550d57f56994439b485f032ee2aaa35e35ab"
+        },
+        {
+          "order": 54,
+          "title": "I: Of the Order in Which Individuals Are Recommended by Nature to Our Care and Attention (1/2)",
+          "sha256": "eeded8a3984a622da57776245ba76546730d4e9c92f61fba61edb2a69034051e"
+        },
+        {
+          "order": 55,
+          "title": "I: Of the Order in Which Individuals Are Recommended by Nature to Our Care and Attention (2/2)",
+          "sha256": "04a7a3dc2e6a3b7e23620455e4e86bf3e5f2e855dee7b9ea58586c37f49fe84a"
+        },
+        {
+          "order": 56,
+          "title": "II: Of the Order in Which Societies Are by Nature Recommended to Our Beneficence",
+          "sha256": "f5153ce978847a88091bde0aabc3929be0afd8ad1237652a68876b8ca7099480"
+        },
+        {
+          "order": 57,
+          "title": "III: Of Universal Benevolence",
+          "sha256": "c1ce821ce11ec99b4ee85555723eb81fedd2986089c481af97701a78f224c365"
+        },
+        {
+          "order": 58,
+          "title": "Section III: Of Self-Command (1/5)",
+          "sha256": "993bcc26fff7e7acd8c2089dff1673bdeeaefc3e9b94bf064c010b0d6767fe2c"
+        },
+        {
+          "order": 59,
+          "title": "Section III: Of Self-Command (2/5)",
+          "sha256": "297173d7f6b8f08b23c9216bf9d37b15ec9d4ecb2c498fa8e9c53cedac44c46f"
+        },
+        {
+          "order": 60,
+          "title": "Section III: Of Self-Command (3/5)",
+          "sha256": "f73b99cd8cfbdc25c93c8e6294cb242b537bc07b3366bbf6cc0eb80350a0f757"
+        },
+        {
+          "order": 61,
+          "title": "Section III: Of Self-Command (4/5)",
+          "sha256": "13d24ada5859bb27391ac2e1864fa4fe66029851ed0d33fde35343cf2f3072da"
+        },
+        {
+          "order": 62,
+          "title": "Section III: Of Self-Command (5/5)",
+          "sha256": "fda0818f0c57cf05142c3e823697fae2218fad6ab5ebf1a83c63487851228ca0"
+        },
+        {
+          "order": 63,
+          "title": "Conclusion of the Sixth Part",
+          "sha256": "04c8ea6383b71df092c497192a52767a5ff1c6b56eefd77f33aee0fc79c9f13c"
+        },
+        {
+          "order": 64,
+          "title": "Section I: Of the Questions Which Ought to Be Examined in a Theory of Moral Sentiments",
+          "sha256": "03239872c904a8f7d97e371114460f49b316cec055bf093d1874c7df4fcc378e"
+        },
+        {
+          "order": 65,
+          "title": "Section II: Of the Different Accounts Which Have Been Given of the Nature of Virtue",
+          "sha256": "f93b60a79aa873a45b8fbb649938799102c23a32c8989e8120f8cdbee8470639"
+        },
+        {
+          "order": 66,
+          "title": "I: Of Those Systems Which Make Virtue Consist in Propriety (1/5)",
+          "sha256": "63a16bcb6ec72feeefbdd9f3514ba2520d05da3115b27a4d120012acc12484b4"
+        },
+        {
+          "order": 67,
+          "title": "I: Of Those Systems Which Make Virtue Consist in Propriety (2/5)",
+          "sha256": "b5c246a555528cdf128147b9e42b0f655fa9cd300967351c186caf1e3479bb04"
+        },
+        {
+          "order": 68,
+          "title": "I: Of Those Systems Which Make Virtue Consist in Propriety (3/5)",
+          "sha256": "b86e45039079c2cf8b10423dc6892bfa00c0c3e581fdc58509f4300f65c06b7c"
+        },
+        {
+          "order": 69,
+          "title": "I: Of Those Systems Which Make Virtue Consist in Propriety (4/5)",
+          "sha256": "1bbfcc510463cfcb8977602b4438eda7ac3c0979ba56a5f21e5c6fff0c198289"
+        },
+        {
+          "order": 70,
+          "title": "I: Of Those Systems Which Make Virtue Consist in Propriety (5/5)",
+          "sha256": "12b759c3d6a847b38bf909214de9a82da977cbf1481a56431b625822d315e995"
+        },
+        {
+          "order": 71,
+          "title": "II: Of Those Systems Which Make Virtue Consist in Prudence",
+          "sha256": "34772d7ac46ea9f405de95f913f6d234a4c36564689c2c699de6de884f152e44"
+        },
+        {
+          "order": 72,
+          "title": "III: Of Those Systems Which Make Virtue Consist in Benevolence",
+          "sha256": "7959c1d44075601d7cda0b8d4a7645c6f36a3e635955f7a753c93bde22ef90fe"
+        },
+        {
+          "order": 73,
+          "title": "IV: Of Licentious Systems (1/2)",
+          "sha256": "1af7e667465a3e27c66f73cbe8052c08f6e9acaa81288a4d495f49949f327eb9"
+        },
+        {
+          "order": 74,
+          "title": "IV: Of Licentious Systems (2/2)",
+          "sha256": "f12b9d2a878a733ec297977c5ef3170a3c47dfaf11a180fcf054043e5800419b"
+        },
+        {
+          "order": 75,
+          "title": "Section III: Of the Different Systems Which Have Been Formed Concerning the Principle of Approbation",
+          "sha256": "85281a57f4acd0a4790a8f4b52fc67949111cf34cba0377d687bf671ff43c326"
+        },
+        {
+          "order": 76,
+          "title": "I: Of Those Systems Which Deduce the Principle of Approbation from Self-Love",
+          "sha256": "4f64e0dfdfd53fbbfbf3aeef92fe842b2cf2c1bdbd143a966ea524c3299a0849"
+        },
+        {
+          "order": 77,
+          "title": "II: Of Those Systems Which Make Reason the Principle of Approbation",
+          "sha256": "cab82a9997323a89e002f1b33a0220a49c864e95449da437de3a06dd63f198ca"
+        },
+        {
+          "order": 78,
+          "title": "III: Of Those Systems Which Make Sentiment the Principle of Approbation",
+          "sha256": "113e111defb2613f0f39a9c8ee61a39f4b781b81b382bd357dbfd91a88bd7793"
+        },
+        {
+          "order": 79,
+          "title": "Section IV: Of the Manner in Which Different Authors Have Treated of the Practical Rules of Morality (1/3)",
+          "sha256": "9805a636d4d140453f85cc8658f73d8a1a07ca0094ca57c6f9e99c4dce5344ef"
+        },
+        {
+          "order": 80,
+          "title": "Section IV: Of the Manner in Which Different Authors Have Treated of the Practical Rules of Morality (2/3)",
+          "sha256": "3b76d4a8b9cd427ed58d9e8da55a5b66192beeda857bfb7a71fcd62e5a0bbced"
+        },
+        {
+          "order": 81,
+          "title": "Section IV: Of the Manner in Which Different Authors Have Treated of the Practical Rules of Morality (3/3)",
+          "sha256": "ef2ae0b0d7f4aa8e36de12abe2d1588adf41ac72242eedd9e732caf1d3e5f123"
+        },
+        {
+          "order": 82,
+          "title": "Considerations Concerning the First Formation of Languages, etc., etc. (1/5)",
+          "sha256": "2923c581232021f5f1ee5762eefeb17afe94c717295aa5b38cd6c25087d9c585"
+        },
+        {
+          "order": 83,
+          "title": "Considerations Concerning the First Formation of Languages, etc., etc. (2/5)",
+          "sha256": "4d7617e015b2055b751af9e67c1d3e63fd1d10e71f2c14a531a47e45866597d6"
+        },
+        {
+          "order": 84,
+          "title": "Considerations Concerning the First Formation of Languages, etc., etc. (3/5)",
+          "sha256": "3d204325aca55c2dad976c1fc7fd5c3a4b19743f2ed4451f45970bb66567bc94"
+        },
+        {
+          "order": 85,
+          "title": "Considerations Concerning the First Formation of Languages, etc., etc. (4/5)",
+          "sha256": "a2b41f538b32da48a9819e71e79cb700abcc12bad921a9db6198fbd24bb0d321"
+        },
+        {
+          "order": 86,
+          "title": "Considerations Concerning the First Formation of Languages, etc., etc. (5/5)",
+          "sha256": "673b957efd6bc8e3f251e3757a190a56c17104a35f5592ff8842b89d3c3a44bc"
+        }
+      ]
+    },
+    "se-adam-smith_the-wealth-of-nations": {
+      "title": "The Wealth of Nations",
+      "author": "Adam Smith",
+      "level": "C1 고급",
+      "total": 173,
+      "words": 377020,
+      "display": {
+        "titleKo": "국부론",
+        "authorKo": "애덤 스미스",
+        "binding": "strahan-1776",
+        "coverTitle": "An\nInquiry\ninto the\nNature and Causes\nof the\nWealth of Nations.",
+        "coverAuthor": "By ADAM SMITH, LL.D. and F.R.S.",
+        "coverTome": "Vol. I.",
+        "coverPlace": "London:",
+        "coverImprint": "W. Strahan; and T. Cadell",
+        "coverYear": 1776
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-adam-smith_the-wealth-of-nations",
+        "title": "The Wealth of Nations",
+        "author": "Adam Smith",
+        "publishedYear": 1776,
+        "authorDeathYear": 1790,
+        "countryOfOrigin": "GB",
+        "translator": null,
+        "repo": "standardebooks/adam-smith_the-wealth-of-nations",
+        "commit": "9f0165edc4ef95194dd34d2e5d8c7f3aff965614",
+        "url": "https://standardebooks.org/ebooks/adam-smith/the-wealth-of-nations",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "GB",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/adam-smith/the-wealth-of-nations"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: Of the Division of Labour (1/2)",
+          "sha256": "b2a98d638aebcce6389d80be93c95afbb5a5c9d9ae4ccf71a566be6f5b6f0ed2"
+        },
+        {
+          "order": 2,
+          "title": "I: Of the Division of Labour (2/2)",
+          "sha256": "7df027fddf88bf7a788df69aa2face12fbcede4d14119567dccc26673edbc28b"
+        },
+        {
+          "order": 3,
+          "title": "II: Of the Principle Which Gives Occasion to the Division of Labour",
+          "sha256": "9b54123476f6eb3d278aa379e49450b3f5e34cb28ec75abea592d45b0352c671"
+        },
+        {
+          "order": 4,
+          "title": "III: That the Division of Labour Is Limited by the Extent of the Market",
+          "sha256": "1c7a745026459fb3f7237a60cd3f1d4d1c95d2b3ad339b4597aedd92551e19eb"
+        },
+        {
+          "order": 5,
+          "title": "IV: Of the Origin and Use of Money",
+          "sha256": "467bad6f433ac1d2f0936dd59dda373b13cdb1195d8cb3c51a1a0b3ce3e0c3cf"
+        },
+        {
+          "order": 6,
+          "title": "V: Of the Real and Nominal Price of Commodities, or of Their Price in Labour, and Their Price in Money (1/3)",
+          "sha256": "afeb6f0c28fccf30d271a2351798e262df451cffabce62335de41b369cdcc0c3"
+        },
+        {
+          "order": 7,
+          "title": "V: Of the Real and Nominal Price of Commodities, or of Their Price in Labour, and Their Price in Money (2/3)",
+          "sha256": "5b501d063d212b01fb0a018a3154f2472652d365b7f1e332b245ceafc2381dc4"
+        },
+        {
+          "order": 8,
+          "title": "V: Of the Real and Nominal Price of Commodities, or of Their Price in Labour, and Their Price in Money (3/3)",
+          "sha256": "5d99db19a8bd7e388043373b64051b318e3cff5c0684be2e8b376bb81a449b64"
+        },
+        {
+          "order": 9,
+          "title": "VI: Of the Component Parts of the Price of Commodities",
+          "sha256": "f04df9cc3d221178101b22ddbc6bf742e99a9c79808498f92022097f4d5438c7"
+        },
+        {
+          "order": 10,
+          "title": "VII: Of the Natural and Market Price of Commodities (1/2)",
+          "sha256": "919981ec78f90bd830d8d38a9b2f278ff5c89715d1b04ad2a2dd17922ca67955"
+        },
+        {
+          "order": 11,
+          "title": "VII: Of the Natural and Market Price of Commodities (2/2)",
+          "sha256": "ca5a1a6f0168c50f638eb6a7daf139e9fb05cec2ade3d4bb09d237397014f392"
+        },
+        {
+          "order": 12,
+          "title": "VIII: Of the Wages of Labour (1/4)",
+          "sha256": "f8f8ac4c332709a22ce8d02a2a55a67231913624cfb599b06719aa5906988a57"
+        },
+        {
+          "order": 13,
+          "title": "VIII: Of the Wages of Labour (2/4)",
+          "sha256": "d262b7d766435e37a217843e8770f2f8299ed3f72b9fc2e2caa24294f2a105c6"
+        },
+        {
+          "order": 14,
+          "title": "VIII: Of the Wages of Labour (3/4)",
+          "sha256": "ee56938c7a43d5ad3ce4f4aecd8f5e887836d9b620530bfabe6448aa728da8bb"
+        },
+        {
+          "order": 15,
+          "title": "VIII: Of the Wages of Labour (4/4)",
+          "sha256": "20aadee2f28f6d568c3e1f50f43b245e4033f980310547d41800e77317fd0bdf"
+        },
+        {
+          "order": 16,
+          "title": "IX: Of the Profits of Stock (1/2)",
+          "sha256": "98b08bc815cce9ee036f153c9b28e81b4e6295165a335da4bf4bee58c4962ce0"
+        },
+        {
+          "order": 17,
+          "title": "IX: Of the Profits of Stock (2/2)",
+          "sha256": "ffa513945ef2201ad01ebdf607e38a91e442806393a8f76ca33b81ec38f47100"
+        },
+        {
+          "order": 18,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (1/8)",
+          "sha256": "9e813b6540cf8e05b1890ec2777d19fe74347830e0869d7c4bf51a4ce64e6200"
+        },
+        {
+          "order": 19,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (2/8)",
+          "sha256": "80636119da65bae5992dabf43ba6cb8145c0064810d969c8861db83dd2fb2210"
+        },
+        {
+          "order": 20,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (3/8)",
+          "sha256": "7d970780d4f1bc4f8b05dd626500758d6cd642d487b3b2bacf20a2c451b73ee1"
+        },
+        {
+          "order": 21,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (4/8)",
+          "sha256": "1f6b99035676b4d4267681a921b0a229b1b54894d4b5296adf807fd52ae2a38a"
+        },
+        {
+          "order": 22,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (5/8)",
+          "sha256": "c5bc55e0b2f63e025d63d7f6f6de76e237915bf5293063c114f77c60f2e7190a"
+        },
+        {
+          "order": 23,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (6/8)",
+          "sha256": "6d9ba276ae9eae7f6335eeb7461154bdaf92bf4dc899e8ee35dccf3b1e8b9249"
+        },
+        {
+          "order": 24,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (7/8)",
+          "sha256": "0f156ec3c9a76cf76becdc68b0db2e84d633808d02b44651a28642860fe26cac"
+        },
+        {
+          "order": 25,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (8/8)",
+          "sha256": "7f4cb7854ef5aa4f4c5f21b73fcbd6e9f41957901a6442f0b0baacd59c489267"
+        },
+        {
+          "order": 26,
+          "title": "XI: Of the Rent of Land (1/22)",
+          "sha256": "3f228d5e79de5052618949e97125507fb4677a66a2304a1b2a5ce71d6a349299"
+        },
+        {
+          "order": 27,
+          "title": "XI: Of the Rent of Land (2/22)",
+          "sha256": "11cd250c25173edc36827461d48907636c39d958d75ca8328a7a8c616e3b6bb4"
+        },
+        {
+          "order": 28,
+          "title": "XI: Of the Rent of Land (3/22)",
+          "sha256": "87a97afb885b94a685618f558447f1dc62ed0a130001b9792e48613506daeb77"
+        },
+        {
+          "order": 29,
+          "title": "XI: Of the Rent of Land (4/22)",
+          "sha256": "9fdaa41bdd391702c7673c34cae92e021d62eacf690cc2df4789ad759a50681e"
+        },
+        {
+          "order": 30,
+          "title": "XI: Of the Rent of Land (5/22)",
+          "sha256": "3653dbcc000a86620ac815f89e1350cda177cd3de12579e2c719aab56f174126"
+        },
+        {
+          "order": 31,
+          "title": "XI: Of the Rent of Land (6/22)",
+          "sha256": "ac349ecbf530a75aa6f10060c78d3b10179f0a32235c2f5e5e2d9bda8fb046c3"
+        },
+        {
+          "order": 32,
+          "title": "XI: Of the Rent of Land (7/22)",
+          "sha256": "f5171a1f5acf3f51f4f4952e1f94e4b054cf4f77066c3adee1806c50cf0eae9b"
+        },
+        {
+          "order": 33,
+          "title": "XI: Of the Rent of Land (8/22)",
+          "sha256": "950932db5e3c3ba68c141ef521d26ea60a645bb915256d4aa08ebd2979389b54"
+        },
+        {
+          "order": 34,
+          "title": "XI: Of the Rent of Land (9/22)",
+          "sha256": "2544a1b329404a1b7c12504c1303c6f39b3a3ec057f618fad632ddf9c53e25f1"
+        },
+        {
+          "order": 35,
+          "title": "XI: Of the Rent of Land (10/22)",
+          "sha256": "80ea1876a63cf77377e17a0d016adcf332a960811383d202e424b7f25f73ad09"
+        },
+        {
+          "order": 36,
+          "title": "XI: Of the Rent of Land (11/22)",
+          "sha256": "d5ce7912d01dbeb33b683ed16ca0c4479d4d15ebff4b10a7c98e6a42409381ba"
+        },
+        {
+          "order": 37,
+          "title": "XI: Of the Rent of Land (12/22)",
+          "sha256": "07cf24dc3fb73a4ddd841d9c4837bf2b96c7ef7a73f30dabf6e76f3a8da0f15c"
+        },
+        {
+          "order": 38,
+          "title": "XI: Of the Rent of Land (13/22)",
+          "sha256": "fb5e886855507c58c10346dbb054eedf9e56fdba4040cd15a60879c5ede91ded"
+        },
+        {
+          "order": 39,
+          "title": "XI: Of the Rent of Land (14/22)",
+          "sha256": "7e42be6f6889426b4075b50f9c826a35049925c9dc74e8ed854cb1454b546650"
+        },
+        {
+          "order": 40,
+          "title": "XI: Of the Rent of Land (15/22)",
+          "sha256": "c14a9f286aa9d2a7990ed021cdb27f51e94048d2f97edcbaff7eb8aec7939260"
+        },
+        {
+          "order": 41,
+          "title": "XI: Of the Rent of Land (16/22)",
+          "sha256": "dc49c8991d2972ba6c06b33201624fcbeb26eae25acfd292f270fccd7a7fa42d"
+        },
+        {
+          "order": 42,
+          "title": "XI: Of the Rent of Land (17/22)",
+          "sha256": "6b88944dc252ba0e0e7e574e312d12c57b591e73679006aa1115a05444fadd4b"
+        },
+        {
+          "order": 43,
+          "title": "XI: Of the Rent of Land (18/22)",
+          "sha256": "c6f4bb66a21920abfd8b3765c90723747f92c0cd4a82f11476f2bb10a9905dc9"
+        },
+        {
+          "order": 44,
+          "title": "XI: Of the Rent of Land (19/22)",
+          "sha256": "87a4ef4f73db3fe27d3bb1d24c9ca650d9382dfa28fe736c9b92da56c5532524"
+        },
+        {
+          "order": 45,
+          "title": "XI: Of the Rent of Land (20/22)",
+          "sha256": "1bd12f084e6597a7f182041a423c5ec3d8bc9e086e4f3e3673d3a9131241b661"
+        },
+        {
+          "order": 46,
+          "title": "XI: Of the Rent of Land (21/22)",
+          "sha256": "358f24c5721e2db732614447d9518a2586d60776a6b32d38a501608901241070"
+        },
+        {
+          "order": 47,
+          "title": "XI: Of the Rent of Land (22/22)",
+          "sha256": "c641e61294a450fb7eebda374fc45155cad3a77dfe6bd9d0dc0d5696453e73ba"
+        },
+        {
+          "order": 48,
+          "title": "Introduction",
+          "sha256": "4d1279923b58b84679564be940f79dcf8e6b2894a68ccedffbb5e12e47866568"
+        },
+        {
+          "order": 49,
+          "title": "I: Of the Division of Stock",
+          "sha256": "681d5feb5cfa266a07a876f4904155b561499da8448d77490348e36c2af194b3"
+        },
+        {
+          "order": 50,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (1/9)",
+          "sha256": "c7dc8923b5bac618e3fba229fd29a52bc77acf28055c689d48f5df7b5a799199"
+        },
+        {
+          "order": 51,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (2/9)",
+          "sha256": "66b7d67d041885f0bea22bacfaafdb9e54ccb9a4774c9a75ecd3a75c36e6cae2"
+        },
+        {
+          "order": 52,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (3/9)",
+          "sha256": "c8d01ecbb1d633f52709a8edf08c3815ee57afa4ecbbeafa66d7356bf48ab15e"
+        },
+        {
+          "order": 53,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (4/9)",
+          "sha256": "84c6f1c2f1825f86527d12df667b4d7f46486df92d984a17a10e37a9480e5d44"
+        },
+        {
+          "order": 54,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (5/9)",
+          "sha256": "5335a4349444086ce0b96362b28367214b03fb915f124b38f0e5a1cd63dfeac3"
+        },
+        {
+          "order": 55,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (6/9)",
+          "sha256": "55ff2c5262f76f352733e892b50c8dfac65e15f8848c49a6d033f9b4c69801a5"
+        },
+        {
+          "order": 56,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (7/9)",
+          "sha256": "49a6507079907ff92138fe0ef5faab6b9aaa14f1bbd18d935598ac4e93a98996"
+        },
+        {
+          "order": 57,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (8/9)",
+          "sha256": "e365ebea904abb264b5981a273e01f6755669a45dd1af1341f65d83de6483602"
+        },
+        {
+          "order": 58,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (9/9)",
+          "sha256": "76aca42e5eb3b57556496e9fccbde141dbfc060fae8a26594cee34c903f54fee"
+        },
+        {
+          "order": 59,
+          "title": "III: Of the Accumulation of Capital, or of Productive and Unproductive Labour (1/4)",
+          "sha256": "2bfa36eb9439d5c269be35933f8d473bb2f11e8c2685782a4b3c77008997ac4c"
+        },
+        {
+          "order": 60,
+          "title": "III: Of the Accumulation of Capital, or of Productive and Unproductive Labour (2/4)",
+          "sha256": "1e7159ed82c762052ff5db6a64df590993c0aa2c676c00707db34ec4ecb65e98"
+        },
+        {
+          "order": 61,
+          "title": "III: Of the Accumulation of Capital, or of Productive and Unproductive Labour (3/4)",
+          "sha256": "5486f33f203844106e9657f26608fd16352eac46336bfd1f66524b685d19ab7c"
+        },
+        {
+          "order": 62,
+          "title": "III: Of the Accumulation of Capital, or of Productive and Unproductive Labour (4/4)",
+          "sha256": "8ee0b2460595801f632739e60bf7115ac00feaeaede2838805d0ffffc556ff37"
+        },
+        {
+          "order": 63,
+          "title": "IV: Of Stock Lent at Interest (1/2)",
+          "sha256": "b4f4ab5b1bda2f996c194518b4a0f97e501fcefadd2bfd165ee07db31cf8105b"
+        },
+        {
+          "order": 64,
+          "title": "IV: Of Stock Lent at Interest (2/2)",
+          "sha256": "633d058f1a03bd9d856a75364184c32c8649a7d15d9c8850469a734ea33ef950"
+        },
+        {
+          "order": 65,
+          "title": "V: Of the Different Employment of Capitals (1/3)",
+          "sha256": "7ab5c17dbc97888f74c50f6c727b552197fc4af8308f07935181143a10e7a2aa"
+        },
+        {
+          "order": 66,
+          "title": "V: Of the Different Employment of Capitals (2/3)",
+          "sha256": "ed7d06018321395949a9662fe93a0ff2e7e4ae7073ef5e054431ac21519c92a5"
+        },
+        {
+          "order": 67,
+          "title": "V: Of the Different Employment of Capitals (3/3)",
+          "sha256": "8b36a21ada85f38fdcc9c5f77a310f2338734f4da179ed9e2beb60d63cb010d3"
+        },
+        {
+          "order": 68,
+          "title": "I: Of the Natural Progress of Opulence",
+          "sha256": "84f0891b0f09bf027b75b7cf65fe04dcf27d189dbda3ca8bebdb31935ad74781"
+        },
+        {
+          "order": 69,
+          "title": "II: Of the Discouragement of Agriculture in the Ancient State of Europe After the Fall of the Roman Empire (1/2)",
+          "sha256": "9c05525b097af3d49c320af63ab116c12b988b0965e93abb4b2a3a870587144c"
+        },
+        {
+          "order": 70,
+          "title": "II: Of the Discouragement of Agriculture in the Ancient State of Europe After the Fall of the Roman Empire (2/2)",
+          "sha256": "574e4b33bda9495762a119413f2eac26c76e53ce38cb637efcfb5c16fc657cb2"
+        },
+        {
+          "order": 71,
+          "title": "III: Of the Rise and Progress of Cities and Towns, After the Fall of the Roman Empire (1/2)",
+          "sha256": "8786d9bd234854323a4623d1840f66c772e6df304438b45b94449481d3187e4b"
+        },
+        {
+          "order": 72,
+          "title": "III: Of the Rise and Progress of Cities and Towns, After the Fall of the Roman Empire (2/2)",
+          "sha256": "12781759a4b74dc4ec2eeebbfddb01628fed3190f61c60d02ab95f7cd9f6a929"
+        },
+        {
+          "order": 73,
+          "title": "IV: How the Commerce of the Towns Contributed to the Improvement of the Country (1/2)",
+          "sha256": "a0f4632f673c9f3ca5d0830b3b7aa93ef7557546515d380ec6467f8902e5dea6"
+        },
+        {
+          "order": 74,
+          "title": "IV: How the Commerce of the Towns Contributed to the Improvement of the Country (2/2)",
+          "sha256": "94a9a066453b83041e812a9962a835c303183ef72a197813f6b884d49c4eee45"
+        },
+        {
+          "order": 75,
+          "title": "Introduction",
+          "sha256": "6c780cbc41239b96a9331c436766155f9493c36d3d786f99fbf7efd78b14a94e"
+        },
+        {
+          "order": 76,
+          "title": "I: Of the Principle of the Commercial or Mercantile System (1/4)",
+          "sha256": "b303829598b0777f6b43a99669d9fb378e80fadd1707ebf92934ddd04603295d"
+        },
+        {
+          "order": 77,
+          "title": "I: Of the Principle of the Commercial or Mercantile System (2/4)",
+          "sha256": "c6c4b964e914e0de466c3ba4d553dbaad749be187e2f5502f8a263f7ac38c896"
+        },
+        {
+          "order": 78,
+          "title": "I: Of the Principle of the Commercial or Mercantile System (3/4)",
+          "sha256": "1bcdaa75a1b95c358b12b1e0788f901f287ef827f86a30c5c15654987a503c33"
+        },
+        {
+          "order": 79,
+          "title": "I: Of the Principle of the Commercial or Mercantile System (4/4)",
+          "sha256": "73b7d2cfc9fd16984bc6e57cc7b2bdc9098d637ca22a77295a42218a7f6ad2df"
+        },
+        {
+          "order": 80,
+          "title": "II: Of Restraints Upon the Importation from Foreign Countries of Such Goods as Can Be Produced at Home (1/4)",
+          "sha256": "594c5b657b690813adb83ea6f9b73fe75cbbf566c234bad662454885f90fd43e"
+        },
+        {
+          "order": 81,
+          "title": "II: Of Restraints Upon the Importation from Foreign Countries of Such Goods as Can Be Produced at Home (2/4)",
+          "sha256": "2cee4055eb8e4d0b9bc220fad189befee6d90ca4f12deec9c9c1b337b83cc657"
+        },
+        {
+          "order": 82,
+          "title": "II: Of Restraints Upon the Importation from Foreign Countries of Such Goods as Can Be Produced at Home (3/4)",
+          "sha256": "f8ae0998efac8c4b61f93f8ecc7aa3229903138aa6f830e21f1a2557ec5be544"
+        },
+        {
+          "order": 83,
+          "title": "II: Of Restraints Upon the Importation from Foreign Countries of Such Goods as Can Be Produced at Home (4/4)",
+          "sha256": "faf012f61ae69016984da82694756a24e4587fd9db9d7b7ea14f4ead52be6b73"
+        },
+        {
+          "order": 84,
+          "title": "III: Of the Extraordinary Restraints Upon the Importation of Goods of Almost All Kinds, from Those Countries with Which the Balance Is Supposed to Be Disadvantageous (1/5)",
+          "sha256": "c17b76624e1f010e2905f100675641a2b8ad0c88f1585c20e11d843b18a632ed"
+        },
+        {
+          "order": 85,
+          "title": "III: Of the Extraordinary Restraints Upon the Importation of Goods of Almost All Kinds, from Those Countries with Which the Balance Is Supposed to Be Disadvantageous (2/5)",
+          "sha256": "2237e923a77a338caef1e5176d886b85c4c5ad2b22a717d3f17d49700963c521"
+        },
+        {
+          "order": 86,
+          "title": "III: Of the Extraordinary Restraints Upon the Importation of Goods of Almost All Kinds, from Those Countries with Which the Balance Is Supposed to Be Disadvantageous (3/5)",
+          "sha256": "de1f22af1a514400c72f4aa8c775242ecb020430fb672856663dc819cd7ed407"
+        },
+        {
+          "order": 87,
+          "title": "III: Of the Extraordinary Restraints Upon the Importation of Goods of Almost All Kinds, from Those Countries with Which the Balance Is Supposed to Be Disadvantageous (4/5)",
+          "sha256": "d1d39f70548e0a729ec8a74952d5a241d2a79614e109088f95945df5df12a67f"
+        },
+        {
+          "order": 88,
+          "title": "III: Of the Extraordinary Restraints Upon the Importation of Goods of Almost All Kinds, from Those Countries with Which the Balance Is Supposed to Be Disadvantageous (5/5)",
+          "sha256": "bd5981a784d122802641985bdb7632430d88e0fc7f5d4ae646f84e98150d8007"
+        },
+        {
+          "order": 89,
+          "title": "IV: Of Drawbacks",
+          "sha256": "d652a200fbad0d576182688a7d949714c007c8f3daeed46413fc8b2ac90959cc"
+        },
+        {
+          "order": 90,
+          "title": "V: Of Bounties (1/7)",
+          "sha256": "53deec1e1c6ade6248cc24eff9af01d8004dcbd4df8aa9b3d2085a076d63d7b0"
+        },
+        {
+          "order": 91,
+          "title": "V: Of Bounties (2/7)",
+          "sha256": "a06b0da219984b877395e534d7f6e95eb2dd9ede9a7d64f0fdf3c545990c75c0"
+        },
+        {
+          "order": 92,
+          "title": "V: Of Bounties (3/7)",
+          "sha256": "becd7f187e1dbc7ae03a6458015f814ea89c480c8eed590031dc755f7a27ec70"
+        },
+        {
+          "order": 93,
+          "title": "V: Of Bounties (4/7)",
+          "sha256": "1908bfba4866fb95419314b1add6347c9972901501a095112671aca9feae6af5"
+        },
+        {
+          "order": 94,
+          "title": "V: Of Bounties (5/7)",
+          "sha256": "ad748f241bd778a2f412ceaa2521e9d16f6d70f91d1bea3623f75d359891e747"
+        },
+        {
+          "order": 95,
+          "title": "V: Of Bounties (6/7)",
+          "sha256": "99ea2673139d556f1a270958a18af21b4b18e5eaf6207aba5f5f098f414eca4a"
+        },
+        {
+          "order": 96,
+          "title": "V: Of Bounties (7/7)",
+          "sha256": "fd2e84f2e3e74c11bdbb12ce4c8b90b258aaccd16f190c7af3e1feaa674b45ac"
+        },
+        {
+          "order": 97,
+          "title": "VI: Of Treaties of Commerce (1/2)",
+          "sha256": "7f25697ec6e0eb62f6d3aaa43719e3dd17017606400ec6a171824be70bfdd03c"
+        },
+        {
+          "order": 98,
+          "title": "VI: Of Treaties of Commerce (2/2)",
+          "sha256": "5d8d29971f152a14618c62e5b44ed52b70a30d4daef065c1d770089e888249d5"
+        },
+        {
+          "order": 99,
+          "title": "VII: Of Colonies (1/17)",
+          "sha256": "498e36e5f99d512bf1efb23613b0f34a78e5d85201b40b61b491e0abdb867659"
+        },
+        {
+          "order": 100,
+          "title": "VII: Of Colonies (2/17)",
+          "sha256": "edc05d7cea5d51eaedbeab6628fbc3ca89524bec0128b06a294f6a0f75253a8a"
+        },
+        {
+          "order": 101,
+          "title": "VII: Of Colonies (3/17)",
+          "sha256": "2fe65d69ab831b68fd37709fd4cb78040694e40dc9c99c6fee7f5cf4c4546db0"
+        },
+        {
+          "order": 102,
+          "title": "VII: Of Colonies (4/17)",
+          "sha256": "5e7b2fb47e51b3cf21f9ab134c98dcfb0bf31a2aed0ddf34d1322f736757ce42"
+        },
+        {
+          "order": 103,
+          "title": "VII: Of Colonies (5/17)",
+          "sha256": "52abc6379f3961061ed9082da24893321c81bf437f7c2536c07e20aa7a27adee"
+        },
+        {
+          "order": 104,
+          "title": "VII: Of Colonies (6/17)",
+          "sha256": "1980a69d0e114941bdff412a969e579ee8801a9a1fc6af1ae49a683b99100940"
+        },
+        {
+          "order": 105,
+          "title": "VII: Of Colonies (7/17)",
+          "sha256": "d7979adb445fd24ac058d112a015cbfdc70079c30d3ba2c7b1d971c13bc5ad02"
+        },
+        {
+          "order": 106,
+          "title": "VII: Of Colonies (8/17)",
+          "sha256": "023cf62d6a6f4af8d4f2e59b887780b0778dcac63cb19c31a01a39c02f52586e"
+        },
+        {
+          "order": 107,
+          "title": "VII: Of Colonies (9/17)",
+          "sha256": "40d6ab194497c1a0e197decb3e1b21beed97010ac45cd01a53fd7c04a1080d37"
+        },
+        {
+          "order": 108,
+          "title": "VII: Of Colonies (10/17)",
+          "sha256": "164779b541b48dd2815100d78a1416036673f289e604cf3342c2625567cd5ec1"
+        },
+        {
+          "order": 109,
+          "title": "VII: Of Colonies (11/17)",
+          "sha256": "ad17df028af4d1371311d526d6276ea037346fb2086a493bcc7e8c667d1fe64b"
+        },
+        {
+          "order": 110,
+          "title": "VII: Of Colonies (12/17)",
+          "sha256": "4ca8312d79c5aa922286fe754ccab79da4376793304d6cb563dc236aa0154aa3"
+        },
+        {
+          "order": 111,
+          "title": "VII: Of Colonies (13/17)",
+          "sha256": "c6410420083e6a5f1cbbe1ce30400ecebe423242612a33100e0347107bf4319d"
+        },
+        {
+          "order": 112,
+          "title": "VII: Of Colonies (14/17)",
+          "sha256": "d4ad59dfc43a3f31ce08b312a4ba14e06da47892deda2315de51272cca9a7456"
+        },
+        {
+          "order": 113,
+          "title": "VII: Of Colonies (15/17)",
+          "sha256": "2ed78c79b338dd5c81c03a49c25780488aaed2c0e6379cea453b3afcae431054"
+        },
+        {
+          "order": 114,
+          "title": "VII: Of Colonies (16/17)",
+          "sha256": "a8dc63714800b55c4665412a117cf405d53e9b6baf432f84608689cc3f63d120"
+        },
+        {
+          "order": 115,
+          "title": "VII: Of Colonies (17/17)",
+          "sha256": "3da591d1eab76dfdfbf52bde11734816fbb753d88891d2a3784fc1aa7202e6d1"
+        },
+        {
+          "order": 116,
+          "title": "VIII: Conclusion of the Mercantile System (1/4)",
+          "sha256": "fd53d1a717759a87a90e534dd7e7d16a1401f16cb3516f202db4e4b02526031b"
+        },
+        {
+          "order": 117,
+          "title": "VIII: Conclusion of the Mercantile System (2/4)",
+          "sha256": "e156d8975d86d158d2d113226bb840bd332a5aff0f387f2a92601dc94e1fcbb3"
+        },
+        {
+          "order": 118,
+          "title": "VIII: Conclusion of the Mercantile System (3/4)",
+          "sha256": "18ed0cf1e30c6db9f22522d4b3b54f4841fa48cc93f78d52efdce4f98bce2dbb"
+        },
+        {
+          "order": 119,
+          "title": "VIII: Conclusion of the Mercantile System (4/4)",
+          "sha256": "fc48aa5ef43a772a2e6439b59b5424ba4935c3cd592f4d9d109988f3b800f098"
+        },
+        {
+          "order": 120,
+          "title": "IX: Of the Agricultural Systems, or of Those Systems of Political Œconomy, Which Represent the Produce of Land as Either the Sole or the Principal Source of the Revenue and Wealth of Every Country (1/5)",
+          "sha256": "6007d918ffd289e68095e10b4fa4dc30140e275aa0a26ecb3c9d2023978a98bb"
+        },
+        {
+          "order": 121,
+          "title": "IX: Of the Agricultural Systems, or of Those Systems of Political Œconomy, Which Represent the Produce of Land as Either the Sole or the Principal Source of the Revenue and Wealth of Every Country (2/5)",
+          "sha256": "9b85052f22ee9da3b60d9ab8eee30d3bf483916f42c5ff499dfb0ef0fbaa7dff"
+        },
+        {
+          "order": 122,
+          "title": "IX: Of the Agricultural Systems, or of Those Systems of Political Œconomy, Which Represent the Produce of Land as Either the Sole or the Principal Source of the Revenue and Wealth of Every Country (3/5)",
+          "sha256": "60b9ae0c3f122c79de29d918452f0f9b52c07a7b0220dae54cecdf24019621d3"
+        },
+        {
+          "order": 123,
+          "title": "IX: Of the Agricultural Systems, or of Those Systems of Political Œconomy, Which Represent the Produce of Land as Either the Sole or the Principal Source of the Revenue and Wealth of Every Country (4/5)",
+          "sha256": "a8ec99e493b42ab9cffc7670bab7279bf4a95e79ba010c87d071bea4c7c49f55"
+        },
+        {
+          "order": 124,
+          "title": "IX: Of the Agricultural Systems, or of Those Systems of Political Œconomy, Which Represent the Produce of Land as Either the Sole or the Principal Source of the Revenue and Wealth of Every Country (5/5)",
+          "sha256": "e08fc5cb552c35dda5b279cff501b1718519e5fa811675144bfe6a18aa93c6c9"
+        },
+        {
+          "order": 125,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (1/23)",
+          "sha256": "9559b39beecf2a8e90ea92ed9e877dbafe4613ff78b9bab739a853ffd86e818d"
+        },
+        {
+          "order": 126,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (2/23)",
+          "sha256": "c270796d9bb54ba07386f778a7b8c49155e964d96e7fbe50976c7bf2e3e27e14"
+        },
+        {
+          "order": 127,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (3/23)",
+          "sha256": "55230b8bcd1a3da9646cb9a302d96149240ff61e5b706eab8a1f14557d71dae2"
+        },
+        {
+          "order": 128,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (4/23)",
+          "sha256": "42382ad548cac2e1928f9659afe2e851b30417f897d2fa53daa20bf9da7612a8"
+        },
+        {
+          "order": 129,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (5/23)",
+          "sha256": "a6e7010f1e071f2af29eb70d49cbb4a770701cb3911c291172fc4b5bbee0bbf0"
+        },
+        {
+          "order": 130,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (6/23)",
+          "sha256": "564449fa918bf8c828a2796eef67a7eb69163ab979a0717e6f3eed5c12b05749"
+        },
+        {
+          "order": 131,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (7/23)",
+          "sha256": "42f6d8a144e5a0207121d01bbfdc7fc4a32bc4233a121e89faf090583f65ec19"
+        },
+        {
+          "order": 132,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (8/23)",
+          "sha256": "5046301df4bc957bb8e981eb713e5491dffa6d26504bc48987c3618bccd4adf4"
+        },
+        {
+          "order": 133,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (9/23)",
+          "sha256": "ed019cda587f3231aeafd097853f2343c9f6645ee9e8655462697e36ee52ce58"
+        },
+        {
+          "order": 134,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (10/23)",
+          "sha256": "2eba6330c9e335d596cb84277caba7e6b075216d3b259c745bbf29e63b632afb"
+        },
+        {
+          "order": 135,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (11/23)",
+          "sha256": "db0180275621ae2a1a3313054cd8c77771de5de7027fdb19190727b4b20907b7"
+        },
+        {
+          "order": 136,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (12/23)",
+          "sha256": "0521b42a80138121fb057876dfddfe3460d9ce6d4236c0203452bb241cc74ade"
+        },
+        {
+          "order": 137,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (13/23)",
+          "sha256": "07401b668a89b32d756192309ede0a2f13480f8acae66a78ff986d5ca44d0903"
+        },
+        {
+          "order": 138,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (14/23)",
+          "sha256": "a0b9af952b8dd6278984a386201ad154142d904062711a8b8647df78bd51ccd5"
+        },
+        {
+          "order": 139,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (15/23)",
+          "sha256": "2d5c0977a967132a672362eab03c9bd813c8ac271fa1e91b203e4cbfbe37173b"
+        },
+        {
+          "order": 140,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (16/23)",
+          "sha256": "7889c534e7b94a64f716ca0867b8261134bdf8885655fe7e732bd6427dcd1962"
+        },
+        {
+          "order": 141,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (17/23)",
+          "sha256": "d39b21549b390c699c6d7f1d2857fc52cb1f54976ea510e334044a6903467cab"
+        },
+        {
+          "order": 142,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (18/23)",
+          "sha256": "f2b47275581fca0140f0ecbf99bda846f9e8354dd4fcc63d03d2d731e9345146"
+        },
+        {
+          "order": 143,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (19/23)",
+          "sha256": "9a44e7424387df004d65b4ec57486c17c31ce957d6d3c0189527c55bbe52ff9b"
+        },
+        {
+          "order": 144,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (20/23)",
+          "sha256": "331017706f034fd430af6adfb3d21334c4b910da100fa50a839f4ac735d7ae4b"
+        },
+        {
+          "order": 145,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (21/23)",
+          "sha256": "571760f1101ed8e7595d1a11f891ed66202953593a0651c271eeb2df639ef9d5"
+        },
+        {
+          "order": 146,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (22/23)",
+          "sha256": "3237f357cbc8b4fa2d0d8a6a01ba178f3c648f513b17060eb3e0bbe39b82dae8"
+        },
+        {
+          "order": 147,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (23/23)",
+          "sha256": "48f9cb234e2d622b8972f8ccf1b28f7eb0405571750c5ffbad4bb09749338e69"
+        },
+        {
+          "order": 148,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (1/18)",
+          "sha256": "fecd58258a45965ae61611701650ab95549bf568b338f12be70b7536bb9c670f"
+        },
+        {
+          "order": 149,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (2/18)",
+          "sha256": "639be983abfa6463392ff86cadb5bfa1972a9871d0512e739e40e5f924f3cd22"
+        },
+        {
+          "order": 150,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (3/18)",
+          "sha256": "64f6b0f1a61d756caa189b71529722f7e942b5945c7f90243b03c45bd7119614"
+        },
+        {
+          "order": 151,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (4/18)",
+          "sha256": "a6697ce5be350c48a4fbe78284975e7a6a705ef6f6a3b36f2555d0e6665f139b"
+        },
+        {
+          "order": 152,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (5/18)",
+          "sha256": "2d5a7f1246e30d5b1e490275ab01e2cba8d6543377ac0b06d008cb0a401ecf64"
+        },
+        {
+          "order": 153,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (6/18)",
+          "sha256": "2d055512b064d067c92edacbb21a8afc7b1459efb5e7a22e85e17cb195a8689a"
+        },
+        {
+          "order": 154,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (7/18)",
+          "sha256": "267b2c4dd6c4a83285e41c22101e80214ba92adcb3f8c983b6e66391f300aa60"
+        },
+        {
+          "order": 155,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (8/18)",
+          "sha256": "bb2ab9bbec55686acb1d2ba5b55f242362260bbad53f0dd5eaa3ce7f8255cacf"
+        },
+        {
+          "order": 156,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (9/18)",
+          "sha256": "5bad18a33098ef05ee0409185164f63e0655837a87de3858c3d14fb7f3546615"
+        },
+        {
+          "order": 157,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (10/18)",
+          "sha256": "164bc8293178dc8d63ef000b4c50565fbba3b78ff4b09d9e945731e6c91c7f3a"
+        },
+        {
+          "order": 158,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (11/18)",
+          "sha256": "eadf667725a8739b38b5bb97ba82c7fdeb544cc4ceb8be8f7189788f979e8c46"
+        },
+        {
+          "order": 159,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (12/18)",
+          "sha256": "060548757164b911ab5a54a1aee100925201c2d5025173ad679235e0c4abc743"
+        },
+        {
+          "order": 160,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (13/18)",
+          "sha256": "e122255a7be0fde3fbc68adaec6e5d45ea53bb46fdbf3f113cd6d2216b8949b8"
+        },
+        {
+          "order": 161,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (14/18)",
+          "sha256": "893160a9781297e194f684806c8a03c8d61f0f97925ba81161f84b7a81d32ea8"
+        },
+        {
+          "order": 162,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (15/18)",
+          "sha256": "c2287350960bc40f6cf6ebd868d61562aefe8999f24774a89865d31bd82b1977"
+        },
+        {
+          "order": 163,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (16/18)",
+          "sha256": "00b182dc081826af2a760b70c3adf9d64c93102a0fa8363ac45e15ec6e25fa16"
+        },
+        {
+          "order": 164,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (17/18)",
+          "sha256": "5b4e076fe9dff0caebb1e6e29c08ed407d1e5856ee64de5cde2d18b781f40a30"
+        },
+        {
+          "order": 165,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (18/18)",
+          "sha256": "7fea47af5913f089428a3b2b4d980e418ddbddbc90ffa885a7d336d21208fddc"
+        },
+        {
+          "order": 166,
+          "title": "III: Of Public Debts (1/8)",
+          "sha256": "f8ac9b8f43c94d66ac0eee56820963b80446b00dd6bc7cb9b24469616cbb0867"
+        },
+        {
+          "order": 167,
+          "title": "III: Of Public Debts (2/8)",
+          "sha256": "9811f0a90d9a4cca97702154d2d4143d1ef4a85e660f9c2e0f0dc44bc61c1cfd"
+        },
+        {
+          "order": 168,
+          "title": "III: Of Public Debts (3/8)",
+          "sha256": "450ff59d85c72098a422d4f05da7d4773d77ef4f947f406795e6a97b3e5fbbeb"
+        },
+        {
+          "order": 169,
+          "title": "III: Of Public Debts (4/8)",
+          "sha256": "8178b02689f7cdd4f0740fedda716874e2e2df4dd4fe1ca0afd253735ada4598"
+        },
+        {
+          "order": 170,
+          "title": "III: Of Public Debts (5/8)",
+          "sha256": "13a0c018cdb5317fd387ecbafafedeff0609a4a3693f4b839ead2bb802a54552"
+        },
+        {
+          "order": 171,
+          "title": "III: Of Public Debts (6/8)",
+          "sha256": "ddfb32d7acae34f2b8ea2039615358c002db35660db8137bcea70b0319be0d1c"
+        },
+        {
+          "order": 172,
+          "title": "III: Of Public Debts (7/8)",
+          "sha256": "0150b70a05a871f76de180f60fa17c677334264b940452ff88e2ce1b44e05070"
+        },
+        {
+          "order": 173,
+          "title": "III: Of Public Debts (8/8)",
+          "sha256": "858d2ca4a7f34993a4f7e0c8543255f663023901251e9b515a9478cf53d9b4c1"
+        }
+      ]
+    },
     "se-arthur-conan-doyle_the-adventures-of-sherlock-holmes": {
       "title": "The Adventures of Sherlock Holmes",
       "author": "Arthur Conan Doyle",
@@ -283,6 +1682,197 @@
           "order": 47,
           "title": "The Adventure of the Copper Beeches (5/5)",
           "sha256": "31fae422436d31f6eacf2f2ac43ebfea5484914630795784a21a514c1db436c9"
+        }
+      ]
+    },
+    "se-benjamin-franklin_the-autobiography-of-benjamin-franklin": {
+      "title": "The Autobiography of Benjamin Franklin",
+      "author": "Benjamin Franklin",
+      "level": "C1 고급",
+      "total": 28,
+      "words": 61489,
+      "display": {
+        "titleKo": "프랭클린 자서전",
+        "authorKo": "벤저민 프랭클린",
+        "binding": "buisson-1791",
+        "coverTitle": "Mémoires\nde la vie privée\nde Benjamin Franklin,\nécrits par lui-même,\net adressés a son fils;",
+        "coverPartTitle": "Suivis d’un Précis historique\nde sa Vie politique,",
+        "coverPlace": "A Paris,",
+        "coverImprint": "Chez Buisson, Libraire",
+        "coverEdition": "1791."
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-benjamin-franklin_the-autobiography-of-benjamin-franklin",
+        "title": "The Autobiography of Benjamin Franklin",
+        "author": "Benjamin Franklin",
+        "publishedYear": 1791,
+        "authorDeathYear": 1790,
+        "countryOfOrigin": "US",
+        "translator": null,
+        "repo": "standardebooks/benjamin-franklin_the-autobiography-of-benjamin-franklin",
+        "commit": "9e71f1cca87cf88649de02668ccbdd9c1cf582b3",
+        "url": "https://standardebooks.org/ebooks/benjamin-franklin/the-autobiography-of-benjamin-franklin",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "US",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/benjamin-franklin/the-autobiography-of-benjamin-franklin"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: Ancestry and Early Youth in Boston (1/2)",
+          "sha256": "5e0bc6c2bacd4e816b9a91f2515da905d0186e9a4c7d3f6ef165eba5d62ef406"
+        },
+        {
+          "order": 2,
+          "title": "I: Ancestry and Early Youth in Boston (2/2)",
+          "sha256": "b16a36f4ca1702159fb22a295866858e44da18d5377b72080701de781a298330"
+        },
+        {
+          "order": 3,
+          "title": "II: Beginning Life as a Printer (1/2)",
+          "sha256": "8f6b48e8bbf8d27c155f2eb38a67834ce8eff1a907bb7b711e7c8b225da90e66"
+        },
+        {
+          "order": 4,
+          "title": "II: Beginning Life as a Printer (2/2)",
+          "sha256": "2f7b3339622d74ca31bde2bbe585d0028af84644491f952fea86f64b8f9cfd3c"
+        },
+        {
+          "order": 5,
+          "title": "III: Arrival in Philadelphia",
+          "sha256": "ec13d72c9501df20f12c8fc314fffd136dce7bc0f03e77279a35ca271d748635"
+        },
+        {
+          "order": 6,
+          "title": "IV: First Visit to Boston",
+          "sha256": "01ec0ee05f8de99779a51d407cf5df9d5019c5b7ad55af1636202fd8d641e5f1"
+        },
+        {
+          "order": 7,
+          "title": "V: Early Friends in Philadelphia",
+          "sha256": "36684f4ff004fb6d3b4717c8af818883ba0476d86fa98c16d490cf71475b7cba"
+        },
+        {
+          "order": 8,
+          "title": "VI: First Visit to London (1/2)",
+          "sha256": "a5e7e4925044c01946f1e2fcf80ece001ba3bf5bacab832b17daf6054724a490"
+        },
+        {
+          "order": 9,
+          "title": "VI: First Visit to London (2/2)",
+          "sha256": "6794371a0a9a5ef6cb33e40b04efb35c4beb38de6fdf706f761155601ff3dded"
+        },
+        {
+          "order": 10,
+          "title": "VII: Beginning Business in Philadelphia (1/2)",
+          "sha256": "7fb54a930e15b4d5eb9513331260aa892ad2ae73766e325393ccf9996672e17a"
+        },
+        {
+          "order": 11,
+          "title": "VII: Beginning Business in Philadelphia (2/2)",
+          "sha256": "87cf3243e2bd1b582f0389023c1bc34245d6a26667d834cd26a351b099866d0a"
+        },
+        {
+          "order": 12,
+          "title": "VIII: Business Success and First Public Service (1/2)",
+          "sha256": "6a2f8b3a44651d94f05c96100d8b18ffc3555672e16f650d36ee440503dc08f0"
+        },
+        {
+          "order": 13,
+          "title": "VIII: Business Success and First Public Service (2/2)",
+          "sha256": "0baf348aad5e804412f45a335c76daa88b0a92eb143fbfdf3c695e40252450fc"
+        },
+        {
+          "order": 14,
+          "title": "IX: Plan for Attaining Moral Perfection (1/2)",
+          "sha256": "cda8090ea693c9c1eac622f6d8d7fd2371975aa0aa84fec35a8a135ee2548ca1"
+        },
+        {
+          "order": 15,
+          "title": "IX: Plan for Attaining Moral Perfection (2/2)",
+          "sha256": "69a8411e18bae2b07de3b895c01f07285848933f234a0e26f5b085228be966c2"
+        },
+        {
+          "order": 16,
+          "title": "X: Poor Richard’s Almanac and Other Activities",
+          "sha256": "28deced7543eb514d4962c0f27a497e316aa5cbac56e3040ea2d72577d17e632"
+        },
+        {
+          "order": 17,
+          "title": "XI: Interest in Public Affairs",
+          "sha256": "8f5826ec256736fc6f45b474c90341c2f678879339b3959ddb6c202aa55b3a0d"
+        },
+        {
+          "order": 18,
+          "title": "XII: Defense of the Province",
+          "sha256": "f8d8e42b3c124c2274257918aaf1cffb42840db132de5fb33c1ba806405e6e05"
+        },
+        {
+          "order": 19,
+          "title": "XIII: Public Services and Duties (1749–1753) (1/2)",
+          "sha256": "faef8173a4064fc40199959962954bbae09b1e8eb0ee4a5ac17c00f0c162e920"
+        },
+        {
+          "order": 20,
+          "title": "XIII: Public Services and Duties (1749–1753) (2/2)",
+          "sha256": "443af78a979028599ebc876e7f4ceb13c5628bf35e48870e6dd5439d0da124bc"
+        },
+        {
+          "order": 21,
+          "title": "XIV: Albany Plan of Union",
+          "sha256": "68164a150da96b8321c43adb1ed8d355ae6bf5942aa240cc760067f579ffbd26"
+        },
+        {
+          "order": 22,
+          "title": "XV: Quarrels with the Proprietary Governors",
+          "sha256": "4b2e37d3887d74248885c33f72b6e32a5c9f6569e110dac45af4240a2ca824d5"
+        },
+        {
+          "order": 23,
+          "title": "XVI: Braddock’s Expedition (1/2)",
+          "sha256": "47d9a3cfeb3d5727e124012253ac3db4b667e024d836d119ce062073ceb9ed8f"
+        },
+        {
+          "order": 24,
+          "title": "XVI: Braddock’s Expedition (2/2)",
+          "sha256": "a90e76391520c485f98d455ddec4a9639b5c12d209db5f96c033159c28220063"
+        },
+        {
+          "order": 25,
+          "title": "XVII: Franklin’s Defense of the Frontier",
+          "sha256": "5af9598b4dbb46285b59c6e080301a8172c08fa034812f7af6db532b143c0e95"
+        },
+        {
+          "order": 26,
+          "title": "XVIII: Scientific Experiments",
+          "sha256": "83270aeaed3d2c71bb0f53ce2876d2d7bdbec26572ac4a71dc2c9b31c1731217"
+        },
+        {
+          "order": 27,
+          "title": "XIX: Agent of Pennsylvania in London (1/2)",
+          "sha256": "39e63b2f20cad5c16a39b62ab5f477a70fd70f713cf20ef031079ad88e87edaf"
+        },
+        {
+          "order": 28,
+          "title": "XIX: Agent of Pennsylvania in London (2/2)",
+          "sha256": "610866fece7495edbd873f36540174d638d052e998bcae05556d29dbb27bed9b"
         }
       ]
     },
@@ -2264,6 +3854,163 @@
         }
       ]
     },
+    "se-john-stuart-mill_on-liberty": {
+      "title": "On Liberty",
+      "author": "John Stuart Mill",
+      "level": "C1 고급",
+      "total": 22,
+      "words": 46565,
+      "display": {
+        "titleKo": "자유론",
+        "authorKo": "존 스튜어트 밀",
+        "binding": "parker-1859",
+        "coverTitle": "On Liberty"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-john-stuart-mill_on-liberty",
+        "title": "On Liberty",
+        "author": "John Stuart Mill",
+        "publishedYear": 1859,
+        "authorDeathYear": 1873,
+        "countryOfOrigin": "GB",
+        "translator": null,
+        "repo": "standardebooks/john-stuart-mill_on-liberty",
+        "commit": "88e44565f1b64b9a47e1fe65f4d8f113245edca1",
+        "url": "https://standardebooks.org/ebooks/john-stuart-mill/on-liberty",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "GB",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/john-stuart-mill/on-liberty"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: Introductory (1/3)",
+          "sha256": "8eab68fa5b87ec917af0153d3a64f0aa1f07c07348d5386396e31260a1cf57fc"
+        },
+        {
+          "order": 2,
+          "title": "I: Introductory (2/3)",
+          "sha256": "df5e661de534741d8a8d7ef1ea94a42e95cb7d163e5b6ed5e4503abdcb5fe948"
+        },
+        {
+          "order": 3,
+          "title": "I: Introductory (3/3)",
+          "sha256": "e608c69498367920ef6ba9e7c3aa9ab1c11ad04c0b31de3236bc407e12952177"
+        },
+        {
+          "order": 4,
+          "title": "II: Of the Liberty of Thought and Discussion (1/7)",
+          "sha256": "6d94c8b7d50a8075f26aa7d0505e68a9cfaf5de334d4809b56e86a5b51082174"
+        },
+        {
+          "order": 5,
+          "title": "II: Of the Liberty of Thought and Discussion (2/7)",
+          "sha256": "a9da2e3f4d13622e520c03c72e3210fae1d6f95c93d8dff836773a0dd58f0ffc"
+        },
+        {
+          "order": 6,
+          "title": "II: Of the Liberty of Thought and Discussion (3/7)",
+          "sha256": "c97ce2e6c462ad4d6dd5ea1be4f7bbc35f5df15e22d2fd3277400b69e2346786"
+        },
+        {
+          "order": 7,
+          "title": "II: Of the Liberty of Thought and Discussion (4/7)",
+          "sha256": "6289a2cf66b17f35c759223650d1a77cc918a2381d90efdc28ae40b1bfc97fae"
+        },
+        {
+          "order": 8,
+          "title": "II: Of the Liberty of Thought and Discussion (5/7)",
+          "sha256": "38fe942aab46b3bff7ce1f6527faac2009c605dc792dd31a8285e9da5bc3d55c"
+        },
+        {
+          "order": 9,
+          "title": "II: Of the Liberty of Thought and Discussion (6/7)",
+          "sha256": "56cd931cf49beb6df5d365c52b8561cb471afb80a68757491f3d093a3e99adab"
+        },
+        {
+          "order": 10,
+          "title": "II: Of the Liberty of Thought and Discussion (7/7)",
+          "sha256": "a282ce89a5d375964fea0a716a4704e3d9e5d28456426dc5b38fc07ff2638687"
+        },
+        {
+          "order": 11,
+          "title": "III: Of Individuality, as One of the Elements of Well-Being (1/4)",
+          "sha256": "6505e5913819f47b8163d54814e9cd6b0720c399a01e58caa2d88e27b37f7486"
+        },
+        {
+          "order": 12,
+          "title": "III: Of Individuality, as One of the Elements of Well-Being (2/4)",
+          "sha256": "0b5bbd17bfeca8b8fdfcfc37d5bdbbc7d8bd0546bf12657ca289e3b2e1febe3e"
+        },
+        {
+          "order": 13,
+          "title": "III: Of Individuality, as One of the Elements of Well-Being (3/4)",
+          "sha256": "0b3f8e59ece166337b759f93665608d8869fdd62f811fd8f476904e5f7314019"
+        },
+        {
+          "order": 14,
+          "title": "III: Of Individuality, as One of the Elements of Well-Being (4/4)",
+          "sha256": "c2e72048f4b05d90052945748bfe5243c55646298e6d7bdb15cf3e1e5cac4316"
+        },
+        {
+          "order": 15,
+          "title": "IV: Of the Limits to the Authority of Society Over the Individual (1/4)",
+          "sha256": "e3095d85ce7377e87f23b2e4f56e68060e1f1b352c39de95bf42da62d3211189"
+        },
+        {
+          "order": 16,
+          "title": "IV: Of the Limits to the Authority of Society Over the Individual (2/4)",
+          "sha256": "1fe1dd9dc713da23d3fca0121f52acb6baddaffb31e648398dadfb03d36c574d"
+        },
+        {
+          "order": 17,
+          "title": "IV: Of the Limits to the Authority of Society Over the Individual (3/4)",
+          "sha256": "d1886fbe36980120b006640daf793864356336e0a0400083a4970be21b5c621b"
+        },
+        {
+          "order": 18,
+          "title": "IV: Of the Limits to the Authority of Society Over the Individual (4/4)",
+          "sha256": "a9c4005ed117ca75fb86411292ba966e2f282c589c10b262b3998e23d77e5089"
+        },
+        {
+          "order": 19,
+          "title": "V: Applications (1/4)",
+          "sha256": "b9767549495aeaf15c08c5fb63f8f6b6821c88df8025f13d9f7e48f12d1fed81"
+        },
+        {
+          "order": 20,
+          "title": "V: Applications (2/4)",
+          "sha256": "30c6739ee3b41a8b43c9e0e871cf45dddafab8636916155ff6da3ff21f6aca37"
+        },
+        {
+          "order": 21,
+          "title": "V: Applications (3/4)",
+          "sha256": "f66835047a8f277b98989448a9d9e8d4d1b443a7ad0f24ccb6a20f69b8a5c0c1"
+        },
+        {
+          "order": 22,
+          "title": "V: Applications (4/4)",
+          "sha256": "01ffb7f0965d4b762a1c05b8c505f2c819ba10c3fc84198d4c70111e045cd057"
+        }
+      ]
+    },
     "se-lewis-carroll_alices-adventures-in-wonderland": {
       "title": "Alice’s Adventures in Wonderland",
       "author": "Lewis Carroll",
@@ -2369,6 +4116,159 @@
           "order": 12,
           "title": "XII: Alice’s Evidence",
           "sha256": "3761d99e1e2ab658355c55fd37cc545f1ebf7b9dc14b171f94800b56bc7cb598"
+        }
+      ]
+    },
+    "se-marcus-aurelius_meditations_george-long": {
+      "title": "Meditations",
+      "author": "Marcus Aurelius",
+      "level": "C1 고급",
+      "total": 20,
+      "words": 45366,
+      "display": {
+        "titleKo": "명상록",
+        "authorKo": "마르쿠스 아우렐리우스",
+        "binding": "bell-daldy-1862",
+        "coverTitle": "Thoughts"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-marcus-aurelius_meditations_george-long",
+        "title": "Meditations",
+        "author": "Marcus Aurelius",
+        "publishedYear": 180,
+        "authorDeathYear": 180,
+        "countryOfOrigin": "IT",
+        "translator": {
+          "name": "George Long",
+          "deathYear": 1879,
+          "publishedYear": 1862,
+          "countryOfOrigin": "GB"
+        },
+        "repo": "standardebooks/marcus-aurelius_meditations_george-long",
+        "commit": "3a47d37d9f1df94de235d53839f4b254ce2953d5",
+        "url": "https://standardebooks.org/ebooks/marcus-aurelius/meditations/george-long",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "IT",
+            "GB",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/marcus-aurelius/meditations/george-long"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Book I",
+          "sha256": "799e5ec869c97f7d6a2fcb380cdd847b81828cb91e9df17c766207ae445caa00"
+        },
+        {
+          "order": 2,
+          "title": "Book II",
+          "sha256": "87e9043461bb83d88774bdd7e694f335ff37debe3fd229cfc0b33230bb4cfc00"
+        },
+        {
+          "order": 3,
+          "title": "Book III",
+          "sha256": "9bf6f15d6344597d33e5a7718a5a209efe1aa2bc397a4bcc2dfeafcc5fa9d743"
+        },
+        {
+          "order": 4,
+          "title": "Book IV (1/2)",
+          "sha256": "26e30310974182523d55d9ff10b3713e9b2edc15e27a4876265be3821847d614"
+        },
+        {
+          "order": 5,
+          "title": "Book IV (2/2)",
+          "sha256": "c301af26067b50a8d4fb546fa3323691658166ca5bc0f7aa61acf1ffc0d8b0df"
+        },
+        {
+          "order": 6,
+          "title": "Book V (1/2)",
+          "sha256": "c696f380b3e5abce1e769557633da8786e22f190a568f006881085e8a99a4707"
+        },
+        {
+          "order": 7,
+          "title": "Book V (2/2)",
+          "sha256": "7b9c4976f8bf0394557e3b2bc5d5b20ac80e6895b975a175254473753f76648e"
+        },
+        {
+          "order": 8,
+          "title": "Book VI (1/2)",
+          "sha256": "a324598600a1c8eae9f616a633ed69b8c356b309ee9d81e19d7d7330987d2a48"
+        },
+        {
+          "order": 9,
+          "title": "Book VI (2/2)",
+          "sha256": "0095fe8f7fd57ad3d6a7cd92612bbe5cfa287cccf351ea23480d6a27a39e3cfd"
+        },
+        {
+          "order": 10,
+          "title": "Book VII (1/2)",
+          "sha256": "96f199b06da0741fdb5a3778543518531eb4e05eb48f592a2e30c7801f486ce5"
+        },
+        {
+          "order": 11,
+          "title": "Book VII (2/2)",
+          "sha256": "a9ea94a8acb515684e21a24477b9ffefcffa19681638ad8595cd132130f01add"
+        },
+        {
+          "order": 12,
+          "title": "Book VIII (1/2)",
+          "sha256": "d49577541ba0ac04ee172c0204156b5e703438dbfff4f54e96a7ac74c796a493"
+        },
+        {
+          "order": 13,
+          "title": "Book VIII (2/2)",
+          "sha256": "f48c5253efe259bd89a0baaa6bed8838dd5993b64d72d548c9096c54fc887c9c"
+        },
+        {
+          "order": 14,
+          "title": "Book IX (1/2)",
+          "sha256": "aedbca13285f495a179495370a9cef68e4f3acb40b743c57fd2bd8f7c61122d8"
+        },
+        {
+          "order": 15,
+          "title": "Book IX (2/2)",
+          "sha256": "889d8bac79704afb8c58da14cf61ba92a9afedfa8c0573aa83a39c91d8b0b72f"
+        },
+        {
+          "order": 16,
+          "title": "Book X (1/2)",
+          "sha256": "966d7a651e525f8de3e8c646d247be2280241baf2456a073e6a1e8154e577214"
+        },
+        {
+          "order": 17,
+          "title": "Book X (2/2)",
+          "sha256": "72cac362b30655a5bcc6272e28b1ddebc00ad92891df1452164bc0e49e3c2c29"
+        },
+        {
+          "order": 18,
+          "title": "Book XI (1/2)",
+          "sha256": "6873e78750e3008f1cdd9be9abf5787922aaca98a1639322b59af64d4dad0676"
+        },
+        {
+          "order": 19,
+          "title": "Book XI (2/2)",
+          "sha256": "84f7e7f45a6424e6a5997efa47e2a7ab5b55379b16d415d9bd763d841a0aee6b"
+        },
+        {
+          "order": 20,
+          "title": "Book XII",
+          "sha256": "0d5423c90261f33722b3f1bf166001fe37a49ec11a9059bf4454bcd4045bd240"
         }
       ]
     }

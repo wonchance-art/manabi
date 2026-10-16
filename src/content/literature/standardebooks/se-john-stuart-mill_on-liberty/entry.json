@@ -12,7 +12,9 @@
   "level": "C1 고급",
   "display": {
     "titleKo": "자유론",
-    "authorKo": "존 스튜어트 밀"
+    "authorKo": "존 스튜어트 밀",
+    "binding": "parker-1859",
+    "coverTitle": "On Liberty"
   },
   "files": [
     {
