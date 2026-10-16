@@ -500,7 +500,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
           {conf.levels.map((key) => <Link key={key} href={levelListHref(lang, levelKinds(lang, key).includes(kind) ? kind : 'vocab', key)} aria-current={key === levelKey ? 'page' : undefined}
             aria-label={levelLabel(key)}>{levelPill(key)}</Link>)}
         </nav>
-        {/* 탭이 하나뿐인 레벨(HSK 7–9 = 단어만)은 종류 탭을 그리지 않는다. */}
+        {/* 탭이 하나뿐인 레벨(H7 7–9 통합 밴드 = 단어만)은 종류 탭을 그리지 않는다. */}
         {levelKinds(lang, levelKey).length > 1 && <nav className="lv-tabs" aria-label="목록 종류">
           {levelKinds(lang, levelKey).map((k) => <Link key={k} href={levelListHref(lang, k, levelKey)} aria-current={k === kind ? 'page' : undefined}>{LEVEL_KIND_LABEL[k]}</Link>)}
         </nav>}

@@ -1,5 +1,5 @@
 // 책장 「단어 · 문형」 레벨 타일(LEVEL-LIST-AJ-001 · 목업 #v5-shelf · #z-shelf) — 레벨 + 「단어 N / 문형 N」 두 줄
-// (중국어 HSK 1 · 2는 「한자 N」 한 줄 더 — HANZI-TAB-AL-001 §1, HSK 7–9는 문형 없이 「단어 N」 한 줄).
+// (중국어 HSK 1 · 2는 「한자 N」 한 줄 더 — HANZI-TAB-AL-001 §1, H7(7–9 통합 밴드)은 문형 없이 「단어 N」 한 줄).
 // 숫자는 서버가 목록과 같은 조립에서 센 값(levelTileCounts)이다. 설명 열 · 「→」 없음.
 import Link from 'next/link';
 import { LEVEL_LIST_LANGS, levelLabel, levelListHref } from '@/lib/levelList';
