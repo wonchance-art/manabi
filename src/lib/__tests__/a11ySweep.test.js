@@ -37,6 +37,43 @@ describe('① 결과 알림 영역 — 늘 있고 내용만 바뀐다 · 보이�
   });
 });
 
+describe('①b 결과 알림 영역 2차 — 서재 · 노트 · 뷰어 더 알아보기', () => {
+  it('서재 정리 결과 · 미확인(LibraryShelf) — 영역 하나에 두 줄, 다시 시도 · 실패 다시 선택 · 되돌리기가 가리킨다', () => {
+    const src = read('src/components/library/LibraryShelf.jsx');
+    expect(src).toContain('<span className="sr-only" role="status" id="shelf-organize-notice">{[pendingLine,resultLine].filter(Boolean).join(\' \')}</span>');
+    expect(src).toContain('{pendingLine&&<div className="shelf-notice"><span aria-hidden="true">{pendingLine} </span><button aria-describedby="shelf-organize-notice"');
+    expect(src).toContain('{result&&<div className="shelf-notice"><span aria-hidden="true">{resultLine}</span>');
+    expect((src.match(/aria-describedby="shelf-organize-notice"/g) || []).length).toBe(3);
+    expect(src).not.toMatch(/className="shelf-notice" role="status"/);
+  });
+  it('폴더 변경 「저장됨」(LibraryCollections)', () => {
+    const src = read('src/components/library/LibraryCollections.jsx');
+    expect(src).toContain('<span className="sr-only" role="status" id="collections-undo-notice">{undo?\'저장됨\':\'\'}</span>');
+    expect(src).toContain('{undo&&<div className="shelf-notice"><span aria-hidden="true">저장됨 </span><button aria-describedby="collections-undo-notice"');
+  });
+  it('노트 표현 담기 — 줄마다 · 바닥 줄(NoteVocabulary)', () => {
+    const src = read('src/components/notes/NoteVocabulary.jsx');
+    expect(src).toContain("<span className=\"sr-only\" role=\"status\" id={`note-outcome-${row.id}`}>{outcome?.error||(outcome?.ok?outcome.text:'')}</span>");
+    expect(src).toContain('<div className="note-row-error"><p aria-hidden="true">{outcome.error}</p>');
+    expect(src).toContain('aria-describedby={`note-outcome-${row.id}`}');
+    expect(src).toContain('{outcome?.ok&&<p className="note-saved" aria-hidden="true">{outcome.text}</p>}');
+    expect(src).toContain('<footer><span className="sr-only" role="status">{notice||message||\'\'}</span>{(notice||message)&&<p aria-hidden="true">{notice||message}</p>}');
+  });
+  it('뷰어 비슷한 말 실패 — 영역은 조건 밖, 「✦ 비슷한 말 찾기」가 가리킨다', () => {
+    const src = read('src/views/ViewerPage.jsx');
+    const live = '<span className="sr-only" role="status" id="viewer-synant-notice">{synAntEligible(selectedToken,materialLang) && !synAnt?.loading && synAnt?.error ? vt("불러오지 못했어요.") : \'\'}</span>';
+    expect(src).toContain(live);
+    expect(sliceBetween(src, live, '{wordDetail?.loading')).toContain('{synAnt?.error && <p aria-hidden="true">{vt("불러오지 못했어요.")}</p>}<button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" aria-describedby="viewer-synant-notice"');
+  });
+  it('일본어로는 대응어 실패(ViewerJapaneseMore) — 찾는 중 · 결과 두 갈래의 같은 자리에 같은 영역', () => {
+    const src = read('src/components/viewer/ViewerJapaneseMore.jsx');
+    expect(src).toContain("const notice=<span className=\"sr-only\" role=\"status\" id={noticeId}>{!query.isFetching&&query.isError?vt('대응어를 불러오지 못했어요.'):''}</span>;");
+    expect(src).toContain("if(query.isFetching)return <>{warnLine}{notice}<p role=\"status\">");
+    expect(src).toMatch(/return <>\s*\{warnLine\}\s*\{notice\}\s*\{query\.isError&&<p aria-hidden="true">/);
+    expect(src).toContain('aria-describedby={noticeId}');
+  });
+});
+
 describe('② 글자 없는 아이콘 버튼에는 이름이 있다', () => {
   it('✕ · × 만 든 버튼은 aria-label이 있다(화면 코드 전체)', () => {
     const offenders = [];

@@ -7,7 +7,7 @@
 //   · 없으면 로그인 사용자에게 [✦ 일본어로는?] 요청 버튼 — 누를 때만 기존 클라 AI 조회(lookupJapaneseReference) 그대로.
 // 「AI」 표시는 없다(오너 결정 2026-10-07 23:45 KST). 이 조각은 쓰지 않는다 — 요미 받기·빈 칸 저장은 PR ③.
 // 호출부는 日 줄이 보이지 않을 때만 둔다(같은 표기를 두 번 보이지 않는다).
-import {useContext,useState} from 'react';
+import {useContext,useId,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {ViewerUiLocaleContext} from '../../lib/viewerLocaleContext';
 import {t} from '../../lib/viewerMessages';
@@ -18,6 +18,7 @@ export default function ViewerJapaneseMore({userId,word,meaning,pos,dictEntry,ja
   const uiLocale=useContext(ViewerUiLocaleContext);
   const vt=(key,values)=>t(uiLocale,key,values);
   const [requested,setRequested]=useState(false);
+  const noticeId=useId();
   // 확인된 같은 표기(JMdict)가 있으면 그것을, 없으면 간체 표제어를 「같은 글자」 기준으로 쓴다 — 사전 행이 같은 글자를 두고
   // diff라 적은 모순 행을 거르는 기존 규칙(japaneseCandidateConsistency)과 AI 조회의 자형 힌트. 글자 변환(toJaForm)은 쓰지 않는다.
   const hint=jaWordFromTable(word,jaTable)?.form||null;
@@ -42,10 +43,13 @@ export default function ViewerJapaneseMore({userId,word,meaning,pos,dictEntry,ja
   </p>;
   const warnLine=curatedNote?<p className="reader-card-learn__ja">{curatedNote}</p>:null;
   if(!userId||dictLoading||!meaning)return warnLine;
-  if(query.isFetching)return <>{warnLine}<p role="status">{vt('일본어를 찾는 중…')}</p></>;
+  // 실패 알림 영역 — 찾는 중 · 결과 두 갈래의 같은 자리(두 번째 칸)에 늘 두고 내용만 넣는다. 보이는 줄은 숨기고 요청 버튼이 이유를 가리킨다(A11Y-SWEEP-001).
+  const notice=<span className="sr-only" role="status" id={noticeId}>{!query.isFetching&&query.isError?vt('대응어를 불러오지 못했어요.'):''}</span>;
+  if(query.isFetching)return <>{warnLine}{notice}<p role="status">{vt('일본어를 찾는 중…')}</p></>;
   return <>
     {warnLine}
-    {query.isError&&<p role="status">{vt('대응어를 불러오지 못했어요.')}</p>}
-    <button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" onClick={()=>{if(requested)query.refetch();else setRequested(true);}}>{vt('✦ 일본어로는?')}</button>
+    {notice}
+    {query.isError&&<p aria-hidden="true">{vt('대응어를 불러오지 못했어요.')}</p>}
+    <button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" aria-describedby={noticeId} onClick={()=>{if(requested)query.refetch();else setRequested(true);}}>{vt('✦ 일본어로는?')}</button>
   </>;
 }

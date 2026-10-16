@@ -72,11 +72,13 @@ export default function NoteVocabulary({saved, noteId, note, onChange, onFocus, 
           {row.recognition&&<div className="note-recognized"><small>AI 인식{row.recognition.uncertain?' · 읽기와 뜻 확인 필요':''}</small>{row.recognition.choices.length>0&&<div className="note-choices" aria-label={`${row.original} 인식 후보`}>{row.recognition.choices.map((choice,index)=><button key={index} disabled={busy} onClick={()=>edit(row.id,{text:choice.text,base:'',reading:['Japanese','Chinese'].includes(row.language)?choice.reading:'',meaning:choice.meaning})}><b>{choice.text}</b><small>{choice.meaning||'뜻 직접 입력'}</small></button>)}</div>}<p>인식 원문: {row.original}</p></div>}
           {!!choicesForRow?.candidates?.length&&<div className="note-choices" aria-label={`${row.text} 한자 후보`}>{choicesForRow.candidates.map(candidate=><button key={candidate.text} disabled={busy} onClick={()=>{edit(row.id,{text:candidate.text,base:'',reading:candidate.reading,meaning:row.meaning||candidate.meaning||''});setChoices(current=>({...current,[row.id]:null}));}}><b>{candidate.text}</b><small>{candidate.meaning||'뜻 확인 필요'}</small></button>)}<button onClick={()=>setChoices(current=>({...current,[row.id]:null}))}>가나 그대로</button></div>}
           {choicesForRow?.senses?.length>1&&<div className="note-choices" aria-label="뜻 후보">{choicesForRow.senses.map((sense,index)=><button key={index} disabled={busy} onClick={()=>edit(row.id,{meaning:sense.meaning})}>{sense.meaning}</button>)}</div>}
-          {outcome?.error&&<div className="note-row-error" role="status"><p>{outcome.error}</p>{outcome.code==='meaning_conflict'&&outcome.existing&&<><p>기존 뜻: {outcome.existing.meaning}</p><button disabled={busy} onClick={()=>saveRows([row],{[row.id]:{confirmId:outcome.existing.id,confirmMeaning:outcome.existing.meaning}})}>같은 뜻이에요 · 문맥만 연결</button></>}</div>}
-          {outcome?.ok&&<p className="note-saved" role="status">{outcome.text}</p>}
+          {/* 줄마다 저장 결과 알림 — 영역은 늘 두고 내용만 넣는다. 보이는 줄은 숨기고 확인 버튼이 영역을 가리킨다(A11Y-SWEEP-001). */}
+          <span className="sr-only" role="status" id={`note-outcome-${row.id}`}>{outcome?.error||(outcome?.ok?outcome.text:'')}</span>
+          {outcome?.error&&<div className="note-row-error"><p aria-hidden="true">{outcome.error}</p>{outcome.code==='meaning_conflict'&&outcome.existing&&<><p>기존 뜻: {outcome.existing.meaning}</p><button aria-describedby={`note-outcome-${row.id}`} disabled={busy} onClick={()=>saveRows([row],{[row.id]:{confirmId:outcome.existing.id,confirmMeaning:outcome.existing.meaning}})}>같은 뜻이에요 · 문맥만 연결</button></>}</div>}
+          {outcome?.ok&&<p className="note-saved" aria-hidden="true">{outcome.text}</p>}
         </article>;
       })}
     </div>
-    <footer>{(notice||message)&&<p role="status">{notice||message}</p>}<button className="manabi-button" disabled={busy||!selected.length} onClick={()=>saveRows(selected)}>{busy?'선택한 표현 담는 중…':`선택한 ${selected.length}개 담기`}</button><small>기존 단어의 뜻과 복습 일정은 그대로예요.</small></footer>
+    <footer><span className="sr-only" role="status">{notice||message||''}</span>{(notice||message)&&<p aria-hidden="true">{notice||message}</p>}<button className="manabi-button" disabled={busy||!selected.length} onClick={()=>saveRows(selected)}>{busy?'선택한 표현 담는 중…':`선택한 ${selected.length}개 담기`}</button><small>기존 단어의 뜻과 복습 일정은 그대로예요.</small></footer>
   </aside>;
 }

@@ -3432,9 +3432,11 @@ export default function ViewerPage() {
           한국어 나눈 조각(§7.5)은 기존 형태 분석 설명만 쓴다 — AI 요청 버튼을 두지 않는다. */}
       {!koreanPieceSelected && <section ref={learnRef} className="reader-card-learn" aria-label={vt('더 알아보기')} key={`learn:${selectedToken.id||selectedToken.text}`}>
         <h3 className="reader-card-section__label">{vt('더 알아보기')}</h3>
+        {/* 비슷한 말 실패 알림 — 영역은 늘 두고 내용만 넣는다. 보이는 줄은 숨기고 「✦ 비슷한 말 찾기」가 이유를 가리킨다(A11Y-SWEEP-001). */}
+        <span className="sr-only" role="status" id="viewer-synant-notice">{synAntEligible(selectedToken,materialLang) && !synAnt?.loading && synAnt?.error ? vt("불러오지 못했어요.") : ''}</span>
         {synAntEligible(selectedToken,materialLang) && (synAnt?.loading ? <p role="status">{vt("비슷한 말 불러오는 중…")}</p>
           : synAnt && !synAnt.error ? <div className="syn-ant"><div className="syn-ant__row"><span>{vt("유의어")}</span>{renderSynAntChips(synAnt.syn)}</div><div className="syn-ant__row"><span>{vt("반의어")}</span>{renderSynAntChips(synAnt.ant)}</div>{!synAnt.syn.length&&!synAnt.ant.length&&<p>{vt("표시할 항목이 없어요.")}</p>}</div>
-          : <>{synAnt?.error && <p role="status">{vt("불러오지 못했어요.")}</p>}<button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" onClick={() => setSynAntRequest(n => n + 1)}>{vt("✦ 비슷한 말 찾기")}</button></>)}
+          : <>{synAnt?.error && <p aria-hidden="true">{vt("불러오지 못했어요.")}</p>}<button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" aria-describedby="viewer-synant-notice" onClick={() => setSynAntRequest(n => n + 1)}>{vt("✦ 비슷한 말 찾기")}</button></>)}
         {wordDetail?.loading ? <p role="status">{vt("상세 설명 만드는 중…")}</p>
           : wordDetail?.detail ? <div className="reader-card-learn__detail"><small>{vt('일반 사전 설명 · 본문과 다른 뜻이 포함될 수 있어요')}</small><div className="pdf-detail-popup__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(wordDetail.detail) }} /></div>
           : <button type="button" onClick={() => fetchWordDetail(selectedToken)} className="btn btn--ghost btn--sm reader-card-learn__ask">{vt("✦ 자세한 설명")}</button>}
