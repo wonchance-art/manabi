@@ -821,7 +821,8 @@ export default function ViewerPage() {
   const missingLineCount = reanalyze.missingIndices.length;
   const {
     reanalyzePanel, setReanalyzePanel,
-    selectedParas, paragraphs,
+    // setSelectedParas: 「문단 골라 분석」을 열 때 선택을 비운다 — 훅이 돌려주지 않아 버튼이 ReferenceError였다(no-undef 전수, 2026-10-17 KST).
+    selectedParas, setSelectedParas, paragraphs,
     togglePara, requestFullReanalyze, startFullReanalyze, startPartialReanalyze,
   } = useReanalyzeUI({ reanalyze, material, toast, panel:modal('manage')?activeModal.value:null, onPanelChange:value=>changeModal('manage',value) });
 

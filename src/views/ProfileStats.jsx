@@ -28,6 +28,8 @@ import { fetchKnownWords, knownWordsLang } from '../lib/knownWords';
 import { LANG_NAME_KO, detectLang } from '../lib/constants';
 import Button from '../components/Button';
 import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
+// 약점 칸 — import가 빠져 queryFn이 ReferenceError로 늘 실패했다(no-undef 전수, 2026-10-17 KST).
+import { fetchWeaknessRows } from '../lib/weaknessRows';
 import { kstDayStartMs, kstDateString } from '../lib/growthStats';
 import useLearnLanguage from '../components/learn/useLearnLanguage';
 import LangChips from '../components/learn/LangChips';
