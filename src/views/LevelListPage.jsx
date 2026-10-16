@@ -601,8 +601,8 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
     const started = performance.now();
     let frame = 0, settled = started, done = false;
     const card = () => (place.key && listRef.current
-      ? listRef.current.querySelector(`[data-lv-card="${CSS.escape(place.key)}"]`) : null);
-    // 기준 카드가 있으면 그 카드를 남길 때의 높이에, 없으면(문형 · 숨긴 카드) 남긴 세로 위치에.
+      ? listRef.current.querySelector(`[data-lv-card="${CSS.escape(place.key)}"], [data-lv-pat="${CSS.escape(place.key)}"]`) : null);
+    // 기준 카드가 있으면 그 카드를 남길 때의 높이에, 없으면(숨긴 카드 · 찾기로 빠진 카드) 남긴 세로 위치에.
     const apply = () => {
       const node = card();
       const top = node ? window.scrollY + node.getBoundingClientRect().top - place.top : place.y;
@@ -641,9 +641,10 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
     if (hanzi) return undefined;
     const path = window.location.pathname;
     let timer = 0;
-    // 기준 카드 = 붙어 다니는 머리 바로 밑에 걸친 첫 카드(이분 탐색 — 카드는 문서 순서대로 위에서 아래).
+    // 기준 카드 = 붙어 다니는 머리 바로 밑에 걸친 첫 카드(이분 탐색 — 카드는 문서 순서대로 위에서 아래). 문형은 문형 칸(data-lv-pat)이
+    // 기준이다 — 주제 칩으로 건너뛰면 사이 묶음이 어림 높이로 남아, 세로 위치만으로는 다른 문형에 선다.
     const anchor = () => {
-      const cards = listRef.current?.querySelectorAll('[data-lv-card]');
+      const cards = listRef.current?.querySelectorAll('[data-lv-card], [data-lv-pat]');
       if (!cards?.length) return {};
       const edge = barRef.current && vocab ? barRef.current.getBoundingClientRect().bottom : 0;
       let low = 0, high = cards.length - 1;
@@ -651,7 +652,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
         const mid = (low + high) >> 1;
         if (cards[mid].getBoundingClientRect().bottom <= edge) low = mid + 1; else high = mid;
       }
-      return { key: cards[low].dataset.lvCard, top: Math.round(cards[low].getBoundingClientRect().top * 10) / 10 };
+      return { key: cards[low].dataset.lvCard ?? cards[low].dataset.lvPat, top: Math.round(cards[low].getBoundingClientRect().top * 10) / 10 };
     };
     const remember = () => {
       clearTimeout(timer);
@@ -760,7 +761,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
               studying={facetView ? facetMark(facetIdx, e.key, facetView) === 'x' : saved.has(e.key)} saving={saving.has(e.key)}
               pendingKnown={mounted && !!userId && known.isPendingWord(conf.langCode, e.key)}
               onO={() => (facetView ? markFacetO(e) : markO(e))} onX={() => (facetView ? markFacetX(e) : markX(e))} onPrepareX={mounted && userId ? prepareSave : undefined}
-              current={e.key === currentKey} onCardFocus={() => setCursorKey(e.key)} /> : <li key={e.key} className="lv-pat">
+              current={e.key === currentKey} onCardFocus={() => setCursorKey(e.key)} /> : <li key={e.key} className="lv-pat" data-lv-pat={e.key}>
               <div className="lv-pat__head"><span className="lv-hw" lang={lang === 'chinese' ? 'zh-CN' : 'ja'}>{e.pattern}</span>{e.ko && <span className="lv-pat__ko">{e.ko}</span>}</div>
               {e.conn && <p className="lv-formula">{e.conn}</p>}
               {e.note && <p className="lv-note">{e.note}</p>}
