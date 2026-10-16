@@ -135,7 +135,7 @@ function countTiles(lang, conf) {
     return {
       levelKey,
       vocab: vocab ? vocab.groups.reduce((n, g) => n + g.entries.length, 0) : 0,
-      bunkei: bunkeiCountOf[lang](levelKey),
+      ...(levelKinds(lang, levelKey).includes('bunkei') ? { bunkei: bunkeiCountOf[lang](levelKey) } : {}),
       ...(levelKinds(lang, levelKey).includes('hanzi')
         ? { hanzi: (await levelListData(lang, 'hanzi', levelKey))?.groups.reduce((n, g) => n + g.entries.length, 0) || 0 } : {}),
     };

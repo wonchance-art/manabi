@@ -3,30 +3,39 @@
 // 데이터 조립(무거운 콘텐츠 import)은 levelListData.js(서버 전용), 여기는 표기 · 대조 규칙만 둔다.
 import { normalizeKnownWord } from './knownWordControl';
 import { readCompleteLegacyRows } from './legacyReviewSync';
+import { zhHskLevelLabel } from './zhHskLevel';
 
 /** 주소의 언어 조각 → 화면 설정. 일본어 · 중국어만 연다(영어 AJ-2 · 프랑스어 FLELex 결정 전). */
 export const LEVEL_LIST_LANGS = {
   japanese: { language: 'Japanese', langCode: 'ja', name: '일본어', levels: ['N5', 'N4', 'N3', 'N2', 'N1'], source: '출처 open-anki-jlpt-decks' },
-  chinese: { language: 'Chinese', langCode: 'zh', name: '중국어', levels: ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'],
+  chinese: { language: 'Chinese', langCode: 'zh', name: '중국어', levels: ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7'],
     source: '출처 《中文水平考试 HSK 考试大纲》(中外语言交流合作中心, 2025-11 발표 · 2026-07 시행)' },
 };
 export const LEVEL_LIST_KINDS = ['vocab', 'bunkei', 'hanzi'];
 export const LEVEL_KIND_LABEL = { vocab: '단어', bunkei: '문형', hanzi: '한자' };
 /** 「한자」 탭(HANZI-TAB-AL-001)이 있는 레벨 — 표(src/lib/data/zhHanzi)가 있는 중국어 급수만. */
 export const HANZI_TAB_LEVELS = ['H1', 'H2'];
-/** 그 레벨 화면의 탭 — 중국어 HSK 1 · 2만 「한자」가 붙는다. */
+/**
+ * 단어 탭만 있는 레벨 — 중국어 H7 = 7–9 통합 밴드(대강이 7 · 8 · 9를 나누지 않는다 · 오너 2026-10-16 「통째로」).
+ * 2026 대강 7–9 문법 자료가 없어 문형 탭을 열지 않는다.
+ */
+export const VOCAB_ONLY_LEVELS = ['H7'];
+/** 그 레벨 화면의 탭 — 중국어 HSK 1 · 2만 「한자」가 붙고, H7(7–9)은 「단어」 하나. */
 export function levelKinds(lang, levelKey) {
   const key = String(levelKey || '').toUpperCase();
+  if (lang === 'chinese' && VOCAB_ONLY_LEVELS.includes(key)) return ['vocab'];
   return lang === 'chinese' && HANZI_TAB_LEVELS.includes(key) ? LEVEL_LIST_KINDS : ['vocab', 'bunkei'];
 }
 
-/** 화면 이름 — 일 「N5」, 중 「HSK 1」. 레벨 알약은 일 「N5」, 중 「1」. */
+/** 화면 이름 — 일 「N5」, 중 「HSK 1」(H7은 정본 zhHskLevelLabel의 7–9 라벨). 레벨 알약은 일 「N5」, 중 「1」 · 「7–9」. */
 export function levelLabel(levelKey) {
   const key = String(levelKey || '').toUpperCase();
+  if (key === 'H7') return zhHskLevelLabel(7);
   return /^H[1-6]$/.test(key) ? `HSK ${key.slice(1)}` : key;
 }
 export function levelPill(levelKey) {
   const key = String(levelKey || '').toUpperCase();
+  if (key === 'H7') return zhHskLevelLabel(7).replace(/^HSK /, '');
   return /^H[1-6]$/.test(key) ? key.slice(1) : key;
 }
 export const levelListHref = (lang, kind, levelKey) => `/${lang}/${kind}/${String(levelKey).toLowerCase()}`;
