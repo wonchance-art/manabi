@@ -12,7 +12,12 @@
   "level": "B2 상급",
   "display": {
     "titleKo": "크리스마스 캐럴",
-    "authorKo": "찰스 디킨스"
+    "authorKo": "찰스 디킨스",
+    "coverTitle": "A Christmas\nCarol",
+    "cloth": "cinnamon",
+    "border": "blind",
+    "stamping": "gilt",
+    "motif": "holly-candle"
   },
   "files": [
     {

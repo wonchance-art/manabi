@@ -224,7 +224,24 @@ group by 1 order by 1;
 | 중국어 | 唐诗三百首(구텐베르크 중국어 1위) · 鲁迅 「孔乙己」·「故乡」·「社戏」(정치 서술 없는 단편만 — 「阿Q正传」·「狂人日记」 제외) · 「从百草园到三味书屋」 | 朱自清 背影 · 西游记(몇 회만) · 红楼梦 — 三国演义는 정치·전쟁 서사라 하드리밋 ⑷로 제외 |
 | 프랑스어 | La Dernière Classe(Daudet) · La Parure(Maupassant) · Le Tour du monde en quatre-vingts jours(Verne) | Arsène Lupin(Leblanc 1941) · Fables(La Fontaine) · Le Fantôme de l’Opéra · Les Misérables(일부) — 「어린 왕자」는 프랑스 전쟁 연장으로 2032년까지 보호라 제외 |
 
-### 8.4 이식 비용 (재사용 vs 신규)
+### 8.4 영어 표지 — 「빅토리아 천 장정」 (오너 「현실 고증은 B?」 → 「그럼 B로」 2026-10-16 KST)
+
+시안 A(시리즈 A 틀 + 가로 題簽)와 B(빅토리아 천 장정)를 비교한 뒤 **B**로 정했다 — 1860–90년대 영국 출판사 천 장정은 천 위 금박이
+표준이고(종이 제목 라벨은 그보다 앞 시대 관례), 세 작품 초판이 모두 그렇다. 천 색·찍는 방식·테두리는 초판 기록을 따르고,
+초판의 특정 그림은 옮기지 않는다(IP §2.1 금지⑴). 구현: `src/lib/victorianCover.js`(키·고증 값) · `src/components/books/VictorianCover.jsx`.
+
+| 작품 | 초판 장정 기록 | 이 표지 | 근거 |
+|---|---|---|---|
+| Alice’s Adventures in Wonderland | Macmillan 1865/66 — 붉은 천, 금박, 금박 삼중 줄 테두리, 앞뒤 금박 그림(앨리스와 돼지·체셔 고양이) | 붉은 천 · 금박 삼중 줄 · 금박 회중시계·열쇠·하트(그림은 새로) | Bauman Rare Books, UMD 「Alice 150」 전시 |
+| The Adventures of Sherlock Holmes | George Newnes 1892 — 연한 파란 천, 금박과 먹, 경사진 판, 거리 표지판 그림 | 연한 파란 천 · 먹 판 위 금박 제목 · 먹 테두리 · 금박 돋보기 + 먹 안개 | Bauman Rare Books, Morgan Library |
+| A Christmas Carol | Chapman & Hall 1843 — 계피색 골 진 천, 민압 테두리, 금박 화환 | 계피색 골 천(세로 결) · 민압 이중 줄 · 금박 호랑가시 고리 안 촛불 | Bauman Rare Books, Bonhams |
+
+- 앞표지에는 제목만 — 빅토리아 천 장정은 작가를 보통 책등에 찍었고, 60px 표지에서 작가 글자는 읽히지 않는다.
+- 천 색은 일본 책(시리즈 A) 천 색과도 CIELAB 색차 12 이상, 금박(#ecc96c)과 바탕 대비 3:1 이상(`victorianCover.test.js`).
+- 제목 글꼴은 Libre Caslon Display(18–19세기 영국 Caslon 계열, OFL) — 배포 빌드용 사본 `vendor/google-fonts`.
+- 중·불 원작을 넣을 때는 그 나라·시대의 책 모양을 같은 방식(초판 기록 → 관례만 빌림)으로 따로 정한다.
+
+### 8.5 이식 비용 (재사용 vs 신규)
 
 - **그대로 쓰는 것**: 게시 흐름 전체(준비·분석·검수·묶음 검수·공개, provider 분기 — 그림 책 ART-P0-3이 이미 두 번째 provider),
   표지 시리즈 A(새 색·문양만), 경계 미리 묶기 틀(literature-boundaries — 토크나이저만 언어별), 분석기(영·중·불 경로가 이미 있다).

@@ -15,6 +15,17 @@ export function standardEbooksChapter(metadata, works = manifest.works) {
   return work && chapter ? { work, chapter } : null;
 }
 
+/** 책 key → 대조표의 작품(표지·카드 표기). 없으면 null. */
+export function standardEbooksWork(key, works = manifest.works) {
+  return typeof key === 'string' && Object.hasOwn(works, key) ? works[key] : null;
+}
+
+/** 책 묶음(groupByBook) → 작품 — 첫 장이 Standard Ebooks 정본 자료이고 key가 대조표에 있을 때만(아니면 일반 책 카드 그대로). */
+export function standardEbooksWorkOfBook(book, works = manifest.works) {
+  const metadata = book?.chapters?.[0]?.processed_json?.metadata;
+  return metadata?.literature?.provider === SE_PROVIDER ? standardEbooksWork(book.key, works) : null;
+}
+
 /** 출처 줄 크레딧 — 원문이 정본 장과 같을 때만 대조표의 literature. 아니면 null. */
 export async function verifiedStandardEbooksLiterature(material, works = manifest.works) {
   const found = standardEbooksChapter(material?.processed_json?.metadata, works);

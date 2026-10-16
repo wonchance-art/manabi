@@ -32,6 +32,8 @@ import { CardGridSkeleton } from '../components/Skeleton';
 import MaterialGroupCard from '../components/MaterialGroupCard';
 import LiteratureCover from '../components/books/LiteratureCover';
 import { literatureWorkOfBook } from '../lib/literatureCanonical';
+import VictorianCover from '../components/books/VictorianCover';
+import { standardEbooksWorkOfBook } from '../lib/standardEbooksCanonical';
 import { literatureChapterLabel, literatureDivisionLabel } from '../lib/literatureDisplay';
 import SuggestionArtwork from '../components/SuggestionArtwork';
 import { failureMessage } from '@/lib/errorMessage';
@@ -703,6 +705,16 @@ export default function MaterialsPage({ libraryView = null }) {
                 meta: [work.level, work.chars && `${work.chars.toLocaleString()}자`, literatureDivisionLabel(work), `읽음 ${readDone}/${b.chapters.length}`].filter(Boolean).join(' · ') + pendingNote,
                 fitLine: fitLineOf(bf, '장'),
               } : null;
+              // 영어 정본(LIT-SRC-EN-1, Standard Ebooks) — 빅토리아 천 장정 표지 + 원제(영어)·한국어 제목 + 장 제목(판의 장 이름).
+              const english = work ? null : standardEbooksWorkOfBook(b);
+              const englishChapterOf = (c) => english?.chapters.find((item) => item.order === c._bookOrder);
+              const englishProps = english ? {
+                art: <VictorianCover work={english} />,
+                title: <span lang="en">{english.title}</span>,
+                subtitle: [english.display?.titleKo, english.display?.authorKo, english.literature?.publishedYear && `${english.literature.publishedYear}년 발표`].filter(Boolean).join(' · '),
+                meta: [english.level, english.words && `${english.words.toLocaleString()}단어`, `${english.total}장`, `읽음 ${readDone}/${b.chapters.length}`].filter(Boolean).join(' · ') + pendingNote,
+                fitLine: fitLineOf(bf, '장'),
+              } : null;
               return (
                 <MaterialGroupCard
                   key={b.key}
@@ -712,16 +724,18 @@ export default function MaterialsPage({ libraryView = null }) {
                   meta={`챕터 ${b.chapters.length} · 읽음 ${readDone}/${b.chapters.length}${pendingNote}`}
                   fitLine={fitLineOf(bf, '과')}
                   {...literatureProps}
+                  {...englishProps}
                   rows={b.chapters.map((c) => ({
                     key: c.id,
                     onClick: () => openReader(`/viewer/${c.id}`),
                     lead: work ? literatureLead(c._bookOrder) : c._bookOrder,
                     title: work ? <span lang="ja">{chapterOf(c)?.incipit || c.title}</span>
+                      : english ? <span lang="en">{englishChapterOf(c)?.title || c.title}</span>
                       : c.title.includes(' — ') ? c.title.split(' — ').slice(1).join(' — ') : c.title,
                     right: chapterTags(c),
                   }))}
                   // 이어 적기(#1077 5520128974) — 내 책에만 「다음 과 적기」(PDF 카드 「이어 읽기」와 같은 자리)
-                  footer={!work && b.chapters[0]?.owner_id === user?.id ? (
+                  footer={!work && !english && b.chapters[0]?.owner_id === user?.id ? (
                     <Link href={`/materials/add?book=${encodeURIComponent(b.key)}`} className="btn btn--secondary btn--sm">+ 다음 과 적기</Link>
                   ) : null}
                 />

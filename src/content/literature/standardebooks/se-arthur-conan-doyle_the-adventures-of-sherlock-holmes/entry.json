@@ -12,7 +12,12 @@
   "level": "B2 상급",
   "display": {
     "titleKo": "셜록 홈즈의 모험",
-    "authorKo": "아서 코넌 도일"
+    "authorKo": "아서 코넌 도일",
+    "coverTitle": "Sherlock\nHolmes",
+    "cloth": "pale-blue",
+    "border": "black",
+    "stamping": "gilt-black",
+    "motif": "magnifier"
   },
   "files": [
     {

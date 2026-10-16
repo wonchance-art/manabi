@@ -6,9 +6,15 @@
       "author": "Arthur Conan Doyle",
       "level": "B2 상급",
       "total": 47,
+      "words": 104582,
       "display": {
         "titleKo": "셜록 홈즈의 모험",
-        "authorKo": "아서 코넌 도일"
+        "authorKo": "아서 코넌 도일",
+        "coverTitle": "Sherlock\nHolmes",
+        "cloth": "pale-blue",
+        "border": "black",
+        "stamping": "gilt-black",
+        "motif": "magnifier"
       },
       "literature": {
         "schemaVersion": 1,
@@ -285,9 +291,15 @@
       "author": "Charles Dickens",
       "level": "B2 상급",
       "total": 13,
+      "words": 28442,
       "display": {
         "titleKo": "크리스마스 캐럴",
-        "authorKo": "찰스 디킨스"
+        "authorKo": "찰스 디킨스",
+        "coverTitle": "A Christmas\nCarol",
+        "cloth": "cinnamon",
+        "border": "blind",
+        "stamping": "gilt",
+        "motif": "holly-candle"
       },
       "literature": {
         "schemaVersion": 1,
@@ -394,9 +406,15 @@
       "author": "Lewis Carroll",
       "level": "B1 중급",
       "total": 12,
+      "words": 26325,
       "display": {
         "titleKo": "이상한 나라의 앨리스",
-        "authorKo": "루이스 캐럴"
+        "authorKo": "루이스 캐럴",
+        "coverTitle": "Alice in\nWonderland",
+        "cloth": "madder-red",
+        "border": "triple-gilt",
+        "stamping": "gilt",
+        "motif": "pocket-watch"
       },
       "literature": {
         "schemaVersion": 1,

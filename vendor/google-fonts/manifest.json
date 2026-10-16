@@ -3,6 +3,7 @@
   "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36",
   "responses": {
     "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap": "inter-wght-400-500-600-700-swap.css",
+    "https://fonts.googleapis.com/css2?family=Libre+Caslon+Display:wght@400&display=swap": "libre-caslon-display-wght-400-swap.css",
     "https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap": "manrope-wght-200-800-swap.css",
     "https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap": "noto-sans-wght-400-500-700-swap.css",
     "https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap": "noto-sans-jp-wght-400-500-700-swap.css",
@@ -23,6 +24,8 @@
     "inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7W0Q5n-wU.woff2": "fccca918fea40089dacadc7045861314d1a6bc91f1f323cc1eeb22ebcdb321b5",
     "inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2pL7W0Q5n-wU.woff2": "8db00ff46c67b22cda8bed865acf7077651cac8d2841d5b40980556b48961931",
     "inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2ZL7W0Q5n-wU.woff2": "a2e2c783ca6f9c20486e81e72a279203e86730bbf8f01ff6a5ee9dbd09e1c271",
+    "librecaslondisplay/v18/TuGOUUFxWphYQ6YI6q9Xp61FQzxDRKmzr1lWfxlPCz4c.woff2": "d7157ad1851673258b7bf8b9d16654e90ca5f2d687aa0c71506d83266e0a20a2",
+    "librecaslondisplay/v18/TuGOUUFxWphYQ6YI6q9Xp61FQzxDRKmzr1lYfxlPCz4c3AU.woff2": "d08b4179b02dbe412f177c75ae8852d443c4e2445d519d54ae2c80a02f57ba46",
     "manrope/v20/xn7gYHE41ni1AdIRggexSvfedN4.woff2": "e310b55a7fd9677f5e3555e6c6c4d064fa1f1d24393f0ddbe217cea12a8c432f",
     "manrope/v20/xn7gYHE41ni1AdIRggixSvfedN62Zw.woff2": "bab757f8a0a1bc04055ee98cb5777f3254aab11f6d222366e1f40a36f390506a",
     "manrope/v20/xn7gYHE41ni1AdIRggmxSvfedN62Zw.woff2": "ce093b341d9c10658ee1eaa85c5f8042ff3307bc6ccfc5f405616eb437f0009e",

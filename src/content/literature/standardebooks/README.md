@@ -37,4 +37,10 @@ node scripts/build-literature.mjs && npm test
 | The Adventures of Sherlock Holmes | Arthur Conan Doyle(1930) | 1892 | B2 상급 | 47 | `48ec456e` |
 | A Christmas Carol | Charles Dickens(1870) | 1843 | B2 상급 | 13 | `dd1fb9f8` |
 
-게시는 青空文庫와 같은 관리자 → 📚 정본 문학책 표에서(준비 → 분석 → 검수 → 공개). 표지는 영어 표지 시리즈를 목업으로 합의한 뒤에 붙인다.
+게시는 青空文庫와 같은 관리자 → 📚 정본 문학책 표에서(준비 → 분석 → 검수 → 공개).
+
+## 표지 — 「빅토리아 천 장정」(오너 「그럼 B로」 2026-10-16 KST)
+
+entry.json `display`에 `coverTitle`(서재용 짧은 제목, 한두 줄) · `cloth` · `border` · `stamping` · `motif`를 적는다(키는 `src/lib/victorianCover.js`,
+빌드가 검사한다). 값은 그 작품 초판 장정 기록을 따른다 — 근거·표는 `docs/literature-pipeline.md` §8.4. 새 작품은 천 색을 새로 정하고
+(기존 천과 색차 12 이상), 문양은 작품 속 물건에서 새로 그린다(초판 그림·사람 몸 없음).

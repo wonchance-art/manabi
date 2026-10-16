@@ -24,17 +24,18 @@ export function serializeStandardEbooksIndex(keys) {
   return `${lines.join('\n')}\n`;
 }
 
-/** 뷰어 대조표 — 작품 key → 크레딧(책 단위 literature) + 표기(display) + 장마다 제목·원문 SHA-256. */
+/** 뷰어 대조표 — 작품 key → 크레딧(책 단위 literature) + 표기(display — 표지·한국어 제목) + 단어 수 + 장마다 제목·원문 SHA-256. */
 export function createStandardEbooksManifest(entries) {
   const works = {};
-  for (const { draft, entry } of entries) {
+  for (const { draft, display, words } of entries) {
     const { sourceFile: _file, ...literature } = draft.chapters[0].metadata.literature;
     works[draft.book.key] = {
       title: draft.book.title,
       author: draft.book.author,
       level: draft.book.level,
       total: draft.book.total,
-      display: entry.display ?? null,
+      words,
+      display,
       literature,
       chapters: draft.chapters.map((chapter) => ({ order: chapter.order, title: chapter.title, sha256: sha256(chapter.rawText) })),
     };
@@ -47,7 +48,8 @@ export function createStandardEbooksManifest(entries) {
  * @returns {Promise<{works: Array<{key, chapters, status}>, errors: string[]}>}
  */
 export async function buildStandardEbooks({ root = STANDARD_EBOOKS_ROOT, check = false } = {}) {
-  const { createStandardEbooksDraft, standardEbooksBookKey } = await import('../../src/lib/standardEbooks.js');
+  const { createStandardEbooksDraft, standardEbooksBookKey, wordCount } = await import('../../src/lib/standardEbooks.js');
+  const { validateVictorianDisplay } = await import('../../src/lib/victorianCover.js');
   const works = [];
   const errors = [];
   if (!existsSync(root)) return { works, errors };
@@ -68,6 +70,7 @@ export async function buildStandardEbooks({ root = STANDARD_EBOOKS_ROOT, check =
       if (extra.length) throw new Error(`source/에 entry.files에 없는 파일이 있다: ${extra.join(', ')}`);
       if (entry.rights?.status !== 'approved') throw new Error('권리 기록이 approved가 아니다(not publishable)');
       const draft = createStandardEbooksDraft(entry, files);
+      const display = validateVictorianDisplay(entry.display); // 표지 표기(빅토리아 천 장정 — 없거나 틀리면 그 작품은 쓰지 않는다)
       const output = serialize(draft);
       const target = path.join(base, STANDARD_EBOOKS_FILES.chapters);
       const current = existsSync(target) ? readFileSync(target, 'utf8') : null;
@@ -80,7 +83,7 @@ export async function buildStandardEbooks({ root = STANDARD_EBOOKS_ROOT, check =
         writeFileSync(target, output);
         works.push({ key, chapters: draft.chapters.length, status: 'written' });
       }
-      built.push({ draft, entry });
+      built.push({ draft, display, words: draft.chapters.reduce((sum, chapter) => sum + wordCount(chapter.rawText), 0) });
     } catch (error) {
       errors.push(`${dir}: ${error.message}`);
     }
