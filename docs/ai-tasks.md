@@ -934,6 +934,8 @@
     실행권 회수(service_role만) · 관리자 지표 anon 회수 · search_path 고정. 학습 계약 지문 4개 적용 전후 동치. 악용 흔적 없음(음수 XP 0 · 좋아요 0).
   · PROFILES-PRIVACY-001 ①(운영 view 20261016165910 + 앱 embed 3곳): 남의 프로필은 public_profiles(id · display_name · avatar_url).
     ②(전원 공개 정책 제거 · UPDATE 열 제한 · activity 지문 재고정)는 이 PR 배포 뒤. 관리자 역할 변경 버튼 무음 실패(RLS + 'user' CHECK 위반) — admin_set_user_role RPC 초안.
+  · 같은 PR(STUDY-RELIABLE-001): /study 문법 재스케줄이 오프라인 · 저장 실패 때 보류함에 남아 다시 보냄 · 문항 전환 효과 · 진행 막대 progressbar 접근성 ·
+    세션 도중 로그아웃 · 계정 바뀜이면 기록을 멈추고 「로그인이 필요해요」 안내(유실 문항만 한 줄).
   · 보류: CJK 가변 weight(@font-face −67%, brotli 전송 −2%) — 600 · 650 · 800 · 300 굵기가 실제 값으로 바뀌는 시각 변경이라 오너 확인 뒤.
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
