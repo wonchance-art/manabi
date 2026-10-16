@@ -83,13 +83,20 @@ Clear, visible gaps between neighbouring letters.
 ## 2단계 — 고른 안을 이어받기 (고른 이미지를 첨부한 채, 같은 대화에서)
 
 ### 정리판 (필수) → 파일 끝 글자 `c`
-```
-Redraw the attached wordmark exactly: keep every letterform, proportion and stroke shape the same.
-Only clean it: perfectly smooth edges, uniform solid black fill, remove any texture or noise, pure white background,
-same centered layout with wide margins, maximum resolution.
-```
+컨셉 탐색(CONCEPT.md ②)의 칸에는 TONARI와 となり가 함께 들어 있다. 정리판은 **TONARI만 떼어** 받는다.
+- TONARI 단독은 국제판·다른 나라 시리즈·작은 크기(아바타·파비콘)에 쓴다.
+- となり는 칸 안에서 작게 그려져 세부가 부족하다. 정리판으로 키우지 말고 아래 「패밀리 확장」으로 크게 새로 받는다.
+- 둘을 함께 놓은 조합판은 Claude가 두 정리판으로 정밀하게 다시 짠다. 크기 비율과 간격은 원래 칸 이미지를 기준으로 삼는다.
 
-### 패밀리 확장 — となり → `hira-…`
+```
+From the attached image, take only the large word "TONARI" and redraw it alone, without the smaller hiragana line.
+Keep every letterform, proportion and stroke shape exactly the same.
+Only clean it: perfectly smooth edges, uniform solid black fill, remove any texture or noise, pure white background,
+centered with wide margins, maximum resolution.
+```
+TONARI만 들어 있는 이미지라면 첫 줄 대신 `Redraw the attached wordmark exactly.`로 시작한다.
+
+### 패밀리 확장 — となり → `hira-…` (TONARI 정리판을 첨부하고 넣는다)
 ```
 Using exactly the same lettering style as the attached image — same stroke weight, contrast, stroke endings, proportions and spirit — write the Japanese word "となり" written in hiragana, exactly three characters in this order: と (to), な (na), り (ri). Each character keeps its standard stroke structure: と has two strokes, な has four strokes, り has two strokes. No extra or missing strokes, no kanji, no katakana. Keep the same height and the same spacing rhythm.
 
