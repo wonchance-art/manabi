@@ -30,6 +30,7 @@ import { useViewerLanguage } from '../lib/useViewerLanguage';
 import { VIEWER_LANGUAGES, viewerLanguageInfo } from '../lib/viewerLanguage';
 import './material-import.css';
 import { isCanonicalBookKey } from '../lib/canonicalBookKey';
+import { reducedMotion } from '../lib/reducedMotion';
 
 /** 입구 칩(자료 추가 정돈 R2) — 소스 순서 = 렌더 순서(PDF→EPUB→문장 목록→링크), 아래 렌더와 같은 차례. */
 const ENTRIES = [
@@ -125,7 +126,7 @@ function MaterialAddForm() {
     // 스크롤 텍스트 영역으로
     setTimeout(() => {
       const el = document.querySelector('.form-textarea');
-      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
     }, 200);
   };
 
@@ -307,7 +308,7 @@ function MaterialAddForm() {
     setRawText(linkText);
     setVisibility('private');
     setTimeout(() => {
-      document.querySelector('.form-textarea')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.querySelector('.form-textarea')?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
     }, 200);
   };
 
@@ -323,7 +324,7 @@ function MaterialAddForm() {
     setVisibility('private');
     toast('가져왔어요. 아래에서 확인 후 분석을 시작하세요.', 'success');
     setTimeout(() => {
-      document.querySelector('.form-textarea')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.querySelector('.form-textarea')?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
     }, 200);
   };
 
@@ -690,7 +691,7 @@ function MaterialAddForm() {
                   setSentenceSeed(rawText);
                   setRawText('');
                   setTimeout(() => {
-                    document.getElementById('sentence-text')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    document.getElementById('sentence-text')?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
                   }, 100);
                 }}
               >

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { JaText } from './refShared';
 import { buildReadingEvents, accumulateAnswer } from '../lib/readingProgress';
 import { seededShuffle } from '../lib/seededShuffle';
+import { reducedMotion } from '../lib/reducedMotion';
 
 /**
  * 독해 글 뷰어 + 문항 흐름 (신규 컴포넌트).
@@ -718,7 +719,7 @@ export default function ReadingTextView({ text, onPass, onBack, saving = false }
           <QuestionFlow
             questions={questions}
             textId={text.id}
-            onScrollToEvidence={() => bodyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            onScrollToEvidence={() => bodyRef.current?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' })}
             onPass={onPass}
             passLabel="통과"
           />

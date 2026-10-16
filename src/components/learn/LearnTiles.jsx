@@ -10,6 +10,7 @@ import { isVocabularyReviewAvailable, isVocabularyReviewDue } from '@/lib/vocabu
 import { streakView, todayGoalPct } from '@/lib/learnDashboard';
 import { wordScopeLanguage } from '@/lib/reviewScope';
 import { encounterLookupLang } from '@/lib/refVocabLookup';
+import { reducedMotion } from '@/lib/reducedMotion';
 
 export function StatTile({ value, label, href, title, ariaLabel, className = '' }) {
   const body = <><span className="learn-stat__value">{value}</span><span className="learn-stat__label">{label}</span></>;
@@ -52,7 +53,8 @@ export function ReviewTile({ projections = [], lang, count = null, href, classNa
   const [idx, setIdx] = useState(0);
   useEffect(() => {
     setIdx(0);
-    if (pool.length < 2) return undefined;
+    // 동작 줄이기: 3.5초 자동 순환을 멈추고 첫 단어(가장 급한 복습)를 고정한다(MOTION-R2).
+    if (pool.length < 2 || reducedMotion()) return undefined;
     const t = setInterval(() => setIdx(i => (i + 1) % pool.length), 3500);
     return () => clearInterval(t);
   }, [pool]);

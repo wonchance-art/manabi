@@ -7,6 +7,7 @@
 //   위치로 끌려가면 가장 가까운 쪽(포커스가 있으면 그 쪽)으로 맞춘다.
 // 순수 계산(아래 export 함수)과 제어기(createPagedController)는 DOM 흉내 객체로 단독 테스트한다.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { reducedMotion } from './reducedMotion';
 
 export const PAGED_ATTR = 'data-reader-pages';
 const registry = new WeakMap();
@@ -367,7 +368,6 @@ export function revealInReader(target, scrollOptions = { block: 'center' }, reve
   return !!target;
 }
 
-const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 /**

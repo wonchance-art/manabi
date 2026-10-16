@@ -20,6 +20,7 @@ import { bcp47ForLanguage } from '../../lib/speechLang';
 import { langNameKo } from '../../lib/constants';
 import OutputWordChips from '../OutputWordChips';
 import './conversation.css';
+import { reducedMotion } from '../../lib/reducedMotion';
 
 /** 요청이 아직 이 화면(같은 자료·마지막 요청)의 것인가 — 옛 회화 패널 계약 그대로(자료를 바꾸면 늦은 응답을 버린다). */
 export function isConversationRequestCurrent(requestRef, requestId, materialRef, materialId) {
@@ -106,7 +107,7 @@ export default function ConversationThread({
 
   const turnCount = conversation.turnCount || 0;
   useEffect(() => {
-    endRef.current?.scrollIntoView?.({ block: 'end', behavior: 'smooth' });
+    endRef.current?.scrollIntoView?.({ block: 'end', behavior: reducedMotion() ? 'auto' : 'smooth' });
   }, [turnCount, loading]);
 
   async function send({ action = null, retryText = null } = {}) {
