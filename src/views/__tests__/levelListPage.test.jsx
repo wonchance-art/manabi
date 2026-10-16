@@ -79,7 +79,9 @@ describe('단어 목록', () => {
     expect(new Set(hrefs.filter((h) => /^\/chinese\/vocab\/h[1-6]$/.test(h))).size).toBe(6); // 알약 6 + 「단어」 탭
     expect(hrefs).toContain('/chinese/bunkei/h2');
     expect(hrefs.filter((h) => /grammar|legacy/.test(h))).toEqual([]);
-    expect(html).toMatch(/<a aria-current="page" aria-label="HSK 2" href="\/chinese\/vocab\/h2">2<\/a>|<a href="\/chinese\/vocab\/h2" aria-current="page" aria-label="HSK 2">2<\/a>/);
+    // 알약 · 탭 안의 이동 대기 표시(NavPendingMark — APP-FEEL-003)는 화면 읽기에 숨긴 빈 span이다.
+    const PEND = '<span class="nav-pending" aria-hidden="true"></span>';
+    expect(html).toMatch(new RegExp(`<a aria-current="page" aria-label="HSK 2" href="/chinese/vocab/h2">2${PEND}</a>|<a href="/chinese/vocab/h2" aria-current="page" aria-label="HSK 2">2${PEND}</a>`));
   });
 });
 
@@ -255,7 +257,7 @@ describe('한자 목록(HANZI-TAB-AL-001)', () => {
     const html = renderToStaticMarkup(<LevelListPage {...data} />);
     expect(html).toContain('<h1>HSK 1 한자</h1>');
     const tabs = [...html.matchAll(/<nav class="lv-tabs"[^>]*>(.*?)<\/nav>/g)][0][1];
-    expect([...tabs.matchAll(/>([^<]+)<\/a>/g)].map((m) => m[1])).toEqual(['단어', '문형', '한자']);
+    expect([...tabs.matchAll(/>([^<]+)<span class="nav-pending" aria-hidden="true"><\/span><\/a>/g)].map((m) => m[1])).toEqual(['단어', '문형', '한자']);
     expect(html).not.toMatch(TONE);
     const table = (await import('../../lib/data/zhHanzi/H1.json')).default;
     const glosses = Object.values(table.chars).flatMap((c) => c.rd.flatMap((r) => r.s.map((x) => x.g)));

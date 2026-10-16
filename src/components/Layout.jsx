@@ -13,6 +13,8 @@ import './web/focused-reader.css';
 import { librarySearchHref } from '@/lib/libraryReturn';
 import { authEntryHref } from '@/lib/authRedirect';
 import VersionBadge from './VersionBadge';
+import NavPendingMark from './NavPendingMark';
+import { focusMainIfLost } from '@/lib/routeFocus';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
 import ActionIcon from './ActionIcon';
@@ -43,7 +45,7 @@ function ReaderSiteMenu({ isAdmin }) {
     <summary aria-label="메뉴" title="메뉴" data-icon-action><ActionIcon name="menu"/></summary>
     <nav aria-label="읽기 화면 내비게이션" onClick={e => { if (e.target.closest('a')) ref.current.open = false; }}>
       {/* 집중 읽기에서는 기본 메뉴가 숨으므로 이 메뉴가 지금 위치를 알려야 한다(뷰어 = 서재 — M09 6155101880) */}
-      {MAIN_NAV.map(item => <Link key={item.href} href={item.href} prefetch={item.prefetch} aria-current={navigationOwner(pathname) === item.href ? 'page' : undefined}>{item.label}</Link>)}
+      {MAIN_NAV.map(item => <Link key={item.href} href={item.href} prefetch={item.prefetch} aria-current={navigationOwner(pathname) === item.href ? 'page' : undefined}>{item.label}<NavPendingMark /></Link>)}
       {isAdmin && <Link href="/class" prefetch={false}>수업</Link>}
       {isAdmin && <Link href="/admin" prefetch={false}>관리</Link>}
     </nav>
@@ -57,6 +59,17 @@ export default function Layout({ children }) {
   const focusedReading = isFocusedReadingRoute(pathname);
   const isNavActive = href => navigationOwner(pathname) === href;
   const { theme, toggleTheme } = useTheme();
+
+  // 화면이 바뀐 뒤 포커스가 body로 떨어졌으면(누른 카드 · 탭이 사라졌다) 본문으로 옮긴다(APP-FEEL-003, 2026-10-17 KST).
+  // 운영 실측: 배움 → 교재 카드 · 단어 목록 → 문형 탭 · 뷰어 「다음 편」 뒤 activeElement = body — 키보드 · 화면 읽기가 처음부터 다시 찾았다.
+  // 다른 곳에 포커스가 살아 있으면(GNB 탭을 눌렀다 등) 빼앗지 않는다. 첫 마운트 · 해시만 바뀐 이동(pathname 같음)은 건너뛴다.
+  const lastPathname = useRef(null);
+  useEffect(() => {
+    if (lastPathname.current === null || lastPathname.current === pathname) { lastPathname.current = pathname; return undefined; }
+    lastPathname.current = pathname;
+    const frame = requestAnimationFrame(() => focusMainIfLost(document));
+    return () => cancelAnimationFrame(frame);
+  }, [pathname]);
   const [isOffline, setIsOffline] = useState(false);
   const [resendingConfirm, setResendingConfirm] = useState(false);
   const toast = useToast();
@@ -179,6 +192,7 @@ export default function Layout({ children }) {
               aria-current={isNavActive(l.href) ? 'page' : undefined}
             >
               {l.label}
+              <NavPendingMark />
             </Link>
           ))}
         </nav>
@@ -296,6 +310,7 @@ export default function Layout({ children }) {
           >
             <ActionIcon name={l.icon}/>
             <span>{l.label}</span>
+            <NavPendingMark />
           </Link>
         ))}
       </nav>

@@ -34,6 +34,7 @@ import { pinyinToneNumber } from '@/lib/pinyinTone';
 import { ZH_SCOPE_LEVELS, serializeReviewScope } from '@/lib/reviewScopeUrl';
 import { levelCardLabel, levelListKeyAction, levelListMove, levelListNearest } from '@/lib/levelListKeys';
 import { reducedMotion } from '@/lib/reducedMotion';
+import NavPendingMark from '@/components/NavPendingMark';
 // 한자판은 HSK 1 · 2 「한자」 탭에서만 쓴다 — 단어 · 문형 목록 번들에 싣지 않는다.
 const HanziBoard = dynamic(() => import('@/components/levels/HanziBoard'), {
   loading: () => <p className="lv-empty" role="status">한자판 불러오는 중…</p>,
@@ -601,10 +602,10 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
         <p className="lv-crumb"><Link href={`/lessons?lang=${conf.language}`}>← 교재</Link></p>
         <nav className="lv-pills" aria-label="레벨">
           {conf.levels.map((key) => <Link key={key} href={levelListHref(lang, levelKinds(lang, key).includes(kind) ? kind : 'vocab', key)} aria-current={key === levelKey ? 'page' : undefined}
-            aria-label={levelLabel(key)}>{levelPill(key)}</Link>)}
+            aria-label={levelLabel(key)}>{levelPill(key)}<NavPendingMark /></Link>)}
         </nav>
         <nav className="lv-tabs" aria-label="목록 종류">
-          {levelKinds(lang, levelKey).map((k) => <Link key={k} href={levelListHref(lang, k, levelKey)} aria-current={k === kind ? 'page' : undefined}>{LEVEL_KIND_LABEL[k]}</Link>)}
+          {levelKinds(lang, levelKey).map((k) => <Link key={k} href={levelListHref(lang, k, levelKey)} aria-current={k === kind ? 'page' : undefined}>{LEVEL_KIND_LABEL[k]}<NavPendingMark /></Link>)}
         </nav>
       </div>
       {vocab && (searchOpen || query) && <div className="lv-tools" id="lv-find">
