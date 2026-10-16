@@ -13,11 +13,11 @@
   "display": {
     "titleKo": "셜록 홈즈의 모험",
     "authorKo": "아서 코넌 도일",
+    "coverKicker": "The Adventures of",
     "coverTitle": "Sherlock\nHolmes",
+    "coverAuthor": "A. Conan Doyle",
     "cloth": "pale-blue",
-    "border": "black",
-    "stamping": "gilt-black",
-    "motif": "magnifier"
+    "binding": "pictorial"
   },
   "files": [
     {

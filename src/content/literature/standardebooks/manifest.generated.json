@@ -11,10 +11,10 @@
         "titleKo": "셜록 홈즈의 모험",
         "authorKo": "아서 코넌 도일",
         "coverTitle": "Sherlock\nHolmes",
+        "coverKicker": "The Adventures of",
+        "coverAuthor": "A. Conan Doyle",
         "cloth": "pale-blue",
-        "border": "black",
-        "stamping": "gilt-black",
-        "motif": "magnifier"
+        "binding": "pictorial"
       },
       "literature": {
         "schemaVersion": 1,
@@ -295,11 +295,11 @@
       "display": {
         "titleKo": "크리스마스 캐럴",
         "authorKo": "찰스 디킨스",
-        "coverTitle": "A Christmas\nCarol",
+        "coverTitle": "Christmas\nCarol",
+        "coverKicker": "A",
+        "coverAuthor": "Charles Dickens",
         "cloth": "cinnamon",
-        "border": "blind",
-        "stamping": "gilt",
-        "motif": "holly-candle"
+        "binding": "wreath"
       },
       "literature": {
         "schemaVersion": 1,
@@ -412,9 +412,7 @@
         "authorKo": "루이스 캐럴",
         "coverTitle": "Alice in\nWonderland",
         "cloth": "madder-red",
-        "border": "triple-gilt",
-        "stamping": "gilt",
-        "motif": "pocket-watch"
+        "binding": "medallion"
       },
       "literature": {
         "schemaVersion": 1,

@@ -39,8 +39,9 @@ node scripts/build-literature.mjs && npm test
 
 게시는 青空文庫와 같은 관리자 → 📚 정본 문학책 표에서(준비 → 분석 → 검수 → 공개).
 
-## 표지 — 「빅토리아 천 장정」(오너 「그럼 B로」 2026-10-16 KST)
+## 표지 — 「빅토리아 천 장정」(오너 「그럼 B로」 → 「실물에 가깝게」 2026-10-16 KST)
 
-entry.json `display`에 `coverTitle`(서재용 짧은 제목, 한두 줄) · `cloth` · `border` · `stamping` · `motif`를 적는다(키는 `src/lib/victorianCover.js`,
-빌드가 검사한다). 값은 그 작품 초판 장정 기록을 따른다 — 근거·표는 `docs/literature-pipeline.md` §8.4. 새 작품은 천 색을 새로 정하고
-(기존 천과 색차 12 이상), 문양은 작품 속 물건에서 새로 그린다(초판 그림·사람 몸 없음).
+entry.json `display`에 `coverTitle`(표지 큰 글자, 한두 줄) · `coverKicker`(그 위 작은 글자 — 실물에 있을 때만) · `coverAuthor`(앞표지 작가 —
+실물에 있을 때만) · `cloth` · `binding`(장정 구성)을 적는다(키는 `src/lib/victorianCover.js`, 빌드가 검사한다). 값은 그 작품 초판 앞표지의
+실물 구성을 따른다 — 근거·표는 `docs/literature-pipeline.md` §8.4. 새 작품은 초판 사진·서지 기록부터 대조해 장정 구성을 고르거나(없으면
+새로 그린다), 천 색은 실물 사진에서 재고 기존 천과 색차 12 이상인지 본다. 원본은 옮겨 붙이지 않고, 사람 몸·출판사 표지(총서 이름 등)는 그리지 않는다.

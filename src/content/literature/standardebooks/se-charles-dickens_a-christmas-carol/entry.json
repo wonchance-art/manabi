@@ -13,11 +13,11 @@
   "display": {
     "titleKo": "크리스마스 캐럴",
     "authorKo": "찰스 디킨스",
-    "coverTitle": "A Christmas\nCarol",
+    "coverKicker": "A",
+    "coverTitle": "Christmas\nCarol",
+    "coverAuthor": "Charles Dickens",
     "cloth": "cinnamon",
-    "border": "blind",
-    "stamping": "gilt",
-    "motif": "holly-candle"
+    "binding": "wreath"
   },
   "files": [
     {
