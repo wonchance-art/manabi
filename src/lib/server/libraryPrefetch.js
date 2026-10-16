@@ -1,10 +1,10 @@
 // 서재 첫 화면을 서버에서 미리 받는다(LIBRARY-PREFETCH-001 — 「읽던 곳 없음」 접힘 · 대화 묶음 밀림은 서버가 이미 안다).
-// 쿠키 세션(requireUser — 기존 서버 도우미)으로 브라우저와 **같은 키 · 같은 가져오기 함수**(libraryShelfQueries)를 불러
+// 쿠키 세션(requireUserClaims — JWT 서명을 서버에서 바로 검증, 인증 왕복 없음 · LIBRARY-PREFETCH-002)으로 브라우저와 **같은 키 · 같은 가져오기 함수**(libraryShelfQueries)를 불러
 // dehydrate한다. page.jsx가 HydrationBoundary로 넘기면 브라우저 첫 그림이 이미 최종 배치다.
 // 손님 · 세션 없음 · 실패 · 시간 초과 → null(지금처럼 브라우저가 받고 골격이 대신한다). 페이지를 막지 않는다: 전체 예산 안에
 // 끝난 쿼리만 싣는다(dehydrate는 성공한 쿼리만 담는다 — 실패 · 대기 중은 빠지고 브라우저가 다시 받는다).
 import { QueryClient, dehydrate } from '@tanstack/react-query';
-import { requireUser } from '@/lib/supabaseServer';
+import { requireUserClaims } from '@/lib/supabaseServer';
 import { libraryFilters, libraryNarrowed } from '@/lib/personalLibrary';
 import { libraryCollectionsQuery, libraryConversationsQuery, libraryListQuery, libraryRecentQuery } from '@/lib/libraryShelfQueries';
 
@@ -30,7 +30,7 @@ export function shelfQueries(client, ownerId, params) {
 /**
  * @returns {Promise<null | { userId: string, state: object }>}
  */
-export async function prefetchLibraryShelf(searchParams, { budgetMs = LIBRARY_PREFETCH_BUDGET_MS, auth = requireUser } = {}) {
+export async function prefetchLibraryShelf(searchParams, { budgetMs = LIBRARY_PREFETCH_BUDGET_MS, auth = requireUserClaims } = {}) {
   const deadline = Date.now() + budgetMs;
   try {
     const params = new URLSearchParams();

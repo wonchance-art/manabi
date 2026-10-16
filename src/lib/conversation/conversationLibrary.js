@@ -1,7 +1,7 @@
 // 서재의 「대화」 묶음(v2-Z Z-R1 ③) — 대화 자료(processed_json.metadata.conversation)만 따로 읽는다.
 // 서재 목록 RPC(personal_library_page_v2)는 대화를 일반 글과 똑같이 돌려준다. RPC를 바꾸는 DB 변경 없이,
 // 화면이 이 조회로 대화를 「대화」 묶음에 모으고, 목록의 같은 자료에는 「대화」 표시를 붙인다.
-import { filterActiveSources } from '../libraryOperations';
+import { hiddenLibraryKeys, withoutHiddenSources } from '../libraryOperations';
 
 export const CONVERSATION_SHELF_LIMIT = 200;
 export const CONVERSATION_SHELF_PREVIEW = 3;
@@ -16,16 +16,21 @@ const COLUMNS = [
 
 /** 내 대화 목록(최신순). 대화 표식이 있는 내 자료만. */
 export async function fetchConversations(client, userId, { limit = CONVERSATION_SHELF_LIMIT } = {}) {
-  const { data, error } = await client.from('reading_materials')
-    .select(COLUMNS)
-    .eq('owner_id', userId)
-    .not('processed_json->metadata->conversation', 'is', null)
-    .order('id', { ascending: false })
-    .limit(limit);
+  // 대화 행과 숨긴 항목 키는 서로 기다릴 이유가 없다 — 동시에 띄워 두 왕복을 한 왕복 시간으로(LIBRARY-PREFETCH-002).
+  // 서버 미리 받기(libraryShelfQueries)와 브라우저가 같은 이 함수를 쓴다.
+  const [{ data, error }, hidden] = await Promise.all([
+    client.from('reading_materials')
+      .select(COLUMNS)
+      .eq('owner_id', userId)
+      .not('processed_json->metadata->conversation', 'is', null)
+      .order('id', { ascending: false })
+      .limit(limit),
+    hiddenLibraryKeys(client, userId),
+  ]);
   if (error) throw error;
   // 표식 열을 한 번 더 본다 — JSON 경로 필터를 모르는 경로(옛 프록시·테스트 백엔드)가 일반 자료를 섞어 보내도 대화만 남긴다.
   // 휴지통으로 옮긴 대화는 묶음에서 뺀다(서재 휴지통에서 되돌리면 다시 보인다).
-  const active = await filterActiveSources(client, userId, (data || []).filter((row) => row.marker != null));
+  const active = withoutHiddenSources((data || []).filter((row) => row.marker != null), hidden);
   return active.map((row) => ({
     id: String(row.id),
     title: row.topic || row.title || '대화',
