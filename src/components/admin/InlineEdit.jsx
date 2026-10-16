@@ -9,13 +9,17 @@
  *    path로 해석한다(일반 유저 RSC 페이로드에 챕터 원문 값이 실리지 않게).
  *  - 무거운 편집 폼(InlineEditForm)은 첫 연필 클릭 시에만 dynamic import → 챕터 페이지 First Load JS 보호.
  *  - 비관리자·비로그인: 추가 DOM 없이 children만 렌더(semantic 래퍼는 li 등 콘텐츠 자체일 때만 유지).
+ *  - 관리자 여부가 바뀌어도 children은 같은 자리에 그대로 둔다(ADMIN-EDIT-STABLE-001). 예전에는 관리자면
+ *    children을 div.admin-edit로 감쌌는데, 프로필이 늦게 와 isAdmin이 false → true로 바뀌는 순간 같은 자리의
+ *    요소 종류가 Fragment → div로 달라져 그 아래(스토리 문항 등)가 새로 마운트되며 입력이 사라졌다(smoke 「관리자
+ *    보관함 N5 챕터 · 조립」 「확정」 비활성, 수정 전후 약 1/10). 이제 연필은 children 앞의 형제(높이 0 기준점)다.
  *
  * props:
  *  - lang, slug: 대상 챕터
  *  - path: 편집 경로 규약(chapterPath 참고). kind='text'는 콤마로 다중 스칼라 경로 지원.
  *  - kind: 'text' | 'example' | 'json'
- *  - tag: 래퍼 태그. 기본 'div'(장식 래퍼 — 비관리자는 생략). 'li' 등이면 콘텐츠 자체로 항상 렌더.
- *  - className, style: 래퍼(=semantic 태그)에 그대로 전달.
+ *  - tag: 래퍼 태그. 기본 'div'(장식 래퍼 — 렌더하지 않는다). 'li' 등이면 콘텐츠 자체로 항상 렌더.
+ *  - className, style: semantic 태그에 그대로 전달.
  */
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
@@ -38,34 +42,11 @@ export default function InlineEdit({
   const [editing, setEditing] = useState(false);
   const Tag = tag;
   const semantic = tag !== 'div'; // li 등 — 래퍼가 곧 콘텐츠라 비관리자에도 항상 렌더
+  const editingNow = isAdmin && editing;
 
-  // ── 비관리자·비로그인 — 원본 그대로(연필·position 컨텍스트 없음) ──
-  if (!isAdmin) {
-    if (semantic) return <Tag className={className} style={style}>{children}</Tag>;
-    return <>{children}</>;
-  }
-
-  const wrapClass = className ? `${className} admin-edit` : 'admin-edit';
-  const wrapStyle = { ...style, position: 'relative' };
-
-  if (editing) {
-    return (
-      <Tag className={`${wrapClass} admin-edit--editing`} style={wrapStyle}>
-        <InlineEditForm
-          lang={lang}
-          slug={slug}
-          path={path}
-          kind={kind}
-          onDone={() => setEditing(false)}
-          onCancel={() => setEditing(false)}
-        />
-      </Tag>
-    );
-  }
-
-  return (
-    <Tag className={wrapClass} style={wrapStyle}>
-      {children}
+  // 첫 칸 = 관리자 연필(비관리자는 null), 둘째 칸 = 내용. 칸 순서가 늘 같아 isAdmin이 바뀌어도 내용은 다시 마운트되지 않는다.
+  const control = isAdmin && !editingNow ? (
+    <span className="admin-edit__anchor">
       <button
         type="button"
         className="admin-edit__pencil"
@@ -75,6 +56,21 @@ export default function InlineEdit({
       >
         ✎
       </button>
-    </Tag>
-  );
+    </span>
+  ) : null;
+  const body = editingNow ? (
+    <div className="admin-edit admin-edit--editing">
+      <InlineEditForm
+        lang={lang}
+        slug={slug}
+        path={path}
+        kind={kind}
+        onDone={() => setEditing(false)}
+        onCancel={() => setEditing(false)}
+      />
+    </div>
+  ) : children;
+
+  if (semantic) return <Tag className={className} style={style}>{control}{body}</Tag>;
+  return <>{control}{body}</>;
 }

@@ -8116,7 +8116,10 @@ a.viewer-badge:hover {
 .learn-cta .lessons-continue__meta { color: var(--primary-light); font-size: 1.05rem; }
 
 /* ========= 관리자 인라인 편집 (InlineEdit) =========
-   문장 오른쪽 끝(본문 컬럼 밖 여백)에 은은한 연필. 관리자 계정에서만 렌더된다. */
+   문장 오른쪽 끝(본문 컬럼 밖 여백)에 은은한 연필. 관리자 계정에서만 렌더된다.
+   연필은 내용 앞의 높이 0 기준점(.admin-edit__anchor) 안에 있다 — 내용을 감싸지 않는다(감싸면 관리자 여부가 바뀔 때
+   내용이 다시 마운트됐다, ADMIN-EDIT-STABLE-001). 기준점의 위쪽 = 내용의 위쪽이라 예전 자리(우상단)에 그대로 놓인다. */
+.admin-edit__anchor { display: block; position: relative; height: 0; }
 .admin-edit__pencil {
   position: absolute;
   top: 2px;
@@ -8138,7 +8141,8 @@ a.viewer-badge:hover {
   transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   z-index: 5;
 }
-.admin-edit:hover > .admin-edit__pencil,
+.admin-edit__anchor:has(+ :hover) > .admin-edit__pencil,
+.admin-edit__pencil:hover,
 .admin-edit__pencil:focus-visible {
   opacity: 1;
   color: var(--text-primary);

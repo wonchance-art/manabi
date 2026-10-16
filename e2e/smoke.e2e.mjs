@@ -73,6 +73,12 @@ function runtimeErrors(page) {
   return errors;
 }
 
+// 관리자 화면은 프로필(관리자 여부)이 하이드레이션 뒤에 온다. 관리자 연필이 보인 뒤에 문항을 만진다 — 판정은 그대로,
+// 기다리는 시점만 명시한다(ADMIN-EDIT-STABLE-001: 연필이 붙어도 내용은 다시 마운트되지 않지만, 테스트가 관리자 상태를 전제한다).
+async function waitForAdminChrome(page) {
+  await page.locator('.admin-edit__pencil').first().waitFor({ state: 'attached', timeout: config.timeout });
+}
+
 async function assertVisible(locator, label) {
   await locator.waitFor({ state: 'visible', timeout: config.timeout });
   assert.equal(await locator.isVisible(), true, `${label} should be visible`);
@@ -495,6 +501,7 @@ test('chapter story: 관리자 보관함 N5 챕터에서 조립·빈칸 채점�
       'N5 story heading'
     );
     await assertVisible(page.getByRole('button', { name: /はじめまして/ }).first(), 'N5 story dialogue');
+    await waitForAdminChrome(page);
 
     const orderQuestion = page.getByRole('listitem').filter({
       has: page.getByText('문장 만들기', { exact: true }),
@@ -552,6 +559,7 @@ test('chapter quiz: N4 자동사·타동사 챕터를 열고 첫 문항을 채�
     );
     const patternCheck = page.locator('.fr-check');
     await assertVisible(patternCheck, 'intransitive/transitive pattern check');
+    await waitForAdminChrome(page);
     const firstQuestion = page.locator('.fr-check .fr-quiz__item').first();
     await firstQuestion.locator('.fr-quiz__opt').first().click();
     await assertVisible(firstQuestion.locator('.fr-quiz__answer'), 'graded pattern answer');
@@ -572,6 +580,7 @@ test('chapter story: N5 이자카야 문화 도어의 장면과 산출 문항을
       'izakaya story heading'
     );
     await assertVisible(page.locator('[role="button"][aria-expanded]').filter({ hasText: /なんめいさまですか/ }).first(), 'izakaya dialogue');
+    await waitForAdminChrome(page);
     const produceQuestion = page.getByRole('listitem').filter({
       has: page.getByText('문장 만들기 (모범답 확인)', { exact: true }),
     });
