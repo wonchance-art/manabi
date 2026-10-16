@@ -97,7 +97,8 @@ describe('세션 화면 배선', () => {
   const page = read('src/views/StudySessionPage.jsx');
 
   it('챕터 마지막 문항은 보류함으로 보낸다(결과를 버리지 않는다)', () => {
-    expect(page).toContain('pendingGrammarRef.current.submit({ ...agg.srs, user_id: user.id }, ratingFromScore(agg.right, agg.total));');
+    // user_id는 세션 계정(recorder — 로그아웃 · 계정 바뀜이면 기록 자체를 멈춘다, studySessionScreen 계약).
+    expect(page).toContain('pendingGrammarRef.current.submit({ ...agg.srs, user_id: recorder }, ratingFromScore(agg.right, agg.total));');
     expect(page).not.toMatch(/^\s*gradeGrammarReview\(/m);
     expect(page).toContain('createGrammarRetry({ grade: gradeGrammarReview })');
   });

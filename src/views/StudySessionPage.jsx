@@ -51,7 +51,7 @@ export default function StudySessionPage({
   session = null, paragraphMaterials = null, pregenerated = null, warmup = [], encounterItems = [], dial = 'normal',
   sourceMode = false,
   lang, langCode, langName, readKey,
-  band = 'beginner', languages = [], signedOut = false, shuffleSeed = '',
+  band = 'beginner', languages = [], signedOut = false, shuffleSeed = '', sessionUserId = null,
 }) {
   // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
   const signInHref = authEntryHref(usePathname());
@@ -59,7 +59,15 @@ export default function StudySessionPage({
   const kanjiCare = band === 'beginner' && langCode === 'ja';
   // 문단 발음 상시 노출은 입문에 한정 — 비입문은 문장 탭으로 지연 공개(한자 읽기 인출 기회 확보).
   const alwaysShowPron = band === 'beginner';
-  const { user, fetchProfile } = useAuth();
+  const { user, fetchProfile, loading: authLoading } = useAuth();
+  // 세션 계정 — 서버가 확인한 사용자로 시작할 때 고정한다. 도중에 로그아웃하거나 다른 계정이 되면 기록을 멈추고
+  // 로그인을 안내한다(로그인 없는 기록은 기기 로컬로 새고, 다른 계정이면 남의 기록이 된다). 기록하는 곳은 recorderRef만 본다.
+  const sessionUserRef = useRef(sessionUserId || null);
+  if (!sessionUserRef.current && user?.id) sessionUserRef.current = user.id;
+  const authLost = !!sessionUserRef.current && !authLoading && user?.id !== sessionUserRef.current;
+  const recorderRef = useRef(null);
+  recorderRef.current = authLost ? null : sessionUserRef.current;
+  const [lostRecordUid, setLostRecordUid] = useState(null); // 큐에도 못 담은 문항(원본 uid) — 인라인 한 줄
   const { speak: ttsSpeak, supported: ttsSupported } = useTTS();
   // 프리페치된 문단이 있으면 API 없이 즉시 매핑 (마운트 전 결정) — 로딩 화면 스킵.
   const pregenMapped = useMemo(
@@ -354,9 +362,10 @@ export default function StudySessionPage({
       batcherRef.current?.flush();
       retryPendingGrammar();
       // 1문항 이상 답변했고 아직 fireEffects 전이면 활동 기록 시도(스트릭 RPC는 멱등).
-      if (!streakSentRef.current && recordedRef.current.size > 0 && user?.id) {
+      const recorder = recorderRef.current;
+      if (!streakSentRef.current && recordedRef.current.size > 0 && recorder) {
         streakSentRef.current = true;
-        recordActivity(user.id, () => fetchProfile?.(user.id));
+        recordActivity(recorder, () => fetchProfile?.(recorder));
       }
     }
     window.addEventListener('pagehide', onPageHide);
@@ -368,7 +377,6 @@ export default function StudySessionPage({
   useEffect(() => {
     window.addEventListener('online', retryPendingGrammar);
     return () => window.removeEventListener('online', retryPendingGrammar);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   // 문법 due 챕터별 문항 수 (재출제 제외) — 챕터 마지막 문항 판정에 사용
@@ -431,9 +439,9 @@ export default function StudySessionPage({
 
   /** review_events 마이크로배치 큐 — user 확정 후 1회 생성 */
   function getBatcher() {
-    if (!batcherRef.current && user?.id) {
-      batcherRef.current = createReviewEventBatcher(user.id, { size: 4 });
-    }
+    const recorder = recorderRef.current;
+    if (!recorder) return null; // 로그인이 풀렸거나 계정이 바뀌었다 — 이벤트를 쌓지 않는다.
+    if (!batcherRef.current) batcherRef.current = createReviewEventBatcher(recorder, { size: 4 });
     return batcherRef.current;
   }
 
@@ -546,22 +554,29 @@ export default function StudySessionPage({
    */
   function recordSettle(ok, it, result = null, response = null) {
     if (!it?.effect) return;
+    // 세션 계정이 아니면(로그아웃 · 계정 바뀜) 기록하지 않는다 — 기기 로컬 · 남의 계정으로 새지 않게.
+    const recorder = recorderRef.current;
+    if (!recorder) return;
     const rt_ms = Date.now() - itemShownAtRef.current;
     const eff = it.effect;
+    const orig = baseUid(it.uid);
 
     // 답안 완료 기록은 F2 단일 경계로 보낸다. 게스트도 같은 호출을 거쳐 로컬 폴백한다.
     // response는 settle의 pickedValue다 — 여기까지 오지 않아 v2-A R1 진단이 유형까지만
     // 볼 수 있었다(글자 어긋남은 응답이 있어야 난다). 오답 적재는 브리지가 판단한다.
-    recordStudyReviewCompleted(user?.id, {
+    recordStudyReviewCompleted(recorder, {
       correct: ok,
       item: it,
       lang,
       rtMs: rt_ms,
       result,
       response,
-    });
+    }).then(saved => {
+      // 서버에도 큐에도 못 담았을 때만 알린다(큐에 담긴 기록은 연결이 돌아오면 간다).
+      if (saved?.lost) setLostRecordUid(orig);
+    }, () => { /* 저장 거절(아는 단어 등)은 기존처럼 조용히 — 세션은 이어진다. */ });
 
-    if (eff.kind === 'grammar-due' && user?.id) {
+    if (eff.kind === 'grammar-due') {
       const slug = eff.srs.slug;
       // 챕터별 정답 누적 → 마지막 문항에서 챕터 정답률로 재스케줄
       const agg = grammarAggRef.current.get(slug) || { srs: eff.srs, right: 0, total: 0 };
@@ -569,7 +584,7 @@ export default function StudySessionPage({
       grammarAggRef.current.set(slug, agg);
       if (agg.total >= (grammarCounts[slug] || 0)) {
         // 실패하면 보류함에 남는다(같은 챕터는 마지막 채점만) — 결과를 버리면 일정이 조용히 사라진다.
-        pendingGrammarRef.current.submit({ ...agg.srs, user_id: user.id }, ratingFromScore(agg.right, agg.total));
+        pendingGrammarRef.current.submit({ ...agg.srs, user_id: recorder }, ratingFromScore(agg.right, agg.total));
       }
     }
   }
@@ -622,13 +637,13 @@ export default function StudySessionPage({
    * 재시도 가능. 자동 담김 금지 — 수집은 명시적 선택.
    */
   async function saveEncounterWord() {
-    if (!user?.id || !item?.word?.word_text || encounterSaveState) return;
+    if (!recorderRef.current || !item?.word?.word_text || encounterSaveState) return;
     setEncounterSaveState('saving');
     try {
       // 세션 단어는 이미 사전 표제어라 surface/base가 갈리지 않는다 — 그래도 조립은
       // 정본으로 보내, 나중에 필드가 늘 때 이 자리만 뒤처지지 않게 한다.
       const { error } = await supabase.from('user_vocabulary').upsert([buildVocabRow({
-        userId: user.id,
+        userId: recorderRef.current,
         surface: item.word.word_text,
         base: item.word.word_text,
         reading: item.word.furigana,
@@ -651,11 +666,12 @@ export default function StudySessionPage({
    * @returns {Promise<boolean>} 저장 성공 여부(결과 화면 안내 문구 표시용)
    */
   async function saveUserNext(text, score) {
-    if (!user?.id) return false;
+    const recorder = recorderRef.current;
+    if (!recorder) return false;
     try {
       const { data, error: loadError } = await supabase.from('study_paragraphs')
         .select('id, paragraph')
-        .eq('user_id', user.id).eq('lang', lang).eq('status', 'used')
+        .eq('user_id', recorder).eq('lang', lang).eq('status', 'used')
         .order('used_at', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false }).limit(1);
       if (loadError) return false;
@@ -751,13 +767,13 @@ export default function StudySessionPage({
 
     // 세션에서 쓴 문장을 writing_practice에도 남긴다 — 작문(/writing) 히스토리에 노출.
     // WritingStudioPage.persist(:171)와 동일한 컬럼·형태. 세션 흐름은 막지 않되 저장 오류를 기록한다.
-    if (user?.id) {
+    if (recorderRef.current) {
       const allErrors = (feedback.sentences || []).flatMap(
         s => (s.errors || []).map(e => ({ ...e, sentence: s.original }))
       );
       const pat = item.targetPattern?.pattern || '';
       void persistWritingPractice({
-        user_id: user.id,
+        user_id: recorderRef.current,
         sentence: textVal,
         corrected: feedback.sentences.map(s => s.corrected).join('\n'),
         feedback: feedback.summary,
@@ -789,13 +805,14 @@ export default function StudySessionPage({
    */
   /** 보류한 문법 재스케줄 재시도 — 지금 로그인한 그 계정의 채점만 보낸다. */
   function retryPendingGrammar() {
-    const owner = user?.id;
+    const owner = recorderRef.current;
     if (!owner) return;
     pendingGrammarRef.current.retry(row => row.user_id === owner).catch(() => {});
   }
 
   function fireEffects() {
-    if (effectsFired.current || !user?.id) return;
+    const recorder = recorderRef.current;
+    if (effectsFired.current || !recorder) return;
     effectsFired.current = true;
     const results = Object.values(firstResults);
 
@@ -818,7 +835,7 @@ export default function StudySessionPage({
       } catch {}
 
       // progressStore: 진도 + SRS + 보상 일괄 처리
-      recordLessonCompleted(user.id, {
+      recordLessonCompleted(recorder, {
         lang,
         slug: meta.slug,
         source: 'lesson',
@@ -828,7 +845,7 @@ export default function StudySessionPage({
     // 오늘 배운 새 단어 → progressStore로 통합 (FSRS 복습 루프 진입)
     if (genStatus === 'ready' && paragraphMaterials?.newWords?.length) {
       for (const w of paragraphMaterials.newWords) {
-        recordNewWord(user.id, {
+        recordNewWord(recorder, {
           word: w.word,
           pron: w.pron || '',
           meaning: w.meaning || '',
@@ -842,7 +859,7 @@ export default function StudySessionPage({
     batcherRef.current?.flush();
     retryPendingGrammar();
     // recordActivity는 progressStore 내부에서 처리됨
-    fetchProfile?.(user.id);
+    fetchProfile?.(recorder);
   }
 
   const renderMain = (text, pron) =>
@@ -909,6 +926,14 @@ export default function StudySessionPage({
     );
   }
 
+  // 로그인이 풀렸거나 다른 계정이 됐다 — 기록은 멈췄다. 세션 화면 · 결과 화면 맨 위에 안내(copy-standard 「로그인 필요」).
+  const authBanner = authLost && (
+    <div className="study-auth-lost" role="alert">
+      <span>로그인이 필요해요</span>
+      <Link href={signInHref} className="btn btn--primary btn--sm">로그인</Link>
+    </div>
+  );
+
   // ── 결과 화면 ──
   if (finished) {
     const newItems = Object.values(firstResults).filter(r => r.item.effect?.kind === 'new-chapter');
@@ -944,6 +969,7 @@ export default function StudySessionPage({
 
     return (
       <div className="page-container" style={{ maxWidth: 640 }}>
+        {authBanner}
         {/* 1. 요약 */}
         <div style={{ textAlign: 'center', margin: '28px 0 20px' }}>
           <div style={{
@@ -1064,6 +1090,7 @@ export default function StudySessionPage({
   // ── 진행 화면 ──
   return (
     <div className="page-container" style={{ maxWidth: 640 }}>
+      {authBanner}
       {/* 헤더 — 나가기 · 진행바 · 언어 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '10px 0 20px' }}>
         <Link href="/home" aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem', padding: '6px 10px', margin: '-6px -4px -6px -10px' }}>✕</Link>
@@ -1503,6 +1530,11 @@ export default function StudySessionPage({
             </button>
           )}
         </div>
+      )}
+
+      {/* 서버에도 기기 큐에도 못 담은 기록 — 그 문항에만 한 줄(세션은 막지 않는다). */}
+      {phase === 'feedback' && lostRecordUid === baseUid(item.uid) && (
+        <p className="study-record-lost" role="status">이 문항 기록을 저장하지 못했어요. 세션은 계속할 수 있어요.</p>
       )}
 
       {/* 계속 버튼 (산출 문항은 자체 버튼 사용) */}
