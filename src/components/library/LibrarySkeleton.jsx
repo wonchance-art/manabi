@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
 
 /**
@@ -7,9 +8,9 @@ import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
  * 자리 높이를 맞춘다. 줄 · 카드 클래스 자체는 다르게 둔다 — 실제 자료 줄(.shelf-row)을 세는 곳이 골격을 자료로 세지 않게. 표지는 같은 크기의 회색 칸(.shelf-cover 치수).
  */
 /** 자료 목록 받는 중 — 서재 안에서는 이 목록이 알림 하나를 맡는다(announce). 서재 전체 골격 안에서는 바깥이 맡는다. */
-export function ShelfRowsSkeleton({ count = 4, announce = true }) {
+export function ShelfRowsSkeleton({ count = 4, label = '자료 목록', announce = true }) {
   return (
-    <SkeletonRegion label="자료 목록" announce={announce}>
+    <SkeletonRegion label={label} announce={announce}>
       <ul className="shelf-rows" aria-hidden="true">
         {Array.from({ length: count }, (_, i) => <li key={i} className="shelf-row-skeleton">
           <div className="shelf-row-main"><div className="shelf-row-link">
@@ -43,6 +44,24 @@ export function RecentReadsSkeleton() {
   );
 }
 
+/**
+ * 대화 묶음 자리(LOADING-SKELETON-001 후속). 묶음은 받기만 하면 **늘 나온다**(대화가 없어도 「새 대화」 입구 + 안내 한 줄) —
+ * 그래서 받기 전에 아는 것은 「머리줄(대화 · 새 대화)은 있다」뿐이다. 머리줄은 실제 그대로, 몸은 대화 한 줄 자리를 잡는다.
+ * 실제 줄 수가 다르면(없음 = 안내 한 줄 · 2~3개) ConversationShelf가 높이를 짧게 옮겨 맞춘다(useHeightSettle — 점프 대신).
+ */
+export function ConversationShelfSkeleton({ live = true }) {
+  // live = 실제 서재 안(입구 링크가 그대로 쓸 수 있다). 로그인 확인 골격(aria-hidden 안)에서는 같은 모양의 글자만.
+  const entry = live
+    ? <Link className="shelf-conversations-new" href="/conversation/new?returnTo=%2Fmaterials">새 대화</Link>
+    : <span className="shelf-conversations-new">새 대화</span>;
+  return (
+    <section className="shelf-conversations" aria-labelledby={live ? 'shelf-conversations-title' : undefined}>
+      <div className="shelf-section-heading"><h2 id={live ? 'shelf-conversations-title' : undefined}>대화</h2>{entry}</div>
+      <ShelfRowsSkeleton count={1} label="대화" announce={false} />
+    </section>
+  );
+}
+
 /** 로그인 확인 중(LibraryPage) — 머리줄 · 위치 목록 · 읽던 곳 · 목록 골격. 머리 글(「내 서재」)은 늘 같아서 글자 그대로. */
 export function LibraryShelfSkeleton() {
   return (
@@ -56,6 +75,7 @@ export function LibraryShelfSkeleton() {
         <nav className="shelf-folder-nav">{[3, 4, 3].map((w, i) => <span key={i} className="shelf-skeleton-nav"><SkeletonLine width={`${w}em`} /></span>)}</nav>
         <div className="shelf-content">
           <RecentReadsSkeleton />
+          <ConversationShelfSkeleton live={false} />
           <section className="shelf-list-section">
             {/* 도구(정렬 · 필터 · 선택)는 44px 단추라 머리줄 높이를 정한다 — 같은 높이 칸을 둬야 목록이 밀리지 않는다(실측 +17px). */}
             <div className="shelf-section-heading"><h2>전체</h2><div className="shelf-list-tools"><SkeletonLine width="12em" height="44px" /></div></div>

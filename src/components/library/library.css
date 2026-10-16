@@ -193,6 +193,9 @@
 .shelf-cover--skeleton{box-shadow:none}
 .shelf-skeleton-nav{display:flex;align-items:center;min-height:44px;padding:0 12px}
 .shelf-skeleton-button{border-radius:999px}
+/* 골격 → 실제 높이 옮기기(useHeightSettle — 대화 묶음): 높이만 0.2초, 넘치는 줄은 잠깐 가린다. 모션 축소면 훅이 옮기지 않고 전이도 없다. */
+.is-height-settling{overflow:hidden;transition:height .2s var(--ease-settle)}
+@media (prefers-reduced-motion:reduce){.is-height-settling{transition:none}}
 @container(max-width:760px){
  .shelf-workspace{grid-template-columns:1fr;gap:0}
  .shelf-folder-nav{flex-direction:row;align-items:center;overflow-x:auto;white-space:nowrap;gap:4px;padding-top:10px;padding-bottom:5px}
