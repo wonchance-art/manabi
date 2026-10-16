@@ -42,7 +42,7 @@ import { literatureChapterLabel, literatureDivisionLabel } from '../lib/literatu
 import SuggestionArtwork from '../components/SuggestionArtwork';
 import { failureMessage } from '@/lib/errorMessage';
 import { authEntryHref } from '@/lib/authRedirect';
-import { withGuestBookCatalog } from '@/lib/guestBookCatalog';
+import { guestBookCatalogRows, withGuestBookCatalog } from '@/lib/guestBookCatalog';
 
 
 function SuggestionCard({ suggestion: s, router, from = 'materials' }) {
@@ -109,6 +109,8 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
     query = query.eq('processed_json->metadata->>level', levelFilter);
   }
 
+  // 비로그인 「함께 읽는 글」의 책 장 메타는 목록 조회와 나란히 출발한다(전: 목록 응답 뒤에 출발 — 운영 0.7–0.8초 직렬 대기).
+  const guestCatalog = tab === 'public' && !userId ? guestBookCatalogRows(supabase) : null;
   const { data, error } = await query;
   if (error) {
     if (withDocument && /document_json/.test(error.message || '')) return fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuery, includeOwnedPublic, withDirection, withDocument: false });
@@ -121,7 +123,7 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
     throw error;
   }
   // 비로그인은 책 장을 읽지 못한다(BOOK-GUEST-GATE-1 — DB 제한 정책). 책 카드는 메타만 주는 함수로 채운다.
-  const rows = tab === 'public' && !userId ? await withGuestBookCatalog(supabase, data || [], { langFilter, levelFilter, searchQuery }) : data || [];
+  const rows = guestCatalog ? await withGuestBookCatalog(supabase, data || [], { langFilter, levelFilter, searchQuery, catalog: guestCatalog }) : data || [];
   // 팀 루트(수업 설정 행, v2-AB R1)는 자료가 아니다 — 목록에서 숨긴다(정리본은 자료로 보인다).
   // 대화(v2-Z)도 고르는 읽을거리가 아니다 — 서재의 「대화」 묶음에만 모인다.
   return (tab==='private'?await filterActiveSources(supabase,userId,rows):rows).map(documentListRow).filter(material => !isStudySnapshot(material) && !isTeamRoot(material) && !conversationOf(material) && (langFilter === 'all' || (documentOf(material)?.language ?? material.processed_json?.metadata?.language) === langFilter));
@@ -1047,8 +1049,10 @@ export default function MaterialsPage({ libraryView = null }) {
       )}
 
       {/* 오늘의 추천(크론 수집) — 있을 때만 보인다. 빈 날의 상시 안내 카드는
-          상단 '새 자료 추가'·가이드 링크와 같은 문이라 없앴다. */}
-      {(() => {
+          상단 '새 자료 추가'·가이드 링크와 같은 문이라 없앴다.
+          목록이 정해진 뒤에만 그린다(LIBRARY-GUEST-CLS-001): 추천이 먼저 오면 목록 골격(140px 6칸) 아래에 섰다가, 더 짧은 실제
+          목록으로 바뀔 때 통째로 끌려 올라왔다 — 운영 /discover?view=reading CLS 390폭 0.144–0.168 · 1440폭 0.018–0.028. */}
+      {tab && !isLoading && (() => {
         const filteredSuggestions = filterSuggestionsByProfile(suggestions, profile);
         if (filteredSuggestions.length === 0) return null;
         return (
