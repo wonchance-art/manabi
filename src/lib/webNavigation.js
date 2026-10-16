@@ -1,9 +1,11 @@
 // 메뉴 넷(LEARN-HOME-AK-001 — 오너 확정 목업 2026-10-09 「대화 화면이 생기면 배움 · 대화 · 서재 · 산책」,
 // 대화 화면 #1444 운영 반영 뒤 오너 지시 2026-10-15 「배움과 서재 사이 대화 넣어서 오픈」). /lessons · /vocab 경로는 남고 배움 화면의 칸으로 들어간다.
 export const MAIN_NAV = Object.freeze([
-  { href: '/home', label: '배움', icon: 'learn', prefetch: false },
+  // prefetch:false = 화면에 들어올 때 미리 받지 않는다(P5 — 로그인 직후 홈의 부분 prefetch가 연속 탐색을 붙잡는 회귀).
+  // intentPrefetch = 포인터 · 포커스 · 터치 의도에만 대기 화면까지 받는다(APP-FEEL-004, src/lib/intentPrefetch.js).
+  { href: '/home', label: '배움', icon: 'learn', prefetch: false, intentPrefetch: true },
   { href: '/conversation/new', label: '대화', icon: 'chat', prefetch: false },
-  { href: '/materials', label: '서재', icon: 'library', prefetch: false },
+  { href: '/materials', label: '서재', icon: 'library', prefetch: false, intentPrefetch: true },
   { href: '/discover', label: '산책', icon: 'compass' },
 ]);
 // Only the text reader uses this shell; PDF and book readers keep their own controls.

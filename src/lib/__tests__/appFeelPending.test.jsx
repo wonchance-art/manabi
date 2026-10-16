@@ -28,7 +28,7 @@ describe('이동 대기 표시(NavPendingMark = useLinkStatus)', () => {
     expect(sliceBetween(list, '<nav className="lv-pills"', '</nav>')).toContain('{levelPill(key)}<NavPendingMark /></Link>');
     expect(sliceBetween(list, '<nav className="lv-tabs"', '</nav>')).toContain('{LEVEL_KIND_LABEL[k]}<NavPendingMark /></Link>');
     // prefetch 판단(performanceRepairs P5)은 그대로 — 대기 표시가 prefetch를 대신한다.
-    expect(read('src/lib/webNavigation.js')).toMatch(/\{ href: '\/home', label: '배움', icon: 'learn', prefetch: false \}/);
+    expect(read('src/lib/webNavigation.js')).toMatch(/\{ href: '\/home', label: '배움', icon: 'learn', prefetch: false, intentPrefetch: true \}/);
   });
 
   it('CSS: 100ms 안의 이동엔 안 보이고(delay), 동작 줄이기면 깜빡이지 않고 멈춘 밑줄', () => {

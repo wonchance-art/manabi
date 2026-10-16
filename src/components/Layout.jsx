@@ -15,6 +15,7 @@ import { authEntryHref } from '@/lib/authRedirect';
 import VersionBadge from './VersionBadge';
 import NavPendingMark from './NavPendingMark';
 import { focusPageIfLost } from '@/lib/routeFocus';
+import { intentPrefetchProps } from '@/lib/intentPrefetch';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
 import ActionIcon from './ActionIcon';
@@ -28,6 +29,7 @@ import { failureMessage } from '@/lib/errorMessage';
 function ReaderSiteMenu({ isAdmin }) {
   const ref = useRef(null);
   const pathname = usePathname();
+  const router = useRouter();
   useEffect(() => { if (ref.current) ref.current.open = false; }, [pathname]);
   useEffect(() => {
     const closeOutside = e => { if (ref.current && !ref.current.contains(e.target)) ref.current.open = false; };
@@ -45,7 +47,7 @@ function ReaderSiteMenu({ isAdmin }) {
     <summary aria-label="메뉴" title="메뉴" data-icon-action><ActionIcon name="menu"/></summary>
     <nav aria-label="읽기 화면 내비게이션" onClick={e => { if (e.target.closest('a')) ref.current.open = false; }}>
       {/* 집중 읽기에서는 기본 메뉴가 숨으므로 이 메뉴가 지금 위치를 알려야 한다(뷰어 = 서재 — M09 6155101880) */}
-      {MAIN_NAV.map(item => <Link key={item.href} href={item.href} prefetch={item.prefetch} aria-current={navigationOwner(pathname) === item.href ? 'page' : undefined}>{item.label}<NavPendingMark /></Link>)}
+      {MAIN_NAV.map(item => <Link key={item.href} href={item.href} prefetch={item.prefetch} {...intentPrefetchProps(router, item, navigationOwner(pathname) === item.href)} aria-current={navigationOwner(pathname) === item.href ? 'page' : undefined}>{item.label}<NavPendingMark /></Link>)}
       {isAdmin && <Link href="/class" prefetch={false}>수업</Link>}
       {isAdmin && <Link href="/admin" prefetch={false}>관리</Link>}
     </nav>
@@ -188,6 +190,7 @@ export default function Layout({ children }) {
               key={l.href}
               href={l.href}
               prefetch={l.prefetch}
+              {...intentPrefetchProps(router, l, isNavActive(l.href))}
               className={`gnb__link gnb__link--text ${isNavActive(l.href) ? 'active' : ''}`}
               aria-current={isNavActive(l.href) ? 'page' : undefined}
             >
@@ -305,6 +308,7 @@ export default function Layout({ children }) {
             key={l.href}
             href={l.href}
             prefetch={l.prefetch}
+            {...intentPrefetchProps(router, l, isNavActive(l.href))}
             className={`mobile-nav__link ${isNavActive(l.href) ? 'active' : ''}`}
             aria-current={isNavActive(l.href) ? 'page' : undefined}
           >

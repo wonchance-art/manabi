@@ -47,6 +47,12 @@ describe('P1–P5 초기 전송 성능 수리 회귀', () => {
     expect(layout).toContain('const navLinks = MAIN_NAV');
     expect(layout).toContain('const mobileNavLinks = MAIN_NAV');
     expect(layout.split('prefetch={l.prefetch}').length - 1).toBe(2);
+    // 의도 prefetch(APP-FEEL-004)는 뷰포트 prefetch를 되살리지 않는다 — 포인터 · 포커스 · 터치에만, 대기 화면까지(kind 'auto')만 받는다.
+    for (const href of ['/home', '/materials']) {
+      expect(MAIN_NAV.find(item => item.href === href)).toEqual(expect.objectContaining({ prefetch: false, intentPrefetch: true }));
+    }
+    expect(read('src/lib/intentPrefetch.js')).toContain("router.prefetch(href, { kind: 'auto' });");
+    expect(layout).not.toMatch(/prefetch=\{true\}/);
     expect(layout).not.toContain('/review/grammar');
   });
 
