@@ -39,8 +39,8 @@ const CONTRACTS = {
 const KNOWN_VIOLATIONS = {
   '20261016150000_anon_book_catalog.sql': {
     scopes: ['capability', 'core'],
-    ticket: 'KO-CAP-REPIN-001 — #1504 anon_book_chapters_hidden(reading_materials 정책) 뒤 capability 상수 · FSRS core 재게시 마이그레이션 준비 중',
-    fixedBy: null,
+    ticket: 'KO-CAP-REPIN-001 — #1504 anon_book_chapters_hidden(reading_materials 정책) 뒤 capability 상수 · FSRS core 재게시',
+    fixedBy: '20261016191500_korean_capability_repin.sql',
   },
 };
 
@@ -267,6 +267,13 @@ describe('관측 이후 마이그레이션은 범위를 건드리면 같은 파�
       // 허용 목록은 실제 위반과 정확히 같아야 한다 — 위반이 사라지거나 늘면 목록을 고치라고 알린다.
       expect(missing, `${file}: KNOWN_VIOLATIONS 항목과 실제 위반이 다르다 — ${JSON.stringify(why)}`).toEqual(known.scopes);
       expect(known.ticket.length).toBeGreaterThan(20);
+      if (known.fixedBy) {
+        // 고친 마이그레이션은 뒤에 오고, 위반한 지문을 모두 그 파일에서 재게시한다(그 파일 자신도 아래 일반 검사를 받는다).
+        expect(files, `${file}: fixedBy ${known.fixedBy}가 없다`).toContain(known.fixedBy);
+        expect(known.fixedBy > file).toBe(true);
+        const fix = read(`${MIGRATIONS}/${known.fixedBy}`);
+        for (const scope of known.scopes) expect(CONTRACTS[scope].repin.test(fix), `${known.fixedBy}가 ${scope}를 재게시하지 않는다`).toBe(true);
+      }
       return;
     }
     expect(missing, `${file}가 지문 범위를 건드리고 재게시하지 않는다(§4.9-1): ${JSON.stringify(why, null, 1)}`).toEqual([]);
