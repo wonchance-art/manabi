@@ -109,3 +109,11 @@ describe('③ 가벼운 팝업 — 열면 안으로 · Esc로 닫기 · 닫으�
     expect(card).toMatch(/ref=\{dialogRef\}\s+tabIndex=\{-1\}\s+role="dialog"\s+aria-modal="true"/);
   });
 });
+
+describe('④ axe 스캔(Preview b5d2fc7, 2026-10-17 KST) — 제목 단계', () => {
+  it('뷰어 토론 칸 제목은 본문 h1 바로 아래 단계(h2) — h3로 건너뛰지 않는다', () => {
+    const src = read('src/views/ViewerComments.jsx');
+    expect(src).toMatch(/<h2 style=\{\{ fontSize: '1rem', fontWeight: 700, marginBottom: '20px', color: 'var\(--text-primary\)' \}\}>\s*토론 /);
+    expect(src).not.toMatch(/<h3\b/);
+  });
+});
