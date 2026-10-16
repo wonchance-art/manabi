@@ -283,7 +283,7 @@ describe('화면 배선', () => {
   it('함께 읽는 글 책 카드 — 정본이면 표지·목차 표기·첫 문장, 이어 적기 없음(카드는 여전히 한 자리)', () => {
     const page = read('src/views/MaterialsPage.jsx');
     const block = sliceBetween(page, 'const bookCards = books.map', 'const pdfCards');
-    expect(block).toContain('const work = literatureWorkOfBook(b);');
+    expect(block).toContain('const work = canonicalCovers ? literatureWorkOfBook(b) : null;'); // 공개 목록은 정본 표지 닫음(fail closed — bookMeta.test.js)
     expect(block).toContain('art: <LiteratureCover work={work} />');
     expect(block).toContain('lead: work ? literatureLead(c._bookOrder) : c._bookOrder');
     expect(block).toContain('<span className="group-card__sr">{`${work.total}부분 중 ${order}`}</span>'); // 「1/2」를 날짜로 읽지 않게

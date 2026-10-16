@@ -683,6 +683,11 @@ export default function MaterialsPage({ libraryView = null }) {
             const { books, singles: bookless } = groupByBook(filtered);
             const contentLangOf = (c) => (c ? encounterLookupLang(documentOf(c)?.language ?? c.processed_json?.metadata?.language) || undefined : undefined);
             const { groups: pdfGroupsHere, rest: singles } = groupByPdf(bookless, visiblePdfs);
+            // 정본 표지·제목은 공개 목록에서 닫는다(fail closed). 공개 metadata는 누구나 꾸밀 수 있어
+            // 남의 행이 정본 key·provider를 달면 정본 표지를 받는다 — 묶음은 소유자로 갈라도(groupByBook)
+            // 「이 소유자가 정본 발행자」를 판정할 근거가 아직 없다. 정본 표지는 발행 기록(설계 C안
+            // canonical_book_releases, 오너 결정 대기) 도입 때 다시 연다. libraryView 'public'은 tab 'public'.
+            const canonicalCovers = tab !== 'public';
             const bookCards = books.map((b) => {
               const analyzed = b.chapters.filter((c) => ['completed', 'partial'].includes(c.processed_json?.status)).length;
               const readDone = b.chapters.filter((c) => completedIds.has(c.id)).length;
@@ -692,7 +697,7 @@ export default function MaterialsPage({ libraryView = null }) {
               const bf = savedFitIndex ? bookFit(b.chapters, savedFitIndex) : null;
               const pendingNote = pendingCount > 0 ? ` · 분석 전 ${pendingCount}` : '';
               // 정본 문학책(AOZORA-P0-5) — 타이포그래피 표지 + 작가 목차(一·二) / 나눈 위치(1/2) + 장 첫 문장. 교재의 「과」를 쓰지 않는다.
-              const work = literatureWorkOfBook(b);
+              const work = canonicalCovers ? literatureWorkOfBook(b) : null;
               const chapterOf = (c) => work?.chapters.find((item) => item.order === c._bookOrder);
               // 장 표지 — 작가 見出し(一·二)는 일본어로, 「1/2」는 날짜로 읽히지 않게 화면 읽기용 「2부분 중 1」을 따로 둔다.
               const literatureLead = (order) => {
@@ -711,7 +716,7 @@ export default function MaterialsPage({ libraryView = null }) {
                 fitLine: fitLineOf(bf, '장'),
               } : null;
               // 영어 정본(LIT-SRC-EN-1, Standard Ebooks) — 빅토리아 천 장정 표지 + 원제(영어)·한국어 제목 + 장 제목(판의 장 이름).
-              const english = work ? null : standardEbooksWorkOfBook(b);
+              const english = work || !canonicalCovers ? null : standardEbooksWorkOfBook(b);
               const englishChapterOf = (c) => english?.chapters.find((item) => item.order === c._bookOrder);
               const englishProps = english ? {
                 art: <VictorianCover work={english} />,
@@ -722,7 +727,7 @@ export default function MaterialsPage({ libraryView = null }) {
               } : null;
               return (
                 <MaterialGroupCard
-                  key={b.key}
+                  key={b.groupKey}
                   icon="📖"
                   title={b.title || '제목 없는 책'}
                   lang={b.title ? contentLangOf(b.chapters[0]) : undefined}

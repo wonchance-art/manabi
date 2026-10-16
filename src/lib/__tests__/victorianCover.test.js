@@ -118,7 +118,7 @@ describe('그리기', () => {
 describe('배선 — 서재 카드·게시 화면', () => {
   it('서재 카드: Standard Ebooks 책은 빅토리아 표지 + 원제(영어) + 한국어 제목 · 단어 수 · 장 이름, 「다음 과 적기」 없음', () => {
     const page = read('src/views/MaterialsPage.jsx');
-    expect(page).toContain('const english = work ? null : standardEbooksWorkOfBook(b);');
+    expect(page).toContain('const english = work || !canonicalCovers ? null : standardEbooksWorkOfBook(b);'); // 공개 목록은 정본 표지 닫음(fail closed — bookMeta.test.js)
     expect(page).toContain('art: <VictorianCover work={english} />,');
     expect(page).toContain("english.words && `${english.words.toLocaleString()}단어`");
     expect(page).toContain('footer={!work && !english && b.chapters[0]?.owner_id === user?.id ? (');
