@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { literatureBatchTargets,
+  literatureExposedRows,
   literatureBoundaryIssues,
   literatureResumeTargets,
   LITERATURE_PUBLISH_STATE,
@@ -81,6 +82,18 @@ describe('준비 → 분석 → 검수 → 공개(P0-3 · P0-4)', () => {
     expect(literatureStage(book, [row(1, { raw_text: '書き換え' })])).toBe('conflict');
   });
 
+  it('exposed: 분석 전이거나 한 번도 검수하지 않은 장이 공개돼 있으면(P0-3 이전 바로 공개) 경고 — 이어 분석·일괄 대상이 아니다', () => {
+    const legacy = [1, 2, 3, 4, 5, 6].map((order) => row(order, { status: 'pending', visibility: 'public' }));
+    expect(literatureStage(book, legacy)).toBe('exposed');
+    expect(literatureStage(book, all({ visibility: 'public', review: null }))).toBe('exposed'); // 분석 뒤 공개 상태로 검수 없이
+    expect(literatureExposedRows(legacy)).toHaveLength(6);
+    // 정상 공개 뒤 재분석으로 검수가 낡은 장은 exposed가 아니다(검수 기록이 있다 — released 유지)
+    expect(literatureStage(book, all({ visibility: 'public', revision: 'r2' }))).toBe('released');
+    const summaries = [{ key: 'x', publishable: true, stage: 'exposed', plan: { conflicts: [], insert: [] } }];
+    expect(literatureBatchTargets(summaries)).toEqual([]);
+    expect(literatureResumeTargets(summaries)).toEqual([]);
+  });
+
   it('공개는 모든 장이 있고 모두 분석·검수 완료일 때만 — 비공개 장만 고른다', () => {
     expect(planLiteratureRelease(book, all())).toEqual({ ok: true, reason: null, ids: [101, 102, 103, 104, 105, 106] });
     const mixed = all().map((item, index) => (index < 2 ? { ...item, visibility: 'public' } : item));
@@ -113,7 +126,7 @@ describe('관리자 화면 요약·루비 적용률', () => {
     const summary = literatureBookSummary(book, [{ ...row(1), status: 'completed', visibility: 'public' }]);
     expect(summary).toMatchObject({ key: 'aozora-000121-000628', title: 'ごん狐', author: '新美南吉', level: 'N3 중급', total: 6, publishable: true,
       rights: { basis: 'public-domain', reviewedJurisdictions: ['JP', 'KR', 'US'], publishedYear: 1932, authorDeathYear: 1943, charset: '新字新仮名' },
-      plan: { state: 'partial', insert: [2, 3, 4, 5, 6] }, stage: 'preparing' });
+      plan: { state: 'partial', insert: [2, 3, 4, 5, 6] }, stage: 'exposed' }); // 검수 기록 없이 공개된 장이 있다
     expect(summary.chapters[0]).toEqual({ order: 1, title: '一', chars: book.chapters[0].rawText.length, rubyLocks: book.chapters[0].metadata.literature.rubyLocks.length,
       material: { id: 101, status: 'completed', visibility: 'public', reviewed: false } });
     expect(summary.chapters[1].material).toBe(null);

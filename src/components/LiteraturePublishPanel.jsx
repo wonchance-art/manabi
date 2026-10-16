@@ -159,6 +159,7 @@ function stageLabel(book, running, kind) {
     case 'reviewing': return `검수 ${book.chapters.filter((chapter) => chapter.material?.reviewed).length}/${book.total} · ${KIND[kind].reviewHint}`;
     case 'ready': return `검수 ${book.total}/${book.total} · 산책에 아직 안 보여요`;
     case 'released': return '공개됨 · 산책 › 함께 읽는 글';
+    case 'exposed': return '⚠ 검수 전 공개 · 자료 관리에서 비공개로 돌린 뒤 분석·검수해 주세요';
     default: return '확인 필요';
   }
 }
