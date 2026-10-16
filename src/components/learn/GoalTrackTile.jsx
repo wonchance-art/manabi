@@ -7,7 +7,7 @@
  * 과정 목록은 목표가 있을 때만 /api/goal-catalog에서 받는다(홈 페이지에 정본 투영을 싣지 않는다 — P4).
  * 목표가 없으면 「목표를 정하면」 빈 상태 — 목표 편집은 현황의 한 모달(목표 · D-Day)에서만 한다.
  */
-import { useMemo } from 'react';
+import { useId, useMemo } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/AuthContext';
@@ -84,15 +84,29 @@ export function GoalTrackSkeleton({ className = '' }) {
   );
 }
 
-export default function GoalTrackTile({ className = '', href = '/progress', editHref = '/progress?goal=edit', onOpen }) {
-  const { status, view, retry } = useGoalTrack();
+// 진도 실패 알림 — 알림 영역은 칸 바깥에 늘 그려 두고 내용만 넣는다(칸은 상태마다 다른 요소라 칸 안의 영역은 매번 새로 생기고,
+// 내용과 함께 생기는 role=status는 화면 낭독기가 놓칠 수 있다 — StudySessionPage grammarNotice와 같은 방식). 칸 밖이어도
+// .skeleton-sr(absolute)라 배움 격자의 칸을 차지하지 않는다. 보이는 실패 줄은 같은 말을 두 번 읽지 않게 숨기고, 「다시 시도」가 이 영역을 설명으로 가리킨다.
+export const GOAL_PROGRESS_FAILED = '목표 진도를 불러오지 못했어요.';
+
+export default function GoalTrackTile(props) {
+  const track = useGoalTrack();
+  const noticeId = useId();
+  return <>
+    <span className="skeleton-sr" role="status" id={noticeId}>{track.status === 'error' ? GOAL_PROGRESS_FAILED : ''}</span>
+    <GoalTrackBody {...props} track={track} noticeId={noticeId} />
+  </>;
+}
+
+function GoalTrackBody({ className = '', href = '/progress', editHref = '/progress?goal=edit', onOpen, track, noticeId }) {
+  const { status, view, retry } = track;
   if (status === 'loading') return <GoalTrackSkeleton className={className} />;
   // 진도를 받지 못했다 — 링크 칸 안에 버튼을 둘 수 없어 칸 자체는 링크가 아니다(문구 표준 「…지 못했어요.」 + 「다시 시도」).
   if (status === 'error') {
     return (
       <div className={`learn-tile learn-goal learn-goal--empty ${className}`.trim()}>
-        <span><span className="learn-goal__line">목표 진도를 불러오지 못했어요.</span></span>
-        <button type="button" className="learn-button-s" onClick={retry}>다시 시도</button>
+        <span aria-hidden="true"><span className="learn-goal__line">{GOAL_PROGRESS_FAILED}</span></span>
+        <button type="button" className="learn-button-s" aria-describedby={noticeId} onClick={retry}>다시 시도</button>
       </div>
     );
   }

@@ -181,7 +181,21 @@ describe('④ 목표 칸 — 받는 중 · 없음 · 실패를 가른다', () =>
     const failed = tile(auth, { 'goal-catalog': { data: catalog, isPending: false }, 'goal-progress': { isError: true, isPending: false } });
     expect(busy(failed)).toBe(false);
     expect(failed).toContain('목표 진도를 불러오지 못했어요.');
-    expect(failed).toContain('<button type="button" class="learn-button-s">다시 시도</button>');
+    expect(failed).toMatch(/<button type="button" class="learn-button-s" aria-describedby="[^"]+">다시 시도<\/button>/);
     expect(failed).not.toContain('href=');
+  });
+  // 실패 알림은 칸 밖에 늘 있는 role=status 한 곳에 내용만 들어간다(칸은 상태마다 다른 요소 — 칸 안 영역은 매번 새로 생겨 놓친다).
+  it('실패 알림 영역은 받는 중 · 빈 상태 · 실패 모두 같은 자리에 늘 있고, 실패 때만 문구가 들어간다 · 보이는 줄은 한 번만 읽힌다', () => {
+    const auth = { user, profile: goal, loading: false, profileLoading: false };
+    const live = (html) => html.match(/^<span class="skeleton-sr" role="status" id="([^"]+)">([^<]*)<\/span>/);
+    const loading = tile(auth, { 'goal-catalog': { data: catalog, isPending: false } });
+    const empty = tile({ user, profile: {}, loading: false, profileLoading: false });
+    const failed = tile(auth, { 'goal-catalog': { data: catalog, isPending: false }, 'goal-progress': { isError: true, isPending: false } });
+    for (const html of [loading, empty]) { expect(live(html)?.[2]).toBe(''); expect(statuses(html)).toHaveLength(1); }
+    const [, id, text] = live(failed);
+    expect(text).toBe('목표 진도를 불러오지 못했어요.');
+    expect(statuses(failed)).toHaveLength(1);
+    expect(failed).toContain(`aria-describedby="${id}"`);
+    expect(failed).toContain('<span aria-hidden="true"><span class="learn-goal__line">목표 진도를 불러오지 못했어요.</span></span>');
   });
 });

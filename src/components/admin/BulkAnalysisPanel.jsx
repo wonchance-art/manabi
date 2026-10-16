@@ -78,9 +78,14 @@ export default function BulkAnalysisPanel({ ownerId, toast }) {
         : candidates.isError ? <p role="alert">분석 전 자료를 불러오지 못했어요. <Button variant="secondary" size="sm" onClick={() => candidates.refetch()}>다시 시도</Button></p>
         : <>
           <p>내가 공개한 자료 중 아직 분석하지 않은 글 {targets.length}편이에요. 분석하면 뷰어에서 단어를 눌러 뜻을 보고 담을 수 있어요.</p>
-          {running
-            ? <p role="status" aria-live="polite">{running.done}/{running.total}편 분석하고 있어요… <Button variant="secondary" size="sm" onClick={() => abortRef.current?.abort()}>멈추기</Button></p>
-            : <Button disabled={targets.length === 0} onClick={() => setConfirming(true)}>{targets.length}편 분석하기</Button>}
+          {/* 진행 알림 영역은 늘 그려 두고 내용만 바꾼다 — 내용과 함께 생기는 role=status는 화면 낭독기가 놓칠 수 있다
+              (StudySessionPage grammarNotice와 같은 방식). 「멈추기」는 영역 밖이라 진행이 바뀔 때마다 버튼 이름을 다시 읽지 않는다. */}
+          <p style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+            <span role="status" aria-live="polite">{running ? `${running.done}/${running.total}편 분석하고 있어요…` : ''}</span>
+            {running
+              ? <Button variant="secondary" size="sm" onClick={() => abortRef.current?.abort()}>멈추기</Button>
+              : <Button disabled={targets.length === 0} onClick={() => setConfirming(true)}>{targets.length}편 분석하기</Button>}
+          </p>
           {failed.length > 0 && <details><summary>건너뛴 {failed.length}편</summary><ul>{failed.map((item) => <li key={item.id}>{item.title} — {item.message}</li>)}</ul></details>}
         </>}
       <ConfirmModal open={confirming} title={`${targets.length}편을 분석할까요?`}

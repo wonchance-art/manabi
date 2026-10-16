@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { sliceBetween } from './helpers/sliceBetween';
 import { BULK_FAILURE_STOP, BULK_PENDING_STATUSES, bulkAnalysisTargets } from '../bulkAnalysis';
 
 // 분석 전 공개 자료 일괄 분석(BULK-ANALYZE-001, 오너 「권장대로」 2026-10-17 KST).
@@ -34,5 +35,14 @@ describe('패널 배선 — 뷰어와 같은 정본 경로', () => {
     expect(panel).toContain('abortRef.current?.abort()');
     expect(panel).toContain('<ConfirmModal open={confirming}');
     expect(fs.readFileSync('src/views/AdminPage.jsx', 'utf8')).toContain('<BulkAnalysisPanel ownerId={user?.id} toast={toast} />');
+  });
+  it('진행 알림 영역은 늘 그려 두고 내용만 바꾼다 · 「멈추기」는 영역 밖', () => {
+    const live = "<span role=\"status\" aria-live=\"polite\">{running ? `${running.done}/${running.total}편 분석하고 있어요…` : ''}</span>";
+    expect(panel).toContain(live);
+    // 영역이 running 조건 안에서 생기면(내용과 함께 생기는 status) 화면 낭독기가 놓친다.
+    expect(panel).not.toMatch(/running\s*\?\s*<p role="status"/);
+    // 영역 바로 뒤가 버튼 분기 — 「멈추기」는 영역(span) 안이 아니라 그 뒤 형제다.
+    expect(sliceBetween(panel, live).slice(live.length).trimStart().startsWith('{running')).toBe(true);
+    expect(sliceBetween(panel, '<span role="status"', '</span>')).not.toContain('멈추기');
   });
 });
