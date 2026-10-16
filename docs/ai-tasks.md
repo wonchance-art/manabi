@@ -961,6 +961,8 @@
   · 같은 PR(HYDRATION-AUTH-001): smoke N4 챕터 「.fr-check 2개」 간헐(1/20) 원인 = 스트리밍 본문이 다 오기 전 AuthProvider 값 변경 →
     대기 중 Suspense 경계를 클라이언트가 새로 그림. 세션 복원 · 게스트 확정을 DOMContentLoaded 뒤로(SDK 받기는 즉시) — 진단 40회 재렌더 0.
     main 병합(#1508 HSK 7–9) 충돌 2곳 해소. keepalive 실측: Chromium 탭 닫기 · 새로 고침 · 다른 출처 이동 모두 사전 요청 + 본 요청 도착(Safari · Firefox 미측정).
+  · 같은 PR(교차 리뷰 수리): 닫힘 전송 정본 하나(src/lib/keepalive.js — 문법 · 아는 단어 공용, 두 번째 구현 금지 계약) · 대기 화면 뒤 실제 제목이
+    오면 포커스를 한 번 그리로(2초 · 조작 시 멈춤) · SDK 받기 재시도 동안은 loading(손님 깜빡임 없음, 상한 뒤에만 로그아웃 확정).
   · 보류: CJK 가변 weight(@font-face −67%, brotli 전송 −2%) — 600 · 650 · 800 · 300 굵기가 실제 값으로 바뀌는 시각 변경이라 오너 확인 뒤.
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
