@@ -3,9 +3,10 @@ import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import { sliceBetween } from './helpers/sliceBetween.js';
 
-// grammar_review UPDATE 체인을 받아 적는 스텁 — 실제 조건(.eq · .or)과 값이 무엇이었는지 본다.
+// grammar_review UPDATE 체인을 받아 적는 스텁 — 실제 조건(.eq · .is)과 값, 바뀐 행 수(select)가 무엇이었는지 본다.
 const writes = [];
 let writeError = null;
+let changedRows = [{ slug: 'n5-wa' }]; // 비교 후 쓰기가 바꾼 행(select가 돌려줌) — []이면 0행
 vi.mock('../supabase.js', () => ({
   supabase: {
     from: (table) => {
@@ -13,14 +14,19 @@ vi.mock('../supabase.js', () => ({
       const chain = {
         update: (values) => { call.values = values; writes.push(call); return chain; },
         eq: (col, val) => { call.filters.push(['eq', col, val]); return chain; },
+        is: (col, val) => { call.filters.push(['is', col, val]); return chain; },
         or: (expr) => { call.filters.push(['or', expr]); return chain; },
+        select: (cols) => {
+          call.select = cols;
+          return { then: (ok, bad) => Promise.resolve({ data: writeError ? null : changedRows, error: writeError }).then(ok, bad) };
+        },
         then: (ok, bad) => Promise.resolve({ error: writeError }).then(ok, bad),
       };
       return chain;
     },
   },
 }));
-const { createGrammarRetry, GRAMMAR_RETRY_LIMIT, gradeGrammarReview, sendGrammarGradeKeepalive } = await import('../grammarSrs.js');
+const { createGrammarRetry, GRAMMAR_RETRY_LIMIT, gradeGrammarReview, grammarCasPredicate, sendGrammarGradeKeepalive } = await import('../grammarSrs.js');
 
 // 계약: /study 문법 재스케줄 보류함 — 저장 실패(오프라인 등)를 버리지 않고 남겼다가 같은 정본 함수로 다시 보낸다.
 // review_events는 오프라인 큐로 올라가는데 grammar_review 일정만 조용히 사라지던 틈(StudySessionPage가 결과를 버림).
@@ -40,7 +46,8 @@ describe('createGrammarRetry', () => {
     expect(box.size()).toBe(0);
     expect(grade).toHaveBeenCalledTimes(2);
     // 같은 행 · 같은 채점 · 첫 제출 때 고정한 채점 시각으로 다시
-    expect(grade.mock.calls[1]).toEqual([row('n5-wa'), 3, { reviewedAt: grade.mock.calls[0][2].reviewedAt }]);
+    expect(grade.mock.calls[1]).toEqual([row('n5-wa'), 3, { reviewedAt: grade.mock.calls[0][2].reviewedAt, compareAndSet: true }]);
+    expect(grade.mock.calls[0][2].compareAndSet).toBe(true); // 첫 제출도 비교 후 쓰기
     expect(Date.parse(grade.mock.calls[0][2].reviewedAt)).not.toBeNaN();
   });
 
@@ -150,7 +157,7 @@ describe('오프라인 · 닫힘 · 중복 반영', () => {
     await box.beacon(() => true, send);
     await box.beacon(() => true, send);
     expect(send).toHaveBeenCalledTimes(2);
-    expect(send.mock.calls[0]).toEqual([row('n5-wa'), 3, { reviewedAt: grade.mock.calls[0][2].reviewedAt }]);
+    expect(send.mock.calls[0]).toEqual([row('n5-wa'), 3, { reviewedAt: grade.mock.calls[0][2].reviewedAt, compareAndSet: true }]);
     expect(onGiveUp).not.toHaveBeenCalled();
     expect(box.size()).toBe(1); // 실패해도 남는다 — bfcache로 돌아오면 다음 retry가 보낸다
     online = false;
@@ -168,55 +175,99 @@ describe('오프라인 · 닫힘 · 중복 반영', () => {
     expect(box.size()).toBe(0);
   });
 
-  it('gradeGrammarReview(reviewedAt) — 그 시각을 싣고, 그보다 이전에 채점된 행만 바꾼다(두 번 닿아도 한 번 반영)', async () => {
-    writes.length = 0;
-    const at = '2026-10-16T10:00:00.000Z';
-    const saved = await gradeGrammarReview(row('n5-wa'), 3, { reviewedAt: at });
+  it('비교 후 쓰기 조건 — 세션 시작 행의 last_reviewed_at(없으면 is null), 칸이 아예 없으면 조건 없음(옛 프리페치 재료)', () => {
+    expect(grammarCasPredicate(row('n5-wa', { last_reviewed_at: '2026-10-10T01:02:03.456+00:00' }))).toEqual({ op: 'eq', value: '2026-10-10T01:02:03.456+00:00' });
+    expect(grammarCasPredicate(row('n5-wa', { last_reviewed_at: null }))).toEqual({ op: 'is', value: null });
+    expect(grammarCasPredicate(row('n5-wa'))).toBeNull();
+  });
+
+  it('gradeGrammarReview(compareAndSet) — 시계를 비교하지 않고 시작 행과 같을 때만 바꾼다 · 0행은 conflict(끝난 채점)', async () => {
+    const at = '2026-10-16T10:00:00.000Z', seen = '2026-10-10T01:02:03.456+00:00';
+    writes.length = 0; changedRows = [{ slug: 'n5-wa' }];
+    const saved = await gradeGrammarReview(row('n5-wa', { last_reviewed_at: seen }), 3, { reviewedAt: at, compareAndSet: true });
     expect(saved).toBeTruthy();
-    expect(writes).toHaveLength(1);
+    expect(saved.conflict).toBeUndefined();
     expect(writes[0].table).toBe('grammar_review');
     expect(writes[0].values.last_reviewed_at).toBe(at);
     expect(writes[0].filters).toEqual([
-      ['eq', 'user_id', 'u1'], ['eq', 'lang', 'Japanese'], ['eq', 'slug', 'n5-wa'],
-      ['or', `last_reviewed_at.is.null,last_reviewed_at.lt."${at}"`],
+      ['eq', 'user_id', 'u1'], ['eq', 'lang', 'Japanese'], ['eq', 'slug', 'n5-wa'], ['eq', 'last_reviewed_at', seen],
     ]);
-    // 기존 호출(GrammarReviewSession — 시각 없이)은 조건 없이 지금 시각으로 그대로
+    expect(writes[0].select).toBe('slug'); // 바뀐 행 수를 받아야 0행을 가른다
+    expect(writes[0].filters.some(([op]) => op === 'or')).toBe(false); // 기기 시계(lt reviewedAt) 조건은 없다
+    // 한 번도 채점 안 한 행은 is null
     writes.length = 0;
-    await gradeGrammarReview(row('n5-wa'), 3);
-    expect(writes[0].filters.some(([op]) => op === 'or')).toBe(false);
+    await gradeGrammarReview(row('n5-wa', { last_reviewed_at: null }), 3, { reviewedAt: at, compareAndSet: true });
+    expect(writes[0].filters.at(-1)).toEqual(['is', 'last_reviewed_at', null]);
+    // 0행 — 이미 반영됐거나 그사이 다른 곳에서 채점했다: 실패(null)가 아니라 conflict
+    changedRows = [];
+    const conflict = await gradeGrammarReview(row('n5-wa', { last_reviewed_at: seen }), 3, { reviewedAt: at, compareAndSet: true });
+    expect(conflict).toMatchObject({ slug: 'n5-wa', conflict: true });
+    changedRows = [{ slug: 'n5-wa' }];
+    // 기존 호출(GrammarReviewSession — 시각 · 조건 없이)은 그대로
+    writes.length = 0;
+    await gradeGrammarReview(row('n5-wa', { last_reviewed_at: seen }), 3);
+    expect(writes[0].filters).toHaveLength(3);
+    expect(writes[0].select).toBeUndefined();
     writeError = { message: 'offline' };
-    expect(await gradeGrammarReview(row('n5-wa'), 3, { reviewedAt: at })).toBeNull();
+    expect(await gradeGrammarReview(row('n5-wa', { last_reviewed_at: seen }), 3, { reviewedAt: at, compareAndSet: true })).toBeNull();
     writeError = null;
   });
 
-  it('sendGrammarGradeKeepalive — 같은 UPDATE를 keepalive PATCH로(같은 값 · 같은 조건 · 세션 토큰)', async () => {
-    const at = '2026-10-16T10:00:00.000Z';
+  it('0행(conflict)은 보류함에서 빠지고, 실패로 세지도 · 다시 보내지도 · 포기 알림도 하지 않는다', async () => {
+    const grade = vi.fn(async (r) => ({ ...r, conflict: true }));
+    const onGiveUp = vi.fn();
+    const box = createGrammarRetry({ grade, onGiveUp, limit: 0 });
+    expect(await box.submit(row('n5-wa', { last_reviewed_at: null }), 3)).toBe(true);
+    expect(box.size()).toBe(0);
+    await box.retry();
+    expect(grade).toHaveBeenCalledTimes(1);
+    expect(onGiveUp).not.toHaveBeenCalled();
+  });
+
+  it('sendGrammarGradeKeepalive — 같은 UPDATE를 keepalive PATCH로(같은 값 · 같은 비교 후 쓰기 조건 · 세션 토큰 · 바뀐 행 수)', async () => {
+    const at = '2026-10-16T10:00:00.000Z', seen = '2026-10-10T01:02:03.456+00:00';
+    const r = row('n5-wa', { last_reviewed_at: seen });
     writes.length = 0;
-    await gradeGrammarReview(row('n5-wa'), 3, { reviewedAt: at }); // FSRS 모듈을 붙잡아 둔다(화면에서는 첫 제출이 한다)
-    const fetchImpl = vi.fn(async () => ({ ok: true }));
-    const ok = await sendGrammarGradeKeepalive(row('n5-wa'), 3, {
-      reviewedAt: at, accessToken: 'tok', url: 'https://x.supabase.co', apiKey: 'anon', fetchImpl,
-    });
-    expect(ok).toBe(true);
+    await gradeGrammarReview(r, 3, { reviewedAt: at, compareAndSet: true }); // FSRS 모듈을 붙잡아 둔다(화면에서는 첫 제출이 한다)
+    const fetchImpl = vi.fn(async () => ({ ok: true, json: async () => [{ slug: 'n5-wa' }] }));
+    const ok = await sendGrammarGradeKeepalive(r, 3, { reviewedAt: at, accessToken: 'tok', url: 'https://x.supabase.co', apiKey: 'anon', fetchImpl });
+    expect(ok).toBeTruthy();
+    expect(ok.conflict).toBeUndefined();
     const [href, init] = fetchImpl.mock.calls[0];
     const u = new URL(href);
     expect(u.origin + u.pathname).toBe('https://x.supabase.co/rest/v1/grammar_review');
     expect(Object.fromEntries(u.searchParams)).toEqual({
-      user_id: 'eq.u1', lang: 'eq.Japanese', slug: 'eq.n5-wa', or: `(last_reviewed_at.is.null,last_reviewed_at.lt."${at}")`,
+      user_id: 'eq.u1', lang: 'eq.Japanese', slug: 'eq.n5-wa', last_reviewed_at: `eq.${seen}`, select: 'slug',
     });
+    expect(href).toContain('%2B00%3A00'); // 시각의 + 가 공백으로 읽히지 않게 인코딩된다
     expect(init).toMatchObject({ method: 'PATCH', keepalive: true });
-    expect(init.headers).toMatchObject({ apikey: 'anon', Authorization: 'Bearer tok' });
+    expect(init.headers).toMatchObject({ apikey: 'anon', Authorization: 'Bearer tok', Prefer: 'return=representation' });
     const body = JSON.parse(init.body);
     expect(body.last_reviewed_at).toBe(at);
     expect(Object.keys(body).sort()).toEqual(Object.keys(writes[0].values).sort());
+    // 한 번도 채점 안 한 행은 is.null, 0행은 conflict(끝난 채점)
+    const nullRow = row('n5-wa', { last_reviewed_at: null });
+    const empty = vi.fn(async () => ({ ok: true, json: async () => [] }));
+    expect(await sendGrammarGradeKeepalive(nullRow, 3, { reviewedAt: at, accessToken: 'tok', url: 'https://x', apiKey: 'a', fetchImpl: empty }))
+      .toMatchObject({ conflict: true });
+    expect(new URL(empty.mock.calls[0][0]).searchParams.get('last_reviewed_at')).toBe('is.null');
     // 토큰이 없거나 응답이 실패면 false — 보류분은 그대로 남는다
-    expect(await sendGrammarGradeKeepalive(row('n5-wa'), 3, { reviewedAt: at, url: 'https://x', apiKey: 'a', fetchImpl })).toBe(false);
-    expect(await sendGrammarGradeKeepalive(row('n5-wa'), 3, {
+    expect(await sendGrammarGradeKeepalive(r, 3, { reviewedAt: at, url: 'https://x', apiKey: 'a', fetchImpl })).toBe(false);
+    expect(await sendGrammarGradeKeepalive(r, 3, {
       reviewedAt: at, accessToken: 'tok', url: 'https://x', apiKey: 'a', fetchImpl: async () => ({ ok: false }),
     })).toBe(false);
-    expect(await sendGrammarGradeKeepalive(row('n5-wa'), 3, {
+    expect(await sendGrammarGradeKeepalive(r, 3, {
       reviewedAt: at, accessToken: 'tok', url: 'https://x', apiKey: 'a', fetchImpl: async () => { throw new TypeError('offline'); },
     })).toBe(false);
+  });
+
+  it('세션 재료의 문법 행은 last_reviewed_at을 싣는다 — 비교 후 쓰기의 기준', () => {
+    const materials = read('src/lib/studyMaterials.js');
+    expect(materials.match(/next_review_at: row\.next_review_at, last_reviewed_at: row\.last_reviewed_at \?\? null \}/g)).toHaveLength(2);
+    const lib = read('src/lib/grammarSrs.js');
+    expect(lib).not.toContain('last_reviewed_at.lt.');
+    expect(sliceBetween(lib, 'export function sendGrammarGradeKeepalive(', 'export const GRAMMAR_RETRY_LIMIT')).toContain('grammarCasPredicate(row)');
+    expect(sliceBetween(lib, 'export async function gradeGrammarReview(', '\n}')).toContain('grammarCasPredicate(row)');
   });
 });
 
@@ -229,16 +280,20 @@ describe('세션 화면 배선', () => {
     expect(write).toContain('pendingGrammarRef.current.submit({ ...chapter.srs, user_id: recorder }, chapter.rating)');
     expect(write).toContain('if (!saved) rememberGrammarToken(recorder);');
     expect(page).not.toMatch(/^\s*gradeGrammarReview\(/m);
-    expect(page).toContain('createGrammarRetry({ grade: gradeGrammarReview, onGiveUp: () => setGrammarGaveUp(true) })');
+    expect(page).toContain('createGrammarRetry({ grade: gradeGrammarReview, onGiveUp: () => { grammarGiveUpsRef.current += 1; setGrammarGaveUp(true); } })');
   });
 
   it('online · 화면 떠남 · 세션 종료(fireEffects)에서 다시 보내고, pagehide는 keepalive로 보낸다', () => {
     const online = sliceBetween(page, "window.addEventListener('online', retryPendingGrammar);", '}, []);');
     expect(online).toContain("window.removeEventListener('online', retryPendingGrammar);");
-    // 떠날 때 한 번 더 — 그래도 오프라인이면 사라질 보류분을 알린다
-    expect(online).toMatch(/retryPendingGrammar\(\);\s*if \(pendingGrammarRef\.current\.size\(\) > 0 && typeof navigator !== 'undefined' && navigator\.onLine === false\) \{\s*toast\(GRAMMAR_NOT_SAVED, 'warning', 6000\);/);
+    // 떠날 때 한 번 더 — 그 시도 뒤에도 남았거나 포기했으면 연결 여부와 무관하게 알린다(알림 영역은 화면과 함께 사라졌다)
+    expect(online).toContain('Promise.resolve(retryPendingGrammar()).catch(() => {}).then(() => {');
+    expect(online).toContain("if (box.size() > 0 || grammarGiveUpsRef.current > giveUpsBefore) toast(GRAMMAR_NOT_SAVED, 'warning', 6000);");
+    expect(online).not.toContain('navigator.onLine');
     const hide = sliceBetween(page, 'function onPageHide() {', "window.addEventListener('pagehide', onPageHide);");
     expect(hide).toMatch(/if \(!recorder\) return;\s*batcherRef\.current\?\.flush\(\);\s*beaconPendingGrammar\(recorder\);/);
+    // 로그인이 풀린 채 닫히면 보류분이 사라지는 한계는 주석으로 남긴다(문구 변경은 오너 목업 뒤 — 리뷰 N3)
+    expect(hide).toContain('알려진 한계(리뷰 N3');
     const beacon = sliceBetween(page, 'function beaconPendingGrammar(owner) {', '\n  }\n');
     expect(beacon).toContain('if (held?.userId !== owner) { retryPendingGrammar(); return; }');
     expect(beacon).toContain('pendingGrammarRef.current.beacon(row => row.user_id === owner,');

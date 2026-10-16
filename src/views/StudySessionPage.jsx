@@ -142,8 +142,9 @@ export default function StudySessionPage({
   // 거르는 소비자(pendingReviews · flush · 단어장 대기 수)가 여럿이라 새 형식이 이벤트로 새고, fsrsOperationOutbox는 서버 FSRS
   // 작업(UUID 어휘 카드) 계약이다. 대신 오프라인이면 횟수를 쓰지 않고, 닫힐 때는 keepalive로 보내고, 못 보내고 떠나면 알린다.
   const pendingGrammarRef = useRef(null);
+  const grammarGiveUpsRef = useRef(0);            // 포기한 문법 일정 수 — 화면을 떠난 뒤(알림 영역이 없을 때) 포기도 토스트로 알린다
   if (!pendingGrammarRef.current) {
-    pendingGrammarRef.current = createGrammarRetry({ grade: gradeGrammarReview, onGiveUp: () => setGrammarGaveUp(true) });
+    pendingGrammarRef.current = createGrammarRetry({ grade: gradeGrammarReview, onGiveUp: () => { grammarGiveUpsRef.current += 1; setGrammarGaveUp(true); } });
   }
   const grammarTokenRef = useRef(null);            // keepalive용 세션 계정 토큰 { userId, token } — 보류가 생길 때 받아 둔다
   const heldSettlesRef = useRef([]);               // 로그인이 풀린 동안 확정한 문항 — 같은 세션 계정이 돌아오면 그때 기록한다
@@ -376,6 +377,9 @@ export default function StudySessionPage({
   useEffect(() => {
     function onPageHide() {
       // 세션 계정일 때만 — 계정이 바뀐 뒤 flush하면 A의 이벤트가 B의 토큰으로 나가 RLS에 막혀 조용히 사라진다.
+      // 알려진 한계(리뷰 N3, 2026-10-17 KST): 로그인이 풀린 채(authLost) 탭을 닫으면 보류한 문항(heldSettlesRef) ·
+      // 이벤트(heldEventsRef) · 배치에 남은 이벤트 · 문법 보류분은 보낼 계정 토큰이 없어 여기서 함께 사라진다.
+      // 화면에는 「로그인이 필요해요」 배너가 떠 있다. 문구를 바꾸려면 오너 목업이 먼저라 지금은 동작만 이대로 둔다.
       const recorder = recorderRef.current;
       if (!recorder) return;
       batcherRef.current?.flush();
@@ -392,16 +396,18 @@ export default function StudySessionPage({
   }, [user?.id]);
 
   // ── 연결이 돌아오면 보류한 문법 재스케줄을 다시 보낸다. 화면을 떠날 때(「홈으로」 등)도 한 번 —
-  // 그때도 못 보내면(오프라인) 보류함은 이 화면과 함께 사라지므로 조용히 버리지 않고 알린다. ──
+  // 그 시도가 끝난 뒤에도 남았거나(오프라인 · 서버 오류 · 토큰 만료 · 로그인 풀림) 그 시도에서 포기했으면, 보류함은 이 화면과
+  // 함께 사라지므로 조용히 버리지 않고 전역 토스트로 알린다(연결 여부와 무관 — 알림 영역은 화면과 함께 사라졌다). ──
   // retryPendingGrammar는 ref만 읽어 첫 렌더의 함수로도 지금 계정을 본다.
   useEffect(() => {
     window.addEventListener('online', retryPendingGrammar);
     return () => {
       window.removeEventListener('online', retryPendingGrammar);
-      retryPendingGrammar();
-      if (pendingGrammarRef.current.size() > 0 && typeof navigator !== 'undefined' && navigator.onLine === false) {
-        toast(GRAMMAR_NOT_SAVED, 'warning', 6000);
-      }
+      const box = pendingGrammarRef.current, giveUpsBefore = grammarGiveUpsRef.current;
+      if (box.size() === 0) return;
+      Promise.resolve(retryPendingGrammar()).catch(() => {}).then(() => {
+        if (box.size() > 0 || grammarGiveUpsRef.current > giveUpsBefore) toast(GRAMMAR_NOT_SAVED, 'warning', 6000);
+      });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -853,8 +859,8 @@ export default function StudySessionPage({
   /** 보류한 문법 재스케줄 재시도 — 세션 계정의 채점만 보낸다(오프라인이면 보류함이 횟수를 쓰지 않고 기다린다). */
   function retryPendingGrammar() {
     const owner = recorderRef.current;
-    if (!owner) return;
-    pendingGrammarRef.current.retry(row => row.user_id === owner).catch(() => {});
+    if (!owner) return Promise.resolve();
+    return pendingGrammarRef.current.retry(row => row.user_id === owner).catch(() => {});
   }
 
   /** keepalive용 토큰을 미리 받아 둔다 — pagehide에서는 기다릴 수 없다. 세션 계정의 토큰일 때만. */

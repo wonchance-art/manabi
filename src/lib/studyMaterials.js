@@ -239,7 +239,8 @@ async function buildWeaknessMaterials(supabase, userId, lang, ref, reviewEventRo
       if (!sec) return null;
       const row = srsBySlug.get(slug);
       const srs = row
-        ? { lang: row.lang, slug: row.slug, interval: row.interval, ease_factor: row.ease_factor, repetitions: row.repetitions, next_review_at: row.next_review_at }
+        // last_reviewed_at = 이 세션이 읽은 그 행의 표지 — 문법 보류함이 비교 후 쓰기(grammarCasPredicate)로 쓴다.
+        ? { lang: row.lang, slug: row.slug, interval: row.interval, ease_factor: row.ease_factor, repetitions: row.repetitions, next_review_at: row.next_review_at, last_reviewed_at: row.last_reviewed_at ?? null }
         : { lang, slug };
       return {
         pattern: sec.pattern,
@@ -424,7 +425,8 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
     const items = [...q.meaning, ...q.apply];
     if (!items.length) return null;
     return {
-      srs: { lang: row.lang, slug: row.slug, interval: row.interval, ease_factor: row.ease_factor, repetitions: row.repetitions, next_review_at: row.next_review_at },
+      // last_reviewed_at = 이 세션이 읽은 그 행의 표지 — 문법 보류함이 비교 후 쓰기(grammarCasPredicate)로 쓴다.
+      srs: { lang: row.lang, slug: row.slug, interval: row.interval, ease_factor: row.ease_factor, repetitions: row.repetitions, next_review_at: row.next_review_at, last_reviewed_at: row.last_reviewed_at ?? null },
       meta: { slug: row.slug, title: found.chapter.title, level: found.chapter.level, order: found.chapter.order, href: learnerHref(`${ref.base}/grammar/${row.slug}`) },
       items,
     };

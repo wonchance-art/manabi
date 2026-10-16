@@ -116,8 +116,20 @@ export async function countDueGrammar(userId) {
 // 같은 계산을 동기로 쓸 수 있게 붙잡아 둔다(sendGrammarGradeKeepalive).
 let fsrsModule = null;
 
-/** 채점 시각(reviewedAt)보다 이전에 채점된 행만 바꾼다 — 같은 채점이 두 번 닿아도(재시도 · keepalive) 한 번만 반영된다. */
-const olderThan = reviewedAt => `last_reviewed_at.is.null,last_reviewed_at.lt."${reviewedAt}"`;
+/**
+ * 비교 후 쓰기(compare-and-set) 조건 — 세션을 시작할 때 읽은 행(row.last_reviewed_at)과 서버 행이 **같을 때만** 바꾼다.
+ * 기기 시계를 비교하지 않는다(예전 `lt reviewedAt`은 시계가 틀린 기기 하나가 미래 시각을 쓰면 그 뒤 채점이 말없이 멈췄다).
+ * - 한 번 반영되면 last_reviewed_at이 바뀌므로, 같은 채점이 다시 닿아도(재시도 · keepalive · bfcache 복귀) 0행이다.
+ * - 그사이 다른 기기 · 화면이 채점했어도 0행이다 — 더 최신 채점을 낡은 세션 값으로 덮지 않는다.
+ * 행에 last_reviewed_at 칸이 아예 없으면(필드를 싣기 전에 만든 프리페치 재료) 조건 없이 쓴다 — 같은 시작 행으로 계산해
+ * 다시 써도 값이 거의 같아 일정이 두 번 진행되지 않는다(예전 동작 그대로).
+ * @returns {null | { op: 'is' | 'eq', value: string | null }} supabase-js · keepalive URL이 같은 판정을 쓴다.
+ */
+export function grammarCasPredicate(row) {
+  if (!row || !Object.prototype.hasOwnProperty.call(row, 'last_reviewed_at') || row.last_reviewed_at === undefined) return null;
+  return row.last_reviewed_at === null ? { op: 'is', value: null } : { op: 'eq', value: String(row.last_reviewed_at) };
+}
+const casParam = cas => (cas.op === 'is' ? 'is.null' : `eq.${cas.value}`);
 
 /** gradeGrammarReview · keepalive가 같은 값을 쓴다 — 저장 경로가 둘이어도 일정 계산은 하나다. */
 function grammarGradeUpdates(row, rating, reviewedAt) {
@@ -126,11 +138,12 @@ function grammarGradeUpdates(row, rating, reviewedAt) {
 
 /**
  * 복습 결과 반영 — FSRS로 다음 스케줄 계산 후 저장. 성공 시 갱신 행 반환.
- * reviewedAt을 주면(보류함 재시도) 그 시각을 last_reviewed_at으로 싣고, 서버 행이 그보다 이전에 채점됐을 때만 바꾼다
- * — 응답만 잃은 저장을 다시 보내도 간격이 두 번 늘지 않고, 그사이 다른 기기의 더 최신 채점을 덮지 않는다
- * (reviewOutbox.shouldApplyGrade와 같은 원칙). 조건에 걸려 바꾸지 않은 것도 성공이다 — 이미 반영된 채점이다.
+ * reviewedAt을 주면 그 시각을 last_reviewed_at으로 싣는다(보류함은 첫 제출 시각을 고정해 모든 재시도에 싣는다).
+ * compareAndSet(보류함 — 첫 제출 · 재시도 · keepalive 공통)이면 grammarCasPredicate 조건으로 바꾸고 바뀐 행 수를 본다:
+ * 0행이면 `{ ...row, conflict: true }` — 이미 반영됐거나 그사이 다른 곳에서 채점했다. 실패가 아니라 끝난 채점이라
+ * 보류함은 버리고 재시도 · 포기 알림을 하지 않는다. 시각 · 조건 없는 기존 호출(GrammarReviewSession)은 그대로다.
  */
-export async function gradeGrammarReview(row, rating, { reviewedAt = null } = {}) {
+export async function gradeGrammarReview(row, rating, { reviewedAt = null, compareAndSet = false } = {}) {
   if (!row?.user_id) return null;
   try {
     fsrsModule ||= await import('./fsrs.js');
@@ -141,7 +154,14 @@ export async function gradeGrammarReview(row, rating, { reviewedAt = null } = {}
       .eq('user_id', row.user_id)
       .eq('lang', row.lang)
       .eq('slug', row.slug);
-    if (reviewedAt) query = query.or(olderThan(reviewedAt));
+    const cas = compareAndSet ? grammarCasPredicate(row) : null;
+    if (cas) {
+      query = cas.op === 'is' ? query.is('last_reviewed_at', null) : query.eq('last_reviewed_at', cas.value);
+      // 바뀐 행이 돌아와야 0행(이미 반영 · 다른 곳 채점)을 가를 수 있다.
+      const { data, error } = await query.select('slug');
+      if (error || !Array.isArray(data)) return null;
+      return data.length ? { ...row, ...updates } : { ...row, conflict: true };
+    }
     const { error } = await query;
     if (error) return null;
     return { ...row, ...updates };
@@ -152,9 +172,12 @@ export async function gradeGrammarReview(row, rating, { reviewedAt = null } = {}
 
 /**
  * 페이지가 닫히는 순간(pagehide)의 마지막 시도 — supabase-js는 요청마다 keepalive를 줄 수 없고 인증 헤더도
- * 비동기로 붙여, 탭을 닫으면 요청이 나가기 전에 끊긴다. 그래서 같은 PostgREST UPDATE(같은 값 · 같은 reviewedAt 조건)를
- * keepalive fetch로 그 자리에서 보낸다. 토큰은 세션 계정의 것을 호출부가 미리 받아 둔다. FSRS 모듈이 아직 없으면 보내지 않는다.
- * @returns {Promise<boolean>}
+ * 비동기로 붙여, 탭을 닫으면 요청이 나가기 전에 끊긴다. 그래서 같은 PostgREST UPDATE(같은 값 · 같은 비교 후 쓰기 조건
+ * grammarCasPredicate)를 keepalive fetch로 그 자리에서 보낸다. 토큰은 세션 계정의 것을 호출부가 미리 받아 둔다.
+ * FSRS 모듈이 아직 없으면 보내지 않는다.
+ * best-effort다: 다른 출처로 가는 PATCH에 Authorization · JSON 헤더가 붙어 사전 요청(preflight)이 필요한 keepalive라,
+ * 일부 브라우저는 이 요청을 거절할 수 있다(그러면 false — 보류분은 bfcache 복귀 시 다음 retry가 보낸다).
+ * @returns {Promise<false | object>} 반영됐거나(행) 0행(conflict)이면 끝난 채점, 실패는 false.
  */
 export function sendGrammarGradeKeepalive(row, rating, {
   reviewedAt, accessToken,
@@ -165,15 +188,22 @@ export function sendGrammarGradeKeepalive(row, rating, {
     return Promise.resolve(false);
   }
   try {
-    const query = new URLSearchParams({
-      user_id: `eq.${row.user_id}`, lang: `eq.${row.lang}`, slug: `eq.${row.slug}`, or: `(${olderThan(reviewedAt)})`,
-    });
-    return fetchImpl(`${url}/rest/v1/grammar_review?${query}`, {
+    const params = { user_id: `eq.${row.user_id}`, lang: `eq.${row.lang}`, slug: `eq.${row.slug}` };
+    const cas = grammarCasPredicate(row);
+    if (cas) params.last_reviewed_at = casParam(cas);
+    params.select = 'slug'; // 바뀐 행을 돌려받아 0행(이미 반영 · 다른 곳 채점)을 가른다 — gradeGrammarReview와 같다
+    const updates = grammarGradeUpdates(row, rating, reviewedAt);
+    return fetchImpl(`${url}/rest/v1/grammar_review?${new URLSearchParams(params)}`, {
       method: 'PATCH',
       keepalive: true,
-      headers: { apikey: apiKey, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify(grammarGradeUpdates(row, rating, reviewedAt)),
-    }).then(res => !!res?.ok, () => false);
+      headers: { apikey: apiKey, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+      body: JSON.stringify(updates),
+    }).then(async (res) => {
+      if (!res?.ok) return false;
+      const rows = await res.json().catch(() => null);
+      if (!Array.isArray(rows)) return false;
+      return rows.length ? { ...row, ...updates } : { ...row, conflict: true };
+    }, () => false);
   } catch {
     return Promise.resolve(false);
   }
@@ -194,7 +224,8 @@ const browserOnline = () => typeof navigator === 'undefined' || navigator.onLine
  * 그때 호출부가 알린다. 기기 큐(reviewOutbox · fsrsOperationOutbox)는 어휘 이벤트 · 어휘 FSRS 작업 전용 형식이라
  * 문법 일정을 싣지 않는다(StudySessionPage 주석 참고).
  * - 오프라인(navigator.onLine === false)일 때 retry는 시도 횟수를 쓰지 않는다 — 실패할 게 뻔한 시도로 상한을 태우지 않는다.
- * - 채점 시각(reviewedAt)을 첫 제출 때 고정해 모든 재시도에 싣는다 — 두 번 닿아도 한 번만 반영된다.
+ * - 채점 시각(reviewedAt)을 첫 제출 때 고정해 모든 재시도에 싣고, 첫 제출 · 재시도 · keepalive 모두 비교 후 쓰기
+ *   (grammarCasPredicate — 세션 시작 행의 last_reviewed_at과 같을 때만)로 보낸다 — 두 번 닿아도 한 번만 반영된다.
  * @param {{grade?: Function, limit?: number, onGiveUp?: Function, isOnline?: Function, now?: Function}} [options]
  */
 export function createGrammarRetry({
@@ -205,8 +236,10 @@ export function createGrammarRetry({
   const keyOf = row => `${row.user_id}:${row.lang}:${row.slug}`;
   const attempt = async (key, entry, send = grade, { mayGiveUp = true } = {}) => {
     let saved = null;
-    try { saved = await send(entry.row, entry.rating, { reviewedAt: entry.reviewedAt }); } catch { saved = null; }
+    try { saved = await send(entry.row, entry.rating, { reviewedAt: entry.reviewedAt, compareAndSet: true }); } catch { saved = null; }
     if (pending.get(key) !== entry) return; // 그사이 같은 챕터의 새 채점이 들어왔다 — 그쪽이 정본이다.
+    // 반영됐거나 0행(conflict — 이미 반영됐거나 그사이 다른 곳에서 채점)이면 끝난 채점이다. conflict는 실패로 세지 않고
+    // 다시 보내지도, 포기 알림도 하지 않는다 — 다시 보내도 같은 조건에 계속 0행이라 끝없이 붙잡게 된다.
     if (saved) { pending.delete(key); return; }
     if (mayGiveUp && entry.retries >= limit) { pending.delete(key); onGiveUp(entry.row); }
   };
@@ -232,7 +265,7 @@ export function createGrammarRetry({
     },
     /**
      * 페이지가 닫히는 순간의 마지막 시도 — send(keepalive)로 보내고, 횟수를 쓰지도 포기하지도 않는다
-     * (닫히지 않고 bfcache로 돌아오면 보류분은 그대로 남아 다음 retry가 다시 보낸다 — 두 번 닿아도 reviewedAt 조건이 한 번만 반영).
+     * (닫히지 않고 bfcache로 돌아오면 보류분은 그대로 남아 다음 retry가 다시 보낸다 — 두 번 닿아도 비교 후 쓰기 조건이 한 번만 반영).
      */
     beacon(accept = () => true, send) {
       if (!send || !isOnline()) return Promise.resolve();

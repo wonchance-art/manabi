@@ -23,7 +23,7 @@ const REF_READ_KEYS = {
 // 세션 쿠키가 있는데 SDK 조각을 못 받았을 때 다시 복원하는 간격(그 밖에는 online 이벤트에서).
 const AUTH_RESTORE_RETRY_MS = [2000, 8000, 30000];
 
-const STREAK_MILESTONES ={ 7: '🔥 7일 연속 학습 달성!', 30: '🏆 30일 연속 학습 달성!', 100: '🌟 100일 연속 학습 달성!' };
+const STREAK_MILESTONES = { 7: '🔥 7일 연속 학습 달성!', 30: '🏆 30일 연속 학습 달성!', 100: '🌟 100일 연속 학습 달성!' };
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
