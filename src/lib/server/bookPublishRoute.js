@@ -9,6 +9,7 @@
  *                     → 정본 장 중 아직 없는 장만 **비공개** reading_materials로 넣는다(book key + 장 순서 멱등).
  *                       원문이 다른 장·중복 장이 있으면 409로 아무것도 넣지 않는다(덮어쓰기·삭제 없음).
  *                       분석은 관리자 화면이 장마다 뷰어와 같은 경로로 한다(이 API는 분석하지 않는다).
+ *                       이미 준비한 분석 전(pending) 장은 metadata를 정본에 맞춘다(경계 기록·검수 힌트 — AOZORA-P1-12, {synced}).
  *  POST { action:'review', key, order, acceptBoundaries? }
  *                     → 그 장의 「검수 완료」(AOZORA-P0-4). 분석 완료이고 남은 「뜻 확인 필요」가 0일 때만
  *                       metadata.literatureReview {reviewedAt, viewerRevision}을 쓴다(그 revision일 때만 — 동시 재분석이면 409).
@@ -25,7 +26,7 @@
  */
 import { requireAdmin } from '@/lib/supabaseServer';
 import {
-  chapterReviewed, literatureBookPublishable, literatureBoundaryIssues, literatureBookSummary, literaturePublishRows, literatureReviewRemaining, literatureRubyCoverage,
+  chapterReviewed, literatureBookPublishable, literatureBoundaryIssues, planLiteratureMetadataSync, literatureBookSummary, literaturePublishRows, literatureReviewRemaining, literatureRubyCoverage,
   planLiteraturePublish, planLiteratureRelease,
 } from '@/lib/literaturePublish';
 
@@ -125,16 +126,40 @@ export function createBookPublishHandlers(getBooks, { notPublishableError = DEFA
     if (plan.conflicts.length) {
       return respond({ error: '이미 준비된 장 중 정본과 다른 장이 있어 넣지 않았어요. 자료 관리에서 확인해 주세요.', plan }, 409);
     }
-    if (plan.insert.length === 0) return respond({ ok: true, inserted: [], plan });
+    const synced = await syncPendingMetadata(supabase, user, book, rows);
+    if (synced.error) return respond({ error: '준비한 장을 정본에 맞추지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503);
+    if (plan.insert.length === 0) return respond({ ok: true, inserted: [], synced: synced.ids, plan });
 
     const { data, error } = await supabase.from('reading_materials')
       .insert(literaturePublishRows(book, plan.insert, user.id))
       .select('id, order:processed_json->metadata->book->>order');
     if (error) return respond({ error: '책을 준비하지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503);
-    return respond({ ok: true, inserted: data || [], plan });
+    return respond({ ok: true, inserted: data || [], synced: synced.ids, plan });
   }
 
   return { GET, POST };
+}
+
+/**
+ * 분석 전 장의 metadata를 정본에 맞춘다(AOZORA-P1-12, planLiteratureMetadataSync) — 준비 뒤 빌드가 늘린 경계 기록·검수 힌트가
+ * 분석 요청에 실리게. status 'pending'인 장만, 그 상태일 때만 쓴다(그사이 분석이 시작됐으면 건드리지 않는다). → {ids} | {error}
+ */
+async function syncPendingMetadata(supabase, user, book, rows) {
+  const pending = rows.filter((row) => row.status === 'pending');
+  if (pending.length === 0) return { ids: [] };
+  const { data, error } = await supabase.from('reading_materials').select(`id, order:${ORDER_PATH}, raw_text, processed_json`)
+    .eq('owner_id', user.id).in('id', pending.map((row) => row.id));
+  if (error) return { error };
+  const full = (data || []).map((row) => ({ ...row, status: row.processed_json?.status, metadata: row.processed_json?.metadata }));
+  const ids = [];
+  for (const { id, metadata } of planLiteratureMetadataSync(book, full)) {
+    const current = full.find((row) => row.id === id).processed_json;
+    const { data: saved, error: saveError } = await supabase.from('reading_materials').update({ processed_json: { ...current, metadata } })
+      .eq('id', id).eq('owner_id', user.id).eq('processed_json->>status', 'pending').select('id');
+    if (saveError) return { error: saveError };
+    if (saved?.length) ids.push(id);
+  }
+  return { ids };
 }
 
 /**
