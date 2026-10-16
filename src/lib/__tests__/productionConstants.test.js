@@ -31,6 +31,13 @@ describe('production-constants', () => {
     // 다른 양의 값은 함께 있어도 된다(core 이전 값 + live)
     expect(() => localize(`'${earlier}' '${PROD.live}'`, local)).not.toThrow();
   });
+  it('코드에 쓰인 서로 다른 양이 같은 지역값이 되면 던진다 — 이미 고친 상태(게시 = 실제)를 지금 값으로 흉내 내지 않는다', () => {
+    const sql = `IF pinned = '${PROD.pin}' THEN x; ELSIF pinned = '${PROD.live}' THEN y; END IF;`;
+    expect(() => localize(sql, { ...local, pin: local.live })).toThrow(/pin와 live가 같은 지역값/);
+    expect(localize(sql, local)).toBe(`IF pinned = '${local.pin}' THEN x; ELSIF pinned = '${local.live}' THEN y; END IF;`);
+    // 코드에 한쪽만 있으면(다른 쪽은 주석뿐) 상관없다
+    expect(() => localize(`-- 예전 게시값 ${PROD.pin}\nIF live <> '${PROD.live}' THEN RAISE`, { ...local, pin: local.live })).not.toThrow();
+  });
   it('지역값이 빠지면 던진다(일부만 바꾸면 검사가 엉뚱한 이유로 실패한다)', () => {
     const { profile, ...partial } = local;
     expect(profile).toBeTruthy();
