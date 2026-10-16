@@ -23,6 +23,14 @@ describe('production-constants', () => {
     expect(containsProductionConstants("SELECT '4a497440fb53bc1a27c1975875c7d737', '2e57290ce85b8f034f7f304dfdea3ad9'")).toBe(false);
     expect(localize("x '4a497440fb53bc1a27c1975875c7d737'", local)).toBe("x '4a497440fb53bc1a27c1975875c7d737'");
   });
+  it('같은 양의 이전 · 나중 운영 값이 주석 밖에 함께 있으면 던진다 — 주석(-- · /* */) 속 언급은 괜찮다', () => {
+    const [earlier, later] = [PROD.core, PROD_LATER.core[0]];
+    expect(() => localize(`IF core = '${earlier}' THEN x; ELSIF core = '${later}' THEN y; END IF;`, local)).toThrow(/core의 운영 값 여럿/);
+    expect(localize(`-- 예전 값 '${earlier}'을 재현함\n/* 메모: ${earlier} */\nIF core <> '${later}' THEN RAISE`, local))
+      .toBe(`-- 예전 값 '${local.core}'을 재현함\n/* 메모: ${local.core} */\nIF core <> '${local.core}' THEN RAISE`);
+    // 다른 양의 값은 함께 있어도 된다(core 이전 값 + live)
+    expect(() => localize(`'${earlier}' '${PROD.live}'`, local)).not.toThrow();
+  });
   it('지역값이 빠지면 던진다(일부만 바꾸면 검사가 엉뚱한 이유로 실패한다)', () => {
     const { profile, ...partial } = local;
     expect(profile).toBeTruthy();

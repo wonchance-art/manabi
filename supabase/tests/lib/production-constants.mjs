@@ -19,8 +19,19 @@ export const PROD_LATER = Object.freeze({
 const productionValues = key => [PROD[key], ...(PROD_LATER[key] || [])];
 const allProductionValues = () => Object.keys(PROD).flatMap(productionValues);
 
-/** 운영 상수를 지역값으로 바꾼다 — 바꾼 뒤 운영 상수가 남아 있으면 던진다(일부만 바꾸면 검사가 엉뚱한 이유로 실패한다). */
+const stripComments = sql => sql.replace(/\/\*[\s\S]*?\*\//g, '').replace(/--[^\n]*/g, '');
+
+/**
+ * 운영 상수를 지역값으로 바꾼다 — 바꾼 뒤 운영 상수가 남아 있으면 던진다(일부만 바꾸면 검사가 엉뚱한 이유로 실패한다).
+ * 같은 양의 이전 값과 나중 값이 주석 밖에 함께 있으면 던진다: 둘을 한 지역값으로 바꾸면 「core = 이전 값이냐 아니냐」 같은
+ * 상태 분기가 구분되지 않는다(191500은 core 9dcbdd…로 분기한다). 주석(-- · /* *\/) 속 언급은 세지 않는다.
+ */
 export function localize(sql, local) {
+  const code = stripComments(sql);
+  for (const key of Object.keys(PROD)) {
+    const present = productionValues(key).filter(value => code.includes(value));
+    if (present.length > 1) throw new Error(`localize: ${key}의 운영 값 여럿(${present.join(', ')})이 함께 있다 — 한 지역값으로 바꾸면 상태 분기가 사라진다`);
+  }
   let out = sql;
   for (const key of Object.keys(PROD)) {
     if (typeof local[key] !== 'string' || !/^[0-9a-f]{32}$/.test(local[key])) throw new Error(`localize: 지역값 ${key} 없음`);
