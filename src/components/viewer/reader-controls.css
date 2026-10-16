@@ -133,6 +133,9 @@
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .zh-cell {display:inline-flex;justify-content:center;width:var(--zh-cell);}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .zh-run {display:inline-flex;justify-content:center;white-space:nowrap;width:calc((var(--zh-cells,1) * var(--zh-cell)) + ((var(--zh-cells,1) - 1) * var(--char-gap,0px)));}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) :is(ruby,.zh-cell,.zh-run) + :is(ruby,.zh-cell,.zh-run) {margin-left:var(--char-gap,0px);}
+/* 병음이 글자 수와 안 맞는 옛 분석(요미 경로 ruby[data-yomi])은 한 ruby에 격자 칸이 줄줄이 든다 — inline-flex 한 줄이면
+   긴 토큰이 본문 밖으로 수천 px 나간다(viewer-reading-controls e2e 390px 실측 3342px). 칸 단위로 줄을 넘긴다. */
+.viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .word-token ruby[data-yomi] {flex-wrap:wrap;max-width:100%;}
 /* Touch layouts put the sentence bar inline before the line's first word (index.css: 24px hit width, margin -9px/+3px,
    so it takes 18px of the line — #1323). In Chinese it takes exactly one cell instead: width = pitch + 9 - 3 keeps the
    same margins (bar stays at left 9px, hit area ≥ 24px), so a paragraph's first line is indented by one column and
