@@ -85,3 +85,24 @@ test('shelf edit action keeps source and returns under the same filter; study ch
   await f.page.goto('/materials?lang=French');await f.page.locator('.shelf-row').waitFor();assert.equal(await f.page.locator('.shelf-row').count(),1);await f.page.locator('.shelf-row-menu').click();await f.page.getByRole('link',{name:'글과 첨부 수정 ↗'}).click();await f.page.locator('#composer-title').fill('고쳐 읽는 프랑스어');await f.page.getByRole('button',{name:'변경 저장',exact:true}).click();await f.page.locator('.original-reader').waitFor();await f.page.getByRole('link',{name:'← 내 서재',exact:true}).first().click();await f.page.locator('.shelf-row').waitFor();assert.equal(new URL(f.page.url()).searchParams.get('lang'),'French');assert.equal(f.rows[0].raw_text,'The first source.');assert.equal(JSON.stringify(f.rows[0].processed_json),before);assert.equal(f.rows.length,2);await overflow(f);
  }finally{await f.close();}
 });
+
+// READER-RETURN-001 — 「함께 읽는 글 → 뷰어 → ← 발견」은 /materials를 한 번도 거치지 않고(화면 세 번 바뀜 · 위치 잃음 선례)
+// 곧장 /discover?view=reading으로 돌아가 떠난 자리(restoreY)를 되찾는다. 공개 글은 합성 PGlite 서재 행(visibility public).
+test('public reading list → viewer → 「← 발견」 returns directly to the same list position',async()=>{
+ const f=await fixture({width:1280});try{
+ for(let i=1;i<=40;i++)f.rows.push({id:200+i,owner_id:'00000000-0000-4000-8000-000000000999',visibility:'public',title:`${String(i).padStart(2,'0')} · 함께 읽는 짧은 글`,raw_text:'One page at a time.',processed_json:{status:'completed',metadata:{language:'English'},sequence:['id_0_0'],dictionary:{id_0_0:{text:'One',base_form:'one',meaning:'하나'}}},created_at:new Date(Date.UTC(2026,0,i)).toISOString()});
+ const visited=[];f.page.on('framenavigated',frame=>{if(frame===f.page.mainFrame())visited.push(new URL(frame.url()).pathname);});
+ await f.page.goto('/discover?view=reading',{waitUntil:'domcontentloaded',timeout:120000});
+ const card=f.page.getByRole('link',{name:/12 · 함께 읽는 짧은 글/}).first();await card.waitFor({timeout:60000});
+ await card.evaluate(el=>window.scrollTo({top:el.getBoundingClientRect().top+scrollY-150,behavior:'instant'}));await f.page.waitForTimeout(200);const left=await f.page.evaluate(()=>Math.round(scrollY));assert.ok(left>200,`list scrolled (${left})`);
+ await card.click();await f.page.waitForURL(url=>url.pathname.startsWith('/viewer/'));
+ const stored=new URL(f.page.url()).searchParams.get('returnTo');assert.match(stored,/^\/materials\?tab=public/);
+ visited.length=0;
+ await f.page.getByRole('link',{name:'← 발견',exact:true}).first().click();
+ await f.page.waitForURL(url=>url.pathname==='/discover'&&url.searchParams.get('view')==='reading');
+ await f.page.waitForFunction(()=>!new URL(location.href).searchParams.has('restoreY'),null,{timeout:15000});
+ assert.deepEqual(visited.filter(path=>path==='/materials'),[],`no /materials hop: ${visited.join(' → ')}`);
+ const back=await f.page.evaluate(()=>Math.round(scrollY));assert.ok(Math.abs(back-left)<=2,`position restored ${back} vs ${left}`);
+ await overflow(f);
+ }finally{await f.close();}
+});
