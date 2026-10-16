@@ -981,6 +981,9 @@
     복구 = `20261016191500_korean_capability_repin.sql`(capability 고정값 + FSRS core 게시값만 재게시, 사전 검사 두 상태만 통과 · 이미 고쳤으면 no-op ·
     사후 검사 한국어 ready · 네 계약 · snapshot 동일, PGlite 8검사). **병합 = db push = 운영 적용**. 재발 방지 = 지문 범위를 건드리는 마이그레이션은
     같은 파일에서 재게시해야 하는 CI 계약(#1504는 fixedBy로 이 파일에 연결).
+    동적 짝(FINGERPRINT-REPIN-002): 관측 fixture 위에 관측 뒤 마이그레이션을 실제 적용해 매 파일 FSRS 핀 넷 · 모든 언어 ready 확인(운영 상수만
+    fixture 값으로 치환, 191500 = HEAL). 정적 계약이 놓친 과거 장애 1건(061725 대화방 FK → profiles 지문 → 075000 복구)도 재현.
+  · 같은 PR: 일괄 분석 진행 · 목표 진도 실패 알림을 늘 있는 알림 영역에(조건부 마운트로 낭독기가 놓치던 것, 화면 변화 0).
   · 보류: CJK 가변 weight(@font-face −67%, brotli 전송 −2%) — 600 · 650 · 800 · 300 굵기가 실제 값으로 바뀌는 시각 변경이라 오너 확인 뒤(화면 6개 비교 자료 전달, 2026-10-17 KST).
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
