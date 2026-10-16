@@ -67,13 +67,17 @@ async function setup({ width = 1440, saved = false, due = true } = {}) {
  const actions = f.page.locator('.reader-card-actions').filter({ visible: true }).first();
  const toggle = name => actions.getByRole('button', { name, exact: true });
  const gradesUI = actions.locator('.review-score-btn');
- return { ...f, words, exclusions, known, writes, grades, select, actions, toggle, gradesUI,
+ // 아는 단어는 낙관 갱신(42d6ece9)이라 화면이 바뀐 것이 서버가 받았다는 뜻이 아니다 — 서버 상태를 단언하거나 새로 고치기 전에
+ // 그 쓰기의 응답을 기다린다(누르기 전에 건다). 화면 변화만 기다리면 응답 전에 단언 · 이동해 간헐 실패했다(390px 등, 2026-10-17 KST).
+ const written = method => f.page.waitForResponse(r => r.url().includes('/rest/v1/user_known_words') && r.request().method() === method);
+ return { ...f, words, exclusions, known, writes, grades, select, actions, toggle, gradesUI, written,
   fail: () => { failNext = true; }, hold: () => { wait = new Promise(resolve => { release = resolve; }); }, release: () => { release?.(); wait = null; } };
 }
 for (const width of [320, 390, 1440]) test(`미저장 아는 단어/재접속/목록 해제와 4칸·발음 보존 ${width}px`, async () => {
  const f = await setup({ width });
  try {
-  await f.select(0); await f.toggle('아는 단어').click(); await f.toggle('✓ 아는 단어').waitFor();
+  const posted = f.written('POST');
+  await f.select(0); await f.toggle('아는 단어').click(); await f.toggle('✓ 아는 단어').waitFor(); await posted;
   assert.equal(await f.gradesUI.count(), 4);
   for (const b of await f.gradesUI.all()) assert.equal(await b.isDisabled(), true);
   for (const key of ['1', '2', '3', '4']) await f.page.keyboard.press(key);
@@ -87,8 +91,9 @@ for (const width of [320, 390, 1440]) test(`미저장 아는 단어/재접속/�
   await f.page.reload({ waitUntil: 'domcontentloaded' }); await f.select(0); await f.toggle('✓ 아는 단어').waitFor();
   await f.page.goto('/vocab', { waitUntil: 'domcontentloaded' });
   const list = f.page.locator('.vocabulary-known-words').filter({ visible: true }).first();
+  const deleted = f.written('DELETE');
   await list.locator('summary').click(); await list.getByRole('button', { name: '표시 해제', exact: true }).click();
-  await list.waitFor({ state: 'detached' });
+  await list.waitFor({ state: 'detached' }); await deleted;
   assert.equal(f.exclusions.length, 0); assert.equal(f.words.length, 0); assert.equal(f.grades.length, 0);
   await f.page.goto('/viewer/94101', { waitUntil: 'domcontentloaded' }); await f.select(0);
   assert.equal(await f.gradesUI.count(), 4); for (const b of await f.gradesUI.all()) assert.equal(await b.isEnabled(), true);
@@ -115,10 +120,12 @@ test('이전 제외는 별도 접힌 목록에서 해제하고 아는 단어 토
 for (const due of [true, false]) test(`저장 ${due ? '도래' : '미도래'} 카드 아는 단어/해제의 뜻·출처·일정 보존`, async () => {
  const f = await setup({ saved: true, due }); const before = structuredClone(f.words);
  try {
-  await f.select(0); await f.toggle('아는 단어').click(); await f.toggle('✓ 아는 단어').waitFor();
+  const posted = f.written('POST');
+  await f.select(0); await f.toggle('아는 단어').click(); await f.toggle('✓ 아는 단어').waitFor(); await posted;
   assert.equal(await f.gradesUI.count(), 4); for (const b of await f.gradesUI.all()) assert.equal(await b.isDisabled(), true);
   assert.deepEqual(f.words, before); assert.equal(f.grades.length, 0);
-  await f.toggle('✓ 아는 단어').click(); await f.toggle('아는 단어').waitFor();
+  const deleted = f.written('DELETE');
+  await f.toggle('✓ 아는 단어').click(); await f.toggle('아는 단어').waitFor(); await deleted;
   assert.deepEqual(f.words, before); assert.equal(f.grades.length, 0);
   assert.equal(f.writes[0].body.word_text,'猫'); assert.equal(f.writes[0].body.user_id,owner);
   assert.deepEqual(f.errors, []);
@@ -133,9 +140,11 @@ test('실패/중복/이동 뒤 늦은 표시 응답은 현재 단어를 바꾸�
   assert.equal(await f.page.getByText('fixture write failure').count(), 0);
   assert.equal(f.exclusions.length, 0); assert.equal(await f.gradesUI.first().isEnabled(), true);
   // 아는 단어는 누른 순간 반영된다(낙관 갱신 42d6ece9) — 응답을 기다리는 동안 표시는 「✓ 아는 단어」이고 비활성이다.
-  f.hold(); await f.toggle('아는 단어').click(); await delay(100);
+  const late = f.written('POST');
+  f.hold(); await f.toggle('아는 단어').click(); await f.toggle('✓ 아는 단어').waitFor();
   assert.equal(await f.toggle('✓ 아는 단어').isDisabled(), true);
-  await f.select(1); f.release(); await delay(400);
+  // 늦은 응답이 실제로 도착한 뒤에도(응답 대기) 잠시(400ms) 지금 단어가 바뀌지 않는지 본다 — 「바뀌지 않음」은 기다릴 조건이 없다.
+  await f.select(1); f.release(); await late; await delay(400);
   assert.equal(await f.toggle('아는 단어').isEnabled(), true); assert.equal(await f.gradesUI.first().isEnabled(), true);
   await f.select(0); await f.toggle('✓ 아는 단어').waitFor(); assert.equal(await f.gradesUI.first().isDisabled(), true);
   assert.equal(f.writes.length, 2); assert.equal(f.grades.length, 0); assert.deepEqual(f.errors, []);
