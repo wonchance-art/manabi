@@ -47,7 +47,8 @@ describe('kstDateString — daily_suggestions date 키 정본', () => {
   it('배선 계약 — 수집 크론과 조회 라우트가 같은 함수를 쓴다(UTC toISOString 부활 금지)', async () => {
     const fs = await import('node:fs');
     const cron = fs.readFileSync('src/app/api/cron/fetch-suggestions/route.js', 'utf8');
-    const today = fs.readFileSync('src/app/api/suggestions/today/route.js', 'utf8');
+    const today = fs.readFileSync('src/lib/server/suggestionReading.js', 'utf8');
+    expect(fs.readFileSync('src/app/api/suggestions/today/route.js', 'utf8')).toContain('todaySuggestions(');
     for (const src of [cron, today]) {
       expect(src).toContain('kstDateString()');
       expect(src).not.toContain("new Date().toISOString().split('T')[0]");
