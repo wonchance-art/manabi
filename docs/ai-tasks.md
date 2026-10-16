@@ -974,6 +974,11 @@
     자료 추가 beforeunload는 초안이 있을 때만. 남음: 교재 읽기 API no-store(사용자별 진도 섞임 확인 뒤 결정).
   · 같은 PR(ADMIN-EDIT-STABLE-001): 인라인 편집 연필이 늦게 붙어도 내용 재마운트 0(관리자 장면 「확정」 입력 소실 4/20 → 0/20 · smoke 간헐 원인) ·
     문구 표준 1건(일괄 분석 진행). 오너 판단 문구 6건은 보고(재시도 필요 · 받아뒀어요 · 연결 끊김 · Esc 안내 · 대기 이름 · 마침표).
+  · 같은 PR(KO-CAP-REPIN-001 · FINGERPRINT-REPIN-001): **운영 한국어 학습이 #1504 병합(10-17 00:00 KST) 뒤 꺼져 있음** — 그 PR의 RESTRICTIVE
+    정책이 한국어 capability 지문 범위인데 재게시가 빠졌다(실제 da2c… ≠ 게시 1c25…, 그 정책 키를 빼면 게시값과 동일 = 원인 하나).
+    복구 = `20261016191500_korean_capability_repin.sql`(capability 고정값 + FSRS core 게시값만 재게시, 사전 검사 두 상태만 통과 · 이미 고쳤으면 no-op ·
+    사후 검사 한국어 ready · 네 계약 · snapshot 동일, PGlite 8검사). **병합 = db push = 운영 적용**. 재발 방지 = 지문 범위를 건드리는 마이그레이션은
+    같은 파일에서 재게시해야 하는 CI 계약(#1504는 fixedBy로 이 파일에 연결).
   · 보류: CJK 가변 weight(@font-face −67%, brotli 전송 −2%) — 600 · 650 · 800 · 300 굵기가 실제 값으로 바뀌는 시각 변경이라 오너 확인 뒤(화면 6개 비교 자료 전달, 2026-10-17 KST).
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
