@@ -279,3 +279,15 @@ describe('관측 이후 마이그레이션은 범위를 건드리면 같은 파�
     expect(missing, `${file}가 지문 범위를 건드리고 재게시하지 않는다(§4.9-1): ${JSON.stringify(why, null, 1)}`).toEqual([]);
   });
 });
+
+describe('동적 짝(FINGERPRINT-REPIN-002) — 관측 fixture 위 실제 적용', () => {
+  it('CI가 관측 뒤 마이그레이션 적용 검사를 돌리고, 정적 허용 목록의 위반은 동적 기대 깨짐에도 적혀 있다', () => {
+    expect(read('.github/workflows/ci.yml')).toContain('node supabase/tests/post-observation-migrations.mjs');
+    const dynamic = read('supabase/tests/post-observation-migrations.mjs');
+    for (const [file, { ticket }] of Object.entries(KNOWN_VIOLATIONS)) {
+      expect(dynamic, file).toContain(`'${file}': {`);
+      expect(dynamic, file).toContain(ticket.split(' — ')[0]);
+    }
+  });
+});
+

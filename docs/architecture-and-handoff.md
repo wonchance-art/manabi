@@ -148,6 +148,10 @@ LEARN-CONTRACT-CATALOG-001(#1399)로 운영 정의를 `supabase/tests/fixtures/m
 이 범위(capability · FSRS core · manual · admission · activity — 범위는 위 fixture의 지문 함수 본문에서 읽는다)를 건드리는 DDL · 권한 문이
 있으면 같은 파일의 재게시 문 · 적용 후 지문 검사 · 이유 있는 `-- fingerprint-scope-optout: <scope> — <이유>` 중 하나를 요구한다(연쇄:
 capability 재게시 → core, activity → admission). #1504 `20261016150000_anon_book_catalog.sql`은 `KNOWN_VIOLATIONS`에 고칠 때까지 남는다.
+동적 짝(FINGERPRINT-REPIN-002): `supabase/tests/post-observation-migrations.mjs`가 같은 fixture 위에 관측 뒤 마이그레이션을 차례로
+적용하며 핀 넷 · 모든 언어 ready를 실제 지문으로 확인한다(CI). 이 검사가 정적 계약이 못 보는 길도 재현했다 — **다른 표가 `profiles`를
+FK로 참조하기만 해도** profiles에 내부 트리거가 붙어 activity(→ admission) 지문이 바뀐다(CONV-LOBBY-001, `20261016061725` → `075000` 복구).
+고칠 재게시 초안은 `node supabase/tests/post-observation-migrations.mjs <초안.sql>`로 이어 적용해 본다(지문 재계산은 `search_path=''`에서).
 
 ### 4.9 ui 이벤트 규약 (행동 계측 — review_events 재사용, 마이그레이션 0)
 예보 탭·푸시 같은 **행동 계측**은 신규 테이블 없이 `review_events`에 `source:'ui'`로 적재한다 (헌법 3 — 신규 테이블 최후의 수단). 형태: `{source:'ui', item_key:'-', correct:true, detail:{qtype, ...}}`. `correct`는 NOT NULL이라 의미 없이 `true`로 채우고, **종류는 `detail.qtype`로 구분**한다(집계는 `detail->>'qtype'` 필터 — `admin_v3_metrics`). qtype 종류: `forecast_tap`(예보 카드 탭), `push_optin`(구독 동의), `push_sent`(발송), `push_open`(알림 클릭). **rung·FSRS 계산은 `source:'vocab'`만 보므로 ui 이벤트와 무간섭**(skillRung/fsrs 필터). **EWMA 다이얼은 필터가 없어 구멍이었다** — studyMaterials의 gradedEvents가 `ui`·`dict`를 제외하고 공급한다(2026-07 정정). 새 source 추가 시 이 세 필터(skillRung·fsrs·gradedEvents)를 모두 점검하라. 저용량(하루 수 건) 전제이며, **월 1만 건을 초과하면 분리 테이블로 승격**한다(레드팀 응답 §7). 적재는 `logReviewEvents`(reviewEvents.js) 재사용, 실패는 조용히 무시.
