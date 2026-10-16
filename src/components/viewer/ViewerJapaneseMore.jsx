@@ -49,7 +49,7 @@ export default function ViewerJapaneseMore({userId,word,meaning,pos,dictEntry,ja
   return <>
     {warnLine}
     {notice}
-    {query.isError&&<p aria-hidden="true">{vt('대응어를 불러오지 못했어요.')}</p>}
+    {query.isError&&<p className="reader-card-learn__ja-error" aria-hidden="true">{vt('대응어를 불러오지 못했어요.')}</p>}
     <button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" aria-describedby={noticeId} onClick={()=>{if(requested)query.refetch();else setRequested(true);}}>{vt('✦ 일본어로는?')}</button>
   </>;
 }

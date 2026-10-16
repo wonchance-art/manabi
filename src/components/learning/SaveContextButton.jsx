@@ -35,7 +35,7 @@ export default function SaveContextButton({ word, source, label = '복습에 담
     <button type="button" className="btn btn--ghost btn--sm" disabled={pending} onClick={()=>save()}>{pending?'저장 중…':label}</button>
     {/* 결과 알림 영역은 늘 그려 두고 내용만 넣는다(내용과 함께 생기는 role=status는 화면 낭독기가 놓칠 수 있다). 보이는 줄은 한 번만 읽히게 숨긴다. */}
     <span className="sr-only" role="status">{message}</span>
-    {message && <p aria-hidden="true">{message}</p>}
+    {message && <p className="learning-context-save__message" aria-hidden="true">{message}</p>}
     {error && <p role="alert">{error}</p>}
     {conflict && <div className="learning-context-confirm" role="group" aria-label="뜻 확인">
       <p>기존 뜻: <strong>{conflict.existing.meaning || '(없음)'}</strong></p>

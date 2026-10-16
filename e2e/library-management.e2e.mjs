@@ -32,7 +32,7 @@ test('all filtered results include unloaded rows but exclude newly arriving matc
  await f.page.getByRole('button',{name:'휴지통',exact:true}).last().click();await f.page.getByRole('button',{name:'휴지통으로',exact:true}).click();await f.page.getByRole('button',{name:'다시 시도',exact:true}).waitFor();
  await f.page.reload({waitUntil:'domcontentloaded',timeout:120000});await f.page.getByRole('button',{name:'다시 시도',exact:true}).click();await f.page.locator('.shelf-notice').getByText('65개 완료',{exact:true}).waitFor();assert.equal(await f.page.locator('.shelf-row').count(),1);assert.match(await f.page.locator('.shelf-row').innerText(),/뒤늦게/);
  lose=true;await f.page.getByRole('button',{name:'되돌리기',exact:true}).click();await f.page.getByRole('button',{name:'다시 시도',exact:true}).waitFor();
- await f.page.reload({waitUntil:'domcontentloaded',timeout:120000});await f.page.getByRole('button',{name:'다시 시도',exact:true}).click();await f.page.getByText('65개 취소됨',{exact:true}).waitFor();assert.equal((await f.db.query("select count(*)::int n from library_item_state where state='trashed'")).rows[0].n,0);await overflow(f);
+ await f.page.reload({waitUntil:'domcontentloaded',timeout:120000});await f.page.getByRole('button',{name:'다시 시도',exact:true}).click();await f.page.locator('.shelf-notice').getByText('65개 취소됨',{exact:true}).waitFor();assert.equal((await f.db.query("select count(*)::int n from library_item_state where state='trashed'")).rows[0].n,0);await overflow(f);
  }finally{await f.close();}
 });
 

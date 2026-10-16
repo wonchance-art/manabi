@@ -318,7 +318,7 @@ try {
  japaneseRows.朋友={meanings:[{meaning:'다른 뜻',ja:{form:'間違い'}}]};
  await page.keyboard.press('Escape');await tap(wordJ());await panel().getByRole('button',{name:'✦ 일본어로는?',exact:true}).waitFor();
  assert(!(await panel().innerText()).includes('間違い'));japaneseFail=true;
- await panel().getByRole('button',{name:'✦ 일본어로는?',exact:true}).click();await panel().getByText('대응어를 불러오지 못했어요.',{exact:true}).waitFor();
+ await panel().getByRole('button',{name:'✦ 일본어로는?',exact:true}).click();await panel().locator('.reader-card-learn__ja-error').getByText('대응어를 불러오지 못했어요.',{exact:true}).waitFor();
  japaneseFail=false;await panel().getByRole('button',{name:'✦ 일본어로는?',exact:true}).click();await panel().getByText('友人',{exact:true}).waitFor();
  // 「AI」 표 보임 단언은 오너 결정(단어창 「AI」 표시 없음, 10-07 23:45 KST)으로 반대로 — 설계서 §7.2.
  assert.equal(await panel().locator('.reader-card-learn__ja').count(),1);assert.equal(await panel().getByText('AI',{exact:true}).count(),0);

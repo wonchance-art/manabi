@@ -18,7 +18,7 @@ describe('① 결과 알림 영역 — 늘 있고 내용만 바뀐다 · 보이�
   it('문맥 담기 결과(SaveContextButton)', () => {
     const src = read('src/components/learning/SaveContextButton.jsx');
     expect(src).toContain('<span className="sr-only" role="status">{message}</span>');
-    expect(src).toContain('{message && <p aria-hidden="true">{message}</p>}');
+    expect(src).toContain('{message && <p className="learning-context-save__message" aria-hidden="true">{message}</p>}');
     expect(src).not.toMatch(/message && <p role="status"/);
   });
   it('뷰어 읽기 위치 저장 실패 — 「다시 저장」이 이유를 가리킨다', () => {
@@ -57,19 +57,19 @@ describe('①b 결과 알림 영역 2차 — 서재 · 노트 · 뷰어 더 알�
     expect(src).toContain('<div className="note-row-error"><p aria-hidden="true">{outcome.error}</p>');
     expect(src).toContain('aria-describedby={`note-outcome-${row.id}`}');
     expect(src).toContain('{outcome?.ok&&<p className="note-saved" aria-hidden="true">{outcome.text}</p>}');
-    expect(src).toContain('<footer><span className="sr-only" role="status">{notice||message||\'\'}</span>{(notice||message)&&<p aria-hidden="true">{notice||message}</p>}');
+    expect(src).toContain('<footer><span className="sr-only" role="status">{notice||message||\'\'}</span>{(notice||message)&&<p className="note-review-notice" aria-hidden="true">{notice||message}</p>}');
   });
   it('뷰어 비슷한 말 실패 — 영역은 조건 밖, 「✦ 비슷한 말 찾기」가 가리킨다', () => {
     const src = read('src/views/ViewerPage.jsx');
     const live = '<span className="sr-only" role="status" id="viewer-synant-notice">{synAntEligible(selectedToken,materialLang) && !synAnt?.loading && synAnt?.error ? vt("불러오지 못했어요.") : \'\'}</span>';
     expect(src).toContain(live);
-    expect(sliceBetween(src, live, '{wordDetail?.loading')).toContain('{synAnt?.error && <p aria-hidden="true">{vt("불러오지 못했어요.")}</p>}<button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" aria-describedby="viewer-synant-notice"');
+    expect(sliceBetween(src, live, '{wordDetail?.loading')).toContain('{synAnt?.error && <p className="syn-ant__error" aria-hidden="true">{vt("불러오지 못했어요.")}</p>}<button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" aria-describedby="viewer-synant-notice"');
   });
   it('일본어로는 대응어 실패(ViewerJapaneseMore) — 찾는 중 · 결과 두 갈래의 같은 자리에 같은 영역', () => {
     const src = read('src/components/viewer/ViewerJapaneseMore.jsx');
     expect(src).toContain("const notice=<span className=\"sr-only\" role=\"status\" id={noticeId}>{!query.isFetching&&query.isError?vt('대응어를 불러오지 못했어요.'):''}</span>;");
     expect(src).toContain("if(query.isFetching)return <>{warnLine}{notice}<p role=\"status\">");
-    expect(src).toMatch(/return <>\s*\{warnLine\}\s*\{notice\}\s*\{query\.isError&&<p aria-hidden="true">/);
+    expect(src).toMatch(/return <>\s*\{warnLine\}\s*\{notice\}\s*\{query\.isError&&<p className="reader-card-learn__ja-error" aria-hidden="true">/);
     expect(src).toContain('aria-describedby={noticeId}');
   });
 });
@@ -115,5 +115,49 @@ describe('④ axe 스캔(Preview b5d2fc7, 2026-10-17 KST) — 제목 단계', ()
     const src = read('src/views/ViewerComments.jsx');
     expect(src).toMatch(/<h2 style=\{\{ fontSize: '1rem', fontWeight: 700, marginBottom: '20px', color: 'var\(--text-primary\)' \}\}>\s*토론 /);
     expect(src).not.toMatch(/<h3\b/);
+  });
+});
+
+// ⑤ 상시 알림 영역(.sr-only · .skeleton-sr role=status)이 보이는 줄과 같은 글을 가지면 e2e의 getByText가 둘을 잡는다(strict 위반 —
+// cda41f93 실측). 그래서 보이는 사본은 aria-hidden이고, 알림 영역이 들어 있지 않은 **이름 있는 칸**(클래스) 안에 있어야 한다 —
+// e2e는 그 클래스로 범위를 좁힌다(예: locator('.shelf-notice').getByText(…)). 새 상시 영역은 아래 목록에 칸을 함께 등록한다.
+describe('⑤ 상시 알림 영역의 보이는 사본 — aria-hidden + 이름 있는 칸(e2e 범위)', () => {
+  const REGISTRY = [
+    // [파일, 상시 영역 표지, 보이는 사본(칸 클래스 + aria-hidden) — null = 보이는 사본 없음]
+    ['src/components/Skeleton.jsx', '<span className="skeleton-sr" role="status">{line}</span>', null],
+    ['src/components/library/LibraryCollections.jsx', 'id="collections-undo-notice"', '<div className="shelf-notice"><span aria-hidden="true">저장됨 </span>'],
+    ['src/components/library/LibraryShelf.jsx', 'id="shelf-organize-notice"', '<div className="shelf-notice"><span aria-hidden="true">{pendingLine} </span>'],
+    ['src/components/library/LibraryShelf.jsx', 'id="shelf-organize-notice"', '<div className="shelf-notice"><span aria-hidden="true">{resultLine}</span>'],
+    ['src/components/notes/NoteVocabulary.jsx', 'id={`note-outcome-${row.id}`}', '<div className="note-row-error"><p aria-hidden="true">{outcome.error}</p>'],
+    ['src/components/notes/NoteVocabulary.jsx', 'id={`note-outcome-${row.id}`}', '<p className="note-saved" aria-hidden="true">{outcome.text}</p>'],
+    ['src/components/notes/NoteVocabulary.jsx', '<footer><span className="sr-only" role="status">', '<p className="note-review-notice" aria-hidden="true">{notice||message}</p>'],
+    ['src/components/viewer/ViewerJapaneseMore.jsx', 'id={noticeId}', '<p className="reader-card-learn__ja-error" aria-hidden="true">'],
+    ['src/components/learn/GoalTrackTile.jsx', 'id={noticeId}', '<span aria-hidden="true"><span className="learn-goal__line">{GOAL_PROGRESS_FAILED}</span></span>'],
+    ['src/components/learning/SaveContextButton.jsx', '<span className="sr-only" role="status">{message}</span>', '<p className="learning-context-save__message" aria-hidden="true">{message}</p>'],
+    ['src/components/books/BookReader.jsx', "<span className=\"sr-only\" role=\"status\">{unit === 'reference'", '<p className="manabi-status" aria-hidden="true">'],
+    ['src/views/ViewerPage.jsx', 'id="viewer-synant-notice"', '<p className="syn-ant__error" aria-hidden="true">'],
+    ['src/views/ViewerPage.jsx', 'id="viewer-position-notice"', '<div className="error-banner"><span aria-hidden="true">'],
+  ];
+  it('화면 코드의 상시 알림 영역은 모두 목록에 있다(새 영역은 칸과 함께 등록)', () => {
+    const found = [];
+    for (const file of walk(path.join(ROOT, 'src'))) {
+      const src = fs.readFileSync(file, 'utf8');
+      const n = (src.match(/className="(?:sr-only|skeleton-sr)" role="status"/g) || []).length;
+      if (n) found.push([path.relative(ROOT, file), n]);
+    }
+    const expected = {};
+    for (const [file, marker] of REGISTRY) expected[file] = new Set([...(expected[file] || []), marker]);
+    expect(Object.fromEntries(found.sort())).toEqual(Object.fromEntries(Object.entries(expected).map(([f, set]) => [f, set.size]).sort()));
+  });
+  it('등록된 보이는 사본은 aria-hidden이고 이름 있는 칸(클래스) 안에 있으며, 그 칸에는 상시 영역이 없다', () => {
+    for (const [file, marker, visible] of REGISTRY) {
+      const src = read(file);
+      expect(src, file).toContain(marker);
+      if (visible === null) continue;
+      expect(src, file).toContain(visible);
+      expect(visible).toMatch(/aria-hidden="true"/);
+      expect(visible).toMatch(/className="[a-z][\w-]*"/);
+      expect(visible).not.toMatch(/sr-only|skeleton-sr|role="status"/);
+    }
   });
 });

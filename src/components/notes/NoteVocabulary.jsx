@@ -79,6 +79,6 @@ export default function NoteVocabulary({saved, noteId, note, onChange, onFocus, 
         </article>;
       })}
     </div>
-    <footer><span className="sr-only" role="status">{notice||message||''}</span>{(notice||message)&&<p aria-hidden="true">{notice||message}</p>}<button className="manabi-button" disabled={busy||!selected.length} onClick={()=>saveRows(selected)}>{busy?'선택한 표현 담는 중…':`선택한 ${selected.length}개 담기`}</button><small>기존 단어의 뜻과 복습 일정은 그대로예요.</small></footer>
+    <footer><span className="sr-only" role="status">{notice||message||''}</span>{(notice||message)&&<p className="note-review-notice" aria-hidden="true">{notice||message}</p>}<button className="manabi-button" disabled={busy||!selected.length} onClick={()=>saveRows(selected)}>{busy?'선택한 표현 담는 중…':`선택한 ${selected.length}개 담기`}</button><small>기존 단어의 뜻과 복습 일정은 그대로예요.</small></footer>
   </aside>;
 }
