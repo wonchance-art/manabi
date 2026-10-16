@@ -236,6 +236,6 @@ describe('API로 만드는 서재 항목도 30초 캐시를 무효화한다(리�
     const note = fs.readFileSync('src/components/notes/StudyNotePage.jsx', 'utf8');
     const posts = note.match(/requestNote\('\/api\/notes',\{method:'POST'[^;]*\}\);[^;]*;/g) || [];
     expect(posts).toHaveLength(2);
-    for (const call of posts) expect(call).toContain('void invalidateLibrary(queryClient,user?.id)');
+    for (const call of posts) expect(call).toContain('void invalidateLibrary(queryClient,owner)');
   });
 });
