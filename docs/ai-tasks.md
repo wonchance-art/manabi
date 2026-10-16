@@ -897,6 +897,14 @@
     오너 결정 대기 문구(나의 책장/교재 · 담은 표현 등)는 그대로.
   · 같은 PR(SUSPENSE-FALLBACK-001, 스켈레톤 실측 §3): fallback 없는 페이지 Suspense 5곳에 앱 대기 화면 — /conversation/new 직접 진입 빈 화면
     (BAILOUT_TO_CLIENT_SIDE_RENDERING) 제거. 계약 `suspenseFallback.test.js`. 라우트 스켈레톤(산책 1순위 · 배움 2순위)은 목업 승인 대기.
+  · 같은 PR(리뷰 · Preview 검수 2026-10-17 KST): `.manabi-page a:not(.btn)` 우선순위 (0,2,1)이 `.manabi-button` 흰 글자 · `.manabi-link` 로즈를
+    덮던 퇴행(비로그인 주 버튼 6곳 2.50:1) → `:where()` · 계약 `linkColorSpecificity.test.js`. 서가 소식 → 「← 발견으로」(`SUGGESTION_BACK`).
+    공개 목록 정본 책 「다음 과 적기」는 key로 막음(표지 판정과 분리 — 정본 게시 409 예방).
+  · 같은 PR(VIEWER-IDLE-001): 미분석 표지 'idle'을 뷰어가 몰라 공개 시리즈 118편(id 50~177)이 제목만 있고 본문이 빈 화면 → `isPending`에 'idle'.
+    원문 + 분석 전 안내. 계약 `viewerIdleStatus.test.js`. 118편 일괄 분석 여부는 운영 DB 쓰기라 오너 결정.
+  · 같은 PR(PERF-BUNDLE-001, 번들 조사): 산책 · 서재 기본 화면이 그리지 않는 MaterialsPage를 정적 import → `LazyMaterialsPage`(next/dynamic,
+    운영 약 119KB 전송분). `isTeamRoot`를 의존성 없는 `classTeamRoot.js`로(수업 일정 · 공휴일 묶음 제외). 운영 기준 산책 353KB · 서재 379KB · 배움 330KB(JS 압축 전송)
+    → Preview 대조 예정. 다음: 문학 대조표 표시용 축소(/home 64KB) · Noto Sans TC 뷰어 한정(전 페이지 CSS gz 36KB) — 에이전트 진행 중.
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
   제안안 중 웹 몫만(스와이프 · 진동 · 아이폰 안전 여백은 모바일이라 보류). 두 복습 카드(예전 · 새 일정) 공통 `review-card--turn`(0.24초,
