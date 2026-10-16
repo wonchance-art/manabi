@@ -12,7 +12,9 @@ describe('지역학 딥링크(studiesRefs) 계약', () => {
   beforeAll(async () => {
     const cities = await loadAllCities();
     CITY_DATA = Object.fromEntries(cities.map((city) => [city.id, city]));
-  }, 60000);
+    // 도시 전체 적재는 단독 실행에서도 46~55초(2026-10-17 KST 실측) — 60초 한도에 붙어 병렬 실행에서 4회 연속 시간 초과.
+    // 규약 선례(단독 재실행 확인 뒤 명시 timeout)대로 여유를 둔다. 검사 내용은 그대로다.
+  }, 120000);
 
   it('모든 딥링크가 실재하는 studies 문서로 해석된다', () => {
     expect(STUDIES_REF_NODE_IDS.length).toBeGreaterThanOrEqual(70);
