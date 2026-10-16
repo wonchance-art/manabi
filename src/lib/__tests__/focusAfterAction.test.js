@@ -76,7 +76,7 @@ describe('배선 — 세 자리', () => {
     expect(row).toContain("<button id={`${savedRowId}-in`} disabled className=\"btn btn--ghost btn--sm save-grade__in\">{vt('✓ 담은 표현에 있음')}</button>");
     expect(row).toContain('<span id={`${savedRowId}-next`} className="save-grade__next">');
   });
-  it('C2 복습 카드: 잠김 → 풀림 한 번만 채점 막대 자체로 — 「다시」 버튼이 아니다', () => {
+  it('C2 복습 카드(예전 · 새 일정 둘 다): 잠김 → 풀림 한 번만 채점 막대 자체로 — 「다시」 버튼이 아니다', () => {
     const parts = read('src/components/vocab/ReviewCardParts.jsx');
     const hook = sliceBetween(parts, 'export function useGradeBarFocus(locked, armed) {', '\n}\n');
     expect(hook).toContain('if (locked) { sawLocked.current = true; return; }');
@@ -88,6 +88,10 @@ describe('배선 — 세 자리', () => {
     expect(review).toContain('const bar = useGradeBarFocus(locked, armed);');
     expect(review).toContain(bar + "${locked ? ' is-locked' : ''}`} role=\"group\" aria-label=\"기억 채점\">");
     expect(review).not.toMatch(/<button ref=/); // 초점이 채점 버튼에 앉지 않는다
+    const fsrs = read('src/components/vocab/FsrsReviewSession.jsx');
+    expect(fsrs).toContain('const bar = useGradeBarFocus(!revealed, armed);');
+    expect(fsrs).toContain(bar + "${revealed ? '' : ' is-locked'}`} role=\"group\" aria-label=\"기억 채점\">");
+    expect(fsrs).not.toMatch(/<button ref=/);
   });
   it('묶음에 둔 초점은 고리를 그리지 않는다(#main-content 선례) — 안의 버튼은 각자 :focus-visible', () => {
     const css = read('src/components/web/web-shell.css');

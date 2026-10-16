@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import Button from '../Button';
 import { canAutoStartFsrsReview, fsrsIntervalLabel } from '../../lib/useFsrsReview';
 import { gradeGuide, isCardRevealClick, revealTrigger } from '../../lib/reviewCard';
-import { ReviewBack, ReviewCardMeta, ReviewHeadword, useScoreArmed } from './ReviewCardParts';
+import { ReviewBack, ReviewCardMeta, ReviewHeadword, useGradeBarFocus, useScoreArmed } from './ReviewCardParts';
 
 const RATINGS = [
   { rating: 1, label: '다시', style: 'again' },
@@ -38,6 +38,7 @@ export default function FsrsReviewSession({ review, onExit, embedded = false, ca
   }, [current, busy, error, ready.length, controller, embedded, cardId, stepKey]);
   const revealed = current?.phase === 'revealed' && (!embedded || current.cardId === cardId);
   const armed = useScoreArmed(revealed, current?.attempt?.id || cardId);
+  const bar = useGradeBarFocus(!revealed, armed); // 뒷면이 열리면 막대(버튼 아님)로 초점 — FOCUS-AFTER-ACTION-001 C2(예전 일정 카드와 같은 규격)
   const reveal = async trigger => {
     if (await controller.reveal()) onReveal?.(trigger, current?.word);
   };
@@ -93,7 +94,7 @@ export default function FsrsReviewSession({ review, onExit, embedded = false, ca
               onClick={event => reveal(revealTrigger(event))}>정답 확인하기<span className="review-keys-hint review-keys-hint--space" aria-hidden="true"> · Space</span></Button>}
         </div>
       </div>
-      <div className={`review-grade-bar${revealed ? '' : ' is-locked'}`} role="group" aria-label="기억 채점">
+      <div ref={bar} tabIndex={-1} className={`review-grade-bar${revealed ? '' : ' is-locked'}`} role="group" aria-label="기억 채점">
         {revealed && <p className="review-score-guide review-grade-guide">{gradeGuide(word)}<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span></p>}
         <div className="review-score-grid" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
           {RATINGS.map(({ rating, label, style }) => <button key={rating} type="button"
