@@ -920,6 +920,9 @@
   · 같은 PR(PERF-QUERY-002): 서재 쓰기 지점 무효화 보강(자료 추가 · PDF 업로드 · 공개 토글 · 받아두기) → personal-library · library-pinned 30초.
     1000행 상한에 잘리던 브라우저 조회 5곳(맞춤도 · PDF 담김 · 노트 담김 · 주간 담은 말 · 데이터 내보내기)을 정본 완전 조회로. review_events 3곳 · 공개 목록 페이지네이션은 남김.
   · 같은 PR(PERF-BUNDLE-005): /vocab 둘러보기 목록 · 상세 카드 지연 로드(유휴 미리 받기) · 뜻 정리 작은 모듈. 계약 `vocabPageSplit.test.js`.
+  · 같은 PR(MOTION-R2 · CONFIRM-FOCUS-001 · TOAST-MOTION-001 · CONV-TURN-IN-001): 동작 줄이기 공용 `reducedMotion()`(smooth 스크롤 7곳 · 배움 단어 자동 순환 정지),
+    확인창 닫으면 연 버튼으로 포커스 복귀, 토스트 퇴장 0.15s · 손을 올리거나 포커스하면 멈춤, 대화 새 턴 등장. 계약 `reducedMotion.test.js` 외.
+  · studiesRefs 준비 단계 timeout 60 → 120초(단독 46~55초 실측, 병렬 4회 연속 초과).
   · 보류: CJK 가변 weight(@font-face −67%, brotli 전송 −2%) — 600 · 650 · 800 · 300 굵기가 실제 값으로 바뀌는 시각 변경이라 오너 확인 뒤.
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
