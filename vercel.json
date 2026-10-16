@@ -2,8 +2,7 @@
   "git": {
     "deploymentEnabled": {
       "codex/*": false,
-      "codex2/*": false,
-      "claude/*": false
+      "codex2/*": false
     }
   },
   "ignoreCommand": "bash scripts/vercel-ignore.sh",
