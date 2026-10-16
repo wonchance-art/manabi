@@ -205,7 +205,7 @@ export async function fetchPublicMaterials(lang, search) {
 export async function fetchGroupMembers(groupId) {
   const { data, error } = await supabase
     .from('study_group_members')
-    .select('user_id, joined_at, author:profiles(display_name)')
+    .select('user_id, joined_at, author:public_profiles(display_name)')
     .eq('group_id', groupId)
     .order('joined_at', { ascending: true });
   if (error) throw error;
@@ -216,7 +216,7 @@ export async function fetchGroupMembers(groupId) {
 export async function fetchGroupComments(groupId, materialId) {
   const { data, error } = await supabase
     .from('study_group_comments')
-    .select('id, content, progress_pct, created_at, user_id, author:profiles(display_name)')
+    .select('id, content, progress_pct, created_at, user_id, author:public_profiles(display_name)')
     .eq('group_id', groupId)
     .eq('material_id', materialId)
     .order('created_at', { ascending: true })
