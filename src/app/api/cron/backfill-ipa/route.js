@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { callGemini, parseGeminiJSON } from '../../../../lib/gemini.js';
+import { requireUser, isAdminUser } from '@/lib/server/auth';
 
 export const maxDuration = 60;
 
@@ -10,19 +11,11 @@ export async function GET(request) {
   const isCron = !!process.env.CRON_SECRET && authHeader === `Bearer ${process.env.CRON_SECRET}`;
   let isAdmin = false;
   if (!isCron && authHeader?.startsWith('Bearer ')) {
-    const token = authHeader.slice('Bearer '.length);
+    // 관리자 판별은 service-role 헬퍼로만 — anon 키 클라이언트의 profiles 조회는 anon으로 돌아
+    // 프로필 공개 범위 2단계(PROFILES-PRIVACY-001 ②) 뒤 0행이 된다.
     try {
-      const userClient = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-        { auth: { persistSession: false } },
-      );
-      const { data: { user } } = await userClient.auth.getUser(token);
-      if (user) {
-        const { data: profile } = await userClient
-          .from('profiles').select('role').eq('id', user.id).single();
-        isAdmin = profile?.role === 'admin';
-      }
+      const auth = await requireUser(request);
+      if (!auth.error) isAdmin = await isAdminUser(auth.user.id);
     } catch {}
   }
   if (!isCron && !isAdmin) {

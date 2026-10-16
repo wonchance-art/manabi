@@ -14,7 +14,7 @@ import StudyPlanPanel from './StudyPlanPanel';
 import BookRefinePanel from '../components/BookRefinePanel';
 import LiteraturePublishPanel from '../components/LiteraturePublishPanel';
 import BulkAnalysisPanel from '../components/admin/BulkAnalysisPanel';
-import { failureMessage } from '../lib/errorMessage';
+import { failureMessage, roleChangeFailureMessage } from '../lib/errorMessage';
 import { LANG_NAME_KO } from '../lib/constants';
 
 const SOURCE_TYPE_LABELS = {
@@ -171,14 +171,15 @@ export default function AdminPage() {
     onError: (err) => toast(failureMessage('삭제하지 못했어요.', err), 'error'),
   });
 
-  // 역할 변경
+  // 역할 변경 — 관리자 전용 보안 정의자 RPC(마지막 관리자 강등 거부 · CHECK 값 검사). profiles를 직접 update하면
+  // 본인 행 RLS에 0행으로 막히고, 프로필 공개 범위 2단계(PROFILES-PRIVACY-001 ②) 뒤에는 role 열 권한이 없다.
   const rolemutation = useMutation({
     mutationFn: async ({ userId, role }) => {
-      const { error } = await supabase.from('profiles').update({ role }).eq('id', userId);
+      const { error } = await supabase.rpc('admin_set_user_role', { target: userId, new_role: role });
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
-    onError: (err) => toast(failureMessage('역할을 바꾸지 못했어요.', err), 'error'),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-users'] }); toast('역할을 바꿨어요.', 'success'); },
+    onError: (err) => toast(roleChangeFailureMessage(err), 'error'),
   });
 
   // 자료 삭제
@@ -428,10 +429,10 @@ export default function AdminPage() {
                         disabled={rolemutation.isPending}
                         onClick={() => rolemutation.mutate({
                           userId: u.id,
-                          role: u.role === 'admin' ? 'user' : 'admin'
+                          role: u.role === 'admin' ? 'student' : 'admin'
                         })}
                       >
-                        {u.role === 'admin' ? 'user로 변경' : 'admin으로 변경'}
+                        {u.role === 'admin' ? '학습자로 변경' : '관리자로 변경'}
                       </Button>
                     </td>
                   </tr>
