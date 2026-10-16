@@ -198,7 +198,10 @@ describe('⑤ 단어장 1000행 상한 — 브라우저 조회가 조용히 잘�
         const head = chain.split('.select(')[0];
         if (!chain.includes('.select(') || /\.(insert|update|upsert|delete)\(/.test(head)) continue;
         const complete = /readCompleteLegacyRows\(\(\) =>\s*(?:client|supabase)?\s*$/.test(src.slice(Math.max(0, m.index - 80), m.index));
-        const bounded = /\.range\(|\.limit\(|\.single\(|\.maybeSingle\(|head:\s*true|\.in\(|\.eq\(\s*'id'/.test(chain);
+        // .limit(n)은 n ≤ 1000일 때만 경계다 — 더 크면 서버가 1000에서 말없이 자른다(⑥과 같은 판정, REVIEW-ROWS-CAP-001).
+        const limits = [...chain.matchAll(/\.limit\(\s*(\d+)\s*\)/g)].map(([, n]) => Number(n));
+        const bounded = /\.range\(|\.single\(|\.maybeSingle\(|head:\s*true|\.in\(|\.eq\(\s*'id'/.test(chain)
+          || (limits.length > 0 && limits.every((n) => n <= 1000));
         if (!complete && !bounded) unbounded.push(`${f}:${src.slice(0, m.index).split('\n').length}`);
       }
     }
@@ -237,5 +240,65 @@ describe('API로 만드는 서재 항목도 30초 캐시를 무효화한다(리�
     const posts = note.match(/requestNote\('\/api\/notes',\{method:'POST'[^;]*\}\);[^;]*;/g) || [];
     expect(posts).toHaveLength(2);
     for (const call of posts) expect(call).toContain('void invalidateLibrary(queryClient,owner)');
+  });
+});
+
+describe('⑥ review_events 1000행 상한 — 브라우저 조회가 조용히 잘리지 않는다(REVIEW-ROWS-CAP-001)', () => {
+  const clientFiles = fs.readdirSync('src', { recursive: true }).map((f) => path.join('src', String(f)).split(path.sep).join('/'))
+    .filter((f) => /\.(jsx?|tsx?)$/.test(f) && !f.includes('__tests__') && !f.startsWith('src/app/api/') && !f.startsWith('src/lib/server/'));
+  const PAGE_CAP = 1000; // PostgREST max-rows — 이보다 큰 .limit은 말없이 이 값에서 잘린다(⑤의 「.limit(이 있으면 통과」 빈틈)
+
+  /** 한 읽기 체인의 판정 — 완전 조회 · head:true · .range( · .limit(n ≤ 1000) 중 하나. n이 이름이면 같은 파일의 기본값(name = N). */
+  function verdict(src, index) {
+    let end = src.indexOf(';', index);
+    if (end < 0 || end - index > 700) end = index + 700;
+    const chain = src.slice(index, end);
+    const head = chain.split('.select(')[0];
+    if (!chain.includes('.select(') || /\.(insert|update|upsert|delete)\(/.test(head)) return 'write';
+    if (/(?:readCompleteLegacyRows|completeRows)\(\(\) =>\s*(?:client|supabase)?\s*$/.test(src.slice(Math.max(0, index - 80), index))) return 'complete';
+    if (/head:\s*true/.test(chain)) return 'head';
+    if (/\.range\(/.test(chain)) return 'range';
+    const limits = [...chain.matchAll(/\.limit\(\s*([\w.]+)\s*\)/g)].map(([, arg]) => {
+      if (/^\d+$/.test(arg)) return Number(arg);
+      const fallback = new RegExp(`\\b${arg}\\s*=\\s*(\\d+)\\b`).exec(src);
+      return fallback ? Number(fallback[1]) : Infinity;
+    });
+    if (limits.length && limits.every((n) => n <= PAGE_CAP)) return 'limit';
+    return 'unbounded';
+  }
+
+  it('클라이언트의 모든 review_events 읽기는 완전 조회 · head:true · .range( · .limit(n≤1000) 중 하나다', () => {
+    const reads = [], unbounded = [];
+    for (const f of clientFiles) {
+      const src = read(f);
+      for (const m of src.matchAll(/\.from\(\s*'review_events'\s*\)/g)) {
+        const v = verdict(src, m.index);
+        if (v === 'write') continue;
+        reads.push(v);
+        if (v === 'unbounded') unbounded.push(`${f}:${src.slice(0, m.index).split('\n').length}`);
+      }
+    }
+    expect(reads.length, '스캔 대상이 실제로 있다(공허 통과 방지)').toBeGreaterThanOrEqual(10);
+    expect(unbounded).toEqual([]);
+  });
+
+  it('판정기 — .limit(2000) · .limit(5000) · 범위 없는 select는 잡고, 정본 경로는 통과시킨다', () => {
+    const v = (code) => verdict(code, code.indexOf(".from('review_events')"));
+    expect(v("supabase.from('review_events').select('a').eq('u', 1).limit(2000);")).toBe('unbounded');
+    expect(v("supabase.from('review_events').select('a').limit(5000).then(f);")).toBe('unbounded');
+    expect(v("supabase.from('review_events').select('a').eq('u', 1);")).toBe('unbounded');
+    expect(v("const x = 200; function f({ limit = 600 }) { q.from('review_events').select('a').limit(limit); }")).toBe('limit');
+    expect(v("supabase.from('review_events').select('a').limit(400);")).toBe('limit');
+    expect(v("readCompleteLegacyRows(() => supabase.from('review_events').select('a', { count: 'exact' }));")).toBe('complete');
+    expect(v("q.from('review_events').select('id', { count: 'exact', head: true }).in('item_key', ids);")).toBe('head');
+    expect(v("client.from('review_events').select('a').range(0, 999);")).toBe('range');
+    expect(v("supabase.from('review_events').insert(rows);")).toBe('write');
+  });
+
+  it('잘리던 세 곳 — 주간 리포트 완전 조회 · 한자 표시 묶음 페이지 · 드릴 건수', () => {
+    expect(read('src/lib/weeklyReportRows.js')).toMatch(/readCompleteLegacyRows\(\(\) => supabase\.from\('review_events'\)\s*\.select\('id, source, item_key, correct, created_at', \{ count: 'exact' \}\)/);
+    expect(read('src/components/levels/HanziBoard.jsx')).toContain('fetchLastHanziMarks(supabase, userId, allChars)');
+    expect(read('src/lib/hanziSession.js')).toContain('.range(from, from + page - 1)');
+    expect(read('src/components/ChapterDrills.jsx')).toContain(".select('id', { count: 'exact', head: true })");
   });
 });
