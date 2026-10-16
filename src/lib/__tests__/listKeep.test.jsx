@@ -98,7 +98,10 @@ describe('서재 — 머리줄은 새 조건, 목록은 흐린 이전 결과, �
   const shelf = read('src/components/library/LibraryShelf.jsx');
   it('무한 목록이 같은 계정일 때만 이전 결과를 남긴다(키 [1] = user.id)', () => {
     expect(shelf).toContain("import {keepPreviousForUser} from '@/lib/keepPreviousForUser';");
-    expect(shelf).toMatch(/useInfiniteQuery\(\{queryKey:\['personal-library',user\.id,keyFilters,pinned\.data\],[^\n]*placeholderData:keepPreviousForUser\(user\.id\)/);
+    // 키 · 가져오기는 서버와 함께 쓰는 정본(libraryShelfQueries — [1] = 계정 id), 이전 결과 남기기는 화면 몫.
+    expect(shelf).toContain('const listQuery=libraryListQuery(supabase,user.id,filters,pinned.data)');
+    expect(shelf).toContain('useInfiniteQuery({...listQuery,enabled:!filters.pinned||pinned.isSuccess,placeholderData:keepPreviousForUser(user.id)})');
+    expect(read('src/lib/libraryShelfQueries.js')).toContain("queryKey: ['personal-library', ownerId, keyFilters, pinnedIds]");
     expect(shelf).toContain('isPlaceholderData:stale}=list;');
   });
   it('흐린 동안: 목록 aria-busy, 수 · 빈 상태 · 더 보기 · 자동 이어 받기는 새 결과를 기다린다', () => {

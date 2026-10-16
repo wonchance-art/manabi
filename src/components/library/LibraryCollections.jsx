@@ -2,9 +2,9 @@
 import {useEffect,useRef,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {supabase} from '@/lib/supabase';
-import {fetchCollections} from '@/lib/personalLibrary';
+import {libraryCollectionsQuery} from '@/lib/libraryShelfQueries';
 import {currentLibraryTarget,runLibraryOperation,libraryRpc,invalidateLibrary,libraryOperationError,folderPaths} from '@/lib/libraryOperations';
-export function useCollections(ownerId){return useQuery({queryKey:['library-collections',ownerId],enabled:!!ownerId,queryFn:()=>fetchCollections(supabase,ownerId),staleTime:30000});}
+export function useCollections(ownerId){return useQuery(libraryCollectionsQuery(supabase,ownerId));}
 export function LibraryDialog({title,children,onClose}){
  const dialog=useRef(null);
  useEffect(()=>{const opener=document.activeElement,node=dialog.current;node?.showModal();return()=>{node?.close();requestAnimationFrame(()=>{if(document.activeElement===document.body&&opener?.isConnected)opener.focus({preventScroll:true});});};},[]);
