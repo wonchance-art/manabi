@@ -97,6 +97,9 @@
   /* Transition */
   --transition-fast: 0.15s ease;
   --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 내려앉는 감속 곡선(앱 손맛 — 오너 「처음에 하려던 앱처럼 효과」 2026-10-16). 빠르게 출발해 끝에서 길게 멈춘다.
+     카드 넘김 · 담기 형광 · 줄 바뀜 · 복습 끝 막대가 같은 곡선을 쓴다 — 효과마다 곡선을 새로 적지 않는다. */
+  --ease-settle: cubic-bezier(0.23, 1, 0.32, 1);
 
   /* 레벨별 단어 · 문형 목록(LEVEL-LIST-AJ-001) — 다크 값. 셸(.manabi-app)은 밝은 화면이라 level-list.css가 라이트 값으로 고정한다. */
   --lv-card: #26231f; --lv-line: #3a352e; --lv-chip: #34302a; --lv-chip-hover: #3f3a33; --lv-field: #2e2a25;
@@ -1443,7 +1446,7 @@ body.is-review-session .page-container { padding-top: 8px; }
 
 /* 카드 넘김 — 다음 카드가 오른쪽에서 짧게 들어온다(복습 손맛 실험실 제안안, 2026-10-16).
    key로 카드마다 새로 그려지므로 한 장마다 한 번만 돈다. 0.3초 이하 · 감속 곡선. */
-.review-card--turn { animation: reviewCardTurn 0.24s cubic-bezier(0.23, 1, 0.32, 1); }
+.review-card--turn { animation: reviewCardTurn 0.24s var(--ease-settle); }
 @keyframes reviewCardTurn {
   from { opacity: 0.35; transform: translateX(14px); }
   to { opacity: 1; transform: none; }
@@ -1452,6 +1455,11 @@ body.is-review-session .page-container { padding-top: 8px; }
 .review-card__body--front { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   .review-card--turn { animation: none; }
+}
+/* 새 줄이 제자리에 내려앉는다(담은 표현 줄 · 복습 끝 제목) — 4px만, 좌표는 그대로(transform). */
+@keyframes settleIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
 }
 
 .review-card--center {
@@ -1998,10 +2006,15 @@ a.viewer-badge:hover {
   color: var(--warning);
 }
 /* 수집 배지는 무채색으로 내렸지만 **팝은 남긴다** — 단어를 담은 순간의 되먹임은 색이
-   아니라 움직임이 나른다. 움직임을 끈 사용자에게는 애니메이션만 사라진다. */
+   아니라 움직임이 나른다. 움직임을 끈 사용자에게는 애니메이션만 사라진다.
+   붙는 자리 = 「N개 수집」의 숫자(.viewer-stats__count) — 수가 늘 때만 key로 새로 그려 한 번 돈다
+   (첫 렌더·불러오기 완료는 제외, ViewerPage collectPopKey). 0.3초 상한 안(0.4 → 0.2s).
+   transform은 인라인 상자에 안 먹으므로 숫자는 inline-block이고, 그러면 링크 밑줄이 숫자에 안 이어지므로
+   밑줄을 숫자 상자에 그대로 물려받게 한다(text-decoration: inherit — 같은 기준선이라 한 줄로 보인다). */
 .viewer-badge--pop {
-  animation: vocabCounterPop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  animation: vocabCounterPop 0.2s cubic-bezier(0.34,1.56,0.64,1);
 }
+.viewer-stats__count { display: inline-block; text-decoration: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .viewer-badge--pop { animation: none; }
 }
@@ -2991,6 +3004,23 @@ a.viewer-badge:hover {
 }
 .word-token--saved .surface::before {
   border-bottom: 2px solid var(--primary-light);
+}
+/* 담는 순간(앱 손맛 ①) — 방금 담은 그 토큰 하나만 형광펜이 왼쪽에서 오른쪽으로 그어진다.
+   띠(::before)의 좌표(top·height·left·right·밑줄 칸)는 위 규칙들 그대로이고 scaleX만 움직인다 —
+   transform은 레이아웃을 바꾸지 않으므로 문형 밑줄(.pattern-mark)·선택 테두리·이음매와 자리가 겹치지 않는다.
+   클래스는 ViewerPage가 저장 확인 직후 붙이고 짧은 타이머로 뗀다(다시 그려도 재생되지 않게 일회성). */
+.word-token--just-saved .surface::before {
+  transform-origin: left center;
+  animation: hlStroke 0.22s var(--ease-settle) both;
+}
+@keyframes hlStroke {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+/* 모션 축소: 긋기 없이 최종 형광·밑줄만(색 변화는 그대로). 전역 규칙은 길이만 줄이고 뷰어 규칙
+   (reader-controls.css `.viewer-layout *`)은 ::before를 덮지 않으므로 여기서 직접 끈다. */
+@media (prefers-reduced-motion: reduce) {
+  .word-token--just-saved .surface::before { animation: none; transform: none; }
 }
 
 /* 복습 대상: 불투명도 복원 + 부드러운 펄스(밴드 모양 글로우) */
@@ -6329,6 +6359,11 @@ a.viewer-badge:hover {
 .review-done__title {
   font-size: 1.5rem; font-weight: 800; color: var(--text-primary);
   margin-bottom: 6px;
+  /* 복습 끝 마무리(앱 손맛 ②) — 「오늘 몫 끝」이 제자리에 내려앉는다(막대 솟기는 review-room.css). */
+  animation: settleIn 0.2s var(--ease-settle) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .review-done__title { animation: none; animation-delay: 0s; }
 }
 .review-done__sub {
   font-size: 0.88rem; color: var(--text-secondary);

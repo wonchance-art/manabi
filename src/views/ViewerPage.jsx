@@ -272,6 +272,14 @@ function gradeSaveKey(scope, token) {
   return `${scope}:${token?.sep_link || token?.base_form || token?.text || ''}`;
 }
 
+// 번역문 속 숫자 자리(앱 손맛 ① 수집 팝) — 언어마다 숫자 위치가 달라(「N개 수집」·「已收集 N个」) 번역문을 자리표로
+// 받은 뒤 쪼개 숫자만 감싼다. 자리표가 없으면(번역문이 숫자를 안 쓰면) 문구 그대로.
+const COUNT_SLOT = '\u2063';
+function withCountSlot(text, node) {
+  const [before, ...rest] = String(text).split(COUNT_SLOT);
+  return rest.length ? <>{before}{node}{rest.join(COUNT_SLOT)}</> : text;
+}
+
 async function upsertViewerVocabulary(row, options = VOCAB_UPSERT) {
   // 반환 = 새로 들어간 행의 id. `ignoreDuplicates`라 **새로 넣었을 때만** [{ id }], 이미 있던
   // 단어면 [] — W R1 undo의 「되돌릴 게 있는가」 판정이 이 사실 하나에 선다(원래 있던 행은
@@ -419,6 +427,16 @@ export default function ViewerPage() {
   const [pendingGradeSaves, setPendingGradeSaves] = useState(() => new Set());
   const savingGrade = useRef(new Set());
   const saveAnim = pendingGradeSaves.has(gradeSaveKey(saveScopeRef.current, selectedToken));
+  // 앱 손맛 ①(오너 「처음에 하려던 앱처럼 효과」 2026-10-16) — 방금 담은 토큰 하나. 저장이 확인된 뒤에만 붙고
+  // 효과 길이(≤0.3초)보다 조금 길게 두었다가 뗀다 — 다시 그려도 재생되지 않게 일회성. 저장·채점 호출은 그대로다.
+  const [justSaved, setJustSaved] = useState(null);
+  const justSavedTimer = useRef(0);
+  const markJustSaved = useCallback((tokenId) => {
+    clearTimeout(justSavedTimer.current);
+    setJustSaved(tokenId ?? null);
+    justSavedTimer.current = setTimeout(() => setJustSaved(null), 400);
+  }, []);
+  useEffect(() => () => clearTimeout(justSavedTimer.current), []);
   const gradeAction = useRef(0);
   const inlineGradeRequests = useRef(new Set());
   const [pendingInlineGrades, setPendingInlineGrades] = useState(() => new Set());
@@ -1382,6 +1400,16 @@ export default function ViewerPage() {
   // 「N개 수집 → 단어장」(AD-R2 설계 Q4) — 이 자료의 내용어 중 단어장에 담긴 수. 같은 엔진에 '이미 앎'을 합치기 전
   // 인덱스를 넣는다(담은 것만 센다). 표본 하한은 두지 않는다 — 수집은 비율이 아니라 개수라 0% 오표기 위험이 없다.
   const collectedInMaterial = useMemo(() => (user && material?.processed_json ? materialFit(material.processed_json, savedWords).known : 0), [user, material?.processed_json, savedWords]);
+  // 「N개 수집」 숫자 팝 — 수가 **늘 때만** key를 올려 한 번 돈다. 기준은 저장 목록·본문이 다 불러와진 뒤에야 잡는다
+  // (첫 렌더 · 불러오기 완료 0→N · 다른 자료로 이동은 팝이 아니다). 줄어들 때(되돌리기 · 해제)도 돌지 않는다.
+  const collectedPrev = useRef(null);
+  const [collectPopKey, setCollectPopKey] = useState(0);
+  const collectReady = savedWords.complete === true && !!material?.processed_json;
+  useEffect(() => {
+    const prev = collectedPrev.current;
+    collectedPrev.current = collectReady ? { id, count: collectedInMaterial } : null;
+    if (prev && prev.id === id && collectedInMaterial > prev.count) setCollectPopKey(k => k + 1);
+  }, [id, collectReady, collectedInMaterial]);
   // 「이 자료 표현 복습」(REV-SCOPE-R1A 진입점) — 범위 주소 정본으로 이 자료 범위의 복습방 주소를 만든다.
   const materialReviewHref = /^[1-9]\d{0,17}$/.test(String(material?.id ?? ''))
     ? serializeReviewScope({ lang: materialLang, level: null, source: { kind: 'material', ids: [String(material.id)] }, state: 'due' })
@@ -2576,7 +2604,11 @@ export default function ViewerPage() {
 
     let inserted;
     try {
-      if (materialLang === 'Korean') { await saveKoreanVocabulary(savedToken, g); return; }
+      if (materialLang === 'Korean') {
+        const saved = await saveKoreanVocabulary(savedToken, g);
+        if (saved && saveScopeRef.current === saveScope) markJustSaved(savedToken.id);
+        return;
+      }
       // 저장 규약(기본형 우선·출처 동봉)은 정본 조립기가 책임진다 — 저장 경로가 11개라
       // 자리마다 손으로 적으면 갈린다(실측: pdf·quick이 surface를 넣어 행이 둘로 갈렸다).
       const row = buildVocabRow({
@@ -2597,7 +2629,7 @@ export default function ViewerPage() {
       insertConfirmedVocabulary(queryClient, user.id, inserted[0]);
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
-      if (saveScopeRef.current === saveScope) saveCountRef.current += 1;
+      if (saveScopeRef.current === saveScope) { saveCountRef.current += 1; markJustSaved(savedToken.id); }
     } catch (err) {
       if (saveScopeRef.current === saveScope) toast(failureMessage('단어를 추가하지 못했어요.', err), 'error');
       return;
@@ -3386,7 +3418,7 @@ export default function ViewerPage() {
           {knownToggle}
         </div>;
         return (
-          <div className="word-detail-card__actrow save-grade__saved">
+          <div className={`word-detail-card__actrow save-grade__saved${justSaved && justSaved === selectedToken?.id ? ' save-grade__saved--fresh' : ''}`}>
             <span className="save-grade__status">
               <button disabled className="btn btn--ghost btn--sm save-grade__in">{vt('✓ 담은 표현에 있음')}</button>
               {nextReview && <span className="save-grade__next">{nextReview.due ? vt('복습 차례') : vt('다음 복습 {date}', { date: nextReview.label })}</span>}
@@ -3795,7 +3827,8 @@ export default function ViewerPage() {
               <span className="viewer-badge viewer-stats">
                 {coverage && <span title={vt("담은 단어와 '이미 알아요' 표시를 합쳐 센 값 — 서재 맞춤도와 같은 계산이에요")}>{vt('아는 단어 {percent}% · 새 단어 {count}개', {percent: Math.round(coverage.coverage * 100), count: coverage.unknown})}</span>}
                 {coverage && collectedInMaterial > 0 && ' · '}
-                {collectedInMaterial > 0 && <Link href={materialReviewHref} prefetch={false} className="viewer-stats__vocab">{vt('{count}개 수집 · 이 자료 표현 복습', {count: collectedInMaterial})}</Link>}
+                {collectedInMaterial > 0 && <Link href={materialReviewHref} prefetch={false} className="viewer-stats__vocab">{withCountSlot(vt('{count}개 수집 · 이 자료 표현 복습', {count: COUNT_SLOT}),
+                  <span key={collectPopKey} className={`viewer-stats__count${collectPopKey ? ' viewer-badge--pop' : ''}`}>{collectedInMaterial}</span>)}</Link>}
               </span>
             )}
           </div>
@@ -4131,7 +4164,7 @@ export default function ViewerPage() {
                 data-source-text={token.text}
                 data-text={token.text}
                 data-selected={selectedToken?.id===tokenId&&isSheetOpen?true:undefined}
-                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}`}
+                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}${isSaved && justSaved === tokenId ? ' word-token--just-saved' : ''}`}
                 style={paceStyle}
                 onClick={() => handleTokenClick(token, tokenId)}>
                 {linePick}

@@ -74,7 +74,7 @@ function UpcomingCalendar({ projections, learningAvailable, now }) {
         {days.map((d, i) => (
           <div key={i} className="review-done__bar-col">
             <div className={`review-done__bar${d.count > 0 ? ' has-count' : ''}`}
-              style={{ height: d.count > 0 ? `${Math.max(8, (d.count / max) * 40)}px` : '2px' }} title={`${d.key}: ${d.count}개`} />
+              style={{ height: d.count > 0 ? `${Math.max(8, (d.count / max) * 40)}px` : '2px', '--i': i }} title={`${d.key}: ${d.count}개`} />
             <span className="review-done__bar-day">{d.key.slice(5).replace('-', '/')}</span>
             {d.count > 0 && <span className="review-done__bar-count">{d.count}</span>}
           </div>

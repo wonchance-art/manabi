@@ -65,6 +65,10 @@
    Its own em must be the surface's: headings enlarge only .surface, so the frame follows them. */
 .viewer-layout .word-token[data-selected="true"] {position:relative;}
 .viewer-layout .word-token[data-selected="true"] .surface::before {animation:none;}
+/* 앱 손맛 ①: 방금 담은 토큰은 대개 카드가 열린(선택된) 그 토큰이다 — 위 animation:none(선택 중 복습 펄스 끄기)이 특이도로
+   담기 긋기(index.css .word-token--just-saved)까지 끄므로 긋기만 되살린다. 기점 · 좌표는 index.css 규칙 그대로. */
+.viewer-layout .word-token--just-saved[data-selected="true"] .surface::before {animation:hlStroke .22s var(--ease-settle) both;}
+@media (prefers-reduced-motion:reduce) { .viewer-layout .word-token--just-saved[data-selected="true"] .surface::before {animation:none;transform:none;} }
 .viewer-layout .word-token[data-selected="true"]::before {content:"";position:absolute;z-index:1;left:0;right:0;top:calc(var(--hl-band-top) - var(--hl-frame-top));height:calc(var(--hl-frame-top) + var(--hl-band-h) + var(--hl-frame-bottom));border:1.5px solid var(--word-selection-line,color-mix(in srgb,var(--reader-ink) 55%,transparent));border-radius:6px;pointer-events:none;}
 .viewer-layout .word-token--pattern:is(.word-token--saved,.word-token--due) {--hl-frame-bottom:calc(var(--hl-mark-gap) * 2 + 5.5px);}
 .viewer-layout .viewer-h1 .word-token[data-selected="true"]::before {font-size:1.5em;}
@@ -214,6 +218,10 @@
 .reader-card-learn__ask {flex:0 1 auto;}
 /* 하단 저장 줄(§2.1): ✓ 단어장에 있음 · 다음 복습 날짜 [이 문맥 추가] ☐ 아는 단어 — 넘치면 두 줄. */
 .save-grade__saved {display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:0;}
+/* 등급 줄 → 「✓ 담은 표현에 있음」 줄로 바뀌는 순간만(앱 손맛 ①) 새 줄이 4px 내려앉는다. 이미 담긴 단어를 열 때는
+   돌지 않는다(--fresh = 방금 담은 토큰, ViewerPage justSaved). 0.16s · 감속 곡선 · transform/opacity만. */
+.save-grade__saved--fresh {animation:settleIn .16s var(--ease-settle) both;}
+@media (prefers-reduced-motion:reduce) { .save-grade__saved--fresh {animation:none;animation-delay:0s;} }
 .save-grade__status {display:inline-flex;align-items:center;flex-wrap:wrap;gap:0 6px;margin-right:auto;font-size:.8125rem;color:var(--reader-muted);}
 .viewer-layout .reader-card-actions .save-grade__in:disabled {padding:0;border:0;background:transparent;color:var(--reader-ink);font-weight:600;opacity:1;min-height:44px;}
 .save-grade__next::before {content:'· ';}
