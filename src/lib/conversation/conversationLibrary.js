@@ -36,18 +36,28 @@ export async function fetchConversations(client, userId, { limit = CONVERSATION_
 }
 
 /**
- * 대화 방 목록(CONV-CHAT-001 2차) — 내 대화 + 마지막 활동 계산용 턴·미리보기. 본문(raw_text)은 읽지 않는다.
+ * 대화 방 목록(CONV-CHAT-001 2차) — 내 대화 + 미리보기 · 마지막 활동 시각. 본문(raw_text)은 읽지 않는다.
  * 휴지통으로 옮긴 대화는 뺀다(서재 「대화」 묶음과 같은 규칙).
+ * 대화 기록(turns)도 읽지 않는다 — 서버가 턴마다 남기는 preview · lastAt 두 칸만 읽는다(CONV-CHAT-001 6차 최적화).
+ * 두 칸이 없는 옛 대화만 그 행들의 turns를 한 번 더 읽어 채운다(다음 턴부터는 서버가 남긴다).
  */
 export async function fetchConversationRooms(client, userId, { limit = 60 } = {}) {
   const { data, error } = await client.from('reading_materials')
-    .select([COLUMNS, 'turns:processed_json->metadata->conversation->turns', 'preview:processed_json->metadata->conversation->>preview'].join(','))
+    .select([COLUMNS, 'preview:processed_json->metadata->conversation->>preview', 'lastAt:processed_json->metadata->conversation->>lastAt'].join(','))
     .eq('owner_id', userId)
     .not('processed_json->metadata->conversation', 'is', null)
     .order('id', { ascending: false })
     .limit(limit);
   if (error) throw error;
   const active = await filterActiveSources(client, userId, (data || []).filter((row) => row.marker != null));
+  const old = active.filter((row) => !row.preview || row.lastAt == null).map((row) => row.id);
+  const turnsById = new Map();
+  if (old.length) {
+    const { data: rest, error: restError } = await client.from('reading_materials')
+      .select('id,turns:processed_json->metadata->conversation->turns').eq('owner_id', userId).in('id', old);
+    if (restError) throw restError;
+    for (const row of rest || []) turnsById.set(String(row.id), Array.isArray(row.turns) ? row.turns : []);
+  }
   return active.map((row) => ({
     id: String(row.id),
     title: row.title || row.topic || '대화',
@@ -55,8 +65,9 @@ export async function fetchConversationRooms(client, userId, { limit = 60 } = {}
     language: row.language || null,
     parentId: row.parentId || null,
     createdAt: row.created_at || null,
-    turns: Array.isArray(row.turns) ? row.turns : [],
+    turns: turnsById.get(String(row.id)) || [],
     preview: row.preview || '',
+    lastAt: row.lastAt != null && row.lastAt !== '' ? Number(row.lastAt) : null,
   }));
 }
 

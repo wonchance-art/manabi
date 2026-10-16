@@ -58,8 +58,9 @@ export function roomPreview({ preview = '', turns = [] } = {}) {
   return text.length > ROOM_PREVIEW_CHARS ? `${text.slice(0, ROOM_PREVIEW_CHARS)}…` : text;
 }
 
-/** 방의 마지막 활동 시각(ms) — 마지막 턴의 at, 없으면 만든 시각. */
-export function roomLastAt({ turns = [], createdAt = null } = {}) {
+/** 방의 마지막 활동 시각(ms) — 서버가 남긴 lastAt, 없으면(옛 대화) 마지막 턴의 at, 그것도 없으면 만든 시각. */
+export function roomLastAt({ lastAt = null, turns = [], createdAt = null } = {}) {
+  if (lastAt != null && lastAt !== '' && Number.isFinite(Number(lastAt))) return Number(lastAt);
   const last = [...(turns || [])].reverse().find((t) => t?.at != null && Number.isFinite(Number(t.at)));
   if (last) return Number(last.at);
   const t = Date.parse(createdAt || '');

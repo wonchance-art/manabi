@@ -1,7 +1,7 @@
 // CONV-CHAT-001 2차 — 방 목록·날짜 구분선 표시 규칙(KST).
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { chatDateLabel, conversationRooms, kstDateKey, roomPreview, roomTimeLabel, ROOM_PREVIEW_CHARS } from '../chatView';
+import { chatDateLabel, conversationRooms, kstDateKey, roomLastAt, roomPreview, roomTimeLabel, ROOM_PREVIEW_CHARS } from '../chatView';
 
 const read = (rel) => readFileSync(new URL(`../../../${rel}`, import.meta.url), 'utf8');
 // 2026-10-15 15:07 KST = 06:07Z
@@ -46,5 +46,14 @@ describe('방 목록', () => {
     expect(server).toContain('preview: tutorPreview(lines),');
     expect(server).toContain('preview: tutorPreview(tutorTexts)');
     expect(read('lib/conversation/conversationLibrary.js')).toContain("'preview:processed_json->metadata->conversation->>preview'");
+  });
+  it('마지막 활동 시각 — 서버가 남긴 lastAt, 없으면(옛 대화) 마지막 턴, 그것도 없으면 만든 시각', () => {
+    expect(roomLastAt({ lastAt: '1760000000000', turns: [{ at: 5 }] })).toBe(1760000000000);
+    expect(roomLastAt({ lastAt: null, turns: [{ at: 5 }, { at: null }] })).toBe(5);
+    expect(roomLastAt({ createdAt: '2026-10-15T06:07:00Z' })).toBe(NOW);
+    expect(roomLastAt({})).toBe(null);
+    const server = read('lib/server/conversationTurn.js');
+    expect(server).toContain('lastAt: tutorTurn?.at ?? now,');
+    expect(server).toContain('lastAt: now,');
   });
 });

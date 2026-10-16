@@ -23,7 +23,7 @@ import {
 } from '@/lib/conversation/lobby';
 import { isMuted, onChange as onMuteChange, toggleMute } from '@/lib/world/muteStore';
 import { handleConversationKeyDown } from '@/components/conversation/ConversationThread';
-import { useAutoGrow, useChatScroll, useChatViewport } from '@/components/conversation/useChatShell';
+import { useArrivals, useAutoGrow, useChatScroll, useChatViewport } from '@/components/conversation/useChatShell';
 import { useToast } from '@/lib/ToastContext';
 import '@/components/conversation/conversation.css';
 
@@ -72,6 +72,8 @@ export default function ConversationLobbyPage() {
   });
   useChatViewport(shellRef, { nearBottomRef, toBottom });
   useAutoGrow(inputRef, input);
+  // 다른 사람의 새 말만 떠오른다 — 처음 불러온 말은 그대로, 내 말은 보내는 중 말풍선이 이미 떠올랐다.
+  const arrived = useArrivals(messages.map((m) => m.id), { resetKey: language, ready: query.isSuccess });
 
   async function send() {
     const text = cleanLobbyText(input);
@@ -180,7 +182,7 @@ export default function ConversationLobbyPage() {
                     {actions}
                   </div>
                 ) : (
-                  <div className={`conv-lobby__row${m.first ? ' conv-lobby__row--first' : ''}`}>
+                  <div className={`conv-lobby__row${m.first ? ' conv-lobby__row--first' : ''}${arrived(m.id) ? ' conv-anim-in' : ''}`}>
                     {m.first
                       ? <span className="conv-avatar" aria-hidden="true">{m.name.slice(0, 1)}</span>
                       : <span className="conv-lobby__gap" aria-hidden="true" />}
@@ -195,7 +197,7 @@ export default function ConversationLobbyPage() {
             );
           })}
           {pending && (
-            <div className="conv-lobby__row conv-lobby__row--me">
+            <div className="conv-lobby__row conv-lobby__row--me conv-anim-in">
               <div className="conv-lobby__line">
                 <span className="conv-bubble conv-bubble--me conv-bubble--tail conv-bubble--pending" lang={lang}>{pending}</span>
               </div>
@@ -217,6 +219,7 @@ export default function ConversationLobbyPage() {
           <textarea
             ref={inputRef}
             className="conv__textarea"
+            lang={lang}
             value={input}
             maxLength={LOBBY_MAX_CHARS}
             onChange={(e) => { setInput(e.target.value); if (error) setError(''); }}

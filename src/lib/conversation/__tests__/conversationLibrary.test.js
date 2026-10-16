@@ -1,7 +1,7 @@
 // 대화 모드 v2-Z Z-R1 ③ — 대화는 서재 「대화」 묶음으로 모이고, 읽을거리 자리(이어 읽기·고르기·공개)에는 끼지 않는다.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { conversationHref, conversationShelfMeta, fetchConversations } from '../conversationLibrary';
+import { conversationHref, conversationShelfMeta, fetchConversationRooms, fetchConversations } from '../conversationLibrary';
 
 const read = (rel) => readFileSync(new URL(`../../../${rel}`, import.meta.url), 'utf8');
 
@@ -16,6 +16,7 @@ function fakeClient(rows, calls, trashed = []) {
     not(...a) { calls.push(['not', ...a]); return chain; },
     order(...a) { calls.push(['order', ...a]); return chain; },
     limit(n) { calls.push(['limit', n]); return Promise.resolve({ data: rows, error: null }); },
+    in(col, ids) { calls.push(['in', col, ids]); return Promise.resolve({ data: ids.map((id) => ({ id, turns: [{ who: 'me', text: '옛 말', at: 5 }] })), error: null }); },
   };
   return { from(table) { calls.push(['from', table]); return table === 'library_item_state' ? state : chain; } };
 }
@@ -45,6 +46,27 @@ describe('서재 「대화」 묶음 조회', () => {
       .toBe('중국어 · 자료로 시작한 대화 · 10월 14일');
     expect(conversationShelfMeta({ language: null, parentId: null, createdAt: null })).toBe('주제 대화');
     expect(conversationHref('12')).toBe('/viewer/12');
+  });
+});
+
+describe('대화 방 목록은 대화 기록을 읽지 않는다(CONV-CHAT-001 6차 최적화)', () => {
+  it('preview · lastAt 두 칸만 읽고, 두 칸이 없는 옛 대화만 그 행의 turns를 한 번 더 읽는다', async () => {
+    const calls = [];
+    const rows = await fetchConversationRooms(fakeClient([
+      { id: 12, title: '여행', topic: '여행', language: 'Japanese', marker: '1', preview: 'どこへ？', lastAt: '1760000000000' },
+      { id: 9, title: '오늘 하루', topic: '오늘 하루', language: 'Japanese', marker: '1', preview: null, lastAt: null },
+    ], calls), 'u1');
+    const selects = calls.filter((c) => c[0] === 'select').map((c) => c[1]);
+    expect(selects[0]).not.toMatch(/->turns/);
+    expect(selects[0]).toContain('lastAt:processed_json->metadata->conversation->>lastAt');
+    expect(calls).toContainEqual(['in', 'id', [9]]);
+    expect(rows[0]).toMatchObject({ id: '12', turns: [], preview: 'どこへ？', lastAt: 1760000000000 });
+    expect(rows[1]).toMatchObject({ id: '9', lastAt: null, turns: [{ who: 'me', text: '옛 말', at: 5 }] });
+  });
+  it('모두 새 대화면 두 번째 조회가 없다', async () => {
+    const calls = [];
+    await fetchConversationRooms(fakeClient([{ id: 3, marker: '1', preview: 'x', lastAt: '7' }], calls), 'u1');
+    expect(calls.some((c) => c[0] === 'in')).toBe(false);
   });
 });
 

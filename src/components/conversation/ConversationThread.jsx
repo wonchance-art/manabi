@@ -24,7 +24,7 @@ import { bcp47ForLanguage } from '../../lib/speechLang';
 import { langNameKo } from '../../lib/constants';
 import OutputWordChips from '../OutputWordChips';
 import { chatDateLabel, clockLabel, kstDateKey } from '../../lib/conversation/chatView';
-import { CHAT_COMPOSER_MAX_LINES, CHAT_NEAR_BOTTOM_PX, useAutoGrow, useChatScroll, useChatViewport } from './useChatShell';
+import { CHAT_COMPOSER_MAX_LINES, CHAT_NEAR_BOTTOM_PX, useArrivals, useAutoGrow, useChatScroll, useChatViewport } from './useChatShell';
 import './conversation.css';
 
 /** 요청이 아직 이 화면(같은 자료·마지막 요청)의 것인가 — 옛 회화 패널 계약 그대로(자료를 바꾸면 늦은 응답을 버린다). */
@@ -138,6 +138,8 @@ export default function ConversationThread({
   });
   useChatViewport(shellRef, { nearBottomRef, toBottom });
   useAutoGrow(inputRef, input);
+  // 새로 온 튜터 말만 떠오른다 — 내 말은 보내는 중 말풍선이 이미 떠올랐으므로 자리만 바뀐다.
+  const arrived = useArrivals(items.map((item) => item.index), { resetKey: materialId });
 
   // 못 한 줄 자동 채우기 — 소유자 화면에서만(onFilled가 있을 때), 턴을 기다리는 동안은 쉬었다가 이어 한다.
   const missingKey = onFilled && CONVERSATION_ANALYZED_LANGUAGES.includes(language)
@@ -307,7 +309,7 @@ export default function ConversationThread({
       );
       // 메신저처럼 문장마다 말풍선 — 같은 턴은 한 묶음(프로필·이름은 첫 말풍선에만, 듣기·번역은 마지막 말풍선 옆).
       return (
-        <div className="conv__row conv__row--tutor">
+        <div className={`conv__row conv__row--tutor${arrived(item.index) ? ' conv-anim-in' : ''}`}>
           <span className="conv-avatar" aria-hidden="true">튜</span>
           <div className="conv__stack">
             <p className="conv__name">튜터</p>
@@ -414,17 +416,17 @@ export default function ConversationThread({
           return <Fragment key={item.index}>{sep}{renderItem(item)}</Fragment>;
         })}
         {pending && (
-          <div className="conv__row conv__row--me">
+          <div className="conv__row conv__row--me conv-anim-in">
             <div className="conv-bubble__send">
               {error?.retry && (
                 <button type="button" className="conv-retry" disabled={loading} onClick={() => send({ retryText: pending.text })} aria-label="다시 보내기" title="다시 보내기">!</button>
               )}
-              <div className={`conv-bubble conv-bubble--me conv-bubble--tail conv-bubble--pending${error?.retry ? ' conv-bubble--failed' : ''}`}>{pending.text}</div>
+              <div className={`conv-bubble conv-bubble--me conv-bubble--tail conv-bubble--pending${error?.retry ? ' conv-bubble--failed' : ''}`} lang={bcp47ForLanguage(language)}>{pending.text}</div>
             </div>
           </div>
         )}
         {loading && (
-          <div className="conv__row conv__row--tutor" aria-label="입력 중">
+          <div className="conv__row conv__row--tutor conv-anim-fade" aria-label="입력 중">
             <span className="conv-avatar" aria-hidden="true">튜</span>
             <div className="conv__stack">
               <div className="conv-bubble conv-bubble--tutor conv-bubble--tail conv-bubble--typing"><span /><span /><span /></div>
@@ -467,6 +469,7 @@ export default function ConversationThread({
         <textarea
           ref={inputRef}
           className="conv__textarea"
+          lang={bcp47ForLanguage(language)}
           value={input}
           onChange={(e) => { setInput(e.target.value); if (!e.target.value) setInputMode('text'); }}
           onKeyDown={(e) => handleConversationKeyDown(e, () => send())}

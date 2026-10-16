@@ -4,10 +4,14 @@
 //  · useChatViewport: 키보드 — Android는 interactive-widget=resizes-content로 화면이 줄고, iOS는 visualViewport 높이에 맞춘다.
 //    viewport 메타는 이 화면에서만 바꾸고 나가면 되돌린다(다른 화면 영향 0).
 //  · useAutoGrow: 입력창은 한 줄에서 시작해 다섯 줄까지 자라고, 그 위로는 입력창 안에서 스크롤한다.
+//  · useArrivals: 처음 그린 뒤에 새로 도착한 말만 고른다 — 그 말만 살짝 떠오르고, 방을 열 때 지난 말은 그대로 서 있다.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 export const CHAT_COMPOSER_MAX_LINES = 5;
 export const CHAT_NEAR_BOTTOM_PX = 100;
+
+// 「움직임 줄이기」를 켠 사람에게는 부드러운 스크롤도 끈다(docs/ui-conventions.md 접근성 하한).
+const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 export function useChatScroll(logRef, { resetKey, changeKey }) {
   const nearBottomRef = useRef(true);
@@ -16,7 +20,7 @@ export function useChatScroll(logRef, { resetKey, changeKey }) {
   const toBottom = useCallback((smooth) => {
     const log = logRef.current;
     if (!log) return;
-    log.scrollTo?.({ top: log.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+    log.scrollTo?.({ top: log.scrollHeight, behavior: smooth && !reducedMotion() ? 'smooth' : 'auto' });
     nearBottomRef.current = true;
     setJump(false);
   }, [logRef]);
@@ -78,4 +82,16 @@ export function useAutoGrow(inputRef, value) {
     const max = (px('lineHeight') || 24) * CHAT_COMPOSER_MAX_LINES + px('paddingTop') + px('paddingBottom') + border;
     el.style.height = `${Math.min(el.scrollHeight + border, max)}px`;
   }, [inputRef, value]);
+}
+
+/**
+ * 새로 도착한 말인지 — ready가 된 첫 그림에 있던 열쇠는 「지난 말」, 그 뒤에 생긴 열쇠만 「새 말」.
+ * resetKey(방·언어)가 바뀌면 다시 센다. 그림 중에 ref만 고치므로 다시 그리기를 부르지 않는다.
+ */
+export function useArrivals(keys, { resetKey, ready = true } = {}) {
+  const ref = useRef({ resetKey: undefined, seen: null });
+  if (ref.current.resetKey !== resetKey) ref.current = { resetKey, seen: null };
+  if (!ref.current.seen && ready) ref.current.seen = new Set(keys);
+  const { seen } = ref.current;
+  return (key) => !!seen && !seen.has(key);
 }

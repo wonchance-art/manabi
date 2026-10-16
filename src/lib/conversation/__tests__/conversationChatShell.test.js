@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   handleConversationKeyDown, CONVERSATION_COMPOSER_MAX_LINES, CONVERSATION_NEAR_BOTTOM_PX,
 } from '../../../components/conversation/ConversationThread';
+import { sliceBetween } from '../../__tests__/helpers/sliceBetween.js';
 
 const read = (rel) => readFileSync(new URL(`../../../${rel}`, import.meta.url), 'utf8');
 const press = (event, touch) => {
@@ -78,5 +79,52 @@ describe('화면 틀', () => {
     expect(shell).toContain("if (meta && before != null) meta.setAttribute('content', before);");
     expect(shell).toContain("vv.addEventListener('resize', fit);");
     expect(thread).toContain('useChatViewport(shellRef');
+  });
+});
+
+// CONV-CHAT-001 6차 — 글꼴 한 벌 · 앱 같은 움직임(오너 2026-10-16). 화면은 실제 글꼴 빌드 사진으로 보고, 여기서는 되돌아가면 안 되는 규칙만.
+describe('글꼴', () => {
+  const css = read('components/conversation/conversation.css');
+  it('두 대화방 화면 글자는 Noto Sans KR 한 벌', () => {
+    expect(css).toMatch(/\.conv \{[^}]*font-family: var\(--font-noto-kr, 'Noto Sans KR'\), sans-serif;/);
+  });
+  it('font: inherit을 쓰는 입력창·모두의 대화방 말풍선도 학습 언어 글꼴로 — 일본어가 한국어 글꼴로 그려지지 않게', () => {
+    expect(css).toContain(".conv :is(.conv-lobby__bubble, .conv-bubble--pending, .conv__textarea):lang(ja) { font-family: var(--font-noto-jp, 'Noto Sans JP')");
+    expect(css).toContain(".conv :is(.conv-lobby__bubble, .conv-bubble--pending, .conv__textarea):lang(zh) { font-family: var(--font-noto-sc, 'Noto Sans SC')");
+    for (const file of ['components/conversation/ConversationThread.jsx', 'views/ConversationLobbyPage.jsx']) {
+      expect(read(file)).toMatch(/className="conv__textarea"\s+lang=\{/);
+    }
+  });
+  it('모두의 대화방 말풍선 글자 크기도 튜터 방과 같다', () => {
+    expect(css).toMatch(/\.conv-lobby__bubble \{[^}]*font: inherit; font-size: 0\.97rem;/);
+  });
+});
+
+describe('앱 같은 움직임', () => {
+  const css = read('components/conversation/conversation.css');
+  const motion = sliceBetween(css, '@keyframes conv-enter');
+  const reduce = sliceBetween(motion, '@media (prefers-reduced-motion: reduce)');
+  it('짧게(0.25초 이하) · transform/opacity만 움직인다', () => {
+    const secs = [...motion.matchAll(/animation: [\w-]+ (\d?\.\d+)s/g)].map((m) => Number(m[1]));
+    expect(secs.length).toBeGreaterThanOrEqual(4);
+    for (const sec of secs) expect(sec).toBeLessThanOrEqual(0.25);
+    const frames = [...motion.matchAll(/^@keyframes ([\w-]+) \{(.*)\}$/gm)];
+    expect(frames.map((m) => m[1])).toEqual(['conv-enter', 'conv-pop', 'conv-fade', 'conv-jump-in']);
+    for (const [, , body] of frames) expect(body.replace(/opacity|transform/g, '')).not.toMatch(/[a-z-]+:/);
+  });
+  it('「움직임 줄이기」에서는 모두 멈춘다 — 부드러운 스크롤 포함', () => {
+    for (const sel of ['.conv,', '.conv-anim-in', '.conv-anim-fade', '.conv__jump']) expect(reduce).toContain(sel);
+    expect(reduce).toContain('animation: none;');
+    expect(reduce).toContain('transition: none;');
+    expect(read('components/conversation/useChatShell.js')).toContain("behavior: smooth && !reducedMotion() ? 'smooth' : 'auto'");
+  });
+  it('새로 도착한 말만 떠오른다 — 방을 열 때 지난 말은 그대로, 내 말은 보내는 중 말풍선만', () => {
+    const thread = read('components/conversation/ConversationThread.jsx');
+    const lobby = read('views/ConversationLobbyPage.jsx');
+    expect(thread).toContain("useArrivals(items.map((item) => item.index), { resetKey: materialId })");
+    expect(thread).toContain("conv__row--tutor${arrived(item.index) ? ' conv-anim-in' : ''}");
+    expect(thread).toContain('<div className="conv__row conv__row--me conv-anim-in">');
+    expect(lobby).toContain('useArrivals(messages.map((m) => m.id), { resetKey: language, ready: query.isSuccess })');
+    expect(lobby).toContain('<div className="conv-lobby__row conv-lobby__row--me conv-anim-in">');
   });
 });

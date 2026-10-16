@@ -171,6 +171,7 @@ function nextConversation(conv, { meTurn, closeRetry, tutorTurn, now, preview })
     turns,
     turnCount: (conv.turnCount || 0) + 1,
     ...(preview ? { preview } : {}),
+    lastAt: tutorTurn?.at ?? now,
     day: today,
     dayTurns: countTodayMyTurns(turns, now),
   };
@@ -283,6 +284,7 @@ export async function runConversationTurn({ userId, body, deps, now = Date.now()
       turnCount: 1, day: kstDateString(now), dayTurns: 0,
       turns: [{ who: 'tutor', lines: lines.map((_, i) => startLine + i), at: now }],
       preview: tutorPreview(lines),
+      lastAt: now,
       ...(reask ? { reask: [{ ...reask, ok: null }] } : {}),
     };
     const translations = Object.fromEntries(ai.lines.filter((l) => l.ko).map((l) => [l.t, l.ko]));
