@@ -340,6 +340,434 @@
         }
       ]
     },
+    "ws-fr-victor-hugo_les-miserables-1": {
+      "title": "Les Misérables, tome I : Fantine",
+      "author": "Victor Hugo",
+      "level": "C1 고급",
+      "total": 76,
+      "language": "French",
+      "size": 113678,
+      "unit": "words",
+      "display": {
+        "titleKo": "레 미제라블 1부",
+        "authorKo": "빅토르 위고"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-fr-victor-hugo_les-miserables-1",
+        "wiki": "fr",
+        "title": "Les Misérables, tome I : Fantine",
+        "author": "Victor Hugo",
+        "publishedYear": 1862,
+        "authorDeathYear": 1885,
+        "countryOfOrigin": "FR",
+        "mortPourLaFrance": false,
+        "translator": null,
+        "url": "https://fr.wikisource.org/wiki/Les_Mis%C3%A9rables",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "FR",
+            "US",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I. M. MYRIEL",
+          "sha256": "0079ea2e3441def4466cce4aa453676687d5b0a9bff380b81b8525a41adea9a4"
+        },
+        {
+          "order": 2,
+          "title": "II. M. MYRIEL DEVIENT MONSEIGNEUR BIENVENU",
+          "sha256": "94d21b69f99a3549e7702afb40254af4c7842c37411a2f2778681c183dba63c9"
+        },
+        {
+          "order": 3,
+          "title": "III. À BON ÉVÊQUE DUR ÉVÊCHÉ",
+          "sha256": "782e1bb6ac23fe69c65f11ed2dbc9ef234ff14cbb59c333ab450ec4257964a8a"
+        },
+        {
+          "order": 4,
+          "title": "IV. LES ŒUVRES SEMBLABLES AUX PAROLES",
+          "sha256": "6369c8ab7381cec63fb6a07ee5d0d9b1a44bf9d5136cba847ec65eee306d7f92"
+        },
+        {
+          "order": 5,
+          "title": "V. QUE MONSEIGNEUR BIENVENU FAISAIT DURER TROP LONGTEMPS SES SOUTANES",
+          "sha256": "a4b486ee984487d2bf84be4a95f46071e1f32efe5fe601f14572af8cedfe5cc7"
+        },
+        {
+          "order": 6,
+          "title": "VI. PAR QUI IL FAISAIT GARDER SA MAISON",
+          "sha256": "deede50915921cbf6b74af85ba1654afecb71b097d07755d7e240988cb111cfc"
+        },
+        {
+          "order": 7,
+          "title": "VII. CRAVATTE",
+          "sha256": "0cb51a38e6261c233b8bfed4752398e7e0e8d54898215e4ce4ad08a6eb7a4ee1"
+        },
+        {
+          "order": 8,
+          "title": "VIII. PHILOSOPHIE APRÈS BOIRE",
+          "sha256": "a181bf637aac28789a24113725ea508ffc646dc8ab5e8d397f904f64b80af27a"
+        },
+        {
+          "order": 9,
+          "title": "IX. LE FRÈRE RACONTÉ PAR LA SŒUR",
+          "sha256": "2e435cd4a3fddad0b29d06e40b7291865458aaae71bacc837006611159eab871"
+        },
+        {
+          "order": 10,
+          "title": "X. L’ÉVÊQUE EN PRÉSENCE D’UNE LUMIÈRE INCONNUE (1/2)",
+          "sha256": "c800300b11d312ebf4b28206b55b90c93e32fb0bfc31b9dbcaff4a3093369097"
+        },
+        {
+          "order": 11,
+          "title": "X. L’ÉVÊQUE EN PRÉSENCE D’UNE LUMIÈRE INCONNUE (2/2)",
+          "sha256": "700088a72223c767852edb0866003a5f322279bc5be4dadd625cf8b3a68c1800"
+        },
+        {
+          "order": 12,
+          "title": "XI. UNE RESTRICTION",
+          "sha256": "89bdef4c499bb8cf2bed6946ea03b57b70fcf8e59a3fe634b8c3407a98d65a72"
+        },
+        {
+          "order": 13,
+          "title": "XII. SOLITUDE DE MONSEIGNEUR BIENVENU",
+          "sha256": "7611963dd26b2a1adef61e6a9b2d771a53f335b90a42a8c61c92697b423d956b"
+        },
+        {
+          "order": 14,
+          "title": "XIII. CE QU’IL CROYAIT",
+          "sha256": "0f0c77e31d37941dbccf1388d3ba89817b8f8228e73cc31f419843f32b8763f9"
+        },
+        {
+          "order": 15,
+          "title": "XIV. CE QU’IL PENSAIT",
+          "sha256": "fe9989001e23b435197757344dd29a381bb1c2fac2bfce5767337340d49f29e1"
+        },
+        {
+          "order": 16,
+          "title": "I. LE SOIR D’UN JOUR DE MARCHE (1/2)",
+          "sha256": "738613eccc292c9099bb346482798138c2a52ca8195d44c87a3f16ccfad3abd5"
+        },
+        {
+          "order": 17,
+          "title": "I. LE SOIR D’UN JOUR DE MARCHE (2/2)",
+          "sha256": "22036c2bd41b95e04ddab6a2c9f45b91c05b5c1a75efe43af7025c9512a08eba"
+        },
+        {
+          "order": 18,
+          "title": "II. LA PRUDENCE CONSEILLÉE À LA SAGESSE",
+          "sha256": "5f77a87d4a53b7fdfeebc7951487157ca44f903d8bac4c991e1ec137bcd22244"
+        },
+        {
+          "order": 19,
+          "title": "III. HÉROÏSME DE L’OBÉISSANCE PASSIVE",
+          "sha256": "3bedb4abba723e11213bbea76df5ad402e9e1df7eddb596d4b9cf9c1bee16bbe"
+        },
+        {
+          "order": 20,
+          "title": "IV. DÉTAILS SUR LES FROMAGERIES DE PONTARLIER",
+          "sha256": "8dd2f56c5769af15b89b1e0673596f9e497a26090cfd55af9344a3c6ef6ade4f"
+        },
+        {
+          "order": 21,
+          "title": "V. TRANQUILLITÉ",
+          "sha256": "ebd1942ad7e700824832522049d25dbb21638f9af0188970a3705727cf5cec4c"
+        },
+        {
+          "order": 22,
+          "title": "VI. JEAN VALJEAN",
+          "sha256": "f3232d6117af32be4180ffea35f4d93aeb583168052447872179fc1b7ad878ff"
+        },
+        {
+          "order": 23,
+          "title": "VII. LE DEDANS DU DÉSESPOIR",
+          "sha256": "893f19d7d8e52a73e6c43476c9eb05502225300e2f7e73c4124d06eb681658da"
+        },
+        {
+          "order": 24,
+          "title": "VIII. L’ONDE ET L’OMBRE",
+          "sha256": "d71b3909b032239e2fef3f0151c0201af56fa86afcf61a901d8c66ca94890628"
+        },
+        {
+          "order": 25,
+          "title": "IX. NOUVEAUX GRIEFS",
+          "sha256": "52a7dd29af13dac7db7d811f4c7fec579b55f622f6ced7b8c36dec1a6f3aa8da"
+        },
+        {
+          "order": 26,
+          "title": "X. L’HOMME RÉVEILLÉ",
+          "sha256": "714cf11bd7adf3be3ef21e555928fcc432cabb9a21434332c2f9364357e360c6"
+        },
+        {
+          "order": 27,
+          "title": "XI. CE QU’IL FAIT",
+          "sha256": "85d585013dca1d4d60fc72a834e11448728073ef3c8d63b6ebec4b5dd28d4218"
+        },
+        {
+          "order": 28,
+          "title": "XII. L’ÉVÊQUE TRAVAILLE",
+          "sha256": "6ddbda0419bed7303b9a09495824b38f18f39b383fba067f76ace107f38b7577"
+        },
+        {
+          "order": 29,
+          "title": "XIII. PETIT-GERVAIS",
+          "sha256": "2d533ecceef0c25b64a9bfb084a97698641c3bd2b66e1ee17de9aa3fc94a26f9"
+        },
+        {
+          "order": 30,
+          "title": "I. L’ANNÉE 1817",
+          "sha256": "e55be41189eed599e1a007bc05d8f6869dd0207e35fbaea381964b87a7af7a52"
+        },
+        {
+          "order": 31,
+          "title": "II. DOUBLE QUATUOR",
+          "sha256": "fb835daed04371ca423ea9182d3b8382420093887d9320c770ea88a5b2146338"
+        },
+        {
+          "order": 32,
+          "title": "III. QUATRE À QUATRE",
+          "sha256": "61c136e6ff9142eb31f427767b1eff8ddba5b37f05ce21bef3d406977754b5df"
+        },
+        {
+          "order": 33,
+          "title": "IV. THOLOMYÈS EST SI JOYEUX QU’IL CHANTE UNE CHANSON ESPAGNOLE",
+          "sha256": "94b220e78f1b1d05d7879db5307d2dad51745f2ed47976dc39b7e8a819ed0df5"
+        },
+        {
+          "order": 34,
+          "title": "V. CHEZ BOMBARDA",
+          "sha256": "da4c506d964c87cca47588dc1c3ee166d297131c784c0ac4368e7f4335f980e7"
+        },
+        {
+          "order": 35,
+          "title": "VI. CHAPITRE OÙ L’ON S’ADORE",
+          "sha256": "36be9d5362feca6f25dcafc56341761b8fa48ee931be30a82ad2c73cca5a1f43"
+        },
+        {
+          "order": 36,
+          "title": "VII. SAGESSE DE THOLOMYÈS",
+          "sha256": "2908f467056b48f2bce6edec722231a8e2b326181ad6db1413ec41e989f4ad9f"
+        },
+        {
+          "order": 37,
+          "title": "VIII. MORT D’UN CHEVAL",
+          "sha256": "b5515ab71bbe6b46a68c7e33ae88aef98e5c11c3f6b42f74379059b86b5c0ef5"
+        },
+        {
+          "order": 38,
+          "title": "IX. FIN JOYEUSE DE LA JOIE",
+          "sha256": "757e5d9cb2c16db1e0e7138a3781c2b37e4ec0e38f63870adcc84bccd7fc531e"
+        },
+        {
+          "order": 39,
+          "title": "I. UNE MÈRE QUI EN RENCONTRE UNE AUTRE",
+          "sha256": "dc12bc4059fc12e95e4c0c120cb01544eb47cbba9bc03201d4ea2982ddfd81e8"
+        },
+        {
+          "order": 40,
+          "title": "II. PREMIÈRE ESQUISSE DE DEUX FIGURES LOUCHES",
+          "sha256": "145a653e5b304ea9b3718646a92ada8c8fb38a8f6cc4a3b69605c4f220138e35"
+        },
+        {
+          "order": 41,
+          "title": "III. L’ALOUETTE.",
+          "sha256": "eaaf23f14524ac5d89fea239946fdb50a3b1eb1858a04d84175bcb142e37ecde"
+        },
+        {
+          "order": 42,
+          "title": "I. HISTOIRE D’UN PROGRÈS DANS LES VERROTERIES NOIRES",
+          "sha256": "0a359288de01e17d2e9b0b8b7a8928acadfa29d470227e6e3fb4d79411aaca7b"
+        },
+        {
+          "order": 43,
+          "title": "II. MADELEINE",
+          "sha256": "ebbd10157f428aa0b1b5b3e74fe65b1357e4cdecc6345f317b1d586ba4475e41"
+        },
+        {
+          "order": 44,
+          "title": "III. SOMMES DÉPOSÉES CHEZ LAFFITTE",
+          "sha256": "0e9458ef284c5596e781ca77c078b2e09c55478cb8eea73081453947ddf30cb6"
+        },
+        {
+          "order": 45,
+          "title": "IV. M. MADELEINE EN DEUIL",
+          "sha256": "d721d3116b587e019b971dcd636a25a2f912fbc9b80c0d50f232e40bc7cc9a71"
+        },
+        {
+          "order": 46,
+          "title": "V. VAGUES ÉCLAIRS À L’HORIZON",
+          "sha256": "d9b0bc8e109d795b0e5cff1cbd913653cbb464026e74b5aaf7c99e3049317027"
+        },
+        {
+          "order": 47,
+          "title": "VI. LE PÈRE FAUCHELEVENT",
+          "sha256": "04f755a37b98963dad43cb54ffe0ff6a722fd1c1f92e7a96a7f4869dd7b31ce8"
+        },
+        {
+          "order": 48,
+          "title": "VII. FAUCHELEVENT DEVIENT JARDINIER À PARIS",
+          "sha256": "a5f34ba9daff62bef6162db2e9c312991b69c61c4be43062a5698ba83cc1088b"
+        },
+        {
+          "order": 49,
+          "title": "VIII. MADAME VICTURNIEN DÉPENSE TRENTE-CINQ FRANCS POUR LA MORALE",
+          "sha256": "64c50d96f25b447f10d7d43947f426a5422087b9fa49c65be21ebdc692f3f636"
+        },
+        {
+          "order": 50,
+          "title": "IX. SUCCÈS DE MADAME VICTURNIEN",
+          "sha256": "1902a3c8fd5bbfc0118a2201b82fa03013eaaf5936db363f130ead04d9db68f9"
+        },
+        {
+          "order": 51,
+          "title": "X. SUITE DU SUCCÈS",
+          "sha256": "58d6c1ec4f2549f439635e4ef1bb852236d5170948522ab4ec3bd8d24aa67ef6"
+        },
+        {
+          "order": 52,
+          "title": "XI. CHRISTUS NOS LIBERAVIT",
+          "sha256": "adf9283060705935efee06db43c38fdb19c605a53cce39853125aa3425eb4c7d"
+        },
+        {
+          "order": 53,
+          "title": "XII. LE DÉSŒUVREMENT DE M. BAMATABOIS",
+          "sha256": "8e897e040017d381a78466778a4f2e438cfb8fcc5f1f3c9b96b0f1e554256463"
+        },
+        {
+          "order": 54,
+          "title": "XIII. SOLUTION DE QUELQUES QUESTIONS DE POLICE MUNICIPALE (1/2)",
+          "sha256": "303cf31e66083a9e34c5eed7592c115140be344c6498cb252c50bcb15e438626"
+        },
+        {
+          "order": 55,
+          "title": "XIII. SOLUTION DE QUELQUES QUESTIONS DE POLICE MUNICIPALE (2/2)",
+          "sha256": "ad1b188f6b4d3b4ce20e130c03753663673c0b6a109968cc51d54ab99990b21a"
+        },
+        {
+          "order": 56,
+          "title": "I. COMMENCEMENT DU REPOS",
+          "sha256": "1d259caf0aeeaedb6ff6b6dd9f9277254fec8a606f837fc54a111064bc4a55b5"
+        },
+        {
+          "order": 57,
+          "title": "II. COMMENT JEAN PEUT DEVENIR CHAMP",
+          "sha256": "07a035c624487e21a7c86b5676b2dcb6978ef90e2d14e5972620f31d7b8aea11"
+        },
+        {
+          "order": 58,
+          "title": "I. LA SŒUR SIMPLICE",
+          "sha256": "e8f25ba108f9a5565f44f9cd3444407b94e5bd51797e8248cc422cfc6c54f919"
+        },
+        {
+          "order": 59,
+          "title": "II. PERSPICACITÉ DE MAÎTRE SCAUFFLAIRE",
+          "sha256": "e5c76e1cf84ce9b89504f8fffdc3f3e395bb7cf85ba6ac4742870ffd4e04960e"
+        },
+        {
+          "order": 60,
+          "title": "III. UNE TEMPÊTE SOUS UN CRÂNE (1/3)",
+          "sha256": "633e0e110d21e02207ae3e2948c7a6dd88fc2f2dd214a61f24669540a44d5583"
+        },
+        {
+          "order": 61,
+          "title": "III. UNE TEMPÊTE SOUS UN CRÂNE (2/3)",
+          "sha256": "0c233f2383d30b00f84dc9d75bf1bd298d7ac51657fa1550770a3ca738d8dc0a"
+        },
+        {
+          "order": 62,
+          "title": "III. UNE TEMPÊTE SOUS UN CRÂNE (3/3)",
+          "sha256": "9332d24e2246384f76df2bd9d8e52fbebd421ada407a5908105bda46bf00b7ac"
+        },
+        {
+          "order": 63,
+          "title": "IV. FORMES QUE PREND LA SOUFFRANCE PENDANT LE SOMMEIL",
+          "sha256": "7e51a619e5ef0d47c8d55d8bfd79b215f87f3c904c205703b7960f1a95fbf357"
+        },
+        {
+          "order": 64,
+          "title": "V. BÂTONS DANS LES ROUES (1/2)",
+          "sha256": "42ff7652ae59fe70c5749638c40a7fdec6ee9c4c9fe8c02048a64b12e716817a"
+        },
+        {
+          "order": 65,
+          "title": "V. BÂTONS DANS LES ROUES (2/2)",
+          "sha256": "c742b33eba02b2e09ae9f6bb13ac12439b61c373df3dd9ffbd19b90c019a5325"
+        },
+        {
+          "order": 66,
+          "title": "VI. LA SŒUR SIMPLICE MISE À L’ÉPREUVE",
+          "sha256": "8cdbd73d113234ff6f69d104af0facdf3339db99e7f8ca81da597645673d4c4d"
+        },
+        {
+          "order": 67,
+          "title": "VII. LE VOYAGEUR ARRIVÉ PREND SES PRÉCAUTIONS POUR REPARTIR",
+          "sha256": "e08c849609aa4ab425bca78d3424df81c9d304a3bc976149192149084d258e91"
+        },
+        {
+          "order": 68,
+          "title": "VIII. ENTRÉE DE FAVEUR",
+          "sha256": "bf7988634a7b1f69cce17faef055e43e81265f48abe15bfd7f9ccfb4ebc6b044"
+        },
+        {
+          "order": 69,
+          "title": "IX. UN LIEU OÙ DES CONVICTIONS SONT EN TRAIN DE SE FORMER",
+          "sha256": "32811ef7ef6d8b12ac434e8a5b6a9cd31fd32fe5caf9145c8286bf0eff7c3b2a"
+        },
+        {
+          "order": 70,
+          "title": "X. LE SYSTÈME DE DÉNÉGATIONS",
+          "sha256": "16fe7999c533157a54d232a4e7d04df62e4f969832b6de8e98165005f9fabc78"
+        },
+        {
+          "order": 71,
+          "title": "XI. CHAMPMATHIEU DE PLUS EN PLUS ÉTONNÉ",
+          "sha256": "bb863b3eb7bf1a807cc1ca5e69156800ec716e90ffa0ef07002351938537cc25"
+        },
+        {
+          "order": 72,
+          "title": "I. DANS QUEL MIROIR M. MADELEINE REGARDE SES CHEVEUX",
+          "sha256": "fc696e66099597a3010d01a0774e9b05f942d1ce488f64338014591801376454"
+        },
+        {
+          "order": 73,
+          "title": "II. FANTINE HEUREUSE",
+          "sha256": "55dfac587e167cf35500d3df061957165056fd774905bab104215e27a194e6ce"
+        },
+        {
+          "order": 74,
+          "title": "III. JAVERT CONTENT",
+          "sha256": "e7578102bbf356a7449573e73f47aad86989c04783deaa8834af6e76dbd8b55d"
+        },
+        {
+          "order": 75,
+          "title": "IV. L’AUTORITÉ REPREND SES DROITS",
+          "sha256": "ccced00181a66b90b378fbcc8b027b678f46f2d0b6130cc7bcabc71ee40d7c80"
+        },
+        {
+          "order": 76,
+          "title": "V. TOMBEAU CONVENABLE",
+          "sha256": "d44944784c6f536ce555c4a50b756249eb1eec1b89dc28244655b388002f7c88"
+        }
+      ]
+    },
     "ws-fr-victor-hugo_les-miserables-2": {
       "title": "Les Misérables, tome II : Cosette",
       "author": "Victor Hugo",
