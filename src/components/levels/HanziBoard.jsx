@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabase';
 import { logReviewEvents } from '@/lib/reviewEvents';
 import { HANZI_STD, loadHanziTable } from '@/lib/zhHanzi';
 import { hanziBrief, hanziCardModel, hanziChipModel } from '@/lib/hanziCard';
-import { hanziRunMisses, hanziRunProgress, lastHanziMarks, shuffleHanzi, startHanziRun, stepHanziRun } from '@/lib/hanziSession';
+import { fetchLastHanziMarks, hanziRunMisses, hanziRunProgress, shuffleHanzi, startHanziRun, stepHanziRun } from '@/lib/hanziSession';
 import { loadRefVocabIndex } from '@/lib/refVocabIndex';
 import { loadHanjaPanelTable, onIdle } from '@/lib/viewerHanjaPanel';
 import { loadZhengTable } from '@/lib/glyphTables';
@@ -179,10 +179,9 @@ export default function HanziBoard({ levelKey, groups, userId, mounted, words, s
     setServerMarks(new Map());
     if (!userId) return undefined;
     let alive = true;
-    supabase.from('review_events').select('item_key, correct, created_at')
-      .eq('user_id', userId).eq('source', 'hanzi').in('item_key', allChars)
-      .order('created_at', { ascending: false }).limit(5000)
-      .then(({ data, error }) => { if (alive && !error) setServerMarks(lastHanziMarks(data)); }, () => {});
+    // 1000행 상한에 잘리지 않게 묶음 · 페이지로 읽는다(REVIEW-ROWS-CAP-001). 실패면 빈 표시 그대로.
+    fetchLastHanziMarks(supabase, userId, allChars)
+      .then((marks) => { if (alive) setServerMarks(marks); }, () => {});
     return () => { alive = false; };
   }, [userId, allChars]);
 
