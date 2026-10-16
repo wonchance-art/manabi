@@ -926,6 +926,10 @@
   · 같은 PR(리뷰 4차): 서가 책 장 수 head 개수만 · 교재 연결 목록 GET 판본 실패 시 과 목록만 비움 · 새 노트 서재 무효화 · /vocab 상세 카드 누르면 미리 받기.
   · 같은 PR(VIEWER-FIRST-TOKEN-001): 뷰어 자료 조회를 하이드레이션 전(모듈 평가)에 시작 · Supabase preconnect. 운영 첫 단어 2.9~3.4s(미국 측정) → Preview 재측정.
     서버 REST 대기(자료 GET 768ms)는 DB 쪽이라 미조사. 계약 `viewerFirstToken.test.js`.
+  · 같은 PR(BULK-ANALYZE-001, 오너 「권장대로」): 관리자 「자료 관리」에 분석 전 공개 자료 일괄 분석 — 정본 경로 · 소유자 세션. 운영 118편 원본 백업 · 복원 SQL 준비(다이제스트 일치).
+    실행은 병합 · 배포 뒤 오너가 관리자 화면에서. 실행 뒤 status · sequence · metadata 대조.
+  · 같은 PR(리뷰 5차 · no-undef): 새 노트 ReferenceError 수리, 화면 코드 no-undef 켬 — 숨은 ReferenceError 2건(「문단 골라 분석」 · 현황 약점 칸) 수리.
+  · 같은 PR: HSK 목록 지연 로드 · 중복 필드 · 저장됨 1회 · O 낙관 갱신 / 함께 읽는 글 곧장 복귀 · 위치 복원 / review_events 1000행 3곳 / 목록 유지(placeholderData) · ✓ 도장.
   · 보류: CJK 가변 weight(@font-face −67%, brotli 전송 −2%) — 600 · 650 · 800 · 300 굵기가 실제 값으로 바뀌는 시각 변경이라 오너 확인 뒤.
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
