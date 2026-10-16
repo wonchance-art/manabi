@@ -27,8 +27,11 @@ describe('대화 묶음 — 받는 중 자리 · 받은 뒤 상태', () => {
     expect(html).toContain('<h2 id="shelf-conversations-title">대화</h2>');
     expect(html).toContain('href="/conversation/new?returnTo=%2Fmaterials"');
     expect(html).toContain('aria-busy="true"');
-    expect(html).toContain('<span class="skeleton-sr" role="status">대화 불러오는 중…</span>');
-    expect(html.match(/<li class="shelf-row">/g)).toHaveLength(1);
+    // 서재 안 알림은 자료 목록 하나가 맡는다(LOADING-SKELETON-001 N1) — 대화 칸은 읽을 수만 있는 한 줄(live 아님).
+    expect(html).toContain('<span class="skeleton-sr">대화 불러오는 중…</span>');
+    expect(html).not.toContain('role="status">대화 불러오는 중…');
+    // 골격 줄은 실제 자료 줄 클래스와 구분한다(줄을 세는 곳이 골격을 자료로 세지 않게).
+    expect(html.match(/<li class="shelf-row-skeleton">/g)).toHaveLength(1);
   });
   it('받은 뒤: 대화 없음 = 입구 + 안내(구멍 없음), 대화 있음 = 줄, 실패 = 숨김 — 골격은 남지 않는다', () => {
     const empty = shelf({ isPending: false, isSuccess: true, data: [] });
