@@ -1,28 +1,52 @@
 /* 대화 모드 화면(v2-Z Z-R1 ③ → CONV-CHAT-001 ② 채팅앱 껍데기). 색은 토큰만(docs/ui-conventions.md), 터치 영역 44px 이상.
    화면 전체 높이 = 머리 한 줄 · 혼자 스크롤하는 목록 · 맨 아래 입력창. position:fixed가 아니라 흐름 안의 세로 줄이라
    iOS에서 입력창이 키보드와 어긋나지 않는다. 높이는 visualViewport(--conv-vh)가 있으면 그 값, 없으면 100dvh. */
-.conv { position: relative; display: flex; flex-direction: column; width: 100%; height: 100vh; height: var(--conv-vh, 100dvh); top: var(--conv-top, 0); font-size: 1rem; line-height: 1.5; }
-.conv__head { flex: none; display: flex; align-items: center; gap: 4px; min-height: 52px; padding: 4px 4px; border-bottom: 1px solid var(--border); background: var(--bg-primary); }
-.conv__head > a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; color: var(--text-primary); text-decoration: none; }
+/* 메신저 대화방 팔레트(CONV-CHAT-001 3차, 오너 「실제 채팅앱처럼」 2026-10-16) — 국내 메신저 대화방의 관례 그대로:
+   푸른 회색 바탕 · 상대 말 흰 말풍선 · 내 말 노란 말풍선 · 첫 말풍선 꼬리 · 둥근 네모 프로필 · 말풍선 옆 작은 시각 · 흰 입력 막대.
+   값은 이 화면 범위의 토큰으로만 두고(셸은 늘 밝은 화면), 읽기 「어둡게」 테마에서는 어두운 값으로 바꾼다. 로고·마크 재현 없음. */
+.conv {
+  --chat-bg: #BACEE0; --chat-other: #FFFFFF; --chat-me: #FEE94E; --chat-ink: #191919; --chat-meta: #4E5D6C;
+  --chat-name: #3A4652; --chat-bar: #FFFFFF; --chat-field: #F3F4F6; --chat-line: #A9BCCD;
+  position: relative; display: flex; flex-direction: column; width: 100%; height: 100vh; height: var(--conv-vh, 100dvh); top: var(--conv-top, 0);
+  font-size: 1rem; line-height: 1.5; background: var(--chat-bg); color: var(--chat-ink);
+}
+.viewer-layout[data-reader-theme="dark"] .conv {
+  --chat-bg: #1E2932; --chat-other: #2E3A44; --chat-me: #E5CF3C; --chat-ink: #F1F3F5; --chat-meta: #A7B4C0;
+  --chat-name: #C9D3DC; --chat-bar: #26313A; --chat-field: #33404B; --chat-line: #33404B;
+}
+.viewer-layout[data-reader-theme="dark"] .conv .conv-bubble--me { color: #191919; }
+.conv__head { flex: none; display: flex; align-items: center; gap: 4px; min-height: 52px; padding: 4px 4px; background: var(--chat-bg); }
+.conv__head > a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; color: var(--chat-ink); text-decoration: none; }
 .conv__title { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.conv__meta { margin: 0; font-size: 1rem; font-weight: 700; line-height: 1.3; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.conv__sub { margin: 0; font-size: 0.78rem; line-height: 1.3; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv__meta { margin: 0; font-size: 1.05rem; font-weight: 700; line-height: 1.3; color: var(--chat-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv__sub { margin: 0; font-size: 0.78rem; line-height: 1.3; color: var(--chat-meta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* 튜터 프로필 — 메신저처럼 상대 말 묶음의 첫 말풍선 옆에 동그라미 하나. 그림 대신 글자(국기·캐릭터 그림 금지). */
-.conv-avatar { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: color-mix(in srgb, var(--primary) 18%, var(--bg-card)); color: var(--text-primary); font-size: 0.85rem; font-weight: 700; }
-.conv-avatar--head { width: 34px; height: 34px; margin-right: 6px; }
-.conv__date { align-self: center; margin: 6px 0; padding: 2px 12px; border-radius: 999px; background: var(--bg-secondary); color: var(--text-muted); font-size: 0.75rem; }
-.conv__log { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 10px; padding: 12px 12px 16px; }
+.conv-avatar { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 15px; background: color-mix(in srgb, var(--primary) 22%, var(--chat-other)); color: var(--chat-ink); font-size: 0.9rem; font-weight: 700; }
+.conv-avatar--head { width: 36px; height: 36px; border-radius: 13px; margin-right: 6px; }
+/* 날짜 구분선 — 바탕 위 반투명 알약, 흰 글자(메신저 관례). */
+.conv__date { align-self: center; margin: 10px 0 4px; padding: 3px 12px; border-radius: 999px; background: color-mix(in srgb, var(--chat-ink) 18%, transparent); color: #fff; font-size: 0.75rem; }
+.conv__log { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 12px; padding: 8px 12px 16px; }
 .conv__row { display: flex; flex-direction: column; gap: 2px; }
 .conv__row--tutor { align-self: stretch; flex-direction: row; align-items: flex-start; gap: 8px; }
 .conv__stack { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
-.conv__name { margin: 0 0 2px; font-size: 0.78rem; color: var(--text-secondary); }
+.conv__name { margin: 0 0 4px; font-size: 0.78rem; color: var(--chat-name); }
 /* 듣기·번역은 마지막 말풍선 옆(메신저의 시각 자리) — 아래에 줄을 따로 두지 않는다. */
 .conv__line { display: flex; align-items: flex-end; gap: 2px; width: 100%; }
 .conv__line > .conv-bubble { max-width: min(calc(100% - 84px), 520px); }
-.conv__row--me { align-self: flex-end; align-items: flex-end; max-width: 78%; }
-.conv-bubble { padding: 8px 12px; border-radius: 18px; line-height: 1.5; word-break: break-word; }
-.conv-bubble--tutor { background: var(--bg-secondary); border: 1px solid var(--border); border-bottom-left-radius: 4px; color: var(--text-primary); }
-.conv-bubble--me { background: color-mix(in srgb, var(--primary) 14%, transparent); border-bottom-right-radius: 4px; color: var(--text-primary); white-space: pre-wrap; }
+.conv__line--me { justify-content: flex-end; gap: 6px; }
+.conv__row--me { align-self: stretch; align-items: flex-end; }
+.conv__row--me > .conv-feedback, .conv__row--me > .conv-fb-toggle { align-self: flex-end; max-width: 80%; }
+/* 말풍선 — 모서리 14px, 테두리 없음. 묶음 첫 말풍선만 위 모서리에 꼬리(상대는 왼쪽, 나는 오른쪽). */
+.conv-bubble { position: relative; padding: 7px 11px; border-radius: 14px; line-height: 1.5; word-break: break-word; font-size: 0.97rem; }
+.conv-bubble--tutor { background: var(--chat-other); color: var(--chat-ink); }
+.conv-bubble--me { background: var(--chat-me); color: var(--chat-ink); white-space: pre-wrap; }
+.conv-bubble--tail.conv-bubble--tutor { border-top-left-radius: 3px; }
+.conv-bubble--tail.conv-bubble--me { border-top-right-radius: 3px; }
+.conv-bubble--tail::before { content: ''; position: absolute; top: 0; width: 9px; height: 10px; background: inherit; pointer-events: none; }
+.conv-bubble--tail.conv-bubble--tutor::before { left: -6px; clip-path: polygon(0 0, 100% 0, 100% 100%); }
+.conv-bubble--tail.conv-bubble--me::before { right: -6px; clip-path: polygon(0 0, 100% 0, 0 100%); }
+/* 말풍선 옆 시각 — 묶음 마지막 말풍선의 아래 끝, 작게. */
+.conv-time { flex: none; align-self: flex-end; padding-bottom: 1px; font-size: 0.68rem; line-height: 1.2; color: var(--chat-meta); white-space: nowrap; }
 .conv-bubble--pending { opacity: 0.7; }
 .conv-bubble--failed { opacity: 0.55; }
 .conv-bubble__send { display: flex; align-items: center; gap: 4px; }
@@ -34,38 +58,42 @@
 /* 분석이 아직 붙지 않은 줄은 평문으로 그대로 읽힌다(흐린 읽기 화면 표시 아님) — 채워지면 조용히 단어로 바뀐다. */
 .manabi-app .viewer-layout .reader-area .conv :is(.conv-bubble, .conv-answer) .word-token--raw { opacity: 1; color: inherit; letter-spacing: normal; }
 .conv-bubble__actions { flex: none; display: flex; align-items: center; gap: 0; }
-.conv-act { min-width: 40px; min-height: 36px; padding: 0 8px; border: 0; border-radius: 999px; background: none; color: var(--text-muted); font-size: 0.95rem; line-height: 1; cursor: pointer; }
-.conv-act[aria-expanded="true"] { color: var(--text-primary); background: var(--bg-secondary); }
-.conv-act:hover, .conv-act:focus-visible { color: var(--text-primary); }
+.conv-act { min-width: 40px; min-height: 36px; padding: 0 8px; border: 0; border-radius: 999px; background: none; color: var(--chat-meta); font-size: 0.95rem; line-height: 1; cursor: pointer; }
+.conv-act[aria-expanded="true"] { color: var(--chat-ink); background: color-mix(in srgb, var(--chat-other) 70%, transparent); }
+.conv-act:hover, .conv-act:focus-visible { color: var(--chat-ink); }
 @media (pointer: coarse) { .conv-act { min-height: 44px; } }
-.conv-bubble__tx { max-width: min(calc(100% - 84px), 520px); margin: 2px 4px 0; font-size: 0.9rem; color: var(--text-secondary); }
+.conv-bubble__tx { max-width: min(calc(100% - 84px), 520px); margin: 2px 0 0; padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--chat-other) 60%, transparent); font-size: 0.88rem; color: var(--chat-ink); }
 .conv-bubble--typing { display: inline-flex; gap: 4px; padding: 14px 18px; }
-.conv-bubble--typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: conv-dot 1s infinite ease-in-out; }
+.conv-bubble--typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--chat-meta); animation: conv-dot 1s infinite ease-in-out; }
 .conv-bubble--typing span:nth-child(2) { animation-delay: 0.15s; }
 .conv-bubble--typing span:nth-child(3) { animation-delay: 0.3s; }
 @keyframes conv-dot { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .conv-bubble--typing span { animation: none; opacity: 0.6; } }
 .conv-wavy { text-decoration: underline wavy var(--warning); text-underline-offset: 4px; }
-.conv-fb-toggle { min-height: 44px; padding: 0 6px; border: 0; background: none; color: var(--text-secondary); font: inherit; font-size: 0.85rem; cursor: pointer; }
-.conv-fb-toggle:hover, .conv-fb-toggle:focus-visible { color: var(--text-primary); }
-.conv-feedback { align-self: stretch; border-left: 3px solid var(--warning); padding: 6px 10px; font-size: 0.9rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 6px; }
+.conv-fb-toggle { min-height: 44px; padding: 0 6px; border: 0; background: none; color: var(--chat-name); font: inherit; font-size: 0.85rem; cursor: pointer; }
+.conv-fb-toggle:hover, .conv-fb-toggle:focus-visible { color: var(--chat-ink); }
+/* 피드백 — 바탕 위 흰 카드(왼쪽 경고 선). 메신저의 안내 카드처럼 말풍선과 구분된다. */
+.conv-feedback { align-self: stretch; border-left: 3px solid var(--warning); border-radius: 4px 12px 12px 4px; padding: 8px 12px; background: var(--chat-other); font-size: 0.9rem; color: var(--chat-ink); display: flex; flex-direction: column; gap: 6px; }
 .conv-feedback p { margin: 0; }
 .conv-feedback__ok { color: var(--accent-text); font-weight: 600; }
-.conv-feedback__hint span { font-weight: 700; color: var(--text-primary); }
-.conv-feedback__label { font-weight: 700; color: var(--text-primary); }
+.conv-feedback__hint span { font-weight: 700; color: var(--chat-ink); }
+.conv-feedback__label { font-weight: 700; color: var(--chat-ink); }
 .conv-feedback__answer { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
-.conv-answer { color: var(--text-primary); line-height: 1.5; }
-.conv-chip { min-height: 44px; min-width: 44px; padding: 0 12px; border: 1px solid var(--border); border-radius: 999px; background: none; color: var(--text-secondary); font-size: 0.85rem; cursor: pointer; }
+.conv-answer { color: var(--chat-ink); line-height: 1.5; }
+.conv-chip { min-height: 44px; min-width: 44px; padding: 0 14px; border: 1px solid var(--chat-line); border-radius: 999px; background: var(--chat-other); color: var(--chat-ink); font-size: 0.85rem; cursor: pointer; }
 .conv-chip:disabled { opacity: 0.5; cursor: default; }
-.conv__notice { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--text-secondary); }
-.conv__jump { position: absolute; left: 50%; bottom: calc(76px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 5; min-height: 44px; padding: 0 16px; border: 1px solid var(--border); border-radius: 999px; background: var(--bg-card); color: var(--text-primary); font: inherit; font-size: 0.88rem; box-shadow: 0 4px 14px color-mix(in srgb, var(--text-primary) 14%, transparent); cursor: pointer; }
-.conv__input { flex: none; display: flex; gap: 6px; align-items: flex-end; padding: 8px 8px max(8px, env(safe-area-inset-bottom)); border-top: 1px solid var(--border); background: var(--bg-primary); }
-.conv__textarea { flex: 1; min-height: 44px; max-height: calc(1.5em * 5 + 22px); resize: none; padding: 10px 14px; border: 1px solid var(--border); border-radius: 22px; background: var(--bg-card); color: var(--text-primary); font: inherit; font-size: 1rem; line-height: 1.5; overflow-y: auto; }
-.conv__textarea:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
-.conv__icon { flex: none; min-width: 44px; min-height: 44px; border: 1px solid var(--border); border-radius: 50%; background: var(--bg-card); color: var(--text-primary); cursor: pointer; }
-.conv__icon--bare { border-color: transparent; background: none; font-size: 1.15rem; }
-.conv__icon--send { background: var(--primary); color: #fff; border-color: transparent; }
+.conv__notice { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--chat-name); }
+.conv__jump { position: absolute; left: 50%; bottom: calc(76px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 5; min-height: 44px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--chat-other); color: var(--chat-ink); font: inherit; font-size: 0.88rem; box-shadow: 0 4px 14px color-mix(in srgb, var(--text-primary) 14%, transparent); cursor: pointer; }
+/* 입력 막대 — 흰 막대 · 테두리 없는 입력칸 · 노란 네모 보내기(메신저 관례). */
+.conv__input { flex: none; display: flex; gap: 6px; align-items: flex-end; padding: 6px 8px max(6px, env(safe-area-inset-bottom)); background: var(--chat-bar); }
+.conv__textarea { flex: 1; min-height: 44px; max-height: calc(1.5em * 5 + 22px); resize: none; padding: 10px 12px; border: 0; border-radius: 12px; background: var(--chat-field); color: var(--chat-ink); font: inherit; font-size: 1rem; line-height: 1.5; overflow-y: auto; }
+.conv__textarea::placeholder { color: var(--chat-meta); }
+.conv__textarea:focus { outline: 2px solid color-mix(in srgb, var(--chat-ink) 25%, transparent); outline-offset: 0; }
+.conv__icon { flex: none; min-width: 44px; min-height: 44px; border: 0; border-radius: 12px; background: var(--chat-field); color: var(--chat-ink); cursor: pointer; }
+.conv__icon--bare { background: none; font-size: 1.15rem; }
+.conv__icon--send { background: var(--chat-me); color: var(--chat-ink); font-size: 1.05rem; }
 .conv__icon:disabled { opacity: 0.5; cursor: default; }
+.conv__icon--send:disabled { background: var(--chat-field); color: var(--chat-meta); opacity: 1; }
 
 /* 뷰어 안에서 대화 자료를 열면(data-chat) 읽기 화면의 틀을 걷어 낸다 — 전역 메뉴·하단 탭·여백·쪽 넘김 없음.
    개인 노트(study-notes.css)의 :has() 숨김 선례. 읽기 자료에는 data-chat이 없어 아무 영향이 없다. */
@@ -144,20 +172,20 @@
 
 /* 모두의 대화방(CONV-LOBBY-001) — 튜터 대화방 껍데기(.conv) 그대로. 데스크톱은 가운데 한 줄(메신저 웹). */
 .conv-page { width: 100%; max-width: 760px; margin: 0 auto; }
-.conv-page .conv__log { gap: 2px; }
+.conv-page .conv__log { gap: 4px; }
 .conv-avatar--lobby, .conv-rooms__avatar--lobby { background: color-mix(in srgb, var(--primary) 22%, var(--bg-card)); }
 .conv-lobby__row { display: flex; align-items: flex-start; gap: 8px; }
-.conv-lobby__row--first { margin-top: 10px; }
+.conv-lobby__row--first { margin-top: 12px; }
 .conv-lobby__row--me { flex-direction: column; align-items: flex-end; gap: 2px; }
-.conv-lobby__gap { flex: none; width: 36px; }
+.conv-lobby__gap { flex: none; width: 40px; }
 .conv-lobby__line { display: flex; align-items: flex-end; gap: 6px; width: 100%; }
 .conv-lobby__row--me .conv-lobby__line { justify-content: flex-end; }
 .conv-lobby__line > .conv-bubble { max-width: min(calc(100% - 64px), 520px); }
+.conv-lobby__row--me .conv-lobby__line > .conv-bubble { max-width: min(calc(100% - 90px), 520px); }
 .conv-lobby__bubble { min-height: 40px; font: inherit; text-align: left; white-space: pre-wrap; cursor: pointer; }
-.conv-lobby__bubble.conv-bubble--me { border: 0; }
-.conv-lobby__time { flex: none; font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap; }
+.conv-lobby__bubble { border: 0; color: var(--chat-ink); }
 .conv-lobby__actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-.conv-lobby__hidden { margin: 0; font-size: 0.75rem; color: var(--text-secondary); }
+.conv-lobby__hidden { margin: 0; font-size: 0.75rem; color: var(--chat-name); }
 .conv-lobby__empty { margin: auto 0; padding: 24px 16px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .conv-rooms__row--lobby { border-bottom: 1px solid var(--border); }
 .conv-page .conv__date { margin: 14px 0 6px; }

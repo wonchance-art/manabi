@@ -23,7 +23,7 @@ import { isImeComposing } from '../../lib/imeComposing';
 import { bcp47ForLanguage } from '../../lib/speechLang';
 import { langNameKo } from '../../lib/constants';
 import OutputWordChips from '../OutputWordChips';
-import { chatDateLabel, kstDateKey } from '../../lib/conversation/chatView';
+import { chatDateLabel, clockLabel, kstDateKey } from '../../lib/conversation/chatView';
 import { CHAT_COMPOSER_MAX_LINES, CHAT_NEAR_BOTTOM_PX, useAutoGrow, useChatScroll, useChatViewport } from './useChatShell';
 import './conversation.css';
 
@@ -313,8 +313,9 @@ export default function ConversationThread({
             <p className="conv__name">튜터</p>
             {lines.map((line, k) => (
               <div key={line} className="conv__line">
-                <div className="conv-bubble conv-bubble--tutor" lang={bcp47ForLanguage(language)}>{lineView(line)}</div>
+                <div className={`conv-bubble conv-bubble--tutor${k === 0 ? ' conv-bubble--tail' : ''}`} lang={bcp47ForLanguage(language)}>{lineView(line)}</div>
                 {k === lines.length - 1 && actions}
+                {k === lines.length - 1 && item.turn.at != null && <span className="conv-time">{clockLabel(item.turn.at)}</span>}
               </div>
             ))}
             {txOpen && <p className="conv-bubble__tx" lang="ko">{ko.join(' ')}</p>}
@@ -330,8 +331,11 @@ export default function ConversationThread({
     const fbOpen = item.openRetry || onlyFixed || openFb.has(item.index);
     return (
       <div className="conv__row conv__row--me">
-        <div className="conv-bubble conv-bubble--me" lang={bcp47ForLanguage(language)} aria-describedby={hasFeedback && fbOpen ? fbId : undefined}>
-          <MyText text={turn.text} focus={turn.focus} />
+        <div className="conv__line conv__line--me">
+          {turn.at != null && <span className="conv-time">{clockLabel(turn.at)}</span>}
+          <div className="conv-bubble conv-bubble--me conv-bubble--tail" lang={bcp47ForLanguage(language)} aria-describedby={hasFeedback && fbOpen ? fbId : undefined}>
+            <MyText text={turn.text} focus={turn.focus} />
+          </div>
         </div>
         {hasFeedback && !item.openRetry && !onlyFixed && (
           <button type="button" className="conv-fb-toggle" aria-expanded={fbOpen} aria-controls={fbId} onClick={() => toggleFb(item.index)}>
@@ -415,7 +419,7 @@ export default function ConversationThread({
               {error?.retry && (
                 <button type="button" className="conv-retry" disabled={loading} onClick={() => send({ retryText: pending.text })} aria-label="다시 보내기" title="다시 보내기">!</button>
               )}
-              <div className={`conv-bubble conv-bubble--me conv-bubble--pending${error?.retry ? ' conv-bubble--failed' : ''}`}>{pending.text}</div>
+              <div className={`conv-bubble conv-bubble--me conv-bubble--tail conv-bubble--pending${error?.retry ? ' conv-bubble--failed' : ''}`}>{pending.text}</div>
             </div>
           </div>
         )}
@@ -423,7 +427,7 @@ export default function ConversationThread({
           <div className="conv__row conv__row--tutor" aria-label="입력 중">
             <span className="conv-avatar" aria-hidden="true">튜</span>
             <div className="conv__stack">
-              <div className="conv-bubble conv-bubble--tutor conv-bubble--typing"><span /><span /><span /></div>
+              <div className="conv-bubble conv-bubble--tutor conv-bubble--tail conv-bubble--typing"><span /><span /><span /></div>
             </div>
           </div>
         )}

@@ -152,12 +152,12 @@ export default function ConversationLobbyPage() {
           {messages.map((m) => {
             const open = picked === m.id;
             const bubble = (
-              <button type="button" className={`conv-bubble conv-lobby__bubble conv-bubble--${m.mine ? 'me' : 'tutor'}`}
+              <button type="button" className={`conv-bubble conv-lobby__bubble conv-bubble--${m.mine ? 'me' : 'tutor'}${m.first ? ' conv-bubble--tail' : ''}`}
                 lang={lang} aria-expanded={open} onClick={() => setPicked(open ? null : m.id)}>
                 {m.text}
               </button>
             );
-            const time = m.last && <span className="conv-lobby__time">{m.time}</span>;
+            const time = m.last && <span className="conv-time">{m.time}</span>;
             const actions = open && (
               <div className="conv-lobby__actions" role="group" aria-label="이 말에 할 일">
                 {m.mine
@@ -197,7 +197,7 @@ export default function ConversationLobbyPage() {
           {pending && (
             <div className="conv-lobby__row conv-lobby__row--me">
               <div className="conv-lobby__line">
-                <span className="conv-bubble conv-bubble--me conv-bubble--pending" lang={lang}>{pending}</span>
+                <span className="conv-bubble conv-bubble--me conv-bubble--tail conv-bubble--pending" lang={lang}>{pending}</span>
               </div>
             </div>
           )}
