@@ -8,9 +8,12 @@ import {encounterLookupLang} from '@/lib/refVocabLookup';
 import LibraryReaderLink from '@/components/web/LibraryReaderLink';
 import LibraryChapterEditor from './LibraryChapterEditor';
 import useLibraryOutline from './useLibraryOutline';
+import {isCanonicalBookKey} from '@/lib/canonicalBookKey';
 
 export default function LibraryBookChapters({row,ownerId,disabled=false}) {
  const cache=useQueryClient();
+ // 정본 책(아오조라 · SE · 그림 책)은 장을 더하거나 순서를 바꾸지 않는다 — 정본 게시가 충돌(409)로 막힌다. 읽기 목차는 그대로.
+ const locked=isCanonicalBookKey(row.target_id);
  const addButton=useRef(null),chapterButtons=useRef(new Map());
  const [expanded,setExpanded,count,setCount]=useLibraryOutline(row);
  const [editor,setEditor]=useState(null),[menu,setMenu]=useState(null),[reveal,setReveal]=useState(null);
@@ -23,12 +26,12 @@ export default function LibraryBookChapters({row,ownerId,disabled=false}) {
  }
  function closeEditor(){const opener=editor==='add'?addButton.current:chapterButtons.current.get(editor?.id);setEditor(null);requestAnimationFrame(()=>opener?.focus({preventScroll:true}));}
  return <div className="shelf-children shelf-book-chapters">
-  <div className="shelf-chapter-heading"><button aria-expanded={expanded} onClick={()=>setExpanded(!expanded)}>{expanded?'목차 접기':'담긴 글 보기'} · {query.data?.total??row.child_count}편 <span aria-hidden="true">{expanded?'−':'+'}</span></button>{expanded&&query.isSuccess&&<button ref={addButton} disabled={disabled} onClick={()=>setEditor('add')}>+ 과 추가</button>}</div>
+  <div className="shelf-chapter-heading"><button aria-expanded={expanded} onClick={()=>setExpanded(!expanded)}>{expanded?'목차 접기':'담긴 글 보기'} · {query.data?.total??row.child_count}편 <span aria-hidden="true">{expanded?'−':'+'}</span></button>{!locked&&expanded&&query.isSuccess&&<button ref={addButton} disabled={disabled} onClick={()=>setEditor('add')}>+ 과 추가</button>}</div>
   {expanded&&<>
    {query.isPending&&<p role="status">목차를 불러오는 중…</p>}{query.isError&&<p role="alert">목차를 불러오지 못했어요. <button onClick={()=>query.refetch()}>다시 시도</button></p>}
    {query.data&&<ol>{query.data.items.map(chapter=><li key={chapter.id} className={reveal===chapter.id?'is-added':undefined}>
     <LibraryReaderLink href={`/viewer/${chapter.id}`}><span className="shelf-chapter-order">{chapter.order==null?'—':`${chapter.order}과`}</span><span className="shelf-chapter-title" lang={encounterLookupLang(row.language)||undefined}>{chapterCaption(chapter,query.data.title)}</span><span aria-hidden="true">↗</span></LibraryReaderLink>
-    {chapter.order!=null&&<button ref={node=>{if(node)chapterButtons.current.set(chapter.id,node);else chapterButtons.current.delete(chapter.id);}} className="shelf-chapter-menu" aria-label={`${chapter.order}과 더보기`} disabled={disabled} aria-expanded={menu===chapter.id} onClick={()=>setMenu(menu===chapter.id?null:chapter.id)}>···</button>}
+    {!locked&&chapter.order!=null&&<button ref={node=>{if(node)chapterButtons.current.set(chapter.id,node);else chapterButtons.current.delete(chapter.id);}} className="shelf-chapter-menu" aria-label={`${chapter.order}과 더보기`} disabled={disabled} aria-expanded={menu===chapter.id} onClick={()=>setMenu(menu===chapter.id?null:chapter.id)}>···</button>}
     {menu===chapter.id&&<div className="shelf-chapter-options"><button onClick={()=>{setEditor(chapter);setMenu(null);}}>과 번호 수정</button></div>}
    </li>)}</ol>}
    {query.data&&query.data.items.length<query.data.total&&<button disabled={query.isFetching} onClick={()=>setCount(query.data.items.length+20)}>목차 더 보기</button>}

@@ -31,9 +31,10 @@ import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
 import MaterialGroupCard from '../components/MaterialGroupCard';
 import LiteratureCover from '../components/books/LiteratureCover';
-import { literatureWork, literatureWorkOfBook } from '../lib/literatureCanonical';
+import { literatureWorkOfBook } from '../lib/literatureCanonical';
 import VictorianCover from '../components/books/VictorianCover';
-import { standardEbooksWork, standardEbooksWorkOfBook } from '../lib/standardEbooksCanonical';
+import { standardEbooksWorkOfBook } from '../lib/standardEbooksCanonical';
+import { isCanonicalBookKey } from '../lib/canonicalBookKey';
 import { literatureChapterLabel, literatureDivisionLabel } from '../lib/literatureDisplay';
 import SuggestionArtwork from '../components/SuggestionArtwork';
 import { failureMessage } from '@/lib/errorMessage';
@@ -748,11 +749,11 @@ export default function MaterialsPage({ libraryView = null }) {
                     right: chapterTags(c),
                   }))}
                   // 이어 적기(#1077 5520128974) — 내 책에만 「다음 과 적기」(PDF 카드 「이어 읽기」와 같은 자리).
-                  // 정본 key는 표지와 따로 key만으로 막는다 — 공개 목록에서 표지를 닫아도(work=null) 정본 책에 가짜 장이 끼지 않게(2026-10-17 리뷰).
+                  // 정본 key(아오조라 · SE · 그림 책)는 표지와 따로 key만으로 막는다 — 공개 목록에서 표지를 닫아도(work=null) 정본 책에 가짜 장이 끼지 않게(2026-10-17 리뷰).
                   // 비로그인(BOOK-GUEST-GATE-1) — 목록만 보이고 여는 것은 로그인 뒤. 로그인하면 첫 장으로 돌아온다.
                   footer={!user ? (
                     <Link href={authEntryHref(`/viewer/${b.chapters[0]?.id}`)} className="btn btn--primary btn--sm">로그인하고 읽기</Link>
-                  ) : !literatureWork(b.key) && !standardEbooksWork(b.key) && b.chapters[0]?.owner_id === user.id ? (
+                  ) : !isCanonicalBookKey(b.key) && b.chapters[0]?.owner_id === user.id ? (
                     <Link href={`/materials/add?book=${encodeURIComponent(b.key)}`} className="btn btn--secondary btn--sm">+ 다음 과 적기</Link>
                   ) : null}
                 />
