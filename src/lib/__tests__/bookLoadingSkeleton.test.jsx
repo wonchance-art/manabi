@@ -45,7 +45,7 @@ describe('교재 대기 화면 — src/app/(app)/books/loading.jsx', () => {
     expect(sliceBetween(html, '<ol>', '</ol>').match(/<li>/g)).toHaveLength(5); // 처음 파트(처음 만난 사람과) 5과
   });
   it('자리표 칸은 이동 · 초점이 없다(href 0, 버튼 · 요약은 tabindex -1, 칸 전체 aria-hidden)', () => {
-    expect(html).not.toMatch(/href=/);
+    expect(html.replace(/<script>[\s\S]*?<\/script>/, '')).not.toMatch(/href=/);
     expect(html.match(/<(button|summary)\b/g).length).toBe(html.match(/<(button|summary)\b[^>]*tabindex="-1"/g).length);
     for (const part of ['manabi-breadcrumb', 'manabi-book-hero', 'manabi-book-body']) expect(html).toContain(`class="${part}" aria-hidden="true"`);
   });
@@ -61,7 +61,41 @@ describe('교재 대기 화면 — src/app/(app)/books/loading.jsx', () => {
       expect(other).toContain('<p class="spinner-msg">화면 불러오는 중…</p>');
       expect(other).not.toContain('aria-busy');
     }
-    // 본문 위치(#u01-…)는 서버가 모른다 — 붙은 뒤 그리기 전에 보고 전역 대기로 바꾼다(하이드레이션 불일치 0).
-    expect(sliceBetween(source, 'const [reader, setReader] = useState(false);', 'return (')).toContain('useLayoutEffect(() => { setReader(/^#(?!cover$)./.test(window.location.hash)); }, [pathname]);');
+  });
+});
+
+// 본문 첫 그림 골격(BOOK-ENTRY-SKELETON-001): 본문 위치(#u01-…)로 하드 로드하면 붙기 전 110–340ms 표지 자리가 비어 있었다(GNB만).
+describe('본문 위치 진입 — 감춤 한 줄 · 본문 골격', () => {
+  const html = render('/books/japanese-n5');
+  const reader = read('src/components/books/BookReader.jsx');
+  const skeleton = read('src/components/books/BookReaderSkeleton.jsx');
+  it('서버 첫 그림: 감춤 한 줄 → 꺼진 본문 골격(.book-reader 안) → 표지 골격 순서(한 줄이 둘보다 먼저 실행된다)', () => {
+    const gate = html.indexOf('<script>(function(){'), body = html.indexOf('<div class="book-reader"><div class="manabi-reader-page book-entry-skeleton" aria-busy="true">'),
+      cover = html.indexOf('class="manabi-page manabi-book-home" aria-busy="true"');
+    expect(gate).toBeGreaterThanOrEqual(0);
+    expect(body).toBeGreaterThan(gate);
+    expect(cover).toBeGreaterThan(body);
+    expect(html.match(/role="status"/g)).toHaveLength(1); // 알림은 표지 골격의 한 줄뿐 — 꺼진 본문 골격은 알리지 않는다
+  });
+  it('붙은 뒤(링크 이동)는 그리기 전에 판정해 본문 골격만, 교재가 아닌 화면으로 끝나도 감춤을 남기지 않는다', () => {
+    expect(source).toContain('useLayoutEffect(() => { setReader(readerEntry()); }, [pathname]);');
+    expect(source).toContain('if (reader) return <div className="book-reader"><BookReaderSkeleton announce /></div>;');
+    expect(source).toContain('useLayoutEffect(() => () => hashGate(false), []);');
+  });
+  it('본문 골격은 실제 본문 화면과 같은 클래스 · 같은 고정 글, 이동 · 초점 0, 색 리터럴 0', () => {
+    const body = sliceBetween(html, '<div class="manabi-reader-page book-entry-skeleton"', 'class="manabi-page manabi-book-home"');
+    for (const cls of ['manabi-reader-page', 'manabi-reader-toolbar', 'manabi-reference-menu', 'manabi-reader-grid', 'manabi-reader-outline', 'manabi-reader-main',
+      'manabi-mobile-toc', 'manabi-chapter-opening', 'manabi-chapter-subtitle', 'manabi-chapter-goal', 'manabi-chapter-number']) {
+      expect(reader).toContain(cls);
+      expect(body).toContain(cls);
+    }
+    for (const label of ['← 책 목차', '담은 표현', '참고 자료', '집중 읽기', '이 과의 목차']) { expect(reader).toContain(label); expect(body).toContain(label); }
+    expect(body).toContain('일본어 · N5');
+    expect(body).not.toMatch(/href=/);
+    expect(body.match(/<(button|summary)\b/g).length).toBe(body.match(/<(button|summary)\b[^>]*tabindex="-1"/g).length);
+    for (const part of ['manabi-reader-toolbar', 'manabi-reader-grid']) expect(body).toContain(`class="${part}" aria-hidden="true"`);
+    expect(skeleton).toMatch(/import \{ SkeletonLine, SkeletonRegion \} from '@\/components\/Skeleton';/);
+    expect(skeleton).not.toMatch(/#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(|style=/i);
+    expect(body).toContain('skeleton-line'); // 모션 축소 정지는 .skeleton-line 공통 블록
   });
 });

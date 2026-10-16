@@ -6,21 +6,15 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { describe, expect, it } from 'vitest';
 import { sliceBetween } from './helpers/sliceBetween';
+import { HASH_GATE, HASH_GATE_CSS, HASH_GATE_ID, coverPage, pageFromHash } from '../../components/books/bookEntryGate';
 
 const ROOT = path.resolve(__dirname, '../../..');
 const source = fs.readFileSync(path.join(ROOT, 'src/components/books/BookReader.jsx'), 'utf8');
-// 모듈을 불러오지 않고(브라우저 전용 의존성) 정본 문자열을 그대로 꺼내 평가한다.
-const constant = (name) => {
-  const line = sliceBetween(source, `const ${name} = `, ';\n');
-  return vm.runInNewContext(line.replace(/^const \w+ = /, ''), { HASH_GATE_ID: 'book-hash-gate', HASH_GATE_CSS: '.book-reader>.manabi-book-home{visibility:hidden}' });
-};
-const gateFor = (hash, state = null, href = `https://manabi.test/books/japanese-n5${hash}`) => {
-  const ids = constant('HASH_GATE_ID'), css = constant('HASH_GATE_CSS');
-  const script = sliceBetween(source, 'export const HASH_GATE = `', '`;').replace('export const HASH_GATE = `', '')
-    .replace('${HASH_GATE_ID}', ids).replace('${HASH_GATE_CSS}', css);
+// 감춤 한 줄은 정본 문자열(bookEntryGate.HASH_GATE)을 그대로 vm에서 실행해 판정을 본다.
+const gateFor = (hash, state = null, href = `https://manabi.test/books/japanese-n5${hash}`, existing = false) => {
   const appended = [];
-  const document = { createElement: () => ({}), head: { appendChild: (node) => appended.push(node) } };
-  vm.runInNewContext(script, { location: { hash, href }, history: { state }, document });
+  const document = { getElementById: () => (existing ? {} : null), createElement: () => ({}), head: { appendChild: (node) => appended.push(node) } };
+  vm.runInNewContext(HASH_GATE, { location: { hash, href }, history: { state }, document });
   return appended;
 };
 
@@ -29,7 +23,7 @@ describe('하드 로드 감춤 한 줄 — HASH_GATE', () => {
     for (const hash of ['#u01-start', '#u29-patterns', '#reference-start', '#web-u02-start', '#%75%30%31-start']) {
       const nodes = gateFor(hash);
       expect(nodes).toHaveLength(1);
-      expect(nodes[0]).toEqual({ id: 'book-hash-gate', textContent: '.book-reader>.manabi-book-home{visibility:hidden}' });
+      expect(nodes[0]).toEqual({ id: HASH_GATE_ID, textContent: HASH_GATE_CSS });
     }
   });
   it('표지 · 목차 · hash 없음 · 깨진 hash는 그대로(표지가 첫 화면)', () => {
@@ -40,10 +34,21 @@ describe('하드 로드 감춤 한 줄 — HASH_GATE', () => {
     expect(gateFor('', { manabiBookPosition: { href } }, href)).toHaveLength(1);
     expect(gateFor('', { manabiBookPosition: { href: href + '&other' } }, href)).toHaveLength(0);
   });
-  it('서버 · 하이드레이션 첫 그림은 표지 + 그 한 줄(불일치 0), 첫 쪽이 정해지면 뗀다', () => {
-    expect(source).toContain("{unit === 'cover' && !entryDecided && <script dangerouslySetInnerHTML={{ __html: HASH_GATE }} />}");
+  it('이미 넣었으면 다시 넣지 않는다(교재 대기 골격과 BookReader가 둘 다 보낸다)', () => {
+    expect(gateFor('#u01-start', null, undefined, true)).toHaveLength(0);
+  });
+  it('JS 판정(pageFromHash · coverPage)과 같은 규칙', () => {
+    for (const [hash, page] of [['#u01-start', 'u01-start'], ['#web-u02-start', 'u02-start'], ['', 'cover'], ['#%E0%A4%A', 'cover'], ['#toc-part2', 'toc-part2']]) expect(pageFromHash(hash)).toBe(page);
+    for (const hash of ['#u01-start', '#u29-patterns', '#reference-start', '#cover', '#toc', '', '#%E0%A4%A']) expect(gateFor(hash).length === 1).toBe(!coverPage(pageFromHash(hash)));
+  });
+  it('감춤 style = 표지(BookHome · 교재 대기 골격) 끄기 + 본문 골격 켜기, 평소 본문 골격은 꺼짐', () => {
+    expect(HASH_GATE_CSS).toBe(':root .book-reader>.manabi-book-home,:root .manabi-book-home[aria-busy]{display:none}:root .book-entry-skeleton{display:block}');
+    expect(fs.readFileSync(path.join(ROOT, 'src/components/books/reading-shell.css'), 'utf8')).toContain('\n.book-entry-skeleton{display:none}\n');
+  });
+  it('서버 · 하이드레이션 첫 그림은 표지 + 그 한 줄 + 꺼진 본문 골격(불일치 0), 첫 쪽이 정해지면 뗀다', () => {
+    expect(source).toContain("{unit === 'cover' && !entryDecided && <><script dangerouslySetInnerHTML={{ __html: HASH_GATE }} /><BookReaderSkeleton gated /></>}");
     expect(source).toContain("const [pageId, setPageId] = useState('cover')");
-    expect(source).toContain("const HASH_GATE_CSS = '.book-reader>.manabi-book-home{visibility:hidden}';");
+    expect(source).toContain("import { HASH_GATE, coverPage, hashGate, pageFromHash } from './bookEntryGate';");
   });
 });
 

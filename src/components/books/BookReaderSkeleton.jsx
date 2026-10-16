@@ -1,0 +1,40 @@
+import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
+
+/**
+ * 본문 첫 그림 골격(BOOK-ENTRY-SKELETON-001). 본문 위치(#u01-…)로 바로 열 때 붙기 전 빈 자리(110–340ms)를 메운다.
+ * 실제 본문 화면(BookReader의 manabi-reader-page)과 **같은 클래스**로 도구 줄 · 과 목차 · 과 머리를 그린다 — 늘 같은 글(← 책 목차 ·
+ * 일본어 · N5 · 담은 표현 · 참고 자료 · 집중 읽기 · 이 과의 목차)은 그대로, 과마다 다른 글만 회색 줄. 이동 · 초점이 없다.
+ * gated = 평소에는 꺼져 있고 HASH_GATE style이 켤 때만 보인다(.book-entry-skeleton — bookEntryGate). 감싼 .book-reader 안에 둔다.
+ */
+export default function BookReaderSkeleton({ gated = false, announce = false }) {
+  return (
+    <SkeletonRegion className={`manabi-reader-page${gated ? ' book-entry-skeleton' : ''}`} label="교재" announce={announce}>
+      <div className="manabi-reader-toolbar" aria-hidden="true">
+        <a>← 책 목차</a><span>일본어 · N5 / <SkeletonLine width="2.4em" /></span>
+        <div>
+          <a>담은 표현</a>
+          <details className="manabi-reference-menu"><summary tabIndex={-1}>참고 자료</summary></details>
+          <button type="button" tabIndex={-1} aria-pressed="false">집중 읽기</button>
+        </div>
+      </div>
+      <div className="manabi-reader-grid" aria-hidden="true">
+        <aside className="manabi-reader-outline">
+          <p className="manabi-eyebrow"><SkeletonLine width="6em" /></p>
+          <nav>{['70%', '55%', '80%', '62%', '48%', '66%'].map((width, i) => <a key={i}><SkeletonLine width={width} /></a>)}</nav>
+        </aside>
+        <div className="manabi-reader-main">
+          <details className="manabi-mobile-toc"><summary tabIndex={-1}>이 과의 목차</summary></details>
+          <header className="manabi-chapter-opening">
+            <div>
+              <p className="manabi-eyebrow"><SkeletonLine width="9em" /></p>
+              <p className="manabi-chapter-subtitle"><SkeletonLine width="11em" /></p>
+              <h1><SkeletonLine width="70%" /></h1>
+              <p className="manabi-chapter-goal"><SkeletonLine width="85%" /></p>
+            </div>
+            <span className="manabi-chapter-number"><SkeletonLine width="1.1em" /></span>
+          </header>
+        </div>
+      </div>
+    </SkeletonRegion>
+  );
+}

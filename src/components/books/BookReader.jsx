@@ -12,6 +12,8 @@ import { bookReferenceHref, bookReviewHref } from '@/lib/bookReviewNavigation';
 import { readingDraftKey, readingUnit } from '@/lib/bookNavigation';
 import useReadingProgress from './useReadingProgress';
 import BookHome from './BookHome';
+import BookReaderSkeleton from './BookReaderSkeleton';
+import { HASH_GATE, coverPage, hashGate, pageFromHash } from './bookEntryGate';
 import './reading-content.css';
 import useLibraryActivity from '@/components/library/useLibraryActivity';
 import {LibraryReturnLink} from '@/components/web/LibraryReaderLink';
@@ -31,27 +33,7 @@ function readingText(node) {
   return clone.textContent.trim();
 }
 
-// 본문 위치로 바로 열기(BOOK-HASH-ENTRY-001): /books/japanese-n5#u01-start는 서버가 hash를 모른다. 그대로면 서버 HTML의 표지(BookHome)가
-// 칠해지고, 붙은 뒤 계정 확인(sync)까지 표지가 비쳤다(390폭 ~34ms). 그래서 ① 하드 로드는 표지보다 먼저 실행되는 한 줄(HASH_GATE)이
-// hash가 본문 위치이거나 이 기록에 읽던 자리가 있으면 표지를 감추고 ② 붙은 뒤 그리기 전(layout effect)에 hash로 첫 쪽을 정한다.
-// 서버 · 하이드레이션 첫 그림은 늘 표지 + 그 한 줄이라 불일치가 없다. 감춤은 첫 쪽이 정해진 그 그림에서 푼다.
-const HASH_GATE_ID = 'book-hash-gate';
-const HASH_GATE_CSS = '.book-reader>.manabi-book-home{visibility:hidden}';
-export const pageFromHash = hash => {
-  let id;
-  try { id = decodeURIComponent(String(hash || '').slice(1)) || 'cover'; } catch { id = 'cover'; }
-  return id.replace(/^(?:web|pdf|audio)-/, '');
-};
-const coverPage = id => !id || id === 'cover' || id.startsWith('toc');
-export const HASH_GATE = `(function(){try{var h='';try{h=decodeURIComponent(location.hash.slice(1))}catch(e){}h=h.replace(/^(?:web|pdf|audio)-/,'');var s=history.state&&history.state.manabiBookPosition;if((h&&h!=='cover'&&h.indexOf('toc')!==0)||(s&&s.href===location.href)){var g=document.createElement('style');g.id='${HASH_GATE_ID}';g.textContent='${HASH_GATE_CSS}';document.head.appendChild(g)}}catch(e){}})()`;
-function hashGate(on) {
-  const current = document.getElementById(HASH_GATE_ID);
-  if (!on) { current?.remove(); return; }
-  if (current) return;
-  const style = document.createElement('style');
-  style.id = HASH_GATE_ID; style.textContent = HASH_GATE_CSS;
-  document.head.appendChild(style);
-}
+// 본문 위치로 바로 열기 — 첫 쪽 판정 · 하드 로드 감춤 한 줄 · 본문 골격은 bookEntryGate · BookReaderSkeleton(BOOK-HASH-ENTRY-001 · BOOK-ENTRY-SKELETON-001).
 
 export default function BookReader({ book, sectionIndex, preview = false, reference = false }) {
   const { user, loading: authLoading } = useAuth();
@@ -388,7 +370,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
   return <div ref={root} className={`book-reader${focus ? ' is-focused' : ''}`} onClick={interact}>
     {reference && <div className="manabi-preview-note" role="note"><strong>복습 원문 참고</strong><p>읽던 위치는 바뀌지 않아요. 확인 후 복습하던 탭으로 돌아가세요.</p><a data-reading-resume className="manabi-link" href={bookHref(book.edition, active || pageId)}>여기부터 이어읽기 →</a></div>}
     {preview && <p className="manabi-preview-note">관리자 미리보기 · 발행 전 원고예요.</p>}
-    {unit === 'cover' && !entryDecided && <script dangerouslySetInnerHTML={{ __html: HASH_GATE }} />}
+    {unit === 'cover' && !entryDecided && <><script dangerouslySetInnerHTML={{ __html: HASH_GATE }} /><BookReaderSkeleton gated /></>}
     {unit === 'cover' ? <BookHome book={book} preview={preview} progress={progress} hasProgress={hasProgress} ready={ready} /> : <div className="manabi-reader-page">
       <div ref={toolbar} className="manabi-reader-toolbar"><LibraryReturnLink onlyWithContext/><a href={readerHref('cover')}>← 책 목차</a><span>일본어 · N5{lesson ? ` / ${String(lesson.number).padStart(2, '0')}과` : ''}</span><div><Link prefetch={false} href={bookReviewHref(bookHref(book.edition, reference ? progress.page : active || pageId))}>담은 표현</Link><details ref={referenceMenu} className="manabi-reference-menu" onBlur={leaveReferenceMenu} onKeyDown={event => { if (event.key === 'Escape') { event.currentTarget.open = false; event.currentTarget.querySelector('summary').focus(); } }}><summary>참고 자료</summary><nav aria-label="교재 참고 자료"><a href={readerHref('reference-start')}>어휘·문형·한자</a>{lesson && <button type="button" onClick={event => { const menu = event.currentTarget.closest('details'); menu.open = false; openPanel('materials', menu.querySelector('summary')); }}>이 과의 연결 자료</button>}<Link prefetch={false} href={`/books/japanese-n5/materials?edition=${book.edition}`}>문화 읽기</Link></nav></details><button type="button" aria-pressed={focus} onClick={() => setFocus(!focus)}>{focus ? '기본 보기' : '집중 읽기'}</button></div></div>
       <div className="manabi-reader-grid"><aside className="manabi-reader-outline"><p className="manabi-eyebrow">{lesson ? `${String(lesson.number).padStart(2, '0')}과 · 목차` : '목차'}</p><nav aria-label="과 안의 목차">{unitSections.map(section => <a key={section.id} href={readerHref(section.id)} aria-current={active === section.id ? 'location' : undefined}>{section.title}</a>)}</nav></aside>

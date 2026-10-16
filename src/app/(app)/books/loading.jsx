@@ -3,6 +3,8 @@ import { useLayoutEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import BookCover from '@/components/books/BookCover';
 import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
+import BookReaderSkeleton from '@/components/books/BookReaderSkeleton';
+import { HASH_GATE, hashGate, readerEntry } from '@/components/books/bookEntryGate';
 import AppLoading from '../loading';
 
 /**
@@ -10,15 +12,22 @@ import AppLoading from '../loading';
  * 전역 「화면 불러오는 중…」 스피너 뒤 빈 화면이 이어지던 자리다. 실제 화면(BookHome)의 **같은 클래스**로 책 머리 · 목차를
  * 그린다 — 늘 같은 글(갈래 · 표지 · 제목 · 「목차」 · 학습 도구 이름)은 글자 그대로, 사람마다 다른 글(과 이름 · 진도)만 회색 줄.
  * 칸은 href 없는 <a> · tabIndex -1 버튼(초점 · 이동 없음)이라 실제 칸 스타일을 그대로 받는다.
- * 책 첫 화면이 아닌 곳(함께 읽기 · 담은 표현 · 본문 위치 #u01-… 로 바로 여는 읽기 화면)은 모양이 달라 전과 같은 전역 대기를 쓴다.
- * 본문 위치(hash)는 서버가 모른다 — 붙은 뒤 그리기 전(layout effect)에 보고 바꾼다(하이드레이션 불일치 0).
+ * 함께 읽기 · 담은 표현은 모양이 달라 전과 같은 전역 대기를 쓴다.
+ * 본문 위치(#u01-…)로 여는 읽기 화면은 본문 골격(BookReaderSkeleton — BOOK-ENTRY-SKELETON-001)이다. hash는 서버가 모르므로
+ * 서버 · 하이드레이션 첫 그림은 늘 「감춤 한 줄(HASH_GATE) + 꺼진 본문 골격 + 표지 골격」이고, 하드 로드는 그 한 줄이 칠하기 전에
+ * 표지 골격을 끄고 본문 골격을 켠다. 링크 이동(붙은 뒤)은 그리기 전(layout effect)에 보고 본문 골격만 그린다(불일치 0).
  */
 export default function Loading() {
   const pathname = usePathname();
   const [reader, setReader] = useState(false);
-  useLayoutEffect(() => { setReader(/^#(?!cover$)./.test(window.location.hash)); }, [pathname]);
-  if (pathname !== '/books/japanese-n5' || reader) return <AppLoading />;
-  return (
+  useLayoutEffect(() => { setReader(readerEntry()); }, [pathname]);
+  // 교재가 아닌 화면(오류 등)으로 끝나도 감춤을 남기지 않는다 — 교재가 그려지면 BookReader가 같은 그림에서 다시 정한다.
+  useLayoutEffect(() => () => hashGate(false), []);
+  if (pathname !== '/books/japanese-n5') return <AppLoading />;
+  if (reader) return <div className="book-reader"><BookReaderSkeleton announce /></div>;
+  return (<>
+    <script dangerouslySetInnerHTML={{ __html: HASH_GATE }} />
+    <div className="book-reader"><BookReaderSkeleton gated /></div>
     <SkeletonRegion className="manabi-page manabi-book-home" label="교재" announce>
       <p className="manabi-breadcrumb" aria-hidden="true"><a>교재</a><span>/</span>일본어 · N5</p>
       <section className="manabi-book-hero" aria-hidden="true">
@@ -55,5 +64,5 @@ export default function Loading() {
         </aside>
       </div>
     </SkeletonRegion>
-  );
+  </>);
 }
