@@ -2,9 +2,9 @@
 // ① 키 판정(순수) ② 서버 렌더 마크업 — roving tabindex · 카드 이름 · 안내 한 줄 ③ 훅 대역 렌더 — 자동 이동 · 무시 조건.
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { levelCardLabel, levelListKeyAction, levelListMove } from '../../lib/levelListKeys';
+import { levelCardLabel, levelListKeyAction, levelListMove, levelListNearest } from '../../lib/levelListKeys';
 
-const h = vi.hoisted(() => ({ stub: false, slots: [], index: 0, effects: [], pending: new Set(), mutate: [] }));
+const h = vi.hoisted(() => ({ stub: false, slots: [], index: 0, effects: [], pending: new Set(), mutate: [], user: 'u1', rows: [], facets: null }));
 vi.mock('react', async (importOriginal) => {
   const actual = await importOriginal();
   const on = () => h.stub;
@@ -23,12 +23,12 @@ vi.mock('react', async (importOriginal) => {
   };
 });
 vi.mock('next/navigation', () => ({ usePathname: () => '/chinese/vocab/h1' }));
-vi.mock('@/lib/AuthContext', () => ({ useAuth: () => ({ user: h.stub ? { id: 'u1' } : null }) }));
+vi.mock('@/lib/AuthContext', () => ({ useAuth: () => ({ user: h.stub && h.user ? { id: h.user } : null }) }));
 vi.mock('@/lib/supabase', () => ({ supabase: {} }));
 vi.mock('@/lib/useTTS', () => ({ useTTS: () => ({ speak: () => {}, supported: true }) }));
-vi.mock('@/lib/useKnownWords', () => ({ useKnownWords: () => ({ rows: [], isPendingWord: (_lang, key) => h.pending.has(key),
+vi.mock('@/lib/useKnownWords', () => ({ useKnownWords: () => ({ rows: h.rows, isPendingWord: (_lang, key) => h.pending.has(key),
   mutation: { mutate: (r) => h.mutate.push(r), mutateAsync: (r) => { h.mutate.push(r); return Promise.resolve(); } } }) }));
-vi.mock('@/lib/useWordFacets', () => ({ useWordFacets: () => ({ available: false, rows: [], mark: () => {} }) }));
+vi.mock('@/lib/useWordFacets', () => ({ useWordFacets: () => h.facets || ({ available: false, rows: [], mark: () => {} }) }));
 vi.mock('next/dynamic', () => ({ default: () => () => null }));
 
 const { default: LevelListPage, VocabCard } = await import('../LevelListPage.jsx');
@@ -48,6 +48,18 @@ describe('① 키 판정 — 무시 조건', () => {
     expect(levelListKeyAction(ev({ target: { closest: (sel) => (sel.includes('input') ? {} : null) } }))).toBeNull();
     for (const mod of ['ctrlKey', 'metaKey', 'altKey']) expect(levelListKeyAction(ev({ [mod]: true })), mod).toBeNull();
     expect(levelListKeyAction(ev({ defaultPrevented: true }))).toBeNull();
+  });
+  it('누르고 있는 키(반복)는 ↑↓만 — O · X · Space · Esc 반복은 무시', () => {
+    expect(['o', 'x', ' ', 'Escape', 'ArrowDown', 'ArrowUp'].map((key) => levelListKeyAction(ev({ key, repeat: true }))))
+      .toEqual([null, null, null, null, 'next', 'prev']);
+  });
+  it('사라진 카드의 가장 가까운 남은 카드 — 뒤쪽 먼저, 마지막이면 앞쪽, 하나도 없으면 null', () => {
+    const present = (...k) => new Map(k.map((x) => [x, {}]));
+    expect(levelListNearest(['a', 'b', 'c'], 'b', present('a', 'c'))).toBe('c');
+    expect(levelListNearest(['a', 'b', 'c'], 'c', present('a', 'b'))).toBe('b');
+    expect(levelListNearest(['a', 'b', 'c'], 'b', present('a'))).toBe('a');
+    expect(levelListNearest(['a'], 'a', present())).toBeNull();
+    expect(levelListNearest([], 'z', present('q'))).toBe('q');
   });
   it('이동 — 끝이면 더 그릴 것이 있을 때만 grow, 처음 위는 없음', () => {
     expect(levelListMove(['a', 'b'], 'a', 1)).toEqual({ key: 'b' });
@@ -75,10 +87,11 @@ describe('② 서버 렌더 — roving tabindex · 이름 · 안내', () => {
     expect(cards.slice(1).every((c) => c.includes('tabindex="-1"'))).toBe(true);
     expect(cards.every((c) => /role="listitem"/.test(c) && /aria-label="[^"]+ — [^"]+"/.test(c) && c.includes('aria-keyshortcuts="ArrowUp ArrowDown O X Space Escape"'))).toBe(true);
   });
-  it('카드 안 버튼(O · X · 듣기)은 Tab 정지가 아니다(-1)', () => {
+  it('카드 안 버튼(O · X · 듣기)은 지금 카드에서만 Tab으로 닿는다(0) — 다른 카드는 -1', () => {
     const buttons = [...html.matchAll(/<button type="button" class="lv-(?:fab|snd)[^"]*"[^>]*>/g)].map((m) => m[0]);
-    expect(buttons.length).toBe(300); // O · X × 150 (듣기는 붙은 뒤에만 그린다 — 같은 inner -1을 받는다)
-    expect(buttons.filter((b) => !b.includes('tabindex="-1"'))).toEqual([]);
+    expect(buttons.length).toBe(300); // O · X × 150 (듣기는 붙은 뒤에만 그린다 — 같은 inner를 받는다)
+    expect(buttons.slice(0, 2).every((b) => b.includes('tabindex="0"'))).toBe(true); // 첫 카드(지금 카드)의 O · X
+    expect(buttons.slice(2).filter((b) => !b.includes('tabindex="-1"'))).toEqual([]);
   });
   it('안내 한 줄은 목업 문구 그대로, 복습방 안내와 같은 표시 규칙(pointer: fine)', () => {
     expect(html).toContain('<p class="lv-keys review-keys-hint">⌨ ↑↓ 카드 이동 · O 안다 · X 모른다 · Space 펼치기</p>');
@@ -93,20 +106,25 @@ const walk = (node, pick, out = []) => {
   walk(node.props?.children, pick, out);
   return out;
 };
-function renderStub() {
+function renderStub(d = data) {
   h.index = 0; h.effects = [];
-  const tree = LevelListPage(data);
+  const tree = LevelListPage(d);
   const col = walk(tree, (n) => n.props?.className === 'lv-col')[0];
   const cards = walk(tree, (n) => n.type === VocabCard);
-  return { col, cards, current: cards.find((c) => c.props.current)?.props.entry.key };
+  return { tree, col, cards, current: cards.find((c) => c.props.current)?.props.entry.key };
 }
-const key = (k, over = {}) => ({ key: k, target: { closest: () => null }, preventDefault: vi.fn(), ...over });
+const runEffects = () => { for (const fn of h.effects) { try { fn(); } catch { /* 브라우저 전용 효과는 건너뛴다 */ } } };
+// 카드 노드 대역 — closest('[data-lv-card]')는 자기 자신, 버튼 · 입력 칸은 아니다.
+const cardTarget = (k) => { const t = { dataset: { lvCard: k }, closest: (sel) => (sel === '[data-lv-card]' ? t : null) }; return t; };
+const key = (k, over = {}) => ({ key: k, target: cardTarget(renderStub().current), preventDefault: vi.fn(), ...over });
+const without = (gone) => ({ ...data, groups: data.groups.map((g) => ({ ...g, entries: g.entries.filter((e) => (e.key ?? e.word) !== gone) })) });
 
 describe('③ 키로 고르기 — 자동 이동 · 진행 중 무시', () => {
   beforeEach(() => {
-    h.stub = true; h.slots = []; h.pending = new Set(); h.mutate = [];
+    vi.unstubAllGlobals();
+    h.stub = true; h.slots = []; h.pending = new Set(); h.mutate = []; h.user = 'u1'; h.rows = []; h.facets = null;
     renderStub();
-    for (const fn of h.effects) { try { fn(); } catch { /* 브라우저 전용 효과는 건너뛴다 */ } }
+    runEffects();
   });
   const keys = () => renderStub().cards.map((c) => c.props.entry.key);
 
@@ -155,4 +173,97 @@ describe('③ 키로 고르기 — 자동 이동 · 진행 중 무시', () => {
     renderStub().cards[2].props.onCardFocus();
     expect(renderStub().current).toBe(third);
   });
+
+  it('이미 아는 카드에서 O — 풀지 않고(토글 아님) 다음 카드로만', () => {
+    const [first, second] = keys();
+    h.rows = [{ lang: 'zh', word_text: first }];
+    expect(renderStub().cards[0].props.known).toBe(true);
+    renderStub().col.props.onKeyDown(key('o'));
+    expect(h.mutate).toEqual([]);
+    expect(renderStub().current).toBe(second);
+  });
+
+  it('O를 누르고 있으면(반복) 아무것도 하지 않는다 — 카드가 한꺼번에 바뀌지 않게', () => {
+    const [first] = keys();
+    const event = key('o', { repeat: true });
+    renderStub().col.props.onKeyDown(event);
+    expect(event.preventDefault).not.toHaveBeenCalled();
+    expect(h.mutate).toEqual([]);
+    expect(renderStub().current).toBe(first);
+  });
+
+  it('카드 밖(「더 보기」) · 카드 안 버튼(듣기 등)의 키는 그 버튼 몫 — Space · O를 가로채지 않는다', () => {
+    const [first] = keys();
+    const more = { closest: () => null };
+    const card = cardTarget(first);
+    const inButton = { closest: (sel) => (sel === '[data-lv-card]' ? card : sel === 'button, a' ? {} : null) };
+    for (const target of [more, inButton]) {
+      for (const k of [' ', 'o', 'ArrowDown']) {
+        const event = key(k, { target });
+        renderStub().col.props.onKeyDown(event);
+        expect(event.preventDefault).not.toHaveBeenCalled();
+      }
+    }
+    expect(h.mutate).toEqual([]);
+    expect(renderStub().current).toBe(first);
+  });
+
+  it('게스트의 O · X — 로그인 안내만 띄우고 그 카드에 머문다', () => {
+    h.user = null;
+    const [first] = keys();
+    renderStub().col.props.onKeyDown(key('o'));
+    renderStub().col.props.onKeyDown(key('x'));
+    expect(h.mutate).toEqual([]);
+    expect(renderStub().current).toBe(first);
+    const toast = walk(renderStub().tree, (n) => n.props?.className === 'lv-toast')[0];
+    expect(toast).toBeTruthy();
+  });
+
+  it('지금 카드가 사라지면(숨기기 켠 채 O 등) 가장 가까운 남은 카드가 지금 카드 — 포커스를 body에 두지 않는다', () => {
+    const ks = keys();
+    renderStub().cards[2].props.onCardFocus();
+    renderStub(); runEffects(); // 직전 카드 순서를 기억
+    const body = {};
+    vi.stubGlobal('document', { body, activeElement: body });
+    renderStub(without(ks[2])); runEffects();
+    expect(renderStub(without(ks[2])).current).toBe(ks[3]);
+    expect(renderStub(without(ks[2])).cards.find((c) => c.props.current)?.props.entry.key).toBe(ks[3]);
+  });
 });
+
+describe('④ 탭 보기(탭별 O · X) — 켜기만 · 보내는 중 무시', () => {
+  beforeEach(() => {
+    h.stub = true; h.slots = []; h.pending = new Set(); h.mutate = []; h.user = 'u1'; h.rows = [];
+    h.facets = { available: true, rows: [], marks: [], sending: new Set(),
+      mark(body) { this.marks.push(body); return true; }, isPending(k) { return this.sending.has(k); } };
+    vi.stubGlobal('localStorage', { getItem: () => JSON.stringify({ view: 'word' }), setItem() {}, removeItem() {} });
+    renderStub(); runEffects(); renderStub(); runEffects();
+  });
+  const keys = () => renderStub().cards.map((c) => c.props.entry.key);
+
+  it('탭 O — 그 탭에 O를 남기고 다음 카드로', () => {
+    const [first, second] = keys();
+    expect(renderStub().cards[0].props.view).toBe('word');
+    renderStub().col.props.onKeyDown(key('o'));
+    expect(h.facets.marks).toEqual([{ wordText: first, facet: 'word', mark: 'o' }]);
+    expect(renderStub().current).toBe(second);
+  });
+
+  it('탭 기록을 보내는 중인 카드의 O · X는 무시 — 넘어가지도 않는다', () => {
+    const [first] = keys();
+    h.facets.sending.add(first);
+    renderStub().col.props.onKeyDown(key('o'));
+    renderStub().col.props.onKeyDown(key('x'));
+    expect(h.facets.marks).toEqual([]);
+    expect(renderStub().current).toBe(first);
+  });
+
+  it('이미 그 탭에서 X인 카드의 X — 풀지 않고 다음 카드로만', () => {
+    const [first, second] = keys();
+    h.facets.rows = [{ word_text: first, facet: 'word', mark: 'x' }];
+    renderStub().col.props.onKeyDown(key('x'));
+    expect(h.facets.marks).toEqual([]);
+    expect(renderStub().current).toBe(second);
+  });
+});
+

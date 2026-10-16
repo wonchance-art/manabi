@@ -1,6 +1,6 @@
 // 단어 목록 키보드 조작(LEVEL-KEYS-001, 오너 목업 승인 2026-10-17 KST — 「O · X 뒤 다음 카드로 자동 이동」).
 // 키 하나를 동작 이름으로만 바꾼다(화면 상태는 모른다). 무시: 입력기 조합(isComposing · keyCode 229 — imeComposing 정본),
-// 입력 칸 · 찾기, 수정키 조합(Ctrl · ⌘ · Alt — 브라우저 단축키를 빼앗지 않는다), 이미 처리된 이벤트.
+// 입력 칸 · 찾기, 수정키 조합(Ctrl · ⌘ · Alt — 브라우저 단축키를 빼앗지 않는다), 이미 처리된 이벤트, 누르고 있는 O · X · Space(반복).
 import { isImeComposing } from './imeComposing';
 
 const EDITABLE = 'input, textarea, select, [contenteditable=""], [contenteditable="true"]';
@@ -11,7 +11,22 @@ export function levelListKeyAction(event) {
   if (!event || event.defaultPrevented || isImeComposing(event)) return null;
   if (event.ctrlKey || event.metaKey || event.altKey) return null;
   if (event.target?.closest?.(EDITABLE) || event.target?.isContentEditable) return null;
-  return KEYS[event.key] || null;
+  const action = KEYS[event.key] || null;
+  // 누르고 있는 키(반복)는 ↑↓ 이동만 받는다 — O · X · Space를 누르고 있으면 카드 수십 장이 한꺼번에 바뀐다(viewerReliability 선례).
+  if (event.repeat && action !== 'next' && action !== 'prev') return null;
+  return action;
+}
+
+/** 지금 카드가 사라졌을 때(숨기기 켠 채 O 등) 옮겨 갈 카드 — 이전 순서에서 뒤쪽 먼저, 없으면 앞쪽. 남은 카드가 없으면 null. */
+export function levelListNearest(before, gone, present) {
+  const has = (k) => (typeof present?.has === 'function' ? present.has(k) : false);
+  const i = before.indexOf(gone);
+  if (i >= 0) {
+    for (let j = i + 1; j < before.length; j++) if (has(before[j])) return before[j];
+    for (let j = i - 1; j >= 0; j--) if (has(before[j])) return before[j];
+  }
+  const first = present && typeof present.keys === 'function' ? present.keys().next() : null;
+  return first && !first.done ? first.value : null;
 }
 
 /** 지금 카드에서 delta만큼 옮긴 카드 키. 끝 너머면 grow(더 그릴 것이 있으면) — 범위 밖이면 null. */

@@ -32,7 +32,7 @@ import {
 } from '@/lib/levelList';
 import { pinyinToneNumber } from '@/lib/pinyinTone';
 import { ZH_SCOPE_LEVELS, serializeReviewScope } from '@/lib/reviewScopeUrl';
-import { levelCardLabel, levelListKeyAction, levelListMove } from '@/lib/levelListKeys';
+import { levelCardLabel, levelListKeyAction, levelListMove, levelListNearest } from '@/lib/levelListKeys';
 import { reducedMotion } from '@/lib/reducedMotion';
 // 한자판은 HSK 1 · 2 「한자」 탭에서만 쓴다 — 단어 · 문형 목록 번들에 싣지 않는다.
 const HanziBoard = dynamic(() => import('@/components/levels/HanziBoard'), {
@@ -130,10 +130,10 @@ function readingLine(entry, lang, levelKey, tone = false) {
  */
 export function VocabCard({ entry: e, lang, levelKey, view, scoped = true, peek, peekEpoch = 0, onPeek, onRenew, speak, hunCells, glyph, tone = false, known, studying, saving, pendingKnown, onO, onX, onPrepareX, current, onCardFocus }) {
   const scope = view === 'all' || !scoped ? null : LEVEL_VIEWS.find((v) => v.id === view)?.label;
-  // 키보드(LEVEL-KEYS-001): 목록의 Tab 정지는 지금 카드 하나(roving — current면 0, 아니면 -1). 카드 안 버튼은 -1 —
-  // 마우스와 단축키(O · X · Space)로 쓰고, 화면 읽기는 카드 이름(그 보기에 보이는 것만)과 단축키 목록으로 안내한다.
+  // 키보드(LEVEL-KEYS-001): 목록의 Tab 정지는 지금 카드 하나(roving — current면 0, 아니면 -1). 카드 안 버튼(듣기 · 예문 듣기 ·
+  // 펼쳐 보기 · O · X)은 지금 카드에서만 Tab으로 닿고(0), 다른 카드에서는 -1 — 단축키가 없는 듣기도 키보드로 쓸 수 있게.
   const roving = current !== undefined;
-  const inner = roving ? -1 : undefined;
+  const inner = roving ? (current ? 0 : -1) : undefined;
   // 이름표(안다 · 모른다)는 전체 보기 카드에만 — 탭 보기는 한 줄 카드라 동그라미만(디자인 검토 A안, 화면 읽기 이름은 그대로).
   const ox = <OxButtons scope={scope} showLabels={lang === 'chinese' && view === 'all'} known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} onPrepareX={onPrepareX} tabIndex={inner} />;
   // 상태는 카드 자체에 — 아는 단어는 흐리게, 공부 중은 왼쪽 줄(점선 테두리는 「임시」로 읽혀 뺐다).
@@ -479,11 +479,29 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
   const focusNext = useRef(null); // 다음 그리기 뒤 포커스를 옮길 카드 키
   const growFrom = useRef(null); // 더 그린 뒤 이 카드의 다음으로 옮긴다
   const listRef = useRef(null);
+  const prevCardKeys = useRef([]); // 직전 그리기의 카드 순서 — 지금 카드가 사라지면 가까운 카드를 찾는다
   const goTo = (key) => { setCursorKey(key); focusNext.current = key; };
   const moveFrom = (from, delta) => {
     const step = levelListMove(cardKeys, from, delta, { canGrow: rest > 0 });
     if (step?.grow) { growFrom.current = from; setLimit((n) => n + LEVEL_LIST_PAGE); } else if (step?.key) goTo(step.key);
   };
+  // 지금 카드가 사라졌다(숨기기 켠 채 마지막 카드 O · 되돌리기 · 검색) — 가장 가까운 남은 카드를 지금 카드로 삼고,
+  // 포커스가 body로 떨어졌을 때만 그 카드(없으면 목록 안내 줄)로 옮긴다. 옮길 카드가 사라진 대기 포커스는 버린다.
+  useEffect(() => {
+    const before = prevCardKeys.current;
+    prevCardKeys.current = cardKeys;
+    if (focusNext.current && !cardEntries.has(focusNext.current)) focusNext.current = null;
+    if (cursorKey == null || cardEntries.has(cursorKey)) return;
+    const near = levelListNearest(before, cursorKey, cardEntries);
+    setCursorKey(near);
+    const lost = typeof document !== 'undefined' && (!document.activeElement || document.activeElement === document.body);
+    if (!lost) return;
+    if (near) { focusNext.current = near; return; }
+    const fallback = listRef.current?.querySelector('h2, .lv-empty');
+    if (fallback) { if (!fallback.hasAttribute('tabindex')) fallback.setAttribute('tabindex', '-1'); fallback.focus({ preventScroll: true }); }
+    // 카드 목록이 바뀔 때만 본다 — 지금 카드는 목록이 바뀌어야 사라진다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cardKeys]);
   useEffect(() => {
     const key = focusNext.current;
     if (!key || !listRef.current) return;
@@ -502,14 +520,24 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
   }, [cardKeys]);
   const onCardKey = (event) => {
     const action = levelListKeyAction(event);
-    const entry = currentKey && cardEntries.get(currentKey);
-    if (!action || !entry) return;
-    if (action === 'next' || action === 'prev') { event.preventDefault(); moveFrom(currentKey, action === 'next' ? 1 : -1); return; }
+    if (!action) return;
+    // 카드 자체(또는 카드 안의 버튼 · 링크가 아닌 곳)에서 누른 키만 — 「더 보기」 · 듣기 같은 버튼은 제 Space · Enter를 그대로 쓴다.
+    const target = event.target;
+    const node = target?.closest?.('[data-lv-card]');
+    if (!node || (node !== target && target.closest?.('button, a'))) return;
+    const entry = cardEntries.get(node.dataset?.lvCard);
+    if (!entry) return;
+    if (action === 'next' || action === 'prev') { event.preventDefault(); moveFrom(entry.key, action === 'next' ? 1 : -1); return; }
     if (action === 'o' || action === 'x') {
       event.preventDefault();
-      // 진행 중(아는 단어 반영 중 · 공부 중으로 담는 중)인 카드는 클릭처럼 막는다 — 다음 카드로도 넘어가지 않는다.
-      if (saving.has(entry.key) || (mounted && !!userId && known.isPendingWord(conf.langCode, entry.key))) return;
-      if (action === 'o') { if (facetView) markFacetO(entry); else markO(entry); } else if (facetView) markFacetX(entry); else markX(entry);
+      // 게스트 — 클릭과 같은 로그인 안내만 띄우고 그 카드에 머문다(표시하지 않았는데 넘어가지 않게).
+      if (!userId) { if (action === 'o') { if (facetView) markFacetO(entry); else exclude(entry); } else if (facetView) markFacetX(entry); else markX(entry); return; }
+      // 진행 중(아는 단어 반영 중 · 공부 중으로 담는 중 · 탭 기록 보내는 중)인 카드는 클릭처럼 막는다 — 다음 카드로도 넘어가지 않는다.
+      if (saving.has(entry.key) || (mounted && known.isPendingWord(conf.langCode, entry.key)) || (facetView && facets.isPending?.(entry.key))) return;
+      // 키보드는 켜기만 한다(목업 「O 안다 · X 모른다」) — 이미 그 표시면 풀지 않고 다음 카드로만. 버튼 클릭(aria-pressed)은 그대로 켜고 끈다.
+      const mark = facetView ? facetMark(facetIdx, entry.key, facetView) : (knownSet.has(entry.key) ? 'o' : null);
+      if (action === 'o' && mark !== 'o') { if (facetView) markFacetO(entry); else exclude(entry); }
+      if (action === 'x' && !(facetView && mark === 'x')) { if (facetView) markFacetX(entry); else markX(entry); }
       moveFrom(entry.key, 1);
       return;
     }
