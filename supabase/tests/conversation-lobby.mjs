@@ -57,6 +57,16 @@ try {
     for (let i = 0; i < 5; i++) await say('English', `hi ${i}`);
     await fails(say('English', 'too many'), /lobby_rate_limited/);
   });
+  await check('쓴 시각·가림 시각은 서버가 정한다 — 과거 시각으로 도배 막기를 피하지 못한다', async () => {
+    await as(d);
+    const [hid] = (await db.query("insert into public.conversation_lobby_messages(language,body,hidden_at) values('English','x', now()) returning hidden_at")).rows;
+    assert.equal(hid.hidden_at, null);
+    const back = (body) => db.query("insert into public.conversation_lobby_messages(language,body,created_at) values('English',$1, now() - interval '1 day') returning created_at", [body]);
+    const [{ created_at }] = (await back('old 1')).rows;
+    assert.ok(Date.now() - new Date(created_at).getTime() < 60_000);
+    for (let i = 2; i < 5; i++) await back(`old ${i}`);
+    await fails(back('old 5'), /lobby_rate_limited/);
+  });
   await check('서로 다른 3명이 신고하면 가려지고, 쓴 사람·관리자만 본다', async () => {
     for (const who of [b, c]) { await as(who); await db.query('insert into public.conversation_lobby_reports(message_id) values($1)', [first]); }
     await as(d);

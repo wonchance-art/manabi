@@ -6,7 +6,8 @@
 --   · public.conversation_lobby_reports  — 신고(한 사람이 한 말에 한 번). 서로 다른 3명이 신고하면 그 말을 가린다
 --   · 접근 규칙: 로그인한 사람은 가려지지 않은 말을 읽고, 자기 이름으로만 쓰고, 자기 말만 지운다.
 --     관리자(public.is_admin())는 가린 말도 보고 어떤 말이든 지운다. 고치기(UPDATE)는 열지 않는다.
---   · 도배 막기: 한 사람이 10초에 5건을 넘게 쓰면 거절(lobby_rate_limited)
+--   · 도배 막기: 한 사람이 10초에 5건을 넘게 쓰면 거절(lobby_rate_limited). 쓴 시각·가림 시각은 서버가 정한다
+--     (보낸 값은 무시 — 과거 시각으로 써서 도배 막기를 피하던 길을 막는다, M09 #1337 6208592951)
 --   · 새 말 실시간 알림: supabase_realtime 발행에 이 표를 더한다(접근 규칙이 그대로 걸린다)
 --
 -- 적용: 운영은 #1337로 M09가 적용한다(supabase/migrations 자동 적용 경로는 쓰지 않는다). 한 번만 실행한다(새 표 생성).
@@ -43,7 +44,7 @@ CREATE POLICY lobby_messages_write ON public.conversation_lobby_messages FOR INS
 CREATE POLICY lobby_messages_delete ON public.conversation_lobby_messages FOR DELETE TO authenticated
   USING (user_id = auth.uid() OR public.is_admin());
 -- Supabase 기본 권한(새 표에 anon·authenticated 전부)을 걷고 필요한 것만 다시 준다 — 고치기·비우기는 아무에게도 없다.
-REVOKE ALL ON public.conversation_lobby_messages, public.conversation_lobby_reports FROM anon, authenticated;
+REVOKE ALL ON public.conversation_lobby_messages, public.conversation_lobby_reports FROM PUBLIC, anon, authenticated;
 GRANT SELECT, INSERT, DELETE ON public.conversation_lobby_messages TO authenticated;
 
 CREATE POLICY lobby_reports_own ON public.conversation_lobby_reports FOR SELECT TO authenticated
@@ -57,6 +58,8 @@ CREATE FUNCTION public.conversation_lobby_rate_limit()
 RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER SET search_path = '' AS $$
 BEGIN
   NEW.body := btrim(NEW.body);
+  NEW.created_at := now();
+  NEW.hidden_at := NULL;
   IF (SELECT count(*) FROM public.conversation_lobby_messages
       WHERE user_id = NEW.user_id AND created_at > now() - interval '10 seconds') >= 5 THEN
     RAISE EXCEPTION 'lobby_rate_limited' USING ERRCODE = 'P0001';
