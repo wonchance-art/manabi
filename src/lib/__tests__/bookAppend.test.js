@@ -95,7 +95,7 @@ describe('배선 계약 — 입구·등록·진입·완료', () => {
   });
 
   it('진입: 딥링크 ?book= · 자료실 책 카드 footer · 뷰어 마지막 과(내 책만)', () => {
-    expect(page).toContain("const appendBookKey = searchParams.get('book') || '';");
+    expect(page).toContain("const requestedBookKey = searchParams.get('book') || '';"); // 정본 key는 이어 적지 않는다(canonicalBookKey.test.js)
     expect(page).toContain('initialBookKey={appendBookKey}');
     const materials = read('src/views/MaterialsPage.jsx');
     expect(materials).toContain('href={`/materials/add?book=${encodeURIComponent(b.key)}`}');

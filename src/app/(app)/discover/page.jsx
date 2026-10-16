@@ -13,13 +13,18 @@ export default async function Page({searchParams}) {
   if(params?.view==='reading')return <div className="manabi-page"><header className="manabi-page-heading"><div><Link className="manabi-link" href="/discover">← 발견</Link><h1>함께 읽는 글</h1></div><Link className="manabi-link" href="/materials">내 서재</Link></header><LazyMaterialsPage libraryView="public"/></div>;
   // 지역학은 발견에서 내렸다(오너 「지역학 치워버려 지우진 말고」 2026-10-16 KST) — /studies 경로 · 콘텐츠는 그대로다.
   const client = suggestionClient();
-  const [book, suggestions, publicCount] = await Promise.all([
+  const [book, suggestions, looseCount, bookChapterCount] = await Promise.all([
     publishedReading().then(published => readingCatalog(published.book)).catch(() => null), // Shelf remains available.
     todaySuggestions(client),
     client.from('reading_materials').select('id', { count: 'exact', head: true }).eq('visibility', 'public')
       .not('title', 'ilike', SERIES_TITLE_ILIKE) // 목록(/discover?view=reading)과 같은 조건으로 센다
       .then(({ count, error }) => (error ? 0 : count || 0)),
+    // 비로그인(anon)은 책 장 행을 못 센다(anon_book_chapters_hidden, #1504) — 목록이 책 카드를 채우는 것과 같은
+    // public_book_catalog로 책 장을 따로 더한다. 안 더하면 정본 책 공개 뒤 「함께 읽는 글」 칸이 사라진다(리뷰 2026-10-17 KST).
+    client.rpc('public_book_catalog').then(({ data, error }) => (error || !Array.isArray(data) ? 0
+      : data.filter(row => !/^\[.*#/u.test(String(row.title || ''))).length)),
   ]);
+  const publicCount = looseCount + bookChapterCount;
   return <div className="manabi-page manabi-discover"><header className="manabi-page-heading"><h1>발견</h1></header>
     <DiscoverShelf suggestions={suggestions} publicCount={publicCount} date={kstDateString()} />
     {book && book.cultures.length > 0 && <section><div className="manabi-section-heading"><h2>일본어 N5 · 문화 읽기</h2><Link className="manabi-link" href={`/books/japanese-n5/materials?edition=${book.edition}`}>전체 보기</Link></div><div className="discover-cultures">{book.cultures.slice(0, 3).map((culture, index) => <Link href={bookHref(book.edition, culture.id)} key={culture.id}><span>0{index + 1}</span><h3>{culture.title}</h3><p>{culture.lead}</p></Link>)}</div></section>}

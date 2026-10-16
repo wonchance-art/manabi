@@ -49,6 +49,10 @@ describe('발견 화면 배선', () => {
     expect(fs.existsSync(path.join(ROOT, 'src/content/studies'))).toBe(true);
     expect(fs.existsSync(path.join(ROOT, 'src/components/web/DiscoveryExplorer.jsx'))).toBe(true);
   });
+  it('공개 글 수는 책 장도 센다 — 비로그인은 책 장 행을 못 읽으니 public_book_catalog로 더한다', () => {
+    expect(page()).toContain("client.rpc('public_book_catalog')");
+    expect(page()).toContain('const publicCount = looseCount + bookChapterCount;');
+  });
   it('자료 목록 화면은 그 화면에서만 받는다 — 산책 · 서재 기본 화면 JS에 싣지 않는다(운영 약 119KB, 2026-10-17 KST)', () => {
     for (const file of ['src/app/(app)/discover/page.jsx', 'src/components/web/LibraryPage.jsx']) {
       expect(read(file)).not.toMatch(/import\s+\w+\s+from\s+'@\/views\/MaterialsPage'/);

@@ -28,6 +28,7 @@ import { createImportAttempt, saveImportOnce, interruptedImportJson, persistImpo
 import { useViewerLanguage } from '../lib/useViewerLanguage';
 import { VIEWER_LANGUAGES, viewerLanguageInfo } from '../lib/viewerLanguage';
 import './material-import.css';
+import { isCanonicalBookKey } from '../lib/canonicalBookKey';
 
 /** 입구 칩(자료 추가 정돈 R2) — 소스 순서 = 렌더 순서(PDF→EPUB→문장 목록→링크), 아래 렌더와 같은 차례. */
 const ENTRIES = [
@@ -163,7 +164,10 @@ function MaterialAddForm() {
     return () => { alive = false; };
   }, [user?.id]);
   const myBooks = useMemo(() => listAppendableBooks(myBookRows), [myBookRows]);
-  const appendBookKey = searchParams.get('book') || '';
+  // 정본 책(아오조라 · SE · 그림 책)에는 이어 적지 않는다 — 화면 입구를 막아도 옛 북마크 · 직접 주소(?book=aozora-…)로 들어오면
+  // 정본 책에 장이 더해져 게시가 409로 막혔다(리뷰 2026-10-17 KST). 정본 key면 새 자료 쓰기로 연다.
+  const requestedBookKey = searchParams.get('book') || '';
+  const appendBookKey = isCanonicalBookKey(requestedBookKey) ? '' : requestedBookKey;
   // 과당 문장 수 상속 — 가장 최근 등록된 챕터 한 행의 줄 수(문장 목록 책은 곧 과 크기). 못 읽으면 null.
   const inferPerChapter = async (key) => {
     const { data, error } = await supabase

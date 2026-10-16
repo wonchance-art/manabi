@@ -400,7 +400,9 @@ export default function MaterialsPage({ libraryView = null }) {
     queryKey: ['materials', tab, user?.id, langFilter, levelFilter, searchQuery, !!libraryView],
     queryFn: () => fetchMaterials({ tab, userId: user?.id, langFilter, levelFilter, searchQuery, includeOwnedPublic: !!libraryView }),
     // 기본 탭이 로그인 여부로 갈리므로 auth 확정 전에 쏘면 버릴 쿼리가 된다.
-    enabled: !!tab,
+    // 「함께 읽는 글」은 인증 확인 전에도 tab이 'public'이다 — 확인 전에 받으면 로그인 사용자에게도 게스트 목록(책 카드 「로그인하고 읽기」)이
+    // 한 번 그려지고 책 카탈로그 RPC를 한 번 더 부른다(리뷰 2026-10-17 KST). 확인이 끝난 뒤 한 번만 받는다.
+    enabled: !!tab && !(libraryView === 'public' && authLoading),
   });
 
   // 분석 중 자료는 상태 한 칸만 5초마다 본다 — 목록 전체(processed_json 통짜)를 다시 받지 않는다.

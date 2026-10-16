@@ -25,5 +25,7 @@ describe('정본 책 key 판정(isCanonicalBookKey)', () => {
     expect(chapters).toContain('const locked=isCanonicalBookKey(row.target_id)');
     expect(chapters).toMatch(/!locked&&expanded&&query\.isSuccess&&<button ref=\{addButton\}/);
     expect(chapters).toMatch(/!locked&&chapter\.order!=null&&<button/);
+    // 직접 주소(/materials/add?book=aozora-…)도 이어 적기 모드로 열지 않는다.
+    expect(read('src/views/MaterialAddPage.jsx')).toContain('const appendBookKey = isCanonicalBookKey(requestedBookKey) ? \'\' : requestedBookKey;');
   });
 });
