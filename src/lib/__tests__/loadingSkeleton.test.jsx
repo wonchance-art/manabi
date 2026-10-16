@@ -13,6 +13,7 @@ import HomeLoading from '../../app/(app)/home/loading';
 import ResumeTile from '../../components/learn/ResumeTile';
 import ParagraphTile from '../../components/learn/ParagraphTile';
 import { ReviewTile } from '../../components/learn/LearnTiles';
+import { LibraryShelfSkeleton, RecentReadsSkeleton, ShelfRowsSkeleton } from '../../components/library/LibrarySkeleton';
 
 // 로딩 스켈레톤(LOADING-SKELETON-001 — 오너 승인 2026-10-17 KST): 대기 화면을 스피너 · 대기 문구 대신 실제 화면의 칸 모양으로.
 // 실측 우선순위 ① 산책 /discover(탭 전환 스피너 0.25~0.4초) ② 배움 /home(라우트 0.15초 · 「읽던 위치 불러오는 중…」)
@@ -76,9 +77,28 @@ describe('② 배움 — home/loading.jsx와 화면 안 골격이 같은 칸', (
   });
 });
 
+describe('③ 서재 — 대기 문구 세 줄이 골격으로', () => {
+  it('로그인 확인 · 읽던 곳 · 자료 목록 골격', () => {
+    region(render(createElement(LibraryShelfSkeleton)), '서재');
+    region(render(createElement(RecentReadsSkeleton)), '읽던 곳');
+    const rows = render(createElement(ShelfRowsSkeleton));
+    region(rows, '자료 목록');
+    expect(rows.match(/<li class="shelf-row">/g)).toHaveLength(4);
+    expect(rows).toContain('shelf-cover shelf-cover--skeleton skeleton');
+  });
+  it('화면이 그 골격을 실제로 쓰고, 옛 대기 문구는 남지 않는다', () => {
+    const page = read('src/components/web/LibraryPage.jsx');
+    const shelf = read('src/components/library/LibraryShelf.jsx');
+    expect(page).toContain('{loading?<LibraryShelfSkeleton/>:user?');
+    expect(shelf).toContain('(recent.isPending||(recent.data?.items?.length>0))&&<RecentReadsSkeleton/>');
+    expect(shelf).toContain('{(list.isPending||(stale&&!items.length))&&<ShelfRowsSkeleton/>}');
+    for (const old of ['서재를 열고 있어요…', '읽던 곳을 확인하고 있어요…', '자료 목록 불러오는 중…</p>']) expect(page + shelf).not.toContain(old);
+  });
+});
+
 describe('부품 · 토큰 · 모션 축소', () => {
   it('골격 부품은 Skeleton.jsx 한 곳(재사용) — 새 화면은 거기서 가져온다', () => {
-    for (const file of ['src/app/(app)/discover/loading.jsx', 'src/components/learn/ResumeTile.jsx',
+    for (const file of ['src/app/(app)/discover/loading.jsx', 'src/components/library/LibrarySkeleton.jsx', 'src/components/learn/ResumeTile.jsx',
       'src/components/learn/ParagraphTile.jsx', 'src/components/learn/LearnTiles.jsx', 'src/components/learn/GoalTrackTile.jsx']) {
       expect(read(file)).toMatch(/import \{ SkeletonLine(?:, SkeletonRegion)? \} from '@\/components\/Skeleton';/);
     }

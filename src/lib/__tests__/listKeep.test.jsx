@@ -107,7 +107,7 @@ describe('서재 — 머리줄은 새 조건, 목록은 흐린 이전 결과, �
     expect(shelf).toContain('{list.isSuccess&&!stale&&!items.length&&<div className="shelf-empty">');
     expect(shelf).toContain('{list.hasNextPage&&!stale&&<button className="shelf-load-more"');
     expect(shelf).toContain('useEffect(()=>{if(!stale&&items.length<filters.shown&&hasNextPage');
-    expect(shelf).toContain('{(list.isPending||(stale&&!items.length))&&<p role="status" className="shelf-muted">자료 목록 불러오는 중…</p>}');
+    expect(shelf).toContain('{(list.isPending||(stale&&!items.length))&&<ShelfRowsSkeleton/>}');
     expect(shelf).toContain('disabled={busy||stale}');
   });
   it('머리줄(폴더 이름)은 데이터가 아니라 새 조건에서 바로 그린다', () => {

@@ -189,6 +189,10 @@
 .shelf-list-focus{transition:opacity var(--transition-fast)}
 .shelf-list-focus[aria-busy="true"]{opacity:.6}
 @media (prefers-reduced-motion:reduce){.shelf-list-focus{transition:none}}
+/* 골격(LOADING-SKELETON-001, LibrarySkeleton.jsx) — 표지 · 위치 버튼 · 자료 추가 단추와 같은 치수의 회색 칸. */
+.shelf-cover--skeleton{box-shadow:none}
+.shelf-skeleton-nav{display:flex;align-items:center;min-height:44px;padding:0 12px}
+.shelf-skeleton-button{border-radius:999px}
 @container(max-width:760px){
  .shelf-workspace{grid-template-columns:1fr;gap:0}
  .shelf-folder-nav{flex-direction:row;align-items:center;overflow-x:auto;white-space:nowrap;gap:4px;padding-top:10px;padding-bottom:5px}
