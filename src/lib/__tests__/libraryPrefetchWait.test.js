@@ -155,12 +155,21 @@ describe('⑵ 대화 조회 — 두 왕복을 동시에', () => {
     return { client: { from }, log };
   }
   it('대화 행과 숨긴 항목을 함께 띄워 한 왕복 시간 — 결과(휴지통 대화 · 일반 자료 제외)는 그대로', async () => {
-    const { client, log } = slowClient();
-    const started = Date.now();
-    const rows = await fetchConversations(client, 'u1');
-    expect(Date.now() - started).toBeLessThan(95);
-    expect(log.slice(0, 2).sort()).toEqual(['start library_item_state', 'start reading_materials']);
-    expect(rows.map((r) => r.id)).toEqual(['1']);
+    // 가짜 시계로 잰다 — 실제 시계(< 95ms)는 병렬 부하에서 134ms가 나와 흔들렸다(2026-10-17 KST 전체 게이트 실측).
+    vi.useFakeTimers();
+    try {
+      const { client, log } = slowClient();
+      let rows = null;
+      fetchConversations(client, 'u1').then((r) => { rows = r; });
+      await vi.advanceTimersByTimeAsync(50); // 한 왕복(50ms)만 흘린다 — 차례로 띄우면 두 왕복(100ms)이 있어야 끝난다.
+      expect(rows).not.toBeNull();
+      // 겹침: 첫 응답이 오기 전에 두 표가 모두 출발했다.
+      const firstEnd = log.findIndex((entry) => entry.startsWith('end '));
+      expect(log.slice(0, firstEnd).sort()).toEqual(['start library_item_state', 'start reading_materials']);
+      expect(rows.map((r) => r.id)).toEqual(['1']);
+    } finally {
+      vi.useRealTimers();
+    }
   });
   it('다른 화면이 쓰는 filterActiveSources는 같은 결과(숨긴 키 읽기 → 거르기)', async () => {
     const { client } = slowClient();
