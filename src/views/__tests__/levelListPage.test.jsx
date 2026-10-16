@@ -187,6 +187,17 @@ describe('머리 · 진도 · X 펼침(LEVEL-FLOW-001 — 디자인 검토 2026-
     expect(fs.readFileSync('src/components/levels/level-list.css', 'utf8')).toContain('.lv-nav[hidden]{display:none}');
   });
 
+  it('넓은 화면 균형: 묶음은 가운데 · 단어 목록은 목차 없이 680px 한 줄 + 품사 칩(오너 2026-10-16 「1440에서 균형」)', async () => {
+    const css = fs.readFileSync('src/components/levels/level-list.css', 'utf8');
+    expect(css).toContain('.lv-page>*{max-width:904px;margin-inline:auto}');
+    expect(css).toContain('.lv-page--vocab>*{max-width:680px}');
+    expect(css).toContain('.lv-page--bunkei .lv-chips,.lv-page--vocab .lv-chips{display:flex}');
+    expect(css).toMatch(/^\.lv-chips\{[^}]*margin:18px auto 0;/m); // 칩 줄도 가운데(margin 단축형이 margin-inline:auto를 지우지 않게)
+    const html = await render('chinese', 'vocab', 'h1');
+    expect(html).not.toMatch(/lv-tocnav|lv-toc/);
+    expect(html).toContain('<nav class="lv-chips" aria-label="주제">');
+  });
+
   it('문형 · 한자는 그대로 펼친 머리(붙지 않음 · ▾ 없음)', async () => {
     for (const [kind, level] of [['bunkei', 'h1'], ['hanzi', 'h1']]) {
       const html = await render('chinese', kind, level);

@@ -16,7 +16,9 @@
 .lv-tile__go:hover{color:var(--ja)}
 
 /* 목록 화면 */
-.lv-page>*{max-width:904px}
+/* 넓은 화면 균형(오너 2026-10-16 「1440에서 균형」) — 묶음은 가운데. 단어 목록은 목차 없이 680px 한 줄(폰과 같은 구조). */
+.lv-page>*{max-width:904px;margin-inline:auto}
+.lv-page--vocab>*{max-width:680px}
 .lv-crumb{margin:0;font-size:13px}
 .lv-crumb a{color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;min-height:44px}
 /* 머리(디자인 검토 2026-10-16 A안) — 단어 목록은 한 덩어리로 화면 위에 붙어 다닌다: 제목 ▾ · 찾기 · ⚙ / 진도 막대 한 줄 / 보기 스위치.
@@ -67,7 +69,7 @@
 .lv-switch i::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--lv-card);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 25%,transparent);transition:transform .15s ease}
 .lv-switch[aria-checked=true] i{background:var(--ink)}
 .lv-switch[aria-checked=true] i::after{transform:translateX(16px)}
-.lv-view{display:flex;gap:2px;padding:3px;border-radius:12px;background:var(--lv-chip);max-width:520px}
+.lv-view{display:flex;gap:2px;padding:3px;border-radius:12px;background:var(--lv-chip)}
 .lv-view button{flex:1 1 0;min-height:40px;border:0;border-radius:9px;background:none;font:inherit;font-size:14px;color:var(--muted);cursor:pointer}
 .lv-view button:hover{color:var(--ink)}
 .lv-view button[aria-pressed=true]{background:var(--lv-card);color:var(--ink);font-weight:700;box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 12%,transparent)}
@@ -98,14 +100,9 @@
 @keyframes lv-time{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 .lv-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .lv-sr:focus-visible{position:static;width:auto;height:auto;margin:0;clip:auto;padding:0 12px;min-height:44px;border-radius:999px;background:var(--lv-chip);color:var(--ink);font-size:13px}
-.lv-split{display:grid;grid-template-columns:168px minmax(0,680px);gap:56px;margin-top:24px}
-.lv-split--wide{grid-template-columns:minmax(0,1fr)}
-.lv-toc{list-style:none;margin:0;padding:0;font-size:13px;position:sticky;top:calc(var(--gnb-height,78px) + var(--lv-bar-h,0px) + 16px);align-self:start;max-height:calc(100vh - var(--gnb-height,78px) - var(--lv-bar-h,0px) - 32px);overflow:auto}
-.lv-toc a{display:block;padding:6px 0 6px 14px;color:var(--muted);text-decoration:none;line-height:1.5}
-.lv-toc a[aria-current=true]{color:var(--ink);font-weight:700;position:relative}
-.lv-toc a[aria-current=true]::before{content:'';position:absolute;left:0;top:calc(.75em + 3px);width:6px;height:6px;border-radius:50%;background:var(--ja)}
-.lv-chips{display:none;gap:8px;overflow-x:auto;margin:18px 0 0;padding-bottom:4px;scrollbar-width:none}
-.lv-page--bunkei .lv-chips{display:flex}
+.lv-split{display:grid;grid-template-columns:minmax(0,1fr);margin-top:24px}
+.lv-chips{display:none;gap:8px;overflow-x:auto;margin:18px auto 0;padding-bottom:4px;scrollbar-width:none}
+.lv-page--bunkei .lv-chips,.lv-page--vocab .lv-chips{display:flex}
 .lv-chips a{flex:none;font-size:12.5px;padding:0 14px;min-height:44px;display:inline-flex;align-items:center;border-radius:999px;background:var(--lv-chip);color:var(--muted);text-decoration:none}
 .lv-chips a[aria-current=true]{background:var(--ink);color:var(--paper)}
 .lv-col{min-width:0}
@@ -177,14 +174,12 @@
 .lv-page :focus-visible,.lv-shelf :focus-visible{outline:2px solid var(--ja);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){.lv-reveal,.lv-entry[data-peek=closing] .lv-reveal,.lv-reveal__time{animation:none}.lv-navbtn svg,.lv-meter i{transition:none}.lv-fab,.lv-switch i,.lv-switch i::after{transition:none}.lv-fab--save:hover,.lv-fab--save:active,.lv-fab--ex:active,.lv-fab--o:active,.lv-fab--x:active{transform:none}.lv-fab--busy svg{animation:none}}
 @container manabi-shell (max-width:900px){
-  .lv-split{grid-template-columns:minmax(0,1fr);margin-top:22px}
-  .lv-toc,.lv-tocnav{display:none}
+  .lv-split{margin-top:22px}
   .lv-chips{display:flex}
   .lv-tiles,.lv-tiles--6{grid-template-columns:repeat(2,minmax(0,1fr))}
   .lv-bar:not(.lv-bar--sticky){grid-template-columns:minmax(0,1fr)}
   .lv-head h1{font-size:30px}
   .lv-bar--sticky .lv-head h1{font-size:21px}
-  .lv-view{max-width:none}
   .lv-hw{font-size:23px}
   .lv-entry{padding:16px 16px 18px;display:flex;flex-direction:column}
   .lv-entry--solo{display:block}
@@ -243,8 +238,6 @@
 .lv-page--vocab[data-language="zh"] .lv-switch{padding-block:10px;line-height:1.6}
 .lv-page--vocab[data-language="zh"] .lv-switch small{font-size:13px;line-height:1.6}
 @container manabi-shell (max-width:900px){
-  .lv-page--vocab[data-language="zh"] .lv-split{gap:0}
-  .lv-page--vocab[data-language="zh"] .lv-split>nav[aria-label="주제 목차"]{display:none}
   .lv-page--vocab[data-language="zh"] .lv-entry{padding:18px}
   .lv-page--vocab[data-language="zh"] .lv-acts{align-self:stretch;justify-content:flex-end;margin:18px 0 0;gap:10px}
   .lv-page--vocab[data-language="zh"] .lv-acts .lv-fab{box-sizing:border-box;background-clip:border-box}
