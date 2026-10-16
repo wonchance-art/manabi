@@ -7,7 +7,7 @@ import { sliceBetween } from '../../lib/__tests__/helpers/sliceBetween';
 const read = (file) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
 
 describe('P1–P5 초기 전송 성능 수리 회귀', () => {
-  it('P1: root는 실제 sans weight만 로드하고 serif는 app scope에 둔다', () => {
+  it('P1: root는 실제 sans weight만 로드하고 serif는 app scope, 번체 TC는 세그먼트 scope에 둔다', () => {
     const rootLayout = read('src/app/layout.jsx');
     const appLayout = read('src/app/(app)/layout.jsx');
     const css = read('src/index.css');
@@ -15,6 +15,8 @@ describe('P1–P5 초기 전송 성능 수리 회귀', () => {
     expect(rootLayout).not.toContain("'300'");
     expect(rootLayout).not.toContain('Noto_Serif_KR');
     expect(rootLayout).toContain('Noto_Sans_JP');
+    // 대만 번체 TC는 루트가 아니라 번체를 그리는 세그먼트 범위(TcFontScope)에서만 싣는다 — 지도는 src/app/__tests__/fontScope.test.js.
+    expect(rootLayout).not.toContain('Noto_Sans_TC');
     expect(rootLayout).toContain("subsets: ['latin']");
     expect(appLayout).toContain('Noto_Serif_KR');
     expect(appLayout).toContain('className={notoSerifKr.variable}');

@@ -15,7 +15,7 @@
 }
 .viewer-layout[data-reader-theme="light"] { --reader-paper:#fff; --reader-surface:#f4f6f5; }
 .viewer-layout:lang(zh-CN), .reader-modal:lang(zh-CN) {font-family:var(--font-noto-sc), 'Noto Sans SC', var(--font-noto-kr), sans-serif;}
-.viewer-layout:lang(zh-TW), .reader-modal:lang(zh-TW) {font-family:var(--font-noto-tc), 'Noto Sans TC', var(--font-noto-kr), sans-serif;}
+.viewer-layout:lang(zh-TW), .reader-modal:lang(zh-TW) {font-family:var(--font-noto-tc, 'Noto Sans TC'), var(--font-noto-kr, 'Noto Sans KR'), sans-serif;}
 .viewer-layout :is(.reader-area,.reader-card-source,.reader-settings__preview):lang(ko),
 .viewer-layout :is(.reader-area,.reader-card-source,.reader-settings__preview) :lang(ko) {font-family:var(--reader-font), 'Noto Sans KR', sans-serif;}
 .viewer-layout[data-reader-theme="dark"],
@@ -405,7 +405,7 @@
 .reader-card-glyph__label {flex:none;width:1em;font-size:.8125rem;line-height:inherit;color:var(--reader-muted);text-align:center;}
 .reader-card-glyph[data-layout="table"] .reader-card-glyph__label {width:1.75rem;font-size:.8125rem;text-align:start;}
 .reader-card-glyph__form {display:inline-flex;flex:none;}
-.viewer-layout .reader-card-glyph [lang="zh-Hant-TW"] {font-family:var(--font-noto-tc),'Noto Sans TC',var(--font-noto-kr),sans-serif;}
+.viewer-layout .reader-card-glyph [lang="zh-Hant-TW"] {font-family:var(--font-noto-tc, 'Noto Sans TC'),var(--font-noto-kr, 'Noto Sans KR'),sans-serif;}
 .viewer-layout .reader-card-glyph [lang="ja"] {font-family:var(--font-noto-jp),'Noto Sans JP',var(--font-noto-kr),sans-serif;}
 .reader-card-glyph__ch {display:inline-block;width:1em;text-align:center;}
 .reader-card-glyph__ch.is-diff {color:var(--reader-accent);}

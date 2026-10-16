@@ -1,4 +1,4 @@
-import { Inter, Noto_Sans, Noto_Sans_KR, Noto_Sans_JP, Noto_Sans_SC, Noto_Sans_TC } from 'next/font/google';
+import { Inter, Noto_Sans, Noto_Sans_KR, Noto_Sans_JP, Noto_Sans_SC } from 'next/font/google';
 import '../index.css';
 import Providers from './providers';
 
@@ -34,13 +34,8 @@ const notoSc = Noto_Sans_SC({
   display: 'swap',
 });
 
-// 대만 번체 안내·해설은 간체 자형과 독립된 글꼴을 사용한다.
-const notoTc = Noto_Sans_TC({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
-  variable: '--font-noto-tc',
-  display: 'swap',
-});
+// 대만 번체(Noto Sans TC)는 번체를 그리는 세그먼트(viewer · pdf · suggestions · chinese)만 싣는다 —
+// src/components/fonts/TcFontScope.jsx. 루트에 두면 모든 페이지가 TC @font-face 325개를 받았다.
 
 // 병음 전용 라틴 — 성조 부호(ā á ǎ à…) 전 범위 보장, SC와 같은 계열(오너 확정).
 const notoSans = Noto_Sans({
@@ -114,7 +109,7 @@ export default function RootLayout({ children }) {
           />
         )}
       </head>
-      <body className={`${inter.variable} ${notoKr.variable} ${notoJp.variable} ${notoSc.variable} ${notoSans.variable} ${notoTc.variable}`}>
+      <body className={`${inter.variable} ${notoKr.variable} ${notoJp.variable} ${notoSc.variable} ${notoSans.variable}`}>
         <Providers>{children}</Providers>
       </body>
     </html>
