@@ -6,8 +6,9 @@
 //   node scripts/ux-audit.mjs --mobile            # 휴대폰 폭(390)도 함께 — 기본은 웹(데스크톱)만(오너 2026-10-16)
 //   node scripts/ux-audit.mjs --out <dir>         # 기본 .ux-audit/<KST 날짜>
 //
-// 산출: <out>/<viewport>/<route>.png + report.json + report.md. 비로그인 화면만 잰다 — 로그인 화면(복습 · 뷰어 등)은
-// 이 스크립트로 보이지 않으므로 보고서가 「미검증」으로 표시하고, /ux-review가 코드 대조로만 다룬다(2026-10-16 오판 선례).
+// 산출: <out>/<viewport>/<route>.png + report.json + report.md. 비로그인 화면만 잰다 — 로그인 화면 중 복습 진행 · 끝 화면 ·
+// 서재 목록 · 뷰어는 scripts/ux-audit-auth.mjs(e2e 합성 로그인)가 따로 잰다. 나머지 로그인 화면은 보고서가 「미검증」으로
+// 표시하고, /ux-review가 코드 대조로만 다룬다(2026-10-16 오판 선례).
 import { spawn } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -22,15 +23,17 @@ export const VIEWPORTS = Object.freeze({
 // 메뉴 넷 + 메뉴 밖 입구 · 오류 화면. 로그인 전용 화면은 넣지 않는다(게스트로는 다른 화면이 보인다).
 export const MISSING_ROUTE = '/__ux-audit-missing__';
 export const ROUTES = Object.freeze([...MAIN_NAV.map(item => item.href), '/vocab', '/auth', '/offline', MISSING_ROUTE]);
-const LOGIN_ONLY = Object.freeze(['복습 진행 · 끝 화면', '뷰어(읽기)', '학습 세션(/study)', '서재 목록(자료 있음)', '대화 진행']);
+// 앞의 넷은 ux-audit-auth.mjs가 합성 로그인으로 잰다(AUTH_COVERED) — 이 스크립트 보고서에서는 그쪽 보고서를 가리킨다.
+export const AUTH_COVERED = Object.freeze(['복습 진행 · 끝 화면', '뷰어(읽기)', '서재 목록(자료 있음)']);
+const LOGIN_ONLY = Object.freeze(['학습 세션(/study)', '대화 진행']);
 
 export function kstStamp(date = new Date()) {
   return new Date(date.getTime() + 9 * 3600e3).toISOString().slice(0, 16).replace('T', ' ');
 }
 export const routeSlug = route => route.replace(/^\/$/, 'root').replace(/^\//, '').replace(/[^\w가-힣-]+/g, '_') || 'root';
 
-/** 페이지 안에서 재는 값 — 넘침 · 빈 화면 비율 · 남은 스피너 · 메뉴 이름. 순수 DOM 측정(판단 없음). */
-function measure(navLabels) {
+/** 페이지 안에서 재는 값 — 넘침 · 빈 화면 비율 · 남은 스피너 · 메뉴 이름. 순수 DOM 측정(판단 없음). 로그인 점검(ux-audit-auth)도 쓴다. */
+export function measure(navLabels) {
   const doc = document.documentElement;
   const visible = el => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none'; };
   const fixed = el => { for (let n = el; n && n !== document.body; n = n.parentElement) if (['fixed', 'sticky'].includes(getComputedStyle(n).position)) return true; return false; };
@@ -84,6 +87,7 @@ function markdown({ stamp, baseURL, rows, flags }) {
     '| 폭 | 경로 | 로드(ms) | 넘침 | 빈 아래 | 대기표시 | 콘솔 오류 | 메뉴 |', '|---|---|---:|:-:|---:|:-:|---:|---|'];
   for (const r of rows) lines.push(`| ${r.viewport} | \`${r.route}\`${r.finalPath !== r.route ? ` → \`${r.finalPath}\`` : ''} | ${r.loadMs} | ${r.overflowX ? '⚠' : '·'} | ${Math.round((r.emptyBelowRatio || 0) * 100)}% | ${r.spinnerVisible || r.loadingText ? '⚠' : '·'} | ${r.consoleErrors.length} | ${(r.navLabels || []).slice(0, 6).join(' · ')} |`);
   lines.push('', '## 기계 플래그(판단 전 후보)', '', ...(flags.length ? flags.map(f => `- **${f.kind}** ${f.at} — ${f.detail}`) : ['- 없음']));
+  lines.push('', '## 로그인 화면 — `node scripts/ux-audit-auth.mjs --start`(합성 로그인) 보고서에서 볼 것', '', ...AUTH_COVERED.map(s => `- ${s}`));
   lines.push('', '## 미검증(로그인 필요 — 코드 대조로만 다룰 것)', '', ...LOGIN_ONLY.map(s => `- ${s}`), '');
   return lines.join('\n');
 }
