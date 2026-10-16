@@ -963,6 +963,9 @@
     main 병합(#1508 HSK 7–9) 충돌 2곳 해소. keepalive 실측: Chromium 탭 닫기 · 새로 고침 · 다른 출처 이동 모두 사전 요청 + 본 요청 도착(Safari · Firefox 미측정).
   · 같은 PR(교차 리뷰 수리): 닫힘 전송 정본 하나(src/lib/keepalive.js — 문법 · 아는 단어 공용, 두 번째 구현 금지 계약) · 대기 화면 뒤 실제 제목이
     오면 포커스를 한 번 그리로(2초 · 조작 시 멈춤) · SDK 받기 재시도 동안은 loading(손님 깜빡임 없음, 상한 뒤에만 로그아웃 확정).
+  · 같은 PR(LIBRARY-PREFETCH-002): 서재 미리 받기는 토큰이 120초 미만 남으면 건너뜀(서버 갱신 0) · ES256 서명 서버 검증(getClaims, 인증 왕복 0) ·
+    대화 조회 동시 — GNB 서재 → 최종 배치 0.51초 → 0.35초 · CLS 0. 화면 읽기 숨김 정본(.sr-only 계열 한 곳) · 동작 줄이기 판정 7곳 정본화.
+    낡은 e2e 정리(features-r2 · 원래 위치 EPUB 통과 · viewer-reading-controls 진행) + 실제 회귀 2건(줄 머리 그립 화면 밖 · 긴 중국어 토큰 넘침).
   · 보류: CJK 가변 weight(@font-face −67%, brotli 전송 −2%) — 600 · 650 · 800 · 300 굵기가 실제 값으로 바뀌는 시각 변경이라 오너 확인 뒤.
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
