@@ -12,9 +12,21 @@ beforeEach(()=>{
  mock.requireUser.mockResolvedValue({user:{id:'student'}});
  mock.authorize.mockResolvedValue({root:{id:1},team:{pwGen:2},admin:{rpc:mock.rpc,from:mock.from}});
  mock.rpc.mockImplementation(async name=>({data:name==='classroom_update_copy'?state.copy:state,error:null}));
- const q={select:()=>q,eq:()=>q,order:()=>q,range:async()=>({data:[],error:null})};mock.from.mockReturnValue(q);
+ const q={select:()=>q,eq:()=>q,order:()=>q,range:async()=>({data:[],error:null})};mock.from.mockImplementation(table=>table==='reading_materials'?sourceQuery({book:{key:'bk_1',order:1}}):q);
 });
+// 원본 판정(정본 책 차단, BOOK-GUEST-GATE-1) — RPC 전에 원본 metadata만 읽는다.
+const sourceQuery=(metadata,error=null)=>{const q={select:()=>q,eq:()=>q,maybeSingle:async()=>({data:metadata?{metadata}:null,error})};return q;};
+const correctionReads=()=>mock.from.mock.calls.filter(([table])=>table==='token_corrections').length;
 describe('수업 사본 API 권한·갱신 계약',()=>{
+ it('never opens a canonical book as a class copy — rejected before the RPC creates anything',async()=>{
+  for(const provider of ['aozora','standardebooks','art']){
+   mock.rpc.mockClear();mock.from.mockImplementation(table=>table==='reading_materials'?sourceQuery({book:{key:'se-alice',order:1},literature:{provider}}):null);
+   const response=await request({sourceId:12,action:'open'});expect(response.status,provider).toBe(403);expect(mock.rpc).not.toHaveBeenCalled();
+  }
+ });
+ it('source lookup failure is a server error, not a copy',async()=>{
+  mock.from.mockImplementation(()=>sourceQuery(null,{code:'XX000'}));expect((await request({sourceId:12,action:'open'})).status).toBe(500);expect(mock.rpc).not.toHaveBeenCalled();
+ });
  it('requires both account and current class capability',async()=>{
   mock.requireUser.mockResolvedValueOnce({error:'login',status:401});expect((await request({sourceId:12,action:'open'})).status).toBe(401);expect(mock.authorize).not.toHaveBeenCalled();
   mock.authorize.mockResolvedValueOnce({error:Response.json({error:'expired'},{status:401})});expect((await request({sourceId:12,action:'open'})).status).toBe(401);expect(mock.rpc).not.toHaveBeenCalled();
@@ -24,16 +36,16 @@ describe('수업 사본 API 권한·갱신 계약',()=>{
   expect(mock.rpc).toHaveBeenCalledWith('classroom_copy_state',{p_owner:'student',p_root:1,p_generation:2,p_source:'12',p_create:true,p_preferred:null});
  });
  it('never treats database failure as missing copy',async()=>{
-  mock.rpc.mockResolvedValue({data:null,error:{code:'XX000'}});expect((await request({sourceId:12,action:'open'})).status).toBe(500);expect(mock.rpc).toHaveBeenCalledTimes(1);expect(mock.from).not.toHaveBeenCalled();
+  mock.rpc.mockResolvedValue({data:null,error:{code:'XX000'}});expect((await request({sourceId:12,action:'open'})).status).toBe(500);expect(mock.rpc).toHaveBeenCalledTimes(1);expect(correctionReads()).toBe(0);
  });
  it('returns explicit legacy duplicate choices without overwriting rows',async()=>{
   mock.rpc.mockResolvedValue({data:{state:'choose',candidates:[{id:30},{id:31}]}});const r=await request({sourceId:12,action:'open'});expect((await r.json()).state).toBe('choose');expect(mock.rpc).toHaveBeenCalledTimes(1);
  });
  it('fails closed if server returns a different owner',async()=>{
-  state.copy.owner_id='victim';expect((await request({sourceId:12,action:'inspect'})).status).toBe(403);expect(mock.from).not.toHaveBeenCalled();
+  state.copy.owner_id='victim';expect((await request({sourceId:12,action:'inspect'})).status).toBe(403);expect(correctionReads()).toBe(0);
  });
  it('blocks updates if correction history cannot be read',async()=>{
-  const q={select:()=>q,eq:()=>q,order:()=>q,range:async()=>({error:{code:'offline'}})};mock.from.mockReturnValue(q);expect((await request({sourceId:12,action:'update'})).status).toBe(500);expect(mock.rpc).toHaveBeenCalledTimes(1);
+  const q={select:()=>q,eq:()=>q,order:()=>q,range:async()=>({error:{code:'offline'}})};mock.from.mockImplementation(table=>table==='reading_materials'?sourceQuery({}):q);expect((await request({sourceId:12,action:'update'})).status).toBe(500);expect(mock.rpc).toHaveBeenCalledTimes(1);
  });
  it('requires the reviewed source AND personal copy revision',async()=>{
   state.source.processed_json.dictionary.id_0_one.meaning='새 뜻';

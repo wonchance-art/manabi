@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { withGuestBookCatalog } from '../guestBookCatalog.js';
+import { indexFromRows, isProtectedBookMetadata, materialBelongsToTeam } from '../server/classIndex.js';
 import { sliceBetween } from './helpers/sliceBetween';
 
 // 비로그인은 책 목록만 보고, 여는 것은 로그인 뒤(BOOK-GUEST-GATE-1, 오너 「권장대로 진행」 2026-10-16 KST).
@@ -72,5 +73,27 @@ describe('화면 배선', () => {
   it('뷰어 오프라인 사본: 로그아웃 뒤에는 책 장 사본을 열지 않는다', () => {
     const fetcher = sliceBetween(read('src/views/ViewerPage.jsx'), 'async function fetchMaterial(id) {', '\n}\n');
     expect(fetcher).toContain('if (getBook(cached.processed_json?.metadata) && !(await supabase.auth.getSession()).data?.session) throw err;');
+  });
+});
+
+describe('팀 화면 — 수업 암호로 열려도 정본 책은 내주지 않는다(오너 「팀 화면 접근은 가능해도 정본 책 접근은 못하도록」)', () => {
+  const root = { id: 1, owner_id: 'admin' };
+  const team = { key: 'tm1', bookKey: 'se-alice' };
+  const row = (id, provider) => ({ id, owner_id: 'admin', title: `ch${id}`, raw_text: 'text', processed_json: { status: 'completed',
+    metadata: { book: { key: 'se-alice', title: 'Alice', order: id, total: 3 }, ...(provider ? { literature: { provider } } : {}) } } });
+  it('정본(青空文庫 · Standard Ebooks) · 그림 큐레이션 책만 막는다 — 사용자가 만든 책은 그대로', () => {
+    for (const provider of ['aozora', 'standardebooks', 'art']) expect(isProtectedBookMetadata({ literature: { provider } }), provider).toBe(true);
+    for (const metadata of [{}, { book: { key: 'bk_1' } }, { literature: { provider: 'youtube' } }, undefined]) expect(isProtectedBookMetadata(metadata)).toBe(false);
+  });
+  it('목차에서 빠지고, 장 열기 · 출처(loadTeamMaterial)도 null', () => {
+    expect(indexFromRows({ team, chapterRows: [row(1, 'standardebooks'), row(2, 'aozora'), row(3, null)] }).chapters.map((chapter) => chapter.id)).toEqual([3]);
+    expect(materialBelongsToTeam(row(1, 'standardebooks'), team, root)).toBe(null);
+    expect(materialBelongsToTeam(row(2, 'art'), team, root)).toBe(null);
+    expect(materialBelongsToTeam(row(3, null), team, root)).toBe('chapter');
+  });
+  it('사본 만들기(copy 라우트)도 같은 판정으로 막는다 — RPC 전에', () => {
+    const copy = read('src/app/api/class/[team]/copy/route.js');
+    expect(copy).toContain("if(source&&isProtectedBookMetadata(source.metadata))return reply({error:'정본 책은 수업 자료로 열 수 없어요.'},403);");
+    expect(copy.indexOf('isProtectedBookMetadata(source.metadata)')).toBeLessThan(copy.indexOf("rpc('classroom_copy_state'"));
   });
 });
