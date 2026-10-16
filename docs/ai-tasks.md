@@ -970,6 +970,8 @@
     교재 본문 hash 진입 때 표지 비침 0프레임 · 문형 목록 뒤로가기도 기준 칸. CI c8a3c2f 전부 green.
   · 같은 PR: 이동 뒤 포커스 — 보이는 제목만 · 사라진 제목은 2초 안에 다시 옮김(교재 카드 표지→본문) · 단어 목록 pagehide 기록은 bfcache 아닐 때만
     (즉시 뒤로가기 회귀 수리) · viewer-reading-controls 실제 글꼴 전 구간 34/34. bfcache: 나머지 화면은 RSC prefetch no-store가 막음(오너 결정).
+  · 같은 PR(BOOK-ENTRY-SKELETON-001): 교재 본문 hash 하드 로드 빈 자리 → 본문 골격(빈 프레임 0 · 표지 0) · 교재 pagehide 기록도 bfcache 아닐 때만 ·
+    자료 추가 beforeunload는 초안이 있을 때만. 남음: 교재 읽기 API no-store(사용자별 진도 섞임 확인 뒤 결정).
   · 보류: CJK 가변 weight(@font-face −67%, brotli 전송 −2%) — 600 · 650 · 800 · 300 굵기가 실제 값으로 바뀌는 시각 변경이라 오너 확인 뒤.
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
