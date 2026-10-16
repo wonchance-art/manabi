@@ -663,14 +663,18 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
     };
     const scroll = () => { clearTimeout(timer); timer = setTimeout(remember, 200); };
     const click = (event) => { if (event.target?.closest?.('a[href]')) remember(); };
+    // 떠날 때 — bfcache로 들어가는 길(persisted)이면 쓰지 않는다. pagehide 안의 history.replaceState는 Chromium이 그 페이지를
+    // bfcache에서 내쫓는다(IgnoreEventAndEvict, 실측 2026-10-17 KST) — 즉시 뒤로가기가 새로 불러오기가 됐다. bfcache로 돌아오면
+    // 화면 · 스크롤이 그대로라 자리를 따로 남길 필요가 없고, 링크 누름(capture)과 굴리기 멈춤이 이미 이 기록에 남겨 둔다.
+    const hide = (event) => { if (!event.persisted) remember(); };
     window.addEventListener('scroll', scroll, { passive: true });
     document.addEventListener('click', click, true);
-    window.addEventListener('pagehide', remember);
+    window.addEventListener('pagehide', hide);
     return () => {
       clearTimeout(timer);
       window.removeEventListener('scroll', scroll);
       document.removeEventListener('click', click, true);
-      window.removeEventListener('pagehide', remember);
+      window.removeEventListener('pagehide', hide);
     };
   }, [hanzi, vocab]);
 

@@ -72,12 +72,15 @@ describe('배선 — LevelListPage', () => {
     expect(css).toContain('.lv-group{content-visibility:auto;contain-intrinsic-size:auto 1200px;'); // 평소 생략(DOM 예산)은 그대로
   });
   it('남기기: 굴리기 멈춤 · 링크 누름(GNB 포함, capture) · 떠날 때 — 이 기록에, 다른 주소로 떠난 뒤 · 되살리는 중에는 쓰지 않는다', () => {
-    const save = sliceBetween(page, 'const remember = () => {', 'window.removeEventListener(\'pagehide\', remember);');
+    const save = sliceBetween(page, 'const remember = () => {', 'window.removeEventListener(\'pagehide\', hide);');
     expect(save).toContain('if (placeRef.current || window.location.pathname !== path) return;');
     expect(save).toContain("window.history.replaceState(withLevelPlace(window.history.state, place), '', window.location.href);");
     expect(save).toContain('const place = { path, limit: limitRef.current, query: queryRef.current, y: Math.round(window.scrollY), ...anchor() };');
     expect(save).toContain("document.addEventListener('click', click, true);");
-    expect(save).toContain("window.addEventListener('pagehide', remember);");
+    // 떠날 때는 bfcache로 들어가지 않는 길에서만 — pagehide 안 replaceState는 bfcache에서 내쫓긴다(IgnoreEventAndEvict 실측).
+    expect(save).toContain('const hide = (event) => { if (!event.persisted) remember(); };');
+    expect(save).toContain("window.addEventListener('pagehide', hide);");
+    expect(page).not.toContain("window.addEventListener('pagehide', remember);");
     expect(save).toContain('timer = setTimeout(remember, 200);');
   });
   it('문형도 기준 칸으로 — 주제 칩으로 건너뛴 뒤 돌아와도 세로 위치가 아니라 같은 문형에', () => {
