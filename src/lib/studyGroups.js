@@ -6,6 +6,7 @@
  */
 import { supabase } from './supabase';
 import { kstWeekStartMs } from './growthStats';
+import { SERIES_TITLE_ILIKE } from './constants';
 
 /** 그룹 상한(§9-2 오너 확정) — 서버 RPC와 같은 값(계약 테스트로 동치 핀). */
 export const MAX_GROUPS_PER_USER = 3;
@@ -190,7 +191,7 @@ export async function fetchPublicMaterials(lang, search) {
     .from('reading_materials')
     .select('id, title, level:processed_json->metadata->>level')
     .eq('visibility', 'public')
-    .not('title', 'ilike', '[%#%]%')
+    .not('title', 'ilike', SERIES_TITLE_ILIKE)
     .order('created_at', { ascending: false })
     .limit(30);
   if (lang) query = query.eq('processed_json->metadata->>language', lang);
@@ -204,7 +205,7 @@ export async function fetchPublicMaterials(lang, search) {
 export async function fetchGroupMembers(groupId) {
   const { data, error } = await supabase
     .from('study_group_members')
-    .select('user_id, joined_at, author:profiles(display_name)')
+    .select('user_id, joined_at, author:public_profiles(display_name)')
     .eq('group_id', groupId)
     .order('joined_at', { ascending: true });
   if (error) throw error;
@@ -215,7 +216,7 @@ export async function fetchGroupMembers(groupId) {
 export async function fetchGroupComments(groupId, materialId) {
   const { data, error } = await supabase
     .from('study_group_comments')
-    .select('id, content, progress_pct, created_at, user_id, author:profiles(display_name)')
+    .select('id, content, progress_pct, created_at, user_id, author:public_profiles(display_name)')
     .eq('group_id', groupId)
     .eq('material_id', materialId)
     .order('created_at', { ascending: true })

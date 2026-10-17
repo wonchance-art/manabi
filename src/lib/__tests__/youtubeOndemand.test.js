@@ -142,7 +142,9 @@ describe('F R4 — 배선', () => {
   it('읽기 라우트가 on-demand 행을 거르지 않는다 — 이 한 줄이 없으면 카드가 0건이다', () => {
     // 실측으로 찾은 유일한 차단 지점. 단독 `.not(transcript, is, null)`이 되살아나면
     // 크론이 아무리 담아도 화면에 아무것도 안 뜬다.
-    const route = read('src/app/api/suggestions/today/route.js');
+    // 조회 정본은 todaySuggestions(라우트 · 발견 서가 공용, SHELF-001).
+    expect(read('src/app/api/suggestions/today/route.js')).toContain('todaySuggestions(');
+    const route = read('src/lib/server/suggestionReading.js');
     expect(route).toContain('ONDEMAND_SOURCE');
     expect(route).toMatch(/\.or\(/);
     expect(route).not.toMatch(/^\s*\.not\('transcript', 'is', null\)/m);

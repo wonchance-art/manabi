@@ -8,7 +8,7 @@ import {materialActivity,originalPositionKey} from '@/lib/libraryActivity';
 import useLibraryActivity from '@/components/library/useLibraryActivity';
 import useOriginalTextPosition from './useOriginalTextPosition';
 
-const PdfJsViewer=dynamic(()=>import('@/components/PdfJsViewer'),{ssr:false,loading:()=> <p role="status">PDF를 여는 중…</p>});
+const PdfJsViewer=dynamic(()=>import('@/components/PdfJsViewer'),{ssr:false,loading:()=> <p aria-busy="true">PDF를 여는 중…</p>});
 
 export default function OriginalFileReader({ material, asset, onSource, returnSource, sourceMaterial, initialLocator, restoreId, onPosition, canRecord }) {
   const key = originalPositionKey(material.owner_id,material.id,asset.hash);
@@ -103,7 +103,7 @@ export default function OriginalFileReader({ material, asset, onSource, returnSo
   useLibraryActivity(sourceMaterial?materialActivity(sourceMaterial,'original'):materialActivity(material,'original',asset.hash),rendered||chapters.length>0,originalElement);
   return <section ref={originalElement} className="original-file" onScrollCapture={visiblePdfPage} onWheelCapture={()=>{pageTransitionUntil.current=0;}} onTouchMoveCapture={()=>{pageTransitionUntil.current=0;}} aria-label={`${asset.name} 원본`}>
     <header><div><span className="manabi-eyebrow">{asset.kind.toUpperCase()} / ORIGINAL</span><h2>{asset.name}</h2></div>{data?.url && <a href={data.url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">원본 파일 열기 ↗</a>}</header>
-    {original.isPending && <p className="original-state" role="status">원본을 불러오고 있어요…</p>}
+    {original.isPending && <p className="original-state" aria-busy="true">원본을 불러오고 있어요…</p>}
     {original.isError && <div className="original-state" role="alert"><p>원본을 불러오지 못했어요. 글과 저장 기록은 그대로 남아 있어요.</p><button onClick={() => setRetry(value => value + 1)}>다시 시도</button></div>}
     {data?.unreadable && <div className="original-state" role="status"><p>이 EPUB은 여기서 본문을 펼칠 수 없어요. 위의 ‘원본 파일 열기’로 내려받아 읽을 수 있어요.</p><button onClick={() => setRetry(value => value + 1)}>다시 펼치기</button></div>}
     {data?.url && asset.kind === 'pdf' && initialPosition !== null && <div className="original-pdf"><PdfJsViewer key={retry} pdfUrl={data.url} initialPage={initialPosition} onPageChange={onPageChange} onReady={readyRef.current} onPageSource={onPageSource} /></div>}

@@ -7,7 +7,7 @@ import SuggestionReader from './SuggestionReader';
 import { VIEWER_LANGUAGES, textReadingSupported, viewerLanguageInfo } from '@/lib/viewerLanguage';
 import { LEVELS, MATERIAL_DIRECTION } from '@/lib/constants';
 import '@/components/notes/study-notes.css';
-const LegacyImport = dynamic(() => import('@/views/MaterialAddPage'), { loading: () => <p role="status">가져오기 도구를 여는 중…</p> });
+const LegacyImport = dynamic(() => import('@/views/MaterialAddPage'), { loading: () => <p aria-busy="true">가져오기 도구를 여는 중…</p> });
 
 export default function MaterialEntry() {
   const params = useSearchParams();

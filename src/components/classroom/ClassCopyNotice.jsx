@@ -20,7 +20,7 @@ export default function ClassCopyNotice({material,user,returnTo}){
     catch(e){setError(friendlyToastMessage(e));}finally{setBusy(false);}
   }
   return <div className="class-copy-notice">
-    {query.isLoading?<span role="status">수업의 새 내용을 확인하고 있어요…</span>:query.error?<span>새 내용을 확인하지 못했어요. <button onClick={()=>query.refetch()}>다시 시도</button></span>
+    {query.isLoading?<span aria-busy="true">수업의 새 내용을 확인하고 있어요…</span>:query.error?<span>새 내용을 확인하지 못했어요. <button onClick={()=>query.refetch()}>다시 시도</button></span>
       :state?.copyId&&String(state.copyId)!==String(material.id)?<span>별도로 보관한 사본이에요. 이 자료는 자동으로 바꾸지 않아요.</span>
       :['update','blocked'].includes(state?.state)?<><span>수업의 현재 내용과 차이가 있어요.</span><button ref={trigger} onClick={()=>{setOpen(true);requestAnimationFrame(()=>dialog.current?.focus());}}>변경 내용 보기</button></>:null}
     {open&&<div className="class-copy-overlay" onMouseDown={e=>{if(e.target===e.currentTarget&&!busy)close();}}><section ref={dialog} className="class-copy-dialog" role="dialog" aria-modal="true" aria-labelledby="class-copy-title" tabIndex={-1} onKeyDown={e=>{

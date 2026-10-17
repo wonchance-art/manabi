@@ -99,12 +99,12 @@ describe('그리기', () => {
 describe('배선 — 서재 카드·게시 화면·빌드', () => {
   it('서재 카드: 위키문헌 책은 초판 장정 표지 + 원제 + 한국어 제목 · 글자/단어 수 · 장 제목, 「다음 과 적기」 없음', () => {
     const page = read('src/views/MaterialsPage.jsx');
-    const props = sliceBetween(page, 'const world = work || english ? null : wikisourceWorkOfBook(b) || pdSiteWorkOfBook(b);', '} : null;');
+    const props = sliceBetween(page, 'const world = work || english || !canonicalCovers ? null : wikisourceWorkOfBook(b) || pdSiteWorkOfBook(b);', '} : null;');
     expect(props).toContain('art: <FirstEditionCover work={world} />');
     expect(props).toContain("world.unit === 'chars' ? '자' : '단어'");
     expect(page).toContain('{...worldProps}');
     expect(page).toContain(': world ? <span lang={worldLang}>{worldChapterOf(c)?.title || c.title}</span>');
-    expect(page).toContain('!work && !english && !world && b.chapters[0]?.owner_id === user.id');
+    expect(page).toContain('!isCanonicalBookKey(b.key) && b.chapters[0]?.owner_id === user.id'); // 위키문헌 ws- · 전자책 사이트 pd-도 정본 key
   });
   it('게시 화면 표지: 위키문헌 책은 초판 장정', () => {
     const cover = sliceBetween(read('src/components/LiteraturePublishPanel.jsx'), 'export function BookCover', '\n}\n');

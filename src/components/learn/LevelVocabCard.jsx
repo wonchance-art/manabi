@@ -42,7 +42,7 @@ export default function LevelVocabCard({ lang, vocab = [], projections = [], kno
     <div className={`learn-tile learn-levels ${className}`.trim()}>
       <div className="learn-sec-head"><h2 className="learn-sec-title">레벨 어휘</h2></div>
       {!supported ? <p className="learn-center">이 언어의 레벨 목록은 준비 중이에요</p>
-        : !rows ? <p className="learn-center" role="status">레벨 어휘 불러오는 중…</p>
+        : !rows ? <p className="learn-center" aria-busy="true">레벨 어휘 불러오는 중…</p>
           : <>
             <div className="learn-levels__rows">
               {rows.map(row => (

@@ -1,14 +1,16 @@
 // Standard Ebooks 정본 책 빌드(LIT-SRC-EN-1) — src/content/literature/standardebooks/<key>/{entry.json, source/*.xhtml} → chapters.json.
 // 아오조라 빌드(literature-build.mjs)와 같은 원칙: 결정적(같은 입력 → 같은 바이트), --check는 쓰지 않고 차이만 실패로 낸다,
 // 한 편이라도 실패하면 목록·대조표를 다시 쓰지 않는다. 원문 파일 해시가 entry.files와 다르면 그 작품은 실패(원문이 바뀌었다).
-// 루트 산출물: index.generated.js(관리자 게시 API — 장 원문 포함, 서버 전용) · manifest.generated.json(뷰어 대조 — 원문 없음).
+// 루트 산출물: index.generated.js(관리자 게시 API — 장 원문 포함, 서버 전용) · manifest.generated.json(뷰어 대조 — 원문 없음)
+// · manifest.display.generated.json(화면 표지 · 제목용 — manifest에서 파생, 해시 · 크레딧 없음 — literature-display-build.mjs).
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { createDisplayManifest } from './literature-display-build.mjs';
 
 export const STANDARD_EBOOKS_ROOT = 'src/content/literature/standardebooks';
 export const STANDARD_EBOOKS_FILES = Object.freeze({ entry: 'entry.json', source: 'source', chapters: 'chapters.json' });
-export const STANDARD_EBOOKS_OUTPUTS = Object.freeze({ index: 'index.generated.js', manifest: 'manifest.generated.json' });
+export const STANDARD_EBOOKS_OUTPUTS = Object.freeze({ index: 'index.generated.js', manifest: 'manifest.generated.json', display: 'manifest.display.generated.json' });
 
 const sha256 = (value) => createHash('sha256').update(value).digest('hex');
 const serialize = (value) => `${JSON.stringify(value, null, 2)}\n`;
@@ -97,9 +99,11 @@ export async function buildStandardEbooks({ root = STANDARD_EBOOKS_ROOT, check =
     }
   }
   if (errors.length) return { works, errors };
+  const manifest = createStandardEbooksManifest(built);
   const outputs = [
     [STANDARD_EBOOKS_OUTPUTS.index, serializeStandardEbooksIndex(built.map(({ draft }) => draft.book.key))],
-    [STANDARD_EBOOKS_OUTPUTS.manifest, serialize(createStandardEbooksManifest(built))],
+    [STANDARD_EBOOKS_OUTPUTS.manifest, serialize(manifest)],
+    [STANDARD_EBOOKS_OUTPUTS.display, serialize(createDisplayManifest(manifest))],
   ];
   for (const [file, output] of outputs) {
     const target = path.join(root, file);

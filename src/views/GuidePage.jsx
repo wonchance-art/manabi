@@ -135,15 +135,15 @@ export default function GuidePage() {
       {/* ── 4. 서재와 성장 ── */}
       <section className="card" style={{ padding: 24, marginBottom: 20 }}>
         <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 10 }}>
-          서재와 성장
+          지난 이야기와 성장
         </h2>
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
-          지난 이야기들은 서재에 차곡차곡 쌓여요. 예전에 읽은 문단을 발음 표기 없이 다시 읽어보면,
+          읽은 이야기는 「지난 이야기」에 차곡차곡 쌓여요. 예전에 읽은 문단을 발음 표기 없이 다시 읽어보면,
           그새 얼마나 늘었는지 몸으로 느껴져요. 지금까지 익힌 단어 수와 통과한 챕터도
           여기서 한눈에 볼 수 있어요.
         </p>
         <Link href="/study/library" style={linkStyle}>
-          서재 →
+          지난 이야기 →
         </Link>
       </section>
 

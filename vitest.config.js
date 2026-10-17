@@ -18,12 +18,19 @@
 // 없었다는 뜻이라, 현행 API인 top-level `maxWorkers`로 옮긴다.
 import { fileURLToPath } from 'node:url';
 
+// 3) 도시 geo 데이터 모듈(26개 · 약 27MB, 생성물)은 Vite 변환을 건너뛰고 Node가 직접 읽는다(2026-10-17 KST).
+//    도시 전체 적재 49.7s 중 변환이 39.4s였다(seoul 9.2s · london 9.1s · grand-paris 7.1s) —
+//    studiesRefs가 단독에서도 46~55s로 60s 훅 한도에 붙던 원인. 내용은 같은 모듈이라 값이 같고
+//    (cityGeoExternal.test.js가 변환본과 동치 · 패턴 적중을 고정), 이 파일들은 mock 대상이 아니다.
+export const CITY_GEO_MODULE = /\/src\/components\/world\/cities\/[^/]+\.geo\.js$/;
+
 const config = {
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   test: {
     testTimeout: 90_000,
     hookTimeout: 60_000,
     maxWorkers: 4,
+    server: { deps: { external: [CITY_GEO_MODULE] } },
   },
 };
 

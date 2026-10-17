@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { VICTORIAN_BINDINGS, VICTORIAN_CLOTHS, validateVictorianDisplay } from '../victorianCover.js';
 import manifest from '../../content/literature/standardebooks/manifest.generated.json';
 import aozora from '../../content/literature/aozora/manifest.generated.json';
+import display from '../../content/literature/standardebooks/manifest.display.generated.json';
 import { sliceBetween } from './helpers/sliceBetween';
 
 vi.mock('next/font/google', () => ({ Libre_Caslon_Display: () => ({ variable: 'vic-font' }), Shippori_Mincho_B1: () => ({ variable: '' }) }));
@@ -92,7 +93,8 @@ describe('색 — 서재에서 구분되고 금박 제목이 읽힌다', () => {
 });
 
 describe('그리기', () => {
-  const render = (key) => renderToStaticMarkup(createElement(VictorianCover, { work: manifest.works[key] }));
+  // 화면(서재 카드 · 게시 화면)은 표시용 표의 작품을 넘긴다(LIT-DISPLAY-001) — 그 모양으로 그린다
+  const render = (key) => renderToStaticMarkup(createElement(VictorianCover, { work: display.works[key] }));
   it('장식(aria-hidden) · 앞표지 글자는 실물에 있는 것만 · 영어 lang', () => {
     const alice = render('se-lewis-carroll_alices-adventures-in-wonderland');
     expect(alice).toContain('aria-hidden="true"');
@@ -118,10 +120,10 @@ describe('그리기', () => {
 describe('배선 — 서재 카드·게시 화면', () => {
   it('서재 카드: Standard Ebooks 책은 빅토리아 표지 + 원제(영어) + 한국어 제목 · 단어 수 · 장 이름, 「다음 과 적기」 없음', () => {
     const page = read('src/views/MaterialsPage.jsx');
-    expect(page).toContain('const english = work ? null : standardEbooksWorkOfBook(b);');
-    expect(page).toContain('art: <CanonicalCover work={english} />,'); // 빅토리아 · 초판 장정을 binding으로 가른다
+    expect(page).toContain('const english = work || !canonicalCovers ? null : standardEbooksWorkOfBook(b);'); // 공개 목록은 정본 표지 닫음(fail closed — bookMeta.test.js)
+    expect(page).toContain('art: <CanonicalCover work={english} />,'); // 빅토리아 · 초판 장정을 binding으로 가른다(CanonicalCover)
     expect(page).toContain("english.words && `${english.words.toLocaleString()}단어`");
-    expect(page).toContain(') : !work && !english && !world && b.chapters[0]?.owner_id === user.id ? (');
+    expect(page).toContain(') : !isCanonicalBookKey(b.key) && b.chapters[0]?.owner_id === user.id ? (');
   });
 
   it('게시 화면 표지: 아오조라는 시리즈 A, 영어 정본은 빅토리아 표지', () => {

@@ -225,7 +225,7 @@ describe('N R2 — 배선', () => {
     // 자체 검수에서 잡은 결함: 오프라인 분기가 enqueue 결과를 안 보고 무조건
     // {ok:true}를 돌려주면, IndexedDB를 못 쓰는 환경에서 유실이 무증상이 된다.
     expect(read('src/lib/learn/progressStore.js'))
-      .toContain("return queued ? { ok: true, queued: true, reviewedAt } : { ok: false, error: new Error('offline-queue-unavailable') };"); // W R2: reviewedAt 동봉
+      .toContain("return queued ? { ok: true, queued: true, reviewedAt } : { ok: false, lost: true, error: new Error('offline-queue-unavailable') };"); // W R2: reviewedAt 동봉 · lost = 서버 · 큐 모두 실패
   });
 
   it('온라인 경로도 같은 복습 시각을 싣는다 — 중복 제거가 성립하는 근거다', () => {

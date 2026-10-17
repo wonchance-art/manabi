@@ -162,6 +162,8 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
         .select()
         .single();
       if (insertErr) throw insertErr;
+      // 서재 목록(30초 캐시)도 새 PDF를 바로 보게 정본 경로로 무효화한다.
+      invalidateLibrary(queryClient, user.id);
 
       toast(`"${title}" 업로드 완료 (${pageCount}페이지)`, 'success');
       refetch();
@@ -357,7 +359,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
             <h3 style={{ margin: '0 0 6px', fontSize: '1.05rem' }}>{activePdf.title}</h3>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 16 }}>
-              총 {activePdf.page_count}페이지 · 분석할 범위를 선택하세요
+              총 {activePdf.page_count}페이지 · 분석할 범위를 선택해 주세요
             </p>
 
             <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
@@ -474,11 +476,11 @@ function PdfRangesList({ pdfId }) {
     queryFn: () => fetchPdfAnalyzedRanges(pdfId),
   });
 
-  if (isLoading) return <div style={{ padding: 10, fontSize: '0.8rem', color: 'var(--text-muted)' }}>PDF 목록 불러오는 중…</div>;
+  if (isLoading) return <div aria-busy="true" style={{ padding: 10, fontSize: '0.8rem', color: 'var(--text-muted)' }}>PDF 목록 불러오는 중…</div>;
   if (ranges.length === 0) {
     return (
       <div style={{ padding: '10px 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-        아직 분석된 범위가 없어요. &quot;범위 선택&quot;으로 시작하세요.
+        아직 분석된 범위가 없어요. &quot;범위 선택&quot;으로 시작해 주세요.
       </div>
     );
   }

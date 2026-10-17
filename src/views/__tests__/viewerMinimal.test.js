@@ -99,8 +99,9 @@ describe('③ 안내문은 첫 자료에만, 데스크톱은 빈 패널이 대�
   it('reader-hint는 단어를 아직 안 담은 로그인 사용자에게만', () => {
     expect(src()).toContain('{isDone && user && savedCount === 0 && (');
     expect((src().match(/className="reader-hint"/g) || []).length).toBe(1);
-    // 게스트 배너가 같은 말을 하니 게스트에겐 두 번 말하지 않는다
-    expect(src()).toContain('단어를 클릭해 뜻을 확인할 수 있어요.');
+    // 게스트 배너가 같은 말을 하니 게스트에겐 두 번 말하지 않는다(배너는 ViewerGuestBanner — 미분석이면 원문 안내)
+    expect(src()).toContain('{!user && <ViewerGuestBanner vt={vt} signInHref={signInHref} pending={isPending} />}');
+    expect(read('src/components/viewer/ViewerGuestBanner.jsx')).toContain("analyzed: '단어를 클릭해 뜻을 확인할 수 있어요.'");
   });
 
   it('CSS: 기본 감춤 + 좌우 패널이 접히는 블록에서만 켬 — 새 뷰포트 쿼리 0', () => {

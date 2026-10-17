@@ -6,14 +6,23 @@
  */
 import Link from 'next/link';
 import { encounterLookupLang } from '@/lib/refVocabLookup';
+import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
 
 export default function ResumeTile({ item, pending = false, onClick }) {
   if (pending || !item) {
+    // 골격(LOADING-SKELETON-001): 머리 · 제목 두 줄 · 맨 아래 단추 자리 — 실제 칸과 같은 자리, 글만 회색 줄.
     return (
-      <div className="learn-tile learn-resume lang-ja learn-order-resume" role="status">
-        <span className="learn-resume__head"><span className="learn-resume__kicker">이어 읽기</span></span>
-        <span className="learn-resume__body"><span className="learn-resume__sub">읽던 위치 불러오는 중…</span></span>
-      </div>
+      <SkeletonRegion className="learn-tile learn-resume lang-ja learn-order-resume" label="읽던 위치">
+        <span className="learn-resume__head" aria-hidden="true"><span className="learn-resume__kicker">이어 읽기</span></span>
+        <span className="learn-resume__body" aria-hidden="true">
+          <span className="learn-resume__title"><SkeletonLine width="70%" /></span>
+          <span className="learn-resume__sub"><SkeletonLine width="45%" /></span>
+        </span>
+        <span className="learn-resume__bottom" aria-hidden="true">
+          <span className="learn-resume__spacer" />
+          <SkeletonLine className="learn-skeleton-pill" width="7.5em" height="40px" />
+        </span>
+      </SkeletonRegion>
     );
   }
   const code = encounterLookupLang(item.lang) || 'ja';

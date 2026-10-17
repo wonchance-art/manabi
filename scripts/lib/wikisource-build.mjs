@@ -2,6 +2,7 @@
 // Standard Ebooks 빌드와 같은 원칙: 결정적(같은 입력 → 같은 바이트), --check는 쓰지 않고 차이만 실패로 낸다, 한 편이라도 실패하면
 // 목록·대조표를 다시 쓰지 않는다. 쪽 조각 해시가 entry.files와 다르면 그 작품은 실패(원문이 바뀌었다).
 // 루트 산출물: index.generated.js(관리자 게시 API — 장 원문 포함, 서버 전용) · manifest.generated.json(뷰어 대조 — 원문 없음).
+import { createDisplayManifest } from './literature-display-build.mjs';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -9,7 +10,7 @@ import { LITERATURE_BOUNDARY_FILE, withBoundaryMerges } from './literature-bound
 
 export const WIKISOURCE_ROOT = 'src/content/literature/wikisource';
 export const WIKISOURCE_FILES = Object.freeze({ entry: 'entry.json', source: 'source', chapters: 'chapters.json' });
-export const WIKISOURCE_OUTPUTS = Object.freeze({ index: 'index.generated.js', manifest: 'manifest.generated.json' });
+export const WIKISOURCE_OUTPUTS = Object.freeze({ index: 'index.generated.js', manifest: 'manifest.generated.json', display: 'manifest.display.generated.json' });
 
 const sha256 = (value) => createHash('sha256').update(value).digest('hex');
 const serialize = (value) => `${JSON.stringify(value, null, 2)}\n`;
@@ -109,6 +110,7 @@ export async function buildWikisource({ root = WIKISOURCE_ROOT, check = false, v
   const outputs = [
     [WIKISOURCE_OUTPUTS.index, serializeWikisourceIndex(built.map(({ draft }) => draft.book.key))],
     [WIKISOURCE_OUTPUTS.manifest, serialize(createWikisourceManifest(built))],
+    [WIKISOURCE_OUTPUTS.display, serialize(createDisplayManifest(createWikisourceManifest(built)))], // 서재 카드 표지 · 제목용(LIT-DISPLAY-001 — 해시 · 크레딧 없음)
   ];
   for (const [file, output] of outputs) {
     const target = path.join(root, file);

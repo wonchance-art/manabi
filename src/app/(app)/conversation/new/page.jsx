@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import Loading from '@/app/(app)/loading';
 import NewConversationPage from '@/views/NewConversationPage';
 
 export const metadata = {
@@ -7,7 +8,7 @@ export const metadata = {
 
 export default function Page() {
   return (
-    <Suspense>
+    <Suspense fallback={<Loading />}>
       <NewConversationPage />
     </Suspense>
   );

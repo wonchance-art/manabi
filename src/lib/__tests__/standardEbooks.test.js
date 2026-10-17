@@ -6,7 +6,7 @@ import {
   createStandardEbooksDraft, parseStandardEbooksXhtml, SE_PROVIDER, splitBlocksByWords, standardEbooksBookKey,
   standardEbooksRightsPublishable, standardEbooksRightsVerdict, wordCount,
 } from '../standardEbooks.js';
-import { buildStandardEbooks, STANDARD_EBOOKS_ROOT } from '../../../scripts/lib/standard-ebooks-build.mjs';
+import { buildStandardEbooks, STANDARD_EBOOKS_OUTPUTS, STANDARD_EBOOKS_ROOT } from '../../../scripts/lib/standard-ebooks-build.mjs';
 import { STANDARD_EBOOKS_BOOKS } from '../../content/literature/standardebooks/index.generated.js';
 import manifest from '../../content/literature/standardebooks/manifest.generated.json';
 import { standardEbooksChapter, verifiedStandardEbooksLiterature } from '../standardEbooksCanonical.js';
@@ -96,7 +96,9 @@ describe('권리 선(원산국 만료 — 한국은 상호주의 · 미국 선�
 const FIRST_THREE = ['se-arthur-conan-doyle_the-adventures-of-sherlock-holmes', 'se-charles-dickens_a-christmas-carol', 'se-lewis-carroll_alices-adventures-in-wonderland'];
 
 describe('리포 정본 3편 — 산출물·장 모양', () => {
-  it('build-literature --check와 같은 검사가 통과한다(원문 해시·chapters.json·목록·대조표)', async () => {
+  it('build-literature --check와 같은 검사가 통과한다(원문 해시·chapters.json·목록·대조표·표시용 표)', async () => {
+    // 표시용 표(LIT-DISPLAY-001 — 화면 표지·제목, 전체 표에서 파생)도 --check가 본다. 파생 일치는 literatureDisplayManifest.test.js.
+    expect(STANDARD_EBOOKS_OUTPUTS).toEqual({ index: 'index.generated.js', manifest: 'manifest.generated.json', display: 'manifest.display.generated.json' });
     const { works, errors } = await buildStandardEbooks({ root: STANDARD_EBOOKS_ROOT, check: true });
     expect(errors).toEqual([]);
     // 1차 3편 + 2차 묶음 5편(오너 2026-10-17 KST — 초판 장정 표지) + 3차 묶음 5편(「되는 언어로만」 — 초판 속표지·천 장정)

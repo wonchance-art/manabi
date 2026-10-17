@@ -27,11 +27,71 @@
  */
 export const KANA_RE = /[぀-ヿ]/;
 
-export function splitRuby(text, furigana) {
+// 来る는 뒤 가나에 따라 읽기가 바뀐다(来ない こ · 来ます/来た/来て き · 来る/来れば く) — 기본형 읽기(くる)를 그대로 옮기면 틀린다.
+// 뒤 가나를 모르면(다음 토큰도 없으면) 가장 흔한 き다 — 来る는 보통 「来る」 한 토큰으로 온다.
+const KURU_STEM = (next) => (/^[なよさら]/.test(next) ? 'こ' : /^る|^れ/.test(next) ? 'く' : 'き');
+
+/**
+ * @param {string} text 표면형(본문 그대로)
+ * @param {string|null} furigana 독음 — 분석기는 활용형에도 **기본형 읽기**를 준다(違い + ちがう, 待っ + まつ — 운영 자료 실측).
+ * @param {string} [nextText] 바로 뒤 토큰 표기 — 来 | ない처럼 활용 어미가 다음 토큰이면 来의 읽기(こ · き · く)를 여기서 고른다.
+ * @param {string} [baseForm] 기본형(違う · 待つ). 주면 표면 앵커가 안 맞을 때 기본형으로 한자 읽기를 구해 옮긴다 —
+ *   없으면 독음 전체가 한자 위에 얹혀 「違[ちがう]い」 「待[まつ]っ」로 보였다(VIEWER-LANG-AUDIT, 2026-10-17 KST).
+ */
+const KANJI_RE = /[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF]/;
+
+/** 표기를 [한자 구간, 가나 구간, …]으로 나눈다. */
+function segmentsOf(text) {
+  const segments = [];
+  let i = 0;
+  while (i < text.length) {
+    const kanji = KANJI_RE.test(text[i]);
+    let j = i;
+    while (j < text.length && KANJI_RE.test(text[j]) === kanji) j++;
+    segments.push({ type: kanji ? 'kanji' : 'plain', text: text.slice(i, j) });
+    i = j;
+  }
+  return segments;
+}
+
+/** 가나 구간을 앵커로 독음을 한자 구간에 나눈다 — 맞지 않으면 null(폴백은 부르는 쪽이 정한다). */
+function anchorSplit(segments, furigana) {
+  const parts = segments.map(s => (s.type === 'kanji' ? '(.+?)' : s.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  const last = parts.lastIndexOf('(.+?)');
+  if (last !== -1) parts[last] = '(.+)'; // 마지막 한자 캡처는 greedy
+  let match = null;
+  try { match = furigana.match(new RegExp('^' + parts.join('') + '$')); } catch { return null; }
+  if (!match) return null;
+  let group = 1;
+  return segments.map(s => (s.type === 'kanji' ? { kanji: s.text, reading: match[group++] } : { plain: s.text }));
+}
+
+/**
+ * 활용형 토큰의 한자 읽기를 기본형에서 옮긴다 — 기본형이 오쿠리가나 앵커로 **맞게** 나뉘고 한자 구간이 같을 때만. 아니면 null.
+ * (기본형 쪽도 폴백이면 쓰지 않는다 — 食べ + たべ(표면 읽기) + 食べる처럼 독음이 표면 읽기면 표면 앵커가 맞는다.)
+ */
+function fromBaseForm(segments, furigana, baseForm, nextText = '') {
+  const baseSegments = segmentsOf(baseForm);
+  if (!baseSegments.some(seg => seg.type === 'plain')) return null;
+  const base = anchorSplit(baseSegments, furigana);
+  if (!base) return null;
+  const baseKanji = base.filter(seg => seg.kanji);
+  const surfaceKanji = segments.filter(seg => seg.type === 'kanji');
+  if (baseKanji.length !== surfaceKanji.length || !baseKanji.every((seg, k) => seg.kanji === surfaceKanji[k].text)) return null;
+  let k = 0;
+  return segments.map((seg, idx) => {
+    if (seg.type !== 'kanji') return { plain: seg.text };
+    let reading = baseKanji[k++].reading;
+    // 来 뒤 가나가 토큰 안에 없으면(来 | ない · 来 | ます — 실제 분석 출력) 다음 토큰 글자로 고른다.
+    if (seg.text === '来' && /^来る/.test(baseForm)) reading = KURU_STEM(segments[idx + 1]?.text ?? nextText);
+    return { kanji: seg.text, reading };
+  });
+}
+
+export function splitRuby(text, furigana, baseForm, nextText) {
   if (!furigana) return [{ plain: text }];
 
-  const KANJI = /[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF]/;
-  const isKanji = ch => KANJI.test(ch);
+  const isKanji = ch => KANJI_RE.test(ch);
 
   // 중국어 병음: 라틴 음절이 글자 수와 일치하면 글자별로 분배(글자당 음절 = 표준 병음
   // 조판 — 격자 폭 1em 고정·단일 축소 크기·성조색은 이 표식이 스위치다).
@@ -50,47 +110,21 @@ export function splitRuby(text, furigana) {
   }
 
   // 1. surface를 [kanji 구간, hira 구간, ...] 으로 분할
-  const segments = [];
-  let i = 0;
-  while (i < text.length) {
-    if (isKanji(text[i])) {
-      let j = i;
-      while (j < text.length && isKanji(text[j])) j++;
-      segments.push({ type: 'kanji', text: text.slice(i, j) });
-      i = j;
-    } else {
-      let j = i;
-      while (j < text.length && !isKanji(text[j])) j++;
-      segments.push({ type: 'plain', text: text.slice(i, j) });
-      i = j;
-    }
-  }
+  const segments = segmentsOf(text);
 
   // 한자가 없으면 plain으로 반환
   if (!segments.some(s => s.type === 'kanji')) return [{ plain: text }];
 
-  // 2. hira 구간들을 앵커로 regex를 만들어 reading을 분할
-  //    한자 구간 → (.+?)  /  hira 구간 → 리터럴 이스케이프
-  const regexParts = segments.map(s =>
-    s.type === 'kanji' ? '(.+?)' : s.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  );
-  // 마지막 한자 캡처는 greedy로 (.+)
-  const lastKanjiIdx = regexParts.lastIndexOf('(.+?)');
-  if (lastKanjiIdx !== -1) regexParts[lastKanjiIdx] = '(.+)';
+  // 활용형: 분석기는 기본형 읽기를 준다(違い + ちがう) — 기본형이 있고 표면과 다르면 기본형에서 한자 읽기를 옮긴다.
+  // 표면에 오쿠리가나가 없는 토큰(来 · 見)도 앵커가 늘 맞아 「来[くる]」가 되므로 같은 길로 간다.
+  if (baseForm && baseForm !== text && KANA_RE.test(furigana)) {
+    const moved = fromBaseForm(segments, furigana, baseForm, nextText);
+    if (moved) return moved;
+  }
 
-  try {
-    const regex = new RegExp('^' + regexParts.join('') + '$');
-    const match = furigana.match(regex);
-    if (match) {
-      let groupIdx = 1;
-      return segments.map(s => {
-        if (s.type === 'kanji') {
-          return { kanji: s.text, reading: match[groupIdx++] };
-        }
-        return { plain: s.text };
-      });
-    }
-  } catch {}
+  // 2. 가나 구간을 앵커로 독음을 나눈다
+  const anchored = anchorSplit(segments, furigana);
+  if (anchored) return anchored;
 
   // regex 실패 시 fallback: 전체 한자에 전체 reading
   return segments.map(s =>

@@ -14,6 +14,14 @@ export async function candidate(edition) {
     return bundle;
   } catch(error){if(error.status)throw error;throw textbookError(404,'출력본이 아직 준비되지 않았어요.');}
 }
+// 공개 읽기 경로(배움 · 산책 · 교재 화면 · 교재 표현 저장)용 — 판본 파일은 배포 단위로 고정이고 candidate가 해시를 검증한 것만
+// 돌려준다. 요청마다 1.2MB JSON 파싱 + 해시(로컬 실측 23~60ms, 교재 화면은 두 번)를 반복하지 않고 함수 인스턴스 안에서 판본당 한 번.
+// 실패는 담아 두지 않는다(다음 요청이 다시 시도). 원고를 다루는 관리자 경로는 계속 candidate를 쓴다.
+const verifiedCandidates=new Map();
+export function cachedCandidate(edition){
+ if(!verifiedCandidates.has(edition)){const pending=candidate(edition);verifiedCandidates.set(edition,pending);pending.catch(()=>verifiedCandidates.delete(edition));}
+ return verifiedCandidates.get(edition);
+}
 export async function currentCandidate(){const index=JSON.parse(await readFile(path.join(process.cwd(),'src/content/textbookEditions/index.json'),'utf8'));return candidate(index.current)}
 // Curated editor choices are separate from the DB publication pointer and legacy fallback.
 export async function editorCandidates() {
@@ -55,6 +63,10 @@ export async function publishedBookCatalog(db) {
  // The existing materials feature remains usable while the additive migration awaits deployment.
  if(error&&['42P01','PGRST205'].includes(error.code))return [];
  if(error)throw textbookError(503,'교재 목록을 확인하지 못했어요.');if(!release)return [];
- const edition=await readEdition(db,release.edition_id);if(!edition)return [];
- return edition.manuscript.lessons.map(l=>({slug:`n5-book-${l.id}`,title:`${String(l.number).padStart(2,'0')}과 · ${l.title}`,href:`/books/${BOOK_ID}?edition=${release.edition_id}#${l.id}`}));
+ // 원고 jsonb는 받지 않는다 — 발행 확인은 해시 두 개(readEditionStamp), 과 목록은 같은 판본 파일(cachedCandidate)에서.
+ // 대조는 publishedReading과 같은 판정이다(content_hash · bundleHash 불일치 → 503).
+ const edition=await readEditionStamp(db,release.edition_id);if(!edition)return [];
+ const book=await cachedCandidate(release.edition_id);
+ if(edition.content_hash!==book.contentHash||edition.artifact_manifest?.bundleHash!==book.artifactManifest.bundleHash)throw textbookError(503,'교재 판본을 확인하지 못했어요.');
+ return book.manuscript.lessons.map(l=>({slug:`n5-book-${l.id}`,title:`${String(l.number).padStart(2,'0')}과 · ${l.title}`,href:`/books/${BOOK_ID}?edition=${release.edition_id}#${l.id}`}));
 }

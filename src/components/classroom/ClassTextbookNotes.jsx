@@ -50,7 +50,7 @@ export function ChapterNotes({user,teamKey,chapter}) {
  const editingPlaced=editor&&placed.some(p=>p.row.id===editor.id);
  // 조회가 실패해도 이 기기의 저장 대기분은 보여 준다 — 보관돼 있다는 사실이 복구의 출발점이다.
  return <div className="class-textbook-notes__body">
-  {loading&&<p className="classroom-status" role="status">교재 설명을 불러오는 중…</p>}
+  {loading&&<p className="classroom-status" aria-busy="true">교재 설명을 불러오는 중…</p>}
   {failed&&<p className="classroom-notice" role="alert">교재 설명을 불러오지 못했어요. <button onClick={()=>{query.refetch();text.refetch();}}>다시 시도</button></p>}
   {ready&&!placed.length&&!unplaced.length&&<p className="class-textbook-notes__empty">이 과에는 아직 교재 설명이 없어요.</p>}
   {ready&&placed.map(({row})=><article key={row.id}>

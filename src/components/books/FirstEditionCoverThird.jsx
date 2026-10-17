@@ -61,6 +61,14 @@ const Fleuron = ({ x, y, ink }) => (
 
 const compactRoman = (year) => year.replace(/ /gu, ''); // 「MDCCLXXVI」 — 영국 속표지는 띄우지 않는다
 
+/** 판 고정 글자(속표지 원문 그대로 — 화면 라벨이 아니라 그림 속 활자다, copy-standard 영어 라벨 규칙 밖). */
+const IMPRINT_TEXT = Object.freeze({
+  strahanTitle: 'Formerly Professor of Moral Philosophy in the University of GLASGOW.',
+  strahanVolumes: 'IN TWO VOLUMES.',
+  millarUniversity: 'University of GLASGOW.',
+  millarEdinburgh: 'And A. KINCAID and J. BELL, in EDINBURGH.',
+});
+
 // ── 영어 ──
 
 // Buisson 1791 『Mémoires de la vie privée de Benjamin Franklin』 — 자서전의 첫 판(프랑스어 번역)이자 첫 출판. 민짜 종이 표지로 팔렸다(색 기록 없음)
@@ -139,8 +147,8 @@ function Strahan1776({ display, tone, id }) {
       <Laid id={id} color={tone.ground} />
       {lines.map((line, index) => <T key={line} x={60} y={style[index].y} size={style[index].size} font={CASLON} fill={tone.ink} spacing={style[index].spacing}>{style[index].upper ? line.toUpperCase() : line}</T>)}
       <T x={60} y={79} size={3.6} font={CASLON} fill={tone.ink}>{display.coverAuthor}</T>
-      <T x={60} y={84.5} size={2.5} font={GARAMOND} fill={tone.ink} italic>Formerly Professor of Moral Philosophy in the University of GLASGOW.</T>
-      <T x={60} y={96} size={3.1} font={CASLON} fill={tone.ink} spacing=".8">IN TWO VOLUMES.</T>
+      <T x={60} y={84.5} size={2.5} font={GARAMOND} fill={tone.ink} italic>{IMPRINT_TEXT.strahanTitle}</T>
+      <T x={60} y={96} size={3.1} font={CASLON} fill={tone.ink} spacing=".8">{IMPRINT_TEXT.strahanVolumes}</T>
       <T x={60} y={102} size={3.4} font={CASLON} fill={tone.ink} spacing=".8">{display.coverTome.toUpperCase()}</T>
       <Rule y={109} from={16} to={104} ink={tone.ink} />
       <T x={60} y={122} size={3.8} font={CASLON} fill={tone.ink} spacing="1.4">{display.coverPlace.toUpperCase()}</T>
@@ -165,11 +173,11 @@ function Millar1759({ display, tone, id }) {
       <path d="M50 63H70" stroke={tone.ink} strokeWidth=".3" />
       <T x={60} y={71} size={4} font={CASLON} fill={tone.ink} spacing=".5">{display.coverAuthor.toUpperCase()}</T>
       <T x={60} y={77.5} size={3} font={CASLON} fill={tone.ink}>{`${display.coverSubtitle} in the`}</T>
-      <T x={60} y={82} size={3} font={CASLON} fill={tone.ink}>University of GLASGOW.</T>
+      <T x={60} y={82} size={3} font={CASLON} fill={tone.ink}>{IMPRINT_TEXT.millarUniversity}</T>
       <Fleuron x={60} y={102} ink={tone.ink} />
       <T x={60} y={121} size={4.2} font={CASLON} fill={tone.ink} spacing="1.4">{display.coverPlace.toUpperCase()}</T>
       <T x={60} y={127.5} size={2.9} font={CASLON} fill={tone.ink}>{`${display.coverImprint}, in the STRAND;`}</T>
-      <T x={60} y={132} size={2.9} font={CASLON} fill={tone.ink}>And A. KINCAID and J. BELL, in EDINBURGH.</T>
+      <T x={60} y={132} size={2.9} font={CASLON} fill={tone.ink}>{IMPRINT_TEXT.millarEdinburgh}</T>
       <T x={60} y={140} size={3.6} font={CASLON} fill={tone.ink} spacing=".5">{`${year}.`}</T>
     </g>
   );

@@ -22,7 +22,7 @@ describe('library projection boundaries',()=>{
   expect(read('src/lib/libraryActivity.js')).not.toContain('reading_progress');expect(read('src/lib/libraryActivity.js')).not.toContain('persistVocabGrade');
  });
  it('has one composer entry, owned cache identities and bounded root pagination',()=>{
-  const shelf=read('src/components/library/LibraryShelf.jsx');expect(shelf).toContain('libraryComposerHref(returnTo,filters.collection)');expect(shelf).toContain("['personal-library',user.id");expect(shelf).not.toContain('from(\'reading_materials\')');
+  const shelf=read('src/components/library/LibraryShelf.jsx');expect(shelf).toContain('libraryComposerHref(returnTo,filters.collection)');expect(shelf).toContain('libraryListQuery(supabase,user.id,filters,pinned.data)');expect(read('src/lib/libraryShelfQueries.js')).toContain("queryKey: ['personal-library', ownerId, keyFilters, pinnedIds]");expect(shelf).not.toContain('from(\'reading_materials\')');
   expect(read('src/components/library/LibraryRow.jsx')).toContain("['library-children',ownerId,");
   expect(migration).toContain('least(coalesce(p_limit,20),50)');expect(migration).toContain("to_jsonb(p)-'children'-'listed'-'ord'");
  });

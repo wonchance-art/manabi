@@ -96,7 +96,7 @@ export default function Nihongo42Page() {
       </div>
 
       <footer style={{ marginTop: 36, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-        카드를 눌러 챕터 3개의 표현을 패턴·예문과 함께 자세히 확인하세요.
+        카드를 눌러 챕터 3개의 표현을 패턴·예문과 함께 자세히 확인해 주세요.
       </footer>
     </div>
   );

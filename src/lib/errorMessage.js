@@ -120,3 +120,18 @@ export const RETRY_LATER_MESSAGE = '잠시 후 다시 시도해 주세요.';
 export function failureMessage(head, err) {
   return `${head} ${friendlyToastMessage(err, RETRY_LATER_MESSAGE)}`;
 }
+
+// 관리자 역할 변경 실패(public.admin_set_user_role RPC 오류 코드 → 안내). 화면마다 짓지 않도록 여기 둔다.
+//   PGRST202 — 운영에 RPC가 아직 없다(마이그레이션 적용 전) · 42501 — 마지막 관리자 강등 거부 / 관리자 아님 ·
+//   22023 — 역할 값이 student · host · admin 밖 · P0002 — 대상 프로필 없음.
+export const ROLE_CHANGE_FAILED = '역할을 바꾸지 못했어요.';
+export function roleChangeFailureMessage(err) {
+  const code = err?.code;
+  const text = err?.message || '';
+  if (code === 'PGRST202') return `${ROLE_CHANGE_FAILED} 역할 변경 기능이 아직 준비 중이에요.`;
+  if (code === '42501' && /last admin/i.test(text)) return '마지막 관리자는 학습자로 바꿀 수 없어요. 다른 관리자를 먼저 지정해 주세요.';
+  if (code === '42501') return `${ROLE_CHANGE_FAILED} 이 작업은 관리자만 할 수 있어요.`;
+  if (code === '22023') return `${ROLE_CHANGE_FAILED} 학습자 · 호스트 · 관리자 중에서만 고를 수 있어요.`;
+  if (code === 'P0002') return `${ROLE_CHANGE_FAILED} 이 사용자를 찾지 못했어요.`;
+  return failureMessage(ROLE_CHANGE_FAILED, err);
+}

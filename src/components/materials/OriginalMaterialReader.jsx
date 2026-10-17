@@ -132,7 +132,7 @@ export default function OriginalMaterialReader({ material }) {
   return <section className="original-reader" onPointerDownCapture={markGesture} onWheelCapture={markGesture} onKeyDownCapture={markGesture} aria-labelledby="original-title"><div className="composer-top"><LibraryReturnLink /><Link href={`/materials/${material.id}/edit?returnTo=${encodeURIComponent(safeLibraryReturn(params.get('returnTo')))}`}>수정</Link></div>
     <header className="original-heading"><p className="manabi-eyebrow">KEPT FOR ANOTHER DAY</p><h1 id="original-title">{material.title}</h1><p>{new Date(material.created_at).toLocaleDateString('ko-KR')}<span>내가 담아 둔 자료</span></p></header>
     <OriginalPositionNotice sync={sync} sources={positionSources} onAccept={()=>applyPosition(sync.accept())}/>
-    {passageId&&origin.isPending&&<p role="status">학습 구간의 출처를 확인하는 중…</p>}
+    {passageId&&origin.isPending&&<p aria-busy="true">학습 구간의 출처를 확인하는 중…</p>}
     {passageId&&origin.isError&&<p role="alert">해당 구간의 출처를 열지 못했어요. 현재 자료는 그대로 읽을 수 있어요.</p>}
     {origin.data&&<PassageSourceFocus material={origin.data} sources={sources}/>}
     <PassageStudy material={material} sources={sources} preferredKey={preferredKey} {...(textOnly ? {
@@ -150,6 +150,6 @@ export default function OriginalMaterialReader({ material }) {
     {asset && sync.state.ready && (!passageId||!origin.isPending) && <OriginalFileReader key={`${asset.hash}:${passageId||''}:${restore.id}`} material={material} asset={asset} onSource={onFileSource} returnSource={returnSource?.assetHash===asset.hash?returnSource:null} sourceMaterial={returnSource?.assetHash===asset.hash?origin.data:null} initialLocator={!passageId?sync.selected(positionSourceKey({kind:asset.kind,assetHash:asset.hash}))?.locator:null} restoreId={restore.id} onPosition={sync.note} canRecord={canRecord} />}
     <PassageSources material={material}/>
     {composer.body?.trim() && !textOnly && <details className="original-study"><summary>자료 도구 · 본문 전체 학습</summary><p>학습할 언어를 고르면 읽기·표현 저장 화면으로 이어져요. 수정한 본문으로 공부해도 이전 표현의 출처는 남아 있어요.</p><label htmlFor="original-language">학습 언어</label><select id="original-language" value={language} onChange={e => setLanguage(e.target.value)} disabled={busy}><option value="">언어 선택</option>{languages.map(value => <option key={value} value={value}>{studyLanguageLabel(value)}</option>)}</select><button className="manabi-button" disabled={busy || !language} onClick={() => studyBody(language)}>{busy ? '여는 중…' : '본문 학습하기 ↗'}</button>{error && <p role="alert">{error}</p>}</details>}
-    <footer className="original-bottom"><LibraryReturnLink /><Link href="/materials/add">새 자료 작성 ↗</Link></footer>
+    <footer className="original-bottom"><LibraryReturnLink /><Link href="/materials/add">자료 추가 ↗</Link></footer>
   </section>;
 }

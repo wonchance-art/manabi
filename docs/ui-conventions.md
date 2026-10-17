@@ -193,6 +193,8 @@ R3에서 `myplan` 격자를 실제로 옮겨 그 차이를 실측했다 — 260p
 
 숫자는 하한이다. 줄어들면 계약이 잡는다.
 
+**대기 알림(LOADING-ANNOUNCE-001 — 오너 승인 2026-10-17 KST)**: ① 칸 안 짧은 대기(~1s — 사전 뜻 · 비슷한 말 · 연결 목록 등)는 `role="status"` 없이 그 칸에 `aria-busy`만(대기 뒤 결과를 싣는 영역은 대기 동안만 `aria-busy={…}`) · ② 화면 전체 대기(라우트 골격 · 계정 확인)는 「…불러오는 중…」 알림 한 번 그대로(LOADING-SKELETON-001) · ③ 사용자가 시작한 긴 작업(>3s — 분석 · 일괄 분석 · AI 생성)은 늘 있는 상태 영역(`sr-only role="status"`)에 「〔동작〕하고 있어요…」 한 번, 그다음 끝 상태 — 진행 숫자는 약 10%마다만(`announcedProgress`). 문구는 바꾸지 않고 역할 · 속성만 정한다. 계약 `src/lib/__tests__/loadingAnnounce.test.js`.
+
 ## 4. 테마
 
 - `data-theme` 속성 + `[data-theme="light"]` 재정의가 정본.

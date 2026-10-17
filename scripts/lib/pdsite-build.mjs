@@ -1,13 +1,14 @@
 // 퍼블릭 도메인 전자책 사이트 정본 책 빌드(LIT-SRC-PD-1) — src/content/literature/pdsite/<key>/{entry.json, source/<파일>} → chapters.json.
 // 위키문헌 빌드와 같은 원칙: 결정적, --check는 쓰지 않고 차이만 실패, 한 편이라도 실패하면 목록·대조표를 다시 쓰지 않는다.
 // 사이트 HTML 해시가 entry.file과 다르면 그 작품은 실패. 표지 표기가 아직 없으면(binding 없음) 「표지 대기」 — 목록·대조표에 싣지 않는다.
+import { createDisplayManifest } from './literature-display-build.mjs';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 export const PDSITE_ROOT = 'src/content/literature/pdsite';
 export const PDSITE_FILES = Object.freeze({ entry: 'entry.json', source: 'source', chapters: 'chapters.json' });
-export const PDSITE_OUTPUTS = Object.freeze({ index: 'index.generated.js', manifest: 'manifest.generated.json' });
+export const PDSITE_OUTPUTS = Object.freeze({ index: 'index.generated.js', manifest: 'manifest.generated.json', display: 'manifest.display.generated.json' });
 
 const sha256 = (value) => createHash('sha256').update(value).digest('hex');
 const serialize = (value) => `${JSON.stringify(value, null, 2)}\n`;
@@ -93,6 +94,7 @@ export async function buildPdSite({ root = PDSITE_ROOT, check = false } = {}) {
   const outputs = [
     [PDSITE_OUTPUTS.index, serializePdSiteIndex(built.map(({ draft }) => draft.book.key))],
     [PDSITE_OUTPUTS.manifest, serialize(createPdSiteManifest(built))],
+    [PDSITE_OUTPUTS.display, serialize(createDisplayManifest(createPdSiteManifest(built)))], // 서재 카드 표지 · 제목용(LIT-DISPLAY-001 — 해시 · 크레딧 없음)
   ];
   for (const [file, output] of outputs) {
     const target = path.join(root, file);

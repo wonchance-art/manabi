@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { libraryReaderHref, safeReaderReturn, libraryBrowseReturn, readerReturnLabel } from '@/lib/libraryReturn';
+import { libraryReaderHref, safeReaderReturn, libraryBrowseReturn, readerReturnLabel, readerReturnHref } from '@/lib/libraryReturn';
 
 export function useLibraryReader() {
   const router = useRouter();
@@ -27,5 +27,6 @@ export function LibraryReturnLink({ children, onlyWithContext = false, ...props 
   const back = safeReaderReturn(returnTo);
   if (onlyWithContext && (!returnTo || (back === '/materials' && returnTo !== '/materials'))) return null;
   const label = readerReturnLabel(back);
-  return <Link {...props} href={back}>{label === '← 내 서재' ? children || label : label}</Link>;
+  // 라벨 · 맥락 판정은 back(저장 주소) 기준, 이동은 readerReturnHref — 공개 목록은 /materials를 거치지 않고 /discover?view=reading으로.
+  return <Link {...props} href={readerReturnHref(returnTo)}>{label === '← 내 서재' ? children || label : label}</Link>;
 }

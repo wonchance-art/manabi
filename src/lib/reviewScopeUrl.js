@@ -1,6 +1,6 @@
 // 복습 범위 주소 문법(REV-SCOPE-R1A §6-1 ①) — 서버 페이지(/vocab)도 읽으므로 화면 훅 · 학습 계산을 끌어오지 않는 순수 모듈.
 // 개수 · 범위 거르기는 reviewScope.js(이 모듈을 다시 내보낸다).
-import { LEARNING_LANGUAGES } from './learningSources.js';
+import { LEARNING_LANGUAGES } from './learningLanguages.js';
 import { BOOK_ID, bookHref } from './textbook/contract.js';
 import { EXPRESSION_KINDS, EXPRESSION_KIND_LABELS } from './reviewCard.js';
 

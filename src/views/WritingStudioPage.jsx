@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
@@ -17,6 +18,7 @@ import { recordActivity } from '../lib/streak';
 // 첨삭 태그·추천 챕터 링크는 옛 교재 주소일 수 있다(저장된 이력 포함) — 보관함으로만 열리므로 링크를 내지 않는다(VIEWER-R0-BUGS-001 버그 3).
 import { learnerHref } from '../lib/bookNavigation';
 import { friendlyToastMessage } from '../lib/errorMessage';
+import { authEntryHref } from '../lib/authRedirect';
 
 const LANGS = [
   { key: 'Japanese', label: '일본어' },
@@ -35,6 +37,8 @@ const scoreColor = s => (s >= 4 ? 'var(--accent)' : s === 3 ? 'var(--warning)' :
  * 오류는 review_events(약점 진단의 데이터)로 적재된다.
  */
 export default function WritingStudioPage({ recentChapters = [], signedOut = false }) {
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInHref = authEntryHref(usePathname());
   const { user, profile, fetchProfile } = useAuth();
 
   const [language, setLanguage] = useState('Japanese');
@@ -282,7 +286,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20 }}>
           로그인하면 배운 문법으로 작문하고 AI 첨삭을 받을 수 있어요.
         </p>
-        <Link href="/auth" className="btn btn--primary btn--md">로그인 →</Link>
+        <Link href={signInHref} className="btn btn--primary btn--md">로그인 →</Link>
       </div>
     );
   }

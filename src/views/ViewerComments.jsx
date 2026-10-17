@@ -3,13 +3,15 @@ import Button from '../components/Button';
 
 export default function ViewerComments({
   user, comments, commentInput, setCommentInput,
-  addCommentMutation, deleteCommentMutation,
+  addCommentMutation, deleteCommentMutation, signInHref,
 }) {
   return (
     <div className="card" style={{ marginTop: '24px', padding: '24px' }}>
-      <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '20px', color: 'var(--text-primary)' }}>
+      {/* 뷰어 본문 h1 다음 단계 제목 — h3이면 제목 단계를 건너뛴다(axe heading-order, 2026-10-17 KST Preview 스캔).
+          전역 여백 초기화(index.css *{margin:0}) · 같은 인라인 글자 지정이라 h3 → h2는 화면이 같다. */}
+      <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '20px', color: 'var(--text-primary)' }}>
         토론 {comments.length > 0 && <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.88rem' }}>({comments.length})</span>}
-      </h3>
+      </h2>
 
       {comments.length > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
@@ -73,7 +75,7 @@ export default function ViewerComments({
           </Button>
         </div>
       ) : (
-        <Link href="/auth" className="btn btn--secondary btn--sm">
+        <Link href={signInHref} className="btn btn--secondary btn--sm">
           로그인하고 댓글 남기기
         </Link>
       )}

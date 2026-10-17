@@ -50,7 +50,7 @@ describe('뷰어 배선(ViewerPage)', () => {
   });
 
   it('한 번만 그려진다 — 대시 드로우온 1회, reduced-motion이면 즉시 완성선', () => {
-    expect(viewer).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
+    expect(viewer).toMatch(/if \(!reducedMotion\(\)\) \{\s*const len = path\.getTotalLength\(\);/); // 판정은 정본 reducedMotion(N2)
     expect(viewer).toMatch(/strokeDashoffset = '0'/);
     expect(viewer).not.toMatch(/setInterval|animation-iteration-count/);
   });

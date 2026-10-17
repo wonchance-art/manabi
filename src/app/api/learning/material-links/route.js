@@ -18,7 +18,9 @@ export async function GET(request) {
     let query = auth.supabase.from('textbook_material_links')
       .select('id,lang,chapter_slug,material_id,pdf_id,reading_materials:material_id(id,title),uploaded_pdfs:pdf_id(id,title)')
       .eq('user_id', auth.user.id).eq('lang', lang);
-    const bookChapters = lang === 'Japanese' ? await publishedBookCatalog(auth.supabase) : [];
+    // 목록(GET)은 교재 판본 대조가 실패(404 판본 없음 · 503 해시 불일치)해도 이미 연결된 링크는 보여 준다 — 과 목록만 비운다.
+    // 연결을 만드는 POST는 그대로 엄격하다(리뷰 2026-10-17 KST, PERF-TAB-003 뒤 실패 범위가 커진 것 복구).
+    const bookChapters = lang === 'Japanese' ? await publishedBookCatalog(auth.supabase).catch(error => { if ([404, 503].includes(error?.status)) return []; throw error; }) : [];
     const validateChapter = chapterSlug => { if(bookChapterNumber(chapterSlug)){if(!bookChapters.some(c=>c.slug===chapterSlug))fail(404,'발행된 교재를 선택해 주세요.');}else { if(!canReadArchive)fail(403,'기존 교재는 관리자 보관함으로 이동했어요.'); chapterMeta(lang,chapterSlug); } };
     if (slug) { validateChapter(slug); query = query.eq('chapter_slug', slug); }
     else { await accessibleMaterial(auth.supabase, auth.user.id, kind, id); query = query.eq(kind === 'pdf' ? 'pdf_id' : 'material_id', id); }
