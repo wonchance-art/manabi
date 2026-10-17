@@ -1,3 +1,4 @@
+import { headClause } from './meaningClean';
 import { loadVocabularyExclusions } from './vocabularyExclusion';
 import { loadPublishedRegistry } from './publishedChapter';
 import { fsrsServiceClient } from './server/fsrsLearning';
@@ -300,7 +301,8 @@ export function buildEncounterCandidates(encounterRows, { wordByMain, exclude = 
     seen.add(main);
     if (exclude.some((set) => set?.has(main))) continue;
     const w = wordByMain?.get(main);
-    const meaning = (w?.ko || '').split(' — ')[0].trim();
+    // 앞 절 — 괄호 밖의 첫 「 — 」까지(headClause). 예전 split(' — ')은 괄호 안에서 잘라 「아버지 (남에게 …」 같은 짝 없는 괄호를 남겼다.
+    const meaning = headClause(w?.ko || '').trim();
     if (!w || !meaning) continue;
     // meaningFull·pos — 담기 제안(R2)이 NpcDialog 선례대로 정본 뜻 전문을 저장하기 위한 동봉.
     out.push({

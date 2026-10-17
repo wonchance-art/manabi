@@ -55,8 +55,9 @@ function sourceScriptOf(prompt) {
   return { test: s => CJK_SCRIPT.test(s) || LATIN_SCRIPT.test(s) };
 }
 
-/** 괄호 밖에서 처음 만나는 「 — 」 · 문장 끝 앞까지(앞 절). */
-function headClause(s) {
+/** 괄호 밖에서 처음 만나는 「 — 」 · 문장 끝 앞까지(앞 절). 만남 후보(studyMaterials)도 이 함수로 자른다 — 괄호 안 「 — 」에서 자르지 않게. */
+export function headClause(s) {
+  if (typeof s !== 'string') return s;
   let depth = 0;
   for (let i = 0; i < s.length; i++) {
     const c = s[i];
@@ -70,17 +71,18 @@ function headClause(s) {
   }
   return s;
 }
-/** 괄호를 안쪽부터 되풀이해 본다(겹친 괄호). drop(inner) → 뺄지. 남기는 괄호는 자리표로 숨겨 바깥 괄호를 다음 차례에 본다.
- * 짝 없는 꼬리 괄호는 drop과 상관없이 뺀다. */
-function dropParens(s, drop) {
+/** 괄호를 안쪽부터 되풀이해 본다(겹친 괄호). decide(inner) → null(남김) · ''(뺌) · 문자열(괄호 안을 그 글로).
+ * 남기는 괄호는 자리표로 숨겨 바깥 괄호를 다음 차례에 본다. 짝 없는 꼬리 괄호는 decide와 상관없이 뺀다. */
+function dropParens(s, decide) {
   const kept = [];
   const expand = t => { let r = t, p; do { p = r; r = r.replace(/\u0000(\d+)\u0001/g, (_, k) => kept[k]); } while (r !== p); return r; };
   let prev, out = s;
   do {
     prev = out;
     out = out.replace(PAREN, (m, inner) => {
-      if (drop(expand(inner))) return '';
-      kept.push(m);
+      const verdict = decide(expand(inner));
+      if (verdict === '') return '';
+      kept.push(verdict === null ? m : m.replace(inner, verdict));
       return `\u0000${kept.length - 1}\u0001`;
     });
   } while (out !== prev);
@@ -92,7 +94,14 @@ export function choiceMeaning(meaning, prompt) {
   const base = stripSourceLangInMeaning(meaning);
   if (typeof base !== 'string' || !base) return base;
   const source = sourceScriptOf(prompt);
-  const drop = inner => source.test(inner) || QUOTE_MARKS.test(inner);
+  // 뺄 괄호라도 「 — 」 앞이 한글 설명뿐이면 그 앞만 남긴다 — 「안녕하세요 (낮 인사 — 원래 「今日は」…)」 → 「(낮 인사)」.
+  // 뜻을 가르는 설명(낮 · 저녁 인사, 자동사, 찬물)은 지키고 용례만 뺀다(데이터 감사: こんにちは · こんばんは가 같은 보기가 됐다).
+  const leaks = t => source.test(t) || QUOTE_MARKS.test(t);
+  const drop = inner => {
+    if (!leaks(inner)) return null;
+    const head = inner.split(/\s[—–]\s/u)[0].trim();
+    return head !== inner.trim() && !leaks(head) && HANGUL_SYLLABLE.test(head) ? head : '';
+  };
   const text = nfc(base);
   // 한글 뜻이 남는 가장 짧은 꼴을 고른다 — 앞 절이 약어 · 원어뿐이면(「TKG — 갓 지은 밥에…」) 앞 절로 자르지 않는다.
   for (const candidate of [tidy(dropParens(headClause(text), drop)), tidy(dropParens(text, drop))]) {
@@ -112,7 +121,7 @@ export function choiceLabels(labels, prompt) {
   const forms = promptForms(prompt);
   const leaks = forms.length > 0 && labels.some(label => forms.some(f => nfc(label).includes(f)));
   // 괄호 밖(앞 절 자체)에 낱말이 있으면 더 뺄 수 없다 — 그 경우도 괄호는 모두 빼 한쪽만 다르지 않게 둔다(데이터 쪽 과제).
-  return leaks ? labels.map(label => tidy(dropParens(nfc(label), () => true))) : labels;
+  return leaks ? labels.map(label => tidy(dropParens(nfc(label), () => ''))) : labels;
 }
 
 /**

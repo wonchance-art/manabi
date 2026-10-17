@@ -3,7 +3,7 @@
 // 괄호 용례가 문제 낱말을 그대로 보였다. 규칙은 meaningClean.js(choiceMeaning · choiceLabels · choiceSet)가 정본이다.
 import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { choiceLabels, choiceMeaning, choiceSet, stripSourceLangInMeaning } from '../meaningClean';
+import { choiceLabels, choiceMeaning, choiceSet, headClause, stripSourceLangInMeaning } from '../meaningClean';
 import { buildEncounterItems, buildWarmupItems, composeSession } from '../studySession';
 
 const read = (f) => fs.readFileSync(f, 'utf8');
@@ -60,6 +60,15 @@ describe('앞 절 · 겹친 괄호 · 꼬리 괄호(데이터 감사 2026-10-17 
   it('[ ] 괄호도 같은 규칙, 겹친 괄호는 안쪽부터', () => {
     expect(choiceMeaning('~해 버리다 [てしまう→ちゃう / でしまう→じゃう] (완료 뉘앙스)', '〜ちゃう／〜じゃう')).toBe('~해 버리다 (완료 뉘앙스)');
     expect(choiceMeaning("닭도리탕 (국립국어원은 '도리'를 일본어 とり(鳥·새·닭)로 보고 '도리다(도려내다)'설도)", 'とり')).toBe('닭도리탕');
+  });
+  it('뺄 괄호라도 「 — 」 앞이 한글 설명뿐이면 그 앞만 남긴다 — 뜻을 가르는 설명은 지킨다(こんにちは · こんばんは)', () => {
+    expect(choiceMeaning('안녕하세요 (낮 인사 — 원래 「今日は(오늘은)…」의 앞만 남은 인사)', 'こんにちは')).toBe('안녕하세요 (낮 인사)');
+    expect(choiceMeaning('안녕하세요 (저녁 인사 — 「今晩は(오늘 밤은)…」의 화석)', 'こんばんは')).toBe('안녕하세요 (저녁 인사)');
+    expect(choiceMeaning('물 (찬물 — 식당에서는 お水)', '水')).toBe('물 (찬물)');
+  });
+  it('만남 후보의 앞 절은 괄호 밖 「 — 」에서만 자른다(headClause)', () => {
+    expect(headClause('아버지 (남에게 자기 아버지를 말할 때 — 부를 때는 お父さん) — 덧붙임')).toBe('아버지 (남에게 자기 아버지를 말할 때 — 부를 때는 お父さん) ');
+    expect(read('src/lib/studyMaterials.js')).toContain("const meaning = headClause(w?.ko || '').trim();");
   });
   it('짝 안 맞는 꼬리 괄호(만남 문항의 「 — 」 절단)는 뺀다', () => {
     expect(choiceMeaning('아버지 (남에게 자기 아버지를 말할 때', '父')).toBe('아버지');
