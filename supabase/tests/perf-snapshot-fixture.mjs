@@ -61,34 +61,7 @@ export async function setup({ timing = false } = {}) {
   await db.exec(modern);
   await db.exec(await read('../../docs/sql/korean-learning-support.sql'));
   await db.exec(fixture);
-  for (const u of [A, B]) { await db.query('INSERT INTO auth.users(id) VALUES ($1)', [u]); await db.query('INSERT INTO public.profiles(id) VALUES ($1)', [u]); }
-  // edge cases (A): plain · known(word · base_form · whitespace) · excluded(card · language+word · retired card) · known+excluded; B: other user's known word must not leak
-  const edge = [
-    ['10000000-0000-4000-8000-000000000001', A, 'Japanese', '猫', null], ['10000000-0000-4000-8000-000000000002', A, 'Japanese', '犬', null],
-    ['10000000-0000-4000-8000-000000000003', A, 'Japanese', '食べた', '食べる'], ['10000000-0000-4000-8000-000000000004', A, 'Japanese', '鳥', null],
-    ['10000000-0000-4000-8000-000000000005', A, 'Chinese', '学校', null], ['10000000-0000-4000-8000-000000000006', A, 'Korean', '사과', null],
-    ['10000000-0000-4000-8000-000000000007', A, 'English', ' apple ', null], ['10000000-0000-4000-8000-000000000008', A, 'French', 'chat', null],
-    ['20000000-0000-4000-8000-000000000001', B, 'Japanese', '犬', null], ['20000000-0000-4000-8000-000000000002', B, 'Korean', '책', null],
-  ];
-  for (const [id, u, lang, w, base] of edge) { await as(u); await db.query('INSERT INTO public.user_vocabulary(id,user_id,language,word_text,base_form) VALUES ($1,$2,$3,$4,$5)', [id, u, lang, w, base]); }
-  if (timing) {
-    // bulk shaped like the largest production learner (2026-10-17 KST, aggregate counts only): 1,232 words —
-    // Chinese 1,129 · French 98 · a few others — and 223 known words, all zh (each also auto-excluded by the known-word trigger)
-    await as(A);
-    await db.query(`INSERT INTO public.user_vocabulary(user_id,language,word_text,base_form)
-      SELECT $1, CASE WHEN g <= 1121 THEN 'Chinese' WHEN g <= 1219 THEN 'French' ELSE 'English' END, 'w' || g,
-             CASE WHEN g % 7 = 0 THEN 'b' || g END FROM generate_series(1, 1224) g`, [A]);
-    await db.query(`INSERT INTO public.user_known_words(user_id,lang,word_text)
-      SELECT $1, 'zh', CASE WHEN g % 7 = 0 THEN 'b' || g ELSE 'w' || g END FROM generate_series(1, 1121) g WHERE g % 5 = 0 LIMIT 222`, [A]);
-    await db.exec('ANALYZE');
-  }
-  for (const [u, lang, w] of [[A, 'ja', '犬'], [A, 'ja', '食べる'], [A, 'ko', '사과'], [A, 'en', 'apple'], [B, 'zh', '学校']]) {
-    await as(u); await db.query('INSERT INTO public.user_known_words(user_id,lang,word_text) VALUES ($1,$2,$3)', [u, lang, w]);
-  }
-  for (const [u, lang, w, vid, retired] of [[A, 'Japanese', '鳥', '10000000-0000-4000-8000-000000000004', '{}'], [A, 'Chinese', '学校', null, '{}'],
-    [A, 'Korean', '사과', null, '{}'], [A, 'French', 'chien', null, '{10000000-0000-4000-8000-000000000008}']]) {
-    await as(u); await db.query('INSERT INTO public.vocabulary_exclusions(user_id,language,word_text,vocabulary_id,retired_vocabulary_ids) VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING', [u, lang, w, vid, retired]);
-  }
+  await seedLearners(h, { timing });
   h.base = await h.snaps();
   const LOCAL = { pin: (await h.capability()).pinned, ...(({ ok, ...p }) => p)(await h.pins()) };
 
@@ -140,4 +113,38 @@ export async function seedEdgeActor(h) {
     VALUES ('30000000-0000-4000-8000-000000000008',$1,'op-edge-1','2026-10-02','2026-10-02T00:00:00.000500Z')`, [C]);
   await db.exec('RESET session_replication_role');
   await db.exec('ANALYZE');
+}
+
+/** Synthetic learners A (edge cases; with timing = 1,232 words shaped like the largest production learner) and B (small).
+ *  Korean rows need the capability ready, so call this before anything turns it off. Local fixture only. */
+export async function seedLearners(h, { timing = false } = {}) {
+  const { db, as } = h;
+  for (const u of [A, B]) { await db.query('INSERT INTO auth.users(id) VALUES ($1)', [u]); await db.query('INSERT INTO public.profiles(id) VALUES ($1)', [u]); }
+  // edge cases (A): plain · known(word · base_form · whitespace) · excluded(card · language+word · retired card) · known+excluded; B: other user's known word must not leak
+  const edge = [
+    ['10000000-0000-4000-8000-000000000001', A, 'Japanese', '猫', null], ['10000000-0000-4000-8000-000000000002', A, 'Japanese', '犬', null],
+    ['10000000-0000-4000-8000-000000000003', A, 'Japanese', '食べた', '食べる'], ['10000000-0000-4000-8000-000000000004', A, 'Japanese', '鳥', null],
+    ['10000000-0000-4000-8000-000000000005', A, 'Chinese', '学校', null], ['10000000-0000-4000-8000-000000000006', A, 'Korean', '사과', null],
+    ['10000000-0000-4000-8000-000000000007', A, 'English', ' apple ', null], ['10000000-0000-4000-8000-000000000008', A, 'French', 'chat', null],
+    ['20000000-0000-4000-8000-000000000001', B, 'Japanese', '犬', null], ['20000000-0000-4000-8000-000000000002', B, 'Korean', '책', null],
+  ];
+  for (const [id, u, lang, w, base] of edge) { await as(u); await db.query('INSERT INTO public.user_vocabulary(id,user_id,language,word_text,base_form) VALUES ($1,$2,$3,$4,$5)', [id, u, lang, w, base]); }
+  if (timing) {
+    // bulk shaped like the largest production learner (2026-10-17 KST, aggregate counts only): 1,232 words —
+    // Chinese 1,129 · French 98 · a few others — and 223 known words, all zh (each also auto-excluded by the known-word trigger)
+    await as(A);
+    await db.query(`INSERT INTO public.user_vocabulary(user_id,language,word_text,base_form)
+      SELECT $1, CASE WHEN g <= 1121 THEN 'Chinese' WHEN g <= 1219 THEN 'French' ELSE 'English' END, 'w' || g,
+             CASE WHEN g % 7 = 0 THEN 'b' || g END FROM generate_series(1, 1224) g`, [A]);
+    await db.query(`INSERT INTO public.user_known_words(user_id,lang,word_text)
+      SELECT $1, 'zh', CASE WHEN g % 7 = 0 THEN 'b' || g ELSE 'w' || g END FROM generate_series(1, 1121) g WHERE g % 5 = 0 LIMIT 222`, [A]);
+    await db.exec('ANALYZE');
+  }
+  for (const [u, lang, w] of [[A, 'ja', '犬'], [A, 'ja', '食べる'], [A, 'ko', '사과'], [A, 'en', 'apple'], [B, 'zh', '学校']]) {
+    await as(u); await db.query('INSERT INTO public.user_known_words(user_id,lang,word_text) VALUES ($1,$2,$3)', [u, lang, w]);
+  }
+  for (const [u, lang, w, vid, retired] of [[A, 'Japanese', '鳥', '10000000-0000-4000-8000-000000000004', '{}'], [A, 'Chinese', '学校', null, '{}'],
+    [A, 'Korean', '사과', null, '{}'], [A, 'French', 'chien', null, '{10000000-0000-4000-8000-000000000008}']]) {
+    await as(u); await db.query('INSERT INTO public.vocabulary_exclusions(user_id,language,word_text,vocabulary_id,retired_vocabulary_ids) VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING', [u, lang, w, vid, retired]);
+  }
 }

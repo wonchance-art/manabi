@@ -14,11 +14,18 @@ import { readFile, readdir } from 'node:fs/promises';
 import { runInNewContext } from 'node:vm';
 import { PGlite } from '@electric-sql/pglite';
 import { containsProductionConstants, localConstants, localize } from './lib/production-constants.mjs';
+import { A, B, C, seedEdgeActor, seedLearners } from './perf-snapshot-fixture.mjs';
 
 const read = path => readFile(new URL(path, import.meta.url), 'utf8');
 const OBSERVED_AFTER = '20261010999999';
 const MIGRATIONS = new URL('../migrations/', import.meta.url);
-const actor = '00000000-0000-4000-8000-000000000001'; // 합성 로컬 행위자 — 학습자 행은 만들지 않는다.
+const actor = '00000000-0000-4000-8000-000000000001'; // 합성 로컬 행위자(capability 확인용 — 단어 없음)
+// 합성 학습자(perf-snapshot-fixture): A · B(보통 · 아는 단어 · 제외 3종) + C(가장자리 — NFD/NFC · 공백 · 빈 base_form · NULL 언어 ·
+// NULL 섞인 retired · 등록 카드 3장). 마이그레이션 자신의 데이터 검사(전 사용자 snapshot 출력 동일 · registry 동치)가 0행이 아니라
+// 실제 행 위에서 돌고, 이 검사도 건강한 매 단계에서 「snapshot 출력이 처음과 같다」를 본다.
+const LEARNERS = [A, B, C];
+/** 학습 동작(snapshot 출력)을 일부러 바꾸는 마이그레이션 — 이유와 함께만. 그 파일 뒤 기준을 새 출력으로 바꾼다. */
+const EXPECTED_SNAPSHOT_CHANGES = {};
 
 /**
  * 운영에 이미 나간 위반. state = 그 파일 적용 직후의 정확한 상태. healedBy가 있으면 그 파일이 되돌린 이력이다(되돌림까지 확인).
@@ -67,6 +74,11 @@ const languages = async () => {
   return (await queryOne('SELECT public.learning_language_capabilities() value')).value.languages;
 };
 const state = async () => ({ pins: await pins(), languages: await languages() });
+const snapshots = async () => {
+  const out = {};
+  for (const u of LEARNERS) { const { now, ...rest } = (await queryOne(`SELECT public.fsrs_vocabulary_snapshot('${u}') v`)).v; out[u] = rest; }
+  return out;
+};
 const healthy = s => Object.values(s.pins).every(Boolean)
   && Object.keys(s.languages).length > 0
   && Object.values(s.languages).every(flags => Object.keys(flags).length > 0 && Object.values(flags).every(v => v === true));
@@ -81,6 +93,14 @@ try {
   await db.query('INSERT INTO public.profiles(id) VALUES ($1)', [actor]);
   const initial = await state();
   assert.ok(healthy(initial), `관측 fixture가 처음부터 건강하지 않다: ${show(initial)}`);
+  // 한국어 행은 capability가 켜져 있어야 넣을 수 있다 — 어떤 마이그레이션도 적용하기 전에 심는다.
+  const learnerFixture = { db, as: u => db.query("SELECT set_config('request.jwt.claim.sub',$1,false)", [u]) };
+  await seedLearners(learnerFixture);
+  await seedEdgeActor(learnerFixture);
+  let baseline = await snapshots();
+  const cards = Object.values(baseline).reduce((n, s) => n + s.registry.length, 0);
+  assert.ok(cards >= 20 && Object.values(baseline).every(s => s.registry.length > 0), `합성 학습자 카드가 비었다(${cards})`);
+  console.log(`SEED 합성 학습자 ${LEARNERS.length}명 · 카드 ${cards}장`);
 
   const candidates = process.argv.slice(2);
   const files = [...(await readdir(MIGRATIONS)).filter(f => f.endsWith('.sql') && f.slice(0, 14) > OBSERVED_AFTER).sort(), ...candidates];
@@ -113,6 +133,11 @@ try {
       }
       else if (expected) throw new Error(`${file}: EXPECTED_BREAKS에 있지만 적용 뒤 건강하다 — 항목을 지운다(${expected.ticket})`);
       broken = null;
+      // 건강한 상태에서는 학습 동작(snapshot 출력)이 처음과 같아야 한다 — 일부러 바꾼 파일만 EXPECTED_SNAPSHOT_CHANGES로.
+      const now2 = await snapshots();
+      const name = file.split('/').pop();
+      if (EXPECTED_SNAPSHOT_CHANGES[name]) { assert.notDeepEqual(now2, baseline, `${name}: EXPECTED_SNAPSHOT_CHANGES에 있지만 출력이 그대로다`); baseline = now2; }
+      else assert.deepEqual(now2, baseline, `${name}가 학습자 snapshot 출력을 바꿨다(합성 학습자 ${LEARNERS.length}명)`);
       console.log(`OK   ${file}`);
       continue;
     }
