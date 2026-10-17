@@ -25,6 +25,7 @@ import { isMuted, onChange as onMuteChange, toggleMute } from '@/lib/world/muteS
 import { handleConversationKeyDown } from '@/components/conversation/ConversationThread';
 import { useArrivals, useAutoGrow, useChatScroll, useChatViewport } from '@/components/conversation/useChatShell';
 import { useToast } from '@/lib/ToastContext';
+import PhoneFrame from '@/components/conversation/PhoneFrame';
 import '@/components/conversation/conversation.css';
 
 export default function ConversationLobbyPage() {
@@ -116,9 +117,10 @@ export default function ConversationLobbyPage() {
     </div>
   );
 
-  if (authLoading) return <div className="conv-page" data-chat="true"><div className="conv" ref={shellRef}>{head}<p className="conv__notice conv-lobby__empty" role="status">불러오는 중…</p></div></div>;
+  if (authLoading) return <PhoneFrame><div className="conv-page" data-chat="true"><div className="conv" ref={shellRef}>{head}<p className="conv__notice conv-lobby__empty" role="status">불러오는 중…</p></div></div></PhoneFrame>;
   if (!user) {
     return (
+      <PhoneFrame>
       <div className="conv-page" data-chat="true">
         <div className="conv" ref={shellRef}>
           {head}
@@ -128,6 +130,7 @@ export default function ConversationLobbyPage() {
           </div>
         </div>
       </div>
+      </PhoneFrame>
     );
   }
 
@@ -136,6 +139,7 @@ export default function ConversationLobbyPage() {
   const lang = bcp47ForLanguage(language);
 
   return (
+    <PhoneFrame>
     <div className="conv-page" data-chat="true">
       <div className="conv" ref={shellRef}>
         {head}
@@ -234,5 +238,6 @@ export default function ConversationLobbyPage() {
         </div>
       </div>
     </div>
+    </PhoneFrame>
   );
 }

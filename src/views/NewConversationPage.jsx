@@ -23,6 +23,7 @@ import { conversationRooms, roomTimeLabel } from '@/lib/conversation/chatView';
 import { fetchLobby, isLobbyMissing, lobbyHref, lobbyKey } from '@/lib/conversation/lobby';
 import { isMuted } from '@/lib/world/muteStore';
 import { friendlyToastMessage } from '@/lib/errorMessage';
+import PhoneFrame from '@/components/conversation/PhoneFrame';
 import '@/components/conversation/conversation.css';
 
 export default function NewConversationPage() {
@@ -69,18 +70,21 @@ export default function NewConversationPage() {
     }
   }
 
-  if (loading) return <p className="manabi-page" role="status">불러오는 중…</p>;
+  if (loading) return <PhoneFrame><p className="manabi-page conv-rooms" role="status">불러오는 중…</p></PhoneFrame>;
   if (!user) {
     return (
-      <div className="manabi-page conv-rooms">
-        <h1 className="conv-rooms__title">대화</h1>
-        <p>AI 튜터와 주제별 방에서 이야기해요. 로그인하고 시작해 주세요.</p>
-        <Link className="manabi-button" href="/auth?from=/conversation/new">로그인</Link>
-      </div>
+      <PhoneFrame>
+        <div className="manabi-page conv-rooms">
+          <h1 className="conv-rooms__title">대화</h1>
+          <p>AI 튜터와 주제별 방에서 이야기해요. 로그인하고 시작해 주세요.</p>
+          <Link className="manabi-button" href="/auth?from=/conversation/new">로그인</Link>
+        </div>
+      </PhoneFrame>
     );
   }
 
   return (
+    <PhoneFrame>
     <div className="manabi-page conv-rooms">
       <header className="conv-rooms__head">
         <h1 className="conv-rooms__title">대화</h1>
@@ -152,7 +156,8 @@ export default function NewConversationPage() {
           )}
         </li>
       </ul>
-      <p className="conv-new__note">튜터와의 대화는 내 서재 「대화」에 비공개로 남아요. {langNameKo(language)} · {level}</p>
+      <p className="conv-new__note">튜터와의 대화는 나만 볼 수 있고, 이 목록에 남아요. {langNameKo(language)} · {level}</p>
     </div>
+    </PhoneFrame>
   );
 }

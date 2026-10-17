@@ -128,3 +128,28 @@ describe('앱 같은 움직임', () => {
     expect(lobby).toContain('<div className="conv-lobby__row conv-lobby__row--me conv-anim-in">');
   });
 });
+
+describe('PC 휴대폰 틀(9차)', () => {
+  const css = read('components/conversation/conversation.css');
+  const frame = sliceBetween(css, '.phone-stage, .phone-stage__device, .phone-stage__screen');
+  it('틀은 마우스로 쓰는 키 큰 화면에서만 켜지고, 폰·태블릿(터치)에서는 사라진다 — 폭 브레이크포인트를 새로 쓰지 않는다', () => {
+    expect(frame.startsWith('.phone-stage, .phone-stage__device, .phone-stage__screen { display: contents; }')).toBe(true);
+    expect(frame).toContain('.phone-stage__status, .phone-stage__home { display: none; }');
+    expect(frame).toContain('@media (hover: hover) and (pointer: fine) and (min-height: 700px) {');
+    expect(frame).not.toMatch(/@media[^{]*(max|min)-width/);
+  });
+  it('화면 폭은 폰 그대로 390px, 틀 윗변은 메뉴 높이와 상관없이 같은 자리 — 방을 오가도 휴대폰이 움직이지 않는다', () => {
+    expect(frame).toContain('width: min(410px, calc(100vw - 32px));');
+    expect(frame).toContain('border: 10px solid var(--phone-bezel);');
+    expect(frame).toContain('padding: max(16px, calc(var(--phone-top) - var(--gnb-height, 64px))) 16px 20px;');
+    expect(frame).toContain('.phone-stage__screen .conv { height: 100%; top: 0; padding-top: var(--phone-status-h); }');
+  });
+  it('방 목록·모두의 대화방·튜터 대화방이 같은 틀을 쓴다', () => {
+    expect(read('views/NewConversationPage.jsx').match(/<PhoneFrame>/g)).toHaveLength(3);
+    expect(read('views/ConversationLobbyPage.jsx').match(/<PhoneFrame>/g)).toHaveLength(3);
+    expect(read('views/ViewerPage.jsx')).toMatch(/<PhoneFrame>\s*<ConversationThread/);
+    const phone = read('components/conversation/PhoneFrame.jsx');
+    expect(phone).toContain('<div className="phone-stage__status" aria-hidden="true">');
+    expect(phone).toContain("timeZone: 'Asia/Seoul'");
+  });
+});

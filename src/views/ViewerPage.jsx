@@ -89,6 +89,7 @@ import { fetchSynAnt, peekSynAnt, synAntEligible } from '../lib/synAnt';
 import ReportMaterialButton from '../components/ReportMaterialButton';
 import ReadingTest from '../components/ReadingTest';
 import ConversationThread from '../components/conversation/ConversationThread';
+import PhoneFrame from '../components/conversation/PhoneFrame';
 import { conversationOf, tokensByLineIndex, applyTurnResult, applyFillResult } from '../lib/conversation/turnModel';
 import { openConversationFor, startTopicConversation, trashConversation } from '../lib/conversation/conversationClient';
 import { invalidateLibrary } from '../lib/libraryOperations';
@@ -4173,6 +4174,7 @@ export default function ViewerPage() {
           // 대화 자료 — 같은 renderToken으로 말풍선을 편다(토큰 부품·CSS·단어창·저장 경로 공유, §8 계약).
           if (conversation) {
             return (
+              <PhoneFrame>
               <ConversationThread
                 material={material}
                 conversation={conversation}
@@ -4196,6 +4198,7 @@ export default function ViewerPage() {
                   { label: vt('학습'), onSelect: () => changeModal('activities', true) },
                 ]}
               />
+              </PhoneFrame>
             );
           }
 

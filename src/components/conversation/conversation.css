@@ -241,3 +241,47 @@
   .conv__icon, .conv-chip, .conv-act, .conv-lobby__bubble, .conv-rooms__row { transition: none; }
   .conv__icon:active:not(:disabled), .conv-chip:active:not(:disabled), .conv-act:active { transform: none; }
 }
+
+/* 휴대폰 틀(CONV-CHAT-001 9차, 오너 「[대화] 페이지 아예 중간에 스마트폰 스크린샷 크기로 넣어서 그 안에서 구동되게」 2026-10-17).
+   마우스로 쓰는 키 큰 화면(PC)에서만 방 목록·모두의 대화방·튜터 대화방을 가운데 휴대폰(390×844 비율) 안에 띄운다.
+   폰·태블릿(터치)은 틀이 display: contents로 사라져 지금 화면 그대로다. 폭 브레이크포인트를 새로 쓰지 않는다(ui-conventions §2 동결) —
+   입력 방식(hover·pointer)과 높이로만 고른다. 상태 표시줄은 화면 위에 겹치고(말풍선 바탕이 그 밑까지 깔린다), 홈 막대는 입력창 아래. */
+.phone-stage, .phone-stage__device, .phone-stage__screen { display: contents; }
+.phone-stage__status, .phone-stage__home { display: none; }
+@media (hover: hover) and (pointer: fine) and (min-height: 700px) {
+  /* 틀 윗변은 전역 메뉴 높이(방 목록 78px · 대화방 56px)와 상관없이 같은 자리(--phone-top)라 방을 오가도 휴대폰이 움직이지 않는다. */
+  .phone-stage { --phone-bezel: #15171A; --phone-status-ink: var(--text-primary); --phone-status-h: 34px; --phone-top: 98px;
+    display: flex; justify-content: center; align-items: flex-start; width: 100%;
+    padding: max(16px, calc(var(--phone-top) - var(--gnb-height, 64px))) 16px 20px; }
+  .phone-stage__device { position: relative; display: flex; flex-direction: column; flex: none;
+    /* 화면 폭은 휴대폰 그대로 390px(말풍선 줄바꿈이 폰과 같다). 높이는 창에 맞춰 줄인다(844 → 키 작은 창은 SE형 비율). */
+    width: min(410px, calc(100vw - 32px)); height: min(864px, calc(100dvh - var(--phone-top) - 20px - var(--phone-nav-room, 0px)));
+    border: 10px solid var(--phone-bezel); border-radius: 50px; overflow: hidden; background: var(--bg-primary);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-primary) 18%, transparent), 0 24px 60px color-mix(in srgb, var(--phone-bezel) 35%, transparent);
+    transform: translateZ(0); /* 틀 안의 position: fixed(메뉴·확인 창)가 틀을 기준으로 뜬다 */ }
+  .phone-stage__device:has(.conv) { --phone-status-ink: #191919; }
+  .viewer-layout[data-reader-theme="dark"] .phone-stage__device:has(.conv) { --phone-status-ink: #F1F3F5; }
+  .phone-stage__status { position: absolute; inset: 0 0 auto; z-index: 30; display: flex; align-items: center; justify-content: space-between;
+    height: var(--phone-status-h); padding: 4px 22px 0 28px; color: var(--phone-status-ink); font-size: 0.82rem; font-weight: 600;
+    font-variant-numeric: tabular-nums; pointer-events: none; }
+  .phone-stage__icons { display: inline-flex; align-items: center; gap: 5px; }
+  .phone-stage__screen { display: block; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+  .phone-stage__screen::-webkit-scrollbar { display: none; }
+  .phone-stage__home { position: absolute; left: 50%; bottom: 7px; z-index: 30; display: block; width: 34%; height: 5px; border-radius: 3px;
+    background: var(--phone-status-ink); opacity: 0.4; transform: translateX(-50%); pointer-events: none; }
+  /* 화면 안: 대화방은 틀 높이를 채우고(visualViewport 대신), 방 목록은 틀 안에서 스크롤한다. */
+  .phone-stage__screen .conv { height: 100%; top: 0; padding-top: var(--phone-status-h); }
+  .phone-stage__screen .conv__input { padding-bottom: 20px; }
+  .phone-stage__screen .conv__jump { bottom: 92px; }
+  .phone-stage__screen > .conv-page { max-width: none; height: 100%; }
+  .phone-stage__screen > .manabi-page.conv-rooms { max-width: none; min-height: 100%; margin: 0; padding: var(--phone-status-h) 0 24px; }
+  /* 틀이 있으면 대화방에서도 위 전역 메뉴를 그대로 둔다 — 휴대폰은 페이지 한가운데 놓인 화면이고, 메뉴로 다른 곳에 갈 수 있다.
+     (폰에서는 위 data-chat 규칙대로 메뉴를 걷어 화면 전체가 대화방이다.) */
+  .manabi-app:has(.phone-stage .conv) > .gnb { display: flex; }
+  .manabi-app:has(.phone-stage .conv) > .app-layout { padding-top: var(--gnb-height); padding-bottom: 0; }
+  .manabi-app .viewer-layout[data-chat="true"], .manabi-app .viewer-layout[data-chat="true"] .reader-area { background: transparent; }
+  /* 좁은 PC 창(셸 900 이하)의 방 목록은 하단 탭이 보이므로 그만큼 틀을 줄인다. */
+  @container manabi-shell (max-width: 900px) {
+    .manabi-app:not(.manabi-app--reading) .phone-stage:not(:has(.conv)) { --phone-nav-room: 80px; }
+  }
+}
