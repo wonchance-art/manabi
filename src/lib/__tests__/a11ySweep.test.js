@@ -148,6 +148,9 @@ describe('⑤ 상시 알림 영역의 보이는 사본 — aria-hidden + 이름 
     ['src/views/StudySessionPage.jsx', "<span className=\"sr-only\" role=\"status\">{phase === 'feedback' && produceState?.status === 'grading'", '<p className="study-produce__error" aria-hidden="true"'],
     // /study 오프라인 한 줄(STUDY-OFFLINE-LINE — studyUnavailable.test.jsx)
     ['src/views/StudySessionPage.jsx', "<span className=\"sr-only\" role=\"status\">{offline ? STUDY_OFFLINE_LINE : ''}</span>", '<p className="study-offline-line" aria-hidden="true">{STUDY_OFFLINE_LINE}</p>'],
+    // 연습 화면의 긴 작업(QUICK-FOCUS-001 · WRITING-FOCUS-001 — practiceFocus.test.js) — 보이는 사본은 단추 글자라 따로 없다
+    ['src/views/QuickPage.jsx', "<span className=\"sr-only\" role=\"status\">{analyzing ?", null],
+    ['src/views/WritingStudioPage.jsx', "<span className=\"sr-only\" role=\"status\">{loading ?", null],
     ['src/components/notes/NoteRecognition.jsx', "<span className=\"sr-only\" role=\"status\">{busy?'선택한 필기를 읽는 중…'", null],
     ['src/components/classroom/BoardInkRecognition.jsx', "<span className=\"sr-only\" role=\"status\">{busy?'선택한 필기를 읽는 중…'", null],
   ];

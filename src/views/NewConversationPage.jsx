@@ -3,7 +3,7 @@
 // 주제·언어·수준을 고르면 서버 대화 턴 경로가 비공개 대화 자료를 만들고 수준에 맞춘 첫 질문까지 받아 온다.
 // 「써 볼 말」은 오늘 복습한 말(useOutputWords) 표시만이다 — 첫 질문 프롬프트에 함께 넘긴다.
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/AuthContext';
@@ -19,6 +19,7 @@ import {
 } from '@/lib/conversation/newConversation';
 import { safeReaderReturn } from '@/lib/libraryReturn';
 import { friendlyToastMessage } from '@/lib/errorMessage';
+import { focusIfFree } from '@/lib/focusAfterAction';
 import '@/components/conversation/conversation.css';
 
 const RECENT = 3;
@@ -36,6 +37,12 @@ export default function NewConversationPage() {
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
   const outputWords = useOutputWords(language, { enabled: !!user });
+  // 시작 실패 뒤 「대화 시작」으로 초점(CONV-FOCUS-001) — 누르는 동안 잠겨(disabled) 초점이 body로 떨어졌다. 알림(role=alert)과 함께
+  // 다시 누를 자리를 준다. 다른 곳에 살아 있는 초점은 뺏지 않는다.
+  const startRef = useRef(null);
+  useEffect(() => {
+    if (error && !starting) focusIfFree(startRef.current, startRef.current?.closest('.conv-new'));
+  }, [error, starting]);
   const recent = useQuery({
     queryKey: ['library-conversations', user?.id], enabled: !!user, staleTime: 30000,
     queryFn: () => fetchConversations(supabase, user.id),
@@ -133,7 +140,7 @@ export default function NewConversationPage() {
       )}
 
       <div className="conv-new__start">
-        <button type="button" className="manabi-button" disabled={!ready || starting} onClick={start}>
+        <button ref={startRef} type="button" className="manabi-button" disabled={!ready || starting} onClick={start}>
           {starting ? '첫 질문을 받는 중…' : '대화 시작'}
         </button>
         <p className="conv-new__note">대화는 내 서재에 비공개로 남아요. 언제든 지울 수 있어요.</p>
