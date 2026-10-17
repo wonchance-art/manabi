@@ -13,7 +13,7 @@ const page = fs.readFileSync(path.join(process.cwd(), 'src/views/MaterialsPage.j
 describe('화면 — 추천은 목록이 정해진 뒤에만', () => {
   it('추천 칸은 목록 골격과 같은 조건(!tab || isLoading)이 풀린 뒤에 그린다', () => {
     expect(page).toContain('{(!tab || isLoading) ? (\n        <CardGridSkeleton />');
-    const block = sliceBetween(page, '{/* 오늘의 추천(크론 수집)', '<h2 className="suggestions-section__title">오늘의 추천 자료</h2>');
+    const block = sliceBetween(page, '{/* 오늘의 추천(크론 수집)', '<h2 className="suggestions-section__title" id={TODAY_NEWS_ID} tabIndex={-1}>오늘의 소식</h2>');
     expect(block).toContain('{tab && !isLoading && (() => {');
     expect(block).toContain('const filteredSuggestions = filterSuggestionsByProfile(suggestions, profile);');
   });

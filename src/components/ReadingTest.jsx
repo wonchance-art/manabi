@@ -249,10 +249,12 @@ Rules:
     <Wrapper {...(inline ? {} : { onClose })}>
       <div className={`reading-test ${inline ? 'reading-test--inline' : ''}`} onClick={e => e.stopPropagation()}>
 
-        <div className="reading-test__header">
+        {/* 창(ViewerModal) 안에서는 머리를 그리지 않는다 — 창 머리가 이미 제목 · 닫기를 가진다(닫기 두 개 · 제목 두 번이던 것,
+            오너 「권장대로」 2026-10-17 KST). 뷰어의 다른 창 6곳과 같은 관례. */}
+        {!inline && <div className="reading-test__header">
           <h2 style={{ margin: 0, fontSize: '1.1rem' }}>{english ? 'IELTS Reading Test' : '읽기 확인'}</h2>
           {onClose && <button type="button" aria-label="닫기" onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'var(--text-muted)' }}><span aria-hidden="true">✕</span></button>}
-        </div>
+        </div>}
 
         {/* idle */}
         {status === 'idle' && (
@@ -299,7 +301,7 @@ Rules:
             ))}
 
             <Button onClick={gradeTest} disabled={!allAnswered} style={{ width: '100%', marginTop: 16 }}>
-              {allAnswered ? '채점' : `${Object.keys(answers).length}/${questions.length} answered`}
+              {allAnswered ? '채점' : `${Object.keys(answers).length}/${questions.length}`}
             </Button>
           </div>
         )}

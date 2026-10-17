@@ -238,7 +238,7 @@ describe('⑤ 대기 화면 회귀 — 스타일 · 두 번 바뀜 · 비로그�
     expect(empty).not.toContain("tab !== 'public' ? (");
     expect(empty).toContain('>로그인하고 자료 올리기 →</Link>');
     expect(empty).toContain('<Link href="/lessons" className="empty-state__link">로그인 없이 교재부터 보기 →</Link>');
-    expect(page).toContain("? '아직 함께 읽는 글이 없어요.\\n오늘의 추천 자료부터 읽어 보세요.'"); // 안내 문구는 그대로
+    expect(page).toContain("? '아직 함께 읽는 글이 없어요.\\n오늘의 소식부터 읽어 보세요.'"); // 안내 문구 — 칸 이름만 「오늘의 소식」(B2 A안)
   });
   it('A4 발견 골격은 데이터에 달린 「함께 읽는 글」 줄을 그리지 않는다(실제 화면은 publicCount > 0일 때만)', () => {
     expect(render(createElement(DiscoverLoading))).not.toContain('함께 읽는 글');

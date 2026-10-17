@@ -15,7 +15,7 @@ export default function Loading() {
       {/* 제목은 실제 화면이 들어오며 다시 그린다 — 대기 중엔 화면 읽기에 숨겨 「발견」이 두 번 읽히지 않게(배움 · 서재 대기와 같다). */}
       <header className="manabi-page-heading" aria-hidden="true"><h1>발견</h1></header>
       <section className="discover-shelf" aria-hidden="true">
-        <div className="manabi-section-heading"><h2>서가</h2><span>누구나 읽는 책장</span></div>
+        <div className="manabi-section-heading"><div className="discover-shelf__label"><h2>서가</h2><small>누구나 읽는 책장</small></div></div>
         <div className="discover-shelf__row">
           <div className="discover-shelf__label">
             <h3>오늘의 소식</h3>

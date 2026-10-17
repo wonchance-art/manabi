@@ -25,7 +25,7 @@ import { isTeamRoot } from '../lib/classTeamRoot';
 import { groupByPdf, pageRangeLabel, readProgressLabel } from '../lib/pdfGroups';
 import { useGroupReadIds } from '../lib/useGroupReadIds';
 import { LEVELS, SERIES_TITLE_ILIKE, langNameKo, levelRank, profileLevel, isWriteMaterial } from '../lib/constants';
-import { canReadSuggestion, suggestionHref, suggestionSource, TODAY_SUGGESTIONS_KEY, fetchTodaySuggestions } from '../lib/suggestionReading';
+import { canReadSuggestion, suggestionHref, suggestionSource, TODAY_SUGGESTIONS_KEY, TODAY_NEWS_ID, fetchTodaySuggestions } from '../lib/suggestionReading';
 import { encounterLookupLang } from '../lib/refVocabLookup';
 import { isLibraryNote, materialLibraryFilters } from '../lib/libraryDiscovery';
 import ConfirmModal from '../components/ConfirmModal';
@@ -313,7 +313,7 @@ export default function MaterialsPage({ libraryView = null }) {
     window.history.replaceState({ ...window.history.state }, '', `${window.location.pathname === '/discover' ? '/discover' : '/materials'}${next ? `?${next}` : ''}${window.location.hash}`);
   }, [libraryView, searchQuery, langFilter, levelFilter, sortBy, unreadOnly, pinnedOnly, visibleCount]);
 
-  const { data: suggestions = [] } = useQuery({
+  const { data: suggestions = [], isFetched: suggestionsFetched } = useQuery({
     queryKey: TODAY_SUGGESTIONS_KEY,
     enabled: !libraryView || libraryView === 'public',
     queryFn: fetchTodaySuggestions,
@@ -404,7 +404,7 @@ export default function MaterialsPage({ libraryView = null }) {
     return dueVocabError ? null : countVocabularyDueInMaterial(dueVocabIndex, material);
   }
 
-  const { data: materials = [], isLoading, error: materialsError, refetch: refetchMaterials } = useQuery({
+  const { data: materials = [], isLoading, isFetched: materialsFetched, error: materialsError, refetch: refetchMaterials } = useQuery({
     queryKey: ['materials', tab, user?.id, langFilter, levelFilter, searchQuery, !!libraryView],
     queryFn: () => fetchMaterials({ tab, userId: user?.id, langFilter, levelFilter, searchQuery, includeOwnedPublic: !!libraryView }),
     // 기본 탭이 로그인 여부로 갈리므로 auth 확정 전에 쏘면 버릴 쿼리가 된다.
@@ -412,6 +412,26 @@ export default function MaterialsPage({ libraryView = null }) {
     // 한 번 그려지고 책 카탈로그 RPC를 한 번 더 부른다(리뷰 2026-10-17 KST). 확인이 끝난 뒤 한 번만 받는다.
     enabled: !!tab && !(libraryView === 'public' && authLoading),
   });
+
+  // 발견 서가 「오늘의 소식 · 전체 보기」(#today-news, B2 A안 — 오너 「권장대로」 2026-10-17 KST): 목록과 소식이 둘 다 들어온 뒤
+  // 한 번만 그 칸 제목으로 내려가 초점을 둔다 — 위 목록이 늦게 들어오면 칸이 밀려 먼저 내려간 자리가 어긋난다.
+  // 해시 처리는 #library-search와 같은 모양(처음 한 번 + hashchange). 칸이 없으면(로그인 필터로 소식 0) 맨 위 그대로.
+  const newsFocusDone = useRef(false);
+  const newsReady = materialsFetched && suggestionsFetched;
+  useEffect(() => {
+    const focusNews = () => {
+      if (window.location.hash !== `#${TODAY_NEWS_ID}` || newsFocusDone.current || !newsReady) return;
+      const heading = document.getElementById(TODAY_NEWS_ID);
+      if (!heading) return;
+      newsFocusDone.current = true;
+      heading.scrollIntoView({ block: 'start' });
+      heading.focus({ preventScroll: true });
+    };
+    const again = () => { newsFocusDone.current = false; focusNews(); };
+    focusNews();
+    window.addEventListener('hashchange', again);
+    return () => window.removeEventListener('hashchange', again);
+  }, [newsReady]);
 
   // 분석 중 자료는 상태 한 칸만 5초마다 본다 — 목록 전체(processed_json 통짜)를 다시 받지 않는다.
   // 대상은 내 소유 행뿐이다: 공개 화면의 남의 분석 중 자료 때문에 내 화면이 폴링하지 않는다.
@@ -1009,7 +1029,7 @@ export default function MaterialsPage({ libraryView = null }) {
             {anyFilter
               ? '조건에 맞는 자료가 없어요.'
               : tab === 'public' && !user
-                ? '아직 함께 읽는 글이 없어요.\n오늘의 추천 자료부터 읽어 보세요.'
+                ? '아직 함께 읽는 글이 없어요.\n오늘의 소식부터 읽어 보세요.'
                 : !user
                 ? '자료는 계정에 저장돼요.\n로그인하면 텍스트를 올려 해부하고 단어장에 모을 수 있어요.'
                 : tab === 'public'
@@ -1057,7 +1077,7 @@ export default function MaterialsPage({ libraryView = null }) {
         if (filteredSuggestions.length === 0) return null;
         return (
           <section className="suggestions-section" style={{ marginTop: '40px' }}>
-            <h2 className="suggestions-section__title">오늘의 추천 자료</h2>
+            <h2 className="suggestions-section__title" id={TODAY_NEWS_ID} tabIndex={-1}>오늘의 소식</h2>
             <div className="suggestions-grid">
               {filteredSuggestions.map(s => (
                 <SuggestionCard key={s.id} suggestion={s} router={router} from={libraryView === 'public' ? 'reading' : 'materials'} />

@@ -69,3 +69,35 @@ describe('발견 화면 배선', () => {
     expect(read('src/components/web/LibraryPage.jsx')).toContain('href="/discover">서가에서 읽어 보기</Link>');
   });
 });
+
+// B2 A안(오너 「권장대로」 2026-10-17 KST): 부제는 제목 아래 · 오른쪽 끝은 비운다 · 소식 「전체 보기」는 「함께 읽는 글」 아래 「오늘의 소식」 칸으로.
+describe('서가 머리 · 소식 전체 보기(B2 A안)', () => {
+  const html = renderToStaticMarkup(createElement(DiscoverShelf, { suggestions: [row(1, 'Japanese')], publicCount: 3, date: '2026-10-16' }));
+
+  it('「서가」 아래 부제 「누구나 읽는 책장」 — 줄 머리와 같은 쌓기(h + small), 머리 오른쪽에는 아무것도 없다', () => {
+    expect(html).toContain('<div class="manabi-section-heading"><div class="discover-shelf__label"><h2 id="discover-shelf-title">서가</h2><small>누구나 읽는 책장</small></div></div>');
+    expect(html).not.toContain('<span>누구나 읽는 책장</span>');
+  });
+
+  it('소식 「전체 보기」는 #today-news로, 「함께 읽는 글」 「전체 보기」는 목록 맨 위로', () => {
+    expect(html).toContain('href="/discover?view=reading#today-news">전체 보기</a>');
+    expect(html.match(/href="\/discover\?view=reading">전체 보기<\/a>/g)).toHaveLength(1);
+  });
+
+  it('발견 대기 화면 머리도 같은 모양이다', () => {
+    expect(read('src/app/(app)/discover/loading.jsx')).toContain('<div className="manabi-section-heading"><div className="discover-shelf__label"><h2>서가</h2><small>누구나 읽는 책장</small></div></div>');
+  });
+
+  it('「함께 읽는 글」 화면의 칸 — id · 제목 「오늘의 소식」 · 목록과 소식이 둘 다 온 뒤 한 번 내려가 초점(#library-search와 같은 해시 처리)', () => {
+    const page = read('src/views/MaterialsPage.jsx');
+    expect(read('src/lib/suggestionReading.js')).toContain("export const TODAY_NEWS_ID = 'today-news';");
+    expect(page).toContain('<h2 className="suggestions-section__title" id={TODAY_NEWS_ID} tabIndex={-1}>오늘의 소식</h2>');
+    expect(page).not.toContain('오늘의 추천 자료');
+    expect(page).toContain('const newsReady = materialsFetched && suggestionsFetched;');
+    const effect = page.slice(page.indexOf('const newsFocusDone = useRef(false);'), page.indexOf('}, [newsReady]);'));
+    expect(effect).toContain("window.location.hash !== `#${TODAY_NEWS_ID}` || newsFocusDone.current || !newsReady");
+    expect(effect).toContain("heading.scrollIntoView({ block: 'start' });");
+    expect(effect).toContain('heading.focus({ preventScroll: true });');
+    expect(effect).toContain("window.addEventListener('hashchange', again);");
+  });
+});

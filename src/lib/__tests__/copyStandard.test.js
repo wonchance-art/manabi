@@ -197,7 +197,9 @@ describe('문구 린트 — 화면에 영어 라벨을 두지 않는다(copy-sta
 
   it('읽기 확인 결과는 기존 한국어 라벨을 쓴다(다시 풀기 · 닫기 · 채점 · 내 답 · 정답)', () => {
     const src = readFileSync(join(ROOT, 'components/ReadingTest.jsx'), 'utf8');
-    for (const old of ['New Test', '>Close<', 'Submit & Grade', 'Your answer:', 'Correct:', 'Excellent!', 'Good job.', 'Try reading the passage']) {
+    // 「2/5 answered」 → 「2/5」 — 숫자만 쓰는 진행 표시 선례(RefPatternCheck · ExerciseEnginePrototype의 n/m), 오너 「권장대로」 2026-10-17 KST.
+    expect(src).toContain("{allAnswered ? '채점' : `${Object.keys(answers).length}/${questions.length}`}");
+    for (const old of ['New Test', '>Close<', 'Submit & Grade', 'Your answer:', 'Correct:', 'Excellent!', 'Good job.', 'Try reading the passage', ' answered']) {
       expect(src, old).not.toContain(old);
     }
     for (const label of ['>다시 풀기</Button>', '>닫기</Button>', "'채점'", '내 답: {e.yourAnswer}', '정답: {e.correctAnswer}']) {
