@@ -1,0 +1,56 @@
+{
+  "passed": true,
+  "scope": "Local Next app integration and browser acceptance, with synthetic learner and HTTP backend; hosted account/publication and PostgreSQL RLS are excluded",
+  "editionId": "f4a6411c0945bbd3f8767af7",
+  "functionalGroups": 11,
+  "layoutObservations": 168,
+  "readingEndpoints": 42,
+  "contentSource": "Final packaged N4 immutable HTML",
+  "records": [
+    {
+      "path": "ACCEPTANCE.json",
+      "sha256": "7f553a5c973210f479ee0a83a6dd085e11e19339aaa552d4d28ebefe7abbf0ae",
+      "passed": true
+    },
+    {
+      "path": "APP-MATRIX.json",
+      "sha256": "c42180742be262993d985015b9cc48145a325bf676e9edd1e41536c9db2c6513",
+      "passed": true
+    },
+    {
+      "path": "API-AND-N5.json",
+      "sha256": "c9120295b8190bb2e7436f613cfcfbd1631aeb58cc10290f66d31833d32435d5",
+      "passed": true
+    },
+    {
+      "path": "HTTP-PERSISTENCE-EVIDENCE.json",
+      "sha256": "bde089144d3a2e7ecd2b06be92289a267a04756bc5306677fea6fb3960f0475e",
+      "passed": true
+    },
+    {
+      "path": "RETURN-BOUNDARY-DELTA.json",
+      "sha256": "89c623e389b6a05e3c66a0d452312c7ec459003bf891a015d8b6ecf710aaeb1a",
+      "passed": true
+    }
+  ],
+  "script": "e2e/n4-integration.e2e.mjs",
+  "scriptSha256": "f1fcf5479dda6a278f7539fdfbedd63631143d67542ea11f86de9f82cd28fd0f",
+  "evidenceContinuity": "The functional run passed before adding an N5 visible-H1 readiness guard and the separately executed matrix subcommand. The added H1 guard was independently executed in API-AND-N5.json; layout-only N4 choice-span CSS was then verified over all 168 app observations.",
+  "closedProductFindings": [
+    "N4 reference search now supports N4 data-search cards and one app search field",
+    "Duplicate in-manuscript navigation hidden within app reader; N4 study/reference/answer structures receive scoped styles",
+    "Long ruby choices wrap at 320px after N4 scoped flex min-width correction",
+    "BookReview rejects a returnTo for another book while preserving same-book edition and anchor; four actual navigation cases passed"
+  ],
+  "limitations": [
+    "Synthetic identity and memory persistence do not establish hosted authentication, production publication, or PostgreSQL RLS",
+    "Existing legacy vocabulary cohort was graded; full-state FSRS enrollment was not claimed",
+    "Review was muted; existing TTS service returned 500 on an earlier optional autoplay request and TTS success is not claimed"
+  ],
+  "commands": [
+    "node e2e/n4-integration.e2e.mjs --backend-only",
+    "node e2e/n4-integration.e2e.mjs --browser-only",
+    "node e2e/n4-integration.e2e.mjs --browser-only --matrix-only"
+  ],
+  "returnBoundaryCases": 4
+}

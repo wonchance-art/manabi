@@ -1,8 +1,14 @@
 // The manuscript is the editable source. Generated HTML and PDF are immutable artifacts.
 export const BOOK_ID = 'japanese-n5';
+export const BOOKS = Object.freeze({
+  'japanese-n5': Object.freeze({id:'japanese-n5',level:'N5',language:'Japanese',lessons:42,slugPrefix:'n5-book'}),
+  'japanese-n4': Object.freeze({id:'japanese-n4',level:'N4',language:'Japanese',lessons:42,slugPrefix:'n4-book'}),
+});
+export const isBookId = id => typeof id==='string'&&Object.hasOwn(BOOKS,id);
+export const bookUnitSlug = (bookId,lesson) => isBookId(bookId)&&Number.isInteger(lesson)&&lesson>=1&&lesson<=BOOKS[bookId].lessons?`${BOOKS[bookId].slugPrefix}-u${String(lesson).padStart(2,'0')}`:null;
 export const EDITION_ID = /^[a-f0-9]{24}$/;
-export const BOOK_UNIT_SLUG = /^n5-book-u(0[1-9]|[1-3][0-9]|4[0-2])$/;
-const locked = new Set(['id','number','language','level','version','revision','source','editorialChanges','type','kind','target','targets','page_order','pattern_pages','shape','source_ids','unit','start','stage','reviewed','additionalUnit','duration','audioEnabled','save_practice','role','answer_group']);
+export const BOOK_UNIT_SLUG = /^n[45]-book-u(0[1-9]|[1-3][0-9]|4[0-2])$/;
+const locked = new Set(['id','bookId','number','language','level','version','revision','source','editorialChanges','type','kind','target','targets','page_order','pattern_pages','shape','source_ids','unit','start','stage','reviewed','additionalUnit','duration','audioEnabled','save_practice','role','answer_group']);
 export function editableFields(value, path=[], result=[]) {
   if (typeof value==='string') { result.push({path,value}); return result; }
   if (Array.isArray(value)) value.forEach((v,i)=>editableFields(v,[...path,i],result));
@@ -38,4 +44,4 @@ export function withField(manuscript,path,value) {
 }
 export const canonical = value => Array.isArray(value)?value.map(canonical):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(k=>[k,canonical(value[k])])):value;
 export function manuscriptContent(book){return Object.fromEntries(Object.entries(book).filter(([k])=>!['revision','source','editorialChanges'].includes(k)))}
-export const bookHref=(edition,page='cover')=>`/books/${BOOK_ID}?edition=${edition}#${page}`;
+export const bookHref=(edition,page='cover',bookId=BOOK_ID)=>isBookId(bookId)?`/books/${bookId}?edition=${edition}#${page}`:null;

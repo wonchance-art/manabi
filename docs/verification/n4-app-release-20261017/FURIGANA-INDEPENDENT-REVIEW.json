@@ -1,0 +1,260 @@
+{
+  "purpose": "Independent review of added N4 furigana against actual sentence contexts, separate from author",
+  "reviewedLessons": 38,
+  "mappingCount": 272,
+  "ambiguousContextCount": 264,
+  "meaningPreservation": {
+    "checkedJsonFiles": 44,
+    "changedNonKanjiFields": []
+  },
+  "findings": [],
+  "acceptedReadings": [
+    "午後五時=ごごごじ",
+    "午前九時=ごぜんくじ",
+    "午前十時=ごぜんじゅうじ",
+    "何でも=なにでも",
+    "何を=なにを",
+    "何と伝えますか=なんとつたえますか",
+    "来る=くる; 来られる=こられる; 来させる=こさせる; 来い=こい; 来て=きて; 来た=きた",
+    "着く/着いた=つく/ついた (arrival), 着替え=きがえ; 落ち着い=おちつい",
+    "友達の分=ぶん, 分か=わか; mapping safeguards suppress roots in numeric compounds",
+    "会=かい (gathering), 先生 is not 先(さき)+生; compound-boundary guard suppresses partial misreading",
+    "二十分=にじゅっぷん is an accepted variant alongside にじっぷん",
+    "Root guide 昨日買った本=きのうかったほん; 昨日買いました=きのうかいました; these preserve 買う plain/polite changes",
+    "Cumulative review 来る=くる vs 来ない=こない, 晴れる=はれる, 急に=きゅうに, 毎朝練習=まいあされんしゅう",
+    "All 6 cumulative review sets and root bridge guide extra mappings independently read in sentence context."
+  ],
+  "limits": [
+    "Independent AI-language review, not human native-speaker certification.",
+    "Only readings metadata changed; all 42 pre-existing source meaning fields compared to HEAD unchanged.",
+    "Full renderer boundary guard remains material: root readings are safe only when excluded from unlisted Han/number compounds.",
+    "Some spare mappings are unused in visible source; harmless, not counted as filled glyph positions."
+  ],
+  "inputs": [
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/book.json",
+      "sha256": "8e3d9b60d4b07e464a5e6ed8969e45209acd80d6b14d9b175246ba8599dd10fe",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u01.json",
+      "sha256": "e45339b0fa40b5d207f804f14bc1e74d24606f119aef11dc3b35af16635534fa",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u02.json",
+      "sha256": "ff5f4c44a58be1a7ccf78e289009ea089ee3422ef431799a2ec1ddd155febbb8",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u03.json",
+      "sha256": "19fd07a33295d1432047275a7715adf825cfa80591236f8f7d321f2e5fa024ad",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u04.json",
+      "sha256": "a0f3102945d79e77ac756596d28b6cf62ab9addd8fe4ae323427db5635eefd5c",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u05.json",
+      "sha256": "1ea813b337c8d5796f67b46ce45cb1b254fe81fb1f3c1898e70ce9831e26bca3",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u06.json",
+      "sha256": "10e9a5f8a352f2ac08db18ba79a0e9b4c357e3fadd6106751368276d08967377",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u07.json",
+      "sha256": "68a59614b970601f91ebd20a359dd9bddc5445c1ed274321372faa381249196e",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u08.json",
+      "sha256": "fd7283d9bd86c8112a19e42c135255294e041ae625ac54f14e217e87a479b1d9",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u09.json",
+      "sha256": "3836ab36a6556f08d75930948a70233fa1ba2cb98a14574048739493570891ec",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u10.json",
+      "sha256": "470c429c131b3d291c98fca351e17b7b8296695abcedbceccab4eaa0d1587705",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u11.json",
+      "sha256": "1483656a1e4cea8cfe7741b4b8687f717afc7b5b23f704361d0980192b832d24",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u12.json",
+      "sha256": "a44993e9db3e84d7e83c0de5a5e30d8733f2c8016a0090c1b42f32f266077259",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u13.json",
+      "sha256": "18a614cf8cf05d4a175841ab36cc2d3dd039c1772cd5c369e344052cf6f76e99",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u14.json",
+      "sha256": "2df8ae30110bb3ad6a4cfd59a732b5d5e5147054135f3758e032ca5b57ce83b7",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u15.json",
+      "sha256": "7407fbf5d21995ad817b9c33bda5f0d92a0b7a9caa3bdfef523e0dd4fb1c4bcb",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u16.json",
+      "sha256": "b4b34fc8d5b8aa5ef7adc21db301969f3ee4819d86ace14e716dd38949d24e41",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u17.json",
+      "sha256": "c997dfa0de04d43153bfc143247ff30db7512bd9f85e87967f93406e3a6148a0",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u18.json",
+      "sha256": "f3ad87c640604aa866c76c4b5cfa73deb5b755bb80f9ffe41f7403905a3fb105",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u19.json",
+      "sha256": "3910bc82c076120e2da8df1c2ac2e99da49943d969f1779e45736a0d1d4d6046",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u20.json",
+      "sha256": "c5a0cbd75661916b9e480724a18205de1b4904feb5a84141ef31d2caa4635609",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u21.json",
+      "sha256": "e39c991cd799806142b3f469b603cc428ab817efb6f19bf5f0da58af67a3a13f",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u22.json",
+      "sha256": "a929da3bada1499a2d66478856cc6316e84c13aab2913f8b9994d4bab6b5b199",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u23.json",
+      "sha256": "fe6e3cb7d5f68f68c9cd743b4c6b46c80b846b0201a9ff4aa8c9be6c403eb227",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u24.json",
+      "sha256": "1c0c395e3c51f54f68f84abd6a9f89b797c6b6502d7d469cf811383ba8673555",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u25.json",
+      "sha256": "6b51e2dc97ef90b3d98a8f19c0fdf45e690b2b818fa3daf48fe5f5c2ddd03519",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u26.json",
+      "sha256": "66bc9dff063b08f817768edbcb53c731c2d6c675d30fa9ffd4496e9d6fe5bb00",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u27.json",
+      "sha256": "934d39f6d189b97ca4ecc3c639e6d683c5b9e9bb632c00f7aabb96c7b89e0057",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u28.json",
+      "sha256": "c3191cafc27bc3ec9a6a579ce79cde728df9e4a83e824dfba09375a599893e61",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u29.json",
+      "sha256": "af4ab91bcb75d976fee6f9a8ed86fc9d5dd1ad2f95b4212cfa3c8ec4cf3aa503",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u30.json",
+      "sha256": "4a94b59836f918495ff00a83140a3d4c4a23a912a4226536615891b1def05d19",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u31.json",
+      "sha256": "0fdac2b8986b0c2f31b2de2fd3676d365185b13367494a0846dd587076d7bce6",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u32.json",
+      "sha256": "ab874b3cf0cace67f3a07dc22f3c68e7a21f264b096ae4ce9e27a44ba6c5d556",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u33.json",
+      "sha256": "14741e7b6a763456d8da5badae91e589a999c53d00141c74fe69fa611a4d012f",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u34.json",
+      "sha256": "afc09126c8c8b7b2deb12ac4da893e4c77c8412cd118cf1ee2ffe03bc8eb1bec",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u35.json",
+      "sha256": "0c7ffb134348e7f83dc596ced2437cb85af51fa8c1eefa2731203d55be7b68ac",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u36.json",
+      "sha256": "18eaf3ccec7c3de05f93132a23f898a308dc4abbe42326ae01a576a81520a420",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u37.json",
+      "sha256": "710cd7d590cb8bdfb757c8b99c82d33994b645d85b814bd4beff22eb6682e94b",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u38.json",
+      "sha256": "4eb836d680c32067d9353a17c5a05b1f14954a57c7a347b492d8ebf673663536",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u39.json",
+      "sha256": "fef7c69f9c2d5750cca7299cbc1247a2ccf97c859bc21063e51185e6e9e6a882",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u40.json",
+      "sha256": "03747bfe2dd6c3bc6664790155e325fc67684763cc6fd76ab6017c6efab188b8",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u41.json",
+      "sha256": "1eee988ccbabdbac90843f75452e1c10cd3a66d2a7e6f3160d416c127d04acc2",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u42.json",
+      "sha256": "b53113da849d0fc94eda2bfb688edd5f833bc955cb2fa22acd98c94c3bf1944a",
+      "meaningFieldsPreserved": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/syllabus.json",
+      "sha256": "7b96d14f705d5bee7754146f1d208d06fae849a50c489563b94dd2598fb3b9e1",
+      "meaningFieldsPreserved": true
+    }
+  ],
+  "passed": true,
+  "finalReadingEntryChanges": 294,
+  "artifactEdition": "f4a6411c0945bbd3f8767af7",
+  "artifactContentHash": "f4a6411c0945bbd3f8767af72619474fadd45d0fbd0f403463c2c04ccd1b27c5",
+  "finalSourceByteHashesStillEqual": true
+}

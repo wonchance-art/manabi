@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "checks": [
+    "original N5-only database rejects N4 publication",
+    "N5 immutable edition, release pointer, words and original source survive",
+    "administrator publishes N4 through unchanged transactional RPC",
+    "unlisted course still fails the database allowlist",
+    "published N4 cannot be silently overwritten",
+    "normal learner cannot publish, edit releases or read administrator drafts",
+    "N4 and N5 edition bookmarks both resolve while missing editions fail",
+    "other learner cannot see this learner’s saved N4 library record",
+    "anonymous reads published N4 but cannot save or execute publication",
+    "reapplying the old precondition aborts instead of overwriting newer definitions"
+  ],
+  "scope": "Disposable PGlite, synthetic identities. No live account or production writes."
+}

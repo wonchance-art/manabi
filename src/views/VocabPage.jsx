@@ -334,7 +334,7 @@ function VocabWorkspace({ reviewScope }) {
     queryKey: ['book-review', user?.id, 'scope', lookupSource ? formatScopeSource(lookupSource) : null],
     enabled: !!user && !!lookupSource,
     queryFn: async ({ signal }) => lookupSource.kind === 'book'
-      ? fetchBookScope({ signal, from: lookupSource.from, to: lookupSource.to })
+      ? fetchBookScope({ signal, from: lookupSource.from, to: lookupSource.to, bookId: lookupSource.bookId })
       : { ids: await fetchMaterialVocabularyIds({ signal, ids: lookupSource.ids }), chapters: null },
   });
   // 급수 범위는 HSK 2026 표가 있어야 판정한다. 표를 못 받으면 범위를 닫는다(전체로 세지 않는다).
