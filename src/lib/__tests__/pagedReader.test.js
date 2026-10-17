@@ -342,3 +342,42 @@ describe('page-turn mutations outside the page flow do not re-measure', () => {
     detach();
   });
 });
+
+// Tab 초점이 다음 쪽 첫 줄의 문장 막대(.line-pick)에 들 때(PAGED-FOCUS-001, 2026-10-17 KST) — 막대는 낱말 왼쪽 여백에 떠서 단 사이 틈
+// (현재 쪽 끝)에 놓인다. 막대 자리로 쪽을 재면 넘어가지 않아 초점이 화면 밖에 남았다(390 실측: 막대 x 384~408 · 낱말 x 414 · 쪽 그대로).
+describe('focus on a line-head button follows its word page', () => {
+  const buttonOf = (reader, index) => {
+    const token = reader.tokenEls[index];
+    return { nodeType: 1, closest: () => token,
+      getClientRects() { return [this.getBoundingClientRect()]; },
+      getBoundingClientRect() { const r = token.getBoundingClientRect(); return { ...r, left: r.left - 30, right: r.left - 6, width: 24 }; } };
+  };
+  it('focusin on the button turns to the page of its word, not of the gap the button sits in', () => {
+    const reader = fakeReader();
+    const c = controller(reader);
+    c.goTo(1);
+    const button = buttonOf(reader, 20); // 20 = 쪽 2의 첫 낱말, 막대는 쪽 1과 2 사이 틈
+    reader.pages.contains = el => reader.tokenEls.includes(el) || el === button;
+    c.handleFocusIn({ target: button });
+    expect(c.state.page).toBe(2);
+    expect(reader.pages.scrollLeft).toBe(696);
+  });
+  it('a foreign scroll while the button holds focus aligns to the word page too', () => {
+    const reader = fakeReader();
+    const c = controller(reader);
+    c.goTo(1);
+    c.handleScroll(); // 우리 이동이 낸 스크롤 이벤트 — 표식을 걷는다
+    const button = buttonOf(reader, 20);
+    reader.pages.contains = el => reader.tokenEls.includes(el) || el === button;
+    reader.pages.ownerDocument.activeElement = button;
+    reader.pages.scrollLeft = 348 * 1.1; // 브라우저의 포커스 스크롤이 어중간하게 끌고 감
+    c.handleScroll();
+    expect(c.state.page).toBe(2);
+  });
+  it('wiring: focus · scroll · release all measure through the word (focusPageTarget)', () => {
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/lib/usePagedReader.js'), 'utf8');
+    expect(src).toContain("const focusPageTarget = el => { const item = el?.closest?.(opt().anchorSelector || '[data-source-token]'); return item && item !== pages && pages.contains?.(item) ? item : el; };");
+    expect(src.match(/pageOf\(focusPageTarget\(active\)\)/g)).toHaveLength(2);
+    expect(sliceBetween(src, 'function handleFocusIn(event) {', '\n  }')).toContain('const next = pageOf(focusPageTarget(target));');
+  });
+});
