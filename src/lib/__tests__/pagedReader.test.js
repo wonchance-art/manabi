@@ -541,3 +541,21 @@ describe('a foreign scroll lands on the page it newly revealed', () => {
     expect(sliceBetween(src, 'function settleDeferred() {', '\n  }')).toContain('?? nearestPage(pages.scrollLeft || 0, step, count)');
   });
 });
+
+// 끝 카드(NEXT-CARD-SPLIT-001): 1440 쪽 넘김에서 「다음 편」 카드(a.next-lesson-card)가 쪽 경계에서 둘로 갈라졌다(abaa 보고 2026-10-17 KST).
+// 쪽 넘김 상자 안에서만 통째로 다음 쪽에 둔다(break-inside: avoid) — 스크롤 보기에는 걸지 않는다. 실제 쪼개짐 · 쪽 수는 빌드 Playwright가 본다.
+describe('end cards stay whole across page boundaries', () => {
+  const css = fs.readFileSync(path.join(process.cwd(), 'src/components/viewer/paged-reader.css'), 'utf8');
+  const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+  const rule = '[data-reader-pages="paged"] :is(.next-lesson-card, .series-end-card) { break-inside: avoid; }';
+  it('paged-only rule keeps every end card whole', () => {
+    expect(css).toContain(rule);
+    expect(css.match(/break-inside:\s*avoid/g)).toHaveLength(1); // 본문 블록에는 걸지 않는다 — 쪽 채움은 그대로
+  });
+  it('every card in the single 「다음」 slot uses one of the covered classes', () => {
+    const slot = sliceBetween(viewer, "{(isDone || isPending) && (() => {", 'return null;\n      })()}');
+    const roots = [...slot.matchAll(/className="([^"]+)"/g)].map((m) => m[1]).filter((c) => !/__/.test(c));
+    expect(roots.length).toBeGreaterThanOrEqual(5); // 다음 편 · 다음 과 · 다음 과 적기 · 다음 범위 · 완주(공허 통과 방지)
+    for (const c of roots) expect(['next-lesson-card', 'series-end-card'].some((k) => c.split(' ').includes(k)), c).toBe(true);
+  });
+});

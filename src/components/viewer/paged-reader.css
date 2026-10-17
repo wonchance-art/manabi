@@ -69,6 +69,10 @@ html .viewer-layout[data-reader-view="paged"] > .viewer-center { padding-bottom:
     .viewer-layout[data-reader-view="paged"] .viewer-inspector[data-compact="true"]:not(.is-expanded):not(.is-collapsed) { height: var(--reader-sheet-compact, 40dvh); }
 }
 
+/* 끝 카드(다음 편 · 다음 과 · 다음 범위 · 완주)는 한 덩어리다 — 쪽 경계에서 둘로 쪼개지지 않게 통째로 다음 쪽에 둔다
+   (NEXT-CARD-SPLIT-001, 1440에서 a.next-lesson-card가 두 쪽에 걸쳐 갈라졌다 — abaa 보고 2026-10-17 KST). 스크롤 보기에는 걸지 않는다. */
+[data-reader-pages="paged"] :is(.next-lesson-card, .series-end-card) { break-inside: avoid; }
+
 /* ── 원본 리더 ── 본문 글만 쪽으로 나눈다(첨부 파일 읽기는 스크롤 그대로). */
 .original-pages-frame { position: relative; max-width: 760px; }
 .original-reader [data-reader-pages="paged"] .original-writing { max-width: none; padding-block: 8px 24px; }
