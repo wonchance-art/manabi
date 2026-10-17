@@ -1484,12 +1484,10 @@ export default function ViewerPage() {
     const ids = listenSentenceTokens(listenRanges[index], line => listenLineTokens.get(line));
     const el = ids.length ? tokenRefs.current[ids[0]] : null;
     const paged = el && pagerFor(el);
-    if (!paged) { setListenTokens(null); return; }
-    requestAnimationFrame(() => {
-      if (!el.isConnected || listenFollowOff.current) return;
-      if (paged.reveal(el, { auto: true })) setListenTokens(new Set(ids));
-      else { listenFollowOff.current = true; setListenTokens(null); }
-    });
+    if (!paged || !el.isConnected) { setListenTokens(null); return; }
+    // 같은 틱에서 옮기고 밑줄을 단다 — 한 프레임 미루면 머리줄의 지금 문장과 밑줄이 그 사이 어긋나 보였다(실측 24회 중 2회).
+    if (paged.reveal(el, { auto: true })) setListenTokens(new Set(ids));
+    else { listenFollowOff.current = true; setListenTokens(null); }
   }, [listenRanges, listenLineTokens, listenFollowable, tokenRefs]);
 
   // 어휘 커버리지 배지(#1077-2) — 서재 카드와 **같은 엔진·같은 인덱스**(materialFit ←
