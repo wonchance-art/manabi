@@ -901,6 +901,16 @@
   서재 · 학습 화면: 읽던 곳 · 대화 「지난번 0개」 기기 기억 · 바닥 링크 목록 뒤 · 노트 캔버스 병렬 · /lessons 동시 · /quick 사전 대화상자 · /writing 초점 ·
   새 대화 언어 = 첫 학습 언어 · 작문/빠른 분석 메뉴 소속. 글꼴: SC를 중국어 그리는 세그먼트만(ja/en/fr · 교재 · 지역학 첫 진입 −95KB gzip, 픽셀 차 0).
   다음 PR 후보(로컬 wip): profiles 이중 GET 공유 · 헤더 세션 힌트 · SC 링크 2단계 · 뷰어 진입 조기 조회 · /vocab 시작 셋째 왕복 · 시트 top 재계산.
+- **#1512 병합 · 다음 묶음 (2026-10-18 KST)**: #1512 squash `2b14d8fb`(10-17 20:44) · 운영 READY · 사후 점검 15/15 · 런타임 오류 0.
+  다음 묶음(#1515 `477ca41b` 위 56커밋, 에이전트 `claude/wip/**` 로컬 통합 뒤 한 번 push):
+  계정 경계 — 화면 캐시 비우기(AUTH-CACHE-CLEAR-001) · 서버 렌더 refresh 관문 · 죽은 머리말 로그아웃 갈래 삭제(AUTH-ROUTER-REFRESH-001) ·
+  기기 오프라인 · 팀 사본 · 자료 기록 계정 키(OFFLINE-ACCOUNT-SCOPE-001, 받아 둔 것은 숨김 — 「데이터 보존 우선」) · 늦은 mutation 쓰기(MUTATION-ACCOUNT-GEN-001) ·
+  레퍼런스 진도 · 독해 트랙 · 넘겨줄 글(LOCAL-PROGRESS-ACCOUNT-001) · 순서표 계약(ACCOUNT-BOUNDARY-MATRIX) · account-boundary e2e 8장면 필수 CI.
+  운영 결함: 팀 사본 뷰어(local:)가 주소 조각 인코딩으로 열리지 않던 것(viewerRouteId).
+  뷰어 진입 조기 조회 · 행 prefetch 의도 시점(40 → 6~7) · 서재 카드 대기 밑줄 · profiles GET 2 → 1 · /vocab 시작 0.5~0.6초 · FSRS 읽기 상한 20초 ·
+  Claude 본선(키 있을 때만) · TTS 빈틈 셋 · 측정 품질 세트 · 추정 비용 · 새 대화 의도 prefetch · 골격 · 시트 위 끝 · /home LCP ·
+  SC 링크 2단계(일본어 학습자 · 손님 /home SC 0, 같은 글꼴 한 번만, /_fonts 1년 캐시) · 하이드레이션 갱신 대기(교재 서버 HTML 버림 6 → 0) · 교재 과 기억 · 골격 · 다음 과 미리 받기.
+  오너 확인 대기: ANTHROPIC_API_KEY 넣기 · 실계정 390 시트 · iOS 음성 실기기. 다음 과제: N4 390 머리 버튼 줄 38px · 듣기 막대 실패 안내 · 팀 해제 기기 단위(제품 결정).
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로
   /api/suggestions/today와 공용화. 지역학은 발견에서만 내림(/studies · 콘텐츠 보존). 비로그인 서재 → 「서가에서 읽어 보기」.
