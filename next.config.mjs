@@ -29,11 +29,11 @@ const nextConfig = {
     // 교재 폴더 전체(음성·PDF·글꼴)는 asset 경로만 받는다. 키는 picomatch 글롭이라 '[edition]'을 쓰면
     // 문자 집합으로 해석된다 — '*'로 쓴다. reading 경로는 자동 추적으로 bundle.json·index.html을 받는다.
     '/api/books/japanese-n5/*/asset': ['./src/content/textbookEditions/**/*'],
-    '/api/books/japanese-n4/*/asset': ['./src/content/textbookEditions/japanese-n4/**/*'],
-    '/api/books/japanese-n4/*/reading': ['./src/content/textbookEditions/japanese-n4/**/bundle.json', './src/content/textbookEditions/japanese-n4/**/index.html', './src/content/textbookEditions/japanese-n4/index.json'],
-    '/api/admin/books/japanese-n4': ['./src/content/textbookEditions/japanese-n4/**/bundle.json', './src/content/textbookEditions/japanese-n4/index.json'],
-    '/books/japanese-n4': ['./src/content/textbookEditions/japanese-n4/**/bundle.json', './src/content/textbookEditions/japanese-n4/**/index.html', './src/content/textbookEditions/japanese-n4/index.json'],
-    '/books/japanese-n4/**': ['./src/content/textbookEditions/japanese-n4/**/bundle.json', './src/content/textbookEditions/japanese-n4/index.json'],
+    '/api/books/japanese-n4/*/asset': ['./src/content/textbookEditions/**/*'],
+    '/api/books/japanese-n4/*/reading': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/**/index.html', './src/content/textbookEditions/japanese-n4/index.json'],
+    '/api/admin/books/japanese-n4': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/japanese-n4/index.json'],
+    '/books/japanese-n4': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/**/index.html', './src/content/textbookEditions/japanese-n4/index.json'],
+    '/books/japanese-n4/**': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/japanese-n4/index.json'],
     '/api/admin/books/japanese-n5': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
     '/books/japanese-n5': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/**/index.html', './src/content/textbookEditions/index.json'],
     '/books/japanese-n5/**': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],

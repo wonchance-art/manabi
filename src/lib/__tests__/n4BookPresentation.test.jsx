@@ -4,11 +4,14 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams() }));
 vi.mock('@/lib/AuthContext', () => ({ useAuth: () => ({ profile: { role: 'admin' }, user: null, loading: false }) }));
+vi.mock('@tanstack/react-query', () => ({ useInfiniteQuery: () => ({ data: { pages: [] }, isPending: false, error: null }) }));
 vi.mock('@/components/books/useReadingProgress', () => ({ default: () => ({ progress: { page: 'u01-start', completed: [] }, hasProgress: false, ready: true }) }));
 vi.mock('@/components/library/LibrarySaveButton', () => ({ default: ({ edition, bookTitle }) => <span data-save-edition={edition}>{bookTitle}</span> }));
 vi.mock('@/components/web/LibraryReaderLink', () => ({ LibraryReturnLink: () => null }));
 
 import BookHome from '@/components/books/BookHome';
+import BookReview from '@/components/books/BookReview';
+import { parseReviewScope } from '@/lib/reviewScope';
 import BookCover from '@/components/books/BookCover';
 import BookEditionFonts from '@/components/books/BookEditionFonts';
 import Bookshelf from '@/components/books/Bookshelf';
@@ -57,6 +60,28 @@ describe('N4 app entry and edition presentation', () => {
     const html = render(BookCover, { level: 'N4', title: n4.title });
     expect(html).toContain('<b>N4</b>');
     expect(html).toContain(n4.title);
+  });
+
+  it.each([[n4, n5], [n5, n4]])('a saved-expression page cannot adopt another book as its reading or review return', (current, other) => {
+    const returnTo = `/books/${other.bookId}?edition=${other.edition}#u07-patterns`;
+    const html = render(BookReview, { book: current, returnTo });
+    const hrefs = [...html.matchAll(/href="([^"]+)"/g)].map(match => match[1].replaceAll('&amp;', '&'));
+    const scope = parseReviewScope(new URL(hrefs.find(href => href.startsWith('/vocab?')), 'https://local.invalid').searchParams);
+    const expected = `/books/${current.bookId}?edition=${current.edition}#u01-start`;
+    expect(hrefs).toContain(expected);
+    expect(scope.scope.source.bookId).toBe(current.bookId);
+    expect(scope.returnTo).toBe(expected);
+    expect(hrefs).not.toContain(returnTo);
+  });
+
+  it.each([n4, n5])('keeps a same-book return to an older exact edition and anchor', current => {
+    const returnTo = `/books/${current.bookId}?edition=${'3'.repeat(24)}#u12-patterns`;
+    const html = render(BookReview, { book: current, returnTo });
+    const hrefs = [...html.matchAll(/href="([^"]+)"/g)].map(match => match[1].replaceAll('&amp;', '&'));
+    const scope = parseReviewScope(new URL(hrefs.find(href => href.startsWith('/vocab?')), 'https://local.invalid').searchParams);
+    expect(hrefs).toContain(returnTo);
+    expect(scope.scope.source.bookId).toBe(current.bookId);
+    expect(scope.returnTo).toBe(returnTo);
   });
 
   it('loads all N4 font faces from that exact book and edition only', () => {

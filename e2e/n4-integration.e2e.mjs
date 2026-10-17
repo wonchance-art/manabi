@@ -156,6 +156,8 @@ async function runBrowser() {
   const catalog = await (await fetch(`${backendOrigin}/__qa/catalog`)).json();
   assert(catalog.n4, 'Packaged N4 edition must exist before running browser acceptance');
   report.editions = catalog;
+  const n4Bundle = bundles().find(bundle => bundle.editionId === catalog.n4);
+  report.n4Artifact = { editionId: n4Bundle.editionId, contentHash: n4Bundle.contentHash, bundleHash: n4Bundle.artifactManifest.bundleHash };
   const control = body => fetch(`${backendOrigin}/__qa/control`, { method: 'POST', body: JSON.stringify(body) });
   const snapshot = async () => (await fetch(`${backendOrigin}/__qa/state`)).json();
   await fetch(`${backendOrigin}/__qa/reset`, { method: 'POST' });
@@ -188,19 +190,29 @@ async function runBrowser() {
     assert(new URL(page.url()).pathname === '/books/japanese-n4');
     await layout('desktop-n4-toc'); record('Japanese shelf → keyboard N4 entrance → all 42 lesson entries');
 
-    await page.getByRole('link', { name: '단어·문형·한자 찾기', exact: true }).click();
-    const search = page.getByRole('searchbox'); await search.waitFor();
+    await page.getByRole('link', { name: /단어·문형.*찾/ }).click();
+    await page.locator('#reference-start').waitFor();
+    const search = page.locator('.manabi-reference-search input'); await search.waitFor();
+    const entries = '.lex-card,.grammar-recall,.kanji-card,.n4-reference [data-search]';
+    await page.locator(entries).first().waitFor();
+    const allEntries = await page.locator(entries).count(); assert(allEntries > 0);
+    await search.fill('なくす');
+    await page.waitForFunction(selector => { const cards = [...document.querySelectorAll(selector)]; const visible = cards.filter(node => !node.hidden); return visible.length > 0 && visible.length < cards.length; }, entries);
     await search.fill('zzzz-no-N4-match'); await page.getByRole('status').filter({ hasText: '일치하는 항목이 없어요' }).waitFor();
-    await search.fill('');
-    const cardCount = await page.locator('.lex-card:not([hidden]),.grammar-recall:not([hidden]),.kanji-card:not([hidden])').count();
-    assert(cardCount > 0); record('reference search has matching entries and a distinct empty result');
+    await page.waitForFunction(selector => [...document.querySelectorAll(selector)].every(node => node.hidden), entries);
+    assert.equal(await page.locator(entries).evaluateAll(nodes => nodes.filter(node => !node.hidden).length), 0);
+    await search.fill(''); await page.waitForFunction(selector => [...document.querySelectorAll(selector)].every(node => !node.hidden), entries);
+    record('reference search waits for loaded body, filters a real Japanese term, shows zero matching entries, then restores all entries');
 
     await page.goto(`${base}${n4path('u01-start')}`); await page.locator('article[data-unit-page]').first().waitFor();
+    await page.locator('.book-example-save button').first().waitFor();
     const answer = page.locator('[data-save]').filter({ visible: true }).first(); await answer.waitFor();
     const key = await answer.getAttribute('data-save'), kind = await answer.getAttribute('type');
     if (kind === 'radio' || kind === 'checkbox') await answer.check(); else await answer.fill('N4 합성 답안 유지');
     const savedValue = kind === 'radio' || kind === 'checkbox' ? await answer.isChecked() : await answer.inputValue();
+    await page.waitForFunction(({ edition, userId, key }) => Object.hasOwn(JSON.parse(localStorage.getItem(`manabi-book-answers:${edition}:${userId}`) || '{}'), key), { edition: catalog.n4, userId: uid, key });
     await page.reload(); await page.locator(`[data-save="${key}"]`).first().waitFor();
+    await page.locator('.book-example-save button').first().waitFor();
     assert.equal(kind === 'radio' || kind === 'checkbox' ? await page.locator(`[data-save="${key}"]`).first().isChecked() : await page.locator(`[data-save="${key}"]`).first().inputValue(), savedValue);
     record('N4 answer survives actual reload without replacing the edition');
 
@@ -240,18 +252,23 @@ async function runBrowser() {
 
     await page.goto(`${base}${n4path('u01-start')}`); await page.locator('article[data-unit-page]').first().waitFor();
     for (const width of [320, 390, 768]) { await page.setViewportSize({ width, height: 900 }); await layout(`n4-reading-${width}`); }
-    const mobileToc = page.locator('.manabi-mobile-toc summary'); await mobileToc.focus(); await page.keyboard.press('Enter');
+    await page.setViewportSize({ width: 320, height: 900 });
+    const mobileToc = page.locator('.manabi-mobile-toc summary'); await mobileToc.waitFor(); await mobileToc.focus(); await page.keyboard.press('Enter');
     assert(await page.locator('.manabi-mobile-toc').evaluate(node => node.open)); await page.keyboard.press('Enter');
     record('N4 reader at 320/390/768 pixels with keyboard-operated mobile contents and no page overflow');
 
     // Textbook context saves enter the existing legacy cohort. Exercise that actual
     // production review path; this does not assert full-state FSRS enrollment.
+    await page.evaluate(() => localStorage.setItem('vocab_review_sound', 'off'));
     await page.locator('.manabi-reader-toolbar').getByRole('link', { name: '담은 표현', exact: true }).click();
     await page.getByRole('button', { name: '표현 1개 복습 →', exact: true }).waitFor();
     const scopeURL = new URL(page.url()); assert.equal(scopeURL.searchParams.get('src'), 'book:japanese-n4:1-42');
     const reviewReturn = scopeURL.searchParams.get('returnTo'); assert(reviewReturn.includes(catalog.n4));
     await page.getByRole('button', { name: '표현 1개 복습 →', exact: true }).press('Enter');
-    await page.getByRole('button', { name: '정답 확인하기', exact: true }).click();
+    await page.getByText('처음 보는 표현', { exact: true }).waitFor();
+    assert.equal(await page.getByRole('button', { name: /알맞음/ }).count(), 0);
+    await page.getByRole('button', { name: '다음 →', exact: true }).press('Enter');
+    await page.getByRole('button', { name: '정답 확인하기', exact: true }).press('Enter');
     await page.getByRole('link', { name: '이 문장 열기 ↗', exact: true }).waitFor();
     const gradeResponse = page.waitForResponse(response => response.request().method() === 'PATCH' && new URL(response.url()).pathname === '/rest/v1/user_vocabulary');
     await page.getByRole('button', { name: /알맞음/ }).click(); assert.equal((await gradeResponse).status(), 200);
@@ -269,8 +286,10 @@ async function runBrowser() {
     await control({ scopeEmpty: false }); record('saved-expression failure and empty response remain visibly distinct');
 
     await page.goto(`${base}/books/japanese-n5?edition=${catalog.n5}#u03-study1`); await page.locator('#u03-study1').waitFor();
-    assert((await page.locator('.manabi-reader-toolbar').innerText()).includes('N5'));
-    await page.goto(`${base}/books/japanese-n5/review?edition=${catalog.n5}`); await page.getByText(state.words[0].word_text, { exact: true }).count().then(count => assert.equal(count, 0));
+    await page.getByRole('heading', { name: latest('japanese-n5').manuscript.lessons[2].title, exact: true, level: 1 }).waitFor();
+    assert((await page.locator('.manabi-reader-toolbar').textContent()).includes('N5'));
+    await page.goto(`${base}/books/japanese-n5/review?edition=${catalog.n5}`); await page.getByRole('heading', { name: '첫 문장을 담아 볼까요?', exact: true }).waitFor();
+    await page.getByText(state.words[0].word_text, { exact: true }).count().then(count => assert.equal(count, 0));
     assert.equal((await snapshot()).contexts.length, 1); record('N5 published reader remains available and its review excludes N4-only contexts');
 
     const valid = { word: { word_text: selected.quote.slice(0, 160), meaning: '합성 검수', language: 'Japanese' },
@@ -308,6 +327,58 @@ async function runBrowser() {
   return report;
 }
 
+async function runLayoutMatrix() {
+  const catalog = await (await fetch(`${backendOrigin}/__qa/catalog`)).json();
+  const bundle = bundles().find(item => item.editionId === catalog.n4);
+  assert(bundle, 'A packaged N4 edition is required');
+  const report = { scope: 'Actual local Next BookReader geometry only; synthetic learner/backend; functional acceptance is separate',
+    editionId: bundle.editionId, contentHash: bundle.contentHash, bundleHash: bundle.artifactManifest.bundleHash,
+    widths: [320, 390, 768, 1440], observations: [], failures: [], errors: [], startedAt: new Date().toISOString() };
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH || '/usr/bin/chromium', args: ['--no-sandbox'] });
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: 'block', reducedMotion: 'reduce' });
+  await context.route('**/*', route => ['localhost', '127.0.0.1'].includes(new URL(route.request().url()).hostname) ? route.continue() : route.abort());
+  await context.addCookies([{ name: 'sb-127-auth-token', value: fixtureSession('learner'), url: base }]);
+  const page = await context.newPage(); page.setDefaultTimeout(30000); page.on('pageerror', error => report.errors.push(error.message));
+  try {
+    for (const lesson of bundle.manuscript.lessons) {
+      await page.goto(`${base}/books/japanese-n4?edition=${bundle.editionId}#${lesson.id}-start`);
+      await page.locator(`#${lesson.id}-start`).waitFor();
+      await page.waitForFunction(unit => {
+        const articles = [...document.querySelectorAll('.book-reading-content article[data-unit-page]')];
+        return articles.length === 4 && articles.every(node => node.dataset.unitPage === unit)
+          && !document.querySelector('.book-reading-content .book-example-save:empty');
+      }, lesson.id);
+      await page.evaluate(() => document.fonts.ready);
+      for (const width of report.widths) {
+        await page.setViewportSize({ width, height: 1000 });
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        const dimensions = await page.evaluate(() => ({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth,
+          sectionCount: document.querySelectorAll('.book-reading-content article').length,
+          questions: document.querySelectorAll('.book-reading-content .check').length,
+          studyRows: document.querySelectorAll('.book-reading-content .n4-study-row').length,
+          formulas: document.querySelectorAll('.book-reading-content .formula').length }));
+        const row = { unit: lesson.id, ...dimensions }; report.observations.push(row);
+        if (dimensions.scrollWidth > dimensions.width + 1) {
+          const offenders = await page.evaluate(() => [...document.querySelectorAll('.book-reader *')].map(node => ({ tag: node.tagName,
+            className: node.className, text: node.textContent.slice(0, 100), left: node.getBoundingClientRect().left, right: node.getBoundingClientRect().right }))
+            .filter(node => node.right > innerWidth + 1).slice(-10));
+          report.failures.push({ ...row, offenders });
+          await page.screenshot({ path: `${out}/matrix-${lesson.id}-${width}-overflow.png` });
+        }
+        if (lesson.id === 'u41' && width === 320) {
+          await page.locator(`#${lesson.id}-practice .check`).first().scrollIntoViewIfNeeded();
+          await page.screenshot({ path: `${out}/n4-u41-options-320-final.png` });
+        }
+      }
+      console.log(`N4 layout: ${lesson.id} × ${report.widths.join('/')} px`);
+    }
+    assert.equal(report.observations.length, 168); assert.deepEqual(report.errors, []); assert.deepEqual(report.failures, []);
+    report.passed = true;
+  } catch (error) { report.passed = false; report.failure = error.message; throw error; }
+  finally { report.finishedAt = new Date().toISOString(); fs.writeFileSync(`${out}/APP-MATRIX.json`, JSON.stringify(report, null, 2) + '\n'); await context.close(); await browser.close(); }
+  return report;
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   if (process.argv.includes('--backend-only')) {
     const fixture = createN4Fixture(); await fixture.start(); console.log(`Synthetic N4 backend listening on ${backendOrigin}`);
@@ -315,7 +386,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   } else {
     const fixture = process.argv.includes('--browser-only') ? null : createN4Fixture();
     if (fixture) await fixture.start();
-    try { const report = await runBrowser(); console.log(JSON.stringify({ passed: report.passed, checks: report.checks.length, editions: report.editions })); }
+    try {
+      const report = process.argv.includes('--matrix-only') ? await runLayoutMatrix() : await runBrowser();
+      console.log(JSON.stringify({ passed: report.passed, checks: report.checks?.length, observations: report.observations?.length, editions: report.editions }));
+    }
     finally { if (fixture) await fixture.close(); }
   }
 }

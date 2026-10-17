@@ -1,0 +1,61 @@
+{
+  "tooling": "N4 subset refresh reimplementation; not recovered original N5 tooling",
+  "fontTools": "4.61.1",
+  "format": "WOFF",
+  "license": "SIL Open Font License 1.1",
+  "licenseSha256": "849f4ea9c214fa4ac3593b770c699f387534b11ce671264c1b10d85bdcb5997b",
+  "requestedCodepoints": 1250,
+  "fonts": {
+    "JP": {
+      "sourceFile": "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc",
+      "sourceSha256": "5d9c31a059600193c9d7968a998bde886ccdc77e934006ad243b41794c496a7d",
+      "collectionIndex": 0,
+      "output": "fonts/JP.woff",
+      "outputSha256": "2bca77df48e6fdb1a62ef0fb2e6ecd230ce09cd3a5a09a7c1c86530078e785eb",
+      "bytes": 471168,
+      "missingCodepoints": [],
+      "subsetLostCodepoints": []
+    },
+    "JPS": {
+      "sourceFile": "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+      "sourceSha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a",
+      "collectionIndex": 0,
+      "output": "fonts/JPS.woff",
+      "outputSha256": "c1fa91ad733456c1ec3967d0e92fa9c1c50f6f230a00cbf5c1b4c97d768feb6f",
+      "bytes": 279924,
+      "missingCodepoints": [],
+      "subsetLostCodepoints": []
+    },
+    "KR": {
+      "sourceFile": "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+      "sourceSha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a",
+      "collectionIndex": 1,
+      "output": "fonts/KR.woff",
+      "outputSha256": "56cd2610755f397d7cdda068c841d2859edbe20d0c212c477e05618a633df297",
+      "bytes": 279588,
+      "missingCodepoints": [],
+      "subsetLostCodepoints": []
+    },
+    "KRS": {
+      "sourceFile": "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc",
+      "sourceSha256": "5d9c31a059600193c9d7968a998bde886ccdc77e934006ad243b41794c496a7d",
+      "collectionIndex": 1,
+      "output": "fonts/KRS.woff",
+      "outputSha256": "94be6c884ad4a3371d4ff469d878179509e13ddc4ff795d91ea62535062fcd48",
+      "bytes": 470788,
+      "missingCodepoints": [],
+      "subsetLostCodepoints": []
+    },
+    "KRB": {
+      "sourceFile": "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
+      "sourceSha256": "faa5f3656a78b2e2d450d27fe8382c778bc2b6bb5ea29c986664a6a435056ceb",
+      "collectionIndex": 1,
+      "output": "fonts/KRB.woff",
+      "outputSha256": "77c8b934b8d9c831a25753c16b8363c484626ea405749f4e56b0446516555e7b",
+      "bytes": 285500,
+      "missingCodepoints": [],
+      "subsetLostCodepoints": []
+    }
+  },
+  "passed": true
+}

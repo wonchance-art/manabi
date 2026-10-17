@@ -25,7 +25,7 @@ import { focusIsLost, focusPageIfLost } from '@/lib/routeFocus';
 function withoutRuby(node) {
   if (!node) return '';
   const clone = node.cloneNode(true);
-  clone.querySelectorAll('rt,.book-example-save').forEach(el => el.remove());
+  clone.querySelectorAll('rt,.reading-note,.book-example-save').forEach(el => el.remove());
   return clone.textContent.trim();
 }
 
@@ -326,10 +326,10 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
 
   useEffect(() => {
     const search = query.trim().toLocaleLowerCase();
-    const cards = [...(content.current?.querySelectorAll('.lex-card,.kanji-card,.grammar-recall') || [])];
-    cards.forEach(card => { card.hidden = !!search && !card.textContent.toLocaleLowerCase().includes(search); });
+    const cards = [...(content.current?.querySelectorAll('.lex-card,.kanji-card,.grammar-recall,.n4-reference > [data-search]') || [])];
+    cards.forEach(card => { card.hidden = !!search && !String(card.dataset.search || card.textContent).toLocaleLowerCase().includes(search); });
     setSearchCount(cards.filter(card => !card.hidden).length);
-    if (unit === 'reference') content.current?.querySelectorAll('article').forEach(article => { article.hidden = !!search && !article.querySelector('.lex-card:not([hidden]),.kanji-card:not([hidden]),.grammar-recall:not([hidden])'); });
+    if (unit === 'reference') content.current?.querySelectorAll('article').forEach(article => { article.hidden = !!search && !article.querySelector('.lex-card:not([hidden]),.kanji-card:not([hidden]),.grammar-recall:not([hidden]),.n4-reference > [data-search]:not([hidden])'); });
   }, [query, sections, unit]);
 
   const go = useCallback((id, originAnchor) => {
@@ -352,7 +352,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     focusAfterMove.current = true;
     setAnchorRequest(request => request + 1);
     if (!reference && /^u\d{2}/.test(id)) update({ page: id });
-  }, [bookHref, book.edition, unit, update, reference, rememberPosition]);
+  }, [book.edition, bookHref, unit, update, reference, rememberPosition]);
 
   function interact(event) {
     const anchor = event.target.closest('a[href]');
@@ -396,13 +396,13 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     <BookEditionFonts book={book} />
     {reference && <div className="manabi-preview-note" role="note"><strong>복습 원문 참고</strong><p>읽던 위치는 바뀌지 않아요. 확인 후 복습하던 탭으로 돌아가세요.</p><a data-reading-resume className="manabi-link" href={bookHref(book.edition, active || pageId)}>여기부터 이어읽기 →</a></div>}
     {preview && <p className="manabi-preview-note">관리자 미리보기 · 발행 전 원고예요.</p>}
-    {unit === 'cover' && !entryDecided && <><script dangerouslySetInnerHTML={{ __html: HASH_GATE }} /><BookReaderSkeleton gated level={level} /></>}
+    {unit === 'cover' && !entryDecided && <><script dangerouslySetInnerHTML={{ __html: HASH_GATE }} /><BookReaderSkeleton gated /></>}
     {unit === 'cover' ? <BookHome book={book} preview={preview} progress={progress} hasProgress={hasProgress} ready={ready} /> : <div className="manabi-reader-page">
       <div ref={toolbar} className="manabi-reader-toolbar"><LibraryReturnLink onlyWithContext/><a href={readerHref('cover')}>← 책 목차</a><span>일본어 · {level}{lesson ? ` / ${String(lesson.number).padStart(2, '0')}과` : ''}</span><div><Link prefetch={false} href={bookReviewHref(bookHref(book.edition, reference ? progress.page : active || pageId))}>담은 표현</Link><details ref={referenceMenu} className="manabi-reference-menu" onBlur={leaveReferenceMenu} onKeyDown={event => { if (event.key === 'Escape') { event.currentTarget.open = false; event.currentTarget.querySelector('summary').focus(); } }}><summary>참고 자료</summary><nav aria-label="교재 참고 자료"><a href={readerHref('reference-start')}>어휘·문형·한자</a>{lesson && <button type="button" onClick={event => { const menu = event.currentTarget.closest('details'); menu.open = false; openPanel('materials', menu.querySelector('summary')); }}>이 과의 연결 자료</button>}<Link prefetch={false} href={`/books/${bookId}/materials?edition=${book.edition}`}>{book.cultures?.length ? '문화 읽기' : '내 자료 연결'}</Link></nav></details><button type="button" aria-pressed={focus} onClick={() => setFocus(!focus)}>{focus ? '기본 보기' : '집중 읽기'}</button></div></div>
       <div className="manabi-reader-grid"><aside className="manabi-reader-outline"><p className="manabi-eyebrow">{lesson ? `${String(lesson.number).padStart(2, '0')}과 · 목차` : '목차'}</p><nav aria-label="과 안의 목차">{unitSections.map(section => <a key={section.id} href={readerHref(section.id)} aria-current={active === section.id ? 'location' : undefined}>{section.title}</a>)}</nav></aside>
         <div className="manabi-reader-main"><details className="manabi-mobile-toc"><summary>이 과의 목차</summary><nav aria-label="모바일 과 목차">{unitSections.map(section => <a key={section.id} href={readerHref(section.id)} onClick={event => event.currentTarget.closest('details').removeAttribute('open')}>{section.title}</a>)}</nav></details>
           <header className="manabi-chapter-opening"><div><p className="manabi-eyebrow">{lesson?.part || `JAPANESE · ${level}`}</p>{lesson?.subtitle && <p className="manabi-chapter-subtitle">{lesson.subtitle}</p>}<h1>{title}</h1>{lesson && <p className="manabi-chapter-goal">{lesson.goal}</p>}</div>{lesson && <span className="manabi-chapter-number" aria-hidden="true">{String(lesson.number).padStart(2, '0')}</span>}</header>
-          {unit === 'reference' && <label className="manabi-reference-search">어휘·문형·한자 검색<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="일본어 또는 한국어로 찾아보세요" /></label>}
+          {unit === 'reference' && <label className="manabi-reference-search">어휘·문형·한자 검색<input type="search" disabled={loading || !sections.length} value={query} onChange={event => setQuery(event.target.value)} placeholder="일본어 또는 한국어로 찾아보세요" /></label>}
           {loading && <p className="manabi-status" aria-busy="true">본문을 펼치고 있어요…</p>}{error && <p className="manabi-status" role="alert">{error} <button type="button" onClick={() => location.reload()}>다시 시도</button></p>}
           {!unit && <p className="manabi-status"><a href={bookHref(book.edition)}>책 목차에서 다시 열기 →</a></p>}
           {/* 검색 결과 수 알림 — 영역은 늘 두고 내용만 바꾼다(첫 글자를 칠 때 생기는 영역은 첫 결과를 놓친다). 보이는 줄은 한 번만 읽히게 숨긴다. */}

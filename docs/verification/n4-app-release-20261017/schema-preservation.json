@@ -1,0 +1,48 @@
+{
+  "passed": true,
+  "before": [
+    {
+      "snapshot": {
+        "contexts": {
+          "rows": 325,
+          "digest": "2096e5853b494918892ea4c6ecf8ad0a"
+        },
+        "vocabulary": {
+          "rows": 1246,
+          "digest": "761313cf252021903a623740082f0b17"
+        },
+        "n5_editions": {
+          "rows": 2,
+          "digest": "49c97bc0e3d6a3d35a8172a0cea4903d"
+        },
+        "n5_releases": {
+          "rows": 1,
+          "digest": "598147b82abba2b14589f110a820fba7"
+        }
+      }
+    }
+  ],
+  "after": [
+    {
+      "snapshot": {
+        "contexts": {
+          "rows": 325,
+          "digest": "2096e5853b494918892ea4c6ecf8ad0a"
+        },
+        "vocabulary": {
+          "rows": 1246,
+          "digest": "761313cf252021903a623740082f0b17"
+        },
+        "n5_editions": {
+          "rows": 2,
+          "digest": "49c97bc0e3d6a3d35a8172a0cea4903d"
+        },
+        "n5_releases": {
+          "rows": 1,
+          "digest": "598147b82abba2b14589f110a820fba7"
+        }
+      }
+    }
+  ],
+  "scope": "Actual production row counts and complete-row aggregate digests before/after additive schema change; no private row contents returned."
+}

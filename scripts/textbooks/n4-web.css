@@ -1,4 +1,6 @@
 /* N4 additions to the unchanged N5 visual language. Generated after pinned N5 CSS. */
+/* The standalone body is the query container; its zero-margin inline size is the viewport. */
+body{container-type:inline-size}
 .sidebar nav a{display:flex;gap:12px;padding:12px;border:1px solid var(--line);border-radius:6px;font-size:13px;line-height:1.6;background:#fff;color:var(--ink)}
 .sidebar nav a.active{border-color:var(--edge);background:#f4e6ef;color:var(--mauve)}
 .sidebar nav a b{font-size:12px}.draft-banner{max-width:790px;margin:0 auto 16px;font-size:12px;color:var(--muted)}
@@ -16,4 +18,4 @@
 .words>div{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.example>[lang=ja]{display:block}
 .n4-study-row{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.n4-study-row b{font-size:12px}.n4-study-row [lang=ja]{font-size:18px}.n4-study-row p{font-size:12px;margin:4px 0}
 input:focus-visible{outline:3px solid #b98fa8;outline-offset:3px}.check input{min-width:18px;min-height:18px}
-@media(max-width:700px){.layout{display:block}.sidebar{position:relative;max-height:none;padding:18px 16px}.sidebar h1{font-size:20px;margin:8px 0 14px}.sidebar nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-height:230px;overflow:auto}.sidebar .small{display:none}main{padding:16px 12px 80px}.paper{padding:24px 20px}.top{padding:12px 18px;gap:14px}.top>span{font-size:11px}.words{padding:9px 12px}.turn{gap:9px;padding:12px}.turn>b{flex-basis:40px}.n4-reference{grid-template-columns:1fr}.modebar{gap:6px}.modebar button,.modebar a{font-size:12px}.paper h2{font-size:24px}}
+@container(max-width:700px){.layout{display:block}.sidebar{position:relative;max-height:none;padding:18px 16px}.sidebar h1{font-size:20px;margin:8px 0 14px}.sidebar nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-height:230px;overflow:auto}.sidebar .small{display:none}main{padding:16px 12px 80px}.paper{padding:24px 20px}.top{padding:12px 18px;gap:14px}.top>span{font-size:11px}.words{padding:9px 12px}.turn{gap:9px;padding:12px}.turn>b{flex-basis:40px}.n4-reference{grid-template-columns:1fr}.modebar{gap:6px}.modebar button,.modebar a{font-size:12px}.paper h2{font-size:24px}}

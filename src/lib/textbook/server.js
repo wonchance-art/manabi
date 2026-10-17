@@ -58,7 +58,7 @@ export async function readEditionStamp(supabase,edition,bookId=BOOK_ID) {
 }
 // 가변 파일명 읽기(verifiedAsset)는 asset 경로 전용 ./assetFile에 있다. 여기서는 이미 읽은 바이트만 검증한다.
 export function checkedAsset(bundle,file,bytes) {
- const artifact=bundle.assets?.[file];if(!artifact)throw textbookError(404,'파일을 찾을 수 없어요.');
+ const artifact=bundle.assets&&Object.hasOwn(bundle.assets,file)?bundle.assets[file]:null;if(!artifact)throw textbookError(404,'파일을 찾을 수 없어요.');
  if(createHash('sha256').update(bytes).digest('hex')!==artifact.sha256)throw textbookError(503,'출력 파일을 검증하지 못했어요.');
  return {bytes,type:artifact.type};
 }

@@ -2,8 +2,14 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { client, publicClient, admin, user } = vi.hoisted(() => ({ client: vi.fn(), publicClient: vi.fn(), admin: vi.fn(), user: vi.fn() }));
 vi.mock('@/lib/supabaseServer', () => ({ createSupabaseServerClient: client, createSupabasePublicClient: publicClient, requireAdmin: admin, requireUser: user }));
+vi.mock('node:fs/promises', async importOriginal => {
+  const actual = await importOriginal();
+  return { ...actual, readFile: vi.fn(actual.readFile) };
+});
 
-import { candidate, currentCandidate } from '@/lib/textbook/server';
+import { readFile } from 'node:fs/promises';
+import { candidate, checkedAsset, currentCandidate } from '@/lib/textbook/server';
+import { verifiedAsset } from '@/lib/textbook/assetFile';
 import { resolveBookSelection, bookSourceHref } from '@/lib/textbook/sources';
 import { sourceHref } from '@/lib/learningSources';
 import { resolveSave } from '@/lib/server/learningContext';
@@ -102,6 +108,15 @@ describe('N4 immutable publication and cross-book boundaries', () => {
     expect(db.rpc).not.toHaveBeenCalled();
   });
 
+  it('rejects inherited manifest names in the shared verifiers before attempting a disk read', async () => {
+    const elsewhere = { ...n4, editionId: 'no-such-edition-folder' };
+    for (const file of ['__proto__', 'constructor', 'toString']) {
+      expect(() => checkedAsset(elsewhere, file, Buffer.from('unused'))).toThrow(expect.objectContaining({ status: 404 }));
+      await expect(verifiedAsset(elsewhere, file)).rejects.toMatchObject({ status: 404 });
+    }
+    expect(readFile).not.toHaveBeenCalled();
+  });
+
   it('serves public immutable files without cookies and denies unlisted or unsafe file paths', async () => {
     const response = await asset('index.html');
     expect(response.status).toBe(200);
@@ -111,7 +126,7 @@ describe('N4 immutable publication and cross-book boundaries', () => {
     expect(publicClient).toHaveBeenCalledOnce();
     expect(response.headers.get('x-content-type-options')).toBe('nosniff');
     expect(await response.text()).toContain('일본어 N4');
-    for (const file of ['bundle.json', '../bundle.json', '%2e%2e/bundle.json', '..\\bundle.json', 'https://evil.invalid/a', '/etc/passwd', 'missing.js']) {
+    for (const file of ['bundle.json', '../bundle.json', '%2e%2e/bundle.json', '..\\bundle.json', 'https://evil.invalid/a', '/etc/passwd', 'missing.js', '__proto__', 'constructor', 'toString']) {
       expect((await asset(file)).status, file).toBe(404);
     }
     expect(queries.filter(item => item.table === 'textbook_book_editions').every(item => item.filters.some(([key, value]) => key === 'book_id' && value === N4))).toBe(true);

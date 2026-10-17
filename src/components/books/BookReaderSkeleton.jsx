@@ -1,3 +1,5 @@
+'use client';
+import { usePathname } from 'next/navigation';
 import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
 // 「참고 자료」 메뉴 모양(.manabi-reference-menu)은 본문 CSS에만 있다 — BookReader보다 먼저 그려지는 골격이 직접 부른다
 // (없으면 첫 진입 때 회색 「▶ 참고 자료」가 보였다가 「참고 자료 ⌄」로 바뀐다 · /ux-review 2026-10-17 KST).
@@ -11,13 +13,15 @@ import './reading-content.css';
  * lesson = 과 본문 머리(부제 · 목표 · 과 번호 · 도구 줄 「/ N과」). 과가 아닌 쪽(책 사용법 · 찾기 · 문화 읽기)은 실제 화면처럼 갈래 · 제목만.
  * gated일 때는 hash를 모르니 과 칸을 .book-entry-lesson으로 함께 보내고, 과가 아니면 HASH_GATE가 그 칸을 끈다.
  */
-export default function BookReaderSkeleton({ gated = false, announce = false, lesson = true, level = 'N5' }) {
+export default function BookReaderSkeleton({ gated = false, announce = false, lesson = true, level = null }) {
+  const pathname = usePathname();
+  const bookLevel = level || (pathname?.startsWith('/books/japanese-n4') ? 'N4' : 'N5');
   const part = (node) => (gated ? <span className="book-entry-lesson">{node}</span> : lesson ? node : null);
   const block = (Tag, className, node) => (gated ? <Tag className={`${className} book-entry-lesson`}>{node}</Tag> : lesson ? <Tag className={className}>{node}</Tag> : null);
   return (
     <SkeletonRegion className={`manabi-reader-page${gated ? ' book-entry-skeleton' : ''}`} label="교재" announce={announce}>
       <div className="manabi-reader-toolbar" aria-hidden="true">
-        <a>← 책 목차</a><span>일본어 · {level}{part(<> / <SkeletonLine width="2.4em" /></>)}</span>
+        <a>← 책 목차</a><span>일본어 · {bookLevel}{part(<> / <SkeletonLine width="2.4em" /></>)}</span>
         <div>
           <a>담은 표현</a>
           <details className="manabi-reference-menu"><summary tabIndex={-1}>참고 자료</summary></details>

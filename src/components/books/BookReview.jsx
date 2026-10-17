@@ -14,7 +14,7 @@ export default function BookReview({ book, preview = false, returnTo = null }) {
   const bookHref = (edition, page = 'cover') => textbookHref(edition, page, bookId);
   const { user, loading } = useAuth();
   const { progress, ready } = useReadingProgress(book.edition);
-  const readingReturn = safeBookReturn(returnTo) || bookHref(book.edition, ready ? progress.page : 'cover');
+  const readingReturn = safeBookReturn(returnTo, bookId) || bookHref(book.edition, ready ? progress.page : 'cover');
   const { data, error, isPending, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } = useInfiniteQuery({
     queryKey: ['book-review', user?.id, bookId], enabled: !!user && !preview,
     initialPageParam: 0,
