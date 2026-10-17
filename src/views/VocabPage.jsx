@@ -150,6 +150,8 @@ function VocabWorkspace({ reviewScope }) {
   const [reviewIdx, setReviewIdx] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [reviewFinished, setReviewFinished] = useState(false);
+  // 끝 공지(화면 읽기) — 끝 제목이 초점을 받지 못했을 때만 채운다(초점이 간 제목과 같은 말을 두 번 읽지 않게, a3ba 리뷰 ②).
+  const [finishNotice, setFinishNotice] = useState(false);
   const scoringRef = useRef(false);
   const csvInputRef = useRef(null);
   const [search, setSearch] = useState('');
@@ -962,8 +964,7 @@ function VocabWorkspace({ reviewScope }) {
   // 세션 끝 — 낙관 전진을 서버 정본과 재동기한다.
   const finishRun = () => {
     setReviewFinished(true);
-    // 끝 알림 토스트는 띄우지 않는다(VOCAB-FLOW-001 B) — 끝 화면 제목 「오늘 몫 끝」이 같은 말이고, 390에서 「목록으로」를 가렸다.
-    // 화면 읽기 공지는 늘 깔린 알림 영역(아래 review-finish-announce)이 맡는다(토스트 영역 aria-live가 하던 몫).
+    // 끝 토스트 없음(VOCAB-FLOW-001 B) — 화면 읽기는 끝 제목 초점, 못 받으면 review-finish-announce(onTitleNotFocused).
     // 세션 동안의 낙관 전진을 서버 정본과 재동기 — 채점 저장이 fire-and-forget이라
     // 여기서 한 번 무효화하지 않으면 다음 화면이 낡은 FSRS 값을 계속 본다.
     queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
@@ -1218,7 +1219,10 @@ function VocabWorkspace({ reviewScope }) {
     waiting: waitingFsrs, onResumeWaiting: resumeWaiting,
     returnLink: scope.source?.kind === 'material' && scope.source.ids.length === 1 ? { href: `/viewer/${scope.source.ids[0]}`, label: '읽던 자료로 돌아가기' } : null,
     outOfScope: outOfScopeCount ? { count: outOfScopeCount, label: SCOPE_LANG_LABELS[scope.lang], onClick: () => { selectLanguage(scope.lang); setTab('list'); } } : null,
+    onTitleNotFocused: () => setFinishNotice(true), // 끝 제목이 초점을 못 받았을 때만 끝 공지(a3ba 리뷰 ②)
   } : null;
+  // 끝 화면을 벗어나면 공지를 거둔다 — 다음 끝 화면은 그때 초점 여부로 다시 정한다.
+  useEffect(() => { if (!reviewFinished) setFinishNotice(false); }, [reviewFinished]);
 
   // 화면 숫자(session.total)와 같은 계산 결과의 줄로 시작한다 — 보이는 개수 = 시작하는 줄 길이(계약 reviewScopeCount).
   // 세션 길이 칩을 고르면 같은 줄의 앞에서 자른 sessionCards(버튼 숫자)로 시작한다.
@@ -1410,7 +1414,7 @@ function VocabWorkspace({ reviewScope }) {
       </div>}
       <PendingReviewsNotice count={pendingReviewCount} />
       {/* 복습 끝 공지(B) — 화면 읽기 전용. 영역은 늘 그려 두고 내용만 넣는다(내용과 함께 생기는 status는 놓칠 수 있다). */}
-      <p className="sr-only review-finish-announce" role="status">{tab === 'review' && reviewFinished ? '이번 표현 복습을 마쳤어요' : ''}</p>
+      <p className="sr-only review-finish-announce" role="status">{tab === 'review' && reviewFinished && finishNotice ? '이번 표현 복습을 마쳤어요' : ''}</p>
 
       {/* 헤더 — 세션 중 · 끝 화면에는 없앤다(끝 화면은 세션 머리줄 유지). 부제와 총계는 아래 통계와 중복이라 뺐다. */}
       {!sessionChrome && (
@@ -1431,7 +1435,7 @@ function VocabWorkspace({ reviewScope }) {
         <div className="manabi-row"><Link href={reviewScope.returnTo}>← 교재로</Link>{bookExpressionListHref(reviewScope.returnTo) && <Link href={bookExpressionListHref(reviewScope.returnTo)} prefetch={false}>교재의 담은 표현</Link>}</div>
       </section>}
       {/* 세션 상단바 — 나가기 · 진행(서로 다른 카드 n / N) · 🔈/🔇 · 되돌리기. 카드 안에는 문항만 남긴다.
-          끝 화면에도 같은 자리에 남긴다(A). 되돌리기는 끝 화면에서 원래 쓸 수 없어(단축키도 꺼짐) 잠근다 — 빼면 진행 수 · 소리 단추가 옆으로 밀린다(실측 layout-shift 0.0009). */}
+          끝 화면에도 같은 자리에 남긴다(A). 되돌리기는 끝 화면에서도 쓴다(Ctrl/⌘+Z = onFinishedUndo, reviewFinishedUndoKeyboard 계약) — 되돌릴 것이 없을 때만 잠근다. 빼면 진행 수 · 소리 단추가 옆으로 밀린다(실측 layout-shift 0.0009). */}
       {sessionChrome && (() => {
         const progress = tab === 'practice' ? { done: practice.idx, total: practice.total } : runProgress || { done: 0, total: 0 };
         const total = progress.total || 1;
@@ -1456,7 +1460,7 @@ function VocabWorkspace({ reviewScope }) {
             </span>
             {ttsSupported && <ReviewSoundToggle on={soundOn} onToggle={toggleSound} />}
             {tab === 'review' && <button type="button" className="review-topbar__undo" aria-label="직전 채점 되돌리기" title="되돌리기 Ctrl/⌘+Z"
-              disabled={onEndScreen || !reviewKeysRef.current.canUndo} onClick={() => reviewKeysRef.current.undo?.()}>↶</button>}
+              disabled={!reviewKeysRef.current.canUndo} onClick={() => reviewKeysRef.current.undo?.()}>↶</button>}
           </div>
         );
       })()}
@@ -1486,9 +1490,12 @@ function VocabWorkspace({ reviewScope }) {
             {/* 준비 중(입장 한도 · FSRS 목록을 받는 중)에는 제목도 골격이다(VOCAB-FLOW-001 · LOADING-SKELETON-001 「받는 중엔 빈 상태 대신
                 골격」). session.total이 아직 0이라 「잠시, 읽기로 돌아가요.」(오늘 끝)가 0.1~1초 보였다가 「오늘 다시 볼 표현」으로 바뀌었다
                 (픽스처 실측 390 · CPU 4배: 1331 → 1482ms, FSRS 1초 지연 시 약 1초). 제목 자리 · 크기는 같다. */}
+            {/* FSRS 목록을 못 받으면(error) 예전 일정 카드도 0으로 세어져 「잠시, 읽기로 돌아가요.」(오늘 끝)가 거짓으로 섰다 — 제목은 중립
+                「오늘 복습」. 실패 사실은 아래 알림 「복습 일정을 불러오지 못했어요. 다시 시도」가 말한다(같은 말을 제목에 겹치지 않음, a3ba 리뷰 ③). */}
             <h2 id="review-today-title">{heroPending
               ? <><span className="sr-only">오늘 복습</span><SkeletonLine width="8em" height="1em" /></>
-              : session.total ? '오늘 다시 볼 표현' : hasAnyWords ? '잠시, 읽기로 돌아가요.' : '첫 표현을 담아 보세요.'}</h2>
+              : fsrsReview.status === 'error' ? '오늘 복습'
+                : session.total ? '오늘 다시 볼 표현' : hasAnyWords ? '잠시, 읽기로 돌아가요.' : '첫 표현을 담아 보세요.'}</h2>
             {heroPending ? <p aria-busy="true" className="review-room-note">복습 준비 중…</p> : session.total > 0 ? <>
               <div className="review-room-number"><strong className="vocab-hero__num">{session.total}</strong><span>개의 표현</span></div>
               {/* 0인 갈래는 적지 않는다(learning-flow e2e 「복습 0」 금지) — 「복습 14 · 새 표현 4」(설계 §5-1). */}

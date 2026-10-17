@@ -39,6 +39,13 @@ describe('VOCAB-FLOW-001 ② 오늘 카드 — 준비 중엔 제목도 골격(�
     expect(heading).toContain('<span className="sr-only">오늘 복습</span>');
     expect(heading).toContain("session.total ? '오늘 다시 볼 표현' : hasAnyWords ? '잠시, 읽기로 돌아가요.' : '첫 표현을 담아 보세요.'");
   });
+  it('FSRS 목록을 못 받으면(error) 제목은 중립 「오늘 복습」 — 거짓 「오늘 끝」 없음, 실패는 아래 알림이 말한다(a3ba 리뷰 ③)', () => {
+    const heading = between('<h2 id="review-today-title">', '</h2>');
+    const error = heading.indexOf("fsrsReview.status === 'error' ? '오늘 복습'"), done = heading.indexOf('잠시, 읽기로 돌아가요.');
+    expect(error).toBeGreaterThan(heading.indexOf('<SkeletonLine'));
+    expect(done).toBeGreaterThan(error);
+    expect(code).toContain("{fsrsReview.status === 'error' && <p role=\"alert\">복습 일정을 불러오지 못했어요.");
+  });
 });
 
 // ── 오너 「권장대로」(2026-10-17 KST) 목업 A · B · C ──
@@ -50,12 +57,14 @@ describe('VOCAB-FLOW-001 A 끝 화면 — 세션 머리줄 유지, 복습방 머
     expect(code).toContain("const onEndScreen = tab === 'review' && reviewFinished || tab === 'practice' && !!practice && practice.finished;");
     expect(code).toContain('const sessionChrome = inSession || onEndScreen;');
   });
-  it('복습방 머리 · 교재 범위 안내는 세션 · 끝 화면에 없고, 상단바는 둘 다에 있다(되돌리기는 끝 화면에서 잠금 — 빼면 옆 칸이 밀린다)', () => {
+  it('복습방 머리 · 교재 범위 안내는 세션 · 끝 화면에 없고, 상단바는 둘 다에 있다(되돌리기는 끝 화면에서도 쓸 수 있다 — 되돌릴 것이 없을 때만 잠금)', () => {
     expect(code).toContain('{!sessionChrome && (\n        <header className="review-room-heading">');
     expect(code).toContain('{isBookScope && !sessionChrome && <section className="review-room-scope review-room-book-scope"');
     expect(code).toContain('{sessionChrome && (() => {');
     expect(code).toContain("{tab === 'review' && <button type=\"button\" className=\"review-topbar__undo\"");
-    expect(code).toContain('disabled={onEndScreen || !reviewKeysRef.current.canUndo}');
+    // 끝 화면 Ctrl/⌘+Z(onFinishedUndo)가 실제로 되돌린다(reviewFinishedUndoKeyboard) — 단추도 같은 조건(canUndo)으로만 잠근다(a3ba 리뷰 ①).
+    expect(code).toContain('disabled={!reviewKeysRef.current.canUndo} onClick={() => reviewKeysRef.current.undo?.()}>↶</button>}');
+    expect(code).not.toContain('disabled={onEndScreen ||');
   });
   it('위 여백 8px도 끝 화면까지 — 하단 내비만 세션 중에 숨긴다', () => {
     expect(code).toContain("document.body.classList.toggle('is-review-chrome', sessionChrome);");
@@ -69,9 +78,12 @@ describe('VOCAB-FLOW-001 A 끝 화면 — 세션 머리줄 유지, 복습방 머
 
 describe('VOCAB-FLOW-001 A+ 끝 화면 제목으로 초점 — 마지막 채점 뒤 body로 떨어지지 않게(/study 「세션 완료」 선례)', () => {
   const review = strip(file('src/views/VocabReview.jsx'));
-  it('떨어진 초점만 줍는 훅(focusIfFree · 화면 안)이 복습 끝 · 집중 연습 끝 제목 둘 다에 붙는다', () => {
-    expect(review).toContain("useEffect(() => { const el = title.current; focusIfFree(el, el?.closest('.page-container')); }, []);");
-    expect(review.match(/const title = useEndTitleFocus\(\);/g)).toHaveLength(2);
+  it('떨어진 초점만 줍는 훅이 복습 끝 · 집중 연습 끝 제목 둘 다에 붙는다 — 범위 없이(초점이 body일 때만, 상단바 🔈 초점은 그대로)', () => {
+    // 범위(.page-container)를 주면 상단바(🔈 · ← 나가기)에 둔 초점까지 뺏었다(a3ba 리뷰 ②) — focusIfFree(el) = canTakeFocus(undefined) = focusIsLost.
+    expect(review).toContain('useEffect(() => { if (!focusIfFree(title.current)) onNotFocused?.(); }, []);');
+    expect(review).not.toMatch(/focusIfFree\([^)]*closest\(/);
+    expect(review).toContain('const title = useEndTitleFocus(finish.onTitleNotFocused);');
+    expect(review.match(/const title = useEndTitleFocus\(/g)).toHaveLength(2);
     expect(review.match(/<h2 ref=\{title\} tabIndex=\{-1\} className="review-done__title">/g)).toHaveLength(2);
   });
   it('제목은 읽는 자리라 초점 고리를 그리지 않는다', () => {
@@ -84,9 +96,14 @@ describe('VOCAB-FLOW-001 B 끝 알림 — 토스트 없음, 화면 읽기 공지
     expect(code).not.toContain("toast('이번 표현 복습을 마쳤어요'");
   });
   it('공지 영역은 조건 없이 그려 두고 내용만 끝에 넣는다(role=status · sr-only)', () => {
-    expect(code).toContain("<p className=\"sr-only review-finish-announce\" role=\"status\">{tab === 'review' && reviewFinished ? '이번 표현 복습을 마쳤어요' : ''}</p>");
+    expect(code).toContain("<p className=\"sr-only review-finish-announce\" role=\"status\">{tab === 'review' && reviewFinished && finishNotice ? '이번 표현 복습을 마쳤어요' : ''}</p>");
     const at = code.indexOf('<p className="sr-only review-finish-announce"');
     expect(code.slice(at - 40, at)).not.toMatch(/&&\s*$/); // 영역 자체가 조건부면 내용과 함께 생겨 화면 읽기가 놓칠 수 있다
+  });
+  it('공지는 끝 제목이 초점을 못 받았을 때만 — 초점이 간 제목과 같은 말을 두 번 읽지 않는다(a3ba 리뷰 ②)', () => {
+    expect(code).toContain('onTitleNotFocused: () => setFinishNotice(true),');
+    expect(code).toContain('useEffect(() => { if (!reviewFinished) setFinishNotice(false); }, [reviewFinished]);');
+    expect(code).toContain('const [finishNotice, setFinishNotice] = useState(false);');
   });
 });
 
@@ -98,7 +115,10 @@ describe('VOCAB-FLOW-001 C 채점 막대 — 앞면에서도 둘째 줄 자리�
   });
   it('새 일정 막대: 안내 줄 · 간격 글 둘 다 자리를 둔다', () => {
     expect(fsrs).toContain("<p className={`review-score-guide review-grade-guide${revealed ? '' : ' review-grade-guide--reserve'}`} aria-hidden={!revealed || undefined}>");
-    expect(fsrs).toContain('<small className="review-grade-guide--reserve" aria-hidden="true">');
+    // 자리 맡는 간격 글은 실제 한 줄이어야 한다 — 보이지 않는 공백(줄 첫머리 일반 공백은 접힌다)만으로는 높이 0(a3ba 리뷰 ④).
+    // 소스에 「눈에 안 보이는 nbsp 글자」 대신 이스케이프 '\u00a0'로 적어 읽는 사람이 헷갈리지 않게 한다.
+    expect(fsrs).toContain(`<small className="review-grade-guide--reserve" aria-hidden="true">{'\\u00a0'}</small>`);
+    expect(fsrs).not.toContain('\u00a0');
     expect(fsrs).not.toContain('{revealed && <p className="review-score-guide');
   });
   it('자리 맡기는 visibility:hidden(높이 유지) — display:none이면 다시 자란다', () => {

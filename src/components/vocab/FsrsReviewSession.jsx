@@ -107,7 +107,7 @@ export default function FsrsReviewSession({ review, onExit, embedded = false, ca
             {label}<span className="save-grade__key" aria-hidden="true">{rating}</span>
             {/* 보조 글 첫 글자 띄어쓰기 = 화면 읽기 이름 「다시 10분」(GRADE-NAME-001). 줄 첫머리 공백이라 화면에는 그려지지 않는다. */}
             {revealed ? <small>{' '}{fsrsIntervalLabel(current.previews?.[rating]?.due, current.previewAt)}</small>
-              : <small className="review-grade-guide--reserve" aria-hidden="true">{' '}{' '}</small>}
+              : <small className="review-grade-guide--reserve" aria-hidden="true">{'\u00a0'}</small>}
           </button>)}
         </div>
       </div>

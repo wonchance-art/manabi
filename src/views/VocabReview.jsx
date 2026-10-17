@@ -90,20 +90,23 @@ function UpcomingCalendar({ projections, learningAvailable, now }) {
 /**
  * 끝 화면(§5-5) — 「전체 복습 끝」이라고 하지 않는다(기존 계약). 학습 단계 카드가 남았으면 끝이 아니라 「잠시 뒤」.
  * finish = { scopeLabel, total, again, cutRemaining?, onContinueCut?, waiting?:{count, nextAt, ready}, onResumeWaiting?,
- *            returnLink?:{href,label}, outOfScope?:{count,label,onClick} }
+ *            returnLink?:{href,label}, outOfScope?:{count,label,onClick}, onTitleNotFocused?:() => void }
  */
 /**
  * 끝 화면 제목으로 초점(VOCAB-FLOW-001 — /study 「세션 완료」 선례). 마지막 채점 단추가 사라지며 초점이 body로 떨어졌다(a3ba 탐침).
- * 떨어진 초점만 줍는다(focusIfFree — 다른 곳에 살아 있는 초점은 뺏지 않는다). 제목은 읽는 자리라 고리를 그리지 않는다(tabIndex −1).
+ * 떨어진 초점만 줍는다 — 범위 없이 focusIfFree(초점이 body일 때만, canTakeFocus(undefined) = focusIsLost). 화면 안 범위
+ * (.page-container)를 주면 상단바(🔈 · ← 나가기)에 둔 초점까지 뺏었다(🔈에 두고 숫자키로 마지막 채점 — a3ba 리뷰 ②).
+ * 제목은 읽는 자리라 고리를 그리지 않는다(tabIndex −1). 초점을 옮기지 못했으면(다른 곳에 초점이 살아 있음) onNotFocused로 알린다 —
+ * 그때만 끝 공지를 읽힌다(초점이 간 제목과 같은 말을 두 번 읽지 않게).
  */
-function useEndTitleFocus() {
+function useEndTitleFocus(onNotFocused) {
   const title = useRef(null);
-  useEffect(() => { const el = title.current; focusIfFree(el, el?.closest('.page-container')); }, []);
+  useEffect(() => { if (!focusIfFree(title.current)) onNotFocused?.(); }, []); // eslint-disable-line react-hooks/exhaustive-deps -- 끝 화면이 열린 그 한 번
   return title;
 }
 
 function ReviewFinished({ finish = {}, bookReview, vocab, projections, learningAvailable, now, setTab }) {
-  const title = useEndTitleFocus();
+  const title = useEndTitleFocus(finish.onTitleNotFocused);
   const { scopeLabel, total = 0, again = 0, cutRemaining = 0, onContinueCut, waiting, onResumeWaiting, returnLink, outOfScope } = finish;
   const returnTo = returnLink || (bookReview ? { href: bookReview.returnTo, label: '읽던 교재로 돌아가기' } : null);
   const mature = learningAvailable ? projections.filter(row => wordStage(row).key === 'mature').length : null;
