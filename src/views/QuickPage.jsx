@@ -137,7 +137,7 @@ export default function QuickPage() {
   }
 
   const renderToken = (token, i, line) => {
-    const rubySegments = token.furigana ? splitRuby(token.text, token.furigana) : null;
+    const rubySegments = token.furigana ? splitRuby(token.text, token.furigana, token.base_form) : null;
     return (
       <div key={i} className="word-token" role="button" tabIndex={0}
         onClick={() => openWordDetail(token, line)}

@@ -3160,7 +3160,7 @@ export default function ViewerPage() {
         // ① 폭맞춤 확대(오너 승인): CJK는 1em 격자라 크기 = 100cqi ÷ fitDivisor가 CSS
         // 수식으로 성립(.word-fit — 측정 JS 없음). 라틴 자료는 기존 크기 유지.
         // ④ 글자 탐색: 한자만 탭 대상 — zh는 seg가 글자 단위라 병음도 그 글자 것이다.
-        const rubySegs = headReading ? splitRuby(headText, headReading) : null;
+        const rubySegs = headReading ? splitRuby(headText, headReading, headIsBase ? undefined : selectedToken?.base_form) : null;
         let at = 0; // 표제어 안 코드포인트 위치 — 탭한 구간(headPicked) 강조용
         if (!isFitLang(materialLang)) {
           return (
@@ -4226,7 +4226,7 @@ export default function ViewerPage() {
             // ruby는 토글과 무관하게 항상 만든다 — 폭 예약(ruby[data-pinyin])이 병음을 꺼도
             // 유지돼야 켤 때 글자가 밀리지 않는다(오너 요청 2026-08-19). 끌 때는 rt만 감춘다.
             const rubySegments = token.furigana
-              ? splitRuby(token.text, token.furigana)
+              ? splitRuby(token.text, token.furigana, token.base_form) // 활용형은 기본형 읽기에서 한자 읽기만(違[ちが]い)
               : null;
             // 발음 표기 3단(오너 확정 2026-08-27) — 감춰도 rt만 숨긴다(폭 예약 불변, furi-off 선례).
             // 「가려져 있다」는 **읽기가 실제로 붙는 토큰**에서만 참이다: furigana가 있어도

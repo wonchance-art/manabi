@@ -229,7 +229,9 @@ test('Korean atomic save, known/exclusion restore, locale conflict, due review a
     await f.page.goto('/vocab',{waitUntil:'domcontentloaded'});
     const known=f.page.locator('.vocabulary-known-words').filter({visible:true}).first();
     await known.locator('summary').click();await known.getByRole('button',{name:'표시 해제',exact:true}).click();
-    await known.waitFor({state:'detached'});assert.equal(f.exclusions.length,0);assert.deepEqual(f.cards,saved);
+    // 「표시 해제」도 낙관 갱신이라 줄이 쓰기보다 먼저 사라진다(42d6ece9) — 제외 해제 쓰기가 도착할 때까지 기다린 뒤 본다(위 「✓ 아는 단어」와 같은 방식).
+    await known.waitFor({state:'detached'});for(let i=0;i<100&&f.exclusions.length;i++) await f.page.waitForTimeout(100);
+    assert.equal(f.exclusions.length,0);assert.deepEqual(f.cards,saved);
     f.cards[0].next_review_at='2099-01-01T00:00:00Z';saved[0].next_review_at=f.cards[0].next_review_at;
     await f.open(); const count=f.writes.length;
     await locale(f.page,'uiLocale','zh-TW');await locale(f.page,'explanationLocale','zh-TW');
