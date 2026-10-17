@@ -1,6 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { QueryClient, QueryObserver } from '@tanstack/query-core';
 import { sliceBetween } from './helpers/sliceBetween';
 
 // 서재 카드 → 뷰어 첫 글자(VIEWER-ENTRY R1 · R2, 2026-10-17 KST): 누른 뒤 뷰어 서버 응답 → JS 청크 15개 → 그제야 자료 조회였다.
@@ -10,8 +13,10 @@ import { sliceBetween } from './helpers/sliceBetween';
 vi.mock('../supabase', () => ({ supabase: { from: () => { throw new Error('network not used in this test'); }, auth: { getSession: async () => ({ data: { session: null } }) } } }));
 vi.mock('../offlineCache', () => ({ cacheMaterial: async () => {}, getCachedMaterial: async () => null }));
 vi.mock('../sharedStore', () => ({ getSharedCopy: async () => null }));
-vi.mock('next/link', () => ({ default: () => null }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({}), useSearchParams: () => new URLSearchParams(), usePathname: () => '/materials' }));
+const h = vi.hoisted(() => ({ links: [], pushed: [], cache: new Map() }));
+vi.mock('next/link', () => ({ default: (props) => { h.links.push(props); return null; } }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: (u) => h.pushed.push(u), prefetch: () => {} }), useSearchParams: () => new URLSearchParams(), usePathname: () => '/materials' }));
+vi.mock('@tanstack/react-query', () => ({ useQueryClient: () => ({ getQueryData: (key) => h.cache.get(JSON.stringify(key)) }) }));
 vi.mock('../AuthContext', () => ({ useAuth: () => ({ user: null }) }));
 
 const lib = await import('../viewerMaterial');
@@ -56,7 +61,15 @@ describe('서재 번들에 뷰어 JS가 끌려오지 않는다', () => {
     const src = read('src/components/web/LibraryReaderLink.jsx');
     expect(src.match(/import\(/g)).toHaveLength(1);
     expect(src).toContain("load = () => import('@/views/ViewerPage')");
-    expect(read('src/lib/viewerMaterial.js')).not.toMatch(/import\(/);
+    // 조회 모듈의 동적 import는 그 길에 들어설 때만 받는 기기 캐시 · 팀 사본뿐 — 뷰어는 없다
+    expect([...read('src/lib/viewerMaterial.js').matchAll(/\bimport\(\s*'([^']+)'/g)].map((m) => m[1]).sort()).toEqual(['./offlineCache', './offlineCache', './sharedStore']);
+  });
+  it('조회 모듈의 정적 의존은 허용 목록뿐 — 서재 링크를 쓰는 모든 화면에 수업 일정 · 공휴일 · 기기 캐시 · 팀 사본을 끌지 않는다', () => {
+    expect(staticGraph(path.join(ROOT, 'src/lib/viewerMaterial.js')).sort()).toEqual(['src/lib/accountQueryCache.js', 'src/lib/bookMeta.js', 'src/lib/supabase.js', 'src/lib/viewerMaterial.js']);
+  });
+  it('팀 사본 판정(local:)은 classBoard.isLocalId와 같다', async () => {
+    const board = await import('../classBoard');
+    for (const id of ['local:7', 'local:', 'local:abc', 'Local:7', '7', 7, null, undefined, ' local:7', ['local:7'], { toString: () => 'local:7' }]) expect(lib.isLocalId(id), String(id)).toBe(board.isLocalId(id));
   });
   it('「← 돌아가기」는 따로 둔 파일 — 교재(SC 글꼴 범위 밖)가 불러도 뷰어 동적 import에 닿지 않는다(fontScope.test ②)', () => {
     const ret = read('src/components/web/LibraryReturnLink.jsx');
@@ -95,17 +108,48 @@ describe('R1 조기 조회 등록부 — 받아 쓰기와 폴백', () => {
     lib.startEarlyMaterial('/viewer/45', 1000, { fetch: f.fetch });
     expect(await lib.loadMaterial('45', { owner: null, now: 1100, fetch: f.fetch })).toEqual({ id: '45', n: 1 });
   });
-  it('띄운 조회가 실패하면 한 번 새로 받는다 — 없음(NOT_FOUND) · 팀 사본 없음은 그대로 오류', async () => {
+  it('띄운 조회가 실패하면 오류를 그대로 내고 따로 다시 받지 않는다 — 재시도는 react-query(retry 1)가, 그때는 새로 받는다(최악 2회)', async () => {
     const d = deferred(), calls = [];
+    const fetch = (id) => { calls.push(id); return Promise.resolve({ id, fresh: true }); };
     lib.startEarlyMaterial('/viewer/45', 1000, { owner: 'A', fetch: () => d.promise });
-    const loading = lib.loadMaterial('45', { owner: 'A', now: 1100, fetch: (id) => { calls.push(id); return Promise.resolve({ id, fresh: true }); } });
+    const loading = lib.loadMaterial('45', { owner: 'A', now: 1100, fetch });
     d.reject(Object.assign(new Error('fetch failed'), { code: 'NETWORK' }));
-    expect(await loading).toEqual({ id: '45', fresh: true });
+    await expect(loading).rejects.toMatchObject({ code: 'NETWORK' });
+    expect(calls).toEqual([]);
+    expect(await lib.loadMaterial('45', { owner: 'A', now: 1200, fetch })).toEqual({ id: '45', fresh: true }); // 재시도 = 등록부가 비어 새로
     expect(calls).toEqual(['45']);
-    for (const code of ['NOT_FOUND', 'LOCAL_MISSING']) {
-      lib.startEarlyMaterial('/viewer/45', 2000, { owner: 'A', fetch: () => Promise.reject(Object.assign(new Error(code), { code })) });
-      await expect(lib.loadMaterial('45', { owner: 'A', now: 2100, fetch: () => Promise.resolve('unused') })).rejects.toMatchObject({ code });
-    }
+  });
+  it('캐시가 있으면(cached) 등록부를 쓰지 않고 늘 새로 받는다 · 그 id의 등록부는 버릴 수 있다', async () => {
+    const f = fetchOnce();
+    lib.startEarlyMaterial('/viewer/45', 1000, { owner: 'A', fetch: f.fetch });
+    expect(await lib.loadMaterial('45', { owner: 'A', cached: true, now: 1100, fetch: f.fetch })).toEqual({ id: '45', n: 2 });
+    lib.discardEarlyMaterial('49'); // 다른 id는 그대로
+    expect(lib.takeEarlyMaterial('45', 1200, { owner: 'A' })).not.toBe(null);
+    lib.startEarlyMaterial('/viewer/45', 1300, { owner: 'A', fetch: f.fetch });
+    lib.discardEarlyMaterial('45');
+    expect(lib.takeEarlyMaterial('45', 1400, { owner: 'A' })).toBe(null);
+  });
+  it('리뷰 차단 재현: 캐시가 신선한 채 다시 누르고 10초 안에 교정 → invalidate가 교정 전 응답으로 되돌리지 않는다', async () => {
+    let server = { id: '45', v: 'v1' };
+    const fetch = vi.fn(async () => ({ ...server }));
+    const qc = new QueryClient({ defaultOptions: { queries: { staleTime: 120000, retry: 1 } } });
+    const key = ['material', '45'];
+    // 뷰어(ViewerPage)와 같은 규칙: 마운트 때 캐시가 있으면 등록부를 버리고, queryFn은 캐시가 있으면 등록부를 쓰지 않는다.
+    const mount = () => { if (qc.getQueryData(key) !== undefined) lib.discardEarlyMaterial('45'); const obs = new QueryObserver(qc, { queryKey: key, queryFn: () => lib.loadMaterial('45', { owner: 'A', cached: qc.getQueryData(key) !== undefined, fetch }) }); return obs.subscribe(() => {}); };
+    // 서재 누름(서재 규칙: 캐시가 있으면 띄우지 않는다 — 여기서는 그 규칙이 빠져도 뷰어 쪽이 막는지 본다)
+    lib.startEarlyMaterial('/viewer/45', Date.now(), { owner: 'A', fetch });
+    let un = mount();
+    await vi.waitFor(() => expect(qc.getQueryData(key)?.v).toBe('v1'));
+    un();
+    lib.startEarlyMaterial('/viewer/45', Date.now(), { owner: 'A', fetch }); // 신선한 캐시인데 다시 누름(최악)
+    un = mount();
+    expect(lib.takeEarlyMaterial('45', Date.now(), { owner: 'A' })).toBe(null); // 마운트가 버렸다 — 고아 없음
+    server = { id: '45', v: 'v2' };
+    qc.setQueryData(key, { id: '45', v: 'v2' });
+    await qc.invalidateQueries({ queryKey: key });
+    expect(qc.getQueryData(key)?.v).toBe('v2'); // 교정이 남는다(서버에서 새로 받음)
+    expect(fetch).toHaveBeenCalledTimes(3);
+    un();
   });
   it('같은 자료를 두 번 띄우지 않는다 — 서재가 띄운 뒤 뷰어 모듈 평가(계정 모름)가 와도 그대로 둔다', () => {
     const f = fetchOnce();
@@ -126,7 +170,20 @@ describe('R1 조기 조회 등록부 — 받아 쓰기와 폴백', () => {
     const open = sliceBetween(src, 'const openReader = (href, event) => {', 'return { readerHref, openReader };');
     expect(open.indexOf('event.metaKey || event.ctrlKey')).toBeLessThan(open.indexOf('startEarlyMaterial(href, Date.now(), { owner: user?.id ?? null });'));
     expect(open.indexOf('startEarlyMaterial(')).toBeLessThan(open.indexOf('router.push('));
-    expect(read('src/views/ViewerPage.jsx')).toContain('queryFn: () => loadMaterial(id, { owner: user?.id ?? null }),');
+    const viewer = read('src/views/ViewerPage.jsx');
+    expect(viewer).toContain("queryFn: () => loadMaterial(id, { owner: user?.id ?? null, cached: queryClient.getQueryData(['material', id]) !== undefined }),");
+    expect(viewer).toContain("useEffect(() => { if (queryClient.getQueryData(['material', id]) !== undefined) discardEarlyMaterial(id); }, [id, queryClient]);");
+  });
+  it('서재 누름: 이 자료가 캐시에 있으면(다시 누름) 띄우지 않는다 · 없으면 띄운다 · 수정키 클릭은 아무것도 안 한다', () => {
+    const click = (href, event = {}) => { h.links.length = 0; renderToStaticMarkup(createElement(link.default, { href }, 'x')); h.links[0].onClick({ preventDefault() {}, button: 0, ...event }); };
+    vi.stubGlobal('window', { location: { pathname: '/materials', search: '' }, scrollY: 0 });
+    vi.stubGlobal('navigator', { connection: { saveData: true } }); // 미리 받기(R2)는 여기서 보지 않는다 — 모듈 캐시를 남기지 않게
+    h.cache.set(JSON.stringify(['material', '61']), { id: '61' });
+    click('/viewer/61');
+    expect(lib.takeEarlyMaterial('61')).toBe(null);
+    click('/viewer/62', { metaKey: true });
+    expect(lib.takeEarlyMaterial('62')).toBe(null);
+    vi.unstubAllGlobals();
   });
 });
 
@@ -147,11 +204,15 @@ describe('R2 뷰어 모듈 미리 받기 — 머묾 80ms · 누름 · 키보드 
     expect(e.queue[1].fn).toBe(null);
     p.onPointerEnter({ pointerType: 'touch' }); expect(e.queue).toHaveLength(2);
   });
-  it('누르면(터치 포함) 바로 받고, 키보드 포커스(:focus-visible)에 받는다 — 마우스로 누를 때 생기는 포커스는 건너뛴다', () => {
+  it('마우스로 누르면 바로 받고(터치의 누름은 스크롤 시작일 수 있어 받지 않는다), 키보드 포커스(:focus-visible)에 받는다', () => {
     const e = env(), p = link.viewerWarmProps('/viewer/45', {}, e.opts);
-    p.onPointerDown({ pointerType: 'touch' }); expect(e.warmed).toBe(1);
+    p.onPointerDown({ pointerType: 'touch' }); expect(e.warmed).toBe(0);
+    p.onPointerDown({ pointerType: 'mouse' }); expect(e.warmed).toBe(1);
     p.onFocus({ currentTarget: { matches: () => true } }); expect(e.warmed).toBe(2);
     p.onFocus({ currentTarget: { matches: () => false } }); expect(e.warmed).toBe(2);
+  });
+  it('터치는 실제 누름(click → openReader)에 받는다', () => {
+    expect(sliceBetween(read('src/components/web/LibraryReaderLink.jsx'), 'const openReader = (href, event) => {', 'return { readerHref, openReader };')).toContain('warmViewer(); // R2');
   });
   it('받은 처리기(props)는 그대로 부른다', () => {
     const e = env(), seen = [];

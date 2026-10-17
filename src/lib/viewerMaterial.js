@@ -1,13 +1,20 @@
 // 뷰어 자료 조회 정본 + 조기 조회 등록부 — ViewerPage에서 뺐다(VIEWER-ENTRY R1, 2026-10-17 KST).
 // 서재 카드를 누르는 순간 조회를 띄우려면 서재가 이 함수를 불러야 하는데, ViewerPage를 import하면 서재 번들에 뷰어 JS가 통째로
-// 끌려온다. 그래서 조회 · 등록부만 이 작은 모듈에 둔다(의존: supabase · 기기 캐시 · 팀 사본 · 책 메타뿐 — viewerEntryWarm.test가
-// import 그래프로 지킨다). ViewerPage와 서재가 같은 fetchMaterial · 같은 등록부를 쓴다 — 결과 · 오류 · 오프라인 폴백이 그대로다.
+// 끌려온다. 그래서 조회 · 등록부만 이 작은 모듈에 둔다. 정적 의존은 supabase · 계정 메모(accountQueryCache) · 책 메타뿐(viewerEntryWarm.test 허용 목록) — 기기 캐시 ·
+// 팀 사본(→ classBoard · 수업 일정 · 공휴일)은 그 길에 들어설 때만 받는다(동적 import). 서재 링크를 쓰는 모든 화면에 끌려가지 않게.
+// ViewerPage와 서재가 같은 fetchMaterial · 같은 등록부를 쓴다 — 결과 · 오류 · 오프라인 폴백이 그대로다.
 import { supabase } from './supabase';
 import { knownAccount, whenAccountKnown } from './accountQueryCache';
-import { cacheMaterial, getCachedMaterial } from './offlineCache';
-import { isLocalId, parseLocalId } from './classBoard';
-import { getSharedCopy } from './sharedStore';
 import { getBook } from './bookMeta';
+
+// 팀 사본 주소(local:<n>) 판정 — classBoard.isLocalId와 같은 규칙(같음은 viewerEntryWarm.test가 지킨다). 이 판정 하나 때문에
+// classBoard(→ 수업 일정 · 공휴일)를 정적으로 끌지 않는다.
+const LOCAL_PREFIX = 'local:';
+export const isLocalId = (id) => typeof id === 'string' && id.startsWith(LOCAL_PREFIX);
+const getSharedCopy = (...args) => import('./sharedStore').then((m) => m.getSharedCopy(...args));
+const parseLocalId = (id) => { const n = Number(String(id).slice(LOCAL_PREFIX.length)); return Number.isInteger(n) && n > 0 ? n : null; };
+const cacheMaterial = (...args) => import('./offlineCache').then((m) => m.cacheMaterial(...args));
+const getCachedMaterial = (...args) => import('./offlineCache').then((m) => m.getCachedMaterial(...args));
 
 /**
  * 자료 조회 — 온라인이면 네트워크가 정본(계약 6)이고, 성공분은 오프라인용으로
@@ -66,8 +73,10 @@ export async function fetchMaterial(id) {
 // 조기 조회(VIEWER-FIRST-TOKEN-001 · VIEWER-ENTRY R1) — 두 곳에서 띄운다.
 //   ① 직접 진입: ViewerPage 모듈이 평가될 때(하이드레이션 전) 주소의 자료. 계정은 아직 모른다(owner undefined).
 //   ② 서재 카드: 누르는 순간(뷰어 서버 응답 · JS 청크 15개를 기다리는 동안) 그 자료. 누른 계정을 같이 적는다.
-// 뷰어 useQuery가 같은 id로 한 번만 받아 쓴다. 다른 id · 늦음(EARLY_MATERIAL_MAX_AGE_MS) · 계정이 다름(전환 · 로그아웃)이면 넘기지 않고
-// 새로 받는다 — 오래된 응답이나 다른 사람의 응답을 화면에 내지 않는다. 팀 사본(local:)은 네트워크가 없어 띄우지 않는다.
+// 뷰어 useQuery가 같은 id로 한 번만 받아 쓴다 — **캐시가 빈 첫 조회에서만**(loadMaterial cached:false). 캐시가 있으면(신선해서 마운트가
+// 조회하지 않음 · 교정 뒤 invalidate · 분석 폴링 · 팀 사본 다시 받기 · 다시 시도) 늘 새로 받는다: 누른 순간(교정 전) 응답이 고아로 남아
+// 교정을 되돌리고 다음 교정이 옛 processed_json으로 덮던 길(리뷰 차단 2026-10-17 KST)을 막는다. 마운트 때 캐시가 있으면 그 id의 것은 버린다.
+// 다른 id · 늦음(EARLY_MATERIAL_MAX_AGE_MS) · 계정이 다름(전환 · 로그아웃)이면 넘기지 않고 새로 받는다. 팀 사본(local:)은 띄우지 않는다.
 export const EARLY_MATERIAL_MAX_AGE_MS = 10000;
 let earlyMaterial = null;
 
@@ -100,12 +109,17 @@ export function takeEarlyMaterial(id, now = Date.now(), { owner } = {}) {
   return early.promise;
 }
 
-/** 뷰어 useQuery의 queryFn — 띄워 둔 조회가 있으면 그것, 없으면 새로. 띄운 조회가 실패하면(없음 NOT_FOUND 말고) 한 번 새로 받는다. */
-export function loadMaterial(id, { owner, now = Date.now(), fetch = fetchMaterial } = {}) {
-  const early = takeEarlyMaterial(id, now, { owner });
-  if (!early) return fetch(id);
-  return early.catch((err) => {
-    if (err?.code === 'NOT_FOUND' || err?.code === 'LOCAL_MISSING') throw err;
-    return fetch(id);
-  });
+/** 그 id의 띄워 둔 조회를 버린다(뷰어 마운트 때 캐시가 이미 있으면 — 고아로 남기지 않는다). */
+export function discardEarlyMaterial(id) {
+  if (earlyMaterial?.id === String(id)) earlyMaterial = null;
+}
+
+/**
+ * 뷰어 useQuery의 queryFn. cached = 그 순간 캐시에 자료가 있음(쿼리 클라이언트가 안다) — 있으면 늘 새로 받는다(등록부 안 씀).
+ * 캐시가 빈 첫 조회만 띄워 둔 조회를 받아 쓴다. 그 조회가 실패하면 오류를 그대로 내고 재시도는 react-query(retry 1)에 맡긴다 —
+ * 재시도 때는 등록부가 비어 새로 받는다(따로 다시 받으면 최악 3회였다).
+ */
+export function loadMaterial(id, { owner, cached = false, now = Date.now(), fetch = fetchMaterial } = {}) {
+  if (cached) return fetch(id);
+  return takeEarlyMaterial(id, now, { owner }) ?? fetch(id);
 }

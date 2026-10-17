@@ -59,7 +59,7 @@ describe('② 직접 진입 — 자료 조회를 하이드레이션 전에 띄�
 
   it('useQuery는 띄워 둔 조회를 먼저 받고, 없으면 전처럼 fetchMaterial로 받는다 · 모듈 평가 때 한 번 띄운다', () => {
     const source = read('src/views/ViewerPage.jsx');
-    expect(source).toContain('queryFn: () => loadMaterial(id, { owner: user?.id ?? null }),');
+    expect(source).toContain("queryFn: () => loadMaterial(id, { owner: user?.id ?? null, cached: queryClient.getQueryData(['material', id]) !== undefined }),");
     expect(source).toContain("if (typeof window !== 'undefined') startEarlyMaterial(window.location.pathname);");
   });
 });

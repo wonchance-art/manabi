@@ -159,7 +159,7 @@ import { SENTENCE_TX_LOGIN_REQUIRED, SENTENCE_TX_QUERY, canonicalSentence, class
 import { sentencePanelOriginal, sentencePanelTokenIds, sentencePatternHits, sentenceWordGlosses } from '../lib/viewerSentenceGlosses';
 import { useSentencePrefetch } from '../lib/useSentencePrefetch';
 import { isLocalId, parseLocalId, chaptersForLocalNav, isTeamRoot, viewerRouteId } from '../lib/classBoard';
-import { loadMaterial, startEarlyMaterial } from '../lib/viewerMaterial';
+import { discardEarlyMaterial, loadMaterial, startEarlyMaterial } from '../lib/viewerMaterial';
 import { readIndexCache } from '../lib/classClient';
 import { useRefVocabEntry, useRefVocabIndex } from '../lib/refVocabIndex';
 import { zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
@@ -312,9 +312,12 @@ export default function ViewerPage() {
   const { speak, stop:stopSpeech, supported: browserTtsSupported } = useTTS();
   useEffect(()=>()=>stopSpeech(),[id,stopSpeech]);
 
+  // 띄워 둔 조회(서재 누름 · 직접 진입)는 캐시가 빈 첫 조회에서만 받아 쓴다 — 캐시가 있으면(교정 뒤 invalidate · 분석 폴링 · 다시 받기)
+  // 늘 새로. 마운트 때 캐시가 이미 있으면(신선해서 조회 안 함) 그 id의 것을 버린다 — 누른 순간(교정 전) 응답이 고아로 남지 않게.
+  useEffect(() => { if (queryClient.getQueryData(['material', id]) !== undefined) discardEarlyMaterial(id); }, [id, queryClient]);
   const { data: material, isLoading, error, refetch } = useQuery({
     queryKey: ['material', id],
-    queryFn: () => loadMaterial(id, { owner: user?.id ?? null }),
+    queryFn: () => loadMaterial(id, { owner: user?.id ?? null, cached: queryClient.getQueryData(['material', id]) !== undefined }),
     refetchInterval: (query) => {
       const d = query.state.data;
       const s = d?.processed_json?.status || d?.status;
