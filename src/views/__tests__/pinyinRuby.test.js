@@ -136,8 +136,8 @@ describe('중국어 격자 계약', () => {
   });
 
   it('줄머리 금칙 표시는 본문과 Aa 미리보기가 같은 함수를 쓴다', () => {
-    expect(viewer).toContain('zhKinsokuMarks(json.sequence, id => json.dictionary[id])');
-    expect(preview).toContain('zhKinsokuMarks(shown.map((_,i)=>i),i=>shown[i])');
+    expect(viewer).toContain('zhKinsokuMarks(json.sequence, id => json.dictionary[id], materialLang)');
+    expect(preview).toContain('zhKinsokuMarks(shown.map((_,i)=>i),i=>shown[i],language)');
     expect(viewer).toContain('useZhGridRuns(readerRef, zhGrid);');
     expect(preview).toContain('useZhGridRuns(ref,zh);');
   });
