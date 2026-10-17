@@ -14,7 +14,7 @@
  * - 예보 탭 기록(buildForecastTapEvent → logReviewEvents)은 오늘 문단 칸으로 옮겼다.
  * - 휴대폰 순서(이어 읽기 → 단어 복습 → 오늘 문단 → 상태 묶음)는 클래스 order로 정한다(nth-child 금지).
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, use, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
@@ -113,10 +113,59 @@ function materialItem(material, lang) {
 const HSK_WORDS_ITEM = { key: 'hsk-words', href: '/chinese/vocab/h1', tone: 'progress',
   kicker: '중국어 · HSK', title: 'HSK 단어 목록', meta: '1급부터 ↗' };
 
-export default function HomePage({ book = null, sessionHint }) {
-  const { user, profile, loading: authLoading } = useAuth();
+// 교재 판본(book)은 서버가 기다리지 않고 약속(bookPromise)으로 넘긴다(LCP-UNSUSPEND — 조정 승인 2026-10-17 KST).
+// 판본이 필요한 것은 이어 읽기 칸과 저장 불가 안내뿐이라, 그 둘만 안쪽 Suspense에서 받는다 — 맛보기 문단 · 로그인 칸 ·
+// 제목은 서버 첫 HTML(뼈대)에 바로 들어간다(예전엔 화면 전체가 판본 조회 뒤 스트리밍 조각으로 늦게 끼워졌다).
+// 대기 그림은 배움 대기 화면(loading.jsx)과 같은 <ResumeTile pending /> — 자리 · 모양이 같다.
+// book(값)도 받는다 — 판본을 이미 가진 호출부 · 테스트용. 약속이 있으면 약속이 우선이다.
+function useBook(bookPromise, book) {
+  return bookPromise ? use(bookPromise) : book;
+}
+
+function ResumeSlot({ bookPromise, book: bookValue, user, authLoading, isLoading, data, lang }) {
+  const book = useBook(bookPromise, bookValue);
   const local = useReadingProgress(book?.edition);
   const resume = bookResume(book, local.progress, local.hasProgress);
+  // 이어 읽기 — 일본어는 교재 기록과 서재 자료를 실제 시각으로 비교, 다른 언어는 그 언어의 서재 자료 → 산책 추천.
+  const pending = authLoading || (!!book && !local.ready) || (!!user && isLoading);
+  const material = recentMaterial((data?.recentProgress || []).filter(row => materialInLang(row, lang)));
+  const bookForLang = lang === 'Japanese' ? resume : null;
+  // Once rendered, keep the primary destination stable during background query refreshes.
+  // A user/account, edition or language change gets a fresh choice. Position still updates from real records.
+  const choice = useRef(null);
+  const choiceKey = `${user?.id || 'guest'}:${book?.edition || ''}:${lang}`;
+  if (choice.current?.key !== choiceKey) choice.current = null;
+  if (!pending && !choice.current) choice.current = { key: choiceKey, kind: chooseResume(bookForLang, local.updatedAt, material), material };
+  const kind = choice.current?.kind || null;
+  const needSuggestion = !pending && !kind && !(lang === 'Japanese' && !book);
+  const recommendations = useQuery({ queryKey: TODAY_SUGGESTIONS_KEY, queryFn: fetchTodaySuggestions, staleTime: 300000, enabled: needSuggestion });
+  const suggestion = useMemo(() => rankSuggestions((recommendations.data || []).filter(canReadSuggestion), {
+    langs: [lang], fitOf: () => null,
+    levelOf: s => getIdealLevel(s.language, data?.vocabByLang?.[s.language] || 0),
+  }).find(s => s.language === lang) || null, [recommendations.data, data, lang]);
+
+  let resumeItem = null;
+  if (kind === 'material' && choice.current.material) resumeItem = materialItem(choice.current.material, lang);
+  else if (kind === 'book' && resume) resumeItem = bookItem(book, resume);
+  else if (lang === 'Japanese' && !book) resumeItem = { lang, kicker: '교재', glyph: GLYPH.Japanese, title: '교재 정보를 불러오지 못했어요',
+    sub: '교재 목록에서 다시 골라 주세요.', href: '/lessons', cta: '교재 보기' };
+  else if (suggestion) resumeItem = { lang, kicker: '산책 추천', glyph: '文', title: suggestion.title, titleLang: encounterLookupLang(suggestion.language) || undefined,
+    sub: [langNameKo(suggestion.language), suggestion.level].filter(Boolean).join(' · '), href: suggestionHref(suggestion, 'home'), cta: '읽어 보기' };
+  else if (!pending) resumeItem = { lang, kicker: '산책', glyph: GLYPH[lang] || '文', title: '오늘 읽을 글을 골라 보세요',
+    sub: `${learnLangLabel(lang)} 읽을거리`, href: '/discover', cta: '산책하기' };
+  const resumePending = pending || (needSuggestion && recommendations.isLoading);
+  return <ResumeTile item={resumeItem} pending={resumePending} />;
+}
+
+// 저장 불가 안내 — 판본(edition)별 읽은 위치 저장소를 읽어 본 뒤에만 안다(useReadingProgress). 판본을 기다리는 동안은 없다(예전과 같다).
+function StorageNote({ bookPromise, book: bookValue }) {
+  const book = useBook(bookPromise, bookValue);
+  const local = useReadingProgress(book?.edition);
+  return !local.storageAvailable ? <p role="status" className="learn-note">이 브라우저에서는 읽던 위치를 저장할 수 없어요.</p> : null;
+}
+
+export default function HomePage({ book = null, bookPromise, sessionHint }) {
+  const { user, profile, loading: authLoading } = useAuth();
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['home-v3', user?.id], queryFn: () => fetchHomeData(user.id),
     enabled: !!user && !authLoading, staleTime: 60000, refetchOnWindowFocus: true,
@@ -157,34 +206,9 @@ export default function HomePage({ book = null, sessionHint }) {
   useEffect(() => { try { setHskResume(levelResumeCard(readLevelSnapshot(localStorage, 'chinese'))); } catch { /* 저장소 차단 — 1급부터 */ } }, []);
   const hskItem = hskResume ? { ...HSK_WORDS_ITEM, ...hskResume } : HSK_WORDS_ITEM;
 
-  // 이어 읽기 — 일본어는 교재 기록과 서재 자료를 실제 시각으로 비교, 다른 언어는 그 언어의 서재 자료 → 산책 추천.
-  const pending = authLoading || (!!book && !local.ready) || (!!user && isLoading);
-  const material = recentMaterial((data?.recentProgress || []).filter(row => materialInLang(row, lang)));
-  const bookForLang = lang === 'Japanese' ? resume : null;
-  // Once rendered, keep the primary destination stable during background query refreshes.
-  // A user/account, edition or language change gets a fresh choice. Position still updates from real records.
-  const choice = useRef(null);
-  const choiceKey = `${user?.id || 'guest'}:${book?.edition || ''}:${lang}`;
-  if (choice.current?.key !== choiceKey) choice.current = null;
-  if (!pending && !choice.current) choice.current = { key: choiceKey, kind: chooseResume(bookForLang, local.updatedAt, material), material };
-  const kind = choice.current?.kind || null;
-  const needSuggestion = !pending && !kind && !(lang === 'Japanese' && !book);
-  const recommendations = useQuery({ queryKey: TODAY_SUGGESTIONS_KEY, queryFn: fetchTodaySuggestions, staleTime: 300000, enabled: needSuggestion });
-  const suggestion = useMemo(() => rankSuggestions((recommendations.data || []).filter(canReadSuggestion), {
-    langs: [lang], fitOf: () => null,
-    levelOf: s => getIdealLevel(s.language, data?.vocabByLang?.[s.language] || 0),
-  }).find(s => s.language === lang) || null, [recommendations.data, data, lang]);
-
-  let resumeItem = null;
-  if (kind === 'material' && choice.current.material) resumeItem = materialItem(choice.current.material, lang);
-  else if (kind === 'book' && resume) resumeItem = bookItem(book, resume);
-  else if (lang === 'Japanese' && !book) resumeItem = { lang, kicker: '교재', glyph: GLYPH.Japanese, title: '교재 정보를 불러오지 못했어요',
-    sub: '교재 목록에서 다시 골라 주세요.', href: '/lessons', cta: '교재 보기' };
-  else if (suggestion) resumeItem = { lang, kicker: '산책 추천', glyph: '文', title: suggestion.title, titleLang: encounterLookupLang(suggestion.language) || undefined,
-    sub: [langNameKo(suggestion.language), suggestion.level].filter(Boolean).join(' · '), href: suggestionHref(suggestion, 'home'), cta: '읽어 보기' };
-  else if (!pending) resumeItem = { lang, kicker: '산책', glyph: GLYPH[lang] || '文', title: '오늘 읽을 글을 골라 보세요',
-    sub: `${learnLangLabel(lang)} 읽을거리`, href: '/discover', cta: '산책하기' };
-  const resumePending = pending || (needSuggestion && recommendations.isLoading);
+  // 이어 읽기 칸 · 저장 불가 안내 — 판본을 받는 동안은 배움 대기 화면과 같은 골격 칸(자리 · 모양 같음).
+  const resumeSlot = <Suspense fallback={<ResumeTile pending />}><ResumeSlot bookPromise={bookPromise} book={book} user={user} authLoading={authLoading} isLoading={isLoading} data={data} lang={lang} /></Suspense>;
+  const storageNote = <Suspense fallback={null}><StorageNote bookPromise={bookPromise} book={book} /></Suspense>;
 
   // 손님 배치 — 서버가 세션 쿠키가 없다고 알려 주면(sessionHint === false) 로그인 확인을 기다리지 않는다(B1 — 오너 승인
   // 2026-10-17 KST). 서버 HTML · 첫 그림 · 확인 뒤가 모두 같은 손님 배치라, 로그인 배치 골격이 0.7초 보였다가 바뀌던 것이 없다.
@@ -193,11 +217,11 @@ export default function HomePage({ book = null, sessionHint }) {
     return <div className="manabi-page learn-page">
       <div className="learn-top"><div className="learn-top__title"><h1>배움</h1></div></div>
       <div className="learn-grid">
-        <ResumeTile item={resumeItem} pending={resumePending} />
+        {resumeSlot}
         <ParagraphTile state={{ kind: 'ready', sentence: GUEST_SAMPLE }} lang="Japanese" href="/study" kicker="오늘 문단 · 맛보기" />
         <GuestLoginTile href={authEntryHref('/home')} />
       </div>
-      {!local.storageAvailable && <p role="status" className="learn-note">이 브라우저에서는 읽던 위치를 저장할 수 없어요.</p>}
+      {storageNote}
     </div>;
   }
 
@@ -208,7 +232,7 @@ export default function HomePage({ book = null, sessionHint }) {
     </div>
     {error && <div className="manabi-inline-state" role="alert">학습 기록을 불러오지 못했어요. 읽기와 책장은 계속 이용할 수 있어요. <button type="button" onClick={() => refetch()}>다시 시도</button></div>}
     <div className="learn-grid">
-      <ResumeTile item={resumeItem} pending={resumePending} />
+      {resumeSlot}
       <div className="learn-quad learn-order-status">
         <GoalTrackTile />
         <TodayGoalTile vocab={data?.vocab || []} projections={data?.learning?.projections || []} profile={profile} empty={!data} />
@@ -220,7 +244,7 @@ export default function HomePage({ book = null, sessionHint }) {
       <ParagraphTile state={paragraphTileState} lang={paragraphTileState.kind === 'ready' ? paragraph.data?.lang || lang : lang} busy={paragraph.isPlaceholderData}
         pending={paragraph.isPending} href={`/study?lang=${lang}`} onForecastTap={onForecastTap} />
     </div>
-    {!local.storageAvailable && <p role="status" className="learn-note">이 브라우저에서는 읽던 위치를 저장할 수 없어요.</p>}
+    {storageNote}
     {continueDeckItems.length > 0 && <section className="learn-more" aria-label="이어서"><ContinueDeck items={continueDeckItems} /></section>}
     {/* 임시 입구(오너 지시 2026-10-15 KST) — HSK 단어 목록이 내비에 자리를 잡을 때까지. 덱과 같은 카드 양식. */}
     <section className="learn-more" aria-label="HSK 단어"><ContinueDeck items={[hskItem]} /></section>
