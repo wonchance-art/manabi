@@ -2,6 +2,7 @@
 import { chromium } from 'playwright-core';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { legacyLearningSnapshot } from './fixtures/learning-snapshot.mjs';
 const base=process.env.QA_BASE||'http://127.0.0.1:8897',out=process.env.QA_OUT||'/private/tmp/manabi-viewer-reliability-qa';
 fs.mkdirSync(out,{recursive:true});
 const browser=await chromium.launch({executablePath:process.env.QA_CHROME||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
@@ -49,7 +50,7 @@ await context.route('**/rest/v1/**',async r=>{
   }
   if(table==='reading_progress'){const row=Array.isArray(body)?body[0]:body;reads=reads.filter(r=>String(r.material_id)!==String(row.material_id));reads.push({...row,is_completed:false,updated_at:new Date().toISOString()});return send([row]);}
   if(table==='user_vocabulary'){
-   if(method==='POST'){const rows=(Array.isArray(body)?body:[body]).map(row=>({...row,id:89001+vocab.length,created_at:new Date().toISOString()}));vocab.push(...rows);return send(rows);}
+   if(method==='POST'){const rows=(Array.isArray(body)?body:[body]).map(row=>({...row,id:String(89001+vocab.length),created_at:new Date().toISOString()}));vocab.push(...rows);return send(rows);}
    const rows=vocab.filter(row=>String(row.id)===url.searchParams.get('id')?.slice(3));rows.forEach(row=>Object.assign(row,body));return send(rows);
   }
   return send([]);
@@ -57,6 +58,7 @@ await context.route('**/rest/v1/**',async r=>{
  if(table==='reading_materials'){
   let rows=records;
   for(const key of ['id','owner_id','visibility']){const f=url.searchParams.get(key);if(f?.startsWith('eq.'))rows=rows.filter(row=>String(row[key])===f.slice(3));}
+  const parent=url.searchParams.get('processed_json->metadata->conversation->>parentId');if(parent)rows=rows.filter(row=>String(row.processed_json.metadata.conversation?.parentId)===parent.slice(3));else if(!url.searchParams.get('id'))rows=rows.filter(row=>!row.processed_json.metadata.conversation);
   const attempt=url.searchParams.get('processed_json->metadata->>importAttempt');if(attempt)rows=rows.filter(row=>row.processed_json.metadata.importAttempt===attempt.slice(3));
   const q=url.searchParams.getAll('title').find(value=>value.startsWith('ilike.'));if(q)rows=rows.filter(row=>row.title.includes(q.slice(6).replaceAll('%','')));
   if(url.searchParams.has('processed_json->metadata->book'))rows=rows.filter(row=>row.processed_json.metadata.book);
@@ -79,6 +81,13 @@ await context.route('**/api/analyze',async r=>{
 });
 await context.route('**/api/gemini',r=>r.fulfill({json:{text:'검수용 설명'}}));
 await context.route('**/api/learning/**',r=>{
+ // 저장 단어 읽기는 2026-10-14(dc69aab4)부터 /api/learning/vocabulary?view=learning snapshot이다(user_vocabulary 직접 조회가 아님).
+ // 이 고정 데이터가 그 GET에도 문맥 목록을 돌려줘 「저장한 단어를 불러오지 못했어요」가 떴다 — 공용 합성 snapshot(learning-snapshot.mjs)으로 답한다.
+ const learningUrl=new URL(r.request().url());
+ if(r.request().method()==='GET'&&learningUrl.pathname==='/api/learning/vocabulary'&&learningUrl.searchParams.get('view')==='learning')
+  return r.fulfill({json:legacyLearningSnapshot({actorId:uid,rows:vocab,fields:learningUrl.searchParams.get('fields')})});
+ // 제외 상태도 같은 경로 아래다(learning-flow · korean-learning 고정 데이터와 같은 모양) — 문맥 목록을 받으면 items가 없어 채점 막대가 잠겼다.
+ if(r.request().method()==='GET'&&learningUrl.pathname==='/api/learning/exclusions')return r.fulfill({json:{items:[]}});
  if(r.request().method()==='POST'){
   const payload=r.request().postDataJSON();const word=vocab.find(v=>v.word_text===payload.word?.word_text)||vocab.at(-1);contexts.push({id:'context-1',user_id:uid,vocabulary_id:word?.id,material_id:payload.source?.materialId,quote:payload.source?.quote,locator:{tokenId:payload.source?.tokenId}});return r.fulfill({json:{ok:true,context:{id:'context-1'},vocabulary:{id:word?.id}}});
  }
@@ -107,6 +116,9 @@ for(let l=0;l<28;l++){
  });
 }
 records=[{id:94001,title:'중국어 뷰어 검수 — 긴 문장과 선택 동작을 확인하는 자체 작성 자료',owner_id:uid,visibility:'private',direction:'read',created_at:new Date().toISOString(),raw_text:raw.join('\n'),processed_json:{status:'completed',sequence,dictionary,metadata:{language:'Chinese',level:'HSK5'}}}];
+// v2-Z(2026-10-15, 7a77784b): 「회화 연습」 패널이 「대화」 → 대화 자료(processed_json.metadata.conversation, parentId = 원본)로 바뀌었다.
+// 이 자료의 대화를 이미 하나 연 상태로 두면 「대화」가 새 턴(AI) 없이 그 대화로 간다(findLatestConversation).
+records.push({...structuredClone(records[0]),id:94002,title:'중국어 대화 검수',processed_json:{...structuredClone(records[0].processed_json),metadata:{language:'Chinese',level:'HSK5',conversation:{version:1,parentId:'94001',language:'Chinese',level:'HSK5',turns:[],turnCount:0}}}});
 let race=false, detailWait=0,analysisFail=false,readingInvalid=false,reanalysis=false,readingPrompt='';
 await context.route('**/api/gemini',async r=>{
  const prompt=r.request().postDataJSON()?.contents?.[0]?.parts?.[0]?.text||'';
@@ -136,11 +148,18 @@ const baseline=structuredClone(records),checks=[];
 const wordA=()=>page.locator('[data-tid="id_0_2_audit"]'),wordB=()=>page.locator('[data-tid="id_1_0_audit"]');
 async function tap(loc){
  // Scroll like a reader: raw scrollBy can race a pending focus/layout restoration.
+ const reachable=()=>loc.evaluate(e=>{const r=e.getBoundingClientRect();return e.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2));});
  for(let i=0;i<3;i++){
   const r=await loc.boundingBox();
   await page.mouse.move(Math.min(page.viewportSize().width-12,Math.max(12,r.x+8)),180);
   await page.mouse.wheel(0,r.y-180);await delay(100);
-  if(await loc.evaluate(e=>{const r=e.getBoundingClientRect();return e.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2));}))break;
+  if(await reachable())break;
+ }
+ // 쪽 보기(기본)는 시트가 열려도 본문을 다시 흘리지 않는다 — 고른 단어만 보이게 시트를 낮춘다(paged-reader.css 목업 C).
+ // 그래서 시트 밑에 깔린 다른 단어는 밀어 올릴 수 없고, 손가락 대신 키보드로 고른다(토큰 초점 자리 .surface[role=button] · 줄 머리 막대).
+ if(!await reachable()){
+  const key=loc.locator('.surface[role="button"]').or(loc.locator('xpath=self::button|self::*[@role="button"]')).first();
+  await key.focus();await page.keyboard.press('Enter');return;
  }
  await loc.click();
 }
@@ -171,7 +190,7 @@ try {
  await fresh();await page.getByRole('button',{name:'리딩 테스트',exact:true}).click();await page.locator('.reading-test__question').first().waitFor();
  assert.equal(await page.locator('.reading-test__question').count(),5);assert(readingPrompt.includes('질문과 선택지는 중국어'));assert.equal(await page.getByRole('heading',{name:'읽기 확인 · 전체 자료',exact:true}).count(),1);assert.equal(await page.getByRole('heading',{name:'읽기 확인',exact:true}).count(),0);assert.equal(await page.getByText('IELTS Reading Test',{exact:true}).count(),0);pass('Chinese reading check uses Chinese questions and source evidence');await shotAt('chinese-reading-check');
  await fresh();readingInvalid=true;await page.getByRole('button',{name:'리딩 테스트',exact:true}).click();await page.locator('.reading-test [role="alert"]').waitFor();assert.equal(await page.locator('.reading-test__question').count(),0);readingInvalid=false;await page.getByRole('button',{name:'다시 시도',exact:true}).click();await page.locator('.reading-test__question').first().waitFor();pass('malformed reading answer is rejected and retry recovers');
- await fresh();await page.getByRole('button',{name:'회화 연습',exact:true}).click();await page.getByRole('button',{name:'대화 시작',exact:true}).click();await page.getByRole('button',{name:'음성 입력',exact:true}).click();assert.equal(await page.evaluate(()=>window.__speechLang),'zh-CN');pass('Chinese speech input selects zh-CN without real recording');
+ await fresh();await page.getByRole('button',{name:'대화',exact:true}).click();await page.waitForURL(/\/viewer\/94002/);await page.getByRole('button',{name:'음성 입력',exact:true}).click();assert.equal(await page.evaluate(()=>window.__speechLang),'zh-CN');pass('Chinese speech input selects zh-CN without real recording');
  async function menu(){await page.getByRole('button',{name:'학습',exact:true}).click();await page.getByRole('dialog',{name:'학습'}).getByRole('button',{name:/^자료 관리/}).click();} // AD-R2 Q1 ③: ⋯ → 「학습」 창 항목
  const materialWrites=()=>writes.filter(w=>w.table==='reading_materials'||w.table==='viewer_replace_analysis');
  await fresh();analysisFail=true;await menu();await page.getByRole('button',{name:/^전체 분석/}).click();await page.getByRole('dialog',{name:'자료 관리'}).getByRole('button',{name:'전체 분석',exact:true}).click();await page.getByRole('button',{name:'분석 중단',exact:true}).waitFor({state:'hidden'});assert.deepEqual(records,baseline);assert.equal(materialWrites().length,0);pass('failed reanalysis preserves entire prior source and analysis');
