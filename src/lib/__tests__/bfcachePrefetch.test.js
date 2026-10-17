@@ -14,6 +14,7 @@ describe('메뉴 — 화면 진입 prefetch 없음', () => {
   it('산책은 prefetch:false + 의도 prefetch(배움과 같은 항목 모양)', () => {
     expect(MAIN_NAV.find(item => item.href === '/discover')).toEqual(expect.objectContaining({ prefetch: false, intentPrefetch: true }));
     expect(MAIN_NAV.find(item => item.href === '/home')).toEqual(expect.objectContaining({ prefetch: false, intentPrefetch: true }));
+    expect(MAIN_NAV.find(item => item.href === '/conversation/new')).toEqual(expect.objectContaining({ prefetch: false, intentPrefetch: true })); // CONV-INTENT-001
   });
   it('메뉴 넷 모두 화면 진입 prefetch를 하지 않는다(prefetch가 false가 아닌 항목 = 0)', () => {
     expect(MAIN_NAV.filter(item => item.prefetch !== false).map(item => item.href)).toEqual([]);
