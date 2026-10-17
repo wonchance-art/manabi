@@ -136,6 +136,12 @@
    wraps together with its marks. Multi-character marks over-reserve by a gap at most (wraps a cell early, never late). */
 .viewer-layout[data-language="Japanese"] :is(.reader-area,.reader-settings__preview) {--ja-pitch:calc(1em + var(--char-gap,0px));}
 .viewer-layout[data-language="Japanese"] :is(.reader-area,.reader-settings__preview) .word-token {margin-left:calc(0px - (var(--zh-pull,0) * var(--ja-pitch)));margin-right:calc(var(--zh-hold,0) * var(--ja-pitch));}
+/* Headings enlarge only .surface (index.css .viewer-h1/h2/h3 .surface 1.5/1.25/1.1em), so a heading's closing mark is wider than
+   the token em. Reserve at the heading size — same factors as the selection frame above (JA-KINSOKU-HEAD). Declared on the token,
+   so the em resolves at the token (= body em) and the factor scales it; both sides of a mark sit in the same heading and still cancel. */
+.viewer-layout[data-language="Japanese"] :is(.reader-area,.reader-settings__preview) .viewer-h1 .word-token {--ja-pitch:calc(1.5em + var(--char-gap,0px));}
+.viewer-layout[data-language="Japanese"] :is(.reader-area,.reader-settings__preview) .viewer-h2 .word-token {--ja-pitch:calc(1.25em + var(--char-gap,0px));}
+.viewer-layout[data-language="Japanese"] :is(.reader-area,.reader-settings__preview) .viewer-h3 .word-token {--ja-pitch:calc(1.1em + var(--char-gap,0px));}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .zh-cell {display:inline-flex;justify-content:center;width:var(--zh-cell);}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .zh-run {display:inline-flex;justify-content:center;white-space:nowrap;width:calc((var(--zh-cells,1) * var(--zh-cell)) + ((var(--zh-cells,1) - 1) * var(--char-gap,0px)));}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) :is(ruby,.zh-cell,.zh-run) + :is(ruby,.zh-cell,.zh-run) {margin-left:var(--char-gap,0px);}

@@ -2302,6 +2302,11 @@ export default function ViewerPage() {
   const savedRowList = useMemo(() => [...(savedWords.byKey?.values() || [])], [savedWords]);
   // 来가 든 토큰 → 같은 줄 바로 뒤 토큰 표기(splitRuby의 来 | ない 읽기 고르기) — 자료마다 한 번. 렌더 · 토큰마다 Map · 정규식을 만들지 않는다.
   const kuruNext = useMemo(() => kuruNextTexts(material?.processed_json?.sequence, material?.processed_json?.dictionary), [material?.processed_json]);
+  // 줄머리 금칙(중국어 ZH-GRID-001 · 일본어 JA-KINSOKU): 닫는 부호 묶음과 그 앞 토큰을 한 줄에 묶는 여백 표시. 자료(sequence · dictionary) ·
+  // 언어마다 한 번 만든다 — 낱말 탭마다 본문 전체를 다시 훑지 않게(KINSOKU-MEMO-001). 렌더는 표만 본다.
+  const kinsokuMarks = useMemo(() => (hasKinsoku(materialLang)
+    ? zhKinsokuMarks(material?.processed_json?.sequence || [], id => material?.processed_json?.dictionary?.[id], materialLang)
+    : null), [material?.processed_json?.sequence, material?.processed_json?.dictionary, materialLang]);
   const refVocabIndex = useRefVocabIndex(hanjaPopoverMode ? materialLang : null);
   const hanjaHunOf = (text) => (
     materialLang === 'Chinese' && showHanjaKo && hanjaKoTable && hanjaHunTable && hanjaTradTable
@@ -4189,8 +4194,8 @@ export default function ViewerPage() {
             });
           }
 
-          // 줄머리 금칙(중국어 ZH-GRID-001 · 일본어 JA-KINSOKU): 닫는 부호 묶음과 그 앞 토큰을 한 줄에 묶는 여백 표시.
-          const zhMarks = hasKinsoku(materialLang) ? zhKinsokuMarks(json.sequence, id => json.dictionary[id], materialLang) : null;
+          // 줄머리 금칙 표시는 자료 단위 useMemo(kinsokuMarks)를 그대로 쓴다.
+          const zhMarks = kinsokuMarks;
 
           const renderToken = (tokenId, lineHead = null, picked = false, paceSlice = null) => {
             const zhStyle = zhKinsokuStyle(zhMarks?.get(tokenId));
