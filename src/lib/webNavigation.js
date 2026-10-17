@@ -7,7 +7,10 @@ export const MAIN_NAV = Object.freeze([
   { href: '/home', label: '배움', icon: 'learn', prefetch: false, intentPrefetch: true },
   { href: '/conversation/new', label: '대화', icon: 'chat', prefetch: false },
   { href: '/materials', label: '서재', icon: 'library', prefetch: false },
-  { href: '/discover', label: '산책', icon: 'compass' },
+  // 산책도 화면 진입 prefetch를 끈다(BFCACHE-A-001 — 오너 승인 2026-10-17 KST 선택지 A). Next 15.5 RSC prefetch 응답은
+  // no-store라 받기만 해도 Chrome이 그 화면을 bfcache에 넣지 않는다(JsNetworkRequestReceivedCacheControlNoStoreResource) —
+  // 교재 등 메뉴가 보이는 화면 전부의 「뒤로」가 다시 불러오기(Preview 1.3~1.6초)가 됐다. 자체 대기 화면이 있어 배움과 같이 의도 prefetch.
+  { href: '/discover', label: '산책', icon: 'compass', prefetch: false, intentPrefetch: true },
 ]);
 // Only the text reader uses this shell; PDF and book readers keep their own controls.
 export function isFocusedReadingRoute(pathname) {

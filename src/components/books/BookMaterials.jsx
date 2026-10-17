@@ -9,7 +9,7 @@ export default function BookMaterials({ book, preview = false }) {
   const { progress } = useReadingProgress(book.edition);
   const [selected, setSelected] = useState(null);
   const unit = selected || progress.page.slice(0, 3);
-  return <div className="manabi-page"><p className="manabi-breadcrumb"><Link href="/lessons">교재</Link><span>/</span><Link href={bookHref(book.edition)}>일본어 N5</Link><span>/</span>함께 읽기</p>
+  return <div className="manabi-page"><p className="manabi-breadcrumb"><Link href="/lessons" prefetch={false}>교재</Link><span>/</span><Link href={bookHref(book.edition)}>일본어 N5</Link><span>/</span>함께 읽기</p>
     <header className="manabi-page-heading"><div><p className="manabi-eyebrow">BEYOND THE BOOK</p><h1>책 밖으로 이어 읽기<span>.</span></h1></div></header><p className="manabi-muted manabi-small">짧은 문화 이야기에서 표현을 다시 만나고, 내 자료로 읽기를 이어가세요.</p>
     <div className="manabi-row"><Link className="manabi-button" href="/materials">내 자료 열기 ↗</Link><Link className="manabi-link" href={bookHref(book.edition, progress.page)}>읽던 교재로 돌아가기</Link></div>
     <div className="manabi-section-heading"><h2>일상 속 일본어</h2><span>문화 읽기</span></div><div className="manabi-culture-grid">{book.cultures.map((culture, index) => <Link className="manabi-culture-card" key={culture.id} href={bookHref(book.edition, culture.id)}><span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><div><small>CULTURE / {String(index + 1).padStart(2, '0')}</small><h2>{culture.title} ↗</h2><p>{culture.lead}</p></div></Link>)}</div>
