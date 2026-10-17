@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { SC_HINT_COOKIE, scHintFromJar, syncScHintCookie, wantsScFont } from '@/lib/scFontHint';
+import { SC_HINT_COOKIE, scHintDecision, scHintFromJar, syncScHintCookie, wantsScFont } from '@/lib/scFontHint';
 
 /**
  * 계약: 간체 중국어를 그리는 잎이 독립 스타일시트를 직접 건다 (SC-LINK-001 2단계, 2026-10-17 KST).
@@ -86,8 +86,28 @@ describe('학습 언어 힌트 쿠키', () => {
     expect(syncScHintCookie(true, null)).toBe(false);
   });
 
-  it('③ 학습 언어 훅은 프로필이 온 뒤에만 힌트를 맞춘다', () => {
+  it('③ 학습 언어가 실제 데이터로 정해진 뒤에만 정한다 — 손님 · 담은 표현 수가 오기 전의 기본값은 null(건드리지 않음, 리뷰 N2-d)', () => {
+    expect(scHintDecision(null, { Chinese: 3 })).toBeNull(); // 손님 · 프로필 받는 중
+    expect(scHintDecision({ learning_language: ['Chinese', 'Japanese'] }, null)).toBe(true); // 프로필이 정본
+    expect(scHintDecision({ learning_language: 'Japanese' }, { Chinese: 9 })).toBe(false);
+    expect(scHintDecision({ learning_language: null }, null)).toBeNull(); // 담은 표현 수가 오기 전 — 기본값(일본어)으로 지우지 않는다
+    expect(scHintDecision({ learning_language: [] }, {})).toBeNull();
+    expect(scHintDecision({ learning_language: null }, { Chinese: 5, Japanese: 2 })).toBe(true); // 담은 표현 수로 정해짐
+    expect(scHintDecision({ learning_language: null }, { Japanese: 2 })).toBe(false);
+    expect(scHintDecision({ learning_language: ['Klingon'] }, null)).toBeNull(); // 목록 밖 값은 정해진 것으로 치지 않는다
+  });
+
+  it('③ 학습 언어 훅은 그 판정이 정해졌을 때만 쿠키를 맞추고, 계정을 떠날 때 지우는 곳은 AuthContext 한 곳이다', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/components/learn/useLearnLanguage.js'), 'utf8');
-    expect(src).toContain('useEffect(() => { if (hasProfile) syncScHintCookie(wantsScFont(langs)); }, [hasProfile, langs]);');
+    expect(src).toContain('const scHint = scHintDecision(profile, vocabCounts);');
+    expect(src).toContain('useEffect(() => { if (scHint !== null) syncScHintCookie(scHint); }, [scHint]);');
+    const writers = ['src/components', 'src/lib', 'src/views', 'src/app'].flatMap(function walk(dir) {
+      return fs.readdirSync(path.join(process.cwd(), dir), { withFileTypes: true }).flatMap((d) => {
+        const rel = path.join(dir, d.name);
+        if (d.isDirectory()) return d.name === '__tests__' ? [] : walk(rel);
+        return /\.(js|jsx)$/.test(d.name) && fs.readFileSync(path.join(process.cwd(), rel), 'utf8').includes('syncScHintCookie(') ? [rel] : [];
+      });
+    }).sort();
+    expect(writers).toEqual(['src/components/learn/useLearnLanguage.js', 'src/lib/AuthContext.jsx', 'src/lib/scFontHint.js']);
   });
 });

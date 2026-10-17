@@ -11,6 +11,7 @@ import { useToast } from './ToastContext';
 import { watchAccountMutations } from './accountQueryCache';
 import { REF_READ_KEYS, claimGuestRefProgress } from './refReadStore';
 import { clearAllStudySources } from './studySourceHandoff';
+import { syncScHintCookie } from './scFontHint';
 import { pullProgress } from './refProgress';
 import { createProfileReadOnlyRefresh, recordExplicitProfileLogin } from './learningActivity';
 import { accountCacheReset, accountLeft, clearAccountQueries, noteAccount } from './accountQueryCache';
@@ -69,6 +70,9 @@ export function AuthProvider({ children, queryClient, onAccountLeft }) {
         clearAccountQueries(queryClient);
         import('./offlineCache').then((cache) => cache.purgeOfflineForAccount(nextActor)).catch(() => {});
         clearAllStudySources(); // 넘겨줄 글(/study?source=mine)은 넘긴 계정의 것 — 떠나면 지운다
+        // 간체 글꼴 힌트도 이 판정에서 지운다(SC-LINK-001 리뷰 N2) — 다음 계정은 배움 화면에서 자기 학습 언어로 다시 쓴다.
+        // 처음 계정을 맞을 때(손님 → 계정, 앞선 계정 없음)는 지우지 않는다.
+        syncScHintCookie(false);
       }
       if (left) accountLeftPendingRef.current = true;
       // 손님 몫 레퍼런스 진도는 이 기기의 첫 로그인 계정에만 한 번 합친다 — 화면이 합친 값을 바로 읽게 그리기 전에.
@@ -189,6 +193,8 @@ export function AuthProvider({ children, queryClient, onAccountLeft }) {
     if (!hasSessionCookie) {
       guestConfirmedRef.current = true;
       noteAccount(null); // 쿠키가 없으면 손님이 확정이다 — 기기 캐시 읽기(whenAccountKnown)가 기다리지 않게
+      // 손님 확정 — 세션 쿠키가 없다(만료 · 다른 탭 로그아웃 뒤). 학습자 힌트를 남기지 않는다(SC-LINK-001 리뷰 N2).
+      syncScHintCookie(false);
       // 게스트 확정도 Provider 값을 바꾼다 — 스트리밍 본문이 다 온 뒤에(whenDocumentParsed).
       const stopWaiting = whenDocumentParsed(() => { if (!cancelled) setLoading(false); });
       return () => { cancelled = true; stopWaiting(); };
