@@ -47,14 +47,18 @@ describe('뷰어 배선', () => {
     expect(h).toContain('if (paged.reveal(el, { auto: true })) setListenTokens(new Set(ids));');
     expect(h).not.toContain('user: true');
   });
-  it('시트 · 범위 지정 · 키 차단 · 누르는 중에는 옮기지 않고 따라가기를 멈춘다 — 판정은 pager(reveal auto · canAutoReveal, pagedReader.test)', () => {
+  it('시트 · 범위 지정 · 키 차단 · 누르는 중에는 그 문장 이동만 건너뛴다(멈추지 않음) — 판정은 pager(reveal auto · canAutoReveal, pagedReader.test)', () => {
     const h = handler();
-    expect(h).toContain('else { listenFollowOff.current = true; setListenTokens(null); }');
+    expect(h).toContain('if (paged.reveal(el, { auto: true })) setListenTokens(new Set(ids));\n    else setListenTokens(null);');
+    expect(h).not.toContain('listenFollowOff.current = true'); // 멈춤은 사람의 쪽 넘김(onUserPage)에서만
     expect(viewer()).not.toContain('listenPressing'); // 누르는 중은 pager 안 상태만 쓴다
+  });
+  it('같은 틱 — 핸들러 안에서 이동을 프레임 뒤로 미루지 않는다(2fb97e82)', () => {
+    expect(handler()).not.toContain('requestAnimationFrame');
   });
   it('손으로 넘기면 멈춤 — 문장을 못 이은 동안(listenActive)에도 걸린다', () => {
     expect(sliceBetween(viewer(), 'onUserPage: anchor => {', 'saveScrollPosition(index);'))
-      .toContain('if (listenActive.current) { listenFollowOff.current = true; setListenTokens(null); }');
+      .toContain('if (listenActive.current) { listenFollowOff.current = true; setListenTokens(null); setListenStopped(true); }');
     expect(handler()).toContain('listenActive.current = true;');
   });
   it('강조는 고른 문장 띠와 다른 밑줄(.word-token--listening) — 문장 지정(isPicked)에 섞지 않는다', () => {
@@ -86,10 +90,40 @@ describe('좁은 폭 듣기 막대 한 줄(390)', () => {
   it('지금 문장 줄은 따라가기 중(쪽 넘김 · 본문 강조)에만 숨긴다 — 스크롤 보기는 그대로', () => {
     expect(block()).toContain('.manabi-app .viewer-layout .viewer-topbar .listen-controls--follow .listen-controls__current{display:none}');
     expect(read('src/components/ListenControls.jsx')).toContain("<div className={followActive ? 'listen-controls listen-controls--follow' : 'listen-controls'}>");
-    expect(viewer()).toContain('followActive={listenFollowable}');
+    expect(viewer()).toContain('followActive={listenFollowable && !listenStopped}');
   });
   it('아이콘 버튼은 접근 이름을 그대로 가진다(재생 · 일시정지 · 정지)', () => {
     const panel = sliceBetween(read('src/components/ListenControls.jsx'), '<div className="listen-controls__panel">', '<span className="listen-controls__progress">');
     for (const name of ["aria-label={label('재생')}", "aria-label={label('일시정지')}", "aria-label={label('정지')}"]) expect(panel).toContain(name);
+  });
+});
+
+describe('2단계 [지금 문장으로](목업 listen-resume B안)', () => {
+  it('멈춘 동안에만 쪽 막대 가운데 칩 — 버튼 모양은 자동 진행 단독 버튼 재사용, 보이는 글자 = 접근 이름(aria-label 없음), 단축키 없음', () => {
+    const v = viewer();
+    const chip = sliceBetween(v, '{pagedActive&&<PageBar pager={pager} barRef={pageBarRef} tr={vt} extra={listenFollowable && listenStopped ? (', ') : null}/>}');
+    expect(chip).toContain('className="viewer-pace-float__btn reader-pagebar__resume"');
+    expect(chip).toContain("<span>{vt('지금 문장으로')}</span>");
+    expect(chip).toContain("title={vt('듣고 있는 문장의 쪽으로 가고 다시 따라가요')}");
+    expect(chip).not.toContain('aria-label');
+    expect(chip).not.toContain('aria-keyshortcuts');
+    expect(read('src/components/viewer/PageBar.jsx')).toContain("{pager.ready ? label(tr, pager) : ''}</span>\n      {extra}");
+  });
+  it('누르면 따라가기를 다시 켜고 지금 문장 쪽으로(사람 이동 — auto 아님 · 위치 저장 없음) 밑줄', () => {
+    const resume = sliceBetween(viewer(), 'const resumeListenFollow = () => {', '\n  };');
+    expect(resume).toContain('listenFollowOff.current = false;');
+    expect(resume).toContain('setListenStopped(false);');
+    expect(resume).toContain('listenSentenceTokens(listenRanges[listenIndex.current], line => listenLineTokens.get(line));');
+    expect(resume).toContain('paged.reveal(el);');
+    expect(resume).not.toContain('auto: true');
+    expect(resume).not.toContain('user: true');
+    expect(resume).toContain('setListenTokens(new Set(ids));');
+  });
+  it('멈춤 알림은 막대 밖 polite 상태 한 줄 · 좁은 폭 지금 문장 줄은 실제로 따라갈 때만 숨김 · 3언어 문구', () => {
+    const v = viewer();
+    expect(v).toContain("{pagedActive&&<span className=\"sr-only\" role=\"status\">{listenFollowable && listenStopped ? vt('따라가기를 멈췄어요') : ''}</span>}");
+    expect(v).toContain('followActive={listenFollowable && !listenStopped}');
+    const msgs = read('src/lib/viewerMessages.js');
+    for (const k of ["['지금 문장으로','回到当前句','回到目前句']", "['따라가기를 멈췄어요','已停止跟随','已停止跟隨']"]) expect(msgs).toContain(k);
   });
 });

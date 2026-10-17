@@ -912,17 +912,19 @@ export default function ViewerPage() {
   // 자동 진행은 세로 흐름(휠·터치 감지·문장 스크롤)에 맞춘 기능이라 쪽 넘김 보기에서는 끈다(설계 §4 P0) — 스크롤 보기는 그대로.
   const autoPaceOn = autoPace && !pagedActive;
   // 듣기 따라가기(뷰어 감사 목업 6 · 1단계) — 읽는 **문장**의 토큰(listenTokens)에 은은한 밑줄을 긋고 그 쪽으로 넘긴다.
-  // 손으로 쪽을 넘기거나, 자동 이동이 거절되면(누르는 중 · 시트 · 범위 지정 · 키 차단 — pager.reveal auto) 그 듣기가 끝날 때까지
-  // 따라가지 않는다(listenFollowOff). listenActive = 듣는 중(문장을 못 이은 문장이어도) — 손으로 넘기면 멈춤이 늘 걸리게.
+  // 멈춤은 사람이 쪽을 넘길 때(onUserPage)만 — 그 듣기가 끝날 때까지 따라가지 않고(listenFollowOff) [지금 문장으로]가 뜬다
+  // (listenStopped). 자동 이동이 거절되면(누르는 중 · 시트 · 범위 지정 · 키 차단 — pager.reveal auto) 그 문장 이동만 건너뛴다.
+  // listenActive = 듣는 중(문장을 못 이은 문장이어도) — 손으로 넘기면 멈춤이 늘 걸리게. listenIndex = 지금 읽는 문장 번호.
   const [listenTokens, setListenTokens] = useState(null);
-  const listenActive = useRef(false), listenFollowOff = useRef(false);
+  const [listenStopped, setListenStopped] = useState(false);
+  const listenActive = useRef(false), listenFollowOff = useRef(false), listenIndex = useRef(null);
   const pager = usePagedReader({
     enabled: pagedActive, pages: pagesEl, barRef: pageBarRef, resetKey: id,
     layoutKey: `${fontSize}|${lineGap}|${charGap}|${fontFamily}|${pronDisplay}|${pinyinSize}|${pinyinCell}|${fontStatus}|${uiLocale}|${wordStateHl}|${showPatterns}`,
     initialAnchor: () => { const el = pagedInitialAnchor.current; pagedInitialAnchor.current = null; return el?.isConnected ? { kind: 'element', el } : null; },
     onUserPage: anchor => {
       // 듣는 중에 손으로 넘겼다 — 이번 듣기 동안 따라가기 · 강조를 멈춘다(듣기 자체는 계속).
-      if (listenActive.current) { listenFollowOff.current = true; setListenTokens(null); }
+      if (listenActive.current) { listenFollowOff.current = true; setListenTokens(null); setListenStopped(true); }
       const tokenId = anchor?.el?.dataset?.sourceToken, index = tokenId ? material?.processed_json?.sequence?.indexOf(tokenId) : -1;
       if (index >= 0) saveScrollPosition(index);
     },
@@ -1475,10 +1477,11 @@ export default function ViewerPage() {
     return byLine;
   }, [material?.processed_json]);
   const listenFollowable = pagedActive && !isStaleAnalysis && missingLineCount === 0 && sentences.length > 0;
-  // 시트 · 드래그 범위 지정 · 키 차단 · 누르는 중에는 쪽을 옮기지 않는다 — pager.reveal(auto)가 거절하면 이번 듣기의 따라가기를
-  // 멈춘다(리뷰 차단 2). 강조는 이동이 받아들여진 뒤에 단다 — 시트 단어 보이기와 겹치면 그쪽이 이긴다.
+  // 시트 · 드래그 범위 지정 · 키 차단 · 누르는 중에는 쪽을 옮기지 않는다 — pager.reveal(auto)가 거절하면 **이번 문장 이동만**
+  // 건너뛴다(같은 쪽이면 pager가 true — 이동 없이 밑줄). 시트가 닫히면 다음 문장부터 다시 따라간다. 시트 단어 보이기가 늘 이긴다.
   const handleListenSentence = useCallback((index) => {
-    if (index == null) { listenActive.current = false; listenFollowOff.current = false; setListenTokens(null); return; }
+    listenIndex.current = index;
+    if (index == null) { listenActive.current = false; listenFollowOff.current = false; setListenTokens(null); setListenStopped(false); return; }
     listenActive.current = true;
     if (!listenFollowable || listenFollowOff.current) { setListenTokens(null); return; }
     const ids = listenSentenceTokens(listenRanges[index], line => listenLineTokens.get(line));
@@ -1487,8 +1490,20 @@ export default function ViewerPage() {
     if (!paged || !el.isConnected) { setListenTokens(null); return; }
     // 같은 틱에서 옮기고 밑줄을 단다 — 한 프레임 미루면 머리줄의 지금 문장과 밑줄이 그 사이 어긋나 보였다(실측 24회 중 2회).
     if (paged.reveal(el, { auto: true })) setListenTokens(new Set(ids));
-    else { listenFollowOff.current = true; setListenTokens(null); }
+    else setListenTokens(null);
   }, [listenRanges, listenLineTokens, listenFollowable, tokenRefs]);
+  // [지금 문장으로](목업 listen-resume B안) — 사람이 누른 이동이라 auto가 아니다(시트가 열려 있어도 옮긴다). 듣는 자리로 가는 것이라
+  // 읽은 위치로 저장하지 않는다(user 아님). 따라가기를 다시 켜고 지금 문장에 밑줄.
+  const resumeListenFollow = () => {
+    listenFollowOff.current = false;
+    setListenStopped(false);
+    const ids = listenSentenceTokens(listenRanges[listenIndex.current], line => listenLineTokens.get(line));
+    const el = ids.length ? tokenRefs.current[ids[0]] : null;
+    const paged = el && pagerFor(el);
+    if (!paged) return;
+    paged.reveal(el);
+    setListenTokens(new Set(ids));
+  };
 
   // 어휘 커버리지 배지(#1077-2) — 서재 카드와 **같은 엔진·같은 인덱스**(materialFit ←
   // 담김 ∪ '이미 앎'). 뷰어에서만 다른 수를 보이면 두 화면이 서로를 반증한다.
@@ -3920,7 +3935,7 @@ export default function ViewerPage() {
             {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
               <button onClick={stopReanalysis} disabled={reanalyze.committing} className="grammar-btn grammar-btn--danger">{vt("분석 중단")}</button>
             )}
-            {ttsSupported && <ListenControls text={material?.raw_text} language={materialLang} stopSignal={activeModal?.kind} playbackRate={TTS_RATES[ttsRate].web} rateLabel={TTS_RATES[ttsRate].label} onSentence={handleListenSentence} followActive={listenFollowable} compact uiLocale={uiLocale} />}
+            {ttsSupported && <ListenControls text={material?.raw_text} language={materialLang} stopSignal={activeModal?.kind} playbackRate={TTS_RATES[ttsRate].web} rateLabel={TTS_RATES[ttsRate].label} onSentence={handleListenSentence} followActive={listenFollowable && !listenStopped} compact uiLocale={uiLocale} />}
             <button ref={settingsTrigger} className="viewer-tool viewer-tool--aa" aria-label={`Aa ${vt("읽기 설정")}`} title={vt("읽기 설정")} aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
               <span aria-hidden="true">Aa</span>
             </button>
@@ -4582,7 +4597,12 @@ export default function ViewerPage() {
       </div>{/* reader-pages end */}
       {pagedActive&&<PageStrips pager={pager} tr={vt}/>}
       </div>
-      {pagedActive&&<PageBar pager={pager} barRef={pageBarRef} tr={vt}/>}
+      {pagedActive&&<PageBar pager={pager} barRef={pageBarRef} tr={vt} extra={listenFollowable && listenStopped ? (
+        <button type="button" className="viewer-pace-float__btn reader-pagebar__resume" title={vt('듣고 있는 문장의 쪽으로 가고 다시 따라가요')} onClick={resumeListenFollow}>
+          <ActionIcon name="headphones"/><span>{vt('지금 문장으로')}</span>
+        </button>) : null}/>}
+      {/* 따라가기 멈춤 알림 — 쪽 막대가 숨어도(시트) 읽히게 막대 밖에 둔다. 보이는 글은 [지금 문장으로] 칩. */}
+      {pagedActive&&<span className="sr-only" role="status">{listenFollowable && listenStopped ? vt('따라가기를 멈췄어요') : ''}</span>}
       </div>{/* viewer-center end */}
 
       <TextbookAnnotations key={`${id}:${user?.id||'guest'}`} material={material} user={user}

@@ -574,11 +574,13 @@ describe('end boxes stay whole across page boundaries', () => {
 // 본문을 누르는 중이거나 canAutoReveal()이 거절하면(시트 열림 · 드래그 범위 지정 · 키 차단) 옮기지도 기준을 바꾸지도 않는다.
 // 시트의 단어 보이기(useSelectedTokenVisibility)는 auto가 아니라 늘 이긴다.
 describe('auto reveal yields to people (listen follow)', () => {
-  it('canAutoReveal false → auto reveal은 false · 쪽 · 기준 그대로, 같은 대상의 보통 reveal은 지금처럼 옮긴다', () => {
+  it('canAutoReveal false → 다른 쪽 대상은 false · 쪽 · 기준 그대로, 같은 쪽 대상은 true(옮기지 않고 보인다), 보통 reveal은 지금처럼 옮긴다', () => {
     const reader = fakeReader();
     let allow = false;
     const c = controller(reader, { canAutoReveal: () => allow });
     expect(c.reveal(reader.tokenEls[57], { auto: true })).toBe(false);
+    expect(c.state.page).toBe(0);
+    expect(c.reveal(reader.tokenEls[4], { auto: true })).toBe(true); // 지금 쪽(0) — 밑줄은 달 수 있다
     expect(c.state.page).toBe(0);
     expect(c.reveal(reader.tokenEls[57])).toBe(true);
     expect(c.state.page).toBe(5);
@@ -606,7 +608,7 @@ describe('auto reveal yields to people (listen follow)', () => {
     expect(layout).not.toContain('auto: true');
     const hook = fs.readFileSync(path.join(process.cwd(), 'src/lib/usePagedReader.js'), 'utf8');
     expect(sliceBetween(hook, 'function reveal(target, {', 'anchor = target.nodeType'))
-      .toContain("if (auto && (pressed || opt().canAutoReveal?.() === false)) return false;");
+      .toContain("if (auto && (pressed || opt().canAutoReveal?.() === false)) return ready && pageOf(target) === page;");
     // 훅이 뷰어의 판정을 컨트롤러로 넘긴다 — 빠지면 시트가 열려 있어도 듣기가 쪽을 옮긴다.
     expect(sliceBetween(hook, 'export function usePagedReader({', '}) {')).toContain('canAutoReveal');
     expect(hook).toContain('latest.current = { onUserPage, canSwipe, canKey, canAutoReveal,');

@@ -240,11 +240,12 @@ export function createPagedController(pages, options = () => ({})) {
   }
   /** 대상(토큰·글자 Range)이 있는 쪽으로. 대상 자체가 기준이 된다 — 글자 크기를 바꿔도 대상이 보이는 쪽으로 돌아온다.
    *  auto = 자동 이동(듣기 따라가기 등) — 사람과 다른 이동에 진다: 본문을 누르는 중이거나 canAutoReveal()이 거절하면
-   *  (시트 열림 · 드래그 범위 지정 · 키 차단 — 뷰어가 판정) 옮기지도 기준을 바꾸지도 않고 false. 시트의 단어 보이기 등
-   *  auto가 아닌 이동은 지금 그대로라 둘이 겹치면 늘 사람 쪽 이동이 남는다(LISTEN-FOLLOW 우선순위 계약). */
+   *  (시트 열림 · 드래그 범위 지정 · 키 차단 — 뷰어가 판정) 옮기지도 기준을 바꾸지도 않는다. 이미 지금 쪽에 있으면 true
+   *  (옮길 필요가 없으니 보인다), 다른 쪽이면 false. 시트의 단어 보이기 등 auto가 아닌 이동은 지금 그대로라 둘이 겹치면
+   *  늘 사람 쪽 이동이 남는다(LISTEN-FOLLOW 우선순위 계약). */
   function reveal(target, { user = false, animate = false, auto = false } = {}) {
     if (!target || destroyed) return false;
-    if (auto && (pressed || opt().canAutoReveal?.() === false)) return false;
+    if (auto && (pressed || opt().canAutoReveal?.() === false)) return ready && pageOf(target) === page;
     anchor = target.nodeType === 1 ? { kind: 'element', el: target } : { kind: 'range', range: target };
     if (!ready) { schedule(); return true; }
     const next = anchorPage();
