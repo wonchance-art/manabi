@@ -70,6 +70,8 @@ html .viewer-layout[data-reader-view="paged"] > .viewer-center { padding-bottom:
   /* A안(VIEWER-AUDIT 2): 고른 단어가 화면 아래 절반이면 시트를 머리줄 아래에 세운다 — 자리는 useSelectedTokenVisibility가 잰다(--reader-sheet-top). */
     .viewer-layout[data-reader-view="paged"] .viewer-inspector[data-dock="top"]:not(.is-expanded):not(.is-collapsed) { top: var(--reader-sheet-top, 64px); bottom: auto; max-height: calc(100dvh - var(--reader-keyboard-inset, 0px) - var(--reader-sheet-top, 64px) - max(8px, env(safe-area-inset-bottom))); }
   /* ↑ 위에 세운 시트도 키보드에 걸리지 않는다 — 보이는 바닥(배치 높이 − 키보드 여백, useReaderLayout --reader-keyboard-inset)에서 멈춘다. */
+  /* 처음 열 때 자리 판정 전(1프레임, 늦어도 2프레임)은 투명 · 누르기 막음 — 바닥 자리가 그려졌다 위로 튀지 않게. opacity라 초점은 들어간다(visibility 금지). */
+    .viewer-layout[data-reader-view="paged"] .viewer-inspector[data-placing="true"] { opacity: 0; pointer-events: none; }
 }
 
 /* 끝 카드(다음 편 · 다음 과 · 다음 범위 · 완주)는 한 덩어리다 — 쪽 경계에서 둘로 쪼개지지 않게 통째로 다음 쪽에 둔다

@@ -580,20 +580,26 @@ describe('paged sheet dock (A안 — 고른 단어의 반대편)', () => {
   });
   it('배선: 쪽 넘김 경로에서만 정하고(바닥 낮추기와 한 갈래), 닫을 때 자리 표시를 지운다', () => {
     const hook = fs.readFileSync(path.resolve(__dirname, '../useReaderLayout.js'), 'utf8');
-    const pagedBranch = sliceBetween(hook, 'const placePaged = pager => {', 'const reveal = () => {');
-    expect(pagedBranch).toContain("getComputedStyle(panel).position !== 'fixed'"); // 1440 옆 패널(sticky)은 들지 않는다
+    const pagedBranch = sliceBetween(hook, 'function sheetViewport() {', 'export function useSelectedTokenVisibility');
+    expect(pagedBranch).toContain("const sheetPlaceable = panel => getComputedStyle(panel).position === 'fixed'"); // 1440 옆 패널(sticky)은 들지 않는다
     expect(pagedBranch).toContain('const dock = pagedSheetDock({');
     expect(pagedBranch).toMatch(/\n\s+if \(dock\.dock === 'top'\) \{\n\s+panel\.dataset\.dock = 'top';/);
     expect(pagedBranch).toContain("panel.dataset.dock = 'top'; panel.style.setProperty('--reader-sheet-top', `${dock.top}px`);");
     expect(pagedBranch).toContain('const height = compactSheetHeight({ tokenBottom: tokenRect.bottom'); // 위 절반은 지금 그대로
     expect(pagedBranch).toContain("delete panel.dataset.compact; delete panel.dataset.dock; panel.style.removeProperty('--reader-sheet-top');");
-    expect(hook).toContain('delete panel.dataset.compact; delete panel.dataset.dock;\n}'); // resetPagedSheet — 닫힘 · 스크롤 보기 전환
+    expect(sliceBetween(hook, 'function resetPagedSheet(panel) {', 'export function useSelectedTokenVisibility')).toContain('delete panel.dataset.compact; delete panel.dataset.dock; delete panel.dataset.placing;'); // 닫힘 · 스크롤 보기 전환
     expect(hook.split('pagedSheetDock(').length - 1).toBe(1); // 스크롤 보기 경로에는 없다
+    // 처음 열 때 자리(시트를 보이게 한 DOM 변경)는 본문이 붙은 뒤에도 걸려야 한다 — 자료가 오기 전 마운트에는 본문이 없다.
+    expect(hook).toContain('  }, [readerRef, revision]); // 본문(readerRef)은 자료가 온 뒤에 붙는다');
   });
   it('CSS: 1119 이하 쪽 넘김에서만 위에 세운다 — 펼침 · 접힘 상태는 지금 그대로', () => {
     const css = fs.readFileSync(path.resolve(__dirname, '../../components/viewer/paged-reader.css'), 'utf8');
     const narrow = sliceBetween(css, '@container reader (max-width: 1119px) {', '── 원본 리더 ──');
     expect(narrow).toContain('.viewer-layout[data-reader-view="paged"] .viewer-inspector[data-dock="top"]:not(.is-expanded):not(.is-collapsed) { top: var(--reader-sheet-top, 64px); bottom: auto; max-height: calc(100dvh - var(--reader-keyboard-inset, 0px) - var(--reader-sheet-top, 64px) - max(8px, env(safe-area-inset-bottom))); }');
     expect(css.split('[data-dock="top"]').length - 1).toBe(1);
+    // 처음 열 때 판정 전 숨김: 투명 + 누르기 막음. visibility는 초점을 막아(카드 첫 초점) 쓰지 않는다. 옮겨 가는 동작도 없다.
+    const placing = css.split('\n').filter(line => line.includes('[data-placing="true"]') && line.includes('{'));
+    expect(placing).toEqual(['    .viewer-layout[data-reader-view="paged"] .viewer-inspector[data-placing="true"] { opacity: 0; pointer-events: none; }']);
+    expect(narrow).toContain(placing[0]);
   });
 });

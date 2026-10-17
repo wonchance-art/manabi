@@ -8,7 +8,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const effects = [];
 vi.mock('react', () => ({ useEffect: fn => { effects.push(fn); }, useRef: () => ({}), useState: v => [v, () => {}], useCallback: fn => fn }));
 const pager = { reveal: vi.fn() };
-vi.mock('../usePagedReader', () => ({ pagerFor: () => pager }));
+let pagerOn = true;
+vi.mock('../usePagedReader', () => ({ pagerFor: () => (pagerOn ? pager : null) }));
 
 const { useSelectedTokenVisibility } = await import('../useReaderLayout');
 const { pagedSheetDock } = await import('../readingViewport');
@@ -20,8 +21,10 @@ function fakeStyle() {
   return { setProperty: (k, v) => props.set(k, v), removeProperty: k => props.delete(k), getPropertyValue: k => props.get(k) ?? '', props };
 }
 function fakeWorld({ withPanel = true } = {}) {
+  const panelClasses = new Set();
   const panel = {
-    hidden: false, dataset: {}, style: fakeStyle(), classList: { contains: () => false },
+    hidden: false, displayed: true, dataset: {}, style: fakeStyle(), classes: new Set(), classList: { contains: name => panelClasses.has(name) },
+    getClientRects() { return this.displayed ? [this.getBoundingClientRect()] : []; },
     natural: 440, card: false,
     // 카드가 그려졌으면 핵심 = 뜻 아래(위 끝 + 300) + 등급 줄(80) + 12 = 392.
     querySelector(sel) {
@@ -40,9 +43,21 @@ function fakeWorld({ withPanel = true } = {}) {
   const topbar = { getBoundingClientRect: () => ({ top: 68, bottom: 126 }) };
   const children = { panel: withPanel ? panel : null };
   const layout = { querySelector: sel => (sel === '.viewer-inspector' ? children.panel : sel === '.viewer-topbar' ? topbar : null) };
-  const root = { dataset: {}, closest: () => layout };
+  const selected = { current: null };
+  const root = { dataset: {}, closest: () => layout, querySelector: sel => (sel === '[data-selected]' ? selected.current : null) };
   const token = (top) => ({ isConnected: true, contains: () => false, getBoundingClientRect: () => ({ top, bottom: top + 56 }) });
-  return { panel, layout, root, token, attach: () => { children.panel = panel; } };
+  return { panel, panelClasses, layout, root, token, selected, attach: () => { children.panel = panel; } };
+}
+// 둘째 효과(처음 열 때 첫 그리기 전 자리) — 시트를 보이게 한 DOM 변경을 MutationObserver가 알린다.
+function useShowEffect(world) {
+  const before = effects.length;
+  useSelectedTokenVisibility({ current: world.root }, { current: {} }, undefined, false, 0);
+  effects[before + 1]();
+  const observer = mutationCallbacks[mutationCallbacks.length - 1];
+  // 시트를 보이게 하는 변화(열기 · 접힘 풀기 · 고른 단어 표시)를 모두 지켜본다.
+  expect(observer.on && observer.opts).toMatchObject({ subtree: true, childList: true, attributes: true });
+  expect(observer.opts.attributeFilter).toEqual(expect.arrayContaining(['hidden', 'class', 'data-selected']));
+  return () => { if (observer.on) observer.cb([]); };
 }
 function useMountedEffect(world, tokens, id, enabled = true) {
   const before = effects.length;
@@ -51,12 +66,12 @@ function useMountedEffect(world, tokens, id, enabled = true) {
 }
 
 beforeEach(() => {
-  queue = []; mutationCallbacks = []; resizeCallbacks = []; effects.length = 0; pager.reveal.mockClear();
+  queue = []; mutationCallbacks = []; resizeCallbacks = []; effects.length = 0; pager.reveal.mockClear(); pagerOn = true;
   vi.stubGlobal('requestAnimationFrame', fn => { const id = nextId++; queue.push({ id, fn }); return id; });
   vi.stubGlobal('cancelAnimationFrame', id => { queue = queue.filter(entry => entry.id !== id); });
   vi.stubGlobal('getComputedStyle', () => ({ position: 'fixed' }));
   vi.stubGlobal('ResizeObserver', class { constructor(cb) { this.cb = cb; this.on = true; resizeCallbacks.push(this); } observe() {} disconnect() { this.on = false; } });
-  vi.stubGlobal('MutationObserver', class { constructor(cb) { this.cb = cb; mutationCallbacks.push(this); } observe() { this.on = true; } disconnect() { this.on = false; } });
+  vi.stubGlobal('MutationObserver', class { constructor(cb) { this.cb = cb; mutationCallbacks.push(this); } observe(target, opts) { this.on = true; this.opts = opts; } disconnect() { this.on = false; } });
   vi.stubGlobal('window', { innerWidth: 390, innerHeight: 844, visualViewport: { offsetTop: 0, height: 844, addEventListener() {}, removeEventListener() {} }, addEventListener() {}, removeEventListener() {} });
 });
 afterEach(() => { vi.unstubAllGlobals(); });
@@ -132,6 +147,110 @@ describe('쪽 넘김 시트 자리 — 바꿔 누를 때 · 닫을 때 · 늦게
     flushFrame();
     expect(world.panel.dataset.dock).toBe('top');
     expect(world.panel.style.getPropertyValue('--reader-sheet-top')).toBe('308px'); // max(머리줄 126, 300) + 8
+  });
+});
+
+describe('처음 열 때 — 자리 판정 전에는 시트를 그리지 않는다(data-placing)', () => {
+  const ro = () => { for (const observer of resizeCallbacks.filter(o => o.on)) observer.cb([]); };
+  it('처음 연 아래 단어: 효과에서 바로 숨기고, 첫 프레임에 위 자리와 함께 보인다', () => {
+    const world = fakeWorld(), tokens = { a: world.token(688) };
+    useMountedEffect(world, tokens, 'a');
+    expect(world.panel.dataset.placing).toBe('true'); // 그리기 전 — 바닥 자리는 그려지지 않는다
+    flushFrame();
+    expect(world.panel.dataset).toEqual({ dock: 'top' });
+  });
+  it('바꿔 누를 때는 숨기지 않는다(이미 자리 잡고 보인 시트)', () => {
+    const world = fakeWorld(), tokens = { a: world.token(688), b: world.token(617) };
+    const cleanup = useMountedEffect(world, tokens, 'a');
+    flushFrame();
+    cleanup(); useMountedEffect(world, tokens, 'b');
+    expect(world.panel.dataset.placing).toBeUndefined();
+    flushFrame();
+    expect(world.panel.dataset).toEqual({ dock: 'top' });
+  });
+  it('스크롤 보기에서 열린 채 쪽 넘김으로 이어받은 시트도 숨기지 않는다(앞 효과에서 이어받음)', () => {
+    const world = fakeWorld(), tokens = { a: world.token(688), b: world.token(617) };
+    pagerOn = false;
+    const cleanup = useMountedEffect(world, tokens, 'a');
+    flushFrame(); // 스크롤 보기의 첫 프레임(쪽 넘김 아님 — 숨김 없음)
+    pagerOn = true;
+    cleanup(); useMountedEffect(world, tokens, 'b');
+    expect(world.panel.dataset.placing).toBeUndefined();
+  });
+  it('판정이 안 오면 2프레임 뒤 그냥 보인다(안전 시간)', () => {
+    const world = fakeWorld(), tokens = { a: world.token(688) };
+    tokens.a.isConnected = false; // 판정 프레임이 아무것도 못 한다
+    useMountedEffect(world, tokens, 'a');
+    flushFrame();
+    expect(world.panel.dataset.placing).toBe('true');
+    flushFrame();
+    expect(world.panel.dataset.placing).toBeUndefined();
+  });
+  it('효과 때 아직 안 보이던 시트는 보이게 되는 순간(ResizeObserver, 그리기 전) 숨긴다', () => {
+    const world = fakeWorld(), tokens = { a: world.token(688) };
+    world.panel.displayed = false;
+    useMountedEffect(world, tokens, 'a');
+    expect(world.panel.dataset.placing).toBeUndefined();
+    flushFrame();
+    world.panel.displayed = true; ro();
+    expect(world.panel.dataset.placing).toBe('true');
+    flushFrame();
+    expect(world.panel.dataset).toEqual({ dock: 'top' });
+  });
+  it('닫았다 다시 열면 다시 숨겼다 보인다 — 닫힌 동안 안 보이던 같은 시트', () => {
+    const world = fakeWorld(), tokens = { a: world.token(688) };
+    const cleanup = useMountedEffect(world, tokens, 'a');
+    flushFrame();
+    cleanup(); world.panel.displayed = false; useMountedEffect(world, tokens, 'a', false);
+    flushFrame(); // 닫힘 정리
+    world.panel.displayed = true;
+    useMountedEffect(world, tokens, 'a');
+    expect(world.panel.dataset.placing).toBe('true');
+  });
+  it('옆 패널(sticky) · 스크롤 보기는 숨기지 않는다', () => {
+    const sticky = fakeWorld(), tokens = { a: sticky.token(688) };
+    vi.stubGlobal('getComputedStyle', () => ({ position: 'sticky' }));
+    useMountedEffect(sticky, tokens, 'a');
+    expect(sticky.panel.dataset.placing).toBeUndefined();
+    vi.stubGlobal('getComputedStyle', () => ({ position: 'fixed' }));
+    const scroll = fakeWorld();
+    pagerOn = false;
+    useMountedEffect(scroll, { a: scroll.token(688) }, 'a');
+    expect(scroll.panel.dataset.placing).toBeUndefined();
+  });
+});
+
+describe('처음 열 때 — 시트를 보이게 한 DOM 변경에서 바로 자리(그리기 전)', () => {
+  it('고른 단어가 아래 절반이면 첫 그리기 전에 위에 선다 — 숨길 일도 없다', () => {
+    const world = fakeWorld(); world.selected.current = world.token(688);
+    const show = useShowEffect(world);
+    show();
+    expect(world.panel.dataset).toEqual({ dock: 'top' });
+    useMountedEffect(world, { a: world.selected.current }, 'a'); // 뒤늦은 선택 효과
+    expect(world.panel.dataset.placing).toBeUndefined();
+    flushFrame();
+    expect(world.panel.dataset).toEqual({ dock: 'top' });
+  });
+  it('접힌 막대 · 펼친 시트 · 스크롤 보기 · 고른 단어 없음은 건드리지 않는다', () => {
+    const world = fakeWorld(); world.selected.current = world.token(688);
+    const show = useShowEffect(world);
+    world.panelClasses.add('is-collapsed'); show();
+    world.panelClasses.clear(); world.panelClasses.add('is-expanded'); show();
+    world.panelClasses.clear(); pagerOn = false; show();
+    pagerOn = true; world.selected.current = null; show();
+    expect(world.panel.dataset).toEqual({});
+  });
+  it('닫았다(접힌 막대) 다시 열면 다시 정한다', () => {
+    const world = fakeWorld(); world.selected.current = world.token(688);
+    const show = useShowEffect(world);
+    show();
+    const cleanup = useMountedEffect(world, { a: world.selected.current }, 'a');
+    flushFrame();
+    cleanup(); world.panelClasses.add('is-collapsed');
+    flushFrame(); // 닫힘 정리 — 자리 표시를 지우고 「자리 잡음」을 잊는다
+    expect(world.panel.dataset).toEqual({});
+    world.panelClasses.clear(); show();
+    expect(world.panel.dataset).toEqual({ dock: 'top' });
   });
 });
 
