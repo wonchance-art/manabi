@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { withoutServerSignOut } from '../authCookieGuard';
+import { INVALID_SESSION_CODES, authCookieRemovals, invalidSessionError, withoutServerSignOut } from '../authCookieGuard';
 
 // TOKEN-REFRESH-409-001 — 운영 runtime error 「AuthApiError: Too many concurrent token refresh requests on the same session or
 // refresh token」(409, /api/learning/vocabulary, 2026-10-10 · 10-16). 접근 토큰이 만료된 채 한 화면이 학습 API를 동시에 부르면
@@ -21,14 +21,14 @@ vi.mock('next/headers', () => ({
   }),
 }));
 
-import { requireUser } from '../supabaseServer';
+import { requireAdmin, requireUser } from '../supabaseServer';
 
 const ROOT = path.resolve(__dirname, '../../..');
 const enc = (v) => Buffer.from(JSON.stringify(v)).toString('base64url');
 /** 브라우저가 심는 모양(@supabase/ssr — base64- 접두 · 조각 .0/.1)의 만료된 쿠키 세션. */
-function expiredSession() {
+function expiredSession(offset = -60) {
   jar.cookies.clear(); jar.writes.length = 0;
-  const exp = Math.floor(Date.now() / 1000) - 60;
+  const exp = Math.floor(Date.now() / 1000) + offset;
   const session = { access_token: `${enc({ alg: 'HS256' })}.${enc({ sub: 'u1', exp, aud: 'authenticated' })}.sig`, refresh_token: 'r-old', expires_at: exp, expires_in: 3600, token_type: 'bearer', user: { id: 'u1' } };
   const value = `base64-${Buffer.from(JSON.stringify(session)).toString('base64url')}`;
   const half = Math.ceil(value.length / 2);
@@ -71,6 +71,64 @@ describe('동시 갱신에서 진 요청(409) — 그 요청만 401, 인증 쿠�
   });
 });
 
+// 진짜 무효 세션(TOKEN-REFRESH-409-001 후속 · a775 리뷰): 409와 달리 다시 살아나지 않는 세션이면 서버가 인증 쿠키를 지운다 —
+// 지우지 않으면 그 브라우저는 접근 토큰 수명 동안 로그인한 것처럼 보이는데 서버 API는 모두 401이었다. 실물 @supabase/ssr · supabase-js +
+// 가짜 Auth 응답(GoTrue 모양 { code, error_code, msg }). 코드 목록 정본: @supabase/auth-js 2.100 lib/error-codes.d.ts.
+describe('진짜 무효 세션이면 인증 쿠키를 지운다 — 409 · 재사용 · bad_jwt · 5xx는 지우지 않는다', () => {
+  const removedChunks = () => authCookieWrites().filter((w) => w.value === '' && w.maxAge === 0).map((w) => w.name).sort();
+  const refreshFails = (status, code) => vi.stubGlobal('fetch', async (url) => {
+    const { pathname } = new URL(String(url));
+    if (pathname === '/auth/v1/token') return json({ code: status, error_code: code, msg: code }, status);
+    return json({ message: 'unexpected' }, 500);
+  });
+  const userFails = (status, code) => vi.stubGlobal('fetch', async (url) => {
+    const { pathname } = new URL(String(url));
+    if (pathname === '/auth/v1/user') return json({ code: status, error_code: code, msg: code }, status);
+    return json({ message: 'unexpected' }, 500);
+  });
+  for (const [label, arrange] of [
+    ['갱신: refresh_token_not_found', () => { expiredSession(); refreshFails(400, 'refresh_token_not_found'); }],
+    ['갱신: session_expired', () => { expiredSession(); refreshFails(400, 'session_expired'); }],
+    ['토큰 살아 있음 · /user: session_not_found(다른 기기 로그아웃)', () => { expiredSession(3600); userFails(403, 'session_not_found'); }],
+    ['토큰 살아 있음 · /user: user_banned', () => { expiredSession(3600); userFails(403, 'user_banned'); }],
+    ['토큰 살아 있음 · /user: user_not_found(계정 삭제)', () => { expiredSession(3600); userFails(404, 'user_not_found'); }],
+  ]) {
+    it(`지운다 — ${label}`, async () => {
+      arrange();
+      expect(await requireUser()).toEqual({ error: '로그인이 필요해요.', status: 401 });
+      expect(removedChunks()).toEqual(['sb-e2e-auth-token.0', 'sb-e2e-auth-token.1']);
+    });
+  }
+  for (const [label, arrange] of [
+    ['갱신: conflict(409 동시 갱신)', () => { expiredSession(); refreshFails(409, 'conflict'); }],
+    ['갱신: refresh_token_already_used', () => { expiredSession(); refreshFails(400, 'refresh_token_already_used'); }],
+    ['토큰 살아 있음 · /user: bad_jwt', () => { expiredSession(3600); userFails(403, 'bad_jwt'); }],
+    ['갱신: 503(재시도 가능)', () => { expiredSession(); refreshFails(503, 'unexpected_failure'); }],
+  ]) {
+    it(`지우지 않는다 — ${label}`, async () => {
+      arrange();
+      expect((await requireUser()).status).toBe(401);
+      expect(authCookieWrites()).toEqual([]);
+    });
+  }
+  it('requireAdmin도 같은 판정으로 지운다', async () => {
+    expiredSession(); refreshFails(400, 'refresh_token_not_found');
+    expect((await requireAdmin()).status).toBe(401);
+    expect(removedChunks()).toEqual(['sb-e2e-auth-token.0', 'sb-e2e-auth-token.1']);
+  });
+  it('판정 · 쓰기 모양: 코드 목록은 auth-js ErrorCode 안의 것만 · 삭제 속성은 @supabase/ssr와 같다', () => {
+    const codes = fs.readFileSync(path.join(ROOT, 'node_modules/@supabase/auth-js/dist/main/lib/error-codes.d.ts'), 'utf8');
+    for (const code of [...INVALID_SESSION_CODES, 'session_not_found', 'conflict', 'refresh_token_already_used', 'bad_jwt']) expect(codes, code).toContain(`'${code}'`);
+    expect(INVALID_SESSION_CODES).not.toContain('conflict');
+    expect(INVALID_SESSION_CODES).not.toContain('refresh_token_already_used');
+    expect(invalidSessionError({ name: 'AuthSessionMissingError' })).toBe(true);
+    expect(invalidSessionError({ name: 'AuthApiError', code: 'conflict' })).toBe(false);
+    expect(invalidSessionError(null)).toBe(false);
+    expect(authCookieRemovals(['sb-e2e-auth-token', 'sb-e2e-auth-token.1', 'sb-e2e-auth-token-code-verifier', 'other']))
+      .toEqual(['sb-e2e-auth-token', 'sb-e2e-auth-token.1'].map((name) => ({ name, value: '', options: { path: '/', sameSite: 'lax', httpOnly: false, maxAge: 0 } })));
+  });
+});
+
 describe('withoutServerSignOut — 지우기만 하는 묶음만 버린다', () => {
   const del = (name) => ({ name, value: '', options: { maxAge: 0 } });
   const put = (name, value) => ({ name, value, options: { maxAge: 34560000 } });
@@ -87,6 +145,19 @@ describe('withoutServerSignOut — 지우기만 하는 묶음만 버린다', () 
 });
 
 describe('배선 — 서버의 쿠키 세션 클라이언트 두 곳이 같은 가드를 쓴다 · 서버 로그아웃 0', () => {
+  it('쿠키를 쓰는 서버 createServerClient는 모두 가드를 거친다 — setAll() {}(서버 컴포넌트, 쓰기 없음)만 예외', () => {
+    const offenders = [];
+    const walk = (dir) => { for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const full = path.join(dir, e.name); if (e.isDirectory()) { if (e.name !== '__tests__' && e.name !== 'node_modules') walk(full); } else if (/\.(m?js|jsx)$/.test(e.name)) {
+      const src = fs.readFileSync(full, 'utf8');
+      if (!/createServerClient\(/.test(src)) continue;
+      const writes = /setAll\s*\(\s*cookiesToSet\s*\)/.test(src);
+      if (writes && !/withoutServerSignOut\(cookiesToSet\)/.test(src)) offenders.push(path.relative(ROOT, full));
+    } } };
+    walk(path.join(ROOT, 'src'));
+    expect(offenders).toEqual([]);
+    // auth/callback · auth/confirm(code 교환 · OTP 확인)도 같은 규칙 — 새 세션을 심는 묶음은 그대로 지나간다
+    for (const file of ['src/app/auth/callback/route.js', 'src/app/auth/confirm/route.js']) expect(fs.readFileSync(path.join(ROOT, file), 'utf8')).toContain('pendingCookies.push(...withoutServerSignOut(cookiesToSet));');
+  });
   it('supabaseServer · middleware의 setAll이 withoutServerSignOut을 거친다', () => {
     expect(fs.readFileSync(path.join(ROOT, 'src/lib/supabaseServer.js'), 'utf8')).toContain('withoutServerSignOut(cookiesToSet).forEach(({ name, value, options }) =>');
     expect(fs.readFileSync(path.join(ROOT, 'src/middleware.js'), 'utf8')).toContain('withoutServerSignOut(cookiesToSet).forEach(({ name, value, options }) =>');

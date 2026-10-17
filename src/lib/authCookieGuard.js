@@ -18,3 +18,25 @@ export function withoutServerSignOut(cookiesToSet) {
   if (auth.length && auth.every(isRemoval)) return list.filter(({ name }) => !AUTH_COOKIE.test(name));
   return list;
 }
+
+// 진짜 무효 세션(TOKEN-REFRESH-409-001 후속 · a775 리뷰 2026-10-17 KST) — 위 가드는 409와 진짜 무효를 구분하지 못해, 다른 기기 로그아웃 ·
+// 차단 · 삭제 뒤에도 그 브라우저가 접근 토큰 수명 동안 「로그인한 것처럼 보이는데 서버는 401」로 남았다. 서버가 getUser 오류 코드로
+// 「이 세션은 다시 살아나지 않는다」를 확인했을 때만 인증 쿠키를 지운다. 코드는 @supabase/auth-js 2.100 lib/error-codes.d.ts의 ErrorCode
+// (fetch.handleError가 응답 code · error_code에서 고른다). session_not_found는 handleError가 AuthSessionMissingError(코드 없음)로 바꾼다.
+//   지운다: session_not_found(→ AuthSessionMissingError) · session_expired · refresh_token_not_found · user_not_found · user_banned
+//   지우지 않는다: conflict(409 동시 갱신 — 이긴 쪽이 새 쿠키를 심었다) · refresh_token_already_used(재사용 간격 밖의 늦은 요청에서도 난다 —
+//     브라우저 갱신에 맡긴다) · bad_jwt(시계 차 · 만료 직전에도 난다 — refresh token은 살아 있을 수 있다) · 네트워크 · 5xx(재시도 가능)
+export const INVALID_SESSION_CODES = Object.freeze(['session_expired', 'refresh_token_not_found', 'user_not_found', 'user_banned']);
+
+/** getUser 오류가 「세션이 영영 무효」인가 — 그때만 서버가 인증 쿠키를 지운다. */
+export function invalidSessionError(error) {
+  if (!error) return false;
+  if (error.name === 'AuthSessionMissingError') return true; // session_not_found(응답) · 쿠키 세션을 못 읽음 — 지울 쿠키가 없으면 아무것도 안 한다
+  return INVALID_SESSION_CODES.includes(error.code);
+}
+
+/** 지금 있는 인증 쿠키(조각 포함)를 지우는 쓰기 — @supabase/ssr의 삭제와 같은 속성(path / · lax · httpOnly 아님 · maxAge 0). */
+export function authCookieRemovals(names) {
+  return (Array.isArray(names) ? names : []).filter((name) => AUTH_COOKIE.test(name))
+    .map((name) => ({ name, value: '', options: { path: '/', sameSite: 'lax', httpOnly: false, maxAge: 0 } }));
+}
