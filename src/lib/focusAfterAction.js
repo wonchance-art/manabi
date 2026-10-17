@@ -54,3 +54,18 @@ export function orderChipSpot(chip) {
   const siblings = [...chip.parentElement.querySelectorAll('.fr-quiz__token')];
   return { root, zone: row, index: siblings.indexOf(chip) };
 }
+
+/**
+ * 새 문항의 첫 답 컨트롤(STUDY-FOCUS-001). 「계속 →」이 사라지면 초점이 body로 떨어져, 키보드로는 머리글 메뉴부터 다시
+ * 2~12번 Tab을 눌러야 보기에 닿았다(합성 로그인 /study 실측 2026-10-17 KST). 보기 → 어순 칩 → 입력칸 → 그 밖의 버튼 순으로
+ * 고르고, 발음 듣기(.fr-speak)처럼 답이 아닌 보조 단추는 건너뛴다. 잠긴(disabled) 것은 고르지 않는다. 없으면 null.
+ */
+const ANSWER_CONTROLS = ['.fr-quiz__opt', '.fr-quiz__token', 'input[type="text"]', 'textarea', 'button:not(.fr-speak)'];
+export function firstAnswerControl(root) {
+  if (!root?.querySelectorAll) return null;
+  for (const selector of ANSWER_CONTROLS) {
+    const found = [...root.querySelectorAll(selector)].find(el => !el.disabled);
+    if (found) return found;
+  }
+  return null;
+}

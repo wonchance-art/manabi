@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import { firstAnswerControl, focusIfFree } from '../lib/focusAfterAction';
 
 /** 로컬 날짜 YYYY-MM-DD — StudySessionPage.ymdLocal과 동일 포맷(산출 시드 키 값 일치) */
 function ymdLocal(d) {
@@ -52,6 +53,22 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
     try { onboarded = !!localStorage.getItem(`study_onboarded_${lang}`); } catch {}
     setPhase(onboarded ? 'session' : 'q1');
   }, [lang]);
+
+  // STUDY-FOCUS-001 — 고른 단추가 다음 질문으로 바뀌며 사라져 초점이 body로 떨어졌다(키보드는 머리글부터 다시 Tab).
+  // 질문이 바뀌면 그 질문 제목으로, 「시작하기 →」 뒤에는 세션 첫 문항의 첫 답 컨트롤로 잇는다. 첫 질문(화면 진입)은 그대로 둔다.
+  const headingRef = useRef(null);
+  const prevPhaseRef = useRef(phase);
+  useEffect(() => {
+    const prev = prevPhaseRef.current;
+    prevPhaseRef.current = phase;
+    if (prev === phase || prev === 'loading') return;
+    if (phase === 'session') {
+      const first = firstAnswerControl(typeof document === 'undefined' ? null : document.querySelector('.study-item'));
+      focusIfFree(first, first?.closest('.page-container'));
+      return;
+    }
+    focusIfFree(headingRef.current, headingRef.current?.closest('.page-container'));
+  }, [phase]);
 
   const regular = levels.filter(l => !l.isIntro);
 
@@ -139,7 +156,7 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
       {/* ── ① 지식 ── */}
       {phase === 'q1' && (
         <>
-          <h1 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: 6 }}>
+          <h1 ref={headingRef} tabIndex={-1} style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: 6 }}>
             {langName}, 얼마나 알고 있나요?
           </h1>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 22 }}>
@@ -160,6 +177,7 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
             <button
               type="button"
               style={cardStyle(knowledge === 'learned')}
+              aria-expanded={knowledge === 'learned'}
               onClick={() => setKnowledge('learned')}
             >
               <span style={{ display: 'block', fontSize: '1rem', fontWeight: 700, marginBottom: 3 }}>배운 적 있어요</span>
@@ -188,7 +206,7 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
       {/* ── 문자 안내 (완전 처음 + 가나/병음 트랙) ── */}
       {phase === 'chars' && scriptTrack && (
         <>
-          <h1 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: 6 }}>
+          <h1 ref={headingRef} tabIndex={-1} style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: 6 }}>
             {langName}는 {scriptNoun}부터예요
           </h1>
           <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: 22 }}>
@@ -219,7 +237,7 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
       {/* ── ② 관심사 ── */}
       {phase === 'q2' && (
         <>
-          <h1 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: 6 }}>
+          <h1 ref={headingRef} tabIndex={-1} style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: 6 }}>
             어떤 이야기가 좋아요?
           </h1>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 22 }}>
@@ -232,6 +250,7 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
                 key={o.key}
                 type="button"
                 style={{ ...cardStyle(interest === o.key), textAlign: 'center' }}
+                aria-pressed={interest === o.key}
                 onClick={() => setInterest(o.key)}
               >
                 <span style={{ display: 'block', fontSize: '1.5rem', marginBottom: 4 }} aria-hidden="true">{o.emoji}</span>

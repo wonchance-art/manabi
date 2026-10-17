@@ -28,7 +28,7 @@ import { splitSentenceAroundWord } from '../lib/constants';
 import { mapParagraphToItems } from '../lib/studyParagraph';
 import { ARCHIVED_TEXTBOOK_NOTICE, learnerHref } from '../lib/bookNavigation';
 import { authEntryHref } from '../lib/authRedirect';
-import { focusIfFree, ignoreHeldKey } from '../lib/focusAfterAction';
+import { firstAnswerControl, focusIfFree, ignoreHeldKey } from '../lib/focusAfterAction';
 
 /** 문법 일정을 끝내 못 보냈다(재시도 상한 · 오프라인으로 화면 떠남) — copy-standard 실패 + 보존 여부 한 문장. */
 const GRAMMAR_NOT_SAVED = '문법 복습 일정을 저장하지 못했어요. 이 문법은 다음 학습에 다시 나와요.';
@@ -244,6 +244,23 @@ export default function StudySessionPage({
     const button = continueRef.current;
     focusIfFree(button, button?.closest('.page-container'));
   }, [phase, item?.uid, item?.type]);
+  // STUDY-FOCUS-001 — 「계속 →」을 누르면 그 단추가 사라져 초점이 body로 떨어졌고, 키보드로는 머리글 메뉴부터 2~12번 Tab을
+  // 눌러야 다음 문항의 보기에 닿았다(합성 로그인 실측 2026-10-17 KST). 새 문항의 첫 답 컨트롤로 잇는다(focusIfFree — 다른 곳에
+  // 살아 있는 초점은 뺏지 않는다). 첫 문항(화면 진입)은 화면 이동 초점(제목, routeFocus)에 맡긴다.
+  const itemRef = useRef(null);
+  const firstItemUidRef = useRef(item?.uid);
+  useEffect(() => {
+    if (phase !== 'answer' || !item?.uid || item.uid === firstItemUidRef.current) return;
+    const root = itemRef.current;
+    focusIfFree(firstAnswerControl(root), root?.closest('.page-container'));
+  }, [phase, item?.uid]);
+  // 마지막 「결과 보기 →」도 누르면 사라진다 — 결과 화면 제목(「세션 완료」)으로 잇는다.
+  const resultHeadingRef = useRef(null);
+  useEffect(() => {
+    if (!finished) return;
+    const heading = resultHeadingRef.current;
+    focusIfFree(heading, heading?.closest('.page-container'));
+  }, [finished]);
 
   // 재료 단어 팝오버 — 바깥 탭 시 닫기(트리거·팝오버는 stopPropagation으로 유지)
   useEffect(() => {
@@ -1074,7 +1091,7 @@ export default function StudySessionPage({
             border: `6px solid ${pct >= 80 ? 'var(--accent)' : pct >= 50 ? 'var(--warning)' : 'var(--danger)'}`,
             fontSize: '1.5rem', fontWeight: 700,
           }}>{pct}%</div>
-          <h1 style={{ fontSize: '1.3rem', fontWeight: 700 }}>세션 완료</h1>
+          <h1 ref={resultHeadingRef} tabIndex={-1} style={{ fontSize: '1.3rem', fontWeight: 700 }}>세션 완료</h1>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: 6, fontWeight: 700 }}>
             강해진 기억 {rightCount} · 곧 다시 만날 {wrong.length}
             {skipped.size > 0 && ` · 건너뜀 ${skipped.size}`}
@@ -1203,7 +1220,7 @@ export default function StudySessionPage({
       </div>
 
       {/* 문항 한 장 — uid마다 새로 그려 짧게 내려앉는다(.study-item, 0.16초 · 모션 축소 시 없음). */}
-      <div key={item.uid} className="study-item">
+      <div key={item.uid} ref={itemRef} className="study-item">
       {isRetry && (
         <div style={{ fontSize: '0.75rem', color: 'var(--warning)', fontWeight: 700, marginBottom: 8 }}>↻ 다시 도전</div>
       )}

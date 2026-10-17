@@ -31,6 +31,21 @@ export function useScoreArmed(revealed, key) {
  * 막 열린 화면(처음부터 풀린 상태)은 건드리지 않는다. 초점이 복습 화면 밖이면 뺏지 않는다.
  * 돌려준 ref는 막대 div에 단다.
  */
+/**
+ * 새 카드의 「정답 확인하기」로 초점 잇기(STUDY-FOCUS-001). 채점하거나 복습을 시작하면 누른 단추가 사라져 초점이 body로
+ * 떨어졌다 — Space · 1~4 단축키는 되지만, 화면 읽기는 새 카드를 알리지 않고 Tab은 머리글부터 다시 돈다(실측 3~6번).
+ * 카드(key)마다 앞면이 쓸 수 있게 된 그 한 번만 옮긴다(focusIfFree — 복습 화면 밖의 초점은 뺏지 않는다). ref는 단추에 단다.
+ */
+export function useRevealFocus(front, cardKey, disabled = false) {
+  const button = useRef(null);
+  const focusedKey = useRef(null);
+  useEffect(() => {
+    if (!front || disabled || cardKey == null || focusedKey.current === cardKey) return;
+    if (focusIfFree(button.current, button.current?.closest('.review-room-session'))) focusedKey.current = cardKey;
+  }, [front, cardKey, disabled]);
+  return button;
+}
+
 export function useGradeBarFocus(locked, armed) {
   const bar = useRef(null);
   const sawLocked = useRef(false);

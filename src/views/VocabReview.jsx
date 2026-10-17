@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Button from '../components/Button';
 import { detectLang, splitSentenceAroundWord } from '../lib/constants';
 import VocabularyContexts from '../components/learning/VocabularyContexts';
-import { ReviewCardMeta, ReviewHeadword, ReviewReadingRow, langTag, useGradeBarFocus } from '../components/vocab/ReviewCardParts';
+import { ReviewCardMeta, ReviewHeadword, ReviewReadingRow, langTag, useGradeBarFocus, useRevealFocus } from '../components/vocab/ReviewCardParts';
 import { gradeGuide, isCardRevealClick, revealTrigger } from '../lib/reviewCard';
 import { wordStage } from '../lib/growthStats';
 import { vocabularyReviewCalendar } from '../lib/vocabularyLearningRows';
@@ -179,6 +179,8 @@ export default function VocabReview({
   }, [reviewIdx, mode, ttsSupported, currentWord, speak]);
 
   const reveal = event => { setShowAnswer(true); setShowHint?.(false); onReveal?.(revealTrigger(event)); };
+  // 새 카드가 열리면 「정답 확인하기」로 초점(STUDY-FOCUS-001) — 시작 · 채점 단추가 사라져 body로 떨어지던 자리.
+  const revealRef = useRevealFocus(mode === 'flash' && !reviewFinished && !showAnswer && !!currentWord, currentWord?.id);
   const finishBar = practice
     ? (showAnswer && mode !== 'listening' ? <PracticeButtons onResult={handleScore} armed={armed} /> : null)
     : currentWord && mode === 'flash' && <ScoreSection word={currentWord} onScore={handleScore} armed={armed} locked={!showAnswer} />;
@@ -244,7 +246,7 @@ export default function VocabReview({
                     );
                   })()}
                   {!showAnswer && (
-                    <Button variant="secondary" size="lg" onClick={reveal} className="review-reveal-btn">
+                    <Button ref={revealRef} variant="secondary" size="lg" onClick={reveal} className="review-reveal-btn">
                       {practice ? '뜻 보기' : '정답 확인하기'}<span className="review-keys-hint review-keys-hint--space" aria-hidden="true"> · Space</span>
                     </Button>
                   )}
