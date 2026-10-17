@@ -3,10 +3,10 @@
 //
 // 단위 계약(src/app/__tests__/scStylesheet.test.js)은 "계산"만 지킨다. 이 검사는 빌드 결과에 대고
 //   ① env 주소의 CSS가 public에 있고, 지금 글꼴 입력으로 다시 계산한 본문과 같다(옛 산출물 · 다른 입력이 섞이지 않았다)
-//   ② CSS가 가리키는 글꼴이 모두 public에 있고, 파일 이름 = 바이트 해시(오래 캐시해도 내용이 바뀌지 않는다)
-//   ③ 같은 빌드에서 next/font가 낸 'Noto Sans SC' @font-face와 굵기 · unicode-range 쌍이 같다(바꿔 걸어도 덮는 글자가 같다)
+//   ② CSS가 가리키는 글꼴이 모두 같은 빌드의 next/font 산출(.next/static/media)에 있다(독립 CSS는 글꼴을 따로 내지 않는다)
+//   ③ 같은 빌드에서 next/font가 낸 'Noto Sans SC' @font-face와 굵기 · unicode-range 쌍이 같고, 쌍마다 글꼴 주소도 같다
+//      (SC-LINK-001 리뷰 B1 — 두 벌의 @font-face가 같은 바이트를 한 번만 받는다)
 // 를 확인한다. 사용: 빌드와 같은 NEXT_FONT_GOOGLE_MOCKED_RESPONSES로 `node scripts/fonts/check-sc-stylesheet.mjs [.next] [public]`.
-import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
@@ -42,6 +42,22 @@ export function normalizeRange(text) {
   return merged.map(([a, b]) => `${a.toString(16)}-${b.toString(16)}`).join(',');
 }
 
+/** CSS에서 family별 (굵기 | unicode-range) → 글꼴 주소 집합. 빌드 CSS는 같은 @font-face가 여러 덩어리에 거듭 실릴 수 있다. */
+export function faceUrls(cssText, family) {
+  const map = new Map();
+  for (const m of cssText.matchAll(/@font-face\s*\{([^}]*)\}/g)) {
+    const fam = /font-family:\s*(['"]?)([^;'"}]+)\1/.exec(m[1])?.[2]?.trim();
+    if (fam !== family) continue;
+    const weight = /font-weight:\s*([^;}]+)/.exec(m[1])?.[1]?.trim();
+    const range = normalizeRange(/unicode-range:\s*([^;}]+)/.exec(m[1])?.[1] || '');
+    const url = /url\(\s*(['"]?)([^)'"]+)\1\s*\)/.exec(m[1])?.[2] ?? null;
+    const key = `${weight}|${range}`;
+    if (!map.has(key)) map.set(key, new Set());
+    map.get(key).add(url);
+  }
+  return map;
+}
+
 /** CSS에서 family별 (굵기 | unicode-range) 쌍을 모은다 — 정렬된 목록(범위는 값으로 맞춘 꼴). */
 export function faceKeys(cssText, family) {
   const keys = [];
@@ -64,17 +80,25 @@ export function checkScStylesheet({ nextDir = '.next', publicDir = 'public', env
   const cssFile = path.join(publicDir, ...expected.href.slice(1).split('/'));
   if (!fs.existsSync(cssFile)) problems.push(`① CSS가 public에 없다 — ${expected.href}`);
   else if (fs.readFileSync(cssFile, 'utf8') !== expected.css) problems.push(`① public CSS 본문이 지금 글꼴 입력과 다르다 — ${expected.href}`);
-  for (const { name } of expected.files) {
-    const file = path.join(publicDir, ...SC_STYLESHEET.publicDir.split('/'), name);
-    if (!fs.existsSync(file)) { problems.push(`② 글꼴이 public에 없다 — ${name}`); continue; }
-    const hash = crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex').slice(0, 16);
-    if (`${hash}.woff2` !== name) problems.push(`② 파일 이름이 바이트 해시와 다르다 — ${name} (실제 ${hash})`);
+  const mediaDir = path.join(nextDir, 'static', 'media');
+  for (const url of expected.fonts) {
+    if (!url.startsWith('/_next/static/media/')) { problems.push(`② 글꼴 주소가 next/font 산출이 아니다 — ${url}`); continue; }
+    if (!fs.existsSync(path.join(mediaDir, url.slice('/_next/static/media/'.length)))) problems.push(`② next/font 산출에 글꼴이 없다 — ${url}`);
   }
   const built = walk(path.join(nextDir, 'static', 'css'), (p) => p.endsWith('.css')).map((p) => fs.readFileSync(p, 'utf8')).join('\n');
   const nextFont = faceKeys(built, SC_STYLESHEET.family);
   const ours = faceKeys(expected.css, SC_STYLESHEET.family);
   if (!nextFont.length) problems.push(`③ 빌드 CSS에 next/font '${SC_STYLESHEET.family}' @font-face가 없다 — 대조 기준이 없다`);
   else if ([...new Set(nextFont)].join('\n') !== [...new Set(ours)].join('\n')) problems.push(`③ next/font와 굵기 · unicode-range가 다르다(next ${new Set(nextFont).size}쌍 · 독립 ${new Set(ours).size}쌍)`);
+  else {
+    const builtUrls = faceUrls(built, SC_STYLESHEET.family);
+    const ourUrls = faceUrls(expected.css, SC_STYLESHEET.family);
+    const differ = [...ourUrls].filter(([key, urls]) => {
+      const theirs = builtUrls.get(key);
+      return !theirs || theirs.size !== 1 || urls.size !== 1 || [...theirs][0] !== [...urls][0];
+    });
+    if (differ.length) problems.push(`③ 글꼴 주소가 next/font와 다르다(${differ.length}쌍) — 두 벌의 @font-face가 같은 글자를 두 번 받는다`);
+  }
   return problems;
 }
 

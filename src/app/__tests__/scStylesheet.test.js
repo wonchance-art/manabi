@@ -10,13 +10,15 @@ import { checkScStylesheet, faceKeys, normalizeRange } from '../../../scripts/fo
  * 계약: 간체 중국어(Noto Sans SC) 독립 스타일시트 — next/font 밖의 고정 주소 CSS(SC-LINK-001 1단계, 2026-10-17 KST).
  * 설계 메모 A안(중국어를 그리는 부품이 `<link rel="stylesheet" precedence>`로 건다)의 재료다. 1단계는 산출만 한다.
  *
- * ① 계산 — 글꼴 입력(배포 사본 · e2e 대역)의 Google CSS를 그대로 두고 글꼴 주소만 내용 해시 이름으로 바꾼다
+ * ① 계산 — 글꼴 입력(배포 사본 · e2e 대역)의 Google CSS를 그대로 두고 글꼴 주소만 next/font(ScFontScope)가 낼 주소로 바꾼다
+ *   (리뷰 B1 — 독립 스타일시트와 next/font @font-face가 한 문서에 두 벌 있어도 같은 바이트를 한 번만 받는다)
  * ② 산출 대조 — scripts/fonts/check-sc-stylesheet.mjs(여기서는 합성 public · .next로, CI는 e2e:build 직후 실물로)
- * ③ 배선 — next.config env · public 산출물은 git 밖 · next/font와 독립(모듈이 next를 부르지 않는다)
+ * ③ 배선 — next.config env · CSS만 public(git 밖) · 1년 immutable 캐시(리뷰 B2 — 이름이 CSS 본문 해시)
  */
 const ROOT = process.cwd();
 const require = createRequire(import.meta.url);
 const { SC_STYLESHEET, scStylesheet, writeScStylesheet, scStylesheetEnv } = require('../../../scripts/fonts/sc-stylesheet.cjs');
+const { nextFontEmittedName } = require('../../../scripts/fonts/next-font-file-url.cjs');
 const VENDORED = path.join(ROOT, 'vendor/google-fonts/responses.cjs');
 const E2E_MOCK = path.join(ROOT, 'e2e/fixtures/google-fonts-mock.cjs');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
@@ -25,17 +27,43 @@ const hash16 = (b) => crypto.createHash('sha256').update(b).digest('hex').slice(
 describe('① 계산 — Google CSS 그대로, 주소만 내용 해시', () => {
   const responses = require(VENDORED);
   const result = scStylesheet(responses);
-  it('배포 사본: 굵기 3 × 조각 101 = @font-face 303, 글꼴 파일 101(굵기끼리 같은 가변 글꼴)', () => {
+  it('배포 사본: 굵기 3 × 조각 101 = @font-face 303, 글꼴 101(굵기끼리 같은 가변 글꼴) · CSS 주소는 본문 해시', () => {
     expect((result.css.match(/@font-face/g) || []).length).toBe(303);
-    expect(result.files).toHaveLength(101);
+    expect(result.fonts).toHaveLength(101);
     expect(result.href).toMatch(/^\/_fonts\/noto-sans-sc\/noto-sans-sc\.[0-9a-f]{16}\.css$/);
     expect(result.href).toContain(hash16(result.css));
   });
-  it('모든 글꼴 주소는 /_fonts/noto-sans-sc/<바이트 해시>.woff2 — 이름이 곧 내용이다', () => {
-    const urls = [...result.css.matchAll(/url\(([^)]+)\)/g)].map(m => m[1]);
-    expect(urls.length).toBe(303);
-    expect(urls.every(u => /^\/_fonts\/noto-sans-sc\/[0-9a-f]{16}\.woff2$/.test(u))).toBe(true);
-    for (const { name, from } of result.files) expect(name).toBe(`${hash16(fs.readFileSync(from))}.woff2`);
+  it('모든 글꼴 주소는 next/font가 같은 바이트로 낼 /_next/static/media 이름 — latin 조각만 .p(preload), 모두 -s(크기 보정)', () => {
+    const source = responses[SC_STYLESHEET.cssUrl];
+    const pairs = [...source.matchAll(/(?:\/\*\s*([^*]+?)\s*\*\/\s*)?@font-face\s*\{[^}]*url\(([^)]+)\)/g)];
+    const ours = [...result.css.matchAll(/url\(([^)]+)\)/g)].map((m) => m[1]);
+    expect(ours).toHaveLength(303);
+    // next loader 규칙: 주석(/* subset */)은 다음 주석까지 이어지고, 같은 파일은 처음 나온 자리의 subset으로 preload를 정한다.
+    let subset = '';
+    const firstSubset = new Map();
+    pairs.forEach((m, i) => {
+      if (m[1]) subset = m[1];
+      if (!firstSubset.has(m[2])) firstSubset.set(m[2], subset);
+      const expected = `/_next/${nextFontEmittedName(fs.readFileSync(m[2]), { sizeAdjust: true, preload: firstSubset.get(m[2]) === 'latin' })}`;
+      expect(ours[i]).toBe(expected);
+    });
+    expect(ours.every((u) => /^\/_next\/static\/media\/[0-9a-f]+-s(\.p)?\.woff2$/.test(u))).toBe(true);
+    expect(new Set(ours.filter((u) => u.endsWith('.p.woff2'))).size).toBe(1);
+  });
+  it('이름 규칙은 next 15.5 loader의 emitFontFile 틀 그대로(파일 이름 = 바이트 해시 · -s · .p)', () => {
+    const loader = fs.readFileSync(require.resolve('next/dist/build/webpack/loaders/next-font-loader/index.js'), 'utf8');
+    expect(loader).toContain("`static/media/[hash]${isUsingSizeAdjust ? '-s' : ''}${preload ? '.p' : ''}.${ext}`");
+    const google = fs.readFileSync(require.resolve('next/dist/compiled/@next/font/dist/google/loader.js'), 'utf8');
+    expect(google).toContain('emitFontFile(fontFileBuffer, ext, preloadFontFile, !!adjustFontFallbackMetrics)');
+  });
+  it('가리키는 next/font 선언과 인자가 같다 — ScFontScope의 Noto_Sans_SC(subsets latin · preload · 크기 보정 기본값)', () => {
+    const scope = read('src/components/fonts/ScFontScope.jsx');
+    const call = scope.slice(scope.indexOf('Noto_Sans_SC({'), scope.indexOf('});', scope.indexOf('Noto_Sans_SC({')));
+    expect(call).toContain(`subsets: ['${SC_STYLESHEET.nextFont.subsets.join("', '")}']`);
+    expect(call).toContain("weight: ['400', '500', '700']");
+    expect(call).not.toMatch(/preload:\s*false/);
+    expect(call).not.toMatch(/adjustFontFallback:\s*false/);
+    expect(SC_STYLESHEET.nextFont).toEqual({ subsets: ['latin'], preload: true, adjustFontFallback: true });
   });
   it('굵기 · unicode-range · font-display는 Google CSS 그대로(덮는 글자가 next/font와 같다)', () => {
     const source = responses[SC_STYLESHEET.cssUrl];
@@ -47,7 +75,7 @@ describe('① 계산 — Google CSS 그대로, 주소만 내용 해시', () => {
   });
   it('e2e 대역도 같은 길로 만들어진다(대역 글꼴 1개)', () => {
     const mock = scStylesheet(require(E2E_MOCK));
-    expect(mock.files).toHaveLength(1);
+    expect(mock.fonts).toHaveLength(1);
     expect((mock.css.match(/@font-face/g) || []).length).toBe(3);
   });
   it('입력에 없는 요청 · 로컬 파일이 아닌 주소는 멈춘다(조용히 빈 CSS를 내지 않는다)', () => {
@@ -64,8 +92,10 @@ describe('② 산출 대조 — public 산출물 · next/font 덮는 범위', ()
     const result = scStylesheet(require(VENDORED));
     writeScStylesheet(result, publicDir);
     fs.mkdirSync(path.join(nextDir, 'static', 'css'), { recursive: true });
-    // next/font가 낸 것과 같은 모양의 @font-face(주소만 next 산출 이름) — 굵기 · 범위가 같으면 통과
-    fs.writeFileSync(path.join(nextDir, 'static', 'css', 'a.css'), require(VENDORED)[SC_STYLESHEET.cssUrl].replace(/url\([^)]+\)/g, 'url(/_next/static/media/x-s.woff2)'));
+    fs.mkdirSync(path.join(nextDir, 'static', 'media'), { recursive: true });
+    for (const url of result.fonts) fs.writeFileSync(path.join(nextDir, 'static', 'media', url.split('/').pop()), 'woff2');
+    // next/font가 낸 것과 같은 모양의 @font-face — 같은 빌드면 주소까지 같다(독립 CSS 본문 그대로 = next 산출 꼴)
+    fs.writeFileSync(path.join(nextDir, 'static', 'css', 'a.css'), result.css);
     return { dir, publicDir, nextDir, result };
   };
   it('맞으면 통과', () => {
@@ -85,10 +115,10 @@ describe('② 산출 대조 — public 산출물 · next/font 덮는 범위', ()
     expect(checkScStylesheet({ nextDir: s.nextDir, publicDir: s.publicDir, env }).join()).toMatch(/① CSS가 public에 없다/);
     s = setup(); fs.appendFileSync(path.join(s.publicDir, ...s.result.href.slice(1).split('/')), '/* x */');
     expect(checkScStylesheet({ nextDir: s.nextDir, publicDir: s.publicDir, env }).join()).toMatch(/① public CSS 본문이/);
-    s = setup(); fs.rmSync(path.join(s.publicDir, '_fonts', 'noto-sans-sc', s.result.files[0].name));
-    expect(checkScStylesheet({ nextDir: s.nextDir, publicDir: s.publicDir, env }).join()).toMatch(/② 글꼴이 public에 없다/);
-    s = setup(); fs.appendFileSync(path.join(s.publicDir, '_fonts', 'noto-sans-sc', s.result.files[1].name), 'x');
-    expect(checkScStylesheet({ nextDir: s.nextDir, publicDir: s.publicDir, env }).join()).toMatch(/② 파일 이름이 바이트 해시와 다르다/);
+    s = setup(); fs.rmSync(path.join(s.nextDir, 'static', 'media', s.result.fonts[0].split('/').pop()));
+    expect(checkScStylesheet({ nextDir: s.nextDir, publicDir: s.publicDir, env }).join()).toMatch(/② next\/font 산출에 글꼴이 없다/);
+    s = setup(); fs.writeFileSync(path.join(s.nextDir, 'static', 'css', 'a.css'), s.result.css.replace(s.result.fonts[3], '/_next/static/media/other-s.woff2'));
+    expect(checkScStylesheet({ nextDir: s.nextDir, publicDir: s.publicDir, env }).join()).toMatch(/③ 글꼴 주소가 next\/font와 다르다/);
     s = setup(); fs.writeFileSync(path.join(s.nextDir, 'static', 'css', 'a.css'), '');
     expect(checkScStylesheet({ nextDir: s.nextDir, publicDir: s.publicDir, env }).join()).toMatch(/③ 빌드 CSS에 next\/font/);
     s = setup(); fs.writeFileSync(path.join(s.nextDir, 'static', 'css', 'a.css'), "@font-face{font-family:'Noto Sans SC';font-weight:400;src:url(/x.woff2);unicode-range:U+4e00}");
@@ -115,9 +145,21 @@ describe('③ 배선', () => {
     expect(env[SC_STYLESHEET.env]).toMatch(/^\/_fonts\/noto-sans-sc\/noto-sans-sc\.[0-9a-f]{16}\.css$/);
     expect(fs.existsSync(path.join(dir, ...env[SC_STYLESHEET.env].slice(1).split('/')))).toBe(true);
   });
-  it('산출물은 git 밖 · 모듈은 next/font와 독립 · CI는 e2e:build 뒤 대조', () => {
+  it('산출물은 git 밖 · public에는 CSS 하나만(글꼴은 next/font 산출) · CI는 e2e:build 뒤 대조', () => {
     expect(read('.gitignore')).toContain('/public/_fonts/');
-    expect(read('scripts/fonts/sc-stylesheet.cjs')).not.toMatch(/require\(['"]next/);
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'sc-link-only-css-'));
+    const result = scStylesheet(require(VENDORED));
+    writeScStylesheet(result, dir);
+    expect(fs.readdirSync(path.join(dir, '_fonts', 'noto-sans-sc'))).toEqual([result.href.split('/').pop()]);
     expect(read('.github/workflows/ci.yml')).toContain('node scripts/fonts/check-sc-stylesheet.mjs');
+  });
+  it('B2 — /_fonts는 1년 immutable(이름이 CSS 본문 해시라 내용이 바뀌면 이름이 바뀐다)', async () => {
+    const { default: config } = await import('../../../next.config.mjs');
+    const rules = await config.headers();
+    const rule = rules.find((r) => r.source === '/_fonts/:path*');
+    expect(rule?.headers).toEqual([{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }]);
+    const { href, css } = scStylesheet(require(VENDORED));
+    expect(href.endsWith(`.${hash16(css)}.css`)).toBe(true); // immutable의 근거 — 같은 이름이면 같은 바이트
+    expect(href.startsWith('/_fonts/')).toBe(true);
   });
 });
