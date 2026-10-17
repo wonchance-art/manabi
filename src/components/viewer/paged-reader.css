@@ -67,6 +67,8 @@ html .viewer-layout[data-reader-view="paged"] > .viewer-center { padding-bottom:
   .viewer-layout[data-reader-view="paged"]:has(.viewer-inspector:not([hidden])) .reader-pagebar { visibility: hidden; }
   /* 고른 단어가 시트 밑에 깔리면 시트를 낮게 연다(본문은 그대로) — 높이는 useSelectedTokenVisibility가 잰다. */
     .viewer-layout[data-reader-view="paged"] .viewer-inspector[data-compact="true"]:not(.is-expanded):not(.is-collapsed) { height: var(--reader-sheet-compact, 40dvh); }
+  /* A안(VIEWER-AUDIT 2): 고른 단어가 화면 아래 절반이면 시트를 머리줄 아래에 세운다 — 자리는 useSelectedTokenVisibility가 잰다(--reader-sheet-top). */
+    .viewer-layout[data-reader-view="paged"] .viewer-inspector[data-dock="top"]:not(.is-expanded):not(.is-collapsed) { top: var(--reader-sheet-top, 64px); bottom: auto; }
 }
 
 /* 끝 카드(다음 편 · 다음 과 · 다음 범위 · 완주)는 한 덩어리다 — 쪽 경계에서 둘로 쪼개지지 않게 통째로 다음 쪽에 둔다
