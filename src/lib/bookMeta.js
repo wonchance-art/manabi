@@ -28,8 +28,17 @@ export function analysisStateOf(material) {
 }
 
 /**
+ * 책 묶음 식별 — (소유자 + 책 key). 공개 metadata는 누구나 꾸밀 수 있으므로 key만으로
+ * 묶으면 남의 행이 같은 key를 달아 다른 사람의 책(정본 문학책 포함)에 끼어든다.
+ * 뷰어의 형제 장 정의(ViewerPage: key + 같은 owner_id)와 같은 경계다.
+ * owner_id가 없는 행(로컬·테스트)은 빈 소유자로 한 묶음이 된다.
+ */
+export const bookGroupKey = (ownerId, key) => `${ownerId ?? ''}\u0000${key}`;
+
+/**
  * 자료 목록을 책 그룹과 단독 자료로 분리.
- * @returns {{ books: Array<{key, title, chapters: object[]}>, singles: object[] }}
+ * @returns {{ books: Array<{key, ownerId, groupKey, title, chapters: object[]}>, singles: object[] }}
+ *   key는 책 key(정본 대조표·「다음 과 적기」 링크용), groupKey는 소유자까지 포함한 묶음 식별(React key).
  *   books는 첫 등장 순, chapters는 book.order 오름차순.
  */
 export function groupByBook(materials) {
@@ -41,8 +50,10 @@ export function groupByBook(materials) {
       singles.push(m);
       continue;
     }
-    if (!map.has(book.key)) map.set(book.key, { key: book.key, title: book.title, chapters: [] });
-    map.get(book.key).chapters.push({ ...m, _bookOrder: book.order });
+    const ownerId = m?.owner_id ?? null;
+    const groupKey = bookGroupKey(ownerId, book.key);
+    if (!map.has(groupKey)) map.set(groupKey, { key: book.key, ownerId, groupKey, title: book.title, chapters: [] });
+    map.get(groupKey).chapters.push({ ...m, _bookOrder: book.order });
   }
   const books = [...map.values()].map((b) => ({
     ...b,

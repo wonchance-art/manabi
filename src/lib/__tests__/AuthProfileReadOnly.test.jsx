@@ -1,5 +1,5 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-const h = vi.hoisted(() => ({ slots: [], index: 0, effects: [], cleanups: [], profile: new Map(), writes: [], reads: [], listener: null, session: null, sessionDeferred: null, emitInitial: false, deferred: null }));
+const h = vi.hoisted(() => ({ slots: [], index: 0, effects: [], cleanups: [], profile: new Map(), writes: [], reads: [], listener: null, session: null, sessionDeferred: null, emitInitial: false, deferred: null, failLoads: 0 }));
 vi.mock('react', async importOriginal => {
   const actual = await importOriginal();
   return { ...actual,
@@ -21,7 +21,7 @@ vi.mock('../supabase', () => {
     signInWithPassword:vi.fn(async()=>({data:{session:{user:{id:'A',user_metadata:{name:'A'}}}},error:null})),
     signOut:vi.fn(async()=>{h.listener?.('SIGNED_OUT',null);return{};}),
   }};
-  return {supabase:client,getSupabase:vi.fn(async()=>client)};
+  return {supabase:client,getSupabase:vi.fn(async()=>{if(h.failLoads>0){h.failLoads-=1;throw new Error('chunk load failed');}return client;})};
 });
 vi.mock('../ToastContext',()=>({useToast:()=>vi.fn()}));
 vi.mock('../refProgress',()=>({pullProgress:vi.fn(async()=>{})}));
@@ -35,7 +35,7 @@ async function effects(){for(const fn of h.effects.splice(0)){const cleanup=fn()
 const tick=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
 async function mount(){render();await effects();return render();}
 
-beforeEach(()=>{h.slots=[];h.index=0;h.effects=[];h.cleanups=[];h.profile=new Map([['A',row('A')],['B',row('B')]]);h.writes=[];h.reads=[];h.listener=null;h.session={user:user('A')};h.sessionDeferred=null;h.emitInitial=false;h.deferred=null;
+beforeEach(()=>{h.failLoads=0;h.slots=[];h.index=0;h.effects=[];h.cleanups=[];h.profile=new Map([['A',row('A')],['B',row('B')]]);h.writes=[];h.reads=[];h.listener=null;h.session={user:user('A')};h.sessionDeferred=null;h.emitInitial=false;h.deferred=null;
  vi.stubGlobal('document',{cookie:'sb-test-auth-token=x'});
  vi.stubGlobal('window',{addEventListener:vi.fn(),removeEventListener:vi.fn(),location:{origin:'http://fixture',pathname:'/home',search:''}});
 });
@@ -52,4 +52,25 @@ describe('AuthProvider profile reads never manufacture learning activity',()=>{
  it('an auth event winning the initial session race ends loading and cannot be overwritten by old getSession',async()=>{let resolve;h.sessionDeferred=new Promise(r=>{resolve=r;});h.emitInitial=true;await mount();expect(render().loading).toBe(false);await h.listener('TOKEN_REFRESHED',{user:user('B')});await tick();resolve({data:{session:{user:user('A')}}});await tick();expect(render().user.id).toBe('B');expect(render().profile.id).toBe('B');expect(render().loading).toBe(false);expect(h.writes).toEqual([]);});
  it('repeated SIGNED_IN notification for the current actor is still a read, not another login mutation',async()=>{await mount();await h.listener('SIGNED_IN',{user:user('A')});await tick();expect(h.writes).toEqual([]);});
  it('sign-out invalidates an in-flight profile refresh before it can repopulate profile',async()=>{const auth=await mount();let resolve;h.deferred=new Promise(r=>{resolve=r;});const pending=auth.refreshProfileReadOnly('A');await auth.signOut();resolve({data:row('A'),error:null});await pending;expect(render().profile).toBeNull();expect(render().user).toBeNull();expect(h.writes).toEqual([]);});
+
+ // 병합 전 교차 리뷰 S1: SDK 조각을 못 받아 다시 해 볼 차례가 남은 동안은 「확인 중」(loading) — user=null을 로그아웃으로 내보내지 않는다.
+ it('SDK load retries keep loading true until the cap, then settle signed-out; a successful retry restores the account without a guest flash',async()=>{
+  vi.useFakeTimers();
+  try{
+   h.failLoads=4; // 첫 시도 + 2 · 8 · 30초 재시도 모두 실패
+   await mount();
+   const seen=[render().loading];
+   for(const ms of [2000,8000,30000]){await vi.advanceTimersByTimeAsync(ms);await effects();seen.push(render().loading);}
+   expect(seen).toEqual([true,true,true,false]); // 차례를 다 쓴 뒤에만 확정
+   expect(render().user).toBeNull();
+   for(const fn of h.cleanups.splice(0))fn();
+   h.slots=[];h.index=0;h.effects=[];
+   h.failLoads=1; // 첫 시도만 실패 — 2초 뒤 재시도로 복원
+   await mount();
+   expect(render()).toMatchObject({loading:true,user:null});
+   await vi.advanceTimersByTimeAsync(2000);await effects();
+   expect(render().loading).toBe(false);
+   expect(render().user.id).toBe('A');
+  }finally{vi.useRealTimers();}
+ });
 });

@@ -59,13 +59,13 @@ vi.mock('../offlineCache', async (importOriginal) => ({
   getCachedVocabSnapshot: (...a) => cacheMock.getCachedVocabSnapshot(...a),
 }));
 
-/** user_vocabulary 조회 한 번을 흉내내는 최소 체인. */
+/** user_vocabulary 조회를 흉내내는 최소 체인 — 정본 완전 조회(order·range·exact count)를 한 page로 답한다. */
 function stubVocabQuery(result) {
   supabaseMock.from.mockImplementation(() => ({
-    select: () => ({
-      eq: () => ({ order: () => Promise.resolve(result) }),
-      in: () => Promise.resolve({ data: [], error: null }),
-    }),
+    select: () => {
+      const page = { order: () => page, range: () => Promise.resolve({ ...result, count: result.data?.length ?? null }) };
+      return { eq: () => page, in: () => Promise.resolve({ data: [], error: null }) };
+    },
   }));
 }
 

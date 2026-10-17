@@ -35,7 +35,10 @@ export function useScrollRestore({ user, materialId, material, readingProgress, 
       }, { onConflict: 'user_id,material_id' });
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ['reading-progress', owner, materialId] });
-      queryClient.invalidateQueries({ queryKey: ['library-reading-v2', owner] });
+      // 서재 「읽던 곳」·목록은 reading_progress를 읽는다(personal_library_page_v2) — 뷰어를 떠나며 쓴
+      // 마지막 위치가 서재 재조회보다 늦게 끝나도 반영되게, 정의 없는 옛 키 대신 실제 키를 무효화한다.
+      queryClient.invalidateQueries({ queryKey: ['library-recent', owner] });
+      queryClient.invalidateQueries({ queryKey: ['personal-library', owner] });
       queryClient.invalidateQueries({ queryKey: ['home-v2', owner] });
     }, error => { if (alive) setPositionError(!!error); });
     writerRef.current = { key, writer };

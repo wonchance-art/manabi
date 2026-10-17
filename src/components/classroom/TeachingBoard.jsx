@@ -4,7 +4,7 @@ import {createPortal} from 'react-dom';
 import dynamic from 'next/dynamic';
 import './teaching-board.css';
 
-const Canvas = dynamic(() => import('./TeachingBoardCanvas'), {ssr: false, loading: () => <p className="teaching-board-loading" role="status">설명판을 펼치고 있어요…</p>});
+const Canvas = dynamic(() => import('./TeachingBoardCanvas'), {ssr: false, loading: () => <p className="teaching-board-loading" aria-busy="true">설명판을 펼치고 있어요…</p>});
 
 class BoardBoundary extends Component {
   state = {error: false};

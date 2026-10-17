@@ -175,7 +175,8 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
     );
     // 큐에 못 담았으면 그건 진짜 유실이다 — 성공이라 말하면 안 된다(사생활 모드 등).
     // reviewedAt 동봉(W R2) — undo가 outbox 항목(itemKey + reviewedAt)을 찾아 지우는 열쇠
-    return queued ? { ok: true, queued: true, reviewedAt } : { ok: false, error: new Error('offline-queue-unavailable') };
+    // lost: 서버에도 기기 큐에도 없다 — 화면이 「이 문항 기록을 저장하지 못했어요」를 띄우는 유일한 경우.
+    return queued ? { ok: true, queued: true, reviewedAt } : { ok: false, lost: true, error: new Error('offline-queue-unavailable') };
   }
 
   // 로그인 경로: 복습 이벤트 + SRS + 보상
@@ -215,7 +216,7 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
     // 큐마저 못 쓰는 환경(사생활 모드 등)에서만 실패를 표면화한다 — 콘솔만 남기면
     // 채점 유실이 무증상이 된다(과거 조용한 실패 사고).
     console.error('[progressStore] reviewCompleted 오류:', err);
-    return { ok: false, error: err };
+    return { ok: false, lost: true, error: err };
   }
 }
 

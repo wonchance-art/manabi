@@ -60,8 +60,8 @@ describe('화면 틀', () => {
     expect(viewer).toContain("data-chat={conversation?'true':undefined}");
     expect(viewer).toContain('{!conversation&&<div className="viewer-topbar">');
     expect(viewer).toContain('{!conversation&&<header className="page-header viewer-header">');
-    expect(viewer).toContain('{needsRecovery && user?.id === material?.owner_id && !conversation && (');
-    expect(viewer).toContain('{isAnalyzing && !needsRecovery && !conversation && (');
+    // 분석 · 복구 배너(「이어서 분석」)는 대화 화면에서 숨긴다 — 못 한 줄은 화면이 알아서 채운다.
+    expect(read('components/conversation/conversation.css')).toContain('.manabi-app .viewer-layout[data-chat="true"] .analyzing-banner { display: none; }');
     expect(viewer).toContain('!conversation && <MaterialChapterLinks');
   });
   it('전체 높이 껍데기 — 입력창은 고정 배치가 아니라 맨 아래 줄, 전역 메뉴·하단 탭은 대화에서만 숨긴다', () => {

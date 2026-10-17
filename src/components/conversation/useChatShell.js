@@ -6,12 +6,12 @@
 //  · useAutoGrow: 입력창은 한 줄에서 시작해 다섯 줄까지 자라고, 그 위로는 입력창 안에서 스크롤한다.
 //  · useArrivals: 처음 그린 뒤에 새로 도착한 말만 고른다 — 그 말만 살짝 떠오르고, 방을 열 때 지난 말은 그대로 서 있다.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { reducedMotion } from '../../lib/reducedMotion';
 
 export const CHAT_COMPOSER_MAX_LINES = 5;
 export const CHAT_NEAR_BOTTOM_PX = 100;
 
-// 「움직임 줄이기」를 켠 사람에게는 부드러운 스크롤도 끈다(docs/ui-conventions.md 접근성 하한).
-const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+// 「움직임 줄이기」를 켠 사람에게는 부드러운 스크롤도 끈다(docs/ui-conventions.md 접근성 하한) — 판정은 공용 reducedMotion() 한 곳.
 
 export function useChatScroll(logRef, { resetKey, changeKey }) {
   const nearBottomRef = useRef(true);

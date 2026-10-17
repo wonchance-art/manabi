@@ -7,6 +7,7 @@
 //   위치로 끌려가면 가장 가까운 쪽(포커스가 있으면 그 쪽)으로 맞춘다.
 // 순수 계산(아래 export 함수)과 제어기(createPagedController)는 DOM 흉내 객체로 단독 테스트한다.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { reducedMotion } from './reducedMotion';
 
 export const PAGED_ATTR = 'data-reader-pages';
 const registry = new WeakMap();
@@ -65,6 +66,28 @@ export function swipeDirection({ dx, dy, dt }, { min = 48, ratio = 1.5, maxTime 
   return dx < 0 ? 1 : -1;
 }
 /** 문서 순서 목록에서 쪽 번호가 page 이상인 첫 항목(다단은 문서 순서대로 채우므로 쪽 번호가 단조 증가). */
+/** CSS font-family 값 → 비교용 이름 목록(따옴표 · 공백 · 대소문자를 뗀다). */
+export function fontFamilyNames(value) {
+  return String(value || '').split(',').map(name => name.trim().replace(/^["']|["']$/g, '').trim().toLowerCase()).filter(Boolean);
+}
+/**
+ * 글꼴 받기가 끝났을 때 쪽을 다시 잴지(READER-FONT-REMEASURE-001). 받은 글꼴 중 하나라도 본문 글꼴 목록(families)에 있으면 잰다.
+ * 판단할 수 없으면(받은 글꼴 목록 · 본문 글꼴 목록이 없거나 이름이 없는 글꼴) 전처럼 잰다 — 쪽이 틀린 채 남는 쪽보다 한 번 더 재는 쪽이 낫다.
+ * 운영 실측(2026-10-17 KST): 뷰어 읽기 설정을 열면 창 글꼴이 받아지며 본문 쪽을 통째로 다시 쟀다(390폭 · CPU 4배 46ms).
+ */
+export function fontsAffectReader(faces, families) {
+  const list = faces ? [...faces] : [];
+  if (!list.length || !families?.length) return true;
+  const names = new Set(families);
+  return list.some(face => { const name = fontFamilyNames(face?.family)[0]; return !name || names.has(name); });
+}
+/** 다시 재기를 부르지 않아도 되는 변화 — 쪽 흐름 밖 칸(data-page-ignore: 쪽 보기에서 숨긴 진행 막대 등) 안의 바뀜만. 대상을 모르면 잰다. */
+export function mutationsAffectFlow(records) {
+  return [...(records || [])].some(record => {
+    const node = record?.target?.nodeType === 1 ? record.target : record?.target?.parentElement;
+    return !node?.closest?.('[data-page-ignore]');
+  });
+}
 export function firstIndexAtOrAfter(length, page, pageAt) {
   let low = 0, high = length;
   while (low < high) { const mid = (low + high) >> 1; if (pageAt(mid) < page) low = mid + 1; else high = mid; }
@@ -294,7 +317,14 @@ export function createPagedController(pages, options = () => ({})) {
     w.addEventListener('resize', schedule);
     w.addEventListener('orientationchange', schedule);
     w.visualViewport?.addEventListener('resize', schedule);
-    doc.fonts?.addEventListener?.('loadingdone', schedule);
+    // 본문 글꼴 = 상자와 1em 탐침(본문 글자와 같은 글꼴)의 font-family. 상자는 화면 글꼴, 글자는 언어별 글꼴이라 둘을 함께 본다.
+    const readerFamilies = () => {
+      if (typeof w.getComputedStyle !== 'function') return [];
+      const nodes = [pages, ...(pages.querySelectorAll?.('[data-page-probe]') || [])];
+      return [...new Set(nodes.flatMap(node => { try { return fontFamilyNames(w.getComputedStyle(node)?.fontFamily); } catch { return []; } }))];
+    };
+    const onFontsLoaded = event => { if (fontsAffectReader(event?.fontfaces, readerFamilies())) schedule(); };
+    doc.fonts?.addEventListener?.('loadingdone', onFontsLoaded);
     doc.fonts?.ready?.then(() => schedule());
     const resize = typeof w.ResizeObserver === 'function' ? new w.ResizeObserver(schedule) : null;
     // 상자 자신·위 머리글(상단 막대가 접혀 늘면 상자 위가 내려간다)·문서(200% 글자 등 rem 변화)의 크기 변화.
@@ -303,7 +333,12 @@ export function createPagedController(pages, options = () => ({})) {
     const watchProbes = () => { for (const probe of pages.querySelectorAll?.('[data-page-probe]') || []) resize?.observe(probe); };
     watchProbes();
     // 분석이 끝나 원문 줄이 토큰으로 바뀌거나 글자 크기가 바뀌면 흐름이 바뀐다 — 다시 재고 기준 토큰으로.
-    const mutation = typeof w.MutationObserver === 'function' ? new w.MutationObserver(() => { watchProbes(); schedule(); }) : null;
+    // 쪽 넘김마다 진행 막대(쪽 보기에서는 숨김, 쪽 상자 안)의 너비 · 숫자가 바뀌어 크기 변화 없이 쪽 전체를 다시 쟀다(PAGE-TURN-REMEASURE-001,
+    // 운영 실측 2026-10-17 KST viewer/45) — 흐름 밖 칸 안의 바뀜만이면 건너뛴다.
+    const mutation = typeof w.MutationObserver === 'function' ? new w.MutationObserver(records => {
+      if (!mutationsAffectFlow(records)) return;
+      watchProbes(); schedule();
+    }) : null;
     mutation?.observe(pages, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['style', 'hidden'] });
     return () => {
       pages.removeEventListener('scroll', handleScroll);
@@ -317,7 +352,7 @@ export function createPagedController(pages, options = () => ({})) {
       w.removeEventListener('resize', schedule);
       w.removeEventListener('orientationchange', schedule);
       w.visualViewport?.removeEventListener('resize', schedule);
-      doc.fonts?.removeEventListener?.('loadingdone', schedule);
+      doc.fonts?.removeEventListener?.('loadingdone', onFontsLoaded);
       resize?.disconnect(); mutation?.disconnect();
     };
   }
@@ -367,7 +402,6 @@ export function revealInReader(target, scrollOptions = { block: 'center' }, reve
   return !!target;
 }
 
-const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 /**

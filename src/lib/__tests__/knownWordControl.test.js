@@ -36,6 +36,7 @@ describe('아는 단어 정본·표기·범위', () => {
       const q={select:()=>q,eq:()=>q,order:()=>q,range:async(start,end)=>start===failure?{error:new Error('unavailable')}:{data:all.slice(start,end+1)}};return q;
     }});
     expect(await loadKnownWords(client(-1),'owner','en')).toHaveLength(1001);
-    await expect(loadKnownWords(client(400),'owner')).rejects.toThrow('unavailable');
+    // 페이지 크기 1000 — 둘째 페이지(1000~)의 실패가 그대로 드러나야 한다.
+    await expect(loadKnownWords(client(1000),'owner')).rejects.toThrow('unavailable');
   });
 });

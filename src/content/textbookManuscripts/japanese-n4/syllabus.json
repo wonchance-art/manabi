@@ -1,0 +1,1502 @@
+{
+  "status": "M00_AUTHORING_BASELINE_NOT_PUBLICATION_ACCEPTANCE",
+  "basis": "Internal repository inventory and pinned N5 editions; not an official JLPT exhaustive list",
+  "lessonCount": 42,
+  "n5EditionInspected": "8a8c1c1fd452773810abaf8c",
+  "preBookBridge": "Unnumbered adaptive diagnostic; plain affirmative/negative/past/past-negative, particles, て/た and N5 units 31–42. Failed parts link back to N5; do not rebuild N5 chapters.",
+  "lessons": [
+    {
+      "number": 1,
+      "id": "u01",
+      "title": "왜 늦었는지 말할게",
+      "parts": "〜んです / 〜んですか",
+      "prerequisite": "N5:28,29,30,35",
+      "goal": "이유를 설명하고 용건의 문을 연다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜んです",
+        "〜んですか"
+      ],
+      "syllabusId": "n4-u01",
+      "n5PrerequisiteUnits": [
+        28,
+        29,
+        30,
+        35
+      ],
+      "n4PrerequisiteUnits": [],
+      "recallN4Units": [],
+      "recallN5Units": [
+        28,
+        29,
+        30,
+        35
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t01-07"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 2,
+      "id": "u02",
+      "title": "친구가 뭐라고 했냐면",
+      "parts": "〜と言う / 〜と思う",
+      "prerequisite": "N5:28,29,30",
+      "goal": "말한 내용과 내 생각을 인용한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜と言う",
+        "〜と思う"
+      ],
+      "syllabusId": "n4-u02",
+      "n5PrerequisiteUnits": [
+        28,
+        29,
+        30
+      ],
+      "n4PrerequisiteUnits": [],
+      "recallN4Units": [
+        1
+      ],
+      "recallN5Units": [
+        28,
+        29,
+        30
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t14-01",
+        "n4-bunkei-t14-03"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 3,
+      "id": "u03",
+      "title": "하는 걸 좋아해요",
+      "parts": "〜のが・のは・のを / 〜こと",
+      "prerequisite": "N5:37,38",
+      "goal": "행동을 명사 덩어리로 쓰되 の/こと가 항상 대체되는 것으로 가르치지 않는다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜のが・のは・のを",
+        "〜こと"
+      ],
+      "syllabusId": "n4-u03",
+      "n5PrerequisiteUnits": [
+        37,
+        38
+      ],
+      "n4PrerequisiteUnits": [],
+      "recallN4Units": [
+        2
+      ],
+      "recallN5Units": [
+        37,
+        38
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t15-01",
+        "n4-bunkei-t15-02",
+        "n4-bunkei-t15-03"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 4,
+      "id": "u04",
+      "title": "몇 시인지 알아요?",
+      "parts": "〜か / 〜かどうか",
+      "prerequisite": "N5:5,10;N4:2",
+      "goal": "질문을 문장 안에 넣는다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜か",
+        "〜かどうか"
+      ],
+      "syllabusId": "n4-u04",
+      "n5PrerequisiteUnits": [
+        5,
+        10
+      ],
+      "n4PrerequisiteUnits": [
+        2
+      ],
+      "recallN4Units": [
+        3,
+        1
+      ],
+      "recallN5Units": [
+        5,
+        10
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t14-07",
+        "n4-bunkei-t14-08"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 5,
+      "id": "u05",
+      "title": "이제 혼자서도 할 수 있어",
+      "parts": "가능형 / が와 を의 선택",
+      "prerequisite": "N5:17,18,28,38",
+      "goal": "가능형을 만들고 능력·상황적 가능을 구별한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "가능형",
+        "が와 を의 선택"
+      ],
+      "syllabusId": "n4-u05",
+      "n5PrerequisiteUnits": [
+        17,
+        18,
+        28,
+        38
+      ],
+      "n4PrerequisiteUnits": [],
+      "recallN4Units": [
+        4,
+        2
+      ],
+      "recallN5Units": [
+        17,
+        18,
+        28,
+        38
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t07-01",
+        "n4-bunkei-t07-03"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 6,
+      "id": "u06",
+      "title": "잘 보이는 자리로 주세요",
+      "parts": "見える / 聞こえる",
+      "prerequisite": "N4:5",
+      "goal": "의지적 가능과 저절로 지각됨을 구별한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "見える",
+        "聞こえる"
+      ],
+      "syllabusId": "n4-u06",
+      "n5PrerequisiteUnits": [],
+      "n4PrerequisiteUnits": [
+        5
+      ],
+      "recallN4Units": [
+        5,
+        3
+      ],
+      "recallN5Units": [
+        26
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t07-04",
+        "n4-bunkei-t07-05"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 7,
+      "id": "u07",
+      "title": "쉽긴 한데 너무 비싸",
+      "parts": "〜やすい・〜にくい / 〜すぎる",
+      "prerequisite": "N5:13,17",
+      "goal": "하기 쉬움·어려움과 과도함을 말한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜やすい・〜にくい",
+        "〜すぎる"
+      ],
+      "syllabusId": "n4-u07",
+      "n5PrerequisiteUnits": [
+        13,
+        17
+      ],
+      "n4PrerequisiteUnits": [],
+      "recallN4Units": [
+        6,
+        4
+      ],
+      "recallN5Units": [
+        13,
+        17
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t07-06",
+        "n4-bunkei-t07-07",
+        "n4-bunkei-t07-08"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 8,
+      "id": "u08",
+      "title": "이번에는 내가 해볼까",
+      "parts": "의향형 / 〜(よ)うと思う",
+      "prerequisite": "N4:2",
+      "goal": "의향형을 만들어 자신의 결심을 말한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "의향형",
+        "〜(よ)うと思う"
+      ],
+      "syllabusId": "n4-u08",
+      "n5PrerequisiteUnits": [],
+      "n4PrerequisiteUnits": [
+        2
+      ],
+      "recallN4Units": [
+        7,
+        5,
+        1
+      ],
+      "recallN5Units": [
+        28,
+        29,
+        30
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t11-01",
+        "n4-bunkei-t11-02",
+        "n4-bunkei-t11-03"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 9,
+      "id": "u09",
+      "title": "생각은 했고, 일정은 잡았어",
+      "parts": "〜つもり / 〜予定",
+      "prerequisite": "N4:8",
+      "goal": "개인 의도와 확정 일정을 구별한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜つもり",
+        "〜予定"
+      ],
+      "syllabusId": "n4-u09",
+      "n5PrerequisiteUnits": [],
+      "n4PrerequisiteUnits": [
+        8
+      ],
+      "recallN4Units": [
+        8,
+        6,
+        2
+      ],
+      "recallN5Units": [
+        28
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t11-04",
+        "n4-bunkei-t11-05"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 10,
+      "id": "u10",
+      "title": "내가 정한 일, 정해진 일",
+      "parts": "〜ことにする / 〜ことになる",
+      "prerequisite": "N5:38;N4:9",
+      "goal": "결정 주체를 구별한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜ことにする",
+        "〜ことになる"
+      ],
+      "syllabusId": "n4-u10",
+      "n5PrerequisiteUnits": [
+        38
+      ],
+      "n4PrerequisiteUnits": [
+        9
+      ],
+      "recallN4Units": [
+        9,
+        7,
+        3
+      ],
+      "recallN5Units": [
+        38
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t11-06",
+        "n4-bunkei-t11-08"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 11,
+      "id": "u11",
+      "title": "우리 모임은 그렇게 해요",
+      "parts": "〜ことにしている / 〜ことになっている",
+      "prerequisite": "N4:10",
+      "goal": "개인 실천 규칙과 외부 규칙을 구별한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜ことにしている",
+        "〜ことになっている"
+      ],
+      "syllabusId": "n4-u11",
+      "n5PrerequisiteUnits": [],
+      "n4PrerequisiteUnits": [
+        10
+      ],
+      "recallN4Units": [
+        10,
+        8,
+        4
+      ],
+      "recallN5Units": [
+        5
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t11-07",
+        "n4-bunkei-t11-09"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 12,
+      "id": "u12",
+      "title": "조금씩 할 수 있게 됐어",
+      "parts": "〜ようになる / 〜ようにする",
+      "prerequisite": "N4:5,11",
+      "goal": "능력·습관 변화와 의식적 노력을 구별한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜ようになる",
+        "〜ようにする"
+      ],
+      "syllabusId": "n4-u12",
+      "n5PrerequisiteUnits": [],
+      "n4PrerequisiteUnits": [
+        5,
+        11
+      ],
+      "recallN4Units": [
+        11,
+        9,
+        5
+      ],
+      "recallN5Units": [
+        38
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t12-05",
+        "n4-bunkei-t12-07"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 13,
+      "id": "u13",
+      "title": "문이 열린 걸까, 누가 연 걸까",
+      "parts": "자동사·타동사 / 결과 상태 〜ている",
+      "prerequisite": "N5:26",
+      "goal": "가/을의 사건 관점과 결과 상태를 연결한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "자동사·타동사",
+        "결과 상태 〜ている"
+      ],
+      "syllabusId": "n4-u13",
+      "n5PrerequisiteUnits": [
+        26
+      ],
+      "n4PrerequisiteUnits": [],
+      "recallN4Units": [
+        12,
+        10,
+        6
+      ],
+      "recallN5Units": [
+        26
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t19-08"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 14,
+      "id": "u14",
+      "title": "미리 해뒀어요",
+      "parts": "〜ておく / 〜てある",
+      "prerequisite": "N4:13",
+      "goal": "준비 행동과 의도적 조치의 결과를 구별한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜ておく",
+        "〜てある"
+      ],
+      "syllabusId": "n4-u14",
+      "n5PrerequisiteUnits": [],
+      "n4PrerequisiteUnits": [
+        13
+      ],
+      "recallN4Units": [
+        13,
+        11,
+        7
+      ],
+      "recallN5Units": [
+        17
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t03-01",
+        "n4-bunkei-t03-06"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 15,
+      "id": "u15",
+      "title": "한 번 해봤는데, 다 해버렸네",
+      "parts": "〜てみる / 〜てしまう",
+      "prerequisite": "N5:24,32",
+      "goal": "시도와 완료·유감의 맥락을 읽는다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜てみる",
+        "〜てしまう"
+      ],
+      "syllabusId": "n4-u15",
+      "n5PrerequisiteUnits": [
+        24,
+        32
+      ],
+      "n4PrerequisiteUnits": [],
+      "recallN4Units": [
+        14,
+        12,
+        8
+      ],
+      "recallN5Units": [
+        24,
+        32
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t03-02",
+        "n4-bunkei-t03-03"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 16,
+      "id": "u16",
+      "title": "점점 가까워지고 있어",
+      "parts": "〜てくる / 〜ていく",
+      "prerequisite": "N5:20,24",
+      "goal": "이동과 시간 변화의 기준점을 구별한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜てくる",
+        "〜ていく"
+      ],
+      "syllabusId": "n4-u16",
+      "n5PrerequisiteUnits": [
+        20,
+        24
+      ],
+      "n4PrerequisiteUnits": [],
+      "recallN4Units": [
+        15,
+        13,
+        9
+      ],
+      "recallN5Units": [
+        20,
+        24
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t03-04",
+        "n4-bunkei-t03-05"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 17,
+      "id": "u17",
+      "title": "불 켜 둔 채 잠들었어",
+      "parts": "〜たまま / 〜ながら 회수",
+      "prerequisite": "N5:28,41;N4:13",
+      "goal": "유지된 상태와 동시 행동을 구별한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜たまま",
+        "〜ながら 회수"
+      ],
+      "syllabusId": "n4-u17",
+      "n5PrerequisiteUnits": [
+        28,
+        41
+      ],
+      "n4PrerequisiteUnits": [
+        13
+      ],
+      "recallN4Units": [
+        16,
+        14,
+        10
+      ],
+      "recallN5Units": [
+        28,
+        41
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t02-04"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 18,
+      "id": "u18",
+      "title": "맛있어 보인대? 보인다고?",
+      "parts": "양태 〜そうだ / 전문 〜そうだ",
+      "prerequisite": "N5:13,17;N4:2",
+      "goal": "접속과 근거 출처를 구별한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "양태 〜そうだ",
+        "전문 〜そうだ"
+      ],
+      "syllabusId": "n4-u18",
+      "n5PrerequisiteUnits": [
+        13,
+        17
+      ],
+      "n4PrerequisiteUnits": [
+        2
+      ],
+      "recallN4Units": [
+        17,
+        15,
+        11
+      ],
+      "recallN5Units": [
+        13,
+        17
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t06-04"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 19,
+      "id": "u19",
+      "title": "그럴 수도, 그럴 리가",
+      "parts": "〜かもしれない / 〜はずだ・はずがない",
+      "prerequisite": "N4:2",
+      "goal": "가능성 제시와 근거 있는 기대를 구별한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜かもしれない",
+        "〜はずだ・はずがない"
+      ],
+      "syllabusId": "n4-u19",
+      "n5PrerequisiteUnits": [],
+      "n4PrerequisiteUnits": [
+        2
+      ],
+      "recallN4Units": [
+        18,
+        16,
+        12
+      ],
+      "recallN5Units": [
+        38
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t06-01",
+        "n4-bunkei-t06-03"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 20,
+      "id": "u20",
+      "title": "보아하니 그런 것 같아",
+      "parts": "〜ようだ / 〜みたいだ",
+      "prerequisite": "N4:18,19",
+      "goal": "관찰 근거와 문체 차이를 읽는다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜ようだ",
+        "〜みたいだ"
+      ],
+      "syllabusId": "n4-u20",
+      "n5PrerequisiteUnits": [],
+      "n4PrerequisiteUnits": [
+        18,
+        19
+      ],
+      "recallN4Units": [
+        19,
+        17,
+        13
+      ],
+      "recallN5Units": [
+        26
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t06-05",
+        "n4-bunkei-t06-06"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 21,
+      "id": "u21",
+      "title": "그렇다더라, 그런가 봐",
+      "parts": "〜らしい / 〜かな",
+      "prerequisite": "N5:42;N4:18,19",
+      "goal": "전언·추정·혼잣말의 근거를 맥락으로 구별한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜らしい",
+        "〜かな"
+      ],
+      "syllabusId": "n4-u21",
+      "n5PrerequisiteUnits": [
+        42
+      ],
+      "n4PrerequisiteUnits": [
+        18,
+        19
+      ],
+      "recallN4Units": [
+        20,
+        18,
+        14
+      ],
+      "recallN5Units": [
+        42
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t06-07",
+        "n4-bunkei-t06-08"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 22,
+      "id": "u22",
+      "title": "누르면 열려요",
+      "parts": "조건 〜と",
+      "prerequisite": "N5:34;N4:13",
+      "goal": "규칙·습관적 결과와 뒤 절 제약을 이해한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "조건 〜と"
+      ],
+      "syllabusId": "n4-u22",
+      "n5PrerequisiteUnits": [
+        34
+      ],
+      "n4PrerequisiteUnits": [
+        13
+      ],
+      "recallN4Units": [
+        21,
+        19,
+        15
+      ],
+      "recallN5Units": [
+        34
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t09-01"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 23,
+      "id": "u23",
+      "title": "시간만 있으면 좋을 텐데",
+      "parts": "〜ば / 〜なければ",
+      "prerequisite": "N5:18,39;N4:22",
+      "goal": "동사·형용사 조건을 만들고 필수 조건을 말한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜ば",
+        "〜なければ"
+      ],
+      "syllabusId": "n4-u23",
+      "n5PrerequisiteUnits": [
+        18,
+        39
+      ],
+      "n4PrerequisiteUnits": [
+        22
+      ],
+      "recallN4Units": [
+        22,
+        20,
+        16
+      ],
+      "recallN5Units": [
+        18,
+        39
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t09-02",
+        "n4-bunkei-t09-03",
+        "n4-bunkei-t09-09"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 24,
+      "id": "u24",
+      "title": "도착하면 연락해",
+      "parts": "〜たら / 〜たらどうですか",
+      "prerequisite": "N5:28;N4:22",
+      "goal": "완료 뒤 조건과 제안을 말한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜たら",
+        "〜たらどうですか"
+      ],
+      "syllabusId": "n4-u24",
+      "n5PrerequisiteUnits": [
+        28
+      ],
+      "n4PrerequisiteUnits": [
+        22
+      ],
+      "recallN4Units": [
+        23,
+        21,
+        17
+      ],
+      "recallN5Units": [
+        28
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t09-04",
+        "n4-bunkei-t09-07"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 25,
+      "id": "u25",
+      "title": "그 얘기라면 내가 알아",
+      "parts": "〜なら",
+      "prerequisite": "N4:24",
+      "goal": "상대 화제를 받아 조언하고 시간 순서를 기계 적용하지 않는다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜なら"
+      ],
+      "syllabusId": "n4-u25",
+      "n5PrerequisiteUnits": [],
+      "n4PrerequisiteUnits": [
+        24
+      ],
+      "recallN4Units": [
+        24,
+        22,
+        18
+      ],
+      "recallN5Units": [
+        5
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t09-06"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 26,
+      "id": "u26",
+      "title": "비가 와도 갈 거야",
+      "parts": "〜ても / いくら〜ても",
+      "prerequisite": "N5:24;N4:22,24",
+      "goal": "조건을 받아들여도 결과가 유지됨을 말한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜ても",
+        "いくら〜ても"
+      ],
+      "syllabusId": "n4-u26",
+      "n5PrerequisiteUnits": [
+        24
+      ],
+      "n4PrerequisiteUnits": [
+        22,
+        24
+      ],
+      "recallN4Units": [
+        25,
+        23,
+        19
+      ],
+      "recallN5Units": [
+        24
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t09-10",
+        "n4-bunkei-t09-11"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 27,
+      "id": "u27",
+      "title": "기다렸는데 안 왔어",
+      "parts": "〜のに / 〜し",
+      "prerequisite": "N5:35,36",
+      "goal": "예상 어긋남과 이유 나열을 구별한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜のに",
+        "〜し"
+      ],
+      "syllabusId": "n4-u27",
+      "n5PrerequisiteUnits": [
+        35,
+        36
+      ],
+      "n4PrerequisiteUnits": [],
+      "recallN4Units": [
+        26,
+        24,
+        20
+      ],
+      "recallN5Units": [
+        35,
+        36
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t16-01",
+        "n4-bunkei-t16-02"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 28,
+      "id": "u28",
+      "title": "잘 전하려고 준비했어요",
+      "parts": "목적 〜ために / 〜ように",
+      "prerequisite": "N4:5,12",
+      "goal": "의지 행동 목적과 비의지적 목표를 구별한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "목적 〜ために",
+        "〜ように"
+      ],
+      "syllabusId": "n4-u28",
+      "n5PrerequisiteUnits": [],
+      "n4PrerequisiteUnits": [
+        5,
+        12
+      ],
+      "recallN4Units": [
+        27,
+        25,
+        21
+      ],
+      "recallN5Units": [
+        17
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t12-08",
+        "n4-bunkei-t16-03"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 29,
+      "id": "u29",
+      "title": "언제까지 끝내야 해요?",
+      "parts": "〜までに / 〜あいだに",
+      "prerequisite": "N5:10,37",
+      "goal": "완료 기한과 기간 안 사건을 구별한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜までに",
+        "〜あいだに"
+      ],
+      "syllabusId": "n4-u29",
+      "n5PrerequisiteUnits": [
+        10,
+        37
+      ],
+      "n4PrerequisiteUnits": [],
+      "recallN4Units": [
+        28,
+        26,
+        22
+      ],
+      "recallN5Units": [
+        10,
+        37
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t17-07",
+        "n4-bunkei-t17-11"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 30,
+      "id": "u30",
+      "title": "지금 막 나가려던 참이야",
+      "parts": "〜ところだ / 〜たばかりだ",
+      "prerequisite": "N5:24,28,42",
+      "goal": "행동 단계와 화자의 가까운 과거 감각을 읽는다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜ところだ",
+        "〜たばかりだ"
+      ],
+      "syllabusId": "n4-u30",
+      "n5PrerequisiteUnits": [
+        24,
+        28,
+        42
+      ],
+      "n4PrerequisiteUnits": [],
+      "recallN4Units": [
+        29,
+        27,
+        23
+      ],
+      "recallN5Units": [
+        24,
+        28,
+        42
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t17-01",
+        "n4-bunkei-t17-02",
+        "n4-bunkei-t17-03",
+        "n4-bunkei-t17-04"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 31,
+      "id": "u31",
+      "title": "이것밖에 없지만 괜찮아",
+      "parts": "〜しか〜ない / 〜ほど〜ない",
+      "prerequisite": "N5:15,16,40",
+      "goal": "한정의 부정과 부정 비교를 선택한다; 대등 비교는 참조층",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜しか〜ない",
+        "〜ほど〜ない"
+      ],
+      "syllabusId": "n4-u31",
+      "n5PrerequisiteUnits": [
+        15,
+        16,
+        40
+      ],
+      "n4PrerequisiteUnits": [],
+      "recallN4Units": [
+        30,
+        28,
+        24
+      ],
+      "recallN5Units": [
+        15,
+        16,
+        40
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t19-01",
+        "n4-bunkei-t19-03"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 32,
+      "id": "u32",
+      "title": "누구든, 뭐라도 좋아",
+      "parts": "의문사+でも / Nでも",
+      "prerequisite": "N5:5,11,40",
+      "goal": "전면 허용과 가벼운 예시·제안을 구별한다; 수량 강조는 참조층",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "의문사+でも",
+        "Nでも"
+      ],
+      "syllabusId": "n4-u32",
+      "n5PrerequisiteUnits": [
+        5,
+        11,
+        40
+      ],
+      "n4PrerequisiteUnits": [],
+      "recallN4Units": [
+        31,
+        29,
+        25
+      ],
+      "recallN5Units": [
+        5,
+        11,
+        40
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t19-05",
+        "n4-bunkei-t19-06"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 33,
+      "id": "u33",
+      "title": "누가 누구에게 준 거야",
+      "parts": "あげる / くれる",
+      "prerequisite": "N5:19,20",
+      "goal": "주는 사람·받는 사람·화자의 관점을 추적한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "あげる",
+        "くれる"
+      ],
+      "syllabusId": "n4-u33",
+      "n5PrerequisiteUnits": [
+        19,
+        20
+      ],
+      "n4PrerequisiteUnits": [],
+      "recallN4Units": [
+        32,
+        30,
+        26
+      ],
+      "recallN5Units": [
+        19,
+        20
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t08-01",
+        "n4-bunkei-t08-02"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 34,
+      "id": "u34",
+      "title": "친구가 도와줬어",
+      "parts": "もらう / 〜てもらう",
+      "prerequisite": "N4:33",
+      "goal": "행동 수혜자를 관점과 함께 말한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "もらう",
+        "〜てもらう"
+      ],
+      "syllabusId": "n4-u34",
+      "n5PrerequisiteUnits": [],
+      "n4PrerequisiteUnits": [
+        33
+      ],
+      "recallN4Units": [
+        33,
+        31,
+        27
+      ],
+      "recallN5Units": [
+        26
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t08-03",
+        "n4-bunkei-t08-10"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 35,
+      "id": "u35",
+      "title": "도움을 받아도 될까요",
+      "parts": "〜てあげる / 〜てくれる",
+      "prerequisite": "N4:33,34",
+      "goal": "도움의 방향과 시혜적으로 들릴 수 있는 상황을 판별한다; 부탁은 N5의 てください/ませんか를 회수한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜てあげる",
+        "〜てくれる"
+      ],
+      "syllabusId": "n4-u35",
+      "n5PrerequisiteUnits": [],
+      "n4PrerequisiteUnits": [
+        33,
+        34
+      ],
+      "recallN4Units": [
+        34,
+        32,
+        28
+      ],
+      "recallN5Units": [
+        17
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t08-08",
+        "n4-bunkei-t08-09"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 36,
+      "id": "u36",
+      "title": "나는 원하고, 친구는 원해 보여",
+      "parts": "〜たがる / 〜てほしい・〜ないでほしい",
+      "prerequisite": "N5:21;N4:18",
+      "goal": "제3자 희망의 관찰과 상대 행동에 대한 희망을 구별한다; ほしがる는 참조층",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜たがる",
+        "〜てほしい・〜ないでほしい"
+      ],
+      "syllabusId": "n4-u36",
+      "n5PrerequisiteUnits": [
+        21
+      ],
+      "n4PrerequisiteUnits": [
+        18
+      ],
+      "recallN4Units": [
+        35,
+        33,
+        29
+      ],
+      "recallN5Units": [
+        21
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t13-01",
+        "n4-bunkei-t13-04",
+        "n4-bunkei-t13-05"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 37,
+      "id": "u37",
+      "title": "내가 초대받았어",
+      "parts": "직접 수동 / 행위자 に",
+      "prerequisite": "N4:5,13",
+      "goal": "가능형과 같은 표면형을 의미·격으로 판별한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "직접 수동",
+        "행위자 に"
+      ],
+      "syllabusId": "n4-u37",
+      "n5PrerequisiteUnits": [],
+      "n4PrerequisiteUnits": [
+        5,
+        13
+      ],
+      "recallN4Units": [
+        36,
+        34,
+        30
+      ],
+      "recallN5Units": [
+        28
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t10-01",
+        "n4-bunkei-t10-02"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 38,
+      "id": "u38",
+      "title": "갑자기 비가 와서 곤란했어",
+      "parts": "간접 피해수동 / 소유자 수동",
+      "prerequisite": "N4:37",
+      "goal": "피해자 관점과 목적어 보존을 구별한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "간접 피해수동",
+        "소유자 수동"
+      ],
+      "syllabusId": "n4-u38",
+      "n5PrerequisiteUnits": [],
+      "n4PrerequisiteUnits": [
+        37
+      ],
+      "recallN4Units": [
+        37,
+        35,
+        31
+      ],
+      "recallN5Units": [
+        37,
+        38
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t10-03"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 39,
+      "id": "u39",
+      "title": "하게 했어, 하게 뒀어",
+      "parts": "사역형 / を・に 배역",
+      "prerequisite": "N4:13,37",
+      "goal": "강제·허용을 맥락으로 구별하고 이중 を를 피한다",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "사역형",
+        "を・に 배역"
+      ],
+      "syllabusId": "n4-u39",
+      "n5PrerequisiteUnits": [],
+      "n4PrerequisiteUnits": [
+        13,
+        37
+      ],
+      "recallN4Units": [
+        38,
+        36,
+        32
+      ],
+      "recallN5Units": [
+        5
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t10-04"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 40,
+      "id": "u40",
+      "title": "제가 하게 해주세요",
+      "parts": "〜させてください / 명령형(읽기 중심)",
+      "prerequisite": "N4:39",
+      "goal": "사역형으로 허락을 구하고 표지·긴급 명령을 읽는다; 사전형+な는 참조층",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "〜させてください",
+        "명령형(읽기 중심)"
+      ],
+      "syllabusId": "n4-u40",
+      "n5PrerequisiteUnits": [],
+      "n4PrerequisiteUnits": [
+        39
+      ],
+      "recallN4Units": [
+        39,
+        37,
+        33
+      ],
+      "recallN5Units": [
+        38
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t05-01",
+        "n4-bunkei-t10-05"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 41,
+      "id": "u41",
+      "title": "같은 말도 상대에 따라",
+      "parts": "くださる / いただく",
+      "prerequisite": "N4:33,34,35",
+      "goal": "주고받기에서 상대의 행동을 높이거나 자신의 받음을 낮추는 방향을 구별한다; 기타 경어는 참조층",
+      "newPartsMaximum": 2,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "くださる",
+        "いただく"
+      ],
+      "syllabusId": "n4-u41",
+      "n5PrerequisiteUnits": [],
+      "n4PrerequisiteUnits": [
+        33,
+        34,
+        35
+      ],
+      "recallN4Units": [
+        40,
+        38,
+        34
+      ],
+      "recallN5Units": [
+        26
+      ],
+      "sourceRefs": [
+        "n4-bunkei-t08-06",
+        "n4-bunkei-t08-07"
+      ],
+      "textOnlyComprehension": true
+    },
+    {
+      "number": 42,
+      "id": "u42",
+      "title": "뜻밖의 하루도 설명할 수 있어",
+      "parts": "새 문형 없음: 누적 수행",
+      "prerequisite": "N4:1-41",
+      "goal": "안내문·대화·경위 설명·조정 요청을 연결하고 오류 원인을 찾아 고친다",
+      "newPartsMaximum": 0,
+      "revisitRule": "At least one prior N4 target at +1/+3/+7 lessons; one N5 target reused functionally without reteaching. Final scheduled revisits can occur in cumulative review.",
+      "primaryPatterns": [
+        "새 문형 없음: 누적 수행"
+      ],
+      "syllabusId": "n4-u42",
+      "n5PrerequisiteUnits": [],
+      "n4PrerequisiteUnits": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41
+      ],
+      "recallN4Units": [
+        5,
+        14,
+        18,
+        24,
+        25,
+        33,
+        34,
+        37,
+        39,
+        41
+      ],
+      "recallN5Units": [
+        31,
+        35,
+        37,
+        38,
+        39
+      ],
+      "sourceRefs": [],
+      "textOnlyComprehension": true
+    }
+  ],
+  "lessonFieldContract": "Reuse exact N5 manuscript.lesson fields. N4 source refs metadata is additive; no N5 mutation.",
+  "lessonSizeContract": {
+    "dialogueTurns": "6–10",
+    "primaryPatternBlocksMaximum": 2,
+    "readingCharacters": "120–220 Japanese characters; counting rule must be pinned",
+    "multipleChoice": 3,
+    "dialogueReadingQuestion": 1,
+    "oral": 2,
+    "writing": 1,
+    "answersAndReasons": "Every scored item; open writing checklist and exemplar separately labeled",
+    "comprehensionLabel": "Read the dialogue/text. No audio track or listening certification.",
+    "introducedOrRecalledWords": "10–14, mark new/review; no minimum new-word quota"
+  },
+  "deferredReferenceExamples": [
+    "〜だろう (N5でしょうとの対照)",
+    "〜と同じくらい",
+    "수량사+も",
+    "〜ほしがる",
+    "사전형+な",
+    "〜とか〜とか",
+    "〜がする",
+    "〜たら…た/〜ばよかった의 세부 확장",
+    "상용 경어 전체17항목",
+    "사역수동 (N3 본심화)"
+  ],
+  "latestRepository": "519045be (M00 handoff; N4 six source file bytes independently match inspected /workspace/manabi)",
+  "bookId": "japanese-n4",
+  "sourceInventoryCoverageCounts": {
+    "n5-retrieval": 19,
+    "core": 81,
+    "reading-reference": 54,
+    "later-depth": 2
+  },
+  "sourceInventoryCoverageTotal": 156
+}

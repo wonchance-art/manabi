@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "testFiles": 699,
+  "tests": 8187,
+  "vitestDurationSeconds": 204.12,
+  "wholeEslint": true,
+  "migrationRegression": {
+    "files": 3,
+    "tests": 38
+  },
+  "actualAccountLoginVerified": false,
+  "schemaMigration": "20261017050212_textbook_n4_book_support",
+  "scope": "Local full Vitest, ESLint, actual Next browser with synthetic backend; production schema preservation separately observed. Build, hosted publication and GitHub CI recorded at closeout.",
+  "applicationFunctionalGroups": 11,
+  "applicationLayoutObservations": 168,
+  "finalReturnBoundaryCases": 4,
+  "postBaselineTargetedTests": 80,
+  "newTestsSinceFullRun": 4,
+  "initialPublicationSqlScenarios": 5,
+  "schemaSqlScenarios": 10,
+  "finalCodeDelta": "One BookReview same-book return guard, N4-only choice wrapping CSS and deployment trace path correction; independently tested after the full 8187-test run. Exact final-head CI remains the release gate."
+}

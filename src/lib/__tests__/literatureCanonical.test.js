@@ -26,8 +26,9 @@ const row = (chapter = book.chapters[0], overrides = {}) => ({
   ...overrides,
 });
 
+// 전체 대조표는 해시 대조(뷰어 출처 줄 · 게시 검증) 전용이다 — 홈 · 서재 화면은 표시용 표만 읽는다(LIT-DISPLAY-001, literatureDisplayManifest.test.js).
 describe('정본 대조표(manifest.generated.json)', () => {
-  it('책 목록의 장 원문과 해시가 같고, 원문·잠금은 싣지 않는다(뷰어 번들용)', () => {
+  it('책 목록의 장 원문과 해시가 같고, 원문·잠금은 싣지 않는다(뷰어 해시 대조용)', () => {
     expect(Object.keys(manifest.works)).toEqual(LITERATURE_BOOKS.map((item) => item.book.key));
     for (const item of LITERATURE_BOOKS) {
       const work = manifest.works[item.book.key];

@@ -132,6 +132,8 @@
 .manabi-app .viewer-layout[data-chat="true"] .viewer-center { padding: 0; }
 .manabi-app .viewer-layout[data-chat="true"] .reader-pages { padding: 0; overflow: visible; }
 .manabi-app .viewer-layout[data-chat="true"] .reader-area { display: block; min-height: 0; padding: 0; background: var(--bg-primary); }
+/* 못 한 줄은 화면이 알아서 채운다(CONV-CHAT-001 ①) — 대화에는 분석 · 복구 배너(「이어서 분석」)를 띄우지 않는다. */
+.manabi-app .viewer-layout[data-chat="true"] .analyzing-banner { display: none; }
 @container reader (min-width: 1120px) {
   .manabi-app .viewer-layout[data-chat="true"] .viewer-inspector { top: 12px; height: calc(var(--conv-vh, 100dvh) - 24px); }
 }

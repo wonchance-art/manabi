@@ -40,7 +40,8 @@ describe('빠른 분석 ↔ /api/analyze 계약', () => {
 
   it('게스트는 로그인 안내 — 서버 401 정책의 클라 미러', () => {
     expect(quick).toContain('!user ?');
-    expect(quick).toContain('/auth');
+    expect(quick).toContain('href={signInHref}');
+    expect(quick).toContain('const signInHref = authEntryHref(usePathname());');
   });
 });
 

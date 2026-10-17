@@ -53,8 +53,9 @@ describe('홈 알림 덱 계약', () => {
   });
 
   it('⑷ prefers-reduced-motion을 존중한다 — JS 스크롤과 CSS 양쪽', () => {
-    expect(deck).toContain("prefers-reduced-motion: reduce");
-    expect(deck).toContain("behavior: reduced ? 'auto' : 'smooth'");
+    // 판정은 공통 reducedMotion()(src/lib/reducedMotion.js = matchMedia('(prefers-reduced-motion: reduce)'))으로 옮겼다(MOTION-R2).
+    expect(deck).toMatch(/import \{ reducedMotion \} from '[^']*reducedMotion'/);
+    expect(deck).toContain("behavior: reducedMotion() ? 'auto' : 'smooth'");
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]{0,200}continue-deck__scroller \{ scroll-behavior: auto; \}/);
   });
 

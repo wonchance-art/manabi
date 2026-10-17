@@ -7,9 +7,9 @@
 // 옛 급수라 레벨이 아니다. 중국어 문형은 2026 문법 자료가 없어 콘텐츠 레벨(H1~H6) 그대로다.
 import { JAPANESE_VOCAB_REF } from './japaneseVocabRegistry';
 import { getBunkei as getJaBunkei, countBunkei as countJaBunkei } from '../content/japanese';
-import { getVocab as getZhVocab, getBunkei as getZhBunkei, countBunkei as countZhBunkei, ZH_LEVEL_META } from '../content/chinese';
+import { getVocab as getZhVocab, getBunkei as getZhBunkei, countBunkei as countZhBunkei, ZH_LEVEL_META, ZH_HSK79_VOCAB } from '../content/chinese';
 import { loadZhHskLevels, zhHskLevelOf } from './zhHskLevel';
-import { LEVEL_LIST_LANGS, levelKinds, levelWordKey, shortMeaning } from './levelList';
+import { LEVEL_LIST_LANGS, compactLevelEntry, levelKinds, levelWordKey, shortMeaning } from './levelList';
 import { loadHanziTable } from './zhHanzi';
 
 const bunkeiOf = { japanese: getJaBunkei, chinese: getZhBunkei };
@@ -44,18 +44,20 @@ function japaneseVocabGroups(levelKey) {
       const key = levelWordKey(w.ja);
       if (!key || seen.has(key)) return [];
       seen.add(key);
-      return [{ key, word: w.ja, reading: w.yomi || '', meaning: shortMeaning(w.ko), fullMeaning: w.ko || '', pos: w.pos || '', ex: jaExample(w.ex) }];
+      // 화면 전달 크기 — 표제어와 같은 key · 짧은 뜻과 같은 전체 뜻은 생략(화면이 levelEntry로 되살린다).
+      return [compactLevelEntry({ key, word: w.ja, reading: w.yomi || '', meaning: shortMeaning(w.ko), fullMeaning: w.ko || '', pos: w.pos || '', ex: jaExample(w.ex) })];
     }),
   })).filter((g) => g.entries.length);
 }
 
 let zhDictionary = null;
-/** 우리 사전 표제어 → 첫 항목(콘텐츠 레벨 낮은 순, 생활 어휘 마지막). */
+/** 우리 사전 표제어 → 첫 항목(콘텐츠 레벨 낮은 순, 생활 어휘 다음, 7–9 통합 밴드 보강 마지막). */
 function chineseDictionary() {
   if (zhDictionary) return zhDictionary;
   const map = new Map();
-  for (const meta of ZH_LEVEL_META) {
-    for (const theme of getZhVocab(meta.key)?.themes || []) {
+  const sets = [...ZH_LEVEL_META.map((meta) => getZhVocab(meta.key)), ...ZH_HSK79_VOCAB];
+  for (const set of sets) {
+    for (const theme of set?.themes || []) {
       for (const w of theme.words || []) {
         const key = levelWordKey(w.zh);
         if (key && !map.has(key)) map.set(key, w);
@@ -72,7 +74,7 @@ async function chineseVocabGroups(levelKey) {
   const groups = ZH_POS_GROUPS.map((g) => ({ name: g.name, entries: [] }));
   for (const [key, w] of chineseDictionary()) {
     if (zhHskLevelOf(key, table) !== level) continue;
-    groups[zhGroupOf(w.pos)].entries.push({ key, word: w.zh, reading: w.pinyin || '', meaning: shortMeaning(w.ko), fullMeaning: w.ko || '', pos: w.pos || '', ex: zhExample(w.ex) });
+    groups[zhGroupOf(w.pos)].entries.push(compactLevelEntry({ key, word: w.zh, reading: w.pinyin || '', meaning: shortMeaning(w.ko), fullMeaning: w.ko || '', pos: w.pos || '', ex: zhExample(w.ex) }));
   }
   for (const g of groups) g.entries.sort((a, b) => pinyinOrder(a.reading).localeCompare(pinyinOrder(b.reading)) || a.word.localeCompare(b.word, 'zh'));
   return groups.filter((g) => g.entries.length);
@@ -108,7 +110,7 @@ async function hanziGroups(levelKey) {
     .map(([set, entries]) => ({ name: set === 0 ? '문법 글자' : `묶음 ${set}`, set, entries }));
 }
 
-/** 한 화면의 목록 — { lang, kind, levelKey, groups:[{name, entries}] }. 없는 레벨이면 null. */
+/** 한 화면의 목록 — { lang, kind, levelKey, groups:[{name, entries}] }. 없는 레벨이면 null. 단어 항목은 줄인 꼴(compactLevelEntry). */
 export async function levelListData(lang, kind, levelParam) {
   const conf = LEVEL_LIST_LANGS[lang];
   const levelKey = String(levelParam || '').toUpperCase();
@@ -134,7 +136,7 @@ function countTiles(lang, conf) {
     return {
       levelKey,
       vocab: vocab ? vocab.groups.reduce((n, g) => n + g.entries.length, 0) : 0,
-      bunkei: bunkeiCountOf[lang](levelKey),
+      ...(levelKinds(lang, levelKey).includes('bunkei') ? { bunkei: bunkeiCountOf[lang](levelKey) } : {}),
       ...(levelKinds(lang, levelKey).includes('hanzi')
         ? { hanzi: (await levelListData(lang, 'hanzi', levelKey))?.groups.reduce((n, g) => n + g.entries.length, 0) || 0 } : {}),
     };

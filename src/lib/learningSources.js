@@ -2,8 +2,10 @@ import {boundaryCoveringToken} from './boundaryEdits';
 import {bookSourceHref} from './textbook/sources';
 import {absoluteSourceSpan, exactSourceQuote} from './viewerLocalizedContext';
 import {viewerCacheKey} from './viewerReliability';
+import { LEARNING_LANGUAGES } from './learningLanguages.js';
 // 브라우저/서버 공용. 주소는 저장된 URL을 신뢰하지 않고 검증된 식별자로 다시 만든다.
-export const LEARNING_LANGUAGES = ['Japanese','Chinese','French','English','Korean'];
+// 학습 언어 정본은 learningLanguages.js(import 0개) — 기존 소비처를 위해 그대로 다시 내보낸다.
+export { LEARNING_LANGUAGES };
 export const LANGUAGE_BASE = { Japanese: '/japanese', Chinese: '/chinese', French: '/french', English: '/english' };
 export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const materialIdValid = (kind, id) => kind === 'pdf' ? UUID.test(String(id)) : kind === 'reading' && /^\d{1,19}$/.test(String(id)) && BigInt(id) > 0n && BigInt(id) <= 9223372036854775807n;

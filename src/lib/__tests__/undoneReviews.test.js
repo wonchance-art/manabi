@@ -79,7 +79,7 @@ describe('되돌린 채점 제외 계약 (W 후속 ②)', () => {
 
   it('소비처 배선 — 로더가 필터를 지난다(복습방 자동 모드의 rung 조회는 REV-SCOPE-R1B-1에서 본 복습이 플래시만 남아 없어졌다)', () => {
     const weekly = read('src/lib/weeklyReportRows.js');
-    expect(weekly).toContain("select('source, item_key, correct, created_at')");
+    expect(weekly).toContain(".select('id, source, item_key, correct, created_at', { count: 'exact' })"); // 정본 완전 조회(REVIEW-ROWS-CAP-001)
     expect(weekly).toContain('fetchUndoMarkers(userId, { sinceIso: prevStartIso })');
     expect(weekly).toContain('events: dropUndoneEvents(ev.data || [], undo)');
 

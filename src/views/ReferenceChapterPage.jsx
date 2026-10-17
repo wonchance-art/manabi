@@ -213,7 +213,7 @@ export function FormulaicChapterIntro({ formulaic }) {
       >
         장면 고정구
       </strong>
-      <span>여기 나온 문형은 통째로 익히는 고정구예요. 문법 분석은 후속 챕터에서 다룹니다.</span>
+      <span>여기 나온 문형은 통째로 익히는 고정구예요. 문법 분석은 후속 챕터에서 다뤄요.</span>
     </div>
   );
 }

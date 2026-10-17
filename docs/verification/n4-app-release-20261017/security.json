@@ -1,0 +1,66 @@
+{
+  "status": "passed",
+  "book": "japanese-n4",
+  "edition": "f4a6411c0945bbd3f8767af7",
+  "checks": {
+    "n4SecurityCases": 12,
+    "existingAssetTraceAndVerificationCases": 9,
+    "targetTestsPassed": 25,
+    "targetFilesPassed": 3,
+    "eslint": "passed",
+    "n5PreservedFiles": 175,
+    "n5ChangedFiles": 0,
+    "furiganaReadingEntryChangesIndependentlyReviewed": 294,
+    "allN4NonReadingSourceJsonFilesPreserved": 44,
+    "actualArtifactHtmlSections": 174,
+    "unsafeArtifactSections": 0,
+    "existingAssetCacheCases": 4
+  },
+  "fixedFinding": {
+    "id": "N4-SEC-07-PROTOTYPE",
+    "before": "Manifest lookup inherited __proto__/constructor/toString and attempted fs read, producing500 instead of404",
+    "fix": "Public asset route, shared checkedAsset and verifiedAsset all verify Object.hasOwn(bundle.assets,file); direct-verifier test spies on readFile and confirms zero disk reads for inherited names",
+    "after": "All inherited-prototype names and unlisted/traversal names return404 before disk access; valid immutable public asset200 and private admin preview200 remain"
+  },
+  "evidence": [
+    "SECURITY-VITEST.log",
+    "SECURITY-VITEST-PROTOTYPE-BEFORE.log",
+    "N5-PRESERVATION.json",
+    "FURIGANA-INDEPENDENT-REVIEW.json",
+    "ARTIFACT-HTML-SECURITY.json"
+  ],
+  "reviewedSourcePaths": [
+    "src/lib/textbook/contract.js",
+    "src/lib/textbook/server.js",
+    "src/lib/textbook/sources.js",
+    "src/lib/server/learningContext.js",
+    "src/lib/server/bookReading.js",
+    "src/app/api/books/japanese-n5/[edition]/asset/route.js",
+    "src/app/api/books/japanese-n4/[edition]/asset/route.js",
+    "src/app/api/learning/book-review/route.js",
+    "src/lib/reviewScopeUrl.js",
+    "src/lib/bookReviewNavigation.js",
+    "scripts/verification/n4-book-support.sql",
+    "src/lib/textbook/assetFile.js"
+  ],
+  "limitations": [
+    "Vitest auth/database is mocked, not a real user account or deployed DB publication",
+    "Independent AI language review, no human native-speaker or measured retention certification",
+    "No production database/auth/environment mutation performed by this reviewer"
+  ],
+  "inputHashes": {
+    "src/lib/textbook/contract.js": "1248bd2799715769bc9da89ae74760b6c7ff44275f2e09d8a5b47750ab187e84",
+    "src/lib/textbook/server.js": "0f852b058863d282921da78a90c12481b4c209fb18bbd85324ab269fd2e22df2",
+    "src/lib/textbook/sources.js": "30037cf4ccefe355ce40352f79d2de9d570fdad4182a3c047c9087835b3d2b07",
+    "src/lib/server/learningContext.js": "4f4a91f8d13c41c6f287c0fe64e0fbde2bf9fed48c843ad54b5c65b5c5bf6768",
+    "src/lib/server/bookReading.js": "eb10e3fefa5460904354c6c6057ce7f766287c399603c87f14fa7b38489f2a1c",
+    "src/app/api/books/japanese-n5/[edition]/asset/route.js": "d5a1cb7ced901d22428cbe4ec6b713b10d1a31a8a9fa6fc25b7ff35861ff4859",
+    "src/app/api/books/japanese-n4/[edition]/asset/route.js": "57646b8355f5a938a4c57941368650a7a83ed7d713f1b4d0faf85830cfa85ae2",
+    "src/app/api/learning/book-review/route.js": "29221d95fa3e5648ac1068848f96f3fdbec3ba203300adc1b439dca4e18e9b75",
+    "src/lib/reviewScopeUrl.js": "6c00404e333c44d22579dea3a77d4fecb9fdf95c1eb01b488476db10b80aa2bc",
+    "src/lib/bookReviewNavigation.js": "35089ff4b5645e805c3e7ccfac99222220f7c1c0503b96c5076d4a6b469e8767",
+    "scripts/verification/n4-book-support.sql": "819a88e77298c288dcce81e313923456edac09223b5026dedbd5cf12d12d8fd9",
+    "src/lib/textbook/assetFile.js": "875fed927789c8319533cddda3dd760d964bc290019ebecf7a4c356cae1cc0b2"
+  },
+  "artifactContentHash": "f4a6411c0945bbd3f8767af72619474fadd45d0fbd0f403463c2c04ccd1b27c5"
+}

@@ -24,10 +24,13 @@ import BookDraftPanel from '../components/BookDraftPanel';
 import { friendlyToastMessage, failureMessage } from '../lib/errorMessage';
 import { titleFromBody } from '../lib/materialTitle';
 import { useQueryClient } from '@tanstack/react-query';
+import { invalidateLibrary } from '../lib/libraryOperations';
 import { createImportAttempt, saveImportOnce, interruptedImportJson, persistImportAnalysis } from '../lib/materialImport';
 import { useViewerLanguage } from '../lib/useViewerLanguage';
 import { VIEWER_LANGUAGES, viewerLanguageInfo } from '../lib/viewerLanguage';
 import './material-import.css';
+import { isCanonicalBookKey } from '../lib/canonicalBookKey';
+import { reducedMotion } from '../lib/reducedMotion';
 
 /** 입구 칩(자료 추가 정돈 R2) — 소스 순서 = 렌더 순서(PDF→EPUB→문장 목록→링크), 아래 렌더와 같은 차례. */
 const ENTRIES = [
@@ -119,11 +122,11 @@ function MaterialAddForm() {
     if (pdf.language) setLanguage(pdf.language);
     if (pdf.level) setLevel(pdf.level);
     setVisibility('private'); // PDF 출처는 항상 private
-    toast('추출 완료! 아래에서 확인 후 분석을 시작하세요.', 'success');
+    toast('본문을 추출했어요. 아래에서 확인한 뒤 분석을 시작해 주세요.', 'success');
     // 스크롤 텍스트 영역으로
     setTimeout(() => {
       const el = document.querySelector('.form-textarea');
-      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
     }, 200);
   };
 
@@ -163,7 +166,10 @@ function MaterialAddForm() {
     return () => { alive = false; };
   }, [user?.id]);
   const myBooks = useMemo(() => listAppendableBooks(myBookRows), [myBookRows]);
-  const appendBookKey = searchParams.get('book') || '';
+  // 정본 책(아오조라 · SE · 그림 책)에는 이어 적지 않는다 — 화면 입구를 막아도 옛 북마크 · 직접 주소(?book=aozora-…)로 들어오면
+  // 정본 책에 장이 더해져 게시가 409로 막혔다(리뷰 2026-10-17 KST). 정본 key면 새 자료 쓰기로 연다.
+  const requestedBookKey = searchParams.get('book') || '';
+  const appendBookKey = isCanonicalBookKey(requestedBookKey) ? '' : requestedBookKey;
   // 과당 문장 수 상속 — 가장 최근 등록된 챕터 한 행의 줄 수(문장 목록 책은 곧 과 크기). 못 읽으면 null.
   const inferPerChapter = async (key) => {
     const { data, error } = await supabase
@@ -276,6 +282,7 @@ function MaterialAddForm() {
         if (error) throw error;
         inserted = data;
       }
+      refreshLibrary();
       setBookDoneCount(bookDraft.chapters.length);
       setBookFirstNewId(inserted?.[0]?.id ?? null);
       toast(bookDraft.append
@@ -301,7 +308,7 @@ function MaterialAddForm() {
     setRawText(linkText);
     setVisibility('private');
     setTimeout(() => {
-      document.querySelector('.form-textarea')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.querySelector('.form-textarea')?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
     }, 200);
   };
 
@@ -317,7 +324,7 @@ function MaterialAddForm() {
     setVisibility('private');
     toast('가져왔어요. 아래에서 확인 후 분석을 시작하세요.', 'success');
     setTimeout(() => {
-      document.querySelector('.form-textarea')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.querySelector('.form-textarea')?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
     }, 200);
   };
 
@@ -357,10 +364,9 @@ function MaterialAddForm() {
     return () => { aliveRef.current = false; abortControllerRef.current?.abort(); };
   }, []);
 
-  const refreshLibrary = () => {
-    queryClient.invalidateQueries({ queryKey: ['materials'] });
-    queryClient.invalidateQueries({ queryKey: ['library-reading-v2', user?.id] });
-  };
+  // 서재(personal-library·읽던 곳·my-pdfs)와 자료실 목록을 함께 무효화한다 — 서재 목록이 30초 캐시라
+  // 방금 더한 자료가 늦게 뜨지 않게 하는 정본 경로(libraryOperations.invalidateLibrary).
+  const refreshLibrary = () => { if (user?.id) invalidateLibrary(queryClient, user.id); };
 
   async function handleStart() {
     if (busyRef.current || savedRecordRef.current) return;
@@ -397,11 +403,12 @@ function MaterialAddForm() {
         importAttemptRef.current = { signature, attempt: createImportAttempt(materialRow, crypto.randomUUID()) };
       }
       const record = await saveImportOnce(supabase, importAttemptRef.current.attempt);
+      // 저장은 끝났다 — 화면을 떠났어도 서재는 새 자료를 봐야 한다.
+      refreshLibrary();
       if (!aliveRef.current) return;
       savedRecordRef.current = record;
       analysisJsonRef.current = record.processed_json;
       setCompletedId(record.id);
-      refreshLibrary();
       // Saving an extracted range does not mean the reader has read its final page.
       // PDF page progress remains owned by the PDF reader.
       if (isNote) {
@@ -409,7 +416,7 @@ function MaterialAddForm() {
         setIsProcessing(false); busyRef.current = false;
         return;
       }
-      setStatus('원문 저장 완료. 읽기 도구를 준비하고 있어요…');
+      setStatus('원문을 저장했어요. 읽기 도구를 준비하고 있어요…');
       setProgress(0);
       startAnalysis();
     } catch (err) {
@@ -462,7 +469,7 @@ function MaterialAddForm() {
       analysisJsonRef.current = finalJson;
       setAnalysisState(finalJson.status);
       setStatus(finalJson.status === 'failed' ? '원문은 저장됐어요. 분석을 다시 시도할 수 있어요.'
-        : finalJson.status === 'partial' ? `원문 저장 완료 · ${finalJson.failed_indices?.length || 0}개 줄 재시도 필요` : '원문과 읽기 도구가 준비됐어요.');
+        : finalJson.status === 'partial' ? `원문을 저장했어요 · ${finalJson.failed_indices?.length || 0}개 줄 재시도 필요` : '원문과 읽기 도구가 준비됐어요.');
       setProgress(100);
 
     } catch (err) {
@@ -476,7 +483,8 @@ function MaterialAddForm() {
       setStatus(signal.aborted ? '분석을 멈췄어요. 원문은 서재에 남아 있어요.' : '원문은 저장됐어요. 분석을 다시 시도할 수 있어요.');
       if (!signal.aborted) setError('분석 오류 — ' + friendlyToastMessage(err));
     } finally {
-      if (aliveRef.current) { setIsProcessing(false); refreshLibrary(); }
+      if (aliveRef.current) setIsProcessing(false);
+      refreshLibrary();
     }
   }
 
@@ -683,7 +691,7 @@ function MaterialAddForm() {
                   setSentenceSeed(rawText);
                   setRawText('');
                   setTimeout(() => {
-                    document.getElementById('sentence-text')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    document.getElementById('sentence-text')?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
                   }, 100);
                 }}
               >
@@ -803,7 +811,7 @@ function MaterialAddForm() {
       </div>
       </fieldset>
       <div className="import-result" aria-live="polite">
-        {completedId && <p className="import-saved-label">✓ 원문 저장 완료 · {isNote ? '비공개 노트' : visibility === 'public' && !pdfSource && !epubSource ? '공개 자료' : '비공개 자료'}</p>}
+        {completedId && <p className="import-saved-label">✓ 원문을 저장했어요 · {isNote ? '비공개 노트' : visibility === 'public' && !pdfSource && !epubSource ? '공개 자료' : '비공개 자료'}</p>}
         {!isProcessing && status && <p className="import-status">{status}</p>}
         {/* Progress */}
         {isProcessing && (

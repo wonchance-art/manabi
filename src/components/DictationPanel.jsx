@@ -3,7 +3,7 @@
 /**
  * 받아쓰기 패널 (#1077-6, 목업 ①) — 지정한 문장을 듣고 타이핑해 채점한다.
  * 채점은 dictation 엔진(gradeDictation — diffChars LCS), 듣기는 useTTS 재사용.
- * 패널이 열려 있는 동안 원문은 가려진다([본문 보기] 전까지) — 듣기 훈련의 전제.
+ * 패널이 열려 있는 동안 원문은 가려진다([원문 보기] 전까지) — 듣기 훈련의 전제.
  */
 import { useState, useEffect, useRef } from 'react';
 import { useTTS } from '../lib/useTTS';

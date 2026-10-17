@@ -7,6 +7,7 @@
  * (배포와 마이그레이션 적용 순서에 독립).
  */
 import { supabase } from './supabase.js';
+import { postgrestKeepalive } from './keepalive.js';
 
 /** 정답률 → FSRS rating (1 Again / 2 Hard / 3 Good / 4 Easy) */
 export function ratingFromScore(right, total) {
@@ -112,24 +113,155 @@ export async function countDueGrammar(userId) {
   }
 }
 
-/** 복습 결과 반영 — FSRS로 다음 스케줄 계산 후 저장. 성공 시 갱신 행 반환. */
-export async function gradeGrammarReview(row, rating) {
+// FSRS 모듈은 첫 채점 때 동적으로 불러온다. 한 번 불러온 뒤에는 pagehide처럼 기다릴 수 없는 자리에서도
+// 같은 계산을 동기로 쓸 수 있게 붙잡아 둔다(sendGrammarGradeKeepalive).
+let fsrsModule = null;
+
+/**
+ * 비교 후 쓰기(compare-and-set) 조건 — 세션을 시작할 때 읽은 행(row.last_reviewed_at)과 서버 행이 **같을 때만** 바꾼다.
+ * 기기 시계를 비교하지 않는다(예전 `lt reviewedAt`은 시계가 틀린 기기 하나가 미래 시각을 쓰면 그 뒤 채점이 말없이 멈췄다).
+ * - 한 번 반영되면 last_reviewed_at이 바뀌므로, 같은 채점이 다시 닿아도(재시도 · keepalive · bfcache 복귀) 0행이다.
+ * - 그사이 다른 기기 · 화면이 채점했어도 0행이다 — 더 최신 채점을 낡은 세션 값으로 덮지 않는다.
+ * 행에 last_reviewed_at 칸이 아예 없으면(필드를 싣기 전에 만든 프리페치 재료) 조건 없이 쓴다 — 같은 시작 행으로 계산해
+ * 다시 써도 값이 거의 같아 일정이 두 번 진행되지 않는다(예전 동작 그대로).
+ * @returns {null | { op: 'is' | 'eq', value: string | null }} supabase-js · keepalive URL이 같은 판정을 쓴다.
+ */
+export function grammarCasPredicate(row) {
+  if (!row || !Object.prototype.hasOwnProperty.call(row, 'last_reviewed_at') || row.last_reviewed_at === undefined) return null;
+  return row.last_reviewed_at === null ? { op: 'is', value: null } : { op: 'eq', value: String(row.last_reviewed_at) };
+}
+const casParam = cas => (cas.op === 'is' ? 'is.null' : `eq.${cas.value}`);
+
+/** gradeGrammarReview · keepalive가 같은 값을 쓴다 — 저장 경로가 둘이어도 일정 계산은 하나다. */
+function grammarGradeUpdates(row, rating, reviewedAt) {
+  return { ...fsrsModule.calculateFSRS(rating, row), last_reviewed_at: reviewedAt };
+}
+
+/**
+ * 복습 결과 반영 — FSRS로 다음 스케줄 계산 후 저장. 성공 시 갱신 행 반환.
+ * reviewedAt을 주면 그 시각을 last_reviewed_at으로 싣는다(보류함은 첫 제출 시각을 고정해 모든 재시도에 싣는다).
+ * compareAndSet(보류함 — 첫 제출 · 재시도 · keepalive 공통)이면 grammarCasPredicate 조건으로 바꾸고 바뀐 행 수를 본다:
+ * 0행이면 `{ ...row, conflict: true }` — 이미 반영됐거나 그사이 다른 곳에서 채점했다. 실패가 아니라 끝난 채점이라
+ * 보류함은 버리고 재시도 · 포기 알림을 하지 않는다. 시각 · 조건 없는 기존 호출(GrammarReviewSession)은 그대로다.
+ */
+export async function gradeGrammarReview(row, rating, { reviewedAt = null, compareAndSet = false } = {}) {
   if (!row?.user_id) return null;
   try {
-    const { calculateFSRS } = await import('./fsrs.js');
-    const next = calculateFSRS(rating, row);
-    const updates = { ...next, last_reviewed_at: new Date().toISOString() };
-    const { error } = await supabase
+    fsrsModule ||= await import('./fsrs.js');
+    const updates = grammarGradeUpdates(row, rating, reviewedAt || new Date().toISOString());
+    let query = supabase
       .from('grammar_review')
       .update(updates)
       .eq('user_id', row.user_id)
       .eq('lang', row.lang)
       .eq('slug', row.slug);
+    const cas = compareAndSet ? grammarCasPredicate(row) : null;
+    if (cas) {
+      query = cas.op === 'is' ? query.is('last_reviewed_at', null) : query.eq('last_reviewed_at', cas.value);
+      // 바뀐 행이 돌아와야 0행(이미 반영 · 다른 곳 채점)을 가를 수 있다.
+      const { data, error } = await query.select('slug');
+      if (error || !Array.isArray(data)) return null;
+      return data.length ? { ...row, ...updates } : { ...row, conflict: true };
+    }
+    const { error } = await query;
     if (error) return null;
     return { ...row, ...updates };
   } catch {
     return null;
   }
+}
+
+/**
+ * 페이지가 닫히는 순간(pagehide)의 마지막 시도 — 같은 PostgREST UPDATE(같은 값 · 같은 비교 후 쓰기 조건 grammarCasPredicate)를
+ * 정본 전송(keepalive.postgrestKeepalive — 왜 · best-effort 한계는 거기)으로 보낸다. 토큰은 세션 계정의 것을 호출부가 미리 받아 둔다.
+ * FSRS 모듈이 아직 없으면 보내지 않는다.
+ * @param {{reviewedAt: string, accessToken: string, url?: string, apiKey?: string, fetchImpl?: Function}} options 전송 옵션은 그대로 넘긴다
+ * @returns {Promise<false | object>} 반영됐거나(행) 0행(conflict)이면 끝난 채점, 실패는 false.
+ */
+export function sendGrammarGradeKeepalive(row, rating, { reviewedAt, ...transport } = {}) {
+  if (!row?.user_id || !row?.slug || !reviewedAt || !fsrsModule) return Promise.resolve(false);
+  try {
+    const query = { user_id: `eq.${row.user_id}`, lang: `eq.${row.lang}`, slug: `eq.${row.slug}` };
+    const cas = grammarCasPredicate(row);
+    if (cas) query.last_reviewed_at = casParam(cas);
+    query.select = 'slug'; // 바뀐 행을 돌려받아 0행(이미 반영 · 다른 곳 채점)을 가른다 — gradeGrammarReview와 같다
+    const updates = grammarGradeUpdates(row, rating, reviewedAt);
+    return postgrestKeepalive({ ...transport, path: 'grammar_review', method: 'PATCH', query, body: updates, prefer: 'return=representation' })
+      .then(async (res) => {
+        if (!res?.ok) return false;
+        const rows = await res.json().catch(() => null);
+        if (!Array.isArray(rows)) return false;
+        return rows.length ? { ...row, ...updates } : { ...row, conflict: true };
+      }, () => false);
+  } catch {
+    return Promise.resolve(false);
+  }
+}
+
+/** 보류한 문법 재채점을 다시 보내는 최대 횟수(첫 시도 제외). 넘으면 버리고 알린다 — 끝없이 붙잡지 않는다. */
+export const GRAMMAR_RETRY_LIMIT = 3;
+
+const browserOnline = () => typeof navigator === 'undefined' || navigator.onLine !== false;
+
+/**
+ * 문법 재스케줄 보류함 — gradeGrammarReview가 실패(null)하면 그 챕터 채점을 남겨 두었다가
+ * retry()(온라인 복귀 · 세션 종료 · 화면 떠남)에서 같은 정본 함수로 다시 보낸다.
+ * review_events는 오프라인 큐로 살아남는데 grammar_review 일정만 조용히 사라지던 틈을 메운다.
+ * 같은 챕터(사용자 · 언어 · slug)가 다시 들어오면 마지막 채점만 남긴다.
+ *
+ * 범위: 이 보류함은 **같은 화면 안**(메모리)이다. 오프라인인 채로 화면을 떠나거나 탭을 닫으면 남지 않는다 —
+ * 그때 호출부가 알린다. 기기 큐(reviewOutbox · fsrsOperationOutbox)는 어휘 이벤트 · 어휘 FSRS 작업 전용 형식이라
+ * 문법 일정을 싣지 않는다(StudySessionPage 주석 참고).
+ * - 오프라인(navigator.onLine === false)일 때 retry는 시도 횟수를 쓰지 않는다 — 실패할 게 뻔한 시도로 상한을 태우지 않는다.
+ * - 채점 시각(reviewedAt)을 첫 제출 때 고정해 모든 재시도에 싣고, 첫 제출 · 재시도 · keepalive 모두 비교 후 쓰기
+ *   (grammarCasPredicate — 세션 시작 행의 last_reviewed_at과 같을 때만)로 보낸다 — 두 번 닿아도 한 번만 반영된다.
+ * @param {{grade?: Function, limit?: number, onGiveUp?: Function, isOnline?: Function, now?: Function}} [options]
+ */
+export function createGrammarRetry({
+  grade = gradeGrammarReview, limit = GRAMMAR_RETRY_LIMIT, onGiveUp = () => {}, isOnline = browserOnline, now = () => new Date(),
+} = {}) {
+  const pending = new Map(); // key → { row, rating, reviewedAt, retries }
+  let running = null;
+  const keyOf = row => `${row.user_id}:${row.lang}:${row.slug}`;
+  const attempt = async (key, entry, send = grade, { mayGiveUp = true } = {}) => {
+    let saved = null;
+    try { saved = await send(entry.row, entry.rating, { reviewedAt: entry.reviewedAt, compareAndSet: true }); } catch { saved = null; }
+    if (pending.get(key) !== entry) return; // 그사이 같은 챕터의 새 채점이 들어왔다 — 그쪽이 정본이다.
+    // 반영됐거나 0행(conflict — 이미 반영됐거나 그사이 다른 곳에서 채점)이면 끝난 채점이다. conflict는 실패로 세지 않고
+    // 다시 보내지도, 포기 알림도 하지 않는다 — 다시 보내도 같은 조건에 계속 0행이라 끝없이 붙잡게 된다.
+    if (saved) { pending.delete(key); return; }
+    if (mayGiveUp && entry.retries >= limit) { pending.delete(key); onGiveUp(entry.row); }
+  };
+  const accepted = accept => [...pending].filter(([, entry]) => accept(entry.row));
+  return {
+    /** 첫 시도 — 성공하면 보류할 것이 없다. 실패하면 보류(같은 챕터는 덮어쓴다). */
+    async submit(row, rating) {
+      if (!row?.user_id || !row?.slug) return null;
+      const key = keyOf(row), entry = { row, rating, reviewedAt: now().toISOString(), retries: 0 };
+      pending.set(key, entry);
+      await attempt(key, entry);
+      return pending.get(key) === entry ? null : true;
+    },
+    /** 보류분을 다시 보낸다. 겹쳐 부르면 진행 중인 한 번을 같이 기다린다. accept로 계정이 바뀐 보류분은 건너뛴다. */
+    retry(accept = () => true) {
+      if (running) return running;
+      if (!isOnline()) return Promise.resolve(); // 연결이 없다 — 횟수를 쓰지 않고 online을 기다린다.
+      const entries = accepted(accept);
+      if (!entries.length) return Promise.resolve();
+      running = Promise.all(entries.map(([key, entry]) => { entry.retries += 1; return attempt(key, entry); }))
+        .finally(() => { running = null; });
+      return running;
+    },
+    /**
+     * 페이지가 닫히는 순간의 마지막 시도 — send(keepalive)로 보내고, 횟수를 쓰지도 포기하지도 않는다
+     * (닫히지 않고 bfcache로 돌아오면 보류분은 그대로 남아 다음 retry가 다시 보낸다 — 두 번 닿아도 비교 후 쓰기 조건이 한 번만 반영).
+     */
+    beacon(accept = () => true, send) {
+      if (!send || !isOnline()) return Promise.resolve();
+      return Promise.all(accepted(accept).map(([key, entry]) => attempt(key, entry, send, { mayGiveUp: false })));
+    },
+    size: () => pending.size,
+  };
 }
 
 /**

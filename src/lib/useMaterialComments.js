@@ -14,7 +14,7 @@ export function useMaterialComments({ materialId, user, toast, enabled = true })
     queryFn: async () => {
       const { data, error } = await supabase
         .from('material_comments')
-        .select('id, content, created_at, user_id, author:profiles(display_name)')
+        .select('id, content, created_at, user_id, author:public_profiles(display_name)')
         .eq('material_id', materialId)
         .order('created_at', { ascending: true });
       if (error) throw error;

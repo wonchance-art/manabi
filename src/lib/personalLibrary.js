@@ -1,5 +1,6 @@
 // The catalog is a projection over existing sources, never a second copy of a reading material.
 import {safeLibraryReturn} from './libraryReturn';
+import {BOOK_ID,isBookId,bookHref} from './textbook/contract';
 export const LIBRARY_PAGE_SIZE=20;
 export const LIBRARY_LANGUAGES=['Japanese','Chinese','English','French'];
 export const COLLECTION_ID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -50,9 +51,13 @@ export async function removeFromCollection(client,ownerId,id,target){
  const {error}=await client.from('library_collection_items').delete().eq('owner_id',ownerId).eq('collection_id',id).eq('target_kind',target.target_kind).eq('target_id',String(target.target_id));
  if(error)throw error;
 }
+export function libraryEditionBookId(row){
+ const explicit=row.book_id||row.context?.bookId;
+ return explicit?isBookId(explicit)?explicit:null:row.level==='N4'?'japanese-n4':BOOK_ID;
+}
 export function libraryItemHref(row){
  if(row.target_kind==='pdf')return `/pdf/${encodeURIComponent(row.target_id)}?pdfjs=1`;
- if(row.target_kind==='edition')return `/books/japanese-n5?edition=${encodeURIComponent(row.target_id)}#cover`;
+ if(row.target_kind==='edition')return bookHref(encodeURIComponent(row.target_id),'cover',libraryEditionBookId(row));
  return `/viewer/${encodeURIComponent(row.material_id||row.target_id)}`;
 }
 export function libraryComposerHref(returnTo,collection){

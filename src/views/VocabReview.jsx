@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Button from '../components/Button';
 import { detectLang, splitSentenceAroundWord } from '../lib/constants';
 import VocabularyContexts from '../components/learning/VocabularyContexts';
-import { ReviewCardMeta, ReviewHeadword, ReviewReadingRow, langTag } from '../components/vocab/ReviewCardParts';
+import { ReviewCardMeta, ReviewHeadword, ReviewReadingRow, langTag, useGradeBarFocus } from '../components/vocab/ReviewCardParts';
 import { gradeGuide, isCardRevealClick, revealTrigger } from '../lib/reviewCard';
 import { wordStage } from '../lib/growthStats';
 import { vocabularyReviewCalendar } from '../lib/vocabularyLearningRows';
@@ -14,8 +14,9 @@ import { vocabularyReviewCalendar } from '../lib/vocabularyLearningRows';
  */
 function ScoreSection({ word, onScore, armed = true, locked = false }) {
   const off = locked || !armed;
+  const bar = useGradeBarFocus(locked, armed); // 뒷면이 열리면 막대(버튼 아님)로 초점 — FOCUS-AFTER-ACTION-001 C2
   return (
-    <div className={`review-grade-bar${locked ? ' is-locked' : ''}`} role="group" aria-label="기억 채점">
+    <div ref={bar} tabIndex={-1} className={`review-grade-bar${locked ? ' is-locked' : ''}`} role="group" aria-label="기억 채점">
       {!locked && <p className="review-score-guide review-grade-guide">{gradeGuide(word)}<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span></p>}
       {/* 숫자 배지 = 키 안내(W R2) — 라벨 텍스트는 버튼 첫 자식 그대로(saveGrade 계약이 이 소스에서 라벨을 뽑는다) */}
       <div className="review-score-grid" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
@@ -74,7 +75,7 @@ function UpcomingCalendar({ projections, learningAvailable, now }) {
         {days.map((d, i) => (
           <div key={i} className="review-done__bar-col">
             <div className={`review-done__bar${d.count > 0 ? ' has-count' : ''}`}
-              style={{ height: d.count > 0 ? `${Math.max(8, (d.count / max) * 40)}px` : '2px' }} title={`${d.key}: ${d.count}개`} />
+              style={{ height: d.count > 0 ? `${Math.max(8, (d.count / max) * 40)}px` : '2px', '--i': i }} title={`${d.key}: ${d.count}개`} />
             <span className="review-done__bar-day">{d.key.slice(5).replace('-', '/')}</span>
             {d.count > 0 && <span className="review-done__bar-count">{d.count}</span>}
           </div>
@@ -189,7 +190,7 @@ export default function VocabReview({
           : <ReviewFinished finish={finish || { total: new Set(reviewWords.filter(Boolean).map(word => word.id)).size }} bookReview={bookReview} vocab={vocab}
             projections={projections} learningAvailable={learningAvailable} now={now} setTab={setTab} />
       ) : admissionPending || admissionError ? (
-        <div className="card review-card review-card--center" role={admissionError ? 'alert' : 'status'}>
+        <div className="card review-card review-card--center" role={admissionError ? 'alert' : 'status'} aria-busy={!admissionError || undefined}>
           <p>{admissionError ? REVIEW_PREP_FAILED : '복습 준비 중…'}</p>
           {admissionError && <Button variant="ghost" onClick={onAdmissionRetry}>다시 시도</Button>}
         </div>

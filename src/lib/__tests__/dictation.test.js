@@ -72,7 +72,8 @@ describe('받아쓰기 배선 계약', () => {
     const panel = await read('src/components/DictationPanel.jsx');
     expect(panel).toContain('gradeDictation');
     expect(panel).toContain('useTTS');
-    expect(panel).toContain('본문 보기'); // 열림 동안 원문 가림 — 명시 공개만
+    // 열림 동안 원문 가림 — 명시 공개만. 주석이 아니라 실제 공개 버튼 문구로 확인한다(이전 검사는 주석의 「본문 보기」로 통과했다).
+    expect(panel).toMatch(/!revealed && \(\s*<button[^>]*onClick=\{\(\) => setRevealed\(true\)\}[^>]*>원문 보기<\/button>/u);
   });
 
   it('뷰어의 두 진입 경로가 같은 대상 상태(dictationSentence)로 모인다', async () => {

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useAuth } from '../lib/AuthContext';
 import { logReviewEvents } from '../lib/reviewEvents';
 import { enqueueGrammarReview } from '../lib/grammarSrs';
@@ -21,6 +21,7 @@ import {
   createPassGate,
 } from '../lib/readingProgress';
 import ReadingTextView, { ReadingDrillView } from './ReadingTextView';
+import { authEntryHref } from '../lib/authRedirect';
 
 /**
  * 독해 트랙 페이지 — "도쿄 도착"(JA N5 파일럿).
@@ -68,6 +69,10 @@ export default function ReadingTrackPage({ track }) {
  * 기록: user_ref_progress(rt: slug) + localStorage Set + review_events + 글 단위 grammar_review.
  */
 function ReadingTrack({ track, user, selectedId }) {
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInPath = usePathname();
+  const signInQuery = useSearchParams()?.toString();
+  const signInHref = authEntryHref(signInQuery ? `${signInPath}?${signInQuery}` : signInPath);
   const router = useRouter();
   const [passedSet, setPassedSet] = useState(() => new Set());
   // 통과 저장 게이트(P2-4) — 노드별 진행 중 Promise Map + 직렬 체인을 캡슐화한다. 같은 노드
@@ -239,7 +244,7 @@ function ReadingTrack({ track, user, selectedId }) {
           <div className="card" style={{ padding: '28px 18px', textAlign: 'center' }}>
             {activePending ? (
               // 서버 응답 전 — 로딩만. 재시도 버튼은 응답이 왔는데 상세가 없을 때만 띄운다(WALL-STATES-001 ⑤).
-              <p role="status" style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', margin: 0 }}>
+              <p aria-busy="true" style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', margin: 0 }}>
                 글과 문항 불러오는 중…
               </p>
             ) : !deniedGuest ? (
@@ -256,7 +261,7 @@ function ReadingTrack({ track, user, selectedId }) {
                 <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', marginBottom: 14 }}>
                   여기서부터는 로그인해야 진도가 저장되고 다음 글의 문항이 열려요.
                 </p>
-                <Link href="/auth" className="btn btn--primary btn--md">로그인하러 가기</Link>
+                <Link href={signInHref} className="btn btn--primary btn--md">로그인하러 가기</Link>
               </>
             )}
           </div>

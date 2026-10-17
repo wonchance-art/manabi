@@ -48,8 +48,10 @@ describe('/home — 게스트가 와도 빈 벽이 아니다', () => {
     // 서재 · 산책은 메뉴가 늘 연다. 로그인은 「로그인하면 여기에 쌓여요」 칸의 권유일 뿐이다.
     expect(guest).toContain('bookHref(book.edition, resume.page)');
     expect(guest).toContain("href: '/lessons'");
-    expect(guest).toContain('href="/auth"');
-    expect(guest).toContain('로그인하면 여기에 쌓여요');
+    // 로그인 권유는 정본 진입(authEntryHref)으로 — 로그인 뒤 배움으로 돌아온다(맨 /auth 금지 계약: authReturnLinks.test.js).
+    expect(guest).toContain("<GuestLoginTile href={authEntryHref('/home')} />");
+    // 칸 글은 손님 화면과 손님 대기 화면(B1)이 함께 쓰는 GuestLoginTile에 있다.
+    expect(read('src/components/learn/LearnTiles.jsx')).toContain('로그인하면 여기에 쌓여요');
     expect(guest).not.toContain('if (!user) return');
   });
 

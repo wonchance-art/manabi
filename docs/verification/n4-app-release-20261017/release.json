@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "bookId": "japanese-n4",
+  "editionId": "f4a6411c0945bbd3f8767af7",
+  "contentHash": "f4a6411c0945bbd3f8767af72619474fadd45d0fbd0f403463c2c04ccd1b27c5",
+  "bundleHash": "16c62d4ae663e23de47b8538d29622c45e59af9d341473120c9023fb2a6d459a",
+  "passed": true,
+  "scope": "Reviewed N4 artifact. Prior source semantics reviewed for all 42 lessons; only independently reviewed reading maps and renderer/container behavior changed. Account integration and publication are separately verified.",
+  "checks": {
+    "structure": {
+      "bookId": "japanese-n4",
+      "editionId": "f4a6411c0945bbd3f8767af7",
+      "contentHash": "f4a6411c0945bbd3f8767af72619474fadd45d0fbd0f403463c2c04ccd1b27c5",
+      "bundleHash": "16c62d4ae663e23de47b8538d29622c45e59af9d341473120c9023fb2a6d459a",
+      "passed": true,
+      "evidence": [
+        {
+          "path": "STRUCTURE-CONTAINER.json",
+          "sha256": "3cc04c718667c34d2de721cea3d2a3ea3cade46b28441cb0ded0a744ad84d4f2"
+        },
+        {
+          "path": "REPRODUCIBILITY-CONTAINER.json",
+          "sha256": "767e00bfc2e2092f83139dcd264a091dd939811e673003dd4bbe66fa9ebcc0cc"
+        }
+      ]
+    },
+    "language": {
+      "bookId": "japanese-n4",
+      "editionId": "f4a6411c0945bbd3f8767af7",
+      "contentHash": "f4a6411c0945bbd3f8767af72619474fadd45d0fbd0f403463c2c04ccd1b27c5",
+      "bundleHash": "16c62d4ae663e23de47b8538d29622c45e59af9d341473120c9023fb2a6d459a",
+      "passed": true,
+      "evidence": [
+        {
+          "path": "FURIGANA-INDEPENDENT-REVIEW.json",
+          "sha256": "d69269398cf6ca067e44d845352431bb3918585f84479ffa21eae8789cfb1df6"
+        },
+        {
+          "path": "SOURCE-INVARIANCE.json",
+          "sha256": "86c32272d5051a0f3a3b5f15ee143dc8f1630c697c90fffc53c731fde9f7f7d4"
+        },
+        {
+          "path": "CONTENT-REVIEW-CONTINUITY.json",
+          "sha256": "81c9292daf28372914d513d6acf65b13461709e20530a35254e4a2bfd12e6dd6"
+        }
+      ]
+    },
+    "browser": {
+      "bookId": "japanese-n4",
+      "editionId": "f4a6411c0945bbd3f8767af7",
+      "contentHash": "f4a6411c0945bbd3f8767af72619474fadd45d0fbd0f403463c2c04ccd1b27c5",
+      "bundleHash": "16c62d4ae663e23de47b8538d29622c45e59af9d341473120c9023fb2a6d459a",
+      "passed": true,
+      "evidence": [
+        {
+          "path": "BROWSER-CONTAINER-DELTA.json",
+          "sha256": "35d9fcc9b4bc05c2f11e547303467a84ada91b8c76c3c11af21153abcfaf598e"
+        },
+        {
+          "path": "DOM-READING-AUDIT.json",
+          "sha256": "c0c2b38d8553b76573c3da67463fe9ba1b1df66727c9da2ac8bf26d2fe601c1c"
+        }
+      ]
+    }
+  }
+}

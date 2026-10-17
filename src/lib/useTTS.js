@@ -56,12 +56,36 @@ export function immediateSpeechVoice(voices, language, wantedURI) {
     || matching[0];
 }
 
+// 서버 음성이 「서비스 설정」(결제 · 크레딧, /api/tts code 'service_config')으로 실패하면 이 탭(세션)에서 SKIP_MS 동안
+// 서버를 부르지 않고 바로 브라우저 음성을 쓴다 — 단어를 누를 때마다 실패 왕복(운영 실측 0.55~2.4초)을 기다리던 것(GEMINI-402-GUARD).
+// 이미 받아 둔 소리(serverAudioCache)는 그대로 재생한다. 다른 실패(일시 502 등)는 기억하지 않는다(지금처럼 다음 탭에 다시 시도).
+export const SERVER_TTS_SKIP_MS = 10 * 60 * 1000;
+const SERVER_TTS_SKIP_KEY = 'tts_server_skip_until';
+let serverSkipUntil = 0;
+export function serverTtsSkipped(now = Date.now()) {
+  if (serverSkipUntil > now) return true;
+  try {
+    const saved = Number(window.sessionStorage?.getItem(SERVER_TTS_SKIP_KEY));
+    if (saved > now) { serverSkipUntil = saved; return true; }
+  } catch { /* 저장소 없음 — 메모리 값만 */ }
+  return false;
+}
+function rememberServerTtsFailure(now = Date.now()) {
+  serverSkipUntil = now + SERVER_TTS_SKIP_MS;
+  try { window.sessionStorage?.setItem(SERVER_TTS_SKIP_KEY, String(serverSkipUntil)); } catch { /* 메모리 값만 */ }
+}
+
 async function playServerTTS(text, language, playbackRate = 1, generation) {
   const url = `/api/tts?lang=${encodeURIComponent(language)}&text=${encodeURIComponent(text)}`;
   let objUrl = serverAudioCache.get(url);
   if (!objUrl) {
+    if (serverTtsSkipped()) throw new Error('tts skipped: service config');
     const res = await window.fetch(url);
-    if (!res.ok) throw new Error('tts ' + res.status);
+    if (!res.ok) {
+      const body = typeof res.json === 'function' ? await res.json().catch(() => null) : null;
+      if (body?.code === 'service_config') rememberServerTtsFailure();
+      throw new Error('tts ' + res.status);
+    }
     const blob = await res.blob();
     objUrl = window.URL.createObjectURL(blob);
     serverAudioCache.set(url, objUrl);
@@ -86,7 +110,7 @@ async function playServerTTS(text, language, playbackRate = 1, generation) {
  */
 const prefetching = new Map();
 export function prefetchSpeech(text, language) {
-  if (typeof window === 'undefined' || !text || !getTtsCapabilities().serverAudio) return;
+  if (typeof window === 'undefined' || !text || !getTtsCapabilities().serverAudio || serverTtsSkipped()) return;
   const url = `/api/tts?lang=${encodeURIComponent(language)}&text=${encodeURIComponent(text)}`;
   if (serverAudioCache.has(url) || prefetching.has(url)) return;
   const request = window.fetch(url).then(res => (res.ok ? res.blob() : null)).then(blob => {

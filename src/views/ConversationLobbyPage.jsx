@@ -117,7 +117,7 @@ export default function ConversationLobbyPage() {
     </div>
   );
 
-  if (authLoading) return <PhoneFrame><div className="conv-page" data-chat="true"><div className="conv" ref={shellRef}>{head}<p className="conv__notice conv-lobby__empty" role="status">불러오는 중…</p></div></div></PhoneFrame>;
+  if (authLoading) return <PhoneFrame><div className="conv-page" data-chat="true"><div className="conv" ref={shellRef}>{head}<p className="conv__notice conv-lobby__empty" aria-busy="true">불러오는 중…</p></div></div></PhoneFrame>;
   if (!user) {
     return (
       <PhoneFrame>
@@ -143,13 +143,13 @@ export default function ConversationLobbyPage() {
     <div className="conv-page" data-chat="true">
       <div className="conv" ref={shellRef}>
         {head}
-        <div className="conv__log" role="log" aria-live="polite" aria-relevant="additions" ref={logRef} onScroll={onScroll}>
-          {query.isLoading && <p className="conv__notice" role="status">불러오는 중…</p>}
+        <div className="conv__log" role="log" aria-live="polite" aria-relevant="additions" aria-busy={query.isLoading || undefined} ref={logRef} onScroll={onScroll}>
+          {query.isLoading && <p className="conv__notice" aria-busy="true">불러오는 중…</p>}
           {missing && <p className="conv__notice conv-lobby__empty" role="status">{LOBBY_SOON_TEXT}</p>}
           {query.isError && !missing && (
             <div className="conv__notice" role="status">
               <span>말을 불러오지 못했어요.</span>
-              <button type="button" className="conv-chip" onClick={() => query.refetch()}>다시 받기</button>
+              <button type="button" className="conv-chip" onClick={() => query.refetch()}>다시 시도</button>
             </div>
           )}
           {query.isSuccess && messages.length === 0 && !pending && (

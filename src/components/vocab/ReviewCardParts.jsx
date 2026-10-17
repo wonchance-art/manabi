@@ -3,10 +3,11 @@
 // 복습 카드 공통 조각(REV-SCOPE-R1B-1 — 설계 §3-2 · §3-3 · §5-3 · §6-1 ⑥). 예전 일정 카드(VocabReview) · 새 일정
 // 카드(FsrsReviewSession) · 처음 보는 표현 · 집중 연습이 같은 앞뒤 규격을 쓴다: 앞면 = 글자만(읽기 · 뜻 없음),
 // 뒷면 = 뜻 + 읽기 + 소리. 판정(종류 · 발음 판정 대상 · 읽기 줄 · 문구)은 reviewCard.js가 진다.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import VocabularyContexts from '../learning/VocabularyContexts';
 import { detectLang, displayWord } from '../../lib/constants';
 import { EXPRESSION_KIND_LABELS, expressionKind, gradeGuide, readingLine, revealTrigger } from '../../lib/reviewCard';
+import { focusIfFree } from '../../lib/focusAfterAction';
 
 const LANG_TAG = { Japanese: 'ja', Chinese: 'zh', English: 'en', French: 'fr', Korean: 'ko' };
 export const langTag = word => LANG_TAG[word?.language] || undefined;
@@ -21,6 +22,25 @@ export function useScoreArmed(revealed, key) {
     return () => clearTimeout(timer);
   }, [revealed, key]);
   return revealed && armedKey === key;
+}
+
+/**
+ * 채점 막대로 초점 잇기(FOCUS-AFTER-ACTION-001 C2). 「정답 확인하기」는 누르면 사라져 초점이 body로 떨어졌다.
+ * 막대가 잠김에서 풀림(뒷면 + armed)으로 바뀐 그 한 번만 **막대 자체**(tabIndex -1 · role=group 「기억 채점」)로 옮긴다.
+ * 버튼이 아니므로 Space/Enter를 한 번 더 눌러도 채점되지 않는다. Tab을 누르면 네 버튼으로 들어간다.
+ * 막 열린 화면(처음부터 풀린 상태)은 건드리지 않는다. 초점이 복습 화면 밖이면 뺏지 않는다.
+ * 돌려준 ref는 막대 div에 단다.
+ */
+export function useGradeBarFocus(locked, armed) {
+  const bar = useRef(null);
+  const sawLocked = useRef(false);
+  useEffect(() => {
+    if (locked) { sawLocked.current = true; return; }
+    if (!armed || !sawLocked.current) return;
+    sawLocked.current = false;
+    focusIfFree(bar.current, bar.current?.closest('.review-room-session'));
+  }, [locked, armed]);
+  return bar;
 }
 
 /** 카드 머리 — 「복습 · 단어」 · 「처음 보는 표현」 · 「집중 연습 · 7 / 42」. */

@@ -332,7 +332,7 @@ export default function QuestReview({ userId, onClose }) {
 
         {/* 로딩 */}
         {phase === 'loading' && (
-          <p style={{ textAlign: 'center', padding: '18px 0', color: GBC.inkSoft, fontSize: '0.86rem' }}>
+          <p aria-busy="true" style={{ textAlign: 'center', padding: '18px 0', color: GBC.inkSoft, fontSize: '0.86rem' }}>
             불러오는 중…
           </p>
         )}

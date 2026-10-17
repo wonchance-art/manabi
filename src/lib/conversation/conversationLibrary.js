@@ -1,7 +1,7 @@
 // 대화 자료(processed_json.metadata.conversation) 조회 — 대화 탭 방 목록·지난 턴 기록.
 // 튜터 대화는 서재에 두지 않는다(오너 결정 「대화방에만」 2026-10-17, CONV-CHAT-001 8차): 서재 목록 RPC가
 // 휴지통 밖에서 대화를 뺀다(docs/sql/library-hide-conversations.sql). 대화는 대화 탭 방 목록에서만 연다.
-import { filterActiveSources } from '../libraryOperations';
+import { hiddenLibraryKeys, withoutHiddenSources } from '../libraryOperations';
 
 const COLUMNS = [
   'id', 'title', 'created_at',
@@ -18,14 +18,18 @@ const COLUMNS = [
  * 두 칸이 없는 옛 대화만 그 행들의 turns를 한 번 더 읽어 채운다(다음 턴부터는 서버가 남긴다).
  */
 export async function fetchConversationRooms(client, userId, { limit = 60 } = {}) {
-  const { data, error } = await client.from('reading_materials')
-    .select([COLUMNS, 'preview:processed_json->metadata->conversation->>preview', 'lastAt:processed_json->metadata->conversation->>lastAt'].join(','))
-    .eq('owner_id', userId)
-    .not('processed_json->metadata->conversation', 'is', null)
-    .order('id', { ascending: false })
-    .limit(limit);
+  // 대화 행과 숨긴 항목 키는 서로 기다릴 이유가 없다 — 동시에 띄워 두 왕복을 한 왕복 시간으로(LIBRARY-PREFETCH-002 선례).
+  const [{ data, error }, hidden] = await Promise.all([
+    client.from('reading_materials')
+      .select([COLUMNS, 'preview:processed_json->metadata->conversation->>preview', 'lastAt:processed_json->metadata->conversation->>lastAt'].join(','))
+      .eq('owner_id', userId)
+      .not('processed_json->metadata->conversation', 'is', null)
+      .order('id', { ascending: false })
+      .limit(limit),
+    hiddenLibraryKeys(client, userId),
+  ]);
   if (error) throw error;
-  const active = await filterActiveSources(client, userId, (data || []).filter((row) => row.marker != null));
+  const active = withoutHiddenSources((data || []).filter((row) => row.marker != null), hidden);
   const old = active.filter((row) => !row.preview || row.lastAt == null).map((row) => row.id);
   const turnsById = new Map();
   if (old.length) {

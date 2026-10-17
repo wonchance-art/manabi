@@ -70,6 +70,8 @@ function AuthForm() {
       } else if (isLogin) {
         await signIn(email, password);
         router.push(from);
+        // 손님일 때 미리 받아 둔 배움 대기 화면(손님 골격)을 버린다 — 이동 뒤 차례로(B1). push 앞이면 이동이 refresh를 버린다.
+        router.refresh();
       } else {
         if (password.length < 8) { setError('비밀번호는 8자 이상이어야 해요.'); setLoading(false); return; }
         await signUp(email, password, displayName);

@@ -52,6 +52,12 @@ jobs:
       - run: node supabase/tests/fsrs-anki-v2-policy.mjs
       - run: node supabase/tests/conversation-lobby.mjs
       - run: node supabase/tests/anon-book-catalog.mjs
+      - run: node scripts/verification/n4-book-support.mjs
+      - run: node supabase/tests/korean-capability-repin.mjs
+      - run: node supabase/tests/vocabulary-snapshot-set-flags.mjs
+      # 관측 fixture 위에 관측일 뒤 마이그레이션을 차례로 적용해 FSRS 핀 넷 · 모든 언어 ready를 실제 지문으로 확인한다
+      # (FINGERPRINT-REPIN-002). 이미 나간 위반은 스크립트의 EXPECTED_BREAKS(정확한 상태)로만 통과한다.
+      - run: node supabase/tests/post-observation-migrations.mjs
 
   e2e:
     name: e2e (smoke · learning-flow)
@@ -78,6 +84,11 @@ jobs:
           E2E_PUBLISHED_EDITION: 8a8c1c1fd452773810abaf8c
           NODE_OPTIONS: --import=./e2e/server-fetch-mock.mjs
         run: npm run e2e:build
+
+      # 글꼴 힌트 산출 대조(FONT-HINT-001) — 빌드와 같은 글꼴 입력(대역)으로 힌트 주소가 산출 파일 ·
+      # @font-face · 서버 번들과 맞는지 본다. next 업그레이드로 파일 이름 규칙이 바뀌면 여기서 깨진다. 빌드 추가 없음.
+      - name: 글꼴 힌트 산출 대조
+        run: NEXT_FONT_GOOGLE_MOCKED_RESPONSES="$PWD/e2e/fixtures/google-fonts-mock.cjs" node scripts/fonts/check-font-hints.mjs
 
       # 브라우저는 러너에 미리 깔린 Google Chrome을 쓴다(playwright.config.mjs 기본 channel).
       - name: Chrome 확인

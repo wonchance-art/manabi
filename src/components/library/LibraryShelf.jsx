@@ -1,32 +1,40 @@
 'use client';
 import Link from 'next/link';
 import {useEffect,useState,useRef} from 'react';
-import {useSearchParams,useRouter} from 'next/navigation';
+import {useSearchParams} from 'next/navigation';
 import {useInfiniteQuery,useQuery,useQueryClient} from '@tanstack/react-query';
 import {supabase} from '@/lib/supabase';
 import {langNameKo} from '@/lib/constants';
 import {encounterLookupLang} from '@/lib/refVocabLookup';
 import {pinnedMaterialIds} from '@/lib/offlineCache';
-import {fetchLibraryPage,LIBRARY_LANGUAGES,libraryFilters,libraryNarrowed,libraryKey,libraryError,libraryComposerHref} from '@/lib/personalLibrary';
+import {LIBRARY_LANGUAGES,libraryFilters,libraryNarrowed,libraryKey,libraryError,libraryComposerHref} from '@/lib/personalLibrary';
 import {libraryResume} from '@/lib/libraryActivity';
 import {safeLibraryReturn} from '@/lib/libraryReturn';
+import {keepPreviousForUser} from '@/lib/keepPreviousForUser';
+import {useCommittedReplace} from '@/lib/useCommittedReplace';
+import {libraryListQuery,libraryRecentQuery} from '@/lib/libraryShelfQueries';
 import LibraryReaderLink from '@/components/web/LibraryReaderLink';
 import LibraryRow,{LibraryCover} from './LibraryRow';
 import LibraryCollections,{LibraryDialog,useCollections} from './LibraryCollections';
 import {operationTarget,currentLibraryTarget,selectedRange,folderPaths,prepareOperation,continueOperation,libraryRpc,invalidateLibrary,libraryOperationError,pendingOperationKey,parsePendingOperation,operationCounts} from '@/lib/libraryOperations';
+import {RecentReadsSkeleton,ShelfRowsSkeleton} from './LibrarySkeleton';
 import './library.css';
 
 function QueryFailure({query,label}){return query.isError?<div className="shelf-query-error" role="alert"><p>{label} · {libraryError(query.error)}</p><button onClick={()=>query.refetch()}>다시 시도</button></div>:null;}
+// 서재 쿼리는 30초 캐시한다 — 쓰기 지점이 모두 무효화한다(browserQueryTrim.test.js가 지킨다).
+// 읽던 곳·목록: 열람 기록(useLibraryActivity)·읽은 위치(useScrollRestore)·서재 작업과 자료 추가·공개 범위(invalidateLibrary).
+// 받아두기 목록(library-pinned): 자료실의 받아두기 토글이 무효화한다.
 function RecentReads({user}){
  const [more,setMore]=useState(false),[rows,setRows]=useState([]);
- const recent=useQuery({queryKey:['library-recent',user.id],staleTime:0,queryFn:()=>fetchLibraryPage(supabase,{},0,{recent:true})});
+ const recent=useQuery(libraryRecentQuery(supabase,user.id));
  useEffect(()=>{
   const items=[...(recent.data?.items||[])];
   const ordered=items.sort((a,b)=>Date.parse(b.opened_at)-Date.parse(a.opened_at)).slice(0,3);
   let storage;try{storage=window.localStorage;}catch{/* No exact local location. */}
   setRows(ordered.map(row=>({...row,resume:libraryResume(row,user.id,storage)})));
  },[recent.data,user.id]);
- if(!rows.length)return <>{recent.isPending&&<p className="shelf-muted" role="status">읽던 곳을 확인하고 있어요…</p>}<QueryFailure query={recent} label="읽던 곳"/></>;
+ // 받는 중 · 받은 직후 줄을 고르는 한 프레임은 골격(LOADING-SKELETON-001) — 비었다가 카드가 들어오며 아래가 밀리지 않게.
+ if(!rows.length)return <>{(recent.isPending||(recent.data?.items?.length>0))&&<RecentReadsSkeleton/>}<QueryFailure query={recent} label="읽던 곳"/></>;
  return <section className={`shelf-recent${more?' is-expanded':''}`} aria-labelledby="shelf-recent-title"><div className="shelf-section-heading"><h2 id="shelf-recent-title">읽던 곳에서</h2>{rows.length>1&&<button className="shelf-recent-toggle" aria-expanded={more} onClick={()=>setMore(!more)}>{more?'접기':'다른 읽던 자료'}</button>}</div><div className="shelf-recent-grid">{rows.map((row,index)=><LibraryReaderLink key={libraryKey(row)} href={row.resume.href} className={`shelf-recent-card${index?' shelf-recent-extra':''}`}><LibraryCover row={row}/><div><small>{row.language?langNameKo(row.language):'읽던 자료'}</small><h3 lang={encounterLookupLang(row.language)||undefined}>{row.title}</h3><p>{row.resume.label} <span aria-hidden="true">↗</span></p></div></LibraryReaderLink>)}</div><QueryFailure query={recent} label="읽던 곳"/></section>;
 }
 function FilterDialog({filters,onApply,onClose}){
@@ -40,28 +48,32 @@ function FilterDialog({filters,onApply,onClose}){
  </form></LibraryDialog>;
 }
 export default function LibraryShelf({user}){
- const params=useSearchParams(),router=useRouter(),cache=useQueryClient();
+ // 검색어만 바꾸는 이동은 반영을 확인한다 — 같은 경로 router.replace가 가끔 commit되지 않는다(useCommittedReplace).
+ const params=useSearchParams(),replace=useCommittedReplace(),cache=useQueryClient();
  const filters=libraryFilters(params),narrowed=libraryNarrowed(filters),trash=filters.scope==='trash';
  const [search,setSearch]=useState(filters.query),[dialog,setDialog]=useState(null),[menu,setMenu]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const [selecting,setSelecting]=useState(false),[selected,setSelected]=useState([]),[result,setResult]=useState(null),[pending,setPending]=useState(null),[folder,setFolder]=useState(''),[rename,setRename]=useState('');
  const anchor=useRef(null),attempt=useRef(null),listRef=useRef(null);
  const collections=useCollections(user.id),folders=folderPaths(collections.data||[]);
  const currentCollection=folders.find(c=>c.id===filters.collection),returnTo=safeLibraryReturn(`/materials?${params}`);
- const pinned=useQuery({queryKey:['library-pinned',user.id],enabled:filters.pinned,queryFn:pinnedMaterialIds,staleTime:0});
- const keyFilters={...filters};delete keyFilters.shown;
- const list=useInfiniteQuery({queryKey:['personal-library',user.id,keyFilters,pinned.data],enabled:!filters.pinned||pinned.isSuccess,initialPageParam:0,
- queryFn:({pageParam})=>fetchLibraryPage(supabase,filters,pageParam,{pinned:pinned.data}),getNextPageParam:(last,pages)=>{const length=pages.reduce((n,p)=>n+p.items.length,0);return length<last.total?length:undefined;},staleTime:0});
- const {hasNextPage,isFetching,isError,fetchNextPage}=list;
+ const pinned=useQuery({queryKey:['library-pinned',user.id],enabled:filters.pinned,queryFn:pinnedMaterialIds,staleTime:30000});
+ const listQuery=libraryListQuery(supabase,user.id,filters,pinned.data),keyFilters=listQuery.queryKey[2];
+ // 조건을 바꾸는 동안 이전 목록을 흐리게 남긴다(LIST-KEEP — 비었다가 다시 차며 높이가 튀던 것). 같은 계정일 때만.
+ const list=useInfiniteQuery({...listQuery,enabled:!filters.pinned||pinned.isSuccess,placeholderData:keepPreviousForUser(user.id)});
+ const {hasNextPage,isFetching,isError,fetchNextPage,isPlaceholderData:stale}=list;
  const items=list.data?.pages.flatMap(p=>p.items)||[],total=list.data?.pages[0]?.total||0;
  // 튜터 대화는 서재에 두지 않는다(오너 결정 「대화방에만」 2026-10-17) — 대화 탭 방 목록에서만 연다. 목록 RPC가 휴지통 밖에서 뺀다
  // (docs/sql/library-hide-conversations.sql). 휴지통에는 남아 지운 대화를 되돌릴 수 있다.
  const selectedKeys=new Set(selected.map(libraryKey)),counts=operationCounts(result);
+ // 정리 결과 알림 — 영역(.sr-only)은 늘 두고 내용만 넣는다(내용과 함께 생기는 role=status는 화면 낭독기가 놓칠 수 있다). 보이는 줄은 한 번만 읽히게 숨기고, 다시 시도 · 되돌리기가 이 영역을 가리킨다(A11Y-SWEEP-001).
+ const pendingLine=pending&&!busy?'정리 결과를 아직 확인하지 못했어요.':'';
+ const resultLine=result?`${busy?'정리 중…':counts.undone?`${counts.undone}개 취소됨`:`${counts.success||0}개 완료`}${Object.entries(counts).filter(([k])=>!['success','undone','pending'].includes(k)).reduce((n,[,v])=>n+v,0)>0?' · 일부 자료는 다시 확인해 주세요.':''}`:'';
  const selectionScope=JSON.stringify({...keyFilters,sort:null,pinnedIds:pinned.data||[],owner:user.id});
  useEffect(()=>{setSelected([]);setSelecting(false);anchor.current=null;},[selectionScope]);
  useEffect(()=>{try{setPending(parsePendingOperation(localStorage.getItem(pendingOperationKey(user.id))));}catch{/* No persistence available. */}},[user.id]);
  useEffect(()=>setSearch(filters.query),[filters.query]);
- useEffect(()=>{if(items.length<filters.shown&&hasNextPage&&!isFetching&&!isError)fetchNextPage();},[filters.shown,items.length,hasNextPage,isFetching,isError,fetchNextPage]);
- function change(patch){const next=new URLSearchParams(params.toString());if(!Object.hasOwn(patch,'shown'))next.delete('shown');next.delete('restoreY');for(const [k,v]of Object.entries(patch)){if(v)next.set(k,String(v));else next.delete(k);}router.replace(`/materials${next.size?`?${next}`:''}`,{scroll:false});}
+ useEffect(()=>{if(!stale&&items.length<filters.shown&&hasNextPage&&!isFetching&&!isError)fetchNextPage();},[stale,filters.shown,items.length,hasNextPage,isFetching,isError,fetchNextPage]);
+ function change(patch){const next=new URLSearchParams(params.toString());if(!Object.hasOwn(patch,'shown'))next.delete('shown');next.delete('restoreY');for(const [k,v]of Object.entries(patch)){if(v)next.set(k,String(v));else next.delete(k);}replace(`/materials${next.size?`?${next}`:''}`,{scroll:false});}
  function remember(id,undo=false){const request=id?{id,undo}:null;setPending(request);try{if(request)localStorage.setItem(pendingOperationKey(user.id),JSON.stringify(request));else localStorage.removeItem(pendingOperationKey(user.id));}catch{/* Result can still be recovered in this tab. */}}
  async function finish(value){setResult(value);await invalidateLibrary(cache,user.id);setSelected([]);setDialog(null);setMenu(null);if(!value.items.some(x=>x.status==='pending'))remember(null);requestAnimationFrame(()=>listRef.current?.focus({preventScroll:true}));}
  async function apply(action,rows=selected,options={}){
@@ -80,22 +92,23 @@ export default function LibraryShelf({user}){
  return <div className="shelf-layout shelf-managed"><header className="shelf-header"><h1>내 서재</h1><form role="search" onSubmit={e=>{e.preventDefault();change({q:search.trim()});}}><label className="shelf-sr" htmlFor="library-search">제목·파일명 검색</label><input id="library-search" type="search" maxLength={120} value={search} placeholder="검색" onChange={e=>{setSearch(e.target.value);if(!e.target.value)change({q:''});}}/><button type="submit" aria-label="검색">↗</button></form><Link className="manabi-button" href={libraryComposerHref(returnTo,filters.collection)}>자료 추가</Link></header>
  <div className="shelf-workspace"><nav className="shelf-folder-nav" aria-label="서재 위치">{navigation}</nav><div className="shelf-content">
  {!narrowed&&!search&&<RecentReads user={user}/>}
- <section className="shelf-list-section" aria-labelledby="shelf-list-title"><div className="shelf-section-heading"><h2 id="shelf-list-title">{currentCollection?.path||({trash:'휴지통',favorites:'즐겨찾기',unfiled:'미분류'})[filters.scope]||'전체'} <span className="shelf-count">{list.isSuccess?total:''}</span></h2><div className="shelf-list-tools"><label className="shelf-sr" htmlFor="library-sort">정렬</label><select id="library-sort" value={filters.sort} onChange={e=>change({sort:e.target.value})}><option value="newest">최근 저장순</option><option value="opened">최근 열어본 순</option><option value="title">제목순</option>{filters.sort==='level'&&<option value="level">급수순</option>}</select><button onClick={()=>setDialog('filters')} aria-label="자료 필터">필터</button><button aria-pressed={selecting} disabled={busy} onClick={()=>{setSelecting(!selecting);setSelected([]);}}>{selecting?'취소':'선택'}</button></div></div>
+ <section className="shelf-list-section" aria-labelledby="shelf-list-title"><div className="shelf-section-heading"><h2 id="shelf-list-title">{currentCollection?.path||({trash:'휴지통',favorites:'즐겨찾기',unfiled:'미분류'})[filters.scope]||'전체'} <span className="shelf-count">{list.isSuccess&&!stale?total:''}</span></h2><div className="shelf-list-tools"><label className="shelf-sr" htmlFor="library-sort">정렬</label><select id="library-sort" value={filters.sort} onChange={e=>change({sort:e.target.value})}><option value="newest">최근 저장순</option><option value="opened">최근 열어본 순</option><option value="title">제목순</option>{filters.sort==='level'&&<option value="level">급수순</option>}</select><button onClick={()=>setDialog('filters')} aria-label="자료 필터">필터</button><button aria-pressed={selecting} disabled={busy} onClick={()=>{setSelecting(!selecting);setSelected([]);}}>{selecting?'취소':'선택'}</button></div></div>
  <QueryFailure query={collections} label="폴더"/><QueryFailure query={pinned} label="기기 보관"/><QueryFailure query={list} label="자료 목록"/>
  {filters.collection&&collections.isSuccess&&!currentCollection&&<p role="status">폴더가 없어요. <button onClick={()=>change({collection:''})}>전체</button></p>}
  {(filters.query||filters.language||filters.kind||filters.state)&&<div className="shelf-result-summary"><span>{filters.query||filters.language||filters.kind||filters.state}</span><button onClick={()=>change({q:'',lang:'',kind:'',state:'',view:'',unread:''})}>조건 지우기</button></div>}
  {selecting&&<div className="shelf-selection-heading"><label><input type="checkbox" aria-label="현재 표시된 자료 선택" checked={items.length>0&&items.every(r=>selectedKeys.has(libraryKey(r)))} disabled={busy} onChange={e=>setSelected(e.target.checked?[...new Map([...selected,...items.map(operationTarget)].map(r=>[libraryKey(r),r])).values()]:selected.filter(r=>!items.some(x=>libraryKey(r)===libraryKey(x))))}/>현재 목록</label><span>{selected.length}개 선택</span>{total>items.length&&<button disabled={busy} onClick={selectAll}>검색 결과 {total}개 선택</button>}</div>}
- {list.isPending&&<p role="status" className="shelf-muted">불러오는 중…</p>}
- <div ref={listRef} tabIndex={-1} className="shelf-list-focus" onKeyDown={e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='a'&&!['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)){e.preventDefault();setSelecting(true);setSelected(items.map(operationTarget));}}}>
- {!!items.length&&<ul className="shelf-rows">{items.map(row=><LibraryRow key={libraryKey(row)} row={row} ownerId={user.id} selecting={selecting} selected={selectedKeys.has(libraryKey(row))} disabled={busy} onSelect={toggle} onMenu={value=>{setMenu(value);setError('');}}/>)}</ul>}
- {list.isSuccess&&!items.length&&<div className="shelf-empty"><h3>{trash?'휴지통이 비어 있어요.':'자료가 없어요.'}</h3>{!trash&&<Link className="manabi-button" href={libraryComposerHref(returnTo,filters.collection)}>자료 추가</Link>}</div>}
+ {(list.isPending||(stale&&!items.length))&&<ShelfRowsSkeleton/>}
+ <div ref={listRef} tabIndex={-1} className="shelf-list-focus" aria-busy={stale||undefined} onKeyDown={e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='a'&&!['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)){e.preventDefault();setSelecting(true);setSelected(items.map(operationTarget));}}}>
+ {!!items.length&&<ul className="shelf-rows">{items.map(row=><LibraryRow key={libraryKey(row)} row={row} ownerId={user.id} selecting={selecting} selected={selectedKeys.has(libraryKey(row))} disabled={busy||stale} onSelect={toggle} onMenu={value=>{setMenu(value);setError('');}}/>)}</ul>}
+ {list.isSuccess&&!stale&&!items.length&&<div className="shelf-empty"><h3>{trash?'휴지통이 비어 있어요.':'아직 자료가 없어요.'}</h3>{!trash&&<Link className="manabi-button" href={libraryComposerHref(returnTo,filters.collection)}>자료 추가</Link>}</div>}
  </div>
- {list.hasNextPage&&<button className="shelf-load-more" disabled={list.isFetchingNextPage} onClick={()=>{change({shown:items.length+20});list.fetchNextPage();}}>{list.isFetchingNextPage?'불러오는 중…':'더 보기'}</button>}
+ {list.hasNextPage&&!stale&&<button className="shelf-load-more" disabled={list.isFetchingNextPage} onClick={()=>{change({shown:items.length+20});list.fetchNextPage();}}>{list.isFetchingNextPage?'불러오는 중…':'더 보기'}</button>}
  </section>
  {selecting&&selected.length>0&&<div className="shelf-selection-bar" aria-label="선택한 자료 작업"><strong>{selected.length}개</strong>{trash?<button disabled={busy||!!pending} onClick={()=>apply('restore')}>복원</button>:<><button disabled={busy||!!pending} onClick={()=>{setMenu(null);setFolder('');setDialog('add');}}>폴더에 추가</button>{filters.collection&&<button disabled={busy||!!pending} onClick={()=>{setMenu(null);setFolder('');setDialog('move');}}>이동</button>}<button disabled={busy||!!pending} onClick={()=>apply('favorite',selected,{value:filters.scope!=='favorites'})}>{filters.scope==='favorites'?'즐겨찾기 해제':'즐겨찾기'}</button><button disabled={busy||!!pending} onClick={()=>{setMenu(null);setDialog('trash');}}>휴지통</button></>}<button disabled={busy} aria-label="선택 해제" onClick={()=>{setSelected([]);setSelecting(false);}}>×</button></div>}
  {error&&<p className="shelf-notice" role="alert">{error}</p>}
- {pending&&!busy&&<div className="shelf-notice" role="status">정리 결과를 아직 확인하지 못했어요. <button onClick={()=>resume(pending.id,pending.undo)}>다시 시도</button></div>}
- {result&&<div className="shelf-notice" role="status"><span>{busy?'정리 중…':counts.undone?`${counts.undone}개 취소됨`:`${counts.success||0}개 완료`}{Object.entries(counts).filter(([k])=>!['success','undone','pending'].includes(k)).reduce((n,[,v])=>n+v,0)>0&&' · 일부 자료는 다시 확인해 주세요.'}</span>{(counts.conflict||counts.unavailable)>0&&<button disabled={busy||!!pending} onClick={async()=>{setBusy(true);try{const failed=result.items.filter(x=>['conflict','unavailable'].includes(x.status));setSelected(await Promise.all(failed.map(x=>currentLibraryTarget(supabase,x))));setSelecting(true);setResult(null);}catch(e){setError(libraryOperationError(e));}finally{setBusy(false);}}}>실패 항목 다시 선택</button>}{counts.success>0&&<button disabled={busy||!!pending} onClick={()=>resume(result.id,true)}>되돌리기</button>}<button aria-label="결과 닫기" disabled={busy} onClick={()=>setResult(null)}>×</button></div>}
+ <span className="sr-only" role="status" id="shelf-organize-notice">{[pendingLine,resultLine].filter(Boolean).join(' ')}</span>
+ {pendingLine&&<div className="shelf-notice"><span aria-hidden="true">{pendingLine} </span><button aria-describedby="shelf-organize-notice" onClick={()=>resume(pending.id,pending.undo)}>다시 시도</button></div>}
+ {result&&<div className="shelf-notice"><span aria-hidden="true">{resultLine}</span>{(counts.conflict||counts.unavailable)>0&&<button aria-describedby="shelf-organize-notice" disabled={busy||!!pending} onClick={async()=>{setBusy(true);try{const failed=result.items.filter(x=>['conflict','unavailable'].includes(x.status));setSelected(await Promise.all(failed.map(x=>currentLibraryTarget(supabase,x))));setSelecting(true);setResult(null);}catch(e){setError(libraryOperationError(e));}finally{setBusy(false);}}}>실패 항목 다시 선택</button>}{counts.success>0&&<button aria-describedby="shelf-organize-notice" disabled={busy||!!pending} onClick={()=>resume(result.id,true)}>되돌리기</button>}<button aria-label="결과 닫기" disabled={busy} onClick={()=>setResult(null)}>×</button></div>}
  <footer className="shelf-footer"><Link href="/study/library">지난 이야기</Link><Link href="/vocab">복습</Link><Link href="/materials?tools=1&view=owned">자료 상세 보기</Link></footer>
  </div></div>
  {dialog==='filters'&&<FilterDialog filters={filters} onApply={change} onClose={close}/>}

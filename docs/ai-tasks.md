@@ -878,7 +878,153 @@
 
 ## Claude (claude/*)
 ### doing
-- **WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)** `claude/beautiful-lamport-po6fv0`:
+- **#1505 병합 후속 (2026-10-17 KST)** `claude/beautiful-lamport-po6fv0`: 손님 서재 서버 HTML부터 손님 화면 · 듣기 막대 속도 이름 · 글자 칸 aria-expanded ·
+  교재 hash 기록 Next tree(BOOK-HASH-RACE-001 후속) · 来い/来れる · 오쿠리가나 관행 가드 · 来 다음 토큰 표 useMemo ·
+  TOKEN-REFRESH-409-001(동시 갱신에서 진 요청이 인증 쿠키를 지워 로그아웃시키던 길 차단, 적대적 리뷰 차단 0).
+  + 진짜 무효 세션(session_not_found · refresh_token_not_found · user_banned 등)만 서버가 쿠키 삭제 · auth/callback · confirm 같은 가드(리뷰 문제없음) ·
+  영어 카드 IPA 줄(토큰 furigana) · 1단 의지형 食べよ|う 가드 · e2e 학습 API fixture 공용화.
+  #1505 운영 배포 검수(12:23 KST READY · 16/16 · 런타임 오류 0 · asset public 캐시 · set-cookie 없음).
+  목업 권장안(오너 「결정사안은 권장대로 진행」): 손님 AI 로그인 안내 · 손님 ← 산책 · 로그아웃 활용형 표제어 읽기 · 어두운 테마 바깥 여백 · 중국어 日 줄 표 즉시 받기.
+  bfcache A(산책 · 교재 breadcrumb prefetch 끔, 교재 bfcache 3/3) · FONT-HINT-001(Noto Sans 그리는 세그먼트만 미리 받기, 픽셀 차 0).
+  GEMINI-402-GUARD(결제 · 크레딧 오류 = 「서비스 설정」: 혼잡 재시도 없음 · 뜻 빈 분석 completed 저장 막기 · TTS 실패 10분 기억, 리뷰 차단 1 반영) ·
+  CARD-SENSES-SHIFT-001(1440 채점 줄 패널 아래 고정 — 예문 늦게 와도 0px, 오너 「권장대로」) · VIEWER-TAP-PERF-001(탭 재렌더 360 → 2칸) ·
+  원본 「일부만 고르기」 초점 깜박임 · e2e 위치 저장 경합 4곳 · 분석 복구 단언 정리.
+  오너 확인 대기: Gemini 선불 크레딧 소진(TTS 402 · 분석 뜻 조회) · N5 #1–5 원문 기준 재분석 · 뷰어 목업 10건.
+- ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
+  발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로
+  /api/suggestions/today와 공용화. 지역학은 발견에서만 내림(/studies · 콘텐츠 보존). 비로그인 서재 → 「서가에서 읽어 보기」.
+  문학 · 그림 한 장 읽기 · 매거진(별도 세션 제작 중, 첫 호 전) 칸은 공개 결정 + 정본 판정(공개 metadata 위조 방어) 뒤. 계약 `discoverShelf.test.jsx`.
+  · 같은 PR(/ux-review 운영 점검 2026-10-16): 「공개 글 123편」→ 열면 0편(공개 123편이 전부 시리즈 제목) 실측 → 서가 · 목록 · 스터디 그룹이
+    `SERIES_TITLE_ILIKE` 하나로 같은 조건을 쓰고 0편이면 칸을 숨김 · 공개 목록 빈 상태를 로그인 권유 대신 「아직 함께 읽는 글이 없어요」로 ·
+    `.manabi-page a` 글자색 상속이 `.btn--primary` 흰 글자를 덮던 대비 2.50:1 수정(`a:not(.btn)`).
+  · 같은 PR(PERF): 공개 읽기 경로 판본 검증 재사용 `cachedCandidate` · 장 목록 `readingSections` 인스턴스 기억(관리자 경로는 매번 검증).
+  · 같은 PR(AUTH-RETURN-001, /ux-review 3번): 화면의 맨 `/auth` 18곳(17파일)을 정본 `authEntryHref`로 — 로그인 뒤 누른 화면으로 복귀
+    (뷰어 게스트 배너 → 단어 저장 이음새 포함). 계약 `authReturnLinks.test.js`(맨 /auth href 금지). 실계정 복귀는 Preview 확인 대상.
+  · 같은 PR(BOOK-GROUP-OWNER-001, 정본 판정 설계 §1.6 허점): 공개 목록 책 묶음을 (소유자 + key)로 — 남의 공개 행이 정본 책 카드에 끼지 않음.
+    공개 목록에서는 정본 표지 · 제목을 닫음(fail closed — 발행 기록 C안 canonical_book_releases, 오너 결정 대기 뒤 재개). 계약 `bookMeta.test.js`.
+  · 같은 PR(UX-AUDIT-AUTH-001): `scripts/ux-audit-auth.mjs` — e2e 합성 로그인으로 복습 진행 · 끝, 서재 목록, 뷰어를 캡처 · 판정.
+    실행 결과 PASS 40 · FAIL 0 — 복습 카드 넘김(실측 235ms) · 앞면 클릭 펼치기 실브라우저 확인(예전 일정 엔진). FSRS 활성 화면 · /study · 대화는 미검증.
+  · 같은 PR(COPY-FIX-001, /ux-review 문구 점검): 화면 문구 67곳(38파일) — 옛 이름(자료실 → 서재 · 지난 이야기) · 대상 없는 「불러오는 중…」 ·
+    「가져오지 못했어요」 · 해요체 · 안내 「…해 주세요」 · 버튼(전체 보기 · 이어 읽기 · 자료 추가) · OG description 일치. 계약 `copyStandard.test.js` 규칙 3개 추가.
+    오너 결정 대기 문구(나의 책장/교재 · 담은 표현 등)는 그대로.
+  · 같은 PR(SUSPENSE-FALLBACK-001, 스켈레톤 실측 §3): fallback 없는 페이지 Suspense 5곳에 앱 대기 화면 — /conversation/new 직접 진입 빈 화면
+    (BAILOUT_TO_CLIENT_SIDE_RENDERING) 제거. 계약 `suspenseFallback.test.js`. 라우트 스켈레톤(산책 1순위 · 배움 2순위)은 목업 승인 대기.
+  · 같은 PR(리뷰 · Preview 검수 2026-10-17 KST): `.manabi-page a:not(.btn)` 우선순위 (0,2,1)이 `.manabi-button` 흰 글자 · `.manabi-link` 로즈를
+    덮던 퇴행(비로그인 주 버튼 6곳 2.50:1) → `:where()` · 계약 `linkColorSpecificity.test.js`. 서가 소식 → 「← 발견으로」(`SUGGESTION_BACK`).
+    공개 목록 정본 책 「다음 과 적기」는 key로 막음(표지 판정과 분리 — 정본 게시 409 예방).
+  · 같은 PR(VIEWER-IDLE-001): 미분석 표지 'idle'을 뷰어가 몰라 공개 시리즈 118편(id 50~177)이 제목만 있고 본문이 빈 화면 → `isPending`에 'idle'.
+    원문 + 분석 전 안내. 계약 `viewerIdleStatus.test.js`. 118편 일괄 분석 여부는 운영 DB 쓰기라 오너 결정.
+  · 같은 PR(PERF-BUNDLE-001, 번들 조사): 산책 · 서재 기본 화면이 그리지 않는 MaterialsPage를 정적 import → `LazyMaterialsPage`(next/dynamic,
+    운영 약 119KB 전송분). `isTeamRoot`를 의존성 없는 `classTeamRoot.js`로(수업 일정 · 공휴일 묶음 제외).
+    Preview(da5b8ba) 대조 실측(JS 압축 전송): 산책 360 → 199KB(청크 27 → 15) · 서재 379 → 247KB(29 → 21) · 함께 읽는 글은 청크 비교로 약 7KB 감소.
+  · 같은 PR(FONT-TC-SCOPE-001): Noto Sans TC를 번체 화면 세그먼트(viewer · pdf · suggestions · chinese, `TcFontScope`)로 — 그 밖 페이지 head CSS에서
+    @font-face 325면(brotli 약 35KB) 제거. `var(--font-noto-tc)` 폴백 없던 2곳 수리. 계약 `fontScope.test.js`. 빌드 확인은 Preview.
+  · 같은 PR(리뷰 2차): 정본 책 key 판정 공용화 `isCanonicalBookKey`(aozora- · se- · art-) — 서재 목차 「+ 과 추가」 · 「과 번호 수정」도 막음(정본 게시 409 예방).
+    문구 변경으로 깨진 e2e 선택자 4파일 · smoke 오류 단언 복구 + `retiredCopyE2e.test.js`. 팀 설정 행은 미분석 아님. 미분석 자료 게스트 배너 문구.
+  · 같은 PR(PERF-QUERY-001): 서재 목록 5초 통째 폴링 → 내 분석 중 행의 상태만 · 오늘의 추천 키 하나로 · 아는 단어 60초 · 읽던 곳 30초. 계약 `browserQueryTrim.test.js`.
+  · 같은 PR(PERF-TAB-003 · PERF-STUDY-001 · PERF-FSRS-001 · PERF-ANNOT-001): 교재 asset 경로 해시만 발행 확인 · 판본 재사용 · 공개 판본 immutable,
+    교재 목록 원고 jsonb 없이, /study 조립 순차 왕복 5 → 3, FSRS 상태 RPC 병렬, 주의점 GET은 metadata만.
+  · 같은 PR(APP-FEEL-002): `--ease-settle` 토큰 · 담기 순간(형광 긋기 · 담은 줄 · 수집 숫자 팝) · 복습 끝 막대 barGrow · learnIn .24s — 모두 0.3초 이하 · 전용 모션 축소.
+    계약 `appFeel.test.js`. 실빌드 탐침으로 움직임 · 모션 축소 확인(Chromium). 체감은 오너 검수.
+  · 같은 PR(리뷰 3차): 서가 공개 글 수에 책 장 포함(public_book_catalog) · 함께 읽는 글 인증 확인 뒤 조회 · 정본 책 직접 주소 이어 적기 차단.
+  · 같은 PR(PERF-LIT-DISPLAY-001): 정본 대조표를 화면용(manifest.display · incipits)으로 파생 — 배움 · 서재가 전체 표(해시 · 크레딧) 대신 표시용만.
+    데이터 gzip 배움 59.7 → 7.1KB · 서재 64.5 → 25.8KB. 해시 대조는 전체 표 그대로. 계약 `literatureDisplayManifest.test.js`(import 그래프 검사).
+  · 같은 PR(PERF-QUERY-002): 서재 쓰기 지점 무효화 보강(자료 추가 · PDF 업로드 · 공개 토글 · 받아두기) → personal-library · library-pinned 30초.
+    1000행 상한에 잘리던 브라우저 조회 5곳(맞춤도 · PDF 담김 · 노트 담김 · 주간 담은 말 · 데이터 내보내기)을 정본 완전 조회로. review_events 3곳 · 공개 목록 페이지네이션은 남김.
+  · 같은 PR(PERF-BUNDLE-005): /vocab 둘러보기 목록 · 상세 카드 지연 로드(유휴 미리 받기) · 뜻 정리 작은 모듈. 계약 `vocabPageSplit.test.js`.
+  · 같은 PR(MOTION-R2 · CONFIRM-FOCUS-001 · TOAST-MOTION-001 · CONV-TURN-IN-001): 동작 줄이기 공용 `reducedMotion()`(smooth 스크롤 7곳 · 배움 단어 자동 순환 정지),
+    확인창 닫으면 연 버튼으로 포커스 복귀, 토스트 퇴장 0.15s · 안의 버튼(×·되돌리기)에 손을 올리거나 포커스하면 멈춤(토스트 바탕은 아래 화면을 가로채지 않음 — 글자 위 멈춤은 없음), 대화 새 턴 등장. 계약 `reducedMotion.test.js` 외.
+  · studiesRefs 준비 단계 timeout 60 → 120초(단독 46~55초 실측, 병렬 4회 연속 초과).
+  · 같은 PR(리뷰 4차): 서가 책 장 수 head 개수만 · 교재 연결 목록 GET 판본 실패 시 과 목록만 비움 · 새 노트 서재 무효화 · /vocab 상세 카드 누르면 미리 받기.
+  · 같은 PR(VIEWER-FIRST-TOKEN-001): 뷰어 자료 조회를 하이드레이션 전(모듈 평가)에 시작 · Supabase preconnect. 운영 첫 단어 2.9~3.4s(미국 측정) → Preview 재측정.
+    서버 REST 대기(자료 GET 768ms)는 DB 쪽이라 미조사. 계약 `viewerFirstToken.test.js`.
+  · 같은 PR(BULK-ANALYZE-001, 오너 「권장대로」): 관리자 「자료 관리」에 분석 전 공개 자료 일괄 분석 — 정본 경로 · 소유자 세션. 운영 118편 원본 백업 · 복원 SQL 준비(다이제스트 일치).
+    실행은 병합 · 배포 뒤 오너가 관리자 화면에서. 실행 뒤 status · sequence · metadata 대조.
+  · 같은 PR(리뷰 5차 · no-undef): 새 노트 ReferenceError 수리, 화면 코드 no-undef 켬 — 숨은 ReferenceError 2건(「문단 골라 분석」 · 현황 약점 칸) 수리.
+  · 같은 PR: HSK 목록 지연 로드 · 중복 필드 · 저장됨 1회 · O 낙관 갱신 / 함께 읽는 글 곧장 복귀 · 위치 복원 / review_events 1000행 3곳 / 목록 유지(placeholderData) · ✓ 도장.
+  · SECDEF-HARDEN-001(오너 「권장대로 ㄱㄱ」 2026-10-17 KST, **운영 적용 완료** 20261016165745): anon 실행 가능하던 award_xp · 좋아요 4종 · touch_morphemes
+    실행권 회수(service_role만) · 관리자 지표 anon 회수 · search_path 고정. 학습 계약 지문 4개 적용 전후 동치. 악용 흔적 없음(음수 XP 0 · 좋아요 0).
+  · PROFILES-PRIVACY-001 ①(운영 view 20261016165910 + 앱 embed 3곳): 남의 프로필은 public_profiles(id · display_name · avatar_url).
+    ②(전원 공개 정책 제거 · UPDATE 열 제한 · activity 지문 재고정)는 이 PR 배포 뒤. 관리자 역할 변경 버튼 무음 실패(RLS + 'user' CHECK 위반) — admin_set_user_role RPC 초안.
+  · 같은 PR(STUDY-RELIABLE-001): /study 문법 재스케줄이 오프라인 · 저장 실패 때 보류함에 남아 다시 보냄 · 문항 전환 효과 · 진행 막대 progressbar 접근성 ·
+    세션 도중 로그인이 풀리면 「로그인이 필요해요」 안내 + 기록은 보류했다가 같은 계정이 돌아오면 보냄(다른 계정은 받지 않음 · 메모리 보류 = 같은 화면 안).
+    문법 일정은 시작 행과 같을 때만 쓰는 비교 후 쓰기(기기 시계 무관) · 탭 닫힘은 keepalive best-effort · 떠날 때 남으면 토스트.
+  · 같은 PR(LEVEL-KEYS-001, 오너 승인 목업): HSK 단어 목록 키보드 — roving 카드 · ↑↓ 이동(끝이면 150개 더) · O · X 뒤 다음 카드 · Space 펼치기 · Esc.
+    입력기 조합 · 입력 칸 · 수정키 · 진행 중 카드 · 키 반복(↑↓ 제외)은 무시. 키보드 O는 켜기만(해제 없음) · 지금 카드 안 버튼만 Tab ·
+    게스트는 제자리 + 로그인 안내. 단어 탭만. 남은 확인: 로그인 O · X 실저장(실계정).
+  · 같은 PR(LOADING-SKELETON-001, 오너 승인 목업): 발견 · 배움 라우트 loading.jsx + 서재 골격(Skeleton 부품 재사용 · aria-busy · 모션 축소 정지).
+    실빌드 CLS 발견 0 · 배움 0.00002 · 서재 0.032(읽던 곳 없는 첫 사용자 0.130 — 남은 한계). 배움 받는 중 거짓 빈 상태 제거.
+  · 같은 PR(ROW-CAP-SWEEP-001): 1000행 잘림 전수 조사 — 지금 넘는 미수리 경로 0. 새 기기 만남 끌어오기만 1000행 page로(계약 ⑦).
+    관찰: 내 자료 목록(최대 253) · public_book_catalog(공개 책 장 0) · 주간 만난 단어(14일 72).
+  · 같은 PR(PROFILES-PRIVACY-001 ② 선행): 관리자 판별을 service role 헬퍼로(backfill-ipa · seed-starters, anon 폴백 제거) · 관리자 역할 변경 =
+    admin_set_user_role RPC(마지막 관리자 강등 거부 · 'user'→'student') — 마이그레이션 20261016171800은 병합 때 db push로 운영 적용되므로
+    **병합 전 오너 명시 승인 필요**(대기). 그 전엔 안내 토스트. backfill-ipa · seed-starters는 서비스 키 없으면 503.
+    ② 본 적용(전원 공개 정책 제거 · UPDATE 14열 · activity + admission 지문 재고정)은 배포 · 역할 변경 실계정 검수 뒤.
+  · 같은 PR(APP-FEEL-003, 운영 손맛 점검 7건 중 4건): 탭 이동 대기 밑줄(useLinkStatus · 100ms 지연 · prefetch:false 유지) · 이동 뒤 포커스를
+    새 화면 첫 제목(없으면 본문 · 살아 있는 포커스는 그대로) · 주요 카드 눌림(:active scale .985 · 모션 축소 제외) · 대기 밑줄 = 지금 탭 밑줄 자리.
+    목록 뒤로가기 자리 복원(LEVEL-RESTORE-001 — h1 2500px −437 → 0 · h4 80,063px 0) · 교재 대기 골격(BOOK-SKELETON-001, CLS 0). 뷰어 다음 편 유지(진행).
+  · 같은 PR(CI e2e 수리): 토스트 바탕은 아래 화면을 가로채지 않음(안의 조작 요소만 눌림 — 포인터 위 멈춤이 카드 버튼을 영영 막던 것) ·
+    서재 골격 줄 클래스 분리 · N3 「저장됨」 예산 · 번체 글꼴 단언 · 뷰어 아는 단어 낙관 표시 단언.
+  · 같은 PR(LIBRARY-PREFETCH-001): 서재 첫 화면을 서버가 미리 받음(같은 키 · 같은 가져오기 + HydrationBoundary, 800ms 예산 · 실패면 기존 골격) —
+    로그인 서재 직접 진입 CLS 0.032~0.183 → 0 · 첫 줄 0.22~0.36초. 대화 묶음 자리. 아는 단어 낙관 쓰기는 응답 전 이탈 때 keepalive로 한 번 더(실기기 확인 중).
+    Preview 8c06c1b 검증 스크립트 통과(대기 밑줄 · 포커스 · 눌림 6곳 · 키보드 · 골격 CLS 0 · 콘솔 0). 배움 골격은 첫 클릭 1.57초(prefetch:false) — 의도 prefetch 진행.
+  · 같은 PR(APP-FEEL-004): 배움 탭 의도 prefetch — prefetch:false 유지 + 마우스 80ms 머묾 · 키보드 focus-visible 때만 router.prefetch(kind auto, 4분 중복 방지).
+    터치 · 서재 제외(서재는 서버 미리 받기). 병합 전 확인: 서재 미리 받기가 만료 토큰으로 서버 갱신을 일으키지 않게(진행).
+  · 같은 PR(HYDRATION-AUTH-001): smoke N4 챕터 「.fr-check 2개」 간헐(1/20) 원인 = 스트리밍 본문이 다 오기 전 AuthProvider 값 변경 →
+    대기 중 Suspense 경계를 클라이언트가 새로 그림. 세션 복원 · 게스트 확정을 DOMContentLoaded 뒤로(SDK 받기는 즉시) — 진단 40회 재렌더 0.
+    main 병합(#1508 HSK 7–9) 충돌 2곳 해소. keepalive 실측: Chromium 탭 닫기 · 새로 고침 · 다른 출처 이동 모두 사전 요청 + 본 요청 도착(Safari · Firefox 미측정).
+  · 같은 PR(교차 리뷰 수리): 닫힘 전송 정본 하나(src/lib/keepalive.js — 문법 · 아는 단어 공용, 두 번째 구현 금지 계약) · 대기 화면 뒤 실제 제목이
+    오면 포커스를 한 번 그리로(2초 · 조작 시 멈춤) · SDK 받기 재시도 동안은 loading(손님 깜빡임 없음, 상한 뒤에만 로그아웃 확정).
+  · 같은 PR(LIBRARY-PREFETCH-002): 서재 미리 받기는 토큰이 120초 미만 남으면 건너뜀(서버 갱신 0) · ES256 서명 서버 검증(getClaims, 인증 왕복 0) ·
+    대화 조회 동시 — GNB 서재 → 최종 배치 0.51초 → 0.35초 · CLS 0. 화면 읽기 숨김 정본(.sr-only 계열 한 곳) · 동작 줄이기 판정 7곳 정본화.
+    낡은 e2e 정리(features-r2 · 원래 위치 EPUB 통과 · viewer-reading-controls 진행) + 실제 회귀 2건(줄 머리 그립 화면 밖 · 긴 중국어 토큰 넘침).
+  · 같은 PR(CAPABILITY-DEDUPE-001 · BOOK-HASH-ENTRY-001): 단어장 능력 RPC 중복 제거 · 서버 입장/FSRS 상태 읽기 병렬(신선도 그대로) ·
+    교재 본문 hash 진입 때 표지 비침 0프레임 · 문형 목록 뒤로가기도 기준 칸. CI c8a3c2f 전부 green.
+  · 같은 PR: 이동 뒤 포커스 — 보이는 제목만 · 사라진 제목은 2초 안에 다시 옮김(교재 카드 표지→본문) · 단어 목록 pagehide 기록은 bfcache 아닐 때만
+    (즉시 뒤로가기 회귀 수리) · viewer-reading-controls 실제 글꼴 전 구간 34/34. bfcache: 나머지 화면은 RSC prefetch no-store가 막음(오너 결정).
+  · 같은 PR(BOOK-ENTRY-SKELETON-001): 교재 본문 hash 하드 로드 빈 자리 → 본문 골격(빈 프레임 0 · 표지 0) · 교재 pagehide 기록도 bfcache 아닐 때만 ·
+    자료 추가 beforeunload는 초안이 있을 때만. 교재 읽기 API = 사용자 값 없음 확인 → 공개 판본만 `private, no-cache` + ETag/304
+    (미리보기 · 오류는 no-store 그대로, bookReadingCache.test.js) — 헤더 흉내 Preview 실측 bfcache 복원 2/2, 실배포 재측정 대기.
+    과가 아닌 쪽(찾기 · 책 사용법 · 문화 읽기) 골격 머리는 갈래 · 제목만(실제와 같은 높이 160/131px, CLS 0). #u29 늦은 CLS는 e2e 대역 글꼴 탓 — 운영 ≤0.0013.
+  · 같은 PR(ADMIN-EDIT-STABLE-001): 인라인 편집 연필이 늦게 붙어도 내용 재마운트 0(관리자 장면 「확정」 입력 소실 4/20 → 0/20 · smoke 간헐 원인) ·
+    문구 표준 1건(일괄 분석 진행). 오너 판단 문구 6건은 보고(재시도 필요 · 받아뒀어요 · 연결 끊김 · Esc 안내 · 대기 이름 · 마침표).
+  · 같은 PR(KO-CAP-REPIN-001 · FINGERPRINT-REPIN-001): **운영 한국어 학습이 #1504 병합(10-17 00:00 KST) 뒤 꺼져 있음** — 그 PR의 RESTRICTIVE
+    정책이 한국어 capability 지문 범위인데 재게시가 빠졌다(실제 da2c… ≠ 게시 1c25…, 그 정책 키를 빼면 게시값과 동일 = 원인 하나).
+    복구 = `20261016191500_korean_capability_repin.sql`(capability 고정값 + FSRS core 게시값만 재게시, 사전 검사 두 상태만 통과 · 이미 고쳤으면 no-op ·
+    사후 검사 한국어 ready · 네 계약 · snapshot 동일, PGlite 8검사). **병합 = db push = 운영 적용**. 재발 방지 = 지문 범위를 건드리는 마이그레이션은
+    같은 파일에서 재게시해야 하는 CI 계약(#1504는 fixedBy로 이 파일에 연결).
+    동적 짝(FINGERPRINT-REPIN-002): 관측 fixture 위에 관측 뒤 마이그레이션을 실제 적용해 매 파일 FSRS 핀 넷 · 모든 언어 ready 확인(운영 상수만
+    fixture 값으로 치환, 191500 = HEAL). 정적 계약이 놓친 과거 장애 1건(061725 대화방 FK → profiles 지문 → 075000 복구)도 재현.
+  · 같은 PR: 일괄 분석 진행 · 목표 진도 실패 알림을 늘 있는 알림 영역에(조건부 마운트로 낭독기가 놓치던 것, 화면 변화 0).
+    접근성 점검 1차(화면 변화 0): 문맥 추가 결과 · 읽기 위치 저장 실패 · 교재 참고 검색 결과 수 알림 상시화, 읽기 확인 ✕ 이름,
+    현황 타일 창 · 문형 카드 Esc · 포커스 복귀(useDialogReturn). 치환 helper는 같은 양의 이전/나중 운영 값이 함께 있으면 거부.
+    2차: 서재 정리 · 폴더 저장됨 · 노트 담기 · 비슷한 말 · 대응어 결과 알림 상시화, 뷰어 토론 제목 h2(axe). 동작 뒤 초점(FOCUS-AFTER-ACTION-001):
+    읽기 저장 줄 · 두 복습 채점 막대는 묶음에(한 번 더 Enter/Space = 쓰기 0), /study는 「계속 →」. e2e는 보이는 알림 줄 기준으로 찾게 정정.
+    대비 AA(오너 승인 2026-10-17 「권장대로」): 이어 읽기 머리 · 장 부제/목표(②A) · 문형 번호 · 단어 위 읽기 5곳 ≥4.5:1(colorV2Unify 계약).
+    대기 화면 회귀 A1–A4 수리: 배움 · 교재 골격 CSS 직접 import, 공통 스피너는 0.4초 뒤에만(CSS), 손님 빈 공개 목록 = 운영 버튼, 발견 골격의 없는 줄 제거.
+    재검토 수정: localize 두 양 붕괴 가드 · 늦은 저장 뒤 초점이 카드 안 다른 조작을 뺏지 않게. 서재 필터 전환 간헐 미반영(Next 라우터 commit 누락) 우회 작업 중.
+  · 같은 PR(KO-PERF-SNAPSHOT-P4, 오너 승인 2026-10-17 「권장대로」 — P2 대신 P4, P3 보류): snapshot의 아는 단어 · 제외 판정을 집합 연산 한 번으로
+    (20261016191600, manual → core → admission 재게시, 사후 검사 전 사용자 출력 동일 + 모든 카드 registry_entry ≡ snapshot.registry).
+    PGlite 873 → 91ms(운영 예상 1.4 → 0.15~0.3초). 병합 = db push = 171800 → 191500 → 191600 순서로 운영 적용.
+    /study 보기 정답 누출 수리(STUDY-CHOICE-LEAK-001) · 읽기 확인 영어 라벨 → 기존 한국어(COPY-EN-001) · 비로그인 읽을거리 CLS 0.144 → 0
+    (LIBRARY-GUEST-CLS-001, 책 장 메타 RPC를 목록과 나란히) · 글꼴 받은 뒤 본문 글꼴일 때만 쪽 다시 재기(READER-FONT-REMEASURE-001).
+    서재 필터 전환 미반영(즐겨찾기 flake 약 10% — Next 15.5 라우터 commit 누락, 15.5.28까지 수정 없음) → useCommittedReplace 반영 확인 후
+    재전송(최대 2회), 실패 9/87 → 0/40. 같은 경로 replace 앱 전체 판정표 계약. /study 보기 규칙 보강(괄호 밖 누출 99건 · 짝 안 맞는 괄호 108건 ·
+    뜻 가르는 설명 보존, 전 트랙 드롭 0%). 채점 버튼 낭독 이름 「다시 10분」. 병합 전 운영 상수 대조 SQL 생성기 · 하네스 합성 학습자.
+    답한 뒤 뜻 전문 한 줄 · 어순 배열 칩 초점 이어받기 · 대기 알림 규칙(LOADING-ANNOUNCE-001 — ui-conventions §3, 짧은 대기 42곳 aria-busy만 ·
+    긴 작업 상시 영역 10% 단위) · vitest 도시 geo 변환 제외(전체 373 → 303초) · 실제 시계 판정 4곳 가짜 시계로.
+    오너 승인 2026-10-17 「권장대로」: 발견 서가 머리 A안(부제 · 「전체 보기」 → #today-news 「오늘의 소식」) · 읽기 확인 창 닫기 하나 · 「2/5」.
+    교재 안 이동(목차 → 과 · 다음 과 · ← 책 목차) 뒤 초점 새 쪽 제목으로(KBD-WALK-001) · 첨삭 · 필기 인식 상시 알림.
+    손님 배움 골격(B1, 오너 승인 목업 ①): 세션 쿠키로 서버부터 손님 배치 — 회원 배치가 보이던 0.5~0.7초 → 0. 쪽 넘김 다시 재기 1 → 0회.
+  · 같은 PR(PROFILES-PRIVACY-001 ①-hotfix · VIEW-WRITE-GRANT-001): **운영 public_profiles view가 anon · authenticated에 쓰기 권한을 가진 채 배포됨**
+    (165910이 PUBLIC만 회수, security_invoker=false · 소유자 postgres → RLS 우회, profiles 삭제 시 19개 표 CASCADE). 악용 흔적 0(접근 로그 · 행 수).
+    보완 20261016170000(SELECT만) + 정의자 view 쓰기 권한 계약. 운영 즉시 적용 완료(2026-10-17 10:5x KST, 오너 승인 · relacl anon/authenticated=r 확인).
+    Inter 라틴 조각 전 페이지 미리 받기 제거(FONT-PRELOAD-001, −47kB) · 공개 캐시 응답 쿠키 세션 금지 계약(PUBLIC-CACHE-COOKIE-001).
+    언어별 뷰어 점검(VIEWER-LANG-AUDIT): 일본어 활용형 요미가나를 기본형 읽기에서 옮김 — 違[ちがう]い → 違[ちが]い · 待[まつ]っ → 待[ま]っ(원래 있던 결함) · 来 | ない는 다음 토큰으로 こ. 실글꼴 빌드 성조 색 · 병음 크기 통과.
+    교재 다른 과 hash 이동 경합(BOOK-HASH-RACE-001): 고유 hash 이동을 라우터에 알리고 주소는 이벤트에서 — 4배 감속 320회 중 18 → 480회 중 0 실패.
+    필수 CI 밖 e2e 전수 점검: 이 PR 회귀 0(main 대조). 중국어 단어 카드에서 뷰어 전체 오류 화면이 되던 jaRef TypeError 수정 · 낡은 단언 정리.
+  · 보류: CJK 가변 weight(@font-face −67%, brotli 전송 −2%) — 600 · 650 · 800 · 300 굵기가 실제 값으로 바뀌는 시각 변경이라 오너 확인 뒤(화면 6개 비교 자료 전달, 2026-10-17 KST).
+- ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
   제안안 중 웹 몫만(스와이프 · 진동 · 아이폰 안전 여백은 모바일이라 보류). 두 복습 카드(예전 · 새 일정) 공통 `review-card--turn`(0.24초,
   모션 감소 분기) + `isCardRevealClick`(카드 안 조작은 가로채지 않음, 정본 입력은 「정답 확인하기」 버튼 유지) · 404 돌아갈 곳 = `MAIN_NAV`
@@ -1054,7 +1200,7 @@
   - **NAV-CONVERSATION-001**(10-15, 오너 지시 「[배움]과 [서재] 사이 [대화] 넣어서 오픈」 — AK 목업 10-09 「대화 화면이 생기면 배움 · 대화 · 서재 · 산책」의 실현, 대화 화면 #1444 운영 PASS 6181677483 뒤): 메뉴 넷 배움 · 대화 · 서재 · 산책, 대화 = `/conversation/new`(주제 · 이어서 하기), `/conversation/*` 소속 = 대화, chat 아이콘 · 계약 `webNavigation.test.js` · `focusedReader.test.js` · 브랜치 `claude/nav-conversation`(PR 진행).
   - **LEVEL-OX-AN-001**(10-15 KST, 오너 지시 — 채점 · 입력창 폐기, 목업 `/mnt/project-files/notes/level-list-ox-mockup.md`): 레벨 단어 목록을 빠른 암기용으로 — 카드 [O](아는 단어 = markKnown, 다시 누르면 되돌리기) · [X](공부 중 = FSRS save, 아는 단어면 먼저 풀고 담기) · 보기 탭 하나 고르기 [전체 · 단어 · 문장 · 뜻 · 소리] — 3판(10-15, 오너 「가리는 게 아니라 지정한 것만 보이게」): 전체가 아니면 고른 것 하나만 카드에 남고(가린 칸 없음, 단어는 글자 + 훈음 · 읽기 없음) 카드를 누르면 10초 동안 전체 · ⚙ 스위치: 아는 단어 숨기기 · 중국어 훈음(기본 켬, 뷰어 `hunRubyCells` + `HunCell` — 정체 꼴로 찾기) · 한자 대조(뷰어 `glyphRows` 正 · 日) · 「아는 단어 N」 목록 · 뜻 가리기 흡수 · 계약 `levelList.test.js` ⑹ · `levelListPage.test.jsx` · #1484 병합(25ed51d) · 3판 #1488 병합(93b91ed) · 4판(10-15, 오너 「다시 누르면 닫히게 · 애니메이션 · 닫힐 때 위치 변화 개선」): 고른 줄은 제자리 · 나머지만 아래로 펼침(grid 0fr→1fr) · 다시 누르면 접기 · 10초 자동 접기(남은 시간 줄) · 움직임 줄이기면 즉시 + M09 가독성 계획 이어받음(병음 Noto Sans · 듣기 아이콘 · O/X 48px · 좁은 화면 빈 목차 칸) · 검토 `/mnt/project-files/notes/level-list-v4-review.md`(탭별 O/X = 계정 저장 결정, 뜻별 예문 = 1급 표본 대기) · #1491 병합(922e2cf).
   - **LEVEL-FACET-AO-001**(10-15 KST, 오너 「단어랑 문장 뜻은 각자 독립적으로」 · 저장 = 「계정에」 결정): 보기 탭(단어 · 문장 · 뜻 · 소리)의 O/X를 그 탭에만 기록(새 표 `user_word_facets`, 본인 행 RLS 4 · anon 차단 · 트리거 0, PGlite `supabase/tests/user-word-facets.mjs` CI 편입) · 전체 탭은 아는 단어 · 공부 중 그대로 · 탭 X = 기록 + 공부 중 담기 · 네 탭 O면 아는 단어 옮기기 제안(자동 0) · 숨기기 · 개수 탭 기준 · 토스트 모바일 하단 메뉴 위로 · 뜻별 예문 1급 표본 `/mnt/project-files/notes/hsk1-sense-examples-pilot.md`(오너 검토 대기) · #1492 병합 `ff127200`(10-15 17:59 KST, 오너 「적용」). 자동 적용은 운영 이력 불일치로 [실패](https://github.com/wonchance-art/manabi/actions/runs/38709592304)(link 직후 중단, DB 변경 0) → [M09 적용 요청](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6188440901)(version 20261015090000 이력 맞춤). **LEVEL-FACET-FALLBACK-001**: 표를 읽지 못하면 탭별 기록을 끄고 모든 탭이 단어 단위 O · X(저장 실패 토스트 0, 표 생기면 배포 없이 전환) — 실브라우저 390 표 없음 · 있음 두 경로 PASS.
-  - **LEVEL-FLOW-001**(10-16 KST, 오너 디자인 검토 [아티팩트](https://claude.ai/artifact/DFw52LnpFCXpLBvS5w9efp) 1–4번 · 「오늘 20개」는 「나중에」 · 오너 「숫자가 대거 적히면 시선이 분산」): 단어 목록 머리를 붙는 한 줄로(제목 · ▾ 레벨/목록 · 찾기 · ⚙ — 알약 · 탭은 ▾ 안, 문형 · 한자는 그대로) · 보기 = 세그먼트 · 탭 보기 카드 줄 높이 축소(44px 원형 O · X, 이름표는 전체 보기만 — #1495 존중) · 진도 줄 = 얇은 막대 + 「N개 남음」 숫자 하나 + 「복습하기 →」(이 급수 범위 `/vocab?lang=Chinese&level=H1`) · 탭 개수 · 묶음 분수 · 더 보기 개수 0 · 탭 보기 X = 그 카드 펼침 · 처음 담은 날 KST 하루 한 번 「복습하기」 토스트 · ⚙ 성조 색(기본 끔, pinyinTone 재사용) · 아는 카드 흐리게 / 공부 중 줄무늬 · 배움 입구 HSK 카드 = 이 기기 사본으로 마지막 레벨 이어 하기 + 「알아요 n / N · 공부 중 n」(자세한 개수는 여기에만). DB 무접촉. #1500 병합 `e638b4a1`. **LEVEL-BALANCE-001**(10-16, 오너 「1440에서 균형」 → 카드 결정 「가운데 한 줄」): 목록 묶음 가운데 정렬 · 단어 목록은 왼쪽 목차 없이 680px 한 줄 + 품사 칩 줄(폰과 같은 구조), 문형도 가운데.
+  - **LEVEL-FLOW-001**(10-16 KST, 오너 디자인 검토 [아티팩트](https://claude.ai/artifact/DFw52LnpFCXpLBvS5w9efp) 1–4번 · 「오늘 20개」는 「나중에」 · 오너 「숫자가 대거 적히면 시선이 분산」): 단어 목록 머리를 붙는 한 줄로(제목 · ▾ 레벨/목록 · 찾기 · ⚙ — 알약 · 탭은 ▾ 안, 문형 · 한자는 그대로) · 보기 = 세그먼트 · 탭 보기 카드 줄 높이 축소(44px 원형 O · X, 이름표는 전체 보기만 — #1495 존중) · 진도 줄 = 얇은 막대 + 「N개 남음」 숫자 하나 + 「복습하기 →」(이 급수 범위 `/vocab?lang=Chinese&level=H1`) · 탭 개수 · 묶음 분수 · 더 보기 개수 0 · 탭 보기 X = 그 카드 펼침 · 처음 담은 날 KST 하루 한 번 「복습하기」 토스트 · ⚙ 성조 색(기본 끔, pinyinTone 재사용) · 아는 카드 흐리게 / 공부 중 줄무늬 · 배움 입구 HSK 카드 = 이 기기 사본으로 마지막 레벨 이어 하기 + 「알아요 n / N · 공부 중 n」(자세한 개수는 여기에만). DB 무접촉. #1500 병합 `e638b4a1`. **LEVEL-BALANCE-001**(10-16, 오너 「1440에서 균형」 → 카드 결정 「가운데 한 줄」): 목록 묶음 가운데 정렬 · 단어 목록은 왼쪽 목차 없이 680px 한 줄 + 품사 칩 줄(폰과 같은 구조), 문형도 가운데. **LEVEL-HSK79-001**(10-16, 오너 「HSK 7~9도 추가 · 통째로」): 중국어 레벨 목록에 H7 = 「HSK 7–9」 통합 밴드(알약 「7–9」 · 단어 탭만 — 7–9 문법 자료 없음), 처음엔 우리 사전에 뜻 있는 1,316개, 빠진 4,246개는 대강 PDF 목록(words.json)으로 #1445 방식(초안 → 검사 → 표본 대조) 후속 PR. #1508 병합 `0cd6a0c`. 후속: 4,246개 「HSK7–9 2026 보강」(h7_hsk2026_a~e, ZH_HSK79_VOCAB — 레지스트리 밖, 뷰어 사전 level H7) → 목록 5,562, 표본 460 대조 · 한자어 노트 전수 대조.
   · **HSK-READABILITY-001 (2026-10-15 KST, 오너 직접 요청 · M09)** `codex/m09-hsk-readability-20261015`: HSK 단어 병음 Noto Sans·SC/TC/JP 정본·읽기 간격·44px 듣기·이름 있는48px O/X. 320/390/1440×5보기, 모든 옵션·긴 훈음/HSK6 성어·펼침/재클릭/키보드/자동접힘 로컬 확인. 저장/FSRS·콘텐츠·최신 탭별 기록/fallback 보존. #1495 draft; 797e3258 CI 전체613파일7366검사·E2E PASS, 펼침 병음 배치 보완 후 최종 CI·정상 계정 Preview/운영 검수 대기. #1337 6186789430.
   - **HSK-ENTRY-TMP-001**(10-15 KST, 오너 지시 「임시용」): 배움(/home) 맨 아래에 「HSK 단어 목록」 카드 하나(이어서 덱과 같은 `ContinueDeck` 양식, `/chinese/vocab/h1`) · 내비에 자리 잡으면 걷어 낸다 · 계약 `continueDeck.test.js` · 브랜치 `claude/project-thread-msb9j3`(PR 진행).
   - **CONV-CHAT-001**(10-15 KST, 오너 지시 「대화 모드가 실제로 채팅앱과 동일한 조건 · 분석은 자동」, 설계 · 목업 `/mnt/project-files/notes/conversation-chat-shell.md`): ① 못 한 줄은 서버 `action:'analyze'`(25초 · 최근 8줄 · turnCount 잠금)로 화면이 자동으로 채운다(0 · 3 · 10 · 30초), 「다시 분석」 · 「이어서 분석」 배너 제거. ② 대화는 채팅 껍데기 — 전역 메뉴 · 읽기 상단바 · 머리 · 쪽 넘김 없음, `100dvh`/visualViewport 높이 · 맨 아래 입력창(1→5줄, 마이크↔보내기, 터치 Enter=줄바꿈), 듣기 · 번역 아이콘, 피드백 한 줄 접기, 맨 아래일 때만 따라가기 + 「새 메시지 ↓」. 첫 말풍선 top 476→65px(390 실측). ③ 2차(오너 「이게 최선인가?」 17:30 KST): 오픈소스 채팅 UI(chatscope, MIT) 390px 실측 대조 — 말풍선 줄 높이(두 줄 88→66px) · 튜터 프로필·이름 · 문장마다 말풍선 · 듣기·번역은 말풍선 옆 · 날짜 구분선 · 머리 두 줄. 첫 화면 `/conversation/new` = 방 목록(한 주제 = 한 방, 마지막 말·시각, 언어=배움 학습 언어 · 수준=정본 자동, 선택 칸 없음), 서버가 `conversation.preview` 저장. ④ 모두의 대화방(오너 결정 「기록 남기기」 17:54 KST): 방 목록 맨 위 고정, 언어별 방 · 지난 말 100개 · 실시간 · 지우기/신고(3명 시 가림)/가리기. 표는 `docs/sql/conversation-lobby.sql`(+rollback, PGlite `supabase/tests/conversation-lobby.mjs`) — 운영 적용은 #1337(M09), 적용 전 화면은 「곧 열려요」. 계약 `lobby.test.js`. ⑤ 3차(오너 「실제 채팅앱처럼」 10-16 16:11 KST): 메신저 대화방 모습 — 푸른 회색 바탕 · 흰/노란 말풍선 · 첫 말풍선 꼬리 · 둥근 네모 프로필 · 말풍선 옆 시각 · 흰 입력 막대(색은 `.conv` 범위 `--chat-*` 토큰). ⑥ 6차(오너 「폰트는 이게 최선인가」 · 「앱처럼 애니메이션」 10-17 00:51 KST): 두 방 화면 글자 Noto Sans KR 한 벌, 모두의 대화방 일본어가 한국어 글꼴로 그려지던 결함 수정(`font: inherit`이 `:lang(ja)`를 덮음 — 실제 글꼴 빌드 CDP 실측), 움직임 0.25초 이하(방 들어가기 · 새로 온 말만 · 누름, 움직임 줄이기 시 정지), 방 목록은 turns 대신 `preview`·`lastAt`만 읽음. ⑦ 7차(오너 「프로필 다른 색과 이미지로 구분」 10-17 01:34 KST): 아이디로 동물 그림 16 × 바탕 8색 고정(`profileLook`, 선례표 `notes/conv-avatar-precedents.md`), 튜터는 고정 그림. ⑧ 8차(오너 결정 「대화방에만」 10-17 03:02 KST): 튜터 대화는 서재에 두지 않음 — 「대화」 묶음·표시 제거, 목록 RPC `managed_rows`가 휴지통 밖에서 대화를 뺌(`docs/sql/library-hide-conversations.sql` + rollback, 운영 시험 20→19 · 지문 4종 불변, 오너 「적용」 후 10-17 10:5x KST 운영 적용 · #1337 기록). ⑨ 9차(오너 「[대화] 페이지 아예 중간에 스마트폰 스크린샷 크기로」 10-17 15:36 KST): 마우스로 쓰는 키 큰 화면(PC)에서 방 목록 · 모두의 대화방 · 튜터 대화방을 가운데 휴대폰 틀(화면 폭 390px · 상태 표시줄 KST 시각 · 홈 막대) 안에서 구동, 틀 윗변 고정이라 방을 오가도 안 움직임, 단어창은 틀 옆, 폰·태블릿(터치)은 그대로(`PhoneFrame` · hover/pointer/높이만, 폭 브레이크포인트 신설 0). 계약 `conversationChatShell.test.js` · `conversationFill.test.js` · `chatView.test.js` · `conversationLibrary.test.js` · PR #1490.

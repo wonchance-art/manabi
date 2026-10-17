@@ -72,7 +72,7 @@ export function ReviewScopeNotice({ empty = false, scope, count, countFor, remai
   const practice = onPractice ? <button type="button" className="btn btn--ghost btn--sm review-scope-notice__practice" onClick={onPractice}>{empty ? '집중 연습' : '지금 집중 연습으로 보기'}</button> : null;
   if (empty) return <>
     {alternative ? <div className="review-scope-notice" role="status">
-      <p className="review-room-note">이 범위엔 오늘 복습할 표현이 없어요 · {alternative.label}{objectParticle(alternative.label)} 빼면 {alternative.total}개</p>
+      <p className="review-room-note">이 범위에는 지금 복습할 표현이 없어요 · {alternative.label}{objectParticle(alternative.label)} 빼면 {alternative.total}개</p>
       <button type="button" className="btn btn--ghost btn--sm review-scope-notice__release" onClick={() => onChange(alternative.next)}>{RELEASE[alternative.axis]}</button>
       {practice}
     </div> : <><p className="review-room-note">{limit || fallback}</p>{practice && <div className="review-scope-notice">{practice}</div>}</>}
@@ -191,7 +191,7 @@ function ReviewScopeSheet({ scope, countFor, allVocab, learningById, materialTit
               <Option key={level} active={draft.level === level} onClick={() => setDraft({ ...draft, level, source: draft.source?.kind === 'book' ? null : draft.source })}
                 count={ready({ ...draft, level })}>{scopeLevelLabel(level)}</Option>
             ))}
-          </div> : <p className="review-scope-sheet__muted" role="status">급수 표 불러오는 중…</p>)
+          </div> : <p className="review-scope-sheet__muted" aria-busy="true">급수 표 불러오는 중…</p>)
             : <p className="review-scope-sheet__muted">급수는 중국어만 고를 수 있어요. 일본어 N급은 준비 중이에요.</p>}
         </fieldset>
 

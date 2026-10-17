@@ -195,7 +195,8 @@ export async function POST(request) {
     recordStat('errors');
     if (err instanceof LLMError) {
       // 마지막 Gemini 응답의 상태·본문을 그대로 되돌린다 — 클라 재시도 판정(isCapacityError)이 현행과 같다.
-      const status = err.status >= 400 ? err.status : 502;
+      // 「서비스 설정」(결제 · 크레딧)은 Gemini가 429로 보내도 402로 — 클라가 용량 재시도(최대 4회 · 백오프)를 타지 않는다.
+      const status = err.code === 'service_config' ? 402 : (err.status >= 400 ? err.status : 502);
       const key = String(status);
       stats.errorByStatus[key] = (stats.errorByStatus[key] || 0) + 1;
       const detailErr = err.detail && typeof err.detail === 'object' ? err.detail.error : null;

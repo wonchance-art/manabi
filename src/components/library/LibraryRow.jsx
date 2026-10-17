@@ -22,7 +22,7 @@ export default function LibraryRow({row,ownerId,onMenu,selecting=false,selected=
   {row.match_child&&row.target_kind!=='material'&&<LibraryReaderLink className="shelf-child-match" href={`/viewer/${row.match_child.id}`}>포함된 글: {row.match_child.title} ↗</LibraryReaderLink>}
   {!selecting&&row.state!=='trashed'&&row.target_kind==='book'&&row.owned&&!row.unavailable&&<LibraryBookChapters row={row} ownerId={ownerId} disabled={disabled}/>}
   {!selecting&&row.state!=='trashed'&&(row.target_kind==='pdf'||(row.target_kind==='book'&&!row.owned))&&row.child_count>0&&<div className="shelf-children"><button aria-expanded={expanded} onClick={()=>setExpanded(!expanded)}>{expanded?'목차 접기':'담긴 글 보기'} · {row.child_count}편 <span aria-hidden="true">{expanded?'−':'+'}</span></button>{expanded&&<>
-   {children.isPending&&<p role="status">목차를 불러오고 있어요…</p>}{children.isError&&<p role="alert">목차를 불러오지 못했어요. <button onClick={()=>children.refetch()}>다시 시도</button></p>}
+   {children.isPending&&<p aria-busy="true">목차를 불러오고 있어요…</p>}{children.isError&&<p role="alert">목차를 불러오지 못했어요. <button onClick={()=>children.refetch()}>다시 시도</button></p>}
    {children.data&&<ol>{children.data.items.map(c=><li key={c.id} lang={titleLang}><LibraryReaderLink href={`/viewer/${c.id}`}>{c.title}<span aria-hidden="true">↗</span></LibraryReaderLink></li>)}</ol>}
    {children.data&&children.data.items.length<children.data.total&&<button onClick={()=>setCount(count+20)}>목차 더 보기</button>}
   </>}</div>}

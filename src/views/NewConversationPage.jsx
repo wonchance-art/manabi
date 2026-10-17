@@ -70,7 +70,7 @@ export default function NewConversationPage() {
     }
   }
 
-  if (loading) return <PhoneFrame><p className="manabi-page conv-rooms" role="status">불러오는 중…</p></PhoneFrame>;
+  if (loading) return <PhoneFrame><p className="manabi-page conv-rooms" role="status">대화 불러오는 중…</p></PhoneFrame>;
   if (!user) {
     return (
       <PhoneFrame>

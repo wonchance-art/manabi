@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { legacyTextbookTarget } from './lib/bookNavigation';
 import { hasLegacyArchivePath } from './lib/legacyArchiveRoutes';
 import { authEntryHref } from './lib/authRedirect';
+import { withoutServerSignOut } from './lib/authCookieGuard';
 
 // EMEA 오버월드 자산 가드는 #306 일반 공개(releaseEligible 릴리스 정합 전환)로 폐기했다.
 // 스테일 가드가 남아 비관리자 전원이 EMEA 지형 404를 받는 라이브 결함을 만들었음(2026-07-22
@@ -26,7 +27,8 @@ export async function middleware(request) {
       cookies: {
         getAll() { return request.cookies.getAll(); },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          // 동시 갱신에서 진 요청이 인증 쿠키를 지우지 않게(TOKEN-REFRESH-409-001 — authCookieGuard).
+          withoutServerSignOut(cookiesToSet).forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           );
         },

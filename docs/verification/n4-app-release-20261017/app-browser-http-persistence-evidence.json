@@ -1,0 +1,22 @@
+{
+  "scope": "Synthetic learner state after real local Next save/review routes; no hosted DB or existing account",
+  "bookId": "japanese-n4",
+  "editionId": "f4a6411c0945bbd3f8767af7",
+  "pageId": "u01-patterns",
+  "chapterSlug": "n4-book-u01",
+  "contextCount": 1,
+  "vocabularyCount": 1,
+  "saveRpcCalls": 2,
+  "gradePatchCalls": 1,
+  "grade": {
+    "interval": 2.3065,
+    "ease_factor": 2.11810397,
+    "repetitions": 0,
+    "next_review_at": "2026-10-19T05:03:25.535Z",
+    "last_reviewed_at": "2026-10-17T05:03:25.535Z"
+  },
+  "admittedLegacyCardIds": [
+    "00000000-0000-4000-8000-000000000001"
+  ],
+  "scriptSha256": "ac152b2b5d94ea1f93751f2af1efc80a279561453a41c8be0aceaec5264f4bd9"
+}

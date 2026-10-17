@@ -11,6 +11,12 @@ vi.mock('@/lib/supabase', () => ({ supabase: {} }));
 vi.mock('@/lib/useTTS', () => ({ useTTS: () => ({ speak: () => {}, supported: true }) }));
 vi.mock('@/lib/useKnownWords', () => ({ useKnownWords: () => ({ rows: [], isPendingWord: () => false, mutation: { mutate: () => {} } }) }));
 vi.mock('@/lib/useWordFacets', () => ({ useWordFacets: () => ({ available: true, rows: [], mark: () => {} }) }));
+// 한자판은 next/dynamic으로 지연 로드한다(levelListLazy 계약). 기본값(ssr)이라 Next 서버 렌더는 한자판을 그려 보낸다 —
+// 동기 renderToStaticMarkup에서도 같은 마크업을 보도록, 불러올 모듈을 미리 받아 돌려준다.
+vi.mock('next/dynamic', async () => {
+  const board = await import('../../components/levels/HanziBoard.jsx');
+  return { default: () => board.default };
+});
 
 const { default: LevelListPage, VocabCard } = await import('../LevelListPage.jsx');
 const { levelListData } = await import('../../lib/levelListData.js');
@@ -73,7 +79,9 @@ describe('단어 목록', () => {
     expect(new Set(hrefs.filter((h) => /^\/chinese\/vocab\/h[1-6]$/.test(h))).size).toBe(6); // 알약 6 + 「단어」 탭
     expect(hrefs).toContain('/chinese/bunkei/h2');
     expect(hrefs.filter((h) => /grammar|legacy/.test(h))).toEqual([]);
-    expect(html).toMatch(/<a aria-current="page" aria-label="HSK 2" href="\/chinese\/vocab\/h2">2<\/a>|<a href="\/chinese\/vocab\/h2" aria-current="page" aria-label="HSK 2">2<\/a>/);
+    // 알약 · 탭 안의 이동 대기 표시(NavPendingMark — APP-FEEL-003)는 화면 읽기에 숨긴 빈 span이다.
+    const PEND = '<span class="nav-pending" aria-hidden="true"></span>';
+    expect(html).toMatch(new RegExp(`<a aria-current="page" aria-label="HSK 2" href="/chinese/vocab/h2">2${PEND}</a>|<a href="/chinese/vocab/h2" aria-current="page" aria-label="HSK 2">2${PEND}</a>`));
   });
 });
 
@@ -218,7 +226,7 @@ describe('머리 · 진도 · X 펼침(LEVEL-FLOW-001 — 디자인 검토 2026-
   });
 
   it('탭 보기에서 X = 그 카드를 펼쳐 답을 본다 · 「복습하기」 알림은 KST 하루 한 번', () => {
-    const markX = sliceBetween(page, 'const markX = (entry) => {', '};');
+    const markX = sliceBetween(page, 'const markX = async (entry) => {', '};'); // 아는 단어 풀기를 기다리므로 async
     expect(markX).toContain("if (prefs.view !== 'all') openPeek(entry.key);");
     const nudge = sliceBetween(page, 'const nudgeReview = () => {', '};');
     expect(nudge).toContain('if (localStorage.getItem(NUDGE_KEY) === kstDay()) return; localStorage.setItem(NUDGE_KEY, kstDay());');
@@ -249,7 +257,7 @@ describe('한자 목록(HANZI-TAB-AL-001)', () => {
     const html = renderToStaticMarkup(<LevelListPage {...data} />);
     expect(html).toContain('<h1>HSK 1 한자</h1>');
     const tabs = [...html.matchAll(/<nav class="lv-tabs"[^>]*>(.*?)<\/nav>/g)][0][1];
-    expect([...tabs.matchAll(/>([^<]+)<\/a>/g)].map((m) => m[1])).toEqual(['단어', '문형', '한자']);
+    expect([...tabs.matchAll(/>([^<]+)<span class="nav-pending" aria-hidden="true"><\/span><\/a>/g)].map((m) => m[1])).toEqual(['단어', '문형', '한자']);
     expect(html).not.toMatch(TONE);
     const table = (await import('../../lib/data/zhHanzi/H1.json')).default;
     const glosses = Object.values(table.chars).flatMap((c) => c.rd.flatMap((r) => r.s.map((x) => x.g)));
@@ -260,8 +268,8 @@ describe('한자 목록(HANZI-TAB-AL-001)', () => {
     expect(html).not.toContain('모름만'); // 로그인 전 · 표시 0
     expect(html).not.toContain('class="lv-search"');
     // 알약: 한자 탭이 있는 급수(1 · 2)는 한자로, 없는 급수(3–6)는 단어로 — 없는 주소(404) 0
-    const pills = [...html.matchAll(/href="(\/chinese\/[a-z]+\/h\d)" aria-label="HSK \d"|aria-label="HSK \d" href="(\/chinese\/[a-z]+\/h\d)"/g)].map((m) => m[1] || m[2]);
-    expect(pills).toEqual(['/chinese/hanzi/h1', '/chinese/hanzi/h2', '/chinese/vocab/h3', '/chinese/vocab/h4', '/chinese/vocab/h5', '/chinese/vocab/h6']);
+    const pills = [...html.matchAll(/href="(\/chinese\/[a-z]+\/h\d)" aria-label="HSK [\d–]+"|aria-label="HSK [\d–]+" href="(\/chinese\/[a-z]+\/h\d)"/g)].map((m) => m[1] || m[2]);
+    expect(pills).toEqual(['/chinese/hanzi/h1', '/chinese/hanzi/h2', '/chinese/vocab/h3', '/chinese/vocab/h4', '/chinese/vocab/h5', '/chinese/vocab/h6', '/chinese/vocab/h7']);
   });
 
   it('한자 탭은 HSK 1–2급만 — 3급 이상 · 일본어에는 없다', async () => {
@@ -269,6 +277,25 @@ describe('한자 목록(HANZI-TAB-AL-001)', () => {
     expect(await render('chinese', 'vocab', 'h3')).not.toContain('/chinese/hanzi/');
     expect(await levelListData('chinese', 'hanzi', 'h3')).toBeNull();
     expect(await levelListData('japanese', 'hanzi', 'n5')).toBeNull();
+  });
+});
+
+describe('HSK 7–9(단어 탭 하나)', () => {
+  it('알약 「7–9」 · 제목 「HSK 7–9 단어」, 종류 탭을 그리지 않는다', async () => {
+    const html = await render('chinese', 'vocab', 'h7');
+    expect(html).toContain('<h1>HSK 7–9 단어</h1>');
+    expect(html).toMatch(/aria-label="HSK 7–9"[^>]*>7–9</);
+    expect(html).not.toContain('class="lv-tabs"');
+    expect(html).not.toContain('/chinese/bunkei/h7');
+    expect(await render('chinese', 'vocab', 'h6')).toContain('class="lv-tabs"');
+  });
+
+  it('타일은 「단어 N」 한 줄 — 문형 줄 · 0 링크 없음', () => {
+    const html = renderToStaticMarkup(<LevelTiles language="Chinese" tiles={[{ levelKey: 'H6', vocab: 1777, bunkei: 59 }, { levelKey: 'H7', vocab: 1332 }]} />);
+    expect(html).toContain('<span class="lv-tile__lv">HSK 7–9</span>');
+    expect(html).toContain('href="/chinese/vocab/h7"');
+    expect(html).not.toContain('/chinese/bunkei/h7');
+    expect(html).not.toContain('문형<b>0</b>');
   });
 });
 

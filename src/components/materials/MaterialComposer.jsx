@@ -139,16 +139,19 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
     if (patch) change(patch);
   }, [languages, editing, change, draftId]);
 
+  // 떠나기 확인은 지킬 초안이 있을 때만 붙인다 — 늘 붙어 있는 beforeunload는 Firefox에서 그 화면을 bfcache(즉시 뒤로가기)에서
+  // 뺀다. 붙어 있는 동안의 판정은 그대로 최신 초안(draftRef)으로 한다(상태 반영 전 한 프레임도 놓치지 않게).
+  const unsaved = value => !!(value && !value.savedId && (!editing || value.dirty || value.frozen) && (value.body || value.title || value.files.length || value.links.length));
+  const leaveGuard = unsaved(draft);
   useEffect(() => {
+    if (!leaveGuard) return undefined;
     const protect = event => {
-      const value = draftRef.current;
-      if (value && !value.savedId && (!editing || value.dirty || value.frozen) && (value.body || value.title || value.files.length || value.links.length)) {
-        event.preventDefault(); event.returnValue = '';
-      }
+      if (unsaved(draftRef.current)) { event.preventDefault(); event.returnValue = ''; }
     };
     window.addEventListener('beforeunload', protect);
     return () => window.removeEventListener('beforeunload', protect);
-  }, [editing]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leaveGuard, editing]);
 
   useEffect(() => { if (linkOpen) linkField.current?.focus(); }, [linkOpen]);
 
@@ -218,10 +221,9 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
       await persistDraft(saved).catch(() => {});
       queryClient.invalidateQueries({ queryKey: ['personal-library',ownerId] });
       queryClient.invalidateQueries({ queryKey: ['materials'] });
-      queryClient.invalidateQueries({ queryKey: ['library-reading-v2'] });
       await queryClient.invalidateQueries({ queryKey: ['material', String(record.id)] });
       if (!alive.current) return;
-      draftRef.current = saved; setDraft(saved); setDraftStatus('서재에 저장됨'); setStage(study ? '저장했어요. 학습 화면을 엽니다…' : '저장했어요. 자료를 엽니다…');
+      draftRef.current = saved; setDraft(saved); setDraftStatus('서재에 저장됨'); setStage(study ? '저장했어요. 학습 화면을 열고 있어요…' : '저장했어요. 자료를 열고 있어요…');
       if(saved.collectionId){
         try { await addToCollection(supabase,ownerId,saved.collectionId,{target_kind:'material',target_id:String(record.id)}); }
         catch { if(alive.current)setError('자료는 저장했지만 모음집에 담지 못했어요. 자료를 다시 저장할 필요는 없어요.'); return; }
@@ -231,7 +233,7 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
         // 원본 화면 「이 글로 공부하기」와 같은 openDocumentStudy. 열지 못해도 자료는 저장됐으니 원본으로 간다.
         const next = await openStudyOrOriginal(supabase, record, current.language, { explanationLocale, returnTo });
         if (next.study) await queryClient.invalidateQueries({ queryKey: ['material', String(next.study.id)] });
-        else toast('자료는 저장했어요. 학습 화면을 열지 못해 원본으로 엽니다.', 'warning', 8000);
+        else toast('자료는 저장했어요. 학습 화면을 열지 못해 원본으로 열어요.', 'warning', 8000);
         router.push(next.href);
         return;
       }
@@ -278,7 +280,7 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
 
   if (anotherTab) return <section className="composer-gate"><h1>다른 탭에서 작성 중이에요.</h1><p>초안이 서로 덮어써지지 않도록 한 탭에서 작성해 주세요.</p><button className="manabi-button" onClick={() => window.location.reload()}>다른 편집기를 닫고 다시 열기</button><Link className="manabi-link" href="/materials?view=owned">내 서재로</Link></section>;
   if (!draft) return <div className="composer-gate" role="status">{draftStatus}</div>;
-  if (draft.savedId) return <section className="composer-gate"><p className="manabi-eyebrow">SAVED TO YOUR LIBRARY</p><h1>{composerTitle(draft)}</h1><p>서재에 저장된 자료예요.</p>{error&&<p role="alert">{error}</p>}{draft.collectionId&&<button className="manabi-button" disabled={busy} onClick={retryMembership}>{busy?'담는 중…':'모음집에 담기 다시 시도'}</button>}<Link className="manabi-button" href={`/viewer/${draft.savedId}?returnTo=${encodeURIComponent(returnTo)}`}>자료 열기 ↗</Link><button className="manabi-link" onClick={startNew}>새 자료 작성</button></section>;
+  if (draft.savedId) return <section className="composer-gate"><p className="manabi-eyebrow">SAVED TO YOUR LIBRARY</p><h1>{composerTitle(draft)}</h1><p>서재에 저장된 자료예요.</p>{error&&<p role="alert">{error}</p>}{draft.collectionId&&<button className="manabi-button" disabled={busy} onClick={retryMembership}>{busy?'담는 중…':'모음집에 담기 다시 시도'}</button>}<Link className="manabi-button" href={`/viewer/${draft.savedId}?returnTo=${encodeURIComponent(returnTo)}`}>자료 열기 ↗</Link><button className="manabi-link" onClick={startNew}>자료 추가</button></section>;
   const locked = busy || draft.frozen;
   return <section className="material-composer" aria-labelledby="composer-heading">
     <div className="composer-top"><Link href={editing ? `/viewer/${scope}?returnTo=${encodeURIComponent(returnTo)}` : returnTo}>{editing ? '← 자료로 돌아가기' : '← 내 서재'}</Link><span>PRIVATE / 나만 보기</span></div>
@@ -297,7 +299,7 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
       </div>
       {linkOpen && <div className="composer-link-input"><label htmlFor="composer-link">담아 둘 링크</label><div><input ref={linkField} id="composer-link" type="url" placeholder="https://" value={linkInput} disabled={locked} onChange={e => setLinkInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addLink(); } if (e.key === 'Escape') { setLinkOpen(false); setLinkInput(''); } }} /><button type="button" disabled={locked} onClick={() => addLink()}>추가</button></div></div>}
       <div className="composer-tools"><input ref={fileInput} className="sr-only" type="file" tabIndex={-1} accept=".pdf,.epub,application/pdf,application/epub+zip" multiple disabled={locked || preparing} onChange={e => { addFiles([...e.target.files]); e.target.value = ''; }} aria-label="첨부 파일 선택" />
-        <button type="button" disabled={locked || preparing} onClick={() => fileInput.current?.click()}>＋ 파일</button><button type="button" disabled={locked} aria-expanded={linkOpen} onClick={() => setLinkOpen(value => !value)}>↗ 링크</button><small>{preparing ? '파일 확인 중…' : '끌어 놓아도 좋아요 · 파일당 50MB'}</small></div>
+        <button type="button" disabled={locked || preparing} onClick={() => fileInput.current?.click()}>＋ 파일</button><button type="button" disabled={locked} aria-expanded={linkOpen} onClick={() => setLinkOpen(value => !value)}>↗ 링크</button><small aria-busy={preparing || undefined}>{preparing ? '파일 확인 중…' : '끌어 놓아도 좋아요 · 파일당 50MB'}</small></div>
       <StudyLanguageChips id="composer-language" languages={languages} value={languages.includes(draft.language) ? draft.language : ''} guessed={!!draft.languageGuessed} disabled={locked} onChange={language => change({ language, languageChosen: true, languageGuessed: false })} />
       {notice && !error && <p className="composer-notice" role="status">{notice}</p>}
       {error && <div className="composer-error" role="alert">{error}{draft.frozen && !conflict && <p>저장 결과가 확정될 때까지 내용을 그대로 둬요. 아래에서 다시 저장해 주세요.</p>}{conflict && <div className="composer-conflict-actions"><button type="button" onClick={downloadDraft}>내 초안 텍스트 내려받기</button><button type="button" onClick={reloadLatest}>최신 글로 다시 수정</button></div>}</div>}
