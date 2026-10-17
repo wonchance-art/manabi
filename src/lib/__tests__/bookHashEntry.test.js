@@ -6,7 +6,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { describe, expect, it } from 'vitest';
 import { sliceBetween } from './helpers/sliceBetween';
-import { HASH_GATE, HASH_GATE_CSS, HASH_GATE_ID, HASH_GATE_PLAIN_CSS, coverPage, lessonPage, pageFromHash } from '../../components/books/bookEntryGate';
+import { HASH_GATE, HASH_GATE_CSS, HASH_GATE_ID, HASH_GATE_PLAIN_CSS, announceFragmentUrl, coverPage, lessonPage, pageFromHash } from '../../components/books/bookEntryGate';
 
 const ROOT = path.resolve(__dirname, '../../..');
 const source = fs.readFileSync(path.join(ROOT, 'src/components/books/BookReader.jsx'), 'utf8');
@@ -57,7 +57,7 @@ describe('하드 로드 감춤 한 줄 — HASH_GATE', () => {
   it('서버 · 하이드레이션 첫 그림은 표지 + 그 한 줄 + 꺼진 본문 골격(불일치 0), 첫 쪽이 정해지면 뗀다', () => {
     expect(source).toContain("{unit === 'cover' && !entryDecided && <><script dangerouslySetInnerHTML={{ __html: HASH_GATE }} /><BookReaderSkeleton gated /></>}");
     expect(source).toContain("const [pageId, setPageId] = useState('cover')");
-    expect(source).toContain("import { HASH_GATE, coverPage, hashGate, pageFromHash } from './bookEntryGate';");
+    expect(source).toContain("import { HASH_GATE, announceFragmentUrl, coverPage, hashGate, pageFromHash } from './bookEntryGate';");
   });
 });
 
@@ -72,8 +72,8 @@ describe('붙은 뒤 그리기 전 — 첫 쪽 정하기', () => {
     expect(first).toContain('useLayoutEffect(() => () => hashGate(false), []);'); // 떠날 때 감춤을 남기지 않는다
   });
   it('sync도 같은 hash 해석(pageFromHash)을 쓰고, 끝나면 감춤을 푼다', () => {
-    const sync = sliceBetween(source, 'const sync = restorePosition => {', '\n    };');
-    expect(sync).toContain('let id = pageFromHash(window.location.hash);');
+    const sync = sliceBetween(source, 'const sync = (restorePosition, href = window.location.href) => {', '\n    };');
+    expect(sync).toContain('let id = pageFromHash(new URL(href).hash);'); // 그 이동의 주소(BOOK-HASH-RACE-001)
     expect(sync).toContain('setEntryDecided(true);');
     expect(sync).not.toContain('decodeURIComponent'); // 해석은 pageFromHash 한 곳(HASH_GATE는 같은 규칙의 하드 로드판)
   });
@@ -81,5 +81,39 @@ describe('붙은 뒤 그리기 전 — 첫 쪽 정하기', () => {
     const anchor = sliceBetween(source, '// 계정 확인(sync) 전에는 옮기지 않는다', 'let frame, cancelled = false;');
     expect(anchor).toContain('if (authLoading || !ready ||');
     expect(source).toContain('}, [authLoading, pageId, anchorRequest, sections, examples, unit, update, ready, measureToolbar, reference, rememberPosition]);');
+  });
+});
+
+// 같은 문서 hash 이동의 라우터 경합(BOOK-HASH-RACE-001, 2026-10-17 KST): Next 라우터는 고유 hash 이동을 모른다(pushState 패치 밖).
+// 앞서 걸린 라우터 갱신(읽던 자리 replaceState → ACTION_RESTORE, transition)이 늦게 들면 HistoryUpdater가 주소를 옛 hash로 되돌리고,
+// 뒤이은 hashchange가 그 주소를 읽어 앞 과로 돌아갔다 — 빌드 Playwright 4배 감속에서 다른 과 이동 160회 중 8회(#guide-katakana-long ·
+// #u03-study1 · #grammarIndex-1), 고친 뒤 0회. 계약: ① 이동 주소는 이벤트에서(지금 주소 아님) ② 라우터에 새 주소를 알린다.
+describe('같은 문서 hash 이동 — 라우터가 옛 hash로 되돌려도 따라가지 않는다(BOOK-HASH-RACE-001)', () => {
+  it('hashchange는 event.newURL로 sync하고, 먼저 라우터에 새 주소를 알린다 · popstate는 그때 주소로', () => {
+    const handlers = sliceBetween(source, 'const pop = () =>', '// 떠날 때 자리 남기기');
+    expect(handlers).toContain('const pop = () => { traversedHref = window.location.href; focusAfterMove.current = true; sync(true, traversedHref); };');
+    expect(handlers).toContain('const href = event?.newURL || window.location.href;');
+    expect(handlers).toContain('announceFragmentUrl(href);');
+    expect(handlers).toContain('if (traversedHref === href) { traversedHref = null; return; }');
+    expect(handlers).toContain('sync(false, href);');
+    expect(handlers).not.toContain('sync(false);');
+    // 알림은 같은 기록 이동 판정보다 먼저 — 앞으로 · 뒤로 이동도 라우터가 늘 마지막 주소를 쥔다.
+    expect(handlers.indexOf('announceFragmentUrl(href);')).toBeLessThan(handlers.indexOf('if (traversedHref === href)'));
+  });
+  it('announceFragmentUrl: Next 표지(__NA · tree)를 빼고 넘겨 패치를 거치게 하고, 다른 주소의 읽던 자리는 남기지 않는다', () => {
+    const calls = [];
+    const href = 'http://x/books/japanese-n5?edition=e#guide-katakana-long';
+    const run = (state) => {
+      const before = globalThis.window;
+      globalThis.window = { history: { state, replaceState: (data, unused, url) => calls.push({ data, url }) } };
+      try { announceFragmentUrl(href); } finally { globalThis.window = before; }
+      return calls.at(-1);
+    };
+    const tree = ['', {}];
+    const same = run({ __NA: true, __PRIVATE_NEXTJS_INTERNALS_TREE: tree, manabiBookPosition: { href, page: 'guide-katakana-long' }, other: 1 });
+    expect(same).toEqual({ data: { manabiBookPosition: { href, page: 'guide-katakana-long' }, other: 1 }, url: href });
+    const stale = run({ __NA: true, __PRIVATE_NEXTJS_INTERNALS_TREE: tree, manabiBookPosition: { href: 'http://x/books/japanese-n5?edition=e#u03-study1', page: 'u03-study1' } });
+    expect(stale).toEqual({ data: {}, url: href });
+    expect(run(null)).toEqual({ data: {}, url: href }); // 고유 hash 이동의 새 기록은 state가 null
   });
 });

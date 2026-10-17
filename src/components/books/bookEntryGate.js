@@ -32,6 +32,21 @@ export function readerEntry() {
 // 같은 판정의 하드 로드판 — 교재 대기 골격과 BookReader가 둘 다 보낼 수 있어 이미 있으면 다시 넣지 않는다.
 export const HASH_GATE = `(function(){try{if(document.getElementById('${HASH_GATE_ID}'))return;var h='';try{h=decodeURIComponent(location.hash.slice(1))}catch(e){}h=h.replace(/^(?:web|pdf|audio)-/,'');var s=history.state&&history.state.manabiBookPosition;if((h&&h!=='cover'&&h.indexOf('toc')!==0)||(s&&s.href===location.href)){var g=document.createElement('style');g.id='${HASH_GATE_ID}';g.textContent='${HASH_GATE_CSS}'+(h&&h!=='cover'&&h.indexOf('toc')!==0&&!/^u\\d{2}/.test(h)?'${HASH_GATE_PLAIN_CSS}':'');document.head.appendChild(g)}}catch(e){}})()`;
 
+/**
+ * 같은 문서 hash 이동(주소창 · 고유 링크 · 브라우저 이동)을 Next 라우터에 알린다(BOOK-HASH-RACE-001).
+ * 그런 이동은 Next의 pushState 패치를 거치지 않아 라우터 주소(canonicalUrl)가 옛 hash에 머문다. 그 전에 걸린 라우터 갱신
+ * (읽던 자리 replaceState → ACTION_RESTORE — transition이라 늦게 반영)이 들어오면 HistoryUpdater가 주소를 옛 hash로 되돌리고,
+ * 뒤이은 hashchange가 그 주소를 읽어 앞 과로 되돌아갔다(4배 감속에서 다른 과 hash 이동 160회 중 8회, 2026-10-17 KST 실측).
+ * 패치된 replaceState로 새 주소를 넘겨 라우터의 마지막 갱신이 늘 이 주소가 되게 한다 — Next 표지(__NA · tree)가 있으면 패치가
+ * 그냥 지나가므로 빼고 넘긴다(패치가 지금 기록의 표지를 다시 붙인다). 다른 주소의 읽던 자리는 이 기록에 남기지 않는다.
+ */
+export function announceFragmentUrl(href) {
+  const own = { ...(window.history.state || {}) };
+  delete own.__NA; delete own.__PRIVATE_NEXTJS_INTERNALS_TREE;
+  if (own.manabiBookPosition && own.manabiBookPosition.href !== href) delete own.manabiBookPosition;
+  window.history.replaceState(own, '', href);
+}
+
 export function hashGate(on) {
   const current = document.getElementById(HASH_GATE_ID);
   if (!on) { current?.remove(); return; }

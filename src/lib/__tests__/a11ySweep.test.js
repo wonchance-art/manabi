@@ -209,7 +209,7 @@ describe('⑦ 책 안 이동 뒤 초점 — 누른 링크가 사라지면 새 �
   const src = read('src/components/books/BookReader.jsx');
   const effect = sliceBetween(src, "if (target?.classList.contains('kanji-card'))", 'pendingAnchor.current = null; pendingPosition.current = null;');
   const go = sliceBetween(src, 'const go = useCallback((id, originAnchor) => {', '}, [book.edition');
-  const sync = sliceBetween(src, 'const sync = restorePosition => {', "window.addEventListener('hashchange', hash);");
+  const sync = sliceBetween(src, 'const sync = (restorePosition, href = window.location.href) => {', "window.addEventListener('hashchange', hash);");
 
   it('routeFocus 정본을 쓴다(새 판정 함수를 만들지 않는다)', () => {
     expect(src).toContain("import { focusIsLost, focusPageIfLost } from '@/lib/routeFocus';");
@@ -217,9 +217,10 @@ describe('⑦ 책 안 이동 뒤 초점 — 누른 링크가 사라지면 새 �
 
   it('앱 안 이동 · 해시 바뀜 · 뒤로/앞으로는 표시를 켜고, 첫 진입(sync(true) 한 번 · bfcache 복귀)은 켜지 않는다', () => {
     expect(go).toContain('focusAfterMove.current = true;');
-    expect(sync).toContain('const pop = () => { traversedHref = window.location.href; focusAfterMove.current = true; sync(true); };');
-    expect(sync).toContain('traversedHref = null; focusAfterMove.current = true; sync(false);');
-    expect(sliceBetween(src, 'const sync = restorePosition => {', 'let traversedHref;')).not.toContain('focusAfterMove.current = true');
+    // 이동 주소는 이벤트에서 받는다(BOOK-HASH-RACE-001 — bookHashEntry.test.js).
+    expect(sync).toContain('const pop = () => { traversedHref = window.location.href; focusAfterMove.current = true; sync(true, traversedHref); };');
+    expect(sync).toContain('traversedHref = null; focusAfterMove.current = true; sync(false, href);');
+    expect(sliceBetween(src, 'const sync = (restorePosition, href = window.location.href) => {', 'let traversedHref;')).not.toContain('focusAfterMove.current = true');
     expect(src).toContain("const acquire = event => { window.history.scrollRestoration = 'manual'; if (event.persisted) sync(true); };");
   });
 

@@ -13,7 +13,7 @@ import { readingDraftKey, readingUnit } from '@/lib/bookNavigation';
 import useReadingProgress from './useReadingProgress';
 import BookHome from './BookHome';
 import BookReaderSkeleton from './BookReaderSkeleton';
-import { HASH_GATE, coverPage, hashGate, pageFromHash } from './bookEntryGate';
+import { HASH_GATE, announceFragmentUrl, coverPage, hashGate, pageFromHash } from './bookEntryGate';
 import './reading-content.css';
 import useLibraryActivity from '@/components/library/useLibraryActivity';
 import {LibraryReturnLink} from '@/components/web/LibraryReaderLink';
@@ -120,10 +120,11 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     // Own restoration while mounted, including after a bfcache return.
     const restoration = window.history.scrollRestoration;
     window.history.scrollRestoration = 'manual';
-    const sync = restorePosition => {
-      let id = pageFromHash(window.location.hash);
+    // href = 그 이동의 주소(이벤트가 준 것) — 지금 주소는 라우터가 잠깐 옛 hash로 되돌려 놓았을 수 있다(announceFragmentUrl).
+    const sync = (restorePosition, href = window.location.href) => {
+      let id = pageFromHash(new URL(href).hash);
       const saved = window.history.state?.manabiBookPosition;
-      const position = restorePosition && saved?.href === window.location.href && saved.edition === book.edition
+      const position = restorePosition && saved?.href === href && saved.edition === book.edition
         && saved.account === (user?.id || 'guest') && saved.reference === reference
         && Number.isFinite(saved.offset) && sectionIndex.some(section => section.id === saved.page) ? saved : null;
       if (position) id = position.page;
@@ -137,11 +138,14 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     // Internal reader links also clear the snapshot before pushing an explicit anchor.
     sync(true);
     let traversedHref;
-    const pop = () => { traversedHref = window.location.href; focusAfterMove.current = true; sync(true); };
-    const hash = () => {
+    const pop = () => { traversedHref = window.location.href; focusAfterMove.current = true; sync(true, traversedHref); };
+    const hash = event => {
+      const href = event?.newURL || window.location.href;
+      // 라우터가 이 주소를 알게 한다 — 모르면 늦게 든 라우터 갱신이 주소를 옛 hash로 되돌린다(BOOK-HASH-RACE-001).
+      announceFragmentUrl(href);
       // Traversal can emit both events; its hashchange must not erase the snapshot.
-      if (traversedHref === window.location.href) { traversedHref = null; return; }
-      traversedHref = null; focusAfterMove.current = true; sync(false);
+      if (traversedHref === href) { traversedHref = null; return; }
+      traversedHref = null; focusAfterMove.current = true; sync(false, href);
     };
     // 떠날 때 자리 남기기는 bfcache로 들어가지 않는 길(새로 고침 등)에서만 — pagehide 안의 history.replaceState는 Chromium이
     // 그 페이지를 bfcache에서 내쫓는다(IgnoreEventAndEvict, 실측 2026-10-17 KST). bfcache로 돌아오면 화면 · 스크롤이 그대로고,
