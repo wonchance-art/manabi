@@ -40,14 +40,36 @@ export const HASH_GATE = `(function(){try{if(document.getElementById('${HASH_GAT
  * 패치된 replaceState로 새 주소를 넘겨 라우터의 마지막 갱신이 늘 이 주소가 되게 한다 — Next 표지(__NA · tree)가 있으면 패치가
  * 그냥 지나가므로 빼고 넘긴다(패치가 지금 기록의 표지를 다시 붙인다). 다른 주소의 읽던 자리는 이 기록에 남기지 않는다.
  */
+// 같은 문서(경로 + 검색어가 같은 주소)에서 마지막으로 본 Next tree — 고유 hash 이동의 새 기록(state null)에 표지와 함께 찍는다.
+// tree 없이 표지만 찍힌 기록으로 다른 경로(예: /materials)에서 뒤로 오면 Next traverse가 「지금」 tree(/materials)를 써서
+// 주소는 교재인데 화면은 /materials가 된다(BOOK-HASH-RACE-001 후속 · a775 리뷰 2026-10-17 KST). 검색어가 다르면 page 세그먼트 키가
+// 달라 그 tree를 쓰지 않는다.
+let lastRouterTree = null; // { route: pathname + search, tree }
+const routeOf = (href) => { const url = new URL(href, 'http://local'); return url.pathname + url.search; };
+
+/** 지금 기록에 Next tree가 있으면 그 주소의 경로 + 검색어와 함께 기억한다(BookReader가 붙을 때 · 뒤로/앞으로 · 읽던 자리 기록 때). */
+export function rememberRouterTree(state = window.history.state, href = window.location?.href) {
+  const tree = state?.__PRIVATE_NEXTJS_INTERNALS_TREE;
+  if (tree && href) lastRouterTree = { route: routeOf(href), tree };
+}
+
+/** 단위 계약용 — 기억을 비운다. */
+export function forgetRouterTree() { lastRouterTree = null; }
+
 export function announceFragmentUrl(href) {
+  rememberRouterTree();
   const own = { ...(window.history.state || {}) };
   delete own.__NA; delete own.__PRIVATE_NEXTJS_INTERNALS_TREE;
   if (own.manabiBookPosition && own.manabiBookPosition.href !== href) delete own.manabiBookPosition;
   window.history.replaceState(own, '', href);
   // 고유 hash 이동의 새 기록은 state가 null이라 패치가 붙일 표지가 없다 — `{}`로 남은 기록으로 뒤로 가면 Next가 새로 고친다
-  // (onPopState의 !__NA). 표지를 직접 찍는다(표지가 있으면 패치를 지나가 RESTORE가 더 생기지 않고, tree가 없으면 traverse가 지금 tree를 쓴다).
-  if (!window.history.state?.__NA) window.history.replaceState({ ...(window.history.state || {}), __NA: true }, '', href);
+  // (onPopState의 !__NA). 표지를 직접 찍는다(표지가 있으면 패치를 지나가 RESTORE가 더 생기지 않는다). 같은 문서의 tree를
+  // 기억하고 있으면 함께 찍는다 — 없으면 traverse가 그 순간의 tree를 쓰는데, 그게 다른 경로의 tree일 수 있다.
+  const now = window.history.state || {};
+  const tree = now.__PRIVATE_NEXTJS_INTERNALS_TREE || (lastRouterTree?.route === routeOf(href) ? lastRouterTree.tree : undefined);
+  if (!now.__NA || (!now.__PRIVATE_NEXTJS_INTERNALS_TREE && tree)) {
+    window.history.replaceState({ ...now, __NA: true, ...(tree ? { __PRIVATE_NEXTJS_INTERNALS_TREE: tree } : {}) }, '', href);
+  }
 }
 
 export function hashGate(on) {
