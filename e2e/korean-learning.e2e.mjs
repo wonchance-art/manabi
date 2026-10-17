@@ -220,6 +220,9 @@ test('Korean atomic save, known/exclusion restore, locale conflict, due review a
     const saved=structuredClone(f.cards), source=structuredClone(f.contexts);
     await f.actions.getByRole('button',{name:'아는 단어',exact:true}).click();
     await f.actions.getByRole('button',{name:'✓ 아는 단어',exact:true}).waitFor();
+    // 「✓ 아는 단어」는 낙관 갱신이라 쓰기보다 먼저 그려진다 — 쓰기가 실제로 도착할 때까지 기다린 뒤 내용을 본다.
+    for(let i=0;i<100&&!(f.known.length&&f.exclusions.length);i++) await f.page.waitForTimeout(100);
+    assert.ok(f.known.length>0,'known-word write arrives');
     assert.equal(f.known[0].lang,'ko');assert.equal(f.exclusions[0].language,'Korean');
     for(const key of ['1','2','3','4']) await f.page.keyboard.press(key);
     assert.deepEqual(f.cards,saved);assert.deepEqual(f.contexts,source);assert.equal(f.events.length,0);
