@@ -881,6 +881,9 @@
 - **#1505 병합 후속 (2026-10-17 KST)** `claude/beautiful-lamport-po6fv0`: 손님 서재 서버 HTML부터 손님 화면 · 듣기 막대 속도 이름 · 글자 칸 aria-expanded ·
   교재 hash 기록 Next tree(BOOK-HASH-RACE-001 후속) · 来い/来れる · 오쿠리가나 관행 가드 · 来 다음 토큰 표 useMemo ·
   TOKEN-REFRESH-409-001(동시 갱신에서 진 요청이 인증 쿠키를 지워 로그아웃시키던 길 차단, 적대적 리뷰 차단 0).
+  + 진짜 무효 세션(session_not_found · refresh_token_not_found · user_banned 등)만 서버가 쿠키 삭제 · auth/callback · confirm 같은 가드(리뷰 문제없음) ·
+  영어 카드 IPA 줄(토큰 furigana) · 1단 의지형 食べよ|う 가드 · e2e 학습 API fixture 공용화.
+  #1505 운영 배포 검수(12:23 KST READY · 16/16 · 런타임 오류 0 · asset public 캐시 · set-cookie 없음).
   오너 확인 대기: Gemini 선불 크레딧 소진(TTS 402 · 분석 뜻 조회) · N5 #1–5 원문 기준 재분석 · 뷰어 목업 10건.
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로
