@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   WS_LICENSE, createWikisourceDraft, parseWikisourceFragment, splitBlocks, wikisourceRightsPublishable, wikisourceRightsVerdict, charCount, wordCount,
 } from '../wikisource.js';
+import { wikisourceAttributionParts } from '../videoAttribution.js';
 
 // Wikisource 정본 책(LIT-SRC-WS-1, 오너 「같이해. 위 3편+3편+1편(레미제라블 추가). 간체와 번체 옵션 같이」 2026-10-17 KST) —
 // 본문 조각 파서(fail-closed) · 고유명사 밑줄 · 장 나눔 · 간체/번체 대조 · 권리 판정(원산국 만료 — 중국 50 · 프랑스 70(+전쟁 30) · 한국은 상호주의 · 미국 기준 없음).
@@ -155,7 +156,7 @@ describe('한국 근대 문학(오너 「한국 근대 문학도 추가」 → �
     const root = 'src/content/literature/wikisource';
     // 기미독립선언서(3차 묶음)는 1919년 국한문 원문 그대로라 옛한글 자모·짧은 한 장 — 아래 3차 묶음 계약에서 따로 본다
     const keys = readdirSync(root).filter((name) => name.startsWith('ws-ko-') && name !== 'ws-ko-choe-nam-seon_gimi-dongnip-seoneonseo').sort();
-    expect(keys).toEqual(['ws-ko-hyeon-jin-geon_unsu-joeun-nal', 'ws-ko-kim-dong-in_gamja', 'ws-ko-kim-so-wol_jindallaekkot', 'ws-ko-kim-yu-jeong_dongbaekkkot', 'ws-ko-yi-hyo-seok_memilkkot-pil-muryeop', 'ws-ko-yi-sang_nalgae', 'ws-ko-yun-dong-ju_haneulgwa-baramgwa-byeolgwa-si']);
+    expect(keys).toEqual(['ws-ko-hyeon-jin-geon_unsu-joeun-nal', 'ws-ko-kim-dong-in_gamja', 'ws-ko-kim-so-wol_jindallaekkot', 'ws-ko-kim-yu-jeong_dongbaekkkot', 'ws-ko-samil-centennial_swipgo-bareuge-ingneun-dongnip-seoneonseo', 'ws-ko-yi-hyo-seok_memilkkot-pil-muryeop', 'ws-ko-yi-sang_nalgae', 'ws-ko-yun-dong-ju_haneulgwa-baramgwa-byeolgwa-si']);
     const manifest = JSON.parse(readFileSync(`${root}/manifest.generated.json`, 'utf8'));
     for (const key of keys) {
       const entry = JSON.parse(readFileSync(`${root}/${key}/entry.json`, 'utf8'));
@@ -209,6 +210,19 @@ describe('3차 묶음(오너 「되는 언어로만 ㄱㄱ」 2026-10-17 KST) �
     expect(kimi.draft.chapters[0].rawText).toMatch(/^宣言書\n\n吾等은 玆에 我 朝鮮의 獨立國임과/u);
     expect(kimi.draft.chapters[0].rawText).toMatch(/公約三章[\s\S]*韓龍雲, 洪秉箕, 洪其兆$/u);
     expect(kimi.draft.chapters[0].rawText).not.toMatch(/현대어|우리는|쉽고 바르게/u);
+    // 쉽고 바르게 읽는 3·1독립선언서 — 공공누리 제1유형(배포 기관 표시 의무) · 판 라이선스는 공공누리 그대로 · 이용 허락 안내 상자는 본문이 아니다
+    const easy = draftOf('ws-ko-samil-centennial_swipgo-bareuge-ingneun-dongnip-seoneonseo');
+    const easyLiterature = easy.draft.chapters[0].metadata.literature;
+    expect(easyLiterature).toMatchObject({ license: 'KOGL-1', rights: { basis: 'kogl-type1', holder: '3·1운동 및 대한민국임시정부 수립 100주년 기념사업 추진위원회' } });
+    expect(wikisourceRightsPublishable(easyLiterature)).toBe(true);
+    expect(wikisourceRightsPublishable({ ...easyLiterature, license: WS_LICENSE })).toBe(false); // 공공누리 글을 CC BY-SA로 표기하지 않는다
+    expect(wikisourceRightsPublishable({ ...easyLiterature, rights: { ...easyLiterature.rights, holder: '' } })).toBe(false);
+    // 출처 줄 — 「공공누리 제1유형 · 배포 기관 …」, 퍼블릭 도메인·CC BY-SA 표기는 붙지 않는다
+    expect(wikisourceAttributionParts(easyLiterature)).toMatchObject({ kogl: '3·1운동 및 대한민국임시정부 수립 100주년 기념사업 추진위원회', publicDomain: false, ccBySa: false });
+    expect(wikisourceAttributionParts(kimi.draft.chapters[0].metadata.literature)).toMatchObject({ kogl: null, publicDomain: true, ccBySa: true });
+    expect(easy.draft.chapters[0].rawText).toMatch(/^선언서\n\n우리는 오늘 조선이 독립한 나라이며/u);
+    expect(easy.draft.chapters[0].rawText).not.toMatch(/저작물|퍼블릭 도메인|공공누리|吾等/u);
+    expect(wikisourceRightsPublishable(kimi.draft.chapters[0].metadata.literature)).toBe(true); // 원문 쪽은 그대로 퍼블릭 도메인 · CC BY-SA 전사
     // 릴케 — 다섯 편 한 장, 헌사(「À Madame …」) 위에 시 제목
     const rilke = draftOf('ws-fr-rainer-maria-rilke_poemes-dedies-aux-amis-francais');
     expect(rilke.draft.chapters).toHaveLength(1);

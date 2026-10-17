@@ -189,6 +189,8 @@ export function wikisourceAttributionParts(literature) {
     url: wikisourceHref(literature.url, literature.wiki),
     publicDomain: rights.status === 'approved' && rights.basis === LICENSE_PUBLIC_DOMAIN,
     ccBySa: literature.license === 'CC-BY-SA-4.0',
+    // 공공누리 제1유형 — 배포 기관(출처 표시 의무). 승인된 kogl-type1 기록일 때만
+    kogl: rights.status === 'approved' && rights.basis === 'kogl-type1' && literature.license === 'KOGL-1' && typeof rights.holder === 'string' && rights.holder.trim() ? rights.holder.trim() : null,
     editNote: ['chapter-split-by-manabi', 'typography-normalized', 'illustrations-omitted', 'notes-omitted'].every((code) => edits.includes(code)),
     scriptNote: edits.includes('script-variant-by-wikisource'),
     translator: translatorCredit(literature),

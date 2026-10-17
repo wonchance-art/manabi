@@ -127,8 +127,10 @@ describe('2차 묶음(오너 「원본 책 재구성 … 표지 만들기까지 
       ...Object.entries(pd.works),
       ...works.filter(([, work]) => ['sonnenschein-1887', 'geneve-1782', 'hartmann-1935'].includes(work.display.binding)), // 3차 위키문헌 영·불
     ];
-    expect(second).toHaveLength(29);
+    // 기미독립선언서 두 판(1919 원문 · 2019 「쉽고 바르게 읽는」)만 같은 문서의 얼굴(보성사 『宣言書』)을 함께 쓴다
+    expect(second).toHaveLength(30);
     expect(new Set(second.map(([, work]) => work.display.binding)).size).toBe(29);
+    expect(second.filter(([, work]) => work.display.binding === 'boseongsa-1919').map(([key]) => key).sort()).toEqual(['ws-ko-choe-nam-seon_gimi-dongnip-seoneonseo', 'ws-ko-samil-centennial_swipgo-bareuge-ingneun-dongnip-seoneonseo']);
     for (const key of Object.keys(FIRST_EDITION_BINDINGS)) expect(Object.hasOwn(VICTORIAN_BINDINGS, key)).toBe(false);
     for (const [, work] of second) {
       expect(validateFirstEditionDisplay(work.display)).toEqual(work.display);

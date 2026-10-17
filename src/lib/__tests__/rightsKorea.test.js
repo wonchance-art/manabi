@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { KR_PRE_EXTENSION_DEATH_YEAR, koreaPublicDomainVerdict, koreaTermExpired, originTermExpired } from '../rightsKorea.js';
+import { KOGL_TYPE1, KR_PRE_EXTENSION_DEATH_YEAR, koglType1Verdict, koreaPublicDomainVerdict, koreaTermExpired, originTermExpired } from '../rightsKorea.js';
 
 // 정본 책 권리 선의 공통 정본(오너 「미국 기준 없애」 2026-10-17 KST) — 한국 저작권법: ① 한국 보호기간 만료(1962년 이전 사망 —
 // 2013-07-01 연장 전에 끝남 — 또는 사후 70년) · ② 본국 만료(제3조 제4항 상호주의). 미국 선은 미국 원산의 ②에서만.
@@ -63,5 +63,19 @@ describe('번역본 = 원작 만료 그리고 번역 만료(오너 「되는 언
   it('번역 쪽이 본국 상호주의로만 끝났으면 근거는 origin-term', () => {
     expect(at({ authorDeathYear: 1883, countryOfOrigin: 'GB', translator: { name: 'Y', deathYear: 1970, publishedYear: 1925, countryOfOrigin: 'US' } }))
       .toMatchObject({ ok: true, basis: 'origin-term' });
+  });
+});
+
+describe('공공누리 제1유형(오너 「쉽고 바르게라도 넣어」 2026-10-17 KST) — 퍼블릭 도메인 밖 유일한 근거, 배포 기관 표시 의무', () => {
+  const holder = '3·1운동 및 대한민국임시정부 수립 100주년 기념사업 추진위원회';
+  const kogl = { publishedYear: 2019, countryOfOrigin: 'KR', rights: { basis: KOGL_TYPE1, holder, reviewedAt: '2026-10-17' } };
+  it('배포 기관 · 출판 연도 · 한국 공공기관 · 검토일이 있으면 된다', () => {
+    expect(koglType1Verdict(kogl)).toMatchObject({ ok: true, basis: KOGL_TYPE1, reviewYear: 2026 });
+  });
+  it('배포 기관이 없거나 외국 기관이거나 근거가 다르면 막힌다(fail-closed)', () => {
+    expect(koglType1Verdict({ ...kogl, rights: { ...kogl.rights, holder: ' ' } }).reasons.join()).toMatch(/holder/u);
+    expect(koglType1Verdict({ ...kogl, countryOfOrigin: 'JP' }).ok).toBe(false);
+    expect(koglType1Verdict({ ...kogl, rights: { ...kogl.rights, basis: 'public-domain' } }).ok).toBe(false);
+    expect(koglType1Verdict({ ...kogl, publishedYear: undefined }).ok).toBe(false);
   });
 });

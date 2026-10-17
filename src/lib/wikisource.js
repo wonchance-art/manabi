@@ -14,7 +14,7 @@
 // 장 나눔: 위키문헌의 쪽 하나(단편 · 장)가 기본 단위. 학습 한 번 분량을 넘으면 그 쪽 안에서 문단 경계로 고르게 나눈다 — 프랑스어는
 // 단어 수(WS_TARGET.French), 중국어는 글자 수(WS_TARGET.Chinese). 문단 한가운데는 자르지 않는다.
 
-import { koreaPublicDomainVerdict } from './rightsKorea.js';
+import { KOGL_TYPE1, koglType1Verdict, koreaPublicDomainVerdict } from './rightsKorea.js';
 
 export const WS_PROVIDER = 'wikisource';
 export const WS_BOOK_VERSION = 1;
@@ -231,14 +231,20 @@ export function splitBlocks(blocks, target, measure) {
 
 /** 권리 판정 — 한국 공개 가능(① 한국 만료 · ② 본국 만료, 공통 정본 rightsKorea). 판정 규칙이 없는 원산국은 ①로만 열린다. */
 export function wikisourceRightsVerdict(literature = {}) {
+  // 공공누리 제1유형(「쉽고 바르게 읽는 3·1독립선언서」) — 보호기간이 아니라 이용 허락이 근거다
+  if (literature?.rights?.basis === KOGL_TYPE1) return koglType1Verdict(literature);
   return koreaPublicDomainVerdict(literature);
 }
 
-/** 게시 가능한 권리 기록인가 — 승인 · 퍼블릭 도메인 · 원산국 · 한국 검토 · 판정 통과 · 위키문헌 라이선스. */
+/** 판의 라이선스 — 퍼블릭 도메인 원작은 위키문헌 전사의 CC BY-SA 4.0, 공공누리 저작물은 공공누리 제1유형 그대로. */
+export const WS_KOGL_LICENSE = 'KOGL-1';
+const licenseOf = (entry) => (entry?.rights?.basis === KOGL_TYPE1 ? WS_KOGL_LICENSE : WS_LICENSE);
+
+/** 게시 가능한 권리 기록인가 — 승인 · 퍼블릭 도메인(또는 공공누리 제1유형) · 원산국 · 한국 검토 · 판정 통과 · 판의 라이선스. */
 export function wikisourceRightsPublishable(literature) {
   const rights = literature?.rights;
-  if (literature?.provider !== WS_PROVIDER || rights?.status !== 'approved' || rights?.basis !== 'public-domain') return false;
-  if (literature.license !== WS_LICENSE) return false;
+  if (literature?.provider !== WS_PROVIDER || rights?.status !== 'approved' || !['public-domain', KOGL_TYPE1].includes(rights?.basis)) return false;
+  if (literature.license !== licenseOf(literature)) return false;
   const jurisdictions = Array.isArray(rights.reviewedJurisdictions) ? rights.reviewedJurisdictions : [];
   if (![literature.countryOfOrigin, literature.translator?.countryOfOrigin, 'KR'].filter(Boolean).every((code) => jurisdictions.includes(code))) return false;
   return wikisourceRightsVerdict(literature).ok;
@@ -365,7 +371,7 @@ export function createWikisourceDraft(entry, files) {
     translator: entry.translator ?? null,
     url: entry.url,
     fetchedAt: entry.fetchedAt,
-    license: WS_LICENSE,
+    license: licenseOf(entry),
     rights: entry.rights,
     ...(zh ? { script: WS_SCRIPT.canonical, scriptVariants: [WS_SCRIPT.alternate] } : {}),
     edits: [...WS_EDITS, ...(zh ? ['script-variant-by-wikisource'] : [])],

@@ -97,3 +97,19 @@ function termVerdict({ publishedYear, authorDeathYear, countryOfOrigin, mortPour
   if (origin.expired) return { ok: true, reasons: [], basis: 'origin-term' };
   return { ok: false, reasons: [`${who} ${authorDeathYear} 사망 — 한국 보호기간이 끝나지 않았다(1962년 이전 사망 또는 사후 70년)`, origin.reason], basis: null };
 }
+
+/**
+ * 공공누리 제1유형(오너 「쉽고 바르게라도 넣어」 2026-10-17 KST) — 퍼블릭 도메인이 아닌 유일한 근거. 공공기관이 배포한 저작물을
+ * 영리 이용·변경까지 허락하되 **출처(배포 기관) 표시가 의무**라 holder가 없으면 불가다. 한국 공공기관 저작물만(countryOfOrigin KR).
+ */
+export const KOGL_TYPE1 = 'kogl-type1';
+export function koglType1Verdict({ publishedYear, countryOfOrigin, rights } = {}) {
+  const reasons = [];
+  const reviewYear = /^\d{4}-\d{2}-\d{2}$/u.test(rights?.reviewedAt ?? '') ? Number(rights.reviewedAt.slice(0, 4)) : null;
+  if (rights?.basis !== KOGL_TYPE1) reasons.push(`rights.basis가 ${KOGL_TYPE1}이어야 한다`);
+  if (reviewYear == null) reasons.push('rights.reviewedAt(YYYY-MM-DD)가 필요하다');
+  if (typeof rights?.holder !== 'string' || !rights.holder.trim()) reasons.push('rights.holder(배포 공공기관 — 출처 표시 의무)가 필요하다');
+  if (!Number.isInteger(publishedYear)) reasons.push('publishedYear가 필요하다');
+  if (countryOfOrigin !== 'KR') reasons.push('공공누리는 한국 공공기관 저작물만(countryOfOrigin KR)');
+  return reasons.length ? { ok: false, reasons, reviewYear, basis: null } : { ok: true, reasons: [], reviewYear, basis: KOGL_TYPE1 };
+}

@@ -3737,6 +3737,59 @@
         }
       ]
     },
+    "ws-ko-samil-centennial_swipgo-bareuge-ingneun-dongnip-seoneonseo": {
+      "title": "쉽고 바르게 읽는 3.1독립선언서",
+      "author": "3·1운동 및 대한민국임시정부 수립 100주년 기념사업 추진위원회",
+      "level": "중급",
+      "total": 1,
+      "language": "Korean",
+      "size": 2138,
+      "unit": "chars",
+      "display": {
+        "titleKo": "쉽고 바르게 읽는 3·1독립선언서",
+        "authorKo": "3·1운동·임시정부 100주년 기념사업 추진위원회",
+        "binding": "boseongsa-1919",
+        "coverTitle": "宣言書"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-ko-samil-centennial_swipgo-bareuge-ingneun-dongnip-seoneonseo",
+        "wiki": "ko",
+        "title": "쉽고 바르게 읽는 3.1독립선언서",
+        "author": "3·1운동 및 대한민국임시정부 수립 100주년 기념사업 추진위원회",
+        "publishedYear": 2019,
+        "authorDeathYear": null,
+        "countryOfOrigin": "KR",
+        "translator": null,
+        "url": "https://ko.wikisource.org/wiki/3%C2%B71%EB%8F%85%EB%A6%BD%EC%84%A0%EC%96%B8%EC%84%9C",
+        "fetchedAt": "2026-10-17",
+        "license": "KOGL-1",
+        "rights": {
+          "status": "approved",
+          "basis": "kogl-type1",
+          "holder": "3·1운동 및 대한민국임시정부 수립 100주년 기념사업 추진위원회",
+          "reviewedJurisdictions": [
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "쉽고 바르게 읽는 3.1독립선언서",
+          "sha256": "1b1b524dcefca8e28f410fa0c81decf81ae5f60bfc6fba0ea533101ba3f541b0"
+        }
+      ]
+    },
     "ws-ko-yi-hyo-seok_memilkkot-pil-muryeop": {
       "title": "메밀꽃 필 무렵",
       "author": "이효석",
