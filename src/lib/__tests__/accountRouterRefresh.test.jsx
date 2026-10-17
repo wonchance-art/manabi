@@ -116,11 +116,19 @@ describe('배선 — 관문은 하나', () => {
     onAccountLeftRef.current?.();
   }, [user]);`);
   });
-  it('로그아웃 · 계정 삭제 화면은 따로 router.refresh를 부르지 않는다(중복 금지 — 관문이 한다)', () => {
-    for (const file of ['src/components/Layout.jsx', 'src/views/MyPage.jsx', 'src/components/AccountSettings.jsx', 'src/app/embed/review/EmbedReviewClient.jsx']) {
+  it('이동하지 않는 로그아웃 · 계정 삭제 화면은 따로 router.refresh를 부르지 않는다(중복 금지 — 관문이 한다)', () => {
+    for (const file of ['src/views/MyPage.jsx', 'src/components/AccountSettings.jsx', 'src/app/embed/review/EmbedReviewClient.jsx']) {
       expect(read(file), file).toMatch(/signOut\(\)/);
       expect(read(file), file).not.toMatch(/router\.refresh\(/);
     }
+    // 이동하는 로그아웃(Layout)만 push 다음 줄에 refresh를 하나 더 둔다(차단2 — 관문 effect가 push보다 먼저 나가면 Next가 이동으로
+    // 대기 중 refresh를 버린다). 이동 앞에 두면 같은 이유로 버려지므로 반드시 push 뒤, 그리고 그 하나뿐.
+    const layout = read('src/components/Layout.jsx');
+    const logout = sliceBetween(layout, 'await signOut();', '} else {');
+    expect(logout.match(/router\.refresh\(\)/g)).toHaveLength(1);
+    expect(logout.indexOf("router.push('/auth');")).toBeGreaterThanOrEqual(0);
+    expect(logout.indexOf("router.push('/auth');")).toBeLessThan(logout.indexOf('router.refresh();'));
+    expect(layout.match(/router\.refresh\(\)/g)).toHaveLength(1);
     // 계정 삭제도 같은 signOut을 지난다 — 예전에는 새로고침이 없어 삭제한 계정의 서버 렌더가 그대로 남았다.
     expect(sliceBetween(read('src/components/AccountSettings.jsx'), 'async function handleDeleteAccount() {', 'finally {')).toContain('await signOut();');
   });

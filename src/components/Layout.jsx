@@ -167,8 +167,11 @@ export default function Layout({ children }) {
   async function handleAuthClick() {
     if (user) {
       await signOut();
-      // 서버 렌더 버리기(router.refresh — B1 배움 대기 화면 포함)는 AuthContext 관문이 이동 뒤에 한다(AUTH-ROUTER-REFRESH-001).
       router.push('/auth');
+      // 이동 다음 줄의 refresh는 관문(AuthContext onAccountLeft)과 별개로 남긴다(AUTH-ROUTER-REFRESH-001 리뷰 차단2). supabase signOut은
+      // navigator lock 태스크 경계를 지나므로 관문 effect가 이 push보다 먼저 나갈 수 있고, Next 액션 큐는 대기 중 refresh를 이동이
+      // 버린다(app-router-instance.js discarded) — 그러면 B1 배움 대기 화면 · 라우터 캐시가 남는다. 여기 한 번은 push 뒤라 버려지지 않는다.
+      router.refresh();
     } else {
       router.push(authEntryHref(window.location.pathname + window.location.search + window.location.hash));
     }
