@@ -1,5 +1,6 @@
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
+import { BOUNDARY_ACTORS, BOUNDARY_MARKER, BOUNDARY_MATERIAL_ID } from './fixtures/account-boundary-actors.mjs';
 
 const supabaseURL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseOrigin = supabaseURL ? new URL(supabaseURL).origin : null;
@@ -59,7 +60,26 @@ function userFromClaims(claims) {
   };
 }
 
+// 계정 경계 e2e(e2e/account-boundary.e2e.mjs, AUTH-ROUTER-REFRESH-001) 전용 표식 계정 두 개. 다른 e2e는 이 sub를 쓰지 않으므로
+// 기존 응답은 하나도 바뀌지 않는다. A에게만 서버 렌더 표식(지난 문단 · 비공개 자료 제목)을 주고, B에게는 RLS처럼 빈 결과를 준다.
+function boundaryResponse(url, claims) {
+  const sub = claims?.sub;
+  if (sub !== BOUNDARY_ACTORS.A && sub !== BOUNDARY_ACTORS.B) return null;
+  const isA = sub === BOUNDARY_ACTORS.A;
+  if (url.pathname.endsWith('/rest/v1/study_paragraphs')) {
+    const at = new Date().toISOString();
+    return json(isA ? [{ id: 'boundary-a-1', theme: `${BOUNDARY_MARKER} 주제`, level: 'N5', materials: {}, used_at: at, created_at: at,
+      paragraph: { paragraph: `${BOUNDARY_MARKER} 문단`, translation: `${BOUNDARY_MARKER} 번역`, sentences: [{ text: `${BOUNDARY_MARKER}です。`, ko: BOUNDARY_MARKER }] } }] : []);
+  }
+  if (url.pathname.endsWith('/rest/v1/reading_materials') && url.searchParams.get('id') === `eq.${BOUNDARY_MATERIAL_ID}`) {
+    return isA ? json({ title: `${BOUNDARY_MARKER} 제목` }) : json({ code: 'PGRST116', message: 'JSON object requested, multiple (or no) rows returned' }, 406);
+  }
+  return null;
+}
+
 function mockResponse(url, claims) {
+  const boundary = boundaryResponse(url, claims);
+  if (boundary) return boundary;
   // Archive rendering resolves published overrides on the server. Do not let that
   // request escape to the nonexistent fixture host and wait on DNS/network retries.
   if (url.pathname.endsWith('/rest/v1/content_overrides')) return json([]);
