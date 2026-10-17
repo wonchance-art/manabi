@@ -24,6 +24,10 @@
 //    집계(getLLMStats — 인스턴스 재시작에 초기화되므로 로그가 정본, 집계는 창). 테스트 러너(VITEST)에서는
 //    LLM_LOG=on일 때만 로그를 낸다.
 
+// 「서비스 설정」 판정의 정본은 errorMessage.js 한 곳(서버 · 클라 · 안내 문구가 같이 쓴다 — GEMINI-402-GUARD).
+import { isServiceConfigError } from '../errorMessage.js';
+export { isServiceConfigError };
+
 /** 티어 표 — 호출부는 이 이름만 안다. 폴백 모델 출력 단가는 본선 이하여야 한다(R3에서 확정). */
 export const TIERS = Object.freeze({
   light: Object.freeze({ primary: 'gemini-3.5-flash-lite', fallbacks: Object.freeze([]) }),
@@ -127,8 +131,9 @@ export function resolveTier({ tier, model } = {}) {
   return { tier: 'standard' };
 }
 
-/** 용량 오류 판정 — 기존 5곳 관용구의 합집합(상태 0은 네트워크 실패). */
+/** 용량 오류 판정 — 기존 5곳 관용구의 합집합(상태 0은 네트워크 실패). 「서비스 설정」(결제 · 크레딧)은 429로 와도 용량이 아니다. */
 export function isCapacityError(status, detail) {
+  if (isServiceConfigError(status, detail)) return false;
   if (status === 429 || status === 503 || status === 0) return true;
   const text = JSON.stringify(detail ?? '').toLowerCase();
   return CAPACITY_WORDS.some((w) => text.includes(w));
@@ -403,6 +408,8 @@ async function callLLMInner(tier, input, opts, started) {
     }
     depth++;
     if (giveUp) break;
+    // 결제 · 크레딧이 막히면 같은 키의 다른 Gemini 모델도 같은 답이다 — 나머지 모델은 건너뛰고 Groq(다른 제공자)만 본다.
+    if (lastGemini && isServiceConfigError(lastGemini.status, lastGemini.detail)) break;
   }
 
   if (groqKey && !pastDeadline()) {
@@ -417,7 +424,7 @@ async function callLLMInner(tier, input, opts, started) {
   throw new LLMError(
     primary ? `LLM ${primary.provider} ${primary.model} failed (${primary.code} ${primary.status})` : 'LLM unavailable',
     {
-      code: primary?.code || 'exhausted',
+      code: primary && isServiceConfigError(primary.status, primary.detail) ? 'service_config' : (primary?.code || 'exhausted'),
       status: primary?.status ?? 0,
       detail: primary?.detail ?? null,
       model: primary?.model ?? null,

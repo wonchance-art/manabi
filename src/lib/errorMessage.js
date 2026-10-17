@@ -2,7 +2,24 @@
 // 기술 메시지(HTTP, DB, API)를 사람이 이해할 수 있는 안내로
 // 화면 오류 문구의 정본 파일 — 문구는 화면 문구 표준(docs/design/copy-standard.md)을 따른다(해요체 · 「…해 주세요」 · 「…」).
 
+// 「서비스 설정」 오류 — AI 제공자 결제 · 크레딧 소진(Gemini 402, 같은 문구가 429 RESOURCE_EXHAUSTED로도 온다).
+// 기다려도 풀리지 않으므로 혼잡(재시도 · 「잠시 붐비고 있어요」)으로 보지 않는다. 서버(llm.js · tts) · 클라(gemini.js) · 안내 문구가
+// 이 한 판정을 쓴다(GEMINI-402-GUARD, 2026-10-17 KST — 운영 402 「Your prepayment credits are depleted」 실측).
+export const SERVICE_CONFIG_PATTERN = /prepayment|billing|credits?\s+(?:are\s+)?depleted/i;
+export function isServiceConfigError(status, detail) {
+  if (status === 402) return true;
+  let text = '';
+  try { text = typeof detail === 'string' ? detail : JSON.stringify(detail ?? ''); } catch { text = ''; }
+  return SERVICE_CONFIG_PATTERN.test(text || '');
+}
+
+// 안내는 기존 「서비스 설정」 문구(api key 패턴과 같은 말) 그대로 — 새 문구를 만들지 않는다.
+const SERVICE_CONFIG_MESSAGE = '서비스 설정에 문제가 있어요. 관리자에게 문의해 주세요.';
+
 const PATTERNS = [
+  // 서비스 설정(결제 · 크레딧) — 용량 패턴보다 먼저 본다: 같은 문구가 429 · RESOURCE_EXHAUSTED로 와도 「붐빔」이 아니다.
+  { match: SERVICE_CONFIG_PATTERN, user: SERVICE_CONFIG_MESSAGE },
+
   // 네트워크
   { match: /failed to fetch|network|ERR_NETWORK|connection/i,
     user: '인터넷 연결을 확인해 주세요. 잠시 후 다시 시도하면 대개 해결돼요.',
@@ -84,6 +101,8 @@ export function isUserFacingMessage(text) {
  */
 export function friendlyError(err, { fallback } = {}) {
   const technical = typeof err === 'string' ? err : (err?.message || (err == null ? '' : String(err)));
+  // 본문 없이 상태만 온 402(「API 요청 실패 (HTTP 402)」)도 서비스 설정이다.
+  if (err && typeof err === 'object' && err.status === 402) return { message: SERVICE_CONFIG_MESSAGE, retry: false, technical };
 
   for (const p of PATTERNS) {
     if (p.match.test(technical)) {

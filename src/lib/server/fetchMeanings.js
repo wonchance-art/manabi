@@ -360,7 +360,8 @@ export async function fetchMeaningsForMissing(missing, language, supabase, opts 
       }
       const errMsg = `HTTP ${err?.status ?? 0}: ${JSON.stringify(err?.detail ?? err?.message ?? '').slice(0, 300)}`;
       console.warn('[fetchMeanings] batch failed:', errMsg);
-      errors.push({ stage: 'http', batch: batchOffset, error: errMsg });
+      // code: llm.js LLMError 코드 — 'service_config'(결제 · 크레딧)면 analyzeCore가 뜻 빈 완료본 대신 실패로 끝낸다.
+      errors.push({ stage: 'http', batch: batchOffset, error: errMsg, code: err?.code ?? null });
       return;
     }
 
