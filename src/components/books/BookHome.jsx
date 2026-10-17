@@ -18,7 +18,7 @@ export default function BookHome({ book, preview=false, progress, hasProgress = 
   const resume = bookResume(book, progress, hasProgress);
   const current = resume.lesson;
   const groups = lessonGroups(book.lessons);
-  return <div className="manabi-page manabi-book-home"><p className="manabi-breadcrumb"><LibraryReturnLink onlyWithContext/><Link href="/lessons">교재</Link><span>/</span>일본어 · N5</p>
+  return <div className="manabi-page manabi-book-home"><p className="manabi-breadcrumb"><LibraryReturnLink onlyWithContext/><Link href="/lessons" prefetch={false}>교재</Link><span>/</span>일본어 · N5</p>
     <section className="manabi-book-hero"><BookCover /><div><p className="manabi-eyebrow">일본어 · N5{preview && ' · 검수 중'}</p><h1>작은 문장으로<br />시작하는 일본어</h1><div className="manabi-row"><a className="manabi-button" href={readerHref(resume.page)}>{!ready ? '읽기 열기' : resume.started ? `${String(current.number).padStart(2, '0')}과 이어 읽기` : '첫 과부터 시작하기'} →</a>{resume.started && resume.page !== `${current.id}-start` && <a className="manabi-link" href={readerHref(`${current.id}-start`)}>{String(current.number).padStart(2, '0')}과 처음부터</a>}</div></div></section>
     {!preview&&<LibrarySaveButton edition={book.edition}/>}
     <div className="manabi-book-body"><section><div className="manabi-section-heading"><h2>목차</h2><span>{resume.completed} / {resume.total}과 학습</span></div>

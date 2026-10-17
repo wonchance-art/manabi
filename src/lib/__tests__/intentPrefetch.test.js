@@ -96,11 +96,11 @@ describe('intentPrefetchProps', () => {
 });
 
 describe('메뉴 배선', () => {
-  it('배움만 의도 prefetch — 뷰포트 prefetch(P5)는 계속 끄고, 서재(자체 loading 없음 → 라우터 상태만)는 붙이지 않는다', () => {
+  it('배움 · 산책만 의도 prefetch — 뷰포트 prefetch(P5 · BFCACHE-A-001)는 끄고, 서재(자체 loading 없음 → 라우터 상태만)는 붙이지 않는다', () => {
     const intent = MAIN_NAV.filter(item => item.intentPrefetch).map(item => item.href);
-    expect(intent).toEqual(['/home']);
-    for (const href of ['/home', '/materials']) expect(MAIN_NAV.find(item => item.href === href).prefetch).toBe(false);
-    expect(fs.existsSync('src/app/(app)/home/loading.jsx')).toBe(true); // 받을 골격이 있어야 의미가 있다
+    expect(intent).toEqual(['/home', '/discover']);
+    for (const href of ['/home', '/materials', '/discover']) expect(MAIN_NAV.find(item => item.href === href).prefetch).toBe(false);
+    for (const route of ['home', 'discover']) expect(fs.existsSync(`src/app/(app)/${route}/loading.jsx`)).toBe(true); // 받을 골격이 있어야 의미가 있다
   });
 
   it('GNB · 휴대폰 탭 막대 · 읽기 화면 메뉴의 MAIN_NAV Link 셋 모두에 붙는다', () => {
