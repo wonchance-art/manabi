@@ -110,7 +110,10 @@ test('이전 제외는 별도 접힌 목록에서 해제하고 아는 단어 토
   await f.page.goto('/vocab',{waitUntil:'domcontentloaded'});
   const legacy=f.page.locator('.vocabulary-legacy-exclusions').filter({visible:true}).first();
   await legacy.locator('summary').click();
-  await legacy.getByRole('button',{name:'제외 해제',exact:true}).first().click();
+  // 해제 요청이 도착한 뒤에 떠난다 — 누르자마자 이동하면 요청이 나가기 전에 끊겨 서버 상태(exclusions)가 그대로일 수 있다.
+  // 위 아는 단어 쓰기(written)와 같은 방식: 누르기 전에 응답 대기를 건다.
+  const removed = f.page.waitForResponse(r => r.url().includes('/api/learning/exclusions') && r.request().method() !== 'GET');
+  await legacy.getByRole('button',{name:'제외 해제',exact:true}).first().click();await removed;
   await f.page.goto('/viewer/94101',{waitUntil:'domcontentloaded'});await f.select(0);
   assert.equal(f.exclusions.length, 0); assert.equal(f.grades.length, 0);
   for (const button of await f.gradesUI.all()) assert.equal(await button.isEnabled(), true);
