@@ -54,6 +54,18 @@ const EXPECTED_BREAKS = {
 // 「범위 밖 · 건너뜀」으로 보고, 마이그레이션 자신의 검사(RAISE) 등 다른 오류는 실패다.
 const OUT_OF_FIXTURE = new Set(['42P01', '42883', '42704', '3F000']);
 
+/**
+ * VIEW-WRITE-GRANT-001 동적 판정: 정의자 권한(security_invoker가 true가 아닌) public view에 anon · authenticated 쓰기 권한이 남으면
+ * RLS를 거치지 않는 쓰기 길이다. 운영과 같은 Supabase 기본 권한(postgres가 public에 만드는 표 · view → anon · authenticated ALL)을 켜고
+ * 매 파일 뒤 본다. 이미 운영에 나간 위반은 고친 파일과 함께만 — 그 파일까지 열려 있어도 되고, 그 뒤에는 닫혀 있어야 한다.
+ */
+const VIEW_WRITE_KNOWN = {
+  '20261016165910_public_profiles_view.sql': {
+    ticket: 'PROFILES-PRIVACY-001 ①-hotfix — public_profiles에 anon · authenticated INSERT · UPDATE · DELETE(운영 2026-10-17 KST)',
+    views: ['public_profiles'], fixedBy: '20261016170000_public_profiles_view_select_only.sql',
+  },
+};
+
 const originalTest = await read('./korean-learning-support.mjs');
 const marker = 'const modernFixtureSql = ';
 const start = originalTest.indexOf(marker) + marker.length;
@@ -101,6 +113,15 @@ try {
   const cards = Object.values(baseline).reduce((n, s) => n + s.registry.length, 0);
   assert.ok(cards >= 20 && Object.values(baseline).every(s => s.registry.length > 0), `합성 학습자 카드가 비었다(${cards})`);
   console.log(`SEED 합성 학습자 ${LEARNERS.length}명 · 카드 ${cards}장`);
+  // 운영과 같은 기본 권한 — 관측 뒤 마이그레이션이 만드는 public 표 · view는 anon · authenticated ALL을 받는다(Supabase 기본).
+  await db.exec('ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role');
+  const writableDefinerViews = async () => (await db.query(`SELECT c.relname::text v FROM pg_class c
+    WHERE c.relnamespace='public'::regnamespace AND c.relkind='v'
+      AND coalesce((SELECT option_value FROM pg_options_to_table(c.reloptions) WHERE option_name='security_invoker'),'false') NOT IN ('true','on','1')
+      AND (has_table_privilege('anon',c.oid,'INSERT,UPDATE,DELETE') OR has_table_privilege('authenticated',c.oid,'INSERT,UPDATE,DELETE'))
+    ORDER BY 1`)).rows.map(r => r.v);
+  assert.deepEqual(await writableDefinerViews(), [], '관측 fixture에 이미 쓰기 가능한 정의자 view가 있다');
+  const openViews = new Map(); // view → 연 파일
 
   const candidates = process.argv.slice(2);
   const files = [...(await readdir(MIGRATIONS)).filter(f => f.endsWith('.sql') && f.slice(0, 14) > OBSERVED_AFTER).sort(), ...candidates];
@@ -121,6 +142,21 @@ try {
       if (!OUT_OF_FIXTURE.has(error.code)) throw new Error(`${file}: 적용 실패 ${error.code ?? ''} ${error.message}`);
       console.log(`SKIP ${file} — fixture 밖 대상(${error.code} ${error.message.split('\n')[0]})`);
       continue;
+    }
+    {
+      const name = file.split('/').pop();
+      const open = await writableDefinerViews();
+      for (const v of open) if (!openViews.has(v)) {
+        const known = VIEW_WRITE_KNOWN[name];
+        if (!known?.views.includes(v)) throw new Error(`${name}: 정의자 권한 view ${v}에 anon · authenticated 쓰기 권한이 남는다(VIEW-WRITE-GRANT-001)`);
+        openViews.set(v, name);
+        console.log(`VIEW-WRITE ${name} — ${v} 쓰기 가능(${known.ticket.split(' — ')[0]}) · ${known.fixedBy}가 닫는다`);
+      }
+      for (const [v, by] of [...openViews]) if (!open.includes(v)) {
+        assert.equal(name, VIEW_WRITE_KNOWN[by].fixedBy, `${v}를 닫은 파일이 기록(fixedBy)과 다르다`);
+        openViews.delete(v);
+        console.log(`VIEW-CLOSE ${name} — ${v} 읽기 전용`);
+      }
     }
     const now = await state();
     const expected = EXPECTED_BREAKS[file];
@@ -158,6 +194,8 @@ try {
     if (entry.healedBy) assert.ok(files.includes(entry.healedBy) && broken?.file !== file, `${file}: 기록된 되돌림(${entry.healedBy})이 일어나지 않았다`);
   }
   if (broken) assert.equal(EXPECTED_BREAKS[broken.file].healedBy, undefined, '되돌림이 기록된 깨짐이 끝까지 남았다');
+  for (const [v, by] of openViews) assert.ok(!files.includes(VIEW_WRITE_KNOWN[by].fixedBy), `${v}: 고친 파일 ${VIEW_WRITE_KNOWN[by].fixedBy}를 적용했는데 아직 쓰기 가능하다`);
+  for (const [v, by] of openViews) console.log(`NOTICE ${v}는 ${by} 뒤 아직 쓰기 가능 — 고칠 파일 ${VIEW_WRITE_KNOWN[by].fixedBy} 대기`);
   for (const r of resolved) console.log(`NOTICE ${r.file}의 깨짐은 ${r.by}가 되돌렸다 — EXPECTED_BREAKS 항목을 지운다(${EXPECTED_BREAKS[r.file]?.ticket})`);
   const seconds = ((Date.now() - started) / 1000).toFixed(1);
   console.log(broken

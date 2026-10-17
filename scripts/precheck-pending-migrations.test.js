@@ -75,7 +75,9 @@ describe('출력 SQL — 읽기 전용', () => {
 describe('대상 파일', () => {
   it('--after 버전 뒤의 저장소 마이그레이션만, 버전 순서대로', () => {
     const files = pendingFiles({ after: '20261016165910', files: [] }, ROOT);
-    expect(files[0]).toBe('supabase/migrations/20261016171800_admin_set_user_role.sql');
+    // 첫 파일을 못 박지 않는다 — 165910 바로 뒤에 보완 파일(예: 170000)이 끼어들 수 있다. 포함 · 정렬 · 범위만.
+    expect(files).toContain('supabase/migrations/20261016171800_admin_set_user_role.sql');
+    expect([...files].sort()).toEqual(files);
     expect(files).toContain('supabase/migrations/20261016191600_vocabulary_snapshot_set_flags.sql');
     expect(files.every(f => path.basename(f).slice(0, 14) > '20261016165910')).toBe(true);
     expect(() => pendingFiles({ after: 'x', files: [] }, ROOT)).toThrow(/--after/);
