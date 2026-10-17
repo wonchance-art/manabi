@@ -29,6 +29,10 @@ export function isServiceConfigError(status, detail) {
   return SERVICE_CONFIG_PATTERN.test(text || '');
 }
 
+// 소리를 낼 길이 없을 때(서버 음성이 막혔고 이 기기에 그 언어의 브라우저 음성이 없음 — TTS-GAP-001 ①).
+// 새 문구가 아니라 레벨 화면의 같은 상황 문구(「이 기기에서는 소리를 낼 수 없어요」, 규칙상 할 수 없는 일 형태)를 그대로 쓴다.
+export const SPEECH_UNAVAILABLE_MESSAGE = '이 기기에서는 소리를 낼 수 없어요.';
+
 // 안내는 기존 「서비스 설정」 문구(api key 패턴과 같은 말) 그대로 — 새 문구를 만들지 않는다.
 const SERVICE_CONFIG_MESSAGE = '서비스 설정에 문제가 있어요. 관리자에게 문의해 주세요.';
 

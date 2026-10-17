@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/lib/AuthContext';
 import { ToastProvider } from '@/lib/ToastContext';
 import { useRouter } from 'next/navigation';
+import SpeechUnavailableNotice from '@/components/SpeechUnavailableNotice';
 import { useState } from 'react';
 
 export default function Providers({ children }) {
@@ -20,6 +21,7 @@ export default function Providers({ children }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
+        <SpeechUnavailableNotice />
         {/* 계정이 바뀌면 캐시(queryClient)와 서버 렌더(router.refresh)를 같은 관문에서 버린다(AUTH-ROUTER-REFRESH-001). */}
         <AuthProvider queryClient={queryClient} onAccountLeft={() => router.refresh()}>{children}</AuthProvider>
       </ToastProvider>
