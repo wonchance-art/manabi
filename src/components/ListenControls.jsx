@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { bcp47ForLanguage } from '../lib/speechLang';
 import ActionIcon from './ActionIcon';
 import {t} from '../lib/viewerMessages';
+import { splitListenSentences } from '../lib/listenFollow';
 
 // 재생 중 속도 칸의 글자 — 뷰어는 Aa 「재생 속도」와 같은 이름(1× 등)을 넘긴다. playbackRate는 Web Speech에 넣는 실제 값(보통 0.85)이라
 // 그대로 보이면 설정은 1×인데 막대는 0.85×로 서로 다른 말을 했다(뷰어 기능 감사 2026-10-17 KST).
@@ -11,7 +12,8 @@ export function listenRateText(playbackRate, rateLabel) {
   return rateLabel || `${playbackRate}×`;
 }
 
-export default function ListenControls({ text, language = 'Japanese', stopSignal, playbackRate, rateLabel, compact = false, uiLocale = 'ko' }) {
+// onSentence(i) — 지금 읽기 시작한 문장 번호(splitListenSentences 순서), 멈추면 null. 뷰어가 쪽 따라가기에 쓴다(listenFollow.js).
+export default function ListenControls({ text, language = 'Japanese', stopSignal, playbackRate, rateLabel, onSentence, compact = false, uiLocale = 'ko' }) {
   const [supported, setSupported] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -23,6 +25,8 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
   const sessionRef = useRef(0);
   const rateRef = useRef(rate);
   const languageRef = useRef(language);
+  const onSentenceRef = useRef(onSentence);
+  onSentenceRef.current = onSentence;
 
   rateRef.current = playbackRate ?? rate;
   languageRef.current = language;
@@ -38,12 +42,9 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
     setPlaying(false);
     setPaused(false);
     setCurrentSentence('');
+    onSentenceRef.current?.(null);
     if (!text) { sentencesRef.current = []; return; }
-    const sentences = text
-      .replace(/\n+/g, ' ')
-      .split(/(?<=[。.!?！？])\s*/)
-      .map(s => s.trim())
-      .filter(Boolean);
+    const sentences = splitListenSentences(text);
     sentencesRef.current = sentences;
     setProgress({ current: 0, total: sentences.length });
   }, [text, language]);
@@ -51,9 +52,10 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
   useEffect(() => () => {
     sessionRef.current += 1;
     if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
+    onSentenceRef.current?.(null);
   }, []);
 
-  useEffect(()=>{sessionRef.current+=1;window.speechSynthesis?.cancel();setPlaying(false);setPaused(false);setCurrentSentence('');},[stopSignal]);
+  useEffect(()=>{sessionRef.current+=1;window.speechSynthesis?.cancel();setPlaying(false);setPaused(false);setCurrentSentence('');onSentenceRef.current?.(null);},[stopSignal]);
 
   function speakNext(sessionId) {
     if (sessionRef.current !== sessionId) return;
@@ -65,6 +67,7 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
     }
     setProgress({ current: i + 1, total: sentences.length });
     setCurrentSentence(sentences[i]);
+    onSentenceRef.current?.(i);
     const utter = new window.SpeechSynthesisUtterance(sentences[i]);
     utter.lang = bcp47ForLanguage(languageRef.current);
     utter.rate = rateRef.current;
@@ -100,6 +103,7 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
   function stop() {
     sessionRef.current += 1;
     window.speechSynthesis.cancel();
+    onSentenceRef.current?.(null);
     indexRef.current = 0;
     setPlaying(false);
     setPaused(false);
