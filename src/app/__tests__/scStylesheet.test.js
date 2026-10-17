@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { checkScStylesheet, faceKeys, normalizeRange } from '../../../scripts/fonts/check-sc-stylesheet.mjs';
+import { sliceBetween } from '../../lib/__tests__/helpers/sliceBetween.js';
 
 /**
  * 계약: 간체 중국어(Noto Sans SC) 독립 스타일시트 — next/font 밖의 고정 주소 CSS(SC-LINK-001 1단계, 2026-10-17 KST).
@@ -57,8 +58,7 @@ describe('① 계산 — Google CSS 그대로, 주소만 내용 해시', () => {
     expect(google).toContain('emitFontFile(fontFileBuffer, ext, preloadFontFile, !!adjustFontFallbackMetrics)');
   });
   it('가리키는 next/font 선언과 인자가 같다 — ScFontScope의 Noto_Sans_SC(subsets latin · preload · 크기 보정 기본값)', () => {
-    const scope = read('src/components/fonts/ScFontScope.jsx');
-    const call = scope.slice(scope.indexOf('Noto_Sans_SC({'), scope.indexOf('});', scope.indexOf('Noto_Sans_SC({')));
+    const call = sliceBetween(read('src/components/fonts/ScFontScope.jsx'), 'Noto_Sans_SC({', '});');
     expect(call).toContain(`subsets: ['${SC_STYLESHEET.nextFont.subsets.join("', '")}']`);
     expect(call).toContain("weight: ['400', '500', '700']");
     expect(call).not.toMatch(/preload:\s*false/);
