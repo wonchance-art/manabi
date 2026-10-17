@@ -19,6 +19,7 @@ import useLibraryActivity from '@/components/library/useLibraryActivity';
 import {LibraryReturnLink} from '@/components/web/LibraryReaderLink';
 import {safeLibraryReturn, libraryReaderHref} from '@/lib/libraryReturn';
 import { friendlyToastMessage } from '@/lib/errorMessage';
+import { focusPageIfLost } from '@/lib/routeFocus';
 
 function withoutRuby(node) {
   if (!node) return '';
@@ -41,6 +42,9 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
   const returnTo = params.get('returnTo');
   const { progress, update, storageAvailable, hasProgress, ready } = useReadingProgress(book.edition);
   const content = useRef(null), root = useRef(null), toolbar = useRef(null), referenceMenu = useRef(null), dialog = useRef(null), dialogOrigin = useRef(null), pendingAnchor = useRef(null), pendingPosition = useRef(null);
+  // 책 안 이동(목차 → 과 · 다음 과 · ← 책 목차 · 뒤로 · 앞으로)은 pathname이 같아 전역 되찾기(Layout · routeFocus)가 건너뛴다 —
+  // 누른 링크가 새 쪽에서 사라지면 초점이 body로 떨어졌다(키보드 둘러보기 Preview 8d2b681 실측). 첫 진입(새로 열기)은 옮기지 않는다.
+  const focusAfterMove = useRef(false);
   const [pageId, setPageId] = useState('cover'), [active, setActive] = useState('');
   const [anchorRequest, setAnchorRequest] = useState(0);
   const [entryDecided, setEntryDecided] = useState(false);
@@ -133,11 +137,11 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     // Internal reader links also clear the snapshot before pushing an explicit anchor.
     sync(true);
     let traversedHref;
-    const pop = () => { traversedHref = window.location.href; sync(true); };
+    const pop = () => { traversedHref = window.location.href; focusAfterMove.current = true; sync(true); };
     const hash = () => {
       // Traversal can emit both events; its hashchange must not erase the snapshot.
       if (traversedHref === window.location.href) { traversedHref = null; return; }
-      traversedHref = null; sync(false);
+      traversedHref = null; focusAfterMove.current = true; sync(false);
     };
     // 떠날 때 자리 남기기는 bfcache로 들어가지 않는 길(새로 고침 등)에서만 — pagehide 안의 history.replaceState는 Chromium이
     // 그 페이지를 bfcache에서 내쫓는다(IgnoreEventAndEvict, 실측 2026-10-17 KST). bfcache로 돌아오면 화면 · 스크롤이 그대로고,
@@ -280,6 +284,8 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
       else if (id === 'cover' || id === unit || id === `${unit}-start`) window.scrollTo({ top: 0, behavior: 'instant' });
       else (target || root.current)?.scrollIntoView({ block: 'start', behavior: 'instant' });
       if (target?.classList.contains('kanji-card')) { target.setAttribute('tabindex', '-1'); target.focus({ preventScroll: true }); }
+      // 살아 있는 초점은 빼앗지 않는다 — 잃었을 때만 새 쪽의 첫 제목(없으면 본문)으로(routeFocus 정본).
+      if (focusAfterMove.current) { focusAfterMove.current = false; focusPageIfLost(document); }
       pendingAnchor.current = null; pendingPosition.current = null;
       rememberPosition();
       if (!reference && /^u\d{2}/.test(id)) update({ page: id });
@@ -328,6 +334,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     window.history.pushState(navigationState, '', destination.pathname+destination.search+destination.hash);
     setQuery('');
     pendingPosition.current = null; pendingAnchor.current = id; setPageId(id); setActive(id);
+    focusAfterMove.current = true;
     setAnchorRequest(request => request + 1);
     if (!reference && /^u\d{2}/.test(id)) update({ page: id });
   }, [book.edition, unit, update, reference, rememberPosition]);

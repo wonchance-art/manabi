@@ -197,3 +197,29 @@ describe('⑥ 채점 버튼 이름 — 라벨과 간격 보조 글이 붙어 읽
     for (const { file, button } of buttons) expect(button, file).not.toMatch(/aria-label=/);
   });
 });
+
+describe('⑦ 책 안 이동 뒤 초점 — 누른 링크가 사라지면 새 쪽 제목으로(KBD-WALK-001)', () => {
+  // 키보드 둘러보기(Preview 8d2b681, 2026-10-17 KST): 목차 → 01과 · 「02과로 →」 · 「← 책 목차」 뒤 activeElement = body(1440 · 390 모두).
+  // 책 안 이동은 pathname이 같아 전역 되찾기(Layout → routeFocus)가 건너뛴다 — BookReader가 같은 정본(focusPageIfLost)을 쓴다.
+  const src = read('src/components/books/BookReader.jsx');
+  const effect = sliceBetween(src, "if (target?.classList.contains('kanji-card'))", 'pendingAnchor.current = null; pendingPosition.current = null;');
+  const go = sliceBetween(src, 'const go = useCallback((id, originAnchor) => {', '}, [book.edition');
+  const sync = sliceBetween(src, 'const sync = restorePosition => {', "window.addEventListener('hashchange', hash);");
+
+  it('routeFocus 정본을 쓴다(새 판정 함수를 만들지 않는다)', () => {
+    expect(src).toContain("import { focusPageIfLost } from '@/lib/routeFocus';");
+  });
+
+  it('앱 안 이동 · 해시 바뀜 · 뒤로/앞으로는 표시를 켜고, 첫 진입(sync(true) 한 번 · bfcache 복귀)은 켜지 않는다', () => {
+    expect(go).toContain('focusAfterMove.current = true;');
+    expect(sync).toContain('const pop = () => { traversedHref = window.location.href; focusAfterMove.current = true; sync(true); };');
+    expect(sync).toContain('traversedHref = null; focusAfterMove.current = true; sync(false);');
+    expect(sliceBetween(src, 'const sync = restorePosition => {', 'let traversedHref;')).not.toContain('focusAfterMove.current = true');
+    expect(src).toContain("const acquire = event => { window.history.scrollRestoration = 'manual'; if (event.persisted) sync(true); };");
+  });
+
+  it('쪽 맞춤이 끝난 뒤 한 번만, 초점을 잃었을 때만 옮긴다(한자 카드 초점 다음)', () => {
+    expect(effect).toContain('if (focusAfterMove.current) { focusAfterMove.current = false; focusPageIfLost(document); }');
+    expect(effect.indexOf('focusPageIfLost')).toBeGreaterThan(effect.indexOf("target.focus({ preventScroll: true })"));
+  });
+});
