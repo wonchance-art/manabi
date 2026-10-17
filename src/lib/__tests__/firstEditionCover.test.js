@@ -181,6 +181,9 @@ describe('2차 묶음(오너 「원본 책 재구성 … 표지 만들기까지 
     const first = read('src/components/books/FirstEditionCover.jsx');
     expect(first).toMatch(/paper: \{[^}]*voids: 0\.8\d, density: 0\.\d+ \}/u);
     expect(first).toContain('result="voids"'); expect(first).toContain('result="density"');
+    // 모서리 닳음은 작게 해진 귀퉁이(크게 둥근 밝은 조각 금지 — 오너 「실물처럼」)
+    expect(first).toContain('function frayedCorner(');
+    expect(first).not.toMatch(/const corner = 5 \+ random\(\) \* 4/u);
   });
 });
 

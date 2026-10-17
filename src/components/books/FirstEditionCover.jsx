@@ -228,18 +228,37 @@ function seeded(name) {
   };
 }
 
+/** 닳아 드러나는 속 — 종이는 흰 속종이, 보드 · 천 · 마포는 회갈색 보드. */
+const WORN_UNDER = Object.freeze({ paper: '#f4ecdb', board: '#d6ccb9', cloth: '#d6ccb9', burlap: '#d6ccb9' });
+
+/** 해진 귀퉁이 하나 — 오른쪽 모서리(x 120, y)에서 size 안쪽으로 반지름이 고르지 않은 사분원을 그린다(down: 위 모서리 1 · 아래 모서리 −1). */
+function frayedCorner(random, size, y, down) {
+  const steps = 6;
+  const points = Array.from({ length: steps + 1 }, (_, index) => {
+    const angle = (index / steps) * (Math.PI / 2);
+    const radius = size * (index === 0 || index === steps ? 1 : 0.72 + random() * 0.4);
+    return `L${(120 - radius * Math.cos(angle)).toFixed(2)} ${(y + down * radius * Math.sin(angle)).toFixed(2)}`;
+  }).join('');
+  return { at: y, points };
+}
+
 function Aging({ id, binding, material }) {
   const age = AGING[material];
   const random = seeded(binding);
   const spots = Array.from({ length: age.foxing }, () => ({ cx: 8 + random() * 104, cy: 8 + random() * 152, r: 0.8 + random() * 2.4, o: 0.08 + random() * 0.12 }));
-  const corner = 5 + random() * 4;
+  // 모서리 닳음 — 앞쪽(오른쪽) 두 모서리가 먼저 닳는다. 귀퉁이 1.4–2.4만 겉감(종이 · 천)이 닳아 속이 드러나고, 닳은 가장자리는 올이 일어나
+  // 들쭉날쭉하며 손때가 묻는다(오너 「실물처럼」 2026-10-17 KST — 크게 둥근 밝은 조각은 모서리를 둥글게 잘라 낸 것처럼 보였다).
+  const corners = [[0, 1], [168, -1]].map(([y, down], index) => frayedCorner(random, (index ? 1.2 : 1.4) + random() * 1, y, down));
   return (
     <g pointerEvents="none">
       <rect width="120" height="168" fill={`url(#${id}-toning)`} />
       {spots.map((spot) => <circle key={`${spot.cx.toFixed(1)}-${spot.cy.toFixed(1)}`} cx={spot.cx.toFixed(1)} cy={spot.cy.toFixed(1)} r={spot.r.toFixed(2)} fill="#7a4a1e" opacity={spot.o.toFixed(2)} />)}
-      {/* 모서리 닳음 — 앞쪽(오른쪽) 두 모서리가 먼저 닳는다 */}
-      <path d={`M120 0h-${corner.toFixed(1)}q${(corner * 0.7).toFixed(1)} ${(corner * 0.3).toFixed(1)} ${corner.toFixed(1)} ${corner.toFixed(1)}z`} fill="#fff" opacity={age.wear} />
-      <path d={`M120 168h-${(corner * 0.8).toFixed(1)}q${(corner * 0.55).toFixed(1)} -${(corner * 0.25).toFixed(1)} ${(corner * 0.8).toFixed(1)} -${(corner * 0.8).toFixed(1)}z`} fill="#fff" opacity={age.wear} />
+      {corners.map((edge) => (
+        <g key={edge.at}>
+          <path d={`M120 ${edge.at}${edge.points}z`} fill={WORN_UNDER[material]} opacity={age.wear * 2.4} />
+          <path d={`M${edge.points.slice(1)}`} fill="none" stroke="#4a3420" strokeWidth=".25" opacity=".22" />
+        </g>
+      ))}
       <rect x="0" y="0" width="120" height=".8" fill="#fff" opacity={age.wear * 0.5} /><rect x="0" y="167.2" width="120" height=".8" fill="#fff" opacity={age.wear * 0.5} />
     </g>
   );
