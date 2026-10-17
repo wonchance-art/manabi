@@ -54,7 +54,7 @@ describe('자형 열 배선 — 표제어 덩어리 안, 일반 모드만', () =
     const below = sliceBetween(card, '{/* 첫 화면 우선 2단계', '{/* 사전 뜻 줄 교정 직후');
     expect(below).toContain('forceLayout="stack"');
     expect(below).not.toMatch(/<details|aria-expanded/);
-    expect(card.indexOf('{/* 첫 화면 우선 2단계')).toBeGreaterThan(card.indexOf("refMeaning || selectedToken.meaning || '(뜻 없음)'"));
+    expect(card.indexOf('{/* 첫 화면 우선 2단계')).toBeGreaterThan(card.indexOf("refMeaning || selectedToken.meaning || vt('(뜻 없음)')"));
     expect(card).toContain('sideOnly onSideMiss');
   });
 

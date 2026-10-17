@@ -24,7 +24,7 @@ describe('뷰어 시트 — 우리 사전 연동', () => {
   it('문맥 뜻(사용자 교정 포함)을 유지하고 사전의 다른 뜻을 구분한다', () => {
     expect(src).toContain('const refMeaning = contextualMeaning(selectedToken) || null;');
     expect(src).toContain('referenceMatchesContext(selectedToken, refVocab?.word)');
-    expect(src).toMatch(/refMeaning \|\| selectedToken\.meaning \|\| '\(뜻 없음\)'/);
+    expect(src).toMatch(/refMeaning \|\| selectedToken\.meaning \|\| vt\('\(뜻 없음\)'\)/);
   });
 
   it('급수 뱃지·정본 예문은 박스 없이 자연 배치, 한자 노트는 한자 대조와 중복 방지', () => {
