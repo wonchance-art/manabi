@@ -46,6 +46,14 @@ describe('VOCAB-FLOW-001 ② 오늘 카드 — 준비 중엔 제목도 골격(�
     expect(done).toBeGreaterThan(error);
     expect(code).toContain("{fsrsReview.status === 'error' && <p role=\"alert\">복습 일정을 불러오지 못했어요.");
   });
+  it('FSRS error면 본문 빈 상태(「지금 다시 볼 표현은 없어요」 · 「오늘로 →」)도 그리지 않는다 — 오류 알림 하나만', () => {
+    const branch = between("</> : fsrsReview.status === 'error' ? null : <>", '</>}');
+    expect(branch).toContain('<ReviewScopeNotice empty');
+    expect(branch).toContain('지금 다시 볼 표현은 없어요.');
+    expect(branch).toContain("'오늘로 →'");
+    // 빈 상태 문구는 이 분기 안에만 있다 — error 판정 밖으로 새지 않는다.
+    expect(code.split('지금 다시 볼 표현은 없어요.').length - 1).toBe(1);
+  });
 });
 
 // ── 오너 「권장대로」(2026-10-17 KST) 목업 A · B · C ──

@@ -1516,7 +1516,9 @@ function VocabWorkspace({ reviewScope }) {
               {practiceWords.length > 0 && <p className="review-room-note review-room-practice-note">복습 {session.total}개 먼저 하면 일정에 반영돼요. 집중 연습은 일정을 바꾸지 않아요.</p>}
               <ReviewScopeNotice scope={scope} count={session} countFor={countFor} remainingNew={remainingNew} languages={[...languageCounts.keys()]} onChange={changeScope} materialTitles={materialTitles}
                 onPractice={practiceWords.length ? () => startPractice(practiceWords) : null} onFillMeaning={() => { setMissingMeaningOnly(true); setTab('browse'); }} />
-            </> : <>
+            </> : fsrsReview.status === 'error' ? null : <>
+              {/* FSRS 목록을 못 받으면(error) 빈 상태(「지금 다시 볼 표현은 없어요」 · 「오늘로 →」)를 그리지 않는다 — 예전 일정 카드도 0으로
+                  세어진 거짓 빈 상태다. 이때는 아래 오류 알림 「복습 일정을 불러오지 못했어요. 다시 시도」 하나만 말한다(제목 중립과 같은 판정). */}
               <ReviewScopeNotice empty scope={scope} count={session} countFor={countFor} remainingNew={remainingNew} languages={[...languageCounts.keys()]} onChange={changeScope} materialTitles={materialTitles}
                 onPractice={practiceWords.length ? () => startPractice(practiceWords) : null} onFillMeaning={() => { setMissingMeaningOnly(true); setTab('browse'); }}
                 fallback={!hasAnyWords ? '교재 예문의 ‘예문 담기’로 기억하고 싶은 문장을 골라 주세요.' : '지금 다시 볼 표현은 없어요. 다음 복습까지 새로운 문장을 만나 보세요.'} />
