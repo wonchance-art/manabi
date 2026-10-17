@@ -42,8 +42,12 @@ export const HASH_GATE = `(function(){try{if(document.getElementById('${HASH_GAT
  */
 // 같은 문서(경로 + 검색어가 같은 주소)에서 마지막으로 본 Next tree — 고유 hash 이동의 새 기록(state null)에 표지와 함께 찍는다.
 // tree 없이 표지만 찍힌 기록으로 다른 경로(예: /materials)에서 뒤로 오면 Next traverse가 「지금」 tree(/materials)를 써서
-// 주소는 교재인데 화면은 /materials가 된다(BOOK-HASH-RACE-001 후속 · a775 리뷰 2026-10-17 KST). 검색어가 다르면 page 세그먼트 키가
-// 달라 그 tree를 쓰지 않는다.
+// 주소는 교재인데 화면은 /materials가 된다(BOOK-HASH-RACE-001 후속 · a775 리뷰 2026-10-17 KST).
+// 키는 tree가 아니라 「그 tree를 본 기록의 주소」다. Next 15의 얕은 이동(표지 없는 pushState — 패치가 지금 기록의 표지 · tree를 복사)과
+// BookReader go()(표지째 복사)는 같은 문서를 다른 검색어 주소로 옮기므로 tree의 page 키와 주소 검색어가 다를 수 있다 — 그 tree가 그 기록의
+// 화면을 그린 tree라 맞다(go()는 늘 book.edition 그대로). tree를 빼고 옮기면 패치가 다시 복사하거나(표지 없음), 표지만 남아 traverse가
+// 그 순간 tree를 쓴다(위 경로) — 둘 다 고치는 게 아니다(E2E-SWEEP 후속 검토 2026-10-17 KST, 계약 bookHashEntry). 다른 판본 · 참고 모드는
+// 주소(검색어)가 달라 이 기억을 쓰지 않는다.
 let lastRouterTree = null; // { route: pathname + search, tree }
 const routeOf = (href) => { const url = new URL(href, 'http://local'); return url.pathname + url.search; };
 
