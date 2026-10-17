@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 
 /**
  * 계약: 번체 글꼴(Noto Sans TC)은 번체를 그리는 화면에만 싣는다 (FONT-TC-SCOPE-001, 2026-10-17 KST).
@@ -89,25 +90,68 @@ describe('번체 글꼴 범위 — Noto Sans TC', () => {
  * 범위 밖은 한 언어만 그리는 화면(일본어 · 영어 · 프랑스어 레퍼런스 · 일본어 교재 · 지역학 · 계정 · 안내 · 관리)이다.
  *
  * 지키는 것: ① 루트는 SC를 걸지 않고 정의는 범위 부품 한 곳(이중 선언 금지 — FONT-HINT-001과 같은 원칙)
- * ② 중국어를 그릴 수 있는 화면 부품을 여는 라우트는 SC 세그먼트 안(밖이면 이유와 함께 OUTSIDE)
+ * ② 범위 밖 라우트가 import 그래프로 닿는 zh 신호 부품은 근거(라우트 패턴 + 이유)가 있는 것뿐(SC_OUTSIDE)
  * ③ --font-noto-sc는 모두 폴백을 둔다 — 범위 밖에서 선언 통째 무효(→ 상속 글꼴로 바뀜)가 되지 않게.
+ * ④ 그 폴백 'Noto Sans SC'는 웹폰트 @font-face 이름 그대로다(next/font 15.5는 패밀리 이름을 해시하지 않는다) — SC CSS가
+ *    문서에 실려 있으면 변수 없이도 웹폰트를 쓴다. 해시가 돌아오면 폴백이 로컬 설치 글꼴만 가리키므로 설치된 Next로 핀한다.
  */
 const SC_SCOPE = 'src/components/fonts/ScFontScope.jsx';
 const SC_SEGMENTS = [
   'home', 'discover', 'lessons', 'materials', 'notes', 'class', 'chinese', 'viewer', 'pdf', 'suggestions', 'study', 'vocab',
   'review', 'writing', 'quick', 'progress', 'world', 'conversation', 'admin/legacy-textbooks',
 ].map(s => `src/app/(app)/${s}`);
-// 중국어를 그릴 수 있는 화면 부품 — lang을 데이터(자료 · 단어 · 학습 언어)에서 정하거나 zh를 직접 쓰거나 SC CSS를 쓴다.
-const SC_SCREENS = [
-  '@/views/HomePage', '@/views/MaterialsPage', '@/components/web/LazyMaterialsPage', '@/components/web/LibraryPage', '@/components/books/Bookshelf',
-  '@/components/materials/MaterialEntry', '@/components/materials/MaterialEditor', '@/components/notes/StudyNotePage', '@/views/ViewerPage', '@/views/PdfViewerPage',
-  '@/components/materials/SuggestionReader', '@/views/levelListRoute', '@/views/VocabPage', '@/views/WritingStudioPage', '@/views/QuickPage',
-  '@/views/ProfileStats', '@/views/WorldPage', '@/views/NewConversationPage', '@/views/StudyLibraryPage', '@/views/GrammarReviewSession',
-  '@/views/ClassHubPage', '@/views/ClassTeamPage', '@/views/ClassBoardPage', '@/views/ClassLivePage', '@/views/ClassCourseDayPage', '@/views/ClassCourseTestPage',
-];
-// 범위 밖 라우트 — 한 언어만 그린다(이유와 함께). SC 부품이 여기서 열리면 그 언어로만 열린다는 근거가 있어야 한다.
+// 중국어를 그릴 수 있는 부품은 손으로 적지 않는다 — 라우트에서 import 그래프를 따라가 「zh 신호」가 있는 화면 파일을 찾는다
+// (FONT-SC-SCOPE-002, 2026-10-17 KST — 수기 목록은 새 라우트가 목록 밖 부품을 열면 조용히 통과했다).
+// zh 신호(.jsx만 — 그리는 쪽): lang에 zh를 직접 쓰거나, 값이 데이터에서 오는 lang={…}에 zh · Chinese를 함께 쓰거나,
+// SC CSS 고리(표지 · 이어 읽기 글자 · 수업 · 뷰어 · 중국어 뷰어 글꼴)를 쓴다.
+const EXT = ['.jsx', '.js', '.mjs', '.tsx', '.ts'];
+const IMPORT = /(?:\bimport\s+(?:[^'"()]*?\s+from\s+)?|\bimport\s*\(\s*|\brequire\s*\(\s*|\bexport\s+[^'"]*?\s+from\s+)['"]([^'"]+)['"]/g;
+const ZH_LITERAL = /lang=["'{]\s*['"]?zh/;
+const ZH_DYNAMIC = /\blang=\{(?!['"](?:ja|en|fr|ko|und)['"])/;
+const ZH_VALUE = /['"]zh(?:-[A-Za-z]+)*['"]|\bChinese\b/;
+const SC_HOOK = /manabi-cover__glyph|learn-resume__glyph|classroom-shell|reader-modal|viewer-layout|readerFontFamily\(/;
+function scGraph() {
+  const resolve = (from, spec) => {
+    let p;
+    if (spec.startsWith('@/')) p = path.join('src', spec.slice(2));
+    else if (spec.startsWith('.')) p = path.join(path.dirname(from), spec);
+    else return null;
+    for (const c of [p, ...EXT.map(e => p + e), ...EXT.map(e => path.join(p, `index${e}`))]) {
+      const abs = path.join(ROOT, c);
+      if (fs.existsSync(abs) && fs.statSync(abs).isFile()) return c.replaceAll('\\', '/');
+    }
+    return null;
+  };
+  const deps = new Map();
+  const depsOf = (f) => {
+    if (!deps.has(f)) {
+      const src = fs.readFileSync(path.join(ROOT, f), 'utf8');
+      deps.set(f, [...src.matchAll(IMPORT)].map(m => resolve(f, m[1])).filter(r => r && !/\.(css|json)$/.test(r)));
+    }
+    return deps.get(f);
+  };
+  const reach = (start) => {
+    const seen = new Set(); const stack = [start];
+    while (stack.length) { const f = stack.pop(); if (seen.has(f)) continue; seen.add(f); stack.push(...depsOf(f)); }
+    return seen;
+  };
+  const zhCapable = (f) => {
+    if (!/\.(jsx|tsx)$/.test(f)) return false;
+    const src = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    return ZH_LITERAL.test(src) || (ZH_DYNAMIC.test(src) && ZH_VALUE.test(src)) || SC_HOOK.test(src);
+  };
+  return { reach, zhCapable };
+}
+// 범위 밖 라우트가 닿아도 되는 zh 신호 부품 — 그 라우트에서는 중국어로 열리지 않는다는 근거(라우트 패턴 + 이유).
+const REF_ROUTES = /^src\/app\/\(app\)\/(japanese|english|french)\/|^src\/app\/nihongo\//;
 const SC_OUTSIDE = Object.freeze({
-  'src/app/(app)/japanese': '일본어 레벨 목록 · 레퍼런스 · 읽기 트랙 — LevelListPage의 zh-CN/zh-TW 줄은 chinese 경로에서만 나온다',
+  'src/components/books/BookCover.jsx': { routes: /^src\/app\/\(app\)\/books\//, reason: '출판 교재는 일본어 N5 · N4뿐이다 — 표지 글자 lang은 ja로만 열린다' },
+  'src/views/refShared.jsx': { routes: REF_ROUTES, reason: '레퍼런스 공용 부품 — lang은 그 라우트의 언어(ja · en · fr)를 따른다. 중국어는 /chinese(범위 안)' },
+  'src/components/RefPatternCheck.jsx': { routes: REF_ROUTES, reason: '문형 확인 — 라우트 언어(ja · en · fr)로만 열린다' },
+  'src/components/WritingPractice.jsx': { routes: REF_ROUTES, reason: '챕터 작문 연습 — 라우트 언어(ja · en · fr)로만 열린다' },
+  'src/views/ReferenceVocabPage.jsx': { routes: REF_ROUTES, reason: '레퍼런스 단어 목록 — 영어 · 프랑스어 라우트의 언어로만 열린다' },
+  'src/views/LevelListPage.jsx': { routes: /^src\/app\/\(app\)\/japanese\//, reason: '일본어 레벨 목록 — zh-CN/zh-TW 줄은 chinese 경로(범위 안)에서만 나온다' },
+  'src/components/levels/HanziBoard.jsx': { routes: /^src\/app\/\(app\)\/japanese\//, reason: '한자판은 중국어 레벨(hanzi)에서만 그린다 — 일본어 레벨 목록은 같은 모듈을 불러올 뿐 열지 않는다' },
 });
 
 describe('간체 글꼴 범위 — Noto Sans SC', () => {
@@ -134,13 +178,19 @@ describe('간체 글꼴 범위 — Noto Sans SC', () => {
     }
   });
 
-  it('② 중국어를 그릴 수 있는 화면을 여는 라우트는 SC 세그먼트 안에 있다', () => {
-    const routes = files.filter(f => rel(f).startsWith('src/app/') && /\/(page|layout)\.jsx$/.test(f));
-    const opens = (f) => { const src = fs.readFileSync(f, 'utf8'); return SC_SCREENS.some(m => src.includes(`from '${m}'`) || src.includes(`import('${m}')`)); };
-    const hits = routes.filter(opens).map(rel);
-    expect(hits.length).toBeGreaterThanOrEqual(15); // 공허 통과 방지
-    const outside = hits.filter(f => !SC_SEGMENTS.some(seg => f.startsWith(`${seg}/`)) && !Object.keys(SC_OUTSIDE).some(o => f.startsWith(`${o}/`)));
-    expect(outside, '중국어를 그릴 수 있는 화면이 SC 범위 밖 라우트에서 열린다 — SC_SEGMENTS에 넣거나 SC_OUTSIDE에 이유를 적는다').toEqual([]);
+  it('② 범위 밖 라우트가 닿는 zh 신호 부품은 근거 목록(SC_OUTSIDE)에 있는 것뿐이다 — import 그래프로 판정', () => {
+    const { reach, zhCapable } = scGraph();
+    const routes = files.map(rel).filter(f => f.startsWith('src/app/') && /\/(page|layout|loading|error|not-found|template|default)\.jsx?$|Client\.jsx$/.test(f));
+    const inside = (f) => SC_SEGMENTS.some(seg => f.startsWith(`${seg}/`));
+    // 공허 통과 방지: 신호는 알려진 중국어 부품을 잡고, 범위 안 라우트는 실제로 그것들에 닿는다.
+    for (const known of ['src/views/ViewerPage.jsx', 'src/views/QuickPage.jsx', 'src/components/levels/HanziBoard.jsx', 'src/components/books/BookCover.jsx']) {
+      expect(zhCapable(known), known).toBe(true);
+    }
+    const insideHits = new Set(routes.filter(inside).flatMap(r => [...reach(r)].filter(zhCapable)));
+    expect(insideHits.size).toBeGreaterThanOrEqual(20);
+    const unexplained = routes.filter(r => !inside(r)).flatMap(r => [...reach(r)].filter(zhCapable)
+      .filter(f => !(SC_OUTSIDE[f] && SC_OUTSIDE[f].routes.test(r))).map(f => `${r} → ${f}`));
+    expect(unexplained, '중국어를 그릴 수 있는 부품이 SC 범위 밖 라우트에서 열린다 — 그 세그먼트를 SC_SEGMENTS에 넣거나 SC_OUTSIDE에 근거를 적는다').toEqual([]);
   });
 
   it('③ --font-noto-sc를 쓰는 곳은 모두 폴백이 있다', () => {
@@ -149,10 +199,25 @@ describe('간체 글꼴 범위 — Noto Sans SC', () => {
     expect(uses.filter(u => !/var\(--font-noto-sc,\s*'Noto Sans SC'\)/.test(u))).toEqual([]);
   });
 
-  it('범위 밖 목록의 경로는 실제로 있고 이유가 있다', () => {
-    for (const [dir, reason] of Object.entries(SC_OUTSIDE)) {
-      expect(fs.existsSync(path.join(ROOT, dir)), dir).toBe(true);
-      expect(reason.length, dir).toBeGreaterThan(10);
+  it('범위 밖 근거 목록의 파일은 실제로 있고, zh 신호가 있으며(낡은 항목 금지), 이유가 있다', () => {
+    const { zhCapable } = scGraph();
+    for (const [file, { reason }] of Object.entries(SC_OUTSIDE)) {
+      expect(fs.existsSync(path.join(ROOT, file)), file).toBe(true);
+      expect(zhCapable(file), file).toBe(true);
+      expect(reason.length, file).toBeGreaterThan(10);
     }
+  });
+
+  it("④ next/font는 패밀리 이름을 해시하지 않는다 — 폴백 'Noto Sans SC'가 웹폰트 자신을 가리키는 전제(설치된 Next로 실제 변환)", async () => {
+    // Next 13 · 14는 __Noto_Sans_SC_<hash>로 바꿨다. 15.5는 이름을 그대로 둔다(postcss-next-font formatFamily). 해시가 돌아오면
+    // var(--font-noto-sc, 'Noto Sans SC')의 폴백은 로컬 설치 글꼴만 가리키게 된다 — 그때 이 계약이 먼저 깨진다.
+    const require = createRequire(path.join(ROOT, 'package.json'));
+    const postcss = require('postcss');
+    const plugin = require('next/dist/build/webpack/loaders/next-font-loader/postcss-next-font').default;
+    const out = await postcss([plugin({ exports: [], variable: '--font-noto-sc', adjustFontFallback: { fallbackFont: 'Arial' } })])
+      .process("@font-face{font-family:'Noto Sans SC';src:url(a.woff2) format('woff2')}", { from: undefined });
+    expect(out.css).toMatch(/@font-face\s*\{\s*font-family:\s*'Noto Sans SC';/);
+    expect(out.css).toMatch(/--font-noto-sc:\s*'Noto Sans SC',\s*'Noto Sans SC Fallback'/);
+    expect(out.css).not.toMatch(/__Noto_Sans_SC/);
   });
 });
