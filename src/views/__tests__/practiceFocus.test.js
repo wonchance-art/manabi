@@ -72,6 +72,6 @@ describe('CONV-FOCUS-001 — 새 대화 시작 실패 뒤 다시 누를 자리',
   it('오류가 나고 잠김이 풀리면 「대화 시작」으로(다른 곳의 초점은 그대로)', () => {
     const effect = sliceBetween(conv, 'const startRef = useRef(null);', '}, [error, starting]);');
     expect(effect).toContain("if (error && !starting) focusIfFree(startRef.current, startRef.current?.closest('.conv-new'));");
-    expect(conv).toContain('<button ref={startRef} type="button" className="manabi-button" disabled={!ready || starting} onClick={start}>');
+    expect(conv).toContain('<button ref={startRef} type="button" className="manabi-button" disabled={!settled || !ready || starting} onClick={start}>');
   });
 });

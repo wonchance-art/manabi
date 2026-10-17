@@ -20,12 +20,21 @@ import {
 import { safeReaderReturn } from '@/lib/libraryReturn';
 import { friendlyToastMessage } from '@/lib/errorMessage';
 import { focusIfFree } from '@/lib/focusAfterAction';
+import { hasSupabaseSessionCookie } from '@/lib/authCookie';
+import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
 import '@/components/conversation/conversation.css';
 
 const RECENT = 3;
 
 export default function NewConversationPage() {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, profileLoading } = useAuth();
+  // 로그인 확인 중에도 머리글 · 선택지를 먼저(CONV-SHELL-001 — 오너 「권장대로」 목업 A, 2026-10-17 KST). 예전에는 확인이 끝날 때까지
+  // 「대화 불러오는 중…」 한 줄뿐이라 클릭 → 제목이 약 0.4초였다. 주제 칩은 상수라 바로 누를 수 있고, 언어 칩(상수 4개)은 그려 두되
+  // 선택 표시 · 누름은 확인 뒤에 켠다(프로필 첫 학습 언어가 들어올 때 선택만 붙고 자리는 그대로). 수준은 언어마다 달라 골격 3칸.
+  // 손님은 세션 쿠키가 없으면 처음부터 손님 화면(배움과 같은 판정 함수). 쿠키가 남았는데 세션이 끝났으면 골격 뒤 같은 손님 화면.
+  // 이 화면은 useSearchParams로 클라이언트에서만 그려지므로 첫 그림에서 쿠키를 읽어도 서버 그림과 어긋나지 않는다.
+  const [guestGuess] = useState(() => typeof document !== 'undefined' && !hasSupabaseSessionCookie(document.cookie));
+  const settled = !loading && !profileLoading;
   const router = useRouter();
   const params = useSearchParams();
   const initial = useMemo(() => newConversationDefaults(params, {
@@ -86,8 +95,7 @@ export default function NewConversationPage() {
     }
   }
 
-  if (loading) return <p className="manabi-page" role="status">대화 불러오는 중…</p>;
-  if (!user) {
+  if (!user && (!loading || guestGuess)) {
     return (
       <div className="manabi-page conv-new">
         <h1>새 대화</h1>
@@ -127,18 +135,21 @@ export default function NewConversationPage() {
         <h2 id="conv-new-lang">언어</h2>
         <div className="conv-new__chips">
           {CONVERSATION_LANGUAGES.map((l) => (
-            <button key={l} type="button" className="conv-chip" aria-pressed={language === l} onClick={() => pickLanguage(l)}>{langNameKo(l)}</button>
+            <button key={l} type="button" className="conv-chip" aria-pressed={settled && language === l} aria-disabled={!settled || undefined}
+              onClick={() => { if (settled) pickLanguage(l); }}>{langNameKo(l)}</button>
           ))}
         </div>
       </section>
 
       <section className="conv-new__group" aria-labelledby="conv-new-level">
-        <h2 id="conv-new-level">말 수준 <small>{profileLevel(profile, language) ? '내 학습 수준 기준 추천' : '처음 단계부터'}</small></h2>
-        <div className="conv-new__chips">
+        <h2 id="conv-new-level">말 수준 <small>{!settled ? <SkeletonLine width="7em" /> : profileLevel(profile, language) ? '내 학습 수준 기준 추천' : '처음 단계부터'}</small></h2>
+        {settled ? <div className="conv-new__chips">
           {conversationLevels(language).map((lv) => (
             <button key={lv} type="button" className="conv-chip" aria-pressed={level === lv} onClick={() => { picked.current = true; setLevel(lv); }}>{lv}</button>
           ))}
-        </div>
+        </div> : <SkeletonRegion className="conv-new__chips" label="대화" announce>
+          {[0, 1, 2].map((i) => <span key={i} className="conv-chip conv-chip--skeleton" aria-hidden="true"><SkeletonLine width="3.4em" height="1em" /></span>)}
+        </SkeletonRegion>}
       </section>
 
       {(outputWords.length > 0 || pastFixes.length > 0) && (
@@ -150,7 +161,7 @@ export default function NewConversationPage() {
       )}
 
       <div className="conv-new__start">
-        <button ref={startRef} type="button" className="manabi-button" disabled={!ready || starting} onClick={start}>
+        <button ref={startRef} type="button" className="manabi-button" disabled={!settled || !ready || starting} onClick={start}>
           {starting ? '첫 질문을 받는 중…' : '대화 시작'}
         </button>
         <p className="conv-new__note">대화는 내 서재에 비공개로 남아요. 언제든 지울 수 있어요.</p>
