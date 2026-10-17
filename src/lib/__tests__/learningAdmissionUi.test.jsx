@@ -211,3 +211,68 @@ describe('FSRS shares authoritative admission without early exposure', () => {
     expect(payloads[1]).toEqual(payloads[0]); next.dispose();
   });
 });
+
+// VOCAB-START-3 (2026-10-17 KST) — 복습 시작의 셋째 왕복: startSession이 입장 한도를 막 읽었는데 첫 카드의 question()이 다시
+// refresh(GET)부터 했다(픽스처 실측 시작 클릭 뒤 입장 → FSRS → 입장 다시). question이 쓰는 것은 입장 한도(정책 판 · 호환 여부)뿐이고
+// FSRS 목록은 쓰지 않지만, 묻는 카드(줄 머리)는 두 결과로 짠 줄에서 나오므로 앞 두 읽기와 함께 보낼 수는 없다. 대신 막 받은 한도
+// (QUESTION_QUOTA_FRESH_MS 안)면 다시 읽지 않는다. 오래됐거나 · 오류 · 한도 없음이면 지금처럼 읽고, 판이 어긋나면 서버 409 → 다시 읽기 그대로.
+describe('VOCAB-START-3 — 막 받은 입장 한도로 묻기(중복 GET 없음)', () => {
+  const clock = start => { let t = start; return { now: () => t, advance: ms => { t += ms; } }; };
+  it('막 읽은 한도(창 안)면 question은 다시 읽지 않는다 — 시작 직후 첫 카드', async () => {
+    const load = vi.fn(async () => status()), c = clock(1000);
+    const { value } = controller({ load, admit: async req => receipt({ ...req, operationId: 'q' }) }, { now: c.now });
+    expect(await value.refresh()).toBe(true); expect(load).toHaveBeenCalledTimes(1);
+    c.advance(300);
+    expect(await value.question(cardId, 's:0')).toBe(true);
+    expect(load).toHaveBeenCalledTimes(1);
+  });
+  it('호환(사전 활성) 한도도 같다 — 창 안이면 GET 없이 바로 호환 입장', async () => {
+    const load = vi.fn(async () => status({ enabled: false, active: false, fsrsEnabled: false, startsAt: null })), admit = vi.fn(), c = clock(0);
+    const { value } = controller({ load, admit }, { now: c.now });
+    await value.refresh(); c.advance(50);
+    expect(await value.question(cardId, 's:0')).toBe(true);
+    expect(load).toHaveBeenCalledTimes(1); expect(admit).not.toHaveBeenCalled();
+    expect(value.getSnapshot().current.compatibility).toBe(true);
+  });
+  it('창을 넘긴 한도는 지금처럼 다시 읽는다', async () => {
+    const load = vi.fn(async () => status()), c = clock(0);
+    const { value } = controller({ load, admit: async req => receipt({ ...req, operationId: 'q' }) }, { now: c.now });
+    await value.refresh(); c.advance(60_000);
+    await value.question(cardId, 's:0');
+    expect(load).toHaveBeenCalledTimes(2);
+  });
+  it('한도가 없거나 오류 상태면 다시 읽는다(창 안이어도)', async () => {
+    const load = vi.fn().mockRejectedValueOnce(Object.assign(new Error('offline'), { status: 503 })).mockResolvedValue(status()), c = clock(0);
+    const { value } = controller({ load, admit: async req => receipt({ ...req, operationId: 'q' }) }, { now: c.now });
+    expect(await value.refresh()).toBe(false); expect(value.getSnapshot().status).toBe('error');
+    expect(await value.question(cardId, 's:0')).toBe(true);
+    expect(load).toHaveBeenCalledTimes(2);
+  });
+  it('성공 뒤 실패한 읽기(창 안)가 있었으면 막 받은 한도가 아니다 — 다시 읽는다', async () => {
+    const load = vi.fn().mockResolvedValueOnce(status()).mockRejectedValueOnce(Object.assign(new Error('offline'), { status: 503 })).mockResolvedValue(status()), c = clock(0);
+    const { value } = controller({ load, admit: async req => receipt({ ...req, operationId: 'q' }) }, { now: c.now });
+    await value.refresh(); c.advance(10); expect(await value.refresh()).toBe(false); c.advance(10);
+    expect(await value.question(cardId, 's:0')).toBe(true);
+    expect(load).toHaveBeenCalledTimes(3);
+  });
+  it('입장 응답이 준 한도도 막 받은 한도다 — 다음 카드(창 안)는 GET 없이 바로 묻는다', async () => {
+    const load = vi.fn(async () => status()), c = clock(0);
+    const { value } = controller({ load, admit: async req => receipt({ ...req, operationId: req.cardId }) }, { now: c.now });
+    await value.refresh(); c.advance(100);
+    await value.question(cardId, 's:0'); c.advance(100);
+    value.leave(); await value.question(actor, 's:1');
+    expect(load).toHaveBeenCalledTimes(1);
+  });
+  it('진행 중인 읽기가 있으면 그것을 기다린다(창 안의 옛 한도를 쓰지 않음)', async () => {
+    const late = deferred(), load = vi.fn().mockResolvedValueOnce(status()).mockImplementationOnce(() => late.promise), c = clock(0);
+    const admit = vi.fn(async req => receipt({ ...req, operationId: 'q' }, status({ policyRevision: 2, used: 1, remaining: 14, legacyUsed: 1, admittedLegacyCardIds: [cardId] })));
+    const { value } = controller({ load, admit }, { now: c.now });
+    await value.refresh(); c.advance(10);
+    const focusRead = value.refresh();
+    const asked = value.question(cardId, 's:0');
+    late.resolve(status({ policyRevision: 2 })); await focusRead;
+    expect(await asked).toBe(true);
+    expect(load).toHaveBeenCalledTimes(2);
+    expect(admit.mock.calls[0][0].expectedPolicyRevision).toBe(2); // 기다린 새 한도의 판으로 묻는다
+  });
+});
