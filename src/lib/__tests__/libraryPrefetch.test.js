@@ -82,17 +82,28 @@ describe('⑵ 실패하면 지금처럼(null → 브라우저가 받고 골격)'
 });
 
 describe('⑶ 페이지를 막지 않는다 — 예산 안에서 끝난 것만', () => {
+  // 가짜 시계로 잰다 — 실제 시계(< 250ms)는 전체 게이트 병렬 부하에서 흔들릴 후보다(libraryPrefetchWait 6e58b301 선례).
+  // 예산만큼만 시간을 흘렸을 때 이미 끝나 있어야 한다(예산을 무시하고 멈춘 쿼리를 기다리면 끝나지 않는다).
+  async function settleWithin(budgetMs, run) {
+    vi.useFakeTimers();
+    try {
+      const outcome = { done: false, value: undefined };
+      run().then((value) => { Object.assign(outcome, { done: true, value }); });
+      await vi.advanceTimersByTimeAsync(budgetMs);
+      return outcome;
+    } finally {
+      vi.useRealTimers();
+    }
+  }
   it('목록 RPC가 멈춰도 예산(여기선 60ms) 안에 돌아오고, 끝난 폴더 · 대화만 싣는다', async () => {
     const stuck = fakeClient({ rpc: () => new Promise(() => {}) });
-    const started = Date.now();
-    const result = await prefetchLibraryShelf({}, { auth: signedIn(stuck), budgetMs: 60 });
-    expect(Date.now() - started).toBeLessThan(250);
+    const { done, value: result } = await settleWithin(60, () => prefetchLibraryShelf({}, { auth: signedIn(stuck), budgetMs: 60 }));
+    expect(done).toBe(true);
     expect(result.state.queries.map((q) => q.queryKey[0]).sort()).toEqual(['library-collections', 'library-conversations']);
   });
   it('인증이 예산을 넘기면 null', async () => {
-    const started = Date.now();
-    expect(await prefetchLibraryShelf({}, { auth: () => new Promise(() => {}), budgetMs: 40 })).toBeNull();
-    expect(Date.now() - started).toBeLessThan(250);
+    const outcome = await settleWithin(40, () => prefetchLibraryShelf({}, { auth: () => new Promise(() => {}), budgetMs: 40 }));
+    expect(outcome).toEqual({ done: true, value: null });
   });
   it('기본 예산 800ms · page.jsx는 실패 시 그대로 LibraryPage, 성공 시 HydrationBoundary + serverUserId', () => {
     expect(read('src/lib/server/libraryPrefetch.js')).toContain('export const LIBRARY_PREFETCH_BUDGET_MS = 800;');

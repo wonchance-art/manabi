@@ -38,18 +38,20 @@ function snapshot() {
 const THEME_ROWS = [{ theme: '카페' }, { theme: '여행' }];
 const USED_ROW = { paragraph: { arcSummary: '고양이가 역에서 기다린다', userNext: { text: '비가 온다', score: 2 } }, materials: { episode: 3 },
   used_at: iso(NOW - 86400000), created_at: iso(NOW - 2 * 86400000) };
-/** 쿼리마다 시작 시각을 남기고 잠깐 뒤 답한다 — 시작 시각이 같은 묶음 = 한 번의 왕복. */
+/** 쿼리마다 출발 때까지 도착한 응답 수를 남기고 잠깐 뒤 답한다 — 그 수가 같은 묶음 = 한 번의 왕복.
+ *  (출발 시각 10ms 군집으로 묶던 판정은 병렬 부하에서 한 묶음이 쪼개질 수 있어 시계 없는 순서로 잰다 — libraryPrefetchWait 선례.) */
 function database({ failParagraphs = false } = {}) {
   const starts = [];
-  const t0 = performance.now();
+  let answered = 0;
   return { starts, from(table) {
     const chain = { filters: [] };
     for (const method of ['select', 'not', 'lte', 'gte', 'order', 'limit', 'in', 'range']) chain[method] = () => chain;
     chain.eq = (key, value) => { chain.filters.push([key, value]); return chain; };
     chain.then = (resolve, reject) => {
-      starts.push({ table, at: performance.now() - t0, used: chain.filters.some(([k, v]) => k === 'status' && v === 'used') });
+      starts.push({ table, answered, used: chain.filters.some(([k, v]) => k === 'status' && v === 'used') });
       const data = table !== 'study_paragraphs' ? [] : chain.filters.some(([k, v]) => k === 'status' && v === 'used') ? [USED_ROW] : THEME_ROWS;
       const result = new Promise(done => setTimeout(done, 25)).then(() => {
+        answered += 1;
         if (failParagraphs && table === 'study_paragraphs') throw new Error('relation does not exist');
         return { data };
       });
@@ -58,7 +60,7 @@ function database({ failParagraphs = false } = {}) {
     return chain;
   } };
 }
-const waves = starts => { const out = []; for (const s of [...starts].sort((a, b) => a.at - b.at)) { const last = out.at(-1); if (last && s.at - last.at < 10) last.items.push(s); else out.push({ at: s.at, items: [s] }); } return out; };
+const waves = starts => { const out = []; for (const s of starts) { const last = out.at(-1); if (last && last.answered === s.answered) last.items.push(s); else out.push({ answered: s.answered, items: [s] }); } return out; };
 const read = file => fs.readFileSync(path.resolve(__dirname, '../../..', file), 'utf8');
 
 beforeEach(() => {

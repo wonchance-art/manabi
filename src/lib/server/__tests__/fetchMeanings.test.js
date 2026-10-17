@@ -287,9 +287,17 @@ describe('fetchMeaningsForMissing — 병렬·deadline', () => {
     }));
     vi.stubGlobal('fetch', fetchSpy);
     // deadline 여유 100ms < 첫 재시도 대기 5000ms → 1회 시도 후 즉시 포기(실대기 없음)
-    const { result, errors } = await fetchMeaningsForMissing(
-      makeMissing(15), 'Chinese', mockSupabase, { deadlineMs: Date.now() + 100, concurrency: 1 }
-    );
+    // 시각만 멈춘다 — 실제 시계면 병렬 부하로 첫 웨이브 전에 100ms가 지나 시도 0회가 될 수 있다(벽시계 의존 제거).
+    vi.useFakeTimers({ toFake: ['Date'] });
+    let outcome;
+    try {
+      outcome = await fetchMeaningsForMissing(
+        makeMissing(15), 'Chinese', mockSupabase, { deadlineMs: Date.now() + 100, concurrency: 1 }
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+    const { result, errors } = outcome;
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     expect(result.size).toBe(0);
     expect(errors.find((e) => e.stage === 'http')).toBeTruthy();
