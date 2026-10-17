@@ -2,6 +2,7 @@
 import {chromium,webkit} from 'playwright-core';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { inactiveLearningReply } from './fixtures/learning-snapshot.mjs';
 const base=process.env.QA_BASE||'http://127.0.0.1:8897',out=process.env.QA_OUT||'/private/tmp/manabi-context-browser';
 fs.mkdirSync(out,{recursive:true});
 const uid='00000000-0000-4000-8000-000000000089',cid='00000000-0000-4000-8000-000000000091',vid='00000000-0000-4000-8000-000000000092';
@@ -61,6 +62,13 @@ await context.route('**/api/learning/vocabulary',r=>{
  if(body?.word){const tokenId=body.source.tokenId;const line=Number(tokenId?.split('_')[1]||0);const row={...selectedContext,locator:{tokenId,surface:dictionary[tokenId]?.text||body.source.surface},quote:lines[line%3].join(''),vocabulary_id:vid,href:`/viewer/94041?sourceContext=${cid}`};saved=[row];selectedContext=row;return r.fulfill({json:{vocabularyId:vid,contextAdded:true}});}
  return r.fulfill({json:{contexts:saved}});
 });
+// 저장 단어 읽기는 2026-10-14(dc69aab4)부터 GET /api/learning/vocabulary?view=learning snapshot이다. 위 문맥 처리가 그 GET에도
+// 문맥 목록을 돌려줘 「저장한 단어를 불러오지 못했어요」 → 채점 막대가 잠겼다(viewer-reliability 530ba965와 같은 원인).
+// 저장 단어(vocab) · FSRS 상태 · 한도 · 언어 계약 · 제외 목록을 공용 합성 응답으로 답하고, 나머지는 위 처리로 넘긴다(나중 등록이 먼저 돈다).
+await context.route('**/api/learning/**',r=>{
+ const reply=inactiveLearningReply(r.request(),{actorId:uid,rows:()=>vocab});
+ return reply?r.fulfill({status:reply.status,json:reply.json}):r.fallback();
+});
 const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
 const pass=name=>{checks.push(name);console.log('PASS '+name);};
 const token=id=>page.locator(`[data-source-token="${id}"]`);
@@ -97,7 +105,12 @@ try {
  await page.locator('.save-grade .review-score-btn--again').click();await linked;
  assert.equal(vocab.length,1);assert.equal(vocab[0].meaning,'눈앞');assert.equal(vocab[0].source_sentence,'眼前有山。');assert.equal(saved.length,1);
  assert(!JSON.stringify(vocab[0]).includes('Japanese'));pass('save retains the shown meaning and original sentence');
- await page.waitForLoadState('networkidle');await page.goto(base+'/vocab');await page.getByLabel('단어장 도구',{exact:true}).click();await page.getByRole('combobox',{name:'복습 방식',exact:true}).selectOption('flash');await page.locator('.review-room-start').click();
+ // 한 번도 복습하지 않은 표현은 REV-SCOPE-R1B-1부터 「처음 보는 표현」(채점 없음 · 답 공개)으로 열린다. 이 검사는 답을 가린 채점 카드에서
+ // 출처를 열어도 채점되지 않는지를 보므로, 이미 한 번 복습한(기한이 된) 표현으로 둔다.
+ vocab[0].last_reviewed_at='2026-01-01';vocab[0].next_review_at='2026-01-02';
+ await page.waitForLoadState('networkidle');await page.goto(base+'/vocab');
+ // 복습 방식 선택은 REV-SCOPE-R1B-1(edc22ab1)에서 없어졌다 — 본 복습은 플래시(버튼 넷)뿐이라 고를 것이 없다.
+ await page.locator('.review-room-start').click();
  await page.getByRole('button',{name:'정답 확인하기',exact:true}).click();
  await page.getByRole('link',{name:'이 문장 열기 ↗',exact:true}).waitFor();
  assert.equal(await page.locator('.review-card__source').count(),1);assert.equal(await page.getByRole('link',{name:'원문 열기 ↗',exact:true}).count(),0);

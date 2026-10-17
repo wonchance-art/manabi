@@ -2,6 +2,7 @@
 import { chromium } from 'playwright-core';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { inactiveLearningReply, inactiveLegacyBoundary } from './fixtures/learning-snapshot.mjs';
 const base = process.env.QA_BASE || 'http://localhost:8881';
 const out = process.env.QA_OUT || '/private/tmp/manabi-review-qa';
 fs.mkdirSync(out, { recursive: true });
@@ -17,8 +18,8 @@ const session = {user, access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:
 const cors = {'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*','access-control-expose-headers':'content-range'};
 let state='due', grammarFail=false;
 let rows = [
- {id:88001,user_id:uid,word_text:'きっかけ',meaning:'계기',language:'Japanese',furigana:'',source_ref:'일본어 · N5',source_sentence:'日本語を学ぶきっかけは何ですか。',source_material_id:91001,interval:1,ease_factor:5,repetitions:0,last_reviewed_at:'2026-01-01',next_review_at:'2026-01-02',created_at:'2026-01-01'},
- {id:88002,user_id:uid,word_text:'大切にする',meaning:'소중히 여기다',language:'Japanese',furigana:'たいせつにする',interval:1,ease_factor:5,repetitions:0,last_reviewed_at:'2026-01-01',next_review_at:'2026-01-02',created_at:'2026-01-01'},
+ {id:'88001',user_id:uid,word_text:'きっかけ',meaning:'계기',language:'Japanese',furigana:'',source_ref:'일본어 · N5',source_sentence:'日本語を学ぶきっかけは何ですか。',source_material_id:91001,interval:1,ease_factor:5,repetitions:0,last_reviewed_at:'2026-01-01',next_review_at:'2026-01-02',created_at:'2026-01-01'},
+ {id:'88002',user_id:uid,word_text:'大切にする',meaning:'소중히 여기다',language:'Japanese',furigana:'たいせつにする',interval:1,ease_factor:5,repetitions:0,last_reviewed_at:'2026-01-01',next_review_at:'2026-01-02',created_at:'2026-01-01'},
 ];
 const writes=[];
 await context.route(base+'/**',async route=>{
@@ -29,11 +30,12 @@ await context.route('**/auth/v1/**',route=>route.fulfill({status:route.request()
 await context.route('**/rest/v1/**',async route=>{
  const req=route.request(), url=new URL(req.url()), table=url.pathname.split('/').pop(), method=req.method();
  if(method==='OPTIONS')return route.fulfill({status:204,headers:cors});
+ if(table==='fsrs_legacy_boundary'&&method==='POST')return route.fulfill({headers:cors,json:inactiveLegacyBoundary({actorId:uid})});
  if(table==='profiles')return route.fulfill({headers:cors,json:{id:uid,display_name:'복습 검수',role:'user',onboarded:true,last_login_at:new Date().toISOString(),learning_language:['Japanese']}});
  if(method==='HEAD')return route.fulfill({headers:{...cors,'content-range':'*/0'},body:''});
  if(['POST','PATCH','DELETE'].includes(method)){
   const body=req.postDataJSON(); writes.push({table,method,body});
-  if(table==='user_vocabulary'&&method==='PATCH') {const id=Number(url.searchParams.get('id')?.replace('eq.','')); rows=rows.map(r=>r.id===id?{...r,...body}:r);}
+  if(table==='user_vocabulary'&&method==='PATCH') {const id=url.searchParams.get('id')?.replace('eq.',''); rows=rows.map(r=>r.id===id?{...r,...body}:r);}
   return route.fulfill({headers:cors,json:[]});
  }
  if((table==='user_vocabulary'&&state==='error')||(table==='grammar_review'&&grammarFail))return route.fulfill({status:503,headers:cors,json:{message:'fixture offline'}});
@@ -44,6 +46,13 @@ await context.route('**/rest/v1/**',async route=>{
 });
 await context.route('**/api/learning/vocabulary?*',route=>route.fulfill({json:{contexts:[{id:'source-1',kind:'textbook',quote:'日本語を学ぶきっかけは何ですか。',translation:'일본어를 배우는 계기가 무엇인가요?',lang:'Japanese',chapter_slug:'n5-book-u29',locator:{bookId:'japanese-n5',editionId:'7f572327dc67893e9453246c',pageId:'u29-patterns'}}]}}));
 await context.route('**/api/suggestions/today',route=>route.fulfill({json:[]}));
+// 저장 단어 읽기는 2026-10-14(dc69aab4)부터 /api/learning/vocabulary?view=learning snapshot이다 — REST user_vocabulary와 같은 state로 답한다.
+// FSRS 상태 · 첫 질문 한도 · 언어 계약도 학습 API다. 이 fixture는 서버로 가는 요청의 쿠키를 지우므로(위 base 경로) 서버 응답은 401이었다.
+// 나중에 등록한 route가 먼저 돈다 — 해당 없는 요청(문맥 조회 등)은 위 처리로 넘긴다.
+await context.route('**/api/learning/**',route=>{
+ const reply=inactiveLearningReply(route.request(),{actorId:uid,rows:()=>state==='empty'?[]:state==='done'?rows.map(r=>({...r,next_review_at:'2099-01-01'})):rows,snapshotStatus:state==='error'?503:200});
+ return reply?route.fulfill({status:reply.status,headers:cors,json:reply.json}):route.fallback();
+});
 await context.addInitScript(()=>{localStorage.setItem('as_review_mode','flash');});
 const page=await context.newPage();
 page.on('pageerror',e=>report.errors.push(e.message));
