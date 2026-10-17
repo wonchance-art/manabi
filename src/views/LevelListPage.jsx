@@ -96,13 +96,13 @@ function Example({ ex, lang, speak, hideTranslation, tabIndex }) {
 }
 
 /** [O] 안다(아는 단어) · [X] 모른다(공부 중인 단어) — 누른 쪽이 채워진다. 아는 단어가 먼저다(저장돼 있어도 O면 O만). */
-function OxButtons({ scope, known, studying, saving, pendingKnown, onO, onX, onPrepareX, showLabels = false, tabIndex }) {
+function OxButtons({ scope, known, studying, saving, pendingKnown, onO, onX, onPrepareX, tabIndex }) {
   return <div className="lv-acts">
     <button type="button" className="lv-fab lv-fab--o" aria-pressed={known} aria-label={scope ? `${scope} 탭에서 안다` : '안다 — 아는 단어로'} title="안다"
-      onClick={onO} disabled={pendingKnown} tabIndex={tabIndex}><CircleIcon />{showLabels && <span>안다</span>}</button>
+      onClick={onO} disabled={pendingKnown} tabIndex={tabIndex}><CircleIcon /></button>
     <button type="button" className={`lv-fab lv-fab--x${saving ? ' lv-fab--busy' : ''}`} aria-pressed={!known && studying}
       aria-label={saving ? '공부 중인 단어로 담는 중' : `${scope ? `${scope} 탭에서 ` : ''}모른다 — 공부 중인 단어로`} title="모른다"
-      aria-disabled={saving || undefined} onClick={saving ? undefined : onX} onPointerEnter={onPrepareX} onFocus={onPrepareX} disabled={pendingKnown} tabIndex={tabIndex}>{saving ? <SpinIcon /> : <CrossIcon />}{showLabels && <span>모른다</span>}</button>
+      aria-disabled={saving || undefined} onClick={saving ? undefined : onX} onPointerEnter={onPrepareX} onFocus={onPrepareX} disabled={pendingKnown} tabIndex={tabIndex}>{saving ? <SpinIcon /> : <CrossIcon />}</button>
   </div>;
 }
 
@@ -136,8 +136,8 @@ export function VocabCard({ entry: e, lang, levelKey, view, scoped = true, peek,
   // 펼쳐 보기 · O · X)은 지금 카드에서만 Tab으로 닿고(0), 다른 카드에서는 -1 — 단축키가 없는 듣기도 키보드로 쓸 수 있게.
   const roving = current !== undefined;
   const inner = roving ? (current ? 0 : -1) : undefined;
-  // 이름표(안다 · 모른다)는 전체 보기 카드에만 — 탭 보기는 한 줄 카드라 동그라미만(디자인 검토 A안, 화면 읽기 이름은 그대로).
-  const ox = <OxButtons scope={scope} showLabels={lang === 'chinese' && view === 'all'} known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} onPrepareX={onPrepareX} tabIndex={inner} />;
+  // O · X는 어느 보기든 동그라미만 — 이름표(안다 · 모른다)는 화면 읽기 이름에만 남긴다(오너 2026-10-17 「O X 버튼만」).
+  const ox = <OxButtons scope={scope} known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} onPrepareX={onPrepareX} tabIndex={inner} />;
   // 상태는 카드 자체에 — 아는 단어는 흐리게, 공부 중은 왼쪽 줄(점선 테두리는 「임시」로 읽혀 뺐다).
   const state = { 'data-known': known || undefined, 'data-studying': (!known && studying) || undefined };
   const card = roving ? { 'data-lv-card': e.key, role: 'listitem', tabIndex: current ? 0 : -1, onFocus: onCardFocus,
