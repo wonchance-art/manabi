@@ -1,0 +1,13 @@
+{
+  "edition": "f4a6411c0945bbd3f8767af7",
+  "contentHash": "f4a6411c0945bbd3f8767af72619474fadd45d0fbd0f403463c2c04ccd1b27c5",
+  "sections": 174,
+  "unsafeSectionCount": 0,
+  "assetHashMatches": true,
+  "sourceIndexEntries": 174,
+  "lessonSections": 168,
+  "scripts": [
+    "app.js"
+  ],
+  "externalRequests": []
+}

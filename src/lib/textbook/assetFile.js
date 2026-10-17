@@ -8,7 +8,7 @@ import {checkedAsset,textbookError} from './server';
 // 올리지 않는다). 기대 해시가 바뀌면(다른 bundle) 다시 검증한다. 실패는 기억하지 않는다 — 다음 요청이 다시 검증한다.
 const verifiedFiles=new Map();
 export async function verifiedAsset(bundle,file) {
- const artifact=bundle.assets?.[file];if(!artifact||!/^[-a-zA-Z0-9_./]+$/.test(file)||file.includes('..'))throw textbookError(404,'파일을 찾을 수 없어요.');
+ const artifact=bundle.assets&&Object.hasOwn(bundle.assets,file)?bundle.assets[file]:null;if(!artifact||!/^[-a-zA-Z0-9_./]+$/.test(file)||file.includes('..'))throw textbookError(404,'파일을 찾을 수 없어요.');
  const bytes=await readFile(path.join(process.cwd(),'src/content/textbookEditions',bundle.editionId,file));
  const key=`${bundle.editionId}:${file}`;
  if(verifiedFiles.get(key)===artifact.sha256)return {bytes,type:artifact.type};

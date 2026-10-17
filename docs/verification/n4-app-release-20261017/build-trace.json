@@ -1,0 +1,37 @@
+{
+  "passed": true,
+  "editionId": "f4a6411c0945bbd3f8767af7",
+  "checks": [
+    {
+      "route": "server/app/api/books/japanese-n4/[edition]/asset/route.js.nft.json",
+      "missing": [],
+      "tracedFiles": 197,
+      "mp3Files": 147
+    },
+    {
+      "route": "server/app/api/books/japanese-n4/[edition]/reading/route.js.nft.json",
+      "missing": [],
+      "tracedFiles": 20,
+      "mp3Files": 0
+    },
+    {
+      "route": "server/app/(app)/books/japanese-n4/page.js.nft.json",
+      "missing": [],
+      "tracedFiles": 77,
+      "mp3Files": 0
+    },
+    {
+      "route": "server/app/(app)/lessons/page.js.nft.json",
+      "missing": [],
+      "tracedFiles": 100,
+      "mp3Files": 0
+    },
+    {
+      "route": "server/app/api/learning/vocabulary/route.js.nft.json",
+      "missing": [],
+      "tracedFiles": 86,
+      "mp3Files": 0
+    }
+  ],
+  "scope": "Actual Next generated server file-trace manifests. Metadata/body/font dependencies present; ordinary routes do not receive N5 mp3 files."
+}
