@@ -90,7 +90,7 @@ describe('좁은 폭 듣기 막대 한 줄(390)', () => {
   it('지금 문장 줄은 따라가기 중(쪽 넘김 · 본문 강조)에만 숨긴다 — 스크롤 보기는 그대로', () => {
     expect(block()).toContain('.manabi-app .viewer-layout .viewer-topbar .listen-controls--follow .listen-controls__current{display:none}');
     expect(read('src/components/ListenControls.jsx')).toContain("<div className={followActive ? 'listen-controls listen-controls--follow' : 'listen-controls'}>");
-    expect(viewer()).toContain('followActive={listenFollowable && !listenStopped}');
+    expect(viewer()).toContain('followActive={listenFollowable}');
   });
   it('아이콘 버튼은 접근 이름을 그대로 가진다(재생 · 일시정지 · 정지)', () => {
     const panel = sliceBetween(read('src/components/ListenControls.jsx'), '<div className="listen-controls__panel">', '<span className="listen-controls__progress">');
@@ -119,10 +119,11 @@ describe('2단계 [지금 문장으로](목업 listen-resume B안)', () => {
     expect(resume).not.toContain('user: true');
     expect(resume).toContain('flushSync(() => setListenTokens(new Set(ids)));');
   });
-  it('멈춤 알림은 막대 밖 polite 상태 한 줄 · 좁은 폭 지금 문장 줄은 실제로 따라갈 때만 숨김 · 3언어 문구', () => {
+  it('멈춤 알림은 막대 밖 polite 상태 한 줄 · 좁은 폭 지금 문장 줄은 멈춘 동안에도 숨김(다시 보이면 칩 · 쪽 막대가 화면 밖) · 3언어 문구', () => {
     const v = viewer();
     expect(v).toContain("{pagedActive&&<span className=\"sr-only\" role=\"status\">{listenFollowable && listenStopped ? vt('따라가기를 멈췄어요') : ''}</span>}");
-    expect(v).toContain('followActive={listenFollowable && !listenStopped}');
+    expect(v).toContain('followActive={listenFollowable}');
+    expect(v).not.toContain('followActive={listenFollowable && !listenStopped}');
     const msgs = read('src/lib/viewerMessages.js');
     for (const k of ["['지금 문장으로','回到当前句','回到目前句']", "['따라가기를 멈췄어요','已停止跟随','已停止跟隨']"]) expect(msgs).toContain(k);
   });
