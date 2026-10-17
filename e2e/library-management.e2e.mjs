@@ -52,7 +52,8 @@ test('personal rename, favorites, revision conflict and minimum 320px keyboard c
 });
 
 test('pressing a card shows the tab pending underline on that card only until the slow viewer reply; a second press is ignored (LIBRARY-PENDING-001)',async()=>{
- const f=await fixture({management:true,width:390});try{
+ // 움직임 그대로(no-preference) — 공용 픽스처 기본은 동작 줄이기(reduce)라 밑줄이 정지판(nav-pending-still)으로 그려진다(그 판은 appFeelPending 계약).
+ const f=await fixture({management:true,width:390,reducedMotion:'no-preference'});try{
  seed(f,3);let navigations=0;
  // 느린 서버: 뷰어로 가는 이동(RSC · prefetch 아님)만 1.2초 늦춘다
  await f.context.route(/\/viewer\/\d+/,async r=>{const h=r.request().headers();if(h.rsc&&!h['next-router-prefetch']){navigations++;await new Promise(res=>setTimeout(res,1200));}return r.fallback();});
