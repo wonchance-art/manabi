@@ -41,7 +41,7 @@ describe('번체 글꼴 범위 — Noto Sans TC', () => {
   it('① 루트 레이아웃은 Noto Sans TC를 걸지 않는다', () => {
     const root = read('src/app/layout.jsx');
     expect(root).not.toMatch(/Noto_Sans_TC|notoTc|--font-noto-tc/);
-    expect(root).toContain('Noto_Sans_SC'); // SC는 이번 범위가 아니다 — 그대로 루트.
+    expect(root).not.toContain('Noto_Sans_SC('); // SC도 범위 부품이다(FONT-SC-SCOPE-001, 아래).
   });
 
   it('TC는 범위 부품 한 곳에서 정의하고, 번체 세그먼트 레이아웃이 그것으로 감싼다', () => {
@@ -74,6 +74,83 @@ describe('번체 글꼴 범위 — Noto Sans TC', () => {
 
   it('범위 밖 목록의 경로는 실제로 있고 이유가 있다', () => {
     for (const [dir, reason] of Object.entries(OUTSIDE)) {
+      expect(fs.existsSync(path.join(ROOT, dir)), dir).toBe(true);
+      expect(reason.length, dir).toBeGreaterThan(10);
+    }
+  });
+});
+
+/**
+ * 계약: 간체 중국어(Noto Sans SC)는 중국어를 그릴 수 있는 화면에만 싣는다 (FONT-SC-SCOPE-001, 2026-10-17 KST).
+ *
+ * 루트가 SC를 걸어 모든 페이지 head CSS에 SC @font-face 303개(gz 약 91KB, 렌더 차단)가 실렸다. SC로 그리는 것은
+ * lang zh*(:lang(zh) 전역 규칙) · 중국어 뷰어 글꼴(readerFontFamily) · 표지/이어 읽기 글자[lang=zh] · 수업 [lang=zh]다.
+ * 그 lang은 대부분 데이터(자료 · 단어 · 표지 언어)를 따라가므로, 학습 언어를 섞어 보여 주는 화면은 모두 범위에 넣는다.
+ * 범위 밖은 한 언어만 그리는 화면(일본어 · 영어 · 프랑스어 레퍼런스 · 일본어 교재 · 지역학 · 계정 · 안내 · 관리)이다.
+ *
+ * 지키는 것: ① 루트는 SC를 걸지 않고 정의는 범위 부품 한 곳(이중 선언 금지 — FONT-HINT-001과 같은 원칙)
+ * ② 중국어를 그릴 수 있는 화면 부품을 여는 라우트는 SC 세그먼트 안(밖이면 이유와 함께 OUTSIDE)
+ * ③ --font-noto-sc는 모두 폴백을 둔다 — 범위 밖에서 선언 통째 무효(→ 상속 글꼴로 바뀜)가 되지 않게.
+ */
+const SC_SCOPE = 'src/components/fonts/ScFontScope.jsx';
+const SC_SEGMENTS = [
+  'home', 'discover', 'lessons', 'materials', 'notes', 'class', 'chinese', 'viewer', 'pdf', 'suggestions', 'study', 'vocab',
+  'review', 'writing', 'quick', 'progress', 'world', 'conversation', 'admin/legacy-textbooks',
+].map(s => `src/app/(app)/${s}`);
+// 중국어를 그릴 수 있는 화면 부품 — lang을 데이터(자료 · 단어 · 학습 언어)에서 정하거나 zh를 직접 쓰거나 SC CSS를 쓴다.
+const SC_SCREENS = [
+  '@/views/HomePage', '@/views/MaterialsPage', '@/components/web/LazyMaterialsPage', '@/components/web/LibraryPage', '@/components/books/Bookshelf',
+  '@/components/materials/MaterialEntry', '@/components/materials/MaterialEditor', '@/components/notes/StudyNotePage', '@/views/ViewerPage', '@/views/PdfViewerPage',
+  '@/components/materials/SuggestionReader', '@/views/levelListRoute', '@/views/VocabPage', '@/views/WritingStudioPage', '@/views/QuickPage',
+  '@/views/ProfileStats', '@/views/WorldPage', '@/views/NewConversationPage', '@/views/StudyLibraryPage', '@/views/GrammarReviewSession',
+  '@/views/ClassHubPage', '@/views/ClassTeamPage', '@/views/ClassBoardPage', '@/views/ClassLivePage', '@/views/ClassCourseDayPage', '@/views/ClassCourseTestPage',
+];
+// 범위 밖 라우트 — 한 언어만 그린다(이유와 함께). SC 부품이 여기서 열리면 그 언어로만 열린다는 근거가 있어야 한다.
+const SC_OUTSIDE = Object.freeze({
+  'src/app/(app)/japanese': '일본어 레벨 목록 · 레퍼런스 · 읽기 트랙 — LevelListPage의 zh-CN/zh-TW 줄은 chinese 경로에서만 나온다',
+});
+
+describe('간체 글꼴 범위 — Noto Sans SC', () => {
+  const files = walk(path.join(ROOT, 'src'));
+  const rel = (p) => path.relative(ROOT, p).replaceAll('\\', '/');
+
+  it('① 루트는 SC를 걸지 않고, 정의는 범위 부품 한 곳뿐이다(이중 선언 금지)', () => {
+    const root = read('src/app/layout.jsx');
+    expect(root).not.toMatch(/Noto_Sans_SC|notoSc/);
+    const definers = files.filter(f => /Noto_Sans_SC\(/.test(fs.readFileSync(f, 'utf8'))).map(rel);
+    expect(definers).toEqual([SC_SCOPE]);
+    const scope = read(SC_SCOPE);
+    expect(scope).toContain("variable: '--font-noto-sc'");
+    expect(scope).toContain("weight: ['400', '500', '700'],");
+    expect(scope).toContain("style={{ display: 'contents' }}");
+    expect(scope).toContain('<ScFontBodyVariable className={notoSc.variable} />'); // 감싸개 밖 포털(한자판 · 판서)
+  });
+
+  it('SC 세그먼트 레이아웃은 모두 ScFontScope로 감싼다', () => {
+    for (const seg of SC_SEGMENTS) {
+      const layout = read(`${seg}/layout.jsx`);
+      expect(layout, seg).toContain("import ScFontScope from '@/components/fonts/ScFontScope'");
+      expect(layout, seg).toMatch(/<ScFontScope>[\s\S]*\{children\}[\s\S]*<\/ScFontScope>/);
+    }
+  });
+
+  it('② 중국어를 그릴 수 있는 화면을 여는 라우트는 SC 세그먼트 안에 있다', () => {
+    const routes = files.filter(f => rel(f).startsWith('src/app/') && /\/(page|layout)\.jsx$/.test(f));
+    const opens = (f) => { const src = fs.readFileSync(f, 'utf8'); return SC_SCREENS.some(m => src.includes(`from '${m}'`) || src.includes(`import('${m}')`)); };
+    const hits = routes.filter(opens).map(rel);
+    expect(hits.length).toBeGreaterThanOrEqual(15); // 공허 통과 방지
+    const outside = hits.filter(f => !SC_SEGMENTS.some(seg => f.startsWith(`${seg}/`)) && !Object.keys(SC_OUTSIDE).some(o => f.startsWith(`${o}/`)));
+    expect(outside, '중국어를 그릴 수 있는 화면이 SC 범위 밖 라우트에서 열린다 — SC_SEGMENTS에 넣거나 SC_OUTSIDE에 이유를 적는다').toEqual([]);
+  });
+
+  it('③ --font-noto-sc를 쓰는 곳은 모두 폴백이 있다', () => {
+    const uses = files.flatMap(f => (fs.readFileSync(f, 'utf8').match(/var\(--font-noto-sc[^)]*\)/g) || []).map(u => `${rel(f)}: ${u}`));
+    expect(uses.length).toBeGreaterThan(5);
+    expect(uses.filter(u => !/var\(--font-noto-sc,\s*'Noto Sans SC'\)/.test(u))).toEqual([]);
+  });
+
+  it('범위 밖 목록의 경로는 실제로 있고 이유가 있다', () => {
+    for (const [dir, reason] of Object.entries(SC_OUTSIDE)) {
       expect(fs.existsSync(path.join(ROOT, dir)), dir).toBe(true);
       expect(reason.length, dir).toBeGreaterThan(10);
     }
