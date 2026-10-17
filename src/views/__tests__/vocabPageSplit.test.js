@@ -26,7 +26,7 @@ describe('/vocab 페이지 청크 나누기', () => {
     expect(row).toContain('onFocus={loadVocabDetailCard}');
   });
   it('뜻 정리는 작은 모듈에서 — studySession을 싣지 않는다(다시 내보내기로 같은 함수)', () => {
-    expect(page).toContain("import { stripSourceLangInMeaning } from '../lib/meaningClean';");
+    expect(page).toContain("import { choiceLabels, choiceMeaning } from '../lib/meaningClean';"); // 보기 규칙(STUDY-CHOICE-LEAK-001)
     expect(page).not.toContain("from '../lib/studySession'");
     expect(fs.readFileSync('src/lib/meaningClean.js', 'utf8')).not.toMatch(/^import /m);
     expect(fromSession).toBe(fromClean);

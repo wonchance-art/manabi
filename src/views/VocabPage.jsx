@@ -23,7 +23,7 @@ import VocabReview, { REVIEW_PREP_FAILED } from './VocabReview';
 import { CardGridSkeleton } from '../components/Skeleton';
 import { failureMessage } from '../lib/errorMessage';
 import { detectLang, detectLangConfident, hasCjkText } from '../lib/constants';
-import { stripSourceLangInMeaning } from '../lib/meaningClean';
+import { choiceLabels, choiceMeaning } from '../lib/meaningClean';
 import { authEntryHref } from '../lib/authRedirect';
 import { bookExpressionListHref, fetchBookScope, fetchMaterialVocabularyIds } from '../lib/bookReviewNavigation';
 import {
@@ -727,9 +727,11 @@ function VocabWorkspace({ reviewScope }) {
     if (!activeWord) return [];
     const others = vocab.filter(v => v.id !== activeWord.id && v.meaning);
     const distractors = fisherYatesShuffle(others).slice(0, 3);
-    // 보기 텍스트는 원어 병기 괄호를 정리 — 정답 식별은 id 기준이라 채점엔 무영향
-    return fisherYatesShuffle([...distractors, activeWord])
-      .map(v => ({ ...v, meaning: stripSourceLangInMeaning(v.meaning) }));
+    // 보기 텍스트는 보기 규칙으로 정리(원어 병기 · 낱말이 드러나는 괄호 용례 — meaningClean choiceMeaning · choiceLabels,
+    // 네 보기에 같은 규칙). 정답 식별은 id 기준이라 채점엔 무영향.
+    const shuffled = fisherYatesShuffle([...distractors, activeWord]);
+    const labels = choiceLabels(shuffled.map(v => choiceMeaning(v.meaning)), activeWord.word_text);
+    return shuffled.map((v, i) => ({ ...v, meaning: labels[i] }));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewIdx, practice?.idx, activeWord?.id]);
   // 본 복습은 플래시(버튼 넷)뿐이다. 집중 연습은 고른 갈래 — 보기를 만들 수 없으면 스스로 확인으로 돌린다.

@@ -14,7 +14,7 @@
 
 import { vocabTypeForRung } from './skillRung';
 import { normalizeRecall } from './answerNormalize';
-import { stripSourceLangInMeaning } from './meaningClean';
+import { choiceMeaning, choiceSet, stripSourceLangInMeaning } from './meaningClean';
 
 const MAX_ITEMS = 10; // 예산제 하드캡 (기획 H3)
 
@@ -96,7 +96,7 @@ function buildVocabMatchItem(vocab) {
 
   for (const row of vocab || []) {
     const wordText = typeof row?.word_text === 'string' ? row.word_text.trim() : '';
-    const meaning = stripSourceLangInMeaning(row?.meaning);
+    const meaning = choiceMeaning(row?.meaning); // 짝 맞추기 뜻 칸도 보기다 — 괄호 용례가 낱말을 드러내지 않게(meaningClean)
     if (!wordText || !meaning || seenWords.has(wordText) || seenMeanings.has(meaning)) continue;
     seenWords.add(wordText);
     seenMeanings.add(meaning);
@@ -121,10 +121,10 @@ function buildVocabItems(vocab, meaningPool, vocabRungs = {}, dial = 'normal', e
   const matchItem = buildVocabMatchItem(vocab);
   if (matchItem) return [matchItem];
 
-  const cleanPool = (meaningPool || []).map(stripSourceLangInMeaning);
+  const cleanPool = (meaningPool || []).map(choiceMeaning);
   return (vocab || []).slice(0, 3).map(w => {
-    const meaning = stripSourceLangInMeaning(w.meaning); // 보기·정답·채점 기준을 정화된 값으로 통일
-    const word = { ...w, meaning };
+    let meaning = choiceMeaning(w.meaning); // 보기·정답·채점 기준을 정화된 값으로 통일(보기 규칙 — meaningClean choiceMeaning)
+    let word = { ...w, meaning };
     let type = vocabTypeForRung(vocabRungs[w.word_text] ?? 1, dial);
     let options = null;
     let sentence = null;
@@ -137,9 +137,9 @@ function buildVocabItems(vocab, meaningPool, vocabRungs = {}, dial = 'normal', e
       }
     }
     if (type === 'vocab-choice') {
-      const distractors = pickDistractors(cleanPool, meaning, 3);
-      if (distractors.length < 2) type = 'vocab-typing';   // 보기 부족 → 타이핑으로
-      else options = [meaning, ...distractors];
+      const set = choiceSet(meaning, pickDistractors(cleanPool, meaning, 3), w.word_text);
+      if (!set) type = 'vocab-typing';   // 보기 부족 → 타이핑으로
+      else { options = set.options; meaning = set.correct; word = { ...word, meaning }; }
     }
     return {
       uid: uid('v'),
@@ -166,20 +166,20 @@ export function buildEncounterItems(encounterVocab, meaningPool, dial = 'normal'
   if (dial === 'easy') return [];
   const slots = Math.min(2, Math.max(0, 3 - dueCount));
   if (!slots) return [];
-  const cleanPool = (meaningPool || []).map(stripSourceLangInMeaning);
+  const cleanPool = (meaningPool || []).map(choiceMeaning);
   const out = [];
   for (const w of encounterVocab || []) {
     if (out.length >= slots) break;
-    const meaning = stripSourceLangInMeaning(w?.meaning);
+    const meaning = choiceMeaning(w?.meaning);
     if (!w?.word_text || !meaning) continue;
-    const distractors = pickDistractors(cleanPool, meaning, 3);
-    if (distractors.length < 2) continue;
+    const set = choiceSet(meaning, pickDistractors(cleanPool, meaning, 3), w.word_text);
+    if (!set) continue;
     out.push({
       uid: uid('e'),
       type: 'vocab-choice',
       origin: 'encounter',
-      word: { ...w, meaning },
-      options: [meaning, ...distractors],
+      word: { ...w, meaning: set.correct },
+      options: set.options,
       effect: { kind: 'vocab', wordId: w.id ?? null, origin: 'encounter' },
     });
   }
@@ -382,16 +382,16 @@ export function buildWarmupItems(recentEvents, vocabRows, meaningPool = [], dueS
     }
   }
   // 인지형(뜻 고르기) 문항으로 — 보기 오답 2개 미만이면 제외
-  const cleanPool = (meaningPool || []).map(stripSourceLangInMeaning);
+  const cleanPool = (meaningPool || []).map(choiceMeaning);
   return chosen.map(row => {
-    const meaning = stripSourceLangInMeaning(row.meaning); // 보기·정답·채점 기준 통일
-    const distractors = pickDistractors(cleanPool, meaning, 3);
-    if (distractors.length < 2) return null;
+    const meaning = choiceMeaning(row.meaning); // 보기·정답·채점 기준 통일(보기 규칙 — meaningClean choiceMeaning)
+    const set = choiceSet(meaning, pickDistractors(cleanPool, meaning, 3), row.word_text);
+    if (!set) return null;
     return {
       uid: uid('w'),
       type: 'vocab-choice',
-      word: { word_text: row.word_text, meaning, furigana: row.furigana || null },
-      options: [meaning, ...distractors],
+      word: { word_text: row.word_text, meaning: set.correct, furigana: row.furigana || null },
+      options: set.options,
       warmup: true,
       effect: { kind: 'warmup', key: row.word_text },
     };
