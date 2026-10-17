@@ -114,6 +114,14 @@ describe('같은 문서 hash 이동 — 라우터가 옛 hash로 되돌려도 �
     expect(same).toEqual({ data: { manabiBookPosition: { href, page: 'guide-katakana-long' }, other: 1 }, url: href });
     const stale = run({ __NA: true, __PRIVATE_NEXTJS_INTERNALS_TREE: tree, manabiBookPosition: { href: 'http://x/books/japanese-n5?edition=e#u03-study1', page: 'u03-study1' } });
     expect(stale).toEqual({ data: {}, url: href });
-    expect(run(null)).toEqual({ data: {}, url: href }); // 고유 hash 이동의 새 기록은 state가 null
+    // 고유 hash 이동의 새 기록은 state가 null — 패치가 붙일 표지가 없으니 패치에 한 번 넘긴 뒤 표지를 직접 찍는다
+    // (`{}`로 남은 기록으로 뒤로 가면 Next onPopState가 !__NA로 새로 고친다 — a775 리뷰 2026-10-17 KST).
+    const start = calls.length;
+    run(null);
+    expect(calls.slice(start)).toEqual([{ data: {}, url: href }, { data: { __NA: true }, url: href }]);
+    // 표지가 이미 있으면(패치가 붙였거나 원래 있던 기록) 더 찍지 않는다.
+    const marked = calls.length;
+    run({ __NA: true });
+    expect(calls.length - marked).toBe(1);
   });
 });

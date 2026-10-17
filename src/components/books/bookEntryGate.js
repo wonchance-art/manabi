@@ -45,6 +45,9 @@ export function announceFragmentUrl(href) {
   delete own.__NA; delete own.__PRIVATE_NEXTJS_INTERNALS_TREE;
   if (own.manabiBookPosition && own.manabiBookPosition.href !== href) delete own.manabiBookPosition;
   window.history.replaceState(own, '', href);
+  // 고유 hash 이동의 새 기록은 state가 null이라 패치가 붙일 표지가 없다 — `{}`로 남은 기록으로 뒤로 가면 Next가 새로 고친다
+  // (onPopState의 !__NA). 표지를 직접 찍는다(표지가 있으면 패치를 지나가 RESTORE가 더 생기지 않고, tree가 없으면 traverse가 지금 tree를 쓴다).
+  if (!window.history.state?.__NA) window.history.replaceState({ ...(window.history.state || {}), __NA: true }, '', href);
 }
 
 export function hashGate(on) {
