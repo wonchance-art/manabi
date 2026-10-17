@@ -1528,7 +1528,7 @@ function VocabWorkspace({ reviewScope }) {
             {(inMemoryResume || restorable) && <button type="button" className="review-room-resume" onClick={resumeRun}>
               멈춘 복습 이어 하기 ({(inMemoryResume || restorable).done} / {(inMemoryResume || restorable).total}) →</button>}
             {vocabError && <p role="alert">최신 표현을 확인하지 못했어요. <button type="button" onClick={() => refetchVocab()}>다시 시도</button></p>}
-            {fsrsReview.status === 'error' && <p role="alert">복습 일정을 불러오지 못했어요. <button type="button" onClick={() => fsrsReview.controller.refresh()}>다시 시도</button></p>}
+            {fsrsReview.status === 'error' && <p role="alert">복습 일정을 불러오지 못했어요. <button type="button" onClick={() => fsrsReview.controller.refresh({ retry: true })}>다시 시도</button></p>}
             {fsrsReview.error?.message === 'fsrs_sync_blocked' && <p role="alert">복습을 저장하지 못했어요. 연결을 확인해 주세요 — 이 단어는 다음에 다시 나와요.
               <button type="button" onClick={() => fsrsReview.controller.retrySync()}>다시 시도</button>
             </p>}
