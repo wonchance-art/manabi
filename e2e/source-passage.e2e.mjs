@@ -90,7 +90,10 @@ test('lost response reuses one snapshot; small screens, keyboard and manual inpu
   f.losePassageReply();await f.page.getByRole('button',{name:'이 부분 공부하기',exact:true}).click();await f.page.getByRole('alert').filter({hasText:'구간을 열지 못했어요'}).waitFor();assert.equal(f.rows.length,2);assert.equal(f.calls,0);
   await start(f);assert.equal(f.rows.length,2);assert.equal(f.calls,1);
   await f.page.getByRole('link',{name:'원본의 작성한 본문으로 ↗'}).click();await f.page.locator('.original-reader').waitFor();
-  const open=f.page.getByRole('button',{name:'일부만 고르기',exact:true});await open.focus();await f.page.keyboard.press('Enter');await f.page.keyboard.press('Escape');assert.equal(await open.evaluate(el=>el===document.activeElement),true);
+  // 본문이 그려지기 전(구간 목록이 비어 있는 동안) 이 단추는 disabled다 — 쓸 수 있게 된 뒤에 초점을 둔다. 그 뒤로 다시 disabled로
+  // 깜박이지 않는 것은 제품 쪽 고정이다(PASSAGE-OPENER-FOCUS-001: 출처를 받은 뒤 동기화가 다시 돌 때 본문을 내리던 결함 — 그때 초점이
+  // 제목으로 가고 Enter · Esc가 헛돌았다). 아래 「Esc로 닫으면 여는 단추로」 단언은 그대로.
+  const open=f.page.getByRole('button',{name:'일부만 고르기',exact:true});for(let i=0;!(await open.isEnabled());i++){assert.ok(i<100,'opener stays disabled');await f.page.waitForTimeout(50);}await open.focus();await f.page.keyboard.press('Enter');await f.page.keyboard.press('Escape');assert.equal(await open.evaluate(el=>el===document.activeElement),true);
   await open.click();await f.page.getByRole('button',{name:'추출된 글이 어색한가요? 직접 입력',exact:true}).click();await f.page.getByLabel('학습할 내용',{exact:true}).fill('A sentence I transcribed.');
   await f.page.locator('dialog').getByLabel('학습 언어',{exact:true}).selectOption('');assert.equal(await f.page.getByRole('button',{name:'이 부분 공부하기',exact:true}).isDisabled(),true);await f.page.locator('dialog').getByLabel('학습 언어',{exact:true}).selectOption('English');await start(f);
   assert.equal(f.rows[2].processed_json.metadata.composer.passage.manual,true);assert.equal(f.rows[2].processed_json.metadata.composer.passage.quote,undefined);

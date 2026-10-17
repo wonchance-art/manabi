@@ -86,8 +86,15 @@ export default function OriginalMaterialReader({ material }) {
     // Apply once at entry; later remote updates are offered by the notice.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[sync.state.ready,origin.isPending,passageId]);
+  // 한 번 그린 본문은 위치 동기화가 다시 시작돼도 내리지 않는다(PASSAGE-OPENER-FOCUS-001, 2026-10-17 KST). 구간에서 온 원본(?passage=)은
+  // 출처를 받는 동안 동기화를 꺼 둔 채(ready) 본문을 먼저 그리고, 출처가 오면 동기화가 처음부터(ready=false) 다시 돈다 — 그 30ms 남짓
+  // 본문이 내려갔다 올라와 구간 목록이 비고 「일부만 고르기」가 disabled로 깜박였다. 초점이 그 단추에 있으면 잃었고(→ 제목),
+  // 그 사이 누른 키 · 클릭은 헛돌았다(source-passage e2e 실측 4/5). 위치 기록(useOriginalTextPosition)은 지금 ready를 그대로 따른다.
+  const bodyShownRef=useRef(false);
+  if(sync.state.ready)bodyShownRef.current=true;
+  const bodyShown=bodyShownRef.current;
   useEffect(()=>{setBodySource(bodyElement.current?{key:`body:${composer.revision||'original'}`,element:bodyElement.current,
-    source:{version:1,kind:'body',revision:composer.revision,textVersion:'plain-v1'}}:null);},[composer.body,composer.revision,sync.state.ready]);
+    source:{version:1,kind:'body',revision:composer.revision,textVersion:'plain-v1'}}:null);},[composer.body,composer.revision,bodyShown]);
   const bodyPositionSource={kind:'body',revision:composer.revision||null};
   const bodyRestore=useMemo(()=>restore.point?.source.kind==='body'?{id:restore.id,offset:restore.point.locator.offset}:null,[restore]);
   // 쪽 넘김 보기(READER-PAGED-001) — 첨부 없이 글만 있는 자료의 본문을 화면 단위 쪽으로 나눈다. 첨부 파일 읽기(PDF·EPUB)는
@@ -97,7 +104,7 @@ export default function OriginalMaterialReader({ material }) {
   const [pagesEl,setPagesEl]=useState(null);
   const pageBar=useRef(null);
   const bodyPaged=readerView==='paged'&&!!composer.body?.trim()&&!assets.length;
-  const pager=usePagedReader({enabled:bodyPaged&&sync.state.ready,pages:pagesEl,barRef:pageBar,anchorSelector:'.original-writing',topInset:originalReaderTopInset,
+  const pager=usePagedReader({enabled:bodyPaged&&bodyShown,pages:pagesEl,barRef:pageBar,anchorSelector:'.original-writing',topInset:originalReaderTopInset,
     captureAnchor:(page,api)=>{
       const element=bodyElement.current;if(!element)return undefined;
       const offset=pagedOriginalTextOffset(element,range=>api.pageOf(range),page);
@@ -144,7 +151,7 @@ export default function OriginalMaterialReader({ material }) {
         {error && <p role="alert" className="original-entry-error">{error}</p>}
       </>,
     } : {})}/>
-    {sync.state.ready&&composer.body?.trim() && <><div className="original-pages-frame"><div ref={setPagesEl} className="original-pages" data-reader-pages={bodyPaged?'paged':'scroll'}><article ref={bodyElement} className="original-writing" aria-label="작성한 본문">{composer.body}</article><div data-page-end aria-hidden="true"/></div>{bodyPaged&&<PageStrips pager={pager}/>}</div>{bodyPaged&&<PageBar pager={pager} barRef={pageBar} className="original-pagebar"/>}</>}
+    {bodyShown&&composer.body?.trim() && <><div className="original-pages-frame"><div ref={setPagesEl} className="original-pages" data-reader-pages={bodyPaged?'paged':'scroll'}><article ref={bodyElement} className="original-writing" aria-label="작성한 본문">{composer.body}</article><div data-page-end aria-hidden="true"/></div>{bodyPaged&&<PageStrips pager={pager}/>}</div>{bodyPaged&&<PageBar pager={pager} barRef={pageBar} className="original-pagebar"/>}</>}
     {!!links.length && <section className="original-links" aria-label="담아 둔 링크">{links.map(url => <a key={url} href={url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer"><div><small>ORIGINAL LINK</small><strong>{new URL(url).hostname}</strong><span>{url}</span></div><b aria-hidden="true">↗</b></a>)}<p>링크의 원문은 해당 사이트에서 열립니다.</p></section>}
     {assets.length > 1 && <div className="original-file-picker"><label htmlFor="original-file-select">첨부 원본 {assets.length}개</label><select id="original-file-select" value={assetIndex} onChange={e=>{const index=Number(e.target.value);setAssetIndex(index);const selected=assets[index],point=sync.selected(`asset:${selected.hash}`);if(point)sync.note(point.source,point.locator);applyPosition(point);}}>{assets.map((item, index) => <option key={item.hash} value={index}>{item.name}</option>)}</select></div>}
     {asset && sync.state.ready && (!passageId||!origin.isPending) && <OriginalFileReader key={`${asset.hash}:${passageId||''}:${restore.id}`} material={material} asset={asset} onSource={onFileSource} returnSource={returnSource?.assetHash===asset.hash?returnSource:null} sourceMaterial={returnSource?.assetHash===asset.hash?origin.data:null} initialLocator={!passageId?sync.selected(positionSourceKey({kind:asset.kind,assetHash:asset.hash}))?.locator:null} restoreId={restore.id} onPosition={sync.note} canRecord={canRecord} />}
