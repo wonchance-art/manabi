@@ -229,13 +229,12 @@
 .lv-page--vocab[data-language="zh"] :is(.lv-ex__py,.lv-ex__tr){grid-column:1/-1;margin:0}
 .lv-page--vocab[data-language="zh"] .lv-ex__tr{font-size:14px;line-height:1.75;overflow-wrap:anywhere}
 .lv-page--vocab[data-language="zh"] .lv-acts{gap:8px}
-.lv-page--vocab[data-language="zh"] .lv-fab{width:auto;min-width:94px;min-height:48px;height:auto;padding:10px 14px;display:inline-flex;gap:8px;border:1px solid var(--lv-line);border-radius:10px;font:600 14px/1.5 var(--font-noto-kr),sans-serif;touch-action:manipulation}
+/* O · X는 전체 보기 · 탭 보기 모두 이름표 없는 동그라미(오너 2026-10-17 「O X 버튼만」) — 가운데 맞춤은 기본 .lv-fab(inline-grid · place-items)에 맡긴다. */
+.lv-page--vocab[data-language="zh"] .lv-fab{touch-action:manipulation}
 .lv-page--vocab[data-language="zh"] .lv-fab svg{width:20px;height:20px;flex:none}
 .lv-page--vocab[data-language="zh"] .lv-fab[aria-pressed=true]{border-color:transparent}
 .lv-page--vocab[data-language="zh"] .lv-solo{min-width:0}
 .lv-page--vocab[data-language="zh"] .lv-solo__row{flex-wrap:nowrap}
-/* 탭 보기 한 줄 카드 — O · X는 이름표 없는 44px 동그라미(전체 보기의 이름표 버튼은 그대로). */
-.lv-page--vocab[data-language="zh"] .lv-entry--solo .lv-fab{min-width:0;width:44px;height:44px;padding:0;border-radius:50%}
 .lv-page--vocab[data-language="zh"] .lv-entry--solo{padding:8px 10px 8px 18px}
 .lv-page--vocab[data-language="zh"] .lv-solo>.lv-entry__word{display:block}
 .lv-page--vocab[data-language="zh"] .lv-solo__ex{font-size:22px;line-height:1.8}
