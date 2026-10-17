@@ -7,7 +7,7 @@
  * 과정 목록은 목표가 있을 때만 /api/goal-catalog에서 받는다(홈 페이지에 정본 투영을 싣지 않는다 — P4).
  * 목표가 없으면 「목표를 정하면」 빈 상태 — 목표 편집은 현황의 한 모달(목표 · D-Day)에서만 한다.
  */
-import { useMemo } from 'react';
+import { useId, useMemo } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/AuthContext';
@@ -15,6 +15,7 @@ import { buildPlan, markProgress } from '@/lib/studyPlan';
 import { countRecentDone, pace } from '@/lib/goalPace';
 import { fetchGoalProgressRows } from '@/lib/goalRows';
 import { goalTrackView } from '@/lib/learnDashboard';
+import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
 
 export async function fetchGoalCatalog() {
   const response = await fetch('/api/goal-catalog');
@@ -26,9 +27,9 @@ export function useGoalCatalog(enabled = true) {
   return useQuery({ queryKey: ['goal-catalog'], queryFn: fetchGoalCatalog, enabled, staleTime: Infinity, gcTime: Infinity });
 }
 
-/** 목표 궤도 — { status: 'none' | 'loading' | 'ready', view } */
+/** 목표 궤도 — { status: 'none' | 'loading' | 'error' | 'ready', view, retry? } */
 export function useGoalTrack() {
-  const { user, profile } = useAuth();
+  const { user, profile, loading: authLoading, profileLoading } = useAuth();
   const goalLang = profile?.goal_lang;
   const goalLevel = profile?.goal_level;
   const goalDate = profile?.dday_date;
@@ -38,12 +39,13 @@ export function useGoalTrack() {
     () => (hasGoal && catalog.data ? buildPlan({ languages: catalog.data }, goalLang, { upto: goalLevel }) : null),
     [hasGoal, catalog.data, goalLang, goalLevel],
   );
-  const { data: rows, isLoading } = useQuery({
+  const progress = useQuery({
     queryKey: ['goal-progress', user?.id, goalLang],
     enabled: hasGoal && !!plan,
     queryFn: () => fetchGoalProgressRows(user.id, goalLang),
     staleTime: 1000 * 60 * 5,
   });
+  const rows = progress.data;
   const view = useMemo(() => {
     if (!plan || !rows) return null;
     const marked = markProgress(plan, rows);
@@ -53,9 +55,15 @@ export function useGoalTrack() {
     const goalName = profile?.dday_label || plan.levels[plan.levels.length - 1]?.label || goalLevel;
     return goalTrackView({ marked, p, goalName, goalDate });
   }, [plan, rows, goalDate, goalLevel, profile?.dday_label]);
+  // 받는 중 · 없음 · 실패를 가른다(LOADING-SKELETON-001 리뷰). 로그인 확인 · 프로필 받는 중에 profile이 비어 있다고
+  // 「목표를 정하면」(거짓 빈 상태)을 보이지 않고, 실패 · 셀 수 없음을 「불러오는 중」으로 영원히 두지도 않는다.
+  if (authLoading || (user?.id && profileLoading)) return { status: 'loading', view: null };
   if (!hasGoal || catalog.isError) return { status: 'none', view: null };
-  if (!view) return { status: catalog.isLoading || isLoading || !rows ? 'loading' : 'none', view: null };
-  return { status: 'ready', view };
+  if (view) return { status: 'ready', view };
+  if (!catalog.data) return { status: 'loading', view: null };
+  if (!plan) return { status: 'none', view: null }; // 목표 언어 · 과정이 목록에 없다 — 궤도를 셀 수 없다
+  if (progress.isError) return { status: 'error', view: null, retry: () => progress.refetch() };
+  return { status: 'loading', view: null };
 }
 
 /** 칸 겉 — 배움에서는 링크(현황으로), 현황에서는 목표 편집을 여는 버튼(onOpen). */
@@ -64,10 +72,43 @@ function Shell({ onOpen, href, className, children, ...rest }) {
   return <Link href={href} prefetch={false} className={className} {...rest}>{children}</Link>;
 }
 
-export default function GoalTrackTile({ className = '', href = '/progress', editHref = '/progress?goal=edit', onOpen }) {
-  const { status, view } = useGoalTrack();
-  if (status === 'loading') {
-    return <div className={`learn-tile learn-goal learn-goal--empty ${className}`.trim()} role="status"><span className="learn-goal__line">목표 불러오는 중…</span></div>;
+/** 목표 칸 골격(LOADING-SKELETON-001) — 받는 중 · 배움 대기 화면(home/loading.jsx)이 같은 칸을 쓴다. */
+export function GoalTrackSkeleton({ className = '' }) {
+  return (
+    <SkeletonRegion className={`learn-tile learn-goal learn-goal--empty ${className}`.trim()} label="목표">
+      <span aria-hidden="true">
+        <span className="learn-goal__title"><SkeletonLine width="7em" /></span>
+        <span className="learn-goal__line"><SkeletonLine width="14em" /></span>
+      </span>
+    </SkeletonRegion>
+  );
+}
+
+// 진도 실패 알림 — 알림 영역은 칸 바깥에 늘 그려 두고 내용만 넣는다(칸은 상태마다 다른 요소라 칸 안의 영역은 매번 새로 생기고,
+// 내용과 함께 생기는 role=status는 화면 낭독기가 놓칠 수 있다 — StudySessionPage grammarNotice와 같은 방식). 칸 밖이어도
+// .skeleton-sr(absolute)라 배움 격자의 칸을 차지하지 않는다. 보이는 실패 줄은 같은 말을 두 번 읽지 않게 숨기고, 「다시 시도」가 이 영역을 설명으로 가리킨다.
+export const GOAL_PROGRESS_FAILED = '목표 진도를 불러오지 못했어요.';
+
+export default function GoalTrackTile(props) {
+  const track = useGoalTrack();
+  const noticeId = useId();
+  return <>
+    <span className="skeleton-sr" role="status" id={noticeId}>{track.status === 'error' ? GOAL_PROGRESS_FAILED : ''}</span>
+    <GoalTrackBody {...props} track={track} noticeId={noticeId} />
+  </>;
+}
+
+function GoalTrackBody({ className = '', href = '/progress', editHref = '/progress?goal=edit', onOpen, track, noticeId }) {
+  const { status, view, retry } = track;
+  if (status === 'loading') return <GoalTrackSkeleton className={className} />;
+  // 진도를 받지 못했다 — 링크 칸 안에 버튼을 둘 수 없어 칸 자체는 링크가 아니다(문구 표준 「…지 못했어요.」 + 「다시 시도」).
+  if (status === 'error') {
+    return (
+      <div className={`learn-tile learn-goal learn-goal--empty ${className}`.trim()}>
+        <span aria-hidden="true"><span className="learn-goal__line">{GOAL_PROGRESS_FAILED}</span></span>
+        <button type="button" className="learn-button-s" aria-describedby={noticeId} onClick={retry}>다시 시도</button>
+      </div>
+    );
   }
   if (!view) {
     return (

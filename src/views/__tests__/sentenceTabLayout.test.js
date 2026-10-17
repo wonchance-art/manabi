@@ -69,10 +69,11 @@ describe('[문장] 탭 — 게스트(Q4)', () => {
     expect(run).toContain('SENTENCE_TX_LOGIN_REQUIRED');
   });
 
-  it('안내는 번역 칸 안의 /auth 링크', () => {
+  it('안내는 번역 칸 안의 로그인 링크 — 로그인 뒤 이 자료로 돌아온다', () => {
     const slot = sliceBetween(panel(), 'reader-sentence__translation', 'reader-sentence__actions');
     expect(slot).toContain('SENTENCE_TX_LOGIN_REQUIRED');
-    expect(slot).toContain('href="/auth"');
+    expect(slot).toContain('href={signInHref}');
+    expect(viewer).toMatch(/const signInHref = authEntryHref\(/);
     expect(slot).toContain("vt('로그인하면 이 문장의 번역을 볼 수 있어요 →')");
   });
 

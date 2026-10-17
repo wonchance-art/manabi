@@ -29,7 +29,8 @@ export async function readZhDictionary() {
   const files = [...src.matchAll(/import\('\.\.\/content\/chinese\/vocab\/([\w-]+)'\)\.then\(\(m\) => \(\{ level: '(\w+)'/g)].map((m) => ({ file: m[1], level: m[2] }));
   if (files.length < 30) throw new Error(`refVocabIndex 파일 목록을 읽지 못했다(${files.length})`);
   const sets = [];
-  for (const { file, level } of files) sets.push({ level, mod: await import(pathToFileURL(path.join(root, `src/content/chinese/vocab/${file}.js`)).href) });
+  // HSK 7–9 보강(level H7, LEVEL-HSK79-001)은 넣지 않는다 — 「한자」 탭(HSK 1 · 2 글자)의 단어 · 조어력은 그 전 사전 그대로.
+  for (const { file, level } of files) if (level !== 'H7') sets.push({ level, mod: await import(pathToFileURL(path.join(root, `src/content/chinese/vocab/${file}.js`)).href) });
   const RANK = { H1: 1, H2: 2, H3: 3, H4: 4, H5: 5, H6: 6 };
   const map = new Map();
   for (const { level, mod } of sets) {

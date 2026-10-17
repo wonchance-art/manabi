@@ -29,7 +29,7 @@ export default function MaterialChapterLinks({ lang, slug, kind, materialId, bro
   if (browseFirst) return <section className="learning-links learning-links--browse">
     <p className="learning-links__muted">나에게만 보임</p>
     {!user?<p>로그인하면 내 연결 자료를 볼 수 있어요.</p>:<>
-      {isLoading&&<p role="status">불러오는 중…</p>}
+      {isLoading&&<p aria-busy="true">연결 목록 불러오는 중…</p>}
       {(error||loadError)&&<p role="alert">{error||friendlyToastMessage(loadError)}</p>}
       {loadError&&<button type="button" className="btn btn--ghost btn--sm" onClick={()=>refetch()}>다시 시도</button>}
       {data&&<>
@@ -47,7 +47,7 @@ export default function MaterialChapterLinks({ lang, slug, kind, materialId, bro
     <summary>{slug?'자료와 함께 복습하기':'연결한 교재 단원'}</summary>
     <p className="learning-links__muted">연결 목록은 나에게만 보여요. 자료의 공개 범위는 바뀌지 않아요.</p>
     {!user?<p>로그인하면 자료와 교재를 연결할 수 있어요.</p>:<>
-      {isLoading&&<p role="status">불러오는 중…</p>}
+      {isLoading&&<p aria-busy="true">연결 목록 불러오는 중…</p>}
       {(error||loadError)&&<p role="alert">{error||friendlyToastMessage(loadError)}</p>}
       {loadError&&<button type="button" className="btn btn--ghost btn--sm" onClick={()=>refetch()}>다시 시도</button>}
       {data&&<>

@@ -69,7 +69,7 @@ export default function NewConversationPage() {
     }
   }
 
-  if (loading) return <p className="manabi-page" role="status">불러오는 중…</p>;
+  if (loading) return <p className="manabi-page" role="status">대화 불러오는 중…</p>;
   if (!user) {
     return (
       <div className="manabi-page conv-new">
@@ -142,7 +142,7 @@ export default function NewConversationPage() {
 
       {recentRows.length > 0 && (
         <section className="conv-new__group" aria-labelledby="conv-new-recent">
-          <h2 id="conv-new-recent">이어서 하기</h2>
+          <h2 id="conv-new-recent">이어 하기</h2>
           <ul className="conv-new__recent">
             {recentRows.map((row) => (
               <li key={row.id}>

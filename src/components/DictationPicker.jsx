@@ -22,7 +22,7 @@ export default function DictationPicker({ sentences, savedSet, onPick, onClose }
   return (
     <ViewerModal title="받아쓰기 문장 고르기" onClose={onClose}>
         <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0 0 14px' }}>
-          담은 단어가 든 문장부터 골랐어요 · 원문은 가려 둡니다
+          담은 단어가 든 문장부터 골랐어요 · 원문은 가려 둬요
         </p>
 
         {picks.length === 0 ? (

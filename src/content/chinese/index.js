@@ -81,6 +81,12 @@ import vocabH3hsk2026 from './vocab/h3_hsk2026';
 import vocabH4hsk2026 from './vocab/h4_hsk2026';
 import vocabH5hsk2026 from './vocab/h5_hsk2026';
 import vocabH6hsk2026 from './vocab/h6_hsk2026';
+// HSK 7–9 (2026 대강 통합 밴드) 보강 — 콘텐츠 레벨(H1~H6) 세트가 아니다. 레벨 목록 7–9와 단어 사전에만 쓴다(LEVEL-HSK79-001).
+import vocabH7hsk2026A from './vocab/h7_hsk2026_a';
+import vocabH7hsk2026B from './vocab/h7_hsk2026_b';
+import vocabH7hsk2026C from './vocab/h7_hsk2026_c';
+import vocabH7hsk2026D from './vocab/h7_hsk2026_d';
+import vocabH7hsk2026E from './vocab/h7_hsk2026_e';
 import vocabExpansion from './vocab/expansion';
 // 원본 어휘 + HSK 보강 어휘를 '보강' 구분 없이 한 사전으로 — 품사별 자연 분류로 통합.
 const POS_GROUPS = [
@@ -212,6 +218,8 @@ export const getLevelMeta = registry.getLevelMeta;
 export const getGrammarChapters = registry.getGrammarChapters;
 export const getChapter = registry.getChapter;
 export const getVocab = registry.getVocab;
+/** HSK 7–9 보강 세트(원본 그대로) — 콘텐츠 레벨이 아니라 레지스트리(getVocab · countVocab · 교재 보관함)에 넣지 않는다. */
+export const ZH_HSK79_VOCAB = [vocabH7hsk2026A, vocabH7hsk2026B, vocabH7hsk2026C, vocabH7hsk2026D, vocabH7hsk2026E];
 export const countVocab = registry.countVocab;
 
 /** 문형 사전 — 챕터(이해)와 별개의 전수 커버 레이어 (SCHEMA.md 참고) */

@@ -72,7 +72,8 @@ try {
  await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last().click();await page.waitForURL('**/home');await page.waitForLoadState('networkidle');
  for(const width of [320,390,768,1440]) {
   material=original();mode='slow';await page.setViewportSize({width,height:900});await open('width'+width);
-  await page.getByText('분석이 끝나지 않은 부분이 2곳 있어요.',{exact:true}).waitFor();
+  // 보이는 배너 줄에서 찾는다 — 같은 글이 배너 밖 상시 알림 영역(sr-only)에도 있다(LOADING-ANNOUNCE-001 ③ · e95f31b3 선례).
+  await page.locator('.analyzing-banner').getByText('분석이 끝나지 않은 부분이 2곳 있어요.',{exact:true}).waitFor();
   const rect=await resume().boundingBox();assert(rect.height>=44);await shot('before-'+width);
   const before=structuredClone(material.processed_json.dictionary.id_0_0_resume),start=commits;
   await resume().focus();await page.keyboard.press('Enter');

@@ -140,7 +140,7 @@ export default function TextbookEditor({ catalog, initialLang, initialSlug }) {
         {book.chapters.filter((item) => item.level === selectedChapter?.level).map((item) => <option key={item.slug} value={item.slug}>{item.order}. {item.slug === selection.slug && draft ? draft.title : item.title}</option>)}
       </select></label>
     </fieldset>
-    {pending && <p role="status">교재를 불러오는 중…</p>}
+    {pending && <p aria-busy="true">교재를 불러오는 중…</p>}
     {error && <div className="textbook-editor__message" role="alert"><p>{error}</p>
       <button className="btn btn--ghost btn--sm" type="button" disabled={saving} onClick={() => { if (mayLeave()) setReload((n) => n + 1); }}>최신 내용 불러오기</button>
     </div>}

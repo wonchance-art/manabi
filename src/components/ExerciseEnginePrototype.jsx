@@ -1,9 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import RefSpeak from './RefSpeak';
 import { tokenizeExampleSentence } from '../lib/studySession';
 import { normalizeRecall } from '../lib/answerNormalize';
+import { focusIfFree, orderChipSpot, orderChipTarget } from '../lib/focusAfterAction';
 
 const FILL_TYPES = new Set(['fill', 'short-answer']);
 const CHOICE_TYPES = new Set(['choice', 'select']);
@@ -411,6 +412,22 @@ export function createExerciseResult(question, response) {
   };
 }
 
+/**
+ * 어순 배열 칩 초점(FOCUS-WORD-ORDER-001). 누른 칩은 상태가 바뀌며 사라져 초점이 body로 떨어졌다(실측).
+ * 누른 순간 자리를 적고, 다시 그린 뒤 다음 칩 → 첫 놓인 칩 → 「확인」 순서로 잇는다(orderChipTarget). 화면은 그대로다.
+ * 초점이 그 문항 밖에 있으면 뺏지 않는다(focusIfFree). 답이 끝나 갈 곳이 없으면 아무것도 하지 않는다(부모가 「계속 →」).
+ */
+function useOrderChipFocus() {
+  const spot = useRef(null);
+  useEffect(() => {
+    const at = spot.current;
+    if (!at) return;
+    spot.current = null;
+    if (at.root.isConnected) focusIfFree(orderChipTarget(at.root, at.zone, at.index), at.root);
+  });
+  return event => { spot.current = orderChipSpot(event.currentTarget); };
+}
+
 function StudySessionExercise({
   studyItem,
   phase = 'answer',
@@ -426,6 +443,7 @@ function StudySessionExercise({
   langCode,
   renderMain = text => text,
 }) {
+  const markChip = useOrderChipFocus();
   const question = normalizeStudySessionExerciseQuestion(studyItem);
   if (!question) return null;
 
@@ -541,7 +559,7 @@ function StudySessionExercise({
   const correct = gradeExerciseResponse(question, built);
 
   return (
-    <div className="fr-quiz__q">
+    <div className="fr-quiz__q" data-order-root="">
       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 6 }}>
         {context}
       </div>
@@ -553,7 +571,7 @@ function StudySessionExercise({
             type="button"
             className="fr-quiz__token is-picked"
             disabled={feedback}
-            onClick={() => onOrderPicksChange?.(current => current.filter((_, index) => index !== position))}
+            onClick={event => { markChip(event); onOrderPicksChange?.(current => current.filter((_, index) => index !== position)); }}
             lang={langCode}
           >
             {bank[bankIndex].t}
@@ -570,8 +588,9 @@ function StudySessionExercise({
                 type="button"
                 className="fr-quiz__token"
                 lang={langCode}
-                onClick={() => {
+                onClick={event => {
                   if (isTapLocked?.()) return;
+                  markChip(event);
                   const nextPicks = [...orderPicks, bankIndex];
                   onOrderPicksChange?.(nextPicks);
                   if (nextPicks.length === question.tokens.length) {
@@ -630,6 +649,7 @@ function StandaloneExerciseEngine({
   }, [examples, questions, vocabSet]);
   const [inputs, setInputs] = useState({});
   const [results, setResults] = useState({});
+  const markChip = useOrderChipFocus();
 
   if (normalizedQuestions.length === 0) return null;
 
@@ -787,7 +807,7 @@ function StandaloneExerciseEngine({
                     )}
                   </div>
                 ) : (
-                  <div style={{ marginTop: 10 }}>
+                  <div style={{ marginTop: 10 }} data-order-root="">
                     <div className="fr-quiz__line">
                       {(inputs[question.id] || []).map((bankIndex, position) => (
                         <button
@@ -795,10 +815,10 @@ function StandaloneExerciseEngine({
                           type="button"
                           className="fr-quiz__token is-picked"
                           disabled={!!result}
-                          onClick={() => setInputs(current => ({
+                          onClick={event => { markChip(event); setInputs(current => ({
                             ...current,
                             [question.id]: (current[question.id] || []).filter((_, pickIndex) => pickIndex !== position),
-                          }))}
+                          })); }}
                         >
                           {question.bank[bankIndex].t}
                         </button>
@@ -815,10 +835,10 @@ function StandaloneExerciseEngine({
                               key={bankIndex}
                               type="button"
                               className="fr-quiz__token"
-                              onClick={() => setInputs(current => ({
+                              onClick={event => { markChip(event); setInputs(current => ({
                                 ...current,
                                 [question.id]: [...(current[question.id] || []), bankIndex],
-                              }))}
+                              })); }}
                             >
                               {token.t}
                             </button>
@@ -830,6 +850,7 @@ function StandaloneExerciseEngine({
                       <button
                         type="button"
                         className="btn btn--primary btn--sm"
+                        data-order-confirm=""
                         disabled={(inputs[question.id] || []).length !== question.tokens.length}
                         onClick={() => {
                           const response = (inputs[question.id] || [])

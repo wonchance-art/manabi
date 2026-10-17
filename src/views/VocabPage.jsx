@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -17,14 +18,12 @@ import { callGemini } from '../lib/gemini';
 import Button from '../components/Button';
 import OfflineNotice, { PendingReviewsNotice } from '../components/OfflineNotice';
 import ConfirmModal from '../components/ConfirmModal';
-import VocabList from './VocabList';
 import VocabularyExclusionList from '../components/VocabularyExclusionList';
 import VocabReview, { REVIEW_PREP_FAILED } from './VocabReview';
-import VocabDetailCard from './VocabDetailCard';
 import { CardGridSkeleton } from '../components/Skeleton';
 import { failureMessage } from '../lib/errorMessage';
 import { detectLang, detectLangConfident, hasCjkText } from '../lib/constants';
-import { stripSourceLangInMeaning } from '../lib/studySession';
+import { choiceLabels, choiceMeaning } from '../lib/meaningClean';
 import { authEntryHref } from '../lib/authRedirect';
 import { bookExpressionListHref, fetchBookScope, fetchMaterialVocabularyIds } from '../lib/bookReviewNavigation';
 import {
@@ -64,6 +63,15 @@ import {
 } from '../lib/vocabStudy';
 
 import '../components/web/review-room.css';
+import dynamic from 'next/dynamic';
+import Spinner from '../components/Spinner';
+
+// 둘러보기 탭 · 상세 카드는 첫 화면(복습방)에 없다 — 페이지 청크에서 뺀다(2026-10-17 KST 번들 조사, refShared 포함 소스 약 44KB).
+// 오프라인 첫 화면(오류 분기의 캐시 목록)도 목록을 쓰므로 첫 렌더 뒤 유휴 시간에 미리 받는다(SW가 청크를 캐시).
+const loadVocabList = () => import('./VocabList');
+const loadVocabDetailCard = () => import('./VocabDetailCard');
+const VocabList = dynamic(loadVocabList, { loading: () => <Spinner message="담은 표현 불러오는 중…" /> });
+const VocabDetailCard = dynamic(loadVocabDetailCard, { loading: () => null });
 
 const MAX_EXAMPLE_CACHE = 50;
 
@@ -105,6 +113,8 @@ function readSavedScope() {
 }
 
 function VocabWorkspace({ reviewScope }) {
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInHref = authEntryHref(usePathname());
   const { user, profile, refreshProfileReadOnly } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -119,6 +129,11 @@ function VocabWorkspace({ reviewScope }) {
   const [tab, setTab] = useState('list');
   const [startingReview, setStartingReview] = useState(false);
   const startingRef = useRef(false);
+  useEffect(() => {
+    const warm = () => { loadVocabList(); loadVocabDetailCard(); };
+    const id = typeof window.requestIdleCallback === 'function' ? window.requestIdleCallback(warm, { timeout: 3000 }) : window.setTimeout(warm, 1500);
+    return () => (typeof window.cancelIdleCallback === 'function' ? window.cancelIdleCallback(id) : window.clearTimeout(id));
+  }, []);
   const workspaceAlive = useRef(true);
   const gradeLifetimeRef = useRef(0);
   useEffect(() => {
@@ -340,8 +355,18 @@ function VocabWorkspace({ reviewScope }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [learningAvailable, projections, scopeKey, scopeLevels, scopeSourceIds, reviewSupported, Math.floor(effectiveNow / 60000)]);
   const fsrsControllerRef = useRef(null), quotaSignature = useRef(null);
+  // 입장 한도가 **바뀌면** FSRS 목록을 다시 읽는다. 첫 한도는 바뀐 것이 아니다 — FSRS 목록은 마운트 때 이미 같은 서버 상태
+  // (입장 상태 포함)를 읽고 있어, 첫 한도에 다시 읽으면 fsrs_capabilities · fsrs_list_states · learning_admission_status가
+  // 한 번씩 더 나갔다(응답 순서에 따라 — 능력 RPC 중복 조사 2026-10-17 KST). 다만 FSRS 첫 읽기가 실패해 있으면 예전처럼
+  // 그 김에 다시 읽는다(진행 중이면 refresh가 같은 약속을 돌려준다). 계정이 바뀌면 처음부터 센다.
+  const quotaOwner = useRef(null);
   const admission = useLearningAdmission({ accountId: user?.id, onQuota: quota => {
     const signature = JSON.stringify([quota.learningDay, quota.policyRevision, quota.used, quota.active, quota.fsrsEnabled]);
+    if (quotaOwner.current !== quota.actorId) {
+      quotaOwner.current = quota.actorId; quotaSignature.current = signature;
+      if (fsrsControllerRef.current?.getSnapshot?.().status === 'error') fsrsControllerRef.current.refresh();
+      return;
+    }
     if (signature !== quotaSignature.current) {
       quotaSignature.current = signature;
       fsrsControllerRef.current?.refresh();
@@ -702,9 +727,11 @@ function VocabWorkspace({ reviewScope }) {
     if (!activeWord) return [];
     const others = vocab.filter(v => v.id !== activeWord.id && v.meaning);
     const distractors = fisherYatesShuffle(others).slice(0, 3);
-    // 보기 텍스트는 원어 병기 괄호를 정리 — 정답 식별은 id 기준이라 채점엔 무영향
-    return fisherYatesShuffle([...distractors, activeWord])
-      .map(v => ({ ...v, meaning: stripSourceLangInMeaning(v.meaning) }));
+    // 보기 텍스트는 보기 규칙으로 정리(원어 병기 · 낱말이 드러나는 괄호 용례 — meaningClean choiceMeaning · choiceLabels,
+    // 네 보기에 같은 규칙). 정답 식별은 id 기준이라 채점엔 무영향.
+    const shuffled = fisherYatesShuffle([...distractors, activeWord]);
+    const labels = choiceLabels(shuffled.map(v => choiceMeaning(v.meaning, activeWord.word_text)), activeWord.word_text);
+    return shuffled.map((v, i) => ({ ...v, meaning: labels[i] }));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewIdx, practice?.idx, activeWord?.id]);
   // 본 복습은 플래시(버튼 넷)뿐이다. 집중 연습은 고른 갈래 — 보기를 만들 수 없으면 스스로 확인으로 돌린다.
@@ -1319,7 +1346,7 @@ function VocabWorkspace({ reviewScope }) {
         </p>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <Link href="/review/grammar" className="btn btn--primary btn--md">문법 복습 이어가기 →</Link>
-          <Link href="/auth" className="btn btn--ghost btn--md">로그인하고 단어장 쓰기</Link>
+          <Link href={signInHref} className="btn btn--ghost btn--md">로그인하고 단어장 쓰기</Link>
         </div>
       </div>
     );
@@ -1437,7 +1464,7 @@ function VocabWorkspace({ reviewScope }) {
             <div className="vocab-hero__top"><span className="vocab-hero__kicker">이 범위에서 오늘</span><span className="manabi-eyebrow">01 / RECALL</span></div>
             {/* 「첫 표현」 안내는 정말 담은 표현이 없을 때만 — 좁힌 범위가 비었을 뿐이면 범위 문구가 말한다(교재 범위는 그 교재 기준). */}
             <h2 id="review-today-title">{session.total ? '오늘 다시 볼 표현' : hasAnyWords ? '잠시, 읽기로 돌아가요.' : '첫 표현을 담아 보세요.'}</h2>
-            {admission.status !== 'ready' || session.status !== 'ready' ? <p role="status" className="review-room-note">복습 준비 중…</p> : session.total > 0 ? <>
+            {admission.status !== 'ready' || session.status !== 'ready' ? <p aria-busy="true" className="review-room-note">복습 준비 중…</p> : session.total > 0 ? <>
               <div className="review-room-number"><strong className="vocab-hero__num">{session.total}</strong><span>개의 표현</span></div>
               {/* 0인 갈래는 적지 않는다(learning-flow e2e 「복습 0」 금지) — 「복습 14 · 새 표현 4」(설계 §5-1). */}
               <p className="review-room-note">{[session.due > 0 && `복습 ${session.due}`, session.newAllowed > 0 && `새 표현 ${session.newAllowed}`].filter(Boolean).join(' · ')}</p>
@@ -1477,7 +1504,7 @@ function VocabWorkspace({ reviewScope }) {
           </section>
           {!isBookScope && <section className="review-room-grammar" aria-labelledby="review-grammar-title">
             <p className="manabi-eyebrow">02 / PATTERNS</p><h2 id="review-grammar-title">문법도 한 번 더.</h2>
-            {grammarLoading ? <p role="status">복습 일정을 확인하고 있어요…</p> : grammarError ? <p role="alert">문법 일정을 불러오지 못했어요. <button type="button" className="btn btn--ghost btn--sm" onClick={() => refetchGrammar()}>다시 시도</button></p> : <p>{dueGrammarCount ? `다시 확인할 문법 ${dueGrammarCount}개가 있어요.` : grammarQueue?.total ? '지금 복습할 문법이 없어요. 다음 일정에 다시 만나요.' : '이야기 학습에서 연습한 문법의 복습 일정이 여기에 모여요. N5 과별 답안과는 별개예요.'}</p>}
+            {grammarLoading ? <p aria-busy="true">복습 일정을 확인하고 있어요…</p> : grammarError ? <p role="alert">문법 일정을 불러오지 못했어요. <button type="button" className="btn btn--ghost btn--sm" onClick={() => refetchGrammar()}>다시 시도</button></p> : <p>{dueGrammarCount ? `다시 확인할 문법 ${dueGrammarCount}개가 있어요.` : grammarQueue?.total ? '지금 복습할 문법이 없어요. 다음 일정에 다시 만나요.' : '이야기 학습에서 연습한 문법의 복습 일정이 여기에 모여요. N5 과별 답안과는 별개예요.'}</p>}
             <Link href="/review/grammar" prefetch={false} className="manabi-link">{dueGrammarCount ? `문법 ${dueGrammarCount}개 →` : '문법 복습 확인 →'}</Link>
             <div className="review-room-extra"><p>글 한 편으로 함께 연습하고 싶다면</p><Link href="/study" prefetch={false} className="manabi-link">이야기로 연습 →</Link></div>
                   {confused.length >= CONFUSED_MIN && (
@@ -1530,6 +1557,8 @@ function VocabWorkspace({ reviewScope }) {
                         key={v.id}
                         type="button"
                         className="review-sec__row"
+                        onPointerDown={loadVocabDetailCard}
+                        onFocus={loadVocabDetailCard}
                         onClick={() => setDetailWord(v)}
                         aria-label={`${v.word_text} — ${v.meaning} 상세 열기`}
                       >

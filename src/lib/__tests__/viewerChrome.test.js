@@ -438,7 +438,9 @@ describe('⑨ AD-R2 읽기 크롬 — 영문 0 · 라벨 툴바 · 통계 한 �
     const stats = sliceBetween(header(), '<span className="viewer-badge viewer-stats"', '</Link>}');
     expect(stats).toContain("vt('아는 단어 {percent}% · 새 단어 {count}개'");
     // REV-SCOPE-R1A: 전체 복습(/vocab)이 아니라 이 자료 범위의 복습방으로 간다(범위 주소 정본 serializeReviewScope).
-    expect(stats).toMatch(/<Link href=\{materialReviewHref\} prefetch=\{false\} className="viewer-stats__vocab">\{vt\('\{count\}개 수집 · 이 자료 표현 복습', \{count: collectedInMaterial\}\)\}$/);
+    // 수는 숫자 자리표로 번역문을 받은 뒤 숫자만 감싼다(앱 손맛 ① 수집 팝 — 수가 늘 때만 도는 팝 자리). 수 자체는 그대로 collectedInMaterial.
+    expect(stats).toContain(`<Link href={materialReviewHref} prefetch={false} className="viewer-stats__vocab">{withCountSlot(vt('{count}개 수집 · 이 자료 표현 복습', {count: COUNT_SLOT}),`);
+    expect(stats).toMatch(/className=\{`viewer-stats__count\$\{collectPopKey \? ' viewer-badge--pop' : ''\}`\}>\{collectedInMaterial\}<\/span>\)\}$/);
     expect(src).toContain("serializeReviewScope({ lang: materialLang, level: null, source: { kind: 'material', ids: [String(material.id)] }, state: 'due' })");
     // 수집 링크도 무채색 — 크롬 강조색은 복습 하나(위 ⑥)
     const link = sliceBetween(read(MANABI_CSS), '.manabi-app .viewer-layout .viewer-stats__vocab {', '}');

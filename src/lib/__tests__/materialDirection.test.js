@@ -47,7 +47,7 @@ describe('추가 화면 (MaterialAddPage)', () => {
 
   it("direction=write는 분석 큐에 들어가지 않는다 — status 'note'로 저장하고 runBackgroundAnalysis를 호출하지 않는다", () => {
     expect(add).toContain(`status: isNote ? 'note' : "analyzing"`);
-    const after = sliceBetween(add, 'if (isNote) {', "setStatus('원문 저장 완료. 읽기 도구를 준비하고 있어요…');");
+    const after = sliceBetween(add, 'if (isNote) {', "setStatus('원문을 저장했어요. 읽기 도구를 준비하고 있어요…');");
     expect(after).not.toContain('runBackgroundAnalysis(');
     expect(after).not.toContain('startAnalysis(');
     expect(add.indexOf('setCompletedId(record.id);')).toBeLessThan(add.indexOf('if (isNote) {'));

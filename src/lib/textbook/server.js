@@ -17,7 +17,7 @@ export async function candidate(edition,bookId=BOOK_ID) {
     return bundle;
   } catch(error){if(error.status)throw error;throw textbookError(404,'출력본이 아직 준비되지 않았어요.');}
 }
-// Immutable file candidates are cached per book and edition; failures never become cached successes.
+// 공개 읽기 경로는 배포 단위로 고정된 판본을 재사용한다. 책+판본마다 분리하고, 실패는 기억하지 않는다.
 const verifiedCandidates=new Map();
 export function cachedCandidate(edition,bookId=BOOK_ID){
  const key=`${bookId}:${edition}`;
@@ -74,6 +74,7 @@ export async function publishedBookCatalog(db,bookId=BOOK_ID) {
  // The existing materials feature remains usable while the additive migration awaits deployment.
  if(error&&['42P01','PGRST205'].includes(error.code))return [];
  if(error)throw textbookError(503,'교재 목록을 확인하지 못했어요.');if(!release)return [];
+ // 원고 JSONB 없이 발행 해시 두 개를 대조하고 검증한 판본 파일에서 과 목록을 만든다.
  const edition=await readEditionStamp(db,release.edition_id,bookId);if(!edition)return [];
  const book=await cachedCandidate(release.edition_id,bookId);
  if(edition.content_hash!==book.contentHash||edition.artifact_manifest?.bundleHash!==book.artifactManifest.bundleHash)throw textbookError(503,'교재 판본을 확인하지 못했어요.');

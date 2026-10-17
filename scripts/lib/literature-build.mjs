@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { LITERATURE_BOUNDARY_FILE, withBoundaryMerges } from './literature-boundaries.mjs';
+import { createDisplayManifest, createIncipitManifest } from './literature-display-build.mjs';
 
 export const LITERATURE_ROOT = 'src/content/literature/aozora';
 export const LITERATURE_FILES = Object.freeze({ source: 'source.txt', entry: 'entry.json', chapters: 'chapters.json', review: 'review.json' });
@@ -12,8 +13,11 @@ export const LITERATURE_FILES = Object.freeze({ source: 'source.txt', entry: 'en
  * 루트에 같이 만드는 산출물(AOZORA-P0-2) — 작품 폴더 목록에서 결정적으로 나온다. 손으로 고치지 않는다.
  *   index  관리자 게시 API가 정적 import하는 책 목록(장 원문 포함 — 서버 전용)
  *   manifest 뷰어가 쓰는 정본 대조표(장 원문 SHA-256 + 출처 크레딧). 원문은 싣지 않는다.
+ *   display  화면 표지 · 제목용 — manifest에서 파생(해시 · 크레딧 · 첫 문장 없음, literature-display-build.mjs). 홈 · 서재가 import한다.
+ *   incipits 장 첫 문장 — manifest에서 파생. 서재 책 카드 목차 줄만 import한다.
  */
-export const LITERATURE_OUTPUTS = Object.freeze({ index: 'index.generated.js', manifest: 'manifest.generated.json' });
+export const LITERATURE_OUTPUTS = Object.freeze({ index: 'index.generated.js', manifest: 'manifest.generated.json',
+  display: 'manifest.display.generated.json', incipits: 'manifest.incipits.generated.json' });
 
 const sha256 = (buffer) => createHash('sha256').update(buffer).digest('hex');
 
@@ -149,9 +153,12 @@ export async function buildLiterature({ root = LITERATURE_ROOT, check = false } 
   }
   // 한 편이라도 실패하면 목록을 바꾸지 않는다 — 깨진 작품이 빠진 채 게시 목록이 줄어드는 일을 막는다.
   if (errors.length) return { works, errors };
+  const manifest = createManifest(drafts);
   const outputs = [
     [LITERATURE_OUTPUTS.index, serializeIndex(drafts.map((draft) => draft.book.key))],
-    [LITERATURE_OUTPUTS.manifest, serializeChapters(createManifest(drafts))],
+    [LITERATURE_OUTPUTS.manifest, serializeChapters(manifest)],
+    [LITERATURE_OUTPUTS.display, serializeChapters(createDisplayManifest(manifest))],
+    [LITERATURE_OUTPUTS.incipits, serializeChapters(createIncipitManifest(manifest))],
   ];
   for (const [file, output] of outputs) {
     const target = path.join(root, file);

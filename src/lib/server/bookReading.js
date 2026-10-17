@@ -14,23 +14,28 @@ export async function publishedReading(editionId, allowPreview = false, bookId =
     const auth = await requireAdmin();
     if (auth.error) throw textbookError(auth.status, auth.error);
   }
-  const book = id ? await cachedCandidate(id,bookId) : await currentCandidate(bookId);
+  const book = id ? bookId===BOOK_ID ? await cachedCandidate(id) : await cachedCandidate(id,bookId) : await currentCandidate(bookId);
   if (published && (published.content_hash !== book.contentHash || published.artifact_manifest?.bundleHash !== book.artifactManifest.bundleHash)) throw textbookError(503, '교재 판본을 확인하지 못했어요.');
   return { book, preview: !published };
 }
 
+// 판본 본문은 인스턴스 안에서 책+판본당 한 번 만든다. 실패는 담지 않는다.
 const sectionsByEdition = new Map();
 export const readingSections = cache((edition,bookId=BOOK_ID) => {
   const key=`${bookId}:${edition}`;
   if(!sectionsByEdition.has(key)){
-    const pending=buildReadingSections(edition,bookId);
+    const pending=bookId===BOOK_ID?buildReadingSections(edition):buildBookReadingSections(edition,bookId);
     sectionsByEdition.set(key,pending);
     pending.catch(()=>sectionsByEdition.delete(key));
   }
   return sectionsByEdition.get(key);
 });
 
-async function buildReadingSections(edition,bookId) {
+async function buildReadingSections(edition) {
+  return buildBookReadingSections(edition,BOOK_ID);
+}
+
+async function buildBookReadingSections(edition,bookId) {
   const book = await cachedCandidate(edition,bookId);
   const { bytes } = await verifiedReadingHtml(book);
   const sections = extractReadingSections(bytes.toString('utf8'));

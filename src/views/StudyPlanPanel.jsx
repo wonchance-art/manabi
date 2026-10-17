@@ -126,7 +126,7 @@ export default function StudyPlanPanel() {
         <h2 className="myplan__title">📅 내 진도 — 올 12월까지</h2>
         <p className="myplan__lead">
           정본 문법 챕터를 순서대로. <strong>진도는 읽음·통과 기록에서 그대로</strong> 와요 —
-          따로 체크할 것이 없고, 챕터가 개편되면 표도 같이 바뀝니다.
+          따로 체크할 것이 없고, 챕터가 개편되면 표도 같이 바뀌어요.
           {' '}번호를 누르면 그 챕터로 가요.
           {' '}목표 <strong>{TARGET}</strong> · <strong>D-{dleft}</strong>
         </p>

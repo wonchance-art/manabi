@@ -55,8 +55,15 @@ export function selectedRange(items,selected,key,anchor,checked,shift){
  const rows=shift&&start>=0&&end>=0?items.slice(Math.min(start,end),Math.max(start,end)+1):items.filter(item=>libraryKey(item)===key);
  for(const row of rows){if(checked)next.set(libraryKey(row),operationTarget(row));else next.delete(libraryKey(row));}return [...next.values()];
 }
-export async function filterActiveSources(client,owner,rows,kind='material'){
+// 숨긴(휴지통 등 active 아닌) 서재 항목 키 — 거를 행과 무관하게 읽을 수 있어, 행 조회와 **동시에** 띄울 수 있다(LIBRARY-PREFETCH-002).
+export async function hiddenLibraryKeys(client,owner){
  const hidden=new Set();
  for(let offset=0;;offset+=1000){const {data,error}=await client.from('library_item_state').select('target_kind,target_id').eq('owner_id',owner).neq('state','active').range(offset,offset+999);if(error)throw error;for(const row of data||[])hidden.add(libraryKey(row));if((data||[]).length<1000)break;}
+ return hidden;
+}
+export function withoutHiddenSources(rows,hidden,kind='material'){
  return rows.filter(row=>{const meta=row.processed_json?.metadata||{};const key=kind==='pdf'?`pdf:${row.id}`:meta.book?.key?`book:${meta.book.key}`:row.source_pdf_id?`pdf:${row.source_pdf_id}`:`material:${meta.composer?.role==='study'?meta.composer.parentId:row.id}`;return !hidden.has(key);});
+}
+export async function filterActiveSources(client,owner,rows,kind='material'){
+ return withoutHiddenSources(rows,await hiddenLibraryKeys(client,owner),kind);
 }

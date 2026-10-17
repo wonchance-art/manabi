@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { reducedMotion } from './reducedMotion';
 
 // requestAnimationFrame 기반 숫자 카운트업.
 // IntersectionObserver로 viewport 진입 시 시작 (off-screen에선 작동 X).
@@ -13,7 +14,7 @@ export function useCountUp(target, { duration = 700, startOnVisible = true } = {
 
   useEffect(() => {
     if (typeof window === 'undefined') { setValue(target); return; }
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+    if (reducedMotion()) {
       setValue(target);
       return;
     }

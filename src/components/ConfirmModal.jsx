@@ -36,10 +36,19 @@ export default function ConfirmModal({ open, title, message, confirmLabel, cance
 
   useEffect(() => {
     if (!open) return undefined;
+    // 연 자리(버튼)를 기억했다가 닫힐 때 돌려준다 — 안 돌려주면 포커스가 body로 떨어져 키보드 사용자가 처음부터 다시 찾았다
+    // (상호작용 빈틈 조사 2026-10-17 KST). 선례 ViewerModal · LibraryDialog: 연결이 살아 있고 다른 곳에 포커스가 가지 않았을 때만.
+    const opener = document.activeElement;
     document.addEventListener('keydown', handleKey);
     // 열릴 때 취소 버튼에 자동 포커스
     const focusTimer = setTimeout(() => cancelRef.current?.focus(), 0);
-    return () => { clearTimeout(focusTimer); document.removeEventListener('keydown', handleKey); };
+    return () => {
+      clearTimeout(focusTimer);
+      document.removeEventListener('keydown', handleKey);
+      requestAnimationFrame(() => {
+        if (opener?.isConnected && document.activeElement === document.body) opener.focus({ preventScroll: true });
+      });
+    };
   }, [open, handleKey]);
 
   if (!open) return null;

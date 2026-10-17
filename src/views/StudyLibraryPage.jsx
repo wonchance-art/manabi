@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import RefSpeak from '../components/RefSpeak';
 import { JaText } from './refShared';
 import { stripInlineReadings } from '../lib/studyParagraph';
 import { GROWTH_LABELS, GROWTH_COPY } from '../lib/growthStats';
+import { authEntryHref } from '../lib/authRedirect';
 
 /** 날짜 포맷 — YYYY.M.D (ko) */
 function fmtDate(at) {
@@ -156,6 +157,8 @@ function MySourceComposer({ lang, langCode }) {
 export default function StudyLibraryPage({
   paragraphs = [], summary = {}, lang, langCode, langName, languages = [], signedOut = false,
 }) {
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInHref = authEntryHref(usePathname());
   if (signedOut) {
     return (
       <div className="page-container" style={{ maxWidth: 640, textAlign: 'center', paddingTop: 60 }}>
@@ -163,7 +166,7 @@ export default function StudyLibraryPage({
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20 }}>
           로그인하면 그동안 읽은 이야기를 다시 읽고, 성장을 확인할 수 있어요.
         </p>
-        <Link href="/auth" className="btn btn--primary btn--md">로그인 →</Link>
+        <Link href={signInHref} className="btn btn--primary btn--md">로그인 →</Link>
       </div>
     );
   }

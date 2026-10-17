@@ -140,7 +140,9 @@ describe('같은 한자어 판정 — 정체 꼴 한국 한자음(+두음)이 �
     expect(simp).toBeGreaterThanOrEqual(2133);
     expect(trad).toBeGreaterThanOrEqual(2202);
     expect(trad - simp).toBeGreaterThanOrEqual(69);
-    expect(lost).toEqual([]);
+    // HSK 7–9 보강(LEVEL-HSK79-001): 出征 출정 · 乐谱 악보는 정체 후보(徵 · 樂)가 다른 음(징 · 락)을 먼저 내 간체 음보다 진다 —
+    // 단어 안 다음자를 모르는 기존 조회 한계(본음·속음과 같은 부류). 화면은 판정 실패라 흐린 짧은 뜻으로 보일 뿐 틀린 음은 0.
+    expect(lost.sort()).toEqual(['乐谱', '出征']);
     expect(outside).toEqual([]);
     expect(judged).toBeLessThan(trad); // 경계 규칙이 护士류를 걸러 낸다(실측 2,152)
     expect(judged).toBeGreaterThanOrEqual(2148);
@@ -276,13 +278,14 @@ describe('같은 한자어 타일 — selectSameHanjaTiles', () => {
     expect(yue.map((x) => x.word)).not.toContain('乐观');
   });
   // HSK 2026 보강(ZH-LEVEL-2026-001 ④)으로 乐器 악기가 들어와 기본 3칸이 판정 성공으로 찼다 — 모자란 칸은 4칸째로 본다.
-  it('모자란 칸 = 판정 실패 후보의 짧은 뜻(흐림) — 音乐의 乐: 音乐会 음악회 · 乐器 악기 · 乐曲 악곡 · 乐队 「악단」 흐림', () => {
+  // HSK 7–9 보강(LEVEL-HSK79-001)으로 交响乐 교향악이 4칸째 판정 성공 — 모자란 칸은 5칸째로 본다.
+  it('모자란 칸 = 판정 실패 후보의 짧은 뜻(흐림) — 音乐의 乐: 音乐会 음악회 · 乐器 악기 · 乐曲 악곡 · 交响乐 교향악 · 乐队 「악단」 흐림', () => {
     expect(tiles({ ch: '乐', reading: 'yuè', headText: '音乐', index: 1 }).map((x) => x.word)).toEqual(['音乐会', '乐器', '乐曲']);
-    const t = tiles({ ch: '乐', reading: 'yuè', headText: '音乐', index: 1, cap: 4 });
-    expect(t.map((x) => x.word)).toEqual(['音乐会', '乐器', '乐曲', '乐队']);
-    expect(t.map((x) => x.ko)).toEqual(['음악회', '악기', '악곡', null]);
-    expect(t[3]).toMatchObject({ short: '악단', dim: true });
-    expect(t.slice(0, 3).every((x) => !x.dim && x.short === null)).toBe(true);
+    const t = tiles({ ch: '乐', reading: 'yuè', headText: '音乐', index: 1, cap: 5 });
+    expect(t.map((x) => x.word)).toEqual(['音乐会', '乐器', '乐曲', '交响乐', '乐队']);
+    expect(t.map((x) => x.ko)).toEqual(['음악회', '악기', '악곡', '교향악', null]);
+    expect(t[4]).toMatchObject({ short: '악단', dim: true });
+    expect(t.slice(0, 4).every((x) => !x.dim && x.short === null)).toBe(true);
   });
   it('경계 위반 단어(护士 「호사」)는 한국 한자어 줄에 오지 않는다 — 내 단어라도 흐린 짧은 뜻', () => {
     const t = tiles({ ch: '护', reading: 'hù', headText: '保护', cap: 20, savedRows: [{ word_text: '护士', meaning: '간호사', language: 'Chinese' }] });

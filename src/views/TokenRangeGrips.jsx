@@ -6,6 +6,14 @@
 import { useLayoutEffect, useState } from 'react';
 import { overlayOrigin } from '../lib/usePagedReader';
 
+// 그립은 28px 터치 타깃의 가운데(margin-left -14px, index.css .range-grip)를 토큰 끝에 맞춘다. 좁은 화면은 본문 안쪽 여백이
+// 12px이라 첫 토큰이 줄 머리에 오면 시작 그립이 화면 밖으로 2px 나간다 — 타깃 전체가 화면 안에 남도록 x를 화면 폭 안으로 민다.
+export const GRIP_HALF = 14;
+export function clampGripX(x, originLeft, viewportWidth) {
+  if (!Number.isFinite(viewportWidth) || viewportWidth < GRIP_HALF * 2) return x;
+  return Math.min(Math.max(x, GRIP_HALF - originLeft), viewportWidth - GRIP_HALF - originLeft);
+}
+
 export default function TokenRangeGrips({ range, sequence, tokenRefs, readerRef, onGripDown }) {
   const [pos, setPos] = useState(null);
 
@@ -19,9 +27,10 @@ export default function TokenRangeGrips({ range, sequence, tokenRefs, readerRef,
       const r = overlayOrigin(reader); // 쪽 넘김 보기는 다단 상자가 기준(본문 영역은 단마다 쪼개진다)
       const s = startEl.getBoundingClientRect();
       const e = endEl.getBoundingClientRect();
+      const width = document.documentElement.clientWidth;
       setPos({
-        start: { x: s.left - r.left, y: s.bottom - r.top },
-        end: { x: e.right - r.left, y: e.bottom - r.top },
+        start: { x: clampGripX(s.left - r.left, r.left, width), y: s.bottom - r.top },
+        end: { x: clampGripX(e.right - r.left, r.left, width), y: e.bottom - r.top },
       });
     };
     measure();

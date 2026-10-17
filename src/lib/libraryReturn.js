@@ -36,6 +36,24 @@ export function safeReaderReturn(value) {
   return safeLibraryReturn(value);
 }
 
+// 「함께 읽는 글」 목록 키 — /discover?view=reading이 읽는 것만, 이 순서로 옮긴다. 개인 서재 키(tab · tools · scope ·
+// collection · outline · kind · state)는 옮기지 않는다.
+const PUBLIC_READING_KEYS = Object.freeze(['q', 'lang', 'level', 'sort', 'unread', 'pinned', 'shown', 'restoreY']);
+
+/**
+ * 뷰어 「←」가 실제로 갈 주소(READER-RETURN-001). 저장된 returnTo가 공개 목록(/materials?tab=public…)이면
+ * 옛 주소 리다이렉트(/materials → /discover)를 거치지 않고 곧장 /discover?view=reading으로 — 거치면 화면이 세 번 바뀌고
+ * 위치(restoreY)를 잃었다. 그 밖(서재 · 수업 · 거절된 입력)은 safeReaderReturn 결과 그대로다.
+ */
+export function readerReturnHref(value) {
+  const back = safeReaderReturn(value);
+  const url = new URL(back, 'https://manabi.invalid');
+  if (url.pathname !== '/materials' || url.searchParams.get('tab') !== 'public') return back;
+  const out = new URLSearchParams([['view', 'reading']]);
+  for (const key of PUBLIC_READING_KEYS) { const v = url.searchParams.get(key); if (v !== null) out.set(key, v); }
+  return `/discover?${out}`;
+}
+
 export function readerReturnLabel(value) {
   const url = new URL(safeReaderReturn(value), 'https://manabi.invalid');
   if (url.pathname.startsWith('/class/')) {

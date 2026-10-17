@@ -455,7 +455,7 @@ export function SharedBoardCanvas({owner, team, day, rootId, scope, store, perso
     setRecording(false);setMessage(failed?`${failed}개를 추가하지 못했어요. 수업 기록에서 확인하고 다시 시도해 주세요.`:queued?`${queued}개 표현 저장을 요청했어요. 수업 기록에서 완료 상태를 확인하세요.`:'이미 수업에 남긴 표현이에요.');
   };
 
-  if (!store.ready || !pageId) return <div className="teaching-board-loading"><p role="status">{store.error || '보관된 설명판을 불러오고 있어요…'}</p><button onClick={onClose}>교재로 돌아가기</button></div>;
+  if (!store.ready || !pageId) return <div className="teaching-board-loading"><p role="status" aria-busy={!store.error || undefined}>{store.error || '보관된 설명판을 불러오고 있어요…'}</p><button onClick={onClose}>교재로 돌아가기</button></div>;
   const page = document.current.pages.find(item => item.id === pageId), pages = document.current.pages;
   const boardHasContent=hasContent??page.elements.some(el=>!el.isDeleted);
   const recent=pages.flatMap(item=>item.elements.filter(el=>!el.isDeleted&&expressionOf(el)).map(el=>({...readCard(el,item.elements),label:'최근 판'}))).reverse();

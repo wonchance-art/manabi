@@ -144,3 +144,7 @@ export function levelRank(language, level) {
   const i = (LEVELS[language] || []).indexOf(level);
   return i < 0 ? null : i;
 }
+
+/** 시리즈 패턴 제목([… #N] — 문법 예문 연재)은 /lessons 소속이라 공개 목록 · 공개 글 수에서 뺀다(PostgREST ilike 패턴).
+ *  자료실 목록 · 스터디 그룹 · 발견 서가가 같은 조건을 쓴다 — 셋이 어긋나면 「123편」이라 세고 열면 0편이 된다(2026-10-16 실측). */
+export const SERIES_TITLE_ILIKE = '[%#%]%';

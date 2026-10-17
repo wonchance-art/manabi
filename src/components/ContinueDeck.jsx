@@ -22,6 +22,7 @@
  */
 import { useRef, useState } from 'react';
 import Link from 'next/link';
+import { reducedMotion } from '../lib/reducedMotion';
 
 function ContinueRow({ item }) {
   return (
@@ -56,9 +57,7 @@ export default function ContinueDeck({ items }) {
   const goTo = (i) => {
     const el = scrollerRef.current?.children?.[i];
     if (!el) return;
-    const reduced = typeof window !== 'undefined'
-      && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest', inline: 'start' });
+    el.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'nearest', inline: 'start' });
   };
 
   // 활성 장은 스크롤 위치에서 역산한다(별도 상태 동기화 없이 스크롤이 진실).

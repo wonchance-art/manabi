@@ -2,9 +2,9 @@
 import {useEffect,useRef,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {supabase} from '@/lib/supabase';
-import {fetchCollections} from '@/lib/personalLibrary';
+import {libraryCollectionsQuery} from '@/lib/libraryShelfQueries';
 import {currentLibraryTarget,runLibraryOperation,libraryRpc,invalidateLibrary,libraryOperationError,folderPaths} from '@/lib/libraryOperations';
-export function useCollections(ownerId){return useQuery({queryKey:['library-collections',ownerId],enabled:!!ownerId,queryFn:()=>fetchCollections(supabase,ownerId),staleTime:30000});}
+export function useCollections(ownerId){return useQuery(libraryCollectionsQuery(supabase,ownerId));}
 export function LibraryDialog({title,children,onClose}){
  const dialog=useRef(null);
  useEffect(()=>{const opener=document.activeElement,node=dialog.current;node?.showModal();return()=>{node?.close();requestAnimationFrame(()=>{if(document.activeElement===document.body&&opener?.isConnected)opener.focus({preventScroll:true});});};},[]);
@@ -37,7 +37,9 @@ export default function LibraryCollections({ownerId,target=null,onClose,onSelect
  <button disabled={busy||!editing.name.trim()}>{editing.action==='trash'?'폴더 삭제':'저장'}</button><button type="button" onClick={()=>setEditing(null)}>취소</button></form>}
  </div>)}</div>
  {error&&<p role="alert">{error}</p>}
- {undo&&<div className="shelf-notice" role="status">저장됨 <button disabled={busy} onClick={()=>run(async()=>{await libraryRpc(supabase,'library_folder_undo',{p_request:undo});setUndo(null);})}>되돌리기</button></div>}
+ {/* 폴더 변경 알림 — 영역은 늘 두고 내용만 넣는다. 보이는 「저장됨」은 숨기고 「되돌리기」가 영역을 가리킨다(A11Y-SWEEP-001). */}
+ <span className="sr-only" role="status" id="collections-undo-notice">{undo?'저장됨':''}</span>
+ {undo&&<div className="shelf-notice"><span aria-hidden="true">저장됨 </span><button aria-describedby="collections-undo-notice" disabled={busy} onClick={()=>run(async()=>{await libraryRpc(supabase,'library_folder_undo',{p_request:undo});setUndo(null);})}>되돌리기</button></div>}
  <form className="shelf-create-collection" onSubmit={e=>{e.preventDefault();run(async()=>{await change('create',null,{name:name.trim(),parent});setName('');});}}>
  <label htmlFor="collection-name">새 폴더</label><div><input id="collection-name" maxLength={80} value={name} autoComplete="off" placeholder="이름" onChange={e=>setName(e.target.value)} disabled={busy}/><button disabled={busy||!name.trim()}>만들기</button></div>
  <label className="shelf-sr" htmlFor="folder-parent">상위 폴더</label><select id="folder-parent" value={parent} onChange={e=>setParent(e.target.value)}><option value="">내 서재</option>{folders.map(f=><option key={f.id} value={f.id}>{f.path}</option>)}</select>

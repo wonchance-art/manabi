@@ -1,6 +1,6 @@
 import {publishedBookCatalog} from '@/lib/textbook/server';
 import {bookChapterNumber,bookIdForChapter} from '@/lib/textbook/sources';
-import {BOOKS} from '@/lib/textbook/contract';
+import {BOOK_ID,BOOKS} from '@/lib/textbook/contract';
 import { requireUser } from '@/lib/supabaseServer';
 import { getGrammarManifest } from '@/content/refGrammarLoaders';
 import { getOverridesForLang, mergeChapter } from '@/lib/contentOverrides';
@@ -19,8 +19,11 @@ export async function GET(request) {
     let query = auth.supabase.from('textbook_material_links')
       .select('id,lang,chapter_slug,material_id,pdf_id,reading_materials:material_id(id,title),uploaded_pdfs:pdf_id(id,title)')
       .eq('user_id', auth.user.id).eq('lang', lang);
-    // A broken edition must not take unrelated existing material links out of the library.
-    const books = lang === 'Japanese' ? await Promise.all(Object.keys(BOOKS).map(async bookId=>({bookId,chapters:await publishedBookCatalog(auth.supabase,bookId).catch(error=>{if([404,503].includes(error?.status))return [];throw error;})}))) : [];
+    // 목록(GET)은 교재 판본 대조가 실패(404 판본 없음 · 503 해시 불일치)해도 이미 연결된 링크는 보여 준다 — 과 목록만 비운다.
+    // 연결을 만드는 POST는 그대로 엄격하다(리뷰 2026-10-17 KST, PERF-TAB-003 뒤 실패 범위가 커진 것 복구).
+    const n5Chapters = lang === 'Japanese' ? await publishedBookCatalog(auth.supabase).catch(error => { if ([404, 503].includes(error?.status)) return []; throw error; }) : [];
+    const additionalBooks = lang === 'Japanese' ? await Promise.all(Object.keys(BOOKS).filter(id=>id!==BOOK_ID).map(async bookId=>({bookId,chapters:await publishedBookCatalog(auth.supabase,bookId).catch(error=>{if([404,503].includes(error?.status))return [];throw error;})}))) : [];
+    const books = [{bookId:BOOK_ID,chapters:n5Chapters},...additionalBooks];
     const bookChapters = books.flatMap(book=>book.chapters);
     const validateChapter = chapterSlug => { if(bookChapterNumber(chapterSlug)){if(!bookChapters.some(c=>c.slug===chapterSlug))fail(404,'발행된 교재를 선택해 주세요.');}else { if(!canReadArchive)fail(403,'기존 교재는 관리자 보관함으로 이동했어요.'); chapterMeta(lang,chapterSlug); } };
     if (slug) { validateChapter(slug); query = query.eq('chapter_slug', slug); }
@@ -58,7 +61,10 @@ export async function POST(request) {
   if (auth.error) return reply({error:auth.error},auth.status);
   try {
     const body = await readBody(request);
-    if(body.lang==='Japanese' && bookChapterNumber(body.slug)){const chapters=await publishedBookCatalog(auth.supabase,bookIdForChapter(body.slug));if(!chapters.some(c=>c.slug===body.slug))fail(404,'발행된 교재를 선택해 주세요.');}else { if(!(await canReadLegacyTextbook(auth.supabase, auth.user.id)))fail(403,'기존 교재는 관리자 보관함으로 이동했어요.'); chapterMeta(body.lang, body.slug); }
+    if(body.lang==='Japanese' && bookChapterNumber(body.slug)){
+      if(bookIdForChapter(body.slug)===BOOK_ID){const chapters=await publishedBookCatalog(auth.supabase);if(!chapters.some(c=>c.slug===body.slug))fail(404,'발행된 교재를 선택해 주세요.');}
+      else {const chapters=await publishedBookCatalog(auth.supabase,bookIdForChapter(body.slug));if(!chapters.some(c=>c.slug===body.slug))fail(404,'발행된 교재를 선택해 주세요.');}
+    }else { if(!(await canReadLegacyTextbook(auth.supabase, auth.user.id)))fail(403,'기존 교재는 관리자 보관함으로 이동했어요.'); chapterMeta(body.lang, body.slug); }
     await accessibleMaterial(auth.supabase,auth.user.id,body.kind,body.materialId);
     const column = body.kind === 'pdf' ? 'pdf_id' : 'material_id';
     const { error } = await auth.supabase.from('textbook_material_links').upsert({ user_id:auth.user.id,lang:body.lang,chapter_slug:body.slug,[column]:body.materialId },

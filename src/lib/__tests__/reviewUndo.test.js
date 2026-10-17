@@ -55,7 +55,7 @@ describe('복습 undo — SRS 복원 + 보상 이벤트 (VocabPage)', () => {
     // 원 채점 시각은 progressStore가 결과에 동봉한다(가산 — 기존 ok/queued 유지)
     expect(store).toContain('return { ok: true, reviewedAt };');
     expect(store).toContain('if (queued) return { ok: true, queued: true, reviewedAt };');
-    expect(store).toContain("return queued ? { ok: true, queued: true, reviewedAt } : { ok: false, error: new Error('offline-queue-unavailable') };");
+    expect(store).toContain("return queued ? { ok: true, queued: true, reviewedAt } : { ok: false, lost: true, error: new Error('offline-queue-unavailable') };");
   });
 
   it('오프라인 undo는 서버에 아무것도 쓰지 않고 outbox 항목을 제거한다(itemKey + reviewedAt 완전 일치)', () => {

@@ -201,7 +201,7 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
         )}
       </p>
 
-      {!questions && <p className="fr-check__lead">문항 준비 중…</p>}
+      {!questions && <p className="fr-check__lead" aria-busy="true">문항 준비 중…</p>}
 
       {questions && (
         <ol className="fr-quiz">

@@ -50,7 +50,7 @@ export function useReanalyzeUI({ reanalyze, material, toast, panel, onPanelChang
 
   return {
     reanalyzePanel, setReanalyzePanel,
-    selectedParas, paragraphs,
+    selectedParas, setSelectedParas, paragraphs,
     togglePara, requestFullReanalyze, startFullReanalyze, startPartialReanalyze,
   };
 }

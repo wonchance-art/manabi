@@ -7,6 +7,15 @@
 //   - code verifier(`sb-<ref>-auth-token-code-verifier`)는 세션이 아니므로 제외한다.
 const SESSION_COOKIE = /(?:^|;\s*)sb-[^=;]*-auth-token(?:\.\d+)?\s*=/;
 
+/**
+ * 서버 쿠키 저장소(next/headers cookies())에 세션 쿠키가 있는가 — 이름만 본다(값은 읽지 않는다).
+ * 배움(/home) 화면 · 대기 화면이 손님 / 로그인 배치를 서버에서부터 고르는 데 쓴다(B1 — 오너 승인 2026-10-17 KST).
+ */
+export function hasSupabaseSessionInJar(jar) {
+  const names = typeof jar?.getAll === 'function' ? jar.getAll().map(c => c?.name).filter(Boolean) : [];
+  return hasSupabaseSessionCookie(names.map(name => `${name}=1`).join('; '));
+}
+
 export function hasSupabaseSessionCookie(cookieString) {
   if (typeof cookieString !== 'string' || cookieString === '') return false;
   return SESSION_COOKIE.test(cookieString);

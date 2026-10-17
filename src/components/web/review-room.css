@@ -198,9 +198,16 @@ body:has(.review-grade-bar) .review-known-undo { bottom:calc(140px + env(safe-ar
 .review-done__calendar-head span:first-child { font-weight:700; color:var(--ink); }
 .review-done__bars { display:flex; gap:4px; align-items:flex-end; height:50px; }
 .review-done__bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; min-width:0; }
-.review-done__bar { width:100%; background:var(--rule); border-radius:2px; transition:height .4s; }
+/* 복습 끝 마무리(앱 손맛 ②) — 막대가 바닥에서 솟는다. 예전 transition:height는 막대가 처음부터 최종 높이로
+   그려져 한 번도 돌지 않던 죽은 효과라 지웠다. 높이(레이아웃)는 그대로 두고 scaleY만 움직이며, 날짜 순서대로
+   10ms씩 뒤따른다(--i = 막대 순번, VocabReview 인라인). 7개 = 240 + 60ms, 0.3초 상한 안. */
+.review-done__bar { width:100%; background:var(--rule); border-radius:2px; transform-origin:bottom; animation:barGrow .24s var(--ease-settle) both; animation-delay:calc(var(--i, 0) * 10ms); }
+@keyframes barGrow { from { transform:scaleY(0); } to { transform:scaleY(1); } }
 .review-done__bar.has-count { background:var(--ja); }
 .review-done__bar-day,.review-done__bar-count { font-size:.65rem; color:var(--muted); }
 .review-done__bar-count { font-weight:700; color:var(--ja); }
 .review-done__actions .btn { min-height:44px; }
-@media (prefers-reduced-motion: reduce) { .review-done__bar { transition:none; } }
+/* 모션 축소: 막대는 처음부터 최종 높이. 전역 규칙이 남기는 delay도 직접 0으로. 제목은 index.css(.review-done__title) 몫. */
+@media (prefers-reduced-motion: reduce) {
+  .review-done__bar { animation:none; animation-delay:0s; transform:none; }
+}

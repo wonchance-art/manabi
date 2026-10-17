@@ -1,25 +1,22 @@
 import { createClient } from '@supabase/supabase-js';
 import { STARTER_MATERIALS } from '../../../../lib/starter-content.js';
+import { requireAdmin, SERVICE_KEY_MISSING_MESSAGE } from '@/lib/server/auth';
 
 export async function POST(request) {
-  const authHeader = request.headers.get('authorization');
-  const token = authHeader?.replace('Bearer ', '');
-  if (!token) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  // 관리자 판별과 시드 쓰기는 service-role로만 — anon 키로 떨어지면 profiles 조회가 anon으로 돌아
+  // 프로필 공개 범위 2단계(PROFILES-PRIVACY-001 ②) 뒤 관리자도 403이 된다. 키가 없으면 닫힌 채 503.
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return Response.json({ error: SERVICE_KEY_MISSING_MESSAGE }, { status: 503 });
+  }
+  const auth = await requireAdmin(request);
+  if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
+  const { user } = auth;
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    { auth: { persistSession: false } },
   );
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-  if (authError || !user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-  if (profile?.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
   // 이미 존재하는 스타터 자료 확인 (title 기준)
   // 148+ 타이틀을 한 번에 .in()으로 보내면 PostgREST URL 길이 제한 → 30개씩 배치

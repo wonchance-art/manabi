@@ -15,7 +15,7 @@
 }
 .viewer-layout[data-reader-theme="light"] { --reader-paper:#fff; --reader-surface:#f4f6f5; }
 .viewer-layout:lang(zh-CN), .reader-modal:lang(zh-CN) {font-family:var(--font-noto-sc), 'Noto Sans SC', var(--font-noto-kr), sans-serif;}
-.viewer-layout:lang(zh-TW), .reader-modal:lang(zh-TW) {font-family:var(--font-noto-tc), 'Noto Sans TC', var(--font-noto-kr), sans-serif;}
+.viewer-layout:lang(zh-TW), .reader-modal:lang(zh-TW) {font-family:var(--font-noto-tc, 'Noto Sans TC'), var(--font-noto-kr, 'Noto Sans KR'), sans-serif;}
 .viewer-layout :is(.reader-area,.reader-card-source,.reader-settings__preview):lang(ko),
 .viewer-layout :is(.reader-area,.reader-card-source,.reader-settings__preview) :lang(ko) {font-family:var(--reader-font), 'Noto Sans KR', sans-serif;}
 .viewer-layout[data-reader-theme="dark"],
@@ -65,6 +65,10 @@
    Its own em must be the surface's: headings enlarge only .surface, so the frame follows them. */
 .viewer-layout .word-token[data-selected="true"] {position:relative;}
 .viewer-layout .word-token[data-selected="true"] .surface::before {animation:none;}
+/* 앱 손맛 ①: 방금 담은 토큰은 대개 카드가 열린(선택된) 그 토큰이다 — 위 animation:none(선택 중 복습 펄스 끄기)이 특이도로
+   담기 긋기(index.css .word-token--just-saved)까지 끄므로 긋기만 되살린다. 기점 · 좌표는 index.css 규칙 그대로. */
+.viewer-layout .word-token--just-saved[data-selected="true"] .surface::before {animation:hlStroke .22s var(--ease-settle) both;}
+@media (prefers-reduced-motion:reduce) { .viewer-layout .word-token--just-saved[data-selected="true"] .surface::before {animation:none;transform:none;} }
 .viewer-layout .word-token[data-selected="true"]::before {content:"";position:absolute;z-index:1;left:0;right:0;top:calc(var(--hl-band-top) - var(--hl-frame-top));height:calc(var(--hl-frame-top) + var(--hl-band-h) + var(--hl-frame-bottom));border:1.5px solid var(--word-selection-line,color-mix(in srgb,var(--reader-ink) 55%,transparent));border-radius:6px;pointer-events:none;}
 .viewer-layout .word-token--pattern:is(.word-token--saved,.word-token--due) {--hl-frame-bottom:calc(var(--hl-mark-gap) * 2 + 5.5px);}
 .viewer-layout .viewer-h1 .word-token[data-selected="true"]::before {font-size:1.5em;}
@@ -129,6 +133,9 @@
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .zh-cell {display:inline-flex;justify-content:center;width:var(--zh-cell);}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .zh-run {display:inline-flex;justify-content:center;white-space:nowrap;width:calc((var(--zh-cells,1) * var(--zh-cell)) + ((var(--zh-cells,1) - 1) * var(--char-gap,0px)));}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) :is(ruby,.zh-cell,.zh-run) + :is(ruby,.zh-cell,.zh-run) {margin-left:var(--char-gap,0px);}
+/* 병음이 글자 수와 안 맞는 옛 분석(요미 경로 ruby[data-yomi])은 한 ruby에 격자 칸이 줄줄이 든다 — inline-flex 한 줄이면
+   긴 토큰이 본문 밖으로 수천 px 나간다(viewer-reading-controls e2e 390px 실측 3342px). 칸 단위로 줄을 넘긴다. */
+.viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .word-token ruby[data-yomi] {flex-wrap:wrap;max-width:100%;}
 /* Touch layouts put the sentence bar inline before the line's first word (index.css: 24px hit width, margin -9px/+3px,
    so it takes 18px of the line — #1323). In Chinese it takes exactly one cell instead: width = pitch + 9 - 3 keeps the
    same margins (bar stays at left 9px, hit area ≥ 24px), so a paragraph's first line is indented by one column and
@@ -214,6 +221,10 @@
 .reader-card-learn__ask {flex:0 1 auto;}
 /* 하단 저장 줄(§2.1): ✓ 단어장에 있음 · 다음 복습 날짜 [이 문맥 추가] ☐ 아는 단어 — 넘치면 두 줄. */
 .save-grade__saved {display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:0;}
+/* 등급 줄 → 「✓ 담은 표현에 있음」 줄로 바뀌는 순간만(앱 손맛 ①) 새 줄이 4px 내려앉는다. 이미 담긴 단어를 열 때는
+   돌지 않는다(--fresh = 방금 담은 토큰, ViewerPage justSaved). 0.16s · 감속 곡선 · transform/opacity만. */
+.save-grade__saved--fresh {animation:settleIn .16s var(--ease-settle) both;}
+@media (prefers-reduced-motion:reduce) { .save-grade__saved--fresh {animation:none;animation-delay:0s;} }
 .save-grade__status {display:inline-flex;align-items:center;flex-wrap:wrap;gap:0 6px;margin-right:auto;font-size:.8125rem;color:var(--reader-muted);}
 .viewer-layout .reader-card-actions .save-grade__in:disabled {padding:0;border:0;background:transparent;color:var(--reader-ink);font-weight:600;opacity:1;min-height:44px;}
 .save-grade__next::before {content:'· ';}
@@ -405,7 +416,7 @@
 .reader-card-glyph__label {flex:none;width:1em;font-size:.8125rem;line-height:inherit;color:var(--reader-muted);text-align:center;}
 .reader-card-glyph[data-layout="table"] .reader-card-glyph__label {width:1.75rem;font-size:.8125rem;text-align:start;}
 .reader-card-glyph__form {display:inline-flex;flex:none;}
-.viewer-layout .reader-card-glyph [lang="zh-Hant-TW"] {font-family:var(--font-noto-tc),'Noto Sans TC',var(--font-noto-kr),sans-serif;}
+.viewer-layout .reader-card-glyph [lang="zh-Hant-TW"] {font-family:var(--font-noto-tc, 'Noto Sans TC'),var(--font-noto-kr, 'Noto Sans KR'),sans-serif;}
 .viewer-layout .reader-card-glyph [lang="ja"] {font-family:var(--font-noto-jp),'Noto Sans JP',var(--font-noto-kr),sans-serif;}
 .reader-card-glyph__ch {display:inline-block;width:1em;text-align:center;}
 .reader-card-glyph__ch.is-diff {color:var(--reader-accent);}
@@ -746,7 +757,6 @@
 .hanja-pop[data-compact] {--hanja-pop-h:152px;padding:6px 8px 6px 12px;}
 .hanja-pop__arrow {position:absolute;top:-7px;left:calc(var(--hanja-pop-arrow,24px) - 6px);width:12px;height:12px;background:var(--reader-paper);border-left:1px solid var(--hanja-pop-line);border-top:1px solid var(--hanja-pop-line);transform:rotate(45deg);}
 .hanja-pop[data-shifted] .hanja-pop__arrow {display:none;}
-.hanja-pop__sr {position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;}
 .hanja-pop :is(.hanja-pop__close,.hanja-pop__back) {display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;min-width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:10px;background:transparent;color:var(--reader-muted);cursor:pointer;}
 .hanja-pop .hanja-pop__close {position:absolute;top:2px;right:2px;}
 .hanja-pop .hanja-pop__back {margin-left:-8px;}
@@ -870,7 +880,6 @@
 .viewer-boundary-confirm__scope label {display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:.875rem;color:var(--reader-ink);}
 .viewer-boundary-confirm__scope input {width:18px;height:18px;margin:0;accent-color:var(--reader-accent);}
 .viewer-boundary-confirm__note {margin:0;font-size:.8125rem;line-height:1.5;color:var(--reader-muted);}
-.viewer-boundary-confirm .sr-only,.viewer-boundary-split .sr-only {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;}
 .reader-card-boundary,.reader-card-boundary-undo {display:flex;flex-wrap:wrap;align-items:center;gap:0 4px;margin:-6px 0 8px;font-size:.8125rem;color:var(--reader-muted);}
 .reader-card-boundary button,.reader-card-boundary-undo button {min-height:44px;}
 .viewer-boundary-split {display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin:0 0 10px;max-width:100%;}

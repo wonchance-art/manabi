@@ -12,6 +12,7 @@ se-<작가>_<작품>/
   chapters.json     빌드 산출물(손으로 고치지 않는다)
 index.generated.js       관리자 게시 API용 책 목록(장 원문 포함 — 서버 전용)
 manifest.generated.json  뷰어 정본 대조표(장마다 제목·원문 SHA-256 + 크레딧, 원문 없음)
+manifest.display.generated.json  화면 표지·제목용(위 표에서 파생 — 해시·크레딧 없음, src/lib/standardEbooksWorks.js)
 ```
 
 ## 작품 추가

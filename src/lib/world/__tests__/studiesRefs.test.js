@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { STUDIES_REF_NODE_IDS, studiesRefForNode } from '../studiesRefs.js';
 import { wikiDoc } from '../travelWiki.js';
-import { loadAllCities } from '../../../components/world/cities/index.js';
+import { loadAllCities } from '../../../components/world/cities/manifest.js';
 import { ALL_WORLD_NODES, WORLD_NODES } from '../../../components/world/worldNodes.js';
 
 // 도시 23종 로드가 무거워 병렬 부하에서 흔들릴 수 있다 — kyotoGeo 선례로 명시 타임아웃.
@@ -12,7 +12,11 @@ describe('지역학 딥링크(studiesRefs) 계약', () => {
   beforeAll(async () => {
     const cities = await loadAllCities();
     CITY_DATA = Object.fromEntries(cities.map((city) => [city.id, city]));
-  }, 60000);
+    // 도시 전체 적재는 단독 실행에서도 46~55초(2026-10-17 KST 실측) — 60초 한도에 붙어 병렬 실행에서 4회 연속 시간 초과.
+    // 규약 선례(단독 재실행 확인 뒤 명시 timeout)대로 여유를 둔다. 검사 내용은 그대로다.
+    // 원인은 geo 데이터 모듈의 Vite 변환(49.7s 중 39.4s)이었다 — vitest.config.js ③에서 외부화해 단독 52s → 4s(2026-10-17 KST).
+    // 같은 함수를 배럴(index.js) 대신 manifest.js에서 받는다: 배럴은 테스트 환경에서 구 호환용으로 26도시를 한 번 더 동기 적재한다.
+  }, 120000);
 
   it('모든 딥링크가 실재하는 studies 문서로 해석된다', () => {
     expect(STUDIES_REF_NODE_IDS.length).toBeGreaterThanOrEqual(70);

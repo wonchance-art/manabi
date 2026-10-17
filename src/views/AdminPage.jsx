@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { invalidateLibrary } from '../lib/libraryOperations';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
@@ -12,7 +13,8 @@ import ConfirmModal from '../components/ConfirmModal';
 import StudyPlanPanel from './StudyPlanPanel';
 import BookRefinePanel from '../components/BookRefinePanel';
 import LiteraturePublishPanel from '../components/LiteraturePublishPanel';
-import { failureMessage } from '../lib/errorMessage';
+import BulkAnalysisPanel from '../components/admin/BulkAnalysisPanel';
+import { failureMessage, roleChangeFailureMessage } from '../lib/errorMessage';
 import { LANG_NAME_KO } from '../lib/constants';
 
 const SOURCE_TYPE_LABELS = {
@@ -169,14 +171,15 @@ export default function AdminPage() {
     onError: (err) => toast(failureMessage('삭제하지 못했어요.', err), 'error'),
   });
 
-  // 역할 변경
+  // 역할 변경 — 관리자 전용 보안 정의자 RPC(마지막 관리자 강등 거부 · CHECK 값 검사). profiles를 직접 update하면
+  // 본인 행 RLS에 0행으로 막히고, 프로필 공개 범위 2단계(PROFILES-PRIVACY-001 ②) 뒤에는 role 열 권한이 없다.
   const rolemutation = useMutation({
     mutationFn: async ({ userId, role }) => {
-      const { error } = await supabase.from('profiles').update({ role }).eq('id', userId);
+      const { error } = await supabase.rpc('admin_set_user_role', { target: userId, new_role: role });
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
-    onError: (err) => toast(failureMessage('역할을 바꾸지 못했어요.', err), 'error'),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-users'] }); toast('역할을 바꿨어요.', 'success'); },
+    onError: (err) => toast(roleChangeFailureMessage(err), 'error'),
   });
 
   // 자료 삭제
@@ -185,7 +188,7 @@ export default function AdminPage() {
       const { error } = await supabase.from('reading_materials').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-materials'] }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-materials'] }); if (user?.id) invalidateLibrary(queryClient, user.id); },
     onError: (err) => toast(failureMessage('삭제하지 못했어요.', err), 'error'),
   });
 
@@ -426,10 +429,10 @@ export default function AdminPage() {
                         disabled={rolemutation.isPending}
                         onClick={() => rolemutation.mutate({
                           userId: u.id,
-                          role: u.role === 'admin' ? 'user' : 'admin'
+                          role: u.role === 'admin' ? 'student' : 'admin'
                         })}
                       >
-                        {u.role === 'admin' ? 'user로 변경' : 'admin으로 변경'}
+                        {u.role === 'admin' ? '학습자로 변경' : '관리자로 변경'}
                       </Button>
                     </td>
                   </tr>
@@ -444,6 +447,8 @@ export default function AdminPage() {
       {tab === 'materials' && (
         matsLoading ? <Spinner message="자료 목록 불러오는 중…" /> : materialsError ? <AdminLoadError what="자료" onRetry={refetchMaterials} /> : (
           <div className="admin-table-wrap">
+            {/* 분석 전 공개 자료 일괄 분석(BULK-ANALYZE-001) — 뷰어와 같은 정본 분석 경로, 내 소유만(저장 RPC가 소유자만 받는다) */}
+            <BulkAnalysisPanel ownerId={user?.id} toast={toast} />
             {/* 책 단위 정제(v2-AB R0) — 내 책 묶음만 후보로 보인다(RPC가 소유자만 받는다) */}
             <BookRefinePanel
               materials={materials}
