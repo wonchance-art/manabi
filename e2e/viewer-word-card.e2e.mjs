@@ -57,13 +57,15 @@ async function open(material,{guest=false,dict='ok',prefs={focusMode:false,autoS
  await f.context.route(/\/api\/analyze(\/korean)?$/,r=>r.fulfill({contentType:'application/json',body:JSON.stringify({results:[]})}));
  // 픽스처 뒤에 등록한 경로가 먼저 받는다 — morpheme_dictionary 요청만 세고 합성 행으로 답한다.
  // PR ③: 공유 detail_text 지연 조회(select=detail_text)는 f.detail로 따로 센다 — f.single은 카드 사전 행(뜻·읽기) 단건 조회만.
- f.bulk=[];f.single=[];f.detail=[];f.requests=[];
+ f.bulk=[];f.single=[];f.detail=[];f.requests=[];f.positions=[];f.sequence=material.sequence;
  // AE-R2 PR②: 카드가 0.3초 열려 있으면 그 줄 번역 선처리(/api/gemini, purpose 'viewer-sentence-prefetch')가 1회 나간다 —
  // 쓰기도 단어 설명 AI도 아니라 아래 「쓰기 0」·「AI 호출 0」 단언에서 그것만 뺀다(다른 AI 호출은 그대로 잡는다).
  f.page.on('request',req=>{
   let purpose;
   if(/\/api\/gemini/.test(req.url()))try{purpose=req.postDataJSON()?.purpose;}catch{purpose=undefined;}
   f.requests.push({method:req.method(),url:req.url(),...(purpose===SENTENCE_PREFETCH?{purpose}:{})});
+  // 위치 저장(reading_progress upsert)의 토큰 번호 — positionSaved가 「그 탭의」 저장인지 가린다. f.requests 항목 모양은 그대로.
+  if(req.method()==='POST'&&req.url().includes('/rest/v1/reading_progress')){let idx;try{const b=req.postDataJSON();idx=(Array.isArray(b)?b[0]:b)?.last_token_idx;}catch{idx=undefined;}f.positions.push({at:f.requests.length-1,idx});}
  });
  const rows=rowOverride||dictRows[material.language]||{};
  await f.context.route('**/rest/v1/morpheme_dictionary**',route=>{
@@ -470,6 +472,15 @@ test('ko and en materials: sentence line · headword · meaning · bottom render
 // 단어장(user_vocabulary)·FSRS·사전 쓰기는 0이어야 한다(정본 §0.2). 합성 백엔드(f.rows)만 바뀐다.
 const twoSenses={...dictRows.Chinese,壮观:{meanings:[{meaning:'웅장하다, 장관이다',priority:1,pos:'형용사'},{meaning:'장관, 웅장한 경관',priority:2,pos:'명사'}],reading:'zhuàng guān',pos:'형용사·명사'}};
 const writesSince=(f,mark)=>f.requests.slice(mark).filter(r=>!['GET','HEAD','OPTIONS'].includes(r.method)&&notPrefetch(r));
+// 로그인 뷰어의 단어 탭은 읽던 자리를 저장한다(useScrollRestore — 마지막 예약 2초 뒤 reading_progress POST 1건, 의도된 쓰기).
+// 탭 직후에 writesSince의 mark를 잡으면 그 POST가 「쓰기 0 · 교정 쓰기만」 세기 안으로 늦게 들어온다(AE-R4 · AD-R4 실측 2026-10-17 KST).
+// since = 마지막 탭 직전의 f.requests.length, id = 그 탭의 토큰 — since 뒤에 「그 토큰 번호」의 POST가 온 것을 본 다음 mark를 잡는다
+// (앞 탭의 저장이 경계에 걸쳐 먼저 와도 속지 않는다 · 세기 구간의 다른 쓰기는 그대로 잡힌다). 비로그인은 저장하지 않으므로 쓰지 않는다.
+const positionSaved=(f,since,id)=>{
+ const idx=f.sequence.indexOf(id);
+ assert.ok(idx>=0,`positionSaved: unknown token ${id}`);
+ return until(()=>f.positions.some(p=>p.at>=since&&p.idx===idx),8000);
+};
 const visibleHeader=f=>f.page.locator('.viewer-inspector__header').filter({visible:true});
 
 test('owner: tapping another dictionary sense corrects this spot only; 「되돌리기」 restores the previous value',{timeout:180000},async()=>{
@@ -478,6 +489,7 @@ test('owner: tapping another dictionary sense corrects this spot only; 「되돌
  const f=await open(m,{prefs:zhPrefs,own:true,rows:twoSenses});
  try{
   await until(()=>f.bulk.length>=1);
+  const tapMark=f.requests.length;
   await tap(f,'id_0_7','웅장하다, 장관이다');
   const senses=f.page.locator('#inspector-word .reader-card-senses');
   await senses.waitFor();
@@ -488,6 +500,7 @@ test('owner: tapping another dictionary sense corrects this spot only; 「되돌
   const box=await pick.boundingBox();
   assert.ok(box.height>=44,`sense row target ≥ 44px: ${box.height}`);
   const stored=()=>f.rows.find(r=>r.id===94171).processed_json.dictionary.id_0_7;
+  await positionSaved(f,tapMark,'id_0_7');
   const mark=f.requests.length;
   await pick.click();
   const meaning=f.page.locator('#inspector-word .word-detail-card__meaning');
@@ -521,11 +534,13 @@ test('not the owner: dictionary senses are display-only and there is no ⋯ menu
  const f=await open(m,{prefs:zhPrefs,rows:twoSenses});
  try{
   await until(()=>f.bulk.length>=1);
+  const tapMark=f.requests.length;
   await tap(f,'id_0_7','웅장하다, 장관이다');
   const senses=f.page.locator('#inspector-word .reader-card-senses');
   await senses.waitFor();
   assert.equal(await senses.locator('.reader-card-sense').count(),2);
   assert.equal(await senses.locator('button').count(),0,'no pressable sense line');
+  await positionSaved(f,tapMark,'id_0_7');
   const mark=f.requests.length;
   await senses.getByText('장관, 웅장한 경관',{exact:true}).click();
   await f.page.waitForTimeout(600);
@@ -885,9 +900,7 @@ test('AE-R4 390 · 1440: 壮观의 观 → 한자 창(머리 · 구성 · 같은
    await tap(f,'id_0_7','웅장하다, 장관이다');
    await visibleCard(f.page).locator('.word-fit__hun').first().waitFor();
    await f.page.waitForTimeout(400);
-   // 탭은 읽던 자리를 저장한다(useScrollRestore → 2초 debounce 뒤 reading_progress POST 1건 · last_token_idx 7 — 의도된 쓰기).
-   // 그 POST가 아래 「창을 쓰는 동안 쓰기 0」 세기 안으로 늦게 들어오지 않게, 도착을 본 뒤에 센다(창이 만드는 쓰기는 그대로 잡힌다).
-   await until(()=>f.requests.slice(tapMark).some(r=>r.method==='POST'&&/reading_progress/.test(r.url)),8000);
+   await positionSaved(f,tapMark,'id_0_7'); // 탭의 위치 저장 POST가 아래 「창을 쓰는 동안 쓰기 0」 세기 안으로 늦게 들어오지 않게
    const before=await cardBoxes(f.page);
    const mark=f.requests.length;
    // 키보드만: 표제어 글자에 포커스 → Enter로 연다 → 창으로 포커스
@@ -1122,6 +1135,7 @@ test('AD-R4 390 owner: 「뜻 확인 필요 2개 [보기]」 → 시트 [문장]
   await senses.waitFor();
   assert.equal(await senses.locator('.reader-card-sense.is-current').count(),0,'context meaning outside the dictionary list: no painted line');
   if(process.env.COMPOSER_SCREENSHOTS)await f.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/sense-review-card-390.png`});
+  const tapMark=f.requests.length;
   await tap(f,'id_0_6','전화');
   assert.equal(await f.page.locator('#inspector-word .reader-card-meaning-check').count(),0,'no ⓘ without the marker');
   // [보기] → 목록(새 화면 아님 — 시트 [문장] 탭 자리)
@@ -1149,6 +1163,7 @@ test('AD-R4 390 owner: 「뜻 확인 필요 2개 [보기]」 → 시트 [문장]
   assert.doesNotMatch(listText+(await line.innerText()),/\bAI\b|인공지능/,'no 「AI」 label');
   if(process.env.COMPOSER_SCREENSHOTS)await f.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/sense-review-list-390.png`});
   // 후보 교정 1회 → 그 토큰의 표식 삭제 · N 감소, 쓰기는 기존 교정 경로 하나
+  await positionSaved(f,tapMark,'id_0_6'); // 위 두 탭(id_0_9 · id_0_6)의 위치 저장이 아래 「교정 쓰기만」 세기에 늦게 들어오지 않게
   const mark=f.requests.length;
   await da.getByRole('button',{name:'때리다, 치다'}).click();
   await until(()=>storedToken(f,'id_0_3').meaning==='때리다, 치다');
