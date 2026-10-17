@@ -991,6 +991,11 @@
     대비 AA(오너 승인 2026-10-17 「권장대로」): 이어 읽기 머리 · 장 부제/목표(②A) · 문형 번호 · 단어 위 읽기 5곳 ≥4.5:1(colorV2Unify 계약).
     대기 화면 회귀 A1–A4 수리: 배움 · 교재 골격 CSS 직접 import, 공통 스피너는 0.4초 뒤에만(CSS), 손님 빈 공개 목록 = 운영 버튼, 발견 골격의 없는 줄 제거.
     재검토 수정: localize 두 양 붕괴 가드 · 늦은 저장 뒤 초점이 카드 안 다른 조작을 뺏지 않게. 서재 필터 전환 간헐 미반영(Next 라우터 commit 누락) 우회 작업 중.
+  · 같은 PR(KO-PERF-SNAPSHOT-P4, 오너 승인 2026-10-17 「권장대로」 — P2 대신 P4, P3 보류): snapshot의 아는 단어 · 제외 판정을 집합 연산 한 번으로
+    (20261016191600, manual → core → admission 재게시, 사후 검사 전 사용자 출력 동일 + 모든 카드 registry_entry ≡ snapshot.registry).
+    PGlite 873 → 91ms(운영 예상 1.4 → 0.15~0.3초). 병합 = db push = 171800 → 191500 → 191600 순서로 운영 적용.
+    /study 보기 정답 누출 수리(STUDY-CHOICE-LEAK-001) · 읽기 확인 영어 라벨 → 기존 한국어(COPY-EN-001) · 비로그인 읽을거리 CLS 0.144 → 0
+    (LIBRARY-GUEST-CLS-001, 책 장 메타 RPC를 목록과 나란히) · 글꼴 받은 뒤 본문 글꼴일 때만 쪽 다시 재기(READER-FONT-REMEASURE-001).
   · 보류: CJK 가변 weight(@font-face −67%, brotli 전송 −2%) — 600 · 650 · 800 · 300 굵기가 실제 값으로 바뀌는 시각 변경이라 오너 확인 뒤(화면 6개 비교 자료 전달, 2026-10-17 KST).
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
