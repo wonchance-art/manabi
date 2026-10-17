@@ -27,6 +27,11 @@ describe('cardSaveReading — 영어 기본형만 토큰 IPA로 메운다', () =
   it('영어에 토큰 IPA도 없으면 비운다', () => {
     expect(cardSaveReading({ language: 'English', headIsBase: true, headReading: null, token: { text: 'went', base_form: 'go', furigana: null } })).toBeNull();
   });
+  it('영어 대체는 /…/ IPA 모양일 때만 — 손 교정 한글 · 옛 분석본의 IPA 아닌 값은 비운다', () => {
+    expect(cardSaveReading({ language: 'English', headIsBase: true, headReading: null, token: { text: 'visits', base_form: 'visit', furigana: '비짓츠' } })).toBeNull();
+    expect(cardSaveReading({ language: 'English', headIsBase: true, headReading: null, token: { text: 'ran', base_form: 'run', furigana: 'ran' } })).toBeNull();
+    expect(cardSaveReading({ language: 'English', headIsBase: true, headReading: null, token: { text: 'ran', base_form: 'run', furigana: '/' } })).toBeNull();
+  });
   it('표제어 = 표면이면 지금처럼 토큰 독음(furigana → reading), 언어 무관', () => {
     expect(cardSaveReading({ language: 'English', headIsBase: false, headReading: '/x/', token: { furigana: '/ˈlaɪ.brer.i/' } })).toBe('/ˈlaɪ.brer.i/');
     expect(cardSaveReading({ language: 'Japanese', headIsBase: false, headReading: null, token: { furigana: '', reading: 'きょう' } })).toBe('きょう');
