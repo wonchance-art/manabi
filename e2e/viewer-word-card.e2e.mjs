@@ -1129,8 +1129,14 @@ test('AD-R4 390 owner: 「뜻 확인 필요 2개 [보기]」 → 시트 [문장]
   assert.equal(await tip.innerText(),'ⓘ 문맥과 다를 수 있어요');
   const g=await measure(f.page);
   assertFirstScreen(g,{label:'zh 390 card with ⓘ'});
-  const tipBox=await tip.boundingBox();
-  assert.ok(tipBox.y>=g.meaning.bottom-.5,'ⓘ sits under the meaning line');
+  // 뜻 줄과 ⓘ는 한 번에 잰다 — 따로 재면 그 사이 시트가 자리를 옮길 수 있다(쪽 넘김 A안, 연달아 돌릴 때 2/2 실패 2026-10-17).
+  const order=await f.page.evaluate(()=>{
+   const panel=[...document.querySelectorAll('.viewer-inspector')].find(el=>el.getClientRects().length);
+   const box=s=>[...panel.querySelectorAll(s)].find(el=>el.getClientRects().length)?.getBoundingClientRect();
+   const meaning=box('#inspector-word .word-detail-card__meaning'),tip=box('#inspector-word .reader-card-meaning-check');
+   return {meaningBottom:meaning.bottom,tipTop:tip.top};
+  });
+  assert.ok(order.tipTop>=order.meaningBottom-.5,`ⓘ sits under the meaning line ${JSON.stringify(order)}`);
   const senses=f.page.locator('#inspector-word .reader-card-senses');
   await senses.waitFor();
   assert.equal(await senses.locator('.reader-card-sense.is-current').count(),0,'context meaning outside the dictionary list: no painted line');
