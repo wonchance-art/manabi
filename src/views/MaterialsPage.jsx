@@ -268,8 +268,10 @@ export default function MaterialsPage({ libraryView = null }) {
       const { data, error } = await supabase
         .from('reading_materials').select('*').eq('id', id).maybeSingle();
       if (error || !data) throw error || new Error('NOT_FOUND');
-      await cache.pinMaterial(data, { owner: user?.id ?? null });
+      const pinned = await cache.pinMaterial(data, { owner: user?.id ?? null });
       queryClient.invalidateQueries({ queryKey: ['library-pinned', user?.id] });
+      // 같은 기기의 다른 계정이 받아 둔 자료 — 그 사람의 받아둔 자료를 덮지 않는다(OFFLINE-ACCOUNT-SCOPE-001).
+      if (!pinned) { toast('이 기기의 다른 계정이 받아 둔 자료라 여기서는 받아 둘 수 없어요.', 'warning'); return; }
       setPinnedIds((prev) => new Set(prev).add(id));
       toast('받아뒀어요 — 연결이 없어도 열려요.', 'success');
     } catch {

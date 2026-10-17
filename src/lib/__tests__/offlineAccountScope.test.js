@@ -1,7 +1,7 @@
 // OFFLINE-ACCOUNT-SCOPE-001 (2026-10-17 KST) — 기기 오프라인 캐시(IndexedDB anatomy-offline-cache)의 자료 기록이 계정을 몰라,
 // 같은 기기에서 B가 오프라인일 때 A가 받아 둔 비공개 자료가 뷰어 폴백(getCachedMaterial)으로 열렸다.
-// 기록에 받은 계정(owner)을 적고 읽을 때 지금 계정과 비교한다 · 계정이 바뀌면 새 계정이 열 수 없는 기록과 남의 단어장 스냅샷을 지운다.
-// 대기 연산(outbox — 복습 · FSRS)은 지우지 않는다: A의 안 보낸 채점은 A가 다시 로그인하면 보내고, B에게는 보이지도 보내지지도 않는다.
+// 기록에 받은 계정(owner)을 적고 읽을 때 지금 계정과 비교한다 · 계정이 바뀌면 다시 받으면 되는 뷰어 자동 캐시 중 새 계정이 열 수 없는 것만
+// 지운다. 직접 받아 둔 자료(핀) · 단어장 스냅샷 · 대기 연산(outbox)은 지우지 않고 숨긴다 — A가 다시 로그인하면 그대로(오너 결정 2026-10-17 KST).
 import fs from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -55,12 +55,6 @@ describe('기록에 계정을 적고 읽을 때 비교한다', () => {
     expect(await cache.unpinMaterial('X', { owner: 'B' })).toBe(false);
     expect([...(await cache.pinnedMaterialIds('A'))]).toEqual(['X']);
   });
-  it('B가 같은 공개 자료를 열어도 A의 핀을 넘겨받지 않는다', async () => {
-    await cache.pinMaterial(publicMaterial, { owner: 'A' });
-    await cache.cacheMaterial(publicMaterial, { owner: 'B' });
-    const row = idb.rows('anatomy-offline-cache', 'materials').find(r => r.id === 'P');
-    expect(row.owner).toBe('B'); expect(row.pinned).toBeUndefined();
-  });
   it('같은 계정이 다시 열면 핀을 지킨다(기존 계약)', async () => {
     await cache.pinMaterial(privateOf('A'), { owner: 'A' });
     await cache.cacheMaterial(privateOf('A'), { owner: 'A' });
@@ -68,31 +62,43 @@ describe('기록에 계정을 적고 읽을 때 비교한다', () => {
   });
 });
 
-describe('계정이 바뀌면 지운다 — 대기 연산은 보존', () => {
+describe('계정이 바뀌면 — 자동 캐시만 지우고, 받아 둔 자료 · 스냅샷 · 대기 연산은 숨겨 보존', () => {
   const grade = (operationId) => ({ action: 'grade', cardId: 'card-1', operationId, expectedRevision: 1, attemptId: 'attempt-1', rating: 3 });
-  it('A → 손님: A의 자료 · 스냅샷을 지우고 공개분 · 손님 캐시는 남긴다. A의 안 보낸 FSRS 채점은 남고 B에게는 보이지 않는다', async () => {
+  it('A → 손님: A의 자동 캐시만 지운다. 받아 둔 자료 · 스냅샷 · 안 보낸 FSRS 채점은 남고, 손님 · B에게는 보이지 않는다', async () => {
     const { createFsrsOperationOutbox } = await import('../fsrsOperationOutbox');
     const outbox = createFsrsOperationOutbox({ open: cache.openDb });
     await cache.pinMaterial(privateOf('A'), { owner: 'A' });
+    await cache.cacheMaterial(privateOf('A', 'XA'), { owner: 'A' }); // 뷰어 자동 캐시
     await cache.cacheMaterial(publicMaterial, { owner: null });
     await cache.cacheVocabSnapshot('A', [{ id: 1 }]);
-    await cache.cacheVocabSnapshot('learning:A', [{ id: 1 }]);
     await outbox.append({ accountId: 'A', payload: grade('op-1') });
-    const removed = await cache.purgeOfflineForAccount(null);
-    expect(removed).toEqual({ materials: 1, snapshots: 2 });
-    expect(idb.rows('anatomy-offline-cache', 'materials').map(r => r.id)).toEqual(['P']);
-    expect(await cache.getCachedVocabSnapshot('A')).toBeNull();
-    expect((await outbox.list('A')).map(e => e.operationId)).toEqual(['op-1']); // A가 다시 들어오면 보낼 것
-    expect(await outbox.list('B')).toEqual([]); // B에게는 보이지도(보내지지도) 않는다
+    expect(await cache.purgeOfflineForAccount(null)).toEqual({ materials: 1 });
+    expect(idb.rows('anatomy-offline-cache', 'materials').map(r => r.id).sort()).toEqual(['P', 'X']);
+    for (const who of [null, 'B']) { // 숨김: 손님 · B는 A가 받아 둔 자료를 못 본다
+      expect(await cache.getCachedMaterial('X', { account: who })).toBeNull();
+      expect([...(await cache.pinnedMaterialIds(who))]).toEqual([]);
+    }
+    expect(await outbox.list('B')).toEqual([]);
+    // A가 다시 들어오면 그대로
+    expect((await cache.getCachedMaterial('X', { account: 'A' })).raw_text).toBe('A의 본문');
+    expect([...(await cache.pinnedMaterialIds('A'))]).toEqual(['X']);
+    expect(await cache.getCachedVocabSnapshot('A')).toEqual([{ id: 1 }]);
+    expect((await outbox.list('A')).map(e => e.operationId)).toEqual(['op-1']);
   });
-  it('A → B: B의 자료 · 스냅샷은 남기고 A의 것만 지운다', async () => {
+  it('A → B: A의 자동 캐시만 지우고 B의 것 · A의 받아 둔 자료는 남긴다', async () => {
     await cache.cacheMaterial(privateOf('A', 'XA'), { owner: 'A' });
+    await cache.pinMaterial(privateOf('A', 'PA'), { owner: 'A' });
     await cache.cacheMaterial(privateOf('B', 'XB'), { owner: 'B' });
-    await cache.cacheVocabSnapshot('A', [1]); await cache.cacheVocabSnapshot('B', [2]);
     await cache.purgeOfflineForAccount('B');
-    expect(idb.rows('anatomy-offline-cache', 'materials').map(r => r.id)).toEqual(['XB']);
-    expect(await cache.getCachedVocabSnapshot('B')).toEqual([2]);
-    expect(await cache.getCachedVocabSnapshot('A')).toBeNull();
+    expect(idb.rows('anatomy-offline-cache', 'materials').map(r => r.id).sort()).toEqual(['PA', 'XB']);
+    expect(await cache.getCachedMaterial('PA', { account: 'B' })).toBeNull();
+  });
+  it('B가 A의 받아 둔 자료를 열거나 받아 두려 해도 A의 것을 덮지 않는다(키가 자료 id 하나)', async () => {
+    await cache.pinMaterial(publicMaterial, { owner: 'A' });
+    await cache.cacheMaterial(publicMaterial, { owner: 'B' });
+    expect(await cache.pinMaterial(publicMaterial, { owner: 'B' })).toBe(false);
+    expect(idb.rows('anatomy-offline-cache', 'materials')[0]).toMatchObject({ id: 'P', owner: 'A', pinned: true });
+    expect([...(await cache.pinnedMaterialIds('A'))]).toEqual(['P']);
   });
   it('옛 복습 큐(reviewOutbox)도 계정으로 걸러 읽는다 — 지우지 않음', async () => {
     const db = await cache.openDb();
@@ -119,7 +125,8 @@ describe('배선', () => {
   it('받아두기 · 배지 호출부가 계정을 넘긴다', () => {
     const page = read('src/views/MaterialsPage.jsx');
     expect(page).toContain('pinnedMaterialIds(user?.id ?? null)');
-    expect(page).toContain('await cache.pinMaterial(data, { owner: user?.id ?? null });');
+    expect(page).toContain('const pinned = await cache.pinMaterial(data, { owner: user?.id ?? null });');
+    expect(page).toContain("if (!pinned) { toast('이 기기의 다른 계정이 받아 둔 자료라 여기서는 받아 둘 수 없어요.', 'warning'); return; }");
     expect(page).toContain('cache.unpinMaterial(id, { owner: user?.id ?? null })');
     expect(read('src/components/library/LibraryShelf.jsx')).toContain('queryFn:()=>pinnedMaterialIds(user.id)');
   });
