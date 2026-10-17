@@ -24,7 +24,7 @@ describe('유의어·반의어 배선', () => {
 
   it('늦게 온 응답이 다른 단어에 붙지 않는다(alive 가드)', () => {
 
-    const effect = viewer.match(/\/\/ ⑤ 유의어·반의어[\s\S]*?\}, \[selectedToken, isSheetOpen, materialLang, synAntRequest\]\);/)?.[0];
+    const effect = viewer.match(/\/\/ ⑤ 유의어·반의어[\s\S]*?\}, \[selectedToken, isSheetOpen, materialLang, synAntRequest, user\?\.id\]\);/)?.[0];
     expect(effect).toBeTruthy();
     expect(effect).toContain('let alive = true');
     expect(effect).toContain('if (alive) setSynAnt(');
