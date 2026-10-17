@@ -130,6 +130,12 @@
 .viewer-layout[data-pron-spacing="natural"] {--zh-cell:1em;}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) {--zh-pitch:calc(var(--zh-cell) + var(--char-gap,0px));}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .word-token {margin-left:calc(var(--char-gap,0px) / 2 - (var(--zh-pull,0) * var(--zh-pitch)));margin-right:calc(var(--char-gap,0px) / 2 + (var(--zh-hold,0) * var(--zh-pitch)));}
+/* Japanese 禁則 (JA-KINSOKU, mockup viewer-lang-4 §4 · JLREQ §3.1.7): the same --zh-hold/--zh-pull marks as Chinese, without the
+   grid. Words keep their flex column gap (--char-gap); a closing mark is one full-width em, so one mark = 1em + one gap.
+   A word before 。、」 reserves that on its right and the mark gives it back on its left — boxes do not move, but the word
+   wraps together with its marks. Multi-character marks over-reserve by a gap at most (wraps a cell early, never late). */
+.viewer-layout[data-language="Japanese"] :is(.reader-area,.reader-settings__preview) {--ja-pitch:calc(1em + var(--char-gap,0px));}
+.viewer-layout[data-language="Japanese"] :is(.reader-area,.reader-settings__preview) .word-token {margin-left:calc(0px - (var(--zh-pull,0) * var(--ja-pitch)));margin-right:calc(var(--zh-hold,0) * var(--ja-pitch));}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .zh-cell {display:inline-flex;justify-content:center;width:var(--zh-cell);}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .zh-run {display:inline-flex;justify-content:center;white-space:nowrap;width:calc((var(--zh-cells,1) * var(--zh-cell)) + ((var(--zh-cells,1) - 1) * var(--char-gap,0px)));}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) :is(ruby,.zh-cell,.zh-run) + :is(ruby,.zh-cell,.zh-run) {margin-left:var(--char-gap,0px);}

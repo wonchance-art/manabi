@@ -104,7 +104,7 @@ import { usePagedReader, pagerFor, overlayOrigin } from '../lib/usePagedReader';
 import { captureReadingAnchor } from '../lib/readingViewport';
 import PageBar, { PageStrips } from '../components/viewer/PageBar';
 import { pinyinCellWidth } from '../lib/pinyinLayout';
-import { zhKinsokuMarks, zhKinsokuStyle } from '../lib/zhGrid';
+import { hasKinsoku, zhKinsokuMarks, zhKinsokuStyle } from '../lib/zhGrid';
 import { ZhText, useZhGridRuns } from '../components/viewer/ZhText';
 import { readerFontFamily } from '../lib/viewerPreferences';
 import { textbookThemeStyle } from '../lib/textbookTheme';
@@ -4189,8 +4189,8 @@ export default function ViewerPage() {
             });
           }
 
-          // 중국어 줄머리 금칙(ZH-GRID-001): 닫는 부호 묶음과 그 앞 토큰을 한 줄에 묶는 여백 표시.
-          const zhMarks = zhGrid ? zhKinsokuMarks(json.sequence, id => json.dictionary[id]) : null;
+          // 줄머리 금칙(중국어 ZH-GRID-001 · 일본어 JA-KINSOKU): 닫는 부호 묶음과 그 앞 토큰을 한 줄에 묶는 여백 표시.
+          const zhMarks = hasKinsoku(materialLang) ? zhKinsokuMarks(json.sequence, id => json.dictionary[id], materialLang) : null;
 
           const renderToken = (tokenId, lineHead = null, picked = false, paceSlice = null) => {
             const zhStyle = zhKinsokuStyle(zhMarks?.get(tokenId));
