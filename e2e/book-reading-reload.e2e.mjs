@@ -277,3 +277,31 @@ for(const width of [390,1440])test(`${engine.name()} ${width}: the book cover ke
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });
+
+// N4 표지(#1510 /books/japanese-n4)도 같은 표지 자리를 쓴다. 이 합성 서버는 기본으로 N5만 발행하므로
+// E2E_PUBLISHED_BOOKS=japanese-n4로 띄운 서버에서만 돈다(없으면 건너뛴다 — 이유를 남긴다).
+test(`${engine.name()} 390: the N4 book cover keeps its own scroll position too`,async t=>{
+ const f=await fixture(390);try{
+  await f.page.goto('/books/japanese-n4');
+  const ready=await f.page.locator('.manabi-book-home .manabi-toc-group').first().waitFor({timeout:8000}).then(()=>true,()=>false);
+  if(!ready){t.skip('N4 is not published by this fixture server (start it with E2E_PUBLISHED_BOOKS=japanese-n4)');return;}
+  assert.equal(await f.page.locator('.book-reader').getAttribute('data-book-id'),'japanese-n4');
+  await coverAt(f.page,0);
+  const y=await scrollCover(f.page);
+  await f.page.locator('.manabi-book-home .manabi-breadcrumb').getByRole('link',{name:'교재',exact:true}).evaluate(link=>link.click());
+  await f.page.waitForURL(url=>url.pathname==='/lessons');await f.page.goBack();await coverAt(f.page,y);
+  await f.page.getByRole('button',{name:/^전체 \d+과$/}).click();
+  const last=f.page.locator('.manabi-book-home details[data-toc-part]').last();
+  await last.locator('summary').click();await f.page.waitForFunction(()=>[...document.querySelectorAll('.manabi-book-home details[data-toc-part]')].at(-1).open);
+  const deep=await last.locator('li a').first().evaluate(link=>{link.scrollIntoView({block:'center',behavior:'instant'});return Math.round(scrollY);});
+  const open=await openParts(f.page);
+  await f.page.waitForFunction(({y,open})=>{const s=history.state?.manabiBookCover;return s?.y===y&&s.all===true&&JSON.stringify(s.open)===JSON.stringify(open);},{y:deep,open});
+  const lesson=await last.locator('li a').first().evaluate(link=>{link.click();return new URL(link.href).hash.slice(1);});
+  assert.equal(new URL(f.page.url()).pathname,'/books/japanese-n4');
+  await settled(f.page,lesson);await f.page.goBack();await coverAt(f.page,deep,true,open);
+  await last.locator('li a').first().evaluate(link=>link.click());await settled(f.page,lesson);
+  await f.page.locator('.manabi-reader-toolbar').getByRole('link',{name:'← 책 목차',exact:true}).evaluate(link=>link.click());
+  await f.page.waitForURL(url=>url.pathname==='/books/japanese-n4'&&url.hash==='#cover');await coverAt(f.page,0,false);
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
