@@ -142,11 +142,6 @@ export function tokensCoverLine(line, texts, language) {
  * - existingJson 전달 시 failed_indices 줄만 재시도 (성공 토큰 재사용).
  */
 /**
- * 최종 상태 판정 — 성공 토큰이 하나도 없으면 'failed'.
- * 전량 실패를 'partial'로 두면 UI가 "분석 완료(재시도 필요)"라고 말해 실패를 가린다
- * (#969 — 중국어 EPUB 전량 실패가 '완료'로 표시된 사고).
- */
-/**
  * 첫 「서비스 설정」(결제 · 크레딧) 실패에서 남은 요청을 멈추는 표지(GEMINI-402-GUARD) — 기다려도 풀리지 않는 실패라 긴 자료가
  * 같은 벽에 요청을 계속 던지지 않게 한다. 하이브리드(서버 응답 code service_config)와 줄 단위(/api/gemini 402 · 같은 판정)가 같이 쓴다.
  * 멈춘 뒤 남은 줄은 각 경로의 기존 실패 길(failed_indices — 이어서 분석으로 복구)로 끝낸다. 호출마다 새로 만든다(다음 분석은 처음부터 보낸다).
@@ -163,6 +158,11 @@ export function createServiceStop() {
   };
 }
 
+/**
+ * 최종 상태 판정 — 성공 토큰이 하나도 없으면 'failed'.
+ * 전량 실패를 'partial'로 두면 UI가 "분석 완료(재시도 필요)"라고 말해 실패를 가린다
+ * (#969 — 중국어 EPUB 전량 실패가 '완료'로 표시된 사고).
+ */
 export function resolveAnalysisStatus(dictionary, failedCount, totalLines) {
   const hasSuccess = Object.values(dictionary || {}).some((t) => t && !t.failed && t.pos !== '개행');
   if (totalLines > 0 && !hasSuccess) return 'failed';
