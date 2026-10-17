@@ -69,7 +69,9 @@ describe('N R3 — 핀이 조용히 풀리지 않는다', () => {
     // put()은 레코드를 통째로 교체한다. 이전 pinned를 안 읽으면 사용자가 챙긴 자료가
     // '열었다'는 이유만으로 자동 축출 대상이 된다.
     expect(cache()).toContain("const prev = await getRaw(STORE_MATERIALS, material.id);");
-    expect(cache()).toContain("...(prev?.pinned ? { pinned: true } : {})");
+    // 같은 계정의 핀만 지킨다 — 다른 계정이 같은 자료를 열어도 핀을 넘겨받지 않는다(OFFLINE-ACCOUNT-SCOPE-001).
+    expect(cache()).toContain("const keepPin = prev?.pinned && materialEntryVisible(prev, owner) && (!own(prev) || prev.owner === owner);");
+    expect(cache()).toContain("...(keepPin ? { pinned: true } : {})");
   });
 
   it('받아둔 자료는 TTL 조회에도 걸리지 않는다 — 저장은 살아 있는데 안 열리면 같은 실패다', () => {
@@ -77,7 +79,7 @@ describe('N R3 — 핀이 조용히 풀리지 않는다', () => {
   });
 
   it('해제는 본문을 지우지 않는다 — 다시 자동 축출 대상이 될 뿐이다', () => {
-    expect(cache()).toContain('await put(STORE_MATERIALS, { id, material: prev.material }, MAX_MATERIALS);');
+    expect(cache()).toContain('await put(STORE_MATERIALS, { id, material: prev.material, ...(own(prev) ? { owner: prev.owner } : {}) }, MAX_MATERIALS);');
   });
 });
 
@@ -88,7 +90,7 @@ describe('N R3 — 배선', () => {
     // 실측: 목록은 select('id, title, created_at, visibility, owner_id, processed_json'),
     // 뷰어는 raw_text·source_pdf_id·page_start·page_end·status도 읽는다.
     expect(page()).toContain(".from('reading_materials').select('*').eq('id', id).maybeSingle()");
-    expect(page()).toContain('await cache.pinMaterial(data)');
+    expect(page()).toContain('await cache.pinMaterial(data, { owner: user?.id ?? null });'); // 계정 몫으로(OFFLINE-ACCOUNT-SCOPE-001)
   });
 
   it('카드 클릭을 가로챈다 — 받아두려다 자료가 열리면 그건 다른 동작이다', () => {

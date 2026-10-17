@@ -10,7 +10,7 @@ import { migrateGuestDrillQueue } from './drillSrs';
 import { useToast } from './ToastContext';
 import { pullProgress } from './refProgress';
 import { createProfileReadOnlyRefresh, recordExplicitProfileLogin } from './learningActivity';
-import { accountLeft, clearAccountQueries } from './accountQueryCache';
+import { accountCacheReset, clearAccountQueries, noteAccount } from './accountQueryCache';
 
 const AuthContext = createContext(null);
 
@@ -43,6 +43,7 @@ export function AuthProvider({ children, queryClient }) {
   const unloadingRef = useRef(false);
 
   const actorRef = useRef(null);
+  const lastSignedInRef = useRef(null); // 이 탭에서 마지막으로 들어와 있던 계정(손님 → B 때 앞선 A의 늦은 쓰기를 비우는 판정)
   const authGenerationRef = useRef(0);
   const explicitLoginRequestRef = useRef(0);
   const mountedRef = useRef(true);
@@ -51,9 +52,16 @@ export function AuthProvider({ children, queryClient }) {
   const profileReaderRef = useRef(null);
 
   function adoptUser(nextUser) {
-    if (actorRef.current !== (nextUser?.id ?? null)) {
-      // A → 손님 · A → B: 새 user로 그리기(setUser) 전에 A의 캐시를 비운다 — 같은 키(['material', id] 등)를 B가 받아 그리지 않게.
-      if (accountLeft(actorRef.current, nextUser?.id)) clearAccountQueries(queryClient);
+    const nextActor = nextUser?.id ?? null;
+    noteAccount(nextActor);
+    if (actorRef.current !== nextActor) {
+      // A → 손님 · A → B(· 손님 → B인데 앞서 A): 새 user로 그리기(setUser) 전에 A의 캐시를 비운다 — 같은 키(['material', id] 등)를
+      // B가 받아 그리지 않게. 기기 캐시(IndexedDB)도 새 계정이 열 수 없는 기록을 지운다(대기 연산은 보존 — offlineCache).
+      if (accountCacheReset(lastSignedInRef.current, actorRef.current, nextActor)) {
+        clearAccountQueries(queryClient);
+        import('./offlineCache').then((cache) => cache.purgeOfflineForAccount(nextActor)).catch(() => {});
+      }
+      if (nextActor) lastSignedInRef.current = nextActor;
       authGenerationRef.current += 1;
       actorRef.current = nextUser?.id ?? null;
       loginActorRef.current = null;

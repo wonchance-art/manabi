@@ -245,11 +245,11 @@ export default function MaterialsPage({ libraryView = null }) {
   useEffect(() => {
     let alive = true;
     import('../lib/offlineCache')
-      .then(({ pinnedMaterialIds }) => pinnedMaterialIds())
+      .then(({ pinnedMaterialIds }) => pinnedMaterialIds(user?.id ?? null)) // 이 계정이 받아 둔 것만(OFFLINE-ACCOUNT-SCOPE-001)
       .then((ids) => { if (alive) setPinnedIds(ids); })
       .catch(() => { /* 큐를 못 쓰는 환경(사생활 모드) — 배지가 안 뜰 뿐 */ });
     return () => { alive = false; };
-  }, []);
+  }, [user?.id]);
 
   // 받아두기 토글. 자료실 목록 행에는 뷰어가 읽는 raw_text·source_pdf_id·page_start·
   // page_end·status가 **없어서**(실측) 전체 행을 한 번 더 받아 담는다 — 목록 행을
@@ -259,7 +259,7 @@ export default function MaterialsPage({ libraryView = null }) {
     try {
       const cache = await import('../lib/offlineCache');
       if (pinnedIds.has(id)) {
-        await cache.unpinMaterial(id);
+        await cache.unpinMaterial(id, { owner: user?.id ?? null });
         queryClient.invalidateQueries({ queryKey: ['library-pinned', user?.id] });
         setPinnedIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
         toast('받아두기를 해제했어요.', 'info');
@@ -268,7 +268,7 @@ export default function MaterialsPage({ libraryView = null }) {
       const { data, error } = await supabase
         .from('reading_materials').select('*').eq('id', id).maybeSingle();
       if (error || !data) throw error || new Error('NOT_FOUND');
-      await cache.pinMaterial(data);
+      await cache.pinMaterial(data, { owner: user?.id ?? null });
       queryClient.invalidateQueries({ queryKey: ['library-pinned', user?.id] });
       setPinnedIds((prev) => new Set(prev).add(id));
       toast('받아뒀어요 — 연결이 없어도 열려요.', 'success');

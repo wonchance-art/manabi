@@ -21,6 +21,27 @@ export function accountLeft(previousActor, nextActor) {
   return previousActor != null && previousActor !== (nextActor ?? null);
 }
 
+/**
+ * 손님 → B인데 이 탭에 앞서 다른 계정(A)이 있었으면 한 번 더 비운다(⑤ 늦은 쓰기, OFFLINE-ACCOUNT-SCOPE-001).
+ * A의 로그아웃 때 비운 뒤에도, 그때 진행 중이던 A의 mutation onSuccess(setQueryData)나 늦게 끝난 조회가 A의 자료를 다시
+ * 넣을 수 있다 — B가 들어오는 순간 그것까지 지운다. 같은 A가 다시 들어오면(A → 손님 → A) A 자신의 것이라 그대로.
+ */
+export function accountSwitchedIn(lastSignedIn, previousActor, nextActor) {
+  return previousActor == null && nextActor != null && lastSignedIn != null && lastSignedIn !== nextActor;
+}
+
+/** adoptUser의 한 판정 — 이 둘 중 하나면 계정에 딸린 캐시(react-query · 기기 캐시)를 비운다. */
+export function accountCacheReset(lastSignedIn, previousActor, nextActor) {
+  return accountLeft(previousActor, nextActor) || accountSwitchedIn(lastSignedIn, previousActor, nextActor);
+}
+
+// 앱이 지금 누구로 보고 있나(AuthContext가 adoptUser마다 적는다) — 기기 캐시 읽기가 쓴다. 아직 한 번도 정하지 않았으면 undefined
+// (첫 복원 전 · 하이드레이션 전 직접 진입). 토큰이 만료된 채 오프라인이면 getSession은 손님을 돌려주지만, 화면이 A로 보고 있는
+// 동안은 A가 받아 둔 자료를 열어야 한다(지하철 — 계정이 바뀐 것이 아니다).
+let shownAccount;
+export function noteAccount(id) { shownAccount = id ?? null; }
+export function knownAccount() { return shownAccount; }
+
 /** 계정에 딸린 캐시를 모두 지운다. 화면에 붙은 쿼리는 다음 그리기(setUser)에서 새 계정으로 다시 받는다. */
 export function clearAccountQueries(queryClient) {
   if (!queryClient?.removeQueries) return;

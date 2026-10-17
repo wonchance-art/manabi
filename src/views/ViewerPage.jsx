@@ -25,6 +25,7 @@ import { supabase } from '../lib/supabase';
 import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
 import { buildVocabularyWordIndex, countVocabularyDueInMaterial, findIndexedVocabulary, isIndexedVocabularyDue } from '../lib/vocabularyDueIndex';
 import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
+import { knownAccount } from '../lib/accountQueryCache';
 import SaveContextButton, { saveContext } from '../components/learning/SaveContextButton';
 import MaterialChapterLinks from '../components/learning/MaterialChapterLinks';
 import ReadingSourceFocus from '../components/learning/ReadingSourceFocus';
@@ -236,6 +237,9 @@ async function fetchMaterial(id) {
     }
     return { ...copy.material, __local: true, __team: copy.team };
   }
+  // 기기 캐시는 계정별이다(OFFLINE-ACCOUNT-SCOPE-001) — 이 조회를 보내는 계정을 요청과 함께 잡는다(나란히 — 기다림을 늘리지 않음).
+  // 늦게 읽으면 로그아웃 · 계정 전환 뒤의 계정으로 적혀 남의 자료가 그 계정 몫이 된다.
+  const accountRequest = supabase.auth.getSession().then(({ data: auth }) => auth?.session?.user?.id ?? null, () => null);
   try {
     const { data, error } = await supabase
       .from('reading_materials')
@@ -250,11 +254,14 @@ async function fetchMaterial(id) {
     }
     // fire-and-forget이되 완전 격리 — 캐시 실패가 아래 catch로 새면 네트워크
     // 성공분이 캐시 폴백으로 빠진다(계약 4·6 동시 위반).
-    Promise.resolve().then(() => cacheMaterial(data)).catch(() => {});
+    Promise.resolve().then(async () => cacheMaterial(data, { owner: await accountRequest })).catch(() => {});
     return data;
   } catch (err) {
     if (err?.code === 'NOT_FOUND') throw err;
-    const cached = await getCachedMaterial(id);
+    // 읽는 계정은 화면이 보고 있는 계정(AuthContext)이 정본 — 토큰이 만료된 채 오프라인이면 getSession은 손님을 돌려준다.
+    // 아직 정하지 않았으면(첫 복원 전 직접 진입) 요청과 함께 잡은 세션 계정.
+    const shown = knownAccount();
+    const cached = await getCachedMaterial(id, { account: shown !== undefined ? shown : await accountRequest });
     if (!cached) throw err;   // 캐시가 없으면 기존 에러 화면 그대로(계약 5)
     // 비로그인에게 책 장 본문은 없다(BOOK-GUEST-GATE-1) — 로그인했을 때 받아 둔 사본도 로그아웃 뒤에는 열지 않는다.
     if (getBook(cached.processed_json?.metadata) && !(await supabase.auth.getSession()).data?.session) throw err;

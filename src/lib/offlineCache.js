@@ -178,21 +178,52 @@ async function getRaw(store, key) {
   }
 }
 
-export async function cacheMaterial(material) {
+/* ── 계정 경계(OFFLINE-ACCOUNT-SCOPE-001, 2026-10-17 KST) ──
+ * 자료 기록은 계정을 몰랐다 — B가 오프라인일 때 같은 기기에서 A가 받아 둔 비공개 자료가 폴백(getCachedMaterial)으로 열렸다.
+ * 기록에 받은 계정(owner: id · null=손님)을 적고, 읽을 때 지금 계정과 비교한다. 키(id)와 저장소 판은 그대로다(판 올림 없음 —
+ * onblocked 경로와 무관). 손님 기록(owner null)은 공개 자료만 담고 누구에게나 열린다. 이 판 이전 기록(owner 없음)은 누가
+ * 받았는지 모르므로 자료가 스스로 말해 주는 것만 연다: 공개 자료 · 지금 계정이 만든 자료(owner_id).
+ * 대기 연산(outbox — 복습 · FSRS)은 이미 userId · accountId로 묶여 읽고 보낸다 — 계정이 바뀌어도 지우지 않는다(A가 다시 로그인하면 보냄).
+ */
+const own = (entry) => Object.prototype.hasOwnProperty.call(entry || {}, 'owner');
+const isPublicMaterial = (material) => material?.visibility === 'public';
+
+/** 이 자료 기록을 지금 계정(account: id · null/undefined=손님)이 열어도 되나. */
+export function materialEntryVisible(entry, account) {
+  const material = entry?.material;
+  if (!material) return false;
+  const who = typeof account === 'string' && account ? account : null; // 모르는 값(쿼리 문맥 객체 등)은 손님으로
+  if (own(entry)) return entry.owner === null ? isPublicMaterial(material) : entry.owner === who;
+  return isPublicMaterial(material) || (who !== null && material.owner_id === who);
+}
+
+/** 단어장 스냅샷 키(`vocab:<id>` · `vocab:learning:<id>`)의 계정. 모르는 꼴이면 null. */
+export function snapshotAccount(key) {
+  const match = /^vocab:(?:learning:)?(.+)$/.exec(String(key || ''));
+  return match ? match[1] : null;
+}
+
+/** 뷰어가 받은 자료를 남긴다. owner = 그 조회를 보낸 계정(요청 시점에 잡은 값 — 늦게 읽으면 로그아웃 뒤 손님으로 적힌다). */
+export async function cacheMaterial(material, { owner = null } = {}) {
   if (!material?.id) return;
+  // 손님 기록은 누구에게나 열리므로 공개 자료만 담는다(계정을 모르는 비공개 행을 손님 몫으로 남기지 않는다).
+  if (owner === null && !isPublicMaterial(material)) return;
   // 핀을 보존한다 — 받아둔 자료를 뷰어에서 열면 자동 캐시가 같은 키를 덮어쓰는데,
-  // 그때 pinned가 떨어지면 사용자가 챙긴 자료가 조용히 자동 축출 대상이 된다.
+  // 그때 pinned가 떨어지면 사용자가 챙긴 자료가 조용히 자동 축출 대상이 된다. 다른 계정의 핀은 넘겨받지 않는다.
   const prev = await getRaw(STORE_MATERIALS, material.id);
+  const keepPin = prev?.pinned && materialEntryVisible(prev, owner) && (!own(prev) || prev.owner === owner);
   await put(
     STORE_MATERIALS,
-    { id: material.id, material, ...(prev?.pinned ? { pinned: true } : {}) },
+    { id: material.id, material, owner, ...(keepPin ? { pinned: true } : {}) },
     MAX_MATERIALS,
   );
 }
 
-export async function getCachedMaterial(id) {
+/** 오프라인 폴백 읽기 — 지금 계정(account)이 열 수 있는 기록만. 빠뜨리면 손님으로 본다(공개분만). */
+export async function getCachedMaterial(id, { account = null } = {}) {
   // 핀은 TTL 밖이다 — 7일 지난 '받아둔 자료'가 안 열리면 받아둔 의미가 없다.
   const raw = await getRaw(STORE_MATERIALS, id);
+  if (!materialEntryVisible(raw, account)) return null;
   if (raw?.pinned) return raw.material || null;
   const entry = await get(STORE_MATERIALS, id);
   return entry?.material || null;
@@ -204,36 +235,68 @@ export async function getCachedMaterial(id) {
  * 자료 하나를 받아둔다. `material`은 **뷰어가 읽는 필드를 다 갖춘 행**이어야 한다
  * (실측: 자료실 목록 조회에는 `raw_text`·`source_pdf_id`·`page_start`·`page_end`·
  * `status`가 없다 — 목록 행을 그대로 넣으면 오프라인 뷰어에 빈 칸이 생긴다).
+ * owner = 받아 두는 계정(로그인 기능 — 없으면 공개 자료만 손님 몫으로).
  */
-export async function pinMaterial(material) {
+export async function pinMaterial(material, { owner = null } = {}) {
   if (!material?.id) return false;
-  await put(STORE_MATERIALS, { id: material.id, material, pinned: true }, MAX_MATERIALS);
+  if (owner === null && !isPublicMaterial(material)) return false;
+  await put(STORE_MATERIALS, { id: material.id, material, owner, pinned: true }, MAX_MATERIALS);
   return true;
 }
 
-/** 받아두기 해제 — 본문은 남기되 자동 축출 대상으로 되돌린다. */
-export async function unpinMaterial(id) {
+/** 받아두기 해제 — 본문은 남기되 자동 축출 대상으로 되돌린다. 지금 계정이 열 수 있는 기록만. */
+export async function unpinMaterial(id, { owner = null } = {}) {
   if (!id) return false;
   const prev = await getRaw(STORE_MATERIALS, id);
-  if (!prev) return false;
-  await put(STORE_MATERIALS, { id, material: prev.material }, MAX_MATERIALS);
+  if (!prev || !materialEntryVisible(prev, owner)) return false;
+  await put(STORE_MATERIALS, { id, material: prev.material, ...(own(prev) ? { owner: prev.owner } : {}) }, MAX_MATERIALS);
   return true;
 }
 
-/** 받아둔 자료 id 집합 — 자료실이 배지·필터에 쓴다. */
-export async function pinnedMaterialIds() {
+async function getAllEntries(store) {
+  const db = await openDb();
+  return new Promise((resolve) => {
+    const tx = db.transaction(store, 'readonly');
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => resolve([]);
+  });
+}
+
+/** 받아둔 자료 id 집합 — 자료실이 배지·필터에 쓴다. 지금 계정(account)이 열 수 있는 것만. */
+export async function pinnedMaterialIds(account = null) {
   try {
-    const db = await openDb();
-    const all = await new Promise((resolve) => {
-      const tx = db.transaction(STORE_MATERIALS, 'readonly');
-      const req = tx.objectStore(STORE_MATERIALS).getAll();
-      req.onsuccess = () => resolve(req.result || []);
-      req.onerror = () => resolve([]);
-    });
-    return new Set(all.filter((e) => e.pinned).map((e) => e.id));
+    const all = await getAllEntries(STORE_MATERIALS);
+    return new Set(all.filter((e) => e.pinned && materialEntryVisible(e, account)).map((e) => e.id));
   } catch {
     return new Set();
   }
+}
+
+/**
+ * 계정이 바뀌면(AuthContext — accountQueryCache와 같은 판정) 새 계정(next: id · null=손님)이 열 수 없는 자료 기록과
+ * 다른 계정의 단어장 스냅샷을 지운다(기기에 남은 남의 학습 자료 줄이기 — 읽기 판정이 1차 방어다).
+ * 대기 연산(outbox)은 건드리지 않는다 — A가 안 보낸 채점은 A가 다시 로그인하면 보낸다(B에게는 읽기 · 보내기 모두 계정 필터).
+ * @returns {Promise<{ materials: number, snapshots: number }>}
+ */
+export async function purgeOfflineForAccount(next) {
+  const who = next ?? null;
+  const removed = { materials: 0, snapshots: 0 };
+  try {
+    const db = await openDb();
+    const materials = (await getAllEntries(STORE_MATERIALS)).filter((e) => !materialEntryVisible(e, who)).map((e) => e.id);
+    const snapshots = (await getAllEntries(STORE_SNAPSHOTS)).filter((e) => snapshotAccount(e.key) !== who).map((e) => e.key);
+    await new Promise((resolve) => {
+      const tx = db.transaction([STORE_MATERIALS, STORE_SNAPSHOTS], 'readwrite');
+      materials.forEach((k) => tx.objectStore(STORE_MATERIALS).delete(k));
+      snapshots.forEach((k) => tx.objectStore(STORE_SNAPSHOTS).delete(k));
+      tx.oncomplete = resolve;
+      tx.onerror = resolve;
+      tx.onabort = resolve;
+    });
+    removed.materials = materials.length; removed.snapshots = snapshots.length;
+  } catch { /* IndexedDB 불가 · blocked — 조용히(읽기 판정이 그대로 막는다) */ }
+  return removed;
 }
 
 /* ── 단어장 스냅샷 — next_review_at을 포함한 전체 행이라 '오늘 due'가 여기서 파생된다

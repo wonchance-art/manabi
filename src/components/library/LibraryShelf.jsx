@@ -60,7 +60,7 @@ export default function LibraryShelf({user,ssr=false}){
  const anchor=useRef(null),attempt=useRef(null),listRef=useRef(null);
  const collections=useCollections(user.id),folders=folderPaths(collections.data||[]);
  const currentCollection=folders.find(c=>c.id===filters.collection),returnTo=safeLibraryReturn(`/materials?${params}`);
- const pinned=useQuery({queryKey:['library-pinned',user.id],enabled:filters.pinned,queryFn:pinnedMaterialIds,staleTime:30000});
+ const pinned=useQuery({queryKey:['library-pinned',user.id],enabled:filters.pinned,queryFn:()=>pinnedMaterialIds(user.id),staleTime:30000});
  const listQuery=libraryListQuery(supabase,user.id,filters,pinned.data),keyFilters=listQuery.queryKey[2];
  // 조건을 바꾸는 동안 이전 목록을 흐리게 남긴다(LIST-KEEP — 비었다가 다시 차며 높이가 튀던 것). 같은 계정일 때만.
  const list=useInfiniteQuery({...listQuery,enabled:!filters.pinned||pinned.isSuccess,placeholderData:keepPreviousForUser(user.id)});

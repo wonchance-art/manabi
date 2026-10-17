@@ -31,7 +31,7 @@ vi.mock('../ToastContext', () => ({ useToast: () => vi.fn() }));
 vi.mock('../refProgress', () => ({ pullProgress: vi.fn(async () => {}) }));
 vi.mock('../drillSrs', () => ({ migrateGuestDrillQueue: vi.fn(async () => {}) }));
 import { AuthProvider } from '../AuthContext';
-import { ACCOUNT_FREE_QUERY_ROOTS, accountLeft, clearAccountQueries, isAccountFreeQuery } from '../accountQueryCache';
+import { ACCOUNT_FREE_QUERY_ROOTS, accountCacheReset, accountLeft, accountSwitchedIn, clearAccountQueries, isAccountFreeQuery, knownAccount } from '../accountQueryCache';
 
 const ROOT = path.resolve(__dirname, '../../..');
 const read = rel => fs.readFileSync(path.join(ROOT, rel), 'utf8');
@@ -123,6 +123,27 @@ describe('AuthContext adoptUser — 계정이 있다가 바뀌는 순간 한 곳
     const asB = await openViewer();
     expect(asB.error?.code).toBe('NOT_FOUND'); expect(asB.seen.some(r => r.data?.raw_text)).toBe(false);
   });
+  it('⑤ 늦은 쓰기: 로그아웃 뒤 A의 mutation onSuccess가 다시 넣은 자료는 B가 들어오는 순간 지운다', async () => {
+    const auth = await mount();
+    await auth.signOut(); await tick();
+    qc.setQueryData(['material', 'X'], { id: 'X', owner: 'A', raw_text: 'A의 비공개 본문' }); // 로그아웃 전에 떠난 교정의 onSuccess
+    await h.listener('SIGNED_IN', { user: user('B') }); await tick();
+    expect(render().user.id).toBe('B');
+    expect(qc.getQueryData(['material', 'X'])).toBeUndefined();
+  });
+  it('⑤ 같은 A가 다시 들어오면(A → 손님 → A) A 자신의 늦은 쓰기는 그대로 둔다', async () => {
+    const auth = await mount();
+    await auth.signOut(); await tick();
+    qc.setQueryData(['material', 'X'], { id: 'X', owner: 'A' });
+    await h.listener('SIGNED_IN', { user: user('A') }); await tick();
+    expect(qc.getQueryData(['material', 'X'])).toEqual({ id: 'X', owner: 'A' });
+  });
+  it('화면 계정을 적는다(기기 캐시 읽기가 쓴다) — 로그아웃이면 손님', async () => {
+    const auth = await mount();
+    expect(knownAccount()).toBe('A');
+    await auth.signOut(); await tick();
+    expect(knownAccount()).toBe(null);
+  });
   it('queryClient 없이 그려도(기존 하네스 · 시험) 아무것도 하지 않는다', () => {
     expect(() => clearAccountQueries(undefined)).not.toThrow();
   });
@@ -135,6 +156,16 @@ describe('판정 · 남기는 키 목록', () => {
     expect(accountLeft('A', null)).toBe(true);
     expect(accountLeft('A', undefined)).toBe(true);
     expect(accountLeft('A', 'B')).toBe(true);
+  });
+  it('accountSwitchedIn · accountCacheReset: 손님 → B는 앞서 다른 계정이 있었을 때만', () => {
+    expect(accountSwitchedIn(null, null, 'A')).toBe(false); // 첫 복원 · 첫 로그인
+    expect(accountSwitchedIn('A', null, 'A')).toBe(false);  // 같은 계정 다시
+    expect(accountSwitchedIn('A', null, 'B')).toBe(true);
+    expect(accountSwitchedIn('A', 'A', 'B')).toBe(false);   // 이건 accountLeft 몫
+    expect(accountCacheReset(null, null, 'A')).toBe(false);
+    expect(accountCacheReset('A', 'A', 'B')).toBe(true);
+    expect(accountCacheReset('A', null, 'B')).toBe(true);
+    expect(accountCacheReset('A', 'A', 'A')).toBe(false);
   });
   it('남기는 뿌리는 확인한 셋뿐 — 계정 id · RLS에 기대는 자료(material 등)는 들이지 않는다', () => {
     expect([...ACCOUNT_FREE_QUERY_ROOTS]).toEqual(['goal-catalog', 'zh-hsk-levels', 'guest-book-chapter']);
@@ -168,7 +199,9 @@ describe('배선', () => {
     const src = read('src/lib/AuthContext.jsx');
     expect(src.match(/setUser\(/g)).toHaveLength(1);
     const adopt = sliceBetween(src, 'function adoptUser(nextUser) {', 'setUser(nextUser ?? null);');
-    expect(adopt).toContain('if (accountLeft(actorRef.current, nextUser?.id)) clearAccountQueries(queryClient);');
+    expect(adopt).toContain('if (accountCacheReset(lastSignedInRef.current, actorRef.current, nextActor)) {');
+    expect(adopt.indexOf('accountCacheReset(')).toBeLessThan(adopt.indexOf('clearAccountQueries(queryClient)'));
+    expect(adopt.indexOf('clearAccountQueries(queryClient)')).toBeLessThan(adopt.indexOf('if (nextActor) lastSignedInRef.current = nextActor;'));
     expect(adopt.indexOf('clearAccountQueries(queryClient)')).toBeLessThan(adopt.indexOf('actorRef.current = nextUser?.id ?? null;'));
   });
 });

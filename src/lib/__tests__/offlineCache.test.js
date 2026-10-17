@@ -135,8 +135,8 @@ describe('배선 — 자료 경로와 안내', () => {
     const fn = sliceBetween(viewer, 'async function fetchMaterial(id)', 'async function fetchUserVocabWords');
     // 캐시 쓰기는 완전 격리된 fire-and-forget이어야 한다 — 동기 throw가 폴백으로 새면
     // 네트워크 성공분이 캐시로 대체된다(구현 중 실측해 잡은 결함).
-    expect(fn).toContain('Promise.resolve().then(() => cacheMaterial(data)).catch(() => {});');
-    expect(fn).toMatch(/const cached = await getCachedMaterial\(id\);/);
+    expect(fn).toContain('Promise.resolve().then(async () => cacheMaterial(data, { owner: await accountRequest })).catch(() => {});');
+    expect(fn).toMatch(/const cached = await getCachedMaterial\(id, \{ account: /); // 계정별 읽기(OFFLINE-ACCOUNT-SCOPE-001)
     expect(fn).toContain('if (!cached) throw err;');
   });
 
