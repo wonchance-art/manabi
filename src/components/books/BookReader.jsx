@@ -18,7 +18,7 @@ import { HASH_GATE, announceFragmentUrl, coverPage, hashGate, pageFromHash, reme
 import { BOOK_COVER_PLACE_KEY, bookCoverPlaceOf, withBookCoverPlace } from './bookEntryGate';
 import './reading-content.css';
 import useLibraryActivity from '@/components/library/useLibraryActivity';
-import {LibraryReturnLink} from '@/components/web/LibraryReaderLink';
+import {LibraryReturnLink} from '@/components/web/LibraryReturnLink';
 import {safeLibraryReturn, libraryReaderHref} from '@/lib/libraryReturn';
 import { friendlyToastMessage } from '@/lib/errorMessage';
 import { focusIsLost, focusPageIfLost } from '@/lib/routeFocus';

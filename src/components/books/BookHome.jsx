@@ -8,7 +8,7 @@ import { bookResume } from '@/lib/webNavigation';
 import { BOOK_ID, bookHref as textbookHref } from '@/lib/textbook/contract';
 import BookCover from './BookCover';
 import LibrarySaveButton from '@/components/library/LibrarySaveButton';
-import {LibraryReturnLink} from '@/components/web/LibraryReaderLink';
+import {LibraryReturnLink} from '@/components/web/LibraryReturnLink';
 
 // 전체 목차 펼침(showAll)은 BookReader가 든다 — 표지 자리(BOOK-HOME-RESTORE-001)와 함께 이 기록에 남아, 다른 화면에서 뒤로 와
 // 표지가 다시 붙어도 같은 높이로 펼쳐진다. 따로 쓰면(props 없음) 지금처럼 이 부품이 든다.

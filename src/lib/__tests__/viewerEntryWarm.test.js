@@ -58,6 +58,13 @@ describe('서재 번들에 뷰어 JS가 끌려오지 않는다', () => {
     expect(src).toContain("load = () => import('@/views/ViewerPage')");
     expect(read('src/lib/viewerMaterial.js')).not.toMatch(/import\(/);
   });
+  it('「← 돌아가기」는 따로 둔 파일 — 교재(SC 글꼴 범위 밖)가 불러도 뷰어 동적 import에 닿지 않는다(fontScope.test ②)', () => {
+    const ret = read('src/components/web/LibraryReturnLink.jsx');
+    expect(ret).toContain('export function LibraryReturnLink(');
+    expect(ret).not.toMatch(/\bimport\s*\(|from ['"][^'"]*LibraryReaderLink['"]/);
+    expect(read('src/components/web/LibraryReaderLink.jsx')).toContain("export { LibraryReturnLink } from './LibraryReturnLink';");
+    for (const f of ['src/components/books/BookHome.jsx', 'src/components/books/BookReader.jsx']) expect(read(f), f).toContain("import {LibraryReturnLink} from '@/components/web/LibraryReturnLink';");
+  });
 });
 
 describe('R1 조기 조회 등록부 — 받아 쓰기와 폴백', () => {

@@ -34,7 +34,7 @@ describe('reader return link destination (readerReturnHref)', () => {
     expect(readerReturnLabel('/materials?tab=public&q=school')).toBe('← 발견');
   });
   it('배선 — 복귀 링크 · 대화 지우기 뒤 이동이 readerReturnHref를 쓴다(라벨 · 맥락 판정은 back 기준)', () => {
-    const link = sliceBetween(read('src/components/web/LibraryReaderLink.jsx'), 'export function LibraryReturnLink');
+    const link = sliceBetween(read('src/components/web/LibraryReturnLink.jsx'), 'export function LibraryReturnLink');
     expect(link).toContain('const target = readerReturnTarget(returnTo, { guest });');
     expect(link).toContain('href={target.href}');
     expect(link).toContain('const back = safeReaderReturn(returnTo);');
@@ -127,7 +127,7 @@ describe('guest reader return (readerReturnTarget)', () => {
     expect(sliceBetween(viewer, '<LibraryReturnLink className="viewer-back-link viewer-back-link--icon"', '</LibraryReturnLink>'))
       .toContain('title={vt(backTarget.label)} data-icon-action><ActionIcon name="back"/>');
     expect(viewer).not.toContain('readerReturnLabel(');
-    const link = sliceBetween(read('src/components/web/LibraryReaderLink.jsx'), 'export function LibraryReturnLink');
+    const link = sliceBetween(read('src/components/web/LibraryReturnLink.jsx'), 'export function LibraryReturnLink');
     expect(link).toContain("{target.guestDefault || label === '← 내 서재' ? children || target.label : label}");
     expect(read('src/lib/viewerMessages.js')).toContain("['← 산책','← 漫步','← 漫步']");
   });
