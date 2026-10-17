@@ -284,6 +284,8 @@ test(`${engine.name()} 390: the N4 book cover keeps its own scroll position too`
  const f=await fixture(390);try{
   await f.page.goto('/books/japanese-n4');
   const ready=await f.page.locator('.manabi-book-home .manabi-toc-group').first().waitFor({timeout:8000}).then(()=>true,()=>false);
+  // 이 실행이 N4를 켰다고 밝혔으면(E2E_PUBLISHED_BOOKS) 건너뛰지 않고 실패한다 — CI의 N4 실행이 조용히 빈 통과가 되지 않게.
+  if(!ready&&(process.env.E2E_PUBLISHED_BOOKS||'').split(',').includes('japanese-n4'))assert.fail('N4 cover did not render on a server started with E2E_PUBLISHED_BOOKS=japanese-n4');
   if(!ready){t.skip('N4 is not published by this fixture server (start it with E2E_PUBLISHED_BOOKS=japanese-n4)');return;}
   assert.equal(await f.page.locator('.book-reader').getAttribute('data-book-id'),'japanese-n4');
   await coverAt(f.page,0);

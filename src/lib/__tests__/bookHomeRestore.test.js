@@ -121,3 +121,23 @@ describe('배선 — BookReader · BookHome', () => {
     expect(home).toContain('onClick={() => setShowAll(true)}');
   });
 });
+
+describe('CI — 표지 자리 e2e 실행 목록', () => {
+  const ci = read('.github/workflows/ci.yml');
+  it('기본 실행(N5만 발행한 서버)에 book-reading-reload가 있고, N4는 같은 빌드의 N4 발행 서버에서 이 파일만 한 번 더 돈다', () => {
+    const base = ci.indexOf('QA_BASE=http://127.0.0.1:8878 node --test --test-concurrency=1 e2e/library-book-chapters.e2e.mjs');
+    expect(base).toBeGreaterThan(0);
+    expect(sliceBetween(ci, 'QA_BASE=http://127.0.0.1:8878 node --test --test-concurrency=1 e2e/library-book-chapters.e2e.mjs', '\n')).toContain('e2e/book-reading-reload.e2e.mjs');
+    const server = ci.indexOf('E2E_PUBLISHED_BOOKS=japanese-n4 E2E_PUBLISHED_EDITION=8a8c1c1fd452773810abaf8c node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 8879');
+    const run = ci.indexOf('E2E_PUBLISHED_BOOKS=japanese-n4 COMPOSER_BASE_URL=http://127.0.0.1:8879 node --test --test-concurrency=1 e2e/book-reading-reload.e2e.mjs');
+    expect(server).toBeGreaterThan(base);
+    expect(run).toBeGreaterThan(server);
+    expect(ci.match(/E2E_PUBLISHED_BOOKS=japanese-n4/g)).toHaveLength(2); // 다른 e2e 실행에는 켜지 않는다
+    expect(ci.match(/run: npm run e2e:build/g)).toHaveLength(1); // 빌드는 그대로 한 번
+  });
+  it('N4를 켠 실행에서 N4 표지가 안 그려지면 건너뛰지 않고 실패한다', () => {
+    const e2e = read('e2e/book-reading-reload.e2e.mjs');
+    expect(e2e).toContain("if(!ready&&(process.env.E2E_PUBLISHED_BOOKS||'').split(',').includes('japanese-n4'))assert.fail(");
+    expect(read('e2e/server-fetch-mock.mjs')).toContain("process.env.E2E_PUBLISHED_BOOKS");
+  });
+});
