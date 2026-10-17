@@ -212,3 +212,57 @@ test(`${engine.name()}: reload rejects wrong-edition and missing-article snapsho
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });
+
+// 표지(책 목차) 뒤로 가기 자리(BOOK-HOME-RESTORE-001) — 표지에서 다른 화면 · 과에 다녀오면 맨 위로 갔다(369px → 0px).
+// 이 기록의 표지 자리(manabiBookCover: 세로 위치 · 전체 목차 · 열린 파트)로 돌아오고, 새로 들어온 표지는 맨 위에서 시작한다.
+const openParts=page=>page.evaluate(()=>[...document.querySelectorAll('.manabi-book-home details[data-toc-part]')].filter(d=>d.open).map(d=>d.dataset.tocPart));
+async function coverAt(page,y,all=false,open=null){
+ await page.locator('.manabi-book-home .manabi-toc-group').first().waitFor();await page.evaluate(()=>document.fonts.ready);
+ await page.waitForFunction(({y,all})=>{
+  const saved=history.state?.manabiBookCover,tabs=document.querySelectorAll('.manabi-book-home .manabi-tabs button');
+  return saved?.href===location.href&&Math.abs(saved.y-y)<2&&Math.abs(scrollY-y)<2&&saved.all===all&&tabs[1]?.getAttribute('aria-pressed')===String(all);
+ },{y,all});
+ await page.waitForTimeout(300); // 늦은 그리기가 자리를 다시 옮기지 않는다
+ const now=await page.evaluate(()=>scrollY);
+ assert.ok(Math.abs(now-y)<2,JSON.stringify({y,now}));
+ if(open)assert.deepEqual(await openParts(page),open);
+}
+async function scrollCover(page,ratio=.6){
+ await page.locator('.manabi-book-home .manabi-toc-group').first().waitFor();await page.evaluate(()=>document.fonts.ready);
+ const y=await page.evaluate(ratio=>{const max=document.documentElement.scrollHeight-innerHeight;const y=Math.round(Math.min(369,max*ratio));scrollTo(0,y);return y;},ratio);
+ assert.ok(y>40,`cover too short to scroll: ${y}`);
+ await page.waitForFunction(y=>Math.abs((history.state?.manabiBookCover?.y??-99)-y)<2,y);
+ return y;
+}
+for(const width of [390,1440])test(`${engine.name()} ${width}: the book cover keeps its own scroll position across routes, lessons, bfcache and reload`,async()=>{
+ const f=await fixture(width),edition=editions[0],cover=`/books/japanese-n5?edition=${edition}`;try{
+  await f.page.goto(cover);await coverAt(f.page,0);
+  // ① 다른 화면(Next Link — 「교재」 breadcrumb)에 다녀오기: 표지가 다시 붙어도 그 자리
+  const y=await scrollCover(f.page);
+  await f.page.locator('.manabi-book-home .manabi-breadcrumb').getByRole('link',{name:'교재',exact:true}).evaluate(link=>link.click());
+  await f.page.waitForURL(url=>url.pathname==='/lessons');await f.page.goBack();await coverAt(f.page,y);
+  // ② 전체 목차를 펼치고 마지막 파트를 열어 내린 뒤 과를 열고 뒤로: 펼침 · 열린 파트 · 자리가 함께
+  await f.page.getByRole('button',{name:'전체 42과',exact:true}).click();
+  const last=f.page.locator('.manabi-book-home details[data-toc-part]').last();
+  await last.locator('summary').click();await f.page.waitForFunction(()=>[...document.querySelectorAll('.manabi-book-home details[data-toc-part]')].at(-1).open);
+  const deep=await last.locator('li a').nth(1).evaluate(link=>{link.scrollIntoView({block:'center',behavior:'instant'});return Math.round(scrollY);});
+  assert.ok(deep>y,`deep ${deep} <= ${y}`);
+  const open=await openParts(f.page);assert.ok(open.length>=2,JSON.stringify(open));
+  await f.page.waitForFunction(({y,open})=>{const s=history.state?.manabiBookCover;return s?.y===y&&s.all===true&&JSON.stringify(s.open)===JSON.stringify(open);},{y:deep,open});
+  const lesson=await last.locator('li a').nth(1).evaluate(link=>{link.click();return new URL(link.href).hash.slice(1);});
+  await settled(f.page,lesson);await f.page.goBack();await coverAt(f.page,deep,true,open);
+  // ③ 다른 화면에 다녀와 표지가 다시 붙어도 펼침 · 열린 파트 · 자리가 이어진다
+  await f.page.locator('.manabi-book-home .manabi-breadcrumb').getByRole('link',{name:'교재',exact:true}).evaluate(link=>link.click());
+  await f.page.waitForURL(url=>url.pathname==='/lessons');await f.page.goBack();await coverAt(f.page,deep,true,open);
+  // ④ bfcache 복귀(persisted pageshow) · 새로 고침
+  await f.page.evaluate(()=>{dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true}));dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));});
+  await coverAt(f.page,deep,true,open);
+  await f.page.reload();await coverAt(f.page,deep,true,open);
+  // ⑤ 새로 들어온 표지(새 기록)는 맨 위 · 현재 파트만 — 과의 「← 책 목차」(책 안 새 기록) · 새 탭
+  await last.locator('li a').nth(1).evaluate(link=>link.click());await settled(f.page,lesson);
+  await f.page.locator('.manabi-reader-toolbar').getByRole('link',{name:'← 책 목차',exact:true}).evaluate(link=>link.click());
+  await f.page.waitForURL(url=>url.hash==='#cover');await coverAt(f.page,0,true);
+  const fresh=await f.context.newPage();await fresh.goto(cover);await coverAt(fresh,0);assert.equal((await openParts(fresh)).length,1);await fresh.close();
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
