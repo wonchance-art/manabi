@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import RefSpeak from '../components/RefSpeak';
@@ -15,6 +16,7 @@ import { textbookThemeStyle } from '../lib/textbookTheme';
 import { ARCHIVED_TEXTBOOK_NOTICE, learnerHref } from '../lib/bookNavigation';
 import '../components/admin/textbook.css';
 import '../components/web/review-room.css';
+import { authEntryHref } from '../lib/authRedirect';
 
 function shuffle(arr) {
   const a = [...arr];
@@ -88,6 +90,8 @@ function UpcomingList({ upcoming }) {
  * 언어는 글자(langName)로 보인다 — 국기는 쓰지 않는다(D-X6, 2026-10-12).
  */
 export default function GrammarReviewSession({ items, upcoming = [], signedOut = false }) {
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInHref = authEntryHref(usePathname());
   const { user, fetchProfile } = useAuth();
   const [idx, setIdx] = useState(0);
   const [mounted, setMounted] = useState(false);
@@ -235,7 +239,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
             ? '로그인하면 통과한 문법 챕터가 며칠 뒤 자동으로 복습 큐에 돌아와요.'
             : '지금 복습할 문법이 없어요. 강의에서 챕터의 패턴 체크를 통과하면 며칠 뒤 여기로 돌아와요.'}
         </p>
-        <Link href={signedOut ? '/auth' : '/lessons'} className="btn btn--primary btn--md">
+        <Link href={signedOut ? signInHref : '/lessons'} className="btn btn--primary btn--md">
           {signedOut ? '로그인 →' : '강의 보러 가기 →'}
         </Link>
         {!signedOut && <UpcomingList upcoming={upcoming} />}
@@ -296,7 +300,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
         </div>
       </header>
 
-      {!questions && <p className="fr-check__lead">문항 준비 중…</p>}
+      {!questions && <p className="fr-check__lead" aria-busy="true">문항 준비 중…</p>}
 
       {questions && (
         <ol className="fr-quiz">

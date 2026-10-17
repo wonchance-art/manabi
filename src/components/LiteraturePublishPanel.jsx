@@ -65,6 +65,7 @@ import { supabase } from '../lib/supabase';
 import { analyzeText } from '../lib/analyzeText';
 import { runPreservedReanalysis } from '../lib/reanalysisPreservation';
 import { failureMessage, friendlyToastMessage } from '../lib/errorMessage';
+import { announcedProgress } from '../lib/announceProgress';
 import { literatureBatchTargets, literatureResumeTargets } from '../lib/literaturePublish';
 import { literatureWork } from '../lib/literatureCanonical';
 import LiteratureCover from './books/LiteratureCover';
@@ -184,7 +185,7 @@ function ChapterReview({ api, queryKey, kind, book, onReview, onReviewMany, revi
     queryKey: [...queryKey, 'ruby', book.key],
     queryFn: () => request(`${api}?ruby=${encodeURIComponent(book.key)}`),
   });
-  if (isLoading) return <p className="admin-table__muted" role="status">검수 상태를 세는 중…</p>;
+  if (isLoading) return <p className="admin-table__muted" aria-busy="true">검수 상태를 세는 중…</p>;
   if (isError) return <button type="button" className="admin-table__muted" onClick={() => refetch()}>검수 상태를 불러오지 못했어요 · 다시 시도</button>;
   const byOrder = new Map(data.coverage.map((item) => [item.order, item]));
   const clean = book.stage === 'reviewing' ? book.chapters.filter((chapter) => {
@@ -411,10 +412,14 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
       )}
       <div className="admin-table-header">
         <span>총 {books.length}{KIND[kind].unit}</span>
+        {/* 일괄 진행 알림 — 영역은 늘 두고 내용만, 장 분석 숫자는 약 10%마다만(LOADING-ANNOUNCE-001 ③). 보이는 줄은 한 번만 읽히게 숨기고 「멈춤」은 그 밖에 둔다. */}
+        <span className="sr-only" role="status">{batch ? `일괄 진행 ${batch.index + 1}/${batch.titles.length} · 「${batch.titles[batch.index]}」${running ? ` 분석 ${announcedProgress(running.done, running.total)}/${running.total}` : ' 준비 중'} · 이 화면을 닫지 마세요` : ''}</span>
         {batch ? (
-          <span role="status">
-            일괄 진행 {batch.index + 1}/{batch.titles.length} · 「{batch.titles[batch.index]}」
-            {running ? ` 분석 ${running.done}/${running.total}` : ' 준비 중'} · 이 화면을 닫지 마세요{' '}
+          <span>
+            <span className="literature-batch__progress" aria-hidden="true">
+              일괄 진행 {batch.index + 1}/{batch.titles.length} · 「{batch.titles[batch.index]}」
+              {running ? ` 분석 ${running.done}/${running.total}` : ' 준비 중'} · 이 화면을 닫지 마세요
+            </span>{' '}
             <Button size="sm" variant="ghost" onClick={() => abortRef.current?.abort()}>멈춤</Button>
           </span>
         ) : pending.length > 1 && (

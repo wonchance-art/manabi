@@ -6,6 +6,7 @@
  */
 import { supabase } from './supabase';
 import { encounterLookupLang } from './refVocabLookup';
+import { postgrestKeepalive, sessionTokenFor } from './keepalive';
 
 /** 표기 언어 코드 — 만남 기록과 같은 매핑('Japanese'→'ja' 등). 미지원 언어는 null. */
 export function knownWordsLang(materialLang, koreanStorageSupported = false) {
@@ -17,15 +18,17 @@ export function knownWordsLang(materialLang, koreanStorageSupported = false) {
 export async function fetchKnownWords(userId, langCode) {
   return loadKnownWords(supabase, userId, langCode);
 }
+const KNOWN_WORDS_PAGE = 1000;
 export async function loadKnownWords(client, userId, langCode) {
   const rows = [];
-  for (let offset = 0; ; offset += 200) {
+  // PostgREST 기본 최대 행 수(1000)에 맞춘 페이지 — 순차 루프라 실패한 페이지를 숨기지 않는다.
+  for (let offset = 0; ; offset += KNOWN_WORDS_PAGE) {
     let query = client.from('user_known_words').select('word_text, lang').eq('user_id', userId);
     if (langCode) query = query.eq('lang', langCode);
-    const { data, error } = await query.order('lang').order('word_text').range(offset, offset + 199);
+    const { data, error } = await query.order('lang').order('word_text').range(offset, offset + KNOWN_WORDS_PAGE - 1);
     if (error) throw error;
     rows.push(...(data || []));
-    if ((data || []).length < 200) return rows;
+    if ((data || []).length < KNOWN_WORDS_PAGE) return rows;
   }
 }
 
@@ -66,4 +69,69 @@ export async function unmarkKnown(userId, langCode, wordText) {
     .eq('lang', langCode)
     .in('word_text', keys);
   if (error) throw error;
+}
+
+const knownKeyOf = (accountId, lang, word) => `${accountId}:${lang}:${word}`;
+/** 이 쓰기가 건드리는 단어 키 — 표시는 그 표기, 해제는 지우는 키 전부. */
+const knownWriteKeys = body => (body.known ? [body.wordText] : body.removeKeys || []).map(word => knownKeyOf(body.accountId, body.lang, word));
+// PostgREST in.(…) 값 — 따옴표로 감싸 쉼표 · 괄호가 든 표기도 한 값으로 간다.
+const postgrestQuote = value => `"${String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+
+/**
+ * 탭이 닫히는 순간(pagehide)의 아는 단어 쓰기 — markKnown · unmarkKnown과 같은 PostgREST 요청을 정본 전송
+ * (keepalive.postgrestKeepalive — 왜 · best-effort 한계는 거기)으로 보낸다.
+ * 둘 다 다시 보내도 같은 결과다: 표시는 upsert(on_conflict user_id,lang,word_text · ignore-duplicates), 해제는 키로 지우기.
+ * @param {{accountId:string, lang:string, wordText:string, known:boolean, removeKeys?:string[]}} body mutation 본문
+ * @param {{accessToken: string, url?: string, apiKey?: string, fetchImpl?: Function}} transport 전송 옵션은 그대로 넘긴다
+ * @returns {Promise<boolean>}
+ */
+export function sendKnownWordKeepalive(body, transport = {}) {
+  if (!body?.accountId || !body?.lang) return Promise.resolve(false);
+  let request;
+  if (body.known) {
+    if (!body.wordText) return Promise.resolve(false);
+    request = { path: 'user_known_words', method: 'POST', query: { on_conflict: 'user_id,lang,word_text' },
+      prefer: 'resolution=ignore-duplicates,return=minimal', body: { user_id: body.accountId, lang: body.lang, word_text: body.wordText } };
+  } else {
+    const keys = body.removeKeys || [];
+    if (!keys.length) return Promise.resolve(false);
+    request = { path: 'user_known_words', method: 'DELETE', prefer: 'return=minimal',
+      query: { user_id: `eq.${body.accountId}`, lang: `eq.${body.lang}`, word_text: `in.(${keys.map(postgrestQuote).join(',')})` } };
+  }
+  return postgrestKeepalive({ ...transport, ...request }).then(res => !!res?.ok, () => false);
+}
+
+/**
+ * 응답을 기다리는 아는 단어 쓰기 목록 — 낙관 갱신(누른 순간 화면 반영)은 서버가 받기 전에 끝난 것처럼 보이므로, 그 사이
+ * 새로 고침 · 다른 사이트로 이동 · 탭 닫기가 오면 쓰기가 말없이 사라질 수 있었다. 쓰기가 나가 있는 동안만 track해 두고,
+ * pagehide에서 남은 것을 sendKnownWordKeepalive로 한 번 더 보낸다(같은 요청이라 원래 요청과 겹쳐도 결과는 같다).
+ * 같은 단어(계정 · 언어 · 표기 — 해제는 지우는 키 각각)에 새 쓰기가 오면 앞의 것은 빠진다 — 마지막 쓰기만 보낸다
+ * (먼저 한 표시가 나중의 해제를 되살리지 않게). 앱 안 이동은 캐시와 요청이 그대로 살아 있어 따로 할 일이 없다.
+ * 영구 큐(reviewOutbox · fsrsOperationOutbox)는 어휘 이벤트 · 어휘 FSRS 작업 형식이라 이 쓰기를 싣지 않는다.
+ */
+export function createKnownWordBeacon({
+  send = sendKnownWordKeepalive, getToken = sessionTokenFor,
+  target = typeof window !== 'undefined' ? window : null,
+} = {}) {
+  const pending = new Set(); // { body, keys, token }
+  let listening = false;
+  const flush = () => {
+    for (const entry of pending) if (entry.token) send(entry.body, { accessToken: entry.token }).catch(() => {});
+  };
+  return {
+    /** 쓰기를 보내기 직전에 부른다. 돌려준 함수를 응답(성공 · 실패) 뒤에 부르면 목록에서 빠진다. */
+    track(body) {
+      const entry = { body, keys: knownWriteKeys(body), token: null };
+      for (const earlier of [...pending]) {
+        if (earlier.keys.some(key => entry.keys.includes(key))) pending.delete(earlier); // 같은 단어의 앞선 쓰기 — 이번 것이 정본
+      }
+      pending.add(entry);
+      if (!listening && target) { listening = true; target.addEventListener('pagehide', flush); }
+      Promise.resolve().then(() => getToken(body.accountId))
+        .then(token => { if (pending.has(entry)) entry.token = token || null; }, () => {});
+      return () => { pending.delete(entry); };
+    },
+    flush,
+    size: () => pending.size,
+  };
 }

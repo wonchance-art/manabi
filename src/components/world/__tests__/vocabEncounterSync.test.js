@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { encounterPullThrottleKey, syncVocabEncounters } from '../vocabEncounterSync.js';
 import { loadVocabEncounters, vocabEncounterStorageKey } from '../vocabEncounters.js';
+import fs from 'node:fs';
+import { sliceBetween } from '../../../lib/__tests__/helpers/sliceBetween.js';
 
 // 🈁 서버 정본 동기화 계약(rfc-vocab-encounter §4.5) — 로컬이 원본:
 //   pull 은 합집합, push 는 로컬 전용분만(ignoreDuplicates → first_met_at 보존),
@@ -15,16 +17,24 @@ function memoryStorage(seed = {}) {
   };
 }
 
-function mockClient({ rows = [], selectError = null, upsertRejects = false } = {}) {
-  const calls = { selects: 0, upserts: [] };
+// 서버처럼 정렬(word_text)하고 한 응답을 1000행에서 자른다 — 페이지(range)마다 selects를 센다.
+function mockClient({ rows = [], selectError = null, upsertRejects = false, failPage = null } = {}) {
+  const calls = { selects: 0, upserts: [], ranges: [] };
+  const sorted = () => [...rows].sort((a, b) => String(a.word_text).localeCompare(String(b.word_text)));
   const client = {
     from: vi.fn(() => ({
       select: () => ({
         eq: () => ({
-          eq: async () => {
-            calls.selects += 1;
-            return selectError ? { data: null, error: selectError } : { data: rows, error: null };
-          },
+          eq: () => ({
+            order: (col, opts) => ({
+              range: async (from, to) => {
+                calls.selects += 1;
+                calls.ranges.push([col, opts?.ascending, from, to]);
+                if (selectError || failPage === calls.selects) return { data: null, error: selectError || { message: 'page failed' } };
+                return { data: sorted().slice(from, Math.min(to, from + 999) + 1), error: null };
+              },
+            }),
+          }),
         }),
       }),
       upsert: (payload, opts) => {
@@ -134,5 +144,35 @@ describe('syncVocabEncounters — 출처 문맥 push 동봉(R3)', () => {
       context: 'まずは 食券を どうぞ。', context_source: 'npc',
     });
     expect(byWord['どうぞ']).toEqual({ user_id: 'u1', lang: 'ja', word_text: 'どうぞ' });
+  });
+});
+
+describe('syncVocabEncounters — 1000행 상한(ROW-CAP-SWEEP-001)', () => {
+  const many = (n) => Array.from({ length: n }, (_, i) => ({ word_text: `w${String(i).padStart(4, '0')}` }));
+  it('그 언어 만남이 2500개면 1000행 페이지 3번으로 끝까지 끌어온다 — 서버에 있는 단어를 다시 보내지 않는다', async () => {
+    const storage = seedLocal(['w0000', 'w2499', '새말']);
+    const { client, calls } = mockClient({ rows: many(2500) });
+    const changed = await syncVocabEncounters(client, 'u1', 'ja', { storage, throttleStorage: null });
+    expect(changed).toBe(true);
+    expect(calls.ranges).toEqual([['word_text', true, 0, 999], ['word_text', true, 1000, 1999], ['word_text', true, 2000, 2999]]);
+    expect(loadVocabEncounters('ja', storage).size).toBe(2501);
+    // 예전처럼 1000행에서 잘리면 w2499도 「서버에 없음」으로 보여 다시 push됐다.
+    expect(calls.upserts.flatMap((u) => u.payload.map((r) => r.word_text))).toEqual(['새말']);
+  });
+
+  it('중간 페이지가 실패하면 부분 집합으로 판단하지 않는다 — 로컬 무변경 · push 없음 · false', async () => {
+    const storage = seedLocal(['새말']);
+    const { client, calls } = mockClient({ rows: many(2500), failPage: 2 });
+    expect(await syncVocabEncounters(client, 'u1', 'ja', { storage, throttleStorage: null })).toBe(false);
+    expect(calls.upserts).toEqual([]);
+    expect([...loadVocabEncounters('ja', storage)]).toEqual(['새말']);
+  });
+
+  it('배선 계약 — 끌어오기는 word_text 정렬 range 페이지 루프다(한 번에 받는 select로 돌아가지 않는다)', () => {
+    const src = fs.readFileSync('src/components/world/vocabEncounterSync.js', 'utf8');
+    const pull = sliceBetween(src, 'const remote = new Set();', "const before = loadVocabEncounters(lang, storage);");
+    expect(pull).toContain(".order('word_text', { ascending: true })");
+    expect(pull).toContain('.range(from, from + ENCOUNTER_PULL_PAGE - 1)');
+    expect(pull).toContain('if ((data || []).length < ENCOUNTER_PULL_PAGE) break;');
   });
 });

@@ -15,7 +15,7 @@ describe('FormulaicChapterIntro', () => {
     expect(markup).toContain('data-formulaic-intro="true"');
     expect(markup).toContain('장면 고정구');
     expect(markup).toContain('여기 나온 문형은 통째로 익히는 고정구예요.');
-    expect(markup).toContain('문법 분석은 후속 챕터에서 다룹니다.');
+    expect(markup).toContain('문법 분석은 후속 챕터에서 다뤄요.');
   });
 
   it('일반 챕터에는 고정구 안내를 표시하지 않는다', () => {

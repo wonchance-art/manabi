@@ -96,7 +96,7 @@ export default function ViewerSettings({settings:s,language,languageSettings,onC
         {/* 보기(READER-PAGED-001 목업 E) — 기본은 쪽 넘김, 스크롤은 지금 그대로의 대안. 위치는 보기 쪽이 기준 글자로 지킨다
             (keepPosition의 화면 좌표 기준점은 다단 쪽에서 맞지 않는다). */}
         <Choices label="보기" uiLocale={uiLocale} value={s.readerView||'paged'} items={choices([['paged','쪽 넘김'],['scroll','스크롤']])} onChange={v=>onReaderView?onReaderView(v):s.setReaderView?.(v)}/>
-        {s.fontFamily==='serif'&&fontStatus!=='ready'&&<p role="status">{tr(fontStatus==='error'?'명조를 불러오지 못해 고딕으로 표시하고 있어요.':'명조 글꼴을 불러오는 중이에요.')}</p>}
+        {s.fontFamily==='serif'&&fontStatus!=='ready'&&<p role="status" aria-busy={fontStatus!=='error'||undefined}>{tr(fontStatus==='error'?'명조를 불러오지 못해 고딕으로 표시하고 있어요.':'명조 글꼴을 불러오는 중이에요.')}</p>}
         <More uiLocale={uiLocale} count={changed(['pinyinSize','lineGap','charGap','fontFamily'])}>
         {language==='Chinese'&&<Slider uiLocale={uiLocale} label="병음 크기" value={s.pinyinSize} min={0.75} max={1} step={0.0625} display={`${Math.round(s.pinyinSize*16)}px`} onChange={v=>set('pinyinSize',v)}/>}
         <Slider uiLocale={uiLocale} label="줄 사이" value={s.lineGap} min={10} max={60} display={`${s.lineGap}px`} onChange={v=>set('lineGap',v)}/>
@@ -107,14 +107,14 @@ export default function ViewerSettings({settings:s,language,languageSettings,onC
       {/* 「표시」 탭은 평평하다 — 접힌 묶음 없이 모든 옵션과 범례를 펼쳐 두고, 맨 아래에 언어 선택 상자 둘(AD-R2 Aa). */}
       {tab==='display'&&<>
         <Choices label="읽기 모드" uiLocale={uiLocale} value={PRESET_META.find(m=>presetActive(m.key,s))?.key||'custom'} items={choices(PRESET_META.map(m=>[m.key,m.name]))} onChange={name=>keepPosition(()=>{s.restore({...READING_PRESETS[name],showToneColors:language==='Chinese'&&READING_PRESETS[name].showToneColors});})}
-          help={<Help uiLocale={uiLocale}><p className="reader-setting-note">{tr('{preset} · 문장 집중도 함께 바뀝니다. 소리와 자동 진행은 시작하지 않아요.',{preset:tr(PRESET_META.find(m=>presetActive(m.key,s))?'프리셋':'사용자 설정')})}</p></Help>}/>
+          help={<Help uiLocale={uiLocale}><p className="reader-setting-note">{tr('{preset} · 문장 집중도 함께 바뀌어요. 소리와 자동 진행은 시작하지 않아요.',{preset:tr(PRESET_META.find(m=>presetActive(m.key,s))?'프리셋':'사용자 설정')})}</p></Help>}/>
         {phonetic&&<Choices label="발음 표기" uiLocale={uiLocale} value={s.pronDisplay} items={choices([['all','전체'],['unknown','새 단어만'],['none','숨김']])} onChange={v=>set('pronDisplay',v)}
           help={<Help uiLocale={uiLocale}><p className="reader-setting-note">{tr('새 단어만: 저장한 단어와 이미 앎 기록의 발음을 가려요.')}</p></Help>}/>}
         <Toggle label="단어 상태" uiLocale={uiLocale} note="새 단어는 파란 밑줄, 저장한 단어 · 복습할 단어는 색 띠로 구분해요" checked={s.wordStateHl} onChange={v=>set('wordStateHl',v)}><StateLegend theme={s.theme} uiLocale={uiLocale}/></Toggle>
         {/* 성조 색상은 발음을 숨겨도 단어창 표제어·글자 탐색 병음을 칠하므로 쓸 수 있는 옵션이다. */}
         {language==='Chinese'&&<><Toggle label="성조 색상" uiLocale={uiLocale} note="병음의 성조 부호는 유지하고 색을 더해요" checked={s.showToneColors} onChange={v=>set('showToneColors',v)}><ToneLegend uiLocale={uiLocale}/></Toggle><Toggle label="한자 대조" uiLocale={uiLocale} note="단어 카드에 한국 한자 훈음을 더해요" checked={s.showHanjaKo} onChange={v=>set('showHanjaKo',v)}/></>}
         {supportsPatterns(language)
-          ?<><Toggle label="문법 표시" uiLocale={uiLocale} note="회색 밑줄은 관련 문형 후보예요. 탭해서 확인하세요." checked={s.showPatterns} onChange={v=>set('showPatterns',v)}/><Choices label="문법 표시 범위" uiLocale={uiLocale} value={s.patternFilter} items={choices([['all','전체'],['due','복습할 것'],['weak','약한 것']])} onChange={v=>set('patternFilter',v)} disabled={!s.showPatterns} reason={s.showPatterns?null:tr('문법 표시를 켜면 고를 수 있어요')}/><p className="reader-setting-note">{translateViewerText(uiLocale,patternNote)}</p></>
+          ?<><Toggle label="문법 표시" uiLocale={uiLocale} note="회색 밑줄은 관련 문형 후보예요. 탭해서 확인해 주세요." checked={s.showPatterns} onChange={v=>set('showPatterns',v)}/><Choices label="문법 표시 범위" uiLocale={uiLocale} value={s.patternFilter} items={choices([['all','전체'],['due','복습할 것'],['weak','약한 것']])} onChange={v=>set('patternFilter',v)} disabled={!s.showPatterns} reason={s.showPatterns?null:tr('문법 표시를 켜면 고를 수 있어요')}/><p className="reader-setting-note">{translateViewerText(uiLocale,patternNote)}</p></>
           :<Toggle label="문법 표시" uiLocale={uiLocale} checked={false} disabled reason={tr('이 언어는 아직 문형 자료가 없어요')} onChange={()=>{}}/>}
         {languageSettings&&<section className="reader-settings__languages" aria-label={tr('언어 설정')}>
           <div className="reader-settings__language-row">

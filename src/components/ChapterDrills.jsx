@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
@@ -10,6 +11,7 @@ import { recordChapterDrillResult, loadGuestDrillQueue, DRILL_ENCOUNTER_LANGS } 
 import { countDueGrammar } from '../lib/grammarSrs';
 import { encounterLookupLang } from '../lib/refVocabLookup';
 import { syncVocabEncounters } from './world/vocabEncounterSync';
+import { authEntryHref } from '../lib/authRedirect';
 
 /** 딕테 채점 — 구두점·아포스트로피 변형에는 관대, 철자·악상에는 엄격 */
 // 힌트는 클릭해야 열린다 — 먼저 스스로 생각해 보게 하는 장치
@@ -189,16 +191,22 @@ export default function ChapterDrills({ lang, drills, title, intro }) {
   useEffect(() => {
     if (!user?.id || !Array.isArray(drills) || drills.length === 0) return undefined;
     let alive = true;
-    supabase
-      .from('review_events')
-      .select('item_key, correct')
-      .eq('user_id', user.id)
-      .in('item_key', drills.map((d) => d.id))
-      .limit(2000)
-      .then(({ data }) => {
-        if (!alive || !Array.isArray(data) || data.length === 0) return;
-        setPastStat({ tries: data.length, right: data.filter((r) => r.correct).length });
-      }, () => {});
+    // 개수만 필요하다 — 행을 받지 않고 건수(head)로 센다(REVIEW-ROWS-CAP-001, 2026-10-17 KST). 행으로 받던 때는
+    // PostgREST 1000행 상한에 말없이 잘려 「n회 풀이」가 1000에서 멈췄다. 두 건수는 같은 시각 상한(untilIso)을 쓴다.
+    const untilIso = new Date().toISOString();
+    const countTries = (onlyCorrect) => {
+      const query = supabase
+        .from('review_events')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .in('item_key', drills.map((d) => d.id))
+        .lte('created_at', untilIso);
+      return onlyCorrect ? query.eq('correct', true) : query;
+    };
+    Promise.all([countTries(false), countTries(true)]).then(([all, right]) => {
+      if (!alive || all.error || right.error || !Number.isSafeInteger(all.count) || all.count === 0) return;
+      setPastStat({ tries: all.count, right: Number.isSafeInteger(right.count) ? right.count : 0 });
+    }, () => {});
     return () => { alive = false; };
   }, [user?.id, drills]);
 
@@ -265,6 +273,8 @@ function countGuestDueDrills() {
 
 /** 드릴 완주 직후 복습 동선 연결 — 방금 푼 문항은 미래 due라 '대기'엔 기존 카드만 잡힌다. */
 function ReviewNudge({ userId }) {
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInHref = authEntryHref(usePathname());
   const [due, setDue] = useState(null);
   useEffect(() => {
     let alive = true;
@@ -282,7 +292,7 @@ function ReviewNudge({ userId }) {
     return (
       <p role="status" aria-live="polite" style={{ marginTop: 6, fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
         풀이 기록은 이 기기에 쌓였어요.{' '}
-        <Link href="/auth" prefetch={false} style={{ fontWeight: 600, color: 'var(--accent-text)' }}>
+        <Link href={signInHref} prefetch={false} style={{ fontWeight: 600, color: 'var(--accent-text)' }}>
           로그인하면 며칠 뒤 복습 큐로 돌아와요 →
         </Link>
       </p>

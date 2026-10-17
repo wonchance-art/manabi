@@ -8,7 +8,9 @@
 export function getJaRef(dictEntry) {
   const meanings = Array.isArray(dictEntry?.meanings) ? dictEntry.meanings : [];
   for (const m of meanings) {
-    if (m && 'ja' in m) return m.ja; // null(대응 없음 판정)도 그대로 반환
+    // 뜻이 문자열인 옛 행(meanings: ['안녕하세요'])도 있다 — 문자열에 `in`을 쓰면 TypeError로 뷰어 전체가 오류 화면이 된다
+    // (수업 교재 e2e 7개 실측 2026-10-17 KST). 객체 행만 본다.
+    if (m && typeof m === 'object' && 'ja' in m) return m.ja; // null(대응 없음 판정)도 그대로 반환
   }
   return undefined; // 미판정 레거시
 }

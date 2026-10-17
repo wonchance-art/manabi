@@ -148,19 +148,32 @@ async function fixture(context, { importMode = false, sentenceMode = false, expl
 }
 
 const preferences = page => page.evaluate(key => JSON.parse(localStorage.getItem(key)), VIEWER_LANGUAGE_PREF_KEY);
+// 글꼴 변수는 루트(body)가 아니라 그 글꼴을 쓰는 세그먼트가 건다 — 번체 TC는 TcFontScope(display: contents 감싸개,
+// FONT-TC-SCOPE-001). 그래서 body가 아니라 실제로 그려지는 요소(뷰어 · top layer 창) 자신이 받는 변수 값을 기준으로 본다.
+// 첫 글꼴 이름만 비교하면 범위 밖의 CSS 폴백('Noto Sans TC' 로컬 이름)도 통과하므로, next/font 스택 전체(본 글꼴 +
+// 「… Fallback」 계측 글꼴)가 계산된 font-family 맨 앞에 오는지, 그 @font-face가 이 문서에 실려 있는지까지 본다.
+const fontStack = value => value.split(',').map(part => part.replace(/["']/g, '').trim()).filter(Boolean);
+function assertFontStack(target, rendered, variable, faces) {
+  assert(variable.value, `${target}: receives ${variable.name} (font scope must wrap it)`);
+  const stack = fontStack(variable.value);
+  assert(stack.length >= 2, `${target}: ${variable.name} is the next/font stack, not a bare name (${variable.value})`);
+  assert.deepEqual(fontStack(rendered).slice(0, stack.length), stack, `${target}: renders ${variable.name} first`);
+  assert(faces.includes(stack[0]), `${target}: @font-face ${stack[0]} is loaded on this page`);
+}
 async function fontScope(page, locale) {
-  const families = await page.evaluate(ui => {
-    const variable = `--font-noto-${({ ko: 'kr', 'zh-CN': 'sc', 'zh-TW': 'tc' })[ui]}`;
-    const expected = getComputedStyle(document.body).getPropertyValue(variable).trim();
-    return { expected, viewer: getComputedStyle(document.querySelector('.viewer-layout')).fontFamily, modal: getComputedStyle(document.querySelector('dialog[open]')).fontFamily };
+  const data = await page.evaluate(ui => {
+    const name = `--font-noto-${({ ko: 'kr', 'zh-CN': 'sc', 'zh-TW': 'tc' })[ui]}`;
+    const read = (el, variable = name) => { const style = getComputedStyle(el); return { family: style.fontFamily, variable: { name: variable, value: style.getPropertyValue(variable).trim() } }; };
+    const source = document.querySelector('.viewer-layout[data-language="Korean"] .reader-area');
+    return {
+      faces: [...document.fonts].map(face => face.family.replace(/["']/g, '').trim()),
+      viewer: read(document.querySelector('.viewer-layout')),
+      modal: read(document.querySelector('dialog[open]')),
+      source: source ? read(source, '--font-noto-kr') : null,
+    };
   }, locale);
-  assert(families.expected, `${locale}: its UI font variable must be registered`);
-  const normalize = value => value.split(',')[0].replace(/["']/g, '').trim();
-  for (const target of ['viewer', 'modal']) assert.equal(normalize(families[target]), normalize(families.expected), `${locale}: ${target} uses its locale font first`);
-  if (await page.locator('.viewer-layout[data-language="Korean"]').count()) {
-    const source = await page.locator('.reader-area').evaluate(el => ({ actual: getComputedStyle(el).fontFamily, expected: getComputedStyle(document.body).getPropertyValue('--font-noto-kr') }));
-    assert.equal(normalize(source.actual), normalize(source.expected), 'Korean source uses KR independently of UI locale');
-  }
+  for (const target of ['viewer', 'modal']) assertFontStack(`${locale} ${target}`, data[target].family, data[target].variable, data.faces);
+  if (data.source) assertFontStack('Korean source (independent of UI locale)', data.source.family, data.source.variable, data.faces);
 }
 async function geometry(page, name, locale) {
   await page.evaluate(() => document.fonts.ready);

@@ -2,6 +2,7 @@
 // 인계 #1337 6119208984(8판) · 보완 6146777048(중국어 급수 = HSK 2026).
 // 데이터 조립(무거운 콘텐츠 import)은 levelListData.js(서버 전용), 여기는 표기 · 대조 규칙만 둔다.
 import { normalizeKnownWord } from './knownWordControl';
+import { readCompleteLegacyRows } from './legacyReviewSync';
 import { zhHskLevelLabel } from './zhHskLevel';
 
 /** 주소의 언어 조각 → 화면 설정. 일본어 · 중국어만 연다(영어 AJ-2 · 프랑스어 FLELex 결정 전). */
@@ -67,6 +68,22 @@ export function levelWordKey(word) {
     .replace(/\s+/g, ''));
 }
 
+/**
+ * 서버 → 화면으로 넘기는 단어 항목을 줄인다 — 대조 키가 표제어와 같으면 key를, 전체 뜻이 짧은 뜻과 같으면
+ * fullMeaning을 뺀다(HSK 6 1,777개 중 1,775개가 같다). 화면은 levelEntry로 되살려 쓴다(값 손실 0 — 왕복 동치).
+ */
+export function compactLevelEntry(entry) {
+  const { key, fullMeaning, ...rest } = entry;
+  return { ...(key === entry.word ? {} : { key }), ...rest, ...(fullMeaning === entry.meaning ? {} : { fullMeaning }) };
+}
+/** compactLevelEntry를 되돌린다 — key 없으면 표제어, fullMeaning 없으면 짧은 뜻. 문형 · 한자 항목(뜻 없음)은 그대로. */
+export function levelEntry(entry) {
+  if (!entry || ('key' in entry && ('fullMeaning' in entry || !('meaning' in entry)))) return entry;
+  return { ...entry, key: entry.key ?? entry.word, ...('meaning' in entry ? { fullMeaning: entry.fullMeaning ?? entry.meaning } : {}) };
+}
+/** 화면이 받은 묶음 전체를 한 번에 되살린다(LevelListPage 진입점 한 곳). */
+export const levelGroupsOf = (groups) => (groups || []).map((g) => ({ ...g, entries: (g.entries || []).map(levelEntry) }));
+
 /** 일본어 표제어 표기 — N5 · N4는 가나 먼저 크게 + 한자 작게, N3부터 한자 위 읽기. */
 export function jaHeadMode(levelKey) {
   return ['N5', 'N4'].includes(String(levelKey || '').toUpperCase()) ? 'kana' : 'ruby';
@@ -106,9 +123,26 @@ export async function fetchSavedLevelKeys(client, userId, language, keys, chunkS
     .eq('user_id', userId).eq('language', language).in(column, chunk))));
   const failed = results.find((r) => r.error);
   if (failed?.error) throw failed.error;
-  const wanted = new Set(unique);
+  return savedKeysOf(results.flatMap((r) => r.data || []), new Set(unique));
+}
+
+/**
+ * 레벨 목록 전체의 「저장됨」 — 그 언어 단어장을 id 순 1000행 page로 한 번에 읽어 대조한다(정본 완전 조회
+ * readCompleteLegacyRows — exact count · 연속 range · 실패는 던짐). 키 150개씩 표기 · 기본형 두 번 묻던
+ * fetchSavedLevelKeys는 HSK 6에서 요청 24개였다. 한자 탭 칩처럼 몇 단어만 볼 때는 fetchSavedLevelKeys를 쓴다.
+ */
+export async function fetchSavedLevelKeysAll(client, userId, language, keys) {
+  if (!client || !userId) return new Set();
+  const wanted = new Set((keys || []).filter(Boolean));
+  if (!wanted.size) return new Set();
+  const rows = await readCompleteLegacyRows(() => client.from('user_vocabulary')
+    .select('id, word_text, base_form', { count: 'exact' }).eq('user_id', userId).eq('language', language));
+  return savedKeysOf(rows, wanted);
+}
+
+function savedKeysOf(rows, wanted) {
   const saved = new Set();
-  for (const row of results.flatMap((r) => r.data || [])) {
+  for (const row of rows) {
     for (const v of [row.word_text, row.base_form]) {
       const k = normalizeKnownWord(v);
       if (wanted.has(k)) saved.add(k);
@@ -136,6 +170,30 @@ export function normalizeLevelPrefs(raw) {
   const flag = (k) => (typeof src[k] === 'boolean' ? src[k] : LEVEL_PREFS_DEFAULT[k]);
   return { view: LEVEL_VIEWS.some((v) => v.id === src.view) ? src.view : 'all',
     hideKnown: flag('hideKnown'), hun: flag('hun'), glyph: flag('glyph'), tone: flag('tone') };
+}
+
+// ── 뒤로 가기 자리(LEVEL-RESTORE-001) ──
+// 긴 목록은 처음 150개만 그린다(LEVEL_LIST_PAGE). 1,000번째 카드까지 내렸다가 다른 화면에 다녀오면 150개만 다시 그려져
+// 브라우저가 옛 높이로 맞추지 못한다(운영 실측: h1 2500px → 돌아오면 2231px, 다른 줄). 그래서 이 기록(history entry)에
+// 「몇 개까지 그렸고 어디였나」를 남겨 두고, 돌아오면 그만큼 그린 뒤 그 자리로 옮긴다. 기록마다 따로라 새로 들어온 목록
+// (링크 · 주소 입력)은 늘 맨 위 150개에서 시작한다 — Next는 이동(traversal)에서만 우리 값을 보존하고 새 이동에서는 지운다.
+// 학습 기록이 아니라 화면 자리다(DiscoveryExplorer manabiDiscoveryScroll · BookReader manabiBookPosition과 같은 방식).
+export const LEVEL_PLACE_KEY = 'manabiLevelList';
+const LEVEL_PLACE_MAX = 20000; // 가장 긴 목록(N1 · HSK 7-9)보다 넉넉히 — 그 이상은 망가진 값
+/** history.state → 이 주소의 자리 { limit, y, query, key?, top? }. 다른 주소 · 망가진 값이면 null. */
+export function levelPlaceOf(state, pathname) {
+  const p = state && typeof state === 'object' ? state[LEVEL_PLACE_KEY] : null;
+  if (!p || typeof p !== 'object' || p.path !== pathname) return null;
+  const { limit, y } = p;
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > LEVEL_PLACE_MAX || !Number.isFinite(y) || y < 0 || y > 1e7) return null;
+  const place = { limit, y, query: typeof p.query === 'string' ? p.query.slice(0, 200) : '' };
+  // 기준 카드 — 위쪽 높이가 계정 상태(진도 줄 · 아는 단어 숨기기)로 늦게 바뀌어도 같은 카드를 같은 높이에 둔다.
+  if (typeof p.key === 'string' && p.key && Number.isFinite(p.top)) Object.assign(place, { key: p.key, top: p.top });
+  return place;
+}
+/** Next의 기록 값(__NA · 트리)을 그대로 두고 우리 자리만 바꾼 새 state. */
+export function withLevelPlace(state, place) {
+  return { ...(state && typeof state === 'object' ? state : {}), [LEVEL_PLACE_KEY]: place };
 }
 
 // ── 진도 · 이어 하기(LEVEL-FLOW-001, 디자인 검토 2026-10-16 · /mnt/project-files/notes/design-review-1016) ──

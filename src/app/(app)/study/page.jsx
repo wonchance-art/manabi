@@ -117,6 +117,7 @@ export default async function Page({ searchParams }) {
       langName={ref.name}
       readKey={ref.readKey}
       shuffleSeed={crypto.randomUUID()}
+      sessionUserId={user.id}
       languages={Object.entries(REF_LANGS).map(([key, r]) => ({ key, name: r.name }))}
     />
   );

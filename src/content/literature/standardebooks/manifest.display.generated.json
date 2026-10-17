@@ -1,0 +1,354 @@
+{
+  "schemaVersion": 1,
+  "works": {
+    "se-arthur-conan-doyle_the-adventures-of-sherlock-holmes": {
+      "title": "The Adventures of Sherlock Holmes",
+      "author": "Arthur Conan Doyle",
+      "level": "B2 상급",
+      "total": 47,
+      "words": 104582,
+      "display": {
+        "titleKo": "셜록 홈즈의 모험",
+        "authorKo": "아서 코넌 도일",
+        "coverTitle": "Sherlock\nHolmes",
+        "coverKicker": "The Adventures of",
+        "coverAuthor": "A. Conan Doyle",
+        "cloth": "pale-blue",
+        "binding": "pictorial"
+      },
+      "literature": {
+        "publishedYear": 1892
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "A Scandal in Bohemia (1/4)"
+        },
+        {
+          "order": 2,
+          "title": "A Scandal in Bohemia (2/4)"
+        },
+        {
+          "order": 3,
+          "title": "A Scandal in Bohemia (3/4)"
+        },
+        {
+          "order": 4,
+          "title": "A Scandal in Bohemia (4/4)"
+        },
+        {
+          "order": 5,
+          "title": "The Redheaded League (1/4)"
+        },
+        {
+          "order": 6,
+          "title": "The Redheaded League (2/4)"
+        },
+        {
+          "order": 7,
+          "title": "The Redheaded League (3/4)"
+        },
+        {
+          "order": 8,
+          "title": "The Redheaded League (4/4)"
+        },
+        {
+          "order": 9,
+          "title": "A Case of Identity (1/3)"
+        },
+        {
+          "order": 10,
+          "title": "A Case of Identity (2/3)"
+        },
+        {
+          "order": 11,
+          "title": "A Case of Identity (3/3)"
+        },
+        {
+          "order": 12,
+          "title": "The Boscombe Valley Mystery (1/4)"
+        },
+        {
+          "order": 13,
+          "title": "The Boscombe Valley Mystery (2/4)"
+        },
+        {
+          "order": 14,
+          "title": "The Boscombe Valley Mystery (3/4)"
+        },
+        {
+          "order": 15,
+          "title": "The Boscombe Valley Mystery (4/4)"
+        },
+        {
+          "order": 16,
+          "title": "The Five Orange Pips (1/3)"
+        },
+        {
+          "order": 17,
+          "title": "The Five Orange Pips (2/3)"
+        },
+        {
+          "order": 18,
+          "title": "The Five Orange Pips (3/3)"
+        },
+        {
+          "order": 19,
+          "title": "The Man with the Twisted Lip (1/4)"
+        },
+        {
+          "order": 20,
+          "title": "The Man with the Twisted Lip (2/4)"
+        },
+        {
+          "order": 21,
+          "title": "The Man with the Twisted Lip (3/4)"
+        },
+        {
+          "order": 22,
+          "title": "The Man with the Twisted Lip (4/4)"
+        },
+        {
+          "order": 23,
+          "title": "The Adventure of the Blue Carbuncle (1/4)"
+        },
+        {
+          "order": 24,
+          "title": "The Adventure of the Blue Carbuncle (2/4)"
+        },
+        {
+          "order": 25,
+          "title": "The Adventure of the Blue Carbuncle (3/4)"
+        },
+        {
+          "order": 26,
+          "title": "The Adventure of the Blue Carbuncle (4/4)"
+        },
+        {
+          "order": 27,
+          "title": "The Adventure of the Speckled Band (1/4)"
+        },
+        {
+          "order": 28,
+          "title": "The Adventure of the Speckled Band (2/4)"
+        },
+        {
+          "order": 29,
+          "title": "The Adventure of the Speckled Band (3/4)"
+        },
+        {
+          "order": 30,
+          "title": "The Adventure of the Speckled Band (4/4)"
+        },
+        {
+          "order": 31,
+          "title": "The Adventure of the Engineer’s Thumb (1/4)"
+        },
+        {
+          "order": 32,
+          "title": "The Adventure of the Engineer’s Thumb (2/4)"
+        },
+        {
+          "order": 33,
+          "title": "The Adventure of the Engineer’s Thumb (3/4)"
+        },
+        {
+          "order": 34,
+          "title": "The Adventure of the Engineer’s Thumb (4/4)"
+        },
+        {
+          "order": 35,
+          "title": "The Adventure of the Noble Bachelor (1/4)"
+        },
+        {
+          "order": 36,
+          "title": "The Adventure of the Noble Bachelor (2/4)"
+        },
+        {
+          "order": 37,
+          "title": "The Adventure of the Noble Bachelor (3/4)"
+        },
+        {
+          "order": 38,
+          "title": "The Adventure of the Noble Bachelor (4/4)"
+        },
+        {
+          "order": 39,
+          "title": "The Adventure of the Beryl Coronet (1/4)"
+        },
+        {
+          "order": 40,
+          "title": "The Adventure of the Beryl Coronet (2/4)"
+        },
+        {
+          "order": 41,
+          "title": "The Adventure of the Beryl Coronet (3/4)"
+        },
+        {
+          "order": 42,
+          "title": "The Adventure of the Beryl Coronet (4/4)"
+        },
+        {
+          "order": 43,
+          "title": "The Adventure of the Copper Beeches (1/5)"
+        },
+        {
+          "order": 44,
+          "title": "The Adventure of the Copper Beeches (2/5)"
+        },
+        {
+          "order": 45,
+          "title": "The Adventure of the Copper Beeches (3/5)"
+        },
+        {
+          "order": 46,
+          "title": "The Adventure of the Copper Beeches (4/5)"
+        },
+        {
+          "order": 47,
+          "title": "The Adventure of the Copper Beeches (5/5)"
+        }
+      ]
+    },
+    "se-charles-dickens_a-christmas-carol": {
+      "title": "A Christmas Carol",
+      "author": "Charles Dickens",
+      "level": "B2 상급",
+      "total": 13,
+      "words": 28442,
+      "display": {
+        "titleKo": "크리스마스 캐럴",
+        "authorKo": "찰스 디킨스",
+        "coverTitle": "Christmas\nCarol",
+        "coverKicker": "A",
+        "coverAuthor": "Charles Dickens",
+        "cloth": "cinnamon",
+        "binding": "wreath"
+      },
+      "literature": {
+        "publishedYear": 1843
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Stave I: Marley’s Ghost (1/3)"
+        },
+        {
+          "order": 2,
+          "title": "Stave I: Marley’s Ghost (2/3)"
+        },
+        {
+          "order": 3,
+          "title": "Stave I: Marley’s Ghost (3/3)"
+        },
+        {
+          "order": 4,
+          "title": "Stave II: The First of the Three Spirits (1/3)"
+        },
+        {
+          "order": 5,
+          "title": "Stave II: The First of the Three Spirits (2/3)"
+        },
+        {
+          "order": 6,
+          "title": "Stave II: The First of the Three Spirits (3/3)"
+        },
+        {
+          "order": 7,
+          "title": "Stave III: The Second of the Three Spirits (1/4)"
+        },
+        {
+          "order": 8,
+          "title": "Stave III: The Second of the Three Spirits (2/4)"
+        },
+        {
+          "order": 9,
+          "title": "Stave III: The Second of the Three Spirits (3/4)"
+        },
+        {
+          "order": 10,
+          "title": "Stave III: The Second of the Three Spirits (4/4)"
+        },
+        {
+          "order": 11,
+          "title": "Stave IV: The Last of the Spirits (1/2)"
+        },
+        {
+          "order": 12,
+          "title": "Stave IV: The Last of the Spirits (2/2)"
+        },
+        {
+          "order": 13,
+          "title": "Stave V: The End of It"
+        }
+      ]
+    },
+    "se-lewis-carroll_alices-adventures-in-wonderland": {
+      "title": "Alice’s Adventures in Wonderland",
+      "author": "Lewis Carroll",
+      "level": "B1 중급",
+      "total": 12,
+      "words": 26325,
+      "display": {
+        "titleKo": "이상한 나라의 앨리스",
+        "authorKo": "루이스 캐럴",
+        "coverTitle": "Alice in\nWonderland",
+        "cloth": "madder-red",
+        "binding": "medallion"
+      },
+      "literature": {
+        "publishedYear": 1865
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: Down the Rabbit-Hole"
+        },
+        {
+          "order": 2,
+          "title": "II: The Pool of Tears"
+        },
+        {
+          "order": 3,
+          "title": "III: A Caucus-Race and a Long Tale"
+        },
+        {
+          "order": 4,
+          "title": "IV: The Rabbit Sends in a Little Bill"
+        },
+        {
+          "order": 5,
+          "title": "V: Advice from a Caterpillar"
+        },
+        {
+          "order": 6,
+          "title": "VI: Pig and Pepper"
+        },
+        {
+          "order": 7,
+          "title": "VII: A Mad Tea-Party"
+        },
+        {
+          "order": 8,
+          "title": "VIII: The Queen’s Croquet-Ground"
+        },
+        {
+          "order": 9,
+          "title": "IX: The Mock Turtle’s Story"
+        },
+        {
+          "order": 10,
+          "title": "X: The Lobster Quadrille"
+        },
+        {
+          "order": 11,
+          "title": "XI: Who Stole the Tarts?"
+        },
+        {
+          "order": 12,
+          "title": "XII: Alice’s Evidence"
+        }
+      ]
+    }
+  }
+}

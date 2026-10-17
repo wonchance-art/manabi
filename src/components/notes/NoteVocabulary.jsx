@@ -56,7 +56,7 @@ export default function NoteVocabulary({saved, noteId, note, onChange, onFocus, 
   const inkCount = note.board.pages.reduce((count, page) => count + page.elements.filter(el => !el.isDeleted && el.type === 'freedraw').length, 0);
   return <aside className="note-review" tabIndex={-1} aria-label="노트 단어 정리" aria-busy={busy} onKeyDown={event=>{if(event.key==='Escape'&&!event.nativeEvent.isComposing&&!busy){event.preventDefault();event.stopPropagation();onClose();}}}>
     <header><div><small>MY WORDS</small><h2>단어 정리<span>.</span></h2></div><button className="note-icon" aria-label="단어 정리 닫기" disabled={busy} onClick={onClose}><BoardIcon name="close"/></button></header>
-    <p className="note-review-intro">표기와 뜻을 확인한 표현을 선택하세요. 필기 원본은 그대로 남아요.</p>
+    <p className="note-review-intro">표기와 뜻을 확인한 표현을 선택해 주세요. 필기 원본은 그대로 남아요.</p>
     <div className="note-review-actions"><button disabled={busy} onClick={()=>onChange(current=>current.map(row=>!row.excluded&&!row.vocabularyId&&row.text.trim()&&row.meaning.trim()?{...row,reviewed:true}:row))}>뜻 있는 항목 모두 선택</button><label><input type="checkbox" checked={showExcluded} onChange={event=>setShowExcluded(event.target.checked)}/>제외한 항목</label></div>
     <div className="note-review-scroll">
       {!rows.length&&<div className="note-review-empty"><h3>노트에서 표현을 모아 보세요.</h3><p>＋로 놓은 단어와 글자 도구로 적은 내용을 정리할 수 있어요. ‘표현 → 뜻’으로 적으면 한 줄씩 연결돼요.</p></div>}
@@ -72,11 +72,13 @@ export default function NoteVocabulary({saved, noteId, note, onChange, onFocus, 
           {row.recognition&&<div className="note-recognized"><small>AI 인식{row.recognition.uncertain?' · 읽기와 뜻 확인 필요':''}</small>{row.recognition.choices.length>0&&<div className="note-choices" aria-label={`${row.original} 인식 후보`}>{row.recognition.choices.map((choice,index)=><button key={index} disabled={busy} onClick={()=>edit(row.id,{text:choice.text,base:'',reading:['Japanese','Chinese'].includes(row.language)?choice.reading:'',meaning:choice.meaning})}><b>{choice.text}</b><small>{choice.meaning||'뜻 직접 입력'}</small></button>)}</div>}<p>인식 원문: {row.original}</p></div>}
           {!!choicesForRow?.candidates?.length&&<div className="note-choices" aria-label={`${row.text} 한자 후보`}>{choicesForRow.candidates.map(candidate=><button key={candidate.text} disabled={busy} onClick={()=>{edit(row.id,{text:candidate.text,base:'',reading:candidate.reading,meaning:row.meaning||candidate.meaning||''});setChoices(current=>({...current,[row.id]:null}));}}><b>{candidate.text}</b><small>{candidate.meaning||'뜻 확인 필요'}</small></button>)}<button onClick={()=>setChoices(current=>({...current,[row.id]:null}))}>가나 그대로</button></div>}
           {choicesForRow?.senses?.length>1&&<div className="note-choices" aria-label="뜻 후보">{choicesForRow.senses.map((sense,index)=><button key={index} disabled={busy} onClick={()=>edit(row.id,{meaning:sense.meaning})}>{sense.meaning}</button>)}</div>}
-          {outcome?.error&&<div className="note-row-error" role="status"><p>{outcome.error}</p>{outcome.code==='meaning_conflict'&&outcome.existing&&<><p>기존 뜻: {outcome.existing.meaning}</p><button disabled={busy} onClick={()=>saveRows([row],{[row.id]:{confirmId:outcome.existing.id,confirmMeaning:outcome.existing.meaning}})}>같은 뜻이에요 · 문맥만 연결</button></>}</div>}
-          {outcome?.ok&&<p className="note-saved" role="status">{outcome.text}</p>}
+          {/* 줄마다 저장 결과 알림 — 영역은 늘 두고 내용만 넣는다. 보이는 줄은 숨기고 확인 버튼이 영역을 가리킨다(A11Y-SWEEP-001). */}
+          <span className="sr-only" role="status" id={`note-outcome-${row.id}`}>{outcome?.error||(outcome?.ok?outcome.text:'')}</span>
+          {outcome?.error&&<div className="note-row-error"><p aria-hidden="true">{outcome.error}</p>{outcome.code==='meaning_conflict'&&outcome.existing&&<><p>기존 뜻: {outcome.existing.meaning}</p><button aria-describedby={`note-outcome-${row.id}`} disabled={busy} onClick={()=>saveRows([row],{[row.id]:{confirmId:outcome.existing.id,confirmMeaning:outcome.existing.meaning}})}>같은 뜻이에요 · 문맥만 연결</button></>}</div>}
+          {outcome?.ok&&<p className="note-saved" aria-hidden="true">{outcome.text}</p>}
         </article>;
       })}
     </div>
-    <footer>{(notice||message)&&<p role="status">{notice||message}</p>}<button className="manabi-button" disabled={busy||!selected.length} onClick={()=>saveRows(selected)}>{busy?'선택한 표현 담는 중…':`선택한 ${selected.length}개 담기`}</button><small>기존 단어의 뜻과 복습 일정은 그대로예요.</small></footer>
+    <footer><span className="sr-only" role="status">{notice||message||''}</span>{(notice||message)&&<p className="note-review-notice" aria-hidden="true">{notice||message}</p>}<button className="manabi-button" disabled={busy||!selected.length} onClick={()=>saveRows(selected)}>{busy?'선택한 표현 담는 중…':`선택한 ${selected.length}개 담기`}</button><small>기존 단어의 뜻과 복습 일정은 그대로예요.</small></footer>
   </aside>;
 }

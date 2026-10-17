@@ -8,11 +8,12 @@ import { conversationOf } from '@/lib/conversation/turnModel';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import LibraryReaderLink, { useLibraryReader } from '@/components/web/LibraryReaderLink';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '../lib/supabase';
 import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
+import { readCompleteLegacyRows } from '../lib/legacyReviewSync';
 import { buildVocabularyWordIndex, countVocabularyDueInMaterial } from '../lib/vocabularyDueIndex';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
@@ -20,37 +21,34 @@ import { parseTitle } from '../lib/seriesMeta';
 import { materialFit, fitBand, sortByFit, bookFit, FIT_MIN_TYPES } from '../lib/materialFit';
 import { fetchKnownWords, mergeKnownIntoIndex } from '../lib/knownWords';
 import { groupByBook } from '../lib/bookMeta';
-import { isTeamRoot } from '../lib/classBoard';
+import { isTeamRoot } from '../lib/classTeamRoot';
 import { groupByPdf, pageRangeLabel, readProgressLabel } from '../lib/pdfGroups';
 import { useGroupReadIds } from '../lib/useGroupReadIds';
-import { LEVELS, langNameKo, levelRank, profileLevel, isWriteMaterial } from '../lib/constants';
-import { canReadSuggestion, suggestionHref, suggestionSource } from '../lib/suggestionReading';
+import { LEVELS, SERIES_TITLE_ILIKE, langNameKo, levelRank, profileLevel, isWriteMaterial } from '../lib/constants';
+import { canReadSuggestion, suggestionHref, suggestionSource, TODAY_SUGGESTIONS_KEY, TODAY_NEWS_ID, fetchTodaySuggestions } from '../lib/suggestionReading';
 import { encounterLookupLang } from '../lib/refVocabLookup';
 import { isLibraryNote, materialLibraryFilters } from '../lib/libraryDiscovery';
 import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
 import MaterialGroupCard from '../components/MaterialGroupCard';
 import LiteratureCover from '../components/books/LiteratureCover';
-import { literatureWorkOfBook } from '../lib/literatureCanonical';
+// 표지 · 제목은 표시용 대조표만(LIT-DISPLAY-001) — 전체 대조표(해시 · 크레딧)는 뷰어 출처 줄 몫이라 서재 번들에 싣지 않는다.
+import { literatureWorkOfBook } from '../lib/literatureWorks';
+import { literatureChapterIncipit } from '../lib/literatureIncipits';
 import VictorianCover from '../components/books/VictorianCover';
-import { standardEbooksWorkOfBook } from '../lib/standardEbooksCanonical';
+import { standardEbooksWorkOfBook } from '../lib/standardEbooksWorks';
+import { isCanonicalBookKey } from '../lib/canonicalBookKey';
 import { literatureChapterLabel, literatureDivisionLabel } from '../lib/literatureDisplay';
 import SuggestionArtwork from '../components/SuggestionArtwork';
 import { failureMessage } from '@/lib/errorMessage';
 import { authEntryHref } from '@/lib/authRedirect';
-import { withGuestBookCatalog } from '@/lib/guestBookCatalog';
+import { guestBookCatalogRows, withGuestBookCatalog } from '@/lib/guestBookCatalog';
 
 
-async function fetchTodaySuggestions() {
-  const res = await fetch('/api/suggestions/today');
-  if (!res.ok) return [];
-  return res.json();
-}
-
-function SuggestionCard({ suggestion: s, router }) {
+function SuggestionCard({ suggestion: s, router, from = 'materials' }) {
   const canStudy = canReadSuggestion(s);
   const source = suggestionSource(s);
-  function handleStudy() { router.push(suggestionHref(s)); }
+  function handleStudy() { router.push(suggestionHref(s, from)); }
 
   return (
     <div className="suggestion-card">
@@ -91,7 +89,7 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
   if (withDocument) query = query.select(`${MATERIAL_LIST_COLS}${withDirection ? ', direction' : ''}, document_revision:document_json->>revision, document_language:document_json->>language, document_excerpt:document_json->>excerpt, document_assets:document_json->assets, document_has_body:document_json->hasBody`);
 
   // 자료실은 현지 언어 콘텐츠만 — 시리즈 패턴 [* #N] 자료는 /lessons로 분리
-  query = query.not('title', 'ilike', '[%#%]%');
+  query = query.not('title', 'ilike', SERIES_TITLE_ILIKE);
 
   if (tab === 'public') {
     query = query.eq('visibility', 'public');
@@ -111,6 +109,8 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
     query = query.eq('processed_json->metadata->>level', levelFilter);
   }
 
+  // 비로그인 「함께 읽는 글」의 책 장 메타는 목록 조회와 나란히 출발한다(전: 목록 응답 뒤에 출발 — 운영 0.7–0.8초 직렬 대기).
+  const guestCatalog = tab === 'public' && !userId ? guestBookCatalogRows(supabase) : null;
   const { data, error } = await query;
   if (error) {
     if (withDocument && /document_json/.test(error.message || '')) return fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuery, includeOwnedPublic, withDirection, withDocument: false });
@@ -123,7 +123,7 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
     throw error;
   }
   // 비로그인은 책 장을 읽지 못한다(BOOK-GUEST-GATE-1 — DB 제한 정책). 책 카드는 메타만 주는 함수로 채운다.
-  const rows = tab === 'public' && !userId ? await withGuestBookCatalog(supabase, data || [], { langFilter, levelFilter, searchQuery }) : data || [];
+  const rows = guestCatalog ? await withGuestBookCatalog(supabase, data || [], { langFilter, levelFilter, searchQuery, catalog: guestCatalog }) : data || [];
   // 팀 루트(수업 설정 행, v2-AB R1)는 자료가 아니다 — 목록에서 숨긴다(정리본은 자료로 보인다).
   // 대화(v2-Z)도 고르는 읽을거리가 아니다 — 서재의 「대화」 묶음에만 모인다.
   return (tab==='private'?await filterActiveSources(supabase,userId,rows):rows).map(documentListRow).filter(material => !isStudySnapshot(material) && !isTeamRoot(material) && !conversationOf(material) && (langFilter === 'all' || (documentOf(material)?.language ?? material.processed_json?.metadata?.language) === langFilter));
@@ -188,12 +188,17 @@ export default function MaterialsPage({ libraryView = null }) {
       if (error) throw error;
     },
     onSuccess: (_, { newVisibility }) => {
-      queryClient.invalidateQueries({ queryKey: ['materials'] });
+      // 서재 목록도 공개 범위를 보인다 — 자료실 목록만이 아니라 서재 캐시까지 정본 경로로 무효화한다.
+      invalidateLibrary(queryClient, user.id);
       toast(newVisibility === 'public' ? '공용으로 공개했어요.' : '비공개로 바꿨어요.', 'success');
     },
     onError: (err) => toast(failureMessage('공개 범위를 바꾸지 못했어요.', err), 'error'),
   });
   const searchParams = useSearchParams();
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInPath = usePathname();
+  const signInQuery = searchParams?.toString();
+  const signInHref = authEntryHref(signInQuery ? `${signInPath}?${signInQuery}` : signInPath);
   // 기본 탭(v2-P, 오너 지시 「내 자료가 먼저」) — 로그인 `private` / 비로그인 `public`.
   // ⚠ 게스트 분기가 **필수**다: `내 자료` 쿼리는 `if (!userId) return []`이라 게스트에게
   // 무조건 빈 목록이다. 그냥 뒤집으면 게스트 첫 화면이 빈다.
@@ -252,6 +257,7 @@ export default function MaterialsPage({ libraryView = null }) {
       const cache = await import('../lib/offlineCache');
       if (pinnedIds.has(id)) {
         await cache.unpinMaterial(id);
+        queryClient.invalidateQueries({ queryKey: ['library-pinned', user?.id] });
         setPinnedIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
         toast('받아두기를 해제했어요.', 'info');
         return;
@@ -260,8 +266,9 @@ export default function MaterialsPage({ libraryView = null }) {
         .from('reading_materials').select('*').eq('id', id).maybeSingle();
       if (error || !data) throw error || new Error('NOT_FOUND');
       await cache.pinMaterial(data);
+      queryClient.invalidateQueries({ queryKey: ['library-pinned', user?.id] });
       setPinnedIds((prev) => new Set(prev).add(id));
-      toast('받아뒀어요 — 연결이 없어도 열립니다.', 'success');
+      toast('받아뒀어요 — 연결이 없어도 열려요.', 'success');
     } catch {
       toast('받아 두지 못했어요. 연결을 확인해 주세요.', 'error');
     } finally {
@@ -306,8 +313,8 @@ export default function MaterialsPage({ libraryView = null }) {
     window.history.replaceState({ ...window.history.state }, '', `${window.location.pathname === '/discover' ? '/discover' : '/materials'}${next ? `?${next}` : ''}${window.location.hash}`);
   }, [libraryView, searchQuery, langFilter, levelFilter, sortBy, unreadOnly, pinnedOnly, visibleCount]);
 
-  const { data: suggestions = [] } = useQuery({
-    queryKey: ['suggestions-today'],
+  const { data: suggestions = [], isFetched: suggestionsFetched } = useQuery({
+    queryKey: TODAY_SUGGESTIONS_KEY,
     enabled: !libraryView || libraryView === 'public',
     queryFn: fetchTodaySuggestions,
     staleTime: 60 * 60 * 1000, // 1시간 캐시
@@ -368,11 +375,11 @@ export default function MaterialsPage({ libraryView = null }) {
   const { data: savedVocabIndex } = useQuery({
     queryKey: ['saved-vocab-index', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // PostgREST 기본 상한(1000행)에 잘리지 않게 정본 완전 조회(id 순 page · exact count)로 읽는다.
+      const data = await readCompleteLegacyRows(() => supabase
         .from('user_vocabulary')
-        .select('word_text, base_form')
-        .eq('user_id', user.id);
-      if (error) throw error;
+        .select('id, word_text, base_form', { count: 'exact' })
+        .eq('user_id', user.id));
       const surfaces = new Set();
       const bases = new Set();
       for (const v of data || []) {
@@ -397,18 +404,65 @@ export default function MaterialsPage({ libraryView = null }) {
     return dueVocabError ? null : countVocabularyDueInMaterial(dueVocabIndex, material);
   }
 
-  const { data: materials = [], isLoading, error: materialsError, refetch: refetchMaterials } = useQuery({
+  const { data: materials = [], isLoading, isFetched: materialsFetched, error: materialsError, refetch: refetchMaterials } = useQuery({
     queryKey: ['materials', tab, user?.id, langFilter, levelFilter, searchQuery, !!libraryView],
     queryFn: () => fetchMaterials({ tab, userId: user?.id, langFilter, levelFilter, searchQuery, includeOwnedPublic: !!libraryView }),
     // 기본 탭이 로그인 여부로 갈리므로 auth 확정 전에 쏘면 버릴 쿼리가 된다.
-    enabled: !!tab,
-    refetchInterval: (query) => {
-      const hasAnalyzing = query.state.data?.some(
-        m => m.processed_json?.status === 'analyzing'
-      );
-      return hasAnalyzing ? 5000 : false;
-    },
+    // 「함께 읽는 글」은 인증 확인 전에도 tab이 'public'이다 — 확인 전에 받으면 로그인 사용자에게도 게스트 목록(책 카드 「로그인하고 읽기」)이
+    // 한 번 그려지고 책 카탈로그 RPC를 한 번 더 부른다(리뷰 2026-10-17 KST). 확인이 끝난 뒤 한 번만 받는다.
+    enabled: !!tab && !(libraryView === 'public' && authLoading),
   });
+
+  // 발견 서가 「오늘의 소식 · 전체 보기」(#today-news, B2 A안 — 오너 「권장대로」 2026-10-17 KST): 목록과 소식이 둘 다 들어온 뒤
+  // 한 번만 그 칸 제목으로 내려가 초점을 둔다 — 위 목록이 늦게 들어오면 칸이 밀려 먼저 내려간 자리가 어긋난다.
+  // 해시 처리는 #library-search와 같은 모양(처음 한 번 + hashchange). 칸이 없으면(로그인 필터로 소식 0) 맨 위 그대로.
+  const newsFocusDone = useRef(false);
+  const newsReady = materialsFetched && suggestionsFetched;
+  useEffect(() => {
+    const focusNews = () => {
+      if (window.location.hash !== `#${TODAY_NEWS_ID}` || newsFocusDone.current || !newsReady) return;
+      const heading = document.getElementById(TODAY_NEWS_ID);
+      if (!heading) return;
+      newsFocusDone.current = true;
+      heading.scrollIntoView({ block: 'start' });
+      heading.focus({ preventScroll: true });
+    };
+    const again = () => { newsFocusDone.current = false; focusNews(); };
+    focusNews();
+    window.addEventListener('hashchange', again);
+    return () => window.removeEventListener('hashchange', again);
+  }, [newsReady]);
+
+  // 분석 중 자료는 상태 한 칸만 5초마다 본다 — 목록 전체(processed_json 통짜)를 다시 받지 않는다.
+  // 대상은 내 소유 행뿐이다: 공개 화면의 남의 분석 중 자료 때문에 내 화면이 폴링하지 않는다.
+  // 상태가 바뀐(또는 사라진) 행이 있을 때만 목록을 무효화해, 다시 받은 목록이 평소처럼 그린다.
+  const analyzingIds = useMemo(() => (user?.id ? materials
+    .filter(m => m.processed_json?.status === 'analyzing' && m.owner_id === user.id)
+    .map(m => m.id) : []), [materials, user?.id]);
+  const { data: analyzingStatus, dataUpdatedAt: analyzingCheckedAt } = useQuery({
+    queryKey: ['materials-analyzing-status', user?.id, analyzingIds],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('reading_materials')
+        .select('id, status:processed_json->>status')
+        .in('id', analyzingIds);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: analyzingIds.length > 0,
+    refetchInterval: 5000,
+    staleTime: 0,
+  });
+  const handledStatusAt = useRef(0);
+  useEffect(() => {
+    // 한 번의 폴링 결과에 한 번만 반응한다 — 목록 재조회로 id 배열만 새로 만들어져도 다시 무효화하지 않는다.
+    if (!analyzingStatus || !analyzingIds.length || handledStatusAt.current === analyzingCheckedAt) return;
+    handledStatusAt.current = analyzingCheckedAt;
+    const statusById = new Map(analyzingStatus.map(row => [String(row.id), row.status]));
+    if (analyzingIds.some(id => statusById.get(String(id)) !== 'analyzing')) {
+      queryClient.invalidateQueries({ queryKey: ['materials'] });
+    }
+  }, [analyzingStatus, analyzingCheckedAt, analyzingIds, queryClient]);
 
   // 레벨 목록도 정본에서. 삼항 체인이라 프랑스어를 고르면 **전체 목록**이 나왔다.
   // '전체'는 네 언어를 합치되 중복을 지운다 — 영어와 프랑스어가 CEFR 급수를 공유해서,
@@ -544,7 +598,7 @@ export default function MaterialsPage({ libraryView = null }) {
         <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
           <Link href="/quick" className="btn btn--ghost btn--md">⚡ 빠른 분석</Link>
           <Link href="/materials/add" className="btn btn--primary btn--md">
-            새 자료 추가
+            자료 추가
           </Link>
         </div>
       </div>
@@ -599,7 +653,7 @@ export default function MaterialsPage({ libraryView = null }) {
               onClick={() => setUnreadOnly(v => !v)}
               aria-pressed={unreadOnly}
               className={`chip ${unreadOnly ? 'chip--active' : ''}`}
-              title="완독한 자료를 목록에서 숨깁니다"
+              title="완독한 자료를 목록에서 숨겨요"
             >
               안 읽은 것만
             </button>
@@ -611,7 +665,7 @@ export default function MaterialsPage({ libraryView = null }) {
               onClick={() => setPinnedOnly(v => !v)}
               aria-pressed={pinnedOnly}
               className={`chip ${pinnedOnly ? 'chip--active' : ''}`}
-              title="연결이 없어도 열리는 자료만 봅니다"
+              title="연결이 없어도 열리는 자료만 봐요"
             >
               받아둔 것만
             </button>
@@ -656,7 +710,7 @@ export default function MaterialsPage({ libraryView = null }) {
       {dueVocabError && <div className="library-query-state" role="alert">표현을 불러오지 못했어요. <button type="button" onClick={() => refetchDueVocab()}>다시 시도</button></div>}
       {progressError && <div className="library-query-state" role="alert">읽음 기록을 불러오지 못했어요. <button type="button" onClick={() => refetchProgress()}>다시 시도</button></div>}
       {showPdfs && pdfsError && <div className="library-query-state" role="alert">PDF 목록을 불러오지 못했어요. <button type="button" onClick={() => refetchPdfs()}>다시 시도</button></div>}
-      {showPdfs && pdfsLoading && <p role="status">PDF 목록 확인 중…</p>}
+      {showPdfs && pdfsLoading && <p aria-busy="true">PDF 목록 확인 중…</p>}
       {(!tab || isLoading) ? (
         <CardGridSkeleton />
       ) : materialsError ? (
@@ -682,6 +736,11 @@ export default function MaterialsPage({ libraryView = null }) {
             const { books, singles: bookless } = groupByBook(filtered);
             const contentLangOf = (c) => (c ? encounterLookupLang(documentOf(c)?.language ?? c.processed_json?.metadata?.language) || undefined : undefined);
             const { groups: pdfGroupsHere, rest: singles } = groupByPdf(bookless, visiblePdfs);
+            // 정본 표지·제목은 공개 목록에서 닫는다(fail closed). 공개 metadata는 누구나 꾸밀 수 있어
+            // 남의 행이 정본 key·provider를 달면 정본 표지를 받는다 — 묶음은 소유자로 갈라도(groupByBook)
+            // 「이 소유자가 정본 발행자」를 판정할 근거가 아직 없다. 정본 표지는 발행 기록(설계 C안
+            // canonical_book_releases, 오너 결정 대기) 도입 때 다시 연다. libraryView 'public'은 tab 'public'.
+            const canonicalCovers = tab !== 'public';
             const bookCards = books.map((b) => {
               const analyzed = b.chapters.filter((c) => ['completed', 'partial'].includes(c.processed_json?.status)).length;
               const readDone = b.chapters.filter((c) => completedIds.has(c.id)).length;
@@ -691,8 +750,7 @@ export default function MaterialsPage({ libraryView = null }) {
               const bf = savedFitIndex ? bookFit(b.chapters, savedFitIndex) : null;
               const pendingNote = pendingCount > 0 ? ` · 분석 전 ${pendingCount}` : '';
               // 정본 문학책(AOZORA-P0-5) — 타이포그래피 표지 + 작가 목차(一·二) / 나눈 위치(1/2) + 장 첫 문장. 교재의 「과」를 쓰지 않는다.
-              const work = literatureWorkOfBook(b);
-              const chapterOf = (c) => work?.chapters.find((item) => item.order === c._bookOrder);
+              const work = canonicalCovers ? literatureWorkOfBook(b) : null;
               // 장 표지 — 작가 見出し(一·二)는 일본어로, 「1/2」는 날짜로 읽히지 않게 화면 읽기용 「2부분 중 1」을 따로 둔다.
               const literatureLead = (order) => {
                 const label = literatureChapterLabel(work, order);
@@ -710,7 +768,7 @@ export default function MaterialsPage({ libraryView = null }) {
                 fitLine: fitLineOf(bf, '장'),
               } : null;
               // 영어 정본(LIT-SRC-EN-1, Standard Ebooks) — 빅토리아 천 장정 표지 + 원제(영어)·한국어 제목 + 장 제목(판의 장 이름).
-              const english = work ? null : standardEbooksWorkOfBook(b);
+              const english = work || !canonicalCovers ? null : standardEbooksWorkOfBook(b);
               const englishChapterOf = (c) => english?.chapters.find((item) => item.order === c._bookOrder);
               const englishProps = english ? {
                 art: <VictorianCover work={english} />,
@@ -721,7 +779,7 @@ export default function MaterialsPage({ libraryView = null }) {
               } : null;
               return (
                 <MaterialGroupCard
-                  key={b.key}
+                  key={b.groupKey}
                   icon="📖"
                   title={b.title || '제목 없는 책'}
                   lang={b.title ? contentLangOf(b.chapters[0]) : undefined}
@@ -733,16 +791,17 @@ export default function MaterialsPage({ libraryView = null }) {
                     key: c.id,
                     onClick: () => openReader(`/viewer/${c.id}`),
                     lead: work ? literatureLead(c._bookOrder) : c._bookOrder,
-                    title: work ? <span lang="ja">{chapterOf(c)?.incipit || c.title}</span>
+                    title: work ? <span lang="ja">{literatureChapterIncipit(b.key, c._bookOrder) || c.title}</span>
                       : english ? <span lang="en">{englishChapterOf(c)?.title || c.title}</span>
                       : c.title.includes(' — ') ? c.title.split(' — ').slice(1).join(' — ') : c.title,
                     right: chapterTags(c),
                   }))}
-                  // 이어 적기(#1077 5520128974) — 내 책에만 「다음 과 적기」(PDF 카드 「이어 읽기」와 같은 자리)
+                  // 이어 적기(#1077 5520128974) — 내 책에만 「다음 과 적기」(PDF 카드 「이어 읽기」와 같은 자리).
+                  // 정본 key(아오조라 · SE · 그림 책)는 표지와 따로 key만으로 막는다 — 공개 목록에서 표지를 닫아도(work=null) 정본 책에 가짜 장이 끼지 않게(2026-10-17 리뷰).
                   // 비로그인(BOOK-GUEST-GATE-1) — 목록만 보이고 여는 것은 로그인 뒤. 로그인하면 첫 장으로 돌아온다.
                   footer={!user ? (
                     <Link href={authEntryHref(`/viewer/${b.chapters[0]?.id}`)} className="btn btn--primary btn--sm">로그인하고 읽기</Link>
-                  ) : !work && !english && b.chapters[0]?.owner_id === user.id ? (
+                  ) : !isCanonicalBookKey(b.key) && b.chapters[0]?.owner_id === user.id ? (
                     <Link href={`/materials/add?book=${encodeURIComponent(b.key)}`} className="btn btn--secondary btn--sm">+ 다음 과 적기</Link>
                   ) : null}
                 />
@@ -825,7 +884,7 @@ export default function MaterialsPage({ libraryView = null }) {
               if (isCompleted) return <span className="mat-state mat-state--done">✓ 완독</span>;
               const lastIdx = progressMap.inProgress.get(m.id);
               if (lastIdx && tokens > 0) {
-                return <span className="mat-state mat-state--progress" title="이어서 읽기">{Math.min(100, Math.round((lastIdx / tokens) * 100))}%</span>;
+                return <span className="mat-state mat-state--progress" title="이어 읽기">{Math.min(100, Math.round((lastIdx / tokens) * 100))}%</span>;
               }
               if (status === 'analyzing') return <span className="mat-state mat-state--busy">분석 중</span>;
               if (status === 'failed') return <span className="mat-state mat-state--danger">실패</span>;
@@ -876,7 +935,7 @@ export default function MaterialsPage({ libraryView = null }) {
                         onClick={(e) => { e.stopPropagation(); togglePin(m.id); }}
                         disabled={pinBusy === m.id}
                         aria-checked={isPinned}
-                        title={isPinned ? '받아둠 — 연결이 없어도 열립니다 (눌러서 해제)' : '받아두기 — 연결이 없어도 열립니다'}
+                        title={isPinned ? '받아둠 — 연결이 없어도 열려요 (눌러서 해제)' : '받아두기 — 연결이 없어도 열려요'}
                       >
                         {pinBusy === m.id ? '…' : isPinned ? '✓ 받아둠 — 해제' : documentOf(m)?.assets?.length ? '⬇ 작성한 본문 받아두기' : '⬇ 받아두기'}
                       </button>}
@@ -932,7 +991,7 @@ export default function MaterialsPage({ libraryView = null }) {
                     {dueCount > 0 && <span className="tag tag--due" title="이 자료를 읽으면 복습 처리됨">{dueCount} 복습</span>}
                     {/* 우리 그룹이 이번 주 읽는 자료(v2-F R3) — 무그룹·게스트는 빈 Set이라 자연히 안 뜬다 */}
                     {groupReadIds.has(m.id) && <span className="tag tag--group" title="우리 그룹의 이번 주 같이 읽기">같이 읽기</span>}
-                    {isPinned && <span className="tag" title="받아둠 — 연결이 없어도 열립니다">받아둠</span>}
+                    {isPinned && <span className="tag" title="받아둠 — 연결이 없어도 열려요">받아둠</span>}
                     {score && <span className="tag tag--score" title="리딩 테스트 최고 점수">{score.score}/{score.total}</span>}
                     {stateBadge}
                   </div>
@@ -969,16 +1028,20 @@ export default function MaterialsPage({ libraryView = null }) {
           <p className="empty-state__msg">
             {anyFilter
               ? '조건에 맞는 자료가 없어요.'
-              : !user
+              : tab === 'public' && !user
+                ? '아직 함께 읽는 글이 없어요.\n오늘의 소식부터 읽어 보세요.'
+                : !user
                 ? '자료는 계정에 저장돼요.\n로그인하면 텍스트를 올려 해부하고 단어장에 모을 수 있어요.'
                 : tab === 'public'
                   ? '아직 공유된 공용 자료가 없어요.'
                   : libraryView === 'notes' ? '아직 작성한 노트가 없어요.' : '아직 보관된 개인 자료가 없어요.'}
           </p>
           {/* 게스트에게 빈 목록만 보여 주지 않는다 — 왜 비어 있는지와 다음 행동을 함께 준다. */}
+          {/* 비로그인은 공개 목록이 비어도 운영과 같은 두 갈래(로그인하고 올리기 · 교재부터)를 준다 — 공유 버튼(자료 올리기 화면)은
+              로그인 없이 못 하는 행동이었다(/ux-review Preview 2026-10-17 KST). 안내 문구(오늘의 추천부터)는 그대로. */}
           {!user && !anyFilter ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-              <Link href="/auth" className="btn btn--primary btn--md">로그인하고 자료 올리기 →</Link>
+              <Link href={signInHref} className="btn btn--primary btn--md">로그인하고 자료 올리기 →</Link>
               <Link href="/lessons" className="empty-state__link">로그인 없이 교재부터 보기 →</Link>
             </div>
           ) : anyFilter ? (
@@ -999,23 +1062,25 @@ export default function MaterialsPage({ libraryView = null }) {
             </div>
           ) : (
             <Link href="/materials/add" className="empty-state__link">
-              새 자료 작성 →
+              자료 추가 →
             </Link>
           )}
         </div>
       )}
 
       {/* 오늘의 추천(크론 수집) — 있을 때만 보인다. 빈 날의 상시 안내 카드는
-          상단 '새 자료 추가'·가이드 링크와 같은 문이라 없앴다. */}
-      {(() => {
+          상단 '새 자료 추가'·가이드 링크와 같은 문이라 없앴다.
+          목록이 정해진 뒤에만 그린다(LIBRARY-GUEST-CLS-001): 추천이 먼저 오면 목록 골격(140px 6칸) 아래에 섰다가, 더 짧은 실제
+          목록으로 바뀔 때 통째로 끌려 올라왔다 — 운영 /discover?view=reading CLS 390폭 0.144–0.168 · 1440폭 0.018–0.028. */}
+      {tab && !isLoading && (() => {
         const filteredSuggestions = filterSuggestionsByProfile(suggestions, profile);
         if (filteredSuggestions.length === 0) return null;
         return (
           <section className="suggestions-section" style={{ marginTop: '40px' }}>
-            <h2 className="suggestions-section__title">오늘의 추천 자료</h2>
+            <h2 className="suggestions-section__title" id={TODAY_NEWS_ID} tabIndex={-1}>오늘의 소식</h2>
             <div className="suggestions-grid">
               {filteredSuggestions.map(s => (
-                <SuggestionCard key={s.id} suggestion={s} router={router} />
+                <SuggestionCard key={s.id} suggestion={s} router={router} from={libraryView === 'public' ? 'reading' : 'materials'} />
               ))}
             </div>
           </section>

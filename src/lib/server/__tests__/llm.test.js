@@ -371,7 +371,14 @@ describe('AA R1 — callLLM 동작 계약', () => {
     const fetchSpy = vi.fn(async () => geminiFail(429));
     vi.stubGlobal('fetch', fetchSpy);
     const { callLLM } = await fresh();
-    const err = await callLLM('light', 'p', { retry: { max: 3, delays: [5000] }, deadlineMs: Date.now() + 100 }).catch((e) => e);
+    // 시각만 멈춘다 — 실제 시계면 병렬 부하로 Gemini 실패 처리에 100ms가 넘게 걸려 Groq가 생략될 수 있다(벽시계 의존 제거).
+    vi.useFakeTimers({ toFake: ['Date'] });
+    let err;
+    try {
+      err = await callLLM('light', 'p', { retry: { max: 3, delays: [5000] }, deadlineMs: Date.now() + 100 }).catch((e) => e);
+    } finally {
+      vi.useRealTimers();
+    }
     expect(err.status).toBe(429);
     expect(fetchSpy).toHaveBeenCalledTimes(2); // Gemini 1(대기 포기) + Groq 1(아직 deadline 전)
     fetchSpy.mockClear();

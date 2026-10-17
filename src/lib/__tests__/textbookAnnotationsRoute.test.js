@@ -1,16 +1,19 @@
 import {beforeEach,describe,it,expect,vi} from 'vitest';
-const m=vi.hoisted(()=>({user:null,scoped:null,mapping:null,source:null,teacherRoot:null,canClass:false,rows:[],rpc:vi.fn(),replay:null}));
-const query=result=>{const q={select:()=>q,eq:()=>q,order:()=>Promise.resolve({data:result}),in:()=>q,limit:()=>Promise.resolve({data:result}),maybeSingle:()=>Promise.resolve({data:result})};return q;};
-vi.mock('@supabase/supabase-js',()=>({createClient:()=>({from:()=>{let teacher=false;const q={select:()=>q,eq:key=>{if(key==='processed_json->metadata->team->>key')teacher=true;return q;},maybeSingle:()=>Promise.resolve({data:teacher?m.teacherRoot:m.scoped})};return q;}})}));
+const m=vi.hoisted(()=>({user:null,scoped:null,mapping:null,source:null,teacherRoot:null,canClass:false,rows:[],rpc:vi.fn(),replay:null,selects:[]}));
+// PostgREST 대역 — select 열 목록대로 돌려준다(별칭 metadata:processed_json->metadata = 원고 없이 metadata만).
+const LIGHT='metadata:processed_json->metadata';
+const shape=(table,cols,data)=>{if(table!=='reading_materials'||!data)return data;m.selects.push(cols);if(!cols.includes(LIGHT))return data;const {id,owner_id,processed_json}=data;return {id,owner_id,metadata:processed_json?.metadata??null};};
+const query=(table,result)=>{let cols='';const q={select:c=>{cols=c||'';return q;},eq:()=>q,order:()=>Promise.resolve({data:result}),in:()=>q,limit:()=>Promise.resolve({data:result}),maybeSingle:()=>Promise.resolve({data:shape(table,cols,result)})};return q;};
+vi.mock('@supabase/supabase-js',()=>({createClient:()=>({from:table=>{let teacher=false,cols='';const q={select:c=>{cols=c||'';return q;},eq:key=>{if(key==='processed_json->metadata->team->>key')teacher=true;return q;},maybeSingle:()=>Promise.resolve({data:shape(table,cols,teacher?m.teacherRoot:m.scoped)})};return q;}})}));
 vi.mock('@/lib/server/auth',()=>({requireUser:async()=>m.user?{user:m.user}:{error:'login',status:401}}));
-vi.mock('@/lib/server/classIndex',()=>({serviceClient:()=>({from:table=>query(table==='reading_materials'?m.source:table==='class_material_copies'?m.mapping:table==='textbook_annotations'?m.rows:m.replay),rpc:m.rpc}),materialBelongsToTeam:row=>row?.owner_id==='teacher'&&row?.processed_json?.metadata?.book?.key==='book'}));
+vi.mock('@/lib/server/classIndex',()=>({serviceClient:()=>({from:table=>query(table,table==='reading_materials'?m.source:table==='class_material_copies'?m.mapping:table==='textbook_annotations'?m.rows:m.replay),rpc:m.rpc}),materialBelongsToTeam:row=>row?.owner_id==='teacher'&&row?.processed_json?.metadata?.book?.key==='book'}));
 vi.mock('@/app/api/class/[team]/route',()=>({authorizeTeamRequest:async()=>m.canClass?{root:{owner_id:'teacher'},team:{bookKey:'book'}}:{error:Response.json({error:'locked'},{status:401})}}));
 import {GET,POST} from '@/app/api/materials/[id]/annotations/route';
 import {makeTextbookAnchor} from '../textbookAnnotations';
 const material=()=>({id:2,owner_id:'teacher',processed_json:{sequence:['a'],dictionary:{a:{text:'图书馆'}},metadata:{book:{key:'book'}}}});
 const call=(method='GET',body,team='')=>{const req=new Request(`https://manabi.invalid/api/materials/2/annotations${team?'?team='+team:''}`,{method,headers:{...(m.user?{Authorization:'Bearer fixture'}:{}),...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});return (method==='POST'?POST:GET)(req,{params:Promise.resolve({id:'2'})});};
 const body=()=>({operation:crypto.randomUUID(),annotation:{id:crypto.randomUUID(),revision:0,archived:false,anchor:makeTextbookAnchor(material().processed_json,'a'),body:'주의점'}});
-beforeEach(()=>{Object.assign(m,{user:{id:'teacher'},scoped:material(),source:material(),mapping:null,rows:[],replay:null,teacherRoot:null,canClass:false});m.rpc.mockReset().mockResolvedValue({data:{id:'saved'}});});
+beforeEach(()=>{Object.assign(m,{user:{id:'teacher'},scoped:material(),source:material(),mapping:null,rows:[],replay:null,teacherRoot:null,canClass:false,selects:[]});m.rpc.mockReset().mockResolvedValue({data:{id:'saved'}});});
 describe('textbook annotations permissions',()=>{
  it('allows existing material owner to add',async()=>{expect((await call('POST',body())).status).toBe(200);expect(m.rpc.mock.calls[0][1].p_actor).toBe('teacher');});
  it('requires ownership of this team as well as its source in a classroom',async()=>{
@@ -31,4 +34,27 @@ describe('textbook annotations permissions',()=>{
  it('rejects forged location before calling the mutation',async()=>{const b=body();b.annotation.anchor.exact='其他';expect((await call('POST',b)).status).toBe(409);expect(m.rpc).not.toHaveBeenCalled();});
  it('marks revision conflicts distinctly for safe editing',async()=>{m.rpc.mockResolvedValue({error:{code:'40001'}});const r=await call('POST',body());expect(r.status).toBe(409);expect((await r.json()).conflict).toBe(true);});
  it('invalid UUID and oversized note never enter SQL',async()=>{const b=body();b.operation='bad';expect((await call('POST',b)).status).toBe(400);b.operation=crypto.randomUUID();b.annotation.body='x'.repeat(2001);expect((await call('POST',b)).status).toBe(400);expect(m.rpc).not.toHaveBeenCalled();});
+});
+// PERF-ANNOT-001 — 주의점 목록(GET)은 자료 원고(processed_json 전체 — 본문 sequence · dictionary)를 받지 않는다. 저장(POST)은 위치 검증에 전체가 필요하다.
+describe('textbook annotations reads',()=>{
+ const heavy=cols=>cols.split(',').map(c=>c.trim()).includes('processed_json');
+ it('GET은 자료 읽기마다 id · owner_id · metadata만 고른다(교실 판정 포함)',async()=>{
+  m.teacherRoot={id:1,owner_id:'teacher',processed_json:{metadata:{team:{root:true,key:'class',bookKey:'book'}}}};
+  expect((await call('GET',null,'class')).status).toBe(200);
+  m.user={id:'student'};m.scoped={...material(),owner_id:'student'};m.mapping={source_material_id:20};m.canClass=true;
+  expect((await call('GET',null,'class')).status).toBe(200);
+  expect(m.selects.length).toBeGreaterThanOrEqual(3);
+  for(const cols of m.selects){expect(heavy(cols)).toBe(false);expect(cols).toBe('id,owner_id,metadata:processed_json->metadata');}
+ });
+ it('같은 결과 — 교실 편집 권한 · 자료 id는 전체를 받던 때와 같다',async()=>{
+  m.teacherRoot={id:1,owner_id:'teacher',processed_json:{metadata:{team:{root:true,key:'class',bookKey:'book'}}}};
+  const own=await (await call('GET',null,'class')).json();expect(own).toMatchObject({materialId:'2',canEdit:true});
+  m.teacherRoot.processed_json.metadata.team.key='other';expect(await (await call('GET',null,'class')).json()).toMatchObject({canEdit:false});
+  const plain=await (await call()).json();expect(plain).toMatchObject({materialId:'2',canEdit:true});
+ });
+ it('POST는 그대로 전체(processed_json)를 받는다 — 위치 검증 · 저장 대조용',async()=>{
+  expect((await call('POST',body())).status).toBe(200);
+  expect(m.selects.length).toBeGreaterThan(0);
+  expect(m.selects.every(heavy)).toBe(true);
+ });
 });

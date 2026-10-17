@@ -19,7 +19,7 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
-import { literatureDisplayTitle } from '@/lib/literatureCanonical';
+import { literatureDisplayTitle } from '@/lib/literatureWorks'; // 표시용 대조표만(LIT-DISPLAY-001) — 전체 대조표를 홈 번들에 싣지 않는다
 import { bookHref } from '@/lib/textbook/contract';
 import { bookResume, chooseResume, recentMaterial } from '@/lib/webNavigation';
 import useReadingProgress from '@/components/books/useReadingProgress';
@@ -32,7 +32,7 @@ import { logReviewEvents } from '@/lib/reviewEvents';
 import { getIdealLevel } from '@/lib/levels';
 import { rankSuggestions } from '@/lib/suggestionRank';
 import { detectLang, langNameKo } from '@/lib/constants';
-import { canReadSuggestion, suggestionHref } from '@/lib/suggestionReading';
+import { canReadSuggestion, suggestionHref, TODAY_SUGGESTIONS_KEY, fetchTodaySuggestions } from '@/lib/suggestionReading';
 import { fetchVocabularyLearningRows } from '@/lib/vocabularyLearningRows';
 import { countReviewScope, reviewScopeQuota, serializeReviewScope } from '@/lib/reviewScope';
 import { useLearningAdmission } from '@/lib/useLearningAdmission';
@@ -44,9 +44,11 @@ import useLearnLanguage from '@/components/learn/useLearnLanguage';
 import LangChips from '@/components/learn/LangChips';
 import ResumeTile from '@/components/learn/ResumeTile';
 import ParagraphTile from '@/components/learn/ParagraphTile';
+import { keepPreviousForUser } from '@/lib/keepPreviousForUser';
 import GoalTrackTile from '@/components/learn/GoalTrackTile';
-import { ReviewTile, StreakTile, TodayGoalTile } from '@/components/learn/LearnTiles';
+import { GuestLoginTile, ReviewTile, StreakTile, TodayGoalTile } from '@/components/learn/LearnTiles';
 import '@/components/learn/learn.css';
+import { authEntryHref } from '../lib/authRedirect';
 
 export async function fetchHomeData(userId, nowMs = Date.now()) {
   // 전체 두 코호트를 같은 snapshot에서 합친 뒤 센다. 구형 due WHERE로 먼저 자르지 않는다.
@@ -85,13 +87,6 @@ export async function fetchPrefetchedSentence(userId, lang, nowMs = Date.now()) 
   return data?.[0]?.sentence || null;
 }
 
-async function fetchSuggestions() {
-  const response = await fetch('/api/suggestions/today');
-  if (!response.ok) throw new Error('추천을 불러오지 못했어요.');
-  const rows = await response.json();
-  return Array.isArray(rows) ? rows : [];
-}
-
 const GLYPH = { Japanese: 'あ', Chinese: '汉', English: 'A', French: 'É' };
 const GUEST_SAMPLE = '駅前の小さなパン屋で、今日も同じパンを買いました。';
 
@@ -102,7 +97,7 @@ function bookItem(book, resume) {
     // 원어 제목이 비면 한국어 제목이 주 제목(지금 동작과 같음) — 42과 원어 제목 저작은 별도 콘텐츠 작업.
     title: titleJa || lesson.title, titleLang: titleJa ? 'ja' : 'ko', sub: titleJa ? lesson.title : lesson.subtitle,
     count: { done: resume.completed, total: resume.total }, href: bookHref(book.edition, resume.page),
-    cta: resume.started ? '이어서 읽기' : '첫 페이지 열기' };
+    cta: resume.started ? '이어 읽기' : '첫 페이지 열기' };
 }
 
 function materialItem(material, lang) {
@@ -112,13 +107,13 @@ function materialItem(material, lang) {
     // 서재에 예전 표기(「鼻 — 1편」)로 옮겨 둔 정본 문학책도 정본 표기(「鼻 (1/2)」)로(AOZORA-P0-5 — 다시 받지 않아도 된다)
     title: literatureDisplayTitle({ book: m.book, literature: { provider: m.provider } }, m.title),
     titleLang: encounterLookupLang(materialLang) || undefined, sub: m.level || null,
-    href: `/viewer/${m.id}`, cta: '이어서 읽기' };
+    href: `/viewer/${m.id}`, cta: '이어 읽기' };
 }
 
 const HSK_WORDS_ITEM = { key: 'hsk-words', href: '/chinese/vocab/h1', tone: 'progress',
   kicker: '중국어 · HSK', title: 'HSK 단어 목록', meta: '1급부터 ↗' };
 
-export default function HomePage({ book = null }) {
+export default function HomePage({ book = null, sessionHint }) {
   const { user, profile, loading: authLoading } = useAuth();
   const local = useReadingProgress(book?.edition);
   const resume = bookResume(book, local.progress, local.hasProgress);
@@ -127,9 +122,11 @@ export default function HomePage({ book = null }) {
     enabled: !!user && !authLoading, staleTime: 60000, refetchOnWindowFocus: true,
   });
   const { langs, lang, choose } = useLearnLanguage(profile, data?.vocabByLang);
+  // 언어 칩을 바꾸는 동안 이전 언어의 문단을 흐리게 남긴다(LIST-KEEP — 「시작하면 오늘 문단을 만들어요」 거짓 빈 상태가
+  // 잠깐 끼던 것). 결과에 언어를 함께 담아, 남긴 문장의 lang 속성이 그 문장의 언어를 따른다. 같은 계정일 때만.
   const paragraph = useQuery({
-    queryKey: ['learn-paragraph', user?.id, lang], queryFn: () => fetchPrefetchedSentence(user.id, lang),
-    enabled: !!user && !authLoading, staleTime: 300000,
+    queryKey: ['learn-paragraph', user?.id, lang], queryFn: async () => ({ lang, sentence: await fetchPrefetchedSentence(user.id, lang) }),
+    enabled: !!user && !authLoading, staleTime: 300000, placeholderData: keepPreviousForUser(user?.id),
   });
   // 새 표현 한도 — 복습방과 같은 입력(reviewScopeQuota): 서버 한도, 호환 모드면 이 기기의 하루 한도 − 오늘 시작한 수.
   const admission = useLearningAdmission({ accountId: user?.id });
@@ -145,6 +142,7 @@ export default function HomePage({ book = null }) {
 
   const forecast = data?.forecastByLang?.[lang];
   const forecastWords = forecast?.count > 0 && forecast.top3?.length > 0 && forecast.top3.map(w => w.word_text);
+  const paragraphTileState = paragraphState({ sentence: paragraph.data?.sentence, forecastWords });
   const onForecastTap = () => {
     if (user?.id && forecast) { try { logReviewEvents(user.id, [buildForecastTapEvent(lang, forecast)]); } catch { /* Existing optional telemetry. */ } }
   };
@@ -171,7 +169,7 @@ export default function HomePage({ book = null }) {
   if (!pending && !choice.current) choice.current = { key: choiceKey, kind: chooseResume(bookForLang, local.updatedAt, material), material };
   const kind = choice.current?.kind || null;
   const needSuggestion = !pending && !kind && !(lang === 'Japanese' && !book);
-  const recommendations = useQuery({ queryKey: ['today-suggestions'], queryFn: fetchSuggestions, staleTime: 300000, enabled: needSuggestion });
+  const recommendations = useQuery({ queryKey: TODAY_SUGGESTIONS_KEY, queryFn: fetchTodaySuggestions, staleTime: 300000, enabled: needSuggestion });
   const suggestion = useMemo(() => rankSuggestions((recommendations.data || []).filter(canReadSuggestion), {
     langs: [lang], fitOf: () => null,
     levelOf: s => getIdealLevel(s.language, data?.vocabByLang?.[s.language] || 0),
@@ -188,19 +186,16 @@ export default function HomePage({ book = null }) {
     sub: `${learnLangLabel(lang)} 읽을거리`, href: '/discover', cta: '산책하기' };
   const resumePending = pending || (needSuggestion && recommendations.isLoading);
 
-  if (!authLoading && !user) {
+  // 손님 배치 — 서버가 세션 쿠키가 없다고 알려 주면(sessionHint === false) 로그인 확인을 기다리지 않는다(B1 — 오너 승인
+  // 2026-10-17 KST). 서버 HTML · 첫 그림 · 확인 뒤가 모두 같은 손님 배치라, 로그인 배치 골격이 0.7초 보였다가 바뀌던 것이 없다.
+  // 쿠키가 있는데 세션이 끝났으면(만료 등) 예전처럼 확인을 기다린다.
+  if (!user && (!authLoading || sessionHint === false)) {
     return <div className="manabi-page learn-page">
       <div className="learn-top"><div className="learn-top__title"><h1>배움</h1></div></div>
       <div className="learn-grid">
         <ResumeTile item={resumeItem} pending={resumePending} />
         <ParagraphTile state={{ kind: 'ready', sentence: GUEST_SAMPLE }} lang="Japanese" href="/study" kicker="오늘 문단 · 맛보기" />
-        <Link href="/auth" prefetch={false} className="learn-tile learn-goal--empty learn-guest">
-          <span>
-            <span className="learn-goal__title">로그인하면 여기에 쌓여요</span>
-            <span className="learn-goal__line">단어 복습 · 오늘 목표 · 레벨 어휘 · 기록</span>
-          </span>
-          <span className="learn-button-s">로그인</span>
-        </Link>
+        <GuestLoginTile href={authEntryHref('/home')} />
       </div>
       {!local.storageAvailable && <p role="status" className="learn-note">이 브라우저에서는 읽던 위치를 저장할 수 없어요.</p>}
     </div>;
@@ -219,8 +214,11 @@ export default function HomePage({ book = null }) {
         <TodayGoalTile vocab={data?.vocab || []} projections={data?.learning?.projections || []} profile={profile} empty={!data} />
         <StreakTile profile={profile} />
       </div>
-      <ReviewTile projections={data?.learning?.projections || []} lang={lang} count={reviewCount} href={reviewHref} className="learn-order-review" />
-      <ParagraphTile state={paragraphState({ sentence: paragraph.data, forecastWords })} lang={lang} href={`/study?lang=${lang}`} onForecastTap={onForecastTap} />
+      {/* 처음 받는 중에는 빈 상태(「아직 수집한 단어가 없어요」 · 「시작하면 오늘 문단을 만들어요」) 대신 골격(LOADING-SKELETON-001). */}
+      <ReviewTile projections={data?.learning?.projections || []} lang={lang} count={reviewCount} href={reviewHref} className="learn-order-review"
+        pending={!data && (authLoading || isLoading)} />
+      <ParagraphTile state={paragraphTileState} lang={paragraphTileState.kind === 'ready' ? paragraph.data?.lang || lang : lang} busy={paragraph.isPlaceholderData}
+        pending={paragraph.isPending} href={`/study?lang=${lang}`} onForecastTap={onForecastTap} />
     </div>
     {!local.storageAvailable && <p role="status" className="learn-note">이 브라우저에서는 읽던 위치를 저장할 수 없어요.</p>}
     {continueDeckItems.length > 0 && <section className="learn-more" aria-label="이어서"><ContinueDeck items={continueDeckItems} /></section>}

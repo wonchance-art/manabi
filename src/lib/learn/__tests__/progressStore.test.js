@@ -171,6 +171,8 @@ describe('progressStore', () => {
 
       expect(result.ok).toBe(false);
       expect(result.error).toBeInstanceOf(Error);
+      // 기기 큐(IndexedDB)도 없는 환경 — 서버에도 큐에도 없으니 lost(화면이 그 문항에 한 줄 알린다).
+      expect(result.lost).toBe(true);
     });
 
     it('게스트: 진도 이벤트 기록 불가 (localStorage 제약)', async () => {

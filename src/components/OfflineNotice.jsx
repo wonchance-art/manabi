@@ -20,7 +20,7 @@ export function objectParticle(word) {
 export default function OfflineNotice({ what = '내용' }) {
   return (
     <p className="offline-notice" role="status">
-      저장해 둔 {what}{objectParticle(what)} 보여드리고 있어요 — 연결되면 최신 내용으로 바뀝니다.
+      저장해 둔 {what}{objectParticle(what)} 보여드리고 있어요 — 연결되면 최신 내용으로 바뀌어요.
     </p>
   );
 }

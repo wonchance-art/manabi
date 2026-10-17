@@ -6,7 +6,8 @@
 // (대비·다크 처리를 CSS 한 곳에서 지킨다).
 // 목차: 작가의 見出し(一·二…)는 그대로, manabi가 분량으로 나눈 장은 「1/2」, 한 장이면 「전문」(「전편」은 前篇으로 읽힌다) — 교재의 「과」를 쓰지 않는다.
 // 장 줄에는 그 장 첫 문장(incipit)을 단다. 이름표가 아니라 본문이 장을 알아보게 한다.
-// 이 모듈은 빌드(scripts/lib/literature-build.mjs)도 쓰므로 대조표를 import하지 않는다 — 작품 찾기는 literatureCanonical.literatureWork.
+// 이 모듈은 빌드(scripts/lib/literature-build.mjs)도 쓰므로 대조표를 import하지 않는다 — 작품 찾기는 literatureWorks.literatureWork
+// (표시용 대조표 — 홈 · 서재). 해시 대조는 literatureCanonical(전체 대조표).
 
 /**
  * 표지 바탕(천·종이 색) — 일본 전통색 이름. 明治 말~昭和 전기 문예서 실물(초판 고서 사진·복각본 50여 장, 2026-10-15 KST 조사)에서
@@ -77,6 +78,23 @@ export function literatureIncipit(rawText) {
   if (sentence.length <= 30 && (end !== -1 || first.length <= 30)) return sentence;
   const comma = first.slice(0, 28).lastIndexOf('、');
   return comma >= 12 ? `${first.slice(0, comma)}…` : `${first.slice(0, 24)}…`;
+}
+
+/**
+ * 책 key → 대조표의 작품. 표에 없으면 null. 전체 대조표(해시 대조)와 표시용 대조표(표지 · 제목 — LIT-DISPLAY-001)가 같은 판정을 쓴다 —
+ * 대조표는 부르는 쪽이 넘긴다(이 모듈은 대조표를 import하지 않는다).
+ */
+export function canonicalWorkOf(key, works) {
+  return typeof key === 'string' && Object.hasOwn(works, key) ? works[key] : null;
+}
+
+/** 자료 metadata.book → 대조표의 {work, chapter}. 출처(provider)가 다르거나 표에 없는 작품 · 장이면 null. */
+export function canonicalChapterOf(metadata, provider, works) {
+  if (metadata?.literature?.provider !== provider) return null;
+  const work = canonicalWorkOf(metadata?.book?.key, works);
+  const order = Number(metadata?.book?.order);
+  const chapter = work?.chapters.find((item) => item.order === order) || null;
+  return work && chapter ? { work, chapter } : null;
 }
 
 /** 목차 줄 앞 표지 — 見出し 그대로 · 「1/2」 · 「전문」. 표에 없는 장이면 순서 숫자. */

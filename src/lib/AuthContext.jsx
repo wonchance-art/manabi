@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { getSupabase, supabase } from '../lib/supabase';
 import { hasSupabaseSessionCookie } from './authCookie';
+import { whenDocumentParsed } from './documentParsed';
 import { authCallbackUrl } from './authRedirect';
 import { isRepeatedSignup } from './authErrors';
 import { migrateGuestDrillQueue } from './drillSrs';
@@ -20,12 +21,17 @@ const REF_READ_KEYS = {
   Chinese: 'zh_read_chapters',
 };
 
+// 세션 쿠키가 있는데 SDK 조각을 못 받았을 때 다시 복원하는 간격(그 밖에는 online 이벤트에서).
+const AUTH_RESTORE_RETRY_MS = [2000, 8000, 30000];
+
 const STREAK_MILESTONES = { 7: '🔥 7일 연속 학습 달성!', 30: '🏆 30일 연속 학습 달성!', 100: '🌟 100일 연속 학습 달성!' };
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  // 프로필 읽기가 끝난(성공 · 실패 모두) 계정 — profile이 null인 것이 「아직 받는 중」인지 「없음」인지 가른다(profileLoading).
+  const [profileSettledFor, setProfileSettledFor] = useState(null);
   const toast = useToast();
   const explicitSignOutRef = useRef(false);
   const hadSessionRef = useRef(false);
@@ -62,6 +68,7 @@ export function AuthProvider({ children }) {
         const previous = observedProfileRef.current;
         observedProfileRef.current = nextProfile;
         setProfile(nextProfile);
+        setProfileSettledFor(actorId);
         // 첫 조회는 보상 이벤트가 아니다. 확정된 같은 계정의 증가만 기존 토스트로 알린다.
         const count = nextProfile?.streak_count;
         const message = previous && count > previous.streak_count && STREAK_MILESTONES[count];
@@ -82,8 +89,9 @@ export function AuthProvider({ children }) {
   async function refreshProfileReadOnly(userId) {
     try { return await profileReaderRef.current.refresh(userId); }
     catch (err) {
-      if (!unloadingRef.current && mountedRef.current && actorRef.current === userId) {
-        console.error('프로필 로드/갱신 실패:', err.message);
+      if (mountedRef.current && actorRef.current === userId) {
+        setProfileSettledFor(userId); // 실패도 끝 — 받는 중으로 영원히 두지 않는다
+        if (!unloadingRef.current) console.error('프로필 로드/갱신 실패:', err.message);
       }
       return null;
     }
@@ -101,6 +109,7 @@ export function AuthProvider({ children }) {
         await refreshProfileReadOnly(userId);
       }
     } catch (err) {
+      if (current()) setProfileSettledFor(userId); // 로그인 기록이 실패해도 받는 중으로 남기지 않는다
       if (current() && !unloadingRef.current) console.error('프로필 로드/갱신 실패:', err.message);
     }
   }
@@ -138,39 +147,66 @@ export function AuthProvider({ children }) {
     const hasSessionCookie =
       typeof document !== 'undefined' && hasSupabaseSessionCookie(document.cookie);
     if (!hasSessionCookie) {
-      setLoading(false);
       guestConfirmedRef.current = true;
-      return () => { cancelled = true; };
+      // 게스트 확정도 Provider 값을 바꾼다 — 스트리밍 본문이 다 온 뒤에(whenDocumentParsed).
+      const stopWaiting = whenDocumentParsed(() => { if (!cancelled) setLoading(false); });
+      return () => { cancelled = true; stopWaiting(); };
     }
 
-    getSupabase()
-      .then((client) => {
-        if (cancelled) return;
+    let stopWaiting = () => {};
+    // SDK 조각을 못 받으면(오프라인 · 배포 교체 직후 등) 쿠키가 있는데도 user가 비어 로그아웃처럼 보인다.
+    // 로그아웃으로 굳히지 않고 연결이 돌아올 때 · 잠시 뒤 다시 복원한다 — 같은 계정이 돌아오면 /study처럼
+    // 세션 계정을 고정한 화면이 멈춰 둔 기록을 이어 보낸다(getSupabase는 실패하면 다음 호출에서 다시 받는다).
+    // 복원 재시도가 남아 있는 동안은 loading=true(「확인 중」)다 — 소비자(서재 serverUserId · /study authLost · 배움 손님 분기 ·
+    // 목표 칸)는 loading만 보면 되고, 따로 「복원 중」 값을 읽지 않는다.
+    let restored = false;
+    let retryTimer;
+    let retries = 0;
+    const restore = () => {
+      if (cancelled || restored) return;
+      clearTimeout(retryTimer);
+      getSupabase()
+        // SDK는 지금 받고, 세션 복원(값 변경)은 스트리밍 본문이 다 온 뒤에 한다(whenDocumentParsed — HYDRATION-AUTH-001).
+        .then((client) => new Promise((resolve) => { stopWaiting(); stopWaiting = whenDocumentParsed(() => resolve(client)); }))
+        .then((client) => {
+          if (cancelled || restored) return;
+          restored = true;
+          window.removeEventListener('online', restore);
 
-        // 기존 순서 유지: 세션 조회를 먼저 시작한 뒤 auth listener를 즉시 등록한다.
-        // listener는 동기 반환 API라 lazy facade 대신 실제 client가 필요하다.
-        const sessionGeneration = authGenerationRef.current;
-        const sessionRequest = client.auth.getSession();
-        subscription = attachAuthListener(client, () => cancelled);
+          // 기존 순서 유지: 세션 조회를 먼저 시작한 뒤 auth listener를 즉시 등록한다.
+          // listener는 동기 반환 API라 lazy facade 대신 실제 client가 필요하다.
+          const sessionGeneration = authGenerationRef.current;
+          const sessionRequest = client.auth.getSession();
+          subscription = attachAuthListener(client, () => cancelled);
 
-        return sessionRequest.then(({ data: { session } }) => {
-          if (cancelled || authGenerationRef.current !== sessionGeneration) return;
-          adoptUser(session?.user ?? null);
-          if (session?.user) {
-            hadSessionRef.current = true;
-            fetchProfile(session.user.id, session.user.user_metadata);
-          }
+          return sessionRequest.then(({ data: { session } }) => {
+            if (cancelled || authGenerationRef.current !== sessionGeneration) return;
+            adoptUser(session?.user ?? null);
+            if (session?.user) {
+              hadSessionRef.current = true;
+              fetchProfile(session.user.id, session.user.user_metadata);
+            }
+            setLoading(false);
+          });
+        })
+        .catch(() => {
+          if (cancelled) return;
+          // 다시 해 볼 차례가 남았으면 loading을 그대로 둔다 — 쿠키가 있는데 아직 확인 못 했을 뿐이라, 그동안 user=null을
+          // 「로그아웃」으로 읽으면 서재는 서버가 확인한 계정 대신 손님 화면, /study는 「로그인이 필요해요」, 배움은 손님 분기로
+          // 뒤집혔다가 돌아온다(병합 전 교차 리뷰 S1). 차례를 다 쓰면(2 · 8 · 30초) 그때 확정(loading=false · user=null)이다.
+          // 그 뒤에도 online이 오면 다시 복원한다(복원되면 user가 들어온다).
+          if (!restored && retries < AUTH_RESTORE_RETRY_MS.length) { retryTimer = setTimeout(restore, AUTH_RESTORE_RETRY_MS[retries++]); return; }
           setLoading(false);
         });
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      });
+    };
+    window.addEventListener('online', restore);
+    restore();
 
     return () => {
       cancelled = true;
+      clearTimeout(retryTimer);
+      window.removeEventListener('online', restore);
+      stopWaiting();
       subscription?.unsubscribe();
     };
     // 마운트 1회 세션 복원. attachAuthListener·fetchProfile은 매 렌더 새 함수라 의존성에 넣으면
@@ -314,6 +350,8 @@ export function AuthProvider({ children }) {
     user,
     profile,
     loading,
+    // 로그인했는데 프로필을 아직 받지 못했다 — profile null을 「목표 없음」 같은 빈 상태로 읽지 않게(LOADING-SKELETON-001).
+    profileLoading: !!user && profileSettledFor !== user.id,
     isAdmin,
     signUp,
     signIn,

@@ -166,3 +166,18 @@ describe('드래그 중 시트 가로채기 차단 계약', () => {
     expect(e2e).toContain('}, synonymKey);');
   });
 });
+
+// 좁은 화면(본문 여백 12px)에서 줄 머리 토큰의 시작 그립이 화면 밖으로 2px 나가던 것(viewer-reading-controls e2e 390px 실측
+// [-2, 26]) — 28px 터치 타깃 전체가 화면 폭 안에 남는다.
+describe('clampGripX — 그립 터치 타깃은 화면 안', () => {
+  it('줄 머리 · 줄 끝 토큰의 그립을 화면 안으로 밀고, 안쪽 토큰은 그대로 둔다', async () => {
+    const { clampGripX, GRIP_HALF } = await import('../../views/TokenRangeGrips.jsx');
+    expect(GRIP_HALF).toBe(14);
+    expect(clampGripX(12, 0, 390)).toBe(14);          // 시작 그립: left -2 → 0
+    expect(clampGripX(12 - 0, 0, 390) - GRIP_HALF).toBeGreaterThanOrEqual(0);
+    expect(clampGripX(386, 0, 390)).toBe(376);        // 끝 그립: right 400 → 390
+    expect(clampGripX(160, 0, 390)).toBe(160);
+    expect(clampGripX(-30, 40, 1440)).toBe(-26);      // 기준 상자가 화면 안쪽(left 40)이면 화면 기준으로 민다
+    expect(clampGripX(12, 0, Number.NaN)).toBe(12);
+  });
+});

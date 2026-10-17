@@ -11,6 +11,12 @@ vi.mock('@/lib/supabase', () => ({ supabase: {} }));
 vi.mock('@/lib/useTTS', () => ({ useTTS: () => ({ speak: () => {}, supported: true }) }));
 vi.mock('@/lib/useKnownWords', () => ({ useKnownWords: () => ({ rows: [], isPendingWord: () => false, mutation: { mutate: () => {} } }) }));
 vi.mock('@/lib/useWordFacets', () => ({ useWordFacets: () => ({ available: true, rows: [], mark: () => {} }) }));
+// 한자판은 next/dynamic으로 지연 로드한다(levelListLazy 계약). 기본값(ssr)이라 Next 서버 렌더는 한자판을 그려 보낸다 —
+// 동기 renderToStaticMarkup에서도 같은 마크업을 보도록, 불러올 모듈을 미리 받아 돌려준다.
+vi.mock('next/dynamic', async () => {
+  const board = await import('../../components/levels/HanziBoard.jsx');
+  return { default: () => board.default };
+});
 
 const { default: LevelListPage, VocabCard } = await import('../LevelListPage.jsx');
 const { levelListData } = await import('../../lib/levelListData.js');
@@ -73,7 +79,9 @@ describe('단어 목록', () => {
     expect(new Set(hrefs.filter((h) => /^\/chinese\/vocab\/h[1-6]$/.test(h))).size).toBe(6); // 알약 6 + 「단어」 탭
     expect(hrefs).toContain('/chinese/bunkei/h2');
     expect(hrefs.filter((h) => /grammar|legacy/.test(h))).toEqual([]);
-    expect(html).toMatch(/<a aria-current="page" aria-label="HSK 2" href="\/chinese\/vocab\/h2">2<\/a>|<a href="\/chinese\/vocab\/h2" aria-current="page" aria-label="HSK 2">2<\/a>/);
+    // 알약 · 탭 안의 이동 대기 표시(NavPendingMark — APP-FEEL-003)는 화면 읽기에 숨긴 빈 span이다.
+    const PEND = '<span class="nav-pending" aria-hidden="true"></span>';
+    expect(html).toMatch(new RegExp(`<a aria-current="page" aria-label="HSK 2" href="/chinese/vocab/h2">2${PEND}</a>|<a href="/chinese/vocab/h2" aria-current="page" aria-label="HSK 2">2${PEND}</a>`));
   });
 });
 
@@ -218,7 +226,7 @@ describe('머리 · 진도 · X 펼침(LEVEL-FLOW-001 — 디자인 검토 2026-
   });
 
   it('탭 보기에서 X = 그 카드를 펼쳐 답을 본다 · 「복습하기」 알림은 KST 하루 한 번', () => {
-    const markX = sliceBetween(page, 'const markX = (entry) => {', '};');
+    const markX = sliceBetween(page, 'const markX = async (entry) => {', '};'); // 아는 단어 풀기를 기다리므로 async
     expect(markX).toContain("if (prefs.view !== 'all') openPeek(entry.key);");
     const nudge = sliceBetween(page, 'const nudgeReview = () => {', '};');
     expect(nudge).toContain('if (localStorage.getItem(NUDGE_KEY) === kstDay()) return; localStorage.setItem(NUDGE_KEY, kstDay());');
@@ -249,7 +257,7 @@ describe('한자 목록(HANZI-TAB-AL-001)', () => {
     const html = renderToStaticMarkup(<LevelListPage {...data} />);
     expect(html).toContain('<h1>HSK 1 한자</h1>');
     const tabs = [...html.matchAll(/<nav class="lv-tabs"[^>]*>(.*?)<\/nav>/g)][0][1];
-    expect([...tabs.matchAll(/>([^<]+)<\/a>/g)].map((m) => m[1])).toEqual(['단어', '문형', '한자']);
+    expect([...tabs.matchAll(/>([^<]+)<span class="nav-pending" aria-hidden="true"><\/span><\/a>/g)].map((m) => m[1])).toEqual(['단어', '문형', '한자']);
     expect(html).not.toMatch(TONE);
     const table = (await import('../../lib/data/zhHanzi/H1.json')).default;
     const glosses = Object.values(table.chars).flatMap((c) => c.rd.flatMap((r) => r.s.map((x) => x.g)));

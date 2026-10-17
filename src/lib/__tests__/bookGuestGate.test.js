@@ -55,7 +55,8 @@ describe('DB — anon 제한 정책 + 메타만 주는 함수', () => {
 describe('화면 배선', () => {
   it('서재: 비로그인 「함께 읽는 글」만 메타로 책 카드를 채우고, 책 카드는 「로그인하고 읽기」(첫 장으로 돌아옴)', () => {
     const page = read('src/views/MaterialsPage.jsx');
-    expect(page).toContain("const rows = tab === 'public' && !userId ? await withGuestBookCatalog(supabase, data || [], { langFilter, levelFilter, searchQuery }) : data || [];");
+    expect(page).toContain("const guestCatalog = tab === 'public' && !userId ? guestBookCatalogRows(supabase) : null;");
+    expect(page).toContain("const rows = guestCatalog ? await withGuestBookCatalog(supabase, data || [], { langFilter, levelFilter, searchQuery, catalog: guestCatalog }) : data || [];");
     expect(page).toContain('footer={!user ? (');
     expect(page).toContain('<Link href={authEntryHref(`/viewer/${b.chapters[0]?.id}`)} className="btn btn--primary btn--sm">로그인하고 읽기</Link>');
   });

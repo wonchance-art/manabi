@@ -49,7 +49,7 @@ try {
   assert.equal(await page.locator('#u29-patterns .examples').first().evaluate(el => getComputedStyle(el).borderStyle), 'solid');
   await page.screenshot({ path: out + '/reader-examples-desktop.png' });
   await page.getByRole('link', { name: 'manabi 배움', exact: true }).click();
-  const resumeTile = page.locator('a.learn-resume').filter({ hasText: '이어서 읽기' });
+  const resumeTile = page.locator('a.learn-resume').filter({ hasText: '이어 읽기' });
   await resumeTile.waitFor();
   assert.match(await resumeTile.getAttribute('href'), /#u29-/);
   await resumeTile.click();
@@ -144,8 +144,8 @@ try {
   await mp.getByPlaceholder('비밀번호', { exact: true }).fill('fixture-password');
   await mp.getByRole('button', { name: '로그인', exact: true }).last().click();
   await mp.waitForURL('**/home');
-  await mp.getByRole('link', { name: '이어서 읽기', exact: true }).waitFor();
-  assert.match(await mp.getByRole('link', { name: '이어서 읽기', exact: true }).getAttribute('href'), /#u35-start/);
+  await mp.getByRole('link', { name: '이어 읽기', exact: true }).waitFor();
+  assert.match(await mp.getByRole('link', { name: '이어 읽기', exact: true }).getAttribute('href'), /#u35-start/);
   await mp.waitForFunction(() => document.querySelector('.today-review h2')?.textContent.includes('3개의'));
   assert.match(await mp.locator('.today-record').first().innerText(), /2 \/ 42과/);
   await mp.locator('.suggestion-artwork > span').waitFor();
@@ -159,7 +159,7 @@ try {
   failed = true;
   await mp.goto(base + '/home');
   await mp.getByRole('alert').filter({ hasText: '학습 기록을 불러오지 못했어요' }).waitFor({ timeout: 30000 });
-  assert.equal(await mp.getByRole('link', { name: '이어서 읽기', exact: true }).isVisible(), true);
+  assert.equal(await mp.getByRole('link', { name: '이어 읽기', exact: true }).isVisible(), true);
   report.fixtureStates.push('server failure leaves local book readable and exposes retry');
   failed = false; due = 0;
   await mp.getByRole('button', { name: '다시 시도', exact: true }).click();
@@ -171,7 +171,7 @@ try {
   rows = [{ material_id: 'fixture-material', is_completed: false, updated_at: new Date().toISOString(), reading_materials: { id: 'fixture-material', title: '최근에 읽은 자료의 실제 기록 형태' } }];
   await mp.reload();
   await mp.waitForFunction(() => document.querySelector('.today-location strong')?.textContent === '최근에 읽은 자료의 실제 기록 형태');
-  assert.equal(await mp.getByRole('link', { name: '이어서 읽기', exact: true }).getAttribute('href'), '/viewer/fixture-material');
+  assert.equal(await mp.getByRole('link', { name: '이어 읽기', exact: true }).getAttribute('href'), '/viewer/fixture-material');
   report.fixtureStates.push('newer server reading wins without combining its progress with book completion');
   assert(requests.filter(r => /\/(user_vocabulary|reading_progress)$/.test(r.path)).every(r => r.search.includes(`user_id=eq.${uid}`)), 'every personal reading/vocab query is scoped to the signed-in user');
   rows = [];

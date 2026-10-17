@@ -21,7 +21,7 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
     expect(viewer).toContain('const headText = selectedToken && selectedLexKey && selectedLexKey !== selectedToken.text ? selectedLexKey : selectedToken?.text;');
     expect(viewer).toContain("import { pickedRangeOf } from '../lib/headwordPick';");
     expect(viewer).toContain('const headPicked = headIsBase ? pickedRangeOf(headText, selectedToken.text) : null;');
-    expect(card).toContain('splitRuby(headText, headReading)');
+    expect(card).toContain('splitRuby(headText, headReading, headIsBase ? undefined : selectedToken?.base_form)'); // 표면 표제어면 기본형 읽기 옮기기(VIEWER-LANG-AUDIT)
     expect(card).toContain('[...headText].map((ch, j) => charSpan(ch, `p:${j}`, null, j))');
     expect(card).toMatch(/isPickedAt\(i\) \? ' word-fit__char--picked' : ''/);
     expect(css).toMatch(/\.word-fit__char--picked \{[^}]*background/);

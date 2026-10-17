@@ -135,7 +135,9 @@ describe('화면 — 기존 함수로만 쓰고, 로그인 전에는 쓰지 않�
     expect(src).toMatch(/source: 'hanzi'/);
     expect(src).not.toMatch(/\.insert\(|\.upsert\(|localStorage|sessionStorage|indexedDB/);
     expect(src).toMatch(/if \(!userId\) return;\n\s+logReviewEvents/);
-    expect(src).toMatch(/if \(!userId\) return undefined;\n\s+let alive = true;\n\s+supabase\.from\('review_events'\)\.select/);
+    // 읽기는 묶음 · 페이지 조회 한 곳(fetchLastHanziMarks — 1000행 상한, REVIEW-ROWS-CAP-001), 로그인 전에는 읽지 않는다.
+    expect(src).toMatch(/if \(!userId\) return undefined;\n\s+let alive = true;\n(?:\s+\/\/[^\n]*\n)?\s+fetchLastHanziMarks\(supabase, userId, allChars\)/);
+    expect(src).not.toMatch(/\.from\('review_events'\)/);
   });
 });
 

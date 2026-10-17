@@ -664,6 +664,8 @@ test('AE-R3 390 · 1440: 壮观 안 1 — 正 壯觀 · 日 壮観 そうかん,
    await tap(f,'id_0_7','웅장하다, 장관이다');
    await f.page.locator('#inspector-word .reader-card-glyph').filter({visible:true}).waitFor();
    await f.page.locator('#inspector-word .word-fit__hun').filter({visible:true}).first().waitFor();
+   // 日 줄은 일본어 표기 표(jaWords.json — 지연 import)가 도착한 뒤에 선다(실측 훈음 뒤 약 0.2초) — 그 줄을 기다린 뒤 잰다.
+   await f.page.locator('#inspector-word .reader-card-glyph__row--ja').filter({visible:true}).first().waitFor();
    await f.page.waitForTimeout(300);
    const g=await glyphGeometry(f.page);
    const label=`壮观 ${width}`;

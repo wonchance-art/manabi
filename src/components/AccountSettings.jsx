@@ -2,10 +2,18 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { readCompleteLegacyRows } from '../lib/legacyReviewSync';
 import { failureMessage } from '../lib/errorMessage';
 import Button from './Button';
 
 const EXPORT_KEYS = ['profile', 'vocab', 'materials', 'progress', 'notes', 'writings', 'pdfs'];
+
+// 내보내기는 전부여야 한다 — PostgREST 기본 상한(1000행)에 조용히 잘리지 않게 정본 완전 조회(id 순 page ·
+// exact count)로 읽고, 결과는 unwrapAccountExportResults가 읽는 { data } / { error } 모양으로 돌려준다.
+function exportRows(table, ownerColumn, ownerId, pageSize = 1000) {
+  return readCompleteLegacyRows(() => supabase.from(table).select('*', { count: 'exact' }).eq(ownerColumn, ownerId), { pageSize })
+    .then(data => ({ data, error: null }), error => ({ data: null, error }));
+}
 
 export function unwrapAccountExportResults(results) {
   const failed = results
@@ -113,12 +121,13 @@ export default function AccountSettings({ user, toast, signOut }) {
     try {
       const exportResults = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
-        supabase.from('user_vocabulary').select('*').eq('user_id', user.id),
-        supabase.from('reading_materials').select('*').eq('owner_id', user.id),
-        supabase.from('reading_progress').select('*').eq('user_id', user.id),
-        supabase.from('grammar_notes').select('*').eq('user_id', user.id),
-        supabase.from('writing_practice').select('*').eq('user_id', user.id),
-        supabase.from('uploaded_pdfs').select('*').eq('owner_id', user.id),
+        exportRows('user_vocabulary', 'user_id', user.id),
+        // 자료 행은 본문·분석 JSON이 커서 page를 작게 나눈다.
+        exportRows('reading_materials', 'owner_id', user.id, 100),
+        exportRows('reading_progress', 'user_id', user.id),
+        exportRows('grammar_notes', 'user_id', user.id),
+        exportRows('writing_practice', 'user_id', user.id),
+        exportRows('uploaded_pdfs', 'owner_id', user.id),
       ]);
       const { profile, vocab, materials, progress, notes, writings, pdfs } = unwrapAccountExportResults(exportResults);
 

@@ -71,5 +71,5 @@ export default function ClassSourceFocus({ material, user, params, onResolve, to
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [material?.id, material?.processed_json, material?.owner_id, user?.id, key, hasRecord, legacyQuote, legacyToken, retry]);
   if (!state) return null;
-  return <div className="classroom-notice" role="status">{state.loading ? '수업에서 선택한 위치를 찾는 중…' : <>{state.message}{state.quote && <p>{state.quote}</p>}{state.retry && <button onClick={() => setRetry(value => value + 1)}>다시 찾기</button>}</>}</div>;
+  return <div className="classroom-notice" role="status" aria-busy={state.loading || undefined}>{state.loading ? '수업에서 선택한 위치를 찾는 중…' : <>{state.message}{state.quote && <p>{state.quote}</p>}{state.retry && <button onClick={() => setRetry(value => value + 1)}>다시 찾기</button>}</>}</div>;
 }

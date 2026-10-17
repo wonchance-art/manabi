@@ -1,28 +1,26 @@
 import { createClient } from '@supabase/supabase-js';
 import { callGemini, parseGeminiJSON } from '../../../../lib/gemini.js';
+import { requireUser, isAdminUser, SERVICE_KEY_MISSING_MESSAGE } from '@/lib/server/auth';
 
 export const maxDuration = 60;
 
 export async function GET(request) {
+  // 관리자 판별(isAdminUser)과 보충 쓰기는 service-role로만 — 키가 없으면 판별이 예외로 꺼져 관리자도 401이 되고
+  // cron 경로는 쓰기 클라이언트를 만들지 못한다. seed-starters와 같이 닫힌 채 503(같은 안내)으로 돌려준다.
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return Response.json({ error: SERVICE_KEY_MISSING_MESSAGE }, { status: 503 });
+  }
   // 인증: CRON_SECRET (Vercel cron) OR 관리자 세션 (대시보드 수동 실행)
   // CRON_SECRET 미설정 시 "Bearer undefined" 통과 방지 — isCron은 시크릿이 있을 때만 참.
   const authHeader = request.headers.get('authorization');
   const isCron = !!process.env.CRON_SECRET && authHeader === `Bearer ${process.env.CRON_SECRET}`;
   let isAdmin = false;
   if (!isCron && authHeader?.startsWith('Bearer ')) {
-    const token = authHeader.slice('Bearer '.length);
+    // 관리자 판별은 service-role 헬퍼로만 — anon 키 클라이언트의 profiles 조회는 anon으로 돌아
+    // 프로필 공개 범위 2단계(PROFILES-PRIVACY-001 ②) 뒤 0행이 된다.
     try {
-      const userClient = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-        { auth: { persistSession: false } },
-      );
-      const { data: { user } } = await userClient.auth.getUser(token);
-      if (user) {
-        const { data: profile } = await userClient
-          .from('profiles').select('role').eq('id', user.id).single();
-        isAdmin = profile?.role === 'admin';
-      }
+      const auth = await requireUser(request);
+      if (!auth.error) isAdmin = await isAdminUser(auth.user.id);
     } catch {}
   }
   if (!isCron && !isAdmin) {
