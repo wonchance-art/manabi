@@ -3289,6 +3289,322 @@
           "title": "Book XII"
         }
       ]
+    },
+    "se-thomas-mann_short-fiction_various-translators": {
+      "title": "Short Fiction",
+      "author": "Thomas Mann",
+      "level": "B2 상급",
+      "total": 74,
+      "words": 157339,
+      "display": {
+        "titleKo": "토니오 크뢰거 · 베니스에서의 죽음 외",
+        "authorKo": "토마스 만",
+        "binding": "tpl-jacket",
+        "coverTitle": "Short Fiction",
+        "coverAuthor": "Thomas Mann",
+        "coverPalette": "buff"
+      },
+      "literature": {
+        "publishedYear": 1930
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Little Herr Friedemann (1/4)"
+        },
+        {
+          "order": 2,
+          "title": "Little Herr Friedemann (2/4)"
+        },
+        {
+          "order": 3,
+          "title": "Little Herr Friedemann (3/4)"
+        },
+        {
+          "order": 4,
+          "title": "Little Herr Friedemann (4/4)"
+        },
+        {
+          "order": 5,
+          "title": "Little Louise (1/3)"
+        },
+        {
+          "order": 6,
+          "title": "Little Louise (2/3)"
+        },
+        {
+          "order": 7,
+          "title": "Little Louise (3/3)"
+        },
+        {
+          "order": 8,
+          "title": "Tobias Mindernickel (1/2)"
+        },
+        {
+          "order": 9,
+          "title": "Tobias Mindernickel (2/2)"
+        },
+        {
+          "order": 10,
+          "title": "The Wardrobe (1/2)"
+        },
+        {
+          "order": 11,
+          "title": "The Wardrobe (2/2)"
+        },
+        {
+          "order": 12,
+          "title": "The Path to the Cemetery (1/2)"
+        },
+        {
+          "order": 13,
+          "title": "The Path to the Cemetery (2/2)"
+        },
+        {
+          "order": 14,
+          "title": "The Infant Prodigy (1/2)"
+        },
+        {
+          "order": 15,
+          "title": "The Infant Prodigy (2/2)"
+        },
+        {
+          "order": 16,
+          "title": "Tristan (1/7)"
+        },
+        {
+          "order": 17,
+          "title": "Tristan (2/7)"
+        },
+        {
+          "order": 18,
+          "title": "Tristan (3/7)"
+        },
+        {
+          "order": 19,
+          "title": "Tristan (4/7)"
+        },
+        {
+          "order": 20,
+          "title": "Tristan (5/7)"
+        },
+        {
+          "order": 21,
+          "title": "Tristan (6/7)"
+        },
+        {
+          "order": 22,
+          "title": "Tristan (7/7)"
+        },
+        {
+          "order": 23,
+          "title": "Tonio Kröger (1/11)"
+        },
+        {
+          "order": 24,
+          "title": "Tonio Kröger (2/11)"
+        },
+        {
+          "order": 25,
+          "title": "Tonio Kröger (3/11)"
+        },
+        {
+          "order": 26,
+          "title": "Tonio Kröger (4/11)"
+        },
+        {
+          "order": 27,
+          "title": "Tonio Kröger (5/11)"
+        },
+        {
+          "order": 28,
+          "title": "Tonio Kröger (6/11)"
+        },
+        {
+          "order": 29,
+          "title": "Tonio Kröger (7/11)"
+        },
+        {
+          "order": 30,
+          "title": "Tonio Kröger (8/11)"
+        },
+        {
+          "order": 31,
+          "title": "Tonio Kröger (9/11)"
+        },
+        {
+          "order": 32,
+          "title": "Tonio Kröger (10/11)"
+        },
+        {
+          "order": 33,
+          "title": "Tonio Kröger (11/11)"
+        },
+        {
+          "order": 34,
+          "title": "At the Prophet’s"
+        },
+        {
+          "order": 35,
+          "title": "How Jappe Fought Do Escobar (1/3)"
+        },
+        {
+          "order": 36,
+          "title": "How Jappe Fought Do Escobar (2/3)"
+        },
+        {
+          "order": 37,
+          "title": "How Jappe Fought Do Escobar (3/3)"
+        },
+        {
+          "order": 38,
+          "title": "Death in Venice (1/13)"
+        },
+        {
+          "order": 39,
+          "title": "Death in Venice (2/13)"
+        },
+        {
+          "order": 40,
+          "title": "Death in Venice (3/13)"
+        },
+        {
+          "order": 41,
+          "title": "Death in Venice (4/13)"
+        },
+        {
+          "order": 42,
+          "title": "Death in Venice (5/13)"
+        },
+        {
+          "order": 43,
+          "title": "Death in Venice (6/13)"
+        },
+        {
+          "order": 44,
+          "title": "Death in Venice (7/13)"
+        },
+        {
+          "order": 45,
+          "title": "Death in Venice (8/13)"
+        },
+        {
+          "order": 46,
+          "title": "Death in Venice (9/13)"
+        },
+        {
+          "order": 47,
+          "title": "Death in Venice (10/13)"
+        },
+        {
+          "order": 48,
+          "title": "Death in Venice (11/13)"
+        },
+        {
+          "order": 49,
+          "title": "Death in Venice (12/13)"
+        },
+        {
+          "order": 50,
+          "title": "Death in Venice (13/13)"
+        },
+        {
+          "order": 51,
+          "title": "Bashan and I (1/17)"
+        },
+        {
+          "order": 52,
+          "title": "Bashan and I (2/17)"
+        },
+        {
+          "order": 53,
+          "title": "Bashan and I (3/17)"
+        },
+        {
+          "order": 54,
+          "title": "Bashan and I (4/17)"
+        },
+        {
+          "order": 55,
+          "title": "Bashan and I (5/17)"
+        },
+        {
+          "order": 56,
+          "title": "Bashan and I (6/17)"
+        },
+        {
+          "order": 57,
+          "title": "Bashan and I (7/17)"
+        },
+        {
+          "order": 58,
+          "title": "Bashan and I (8/17)"
+        },
+        {
+          "order": 59,
+          "title": "Bashan and I (9/17)"
+        },
+        {
+          "order": 60,
+          "title": "Bashan and I (10/17)"
+        },
+        {
+          "order": 61,
+          "title": "Bashan and I (11/17)"
+        },
+        {
+          "order": 62,
+          "title": "Bashan and I (12/17)"
+        },
+        {
+          "order": 63,
+          "title": "Bashan and I (13/17)"
+        },
+        {
+          "order": 64,
+          "title": "Bashan and I (14/17)"
+        },
+        {
+          "order": 65,
+          "title": "Bashan and I (15/17)"
+        },
+        {
+          "order": 66,
+          "title": "Bashan and I (16/17)"
+        },
+        {
+          "order": 67,
+          "title": "Bashan and I (17/17)"
+        },
+        {
+          "order": 68,
+          "title": "Disorder and Early Sorrow (1/7)"
+        },
+        {
+          "order": 69,
+          "title": "Disorder and Early Sorrow (2/7)"
+        },
+        {
+          "order": 70,
+          "title": "Disorder and Early Sorrow (3/7)"
+        },
+        {
+          "order": 71,
+          "title": "Disorder and Early Sorrow (4/7)"
+        },
+        {
+          "order": 72,
+          "title": "Disorder and Early Sorrow (5/7)"
+        },
+        {
+          "order": 73,
+          "title": "Disorder and Early Sorrow (6/7)"
+        },
+        {
+          "order": 74,
+          "title": "Disorder and Early Sorrow (7/7)"
+        }
+      ]
     }
   }
 }

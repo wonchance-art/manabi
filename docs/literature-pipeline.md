@@ -416,7 +416,7 @@ group by 1 order by 1;
 
 | 단계 | 3차 묶음까지 | 지금 |
 |---|---|---|
-| 후보 · 권리 | 대화에서 목록 → 매번 몰년 · 번역자 조사 | `src/content/literature/catalog.json` — 나라별 인기 순 341줄(수록 84 · 불러올 수 있음 208 · 막힘 49), 권리 사실 · 출처 위치까지 |
+| 후보 · 권리 | 대화에서 목록 → 매번 몰년 · 번역자 조사 | `src/content/literature/catalog.json` — 나라별 인기 순 342줄(수록 85 · 불러올 수 있음 208 · 막힘 49), 권리 사실 · 출처 위치까지 |
 | 받기 | 출처마다 다른 명령 네 개(add-work · se-add-work · ws-add-work · pd-add-work) + 플래그 | `node scripts/literature/import.mjs <id>` 한 줄(`--next N [--country XX]` · `--dry-run` · `--list`) |
 | entry.json | 제목 · 연도 · 원산국 · 번역자 · 권리 · 한국어 표기 · 레벨 · 표지 · parse 약 12칸 손으로 | 카탈로그가 채운다 — 사람이 쓰는 칸 0(아오조라는 시리즈 A 문양만 — 「작품마다 새 문양」) |
 | 전자책 사이트 parse | 판마다 정규식 손으로 | 머리글 모양에서 추정(`inferPdSiteParse`) + 버리는 머리글 보고 — 이름 · 목차 밖을 버리면 멈추고 사람이 본다(`--accept-parse`) |
@@ -430,7 +430,13 @@ group by 1 order by 1;
 - **loadable** 줄 = 가져오기 입력 전부: 출처 위치 · 출판 연도 · 작가 몰년 · 원산국 · (번역자 기록) · 한국어 표기 · 레벨(그 언어 목록 — 한국어는 초급·중급·고급).
   계약: 오늘 한국 공개 가능(아오조라는 D5 — 일본 만료, 그 밖은 rightsKorea) · 표지 표기가 장정 규칙 통과 · key 폴더가 아직 없다.
 - **blocked** 줄 = 막힌 이유(보호기간 · 번역자 몰년 미확인 · 출처 없음 · 아오조라 新字旧仮名). 같은 나라 안은 인기 순 — `--next`가 이 순서로 고른다.
-- 판단이 필요한 줄은 막아 둔다(이유에 「오너」): Lowe-Porter 번역 토마스 만 3권(번역자 1963 사망 — 번역 판을 미국판으로 볼지), 번역자 몰년이 출처 한 곳뿐인 2권.
+- 판단이 필요한 줄은 막아 둔다(이유에 「오너」): 번역자 몰년이 출처 한 곳뿐인 2권.
+- **번역자가 여럿인 모음집**: `translator`를 목록(`[{name, deathYear, publishedYear, countryOfOrigin}, …]`)으로 적고 모두 따로 본다(`rightsKorea` —
+  한 사람이라도 막히면 불가). 막히는 번역의 작품은 `source.exclude`로 판에서 뺀다. 출처 줄은 「번역 Kenneth Burke, 1924 · Herman George Scheffauer, 1928」.
+  선례 — 토마스 만(오너 「다른 번역본 찾아보고 없으면 그만두자」 2026-10-17 KST): Lowe-Porter(1963 사망) 판 『부덴브로크가』 · 『마의 산』은 다른 공개 번역이 없어 싣지 않는다.
+  Standard Ebooks 단편집에서 작품마다 번역자를 원본 판과 대조해(SE content.opf 판 주석 · Gutenberg 66073 본문 · Open Library) Burke 3편(뉴욕 Knopf 1924–25 —
+  미국판만이라 미국 원산 · 1931년 전) + Scheffauer 10편(1927 사망 — 한국 만료)만 싣고 Lowe-Porter의 「Mario and the Magician」은 뺐다. 원어(독일어)는 학습 언어 밖.
+  보완: `se-add-work`가 `translator-1 …` 꼴 번역자를 놓쳐 원작만 보고 통과시키던 구멍을 막았다(번역자가 여럿이면 `--translators` 없이는 멈춘다).
 
 ### 9.3 틀 표지 — 실물 조사 전의 기본 (`tpl-*`, `FirstEditionCoverTemplate.jsx`)
 

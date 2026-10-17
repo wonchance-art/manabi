@@ -5268,6 +5268,12 @@
       "country": "DE"
     },
     {
+      "id": "de-thomas-mann-short-fiction",
+      "key": "se-thomas-mann_short-fiction_various-translators",
+      "status": "수록",
+      "country": "DE"
+    },
+    {
       "id": "de-jacob-grimm-wilhelm-grimm-household-tales-margaret-hunt",
       "key": "se-jacob-grimm_wilhelm-grimm_household-tales_margaret-hunt",
       "status": "loadable",
@@ -5372,7 +5378,7 @@
       },
       "popularity": "노벨상 수상작",
       "note": "원작 통과(1955 사망 → 한국 선). 번역자 Lowe-Porter 1963 사망 → 한국 선 밖 — 번역 원산을 US(Knopf 뉴욕 1924)로 볼 때만 출판 95년 만료로 통과. 런던 Secker 동시 출간 — 베른 5(4)(a) 동시 발행 시 최단 보호국 기준 해석 필요. 승인 전 원산 판정 확인",
-      "blocker": "번역 원산국 판정 필요(오너) — Lowe-Porter(1963 사망)는 한국 선 밖, 번역 판을 미국판(Knopf 뉴욕)으로 볼지가 갈린다"
+      "blocker": "싣지 않음(오너 「다른 번역본 찾아보고 없으면 그만두자」 2026-10-17 KST) — 다른 공개 번역이 없고 Lowe-Porter(1963 사망) 판은 한국 선 밖. 만 중단편은 Burke · Scheffauer 판으로 수록(de-thomas-mann-short-fiction)."
     },
     {
       "id": "de-thomas-mann-the-magic-mountain-h-t-lowe-porter",
@@ -5400,7 +5406,7 @@
       },
       "popularity": "20세기 독일 소설 대표",
       "note": "Buddenbrooks와 같은 번역 원산 쟁점(Knopf 1927)",
-      "blocker": "번역 원산국 판정 필요(오너) — Lowe-Porter(1963 사망)는 한국 선 밖, 번역 판을 미국판(Knopf 뉴욕)으로 볼지가 갈린다"
+      "blocker": "싣지 않음(오너 「다른 번역본 찾아보고 없으면 그만두자」 2026-10-17 KST) — 다른 공개 번역이 없고 Lowe-Porter(1963 사망) 판은 한국 선 밖. 만 중단편은 Burke · Scheffauer 판으로 수록(de-thomas-mann-short-fiction)."
     },
     {
       "id": "de-thomas-mann-death-in-venice-and-seven-other-stories",
@@ -5429,7 +5435,7 @@
       },
       "popularity": "중편 대표",
       "note": "Lowe-Porter 1930 Knopf(US) — 출판 95년 선(≤1930) 정확히 통과. 원산 쟁점은 Buddenbrooks와 같음",
-      "blocker": "번역 원산국 판정 필요(오너) — Lowe-Porter(1963 사망)는 한국 선 밖, 번역 판을 미국판(Knopf 뉴욕)으로 볼지가 갈린다"
+      "blocker": "싣지 않음(오너 「다른 번역본 찾아보고 없으면 그만두자」 2026-10-17 KST) — 다른 공개 번역이 없고 Lowe-Porter(1963 사망) 판은 한국 선 밖. 만 중단편은 Burke · Scheffauer 판으로 수록(de-thomas-mann-short-fiction)."
     },
     {
       "id": "de-hermann-hesse-demian-n-h-priday",

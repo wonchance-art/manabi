@@ -14,5 +14,6 @@ import book10 from './se-john-stuart-mill_on-liberty/chapters.json';
 import book11 from './se-l-frank-baum_the-wonderful-wizard-of-oz/chapters.json';
 import book12 from './se-lewis-carroll_alices-adventures-in-wonderland/chapters.json';
 import book13 from './se-marcus-aurelius_meditations_george-long/chapters.json';
+import book14 from './se-thomas-mann_short-fiction_various-translators/chapters.json';
 
-export const STANDARD_EBOOKS_BOOKS = Object.freeze([book0, book1, book2, book3, book4, book5, book6, book7, book8, book9, book10, book11, book12, book13]);
+export const STANDARD_EBOOKS_BOOKS = Object.freeze([book0, book1, book2, book3, book4, book5, book6, book7, book8, book9, book10, book11, book12, book13, book14]);

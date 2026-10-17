@@ -4,7 +4,7 @@
 // 과정까지 모두 프로세스 최적화」(2026-10-17 KST). 카탈로그 한 줄이 가져오기(scripts/literature/import.mjs)의 입력 전부다 — 출처 위치 ·
 // 권리 사실(출판 · 몰년 · 원산국 · 번역자) · 한국어 표기 · 레벨 · 표지(실물 조사가 있으면 그 값, 없으면 시대 · 언어 틀). 사람이 entry.json을
 // 손으로 쓰지 않는다. 수록되면 status가 「수록」이 되고 key가 그 작품 폴더를 가리킨다(계약 테스트가 둘을 맞춰 본다).
-import { koreaPublicDomainVerdict } from '../../src/lib/rightsKorea.js';
+import { koreaPublicDomainVerdict, translatorRecords } from '../../src/lib/rightsKorea.js';
 import { aozoraJurisdictionVerdict } from '../../src/lib/aozoraRights.js';
 import { EN_LEVELS, FR_LEVELS, JP_LEVELS, ZH_LEVELS } from '../../src/lib/constants.js';
 import { FIRST_EDITION_BINDINGS, TEMPLATE_BINDINGS, TEMPLATE_PALETTES, validateFirstEditionDisplay } from '../../src/lib/firstEditionCover.js';
@@ -132,7 +132,9 @@ const PAPER = ['cream', 'buff', 'grey', 'yellow'];
 export function catalogCoverDisplay(entry) {
   const base = { titleKo: entry.titleKo, authorKo: entry.authorKo };
   if (entry.cover) return { ...base, ...entry.cover };
-  const year = entry.translator?.publishedYear ?? entry.publishedYear;
+  // 번역본은 번역 판의 해 — 번역자가 여럿이면(모음집) 가장 늦은 판
+  const years = translatorRecords(entry.translator).map((item) => item.publishedYear).filter(Number.isInteger);
+  const year = years.length ? Math.max(...years) : entry.publishedYear;
   const key = entry.key;
   if (entry.language === 'Chinese' || entry.language === 'Korean') {
     return { ...base, binding: 'tpl-cjk-vertical', coverTitle: verticalTitle(coverName(entry.title)), coverAuthor: coverName(entry.author), coverPalette: pick(PAPER, key) };

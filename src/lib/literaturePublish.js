@@ -21,6 +21,7 @@ import { senseReviewItems } from './viewerSenseReview.js';
 import { SE_PROVIDER, standardEbooksRightsPublishable } from './standardEbooks.js';
 import { WS_PROVIDER, wikisourceRightsPublishable } from './wikisource.js';
 import { PD_PROVIDER, PD_SITES, pdSiteRightsPublishable } from './pdSite.js';
+import { translatorRecords } from './rightsKorea.js';
 
 /** 분석 전이거나 검수 기록이 한 번도 없는데 공개된 장 — 사용자에게 「분석 전」·「검수 전」 장이 보이는 상태. rows: {visibility, status, review} */
 export const literatureExposedRows = (rows = []) => rows.filter((row) => row.visibility === 'public' && (row.status !== 'completed' || !row.review));
@@ -129,10 +130,12 @@ function pdSiteRightsSummary(literature) {
  * 없으면 칸을 만들지 않는다(원작 단독 · 퍼블릭 도메인 책은 지금 모양 그대로).
  */
 function withRightsRecords(summary, literature) {
-  const translator = literature.translator && typeof literature.translator === 'object' ? literature.translator : null;
+  // 번역자가 여럿이면(모음집) 모두 — 관리자 칸은 사람마다 판 · 몰년
+  const translators = translatorRecords(literature.translator).filter((item) => item && typeof item === 'object');
+  const record = (item) => ({ name: item.name, deathYear: item.deathYear ?? null, publishedYear: item.publishedYear ?? null });
   return {
     ...summary,
-    ...(translator ? { translator: { name: translator.name, deathYear: translator.deathYear ?? null, publishedYear: translator.publishedYear ?? null } } : {}),
+    ...(translators.length ? { translator: Array.isArray(literature.translator) ? translators.map(record) : record(translators[0]) } : {}),
     ...(literature.rights?.holder ? { holder: literature.rights.holder } : {}),
   };
 }

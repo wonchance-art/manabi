@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "provider": "standardebooks",
+  "repo": "standardebooks/thomas-mann_short-fiction_various-translators",
+  "commit": "717653fc4475841d5fde1fa93613423afb4144c2",
+  "url": "https://standardebooks.org/ebooks/thomas-mann/short-fiction/various-translators",
+  "title": "Short Fiction",
+  "author": "Thomas Mann",
+  "publishedYear": 1930,
+  "authorDeathYear": 1955,
+  "countryOfOrigin": "DE",
+  "translator": [
+    {
+      "name": "Kenneth Burke",
+      "deathYear": 1993,
+      "publishedYear": 1924,
+      "countryOfOrigin": "US"
+    },
+    {
+      "name": "Herman George Scheffauer",
+      "deathYear": 1927,
+      "publishedYear": 1928,
+      "countryOfOrigin": "US"
+    }
+  ],
+  "level": "B2 상급",
+  "display": {
+    "titleKo": "토니오 크뢰거 · 베니스에서의 죽음 외",
+    "authorKo": "토마스 만",
+    "binding": "tpl-jacket",
+    "coverTitle": "Short Fiction",
+    "coverAuthor": "Thomas Mann",
+    "coverPalette": "buff"
+  },
+  "files": [
+    {
+      "path": "little-herr-friedemann.xhtml",
+      "sha256": "a2efeb8c9c790080183591a174127798238871899ebe1b4272ade86d45b85daf"
+    },
+    {
+      "path": "little-louise.xhtml",
+      "sha256": "9cbca1d8ac7f7f95913d2407511a9287762106a1d64195e5c42d22792bfc825d"
+    },
+    {
+      "path": "tobias-mindernickel.xhtml",
+      "sha256": "280c2389872d94f992d88ee4016f65a1ae837ea90af1bde019a3b636ebf6e89b"
+    },
+    {
+      "path": "the-wardrobe.xhtml",
+      "sha256": "84cbebe63a9f935b5b968854c053a69b2116e88608d2808a42650886249cc55a"
+    },
+    {
+      "path": "the-path-to-the-cemetery.xhtml",
+      "sha256": "ce9c08161557043a503f44a7e9fee6dcad59439c9faa57c91c80c0e62127020b"
+    },
+    {
+      "path": "the-infant-prodigy.xhtml",
+      "sha256": "8b82ebbe34b42d16d4c491fc3000c3f1bc7dcc1e3401d2748e2e217c58c6c9e3"
+    },
+    {
+      "path": "tristan.xhtml",
+      "sha256": "db1c4ee2b19a2b2ae9e361707b74090ebaef2fa44fb734bac8179f2cdb1f6af1"
+    },
+    {
+      "path": "tonio-kroger.xhtml",
+      "sha256": "9914122d5d3b20875a24b5a8db143c04f0d9686316f894458cfe607e24603e16"
+    },
+    {
+      "path": "at-the-prophets.xhtml",
+      "sha256": "d5fa23a4378a161f3b3acf2f344ce799897a63e66f8b0fee1b902450983b3af7"
+    },
+    {
+      "path": "how-jappe-fought-do-escobar.xhtml",
+      "sha256": "4c48fd68465c443e735cfd2fdeefe84a51c63db7a843eca8ff479a0141df5c9c"
+    },
+    {
+      "path": "death-in-venice.xhtml",
+      "sha256": "4ccfe4c8936458c80710b809bc97d3bd9674cdf14b5a073034c08dfd313df979"
+    },
+    {
+      "path": "bashan-and-i.xhtml",
+      "sha256": "e8a77b5330b467074ff36485f3fab69eeeb10b423b43a0d3a52b5367563d41bd"
+    },
+    {
+      "path": "disorder-and-early-sorrow.xhtml",
+      "sha256": "bc8549cedf3e6728e9ead40e8d2c95008ac9bce20eab7dd6524ce76cec3a3e1e"
+    }
+  ],
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-17",
+    "reviewedJurisdictions": [
+      "DE",
+      "US",
+      "KR"
+    ],
+    "evidenceUrl": "https://standardebooks.org/ebooks/thomas-mann/short-fiction/various-translators"
+  }
+}

@@ -4449,6 +4449,438 @@
           "sha256": "0d5423c90261f33722b3f1bf166001fe37a49ec11a9059bf4454bcd4045bd240"
         }
       ]
+    },
+    "se-thomas-mann_short-fiction_various-translators": {
+      "title": "Short Fiction",
+      "author": "Thomas Mann",
+      "level": "B2 상급",
+      "total": 74,
+      "words": 157339,
+      "display": {
+        "titleKo": "토니오 크뢰거 · 베니스에서의 죽음 외",
+        "authorKo": "토마스 만",
+        "binding": "tpl-jacket",
+        "coverTitle": "Short Fiction",
+        "coverAuthor": "Thomas Mann",
+        "coverPalette": "buff"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-thomas-mann_short-fiction_various-translators",
+        "title": "Short Fiction",
+        "author": "Thomas Mann",
+        "publishedYear": 1930,
+        "authorDeathYear": 1955,
+        "countryOfOrigin": "DE",
+        "translator": [
+          {
+            "name": "Kenneth Burke",
+            "deathYear": 1993,
+            "publishedYear": 1924,
+            "countryOfOrigin": "US"
+          },
+          {
+            "name": "Herman George Scheffauer",
+            "deathYear": 1927,
+            "publishedYear": 1928,
+            "countryOfOrigin": "US"
+          }
+        ],
+        "repo": "standardebooks/thomas-mann_short-fiction_various-translators",
+        "commit": "717653fc4475841d5fde1fa93613423afb4144c2",
+        "url": "https://standardebooks.org/ebooks/thomas-mann/short-fiction/various-translators",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "DE",
+            "US",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/thomas-mann/short-fiction/various-translators"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Little Herr Friedemann (1/4)",
+          "sha256": "eaa5c2432750cff239d7a74a56357ce0131151efcdba2fe0fd74fc66d7ef7f8b"
+        },
+        {
+          "order": 2,
+          "title": "Little Herr Friedemann (2/4)",
+          "sha256": "1cac7a725019fccb90d2311e7b760b75b32629fccc58c3297954a2ceb6d6fe72"
+        },
+        {
+          "order": 3,
+          "title": "Little Herr Friedemann (3/4)",
+          "sha256": "ba1036d76dd31f94c4048bb696eb4cd392f6ea72575af9b24fb8c37cd9921eac"
+        },
+        {
+          "order": 4,
+          "title": "Little Herr Friedemann (4/4)",
+          "sha256": "c1b6a6153a3f768697ab0b1e9f17079cefd95fb404218950dbe8d6112c6c6791"
+        },
+        {
+          "order": 5,
+          "title": "Little Louise (1/3)",
+          "sha256": "26ba8b1166cf6fbdd013a6c1cb10b1f95c0f18ba99cde6598f0d3095a906259d"
+        },
+        {
+          "order": 6,
+          "title": "Little Louise (2/3)",
+          "sha256": "c5340b480bb3cf88874b1301a9c47ce5ba60d04e07a3712ba34a29d77fc52434"
+        },
+        {
+          "order": 7,
+          "title": "Little Louise (3/3)",
+          "sha256": "a14ebded8e8615b5cebf0c1ee321e522331a1f1f8e03d7b57b86e56cb5726bb5"
+        },
+        {
+          "order": 8,
+          "title": "Tobias Mindernickel (1/2)",
+          "sha256": "5a352fd2ac422784cfcdbe3bb6bb26aad462db8ded12509bb249e28676924a4b"
+        },
+        {
+          "order": 9,
+          "title": "Tobias Mindernickel (2/2)",
+          "sha256": "7fe81a8ced92f2c695d098807f8c9340b1d924698cbd6e2cdc2ba53d8f822bba"
+        },
+        {
+          "order": 10,
+          "title": "The Wardrobe (1/2)",
+          "sha256": "dba6b9ceaa2fc40a0709ab01dbcd5545e7346c6c272d34dd58362cbf6022a251"
+        },
+        {
+          "order": 11,
+          "title": "The Wardrobe (2/2)",
+          "sha256": "6da8bfc8ffc67e6e2563e3d03422c873a7bd272ecf4bb3f6ff55305340c92fb0"
+        },
+        {
+          "order": 12,
+          "title": "The Path to the Cemetery (1/2)",
+          "sha256": "15d6887644075639c63cd72f3997691f99762c53a879277a7bc10bcdd8c3367e"
+        },
+        {
+          "order": 13,
+          "title": "The Path to the Cemetery (2/2)",
+          "sha256": "96fe28780ce7a0e997d6a4574343f617d2e22494900a45a834c789c926465538"
+        },
+        {
+          "order": 14,
+          "title": "The Infant Prodigy (1/2)",
+          "sha256": "f5a4db62db72d7000308a0e9cf0c52ecb6d0a1d39c97f6bbd097d3a038d2ef2f"
+        },
+        {
+          "order": 15,
+          "title": "The Infant Prodigy (2/2)",
+          "sha256": "48f9a42a33f648e01974e6b52a41fc331ff3988cd8bdb57d8a32cd54c2a4b337"
+        },
+        {
+          "order": 16,
+          "title": "Tristan (1/7)",
+          "sha256": "5bc77596bbeb8818d328c0066a806d8edf12ba21ff2fbd62658206353b6e4196"
+        },
+        {
+          "order": 17,
+          "title": "Tristan (2/7)",
+          "sha256": "6e15c203afb5937b1676946d852cf3dbf392179d9f977b5c43d9a838c7543c2e"
+        },
+        {
+          "order": 18,
+          "title": "Tristan (3/7)",
+          "sha256": "30963c7d808068abdc32ce029c747fc2d78e1f9a1f6c6251145aa44e3a50ffb0"
+        },
+        {
+          "order": 19,
+          "title": "Tristan (4/7)",
+          "sha256": "7cdda729b624ecf2a4f767f7c8e117397df25b255df88a85e93416a212d9e7d4"
+        },
+        {
+          "order": 20,
+          "title": "Tristan (5/7)",
+          "sha256": "3f6988850368d0835caa5ca6dc438d14df7c0cda6a8c376ddc0aa2a4a9805447"
+        },
+        {
+          "order": 21,
+          "title": "Tristan (6/7)",
+          "sha256": "f88652909b1ba4b9194dac31b7581ce9c3ce3bbf493d6798be2747487bc63dcc"
+        },
+        {
+          "order": 22,
+          "title": "Tristan (7/7)",
+          "sha256": "9f2c2bf5d4b9fadac508b6705190384cb02d59e29158c0900bf699d435bc33cc"
+        },
+        {
+          "order": 23,
+          "title": "Tonio Kröger (1/11)",
+          "sha256": "867e1d63526f1c59021bf0e3575a23628c141292f0e7c7cc49a7310b2bfc077f"
+        },
+        {
+          "order": 24,
+          "title": "Tonio Kröger (2/11)",
+          "sha256": "1c4f09bcf0574052a556a93169814a3c7c5b2b8bdbe02c255cd9b6a39d13d3f4"
+        },
+        {
+          "order": 25,
+          "title": "Tonio Kröger (3/11)",
+          "sha256": "81320ce1c27f1544fbcab8da6c05b315890b6fbecbeed509803cbd6ff5d9d9d8"
+        },
+        {
+          "order": 26,
+          "title": "Tonio Kröger (4/11)",
+          "sha256": "4897362ad4922ba128bfc5d2a0aaa7bc74b670cf2560b12cb3090d03b3adfa5e"
+        },
+        {
+          "order": 27,
+          "title": "Tonio Kröger (5/11)",
+          "sha256": "eeb79be412f33789b9f314a323de250f02d70fa2fd1c3b5e0ab4d475daa66792"
+        },
+        {
+          "order": 28,
+          "title": "Tonio Kröger (6/11)",
+          "sha256": "6ceb50002e39da88f883de76a42354ed466c5283b21d32d1eaa7f72f1551be3b"
+        },
+        {
+          "order": 29,
+          "title": "Tonio Kröger (7/11)",
+          "sha256": "eb9cf987be1581eaf1f4dd524918d53d16dd07b384cd5dbbcfe56e6f5558aafd"
+        },
+        {
+          "order": 30,
+          "title": "Tonio Kröger (8/11)",
+          "sha256": "71c8e655eb423a46545e73b9351fd684aa3d65a06c7c1e11cf54727dcd159923"
+        },
+        {
+          "order": 31,
+          "title": "Tonio Kröger (9/11)",
+          "sha256": "60c6944690719fcaeb1cb4e8666495f713157828eb1df967da97507e6ac2f0ce"
+        },
+        {
+          "order": 32,
+          "title": "Tonio Kröger (10/11)",
+          "sha256": "75574c6aa2dab20cf5e401e44f134c956a93f87709b825d48a5abe00f5be4061"
+        },
+        {
+          "order": 33,
+          "title": "Tonio Kröger (11/11)",
+          "sha256": "104e22b680113e840d79beef79f3bd81118433aa5ecba8b3fd08f79afaaab7fc"
+        },
+        {
+          "order": 34,
+          "title": "At the Prophet’s",
+          "sha256": "b1a43e86df16c91b4da602cd782414821695ca08b45c57463f398a6a7ee926cd"
+        },
+        {
+          "order": 35,
+          "title": "How Jappe Fought Do Escobar (1/3)",
+          "sha256": "5fff42ab4c6324e9ad022d92d50af03dc4e20105430fa971e3047108de06e6a0"
+        },
+        {
+          "order": 36,
+          "title": "How Jappe Fought Do Escobar (2/3)",
+          "sha256": "7edb8986868534e946661e658e618d0e18f722cc47aeece9f8c403b50da8137f"
+        },
+        {
+          "order": 37,
+          "title": "How Jappe Fought Do Escobar (3/3)",
+          "sha256": "bb3bd6cdbae47755c119c16fc4433a60b61ab6a7e9348f98317644eb9c4f39e8"
+        },
+        {
+          "order": 38,
+          "title": "Death in Venice (1/13)",
+          "sha256": "cb2d50afdfdeb3ad06cbb5f9d21c693e07b41576572f9de21a2ea6794e6a5870"
+        },
+        {
+          "order": 39,
+          "title": "Death in Venice (2/13)",
+          "sha256": "e2168424c150cb98d083c0a242c0e1651611749a5e3d443bfac7f6a30a0d1fc4"
+        },
+        {
+          "order": 40,
+          "title": "Death in Venice (3/13)",
+          "sha256": "834ef99a3249cc655283d3455cc41ba3a26ad5afd1210b1cf21d38f41d5833a2"
+        },
+        {
+          "order": 41,
+          "title": "Death in Venice (4/13)",
+          "sha256": "d3884e93c0414ce70b48a24c58c24587c5c56171815d926925079c5c893dff8f"
+        },
+        {
+          "order": 42,
+          "title": "Death in Venice (5/13)",
+          "sha256": "c1bd8102bb1ea6e5525689ebe75b92bff44787781c4440c185cc16c576e758c5"
+        },
+        {
+          "order": 43,
+          "title": "Death in Venice (6/13)",
+          "sha256": "0f7e00dded52b7f10895e0283d07278bd57f9a7d24c30d481603fcee8bca27b0"
+        },
+        {
+          "order": 44,
+          "title": "Death in Venice (7/13)",
+          "sha256": "7dfa80c6722afcc3c742bc28b3bee1ced2f438380ca12c91578d3e6ceb6a1ca9"
+        },
+        {
+          "order": 45,
+          "title": "Death in Venice (8/13)",
+          "sha256": "b278410c2bafca87a48f01d1dd930e39fb41b7c1a89c47bbaf806b4fc6ab284e"
+        },
+        {
+          "order": 46,
+          "title": "Death in Venice (9/13)",
+          "sha256": "7bca478fe9cb470f387dfb01a730cbd60248544c81f95c855144a68b9ef93415"
+        },
+        {
+          "order": 47,
+          "title": "Death in Venice (10/13)",
+          "sha256": "33372f7a29a8a72c51424f04f4c56cdfd663d7445bf65b8a8c4864f95e78f3d3"
+        },
+        {
+          "order": 48,
+          "title": "Death in Venice (11/13)",
+          "sha256": "520563cbe445d46a389e8325d53dda8820b14db517c30123fa2454d27a37dead"
+        },
+        {
+          "order": 49,
+          "title": "Death in Venice (12/13)",
+          "sha256": "0bf5e81a7c29c1ac295ddfb46a7ec73c33d03ac7643386c1195da23ff746db00"
+        },
+        {
+          "order": 50,
+          "title": "Death in Venice (13/13)",
+          "sha256": "f2456f7451dba69813d8b9ac8a2950e3049240c387db8509e1493312708e307b"
+        },
+        {
+          "order": 51,
+          "title": "Bashan and I (1/17)",
+          "sha256": "a90d3e5d8d945e01108812cc06b36627f99590de98a5221cc2d201bed57d7d2f"
+        },
+        {
+          "order": 52,
+          "title": "Bashan and I (2/17)",
+          "sha256": "aab7cf0afde95306de14663fe6253e59981e5b90b703a13bc81ef7946271bdf4"
+        },
+        {
+          "order": 53,
+          "title": "Bashan and I (3/17)",
+          "sha256": "a6518e2ee90baef4c3fd2166d2295d870b2ab9b208578f06ac300554c65698b2"
+        },
+        {
+          "order": 54,
+          "title": "Bashan and I (4/17)",
+          "sha256": "b14523594484e25faf0a04cc95b9261465462582f98b6a8075d487b0c8cb8bfe"
+        },
+        {
+          "order": 55,
+          "title": "Bashan and I (5/17)",
+          "sha256": "53245b7d4b695da7776fe4f00579290ee8b8f8808a81ce482ca8c1052f141f62"
+        },
+        {
+          "order": 56,
+          "title": "Bashan and I (6/17)",
+          "sha256": "499f6567014eb632e334c39d9bbcb8de10bf1e33783dca7ded6e66508d3f3f7d"
+        },
+        {
+          "order": 57,
+          "title": "Bashan and I (7/17)",
+          "sha256": "be8d0d8c044593b21d84b23be7f9f5d441782a325f44eaba299e96a35bae12c2"
+        },
+        {
+          "order": 58,
+          "title": "Bashan and I (8/17)",
+          "sha256": "b0134b83b48f4345ee5bc1a643b7e97676bb46a14a6182ad9959d1b36906478c"
+        },
+        {
+          "order": 59,
+          "title": "Bashan and I (9/17)",
+          "sha256": "a8ad5f3930ee696108110a61590dfaa6c459eb9f6d5288c9b6e90496bd98eef5"
+        },
+        {
+          "order": 60,
+          "title": "Bashan and I (10/17)",
+          "sha256": "5bc7331d02d48fff25695a5bee5f479cb6da90c6396e5be5d707f1f4ddb70637"
+        },
+        {
+          "order": 61,
+          "title": "Bashan and I (11/17)",
+          "sha256": "8a5e2f3c19cc4cfa83acc7020d4e64eac6d6a5203dc81dd0ecbb253bd102a865"
+        },
+        {
+          "order": 62,
+          "title": "Bashan and I (12/17)",
+          "sha256": "298deab85959adfe4d98937644a3c99fef42360ffd6310b139b3a4447605c9c8"
+        },
+        {
+          "order": 63,
+          "title": "Bashan and I (13/17)",
+          "sha256": "aab2363545f1056b04f8d2b8ace022ad0d8bd912a12220b709408908619cdcbc"
+        },
+        {
+          "order": 64,
+          "title": "Bashan and I (14/17)",
+          "sha256": "7c45fd451761298eb4cf705aec91fb8893627fa91e50deb1ceea81373fcc7a3a"
+        },
+        {
+          "order": 65,
+          "title": "Bashan and I (15/17)",
+          "sha256": "8fc05677a1320caab51a3b22f6ffb1ec570009a5e059021f49dc4e1b564ac223"
+        },
+        {
+          "order": 66,
+          "title": "Bashan and I (16/17)",
+          "sha256": "c4f07969cf960d1ecea2fc4c5fe39536a2000dbc95e8633db460053a3311e2c1"
+        },
+        {
+          "order": 67,
+          "title": "Bashan and I (17/17)",
+          "sha256": "beb32aed7764cfe68b348454748aef737c032a4d74a9ad8eebf100c8ebda787d"
+        },
+        {
+          "order": 68,
+          "title": "Disorder and Early Sorrow (1/7)",
+          "sha256": "a23e4f8001f7ee7ebb511de098452442f958bd7d1c4808e3ef7192d5ed5de3d2"
+        },
+        {
+          "order": 69,
+          "title": "Disorder and Early Sorrow (2/7)",
+          "sha256": "aaa5f5a191cb761fcb1be94c85b1fd4427106f84ffe5926adb057b62086c12d6"
+        },
+        {
+          "order": 70,
+          "title": "Disorder and Early Sorrow (3/7)",
+          "sha256": "bc45723c7a46612160f9eac5c734d5fe53a02e9c0892a82c86b2490deec77f32"
+        },
+        {
+          "order": 71,
+          "title": "Disorder and Early Sorrow (4/7)",
+          "sha256": "b86b7ffa6e28614ad08cfe56d525a68607fdecc64769822041c66d560be82330"
+        },
+        {
+          "order": 72,
+          "title": "Disorder and Early Sorrow (5/7)",
+          "sha256": "90b91350fb69936f702e111ae32cb2fb6009d2d7fce65310bd46574bf4078a80"
+        },
+        {
+          "order": 73,
+          "title": "Disorder and Early Sorrow (6/7)",
+          "sha256": "c3787501db8780a570a88f970a18aa902fae4022cdcadc9b5d7a53bac963c116"
+        },
+        {
+          "order": 74,
+          "title": "Disorder and Early Sorrow (7/7)",
+          "sha256": "5e90b7de9e056fd531c5cdcaa3832f63dec554f94b6c32286d24f462dac0a875"
+        }
+      ]
     }
   }
 }

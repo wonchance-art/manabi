@@ -173,7 +173,7 @@ const rightsBasisLabel = (rights) => ({ 'public-domain': '퍼블릭 도메인', 
 function rightsPeopleText(rights) {
   const parts = [];
   if (Number.isInteger(rights.authorDeathYear)) parts.push(`작가 ${rights.authorDeathYear} 사망`);
-  if (rights.translator) parts.push(`번역 ${rights.translator.name}(${rights.translator.publishedYear ?? '?'}년 판 · ${rights.translator.deathYear ?? '?'} 사망)`);
+  for (const translator of [rights.translator].flat().filter(Boolean)) parts.push(`번역 ${translator.name}(${translator.publishedYear ?? '?'}년 판 · ${translator.deathYear ?? '?'} 사망)`);
   if (rights.holder) parts.push(`배포 기관 ${rights.holder}`);
   return parts.join(' · ') || '작가 기록 없음';
 }

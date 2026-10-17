@@ -113,8 +113,9 @@ describe('리포 정본 3편 — 산출물·장 모양', () => {
       expect(literatureBookPublishable(book)).toBe(true);
       for (const chapter of book.chapters) {
         expect(chapter.metadata).toMatchObject({ language: 'English', level: book.book.level, book: { key: book.book.key, order: chapter.order, total: book.book.total } });
-        // 번역본(명상록 롱 역)만 번역자 기록 — 나머지는 원어 원문
-        const translator = book.book.key.endsWith('_george-long') ? { name: 'George Long', deathYear: 1879, publishedYear: 1862, countryOfOrigin: 'GB' } : null;
+        // 번역자 기록은 entry.json 그대로(번역본만 — 명상록 롱 역 · 만 단편집 Burke·Scheffauer), 원어 원문은 null
+        const translator = JSON.parse(readFileSync(path.join(STANDARD_EBOOKS_ROOT, book.book.key, 'entry.json'), 'utf8')).translator ?? null;
+        if (book.book.key.endsWith('_george-long')) expect(translator).toEqual({ name: 'George Long', deathYear: 1879, publishedYear: 1862, countryOfOrigin: 'GB' });
         expect(chapter.metadata.literature).toMatchObject({ provider: SE_PROVIDER, license: 'CC0-1.0', translator, rights: { status: 'approved' } });
         expect(chapter.materialTitle).toBe(`${book.book.title} — ${chapter.title}`);
         expect(chapter.rawText).not.toMatch(/[<>⁠ ]|\n{3}/u);
@@ -171,6 +172,9 @@ describe('뷰어 대조·출처 줄 · 게시', () => {
     expect(standardEbooksAttributionParts({ ...literature, translator: { name: ' George Long ', deathYear: 1879, publishedYear: 1862, countryOfOrigin: 'GB' } }).translator)
       .toEqual({ name: 'George Long', publishedYear: 1862 });
     expect(standardEbooksAttributionParts({ ...literature, translator: 'George Long' }).translator).toBe(null); // 이름뿐인 기록은 크레딧이 아니다
+    // 번역자가 여럿인 모음집 — 한 줄에 판마다 이름 · 해
+    expect(standardEbooksAttributionParts({ ...literature, translator: [{ name: 'Kenneth Burke', publishedYear: 1924 }, { name: 'Herman George Scheffauer', publishedYear: 1928 }] }).translator)
+      .toEqual({ name: 'Kenneth Burke, 1924 · Herman George Scheffauer, 1928', publishedYear: null });
     expect(standardEbooksAttributionParts({ ...literature, url: 'javascript:alert(1)' }).url).toBe('');
     expect(standardEbooksAttributionParts({ ...literature, rights: { status: 'reviewing' } }).publicDomain).toBe(false);
     expect(standardEbooksAttributionParts({ ...literature, provider: 'aozora' })).toBe(null);

@@ -11,7 +11,7 @@
 // 원문은 리포에 고정한다: 사이트 HTML 한 파일을 바이트 그대로 source/에 두고 SHA-256을 entry.json에 적는다(scripts/literature/pd-add-work.mjs).
 // 사이트마다 · 책마다 HTML 모양이 달라서, 본문의 시작 · 끝 · 장 제목 · 부(part) 제목을 entry.parse에 정규식으로 적는다. 모르는 구조는 throw.
 
-import { koreaPublicDomainVerdict } from './rightsKorea.js';
+import { koreaPublicDomainVerdict, translatorRecords } from './rightsKorea.js';
 import { splitBlocksByWords, wordCount } from './standardEbooks.js';
 
 export const PD_PROVIDER = 'pdsite';
@@ -153,7 +153,7 @@ export function pdSiteRightsPublishable(literature) {
   const rights = literature?.rights;
   if (literature?.provider !== PD_PROVIDER || rights?.status !== 'approved' || rights?.basis !== 'public-domain') return false;
   const jurisdictions = Array.isArray(rights.reviewedJurisdictions) ? rights.reviewedJurisdictions : [];
-  if (![literature.countryOfOrigin, literature.translator?.countryOfOrigin, 'KR'].filter(Boolean).every((code) => jurisdictions.includes(code))) return false;
+  if (![literature.countryOfOrigin, ...translatorRecords(literature.translator).map((record) => record?.countryOfOrigin), 'KR'].filter(Boolean).every((code) => jurisdictions.includes(code))) return false;
   return pdSiteRightsVerdict(literature).ok;
 }
 

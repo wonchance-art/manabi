@@ -60,6 +60,19 @@ describe('번역본 = 원작 만료 그리고 번역 만료(오너 「되는 언
   it('원작이 보호 중이면 번역이 만료여도 막힌다', () => {
     expect(at({ authorDeathYear: 1990, countryOfOrigin: 'GB', translator: long }).ok).toBe(false);
   });
+  it('번역자가 여럿인 모음집은 모두 따로 본다 — 한 사람이라도 막히면 불가(그 번역은 빼고 싣는다 · 만 단편집 선례)', () => {
+    const mann = { authorDeathYear: 1955, publishedYear: 1930, countryOfOrigin: 'DE' };
+    const burke = { name: 'Kenneth Burke', deathYear: 1993, publishedYear: 1924, countryOfOrigin: 'US' }; // 뉴욕 Knopf판만 — 미국 원산
+    const scheffauer = { name: 'Herman George Scheffauer', deathYear: 1927, publishedYear: 1928, countryOfOrigin: 'US' };
+    const lowePorter = { name: 'H. T. Lowe-Porter', deathYear: 1963, publishedYear: 1930, countryOfOrigin: 'GB' }; // 런던판으로 보면
+    expect(at({ ...mann, translator: [scheffauer] })).toMatchObject({ ok: true, basis: 'korea-term' });
+    expect(at({ ...mann, translator: [burke, scheffauer] })).toMatchObject({ ok: true, basis: 'origin-term' });
+    const blocked = at({ ...mann, translator: [burke, scheffauer, lowePorter] });
+    expect(blocked.ok).toBe(false);
+    expect(blocked.reasons[0]).toMatch(/^번역자 H\. T\. Lowe-Porter 1963 사망/u);
+    expect(at({ ...mann, translator: [] }).reasons).toContain('번역자 목록이 비었다');
+    expect(at({ ...mann, translator: [scheffauer, 'Burke'] }).ok).toBe(false); // 이름만은 기록이 아니다
+  });
   it('번역 쪽이 본국 상호주의로만 끝났으면 근거는 origin-term', () => {
     expect(at({ authorDeathYear: 1883, countryOfOrigin: 'GB', translator: { name: 'Y', deathYear: 1970, publishedYear: 1925, countryOfOrigin: 'US' } }))
       .toMatchObject({ ok: true, basis: 'origin-term' });

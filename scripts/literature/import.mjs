@@ -20,6 +20,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { catalogEntryProblems, catalogRightsVerdict, checkedCover } from '../lib/literature-catalog.mjs';
+import { translatorRecords } from '../../src/lib/rightsKorea.js';
 import { createPdSiteDraft, inferPdSiteParse, pdSiteParseReport } from '../../src/lib/pdSite.js';
 import { inspectChapters, printInspection, workDir } from './inspect.mjs';
 
@@ -45,7 +46,7 @@ const writeJson = (file, value) => writeFileSync(file, `${JSON.stringify(value, 
 function rightsRecord(entry, reviewedAt) {
   return {
     status: 'approved', basis: 'public-domain',
-    reviewedJurisdictions: [...new Set([entry.countryOfOrigin, entry.translator?.countryOfOrigin, 'KR'].filter(Boolean))],
+    reviewedJurisdictions: [...new Set([entry.countryOfOrigin, ...translatorRecords(entry.translator).map((item) => item.countryOfOrigin), 'KR'].filter(Boolean))],
     reviewer: 'claude', reviewedAt,
   };
 }
@@ -112,7 +113,9 @@ function fetchSource(entry) {
     case 'standardebooks':
       run('scripts/literature/se-add-work.mjs', [s.repo, '--published', String(entry.publishedYear), '--death', String(entry.authorDeathYear), '--origin', entry.countryOfOrigin,
         '--level', entry.level, '--title-ko', entry.titleKo, '--author-ko', entry.authorKo, '--approve', 'claude',
-        ...(entry.translator ? ['--translated', String(entry.translator.publishedYear), '--translator-death', String(entry.translator.deathYear), '--translator-origin', entry.translator.countryOfOrigin] : [])]);
+        ...(Array.isArray(entry.translator) ? ['--translators', JSON.stringify(entry.translator)]
+          : entry.translator ? ['--translated', String(entry.translator.publishedYear), '--translator-death', String(entry.translator.deathYear), '--translator-origin', entry.translator.countryOfOrigin] : []),
+        ...(s.exclude?.length ? ['--exclude', s.exclude.join(',')] : [])]);
       break;
     case 'wikisource':
       run('scripts/literature/ws-add-work.mjs', ['--wiki', s.wiki, '--key', entry.key, '--main', s.main, '--resume',
@@ -138,7 +141,7 @@ export function importEntry(entry, { dryRun = false } = {}) {
   const verdict = catalogRightsVerdict(entry, reviewedAt);
   if (!verdict.ok) throw new Error(`${entry.id}: 한국 공개 불가 — ${verdict.reasons.join(' / ')}`);
   const cover = entry.source.provider === 'aozora' ? null : checkedCover(entry);
-  console.log(`■ ${entry.id} → ${entry.key} · ${entry.title} · ${entry.author} · 권리 ${verdict.basis}${entry.translator ? ` · 번역 ${entry.translator.name}` : ''} · 표지 ${cover?.binding ?? '시리즈 A(아오조라)'}`);
+  console.log(`■ ${entry.id} → ${entry.key} · ${entry.title} · ${entry.author} · 권리 ${verdict.basis}${translatorRecords(entry.translator).map((item) => ` · 번역 ${item.name}`).join('')} · 표지 ${cover?.binding ?? '시리즈 A(아오조라)'}`);
   if (dryRun) return { id: entry.id, key: entry.key, dryRun: true, cover: cover?.binding ?? null, basis: verdict.basis };
   fetchSource(entry);
   if (entry.source.provider === 'pdsite') entry = { ...entry, parse: resolvePdParse(entry) };

@@ -14,7 +14,7 @@
 // 장 나눔: 위키문헌의 쪽 하나(단편 · 장)가 기본 단위. 학습 한 번 분량을 넘으면 그 쪽 안에서 문단 경계로 고르게 나눈다 — 프랑스어는
 // 단어 수(WS_TARGET.French), 중국어는 글자 수(WS_TARGET.Chinese). 문단 한가운데는 자르지 않는다.
 
-import { KOGL_TYPE1, koglType1Verdict, koreaPublicDomainVerdict } from './rightsKorea.js';
+import { KOGL_TYPE1, koglType1Verdict, koreaPublicDomainVerdict, translatorRecords } from './rightsKorea.js';
 
 export const WS_PROVIDER = 'wikisource';
 export const WS_BOOK_VERSION = 1;
@@ -252,7 +252,7 @@ export function wikisourceRightsPublishable(literature) {
   if (literature?.provider !== WS_PROVIDER || rights?.status !== 'approved' || !['public-domain', KOGL_TYPE1].includes(rights?.basis)) return false;
   if (literature.license !== licenseOf(literature)) return false;
   const jurisdictions = Array.isArray(rights.reviewedJurisdictions) ? rights.reviewedJurisdictions : [];
-  if (![literature.countryOfOrigin, literature.translator?.countryOfOrigin, 'KR'].filter(Boolean).every((code) => jurisdictions.includes(code))) return false;
+  if (![literature.countryOfOrigin, ...translatorRecords(literature.translator).map((record) => record?.countryOfOrigin), 'KR'].filter(Boolean).every((code) => jurisdictions.includes(code))) return false;
   return wikisourceRightsVerdict(literature).ok;
 }
 

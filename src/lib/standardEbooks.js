@@ -10,7 +10,7 @@
 // 고르게 나눈다(목표 SE_TARGET_WORDS 단어) — 「A Scandal in Bohemia (2/4)」. 문단 한가운데는 자르지 않는다.
 // 바꾼 점(edits — 뷰어 출처 줄이 밝힌다): 장 분할, 글자 정리(단어 결합자·줄 안 공백 제거 등 보이지 않는 조판 문자), 삽화 생략.
 
-import { koreaPublicDomainVerdict } from './rightsKorea.js';
+import { koreaPublicDomainVerdict, translatorRecords } from './rightsKorea.js';
 
 export const SE_PROVIDER = 'standardebooks';
 export const SE_BOOK_VERSION = 1;
@@ -136,7 +136,7 @@ export function standardEbooksRightsPublishable(literature) {
   if (literature?.provider !== SE_PROVIDER || rights?.status !== 'approved' || rights?.basis !== 'public-domain') return false;
   if (literature.license !== SE_LICENSE) return false;
   const jurisdictions = Array.isArray(rights.reviewedJurisdictions) ? rights.reviewedJurisdictions : [];
-  if (![literature.countryOfOrigin, literature.translator?.countryOfOrigin, 'KR'].filter(Boolean).every((code) => jurisdictions.includes(code))) return false;
+  if (![literature.countryOfOrigin, ...translatorRecords(literature.translator).map((record) => record?.countryOfOrigin), 'KR'].filter(Boolean).every((code) => jurisdictions.includes(code))) return false;
   return standardEbooksRightsVerdict(literature).ok;
 }
 

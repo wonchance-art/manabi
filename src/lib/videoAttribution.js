@@ -143,6 +143,12 @@ function standardEbooksHref(value) {
  * 출처 줄에 「번역 George Long, 1862」로 원작 크레딧 뒤에 붙는다. 없으면 null(원어 원문). */
 export function translatorCredit(literature) {
   const t = literature && typeof literature === 'object' ? literature.translator : null;
+  // 번역자가 여럿인 모음집(토마스 만 단편집)은 「번역 Kenneth Burke, 1925 · Herman George Scheffauer, 1928」 — 한 줄에 판마다 이름 · 해
+  if (Array.isArray(t)) {
+    const named = t.filter((item) => item && typeof item === 'object' && typeof item.name === 'string' && item.name.trim());
+    if (!named.length) return null;
+    return { name: named.map((item) => (Number.isInteger(item.publishedYear) ? `${item.name.trim()}, ${item.publishedYear}` : item.name.trim())).join(' · '), publishedYear: null };
+  }
   if (!t || typeof t !== 'object' || typeof t.name !== 'string' || !t.name.trim()) return null;
   return { name: t.name.trim(), publishedYear: Number.isInteger(t.publishedYear) ? t.publishedYear : null };
 }
