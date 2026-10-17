@@ -80,6 +80,21 @@ export function gradeToInitialStats(grade, now = () => new Date().toISOString())
   return grade === 1 ? { ...stats, next_review_at: now() } : stats;
 }
 
+/**
+ * 카드 저장 행의 읽기(EN-SAVE-IPA-001). 표제어가 기본형(visits → visit)이면 사전 행 읽기를 쓴다 — 일본어 토큰 독음은
+ * 표면 읽기일 수 있어(食べ + たべ) 기본형 읽기로 쓰면 틀린다. 영어만 예외: 분석기가 토큰 furigana에 **기본형 IPA**를 둔다
+ * (rests → /rest/, 운영 표본 2026-10-17 KST) — 사전 행 읽기가 없을 때 비워 저장하면 복습 카드에서도 발음이 사라지므로 토큰 IPA로.
+ * 대체는 `/…/` IPA 모양일 때만 — 저장 행 읽기는 처음 넣을 때만 쓰이므로(ignoreDuplicates) 틀린 값은 고쳐지지 않는다.
+ * 표제어 = 표면이면 지금처럼 토큰 독음(furigana → reading). 다른 언어는 바뀌지 않는다.
+ */
+export function cardSaveReading({ language, headIsBase, headReading, token }) {
+  if (!headIsBase) return token?.furigana || token?.reading;
+  if (headReading) return headReading;
+  if (language !== 'English') return headReading;
+  const ipa = token?.furigana || token?.reading;
+  return typeof ipa === 'string' && /^\/.+\/$/.test(ipa.trim()) ? ipa : null; // /…/ 모양만 — 손 교정 한글 · 옛 분석본 값은 기본형 읽기로 굳히지 않는다
+}
+
 export function buildVocabRow({
   userId, surface, base, meaning, pos, reading, language,
   sourceSentence, sourceMaterialId, sourceRef, grade, now = () => new Date().toISOString(),

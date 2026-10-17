@@ -21,8 +21,9 @@ export function navigationOwner(pathname) {
   if (/^\/conversation(?:\/|$)/.test(pathname)) return '/conversation/new';
   if (/^\/(?:discover|studies|world|suggestions)(?:\/|$)/.test(pathname)) return '/discover';
   // 메뉴에서 빠진 교재 · 복습 · 학습 경로는 배움 소속이다 — 어느 메뉴에도 불이 안 들어오는 화면을 만들지 않는다(정정 2026-10-11).
-  if (/^\/(?:lessons|books|vocab|review|study|learn|progress)(?:\/|$)/.test(pathname)) return '/home';
-  if (/^\/(?:materials|viewer|library|pdf|epub|groups)(?:\/|$)/.test(pathname)) return '/materials';
+  // 작문은 배움(학습 순환의 산출 — 단어장 · 오늘 학습에서 연다), 빠른 분석은 서재(자료 추가로 이어진다) 소속(오너 「권장대로」 2026-10-17 KST).
+  if (/^\/(?:lessons|books|vocab|review|study|learn|progress|writing)(?:\/|$)/.test(pathname)) return '/home';
+  if (/^\/(?:materials|viewer|library|pdf|epub|groups|quick)(?:\/|$)/.test(pathname)) return '/materials';
   return pathname === '/home' ? '/home' : null;
 }
 // Published-book reading counts never incorporate legacy quizzes or vocabulary schedules.

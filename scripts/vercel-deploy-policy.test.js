@@ -17,6 +17,12 @@ describe('Vercel 배포 정책', () => {
     expect(enabled['claude/*']).not.toBe(false);
     expect(enabled['codex/*']).toBe(false);
     expect(enabled['codex2/*']).toBe(false);
+  });
+  it('에이전트 실험 브랜치(claude/wip/**)는 Git 배포를 만들지 않는다 — 건너뛴 배포도 일일 100회 한도에 든다(2026-10-17 KST 한도 소진 실측, 오너 「권장대로 진행」)', () => {
+    const enabled = vercel.git.deploymentEnabled;
+    expect(enabled['claude/wip/**']).toBe(false);
+    // PR 브랜치(claude/<세션>)는 그대로 열려 있다 — wip 규칙이 claude/* 전체를 덮지 않는다.
+    expect(Object.entries(enabled).filter(([k, v]) => v === false && /^claude\/(\*|\*\*)$/.test(k))).toEqual([]);
     expect(vercel.ignoreCommand).toBe('bash scripts/vercel-ignore.sh');
   });
   it('서버 함수는 DB(Supabase ap-northeast-1)와 같은 도쿄(hnd1)에서 돈다 — 오너 「도쿄 ㄱㄱ」 2026-10-16', () => {

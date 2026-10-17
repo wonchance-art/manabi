@@ -54,3 +54,17 @@ export function orderChipSpot(chip) {
   const siblings = [...chip.parentElement.querySelectorAll('.fr-quiz__token')];
   return { root, zone: row, index: siblings.indexOf(chip) };
 }
+
+/**
+ * 새 문항의 머리로 초점(STUDY-FOCUS-001). 「계속 →」이 사라지면 초점이 body로 떨어져, 키보드로는 머리글 메뉴부터 다시
+ * 2~12번 Tab을 눌러야 문항에 닿았다(합성 로그인 /study 실측 2026-10-17 KST). 첫 답 컨트롤로 보내면 설명 · 문단 카드에서
+ * 맨 아래 「바로 문제로 →」나 재료 칩으로 건너뛰어 내용을 놓친다(리뷰 차단) — 그래서 문항의 질문/제목 머리
+ * ([data-item-head], tabIndex −1 · 테두리 없음)로 옮긴다. 화면 읽기는 질문부터 읽고, Tab은 그 아래 첫 컨트롤로 간다.
+ * 입력 문항처럼 autoFocus가 이미 문항 안을 잡았으면 그대로 둔다(그 입력칸은 aria-describedby로 질문을 읽는다).
+ */
+export function focusItemHead(root, scope = root) {
+  if (!root?.isConnected) return false;
+  const active = root.ownerDocument.activeElement;
+  if (active && active !== root && root.contains(active)) return false;
+  return focusIfFree(root.querySelector('[data-item-head]'), scope);
+}

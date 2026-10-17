@@ -55,3 +55,16 @@ export function compactSheetHeight({ tokenBottom, sheetTop, sheetBottom, min = 3
   if (![tokenBottom, sheetTop, sheetBottom].every(Number.isFinite) || tokenBottom <= sheetTop - 8) return null;
   return Math.max(min, Math.floor(sheetBottom - tokenBottom - margin));
 }
+
+// 쪽 넘김 보기 A안(VIEWER-AUDIT 2, 오너 「권장대로」 2026-10-17 KST): 바닥 시트가 화면 아래 절반의 단어를 덮었다(낮춰도 카드 핵심
+// 높이 아래로는 못 줄여서). 고른 단어가 아래 절반이면 시트를 머리줄 아래(topLimit)에 세운다 — 쪽 · 쪽 경계는 그대로다.
+// 위에 세울 때도 단어 위 남은 자리가 모자라면 낮추되 카드 핵심(min — 부르는 쪽이 잰 값) 아래로는 줄이지 않고, 원래 높이보다
+// 키우지도 않는다(height null = 원래 높이 — 긴 문장 카드는 핵심이 원래 높이를 넘는다, viewer-word-card 「zh 390 long sentence」).
+// 화면 가운데 띠(390×844에서 약 y 441–529)의 단어는 어느 쪽에 세워도 핵심 높이 때문에 덮일 수 있다 — 덮는 양이 적은 쪽(중점 기준)을 고른다.
+// 좌표는 모두 배치 뷰포트 기준 — 보이는 영역은 visualViewport의 offsetTop부터 height만큼이다(키보드가 열리면 줄고 내려간다).
+export function pagedSheetDock({ tokenTop, tokenBottom, viewportTop = 0, viewportHeight, topLimit, naturalHeight, min = 368, margin = 12 }) {
+  if (![tokenTop, tokenBottom, viewportTop, viewportHeight, topLimit, naturalHeight].every(Number.isFinite)) return { dock: 'bottom' };
+  if ((tokenTop + tokenBottom) / 2 <= viewportTop + viewportHeight / 2) return { dock: 'bottom' };
+  const height = Math.max(min, Math.floor(tokenTop - margin - topLimit));
+  return { dock: 'top', top: Math.ceil(topLimit), height: height >= naturalHeight ? null : height };
+}

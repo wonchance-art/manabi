@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { seededShuffle } from '../lib/seededShuffle';
 import Button from '../components/Button';
@@ -28,7 +28,8 @@ import { splitSentenceAroundWord } from '../lib/constants';
 import { mapParagraphToItems } from '../lib/studyParagraph';
 import { ARCHIVED_TEXTBOOK_NOTICE, learnerHref } from '../lib/bookNavigation';
 import { authEntryHref } from '../lib/authRedirect';
-import { focusIfFree, ignoreHeldKey } from '../lib/focusAfterAction';
+import { focusIfFree, focusItemHead, ignoreHeldKey } from '../lib/focusAfterAction';
+import { STUDY_OFFLINE_LINE } from '../lib/studyUnavailable';
 
 /** 문법 일정을 끝내 못 보냈다(재시도 상한 · 오프라인으로 화면 떠남) — copy-standard 실패 + 보존 여부 한 문장. */
 const GRAMMAR_NOT_SAVED = '문법 복습 일정을 저장하지 못했어요. 이 문법은 다음 학습에 다시 나와요.';
@@ -244,6 +245,34 @@ export default function StudySessionPage({
     const button = continueRef.current;
     focusIfFree(button, button?.closest('.page-container'));
   }, [phase, item?.uid, item?.type]);
+  // STUDY-FOCUS-001 — 「계속 →」을 누르면 그 단추가 사라져 초점이 body로 떨어졌고, 키보드로는 머리글 메뉴부터 2~12번 Tab을
+  // 눌러야 다음 문항에 닿았다(합성 로그인 실측 2026-10-17 KST). 새 문항의 질문/제목 머리(headId · data-item-head)로 잇는다 —
+  // 첫 답 컨트롤로 보내면 설명 · 문단 카드에서 내용을 건너뛴다(리뷰 차단). 다른 곳에 살아 있는 초점은 뺏지 않는다(focusIfFree).
+  // 첫 문항(화면 진입)은 화면 이동 초점(제목, routeFocus)에, 온보딩 「시작하기 →」 뒤 첫 문항은 StudyOnboarding에 맡긴다.
+  const itemRef = useRef(null);
+  const headId = useId();
+  const firstItemUidRef = useRef(item?.uid);
+  useEffect(() => {
+    if (phase !== 'answer' || !item?.uid || item.uid === firstItemUidRef.current) return;
+    const root = itemRef.current;
+    focusItemHead(root, root?.closest('.page-container'));
+  }, [phase, item?.uid]);
+  // 오프라인 동안만 진행 막대 아래 한 줄(STUDY-OFFLINE-LINE, 오너 「권장대로」 2026-10-17 KST) — 답은 기기 보류함에 남았다가
+  // 연결되면 저장된다(Layout의 online 동기화). 서버 렌더 · 첫 그림은 온라인으로 두고 붙은 뒤 navigator.onLine을 읽는다.
+  const [offline, setOffline] = useState(false);
+  useEffect(() => {
+    const sync = () => setOffline(typeof navigator !== 'undefined' && navigator.onLine === false);
+    sync();
+    window.addEventListener('online', sync); window.addEventListener('offline', sync);
+    return () => { window.removeEventListener('online', sync); window.removeEventListener('offline', sync); };
+  }, []);
+  // 마지막 「결과 보기 →」도 누르면 사라진다 — 결과 화면 제목(「세션 완료」)으로 잇는다.
+  const resultHeadingRef = useRef(null);
+  useEffect(() => {
+    if (!finished) return;
+    const heading = resultHeadingRef.current;
+    focusIfFree(heading, heading?.closest('.page-container'));
+  }, [finished]);
 
   // 재료 단어 팝오버 — 바깥 탭 시 닫기(트리거·팝오버는 stopPropagation으로 유지)
   useEffect(() => {
@@ -1074,7 +1103,7 @@ export default function StudySessionPage({
             border: `6px solid ${pct >= 80 ? 'var(--accent)' : pct >= 50 ? 'var(--warning)' : 'var(--danger)'}`,
             fontSize: '1.5rem', fontWeight: 700,
           }}>{pct}%</div>
-          <h1 style={{ fontSize: '1.3rem', fontWeight: 700 }}>세션 완료</h1>
+          <h1 ref={resultHeadingRef} tabIndex={-1} style={{ fontSize: '1.3rem', fontWeight: 700 }}>세션 완료</h1>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: 6, fontWeight: 700 }}>
             강해진 기억 {rightCount} · 곧 다시 만날 {wrong.length}
             {skipped.size > 0 && ` · 건너뜀 ${skipped.size}`}
@@ -1202,8 +1231,12 @@ export default function StudySessionPage({
         </span>
       </div>
 
+      {/* 오프라인 한 줄 — 알림 영역은 늘 두고 내용만 넣는다(A11Y-SWEEP-001). 보이는 줄은 한 번만 읽히게 aria-hidden. */}
+      <span className="sr-only" role="status">{offline ? STUDY_OFFLINE_LINE : ''}</span>
+      {offline && <p className="study-offline-line" aria-hidden="true">{STUDY_OFFLINE_LINE}</p>}
+
       {/* 문항 한 장 — uid마다 새로 그려 짧게 내려앉는다(.study-item, 0.16초 · 모션 축소 시 없음). */}
-      <div key={item.uid} className="study-item">
+      <div key={item.uid} ref={itemRef} className="study-item">
       {isRetry && (
         <div style={{ fontSize: '0.75rem', color: 'var(--warning)', fontWeight: 700, marginBottom: 8 }}>↻ 다시 도전</div>
       )}
@@ -1215,7 +1248,7 @@ export default function StudySessionPage({
       {/* ── 오늘의 문단 (읽기 카드) ── */}
       {item.type === 'paragraph' && (
         <div className="card" style={{ padding: '22px 20px' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-light)', marginBottom: 14 }}>
+          <div id={headId} tabIndex={-1} data-item-head="" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-light)', marginBottom: 14 }}>
             {paragraphMaterials?.weekly ? '이번 주 헷갈린 것들' : '오늘의 문단'}
           </div>
           {item.preQuestion?.q && (
@@ -1309,7 +1342,7 @@ export default function StudySessionPage({
       {/* ── 티칭 카드 ── */}
       {item.type === 'teach' && (
         <div className="card" style={{ padding: '22px 20px' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-light)', marginBottom: 10 }}>
+          <div id={headId} tabIndex={-1} data-item-head="" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-light)', marginBottom: 10 }}>
             새로 배우기 · {item.chapter.level} #{item.chapter.order} {item.chapter.title}
           </div>
           <div className="fr-pattern" style={{ borderColor: 'var(--primary)' }}>
@@ -1350,13 +1383,13 @@ export default function StudySessionPage({
             </div>
           )}
           <div className="fr-quiz__prompt" lang={langCode} style={{ fontSize: '1.3rem' }}>
-            {item.word.word_text}
+            <span id={headId} tabIndex={-1} data-item-head="">{item.word.word_text}</span>
             <RefSpeak text={item.word.word_text} lang={lang} size="xs" />
           </div>
           {item.word.furigana && (kanjiCare || phase === 'feedback') && (
             <div className="fr-quiz__sub">{item.word.furigana}</div>
           )}
-          <div className="fr-quiz__opts fr-quiz__opts--col">
+          <div className="fr-quiz__opts fr-quiz__opts--col" role="group" aria-labelledby={headId}>
             {prepared.options.map(opt => (
               <button key={opt} type="button" disabled={phase === 'feedback'}
                 className={`fr-quiz__opt ${phase === 'feedback' ? (opt === item.word.meaning ? 'is-correct' : opt === picked ? 'is-wrong' : 'is-locked') : ''}`}
@@ -1378,7 +1411,7 @@ export default function StudySessionPage({
           {item.type === 'vocab-cloze' ? (
             <>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 6 }}>빈칸에 알맞은 단어를 입력하세요</div>
-              <div className="fr-quiz__prompt" lang={langCode}>
+              <div className="fr-quiz__prompt" lang={langCode} id={headId} tabIndex={-1} data-item-head="">
                 {(() => {
                   const { parts, term } = splitSentenceAroundWord(item.sentence.main, item.word.word_text, item.word.furigana);
                   const blankLen = Math.max(2, (term || item.word.word_text || '').length);
@@ -1392,17 +1425,17 @@ export default function StudySessionPage({
               <div className="fr-quiz__sub">“{item.word.meaning}”</div>
             </>
           ) : item.type === 'vocab-typing' ? (
-            <div className="fr-quiz__prompt">“{item.word.meaning}”</div>
+            <div className="fr-quiz__prompt" id={headId} tabIndex={-1} data-item-head="">“{item.word.meaning}”</div>
           ) : (
             <div className="fr-quiz__prompt" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              🔊 듣고 입력하세요 <RefSpeak text={item.word.word_text} lang={lang} size="sm" />
+              <span id={headId} tabIndex={-1} data-item-head="">🔊 듣고 입력하세요</span> <RefSpeak text={item.word.word_text} lang={lang} size="sm" />
               {listenFailed && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>재생이 안 되면 ▷</span>}
             </div>
           )}
           <input
             type="text" className="form-input" lang={langCode} value={typing}
             onChange={e => setTyping(e.target.value)} disabled={phase === 'feedback'}
-            placeholder={langName + '로 입력'}
+            placeholder={langName + '로 입력'} aria-describedby={headId}
             enterKeyHint="go"
             onKeyDown={e => {
               if (e.key !== 'Enter') return;
@@ -1453,6 +1486,7 @@ export default function StudySessionPage({
           lang={lang}
           langCode={langCode}
           renderMain={renderMain}
+          headId={headId}
         />
       )}
 
@@ -1463,14 +1497,14 @@ export default function StudySessionPage({
             {item.sentence.isKoreanPrompt ? '내용 이해' : '독해'}
           </div>
           {item.sentence.isKoreanPrompt ? (
-            <div className="fr-quiz__prompt">{item.sentence.main}</div>
+            <div className="fr-quiz__prompt" id={headId} tabIndex={-1} data-item-head="">{item.sentence.main}</div>
           ) : (
             <div className="fr-quiz__prompt" lang={langCode}>
-              {renderMain(item.sentence.main, (kanjiCare || phase === 'feedback') ? item.sentence.pron : null)}
+              <span id={headId} tabIndex={-1} data-item-head="">{renderMain(item.sentence.main, (kanjiCare || phase === 'feedback') ? item.sentence.pron : null)}</span>
               <RefSpeak text={item.sentence.main} lang={lang} size="xs" />
             </div>
           )}
-          <div className="fr-quiz__opts fr-quiz__opts--col">
+          <div className="fr-quiz__opts fr-quiz__opts--col" role="group" aria-labelledby={headId}>
             {prepared.options.map(opt => (
               <button key={opt} type="button" disabled={phase === 'feedback'}
                 className={`fr-quiz__opt ${phase === 'feedback' ? (opt === item.correct ? 'is-correct' : opt === picked ? 'is-wrong' : 'is-locked') : ''}`}
@@ -1495,7 +1529,7 @@ export default function StudySessionPage({
           </div>
           {item.serial ? (
             <>
-              <div className="fr-quiz__prompt" style={{ fontSize: '1rem', lineHeight: 1.6 }}>
+              <div className="fr-quiz__prompt" id={headId} tabIndex={-1} data-item-head="" style={{ fontSize: '1rem', lineHeight: 1.6 }}>
                 주인공이 다음에 어떻게 할까요? 이야기의 다음 문장을 <span style={{ fontWeight: 700 }}>{langName}</span>로 한 문장 쓰세요.
               </div>
               {item.context && (
@@ -1512,7 +1546,7 @@ export default function StudySessionPage({
             </>
           ) : (
             <>
-              <div className="fr-quiz__prompt" style={{ fontSize: '1rem', lineHeight: 1.6 }}>
+              <div className="fr-quiz__prompt" id={headId} tabIndex={-1} data-item-head="" style={{ fontSize: '1rem', lineHeight: 1.6 }}>
                 이야기를 이어서 — <span lang={langCode} style={{ fontWeight: 700 }}>{item.targetPattern.pattern}</span>
                 {item.targetPattern.patternKo && <span style={{ color: 'var(--text-muted)' }}> ({item.targetPattern.patternKo})</span>}
                 을(를) 써서 한 문장
@@ -1531,7 +1565,7 @@ export default function StudySessionPage({
                 className="form-input" lang={langCode} value={typing}
                 onChange={e => setTyping(e.target.value.slice(0, 200))}
                 placeholder={`${langName}로 1~2문장`}
-                rows={2} maxLength={200} autoFocus
+                rows={2} maxLength={200} autoFocus aria-describedby={headId}
                 style={{ marginTop: 12, fontSize: '1.05rem', resize: 'vertical', width: '100%' }}
               />
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10 }}>

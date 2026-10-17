@@ -10,7 +10,7 @@ const rule = (selector) => css.match(new RegExp(`\\n${selector.replace(/[.*+?^${
 
 describe('문항 전환', () => {
   it('문항 래퍼는 uid마다 새로 그려진다(key) — 문항 블록 전부와 계속 버튼을 감싼다', () => {
-    const open = session.indexOf('<div key={item.uid} className="study-item">');
+    const open = session.indexOf('<div key={item.uid} ref={itemRef} className="study-item">'); // ref = 새 문항 첫 답 컨트롤로 초점(STUDY-FOCUS-001)
     expect(open).toBeGreaterThan(0);
     const body = session.slice(open);
     // 첫 블록(다시 도전)부터 계속 버튼까지 래퍼 안, 언어 전환은 밖.

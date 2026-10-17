@@ -27,12 +27,18 @@ export function zhRunCells(width, cell, gap = 0) {
 }
 
 // 줄머리 금칙(禁则) — 닫는 부호는 줄 첫 자리에 올 수 없다.
+// 일본어(JA-KINSOKU — 목업 viewer-lang-4 §4, W3C JLREQ §3.1.7 행두 금칙)도 같은 표시 · 같은 CSS 변수를 쓴다. 일본어 집합은
+// 중국어 집합에 장음(ー)·중점(・)·반복 부호(ゝゞヽヾ々〻)·작은 가나·물결표(〜～)·반각 가나 부호(｡､｣･ｰ)를 더한다.
 const CLOSING_FULL = /^[。，、；：？！．）》」』〉】〕〗〙〛”’…‥·％]+$/u;
+const CLOSING_JA = /^[。，、；：？！．）》」』〉】〕〗〙〛”’…‥·％・ー〜～゠ゝゞヽヾ々〻ぁぃぅぇぉっゃゅょゎゕゖァィゥェォッャュョヮヵヶㇰ-ㇿ‼⁇⁈⁉｡､｣･ｰ]+$/u;
 const CLOSING_HALF = /^[,.;:?!)\]}%]{1,2}$/;
-/** 닫는 부호 토큰이면 그 칸 수, 아니면 0. 반각 부호 1–2자는 한 칸보다 좁아 1칸이다. */
-export function zhClosingCells(text) {
+/** 금칙을 적용하는 본문 언어 — 토큰마다 inline-block(flex 항목)이라 브라우저 line-break가 토큰 사이에 닿지 않는 언어. */
+export const KINSOKU_LANGUAGES = Object.freeze(['Chinese', 'Japanese']);
+export const hasKinsoku = (language) => KINSOKU_LANGUAGES.includes(language);
+/** 닫는 부호 토큰이면 그 칸 수, 아니면 0. 반각 부호 1–2자는 한 칸보다 좁아 1칸이다. 일본어는 language='Japanese'. */
+export function zhClosingCells(text, language = 'Chinese') {
   const t = String(text ?? '');
-  if (CLOSING_FULL.test(t)) return [...t].length;
+  if ((language === 'Japanese' ? CLOSING_JA : CLOSING_FULL).test(t)) return [...t].length;
   return CLOSING_HALF.test(t) ? 1 : 0;
 }
 
@@ -41,8 +47,9 @@ export function zhClosingCells(text) {
  * CSS가 hold만큼 앞 토큰의 오른쪽 여백을 늘리고 pull만큼 부호의 왼쪽 여백을 줄인다 — 두 값이 상쇄돼
  * 배치(격자)는 그대로고, 앞 토큰이 들어갈 자리가 없으면 부호와 함께 다음 줄로 넘어간다.
  * 개행 토큰(pos '개행' 또는 '\n')에서 끊는다. 반환: Map(tokenId → {hold?, pull?}).
+ * language: 'Chinese'(기본) · 'Japanese' — 닫는 부호 집합만 다르다(zhClosingCells).
  */
-export function zhKinsokuMarks(ids, tokenOf) {
+export function zhKinsokuMarks(ids, tokenOf, language = 'Chinese') {
   const marks = new Map();
   let prev = null, head = null, cells = 0;
   const flush = () => {
@@ -56,7 +63,7 @@ export function zhKinsokuMarks(ids, tokenOf) {
     const token = tokenOf(id);
     if (!token) continue;
     if (token.pos === '개행' || String(token.text ?? '').includes('\n')) { flush(); prev = null; continue; }
-    const closing = zhClosingCells(token.text);
+    const closing = zhClosingCells(token.text, language);
     if (closing && prev) { head ??= id; cells += closing; continue; }
     flush(); prev = id;
   }

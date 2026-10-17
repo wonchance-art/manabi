@@ -35,6 +35,9 @@
   2026-08-17 §C4 4시간+ 무응답).
 - 발주했다면 **30분 내 WORKING 표식이 없으면 회수**해 직접 수행한다(기존 '무응답 3회'는
   대기가 과했다).
+- **서브에이전트 작업 브랜치는 `claude/wip/<주제>`로 만들고 push하지 않는다**(2026-10-17 KST — Vercel 무료 플랜 일일 배포 100회를
+  건너뛴 배포까지 포함해 소진한 실측). 같은 컨테이너의 로컬 브랜치로 넘기고, PR 브랜치에만 묶어서 push한다.
+  `vercel.json`이 `claude/wip/**` Git 배포를 닫아 둔다(계약 `scripts/vercel-deploy-policy.test.js`).
 - 자기 네임스페이스 밖 파일 수정 금지. force-push 금지(자기 claude/* 브랜치의
   squash-merge 후 `--force-with-lease` 재동기화만 확립 관례).
 - **시간 표기는 KST 고정**(오너 지시 2026-08-28): 오너 보고·보드·이슈/PR 코멘트의

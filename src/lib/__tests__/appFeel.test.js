@@ -152,7 +152,8 @@ describe('죽은 효과 재발 방지 — CSS만 있고 붙는 곳이 없으면 
     const bars = html.match(/<div class="review-done__bar[^"]*" style="[^"]*"/g) || [];
     expect(bars).toHaveLength(7);
     bars.forEach((bar, i) => expect(bar).toContain(`--i:${i}`));
-    expect(html).toContain('<h2 class="review-done__title">오늘 몫 끝</h2>');
+    // 끝 화면 제목은 마지막 채점 뒤 초점을 받는다(tabIndex −1 — VOCAB-FLOW-001, /study 「세션 완료」 선례).
+    expect(html).toContain('<h2 tabindex="-1" class="review-done__title">오늘 몫 끝</h2>');
   });
 });
 

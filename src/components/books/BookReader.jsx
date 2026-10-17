@@ -15,6 +15,7 @@ import BookHome from './BookHome';
 import BookEditionFonts from './BookEditionFonts';
 import BookReaderSkeleton from './BookReaderSkeleton';
 import { HASH_GATE, announceFragmentUrl, coverPage, hashGate, pageFromHash, rememberRouterTree } from './bookEntryGate';
+import { BOOK_COVER_PLACE_KEY, bookCoverPlaceOf, withBookCoverPlace } from './bookEntryGate';
 import './reading-content.css';
 import useLibraryActivity from '@/components/library/useLibraryActivity';
 import {LibraryReturnLink} from '@/components/web/LibraryReaderLink';
@@ -34,6 +35,9 @@ function readingText(node) {
   clone.querySelectorAll('ruby').forEach(ruby => { const reading = ruby.querySelector('rt')?.textContent; if (reading) ruby.replaceWith(reading); });
   return clone.textContent.trim();
 }
+
+/** 표지 목차에서 열려 있는 파트 이름들(BOOK-HOME-RESTORE-001) — 사용자가 연 파트까지 같아야 돌아왔을 때 높이가 같다. */
+const openTocParts = node => [...(node?.querySelectorAll('.manabi-book-home details[data-toc-part]') || [])].filter(group => group.open).map(group => group.dataset.tocPart);
 
 // 본문 위치로 바로 열기 — 첫 쪽 판정 · 하드 로드 감춤 한 줄 · 본문 골격은 bookEntryGate · BookReaderSkeleton(BOOK-HASH-ENTRY-001 · BOOK-ENTRY-SKELETON-001).
 
@@ -56,6 +60,13 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
   const [focus, setFocus] = useState(false), [selection, setSelection] = useState(null), [expression, setExpression] = useState(''), [meaning, setMeaning] = useState('');
   const [examples, setExamples] = useState([]), [panel, setPanel] = useState('selection'), [query, setQuery] = useState(''), [searchCount, setSearchCount] = useState(0), [draftStatus, setDraftStatus] = useState('');
   const unit = readingUnit(pageId, sectionIndex);
+  // 표지 자리(BOOK-HOME-RESTORE-001)에 쓰는 값 — 전체 목차 펼침은 표지가 다시 붙어도(다른 화면에서 뒤로) 이어진다.
+  const [tocAll, setTocAll] = useState(false), [tocOpen, setTocOpen] = useState(null);
+  const unitRef = useRef(unit), tocAllRef = useRef(tocAll);
+  // pendingCover = sync가 이 기록에서 찾은 표지 자리(스크롤 단계가 주소로 다시 찾지 않게). coverHold = 높이가 모자라 잘라 옮긴
+  // 자리 — 사용자가 움직이기 전까지는 잘린 값을 이 기록에 다시 쓰지 않는다(원래 자리를 지킨다).
+  const pendingCover = useRef(null), coverHold = useRef(null);
+  unitRef.current = unit; tocAllRef.current = tocAll;
   const lesson = book.lessons.find(item => item.id === unit);
   useLibraryActivity({target_kind:'edition',target_id:book.edition,context:{bookId,page:active.startsWith(`${unit}-`)?active:pageId}},!reference&&!preview&&!loading&&!error&&!!lesson&&!!sections.length&&sections[0].unit===unit);
   const unitSections = sectionIndex.filter(section => section.unit === unit);
@@ -107,6 +118,17 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
 
   const rememberPosition = useCallback(current => {
     if (authLoading || pendingAnchor.current || dialog.current?.open) return;
+    // 표지(책 목차)는 쪽이 없다 — 이 기록에 세로 위치 · 전체 목차 펼침 · 열린 파트만 남긴다(BOOK-HOME-RESTORE-001 · bookCoverPlaceOf).
+    // 열린 파트는 화면(details)에서 읽는다 — 사용자가 연 파트까지 같아야 돌아왔을 때 높이가 같다.
+    // unit은 ref로 읽는다 — 의존성에 넣으면 쪽이 바뀔 때마다 sync 효과가 다시 돌아 앵커 이동이 되풀이된다.
+    if (unitRef.current === 'cover') {
+      const open = openTocParts(root.current);
+      const hold = coverHold.current;
+      if (hold && Math.abs(window.scrollY - hold.top) < 1 && hold.all === tocAllRef.current && hold.open === JSON.stringify(open)) return;
+      coverHold.current = null;
+      window.history.replaceState(withBookCoverPlace(window.history.state, { href: window.location.href, y: Math.round(window.scrollY), all: tocAllRef.current, open }), '', window.location.href);
+      return;
+    }
     const articles = [...(content.current?.querySelectorAll('article[data-unit-page]') || [])];
     current ||= articles.filter(article => article.getBoundingClientRect().top < Math.min(240, innerHeight * .32)).at(-1) || articles[0];
     if (!current) return;
@@ -133,6 +155,12 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
         && saved.account === (user?.id || 'guest') && saved.reference === reference
         && Number.isFinite(saved.offset) && sectionIndex.some(section => section.id === saved.page) ? saved : null;
       if (position) id = position.page;
+      // 표지로 돌아오면(뒤로 · 앞으로 · 새로 고침 · bfcache) 그 기록의 전체 목차 · 열린 파트부터 — 높이가 같아야 남긴 세로 위치로
+      // 맞는다(옮기기는 앵커 효과가 pendingCover로). 자리 기록이 없는 표지(새로 연 표지)는 기본값(지금 파트만, 맨 위)이다.
+      const coverPlace = id === 'cover' && restorePosition ? bookCoverPlaceOf(window.history.state, href) : null;
+      if (coverPlace) { setTocAll(coverPlace.all); setTocOpen(coverPlace.open); }
+      else if (id === 'cover') { setTocAll(false); setTocOpen(null); }
+      pendingCover.current = coverPlace; coverHold.current = null;
       pendingPosition.current = position;
       pendingAnchor.current = id; setPageId(id); setActive(id);
       // The same hash can belong to entries with distinct reading positions.
@@ -291,7 +319,14 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
         target.scrollIntoView({ block: 'start', behavior: 'instant' });
         window.scrollTo({ top: window.scrollY + target.getBoundingClientRect().top - (toolbar.current?.getBoundingClientRect().bottom || 0) - position.offset, behavior: 'instant' });
       }
-      else if (id === 'cover' || id === unit || id === `${unit}-start`) window.scrollTo({ top: 0, behavior: 'instant' });
+      else if (id === 'cover') {
+        // 표지 — 이 기록에 남긴 세로 위치로, 없으면(새로 들어온 표지) 맨 위로(BOOK-HOME-RESTORE-001). 더 내려갈 수 없으면 끝까지.
+        const place = pendingCover.current, top = place ? Math.min(place.y, Math.max(0, document.documentElement.scrollHeight - innerHeight)) : 0;
+        window.scrollTo({ top, behavior: 'instant' });
+        // 잘라 옮겼으면 그 자리 · 펼침이 그대로인 동안은 원래 값을 지킨다(rememberPosition이 건너뛴다).
+        if (place && top < place.y) coverHold.current = { top, all: tocAllRef.current, open: JSON.stringify(openTocParts(root.current)) };
+      }
+      else if (id === unit || id === `${unit}-start`) window.scrollTo({ top: 0, behavior: 'instant' });
       else (target || root.current)?.scrollIntoView({ block: 'start', behavior: 'instant' });
       if (target?.classList.contains('kanji-card')) { target.setAttribute('tabindex', '-1'); target.focus({ preventScroll: true }); }
       // 살아 있는 초점은 빼앗지 않는다 — 잃었을 때만 새 쪽의 첫 제목(없으면 본문)으로(routeFocus 정본).
@@ -303,7 +338,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
         if (!focusIsLost(document) && active?.getClientRects?.().length === 0) active.blur();
         focusPageIfLost(document);
       }
-      pendingAnchor.current = null; pendingPosition.current = null;
+      pendingAnchor.current = null; pendingPosition.current = null; pendingCover.current = null;
       rememberPosition();
       if (!reference && /^u\d{2}/.test(id)) update({ page: id });
     }); });
@@ -327,6 +362,18 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
   }, [sections, lesson, update, reference, rememberPosition]);
 
   useEffect(() => {
+    if (unit !== 'cover') return undefined;
+    // 표지 자리 남기기(BOOK-HOME-RESTORE-001, LevelListPage와 같은 때) — 굴리기를 멈췄을 때 · 링크를 누를 때(capture: Next Link가
+    // 새 기록을 쌓기 전). 떠날 때는 release(bfcache로 들어가지 않는 길만), 책 안 이동은 go가 남긴다.
+    let timer;
+    const scroll = () => { clearTimeout(timer); timer = setTimeout(() => rememberPosition(), 120); };
+    const click = event => { if (event.target?.closest?.('a[href]')) rememberPosition(); };
+    window.addEventListener('scroll', scroll, { passive: true });
+    document.addEventListener('click', click, true);
+    return () => { clearTimeout(timer); window.removeEventListener('scroll', scroll); document.removeEventListener('click', click, true); };
+  }, [unit, rememberPosition]);
+
+  useEffect(() => {
     const search = query.trim().toLocaleLowerCase();
     const cards = [...(content.current?.querySelectorAll('.lex-card,.kanji-card,.grammar-recall,.n4-reference > [data-search]') || [])];
     cards.forEach(card => { card.hidden = !!search && !String(card.dataset.search || card.textContent).toLocaleLowerCase().includes(search); });
@@ -338,7 +385,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     dialog.current?.close();
     rememberPosition();
     const navigationState = { ...window.history.state };
-    delete navigationState.manabiBookPosition;
+    delete navigationState.manabiBookPosition; delete navigationState[BOOK_COVER_PLACE_KEY];
     const back=new URLSearchParams(window.location.search).get('returnTo');
     const destination=new URL(bookHref(book.edition,id),window.location.origin);
     if(back)destination.searchParams.set('returnTo',safeLibraryReturn(back));
@@ -351,6 +398,9 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     window.history.pushState(navigationState, '', destination.pathname+destination.search+destination.hash);
     setQuery('');
     pendingPosition.current = null; pendingAnchor.current = id; setPageId(id); setActive(id);
+    // 책 안에서 새로 연 표지(「← 책 목차」)는 새 기록이다 — 목차 펼침 · 열린 파트를 기본값으로, 자리는 맨 위.
+    pendingCover.current = null; coverHold.current = null;
+    if (id === 'cover') { setTocAll(false); setTocOpen(null); }
     focusAfterMove.current = true;
     setAnchorRequest(request => request + 1);
     if (!reference && /^u\d{2}/.test(id)) update({ page: id });
@@ -399,7 +449,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     {reference && <div className="manabi-preview-note" role="note"><strong>복습 원문 참고</strong><p>읽던 위치는 바뀌지 않아요. 확인 후 복습하던 탭으로 돌아가세요.</p><a data-reading-resume className="manabi-link" href={bookHref(book.edition, active || pageId)}>여기부터 이어읽기 →</a></div>}
     {preview && <p className="manabi-preview-note">관리자 미리보기 · 발행 전 원고예요.</p>}
     {unit === 'cover' && !entryDecided && <><script dangerouslySetInnerHTML={{ __html: HASH_GATE }} /><BookReaderSkeleton gated /></>}
-    {unit === 'cover' ? <BookHome book={book} preview={preview} progress={progress} hasProgress={hasProgress} ready={ready} /> : <div className="manabi-reader-page">
+    {unit === 'cover' ? <BookHome book={book} preview={preview} progress={progress} hasProgress={hasProgress} ready={ready} showAll={tocAll} onShowAll={setTocAll} openParts={tocOpen} /> : <div className="manabi-reader-page">
       <div ref={toolbar} className="manabi-reader-toolbar"><LibraryReturnLink onlyWithContext/><a href={readerHref('cover')}>← 책 목차</a><span>일본어 · {level}{lesson ? ` / ${String(lesson.number).padStart(2, '0')}과` : ''}</span><div><Link prefetch={false} href={bookReviewHref(bookHref(book.edition, reference ? progress.page : active || pageId))}>담은 표현</Link><details ref={referenceMenu} className="manabi-reference-menu" onBlur={leaveReferenceMenu} onKeyDown={event => { if (event.key === 'Escape') { event.currentTarget.open = false; event.currentTarget.querySelector('summary').focus(); } }}><summary>참고 자료</summary><nav aria-label="교재 참고 자료"><a href={readerHref('reference-start')}>어휘·문형·한자</a>{lesson && <button type="button" onClick={event => { const menu = event.currentTarget.closest('details'); menu.open = false; openPanel('materials', menu.querySelector('summary')); }}>이 과의 연결 자료</button>}<Link prefetch={false} href={`/books/${bookId}/materials?edition=${book.edition}`}>{book.cultures?.length ? '문화 읽기' : '내 자료 연결'}</Link></nav></details><button type="button" aria-pressed={focus} onClick={() => setFocus(!focus)}>{focus ? '기본 보기' : '집중 읽기'}</button></div></div>
       <div className="manabi-reader-grid"><aside className="manabi-reader-outline"><p className="manabi-eyebrow">{lesson ? `${String(lesson.number).padStart(2, '0')}과 · 목차` : '목차'}</p><nav aria-label="과 안의 목차">{unitSections.map(section => <a key={section.id} href={readerHref(section.id)} aria-current={active === section.id ? 'location' : undefined}>{section.title}</a>)}</nav></aside>
         <div className="manabi-reader-main"><details className="manabi-mobile-toc"><summary>이 과의 목차</summary><nav aria-label="모바일 과 목차">{unitSections.map(section => <a key={section.id} href={readerHref(section.id)} onClick={event => event.currentTarget.closest('details').removeAttribute('open')}>{section.title}</a>)}</nav></details>

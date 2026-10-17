@@ -71,7 +71,7 @@ import { assertLegacyFsrsAllowed } from '../lib/fsrsLegacyBoundary';
 import { insertConfirmedVocabulary, preservePendingVocabularyReviews } from '../lib/viewerVocabularyCache';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage, failureMessage } from '../lib/errorMessage';
-import { SAVE_GRADES, VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
+import { SAVE_GRADES, VOCAB_UPSERT, buildVocabRow, cardSaveReading } from '../lib/vocabIO';
 import { useVocabularyExclusions } from '../lib/useVocabularyExclusions';
 import { exclusionWord, findVocabularyExclusion } from '../lib/vocabularyExclusion';
 import { callGemini } from '../lib/gemini';
@@ -101,10 +101,13 @@ import { useGroupReadPush } from '../lib/useGroupReadPush';
 import { useScrollRestore } from '../lib/useScrollRestore';
 import { useReaderLayout, readerVisibleBounds, useSelectedTokenVisibility } from '../lib/useReaderLayout';
 import { usePagedReader, pagerFor, overlayOrigin } from '../lib/usePagedReader';
+import { flushSync } from 'react-dom';
+import { listenSentenceRanges, listenSentenceTokens } from '../lib/listenFollow';
+import { analysisTokenLine } from '../lib/analysisCoverage';
 import { captureReadingAnchor } from '../lib/readingViewport';
 import PageBar, { PageStrips } from '../components/viewer/PageBar';
 import { pinyinCellWidth } from '../lib/pinyinLayout';
-import { zhKinsokuMarks, zhKinsokuStyle } from '../lib/zhGrid';
+import { hasKinsoku, zhKinsokuMarks, zhKinsokuStyle } from '../lib/zhGrid';
 import { ZhText, useZhGridRuns } from '../components/viewer/ZhText';
 import ReaderToken from '../components/viewer/ReaderToken';
 import { readerFontFamily } from '../lib/viewerPreferences';
@@ -538,8 +541,11 @@ export default function ViewerPage() {
   }, [metCode]);
   // 서버 정본 동기화(§4.5) — 로그인 시 쌍방 병합(5분 스로틀). 다른 기기에서 온 만남이 있을 때만
   // 진입 스냅샷을 한 번 다시 뜬다(세션 중 점 번짐 금지 원칙은 그대로 — 내 드래그는 반영 안 됨).
+  // 자료가 오기 전 materialLang은 기본값 'Japanese'다 — 그때 돌리면 다른 언어(ja)를 받고 그 언어의 5분 스로틀까지 써 버린다
+  // (서재 → 중국어 자료 진입 실측: ja · zh 두 번씩, 2026-10-17 KST). 자료가 온 뒤 그 언어로 한 번.
+  const materialReady = !!material;
   useEffect(() => {
-    if (!user?.id || !metCode) return undefined;
+    if (!user?.id || !metCode || !materialReady) return undefined;
     let cancel = false;
     (async () => {
       if (await syncVocabEncounters(supabase, user.id, metCode) && !cancel) {
@@ -547,7 +553,7 @@ export default function ViewerPage() {
       }
     })();
     return () => { cancel = true; };
-  }, [user?.id, metCode]);
+  }, [user?.id, metCode, materialReady]);
   // 지정(막대·드래그·이동) 문장 기록. 노트 저장은 더 이상 이것을 읽지 않는다 — 해설을 만든 문장(grammar.forText)을
   // 쓴다(AE-R2 §5.2). 지정 경로의 기록 자체는 focusMode 계약이 고정하고 있어 그대로 둔다.
   const [, setSelectedRangeText] = useState('');
@@ -890,7 +896,8 @@ export default function ViewerPage() {
 
   // 아는 단어 표시와 복습 보호 상태는 같은 DB 트랜잭션으로 바뀐다.
   const knownLangCode = knownWordsLang(materialLang, learningCapabilities.known);
-  const knownState = useKnownWords(knownLangCode, !!knownLangCode);
+  // 아는 단어도 자료가 온 뒤 그 언어로 — 기본값(ja)으로 먼저 받으면 중국어 자료에서 ja · zh 두 번 나갔다(위 만남 동기화와 같은 원인).
+  const knownState = useKnownWords(knownLangCode, !!knownLangCode && materialReady);
   const knownWordSet = useMemo(() => knownWordSetOf(knownState.data, exclusionState.data, knownLangCode), [knownState.data, exclusionState.data, knownLangCode]);
 
   // 스크롤 위치 저장(debounce 2s) + 재진입 시 자동 복원
@@ -905,21 +912,33 @@ export default function ViewerPage() {
   const pagedActive = readerView === 'paged' && !classStudyActive;
   // 자동 진행은 세로 흐름(휠·터치 감지·문장 스크롤)에 맞춘 기능이라 쪽 넘김 보기에서는 끈다(설계 §4 P0) — 스크롤 보기는 그대로.
   const autoPaceOn = autoPace && !pagedActive;
+  // 듣기 따라가기(뷰어 감사 목업 6 · 1단계) — 읽는 **문장**의 토큰(listenTokens)에 은은한 밑줄을 긋고 그 쪽으로 넘긴다.
+  // 멈춤은 사람이 쪽을 넘길 때(onUserPage)만 — 그 듣기가 끝날 때까지 따라가지 않고(listenFollowOff) [지금 문장으로]가 뜬다
+  // (listenStopped). 자동 이동이 거절되면(누르는 중 · 시트 · 범위 지정 · 키 차단 — pager.reveal auto) 그 문장 이동만 건너뛴다.
+  // listenActive = 듣는 중(문장을 못 이은 문장이어도) — 손으로 넘기면 멈춤이 늘 걸리게. listenIndex = 지금 읽는 문장 번호.
+  const [listenTokens, setListenTokens] = useState(null);
+  const [listenStopped, setListenStopped] = useState(false);
+  const listenActive = useRef(false), listenFollowOff = useRef(false), listenIndex = useRef(null);
   const pager = usePagedReader({
     enabled: pagedActive, pages: pagesEl, barRef: pageBarRef, resetKey: id,
     layoutKey: `${fontSize}|${lineGap}|${charGap}|${fontFamily}|${pronDisplay}|${pinyinSize}|${pinyinCell}|${fontStatus}|${uiLocale}|${wordStateHl}|${showPatterns}`,
     initialAnchor: () => { const el = pagedInitialAnchor.current; pagedInitialAnchor.current = null; return el?.isConnected ? { kind: 'element', el } : null; },
     onUserPage: anchor => {
+      // 듣는 중에 손으로 넘겼다 — 이번 듣기 동안 따라가기 · 강조를 멈춘다(듣기 자체는 계속).
+      if (listenActive.current) { listenFollowOff.current = true; setListenTokens(null); setListenStopped(true); }
       const tokenId = anchor?.el?.dataset?.sourceToken, index = tokenId ? material?.processed_json?.sequence?.indexOf(tokenId) : -1;
       if (index >= 0) saveScrollPosition(index);
     },
     // 밀기는 글자를 끌어 고르는 중이거나 단어창·보조 패널이 열려 있으면 무시한다(설계 §2).
     canSwipe: () => !pagedGuard.current.dragging && !pagedGuard.current.sheetOpen,
     canKey: () => !pagedGuard.current.blocked,
+    // 자동 이동(듣기 따라가기)은 시트 · 드래그 범위 지정 · 키 차단 중에 진다 — 누르는 중은 pager가 직접 본다(reveal auto).
+    canAutoReveal: () => { const g = pagedGuard.current; return !(g.sheetOpen || g.dragging || g.blocked); },
     bottomGap: () => parseFloat(pagesEl && getComputedStyle(pagesEl.closest('.viewer-layout') || pagesEl).paddingBottom) || 12,
   });
   // 진행률 소비처(진행 막대·그룹 같이 읽기 push)는 같은 값을 받는다 — 쪽 넘김이면 쪽 기준(설계 §4).
-  const readProgress = pagedActive ? pager.progress : scrollReadProgress;
+  // 쪽 넘김의 진도는 readProgress — 듣기 따라가기의 자동 이동은 진도를 올리지 않는다(따라가기 전 듣기는 쪽을 안 옮겨 진도 불변).
+  const readProgress = pagedActive ? pager.readProgress : scrollReadProgress;
   // 그룹 같이 읽기 진도 push(§4.3) — 이번 주 지정 자료일 때만, 실패 조용히
   useGroupReadPush(material?.id, user?.id, readProgress);
   // 보기 전환 — 스크롤 → 쪽이면 지금 화면 맨 위 글자를 첫 기준으로 넘긴다(쪽 → 스크롤은 훅이 기준 글자를 가운데로 데려온다).
@@ -1445,6 +1464,49 @@ export default function ViewerPage() {
     if (curGroup.tokenIds.length) lineGroups.push(curGroup);
     return pickableSentences(lineGroups, rawLines);
   }, [material?.processed_json, material?.raw_text]);
+
+  // 듣기 따라가기 — 쪽 넘김 보기이고 원문과 분석 본문이 맞을 때만(분석 안 된 줄 0 · 낡은 분석 아님). 원문이 바뀐 자료(N5 #1–5처럼
+  // 원문과 분석 본문이 다른 글)는 문장을 엉뚱한 줄에 잇게 되므로 따라가지 않는다. 이동은 기준만 옮기고(user 아님) 위치는 저장하지 않는다.
+  const listenRanges = useMemo(() => listenSentenceRanges(material?.raw_text), [material?.raw_text]);
+  const listenLineTokens = useMemo(() => {
+    const byLine = new Map(), json = material?.processed_json;
+    for (const tokenId of json?.sequence || []) {
+      const token = json.dictionary?.[tokenId], line = analysisTokenLine(tokenId);
+      if (!token || token.pos === '개행' || line == null) continue;
+      if (!byLine.has(line)) byLine.set(line, []);
+      byLine.get(line).push({ id: tokenId, text: token.text });
+    }
+    return byLine;
+  }, [material?.processed_json]);
+  const listenFollowable = pagedActive && !isStaleAnalysis && missingLineCount === 0 && sentences.length > 0;
+  // 시트 · 드래그 범위 지정 · 키 차단 · 누르는 중에는 쪽을 옮기지 않는다 — pager.reveal(auto)가 거절하면 **이번 문장 이동만**
+  // 건너뛴다(같은 쪽이면 pager가 true — 이동 없이 밑줄). 시트가 닫히면 다음 문장부터 다시 따라간다. 시트 단어 보이기가 늘 이긴다.
+  const handleListenSentence = useCallback((index) => {
+    listenIndex.current = index;
+    if (index == null) { listenActive.current = false; listenFollowOff.current = false; setListenTokens(null); setListenStopped(false); return; }
+    listenActive.current = true;
+    if (!listenFollowable || listenFollowOff.current) { setListenTokens(null); return; }
+    const ids = listenSentenceTokens(listenRanges[index], line => listenLineTokens.get(line));
+    const el = ids.length ? tokenRefs.current[ids[0]] : null;
+    const paged = el && pagerFor(el);
+    if (!paged || !el.isConnected) { setListenTokens(null); return; }
+    // 같은 틱에서 옮기고 밑줄을 단다 — 한 프레임 미루면 머리줄의 지금 문장과 밑줄이 그 사이 어긋나 보였다(실측 24회 중 2회).
+    // 쪽 이동(scrollLeft)은 즉시라 밑줄도 flushSync로 바로 그린다 — 새 쪽에 옛 문장 밑줄이 남는 틈(실측 24회 중 1회)을 없앤다.
+    if (paged.reveal(el, { auto: true })) flushSync(() => setListenTokens(new Set(ids)));
+    else setListenTokens(null);
+  }, [listenRanges, listenLineTokens, listenFollowable, tokenRefs]);
+  // [지금 문장으로](목업 listen-resume B안) — 사람이 누른 이동이라 auto가 아니다(시트가 열려 있어도 옮긴다). 듣는 자리로 가는 것이라
+  // 읽은 위치로 저장하지 않는다(user 아님). 따라가기를 다시 켜고 지금 문장에 밑줄.
+  const resumeListenFollow = () => {
+    listenFollowOff.current = false;
+    setListenStopped(false);
+    const ids = listenSentenceTokens(listenRanges[listenIndex.current], line => listenLineTokens.get(line));
+    const el = ids.length ? tokenRefs.current[ids[0]] : null;
+    const paged = el && pagerFor(el);
+    if (!paged) return;
+    paged.reveal(el);
+    flushSync(() => setListenTokens(new Set(ids)));
+  };
 
   // 어휘 커버리지 배지(#1077-2) — 서재 카드와 **같은 엔진·같은 인덱스**(materialFit ←
   // 담김 ∪ '이미 앎'). 뷰어에서만 다른 수를 보이면 두 화면이 서로를 반증한다.
@@ -2313,6 +2375,11 @@ export default function ViewerPage() {
   const savedRowList = useMemo(() => [...(savedWords.byKey?.values() || [])], [savedWords]);
   // 来가 든 토큰 → 같은 줄 바로 뒤 토큰 표기(splitRuby의 来 | ない 읽기 고르기) — 자료마다 한 번. 렌더 · 토큰마다 Map · 정규식을 만들지 않는다.
   const kuruNext = useMemo(() => kuruNextTexts(material?.processed_json?.sequence, material?.processed_json?.dictionary), [material?.processed_json]);
+  // 줄머리 금칙(중국어 ZH-GRID-001 · 일본어 JA-KINSOKU): 닫는 부호 묶음과 그 앞 토큰을 한 줄에 묶는 여백 표시. 자료(sequence · dictionary) ·
+  // 언어마다 한 번 만든다 — 낱말 탭마다 본문 전체를 다시 훑지 않게(KINSOKU-MEMO-001). 렌더는 표만 본다.
+  const kinsokuMarks = useMemo(() => (hasKinsoku(materialLang)
+    ? zhKinsokuMarks(material?.processed_json?.sequence || [], id => material?.processed_json?.dictionary?.[id], materialLang)
+    : null), [material?.processed_json?.sequence, material?.processed_json?.dictionary, materialLang]);
   const refVocabIndex = useRefVocabIndex(hanjaPopoverMode ? materialLang : null);
   const hanjaHunOf = (text) => (
     materialLang === 'Chinese' && showHanjaKo && hanjaKoTable && hanjaHunTable && hanjaTradTable
@@ -2718,7 +2785,7 @@ export default function ViewerPage() {
         base: selectedToken.sep_link || selectedToken.base_form,   // kuromoji 경로·이합사 O 조각
         meaning: selectedToken.meaning,
         pos: selectedToken.pos,
-        reading: headIsBase ? headReading : selectedToken.furigana || selectedToken.reading,
+        reading: cardSaveReading({ language: materialLang, headIsBase, headReading, token: selectedToken }), // 영어 기본형 = 사전 읽기 없으면 토큰 IPA(EN-SAVE-IPA-001)
         language: materialLang,
         sourceSentence,
         sourceMaterialId: id,
@@ -2874,7 +2941,8 @@ export default function ViewerPage() {
     saveLocked: isWordSaved || saveAnim || selectedExcluded || !wordStateReady || knownPending || exclusionState.mutation.isPending,
     inlineDue: !!user && !selectedExcluded && wordStateReady && !knownPending && !exclusionState.mutation.isPending && isWordSaved && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending,
   };
-  pagedGuard.current = { dragging: tokenRange.dragging, sheetOpen: inspectorOpen || (!!selectedToken && isSheetOpen), blocked: keyHandlersRef.current.blocked };
+  const pagedSheetOpen = inspectorOpen || (!!selectedToken && isSheetOpen);
+  pagedGuard.current = { dragging: tokenRange.dragging, sheetOpen: pagedSheetOpen, blocked: keyHandlersRef.current.blocked };
   const savedCount = (savedWords.surfaces?.size || 0);
 
   // 이 자료에서 복습 가능한 단어 수 (현재 로드된 토큰 기준)
@@ -3871,7 +3939,7 @@ export default function ViewerPage() {
             {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
               <button onClick={stopReanalysis} disabled={reanalyze.committing} className="grammar-btn grammar-btn--danger">{vt("분석 중단")}</button>
             )}
-            {ttsSupported && <ListenControls text={material?.raw_text} language={materialLang} stopSignal={activeModal?.kind} playbackRate={TTS_RATES[ttsRate].web} rateLabel={TTS_RATES[ttsRate].label} compact uiLocale={uiLocale} />}
+            {ttsSupported && <ListenControls text={material?.raw_text} language={materialLang} stopSignal={activeModal?.kind} playbackRate={TTS_RATES[ttsRate].web} rateLabel={TTS_RATES[ttsRate].label} onSentence={handleListenSentence} followActive={listenFollowable} compact uiLocale={uiLocale} />}
             <button ref={settingsTrigger} className="viewer-tool viewer-tool--aa" aria-label={`Aa ${vt("읽기 설정")}`} title={vt("읽기 설정")} aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
               <span aria-hidden="true">Aa</span>
             </button>
@@ -4203,8 +4271,8 @@ export default function ViewerPage() {
             });
           }
 
-          // 중국어 줄머리 금칙(ZH-GRID-001): 닫는 부호 묶음과 그 앞 토큰을 한 줄에 묶는 여백 표시.
-          const zhMarks = zhGrid ? zhKinsokuMarks(json.sequence, id => json.dictionary[id]) : null;
+          // 줄머리 금칙 표시는 자료 단위 useMemo(kinsokuMarks)를 그대로 쓴다.
+          const zhMarks = kinsokuMarks;
 
           // 문장 전체 지정 막대(.line-pick) — 낱말 칸(ReaderToken)과 분석 실패 칸이 같은 동작을 쓴다.
           linePickRef.current = (lineHead) => {
@@ -4258,7 +4326,7 @@ export default function ViewerPage() {
             // 루비 조각 · 발음 가림 · 문형 밑줄 · 단어 조작 마크업은 ReaderToken(memo)이 그린다 — 바뀐 낱말만 다시 그린다(VIEWER-TAP-PERF-001).
             return (
               <ReaderToken key={tokenId} tokenId={tokenId} token={token} tokenRefs={tokenRefs}
-                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}${isSaved && justSaved === tokenId ? ' word-token--just-saved' : ''}`}
+                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${listenTokens?.has(tokenId) ? ' word-token--listening' : ''}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}${isSaved && justSaved === tokenId ? ' word-token--just-saved' : ''}`}
                 selected={selectedToken?.id === tokenId && isSheetOpen}
                 paceStyle={paceStyle}
                 lineHeadText={lineHead ? lineHead.text : null} lineHeadRawIdx={lineHead ? lineHead.rawIdx : null}
@@ -4533,7 +4601,13 @@ export default function ViewerPage() {
       </div>{/* reader-pages end */}
       {pagedActive&&<PageStrips pager={pager} tr={vt}/>}
       </div>
-      {pagedActive&&<PageBar pager={pager} barRef={pageBarRef} tr={vt}/>}
+      {/* 시트(옆 · 아래)가 열린 동안은 칩을 숨긴다 — 누르면 시트가 보여 주는 단어의 쪽을 떠나고, 시트 동안 자동 이동은 거절돼 밑줄도 사라진다. */}
+      {pagedActive&&<PageBar pager={pager} barRef={pageBarRef} tr={vt} extra={listenFollowable && listenStopped && !pagedSheetOpen ? (
+        <button type="button" className="viewer-pace-float__btn reader-pagebar__resume" title={vt('듣고 있는 문장의 쪽으로 가고 다시 따라가요')} onClick={resumeListenFollow}>
+          <ActionIcon name="headphones"/><span>{vt('지금 문장으로')}</span>
+        </button>) : null}/>}
+      {/* 따라가기 멈춤 알림 — 쪽 막대가 숨어도(시트) 읽히게 막대 밖에 둔다. 보이는 글은 [지금 문장으로] 칩. */}
+      {pagedActive&&<span className="sr-only" role="status">{listenFollowable && listenStopped ? vt('따라가기를 멈췄어요') : ''}</span>}
       </div>{/* viewer-center end */}
 
       <TextbookAnnotations key={`${id}:${user?.id||'guest'}`} material={material} user={user}

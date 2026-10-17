@@ -8,7 +8,7 @@
  * PDF 뷰어 팝업 계약(fetchWordDetailText·formatDetail·TokenPosLabel)을 재사용한다.
  * 저장 경로는 하나 — [자료로 저장]이 초안을 sessionStorage로 추가 화면에 넘긴다.
  */
-import { useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { supabase } from '../lib/supabase';
@@ -22,6 +22,7 @@ import { formatDetail } from '../lib/wordDetailFormat';
 import Button from '../components/Button';
 import TokenPosLabel from './TokenPosLabel';
 import { friendlyToastMessage } from '../lib/errorMessage';
+import { focusIfFree } from '../lib/focusAfterAction';
 import { authEntryHref } from '../lib/authRedirect';
 
 // 서버 캡 미러 — route.js의 MAX_LINES·MAX_LINE_LEN과 같은 값(계약 테스트로 핀).
@@ -51,6 +52,44 @@ export default function QuickPage() {
   const [resultLines, setResultLines] = useState(null); // [{ text, tokens: [token]|null }]
   const [wordDetail, setWordDetail] = useState(null); // { token, line, detail, loading }
   const [saving, setSaving] = useState({});
+  const popupWordId = useId();
+  const popupRef = useRef(null);
+  const openerRef = useRef(null);
+
+  // 탭 사전 초점(QUICK-FOCUS-001) — 팝업은 페이지 맨 끝에 그려져, 키보드로 단어를 열면 초점이 그 단어에 남고 팝업은
+  // 남은 단어를 모두 지나야 닿았다(화면 읽기는 열린 줄도 몰랐다). 열리면 닫기로 옮기고, Esc로 닫고, Tab은 팝업 안에서만
+  // 돌고, 닫히면 연 단어로 돌려준다(ConfirmModal 선례 — 다른 곳에 초점이 가지 않았을 때만). 화면은 그대로다.
+  // 분석이 끝나면 결과 제목(화면 읽기 전용 h2)으로 — 「분석」은 누르는 동안 잠겨(disabled) 초점이 body로 떨어졌다(합성 로그인
+  // 1440 · 390 실측). Tab은 그 아래 첫 단어로 간다. 다른 곳에 살아 있는 초점은 뺏지 않는다.
+  const resultHeadRef = useRef(null);
+  useEffect(() => {
+    if (resultLines) focusIfFree(resultHeadRef.current, resultHeadRef.current?.closest('.page-container'));
+  }, [resultLines]);
+
+  const popupOpen = !!wordDetail;
+  useEffect(() => {
+    if (!popupOpen) return undefined;
+    const opener = openerRef.current;
+    popupRef.current?.querySelector('.pdf-detail-popup__close')?.focus({ preventScroll: true });
+    const onKey = (e) => {
+      if (e.key === 'Escape') { e.preventDefault(); setWordDetail(null); return; }
+      if (e.key !== 'Tab' || !popupRef.current) return;
+      const focusable = [...popupRef.current.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])')].filter((el) => !el.disabled);
+      if (!focusable.length) return;
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (!popupRef.current.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+      else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      requestAnimationFrame(() => {
+        const active = document.activeElement;
+        if (opener?.isConnected && (!active || active === document.body)) opener.focus({ preventScroll: true });
+      });
+    };
+  }, [popupOpen]);
 
   async function handleAnalyze() {
     const rawLines = text.split('\n').map((l) => l.trim()).filter(Boolean);
@@ -140,8 +179,8 @@ export default function QuickPage() {
     const rubySegments = token.furigana ? splitRuby(token.text, token.furigana, token.base_form, line?.[i + 1]?.text) : null;
     return (
       <div key={i} className="word-token" role="button" tabIndex={0}
-        onClick={() => openWordDetail(token, line)}
-        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), openWordDetail(token, line))}>
+        onClick={(e) => { openerRef.current = e.currentTarget; openWordDetail(token, line); }}
+        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), openerRef.current = e.currentTarget, openWordDetail(token, line))}>
         {rubySegments ? (
           <span className="surface">
             {rubySegments.map((seg, si) =>
@@ -188,7 +227,7 @@ export default function QuickPage() {
               style={{ width: '100%', resize: 'vertical', fontSize: '0.95rem', lineHeight: 1.7 }}
             />
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
-              <select value={language} onChange={(e) => setLanguage(e.target.value)}
+              <select value={language} onChange={(e) => setLanguage(e.target.value)} aria-label="분석 언어"
                 style={{ fontSize: '0.82rem', padding: '6px 8px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
                 {QUICK_LANGS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
               </select>
@@ -203,13 +242,16 @@ export default function QuickPage() {
 
           {error && (
             <div className="card" style={{ padding: '14px 16px', marginBottom: 16, fontSize: '0.85rem' }}>
-              {error}{' '}
+              <span role="alert">{error}</span>{' '}
               <button type="button" className="btn btn--ghost btn--sm" onClick={handleAnalyze}>다시 시도</button>
             </div>
           )}
 
+          {/* 분석 알림 — 영역은 늘 두고 내용만(A11Y-SWEEP-001). 단추 글자(「분석 중…」)와 겹치지 않는 문구 */}
+          <span className="sr-only" role="status">{analyzing ? '텍스트를 분석하는 중이에요' : resultLines ? `분석을 마쳤어요 — ${resultLines.length}줄` : ''}</span>
           {resultLines && (
             <div className="card" style={{ padding: '18px 20px' }}>
+              <h2 ref={resultHeadRef} tabIndex={-1} className="sr-only">분석 결과</h2>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14,
                 paddingBottom: 10, borderBottom: '1px solid var(--border)',
@@ -241,14 +283,14 @@ export default function QuickPage() {
       {wordDetail && (
         <>
           <div className="pdf-detail-overlay" onClick={() => setWordDetail(null)} />
-          <div className="pdf-detail-popup">
+          <div className="pdf-detail-popup" ref={popupRef} role="dialog" aria-modal="true" aria-labelledby={popupWordId}>
             <div className="pdf-detail-popup__header">
-              <div className="pdf-detail-popup__word">
+              <div className="pdf-detail-popup__word" id={popupWordId} lang={htmlLang(language)}>
                 {wordDetail.token.furigana
                   ? <ruby>{wordDetail.token.text}<rt>{wordDetail.token.furigana}</rt></ruby>
                   : wordDetail.token.text}
               </div>
-              <button className="pdf-detail-popup__close" onClick={() => setWordDetail(null)}>✕</button>
+              <button type="button" className="pdf-detail-popup__close" aria-label="닫기" onClick={() => setWordDetail(null)}>✕</button>
             </div>
             <div className="pdf-detail-popup__meta">
               <span className="pdf-detail-popup__pos"><TokenPosLabel token={wordDetail.token} /></span>
