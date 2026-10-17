@@ -15,7 +15,10 @@ try {
   await db.exec(`create role anon;create role authenticated;create schema auth;
   create table auth.users(id uuid primary key);grant usage on schema auth to anon,authenticated;
   create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
-  insert into auth.users values('${a}'),('${b}');`);
+  insert into auth.users values('${a}'),('${b}');
+  -- 운영(Supabase) 기본 ACL 재현: 새 public 표에 anon·authenticated 전부를 준다(M09 #1337 6192814347).
+  grant usage on schema public to anon,authenticated;
+  alter default privileges in schema public grant all on tables to anon,authenticated;`);
   const sql = await fs.readFile(new URL('../migrations/20261015090000_user_word_facets.sql', import.meta.url), 'utf8');
   await db.exec(sql);
   await db.exec(sql); // 재실행 안전
@@ -39,6 +42,15 @@ try {
   await check('게스트(anon)는 읽기 · 쓰기 모두 차단', async () => {
     await as(null);
     await assert.rejects(rows('select * from user_word_facets'));
+  });
+  await check('넓은 기본 ACL에서도 authenticated는 CRUD만, anon은 아무것도 없다', async () => {
+    await db.exec('reset role');
+    const priv = async (role, p) => (await rows(`select has_table_privilege('${role}','public.user_word_facets','${p}') ok`))[0].ok;
+    for (const p of ['SELECT', 'INSERT', 'UPDATE', 'DELETE']) assert.equal(await priv('authenticated', p), true, p);
+    for (const p of ['TRUNCATE', 'REFERENCES', 'TRIGGER']) assert.equal(await priv('authenticated', p), false, p);
+    for (const p of ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE']) assert.equal(await priv('anon', p), false, p);
+    await as(a);
+    await assert.rejects(db.exec('truncate public.user_word_facets'), /permission denied/);
   });
   await check('모르는 탭 · 표시는 거부', async () => {
     await as(a);
