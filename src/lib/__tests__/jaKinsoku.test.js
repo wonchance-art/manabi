@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { sliceBetween } from './helpers/sliceBetween';
 import { KINSOKU_LANGUAGES, hasKinsoku, zhClosingCells, zhKinsokuMarks, zhKinsokuStyle } from '../zhGrid';
 
 // 일본어 줄머리 금칙(JA-KINSOKU — 목업 viewer-lang-4 §4, 오너 「권장대로」 2026-10-17 KST · W3C JLREQ §3.1.7 행두 금칙).
@@ -68,7 +69,7 @@ describe('배선 — 본문 · Aa 미리보기가 같은 함수 · 같은 CSS �
     for (const l of ['Korean', 'English', 'French', undefined]) expect(hasKinsoku(l)).toBe(false);
   });
   it('본문과 미리보기 모두 hasKinsoku로 켜고 언어를 넘긴다(중국어 격자 · ZhText는 중국어 그대로)', () => {
-    expect(viewer).toContain('const zhMarks = hasKinsoku(materialLang) ? zhKinsokuMarks(json.sequence, id => json.dictionary[id], materialLang) : null;');
+    expect(viewer).toContain('const zhMarks = kinsokuMarks;'); // 자료 단위 useMemo(아래 KINSOKU-MEMO-001)
     expect(viewer).toContain('const zhStyle = zhKinsokuStyle(zhMarks?.get(tokenId));');
     expect(viewer).toContain("const zhGrid = materialLang === 'Chinese';");
     expect(preview).toContain('const marks=hasKinsoku(language)?zhKinsokuMarks(shown.map((_,i)=>i),i=>shown[i],language):null;');
@@ -83,5 +84,44 @@ describe('배선 — 본문 · Aa 미리보기가 같은 함수 · 같은 CSS �
   it('실렌더 계약(e2e)이 필수 CI 목록에 있다', () => {
     expect(fs.existsSync(path.join(process.cwd(), 'e2e/viewer-ja-kinsoku.e2e.mjs'))).toBe(true);
     expect(ci).toMatch(/e2e\/viewer-zh-grid\.e2e\.mjs e2e\/viewer-ja-kinsoku\.e2e\.mjs/);
+  });
+});
+
+// 제목 줄(viewer-h1/h2/h3)은 .surface만 키운다 — 부호가 토큰 em보다 넓어 1em 예약이 모자라면 제목 끝 「。」만 다음 줄 머리로
+// 넘어갈 수 있었다(리뷰 2026-10-17 KST). 예약을 제목 배율로 — 배율은 index.css 제목 글자 크기와 같은 값이어야 한다(선택 틀 선례).
+describe('제목 줄 예약 = 제목 글자 배율(JA-KINSOKU-HEAD)', () => {
+  const index = read('src/index.css');
+  for (const level of [1, 2, 3]) {
+    it(`viewer-h${level}: --ja-pitch 배율 = .viewer-h${level} .surface font-size = 선택 틀 배율`, () => {
+      const surface = index.match(new RegExp(`\\.viewer-h${level} \\.surface \\{ font-size: ([\\d.]+)em;`))?.[1];
+      expect(surface, 'index.css 제목 크기').toBeTruthy();
+      expect(css).toContain(`.viewer-layout[data-language="Japanese"] :is(.reader-area,.reader-settings__preview) .viewer-h${level} .word-token {--ja-pitch:calc(${surface}em + var(--char-gap,0px));}`);
+      expect(css).toContain(`.viewer-layout .viewer-h${level} .word-token[data-selected="true"]::before {font-size:${surface}em;}`);
+    });
+  }
+  it('제목 규칙은 --ja-pitch만 바꾼다 — 여백 식은 본문 규칙 하나(앞 · 부호 같은 제목 안이라 그대로 상쇄)', () => {
+    const rules = css.match(/\[data-language="Japanese"\][^{]*\.word-token \{[^}]*\}/g) || [];
+    expect(rules.filter(r => /margin-(left|right)/.test(r))).toHaveLength(1);
+    expect(rules.filter(r => /viewer-h\d/.test(r)).every(r => /^[^{]*\{--ja-pitch:[^;]*;\}$/.test(r))).toBe(true);
+  });
+});
+
+// 금칙 표시는 자료(sequence · dictionary) · 언어마다 한 번 — 낱말 탭(뷰어 다시 그리기)마다 본문 전체를 다시 훑지 않는다(KINSOKU-MEMO-001).
+describe('금칙 표시 자료 단위 useMemo — 중국어 · 일본어 같은 길', () => {
+  it('useMemo 한 곳(같은 함수 · 같은 인자), 렌더는 표만 본다', () => {
+    const memo = sliceBetween(viewer, 'const kinsokuMarks = useMemo(', ']);');
+    expect(memo).toContain('hasKinsoku(materialLang)');
+    expect(memo).toContain('zhKinsokuMarks(material?.processed_json?.sequence || [], id => material?.processed_json?.dictionary?.[id], materialLang)');
+    expect(memo).toContain('[material?.processed_json?.sequence, material?.processed_json?.dictionary, materialLang');
+    expect(viewer.match(/zhKinsokuMarks\(/g)).toHaveLength(1);
+    expect(viewer).not.toContain('zhKinsokuMarks(json.sequence');
+    // 훅은 이른 반환보다 앞(훅 순서 고정)
+    expect(viewer.indexOf('const kinsokuMarks = useMemo(')).toBeLessThan(viewer.indexOf('if (isLoading) return <div className="page-container">'));
+  });
+  it('표는 자료가 같으면 같은 결과 — 중국어 표시 그대로(언어 생략 = 중국어)', () => {
+    const tokens = { a: { text: '我' }, b: { text: '。' }, c: { text: '他' }, d: { text: '，' }, e: { text: '」' } };
+    const ids = Object.keys(tokens);
+    expect(Object.fromEntries(zhKinsokuMarks(ids, id => tokens[id], 'Chinese'))).toEqual(Object.fromEntries(zhKinsokuMarks(ids, id => tokens[id])));
+    expect(Object.fromEntries(zhKinsokuMarks(ids, id => tokens[id], 'Chinese'))).toEqual({ a: { hold: 1 }, b: { pull: 1 }, c: { hold: 2 }, d: { pull: 2 } });
   });
 });
