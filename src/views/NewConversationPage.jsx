@@ -15,7 +15,7 @@ import { startTopicConversation } from '@/lib/conversation/conversationClient';
 import { fetchConversations, fetchConversationTurns, conversationHref, conversationShelfMeta } from '@/lib/conversation/conversationLibrary';
 import { conversationCorrections } from '@/lib/conversation/conversationLoop';
 import {
-  CONVERSATION_TOPICS, canStartConversation, conversationLevels, newConversationDefaults, recommendedLevel,
+  CONVERSATION_TOPICS, canStartConversation, conversationLevels, newConversationDefaults, preferredConversationLanguage, recommendedLevel,
 } from '@/lib/conversation/newConversation';
 import { safeReaderReturn } from '@/lib/libraryReturn';
 import { friendlyToastMessage } from '@/lib/errorMessage';
@@ -28,12 +28,21 @@ export default function NewConversationPage() {
   const { user, profile, loading } = useAuth();
   const router = useRouter();
   const params = useSearchParams();
-  const initial = useMemo(() => newConversationDefaults(params, { profileLevelOf: (l) => profileLevel(profile, l) }), [params, profile]);
+  const initial = useMemo(() => newConversationDefaults(params, {
+    profileLevelOf: (l) => profileLevel(profile, l), fallbackLanguage: preferredConversationLanguage(profile),
+  }), [params, profile]);
   const [language, setLanguage] = useState(initial.language);
   const [level, setLevel] = useState(initial.level);
   const [topic, setTopic] = useState(CONVERSATION_TOPICS.includes(initial.topic) ? initial.topic : '');
   const [ownTopic, setOwnTopic] = useState(CONVERSATION_TOPICS.includes(initial.topic) ? '' : initial.topic);
   const [writing, setWriting] = useState(!!ownTopic);
+  // 프로필은 첫 그림 뒤에 올 수 있다 — 아직 직접 고르지 않았으면 처음 선택(언어 · 수준)을 프로필 기준으로 맞춘다. 고른 뒤에는 덮지 않는다.
+  const picked = useRef(false);
+  useEffect(() => {
+    if (picked.current) return;
+    setLanguage(initial.language);
+    setLevel(initial.level);
+  }, [initial.language, initial.level]);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
   const outputWords = useOutputWords(language, { enabled: !!user });
@@ -59,6 +68,7 @@ export default function NewConversationPage() {
   const ready = canStartConversation({ topic: chosenTopic, language, level });
 
   function pickLanguage(next) {
+    picked.current = true;
     setLanguage(next);
     setLevel(recommendedLevel(next, profileLevel(profile, next)));
     setError('');
@@ -126,7 +136,7 @@ export default function NewConversationPage() {
         <h2 id="conv-new-level">말 수준 <small>{profileLevel(profile, language) ? '내 학습 수준 기준 추천' : '처음 단계부터'}</small></h2>
         <div className="conv-new__chips">
           {conversationLevels(language).map((lv) => (
-            <button key={lv} type="button" className="conv-chip" aria-pressed={level === lv} onClick={() => setLevel(lv)}>{lv}</button>
+            <button key={lv} type="button" className="conv-chip" aria-pressed={level === lv} onClick={() => { picked.current = true; setLevel(lv); }}>{lv}</button>
           ))}
         </div>
       </section>
