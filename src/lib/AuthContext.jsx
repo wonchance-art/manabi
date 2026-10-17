@@ -8,6 +8,7 @@ import { authCallbackUrl } from './authRedirect';
 import { isRepeatedSignup } from './authErrors';
 import { migrateGuestDrillQueue } from './drillSrs';
 import { useToast } from './ToastContext';
+import { watchAccountMutations } from './accountQueryCache';
 import { pullProgress } from './refProgress';
 import { createProfileReadOnlyRefresh, recordExplicitProfileLogin } from './learningActivity';
 import { accountCacheReset, accountLeft, clearAccountQueries, noteAccount } from './accountQueryCache';
@@ -154,6 +155,9 @@ export function AuthProvider({ children, queryClient, onAccountLeft }) {
       subscriptionRef.current?.unsubscribe();
     };
   }, []);
+
+  // 계정을 가로지른 mutation의 늦은 쓰기를 지운다(MUTATION-ACCOUNT-GEN-001 — lib/accountQueryCache.watchAccountMutations).
+  useEffect(() => (queryClient ? watchAccountMutations(queryClient) : undefined), [queryClient]);
 
   // 이동 시작을 표시 — bfcache 복원(persisted)까지 고려해 pageshow에서 되돌린다.
   useEffect(() => {

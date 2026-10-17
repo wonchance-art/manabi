@@ -50,6 +50,36 @@ export function whenAccountKnown() {
   return shownAccount !== undefined ? Promise.resolve(shownAccount) : new Promise((resolve) => accountWaiters.push(resolve));
 }
 
+/**
+ * 계정을 가로지른 mutation의 늦은 쓰기(MUTATION-ACCOUNT-GEN-001, 2026-10-17 KST) — react-query 내부를 바꾸지 않는다.
+ * A로 시작한 mutation이 로그아웃 · 다른 계정 로그인 뒤에 끝나면, 그 onSuccess · onError(되돌리기) · onSettled · mutate(…, { onSuccess })가
+ * setQueryData로 A의 자료를 다시 넣는다 — 키가 계정을 모르면(['material', id] 등) B가 그것을 그린다. 어느 키를 썼는지는 알 수 없으므로
+ * (쓰기는 콜백 안의 setQueryData), 끝난 순간 계정이 시작 때와 다르면 콜백이 모두 돈 다음(다음 차례) 계정에 딸린 캐시를 한 번 더 비운다.
+ * 시작 계정은 mutation 캐시 이벤트(pending)에서 적는다 — 전역 콜백이나 mutation 옵션을 건드리지 않는다. 손님으로 시작한 것은 공개 자료라
+ * 비우지 않는다(로그인 직후 서버가 넣은 서재를 지우지 않게). 같은 계정이 다시 들어온 뒤 끝난 것(A → 손님 → A)은 A 자신의 것이라 그대로.
+ * 드물게 B의 화면 캐시가 한 번 더 비워져 다시 받는다(비용은 그 한 번).
+ * @returns {() => void} 구독 해제
+ */
+export function watchAccountMutations(queryClient, { currentAccount = knownAccount, schedule = (fn) => setTimeout(fn, 0) } = {}) {
+  const cache = queryClient?.getMutationCache?.();
+  if (!cache?.subscribe) return () => {};
+  const startedAs = new WeakMap();
+  return cache.subscribe((event) => {
+    if (event?.type !== 'updated' || !event.mutation) return;
+    const kind = event.action?.type;
+    if (kind === 'pending') {
+      if (!startedAs.has(event.mutation)) startedAs.set(event.mutation, currentAccount());
+      return;
+    }
+    if (kind !== 'success' && kind !== 'error') return;
+    const was = startedAs.get(event.mutation);
+    startedAs.delete(event.mutation);
+    if (typeof was !== 'string' || !was || currentAccount() === was) return;
+    // 이 이벤트 뒤에 mutate(…, { onSuccess })가 돈다 — 다음 차례에 비워 그 쓰기까지 지운다(그사이 A가 돌아왔으면 그대로).
+    schedule(() => { if (currentAccount() !== was) clearAccountQueries(queryClient); });
+  });
+}
+
 /** 계정에 딸린 캐시를 모두 지운다. 화면에 붙은 쿼리는 다음 그리기(setUser)에서 새 계정으로 다시 받는다. */
 export function clearAccountQueries(queryClient) {
   if (!queryClient?.removeQueries) return;
