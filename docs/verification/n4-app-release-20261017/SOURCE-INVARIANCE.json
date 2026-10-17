@@ -1,0 +1,617 @@
+{
+  "passed": true,
+  "baseline": "7fa5fbe301ebe1d460f892bd3b796bc966f3b528",
+  "jsonFiles": 44,
+  "addedOrCorrectedReadingEntries": 294,
+  "scope": "All authored source fields excluding root/lesson/cumulative-review kanji maps; Japanese text, meanings, options, answers, IDs, metadata and syllabus must be identical.",
+  "files": [
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/book.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "174729719b46cdf9da0ab51558ea7c95a3d7dded8fbbd350a00845eff5bb3eb1",
+      "addedOrCorrectedReadings": {
+        "昨日": "きのう",
+        "休": "やす",
+        "駅": "えき",
+        "着": "つ",
+        "友達": "ともだち",
+        "電話": "でんわ",
+        "昨日買った本": "きのうかったほん",
+        "読": "よ",
+        "review7": {
+          "明日行かない": "あしたいかない",
+          "字": "じ",
+          "来る": "くる",
+          "来ない": "こない"
+        },
+        "review14": {
+          "毎朝練習": "まいあされんしゅう",
+          "予定": "よてい",
+          "必要": "ひつよう"
+        },
+        "review21": {
+          "晴": "は"
+        },
+        "review28": {
+          "遅": "おく"
+        },
+        "review35": {},
+        "review42": {
+          "急": "きゅう",
+          "困": "こま",
+          "少し": "すこし",
+          "早": "はや",
+          "帰": "かえ"
+        }
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u01.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "51b7a7834092c020c84c8676758b4c56a48e205a35369cde32837c4dd5ce9695",
+      "addedOrCorrectedReadings": {}
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u02.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "d6b1243f2ca368e83986ff5fe0bb0380c12a23337d04d8f5db313f1759d5920b",
+      "addedOrCorrectedReadings": {
+        "私": "わたし",
+        "言う": "いう",
+        "思う": "おもう",
+        "学校": "がっこう"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u03.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "3f6cfb780d32c5f2b8a2f9dfef5208256c03b269ec54a047fbc52676a4ae1b4d",
+      "addedOrCorrectedReadings": {
+        "私": "わたし"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u04.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "b5fa1286e0491d4c3f4f01de340d738e67b8db13453ad967fc4f6ee3f8f11c79",
+      "addedOrCorrectedReadings": {
+        "私": "わたし"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u05.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "7c82c89fbb770972ffb5b345de6866c2ae807547c9a2bbd9b041861232e5ffb1",
+      "addedOrCorrectedReadings": {
+        "私": "わたし",
+        "学校": "がっこう"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u06.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "3dbf666dc65fb0cdf12bb2e9a751e9a3add03eaf73f6d23cae033988b43d8352",
+      "addedOrCorrectedReadings": {
+        "聞": "き",
+        "山": "やま",
+        "学校": "がっこう"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u07.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "985f8e3e9d8aa43bb5c7cf7eecb4b83c047ff3b8d9813f8babe9e2594d8f5db3",
+      "addedOrCorrectedReadings": {
+        "聞": "き"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u08.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "d83ea0b202266e602acd155fd692993fbf5a48d23e55cf8711e90ef4cb444729",
+      "addedOrCorrectedReadings": {
+        "聞": "き",
+        "私": "わたし",
+        "思う": "おもう"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u09.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "1cfd1e7f7e797111a14d214274f529821765fe94a9a25d66113d79741ab6d44e",
+      "addedOrCorrectedReadings": {
+        "私": "わたし"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u10.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "e69741fb8da9d63df3de0cfd834f10997e7edd7175f2f37093e3c0b2e644479e",
+      "addedOrCorrectedReadings": {
+        "私": "わたし",
+        "学校": "がっこう"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u11.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "16dd83a656be126a9c879f1fbbde7c5fb147788f57dc13fd39a14b570f36729b",
+      "addedOrCorrectedReadings": {
+        "毎回": "まいかい",
+        "私": "わたし",
+        "一回": "いっかい",
+        "学校": "がっこう"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u12.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "43a1cf8128810c8c0856e0f63fc7a61b9eb2e3e98c3691d9494c838f9c410b7d",
+      "addedOrCorrectedReadings": {
+        "忘": "わす",
+        "予定": "よてい",
+        "私": "わたし",
+        "毎日少し": "まいにちすこし",
+        "学校": "がっこう"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u13.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "9222af462df4d91811a1a13199e201b780cf253486c7fb121301420033acb5f7",
+      "addedOrCorrectedReadings": {
+        "私": "わたし",
+        "学校": "がっこう"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u14.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "b34b0153c4982d4d6b2e594e7f143c626e36fd23f3330b4e25a853a84af437ef",
+      "addedOrCorrectedReadings": {
+        "私": "わたし",
+        "学校": "がっこう"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u15.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "c87299364da9dd44dbb87e2f071c66b6466c494cd818d74bc2dc49020f3335c3",
+      "addedOrCorrectedReadings": {
+        "全部食べ": "ぜんぶたべ",
+        "もう一度作ります": "もういちどつくります"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u16.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "7665bdbf297b2f7b20671d3c99e9cad58f57d86701e13321495672b23ad788c4",
+      "addedOrCorrectedReadings": {}
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u17.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "0e70b0556e849535e03e0812a9f9eb84a20dedf3909253d40e781eb7a0a4b34b",
+      "addedOrCorrectedReadings": {
+        "読み物": "よみもの"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u18.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "c5db45dd06fea849ae91521ac4cb8dea1b79a8e89ba3166f47b6ef465632a137",
+      "addedOrCorrectedReadings": {}
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u19.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "5b3d7d30992ce8b90098371c69224adc8d8bfb08d32acecec7ff0c8e356051dc",
+      "addedOrCorrectedReadings": {
+        "先週見た": "せんしゅうみた",
+        "必ず": "かならず",
+        "最後": "さいご",
+        "午前九時": "ごぜんくじ"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u20.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "dd98bc4b99c91ab05c7f372a2d2a0a368eace2bee63de4dc478c755157a94a4b",
+      "addedOrCorrectedReadings": {
+        "午後三時": "ごごさんじ"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u21.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "5df7b7876e8cffb763e37dbbd5e3048f060cb0e6f949c690b36a34a8436a0ff7",
+      "addedOrCorrectedReadings": {
+        "集": "あつ",
+        "子供": "こども"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u22.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "e1284126ea545be4e5d5990bcfcb3e0822dd1785df9293ec3f28edf77b25d6c2",
+      "addedOrCorrectedReadings": {}
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u23.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "72222f1e5d58f8fd84c1eeacfbe985c98fb8861e6844d59840a7e9b87fb7c314",
+      "addedOrCorrectedReadings": {
+        "名詞": "めいし"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u24.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "c2b7926a71e7255975340f9ec99fab8dc3344c8d1ac813bae7e5ef75fbd360ea",
+      "addedOrCorrectedReadings": {
+        "もう一度予報": "もういちどよほう"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u25.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "31021f6c8a0d05aa9d923624538d528fec9520bdf010bdb812c08d98d6a6c238",
+      "addedOrCorrectedReadings": {
+        "探": "さが",
+        "借": "か"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u26.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "51b6fe85b11ca61f05b94e6d00ec31518dbf3c9b014912741bc54c32a2611a02",
+      "addedOrCorrectedReadings": {
+        "もう一度利用時間": "もういちどりようじかん"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u27.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "b65de9726b0929053023c103e606d74d30b38f8e098b1f25d6f0ef34a880708f",
+      "addedOrCorrectedReadings": {
+        "二十分待った": "にじゅっぷんまった"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u28.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "b8d5a4f5df1591dd9a4340d78b72281b4d3e460ff2b200fbf1d858b7faf6cfd3",
+      "addedOrCorrectedReadings": {
+        "日本": "にほん",
+        "必ず": "かならず",
+        "消": "き"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u29.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "1cb6b0ee4bcaa2990edd1859a2f3756543195cb4edca1f62587fed84eb2c1857",
+      "addedOrCorrectedReadings": {
+        "行": "い",
+        "電話番号": "でんわばんごう",
+        "記入": "きにゅう",
+        "来た": "きた",
+        "午後五時": "ごごごじ",
+        "何時": "なんじ",
+        "料理教室": "りょうりきょうしつ",
+        "確認": "かくにん"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u30.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "5b9ff03f13cc06d645b9b9aca545d22d4e5107ce73a04fa25c81c54897eb6a2e",
+      "addedOrCorrectedReadings": {
+        "印刷": "いんさつ",
+        "昨日買った": "きのうかった",
+        "乾": "かわ",
+        "作業室": "さぎょうしつ",
+        "帰": "かえ",
+        "使い方": "つかいかた",
+        "分か": "わか",
+        "問題": "もんだい",
+        "動": "うご",
+        "確認": "かくにん",
+        "住": "す",
+        "少し": "すこし",
+        "全部終わった": "ぜんぶおわった",
+        "着": "つ",
+        "昨日買いました": "きのうかいました"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u31.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "5a8dbc4b89502101fbc3e0efe16be164f333dde5c2653bc2707359a422456e59",
+      "addedOrCorrectedReadings": {
+        "紙": "かみ",
+        "残": "のこ",
+        "手伝": "てつだ",
+        "混": "こ",
+        "駅前": "えきまえ",
+        "広": "ひろ",
+        "同じ": "おなじ",
+        "足り": "たり",
+        "印刷室": "いんさつしつ",
+        "休": "やす",
+        "コピー機": "コピーき",
+        "使": "つか",
+        "二十部増や": "にじゅうぶふや",
+        "少な": "すくな",
+        "午前中": "ごぜんちゅう",
+        "多": "おお",
+        "早": "はや"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u32.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "ae6203cdfe17a21707f5560a576412cb122d58dc6de45bba8ec1a952ac807c53",
+      "addedOrCorrectedReadings": {
+        "何": "なに",
+        "会": "かい",
+        "三つ": "みっつ",
+        "飲": "の",
+        "公園": "こうえん",
+        "歩": "ある",
+        "中": "なか",
+        "店": "みせ",
+        "集合場所": "しゅうごうばしょ",
+        "近": "ちか",
+        "食べ物": "たべもの",
+        "用意": "ようい",
+        "集合前": "しゅうごうまえ",
+        "方": "かた",
+        "午前十時": "ごぜんじゅうじ",
+        "水": "みず",
+        "話し": "はなし"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u33.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "4dc021eb1c48f226d415ad98bfd3cea2f5a5a4e04279c83dd20a125df69d757d",
+      "addedOrCorrectedReadings": {
+        "花": "はな",
+        "本": "ほん",
+        "同じ": "おなじ",
+        "物": "もの",
+        "合う": "あう",
+        "置": "お",
+        "部屋": "へや",
+        "小さ": "ちいさ",
+        "昨日選んだ": "きのうえらんだ",
+        "包": "つつ",
+        "返": "かえ",
+        "好き": "すき"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u34.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "f61106dec8ca0fc295c0bdffdfa17b4aab28030046c140a610c08a2d0c724050",
+      "addedOrCorrectedReadings": {
+        "直": "なお",
+        "文": "ぶん",
+        "使い方": "つかいかた",
+        "頼": "たの",
+        "見": "み",
+        "連絡": "れんらく",
+        "丁寧": "ていねい",
+        "見直": "みなお",
+        "助": "たす",
+        "もう一度読んで": "もういちどよんで",
+        "もう一度読み直し": "もういちどよみなおし",
+        "買": "か",
+        "発表用": "はっぴょうよう",
+        "印刷": "いんさつ",
+        "提出": "ていしゅつ"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u35.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "2e5dc40f2aeff23595740173957d4536bff1676c1ed3cdbaeb1b659f81b5ed0f",
+      "addedOrCorrectedReadings": {
+        "貼": "は",
+        "妹": "いもうと",
+        "本": "ほん",
+        "荷物": "にもつ",
+        "運": "はこ",
+        "手伝": "てつだ",
+        "姉": "あね",
+        "高": "たか",
+        "助": "たす",
+        "動": "うご",
+        "早": "はや",
+        "分け": "わけ",
+        "必要": "ひつよう",
+        "相談": "そうだん",
+        "続": "つづ"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u36.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "869c08a38069a49418a70208c4544894653379811b47ec7bb5c66453b58deb6c",
+      "addedOrCorrectedReadings": {
+        "行": "い",
+        "毎日": "まいにち",
+        "見": "み",
+        "子ども": "こども",
+        "外": "そと",
+        "遊": "あそ",
+        "急": "いそ",
+        "美術": "びじゅつ",
+        "大丈夫": "だいじょうぶ",
+        "何と": "なんと",
+        "伝": "つた",
+        "入": "はい",
+        "分か": "わか",
+        "楽": "たの",
+        "帰": "かえ",
+        "決": "き",
+        "遅": "おく",
+        "話し": "はなし",
+        "方": "かた",
+        "朝": "あさ",
+        "聞": "き",
+        "何度": "なんど"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u37.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "347f454a00046d2eeb0892ad8301553f651ff27123229b2279bf2a38e40a6d43",
+      "addedOrCorrectedReadings": {
+        "招待": "しょうたい",
+        "来る": "くる",
+        "来られる": "こられる",
+        "映画": "えいが",
+        "見": "み",
+        "呼": "よ",
+        "何": "なに",
+        "展示": "てんじ",
+        "案内": "あんない",
+        "分か": "わか",
+        "伝": "つた",
+        "少し": "すこし",
+        "心配": "しんぱい",
+        "直": "なお",
+        "帰": "かえ",
+        "会": "かい"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u38.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "afc57a120dfa48f0c7ac9fda3c888b6239bb1d54089a02fec4c0fae71bae6992",
+      "addedOrCorrectedReadings": {
+        "食": "た",
+        "騒": "さわ",
+        "汚": "よご",
+        "公園": "こうえん",
+        "大変": "たいへん",
+        "着替え": "きがえ",
+        "大丈夫": "だいじょうぶ",
+        "帰": "かえ",
+        "楽": "たの",
+        "物": "もの",
+        "伝": "つた",
+        "分か": "わか",
+        "困": "こま",
+        "残念": "ざんねん",
+        "招待": "しょうたい",
+        "家": "いえ"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u39.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "5253efed85ffbc3b5c02ce7c77fe7848c8e3ae734d1f1de50be8bb18c5ebe777",
+      "addedOrCorrectedReadings": {
+        "運": "はこ",
+        "休": "やす",
+        "食": "た",
+        "学生": "がくせい",
+        "母": "はは",
+        "疲": "つか",
+        "子ども": "こども",
+        "早": "はや",
+        "来る": "くる",
+        "来させる": "こさせる",
+        "道具": "どうぐ",
+        "自分": "じぶん",
+        "先": "さき",
+        "聞": "き",
+        "決": "き",
+        "雨": "あめ",
+        "好き": "すき",
+        "作": "つく",
+        "仕事": "しごと",
+        "同じ": "おなじ"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u40.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "29d44e46fd0c8664583674b90c64cc85f279398a958b00f18a9789a781b6996a",
+      "addedOrCorrectedReadings": {
+        "案内": "あんない",
+        "一度": "いちど",
+        "来る": "くる",
+        "来い": "こい",
+        "止ま": "とま",
+        "離": "はな",
+        "危険": "きけん",
+        "分か": "わか",
+        "何度": "なんど",
+        "練習": "れんしゅう",
+        "標識": "ひょうしき",
+        "落ち着い": "おちつい",
+        "声": "こえ",
+        "丁寧": "ていねい",
+        "場所": "ばしょ",
+        "確認": "かくにん",
+        "困": "こま",
+        "案内係": "あんないがかり",
+        "短": "みじか",
+        "話し": "はなし",
+        "決": "き",
+        "連絡": "れんらく"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u41.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "6f368e6590f0a9e20ef2a2369bf0ba18174e36e49354523363cfbbacfec28644",
+      "addedOrCorrectedReadings": {
+        "発表": "はっぴょう",
+        "伝": "つた",
+        "会": "かい",
+        "住": "す",
+        "発表会": "はっぴょうかい",
+        "順番": "じゅんばん",
+        "見": "み",
+        "自分": "じぶん",
+        "願": "ねが"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/lessons/u42.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "3bc1ecd9ebcf7a59917a93f46732b743c601f1bcdc091411fd7d77fa3f85e5fe",
+      "addedOrCorrectedReadings": {
+        "教室": "きょうしつ",
+        "変": "か",
+        "雨": "あめ",
+        "公園": "こうえん",
+        "来て": "きて",
+        "分か": "わか",
+        "着": "つ",
+        "願": "ねが",
+        "間に合": "まにあ",
+        "先": "さき",
+        "入れ": "いれ",
+        "読書会": "どくしょかい",
+        "集": "あつ",
+        "午後二時": "ごごにじ",
+        "使": "つか",
+        "忘": "わす",
+        "遅": "おく",
+        "理由": "りゆう"
+      }
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n4/syllabus.json",
+      "nonReadingFieldsUnchanged": true,
+      "nonReadingFieldsSha256": "2b32f9434ad61aacd459f967e1a6f5fa6c627cd0888d9ca5d2e7c2eeb3b49338",
+      "addedOrCorrectedReadings": {}
+    }
+  ]
+}

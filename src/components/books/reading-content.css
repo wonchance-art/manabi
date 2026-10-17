@@ -91,3 +91,37 @@
 .book-reader .learning-links--browse>details{border-top:1px solid #e8dade;padding-top:14px;margin-top:20px}
 .book-reader .learning-links--browse>details>summary{min-height:44px;cursor:pointer;color:#994a5a}
 @container manabi-reader (max-width:550px){.book-reading-content .oral{grid-template-columns:1fr}.book-reading-content .oral>div{display:block}.book-reading-content .answers>.answer{padding:16px}}
+
+/* The app search owns N4 reference filtering; the immutable standalone search remains in its artifact. */
+.book-reader[data-book-id="japanese-n4"] .book-reading-content :is(label[for="lex-search"],#lex-search,.search-status){display:none}
+/* N4-only manuscript blocks reuse the reader's paper palette and content width. */
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-unit-links{display:none}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .reading-note{display:block;font-family:ManabiN4JP,serif;font-size:13px;color:var(--muted);line-height:1.7}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-answer{margin:20px 0;padding:0;border:1px solid var(--edge);border-radius:6px;background:var(--wash)}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-answer summary{display:list-item;cursor:pointer;min-height:44px;padding:12px 16px;font-size:14px;line-height:1.7;color:var(--mauve)}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-answer>:not(summary){margin:12px 16px;font-size:14px;line-height:1.95}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-answer [lang=ja]{font-size:20px}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-reference{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0 32px}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-reference>[data-search]{border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0;background:var(--wash);overflow-wrap:anywhere}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-reference [lang=ja]{font-size:21px}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-reference p{font-size:14px;margin:8px 0}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-reference a{display:inline-flex;align-items:center;min-height:44px;font-size:13px;line-height:1.7;text-underline-offset:4px}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-study-row{display:grid;grid-template-columns:90px minmax(0,1fr);gap:16px;padding:16px 0;border-bottom:1px solid var(--line)}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-study-row>b{font-size:13px;line-height:1.9}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-study-row>div{min-width:0}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-study-row [lang=ja]{font-size:21px;overflow-wrap:anywhere}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-study-row p{font-size:14px;margin:6px 0;line-height:1.9}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .reading{white-space:pre-line}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .oral{grid-template-columns:minmax(0,1fr)}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .example>[lang=ja]{display:block}
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .check input{flex-shrink:0;min-width:18px;min-height:18px}
+@container manabi-reader (max-width:600px){
+  .book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-reference{grid-template-columns:minmax(0,1fr)}
+  .book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-study-row{grid-template-columns:70px minmax(0,1fr);gap:12px}
+}
+@container manabi-reader (max-width:360px){
+  .book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-study-row{grid-template-columns:minmax(0,1fr);gap:8px}
+  .book-reader[data-book-id="japanese-n4"] .book-reading-content .n4-study-row>b{color:var(--mauve)}
+}
+/* A long ruby option must shrink inside the radio row before it wraps. */
+.book-reader[data-book-id="japanese-n4"] .book-reading-content .check label>span{min-width:0;flex:1;overflow-wrap:anywhere}

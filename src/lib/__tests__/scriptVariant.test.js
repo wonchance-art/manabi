@@ -90,10 +90,14 @@ describe('배선 — 뷰어 · 설정', () => {
     expect(page).toContain("const zhHant = useScriptVariant(material);");
     expect(page).toContain("zhGrid && zhHant && settings.zhScript === 'hant'");
     const token = sliceBetween(page, 'const shownText = scriptSurfaces?.get(tokenId) ?? token.text;', '// 대화 자료');
-    expect(token).toContain('data-text={token.text}');
-    expect(token).toContain('variantPieces(rubySegments, scriptSurfaces?.get(tokenId))');
-    expect(token).toContain('<ZhText text={shownText} />');
+    expect(token).toContain('<ZhText text={shownText} />'); // 분석 실패 칸
+    expect(token).toContain('variantText={scriptSurfaces?.get(tokenId)}'); // 낱말 칸은 ReaderToken(memo)이 그린다
     expect(token).not.toContain('<ZhText text={token.text} />');
+    const view = read('src/components/viewer/ReaderToken.jsx');
+    expect(view).toContain('data-text={token.text}');
+    expect(view).toContain('const shownText = variantText ?? token.text;');
+    expect(view).toContain('variantPieces(rubySegments, variantText)');
+    expect(view).not.toContain('<ZhText text={token.text} />');
     expect(page).toContain('zhScriptAvailable={!!zhHant}');
   });
   it('설정: 「글자 모양 간체 | 번체」는 번체 사본이 있는 중국어 책에서만', () => {

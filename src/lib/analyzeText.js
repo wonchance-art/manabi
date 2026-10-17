@@ -462,8 +462,12 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
   };
 
   if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+  // 서버가 「서비스 설정」(결제 · 크레딧, code service_config)으로 실패하면 남은 요청은 보내지 않는다 — 기다려도 풀리지 않는
+  // 실패라 긴 자료가 같은 벽에 요청을 계속 던지던 것(GEMINI-402-GUARD). 남은 줄은 지금 실패 응답과 같은 길(결과 없음 → failed_indices)로 끝난다.
+  let serviceStopped = false;
   for (const { units } of requests) {
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+    if (serviceStopped) { units.forEach(unit => unitResults.set(unit, null)); continue; }
     const sent = new Set(units);
     const boundariesBody = allSent.filter(item => sent.has(homeOf.get(item)))
       .map(item => boundaryToUnit(item.payload, homeOf.get(item), units.indexOf(homeOf.get(item))));
@@ -477,7 +481,10 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
           ...(boundariesBody.length ? { boundaries: boundariesBody } : {}) }),
       }, signal);
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      if (!res.ok) {
+        if (data?.code === 'service_config') serviceStopped = true;
+        throw new Error(data?.error || `HTTP ${res.status}`);
+      }
       if (isKorean && (data?.metadata?.language !== language || data?.metadata?.explanationLocale !== explanationLocale ||
           data?.metadata?.analysisVersion !== 'ko-llm-v1')) throw new Error('analysis_metadata_mismatch');
       response = data;

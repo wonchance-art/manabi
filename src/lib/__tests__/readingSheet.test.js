@@ -100,14 +100,15 @@ describe('읽기 모드 프리셋', () => {
 // 설계 계약: 뷰어 소스에 그 식별자가 0이다(죽은 코드 금지). 주석은 세지 않는다.
 describe('발음 공개 단계·암기 확인 제거', () => {
   const strip = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`])\/\/.*$/gm, '$1');
-  const files = ['src/views/ViewerPage.jsx', 'src/components/viewer/ViewerSettings.jsx', 'src/lib/readingSheet.js', 'src/lib/viewerPreferences.js', 'src/lib/useViewerSettings.js'];
+  const files = ['src/views/ViewerPage.jsx', 'src/components/viewer/ReaderToken.jsx', 'src/components/viewer/ViewerSettings.jsx', 'src/lib/readingSheet.js', 'src/lib/viewerPreferences.js', 'src/lib/useViewerSettings.js'];
   it.each(files)('%s에 pronReveal·revealedPron·shouldRevealPron·pronRevealAvailable·recall 식별자가 없다', (file) => {
     const code = strip(fs.readFileSync(path.join(process.cwd(), file), 'utf8'));
     expect(code).not.toMatch(/\b(pronReveal|revealedPron|setRevealedPron|pronRevealed|shouldRevealPron|pronRevealAvailable|recall)\b/);
   });
   it('가려진 발음이 탭 공개 없이 그대로 가림 판정만 따른다 — 「발음 표기」 3단은 남는다', () => {
     const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
-    expect(viewer).toContain('const furiOff = pronHidden;');
+    // 낱말 칸(ReaderToken)이 읽기가 붙는 토큰에서 가림 판정만 따른다.
+    expect(fs.readFileSync(path.join(process.cwd(), 'src/components/viewer/ReaderToken.jsx'), 'utf8')).toContain('const furiOff = hasReading && pronHiddenFor(pronDisplay, { isKnown, isSaved });');
     expect(viewer).toContain("data-pron-spacing={materialLang==='Chinese'&&pronDisplay!=='none'?'reserved':'natural'}");
     expect(PRESET_META.map(m => m.key)).toEqual(['immerse', 'study']);
   });

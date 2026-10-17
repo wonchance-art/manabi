@@ -1,3 +1,4 @@
+import { BOOK_ID, isBookId } from '@/lib/textbook/contract';
 import { publishedReading, readingSections } from '@/lib/server/bookReading';
 import { respond, respondError, textbookError } from '@/lib/textbook/server';
 
@@ -8,13 +9,14 @@ export const dynamic = 'force-dynamic';
 // 따로 받는다(bookReadingCache.test.js). 다시 확인은 ETag(원고 해시 · 출력본 해시 + unit) — 같으면 304로 본문을 다시 보내지 않는다.
 // 관리자 미리보기(미공개 판본)와 오류는 respond()의 no-store 그대로.
 const PUBLISHED_READING_CACHE = 'private, no-cache';
-export async function GET(request, { params }) {
+export async function GET(request, { params, bookId = BOOK_ID }) {
   try {
+    if (!isBookId(bookId)) throw textbookError(404, '교재를 찾을 수 없어요.');
     const { edition } = await params;
-    const { book, preview } = await publishedReading(edition, true);
+    const { book, preview } = await publishedReading(edition, true, bookId);
     const unit = new URL(request.url).searchParams.get('unit');
     if (!/^(u(0[1-9]|[1-3][0-9]|4[0-2])|guide|materials|reference)$/.test(unit || '')) throw textbookError(400, '읽을 부분을 선택해 주세요.');
-    const sections = (await readingSections(book.editionId)).filter(section => section.unit === unit);
+    const sections = (await readingSections(book.editionId, bookId)).filter(section => section.unit === unit);
     if (!sections.length) throw textbookError(404, '본문을 찾지 못했어요.');
     const body = { edition: book.editionId, unit, sections };
     if (preview) return respond(body);

@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import { chromium, webkit } from 'playwright-core';
 import { fixtureSession, revision } from './fixtures/n5-revision-backend.mjs';
+import { inactiveLearningReply, inactiveLegacyBoundary } from './fixtures/learning-snapshot.mjs';
 const base=process.env.QA_BASE || 'http://127.0.0.1:49001';
 const out=process.env.QA_OUT || '/private/tmp/manabi-n5-review-return-qa';
 fs.mkdirSync(out,{recursive:true});
@@ -24,6 +25,7 @@ const server=http.createServer(async(req,res)=>{
  let body=null;if(['POST','PATCH','DELETE'].includes(req.method)){let raw='';for await(const chunk of req)raw+=chunk;if(raw)body=JSON.parse(raw);writes.push({table,method:req.method,body,target:url.searchParams.get('id')?.replace('eq.','')});}
  if(table==='user')return send({id:uid,email:'n5-fixture@example.invalid',email_confirmed_at:'2026-01-01',aud:'authenticated',role:'authenticated',app_metadata:{provider:'email'},user_metadata:{}});
  if(table==='is_admin')return send(false);
+ if(table==='fsrs_legacy_boundary')return send(inactiveLegacyBoundary({actorId:uid}));
  if(table==='profiles')return send({id:uid,role:'learner',display_name:'학습 흐름 검수',onboarded:true,last_login_at:new Date().toISOString(),streak_count:1,learning_language:['Japanese']});
  if(table==='textbook_book_releases')return send({book_id:'japanese-n5',edition_id:revision,version:2});
  if(table==='textbook_book_editions'){
@@ -64,6 +66,13 @@ try {for(const engine of (process.env.QA_ENGINE==='chromium'?[chromium]:[chromiu
  reset();const browser=await engine.launch({headless:true,...(engine===chromium?{executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'}:{})});
  const context=await browser.newContext({viewport:{width:1440,height:960},serviceWorkers:'block',reducedMotion:'reduce'});
  context.setDefaultTimeout(20000);
+ // 저장 단어 읽기(2026-10-14 dc69aab4부터 GET /api/learning/vocabulary?view=learning snapshot) · FSRS 상태 · 한도 · 언어 계약은 학습 API다.
+ // 이 합성 백엔드(49002)에는 그 RPC가 없어 서버가 실패했고 「표현 1개 복습 →」이 나오지 않았다 — 같은 words로 공용 합성 응답을 준다.
+ // 교재 범위(/api/learning/book-review) · 채점(REST PATCH) · 문맥 저장은 그대로 서버 → 합성 백엔드로 간다.
+ await context.route('**/api/learning/**',route=>{
+  const reply=inactiveLearningReply(route.request(),{actorId:uid,rows:()=>words});
+  return reply?route.fulfill({status:reply.status,json:reply.json}):route.fallback();
+ });
  await context.addCookies([{name:'sb-127-auth-token',value:fixtureSession('learner'),url:base}]);
  const page=await context.newPage(),report={engine:engine.name(),checks:[],errors:[]};reports.push(report);
  page.on('pageerror',e=>report.errors.push(e.message));
@@ -80,10 +89,12 @@ try {for(const engine of (process.env.QA_ENGINE==='chromium'?[chromium]:[chromiu
   await page.goto(base+'/vocab?book=japanese-n5&returnTo='+encodeURIComponent(reading));
   await page.getByRole('button',{name:'표현 1개 복습 →',exact:true}).click();
   await page.getByRole('heading',{name:sentence,exact:true}).waitFor();
-  await page.getByRole('button',{name:'정답 확인하기',exact:true}).waitFor();
+  // 한 번도 복습하지 않은 첫 저장은 REV-SCOPE-R1B-1(edc22ab1)부터 「처음 보는 표현」 카드다(채점 없음 · 답 공개 · 「다음 →」).
+  await page.getByText('처음 보는 표현',{exact:true}).waitFor();await page.getByRole('button',{name:'다음 →',exact:true}).waitFor();
   assert.equal(await page.getByRole('group',{name:'문맥에 맞는 뜻 고르기'}).count(),0);
-  // 기존 화면은 복원한 기본 auto를 저장한다. 카드별 flash 전환이 설정을 바꾸면 안 된다.
-  assert.equal(await page.evaluate(()=>localStorage.getItem('as_review_mode')),'auto');
+  // 복습 방식(auto · 문맥 · 타이핑 · 리스닝) 고르기는 R1B-1에서 없어지고 본 복습은 플래시뿐이다. 이 키는 이제 집중 연습 갈래이고 기본값은 flash다 —
+  // 카드가 그 설정을 바꾸지 않는다.
+  assert.equal(await page.evaluate(()=>localStorage.getItem('as_review_mode')),'flash');
   for(const width of [1440,320]){await page.setViewportSize({width,height:960});await check(`default first saved sentence remains visible at ${width}px`);await page.screenshot({path:`${out}/${engine.name()}-first-sentence-${width}.png`,fullPage:false});}
   assert.equal(writes.filter(w=>w.table==='user_vocabulary'&&w.method==='PATCH').length,0);
   reset();await page.setViewportSize({width:1440,height:960});
@@ -95,12 +106,15 @@ try {for(const engine of (process.env.QA_ENGINE==='chromium'?[chromium]:[chromiu
   const answerField=page.locator('[data-save]').first();
   if(['radio','checkbox'].includes(await answerField.getAttribute('type')))await answerField.check();else await answerField.fill('합성 답안');
   const answerKey=`manabi-book-answers:${revision}:${uid}`,savedAnswer=await page.evaluate(key=>localStorage.getItem(key),answerKey);assert(savedAnswer);
+  // 답안 칸 fill이 칸을 화면에 스크롤하면 읽던 위치가 스크롤 추적(BookReader 120ms 뒤 기록)으로 그 단원으로 옮겨진다 — 정상 동작이다.
+  // 기록이 멈춘 뒤의 값을 기준으로 삼는다(바로 읽으면 기록 직전 값을 잡아 「담은 표현」 returnTo · 아래 「참고 열람은 위치를 안 바꾼다」 비교가 흔들렸다).
+  const readStored=()=>page.evaluate(({progressKey,oldKey})=>[localStorage.getItem(progressKey),localStorage.getItem(oldKey)],{progressKey,oldKey});
+  let storedBefore=await readStored();for(let i=0;;i++){await page.waitForTimeout(400);const next=await readStored();if(JSON.stringify(next)===JSON.stringify(storedBefore))break;assert(i<20,'reading position kept moving');storedBefore=next;}
 
   // REV-SCOPE-R1A: 도구막대 「담은 표현」 = 교재 범위의 채점 복습방(범위 주소 정본 src=book:japanese-n5:1-42).
   const reviewLink=page.getByRole('link',{name:'담은 표현',exact:true});await reviewLink.waitFor();
   const scopeHref=await reviewLink.getAttribute('href'),returnTo=new URL(scopeHref,base).searchParams.get('returnTo');assert(returnTo.includes(revision));assert(returnTo.includes('#u42-'));
   assert.equal(new URL(scopeHref,base).searchParams.get('src'),'book:japanese-n5:1-42');
-  const storedBefore=await page.evaluate(({progressKey,oldKey})=>[localStorage.getItem(progressKey),localStorage.getItem(oldKey)],{progressKey,oldKey});
   const beforeWords=structuredClone(words);
   // The first page contains only repeated card 1; other cards must come from the next page.
   contexts=[...Array.from({length:201},(_,n)=>({...source(n+10,id(1),n%2?old:revision),quote:`저장 문맥 ${n}`})),contexts[2],contexts[3]];

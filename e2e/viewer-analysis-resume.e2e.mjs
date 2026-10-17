@@ -88,6 +88,10 @@ try {
  material=original();mode='slow';await open('abort');const before=structuredClone(material),beforeCommit=commits;
  await resume().click();await page.getByRole('button',{name:'⏹ 중단',exact:true}).click();await resume().waitFor();
  await page.waitForTimeout(1500);assert.equal(commits,beforeCommit);assert.deepEqual(material,before);await pass('stop never replaces the old source');
+ // 이 검사는 스크롤 보기에서 잰다(2026-10-17 KST 실측). 1440 기본은 쪽 넘김 보기라 scrollIntoViewIfNeeded로 굴린 가로 위치를
+ // 쪽 넘김이 곧바로 쪽 경계로 되돌려(44ms) 「읽던 자리」가 그 낱말이 아니게 된다 — 세로 y 비교가 604px 이동으로 실패하던 까닭이다
+ // (main에서도 같다). 쪽 넘김 보기에서는 복구 뒤에도 같은 쪽에 머문다(같은 실측: 쪽 1 → 쪽 1).
+ await page.evaluate(()=>{const k='viewer_preferences_v2';let v;try{v=JSON.parse(localStorage.getItem(k)||'null');}catch{v=null;}v=v&&typeof v==='object'?v:{version:2,languages:{}};v.common={...(v.common||{}),readerView:'scroll'};localStorage.setItem(k,JSON.stringify(v));});
  material=original();mode='slow';await open('read-during-recovery');await resume().click();
  const reading=page.locator('[data-source-token="id_12_0_resume"]');
  await reading.scrollIntoViewIfNeeded();const topBefore=(await reading.boundingBox()).y;

@@ -7,6 +7,7 @@
 import { combineChunks, createServerClient, stringFromBase64URL } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { authCookieRemovals, invalidSessionError, withoutServerSignOut } from './authCookieGuard';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -24,7 +25,8 @@ export async function createSupabaseServerClient() {
       },
       setAll(cookiesToSet) {
         try {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          // 동시 갱신에서 진 요청(409)이 인증 쿠키를 지워 로그아웃시키지 않게 — 서버는 로그아웃하지 않는다(authCookieGuard).
+          withoutServerSignOut(cookiesToSet).forEach(({ name, value, options }) =>
             cookieStore.set(name, value, options)
           );
         } catch {
@@ -46,6 +48,21 @@ export function createSupabasePublicClient() {
 }
 
 /**
+ * getUser가 「세션이 영영 무효」(다른 기기 로그아웃 · 차단 · 삭제)를 알렸을 때만 인증 쿠키를 지운다 — setAll 가드(withoutServerSignOut)는
+ * 409 동시 갱신과 구분하지 못해 모든 삭제를 버리므로, 오류 코드를 본 이 자리에서 따로 지운다(authCookieGuard.invalidSessionError).
+ * 서버 컴포넌트는 쿠키를 쓸 수 없어 조용히 건너뛴다(route handler에서만 실제로 지운다).
+ */
+async function clearInvalidSession(error) {
+  if (!invalidSessionError(error)) return;
+  try {
+    const cookieStore = await cookies();
+    for (const { name, value, options } of authCookieRemovals(cookieStore.getAll().map((c) => c.name))) cookieStore.set(name, value, options);
+  } catch {
+    // 서버 컴포넌트 렌더 중 — 쿠키 쓰기 불가
+  }
+}
+
+/**
  * 관리자 인증 게이트 — 쿠키 세션에서 유저를 확인하고 profiles.role='admin'인지 검사한다.
  * @returns {Promise<{ supabase, user } | { error: string, status: number }>}
  *   성공 시 { supabase, user }, 실패 시 { error, status }.
@@ -56,8 +73,9 @@ export async function requireAdmin() {
 
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
-  if (!user) return { error: '로그인이 필요해요.', status: 401 };
+  if (!user) { await clearInvalidSession(authError); return { error: '로그인이 필요해요.', status: 401 }; }
 
   const { data: profile, error } = await supabase
     .from('profiles')
@@ -83,8 +101,9 @@ export async function requireUser() {
 
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
-  if (!user) return { error: '로그인이 필요해요.', status: 401 };
+  if (!user) { await clearInvalidSession(authError); return { error: '로그인이 필요해요.', status: 401 }; }
 
   return { supabase, user };
 }

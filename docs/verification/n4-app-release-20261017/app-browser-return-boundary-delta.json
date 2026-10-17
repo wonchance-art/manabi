@@ -1,0 +1,63 @@
+{
+  "scope": "Four known cross-book returnTo boundary cases on actual local Next UI, synthetic learner only",
+  "editionId": "f4a6411c0945bbd3f8767af7",
+  "cases": [
+    {
+      "name": "N4 rejects N5 return",
+      "book": "japanese-n4",
+      "edition": "f4a6411c0945bbd3f8767af7",
+      "input": "/books/japanese-n5?edition=8a8c1c1fd452773810abaf8c#u29-practice",
+      "expected": "/books/japanese-n4?edition=f4a6411c0945bbd3f8767af7#u01-start",
+      "scopeHref": "/vocab?lang=Japanese&src=book%3Ajapanese-n4%3A1-42&returnTo=%2Fbooks%2Fjapanese-n4%3Fedition%3Df4a6411c0945bbd3f8767af7%23u01-start",
+      "returnHref": "/books/japanese-n4?edition=f4a6411c0945bbd3f8767af7#u01-start",
+      "navigation": "http://localhost:49011/vocab?lang=Japanese&src=book%3Ajapanese-n4%3A1-42&returnTo=%2Fbooks%2Fjapanese-n4%3Fedition%3Df4a6411c0945bbd3f8767af7%23u01-start",
+      "passed": true
+    },
+    {
+      "name": "N5 rejects N4 return",
+      "book": "japanese-n5",
+      "edition": "7f572327dc67893e9453246c",
+      "input": "/books/japanese-n4?edition=f4a6411c0945bbd3f8767af7#u29-practice",
+      "expected": "/books/japanese-n5?edition=7f572327dc67893e9453246c#u01-start",
+      "scopeHref": "/vocab?lang=Japanese&src=book%3Ajapanese-n5%3A1-42&returnTo=%2Fbooks%2Fjapanese-n5%3Fedition%3D7f572327dc67893e9453246c%23u01-start",
+      "returnHref": "/books/japanese-n5?edition=7f572327dc67893e9453246c#u01-start",
+      "navigation": "http://localhost:49011/vocab?lang=Japanese&src=book%3Ajapanese-n5%3A1-42&returnTo=%2Fbooks%2Fjapanese-n5%3Fedition%3D7f572327dc67893e9453246c%23u01-start",
+      "passed": true
+    },
+    {
+      "name": "N4 preserves exact same-book return",
+      "book": "japanese-n4",
+      "edition": "f4a6411c0945bbd3f8767af7",
+      "input": "/books/japanese-n4?edition=f4a6411c0945bbd3f8767af7#u29-practice",
+      "expected": "/books/japanese-n4?edition=f4a6411c0945bbd3f8767af7#u29-practice",
+      "scopeHref": "/vocab?lang=Japanese&src=book%3Ajapanese-n4%3A1-42&returnTo=%2Fbooks%2Fjapanese-n4%3Fedition%3Df4a6411c0945bbd3f8767af7%23u29-practice",
+      "returnHref": "/books/japanese-n4?edition=f4a6411c0945bbd3f8767af7#u29-practice",
+      "navigation": "http://localhost:49011/vocab?lang=Japanese&src=book%3Ajapanese-n4%3A1-42&returnTo=%2Fbooks%2Fjapanese-n4%3Fedition%3Df4a6411c0945bbd3f8767af7%23u29-practice",
+      "passed": true
+    },
+    {
+      "name": "N5 preserves same-book older edition and anchor",
+      "book": "japanese-n5",
+      "edition": "7f572327dc67893e9453246c",
+      "input": "/books/japanese-n5?edition=8a8c1c1fd452773810abaf8c#u29-practice",
+      "expected": "/books/japanese-n5?edition=8a8c1c1fd452773810abaf8c#u29-practice",
+      "scopeHref": "/vocab?lang=Japanese&src=book%3Ajapanese-n5%3A1-42&returnTo=%2Fbooks%2Fjapanese-n5%3Fedition%3D8a8c1c1fd452773810abaf8c%23u29-practice",
+      "returnHref": "/books/japanese-n5?edition=8a8c1c1fd452773810abaf8c#u29-practice",
+      "navigation": "http://localhost:49011/vocab?lang=Japanese&src=book%3Ajapanese-n5%3A1-42&returnTo=%2Fbooks%2Fjapanese-n5%3Fedition%3D8a8c1c1fd452773810abaf8c%23u29-practice",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "startedAt": "2026-10-17T05:09:07.493Z",
+  "priorEvidenceReused": [
+    "ACCEPTANCE.json functional11",
+    "APP-MATRIX.json 168geometry"
+  ],
+  "boundaryFiles": {
+    "src/components/books/BookReview.jsx": "a71318bbf4442c6245daeae5497530da63aeef39dcaf9aca82d045e294d8ed77",
+    "src/lib/reviewScopeUrl.js": "6c00404e333c44d22579dea3a77d4fecb9fdf95c1eb01b488476db10b80aa2bc"
+  },
+  "learningMutationCount": 0,
+  "passed": true,
+  "finishedAt": "2026-10-17T05:09:14.374Z"
+}

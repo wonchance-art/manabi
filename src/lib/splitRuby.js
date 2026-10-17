@@ -27,17 +27,50 @@
  */
 export const KANA_RE = /[぀-ヿ]/;
 
-// 来る는 뒤 가나에 따라 읽기가 바뀐다(来ない こ · 来ます/来た/来て き · 来る/来れば く) — 기본형 읽기(くる)를 그대로 옮기면 틀린다.
-// 뒤 가나를 모르면(다음 토큰도 없으면) 가장 흔한 き다 — 来る는 보통 「来る」 한 토큰으로 온다.
-const KURU_STEM = (next) => (/^[なよさら]/.test(next) ? 'こ' : /^る|^れ/.test(next) ? 'く' : 'き');
+// 来る는 뒤 가나에 따라 읽기가 바뀐다 — 기본형 읽기(くる)를 그대로 옮기면 틀린다. tail = 来 뒤 가나(토큰 안 + 다음 토큰).
+//   こ: 来ない · 来よう · 来させる · 来られる · 来い(명령) · 来ず · 来ぬ · 来れる/来れない(가능 — れ 뒤에 ば가 아닌 글자)
+//   く: 来る · 来れば(가정) · 来れ만 알 때(뒤를 모름 — 가정형 来れ | ば가 분석기의 보통 출력)
+//   き: 来ます · 来た · 来て · 来たい … 그리고 뒤를 전혀 모를 때(가장 흔함)
+export const KURU_STEM = (tail = '') => (/^れば/.test(tail) ? 'く'
+  : /^れ./.test(tail) || /^[なよさらいずぬ]/.test(tail) ? 'こ'
+  : /^[るれ]/.test(tail) ? 'く' : 'き');
+
+// 5단 · 형용사 활용에서 기본형 끝 가나가 바뀔 수 있는 글자(같은 행 + 음편 っ · ん · い, る는 1단 의지형 よ — 食べよ|う · 見よ|う 실제 분석 출력). 이 밖의 글자로 시작하는 표면 어미는
+// 활용이 아니라 오쿠리가나 표기 관행이 다른 것이다(終っ ↔ 終わる · 行なっ ↔ 行う) — 기본형 이동을 쓰지 않는다.
+const CONJUGABLE = {
+  う: 'わいうえおっ', く: 'かきくけこいっ', ぐ: 'がぎぐげごい', す: 'さしすせそ', つ: 'たちつてとっ', ぬ: 'なにぬねのん',
+  ぶ: 'ばびぶべぼん', む: 'まみむめもん', る: 'らりるれろよっん', い: 'いくかけさそうきみ',
+};
+const SURU_STEMS = 'しさせすじざぜず';
 
 /**
- * @param {string} text 표면형(본문 그대로)
- * @param {string|null} furigana 독음 — 분석기는 활용형에도 **기본형 읽기**를 준다(違い + ちがう, 待っ + まつ — 운영 자료 실측).
- * @param {string} [nextText] 바로 뒤 토큰 표기 — 来 | ない처럼 활용 어미가 다음 토큰이면 来의 읽기(こ · き · く)를 여기서 고른다.
- * @param {string} [baseForm] 기본형(違う · 待つ). 주면 표면 앵커가 안 맞을 때 기본형으로 한자 읽기를 구해 옮긴다 —
- *   없으면 독음 전체가 한자 위에 얹혀 「違[ちがう]い」 「待[まつ]っ」로 보였다(VIEWER-LANG-AUDIT, 2026-10-17 KST).
+ * 표면 · 기본형의 가나 구간이 「활용으로 생길 수 있는 차이」 안인가(BASEFORM-OKURI-001).
+ * - 한자 사이 가나(引き出す의 き)는 같아야 한다.
+ * - 마지막 가나: 기본형 어미의 마지막 글자 앞부분(食べる의 べ · 終わる의 わ)이 표면에 그대로 있고, 그 뒤 표면 글자가 그 행의 활용 글자다.
+ *   する · ずる는 す · ず 앞까지가 줄기다. 来る는 따로(KURU_STEM). 표에 없는 끝 글자는 막지 않는다(판단 근거 없음 — 옛 동작).
  */
+function okuriganaCompatible(segments, baseSegments, baseForm) {
+  if (/^来る$/.test(baseForm)) return true;
+  const plainsAfterKanji = (segs) => {
+    const out = [];
+    segs.forEach((seg, i) => { if (seg.type === 'kanji') out.push(segs[i + 1]?.type === 'plain' ? segs[i + 1].text : ''); });
+    return out;
+  };
+  const surface = plainsAfterKanji(segments), base = plainsAfterKanji(baseSegments);
+  if (surface.length !== base.length) return false;
+  for (let k = 0; k < base.length - 1; k++) if (surface[k] !== base[k]) return false;
+  const s = surface.at(-1), b = base.at(-1);
+  if (!b) return s === '';
+  const suru = /[すず]る$/.test(b);
+  const stem = suru ? b.slice(0, -2) : b.slice(0, -1);
+  if (!s.startsWith(stem)) return false;
+  const rest = s.slice(stem.length);
+  if (!rest) return true;
+  if (suru) return SURU_STEMS.includes(rest[0]);
+  const allowed = CONJUGABLE[b.at(-1)];
+  return allowed ? allowed.includes(rest[0]) : true;
+}
+
 const KANJI_RE = /[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF]/;
 
 /** 표기를 [한자 구간, 가나 구간, …]으로 나눈다. */
@@ -78,16 +111,27 @@ function fromBaseForm(segments, furigana, baseForm, nextText = '') {
   const baseKanji = base.filter(seg => seg.kanji);
   const surfaceKanji = segments.filter(seg => seg.type === 'kanji');
   if (baseKanji.length !== surfaceKanji.length || !baseKanji.every((seg, k) => seg.kanji === surfaceKanji[k].text)) return null;
+  if (!okuriganaCompatible(segments, baseSegments, baseForm)) return null;
   let k = 0;
   return segments.map((seg, idx) => {
     if (seg.type !== 'kanji') return { plain: seg.text };
     let reading = baseKanji[k++].reading;
-    // 来 뒤 가나가 토큰 안에 없으면(来 | ない · 来 | ます — 실제 분석 출력) 다음 토큰 글자로 고른다.
-    if (seg.text === '来' && /^来る/.test(baseForm)) reading = KURU_STEM(segments[idx + 1]?.text ?? nextText);
+    // 来 뒤 가나 = 토큰 안 어미 + (그 어미로 토큰이 끝나면) 다음 토큰 — 来 | ない · 来れ | ば(실제 분석 출력)도 고른다.
+    if (seg.text === '来' && /^来る/.test(baseForm)) {
+      const inToken = segments[idx + 1]?.type === 'plain' ? segments[idx + 1].text : '';
+      reading = KURU_STEM(inToken + (idx + 1 >= segments.length - 1 ? nextText : ''));
+    }
     return { kanji: seg.text, reading };
   });
 }
 
+/**
+ * @param {string} text 표면형(본문 그대로)
+ * @param {string|null} furigana 독음 — 분석기는 활용형에도 **기본형 읽기**를 준다(違い + ちがう, 待っ + まつ — 운영 자료 실측).
+ * @param {string} [baseForm] 기본형(違う · 待つ). 주면 표면 앵커가 안 맞을 때 기본형으로 한자 읽기를 구해 옮긴다 —
+ *   없으면 독음 전체가 한자 위에 얹혀 「違[ちがう]い」 「待[まつ]っ」로 보였다(VIEWER-LANG-AUDIT, 2026-10-17 KST).
+ * @param {string} [nextText] 바로 뒤 토큰 표기 — 来 | ない처럼 활용 어미가 다음 토큰이면 来의 읽기(こ · き · く)를 여기서 고른다.
+ */
 export function splitRuby(text, furigana, baseForm, nextText) {
   if (!furigana) return [{ plain: text }];
 
@@ -130,4 +174,33 @@ export function splitRuby(text, furigana, baseForm, nextText) {
   return segments.map(s =>
     s.type === 'kanji' ? { kanji: s.text, reading: furigana } : { plain: s.text }
   );
+}
+
+/**
+ * 기본형 표제어 읽기(GUEST-HEAD-READING-001) — 로그아웃 카드는 사전 행을 못 읽는다(morpheme_dictionary RLS = 로그인만).
+ * 활용형 토큰(違い)의 독음이 **기본형 읽기**(ちがう)면 그 독음을 기본형 표제어(違う)의 읽기로 돌려준다 — 판정은 본문 루비가
+ * 쓰는 fromBaseForm 그대로(기본형 앵커 + 한자 구간 일치 + BASEFORM-OKURI-001 가드). 표면 읽기(食べ + たべ) · 가드에 걸리는 표기
+ * (終っ ↔ 終わる) · 한자 없음 · 가나 없는 독음(병음)은 null — 틀린 읽기를 내지 않고 지금처럼 읽기 없이 둔다.
+ */
+export function baseFormReading(text, furigana, baseForm) {
+  if (!text || !furigana || !baseForm || baseForm === text || !KANA_RE.test(furigana)) return null;
+  const segments = segmentsOf(text);
+  if (!segments.some(seg => seg.type === 'kanji')) return null;
+  return fromBaseForm(segments, furigana, baseForm) ? furigana : null;
+}
+
+/**
+ * 본문의 「来가 든 토큰 → 같은 줄 바로 뒤 토큰 표기」 표 — splitRuby의 nextText용(来 | ない). 来가 없는 토큰은 표에 없다.
+ * 자료(sequence · dictionary)마다 한 번 만든다(ViewerPage useMemo) — 렌더 · 토큰마다 정규식 · Map을 다시 만들지 않는다.
+ */
+export function kuruNextTexts(sequence = [], dictionary = {}) {
+  const out = new Map();
+  const lineOf = (id) => String(id).match(/^(?:id|failed)_(\d+)_/)?.[1];
+  for (let i = 0; i < sequence.length; i++) {
+    const id = sequence[i];
+    if (!dictionary[id]?.text?.includes('来')) continue;
+    const next = sequence[i + 1];
+    out.set(id, next && lineOf(next) === lineOf(id) ? dictionary[next]?.text || '' : '');
+  }
+  return out;
 }

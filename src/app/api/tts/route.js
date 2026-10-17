@@ -5,6 +5,8 @@
  * 실패 시 클라이언트(useTTS)가 브라우저 내장 음성으로 폴백.
  */
 
+import { isServiceConfigError } from '@/lib/errorMessage';
+
 const TTS_MODEL = 'models/gemini-3.1-flash-tts-preview'; // 2.5-preview-tts 승계 — 동일 요청·PCM 응답 실측
 
 // 언어별 프리셋 음성 (Gemini prebuilt voices)
@@ -127,7 +129,9 @@ export async function GET(request) {
     if (!res.ok) {
       const errBody = await res.text().catch(() => '');
       console.error('[tts]', res.status, errBody.slice(0, 200));
-      return Response.json({ error: 'tts upstream failed' }, { status: 502 });
+      // 「서비스 설정」(결제 · 크레딧) 실패는 표식을 단다 — 클라(useTTS)가 한동안 서버를 건너뛰고 바로 브라우저 음성을 쓴다.
+      // 상태(502)와 오류 문구는 그대로(GEMINI-402-GUARD).
+      return Response.json({ error: 'tts upstream failed', ...(isServiceConfigError(res.status, errBody) ? { code: 'service_config' } : {}) }, { status: 502 });
     }
 
     const data = await res.json();
