@@ -5,7 +5,7 @@ vi.mock('react', () => ({ useCallback: (fn) => fn, useEffect: () => {}, useState
 
 // TTS-GAP-001(2026-10-17 KST) — 소리를 끝내 내지 못하는 세 빈틈.
 //  ① 서버 음성이 막혔고 이 기기에 그 언어의 브라우저 음성이 없으면 무음 · 무안내였다 → 'no-voice' 알림(기존 같은 상황 문구)
-//  ② 브라우저 음성 우선 경로에서 서버 재시도까지 실패하면 조용히 끝났다 → 'failed' 알림(문구는 오너 확정 전)
+//  ② 브라우저 음성 우선 경로에서 서버 재시도까지 실패하면 조용히 끝났다 → 'failed' 알림(오너 확정 문구)
 //  ③ iOS: 서버 응답 뒤의 브라우저 음성은 탭 밖이라 막힐 수 있다 → 서버가 쉬는 중이면 탭 안에서 바로, iOS는 탭 안에서 엔진을 한 번 열어 둔다
 
 const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
@@ -179,14 +179,16 @@ describe('③ 탭 안에서 음성 엔진을 쓴다(iOS 사용자 동작 규칙)
 });
 
 describe('안내 배선 · 문구', () => {
-  it('providers가 토스트 안에 안내를 단다 — no-voice만 기존 같은 상황 문구, failed는 문구 확정 전이라 표에 없다', async () => {
+  it('providers가 토스트 안에 안내를 단다 — no-voice는 기존 같은 상황 문구, failed는 오너 확정 문구', async () => {
     const providers = read('src/app/providers.jsx');
     expect(providers).toMatch(/<ToastProvider>\s*<SpeechUnavailableNotice \/>/);
     const notice = read('src/components/SpeechUnavailableNotice.jsx');
-    expect(notice).toContain("export const SPEECH_NOTICES = Object.freeze({ 'no-voice': SPEECH_UNAVAILABLE_MESSAGE });");
+    expect(notice).toContain("export const SPEECH_NOTICES = Object.freeze({ 'no-voice': SPEECH_UNAVAILABLE_MESSAGE, failed: SPEECH_FAILED_MESSAGE });");
     expect(notice).toContain("if (message) toast(message, 'warning');");
-    const { SPEECH_UNAVAILABLE_MESSAGE } = await import('../errorMessage.js');
+    const { SPEECH_UNAVAILABLE_MESSAGE, SPEECH_FAILED_MESSAGE } = await import('../errorMessage.js');
     expect(SPEECH_UNAVAILABLE_MESSAGE).toBe('이 기기에서는 소리를 낼 수 없어요.');
+    // 문구 표준: 실패는 「〔무엇〕을 〔동작〕하지 못했어요.」 + 다음 행동 한 문장, 두 문장까지
+    expect(SPEECH_FAILED_MESSAGE).toBe('소리를 재생하지 못했어요. 잠시 후 다시 눌러 주세요.');
     // 새 문구가 아니다 — 레벨 화면의 같은 상황 문구 그대로(마침표만 토스트 문장으로)
     expect(read('src/views/LevelListPage.jsx')).toContain('이 기기에서는 소리를 낼 수 없어요<');
   });
