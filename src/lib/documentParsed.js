@@ -11,6 +11,8 @@
  * (react-dom-client updateSuspenseComponent: isSuspenseInstancePending → retrySuspenseComponentWithoutHydrating).
  * 그래서 파싱이 끝난 뒤 문서에 기다리는 경계가 남았으면 다 붙을 때까지(표시가 「$」로 바뀔 때) 기다린다 — 3초를 넘기면 그만 기다린다.
  * 기다리는 경계가 없으면 바로(같은 틱) 부른다.
+ * 로그인 표시가 늦어지는 폭: 보통 마지막 붙이기 뒤 ≤300ms($RV 규칙 — 페이지 시작 2.0–2.3초 사이에 붙이면 2.3초 시점까지),
+ * 최악(경계 표시가 끝내 「$」가 안 되는 화면)은 문서 파싱 뒤 3,000ms(SETTLE_LIMIT_MS)에서 그만 기다리고 값을 바꾼다.
  */
 const WAITING = new Set(['$?', '$~']);
 const SETTLE_LIMIT_MS = 3000;

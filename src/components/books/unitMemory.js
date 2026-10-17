@@ -12,4 +12,25 @@ export function rememberUnit(key, sections) {
   unitMemory.delete(key); unitMemory.set(key, sections);
   while (unitMemory.size > UNIT_MEMORY_MAX) unitMemory.delete(unitMemory.keys().next().value);
 }
-export const forgetUnits = () => unitMemory.clear(); // 단위 계약용
+
+// 받는 중인 과(BOOKS-FLOW-002) — 미리 받기와 실제 열기가 같은 과를 두 번 받지 않게 같은 요청을 함께 쓴다.
+const inflight = new Map(); // key → Promise<sections>
+/** 이 과의 본문 — 기억에 있으면 그대로, 받는 중이면 그 요청을, 아니면 한 번 받아 기억한다(공개 판본만 부른다). */
+export function loadUnit(key, url, fetchImpl = fetch) {
+  const hit = rememberedUnit(key);
+  if (hit) return Promise.resolve(hit);
+  if (inflight.has(key)) return inflight.get(key);
+  const request = fetchImpl(url)
+    .then(async response => { const data = await response.json(); if (!response.ok) throw new Error(data.error || '본문을 불러오지 못했어요.'); return data.sections; })
+    .then(sections => { rememberUnit(key, sections); return sections; })
+    .finally(() => inflight.delete(key));
+  inflight.set(key, request);
+  return request;
+}
+/** 다음 과 미리 받기 — 이미 기억했거나 받는 중이면 아무것도 하지 않는다. 실패는 조용히 버린다(열 때 다시 받는다). */
+export function prefetchUnit(key, url, fetchImpl = fetch) {
+  if (unitMemory.has(key) || inflight.has(key)) return false;
+  loadUnit(key, url, fetchImpl).catch(() => {});
+  return true;
+}
+export const forgetUnits = () => { unitMemory.clear(); inflight.clear(); }; // 단위 계약용
