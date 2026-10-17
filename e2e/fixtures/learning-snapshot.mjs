@@ -69,3 +69,31 @@ export function legacyLearningSnapshot({ actorId, rows, known = [], exclusions =
     rows: fields === 'summary' ? fullRows.map(row => Object.fromEntries(SUMMARY_FIELDS.map(key => [key, row[key]]))) : fullRows,
     registry };
 }
+
+// 설치 완료 · 비활성 FSRS 계정의 학습 API 한 벌(learning-flow · material-editing-backend와 같은 모양)을 한곳에서 답한다.
+// 저장 단어 읽기(GET /api/learning/vocabulary?view=learning snapshot, dc69aab4) · FSRS 상태 · 첫 질문 한도 · 언어 계약 · 제외 목록.
+// 해당 요청이 아니면 null — 부른 쪽이 원래 처리(문맥 조회 · 저장 POST 등)로 넘긴다. rows는 부를 때마다 지금 값을 받도록 함수도 된다.
+// snapshotStatus가 200이 아니면 저장 단어 읽기만 그 상태로 실패한다(진짜 요청 실패 — 빈 목록 · 완료 화면과 구분하는 검사용).
+// 옛(legacy) 채점 저장 앞의 등록 경계(rpc fsrs_legacy_boundary — src/lib/fsrsLegacyBoundary.js). 등록 안 된 계정이라 기존 경로로 저장한다.
+// 이 응답이 없으면 경계 확인이 실패해 채점 PATCH가 나가지 않는다(material-editing-backend와 같은 값).
+export const inactiveLegacyBoundary = ({ actorId }) => ({ version: 1, actorId, enrolled: false });
+
+export function inactiveLearningReply(request, { actorId, rows = [], snapshotStatus = 200 }) {
+  const url = new URL(request.url()), method = request.method(), path = url.pathname;
+  if (path === '/api/learning/vocabulary' && method === 'GET' && url.searchParams.get('view') === 'learning') {
+    if (snapshotStatus !== 200) return { status: snapshotStatus, json: { error: 'fixture offline' } };
+    return { status: 200, json: legacyLearningSnapshot({ actorId, rows: typeof rows === 'function' ? rows() : rows, fields: url.searchParams.get('fields') }) };
+  }
+  if (path === '/api/learning/fsrs') {
+    assert.equal(method, 'GET', 'Inactive FSRS fixture must not receive a mutation');
+    return { status: 200, json: inactiveFsrsStatus({ actorId }) };
+  }
+  if (path === '/api/learning/admission') {
+    assert.equal(method, 'GET', 'Inactive admission fixture must not receive a mutation');
+    return { status: 200, json: inactiveLearningAdmission({ actorId }) };
+  }
+  // 한국어 저장 계약 없음(learningCapabilities normalize(null)과 같은 값) — 일본어 · 중국어는 legacy 지원이라 그대로 저장 · 복습한다.
+  if (path === '/api/learning/capabilities' && method === 'GET') return { status: 200, json: { version: 1, languages: {} } };
+  if (path === '/api/learning/exclusions' && method === 'GET') return { status: 200, json: { items: [] } };
+  return null;
+}
