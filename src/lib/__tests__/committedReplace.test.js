@@ -96,3 +96,34 @@ describe('배선', () => {
     expect(hook).toContain('current: () => window.location.pathname + window.location.search,');
   });
 });
+
+// 앱 전체 점검(2026-10-17 KST): 같은 경로 · 검색어만 바꾸는 router 이동은 서재 위치 버튼(LibraryShelf.change)만 사용자가 자주 누르고
+// 결과(목록)가 그 이동의 commit에 달렸다 — 그래서 그 한 곳만 반영 확인. 나머지 router.replace는 아래처럼 판정했다.
+// 새 router.replace를 쓰면 이 표에 판정을 더한다(같은 경로 · 검색어만 바꾸고 화면이 그 commit에 달렸으면 useCommittedReplace).
+const ROUTER_REPLACE_REVIEWED = {
+  'src/components/web/LibraryPage.jsx': '다른 경로(/discover)로 옮기는 옛 주소 정리 — 1회',
+  'src/components/notes/StudyNotePage.jsx': '새 노트 저장 뒤 다른 경로(/notes/<id>)로 — 1회',
+  'src/components/classroom/ClassSaveResume.jsx': '수업 저장 이어하기를 끝낸 뒤 읽기 주소로 — 1회, 화면은 결과 문구가 맡는다',
+  'src/views/ClassCourseTestPage.jsx': '검색어만(?mode=test&sheet=) 바꾸지만 화면은 지역 상태(sheetNo)로 그린다 — commit이 늦어도 주소만 늦는다',
+  'src/views/ReadingTrackPage.jsx': '관리자 전용 화면(비관리자는 서버가 /home으로) — 점검 범위 밖',
+  'src/views/ClassLivePage.jsx': '다른 경로(수업 작업 공간)로 — 1회',
+};
+
+describe('같은 경로 router 이동 점검표', () => {
+  const walk = (dir, out = []) => {
+    for (const name of fs.readdirSync(dir)) {
+      if (['node_modules', '__tests__', 'admin', 'world'].includes(name)) continue;
+      const p = path.join(dir, name);
+      if (fs.statSync(p).isDirectory()) walk(p, out);
+      else if (/\.(jsx?|mjs)$/.test(name) && !/\.test\./.test(name)) out.push(path.relative(process.cwd(), p).replaceAll('\\', '/'));
+    }
+    return out;
+  };
+  it('router.replace를 쓰는 화면은 모두 판정이 있다 — 서재는 반영 확인 helper로', () => {
+    const users = walk(path.join(process.cwd(), 'src')).filter((f) => /router\.replace\(/.test(read(f)));
+    expect(users.sort()).toEqual(Object.keys(ROUTER_REPLACE_REVIEWED).sort());
+    for (const reason of Object.values(ROUTER_REPLACE_REVIEWED)) expect(reason.length).toBeGreaterThan(10);
+    expect(walk(path.join(process.cwd(), 'src')).filter((f) => f !== 'src/lib/useCommittedReplace.js' && read(f).includes('useCommittedReplace()'))).toEqual(['src/components/library/LibraryShelf.jsx']);
+  });
+});
+
