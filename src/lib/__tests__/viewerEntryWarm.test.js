@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { QueryClient, QueryObserver } from '@tanstack/query-core';
@@ -9,17 +9,19 @@ import { sliceBetween } from './helpers/sliceBetween';
 // 서재 카드 → 뷰어 첫 글자(VIEWER-ENTRY R1 · R2, 2026-10-17 KST): 누른 뒤 뷰어 서버 응답 → JS 청크 15개 → 그제야 자료 조회였다.
 //   R1 누르는 순간 자료 조회(lib/viewerMaterial 등록부) — 뷰어가 같은 id · 같은 계정 · 10초 안이면 받아 쓰고, 아니면 새로.
 //   R2 머묾 80ms · 누름 · 키보드 포커스에 뷰어 모듈만 미리 import(서버 호출 없음).
+//   (c) 행 Link의 화면 진입 prefetch를 끄고(no-store → 서재 bfcache 막힘 · 행마다 서버 렌더) 의도 시점에만 router.prefetch(auto).
 // 서재 번들에 뷰어 JS가 끌려오지 않는다(정적 import 그래프) — 뷰어 모듈은 R2의 동적 import 한 곳으로만 닿는다.
 vi.mock('../supabase', () => ({ supabase: { from: () => { throw new Error('network not used in this test'); }, auth: { getSession: async () => ({ data: { session: null } }) } } }));
 vi.mock('../offlineCache', () => ({ cacheMaterial: async () => {}, getCachedMaterial: async () => null }));
 vi.mock('../sharedStore', () => ({ getSharedCopy: async () => null }));
-const h = vi.hoisted(() => ({ links: [], pushed: [], cache: new Map() }));
+const h = vi.hoisted(() => ({ links: [], pushed: [], cache: new Map(), prefetched: [] }));
 vi.mock('next/link', () => ({ default: (props) => { h.links.push(props); return null; } }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: (u) => h.pushed.push(u), prefetch: () => {} }), useSearchParams: () => new URLSearchParams(), usePathname: () => '/materials' }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: (u) => h.pushed.push(u), prefetch: (...args) => h.prefetched.push(args) }), useSearchParams: () => new URLSearchParams(), usePathname: () => '/materials' }));
 vi.mock('@tanstack/react-query', () => ({ useQueryClient: () => ({ getQueryData: (key) => h.cache.get(JSON.stringify(key)) }) }));
 vi.mock('../AuthContext', () => ({ useAuth: () => ({ user: null }) }));
 
 const lib = await import('../viewerMaterial');
+const { INTENT_DWELL_MS } = await import('../intentPrefetch');
 const link = await import('../../components/web/LibraryReaderLink');
 const ROOT = path.resolve(__dirname, '../../..');
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
@@ -167,7 +169,7 @@ describe('R1 조기 조회 등록부 — 받아 쓰기와 폴백', () => {
   });
   it('배선: 서재 링크가 누르는 순간 누른 계정으로 띄우고(새 탭 · 수정키는 제외), 뷰어는 지금 계정으로 받는다', () => {
     const src = read('src/components/web/LibraryReaderLink.jsx');
-    const open = sliceBetween(src, 'const openReader = (href, event) => {', 'return { readerHref, openReader };');
+    const open = sliceBetween(src, 'const openReader = (href, event) => {', 'return { readerHref, openReader, router };');
     expect(open.indexOf('event.metaKey || event.ctrlKey')).toBeLessThan(open.indexOf('startEarlyMaterial(href, Date.now(), { owner: user?.id ?? null });'));
     expect(open.indexOf('startEarlyMaterial(')).toBeLessThan(open.indexOf('router.push('));
     const viewer = read('src/views/ViewerPage.jsx');
@@ -187,38 +189,32 @@ describe('R1 조기 조회 등록부 — 받아 쓰기와 폴백', () => {
   });
 });
 
-describe('R2 뷰어 모듈 미리 받기 — 머묾 80ms · 누름 · 키보드 포커스', () => {
+describe('R2 뷰어 모듈 미리 받기 — 머묾 80ms · 누름 · 키보드 포커스(판정은 intentPrefetchProps 재사용)', () => {
   const env = () => { const timers = new Map(), queue = []; let warmed = 0;
     return { timers, queue, get warmed() { return warmed; }, opts: { warm: () => { warmed += 1; }, timers, schedule: (fn, ms) => { queue.push({ fn, ms }); return queue.length; }, cancel: (id) => { queue[id - 1].fn = null; } } }; };
   it('뷰어로 가는 링크에만 붙는다', () => {
     expect(link.viewerWarmProps('/pdf/7')).toEqual({});
-    expect(Object.keys(link.viewerWarmProps('/viewer/45'))).toEqual(['onPointerEnter', 'onPointerLeave', 'onPointerDown', 'onFocus']);
+    expect(Object.keys(link.viewerWarmProps('/viewer/45')).sort()).toEqual(['onFocus', 'onPointerDown', 'onPointerEnter', 'onPointerLeave']);
   });
-  it('마우스가 80ms 머물면 받고, 그 전에 떠나면 받지 않는다 · 터치는 머묾으로 받지 않는다', () => {
-    const e = env(), p = link.viewerWarmProps('/viewer/45', {}, e.opts);
+  it('마우스가 80ms(INTENT_DWELL_MS) 머물면 받고, 그 전에 떠나면 받지 않는다 · 터치는 머묾으로 받지 않는다', () => {
+    const e = env(), p = link.viewerWarmProps('/viewer/45', e.opts);
     p.onPointerEnter({ pointerType: 'mouse' });
-    expect(e.queue[0].ms).toBe(link.VIEWER_WARM_DWELL_MS);
-    expect(link.VIEWER_WARM_DWELL_MS).toBe(80);
+    expect(e.queue[0].ms).toBe(INTENT_DWELL_MS);
+    expect(INTENT_DWELL_MS).toBe(80);
     e.queue[0].fn(); expect(e.warmed).toBe(1);
     p.onPointerEnter({ pointerType: 'mouse' }); p.onPointerLeave({});
     expect(e.queue[1].fn).toBe(null);
     p.onPointerEnter({ pointerType: 'touch' }); expect(e.queue).toHaveLength(2);
   });
   it('마우스로 누르면 바로 받고(터치의 누름은 스크롤 시작일 수 있어 받지 않는다), 키보드 포커스(:focus-visible)에 받는다', () => {
-    const e = env(), p = link.viewerWarmProps('/viewer/45', {}, e.opts);
+    const e = env(), p = link.viewerWarmProps('/viewer/45', e.opts);
     p.onPointerDown({ pointerType: 'touch' }); expect(e.warmed).toBe(0);
     p.onPointerDown({ pointerType: 'mouse' }); expect(e.warmed).toBe(1);
     p.onFocus({ currentTarget: { matches: () => true } }); expect(e.warmed).toBe(2);
     p.onFocus({ currentTarget: { matches: () => false } }); expect(e.warmed).toBe(2);
   });
   it('터치는 실제 누름(click → openReader)에 받는다', () => {
-    expect(sliceBetween(read('src/components/web/LibraryReaderLink.jsx'), 'const openReader = (href, event) => {', 'return { readerHref, openReader };')).toContain('warmViewer(); // R2');
-  });
-  it('받은 처리기(props)는 그대로 부른다', () => {
-    const e = env(), seen = [];
-    const p = link.viewerWarmProps('/viewer/45', { onFocus: () => seen.push('focus'), onPointerDown: () => seen.push('down') }, e.opts);
-    p.onFocus({ currentTarget: { matches: () => false } }); p.onPointerDown({});
-    expect(seen).toEqual(['focus', 'down']);
+    expect(sliceBetween(read('src/components/web/LibraryReaderLink.jsx'), 'const openReader = (href, event) => {', 'return { readerHref, openReader, router };')).toContain('warmViewer(); // R2');
   });
   it('모듈은 한 번만 받고(실패하면 다음 기회에 다시) · 데이터 절약 모드는 받지 않는다 · 서버 호출 없이 import만', async () => {
     expect(link.warmViewer({ load: () => Promise.resolve('x'), nav: { connection: { saveData: true } } })).toBe(null);
@@ -229,9 +225,46 @@ describe('R2 뷰어 모듈 미리 받기 — 머묾 80ms · 누름 · 키보드 
     expect(link.warmViewer({ load: () => { loads += 1; return Promise.resolve('again'); }, nav: {} })).toBe(ok);
     await ok;
     expect(loads).toBe(2);
-    expect(read('src/components/web/LibraryReaderLink.jsx')).not.toMatch(/router\.prefetch/);
   });
-  it('배선: 서재 링크가 미리 받기 이벤트를 단다', () => {
-    expect(read('src/components/web/LibraryReaderLink.jsx')).toContain('<Link {...props} {...viewerWarmProps(href, props)} href={readerHref(href)}');
+  it('판정 함수를 새로 만들지 않는다 — 머묾 · 포커스 판정은 intentPrefetchProps 한 곳(이 파일에 :focus-visible · 터치 판정 없음)', () => {
+    const src = read('src/components/web/LibraryReaderLink.jsx');
+    expect(src).not.toMatch(/focus-visible/);
+    expect(src.match(/pointerType/g)).toHaveLength(1); // 터치 누름 규칙(7) 하나 — 머묾의 터치 제외는 intentPrefetchProps가
+    expect(src.match(/intentPrefetchProps\(/g)).toHaveLength(2); // R2 · 라우트 의도 prefetch
+  });
+});
+
+describe('(c) 서재 행 Link — 화면 진입 prefetch 끄고 의도 시점에만 router.prefetch(auto)', () => {
+  const render = (props) => { h.links.length = 0; renderToStaticMarkup(createElement(link.default, props, 'x')); return h.links[0]; };
+  beforeEach(() => { h.prefetched.length = 0; vi.useFakeTimers(); });
+  afterEach(() => { vi.useRealTimers(); });
+  it('행 Link는 prefetch={false} — 화면에 들어와도 서버 렌더 · no-store 응답이 없다(서재 bfcache)', () => {
+    expect(render({ href: '/viewer/45' }).prefetch).toBe(false);
+  });
+  it('마우스 80ms 머묾에 대기 화면까지(auto)만 받는다 · 그 전에 누르면 취소 · 터치는 받지 않는다', () => {
+    const a = render({ href: '/viewer/46'  });
+    a.onPointerEnter({ pointerType: 'mouse' });
+    vi.advanceTimersByTime(INTENT_DWELL_MS);
+    expect(h.prefetched).toEqual([[expect.stringMatching(/^\/viewer\/46\?returnTo=/), { kind: 'auto' }]]);
+    const b = render({ href: '/viewer/47'  });
+    b.onPointerEnter({ pointerType: 'mouse' }); b.onPointerDown({ pointerType: 'mouse' });
+    vi.advanceTimersByTime(500);
+    const c = render({ href: '/viewer/48'  });
+    c.onPointerEnter({ pointerType: 'touch' }); vi.advanceTimersByTime(500);
+    expect(h.prefetched).toHaveLength(1);
+  });
+  it('키보드 포커스(:focus-visible)는 바로 받는다 — 뷰어가 아닌 행(PDF · 대화)도 같은 규칙', () => {
+    for (const href of ['/viewer/49', '/pdf/7']) render({ href  }).onFocus({ currentTarget: { matches: () => true } });
+    expect(h.prefetched.map(([u]) => u.split('?')[0])).toEqual(['/viewer/49', '/pdf/7']);
+  });
+  it('받은 처리기는 그대로 불린다 · 부르는 쪽이 prefetch를 정하면 그 값을 따른다(의도 prefetch 없음)', () => {
+    const seen = [];
+    const a = render({ href: '/viewer/50', onFocus: () => seen.push('focus')  });
+    a.onFocus({ currentTarget: { matches: () => false } });
+    expect(seen).toEqual(['focus']);
+    const b = render({ href: '/viewer/51', prefetch: true  });
+    expect(b.prefetch).toBe(true);
+    b.onFocus?.({ currentTarget: { matches: () => true } });
+    expect(h.prefetched.filter(([u]) => u.startsWith('/viewer/51'))).toEqual([]);
   });
 });
