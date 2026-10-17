@@ -3,6 +3,7 @@ import {boardMenus,verifyBoardMenus} from './teaching-board-menu-checks.mjs';
 import {chromium,webkit} from 'playwright-core';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
+import {inactiveLearningReply} from './fixtures/learning-snapshot.mjs';
 const {PGlite}=await import(process.env.QA_PGLITE_MODULE||'@electric-sql/pglite');
 const base=process.env.QA_BASE||'http://127.0.0.1:3108',out=process.env.QA_OUT||'/private/tmp/manabi-board-qa';fs.mkdirSync(out,{recursive:true});
 const db=new PGlite();const uid='00000000-0000-4000-8000-000000000077',day='2026-09-10';
@@ -83,6 +84,9 @@ await context.route('**/rest/v1/**',async r=>{
 });
 await context.route('**/api/suggestions/today',r=>r.fulfill({json:[]}));
 await context.route('**/api/analyze',async r=>{if(analysisDelay)await new Promise(resolve=>setTimeout(resolve,analysisDelay));if(analysisFail)return r.fulfill({status:503,json:{error:'검수 분석 실패'}});const {lines}=r.request().postDataJSON();analyzedLines.push(lines);try{await r.fulfill({json:{results:lines.map(line=>({sequence:['word'],dictionary:{word:{text:line,meaning:emptyMeaning?'':'검수 표현의 뜻',pos:'명사',furigana:'よみ'}}}))}});}catch{}});
+// 저장 단어 읽기(2026-10-14부터 GET /api/learning/vocabulary?view=learning snapshot) · FSRS 상태 · 한도 · 언어 계약 · 제외 목록은
+// 공용 합성 응답으로 답한다(learning-snapshot.mjs — 비활성 FSRS 계정, 저장 단어 없음). 해당 없는 요청은 위 처리로 넘긴다(나중 등록이 먼저 돈다).
+await context.route('**/api/learning/**',r=>{const reply=inactiveLearningReply(r.request(),{actorId:uid,rows:[]});return reply?r.fulfill({status:reply.status,json:reply.json}):r.fallback();});
 const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));page.on('console',m=>{if(m.type()==='error' && !m.text().startsWith('WebSocket connection')){report.errors.push(m.text());console.log('browser-console',m.text());}});
 page.on('requestfailed',request=>{const url=new URL(request.url());report.failedRequests.push(url.origin+url.pathname);});
 const check=label=>{report.checks.push(label);console.log(label);};
@@ -133,9 +137,13 @@ try {
   assert.equal(report.errors.length,0,report.errors.join('\n'));check('no browser runtime errors');
   await fs.promises.writeFile(out+'/report.json',JSON.stringify(report,null,2));await browser.close();await db.close();process.exit(0);
  }
+ // 판에 놓은 표현 하나의 요소 수 = 카드 사각형 1 + 뜻 1 + 글자마다(글자 · 한자 훈음 · 병음) — 글자 칸 배치(TeachingWord)라 글자 수로 센다.
+ // 병음 칸은 읽기가 있을 때만이다(아래 직접 입력한 「你好」는 뜻만 넣어 글자 · 훈음 두 칸).
+ const boardWordElements=(text,{reading=true}={})=>2+(reading?3:2)*[...text].length;
+ const placedCount=boardWordElements(await page.locator('[data-tid="id_0_word"]').getAttribute('data-text'));
  await page.locator('[data-tid="id_0_word"]')[activate]();
  await page.locator('.viewer-inspector').getByRole('button',{name:'판에 놓기',exact:true})[activate]();
- await waitFor(async()=> (await scene()).length===4);
+ await waitFor(async()=> (await scene()).length===placedCount);
  assert.equal(await board.getByLabel('설명판 시작 안내',{exact:true}).count(),0,'placing content removes the empty-board hint');
  assert.equal((await scene()).find(el=>el.customData?.manabiExpression).customData.manabiExpression.source.materialId,'10');
  await saveScreen('board-textbook');check('selected textbook expression imports with reading, meaning and exact source');
@@ -177,7 +185,7 @@ try {
  await menus.action('tools','다시 실행');await waitFor(async()=> (await scene()).some(el=>el.type==='freedraw'));
  check('native undo and redo restore the stroke without reader grading');
  await menus.action('tools','선택');
- await board.locator('canvas.interactive').click({position:{x:500,y:400}});await page.keyboard.press('Meta+a');
+ await board.locator('canvas.interactive').click({position:{x:500,y:400}});await page.keyboard.press('ControlOrMeta+a');
  await menus.action('selection','함께 묶기');
  await waitFor(async()=> (await scene()).every(el=>el.groupIds.length>0));
  const beforeMove=await scene();
@@ -190,7 +198,7 @@ try {
  const moved=await scene();const delta=moved.find(el=>el.id===rectangle.id).x-rectangle.x;
  for(const el of moved)assert(Math.abs(el.x-beforeMove.find(old=>old.id===el.id).x-delta)<1,'grouped expression and ink move together');
  const saved=JSON.stringify(moved.map(({id,type,x,y,text,points,customData,groupIds})=>({id,type,x,y,text,points,customData,groupIds})));
- await page.reload();await board.waitFor();await waitFor(async()=> (await scene()).length===5);
+ await page.reload();await board.waitFor();await waitFor(async()=> (await scene()).length===placedCount+1); // 표현 + 필기 1
  assert.equal(JSON.stringify((await scene()).map(({id,type,x,y,text,points,customData,groupIds})=>({id,type,x,y,text,points,customData,groupIds}))),saved);
  check('group moves as one explanation, then survives reload with ink, source and positions');
  await page.getByRole('button',{name:'표현 입력',exact:true})[activate]();
@@ -199,18 +207,22 @@ try {
  await form.getByRole('button',{name:'바로 놓기',exact:true})[activate]();
  await waitFor(async()=> (await scene()).filter(el=>el.customData?.manabiExpression).length===2);
  assert.equal((await current()).raw_text,originalNote,'displaying a manual expression does not publish it');
- await menus.action('selection','오늘 표현에 추가');
+ // 선택한 표현을 수업 기록에 넣는 단추는 「수업에 남기기」다(TeachingBoardCanvas · BoardPresentation 같은 이름).
+ await menus.action('selection','수업에 남기기');
  await waitFor(async()=> (await current()).raw_text.includes('你好'));
  check('manual expression displays immediately; only explicit add writes the existing classroom record');
- await menus.action('selection','뜻 가리기');
+ // 뜻 가리기/보이기는 선택 메뉴의 표시 토글 「뜻」(aria-pressed, WordDisplayControls)이다.
+ await menus.open('selection');const meaningToggle=hud.locator('#board-menu-selection').getByRole('group',{name:'표현 표시 설정'}).getByRole('button',{name:'뜻',exact:true});
+ assert.equal(await meaningToggle.getAttribute('aria-pressed'),'true');await meaningToggle[activate]();
  await waitFor(async()=> (await scene()).find(el=>el.customData?.manabiExpression?.text==='你好').customData.manabiExpression.showMeaning===false);
  assert.equal((await scene()).filter(el=>el.customData?.manabiField==='meaning').at(-1).opacity,0);
- await menus.action('selection','뜻 보이기');
+ await menus.open('selection');await meaningToggle[activate]();
+ await waitFor(async()=> (await scene()).find(el=>el.customData?.manabiExpression?.text==='你好').customData.manabiExpression.showMeaning!==false);
  await menus.action('pages','새 판');await waitFor(async()=> (await head()).document.pages.length===2);
  await menus.action('pages','1번 판');
- await waitFor(async()=> (await scene()).length===9);
+ await waitFor(async()=> (await scene()).length===placedCount+1+boardWordElements('你好',{reading:false}));
  await menus.open('book');await page.getByLabel('수업 교재 과 선택').selectOption('11');await page.waitForURL('**/viewer/11?**');await board.waitFor();
- assert.equal(new URL(page.url()).searchParams.get('board'),'1');await waitFor(async()=> (await scene()).length===9);
+ assert.equal(new URL(page.url()).searchParams.get('board'),'1');await waitFor(async()=> (await scene()).length===placedCount+1+boardWordElements('你好',{reading:false}));
  check('reading/meaning toggles and pages persist; changing textbooks keeps the same lesson board');
  const quick=hud.locator('#board-menu-entry form').getByLabel('단어·표현',{exact:true});
  await menus.open('entry');await quick.fill('준비 중인 표현');await menus.close();
@@ -259,17 +271,19 @@ try {
  // Local search retains the exact chapter source. Editing an existing card
  // must leave an unfinished new-expression draft available after cancel/save.
  await menus.open('entry');await quick.fill('老师');
- await hud.locator('.board-search-results').getByRole('button',{name:/老师/})[activate]();
+ // 검색 결과를 누르면 입력 칸에 채우고(읽기 · 뜻 · 출처), 놓기는 「바로 놓기」로 한다.
+ await hud.locator('.board-search-results').getByRole('button',{name:/老师/})[activate]();await hud.locator('#board-menu-entry form').getByRole('button',{name:'바로 놓기',exact:true})[activate]();
  await waitFor(async()=>(await scene()).some(el=>el.customData?.manabiExpression?.text==='老师'));
  const localCard=(await scene()).find(el=>el.customData?.manabiExpression?.text==='老师');
  assert.equal(localCard.customData.manabiExpression.source.materialId,'11');
- await menus.open('entry');await quick.fill('다음 설명 초안');
+ // 메뉴 창이 열려 있으면 「선택한 요소 편집」 단추는 감춰진다(teaching-board.css — popover 열림 중 visibility:hidden). 닫고 연다.
+ await menus.open('entry');await quick.fill('다음 설명 초안');await menus.close();
  await menus.action('selection','내용 수정');
  await form.getByLabel('뜻',{exact:true}).fill('취소할 설명');
  await form.getByRole('button',{name:'수정 취소',exact:true})[activate]();
  assert.equal(await quick.inputValue(),'다음 설명 초안');
  assert.equal((await scene()).find(el=>el.id===localCard.id).customData.manabiExpression.meaning,localCard.customData.manabiExpression.meaning);
- await menus.action('selection','내용 수정');
+ await menus.close();await menus.action('selection','내용 수정');
  await form.getByLabel('뜻',{exact:true}).fill('선생님');
  await form.getByRole('button',{name:'수정',exact:true})[activate]();
  await waitFor(async()=>(await scene()).find(el=>el.id===localCard.id).customData.manabiExpression.meaning==='선생님');
@@ -339,7 +353,8 @@ try {
  await backupMenu.locator('input[type=file]').setInputFiles(file);await waitFor(async()=> (await head()).document.pages.length===count*2);
  const revisionBefore=(await head()).revision;
  await backupMenu.locator('input[type=file]').setInputFiles({name:'invalid.json',mimeType:'application/json',buffer:Buffer.from('{"format":"other"}')});
- await board.getByText('manabi 설명판 백업 파일을 골라 주세요.',{exact:true}).waitFor();assert.equal((await head()).revision,revisionBefore);
+ // 판 안내(teaching-board-message)는 메뉴 창이 닫혀 있을 때만 보인다(TeachingBoardCanvas !menu) — 백업 메뉴를 닫고 본다.
+ await menus.close();await board.getByText('manabi 설명판 백업 파일을 골라 주세요.',{exact:true}).waitFor();assert.equal((await head()).revision,revisionBefore);
  await menus.layout('설명판');assert.equal(await page.locator('.viewer-center').isVisible(),false);
  await menus.layout('함께');assert(await page.locator('.viewer-center').isVisible());
  await menus.layout('교재');assert.equal(await board.locator('canvas.interactive').isVisible(),false);

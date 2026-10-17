@@ -3,6 +3,7 @@ import {boardMenus} from './teaching-board-menu-checks.mjs';
 import {chromium,webkit} from 'playwright-core';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
+import {inactiveLearningReply} from './fixtures/learning-snapshot.mjs';
 const {PGlite}=await import(process.env.QA_PGLITE_MODULE||'@electric-sql/pglite');
 const base=process.env.QA_BASE||'http://127.0.0.1:3108',out=process.env.QA_OUT||'/private/tmp/manabi-classroom-ink-qa';fs.mkdirSync(out,{recursive:true});
 const db=new PGlite();const uid='00000000-0000-4000-8000-000000000077',day='2026-09-10';
@@ -84,6 +85,9 @@ await context.route('**/rest/v1/**',async r=>{
 });
 await context.route('**/api/suggestions/today',r=>r.fulfill({json:[]}));
 await context.route('**/api/analyze',async r=>{if(analysisDelay)await new Promise(resolve=>setTimeout(resolve,analysisDelay));if(analysisFail)return r.fulfill({status:503,json:{error:'검수 분석 실패'}});const {lines}=r.request().postDataJSON();analyzedLines.push(lines);try{await r.fulfill({json:{results:lines.map(line=>({sequence:['word'],dictionary:{word:{text:line,meaning:emptyMeaning?'':'검수 표현의 뜻',pos:'명사',furigana:'よみ'}}}))}});}catch{}});
+// 저장 단어 읽기(2026-10-14부터 GET /api/learning/vocabulary?view=learning snapshot) · FSRS 상태 · 한도 · 언어 계약 · 제외 목록은
+// 공용 합성 응답으로 답한다(learning-snapshot.mjs — 비활성 FSRS 계정, 저장 단어 없음). 해당 없는 요청은 위 처리로 넘긴다(나중 등록이 먼저 돈다).
+await context.route('**/api/learning/**',r=>{const reply=inactiveLearningReply(r.request(),{actorId:uid,rows:[]});return reply?r.fulfill({status:reply.status,json:reply.json}):r.fallback();});
 const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));page.on('console',m=>{
  if(m.type()!=='error'||m.text().startsWith('WebSocket connection')||(lookupError&&m.text().includes('503')))return;
  if(cancelledHomePrefetch&&m.text().startsWith('Failed to fetch RSC payload for '+base+'/home')){cancelledHomePrefetch=false;report.expectedTransport.push('home link prefetch cancelled while replacing the test document');return;}
@@ -150,7 +154,7 @@ try{
  await page.mouse.move(rect.x+220,rect.y+210);await page.mouse.down();await page.mouse.move(rect.x+390,rect.y+260,{steps:18});await page.mouse.up();
  await waitFor(async()=>(await scene()).some(el=>el.type==='freedraw'));
  const originalInk=(await scene()).filter(el=>el.type==='freedraw').map(el=>({id:el.id,x:el.x,y:el.y,points:el.points}));
- const capture=async()=>{await menus.action('tools','선택');await surface.click({position:{x:150,y:600}});await page.keyboard.press('Meta+a');await menus.open('selection');await hud.getByRole('button',{name:'선택한 필기 인식',exact:true}).click();};
+ const capture=async()=>{await menus.action('tools','선택');await surface.click({position:{x:150,y:600}});await page.keyboard.press('ControlOrMeta+a');await menus.open('selection');await hud.getByRole('button',{name:'선택한 필기 인식',exact:true}).click();};
  await capture();const panel=page.getByRole('dialog',{name:'필기에서 표현 가져오기'});await panel.waitFor();
  await saveScreen('01-selected-ink-desktop');assert.equal(calls.length,0);
  await panel.getByRole('button',{name:'필기 인식 닫기',exact:true}).click();assert.equal(calls.length,0);
