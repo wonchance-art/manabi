@@ -110,8 +110,13 @@ export function AuthProvider({ children, queryClient, onAccountLeft }) {
   }
 
   // refresh와 로그인은 별개다. 누락된 프로필도 읽기 중에는 생성하지 않는다.
-  async function refreshProfileReadOnly(userId) {
-    try { return await profileReaderRef.current.refresh(userId); }
+  // 밖에서 부르는 refreshProfileReadOnly · fetchProfile은 「쓰기 뒤 재읽기」다 — 늘 새로 읽는다(공유하지 않음).
+  async function refreshProfileReadOnly(userId) { return readProfile(userId); }
+  // 세션 경로(getSession · 인증 알림)만 같은 계정의 진행 중 읽기를 공유한다(PROFILE-READ-SHARE-001) — 페이지 로드마다
+  // 두 경로가 몇 ms 차이로 같은 읽기를 보냈다. 쓰기 경계 뒤에 시작된 읽기만 합류한다(learningActivity 참고).
+  function readSessionProfile(userId) { return readProfile(userId, { share: true }); }
+  async function readProfile(userId, options) {
+    try { return await profileReaderRef.current.refresh(userId, options); }
     catch (err) {
       if (mountedRef.current && actorRef.current === userId) {
         setProfileSettledFor(userId); // 실패도 끝 — 받는 중으로 영원히 두지 않는다
@@ -220,7 +225,7 @@ export function AuthProvider({ children, queryClient, onAccountLeft }) {
             adoptUser(session?.user ?? null);
             if (session?.user) {
               hadSessionRef.current = true;
-              fetchProfile(session.user.id, session.user.user_metadata);
+              readSessionProfile(session.user.id); // 세션 경로 — 알림 경로와 진행 중 읽기 공유
             }
             setLoading(false);
           });
@@ -262,7 +267,7 @@ export function AuthProvider({ children, queryClient, onAccountLeft }) {
       if (session?.user) {
         hadSessionRef.current = true;
         // SDK는 cookie 복원/탭 복귀에도 SIGNED_IN을 보낸다. 이벤트는 로그인 쓰기의 증거가 아니다.
-        refreshProfileReadOnly(session.user.id);
+        readSessionProfile(session.user.id); // 세션 경로 — getSession 경로와 진행 중 읽기 공유
       } else {
         setProfile(null);
         // 세션이 있다가 사라진 경우 — 명시적 로그아웃이 아니면 만료로 간주
