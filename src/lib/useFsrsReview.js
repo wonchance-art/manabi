@@ -32,6 +32,9 @@ export function fsrsIntervalLabel(due, at) {
   return `${Math.round(seconds / 86400)}d`;
 }
 
+/** 처음 받는 FSRS 목록이 이보다 오래 'loading'이면 오류로 내린다(다시 시도). 목록 요청 상한(15초)보다 조금 길다. */
+export const FSRS_LOADING_CAP_MS = 20000;
+
 /** DB 상태만 문제의 기준으로 삼는다. 대기 중인 연산은 재출제나 옛 채점 경로로 보내지 않는다. */
 export function createFsrsReviewController({ accountId, client, now = Date.now, makeId = uuid,
   setTimer = setTimeout, clearTimer = clearTimeout, eventTarget = globalThis.window,
@@ -105,6 +108,19 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
     if (disposed || !accountId) return false;
     if (refreshPromise) return refreshPromise;
     const token = generation, readToken = ++readGeneration;
+    // 첫 읽기 상한(FSRS-LOADING-CAP, 2026-10-17 KST) — 목록 GET은 요청 상한이 있지만 대기 연산 읽기(IndexedDB)는 막히면(blocked ·
+    // 다른 탭) 끝나지 않아, 상태가 'loading'에 묶여 오늘 카드가 골격 · 시작 단추가 「복습 준비 중…」에 멈췄다. 처음 받는 중(loading)에
+    // FSRS_LOADING_CAP_MS를 넘기면 오류로 내린다 — 화면은 기존 「복습 일정을 불러오지 못했어요. 다시 시도」(같은 refresh 경로).
+    // 다시 시도가 새 읽기를 보내게 진행 중 약속을 비운다. 늦게 도착한 결과는 세대 검사를 따른다: 그사이 새 읽기가 없으면 반영(스스로 회복),
+    // 다시 시도가 시작됐으면 버린다(readGeneration).
+    const capTimer = state.status === 'loading' ? setTimer(() => {
+      if (disposed || token !== generation || readToken !== readGeneration || state.status !== 'loading') return;
+      const error = new Error('fsrs_load_timeout');
+      refreshPromise = null;
+      logLearningFailure('fsrs load', error);
+      publish({ registryAvailable: false, status: 'error', error });
+      queue();
+    }, FSRS_LOADING_CAP_MS) : null;
     refreshPromise = (async () => {
       let pending;
       try {
@@ -146,7 +162,10 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
           queue();
         }
         return false;
-      } finally { if (token === generation && readToken === readGeneration) refreshPromise = null; }
+      } finally {
+        if (capTimer !== null) clearTimer(capTimer);
+        if (token === generation && readToken === readGeneration) refreshPromise = null;
+      }
     })();
     return refreshPromise;
   }
