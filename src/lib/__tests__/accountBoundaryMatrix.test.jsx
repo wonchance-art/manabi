@@ -1,7 +1,8 @@
 // 계정 경계 순서표(ACCOUNT-BOUNDARY-MATRIX, 2026-10-17 KST) — AuthContext adoptUser 최종본 하나가 장면마다 무엇을 하는지 한 장에 고정한다.
 // 열: 화면 캐시(react-query) · 오프라인 정리(purgeOfflineForAccount) · 진도 수령(손님 몫 레퍼런스 진도) · 넘겨줄 글 삭제(study_source_*) ·
 //     mutation 감시(앞 계정이 시작해 뒤에 끝난 쓰기) · 화면 계정(knownAccount) · refresh 표시(aafb ②) · SC 힌트.
-// 아직 통합본에 없는 칸(PENDING)은 비워 둔다 — aafb ②(refresh) · a0a4 sc-link-3(SC 힌트 쿠키)이 들어오면 아래 「대기 칸」 계약이 깨져 채우라고 알린다.
+// refresh 표시(aafb ② — onAccountLeft → router.refresh) · SC 힌트(a0a4 sc-link-3 — syncScHintCookie(false))도 이제 실제로 돌려 칸을 채운다
+// (통합 next-staging-2, 2026-10-18 KST — 대기 칸 계약이 깨져 채움). SC 힌트 지움은 화면 캐시 비우기와 같은 판정(accountCacheReset) 자리다.
 // 표의 각 칸은 실제 AuthProvider(훅 대역)를 돌려 확인한다 — 문서가 아니라 계약이다.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -30,6 +31,9 @@ vi.mock('../supabase', () => {
   return { supabase: client, getSupabase: vi.fn(async () => client) };
 });
 const purge = vi.hoisted(() => ({ calls: [] }));
+const hint = vi.hoisted(() => ({ calls: [] }));
+// SC 힌트 쿠키 — 지우는 호출만 센다(대역 document.cookie는 문자열이라 실제로 쓰면 세션 쿠키 흉내가 지워진다). 쿠키 쓰기 자체는 scHintAccountBoundary가 본다.
+vi.mock('../scFontHint', async importOriginal => ({ ...(await importOriginal()), syncScHintCookie: vi.fn(on => { hint.calls.push(on); return true; }) }));
 vi.mock('../offlineCache', () => ({ purgeOfflineForAccount: vi.fn(async next => { purge.calls.push(next); return { materials: 0 }; }) }));
 vi.mock('../ToastContext', () => ({ useToast: () => vi.fn() }));
 vi.mock('../refProgress', () => ({ pullProgress: vi.fn(async () => {}) }));
@@ -42,27 +46,28 @@ const read = rel => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 const tick = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const user = id => ({ id, user_metadata: { name: id } });
-const PENDING = '② 대기';
 
-/** 순서표 — 각 장면의 마지막 전환에서 일어나는 일. 값: 'yes' · 'no' · 손님/계정 표기 · PENDING. */
+/** 순서표 — 각 장면의 마지막 전환에서 일어나는 일. 값: 'yes' · 'no' · 'keep' · 'clear' · 손님/계정 표기.
+ *  refresh = 서버 렌더 버리기(계정이 떠날 때만 — A → 손님 · A → B). scHint = 간체 글꼴 힌트 쿠키(화면 캐시와 같은 판정에서 지움). */
 export const ACCOUNT_BOUNDARY_MATRIX = [
-  { scene: '첫 복원(손님 → A, 이 기기 처음)', cache: 'keep', purge: 'no', claim: 'yes', source: 'keep', mutation: '해당 없음', shown: 'A', refresh: PENDING, scHint: PENDING },
-  { scene: '같은 계정 갱신(A → A, TOKEN_REFRESHED)', cache: 'keep', purge: 'no', claim: 'no', source: 'keep', mutation: 'keep', shown: 'A', refresh: PENDING, scHint: PENDING },
-  { scene: 'A → 손님(로그아웃)', cache: 'clear', purge: '손님', claim: 'no', source: 'clear', mutation: 'clear', shown: '손님', refresh: PENDING, scHint: PENDING },
-  { scene: 'A → B(다른 탭 SIGNED_IN B)', cache: 'clear', purge: 'B', claim: 'no', source: 'clear', mutation: 'clear', shown: 'B', refresh: PENDING, scHint: PENDING },
-  { scene: '손님 → B(앞서 A)', cache: 'clear', purge: 'B', claim: 'no', source: 'clear', mutation: 'clear', shown: 'B', refresh: PENDING, scHint: PENDING },
-  { scene: 'A → 손님 → A', cache: 'keep', purge: 'no', claim: 'yes', source: 'keep', mutation: 'keep', shown: 'A', refresh: PENDING, scHint: PENDING },
+  { scene: '첫 복원(손님 → A, 이 기기 처음)', cache: 'keep', purge: 'no', claim: 'yes', source: 'keep', mutation: '해당 없음', shown: 'A', refresh: 'no', scHint: 'keep' },
+  { scene: '같은 계정 갱신(A → A, TOKEN_REFRESHED)', cache: 'keep', purge: 'no', claim: 'no', source: 'keep', mutation: 'keep', shown: 'A', refresh: 'no', scHint: 'keep' },
+  { scene: 'A → 손님(로그아웃)', cache: 'clear', purge: '손님', claim: 'no', source: 'clear', mutation: 'clear', shown: '손님', refresh: 'yes', scHint: 'clear' },
+  { scene: 'A → B(다른 탭 SIGNED_IN B)', cache: 'clear', purge: 'B', claim: 'no', source: 'clear', mutation: 'clear', shown: 'B', refresh: 'yes', scHint: 'clear' },
+  { scene: '손님 → B(앞서 A)', cache: 'clear', purge: 'B', claim: 'no', source: 'clear', mutation: 'clear', shown: 'B', refresh: 'no', scHint: 'clear' },
+  { scene: 'A → 손님 → A', cache: 'keep', purge: 'no', claim: 'yes', source: 'keep', mutation: 'keep', shown: 'A', refresh: 'no', scHint: 'keep' },
 ];
 
-let qc, data;
-const render = () => { h.index = 0; return AuthProvider({ children: null, queryClient: qc }).props.value; };
+let qc, data, refreshes;
+const onAccountLeft = () => { refreshes += 1; };
+const render = () => { h.index = 0; return AuthProvider({ children: null, queryClient: qc, onAccountLeft }).props.value; };
 async function effects() { for (const fn of h.effects.splice(0)) { const cleanup = fn(); if (cleanup) h.cleanups.push(cleanup); } await tick(); }
 async function mount() { render(); await effects(); return render(); }
 async function rerender() { render(); await effects(); }
 
 beforeEach(() => {
   h.slots = []; h.index = 0; h.effects = []; h.cleanups = []; h.listener = null; h.session = { user: user('A') };
-  purge.calls = [];
+  purge.calls = []; hint.calls = []; refreshes = 0;
   qc = new QueryClient({ defaultOptions: { queries: { staleTime: 120000, retry: false }, mutations: { retry: false } } });
   data = new Map();
   vi.stubGlobal('localStorage', { get length() { return data.size; }, key: i => [...data.keys()][i] ?? null,
@@ -85,7 +90,7 @@ function seed() {
   qc.setQueryData(['material', 'X'], { id: 'X' });
   data.set('ja_read_chapters', JSON.stringify(['n5-01'])); // 손님 몫(옛 키)
   data.set('study_source_Japanese', JSON.stringify({ owner: null, at: Date.now(), text: '넘겨줄 글' }));
-  purge.calls = [];
+  purge.calls = []; hint.calls = []; refreshes = 0;
 }
 function observe(target) {
   return {
@@ -94,6 +99,8 @@ function observe(target) {
     claim: target && data.has(`ja_read_chapters:${target}`) && !data.has('ja_read_chapters') ? 'yes' : 'no',
     source: data.has('study_source_Japanese') ? 'keep' : 'clear',
     shown: knownAccount() === null ? '손님' : knownAccount(),
+    refresh: refreshes > 0 ? 'yes' : 'no',
+    scHint: hint.calls.includes(false) ? 'clear' : 'keep',
   };
 }
 
@@ -157,7 +164,7 @@ describe('계정 경계 순서표 — 장면마다 실제로 돌려 표와 맞�
   for (const row of ACCOUNT_BOUNDARY_MATRIX) {
     it(row.scene, async () => {
       const got = await SCENES[row.scene]();
-      const want = { cache: row.cache, purge: row.purge, claim: row.claim, source: row.source, mutation: row.mutation, shown: row.shown };
+      const want = { cache: row.cache, purge: row.purge, claim: row.claim, source: row.source, mutation: row.mutation, shown: row.shown, refresh: row.refresh, scHint: row.scHint };
       expect(got).toEqual(want);
     });
   }
@@ -181,18 +188,25 @@ describe('순서 — adoptUser 안에서 이 차례로 한다(새 user로 그리
   });
 });
 
-describe('대기 칸 — 통합본에 아직 없는 열', () => {
-  it('refresh 표시(aafb ② AUTH-ROUTER-REFRESH-001)가 들어오면 이 계약이 깨진다 — 그때 표의 refresh 칸을 채우고 이 검사를 실제 검사로 바꾼다', () => {
-    expect(read('src/lib/AuthContext.jsx')).not.toContain('onAccountLeft');
-    expect(read('src/app/providers.jsx')).not.toContain('onAccountLeft');
-    expect(ACCOUNT_BOUNDARY_MATRIX.every(r => r.refresh === PENDING)).toBe(true);
+describe('refresh · SC 힌트 칸 — 배선과 장면 밖 경우', () => {
+  it('refresh 표시는 계정이 떠날 때만 세우고(left), 그리기가 끝난 뒤 effect에서 한 번 부른다 — 「비우기 → setUser → effect에서 refresh」', () => {
+    const src = read('src/lib/AuthContext.jsx');
+    const adopt = sliceBetween(src, 'function adoptUser(nextUser) {', 'if (!profileReaderRef.current) {');
+    const at = ['const left = accountLeft(actorRef.current, nextActor);', 'clearAccountQueries(queryClient);', 'if (left) accountLeftPendingRef.current = true;', 'setUser(nextUser ?? null);'].map(x => adopt.indexOf(x));
+    expect(at.every(i => i >= 0)).toBe(true);
+    expect([...at].sort((a, b) => a - b)).toEqual(at);
+    expect(read('src/app/providers.jsx')).toContain('<AuthProvider queryClient={queryClient} onAccountLeft={() => router.refresh()}>');
   });
-  it('SC 힌트 칸(a0a4 sc-link-3 — 중국어 글꼴 힌트 쿠키 `manabi_sc=1`, 로그아웃 · 계정 이탈 때 syncScHintCookie(false)로 지워야 함)이 들어오면 이 계약이 깨진다 — 그때 표의 scHint 칸(A → 손님 · A → B · 손님 → B는 지움)을 채우고 실제 검사로 바꾼다', () => {
-    const files = [];
-    const walk = dir => { for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const p = path.join(dir, e.name); if (e.isDirectory()) { if (e.name !== '__tests__') walk(p); } else if (/\.(jsx?|mjs)$/.test(e.name)) files.push(p); } };
-    walk(path.join(ROOT, 'src'));
-    const withHint = files.filter(f => /syncScHintCookie|manabi_sc\b/.test(fs.readFileSync(f, 'utf8'))).map(f => path.relative(ROOT, f));
-    expect(withHint, 'sc-link-3이 들어왔다 — SC 힌트 칸을 채운다').toEqual([]);
-    expect(ACCOUNT_BOUNDARY_MATRIX.every(r => r.scHint === PENDING)).toBe(true);
+  it('SC 힌트 지움은 화면 캐시 비우기와 같은 판정(accountCacheReset) 안에 있다', () => {
+    const adopt = sliceBetween(read('src/lib/AuthContext.jsx'), 'if (accountCacheReset(', 'if (left) accountLeftPendingRef.current = true;');
+    expect(adopt).toContain('clearAccountQueries(queryClient);');
+    expect(adopt).toContain('syncScHintCookie(false);');
+  });
+  it('손님 확정(세션 쿠키 없음 — 만료 · 다른 탭 로그아웃 뒤 첫 진입)은 힌트를 지우고 refresh는 부르지 않는다', async () => {
+    h.session = null;
+    vi.stubGlobal('document', { cookie: '' });
+    await mount();
+    expect(hint.calls).toContain(false);
+    expect(refreshes).toBe(0);
   });
 });
