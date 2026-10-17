@@ -443,7 +443,7 @@ test('⑦ 팀 사본(local:) — A가 받은 사본을 B가 열지 못한다(A �
     await loginThroughForm(page, 'B', '/home', { inApp: true });
     await startWatch(page);
     await nav(page, localHref);
-    await page.waitForTimeout(2000);
+    await page.getByText('사본이 없어요').first().waitFor(); // 팀 사본 경로(LOCAL_MISSING)로 — 서버에 묻지 않고 B 몫 사본이 없다
     assert.equal(await page.locator('[data-source-token]').count(), 0, 'B: A의 팀 사본 본문이 열리지 않는다');
     await assertNoMarker(page, 'B /viewer/local:');
     assert.equal(await leak(page), null);
