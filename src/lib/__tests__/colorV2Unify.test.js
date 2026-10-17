@@ -132,3 +132,66 @@ describe('WALL-001 대비 지적 위치', () => {
     expect(read('src/app/(app)/studies/page.jsx')).not.toMatch(/opacity:\s*0?\.\d/);
   });
 });
+
+// AXE-CONTRAST-001(오너 「권장대로」 2026-10-17 KST) — axe가 serious로 잡은 대비 5곳. 색상(hue)은 두고 밝기·투명도만 바꿨다.
+// 실제 CSS 값을 읽어 투명도·color-mix까지 바탕에 합성한 뒤 잰다 — 값만 맞고 opacity가 되살아나면 여기서 걸린다.
+describe('AXE-CONTRAST-001 serious 대비 5곳', () => {
+  const hex = (h) => [0, 2, 4].map(i => parseInt(h.replace('#', '').slice(i, i + 2), 16));
+  const toHex = (rgb) => `#${rgb.map(c => Math.round(c).toString(16).padStart(2, '0')).join('')}`;
+  // 글자 fg를 alpha로 바탕 bg 위에 합성한 실제 보이는 색.
+  const over = (fg, alpha, bg) => toHex(hex(fg).map((c, i) => c * alpha + hex(bg)[i] * (1 - alpha)));
+  const esc = (sel) => sel.replace(/[.>[\]()*+?^$|\\]/g, m => `\\${m}`);
+  const decl = (css, sel, prop) => css.match(new RegExp(`${esc(sel)}\\s*\\{(?:[^}]*?;)?\\s*${prop}:\\s*([^;}]+)`))?.[1]?.trim();
+  const shell = read('src/components/web/web-shell.css').match(/^\.manabi-app\{[^}]*\}/m)[0];
+
+  it('① 이어 읽기 머리 윗줄 — 흰 글자 color-mix가 네 언어 색 바탕 모두에서 4.5 이상', () => {
+    const value = decl(read('src/components/learn/learn.css'), '.learn-resume__kicker', 'color');
+    const mix = value.match(/^color-mix\(in srgb,\s*#fff\s+(\d+)%,\s*transparent\)$/);
+    expect(mix, value).toBeTruthy();
+    const alpha = Number(mix[1]) / 100;
+    for (const lang of ['--ja', '--zh', '--en', '--fr']) {
+      const bg = token(shell, lang);
+      expect(bg, lang).toBeTruthy();
+      expect(contrast(over('#ffffff', alpha, bg), bg), lang).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('② 장 머리 부제·목표 — 연분홍 장 머리 바탕(#f6edef) 위 4.5 이상(두 규칙만 바꾼 A안)', () => {
+    const css = read('src/components/books/reading-shell.css');
+    const bg = decl(css, '.manabi-chapter-opening', 'background');
+    expect(bg).toBe('#f6edef');
+    for (const sel of ['.manabi-chapter-subtitle', '.manabi-chapter-goal']) {
+      const fg = decl(css, sel, 'color');
+      expect(fg, sel).toMatch(/^#[0-9a-f]{6}$/);
+      expect(contrast(fg, bg), sel).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('③ 교재 문형 번호·노트 제목 — 종이 · 흰 쪽 · 옅은 칸 · 노트 바탕 모두 4.5 이상', () => {
+    const css = read('src/components/books/reading-manuscript.css');
+    const wash = token(css, '--wash');
+    const noteBg = decl(css, '.book-reading-content .note', 'background');
+    expect(noteBg).toMatch(/^#[0-9a-f]{6}$/);
+    for (const sel of ['.book-reading-content .pattern h3 small', '.book-reading-content .note>b']) {
+      const fg = decl(css, sel, 'color');
+      expect(fg, sel).toMatch(/^#[0-9a-f]{6}$/);
+      for (const bg of ['#ffffff', wash, noteBg, token(shell, '--paper'), token(shell, '--sheet')]) {
+        expect(contrast(fg, bg), `${sel} on ${bg}`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
+  it('④⑤ 단어 위 읽기(본문 · 단어 카드) — 투명도 합성 후 읽기 화면 밝은·세피아·어두운 바탕 모두 4.5 이상', () => {
+    const css = read('src/index.css');
+    const light = token(css, '--book-mauve-main'), dark = token(css, '--book-mauve-dark-text');
+    // 읽기 화면 바탕(Preview 실측 2026-10-17 KST): 밝은 #fff · #f4f6f5(Aa 미리보기), 세피아 #fffefb · #f6f4ee, 어두운 #202625 · #2b3430.
+    const pairs = [[light, '#ffffff'], [light, '#f4f6f5'], [light, '#fffefb'], [light, '#f6f4ee'], [dark, '#202625'], [dark, '#2b3430']];
+    for (const sel of ['.word-token :is(rt, .rt-an)', '.word-fit :is(rt, .rt-an)']) {
+      expect(decl(css, sel, 'color'), sel).toBe('var(--primary-light)');
+      const opacity = Number(decl(css, sel, 'opacity') ?? 1);
+      for (const [fg, bg] of pairs) {
+        expect(contrast(over(fg, opacity, bg), bg), `${sel} ${fg} on ${bg}`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+});

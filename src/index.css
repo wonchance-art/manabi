@@ -2596,7 +2596,6 @@ a.viewer-badge:hover {
   font-size: 0.5em;
   color: var(--primary-light);
   font-weight: 400;
-  opacity: 0.85;
   user-select: none;
   /* 병음처럼 공백 포함 독음이 rt 안에서 접히면 글자 배열이 흔들린다 — 한 줄 고정 */
   white-space: nowrap;
@@ -4562,7 +4561,6 @@ a.viewer-badge:hover {
   font-size: 0.5em;
   color: var(--primary-light);
   font-weight: 400;
-  opacity: 0.85;
   user-select: none;
   white-space: nowrap;
   text-align: center;

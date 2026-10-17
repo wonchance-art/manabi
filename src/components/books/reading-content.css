@@ -4,6 +4,7 @@
 .book-reading-content .paper{max-width:none;background:transparent;border:0;border-radius:0;box-shadow:none;margin:0;padding:44px 0 22px;scroll-margin-top:148px;min-width:0;border-top:1px solid var(--line)}
 .book-reading-content .paper:first-child{border:0;padding-top:32px}
 .book-reading-content .meta,.book-reading-content footer,.book-reading-content .audio-btn,.book-reading-content .roles,.book-reading-content .player,.book-reading-content .lex-tools{display:none!important}
+/* 첫 쪽 h2는 42과 모두 앱 h1(lesson.title)과 같은 글이라 display:none을 지킨다 — sr-only로 바꾸면 제목이 두 번 읽힌다(AXE-CONTRAST-001, 2026-10-17 KST 실측). */
 .book-reading-content.is-lesson .paper:first-child>h2,.book-reading-content.is-lesson .paper:first-child>.subtitle,.book-reading-content.is-lesson .paper:first-child>.goal{display:none}
 .book-reading-content .stage{background:transparent;border-radius:0;padding:0;color:var(--mauve);font-size:11px;letter-spacing:.04em;font-weight:700;margin-bottom:10px}
 .book-reading-content h2{font-size:27px;margin:6px 0 24px;color:var(--ink);letter-spacing:-.035em}
