@@ -2417,6 +2417,9 @@ export default function ViewerPage() {
   const headReading = headIsBase ? (editDictEntry?.reading || null) : selectedToken?.furigana;
   // 사전 행이 없으면 기본형을 루비 없이 세우고 메타에 「기본형 …」 라벨 — 조회가 끝난 뒤에만(깜빡임 방지)
   const headFallback = headIsBase && dictFetched && !editDictEntry?.reading;
+  // 영어 발음 줄(IPA) — 분석기는 IPA를 토큰 furigana에 둔다(analyzeCore dictionary[tokenId].furigana, 영어 토큰 953개 중 672개 ·
+  // reading 칸은 0개 — 운영 실측 2026-10-17 KST). reading만 보던 카드는 줄을 한 번도 그리지 않았다. 저장된 값 그대로(/…/ 포함) 쓴다.
+  const enPronunciation = materialLang === 'English' ? (selectedToken?.furigana || selectedToken?.reading || null) : null;
   const headPicked = headIsBase ? pickedRangeOf(headText, selectedToken.text) : null;
 
   function readingContextSource(token) {
@@ -3239,7 +3242,7 @@ export default function ViewerPage() {
           </div>
         );
       })()}
-      {materialLang === 'English' && selectedToken.reading && <div className="reader-card-pronunciation">{selectedToken.reading}</div>}
+      {enPronunciation && <div className="reader-card-pronunciation">{enPronunciation}</div>}
       </div>
       </div>}
       {inspectChar && !hanjaPopoverMode && (() => {
@@ -3348,7 +3351,7 @@ export default function ViewerPage() {
           </div>
         );
       })()}
-      {classMeaning?.editor||(!classStudyActive&&<div className={`word-detail-card__meaningrow${materialLang === 'English' && selectedToken.reading ? ' word-detail-card__meaningrow--tight' : ''}`}>
+      {classMeaning?.editor||(!classStudyActive&&<div className={`word-detail-card__meaningrow${enPronunciation ? ' word-detail-card__meaningrow--tight' : ''}`}>
         <div className="word-detail-card__meaning" lang={materialLang === 'Korean' ? effectiveExplanationLocale : undefined} aria-busy={(materialLang === 'Korean' && !koreanPieceSelected && localizedWord.loading) || undefined}>
           {materialLang === 'Korean' ? (koreanPieceSelected ? koreanPieceMeaning(selectedToken) : localizedWord.loading ? vt('문맥 뜻을 불러오는 중…') : localizedWord.error ? <button onClick={localizedWord.retry}>{vt('다시 시도')}</button> : localizedWord.meaning) : refMeaning || selectedToken.meaning || '(뜻 없음)'}
         </div>
@@ -3398,7 +3401,7 @@ export default function ViewerPage() {
           onClose={() => setIsEditingToken(false)}
         />
       )}
-      {classStudyActive && materialLang === 'English' && selectedToken.reading && <div className="reader-card-pronunciation">{selectedToken.reading}</div>}
+      {classStudyActive && enPronunciation && <div className="reader-card-pronunciation">{enPronunciation}</div>}
       {classStudyActive && renderClassSentenceAction()}
 
       {/* 읽기를 이어 갈 단어·뜻을 먼저, 켜 둔 참고 정보는 그 아래에 바로 표시한다. */}
