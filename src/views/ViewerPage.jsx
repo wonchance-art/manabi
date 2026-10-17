@@ -71,7 +71,7 @@ import { assertLegacyFsrsAllowed } from '../lib/fsrsLegacyBoundary';
 import { insertConfirmedVocabulary, preservePendingVocabularyReviews } from '../lib/viewerVocabularyCache';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage, failureMessage } from '../lib/errorMessage';
-import { SAVE_GRADES, VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
+import { SAVE_GRADES, VOCAB_UPSERT, buildVocabRow, cardSaveReading } from '../lib/vocabIO';
 import { useVocabularyExclusions } from '../lib/useVocabularyExclusions';
 import { exclusionWord, findVocabularyExclusion } from '../lib/vocabularyExclusion';
 import { callGemini } from '../lib/gemini';
@@ -2723,7 +2723,7 @@ export default function ViewerPage() {
         base: selectedToken.sep_link || selectedToken.base_form,   // kuromoji 경로·이합사 O 조각
         meaning: selectedToken.meaning,
         pos: selectedToken.pos,
-        reading: headIsBase ? headReading : selectedToken.furigana || selectedToken.reading,
+        reading: cardSaveReading({ language: materialLang, headIsBase, headReading, token: selectedToken }), // 영어 기본형 = 사전 읽기 없으면 토큰 IPA(EN-SAVE-IPA-001)
         language: materialLang,
         sourceSentence,
         sourceMaterialId: id,

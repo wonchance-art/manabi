@@ -88,7 +88,7 @@ const pron=f=>card(f).locator('.reader-card-pronunciation');
 const GRADES=['다시','어려움','알맞음','쉬움'];
 
 for(const [width,height] of [[390,844],[1440,900]]){
- test(`EN card ${width}: IPA line (stored /…/ as is) · base-form headword · meaning · dictionary senses · 4 grades · save carries the IPA`,{timeout:180000},async()=>{
+ test(`EN card ${width}: IPA line (stored /…/ as is) · base-form headword · meaning · dictionary senses · 4 grades · save carries the IPA (with or without a dictionary row)`,{timeout:180000},async()=>{
   const f=await open(width,height);
   try{
    await until(()=>f.bulk.length>=1);
@@ -140,6 +140,16 @@ for(const [width,height] of [[390,844],[1440,900]]){
    assert.equal(row.pos,'동사');
    assert.equal(String(row.source_material_id),'94501');
    assert.ok(row.next_review_at,'graded save carries an initial schedule');
+
+   // ⑥ 사전 행 없는 활용형(notebooks → notebook) 저장 — 영어는 토큰의 기본형 IPA로 채운다(EN-SAVE-IPA-001).
+   //    비면 복습 카드에서도 발음이 사라졌다(사전 읽기만 보던 저장).
+   await tap(f,id(1,5),'공책');
+   assert.equal(await headword(f),'notebook');
+   await actions.getByRole('button',{name:/^알맞음/}).click();
+   await until(()=>f.vocab.length===2);
+   assert.equal(f.vocab[1].base_form,'notebook');
+   assert.equal(f.vocab[1].furigana,'/ˈnoʊt.bʊk/','no dictionary row: the token IPA (already the base form) is saved');
+   assert.equal(f.vocab[1].language,'English');
    assert.deepEqual(f.errors,[]);
   }finally{await f.context.close();}
  });
