@@ -60,11 +60,16 @@ export function compactSheetHeight({ tokenBottom, sheetTop, sheetBottom, min = 3
 // 높이 아래로는 못 줄여서). 고른 단어가 아래 절반이면 시트를 머리줄 아래(topLimit)에 세운다 — 쪽 · 쪽 경계는 그대로다.
 // 위에 세울 때도 단어 위 남은 자리가 모자라면 낮추되 카드 핵심(min — 부르는 쪽이 잰 값) 아래로는 줄이지 않고, 원래 높이보다
 // 키우지도 않는다(height null = 원래 높이 — 긴 문장 카드는 핵심이 원래 높이를 넘는다, viewer-word-card 「zh 390 long sentence」).
-// 화면 가운데 띠(390×844에서 약 y 441–529)의 단어는 어느 쪽에 세워도 핵심 높이 때문에 덮일 수 있다 — 덮는 양이 적은 쪽(중점 기준)을 고른다.
+// 위에 세운 시트가 단어를 덮으면(단어 위 자리 < 시트가 줄 수 있는 가장 낮은 높이 = min(카드 핵심, 원래 높이)) 바닥(지금 그대로)에
+// 둔다(2026-10-17 KST 오너 「권장대로」: 머리줄이 큰 배치 — 390 듣기 중 머리줄 바닥 386 · 단어 540 — 에서 위 시트 394–834가 단어를
+// 30/30 덮었다). 시트는 원래 높이보다 커지지 않으므로 핵심이 원래 높이를 넘는 카드(게스트 카드 실측 핵심 1113 · 원래 440)는 원래 높이로
+// 잰다 — 단어 689 · 위 끝 242면 242–682로 덮지 않으니 위에 선다. 바닥 시트도 단어를 덮을 수 있다(낮추기가 핵심 아래로는 못 줄인다) — 기록만.
 // 좌표는 모두 배치 뷰포트 기준 — 보이는 영역은 visualViewport의 offsetTop부터 height만큼이다(키보드가 열리면 줄고 내려간다).
 export function pagedSheetDock({ tokenTop, tokenBottom, viewportTop = 0, viewportHeight, topLimit, naturalHeight, min = 368, margin = 12 }) {
   if (![tokenTop, tokenBottom, viewportTop, viewportHeight, topLimit, naturalHeight].every(Number.isFinite)) return { dock: 'bottom' };
   if ((tokenTop + tokenBottom) / 2 <= viewportTop + viewportHeight / 2) return { dock: 'bottom' };
-  const height = Math.max(min, Math.floor(tokenTop - margin - topLimit));
+  const need = Math.min(min, naturalHeight); // 위에 세운 시트의 가장 낮은 높이
+  if (tokenTop - Math.ceil(topLimit) < need) return { dock: 'bottom' }; // 그 높이로도 단어를 덮는다
+  const height = Math.max(need, Math.floor(tokenTop - margin - topLimit));
   return { dock: 'top', top: Math.ceil(topLimit), height: height >= naturalHeight ? null : height };
 }
