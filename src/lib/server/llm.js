@@ -464,6 +464,48 @@ export const BENCH_MODELS = Object.freeze({
   'claude-sonnet-5-5': Object.freeze({ provider: 'anthropic', model: 'claude-sonnet-5-5', env: 'ANTHROPIC_API_KEY', label: 'Claude Sonnet 5.5 (품질 경로 · thinking 끔)', price: [2.00, 10.00] }),
   'gpt-6-luna': Object.freeze({ provider: 'openai', model: 'gpt-6-luna', env: 'OPENAI_API_KEY', label: 'GPT-6 Luna (reasoning none)', price: [0.10, 0.50] }),
 });
+/**
+ * 운영 모델 → 단가($/MTok [입력, 출력]) — 측정 표(BENCH_MODELS)의 단가를 그대로 쓴다(단가가 사는 곳은 한 곳). 공개가 기준 추정이며 청구액이 아니다.
+ * 추론(thinking) 토큰은 세 제공자 모두 출력으로 청구되므로 출력 단가로 센다. Haiku 5.5의 100K 넘는 프롬프트 요율(입출력 5배)은 반영하지 않는다
+ * (운영 프롬프트는 수천 토큰 — 넘는 호출이 생기면 과소 추정).
+ */
+export const MODEL_PRICES = Object.freeze(Object.fromEntries(Object.values(BENCH_MODELS).map((s) => [s.model, Object.freeze({ provider: s.provider, price: s.price })])));
+export const PRICE_AS_OF = '2026-10-17 KST(Gemini · Groq · OpenAI는 2026-10-09 공개가)';
+
+/** 토큰 → 추정 비용(달러). 단가를 모르는 모델은 null(0으로 숨기지 않는다). */
+export function estimateCostUsd(model, usage) {
+  const p = MODEL_PRICES[model];
+  if (!p) return null;
+  const [pin, pout] = p.price;
+  const inT = Number(usage?.in) || 0;
+  const outT = (Number(usage?.out) || 0) + (Number(usage?.thinking) || 0);
+  return Number(((inT * pin + outT * pout) / 1e6).toFixed(6));
+}
+
+/**
+ * 인메모리 창(getLLMStats) → provider · 모델별 추정 비용. 인스턴스 하나의 창이라 운영 전체가 아니다 — 월 추정은 로그 스크립트
+ * (scripts/eval/llm-cost-from-logs.mjs)가 한다.
+ */
+export function llmCostSummary(snapshot = getLLMStats()) {
+  const byModel = new Map();
+  for (const models of Object.values(snapshot?.tiers || {})) {
+    for (const [model, b] of Object.entries(models || {})) {
+      const row = byModel.get(model) || { model, provider: MODEL_PRICES[model]?.provider ?? null, calls: 0, ok: 0, in: 0, out: 0, thinking: 0 };
+      for (const k of ['calls', 'ok', 'in', 'out', 'thinking']) row[k] += Number(b?.[k]) || 0;
+      byModel.set(model, row);
+    }
+  }
+  const rows = [...byModel.values()].map((r) => ({ ...r, costUsd: estimateCostUsd(r.model, r) })).sort((a, b) => (b.costUsd ?? 0) - (a.costUsd ?? 0));
+  const unpriced = rows.filter((r) => r.costUsd == null && (r.in || r.out || r.thinking)).map((r) => r.model);
+  return {
+    priceAsOf: PRICE_AS_OF,
+    since: snapshot?.since ?? null,
+    byModel: rows,
+    totalUsd: Number(rows.reduce((a, r) => a + (r.costUsd ?? 0), 0).toFixed(6)),
+    unpriced,
+  };
+}
+
 const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 // Gemini 밖 모델에는 JSON 강제 모드를 쓰지 않는다 — 우리 프롬프트는 배열을 요구하는데 json_object는 객체만 허용한다.
 // 대신 같은 꼬리 한 줄을 세 모델에 똑같이 붙인다(공정 비교).
