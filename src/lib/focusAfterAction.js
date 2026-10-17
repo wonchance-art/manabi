@@ -30,3 +30,27 @@ export function focusIfFree(target, scope) {
 export function ignoreHeldKey(event) {
   if (event.repeat && (event.key === 'Enter' || event.key === ' ')) event.preventDefault();
 }
+
+/**
+ * 어순 배열 — 누른 낱말 칩이 사라진 뒤 초점을 받을 자리(FOCUS-WORD-ORDER-001).
+ * root = 그 문항([data-order-root]). zone = 누른 칩이 있던 곳('bank' 남은 칩 줄 · 'line' 놓인 칩 줄), index = 그 줄에서의 순서.
+ * 남은 칩을 골랐으면: 같은 자리로 밀려 온 다음 남은 칩(마지막이었으면 그 앞) → 없으면 첫 놓인 칩 → 없으면 「확인」([data-order-confirm]).
+ * 놓인 칩을 되돌렸으면: 같은 자리의 다음 놓인 칩 → 없으면 첫 남은 칩 → 없으면 「확인」. 잠긴(disabled) 칩은 건너뛴다.
+ * 모두 없으면 null — 답이 끝난 화면은 부모(오늘 학습 「계속 →」)가 초점을 정한다.
+ */
+export function orderChipTarget(root, zone, index) {
+  if (!root) return null;
+  const enabled = selector => [...root.querySelectorAll(selector)].filter(el => !el.disabled);
+  const bank = enabled('.fr-quiz__tokens .fr-quiz__token'), line = enabled('.fr-quiz__line .fr-quiz__token');
+  const [same, other] = zone === 'line' ? [line, bank] : [bank, line];
+  return same[Math.min(Math.max(index, 0), same.length - 1)] || other[0] || enabled('[data-order-confirm]')[0] || null;
+}
+
+/** 칩을 누른 그 순간의 자리 — 상태가 바뀌어 칩이 사라지기 전에 적는다. root가 없으면(어순 문항 밖) null. */
+export function orderChipSpot(chip) {
+  const root = chip?.closest?.('[data-order-root]');
+  if (!root) return null;
+  const row = chip.closest('.fr-quiz__line') ? 'line' : 'bank';
+  const siblings = [...chip.parentElement.querySelectorAll('.fr-quiz__token')];
+  return { root, zone: row, index: siblings.indexOf(chip) };
+}
