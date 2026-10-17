@@ -2,11 +2,15 @@ import { Inter, Noto_Sans, Noto_Sans_KR, Noto_Sans_JP, Noto_Sans_SC } from 'next
 import '../index.css';
 import Providers from './providers';
 
+// Inter는 미리 받지 않는다(FONT-PRELOAD-001): 앱 화면(.manabi-app)은 Noto Sans KR · Manrope가 먼저라 Inter 라틴 조각(47kB)이
+// 모든 페이지에서 미리 받아지고 쓰이지 않았다(Preview b8fc2b62 실측 2026-10-17 KST — 배움 · 산책 · 교재 · 뷰어 · 로그인 · 단어 목록 ·
+// /study, 390 · 1440). 미리 받기만 뺀다 — @font-face는 그대로라 쓰는 곳(한국어 뷰어 「Inter」 선택 등)은 그때 받는다.
 const inter = Inter({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-inter',
   display: 'swap',
+  preload: false,
 });
 
 const notoKr = Noto_Sans_KR({
