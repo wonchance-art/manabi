@@ -516,7 +516,7 @@ async function anthropicBenchOnce(model, prompt, { key, signal, maxTokens }) {
  * Groq는 reasoning low, Luna는 reasoning none, Claude는 ANTHROPIC_MODELS 표(Haiku disabled · Sonnet between_tools + effort).
  * @returns {Promise<{ok, text?, ms, usage?, status, code?, detail?}>} — 던지지 않는다. 키 없음은 code 'no_key'.
  */
-export async function benchOnce(id, prompt, { json = false, timeoutMs = 45_000, maxTokens = 4096 } = {}) {
+export async function benchOnce(id, prompt, { json = false, timeoutMs = 45_000, maxTokens = 4096, generationConfig = null } = {}) {
   const spec = BENCH_MODELS[id];
   if (!spec) return { ok: false, code: 'unknown_model', status: 400, ms: 0 };
   const key = process.env[spec.env];
@@ -525,6 +525,20 @@ export async function benchOnce(id, prompt, { json = false, timeoutMs = 45_000, 
   const signal = makeSignal(null, timeoutMs);
   const tailed = json ? prompt + BENCH_JSON_TAIL : prompt;
   let r;
+  // 품질 세트(LLM-BENCH-QUALITY-001) — 운영 호출부의 generationConfig(temperature · 응답 스키마)를 그대로 받아 운영과 같은 요청 형식으로
+  // 보낸다: Gemini는 responseSchema + 최소 thinking, Claude는 운영 anthropicOnce(structured output · 모델 표). Groq · OpenAI는 아래 꼬리 방식.
+  if (generationConfig && (spec.provider === 'gemini' || spec.provider === 'anthropic')) {
+    if (spec.provider === 'anthropic') {
+      r = await anthropicOnce(spec.model, prompt, generationConfig, { key, signal, timeoutMs, thinkingOff: true });
+    } else {
+      const cfg = { ...generationConfig, thinkingConfig: THINKING_OFF_CONFIG };
+      r = await geminiOnce(spec.model, toContents(prompt), cfg, { apiKey: key, signal });
+      if (!r.ok && r.status === 400 && mentionsThinking(r.detail)) {
+        r = await geminiOnce(spec.model, toContents(prompt), generationConfig, { apiKey: key, signal: makeSignal(null, timeoutMs) });
+      }
+    }
+    return { ...r, ms: Date.now() - started };
+  }
   if (spec.provider === 'gemini') {
     const cfg = { temperature: 0, ...(json ? { responseMimeType: 'application/json' } : {}), thinkingConfig: THINKING_OFF_CONFIG };
     r = await geminiOnce(spec.model, toContents(prompt), cfg, { apiKey: key, signal });
