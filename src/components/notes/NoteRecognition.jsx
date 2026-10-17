@@ -44,6 +44,6 @@ export default function NoteRecognition({noteId,capture,sync,current,onApply,onC
       <img src={capture.image} alt="인식할 선택 영역의 필기"/>
       <p>손글씨는 그대로 남기고, 읽은 표현을 정리 목록에 추가해요. 인식한 표기와 뜻은 후보를 보고 직접 골라 주세요.</p>
       {error&&<p role="alert" className="note-row-error">{error}</p>}
-    </div><footer><button className="manabi-button" disabled={busy} onClick={recognize}>{busy?'선택한 필기를 읽는 중…':error?'다시 인식':'이 부분 인식하기'}</button><small role="status">{busy?'닫으면 결과를 적용하지 않아요.':'전체 노트·다른 페이지·연결한 교재는 보내지 않아요.'}</small></footer>
+    </div><footer><span className="sr-only" role="status">{busy?'선택한 필기를 읽는 중…':''}</span><button className="manabi-button" disabled={busy} onClick={recognize}>{busy?'선택한 필기를 읽는 중…':error?'다시 인식':'이 부분 인식하기'}</button><small role="status">{busy?'닫으면 결과를 적용하지 않아요.':'전체 노트·다른 페이지·연결한 교재는 보내지 않아요.'}</small></footer>
   </dialog>;
 }

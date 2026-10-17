@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 // 문구 표준(docs/design/copy-standard.md 로딩 줄)의 두 꼴 + 이 리포에 실제로 있는 대기 동사들.
-export const LOADING_PHRASE = /(불러오는 중|불러오고 있어요|찾는 중|확인하는 중|확인 중…|확인하고 있어요|여는 중…|세는 중…|준비 중…|만드는 중…|번역 중…|펼치고 있어요|이동하고 있어요|분석하고 있어요|저장하고 있어요|글꼴을 불러오는 중이에요)/;
+export const LOADING_PHRASE = /(불러오는 중|불러오고 있어요|찾는 중|확인하는 중|확인 중…|확인하고 있어요|여는 중…|세는 중…|준비 중…|만드는 중…|번역 중…|펼치고 있어요|이동하고 있어요|분석하고 있어요|저장하고 있어요|읽는 중…|글꼴을 불러오는 중이에요)/;
 const SKIP_TAGS = new Set(['button', 'Button', 'option', 'Option', 'title', 'label']);
 const QUOTED = /(['"`])((?:\\.|(?!\1)[^\\])*)\1/g;
 

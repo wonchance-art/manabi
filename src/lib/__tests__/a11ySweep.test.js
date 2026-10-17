@@ -143,6 +143,11 @@ describe('⑤ 상시 알림 영역의 보이는 사본 — aria-hidden + 이름 
     ['src/views/ViewerPage.jsx', '<span className="sr-only" role="status">{isAnalyzing', '<span className="analyzing-banner__line" aria-hidden="true">{recoveryLine('],
     ['src/components/admin/BulkAnalysisPanel.jsx', '<span className="sr-only" role="status">{running ?', '<span className="bulk-analysis__progress" aria-hidden="true">'],
     ['src/components/LiteraturePublishPanel.jsx', '<span className="sr-only" role="status">{batch ?', '<span className="literature-batch__progress" aria-hidden="true">'],
+    // 사용자 화면의 긴 작업(LOADING-ANNOUNCE-002) — 필기 인식은 버튼 글자가 보이는 쪽이라 숨긴 사본이 없다
+    ['src/views/StudySessionPage.jsx', "<span className=\"sr-only\" role=\"status\">{phase === 'feedback' && produceState?.status === 'grading'", '<p className="study-produce__pending" aria-hidden="true"'],
+    ['src/views/StudySessionPage.jsx', "<span className=\"sr-only\" role=\"status\">{phase === 'feedback' && produceState?.status === 'grading'", '<p className="study-produce__error" aria-hidden="true"'],
+    ['src/components/notes/NoteRecognition.jsx', "<span className=\"sr-only\" role=\"status\">{busy?'선택한 필기를 읽는 중…'", null],
+    ['src/components/classroom/BoardInkRecognition.jsx', "<span className=\"sr-only\" role=\"status\">{busy?'선택한 필기를 읽는 중…'", null],
   ];
   it('화면 코드의 상시 알림 영역은 모두 목록에 있다(새 영역은 칸과 함께 등록)', () => {
     const found = [];

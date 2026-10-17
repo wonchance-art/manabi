@@ -1543,9 +1543,11 @@ export default function StudySessionPage({
             </>
           )}
 
+          {/* 첨삭(AI — 긴 작업) 알림 — 영역은 늘 두고 내용만, 끝 상태(받지 못함)까지 같은 영역에(LOADING-ANNOUNCE-002). 보이는 줄은 한 번만 읽히게 숨긴다. */}
+          <span className="sr-only" role="status">{phase === 'feedback' && produceState?.status === 'grading' ? '첨삭 확인 중…' : phase === 'feedback' && produceState?.status === 'error' ? '첨삭을 받지 못했어요 — 다음에 다시 해 봐요' : ''}</span>
           {phase === 'feedback' && produceState?.status === 'grading' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14 }}>
-              <p aria-busy="true" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>첨삭 확인 중…</p>
+              <p className="study-produce__pending" aria-hidden="true" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>첨삭 확인 중…</p>
               <button type="button" onClick={skipProduceGrading} className="study-textlink">
                 건너뛰고 마치기
               </button>
@@ -1583,7 +1585,7 @@ export default function StudySessionPage({
           })()}
 
           {phase === 'feedback' && produceState?.status === 'error' && (
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: 14 }}>
+            <p className="study-produce__error" aria-hidden="true" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: 14 }}>
               첨삭을 받지 못했어요 — 다음에 다시 해 봐요
             </p>
           )}

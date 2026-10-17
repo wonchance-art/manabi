@@ -20,6 +20,15 @@ const LONG_TASK_REGIONS = {
   'src/components/admin/BulkAnalysisPanel.jsx': 1,
   'src/components/LiteraturePublishPanel.jsx': 1,
   'src/views/ViewerPage.jsx': 2, // 자세한 설명(AI) · 분석/복구 배너
+  'src/views/StudySessionPage.jsx': 1, // /study 첨삭(AI) — LOADING-ANNOUNCE-002
+  'src/components/notes/NoteRecognition.jsx': 1, // 노트 필기 인식(AI)
+  'src/components/classroom/BoardInkRecognition.jsx': 1, // 설명판 필기 인식(AI)
+};
+// ③ 버튼 글자만 바뀌던 긴 작업(LOADING-ANNOUNCE-002) — 같은 글이 버튼 밖 상시 영역(sr-only role=status)에도 있어야 한다.
+// 짧은 상태어 버튼(「저장 중…」 「여는 중…」)은 문구 표준대로 버튼 안에만 둔다 — 여기엔 긴 작업만 적는다.
+const LONG_TASK_BUTTONS = {
+  'src/components/notes/NoteRecognition.jsx': '선택한 필기를 읽는 중…',
+  'src/components/classroom/BoardInkRecognition.jsx': '선택한 필기를 읽는 중…',
 };
 // 대기 글처럼 보이지만 대기 영역이 아닌 줄(이유와 함께). 줄 번호가 아니라 글로 잡는다.
 const NOT_LOADING = {
@@ -108,6 +117,28 @@ describe('③ 긴 작업 — 늘 있는 영역 · 약 10%마다', () => {
     expect(src).toContain('<span className="analyzing-banner__line" aria-hidden="true">{vt(analyzingLine)}</span>');
     expect(src).toContain('<span className="analyzing-banner__line" aria-hidden="true">{recoveryLine(reanalyze.recovery?.completed)}</span>');
     expect(src).not.toMatch(/<span role="status" aria-live="polite">\{reanalyze\.committing/);
+  });
+});
+
+describe('③ 사용자 화면의 긴 작업 — /study 첨삭 · 필기 인식(LOADING-ANNOUNCE-002)', () => {
+  it('버튼 글자만 바뀌던 긴 작업은 같은 글을 버튼 밖 상시 영역에도 싣는다', () => {
+    for (const [file, text] of Object.entries(LONG_TASK_BUTTONS)) {
+      const src = read(file);
+      expect(src, file).toMatch(new RegExp(`<button[^>]*>\\{busy\\?'${text}'`));
+      const regions = loadingElements(src).filter((el) => srOnly(el.attrs) && announces(el.attrs) && el.inner.includes(`'${text}'`));
+      expect(regions.map((el) => el.inner), file).toEqual([`{busy?'${text}':''}`]);
+    }
+  });
+  it('영역은 조건 밖 — 노트는 footer 첫 자식, 설명판은 footer 안 버튼 앞', () => {
+    expect(read('src/components/notes/NoteRecognition.jsx')).toContain("<footer><span className=\"sr-only\" role=\"status\">{busy?'선택한 필기를 읽는 중…':''}</span><button className=\"manabi-button\"");
+    expect(read('src/components/classroom/BoardInkRecognition.jsx')).toMatch(/<footer>\{error&&<p role="alert">\{error\}<\/p>\}\{message&&<p role="status">\{message\}<\/p>\}\s*\{\/\*[^*]*\*\/\}\s*<span className="sr-only" role="status">\{busy\?'선택한 필기를 읽는 중…':''\}<\/span>\s*\{!rows\?<button/);
+  });
+  it('/study 첨삭: 영역은 grading 조건 밖, 끝 상태(받지 못함)도 같은 영역 · 보이는 줄은 숨긴 사본', () => {
+    const src = read('src/views/StudySessionPage.jsx');
+    const region = "<span className=\"sr-only\" role=\"status\">{phase === 'feedback' && produceState?.status === 'grading' ? '첨삭 확인 중…' : phase === 'feedback' && produceState?.status === 'error' ? '첨삭을 받지 못했어요 — 다음에 다시 해 봐요' : ''}</span>";
+    expect(src).toContain(`${region}\n          {phase === 'feedback' && produceState?.status === 'grading' && (`);
+    expect(src).toContain('<p className="study-produce__pending" aria-hidden="true"');
+    expect(src).toMatch(/<p className="study-produce__error" aria-hidden="true"[^>]*>\s*첨삭을 받지 못했어요 — 다음에 다시 해 봐요\s*<\/p>/);
   });
 });
 
