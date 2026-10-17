@@ -252,7 +252,6 @@ function Jindallae({ display, tone }) {
   ));
   return (
     <g lang="ko">
-      <rect x={L.band} y="0" width={120 - L.band} height="168" fill={tone.band} />
       {row([...rtl(display.coverSubtitle)], L.subtitle, HANJA, 's', 800)}
       <path d={L.subRule} stroke={tone.ink} strokeWidth=".6" />
       {/* 글자 사이를 letterSpacing으로 벌리면 옛한글 자모(ᄭ · ᅩ · ᆺ) 사이에도 틈이 생겨 조합이 깨진다 — 글자마다 자리를 준다 */}
@@ -268,10 +267,14 @@ function Jindallae({ display, tone }) {
 // 손으로 그린 도안 글자라 간격이 고르지 않아, 글자 칸(먹 상자 [위, 아래, 왼쪽, 오른쪽])은 오너가 준 대조 사진(2026-10-17 KST)에서 글자마다 잰 값을
 // 그대로 쓴다(사진 너비 = 판 너비, 세로 비율 그대로 — 판보다 긴 사진 아래 끝 8은 그림뿐이라 잘린다).
 // 표지 그림(학 · 붉은 꽃 · 색 면)은 김환기 작품이라 그리지 않는다 — 글자 자리만 실물대로.
+// 오른쪽 끝은 한 줄(오너 「오른쪽 끝이 일렬 재서 깔끔하게」) — 사진에서 잰 칸의 오른쪽 끝(26.7–27.6, 손 도안이라 고르지 않다)을 평균 27.2에
+// 모으고, 글자마다 잰 폭 · 위아래는 그대로 둔다.
+const JEONGEUM_RIGHT = 27.2;
+// [위, 아래, 폭, 먹 보정] — 먹 보정은 글리프마다 먹의 오른쪽 끝이 칸 오른쪽에서 벗어나는 만큼(렌더 실측: 하 · 바 · 람의 ㅏ 획은 나오고 늘 · 별은 들어간다).
 const JEONGEUM_BOXES = Object.freeze([
-  [7.5, 20.7, 10.8, 27.6], [22.2, 36.6, 9.9, 27.3], [37.5, 44.1, 19.8, 27.3], [45.6, 57.9, 10.8, 27.3], [60.6, 74.4, 10.2, 27],
-  [76.5, 82.8, 19.8, 27], [84.3, 98.4, 10.2, 26.7], [100.5, 107.7, 19.8, 26.7], [109.5, 125.1, 10.5, 27],
-]);
+  [7.5, 20.7, 16.8, -1], [22.2, 36.6, 17.4, 0.4], [37.5, 44.1, 7.5, -0.4], [45.6, 57.9, 16.5, -0.8], [60.6, 74.4, 16.8, -1],
+  [76.5, 82.8, 7.2, -0.4], [84.3, 98.4, 16.5, 0.6], [100.5, 107.7, 6.9, -0.4], [109.5, 125.1, 16.5, -0.4],
+].map(([top, bottom, width, nudge]) => [top, bottom, JEONGEUM_RIGHT - width + nudge, JEONGEUM_RIGHT + nudge]));
 const JEONGEUM_BYLINE = Object.freeze({ centers: [25.5, 46.8, 67.8, 90.8, 105.3], top: 152.7, bottom: 162.9 });
 // 글꼴 먹 비율(글자 크기 1에 대한 먹 너비 · 높이) — 렌더 실측. 도안 글자의 먹은 dominant-baseline central에서 먹 높이의 1/10 위로 뜨고,
 // 명조 한자(아래 줄)는 1/20 아래로 처진다 — 둘 다 그만큼 되돌린다.
@@ -515,6 +518,11 @@ function Reynal({ display, tone }) {
     </g>
   );
 }
+
+/** 바탕 조각 — 잉크가 아니라 종이라 닳은 활자(잉크 층) 밖, 결(grain) 아래에 그린다. */
+export const SECOND_UNDER = {
+  jindallae: ({ tone }) => <rect x={JINDALLAE.band} y="0" width={120 - JINDALLAE.band} height="168" fill={tone.band} />,
+};
 
 export const SECOND_DRAW = {
   gaebyeok: Gaebyeok, bakmun: Bakmun, dongbaek: Dongbaek, isang: Isang, gamja: Gamja, jindallae: Jindallae, 'jeongeum-1955': Jeongeum1955,

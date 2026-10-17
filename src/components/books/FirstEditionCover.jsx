@@ -1,7 +1,7 @@
 import { useId } from 'react';
 import { Metamorphous, Noto_Serif_SC, Rye } from 'next/font/google';
 import { FIRST_EDITION_BINDINGS, romanYear, templateTone } from '../../lib/firstEditionCover';
-import { PERIOD_FONTS, SECOND_DRAW, SECOND_FONT_CLASS, SECOND_GROUNDS } from './FirstEditionCoverSecond';
+import { PERIOD_FONTS, SECOND_DRAW, SECOND_FONT_CLASS, SECOND_GROUNDS, SECOND_UNDER } from './FirstEditionCoverSecond';
 import { THIRD_DRAW, THIRD_FONT_CLASS, THIRD_GROUNDS } from './FirstEditionCoverThird';
 import { SONG, TEMPLATE_DRAW } from './FirstEditionCoverTemplate';
 import './first-edition-cover.css';
@@ -206,11 +206,14 @@ const DRAW = { nahan: Nahan, kaiming: Kaiming, lemerre: Lemerre, marpon: Marpon,
 // ② 재질: 장정마다 material(paper · cloth · board · burlap) 하나 — 결의 세기와 낡음의 세기가 재질로만 정해진다.
 // ③ 낡음(빈티지): 모든 책에 같은 네 겹 — 가장자리 바램(테두리 쪽 갈변) · 얼룩(종이·보드만, 갈색 점) · 모서리 닳음 · 인쇄 번짐(글자·그림 가장자리가
 //    살짝 거칠어짐). 위치·모양은 장정 이름에서 나온 씨앗으로 정해져 늘 같다(결정적 — 같은 책은 언제 그려도 같은 낡음).
+// ④ 닳은 활자(오너 「옛날에 나온 책 답게 폰트를 매끄럽게 처리하지 말고 조금 낡은 것처럼」 2026-10-17 KST): 인쇄 번짐 위에 고운 잉크 빠짐(닳은 활자 ·
+//    덜 묻은 잉크의 흰 점, voids — 이 값보다 큰 잡음 자리가 빈다)과 넓게 고르지 않은 잉크 농도(density — 가장 옅은 자리가 1 − density)를 더한다.
+//    천 · 마포는 박 · 압인이라 덜 빠진다. 잉크 층에만 걸고 종이(진달래꽃 띠 같은 바탕 조각)는 UNDER로 잉크 층 밖에 둔다.
 const AGING = Object.freeze({
-  paper: { grain: 0.1, toning: 0.26, foxing: 5, wear: 0.16, ink: 0.42 },
-  board: { grain: 0.14, toning: 0.3, foxing: 7, wear: 0.2, ink: 0.3 },
-  cloth: { grain: 0.06, toning: 0.18, foxing: 0, wear: 0.24, ink: 0.3 },
-  burlap: { grain: 0.08, toning: 0.16, foxing: 0, wear: 0.18, ink: 0.3 },
+  paper: { grain: 0.1, toning: 0.26, foxing: 5, wear: 0.16, ink: 0.6, voids: 0.85, density: 0.2 },
+  board: { grain: 0.14, toning: 0.3, foxing: 7, wear: 0.2, ink: 0.5, voids: 0.86, density: 0.18 },
+  cloth: { grain: 0.06, toning: 0.18, foxing: 0, wear: 0.24, ink: 0.4, voids: 0.9, density: 0.12 },
+  burlap: { grain: 0.08, toning: 0.16, foxing: 0, wear: 0.18, ink: 0.4, voids: 0.9, density: 0.12 },
 });
 
 /** 장정 이름 → 0–1 난수열(mulberry32). 같은 이름이면 늘 같은 열. */
@@ -253,6 +256,7 @@ export default function FirstEditionCover({ work }) {
   const tone = template ? templateTone(display) : FIRST_EDITION_GROUNDS[binding];
   if (!tone) return null;
   const Draw = DRAW[binding];
+  const Under = SECOND_UNDER[binding];
   const { material } = FIRST_EDITION_BINDINGS[binding];
   const age = AGING[material];
   // 정의 id — React 트리가 둘 이상인 화면에서도 겹치지 않게 장정 이름을 붙인다.
@@ -267,10 +271,16 @@ export default function FirstEditionCover({ work }) {
             <feColorMatrix values={`0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 ${age.grain} 0`} />
             <feComposite in2="SourceGraphic" operator="in" />
           </filter>
-          {/* 인쇄 번짐 — 글자·그림 가장자리를 살짝 흔든다(활판·석판 인쇄와 오래된 박) */}
+          {/* 인쇄 번짐 — 글자·그림 가장자리를 살짝 흔든다(활판·석판 인쇄와 오래된 박) · 닳은 활자 — 고운 잉크 빠짐과 고르지 않은 농도 */}
           <filter id={`${id}-ink`} x="-2%" y="-2%" width="104%" height="104%">
             <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="1" seed="11" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale={age.ink} xChannelSelector="R" yChannelSelector="G" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale={age.ink} xChannelSelector="R" yChannelSelector="G" result="moved" />
+            <feTurbulence type="fractalNoise" baseFrequency="2.2" numOctaves="2" seed="29" result="speck" />
+            <feColorMatrix in="speck" values={`0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -10 0 0 0 ${(10 * age.voids).toFixed(2)}`} result="voids" />
+            <feComposite in="moved" in2="voids" operator="in" result="worn" />
+            <feTurbulence type="fractalNoise" baseFrequency=".16" numOctaves="2" seed="5" result="blot" />
+            <feColorMatrix in="blot" values={`0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  ${(2.5 * age.density).toFixed(3)} 0 0 0 ${(1 - 1.75 * age.density).toFixed(3)}`} result="density" />
+            <feComposite in="worn" in2="density" operator="in" />
           </filter>
           {/* 가장자리 바램 — 가운데는 그대로, 테두리 쪽으로 갈변 */}
           <radialGradient id={`${id}-toning`} cx="50%" cy="48%" r="72%">
@@ -279,6 +289,7 @@ export default function FirstEditionCover({ work }) {
           </radialGradient>
         </defs>
         <rect width="120" height="168" fill={tone.ground} />
+        {Under && <Under display={display} tone={tone} />}
         <rect width="120" height="168" fill={tone.ground} filter={`url(#${id}-grain)`} />
         <g filter={`url(#${id}-ink)`}><Draw display={display} tone={tone} id={id} /></g>
         {/* 틀 장정은 여러 책이 같은 이름이라 제목을 씨앗에 더한다 — 같은 책은 늘 같게, 다른 책은 다르게 낡는다 */}

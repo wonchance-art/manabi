@@ -168,9 +168,14 @@ describe('2차 묶음(오너 「원본 책 재구성 … 표지 만들기까지 
     expect(source).toContain('Intl.Segmenter'); // 자간(letterSpacing)은 옛한글 자모 조합을 깨서 글자 단위로 놓는다
     // 1955 정음사 제목 — 손 도안 글자라 글자 칸을 실물에서 잰 값 그대로(9자), 「詩」도 굵은 고딕(명조로 떨어지지 않게)
     expect(source).toMatch(/const HEAVY = stack\('--font-fe-blackhan', 'Black Han Sans', stack\('--font-fe-dela', 'Dela Gothic One'/u);
-    expect(source.match(/JEONGEUM_BOXES = Object\.freeze\(\[([\s\S]*?)\]\);/u)[1].match(/\[/gu)).toHaveLength(9);
+    expect(source.match(/JEONGEUM_BOXES = Object\.freeze\(\[([\s\S]*?)\]\.map/u)[1].match(/\[/gu)).toHaveLength(9);
+    expect(source).toContain('[top, bottom, JEONGEUM_RIGHT - width + nudge, JEONGEUM_RIGHT + nudge]'); // 오른쪽 끝 한 줄(오너 지시)
     expect(source).toMatch(/JEONGEUM_BYLINE = Object\.freeze\(\{ centers: \[[^\]]+\]/u); // 아래 줄 「尹東柱 詩集」 5자
-    expect(source).toMatch(/<rect x=\{L\.band\}/u); // 진달래꽃 오른쪽 책등 쪽 띠(오너 대조 사진)
+    expect(source).toMatch(/jindallae: \(\{ tone \}\) => <rect x=\{JINDALLAE\.band\}/u); // 진달래꽃 오른쪽 책등 쪽 띠(오너 대조 사진) — 종이라 잉크 층 밖(UNDER)
+    // 닳은 활자(오너 「폰트를 매끄럽게 처리하지 말고 조금 낡은 것처럼」) — 잉크 층에 잉크 빠짐 · 농도 고르지 않음, 재질마다 세기
+    const first = read('src/components/books/FirstEditionCover.jsx');
+    expect(first).toMatch(/paper: \{[^}]*voids: 0\.8\d, density: 0\.\d+ \}/u);
+    expect(first).toContain('result="voids"'); expect(first).toContain('result="density"');
   });
 });
 
