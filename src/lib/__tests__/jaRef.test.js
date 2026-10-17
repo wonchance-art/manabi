@@ -18,6 +18,11 @@ describe('getJaRef — 사전 행에서 ja 추출', () => {
     expect(getJaRef({ meanings: [{ meaning: '계획' }] })).toBeUndefined();
     expect(getJaRef(null)).toBeUndefined();
   });
+
+  it('뜻이 문자열인 옛 행은 던지지 않고 미판정(undefined) — 객체 행의 ja는 그대로 찾는다', () => {
+    expect(getJaRef({ meanings: ['안녕하세요'] })).toBeUndefined();
+    expect(getJaRef({ meanings: ['일', { meaning: '일하다', ja: null }] })).toBeNull();
+  });
 });
 
 describe('formatJaRef — 표시 문자열', () => {
