@@ -87,8 +87,12 @@ describe('좁은 폭 듣기 막대 한 줄(390)', () => {
     expect(b).toContain('.manabi-app .viewer-layout .viewer-topbar .listen-controls__panel{flex-wrap:nowrap;gap:0;padding:0 2px}');
     expect(b).toMatch(/\.listen-controls__progress,\s*\.manabi-app \.viewer-layout \.viewer-topbar \.listen-controls__rate\{display:none\}/);
   });
-  it('지금 문장 줄은 따라가기 중(쪽 넘김 · 본문 강조)에만 숨긴다 — 스크롤 보기는 그대로', () => {
-    expect(block()).toContain('.manabi-app .viewer-layout .viewer-topbar .listen-controls--follow .listen-controls__current{display:none}');
+  it('지금 문장 줄은 따라가기 화면(쪽 넘김 · 본문 강조)에서 폭과 상관없이 숨긴다(B1) — 스크롤 보기 · 분석 어긋남은 그대로', () => {
+    // 넓은 폭에서도 줄 높이가 문장 길이를 따라 머리줄을 71↔222px로 바꿔 문장마다 쪽이 다시 흘렀다(768 · 1024 · 1440 실측 7↔10쪽).
+    // 규칙은 좁은 폭 블록 밖(전 폭)에 있어야 한다 — 블록 안으로 돌아가면 넓은 폭이 다시 흐른다.
+    const rule = '.manabi-app .viewer-layout .viewer-topbar .listen-controls--follow .listen-controls__current{display:none}';
+    expect(block()).not.toContain(rule);
+    expect(css().split('\n')).toContain(rule);
     expect(read('src/components/ListenControls.jsx')).toContain("<div className={followActive ? 'listen-controls listen-controls--follow' : 'listen-controls'}>");
     expect(viewer()).toContain('followActive={listenFollowable}');
   });
@@ -99,9 +103,15 @@ describe('좁은 폭 듣기 막대 한 줄(390)', () => {
 });
 
 describe('2단계 [지금 문장으로](목업 listen-resume B안)', () => {
+  it('시트(옆 · 아래)가 열린 동안은 칩을 숨긴다 — 시트 단어의 쪽을 떠나지 않게; 판정은 자동 이동 가드와 같은 값', () => {
+    const v = viewer();
+    expect(v).toContain('const pagedSheetOpen = inspectorOpen || (!!selectedToken && isSheetOpen);');
+    expect(v).toContain('pagedGuard.current = { dragging: tokenRange.dragging, sheetOpen: pagedSheetOpen, blocked: keyHandlersRef.current.blocked };');
+    expect(v).toContain('extra={listenFollowable && listenStopped && !pagedSheetOpen ? (');
+  });
   it('멈춘 동안에만 쪽 막대 가운데 칩 — 버튼 모양은 자동 진행 단독 버튼 재사용, 보이는 글자 = 접근 이름(aria-label 없음), 단축키 없음', () => {
     const v = viewer();
-    const chip = sliceBetween(v, '{pagedActive&&<PageBar pager={pager} barRef={pageBarRef} tr={vt} extra={listenFollowable && listenStopped ? (', ') : null}/>}');
+    const chip = sliceBetween(v, '{pagedActive&&<PageBar pager={pager} barRef={pageBarRef} tr={vt} extra={listenFollowable && listenStopped && !pagedSheetOpen ? (', ') : null}/>}');
     expect(chip).toContain('className="viewer-pace-float__btn reader-pagebar__resume"');
     expect(chip).toContain("<span>{vt('지금 문장으로')}</span>");
     expect(chip).toContain("title={vt('듣고 있는 문장의 쪽으로 가고 다시 따라가요')}");

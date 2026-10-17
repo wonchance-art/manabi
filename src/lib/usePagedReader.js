@@ -133,10 +133,14 @@ export function createPagedController(pages, options = () => ({})) {
   const win = () => opt().window || (typeof window !== 'undefined' ? window : null);
   let width = 0, gap = 0, step = 1, count = 1, page = 0, ready = false, height = 0;
   let anchor = { kind: 'start' }, programmatic = null, destroyed = false, frame = 0;
+  // 읽기 진도 쪽(readPage)은 자동 이동(reveal auto — 듣기 따라가기)이 올리지 않는다(LISTEN-FOLLOW · 진도 보존): 따라가기 전에는 듣기가
+  // 쪽을 옮기지 않아 진도가 그대로였다. 사람의 이동(goTo · 넘김 · 키 · 초점 · 남의 스크롤)과 auto가 아닌 reveal(시트 단어 · [지금 문장으로])만
+  // 진도를 옮긴다. autoHeld = 지금 기준이 자동 이동이 정한 것 — 그 사이 다시 흐름(relayout)도 진도를 옮기지 않는다.
+  let readPage = 0, autoHeld = false;
   const subscribers = new Set();
-  const snapshot = () => ({ page, count, ready, progress: ready ? pageProgress(page, count) : 0, label: pageLabel(page, count) });
+  const snapshot = () => ({ page, count, ready, progress: ready ? pageProgress(page, count) : 0, readProgress: ready ? pageProgress(readPage, count) : 0, label: pageLabel(page, count) });
   let last = '';
-  const emit = () => { const s = snapshot(), key = `${s.page}/${s.count}/${s.ready}`; if (key === last) return; last = key; subscribers.forEach(fn => fn(s)); };
+  const emit = () => { const s = snapshot(), key = `${s.page}/${s.count}/${s.ready}/${s.readProgress}`; if (key === last) return; last = key; subscribers.forEach(fn => fn(s)); };
 
   const box = () => pages.getBoundingClientRect();
   const rawPageOf = (rect, origin = box()) => pageOfOffset(rect.left - origin.left - (pages.clientLeft || 0) + (pages.scrollLeft || 0), step);
@@ -213,7 +217,7 @@ export function createPagedController(pages, options = () => ({})) {
     if (destroyed || !ready) return page;
     const next = clampPage(target, count);
     scrollToPage(next, animate);
-    page = next;
+    page = next; readPage = next; autoHeld = false;
     if (user) { anchor = captureAnchor(next); opt().onUserPage?.(anchor, next); }
     emit();
     return next;
@@ -230,6 +234,7 @@ export function createPagedController(pages, options = () => ({})) {
     }
     const target = anchorPage();
     page = clampPage(target ?? page, count);
+    readPage = autoHeld ? clampPage(readPage, count) : page;
     scrollToPage(page, false);
     emit();
   }
@@ -247,11 +252,13 @@ export function createPagedController(pages, options = () => ({})) {
     if (!target || destroyed) return false;
     if (auto && (pressed || opt().canAutoReveal?.() === false)) return ready && pageOf(target) === page;
     anchor = target.nodeType === 1 ? { kind: 'element', el: target } : { kind: 'range', range: target };
+    autoHeld = auto;
     if (!ready) { schedule(); return true; }
     const next = anchorPage();
     if (next == null) return false;
     scrollToPage(next, animate);
     page = next;
+    if (!auto) readPage = next;
     if (user) opt().onUserPage?.(anchor, next);
     emit();
     return true;
@@ -409,7 +416,7 @@ export function createPagedController(pages, options = () => ({})) {
     first: (o = { user: true, animate: true }) => goTo(0, o),
     last: (o = { user: true, animate: true }) => goTo(count - 1, o),
     get anchor() { return anchor; },
-    set anchor(value) { anchor = value || { kind: 'start' }; },
+    set anchor(value) { anchor = value || { kind: 'start' }; autoHeld = false; },
     get state() { return snapshot(); },
     get metrics() { return { width, gap, step, count, height }; },
     subscribe(fn) { subscribers.add(fn); return () => subscribers.delete(fn); },
@@ -443,10 +450,11 @@ const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayout
 /**
  * React 연결. pages는 콜백 ref로 받은 다단 상자 요소(자료가 늦게 뜨면 그때 붙는다). enabled일 때만 제어기를 만든다 — 끄면 상자는 평범한 블록으로 돌아가고(스크롤 보기 = 지금 그대로)
  * 마지막 기준 토큰을 화면 가운데로 데려온다.
- * @returns {{page,count,ready,progress,label,next,prev,first,last,goTo,reveal}}
+ * @returns {{page,count,ready,progress,readProgress,label,next,prev,first,last,goTo,reveal}}
+ * progress = 지금 쪽의 위치(쪽 막대 표시), readProgress = 읽기 진도(자동 이동 제외 — 진행 막대 · 그룹 같이 읽기 push).
  */
 export function usePagedReader({ enabled, pages, barRef, layoutKey, resetKey, onUserPage, canSwipe, canKey, canAutoReveal, captureAnchor, anchorSelector, focusSelector, initialAnchor, bottomGap, topInset }) {
-  const [state, setState] = useState({ page: 0, count: 1, ready: false, progress: 0, label: pageLabel(0, 1) });
+  const [state, setState] = useState({ page: 0, count: 1, ready: false, progress: 0, readProgress: 0, label: pageLabel(0, 1) });
   const controller = useRef(null);
   const latest = useRef({});
   latest.current = { onUserPage, canSwipe, canKey, canAutoReveal, captureAnchor, anchorSelector, focusSelector, initialAnchor, bottomGap, topInset, bar: () => barRef?.current || null, reducedMotion };
@@ -462,7 +470,7 @@ export function usePagedReader({ enabled, pages, barRef, layoutKey, resetKey, on
       const anchor = pager.anchor, target = anchor?.range || anchor?.el;
       unsubscribe(); detach(); registry.delete(pages); pager.destroy();
       if (controller.current === pager) controller.current = null;
-      setState({ page: 0, count: 1, ready: false, progress: 0, label: pageLabel(0, 1) });
+      setState({ page: 0, count: 1, ready: false, progress: 0, readProgress: 0, label: pageLabel(0, 1) });
       // 스크롤 보기로 바꾸면 읽던 글자를 화면으로 데려온다(쪽 → 스크롤도 같은 글자).
       if (target && typeof requestAnimationFrame === 'function') requestAnimationFrame(() => requestAnimationFrame(() => {
         if (!connected(target) || pagerFor(pages)) return;

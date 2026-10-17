@@ -692,8 +692,11 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
   .manabi-app .viewer-layout .viewer-topbar .listen-controls__panel{flex-wrap:nowrap;gap:0;padding:0 2px}
   .manabi-app .viewer-layout .viewer-topbar .listen-controls__progress,
   .manabi-app .viewer-layout .viewer-topbar .listen-controls__rate{display:none}
-  .manabi-app .viewer-layout .viewer-topbar .listen-controls--follow .listen-controls__current{display:none}
 }
+/* 따라가기 화면의 지금 문장 줄은 폭과 상관없이 숨긴다(B1, 2026-10-17 KST) — 줄 높이가 문장 길이를 따라 머리줄을 71↔222px로
+   바꿔 문장마다 쪽이 다시 흘렀다(768 · 1024 · 1440 실측: 7↔10쪽, 긴 문장 첫 낱말 4~6/26회 화면 밖). 지금 문장은 본문 밑줄 ·
+   [지금 문장으로] 칩 · 상태 알림이 알린다. 따라갈 수 없는 화면(스크롤 보기 · 분석 어긋남)은 --follow가 없어 줄이 그대로 보인다. */
+.manabi-app .viewer-layout .viewer-topbar .listen-controls--follow .listen-controls__current{display:none}
 
 /* Word-body hierarchy only. Existing panel scrolling and grading geometry stay intact. */
 .manabi-app .viewer-layout .reader-card-body .word-detail-card__meta{font-size:.75rem;line-height:1.5;gap:8px;letter-spacing:0;margin-bottom:8px}

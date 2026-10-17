@@ -598,6 +598,36 @@ describe('auto reveal yields to people (listen follow)', () => {
     expect(c.reveal(reader.tokenEls[57], { auto: true })).toBe(true);
     expect(c.state.page).toBe(5);
   });
+  // 진도 보존(LISTEN-FOLLOW 리뷰 5-①) — 따라가기 전 듣기는 쪽을 옮기지 않아 읽기 진도(진행 막대 · 그룹 material_pct)가 그대로였다.
+  // 자동 이동은 쪽(progress · 쪽 막대)은 옮겨도 readProgress는 올리지 않는다. 사람의 넘김과 auto 아닌 reveal은 지금처럼 진도.
+  it('auto reveal은 readProgress를 올리지 않는다 — 다시 흐름(relayout)에도 그대로, 사람 넘김 · 보통 reveal은 올린다', () => {
+    const reader = fakeReader();
+    const c = controller(reader, { canAutoReveal: () => true });
+    const start = c.state.readProgress;
+    expect(c.reveal(reader.tokenEls[57], { auto: true })).toBe(true);
+    expect(c.state.page).toBe(5);
+    expect(c.state.readProgress).toBe(start);
+    expect(c.state.progress).not.toBe(start); // 쪽 막대의 지금 쪽 표시는 옮긴다
+    c.relayout();
+    expect(c.state.page).toBe(5);
+    expect(c.state.readProgress).toBe(start);
+    c.next({ user: true });
+    expect(c.state.page).toBe(6);
+    expect(c.state.readProgress).toBe(c.state.progress);
+    expect(c.reveal(reader.tokenEls[57], { auto: true })).toBe(true);
+    const held = c.state.readProgress;
+    expect(c.state.page).toBe(5);
+    expect(held).toBeGreaterThan(c.state.progress); // 6쪽 진도 그대로 — 자동으로 5쪽에 와도 내려가지 않는다(올라가지도 않는다)
+    expect(c.reveal(reader.tokenEls[3])).toBe(true); // [지금 문장으로] · 시트 단어 = auto 아님 → 진도
+    expect(c.state.page).toBe(0);
+    expect(c.state.readProgress).toBe(c.state.progress);
+  });
+  it('배선 — 쪽 넘김 진도는 readProgress(진행 막대 · 그룹 push), 쪽 막대 글은 progress', () => {
+    const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+    expect(viewer).toContain('const readProgress = pagedActive ? pager.readProgress : scrollReadProgress;');
+    expect(viewer).not.toContain('pagedActive ? pager.progress');
+    expect(viewer).toContain('useGroupReadPush(material?.id, user?.id, readProgress);');
+  });
   it('배선 — 뷰어는 시트 · 범위 지정 · 키 차단을 canAutoReveal로 넘기고 듣기는 auto로만 옮긴다; 시트 단어 보이기는 auto가 아니다', () => {
     const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     expect(viewer).toContain('canAutoReveal: () => { const g = pagedGuard.current; return !(g.sheetOpen || g.dragging || g.blocked); },');

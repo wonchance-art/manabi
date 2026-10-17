@@ -937,7 +937,8 @@ export default function ViewerPage() {
     bottomGap: () => parseFloat(pagesEl && getComputedStyle(pagesEl.closest('.viewer-layout') || pagesEl).paddingBottom) || 12,
   });
   // 진행률 소비처(진행 막대·그룹 같이 읽기 push)는 같은 값을 받는다 — 쪽 넘김이면 쪽 기준(설계 §4).
-  const readProgress = pagedActive ? pager.progress : scrollReadProgress;
+  // 쪽 넘김의 진도는 readProgress — 듣기 따라가기의 자동 이동은 진도를 올리지 않는다(따라가기 전 듣기는 쪽을 안 옮겨 진도 불변).
+  const readProgress = pagedActive ? pager.readProgress : scrollReadProgress;
   // 그룹 같이 읽기 진도 push(§4.3) — 이번 주 지정 자료일 때만, 실패 조용히
   useGroupReadPush(material?.id, user?.id, readProgress);
   // 보기 전환 — 스크롤 → 쪽이면 지금 화면 맨 위 글자를 첫 기준으로 넘긴다(쪽 → 스크롤은 훅이 기준 글자를 가운데로 데려온다).
@@ -2940,7 +2941,8 @@ export default function ViewerPage() {
     saveLocked: isWordSaved || saveAnim || selectedExcluded || !wordStateReady || knownPending || exclusionState.mutation.isPending,
     inlineDue: !!user && !selectedExcluded && wordStateReady && !knownPending && !exclusionState.mutation.isPending && isWordSaved && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending,
   };
-  pagedGuard.current = { dragging: tokenRange.dragging, sheetOpen: inspectorOpen || (!!selectedToken && isSheetOpen), blocked: keyHandlersRef.current.blocked };
+  const pagedSheetOpen = inspectorOpen || (!!selectedToken && isSheetOpen);
+  pagedGuard.current = { dragging: tokenRange.dragging, sheetOpen: pagedSheetOpen, blocked: keyHandlersRef.current.blocked };
   const savedCount = (savedWords.surfaces?.size || 0);
 
   // 이 자료에서 복습 가능한 단어 수 (현재 로드된 토큰 기준)
@@ -4599,7 +4601,8 @@ export default function ViewerPage() {
       </div>{/* reader-pages end */}
       {pagedActive&&<PageStrips pager={pager} tr={vt}/>}
       </div>
-      {pagedActive&&<PageBar pager={pager} barRef={pageBarRef} tr={vt} extra={listenFollowable && listenStopped ? (
+      {/* 시트(옆 · 아래)가 열린 동안은 칩을 숨긴다 — 누르면 시트가 보여 주는 단어의 쪽을 떠나고, 시트 동안 자동 이동은 거절돼 밑줄도 사라진다. */}
+      {pagedActive&&<PageBar pager={pager} barRef={pageBarRef} tr={vt} extra={listenFollowable && listenStopped && !pagedSheetOpen ? (
         <button type="button" className="viewer-pace-float__btn reader-pagebar__resume" title={vt('듣고 있는 문장의 쪽으로 가고 다시 따라가요')} onClick={resumeListenFollow}>
           <ActionIcon name="headphones"/><span>{vt('지금 문장으로')}</span>
         </button>) : null}/>}
