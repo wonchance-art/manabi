@@ -881,9 +881,13 @@ test('AE-R4 390 · 1440: 壮观의 观 → 한자 창(머리 · 구성 · 같은
   const label=`观 ${width}`;
   try{
    await until(()=>f.bulk.length>=1);
+   const tapMark=f.requests.length;
    await tap(f,'id_0_7','웅장하다, 장관이다');
    await visibleCard(f.page).locator('.word-fit__hun').first().waitFor();
    await f.page.waitForTimeout(400);
+   // 탭은 읽던 자리를 저장한다(useScrollRestore → 2초 debounce 뒤 reading_progress POST 1건 · last_token_idx 7 — 의도된 쓰기).
+   // 그 POST가 아래 「창을 쓰는 동안 쓰기 0」 세기 안으로 늦게 들어오지 않게, 도착을 본 뒤에 센다(창이 만드는 쓰기는 그대로 잡힌다).
+   await until(()=>f.requests.slice(tapMark).some(r=>r.method==='POST'&&/reading_progress/.test(r.url)),8000);
    const before=await cardBoxes(f.page);
    const mark=f.requests.length;
    // 키보드만: 표제어 글자에 포커스 → Enter로 연다 → 창으로 포커스
