@@ -17,7 +17,7 @@ import { takePassageAnalysis } from '@/lib/passageAnalysis';
 import { composerOf, shouldReadComposerOriginal } from '@/lib/materialComposer';
 import Link from 'next/link';
 import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
-import { readerReturnHref, readerReturnLabel } from '../lib/libraryReturn';
+import { readerReturnHref, readerReturnTarget } from '../lib/libraryReturn';
 import ActionIcon from '../components/ActionIcon';
 import ViewerReferenceExample from '../components/viewer/ViewerReferenceExample';
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -366,7 +366,10 @@ export default function ViewerPage() {
   const classBoardTarget=useRef(null),classBoardHeaderTarget=useRef(null);
   const [classBoardRatio,setClassBoardRatio]=useState(60);
   const [classPresenting,setClassPresenting]=useState(false);
-  const { user, profile, fetchProfile, isAdmin } = useAuth();
+  const { user, profile, fetchProfile, isAdmin, loading: authLoading } = useAuth();
+  // 「←」 복귀 — 확인된 손님이 맥락 없이 열면 산책(/discover). 로그인 확인 중 · 회원 · returnTo가 있으면 지금 그대로(readerReturnTarget).
+  const guestReader = !user && !authLoading;
+  const backTarget = readerReturnTarget(originalParams.get('returnTo'), { guest: guestReader });
   const toast = useToast();
   const queryClient = useQueryClient();
 
@@ -2764,7 +2767,7 @@ export default function ViewerPage() {
         <p style={{ color: 'var(--text-secondary)', maxWidth: 400, margin: '0 auto 20px' }}>{vt("로그인하면 이 장을 읽고 단어를 저장할 수 있어요.")}</p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           <Link href={authEntryHref(`/viewer/${id}`)} className="btn btn--primary">{vt("로그인")}</Link>
-          <LibraryReturnLink className="btn btn--secondary" aria-label={vt(readerReturnLabel(originalParams.get('returnTo')))}><span aria-hidden="true">←</span></LibraryReturnLink>
+          <LibraryReturnLink className="btn btn--secondary" guest={guestReader} aria-label={vt(backTarget.label)}><span aria-hidden="true">←</span></LibraryReturnLink>
         </div>
       </div>
     );
@@ -2784,7 +2787,7 @@ export default function ViewerPage() {
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           {!isNotFound && <button onClick={() => refetch()} className="btn btn--primary">{vt("다시 시도")}</button>}
-          <LibraryReturnLink className="btn btn--secondary" aria-label={vt(readerReturnLabel(originalParams.get('returnTo')))}><span aria-hidden="true">←</span></LibraryReturnLink>
+          <LibraryReturnLink className="btn btn--secondary" guest={guestReader} aria-label={vt(backTarget.label)}><span aria-hidden="true">←</span></LibraryReturnLink>
         </div>
       </div>
     );
@@ -2796,7 +2799,7 @@ export default function ViewerPage() {
       <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
         <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>{vt("비공개 자료예요")}</h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>{vt("이 자료는 작성자만 볼 수 있어요.")}</p>
-        <LibraryReturnLink className="btn btn--primary" aria-label={vt(readerReturnLabel(originalParams.get('returnTo')))}><span aria-hidden="true">←</span></LibraryReturnLink>
+        <LibraryReturnLink className="btn btn--primary" guest={guestReader} aria-label={vt(backTarget.label)}><span aria-hidden="true">←</span></LibraryReturnLink>
       </div>
     );
   }
@@ -3823,7 +3826,7 @@ export default function ViewerPage() {
           {classStudyActive&&originalParams.get('returnTo')?.includes('view=history')&&<LibraryReturnLink className="viewer-back-link">{vt("← 수업 기록")}</LibraryReturnLink>}
           {!classStudyActive&&(material?.__local
             ? <Link href={`/class/${material.__team}`} className="viewer-back-link">{vt("← 팀 페이지")}</Link>
-            : <LibraryReturnLink className="viewer-back-link viewer-back-link--icon" aria-label={vt(readerReturnLabel(originalParams.get('returnTo')))} title={vt(readerReturnLabel(originalParams.get('returnTo')))} data-icon-action><ActionIcon name="back"/></LibraryReturnLink>)}
+            : <LibraryReturnLink className="viewer-back-link viewer-back-link--icon" guest={guestReader} aria-label={vt(backTarget.label)} title={vt(backTarget.label)} data-icon-action><ActionIcon name="back"/></LibraryReturnLink>)}
           {composerOf(material) && <Link className="viewer-back-link" href={sourcePassageHref(material,originalParams.get('returnTo')) || `/viewer/${composerOf(material)?.parentId || id}?returnTo=${encodeURIComponent(originalParams.get('returnTo') || '/materials?view=owned')}`}>{passageOf(material)?`원본의 ${passageLocation(passageOf(material))}으로 ↗`:'현재 글과 첨부 원본 ↗'}</Link>}
           {siblingNav && (
             <div className="viewer-series-nav" title={siblingNav.label}>

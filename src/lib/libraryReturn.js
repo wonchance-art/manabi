@@ -63,6 +63,17 @@ export function readerReturnLabel(value) {
   return url.searchParams.get('tab') === 'public' ? '← 발견' : '← 내 서재';
 }
 
+// 손님은 서재가 없다 — 맥락 없이 연 뷰어의 「←」는 산책(/discover)으로(뷰어 기능 감사 2026-10-17 KST). 뷰어의 아이콘 버튼이라
+// 그림은 같고 접근 이름 · 툴팁 · 이동처만 바뀐다. 쓸 수 있는 returnTo가 있으면(그대로 받은 /materials 포함) 그쪽이 우선이다.
+// 맥락 없음 = returnTo가 없거나 거절돼 기본 /materials로 떨어진 경우(LibraryReturnLink onlyWithContext와 같은 판정).
+export const GUEST_READER_RETURN = Object.freeze({ href: '/discover', label: '← 산책' });
+export function readerReturnTarget(value, { guest = false } = {}) {
+  const back = safeReaderReturn(value);
+  const noContext = !value || (back === '/materials' && value !== '/materials');
+  if (guest && noContext) return { ...GUEST_READER_RETURN, guestDefault: true };
+  return { href: readerReturnHref(value), label: readerReturnLabel(value), guestDefault: false };
+}
+
 export function libraryReaderHref(href, returnTo, scrollY = null) {
   if (!/^\/(?:viewer|pdf|books)\/[^/?#]+(?:[?#]|$)/.test(href)) return href;
   const url = new URL(href, 'https://manabi.invalid');

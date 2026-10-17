@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { safeLibraryReturn, safeReaderReturn, libraryReaderHref, librarySearchHref, readerReturnLabel, readerReturnHref } from '../libraryReturn';
+import { safeLibraryReturn, safeReaderReturn, libraryReaderHref, librarySearchHref, readerReturnLabel, readerReturnHref, readerReturnTarget, GUEST_READER_RETURN } from '../libraryReturn';
 import fs from 'node:fs';
 import path from 'node:path';
 import { sliceBetween } from './helpers/sliceBetween';
@@ -35,7 +35,8 @@ describe('reader return link destination (readerReturnHref)', () => {
   });
   it('배선 — 복귀 링크 · 대화 지우기 뒤 이동이 readerReturnHref를 쓴다(라벨 · 맥락 판정은 back 기준)', () => {
     const link = sliceBetween(read('src/components/web/LibraryReaderLink.jsx'), 'export function LibraryReturnLink');
-    expect(link).toContain('href={readerReturnHref(returnTo)}');
+    expect(link).toContain('const target = readerReturnTarget(returnTo, { guest });');
+    expect(link).toContain('href={target.href}');
     expect(link).toContain('const back = safeReaderReturn(returnTo);');
     expect(link).toContain('readerReturnLabel(back)');
     const remove = sliceBetween(read('src/views/ViewerPage.jsx'), 'const deleteConversation = useCallback', 'const handleConversationTurn');
@@ -96,5 +97,38 @@ describe('library navigation without mixing learning progress',()=>{
     expect(libraryReaderHref('/viewer/123?sourceToken=x#word','/materials')).toContain('sourceToken=x');
     expect(libraryReaderHref('/viewer/123?sourceToken=x#word','/materials')).toMatch(/#word$/);
     expect(libraryReaderHref('/books/japanese-n5#u03','/materials')).toBe('/books/japanese-n5#u03');
+  });
+});
+
+// 손님 「←」 = 산책(뷰어 기능 감사 2026-10-17 KST) — 아이콘 버튼이라 그림은 같고 이름 · 툴팁 · 이동처만 바뀐다.
+describe('guest reader return (readerReturnTarget)', () => {
+  it('맥락 없는 손님은 산책으로 — 없음 · 빈 값 · 거절된 주소', () => {
+    expect(GUEST_READER_RETURN).toEqual({ href: '/discover', label: '← 산책' });
+    for (const value of [null, undefined, '', 'https://evil.test/materials?tab=public', '/admin']) {
+      expect(readerReturnTarget(value, { guest: true }), String(value)).toEqual({ href: '/discover', label: '← 산책', guestDefault: true });
+    }
+  });
+  it('쓸 수 있는 returnTo가 있으면 손님도 그쪽이 우선 — 발견 · 그대로 받은 /materials · 수업', () => {
+    expect(readerReturnTarget('/materials?tab=public&q=school', { guest: true })).toEqual({ href: '/discover?view=reading&q=school', label: '← 발견', guestDefault: false });
+    expect(readerReturnTarget('/materials', { guest: true })).toEqual({ href: '/materials', label: '← 내 서재', guestDefault: false });
+    expect(readerReturnTarget('/class/class-a?view=history', { guest: true }).label).toBe('← 수업 기록');
+  });
+  it('회원 · 로그인 확인 중(guest=false)은 지금 그대로', () => {
+    for (const value of [null, '', '/materials?view=owned', '/materials?tab=public&q=school']) {
+      expect(readerReturnTarget(value), String(value)).toEqual({ href: readerReturnHref(value), label: readerReturnLabel(value), guestDefault: false });
+    }
+  });
+  it('배선 — 뷰어의 「←」 넷이 확인된 손님 판정과 같은 목표를 쓰고, 아이콘(children)은 그대로 그린다', () => {
+    const viewer = read('src/views/ViewerPage.jsx');
+    expect(viewer).toContain('const { user, profile, fetchProfile, isAdmin, loading: authLoading } = useAuth();');
+    expect(viewer).toContain('const guestReader = !user && !authLoading;');
+    expect(viewer).toContain("const backTarget = readerReturnTarget(originalParams.get('returnTo'), { guest: guestReader });");
+    expect(viewer.split('guest={guestReader} aria-label={vt(backTarget.label)}').length - 1).toBe(4);
+    expect(sliceBetween(viewer, '<LibraryReturnLink className="viewer-back-link viewer-back-link--icon"', '</LibraryReturnLink>'))
+      .toContain('title={vt(backTarget.label)} data-icon-action><ActionIcon name="back"/>');
+    expect(viewer).not.toContain('readerReturnLabel(');
+    const link = sliceBetween(read('src/components/web/LibraryReaderLink.jsx'), 'export function LibraryReturnLink');
+    expect(link).toContain("{target.guestDefault || label === '← 내 서재' ? children || target.label : label}");
+    expect(read('src/lib/viewerMessages.js')).toContain("['← 산책','← 漫步','← 漫步']");
   });
 });
