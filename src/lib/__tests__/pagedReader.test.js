@@ -570,6 +570,49 @@ describe('end boxes stay whole across page boundaries', () => {
   });
 });
 
+// 자동 이동 우선순위(LISTEN-FOLLOW, 2026-10-17 KST) — 듣기 따라가기 같은 자동 이동(reveal auto)은 사람과 다른 이동에 진다:
+// 본문을 누르는 중이거나 canAutoReveal()이 거절하면(시트 열림 · 드래그 범위 지정 · 키 차단) 옮기지도 기준을 바꾸지도 않는다.
+// 시트의 단어 보이기(useSelectedTokenVisibility)는 auto가 아니라 늘 이긴다.
+describe('auto reveal yields to people (listen follow)', () => {
+  it('canAutoReveal false → auto reveal은 false · 쪽 · 기준 그대로, 같은 대상의 보통 reveal은 지금처럼 옮긴다', () => {
+    const reader = fakeReader();
+    let allow = false;
+    const c = controller(reader, { canAutoReveal: () => allow });
+    expect(c.reveal(reader.tokenEls[57], { auto: true })).toBe(false);
+    expect(c.state.page).toBe(0);
+    expect(c.reveal(reader.tokenEls[57])).toBe(true);
+    expect(c.state.page).toBe(5);
+    allow = true;
+    expect(c.reveal(reader.tokenEls[3], { auto: true })).toBe(true);
+    expect(c.state.page).toBe(0);
+  });
+  it('누르는 중에는 auto reveal을 거절하고, 손을 떼면 다시 받는다', () => {
+    const reader = fakeReader();
+    const c = controller(reader, { canAutoReveal: () => true });
+    c.handlePointerDown({ pointerId: 9, pointerType: 'mouse', clientX: 10, clientY: 10 });
+    expect(c.reveal(reader.tokenEls[57], { auto: true })).toBe(false);
+    expect(c.state.page).toBe(0);
+    c.handleRelease();
+    expect(c.reveal(reader.tokenEls[57], { auto: true })).toBe(true);
+    expect(c.state.page).toBe(5);
+  });
+  it('배선 — 뷰어는 시트 · 범위 지정 · 키 차단을 canAutoReveal로 넘기고 듣기는 auto로만 옮긴다; 시트 단어 보이기는 auto가 아니다', () => {
+    const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+    expect(viewer).toContain('canAutoReveal: () => { const g = pagedGuard.current; return !(g.sheetOpen || g.dragging || g.blocked); },');
+    expect(sliceBetween(viewer, 'const handleListenSentence = useCallback((index) => {', '}, [listenRanges'))
+      .toContain('if (paged.reveal(el, { auto: true })) setListenTokens(new Set(ids));');
+    const layout = fs.readFileSync(path.join(process.cwd(), 'src/lib/useReaderLayout.js'), 'utf8');
+    expect(layout).toContain('pager.reveal(token);');
+    expect(layout).not.toContain('auto: true');
+    const hook = fs.readFileSync(path.join(process.cwd(), 'src/lib/usePagedReader.js'), 'utf8');
+    expect(sliceBetween(hook, 'function reveal(target, {', 'anchor = target.nodeType'))
+      .toContain("if (auto && (pressed || opt().canAutoReveal?.() === false)) return false;");
+    // 훅이 뷰어의 판정을 컨트롤러로 넘긴다 — 빠지면 시트가 열려 있어도 듣기가 쪽을 옮긴다.
+    expect(sliceBetween(hook, 'export function usePagedReader({', '}) {')).toContain('canAutoReveal');
+    expect(hook).toContain('latest.current = { onUserPage, canSwipe, canKey, canAutoReveal,');
+  });
+});
+
 // 쪽 넘김 A안(VIEWER-AUDIT 2, 오너 「권장대로」 2026-10-17 KST): 고른 단어가 화면 아래 절반이면 시트를 머리줄 아래에 세운다.
 // 쪽 수 · 쪽 경계 · 시트 내용은 그대로 — 시트 자리만 바뀐다. 스크롤 보기 · 1440 옆 패널(position sticky)은 이 경로에 들지 않는다.
 describe('paged sheet dock (A안 — 고른 단어의 반대편)', () => {

@@ -912,10 +912,10 @@ export default function ViewerPage() {
   // 자동 진행은 세로 흐름(휠·터치 감지·문장 스크롤)에 맞춘 기능이라 쪽 넘김 보기에서는 끈다(설계 §4 P0) — 스크롤 보기는 그대로.
   const autoPaceOn = autoPace && !pagedActive;
   // 듣기 따라가기(뷰어 감사 목업 6 · 1단계) — 읽는 **문장**의 토큰(listenTokens)에 은은한 밑줄을 긋고 그 쪽으로 넘긴다.
-  // 손으로 쪽을 넘기거나 시트 · 범위 지정 · 키 차단 · 누르는 중이면 그 듣기가 끝날 때까지 따라가지 않는다(listenFollowOff).
-  // listenActive = 듣는 중(문장을 못 이은 문장이어도) — 손으로 넘기면 멈춤이 늘 걸리게. 판정 · 이동은 sentences 아래 handleListenSentence.
+  // 손으로 쪽을 넘기거나, 자동 이동이 거절되면(누르는 중 · 시트 · 범위 지정 · 키 차단 — pager.reveal auto) 그 듣기가 끝날 때까지
+  // 따라가지 않는다(listenFollowOff). listenActive = 듣는 중(문장을 못 이은 문장이어도) — 손으로 넘기면 멈춤이 늘 걸리게.
   const [listenTokens, setListenTokens] = useState(null);
-  const listenActive = useRef(false), listenFollowOff = useRef(false), listenPressing = useRef(false);
+  const listenActive = useRef(false), listenFollowOff = useRef(false);
   const pager = usePagedReader({
     enabled: pagedActive, pages: pagesEl, barRef: pageBarRef, resetKey: id,
     layoutKey: `${fontSize}|${lineGap}|${charGap}|${fontFamily}|${pronDisplay}|${pinyinSize}|${pinyinCell}|${fontStatus}|${uiLocale}|${wordStateHl}|${showPatterns}`,
@@ -929,6 +929,8 @@ export default function ViewerPage() {
     // 밀기는 글자를 끌어 고르는 중이거나 단어창·보조 패널이 열려 있으면 무시한다(설계 §2).
     canSwipe: () => !pagedGuard.current.dragging && !pagedGuard.current.sheetOpen,
     canKey: () => !pagedGuard.current.blocked,
+    // 자동 이동(듣기 따라가기)은 시트 · 드래그 범위 지정 · 키 차단 중에 진다 — 누르는 중은 pager가 직접 본다(reveal auto).
+    canAutoReveal: () => { const g = pagedGuard.current; return !(g.sheetOpen || g.dragging || g.blocked); },
     bottomGap: () => parseFloat(pagesEl && getComputedStyle(pagesEl.closest('.viewer-layout') || pagesEl).paddingBottom) || 12,
   });
   // 진행률 소비처(진행 막대·그룹 같이 읽기 push)는 같은 값을 받는다 — 쪽 넘김이면 쪽 기준(설계 §4).
@@ -1473,37 +1475,22 @@ export default function ViewerPage() {
     return byLine;
   }, [material?.processed_json]);
   const listenFollowable = pagedActive && !isStaleAnalysis && missingLineCount === 0 && sentences.length > 0;
-  // 시트 · 드래그 범위 지정 · 키 차단 · 누르는 중에는 쪽을 옮기지 않는다 — 그때는 이번 듣기의 따라가기를 멈춘다(리뷰 차단 2).
-  const listenBusy = () => { const g = pagedGuard.current; return !!(g.sheetOpen || g.dragging || g.blocked || listenPressing.current); };
+  // 시트 · 드래그 범위 지정 · 키 차단 · 누르는 중에는 쪽을 옮기지 않는다 — pager.reveal(auto)가 거절하면 이번 듣기의 따라가기를
+  // 멈춘다(리뷰 차단 2). 강조는 이동이 받아들여진 뒤에 단다 — 시트 단어 보이기와 겹치면 그쪽이 이긴다.
   const handleListenSentence = useCallback((index) => {
     if (index == null) { listenActive.current = false; listenFollowOff.current = false; setListenTokens(null); return; }
     listenActive.current = true;
     if (!listenFollowable || listenFollowOff.current) { setListenTokens(null); return; }
-    if (listenBusy()) { listenFollowOff.current = true; setListenTokens(null); return; }
     const ids = listenSentenceTokens(listenRanges[index], line => listenLineTokens.get(line));
-    setListenTokens(ids.length ? new Set(ids) : null);
     const el = ids.length ? tokenRefs.current[ids[0]] : null;
     const paged = el && pagerFor(el);
-    if (paged) requestAnimationFrame(() => {
+    if (!paged) { setListenTokens(null); return; }
+    requestAnimationFrame(() => {
       if (!el.isConnected || listenFollowOff.current) return;
-      if (listenBusy()) { listenFollowOff.current = true; setListenTokens(null); return; }
-      paged.reveal(el);
+      if (paged.reveal(el, { auto: true })) setListenTokens(new Set(ids));
+      else { listenFollowOff.current = true; setListenTokens(null); }
     });
-  // listenBusy는 ref만 읽는다.
   }, [listenRanges, listenLineTokens, listenFollowable, tokenRefs]);
-  // 「누르는 중」 — 본문 상자를 누르고 있는 동안(밀기 · 끌어 고르기 시작)은 쪽을 옮기지 않는다.
-  useEffect(() => {
-    if (!pagesEl) return undefined;
-    const down = () => { listenPressing.current = true; }, up = () => { listenPressing.current = false; };
-    pagesEl.addEventListener('pointerdown', down, { passive: true });
-    document.addEventListener('pointerup', up, true);
-    document.addEventListener('pointercancel', up, true);
-    return () => {
-      pagesEl.removeEventListener('pointerdown', down);
-      document.removeEventListener('pointerup', up, true);
-      document.removeEventListener('pointercancel', up, true);
-    };
-  }, [pagesEl]);
 
   // 어휘 커버리지 배지(#1077-2) — 서재 카드와 **같은 엔진·같은 인덱스**(materialFit ←
   // 담김 ∪ '이미 앎'). 뷰어에서만 다른 수를 보이면 두 화면이 서로를 반증한다.

@@ -43,17 +43,14 @@ describe('뷰어 배선', () => {
   it('문장 단위 — 줄 토큰 표에서 그 문장 토큰만 골라 강조하고, 첫 토큰의 쪽으로', () => {
     const h = handler();
     expect(h).toContain('const ids = listenSentenceTokens(listenRanges[index], line => listenLineTokens.get(line));');
-    expect(h).toContain('setListenTokens(ids.length ? new Set(ids) : null);');
     expect(h).toContain('const el = ids.length ? tokenRefs.current[ids[0]] : null;');
-    expect(h).toContain('paged.reveal(el);');
+    expect(h).toContain('if (paged.reveal(el, { auto: true })) setListenTokens(new Set(ids));');
     expect(h).not.toContain('user: true');
   });
-  it('시트 · 범위 지정 · 키 차단 · 누르는 중에는 옮기지 않고 따라가기를 멈춘다(요청 때 · 실제 이동 직전 둘 다)', () => {
-    expect(viewer()).toContain('const listenBusy = () => { const g = pagedGuard.current; return !!(g.sheetOpen || g.dragging || g.blocked || listenPressing.current); };');
+  it('시트 · 범위 지정 · 키 차단 · 누르는 중에는 옮기지 않고 따라가기를 멈춘다 — 판정은 pager(reveal auto · canAutoReveal, pagedReader.test)', () => {
     const h = handler();
-    expect(h).toContain('if (listenBusy()) { listenFollowOff.current = true; setListenTokens(null); return; }');
-    expect(h.split('listenBusy()').length - 1).toBe(2);
-    expect(viewer()).toContain("pagesEl.addEventListener('pointerdown', down, { passive: true });");
+    expect(h).toContain('else { listenFollowOff.current = true; setListenTokens(null); }');
+    expect(viewer()).not.toContain('listenPressing'); // 누르는 중은 pager 안 상태만 쓴다
   });
   it('손으로 넘기면 멈춤 — 문장을 못 이은 동안(listenActive)에도 걸린다', () => {
     expect(sliceBetween(viewer(), 'onUserPage: anchor => {', 'saveScrollPosition(index);'))
