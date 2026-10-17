@@ -42,11 +42,16 @@ const notoSc = Noto_Sans_SC({
 // src/components/fonts/TcFontScope.jsx. 루트에 두면 모든 페이지가 TC @font-face 325개를 받았다.
 
 // 병음 전용 라틴 — 성조 부호(ā á ǎ à…) 전 범위 보장, SC와 같은 계열(오너 확정).
+// 미리 받기는 그리는 세그먼트(viewer · pdf · suggestions · chinese · quick)만 건다(FONT-HINT-001, 2026-10-17 KST):
+// 루트 preload는 쓰지 않는 화면까지 라틴 조각을 미리 받았다(빌드 실측: /home · /discover · /vocab 첫 진입 −36.5kB,
+// 중국어 뷰어는 1회 다운로드 · 교체 시점 같거나 빠름 · 최종 픽셀 동일, 390 · 1440). 선언은 여기 한 벌뿐이다 —
+// 세그먼트에서 다시 선언하면 @font-face가 두 벌 생겨 두 번 받는다. 힌트: src/components/fonts/fontHints.js.
 const notoSans = Noto_Sans({
   subsets: ['latin'],
   weight: ['400', '500', '700'],
   variable: '--font-noto-sans',
   display: 'swap',
+  preload: false,
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';

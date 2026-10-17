@@ -83,6 +83,11 @@ jobs:
           NODE_OPTIONS: --import=./e2e/server-fetch-mock.mjs
         run: npm run e2e:build
 
+      # 글꼴 힌트 산출 대조(FONT-HINT-001) — 빌드와 같은 글꼴 입력(대역)으로 힌트 주소가 산출 파일 ·
+      # @font-face · 서버 번들과 맞는지 본다. next 업그레이드로 파일 이름 규칙이 바뀌면 여기서 깨진다. 빌드 추가 없음.
+      - name: 글꼴 힌트 산출 대조
+        run: NEXT_FONT_GOOGLE_MOCKED_RESPONSES="$PWD/e2e/fixtures/google-fonts-mock.cjs" node scripts/fonts/check-font-hints.mjs
+
       # 브라우저는 러너에 미리 깔린 Google Chrome을 쓴다(playwright.config.mjs 기본 channel).
       - name: Chrome 확인
         run: google-chrome --version
