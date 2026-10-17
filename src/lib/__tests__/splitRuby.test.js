@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { splitRuby } from '../splitRuby.js';
+import { KURU_STEM, kuruNextTexts, splitRuby } from '../splitRuby.js';
 
 // 계약: 중국어/일본어 판별 — 이 표식(pinyin)이 격자 조판(1em 고정·0.26em 단일 크기)·
 // Noto Sans·성조색의 스위치다. 오분류는 곧 "병음이 크게 나온다"류의 시각 회귀다.
@@ -89,7 +89,7 @@ describe('splitRuby — 독음이 표면 읽기면 표면 앵커가 이긴다(�
 describe('본문 · 카드 · 미리보기 · 빠른 읽기가 기본형을 넘긴다(VIEWER-LANG-AUDIT)', () => {
   const read = (file) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
   it('토큰 독음 분해 자리마다 base_form을 함께 준다', () => {
-    expect(read('src/views/ViewerPage.jsx')).toContain('splitRuby(token.text, token.furigana, token.base_form, nextTokenText(tokenId))');
+    expect(read('src/views/ViewerPage.jsx')).toContain('splitRuby(token.text, token.furigana, token.base_form, kuruNext.get(tokenId))');
     expect(read('src/views/ViewerPage.jsx')).toContain('splitRuby(headText, headReading, headIsBase ? undefined : selectedToken?.base_form)');
     expect(read('src/views/QuickPage.jsx')).toContain('splitRuby(token.text, token.furigana, token.base_form, line?.[i + 1]?.text)');
     expect(read('src/components/viewer/ViewerPreview.jsx')).toContain('splitRuby(token.text,token.furigana,token.base_form,shown[i+1]?.text)');
@@ -112,5 +112,61 @@ describe('splitRuby — 来 | ない처럼 어미가 다음 토큰이면 다음 
   it('카타카나 독음은 앵커가 맞지 않아 옛 폴백(전체 독음)으로 — 깨지지 않는다', () => {
     expect(splitRuby('違い', 'チガウ', '違う')).toEqual([{ kanji: '違', reading: 'チガウ' }, { plain: 'い' }]);
     expect(splitRuby('来', 'クル', '来る', 'ない')).toEqual([{ kanji: '来', reading: 'クル' }]);
+  });
+});
+
+// 来い · 来れる(가능) · 来ず는 こ, 来れば는 く(a775 리뷰 2026-10-17 KST). 来 뒤 가나 = 토큰 안 어미 + 다음 토큰.
+describe('splitRuby — 来의 명령 · 가능 · 부정 문어', () => {
+  it('来い → こ · 来れ | ない → こ · 来 | れる → こ · 来ず → こ · 来れ | ば → く · 来れ(뒤 모름) → く', () => {
+    expect(splitRuby('来い', 'くる', '来る')[0].reading).toBe('こ');
+    expect(splitRuby('来れ', 'くる', '来る', 'ない')[0].reading).toBe('こ');
+    expect(splitRuby('来', 'くる', '来る', 'れる')[0].reading).toBe('こ');
+    expect(splitRuby('来ず', 'くる', '来る')[0].reading).toBe('こ');
+    expect(splitRuby('来れ', 'くる', '来る', 'ば')[0].reading).toBe('く');
+    expect(splitRuby('来', 'くる', '来る', 'れば')[0].reading).toBe('く');
+    expect(splitRuby('来れ', 'くる', '来る')[0].reading).toBe('く');
+  });
+  it('KURU_STEM 표', () => {
+    for (const [tail, r] of [['ない', 'こ'], ['よう', 'こ'], ['させ', 'こ'], ['られ', 'こ'], ['い', 'こ'], ['ず', 'こ'], ['ぬ', 'こ'], ['れる', 'こ'], ['れない', 'こ'],
+      ['れば', 'く'], ['る', 'く'], ['れ', 'く'], ['ます', 'き'], ['た', 'き'], ['て', 'き'], ['', 'き']]) expect(KURU_STEM(tail), tail).toBe(r);
+  });
+});
+
+// 오쿠리가나 표기 관행이 다른 기본형(終っ ↔ 終わる · 行なっ ↔ 行う)은 활용이 아니다 — 기본형 이동을 쓰지 않고 옛 폴백 그대로(a775 리뷰).
+describe('splitRuby — 활용 범위 밖의 오쿠리가나 차이는 기본형 이동을 쓰지 않는다(BASEFORM-OKURI-001)', () => {
+  it('막는 경우: 終っ/終わる · 行なっ/行う · 終わっ/終る · 打ち合せ/打ち合わせる', () => {
+    expect(splitRuby('終っ', 'おわる', '終わる')).toEqual([{ kanji: '終', reading: 'おわる' }, { plain: 'っ' }]);
+    expect(splitRuby('行なっ', 'おこなう', '行う')).toEqual([{ kanji: '行', reading: 'おこなう' }, { plain: 'なっ' }]);
+    expect(splitRuby('終わっ', 'おわる', '終る')).toEqual([{ kanji: '終', reading: 'おわる' }, { plain: 'わっ' }]);
+    expect(splitRuby('打ち合せ', 'うちあわせる', '打ち合わせる')[0].reading).not.toBe('う');
+  });
+  it('기존 통과 사례는 그대로(5단 · 1단 · する · 형용사 · 한자 둘 · 숙자훈 · 出来)', () => {
+    const cases = [
+      ['違い', 'ちがう', '違う', 'ちが'], ['待っ', 'まつ', '待つ', 'ま'], ['行っ', 'いく', '行く', 'い'], ['書い', 'かく', '書く', 'か'],
+      ['読ん', 'よむ', '読む', 'よ'], ['帰っ', 'かえる', '帰る', 'かえ'], ['泳い', 'およぐ', '泳ぐ', 'およ'], ['話し', 'はなす', '話す', 'はな'],
+      ['死ん', 'しぬ', '死ぬ', 'し'], ['遊ん', 'あそぶ', '遊ぶ', 'あそ'], ['違わ', 'ちがう', '違う', 'ちが'], ['食べ', 'たべる', '食べる', 'た'],
+      ['見', 'みる', '見る', 'み'], ['勉強し', 'べんきょうする', '勉強する', 'べんきょう'], ['新しかっ', 'あたらしい', '新しい', 'あたら'],
+      ['大人しく', 'おとなしい', '大人しい', 'おとな'], ['高く', 'たかい', '高い', 'たか'], ['出来', 'できる', '出来る', 'でき'],
+    ];
+    for (const [text, furigana, base, reading] of cases) expect(splitRuby(text, furigana, base)[0].reading, text).toBe(reading);
+    expect(splitRuby('引き出し', 'ひきだす', '引き出す')).toEqual([{ kanji: '引', reading: 'ひ' }, { plain: 'き' }, { kanji: '出', reading: 'だ' }, { plain: 'し' }]);
+  });
+});
+
+describe('kuruNextTexts — 来가 든 토큰만, 같은 줄의 바로 뒤 토큰(ViewerPage가 자료마다 한 번 만든다)', () => {
+  it('来 토큰만 담고, 줄 끝 · 다른 줄이면 빈 글', () => {
+    const sequence = ['id_0_0', 'id_0_1', 'id_0_2', 'id_1_0', 'id_1_1'];
+    const dictionary = { id_0_0: { text: '彼' }, id_0_1: { text: '来' }, id_0_2: { text: 'ない' }, id_1_0: { text: '来' }, id_1_1: { text: '来れ' } };
+    expect([...kuruNextTexts(sequence, dictionary)]).toEqual([['id_0_1', 'ない'], ['id_1_0', '来れ'], ['id_1_1', '']]);
+    expect(kuruNextTexts(['id_0_0', 'id_1_0'], { id_0_0: { text: '来' }, id_1_0: { text: 'ない' } }).get('id_0_0')).toBe('');
+    expect(kuruNextTexts().size).toBe(0);
+  });
+  it('ViewerPage는 useMemo로 자료마다 한 번 만들고 렌더에서는 표만 본다', () => {
+    const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+    expect(viewer).toContain('const kuruNext = useMemo(() => kuruNextTexts(material?.processed_json?.sequence, material?.processed_json?.dictionary), [material?.processed_json]);');
+    expect(viewer).not.toMatch(/new Map\(json\.sequence\.map/);
+    expect(viewer).not.toContain('nextTokenText(');
+    // 훅은 이른 반환보다 앞(훅 순서 고정)
+    expect(viewer.indexOf('const kuruNext = useMemo(')).toBeLessThan(viewer.indexOf("if (isLoading) return <div className=\"page-container\">"));
   });
 });
