@@ -126,6 +126,12 @@ export function createPagedController(pages, options = () => ({})) {
   const pageOf = target => { const rect = rectOf(target); return rect ? clampPage(rawPageOf(rect), count) : null; };
 
   const items = () => [...(pages.querySelectorAll?.(opt().anchorSelector || '[data-source-token]') || [])];
+  /**
+   * 초점이 든 요소의 쪽은 그 요소가 속한 낱말(기준 요소)로 잰다(PAGED-FOCUS-001). 줄 머리 문장 막대(.line-pick)는 낱말 왼쪽 여백에
+   * 떠 있어, 다음 쪽 첫 줄의 막대는 단 사이 틈(현재 쪽 끝)에 놓인다 — 막대 자리로 재면 쪽이 넘어가지 않아 Tab 초점이 화면 밖에 남았다
+   * (390 실측: 막대 x 384~408 · 그 낱말 x 414 · 쪽 1 그대로). 낱말 밖 요소(제목 · 읽기 완료 등)는 그대로 그 요소로 잰다.
+   */
+  const focusPageTarget = el => { const item = el?.closest?.(opt().anchorSelector || '[data-source-token]'); return item && item !== pages && pages.contains?.(item) ? item : el; };
   /** 쪽의 첫 토큰. 토큰이 없는 쪽: 본문 뒤(읽기 완료·다음 편)면 끝에서 몇 번째 쪽인지, 앞(제목)이면 시작. */
   function captureAnchor(target) {
     const custom = opt().captureAnchor?.(target, api);
@@ -236,7 +242,7 @@ export function createPagedController(pages, options = () => ({})) {
     if (!deferred || pressed || destroyed) return;
     deferred = false;
     const active = (opt().document || pages.ownerDocument)?.activeElement;
-    const target = active && active !== pages && pages.contains?.(active) ? pageOf(active) : nearestPage(pages.scrollLeft || 0, step, count);
+    const target = active && active !== pages && pages.contains?.(active) ? pageOf(focusPageTarget(active)) : nearestPage(pages.scrollLeft || 0, step, count);
     if (target != null && (Math.abs((pages.scrollLeft || 0) - target * step) >= 1 || target !== page)) goTo(target, { user: true });
   }
   function handleRelease() {
@@ -256,14 +262,14 @@ export function createPagedController(pages, options = () => ({})) {
     if (pressed) { deferred = true; return; }
     // 같은 프레임 안에서 바로 맞춘다 — 늦게 맞추면 끌려간 화면을 보고 누른 손(또는 자동화의 클릭)이 엉뚱한 자리를 누른다.
     const active = (opt().document || pages.ownerDocument)?.activeElement;
-    const target = active && active !== pages && pages.contains?.(active) ? pageOf(active) : nearestPage(left, step, count);
+    const target = active && active !== pages && pages.contains?.(active) ? pageOf(focusPageTarget(active)) : nearestPage(left, step, count);
     if (Math.abs(left - target * step) >= 1 || target !== page) goTo(target, { user: true });
   }
   function handleFocusIn(event) {
     const target = event?.target;
     if (!ready || !target || target === pages) return;
     if (pressed) { deferred = true; return; }
-    const next = pageOf(target);
+    const next = pageOf(focusPageTarget(target));
     if (next != null && next !== page) goTo(next, { user: true });
   }
   function handleKey(event) {
