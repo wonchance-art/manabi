@@ -6,11 +6,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { QueryClient, QueryObserver } from '@tanstack/query-core';
 import { sliceBetween } from './helpers/sliceBetween';
 
-// 서재 카드 → 뷰어 첫 글자(VIEWER-ENTRY R1 · R2, 2026-10-17 KST): 누른 뒤 뷰어 서버 응답 → JS 청크 15개 → 그제야 자료 조회였다.
+// 서재 카드 → 뷰어 첫 글자(VIEWER-ENTRY, 2026-10-17 KST): 누른 뒤 뷰어 서버 응답 → JS 청크 15개 → 그제야 자료 조회였다.
 //   R1 누르는 순간 자료 조회(lib/viewerMaterial 등록부) — 뷰어가 같은 id · 같은 계정 · 10초 안이면 받아 쓰고, 아니면 새로.
-//   R2 머묾 80ms · 누름 · 키보드 포커스에 뷰어 모듈만 미리 import(서버 호출 없음).
-//   (c) 행 Link의 화면 진입 prefetch를 끄고(no-store → 서재 bfcache 막힘 · 행마다 서버 렌더) 의도 시점에만 router.prefetch(auto).
-// 서재 번들에 뷰어 JS가 끌려오지 않는다(정적 import 그래프) — 뷰어 모듈은 R2의 동적 import 한 곳으로만 닿는다.
+//   (c) 행 Link의 화면 진입 prefetch를 끄고(행마다 서버 렌더) 의도 시점에만 router.prefetch(auto).
+//   R2(뷰어 모듈 동적 import 미리 받기)는 뺐다(2026-10-18 KST 실측 — 같은 모듈 14개가 R2 청크와 뷰어 page 청크에 두 번).
+// 서재 번들에 뷰어 JS가 끌려오지 않는다(정적 import 그래프) — 서재 링크에는 동적 import도 없다.
 const io = vi.hoisted(() => ({ calls: [], network: null }));
 vi.mock('../supabase', () => ({ supabase: { from: () => { if (!io.network) throw new Error('network not used in this test'); return io.network; }, auth: { getSession: async () => ({ data: { session: { user: { id: 'S' } } } }) } } }));
 vi.mock('../offlineCache', () => ({ cacheMaterial: async (...args) => { io.calls.push(['cacheMaterial', ...args]); }, getCachedMaterial: async (...args) => { io.calls.push(['getCachedMaterial', ...args]); return null; } }));
@@ -60,10 +60,10 @@ describe('서재 번들에 뷰어 JS가 끌려오지 않는다', () => {
       expect(graph.filter((f) => f === 'src/views/ViewerPage.jsx' || f.startsWith('src/components/viewer/'))).toEqual([]);
     }
   });
-  it('뷰어 모듈에 닿는 길은 R2의 동적 import 한 곳 — 조회 모듈은 동적 import도 없다', () => {
+  it('서재 링크는 뷰어 모듈을 미리 받지 않는다(R2 제거 — 동적 import가 같은 모듈을 두 청크에 실었다) · 조회 모듈도 뷰어는 동적 import하지 않는다', () => {
     const src = read('src/components/web/LibraryReaderLink.jsx');
-    expect(src.match(/import\(/g)).toHaveLength(1);
-    expect(src).toContain("load = () => import('@/views/ViewerPage')");
+    expect(src).not.toMatch(/\bimport\s*\(/);
+    expect(src).not.toMatch(/warmViewer|views\/ViewerPage/);
     // 조회 모듈의 동적 import는 그 길에 들어설 때만 받는 기기 캐시 · 팀 사본뿐 — 뷰어는 없다
     expect([...read('src/lib/viewerMaterial.js').matchAll(/\bimport\(\s*'([^']+)'/g)].map((m) => m[1]).sort()).toEqual(['./offlineCache', './offlineCache', './sharedStore']);
   });
@@ -90,7 +90,7 @@ describe('서재 번들에 뷰어 JS가 끌려오지 않는다', () => {
     const board = await import('../classBoard');
     for (const id of ['local:7', 'local:', 'local:abc', 'Local:7', '7', 7, null, undefined, ' local:7', ['local:7'], { toString: () => 'local:7' }]) expect(lib.isLocalId(id), String(id)).toBe(board.isLocalId(id));
   });
-  it('「← 돌아가기」는 따로 둔 파일 — 교재(SC 글꼴 범위 밖)가 불러도 뷰어 동적 import에 닿지 않는다(fontScope.test ②)', () => {
+  it('「← 돌아가기」는 따로 둔 파일 — 교재 · 뷰어가 불러도 서재 카드의 조기 조회 · 의도 prefetch를 끌지 않는다', () => {
     const ret = read('src/components/web/LibraryReturnLink.jsx');
     expect(ret).toContain('export function LibraryReturnLink(');
     expect(ret).not.toMatch(/\bimport\s*\(|from ['"][^'"]*LibraryReaderLink['"]/);
@@ -211,7 +211,6 @@ describe('R1 조기 조회 등록부 — 받아 쓰기와 폴백', () => {
   it('서재 누름: 이 자료가 캐시에 있으면(다시 누름) 띄우지 않는다 · 없으면 띄운다 · 수정키 클릭은 아무것도 안 한다', () => {
     const click = (href, event = {}) => { h.links.length = 0; renderToStaticMarkup(createElement(link.default, { href }, 'x')); h.links[0].onClick({ preventDefault() {}, button: 0, ...event }); };
     vi.stubGlobal('window', { location: { pathname: '/materials', search: '' }, scrollY: 0 });
-    vi.stubGlobal('navigator', { connection: { saveData: true } }); // 미리 받기(R2)는 여기서 보지 않는다 — 모듈 캐시를 남기지 않게
     h.cache.set(JSON.stringify(['material', '61']), { id: '61' });
     click('/viewer/61');
     expect(lib.takeEarlyMaterial('61')).toBe(null);
@@ -221,56 +220,11 @@ describe('R1 조기 조회 등록부 — 받아 쓰기와 폴백', () => {
   });
 });
 
-describe('R2 뷰어 모듈 미리 받기 — 머묾 80ms · 누름 · 키보드 포커스(판정은 intentPrefetchProps 재사용)', () => {
-  const env = () => { const timers = new Map(), queue = []; let warmed = 0;
-    return { timers, queue, get warmed() { return warmed; }, opts: { warm: () => { warmed += 1; }, timers, schedule: (fn, ms) => { queue.push({ fn, ms }); return queue.length; }, cancel: (id) => { queue[id - 1].fn = null; } } }; };
-  it('뷰어로 가는 링크에만 붙는다', () => {
-    expect(link.viewerWarmProps('/pdf/7')).toEqual({});
-    expect(Object.keys(link.viewerWarmProps('/viewer/45')).sort()).toEqual(['onFocus', 'onPointerDown', 'onPointerEnter', 'onPointerLeave']);
-  });
-  it('마우스가 80ms(INTENT_DWELL_MS) 머물면 받고, 그 전에 떠나면 받지 않는다 · 터치는 머묾으로 받지 않는다', () => {
-    const e = env(), p = link.viewerWarmProps('/viewer/45', e.opts);
-    p.onPointerEnter({ pointerType: 'mouse' });
-    expect(e.queue[0].ms).toBe(INTENT_DWELL_MS);
-    expect(INTENT_DWELL_MS).toBe(80);
-    e.queue[0].fn(); expect(e.warmed).toBe(1);
-    p.onPointerEnter({ pointerType: 'mouse' }); p.onPointerLeave({});
-    expect(e.queue[1].fn).toBe(null);
-    p.onPointerEnter({ pointerType: 'touch' }); expect(e.queue).toHaveLength(2);
-  });
-  it('마우스로 누르면 바로 받고(터치의 누름은 스크롤 시작일 수 있어 받지 않는다), 키보드 포커스(:focus-visible)에 받는다', () => {
-    const e = env(), p = link.viewerWarmProps('/viewer/45', e.opts);
-    p.onPointerDown({ pointerType: 'touch' }); expect(e.warmed).toBe(0);
-    p.onPointerDown({ pointerType: 'mouse' }); expect(e.warmed).toBe(1);
-    p.onFocus({ currentTarget: { matches: () => true } }); expect(e.warmed).toBe(2);
-    p.onFocus({ currentTarget: { matches: () => false } }); expect(e.warmed).toBe(2);
-  });
-  it('터치는 실제 누름(click → openReader)에 받는다', () => {
-    expect(sliceBetween(read('src/components/web/LibraryReaderLink.jsx'), 'const openReader = (href, event) => {', 'return { readerHref, openReader, router };')).toContain('warmViewer(); // R2');
-  });
-  it('모듈은 한 번만 받고(실패하면 다음 기회에 다시) · 데이터 절약 모드는 받지 않는다 · 서버 호출 없이 import만', async () => {
-    expect(link.warmViewer({ load: () => Promise.resolve('x'), nav: { connection: { saveData: true } } })).toBe(null);
-    let loads = 0;
-    const failing = link.warmViewer({ load: () => { loads += 1; return Promise.reject(new Error('chunk')); }, nav: {} });
-    await failing;
-    const ok = link.warmViewer({ load: () => { loads += 1; return Promise.resolve('module'); }, nav: {} });
-    expect(link.warmViewer({ load: () => { loads += 1; return Promise.resolve('again'); }, nav: {} })).toBe(ok);
-    await ok;
-    expect(loads).toBe(2);
-  });
-  it('판정 함수를 새로 만들지 않는다 — 머묾 · 포커스 판정은 intentPrefetchProps 한 곳(이 파일에 :focus-visible · 터치 판정 없음)', () => {
-    const src = read('src/components/web/LibraryReaderLink.jsx');
-    expect(src).not.toMatch(/focus-visible/);
-    expect(src.match(/pointerType/g)).toHaveLength(1); // 터치 누름 규칙(7) 하나 — 머묾의 터치 제외는 intentPrefetchProps가
-    expect(src.match(/intentPrefetchProps\(/g)).toHaveLength(2); // R2 · 라우트 의도 prefetch
-  });
-});
-
 describe('(c) 서재 행 Link — 화면 진입 prefetch 끄고 의도 시점에만 router.prefetch(auto)', () => {
   const render = (props) => { h.links.length = 0; renderToStaticMarkup(createElement(link.default, props, 'x')); return h.links[0]; };
   beforeEach(() => { h.prefetched.length = 0; vi.useFakeTimers(); });
   afterEach(() => { vi.useRealTimers(); });
-  it('행 Link는 prefetch={false} — 화면에 들어와도 서버 렌더 · no-store 응답이 없다(서재 bfcache)', () => {
+  it('행 Link는 prefetch={false} — 화면에 들어온 행마다 서버 렌더가 생기지 않는다(의도 시점에만)', () => {
     expect(render({ href: '/viewer/45' }).prefetch).toBe(false);
   });
   it('마우스 80ms 머묾에 대기 화면까지(auto)만 받는다 · 그 전에 누르면 취소 · 터치는 받지 않는다', () => {
@@ -288,6 +242,11 @@ describe('(c) 서재 행 Link — 화면 진입 prefetch 끄고 의도 시점에
   it('키보드 포커스(:focus-visible)는 바로 받는다 — 뷰어가 아닌 행(PDF · 대화)도 같은 규칙', () => {
     for (const href of ['/viewer/49', '/pdf/7']) render({ href  }).onFocus({ currentTarget: { matches: () => true } });
     expect(h.prefetched.map(([u]) => u.split('?')[0])).toEqual(['/viewer/49', '/pdf/7']);
+  });
+  it('판정 함수를 새로 만들지 않는다 — 머묾 · 포커스 · 터치 판정은 intentPrefetchProps 한 곳(이 파일에 :focus-visible · 터치 판정 없음)', () => {
+    const src = read('src/components/web/LibraryReaderLink.jsx');
+    expect(src).not.toMatch(/focus-visible|pointerType/);
+    expect(src.match(/intentPrefetchProps\(/g)).toHaveLength(1);
   });
   it('받은 처리기는 그대로 불린다 · 부르는 쪽이 prefetch를 정하면 그 값을 따른다(의도 prefetch 없음)', () => {
     const seen = [];

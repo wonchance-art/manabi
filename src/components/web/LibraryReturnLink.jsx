@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { safeReaderReturn, readerReturnLabel, readerReturnTarget } from '@/lib/libraryReturn';
 
-// 읽기 화면의 「← 돌아가기」(서재 · 공개 목록 · 산책). LibraryReaderLink.jsx에서 뺐다 — 그 파일은 서재 카드의 뷰어 미리 받기(R2,
-// 뷰어 동적 import)를 품고 있어, 교재(일본어 — SC 글꼴 범위 밖)가 「←」 하나 때문에 뷰어 그래프에 닿았다(fontScope.test ②).
+// 읽기 화면의 「← 돌아가기」(서재 · 공개 목록 · 산책). LibraryReaderLink.jsx에서 뺐다 — 그 파일은 서재 카드의 조기 조회 · 의도
+// prefetch를 품고 있어, 교재 · 뷰어가 「←」 하나 때문에 그 그래프를 끌었다(뷰어 모듈 미리 받기 R2가 있던 때는 fontScope.test ②까지).
 // guest = 확인된 손님(로그인 확인이 끝난 뒤) — 맥락 없는 「←」를 산책으로(readerReturnTarget). 회원 · 확인 중은 지금 그대로.
 export function LibraryReturnLink({ children, onlyWithContext = false, guest = false, ...props }) {
   const params = useSearchParams();
