@@ -366,7 +366,7 @@ export default function ViewerPage() {
   const classBoardTarget=useRef(null),classBoardHeaderTarget=useRef(null);
   const [classBoardRatio,setClassBoardRatio]=useState(60);
   const [classPresenting,setClassPresenting]=useState(false);
-  const { user, profile, fetchProfile, isAdmin } = useAuth();
+  const { user, profile, fetchProfile, isAdmin, loading: authLoading } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
 
@@ -1112,7 +1112,8 @@ export default function ViewerPage() {
       return undefined;
     }
     let alive = true;
-    if (!synAntRequest) {
+    // 손님은 캐시만 본다 — AI는 서버가 401로 막으니 요청하지 않고 로그인 안내를 보인다(목업 viewer-audit §1, 번역 칸과 같은 규칙).
+    if (!synAntRequest || !user?.id) {
       setSynAnt(null);
       peekSynAnt(selectedToken, materialLang)
         .then((r) => { if (alive && r) setSynAnt({ loading: false, ...r }); })
@@ -1124,7 +1125,7 @@ export default function ViewerPage() {
       .then((r) => { if (alive) setSynAnt({ loading: false, ...r }); })
       .catch(() => { if (alive) setSynAnt({ loading: false, error: true, syn: [], ant: [] }); });
     return () => { alive = false; };
-  }, [selectedToken, isSheetOpen, materialLang, synAntRequest]);
+  }, [selectedToken, isSheetOpen, materialLang, synAntRequest, user?.id]);
 
   // AE-R1(VIEWER-V2-ROUNDS-001 §2.1 「없어지는 것」·§3): 단어 탭의 문맥 설명 버튼(이 문장에서는…)과 그 설명 상태를 걷었다.
   // /api/explain token 분기·ctxExplain.js는 AD-R4가 대신할 때까지 남는다(suspect 기록이 비는 것은 정본 §3이 감수).
@@ -1262,6 +1263,7 @@ export default function ViewerPage() {
   function setDetailCached(key, val) { if (!isClient) return; try { localStorage.setItem(`pdf_cache:detail:${key}`, JSON.stringify(val)); } catch {} }
 
   async function fetchWordDetail(token) {
+    if (!user) return; // 손님 요청 0(목업 viewer-audit §1) — 버튼도 숨기지만 경로 자체를 막아 둔다.
     const request = detailGate.current.start();
     setWordDetail({ detail: null, loading: true });
     const deadline = setTimeout(() => {
@@ -3477,16 +3479,20 @@ export default function ViewerPage() {
           한국어 나눈 조각(§7.5)은 기존 형태 분석 설명만 쓴다 — AI 요청 버튼을 두지 않는다. */}
       {!koreanPieceSelected && <section ref={learnRef} className="reader-card-learn" aria-label={vt('더 알아보기')} key={`learn:${selectedToken.id||selectedToken.text}`}>
         <h3 className="reader-card-section__label">{vt('더 알아보기')}</h3>
+        {/* 손님 = 요청 대신 로그인 안내(목업 viewer-audit §1 · 번역 칸 SENTENCE_TX_LOGIN_REQUIRED와 같은 규칙). 버튼 둘은 숨기고,
+            캐시가 있으면 지금처럼 내용을 바로 보인다. 둘 다 이미 보이면 안내도 없다. 로그인 확인 중에는 버튼도 안내도 두지 않는다. */}
+        {!user && !authLoading && ((synAntEligible(selectedToken,materialLang) && !(synAnt && !synAnt.loading && !synAnt.error)) || !wordDetail?.detail)
+          && <Link href={signInHref} className="reader-card-learn__login">{vt('로그인하면 비슷한 말과 자세한 설명을 볼 수 있어요 →')}</Link>}
         {/* 비슷한 말 실패 알림 — 영역은 늘 두고 내용만 넣는다. 보이는 줄은 숨기고 「✦ 비슷한 말 찾기」가 이유를 가리킨다(A11Y-SWEEP-001). */}
         <span className="sr-only" role="status" id="viewer-synant-notice">{synAntEligible(selectedToken,materialLang) && !synAnt?.loading && synAnt?.error ? vt("불러오지 못했어요.") : ''}</span>
         {synAntEligible(selectedToken,materialLang) && (synAnt?.loading ? <p aria-busy="true">{vt("비슷한 말 불러오는 중…")}</p>
           : synAnt && !synAnt.error ? <div className="syn-ant"><div className="syn-ant__row"><span>{vt("유의어")}</span>{renderSynAntChips(synAnt.syn)}</div><div className="syn-ant__row"><span>{vt("반의어")}</span>{renderSynAntChips(synAnt.ant)}</div>{!synAnt.syn.length&&!synAnt.ant.length&&<p>{vt("표시할 항목이 없어요.")}</p>}</div>
-          : <>{synAnt?.error && <p className="syn-ant__error" aria-hidden="true">{vt("불러오지 못했어요.")}</p>}<button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" aria-describedby="viewer-synant-notice" onClick={() => setSynAntRequest(n => n + 1)}>{vt("✦ 비슷한 말 찾기")}</button></>)}
+          : !user ? null : <>{synAnt?.error && <p className="syn-ant__error" aria-hidden="true">{vt("불러오지 못했어요.")}</p>}<button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" aria-describedby="viewer-synant-notice" onClick={() => setSynAntRequest(n => n + 1)}>{vt("✦ 비슷한 말 찾기")}</button></>)}
         {/* 자세한 설명(AI 생성 — 긴 작업) 알림 — 영역은 늘 두고 내용만(LOADING-ANNOUNCE-001 ③). 보이는 줄은 한 번만 읽히게 숨긴다. */}
         <span className="sr-only" role="status">{wordDetail?.loading ? vt("상세 설명 만드는 중…") : ''}</span>
         {wordDetail?.loading ? <p className="reader-card-learn__pending" aria-hidden="true">{vt("상세 설명 만드는 중…")}</p>
           : wordDetail?.detail ? <div className="reader-card-learn__detail"><small>{vt('일반 사전 설명 · 본문과 다른 뜻이 포함될 수 있어요')}</small><div className="pdf-detail-popup__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(wordDetail.detail) }} /></div>
-          : <button type="button" onClick={() => fetchWordDetail(selectedToken)} className="btn btn--ghost btn--sm reader-card-learn__ask">{vt("✦ 자세한 설명")}</button>}
+          : user && <button type="button" onClick={() => fetchWordDetail(selectedToken)} className="btn btn--ghost btn--sm reader-card-learn__ask">{vt("✦ 자세한 설명")}</button>}
         {/* 일본어로는(AE-R3 PR② — 일본어 대조 블록 대체, 설계서 §5): 日 줄이 숨겨졌을 때만(수업 모드는 자형 열이 없으므로 항상) —
             사전 diff/warn이 있으면 내용, 없으면 로그인 사용자에게 요청 버튼(기존 클라 AI 그대로, 「AI」 표 없음). 쓰기 0. */}
         {materialLang === 'Chinese' && (classStudyActive || !glyph.ja) && <ViewerJapaneseMore key={`ja:${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} pos={selectedToken.pos} dictEntry={editDictEntry} jaTable={jaWordsTable} dictLoading={!dictFetched&&!dictError} />}
@@ -4616,6 +4622,8 @@ export default function ViewerPage() {
             onClose={() => setShowReadingTest(false)}
             onGraded={handleReadingTestGraded}
             inline
+            signInHref={signInHref}
+            signInLabel={vt('로그인하면 문제를 만들어 드려요 →')}
             nextLesson={nextLesson}
           />
         </ViewerModal>
