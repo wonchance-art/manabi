@@ -10,6 +10,7 @@ import { migrateGuestDrillQueue } from './drillSrs';
 import { useToast } from './ToastContext';
 import { pullProgress } from './refProgress';
 import { createProfileReadOnlyRefresh, recordExplicitProfileLogin } from './learningActivity';
+import { accountLeft, clearAccountQueries } from './accountQueryCache';
 
 const AuthContext = createContext(null);
 
@@ -26,7 +27,8 @@ const AUTH_RESTORE_RETRY_MS = [2000, 8000, 30000];
 
 const STREAK_MILESTONES = { 7: '🔥 7일 연속 학습 달성!', 30: '🏆 30일 연속 학습 달성!', 100: '🌟 100일 연속 학습 달성!' };
 
-export function AuthProvider({ children }) {
+// queryClient: providers.jsx가 넘긴다 — 계정이 바뀌면 계정에 딸린 캐시를 비운다(AUTH-CACHE-CLEAR-001 · lib/accountQueryCache).
+export function AuthProvider({ children, queryClient }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -50,6 +52,8 @@ export function AuthProvider({ children }) {
 
   function adoptUser(nextUser) {
     if (actorRef.current !== (nextUser?.id ?? null)) {
+      // A → 손님 · A → B: 새 user로 그리기(setUser) 전에 A의 캐시를 비운다 — 같은 키(['material', id] 등)를 B가 받아 그리지 않게.
+      if (accountLeft(actorRef.current, nextUser?.id)) clearAccountQueries(queryClient);
       authGenerationRef.current += 1;
       actorRef.current = nextUser?.id ?? null;
       loginActorRef.current = null;

@@ -18,7 +18,7 @@ export default function Providers({ children }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider queryClient={queryClient}>{children}</AuthProvider>
       </ToastProvider>
     </QueryClientProvider>
   );
