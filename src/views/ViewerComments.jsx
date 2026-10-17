@@ -6,7 +6,7 @@ export default function ViewerComments({
   addCommentMutation, deleteCommentMutation, signInHref,
 }) {
   return (
-    <div className="card" style={{ marginTop: '24px', padding: '24px' }}>
+    <div className="card viewer-comments" style={{ marginTop: '24px', padding: '24px' }}>
       {/* 뷰어 본문 h1 다음 단계 제목 — h3이면 제목 단계를 건너뛴다(axe heading-order, 2026-10-17 KST Preview 스캔).
           전역 여백 초기화(index.css *{margin:0}) · 같은 인라인 글자 지정이라 h3 → h2는 화면이 같다. */}
       <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '20px', color: 'var(--text-primary)' }}>

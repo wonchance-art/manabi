@@ -542,21 +542,31 @@ describe('a foreign scroll lands on the page it newly revealed', () => {
   });
 });
 
-// 끝 카드(NEXT-CARD-SPLIT-001): 1440 쪽 넘김에서 「다음 편」 카드(a.next-lesson-card)가 쪽 경계에서 둘로 갈라졌다(abaa 보고 2026-10-17 KST).
-// 쪽 넘김 상자 안에서만 통째로 다음 쪽에 둔다(break-inside: avoid) — 스크롤 보기에는 걸지 않는다. 실제 쪼개짐 · 쪽 수는 빌드 Playwright가 본다.
-describe('end cards stay whole across page boundaries', () => {
-  const css = fs.readFileSync(path.join(process.cwd(), 'src/components/viewer/paged-reader.css'), 'utf8');
-  const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
-  const rule = '[data-reader-pages="paged"] :is(.next-lesson-card, .series-end-card) { break-inside: avoid; }';
-  it('paged-only rule keeps every end card whole', () => {
+// 끝의 테두리 상자(NEXT-CARD-SPLIT-001): 1440 쪽 넘김에서 「다음 편」 카드(a.next-lesson-card)가 쪽 경계에서 둘로 갈라졌다(abaa 보고
+// 2026-10-17 KST). 같은 실측(8px씩 옮기기)에서 연결한 교재 단원(details.learning-links)과 토론 상자도 갈라졌다 — 쪽 넘김 상자 안에서만
+// 통째로 다음 쪽에 둔다(break-inside: avoid). 「다 읽었다면」 줄은 index.css가 이미 묶는다. 본문 문단 · 스크롤 보기에는 걸지 않는다.
+describe('end boxes stay whole across page boundaries', () => {
+  const read = (file) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
+  const css = read('src/components/viewer/paged-reader.css');
+  const viewer = read('src/views/ViewerPage.jsx');
+  const rule = '[data-reader-pages="paged"] :is(.next-lesson-card, .series-end-card, .learning-links, .viewer-comments) { break-inside: avoid; }';
+  it('paged-only rule keeps every end box whole — body text keeps filling pages', () => {
     expect(css).toContain(rule);
-    expect(css.match(/break-inside:\s*avoid/g)).toHaveLength(1); // 본문 블록에는 걸지 않는다 — 쪽 채움은 그대로
+    expect(css.match(/break-inside:\s*avoid/g)).toHaveLength(1);
+    expect(read('src/index.css')).toContain('.post-reading { margin-top: 20px; break-inside: avoid; }'); // 「다 읽었다면」 줄은 원래 묶음
   });
   it('every card in the single 「다음」 slot uses one of the covered classes', () => {
     const slot = sliceBetween(viewer, "{(isDone || isPending) && (() => {", 'return null;\n      })()}');
     const roots = [...slot.matchAll(/className="([^"]+)"/g)].map((m) => m[1]).filter((c) => !/__/.test(c));
     expect(roots.length).toBeGreaterThanOrEqual(5); // 다음 편 · 다음 과 · 다음 과 적기 · 다음 범위 · 완주(공허 통과 방지)
     for (const c of roots) expect(['next-lesson-card', 'series-end-card'].some((k) => c.split(' ').includes(k)), c).toBe(true);
+  });
+  it('the linked-chapter box and the discussion box carry the covered classes', () => {
+    const links = read('src/components/learning/MaterialChapterLinks.jsx');
+    expect(links).toContain('<section className="learning-links learning-links--browse">');
+    expect(links).toContain('<details className="learning-links" onToggle=');
+    expect(read('src/views/ViewerComments.jsx')).toContain('<div className="card viewer-comments" style=');
+    expect(viewer).toContain('<MaterialChapterLinks lang={materialLang} kind="reading" materialId={id} />');
   });
 });
 
