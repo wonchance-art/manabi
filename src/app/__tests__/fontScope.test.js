@@ -152,6 +152,7 @@ const SC_OUTSIDE = Object.freeze({
   'src/views/ReferenceVocabPage.jsx': { routes: REF_ROUTES, reason: '레퍼런스 단어 목록 — 영어 · 프랑스어 라우트의 언어로만 열린다' },
   'src/views/LevelListPage.jsx': { routes: /^src\/app\/\(app\)\/japanese\//, reason: '일본어 레벨 목록 — zh-CN/zh-TW 줄은 chinese 경로(범위 안)에서만 나온다' },
   'src/components/levels/HanziBoard.jsx': { routes: /^src\/app\/\(app\)\/japanese\//, reason: '한자판은 중국어 레벨(hanzi)에서만 그린다 — 일본어 레벨 목록은 같은 모듈을 불러올 뿐 열지 않는다' },
+  'src/components/books/FirstEditionCover.jsx': { routes: /^src\/app\/\(app\)\/admin\/page\.jsx$/, reason: '정본 책 게시 패널의 초판 표지 — 중국어 표지 글자는 자체 송체(Noto Serif SC · --font-ws-song, 폴백 포함)로 그려 Noto Sans SC 범위에 기대지 않는다' },
 });
 
 describe('간체 글꼴 범위 — Noto Sans SC', () => {
