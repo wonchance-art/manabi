@@ -102,7 +102,7 @@ export default function ReadingTest({ rawText, language, materialId, onClose, on
       }
     }).catch(() => { if (requestRef.current === requestId) { setStatus('idle'); setErrorMessage('읽기 확인을 준비하지 못했어요. 다시 열어 주세요.'); } });
     return () => { requestRef.current += 1; generationRef.current?.abort(); };
-  }, [materialId, language, rawText, user?.id, inline]);
+  }, [materialId, language, rawText, user?.id, signedIn, inline]);
 
   // 답변/결과 변경 시 저장
   useEffect(() => {
