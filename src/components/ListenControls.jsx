@@ -72,6 +72,9 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
     const utter = new window.SpeechSynthesisUtterance(sentences[i]);
     utter.lang = bcp47ForLanguage(languageRef.current);
     utter.rate = rateRef.current;
+    // 음성 오류(엔진 · 목소리 없음 등) — 이 세션이면 재생 상태와 뷰어 강조를 정리한다(stop → onSentence(null)).
+    // 취소(cancel)로 끝난 옛 세션의 오류는 세션 번호가 달라 무시된다.
+    utter.onerror = () => { if (sessionRef.current === sessionId) stop(); };
     utter.onend = () => {
       if (sessionRef.current !== sessionId) return;
       indexRef.current += 1;

@@ -101,7 +101,8 @@ import { useGroupReadPush } from '../lib/useGroupReadPush';
 import { useScrollRestore } from '../lib/useScrollRestore';
 import { useReaderLayout, readerVisibleBounds, useSelectedTokenVisibility } from '../lib/useReaderLayout';
 import { usePagedReader, pagerFor, overlayOrigin } from '../lib/usePagedReader';
-import { listenSentenceLines } from '../lib/listenFollow';
+import { listenSentenceRanges, listenSentenceTokens } from '../lib/listenFollow';
+import { analysisTokenLine } from '../lib/analysisCoverage';
 import { captureReadingAnchor } from '../lib/readingViewport';
 import PageBar, { PageStrips } from '../components/viewer/PageBar';
 import { pinyinCellWidth } from '../lib/pinyinLayout';
@@ -910,17 +911,18 @@ export default function ViewerPage() {
   const pagedActive = readerView === 'paged' && !classStudyActive;
   // 자동 진행은 세로 흐름(휠·터치 감지·문장 스크롤)에 맞춘 기능이라 쪽 넘김 보기에서는 끈다(설계 §4 P0) — 스크롤 보기는 그대로.
   const autoPaceOn = autoPace && !pagedActive;
-  // 듣기 따라가기(뷰어 감사 목업 6 · 1단계) — 읽는 문장의 줄(listenLine)을 강조하고 그 쪽으로 넘긴다. 손으로 쪽을 넘기면
-  // 그 듣기가 끝날 때까지 따라가지 않는다(listenFollowOff). 따라가기 판정 · 이동은 sentences 아래 handleListenSentence.
-  const [listenLine, setListenLine] = useState(null);
-  const listenLineRef = useRef(null), listenFollowOff = useRef(false);
+  // 듣기 따라가기(뷰어 감사 목업 6 · 1단계) — 읽는 **문장**의 토큰(listenTokens)에 은은한 밑줄을 긋고 그 쪽으로 넘긴다.
+  // 손으로 쪽을 넘기거나 시트 · 범위 지정 · 키 차단 · 누르는 중이면 그 듣기가 끝날 때까지 따라가지 않는다(listenFollowOff).
+  // listenActive = 듣는 중(문장을 못 이은 문장이어도) — 손으로 넘기면 멈춤이 늘 걸리게. 판정 · 이동은 sentences 아래 handleListenSentence.
+  const [listenTokens, setListenTokens] = useState(null);
+  const listenActive = useRef(false), listenFollowOff = useRef(false), listenPressing = useRef(false);
   const pager = usePagedReader({
     enabled: pagedActive, pages: pagesEl, barRef: pageBarRef, resetKey: id,
     layoutKey: `${fontSize}|${lineGap}|${charGap}|${fontFamily}|${pronDisplay}|${pinyinSize}|${pinyinCell}|${fontStatus}|${uiLocale}|${wordStateHl}|${showPatterns}`,
     initialAnchor: () => { const el = pagedInitialAnchor.current; pagedInitialAnchor.current = null; return el?.isConnected ? { kind: 'element', el } : null; },
     onUserPage: anchor => {
       // 듣는 중에 손으로 넘겼다 — 이번 듣기 동안 따라가기 · 강조를 멈춘다(듣기 자체는 계속).
-      if (listenLineRef.current !== null) { listenFollowOff.current = true; listenLineRef.current = null; setListenLine(null); }
+      if (listenActive.current) { listenFollowOff.current = true; setListenTokens(null); }
       const tokenId = anchor?.el?.dataset?.sourceToken, index = tokenId ? material?.processed_json?.sequence?.indexOf(tokenId) : -1;
       if (index >= 0) saveScrollPosition(index);
     },
@@ -1459,19 +1461,49 @@ export default function ViewerPage() {
 
   // 듣기 따라가기 — 쪽 넘김 보기이고 원문과 분석 본문이 맞을 때만(분석 안 된 줄 0 · 낡은 분석 아님). 원문이 바뀐 자료(N5 #1–5처럼
   // 원문과 분석 본문이 다른 글)는 문장을 엉뚱한 줄에 잇게 되므로 따라가지 않는다. 이동은 기준만 옮기고(user 아님) 위치는 저장하지 않는다.
-  const listenLines = useMemo(() => listenSentenceLines(material?.raw_text), [material?.raw_text]);
+  const listenRanges = useMemo(() => listenSentenceRanges(material?.raw_text), [material?.raw_text]);
+  const listenLineTokens = useMemo(() => {
+    const byLine = new Map(), json = material?.processed_json;
+    for (const tokenId of json?.sequence || []) {
+      const token = json.dictionary?.[tokenId], line = analysisTokenLine(tokenId);
+      if (!token || token.pos === '개행' || line == null) continue;
+      if (!byLine.has(line)) byLine.set(line, []);
+      byLine.get(line).push({ id: tokenId, text: token.text });
+    }
+    return byLine;
+  }, [material?.processed_json]);
   const listenFollowable = pagedActive && !isStaleAnalysis && missingLineCount === 0 && sentences.length > 0;
+  // 시트 · 드래그 범위 지정 · 키 차단 · 누르는 중에는 쪽을 옮기지 않는다 — 그때는 이번 듣기의 따라가기를 멈춘다(리뷰 차단 2).
+  const listenBusy = () => { const g = pagedGuard.current; return !!(g.sheetOpen || g.dragging || g.blocked || listenPressing.current); };
   const handleListenSentence = useCallback((index) => {
-    if (index == null) { listenLineRef.current = null; listenFollowOff.current = false; setListenLine(null); return; }
-    const line = listenLines[index] ?? null;
-    const target = listenFollowable && !listenFollowOff.current && line != null ? sentences.find(s2 => s2.rawIdx === line) : null;
-    listenLineRef.current = target ? line : null;
-    setListenLine(target ? line : null);
-    if (!target) return;
-    const el = tokenRefs.current[target.firstTokenId];
+    if (index == null) { listenActive.current = false; listenFollowOff.current = false; setListenTokens(null); return; }
+    listenActive.current = true;
+    if (!listenFollowable || listenFollowOff.current) { setListenTokens(null); return; }
+    if (listenBusy()) { listenFollowOff.current = true; setListenTokens(null); return; }
+    const ids = listenSentenceTokens(listenRanges[index], line => listenLineTokens.get(line));
+    setListenTokens(ids.length ? new Set(ids) : null);
+    const el = ids.length ? tokenRefs.current[ids[0]] : null;
     const paged = el && pagerFor(el);
-    if (paged) requestAnimationFrame(() => { if (el.isConnected && !listenFollowOff.current) paged.reveal(el); });
-  }, [listenLines, listenFollowable, sentences, tokenRefs]);
+    if (paged) requestAnimationFrame(() => {
+      if (!el.isConnected || listenFollowOff.current) return;
+      if (listenBusy()) { listenFollowOff.current = true; setListenTokens(null); return; }
+      paged.reveal(el);
+    });
+  // listenBusy는 ref만 읽는다.
+  }, [listenRanges, listenLineTokens, listenFollowable, tokenRefs]);
+  // 「누르는 중」 — 본문 상자를 누르고 있는 동안(밀기 · 끌어 고르기 시작)은 쪽을 옮기지 않는다.
+  useEffect(() => {
+    if (!pagesEl) return undefined;
+    const down = () => { listenPressing.current = true; }, up = () => { listenPressing.current = false; };
+    pagesEl.addEventListener('pointerdown', down, { passive: true });
+    document.addEventListener('pointerup', up, true);
+    document.addEventListener('pointercancel', up, true);
+    return () => {
+      pagesEl.removeEventListener('pointerdown', down);
+      document.removeEventListener('pointerup', up, true);
+      document.removeEventListener('pointercancel', up, true);
+    };
+  }, [pagesEl]);
 
   // 어휘 커버리지 배지(#1077-2) — 서재 카드와 **같은 엔진·같은 인덱스**(materialFit ←
   // 담김 ∪ '이미 앎'). 뷰어에서만 다른 수를 보이면 두 화면이 서로를 반증한다.
@@ -4290,7 +4322,7 @@ export default function ViewerPage() {
             // 루비 조각 · 발음 가림 · 문형 밑줄 · 단어 조작 마크업은 ReaderToken(memo)이 그린다 — 바뀐 낱말만 다시 그린다(VIEWER-TAP-PERF-001).
             return (
               <ReaderToken key={tokenId} tokenId={tokenId} token={token} tokenRefs={tokenRefs}
-                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}${isSaved && justSaved === tokenId ? ' word-token--just-saved' : ''}`}
+                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${listenTokens?.has(tokenId) ? ' word-token--listening' : ''}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}${isSaved && justSaved === tokenId ? ' word-token--just-saved' : ''}`}
                 selected={selectedToken?.id === tokenId && isSheetOpen}
                 paceStyle={paceStyle}
                 lineHeadText={lineHead ? lineHead.text : null} lineHeadRawIdx={lineHead ? lineHead.rawIdx : null}
@@ -4385,8 +4417,7 @@ export default function ViewerPage() {
             const lineText = (rawLines[rawIdx] ?? '').trim().replace(/^#{1,3}\s/, '')
               || lineTokenIds.slice(startIdx).map(id => json.dictionary[id]?.text || '').join('').trim();
 
-            // 듣는 줄(listenLine)도 같은 문장 강조 띠를 쓴다 — 새 스타일 없음(목업 6).
-            const isPicked = pickedLineIdx === rawIdx || listenLine === rawIdx;
+            const isPicked = pickedLineIdx === rawIdx;
 
             // 자동 진행 체류 선 — 지정 문장 안에서 각 토큰이 '언제 지워질지'를 글자수
             // 비례로 나눈다. 선은 오른쪽 끝에서 물러나므로 토큰 i의 구간은 [1-e, 1-s].

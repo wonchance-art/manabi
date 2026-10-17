@@ -2996,6 +2996,22 @@ a.viewer-badge:hover {
   from { transform: scaleX(1); }
   to   { transform: scaleX(0); }
 }
+/* ── 듣기 따라가기 밑줄(뷰어 감사 목업 6 · 1단계, 2026-10-17 KST) ──
+   읽는 문장의 토큰 아래 은은한 선 — 고른 문장 띠(--picked)와 구별되고 문장 지정 막대(.line-pick)를 띄우지 않는다.
+   체류 선과 같은 자리 · 색(--pace-line)이지만 줄지 않는다. 체류 선(.word-token::after)은 스크롤 보기 전용이고 따라가기는
+   쪽 넘김 보기 전용이라 같은 의사 요소를 함께 쓰는 순간이 없다. */
+.word-token--listening { position: relative; }
+.word-token--listening::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--hl-band-top) + var(--hl-band-h) + 0.05em);
+  height: 2px;
+  border-radius: 1px;
+  background: var(--pace-line);
+  pointer-events: none;
+}
 .reader-area--pacing .word-token--picked { position: relative; }
 .reader-area--pacing .word-token--picked::after {
   content: '';
