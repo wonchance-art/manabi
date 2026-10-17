@@ -9,6 +9,9 @@ import { sliceBetween } from '../../__tests__/helpers/sliceBetween.js';
 const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
 const BILLING = { error: { code: 429, status: 'RESOURCE_EXHAUSTED', message: 'Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing.' } };
 const geminiFail = (status, body = { error: { message: `http ${status}` } }) => ({ ok: false, status, json: async () => body });
+// 음성 사례(리뷰 차단 1, 2026-10-17 KST) — 보통 쿼터 초과 429도 「billing」을 싣는다. 기다리면 풀리는 혼잡이라 서비스 설정이 아니다.
+const GEMINI_QUOTA = { error: { code: 429, status: 'RESOURCE_EXHAUSTED', message: 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits.' } };
+const GROQ_QUOTA = { error: { message: 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_x` service tier `on_demand` on tokens per day (TPD): Limit 200000. Please try again in 7m. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', type: 'tokens', code: 'rate_limit_exceeded' } };
 const geminiOk = (text) => ({ ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text }] } }] }) });
 const groqOk = (text) => ({ ok: true, status: 200, json: async () => ({ choices: [{ message: { content: text } }], usage: { prompt_tokens: 1, completion_tokens: 1 } }) });
 const isGroq = (url) => String(url).includes('api.groq.com');
@@ -28,6 +31,24 @@ describe('① 서버 분류 — 서비스 설정은 용량이 아니다', () => 
     expect(isCapacityError(402, {})).toBe(false);
     expect(isCapacityError(429, {})).toBe(true);
     expect(isCapacityError(503, {})).toBe(true);
+  });
+
+  it('음성 — 「billing」이 든 보통 쿼터 429(Gemini · Groq)는 서비스 설정이 아니라 용량이다', async () => {
+    const { isServiceConfigError, isCapacityError } = await freshLlm();
+    for (const body of [GEMINI_QUOTA, GROQ_QUOTA]) {
+      expect(isServiceConfigError(429, body)).toBe(false);
+      expect(isCapacityError(429, body)).toBe(true);
+      expect(isServiceConfigError(429, JSON.stringify(body))).toBe(false);
+    }
+  });
+
+  it('음성 — 쿼터 429는 지금처럼 용량 재시도 · 폴백 모델을 탄다(서비스 설정으로 끊지 않는다)', async () => {
+    const fetchSpy = vi.fn(async () => geminiFail(429, GEMINI_QUOTA));
+    vi.stubGlobal('fetch', fetchSpy);
+    const { callLLM } = await freshLlm();
+    const err = await callLLM('standard', 'p', { retry: { max: 1, delays: [0] } }).catch((e) => e);
+    expect(err.code).not.toBe('service_config');
+    expect(fetchSpy).toHaveBeenCalledTimes(4); // 본선 2(1 + 재시도 1) + 폴백 모델 2
   });
 
   it('결제로 막히면 같은 키의 다른 Gemini 모델 · 용량 재시도를 건너뛰고 code service_config로 던진다', async () => {
@@ -110,7 +131,8 @@ describe('② 분석 데이터 보호 — 뜻 빈 완료본을 만들지 않는�
   it('클라 분석은 429만 자동 재시도하고, 실패 응답의 줄은 기존 실패(failed_indices)로 남긴다 — 재분석은 완료 검사에서 멈춘다', () => {
     const text = read('src/lib/analyzeText.js');
     expect(text).toContain('if (res?.status !== 429 || attempt >= RATE_LIMIT_RETRIES) return res;');
-    expect(text).toContain("if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);");
+    expect(text).toContain("if (data?.code === 'service_config') serviceStopped = true;");
+    expect(text).toContain('throw new Error(data?.error || `HTTP ${res.status}`);');
     const preserve = read('src/lib/reanalysisPreservation.js');
     expect(preserve).toContain("if (!completeAnalysis(result, rawText)) throw new Error('새 분석을 완료하지 못했어요. 기존 원문과 분석은 그대로 있어요.');");
   });
