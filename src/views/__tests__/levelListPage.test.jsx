@@ -209,6 +209,22 @@ describe('머리 · 진도 · X 펼침(LEVEL-FLOW-001 — 디자인 검토 2026-
     expect(fs.readFileSync('src/components/levels/level-list.css', 'utf8')).toContain('.lv-nav[hidden]{display:none}');
   });
 
+  it('▾를 열면 카드 하나 — 「레벨」 · 「목록」 이름표 + 꽉 찬 세그먼트, ← 교재는 맨 아래(오너 2026-10-17 「자연스럽게」)', async () => {
+    const nav = (html) => sliceBetween(html, '<div class="lv-nav" id="lv-nav"', '<div class="lv-view"');
+    const keys = (html) => [...nav(html).matchAll(/<span class="lv-nav__k" aria-hidden="true">([^<]+)<\/span>/g)].map((m) => m[1]);
+    const h1 = await render('chinese', 'vocab', 'h1');
+    expect(keys(h1)).toEqual(['레벨', '목록']);
+    expect(nav(h1).indexOf('lv-nav__k')).toBeLessThan(nav(h1).indexOf('class="lv-pills"'));
+    expect(keys(await render('chinese', 'vocab', 'h7'))).toEqual(['레벨']); // 목록 탭이 없으면 이름표도 없다
+    // 문형 · 한자(펼친 머리)에는 이름표를 그리지 않는다
+    expect(await render('chinese', 'bunkei', 'h1')).not.toContain('lv-nav__k');
+    const css = fs.readFileSync('src/components/levels/level-list.css', 'utf8');
+    expect(css).toMatch(/\.lv-bar--sticky \.lv-nav\{[^}]*border:1px solid var\(--lv-line\);border-radius:12px;background:var\(--lv-card\)/); // ⚙ 설정과 같은 카드
+    expect(css).toMatch(/\.lv-bar--sticky \.lv-pills\{display:grid;grid-auto-flow:column;grid-auto-columns:minmax\(0,1fr\)/);
+    expect(css).toMatch(/\.lv-bar--sticky \.lv-crumb\{order:9/);
+    expect(css).toContain('@media (prefers-reduced-motion:reduce){.lv-bar--sticky :is(.lv-nav,.lv-settings,.lv-tools){animation:none}}'); // 내려오는 움직임은 줄이기 설정에서 끈다
+  });
+
   it('넓은 화면 균형: 묶음은 가운데 · 단어 목록은 목차 없이 680px 한 줄 + 품사 칩(오너 2026-10-16 「1440에서 균형」)', async () => {
     const css = fs.readFileSync('src/components/levels/level-list.css', 'utf8');
     expect(css).toContain('.lv-page>*{max-width:904px;margin-inline:auto}');
