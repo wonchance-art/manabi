@@ -106,6 +106,7 @@ import PageBar, { PageStrips } from '../components/viewer/PageBar';
 import { pinyinCellWidth } from '../lib/pinyinLayout';
 import { zhKinsokuMarks, zhKinsokuStyle } from '../lib/zhGrid';
 import { ZhText, useZhGridRuns } from '../components/viewer/ZhText';
+import ReaderToken from '../components/viewer/ReaderToken';
 import { readerFontFamily } from '../lib/viewerPreferences';
 import { textbookThemeStyle } from '../lib/textbookTheme';
 import HunCell from '../components/viewer/HunCell';
@@ -980,6 +981,12 @@ export default function ViewerPage() {
   useEffect(() => { lastSaveRef.current = null; lastInlineGradeRef.current = null; }, [id, user?.id]);
   useEffect(() => { gradeAction.current += 1; }, [id, user?.id]);
 
+  // 본문 낱말(ReaderToken, memo)에 넘기는 고정 함수(VIEWER-TAP-PERF-001) — 매 렌더 새 함수면 memo가 깨져 낱말 수백 개가
+  // 모두 다시 그려진다. 부를 때는 이번 렌더의 handleTokenClick · 문장 지정을 그대로 쓴다(ref는 렌더마다 갱신).
+  const tokenClickRef = useRef(null);
+  const onReaderTokenClick = useCallback((token, tokenId) => tokenClickRef.current?.(token, tokenId), []);
+  const linePickRef = useRef(null);
+  const onReaderLinePick = useCallback((lineHead) => linePickRef.current?.(lineHead), []);
   const handleTokenClick = (token, tokenId) => {
     setRestoredClassSource(null);
     if (token.pos === '개행') return;
@@ -1036,6 +1043,7 @@ export default function ViewerPage() {
       if (idx >= 0) saveScrollPosition(idx);
     }
   };
+  tokenClickRef.current = handleTokenClick;
 
   // ② 리스트 단어 탭 → 팝업 대신 단어 카드가 리스트 위에(오너 승인). 문장 컨텍스트
   // (리스트·막대 지정·집중 어둡기)를 유지해야 하므로 dragTokens·pickedLineIdx는 건드리지 않는다.
@@ -4198,6 +4206,18 @@ export default function ViewerPage() {
           // 중국어 줄머리 금칙(ZH-GRID-001): 닫는 부호 묶음과 그 앞 토큰을 한 줄에 묶는 여백 표시.
           const zhMarks = zhGrid ? zhKinsokuMarks(json.sequence, id => json.dictionary[id]) : null;
 
+          // 문장 전체 지정 막대(.line-pick) — 낱말 칸(ReaderToken)과 분석 실패 칸이 같은 동작을 쓴다.
+          linePickRef.current = (lineHead) => {
+            tokenRange.clearRange(); // 범위 지정 이펙트와 상호 배타
+            setPickedLineIdx(lineHead.rawIdx); // 문장 전체 지정 이펙트
+            setSelectedRangeText(lineHead.text); // 문법 버튼 활성 경로
+            // 집중 모드 단일 규칙: 지정 '밖' 막대 = 순수 이동(지정 먼저), 지정된
+            // 문장의 막대 재탭 = 본래처럼 전체 분석. 집중 꺼짐 = 항상 분석.
+            if (focusMode && pickedLineIdx !== lineHead.rawIdx) clearAnalysisPanels();
+            else runSelectionAnalysis(lineHead.text);
+          };
+          const linePickLabel = vt("문장 전체 분석");
+
           const renderToken = (tokenId, lineHead = null, picked = false, paceSlice = null) => {
             const zhStyle = zhKinsokuStyle(zhMarks?.get(tokenId));
             // 체류 선의 자기 몫 구간(v2-I R1b) — 오른쪽부터 물러나므로 마지막 토큰이 먼저 빈다.
@@ -4211,25 +4231,16 @@ export default function ViewerPage() {
             const pickedClass = picked || inRange ? ' word-token--picked' : '';
             // 줄 첫 토큰에만 문장 전체 지정 막대 — 한자와 같은 라인박스에 인라인으로 앉혀
             // 루비(요미가나·병음) 유무와 무관하게 본문 글자 높이에 정렬된다.
-            const linePick = lineHead ? (
-              <button
-                className="line-pick"
-                aria-label={vt("문장 전체 분석")}
-                title={vt("문장 전체 분석")}
-                onMouseUp={e => e.stopPropagation()}
-                onClick={e => {
-                  e.stopPropagation();
-                  tokenRange.clearRange(); // 범위 지정 이펙트와 상호 배타
-                  setPickedLineIdx(lineHead.rawIdx); // 문장 전체 지정 이펙트
-                  setSelectedRangeText(lineHead.text); // 문법 버튼 활성 경로
-                  // 집중 모드 단일 규칙: 지정 '밖' 막대 = 순수 이동(지정 먼저), 지정된
-                  // 문장의 막대 재탭 = 본래처럼 전체 분석. 집중 꺼짐 = 항상 분석.
-                  if (focusMode && pickedLineIdx !== lineHead.rawIdx) clearAnalysisPanels();
-                  else runSelectionAnalysis(lineHead.text);
-                }}
-              />
-            ) : null;
             if (token.failed) {
+              const linePick = lineHead ? (
+                <button
+                  className="line-pick"
+                  aria-label={linePickLabel}
+                  title={linePickLabel}
+                  onMouseUp={e => e.stopPropagation()}
+                  onClick={e => { e.stopPropagation(); onReaderLinePick(lineHead); }}
+                />
+              ) : null;
               return (
                 <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                   data-tid={tokenId}
@@ -4244,62 +4255,17 @@ export default function ViewerPage() {
               );
             }
             const {isSaved, isDue, isKnown:tokKnown, highlight:hlClass} = tokenDisplayState(token);
-            // ruby는 토글과 무관하게 항상 만든다 — 폭 예약(ruby[data-pinyin])이 병음을 꺼도
-            // 유지돼야 켤 때 글자가 밀리지 않는다(오너 요청 2026-08-19). 끌 때는 rt만 감춘다.
-            const rubySegments = token.furigana
-              ? splitRuby(token.text, token.furigana, token.base_form, kuruNext.get(tokenId)) // 활용형은 기본형 읽기에서 한자 읽기만(違[ちが]い) · 来 | ない는 다음 토큰으로 こ
-              : null;
-            // 발음 표기 3단(오너 확정 2026-08-27) — 감춰도 rt만 숨긴다(폭 예약 불변, furi-off 선례).
-            // 「가려져 있다」는 **읽기가 실제로 붙는 토큰**에서만 참이다: furigana가 있어도
-            // 한자가 없으면 splitRuby가 plain 한 조각만 내주어 벗길 rt가 없다. 그런 토큰까지
-            // 참으로 두면 탭이 아무 일도 없이 먹힌다(카드가 안 열린다).
-            const hasReading = !!rubySegments?.some((seg) => seg.kanji);
-            const pronHidden = hasReading && pronHiddenFor(pronDisplay, { isKnown: tokKnown, isSaved });
-            const furiOff = pronHidden;
-            // 문형 밑줄은 전용 요소 — .surface::after는 지정 이음매 자리라 고르면 사라졌다(R0 버그 1).
-            const patternMark = visibleScan?.byToken.has(tokenId) ? <span className="pattern-mark" aria-hidden="true" /> : null;
-            // 단어 조작은 .surface가 맡아 문장 지정 막대(.line-pick)와 형제로 둔다 — 버튼 안의
-            // 버튼은 키보드·보조기기에서 제 의미를 잃는다(#1323). 막대의 Enter가 바깥으로 새어
-            // 단어 카드를 열던 경로도 함께 사라진다. 마우스 탭은 루비 여백까지 받도록 바깥에 둔다.
-            const wordAction = {
-              role: 'button', tabIndex: 0,
-              onKeyDown: e => {
-                if (e.key !== 'Enter' && e.key !== ' ') return;
-                e.preventDefault(); e.stopPropagation();
-                handleTokenClick(token, tokenId);
-              },
-            };
+            // 루비 조각 · 발음 가림 · 문형 밑줄 · 단어 조작 마크업은 ReaderToken(memo)이 그린다 — 바뀐 낱말만 다시 그린다(VIEWER-TAP-PERF-001).
             return (
-              <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
-                data-tid={tokenId}
-                data-source-token={tokenId}
-                data-source-text={token.text}
-                data-text={token.text}
-                data-selected={selectedToken?.id===tokenId&&isSheetOpen?true:undefined}
+              <ReaderToken key={tokenId} tokenId={tokenId} token={token} tokenRefs={tokenRefs}
                 className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}${isSaved && justSaved === tokenId ? ' word-token--just-saved' : ''}`}
-                style={paceStyle}
-                onClick={() => handleTokenClick(token, tokenId)}>
-                {linePick}
-                {rubySegments ? (
-                  <span className={`surface${furiOff ? ' surface--furi-off' : ''}`} {...wordAction}>
-                    {rubySegments.map((seg, i) =>
-                      seg.kanji
-                        // 병음 rt는 CSS가 전 음절 단일 크기(최장 병음이 1em 셀에 들어가는
-                        // 크기)로 조판한다 — 글자별 속성이 더 필요 없다(오너 확정 2026-08-19).
-                        // 요미가나(data-yomi)는 크기 유지 + 절대배치 — 한자 폭 불변(오너 요청).
-                        // 독음은 <rt>가 아니라 span(.rt-an) — WebKit이 rt에 한해 절대배치를
-                        // 무시해 iOS에서 병음이 흐름으로 새던 실기 결함의 수리(진단기 실측).
-                        ? <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined}
-                            data-yomi={seg.pinyin ? undefined : '1'}>
-                            {zhGrid && !seg.pinyin ? <ZhText text={seg.kanji} /> : seg.kanji}<span className={['rt-an', showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : ''].filter(Boolean).join(' ')}>{seg.reading}</span>
-                          </ruby>
-                        : zhGrid ? <ZhText key={i} text={seg.plain} /> : <span key={i}>{seg.plain}</span>
-                    )}{patternMark}
-                  </span>
-                ) : (
-                  <span className="surface" {...wordAction}>{zhGrid ? <ZhText text={token.text} /> : token.text}{patternMark}</span>
-                )}
-              </div>
+                selected={selectedToken?.id === tokenId && isSheetOpen}
+                paceStyle={paceStyle}
+                lineHeadText={lineHead ? lineHead.text : null} lineHeadRawIdx={lineHead ? lineHead.rawIdx : null}
+                linePickLabel={linePickLabel} onLinePick={onReaderLinePick} onTokenClick={onReaderTokenClick}
+                nextText={token.furigana ? kuruNext.get(tokenId) : ''}
+                pronDisplay={pronDisplay} isKnown={tokKnown} isSaved={isSaved}
+                patternMark={!!visibleScan?.byToken.has(tokenId)} zhGrid={!!zhGrid} showToneColors={!!showToneColors} />
             );
           };
 
