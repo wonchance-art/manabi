@@ -101,6 +101,7 @@ import { useGroupReadPush } from '../lib/useGroupReadPush';
 import { useScrollRestore } from '../lib/useScrollRestore';
 import { useReaderLayout, readerVisibleBounds, useSelectedTokenVisibility } from '../lib/useReaderLayout';
 import { usePagedReader, pagerFor, overlayOrigin } from '../lib/usePagedReader';
+import { flushSync } from 'react-dom';
 import { listenSentenceRanges, listenSentenceTokens } from '../lib/listenFollow';
 import { analysisTokenLine } from '../lib/analysisCoverage';
 import { captureReadingAnchor } from '../lib/readingViewport';
@@ -1489,7 +1490,8 @@ export default function ViewerPage() {
     const paged = el && pagerFor(el);
     if (!paged || !el.isConnected) { setListenTokens(null); return; }
     // 같은 틱에서 옮기고 밑줄을 단다 — 한 프레임 미루면 머리줄의 지금 문장과 밑줄이 그 사이 어긋나 보였다(실측 24회 중 2회).
-    if (paged.reveal(el, { auto: true })) setListenTokens(new Set(ids));
+    // 쪽 이동(scrollLeft)은 즉시라 밑줄도 flushSync로 바로 그린다 — 새 쪽에 옛 문장 밑줄이 남는 틈(실측 24회 중 1회)을 없앤다.
+    if (paged.reveal(el, { auto: true })) flushSync(() => setListenTokens(new Set(ids)));
     else setListenTokens(null);
   }, [listenRanges, listenLineTokens, listenFollowable, tokenRefs]);
   // [지금 문장으로](목업 listen-resume B안) — 사람이 누른 이동이라 auto가 아니다(시트가 열려 있어도 옮긴다). 듣는 자리로 가는 것이라
@@ -1502,7 +1504,7 @@ export default function ViewerPage() {
     const paged = el && pagerFor(el);
     if (!paged) return;
     paged.reveal(el);
-    setListenTokens(new Set(ids));
+    flushSync(() => setListenTokens(new Set(ids)));
   };
 
   // 어휘 커버리지 배지(#1077-2) — 서재 카드와 **같은 엔진·같은 인덱스**(materialFit ←

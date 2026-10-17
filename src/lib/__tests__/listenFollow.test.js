@@ -44,12 +44,12 @@ describe('뷰어 배선', () => {
     const h = handler();
     expect(h).toContain('const ids = listenSentenceTokens(listenRanges[index], line => listenLineTokens.get(line));');
     expect(h).toContain('const el = ids.length ? tokenRefs.current[ids[0]] : null;');
-    expect(h).toContain('if (paged.reveal(el, { auto: true })) setListenTokens(new Set(ids));');
+    expect(h).toContain('if (paged.reveal(el, { auto: true })) flushSync(() => setListenTokens(new Set(ids)));');
     expect(h).not.toContain('user: true');
   });
   it('시트 · 범위 지정 · 키 차단 · 누르는 중에는 그 문장 이동만 건너뛴다(멈추지 않음) — 판정은 pager(reveal auto · canAutoReveal, pagedReader.test)', () => {
     const h = handler();
-    expect(h).toContain('if (paged.reveal(el, { auto: true })) setListenTokens(new Set(ids));\n    else setListenTokens(null);');
+    expect(h).toContain('if (paged.reveal(el, { auto: true })) flushSync(() => setListenTokens(new Set(ids)));\n    else setListenTokens(null);');
     expect(h).not.toContain('listenFollowOff.current = true'); // 멈춤은 사람의 쪽 넘김(onUserPage)에서만
     expect(viewer()).not.toContain('listenPressing'); // 누르는 중은 pager 안 상태만 쓴다
   });
@@ -117,7 +117,7 @@ describe('2단계 [지금 문장으로](목업 listen-resume B안)', () => {
     expect(resume).toContain('paged.reveal(el);');
     expect(resume).not.toContain('auto: true');
     expect(resume).not.toContain('user: true');
-    expect(resume).toContain('setListenTokens(new Set(ids));');
+    expect(resume).toContain('flushSync(() => setListenTokens(new Set(ids)));');
   });
   it('멈춤 알림은 막대 밖 polite 상태 한 줄 · 좁은 폭 지금 문장 줄은 실제로 따라갈 때만 숨김 · 3언어 문구', () => {
     const v = viewer();

@@ -602,7 +602,7 @@ describe('auto reveal yields to people (listen follow)', () => {
     const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     expect(viewer).toContain('canAutoReveal: () => { const g = pagedGuard.current; return !(g.sheetOpen || g.dragging || g.blocked); },');
     expect(sliceBetween(viewer, 'const handleListenSentence = useCallback((index) => {', '}, [listenRanges'))
-      .toContain('if (paged.reveal(el, { auto: true })) setListenTokens(new Set(ids));');
+      .toContain('if (paged.reveal(el, { auto: true })) flushSync(() => setListenTokens(new Set(ids)));');
     const layout = fs.readFileSync(path.join(process.cwd(), 'src/lib/useReaderLayout.js'), 'utf8');
     expect(layout).toContain('pager.reveal(token);');
     expect(layout).not.toContain('auto: true');
