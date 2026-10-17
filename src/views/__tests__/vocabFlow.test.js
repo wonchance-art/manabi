@@ -49,11 +49,12 @@ describe('VOCAB-FLOW-001 A 끝 화면 — 세션 머리줄 유지, 복습방 머
     expect(code).toContain("const onEndScreen = tab === 'review' && reviewFinished || tab === 'practice' && !!practice && practice.finished;");
     expect(code).toContain('const sessionChrome = inSession || onEndScreen;');
   });
-  it('복습방 머리 · 교재 범위 안내는 세션 · 끝 화면에 없고, 상단바는 둘 다에 있다(되돌리기는 끝 화면에서 빼기)', () => {
+  it('복습방 머리 · 교재 범위 안내는 세션 · 끝 화면에 없고, 상단바는 둘 다에 있다(되돌리기는 끝 화면에서 잠금 — 빼면 옆 칸이 밀린다)', () => {
     expect(code).toContain('{!sessionChrome && (\n        <header className="review-room-heading">');
     expect(code).toContain('{isBookScope && !sessionChrome && <section className="review-room-scope review-room-book-scope"');
     expect(code).toContain('{sessionChrome && (() => {');
-    expect(code).toContain("{tab === 'review' && !onEndScreen && <button type=\"button\" className=\"review-topbar__undo\"");
+    expect(code).toContain("{tab === 'review' && <button type=\"button\" className=\"review-topbar__undo\"");
+    expect(code).toContain('disabled={onEndScreen || !reviewKeysRef.current.canUndo}');
   });
   it('위 여백 8px도 끝 화면까지 — 하단 내비만 세션 중에 숨긴다', () => {
     expect(code).toContain("document.body.classList.toggle('is-review-chrome', sessionChrome);");

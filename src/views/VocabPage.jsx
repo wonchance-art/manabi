@@ -1428,7 +1428,7 @@ function VocabWorkspace({ reviewScope }) {
         <div className="manabi-row"><Link href={reviewScope.returnTo}>← 교재로</Link>{bookExpressionListHref(reviewScope.returnTo) && <Link href={bookExpressionListHref(reviewScope.returnTo)} prefetch={false}>교재의 담은 표현</Link>}</div>
       </section>}
       {/* 세션 상단바 — 나가기 · 진행(서로 다른 카드 n / N) · 🔈/🔇 · 되돌리기. 카드 안에는 문항만 남긴다.
-          끝 화면에도 같은 자리에 남긴다(A). 되돌리기는 끝 화면에서 원래 쓸 수 없어(단축키도 꺼짐) 그리지 않는다. */}
+          끝 화면에도 같은 자리에 남긴다(A). 되돌리기는 끝 화면에서 원래 쓸 수 없어(단축키도 꺼짐) 잠근다 — 빼면 진행 수 · 소리 단추가 옆으로 밀린다(실측 layout-shift 0.0009). */}
       {sessionChrome && (() => {
         const progress = tab === 'practice' ? { done: practice.idx, total: practice.total } : runProgress || { done: 0, total: 0 };
         const total = progress.total || 1;
@@ -1452,8 +1452,8 @@ function VocabWorkspace({ reviewScope }) {
               {doneCount} / {progress.total}
             </span>
             {ttsSupported && <ReviewSoundToggle on={soundOn} onToggle={toggleSound} />}
-            {tab === 'review' && !onEndScreen && <button type="button" className="review-topbar__undo" aria-label="직전 채점 되돌리기" title="되돌리기 Ctrl/⌘+Z"
-              disabled={!reviewKeysRef.current.canUndo} onClick={() => reviewKeysRef.current.undo?.()}>↶</button>}
+            {tab === 'review' && <button type="button" className="review-topbar__undo" aria-label="직전 채점 되돌리기" title="되돌리기 Ctrl/⌘+Z"
+              disabled={onEndScreen || !reviewKeysRef.current.canUndo} onClick={() => reviewKeysRef.current.undo?.()}>↶</button>}
           </div>
         );
       })()}
