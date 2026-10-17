@@ -7,6 +7,7 @@
 import { combineChunks, createServerClient, stringFromBase64URL } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { withoutServerSignOut } from './authCookieGuard';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -24,7 +25,8 @@ export async function createSupabaseServerClient() {
       },
       setAll(cookiesToSet) {
         try {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          // 동시 갱신에서 진 요청(409)이 인증 쿠키를 지워 로그아웃시키지 않게 — 서버는 로그아웃하지 않는다(authCookieGuard).
+          withoutServerSignOut(cookiesToSet).forEach(({ name, value, options }) =>
             cookieStore.set(name, value, options)
           );
         } catch {
