@@ -108,9 +108,13 @@ const connected = target => target && (target.isConnected ?? target.startContain
 /**
  * @param {HTMLElement} pages 다단 상자(overflow:hidden). 쪽 이동은 이 상자의 scrollLeft.
  * @param {() => object} options 최신 옵션을 돌려주는 함수(React 렌더마다 바뀌는 콜백을 다시 붙이지 않는다).
- *   anchorSelector, captureAnchor(page, api), onUserPage(anchor, page), canSwipe(), bar(), bottomGap(), initialAnchor(),
+ *   anchorSelector, focusSelector, captureAnchor(page, api), onUserPage(anchor, page), canSwipe(), bar(), bottomGap(), initialAnchor(),
  *   reducedMotion(), window, document
+ *   anchorSelector = 쪽의 첫 기준 요소(쪽 맞춤 · 위치 저장). focusSelector = 초점 귀속 대상(기본 낱말 [data-source-token]) — 둘은 따로다:
+ *   원본 리더의 기준 요소는 본문 전체 article(.original-writing)이라, 초점을 그리로 귀속하면 안의 모든 초점이 첫 쪽으로 튄다.
  */
+const FOCUS_ITEM = '[data-source-token]';
+const FOCUS_SCROLL_MS = 500;
 export function createPagedController(pages, options = () => ({})) {
   const opt = () => options() || {};
   const win = () => opt().window || (typeof window !== 'undefined' ? window : null);
@@ -127,11 +131,12 @@ export function createPagedController(pages, options = () => ({})) {
 
   const items = () => [...(pages.querySelectorAll?.(opt().anchorSelector || '[data-source-token]') || [])];
   /**
-   * 초점이 든 요소의 쪽은 그 요소가 속한 낱말(기준 요소)로 잰다(PAGED-FOCUS-001). 줄 머리 문장 막대(.line-pick)는 낱말 왼쪽 여백에
+   * 초점이 든 요소의 쪽은 그 요소가 속한 낱말로 잰다(PAGED-FOCUS-001). 줄 머리 문장 막대(.line-pick)는 낱말 왼쪽 여백에
    * 떠 있어, 다음 쪽 첫 줄의 막대는 단 사이 틈(현재 쪽 끝)에 놓인다 — 막대 자리로 재면 쪽이 넘어가지 않아 Tab 초점이 화면 밖에 남았다
    * (390 실측: 막대 x 384~408 · 그 낱말 x 414 · 쪽 1 그대로). 낱말 밖 요소(제목 · 읽기 완료 등)는 그대로 그 요소로 잰다.
+   * 귀속 대상은 focusSelector(기본 낱말)이고 anchorSelector가 아니다 — 기준 요소가 여러 쪽에 걸친 상자(원본 리더 article)면 첫 쪽으로 튄다.
    */
-  const focusPageTarget = el => { const item = el?.closest?.(opt().anchorSelector || '[data-source-token]'); return item && item !== pages && pages.contains?.(item) ? item : el; };
+  const focusPageTarget = el => { const item = el?.closest?.(opt().focusSelector || FOCUS_ITEM); return item && item !== pages && pages.contains?.(item) ? item : el; };
   /** 쪽의 첫 토큰. 토큰이 없는 쪽: 본문 뒤(읽기 완료·다음 편)면 끝에서 몇 번째 쪽인지, 앞(제목)이면 시작. */
   function captureAnchor(target) {
     const custom = opt().captureAnchor?.(target, api);
@@ -237,12 +242,19 @@ export function createPagedController(pages, options = () => ({})) {
   // 어중간한 스크롤(찾기·포커스·남의 scrollIntoView) → 쪽 맞춤. 우리 이동이 끝나는 동안의 이벤트는 무시한다.
   // 누르는 동안(마우스 다운~업)에는 쪽을 맞추지 않는다 — 누른 사이 글자가 밀리면 떼는 자리가 달라져 클릭이 사라진다
   // (포커스 이동·남의 스크롤로 어중간해진 쪽은 손을 뗀 뒤에 맞춘다).
-  let pressed = false, deferred = false;
+  // 초점 쪽으로 끌어오는 것은 「초점이 방금 바뀐」 스크롤뿐이다(FOREIGN-SCROLL-001). 초점이 본문 낱말에 그대로 남은 채 브라우저 찾기(Ctrl+F) ·
+  // 화면 읽기 도구가 다른 쪽으로 스크롤하면 그 스크롤이 닿은 쪽(가장 가까운 쪽)으로 맞춘다 — 예전엔 초점 쪽으로 되돌려 찾은 글자가 사라졌다.
+  // 초점 이동이 낸 스크롤(Tab · 클릭)은 focusin과 같은 프레임 근처에 온다 — FOCUS_SCROLL_MS 안이면 초점 쪽.
+  let pressed = false, deferred = false, deferredFocus = false, focusAt = -Infinity;
+  const focusedPage = () => {
+    const active = (opt().document || pages.ownerDocument)?.activeElement;
+    return active && active !== pages && pages.contains?.(active) ? pageOf(focusPageTarget(active)) : null;
+  };
   function settleDeferred() {
     if (!deferred || pressed || destroyed) return;
     deferred = false;
-    const active = (opt().document || pages.ownerDocument)?.activeElement;
-    const target = active && active !== pages && pages.contains?.(active) ? pageOf(focusPageTarget(active)) : nearestPage(pages.scrollLeft || 0, step, count);
+    const byFocus = deferredFocus; deferredFocus = false;
+    const target = (byFocus ? focusedPage() : null) ?? nearestPage(pages.scrollLeft || 0, step, count);
     if (target != null && (Math.abs((pages.scrollLeft || 0) - target * step) >= 1 || target !== page)) goTo(target, { user: true });
   }
   function handleRelease() {
@@ -261,14 +273,14 @@ export function createPagedController(pages, options = () => ({})) {
     }
     if (pressed) { deferred = true; return; }
     // 같은 프레임 안에서 바로 맞춘다 — 늦게 맞추면 끌려간 화면을 보고 누른 손(또는 자동화의 클릭)이 엉뚱한 자리를 누른다.
-    const active = (opt().document || pages.ownerDocument)?.activeElement;
-    const target = active && active !== pages && pages.contains?.(active) ? pageOf(focusPageTarget(active)) : nearestPage(left, step, count);
+    const target = (Date.now() - focusAt < FOCUS_SCROLL_MS ? focusedPage() : null) ?? nearestPage(left, step, count);
     if (Math.abs(left - target * step) >= 1 || target !== page) goTo(target, { user: true });
   }
   function handleFocusIn(event) {
     const target = event?.target;
     if (!ready || !target || target === pages) return;
-    if (pressed) { deferred = true; return; }
+    focusAt = Date.now();
+    if (pressed) { deferred = true; deferredFocus = true; return; }
     const next = pageOf(focusPageTarget(target));
     if (next != null && next !== page) goTo(next, { user: true });
   }
@@ -415,11 +427,11 @@ const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayout
  * 마지막 기준 토큰을 화면 가운데로 데려온다.
  * @returns {{page,count,ready,progress,label,next,prev,first,last,goTo,reveal}}
  */
-export function usePagedReader({ enabled, pages, barRef, layoutKey, resetKey, onUserPage, canSwipe, canKey, captureAnchor, anchorSelector, initialAnchor, bottomGap, topInset }) {
+export function usePagedReader({ enabled, pages, barRef, layoutKey, resetKey, onUserPage, canSwipe, canKey, captureAnchor, anchorSelector, focusSelector, initialAnchor, bottomGap, topInset }) {
   const [state, setState] = useState({ page: 0, count: 1, ready: false, progress: 0, label: pageLabel(0, 1) });
   const controller = useRef(null);
   const latest = useRef({});
-  latest.current = { onUserPage, canSwipe, canKey, captureAnchor, anchorSelector, initialAnchor, bottomGap, topInset, bar: () => barRef?.current || null, reducedMotion };
+  latest.current = { onUserPage, canSwipe, canKey, captureAnchor, anchorSelector, focusSelector, initialAnchor, bottomGap, topInset, bar: () => barRef?.current || null, reducedMotion };
   useIsoLayoutEffect(() => {
     if (!enabled || !pages) return undefined;
     const pager = createPagedController(pages, () => latest.current);
