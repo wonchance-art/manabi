@@ -788,7 +788,7 @@ export default function MaterialsPage({ libraryView = null }) {
               const worldChapterOf = (c) => world?.chapters.find((item) => item.order === c._bookOrder);
               const worldProps = world ? {
                 art: <FirstEditionCover work={world} />,
-                title: <span lang={worldLang}>{world.title}</span>,
+                title: <ZhSlot lang={worldLang}><span lang={worldLang}>{world.title}</span></ZhSlot>, // 위키문헌 중국어 원제 — 간체 독립 스타일시트(SC-LINK-001)
                 subtitle: [world.display?.titleKo, world.display?.authorKo, world.literature?.publishedYear && `${world.literature.publishedYear}년 발표`].filter(Boolean).join(' · '),
                 meta: [world.level, world.size && `${world.size.toLocaleString()}${world.unit === 'chars' ? '자' : '단어'}`, `${world.total}장`, `읽음 ${readDone}/${b.chapters.length}`].filter(Boolean).join(' · ') + pendingNote,
                 fitLine: fitLineOf(bf, '장'),
@@ -810,7 +810,7 @@ export default function MaterialsPage({ libraryView = null }) {
                     lead: work ? literatureLead(c._bookOrder) : c._bookOrder,
                     title: work ? <span lang="ja">{literatureChapterIncipit(b.key, c._bookOrder) || c.title}</span>
                       : english ? <span lang="en">{englishChapterOf(c)?.title || c.title}</span>
-                      : world ? <span lang={worldLang}>{worldChapterOf(c)?.title || c.title}</span>
+                      : world ? <ZhSlot lang={worldLang}><span lang={worldLang}>{worldChapterOf(c)?.title || c.title}</span></ZhSlot>
                       : c.title.includes(' — ') ? c.title.split(' — ').slice(1).join(' — ') : c.title,
                     right: chapterTags(c),
                   }))}
