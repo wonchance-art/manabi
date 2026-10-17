@@ -496,7 +496,11 @@
 .viewer-inspector__actions>button:disabled {opacity:.45;cursor:default;}
 @container reader (min-width:1120px) {
   .manabi-app .viewer-layout[data-inspector-open="true"]>.viewer-center {flex:1;min-width:0;}
-  .manabi-app .viewer-layout .viewer-inspector {top:80px;height:auto;max-height:calc(100dvh - 104px);box-shadow:none;}
+  /* 높이는 위 옆 패널 규칙(height:calc(100dvh - 112px))을 그대로 쓴다 — 내용만큼 자라던 height:auto를 뺐다(CARD-SENSES-SHIFT-001,
+     오너 「권장대로」 B안 2026-10-17 KST). 우리 사전 예문이 늦게 오면 패널이 자라 채점 줄이 106.8px 밀렸다. 패널 높이가 고정이면
+     390 시트와 같은 칸 배치(.viewer-inspector .word-detail-card 세로 flex · .reader-card-body 스크롤 · .reader-card-actions flex:none)로
+     채점 줄이 패널 아래에 머물고, 늦게 온 내용은 본문 스크롤 안에서만 자란다. */
+  .manabi-app .viewer-layout .viewer-inspector {top:80px;max-height:calc(100dvh - 104px);box-shadow:none;}
 }
 @container reader (max-width:600px) {
   .manabi-app .viewer-layout .viewer-header {padding-block:24px 18px;}
