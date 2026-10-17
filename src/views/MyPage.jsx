@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -20,7 +20,6 @@ export default function MyPage() {
   // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
   const signInHref = authEntryHref(usePathname());
   const { user, profile, fetchProfile, signOut } = useAuth();
-  const router = useRouter();
   const toast = useToast();
   const queryClient = useQueryClient();
 
@@ -191,7 +190,7 @@ export default function MyPage() {
             {streak > 0 && <> · {streak}일 연속</>}
           </p>
         </div>
-        <Button variant="ghost" size="sm" onClick={async () => { await signOut(); router.refresh(); /* B1 — 미리 받아 둔 로그인 골격 버림 */ }}>로그아웃</Button>
+        <Button variant="ghost" size="sm" onClick={() => signOut() /* 서버 렌더 버리기는 AuthContext 관문(AUTH-ROUTER-REFRESH-001) */}>로그아웃</Button>
       </div>
 
 

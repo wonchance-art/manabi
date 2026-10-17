@@ -167,8 +167,8 @@ export default function Layout({ children }) {
   async function handleAuthClick() {
     if (user) {
       await signOut();
+      // 서버 렌더 버리기(router.refresh — B1 배움 대기 화면 포함)는 AuthContext 관문이 이동 뒤에 한다(AUTH-ROUTER-REFRESH-001).
       router.push('/auth');
-      router.refresh(); // 로그인 상태로 미리 받아 둔 배움 대기 화면을 버린다(B1) — 이동 뒤 차례로
     } else {
       router.push(authEntryHref(window.location.pathname + window.location.search + window.location.hash));
     }

@@ -10,7 +10,7 @@ import { migrateGuestDrillQueue } from './drillSrs';
 import { useToast } from './ToastContext';
 import { pullProgress } from './refProgress';
 import { createProfileReadOnlyRefresh, recordExplicitProfileLogin } from './learningActivity';
-import { accountCacheReset, clearAccountQueries, noteAccount } from './accountQueryCache';
+import { accountCacheReset, accountLeft, clearAccountQueries, noteAccount } from './accountQueryCache';
 
 const AuthContext = createContext(null);
 
@@ -28,7 +28,11 @@ const AUTH_RESTORE_RETRY_MS = [2000, 8000, 30000];
 const STREAK_MILESTONES = { 7: '🔥 7일 연속 학습 달성!', 30: '🏆 30일 연속 학습 달성!', 100: '🌟 100일 연속 학습 달성!' };
 
 // queryClient: providers.jsx가 넘긴다 — 계정이 바뀌면 계정에 딸린 캐시를 비운다(AUTH-CACHE-CLEAR-001 · lib/accountQueryCache).
-export function AuthProvider({ children, queryClient }) {
+// onAccountLeft: providers.jsx가 router.refresh를 넘긴다 — 같은 순간(A → 손님 · A → B)에 서버 렌더 데이터도 버린다(AUTH-ROUTER-REFRESH-001).
+//   서버 컴포넌트가 쿠키 세션으로 그린 A의 데이터(서재 HydrationBoundary · /study · /writing · /review/grammar · 관리 화면 · 뷰어 제목)는
+//   react-query가 아니라 RSC 페이로드 · 라우터 캐시에 있다 — 지금 화면과 뒤로 가기 캐시에 남아 B에게 보였다. 로그아웃 버튼마다 따로
+//   부르던 router.refresh(Layout · MyPage — 계정 삭제 · 다른 탭 전환은 빠져 있었다)를 이 한 관문으로 모았다.
+export function AuthProvider({ children, queryClient, onAccountLeft }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -44,6 +48,10 @@ export function AuthProvider({ children, queryClient }) {
 
   const actorRef = useRef(null);
   const lastSignedInRef = useRef(null); // 이 탭에서 마지막으로 들어와 있던 계정(손님 → B 때 앞선 A의 늦은 쓰기를 비우는 판정)
+  // 계정이 떠난 뒤 그리기가 끝나면(아래 effect) 한 번 서버 렌더를 버린다. 콜백은 최신 것을 쓴다(렌더마다 새 함수여도 effect를 다시 걸지 않게).
+  const accountLeftPendingRef = useRef(false);
+  const onAccountLeftRef = useRef(onAccountLeft);
+  onAccountLeftRef.current = onAccountLeft;
   const authGenerationRef = useRef(0);
   const explicitLoginRequestRef = useRef(0);
   const mountedRef = useRef(true);
@@ -57,10 +65,13 @@ export function AuthProvider({ children, queryClient }) {
     if (actorRef.current !== nextActor) {
       // A → 손님 · A → B(· 손님 → B인데 앞서 A): 새 user로 그리기(setUser) 전에 A의 캐시를 비운다 — 같은 키(['material', id] 등)를
       // B가 받아 그리지 않게. 기기 캐시(IndexedDB)도 새 계정이 열 수 없는 기록을 지운다(대기 연산은 보존 — offlineCache).
+      // 서버 렌더 버리기(router.refresh)는 계정이 떠날 때만(A → 손님 · A → B) — 손님 → B는 로그인 화면이 이미 새로 그린다.
+      const left = accountLeft(actorRef.current, nextActor);
       if (accountCacheReset(lastSignedInRef.current, actorRef.current, nextActor)) {
         clearAccountQueries(queryClient);
         import('./offlineCache').then((cache) => cache.purgeOfflineForAccount(nextActor)).catch(() => {});
       }
+      if (left) accountLeftPendingRef.current = true;
       if (nextActor) lastSignedInRef.current = nextActor;
       authGenerationRef.current += 1;
       actorRef.current = nextUser?.id ?? null;
@@ -125,6 +136,14 @@ export function AuthProvider({ children, queryClient }) {
       if (current() && !unloadingRef.current) console.error('프로필 로드/갱신 실패:', err.message);
     }
   }
+
+  // 서버 렌더 버리기 — 새 계정(또는 손님)으로 그린 뒤에 한 번. effect라 로그아웃 버튼의 이동(router.push('/auth'))이 먼저 나가고
+  // 새로고침이 뒤따른다(예전 Layout의 「이동 뒤 차례로」 순서 — 이동이 새로고침을 버리지 않게). 손님 → 계정 · 같은 계정은 부르지 않는다.
+  useEffect(() => {
+    if (!accountLeftPendingRef.current) return;
+    accountLeftPendingRef.current = false;
+    onAccountLeftRef.current?.();
+  }, [user]);
 
   useEffect(() => {
     mountedRef.current = true;

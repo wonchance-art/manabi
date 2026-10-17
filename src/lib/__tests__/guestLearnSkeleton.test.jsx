@@ -79,7 +79,9 @@ describe('화면 배선 — 서버 HTML · 첫 그림이 손님 배치', () => {
   });
   it('로그인 · 로그아웃 뒤 router.refresh() — 미리 받아 둔 다른 쪽 골격을 버린다(이동 뒤 차례로)', () => {
     expect(read('src/views/AuthPage.jsx')).toMatch(/await signIn\(email, password\);\s*router\.push\(from\);\s*\/\/[^\n]*\n\s*router\.refresh\(\);/);
-    expect(read('src/components/Layout.jsx')).toMatch(/await signOut\(\);\s*router\.push\('\/auth'\);\s*router\.refresh\(\);/);
-    expect(read('src/views/MyPage.jsx')).toContain('onClick={async () => { await signOut(); router.refresh();');
+    // 로그아웃 쪽은 AuthContext 관문 하나(AUTH-ROUTER-REFRESH-001 — accountQueryCache.test 「서버 렌더 관문」): 이동이 먼저, 새로고침은 그린 뒤 effect.
+    expect(read('src/components/Layout.jsx')).toMatch(/await signOut\(\);\s*\/\/[^\n]*\n\s*router\.push\('\/auth'\);\n\s*\} else/);
+    expect(read('src/views/MyPage.jsx')).toContain('onClick={() => signOut() /* 서버 렌더 버리기는 AuthContext 관문(AUTH-ROUTER-REFRESH-001) */}');
+    expect(read('src/app/providers.jsx')).toContain('onAccountLeft={() => router.refresh()}');
   });
 });

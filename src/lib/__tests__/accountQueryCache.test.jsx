@@ -193,7 +193,7 @@ describe('판정 · 남기는 키 목록', () => {
 
 describe('배선', () => {
   it('providers.jsx가 앱의 QueryClient를 AuthProvider에 넘긴다', () => {
-    expect(read('src/app/providers.jsx')).toContain('<AuthProvider queryClient={queryClient}>{children}</AuthProvider>');
+    expect(read('src/app/providers.jsx')).toContain('<AuthProvider queryClient={queryClient} onAccountLeft={() => router.refresh()}>{children}</AuthProvider>');
   });
   it('계정이 바뀌는 곳은 adoptUser 하나 — setUser는 거기서만, 비우기는 setUser 전에', () => {
     const src = read('src/lib/AuthContext.jsx');
