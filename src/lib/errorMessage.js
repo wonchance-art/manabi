@@ -8,10 +8,23 @@
 // HTTP 402이거나 **구체적인 크레딧 소진 문구**만 본다. 「billing」 단독은 쓰지 않는다 — 보통 쿼터 초과 429도
 // 「…check your plan and billing details」(Gemini) · 「…/settings/billing」(Groq)를 싣는데, 그건 기다리면 풀리는 혼잡이다.
 export const SERVICE_CONFIG_PATTERN = /prepayment credits|credits?\s+(?:are\s+|have been\s+)?(?:depleted|exhausted)/i;
+// Gemini 400 FAILED_PRECONDITION + 결제 문구(공식 오류 표 failed_precondition — 「billing being disabled」)도 결제 · 설정 문제라 기다려도
+// 풀리지 않는다(GEMINI-402-GUARD 후속, 2026-10-17 KST). 400이면서 status(또는 ErrorInfo reason)가 FAILED_PRECONDITION이고 문구에 billing이
+// 있을 때만이다 — 429 + billing(보통 쿼터 초과)은 위 이유로 계속 혼잡이다.
+function failedPreconditionMarked(detail, text) {
+  const error = detail && typeof detail === 'object' ? (detail.error && typeof detail.error === 'object' ? detail.error : detail) : null;
+  if (error) {
+    if (error.status === 'FAILED_PRECONDITION') return true;
+    if (Array.isArray(error.details) && error.details.some((d) => d?.reason === 'FAILED_PRECONDITION')) return true;
+    return false;
+  }
+  return /\bFAILED_PRECONDITION\b/.test(text); // 문자열로만 온 본문(클라 메시지 · 원문 그대로)
+}
 export function isServiceConfigError(status, detail) {
   if (status === 402) return true;
   let text = '';
   try { text = typeof detail === 'string' ? detail : JSON.stringify(detail ?? ''); } catch { text = ''; }
+  if (status === 400 && /billing/i.test(text || '') && failedPreconditionMarked(detail, text || '')) return true;
   return SERVICE_CONFIG_PATTERN.test(text || '');
 }
 
