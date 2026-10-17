@@ -39,8 +39,16 @@ export function accountCacheReset(lastSignedIn, previousActor, nextActor) {
 // (첫 복원 전 · 하이드레이션 전 직접 진입). 토큰이 만료된 채 오프라인이면 getSession은 손님을 돌려주지만, 화면이 A로 보고 있는
 // 동안은 A가 받아 둔 자료를 열어야 한다(지하철 — 계정이 바뀐 것이 아니다).
 let shownAccount;
-export function noteAccount(id) { shownAccount = id ?? null; }
+const accountWaiters = [];
+export function noteAccount(id) {
+  shownAccount = id ?? null;
+  for (const resolve of accountWaiters.splice(0)) resolve(shownAccount);
+}
 export function knownAccount() { return shownAccount; }
+/** 화면 계정이 정해지면(첫 adoptUser · 손님 확정 · 복원 포기) 그 값 — 네트워크 없이 기다린다(local: 팀 사본은 네트워크 0). */
+export function whenAccountKnown() {
+  return shownAccount !== undefined ? Promise.resolve(shownAccount) : new Promise((resolve) => accountWaiters.push(resolve));
+}
 
 /** 계정에 딸린 캐시를 모두 지운다. 화면에 붙은 쿼리는 다음 그리기(setUser)에서 새 계정으로 다시 받는다. */
 export function clearAccountQueries(queryClient) {

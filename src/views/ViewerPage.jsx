@@ -25,7 +25,7 @@ import { supabase } from '../lib/supabase';
 import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
 import { buildVocabularyWordIndex, countVocabularyDueInMaterial, findIndexedVocabulary, isIndexedVocabularyDue } from '../lib/vocabularyDueIndex';
 import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
-import { knownAccount } from '../lib/accountQueryCache';
+import { knownAccount, whenAccountKnown } from '../lib/accountQueryCache';
 import SaveContextButton, { saveContext } from '../components/learning/SaveContextButton';
 import MaterialChapterLinks from '../components/learning/MaterialChapterLinks';
 import ReadingSourceFocus from '../components/learning/ReadingSourceFocus';
@@ -229,7 +229,10 @@ async function fetchMaterial(id) {
   // 팀 사본(v2-AB R2) — `local:<id>`는 **네트워크 0**: 기기 사본(sharedStore)만 연다. 없으면 LOCAL_MISSING
   // (캐시 폴백·서버 조회 없음 — 받기는 팀 페이지만 한다). 사본이 없어도 팀 페이지로 돌아갈 길은 ?team=가 준다.
   if (isLocalId(id)) {
-    const copy = await getSharedCopy(parseLocalId(id));
+    // 팀 사본도 계정별(OFFLINE-ACCOUNT-SCOPE-001) — 화면 계정, 아직 모르면(첫 복원 전 직접 진입) 정해질 때까지 기다린다.
+    const shown = knownAccount();
+    const account = shown !== undefined ? shown : await whenAccountKnown(); // 세션 조회(토큰 갱신)도 하지 않는다 — 네트워크 0
+    const copy = await getSharedCopy(parseLocalId(id), { account });
     if (!copy?.material) {
       const err = new Error('LOCAL_MISSING');
       err.code = 'LOCAL_MISSING';

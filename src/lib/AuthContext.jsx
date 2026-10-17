@@ -160,6 +160,7 @@ export function AuthProvider({ children, queryClient }) {
       typeof document !== 'undefined' && hasSupabaseSessionCookie(document.cookie);
     if (!hasSessionCookie) {
       guestConfirmedRef.current = true;
+      noteAccount(null); // 쿠키가 없으면 손님이 확정이다 — 기기 캐시 읽기(whenAccountKnown)가 기다리지 않게
       // 게스트 확정도 Provider 값을 바꾼다 — 스트리밍 본문이 다 온 뒤에(whenDocumentParsed).
       const stopWaiting = whenDocumentParsed(() => { if (!cancelled) setLoading(false); });
       return () => { cancelled = true; stopWaiting(); };
@@ -209,6 +210,7 @@ export function AuthProvider({ children, queryClient }) {
           // 그 뒤에도 online이 오면 다시 복원한다(복원되면 user가 들어온다).
           if (!restored && retries < AUTH_RESTORE_RETRY_MS.length) { retryTimer = setTimeout(restore, AUTH_RESTORE_RETRY_MS[retries++]); return; }
           setLoading(false);
+          noteAccount(null); // 복원을 포기한 확정(손님) — 기다리던 기기 캐시 읽기를 풀어 준다
         });
     };
     window.addEventListener('online', restore);

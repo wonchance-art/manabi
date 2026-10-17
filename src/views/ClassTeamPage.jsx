@@ -157,10 +157,15 @@ function StudentView({ teamKey, user, toast }) {
   const [studentTab,setStudentTab]=useState(()=>{const view=search.get('view');return search.get('day')||view==='history'?'notes':view==='book'||view==='course'?view:null;});
   const [bannerOff, setBannerOffState] = useState(true);
 
+  // 이 계정 · 손님 사본만(OFFLINE-ACCOUNT-SCOPE-001). 계정은 ref로 읽는다 — refreshCopies가 바뀌면 진입 효과(목록 받기)가
+  // 로그인 확인마다 다시 돌기 때문이다. 계정이 바뀌면 아래 효과가 사본 목록만 다시 읽는다.
+  const copyAccount = useRef(user?.id ?? null);
+  copyAccount.current = user?.id ?? null;
   const refreshCopies = useCallback(async () => {
-    const list = await listSharedCopies();
+    const list = await listSharedCopies({ account: copyAccount.current });
     setCopies(new Map(list.map((e) => [e.id, e])));
   }, []);
+  useEffect(() => { refreshCopies(); }, [user?.id, refreshCopies]);
 
   const relock = useCallback((message) => {
     clearUnlock(teamKey);
@@ -265,7 +270,7 @@ function StudentView({ teamKey, user, toast }) {
     if (offline) { toast(existing ? '사본이 낡았지만 오프라인이라 그대로 열어요.' : '온라인에서 받아야 해요.', existing ? 'info' : 'warning'); if (existing) router.push(destination(localViewerHref(id, teamKey))); return; }
     setRow(id, true);
     try {
-      await ensureSharedCopy(teamKey, unlock.token, entry, {refresh:true});
+      await ensureSharedCopy(teamKey, unlock.token, entry, {refresh:true, owner:user?.id ?? null});
       await refreshCopies();
       router.push(destination(localViewerHref(id, teamKey)));
     } catch (err) {
@@ -287,7 +292,7 @@ function StudentView({ teamKey, user, toast }) {
   async function copyNotePlain(n) {
     if (!unlock) return;
     try {
-      const copy = await ensureSharedCopy(teamKey, unlock.token, n);
+      const copy = await ensureSharedCopy(teamKey, unlock.token, n, {owner:user?.id ?? null});
       await refreshCopies();
       await copyToClipboard(classroomPlainText(copy.material), toast, '정리본을 복사했어요.');
     } catch (err) { toast('복사하지 못했어요 — ' + errMsg(err), 'error'); }
