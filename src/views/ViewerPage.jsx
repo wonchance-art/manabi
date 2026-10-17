@@ -101,6 +101,7 @@ import { useGroupReadPush } from '../lib/useGroupReadPush';
 import { useScrollRestore } from '../lib/useScrollRestore';
 import { useReaderLayout, readerVisibleBounds, useSelectedTokenVisibility } from '../lib/useReaderLayout';
 import { usePagedReader, pagerFor, overlayOrigin } from '../lib/usePagedReader';
+import { listenSentenceLines } from '../lib/listenFollow';
 import { captureReadingAnchor } from '../lib/readingViewport';
 import PageBar, { PageStrips } from '../components/viewer/PageBar';
 import { pinyinCellWidth } from '../lib/pinyinLayout';
@@ -905,11 +906,17 @@ export default function ViewerPage() {
   const pagedActive = readerView === 'paged' && !classStudyActive;
   // 자동 진행은 세로 흐름(휠·터치 감지·문장 스크롤)에 맞춘 기능이라 쪽 넘김 보기에서는 끈다(설계 §4 P0) — 스크롤 보기는 그대로.
   const autoPaceOn = autoPace && !pagedActive;
+  // 듣기 따라가기(뷰어 감사 목업 6 · 1단계) — 읽는 문장의 줄(listenLine)을 강조하고 그 쪽으로 넘긴다. 손으로 쪽을 넘기면
+  // 그 듣기가 끝날 때까지 따라가지 않는다(listenFollowOff). 따라가기 판정 · 이동은 sentences 아래 handleListenSentence.
+  const [listenLine, setListenLine] = useState(null);
+  const listenLineRef = useRef(null), listenFollowOff = useRef(false);
   const pager = usePagedReader({
     enabled: pagedActive, pages: pagesEl, barRef: pageBarRef, resetKey: id,
     layoutKey: `${fontSize}|${lineGap}|${charGap}|${fontFamily}|${pronDisplay}|${pinyinSize}|${pinyinCell}|${fontStatus}|${uiLocale}|${wordStateHl}|${showPatterns}`,
     initialAnchor: () => { const el = pagedInitialAnchor.current; pagedInitialAnchor.current = null; return el?.isConnected ? { kind: 'element', el } : null; },
     onUserPage: anchor => {
+      // 듣는 중에 손으로 넘겼다 — 이번 듣기 동안 따라가기 · 강조를 멈춘다(듣기 자체는 계속).
+      if (listenLineRef.current !== null) { listenFollowOff.current = true; listenLineRef.current = null; setListenLine(null); }
       const tokenId = anchor?.el?.dataset?.sourceToken, index = tokenId ? material?.processed_json?.sequence?.indexOf(tokenId) : -1;
       if (index >= 0) saveScrollPosition(index);
     },
@@ -1445,6 +1452,22 @@ export default function ViewerPage() {
     if (curGroup.tokenIds.length) lineGroups.push(curGroup);
     return pickableSentences(lineGroups, rawLines);
   }, [material?.processed_json, material?.raw_text]);
+
+  // 듣기 따라가기 — 쪽 넘김 보기이고 원문과 분석 본문이 맞을 때만(분석 안 된 줄 0 · 낡은 분석 아님). 원문이 바뀐 자료(N5 #1–5처럼
+  // 원문과 분석 본문이 다른 글)는 문장을 엉뚱한 줄에 잇게 되므로 따라가지 않는다. 이동은 기준만 옮기고(user 아님) 위치는 저장하지 않는다.
+  const listenLines = useMemo(() => listenSentenceLines(material?.raw_text), [material?.raw_text]);
+  const listenFollowable = pagedActive && !isStaleAnalysis && missingLineCount === 0 && sentences.length > 0;
+  const handleListenSentence = useCallback((index) => {
+    if (index == null) { listenLineRef.current = null; listenFollowOff.current = false; setListenLine(null); return; }
+    const line = listenLines[index] ?? null;
+    const target = listenFollowable && !listenFollowOff.current && line != null ? sentences.find(s2 => s2.rawIdx === line) : null;
+    listenLineRef.current = target ? line : null;
+    setListenLine(target ? line : null);
+    if (!target) return;
+    const el = tokenRefs.current[target.firstTokenId];
+    const paged = el && pagerFor(el);
+    if (paged) requestAnimationFrame(() => { if (el.isConnected && !listenFollowOff.current) paged.reveal(el); });
+  }, [listenLines, listenFollowable, sentences, tokenRefs]);
 
   // 어휘 커버리지 배지(#1077-2) — 서재 카드와 **같은 엔진·같은 인덱스**(materialFit ←
   // 담김 ∪ '이미 앎'). 뷰어에서만 다른 수를 보이면 두 화면이 서로를 반증한다.
@@ -3871,7 +3894,7 @@ export default function ViewerPage() {
             {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
               <button onClick={stopReanalysis} disabled={reanalyze.committing} className="grammar-btn grammar-btn--danger">{vt("분석 중단")}</button>
             )}
-            {ttsSupported && <ListenControls text={material?.raw_text} language={materialLang} stopSignal={activeModal?.kind} playbackRate={TTS_RATES[ttsRate].web} rateLabel={TTS_RATES[ttsRate].label} compact uiLocale={uiLocale} />}
+            {ttsSupported && <ListenControls text={material?.raw_text} language={materialLang} stopSignal={activeModal?.kind} playbackRate={TTS_RATES[ttsRate].web} rateLabel={TTS_RATES[ttsRate].label} onSentence={handleListenSentence} compact uiLocale={uiLocale} />}
             <button ref={settingsTrigger} className="viewer-tool viewer-tool--aa" aria-label={`Aa ${vt("읽기 설정")}`} title={vt("읽기 설정")} aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
               <span aria-hidden="true">Aa</span>
             </button>
@@ -4353,7 +4376,8 @@ export default function ViewerPage() {
             const lineText = (rawLines[rawIdx] ?? '').trim().replace(/^#{1,3}\s/, '')
               || lineTokenIds.slice(startIdx).map(id => json.dictionary[id]?.text || '').join('').trim();
 
-            const isPicked = pickedLineIdx === rawIdx;
+            // 듣는 줄(listenLine)도 같은 문장 강조 띠를 쓴다 — 새 스타일 없음(목업 6).
+            const isPicked = pickedLineIdx === rawIdx || listenLine === rawIdx;
 
             // 자동 진행 체류 선 — 지정 문장 안에서 각 토큰이 '언제 지워질지'를 글자수
             // 비례로 나눈다. 선은 오른쪽 끝에서 물러나므로 토큰 i의 구간은 [1-e, 1-s].
