@@ -78,7 +78,7 @@ import { callGemini } from '../lib/gemini';
 import { fetchWordDetailText, peekWordDetailText, fetchSharedDetailText } from '../lib/wordDetail';
 import { announcedProgress } from '../lib/announceProgress';
 import { pinyinToneClass } from '../lib/pinyinTone';
-import { splitRuby, KANA_RE, kuruNextTexts } from '../lib/splitRuby';
+import { splitRuby, KANA_RE, kuruNextTexts, baseFormReading } from '../lib/splitRuby';
 import { pickedRangeOf } from '../lib/headwordPick';
 import { pickableSentences, adjacentSentence } from '../lib/sentenceNav';
 import { fitDivisor, isFitLang } from '../lib/fitWord';
@@ -2419,7 +2419,10 @@ export default function ViewerPage() {
   // 토큰 데이터(text·base_form·furigana·분할)는 한 바이트도 안 바뀐다 — 렌더만(R4a 무충돌).
   const headText = selectedToken && selectedLexKey && selectedLexKey !== selectedToken.text ? selectedLexKey : selectedToken?.text;
   const headIsBase = !!selectedToken && headText !== selectedToken.text;
-  const headReading = headIsBase ? (editDictEntry?.reading || null) : selectedToken?.furigana;
+  // 로그아웃이면 사전 행이 없다(RLS) — 토큰 독음이 기본형 읽기일 때만 표제어 읽기로 쓴다(GUEST-HEAD-READING-001 · splitRuby와 같은 판정).
+  // 로그인은 사전 행 읽기만(조회 중 토큰 독음 → 사전 읽기로 바뀌는 깜빡임 없음). 「기본형」 라벨(headFallback)은 그대로.
+  const guestHeadReading = headIsBase && !user && !authLoading ? baseFormReading(selectedToken.text, selectedToken.furigana, headText) : null;
+  const headReading = headIsBase ? (editDictEntry?.reading || guestHeadReading || null) : selectedToken?.furigana;
   // 사전 행이 없으면 기본형을 루비 없이 세우고 메타에 「기본형 …」 라벨 — 조회가 끝난 뒤에만(깜빡임 방지)
   const headFallback = headIsBase && dictFetched && !editDictEntry?.reading;
   // 영어 발음 줄(IPA) — 분석기는 IPA를 토큰 furigana에 둔다(analyzeCore dictionary[tokenId].furigana, 영어 토큰 953개 중 672개 ·

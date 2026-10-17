@@ -177,6 +177,19 @@ export function splitRuby(text, furigana, baseForm, nextText) {
 }
 
 /**
+ * 기본형 표제어 읽기(GUEST-HEAD-READING-001) — 로그아웃 카드는 사전 행을 못 읽는다(morpheme_dictionary RLS = 로그인만).
+ * 활용형 토큰(違い)의 독음이 **기본형 읽기**(ちがう)면 그 독음을 기본형 표제어(違う)의 읽기로 돌려준다 — 판정은 본문 루비가
+ * 쓰는 fromBaseForm 그대로(기본형 앵커 + 한자 구간 일치 + BASEFORM-OKURI-001 가드). 표면 읽기(食べ + たべ) · 가드에 걸리는 표기
+ * (終っ ↔ 終わる) · 한자 없음 · 가나 없는 독음(병음)은 null — 틀린 읽기를 내지 않고 지금처럼 읽기 없이 둔다.
+ */
+export function baseFormReading(text, furigana, baseForm) {
+  if (!text || !furigana || !baseForm || baseForm === text || !KANA_RE.test(furigana)) return null;
+  const segments = segmentsOf(text);
+  if (!segments.some(seg => seg.type === 'kanji')) return null;
+  return fromBaseForm(segments, furigana, baseForm) ? furigana : null;
+}
+
+/**
  * 본문의 「来가 든 토큰 → 같은 줄 바로 뒤 토큰 표기」 표 — splitRuby의 nextText용(来 | ない). 来가 없는 토큰은 표에 없다.
  * 자료(sequence · dictionary)마다 한 번 만든다(ViewerPage useMemo) — 렌더 · 토큰마다 정규식 · Map을 다시 만들지 않는다.
  */

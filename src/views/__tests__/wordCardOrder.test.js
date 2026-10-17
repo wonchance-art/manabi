@@ -32,7 +32,7 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
 
   it('기본형 읽기는 사전 reading — 표면 ≠ 기본형이면 token-dict 조회가 켜지고, 없으면 폴백만 남는다', () => {
     expect(viewer).toContain("(!!selectedToken && !!selectedLexKey && selectedLexKey !== selectedToken.text)) && !!selectedDictKey");
-    expect(viewer).toContain('const headReading = headIsBase ? (editDictEntry?.reading || null) : selectedToken?.furigana;');
+    expect(viewer).toContain('const headReading = headIsBase ? (editDictEntry?.reading || guestHeadReading || null) : selectedToken?.furigana;'); // 로그아웃 보강은 splitRuby.test.js
     expect(viewer).toContain('const headFallback = headIsBase && dictFetched && !editDictEntry?.reading;');
   });
 

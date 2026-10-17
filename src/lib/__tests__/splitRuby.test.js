@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { KURU_STEM, kuruNextTexts, splitRuby } from '../splitRuby.js';
+import { KURU_STEM, baseFormReading, kuruNextTexts, splitRuby } from '../splitRuby.js';
+import { sliceBetween } from './helpers/sliceBetween';
 
 // 계약: 중국어/일본어 판별 — 이 표식(pinyin)이 격자 조판(1em 고정·0.26em 단일 크기)·
 // Noto Sans·성조색의 스위치다. 오분류는 곧 "병음이 크게 나온다"류의 시각 회귀다.
@@ -170,5 +171,54 @@ describe('kuruNextTexts — 来가 든 토큰만, 같은 줄의 바로 뒤 토�
     expect(viewer).not.toContain('nextTokenText(');
     // 훅은 이른 반환보다 앞(훅 순서 고정)
     expect(viewer.indexOf('const kuruNext = useMemo(')).toBeLessThan(viewer.indexOf("if (isLoading) return <div className=\"page-container\">"));
+  });
+});
+
+// 로그아웃 카드 — 사전 행(RLS = 로그인만)이 없어 활용형의 기본형 표제어(違う)가 읽기 없이 섰다(viewer-lang-4 2번 채택, 2026-10-17 KST).
+// 토큰 독음이 기본형 읽기일 때만, 본문 루비와 같은 판정(fromBaseForm · BASEFORM-OKURI-001)으로 표제어 읽기를 돌려준다.
+describe('baseFormReading — 로그아웃 기본형 표제어 읽기(GUEST-HEAD-READING-001)', () => {
+  it('기본형 읽기 독음이면 그 독음 — 표제어 루비는 기본형 앵커로 나뉜다', () => {
+    const cases = [
+      ['違い', 'ちがう', '違う', 'ちが'], ['待っ', 'まつ', '待つ', 'ま'], ['書い', 'かく', '書く', 'か'], ['食べ', 'たべる', '食べる', 'た'],
+      ['勉強し', 'べんきょうする', '勉強する', 'べんきょう'], ['新しかっ', 'あたらしい', '新しい', 'あたら'], ['食べよ', 'たべる', '食べる', 'た'],
+      ['来', 'くる', '来る', 'く'], ['見', 'みる', '見る', 'み'],
+    ];
+    for (const [text, furigana, base, kanjiReading] of cases) {
+      expect(baseFormReading(text, furigana, base), text).toBe(furigana);
+      expect(splitRuby(base, baseFormReading(text, furigana, base))[0], text).toEqual({ kanji: base.match(/^[^ぁ-ん]+/)[0], reading: kanjiReading });
+    }
+    expect(splitRuby('引き出す', baseFormReading('引き出し', 'ひきだす', '引き出す'))).toEqual([{ kanji: '引', reading: 'ひ' }, { plain: 'き' }, { kanji: '出', reading: 'だ' }, { plain: 'す' }]);
+  });
+  it('null(읽기 없이 둔다): 표면 읽기 · 가드(BASEFORM-OKURI-001) · 한자 구간 불일치 · 병음 · 같은 표기 · 빈 값', () => {
+    expect(baseFormReading('食べ', 'たべ', '食べる')).toBeNull();     // 사전 캐시 없이 kuromoji 표면 읽기
+    expect(baseFormReading('待っ', 'まっ', '待つ')).toBeNull();
+    expect(baseFormReading('終っ', 'おわる', '終わる')).toBeNull();   // 오쿠리가나 관행 차이 — 본문 루비도 이동하지 않는다
+    expect(baseFormReading('行なっ', 'おこなう', '行う')).toBeNull();
+    expect(baseFormReading('終わっ', 'おわる', '終る')).toBeNull();
+    expect(baseFormReading('打ち合せ', 'うちあわせる', '打ち合わせる')).toBeNull();
+    expect(baseFormReading('道', 'dào', '道歉')).toBeNull();          // 이합사 조각(병음) — 일본어 판정 밖
+    expect(baseFormReading('違う', 'ちがう', '違う')).toBeNull();
+    expect(baseFormReading('し', 'する', 'する')).toBeNull();
+    expect(baseFormReading('違い', null, '違う')).toBeNull();
+    expect(baseFormReading('違い', 'ちがう', undefined)).toBeNull();
+  });
+  it('본문 루비와 같은 판정 — 이 값이 있으면 splitRuby도 기본형 이동을 쓰고, null이면 쓰지 않는다', () => {
+    const pairs = [['違い', 'ちがう', '違う'], ['終っ', 'おわる', '終わる'], ['食べ', 'たべ', '食べる'], ['行なっ', 'おこなう', '行う'], ['待っ', 'まつ', '待つ']];
+    for (const [text, furigana, base] of pairs) {
+      const moved = splitRuby(text, furigana, base)[0].reading !== splitRuby(text, furigana)[0].reading;
+      expect(baseFormReading(text, furigana, base) !== null, text).toBe(moved);
+    }
+  });
+  it('규칙은 한 벌 — fromBaseForm을 부르고, ViewerPage는 로그아웃(인증 확정)일 때만 사전 읽기 다음 자리로 쓴다', () => {
+    const lib = fs.readFileSync(path.join(process.cwd(), 'src/lib/splitRuby.js'), 'utf8');
+    const fn = sliceBetween(lib, 'export function baseFormReading(', '\n}\n');
+    expect(fn).toContain('fromBaseForm(segments, furigana, baseForm)');
+    expect(fn).not.toMatch(/CONJUGABLE|anchorSplit|RegExp/);
+    const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+    expect(viewer).toContain('const guestHeadReading = headIsBase && !user && !authLoading ? baseFormReading(selectedToken.text, selectedToken.furigana, headText) : null;');
+    expect(viewer).toContain('const headReading = headIsBase ? (editDictEntry?.reading || guestHeadReading || null) : selectedToken?.furigana;');
+    expect(viewer).toContain('const headFallback = headIsBase && dictFetched && !editDictEntry?.reading;'); // 「기본형」 라벨은 목업대로 유지
+    expect(viewer).toContain('splitRuby(headText, headReading, headIsBase ? undefined : selectedToken?.base_form)');
+    expect(viewer.match(/baseFormReading\(/g)).toHaveLength(1);
   });
 });
