@@ -16,7 +16,7 @@ import { isCanonicalLiteratureMaterial } from '../literatureCanonical';
 import { isArtBookMaterial } from '../artBookProvider';
 
 /**
- * 정본 책(青空文庫 · Standard Ebooks · 그림 큐레이션)은 수업 자료로 내주지 않는다(BOOK-GUEST-GATE-1, 오너 「팀 화면 접근은 가능해도
+ * 정본 책(青空文庫 · Standard Ebooks · 위키문헌 · 전자책 사이트 · 그림 큐레이션)은 수업 자료로 내주지 않는다(BOOK-GUEST-GATE-1, 오너 「팀 화면 접근은 가능해도
  * 정본 책 접근은 못하도록」 2026-10-16 KST). 팀 화면은 수업 암호가 열쇠라 로그인 없이 열린다 — 정본 책 본문은 로그인 뒤에만이다.
  * 순수 — metadata만 본다. 팀 목차 · 장 열기 · 출처 · 사본 만들기(copy 라우트)가 같은 판정을 쓴다.
  */

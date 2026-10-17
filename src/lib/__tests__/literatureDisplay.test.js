@@ -301,7 +301,7 @@ describe('화면 배선', () => {
     expect(viewer).toContain("literatureBook.division === 'heading' ? ['이전 장', '다음 장'] : ['이전 부분', '다음 부분']");
     expect(viewer).toContain('nextLabel: bookNav.next ? `${nextLabel}: ${literatureTitleOf(bookNav.next.order)}` : nextLabel,'); // 목적지까지 읽어 준다
     expect(viewer).toContain("literatureBook?.division === 'heading' ? literatureChapterLabel(literatureBook, bookNav.next.order)"); // 「이어 읽기 · 二」
-    expect(viewer).toContain('canAppend: !!user?.id && material?.owner_id === user.id && !literatureBook');
-    expect(viewer).toContain('!composerOf(material) && !literatureBook && (');
+    expect(viewer).toContain('canAppend: !!user?.id && material?.owner_id === user.id && !canonicalLiteratureLocked'); // 네 출처 정본 책 모두(감사 2026-10-17)
+    expect(viewer).toContain('!composerOf(material) && !canonicalLiteratureLocked && (');
   });
 });

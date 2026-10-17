@@ -641,7 +641,7 @@ export default function ViewerPage() {
       next: idx < navChapters.length - 1 ? navChapters[idx + 1] : null,
       // 이어 적기(#1077 5520128974) — 마지막 과의 「다음 →」 자리에 「다음 과 적기」(내 책만)
       key: bookMeta.key,
-      canAppend: !!user?.id && material?.owner_id === user.id && !literatureBook, // 정본 책은 이어 적지 않는다
+      canAppend: !!user?.id && material?.owner_id === user.id && !canonicalLiteratureLocked, // 정본 책(네 출처 모두)은 이어 적지 않는다
     };
   })();
 
@@ -665,7 +665,10 @@ export default function ViewerPage() {
               nextLabel: bookNav.next ? `${nextLabel}: ${literatureTitleOf(bookNav.next.order)}` : nextLabel,
             };
           })()
-          : { prevLabel: '이전 과', nextLabel: '다음 과' }),
+          // 아오조라 밖 정본 책(Standard Ebooks · 위키문헌 · 전자책 사이트)은 저장된 장 제목이 곧 정본 장 이름이다(빌드가 정한다).
+          : canonicalLiteratureLocked
+            ? { prevLabel: bookNav.prev ? `이전 장: ${bookNav.prev.title}` : '이전 장', nextLabel: bookNav.next ? `다음 장: ${bookNav.next.title}` : '다음 장' }
+            : { prevLabel: '이전 과', nextLabel: '다음 과' }),
       }
     : (prevLesson || nextLesson)
       ? {
@@ -3896,7 +3899,7 @@ export default function ViewerPage() {
              ※ 여기 있던 `flex: 1`은 죽은 값이었다 — 부모(.page-header)가 flex가 아니다. */
           <div className="viewer-titlerow">
             <h1 className="page-header__title" lang={contentLangTag}>{viewerTitle}</h1>
-            {user?.id === material?.owner_id && !composerOf(material) && !literatureBook && (
+            {user?.id === material?.owner_id && !composerOf(material) && !canonicalLiteratureLocked && (
               <button
                 className="viewer-title-edit"
                 onClick={() => { setTitleDraft(material.title); setTitleEditing(true); }}
@@ -4530,7 +4533,7 @@ export default function ViewerPage() {
         if (bookNav?.next) {
           return (
             <Link href={classStudyNeighborHref(bookNav.next,studyContext,originalParams.get('returnTo'))} className="next-lesson-card">
-              <div className="next-lesson-card__hint">{literatureBook ? vt("이어 읽기 ·") : vt("다음 과 ·")}{literatureBook?.division === 'heading' ? literatureChapterLabel(literatureBook, bookNav.next.order) : `${bookNav.pos + 1}/${bookNav.total}`}</div>
+              <div className="next-lesson-card__hint">{literatureBook || canonicalLiteratureLocked ? vt("이어 읽기 ·") : vt("다음 과 ·")}{literatureBook?.division === 'heading' ? literatureChapterLabel(literatureBook, bookNav.next.order) : `${bookNav.pos + 1}/${bookNav.total}`}</div>
               <div className="next-lesson-card__title" lang={contentLangTag}>{literatureTitleOf(bookNav.next.order) || bookNav.next.title}</div>
             </Link>
           );

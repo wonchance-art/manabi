@@ -101,7 +101,7 @@ describe('배선 계약 — 입구·등록·진입·완료', () => {
     expect(materials).toContain('href={`/materials/add?book=${encodeURIComponent(b.key)}`}');
     expect(materials).toContain(") : !isCanonicalBookKey(b.key) && b.chapters[0]?.owner_id === user.id ? ("); // 정본 문학책은 이어 적지 않는다(AOZORA-P0-5)
     const viewer = read('src/views/ViewerPage.jsx');
-    expect(viewer).toContain('canAppend: !!user?.id && material?.owner_id === user.id && !literatureBook,');
+    expect(viewer).toContain('canAppend: !!user?.id && material?.owner_id === user.id && !canonicalLiteratureLocked,');
     expect(viewer).toContain('href={`/materials/add?book=${encodeURIComponent(bookNav.key)}`}');
   });
 
