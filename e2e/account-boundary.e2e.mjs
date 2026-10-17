@@ -39,6 +39,17 @@ const bearerSub = request => {
   const token = request.headers().authorization?.replace(/^Bearer\s+/i, '');
   try { return JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString('utf8')).sub || null; } catch { return null; }
 };
+// 앱 API(/api/learning/*)는 Authorization 없이 세션 쿠키로 온다 — 그때는 쿠키의 세션에서 계정을 읽는다(@supabase/ssr base64- 형식).
+const cookieSub = request => {
+  const raw = /(?:^|;\s*)sb-e2e-auth-token=([^;]+)/.exec(request.headers().cookie || '')?.[1];
+  if (!raw) return null;
+  try {
+    const value = decodeURIComponent(raw);
+    const session = JSON.parse(value.startsWith('base64-') ? Buffer.from(value.slice(7), 'base64url').toString('utf8') : value);
+    return JSON.parse(Buffer.from(session.access_token.split('.')[1], 'base64url').toString('utf8')).sub || null;
+  } catch { return null; }
+};
+const actorSub = request => bearerSub(request) || cookieSub(request);
 const isA = request => bearerSub(request) === BOUNDARY_ACTORS.A;
 
 // A의 비공개 자료 X — 뷰어가 그리는 최소 모양(자료 제목에 표식).
@@ -62,10 +73,12 @@ after(async () => { await browser?.close(); });
 
 async function boundaryContext({ actor = 'A', width = 390, height = 844, expiresIn } = {}) {
   const context = await browser.newContext({ baseURL: base, viewport: { width, height }, serviceWorkers: 'block', reducedMotion: 'reduce' });
-  const stats = { refreshGrants: 0, deletes: 0, rsc: [], bodiesAfterWatch: [] };
+  // dataOffline: Supabase(REST · Auth)만 끊는다 — 뷰어의 오프라인 폴백(기기 캐시)을 타는 조건. 앱 서버(RSC)는 그대로라 화면 이동은 된다.
+  const stats = { refreshGrants: 0, deletes: 0, rsc: [], bodiesAfterWatch: [], reviewInserts: [], dataOffline: false };
   const json = (route, value, status = 200, headers = {}) => route.fulfill({ status, contentType: 'application/json', headers: { ...cors, ...headers }, body: JSON.stringify(value) });
   await context.route('**/*', route => route.request().url().startsWith(base) ? route.continue() : route.abort());
   await context.route('**/auth/v1/**', async route => {
+    if (stats.dataOffline) return route.abort('internetdisconnected');
     const request = route.request(), url = new URL(request.url());
     if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
     if (url.pathname.endsWith('/logout')) return route.fulfill({ status: 204, headers: cors });
@@ -87,12 +100,22 @@ async function boundaryContext({ actor = 'A', width = 390, height = 844, expires
     return json(route, {});
   });
   await context.route('**/rest/v1/**', async route => {
+    if (stats.dataOffline) return route.abort('internetdisconnected');
     const request = route.request(), url = new URL(request.url()), table = url.pathname.split('/').pop();
     if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
     const sub = bearerSub(request);
     if (url.pathname.endsWith('/rpc/fsrs_legacy_boundary')) return sub ? json(route, { version: 1, actorId: sub, enrolled: false }) : json(route, { message: 'missing identity' }, 401);
     if (url.pathname.endsWith('/rpc/personal_library_page_v2')) return json(route, isA(request) ? { items: [libraryItem], total: 1 } : { items: [], total: 0 });
     if (table === 'profiles') return sub ? json(route, { id: sub, display_name: '표식 계정', role: 'learner', onboarded: true, last_login_at: new Date().toISOString(), streak_count: 1 }) : json(route, null);
+    if (table === 'review_events' && request.method() === 'POST') {
+      // 안 보낸 채점(outbox)의 전송 — 어느 세션(bearer)이 누구 행(user_id)을 실었는지 남긴다.
+      stats.reviewInserts.push({ sub, rows: request.postDataJSON() });
+      return json(route, null, 201);
+    }
+    if (table === 'reading_materials' && request.method() === 'GET' && url.searchParams.get('owner_id') === `eq.${BOUNDARY_ACTORS.A}`) {
+      // 자료실(?tools=1) 내 자료 목록 — RLS: A 세션에만 A의 행.
+      return json(route, isA(request) ? [privateRow] : [], 200, { 'content-range': isA(request) ? '0-0/1' : '*/0' });
+    }
     if (table === 'reading_materials' && request.method() === 'GET' && url.searchParams.get('id') === `eq.${X}`) {
       // RLS: 비공개 X는 A에게만. 단일 행 요청(vnd.pgrst.object)은 없으면 406(PGRST116), 목록 요청은 빈 배열.
       const object = (request.headers().accept || '').includes('vnd.pgrst.object');
@@ -100,14 +123,15 @@ async function boundaryContext({ actor = 'A', width = 390, height = 844, expires
       return object ? json(route, { code: 'PGRST116', message: 'JSON object requested, multiple (or no) rows returned' }, 406) : json(route, []);
     }
     if (request.method() === 'HEAD') return route.fulfill({ status: 200, headers: { ...cors, 'content-range': '*/0' } });
-    return json(route, []);
+    // 나머지는 빈 결과 — 개수를 세는 조회(readCompleteLegacyRows 등)가 「모름」으로 멈추지 않게 content-range를 함께 준다.
+    return json(route, [], 200, { 'content-range': '*/0' });
   });
   await context.route('**/api/learning/vocabulary**', route => {
-    const sub = bearerSub(route.request());
+    const sub = actorSub(route.request());
     return sub ? json(route, legacyLearningSnapshot({ actorId: sub, rows: [], fields: new URL(route.request().url()).searchParams.get('fields') })) : json(route, { ok: false, code: 'fsrs_auth_required' }, 401);
   });
-  await context.route('**/api/learning/fsrs', route => { const sub = bearerSub(route.request()); return sub ? json(route, inactiveFsrsStatus({ actorId: sub })) : json(route, { ok: false, code: 'fsrs_auth_required' }, 401); });
-  await context.route('**/api/learning/admission', route => { const sub = bearerSub(route.request()); return sub ? json(route, inactiveLearningAdmission({ actorId: sub })) : json(route, { ok: false, code: 'fsrs_auth_required' }, 401); });
+  await context.route('**/api/learning/fsrs', route => { const sub = actorSub(route.request()); return sub ? json(route, inactiveFsrsStatus({ actorId: sub })) : json(route, { ok: false, code: 'fsrs_auth_required' }, 401); });
+  await context.route('**/api/learning/admission', route => { const sub = actorSub(route.request()); return sub ? json(route, inactiveLearningAdmission({ actorId: sub })) : json(route, { ok: false, code: 'fsrs_auth_required' }, 401); });
   await context.route('**/api/learning/exclusions', route => json(route, { items: [] }));
   await context.route('**/api/dict?**', route => json(route, null));
   await context.route('**/api/account/delete', route => { stats.deletes++; return json(route, { ok: true }); });
@@ -182,9 +206,10 @@ async function visitAsA(page) {
 async function loginThroughForm(page, who, from = '/home', { inApp = false } = {}) {
   const entry = `/auth?from=${encodeURIComponent(from)}`;
   if (inApp) await nav(page, entry); else await page.goto(entry);
+  from = new URL(from, base).pathname;
   await page.getByLabel('이메일', { exact: true }).fill(EMAIL[who]);
   await page.getByLabel('비밀번호', { exact: true }).fill('boundary-password-24');
-  await page.getByRole('button', { name: '로그인', exact: true }).click();
+  await page.locator('form button.auth-submit[type="submit"]').click(); // 머리말 「로그인」 버튼과 겹치지 않게 폼 제출 버튼
   await page.waitForURL(url => new URL(url).pathname === from);
   await settle(page);
 }
@@ -282,7 +307,7 @@ test('④ 손님 → 로그인 · 첫 복원 · 토큰 갱신에서는 관문 �
       const before = stats.rsc.length;
       await page.getByLabel('이메일', { exact: true }).fill(EMAIL.A);
       await page.getByLabel('비밀번호', { exact: true }).fill('boundary-password-24');
-      await page.getByRole('button', { name: '로그인', exact: true }).click();
+      await page.locator('form button.auth-submit[type="submit"]').click(); // 머리말 「로그인」 버튼과 겹치지 않게 폼 제출 버튼
       await page.waitForURL(url => new URL(url).pathname === '/materials');
       await page.getByText(privateRow.title).first().waitFor();
       await page.waitForTimeout(1500);
@@ -292,4 +317,173 @@ test('④ 손님 → 로그인 · 첫 복원 · 토큰 갱신에서는 관문 �
       assert.deepEqual(errors, []);
     } finally { await context.close(); }
   }
+});
+
+// ── ⑤ ~ ⑧ (abaa 리뷰 반영, 2026-10-18 KST) ──────────────────────────────────────────────────────────────
+
+async function logoutFromProfile(page) {
+  await nav(page, '/profile');
+  await page.getByRole('button', { name: '로그아웃', exact: true }).first().click();
+  await page.waitForFunction(() => !document.cookie.includes('sb-e2e-auth-token'));
+  await settle(page);
+}
+// 기기 저장소(IndexedDB) 들여다보기 — 앱이 이미 연 DB를 판 지정 없이 연다(판을 올리거나 저장소를 만들지 않는다).
+const idbKeys = (page, dbName, store) => page.evaluate(([name, storeName]) => new Promise((resolve) => {
+  const req = indexedDB.open(name);
+  req.onerror = () => resolve(null);
+  req.onsuccess = () => {
+    const db = req.result;
+    if (!db.objectStoreNames.contains(storeName)) { db.close(); resolve([]); return; }
+    const all = db.transaction(storeName, 'readonly').objectStore(storeName).getAll();
+    all.onsuccess = () => { db.close(); resolve(all.result.map(r => ({ key: r.id ?? r.key ?? r.seq, owner: r.owner ?? r.userId ?? null, pinned: !!r.pinned }))); };
+    all.onerror = () => { db.close(); resolve(null); };
+  };
+}), [dbName, store]);
+const idbPut = (page, dbName, store, record, { version, keyPath } = {}) => page.evaluate(([name, storeName, value, ver, kp]) => new Promise((resolve, reject) => {
+  const req = ver ? indexedDB.open(name, ver) : indexedDB.open(name);
+  req.onupgradeneeded = () => { if (kp && !req.result.objectStoreNames.contains(storeName)) req.result.createObjectStore(storeName, kp); };
+  req.onerror = () => reject(req.error);
+  req.onsuccess = () => {
+    const db = req.result, t = db.transaction(storeName, 'readwrite');
+    t.objectStore(storeName).put(value);
+    t.oncomplete = () => { db.close(); resolve(true); };
+    t.onerror = () => { db.close(); reject(t.error); };
+  };
+}), [dbName, store, record, version || null, keyPath || null]);
+
+test('⑤ 로그아웃 → 손님으로 뒤로 가기 두 번 — A 표식 0', { timeout: 120000 }, async () => {
+  // 화면에서 누를 수 있는 로그아웃은 내 정보의 버튼이다. Layout의 로그아웃 분기(handleAuthClick, user일 때)는 머리말이 로그인 상태에서
+  // 그 버튼을 그리지 않아 지금 화면으로는 닿지 않는다 — 보고 참고. 이 장면은 이동 없는 로그아웃 뒤 뒤로 가기 캐시를 본다.
+  const { context, page, stats, errors } = await boundaryContext({ actor: 'A' });
+  try {
+    await page.goto('/study/library');
+    await page.getByText(`${BOUNDARY_MARKER} 주제`).first().waitFor();
+    await nav(page, '/materials');
+    await page.getByText(privateRow.title).first().waitFor();
+    await nav(page, '/profile');
+    await settle(page);
+    await page.getByRole('button', { name: '로그아웃', exact: true }).first().click();
+    await startWatch(page);
+    await page.waitForFunction(() => !document.cookie.includes('sb-e2e-auth-token'));
+    await assertNoMarker(page, '로그아웃 뒤 지금 화면(/profile)');
+    await page.goBack(); await assertNoMarker(page, '손님 뒤로 1(/materials)');
+    await page.goBack(); await assertNoMarker(page, '손님 뒤로 2(/study/library)');
+    assert.equal(await leak(page), null, '로그아웃 뒤 한 번이라도 A 표식이 그려졌다');
+    assert.deepEqual(stats.bodiesAfterWatch, [], '손님 응답에 A 표식');
+    assert.deepEqual(errors, []);
+  } finally { await context.close(); }
+});
+
+test('⑥ 오프라인(Supabase 끊김) — A가 받아 둔 뒤 B는 A 제목 없이 오류 · 받아둔 배지 0, A 재로그인 때 배지 · 오프라인 열기 복원', { timeout: 150000 }, async () => {
+  // context.setOffline(true)는 앱 서버 RSC까지 끊어(서비스 워커 막음) 뷰어 경로가 라우트 오류 경계로 떨어진다 — 계정 판정까지 가지 못해
+  // 「B가 못 엶」이 공허하게 통과했다(첫 실행 실측). 그래서 Supabase만 끊어 뷰어의 오프라인 폴백(기기 캐시 읽기)을 실제로 타게 한다.
+  const { context, page, stats, errors } = await boundaryContext({ actor: 'A' });
+  const tools = '/materials?tools=1';
+  const offlineNotice = p => p.getByText(/연결|오프라인/).first();
+  const pinChip = p => p.getByRole('button', { name: /받아둔 것만/ });
+  const pinTag = p => p.locator('.tag', { hasText: '받아둠' });
+  try {
+    // A: 자료실 도구 화면에서 X를 받아 둔다 — 배지(받아둠) · 칩(받아둔 것만)이 생긴다(양성 대조).
+    await page.goto(tools);
+    await page.getByText(privateRow.title).first().waitFor();
+    await page.getByLabel('자료 메뉴').first().click();
+    await page.getByRole('menuitemcheckbox', { name: /받아두기/ }).first().click();
+    await pinTag(page).first().waitFor();
+    assert.ok(await pinChip(page).count() > 0, 'A: 받아둔 것만 칩');
+    const keyA = `acct:${BOUNDARY_ACTORS.A}:${X}`;
+    assert.ok((await idbKeys(page, 'anatomy-offline-cache', 'materials')).some(r => r.key === keyA && r.pinned), 'A의 계정 키로 받아 둠');
+    // A → 손님 → B
+    await logoutFromProfile(page);
+    await loginThroughForm(page, 'B', tools, { inApp: true });
+    await page.getByText('아직 보관된 개인 자료가 없어요.').waitFor(); // B의 내 자료 목록(비어 있음)이 그려진 뒤
+    await startWatch(page);
+    assert.equal(await pinTag(page).count(), 0, 'B: 받아둠 배지 0');
+    assert.equal(await pinChip(page).count(), 0, 'B: 받아둔 것만 칩 0(B가 받아 둔 것 없음)');
+    assert.ok((await idbKeys(page, 'anatomy-offline-cache', 'materials')).some(r => r.key === keyA && r.pinned), 'A의 받아 둔 기록은 지우지 않고 숨긴다');
+    // B: Supabase가 끊긴 채 뷰어를 연다 — 자료 조회가 실패해 기기 캐시(B 몫)로 가고, 없으니 자료 오류 화면.
+    stats.dataOffline = true;
+    await nav(page, `/viewer/${X}`);
+    await page.getByText('자료를 불러오지 못했어요').first().waitFor({ timeout: 15000 });
+    assert.equal(await page.locator('[data-source-token]').count(), 0, 'B 오프라인: A의 본문이 열리지 않는다');
+    await assertNoMarker(page, 'B 오프라인 /viewer/X');
+    stats.dataOffline = false;
+    assert.equal(await leak(page), null, 'B에게 A 표식');
+    // B → 손님 → A: 배지 · 칩 복원, 오프라인 열기도 A에게는 된다(같은 기록 — 숨김이었을 뿐).
+    page.__watching = false; await page.evaluate(() => sessionStorage.removeItem('__boundaryWatch'));
+    await logoutFromProfile(page);
+    await loginThroughForm(page, 'A', tools, { inApp: true });
+    await pinTag(page).first().waitFor();
+    assert.ok(await pinChip(page).count() > 0, 'A 재로그인: 받아둔 것만 칩 복원');
+    stats.dataOffline = true;
+    await nav(page, `/viewer/${X}`);
+    await page.locator('[data-source-token="id_0_0"]').waitFor({ timeout: 15000 });
+    assert.ok(await markerVisible(page), 'A 오프라인: 자기 받아 둔 자료를 연다(양성 대조 — 같은 폴백 경로)');
+    await offlineNotice(page).waitFor();
+    stats.dataOffline = false;
+    assert.deepEqual(errors, []);
+  } finally { await context.close(); }
+});
+
+test('⑦ 팀 사본(local:) — A가 받은 사본을 B가 열지 못한다(A 재로그인 때 그대로)', { timeout: 120000 }, async () => {
+  const { context, page, errors } = await boundaryContext({ actor: 'A' });
+  const copyId = 7701, team = 'boundary-team';
+  const localHref = `/viewer/local:${copyId}?team=${team}`;
+  try {
+    await page.goto('/materials');
+    await page.getByText(privateRow.title).first().waitFor();
+    // 팀 페이지가 받는 것과 같은 꼴로 A 계정 사본을 넣는다(src/lib/sharedStore.js putSharedCopy — 키 acct:<계정>:<id>, DB 판 1).
+    await idbPut(page, 'anatomy-class-shared', 'copies', {
+      id: `acct:${BOUNDARY_ACTORS.A}:${copyId}`, copyId, owner: BOUNDARY_ACTORS.A, team, updatedAt: null, contentRevision: null,
+      material: { ...privateRow, id: copyId, title: `${BOUNDARY_MARKER} 팀 사본` }, savedAt: Date.now(),
+    }, { version: 1, keyPath: { keyPath: 'id' } });
+    await nav(page, localHref);
+    await page.locator('[data-source-token="id_0_0"]').waitFor();
+    assert.ok(await markerVisible(page), '양성 대조: A는 자기 팀 사본을 연다');
+    await logoutFromProfile(page);
+    await loginThroughForm(page, 'B', '/home', { inApp: true });
+    await startWatch(page);
+    await nav(page, localHref);
+    await page.waitForTimeout(2000);
+    assert.equal(await page.locator('[data-source-token]').count(), 0, 'B: A의 팀 사본 본문이 열리지 않는다');
+    await assertNoMarker(page, 'B /viewer/local:');
+    assert.equal(await leak(page), null);
+    assert.ok((await idbKeys(page, 'anatomy-class-shared', 'copies')).some(r => r.key === `acct:${BOUNDARY_ACTORS.A}:${copyId}`), 'A의 사본은 남아 있다');
+    page.__watching = false; await page.evaluate(() => sessionStorage.removeItem('__boundaryWatch'));
+    await logoutFromProfile(page);
+    await loginThroughForm(page, 'A', '/home', { inApp: true });
+    await nav(page, localHref);
+    await page.locator('[data-source-token="id_0_0"]').waitFor();
+    assert.deepEqual(errors, []);
+  } finally { await context.close(); }
+});
+
+test('⑧ A의 안 보낸 채점은 B 세션 요청에 실리지 않고, A 재로그인 때 A 세션으로 보낸다', { timeout: 120000 }, async () => {
+  const { context, page, stats, errors } = await boundaryContext({ actor: 'A' });
+  const reviewedAt = new Date(Date.now() - 60_000).toISOString();
+  const itemKey = 'boundary-grammar-item';
+  try {
+    await page.goto(`/viewer/${X}`);
+    await page.locator('[data-source-token="id_0_0"]').waitFor(); // 뷰어가 기기 DB(anatomy-offline-cache, 판 2)를 연다
+    // 오프라인 채점이 남기는 꼴(src/lib/reviewOutbox.js enqueueReview) — 문법 출처라 어휘 FSRS 단계 없이 review_events만 싣는다.
+    await idbPut(page, 'anatomy-offline-cache', 'outbox', { userId: BOUNDARY_ACTORS.A, itemKey, lang: 'Japanese', source: 'grammar', correct: true, detail: null, reviewedAt });
+    assert.ok((await idbKeys(page, 'anatomy-offline-cache', 'outbox')).some(r => r.owner === BOUNDARY_ACTORS.A), 'A의 대기 채점이 있다');
+    await logoutFromProfile(page);
+    await loginThroughForm(page, 'B', '/home', { inApp: true });
+    await page.waitForTimeout(2500); // B로 앱 진입 동기화(Layout flush)가 돈다
+    const carried = stats.reviewInserts.filter(r => JSON.stringify(r.rows).includes(itemKey));
+    assert.deepEqual(carried, [], 'B 세션 요청에 A의 채점이 실렸다');
+    assert.ok((await idbKeys(page, 'anatomy-offline-cache', 'outbox')).some(r => r.owner === BOUNDARY_ACTORS.A), 'A의 대기 채점은 지우지 않는다');
+    await logoutFromProfile(page);
+    await loginThroughForm(page, 'A', '/home', { inApp: true });
+    for (let i = 0; i < 40 && !stats.reviewInserts.some(r => JSON.stringify(r.rows).includes(itemKey)); i++) await page.waitForTimeout(250);
+    const sent = stats.reviewInserts.filter(r => JSON.stringify(r.rows).includes(itemKey));
+    assert.equal(sent.length, 1, 'A 재로그인 때 한 번 보낸다');
+    assert.equal(sent[0].sub, BOUNDARY_ACTORS.A, 'A 세션으로');
+    const row = [].concat(sent[0].rows)[0];
+    assert.equal(row.user_id, BOUNDARY_ACTORS.A);
+    assert.equal(Date.parse(row.created_at), Date.parse(reviewedAt), '채점 시각 그대로');
+    await page.waitForTimeout(500);
+    assert.equal((await idbKeys(page, 'anatomy-offline-cache', 'outbox')).filter(r => r.owner === BOUNDARY_ACTORS.A).length, 0, '보낸 뒤 대기에서 빠진다');
+    assert.deepEqual(errors, []);
+  } finally { await context.close(); }
 });

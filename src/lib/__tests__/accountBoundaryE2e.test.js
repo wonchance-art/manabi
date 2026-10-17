@@ -39,7 +39,13 @@ describe('계정 경계 e2e 전제', () => {
     const auth = read('src/views/AuthPage.jsx');
     expect(auth).toContain('htmlFor="auth-email">이메일</label>');
     expect(auth).toContain('htmlFor="auth-password" style={{ marginBottom: 0 }}>비밀번호</label>');
-    expect(read('e2e/account-boundary.e2e.mjs').match(/^test\('/gm)).toHaveLength(4);
+    expect(auth).toContain("className={`auth-submit ${loading ? 'auth-submit--loading' : ''}`}"); // 머리말 「로그인」과 겹치지 않게 폼 제출 버튼으로 고른다
+    const materials = read('src/views/MaterialsPage.jsx');
+    expect(materials).toContain('aria-label="자료 메뉴"');
+    expect(materials).toMatch(/role="menuitemcheckbox"[\s\S]{0,200}className=\{`mat-pin/);
+    expect(materials).toContain('<span className="tag" title="받아둠 — 연결이 없어도 열려요">받아둠</span>');
+    expect(materials).toContain("'아직 보관된 개인 자료가 없어요.'");
+    expect(read('e2e/account-boundary.e2e.mjs').match(/^test\('/gm)).toHaveLength(8);
   });
   it('③ 설치된 Next가 운영 빌드에도 window.next.router를 건다', () => {
     const instance = read('node_modules/next/dist/client/components/app-router-instance.js');
