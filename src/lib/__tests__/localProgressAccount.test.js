@@ -76,14 +76,21 @@ describe('손님 몫 합치기 — 그 기기의 첫 로그인 계정에 한 번
     for (const key of ['fr_read_chapters', 'fr_read_chapters_check', 'fr_read_chapters_dates']) expect(localStorage.getItem(key)).toBeNull();
     expect(localStorage.getItem(store.GUEST_PROGRESS_CLAIM_KEY)).toBe('A');
   });
-  it('합친 뒤 손님이 쌓은 것은 다음 계정(B)에도, 다시 들어온 A에게도 합치지 않는다 — 손님 화면에만', () => {
+  it('합친 뒤 손님이 쌓은 것은 다른 계정(B)에는 가지 않고 손님 화면에 남는다 — 같은 계정 A가 다시 들어오면 A가 받는다', () => {
     store.claimGuestRefProgress('A');
     store.addRefRead('zh_read_chapters', null, 'h1-01'); // 로그아웃 뒤 손님
     expect(store.claimGuestRefProgress('B')).toBe(false);
-    expect(store.claimGuestRefProgress('A')).toBe(false);
     expect([...store.readRefRead('zh_read_chapters', 'B')]).toEqual([]);
-    expect([...store.readRefRead('zh_read_chapters', 'A')]).toEqual([]);
     expect([...store.readRefRead('zh_read_chapters', null)]).toEqual(['h1-01']);
+    expect(store.claimGuestRefProgress('A')).toBe(true); // 이 기기의 첫 로그인 계정(독해 트랙 승계와 같은 규칙)
+    expect([...store.readRefRead('zh_read_chapters', 'A')]).toEqual(['h1-01']);
+  });
+  it('받을 계정 판정(claimGuestDevice) 하나 — 첫 계정이 되고, 다른 계정은 거절, 같은 계정은 계속', () => {
+    expect(store.claimGuestDevice('A')).toBe(true);
+    expect(localStorage.getItem(store.GUEST_PROGRESS_CLAIM_KEY)).toBe('A');
+    expect(store.claimGuestDevice('B')).toBe(false);
+    expect(store.claimGuestDevice('A')).toBe(true);
+    expect(store.claimGuestDevice(null)).toBe(false);
   });
   it('계정 키 규약 — 손님은 옛 키 그대로, 쿼리 문맥 같은 이상한 값은 손님', () => {
     expect(store.refReadKey('ja_read_chapters', 'A')).toBe('ja_read_chapters:A');
@@ -115,6 +122,33 @@ describe('재현 ② — /study?source=mine 넘겨받은 글', () => {
     expect(handoff.clearAllStudySources()).toBe(2);
     expect(localStorage.getItem('study_source_Japanese')).toBeNull();
     expect(localStorage.getItem('other_key')).toBe('x');
+  });
+});
+
+describe('범위 판정 — 손님 강의 이벤트 · 독해 트랙(2026-10-17 KST, 기준: 로그인 때 서버로 올라가는 길이 있나)', () => {
+  it('독해 트랙(ja_reading_texts)은 계정 키가 이미 있고(:<uid> · :guest · :legacy), 손님 몫 승계는 서버로 올라가므로 같은 받을 계정 판정을 쓴다', () => {
+    const reading = read('src/lib/readingProgress.js');
+    expect(reading).toContain("const scopedReadingKey = (userId) => (userId ? `${READING_KEY}:${userId}` : guestReadingKey());");
+    expect(reading).toContain("import { claimGuestDevice } from './refReadStore';");
+    expect(sliceBetween(reading, 'export async function pullReadingProgress(', 'let changed = false;'))
+      .toContain('const guestSet = claimGuestDevice(userId) ? readSetFromKey(guestReadingKey()) : new Set();');
+  });
+  it('손님 강의 이벤트(studied_lesson · studied_<source>)는 서버로 올라가는 길이 없어 「기기 설정」으로 둔다 — 쓰기는 손님 경로뿐, 읽기는 화면 표시뿐', () => {
+    // 사유: recordProgressLocal(유일한 쓰기)은 userId가 없을 때만 불리고, getLessonProgress는 읽기(서버 select)만 한다 — upsert · insert 없음.
+    // 로그인 계정 화면에 손님 완료 표시가 섞일 수는 있지만 그 계정 서버 기록으로 가지 않는다(오너 결정: 기기 설정 그대로).
+    const progress = read('src/lib/learn/progressStore.js');
+    const record = sliceBetween(progress, 'export async function recordLessonCompleted(', '// 로그인 경로: 진도 + SRS + 보상');
+    expect(record).toMatch(/if \(!userId\) \{\s*recordProgressLocal\(slug, source, lang\);\s*return;\s*\}/);
+    expect(progress.match(/recordProgressLocal\(/g)).toHaveLength(2); // 정의 1 + 손님 경로 호출 1
+    const get = sliceBetween(progress, 'export async function getLessonProgress(', 'export async function recordLessonCompleted(');
+    expect(get).not.toMatch(/\.(upsert|insert|update)\(/);
+    const files = [];
+    const walk = dir => { for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const p = path.join(dir, e.name); if (e.isDirectory()) { if (e.name !== '__tests__') walk(p); } else if (/\.(jsx?|mjs)$/.test(e.name)) files.push(p); } };
+    walk(path.join(ROOT, 'src'));
+    for (const f of files) {
+      const src = fs.readFileSync(f, 'utf8');
+      if (/studied_lesson|studied_\$\{source\}/.test(src)) expect(path.relative(ROOT, f), '손님 강의 이벤트 키를 새로 읽고 쓰는 곳').toMatch(/src\/lib\/learn\/(progressStore|learningActivity)\.js$|src\/lib\/world\/storageSchema\.js$/);
+    }
   });
 });
 

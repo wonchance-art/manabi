@@ -76,17 +76,35 @@ export function setRefCheck(base, accountId, slug, result, storage) {
 }
 
 /**
- * 손님 몫(옛 무계정 키)을 이 기기의 첫 로그인 계정에 한 번 합친다 — 읽음은 합집합, 확인 점수는 더 최근(at) 것, 날짜는 이른 것.
- * 합친 뒤 옛 키를 비우고 그 계정을 적는다. 이미 다른 계정(또는 같은 계정)이 합쳤으면 아무것도 하지 않는다 — 그 뒤 손님이 쌓은 것은
- * 다음 사람에게 가지 않는다. AuthContext adoptUser가 새 user로 그리기 전에 부른다(화면이 합친 값을 바로 읽게).
- * @returns {boolean} 합쳤나
+ * 이 기기의 손님 몫을 받을 계정인가 — 손님 몫은 그 기기의 첫 로그인 계정(claimant)만 받는다. 아직 아무도 없으면 이 계정이 된다.
+ * 레퍼런스 진도(claimGuestRefProgress)와 독해 트랙(readingProgress.pullReadingProgress)이 같은 판정을 쓴다 — 다른 계정이 이미 받는
+ * 기기면 손님 몫은 그 기기의 손님 화면에만 남고 이 계정 서버 기록으로 올라가지 않는다.
+ * @returns {boolean}
+ */
+export function claimGuestDevice(accountId, storage) {
+  const who = accountOf(accountId);
+  const store = storageOf(storage);
+  if (!who || !store) return false;
+  try {
+    const owner = store.getItem(GUEST_PROGRESS_CLAIM_KEY);
+    if (owner && owner !== who) return false;
+    if (!owner) store.setItem(GUEST_PROGRESS_CLAIM_KEY, who);
+    return true;
+  } catch { return false; }
+}
+
+/**
+ * 손님 몫(옛 무계정 키)을 이 기기의 첫 로그인 계정(claimGuestDevice)에 합친다 — 읽음은 합집합, 확인 점수는 더 최근(at) 것, 날짜는 이른 것.
+ * 합친 뒤 옛 키를 비운다. 이미 다른 계정이 받는 기기면 아무것도 하지 않는다 — 손님 몫은 다음 사람에게 가지 않는다. 같은 계정이
+ * 다시 들어오면 그사이 손님 몫을 다시 받는다(독해 트랙 승계와 같은 규칙). AuthContext adoptUser가 새 user로 그리기 전에 부른다.
+ * @returns {boolean} 받을 계정이었나
  */
 export function claimGuestRefProgress(accountId, storage) {
   const who = accountOf(accountId);
   const store = storageOf(storage);
   if (!who || !store) return false;
   try {
-    if (store.getItem(GUEST_PROGRESS_CLAIM_KEY)) return false;
+    if (!claimGuestDevice(who, store)) return false;
     for (const base of Object.values(REF_READ_KEYS)) {
       const guestRead = readRefRead(base, null, store);
       if (guestRead.size) writeRefRead(base, who, new Set([...readRefRead(base, who, store), ...guestRead]), store);
@@ -108,7 +126,6 @@ export function claimGuestRefProgress(accountId, storage) {
       store.removeItem(refCheckKey(base, null));
       store.removeItem(refDatesKey(base, null));
     }
-    store.setItem(GUEST_PROGRESS_CLAIM_KEY, who);
     return true;
   } catch { return false; }
 }

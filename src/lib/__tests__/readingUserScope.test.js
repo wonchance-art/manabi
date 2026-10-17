@@ -89,6 +89,17 @@ describe('게스트 승계 — 로그인 시 1회 병합 후 게스트 비움', 
     expect([...loadPassedTexts('A')]).toEqual(['n5-tokyo-01']); // A 승계분 보존
   });
 
+  it('손님 몫은 이 기기의 첫 로그인 계정만 받는다(LOCAL-PROGRESS-ACCOUNT-001 — 레퍼런스 진도와 같은 판정)', async () => {
+    await pullReadingProgress('A');                    // A가 이 기기의 받을 계정이 된다
+    markReadingPassedLocal('n5-tokyo-02');            // A 로그아웃 뒤 손님 진행
+    const changed = await pullReadingProgress('B');    // 다른 계정 — 손님 몫을 받지 않는다(서버 업로드 0)
+    expect(changed).toBe(false);
+    expect(loadPassedTexts('B').size).toBe(0);
+    expect([...loadPassedTexts()]).toEqual(['n5-tokyo-02']); // 손님 화면에 그대로
+    await pullReadingProgress('A');                    // 같은 계정이 다시 들어오면 받는다
+    expect([...loadPassedTexts('A')]).toEqual(['n5-tokyo-02']);
+  });
+
   it('재 pull 은 재승계하지 않는다(게스트 빈 상태 멱등)', async () => {
     markReadingPassedLocal('n5-tokyo-01');
     await pullReadingProgress('A');
