@@ -1008,7 +1008,9 @@
     (165910이 PUBLIC만 회수, security_invoker=false · 소유자 postgres → RLS 우회, profiles 삭제 시 19개 표 CASCADE). 악용 흔적 0(접근 로그 · 행 수).
     보완 20261016170000(SELECT만) + 정의자 view 쓰기 권한 계약. 운영 즉시 적용 완료(2026-10-17 10:5x KST, 오너 승인 · relacl anon/authenticated=r 확인).
     Inter 라틴 조각 전 페이지 미리 받기 제거(FONT-PRELOAD-001, −47kB) · 공개 캐시 응답 쿠키 세션 금지 계약(PUBLIC-CACHE-COOKIE-001).
-    언어별 뷰어 점검(VIEWER-LANG-AUDIT): 일본어 활용형 요미가나를 기본형 읽기에서 옮김 — 違[ちがう]い → 違[ちが]い · 待[まつ]っ → 待[ま]っ(원래 있던 결함).
+    언어별 뷰어 점검(VIEWER-LANG-AUDIT): 일본어 활용형 요미가나를 기본형 읽기에서 옮김 — 違[ちがう]い → 違[ちが]い · 待[まつ]っ → 待[ま]っ(원래 있던 결함) · 来 | ない는 다음 토큰으로 こ. 실글꼴 빌드 성조 색 · 병음 크기 통과.
+    교재 다른 과 hash 이동 경합(BOOK-HASH-RACE-001): 고유 hash 이동을 라우터에 알리고 주소는 이벤트에서 — 4배 감속 320회 중 18 → 480회 중 0 실패.
+    필수 CI 밖 e2e 전수 점검: 이 PR 회귀 0(main 대조). 중국어 단어 카드에서 뷰어 전체 오류 화면이 되던 jaRef TypeError 수정 · 낡은 단언 정리.
   · 보류: CJK 가변 weight(@font-face −67%, brotli 전송 −2%) — 600 · 650 · 800 · 300 굵기가 실제 값으로 바뀌는 시각 변경이라 오너 확인 뒤(화면 6개 비교 자료 전달, 2026-10-17 KST).
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
