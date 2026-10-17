@@ -19,7 +19,7 @@ import useLibraryActivity from '@/components/library/useLibraryActivity';
 import {LibraryReturnLink} from '@/components/web/LibraryReaderLink';
 import {safeLibraryReturn, libraryReaderHref} from '@/lib/libraryReturn';
 import { friendlyToastMessage } from '@/lib/errorMessage';
-import { focusPageIfLost } from '@/lib/routeFocus';
+import { focusIsLost, focusPageIfLost } from '@/lib/routeFocus';
 
 function withoutRuby(node) {
   if (!node) return '';
@@ -285,7 +285,14 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
       else (target || root.current)?.scrollIntoView({ block: 'start', behavior: 'instant' });
       if (target?.classList.contains('kanji-card')) { target.setAttribute('tabindex', '-1'); target.focus({ preventScroll: true }); }
       // 살아 있는 초점은 빼앗지 않는다 — 잃었을 때만 새 쪽의 첫 제목(없으면 본문)으로(routeFocus 정본).
-      if (focusAfterMove.current) { focusAfterMove.current = false; focusPageIfLost(document); }
+      if (focusAfterMove.current) {
+        focusAfterMove.current = false;
+        // 누른 링크가 접혀 숨은 것도 잃은 것이다 — 모바일 「이 과의 목차」는 누르면 접혀, 초점이 보이지 않는 링크에 남았다가
+        // body로 떨어졌다(390 실측 2026-10-17 KST). 숨은 초점을 풀고 새 쪽의 첫 제목(없으면 본문)으로.
+        const active = document.activeElement;
+        if (!focusIsLost(document) && active?.getClientRects?.().length === 0) active.blur();
+        focusPageIfLost(document);
+      }
       pendingAnchor.current = null; pendingPosition.current = null;
       rememberPosition();
       if (!reference && /^u\d{2}/.test(id)) update({ page: id });

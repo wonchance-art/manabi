@@ -5866,6 +5866,8 @@ a.viewer-badge:hover {
   font-weight: 700;
   margin-bottom: 16px;
   color: var(--text-primary);
+  /* 발견 서가 「전체 보기」(#today-news)로 내려올 때 고정 머리줄(GNB) 아래에 서게 — 가려지면 초점이 보이지 않는다(실측 2026-10-17 KST). */
+  scroll-margin-top: calc(var(--gnb-height, 78px) + 12px);
 }
 
 .suggestions-grid {

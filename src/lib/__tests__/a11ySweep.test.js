@@ -212,7 +212,7 @@ describe('⑦ 책 안 이동 뒤 초점 — 누른 링크가 사라지면 새 �
   const sync = sliceBetween(src, 'const sync = restorePosition => {', "window.addEventListener('hashchange', hash);");
 
   it('routeFocus 정본을 쓴다(새 판정 함수를 만들지 않는다)', () => {
-    expect(src).toContain("import { focusPageIfLost } from '@/lib/routeFocus';");
+    expect(src).toContain("import { focusIsLost, focusPageIfLost } from '@/lib/routeFocus';");
   });
 
   it('앱 안 이동 · 해시 바뀜 · 뒤로/앞으로는 표시를 켜고, 첫 진입(sync(true) 한 번 · bfcache 복귀)은 켜지 않는다', () => {
@@ -224,7 +224,23 @@ describe('⑦ 책 안 이동 뒤 초점 — 누른 링크가 사라지면 새 �
   });
 
   it('쪽 맞춤이 끝난 뒤 한 번만, 초점을 잃었을 때만 옮긴다(한자 카드 초점 다음)', () => {
-    expect(effect).toContain('if (focusAfterMove.current) { focusAfterMove.current = false; focusPageIfLost(document); }');
+    expect(effect).toContain('if (focusAfterMove.current) {\n        focusAfterMove.current = false;');
+    expect(effect).toContain('focusPageIfLost(document);');
     expect(effect.indexOf('focusPageIfLost')).toBeGreaterThan(effect.indexOf("target.focus({ preventScroll: true })"));
+  });
+});
+
+describe('⑧ 숨은 초점 · 고정 머리줄에 가린 초점(실브라우저 확인 integrate-queue c5ba857, 2026-10-17 KST)', () => {
+  it('책: 누른 링크가 접혀 숨었으면(모바일 「이 과의 목차」) 잃은 것으로 보고 풀어 새 쪽 제목으로 — 보이는 초점은 그대로', () => {
+    const src = read('src/components/books/BookReader.jsx');
+    const effect = sliceBetween(src, 'if (focusAfterMove.current) {', 'pendingAnchor.current = null; pendingPosition.current = null;');
+    expect(effect).toContain('if (!focusIsLost(document) && active?.getClientRects?.().length === 0) active.blur();');
+    expect(effect.indexOf('active.blur()')).toBeLessThan(effect.indexOf('focusPageIfLost(document);'));
+    expect(src).toContain("onClick={event => event.currentTarget.closest('details').removeAttribute('open')}"); // 접히는 쪽은 그대로
+  });
+
+  it('「오늘의 소식」 제목은 #today-news로 내려올 때 고정 머리줄 아래에 선다(scroll-margin-top, 수준표 선례와 같은 식)', () => {
+    const block = sliceBetween(read('src/index.css'), '.suggestions-section__title {', '}');
+    expect(block).toContain('scroll-margin-top: calc(var(--gnb-height, 78px) + 12px);');
   });
 });
