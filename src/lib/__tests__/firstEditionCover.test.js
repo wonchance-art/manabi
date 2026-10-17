@@ -170,6 +170,11 @@ describe('2차 묶음(오너 「원본 책 재구성 … 표지 만들기까지 
     expect(source).toMatch(/const HEAVY = stack\('--font-fe-blackhan', 'Black Han Sans', stack\('--font-fe-dela', 'Dela Gothic One'/u);
     expect(source.match(/JEONGEUM_BOXES = Object\.freeze\(\[([\s\S]*?)\]\.map/u)[1].match(/\[/gu)).toHaveLength(9);
     expect(source).toContain('[top, bottom, JEONGEUM_RIGHT - width + nudge, JEONGEUM_RIGHT + nudge]'); // 오른쪽 끝 한 줄(오너 지시)
+    // 표지는 1948 초판 갈포 장정(오너 대조 사진) — 1955년판 김환기 표지 그림은 보호 중이라 그 장정을 쓰지 않는다. 제첨 종이 · 천 결은 잉크 층 밖(UNDER)
+    const haneul = JSON.parse(read('src/content/literature/wikisource/ws-ko-yun-dong-ju_haneulgwa-baramgwa-byeolgwa-si/entry.json')).display;
+    expect(haneul).toMatchObject({ binding: 'jeongeum-1948', coverTitle: '하늘과 바람과 별과 詩', coverAuthor: '尹東柱', coverSubtitle: '遺稿集' });
+    expect(FIRST_EDITION_BINDINGS['jeongeum-1948'].material).toBe('cloth');
+    expect(source).toMatch(/'jeongeum-1948': \(\{ tone, id \}\) => \{/u);
     expect(source).toMatch(/JEONGEUM_BYLINE = Object\.freeze\(\{ centers: \[[^\]]+\]/u); // 아래 줄 「尹東柱 詩集」 5자
     expect(source).toMatch(/jindallae: \(\{ tone \}\) => <rect x=\{JINDALLAE\.band\}/u); // 진달래꽃 오른쪽 책등 쪽 띠(오너 대조 사진) — 종이라 잉크 층 밖(UNDER)
     // 닳은 활자(오너 「폰트를 매끄럽게 처리하지 말고 조금 낡은 것처럼」) — 잉크 층에 잉크 빠짐 · 농도 고르지 않음, 재질마다 세기

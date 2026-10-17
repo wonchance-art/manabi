@@ -289,7 +289,7 @@ export default function FirstEditionCover({ work }) {
           </radialGradient>
         </defs>
         <rect width="120" height="168" fill={tone.ground} />
-        {Under && <Under display={display} tone={tone} />}
+        {Under && <Under display={display} tone={tone} id={id} />}
         <rect width="120" height="168" fill={tone.ground} filter={`url(#${id}-grain)`} />
         <g filter={`url(#${id}-ink)`}><Draw display={display} tone={tone} id={id} /></g>
         {/* 틀 장정은 여러 책이 같은 이름이라 제목을 씨앗에 더한다 — 같은 책은 늘 같게, 다른 책은 다르게 낡는다 */}
