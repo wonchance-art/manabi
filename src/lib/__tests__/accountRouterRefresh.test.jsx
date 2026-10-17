@@ -68,7 +68,7 @@ describe('서버 렌더 관문 — 계정이 있다가 바뀌면 그린 뒤 한 
   it('로그아웃(A → 손님 — 계정 삭제 뒤 signOut 포함): adoptUser 안에서 바로가 아니라 그린 뒤 effect에서, 두 번 불려도 한 번', async () => {
     const auth = await mount();
     const pushed = [];
-    await auth.signOut(); pushed.push('/auth'); // Layout: await signOut(); router.push('/auth')
+    await auth.signOut(); pushed.push('/auth'); // 로그아웃 뒤 이동하는 화면이 생겨도: await signOut(); router.push(…)
     expect(refresh).not.toHaveBeenCalled(); // 이동이 먼저 나간다(새로고침이 이동에 버려지지 않게)
     const after = await commit();
     expect(after.user).toBeNull();
@@ -116,19 +116,22 @@ describe('배선 — 관문은 하나', () => {
     onAccountLeftRef.current?.();
   }, [user]);`);
   });
-  it('이동하지 않는 로그아웃 · 계정 삭제 화면은 따로 router.refresh를 부르지 않는다(중복 금지 — 관문이 한다)', () => {
-    for (const file of ['src/views/MyPage.jsx', 'src/components/AccountSettings.jsx', 'src/app/embed/review/EmbedReviewClient.jsx']) {
-      expect(read(file), file).toMatch(/signOut\(\)/);
-      expect(read(file), file).not.toMatch(/router\.refresh\(/);
-    }
-    // 이동하는 로그아웃(Layout)만 push 다음 줄에 refresh를 하나 더 둔다(차단2 — 관문 effect가 push보다 먼저 나가면 Next가 이동으로
-    // 대기 중 refresh를 버린다). 이동 앞에 두면 같은 이유로 버려지므로 반드시 push 뒤, 그리고 그 하나뿐.
+  it('로그아웃 진입점은 내 정보 · 계정 삭제 · 임베드뿐이고, 모두 관문만 지난다(따로 router.refresh 없음 — 중복 금지)', () => {
+    // 진입점 = signOut()을 부르는 화면 코드(정의 · 시험 제외). 새 진입점이 생기면 여기서 멈춘다 — 이동하는 로그아웃을 만들면 관문 effect가
+    // 그 이동(push)보다 먼저 나가 Next 액션 큐에서 버려질 수 있으니(차단2) push 뒤 refresh를 함께 두고 이 목록에 이유를 적는다.
+    const files = [];
+    const walk = dir => { for (const e of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) { const rel = `${dir}/${e.name}`; if (e.isDirectory()) { if (e.name !== '__tests__') walk(rel); } else if (/\.(jsx?|mjs)$/.test(e.name)) files.push(rel); } };
+    walk('src');
+    const callers = files.filter(f => f !== 'src/lib/AuthContext.jsx' && /\bsignOut\(\)/.test(read(f))).sort();
+    expect(callers).toEqual(['src/app/embed/review/EmbedReviewClient.jsx', 'src/components/AccountSettings.jsx', 'src/views/MyPage.jsx']);
+    for (const file of callers) expect(read(file), file).not.toMatch(/router\.refresh\(/);
+    // 로그인 상태 머리말에는 로그아웃 단추가 없다 — 머리말 단추(handleAuthClick)는 손님 갈래에만 있고 로그인 진입만 한다.
     const layout = read('src/components/Layout.jsx');
-    const logout = sliceBetween(layout, 'await signOut();', '} else {');
-    expect(logout.match(/router\.refresh\(\)/g)).toHaveLength(1);
-    expect(logout.indexOf("router.push('/auth');")).toBeGreaterThanOrEqual(0);
-    expect(logout.indexOf("router.push('/auth');")).toBeLessThan(logout.indexOf('router.refresh();'));
-    expect(layout.match(/router\.refresh\(\)/g)).toHaveLength(1);
+    const code = layout.replace(/\{\/\*[\s\S]*?\*\/\}|\/\*[\s\S]*?\*\/|(^|[^:'"`])\/\/[^\n]*/gm, '$1'); // 주석은 이력을 적을 수 있다 — 코드만 본다
+    expect(code).not.toMatch(/signOut|로그아웃|router\.refresh\(/);
+    const userArea = sliceBetween(layout, '{user ? (', ') : (');
+    expect(userArea).not.toContain('handleAuthClick');
+    expect(sliceBetween(layout, 'function handleAuthClick() {', '\n  }')).toContain('router.push(authEntryHref(');
     // 계정 삭제도 같은 signOut을 지난다 — 예전에는 새로고침이 없어 삭제한 계정의 서버 렌더가 그대로 남았다.
     expect(sliceBetween(read('src/components/AccountSettings.jsx'), 'async function handleDeleteAccount() {', 'finally {')).toContain('await signOut();');
   });

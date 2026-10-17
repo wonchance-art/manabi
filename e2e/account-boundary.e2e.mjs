@@ -352,8 +352,8 @@ const idbPut = (page, dbName, store, record, { version, keyPath } = {}) => page.
 }), [dbName, store, record, version || null, keyPath || null]);
 
 test('⑤ 로그아웃 → 손님으로 뒤로 가기 두 번 — A 표식 0', { timeout: 120000 }, async () => {
-  // 화면에서 누를 수 있는 로그아웃은 내 정보의 버튼이다. Layout의 로그아웃 분기(handleAuthClick, user일 때)는 머리말이 로그인 상태에서
-  // 그 버튼을 그리지 않아 지금 화면으로는 닿지 않는다 — 보고 참고. 이 장면은 이동 없는 로그아웃 뒤 뒤로 가기 캐시를 본다.
+  // 로그아웃 진입점은 내 정보 · 계정 삭제 · 임베드뿐이다(머리말의 죽은 로그아웃 갈래는 지웠다 — accountRouterRefresh.test).
+  // 이 장면은 내 정보에서 이동 없이 로그아웃한 뒤 뒤로 가기 캐시를 본다.
   const { context, page, stats, errors } = await boundaryContext({ actor: 'A' });
   try {
     await page.goto('/study/library');
