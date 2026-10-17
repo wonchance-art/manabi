@@ -2,9 +2,11 @@
 // ① 표식 계정은 그 e2e 전용이라 공용 서버 대역(server-fetch-mock)을 바꿔도 다른 e2e 응답이 그대로다
 // ② e2e가 고르는 화면 문구 · 표식이 실제 화면에 있다(문구가 바뀌면 e2e가 「못 찾음」으로 깨지기 전에 여기서 알린다)
 // ③ 앱 안 이동에 쓰는 window.next.router가 설치된 Next에 있다(전체 로드로 바뀌면 라우터 캐시를 시험하지 못한다)
+// ④ 필수 CI가 돌린다 — 「서재 과 추가·관리」 격리 서버(8878, QA_BASE) 단계의 e2e 목록에 든다(계정 경계는 필수 CI로 지킨다, 2026-10-18 KST)
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { sliceBetween } from './helpers/sliceBetween';
 import { BOUNDARY_ACTORS, BOUNDARY_MARKER } from '../../../e2e/fixtures/account-boundary-actors.mjs';
 
 const ROOT = process.cwd();
@@ -50,5 +52,9 @@ describe('계정 경계 e2e 전제', () => {
   it('③ 설치된 Next가 운영 빌드에도 window.next.router를 건다', () => {
     const instance = read('node_modules/next/dist/client/components/app-router-instance.js');
     expect(instance).toMatch(/if \(typeof window !== 'undefined' && window\.next\) \{\s*window\.next\.router = publicAppRouterInstance;/);
+  });
+  it('④ 필수 CI의 격리 서버(8878 · QA_BASE) 단계가 이 e2e를 돌린다', () => {
+    const step = sliceBetween(read('.github/workflows/ci.yml'), 'QA_BASE=http://127.0.0.1:8878 node --test', '\n');
+    expect(step).toContain('e2e/account-boundary.e2e.mjs');
   });
 });
