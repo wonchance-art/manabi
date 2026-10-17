@@ -3,7 +3,7 @@ import path from 'node:path';
 import { sliceBetween } from './helpers/sliceBetween';
 import { describe, expect, it, vi } from 'vitest';
 import {
-  pageStep, pageCountFor, pageOfOffset, nearestPage, pageProgress, pageLabel, pageHeightFor,
+  pageStep, pageCountFor, pageOfOffset, nearestPage, foreignScrollPage, pageProgress, pageLabel, pageHeightFor,
   pageKeyAction, swipeDirection, firstIndexAtOrAfter, createPagedController, overlayOrigin,
   fontFamilyNames, fontsAffectReader, mutationsAffectFlow,
 } from '../usePagedReader';
@@ -388,7 +388,7 @@ describe('focus on a line-head button follows its word page', () => {
     expect(src).toContain("const focusPageTarget = el => { const item = el?.closest?.(opt().focusSelector || FOCUS_ITEM); return item && item !== pages && pages.contains?.(item) ? item : el; };");
     expect(src.match(/pageOf\(focusPageTarget\(active\)\)/g)).toHaveLength(1); // focusedPage 한 곳
     // 스크롤 · 뗀 뒤 맞춤은 초점이 방금 바뀐 경우에만 초점 쪽(FOREIGN-SCROLL-001)
-    expect(sliceBetween(src, 'function handleScroll() {', '\n  }')).toContain('(Date.now() - focusAt < FOCUS_SCROLL_MS ? focusedPage() : null) ?? nearestPage(left, step, count)');
+    expect(sliceBetween(src, 'function handleScroll() {', '\n  }')).toContain('(Date.now() - focusAt < FOCUS_SCROLL_MS ? focusedPage() : null) ?? foreignScrollPage(left, page, { step, gap, count })');
     expect(sliceBetween(src, 'function settleDeferred() {', '\n  }')).toContain('(byFocus ? focusedPage() : null) ?? nearestPage(');
     expect(sliceBetween(src, 'function handleFocusIn(event) {', '\n  }')).toContain('focusAt = Date.now();');
     expect(sliceBetween(src, 'function handleFocusIn(event) {', '\n  }')).toContain('const next = pageOf(focusPageTarget(target));');
@@ -476,5 +476,68 @@ describe('focus attribution is separate from the page anchor selector', () => {
     const original = fs.readFileSync(path.join(process.cwd(), 'src/components/materials/OriginalMaterialReader.jsx'), 'utf8');
     expect(original).toContain("anchorSelector:'.original-writing'");
     expect(original).not.toMatch(/focusSelector/);
+  });
+});
+
+// 남의 스크롤이 「새로 드러낸」 쪽(FOREIGN-SCROLL-001 후속, 2026-10-17 KST). 화면 읽기 도구는 다음 쪽 앞머리 요소를 화면 끝에 겨우 보이게
+// (nearest 정렬) 스크롤한다 — 가장 가까운 쪽(반올림)은 지금 쪽이라 되돌아가 요소가 다시 화면 밖이 됐다(390: 쪽 454px, 다음 쪽 앞 약 160px).
+// 지금 쪽 옆 쪽의 글자 칸이 화면에 들어왔으면(단 사이 틈을 넘게 밀렸으면) 그 옆 쪽. 손으로 밀다 놓은 맞춤은 가장 가까운 쪽 그대로.
+describe('a foreign scroll lands on the page it newly revealed', () => {
+  const at390 = { step: 454, gap: 64, count: 10 }; // 390 폭: 단 390 + 틈 64
+  const nearAlign = (page, intoNext) => page * 454 + 64 + intoNext; // 다음 쪽 앞 intoNext px 요소의 오른쪽 끝을 화면 끝에 맞춘 스크롤
+
+  it('next page head (first ~160px) revealed at the right edge → the next page, where rounding went back', () => {
+    for (const into of [20, 100, 160, 180]) {
+      expect(foreignScrollPage(nearAlign(2, into), 2, at390), `${into}px`).toBe(3);
+    }
+    expect(nearestPage(nearAlign(2, 100), 454, 10)).toBe(2); // 반올림이었다면 되돌아간 경우
+    expect(nearestPage(nearAlign(2, 160), 454, 10)).toBe(2);
+  });
+  it('previous page tail revealed at the left edge → the previous page', () => {
+    // 앞 쪽 끝 요소의 왼쪽을 화면 왼쪽에 맞춤: 앞 쪽 단 안 300px 지점
+    expect(foreignScrollPage(454 + 300, 2, at390)).toBe(1);
+    expect(nearestPage(454 + 300, 454, 10)).toBe(2);
+  });
+  it('a nudge inside the column gap stays; a jump past the neighbour (find far away) is the nearest page; edges clamp', () => {
+    for (const nudge of [0, 1, 30, 64]) expect(foreignScrollPage(908 + nudge, 2, at390)).toBe(2);
+    for (const nudge of [-1, -30, -64]) expect(foreignScrollPage(908 + nudge, 2, at390)).toBe(2);
+    expect(foreignScrollPage(454 * 6.2, 2, at390)).toBe(6);
+    expect(foreignScrollPage(454 * 5.7, 2, at390)).toBe(6);
+    expect(foreignScrollPage(454 * 9 + 100, 9, at390)).toBe(9);
+    expect(foreignScrollPage(-200, 0, at390)).toBe(0);
+  });
+  it('find centring a match on the next page still lands on it (either half)', () => {
+    const centre = (page, x) => page * 454 + x - 390 / 2;
+    for (const x of [10, 150, 250, 380]) expect(foreignScrollPage(centre(3, x), 2, at390), `x ${x}`).toBe(3);
+    for (const x of [10, 150, 250, 380]) expect(foreignScrollPage(centre(1, x), 2, at390), `back x ${x}`).toBe(1);
+  });
+
+  const clock = start => { let now = start; const spy = vi.spyOn(Date, 'now').mockImplementation(() => now); return { tick: ms => { now += ms; }, restore: () => spy.mockRestore() }; };
+  it('controller: an unfocused foreign scroll to the next page head turns to it; the same offset after a press (hand swipe) keeps the nearest page', () => {
+    const t = clock(4_000_000);
+    try {
+      const reader = fakeReader(); // 단 300 + 틈 48 = 쪽 348
+      const c = controller(reader);
+      c.goTo(2); t.tick(1000); c.handleScroll();
+      reader.pages.scrollLeft = 2 * 348 + 48 + 100; // 화면 읽기 도구: 다음 쪽 앞 100px 요소를 화면 끝에
+      c.handleScroll();
+      expect(c.state.page).toBe(3);
+      expect(reader.pages.scrollLeft).toBe(3 * 348);
+
+      const swiped = fakeReader(), d = controller(swiped);
+      d.goTo(2); t.tick(1000); d.handleScroll();
+      d.handlePointerDown({ pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: 200, clientY: 300 });
+      swiped.pages.scrollLeft = 2 * 348 + 48 + 100;
+      d.handleScroll();
+      d.handleRelease();
+      expect(d.state.page).toBe(2); // 손으로 밀다 놓은 맞춤 = 가장 가까운 쪽(그대로)
+      expect(swiped.pages.scrollLeft).toBe(2 * 348);
+    } finally { t.restore(); }
+  });
+  it('wiring: only the unpressed, unfocused scroll path uses foreignScrollPage; release keeps nearestPage', () => {
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/lib/usePagedReader.js'), 'utf8');
+    expect(src.match(/foreignScrollPage\(/g)).toHaveLength(2); // 정의 + handleScroll 한 곳
+    expect(sliceBetween(src, 'function settleDeferred() {', '\n  }')).not.toContain('foreignScrollPage');
+    expect(sliceBetween(src, 'function settleDeferred() {', '\n  }')).toContain('?? nearestPage(pages.scrollLeft || 0, step, count)');
   });
 });

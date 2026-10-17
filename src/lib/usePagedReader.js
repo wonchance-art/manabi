@@ -23,6 +23,19 @@ export function pageCountFor({ scrollWidth, width, gap = 0 }) {
 /** 상자 안 가로 위치(스크롤 0 기준) → 쪽. 경계의 반올림 오차 1px을 흡수한다. */
 export function pageOfOffset(offset, step) { return Math.floor(((Number(offset) || 0) + 1) / step); }
 export function nearestPage(scrollLeft, step, count) { return clampPage(Math.round((Number(scrollLeft) || 0) / step), count); }
+/**
+ * 남의 스크롤(초점 이동 없음 — 화면 읽기 도구 · 브라우저 찾기)이 닿은 쪽(FOREIGN-SCROLL-001 후속). 지금 쪽 바로 옆 쪽의 글자 칸이
+ * 조금이라도 화면에 들어왔으면(단 사이 틈 gap을 넘게 밀렸으면) 그 옆 쪽이다 — 스크롤한 쪽이 보이려던 것은 지금 쪽(이미 다 보임)이
+ * 아니라 새로 드러난 쪽이기 때문이다. 화면 읽기 도구가 다음 쪽 앞머리 요소를 화면 끝에 겨우 보이게 스크롤하면 가장 가까운 쪽은
+ * 지금 쪽이라 되돌아갔다(390: 쪽 폭 454px, 다음 쪽 앞 약 160px). 틈 안의 작은 밀림 · 한 쪽을 넘는 이동(찾기가 먼 쪽으로)은 가장 가까운 쪽.
+ * 손으로 밀다 놓은 경우(누른 뒤 맞춤)는 이 규칙이 아니라 가장 가까운 쪽 그대로다(settleDeferred).
+ */
+export function foreignScrollPage(scrollLeft, page, { step, gap = 0, count }) {
+  const offset = (Number(scrollLeft) || 0) - clampPage(page, count) * step;
+  if (offset > gap && offset < step) return clampPage(page + 1, count);
+  if (offset < -gap && offset > -step) return clampPage(page - 1, count);
+  return nearestPage(scrollLeft, step, count);
+}
 /** 쪽 기준 진행률(설계 §4) — 「12 / 48쪽 · 25%」. 한 쪽뿐이면 다 보인 것이다. */
 export function pageProgress(page, count) {
   if (!(count > 1)) return 100;
@@ -273,7 +286,7 @@ export function createPagedController(pages, options = () => ({})) {
     }
     if (pressed) { deferred = true; return; }
     // 같은 프레임 안에서 바로 맞춘다 — 늦게 맞추면 끌려간 화면을 보고 누른 손(또는 자동화의 클릭)이 엉뚱한 자리를 누른다.
-    const target = (Date.now() - focusAt < FOCUS_SCROLL_MS ? focusedPage() : null) ?? nearestPage(left, step, count);
+    const target = (Date.now() - focusAt < FOCUS_SCROLL_MS ? focusedPage() : null) ?? foreignScrollPage(left, page, { step, gap, count });
     if (Math.abs(left - target * step) >= 1 || target !== page) goTo(target, { user: true });
   }
   function handleFocusIn(event) {
