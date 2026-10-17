@@ -7,7 +7,7 @@
 //   incipits  장 첫 문장(서재 책 카드 목차 줄)만 — 아오조라. 홈은 쓰지 않아서 따로 둔다(장 첫 문장만 40KB).
 
 /** 표시용 작품 필드 — 이 목록 밖은 싣지 않는다(전체 대조표에 새 필드가 생겨도 홈 번들로 새지 않게). */
-export const DISPLAY_WORK_FIELDS = Object.freeze(['title', 'author', 'level', 'total', 'division', 'chars', 'words', 'display']);
+export const DISPLAY_WORK_FIELDS = Object.freeze(['title', 'author', 'level', 'total', 'division', 'chars', 'words', 'display', 'language', 'size', 'unit']); // language · size · unit — 위키문헌 · 전자책 사이트(서재 카드 lang · 분량)
 /** 표시용 장 필드. */
 export const DISPLAY_CHAPTER_FIELDS = Object.freeze(['order', 'title']);
 

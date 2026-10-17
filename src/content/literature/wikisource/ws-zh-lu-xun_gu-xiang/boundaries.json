@@ -1,0 +1,291 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "jieba-wasm + fixZhTagged (src/lib/server/tokenizeZh.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "d0443385abbbd6c61b5fffe8d0bb35794d6f4ca4d5ab9615cfc0feebb82542a2",
+      "edits": [
+        {
+          "line": 10,
+          "start": 97,
+          "end": 99,
+          "text": "宏儿",
+          "reason": "name"
+        },
+        {
+          "line": 12,
+          "start": 39,
+          "end": 41,
+          "text": "宏儿",
+          "reason": "name"
+        },
+        {
+          "line": 20,
+          "start": 3,
+          "end": 5,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 24,
+          "start": 5,
+          "end": 7,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 24,
+          "start": 226,
+          "end": 228,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 26,
+          "start": 20,
+          "end": 22,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 26,
+          "start": 56,
+          "end": 58,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 28,
+          "start": 14,
+          "end": 16,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 28,
+          "start": 39,
+          "end": 41,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 30,
+          "start": 16,
+          "end": 18,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 38,
+          "start": 0,
+          "end": 2,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 56,
+          "start": 2,
+          "end": 4,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 56,
+          "start": 41,
+          "end": 43,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 58,
+          "start": 8,
+          "end": 10,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 66,
+          "start": 24,
+          "end": 26,
+          "text": "宏儿",
+          "reason": "name"
+        },
+        {
+          "line": 86,
+          "start": 32,
+          "end": 35,
+          "text": "杨二嫂",
+          "reason": "name"
+        },
+        {
+          "line": 88,
+          "start": 30,
+          "end": 33,
+          "text": "杨二嫂",
+          "reason": "name"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "2092f616751e89bf7cc930e6786a7a098ec319bfd816686282492524e4458c18",
+      "edits": [
+        {
+          "line": 18,
+          "start": 5,
+          "end": 7,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 18,
+          "start": 17,
+          "end": 19,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 18,
+          "start": 30,
+          "end": 32,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 22,
+          "start": 3,
+          "end": 6,
+          "text": "闰土哥",
+          "reason": "name"
+        },
+        {
+          "line": 32,
+          "start": 40,
+          "end": 42,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 34,
+          "start": 3,
+          "end": 5,
+          "text": "宏儿",
+          "reason": "name"
+        },
+        {
+          "line": 36,
+          "start": 31,
+          "end": 33,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 40,
+          "start": 30,
+          "end": 32,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 42,
+          "start": 25,
+          "end": 27,
+          "text": "宏儿",
+          "reason": "name"
+        },
+        {
+          "line": 44,
+          "start": 0,
+          "end": 2,
+          "text": "宏儿",
+          "reason": "name"
+        },
+        {
+          "line": 44,
+          "start": 31,
+          "end": 33,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 62,
+          "start": 15,
+          "end": 17,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 66,
+          "start": 0,
+          "end": 2,
+          "text": "宏儿",
+          "reason": "name"
+        },
+        {
+          "line": 74,
+          "start": 16,
+          "end": 18,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 74,
+          "start": 30,
+          "end": 33,
+          "text": "杨二嫂",
+          "reason": "name"
+        },
+        {
+          "line": 74,
+          "start": 79,
+          "end": 81,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 74,
+          "start": 103,
+          "end": 106,
+          "text": "杨二嫂",
+          "reason": "name"
+        },
+        {
+          "line": 78,
+          "start": 3,
+          "end": 5,
+          "text": "宏儿",
+          "reason": "name"
+        },
+        {
+          "line": 80,
+          "start": 28,
+          "end": 30,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 80,
+          "start": 49,
+          "end": 51,
+          "text": "宏儿",
+          "reason": "name"
+        },
+        {
+          "line": 80,
+          "start": 115,
+          "end": 117,
+          "text": "闰土",
+          "reason": "name"
+        },
+        {
+          "line": 82,
+          "start": 14,
+          "end": 16,
+          "text": "闰土",
+          "reason": "name"
+        }
+      ]
+    }
+  ]
+}

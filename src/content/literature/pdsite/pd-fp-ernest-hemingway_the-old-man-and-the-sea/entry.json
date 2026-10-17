@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "provider": "pdsite",
+  "site": "fp",
+  "key": "pd-fp-ernest-hemingway_the-old-man-and-the-sea",
+  "url": "https://www.fadedpage.com/showbook.php?pid=20141070",
+  "title": "The Old Man and the Sea",
+  "author": "Ernest Hemingway",
+  "language": "English",
+  "level": "B1 중급",
+  "publishedYear": 1952,
+  "authorDeathYear": 1961,
+  "countryOfOrigin": "US",
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "US",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "노인과 바다",
+    "authorKo": "어니스트 헤밍웨이",
+    "binding": "scribner-plain",
+    "coverTitle": "The Old Man\nand the Sea"
+  },
+  "parse": {
+    "start": "^p:He was an old man who fished alone",
+    "stop": "^p:BOOKS BY$"
+  },
+  "file": {
+    "path": "20141070.html",
+    "url": "https://www.fadedpage.com/books/20141070/html.php",
+    "encoding": "utf-8",
+    "sha256": "9eeb9ba392a2ab06c93d91452070ac63c555d6084efc3dc8defc51a543d9777d",
+    "fetchedAt": "2026-10-17"
+  }
+}

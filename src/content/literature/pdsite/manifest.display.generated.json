@@ -1,0 +1,1214 @@
+{
+  "schemaVersion": 1,
+  "works": {
+    "pd-fp-albert-camus_l-etranger": {
+      "title": "L’Étranger",
+      "author": "Albert Camus",
+      "level": "B1 중급",
+      "total": 15,
+      "display": {
+        "titleKo": "이방인",
+        "authorKo": "알베르 카뮈",
+        "binding": "gallimard-blanche",
+        "coverTitle": "L’Étranger",
+        "coverAuthor": "Albert Camus",
+        "coverSubtitle": "Roman",
+        "coverImprint": "Gallimard"
+      },
+      "language": "French",
+      "size": 32050,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1942
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "PREMIÈRE PARTIE · I (1/2)"
+        },
+        {
+          "order": 2,
+          "title": "PREMIÈRE PARTIE · I (2/2)"
+        },
+        {
+          "order": 3,
+          "title": "PREMIÈRE PARTIE · II"
+        },
+        {
+          "order": 4,
+          "title": "PREMIÈRE PARTIE · III"
+        },
+        {
+          "order": 5,
+          "title": "PREMIÈRE PARTIE · IV"
+        },
+        {
+          "order": 6,
+          "title": "PREMIÈRE PARTIE · V"
+        },
+        {
+          "order": 7,
+          "title": "PREMIÈRE PARTIE · VI (1/2)"
+        },
+        {
+          "order": 8,
+          "title": "PREMIÈRE PARTIE · VI (2/2)"
+        },
+        {
+          "order": 9,
+          "title": "DEUXIÈME PARTIE · I"
+        },
+        {
+          "order": 10,
+          "title": "DEUXIÈME PARTIE · II"
+        },
+        {
+          "order": 11,
+          "title": "DEUXIÈME PARTIE · III (1/2)"
+        },
+        {
+          "order": 12,
+          "title": "DEUXIÈME PARTIE · III (2/2)"
+        },
+        {
+          "order": 13,
+          "title": "DEUXIÈME PARTIE · IV"
+        },
+        {
+          "order": 14,
+          "title": "DEUXIÈME PARTIE · V (1/2)"
+        },
+        {
+          "order": 15,
+          "title": "DEUXIÈME PARTIE · V (2/2)"
+        }
+      ]
+    },
+    "pd-fp-albert-camus_le-mythe-de-sisyphe": {
+      "title": "Le Mythe de Sisyphe",
+      "author": "Albert Camus",
+      "level": "C1 고급",
+      "total": 18,
+      "display": {
+        "titleKo": "시지프 신화",
+        "authorKo": "알베르 카뮈",
+        "binding": "gallimard-essais",
+        "coverTitle": "Le Mythe\nde Sisyphe",
+        "coverAuthor": "Albert Camus",
+        "coverEdition": "Les Essais XII",
+        "coverImprint": "Gallimard"
+      },
+      "language": "French",
+      "size": 35477,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1942
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Un raisonnement absurde · L’ABSURDE ET LE SUICIDE"
+        },
+        {
+          "order": 2,
+          "title": "Un raisonnement absurde · LES MURS ABSURDES (1/2)"
+        },
+        {
+          "order": 3,
+          "title": "Un raisonnement absurde · LES MURS ABSURDES (2/2)"
+        },
+        {
+          "order": 4,
+          "title": "Un raisonnement absurde · LE SUICIDE PHILOSOPHIQUE (1/3)"
+        },
+        {
+          "order": 5,
+          "title": "Un raisonnement absurde · LE SUICIDE PHILOSOPHIQUE (2/3)"
+        },
+        {
+          "order": 6,
+          "title": "Un raisonnement absurde · LE SUICIDE PHILOSOPHIQUE (3/3)"
+        },
+        {
+          "order": 7,
+          "title": "Un raisonnement absurde · LA LIBERTÉ ABSURDE (1/2)"
+        },
+        {
+          "order": 8,
+          "title": "Un raisonnement absurde · LA LIBERTÉ ABSURDE (2/2)"
+        },
+        {
+          "order": 9,
+          "title": "L’homme absurde"
+        },
+        {
+          "order": 10,
+          "title": "L’homme absurde · LE DON JUANISME"
+        },
+        {
+          "order": 11,
+          "title": "L’homme absurde · LA COMÉDIE"
+        },
+        {
+          "order": 12,
+          "title": "L’homme absurde · LA CONQUÊTE"
+        },
+        {
+          "order": 13,
+          "title": "La création absurde · PHILOSOPHIE ET ROMAN"
+        },
+        {
+          "order": 14,
+          "title": "La création absurde · KIRILOV"
+        },
+        {
+          "order": 15,
+          "title": "La création absurde · LA CRÉATION SANS LENDEMAIN"
+        },
+        {
+          "order": 16,
+          "title": "Le mythe de Sisyphe"
+        },
+        {
+          "order": 17,
+          "title": "L’espoir et l’absurde dans l’œuvre de Franz Kafka (1/2)"
+        },
+        {
+          "order": 18,
+          "title": "L’espoir et l’absurde dans l’œuvre de Franz Kafka (2/2)"
+        }
+      ]
+    },
+    "pd-fp-antoine-de-saint-exupery_vol-de-nuit": {
+      "title": "Vol de nuit",
+      "author": "Antoine de Saint-Exupéry",
+      "level": "B2 상급",
+      "total": 23,
+      "display": {
+        "titleKo": "야간 비행",
+        "authorKo": "앙투안 드 생텍쥐페리",
+        "binding": "tpl-wrapper",
+        "coverTitle": "Vol de nuit",
+        "coverAuthor": "Antoine de Saint-Exupéry",
+        "coverPalette": "yellow",
+        "coverOrnament": "double-rule",
+        "coverYear": 1931
+      },
+      "language": "French",
+      "size": 18408,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1931
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I"
+        },
+        {
+          "order": 2,
+          "title": "II"
+        },
+        {
+          "order": 3,
+          "title": "III"
+        },
+        {
+          "order": 4,
+          "title": "IV"
+        },
+        {
+          "order": 5,
+          "title": "V"
+        },
+        {
+          "order": 6,
+          "title": "VI"
+        },
+        {
+          "order": 7,
+          "title": "VII"
+        },
+        {
+          "order": 8,
+          "title": "VIII"
+        },
+        {
+          "order": 9,
+          "title": "IX"
+        },
+        {
+          "order": 10,
+          "title": "X"
+        },
+        {
+          "order": 11,
+          "title": "XI"
+        },
+        {
+          "order": 12,
+          "title": "XII"
+        },
+        {
+          "order": 13,
+          "title": "XIII"
+        },
+        {
+          "order": 14,
+          "title": "XIV"
+        },
+        {
+          "order": 15,
+          "title": "XV"
+        },
+        {
+          "order": 16,
+          "title": "XVI"
+        },
+        {
+          "order": 17,
+          "title": "XVII"
+        },
+        {
+          "order": 18,
+          "title": "XVIII"
+        },
+        {
+          "order": 19,
+          "title": "XIX"
+        },
+        {
+          "order": 20,
+          "title": "XX"
+        },
+        {
+          "order": 21,
+          "title": "XXI"
+        },
+        {
+          "order": 22,
+          "title": "XXII"
+        },
+        {
+          "order": 23,
+          "title": "XXIII"
+        }
+      ]
+    },
+    "pd-fp-ernest-hemingway_the-old-man-and-the-sea": {
+      "title": "The Old Man and the Sea",
+      "author": "Ernest Hemingway",
+      "level": "B1 중급",
+      "total": 12,
+      "display": {
+        "titleKo": "노인과 바다",
+        "authorKo": "어니스트 헤밍웨이",
+        "binding": "scribner-plain",
+        "coverTitle": "The Old Man\nand the Sea"
+      },
+      "language": "English",
+      "size": 26584,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1952
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "The Old Man and the Sea (1/12)"
+        },
+        {
+          "order": 2,
+          "title": "The Old Man and the Sea (2/12)"
+        },
+        {
+          "order": 3,
+          "title": "The Old Man and the Sea (3/12)"
+        },
+        {
+          "order": 4,
+          "title": "The Old Man and the Sea (4/12)"
+        },
+        {
+          "order": 5,
+          "title": "The Old Man and the Sea (5/12)"
+        },
+        {
+          "order": 6,
+          "title": "The Old Man and the Sea (6/12)"
+        },
+        {
+          "order": 7,
+          "title": "The Old Man and the Sea (7/12)"
+        },
+        {
+          "order": 8,
+          "title": "The Old Man and the Sea (8/12)"
+        },
+        {
+          "order": 9,
+          "title": "The Old Man and the Sea (9/12)"
+        },
+        {
+          "order": 10,
+          "title": "The Old Man and the Sea (10/12)"
+        },
+        {
+          "order": 11,
+          "title": "The Old Man and the Sea (11/12)"
+        },
+        {
+          "order": 12,
+          "title": "The Old Man and the Sea (12/12)"
+        }
+      ]
+    },
+    "pd-fp-ruth-benedict_the-chrysanthemum-and-the-sword": {
+      "title": "The Chrysanthemum and the Sword",
+      "author": "Ruth Benedict",
+      "level": "C1 고급",
+      "total": 38,
+      "display": {
+        "titleKo": "국화와 칼",
+        "authorKo": "루스 베네딕트",
+        "binding": "houghton-1946",
+        "coverTitle": "The\nChrysanthemum\nand the Sword",
+        "coverAuthor": "Ruth Benedict"
+      },
+      "language": "English",
+      "size": 88886,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1946
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1: Assignment: Japan (1/2)"
+        },
+        {
+          "order": 2,
+          "title": "1: Assignment: Japan (2/2)"
+        },
+        {
+          "order": 3,
+          "title": "2: The Japanese in the War (1/3)"
+        },
+        {
+          "order": 4,
+          "title": "2: The Japanese in the War (2/3)"
+        },
+        {
+          "order": 5,
+          "title": "2: The Japanese in the War (3/3)"
+        },
+        {
+          "order": 6,
+          "title": "3: Taking One’s Proper Station (1/4)"
+        },
+        {
+          "order": 7,
+          "title": "3: Taking One’s Proper Station (2/4)"
+        },
+        {
+          "order": 8,
+          "title": "3: Taking One’s Proper Station (3/4)"
+        },
+        {
+          "order": 9,
+          "title": "3: Taking One’s Proper Station (4/4)"
+        },
+        {
+          "order": 10,
+          "title": "4: The Meiji Reform (1/3)"
+        },
+        {
+          "order": 11,
+          "title": "4: The Meiji Reform (2/3)"
+        },
+        {
+          "order": 12,
+          "title": "4: The Meiji Reform (3/3)"
+        },
+        {
+          "order": 13,
+          "title": "5: Debtor to the Ages and the World (1/2)"
+        },
+        {
+          "order": 14,
+          "title": "5: Debtor to the Ages and the World (2/2)"
+        },
+        {
+          "order": 15,
+          "title": "6: Repaying One-Ten-Thousandth (1/2)"
+        },
+        {
+          "order": 16,
+          "title": "6: Repaying One-Ten-Thousandth (2/2)"
+        },
+        {
+          "order": 17,
+          "title": "7: The Repayment ‘Hardest to Bear’"
+        },
+        {
+          "order": 18,
+          "title": "8: Clearing One’s Name (1/4)"
+        },
+        {
+          "order": 19,
+          "title": "8: Clearing One’s Name (2/4)"
+        },
+        {
+          "order": 20,
+          "title": "8: Clearing One’s Name (3/4)"
+        },
+        {
+          "order": 21,
+          "title": "8: Clearing One’s Name (4/4)"
+        },
+        {
+          "order": 22,
+          "title": "9: The Circle of Human Feelings (1/2)"
+        },
+        {
+          "order": 23,
+          "title": "9: The Circle of Human Feelings (2/2)"
+        },
+        {
+          "order": 24,
+          "title": "10: The Dilemma of Virtue (1/4)"
+        },
+        {
+          "order": 25,
+          "title": "10: The Dilemma of Virtue (2/4)"
+        },
+        {
+          "order": 26,
+          "title": "10: The Dilemma of Virtue (3/4)"
+        },
+        {
+          "order": 27,
+          "title": "10: The Dilemma of Virtue (4/4)"
+        },
+        {
+          "order": 28,
+          "title": "11: Self-Discipline (1/3)"
+        },
+        {
+          "order": 29,
+          "title": "11: Self-Discipline (2/3)"
+        },
+        {
+          "order": 30,
+          "title": "11: Self-Discipline (3/3)"
+        },
+        {
+          "order": 31,
+          "title": "12: The Child Learns (1/6)"
+        },
+        {
+          "order": 32,
+          "title": "12: The Child Learns (2/6)"
+        },
+        {
+          "order": 33,
+          "title": "12: The Child Learns (3/6)"
+        },
+        {
+          "order": 34,
+          "title": "12: The Child Learns (4/6)"
+        },
+        {
+          "order": 35,
+          "title": "12: The Child Learns (5/6)"
+        },
+        {
+          "order": 36,
+          "title": "12: The Child Learns (6/6)"
+        },
+        {
+          "order": 37,
+          "title": "13: The Japanese Since VJ-Day (1/2)"
+        },
+        {
+          "order": 38,
+          "title": "13: The Japanese Since VJ-Day (2/2)"
+        }
+      ]
+    },
+    "pd-fp-virginia-woolf_a-room-of-ones-own": {
+      "title": "A Room of One’s Own",
+      "author": "Virginia Woolf",
+      "level": "C1 고급",
+      "total": 15,
+      "display": {
+        "titleKo": "자기만의 방",
+        "authorKo": "버지니아 울프",
+        "binding": "hogarth-bell",
+        "coverTitle": "a room\nof one’s own",
+        "coverAuthor": "Virginia Woolf"
+      },
+      "language": "English",
+      "size": 37197,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1929
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "CHAPTER I (1/3)"
+        },
+        {
+          "order": 2,
+          "title": "CHAPTER I (2/3)"
+        },
+        {
+          "order": 3,
+          "title": "CHAPTER I (3/3)"
+        },
+        {
+          "order": 4,
+          "title": "CHAPTER II (1/2)"
+        },
+        {
+          "order": 5,
+          "title": "CHAPTER II (2/2)"
+        },
+        {
+          "order": 6,
+          "title": "CHAPTER III (1/2)"
+        },
+        {
+          "order": 7,
+          "title": "CHAPTER III (2/2)"
+        },
+        {
+          "order": 8,
+          "title": "CHAPTER IV (1/3)"
+        },
+        {
+          "order": 9,
+          "title": "CHAPTER IV (2/3)"
+        },
+        {
+          "order": 10,
+          "title": "CHAPTER IV (3/3)"
+        },
+        {
+          "order": 11,
+          "title": "CHAPTER V (1/2)"
+        },
+        {
+          "order": 12,
+          "title": "CHAPTER V (2/2)"
+        },
+        {
+          "order": 13,
+          "title": "CHAPTER VI (1/3)"
+        },
+        {
+          "order": 14,
+          "title": "CHAPTER VI (2/3)"
+        },
+        {
+          "order": 15,
+          "title": "CHAPTER VI (3/3)"
+        }
+      ]
+    },
+    "pd-gau-antoine-de-saint-exupery_le-petit-prince": {
+      "title": "Le Petit Prince",
+      "author": "Antoine de Saint-Exupéry",
+      "level": "A2 초급",
+      "total": 28,
+      "display": {
+        "titleKo": "어린 왕자",
+        "authorKo": "앙투안 드 생텍쥐페리",
+        "binding": "reynal",
+        "coverTitle": "Le Petit Prince",
+        "coverAuthor": "Antoine de Saint-Exupery",
+        "coverEdition": "Avec dessins par l’auteur"
+      },
+      "language": "French",
+      "size": 14114,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1943
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "DEDICACE"
+        },
+        {
+          "order": 2,
+          "title": "PREMIER CHAPITRE"
+        },
+        {
+          "order": 3,
+          "title": "CHAPITRE II"
+        },
+        {
+          "order": 4,
+          "title": "CHAPITRE III"
+        },
+        {
+          "order": 5,
+          "title": "CHAPITRE IV"
+        },
+        {
+          "order": 6,
+          "title": "CHAPITRE V"
+        },
+        {
+          "order": 7,
+          "title": "CHAPITRE VI"
+        },
+        {
+          "order": 8,
+          "title": "CHAPITRE VII"
+        },
+        {
+          "order": 9,
+          "title": "CHAPITRE VIII"
+        },
+        {
+          "order": 10,
+          "title": "CHAPITRE IX"
+        },
+        {
+          "order": 11,
+          "title": "CHAPITRE X"
+        },
+        {
+          "order": 12,
+          "title": "CHAPITRE XI"
+        },
+        {
+          "order": 13,
+          "title": "CHAPITRE XII"
+        },
+        {
+          "order": 14,
+          "title": "CHAPITRE XIII"
+        },
+        {
+          "order": 15,
+          "title": "CHAPITRE XIV"
+        },
+        {
+          "order": 16,
+          "title": "CHAPITRE XV"
+        },
+        {
+          "order": 17,
+          "title": "CHAPITRE XVI"
+        },
+        {
+          "order": 18,
+          "title": "CHAPITRE XVII"
+        },
+        {
+          "order": 19,
+          "title": "CHAPITRE XVIII"
+        },
+        {
+          "order": 20,
+          "title": "CHAPITRE XIX"
+        },
+        {
+          "order": 21,
+          "title": "CHAPITRE XX"
+        },
+        {
+          "order": 22,
+          "title": "CHAPITRE XXI"
+        },
+        {
+          "order": 23,
+          "title": "CHAPITRE XXII"
+        },
+        {
+          "order": 24,
+          "title": "CHAPITRE XXIII"
+        },
+        {
+          "order": 25,
+          "title": "CHAPITRE XXIV"
+        },
+        {
+          "order": 26,
+          "title": "CHAPITRE XXV"
+        },
+        {
+          "order": 27,
+          "title": "CHAPITRE XXVI"
+        },
+        {
+          "order": 28,
+          "title": "CHAPITRE XXVII"
+        }
+      ]
+    },
+    "pd-gau-george-orwell_animal-farm": {
+      "title": "Animal Farm",
+      "author": "George Orwell",
+      "level": "B1 중급",
+      "total": 14,
+      "display": {
+        "titleKo": "동물농장",
+        "authorKo": "조지 오웰",
+        "binding": "secker-diagonal",
+        "coverTitle": "Animal\nFarm",
+        "coverSubtitle": "A Fairy Story",
+        "coverAuthor": "George Orwell"
+      },
+      "language": "English",
+      "size": 30003,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1945
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Chapter I"
+        },
+        {
+          "order": 2,
+          "title": "Chapter II"
+        },
+        {
+          "order": 3,
+          "title": "Chapter III"
+        },
+        {
+          "order": 4,
+          "title": "Chapter IV"
+        },
+        {
+          "order": 5,
+          "title": "Chapter V"
+        },
+        {
+          "order": 6,
+          "title": "Chapter VI"
+        },
+        {
+          "order": 7,
+          "title": "Chapter VII (1/2)"
+        },
+        {
+          "order": 8,
+          "title": "Chapter VII (2/2)"
+        },
+        {
+          "order": 9,
+          "title": "Chapter VIII (1/2)"
+        },
+        {
+          "order": 10,
+          "title": "Chapter VIII (2/2)"
+        },
+        {
+          "order": 11,
+          "title": "Chapter IX (1/2)"
+        },
+        {
+          "order": 12,
+          "title": "Chapter IX (2/2)"
+        },
+        {
+          "order": 13,
+          "title": "Chapter X (1/2)"
+        },
+        {
+          "order": 14,
+          "title": "Chapter X (2/2)"
+        }
+      ]
+    },
+    "pd-gau-george-orwell_homage-to-catalonia": {
+      "title": "Homage to Catalonia",
+      "author": "George Orwell",
+      "level": "B2 상급",
+      "total": 36,
+      "display": {
+        "titleKo": "카탈로니아 찬가",
+        "authorKo": "조지 오웰",
+        "binding": "tpl-jacket",
+        "coverTitle": "Homage to\nCatalonia",
+        "coverAuthor": "George Orwell",
+        "coverPalette": "cream"
+      },
+      "language": "English",
+      "size": 79660,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1938
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Chapter 1 (1/2)"
+        },
+        {
+          "order": 2,
+          "title": "Chapter 1 (2/2)"
+        },
+        {
+          "order": 3,
+          "title": "Chapter 2"
+        },
+        {
+          "order": 4,
+          "title": "Chapter 3 (1/2)"
+        },
+        {
+          "order": 5,
+          "title": "Chapter 3 (2/2)"
+        },
+        {
+          "order": 6,
+          "title": "Chapter 4"
+        },
+        {
+          "order": 7,
+          "title": "Chapter 5 (1/4)"
+        },
+        {
+          "order": 8,
+          "title": "Chapter 5 (2/4)"
+        },
+        {
+          "order": 9,
+          "title": "Chapter 5 (3/4)"
+        },
+        {
+          "order": 10,
+          "title": "Chapter 5 (4/4)"
+        },
+        {
+          "order": 11,
+          "title": "Chapter 6 (1/2)"
+        },
+        {
+          "order": 12,
+          "title": "Chapter 6 (2/2)"
+        },
+        {
+          "order": 13,
+          "title": "Chapter 7 (1/3)"
+        },
+        {
+          "order": 14,
+          "title": "Chapter 7 (2/3)"
+        },
+        {
+          "order": 15,
+          "title": "Chapter 7 (3/3)"
+        },
+        {
+          "order": 16,
+          "title": "Chapter 8"
+        },
+        {
+          "order": 17,
+          "title": "Chapter 9 (1/2)"
+        },
+        {
+          "order": 18,
+          "title": "Chapter 9 (2/2)"
+        },
+        {
+          "order": 19,
+          "title": "Chapter 10 (1/5)"
+        },
+        {
+          "order": 20,
+          "title": "Chapter 10 (2/5)"
+        },
+        {
+          "order": 21,
+          "title": "Chapter 10 (3/5)"
+        },
+        {
+          "order": 22,
+          "title": "Chapter 10 (4/5)"
+        },
+        {
+          "order": 23,
+          "title": "Chapter 10 (5/5)"
+        },
+        {
+          "order": 24,
+          "title": "Chapter 11 (1/5)"
+        },
+        {
+          "order": 25,
+          "title": "Chapter 11 (2/5)"
+        },
+        {
+          "order": 26,
+          "title": "Chapter 11 (3/5)"
+        },
+        {
+          "order": 27,
+          "title": "Chapter 11 (4/5)"
+        },
+        {
+          "order": 28,
+          "title": "Chapter 11 (5/5)"
+        },
+        {
+          "order": 29,
+          "title": "Chapter 12 (1/2)"
+        },
+        {
+          "order": 30,
+          "title": "Chapter 12 (2/2)"
+        },
+        {
+          "order": 31,
+          "title": "Chapter 13 (1/3)"
+        },
+        {
+          "order": 32,
+          "title": "Chapter 13 (2/3)"
+        },
+        {
+          "order": 33,
+          "title": "Chapter 13 (3/3)"
+        },
+        {
+          "order": 34,
+          "title": "Chapter 14 (1/3)"
+        },
+        {
+          "order": 35,
+          "title": "Chapter 14 (2/3)"
+        },
+        {
+          "order": 36,
+          "title": "Chapter 14 (3/3)"
+        }
+      ]
+    },
+    "pd-gau-george-orwell_nineteen-eighty-four": {
+      "title": "Nineteen Eighty-Four",
+      "author": "George Orwell",
+      "level": "B2 상급",
+      "total": 48,
+      "display": {
+        "titleKo": "1984",
+        "authorKo": "조지 오웰",
+        "binding": "secker-numerals",
+        "coverTitle": "nineteen\neighty-four",
+        "coverAuthor": "George Orwell",
+        "coverSubtitle": "a novel",
+        "coverEdition": "1984"
+      },
+      "language": "English",
+      "size": 103310,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1949
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "PART ONE · Chapter 1 (1/3)"
+        },
+        {
+          "order": 2,
+          "title": "PART ONE · Chapter 1 (2/3)"
+        },
+        {
+          "order": 3,
+          "title": "PART ONE · Chapter 1 (3/3)"
+        },
+        {
+          "order": 4,
+          "title": "PART ONE · Chapter 2"
+        },
+        {
+          "order": 5,
+          "title": "PART ONE · Chapter 3"
+        },
+        {
+          "order": 6,
+          "title": "PART ONE · Chapter 4 (1/2)"
+        },
+        {
+          "order": 7,
+          "title": "PART ONE · Chapter 4 (2/2)"
+        },
+        {
+          "order": 8,
+          "title": "PART ONE · Chapter 5 (1/2)"
+        },
+        {
+          "order": 9,
+          "title": "PART ONE · Chapter 5 (2/2)"
+        },
+        {
+          "order": 10,
+          "title": "PART ONE · Chapter 6"
+        },
+        {
+          "order": 11,
+          "title": "PART ONE · Chapter 7 (1/2)"
+        },
+        {
+          "order": 12,
+          "title": "PART ONE · Chapter 7 (2/2)"
+        },
+        {
+          "order": 13,
+          "title": "PART ONE · Chapter 8 (1/4)"
+        },
+        {
+          "order": 14,
+          "title": "PART ONE · Chapter 8 (2/4)"
+        },
+        {
+          "order": 15,
+          "title": "PART ONE · Chapter 8 (3/4)"
+        },
+        {
+          "order": 16,
+          "title": "PART ONE · Chapter 8 (4/4)"
+        },
+        {
+          "order": 17,
+          "title": "PART TWO · Chapter 1 (1/2)"
+        },
+        {
+          "order": 18,
+          "title": "PART TWO · Chapter 1 (2/2)"
+        },
+        {
+          "order": 19,
+          "title": "PART TWO · Chapter 2"
+        },
+        {
+          "order": 20,
+          "title": "PART TWO · Chapter 3 (1/2)"
+        },
+        {
+          "order": 21,
+          "title": "PART TWO · Chapter 3 (2/2)"
+        },
+        {
+          "order": 22,
+          "title": "PART TWO · Chapter 4 (1/2)"
+        },
+        {
+          "order": 23,
+          "title": "PART TWO · Chapter 4 (2/2)"
+        },
+        {
+          "order": 24,
+          "title": "PART TWO · Chapter 5"
+        },
+        {
+          "order": 25,
+          "title": "PART TWO · Chapter 6"
+        },
+        {
+          "order": 26,
+          "title": "PART TWO · Chapter 7"
+        },
+        {
+          "order": 27,
+          "title": "PART TWO · Chapter 8 (1/2)"
+        },
+        {
+          "order": 28,
+          "title": "PART TWO · Chapter 8 (2/2)"
+        },
+        {
+          "order": 29,
+          "title": "PART TWO · Chapter 9 (1/7)"
+        },
+        {
+          "order": 30,
+          "title": "PART TWO · Chapter 9 (2/7)"
+        },
+        {
+          "order": 31,
+          "title": "PART TWO · Chapter 9 (3/7)"
+        },
+        {
+          "order": 32,
+          "title": "PART TWO · Chapter 9 (4/7)"
+        },
+        {
+          "order": 33,
+          "title": "PART TWO · Chapter 9 (5/7)"
+        },
+        {
+          "order": 34,
+          "title": "PART TWO · Chapter 9 (6/7)"
+        },
+        {
+          "order": 35,
+          "title": "PART TWO · Chapter 9 (7/7)"
+        },
+        {
+          "order": 36,
+          "title": "PART THREE · Chapter 1 (1/2)"
+        },
+        {
+          "order": 37,
+          "title": "PART THREE · Chapter 1 (2/2)"
+        },
+        {
+          "order": 38,
+          "title": "PART THREE · Chapter 2 (1/3)"
+        },
+        {
+          "order": 39,
+          "title": "PART THREE · Chapter 2 (2/3)"
+        },
+        {
+          "order": 40,
+          "title": "PART THREE · Chapter 2 (3/3)"
+        },
+        {
+          "order": 41,
+          "title": "PART THREE · Chapter 3 (1/2)"
+        },
+        {
+          "order": 42,
+          "title": "PART THREE · Chapter 3 (2/2)"
+        },
+        {
+          "order": 43,
+          "title": "PART THREE · Chapter 4"
+        },
+        {
+          "order": 44,
+          "title": "PART THREE · Chapter 5"
+        },
+        {
+          "order": 45,
+          "title": "PART THREE · Chapter 6 (1/2)"
+        },
+        {
+          "order": 46,
+          "title": "PART THREE · Chapter 6 (2/2)"
+        },
+        {
+          "order": 47,
+          "title": "PART THREE · APPENDIX (1/2)"
+        },
+        {
+          "order": 48,
+          "title": "PART THREE · APPENDIX (2/2)"
+        }
+      ]
+    }
+  }
+}

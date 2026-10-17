@@ -51,7 +51,8 @@ export function createStandardEbooksManifest(entries) {
  */
 export async function buildStandardEbooks({ root = STANDARD_EBOOKS_ROOT, check = false } = {}) {
   const { createStandardEbooksDraft, standardEbooksBookKey, wordCount } = await import('../../src/lib/standardEbooks.js');
-  const { validateVictorianDisplay } = await import('../../src/lib/victorianCover.js');
+  const { VICTORIAN_BINDINGS, validateVictorianDisplay } = await import('../../src/lib/victorianCover.js');
+  const { validateFirstEditionDisplay } = await import('../../src/lib/firstEditionCover.js');
   const works = [];
   const errors = [];
   if (!existsSync(root)) return { works, errors };
@@ -72,7 +73,14 @@ export async function buildStandardEbooks({ root = STANDARD_EBOOKS_ROOT, check =
       if (extra.length) throw new Error(`source/에 entry.files에 없는 파일이 있다: ${extra.join(', ')}`);
       if (entry.rights?.status !== 'approved') throw new Error('권리 기록이 approved가 아니다(not publishable)');
       const draft = createStandardEbooksDraft(entry, files);
-      const display = validateVictorianDisplay(entry.display); // 표지 표기(빅토리아 천 장정 — 없거나 틀리면 그 작품은 쓰지 않는다)
+      // 표지 대기 — 원문·권리는 검사를 마쳤지만 표지 표기가 아직 없는 작품(위키문헌 빌드와 같은 규칙). 목록·대조표에 싣지 않는다.
+      if (entry.display && typeof entry.display === 'object' && entry.display.binding === undefined) {
+        if (existsSync(path.join(base, STANDARD_EBOOKS_FILES.chapters))) throw new Error(`표지 대기 작품에 ${STANDARD_EBOOKS_FILES.chapters}가 있다 — 지운다`);
+        works.push({ key, chapters: draft.chapters.length, status: 'cover-pending' });
+        continue;
+      }
+      // 표지 표기 — 1차 세 권은 빅토리아 천 장정, 그 뒤 책은 초판 장정(없거나 틀리면 그 작품은 쓰지 않는다)
+      const display = Object.hasOwn(VICTORIAN_BINDINGS, entry.display?.binding ?? '') ? validateVictorianDisplay(entry.display) : validateFirstEditionDisplay(entry.display);
       const output = serialize(draft);
       const target = path.join(base, STANDARD_EBOOKS_FILES.chapters);
       const current = existsSync(target) ? readFileSync(target, 'utf8') : null;

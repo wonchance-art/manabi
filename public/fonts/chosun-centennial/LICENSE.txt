@@ -1,0 +1,21 @@
+조선100년체 (Chosun Centennial) — Version 1.020; Build 20200304
+Copyright (c) 2020 방일영문화재단 (Bang Il Young Foundation). All rights reserved.
+출처: https://event.chosun.com/100/100font.html · http://www.bangfound.org
+파일: ChosunCentennial_ttf.ttf (배포된 원본 그대로 — 수정 · 서브셋 · 형식 변환 없음)
+SHA-256: d620604fbf9eab138612753c9317162aa7a748f97ca53ea61d2860a9a727ba1f
+
+글꼴 파일 name 표 13번(라이선스) 원문:
+
+지적재산권에 대한 알림
+1. '조선100년체'의 지적재산권은 방일영문화재단에 있습니다.
+2. '조선100년체'는 개인 및 기업 사용자에게 무료 제공되며, 사용자들은 이를 다른 이에게 자유롭게 배포할 수 있습니다. 다만 어떠한 경우에도 복사 또는 배포에 따른 대가를 요구할 수 없습니다.
+3. '조선100년체'는 지적재산권자 이외의 사용자가 수정해서 판매할 수 없으며, 배포된 형태 그대로 사용해야 합니다.
+문의 방일영문화재단 (전화 02-724-5040) http://www.bangfound.org
+
+Notice of Intellectual Property Rights
+1. The intellectual property rights of the 'Chosun Centennial' typeface is belonging to the Bang Il Young Foundation.
+2. 'Chosun Centennial' typeface is free for individual and corporate users. Users can distribute it to others. However, users restrict to claim the cost of copy or distribute under any circumstances.
+3. 'Chosun Centennial' typeface cannot be modified and sold by others except intellectual property holder, and users must use it as distributed.
+Contact : Bang Il Young Foundation (Tel.+82-2-724-5040) http://www.bangfound.org
+
+manabi 사용: 정본 책 「초판 장정」 표지(SVG)의 근대 한글 활자 — src/components/books/first-edition-cover.css @font-face. 무료 앱 · 원본 파일을 그대로 내려 준다.

@@ -1,0 +1,1029 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "fr",
+  "key": "ws-fr-victor-hugo_les-miserables-3",
+  "main": "Les Misérables",
+  "url": "https://fr.wikisource.org/wiki/Les_Mis%C3%A9rables",
+  "title": "Les Misérables, tome III : Marius",
+  "author": "Victor Hugo",
+  "level": "C1 고급",
+  "publishedYear": 1862,
+  "authorDeathYear": 1885,
+  "countryOfOrigin": "FR",
+  "mortPourLaFrance": false,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "FR",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "레 미제라블 3부",
+    "authorKo": "빅토르 위고",
+    "binding": "pagnerre",
+    "coverAuthor": "Victor Hugo",
+    "coverTitle": "Les\nMisérables",
+    "coverPart": "Troisième partie",
+    "coverPartTitle": "Marius",
+    "coverTome": "Tome troisième",
+    "coverPlace": "Paris",
+    "coverImprint": "Pagnerre, libraire-éditeur",
+    "coverYear": 1862
+  },
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "Les Misérables/Tome 3/Livre 1/01",
+      "revid": 7217367,
+      "timestamp": "2018-02-12T13:01:14Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "prp",
+          "sha256": "6d299c124f12bf2867779824d2e1a139a1b79e79863f71d47b9b7657be79b124"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 1/02",
+      "revid": 7217375,
+      "timestamp": "2018-02-12T13:03:13Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "002.html",
+          "extract": "prp",
+          "sha256": "120325051740865b7184d425543b1601d989a28ddafffeb86d37d09a5b8a9021"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 1/03",
+      "revid": 7217379,
+      "timestamp": "2018-02-12T13:06:24Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "003.html",
+          "extract": "prp",
+          "sha256": "5f011385740f2d182be543199859d845c086aa739ed0203c5384a319291e27ab"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 1/04",
+      "revid": 7217380,
+      "timestamp": "2018-02-12T13:07:12Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "004.html",
+          "extract": "prp",
+          "sha256": "e87d7e6e2d9bf2491c76d0237a5bc9f8c58ed524547d3bb6aa6e5f4e7ad90806"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 1/05",
+      "revid": 7217382,
+      "timestamp": "2018-02-12T13:08:54Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "005.html",
+          "extract": "prp",
+          "sha256": "fbaa8792bbd1c878900e36dc5f7db421e5c01284473328676c9a9d3ed4404661"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 1/06",
+      "revid": 7217384,
+      "timestamp": "2018-02-12T13:10:37Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "006.html",
+          "extract": "prp",
+          "sha256": "9e0e5b4c0e1bd7108e12dcf76219db50dbedc87948445cf361812fafa522a76d"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 1/07",
+      "revid": 7217386,
+      "timestamp": "2018-02-12T13:11:50Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "007.html",
+          "extract": "prp",
+          "sha256": "9e7ff833af781064b5586a4d8b6795f5ce3783a0543df2ae1d45dc8a4701a862"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 1/08",
+      "revid": 7217388,
+      "timestamp": "2018-02-12T13:12:48Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "008.html",
+          "extract": "prp",
+          "sha256": "fde6261e89f17423eab8ffd870ff6b0b3f8a30e161fd3b2ae513985b8a381261"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 1/09",
+      "revid": 7217390,
+      "timestamp": "2018-02-12T13:13:38Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "009.html",
+          "extract": "prp",
+          "sha256": "c4d74e8f9b58a036860995eee2257146b59536c2810d20aea2bee53502260c66"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 1/10",
+      "revid": 7217393,
+      "timestamp": "2018-02-12T13:15:21Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "010.html",
+          "extract": "prp",
+          "sha256": "692a865b219997a5052557acc1e79adc21eac3e415ee18005592dc974a8d6b96"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 1/11",
+      "revid": 7217395,
+      "timestamp": "2018-02-12T13:16:21Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "011.html",
+          "extract": "prp",
+          "sha256": "308dfba73214b490582fed50ecd49fc6a30cc0b5cbadf94c0c71b444e3f3c5b0"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 1/12",
+      "revid": 7217396,
+      "timestamp": "2018-02-12T13:17:18Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "012.html",
+          "extract": "prp",
+          "sha256": "94f990a4bc4086f333c4bc77d6a3f8dacea1c11337ff385deebda64ff5beddf9"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 1/13",
+      "revid": 7217402,
+      "timestamp": "2018-02-12T13:19:35Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "013.html",
+          "extract": "prp",
+          "sha256": "6fdf68de8b188ff90c2cecc97b32bccd8673dabf0cbbd8e6660522dd67956d35"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 2/01",
+      "revid": 7217444,
+      "timestamp": "2018-02-12T13:48:31Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "014.html",
+          "extract": "prp",
+          "sha256": "31fb780ec2445f0abea0c96292f540a602da10bdf46a74bb63eae43ea0a0ca44"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 2/02",
+      "revid": 7217447,
+      "timestamp": "2018-02-12T13:49:06Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "015.html",
+          "extract": "prp",
+          "sha256": "5e63cdbc57ef50b472091e6fa0a26707befe49a8bc6d2875ef8d3a03980324c9"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 2/03",
+      "revid": 7217448,
+      "timestamp": "2018-02-12T13:49:45Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "016.html",
+          "extract": "prp",
+          "sha256": "47ea4191fb8da6945d18e70e1418a4011ce882cc56535d61105d883f2ebb40bf"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 2/04",
+      "revid": 7217449,
+      "timestamp": "2018-02-12T13:50:24Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "017.html",
+          "extract": "prp",
+          "sha256": "4e0a566f6fb91e8729be58f0da1ef0e14948ca1e67760ea00590aa7adffc22b5"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 2/05",
+      "revid": 7217450,
+      "timestamp": "2018-02-12T13:51:25Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "018.html",
+          "extract": "prp",
+          "sha256": "564c701a54e221bddeba0fa5af0a65a2f190e79e15e8931ae16ae21c8db6fa14"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 2/06",
+      "revid": 7217452,
+      "timestamp": "2018-02-12T13:52:26Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "019.html",
+          "extract": "prp",
+          "sha256": "c9999c88a26e35371223392f5c02512aa6a20db2a74fcf1f9a9f8eca1b5f2801"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 2/07",
+      "revid": 7217453,
+      "timestamp": "2018-02-12T13:53:06Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "020.html",
+          "extract": "prp",
+          "sha256": "527cabb801fd2f55a1180207662441f2b1bed20aa394e7a0078c017e84b175c2"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 2/08",
+      "revid": 7217455,
+      "timestamp": "2018-02-12T13:53:46Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "021.html",
+          "extract": "prp",
+          "sha256": "56872dd60d355d691f25d7c2681ce7c972cec2ef9f0522ec9ec7b709fe43a654"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 3/01",
+      "revid": 7217467,
+      "timestamp": "2018-02-12T14:05:31Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "022.html",
+          "extract": "prp",
+          "sha256": "edab9ecddc23878560d91aa6aebb5e0fa73a8f72b2ac90c90a79532913cb67b6"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 3/02",
+      "revid": 7217468,
+      "timestamp": "2018-02-12T14:06:25Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "023.html",
+          "extract": "prp",
+          "sha256": "572b974d327f5f6c4a961a57cb061b77c85839b456c8bcfa42b346bf229d9e36"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 3/03",
+      "revid": 7217469,
+      "timestamp": "2018-02-12T14:07:19Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "024.html",
+          "extract": "prp",
+          "sha256": "e6d3afb82c325058450a3b2cf1308db6e042d9644a57ed2b49bba26d9eab2f51"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 3/04",
+      "revid": 7217470,
+      "timestamp": "2018-02-12T14:08:43Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "025.html",
+          "extract": "prp",
+          "sha256": "2df62fec6e8b65b4c997a84a61b9f8c495c7d98a541f01695a558401f5595e5e"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 3/05",
+      "revid": 7217471,
+      "timestamp": "2018-02-12T14:09:25Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "026.html",
+          "extract": "prp",
+          "sha256": "32d49c0a1783b78378afb65c7b65bb3ed9aedd3a87d85f8ea42bef27356558a3"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 3/06",
+      "revid": 7217472,
+      "timestamp": "2018-02-12T14:10:09Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "027.html",
+          "extract": "prp",
+          "sha256": "82014df8743e450f8ef088dfa4f605ebe8039ea01635fc607205946a7785fbcd"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 3/07",
+      "revid": 7217475,
+      "timestamp": "2018-02-12T14:11:35Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "028.html",
+          "extract": "prp",
+          "sha256": "89ab387cc4fc65502645f54405df08cd41459ca326d5a2b2f90b60ab0e0f598c"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 3/08",
+      "revid": 7217476,
+      "timestamp": "2018-02-12T14:12:27Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "029.html",
+          "extract": "prp",
+          "sha256": "b5b77bea3b7d2b4c86e35285d7971833ae39b7a55015e9f1caf3d3866186e9a2"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 4/01",
+      "revid": 7217563,
+      "timestamp": "2018-02-12T15:51:28Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "030.html",
+          "extract": "prp",
+          "sha256": "7765394ce82708511401d827231bb62f29b71bb995f2fa09a4000730d30eabdd"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 4/02",
+      "revid": 7217564,
+      "timestamp": "2018-02-12T15:52:10Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "031.html",
+          "extract": "prp",
+          "sha256": "8850f58b7c2a9f23495bef1dff71c74fefce4a28df5d5ee17504d14c3f1b8268"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 4/03",
+      "revid": 7217566,
+      "timestamp": "2018-02-12T15:53:01Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "032.html",
+          "extract": "prp",
+          "sha256": "c437c0113be85ae140d1d41180b736dc3e0f62a1cd64c76f5f950c9838b93fac"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 4/04",
+      "revid": 7217567,
+      "timestamp": "2018-02-12T15:53:52Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "033.html",
+          "extract": "prp",
+          "sha256": "e13959fd82b6bf1243bdd4ab3a6b244f566b942fa51dd3464d11a8de7049d0d5"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 4/05",
+      "revid": 7217569,
+      "timestamp": "2018-02-12T15:54:44Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "034.html",
+          "extract": "prp",
+          "sha256": "2677f2512cc5846fdfd4487d3d5a99493db9add4fc2644551935b06bc04c08b5"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 4/06",
+      "revid": 7217570,
+      "timestamp": "2018-02-12T15:55:30Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "035.html",
+          "extract": "prp",
+          "sha256": "5b2dc1fa4824c0fe972d7eff944de43e6a81d8623537023d731c3e6b97cb611f"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 5/01",
+      "revid": 7217593,
+      "timestamp": "2018-02-12T16:05:33Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "036.html",
+          "extract": "prp",
+          "sha256": "bae2db185b7c87252dfa03c324d37ab5881dd0440619976c6f2aabfaa6f7cf78"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 5/02",
+      "revid": 7217596,
+      "timestamp": "2018-02-12T16:06:14Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "037.html",
+          "extract": "prp",
+          "sha256": "db87b4c2ff4586d4115894fbcd6ebf16c9b9ce7542233250fa602459d81dcb93"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 5/03",
+      "revid": 7217599,
+      "timestamp": "2018-02-12T16:06:58Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "038.html",
+          "extract": "prp",
+          "sha256": "59391206d073ae3b1368a6c1b3591b15098e2fea20ad95ac36153c6dea10e82d"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 5/04",
+      "revid": 7217602,
+      "timestamp": "2018-02-12T16:07:42Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "039.html",
+          "extract": "prp",
+          "sha256": "b8750981ddcaf138d77ca8c84efc32d8a32a13229d2f0b4d0d47f5a377b3e4ee"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 5/05",
+      "revid": 7217613,
+      "timestamp": "2018-02-12T16:11:15Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "040.html",
+          "extract": "prp",
+          "sha256": "291dbc9aae31e0d9cec1500f9cba0581ac62f81f090d2e3456f49f366ed26768"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 5/06",
+      "revid": 7217615,
+      "timestamp": "2018-02-12T16:12:05Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "041.html",
+          "extract": "prp",
+          "sha256": "333aa6d11c8ccd86c039dc0cd9e1fa975ba00523d07d104ef5adbf3eca932fa8"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 6/01",
+      "revid": 7217638,
+      "timestamp": "2018-02-12T16:18:56Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "042.html",
+          "extract": "prp",
+          "sha256": "c7a4bfd9733f7a29a19ea94097f2dcc7293145b530abcc5ec4468c271d550407"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 6/02",
+      "revid": 7217642,
+      "timestamp": "2018-02-12T16:19:40Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "043.html",
+          "extract": "prp",
+          "sha256": "1d8bde6a5a7974bfdc609971b098f47a6b51007f6584decb3f70ea92d552b245"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 6/03",
+      "revid": 7217643,
+      "timestamp": "2018-02-12T16:20:18Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "044.html",
+          "extract": "prp",
+          "sha256": "72f6432f21c125a29c081903a4560047a4e54ee6265122d478154ab786f16a0c"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 6/04",
+      "revid": 7217646,
+      "timestamp": "2018-02-12T16:22:00Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "045.html",
+          "extract": "prp",
+          "sha256": "b6f121d177e2ec108eb4269bc4e3ebd0ff7aa51e92ba8cd66d9340cf2eb04868"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 6/05",
+      "revid": 7217648,
+      "timestamp": "2018-02-12T16:22:49Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "046.html",
+          "extract": "prp",
+          "sha256": "93efbcca2529a000420e771ac2415143330359a8a1037c21b696fe4ad1eaba02"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 6/06",
+      "revid": 7217650,
+      "timestamp": "2018-02-12T16:23:46Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "047.html",
+          "extract": "prp",
+          "sha256": "39bf0cae4c33697c7074515efd68a69cfbb75e0cd8b604b5f38e69375b8accb9"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 6/07",
+      "revid": 7217652,
+      "timestamp": "2018-02-12T16:24:45Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "048.html",
+          "extract": "prp",
+          "sha256": "f4c64076228de35ff58916da774a6294213bc975a33fa53be3e6c70d378765cd"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 6/08",
+      "revid": 7217656,
+      "timestamp": "2018-02-12T16:25:36Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "049.html",
+          "extract": "prp",
+          "sha256": "7718b8fec5defbfaa0c1fc9aecadfc728965409b46ac352746c640ef2270d643"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 6/09",
+      "revid": 7217659,
+      "timestamp": "2018-02-12T16:26:22Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "050.html",
+          "extract": "prp",
+          "sha256": "8cf7d34f2782de5297a82dc33ba77b0eaae381e390f9dcc49465f369bafc43c6"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 7/01",
+      "revid": 7217718,
+      "timestamp": "2018-02-12T17:14:52Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "051.html",
+          "extract": "prp",
+          "sha256": "3c1d4ee2a8ac45e6098dbd243b8d5b3bffb644331dfa85eabf7bcf8b0998f447"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 7/02",
+      "revid": 7217721,
+      "timestamp": "2018-02-12T17:15:34Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "052.html",
+          "extract": "prp",
+          "sha256": "b06179676056502373bc93b0f714c9d524b06c8f23cf2ac5f30a65e7f80e6aa2"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 7/03",
+      "revid": 7217723,
+      "timestamp": "2018-02-12T17:16:27Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "053.html",
+          "extract": "prp",
+          "sha256": "8278c3a85bbe7a610f8fcd55e24b5d16a6b81c230bee57dcfcac63861302d594"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 7/04",
+      "revid": 7217725,
+      "timestamp": "2018-02-12T17:17:10Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "054.html",
+          "extract": "prp",
+          "sha256": "1e7cfc1a4fde988b4279e79da185a279b4b2ba3208fa4ff022f5c11fea900489"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/01",
+      "revid": 7217749,
+      "timestamp": "2018-02-12T17:34:08Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "055.html",
+          "extract": "prp",
+          "sha256": "6e9d4c6ab70d540915b31f5047553588aee661712582e0c6ef1605bdda6d2c89"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/02",
+      "revid": 7217750,
+      "timestamp": "2018-02-12T17:34:51Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "056.html",
+          "extract": "prp",
+          "sha256": "215c05f5f22305302bdef59fbc24f03a5b8674276b675b8065cf3ab086e67014"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/03",
+      "revid": 7217753,
+      "timestamp": "2018-02-12T17:35:43Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "057.html",
+          "extract": "prp",
+          "sha256": "78b6cda9062d513f6cf8fa9bc8a9824a62f04c9d11af2d0469ecfd273c084601"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/04",
+      "revid": 7217754,
+      "timestamp": "2018-02-12T17:36:39Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "058.html",
+          "extract": "prp",
+          "sha256": "d646adb2db38cd91bfe76e90baaa4f2f4b65ddd8475864d3a910b771df4ad792"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/05",
+      "revid": 7217755,
+      "timestamp": "2018-02-12T17:37:39Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "059.html",
+          "extract": "prp",
+          "sha256": "a0c406e91ccee2a44a485d1e3278d1f7a9c13598efe90add6b7dba74d3af3a7c"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/06",
+      "revid": 7217756,
+      "timestamp": "2018-02-12T17:38:37Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "060.html",
+          "extract": "prp",
+          "sha256": "b63bad6232748988da9883f553e143e957a78ae598638a3fc49c9979d07171e4"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/07",
+      "revid": 7217757,
+      "timestamp": "2018-02-12T17:39:19Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "061.html",
+          "extract": "prp",
+          "sha256": "e1388a9211a2041be74491cb1a9f86e28c142a8c670486bbe463d18c97e69580"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/08",
+      "revid": 7217758,
+      "timestamp": "2018-02-12T17:40:12Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "062.html",
+          "extract": "prp",
+          "sha256": "490f57f6742de9d92f80c0b816cbd0f8543fe635008d5086ae7892f0940a8d12"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/09",
+      "revid": 7217760,
+      "timestamp": "2018-02-12T17:41:15Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "063.html",
+          "extract": "prp",
+          "sha256": "1891ff0297d0806c8f197c658f1240fee70f4aa3aebaff4b16d52e5a0c7a3800"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/10",
+      "revid": 7217762,
+      "timestamp": "2018-02-12T17:42:01Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "064.html",
+          "extract": "prp",
+          "sha256": "bba7ffd9f78838c99e1233fc310e0dfb15cd2d38a1af294479c92cf4d5f57383"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/11",
+      "revid": 7217763,
+      "timestamp": "2018-02-12T17:43:10Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "065.html",
+          "extract": "prp",
+          "sha256": "499b8ec6490be4e01830553026075d23e08949a4dbb6d9ffdd858f50d2e5573c"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/12",
+      "revid": 7217764,
+      "timestamp": "2018-02-12T17:44:28Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "066.html",
+          "extract": "prp",
+          "sha256": "736190cd690452f9c859a7c2fa8b7f57341c3bf168f875f0afaec93127b54b14"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/13",
+      "revid": 7217765,
+      "timestamp": "2018-02-12T17:45:08Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "067.html",
+          "extract": "prp",
+          "sha256": "70f7011a36563227bb6c2f0b273f006af30cc16b8ed4317da30be303e029b27a"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/14",
+      "revid": 7217766,
+      "timestamp": "2018-02-12T17:46:20Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "068.html",
+          "extract": "prp",
+          "sha256": "8c276176863849a017650669000a96785d208949bb1d74b7c15007f1c062ffbe"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/15",
+      "revid": 7217769,
+      "timestamp": "2018-02-12T17:47:15Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "069.html",
+          "extract": "prp",
+          "sha256": "a896c8e348d4394b8e8a969baf663946c62fef350c2cdb64c8aa9a0f26a6da51"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/16",
+      "revid": 7217770,
+      "timestamp": "2018-02-12T17:47:57Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "070.html",
+          "extract": "prp",
+          "sha256": "52a15ce5eb135cd45bbb4c257ed6e9dd1493244c145b87c1b7f033d0061942c1"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/17",
+      "revid": 7217773,
+      "timestamp": "2018-02-12T17:48:57Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "071.html",
+          "extract": "prp",
+          "sha256": "fadfe7846e1b2e22be362e4e6559081b009f977f92b1a3b7aeefa78cba274a75"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/18",
+      "revid": 7217775,
+      "timestamp": "2018-02-12T17:49:43Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "072.html",
+          "extract": "prp",
+          "sha256": "38cecadfd79cca7b109b19c24bc898d5438fdab31c8e7c3f13af6e631991728e"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/19",
+      "revid": 7217781,
+      "timestamp": "2018-02-12T17:51:21Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "073.html",
+          "extract": "prp",
+          "sha256": "9422c0e8541af77a35a12736968468e2e794518b3ed8f804190e6a8823dcaed5"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/20",
+      "revid": 7217798,
+      "timestamp": "2018-02-12T17:53:12Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "074.html",
+          "extract": "prp",
+          "sha256": "0d40f95f5bff97ec7bc0cc504aa56b307bc39c2259494a18c00e75f2062c3497"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/21",
+      "revid": 7217810,
+      "timestamp": "2018-02-12T17:54:05Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "075.html",
+          "extract": "prp",
+          "sha256": "5e1b75982f2004c978350989e4e8f2a881e6c004207a56890c07cbfe76cb31a9"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 3/Livre 8/22",
+      "revid": 7217825,
+      "timestamp": "2018-02-12T17:55:40Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "076.html",
+          "extract": "prp",
+          "sha256": "3f98621268f60c96fef2b344e966e344f14a6aa54e463420b11fee2cf1f95825"
+        }
+      ]
+    }
+  ]
+}

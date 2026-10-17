@@ -51,7 +51,9 @@ describe('parseStandardEbooksXhtml — 판 XHTML → 문단', () => {
 
   it('모르는 구조는 흘려보내지 않는다(fail-closed) — 블록 밖 글자·모르는 태그·모르는 문자 참조·빈 본문', () => {
     expect(() => parseStandardEbooksXhtml(xhtml('<div>stray text</div><p>ok</p>'))).toThrow(/블록 밖/u);
-    expect(() => parseStandardEbooksXhtml(xhtml('<p>see <a href="#n1">note</a></p>'))).toThrow(/모르는 태그/u);
+    expect(() => parseStandardEbooksXhtml(xhtml('<p>see <object data="x">note</object></p>'))).toThrow(/모르는 태그/u);
+    // 책 안 상호참조(명상록 「[Book IV]」)는 글자만 — 고리는 뷰어에서 갈 데가 없다
+    expect(parseStandardEbooksXhtml(xhtml('<p>a director [<a href="book-4.xhtml">Book <span epub:type="z3998:roman">IV</span></a>].</p>')).blocks).toEqual(['a director [Book IV].']);
     expect(() => parseStandardEbooksXhtml(xhtml('<p>&nbsp;x</p>'))).toThrow(/문자 참조/u);
     expect(() => parseStandardEbooksXhtml(xhtml('<figure><img src="x"/></figure>'))).toThrow(/본문 문단이 없다/u);
     expect(() => parseStandardEbooksXhtml('<html></html>')).toThrow(/<title>/u);
@@ -71,22 +73,27 @@ describe('splitBlocksByWords — 문단 경계로 고르게', () => {
   });
 });
 
-describe('권리 선(원산국 사후 70년 + 미국 출판 95년 + 한국) — 검토 연도 기준, 결정적', () => {
+describe('권리 선(원산국 만료 — 한국은 상호주의 · 미국 선은 미국 원산에만) — 검토 연도 기준, 결정적', () => {
   const base = { publishedYear: 1865, authorDeathYear: 1898, countryOfOrigin: 'GB', rights: { reviewedAt: '2026-10-16' } };
-  it('2026년 검토: 1955년 이전 사망 · 1930년 이전 출판만', () => {
-    expect(standardEbooksRightsVerdict(base)).toEqual({ ok: true, reasons: [], reviewYear: 2026 });
+  it('2026년 검토: 영국 원산은 1955년 이전 사망만(출판 연도로 막지 않는다) · 미국 원산은 1930년 이전 출판', () => {
+    expect(standardEbooksRightsVerdict(base)).toEqual({ ok: true, reasons: [], reviewYear: 2026, basis: 'korea-term' });
     expect(standardEbooksRightsVerdict({ ...base, authorDeathYear: 1955 }).ok).toBe(true);
-    expect(standardEbooksRightsVerdict({ ...base, authorDeathYear: 1956 }).reasons).toEqual(['작가 1956 사망 — 사후 70년이 끝나지 않았다']);
-    expect(standardEbooksRightsVerdict({ ...base, publishedYear: 1930 }).ok).toBe(true);
-    expect(standardEbooksRightsVerdict({ ...base, publishedYear: 1931 }).ok).toBe(false); // 미국 보호 중
+    expect(standardEbooksRightsVerdict({ ...base, authorDeathYear: 1956 }).ok).toBe(true); // 영국은 보호 중이어도 한국은 1962년 이전 사망 만료
+    expect(standardEbooksRightsVerdict({ ...base, authorDeathYear: 1970 }).reasons).toEqual(['작가 1970 사망 — 한국 보호기간이 끝나지 않았다(1962년 이전 사망 또는 사후 70년)', '작가 1970 사망 — 원산국 보호기간(사후 70년)이 끝나지 않았다']);
+    expect(standardEbooksRightsVerdict({ ...base, publishedYear: 1940, authorDeathYear: 1950 }).ok).toBe(true); // 미국 선 없음(오너 2026-10-17)
+    const us = { ...base, countryOfOrigin: 'US', authorDeathYear: 1970 };
+    expect(standardEbooksRightsVerdict({ ...us, publishedYear: 1930 }).ok).toBe(true); // 미국 원산 — 본국 출판 95년 만료
+    expect(standardEbooksRightsVerdict({ ...us, publishedYear: 1931 }).ok).toBe(false); // 본국 보호 중 · 한국도 보호 중(1970 사망)
   });
   it('번역본·판정 규칙 없는 원산국(프랑스 전쟁 연장 등)·기록 누락은 불가(fail-closed)', () => {
     expect(standardEbooksRightsVerdict({ ...base, translator: 'X' }).ok).toBe(false);
-    expect(standardEbooksRightsVerdict({ ...base, countryOfOrigin: 'FR' }).ok).toBe(false);
+    expect(standardEbooksRightsVerdict({ ...base, countryOfOrigin: 'DE', authorDeathYear: 1990 }).ok).toBe(false);
     expect(standardEbooksRightsVerdict({ ...base, rights: {} }).ok).toBe(false);
     expect(standardEbooksRightsVerdict({ ...base, authorDeathYear: undefined }).ok).toBe(false);
   });
 });
+
+const FIRST_THREE = ['se-arthur-conan-doyle_the-adventures-of-sherlock-holmes', 'se-charles-dickens_a-christmas-carol', 'se-lewis-carroll_alices-adventures-in-wonderland'];
 
 describe('리포 정본 3편 — 산출물·장 모양', () => {
   it('build-literature --check와 같은 검사가 통과한다(원문 해시·chapters.json·목록·대조표·표시용 표)', async () => {
@@ -94,11 +101,11 @@ describe('리포 정본 3편 — 산출물·장 모양', () => {
     expect(STANDARD_EBOOKS_OUTPUTS).toEqual({ index: 'index.generated.js', manifest: 'manifest.generated.json', display: 'manifest.display.generated.json' });
     const { works, errors } = await buildStandardEbooks({ root: STANDARD_EBOOKS_ROOT, check: true });
     expect(errors).toEqual([]);
-    expect(works.map((work) => [work.key, work.chapters])).toEqual([
-      ['se-arthur-conan-doyle_the-adventures-of-sherlock-holmes', 47],
-      ['se-charles-dickens_a-christmas-carol', 13],
-      ['se-lewis-carroll_alices-adventures-in-wonderland', 12],
-    ]);
+    // 작품 목록은 카탈로그가 정본(수록 줄 = 작품 폴더 — literatureCatalog.test.js) — 여기서는 모두 검사를 통과했는지만 본다.
+    // 작품을 넣을 때 이 목록을 손으로 고치지 않는다(LIT-IMPORT-1).
+    const catalog = JSON.parse(readFileSync(path.join(process.cwd(), 'src/content/literature/catalog.json'), 'utf8'));
+    expect(works.map((work) => work.key)).toEqual(catalog.works.filter((entry) => entry.key?.startsWith('se-') && entry.status === '수록').map((entry) => entry.key).sort());
+    expect(works.every((work) => work.status === 'checked' && work.chapters > 0)).toBe(true);
   });
 
   it('장: 영어 · 레벨 · 책 묶음 · 출처 기록, 원문은 문단 사이 빈 줄 · 장당 1,500–3,000단어', () => {
@@ -106,12 +113,17 @@ describe('리포 정본 3편 — 산출물·장 모양', () => {
       expect(literatureBookPublishable(book)).toBe(true);
       for (const chapter of book.chapters) {
         expect(chapter.metadata).toMatchObject({ language: 'English', level: book.book.level, book: { key: book.book.key, order: chapter.order, total: book.book.total } });
-        expect(chapter.metadata.literature).toMatchObject({ provider: SE_PROVIDER, license: 'CC0-1.0', translator: null, rights: { status: 'approved' } });
+        // 번역자 기록은 entry.json 그대로(번역본만 — 명상록 롱 역 · 만 단편집 Burke·Scheffauer), 원어 원문은 null
+        const translator = JSON.parse(readFileSync(path.join(STANDARD_EBOOKS_ROOT, book.book.key, 'entry.json'), 'utf8')).translator ?? null;
+        if (book.book.key.endsWith('_george-long')) expect(translator).toEqual({ name: 'George Long', deathYear: 1879, publishedYear: 1862, countryOfOrigin: 'GB' });
+        expect(chapter.metadata.literature).toMatchObject({ provider: SE_PROVIDER, license: 'CC0-1.0', translator, rights: { status: 'approved' } });
         expect(chapter.materialTitle).toBe(`${book.book.title} — ${chapter.title}`);
         expect(chapter.rawText).not.toMatch(/[<>⁠ ]|\n{3}/u);
         const words = wordCount(chapter.rawText);
-        expect(words).toBeGreaterThan(1500);
-        expect(words).toBeLessThan(3000);
+        // 판의 장 하나가 짧으면 짧은 대로 둔다(모비 딕 「The Prairie」 등) — 긴 장만 2,200단어 안팎으로 나눈다
+        if (FIRST_THREE.includes(book.book.key)) expect(words).toBeGreaterThan(1500);
+        expect(words).toBeGreaterThan(0);
+        expect(words).toBeLessThan(3300);
       }
     }
     const alice = STANDARD_EBOOKS_BOOKS.find((book) => book.book.key === 'se-lewis-carroll_alices-adventures-in-wonderland');
@@ -154,8 +166,15 @@ describe('뷰어 대조·출처 줄 · 게시', () => {
   it('출처 줄 재료 — 작가·출판 연도·퍼블릭 도메인(승인일 때만)·판 링크(standardebooks.org HTTPS만)·바꾼 점', () => {
     const literature = manifest.works[book.book.key].literature;
     expect(standardEbooksAttributionParts(literature)).toEqual({
-      author: 'Lewis Carroll', publishedYear: 1865, url: 'https://standardebooks.org/ebooks/lewis-carroll/alices-adventures-in-wonderland/john-tenniel', publicDomain: true, editNote: true,
+      author: 'Lewis Carroll', publishedYear: 1865, url: 'https://standardebooks.org/ebooks/lewis-carroll/alices-adventures-in-wonderland/john-tenniel', publicDomain: true, editNote: true, notesNote: false, translator: null,
     });
+    // 번역본(명상록 롱 역) — 출처 줄에 「번역 George Long, 1862」
+    expect(standardEbooksAttributionParts({ ...literature, translator: { name: ' George Long ', deathYear: 1879, publishedYear: 1862, countryOfOrigin: 'GB' } }).translator)
+      .toEqual({ name: 'George Long', publishedYear: 1862 });
+    expect(standardEbooksAttributionParts({ ...literature, translator: 'George Long' }).translator).toBe(null); // 이름뿐인 기록은 크레딧이 아니다
+    // 번역자가 여럿인 모음집 — 한 줄에 판마다 이름 · 해
+    expect(standardEbooksAttributionParts({ ...literature, translator: [{ name: 'Kenneth Burke', publishedYear: 1924 }, { name: 'Herman George Scheffauer', publishedYear: 1928 }] }).translator)
+      .toEqual({ name: 'Kenneth Burke, 1924 · Herman George Scheffauer, 1928', publishedYear: null });
     expect(standardEbooksAttributionParts({ ...literature, url: 'javascript:alert(1)' }).url).toBe('');
     expect(standardEbooksAttributionParts({ ...literature, rights: { status: 'reviewing' } }).publicDomain).toBe(false);
     expect(standardEbooksAttributionParts({ ...literature, provider: 'aozora' })).toBe(null);

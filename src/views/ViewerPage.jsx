@@ -201,10 +201,11 @@ import ViewerComments from './ViewerComments';
 import ViewerGuestBanner from '../components/viewer/ViewerGuestBanner';
 import ViewerQuizModal from './ViewerQuizModal';
 import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constants';
-import { attributionParts, literatureAttributionParts, materialSource, standardEbooksAttributionParts } from '../lib/videoAttribution';
+import { attributionParts, literatureAttributionParts, materialSource, pdSiteAttributionParts, standardEbooksAttributionParts, wikisourceAttributionParts } from '../lib/videoAttribution';
 import { isCanonicalLiteratureMaterial, literatureWork } from '../lib/literatureCanonical';
 import { literatureChapterLabel, literatureChapterTitle } from '../lib/literatureDisplay';
-import { useCanonicalLiterature } from '../lib/useCanonicalLiterature';
+import { useCanonicalLiterature, useScriptVariant } from '../lib/useCanonicalLiterature';
+import { scriptVariantSurfaces, variantPieces } from '../lib/scriptVariant';
 import { isArtBookMaterial } from '../lib/artBookProvider';
 import { useArtBookChapter } from '../lib/useArtBookChapter';
 import ViewerArtCard from '../components/viewer/ViewerArtCard';
@@ -650,7 +651,7 @@ export default function ViewerPage() {
       next: idx < navChapters.length - 1 ? navChapters[idx + 1] : null,
       // 이어 적기(#1077 5520128974) — 마지막 과의 「다음 →」 자리에 「다음 과 적기」(내 책만)
       key: bookMeta.key,
-      canAppend: !!user?.id && material?.owner_id === user.id && !literatureBook, // 정본 책은 이어 적지 않는다
+      canAppend: !!user?.id && material?.owner_id === user.id && !canonicalLiteratureLocked, // 정본 책(네 출처 모두)은 이어 적지 않는다
     };
   })();
 
@@ -674,7 +675,10 @@ export default function ViewerPage() {
               nextLabel: bookNav.next ? `${nextLabel}: ${literatureTitleOf(bookNav.next.order)}` : nextLabel,
             };
           })()
-          : { prevLabel: '이전 과', nextLabel: '다음 과' }),
+          // 아오조라 밖 정본 책(Standard Ebooks · 위키문헌 · 전자책 사이트)은 저장된 장 제목이 곧 정본 장 이름이다(빌드가 정한다).
+          : canonicalLiteratureLocked
+            ? { prevLabel: bookNav.prev ? `이전 장: ${bookNav.prev.title}` : '이전 장', nextLabel: bookNav.next ? `다음 장: ${bookNav.next.title}` : '다음 장' }
+            : { prevLabel: '이전 과', nextLabel: '다음 과' }),
       }
     : (prevLesson || nextLesson)
       ? {
@@ -879,6 +883,12 @@ export default function ViewerPage() {
   // 중국어 격자(ZH-GRID-001): 낱말 사이 간격 없이 칸마다 같은 자간, 반각 묶음은 칸 수로 올림.
   const zhGrid = materialLang === 'Chinese';
   useZhGridRuns(readerRef, zhGrid);
+  // 번체로 읽기(LIT-SRC-WS-1) — 정본 대조를 통과한 번체 사본이 있는 책에서만. 토큰 자리마다 같은 길이의 번체 글자를 보인다
+  // (단어 카드·저장·복습·문장 지정은 간체 token.text 그대로). 어긋나면 null — 간체로 보인다.
+  const zhHant = useScriptVariant(material);
+  const scriptSurfaces = useMemo(() => (zhGrid && zhHant && settings.zhScript === 'hant'
+    ? scriptVariantSurfaces(material?.processed_json, material?.raw_text, zhHant) : null),
+  [zhGrid, zhHant, settings.zhScript, material?.processed_json, material?.raw_text]);
   useEffect(()=>{
     let live=true;
     const measure=()=>{
@@ -3986,7 +3996,7 @@ export default function ViewerPage() {
              ※ 여기 있던 `flex: 1`은 죽은 값이었다 — 부모(.page-header)가 flex가 아니다. */
           <div className="viewer-titlerow">
             <h1 className="page-header__title" lang={contentLangTag}>{viewerTitle}</h1>
-            {user?.id === material?.owner_id && !composerOf(material) && !literatureBook && (
+            {user?.id === material?.owner_id && !composerOf(material) && !canonicalLiteratureLocked && (
               <button
                 className="viewer-title-edit"
                 onClick={() => { setTitleDraft(material.title); setTitleEditing(true); }}
@@ -4079,9 +4089,47 @@ export default function ViewerPage() {
         return (
           <p className="viewer-attribution">{vt("출처:")} Standard Ebooks
             {se.author && <> · <span lang="en">{se.author}{se.publishedYear ? `, ${se.publishedYear}` : ''}</span></>}
+            {se.translator && <> · {vt("번역")} <span lang="en">{se.translator.name}{se.translator.publishedYear ? `, ${se.translator.publishedYear}` : ''}</span></>}
             {se.publicDomain && <> · <span className="viewer-attribution__license">{vt("원작 퍼블릭 도메인")}</span></>}
             {se.url && <> · <a href={se.url} target="_blank" rel="noopener noreferrer">{vt("판 보기")}</a></>}
-            {se.editNote && <span className="viewer-attribution__muted"> · {vt("장 분할·글자 정리는 manabi 편집, 삽화는 싣지 않음")}</span>}
+            {se.editNote && <span className="viewer-attribution__muted"> · {vt(se.notesNote ? "장 분할·글자 정리는 manabi 편집, 삽화·미주는 싣지 않음" : "장 분할·글자 정리는 manabi 편집, 삽화는 싣지 않음")}</span>}
+          </p>
+        );
+      })()}
+
+      {/* Wikisource 정본 책 출처(LIT-SRC-WS-1) — 같은 한 줄 문법. 크레딧은 정본 대조표(wikisource/manifest.generated.json)에서, 자료 원문이
+          그 장의 정본과 같을 때만. 전사·교정은 CC BY-SA 4.0이라 라이선스 링크를 함께 건다:
+          출처: 위키문헌 · 鲁迅, 1919 · 원작 퍼블릭 도메인 · 전사 CC BY-SA 4.0 · 원문 보기 · 장 분할·글자 정리는 …
+          공공누리 제1유형 저작물(쉽고 바르게 읽는 3·1독립선언서)은 「공공누리 제1유형 · 배포 기관 …」(출처 표시 의무). */}
+      {(() => {
+        const ws = wikisourceAttributionParts(canonicalLiterature);
+        if (!ws) return null;
+        return (
+          <p className="viewer-attribution">{vt("출처:")} {vt("위키문헌")}
+            {ws.author && <> · <span lang={{ zh: 'zh-Hans', fr: 'fr', ko: 'ko', en: 'en' }[ws.wiki]}>{ws.author}{ws.publishedYear ? `, ${ws.publishedYear}` : ''}</span></>}
+            {ws.translator && <> · {vt("번역")} <span lang={{ zh: 'zh-Hans', fr: 'fr', ko: 'ko', en: 'en' }[ws.wiki]}>{ws.translator.name}{ws.translator.publishedYear ? `, ${ws.translator.publishedYear}` : ''}</span></>}
+            {ws.publicDomain && <> · <span className="viewer-attribution__license">{vt("원작 퍼블릭 도메인")}</span></>}
+            {ws.ccBySa && <> · <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ko" target="_blank" rel="noopener noreferrer license">{vt("전사 CC BY-SA 4.0")}</a></>}
+            {ws.kogl && <> · <a href="https://www.kogl.or.kr/info/licenseType1.do" target="_blank" rel="noopener noreferrer license">{vt("공공누리 제1유형")}</a> · {vt("배포 기관")} <span lang="ko">{ws.kogl}</span></>}
+            {ws.url && <> · <a href={ws.url} target="_blank" rel="noopener noreferrer">{vt("원문 보기")}</a></>}
+            {ws.editNote && <span className="viewer-attribution__muted"> · {vt("장 분할·글자 정리는 manabi 편집, 삽화·주석은 싣지 않음")}</span>}
+            {ws.scriptNote && <span className="viewer-attribution__muted"> · {vt("간체·번체는 위키문헌 글자 변환")}</span>}
+          </p>
+        );
+      })()}
+
+      {/* 퍼블릭 도메인 전자책 사이트 정본 책 출처(LIT-SRC-PD-1) — 같은 한 줄 문법. 사이트의 저작권 표시는 그 나라 기준이라 한국 판정을 적는다:
+          출처: Faded Page · Albert Camus, 1942 · 한국에서 퍼블릭 도메인 · 책 쪽 보기 · 장 분할·글자 정리는 manabi 편집, 삽화는 싣지 않음 */}
+      {(() => {
+        const pd = pdSiteAttributionParts(canonicalLiterature);
+        if (!pd) return null;
+        return (
+          <p className="viewer-attribution">{vt("출처:")} {pd.siteName}
+            {pd.author && <> · <span lang={material?.processed_json?.metadata?.language === 'French' ? 'fr' : 'en'}>{pd.author}{pd.publishedYear ? `, ${pd.publishedYear}` : ''}</span></>}
+            {pd.translator && <> · {vt("번역")} <span lang={material?.processed_json?.metadata?.language === 'French' ? 'fr' : 'en'}>{pd.translator.name}{pd.translator.publishedYear ? `, ${pd.translator.publishedYear}` : ''}</span></>}
+            {pd.publicDomain && <> · <span className="viewer-attribution__license">{vt("한국에서 퍼블릭 도메인")}</span></>}
+            {pd.url && <> · <a href={pd.url} target="_blank" rel="noopener noreferrer">{vt("책 쪽 보기")}</a></>}
+            {pd.editNote && <span className="viewer-attribution__muted"> · {vt(pd.notesNote ? "장 분할·글자 정리는 manabi 편집, 삽화·미주는 싣지 않음" : "장 분할·글자 정리는 manabi 편집, 삽화는 싣지 않음")}</span>}
           </p>
         );
       })()}
@@ -4299,6 +4347,7 @@ export default function ViewerPage() {
             const pickedClass = picked || inRange ? ' word-token--picked' : '';
             // 줄 첫 토큰에만 문장 전체 지정 막대 — 한자와 같은 라인박스에 인라인으로 앉혀
             // 루비(요미가나·병음) 유무와 무관하게 본문 글자 높이에 정렬된다.
+            const shownText = scriptSurfaces?.get(tokenId) ?? token.text; // 번체로 읽기 — 화면 글자만(LIT-SRC-WS-1)
             if (token.failed) {
               const linePick = lineHead ? (
                 <button
@@ -4317,7 +4366,7 @@ export default function ViewerPage() {
                   className={`word-token word-token--failed${pickedClass}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}`} style={paceStyle} title={vt("분석하지 못했어요. 재분석 버튼을 눌러 주세요")}>
                   {linePick}
                   <span className="furigana" />
-                  <span className="surface">{zhGrid ? <ZhText text={token.text} /> : token.text}</span>
+                  <span className="surface">{zhGrid ? <ZhText text={shownText} /> : shownText}</span>
                   <span className="failed-marker">!</span>
                 </div>
               );
@@ -4333,7 +4382,8 @@ export default function ViewerPage() {
                 linePickLabel={linePickLabel} onLinePick={onReaderLinePick} onTokenClick={onReaderTokenClick}
                 nextText={token.furigana ? kuruNext.get(tokenId) : ''}
                 pronDisplay={pronDisplay} isKnown={tokKnown} isSaved={isSaved}
-                patternMark={!!visibleScan?.byToken.has(tokenId)} zhGrid={!!zhGrid} showToneColors={!!showToneColors} />
+                patternMark={!!visibleScan?.byToken.has(tokenId)} zhGrid={!!zhGrid} showToneColors={!!showToneColors}
+                variantText={scriptSurfaces?.get(tokenId)} />
             );
           };
 
@@ -4535,7 +4585,7 @@ export default function ViewerPage() {
         if (bookNav?.next) {
           return (
             <Link href={classStudyNeighborHref(bookNav.next,studyContext,originalParams.get('returnTo'))} className="next-lesson-card">
-              <div className="next-lesson-card__hint">{literatureBook ? vt("이어 읽기 ·") : vt("다음 과 ·")}{literatureBook?.division === 'heading' ? literatureChapterLabel(literatureBook, bookNav.next.order) : `${bookNav.pos + 1}/${bookNav.total}`}</div>
+              <div className="next-lesson-card__hint">{literatureBook || canonicalLiteratureLocked ? vt("이어 읽기 ·") : vt("다음 과 ·")}{literatureBook?.division === 'heading' ? literatureChapterLabel(literatureBook, bookNav.next.order) : `${bookNav.pos + 1}/${bookNav.total}`}</div>
               <div className="next-lesson-card__title" lang={contentLangTag}>{literatureTitleOf(bookNav.next.order) || bookNav.next.title}</div>
             </Link>
           );
@@ -4651,7 +4701,7 @@ export default function ViewerPage() {
       </TextbookAnnotations>
       {paceFloatShown&&<div className={`viewer-pace-float${sheetStripShown?' viewer-pace-float--wide':''}`}>{paceToggle('viewer-pace-float__btn',true)}</div>}
 
-      {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} languageSettings={languageSettings} onClose={closeReadingSettings} keepPosition={pagedActive?change=>change():keepReadingPosition} onReaderView={changeReaderView} previewTokens={previewTokens} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus}/>}
+      {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} languageSettings={languageSettings} onClose={closeReadingSettings} keepPosition={pagedActive?change=>change():keepReadingPosition} onReaderView={changeReaderView} previewTokens={previewTokens} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus} zhScriptAvailable={!!zhHant}/>}
       {modal('activities')&&<ViewerModal uiLocale={uiLocale} title={vt("학습")} onClose={()=>setActiveModal(null)}><div className="reader-activity-menu">
         {user&&!String(id).startsWith('local:')&&<Link className="btn btn--secondary" href={`/notes/new?${new URLSearchParams({material:String(id),language:materialLang})}`}>{vt("내 학습 노트 펼치기 ↗")}</Link>}
         {ttsSupported&&sentences.length>0&&<button onClick={()=>setDictationPickerOpen(true)}><b>{vt("받아쓰기")}</b><span>{vt("추천 문장 하나를 골라 듣고 써요")}</span></button>}

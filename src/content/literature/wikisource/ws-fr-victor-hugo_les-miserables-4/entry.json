@@ -1,0 +1,1029 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "fr",
+  "key": "ws-fr-victor-hugo_les-miserables-4",
+  "main": "Les Misérables",
+  "url": "https://fr.wikisource.org/wiki/Les_Mis%C3%A9rables",
+  "title": "Les Misérables, tome IV : L’Idylle rue Plumet et l’Épopée rue Saint-Denis",
+  "author": "Victor Hugo",
+  "level": "C1 고급",
+  "publishedYear": 1862,
+  "authorDeathYear": 1885,
+  "countryOfOrigin": "FR",
+  "mortPourLaFrance": false,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "FR",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "레 미제라블 4부",
+    "authorKo": "빅토르 위고",
+    "binding": "pagnerre",
+    "coverAuthor": "Victor Hugo",
+    "coverTitle": "Les\nMisérables",
+    "coverPart": "Quatrième partie",
+    "coverPartTitle": "L’Idylle rue Plumet\net l’Épopée rue Saint-Denis",
+    "coverTome": "Tome quatrième",
+    "coverPlace": "Paris",
+    "coverImprint": "Pagnerre, libraire-éditeur",
+    "coverYear": 1862
+  },
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "Les Misérables/Tome 4/Livre 01/01",
+      "revid": 7217879,
+      "timestamp": "2018-02-12T18:29:32Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "prp",
+          "sha256": "0e79751d241b6498f82a8789dbb41bebe6955a6049bd73d1696d677ab3ac0ee3"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 01/02",
+      "revid": 7217893,
+      "timestamp": "2018-02-12T18:32:04Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "002.html",
+          "extract": "prp",
+          "sha256": "18a36f34724d9c765cc4ddad32ddd418d6247241edfd8bc1c92a999f880359a4"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 01/03",
+      "revid": 7217900,
+      "timestamp": "2018-02-12T18:32:55Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "003.html",
+          "extract": "prp",
+          "sha256": "947c6c5cb488c27c33472e05c9ba217a22951914839099091576c376b65eef30"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 01/04",
+      "revid": 7217907,
+      "timestamp": "2018-02-12T18:36:34Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "004.html",
+          "extract": "prp",
+          "sha256": "93dbfa2ac70fccde9380f68e2cf5b6e851011bfc898870f055ba24e916810c25"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 01/05",
+      "revid": 7217908,
+      "timestamp": "2018-02-12T18:38:12Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "005.html",
+          "extract": "prp",
+          "sha256": "8ab410221b226567361d99c2a0aafcb4f08fe0790d88b5b2131721649a816249"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 01/06",
+      "revid": 7217909,
+      "timestamp": "2018-02-12T18:39:04Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "006.html",
+          "extract": "prp",
+          "sha256": "c213dfd69e40d10242a585b9b2bec9513bf2fe3df5826582e002425b023a78f1"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 02/01",
+      "revid": 7217916,
+      "timestamp": "2018-02-12T18:53:59Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "007.html",
+          "extract": "prp",
+          "sha256": "5bcd974288a4cc4152d9699cd04aa31f0f6b8fec3c2da1fa367ac25863b77d13"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 02/02",
+      "revid": 7217917,
+      "timestamp": "2018-02-12T18:55:16Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "008.html",
+          "extract": "prp",
+          "sha256": "30e2047b030a7600b9c32b5ce30ab23910a2157698c9e7a7ef5016ed4ad96a33"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 02/03",
+      "revid": 7217918,
+      "timestamp": "2018-02-12T18:56:07Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "009.html",
+          "extract": "prp",
+          "sha256": "d4391b8ef87c4bbff02352f2cd228913b5094661a6ff9f8d673b280226362baf"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 02/04",
+      "revid": 7217919,
+      "timestamp": "2018-02-12T18:57:00Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "010.html",
+          "extract": "prp",
+          "sha256": "667ade8ff1daf900aaafe53ffedff81ba27a197d64612dab232a040d75839dff"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 03/01",
+      "revid": 12955503,
+      "timestamp": "2023-01-18T12:04:53Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "011.html",
+          "extract": "prp",
+          "sha256": "60bbea46053de45f741a99fde27682d87a5feec8b9f3a94a654edaba4fff5c22"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 03/02",
+      "revid": 7217921,
+      "timestamp": "2018-02-12T18:59:28Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "012.html",
+          "extract": "prp",
+          "sha256": "bf194c50bc670306b8f1a421144560c9d3d15bdf9384c12e01377a27c9a0db93"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 03/03",
+      "revid": 7217922,
+      "timestamp": "2018-02-12T19:01:02Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "013.html",
+          "extract": "prp",
+          "sha256": "722d242af824ed064d7b925f77d5a3753e5c7e2b1c5eb99680cdc3c29386d0c2"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 03/04",
+      "revid": 7217923,
+      "timestamp": "2018-02-12T19:02:28Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "014.html",
+          "extract": "prp",
+          "sha256": "27b924a3f2aed534e4f260e33e7d743c623544060f6a6fa9c11d174c6487c22b"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 03/05",
+      "revid": 7217924,
+      "timestamp": "2018-02-12T19:03:09Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "015.html",
+          "extract": "prp",
+          "sha256": "cf671c1100580990a05e89756002098ba291315340c387927fc2a48195b0ae47"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 03/06",
+      "revid": 7217926,
+      "timestamp": "2018-02-12T19:04:23Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "016.html",
+          "extract": "prp",
+          "sha256": "89dbebbb2491936233cd0fbb8ab72273d4f3ba162db9f31f8fb4c44fdf502c24"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 03/07",
+      "revid": 7217931,
+      "timestamp": "2018-02-12T19:05:10Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "017.html",
+          "extract": "prp",
+          "sha256": "bb6261f32d4766f93b5b2b0beecb11b83901e9bd3ffc35da533f866fb13cb9ab"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 03/08",
+      "revid": 7217934,
+      "timestamp": "2018-02-12T19:06:16Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "018.html",
+          "extract": "prp",
+          "sha256": "748cf3e7daed7f064a9c72e615e53b23f825e275b50b984f120c1efd4d3dc2a5"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 04/01",
+      "revid": 7217936,
+      "timestamp": "2018-02-12T19:08:01Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "019.html",
+          "extract": "prp",
+          "sha256": "4d7ba25278e93f2f40b71efd01c5fa5e7cba4cd7b950ca03ff05e75f2c45ebc0"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 04/02",
+      "revid": 7217938,
+      "timestamp": "2018-02-12T19:08:44Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "020.html",
+          "extract": "prp",
+          "sha256": "2bfa3d69d15ca8bec6beb1aa3880201e9bdff246c8a89f895b7a0593f6bb8e16"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 05/01",
+      "revid": 7217939,
+      "timestamp": "2018-02-12T19:09:53Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "021.html",
+          "extract": "prp",
+          "sha256": "1105a08f2f70aa7c98b32bee62029d919cd7f99517bcad4ccbbad05a9e71d092"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 05/02",
+      "revid": 7217941,
+      "timestamp": "2018-02-12T19:10:35Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "022.html",
+          "extract": "prp",
+          "sha256": "e1565ec0c95ec9b0db8374f76de8029b04a0482846cc74940b44ffaa4522fa57"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 05/03",
+      "revid": 7217942,
+      "timestamp": "2018-02-12T19:11:11Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "023.html",
+          "extract": "prp",
+          "sha256": "ec9fc1a1b25b91a8d30e2e93eaa5e64aee8b831e4cd8f5534d560f1bde7ffed8"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 05/04",
+      "revid": 7217943,
+      "timestamp": "2018-02-12T19:12:08Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "024.html",
+          "extract": "prp",
+          "sha256": "f5bf1ddaa4db56e865cc1826f3f010f3fff68ed2c6e1d7efa04227e9dfe0a543"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 05/05",
+      "revid": 7217944,
+      "timestamp": "2018-02-12T19:12:49Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "025.html",
+          "extract": "prp",
+          "sha256": "626dac88ba77e88708da9b43afd1ca488ae3069251ab58ddf6c705c922b3bddc"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 05/06",
+      "revid": 7217945,
+      "timestamp": "2018-02-12T19:13:44Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "026.html",
+          "extract": "prp",
+          "sha256": "64ead1efac44a590c012de4261315911afe7663077f1a96d19529e90675e3de5"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 06/01",
+      "revid": 7218021,
+      "timestamp": "2018-02-12T19:51:10Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "027.html",
+          "extract": "prp",
+          "sha256": "763cc9babce57463800ad4dd44537ac7be9ddaee495ccb5f4d107a30cb1e40a0"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 06/02",
+      "revid": 7218027,
+      "timestamp": "2018-02-12T19:52:41Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "028.html",
+          "extract": "prp",
+          "sha256": "accd5a014101d99c494c970fc86f4d543869b77f3a6ef8dca34d9d1e9ed8ea63"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 06/03",
+      "revid": 7218030,
+      "timestamp": "2018-02-12T19:53:33Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "029.html",
+          "extract": "prp",
+          "sha256": "108b8cf48f97586ec579e75bcf265986e9fd44a2568751727ae6441f593f62c8"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 07/01",
+      "revid": 7218035,
+      "timestamp": "2018-02-12T19:54:47Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "030.html",
+          "extract": "prp",
+          "sha256": "14a50405ad96affd179c7f7c50b27397a2fdb449c20d90a4b38549f068f39442"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 07/02",
+      "revid": 7218039,
+      "timestamp": "2018-02-12T19:56:32Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "031.html",
+          "extract": "prp",
+          "sha256": "6d3820de9ef6da6080f8aba7d383b06347b89ec0ad8a56e3f28077793e2e9c1f"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 07/03",
+      "revid": 7218040,
+      "timestamp": "2018-02-12T19:57:12Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "032.html",
+          "extract": "prp",
+          "sha256": "d2e8699544e3fe169f886dedc533dcdad5f082ac89f5d68beea040074365705e"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 07/04",
+      "revid": 7218041,
+      "timestamp": "2018-02-12T19:57:54Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "033.html",
+          "extract": "prp",
+          "sha256": "d4050392bfbbaa832d203b18dc1f173612579ca6e851545760607b204b14fcc0"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 08/01",
+      "revid": 7218042,
+      "timestamp": "2018-02-12T19:59:11Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "034.html",
+          "extract": "prp",
+          "sha256": "a19e46e37cf75654b86675138e8e0ccf321341fdfaf6838dba6b33595d6d9baa"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 08/02",
+      "revid": 7218043,
+      "timestamp": "2018-02-12T19:59:57Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "035.html",
+          "extract": "prp",
+          "sha256": "bf437cbea877877e62ee3d5d8e05cd72fa021606469336bf0877eebed9432ec3"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 08/03",
+      "revid": 7218045,
+      "timestamp": "2018-02-12T20:00:42Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "036.html",
+          "extract": "prp",
+          "sha256": "bbfcb630117eedf5147154674e1c0c4bca02768767e8e3d6b09bc21a9af67128"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 08/04",
+      "revid": 7218046,
+      "timestamp": "2018-02-12T20:03:16Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "037.html",
+          "extract": "prp",
+          "sha256": "62091f5774559b81859e8de92fa2ee02ab446ebd30f7994750878481c9b996db"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 08/05",
+      "revid": 7218047,
+      "timestamp": "2018-02-12T20:04:30Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "038.html",
+          "extract": "prp",
+          "sha256": "c78fc26cc9dc1490ff93c3b8e90ee4eca46eedc154849dbf8af88c6c7f9dcaba"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 08/06",
+      "revid": 7218048,
+      "timestamp": "2018-02-12T20:05:19Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "039.html",
+          "extract": "prp",
+          "sha256": "247080c4eb8a4bbb199bf389ae75ccb8fa01874bc6d48a58b2608c2a00fb868b"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 08/07",
+      "revid": 7218050,
+      "timestamp": "2018-02-12T20:06:49Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "040.html",
+          "extract": "prp",
+          "sha256": "97b94758c16a65ee271a5b630aad50842944751571636ee946a065f3d0a52e07"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 09/01",
+      "revid": 7218051,
+      "timestamp": "2018-02-12T20:07:48Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "041.html",
+          "extract": "prp",
+          "sha256": "0541c1a8988d37df5091220dad1e5514a684fb34f82b7f7d3ad35c99ea8d6e35"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 09/02",
+      "revid": 7218052,
+      "timestamp": "2018-02-12T20:08:31Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "042.html",
+          "extract": "prp",
+          "sha256": "6ef8e027662aea2d8bf41de371e8d39ee7e6e0e6a8c472f1d05ef99d4f821b03"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 09/03",
+      "revid": 7218053,
+      "timestamp": "2018-02-12T20:09:22Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "043.html",
+          "extract": "prp",
+          "sha256": "46b542be81b1e420f582907711786b9713659ac30854ddbd3e4d7f9ea8119aa3"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 10/01",
+      "revid": 7218054,
+      "timestamp": "2018-02-12T20:10:24Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "044.html",
+          "extract": "prp",
+          "sha256": "572f2aa1dab614902a61f34faa93900756f8628c590e3e67be946b3ba64c83c1"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 10/02",
+      "revid": 7218056,
+      "timestamp": "2018-02-12T20:11:28Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "045.html",
+          "extract": "prp",
+          "sha256": "c7f02102ee8efe85395c96db5a46bb95d7775eb7cfb80b298f2fbc5c7bb2f8e3"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 10/03",
+      "revid": 7218057,
+      "timestamp": "2018-02-12T20:12:06Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "046.html",
+          "extract": "prp",
+          "sha256": "2aa0dae15bfaebdf105f79a5c1bc34c2abf330c8a358b602e723416ad4a6a412"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 10/04",
+      "revid": 7218058,
+      "timestamp": "2018-02-12T20:12:57Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "047.html",
+          "extract": "prp",
+          "sha256": "4c05c6680c8f0e6e0c8849d5c9a9f89c300bc038776a957cf035353c39c78c96"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 10/05",
+      "revid": 7218059,
+      "timestamp": "2018-02-12T20:13:33Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "048.html",
+          "extract": "prp",
+          "sha256": "88514d765ae7ef8f1b92994ece97fbc1f7531169c4acbe0ebed903e12f1fedfd"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 11/01",
+      "revid": 7218060,
+      "timestamp": "2018-02-12T20:14:43Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "049.html",
+          "extract": "prp",
+          "sha256": "cdf40272ba0390427b26c642b6215bac26176ca58f7e556e102d1720c4cc06b2"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 11/02",
+      "revid": 7218061,
+      "timestamp": "2018-02-12T20:15:34Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "050.html",
+          "extract": "prp",
+          "sha256": "d3b955bfd7d4a1c4b0505e7334c76655baa42871d34e04f2a20ecb9b5dd987e3"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 11/03",
+      "revid": 7218062,
+      "timestamp": "2018-02-12T20:16:41Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "051.html",
+          "extract": "prp",
+          "sha256": "4f296b96442606171040636540a26e894ff840a35482d6c021524b0b009c4071"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 11/04",
+      "revid": 7218064,
+      "timestamp": "2018-02-12T20:17:26Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "052.html",
+          "extract": "prp",
+          "sha256": "302b367340759315b5532d5a2effcb45906a0f5a0d3a2442cfdad46be7741fc9"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 11/05",
+      "revid": 7218065,
+      "timestamp": "2018-02-12T20:18:07Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "053.html",
+          "extract": "prp",
+          "sha256": "49a1d829281a6b3f981e739acb9b83e10d174dca0d91d60b6c70d1ac19e09e25"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 11/06",
+      "revid": 7218067,
+      "timestamp": "2018-02-12T20:18:58Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "054.html",
+          "extract": "prp",
+          "sha256": "c8efd1f8b7e2600831eeed5024b88039ff7b88736ba9ab24627a1b5b378e19ce"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 12/01",
+      "revid": 7218068,
+      "timestamp": "2018-02-12T20:20:25Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "055.html",
+          "extract": "prp",
+          "sha256": "4e6a9948bb71784ab4eb440763197e9724c0d6b0303c01530991411a31e51e1e"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 12/02",
+      "revid": 7218069,
+      "timestamp": "2018-02-12T20:21:16Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "056.html",
+          "extract": "prp",
+          "sha256": "fef286c6f82dab362a1bbdedd22d7102f226f2544e70c3b2668b0bd1b09e8bb1"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 12/03",
+      "revid": 7218070,
+      "timestamp": "2018-02-12T20:22:03Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "057.html",
+          "extract": "prp",
+          "sha256": "c7adfce1e0c2b52ce62ebbd54ea8bd06638316847f17f3887a4cca79d15b87ce"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 12/04",
+      "revid": 7218071,
+      "timestamp": "2018-02-12T20:22:46Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "058.html",
+          "extract": "prp",
+          "sha256": "540abefb68e2874f09966993a409aee93dce04c127f2a57ec0b80d5d62735fd6"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 12/05",
+      "revid": 7218073,
+      "timestamp": "2018-02-12T20:23:36Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "059.html",
+          "extract": "prp",
+          "sha256": "0a2ab79ff237de0fa73b419c379b2d8fc67b2b51175fdceb86c0a3899d1529ef"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 12/06",
+      "revid": 7218074,
+      "timestamp": "2018-02-12T20:24:11Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "060.html",
+          "extract": "prp",
+          "sha256": "73dbc21147b5faf25b350bf9b7035347d408b9ee37af45a3ac3275da3b0b5f26"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 12/07",
+      "revid": 7218078,
+      "timestamp": "2018-02-12T20:25:02Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "061.html",
+          "extract": "prp",
+          "sha256": "8a02eb3390c7dc36a3a9b63c46f7857ac15b998fee26d72e6a78e93bbccf206e"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 12/08",
+      "revid": 7218080,
+      "timestamp": "2018-02-12T20:25:53Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "062.html",
+          "extract": "prp",
+          "sha256": "b7a21f32423bad4620bdb72723bf3a34510c86f14179cb110006ba35475ed929"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 13/01",
+      "revid": 7218082,
+      "timestamp": "2018-02-12T20:27:03Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "063.html",
+          "extract": "prp",
+          "sha256": "3d235e3071d7d6a3f71f2b2bb949adc0af48810aecd549ebca6612d315f92c38"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 13/02",
+      "revid": 7218084,
+      "timestamp": "2018-02-12T20:27:37Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "064.html",
+          "extract": "prp",
+          "sha256": "25187557ca153dd202cf75a18c2c24e859715e8696b67cd3c989742615614ed5"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 13/03",
+      "revid": 7218086,
+      "timestamp": "2018-02-12T20:28:26Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "065.html",
+          "extract": "prp",
+          "sha256": "126b9f4ca7ea0333536da226e0509de6b1d19b78a4d916aa802b3d8d896e3602"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 14/01",
+      "revid": 7218088,
+      "timestamp": "2018-02-12T20:29:22Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "066.html",
+          "extract": "prp",
+          "sha256": "fd8390a618b932da03dcf4d0419d55792ceb580737498e1da413aa03233b106d"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 14/02",
+      "revid": 7218089,
+      "timestamp": "2018-02-12T20:29:59Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "067.html",
+          "extract": "prp",
+          "sha256": "86d05fe64ec0f73434972f8e2fa6ba1bf283424dc0d2c2616a8a91bf7d0d448a"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 14/03",
+      "revid": 7218090,
+      "timestamp": "2018-02-12T20:30:36Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "068.html",
+          "extract": "prp",
+          "sha256": "5f1709ccf6c9564ad9d413474761757f117607d43d79b66234cb347213f8b6c9"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 14/04",
+      "revid": 7218092,
+      "timestamp": "2018-02-12T20:31:14Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "069.html",
+          "extract": "prp",
+          "sha256": "38672e604d8f7f462c13ac2b030aeed4a4270f4d1849faba5c6fe92c6e421bcd"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 14/05",
+      "revid": 7218093,
+      "timestamp": "2018-02-12T20:32:13Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "070.html",
+          "extract": "prp",
+          "sha256": "da2d334044363b082ced00f455dc4da583d924957b723094272c495417a0c8a4"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 14/06",
+      "revid": 7218094,
+      "timestamp": "2018-02-12T20:33:08Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "071.html",
+          "extract": "prp",
+          "sha256": "1c7e95ed6b27e7470f9a15e0a9870de14ef884005138094367e885d18842490a"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 14/07",
+      "revid": 7218096,
+      "timestamp": "2018-02-12T20:33:50Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "072.html",
+          "extract": "prp",
+          "sha256": "ce64c7ca08538cefb66a1f177f2a8ae531980e480af735950e6ab219d79d103e"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 15/01",
+      "revid": 7218103,
+      "timestamp": "2018-02-12T20:42:03Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "073.html",
+          "extract": "prp",
+          "sha256": "d7f3bd2649b65138e96dd27a300f8d9d210eef1c11ddb398ef53aad399a58a50"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 15/02",
+      "revid": 7218104,
+      "timestamp": "2018-02-12T20:43:19Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "074.html",
+          "extract": "prp",
+          "sha256": "16b72d71b6394aafc8a614c5acccb7ba9ff6934c023e74bc52e6145f5db71411"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 15/03",
+      "revid": 7218105,
+      "timestamp": "2018-02-12T20:43:51Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "075.html",
+          "extract": "prp",
+          "sha256": "b74aed6f5fcb1e35a75e324eb7d610471830a6400a34803f2c5ace4afce6a490"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 4/Livre 15/04",
+      "revid": 7218107,
+      "timestamp": "2018-02-12T20:44:44Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "076.html",
+          "extract": "prp",
+          "sha256": "416b8c8d6cced82d9f3be94a9ff81cfd49d4d1a0b5960b291d79a81aac5f5a35"
+        }
+      ]
+    }
+  ]
+}

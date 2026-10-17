@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "provider": "standardebooks",
+  "repo": "standardebooks/john-stuart-mill_on-liberty",
+  "commit": "88e44565f1b64b9a47e1fe65f4d8f113245edca1",
+  "url": "https://standardebooks.org/ebooks/john-stuart-mill/on-liberty",
+  "title": "On Liberty",
+  "author": "John Stuart Mill",
+  "publishedYear": 1859,
+  "authorDeathYear": 1873,
+  "countryOfOrigin": "GB",
+  "level": "C1 고급",
+  "display": {
+    "titleKo": "자유론",
+    "authorKo": "존 스튜어트 밀",
+    "binding": "parker-1859",
+    "coverTitle": "On Liberty"
+  },
+  "files": [
+    {
+      "path": "chapter-1.xhtml",
+      "sha256": "94643418341b249bc8a5be7efd33119ed1798e92f54698ded1441e1b7a729614"
+    },
+    {
+      "path": "chapter-2.xhtml",
+      "sha256": "6e6af95c2537cc434b35326e34ff2bc6dbb0b7ef562dc0d1c4d3afcba83f6529"
+    },
+    {
+      "path": "chapter-3.xhtml",
+      "sha256": "d4d8304314039c6b6ebd9823eec28ee824be433cbc2ee97a18fa64aa40129075"
+    },
+    {
+      "path": "chapter-4.xhtml",
+      "sha256": "06c928e398c9a69b9d0385cda10f152fc3f2fdfad9e84431cf2ca1b8eb79e7f7"
+    },
+    {
+      "path": "chapter-5.xhtml",
+      "sha256": "a6acb9041f08aacbe8de7ceb1fedacbc9f493a83eae6e05106b24bd849b2cc52"
+    }
+  ],
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-17",
+    "reviewedJurisdictions": [
+      "GB",
+      "KR"
+    ],
+    "evidenceUrl": "https://standardebooks.org/ebooks/john-stuart-mill/on-liberty"
+  }
+}

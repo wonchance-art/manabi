@@ -35,8 +35,11 @@ import LiteratureCover from '../components/books/LiteratureCover';
 // 표지 · 제목은 표시용 대조표만(LIT-DISPLAY-001) — 전체 대조표(해시 · 크레딧)는 뷰어 출처 줄 몫이라 서재 번들에 싣지 않는다.
 import { literatureWorkOfBook } from '../lib/literatureWorks';
 import { literatureChapterIncipit } from '../lib/literatureIncipits';
-import VictorianCover from '../components/books/VictorianCover';
+import CanonicalCover from '../components/books/CanonicalCover';
+import FirstEditionCover from '../components/books/FirstEditionCover';
 import { standardEbooksWorkOfBook } from '../lib/standardEbooksWorks';
+import { wikisourceWorkOfBook } from '../lib/wikisourceWorks';
+import { pdSiteWorkOfBook } from '../lib/pdSiteWorks';
 import { isCanonicalBookKey } from '../lib/canonicalBookKey';
 import { literatureChapterLabel, literatureDivisionLabel } from '../lib/literatureDisplay';
 import SuggestionArtwork from '../components/SuggestionArtwork';
@@ -771,10 +774,22 @@ export default function MaterialsPage({ libraryView = null }) {
               const english = work || !canonicalCovers ? null : standardEbooksWorkOfBook(b);
               const englishChapterOf = (c) => english?.chapters.find((item) => item.order === c._bookOrder);
               const englishProps = english ? {
-                art: <VictorianCover work={english} />,
+                art: <CanonicalCover work={english} />,
                 title: <span lang="en">{english.title}</span>,
                 subtitle: [english.display?.titleKo, english.display?.authorKo, english.literature?.publishedYear && `${english.literature.publishedYear}년 발표`].filter(Boolean).join(' · '),
                 meta: [english.level, english.words && `${english.words.toLocaleString()}단어`, `${english.total}장`, `읽음 ${readDone}/${b.chapters.length}`].filter(Boolean).join(' · ') + pendingNote,
+                fitLine: fitLineOf(bf, '장'),
+              } : null;
+              // 위키문헌(LIT-SRC-WS-1 — 중·불·한) · 전자책 사이트(LIT-SRC-PD-1 — 영·불) 정본 — 초판 장정 표지 + 원제·한국어 제목 + 장 제목.
+              // 분량은 중국어·한국어 글자 · 영어·프랑스어 단어.
+              const world = work || english || !canonicalCovers ? null : wikisourceWorkOfBook(b) || pdSiteWorkOfBook(b); // 공개 목록은 정본 표지 닫음(SE와 같은 fail closed)
+              const worldLang = { Chinese: 'zh-Hans', French: 'fr', Korean: 'ko', English: 'en' }[world?.language] || undefined;
+              const worldChapterOf = (c) => world?.chapters.find((item) => item.order === c._bookOrder);
+              const worldProps = world ? {
+                art: <FirstEditionCover work={world} />,
+                title: <span lang={worldLang}>{world.title}</span>,
+                subtitle: [world.display?.titleKo, world.display?.authorKo, world.literature?.publishedYear && `${world.literature.publishedYear}년 발표`].filter(Boolean).join(' · '),
+                meta: [world.level, world.size && `${world.size.toLocaleString()}${world.unit === 'chars' ? '자' : '단어'}`, `${world.total}장`, `읽음 ${readDone}/${b.chapters.length}`].filter(Boolean).join(' · ') + pendingNote,
                 fitLine: fitLineOf(bf, '장'),
               } : null;
               return (
@@ -787,12 +802,14 @@ export default function MaterialsPage({ libraryView = null }) {
                   fitLine={fitLineOf(bf, '과')}
                   {...literatureProps}
                   {...englishProps}
+                  {...worldProps}
                   rows={b.chapters.map((c) => ({
                     key: c.id,
                     onClick: () => openReader(`/viewer/${c.id}`),
                     lead: work ? literatureLead(c._bookOrder) : c._bookOrder,
                     title: work ? <span lang="ja">{literatureChapterIncipit(b.key, c._bookOrder) || c.title}</span>
                       : english ? <span lang="en">{englishChapterOf(c)?.title || c.title}</span>
+                      : world ? <span lang={worldLang}>{worldChapterOf(c)?.title || c.title}</span>
                       : c.title.includes(' — ') ? c.title.split(' — ').slice(1).join(' — ') : c.title,
                     right: chapterTags(c),
                   }))}

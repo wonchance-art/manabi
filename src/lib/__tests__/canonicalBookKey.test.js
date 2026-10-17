@@ -3,6 +3,8 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import aozora from '../../content/literature/aozora/manifest.generated.json';
 import standardEbooks from '../../content/literature/standardebooks/manifest.generated.json';
+import wikisource from '../../content/literature/wikisource/manifest.generated.json';
+import pdSite from '../../content/literature/pdsite/manifest.generated.json';
 import { artBookKey, artBooks } from '../artBook';
 import { makeBookKey } from '../bookMeta';
 import { isCanonicalBookKey } from '../canonicalBookKey';
@@ -11,8 +13,8 @@ const read = (file) => fs.readFileSync(path.resolve(__dirname, '../../..', file)
 
 describe('정본 책 key 판정(isCanonicalBookKey)', () => {
   it('대조표 · 그림 책의 모든 key를 정본으로 본다', () => {
-    const keys = [...Object.keys(aozora.works), ...Object.keys(standardEbooks.works), ...artBooks().map(({ book }) => book.key), artBookKey('x')];
-    expect(keys.length).toBeGreaterThan(30);
+    const keys = [...Object.keys(aozora.works), ...Object.keys(standardEbooks.works), ...Object.keys(wikisource.works), ...Object.keys(pdSite.works), ...artBooks().map(({ book }) => book.key), artBookKey('x')];
+    expect(keys.length).toBeGreaterThan(70);
     expect(keys.filter((key) => !isCanonicalBookKey(key))).toEqual([]);
   });
   it('사용자 책 key(bk_)와 빈 값은 정본이 아니다', () => {

@@ -3,7 +3,7 @@ export const VIEWER_PREF_KEY = 'viewer_preferences_v2';
 // readerView(쪽 넘김·스크롤, READER-PAGED-001)는 기기의 읽는 방식이라 언어와 무관하게 하나다 — 원본 리더도 같은 값을 읽는다.
 export const COMMON_KEYS = ['theme', 'ttsRate', 'readerView'];
 export const TAB_KEYS = {
-  type: ['fontSize', 'pinyinSize', 'lineGap', 'charGap', 'fontFamily', 'theme', 'readerView'],
+  type: ['fontSize', 'pinyinSize', 'lineGap', 'charGap', 'fontFamily', 'zhScript', 'theme', 'readerView'],
   display: ['pronDisplay', 'wordStateHl', 'showToneColors', 'showHanjaKo', 'showPatterns', 'patternFilter'],
   pace: ['focusMode', 'autoPace', 'paceCpm', 'paceStep', 'autoSpeakOnClick', 'ttsRate'],
 };
@@ -17,13 +17,14 @@ export function fontChoices(language) {
 // 저장할 때 붙어, 그 뒤에 사용자가 고른 0.25는 그대로 둔다. 다른 값·다른 언어는 손대지 않는다.
 const GAPLESS = ['Japanese', 'Chinese'], OLD_GAP = 0.25, GAP_MARK = 'cjkGap0';
 export function viewerDefaults(language) {
-  return {fontSize:1.6, pinyinSize:0.75, lineGap:15, charGap:GAPLESS.includes(language) ? 0 : OLD_GAP, theme:'sepia', fontFamily:'sans',
+  return {fontSize:1.6, pinyinSize:0.75, lineGap:15, charGap:GAPLESS.includes(language) ? 0 : OLD_GAP, theme:'sepia', fontFamily:'sans', zhScript:'hans',
     pronDisplay:'all', autoSpeakOnClick:false, ttsRate:'normal', showHanjaKo:false,
     showToneColors:false, focusMode:false, wordStateHl:false, showPatterns:false, patternFilter:'all',
     autoPace:false, paceCpm:null, paceStep:0, readerView:'paged'};
 }
 const ranges = {fontSize:[0.8,3],pinyinSize:[0.75,1],lineGap:[10,60],charGap:[0,1],paceCpm:[10,2000],paceStep:[0,20]};
-const enums = {readerView:['paged','scroll'],theme:['light','sepia','dark'],ttsRate:['slow','normal','fast'],pronDisplay:['all','unknown','none'],patternFilter:['all','due','weak']};
+// zhScript(LIT-SRC-WS-1): 간체 정본 책을 번체로 읽기 — 번체 사본이 정본과 맞는 책에서만 쓰인다(scriptVariant). 단어·복습은 간체 그대로.
+const enums = {zhScript:['hans','hant'],readerView:['paged','scroll'],theme:['light','sepia','dark'],ttsRate:['slow','normal','fast'],pronDisplay:['all','unknown','none'],patternFilter:['all','due','weak']};
 export function validateViewerPreferences(input, language) {
   const values = viewerDefaults(language);
   for (const key of Object.keys(values)) {

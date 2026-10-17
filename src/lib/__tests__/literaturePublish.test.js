@@ -21,6 +21,8 @@ import { getBook, groupByBook } from '../bookMeta.js';
 import { LITERATURE_BOOKS } from '../../content/literature/aozora/index.generated.js';
 import { artBooks } from '../artBook.js';
 import { sliceBetween } from './helpers/sliceBetween';
+import { WIKISOURCE_BOOKS } from '../../content/literature/wikisource/index.generated.js';
+import { senseReviewItems } from '../viewerSenseReview.js';
 
 // 관리자 게시 계획(AOZORA-P0-2) — 실물 「ごん狐」(6장)로 book key + 장 순서 멱등·충돌 시 무게시를 고정한다.
 
@@ -117,7 +119,8 @@ describe('준비 → 분석 → 검수 → 공개(P0-3 · P0-4)', () => {
 
 describe('관리자 화면 요약·루비 적용률', () => {
   it('정본 작품 모두 게시 가능 — 권리 기록이 깨지면 불가', () => {
-    expect(LITERATURE_BOOKS.length).toBe(34);
+    // 작품 수는 카탈로그가 정본(수록 줄 = 작품 폴더 — literatureCatalog.test.js) — 넣을 때 여기를 고치지 않는다
+    expect(LITERATURE_BOOKS.length).toBe(JSON.parse(readFileSync('src/content/literature/catalog.json', 'utf8')).works.filter((entry) => entry.status === '수록' && entry.key.startsWith('aozora-')).length);
     expect(LITERATURE_BOOKS.every(literatureBookPublishable)).toBe(true);
     const broken = { ...book, chapters: book.chapters.map((chapter) => ({ ...chapter, metadata: { ...chapter.metadata, literature: { ...chapter.metadata.literature, rights: { status: 'reviewing', basis: 'unknown' } } } })) };
     expect(literatureBookPublishable(broken)).toBe(false);
@@ -242,6 +245,37 @@ describe('쪼개진 저자 루비 낱말(AOZORA-P1-10 — 오너 「고유명사
     expect(literatureBoundaryIssues(chapter, { sequence: ['x'], dictionary: { x: { text: '存在しない語' } } })).toBe(null);
     const plain = { ...chapter, metadata: { ...chapter.metadata, literature: { ...chapter.metadata.literature, rubyLocks: [] } } };
     expect(literatureBoundaryIssues(plain, { sequence: ['x'], dictionary: { x: { text: '存在しない語' } } })).toEqual({ count: 0, words: [] });
+  });
+});
+
+describe('위키문헌 중국어 — 고유명사 밑줄(nameMarks)도 쪼개짐을 센다 · 남은 확인은 자료 언어로(감사 2026-10-17)', () => {
+  const zh = WIKISOURCE_BOOKS.find((item) => item.chapters[0].metadata.literature.nameMarks?.length);
+  const chapter = zh.chapters[0];
+  const charTokens = () => {
+    const sequence = [], dictionary = {};
+    [...chapter.rawText].forEach((text, k) => { sequence.push(`c${k}`); dictionary[`c${k}`] = text === '\n' ? { text, pos: '개행' } : { text }; });
+    return { sequence, dictionary };
+  };
+  it('글자마다 토큰이면 2자 이상 이름 자리가 모두 쪼개짐', () => {
+    const names = chapter.metadata.literature.nameMarks.filter((mark) => mark.base.length >= 2);
+    expect(names.length).toBeGreaterThan(0);
+    expect(literatureBoundaryIssues(chapter, charTokens()).count).toBe(names.length);
+  });
+  it('literatureReviewRemaining은 뷰어(senseReviewItems)와 같은 언어로 센다', () => {
+    const json = { metadata: { language: 'Chinese' }, sequence: ['a'], dictionary: { a: { text: '孔乙己', pos: '고유명사' } } };
+    expect(literatureReviewRemaining(json)).toBe(senseReviewItems(json, 'Chinese').length);
+    expect(literatureReviewRemaining({ ...json, metadata: {} })).toBe(senseReviewItems(json, 'Japanese').length);
+  });
+});
+
+describe('권리 칸 — 번역자 · 공공누리 배포 기관을 싣는다(관리자가 판정을 가른 기록을 본다)', () => {
+  const ws = (key) => WIKISOURCE_BOOKS.find((item) => item.book.key === key);
+  it('자본론: 번역 판 · 번역자 몰년 · 공공누리 책: 배포 기관 · 원작 단독 책은 칸 없음', () => {
+    expect(literatureBookSummary(ws('ws-en-karl-marx_capital')).rights.translator).toEqual({ name: expect.stringContaining('Untermann'), deathYear: 1956, publishedYear: 1906 });
+    const kogl = literatureBookSummary(ws('ws-ko-samil-centennial_swipgo-bareuge-ingneun-dongnip-seoneonseo')).rights;
+    expect(kogl).toMatchObject({ basis: 'kogl-type1', holder: expect.stringContaining('100주년'), authorDeathYear: null });
+    expect(kogl).not.toHaveProperty('translator');
+    expect(literatureBookSummary(ws('ws-ko-yi-sang_nalgae')).rights).not.toHaveProperty('holder');
   });
 });
 

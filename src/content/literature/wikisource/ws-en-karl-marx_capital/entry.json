@@ -1,0 +1,471 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "en",
+  "key": "ws-en-karl-marx_capital",
+  "main": "Das Kapital (Moore, 1906)",
+  "url": "https://en.wikisource.org/wiki/Das_Kapital_(Moore%2C_1906)",
+  "title": "Capital, Volume I",
+  "author": "Karl Marx",
+  "level": "C1 고급",
+  "publishedYear": 1867,
+  "authorDeathYear": 1883,
+  "countryOfOrigin": "DE",
+  "mortPourLaFrance": null,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "DE",
+      "US",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "자본론 1권",
+    "authorKo": "카를 마르크스",
+    "binding": "sonnenschein-1887",
+    "coverTitle": "Capital."
+  },
+  "fetchedAt": "2026-10-16",
+  "translator": {
+    "name": "Samuel Moore, Edward Aveling; rev. Ernest Untermann",
+    "deathYear": 1956,
+    "publishedYear": 1906,
+    "countryOfOrigin": "US"
+  },
+  "chapterHeading": "^CHAPTER [IVXLC]+\\.$",
+  "files": [
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 1",
+      "revid": 10425905,
+      "timestamp": "2020-09-02T00:01:15Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "prp",
+          "sha256": "65a33d0112eb7766cf9320ac297869520a77bb1a9522b560e315e27b5573bd4b"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 2",
+      "revid": 10425906,
+      "timestamp": "2020-09-02T00:01:44Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "002.html",
+          "extract": "prp",
+          "sha256": "756a1f43cde163b66c33a69f95e36a16ca565d016e555e4644ce2ad6c8af23a0"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 3",
+      "revid": 10446044,
+      "timestamp": "2020-09-12T18:54:41Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "003.html",
+          "extract": "prp",
+          "sha256": "736cb3ebc9ed926c3dded6998bae8b39cbd8fee731d286a161c2c79876a7ed4b"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 4",
+      "revid": 10452858,
+      "timestamp": "2020-09-16T13:26:23Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "004.html",
+          "extract": "prp",
+          "sha256": "5a53e2c90eaa74e6cd9abd877bc61a2df1724a5f1a71b7e56a2dc3328ee1aa3c"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 5",
+      "revid": 10452862,
+      "timestamp": "2020-09-16T13:28:12Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "005.html",
+          "extract": "prp",
+          "sha256": "0bd9fe0b4c33aae6da76d1900e5ddc51bc7d7ac3314687772c4165bedd7d044d"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 6",
+      "revid": 10468196,
+      "timestamp": "2020-09-23T10:58:42Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "006.html",
+          "extract": "prp",
+          "sha256": "2e1d0ba10cf009c1579bc6d15d5a06984175cc7c4f0f2eeca1f52141f6a50135"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 7",
+      "revid": 10481704,
+      "timestamp": "2020-09-30T10:43:12Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "007.html",
+          "extract": "prp",
+          "sha256": "52bfa21b993b4ebc880c713f97f199cc948ccf392b6572ba88a26d5c5a2ace71"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 8",
+      "revid": 10487726,
+      "timestamp": "2020-10-03T10:44:02Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "008.html",
+          "extract": "prp",
+          "sha256": "d8a0e1b8606d64728f029bf1f717673fda88a80ab4fe177a5a991bfadf758630"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 9",
+      "revid": 10502504,
+      "timestamp": "2020-10-11T15:35:57Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "009.html",
+          "extract": "prp",
+          "sha256": "d2feac555290a2162151f530026ccb7fbdd7dbe886cf88c35c8d8d7f169f3946"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 10",
+      "revid": 10585185,
+      "timestamp": "2020-10-24T19:35:41Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "010.html",
+          "extract": "prp",
+          "sha256": "9390c2af30f9516c0b69bd54fede5ccf0e82469f644f7636426f1caeaaa783c4"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 11",
+      "revid": 12100384,
+      "timestamp": "2022-01-26T17:54:50Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "011.html",
+          "extract": "prp",
+          "sha256": "f2c3519bffb61c4752912ed20cbc126bbb0e71f93d618e743bf237787abd33e8"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 12",
+      "revid": 12100380,
+      "timestamp": "2022-01-26T17:54:03Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "012.html",
+          "extract": "prp",
+          "sha256": "d588732378e624e9c48265e41f43733fda010d5a3b53f2947b480bff3a191b8a"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 13",
+      "revid": 12100379,
+      "timestamp": "2022-01-26T17:53:32Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "013.html",
+          "extract": "prp",
+          "sha256": "fa54788b7f9e11dbb644d1cdf3f2d043def7b3c6be397a16315a5c6e0c666d66"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 14",
+      "revid": 12100390,
+      "timestamp": "2022-01-26T17:58:38Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "014.html",
+          "extract": "prp",
+          "sha256": "852917ecec327a572c780bdc93c5e628769d72716f77784bfd7d63cab39b287a"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 15",
+      "revid": 12100427,
+      "timestamp": "2022-01-26T18:08:54Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "015.html",
+          "extract": "prp",
+          "sha256": "7be79bc1ef6991ee4f703f7491cad16e094956a0ee55b7653283c300f67612ef"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 16",
+      "revid": 12100436,
+      "timestamp": "2022-01-26T18:12:51Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "016.html",
+          "extract": "prp",
+          "sha256": "4741369e35960c845dcc5a1fb09a525d34fd87cdab108ab2099543fcc923630c"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 17",
+      "revid": 12100442,
+      "timestamp": "2022-01-26T18:16:19Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "017.html",
+          "extract": "prp",
+          "sha256": "09b0c4d1d6eb066999bcd35e78e3d1c4bff171e310e6c6f9520835ae6c5b0f68"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 18",
+      "revid": 12100451,
+      "timestamp": "2022-01-26T18:19:30Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "018.html",
+          "extract": "prp",
+          "sha256": "dcb1a137f7124f54019b983657681b0982bbb35386f02a10cd81e6094869d26b"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 19",
+      "revid": 12100539,
+      "timestamp": "2022-01-26T19:06:27Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "019.html",
+          "extract": "prp",
+          "sha256": "894b848016862f0df006f02b539efe21dc5e4da93676735bf6e4328799efe039"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 20",
+      "revid": 12100673,
+      "timestamp": "2022-01-26T20:24:15Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "020.html",
+          "extract": "prp",
+          "sha256": "df1c28d1a80011d63e6217a99961435d9d61b54568dc039913ef4413a4718f0b"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 21",
+      "revid": 12100677,
+      "timestamp": "2022-01-26T20:28:28Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "021.html",
+          "extract": "prp",
+          "sha256": "591fe2811946cc07120aba6d99e700bf64bf0650570525fb93e8f40dd5e629e6"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 22",
+      "revid": 12100683,
+      "timestamp": "2022-01-26T20:36:47Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "022.html",
+          "extract": "prp",
+          "sha256": "5be0ec5aee484f073e35342628c512a00dfe1620f59b052e0f4cd4118c56ef74"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 23",
+      "revid": 12100696,
+      "timestamp": "2022-01-26T20:45:00Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "023.html",
+          "extract": "prp",
+          "sha256": "2953fa880c0d2ff7a301e910e2dfac9ddabb078ce13466d30fe218edb1219e15"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 24",
+      "revid": 12100704,
+      "timestamp": "2022-01-26T20:46:54Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "024.html",
+          "extract": "prp",
+          "sha256": "94aeb048161b13f7d5094318eb9b89e19b17395b8fa4ad2e92dde43edfb8d01d"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 25",
+      "revid": 12100720,
+      "timestamp": "2022-01-26T20:50:09Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "025.html",
+          "extract": "prp",
+          "sha256": "260e2a5932f841a1bf342e4530f74995ac947b5aca395fef185d6bb06ac257cc"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 26",
+      "revid": 12100747,
+      "timestamp": "2022-01-26T21:03:51Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "026.html",
+          "extract": "prp",
+          "sha256": "80150af303de22c096ccf496b36fead9d6b2325f0fee5ea1bc35ac72863eb3ed"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 27",
+      "revid": 12100748,
+      "timestamp": "2022-01-26T21:04:52Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "027.html",
+          "extract": "prp",
+          "sha256": "aefd3fd759220ca4201cedd7528cb81628ee6d13ef3d1c382a5314fcc5114b56"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 28",
+      "revid": 12102032,
+      "timestamp": "2022-01-27T06:23:41Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "028.html",
+          "extract": "prp",
+          "sha256": "27ecbc1246605b0f430df620ce8df8d0009d3c4b3aed336301347ff572165ae8"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 29",
+      "revid": 12102045,
+      "timestamp": "2022-01-27T06:37:15Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "029.html",
+          "extract": "prp",
+          "sha256": "28187d8cc7a91dbb046b05334dcbf7c016c30ee385654e50c7431bf437b7f208"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 30",
+      "revid": 12102048,
+      "timestamp": "2022-01-27T06:41:44Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "030.html",
+          "extract": "prp",
+          "sha256": "9fb391061ae4e51721d3802345563647ad00c1737e4d9ddcfaa17693f61838a3"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 31",
+      "revid": 12102049,
+      "timestamp": "2022-01-27T06:43:38Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "031.html",
+          "extract": "prp",
+          "sha256": "37e2036245e8c98d1a28fc488fa423c8a5c46b212f361423abd100650cea5e04"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 32",
+      "revid": 12102051,
+      "timestamp": "2022-01-27T06:45:40Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "032.html",
+          "extract": "prp",
+          "sha256": "5e10f96753a569bd59fe37563c003763faf7098306a8550bb390f14d2271d55b"
+        }
+      ]
+    },
+    {
+      "page": "Das Kapital (Moore, 1906)/Chapter 33",
+      "revid": 12102067,
+      "timestamp": "2022-01-27T07:00:53Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "033.html",
+          "extract": "prp",
+          "sha256": "f3d30a78cb213de6c825617a20b4720e14cd217c42abda09ad2a9b000c644617"
+        }
+      ]
+    }
+  ]
+}

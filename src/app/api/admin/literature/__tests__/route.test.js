@@ -6,6 +6,8 @@ vi.mock('@/lib/supabaseServer', () => ({ requireAdmin: authenticate }));
 import { GET, POST } from '../route';
 import { LITERATURE_BOOKS } from '../../../../../content/literature/aozora/index.generated.js';
 import { STANDARD_EBOOKS_BOOKS } from '../../../../../content/literature/standardebooks/index.generated.js';
+import { WIKISOURCE_BOOKS } from '../../../../../content/literature/wikisource/index.generated.js';
+import { PDSITE_BOOKS } from '../../../../../content/literature/pdsite/index.generated.js';
 
 // 관리자 정본 문학책 게시 API(AOZORA-P0-2 · P0-3 · P0-4) — 권한·준비(비공개) 멱등·충돌 시 무게시·장 검수·분석과 검수를 마친 뒤에만 공개·원문은 리포 산출물에서만.
 
@@ -102,10 +104,12 @@ describe('관리자 정본 문학책 게시 API', () => {
     const response = await GET(new Request('http://localhost/api/admin/literature'));
     expect(response.headers.get('Cache-Control')).toBe('private, no-store');
     const { books } = await response.json();
-    // 青空文庫 + Standard Ebooks(LIT-SRC-EN-1) — 한 표에 출처 순서대로
-    expect(books.map((item) => [item.key, item.plan.state])).toEqual([...LITERATURE_BOOKS, ...STANDARD_EBOOKS_BOOKS].map((item) => [item.book.key, 'unpublished']));
+    // 青空文庫 + Standard Ebooks(LIT-SRC-EN-1) + Wikisource(LIT-SRC-WS-1) — 한 표에 출처 순서대로
+    expect(books.map((item) => [item.key, item.plan.state])).toEqual([...LITERATURE_BOOKS, ...STANDARD_EBOOKS_BOOKS, ...WIKISOURCE_BOOKS, ...PDSITE_BOOKS].map((item) => [item.book.key, 'unpublished']));
     expect(books.filter((item) => item.key.startsWith('se-')).map((item) => [item.title, item.publishable, item.rights.evidenceLabel]))
       .toEqual(STANDARD_EBOOKS_BOOKS.map((item) => [item.book.title, true, 'Standard Ebooks 판']));
+    expect(books.filter((item) => item.key.startsWith('ws-')).map((item) => [item.title, item.publishable, item.rights.evidenceLabel]))
+      .toEqual(WIKISOURCE_BOOKS.map((item) => [item.book.title, true, '위키문헌 원문']));
     expect(JSON.stringify(books)).not.toContain(book.chapters[0].rawText.slice(0, 20));
   });
 

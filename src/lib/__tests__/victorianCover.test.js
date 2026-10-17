@@ -27,7 +27,7 @@ const cielab = (value) => {
   const x = f((r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047); const y = f(r * 0.2126 + g * 0.7152 + b * 0.0722); const z = f((r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883);
   return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
 };
-const works = Object.values(manifest.works);
+const works = Object.values(manifest.works).filter((work) => Object.hasOwn(VICTORIAN_BINDINGS, work.display.binding)); // 빅토리아 천 장정 3편(2차 묶음은 초판 장정)
 
 describe('표지 표기 — 빌드가 entry.json display를 검사한다', () => {
   const alice = { titleKo: '이상한 나라의 앨리스', authorKo: '루이스 캐럴', coverTitle: 'Alice in\nWonderland', cloth: 'madder-red', binding: 'medallion' };
@@ -121,7 +121,7 @@ describe('배선 — 서재 카드·게시 화면', () => {
   it('서재 카드: Standard Ebooks 책은 빅토리아 표지 + 원제(영어) + 한국어 제목 · 단어 수 · 장 이름, 「다음 과 적기」 없음', () => {
     const page = read('src/views/MaterialsPage.jsx');
     expect(page).toContain('const english = work || !canonicalCovers ? null : standardEbooksWorkOfBook(b);'); // 공개 목록은 정본 표지 닫음(fail closed — bookMeta.test.js)
-    expect(page).toContain('art: <VictorianCover work={english} />,');
+    expect(page).toContain('art: <CanonicalCover work={english} />,'); // 빅토리아 · 초판 장정을 binding으로 가른다(CanonicalCover)
     expect(page).toContain("english.words && `${english.words.toLocaleString()}단어`");
     expect(page).toContain(') : !isCanonicalBookKey(b.key) && b.chapters[0]?.owner_id === user.id ? (');
   });
@@ -129,6 +129,6 @@ describe('배선 — 서재 카드·게시 화면', () => {
   it('게시 화면 표지: 아오조라는 시리즈 A, 영어 정본은 빅토리아 표지', () => {
     const cover = sliceBetween(read('src/components/LiteraturePublishPanel.jsx'), 'export function BookCover', '\n}\n');
     expect(cover).toContain('const english = work ? null : standardEbooksWork(bookKey);');
-    expect(cover).toContain('{work ? <LiteratureCover work={work} /> : <VictorianCover work={english} />}');
+    expect(cover).toContain('{work ? <LiteratureCover work={work} /> : english ? <CanonicalCover work={english} /> : <FirstEditionCover work={world} />}');
   });
 });
