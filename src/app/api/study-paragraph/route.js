@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { buildParagraphPrompt, validateParagraph, verifyParagraph, PARAGRAPH_SCHEMA } from '@/lib/studyParagraph';
 import { assembleStudyMaterials, deriveArc } from '@/lib/studyMaterials';
 import { callLLM } from '@/lib/server/llm';
+import { hasPrimaryLLMKey } from '@/lib/server/llmKeys';
 
 /**
  * 오늘의 문단 생성 — 공부 모드의 재료(새 문법·새 어휘·복습 문법·복습 어휘)를
@@ -131,8 +132,7 @@ export async function POST(request) {
     return Response.json({ error: { message: '요청이 너무 잦아요. 잠시 후 다시 시도해 주세요.' } }, { status: 429 });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey && !process.env.GROQ_API_KEY) {
+  if (!hasPrimaryLLMKey() && !process.env.GROQ_API_KEY) {
     return Response.json(
       { error: { message: '서버에 AI 키가 설정되지 않았어요 (GEMINI_API_KEY 또는 GROQ_API_KEY).' } },
       { status: 500 }

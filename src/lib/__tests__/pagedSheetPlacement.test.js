@@ -40,13 +40,14 @@ function fakeWorld({ withPanel = true } = {}) {
       return { top: 836 - height, bottom: 836, height };
     },
   };
-  const topbar = { getBoundingClientRect: () => ({ top: 68, bottom: 126 }) };
+  const bar = { bottom: 126 };
+  const topbar = { getBoundingClientRect: () => ({ top: 68, bottom: bar.bottom }) };
   const children = { panel: withPanel ? panel : null };
   const layout = { querySelector: sel => (sel === '.viewer-inspector' ? children.panel : sel === '.viewer-topbar' ? topbar : null) };
   const selected = { current: null };
   const root = { dataset: {}, closest: () => layout, querySelector: sel => (sel === '[data-selected]' ? selected.current : null) };
   const token = (top) => ({ isConnected: true, contains: () => false, getBoundingClientRect: () => ({ top, bottom: top + 56 }) });
-  return { panel, panelClasses, layout, root, token, selected, attach: () => { children.panel = panel; } };
+  return { panel, panelClasses, layout, root, token, selected, bar, attach: () => { children.panel = panel; } };
 }
 // 둘째 효과(처음 열 때 첫 그리기 전 자리) — 시트를 보이게 한 DOM 변경을 MutationObserver가 알린다.
 function useShowEffect(world) {
@@ -125,28 +126,28 @@ describe('쪽 넘김 시트 자리 — 바꿔 누를 때 · 닫을 때 · 늦게
     expect(mutationCallbacks.every(o => !o.on)).toBe(true); // 붙은 뒤에는 지켜보지 않는다
   });
   it('카드 핵심이 그려지기 전(머리줄만 57px)의 판정은 잠그지 않는다 — 다 차서 커지면 다시 정한다', () => {
-    const world = fakeWorld(), tokens = { a: world.token(531) };
+    const world = fakeWorld(), tokens = { a: world.token(560) };
     world.panel.natural = 57;
     useMountedEffect(world, tokens, 'a');
     flushFrame();
-    expect(world.panel.dataset).toEqual({ dock: 'top' }); // 57px면 단어 위 자리(385)에 들어간다 — 원래 높이
+    expect(world.panel.dataset).toEqual({ dock: 'top' }); // 57px면 단어 위 자리(414)에 들어간다 — 원래 높이
     world.panel.natural = 440; world.panel.card = true; // 카드가 차서 440으로 커진다
     for (const observer of resizeCallbacks.filter(o => o.on)) observer.cb([]);
     flushFrame();
     expect(world.panel.dataset).toEqual({ dock: 'top', compact: 'true' });
-    expect(world.panel.style.getPropertyValue('--reader-sheet-compact')).toBe('392px'); // max(핵심 392, 자리 385)
+    expect(world.panel.style.getPropertyValue('--reader-sheet-compact')).toBe('414px'); // 자리 414 ≥ 핵심 392 — 원래 440보다 낮게
     const settled = { ...world.panel.dataset };
     for (const observer of resizeCallbacks.filter(o => o.on)) observer.cb([]); // 핵심을 잰 뒤에는 잠긴다(출렁임 없음)
     world.panel.card = false; flushFrame();
     expect(world.panel.dataset).toEqual(settled);
   });
   it('키보드가 열린 보이는 영역(offsetTop · height)으로 정한다 — 위 끝은 보이는 영역 아래', () => {
-    window.visualViewport.offsetTop = 300; window.visualViewport.height = 400; // 보이는 영역 300–700, 가운데 500
-    const world = fakeWorld(), tokens = { a: world.token(560) };
+    window.visualViewport.offsetTop = 200; window.visualViewport.height = 640; // 보이는 영역 200–840, 가운데 520
+    const world = fakeWorld(), tokens = { a: world.token(680) };
     useMountedEffect(world, tokens, 'a');
     flushFrame();
     expect(world.panel.dataset.dock).toBe('top');
-    expect(world.panel.style.getPropertyValue('--reader-sheet-top')).toBe('308px'); // max(머리줄 126, 300) + 8
+    expect(world.panel.style.getPropertyValue('--reader-sheet-top')).toBe('208px'); // max(머리줄 126, 200) + 8
   });
 });
 
@@ -255,11 +256,81 @@ describe('처음 열 때 — 시트를 보이게 한 DOM 변경에서 바로 자
 });
 
 describe('pagedSheetDock — visualViewport 좌표계', () => {
-  const base = { viewportHeight: 400, topLimit: 308, naturalHeight: 440, min: 359 };
+  const base = { viewportHeight: 400, topLimit: 308, naturalHeight: 440, min: 100 }; // 가운데 판정만 — 단어 위 자리(≥ 120)는 핵심(100)보다 크다
   it('가운데는 offsetTop + height/2', () => {
     expect(pagedSheetDock({ ...base, viewportTop: 300, tokenTop: 440, tokenBottom: 496 })).toEqual({ dock: 'bottom' }); // 468 ≤ 500
     expect(pagedSheetDock({ ...base, viewportTop: 300, tokenTop: 480, tokenBottom: 536 }).dock).toBe('top'); // 508 > 500
     expect(pagedSheetDock({ ...base, tokenTop: 440, tokenBottom: 496 }).dock).toBe('top'); // offsetTop 0이면 가운데 200
     expect(pagedSheetDock({ ...base, viewportTop: NaN, tokenTop: 480, tokenBottom: 536 })).toEqual({ dock: 'bottom' });
+  });
+});
+
+// 비차단 2(B1 후속, 2026-10-17 KST): 따라갈 수 없는 쪽 넘김 자료(분석 어긋남 · 미분석 줄)는 듣기 「지금 문장」 줄이 보여 문장마다
+// 머리줄이 자라고 준다(390 실측 59→160px). 위에 세운 시트의 위 끝은 열 때의 머리줄 바닥으로 잠겨 있어 자란 머리줄과 겹쳤다.
+// 머리줄 크기 변화(ResizeObserver, 그리기 전)는 --reader-sheet-top만 다시 맞춘다 — 높이 · 위/바닥 판정은 그대로.
+describe('위에 세운 시트 — 머리줄이 문장마다 자라고 줄면 위 끝만 따라간다', () => {
+  const ro = () => { for (const observer of resizeCallbacks.filter(o => o.on)) observer.cb([]); };
+  it('문장마다 바뀌는 머리줄 바닥 + 8로 위 끝을 옮기고, 낮춘 높이 · 자리는 다시 정하지 않는다', () => {
+    const world = fakeWorld(), tokens = { a: world.token(560) };
+    world.panel.card = true;
+    useMountedEffect(world, tokens, 'a');
+    flushFrame();
+    expect(world.panel.dataset).toEqual({ dock: 'top', compact: 'true' });
+    expect(world.panel.style.getPropertyValue('--reader-sheet-top')).toBe('134px');
+    const height = world.panel.style.getPropertyValue('--reader-sheet-compact');
+    for (const bottom of [214, 150, 278, 126]) { // 긴 문장 · 짧은 문장 · 더 긴 문장 · 듣기 끝
+      world.bar.bottom = bottom; ro();
+      expect(world.panel.style.getPropertyValue('--reader-sheet-top')).toBe(`${bottom + 8}px`); // 같은 콜백(그리기 전)
+      flushFrame();
+      expect(world.panel.style.getPropertyValue('--reader-sheet-top')).toBe(`${bottom + 8}px`); // 다음 프레임의 끌어오기가 되돌리지 않는다
+      expect(world.panel.dataset).toEqual({ dock: 'top', compact: 'true' });
+      expect(world.panel.style.getPropertyValue('--reader-sheet-compact')).toBe(height);
+    }
+  });
+  it('펼친 동안 자란 머리줄도 맞춰 둔다 — 펼침을 풀면 지금 머리줄 아래에 선다(다시 판정 없음)', () => {
+    const world = fakeWorld(), tokens = { a: world.token(560) };
+    world.panel.card = true;
+    useMountedEffect(world, tokens, 'a');
+    flushFrame();
+    world.panelClasses.add('is-expanded');
+    world.bar.bottom = 214; ro(); flushFrame();
+    world.panelClasses.delete('is-expanded'); ro(); flushFrame();
+    expect(world.panel.dataset).toEqual({ dock: 'top', compact: 'true' });
+    expect(world.panel.style.getPropertyValue('--reader-sheet-top')).toBe('222px');
+  });
+  it('첫 열림 판정 중(data-placing)에는 건드리지 않는다 — 판정이 그때의 머리줄로 정한다', () => {
+    const world = fakeWorld(), tokens = { a: world.token(688) };
+    useMountedEffect(world, tokens, 'a');
+    expect(world.panel.dataset.placing).toBe('true');
+    world.bar.bottom = 214; ro();
+    expect(world.panel.style.getPropertyValue('--reader-sheet-top')).toBe('');
+    flushFrame();
+    expect(world.panel.dataset).toEqual({ dock: 'top' });
+    expect(world.panel.style.getPropertyValue('--reader-sheet-top')).toBe('222px');
+  });
+  it('바닥 시트 · 보이는 영역 위 끝 아래 머리줄', () => {
+    const low = fakeWorld(), tokens = { high: low.token(200) };
+    low.panel.card = true; // 핵심을 재 잠긴 바닥 시트 — 다시 판정이 지워 주지 않는다
+    useMountedEffect(low, tokens, 'high');
+    flushFrame();
+    low.bar.bottom = 278; ro(); flushFrame();
+    expect(low.panel.dataset.dock).toBeUndefined();
+    expect(low.panel.style.getPropertyValue('--reader-sheet-top')).toBe(''); // 바닥 시트에는 위 끝을 걸지 않는다
+    resizeCallbacks.forEach(o => { o.on = false; });
+    window.visualViewport.offsetTop = 200; window.visualViewport.height = 640; // 키보드 — 보이는 영역 200–840
+    const kb = fakeWorld(), more = { a: kb.token(680) };
+    useMountedEffect(kb, more, 'a');
+    flushFrame();
+    expect(kb.panel.style.getPropertyValue('--reader-sheet-top')).toBe('208px');
+    kb.bar.bottom = 190; ro();
+    expect(kb.panel.style.getPropertyValue('--reader-sheet-top')).toBe('208px'); // max(머리줄 190, 보이는 위 끝 200) + 8
+    kb.bar.bottom = 240; ro();
+    expect(kb.panel.style.getPropertyValue('--reader-sheet-top')).toBe('248px'); // 머리줄이 보이는 위 끝을 넘으면 머리줄
+  });
+  it('배선 — 판정과 다시 맞추기가 같은 위 끝 식(sheetTopLimit)을 쓴다', async () => {
+    const fs = await import('node:fs'), path = await import('node:path');
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/lib/useReaderLayout.js'), 'utf8');
+    expect(src).toContain('topLimit: sheetTopLimit(layout, viewTop), naturalHeight: natural.height');
+    expect(src).toContain('new ResizeObserver(() => { holdSheet(); retopPagedSheet(panel, layout); reveal(); })');
   });
 });

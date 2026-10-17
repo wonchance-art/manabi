@@ -107,9 +107,9 @@ describe('local: 뷰어 — 네트워크 0', () => {
 
   it('뷰어 fetchMaterial은 local:이면 사본만 보고(서버 조회·캐시 폴백 없음) 없으면 LOCAL_MISSING', () => {
     const viewer = read('src/views/ViewerPage.jsx');
-    const fn = sliceBetween(viewer, 'async function fetchMaterial(id) {', '\n}\n');
+    const fn = sliceBetween(read('src/lib/viewerMaterial.js'), 'export async function fetchMaterial(id) {', '\n}\n'); // 조회 정본은 lib/viewerMaterial(VIEWER-ENTRY R1)
     const local = fn.indexOf('if (isLocalId(id)) {');
-    const shared = fn.indexOf('getSharedCopy(parseLocalId(id))');
+    const shared = fn.indexOf('getSharedCopy(parseLocalId(id), { account })'); // 계정별 사본(OFFLINE-ACCOUNT-SCOPE-001)
     const network = fn.indexOf(".from('reading_materials')");
     expect(local).toBeGreaterThan(-1);
     expect(shared).toBeGreaterThan(local);
@@ -148,7 +148,7 @@ describe('local: 뷰어 — 네트워크 0', () => {
   it('팀 페이지 — 받기는 여기서만(ensureSharedCopy → local: 뷰어), 오너 뷰는 API 라우트 0, 로그인 학생은 즉시 복제', () => {
     const page = read('src/views/ClassTeamPage.jsx');
     // Re-entering online also refreshes shared textbook annotations; the viewer itself remains offline-only.
-    expect(page).toContain('await ensureSharedCopy(teamKey, unlock.token, entry, {refresh:true});');
+    expect(page).toContain('await ensureSharedCopy(teamKey, unlock.token, entry, {refresh:true, owner:user?.id ?? null});');
     expect(page).toContain('router.push(destination(localViewerHref(id, teamKey)));');
     expect(page).toContain("const wanted = search.get('open');");
     const owner = sliceBetween(page, 'function OwnerView(', '\nfunction NotesList(');

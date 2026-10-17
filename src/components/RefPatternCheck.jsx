@@ -6,6 +6,7 @@ import RefSpeak from './RefSpeak';
 import { JaText } from '../views/refShared';
 import { useAuth } from '../lib/AuthContext';
 import { syncCheckRemote } from '../lib/refProgress';
+import { accountScopedKey } from '../lib/refReadStore';
 import { enqueueGrammarReview } from '../lib/grammarSrs';
 import { logReviewEvents } from '../lib/reviewEvents';
 
@@ -64,10 +65,10 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
   useEffect(() => {
     if (!storageKey || !slug) return;
     try {
-      const map = JSON.parse(localStorage.getItem(storageKey) || '{}');
-      if (map[slug]) setLastResult(map[slug]);
+      const map = JSON.parse(localStorage.getItem(accountScopedKey(storageKey, user?.id ?? null)) || '{}'); // 이 계정의 확인 점수
+      setLastResult(map[slug] || null);
     } catch {}
-  }, [storageKey, slug]);
+  }, [storageKey, slug, user?.id]);
 
   // 문항 구성 — 마운트 후 셔플
   const questions = useMemo(() => {
@@ -146,9 +147,10 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
     settled.current.add(attempt);
     const result = { right: rightCount, total, at: Date.now(), passed: rightCount >= Math.ceil(total * 0.8) };
     try {
-      const map = JSON.parse(localStorage.getItem(storageKey) || '{}');
+      const key = accountScopedKey(storageKey, user?.id ?? null);
+      const map = JSON.parse(localStorage.getItem(key) || '{}');
       map[slug] = result;
-      localStorage.setItem(storageKey, JSON.stringify(map));
+      localStorage.setItem(key, JSON.stringify(map));
     } catch {}
     setLastResult(result);
     if (user?.id) {

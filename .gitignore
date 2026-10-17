@@ -46,3 +46,6 @@ scripts/data/
 
 # Local synthetic QA evidence; never public auth/session data.
 .qa/
+
+# 간체 중국어 독립 스타일시트 산출물 — 빌드가 글꼴 입력에서 만든다(scripts/fonts/sc-stylesheet.cjs, SC-LINK-001)
+/public/_fonts/

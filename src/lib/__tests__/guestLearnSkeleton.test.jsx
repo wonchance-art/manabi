@@ -62,24 +62,32 @@ describe('화면 배선 — 서버 HTML · 첫 그림이 손님 배치', () => {
     const page = read('src/app/(app)/home/page.jsx');
     expect(page).toContain("export const dynamic = 'force-dynamic';"); // 쿠키를 읽어도 새 동적 비용 없음
     expect(page).toContain('const sessionHint = hasSupabaseSessionInJar(await cookies());');
-    expect(page).toContain('<HomePage book={book} sessionHint={sessionHint} />');
+    // 판본은 약속으로 넘긴다(LCP-UNSUSPEND — homeLcpUnsuspend.test.jsx가 첫 HTML을 렌더해 지킨다).
+    expect(page).toContain('<HomePage bookPromise={bookPromise} sessionHint={sessionHint} />');
     const home = read('src/views/HomePage.jsx');
-    expect(home).toContain('export default function HomePage({ book = null, sessionHint })');
+    expect(home).toContain('export default function HomePage({ book = null, bookPromise, sessionHint })');
     expect(home).toContain('if (!user && (!authLoading || sessionHint === false)) {');
     expect(read('src/app/(app)/home/loading.jsx')).toContain('if (!hasSupabaseSessionInJar(await cookies())) {');
   });
   it('손님 화면과 손님 골격이 같은 칸 순서 · 같은 로그인 칸(GuestLoginTile)', () => {
     const guest = sliceBetween(read('src/views/HomePage.jsx'), 'if (!user && (!authLoading || sessionHint === false)) {', '</div>;');
-    const order = ['<ResumeTile item={resumeItem} pending={resumePending} />', "kicker=\"오늘 문단 · 맛보기\" />", "<GuestLoginTile href={authEntryHref('/home')} />"];
+    // 이어 읽기 칸은 판본을 받는 안쪽 Suspense(resumeSlot) — 대기 그림은 손님 골격과 같은 <ResumeTile pending />(LCP-UNSUSPEND).
+    const order = ['{resumeSlot}', "kicker=\"오늘 문단 · 맛보기\" />", "<GuestLoginTile href={authEntryHref('/home')} />"];
     const at = order.map(part => guest.indexOf(part));
     expect(at.every(i => i >= 0)).toBe(true);
     expect([...at].sort((a, b) => a - b)).toEqual(at);
+    const home = read('src/views/HomePage.jsx');
+    expect(home).toContain('const resumeSlot = <Suspense fallback={<ResumeTile pending />}><ResumeSlot ');
+    expect(home).toContain('return <ResumeTile item={resumeItem} pending={resumePending} />;');
     expect(renderToStaticMarkup(createElement(GuestLoginTile, { href: '/auth?from=%2Fhome' })))
       .toContain('<a href="/auth?from=%2Fhome" class="learn-tile learn-goal--empty learn-guest">');
   });
   it('로그인 · 로그아웃 뒤 router.refresh() — 미리 받아 둔 다른 쪽 골격을 버린다(이동 뒤 차례로)', () => {
     expect(read('src/views/AuthPage.jsx')).toMatch(/await signIn\(email, password\);\s*router\.push\(from\);\s*\/\/[^\n]*\n\s*router\.refresh\(\);/);
-    expect(read('src/components/Layout.jsx')).toMatch(/await signOut\(\);\s*router\.push\('\/auth'\);\s*router\.refresh\(\);/);
-    expect(read('src/views/MyPage.jsx')).toContain('onClick={async () => { await signOut(); router.refresh();');
+    // 로그아웃 쪽은 AuthContext 관문 하나(AUTH-ROUTER-REFRESH-001 — accountQueryCache.test 「서버 렌더 관문」): 이동이 먼저, 새로고침은 그린 뒤 effect.
+    // 머리말에는 로그아웃 갈래가 없다(죽은 경로 삭제) — 로그아웃 쪽 refresh는 AuthContext 관문 하나(accountRouterRefresh.test).
+    expect(read('src/components/Layout.jsx').replace(/(^|[^:'"`])\/\/[^\n]*/gm, '$1')).not.toMatch(/signOut|router\.refresh\(/);
+    expect(read('src/views/MyPage.jsx')).toContain('onClick={() => signOut() /* 서버 렌더 버리기는 AuthContext 관문(AUTH-ROUTER-REFRESH-001) */}');
+    expect(read('src/app/providers.jsx')).toContain('onAccountLeft={() => router.refresh()}');
   });
 });

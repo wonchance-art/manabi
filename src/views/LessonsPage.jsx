@@ -10,6 +10,7 @@ import { textbookThemeStyle } from '../lib/textbookTheme';
 import { chapterEditorHref } from '../lib/chapterEditorModel';
 import '../components/admin/textbook.css';
 import { pullProgress } from '../lib/refProgress';
+import { readRefChecks, readRefRead } from '../lib/refReadStore';
 
 const LanguageWorldMap = dynamic(() => import('../components/LanguageWorldMap'), {
   ssr: false,
@@ -142,16 +143,9 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
       const map = {};
       const checks = {};
       for (const [name, ref] of Object.entries(refManifest)) {
-        try {
-          map[name] = new Set(JSON.parse(localStorage.getItem(ref.readKey) || '[]'));
-        } catch {
-          map[name] = new Set();
-        }
-        try {
-          checks[name] = JSON.parse(localStorage.getItem(`${ref.readKey}_check`) || '{}');
-        } catch {
-          checks[name] = {};
-        }
+        // 이 계정(손님이면 옛 키)의 진도만(LOCAL-PROGRESS-ACCOUNT-001 · lib/refReadStore)
+        map[name] = readRefRead(ref.readKey, user?.id ?? null);
+        checks[name] = readRefChecks(ref.readKey, user?.id ?? null);
       }
       setRefRead(map);
       setRefCheck(checks);

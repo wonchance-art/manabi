@@ -97,9 +97,18 @@ describe('번체 글꼴 범위 — Noto Sans TC', () => {
  */
 const SC_SCOPE = 'src/components/fonts/ScFontScope.jsx';
 const SC_SEGMENTS = [
-  'home', 'discover', 'lessons', 'materials', 'notes', 'class', 'chinese', 'viewer', 'pdf', 'suggestions', 'study', 'vocab',
+  'lessons', 'materials', 'notes', 'class', 'chinese', 'viewer', 'pdf', 'suggestions', 'study', 'vocab',
   'review', 'writing', 'quick', 'progress', 'world', 'conversation', 'admin/legacy-textbooks',
 ].map(s => `src/app/(app)/${s}`);
+// 잎이 독립 스타일시트를 직접 거는 세그먼트(SC-LINK-001 2단계 — next/font SC를 싣지 않는다). 나머지는 다음 단계에서 옮긴다.
+const SC_LINK_SEGMENTS = ['home', 'discover'].map(s => `src/app/(app)/${s}`);
+// 링크 세그먼트에서 lang을 데이터로 정하지만 SC로 그리지 않는 잎 — ZhSlot으로 감싸지 않는다(스타일시트 대기만 늘어난다).
+// 근거는 그 클래스의 CSS 규칙(css + 글꼴 패턴)으로 계약이 직접 확인한다.
+const SC_LINK_NOT_SC = Object.freeze({
+  'src/components/learn/ResumeTile.jsx': {
+    'learn-resume__title': { css: 'src/components/learn/learn.css', font: /var\(--font-serif-kr\)/, reason: '이어 읽기 제목은 언어와 무관하게 Noto Serif KR로 그린다(기존 디자인)' },
+  },
+});
 // 중국어를 그릴 수 있는 부품은 손으로 적지 않는다 — 라우트에서 import 그래프를 따라가 「zh 신호」가 있는 화면 파일을 찾는다
 // (FONT-SC-SCOPE-002, 2026-10-17 KST — 수기 목록은 새 라우트가 목록 밖 부품을 열면 조용히 통과했다).
 // zh 신호(.jsx만 — 그리는 쪽): lang에 zh를 직접 쓰거나, 값이 데이터에서 오는 lang={…}에 zh · Chinese를 함께 쓰거나,
@@ -182,7 +191,8 @@ describe('간체 글꼴 범위 — Noto Sans SC', () => {
   it('② 범위 밖 라우트가 닿는 zh 신호 부품은 근거 목록(SC_OUTSIDE)에 있는 것뿐이다 — import 그래프로 판정', () => {
     const { reach, zhCapable } = scGraph();
     const routes = files.map(rel).filter(f => f.startsWith('src/app/') && /\/(page|layout|loading|error|not-found|template|default)\.jsx?$|Client\.jsx$/.test(f));
-    const inside = (f) => SC_SEGMENTS.some(seg => f.startsWith(`${seg}/`));
+    // 링크 세그먼트는 범위 대신 잎이 스타일시트를 건다 — 아래 「링크 세그먼트 … ZhSlot」 계약이 그 잎을 지킨다.
+    const inside = (f) => [...SC_SEGMENTS, ...SC_LINK_SEGMENTS].some(seg => f.startsWith(`${seg}/`));
     // 공허 통과 방지: 신호는 알려진 중국어 부품을 잡고, 범위 안 라우트는 실제로 그것들에 닿는다.
     for (const known of ['src/views/ViewerPage.jsx', 'src/views/QuickPage.jsx', 'src/components/levels/HanziBoard.jsx', 'src/components/books/BookCover.jsx']) {
       expect(zhCapable(known), known).toBe(true);
@@ -206,6 +216,54 @@ describe('간체 글꼴 범위 — Noto Sans SC', () => {
       expect(fs.existsSync(path.join(ROOT, file)), file).toBe(true);
       expect(zhCapable(file), file).toBe(true);
       expect(reason.length, file).toBeGreaterThan(10);
+    }
+  });
+
+  it('링크 세그먼트는 ScFontScope 없이 힌트 쿠키 부품만 두고, 이미 동적 라우트다(쿠키로 정적을 동적으로 바꾸지 않음)', () => {
+    for (const seg of SC_LINK_SEGMENTS) {
+      const layout = read(`${seg}/layout.jsx`);
+      expect(layout, seg).not.toMatch(/import ScFontScope|<ScFontScope>/);
+      expect(layout, seg).toContain("import ScFontCookieHint from '@/components/fonts/ScFontCookieHint'");
+      expect(layout, seg).toContain('<><ScFontCookieHint />{children}</>');
+      expect(read(`${seg}/page.jsx`), seg).toContain("export const dynamic = 'force-dynamic';");
+    }
+    const hint = read('src/components/fonts/ScFontCookieHint.jsx');
+    expect(hint).toContain('return scHintFromJar(await cookies()) ? <ScFontLink /> : null;');
+  });
+
+  it('범위(ScFontScope) 안의 잎은 링크를 걸지 않는다 — @font-face 두 벌 방지', () => {
+    expect(read(SC_SCOPE)).toContain('<ScFontScopeMarker>{children}</ScFontScopeMarker>');
+  });
+
+  it('링크 세그먼트에서 열리는 부품의 lang을 데이터로 정하는 요소는 ZhSlot 안에 있다(SC로 그리지 않는 잎은 근거와 함께 밖)', () => {
+    const { reach } = scGraph();
+    const reached = new Set(SC_LINK_SEGMENTS.flatMap(seg => ['page.jsx', 'layout.jsx', 'loading.jsx']
+      .map(f => `${seg}/${f}`).filter(f => fs.existsSync(path.join(ROOT, f))).flatMap(f => [...reach(f)])));
+    const leaves = [], bare = [], notSc = [];
+    for (const f of reached) {
+      const src = read(f);
+      for (const m of src.matchAll(/\blang=\{/g)) {
+        const before = src.slice(0, m.index);
+        const tag = [...before.matchAll(/<([A-Za-z][\w.]*)/g)].at(-1);
+        if (!tag || !/^[a-z]/.test(tag[1])) continue; // 부품 prop(lang=언어 이름)은 그 부품의 잎이 판단한다
+        const cls = /className="([^"]+)"/.exec(before.slice(tag.index))?.[1]?.split(/\s+/) || [];
+        const at = `${f}:${before.split('\n').length} <${tag[1]}${cls.length ? `.${cls[0]}` : ''}>`;
+        const open = before.lastIndexOf('<ZhSlot lang=', tag.index);
+        const wrapped = open >= 0 && !before.slice(open, tag.index).includes('</ZhSlot>') && before.slice(open, tag.index).split('\n').length <= 2;
+        const exempt = cls.map(c => SC_LINK_NOT_SC[f]?.[c] && [c, SC_LINK_NOT_SC[f][c]]).find(Boolean);
+        if (exempt) { expect(wrapped, `${at} — SC로 그리지 않는 잎은 감싸지 않는다`).toBe(false); notSc.push([at, ...exempt]); }
+        else (wrapped ? leaves : bare).push(at);
+      }
+    }
+    expect(leaves.length).toBeGreaterThanOrEqual(9); // 공허 통과 방지 — 배움 · 발견의 표지 · 제목 · 단어 · 문단 잎
+    expect(bare, 'lang을 데이터로 정하는 요소가 ZhSlot 밖에 있다 — 중국어면 독립 스타일시트 없이 대체 글꼴로 그린다').toEqual([]);
+    // 예외 목록은 실제로 쓰이고, 그 클래스의 CSS가 SC가 아닌 글꼴을 가리킨다(낡은 예외 금지).
+    expect(notSc.map(([, c]) => c).sort()).toEqual(Object.values(SC_LINK_NOT_SC).flatMap(o => Object.keys(o)).sort());
+    for (const [at, cls, { css, font, reason }] of notSc) {
+      const rules = [...read(css).matchAll(new RegExp(`\\.${cls}(?:\\[[^\\]]*\\])?\\{([^}]*)\\}`, 'g'))].map(r => r[1]);
+      expect(rules.some(r => font.test(r)), `${at} ${css}`).toBe(true);
+      expect(rules.filter(r => /font/.test(r) && /noto-sc|Noto Sans SC/.test(r)), `${at} — SC로 그리면 감싸야 한다`).toEqual([]);
+      expect(reason.length).toBeGreaterThan(10);
     }
   });
 

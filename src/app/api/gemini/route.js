@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { requireAdmin } from '@/lib/server/auth';
 import { callLLM, resolveTier, LLMError } from '@/lib/server/llm';
+import { hasPrimaryLLMKey } from '@/lib/server/llmKeys';
 
 // ── 프록시 잠금(비용 남용 방지) ──
 // 클라는 모델이 아니라 **티어**(light/standard)를 고른다 — 모델·폴백·Groq는 llm.js의 TIERS가 정한다(AA R1).
@@ -97,8 +98,8 @@ export async function POST(request) {
     );
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
+  // 본선 키(Gemini 또는 Claude) — Claude 단독 운영에서도 프록시가 열린다(LLM-CLAUDE-001). Claude 키가 없으면 현행 그대로.
+  if (!hasPrimaryLLMKey()) {
     recordStat('errors');
     stats.errorByStatus['500'] = (stats.errorByStatus['500'] || 0) + 1;
     return Response.json(

@@ -72,7 +72,7 @@ describe('화면 배선', () => {
     expect(viewer).toContain("useEffect(() => { if (user?.id && error?.code === 'NOT_FOUND') refetch(); }, [user?.id, error?.code, refetch]);");
   });
   it('뷰어 오프라인 사본: 로그아웃 뒤에는 책 장 사본을 열지 않는다', () => {
-    const fetcher = sliceBetween(read('src/views/ViewerPage.jsx'), 'async function fetchMaterial(id) {', '\n}\n');
+    const fetcher = sliceBetween(read('src/lib/viewerMaterial.js'), 'export async function fetchMaterial(id) {', '\n}\n'); // 조회 정본은 lib/viewerMaterial(VIEWER-ENTRY R1)
     expect(fetcher).toContain('if (getBook(cached.processed_json?.metadata) && !(await supabase.auth.getSession()).data?.session) throw err;');
   });
 });

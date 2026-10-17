@@ -5,6 +5,7 @@
 
 import { parseJsonLenient } from './fetchMeanings.js';
 import { callLLM } from './llm.js';
+import { hasPrimaryLLMKey } from './llmKeys.js';
 
 const MAX_MARKS = 120;
 
@@ -136,8 +137,7 @@ export async function disambiguateEnPos(lines, marks, opts = {}) {
   const { deadlineMs = null } = opts;
   const picks = new Map();
   if (!marks.length) return { picks, httpCalls: 0 };
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || (deadlineMs != null && Date.now() >= deadlineMs)) {
+  if (!hasPrimaryLLMKey() || (deadlineMs != null && Date.now() >= deadlineMs)) {
     return { picks, httpCalls: 0 };
   }
 

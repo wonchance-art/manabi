@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Button from '../components/Button';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import { readRefChecks } from '../lib/refReadStore';
 import { focusIfFree, focusItemHead } from '../lib/focusAfterAction';
 
 /** 로컬 날짜 YYYY-MM-DD — StudySessionPage.ymdLocal과 동일 포맷(산출 시드 키 값 일치) */
@@ -93,8 +94,7 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
   function scriptLocallyPassed() {
     if (!scriptTrack?.slug || !readKey || typeof window === 'undefined') return false;
     try {
-      const map = JSON.parse(localStorage.getItem(`${readKey}_check`) || '{}');
-      return !!map[scriptTrack.slug]?.passed;
+      return !!readRefChecks(readKey, user?.id ?? null)[scriptTrack.slug]?.passed; // 이 계정의 진도(lib/refReadStore)
     } catch { return false; }
   }
 

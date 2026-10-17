@@ -75,8 +75,62 @@ function rememberServerTtsFailure(now = Date.now()) {
   try { window.sessionStorage?.setItem(SERVER_TTS_SKIP_KEY, String(serverSkipUntil)); } catch { /* 메모리 값만 */ }
 }
 
+const serverTtsUrl = (text, language) => `/api/tts?lang=${encodeURIComponent(language)}&text=${encodeURIComponent(text)}`;
+
+// ── 소리를 끝내 내지 못했을 때(TTS-GAP-001, 2026-10-17 KST) ──
+// 서버 음성 · 브라우저 음성이 모두 막히면 지금까지는 아무 소리 · 안내 없이 끝났다. 이유 하나를 구독자(providers의 안내)에게 알린다.
+//   'no-voice' — 서버가 막혔고 이 기기에 그 언어로 낼 브라우저 음성이 없다(한국어 음성 없음 · Web Speech 없음).
+//   'failed'   — 서버와 브라우저 음성이 둘 다 실패했다(브라우저 음성 우선 경로의 서버 재시도 실패 포함).
+// 같은 이유는 SPEECH_NOTICE_GAP_MS 안에 한 번만 — 단어를 연달아 눌러도 안내가 쌓이지 않게. 취소 · 지난 탭의 실패는 알리지 않는다.
+export const SPEECH_NOTICE_GAP_MS = 10 * 1000;
+const speechUnavailableListeners = new Set();
+const lastSpeechNotice = new Map();
+export function onSpeechUnavailable(listener) {
+  speechUnavailableListeners.add(listener);
+  return () => speechUnavailableListeners.delete(listener);
+}
+export function notifySpeechUnavailable(reason, now = Date.now()) {
+  if (now - (lastSpeechNotice.get(reason) ?? -Infinity) < SPEECH_NOTICE_GAP_MS) return false;
+  lastSpeechNotice.set(reason, now);
+  for (const listener of speechUnavailableListeners) {
+    try { listener(reason); } catch { /* 안내 실패가 재생을 막지 않는다 */ }
+  }
+  return true;
+}
+
+/** 이 기기에서 그 언어를 브라우저 음성으로 낼 수 있는가 — speakFallback의 「낼 수 없음」 조건과 같다. */
+function nativeSpeechAvailable(language) {
+  if (!getTtsCapabilities().webSpeech) return false;
+  if (viewerLanguageInfo(language)?.code !== 'ko') return true;
+  return !!immediateSpeechVoice(window.speechSynthesis.getVoices(), language, loadStoredVoice(readerVoiceKey(language)));
+}
+
+// ── iOS: 서버 응답 뒤의 브라우저 음성이 탭 밖이라 막히는 문제(TTS-GAP-001 ③) ──
+// iOS WebKit은 speechSynthesis.speak()가 사용자 동작 처리 중에 불릴 때만 소리를 낸다(RequireUserGestureForSpeechStart).
+// 서버 음성이 실패한 뒤의 대체 발화는 fetch 뒤라 탭 밖이다. 탭 안에서 소리 없는 빈 발화를 한 번 보내 음성 엔진을 열어 둔다
+// (선례: 첫 탭에 빈 SpeechSynthesisUtterance를 speak — 실기기 검증은 오너 몫). iOS · iPadOS에서만, 페이지당 한 번.
+// 다른 브라우저는 서버 경로에서 브라우저 음성을 건드리지 않는 지금 계약 그대로다.
+let speechPrimed = false;
+export function needsSpeechGesturePrime(browser = typeof window === 'undefined' ? null : window) {
+  const nav = browser?.navigator;
+  if (!nav) return false;
+  return /iP(hone|ad|od)/.test(String(nav.userAgent || '')) || (nav.platform === 'MacIntel' && Number(nav.maxTouchPoints) > 1);
+}
+export function primeSpeechSynthesis(browser = typeof window === 'undefined' ? null : window) {
+  if (speechPrimed || !needsSpeechGesturePrime(browser) || !getTtsCapabilities(browser).webSpeech) return false;
+  try {
+    const synth = browser.speechSynthesis;
+    synth.resume?.(); // 멈춤 상태로 남은 엔진(백그라운드 복귀 등)을 푼다 — 멈춰 있지 않으면 아무 일도 없다
+    const utter = new browser.SpeechSynthesisUtterance('');
+    utter.volume = 0;
+    synth.speak(utter);
+    speechPrimed = true;
+    return true;
+  } catch { return false; }
+}
+
 async function playServerTTS(text, language, playbackRate = 1, generation) {
-  const url = `/api/tts?lang=${encodeURIComponent(language)}&text=${encodeURIComponent(text)}`;
+  const url = serverTtsUrl(text, language);
   let objUrl = serverAudioCache.get(url);
   if (!objUrl) {
     if (serverTtsSkipped()) throw new Error('tts skipped: service config');
@@ -111,7 +165,7 @@ async function playServerTTS(text, language, playbackRate = 1, generation) {
 const prefetching = new Map();
 export function prefetchSpeech(text, language) {
   if (typeof window === 'undefined' || !text || !getTtsCapabilities().serverAudio || serverTtsSkipped()) return;
-  const url = `/api/tts?lang=${encodeURIComponent(language)}&text=${encodeURIComponent(text)}`;
+  const url = serverTtsUrl(text, language);
   if (serverAudioCache.has(url) || prefetching.has(url)) return;
   const request = window.fetch(url).then(res => (res.ok ? res.blob() : null)).then(blob => {
     if (blob && !serverAudioCache.has(url)) serverAudioCache.set(url, window.URL.createObjectURL(blob));
@@ -197,11 +251,22 @@ export function useTTS() {
         loadStoredVoice(readerVoiceKey(language)));
       const retryServer = () => {
         if (generation !== audioGeneration) return;
-        playServerTTS(text, language, opts.playbackRate ?? 1, generation).catch(() => {});
+        playServerTTS(text, language, opts.playbackRate ?? 1, generation)
+          .catch(() => { if (generation === audioGeneration) notifySpeechUnavailable('failed'); });
       };
       if (voice && speakFallback(text, language, opts, voice, retryServer)) return;
     }
-    playServerTTS(text, language, opts.playbackRate ?? 1, generation).catch(() => {if(generation===audioGeneration)speakFallback(text, language, opts);});
+    // 서버 다음의 브라우저 음성 — 낼 수 없으면 이유를 알린다(무음 · 무안내로 끝내지 않는다).
+    const fallbackNow = () => {
+      const onNativeError = () => { if (generation === audioGeneration) notifySpeechUnavailable('failed'); };
+      if (!speakFallback(text, language, opts, undefined, onNativeError)) {
+        notifySpeechUnavailable(nativeSpeechAvailable(language) ? 'failed' : 'no-voice');
+      }
+    };
+    // 서버가 「서비스 설정」으로 쉬는 중이면(받아 둔 소리도 없으면) 기다리지 않고 지금, 탭 안에서 브라우저 음성으로.
+    if (!serverAudioCache.has(serverTtsUrl(text, language)) && serverTtsSkipped()) { fallbackNow(); return; }
+    primeSpeechSynthesis();
+    playServerTTS(text, language, opts.playbackRate ?? 1, generation).catch(() => { if (generation === audioGeneration) fallbackNow(); });
   }, [speakFallback]);
 
   const stop = useCallback(() => {

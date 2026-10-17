@@ -96,11 +96,24 @@ describe('intentPrefetchProps', () => {
 });
 
 describe('메뉴 배선', () => {
-  it('배움 · 산책만 의도 prefetch — 뷰포트 prefetch(P5 · BFCACHE-A-001)는 끄고, 서재(자체 loading 없음 → 라우터 상태만)는 붙이지 않는다', () => {
+  it('배움 · 대화 · 산책만 의도 prefetch — 뷰포트 prefetch(P5 · BFCACHE-A-001)는 끄고, 서재(자체 loading 없음 → 라우터 상태만)는 붙이지 않는다', () => {
     const intent = MAIN_NAV.filter(item => item.intentPrefetch).map(item => item.href);
-    expect(intent).toEqual(['/home', '/discover']);
-    for (const href of ['/home', '/materials', '/discover']) expect(MAIN_NAV.find(item => item.href === href).prefetch).toBe(false);
-    for (const route of ['home', 'discover']) expect(fs.existsSync(`src/app/(app)/${route}/loading.jsx`)).toBe(true); // 받을 골격이 있어야 의미가 있다
+    expect(intent).toEqual(['/home', '/conversation/new', '/discover']);
+    for (const item of MAIN_NAV) expect(item.prefetch, item.href).toBe(false);
+    // 받을 것이 있어야 의미가 있다 — 대기 화면(loading.jsx)이 있거나(골격까지), 정적 화면이라 auto가 화면을 통째로 받거나.
+    for (const route of ['home', 'discover']) expect(fs.existsSync(`src/app/(app)/${route}/loading.jsx`)).toBe(true);
+  });
+
+  it('대화(CONV-INTENT-001)는 대기 화면 없이 정적 화면이라서 의도 prefetch가 이득이다 — 동적으로 바뀌면 이 근거가 사라진다', () => {
+    // 정적 판정: 이 세그먼트(conversation · conversation/new)의 서버 파일이 요청별 값을 읽지 않는다.
+    // 동적이 되면 auto prefetch는 대기 화면이 없어 라우터 상태만 받는다(서재와 같은 처지) — 그때는 loading.jsx를 두거나 의도 prefetch를 뺀다.
+    const files = ['src/app/(app)/conversation/layout.jsx', 'src/app/(app)/conversation/new/page.jsx'];
+    for (const file of files) {
+      const src = read(file);
+      expect(src, file).not.toMatch(/next\/headers|export const dynamic|export const revalidate|cookies\(|headers\(|draftMode\(|connection\(/);
+      expect(src, file).not.toMatch(/export default async function|searchParams/);
+    }
+    expect(fs.existsSync('src/app/(app)/conversation/new/loading.jsx')).toBe(false); // 실측 — 통째로 받으므로 대기 경계가 앞당길 몫이 없다
   });
 
   it('GNB · 휴대폰 탭 막대 · 읽기 화면 메뉴의 MAIN_NAV Link 셋 모두에 붙는다', () => {

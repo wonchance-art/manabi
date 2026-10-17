@@ -107,7 +107,9 @@ describe('배선 — 서재 카드·게시 화면·빌드', () => {
     expect(props).toContain('art: <FirstEditionCover work={world} />');
     expect(props).toContain("world.unit === 'chars' ? '자' : '단어'");
     expect(page).toContain('{...worldProps}');
-    expect(page).toContain(': world ? <span lang={worldLang}>{worldChapterOf(c)?.title || c.title}</span>');
+    // 중국어 원제 · 장 제목은 간체 독립 스타일시트 잎(ZhSlot) 안 — SC-LINK-001 2단계와 함께(fontScope 계약).
+    expect(page).toContain(': world ? <ZhSlot lang={worldLang}><span lang={worldLang}>{worldChapterOf(c)?.title || c.title}</span></ZhSlot>');
+    expect(props).toContain('title: <ZhSlot lang={worldLang}><span lang={worldLang}>{world.title}</span></ZhSlot>');
     expect(page).toContain('!isCanonicalBookKey(b.key) && b.chapters[0]?.owner_id === user.id'); // 위키문헌 ws- · 전자책 사이트 pd-도 정본 key
   });
   it('게시 화면 표지: 위키문헌 책은 초판 장정', () => {

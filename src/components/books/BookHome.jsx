@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useAuth } from '@/lib/AuthContext';
 import { useSearchParams } from 'next/navigation';
 import { libraryReaderHref } from '@/lib/libraryReturn';
 import { lessonGroups } from '@/lib/bookNavigation';
@@ -8,12 +9,15 @@ import { bookResume } from '@/lib/webNavigation';
 import { BOOK_ID, bookHref as textbookHref } from '@/lib/textbook/contract';
 import BookCover from './BookCover';
 import LibrarySaveButton from '@/components/library/LibrarySaveButton';
-import {LibraryReturnLink} from '@/components/web/LibraryReaderLink';
+import {LibraryReturnLink} from '@/components/web/LibraryReturnLink';
 
 // 전체 목차 펼침(showAll)은 BookReader가 든다 — 표지 자리(BOOK-HOME-RESTORE-001)와 함께 이 기록에 남아, 다른 화면에서 뒤로 와
 // 표지가 다시 붙어도 같은 높이로 펼쳐진다. 따로 쓰면(props 없음) 지금처럼 이 부품이 든다.
 // openParts = 돌아온 기록에서 열려 있던 파트(없으면 기본: 지금 파트만 열림).
-export default function BookHome({ book, preview=false, progress, hasProgress = false, ready = true, showAll: heldAll, onShowAll, openParts = null }) {
+// sessionHint = 서버가 본 세션 쿠키(이름만). 로그인 확인 중에는 담기 버튼 자리(44px)를 미리 잡아 확인이 끝날 때 책 몸통이 밀리지 않게 하고,
+// 손님으로 확정되면(쿠키는 있었지만 세션이 없을 때) 접는다. 쿠키가 없는 손님은 지금처럼 자리 자체가 없다(BOOKS-FLOW-002).
+export default function BookHome({ book, preview=false, progress, hasProgress = false, ready = true, showAll: heldAll, onShowAll, openParts = null, sessionHint = false }) {
+  const { loading: authLoading } = useAuth();
   const bookId = book.bookId || BOOK_ID;
   const level = book.level || 'N5';
   const bookHref = (edition, page = 'cover') => textbookHref(edition, page, bookId);
@@ -31,7 +35,7 @@ export default function BookHome({ book, preview=false, progress, hasProgress = 
     </> : <>
     <section className="manabi-book-hero"><BookCover /><div><p className="manabi-eyebrow">일본어 · {level}{preview && ' · 검수 중'}</p><h1>작은 문장으로<br />시작하는 일본어</h1><div className="manabi-row"><a className="manabi-button" href={readerHref(resume.page)}>{!ready ? '읽기 열기' : resume.started ? `${String(current.number).padStart(2, '0')}과 이어 읽기` : '첫 과부터 시작하기'} →</a>{resume.started && resume.page !== `${current.id}-start` && <a className="manabi-link" href={readerHref(`${current.id}-start`)}>{String(current.number).padStart(2, '0')}과 처음부터</a>}</div></div></section>
     </>}
-    {!preview&&<LibrarySaveButton edition={book.edition} bookTitle={`일본어 ${level}`}/>}
+    {!preview&&(sessionHint ? <div className="book-library-slot" data-pending={authLoading ? '' : undefined}><LibrarySaveButton edition={book.edition} bookTitle={`일본어 ${level}`}/></div> : <LibrarySaveButton edition={book.edition} bookTitle={`일본어 ${level}`}/>)}
     <div className="manabi-book-body"><section><div className="manabi-section-heading"><h2>목차</h2><span>{resume.completed} / {resume.total}과 학습</span></div>
       <div className="manabi-tabs" aria-label="목차 범위"><button type="button" aria-pressed={!showAll} onClick={() => setShowAll(false)}>현재 파트</button><button type="button" aria-pressed={showAll} onClick={() => setShowAll(true)}>전체 {resume.total}과</button></div>
       {groups.map((group, i) => (showAll || group.title === current.part) && <details key={`${group.title}:${showAll}`} className="manabi-toc-group" data-toc-part={group.title} open={openParts ? openParts.includes(group.title) : group.title === current.part}><summary><span>{String(i + 1).padStart(2, '0')}</span><strong>{group.title}</strong><small>{String(group.lessons[0].number).padStart(2, '0')}–{String(group.lessons.at(-1).number).padStart(2, '0')}과</small></summary><ol>{group.lessons.map(lesson => <li key={lesson.id} className={lesson.id === current.id ? 'is-current' : ''}><a href={readerHref(`${lesson.id}-start`)}><span>{String(lesson.number).padStart(2, '0')}</span><strong>{lesson.title}</strong><small>{progress.completed.includes(lesson.id) ? '학습함 ✓' : lesson.id === current.id && resume.started ? '읽는 중 →' : '→'}</small></a></li>)}</ol></details>)}

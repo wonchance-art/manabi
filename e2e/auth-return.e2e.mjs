@@ -5,6 +5,15 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const base = new URL(process.env.QA_BASE || 'http://127.0.0.1:8880').origin;
+// 서버가 만든 주소(/auth/callback의 Location)는 NextRequest가 루프백 호스트를 localhost로 정규화한 request.url에서 나온다 —
+// next/dist/server/web/next-url.js의 REGEX_LOCALHOST_HOSTNAME(127.x.x.x · [::1] · localhost → localhost). 그래서 QA_BASE가
+// 127.0.0.1이면 Location은 localhost로 온다(같은 서버 · 같은 포트). 운영 도메인에는 해당하지 않는다(2026-10-17 KST 실측).
+// 브라우저가 만든 주소(window.location 기반 redirectTo)는 그대로 base와 같아야 하므로 정확히 비교한다.
+const loopbackOrigin = (origin) => {
+  const url = new URL(origin);
+  if (/^(?:127(?:\.\d{1,3}){3}|\[::1\]|localhost)$/.test(url.hostname)) url.hostname = 'localhost';
+  return url.origin;
+};
 const out = process.env.QA_OUT || '/private/tmp/manabi-auth-qa';
 fs.mkdirSync(out, { recursive: true });
 const report = { base, checks: [], layouts: [], errors: [], liveAuthRequests: 0 };
@@ -112,7 +121,7 @@ try {
     assert.equal(response.status(), 307);
     assert.match(response.headers()['cache-control'], /no-store/);
     const target = new URL(response.headers().location);
-    assert.equal(target.origin, base);
+    assert.equal(loopbackOrigin(target.origin), loopbackOrigin(base)); // 서버 정규화(위 주석) — 127.0.0.1과 localhost는 같은 서버다
     assert.equal(target.pathname, '/auth');
     assert.equal(target.searchParams.get('error'), 'auth_callback_failed');
     assert.equal(target.searchParams.get('from'), next === reader ? reader : '/materials');

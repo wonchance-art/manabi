@@ -55,7 +55,7 @@ function ReaderSiteMenu({ isAdmin }) {
 }
 
 export default function Layout({ children }) {
-  const { user, profile, isAdmin, signOut } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const focusedReading = isFocusedReadingRoute(pathname);
@@ -164,14 +164,11 @@ export default function Layout({ children }) {
     return () => clearInterval(timer);
   }, [user]);
 
-  async function handleAuthClick() {
-    if (user) {
-      await signOut();
-      router.push('/auth');
-      router.refresh(); // 로그인 상태로 미리 받아 둔 배움 대기 화면을 버린다(B1) — 이동 뒤 차례로
-    } else {
-      router.push(authEntryHref(window.location.pathname + window.location.search + window.location.hash));
-    }
+  // 머리말의 이 단추는 손님에게만 그린다(로그인 상태는 「내 계정」) — 로그인 진입만 한다. 예전 로그아웃 갈래(user일 때 signOut →
+  // push('/auth') → refresh)는 화면에서 누를 수 없는 죽은 경로라 지웠다(AUTH-ROUTER-REFRESH-001, 2026-10-18 KST). 로그아웃 진입점은
+  // 내 정보 · 계정 삭제 · 임베드뿐이고 모두 AuthContext 관문(onAccountLeft → router.refresh)을 지난다(accountRouterRefresh.test).
+  function handleAuthClick() {
+    router.push(authEntryHref(window.location.pathname + window.location.search + window.location.hash));
   }
 
   // 핵심 네비게이션만 노출 — 부가 기능(가이드·통계)은 프로필 안쪽으로

@@ -92,3 +92,4 @@
 
 /* 본문 첫 그림 골격(BOOK-ENTRY-SKELETON-001)은 평소 꺼져 있다 — 본문 위치로 하드 로드할 때만 HASH_GATE style(:root …)이 켠다. */
 .book-entry-skeleton{display:none}
+.manabi-book-home .book-library-slot[data-pending]{min-height:44px} /* 로그인 확인 중 담기 버튼 자리(BOOKS-FLOW-002) — 버튼 줄(.library-save-control)의 높이 */

@@ -65,7 +65,7 @@ describe('② 끝의 행동은 본문 아래 「다 읽었다면」 한 줄 + �
     expect([...order].sort((x, y) => x - y)).toEqual(order);
     expect((row.match(/className="post-reading-actions__btn/g) || []).length).toBe(5); // 완료 2상태 + 셋
     // 이벤트·퀴즈·핸드오프는 자리만 옮겼다 — 오늘 학습 핸드오프 키·읽기 완료 mutation 그대로
-    expect(row).toContain('localStorage.setItem(`study_source_${materialLang}`');
+    expect(row).toContain('writeStudySource(materialLang, (material.raw_text || \'\').slice(0, 1500), user?.id ?? null);'); // 계정 · 시각과 함께(studySourceHandoff)
     expect(row).toContain('/study?source=mine&lang=');
     expect(src()).toContain('const markCompleteMutation = useReadingCompletion({');
   });

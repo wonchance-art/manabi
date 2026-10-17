@@ -1,4 +1,5 @@
 'use client';
+import { ZhSlot } from '@/components/fonts/ScFontLink';
 /**
  * 오늘 문단 칸(「오늘 학습」에서 이름을 바꿈) — 상태 셋: 준비된 문단의 첫 문장 → 넣을 복습 표현(예보 상위 3) → 신규 안내.
  * 예보 상태에서 누르면 기존 forecast_tap 기록을 그대로 남긴다(onForecastTap — 부르는 쪽이 buildForecastTapEvent → logReviewEvents).
@@ -28,9 +29,9 @@ export default function ParagraphTile({ state, lang, href, kicker = '오늘 문�
       onClick={state.kind === 'forecast' ? onForecastTap : undefined}>
       <span className="learn-tile__head"><span className="learn-kick">{kicker}</span></span>
       <span className="learn-paragraph__cycle" aria-busy={busy || undefined}>
-        {state.kind === 'ready' && <span className="learn-paragraph__sentence" lang={code}>{state.sentence}</span>}
+        {state.kind === 'ready' && <ZhSlot lang={code}><span className="learn-paragraph__sentence" lang={code}>{state.sentence}</span></ZhSlot>}
         {state.kind === 'forecast' && <>
-          <span className="learn-paragraph__words" lang={code}>{state.words.join(' · ')}</span>
+          <ZhSlot lang={code}><span className="learn-paragraph__words" lang={code}>{state.words.join(' · ')}</span></ZhSlot>
           <span className="learn-paragraph__cap">오늘 문단에 넣을 표현</span>
         </>}
         {state.kind === 'empty' && <span className="learn-paragraph__cap">시작하면 오늘 문단을 만들어요</span>}

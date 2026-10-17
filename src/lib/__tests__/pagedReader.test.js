@@ -654,14 +654,25 @@ describe('paged sheet dock (A안 — 고른 단어의 반대편)', () => {
     expect(pagedSheetDock({ ...base, tokenTop: 395, tokenBottom: 447 })).toEqual({ dock: 'bottom' }); // 가운데 421 ≤ 422
     expect(pagedSheetDock({ ...base, tokenTop: 684, tokenBottom: 740 })).toEqual({ dock: 'top', top: 120, height: null }); // 위 자리 552 ≥ 440
   });
-  it('위에 세울 때 단어 위 자리가 모자라면 낮추되 카드 핵심(min) 아래로는 줄이지 않는다', () => {
+  it('위에 세울 때 단어 위 자리가 모자라면 낮추되 카드 핵심(min)까지만 — 핵심 높이로도 단어를 덮으면 바닥', () => {
     expect(pagedSheetDock({ ...base, tokenTop: 520, tokenBottom: 576 })).toEqual({ dock: 'top', top: 120, height: 388 });
-    expect(pagedSheetDock({ ...base, tokenTop: 430, tokenBottom: 486 })).toEqual({ dock: 'top', top: 120, height: 359 });
+    expect(pagedSheetDock({ ...base, tokenTop: 490, tokenBottom: 546 })).toEqual({ dock: 'top', top: 120, height: 359 }); // 120–479 · 단어 490 — 덮지 않는다
+    expect(pagedSheetDock({ ...base, tokenTop: 479, tokenBottom: 535 })).toEqual({ dock: 'top', top: 120, height: 359 }); // 바닥 479 = 단어 위 끝
+    expect(pagedSheetDock({ ...base, tokenTop: 478, tokenBottom: 534 })).toEqual({ dock: 'bottom' }); // 120–479가 단어 478을 덮는다
+    expect(pagedSheetDock({ ...base, tokenTop: 430, tokenBottom: 486 })).toEqual({ dock: 'bottom' }); // 예전: 위 120–479가 단어 430–486을 덮었다
     expect(pagedSheetDock({ ...base, tokenTop: NaN, tokenBottom: 486 })).toEqual({ dock: 'bottom' });
   });
-  it('원래 높이보다 키우지 않는다 — 긴 문장 카드는 핵심이 440을 넘는다(실측 445, viewer-word-card zh 390 long sentence)', () => {
-    expect(pagedSheetDock({ ...base, min: 445, tokenTop: 520, tokenBottom: 576 })).toEqual({ dock: 'top', top: 120, height: null });
-    expect(pagedSheetDock({ ...base, min: 440, tokenTop: 520, tokenBottom: 576 })).toEqual({ dock: 'top', top: 120, height: null });
+  it('머리줄이 큰 배치(390 듣기 중 머리줄 바닥 386 — 실측)의 아래 단어는 바닥 — 위 시트 394–834가 단어 540–596을 덮었다', () => {
+    expect(pagedSheetDock({ ...base, topLimit: 394, min: 392, tokenTop: 540, tokenBottom: 596 })).toEqual({ dock: 'bottom' });
+    expect(pagedSheetDock({ ...base, topLimit: 242, min: 392, tokenTop: 684, tokenBottom: 740 })).toEqual({ dock: 'top', top: 242, height: 430 });
+  });
+  it('원래 높이보다 키우지 않는다 — 핵심이 원래 높이를 넘으면 원래 높이로 덮는지 잰다(긴 문장 카드 445 · 게스트 카드 실측 1113)', () => {
+    expect(pagedSheetDock({ ...base, min: 445, tokenTop: 520, tokenBottom: 576 })).toEqual({ dock: 'bottom' }); // 120–560이 단어 520을 덮는다
+    expect(pagedSheetDock({ ...base, min: 445, tokenTop: 560, tokenBottom: 616 })).toEqual({ dock: 'top', top: 120, height: null }); // 120–560 — 덮지 않는다
+    expect(pagedSheetDock({ ...base, topLimit: 242, min: 1113, tokenTop: 689, tokenBottom: 745 })).toEqual({ dock: 'top', top: 242, height: null }); // 242–682
+    expect(pagedSheetDock({ ...base, topLimit: 242, min: 1113, tokenTop: 546, tokenBottom: 602 })).toEqual({ dock: 'bottom' }); // 242–682가 546을 덮는다
+    expect(pagedSheetDock({ ...base, min: 440, tokenTop: 620, tokenBottom: 676 })).toEqual({ dock: 'top', top: 120, height: null }); // 자리 488 ≥ 원래 440
+    expect(pagedSheetDock({ ...base, min: 359, tokenTop: 684, tokenBottom: 740 })).toEqual({ dock: 'top', top: 120, height: null });
   });
   it('배선: 쪽 넘김 경로에서만 정하고(바닥 낮추기와 한 갈래), 닫을 때 자리 표시를 지운다', () => {
     const hook = fs.readFileSync(path.resolve(__dirname, '../useReaderLayout.js'), 'utf8');

@@ -1,3 +1,4 @@
+import { ZhSlot } from '@/components/fonts/ScFontLink';
 import Link from 'next/link';
 import { langNameKo } from '@/lib/constants';
 import { encounterLookupLang } from '@/lib/refVocabLookup';
@@ -54,7 +55,7 @@ export default function DiscoverShelf({ suggestions = [], publicCount = 0, date 
         {news.map((s) => <li key={s.id}>
           <Link href={suggestionHref(s, 'discover')}>
             <small>{[langNameKo(s.language), s.level].filter(Boolean).join(' · ')}</small>
-            <strong lang={encounterLookupLang(s.language) || undefined}>{s.title}</strong>
+            <ZhSlot lang={encounterLookupLang(s.language)}><strong lang={encounterLookupLang(s.language) || undefined}>{s.title}</strong></ZhSlot>
             <span>{s.channel_name}</span>
           </Link>
         </li>)}

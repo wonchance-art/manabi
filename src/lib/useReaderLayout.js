@@ -73,6 +73,22 @@ function sheetViewport() {
   const view = window.visualViewport, viewTop = view?.offsetTop || 0, viewHeight = view?.height || window.innerHeight;
   return { viewTop, viewHeight, sizeKey: `${window.innerWidth}x${viewHeight}@${Math.round(viewTop)}` };
 }
+// 위에 세운 시트의 위 끝 = 머리줄 바닥(또는 보이는 영역 위 끝) + 8. 판정(judgePagedSheet)과 머리줄 크기 변화(retopPagedSheet)가 같은 식을 쓴다.
+function sheetTopLimit(layout, viewTop) {
+  const toolbarBottom = layout?.querySelector('.viewer-topbar')?.getBoundingClientRect().bottom;
+  return Math.max(Number.isFinite(toolbarBottom) ? toolbarBottom : 0, viewTop) + 8;
+}
+// 머리줄이 자라거나 줄면(따라갈 수 없는 쪽 넘김 자료의 듣기 「지금 문장」 줄이 문장마다 바뀐다 — B1 비차단 2) 위에 세운 시트의
+// 위 끝(--reader-sheet-top)만 머리줄 바닥에 다시 맞춘다. 시트 높이(--reader-sheet-compact) · 위/바닥 판정은 다시 하지 않는다 —
+// 단어마다 한 번 정한 자리를 출렁이지 않게(잠금 열쇠 sizeKey 그대로). 첫 열림 판정과 겹치지 않는다 — data-dock="top"을 거는 것은
+// 판정(judgePagedSheet)뿐이고, 판정 전(data-placing)의 시트에는 아직 자리가 없다(판정이 자리를 걸고 같은 태스크에서 숨김을 푼다).
+// 높이 상한은 CSS max-height가 같은 변수(--reader-sheet-top)로 따라 줄어든다. 펼친 동안에도 맞춰 둔다 — CSS가 펼침 중에는 변수를
+// 쓰지 않고, 펼침을 풀면 그때의 머리줄 바닥에 선다(옆 패널 · 스크롤 보기에는 판정이 data-dock을 걸지 않는다).
+function retopPagedSheet(panel, layout) {
+  if (!panel || panel.dataset.dock !== 'top') return;
+  const top = `${Math.ceil(sheetTopLimit(layout, sheetViewport().viewTop))}px`;
+  if (panel.style.getPropertyValue('--reader-sheet-top') !== top) panel.style.setProperty('--reader-sheet-top', top);
+}
 const sheetPlaceable = panel => getComputedStyle(panel).position === 'fixed' && !panel.classList.contains('is-expanded') && !panel.classList.contains('is-collapsed');
 // 쪽 넘김 바닥 시트의 자리(A안 위에 세우기 · 목업 C 낮추기)를 정한다. 카드 핵심을 쟀으면 잠금 열쇠(sizeKey)를, 아직이면 ''를 돌려준다.
 function judgePagedSheet(panel, token, layout) {
@@ -86,9 +102,8 @@ function judgePagedSheet(panel, token, layout) {
   const core = meaning && actions ? Math.ceil(meaning.getBoundingClientRect().bottom + scrolled - natural.top + (natural.bottom - actions.getBoundingClientRect().top) + 12) : undefined;
   const tokenRect = token.getBoundingClientRect();
   // A안: 아래 절반의 단어는 시트를 머리줄 아래에 세운다(data-dock="top" — paged-reader.css). 위 절반은 지금처럼 바닥(목업 C 낮추기).
-  const toolbarBottom = layout?.querySelector('.viewer-topbar')?.getBoundingClientRect().bottom;
   const dock = pagedSheetDock({ tokenTop: tokenRect.top, tokenBottom: tokenRect.bottom, viewportTop: viewTop, viewportHeight: viewHeight,
-    topLimit: Math.max(Number.isFinite(toolbarBottom) ? toolbarBottom : 0, viewTop) + 8, naturalHeight: natural.height, ...(core ? { min: core } : null) });
+    topLimit: sheetTopLimit(layout, viewTop), naturalHeight: natural.height, ...(core ? { min: core } : null) });
   if (dock.dock === 'top') {
     panel.dataset.dock = 'top'; panel.style.setProperty('--reader-sheet-top', `${dock.top}px`);
     if (dock.height !== null) { panel.style.setProperty('--reader-sheet-compact', `${dock.height}px`); panel.dataset.compact = 'true'; }
@@ -118,7 +133,8 @@ export function useSelectedTokenVisibility(readerRef, tokenRefs, tokenId, enable
       holdFrame = requestAnimationFrame(() => { holdSettle = requestAnimationFrame(showSheet); });
     };
     // 시트가 보이게 되는 프레임(그리기 전)에 ResizeObserver가 먼저 숨기고, 자리는 다음 프레임에 정한다.
-    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(() => { holdSheet(); reveal(); }) : null;
+    // 머리줄 크기 변화는 같은 콜백(그리기 전)에서 위 끝만 다시 맞춘다 — 읽는 이가 손을 대 끌어오기가 멈춘 뒤(interrupted)에도.
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(() => { holdSheet(); retopPagedSheet(panel, layout); reveal(); }) : null;
     const adopt = found => {
       panel = found;
       if (pendingSheetReset.has(found)) {

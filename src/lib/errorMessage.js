@@ -7,7 +7,8 @@
 // 이 한 판정을 쓴다(GEMINI-402-GUARD, 2026-10-17 KST — 운영 402 「Your prepayment credits are depleted」 실측).
 // HTTP 402이거나 **구체적인 크레딧 소진 문구**만 본다. 「billing」 단독은 쓰지 않는다 — 보통 쿼터 초과 429도
 // 「…check your plan and billing details」(Gemini) · 「…/settings/billing」(Groq)를 싣는데, 그건 기다리면 풀리는 혼잡이다.
-export const SERVICE_CONFIG_PATTERN = /prepayment credits|credits?\s+(?:are\s+|have been\s+)?(?:depleted|exhausted)/i;
+// Anthropic 크레딧 부족은 400 invalid_request_error 「Your credit balance is too low to access the Anthropic API…」로 온다(LLM-CLAUDE-001).
+export const SERVICE_CONFIG_PATTERN = /prepayment credits|credits?\s+(?:are\s+|have been\s+)?(?:depleted|exhausted)|credit balance is too low/i;
 // Gemini 400 FAILED_PRECONDITION + 결제 문구(공식 오류 표 failed_precondition — 「billing being disabled」)도 결제 · 설정 문제라 기다려도
 // 풀리지 않는다(GEMINI-402-GUARD 후속, 2026-10-17 KST). 400이면서 status(또는 ErrorInfo reason)가 FAILED_PRECONDITION이고 문구에 billing이
 // 있을 때만이다 — 429 + billing(보통 쿼터 초과)은 위 이유로 계속 혼잡이다.
@@ -27,6 +28,12 @@ export function isServiceConfigError(status, detail) {
   if (status === 400 && /billing/i.test(text || '') && failedPreconditionMarked(detail, text || '')) return true;
   return SERVICE_CONFIG_PATTERN.test(text || '');
 }
+
+// 소리를 낼 길이 없을 때(서버 음성이 막혔고 이 기기에 그 언어의 브라우저 음성이 없음 — TTS-GAP-001 ①).
+// 새 문구가 아니라 레벨 화면의 같은 상황 문구(「이 기기에서는 소리를 낼 수 없어요」, 규칙상 할 수 없는 일 형태)를 그대로 쓴다.
+export const SPEECH_UNAVAILABLE_MESSAGE = '이 기기에서는 소리를 낼 수 없어요.';
+// 서버 음성 · 브라우저 음성이 둘 다 실패(TTS-GAP-001 ②) — 실패 형태 + 다음 행동 한 문장(오너 확정 2026-10-17 KST, 권장안 A).
+export const SPEECH_FAILED_MESSAGE = '소리를 재생하지 못했어요. 잠시 후 다시 눌러 주세요.';
 
 // 안내는 기존 「서비스 설정」 문구(api key 패턴과 같은 말) 그대로 — 새 문구를 만들지 않는다.
 const SERVICE_CONFIG_MESSAGE = '서비스 설정에 문제가 있어요. 관리자에게 문의해 주세요.';
