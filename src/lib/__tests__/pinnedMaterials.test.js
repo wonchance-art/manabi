@@ -68,18 +68,19 @@ describe('N R3 — 핀이 조용히 풀리지 않는다', () => {
   it('뷰어 자동 캐시가 핀을 덮어쓰지 않는다 — 받아둔 자료를 열었다고 풀리면 안 된다', () => {
     // put()은 레코드를 통째로 교체한다. 이전 pinned를 안 읽으면 사용자가 챙긴 자료가
     // '열었다'는 이유만으로 자동 축출 대상이 된다.
-    expect(cache()).toContain("const prev = await getRaw(STORE_MATERIALS, material.id);");
     // 같은 계정의 핀만 지킨다 — 다른 계정이 같은 자료를 열어도 핀을 넘겨받지 않는다(OFFLINE-ACCOUNT-SCOPE-001).
-    expect(cache()).toContain("const keepPin = prev?.pinned && materialEntryVisible(prev, owner) && (!own(prev) || prev.owner === owner);");
-    expect(cache()).toContain("...(keepPin ? { pinned: true } : {})");
+    // 키가 계정별이라(acct:<계정>:<id>) 같은 계정의 기록만 읽어 핀을 잇는다(OFFLINE-ACCOUNT-SCOPE-001).
+    expect(cache()).toContain("const prev = await getRaw(STORE_MATERIALS, key);");
+    expect(cache()).toContain("...(prev?.pinned ? { pinned: true } : {})");
   });
 
   it('받아둔 자료는 TTL 조회에도 걸리지 않는다 — 저장은 살아 있는데 안 열리면 같은 실패다', () => {
-    expect(cache()).toContain('if (raw?.pinned) return raw.material || null;');
+    expect(cache()).toContain('if (found.raw.pinned) return found.raw.material || null;');
   });
 
   it('해제는 본문을 지우지 않는다 — 다시 자동 축출 대상이 될 뿐이다', () => {
-    expect(cache()).toContain('await put(STORE_MATERIALS, { id, material: prev.material, ...(own(prev) ? { owner: prev.owner } : {}) }, MAX_MATERIALS);');
+    expect(cache()).toContain('const { pinned: _pinned, savedAt: _savedAt, ...rest } = found.raw;'); // 찾은 자리 그대로 · 본문 유지
+    expect(cache()).toContain('await put(STORE_MATERIALS, rest, MAX_MATERIALS);');
   });
 });
 

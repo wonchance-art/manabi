@@ -180,57 +180,64 @@ async function getRaw(store, key) {
 
 /* ── 계정 경계(OFFLINE-ACCOUNT-SCOPE-001, 2026-10-17 KST) ──
  * 자료 기록은 계정을 몰랐다 — B가 오프라인일 때 같은 기기에서 A가 받아 둔 비공개 자료가 폴백(getCachedMaterial)으로 열렸다.
- * 기록에 받은 계정(owner: id · null=손님)을 적고, 읽을 때 지금 계정과 비교한다. 키(id)와 저장소 판은 그대로다(판 올림 없음 —
- * onblocked 경로와 무관). 손님 기록(owner null)은 공개 자료만 담고 누구에게나 열린다. 이 판 이전 기록(owner 없음)은 누가
- * 받았는지 모르므로 자료가 스스로 말해 주는 것만 연다: 공개 자료 · 지금 계정이 만든 자료(owner_id).
+ * 로그인 계정의 기록은 계정을 붙인 키(`acct:<계정>:<id>`)로 따로 둔다(팀 사본 저장소와 같은 방식) — A · B가 같은 자료를 각자
+ * 받아 두고 열어도 서로 덮지 않는다. 읽을 때 지금 계정과 비교한다. 키 경로(id) · 저장소 판(2)은 그대로다(판 올림 없음 —
+ * onblocked 경로와 무관). 손님 기록(owner null)은 자료 id 키에 공개 자료만 담고 누구에게나 열린다. 이 판 이전 기록(id 키 · owner 없음)은
+ * 누가 받았는지 모르므로 자료가 스스로 말해 주는 것만 연다: 공개 자료 · 지금 계정이 만든 자료(owner_id).
  * 대기 연산(outbox — 복습 · FSRS)은 이미 userId · accountId로 묶여 읽고 보낸다 — 계정이 바뀌어도 지우지 않는다(A가 다시 로그인하면 보냄).
  */
 const own = (entry) => Object.prototype.hasOwnProperty.call(entry || {}, 'owner');
 const isPublicMaterial = (material) => material?.visibility === 'public';
+const accountOf = (account) => (typeof account === 'string' && account ? account : null); // 모르는 값(쿼리 문맥 객체 등)은 손님
+
+/** 저장 키 — 로그인 계정이면 계정을 붙이고, 손님이면 자료 id 그대로(이전 판과 같은 자리). */
+export const materialKey = (id, owner) => (accountOf(owner) ? `acct:${accountOf(owner)}:${id}` : id);
+/** 기록이 담은 자료 id(계정 키 기록은 materialId, 이전 판 · 손님은 키 그대로). */
+const materialIdOf = (entry) => (entry && Object.prototype.hasOwnProperty.call(entry, 'materialId') ? entry.materialId : entry?.id);
 
 /** 이 자료 기록을 지금 계정(account: id · null/undefined=손님)이 열어도 되나. */
 export function materialEntryVisible(entry, account) {
   const material = entry?.material;
   if (!material) return false;
-  const who = typeof account === 'string' && account ? account : null; // 모르는 값(쿼리 문맥 객체 등)은 손님으로
+  const who = accountOf(account);
   if (own(entry)) return entry.owner === null ? isPublicMaterial(material) : entry.owner === who;
   return isPublicMaterial(material) || (who !== null && material.owner_id === who);
 }
 
-/**
- * 다른 계정이 「직접 받아 둔」 기록인가(핀) — 키가 자료 id 하나라 덮어쓰면 그 사람의 받아둔 자료가 사라진다(데이터 보존).
- * 손님 몫(owner null) 핀은 공개 자료라 넘겨받아도 된다. 판 이전 핀은 지금 계정이 열 수 없으면 남의 것으로 본다.
- */
-function pinHeldByOther(prev, owner) {
-  if (!prev?.pinned) return false;
-  if (own(prev)) return prev.owner !== null && prev.owner !== owner;
-  return !materialEntryVisible(prev, owner);
+/** 지금 계정이 열 수 있는 이 자료의 기록 — 자기 키가 먼저, 없으면 자료 id 자리(손님 · 이전 판). TTL은 보지 않는다. */
+async function visibleRaw(id, account) {
+  const who = accountOf(account);
+  for (const key of who ? [materialKey(id, who), id] : [id]) {
+    const raw = await getRaw(STORE_MATERIALS, key);
+    if (materialEntryVisible(raw, who)) return { key, raw };
+  }
+  return null;
 }
 
 /** 뷰어가 받은 자료를 남긴다. owner = 그 조회를 보낸 계정(요청 시점에 잡은 값 — 늦게 읽으면 로그아웃 뒤 손님으로 적힌다). */
 export async function cacheMaterial(material, { owner = null } = {}) {
   if (!material?.id) return;
+  const who = accountOf(owner);
   // 손님 기록은 누구에게나 열리므로 공개 자료만 담는다(계정을 모르는 비공개 행을 손님 몫으로 남기지 않는다).
-  if (owner === null && !isPublicMaterial(material)) return;
+  if (who === null && !isPublicMaterial(material)) return;
   // 핀을 보존한다 — 받아둔 자료를 뷰어에서 열면 자동 캐시가 같은 키를 덮어쓰는데,
-  // 그때 pinned가 떨어지면 사용자가 챙긴 자료가 조용히 자동 축출 대상이 된다. 다른 계정의 핀은 넘겨받지 않는다.
-  const prev = await getRaw(STORE_MATERIALS, material.id);
-  if (pinHeldByOther(prev, owner)) return; // 남이 받아 둔 것은 덮지 않는다 — 이 계정은 자동 캐시 없이 네트워크로만 읽는다
-  const keepPin = prev?.pinned && materialEntryVisible(prev, owner) && (!own(prev) || prev.owner === owner);
+  // 그때 pinned가 떨어지면 사용자가 챙긴 자료가 조용히 자동 축출 대상이 된다. 키가 계정별이라 남의 핀과는 겹치지 않는다.
+  const key = materialKey(material.id, who);
+  const prev = await getRaw(STORE_MATERIALS, key);
   await put(
     STORE_MATERIALS,
-    { id: material.id, material, owner, ...(keepPin ? { pinned: true } : {}) },
+    { id: key, materialId: material.id, material, owner: who, ...(prev?.pinned ? { pinned: true } : {}) },
     MAX_MATERIALS,
   );
 }
 
 /** 오프라인 폴백 읽기 — 지금 계정(account)이 열 수 있는 기록만. 빠뜨리면 손님으로 본다(공개분만). */
 export async function getCachedMaterial(id, { account = null } = {}) {
+  const found = await visibleRaw(id, account);
+  if (!found) return null;
   // 핀은 TTL 밖이다 — 7일 지난 '받아둔 자료'가 안 열리면 받아둔 의미가 없다.
-  const raw = await getRaw(STORE_MATERIALS, id);
-  if (!materialEntryVisible(raw, account)) return null;
-  if (raw?.pinned) return raw.material || null;
-  const entry = await get(STORE_MATERIALS, id);
+  if (found.raw.pinned) return found.raw.material || null;
+  const entry = await get(STORE_MATERIALS, found.key);
   return entry?.material || null;
 }
 
@@ -240,22 +247,23 @@ export async function getCachedMaterial(id, { account = null } = {}) {
  * 자료 하나를 받아둔다. `material`은 **뷰어가 읽는 필드를 다 갖춘 행**이어야 한다
  * (실측: 자료실 목록 조회에는 `raw_text`·`source_pdf_id`·`page_start`·`page_end`·
  * `status`가 없다 — 목록 행을 그대로 넣으면 오프라인 뷰어에 빈 칸이 생긴다).
- * owner = 받아 두는 계정(로그인 기능 — 없으면 공개 자료만 손님 몫으로).
+ * owner = 받아 두는 계정 — 그 계정 키에 둔다(같은 기기의 다른 계정이 같은 자료를 받아 둬도 각자).
  */
 export async function pinMaterial(material, { owner = null } = {}) {
   if (!material?.id) return false;
-  if (owner === null && !isPublicMaterial(material)) return false;
-  if (pinHeldByOther(await getRaw(STORE_MATERIALS, material.id), owner)) return false; // 같은 기기 다른 계정이 받아 둔 자료
-  await put(STORE_MATERIALS, { id: material.id, material, owner, pinned: true }, MAX_MATERIALS);
+  const who = accountOf(owner);
+  if (who === null && !isPublicMaterial(material)) return false;
+  await put(STORE_MATERIALS, { id: materialKey(material.id, who), materialId: material.id, material, owner: who, pinned: true }, MAX_MATERIALS);
   return true;
 }
 
-/** 받아두기 해제 — 본문은 남기되 자동 축출 대상으로 되돌린다. 지금 계정이 열 수 있는 기록만. */
+/** 받아두기 해제 — 본문은 남기되 자동 축출 대상으로 되돌린다. 지금 계정이 열 수 있는 기록만(이전 판 핀 포함, 찾은 자리 그대로). */
 export async function unpinMaterial(id, { owner = null } = {}) {
   if (!id) return false;
-  const prev = await getRaw(STORE_MATERIALS, id);
-  if (!prev || !materialEntryVisible(prev, owner)) return false;
-  await put(STORE_MATERIALS, { id, material: prev.material, ...(own(prev) ? { owner: prev.owner } : {}) }, MAX_MATERIALS);
+  const found = await visibleRaw(id, owner);
+  if (!found) return false;
+  const { pinned: _pinned, savedAt: _savedAt, ...rest } = found.raw;
+  await put(STORE_MATERIALS, rest, MAX_MATERIALS);
   return true;
 }
 
@@ -273,7 +281,7 @@ async function getAllEntries(store) {
 export async function pinnedMaterialIds(account = null) {
   try {
     const all = await getAllEntries(STORE_MATERIALS);
-    return new Set(all.filter((e) => e.pinned && materialEntryVisible(e, account)).map((e) => e.id));
+    return new Set(all.filter((e) => e.pinned && materialEntryVisible(e, account)).map(materialIdOf));
   } catch {
     return new Set();
   }
@@ -287,7 +295,7 @@ export async function pinnedMaterialIds(account = null) {
  * @returns {Promise<{ materials: number }>}
  */
 export async function purgeOfflineForAccount(next) {
-  const who = typeof next === 'string' && next ? next : null;
+  const who = accountOf(next);
   let materials = 0;
   try {
     const db = await openDb();

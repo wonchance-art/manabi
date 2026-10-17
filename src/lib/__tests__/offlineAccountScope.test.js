@@ -45,7 +45,7 @@ describe('기록에 계정을 적고 읽을 때 비교한다', () => {
     await cache.cacheMaterial(publicMaterial, { owner: null });
     for (const who of [null, 'A', 'B']) expect((await cache.getCachedMaterial('P', { account: who })).id).toBe('P');
     await cache.cacheMaterial(privateOf('A', 'Q'), { owner: null }); // 계정을 모르는 비공개 행은 손님 몫으로 남기지 않는다
-    expect(idb.rows('anatomy-offline-cache', 'materials').map(r => r.id)).not.toContain('Q');
+    expect(idb.rows('anatomy-offline-cache', 'materials').map(r => r.materialId ?? r.id)).not.toContain('Q');
   });
   it('받아두기 · 배지도 계정별 — B는 A의 핀을 보지도 풀지도 못한다', async () => {
     expect(await cache.pinMaterial(privateOf('A'), { owner: 'A' })).toBe(true);
@@ -58,7 +58,7 @@ describe('기록에 계정을 적고 읽을 때 비교한다', () => {
   it('같은 계정이 다시 열면 핀을 지킨다(기존 계약)', async () => {
     await cache.pinMaterial(privateOf('A'), { owner: 'A' });
     await cache.cacheMaterial(privateOf('A'), { owner: 'A' });
-    expect(idb.rows('anatomy-offline-cache', 'materials')[0]).toMatchObject({ owner: 'A', pinned: true });
+    expect(idb.rows('anatomy-offline-cache', 'materials')).toEqual([expect.objectContaining({ id: 'acct:A:X', materialId: 'X', owner: 'A', pinned: true })]);
   });
 });
 
@@ -73,7 +73,7 @@ describe('계정이 바뀌면 — 자동 캐시만 지우고, 받아 둔 자료 
     await cache.cacheVocabSnapshot('A', [{ id: 1 }]);
     await outbox.append({ accountId: 'A', payload: grade('op-1') });
     expect(await cache.purgeOfflineForAccount(null)).toEqual({ materials: 1 });
-    expect(idb.rows('anatomy-offline-cache', 'materials').map(r => r.id).sort()).toEqual(['P', 'X']);
+    expect(idb.rows('anatomy-offline-cache', 'materials').map(r => r.id).sort()).toEqual(['P', 'acct:A:X']);
     for (const who of [null, 'B']) { // 숨김: 손님 · B는 A가 받아 둔 자료를 못 본다
       expect(await cache.getCachedMaterial('X', { account: who })).toBeNull();
       expect([...(await cache.pinnedMaterialIds(who))]).toEqual([]);
@@ -90,15 +90,35 @@ describe('계정이 바뀌면 — 자동 캐시만 지우고, 받아 둔 자료 
     await cache.pinMaterial(privateOf('A', 'PA'), { owner: 'A' });
     await cache.cacheMaterial(privateOf('B', 'XB'), { owner: 'B' });
     await cache.purgeOfflineForAccount('B');
-    expect(idb.rows('anatomy-offline-cache', 'materials').map(r => r.id).sort()).toEqual(['PA', 'XB']);
+    expect(idb.rows('anatomy-offline-cache', 'materials').map(r => r.id).sort()).toEqual(['acct:A:PA', 'acct:B:XB']);
     expect(await cache.getCachedMaterial('PA', { account: 'B' })).toBeNull();
   });
-  it('B가 A의 받아 둔 자료를 열거나 받아 두려 해도 A의 것을 덮지 않는다(키가 자료 id 하나)', async () => {
+  it('A · B가 같은 자료를 각자 받아 둔다 — 계정 키(acct:<계정>:<id>)라 서로 덮지 않고 거절도 없다', async () => {
     await cache.pinMaterial(publicMaterial, { owner: 'A' });
-    await cache.cacheMaterial(publicMaterial, { owner: 'B' });
-    expect(await cache.pinMaterial(publicMaterial, { owner: 'B' })).toBe(false);
-    expect(idb.rows('anatomy-offline-cache', 'materials')[0]).toMatchObject({ id: 'P', owner: 'A', pinned: true });
+    await cache.cacheMaterial(publicMaterial, { owner: 'B' }); // B의 뷰어 자동 캐시 — A의 핀을 건드리지 않는다
+    expect(await cache.pinMaterial(publicMaterial, { owner: 'B' })).toBe(true);
+    expect(idb.rows('anatomy-offline-cache', 'materials').map(r => [r.id, r.owner, !!r.pinned]).sort())
+      .toEqual([['acct:A:P', 'A', true], ['acct:B:P', 'B', true]]);
     expect([...(await cache.pinnedMaterialIds('A'))]).toEqual(['P']);
+    expect([...(await cache.pinnedMaterialIds('B'))]).toEqual(['P']);
+    await cache.unpinMaterial('P', { owner: 'B' }); // B가 풀어도 A의 받아둔 자료는 그대로
+    expect([...(await cache.pinnedMaterialIds('A'))]).toEqual(['P']);
+    expect([...(await cache.pinnedMaterialIds('B'))]).toEqual([]);
+  });
+  it('이전 판 핀(id 키 · owner 없음)은 열 수 있는 계정이 그 자리에서 풀고 읽는다', async () => {
+    const db = await cache.openDb();
+    await new Promise(r => { const tx = db.transaction('materials', 'readwrite'); tx.objectStore('materials').put({ id: 'X', material: privateOf('A'), pinned: true, savedAt: Date.now() }); tx.oncomplete = r; });
+    expect([...(await cache.pinnedMaterialIds('A'))]).toEqual(['X']);
+    expect([...(await cache.pinnedMaterialIds('B'))]).toEqual([]);
+    expect(await cache.unpinMaterial('X', { owner: 'B' })).toBe(false);
+    expect(await cache.unpinMaterial('X', { owner: 'A' })).toBe(true);
+    expect(idb.rows('anatomy-offline-cache', 'materials')).toEqual([expect.objectContaining({ id: 'X', material: privateOf('A') })]);
+    expect(idb.rows('anatomy-offline-cache', 'materials')[0].pinned).toBeUndefined();
+  });
+  it('저장 판 · 키 경로 그대로 — 계정은 키 문자열만 다르다', () => {
+    const src = read('src/lib/offlineCache.js');
+    expect(src).toContain("db.createObjectStore(STORE_MATERIALS, { keyPath: 'id' });");
+    expect(src).toContain('export const materialKey = (id, owner) => (accountOf(owner) ? `acct:${accountOf(owner)}:${id}` : id);');
   });
   it('옛 복습 큐(reviewOutbox)도 계정으로 걸러 읽는다 — 지우지 않음', async () => {
     const db = await cache.openDb();
@@ -125,8 +145,8 @@ describe('배선', () => {
   it('받아두기 · 배지 호출부가 계정을 넘긴다', () => {
     const page = read('src/views/MaterialsPage.jsx');
     expect(page).toContain('pinnedMaterialIds(user?.id ?? null)');
-    expect(page).toContain('const pinned = await cache.pinMaterial(data, { owner: user?.id ?? null });');
-    expect(page).toContain("if (!pinned) { toast('이 기기의 다른 계정이 받아 둔 자료라 여기서는 받아 둘 수 없어요.', 'warning'); return; }");
+    expect(page).toContain('await cache.pinMaterial(data, { owner: user?.id ?? null });');
+    expect(page).not.toContain('다른 계정이 받아 둔 자료'); // 계정 키라 거절 경로 · 문구가 없다
     expect(page).toContain('cache.unpinMaterial(id, { owner: user?.id ?? null })');
     expect(read('src/components/library/LibraryShelf.jsx')).toContain('queryFn:()=>pinnedMaterialIds(user.id)');
   });
