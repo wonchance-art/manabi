@@ -56,16 +56,15 @@ export function orderChipSpot(chip) {
 }
 
 /**
- * 새 문항의 첫 답 컨트롤(STUDY-FOCUS-001). 「계속 →」이 사라지면 초점이 body로 떨어져, 키보드로는 머리글 메뉴부터 다시
- * 2~12번 Tab을 눌러야 보기에 닿았다(합성 로그인 /study 실측 2026-10-17 KST). 보기 → 어순 칩 → 입력칸 → 그 밖의 버튼 순으로
- * 고르고, 발음 듣기(.fr-speak)처럼 답이 아닌 보조 단추는 건너뛴다. 잠긴(disabled) 것은 고르지 않는다. 없으면 null.
+ * 새 문항의 머리로 초점(STUDY-FOCUS-001). 「계속 →」이 사라지면 초점이 body로 떨어져, 키보드로는 머리글 메뉴부터 다시
+ * 2~12번 Tab을 눌러야 문항에 닿았다(합성 로그인 /study 실측 2026-10-17 KST). 첫 답 컨트롤로 보내면 설명 · 문단 카드에서
+ * 맨 아래 「바로 문제로 →」나 재료 칩으로 건너뛰어 내용을 놓친다(리뷰 차단) — 그래서 문항의 질문/제목 머리
+ * ([data-item-head], tabIndex −1 · 테두리 없음)로 옮긴다. 화면 읽기는 질문부터 읽고, Tab은 그 아래 첫 컨트롤로 간다.
+ * 입력 문항처럼 autoFocus가 이미 문항 안을 잡았으면 그대로 둔다(그 입력칸은 aria-describedby로 질문을 읽는다).
  */
-const ANSWER_CONTROLS = ['.fr-quiz__opt', '.fr-quiz__token', 'input[type="text"]', 'textarea', 'button:not(.fr-speak)'];
-export function firstAnswerControl(root) {
-  if (!root?.querySelectorAll) return null;
-  for (const selector of ANSWER_CONTROLS) {
-    const found = [...root.querySelectorAll(selector)].find(el => !el.disabled);
-    if (found) return found;
-  }
-  return null;
+export function focusItemHead(root, scope = root) {
+  if (!root?.isConnected) return false;
+  const active = root.ownerDocument.activeElement;
+  if (active && active !== root && root.contains(active)) return false;
+  return focusIfFree(root.querySelector('[data-item-head]'), scope);
 }

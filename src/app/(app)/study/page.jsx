@@ -5,6 +5,8 @@ import { assembleStudyMaterials } from '@/lib/studyMaterials';
 import { canUseStudyPrefetch } from '@/lib/studyPrefetchEligibility';
 import StudySessionPage from '@/views/StudySessionPage';
 import StudyOnboarding from '@/views/StudyOnboarding';
+import StudyUnavailable from '@/views/StudyUnavailable';
+import { isStudyStorageUnavailable } from '@/lib/studyUnavailable';
 import { learnerHref } from '@/lib/bookNavigation';
 
 export const metadata = { title: '오늘 학습' };
@@ -68,8 +70,15 @@ export default async function Page({ searchParams }) {
   const interestGroup = cookieStore.get('study_interest')?.value || null;
 
   // ── 재료 조립 (폴백 세션·rung·dial·오늘의 문단 재료) — prefetched를 써도 라이브로 필요 ──
-  const { session, paragraphMaterials, warmup, encounterItems, band, dial, canGenerate, coldStart, legacyReviewRows } =
-    await assembleStudyMaterials(supabase, user.id, lang, { interestGroup });
+  // 학습 기록(FSRS snapshot)을 못 읽으면 일반 오류 화면 대신 전용 안내(STUDY-UNAVAILABLE-001). 다른 오류는 그대로 던진다.
+  let assembled;
+  try {
+    assembled = await assembleStudyMaterials(supabase, user.id, lang, { interestGroup });
+  } catch (error) {
+    if (isStudyStorageUnavailable(error)) return <StudyUnavailable />;
+    throw error;
+  }
+  const { session, paragraphMaterials, warmup, encounterItems, band, dial, canGenerate, coldStart, legacyReviewRows } = assembled;
 
   // ── 내 자료 세션(?source=mine) — 프리페치를 조회·소모하지 않고 라이브 생성을 강제한다. ──
   // (프리페치 행은 그대로 보존 → 다음 일반 세션이 소비)

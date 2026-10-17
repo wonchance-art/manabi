@@ -7525,6 +7525,10 @@ a.viewer-badge:hover {
 .study-sent--tap { cursor: pointer; }
 
 /* ── 세션 진행 막대 · 문항 전환 ── */
+/* 오프라인 동안만 진행 막대 아래 한 줄(STUDY-OFFLINE-LINE) — 헤더 줄 아래 여백(20px) 안에 붙인다. */
+/* 문항 머리(STUDY-FOCUS-001) — 새 문항마다 초점이 오는 질문/제목(tabIndex −1). 누를 곳이 아니라 읽을 곳이라 고리를 그리지 않는다. */
+.study-item [data-item-head]:focus, .study-item [data-item-head]:focus-visible { outline: none; }
+.study-offline-line { margin: -12px 0 16px; font-size: 0.8125rem; color: var(--text-muted); }
 .study-progress {
   flex: 1; height: 10px; overflow: hidden;
   border-radius: var(--radius-full); background: var(--bg-secondary);

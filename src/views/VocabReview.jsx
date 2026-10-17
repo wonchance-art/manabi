@@ -181,6 +181,7 @@ export default function VocabReview({
   const reveal = event => { setShowAnswer(true); setShowHint?.(false); onReveal?.(revealTrigger(event)); };
   // 새 카드가 열리면 「정답 확인하기」로 초점(STUDY-FOCUS-001) — 시작 · 채점 단추가 사라져 body로 떨어지던 자리.
   const revealRef = useRevealFocus(mode === 'flash' && !reviewFinished && !showAnswer && !!currentWord, currentWord?.id);
+  const headwordId = useId(); // 「정답 확인하기」가 표제어를 함께 읽게(aria-describedby)
   const finishBar = practice
     ? (showAnswer && mode !== 'listening' ? <PracticeButtons onResult={handleScore} armed={armed} /> : null)
     : currentWord && mode === 'flash' && <ScoreSection word={currentWord} onScore={handleScore} armed={armed} locked={!showAnswer} />;
@@ -227,7 +228,7 @@ export default function VocabReview({
               {mode !== 'flash' && <p className="review-room-prompt">{showAnswer ? '뜻을 확인했어요.' : mode === 'typing' ? '이 표현의 뜻을 써 보세요.' : mode === 'context' ? '문장 속 표현의 뜻을 골라 보세요.' : '듣고, 뜻을 골라 보세요.'}</p>}
               {/* 표제어 — 앞면은 글자만(읽기 · 소리 없음). 문맥 · 듣기 갈래는 답을 보기 전까지 숨긴다(예문이 없으면 단어가 문제). */}
               {((mode !== 'context' && mode !== 'listening') || showAnswer || (mode === 'context' && !currentWord.source_sentence)) && (
-                <ReviewHeadword word={currentWord} revealed={showAnswer} />
+                <ReviewHeadword word={currentWord} revealed={showAnswer} id={headwordId} />
               )}
 
               {/* 플래시카드(본 복습 · 집중 연습 「스스로 확인」) */}
@@ -246,7 +247,7 @@ export default function VocabReview({
                     );
                   })()}
                   {!showAnswer && (
-                    <Button ref={revealRef} variant="secondary" size="lg" onClick={reveal} className="review-reveal-btn">
+                    <Button ref={revealRef} variant="secondary" size="lg" onClick={reveal} className="review-reveal-btn" aria-describedby={headwordId}>
                       {practice ? '뜻 보기' : '정답 확인하기'}<span className="review-keys-hint review-keys-hint--space" aria-hidden="true"> · Space</span>
                     </Button>
                   )}

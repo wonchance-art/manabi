@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import Button from '../Button';
 import { canAutoStartFsrsReview, fsrsIntervalLabel } from '../../lib/useFsrsReview';
 import { gradeGuide, isCardRevealClick, revealTrigger } from '../../lib/reviewCard';
@@ -41,6 +41,7 @@ export default function FsrsReviewSession({ review, onExit, embedded = false, ca
   const bar = useGradeBarFocus(!revealed, armed); // 뒷면이 열리면 막대(버튼 아님)로 초점 — FOCUS-AFTER-ACTION-001 C2(예전 일정 카드와 같은 규격)
   const word0 = current?.word && (!embedded || current.cardId === cardId);
   const revealRef = useRevealFocus(!!word0 && !revealed, current?.attempt?.id || null, busy || !current?.attempt); // 새 카드 「정답 확인하기」로 초점(STUDY-FOCUS-001)
+  const headwordId = useId(); // 그 단추가 표제어를 함께 읽게(aria-describedby)
   const reveal = async trigger => {
     if (await controller.reveal()) onReveal?.(trigger, current?.word);
   };
@@ -90,10 +91,10 @@ export default function FsrsReviewSession({ review, onExit, embedded = false, ca
         <div className={`review-card__body${revealed ? '' : ' review-card__body--front'}`}
           onClick={event => { if (!revealed && !disabled && current.attempt && isCardRevealClick(event)) reveal(revealTrigger(event)); }}>
           <ReviewCardMeta label="복습" word={word} />
-          <ReviewHeadword word={word} revealed={revealed} />
+          <ReviewHeadword word={word} revealed={revealed} id={headwordId} />
           {revealed ? <ReviewBack word={word} speak={speak} ttsSupported={ttsSupported} />
             : <Button ref={revealRef} variant="secondary" size="lg" disabled={disabled || !current.attempt} className="review-reveal-btn"
-              onClick={event => reveal(revealTrigger(event))}>정답 확인하기<span className="review-keys-hint review-keys-hint--space" aria-hidden="true"> · Space</span></Button>}
+              aria-describedby={headwordId} onClick={event => reveal(revealTrigger(event))}>정답 확인하기<span className="review-keys-hint review-keys-hint--space" aria-hidden="true"> · Space</span></Button>}
         </div>
       </div>
       <div ref={bar} tabIndex={-1} className={`review-grade-bar${revealed ? '' : ' is-locked'}`} role="group" aria-label="기억 채점">

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Button from '../components/Button';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
-import { firstAnswerControl, focusIfFree } from '../lib/focusAfterAction';
+import { focusIfFree, focusItemHead } from '../lib/focusAfterAction';
 
 /** 로컬 날짜 YYYY-MM-DD — StudySessionPage.ymdLocal과 동일 포맷(산출 시드 키 값 일치) */
 function ymdLocal(d) {
@@ -55,7 +55,8 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
   }, [lang]);
 
   // STUDY-FOCUS-001 — 고른 단추가 다음 질문으로 바뀌며 사라져 초점이 body로 떨어졌다(키보드는 머리글부터 다시 Tab).
-  // 질문이 바뀌면 그 질문 제목으로, 「시작하기 →」 뒤에는 세션 첫 문항의 첫 답 컨트롤로 잇는다. 첫 질문(화면 진입)은 그대로 둔다.
+  // 질문이 바뀌면 그 질문 제목으로, 「시작하기 →」 뒤에는 세션 첫 문항의 질문/제목 머리로 잇는다(세션 안 문항 전환과 같은 규칙).
+  // 첫 질문(화면 진입)은 그대로 둔다.
   const headingRef = useRef(null);
   const prevPhaseRef = useRef(phase);
   useEffect(() => {
@@ -63,8 +64,8 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
     prevPhaseRef.current = phase;
     if (prev === phase || prev === 'loading') return;
     if (phase === 'session') {
-      const first = firstAnswerControl(typeof document === 'undefined' ? null : document.querySelector('.study-item'));
-      focusIfFree(first, first?.closest('.page-container'));
+      const item = typeof document === 'undefined' ? null : document.querySelector('.study-item');
+      focusItemHead(item, item?.closest('.page-container'));
       return;
     }
     focusIfFree(headingRef.current, headingRef.current?.closest('.page-container'));

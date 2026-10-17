@@ -64,11 +64,14 @@ export function ReviewCardMeta({ label, word }) {
   return <p className="review-card__meta">{[label, kind].filter(Boolean).join(' · ')}</p>;
 }
 
-/** 표제어 — 뒷면의 일본어 한자어는 한자 위 후리가나(ruby). 앞면에는 읽기를 내지 않는다. */
-export function ReviewHeadword({ word, revealed = false }) {
+/**
+ * 표제어 — 뒷면의 일본어 한자어는 한자 위 후리가나(ruby). 앞면에는 읽기를 내지 않는다.
+ * id는 「정답 확인하기」의 aria-describedby가 가리킨다(STUDY-FOCUS-001) — 단추로 초점이 오면 어떤 말인지 함께 읽힌다.
+ */
+export function ReviewHeadword({ word, revealed = false, id }) {
   const line = revealed ? readingLine(word) : { kind: 'none' };
   const text = displayWord(word.word_text, word.pos);
-  return <h2 className="review-card__word" lang={langTag(word)}>
+  return <h2 id={id} className="review-card__word" lang={langTag(word)}>
     {line.kind === 'ruby' ? <ruby>{text}<rt>{line.text}</rt></ruby> : text}
   </h2>;
 }

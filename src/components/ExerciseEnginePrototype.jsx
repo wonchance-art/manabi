@@ -442,8 +442,11 @@ function StudySessionExercise({
   lang,
   langCode,
   renderMain = text => text,
+  headId,
 }) {
   const markChip = useOrderChipFocus();
+  const head = headId ? { id: headId, tabIndex: -1, 'data-item-head': '' } : {}; // 문항 머리(STUDY-FOCUS-001) — 부모가 새 문항마다 여기로 초점
+  const labelledBy = headId ? { role: 'group', 'aria-labelledby': headId } : {};
   const question = normalizeStudySessionExerciseQuestion(studyItem);
   if (!question) return null;
 
@@ -464,9 +467,9 @@ function StudySessionExercise({
         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 6 }}>
           {context}
         </div>
-        <div className="fr-quiz__prompt">{question.prompt}</div>
+        <div className="fr-quiz__prompt" {...head}>{question.prompt}</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 10, marginTop: 12 }}>
-          <div className="fr-quiz__opts fr-quiz__opts--col">
+          <div className="fr-quiz__opts fr-quiz__opts--col" {...labelledBy}>
             {question.leftOptions.map(pair => {
               const assigned = matches[pair.id];
               const stateClass = feedback
@@ -486,7 +489,7 @@ function StudySessionExercise({
               );
             })}
           </div>
-          <div className="fr-quiz__opts fr-quiz__opts--col">
+          <div className="fr-quiz__opts fr-quiz__opts--col" {...labelledBy}>
             {question.rightOptions.map(meaning => (
               <button
                 key={meaning}
@@ -528,9 +531,9 @@ function StudySessionExercise({
         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 6 }}>
           {context}
         </div>
-        <div className="fr-quiz__prompt" lang={langCode}>{question.prompt}</div>
+        <div className="fr-quiz__prompt" lang={langCode} {...head}>{question.prompt}</div>
         <div className="fr-quiz__sub">“{question.subtitle}”</div>
-        <div className="fr-quiz__opts fr-quiz__opts--grid">
+        <div className="fr-quiz__opts fr-quiz__opts--grid" {...labelledBy}>
           {options.map(option => (
             <button
               key={option}
@@ -563,7 +566,7 @@ function StudySessionExercise({
       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 6 }}>
         {context}
       </div>
-      <div className="fr-quiz__prompt">“{question.prompt}”</div>
+      <div className="fr-quiz__prompt" {...head}>“{question.prompt}”</div>
       <div className={`fr-quiz__line ${feedback ? (correct ? 'is-correct' : 'is-wrong') : ''}`}>
         {orderPicks.map((bankIndex, position) => (
           <button
@@ -580,7 +583,7 @@ function StudySessionExercise({
         {orderPicks.length === 0 && <span className="fr-quiz__line-hint">단어를 순서대로 탭하세요</span>}
       </div>
       {phase === 'answer' && (
-        <div className="fr-quiz__tokens">
+        <div className="fr-quiz__tokens" {...labelledBy}>
           {bank.map((token, bankIndex) => (
             orderPicks.includes(bankIndex) ? null : (
               <button
