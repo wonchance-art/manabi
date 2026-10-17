@@ -886,6 +886,9 @@
   #1505 운영 배포 검수(12:23 KST READY · 16/16 · 런타임 오류 0 · asset public 캐시 · set-cookie 없음).
   목업 권장안(오너 「결정사안은 권장대로 진행」): 손님 AI 로그인 안내 · 손님 ← 산책 · 로그아웃 활용형 표제어 읽기 · 어두운 테마 바깥 여백 · 중국어 日 줄 표 즉시 받기.
   bfcache A(산책 · 교재 breadcrumb prefetch 끔, 교재 bfcache 3/3) · FONT-HINT-001(Noto Sans 그리는 세그먼트만 미리 받기, 픽셀 차 0).
+  GEMINI-402-GUARD(결제 · 크레딧 오류 = 「서비스 설정」: 혼잡 재시도 없음 · 뜻 빈 분석 completed 저장 막기 · TTS 실패 10분 기억, 리뷰 차단 1 반영) ·
+  CARD-SENSES-SHIFT-001(1440 채점 줄 패널 아래 고정 — 예문 늦게 와도 0px, 오너 「권장대로」) · VIEWER-TAP-PERF-001(탭 재렌더 360 → 2칸) ·
+  원본 「일부만 고르기」 초점 깜박임 · e2e 위치 저장 경합 4곳 · 분석 복구 단언 정리.
   오너 확인 대기: Gemini 선불 크레딧 소진(TTS 402 · 분석 뜻 조회) · N5 #1–5 원문 기준 재분석 · 뷰어 목업 10건.
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로
