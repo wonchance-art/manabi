@@ -96,7 +96,7 @@ function buildVocabMatchItem(vocab) {
 
   for (const row of vocab || []) {
     const wordText = typeof row?.word_text === 'string' ? row.word_text.trim() : '';
-    const meaning = choiceMeaning(row?.meaning); // 짝 맞추기 뜻 칸도 보기다 — 괄호 용례가 낱말을 드러내지 않게(meaningClean)
+    const meaning = choiceMeaning(row?.meaning, wordText); // 짝 맞추기 뜻 칸도 보기다 — 괄호 용례가 낱말을 드러내지 않게(meaningClean)
     if (!wordText || !meaning || seenWords.has(wordText) || seenMeanings.has(meaning)) continue;
     seenWords.add(wordText);
     seenMeanings.add(meaning);
@@ -121,9 +121,9 @@ function buildVocabItems(vocab, meaningPool, vocabRungs = {}, dial = 'normal', e
   const matchItem = buildVocabMatchItem(vocab);
   if (matchItem) return [matchItem];
 
-  const cleanPool = (meaningPool || []).map(choiceMeaning);
   return (vocab || []).slice(0, 3).map(w => {
-    let meaning = choiceMeaning(w.meaning); // 보기·정답·채점 기준을 정화된 값으로 통일(보기 규칙 — meaningClean choiceMeaning)
+    const cleanPool = (meaningPool || []).map(m => choiceMeaning(m, w.word_text)); // 이 문항의 낱말 기준(네 보기 같은 규칙)
+    let meaning = choiceMeaning(w.meaning, w.word_text); // 보기·정답·채점 기준을 정화된 값으로 통일(보기 규칙 — meaningClean choiceMeaning)
     let word = { ...w, meaning };
     let type = vocabTypeForRung(vocabRungs[w.word_text] ?? 1, dial);
     let options = null;
@@ -166,11 +166,11 @@ export function buildEncounterItems(encounterVocab, meaningPool, dial = 'normal'
   if (dial === 'easy') return [];
   const slots = Math.min(2, Math.max(0, 3 - dueCount));
   if (!slots) return [];
-  const cleanPool = (meaningPool || []).map(choiceMeaning);
   const out = [];
   for (const w of encounterVocab || []) {
     if (out.length >= slots) break;
-    const meaning = choiceMeaning(w?.meaning);
+    const cleanPool = (meaningPool || []).map(m => choiceMeaning(m, w?.word_text));
+    const meaning = choiceMeaning(w?.meaning, w?.word_text);
     if (!w?.word_text || !meaning) continue;
     const set = choiceSet(meaning, pickDistractors(cleanPool, meaning, 3), w.word_text);
     if (!set) continue;
@@ -382,9 +382,9 @@ export function buildWarmupItems(recentEvents, vocabRows, meaningPool = [], dueS
     }
   }
   // 인지형(뜻 고르기) 문항으로 — 보기 오답 2개 미만이면 제외
-  const cleanPool = (meaningPool || []).map(choiceMeaning);
   return chosen.map(row => {
-    const meaning = choiceMeaning(row.meaning); // 보기·정답·채점 기준 통일(보기 규칙 — meaningClean choiceMeaning)
+    const cleanPool = (meaningPool || []).map(m => choiceMeaning(m, row.word_text));
+    const meaning = choiceMeaning(row.meaning, row.word_text); // 보기·정답·채점 기준 통일(보기 규칙 — meaningClean choiceMeaning)
     const set = choiceSet(meaning, pickDistractors(cleanPool, meaning, 3), row.word_text);
     if (!set) return null;
     return {

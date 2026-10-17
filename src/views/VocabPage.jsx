@@ -730,7 +730,7 @@ function VocabWorkspace({ reviewScope }) {
     // 보기 텍스트는 보기 규칙으로 정리(원어 병기 · 낱말이 드러나는 괄호 용례 — meaningClean choiceMeaning · choiceLabels,
     // 네 보기에 같은 규칙). 정답 식별은 id 기준이라 채점엔 무영향.
     const shuffled = fisherYatesShuffle([...distractors, activeWord]);
-    const labels = choiceLabels(shuffled.map(v => choiceMeaning(v.meaning)), activeWord.word_text);
+    const labels = choiceLabels(shuffled.map(v => choiceMeaning(v.meaning, activeWord.word_text)), activeWord.word_text);
     return shuffled.map((v, i) => ({ ...v, meaning: labels[i] }));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewIdx, practice?.idx, activeWord?.id]);

@@ -31,7 +31,49 @@ describe('규칙 ① choiceMeaning — 원어 · 인용 괄표가 든 괄호는 
   });
 });
 
+describe('규칙 ①의 원어 = 문제 낱말의 글자 체계(데이터 감사 2026-10-17 KST)', () => {
+  it('중국어 · 일본어 낱말: 한국어 설명 속 단위 · 약어 · 가운뎃점(・)은 원어가 아니라 남긴다', () => {
+    expect(choiceMeaning('근(무게 단위, 500g)', '斤')).toBe('근(무게 단위, 500g)');
+    expect(choiceMeaning('웨이보(중국 대표 SNS)', '微博')).toBe('웨이보(중국 대표 SNS)');
+    expect(choiceMeaning('보양하다, (건강・기계를) 관리하다', '保养')).toBe('보양하다, (건강・기계를) 관리하다');
+    expect(choiceMeaning(MAJI.meaning, MAJI.word_text)).toBe('진짜·레알'); // 가나 용례는 여전히 뺀다
+  });
+  it('영어 · 프랑스어 낱말: 라틴 용례를 뺀다', () => {
+    expect(choiceMeaning('배고픔 (avoir faim 배고프다)', 'la faim')).toBe('배고픔');
+  });
+  it('괄호를 뺀 뒤 끝에 남는 구분 부호는 지운다', () => {
+    expect(choiceMeaning('내일; (あす로도 읽으며 좀 더 격식)', '明日')).toBe('내일');
+  });
+  it('같은 문항의 오답 풀도 같은 낱말로 정리한다(배선)', () => {
+    const src = read('src/lib/studySession.js');
+    expect(src.match(/map\(m => choiceMeaning\(m, (w\.word_text|w\?\.word_text|row\.word_text)\)\)/g)).toHaveLength(3);
+    expect(src).not.toContain('map(choiceMeaning)');
+  });
+});
+
+describe('앞 절 · 겹친 괄호 · 꼬리 괄호(데이터 감사 2026-10-17 KST — 괄호 밖 누출 99건 · 짝 안 맞는 괄호 108건)', () => {
+  it('괄호 밖 해설(「 — 」 · 한글 문장 끝 뒤)은 뺀다 — 문화 · 속어 뜻풀이가 문제 낱말을 해설 안에 담고 있었다', () => {
+    expect(choiceMeaning('성격. 혈액형·MBTI 토크의 핵심 키워드. 「性格いい」=성격 좋다', '性格')).toBe('성격');
+    expect(choiceMeaning('공부 — べんきょうする 공부하다', 'べんきょう')).toBe('공부');
+    expect(choiceMeaning('U.S. 달러', 'dollar')).toBe('U.S. 달러'); // 약어 점은 문장 끝이 아니다
+  });
+  it('[ ] 괄호도 같은 규칙, 겹친 괄호는 안쪽부터', () => {
+    expect(choiceMeaning('~해 버리다 [てしまう→ちゃう / でしまう→じゃう] (완료 뉘앙스)', '〜ちゃう／〜じゃう')).toBe('~해 버리다 (완료 뉘앙스)');
+    expect(choiceMeaning("닭도리탕 (국립국어원은 '도리'를 일본어 とり(鳥·새·닭)로 보고 '도리다(도려내다)'설도)", 'とり')).toBe('닭도리탕');
+  });
+  it('짝 안 맞는 꼬리 괄호(만남 문항의 「 — 」 절단)는 뺀다', () => {
+    expect(choiceMeaning('아버지 (남에게 자기 아버지를 말할 때', '父')).toBe('아버지');
+  });
+  it('앞 절에 한글 뜻이 없으면 자르지 않는다(약어 · 원어만 남는 것 방지)', () => {
+    expect(choiceMeaning('TKG — 갓 지은 밥에 날달걀과 간장을 비벼 먹는 국민 소울푸드', 'たまごかけごはん')).toBe('TKG — 갓 지은 밥에 날달걀과 간장을 비벼 먹는 국민 소울푸드');
+    expect(choiceMeaning('ㅋㅋ [笑→w→www] (채팅 웃음', 'w／ｗｗｗ')).toBe('ㅋㅋ');
+  });
+});
+
 describe('규칙 ② choiceLabels · choiceSet — ①로도 남은 문제 낱말(한글 낱말 등)은 네 보기 모두에서 괄호를 뺀다', () => {
+  it('앞 절 자체에 낱말이 있으면(「텔레비전, TV」 — 데이터 과제) 더 뺄 수 없어도 다른 보기 괄호는 모두 뺀다', () => {
+    expect(choiceLabels(['텔레비전, TV', '라디오 (방송)', '역'], 'TV')).toEqual(['텔레비전, TV', '라디오', '역']);
+  });
   it('한 보기 괄호에 낱말이 있으면 전부에서 괄호를 뺀다(한쪽만 다르지 않게)', () => {
     expect(choiceLabels(['분위기 파악 (눈치가 빠르다)', '밥 (식사)', '학교', '역'], '눈치')).toEqual(['분위기 파악', '밥', '학교', '역']);
   });
@@ -78,7 +120,7 @@ describe('/study 문항에 배선 — 정답 · 보기 · 채점 기준이 같�
     expect(paragraph).toContain("import { choiceMeaning, choiceSet } from './meaningClean';");
     expect(paragraph).toContain('const set = choiceSet(cleanAnswer, cleanDistractors, q.key || q.prompt)');
     const vocabPage = read('src/views/VocabPage.jsx');
-    expect(vocabPage).toContain('const labels = choiceLabels(shuffled.map(v => choiceMeaning(v.meaning)), activeWord.word_text);');
+    expect(vocabPage).toContain('const labels = choiceLabels(shuffled.map(v => choiceMeaning(v.meaning, activeWord.word_text)), activeWord.word_text);');
     // 보기를 만드는 자리에 일반 정리(stripSourceLangInMeaning)가 남지 않는다.
     expect(read('src/lib/studySession.js').match(/stripSourceLangInMeaning\(/g)).toBeNull();
   });

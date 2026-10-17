@@ -411,8 +411,8 @@ export function mapParagraphToItems(para, materials) {
       // 원어(라틴·순가나 등)까지 정리해 보기·정답·채점 기준을 정화값으로 통일.
       // 보기 규칙(meaningClean choiceMeaning · choiceSet): 괄호 용례가 문제 낱말을 드러내지 않게, 네 보기에 같은 규칙.
       // 괄호를 빼서 보기가 겹치면(드묾) 예전처럼 정화값 그대로 낸다 — 문단 문항을 버리지 않는다.
-      const cleanAnswer = choiceMeaning(q.answer);
-      const cleanDistractors = q.distractors.map(choiceMeaning);
+      const cleanAnswer = choiceMeaning(q.answer, q.key || q.prompt);
+      const cleanDistractors = q.distractors.map(d => choiceMeaning(d, q.key || q.prompt));
       const set = choiceSet(cleanAnswer, cleanDistractors, q.key || q.prompt) || { correct: cleanAnswer, options: [cleanAnswer, ...cleanDistractors] };
       const answer = set.correct;
       graded.push({

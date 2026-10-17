@@ -28,17 +28,77 @@ export function stripSourceLangInMeaning(meaning) {
  *   한글만 있는 괄호(「달리다 (과거형)」 · 「(속어)」)는 남긴다: 낱말 철자를 드러낼 수 없고 뜻을 가르는 정보라서.
  * 규칙 ② choiceSet: ① 뒤에도 어느 보기의 괄호에 문제 낱말(표면형 · 「／」 변형 · 〜 뗀 꼴, NFC 비교)이 남아 있으면 — 한글 낱말
  *   (한국어 학습)처럼 ①이 못 거르는 경우 — 네 보기 **모두**에서 괄호를 뺀다(역시 한쪽만 다르지 않게).
+ * 「원어」는 문제 낱말의 글자 체계로 정한다(데이터 감사 2026-10-17 KST): 일본어 · 중국어 낱말이면 가나 · 한자, 영어 · 프랑스어
+ *   낱말이면 라틴 문자. 한국어 설명 속 단위 · 약어(「근(무게 단위, 500g)」 · 「웨이보(중국 대표 SNS)」)나 가운뎃점 「・」은
+ *   원어가 아니다 — 예전엔 이것들로 뜻을 가르는 설명까지 빠졌다. 같은 문항의 네 보기에는 같은 문제 낱말을 넘긴다.
+ * 보기는 앞 절만 쓴다: 괄호 밖의 첫 「 — 」 · 첫 문장 끝(「. 」 · 「。」) 뒤 해설은 뺀다(만남 문항의 「정본 ko 앞 절」 선례와 같은 규칙).
+ *   데이터 감사: 문화 · 속어 뜻풀이가 「성격. … 「性格いい」=성격 좋다」처럼 문제 낱말을 해설 안에 그대로 담고 있었다(괄호 밖 누출 99건).
+ * 괄호는 ( ) · （ ） · [ ] · 【 】를 같이 보고, 겹친 괄호는 안쪽부터 다시 본다. 짝이 안 맞는 꼬리 괄호(「아버지 (남에게 …」 — 만남 문항이
+ *   「 — 」로 자를 때 괄호 안에서 잘린 것)도 뺀다.
+ * 괄호를 뺀 뒤 끝에 남는 구분 부호(「내일;」의 ;)는 지운다.
  * 결과 화면 · 담기는 원래 뜻(전문)을 그대로 쓴다 — 여기는 보기 글자만 정한다.
  */
-const PAREN = /\s*[（(]\s*([^（()）]*?)\s*[)）]/g;
+const PAREN = /\s*[（(［[【]\s*([^（()）［\][\]【】]*?)\s*[)）］\]】]/g;
+const OPEN = /[（(［[【]/, CLOSE = /[)）］\]】]/;
 const QUOTE_MARKS = /[「」『』]/;
-const tidy = s => s.replace(/\s{2,}/g, ' ').trim();
+const HANGUL_SYLLABLE = /[가-힣ㄱ-ㅎㅏ-ㅣ]/u; // 「ㅋㅋ」도 한글 뜻
+const tidy = s => s.replace(/\s{2,}/g, ' ').trim().replace(/\s*[;；,，、·]+$/u, '').replace(/([가-힣])[.。]$/u, '$1').trim();
 const nfc = s => String(s).normalize('NFC');
+// 가운뎃점 「・」(U+30FB)은 가나 블록에 있지만 한국어 설명에도 쓰여 원어로 치지 않는다.
+const CJK_SCRIPT = /[ぁ-ゖゝ-ゟァ-ヺー-ヿｦ-ﾟ々〆〤一-鿿]/;
+const LATIN_SCRIPT = /[A-Za-zÀ-ÖØ-öø-ÿŒœ]/;
+/** 문제 낱말의 글자 체계 → 괄호를 뺄 원어 판정식. 모르면(없음 · 한글 낱말) 둘 다(예전과 같은 넓은 쪽). 한글 낱말은 ②가 맡는다. */
+function sourceScriptOf(prompt) {
+  const p = typeof prompt === 'string' ? nfc(prompt) : '';
+  if (CJK_SCRIPT.test(p)) return CJK_SCRIPT;
+  if (LATIN_SCRIPT.test(p)) return LATIN_SCRIPT;
+  return { test: s => CJK_SCRIPT.test(s) || LATIN_SCRIPT.test(s) };
+}
 
-export function choiceMeaning(meaning) {
+/** 괄호 밖에서 처음 만나는 「 — 」 · 문장 끝 앞까지(앞 절). */
+function headClause(s) {
+  let depth = 0;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (OPEN.test(c)) depth++;
+    else if (CLOSE.test(c)) depth = Math.max(0, depth - 1);
+    else if (depth === 0) {
+      if ((c === '—' || c === '–') && s[i - 1] === ' ' && s[i + 1] === ' ') return s.slice(0, i);
+      if (c === '。' && s.slice(i + 1).trim()) return s.slice(0, i);
+      if (c === '.' && /[가-힣]/u.test(s[i - 1] || '') && s[i + 1] === ' ' && s.slice(i + 1).trim()) return s.slice(0, i); // 한글 문장 끝만(「U.S. 달러」는 그대로)
+    }
+  }
+  return s;
+}
+/** 괄호를 안쪽부터 되풀이해 본다(겹친 괄호). drop(inner) → 뺄지. 남기는 괄호는 자리표로 숨겨 바깥 괄호를 다음 차례에 본다.
+ * 짝 없는 꼬리 괄호는 drop과 상관없이 뺀다. */
+function dropParens(s, drop) {
+  const kept = [];
+  const expand = t => { let r = t, p; do { p = r; r = r.replace(/\u0000(\d+)\u0001/g, (_, k) => kept[k]); } while (r !== p); return r; };
+  let prev, out = s;
+  do {
+    prev = out;
+    out = out.replace(PAREN, (m, inner) => {
+      if (drop(expand(inner))) return '';
+      kept.push(m);
+      return `\u0000${kept.length - 1}\u0001`;
+    });
+  } while (out !== prev);
+  return expand(out.replace(/\s*[（(［[【][^)）］\]】]*$/u, ''));
+}
+
+/** 규칙 ① — prompt = 이 문항의 문제 낱말(정답 · 오답 보기 모두 같은 값을 넘긴다). */
+export function choiceMeaning(meaning, prompt) {
   const base = stripSourceLangInMeaning(meaning);
   if (typeof base !== 'string' || !base) return base;
-  return tidy(nfc(base).replace(PAREN, (m, inner) => (MEANING_SOURCE_SCRIPT.test(inner) || QUOTE_MARKS.test(inner) ? '' : m)));
+  const source = sourceScriptOf(prompt);
+  const drop = inner => source.test(inner) || QUOTE_MARKS.test(inner);
+  const text = nfc(base);
+  // 한글 뜻이 남는 가장 짧은 꼴을 고른다 — 앞 절이 약어 · 원어뿐이면(「TKG — 갓 지은 밥에…」) 앞 절로 자르지 않는다.
+  for (const candidate of [tidy(dropParens(headClause(text), drop)), tidy(dropParens(text, drop))]) {
+    if (HANGUL_SYLLABLE.test(candidate)) return candidate;
+  }
+  return base;
 }
 
 /** 문제 낱말의 비교용 꼴들 — 「／」·「/」로 나뉜 변형, 앞뒤 〜·~ 뗀 꼴. 한 글자 꼴은 우연 일치가 많아 뺀다. */
@@ -47,11 +107,12 @@ function promptForms(prompt) {
   return [...new Set(nfc(prompt).split(/[／/]/).map(s => s.replace(/^[〜~]+|[〜~]+$/g, '').trim()).filter(s => s.length >= 2))];
 }
 
-/** 규칙 ② — 보기 글자 묶음(①을 이미 적용한 값). 어느 괄호에 문제 낱말이 있으면 전부에서 괄호를 뺀다. 순서 · 개수는 그대로. */
+/** 규칙 ② — 보기 글자 묶음(①을 이미 적용한 값). 어느 보기에 문제 낱말이 남아 있으면 전부에서 괄호를 뺀다. 순서 · 개수는 그대로. */
 export function choiceLabels(labels, prompt) {
   const forms = promptForms(prompt);
-  const leaks = forms.length > 0 && labels.some(label => [...String(label).matchAll(PAREN)].some(([, inner]) => forms.some(f => nfc(inner).includes(f))));
-  return leaks ? labels.map(label => tidy(String(label).replace(PAREN, ''))) : labels;
+  const leaks = forms.length > 0 && labels.some(label => forms.some(f => nfc(label).includes(f)));
+  // 괄호 밖(앞 절 자체)에 낱말이 있으면 더 뺄 수 없다 — 그 경우도 괄호는 모두 빼 한쪽만 다르지 않게 둔다(데이터 쪽 과제).
+  return leaks ? labels.map(label => tidy(dropParens(nfc(label), () => true))) : labels;
 }
 
 /**
