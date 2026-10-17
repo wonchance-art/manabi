@@ -66,7 +66,8 @@ describe('배선 — BookReader · BookHome', () => {
   const remember = sliceBetween(reader, 'const rememberPosition = useCallback(current => {', '}, [authLoading, book.edition, user?.id, reference]);');
   it('남기기: 표지면 이 기록에 세로 위치 · 전체 목차 펼침 · 열린 파트를 쓴다(쪽 자리는 쓰지 않는다)', () => {
     expect(remember).toContain("if (unitRef.current === 'cover') {");
-    expect(remember).toContain("const open = [...(root.current?.querySelectorAll('.manabi-book-home details[data-toc-part]') || [])].filter(group => group.open).map(group => group.dataset.tocPart);");
+    expect(remember).toContain('const open = openTocParts(root.current);');
+    expect(reader).toContain("const openTocParts = node => [...(node?.querySelectorAll('.manabi-book-home details[data-toc-part]') || [])].filter(group => group.open).map(group => group.dataset.tocPart);");
     expect(remember).toContain('window.history.replaceState(withBookCoverPlace(window.history.state, { href: window.location.href, y: Math.round(window.scrollY), all: tocAllRef.current, open }), \'\', window.location.href);');
     // 보류 중(되살리기 전) · 계정 확인 전에는 쓰지 않는다 — 남긴 자리를 맨 위 값으로 덮지 않게.
     expect(remember.indexOf('if (authLoading || pendingAnchor.current || dialog.current?.open) return;')).toBeLessThan(remember.indexOf("unitRef.current === 'cover'"));
@@ -86,12 +87,29 @@ describe('배선 — BookReader · BookHome', () => {
     expect(go).toContain('delete navigationState.manabiBookPosition; delete navigationState[BOOK_COVER_PLACE_KEY];');
   });
   it('되살리기: 표지는 남긴 자리로(없으면 맨 위) — 표지를 늘 맨 위로 옮기던 분기는 없다', () => {
-    const anchor = sliceBetween(reader, 'const position = pendingPosition.current;', 'pendingAnchor.current = null; pendingPosition.current = null;');
+    const anchor = sliceBetween(reader, 'const position = pendingPosition.current;', 'pendingAnchor.current = null; pendingPosition.current = null; pendingCover.current = null;');
     expect(anchor).toContain("else if (id === 'cover') {");
-    expect(anchor).toContain('const place = bookCoverPlaceOf(window.history.state, window.location.href);');
-    expect(anchor).toContain('window.scrollTo({ top: place ? Math.min(place.y, Math.max(0, document.documentElement.scrollHeight - innerHeight)) : 0, behavior: \'instant\' });');
+    // sync가 찾은 자리(ref)를 쓴다 — 스크롤 단계에서 주소로 다시 찾지 않는다(라우터가 그 사이 주소를 바꿀 수 있다).
+    expect(anchor).toContain('const place = pendingCover.current, top = place ? Math.min(place.y, Math.max(0, document.documentElement.scrollHeight - innerHeight)) : 0;');
+    expect(anchor).not.toContain('bookCoverPlaceOf(');
+    expect(anchor).toContain("window.scrollTo({ top, behavior: 'instant' });");
     expect(anchor).not.toContain("id === 'cover' || id === unit");
     expect(anchor).toContain("else if (id === unit || id === `${unit}-start`) window.scrollTo({ top: 0, behavior: 'instant' });");
+  });
+  it('잘라 옮긴 자리는 다시 쓰지 않는다 — 사용자가 움직이거나 펼침을 바꾸기 전까지 원래 값을 지킨다', () => {
+    const anchor = sliceBetween(reader, "else if (id === 'cover') {", "else if (id === unit || id === `${unit}-start`)");
+    expect(anchor).toContain('if (place && top < place.y) coverHold.current = { top, all: tocAllRef.current, open: JSON.stringify(openTocParts(root.current)) };');
+    expect(remember).toContain('if (hold && Math.abs(window.scrollY - hold.top) < 1 && hold.all === tocAllRef.current && hold.open === JSON.stringify(open)) return;');
+    expect(remember.indexOf('coverHold.current = null;')).toBeGreaterThan(remember.indexOf('const hold = coverHold.current;'));
+    expect(remember.indexOf('coverHold.current = null;')).toBeLessThan(remember.indexOf('window.history.replaceState(withBookCoverPlace('));
+  });
+  it('새로 연 표지(자리 기록 없음 · 책 안 「← 책 목차」)는 목차 펼침 · 열린 파트를 기본값으로 — 기록값은 돌아올 때만', () => {
+    const sync = sliceBetween(reader, 'const sync = (restorePosition, href = window.location.href) => {', 'setEntryDecided(true);');
+    expect(sync).toContain("else if (id === 'cover') { setTocAll(false); setTocOpen(null); }");
+    expect(sync).toContain('pendingCover.current = coverPlace; coverHold.current = null;');
+    const go = sliceBetween(reader, 'const go = useCallback((id, originAnchor) => {', 'focusAfterMove.current = true;');
+    expect(go).toContain('pendingCover.current = null; coverHold.current = null;');
+    expect(go).toContain("if (id === 'cover') { setTocAll(false); setTocOpen(null); }");
   });
   it('전체 목차 펼침 · 열린 파트는 BookReader가 들고, 돌아오면(이동 · bfcache · 새로 고침) 그 기록의 값부터 — 높이가 같아야 같은 자리', () => {
     const sync = sliceBetween(reader, 'const sync = (restorePosition, href = window.location.href) => {', 'setEntryDecided(true);');
