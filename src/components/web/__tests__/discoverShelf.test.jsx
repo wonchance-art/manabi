@@ -3,6 +3,7 @@ import path from 'node:path';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import { sliceBetween } from '../../../lib/__tests__/helpers/sliceBetween.js';
 import DiscoverShelf, { SHELF_NEWS_LIMIT, interleaveByLanguage, shelfDateLabel } from '../DiscoverShelf';
 
 // 발견 서가(SHELF-001 — 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」 2026-10-16 KST).
@@ -94,7 +95,7 @@ describe('서가 머리 · 소식 전체 보기(B2 A안)', () => {
     expect(page).toContain('<h2 className="suggestions-section__title" id={TODAY_NEWS_ID} tabIndex={-1}>오늘의 소식</h2>');
     expect(page).not.toContain('오늘의 추천 자료');
     expect(page).toContain('const newsReady = materialsFetched && suggestionsFetched;');
-    const effect = page.slice(page.indexOf('const newsFocusDone = useRef(false);'), page.indexOf('}, [newsReady]);'));
+    const effect = sliceBetween(page, 'const newsFocusDone = useRef(false);', '}, [newsReady]);');
     expect(effect).toContain("window.location.hash !== `#${TODAY_NEWS_ID}` || newsFocusDone.current || !newsReady");
     expect(effect).toContain("heading.scrollIntoView({ block: 'start' });");
     expect(effect).toContain('heading.focus({ preventScroll: true });');
