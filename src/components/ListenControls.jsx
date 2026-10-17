@@ -5,7 +5,13 @@ import { bcp47ForLanguage } from '../lib/speechLang';
 import ActionIcon from './ActionIcon';
 import {t} from '../lib/viewerMessages';
 
-export default function ListenControls({ text, language = 'Japanese', stopSignal, playbackRate, compact = false, uiLocale = 'ko' }) {
+// 재생 중 속도 칸의 글자 — 뷰어는 Aa 「재생 속도」와 같은 이름(1× 등)을 넘긴다. playbackRate는 Web Speech에 넣는 실제 값(보통 0.85)이라
+// 그대로 보이면 설정은 1×인데 막대는 0.85×로 서로 다른 말을 했다(뷰어 기능 감사 2026-10-17 KST).
+export function listenRateText(playbackRate, rateLabel) {
+  return rateLabel || `${playbackRate}×`;
+}
+
+export default function ListenControls({ text, language = 'Japanese', stopSignal, playbackRate, rateLabel, compact = false, uiLocale = 'ko' }) {
   const [supported, setSupported] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -122,7 +128,7 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
           <button className="listen-controls__btn" onClick={stop} aria-label={label('정지')} title={label('정지')} data-icon-action={compact||undefined}>{compact?<ActionIcon name="stop"/>:'⏹'}</button>
           <span className="listen-controls__progress">{progress.current}/{progress.total}</span>
           {playbackRate != null ? (
-            <span className="listen-controls__rate" title={compact?label('재생 속도'):'Aa 읽기 설정에서 재생 속도를 바꿀 수 있어요'}>{playbackRate}×</span>
+            <span className="listen-controls__rate" title={compact?label('재생 속도'):'Aa 읽기 설정에서 재생 속도를 바꿀 수 있어요'}>{listenRateText(playbackRate, rateLabel)}</span>
           ) : <select
             className="listen-controls__rate"
             value={rate}

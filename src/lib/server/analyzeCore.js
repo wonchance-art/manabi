@@ -181,12 +181,15 @@ export async function analyzeLines({ lines, language, boundaryRequest = { byLine
   // 넘겨 함수째 죽고, 클라에선 문단 전체 실패로 보였다(#969). 함수 킬 전에 조회만 중단한다.
   const cappedMissing = missingList.slice(0, MAX_MISSING);
   let enBackfillRows = 0;
+  // 뜻 조회가 「서비스 설정」(결제 · 크레딧)으로 막혔는가 — 그러면 빈 뜻으로 완료시키지 않고 호출부가 실패로 끝낸다(GEMINI-402-GUARD).
+  // 결과(results)는 지금처럼 돌려준다: 대화 턴은 이 표식을 보지 않아 동작이 그대로고, /api/analyze만 실패 응답으로 바꾼다.
+  let meaningFailure = null;
   const meaningsPromise = (async () => {
     if (cappedMissing.length === 0) return;
     try {
       // 35s: 마지막 웨이브가 deadline 직전 시작 + 개별 타임아웃 20s까지 물고 늘어져도
       // 60s(maxDuration) 안에 응답 조립까지 마치는 상한.
-      const { result: fetched } = await fetchMeaningsForMissing(cappedMissing, language, supabase, {
+      const { result: fetched, errors: meaningErrors } = await fetchMeaningsForMissing(cappedMissing, language, supabase, {
         deadlineMs: startedAt + 35_000,
         concurrency: 3,
       });
@@ -194,6 +197,7 @@ export async function analyzeLines({ lines, language, boundaryRequest = { byLine
         cache.set(baseForm, entry);
         if (enBackfillForms.has(baseForm)) enBackfillRows++;
       }
+      if ((meaningErrors || []).some((e) => e?.code === 'service_config')) meaningFailure = 'service_config';
     } catch (err) {
       console.warn('[api/analyze] Gemini meaning fetch failed:', err?.message);
     }
@@ -337,6 +341,7 @@ export async function analyzeLines({ lines, language, boundaryRequest = { byLine
 
   return {
     results,
+    ...(meaningFailure ? { meaningFailure } : {}),
     stats: {
       totalTokens: [...allBaseForms].length,
       cacheHits: usedBaseForms.length,

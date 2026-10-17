@@ -32,7 +32,7 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
 
   it('기본형 읽기는 사전 reading — 표면 ≠ 기본형이면 token-dict 조회가 켜지고, 없으면 폴백만 남는다', () => {
     expect(viewer).toContain("(!!selectedToken && !!selectedLexKey && selectedLexKey !== selectedToken.text)) && !!selectedDictKey");
-    expect(viewer).toContain('const headReading = headIsBase ? (editDictEntry?.reading || null) : selectedToken?.furigana;');
+    expect(viewer).toContain('const headReading = headIsBase ? (editDictEntry?.reading || guestHeadReading || null) : selectedToken?.furigana;'); // 로그아웃 보강은 splitRuby.test.js
     expect(viewer).toContain('const headFallback = headIsBase && dictFetched && !editDictEntry?.reading;');
   });
 
@@ -60,7 +60,7 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
       at('<div className="word-detail-card__actions">'),
       at('<div className="reader-card-headword">'),
       at('<ViewerGlyphColumn'),
-      at("refMeaning || selectedToken.meaning || '(뜻 없음)'"),
+      at("refMeaning || selectedToken.meaning || vt('(뜻 없음)')"),
       at('className="reader-card-pattern"'),
       at('senseListCount(senseGroups) > 0'),
       at('splitSentenceAroundWord(refVocab.word.ex.zh, headText, null)'),
@@ -77,7 +77,7 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
     for (let i = 1; i < order.length; i += 1) expect(order[i - 1], `block ${i - 1} before ${i}`).toBeLessThan(order[i]);
     // 글자 카드(AE-R4 전까지)는 표제어 바로 아래 — 뜻보다 위(정본 §3 「위치만 표제어 바로 아래」)
     expect(at('<div className="char-inspect">')).toBeGreaterThan(at('<div className="reader-card-headword">'));
-    expect(at('<div className="char-inspect">')).toBeLessThan(at("refMeaning || selectedToken.meaning || '(뜻 없음)'"));
+    expect(at('<div className="char-inspect">')).toBeLessThan(at("refMeaning || selectedToken.meaning || vt('(뜻 없음)')"));
     // 옛 블록 — 별도 훈음 목록·관련 문형 후보 제목·문장 속 쓰임 인용은 없다
     for (const gone of ['<ViewerHanjaReading', '관련 문형 후보', 'reader-card-context', '문장 속 쓰임']) expect(card).not.toContain(gone);
   });

@@ -27,7 +27,7 @@ export default function BookReview({ book, preview = false, returnTo = null }) {
     getNextPageParam: last => last.nextOffset ?? undefined,
   });
   const items = preview ? [] : data?.pages.flatMap(page => page.items) || [];
-  return <div className="manabi-page"><p className="manabi-breadcrumb"><Link href="/lessons">교재</Link><span>/</span><Link href={bookHref(book.edition)}>일본어 {level}</Link><span>/</span>담은 표현</p>
+  return <div className="manabi-page"><p className="manabi-breadcrumb"><Link href="/lessons" prefetch={false}>교재</Link><span>/</span><Link href={bookHref(book.edition)}>일본어 {level}</Link><span>/</span>담은 표현</p>
     <header className="manabi-page-heading"><div><p className="manabi-eyebrow">WORDS TO KEEP</p><h1>교재의 담은 표현<span>.</span></h1></div></header>
     <p className="manabi-muted manabi-small">책에서 고른 표현을 문맥과 함께 찾아보세요. 같은 표현을 여러 판본에서 담았다면 출처마다 표시되며, 복습은 한 카드로 진행해요.</p><div className="manabi-row">{!preview && ready && <Link className="manabi-button" href={bookReviewHref(readingReturn)}>이 교재 표현 복습 →</Link>}<Link className="manabi-link" href={readingReturn}>읽던 교재로 돌아가기 ↗</Link></div>
     {preview ? <section className="manabi-empty"><h2>발행 후 표현을 담을 수 있어요.</h2><p>검수 중인 판본이에요. 지금은 본문과 연습을 살펴보고, 담은 표현은 발행된 원문에서 관리해요.</p><Link className="manabi-link" href={readingReturn}>검수 중인 교재로 돌아가기 →</Link></section> : loading ? <p className="manabi-status" aria-busy="true">계정을 확인하고 있어요…</p> : !user ? <section className="manabi-empty"><h2>내가 고른 표현으로 채워 보세요.</h2><p>로그인하면 교재에서 담은 표현과 출처를 이곳에 모아 볼 수 있어요.</p><Link className="manabi-link" href={authEntryHref(`/books/${bookId}/review?edition=${book.edition}`)}>로그인하기 →</Link></section> : <>

@@ -1,4 +1,5 @@
 import { POS_CANON } from './server/posCanon';
+import { isServiceConfigError } from './errorMessage';
 // 클라는 모델이 아니라 **티어**를 말한다(AA R1) — 모델·폴백·Groq는 서버 llm.js의 TIERS가 정한다.
 export const GEMINI_TIER = 'standard';
 // 문장 번역(뷰어 [문장] 탭·막대·드래그·선처리) 등급 — 한 상수(뷰어 v2 AE-R2 정본 §4 「light로 시작」, 설계서 Q2).
@@ -56,6 +57,8 @@ async function callGeminiOnce(prompt, signal, { tier = GEMINI_TIER, model, purpo
 
 function isCapacityError(err) {
   const msg = (err?.message || '').toLowerCase();
+  // 결제 · 크레딧(「서비스 설정」)은 기다려도 풀리지 않는다 — 429로 와도 재시도하지 않는다(GEMINI-402-GUARD).
+  if (isServiceConfigError(err?.status, msg)) return false;
   return (
     msg.includes('high demand') ||
     msg.includes('overloaded') ||

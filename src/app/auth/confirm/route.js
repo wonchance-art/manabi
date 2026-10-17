@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
+import { withoutServerSignOut } from '@/lib/authCookieGuard';
 import { EMAIL_OTP_TYPES, confirmDestination } from '@/lib/authConfirm';
 import { recordExplicitProfileLogin } from '@/lib/learningActivity';
 import { UUID } from '@/lib/learningSources';
@@ -30,7 +31,8 @@ export async function GET(request) {
             return request.cookies.getAll();
           },
           setAll(cookiesToSet) {
-            pendingCookies.push(...cookiesToSet);
+            // 서버 쿠키 쓰기 가드(TOKEN-REFRESH-409-001)를 같은 자리 규칙대로 — code 교환 · OTP 확인은 새 세션을 심는 묶음이라 그대로 지나간다.
+            pendingCookies.push(...withoutServerSignOut(cookiesToSet));
           },
         },
       });

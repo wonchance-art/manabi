@@ -249,7 +249,7 @@ describe('한자 대조 배선 계약', () => {
 
   it('배치 — 「일본어로는」 줄(더 알아보기)은 헤더가 아니라 뜻 아래에 있다', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
-    const meaningAt = src.indexOf("refMeaning || selectedToken.meaning || '(뜻 없음)'");
+    const meaningAt = src.indexOf("refMeaning || selectedToken.meaning || vt('(뜻 없음)')");
     const lineAt = src.indexOf('<ViewerJapaneseMore');
     expect(meaningAt).toBeGreaterThan(-1);
     expect(lineAt).toBeGreaterThan(meaningAt);

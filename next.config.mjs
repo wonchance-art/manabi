@@ -1,5 +1,10 @@
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { buildReleaseVersion } from './src/lib/releaseVersion.js';
+
+// 화면별 글꼴 미리 받기 주소(FONT-HINT-001) — 이번 빌드의 글꼴 입력(NEXT_FONT_GOOGLE_MOCKED_RESPONSES)에서
+// next/font 산출 파일 이름을 다시 계산한다. 쓰는 곳: src/components/fonts/fontHints.js.
+const { fontHintEnv } = createRequire(import.meta.url)('./scripts/fonts/next-font-file-url.cjs');
 
 const releaseVersion = {
   ...buildReleaseVersion(process.env),
@@ -64,6 +69,7 @@ const nextConfig = {
     // Server artifact fallback for CLI deployments without runtime Git metadata.
     // /api/version stays dynamic/no-store and still checks request-time identity.
     MANABI_BUILD_IDENTITY: JSON.stringify(releaseVersion),
+    ...fontHintEnv(),
   },
 
   // 공개 서비스 기본 보안 헤더

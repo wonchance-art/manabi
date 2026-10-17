@@ -54,7 +54,7 @@ describe('자형 열 배선 — 표제어 덩어리 안, 일반 모드만', () =
     const below = sliceBetween(card, '{/* 첫 화면 우선 2단계', '{/* 사전 뜻 줄 교정 직후');
     expect(below).toContain('forceLayout="stack"');
     expect(below).not.toMatch(/<details|aria-expanded/);
-    expect(card.indexOf('{/* 첫 화면 우선 2단계')).toBeGreaterThan(card.indexOf("refMeaning || selectedToken.meaning || '(뜻 없음)'"));
+    expect(card.indexOf('{/* 첫 화면 우선 2단계')).toBeGreaterThan(card.indexOf("refMeaning || selectedToken.meaning || vt('(뜻 없음)')"));
     expect(card).toContain('sideOnly onSideMiss');
   });
 
@@ -104,6 +104,28 @@ describe('日 줄은 확인된 표기만 — 단어창은 글자 변환을 부�
     expect(prefetch).toContain('onLoad');
     const effect = sliceBetween(viewer, "if (materialLang !== 'Chinese') return undefined;", '}, [materialLang]);');
     expect(effect).toContain('prefetchGlyphTables({');
+  });
+  it('日 줄 표(jaWords)는 유휴를 기다리지 않고 열자마자 받는다 — 같은 중국어 조건 · 유휴 예약보다 먼저(VIEWER-LANG-4 ①)', () => {
+    // 1440 옆 패널에서 표가 카드보다 늦게 와 日 줄이 뒤늦게 서며 채점 버튼이 101px 밀렸다(2026-10-17 KST 빌드 실측) — 열 때 받으면 0px.
+    const effect = sliceBetween(viewer, "if (materialLang !== 'Chinese') return undefined;", '}, [materialLang]);');
+    const eager = 'loadJaWordsTable().then((t) => { if (alive && t) setJaWordsTable((cur) => cur || t); }).catch(() => {});';
+    expect(effect).toContain(eager);
+    expect(effect.indexOf(eager)).toBeLessThan(effect.indexOf('prefetchGlyphTables({'));
+    // 정체 표(正)는 그대로 유휴 때 — 즉시 받는 것은 日 줄 표 하나
+    expect(effect).not.toContain('loadZhengTable(');
+  });
+});
+
+describe('어두운 읽기 테마의 바깥 여백(VIEWER-AUDIT 5)', () => {
+  const darkPalette = sliceBetween(css, '.viewer-layout[data-reader-theme="dark"],', '}');
+  it('같은 어두운 팔레트가 body · 앱 셸에도 선다(색 값은 한 곳)', () => {
+    expect(darkPalette).toContain('body:has(.viewer-layout[data-reader-theme="dark"]),');
+    expect(darkPalette).toContain('.manabi-app:has(.viewer-layout[data-reader-theme="dark"]) {');
+    expect(darkPalette).toContain('--reader-paper:#202625;');
+  });
+  it('body · 앱 셸 배경은 그 토큰(--reader-paper)으로 칠한다 — 종이 · 밝게 테마 규칙은 없다', () => {
+    expect(css).toContain('body:has(.viewer-layout[data-reader-theme="dark"]),\n.manabi-app:has(.viewer-layout[data-reader-theme="dark"]) {background:var(--reader-paper);color-scheme:dark;}');
+    expect(css).not.toMatch(/(?:body|\.manabi-app):has\(\.viewer-layout\[data-reader-theme="(?:light|sepia)"\]\)/);
   });
 });
 

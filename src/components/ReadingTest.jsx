@@ -6,6 +6,7 @@ import { viewerCacheKey } from '../lib/viewerReliability';
 import { buildReadingCheckPrompt, validateReadingQuestions } from '../lib/readingTestReliability';
 import { callGemini } from '../lib/gemini';
 import { useAuth } from '../lib/AuthContext';
+import { authEntryHref } from '../lib/authRedirect';
 import { logReviewEvents } from '../lib/reviewEvents';
 import Button from './Button';
 
@@ -46,8 +47,14 @@ function ReadingTestOverlay({ children, onClose }) {
   return <div className="reading-test-overlay" onClick={onClose}>{children}</div>;
 }
 
-export default function ReadingTest({ rawText, language, materialId, onClose, onGraded, inline = false, nextLesson = null }) {
-  const { user } = useAuth();
+// 손님 안내 기본값 — 뷰어는 자기 화면 문구(vt)와 제자리 복귀 주소(signInHref)를 넘긴다(목업 viewer-audit §1).
+export const READING_TEST_GUEST_LABEL = '로그인하면 문제를 만들어 드려요 →';
+
+export default function ReadingTest({ rawText, language, materialId, onClose, onGraded, inline = false, nextLesson = null, signInHref = null, signInLabel = READING_TEST_GUEST_LABEL }) {
+  const { user, loading: authLoading } = useAuth();
+  // 손님은 문제를 만들지 않는다 — /api/gemini가 401로 막으니 요청 대신 로그인 안내(번역 칸 SENTENCE_TX_LOGIN_REQUIRED와 같은 규칙).
+  // 이미 만들어 둔 문제(캐시)는 지금처럼 복원해 보인다. 로그인 확인 중에도 요청하지 않는다.
+  const signedIn = !!user?.id;
   const english = language === 'English';
   const [errorMessage, setErrorMessage] = useState('');
   const diskKeyRef = useRef(null);
@@ -91,11 +98,11 @@ export default function ReadingTest({ rawText, language, materialId, onClose, on
         setStatus(saved.result ? 'done' : 'active');
       } else {
         setStatus('idle');
-        if (inline) generationStartRef.current();
+        if (inline && signedIn) generationStartRef.current();
       }
     }).catch(() => { if (requestRef.current === requestId) { setStatus('idle'); setErrorMessage('읽기 확인을 준비하지 못했어요. 다시 열어 주세요.'); } });
     return () => { requestRef.current += 1; generationRef.current?.abort(); };
-  }, [materialId, language, rawText, user?.id, inline]);
+  }, [materialId, language, rawText, user?.id, signedIn, inline]);
 
   // 답변/결과 변경 시 저장
   useEffect(() => {
@@ -109,6 +116,7 @@ export default function ReadingTest({ rawText, language, materialId, onClose, on
   }, [questions, answers, result, materialId]);
 
   async function generateTest() {
+    if (!signedIn) return;
     const excerpt = (rawText || '').slice(0, 2500);
     if (!excerpt.trim() || !diskKeyRef.current) return;
     const requestMaterialId = materialId;
@@ -262,8 +270,10 @@ Rules:
             <p style={{ color: 'var(--text-secondary)', marginBottom: 20, lineHeight: 1.6 }}>
               {english ? 'IELTS 형식으로 이 글의 이해도를 확인해요.' : '방금 읽은 글의 내용을 다섯 문제로 확인해요.'}
             </p>
-            {errorMessage && <p role="alert">{errorMessage}</p>}
-            <Button onClick={generateTest} disabled={!diskKeyRef.current}>{errorMessage ? '다시 시도' : '시작하기'}</Button>
+            {signedIn ? <>
+              {errorMessage && <p role="alert">{errorMessage}</p>}
+              <Button onClick={generateTest} disabled={!diskKeyRef.current}>{errorMessage ? '다시 시도' : '시작하기'}</Button>
+            </> : !authLoading && <Link href={signInHref || authEntryHref(typeof window === 'undefined' ? '/' : window.location.pathname + window.location.search)} className="reading-test__login">{signInLabel}</Link>}
           </div>
         )}
 

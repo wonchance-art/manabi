@@ -14,7 +14,7 @@ import useReadingProgress from './useReadingProgress';
 import BookHome from './BookHome';
 import BookEditionFonts from './BookEditionFonts';
 import BookReaderSkeleton from './BookReaderSkeleton';
-import { HASH_GATE, announceFragmentUrl, coverPage, hashGate, pageFromHash } from './bookEntryGate';
+import { HASH_GATE, announceFragmentUrl, coverPage, hashGate, pageFromHash, rememberRouterTree } from './bookEntryGate';
 import './reading-content.css';
 import useLibraryActivity from '@/components/library/useLibraryActivity';
 import {LibraryReturnLink} from '@/components/web/LibraryReaderLink';
@@ -116,6 +116,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     };
     // Keep Next's routing state and the explicit URL anchor intact. This belongs
     // to one history entry, not to the account's reading-progress storage.
+    rememberRouterTree(); // 같은 문서 tree를 기억해 둔다 — 고유 hash 이동의 새 기록에 표지와 함께 찍는다(announceFragmentUrl)
     window.history.replaceState({ ...window.history.state, manabiBookPosition: position }, '', window.location.href);
   }, [authLoading, book.edition, user?.id, reference]);
 
@@ -140,6 +141,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     };
     // Next preserves custom state on traversal, and clears it on fresh Link navigation.
     // Internal reader links also clear the snapshot before pushing an explicit anchor.
+    rememberRouterTree(); // 붙을 때 이 문서의 Next tree(뒤로/앞으로 기록의 tree는 announceFragmentUrl이 그때 기억한다)
     sync(true);
     let traversedHref;
     const pop = () => { traversedHref = window.location.href; focusAfterMove.current = true; sync(true, traversedHref); };

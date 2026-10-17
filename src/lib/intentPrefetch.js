@@ -1,7 +1,8 @@
 // 의도 prefetch(APP-FEEL-004, 2026-10-17 KST) — 배움 · 서재는 Link prefetch={false}(performanceRepairs P5)라 첫 클릭에
 // 대기 화면(loading.jsx)조차 서버 응답 전까지 뜨지 않았다(Preview 실측: RSC +800ms에 배움 대기 화면 1190ms · 산책 150ms).
 // 화면에 들어올 때(뷰포트) 받는 것은 그대로 끄고, 마우스가 머물거나 키보드 포커스가 올 때만 「대기 화면까지」 받는다.
-// 배움만 쓴다: 서재는 자체 loading이 없어(첫 화면을 서버가 미리 받는다 — LIBRARY-PREFETCH-001) AUTO가 라우터 상태만 받는다
+// 배움 · 산책이 쓴다(산책은 BFCACHE-A-001 — 화면 진입 prefetch의 no-store 응답이 bfcache를 막아 이 방식으로 옮겼다).
+// 서재는 자체 loading이 없어(첫 화면을 서버가 미리 받는다 — LIBRARY-PREFETCH-001) AUTO가 라우터 상태만 받는다
 // (server/app-render/walk-tree-with-flight-router-state.js:60-65) — 골격 이득 없이 붙잡힘 위험만 남는다.
 //
 // kind는 반드시 'auto'다. 옛 라우터(Next 15.5, 세그먼트 캐시 꺼짐)에서 router.prefetch()의 기본값은 FULL이라 개인화 화면을

@@ -17,7 +17,11 @@ describe('루트 글꼴 미리 받기', () => {
     expect(inter).toContain("variable: '--font-inter',");
     expect(inter).toContain("display: 'swap',");
   });
-  it('첫 화면에 쓰이는 글꼴(KR · JP · SC · Noto Sans)의 미리 받기는 건드리지 않는다', () => {
-    for (const name of ['notoKr', 'notoJp', 'notoSc', 'notoSans']) expect(block(name)).not.toContain('preload');
+  it('첫 화면에 쓰이는 글꼴(KR · JP · SC)의 미리 받기는 건드리지 않는다', () => {
+    for (const name of ['notoKr', 'notoJp', 'notoSc']) expect(block(name)).not.toContain('preload');
+  });
+  it('Noto Sans(병음 · 라틴 본문)는 루트에서 미리 받지 않고 그리는 세그먼트만 힌트를 건다 — 계약은 src/app/__tests__/fontHints.test.js', () => {
+    expect(block('notoSans')).toContain('preload: false,');
+    expect(layout).toContain('src/components/fonts/fontHints.js');
   });
 });
