@@ -11,9 +11,10 @@ import { sliceBetween } from './helpers/sliceBetween';
 //   R2 머묾 80ms · 누름 · 키보드 포커스에 뷰어 모듈만 미리 import(서버 호출 없음).
 //   (c) 행 Link의 화면 진입 prefetch를 끄고(no-store → 서재 bfcache 막힘 · 행마다 서버 렌더) 의도 시점에만 router.prefetch(auto).
 // 서재 번들에 뷰어 JS가 끌려오지 않는다(정적 import 그래프) — 뷰어 모듈은 R2의 동적 import 한 곳으로만 닿는다.
-vi.mock('../supabase', () => ({ supabase: { from: () => { throw new Error('network not used in this test'); }, auth: { getSession: async () => ({ data: { session: null } }) } } }));
-vi.mock('../offlineCache', () => ({ cacheMaterial: async () => {}, getCachedMaterial: async () => null }));
-vi.mock('../sharedStore', () => ({ getSharedCopy: async () => null }));
+const io = vi.hoisted(() => ({ calls: [], network: null }));
+vi.mock('../supabase', () => ({ supabase: { from: () => { if (!io.network) throw new Error('network not used in this test'); return io.network; }, auth: { getSession: async () => ({ data: { session: { user: { id: 'S' } } } }) } } }));
+vi.mock('../offlineCache', () => ({ cacheMaterial: async (...args) => { io.calls.push(['cacheMaterial', ...args]); }, getCachedMaterial: async (...args) => { io.calls.push(['getCachedMaterial', ...args]); return null; } }));
+vi.mock('../sharedStore', () => ({ getSharedCopy: async (...args) => { io.calls.push(['getSharedCopy', ...args]); return null; } }));
 const h = vi.hoisted(() => ({ links: [], pushed: [], cache: new Map(), prefetched: [] }));
 vi.mock('next/link', () => ({ default: (props) => { h.links.push(props); return null; } }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: (u) => h.pushed.push(u), prefetch: (...args) => h.prefetched.push(args) }), useSearchParams: () => new URLSearchParams(), usePathname: () => '/materials' }));
@@ -68,6 +69,22 @@ describe('서재 번들에 뷰어 JS가 끌려오지 않는다', () => {
   });
   it('조회 모듈의 정적 의존은 허용 목록뿐 — 서재 링크를 쓰는 모든 화면에 수업 일정 · 공휴일 · 기기 캐시 · 팀 사본을 끌지 않는다', () => {
     expect(staticGraph(path.join(ROOT, 'src/lib/viewerMaterial.js')).sort()).toEqual(['src/lib/accountQueryCache.js', 'src/lib/bookMeta.js', 'src/lib/supabase.js', 'src/lib/viewerMaterial.js']);
+  });
+  it('기기 캐시 · 팀 사본은 동적 import로 받아도 계정 인자를 그대로 넘긴다(OFFLINE-ACCOUNT-SCOPE-001 배선)', async () => {
+    const accounts = await import('../accountQueryCache');
+    accounts.noteAccount('A');
+    io.calls.length = 0;
+    await expect(lib.fetchMaterial('local:7')).rejects.toMatchObject({ code: 'LOCAL_MISSING' });
+    expect(io.calls).toEqual([['getSharedCopy', 7, { account: 'A' }]]);
+    // 네트워크 성공 → 받은 세션 계정으로 기록 · 실패 → 화면 계정으로 폴백 읽기
+    const chain = (result) => ({ select: () => chain(result), eq: () => chain(result), maybeSingle: async () => result });
+    io.calls.length = 0; io.network = chain({ data: { id: 45, title: 't' }, error: null });
+    expect(await lib.fetchMaterial('45')).toEqual({ id: 45, title: 't' });
+    await vi.waitFor(() => expect(io.calls).toEqual([['cacheMaterial', { id: 45, title: 't' }, { owner: 'S' }]]));
+    io.calls.length = 0; io.network = chain({ data: null, error: Object.assign(new Error('offline'), { code: 'FETCH' }) });
+    await expect(lib.fetchMaterial('45')).rejects.toMatchObject({ code: 'FETCH' });
+    expect(io.calls).toEqual([['getCachedMaterial', '45', { account: 'A' }]]);
+    io.network = null;
   });
   it('팀 사본 판정(local:)은 classBoard.isLocalId와 같다', async () => {
     const board = await import('../classBoard');
