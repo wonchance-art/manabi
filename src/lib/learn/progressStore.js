@@ -425,8 +425,9 @@ function readLocalLessonProgress(lang, allowed, vocabLessons = [], accountId = n
     } catch {}
   };
 
-  // F2 게스트 이벤트 키.
-  addStoredArray('studied_lesson');
+  // F2 게스트 이벤트 키 — 손님 화면에만. 로그인 계정은 그 계정 기록만 읽는다(LOCAL-PROGRESS-ACCOUNT-001): 손님 완료가 섞이면
+  // 강의 완료 표시 · 코스 지도가 「완료」로 보여 그 계정이 「완료」를 눌러 자기 서버 기록을 만들 수 없었다. 손님 몫은 서버로 올리지 않는다.
+  if (!accountId) addStoredArray('studied_lesson');
 
   // 기존 레퍼런스 진도 키. progressStore가 유지하는 무손실 폴백 계약이다.
   const readKey = LESSON_READ_KEYS[lang];

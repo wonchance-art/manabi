@@ -142,6 +142,9 @@ describe('범위 판정 — 손님 강의 이벤트 · 독해 트랙(2026-10-17 
     expect(progress.match(/recordProgressLocal\(/g)).toHaveLength(2); // 정의 1 + 손님 경로 호출 1
     const get = sliceBetween(progress, 'export async function getLessonProgress(', 'export async function recordLessonCompleted(');
     expect(get).not.toMatch(/\.(upsert|insert|update)\(/);
+    // 로그인 계정 화면(강의 완료 표시 · 코스 지도)은 손님 강의 이벤트를 섞지 않는다 — 그래야 「완료」로 자기 서버 기록을 만든다.
+    expect(sliceBetween(progress, 'function readLocalLessonProgress(', 'for (const lesson of vocabLessons)'))
+      .toContain("if (!accountId) addStoredArray('studied_lesson');");
     const files = [];
     const walk = dir => { for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const p = path.join(dir, e.name); if (e.isDirectory()) { if (e.name !== '__tests__') walk(p); } else if (/\.(jsx?|mjs)$/.test(e.name)) files.push(p); } };
     walk(path.join(ROOT, 'src'));
