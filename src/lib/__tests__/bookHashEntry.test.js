@@ -6,7 +6,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { describe, expect, it } from 'vitest';
 import { sliceBetween } from './helpers/sliceBetween';
-import { HASH_GATE, HASH_GATE_CSS, HASH_GATE_ID, HASH_GATE_PLAIN_CSS, announceFragmentUrl, coverPage, lessonPage, pageFromHash } from '../../components/books/bookEntryGate';
+import { HASH_GATE, HASH_GATE_CSS, HASH_GATE_ID, HASH_GATE_PLAIN_CSS, announceFragmentUrl, coverPage, forgetRouterTree, lessonPage, pageFromHash, rememberRouterTree } from '../../components/books/bookEntryGate';
 
 const ROOT = path.resolve(__dirname, '../../..');
 const source = fs.readFileSync(path.join(ROOT, 'src/components/books/BookReader.jsx'), 'utf8');
@@ -57,7 +57,7 @@ describe('하드 로드 감춤 한 줄 — HASH_GATE', () => {
   it('서버 · 하이드레이션 첫 그림은 표지 + 그 한 줄 + 꺼진 본문 골격(불일치 0), 첫 쪽이 정해지면 뗀다', () => {
     expect(source).toContain("{unit === 'cover' && !entryDecided && <><script dangerouslySetInnerHTML={{ __html: HASH_GATE }} /><BookReaderSkeleton gated /></>}");
     expect(source).toContain("const [pageId, setPageId] = useState('cover')");
-    expect(source).toContain("import { HASH_GATE, announceFragmentUrl, coverPage, hashGate, pageFromHash } from './bookEntryGate';");
+    expect(source).toContain("import { HASH_GATE, announceFragmentUrl, coverPage, hashGate, pageFromHash, rememberRouterTree } from './bookEntryGate';");
   });
 });
 
@@ -123,5 +123,81 @@ describe('같은 문서 hash 이동 — 라우터가 옛 hash로 되돌려도 �
     const marked = calls.length;
     run({ __NA: true });
     expect(calls.length - marked).toBe(1);
+  });
+});
+
+// 「고유 hash 이동 → (RESTORE 커밋 전) 다른 경로로 이동 → 뒤로」(a775 리뷰 2026-10-17 KST): 표지만 찍힌 hash 기록으로 돌아오면
+// Next traverse가 그 순간의 tree(/materials)를 써서 주소는 교재인데 화면은 /materials가 된다. 같은 문서에서 마지막으로 본 tree를
+// 함께 찍는다. 아래 모형은 Next 15.5.21 app-router.js의 replaceState 패치(표지 없는 data → 지금 기록 표지 복사 · ACTION_RESTORE) ·
+// onPopState(state 없음 → 무시, __NA 없음 → 새로 고침, 그 밖 → traverse(tree ?? 지금 tree)) 그대로다.
+describe('hash 기록에 같은 문서 tree를 함께 찍는다(BOOK-HASH-RACE-001 후속)', () => {
+  const BOOK = 'https://manabi.test/books/japanese-n5?edition=e';
+  const T_BOOK = ['', { children: ['books', {}] }], T_MAT = ['', { children: ['materials', {}] }];
+  function nextModel(first) {
+    const entries = [{ url: first.url, state: first.state }]; let idx = 0;
+    const out = { restores: [], reloads: 0, traversed: [], routerTree: first.state?.__PRIVATE_NEXTJS_INTERNALS_TREE };
+    const original = { replace: (data, url) => { entries[idx] = { url: url ?? entries[idx].url, state: data && structuredClone(data) }; },
+      push: (data, url) => { entries.splice(idx + 1); entries.push({ url, state: data && structuredClone(data) }); idx++; } };
+    const history = {
+      get state() { return entries[idx].state; },
+      replaceState(data, _u, url) {
+        if (data?.__NA || data?._N) return original.replace(data, url);
+        data = data == null ? {} : data;
+        const cur = entries[idx].state;
+        if (cur?.__NA) data.__NA = cur.__NA;
+        if (cur?.__PRIVATE_NEXTJS_INTERNALS_TREE) data.__PRIVATE_NEXTJS_INTERNALS_TREE = cur.__PRIVATE_NEXTJS_INTERNALS_TREE;
+        if (url) out.restores.push({ url, tree: cur?.__PRIVATE_NEXTJS_INTERNALS_TREE });
+        return original.replace(data, url);
+      },
+    };
+    const env = {
+      window: { history, location: { get href() { return entries[idx].url; } } },
+      nativeHash: (url) => { original.push(null, url); }, // 브라우저가 처리하는 hash 이동: 새 기록 state = null
+      linkTo: (url, tree) => { original.push({ __NA: true, __PRIVATE_NEXTJS_INTERNALS_TREE: tree }, url); out.routerTree = tree; }, // HistoryUpdater pendingPush
+      back: () => {
+        idx--; const state = entries[idx].state;
+        if (!state) return 'ignored';
+        if (!state.__NA) { out.reloads++; return 'reload'; }
+        const tree = state.__PRIVATE_NEXTJS_INTERNALS_TREE ?? out.routerTree; // restore-reducer: tree || state.tree
+        out.traversed.push(tree); out.routerTree = tree; return 'traverse';
+      },
+      out, entries,
+    };
+    return env;
+  }
+  const withWindow = (env, fn) => { const before = globalThis.window; globalThis.window = env.window; try { return fn(); } finally { globalThis.window = before; } };
+
+  it('hash 이동 → 커밋 전 /materials로 → 뒤로: 새로 고침 없이 교재 tree로 돌아온다', () => {
+    forgetRouterTree();
+    const env = nextModel({ url: `${BOOK}#u01-start`, state: { __NA: true, __PRIVATE_NEXTJS_INTERNALS_TREE: T_BOOK } });
+    withWindow(env, () => {
+      rememberRouterTree(); // BookReader가 붙을 때
+      env.nativeHash(`${BOOK}#u02-start`);
+      announceFragmentUrl(`${BOOK}#u02-start`); // hashchange
+      // RESTORE가 커밋되기 전에 다른 경로로 — HistoryUpdater는 새 기록에만 쓰고 hash 기록은 다시 찍지 않는다.
+      env.linkTo('https://manabi.test/materials', T_MAT);
+      expect(env.back()).toBe('traverse');
+    });
+    expect(env.out.reloads).toBe(0);
+    expect(env.out.traversed).toEqual([T_BOOK]); // T_MAT(그 순간 tree)가 아니다
+    expect(env.entries[1].state).toEqual({ __NA: true, __PRIVATE_NEXTJS_INTERNALS_TREE: T_BOOK });
+  });
+
+  it('기억한 tree가 다른 문서(검색어가 다른 주소)의 것이면 쓰지 않는다 — 표지만 찍는다', () => {
+    forgetRouterTree();
+    const env = nextModel({ url: 'https://manabi.test/books/japanese-n5?edition=other#u01-start', state: { __NA: true, __PRIVATE_NEXTJS_INTERNALS_TREE: T_BOOK } });
+    withWindow(env, () => {
+      rememberRouterTree();
+      env.nativeHash(`${BOOK}#u02-start`); // 다른 판본 주소(같은 경로 · 다른 검색어)
+      announceFragmentUrl(`${BOOK}#u02-start`);
+    });
+    expect(env.entries[1].state).toEqual({ __NA: true });
+  });
+
+  it('BookReader가 붙을 때와 읽던 자리를 남길 때 tree를 기억한다', () => {
+    expect(source).toContain("import { HASH_GATE, announceFragmentUrl, coverPage, hashGate, pageFromHash, rememberRouterTree } from './bookEntryGate';");
+    const remember = sliceBetween(source, 'const rememberPosition = useCallback(', '}, [authLoading, book.edition, user?.id, reference]);');
+    expect(remember).toMatch(/rememberRouterTree\(\);[^\n]*\n\s*window\.history\.replaceState\(\{ \.\.\.window\.history\.state, manabiBookPosition: position \}/);
+    expect(source).toMatch(/rememberRouterTree\(\);[^\n]*\n\s*sync\(true\);\n\s*let traversedHref;/);
   });
 });
