@@ -5,7 +5,7 @@
       "title": "Capital, Volume I",
       "author": "Karl Marx",
       "level": "C1 고급",
-      "total": 115,
+      "total": 114,
       "display": {
         "titleKo": "자본론 1권",
         "authorKo": "카를 마르크스",
@@ -13,7 +13,7 @@
         "coverTitle": "Capital."
       },
       "language": "English",
-      "size": 245023,
+      "size": 244979,
       "unit": "words",
       "literature": {
         "publishedYear": 1867
@@ -377,106 +377,102 @@
         },
         {
           "order": 90,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (1/16)"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (1/15)"
         },
         {
           "order": 91,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (2/16)"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (2/15)"
         },
         {
           "order": 92,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (3/16)"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (3/15)"
         },
         {
           "order": 93,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (4/16)"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (4/15)"
         },
         {
           "order": 94,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (5/16)"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (5/15)"
         },
         {
           "order": 95,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (6/16)"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (6/15)"
         },
         {
           "order": 96,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (7/16)"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (7/15)"
         },
         {
           "order": 97,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (8/16)"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (8/15)"
         },
         {
           "order": 98,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (9/16)"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (9/15)"
         },
         {
           "order": 99,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (10/16)"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (10/15)"
         },
         {
           "order": 100,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (11/16)"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (11/15)"
         },
         {
           "order": 101,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (12/16)"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (12/15)"
         },
         {
           "order": 102,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (13/16)"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (13/15)"
         },
         {
           "order": 103,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (14/16)"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (14/15)"
         },
         {
           "order": 104,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (15/16)"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (15/15)"
         },
         {
           "order": 105,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (16/16)"
-        },
-        {
-          "order": 106,
           "title": "Chapter XXVI: The Secret of Primitive Accumulation"
         },
         {
-          "order": 107,
+          "order": 106,
           "title": "Chapter XXVII: Expropriation of the Agricultural Population From the Land (1/2)"
         },
         {
-          "order": 108,
+          "order": 107,
           "title": "Chapter XXVII: Expropriation of the Agricultural Population From the Land (2/2)"
         },
         {
-          "order": 109,
+          "order": 108,
           "title": "Chapter XXVIII: Bloody Legislation Against the Expropriated, From the End of the 15Th Century. Forcing Down of Wages by Acts of Parliament"
         },
         {
-          "order": 110,
+          "order": 109,
           "title": "Chapter XXIX: Genesis of the Capitalist Farmer"
         },
         {
-          "order": 111,
+          "order": 110,
           "title": "Chapter XXX: Reaction of the Agricultural Revolution on Industry. Creation of the Home Market for Industrial Capital"
         },
         {
-          "order": 112,
+          "order": 111,
           "title": "Chapter XXXI: Genesis of the Industrial Capitalist (1/2)"
         },
         {
-          "order": 113,
+          "order": 112,
           "title": "Chapter XXXI: Genesis of the Industrial Capitalist (2/2)"
         },
         {
-          "order": 114,
+          "order": 113,
           "title": "Chapter XXXII: Historical Tendency of Capitalist Accumulation"
         },
         {
-          "order": 115,
+          "order": 114,
           "title": "Chapter XXXIII: The Modern Theory of Colonisation"
         }
       ]
@@ -507,6 +503,138 @@
         {
           "order": 1,
           "title": "La Dernière Classe"
+        }
+      ]
+    },
+    "ws-fr-alphonse-daudet_lettres-de-mon-moulin": {
+      "title": "Lettres de mon moulin",
+      "author": "Alphonse Daudet",
+      "level": "B1 중급",
+      "total": 27,
+      "display": {
+        "titleKo": "풍차 방앗간 편지",
+        "authorKo": "알퐁스 도데",
+        "binding": "tpl-wrapper",
+        "coverTitle": "Lettres de mon\nmoulin",
+        "coverAuthor": "Alphonse Daudet",
+        "coverPalette": "yellow",
+        "coverOrnament": "double-rule",
+        "coverYear": 1869
+      },
+      "language": "French",
+      "size": 48163,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1869
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "AVANT-PROPOS"
+        },
+        {
+          "order": 2,
+          "title": "INSTALLATION."
+        },
+        {
+          "order": 3,
+          "title": "LA DILIGENCE DE BEAUCAIRE."
+        },
+        {
+          "order": 4,
+          "title": "LE SECRET DE MAÎTRE CORNILLE"
+        },
+        {
+          "order": 5,
+          "title": "LA CHÈVRE DE M. SEGUIN"
+        },
+        {
+          "order": 6,
+          "title": "LES ÉTOILES."
+        },
+        {
+          "order": 7,
+          "title": "L’ARLÉSIENNE"
+        },
+        {
+          "order": 8,
+          "title": "LA MULE DU PAPE. (1/2)"
+        },
+        {
+          "order": 9,
+          "title": "LA MULE DU PAPE. (2/2)"
+        },
+        {
+          "order": 10,
+          "title": "LE PHARE DES SANGUINAIRES"
+        },
+        {
+          "order": 11,
+          "title": "L’AGONIE DE LA SÉMILLANTE"
+        },
+        {
+          "order": 12,
+          "title": "LES DOUANIERS"
+        },
+        {
+          "order": 13,
+          "title": "LE CURÉ DE CUCUGNAN."
+        },
+        {
+          "order": 14,
+          "title": "LES VIEUX."
+        },
+        {
+          "order": 15,
+          "title": "BALLADES EN PROSE. · I. LA MORT DU DAUPHIN · II. LE SOUS-PRÉFET AUX CHAMPS."
+        },
+        {
+          "order": 16,
+          "title": "LE PORTEFEUILLE DE BIXIOU."
+        },
+        {
+          "order": 17,
+          "title": "LA LÉGENDE DE L’HOMME À LA CERVELLE D’OR."
+        },
+        {
+          "order": 18,
+          "title": "LE POÈTE MISTRAL."
+        },
+        {
+          "order": 19,
+          "title": "LES TROIS MESSES BASSES."
+        },
+        {
+          "order": 20,
+          "title": "LES ORANGES"
+        },
+        {
+          "order": 21,
+          "title": "LES DEUX AUBERGES."
+        },
+        {
+          "order": 22,
+          "title": "À MILIANAH. (1/2)"
+        },
+        {
+          "order": 23,
+          "title": "À MILIANAH. (2/2)"
+        },
+        {
+          "order": 24,
+          "title": "LES SAUTERELLES."
+        },
+        {
+          "order": 25,
+          "title": "L’ÉLIXIR DU RÉVÉREND PÈRE GAUCHER."
+        },
+        {
+          "order": 26,
+          "title": "EN CAMARGUE. · I. LE DÉPART · II. LA CABANE. · III. À L’ESPÈRE ! (À L’AFFÛT !) · IV. LE ROUGE ET LE BLANC. · V. LE VACCARÈS."
+        },
+        {
+          "order": 27,
+          "title": "NOSTALGIE DE CASERNES."
         }
       ]
     },
@@ -555,7 +683,7 @@
         "coverYear": 1782
       },
       "language": "French",
-      "size": 40727,
+      "size": 40726,
       "unit": "words",
       "literature": {
         "publishedYear": 1782
@@ -2670,6 +2798,40 @@
         }
       ]
     },
+    "ws-ko-kim-yu-jeong_bombom": {
+      "title": "봄봄",
+      "author": "김유정",
+      "level": "중급",
+      "total": 3,
+      "display": {
+        "titleKo": "봄봄",
+        "authorKo": "김유정",
+        "binding": "tpl-cjk-vertical",
+        "coverTitle": "봄봄",
+        "coverAuthor": "김유정",
+        "coverPalette": "cream"
+      },
+      "language": "Korean",
+      "size": 8297,
+      "unit": "chars",
+      "literature": {
+        "publishedYear": 1935
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "봄봄 (1/3)"
+        },
+        {
+          "order": 2,
+          "title": "봄봄 (2/3)"
+        },
+        {
+          "order": 3,
+          "title": "봄봄 (3/3)"
+        }
+      ]
+    },
     "ws-ko-kim-yu-jeong_dongbaekkkot": {
       "title": "동백꽃",
       "author": "김유정",
@@ -2876,6 +3038,44 @@
         {
           "order": 1,
           "title": "孔乙己"
+        }
+      ]
+    },
+    "ws-zh-lu-xun_zhu-fu": {
+      "title": "祝福",
+      "author": "鲁迅",
+      "level": "H5 고급",
+      "total": 4,
+      "display": {
+        "titleKo": "축복",
+        "authorKo": "루쉰",
+        "binding": "tpl-cjk-vertical",
+        "coverTitle": "祝福",
+        "coverAuthor": "鲁迅",
+        "coverPalette": "grey"
+      },
+      "language": "Chinese",
+      "size": 9182,
+      "unit": "chars",
+      "literature": {
+        "publishedYear": 1924
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "祝福 (1/4)"
+        },
+        {
+          "order": 2,
+          "title": "祝福 (2/4)"
+        },
+        {
+          "order": 3,
+          "title": "祝福 (3/4)"
+        },
+        {
+          "order": 4,
+          "title": "祝福 (4/4)"
         }
       ]
     },

@@ -21,7 +21,7 @@ import { createStandardEbooksDraft, SE_BOOK_VERSION, SE_PROVIDER, standardEbooks
 
 const args = process.argv.slice(2);
 const flag = (name) => { const at = args.indexOf(`--${name}`); return at >= 0 ? args[at + 1] : undefined; };
-const slug = args.find((arg) => /^[a-z0-9-]+(?:_[a-z0-9-]+){1,2}$/u.test(arg)); // 번역본은 <작가>_<작품>_<번역자>
+const slug = args.find((arg) => /^[a-z0-9-]+(?:_[a-z0-9-]+){1,4}$/u.test(arg)); // 번역본은 <작가>_<작품>_<번역자>
 if (!slug) { console.error('사용: se-add-work.mjs <작가>_<작품> --published YYYY --death YYYY --origin GB|US --level "B1 중급"'); process.exit(1); }
 const repo = `standardebooks/${slug}`;
 const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest('hex');

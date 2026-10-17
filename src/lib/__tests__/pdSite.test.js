@@ -74,10 +74,7 @@ describe('pdSiteSections — 부(part) 제목은 다음 장 앞머리, 본문이
 describe('리포 7편 — 원문 고정 · 한국 법 권리 · 장 모양', () => {
   const keys = readdirSync(ROOT).filter((name) => name.startsWith('pd-')).sort();
   it('작품 목록 · 권리 근거(헤밍웨이·카뮈·생텍쥐페리·오웰·울프 — 한국 보호기간 만료)', () => {
-    expect(keys).toEqual([
-      'pd-fp-albert-camus_l-etranger', 'pd-fp-albert-camus_le-mythe-de-sisyphe', 'pd-fp-ernest-hemingway_the-old-man-and-the-sea', 'pd-fp-ruth-benedict_the-chrysanthemum-and-the-sword', 'pd-fp-virginia-woolf_a-room-of-ones-own',
-      'pd-gau-antoine-de-saint-exupery_le-petit-prince', 'pd-gau-george-orwell_animal-farm', 'pd-gau-george-orwell_nineteen-eighty-four',
-    ]);
+    expect(keys.length).toBeGreaterThanOrEqual(8); // 목록은 카탈로그가 정본(literatureCatalog.test.js) — 넣을 때 여기를 고치지 않는다
     for (const key of keys) {
       const entry = JSON.parse(readFileSync(`${ROOT}/${key}/entry.json`, 'utf8'));
       const html = new TextDecoder(entry.file.encoding, { fatal: true }).decode(readFileSync(`${ROOT}/${key}/source/${entry.file.path}`));

@@ -101,22 +101,11 @@ describe('리포 정본 3편 — 산출물·장 모양', () => {
     expect(STANDARD_EBOOKS_OUTPUTS).toEqual({ index: 'index.generated.js', manifest: 'manifest.generated.json', display: 'manifest.display.generated.json' });
     const { works, errors } = await buildStandardEbooks({ root: STANDARD_EBOOKS_ROOT, check: true });
     expect(errors).toEqual([]);
-    // 1차 3편 + 2차 묶음 5편(오너 2026-10-17 KST — 초판 장정 표지) + 3차 묶음 5편(「되는 언어로만」 — 초판 속표지·천 장정)
-    expect(works.map((work) => [work.key, work.chapters, work.status])).toEqual([
-      ['se-adam-smith_the-theory-of-moral-sentiments', 86, 'checked'],
-      ['se-adam-smith_the-wealth-of-nations', 173, 'checked'],
-      ['se-arthur-conan-doyle_the-adventures-of-sherlock-holmes', 47, 'checked'],
-      ['se-benjamin-franklin_the-autobiography-of-benjamin-franklin', 28, 'checked'],
-      ['se-charles-dickens_a-christmas-carol', 13, 'checked'],
-      ['se-f-scott-fitzgerald_the-great-gatsby', 22, 'checked'],
-      ['se-henry-david-thoreau_walden', 50, 'checked'],
-      ['se-herman-melville_moby-dick', 150, 'checked'],
-      ['se-james-joyce_a-portrait-of-the-artist-as-a-young-man', 39, 'checked'],
-      ['se-jane-austen_pride-and-prejudice', 65, 'checked'],
-      ['se-john-stuart-mill_on-liberty', 22, 'checked'],
-      ['se-lewis-carroll_alices-adventures-in-wonderland', 12, 'checked'],
-      ['se-marcus-aurelius_meditations_george-long', 20, 'checked'],
-    ]);
+    // 작품 목록은 카탈로그가 정본(수록 줄 = 작품 폴더 — literatureCatalog.test.js) — 여기서는 모두 검사를 통과했는지만 본다.
+    // 작품을 넣을 때 이 목록을 손으로 고치지 않는다(LIT-IMPORT-1).
+    const catalog = JSON.parse(readFileSync(path.join(process.cwd(), 'src/content/literature/catalog.json'), 'utf8'));
+    expect(works.map((work) => work.key)).toEqual(catalog.works.filter((entry) => entry.key?.startsWith('se-') && entry.status === '수록').map((entry) => entry.key).sort());
+    expect(works.every((work) => work.status === 'checked' && work.chapters > 0)).toBe(true);
   });
 
   it('장: 영어 · 레벨 · 책 묶음 · 출처 기록, 원문은 문단 사이 빈 줄 · 장당 1,500–3,000단어', () => {

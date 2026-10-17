@@ -28,12 +28,14 @@ const SCENE_BREAK = '⁂';
 const KEY_PATTERN = /^pd-(fp|gau)-[a-z0-9]+(?:-[a-z0-9]+)*_[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 const SHA256 = /^[0-9a-f]{64}$/u;
 
+// 이름 문자 참조 — HTML Latin-1 전부(코드 160–255 순서 그대로) + 문장부호 · 겹글자. 모르는 이름은 여전히 throw(조용히 글자를 잃지 않게).
+const LATIN1 = 'nbsp iexcl cent pound curren yen brvbar sect uml copy ordf laquo not shy reg macr deg plusmn sup2 sup3 acute micro para middot cedil sup1 ordm raquo frac14 frac12 frac34 iquest Agrave Aacute Acirc Atilde Auml Aring AElig Ccedil Egrave Eacute Ecirc Euml Igrave Iacute Icirc Iuml ETH Ntilde Ograve Oacute Ocirc Otilde Ouml times Oslash Ugrave Uacute Ucirc Uuml Yacute THORN szlig agrave aacute acirc atilde auml aring aelig ccedil egrave eacute ecirc euml igrave iacute icirc iuml eth ntilde ograve oacute ocirc otilde ouml divide oslash ugrave uacute ucirc uuml yacute thorn yuml'.split(' ');
 const NAMED = {
+  ...Object.fromEntries(LATIN1.map((name, index) => [name, String.fromCharCode(160 + index)])),
   amp: '&', lt: '<', gt: '>', quot: '"', apos: '\'', nbsp: ' ', ensp: ' ', emsp: ' ', thinsp: ' ', mdash: '—', ndash: '–', hellip: '…',
-  lsquo: '‘', rsquo: '’', ldquo: '“', rdquo: '”', laquo: '«', raquo: '»', middot: '·', shy: '',
-  Agrave: 'À', agrave: 'à', Acirc: 'Â', acirc: 'â', Ccedil: 'Ç', ccedil: 'ç', Eacute: 'É', eacute: 'é', Egrave: 'È', egrave: 'è',
-  Ecirc: 'Ê', ecirc: 'ê', Euml: 'Ë', euml: 'ë', Icirc: 'Î', icirc: 'î', Iuml: 'Ï', iuml: 'ï', Ocirc: 'Ô', ocirc: 'ô', OElig: 'Œ', oelig: 'œ',
-  Ucirc: 'Û', ucirc: 'û', Ugrave: 'Ù', ugrave: 'ù', Uuml: 'Ü', uuml: 'ü',
+  lsquo: '‘', rsquo: '’', ldquo: '“', rdquo: '”', sbquo: '‚', bdquo: '„', lsaquo: '‹', rsaquo: '›', shy: '',
+  OElig: 'Œ', oelig: 'œ', Scaron: 'Š', scaron: 'š', Yuml: 'Ÿ', circ: 'ˆ', tilde: '˜', dagger: '†', Dagger: '‡', bull: '•', prime: '′', Prime: '″',
+  permil: '‰', trade: '™', euro: '€', frasl: '⁄', zwnj: '', zwj: '', lrm: '', rlm: '',
 };
 function decodeEntities(text) {
   return text.replace(/&(#x[0-9a-f]+|#[0-9]+|[a-z]+);/giu, (whole, body) => {
@@ -72,7 +74,14 @@ export function parsePdSiteHtml(html, parse) {
   const body = /<body\b[^>]*>([\s\S]*)<\/body>/iu.exec(html);
   if (!body) throw new Error('HTML에 <body>가 없다');
   let notesOmitted = false;
+  // PGA 판 각주(카탈로니아 찬가 <blockquote>[* Footnote: …]</blockquote> + 본문 「flag.*」) — 각주 상자가 있는 판에서만 본문 별표 고리도 뺀다
+  // (각주 없는 판의 별표는 본문 장식일 수 있다)
+  const starNotes = /<blockquote\b[^>]*>\s*\[\*+ ?Footnote:/iu.test(body[1]);
   const content = body[1]
+    .replace(/<blockquote\b[^>]*>\s*\[\*+ ?Footnote:[\s\S]*?<\/blockquote>/giu, () => { notesOmitted = true; return ''; })
+    .replace(/([\p{L}\p{N}.,;:!?)’”'"])\*+(?=[\s<]|$)/gu, (whole, before) => (starNotes ? before : whole))
+    // 문단 없는 인용 상자(노래 · 편지 — 카탈로니아 찬가 「There are rats, rats,<br>…」)는 문단 하나로 — <br> 줄은 그대로 산다
+    .replace(/<blockquote\b[^>]*>((?:(?!<\/?(?:p|div|h[1-6]|blockquote|pre)\b)[\s\S])*)<\/blockquote>/giu, '<p>$1</p>')
     .replace(/<!--[\s\S]*?-->/gu, '')
     .replace(/<(script|style|noscript|iframe)\b[\s\S]*?<\/\1>/giu, '')
     .replace(/<table\b[\s\S]*?<\/table>/giu, (table) => { const block = tableToBlock(table); if (!block) notesOmitted = true; return block; })
@@ -220,5 +229,67 @@ export function createPdSiteDraft(entry, html) {
     book,
     chapters,
     diagnostics: { chapterCount: total, size: sizes.reduce((sum, value) => sum + value, 0), unit: 'words', minChapter: Math.min(...sizes), maxChapter: Math.max(...sizes) },
+  };
+}
+
+/**
+ * 본문 경계(parse) 추정(LIT-IMPORT-1) — 판 HTML의 머리글을 세어 장 머리글 모양을 고른다. 2·3차 묶음 8편의 손 parse를 실측해 같은
+ * 규칙만 담았다: 장 머리글은 같은 태그에 같은 모양(「CHAPTER IV」 · 「IV」 · 「4」 · 「Chapitre 4」)이 3번 이상, 부(part)는 「PART ONE」 ·
+ * 「Première partie」, 장 번호 바로 다음 다른 태그 머리글은 장 이름(subtitle — 국화와 칼), 끝은 「THE END」 · 「FIN」 줄.
+ * 확신이 없으면 null — 가져오기가 사람에게 parse를 묻는다(fail-closed). 돌려준 parse는 entry.json에 적혀 검토된다.
+ */
+export function inferPdSiteParse(html) {
+  const body = /<body\b[^>]*>([\s\S]*)<\/body>/iu.exec(html)?.[1] ?? '';
+  const flat = (inner) => decodeEntities(inner.replace(/<[^>]+>/gu, ' ')).replace(/\s+/gu, ' ').trim();
+  const items = [...body.matchAll(/<(h[1-6])\b[^>]*>([\s\S]*?)<\/\1>|<p\b[^>]*>([\s\S]*?)(?=<\/p>|<p\b|<h[1-6]\b)/giu)]
+    .map((match) => (match[1] ? { tag: match[1].toLowerCase(), text: flat(match[2]) } : { tag: 'p', text: flat(match[3]) }))
+    .filter((item) => item.text);
+  const SHAPES = [
+    ['(?:CHAPTER|Chapter|CHAPITRE|Chapitre) [IVXLC\\d]+\\.?', /^(?:CHAPTER|Chapter|CHAPITRE|Chapitre) [IVXLC\d]+\.?$/u],
+    ['[IVXLC]+\\.?', /^[IVXLC]+\.?$/u],
+    ['\\d+\\.?', /^\d+\.?$/u],
+  ];
+  let best = null;
+  for (const tag of ['h1', 'h2', 'h3', 'h4']) {
+    for (const [source, shape] of SHAPES) {
+      const count = items.filter((item) => item.tag === tag && shape.test(item.text)).length;
+      if (count >= 3 && (!best || count > best.count)) best = { tag, source, shape, count };
+    }
+  }
+  if (!best) return null;
+  const chapterAt = items.findIndex((item) => item.tag === best.tag && best.shape.test(item.text));
+  const PART_SOURCE = '(?:(?:PART|Part|BOOK|Book) (?:[IVXLC\\d]+|ONE|TWO|THREE|FOUR|FIVE|SIX|One|Two|Three|Four|Five|Six)|(?:PREMIÈRE|DEUXIÈME|TROISIÈME|QUATRIÈME|Première|Deuxième|Troisième|Quatrième) (?:PARTIE|partie))';
+  const PART = new RegExp(`^${PART_SOURCE}$`, 'u');
+  const partItem = items.slice(Math.max(0, chapterAt - 2), chapterAt).find((item) => /^h[1-6]$/u.test(item.tag) && PART.test(item.text));
+  const parse = { chapter: `^${best.tag}:${best.source}$` };
+  if (partItem) {
+    parse.part = `^${partItem.tag}:${PART_SOURCE}$`;
+    parse.start = `^${partItem.tag}:${partItem.text.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}$`;
+  }
+  // 장 번호 바로 다음이 다른 태그의 머리글이면 장 이름이다(장 대부분에서 그래야 한다)
+  const after = items.map((item, index) => [item, items[index + 1]]).filter(([item]) => item.tag === best.tag && best.shape.test(item.text)).map(([, next]) => next);
+  const sub = after.filter((next) => next && /^h[1-6]$/u.test(next.tag) && next.tag !== best.tag);
+  if (sub.length >= Math.ceil(best.count * 0.8) && new Set(sub.map((next) => next.tag)).size === 1) parse.subtitle = `^${sub[0].tag}:`;
+  const end = items.slice(chapterAt).find((item) => /^(?:THE END|FIN|FINIS)\.?$/iu.test(item.text));
+  if (!end) return null;
+  parse.stop = `^${end.tag}:${end.text.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}$`;
+  return parse;
+}
+
+/**
+ * parse 점검 보고(가져오기가 추정 parse를 받기 전에) — 본문 시작 앞에서 버리는 단어 수와 머리글, 본문 안에서 장 · 부 · 장 이름 어디에도
+ * 안 맞는 머리글. 버리는 머리글(어린 왕자 「DEDICACE」 · 국화와 칼 「Acknowledgements」)이나 안 맞는 머리글(1984 「APPENDIX.」)이 있으면
+ * 사람이 한 번 본다 — 싣지 않을 앞글인지, 장으로 넣을 머리글인지는 판마다 다르다.
+ */
+export function pdSiteParseReport(html, parse) {
+  const { blocks } = parsePdSiteHtml(html, { ...parse, start: '^', stop: parse.stop });
+  const start = new RegExp(parse.start || parse.chapter, 'u');
+  const known = [parse.chapter, parse.part, parse.subtitle].filter(Boolean).map((source) => new RegExp(source, 'u'));
+  const at = Math.max(0, blocks.findIndex((block) => start.test(`${block.tag}:${block.text}`)));
+  const isHeading = (block) => /^h[1-6]$/u.test(block.tag);
+  return {
+    leadWords: blocks.slice(0, at).reduce((sum, block) => sum + (block.text.match(/\S+/gu) || []).length, 0),
+    leadHeadings: blocks.slice(0, at).filter(isHeading).map((block) => block.text),
+    strayHeadings: blocks.slice(at).filter((block) => isHeading(block) && !known.some((pattern) => pattern.test(`${block.tag}:${block.text}`))).map((block) => block.text),
   };
 }

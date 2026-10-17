@@ -11,8 +11,8 @@ const garamond = EB_Garamond({ display: 'swap', preload: false, weight: '400', s
 const myeongjo = Noto_Serif_KR({ display: 'swap', preload: false, weight: '400', subsets: ['latin'], variable: '--font-fe-kr-serif' }); // 1919 보성사 명조 활자(한자 섞어 짜기)
 export const THIRD_FONT_CLASS = [garamond, myeongjo].map((font) => font.variable).filter(Boolean).join(' ');
 
-const GARAMOND = 'var(--font-fe-garamond, "EB Garamond"), "EB Garamond", Garamond, Georgia, serif';
-const KR_SERIF = 'var(--font-fe-kr-serif, "Noto Serif KR"), "Noto Serif KR", "Nanum Myeongjo", serif';
+export const GARAMOND = 'var(--font-fe-garamond, "EB Garamond"), "EB Garamond", Garamond, Georgia, serif';
+export const KR_SERIF = 'var(--font-fe-kr-serif, "Noto Serif KR"), "Noto Serif KR", "Nanum Myeongjo", serif';
 const { CASLON, DIDOT, JOSEFIN, YELLOWTAIL } = PERIOD_FONTS;
 
 /** 바탕 색 — 실물 사진에서 잰 값(빛바램은 조금 되돌림). 책은 물건이라 테마를 따라 바뀌지 않는다. */
@@ -30,7 +30,7 @@ export const THIRD_GROUNDS = Object.freeze({
 });
 
 /** 레이드지 결 — 가는 가로 발 자국 + 성긴 세로 사슬 자국(18세기 손으로 뜬 종이). */
-function Laid({ id, color }) {
+export function Laid({ id, color }) {
   return (
     <>
       <defs>
@@ -46,12 +46,12 @@ function Laid({ id, color }) {
 }
 
 /** 굵은-가는 이중 괘선(속표지 아래 출판지 위 · thick-thin rule). */
-const Rule = ({ y, from = 30, to = 90, ink }) => (
+export const Rule = ({ y, from = 30, to = 90, ink }) => (
   <g stroke={ink}><path d={`M${from} ${y}H${to}`} strokeWidth=".7" /><path d={`M${from} ${y + 1.3}H${to}`} strokeWidth=".25" /></g>
 );
 
 /** 작은 꽃 장식 — 18세기 활자 꽃(fleuron)을 줄인 모양(속표지 목판 도안은 옮기지 않는다). */
-const Fleuron = ({ x, y, ink }) => (
+export const Fleuron = ({ x, y, ink }) => (
   <g fill={ink} transform={`translate(${x} ${y})`}>
     <path d="M0 -3.2c1.1 1.2 1.1 2.4 0 3.2-1.1-.8-1.1-2 0-3.2z" />
     <path d="M0 0c1.6-1.4 3.4-1.4 4.6 0-1.2 1.2-3 1.2-4.6 0zM0 0c-1.6-1.4-3.4-1.4-4.6 0 1.2 1.2 3 1.2 4.6 0z" />

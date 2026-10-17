@@ -4011,6 +4011,184 @@
         }
       ]
     },
+    "se-l-frank-baum_the-wonderful-wizard-of-oz": {
+      "title": "The Wonderful Wizard of Oz",
+      "author": "L. Frank Baum",
+      "level": "A2 초급",
+      "total": 26,
+      "words": 39117,
+      "display": {
+        "titleKo": "오즈의 마법사",
+        "authorKo": "L. 프랭크 바움",
+        "binding": "tpl-cloth",
+        "coverTitle": "The Wonderful Wizard\nof Oz",
+        "coverPalette": "olive",
+        "coverOrnament": "gilt-title"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-l-frank-baum_the-wonderful-wizard-of-oz",
+        "title": "The Wonderful Wizard of Oz",
+        "author": "L. Frank Baum",
+        "publishedYear": 1900,
+        "authorDeathYear": 1919,
+        "countryOfOrigin": "US",
+        "translator": null,
+        "repo": "standardebooks/l-frank-baum_the-wonderful-wizard-of-oz",
+        "commit": "36104f0b9ace47debd6ac19cec9dc91b3858e83a",
+        "url": "https://standardebooks.org/ebooks/l-frank-baum/the-wonderful-wizard-of-oz",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "US",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/l-frank-baum/the-wonderful-wizard-of-oz"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: The Cyclone",
+          "sha256": "1d8c591969dd338fd8f251e3b83d991a76b5a7e5c715b503953c5ce4775ec320"
+        },
+        {
+          "order": 2,
+          "title": "II: The Council with the Munchkins",
+          "sha256": "4684ac513d246c4f5805295778d8265b23c558ee023ab2f9807b426499afe483"
+        },
+        {
+          "order": 3,
+          "title": "III: How Dorothy Saved the Scarecrow",
+          "sha256": "ce0965d3cdc54b97b1ef2ea8151b12d833bb3a4c3e23518634e57c8c1cb0c0a4"
+        },
+        {
+          "order": 4,
+          "title": "IV: The Road Through the Forest",
+          "sha256": "b8b13504d6c412eb825c859696229536968dd2a825fec13e1dfef88106a6d850"
+        },
+        {
+          "order": 5,
+          "title": "V: The Rescue of the Tin Woodman",
+          "sha256": "11801abc79c51e27565a9dd7c92d9c0a4defdf1d1610638662bc222490df95d8"
+        },
+        {
+          "order": 6,
+          "title": "VI: The Cowardly Lion",
+          "sha256": "a1289f6a0120734b0fb53c3d7c65469b19acbb3c559eb2e02d41467557371912"
+        },
+        {
+          "order": 7,
+          "title": "VII: The Journey to the Great Oz",
+          "sha256": "bb2abede13f49413af9308a435a236dbab18fa6708f343fc1f28aca903b7d22a"
+        },
+        {
+          "order": 8,
+          "title": "VIII: The Deadly Poppy Field",
+          "sha256": "0bb6a33fad8d1234da824844871ab3f5cfb503c469e7701ec25feb8404ea4228"
+        },
+        {
+          "order": 9,
+          "title": "IX: The Queen of the Field Mice",
+          "sha256": "3cc5183ec151bcf7267ba0bbe053086458505e04c1e056f2235247d7ab0732ab"
+        },
+        {
+          "order": 10,
+          "title": "X: The Guardian of the Gate",
+          "sha256": "ee36fc1848e1b8d8e8376ec3a7b3ba42b8f9e96c0d58752b90981ca96dcfbc6a"
+        },
+        {
+          "order": 11,
+          "title": "XI: The Wonderful City of Oz (1/2)",
+          "sha256": "8b1a908a987fd62cd224c713e2b184f7d9cdf0239a08e6ee8d941a5152bcb808"
+        },
+        {
+          "order": 12,
+          "title": "XI: The Wonderful City of Oz (2/2)",
+          "sha256": "37756901facf45ab443b6869f02a88b604bb6746b1d9f36652c94136845dbadf"
+        },
+        {
+          "order": 13,
+          "title": "XII: The Search for the Wicked Witch (1/2)",
+          "sha256": "7f80753c13200b092c8c711b061c08b1829dcff716f8479b8072e362c930ce73"
+        },
+        {
+          "order": 14,
+          "title": "XII: The Search for the Wicked Witch (2/2)",
+          "sha256": "07b6ea982229550dfbe5ca91b067b29c80f4864a6826ed7b56652e6a5f3a3935"
+        },
+        {
+          "order": 15,
+          "title": "XIII: The Rescue",
+          "sha256": "7acde35c4b1e2917df7e4c0b2d2c2ccac0c7b4bec182fa69037919f31532b23e"
+        },
+        {
+          "order": 16,
+          "title": "XIV: The Winged Monkeys",
+          "sha256": "a744589466514005033f8f8c69e7a4b4e661ab74f009755659163da88fe8ee30"
+        },
+        {
+          "order": 17,
+          "title": "XV: The Discovery of Oz, the Terrible",
+          "sha256": "1a6e4d158edf5e9fc732326808cace488b521dfba718dcc217f4519654fa3ef2"
+        },
+        {
+          "order": 18,
+          "title": "XVI: The Magic Art of the Great Humbug",
+          "sha256": "9be1f5f89e32cd61aa9d597b275b847fe4cb91649c749b626fe98eeac235ccd2"
+        },
+        {
+          "order": 19,
+          "title": "XVII: How the Balloon Was Launched",
+          "sha256": "901a314b382c07095ba454285d638fba7eb3bd322a4feffbbdf43bf089a90e64"
+        },
+        {
+          "order": 20,
+          "title": "XVIII: Away to the South",
+          "sha256": "552685b2db86abf960b48f2537c4b9c8cc509403afc660d16250e68dbe16d3fb"
+        },
+        {
+          "order": 21,
+          "title": "XIX: Attacked by the Fighting Trees",
+          "sha256": "0aba5cdeb2018b4d487e289fbb769f4004991e9de9b2ad28c1694b8291d33849"
+        },
+        {
+          "order": 22,
+          "title": "XX: The Dainty China Country",
+          "sha256": "5e5c38ee7d602e2c175f23622c16a751225d306ac869b83c12872ad1e12fee5f"
+        },
+        {
+          "order": 23,
+          "title": "XXI: The Lion Becomes the King of Beasts",
+          "sha256": "847d2bebc99b392ca7ca2a094bd0d1656bf11607b10459467685611ee4426103"
+        },
+        {
+          "order": 24,
+          "title": "XXII: The Country of the Quadlings",
+          "sha256": "bdd906d7c94d9f71ebba14ba82dfea6045f4ab9332ba9c401723f800d64ebaf5"
+        },
+        {
+          "order": 25,
+          "title": "XXIII: Glinda the Good Witch Grants Dorothy’s Wish",
+          "sha256": "a2e37db5e5372565ec534f641f55fa7d6c7d82473d6b3658026b9841140027ca"
+        },
+        {
+          "order": 26,
+          "title": "XXIV: Home Again",
+          "sha256": "c1214e2379c09e58805f431f9ccb5431055ffe018e0b461c3f87c052b880a43d"
+        }
+      ]
+    },
     "se-lewis-carroll_alices-adventures-in-wonderland": {
       "title": "Alice’s Adventures in Wonderland",
       "author": "Lewis Carroll",

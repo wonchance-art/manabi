@@ -19,7 +19,7 @@ export const SE_TARGET_WORDS = 2200;
 export const SE_LICENSE = 'CC0-1.0';
 export const SE_EDITS = Object.freeze(['chapter-split-by-manabi', 'typography-normalized', 'illustrations-omitted']);
 
-const KEY_PATTERN = /^se-[a-z0-9]+(?:-[a-z0-9]+)*(?:_[a-z0-9]+(?:-[a-z0-9]+)*){1,2}$/u; // 번역본은 _<번역자>가 붙는다(명상록 george-long)
+const KEY_PATTERN = /^se-[a-z0-9]+(?:-[a-z0-9]+)*(?:_[a-z0-9]+(?:-[a-z0-9]+)*){1,4}$/u; // 번역본은 _<번역자>가 붙는다(명상록 george-long) · 공저 · 번역자 둘(전쟁과 평화 louise-maude_aylmer-maude)
 const SHA256 = /^[0-9a-f]{64}$/u;
 const COMMIT = /^[0-9a-f]{40}$/u;
 
@@ -144,7 +144,7 @@ function validateEntry(entry) {
   const problems = [];
   if (entry?.schemaVersion !== SE_BOOK_VERSION) problems.push(`schemaVersion ${SE_BOOK_VERSION}`);
   if (entry?.provider !== SE_PROVIDER) problems.push(`provider '${SE_PROVIDER}'`);
-  if (!/^standardebooks\/[a-z0-9-]+(?:_[a-z0-9-]+){1,2}$/u.test(entry?.repo ?? '')) problems.push('repo(standardebooks/<작가>_<작품>[_<번역자>])');
+  if (!/^standardebooks\/[a-z0-9-]+(?:_[a-z0-9-]+){1,4}$/u.test(entry?.repo ?? '')) problems.push('repo(standardebooks/<작가>_<작품>[_<번역자>])');
   if (!COMMIT.test(entry?.commit ?? '')) problems.push('commit(40자 SHA)');
   if (!/^https:\/\/standardebooks\.org\/ebooks\//u.test(entry?.url ?? '')) problems.push('url(standardebooks.org/ebooks/…)');
   for (const field of ['title', 'author', 'level']) if (typeof entry?.[field] !== 'string' || !entry[field].trim()) problems.push(field);

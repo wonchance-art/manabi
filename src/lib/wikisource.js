@@ -128,11 +128,17 @@ export function parseWikisourceFragment(fragment, { upperSmallCaps = false } = {
     .replace(/<span><span class="pagenum ws-pagenum"[^>]*>(?:<span[^>]*>[^<]*<\/span>)?<\/span><\/span>/gu, '')
     .replace(/<span class="pagenum ws-pagenum"[^>]*>(?:<span[^>]*>[^<]*<\/span>)?<\/span>/gu, '')
     .replace(/<span itemprop="associatedMedia"[^>]*><\/span>/gu, '')
+    // 「〃」 틀(ditto) — 화면에 보이지 않는 칸(__ditto_hidden)에 틀 인자가 날것으로 남는다(『자본론』 표 「{{{1}}}„」). 보이는 「„」만 둔다
+    .replace(/<span class="__ditto_hidden"[^>]*>[\s\S]*?<\/span>/gu, '')
     .replace(/<span style="font-size:0; line-height:0; display:block" class="lettrine"><br\s*\/?><\/span>/gu, '');
   // 각주 번호·목록 — 옛 파서는 class="reference", Parsoid(영어 위키문헌)는 class="mw-ref reference" · "mw-references references".
   // 표보다 먼저 뺀다(『자본론』 통계표 칸 안 각주 번호 「642,607[143]」).
   html = removeElements(html, 'sup', (open) => /class="(?:[^"]*\s)?reference(?:\s[^"]*)?"/u.test(open));
   html = removeElements(html, 'ol', (open) => /class="(?:[^"]*\s)?references(?:\s[^"]*)?"/u.test(open));
+  // 자매 프로젝트 · 작품 정보 상자(zh 「祝福」 — Template:Textinfo 아이콘 그림 · 위키백과 링크)는 본문이 아니다
+  html = removeElements(html, 'ul', (open) => /\bid="plainSister"/u.test(open));
+  // 본문 이름공간 문서(교정 쪽 없이 바로 쓴 zh 문서)의 머리 틀 — 제목 · 作者 · 날짜 · 앞뒤 편 화살표 · 「本作品收录于」 표
+  html = removeElements(html, 'div', (open) => /\bid="headerContainer"/u.test(open));
   html = html.replace(/<table\b[\s\S]*?<\/table>/gu, tableToBlock);
   html = removeElements(html, 'div', (open) => NOISE_DIV.test(open));
   const headings = [];
@@ -344,6 +350,11 @@ export function createWikisourceDraft(entry, files) {
       canonical.blocks.forEach((block, index) => {
         if (block.text.length !== alternate.blocks[index].text.length) throw new Error(`${file.page} ${index + 1}문단: 간체·번체 길이가 다르다`);
       });
+    }
+    // 판의 끝 표시(「FIN.」 · 「THE END」)는 마지막 쪽 끝에만 온다 — 장 글이 아니다(몽상 「Dixème Promenade」 끝)
+    if (file === entry.files.at(-1) && /^(?:FIN|FINIS|THE END)\.?$/u.test(canonical.blocks.at(-1)?.text ?? '')) {
+      canonical.blocks.pop();
+      alternate?.blocks.pop();
     }
     const title = pageTitle(canonical.headings, entry.title);
     const indexed = canonical.blocks.map((block, index) => ({ ...block, alternate: alternate?.blocks[index].text ?? null }));

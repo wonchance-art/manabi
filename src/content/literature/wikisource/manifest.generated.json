@@ -5,9 +5,9 @@
       "title": "Capital, Volume I",
       "author": "Karl Marx",
       "level": "C1 고급",
-      "total": 115,
+      "total": 114,
       "language": "English",
-      "size": 245023,
+      "size": 244979,
       "unit": "words",
       "display": {
         "titleKo": "자본론 1권",
@@ -376,7 +376,7 @@
         {
           "order": 65,
           "title": "Chapter XV: Machinery and Modern Industry (13/21)",
-          "sha256": "17d32bd0d1efeb208c5afb63d5a9c776eba035c908f49d6cbad0f29b2ee1d439"
+          "sha256": "5dae832fdeca2822b5b89523d39ab7260d8e58cdb18e6473aa47e840f6bec9c1"
         },
         {
           "order": 66,
@@ -461,7 +461,7 @@
         {
           "order": 82,
           "title": "Chapter XXII: National Differences of Wages",
-          "sha256": "51f8cf3ff8d7af6f1900189c27be78d39099be53855c1c5d9c90280d43b77952"
+          "sha256": "9c606dc3f53772eee0fdf6023d92a1aa9f6b1984c46781bdc2d8c896de5a02e2"
         },
         {
           "order": 83,
@@ -500,131 +500,126 @@
         },
         {
           "order": 90,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (1/16)",
-          "sha256": "9465aef4bb851a7c36b35a81283b6df0fcfb13a87c8fa915cf9b9728509335e0"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (1/15)",
+          "sha256": "3c22ae8b5b5d0e24df30ababc5f7efe98a84e8c31f01c2aed76cb4bb567ae84d"
         },
         {
           "order": 91,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (2/16)",
-          "sha256": "88177677e1782b4cd3f8befb3672c19097e52a8b25fe3bfb198117068ce2cbb0"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (2/15)",
+          "sha256": "e4f3203f5a9e154354a0403c1657795f8f9396e4e33e036aaee007686343b8a8"
         },
         {
           "order": 92,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (3/16)",
-          "sha256": "fd185a3947c381a2555344f114abc5cb1d41e44abd20576bdb2071d3959b01da"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (3/15)",
+          "sha256": "4ef254d0eb24fb78a1213a96b7b0ef65c6e79aaecdef31a2edb705e8b6162690"
         },
         {
           "order": 93,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (4/16)",
-          "sha256": "a51737fd91760fedcbc203040ffe13ecb778ed20ff03de31df96488dd3132e80"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (4/15)",
+          "sha256": "1f2e9584ac20349613a33a62bca70f6d93b1a913c5e703c9277de48a9c7a3b39"
         },
         {
           "order": 94,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (5/16)",
-          "sha256": "b23ddb52b09377a740877a658604a3a306ae4117ab58d799e877c3278700f927"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (5/15)",
+          "sha256": "64bf65d67e987a4dc821737ab5a896b4a29acb7fc0c98e4215a69e8707d79127"
         },
         {
           "order": 95,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (6/16)",
-          "sha256": "a6cbfec68344b0325a1337159bc998df839ccd1b1593b987d8e6fb488f515717"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (6/15)",
+          "sha256": "ca940918f2b0f696995a7da2ff50ed6842078fb691b749005a7cf1029bc96bde"
         },
         {
           "order": 96,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (7/16)",
-          "sha256": "89b56f8fe33c250f56dc63c75e0b1e52c9ffdb2bca1af742212795b63d0b6fdf"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (7/15)",
+          "sha256": "530ac442d61327e5a4ef22e11cf916c9702e6bd85ff6b98e5087176daed4ff78"
         },
         {
           "order": 97,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (8/16)",
-          "sha256": "ca684e766853e3913c1ec991254efe1f58d93030b1d39de3ae1d38d09a056528"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (8/15)",
+          "sha256": "352e5d1d06aa88490e92475fd02eee8394abb773bc7f06aae3b4eb77828a906e"
         },
         {
           "order": 98,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (9/16)",
-          "sha256": "9525b742ba929fb6bc24b391bc0eb5492409c9a03d45a36cefc3af3dc3970465"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (9/15)",
+          "sha256": "2994310118b23bc1d904230391e50378ef8d9f799b54c8a6acd7809c102e5cae"
         },
         {
           "order": 99,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (10/16)",
-          "sha256": "47a00e15602c01e216188317340f392529495bd0ba542fe8384eb936b3f926ff"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (10/15)",
+          "sha256": "2e8b981f1b9349c5e4d3d2e2c0a051b8fb6b6addc48fb5f0db1ca716e5d9ba47"
         },
         {
           "order": 100,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (11/16)",
-          "sha256": "76676276427e5c12d8743209a809e495fac71db401c93b5df2b7dbd402655e34"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (11/15)",
+          "sha256": "dd7c9ab7092848fe1ea7c05c992c17a8ba8e11c8f4d60c308c4525782b55a5a2"
         },
         {
           "order": 101,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (12/16)",
-          "sha256": "d45ef071226ead04706d728721adbfa025f8ebeb094c17ada0040821da3f7618"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (12/15)",
+          "sha256": "fb8eabfdbed43ae2c038a61955989f9a92bb1cf19f9eae4b2675ec6c2fd2ddda"
         },
         {
           "order": 102,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (13/16)",
-          "sha256": "9789aaf45b31154dfd98c92cf0f3257481fe183dc674fffa10253505a52d1dd8"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (13/15)",
+          "sha256": "05040e5101f8a7c2690d5d2cf8a9b5d81b6e2d08ab822882aa0b8899fb2c1f66"
         },
         {
           "order": 103,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (14/16)",
-          "sha256": "f688fb19edce59de8f8933531e5a43db27efd89f31b2db94069fcd509b21cf79"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (14/15)",
+          "sha256": "a516105e1ad3d0717ac9a745b6efa10ef59843c33a4b2147e7d345e63e1935ba"
         },
         {
           "order": 104,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (15/16)",
-          "sha256": "26e4ee892d1791c85ded4b0c222bbc43b79e6d1607548c0dc09238712bc9b47f"
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (15/15)",
+          "sha256": "e1533bfdf7ac7b2288e01eeef6003b1094a1fe6991233d29de35d6cc1e4a1e8e"
         },
         {
           "order": 105,
-          "title": "Chapter XXV: The General Law of Capitalist Accumulation (16/16)",
-          "sha256": "792091ee0c1152c69d974fda03eb81ed921eb07f1d8a06371439f98438280cf1"
-        },
-        {
-          "order": 106,
           "title": "Chapter XXVI: The Secret of Primitive Accumulation",
           "sha256": "8d3ba4041c3b2e5d333d689dcf0b81872020fab75aa60cdb9d9c01fed7e25801"
         },
         {
-          "order": 107,
+          "order": 106,
           "title": "Chapter XXVII: Expropriation of the Agricultural Population From the Land (1/2)",
           "sha256": "2508a73d6789269fa83ae9b48152fbc4570003c021cf6fe26b68b19378b614d2"
         },
         {
-          "order": 108,
+          "order": 107,
           "title": "Chapter XXVII: Expropriation of the Agricultural Population From the Land (2/2)",
           "sha256": "914c7511c7faba2d8c1abf55f11312f5fabc62f1c45d15fbe7bcceeed7a5a0a8"
         },
         {
-          "order": 109,
+          "order": 108,
           "title": "Chapter XXVIII: Bloody Legislation Against the Expropriated, From the End of the 15Th Century. Forcing Down of Wages by Acts of Parliament",
           "sha256": "3048d21d52a60bf2ab3b1c037f9572718a41986500fe17a2767f1db0b3c343e3"
         },
         {
-          "order": 110,
+          "order": 109,
           "title": "Chapter XXIX: Genesis of the Capitalist Farmer",
           "sha256": "d92cbaad54c49384824a36358e93e96222ce1a9d8f66d3e2e5276a50fd45f22e"
         },
         {
-          "order": 111,
+          "order": 110,
           "title": "Chapter XXX: Reaction of the Agricultural Revolution on Industry. Creation of the Home Market for Industrial Capital",
           "sha256": "8016617415626ce4dec4c51ab1b83091a20fb393c1bfa46ccc8bb45fb5522645"
         },
         {
-          "order": 112,
+          "order": 111,
           "title": "Chapter XXXI: Genesis of the Industrial Capitalist (1/2)",
           "sha256": "afa00a0fc17c898a13d65ef197f8b0da0d4bd975efe9f264060749d5f5c1338d"
         },
         {
-          "order": 113,
+          "order": 112,
           "title": "Chapter XXXI: Genesis of the Industrial Capitalist (2/2)",
           "sha256": "6b391ff3c83d9af5cc74cc85c74dc9a0d9290eb6cb51e680e07a8cb7acd0e0ca"
         },
         {
-          "order": 114,
+          "order": 113,
           "title": "Chapter XXXII: Historical Tendency of Capitalist Accumulation",
           "sha256": "003b8893be50707910c58b512e61eb683ae239152b8a907285239e107b3f9faa"
         },
         {
-          "order": 115,
+          "order": 114,
           "title": "Chapter XXXIII: The Modern Theory of Colonisation",
           "sha256": "a2f87ee66bad233d5356ad1fd5c66706f9af63e8ccda8f9aa0177298def5d5c0"
         }
@@ -686,6 +681,194 @@
           "order": 1,
           "title": "La Dernière Classe",
           "sha256": "6c8751e19e108aceb80cf1c62318932326fed67baa7a317f3f4f212d7efcc8e3"
+        }
+      ]
+    },
+    "ws-fr-alphonse-daudet_lettres-de-mon-moulin": {
+      "title": "Lettres de mon moulin",
+      "author": "Alphonse Daudet",
+      "level": "B1 중급",
+      "total": 27,
+      "language": "French",
+      "size": 48163,
+      "unit": "words",
+      "display": {
+        "titleKo": "풍차 방앗간 편지",
+        "authorKo": "알퐁스 도데",
+        "binding": "tpl-wrapper",
+        "coverTitle": "Lettres de mon\nmoulin",
+        "coverAuthor": "Alphonse Daudet",
+        "coverPalette": "yellow",
+        "coverOrnament": "double-rule",
+        "coverYear": 1869
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-fr-alphonse-daudet_lettres-de-mon-moulin",
+        "wiki": "fr",
+        "title": "Lettres de mon moulin",
+        "author": "Alphonse Daudet",
+        "publishedYear": 1869,
+        "authorDeathYear": 1897,
+        "countryOfOrigin": "FR",
+        "mortPourLaFrance": false,
+        "translator": null,
+        "url": "https://fr.wikisource.org/wiki/Lettres_de_mon_moulin",
+        "fetchedAt": "2026-10-17",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "FR",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "AVANT-PROPOS",
+          "sha256": "356bfc2cd354d4b180e41e95627066d2988b1832adecec8ac33aa3e242b4106b"
+        },
+        {
+          "order": 2,
+          "title": "INSTALLATION.",
+          "sha256": "5544e231144dad4e79b3722abe04bf951de96ac6abe676194e4d812c3a7f6e6a"
+        },
+        {
+          "order": 3,
+          "title": "LA DILIGENCE DE BEAUCAIRE.",
+          "sha256": "ad567379d540efc43bfb44970314cb91c333f2995f428dfa876b290f1dc5b0e5"
+        },
+        {
+          "order": 4,
+          "title": "LE SECRET DE MAÎTRE CORNILLE",
+          "sha256": "a0fc8a6759486a7cf8b9607304cc3ce0f96821d8887dc247e60f0babfafeeb32"
+        },
+        {
+          "order": 5,
+          "title": "LA CHÈVRE DE M. SEGUIN",
+          "sha256": "542e043a7dc1e79eb508fc30878807f66690c64e3f551ddc7680caa476c1c303"
+        },
+        {
+          "order": 6,
+          "title": "LES ÉTOILES.",
+          "sha256": "10d7a022850d8839d72ac701228a91d8c97b06ae4330fa57fdecbe7582f0d309"
+        },
+        {
+          "order": 7,
+          "title": "L’ARLÉSIENNE",
+          "sha256": "6347f89d76e533b5a6de7debe55720ecf6bec5750f411c81c6772c307fcab565"
+        },
+        {
+          "order": 8,
+          "title": "LA MULE DU PAPE. (1/2)",
+          "sha256": "405e4346a12a3562fc55ba21f459aa4d2135bc1893097485cc2e4c5a17c32e2f"
+        },
+        {
+          "order": 9,
+          "title": "LA MULE DU PAPE. (2/2)",
+          "sha256": "41243d997162490a34dffe310ab0fca4a0241e827903fcfe992892987a44fb0d"
+        },
+        {
+          "order": 10,
+          "title": "LE PHARE DES SANGUINAIRES",
+          "sha256": "29afbb2f1b565110c8deb3630f4f2aa8875439473f9468b1a0d5bff507ae7679"
+        },
+        {
+          "order": 11,
+          "title": "L’AGONIE DE LA SÉMILLANTE",
+          "sha256": "1227390a4f36f51ed89ea5804c1f9ceb93dd2beccf5f4636e0c76739a92cb75a"
+        },
+        {
+          "order": 12,
+          "title": "LES DOUANIERS",
+          "sha256": "38d0dc380d3f5f029290dc18aca0de8999e1a2785989a8ea31bff51b59b1f1f8"
+        },
+        {
+          "order": 13,
+          "title": "LE CURÉ DE CUCUGNAN.",
+          "sha256": "a3b9d8fb6d505a36c3ae2e01d5bdec19a4efd815ecdbcea9b72c962a7033b1f1"
+        },
+        {
+          "order": 14,
+          "title": "LES VIEUX.",
+          "sha256": "a53fa8313724418008cd3f35ad3e580deae4c6b665cf8757ba857cd7e09295dd"
+        },
+        {
+          "order": 15,
+          "title": "BALLADES EN PROSE. · I. LA MORT DU DAUPHIN · II. LE SOUS-PRÉFET AUX CHAMPS.",
+          "sha256": "71a5fa477b16c4577a207bc9e29c7f5ecb37d0b084440c371468b1617096f22f"
+        },
+        {
+          "order": 16,
+          "title": "LE PORTEFEUILLE DE BIXIOU.",
+          "sha256": "4906cae0300f9a65e92b0fab44504abe24280481d5cbe59c80927ff1307cbc0e"
+        },
+        {
+          "order": 17,
+          "title": "LA LÉGENDE DE L’HOMME À LA CERVELLE D’OR.",
+          "sha256": "d70cbdaac9ad2dd506efa80479d91745872e98368bc62d26b4e50a25b2db62e4"
+        },
+        {
+          "order": 18,
+          "title": "LE POÈTE MISTRAL.",
+          "sha256": "03e12b5264bd005f5d5e65755850d0512ffeb0a64a05805908447efe9b47d109"
+        },
+        {
+          "order": 19,
+          "title": "LES TROIS MESSES BASSES.",
+          "sha256": "c7b4d09e09a707524d08cbcadfca6775e8d553989065cf4e31a77c4e9c29677b"
+        },
+        {
+          "order": 20,
+          "title": "LES ORANGES",
+          "sha256": "f9f32bffbb80a5b51523d46250c1e771af08c1b29bfc6725e5275af98ae65acc"
+        },
+        {
+          "order": 21,
+          "title": "LES DEUX AUBERGES.",
+          "sha256": "97d65f9c81589b4ea1c4329cd3d06db026e99c0cf3897e55fd939063f9c6dd95"
+        },
+        {
+          "order": 22,
+          "title": "À MILIANAH. (1/2)",
+          "sha256": "e08886c0ff28c4862548f097241183c3028c3bdbefa81706d956e611fb8be300"
+        },
+        {
+          "order": 23,
+          "title": "À MILIANAH. (2/2)",
+          "sha256": "a3d07eb76219afd368ead0bed5a8231610fc86c0f0a8aa339f6449a69f90a2bb"
+        },
+        {
+          "order": 24,
+          "title": "LES SAUTERELLES.",
+          "sha256": "5eaa8c762bce6d2a2285eec429bc2599d4dcbfbefc0a46de014d995d613d33ab"
+        },
+        {
+          "order": 25,
+          "title": "L’ÉLIXIR DU RÉVÉREND PÈRE GAUCHER.",
+          "sha256": "0b0cc8d7971fe630551dbde60b0b40f4ebcf247ca6170dc971c7f6124f2fc238"
+        },
+        {
+          "order": 26,
+          "title": "EN CAMARGUE. · I. LE DÉPART · II. LA CABANE. · III. À L’ESPÈRE ! (À L’AFFÛT !) · IV. LE ROUGE ET LE BLANC. · V. LE VACCARÈS.",
+          "sha256": "c0010dd7824e51b81fddced9fb17cd173dd4a21548e94afd79b1b4b45142f79d"
+        },
+        {
+          "order": 27,
+          "title": "NOSTALGIE DE CASERNES.",
+          "sha256": "a8bbb952eddff9c5a2959e3f7ec9f846d3f27952ad2266567c0d45b23515fa37"
         }
       ]
     },
@@ -753,7 +936,7 @@
       "level": "C1 고급",
       "total": 20,
       "language": "French",
-      "size": 40727,
+      "size": 40726,
       "unit": "words",
       "display": {
         "titleKo": "고독한 산책자의 몽상",
@@ -896,7 +1079,7 @@
         {
           "order": 20,
           "title": "DIXIEME PROMENADE.",
-          "sha256": "4a64c475d26c838a3b60e09f97625a35fa1b2f6014713320e4f4e0ff1270a25c"
+          "sha256": "eca2b6cc6dc2d83547d4fb0c763a7b1c453b38ad2d73d9fc717ebb18ddd629d6"
         }
       ]
     },
@@ -3678,6 +3861,70 @@
         }
       ]
     },
+    "ws-ko-kim-yu-jeong_bombom": {
+      "title": "봄봄",
+      "author": "김유정",
+      "level": "중급",
+      "total": 3,
+      "language": "Korean",
+      "size": 8297,
+      "unit": "chars",
+      "display": {
+        "titleKo": "봄봄",
+        "authorKo": "김유정",
+        "binding": "tpl-cjk-vertical",
+        "coverTitle": "봄봄",
+        "coverAuthor": "김유정",
+        "coverPalette": "cream"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-ko-kim-yu-jeong_bombom",
+        "wiki": "ko",
+        "title": "봄봄",
+        "author": "김유정",
+        "publishedYear": 1935,
+        "authorDeathYear": 1937,
+        "countryOfOrigin": "KR",
+        "translator": null,
+        "url": "https://ko.wikisource.org/wiki/%EB%B4%84%EB%B4%84",
+        "fetchedAt": "2026-10-17",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "봄봄 (1/3)",
+          "sha256": "3d16b7184be13dd73e6eeda5362d5ef25f37aad4accafc5a287505327248530a"
+        },
+        {
+          "order": 2,
+          "title": "봄봄 (2/3)",
+          "sha256": "89df9fde5fa8e1ea7edac92dc241a77d56b8de8c3e004778915ccdac289b6e17"
+        },
+        {
+          "order": 3,
+          "title": "봄봄 (3/3)",
+          "sha256": "18380f9b95cbe495c510b2659900d11cd4d10aa08a9d42862cebf818c171606e"
+        }
+      ]
+    },
     "ws-ko-kim-yu-jeong_dongbaekkkot": {
       "title": "동백꽃",
       "author": "김유정",
@@ -4109,6 +4356,93 @@
           "sha256": "d93c6d35a1c60e7a6a1648700f209ee7059fa2f73ac82d79aa3f26e5c3e6d1cc",
           "variants": {
             "zh-hant": "b14148414b8fa91dba0b0d8fb2ec2d7a7d71c7e4a193503976c648a1145d7c86"
+          }
+        }
+      ]
+    },
+    "ws-zh-lu-xun_zhu-fu": {
+      "title": "祝福",
+      "author": "鲁迅",
+      "level": "H5 고급",
+      "total": 4,
+      "language": "Chinese",
+      "size": 9182,
+      "unit": "chars",
+      "display": {
+        "titleKo": "축복",
+        "authorKo": "루쉰",
+        "binding": "tpl-cjk-vertical",
+        "coverTitle": "祝福",
+        "coverAuthor": "鲁迅",
+        "coverPalette": "grey"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-zh-lu-xun_zhu-fu",
+        "wiki": "zh",
+        "title": "祝福",
+        "author": "鲁迅",
+        "publishedYear": 1924,
+        "authorDeathYear": 1936,
+        "countryOfOrigin": "CN",
+        "translator": null,
+        "url": "https://zh.wikisource.org/wiki/%E7%A5%9D%E7%A6%8F",
+        "fetchedAt": "2026-10-17",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "CN",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "script": "zh-hans",
+        "scriptVariants": [
+          "zh-hant"
+        ],
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted",
+          "script-variant-by-wikisource"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "祝福 (1/4)",
+          "sha256": "305eb6dd605dd5d2a19e5f63695d26a54140e3f05f86185cd561f86814d41efe",
+          "variants": {
+            "zh-hant": "5111faf98305f2afff966ac984bee328ec49d96e41c2d37a4eef3caefd7ad360"
+          }
+        },
+        {
+          "order": 2,
+          "title": "祝福 (2/4)",
+          "sha256": "2c9c59d7828158769866e6a7d44cca8b02d1d383a901a5fb93ca84630ca43028",
+          "variants": {
+            "zh-hant": "751b4348b2790647fbfecdd5976d7ab73c002b7c5060c568e196aa019386ab59"
+          }
+        },
+        {
+          "order": 3,
+          "title": "祝福 (3/4)",
+          "sha256": "3f6c3eabfc3242fc55485895e27b9fac59650a1b8bd5f4387315aa775174a7cf",
+          "variants": {
+            "zh-hant": "820d2f5f3012bc710a4ed610c1316e40ea8e9af65554c3fc5b9d329f0d96bcc9"
+          }
+        },
+        {
+          "order": 4,
+          "title": "祝福 (4/4)",
+          "sha256": "2596c1d16ae7a124e9d8d1d8179c7d72e1aeffd5c4a7efa86be80301b03ad4ec",
+          "variants": {
+            "zh-hant": "f1ddd324b9ab918637a6d4bd4f88e99e60f4bc765fd8da97cb6e3ad9d44ff4d5"
           }
         }
       ]

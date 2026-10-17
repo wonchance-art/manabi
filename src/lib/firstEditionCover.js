@@ -17,13 +17,64 @@ const FIELDS = Object.freeze({
   coverTome: { max: 18 },
   coverImprint: { max: 32 },
   coverPlace: { max: 10 },
+  // 틀 장정(tpl-*)만 — 바탕 색 · 앞면 장식(LIT-IMPORT-1). 값은 정해진 목록에서만(TEMPLATE_PALETTES · TEMPLATE_ORNAMENTS)
+  coverPalette: { enum: 'palette' },
+  coverOrnament: { enum: 'ornament' },
 });
+
+/**
+ * 틀 장정(LIT-IMPORT-1, 오너 「언제든 불러오고 … 다듬는 과정까지 모두 프로세스 최적화」 2026-10-17 KST) — 작품마다 그리던 초판 장정을
+ * 데이터로 짓는다. 3차 묶음 실측: 19세기 천 장정 셋은 「천 색 + 민압 테」, 18세기 넷은 「속표지 글자 줄」, 프랑스 인쇄 표지는 「테 + 글자 줄」 —
+ * 구성이 같고 색 · 글자 · 테만 다르다. 가져오기(import)가 시대 · 언어로 틀을 고르고 카탈로그의 실물 조사(색 · 장식 · 글자)를 채운다.
+ * 실물 재구성(작품 전용 장정)은 그대로 더 할 수 있다 — 틀은 「표지가 없어 못 싣는」 일을 없애는 기본값이다.
+ */
+export const TEMPLATE_PALETTES = Object.freeze({
+  // 천(cloth) — 19세기 출판사 천 색(3차 실측: Parker 초콜릿 · Sonnenschein 적갈 · Bell and Daldy 자줏빛)
+  maroon: { material: 'cloth', ground: '#5a2b2c', ink: '#431f20', light: '#73403f', gilt: '#c9a85a' },
+  brown: { material: 'cloth', ground: '#4a3a3a', ink: '#382b2b', light: '#5f4d4d', gilt: '#c7a65c' },
+  green: { material: 'cloth', ground: '#2f4a3c', ink: '#22382d', light: '#46624f', gilt: '#c9ab5e' },
+  blue: { material: 'cloth', ground: '#2d3e55', ink: '#202e41', light: '#43566f', gilt: '#c8aa60' },
+  plum: { material: 'cloth', ground: '#4a2c45', ink: '#372034', light: '#62415c', gilt: '#c6a75d' },
+  olive: { material: 'cloth', ground: '#4f4b2e', ink: '#3b3822', light: '#666140', gilt: '#cdb066' },
+  red: { material: 'cloth', ground: '#7a2422', ink: '#5c1a19', light: '#93403b', gilt: '#d1b16a' },
+  // 종이(paper) — 속표지 · 인쇄 표지 · 재킷 바탕
+  cream: { material: 'paper', ground: '#efe6d2', ink: '#2b2620', accent: '#a8322b' },
+  buff: { material: 'paper', ground: '#e0cca3', ink: '#2a231b', accent: '#9c2e26' },
+  grey: { material: 'paper', ground: '#cfccc1', ink: '#23211d', accent: '#8f2a24' },
+  blue_grey: { material: 'paper', ground: '#b9c2c3', ink: '#1d2124', accent: '#8a1f1b' },
+  yellow: { material: 'paper', ground: '#e6cf86', ink: '#262017', accent: '#962b22' },
+  rose: { material: 'paper', ground: '#e4c6b8', ink: '#2a1f1c', accent: '#7d2420' },
+});
+/** 앞면 장식 — 천은 민압 테 · 판 · 금박 제목, 종이는 테 없음 · 홑 테 · 겹 테. */
+export const TEMPLATE_ORNAMENTS = Object.freeze({
+  cloth: Object.freeze(['blind-frame', 'blind-panel', 'gilt-title']),
+  paper: Object.freeze(['plain', 'single-rule', 'double-rule']),
+});
+/** 틀 장정의 바탕 · 잉크 — 표기의 coverPalette에서. 틀이 아니거나 모르는 색이면 null. */
+export function templateTone(display) {
+  if (!Object.hasOwn(TEMPLATE_BINDINGS, display?.binding ?? '')) return null;
+  return Object.hasOwn(TEMPLATE_PALETTES, display.coverPalette ?? '') ? TEMPLATE_PALETTES[display.coverPalette] : null;
+}
 
 /**
  * 장정 구성 — 앞표지에 어떤 글자가 어디 있는가(실물대로). script: 표지 글자 언어. year: 앞표지에 판 연도(로마 숫자)가 있는가.
  * material: 앞표지 재질(paper 종이 표지·재킷 · cloth 천 장정 · board 종이 보드 · burlap 갈포) — 시리즈 공통 결·낡음의 세기를 정한다(FirstEditionCover).
  */
 export const FIRST_EDITION_MATERIALS = Object.freeze(['paper', 'cloth', 'board', 'burlap']);
+
+// 틀 장정 — 재질은 틀마다 하나, 색(coverPalette)은 그 재질의 색만(검사가 맞춰 본다). 출판사 · 출판지는 조사한 판에만 — 지어내지 않도록 선택 칸.
+const TEMPLATE_BINDINGS_SOURCE = Object.freeze({
+  // 19세기 출판사 천 장정 — 앞면 민압(또는 금박 제목) · 글자는 책등(Parker 1859 · Sonnenschein 1887 · Harper 1851 실측 구성)
+  'tpl-cloth': Object.freeze({ material: 'cloth', script: 'latin', template: true, required: ['coverTitle', 'coverPalette', 'coverOrnament'], optional: [], titleLines: 3, titleMax: 22, year: false, note: 'Template — publisher’s cloth, blind or gilt front' }),
+  // 18세기 속표지(영국 · 미국) — 캐즐론 글자 줄 · 이중 괘선 · 출판지 · 출판사 · 로마 숫자 연도(Strahan 1776 · Millar 1759 실측 구성)
+  'tpl-title-page': Object.freeze({ material: 'paper', script: 'latin', template: true, required: ['coverTitle', 'coverAuthor', 'coverPalette'], optional: ['coverSubtitle', 'coverPlace', 'coverImprint'], titleLines: 6, titleMax: 24, authorMax: 32, year: true, note: 'Template — 18th-century English title page (issued in plain boards)' }),
+  // 프랑스 인쇄 표지 — 테 · 작가 · 제목 · 부제 · 출판지 · 출판사 · 연도(Lemerre · Marpon · Pagnerre · Hartmann 실측 구성)
+  'tpl-wrapper': Object.freeze({ material: 'paper', script: 'latin', template: true, required: ['coverTitle', 'coverAuthor', 'coverPalette', 'coverOrnament'], optional: ['coverSubtitle', 'coverPlace', 'coverImprint'], titleLines: 3, titleMax: 18, year: true, note: 'Template — French printed paper wrapper' }),
+  // 20세기 활판 재킷(영 · 미) — 바탕 한 색 · 큰 제목 · 작가 · 출판사(그림 없는 활판 재킷)
+  'tpl-jacket': Object.freeze({ material: 'paper', script: 'latin', template: true, required: ['coverTitle', 'coverAuthor', 'coverPalette'], optional: ['coverSubtitle', 'coverImprint'], titleLines: 3, titleMax: 16, year: false, note: 'Template — typographic 20th-century dust jacket' }),
+  // 동아시아 세로 표지 — 생지 · 세로 제목 · 작가 · 가는 이중 테 · 출판사(开明 1928 · 근대 한국 단행본 관례)
+  'tpl-cjk-vertical': Object.freeze({ material: 'paper', script: 'cjk', template: true, required: ['coverTitle', 'coverAuthor', 'coverPalette'], optional: ['coverImprint'], titleLines: 2, titleMax: 8, authorMax: 8, year: false, note: 'Template — East Asian vertical-title cover (two columns at most, right to left)' }),
+});
 
 export const FIRST_EDITION_BINDINGS = Object.freeze({
   // 新潮社 1923 『呐喊』 초판(루쉰 직접 설계): 통째 붉은 바탕 · 가운데 위 검은 판 · 붉은 가는 테 · 바탕색으로 뚫린 글자 가로 오른쪽→왼쪽 · 물결줄 · 작가 · 짧은 줄.
@@ -104,7 +155,10 @@ export const FIRST_EDITION_BINDINGS = Object.freeze({
   'hartmann-1935': Object.freeze({ material: 'paper', script: 'fr', required: ['coverTitle', 'coverAuthor', 'coverImprint', 'coverEdition'], optional: [], titleLines: 2, titleMax: 10, year: true, note: 'Paul Hartmann 1935 Rilke, Poèmes français wrapper' }),
   // 1919 보성사 『宣言書』 — 가로 긴 한 장의 오른쪽 첫머리: 큰 「宣言書」 + 본문 세로줄 오른쪽→왼쪽.
   'boseongsa-1919': Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle'], optional: [], titleLines: 1, titleMax: 3, year: false, note: 'Boseongsa 1919 Declaration of Independence sheet, right-hand opening' }),
+  ...TEMPLATE_BINDINGS_SOURCE,
 });
+/** 틀 장정 키 — 여러 작품이 같은 틀을 쓴다(작품 전용 장정은 작품마다 하나). */
+export const TEMPLATE_BINDINGS = Object.freeze(Object.fromEntries(Object.keys(TEMPLATE_BINDINGS_SOURCE).map((key) => [key, FIRST_EDITION_BINDINGS[key]])));
 
 const ROMAN = [[1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];
 
@@ -150,6 +204,13 @@ export function validateFirstEditionDisplay(display) {
     if (!lines.length || lines.length > maxLines || lines.some((line) => !line.trim() || line !== line.trim() || line.length > max)) problems.push(`${field}(${maxLines}줄 이하, 줄마다 ${max}자 이하)`);
     // 중국어 장정은 판 안 글자가 한자뿐이다(오른쪽→왼쪽·세로로 한 자씩 놓는다)
     if (binding.script.startsWith('zh') && ['coverTitle', 'coverAuthor'].includes(field) && !HAN.test(String(value))) problems.push(`${field}(한자만)`);
+  }
+  // 틀 장정 — 색은 목록에서, 그 색의 재질이 틀의 재질과 같아야(천 틀에 종이 색 안 됨), 장식은 그 재질의 목록에서
+  if (binding.template) {
+    const palette = Object.hasOwn(TEMPLATE_PALETTES, display.coverPalette ?? '') ? TEMPLATE_PALETTES[display.coverPalette] : null;
+    if (!palette) problems.push(`coverPalette(${Object.keys(TEMPLATE_PALETTES).join('·')})`);
+    else if (palette.material !== binding.material) problems.push(`coverPalette(${binding.material} 색만 — ${Object.keys(TEMPLATE_PALETTES).filter((key) => TEMPLATE_PALETTES[key].material === binding.material).join('·')})`);
+    if (allowed.has('coverOrnament') && !TEMPLATE_ORNAMENTS[binding.material].includes(display.coverOrnament)) problems.push(`coverOrnament(${TEMPLATE_ORNAMENTS[binding.material].join('·')})`);
   }
   if (binding.year !== (display.coverYear !== undefined)) problems.push(binding.year ? 'coverYear(이 장정은 앞표지에 연도가 있다)' : 'coverYear(이 장정은 앞표지에 연도가 없다)');
   if (display.coverYear !== undefined) {

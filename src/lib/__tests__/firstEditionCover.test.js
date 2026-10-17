@@ -48,7 +48,10 @@ describe('표지 표기 — 빌드가 entry.json display를 검사한다', () =>
     expect(byBinding('pagnerre')).toHaveLength(5);
     for (const [, work] of works) {
       expect(validateFirstEditionDisplay(work.display)).toEqual(work.display);
-      expect(FIRST_EDITION_BINDINGS[work.display.binding].script.startsWith({ Chinese: 'zh', French: 'fr', Korean: 'ko', English: 'en' }[work.language])).toBe(true);
+      // 실물 장정은 그 언어의 글자 · 틀 장정(tpl-*)은 문자 계열(세로 표지는 중 · 한, 그 밖은 라틴)
+      const { script } = FIRST_EDITION_BINDINGS[work.display.binding];
+      const want = work.display.binding.startsWith('tpl-') ? ({ Chinese: 'cjk', Korean: 'cjk' }[work.language] ?? 'latin') : { Chinese: 'zh', French: 'fr', Korean: 'ko', English: 'en' }[work.language];
+      expect([work.display.binding, script.startsWith(want)]).toEqual([work.display.binding, true]);
     }
     // 레미제라블 다섯 권은 같은 장정 · 부(part)만 다르다
     const tomes = works.filter(([, work]) => work.display.binding === 'pagnerre').map(([, work]) => work.display.coverPart);
@@ -79,7 +82,8 @@ describe('그리기', () => {
     }
     expect(draw({ binding: 'unknown' })).toBe('');
     expect(renderToStaticMarkup(createElement(FirstEditionCover, { work: null }))).toBe('');
-    expect(Object.keys(FIRST_EDITION_GROUNDS).sort()).toEqual(Object.keys(FIRST_EDITION_BINDINGS).sort());
+    // 작품 전용 장정은 바탕 색을 장정에 · 틀 장정(tpl-*)은 표기의 coverPalette에
+    expect(Object.keys(FIRST_EDITION_GROUNDS).sort()).toEqual(Object.keys(FIRST_EDITION_BINDINGS).filter((key) => !key.startsWith('tpl-')).sort());
   });
   it('사람·출판사 도안은 그리지 않는다 — 앞표지 글자에 출판사 표지·모노그램 칸이 없다', () => {
     const source = read('src/components/books/FirstEditionCover.jsx');
@@ -127,9 +131,12 @@ describe('2차 묶음(오너 「원본 책 재구성 … 표지 만들기까지 
       ...Object.entries(pd.works),
       ...works.filter(([, work]) => ['sonnenschein-1887', 'geneve-1782', 'hartmann-1935'].includes(work.display.binding)), // 3차 위키문헌 영·불
     ];
-    // 기미독립선언서 두 판(1919 원문 · 2019 「쉽고 바르게 읽는」)만 같은 문서의 얼굴(보성사 『宣言書』)을 함께 쓴다
-    expect(second).toHaveLength(30);
-    expect(new Set(second.map(([, work]) => work.display.binding)).size).toBe(29);
+    // 실물을 재구성한 장정은 책 하나에 하나 — 기미독립선언서 두 판(1919 원문 · 2019 「쉽고 바르게 읽는」)만 같은 문서의 얼굴(보성사
+    // 『宣言書』)을 함께 쓴다. 틀 장정(tpl-*, 카탈로그 기본 표지)은 여러 책이 같이 쓴다. 권수는 고정하지 않는다(넣을 때 고치지 않게).
+    const bespoke = second.filter(([, work]) => !work.display.binding.startsWith('tpl-'));
+    expect(bespoke.length).toBeGreaterThanOrEqual(30);
+    const uses = Object.groupBy(bespoke, ([, work]) => work.display.binding);
+    for (const [binding, list] of Object.entries(uses)) expect([binding, list.length]).toEqual([binding, binding === 'boseongsa-1919' ? 2 : 1]);
     expect(second.filter(([, work]) => work.display.binding === 'boseongsa-1919').map(([key]) => key).sort()).toEqual(['ws-ko-choe-nam-seon_gimi-dongnip-seoneonseo', 'ws-ko-samil-centennial_swipgo-bareuge-ingneun-dongnip-seoneonseo']);
     for (const key of Object.keys(FIRST_EDITION_BINDINGS)) expect(Object.hasOwn(VICTORIAN_BINDINGS, key)).toBe(false);
     for (const [, work] of second) {

@@ -271,6 +271,173 @@
         }
       ]
     },
+    "pd-fp-antoine-de-saint-exupery_vol-de-nuit": {
+      "title": "Vol de nuit",
+      "author": "Antoine de Saint-Exupéry",
+      "level": "B2 상급",
+      "total": 23,
+      "language": "French",
+      "size": 18408,
+      "unit": "words",
+      "display": {
+        "titleKo": "야간 비행",
+        "authorKo": "앙투안 드 생텍쥐페리",
+        "binding": "tpl-wrapper",
+        "coverTitle": "Vol de nuit",
+        "coverAuthor": "Antoine de Saint-Exupéry",
+        "coverPalette": "yellow",
+        "coverOrnament": "double-rule",
+        "coverYear": 1931
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "pdsite",
+        "workKey": "pd-fp-antoine-de-saint-exupery_vol-de-nuit",
+        "site": "fp",
+        "title": "Vol de nuit",
+        "author": "Antoine de Saint-Exupéry",
+        "publishedYear": 1931,
+        "authorDeathYear": 1944,
+        "countryOfOrigin": "FR",
+        "translator": null,
+        "url": "https://www.fadedpage.com/showbook.php?pid=20150364",
+        "fetchedAt": "2026-10-17",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "FR",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "rightsBasis": "korea-term",
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "site-front-matter-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I",
+          "sha256": "639a37a1bd7cfdb7770fba600e971ae229d48c0915eef74ebb64f4ab1bcdf347"
+        },
+        {
+          "order": 2,
+          "title": "II",
+          "sha256": "83e93ebe678fee91bb625546f39533c5c55569fa43633f1f6f4af2b285d00edc"
+        },
+        {
+          "order": 3,
+          "title": "III",
+          "sha256": "fd9861bd3058a3fe4d331e795681e7e1cf27ac7d63051eeaff3bf0a2bbff3514"
+        },
+        {
+          "order": 4,
+          "title": "IV",
+          "sha256": "4fb4d261363c20c4d7f1b3ff6ea1935099ae0ee87a539b4358836e5f2017b115"
+        },
+        {
+          "order": 5,
+          "title": "V",
+          "sha256": "a1547e848e83f9b0f74e7bd4d854a9db6b82356c6dee93aa222a947c1e85a6b5"
+        },
+        {
+          "order": 6,
+          "title": "VI",
+          "sha256": "98cf370137e267ffefafed1783097be44ed023fca9fc56af2363f3a426aafbcd"
+        },
+        {
+          "order": 7,
+          "title": "VII",
+          "sha256": "a38a7dd265580640c5b78be4441d90d1b6de2072ba50bda153dd762dcfa98a33"
+        },
+        {
+          "order": 8,
+          "title": "VIII",
+          "sha256": "3bcabc7098dfabfcb6a45217909961486c6e89a3d27d83d16b3a2e35bcb697da"
+        },
+        {
+          "order": 9,
+          "title": "IX",
+          "sha256": "fc28b93c0d6c11bb6c4895b877bd4dc7353d8d45c529be6b29f58eea5c51642e"
+        },
+        {
+          "order": 10,
+          "title": "X",
+          "sha256": "406f5f5aac840d19e4282ac66e8f05482cad59746d0ca436d88c736dc32c9e06"
+        },
+        {
+          "order": 11,
+          "title": "XI",
+          "sha256": "09b3fdbfc2b4e0c2d13c7632df3de507ff92729b021add64377953ccb34094a8"
+        },
+        {
+          "order": 12,
+          "title": "XII",
+          "sha256": "a625c16bf9de0862c8381a216c688efc105c8b9189dbe1abea2d659762eef566"
+        },
+        {
+          "order": 13,
+          "title": "XIII",
+          "sha256": "f2ca0c32a96bc5de1a8ec251397c90920739e5e7cb4a42c13c14a7de8f50bb01"
+        },
+        {
+          "order": 14,
+          "title": "XIV",
+          "sha256": "4ea4551511cbeca4fb1b2813684d22d06a1c74436d6e287ad79a236b10e876b5"
+        },
+        {
+          "order": 15,
+          "title": "XV",
+          "sha256": "83c88f8eb27cc62240a1b68afd4106620d105ad3a1d52dbf04e5e1f714f32096"
+        },
+        {
+          "order": 16,
+          "title": "XVI",
+          "sha256": "8db62889edf4bacc0efb10a347bc7a8ae41a962d3b031becc7179c2c63e11dd9"
+        },
+        {
+          "order": 17,
+          "title": "XVII",
+          "sha256": "3dc64d956e7073bf390afe72835b862ae893b2f82194e26d7e383924f8df0a57"
+        },
+        {
+          "order": 18,
+          "title": "XVIII",
+          "sha256": "04595398a25ef0fe0aa05130bbaf210e5299a7b606168a122279fdcbbabe9efe"
+        },
+        {
+          "order": 19,
+          "title": "XIX",
+          "sha256": "3fb96bda31073660de1f897dce652ddeabc254f99ba20b3809a3f5a3698f41e3"
+        },
+        {
+          "order": 20,
+          "title": "XX",
+          "sha256": "1d06f9314e6224170b121e6d2655d13e03a51e02268813775090259675a57c28"
+        },
+        {
+          "order": 21,
+          "title": "XXI",
+          "sha256": "b83ef98bee10001c527a13302feb486b85335e9bbe933bc9011a41d0d4e4ac3f"
+        },
+        {
+          "order": 22,
+          "title": "XXII",
+          "sha256": "b91d83c4cb25d69ebdff160e2ce2606d40e3371265951f89708c9acbf6685643"
+        },
+        {
+          "order": 23,
+          "title": "XXIII",
+          "sha256": "b2171cc4cab221b5a3fd8fc764cc8181e62d13737f3a4b1a52be2fa36ac4df58"
+        }
+      ]
+    },
     "pd-fp-ernest-hemingway_the-old-man-and-the-sea": {
       "title": "The Old Man and the Sea",
       "author": "Ernest Hemingway",
@@ -1052,6 +1219,237 @@
           "order": 14,
           "title": "Chapter X (2/2)",
           "sha256": "4727b9384662bd65dbef9d6bd4c1e94d3dde0337d43709c4c082bdb1afc09d1b"
+        }
+      ]
+    },
+    "pd-gau-george-orwell_homage-to-catalonia": {
+      "title": "Homage to Catalonia",
+      "author": "George Orwell",
+      "level": "B2 상급",
+      "total": 36,
+      "language": "English",
+      "size": 79660,
+      "unit": "words",
+      "display": {
+        "titleKo": "카탈로니아 찬가",
+        "authorKo": "조지 오웰",
+        "binding": "tpl-jacket",
+        "coverTitle": "Homage to\nCatalonia",
+        "coverAuthor": "George Orwell",
+        "coverPalette": "cream"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "pdsite",
+        "workKey": "pd-gau-george-orwell_homage-to-catalonia",
+        "site": "gau",
+        "title": "Homage to Catalonia",
+        "author": "George Orwell",
+        "publishedYear": 1938,
+        "authorDeathYear": 1950,
+        "countryOfOrigin": "GB",
+        "translator": null,
+        "url": "https://gutenberg.net.au/ebooks02/0201111h.html",
+        "fetchedAt": "2026-10-17",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "GB",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "rightsBasis": "korea-term",
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "site-front-matter-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Chapter 1 (1/2)",
+          "sha256": "0d537bbee5aa224f30a4e3f687ffff2c24b7691355f21c408fe7027e34e8bb89"
+        },
+        {
+          "order": 2,
+          "title": "Chapter 1 (2/2)",
+          "sha256": "bc396cce00ff24ec8e173978532752eacd8bbb91a38107c2c95e2fc94b0c928a"
+        },
+        {
+          "order": 3,
+          "title": "Chapter 2",
+          "sha256": "9998f4114c34e8deaa21067cb41019b9b3fd8842fcac32d3b1f1d5ab096d0d53"
+        },
+        {
+          "order": 4,
+          "title": "Chapter 3 (1/2)",
+          "sha256": "ffbc45de67b855db2a7995a90d102bc56761e4c40862ac12c9531bc929cfd2fd"
+        },
+        {
+          "order": 5,
+          "title": "Chapter 3 (2/2)",
+          "sha256": "a481cb5b7a5dc9ddcd0cd03a5984bd6e6acd5c703d513b3aa3c2a0b8937eac58"
+        },
+        {
+          "order": 6,
+          "title": "Chapter 4",
+          "sha256": "3ce4d8c108ac2530e9d8d662cc121535f4e04f209a153fca4c60810208f873e5"
+        },
+        {
+          "order": 7,
+          "title": "Chapter 5 (1/4)",
+          "sha256": "d7f4edf0d8b2f82e45aa45736aaba40028293795df1c4d6df6ca6075fd92d270"
+        },
+        {
+          "order": 8,
+          "title": "Chapter 5 (2/4)",
+          "sha256": "4f99083779e229652280dfaee8b4d41c3cfe13d754837c5111af05e7c81e686f"
+        },
+        {
+          "order": 9,
+          "title": "Chapter 5 (3/4)",
+          "sha256": "b8097b5d9a888cd492b4a2bd1126610d57832a1eb82be1fa6fea02cec412674a"
+        },
+        {
+          "order": 10,
+          "title": "Chapter 5 (4/4)",
+          "sha256": "820d5d4102ec7cbd10f435e50c9b8810798fc3deeadb99308e974400c71d1b11"
+        },
+        {
+          "order": 11,
+          "title": "Chapter 6 (1/2)",
+          "sha256": "852444c74faa39d04f30c56d68ded7b41fb5680d4569ae193de0e0d84067df88"
+        },
+        {
+          "order": 12,
+          "title": "Chapter 6 (2/2)",
+          "sha256": "c616ec065a0fbab7db936f4c343aeba3548d4ac0dca7676d1e8a69ab3410e1a6"
+        },
+        {
+          "order": 13,
+          "title": "Chapter 7 (1/3)",
+          "sha256": "40c3c358b92057ef6aff4b852e199f71edcfb9f6df5878582c2b3e34f2b1295a"
+        },
+        {
+          "order": 14,
+          "title": "Chapter 7 (2/3)",
+          "sha256": "ede19d5a3eb0bd728881b78e6ced6fc8353648bc74d10847e72d754644e6ff5c"
+        },
+        {
+          "order": 15,
+          "title": "Chapter 7 (3/3)",
+          "sha256": "e5afd7d3e94e57a50d80378087113d260feaa7421955b5df46d6d4d409ba9c00"
+        },
+        {
+          "order": 16,
+          "title": "Chapter 8",
+          "sha256": "ca2cb376437ea13b3d5c93722905a985ae8bb242a6b4b351313c5953b670b2bb"
+        },
+        {
+          "order": 17,
+          "title": "Chapter 9 (1/2)",
+          "sha256": "a11d1293866f21aeb957719fcced19ac7295e17104c3698f5d0df9786dfad8a8"
+        },
+        {
+          "order": 18,
+          "title": "Chapter 9 (2/2)",
+          "sha256": "81da5be3c0e780e929a21ea635a66f542964a6140cf59d680edcea66bdd5242c"
+        },
+        {
+          "order": 19,
+          "title": "Chapter 10 (1/5)",
+          "sha256": "4d0fc2d88a2e92f9d655de22e1aa1a23619048d808ed30f399c00f26b2eb902e"
+        },
+        {
+          "order": 20,
+          "title": "Chapter 10 (2/5)",
+          "sha256": "a18e4df70906391d579acc3287db87176003a387d660f2b8b201925e82fac6f3"
+        },
+        {
+          "order": 21,
+          "title": "Chapter 10 (3/5)",
+          "sha256": "d035d78a68dd7ea80a213ef65f69ebc2f4b2bc20f56c0407a52ab5aa8478f096"
+        },
+        {
+          "order": 22,
+          "title": "Chapter 10 (4/5)",
+          "sha256": "f56df39e8afb682bbc3f8bffc9e0de8e2842d38c16aa51197793b559e18229cb"
+        },
+        {
+          "order": 23,
+          "title": "Chapter 10 (5/5)",
+          "sha256": "b7089c40e6df7f3efb984a6f201b40f80f242b89ed7b997da1d09d017a96cd86"
+        },
+        {
+          "order": 24,
+          "title": "Chapter 11 (1/5)",
+          "sha256": "aedcaace5bfc88e066c2b139c6fa668fc38a3e9900a605a2e9b7835f01e90a11"
+        },
+        {
+          "order": 25,
+          "title": "Chapter 11 (2/5)",
+          "sha256": "a7a1014805a71eba19b0560ae281f53c8ea1ee598170a26efbafd48bda84a9cd"
+        },
+        {
+          "order": 26,
+          "title": "Chapter 11 (3/5)",
+          "sha256": "a45f977e0e635da47a865536fd08bc26e056ce571c5c891438633d58c8659ef8"
+        },
+        {
+          "order": 27,
+          "title": "Chapter 11 (4/5)",
+          "sha256": "8d23b4644d2efa79337ceb8aa6693116ed841d44c04b9c73bf52bd21369e98c8"
+        },
+        {
+          "order": 28,
+          "title": "Chapter 11 (5/5)",
+          "sha256": "ec2fa8f67b41b34536ecb7ab2deabe0cf7ed40e3955a8a8a71bfeddad5463d7b"
+        },
+        {
+          "order": 29,
+          "title": "Chapter 12 (1/2)",
+          "sha256": "3ab3e3b187f17f60404919d685ad1f604e06268bfed5bcb2100aad00daf8fe21"
+        },
+        {
+          "order": 30,
+          "title": "Chapter 12 (2/2)",
+          "sha256": "f1435d8ddd78813cb30bd4be3bb2d0f0cd50a400a5586de76f812f434a53d0df"
+        },
+        {
+          "order": 31,
+          "title": "Chapter 13 (1/3)",
+          "sha256": "9b80c2a1a32a407904dc4974f4021d851ea5e34a396299a33ecb7808e46c4d2e"
+        },
+        {
+          "order": 32,
+          "title": "Chapter 13 (2/3)",
+          "sha256": "80f609efb744b055bb47a721efef94db4b9f714baeba88adbfabded915c52cfd"
+        },
+        {
+          "order": 33,
+          "title": "Chapter 13 (3/3)",
+          "sha256": "266850dce488f68ead979fd90fccac59b97577dcde2fff3d5bcee06a43a6359a"
+        },
+        {
+          "order": 34,
+          "title": "Chapter 14 (1/3)",
+          "sha256": "a311c6b3121a24ad251212e1f3923818cb99510a34fc638d8bd0056758ccac21"
+        },
+        {
+          "order": 35,
+          "title": "Chapter 14 (2/3)",
+          "sha256": "41c66945beec28d09b8b7f600296a34d6f8192f25d16fb0f2a2a596ea88646ac"
+        },
+        {
+          "order": 36,
+          "title": "Chapter 14 (3/3)",
+          "sha256": "b1ed7f0ef48e675948c32ae45c4575e45315daa0e23ceceeaf9b1da30b0d6bfd"
         }
       ]
     },

@@ -1,0 +1,363 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "fr",
+  "key": "ws-fr-alphonse-daudet_lettres-de-mon-moulin",
+  "main": "Lettres de mon moulin",
+  "url": "https://fr.wikisource.org/wiki/Lettres_de_mon_moulin",
+  "title": "Lettres de mon moulin",
+  "author": "Alphonse Daudet",
+  "level": "B1 중급",
+  "publishedYear": 1869,
+  "authorDeathYear": 1897,
+  "countryOfOrigin": "FR",
+  "mortPourLaFrance": false,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "FR",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "풍차 방앗간 편지",
+    "authorKo": "알퐁스 도데",
+    "binding": "tpl-wrapper",
+    "coverTitle": "Lettres de mon\nmoulin",
+    "coverAuthor": "Alphonse Daudet",
+    "coverPalette": "yellow",
+    "coverOrnament": "double-rule",
+    "coverYear": 1869
+  },
+  "fetchedAt": "2026-10-17",
+  "files": [
+    {
+      "page": "Lettres de mon moulin/Avant-propos",
+      "revid": 3985491,
+      "timestamp": "2013-03-17T08:09:37Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "prp",
+          "sha256": "9a9c342b6ad6b9330a53912d6e15e7a030ccdf5563304a0df42653c549e207f4"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/Installation",
+      "revid": 9702331,
+      "timestamp": "2019-06-12T05:35:18Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "002.html",
+          "extract": "prp",
+          "sha256": "70cf012ca287e6965f6eaf85d2ea3e1eb369ef46995f14efa75f2a7d2a98510a"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/La diligence de Beaucaire",
+      "revid": 3985494,
+      "timestamp": "2013-03-17T08:11:08Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "003.html",
+          "extract": "prp",
+          "sha256": "78dff2eeb6c0313de80a4406380260a8cdde501f337d11f44f622d7478532410"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/Le secret de maître Cornille",
+      "revid": 5800490,
+      "timestamp": "2016-04-14T10:00:11Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "004.html",
+          "extract": "prp",
+          "sha256": "e86f2f3be98b1a6d8c70b7ae189ce9cb99be83786df3fb4e0956e5033ea1b886"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/La chèvre de monsieur Seguin",
+      "revid": 13007883,
+      "timestamp": "2023-02-04T23:45:37Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "005.html",
+          "extract": "prp",
+          "sha256": "c0aa6e9dfd1565f6752f0699d5d42403d84674484f69de209799c5c3b9d51beb"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/Les étoiles",
+      "revid": 13007887,
+      "timestamp": "2023-02-04T23:46:19Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "006.html",
+          "extract": "prp",
+          "sha256": "6005ad8468df922a371314b3a88bf0bc91767bbe0470a7e94b0f4f423559ab85"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/L’Arlésienne",
+      "revid": 4578198,
+      "timestamp": "2014-05-23T13:45:19Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "007.html",
+          "extract": "prp",
+          "sha256": "b6aef644467c86cf70457e895d73d8f94d190d0efbdf75672ed123bf7e2c720a"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/La mule du Pape",
+      "revid": 7038255,
+      "timestamp": "2017-11-10T06:30:01Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "008.html",
+          "extract": "prp",
+          "sha256": "35335027925b995adfa82e8454cbc1ccbe633c77eeb931e6f9551be667b55e30"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/Le phare des Sanguinaires",
+      "revid": 3985556,
+      "timestamp": "2013-03-17T08:29:47Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "009.html",
+          "extract": "prp",
+          "sha256": "43417012951676ac1f242a2fb5760a2ae1d3d9584f5d27005cda7fd44fa6d6de"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/L’agonie de la Sémillante",
+      "revid": 11239166,
+      "timestamp": "2021-04-05T06:34:18Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "010.html",
+          "extract": "prp",
+          "sha256": "b18f3038e9abd33e0e3d3e46b52a144b9d4cf4530983f4c4836fea80419049b8"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/Les douaniers",
+      "revid": 3985567,
+      "timestamp": "2013-03-17T08:33:30Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "011.html",
+          "extract": "prp",
+          "sha256": "1c4e0f2277c7f173e6a1dcdf5e398419ce12caa2edae42b535cce1d1001a4f8a"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/Le curé de Cucugnan",
+      "revid": 3985583,
+      "timestamp": "2013-03-17T08:37:10Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "012.html",
+          "extract": "prp",
+          "sha256": "f716f99db27a81aecf3be11f01489f58141a3b93dd33938ba9c946462ef084d0"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/Les vieux",
+      "revid": 3985587,
+      "timestamp": "2013-03-17T08:38:30Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "013.html",
+          "extract": "prp",
+          "sha256": "f27bb981a165793e1d45483b76c8a22ed98e55c6d2424320a1afcc7d1f43bd8d"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/Ballades en prose",
+      "revid": 3985595,
+      "timestamp": "2013-03-17T08:41:05Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "014.html",
+          "extract": "prp",
+          "sha256": "dad19eba34dd70024c3aeaab2be30e429732c649a339d618b0633534e11763b3"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/Le portefeuille de Bixiou",
+      "revid": 3985604,
+      "timestamp": "2013-03-17T08:44:28Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "015.html",
+          "extract": "prp",
+          "sha256": "f537c26a96950ab0b0d941c81db276ec45cc37dae319e7a966f4d9bbdfbdef19"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/La légende de l’homme à la cervelle d’or",
+      "revid": 3985611,
+      "timestamp": "2013-03-17T08:46:11Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "016.html",
+          "extract": "prp",
+          "sha256": "91f6806e824cd19d21a9edfa514249977527e4d1bbcf1f751e4f4f585b85985b"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/Le poète Mistral",
+      "revid": 3985612,
+      "timestamp": "2013-03-17T08:47:04Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "017.html",
+          "extract": "prp",
+          "sha256": "b08470a5bd7d22b5d7c55c577af9a1caae6e7e0d25fa138f7cd31b98c7938bb8"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/Les trois messes basses",
+      "revid": 12923305,
+      "timestamp": "2023-01-10T18:16:40Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "018.html",
+          "extract": "prp",
+          "sha256": "571e65fe6f919497bebdb5cfd15ef42a3bd857a37192dd5f234e3a82c95be86b"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/Les oranges",
+      "revid": 3985624,
+      "timestamp": "2013-03-17T08:51:06Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "019.html",
+          "extract": "prp",
+          "sha256": "e98e669ba2cb2c19531540ea028645b6774e00925c01f7c29acf689c27876dc3"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/Les deux auberges",
+      "revid": 5766071,
+      "timestamp": "2016-03-27T11:52:56Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "020.html",
+          "extract": "prp",
+          "sha256": "68786a3fcee405e0c4315e3e21c523f0d7c056b8376a65fb3ac047e13ead7537"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/À Milianah",
+      "revid": 3985630,
+      "timestamp": "2013-03-17T08:53:18Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "021.html",
+          "extract": "prp",
+          "sha256": "c03d241f9db1cf8b9c8a1dc388d61d423a1386dccc21cf840f981b902057e346"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/Les sauterelles",
+      "revid": 3985633,
+      "timestamp": "2013-03-17T08:54:00Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "022.html",
+          "extract": "prp",
+          "sha256": "52913a9ec826e5b874f42d62ef439771d69958c533b64d08c49439117764922a"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/L’élixir du Père Gaucher",
+      "revid": 3985636,
+      "timestamp": "2013-03-17T08:54:48Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "023.html",
+          "extract": "prp",
+          "sha256": "367da6f093b4f1e05599b2038db0cbff41486910daccd9608a279adaa551f895"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/En Camargue",
+      "revid": 4375529,
+      "timestamp": "2013-12-18T05:46:26Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "024.html",
+          "extract": "prp",
+          "sha256": "251af5ae16cd6c2f231fda1a1d5066b3bf1bac9df203768a3e4cd8904a90c44b"
+        }
+      ]
+    },
+    {
+      "page": "Lettres de mon moulin/Nostalgies de caserne",
+      "revid": 3985647,
+      "timestamp": "2013-03-17T08:59:09Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "025.html",
+          "extract": "prp",
+          "sha256": "0bf2e68e862ec055e70276c48e05029e892b66c2d3482b94a4faa4c12dd546aa"
+        }
+      ]
+    }
+  ]
+}

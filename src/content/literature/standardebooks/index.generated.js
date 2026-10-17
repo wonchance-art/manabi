@@ -11,7 +11,8 @@ import book7 from './se-herman-melville_moby-dick/chapters.json';
 import book8 from './se-james-joyce_a-portrait-of-the-artist-as-a-young-man/chapters.json';
 import book9 from './se-jane-austen_pride-and-prejudice/chapters.json';
 import book10 from './se-john-stuart-mill_on-liberty/chapters.json';
-import book11 from './se-lewis-carroll_alices-adventures-in-wonderland/chapters.json';
-import book12 from './se-marcus-aurelius_meditations_george-long/chapters.json';
+import book11 from './se-l-frank-baum_the-wonderful-wizard-of-oz/chapters.json';
+import book12 from './se-lewis-carroll_alices-adventures-in-wonderland/chapters.json';
+import book13 from './se-marcus-aurelius_meditations_george-long/chapters.json';
 
-export const STANDARD_EBOOKS_BOOKS = Object.freeze([book0, book1, book2, book3, book4, book5, book6, book7, book8, book9, book10, book11, book12]);
+export const STANDARD_EBOOKS_BOOKS = Object.freeze([book0, book1, book2, book3, book4, book5, book6, book7, book8, book9, book10, book11, book12, book13]);

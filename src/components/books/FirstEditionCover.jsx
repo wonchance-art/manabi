@@ -1,8 +1,9 @@
 import { useId } from 'react';
 import { Metamorphous, Noto_Serif_SC, Rye } from 'next/font/google';
-import { FIRST_EDITION_BINDINGS, romanYear } from '../../lib/firstEditionCover';
+import { FIRST_EDITION_BINDINGS, romanYear, templateTone } from '../../lib/firstEditionCover';
 import { PERIOD_FONTS, SECOND_DRAW, SECOND_FONT_CLASS, SECOND_GROUNDS } from './FirstEditionCoverSecond';
 import { THIRD_DRAW, THIRD_FONT_CLASS, THIRD_GROUNDS } from './FirstEditionCoverThird';
+import { SONG, TEMPLATE_DRAW } from './FirstEditionCoverTemplate';
 import './first-edition-cover.css';
 
 // 중국어·프랑스어 정본 책 표지 — 「초판 장정」 시리즈(LIT-SRC-WS-1, 오너 「권장대로」 2026-10-17 KST). 규칙·근거는 lib/firstEditionCover.js.
@@ -13,7 +14,6 @@ const song = Noto_Serif_SC({ weight: ['400', '600'], subsets: ['latin'], display
 const pointed = Metamorphous({ weight: '400', subsets: ['latin'], display: 'swap', preload: false, variable: '--font-ws-pointed' });
 const ornate = Rye({ weight: '400', subsets: ['latin'], display: 'swap', preload: false, variable: '--font-ws-ornate' });
 
-const SONG = 'var(--font-ws-song, "Noto Serif SC"), "Noto Serif SC", "Songti SC", STSong, serif';
 // 당시 글꼴(오너 「당시 글꼴로, 원본 대조하면서」 2026-10-17 KST) — Lemerre 1873은 엘제비르(옛 로만) 활자, Pagnerre 1862 · Marpon 1885 판권 글자는 디도.
 const ELZEVIR = PERIOD_FONTS.FELL;
 const DIDONE = PERIOD_FONTS.DIDOT;
@@ -199,7 +199,7 @@ function Pagnerre({ display, tone }) {
   );
 }
 
-const DRAW = { nahan: Nahan, kaiming: Kaiming, lemerre: Lemerre, marpon: Marpon, hetzel: Hetzel, pagnerre: Pagnerre, ...SECOND_DRAW, ...THIRD_DRAW };
+const DRAW = { nahan: Nahan, kaiming: Kaiming, lemerre: Lemerre, marpon: Marpon, hetzel: Hetzel, pagnerre: Pagnerre, ...SECOND_DRAW, ...THIRD_DRAW, ...TEMPLATE_DRAW };
 
 // ── 시리즈 공통 원칙(오너 「이전에 커버 만들었던 것처럼 일관성 줄 수 있는 원칙 일부와 빈티지 효과」 2026-10-17 KST) ──
 // ① 틀: 60×84 · 왼쪽 접힘(경첩) 그림자 하나 — 시리즈 A(일본 책) · 빅토리아 천 장정과 같은 자리(CSS .fe-cover).
@@ -248,7 +248,10 @@ export default function FirstEditionCover({ work }) {
   const display = work?.display;
   const binding = display && Object.hasOwn(FIRST_EDITION_BINDINGS, display.binding) ? display.binding : null;
   if (!binding) return null;
-  const tone = FIRST_EDITION_GROUNDS[binding];
+  // 틀 장정은 표기의 색(coverPalette)이 바탕 — 모르는 색이면 그리지 않는다(빌드 검사가 먼저 막는다)
+  const template = Object.hasOwn(TEMPLATE_DRAW, binding);
+  const tone = template ? templateTone(display) : FIRST_EDITION_GROUNDS[binding];
+  if (!tone) return null;
   const Draw = DRAW[binding];
   const { material } = FIRST_EDITION_BINDINGS[binding];
   const age = AGING[material];
@@ -278,7 +281,8 @@ export default function FirstEditionCover({ work }) {
         <rect width="120" height="168" fill={tone.ground} />
         <rect width="120" height="168" fill={tone.ground} filter={`url(#${id}-grain)`} />
         <g filter={`url(#${id}-ink)`}><Draw display={display} tone={tone} id={id} /></g>
-        <Aging id={id} binding={binding} material={material} />
+        {/* 틀 장정은 여러 책이 같은 이름이라 제목을 씨앗에 더한다 — 같은 책은 늘 같게, 다른 책은 다르게 낡는다 */}
+        <Aging id={id} binding={template ? `${binding}:${display.coverTitle}` : binding} material={material} />
       </svg>
     </span>
   );

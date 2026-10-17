@@ -1,0 +1,6267 @@
+{
+  "about": "정본 책 카탈로그(LIT-IMPORT-1) — 나라별 인기 작가 · 작품. 수록 = key만(사실은 작품 폴더 entry.json) · loadable = 가져오기 입력 전부 · blocked = 막힌 이유. 같은 나라 안에서는 인기 순(위가 먼저 — import.mjs --next가 이 순서로 고른다). 규칙: scripts/lib/literature-catalog.mjs, 계약: src/lib/__tests__/literatureCatalog.test.js.",
+  "works": [
+    {
+      "id": "jp-aozora-275",
+      "key": "aozora-000035-000275",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-277",
+      "key": "aozora-000035-000277",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-301",
+      "key": "aozora-000035-000301",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-1565",
+      "key": "aozora-000035-001565",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-1567",
+      "key": "aozora-000035-001567",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-424",
+      "key": "aozora-000074-000424",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-427",
+      "key": "aozora-000074-000427",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-456",
+      "key": "aozora-000081-000456",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-462",
+      "key": "aozora-000081-000462",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-466",
+      "key": "aozora-000081-000466",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-470",
+      "key": "aozora-000081-000470",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-473",
+      "key": "aozora-000081-000473",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-43754",
+      "key": "aozora-000081-043754",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-46605",
+      "key": "aozora-000081-046605",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-2093",
+      "key": "aozora-000096-002093",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-624",
+      "key": "aozora-000119-000624",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-628",
+      "key": "aozora-000121-000628",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-637",
+      "key": "aozora-000121-000637",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-45245",
+      "key": "aozora-000129-045245",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-752",
+      "key": "aozora-000148-000752",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-753",
+      "key": "aozora-000148-000753",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-773",
+      "key": "aozora-000148-000773",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-789",
+      "key": "aozora-000148-000789",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-799",
+      "key": "aozora-000148-000799",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-47061",
+      "key": "aozora-000296-047061",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-42",
+      "key": "aozora-000879-000042",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-92",
+      "key": "aozora-000879-000092",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-127",
+      "key": "aozora-000879-000127",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-43015",
+      "key": "aozora-000879-043015",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-43016",
+      "key": "aozora-000879-043016",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-42618",
+      "key": "aozora-001095-042618",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-56641",
+      "key": "aozora-001383-056641",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-56642",
+      "key": "aozora-001383-056642",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-56648",
+      "key": "aozora-001779-056648",
+      "status": "수록",
+      "country": "JP"
+    },
+    {
+      "id": "jp-aozora-776",
+      "key": "aozora-000148-000776",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "草枕",
+      "author": "夏目漱石",
+      "titleKo": "풀베개",
+      "authorKo": "나쓰메 소세키",
+      "publishedYear": 1906,
+      "authorDeathYear": 1916,
+      "countryOfOrigin": "JP",
+      "level": "N1 심화",
+      "source": {
+        "provider": "aozora",
+        "workId": 776,
+        "personId": "000148"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 316,191 — 미수록 후보 #1",
+      "note": "화가의 여행 수필풍 소설. 한문투 어휘 많음."
+    },
+    {
+      "id": "jp-aozora-43873",
+      "key": "aozora-000231-043873",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "戦争責任者の問題",
+      "author": "伊丹万作",
+      "titleKo": "전쟁 책임자의 문제",
+      "authorKo": "이타미 만사쿠",
+      "publishedYear": 1946,
+      "authorDeathYear": 1946,
+      "countryOfOrigin": "JP",
+      "level": "N1 심화",
+      "source": {
+        "provider": "aozora",
+        "workId": 43873,
+        "personId": "000231"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 102,572 — 미수록 후보 #3",
+      "note": "1946 평론(문학 아님). 접속 순위는 높으나 교재 적합성 검토."
+    },
+    {
+      "id": "jp-aozora-228",
+      "key": "aozora-000031-000228",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "セメント樽の中の手紙",
+      "author": "葉山嘉樹",
+      "titleKo": "시멘트 통 속의 편지",
+      "authorKo": "하야마 요시키",
+      "publishedYear": 1926,
+      "authorDeathYear": 1945,
+      "countryOfOrigin": "JP",
+      "level": "N2 상급",
+      "source": {
+        "provider": "aozora",
+        "workId": 228,
+        "personId": "000031"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 99,218 — 미수록 후보 #4",
+      "note": "짧은 프롤레타리아 단편(교과서 수록작). 초출 1926."
+    },
+    {
+      "id": "jp-aozora-100",
+      "key": "aozora-000879-000100",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "桃太郎",
+      "author": "芥川竜之介",
+      "titleKo": "모모타로",
+      "authorKo": "아쿠타가와 류노스케",
+      "publishedYear": 1924,
+      "authorDeathYear": 1927,
+      "countryOfOrigin": "JP",
+      "level": "N2 상급",
+      "source": {
+        "provider": "aozora",
+        "workId": 100,
+        "personId": "000879"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 96,218 — 미수록 후보 #5",
+      "note": "모모타로 패러디 단편."
+    },
+    {
+      "id": "jp-aozora-52504",
+      "key": "aozora-001566-052504",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "遠野物語",
+      "author": "柳田国男",
+      "titleKo": "도노 이야기",
+      "authorKo": "야나기타 구니오",
+      "publishedYear": 1910,
+      "authorDeathYear": 1962,
+      "countryOfOrigin": "JP",
+      "level": "N1 심화",
+      "source": {
+        "provider": "aozora",
+        "workId": 52504,
+        "personId": "001566"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 88,877 — 미수록 후보 #6",
+      "note": "문어체(文語体) — 新字新仮名이지만 문체가 고전적. 작가 1962년 사망 = 한국 선 경계."
+    },
+    {
+      "id": "jp-aozora-2381",
+      "key": "aozora-000096-002381",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "瓶詰地獄",
+      "author": "夢野久作",
+      "titleKo": "병 속의 지옥",
+      "authorKo": "유메노 규사쿠",
+      "publishedYear": 1928,
+      "authorDeathYear": 1936,
+      "countryOfOrigin": "JP",
+      "level": "N2 상급",
+      "source": {
+        "provider": "aozora",
+        "workId": 2381,
+        "personId": "000096"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 86,956 — 미수록 후보 #7",
+      "note": "서간체 단편 미스터리."
+    },
+    {
+      "id": "jp-aozora-794",
+      "key": "aozora-000148-000794",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "三四郎",
+      "author": "夏目漱石",
+      "titleKo": "산시로",
+      "authorKo": "나쓰메 소세키",
+      "publishedYear": 1908,
+      "authorDeathYear": 1916,
+      "countryOfOrigin": "JP",
+      "level": "N2 상급",
+      "source": {
+        "provider": "aozora",
+        "workId": 794,
+        "personId": "000148"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 84,611 — 미수록 후보 #8",
+      "note": "전기 3부작 1편."
+    },
+    {
+      "id": "jp-aozora-1465",
+      "key": "aozora-000156-001465",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "蟹工船",
+      "author": "小林多喜二",
+      "titleKo": "게 공선",
+      "authorKo": "고바야시 다키지",
+      "publishedYear": 1929,
+      "authorDeathYear": 1933,
+      "countryOfOrigin": "JP",
+      "level": "N1 심화",
+      "source": {
+        "provider": "aozora",
+        "workId": 1465,
+        "personId": "000156"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 84,122 — 미수록 후보 #9",
+      "note": "프롤레타리아 문학 대표작. 방언·은어 많음."
+    },
+    {
+      "id": "jp-aozora-56866",
+      "key": "aozora-001383-056866",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "春琴抄",
+      "author": "谷崎潤一郎",
+      "titleKo": "슌킨 이야기",
+      "authorKo": "다니자키 준이치로",
+      "publishedYear": 1933,
+      "authorDeathYear": 1965,
+      "countryOfOrigin": "JP",
+      "level": "N1 심화",
+      "source": {
+        "provider": "aozora",
+        "workId": 56866,
+        "personId": "001383"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 76,816 — 미수록 후보 #10",
+      "note": "작가 1965 사망 — 한국 선(1962/1955) 밖. 일본 본국 만료(1967 이전 사망 사후 50년)로만 통과 — 아오조라 D5 기준(이미 刺青·陰翳礼讃 수록 선례). rightsKorea.js ORIGIN_RULES에는 JP가 없음 — 정본 규칙 정합성 확인 필요."
+    },
+    {
+      "id": "jp-aozora-2288",
+      "key": "aozora-000035-002288",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "葉",
+      "author": "太宰治",
+      "titleKo": "잎",
+      "authorKo": "다자이 오사무",
+      "publishedYear": 1934,
+      "authorDeathYear": 1948,
+      "countryOfOrigin": "JP",
+      "level": "N2 상급",
+      "source": {
+        "provider": "aozora",
+        "workId": 2288,
+        "personId": "000035"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 76,380 — 미수록 후보 #11",
+      "note": "단편집 『만년』 첫 작품. 단상 모음."
+    },
+    {
+      "id": "jp-aozora-58093",
+      "key": "aozora-001383-058093",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "痴人の愛",
+      "author": "谷崎潤一郎",
+      "titleKo": "치인의 사랑",
+      "authorKo": "다니자키 준이치로",
+      "publishedYear": 1924,
+      "authorDeathYear": 1965,
+      "countryOfOrigin": "JP",
+      "level": "N2 상급",
+      "source": {
+        "provider": "aozora",
+        "workId": 58093,
+        "personId": "001383"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 69,406 — 미수록 후보 #12",
+      "note": "작가 1965 사망 — JP 본국 만료로만 통과(春琴抄와 같음)."
+    },
+    {
+      "id": "jp-aozora-59532",
+      "key": "aozora-001801-059532",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "夏の葬列",
+      "author": "山川方夫",
+      "titleKo": "여름의 장례 행렬",
+      "authorKo": "야마카와 마사오",
+      "publishedYear": 1962,
+      "authorDeathYear": 1965,
+      "countryOfOrigin": "JP",
+      "level": "N2 상급",
+      "source": {
+        "provider": "aozora",
+        "workId": 59532,
+        "personId": "001801"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 68,236 — 미수록 후보 #13",
+      "note": "교과서 수록 단편. 작가 1965 사망 — JP 본국 만료로만 통과."
+    },
+    {
+      "id": "jp-aozora-1317",
+      "key": "aozora-000125-001317",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "黒死館殺人事件",
+      "author": "小栗虫太郎",
+      "titleKo": "흑사관 살인사건",
+      "authorKo": "오구리 무시타로",
+      "publishedYear": 1934,
+      "authorDeathYear": 1946,
+      "countryOfOrigin": "JP",
+      "level": "N1 심화",
+      "source": {
+        "provider": "aozora",
+        "workId": 1317,
+        "personId": "000125"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 67,404 — 미수록 후보 #14",
+      "note": "장편 본격추리, 현학적 문체 — 학습 난도 매우 높음."
+    },
+    {
+      "id": "jp-aozora-54372",
+      "key": "aozora-001475-054372",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "赤い蝋燭と人魚",
+      "author": "小川未明",
+      "titleKo": "빨간 초와 인어",
+      "authorKo": "오가와 미메이",
+      "publishedYear": 1921,
+      "authorDeathYear": 1961,
+      "countryOfOrigin": "JP",
+      "level": "N3 중급",
+      "source": {
+        "provider": "aozora",
+        "workId": 54372,
+        "personId": "001475"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 67,269 — 미수록 후보 #15",
+      "note": "동화. 작가 1961 사망."
+    },
+    {
+      "id": "jp-aozora-772",
+      "key": "aozora-000148-000772",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "私の個人主義",
+      "author": "夏目漱石",
+      "titleKo": "나의 개인주의",
+      "authorKo": "나쓰메 소세키",
+      "publishedYear": 1914,
+      "authorDeathYear": 1916,
+      "countryOfOrigin": "JP",
+      "level": "N1 심화",
+      "source": {
+        "provider": "aozora",
+        "workId": 772,
+        "personId": "000148"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 67,068 — 미수록 후보 #16",
+      "note": "1914 강연록."
+    },
+    {
+      "id": "jp-aozora-1924",
+      "key": "aozora-000081-001924",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "グスコーブドリの伝記",
+      "author": "宮沢賢治",
+      "titleKo": "구스코 부도리의 전기",
+      "authorKo": "미야자와 겐지",
+      "publishedYear": 1932,
+      "authorDeathYear": 1933,
+      "countryOfOrigin": "JP",
+      "level": "N3 중급",
+      "source": {
+        "provider": "aozora",
+        "workId": 1924,
+        "personId": "000081"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 61,511 — 미수록 후보 #19",
+      "note": "동화."
+    },
+    {
+      "id": "jp-aozora-42620",
+      "key": "aozora-001095-042620",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "堕落論",
+      "author": "坂口安吾",
+      "titleKo": "타락론",
+      "authorKo": "사카구치 안고",
+      "publishedYear": 1946,
+      "authorDeathYear": 1955,
+      "countryOfOrigin": "JP",
+      "level": "N1 심화",
+      "source": {
+        "provider": "aozora",
+        "workId": 42620,
+        "personId": "001095"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 57,715 — 미수록 후보 #21",
+      "note": "전후 평론."
+    },
+    {
+      "id": "jp-aozora-179",
+      "key": "aozora-000879-000179",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "藪の中",
+      "author": "芥川竜之介",
+      "titleKo": "덤불 속",
+      "authorKo": "아쿠타가와 류노스케",
+      "publishedYear": 1922,
+      "authorDeathYear": 1927,
+      "countryOfOrigin": "JP",
+      "level": "N2 상급",
+      "source": {
+        "provider": "aozora",
+        "workId": 179,
+        "personId": "000879"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 56,376 — 미수록 후보 #23",
+      "note": "영화 「라쇼몽」 원작."
+    },
+    {
+      "id": "jp-aozora-689",
+      "key": "aozora-000129-000689",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "山椒大夫",
+      "author": "森鴎外",
+      "titleKo": "산쇼다유",
+      "authorKo": "모리 오가이",
+      "publishedYear": 1915,
+      "authorDeathYear": 1922,
+      "countryOfOrigin": "JP",
+      "level": "N2 상급",
+      "source": {
+        "provider": "aozora",
+        "workId": 689,
+        "personId": "000129"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 46,519 — 미수록 후보 #37",
+      "note": "역사소설(안쥬와 즈시오)."
+    },
+    {
+      "id": "jp-aozora-57228",
+      "key": "aozora-001779-057228",
+      "status": "loadable",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "怪人二十面相",
+      "author": "江戸川乱歩",
+      "titleKo": "괴인 이십면상",
+      "authorKo": "에도가와 란포",
+      "publishedYear": 1936,
+      "authorDeathYear": 1965,
+      "countryOfOrigin": "JP",
+      "level": "N3 중급",
+      "source": {
+        "provider": "aozora",
+        "workId": 57228,
+        "personId": "001779"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 45,197 — 미수록 후보 #39",
+      "note": "소년 탐정단 1편. 작가 1965 사망 — JP 본국 만료(人間椅子 수록 선례)."
+    },
+    {
+      "id": "jp-aozora-18376",
+      "key": "aozora-000329-018376",
+      "status": "blocked",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "桃太郎",
+      "author": "楠山正雄",
+      "titleKo": "모모타로",
+      "authorKo": "구스야마 마사오",
+      "authorDeathYear": 1950,
+      "countryOfOrigin": "JP",
+      "level": "N4 기본",
+      "source": {
+        "provider": "aozora",
+        "workId": 18376,
+        "personId": "000329"
+      },
+      "popularity": "Aozora 접속 순위(2020–22 합산) 127,239 — 미수록 후보 #2",
+      "note": "옛이야기 재화(再話). 초출 연도 색인에 없음 — add-work 시 판본 확인.",
+      "blocker": "카탈로그 칸: publishedYear"
+    },
+    {
+      "id": "jp-aozora-45630",
+      "key": "aozora-000081-045630",
+      "status": "blocked",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "〔雨ニモマケズ〕",
+      "author": "宮沢賢治",
+      "titleKo": "비에도 지지 않고",
+      "authorKo": "미야자와 겐지",
+      "authorDeathYear": 1933,
+      "countryOfOrigin": "JP",
+      "level": "N2 상급",
+      "source": {
+        "provider": "aozora",
+        "workId": 45630,
+        "personId": "000081"
+      },
+      "blocker": "新字旧仮名 — 리포 선정 기준(新字新仮名만) 밖. 권리는 만료.",
+      "popularity": "Aozora 접속 1위(1,171,987)"
+    },
+    {
+      "id": "jp-aozora-2078",
+      "key": "aozora-000129-002078",
+      "status": "blocked",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "舞姫",
+      "author": "森鴎外",
+      "titleKo": "무희",
+      "authorKo": "모리 오가이",
+      "publishedYear": 1890,
+      "authorDeathYear": 1922,
+      "countryOfOrigin": "JP",
+      "level": "N2 상급",
+      "source": {
+        "provider": "aozora",
+        "workId": 2078,
+        "personId": "000129"
+      },
+      "blocker": "新字旧仮名(문어체) — 선정 기준 밖. 권리는 만료.",
+      "popularity": "Aozora 접속 202,190"
+    },
+    {
+      "id": "jp-aozora-60",
+      "key": "aozora-000879-000060",
+      "status": "blocked",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "地獄変",
+      "author": "芥川竜之介",
+      "titleKo": "지옥변",
+      "authorKo": "아쿠타가와 류노스케",
+      "publishedYear": 1918,
+      "authorDeathYear": 1927,
+      "countryOfOrigin": "JP",
+      "level": "N2 상급",
+      "source": {
+        "provider": "aozora",
+        "workId": 60,
+        "personId": "000879"
+      },
+      "blocker": "新字旧仮名 — 선정 기준 밖(新字新仮名 판본 없음).",
+      "popularity": "Aozora 접속 106,430"
+    },
+    {
+      "id": "jp-aozora-45761",
+      "key": "aozora-000879-045761",
+      "status": "blocked",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "河童",
+      "author": "芥川竜之介",
+      "titleKo": "갓파",
+      "authorKo": "아쿠타가와 류노스케",
+      "publishedYear": 1927,
+      "authorDeathYear": 1927,
+      "countryOfOrigin": "JP",
+      "level": "N2 상급",
+      "source": {
+        "provider": "aozora",
+        "workId": 45761,
+        "personId": "000879"
+      },
+      "blocker": "新字旧仮名 — 선정 기준 밖.",
+      "popularity": "Aozora 접속 90,898"
+    },
+    {
+      "id": "jp-aozora-270",
+      "key": "aozora-000035-000270",
+      "status": "blocked",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "富嶽百景",
+      "author": "太宰治",
+      "titleKo": "후가쿠 백경",
+      "authorKo": "다자이 오사무",
+      "publishedYear": 1939,
+      "authorDeathYear": 1948,
+      "countryOfOrigin": "JP",
+      "level": "N2 상급",
+      "source": {
+        "provider": "aozora",
+        "workId": 270,
+        "personId": "000035"
+      },
+      "blocker": "新字旧仮名 — 선정 기준 밖.",
+      "popularity": "Aozora 접속 71,944"
+    },
+    {
+      "id": "jp-aozora-389",
+      "key": "aozora-000064-000389",
+      "status": "blocked",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "たけくらべ",
+      "author": "樋口一葉",
+      "titleKo": "키재기",
+      "authorKo": "히구치 이치요",
+      "publishedYear": 1895,
+      "authorDeathYear": 1896,
+      "countryOfOrigin": "JP",
+      "level": "N2 상급",
+      "source": {
+        "provider": "aozora",
+        "workId": 389,
+        "personId": "000064"
+      },
+      "blocker": "旧字旧仮名 — 선정 기준 밖.",
+      "popularity": "Aozora 접속 68,258"
+    },
+    {
+      "id": "jp-x",
+      "status": "blocked",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "雪国",
+      "author": "川端康成",
+      "titleKo": "설국",
+      "authorKo": "가와바타 야스나리",
+      "publishedYear": 1937,
+      "authorDeathYear": 1972,
+      "countryOfOrigin": "JP",
+      "level": "N2 상급",
+      "source": {
+        "provider": "aozora",
+        "workId": null
+      },
+      "blocker": "작가 1972 사망 — 한국(사후 70년 → 2042)·일본(2018 연장으로 사후 70년) 모두 존속. Aozora에도 없음.",
+      "popularity": "노벨상 — 한국 인지도 최상"
+    },
+    {
+      "id": "jp-x-2",
+      "status": "blocked",
+      "country": "JP",
+      "language": "Japanese",
+      "title": "金閣寺",
+      "author": "三島由紀夫",
+      "titleKo": "금각사",
+      "authorKo": "미시마 유키오",
+      "publishedYear": 1956,
+      "authorDeathYear": 1970,
+      "countryOfOrigin": "JP",
+      "level": "N2 상급",
+      "source": {
+        "provider": "aozora",
+        "workId": null
+      },
+      "blocker": "작가 1970 사망 — 한국·일본 모두 존속.",
+      "popularity": "한국 인지도 높음"
+    },
+    {
+      "id": "gb-adam-smith-the-theory-of-moral-sentiments",
+      "key": "se-adam-smith_the-theory-of-moral-sentiments",
+      "status": "수록",
+      "country": "GB"
+    },
+    {
+      "id": "gb-adam-smith-the-wealth-of-nations",
+      "key": "se-adam-smith_the-wealth-of-nations",
+      "status": "수록",
+      "country": "GB"
+    },
+    {
+      "id": "gb-arthur-conan-doyle-the-adventures-of-sherlock-holmes",
+      "key": "se-arthur-conan-doyle_the-adventures-of-sherlock-holmes",
+      "status": "수록",
+      "country": "GB"
+    },
+    {
+      "id": "gb-charles-dickens-a-christmas-carol",
+      "key": "se-charles-dickens_a-christmas-carol",
+      "status": "수록",
+      "country": "GB"
+    },
+    {
+      "id": "gb-jane-austen-pride-and-prejudice",
+      "key": "se-jane-austen_pride-and-prejudice",
+      "status": "수록",
+      "country": "GB"
+    },
+    {
+      "id": "gb-john-stuart-mill-on-liberty",
+      "key": "se-john-stuart-mill_on-liberty",
+      "status": "수록",
+      "country": "GB"
+    },
+    {
+      "id": "gb-lewis-carroll-alices-adventures-in-wonderland",
+      "key": "se-lewis-carroll_alices-adventures-in-wonderland",
+      "status": "수록",
+      "country": "GB"
+    },
+    {
+      "id": "gb-virginia-woolf-a-room-of-ones-own",
+      "key": "pd-fp-virginia-woolf_a-room-of-ones-own",
+      "status": "수록",
+      "country": "GB"
+    },
+    {
+      "id": "gb-george-orwell-animal-farm",
+      "key": "pd-gau-george-orwell_animal-farm",
+      "status": "수록",
+      "country": "GB"
+    },
+    {
+      "id": "gb-george-orwell-nineteen-eighty-four",
+      "key": "pd-gau-george-orwell_nineteen-eighty-four",
+      "status": "수록",
+      "country": "GB"
+    },
+    {
+      "id": "gb-charlotte-bronte-jane-eyre",
+      "key": "se-charlotte-bronte_jane-eyre",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Jane Eyre",
+      "author": "Charlotte Brontë",
+      "titleKo": "제인 에어",
+      "authorKo": "샬럿 브론테",
+      "publishedYear": 1847,
+      "authorDeathYear": 1855,
+      "countryOfOrigin": "GB",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "charlotte-bronte_jane-eyre"
+      },
+      "popularity": "Gutenberg 30일 #14"
+    },
+    {
+      "id": "gb-jane-austen-sense-and-sensibility",
+      "key": "se-jane-austen_sense-and-sensibility",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Sense and Sensibility",
+      "author": "Jane Austen",
+      "titleKo": "이성과 감성",
+      "authorKo": "제인 오스틴",
+      "publishedYear": 1811,
+      "authorDeathYear": 1817,
+      "countryOfOrigin": "GB",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "jane-austen_sense-and-sensibility"
+      },
+      "popularity": "Gutenberg 30일 #24"
+    },
+    {
+      "id": "gb-jane-austen-emma",
+      "key": "se-jane-austen_emma",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Emma",
+      "author": "Jane Austen",
+      "titleKo": "엠마",
+      "authorKo": "제인 오스틴",
+      "publishedYear": 1815,
+      "authorDeathYear": 1817,
+      "countryOfOrigin": "GB",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "jane-austen_emma"
+      },
+      "popularity": "오스틴 대표작(오만과 편견 수록 후속)"
+    },
+    {
+      "id": "gb-jane-austen-persuasion",
+      "key": "se-jane-austen_persuasion",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Persuasion",
+      "author": "Jane Austen",
+      "titleKo": "설득",
+      "authorKo": "제인 오스틴",
+      "publishedYear": 1817,
+      "authorDeathYear": 1817,
+      "countryOfOrigin": "GB",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "jane-austen_persuasion"
+      },
+      "popularity": "오스틴 6대 장편"
+    },
+    {
+      "id": "gb-emily-bronte-wuthering-heights",
+      "key": "se-emily-bronte_wuthering-heights",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Wuthering Heights",
+      "author": "Emily Brontë",
+      "titleKo": "폭풍의 언덕",
+      "authorKo": "에밀리 브론테",
+      "publishedYear": 1847,
+      "authorDeathYear": 1848,
+      "countryOfOrigin": "GB",
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "emily-bronte_wuthering-heights"
+      },
+      "popularity": "한국 세계문학 필독 목록 상위",
+      "note": "요크셔 방언 대사 많음"
+    },
+    {
+      "id": "gb-mary-shelley-frankenstein",
+      "key": "se-mary-shelley_frankenstein",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Frankenstein",
+      "author": "Mary Shelley",
+      "titleKo": "프랑켄슈타인",
+      "authorKo": "메리 셸리",
+      "publishedYear": 1818,
+      "authorDeathYear": 1851,
+      "countryOfOrigin": "GB",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "mary-shelley_frankenstein"
+      },
+      "popularity": "Gutenberg 상시 상위"
+    },
+    {
+      "id": "gb-robert-louis-stevenson-the-strange-case-of-dr-jekyll-and-mr-hyde",
+      "key": "se-robert-louis-stevenson_the-strange-case-of-dr-jekyll-and-mr-hyde",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "The Strange Case of Dr. Jekyll and Mr. Hyde",
+      "author": "Robert Louis Stevenson",
+      "titleKo": "지킬 박사와 하이드 씨",
+      "authorKo": "로버트 루이스 스티븐슨",
+      "publishedYear": 1886,
+      "authorDeathYear": 1894,
+      "countryOfOrigin": "GB",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "robert-louis-stevenson_the-strange-case-of-dr-jekyll-and-mr-hyde"
+      },
+      "popularity": "Gutenberg 30일 #38·#43",
+      "note": "짧은 중편 — 첫 영어 원서로 적합"
+    },
+    {
+      "id": "gb-robert-louis-stevenson-treasure-island",
+      "key": "se-robert-louis-stevenson_treasure-island",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Treasure Island",
+      "author": "Robert Louis Stevenson",
+      "titleKo": "보물섬",
+      "authorKo": "로버트 루이스 스티븐슨",
+      "publishedYear": 1883,
+      "authorDeathYear": 1894,
+      "countryOfOrigin": "GB",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "robert-louis-stevenson_treasure-island"
+      },
+      "popularity": "아동 고전 최상위"
+    },
+    {
+      "id": "gb-charles-dickens-great-expectations",
+      "key": "se-charles-dickens_great-expectations",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Great Expectations",
+      "author": "Charles Dickens",
+      "titleKo": "위대한 유산",
+      "authorKo": "찰스 디킨스",
+      "publishedYear": 1861,
+      "authorDeathYear": 1870,
+      "countryOfOrigin": "GB",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "charles-dickens_great-expectations"
+      },
+      "popularity": "디킨스 대표작"
+    },
+    {
+      "id": "gb-charles-dickens-a-tale-of-two-cities",
+      "key": "se-charles-dickens_a-tale-of-two-cities",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "A Tale of Two Cities",
+      "author": "Charles Dickens",
+      "titleKo": "두 도시 이야기",
+      "authorKo": "찰스 디킨스",
+      "publishedYear": 1859,
+      "authorDeathYear": 1870,
+      "countryOfOrigin": "GB",
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "charles-dickens_a-tale-of-two-cities"
+      },
+      "popularity": "세계 최다 판매 소설 중 하나"
+    },
+    {
+      "id": "gb-charles-dickens-oliver-twist",
+      "key": "se-charles-dickens_oliver-twist",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Oliver Twist",
+      "author": "Charles Dickens",
+      "titleKo": "올리버 트위스트",
+      "authorKo": "찰스 디킨스",
+      "publishedYear": 1838,
+      "authorDeathYear": 1870,
+      "countryOfOrigin": "GB",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "charles-dickens_oliver-twist"
+      },
+      "popularity": "Gutenberg 30일 #48"
+    },
+    {
+      "id": "gb-arthur-conan-doyle-the-hound-of-the-baskervilles",
+      "key": "se-arthur-conan-doyle_the-hound-of-the-baskervilles",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "The Hound of the Baskervilles",
+      "author": "Arthur Conan Doyle",
+      "titleKo": "바스커빌가의 개",
+      "authorKo": "아서 코난 도일",
+      "publishedYear": 1902,
+      "authorDeathYear": 1930,
+      "countryOfOrigin": "GB",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "arthur-conan-doyle_the-hound-of-the-baskervilles"
+      },
+      "popularity": "Gutenberg 30일 #65"
+    },
+    {
+      "id": "gb-arthur-conan-doyle-a-study-in-scarlet",
+      "key": "se-arthur-conan-doyle_a-study-in-scarlet",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "A Study in Scarlet",
+      "author": "Arthur Conan Doyle",
+      "titleKo": "주홍색 연구",
+      "authorKo": "아서 코난 도일",
+      "publishedYear": 1887,
+      "authorDeathYear": 1930,
+      "countryOfOrigin": "GB",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "arthur-conan-doyle_a-study-in-scarlet"
+      },
+      "popularity": "Gutenberg 30일 #62",
+      "note": "셜록 홈스 첫 장편"
+    },
+    {
+      "id": "gb-h-g-wells-the-time-machine",
+      "key": "se-h-g-wells_the-time-machine",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "The Time Machine",
+      "author": "H. G. Wells",
+      "titleKo": "타임머신",
+      "authorKo": "H. G. 웰스",
+      "publishedYear": 1895,
+      "authorDeathYear": 1946,
+      "countryOfOrigin": "GB",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "h-g-wells_the-time-machine"
+      },
+      "popularity": "SF 고전 — 분량 짧음"
+    },
+    {
+      "id": "gb-h-g-wells-the-war-of-the-worlds",
+      "key": "se-h-g-wells_the-war-of-the-worlds",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "The War of the Worlds",
+      "author": "H. G. Wells",
+      "titleKo": "우주 전쟁",
+      "authorKo": "H. G. 웰스",
+      "publishedYear": 1898,
+      "authorDeathYear": 1946,
+      "countryOfOrigin": "GB",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "h-g-wells_the-war-of-the-worlds"
+      },
+      "popularity": "SF 고전"
+    },
+    {
+      "id": "gb-lewis-carroll-through-the-looking-glass-john-tenniel",
+      "key": "se-lewis-carroll_through-the-looking-glass_john-tenniel",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Through the Looking-Glass",
+      "author": "Lewis Carroll",
+      "titleKo": "거울 나라의 앨리스",
+      "authorKo": "루이스 캐럴",
+      "publishedYear": 1871,
+      "authorDeathYear": 1898,
+      "countryOfOrigin": "GB",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "lewis-carroll_through-the-looking-glass_john-tenniel"
+      },
+      "popularity": "앨리스(수록) 속편",
+      "note": "리포 이름은 _john-tenniel(삽화가) 접미가 정본(접미 없는 이름도 ls-remote 응답)"
+    },
+    {
+      "id": "gb-j-m-barrie-peter-and-wendy",
+      "key": "se-j-m-barrie_peter-and-wendy",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Peter and Wendy",
+      "author": "J. M. Barrie",
+      "titleKo": "피터 팬",
+      "authorKo": "J. M. 배리",
+      "publishedYear": 1911,
+      "authorDeathYear": 1937,
+      "countryOfOrigin": "GB",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "j-m-barrie_peter-and-wendy"
+      },
+      "popularity": "「피터 팬」 소설판",
+      "note": "작가 스코틀랜드"
+    },
+    {
+      "id": "gb-kenneth-grahame-the-wind-in-the-willows",
+      "key": "se-kenneth-grahame_the-wind-in-the-willows",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "The Wind in the Willows",
+      "author": "Kenneth Grahame",
+      "titleKo": "버드나무에 부는 바람",
+      "authorKo": "케네스 그레이엄",
+      "publishedYear": 1908,
+      "authorDeathYear": 1932,
+      "countryOfOrigin": "GB",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "kenneth-grahame_the-wind-in-the-willows"
+      },
+      "popularity": "아동 고전"
+    },
+    {
+      "id": "gb-rudyard-kipling-the-jungle-book",
+      "key": "se-rudyard-kipling_the-jungle-book",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "The Jungle Book",
+      "author": "Rudyard Kipling",
+      "titleKo": "정글북",
+      "authorKo": "러디어드 키플링",
+      "publishedYear": 1894,
+      "authorDeathYear": 1936,
+      "countryOfOrigin": "GB",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "rudyard-kipling_the-jungle-book"
+      },
+      "popularity": "아동 고전"
+    },
+    {
+      "id": "gb-a-a-milne-winnie-the-pooh",
+      "key": "se-a-a-milne_winnie-the-pooh",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Winnie-the-Pooh",
+      "author": "A. A. Milne",
+      "titleKo": "곰돌이 푸",
+      "authorKo": "A. A. 밀른",
+      "publishedYear": 1926,
+      "authorDeathYear": 1956,
+      "countryOfOrigin": "GB",
+      "level": "A2 초급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "a-a-milne_winnie-the-pooh"
+      },
+      "popularity": "한국 인지도 최상(캐릭터)",
+      "note": "작가 1956 사망 → 한국 선(1962 이전 사망) 통과. 영국 본국은 2026년 말까지 보호 — 한국 근거만으로 가능. 텍스트만(셰퍼드 삽화·디즈니 캐릭터 시각 재현 금지 — IP 정책 ⑴). FP 20150606에도 있음."
+    },
+    {
+      "id": "gb-a-a-milne-the-house-at-pooh-corner",
+      "key": "se-a-a-milne_the-house-at-pooh-corner",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "The House at Pooh Corner",
+      "author": "A. A. Milne",
+      "titleKo": "푸 모퉁이에 있는 집",
+      "authorKo": "A. A. 밀른",
+      "publishedYear": 1928,
+      "authorDeathYear": 1956,
+      "countryOfOrigin": "GB",
+      "level": "A2 초급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "a-a-milne_the-house-at-pooh-corner"
+      },
+      "popularity": "푸 속편",
+      "note": "Winnie-the-Pooh와 같은 권리 근거"
+    },
+    {
+      "id": "gb-virginia-woolf-mrs-dalloway",
+      "key": "se-virginia-woolf_mrs-dalloway",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Mrs Dalloway",
+      "author": "Virginia Woolf",
+      "titleKo": "댈러웨이 부인",
+      "authorKo": "버지니아 울프",
+      "publishedYear": 1925,
+      "authorDeathYear": 1941,
+      "countryOfOrigin": "GB",
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "virginia-woolf_mrs-dalloway"
+      },
+      "popularity": "울프 대표작(자기만의 방 수록 후속)",
+      "note": "의식의 흐름 — 난도 높음"
+    },
+    {
+      "id": "gb-virginia-woolf-to-the-lighthouse",
+      "key": "se-virginia-woolf_to-the-lighthouse",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "To the Lighthouse",
+      "author": "Virginia Woolf",
+      "titleKo": "등대로",
+      "authorKo": "버지니아 울프",
+      "publishedYear": 1927,
+      "authorDeathYear": 1941,
+      "countryOfOrigin": "GB",
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "virginia-woolf_to-the-lighthouse"
+      },
+      "popularity": "울프 대표작"
+    },
+    {
+      "id": "gb-william-shakespeare-romeo-and-juliet",
+      "key": "se-william-shakespeare_romeo-and-juliet",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Romeo and Juliet",
+      "author": "William Shakespeare",
+      "titleKo": "로미오와 줄리엣",
+      "authorKo": "윌리엄 셰익스피어",
+      "publishedYear": 1597,
+      "authorDeathYear": 1616,
+      "countryOfOrigin": "GB",
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "william-shakespeare_romeo-and-juliet"
+      },
+      "popularity": "Gutenberg 30일 #5",
+      "note": "초기 근대 영어 운문"
+    },
+    {
+      "id": "gb-william-shakespeare-hamlet",
+      "key": "se-william-shakespeare_hamlet",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Hamlet",
+      "author": "William Shakespeare",
+      "titleKo": "햄릿",
+      "authorKo": "윌리엄 셰익스피어",
+      "publishedYear": 1603,
+      "authorDeathYear": 1616,
+      "countryOfOrigin": "GB",
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "william-shakespeare_hamlet"
+      },
+      "popularity": "4대 비극"
+    },
+    {
+      "id": "gb-william-shakespeare-macbeth",
+      "key": "se-william-shakespeare_macbeth",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Macbeth",
+      "author": "William Shakespeare",
+      "titleKo": "맥베스",
+      "authorKo": "윌리엄 셰익스피어",
+      "publishedYear": 1623,
+      "authorDeathYear": 1616,
+      "countryOfOrigin": "GB",
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "william-shakespeare_macbeth"
+      },
+      "popularity": "4대 비극 — 가장 짧음",
+      "note": "publishedYear=First Folio 1623"
+    },
+    {
+      "id": "gb-joseph-conrad-heart-of-darkness",
+      "key": "se-joseph-conrad_heart-of-darkness",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Heart of Darkness",
+      "author": "Joseph Conrad",
+      "titleKo": "어둠의 심연",
+      "authorKo": "조지프 콘래드",
+      "publishedYear": 1899,
+      "authorDeathYear": 1924,
+      "countryOfOrigin": "GB",
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "joseph-conrad_heart-of-darkness"
+      },
+      "popularity": "현대 고전"
+    },
+    {
+      "id": "gb-thomas-hardy-tess-of-the-durbervilles",
+      "key": "se-thomas-hardy_tess-of-the-durbervilles",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Tess of the d’Urbervilles",
+      "author": "Thomas Hardy",
+      "titleKo": "테스",
+      "authorKo": "토머스 하디",
+      "publishedYear": 1891,
+      "authorDeathYear": 1928,
+      "countryOfOrigin": "GB",
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "thomas-hardy_tess-of-the-durbervilles"
+      },
+      "popularity": "한국 세계문학 목록 상위"
+    },
+    {
+      "id": "gb-george-eliot-middlemarch",
+      "key": "se-george-eliot_middlemarch",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Middlemarch",
+      "author": "George Eliot",
+      "titleKo": "미들마치",
+      "authorKo": "조지 엘리엇",
+      "publishedYear": 1871,
+      "authorDeathYear": 1880,
+      "countryOfOrigin": "GB",
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "george-eliot_middlemarch"
+      },
+      "popularity": "Gutenberg 30일 #30",
+      "note": "초장편"
+    },
+    {
+      "id": "gb-g-k-chesterton-the-man-who-was-thursday",
+      "key": "se-g-k-chesterton_the-man-who-was-thursday",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "The Man Who Was Thursday",
+      "author": "G. K. Chesterton",
+      "titleKo": "목요일이었던 남자",
+      "authorKo": "G. K. 체스터턴",
+      "publishedYear": 1908,
+      "authorDeathYear": 1936,
+      "countryOfOrigin": "GB",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "g-k-chesterton_the-man-who-was-thursday"
+      },
+      "popularity": "Gutenberg 30일 #22"
+    },
+    {
+      "id": "gb-g-k-chesterton-the-innocence-of-father-brown",
+      "key": "se-g-k-chesterton_the-innocence-of-father-brown",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "The Innocence of Father Brown",
+      "author": "G. K. Chesterton",
+      "titleKo": "브라운 신부의 순진",
+      "authorKo": "G. K. 체스터턴",
+      "publishedYear": 1911,
+      "authorDeathYear": 1936,
+      "countryOfOrigin": "GB",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "g-k-chesterton_the-innocence-of-father-brown"
+      },
+      "popularity": "Gutenberg 상위(브라운 신부 시리즈)"
+    },
+    {
+      "id": "gb-george-orwell-homage-to-catalonia",
+      "key": "pd-gau-george-orwell_homage-to-catalonia",
+      "status": "수록",
+      "country": "GB"
+    },
+    {
+      "id": "gb-george-orwell-politics-and-the-english-language",
+      "key": "pd-gau-george-orwell_politics-and-the-english-language",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Politics and the English Language",
+      "author": "George Orwell",
+      "titleKo": "정치와 영어",
+      "authorKo": "조지 오웰",
+      "publishedYear": 1946,
+      "authorDeathYear": 1950,
+      "countryOfOrigin": "GB",
+      "level": "C1 고급",
+      "source": {
+        "provider": "pdsite",
+        "site": "gau",
+        "path": "ebooks02/0200151h.html"
+      },
+      "popularity": "영어 글쓰기 교재 단골 에세이",
+      "note": "짧은 에세이 — 같은 PGA의 Shooting an Elephant(ebooks02/0200141h.html)도 가능"
+    },
+    {
+      "id": "gb-george-orwell-burmese-days",
+      "key": "pd-gau-george-orwell_burmese-days",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Burmese Days",
+      "author": "George Orwell",
+      "titleKo": "버마 시절",
+      "authorKo": "조지 오웰",
+      "publishedYear": 1934,
+      "authorDeathYear": 1950,
+      "countryOfOrigin": "GB",
+      "level": "B2 상급",
+      "source": {
+        "provider": "pdsite",
+        "site": "gau",
+        "path": "ebooks02/0200051h.html"
+      },
+      "popularity": "오웰 첫 장편",
+      "note": "FP 20180520"
+    },
+    {
+      "id": "gb-james-hilton-lost-horizon",
+      "key": "pd-gau-james-hilton_lost-horizon",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Lost Horizon",
+      "author": "James Hilton",
+      "titleKo": "잃어버린 지평선",
+      "authorKo": "제임스 힐턴",
+      "publishedYear": 1933,
+      "authorDeathYear": 1954,
+      "countryOfOrigin": "GB",
+      "level": "B1 중급",
+      "source": {
+        "provider": "pdsite",
+        "site": "gau",
+        "path": "ebooks05/0500141h.html"
+      },
+      "popularity": "'샹그릴라' 어원 — 중간 인지도"
+    },
+    {
+      "id": "gb-james-hilton-goodbye-mr-chips",
+      "key": "pd-gau-james-hilton_goodbye-mr-chips",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Goodbye, Mr. Chips",
+      "author": "James Hilton",
+      "titleKo": "굿바이 미스터 칩스",
+      "authorKo": "제임스 힐턴",
+      "publishedYear": 1934,
+      "authorDeathYear": 1954,
+      "countryOfOrigin": "GB",
+      "level": "B1 중급",
+      "source": {
+        "provider": "pdsite",
+        "site": "gau",
+        "path": "ebooks05/0500111h.html"
+      },
+      "popularity": "짧은 중편, 학교 소재"
+    },
+    {
+      "id": "gb-dylan-thomas-under-milk-wood",
+      "key": "pd-gau-dylan-thomas_under-milk-wood",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "Under Milk Wood",
+      "author": "Dylan Thomas",
+      "titleKo": "밀크우드 아래에서",
+      "authorKo": "딜런 토머스",
+      "publishedYear": 1954,
+      "authorDeathYear": 1953,
+      "countryOfOrigin": "GB",
+      "level": "C1 고급",
+      "source": {
+        "provider": "pdsite",
+        "site": "gau",
+        "path": "ebooks06/0608221h.html"
+      },
+      "popularity": "라디오 극 — 중간 인지도",
+      "note": "웨일스. 작가 1953 사망 → 한국 선 통과"
+    },
+    {
+      "id": "gb-virginia-woolf-the-waves",
+      "key": "pd-fp-virginia-woolf_the-waves",
+      "status": "loadable",
+      "country": "GB",
+      "language": "English",
+      "title": "The Waves",
+      "author": "Virginia Woolf",
+      "titleKo": "파도",
+      "authorKo": "버지니아 울프",
+      "publishedYear": 1931,
+      "authorDeathYear": 1941,
+      "countryOfOrigin": "GB",
+      "level": "C1 고급",
+      "source": {
+        "provider": "pdsite",
+        "site": "fp",
+        "id": "20170834"
+      },
+      "popularity": "울프 후기 대표작",
+      "note": "PGA ebooks02/0201091h.html에도 있음"
+    },
+    {
+      "id": "gb-e-m-forster-a-room-with-a-view",
+      "key": "se-e-m-forster_a-room-with-a-view",
+      "status": "blocked",
+      "country": "GB",
+      "language": "English",
+      "title": "A Room with a View",
+      "author": "E. M. Forster",
+      "titleKo": "전망 좋은 방",
+      "authorKo": "E. M. 포스터",
+      "publishedYear": 1908,
+      "authorDeathYear": 1970,
+      "countryOfOrigin": "GB",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "e-m-forster_a-room-with-a-view"
+      },
+      "blocker": "작가 1970 사망 — 한국 사후 70년(2040)·영국 사후 70년 모두 존속. SE에 있는 것은 미국 출판 95년 기준이라서(미국 선은 본국이 미국일 때만).",
+      "popularity": "Gutenberg 30일 #4"
+    },
+    {
+      "id": "gb-agatha-christie-the-murder-of-roger-ackroyd",
+      "key": "se-agatha-christie_the-murder-of-roger-ackroyd",
+      "status": "blocked",
+      "country": "GB",
+      "language": "English",
+      "title": "The Murder of Roger Ackroyd",
+      "author": "Agatha Christie",
+      "titleKo": "애크로이드 살인사건",
+      "authorKo": "애거사 크리스티",
+      "publishedYear": 1926,
+      "authorDeathYear": 1976,
+      "countryOfOrigin": "GB",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "agatha-christie_the-murder-of-roger-ackroyd"
+      },
+      "blocker": "작가 1976 사망 — 한국·영국 모두 존속. SE 리포(미국 PD)는 있으나 한국 공개 불가. The Mysterious Affair at Styles·The Secret Adversary 등 SE 크리스티 전량 동일.",
+      "popularity": "Gutenberg 30일 상위(크리스티 Secret of Chimneys #7)"
+    },
+    {
+      "id": "gb-aldous-huxley-brave-new-world",
+      "key": "pd-fp-aldous-huxley_brave-new-world",
+      "status": "blocked",
+      "country": "GB",
+      "language": "English",
+      "title": "Brave New World",
+      "author": "Aldous Huxley",
+      "titleKo": "멋진 신세계",
+      "authorKo": "올더스 헉슬리",
+      "publishedYear": 1932,
+      "authorDeathYear": 1963,
+      "countryOfOrigin": "GB",
+      "level": "B2 상급",
+      "source": {
+        "provider": "pdsite",
+        "site": "fp",
+        "id": "20160545"
+      },
+      "blocker": "작가 1963년 11월 사망 — 한국 2013 연장 전 만료선(1962 이전 사망)을 1년 차로 놓침 → 사후 70년(2033년 말)까지 보호. 영국도 동일. Faded Page(캐나다)에는 있음.",
+      "popularity": "디스토피아 3대작 — 한국 인지도 최상"
+    },
+    {
+      "id": "gb-c-s-lewis-the-lion-the-witch-and-the-wardrobe",
+      "status": "blocked",
+      "country": "GB",
+      "language": "English",
+      "title": "The Lion, the Witch and the Wardrobe",
+      "author": "C. S. Lewis",
+      "titleKo": "사자와 마녀와 옷장",
+      "authorKo": "C. S. 루이스",
+      "publishedYear": 1950,
+      "authorDeathYear": 1963,
+      "countryOfOrigin": "GB",
+      "level": "B1 중급",
+      "source": {
+        "provider": "pdsite"
+      },
+      "blocker": "작가 1963년 11월 사망(헉슬리와 같은 날) — 한국 1962 선 밖, 사후 70년(2033) 보호.",
+      "popularity": "나니아 연대기 — 한국 인지도 최상"
+    },
+    {
+      "id": "gb-j-r-r-tolkien-the-hobbit",
+      "status": "blocked",
+      "country": "GB",
+      "language": "English",
+      "title": "The Hobbit",
+      "author": "J. R. R. Tolkien",
+      "titleKo": "호빗",
+      "authorKo": "J. R. R. 톨킨",
+      "publishedYear": 1937,
+      "authorDeathYear": 1973,
+      "countryOfOrigin": "GB",
+      "level": "B2 상급",
+      "source": {
+        "provider": "pdsite"
+      },
+      "blocker": "작가 1973 사망 — 한국·영국 모두 존속.",
+      "popularity": "한국 인지도 최상"
+    },
+    {
+      "id": "ie-james-joyce-a-portrait-of-the-artist-as-a-young-man",
+      "key": "se-james-joyce_a-portrait-of-the-artist-as-a-young-man",
+      "status": "수록",
+      "country": "IE"
+    },
+    {
+      "id": "ie-oscar-wilde-the-picture-of-dorian-gray",
+      "key": "se-oscar-wilde_the-picture-of-dorian-gray",
+      "status": "loadable",
+      "country": "IE",
+      "language": "English",
+      "title": "The Picture of Dorian Gray",
+      "author": "Oscar Wilde",
+      "titleKo": "도리언 그레이의 초상",
+      "authorKo": "오스카 와일드",
+      "publishedYear": 1890,
+      "authorDeathYear": 1900,
+      "countryOfOrigin": "IE",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "oscar-wilde_the-picture-of-dorian-gray"
+      },
+      "popularity": "한국 세계문학 목록 상위"
+    },
+    {
+      "id": "ie-oscar-wilde-childrens-stories",
+      "key": "se-oscar-wilde_childrens-stories",
+      "status": "loadable",
+      "country": "IE",
+      "language": "English",
+      "title": "The Happy Prince and Other Tales (Children’s Stories)",
+      "author": "Oscar Wilde",
+      "titleKo": "행복한 왕자",
+      "authorKo": "오스카 와일드",
+      "publishedYear": 1888,
+      "authorDeathYear": 1900,
+      "countryOfOrigin": "IE",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "oscar-wilde_childrens-stories"
+      },
+      "popularity": "「행복한 왕자」 — 한국 아동 필독",
+      "note": "SE 묶음은 The Happy Prince + A House of Pomegranates. en.wikisource 'The Happy Prince and Other Tales'도 존재"
+    },
+    {
+      "id": "ie-oscar-wilde-the-importance-of-being-earnest",
+      "key": "se-oscar-wilde_the-importance-of-being-earnest",
+      "status": "loadable",
+      "country": "IE",
+      "language": "English",
+      "title": "The Importance of Being Earnest",
+      "author": "Oscar Wilde",
+      "titleKo": "진지함의 중요성",
+      "authorKo": "오스카 와일드",
+      "publishedYear": 1895,
+      "authorDeathYear": 1900,
+      "countryOfOrigin": "IE",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "oscar-wilde_the-importance-of-being-earnest"
+      },
+      "popularity": "영어 희곡 교재 단골"
+    },
+    {
+      "id": "ie-bram-stoker-dracula",
+      "key": "se-bram-stoker_dracula",
+      "status": "loadable",
+      "country": "IE",
+      "language": "English",
+      "title": "Dracula",
+      "author": "Bram Stoker",
+      "titleKo": "드라큘라",
+      "authorKo": "브램 스토커",
+      "publishedYear": 1897,
+      "authorDeathYear": 1912,
+      "countryOfOrigin": "IE",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "bram-stoker_dracula"
+      },
+      "popularity": "Gutenberg 30일 #20·#41",
+      "note": "서간체"
+    },
+    {
+      "id": "ie-jonathan-swift-gullivers-travels",
+      "key": "se-jonathan-swift_gullivers-travels",
+      "status": "loadable",
+      "country": "IE",
+      "language": "English",
+      "title": "Gulliver’s Travels",
+      "author": "Jonathan Swift",
+      "titleKo": "걸리버 여행기",
+      "authorKo": "조너선 스위프트",
+      "publishedYear": 1726,
+      "authorDeathYear": 1745,
+      "countryOfOrigin": "IE",
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "jonathan-swift_gullivers-travels"
+      },
+      "popularity": "한국 아동·고전 필독",
+      "note": "18세기 영어"
+    },
+    {
+      "id": "ie-james-joyce-dubliners",
+      "key": "se-james-joyce_dubliners",
+      "status": "loadable",
+      "country": "IE",
+      "language": "English",
+      "title": "Dubliners",
+      "author": "James Joyce",
+      "titleKo": "더블린 사람들",
+      "authorKo": "제임스 조이스",
+      "publishedYear": 1914,
+      "authorDeathYear": 1941,
+      "countryOfOrigin": "IE",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "james-joyce_dubliners"
+      },
+      "popularity": "조이스 입문작(젊은 예술가의 초상 수록)",
+      "note": "「Araby」「The Dead」 단편 단위 분할 적합"
+    },
+    {
+      "id": "ie-james-joyce-ulysses",
+      "key": "se-james-joyce_ulysses",
+      "status": "loadable",
+      "country": "IE",
+      "language": "English",
+      "title": "Ulysses",
+      "author": "James Joyce",
+      "titleKo": "율리시스",
+      "authorKo": "제임스 조이스",
+      "publishedYear": 1922,
+      "authorDeathYear": 1941,
+      "countryOfOrigin": "IE",
+      "level": "C2 마스터",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "james-joyce_ulysses"
+      },
+      "popularity": "20세기 최고 소설 목록 1위권",
+      "note": "난도 극상 — 우선순위 낮음"
+    },
+    {
+      "id": "ie-george-bernard-shaw-pygmalion",
+      "key": "se-george-bernard-shaw_pygmalion",
+      "status": "loadable",
+      "country": "IE",
+      "language": "English",
+      "title": "Pygmalion",
+      "author": "George Bernard Shaw",
+      "titleKo": "피그말리온",
+      "authorKo": "조지 버나드 쇼",
+      "publishedYear": 1913,
+      "authorDeathYear": 1950,
+      "countryOfOrigin": "IE",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "george-bernard-shaw_pygmalion"
+      },
+      "popularity": "「마이 페어 레이디」 원작 — 발음·계층 영어 교재",
+      "note": "작가 1950 사망 → 한국 선 통과(아일랜드 본국은 사후 70년 → 2020 만료)"
+    },
+    {
+      "id": "ie-w-b-yeats-poetry",
+      "key": "se-w-b-yeats_poetry",
+      "status": "loadable",
+      "country": "IE",
+      "language": "English",
+      "title": "Poetry",
+      "author": "W. B. Yeats",
+      "titleKo": "예이츠 시선",
+      "authorKo": "W. B. 예이츠",
+      "publishedYear": 1889,
+      "authorDeathYear": 1939,
+      "countryOfOrigin": "IE",
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "w-b-yeats_poetry"
+      },
+      "popularity": "노벨상 시인",
+      "note": "publishedYear=첫 시집 기준 대표값 — 시별로 상이"
+    },
+    {
+      "id": "ie-samuel-beckett-waiting-for-godot",
+      "status": "blocked",
+      "country": "IE",
+      "language": "English",
+      "title": "Waiting for Godot",
+      "author": "Samuel Beckett",
+      "titleKo": "고도를 기다리며",
+      "authorKo": "사뮈엘 베케트",
+      "publishedYear": 1953,
+      "authorDeathYear": 1989,
+      "countryOfOrigin": "IE",
+      "level": "B2 상급",
+      "source": {
+        "provider": "pdsite"
+      },
+      "blocker": "작가 1989 사망 — 존속.",
+      "popularity": "한국 인지도 최상"
+    },
+    {
+      "id": "us-benjamin-franklin-the-autobiography-of-benjamin-franklin",
+      "key": "se-benjamin-franklin_the-autobiography-of-benjamin-franklin",
+      "status": "수록",
+      "country": "US"
+    },
+    {
+      "id": "us-f-scott-fitzgerald-the-great-gatsby",
+      "key": "se-f-scott-fitzgerald_the-great-gatsby",
+      "status": "수록",
+      "country": "US"
+    },
+    {
+      "id": "us-henry-david-thoreau-walden",
+      "key": "se-henry-david-thoreau_walden",
+      "status": "수록",
+      "country": "US"
+    },
+    {
+      "id": "us-herman-melville-moby-dick",
+      "key": "se-herman-melville_moby-dick",
+      "status": "수록",
+      "country": "US"
+    },
+    {
+      "id": "us-ernest-hemingway-the-old-man-and-the-sea",
+      "key": "pd-fp-ernest-hemingway_the-old-man-and-the-sea",
+      "status": "수록",
+      "country": "US"
+    },
+    {
+      "id": "us-ruth-benedict-the-chrysanthemum-and-the-sword",
+      "key": "pd-fp-ruth-benedict_the-chrysanthemum-and-the-sword",
+      "status": "수록",
+      "country": "US"
+    },
+    {
+      "id": "us-louisa-may-alcott-little-women",
+      "key": "se-louisa-may-alcott_little-women",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "Little Women",
+      "author": "Louisa May Alcott",
+      "titleKo": "작은 아씨들",
+      "authorKo": "루이자 메이 올콧",
+      "publishedYear": 1868,
+      "authorDeathYear": 1888,
+      "countryOfOrigin": "US",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "louisa-may-alcott_little-women"
+      },
+      "popularity": "Gutenberg 30일 #44"
+    },
+    {
+      "id": "us-mark-twain-the-adventures-of-tom-sawyer",
+      "key": "se-mark-twain_the-adventures-of-tom-sawyer",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "The Adventures of Tom Sawyer",
+      "author": "Mark Twain",
+      "titleKo": "톰 소여의 모험",
+      "authorKo": "마크 트웨인",
+      "publishedYear": 1876,
+      "authorDeathYear": 1910,
+      "countryOfOrigin": "US",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "mark-twain_the-adventures-of-tom-sawyer"
+      },
+      "popularity": "아동 고전 최상위"
+    },
+    {
+      "id": "us-mark-twain-the-adventures-of-huckleberry-finn",
+      "key": "se-mark-twain_the-adventures-of-huckleberry-finn",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "Adventures of Huckleberry Finn",
+      "author": "Mark Twain",
+      "titleKo": "허클베리 핀의 모험",
+      "authorKo": "마크 트웨인",
+      "publishedYear": 1884,
+      "authorDeathYear": 1910,
+      "countryOfOrigin": "US",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "mark-twain_the-adventures-of-huckleberry-finn"
+      },
+      "popularity": "미국 소설 대표",
+      "note": "남부 방언·당대 인종 비하어 — 주석 필요"
+    },
+    {
+      "id": "us-l-frank-baum-the-wonderful-wizard-of-oz",
+      "key": "se-l-frank-baum_the-wonderful-wizard-of-oz",
+      "status": "수록",
+      "country": "US"
+    },
+    {
+      "id": "us-edgar-allan-poe-short-fiction",
+      "key": "se-edgar-allan-poe_short-fiction",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "Short Fiction",
+      "author": "Edgar Allan Poe",
+      "titleKo": "포 단편선",
+      "authorKo": "에드거 앨런 포",
+      "publishedYear": 1845,
+      "authorDeathYear": 1849,
+      "countryOfOrigin": "US",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "edgar-allan-poe_short-fiction"
+      },
+      "popularity": "Gutenberg 30일 #73(작품집)·The Cask of Amontillado 상위",
+      "note": "publishedYear=대표값 — 단편별 상이(검은 고양이 1843 등)"
+    },
+    {
+      "id": "us-nathaniel-hawthorne-the-scarlet-letter",
+      "key": "se-nathaniel-hawthorne_the-scarlet-letter",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "The Scarlet Letter",
+      "author": "Nathaniel Hawthorne",
+      "titleKo": "주홍 글자",
+      "authorKo": "너새니얼 호손",
+      "publishedYear": 1850,
+      "authorDeathYear": 1864,
+      "countryOfOrigin": "US",
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "nathaniel-hawthorne_the-scarlet-letter"
+      },
+      "popularity": "한국 세계문학 목록"
+    },
+    {
+      "id": "us-jack-london-the-call-of-the-wild",
+      "key": "se-jack-london_the-call-of-the-wild",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "The Call of the Wild",
+      "author": "Jack London",
+      "titleKo": "야성의 부름",
+      "authorKo": "잭 런던",
+      "publishedYear": 1903,
+      "authorDeathYear": 1916,
+      "countryOfOrigin": "US",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "jack-london_the-call-of-the-wild"
+      },
+      "popularity": "짧은 장편 — 교재 단골"
+    },
+    {
+      "id": "us-jack-london-white-fang",
+      "key": "se-jack-london_white-fang",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "White Fang",
+      "author": "Jack London",
+      "titleKo": "하얀 엄니",
+      "authorKo": "잭 런던",
+      "publishedYear": 1906,
+      "authorDeathYear": 1916,
+      "countryOfOrigin": "US",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "jack-london_white-fang"
+      },
+      "popularity": "야성의 부름 짝"
+    },
+    {
+      "id": "us-o-henry-short-fiction",
+      "key": "se-o-henry_short-fiction",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "Short Fiction",
+      "author": "O. Henry",
+      "titleKo": "오 헨리 단편선",
+      "authorKo": "오 헨리",
+      "publishedYear": 1906,
+      "authorDeathYear": 1910,
+      "countryOfOrigin": "US",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "o-henry_short-fiction"
+      },
+      "popularity": "「마지막 잎새」「크리스마스 선물」 — 한국 교과서",
+      "note": "publishedYear=대표값"
+    },
+    {
+      "id": "us-ernest-hemingway-the-sun-also-rises",
+      "key": "se-ernest-hemingway_the-sun-also-rises",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "The Sun Also Rises",
+      "author": "Ernest Hemingway",
+      "titleKo": "해는 또다시 떠오른다",
+      "authorKo": "어니스트 헤밍웨이",
+      "publishedYear": 1926,
+      "authorDeathYear": 1961,
+      "countryOfOrigin": "US",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "ernest-hemingway_the-sun-also-rises"
+      },
+      "popularity": "헤밍웨이 첫 장편(노인과 바다 수록)",
+      "note": "작가 1961 사망 → 한국 2013 연장 전 만료(rightsKorea 선례). FP 20150622에도 있음"
+    },
+    {
+      "id": "us-ernest-hemingway-a-farewell-to-arms",
+      "key": "se-ernest-hemingway_a-farewell-to-arms",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "A Farewell to Arms",
+      "author": "Ernest Hemingway",
+      "titleKo": "무기여 잘 있거라",
+      "authorKo": "어니스트 헤밍웨이",
+      "publishedYear": 1929,
+      "authorDeathYear": 1961,
+      "countryOfOrigin": "US",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "ernest-hemingway_a-farewell-to-arms"
+      },
+      "popularity": "Gutenberg 30일 #36"
+    },
+    {
+      "id": "us-ernest-hemingway-for-whom-the-bell-tolls",
+      "key": "pd-fp-ernest-hemingway_for-whom-the-bell-tolls",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "For Whom the Bell Tolls",
+      "author": "Ernest Hemingway",
+      "titleKo": "누구를 위하여 종은 울리나",
+      "authorKo": "어니스트 헤밍웨이",
+      "publishedYear": 1940,
+      "authorDeathYear": 1961,
+      "countryOfOrigin": "US",
+      "level": "B2 상급",
+      "source": {
+        "provider": "pdsite",
+        "site": "fp",
+        "id": "20210122"
+      },
+      "popularity": "한국 인지도 최상",
+      "note": "미국 PD 아님(1940) — 한국 선(1961 사망)으로만 통과. SE에는 리포 없음(자리표시뿐)"
+    },
+    {
+      "id": "us-margaret-mitchell-gone-with-the-wind",
+      "key": "pd-fp-margaret-mitchell_gone-with-the-wind",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "Gone with the Wind",
+      "author": "Margaret Mitchell",
+      "titleKo": "바람과 함께 사라지다",
+      "authorKo": "마거릿 미첼",
+      "publishedYear": 1936,
+      "authorDeathYear": 1949,
+      "countryOfOrigin": "US",
+      "level": "B2 상급",
+      "source": {
+        "provider": "pdsite",
+        "site": "fp",
+        "id": "20160920"
+      },
+      "popularity": "한국 인지도 최상",
+      "note": "작가 1949 사망 → 한국 선 통과(미국은 2031까지 보호). PGA ebooks02/0200161h.html에도 있음. 남부 흑인 방언·인종 서술 — 주석 필요. 초장편"
+    },
+    {
+      "id": "us-f-scott-fitzgerald-tender-is-the-night",
+      "key": "pd-gau-f-scott-fitzgerald_tender-is-the-night",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "Tender Is the Night",
+      "author": "F. Scott Fitzgerald",
+      "titleKo": "밤은 부드러워",
+      "authorKo": "F. 스콧 피츠제럴드",
+      "publishedYear": 1934,
+      "authorDeathYear": 1940,
+      "countryOfOrigin": "US",
+      "level": "B2 상급",
+      "source": {
+        "provider": "pdsite",
+        "site": "gau",
+        "path": "ebooks03/0301261h.html"
+      },
+      "popularity": "개츠비(수록) 후속",
+      "note": "FP 20190739에도 있음. PGA 표기 연도 1933(연재)"
+    },
+    {
+      "id": "us-raymond-chandler-the-big-sleep",
+      "key": "pd-fp-raymond-chandler_the-big-sleep",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "The Big Sleep",
+      "author": "Raymond Chandler",
+      "titleKo": "빅 슬립",
+      "authorKo": "레이먼드 챈들러",
+      "publishedYear": 1939,
+      "authorDeathYear": 1959,
+      "countryOfOrigin": "US",
+      "level": "B2 상급",
+      "source": {
+        "provider": "pdsite",
+        "site": "fp",
+        "id": "20201159"
+      },
+      "popularity": "하드보일드 고전",
+      "note": "작가 1959 사망 → 한국 선. FP에 Farewell, My Lovely(20120626)·The Long Goodbye(20140522)도 있음"
+    },
+    {
+      "id": "us-dashiell-hammett-the-maltese-falcon",
+      "key": "se-dashiell-hammett_the-maltese-falcon",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "The Maltese Falcon",
+      "author": "Dashiell Hammett",
+      "titleKo": "몰타의 매",
+      "authorKo": "대실 해밋",
+      "publishedYear": 1930,
+      "authorDeathYear": 1961,
+      "countryOfOrigin": "US",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "dashiell-hammett_the-maltese-falcon"
+      },
+      "popularity": "하드보일드 고전",
+      "note": "FP 20161221에도 있음"
+    },
+    {
+      "id": "us-william-faulkner-the-sound-and-the-fury",
+      "key": "se-william-faulkner_the-sound-and-the-fury",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "The Sound and the Fury",
+      "author": "William Faulkner",
+      "titleKo": "소리와 분노",
+      "authorKo": "윌리엄 포크너",
+      "publishedYear": 1929,
+      "authorDeathYear": 1962,
+      "countryOfOrigin": "US",
+      "level": "C2 마스터",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "william-faulkner_the-sound-and-the-fury"
+      },
+      "popularity": "노벨상 — 20세기 고전",
+      "note": "작가 1962년 7월 사망 → 한국 1962 선 정확히 통과. As I Lay Dying(SE)도 가능"
+    },
+    {
+      "id": "us-edith-wharton-the-age-of-innocence",
+      "key": "se-edith-wharton_the-age-of-innocence",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "The Age of Innocence",
+      "author": "Edith Wharton",
+      "titleKo": "순수의 시대",
+      "authorKo": "이디스 워튼",
+      "publishedYear": 1920,
+      "authorDeathYear": 1937,
+      "countryOfOrigin": "US",
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "edith-wharton_the-age-of-innocence"
+      },
+      "popularity": "퓰리처상"
+    },
+    {
+      "id": "us-frances-hodgson-burnett-the-secret-garden",
+      "key": "se-frances-hodgson-burnett_the-secret-garden",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "The Secret Garden",
+      "author": "Frances Hodgson Burnett",
+      "titleKo": "비밀의 화원",
+      "authorKo": "프랜시스 호지슨 버넷",
+      "publishedYear": 1911,
+      "authorDeathYear": 1924,
+      "countryOfOrigin": "US",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "frances-hodgson-burnett_the-secret-garden"
+      },
+      "popularity": "한국 아동 필독",
+      "note": "작가 영국 태생 미국 귀화 — 원산 US(뉴욕 Stokes 1911)로 기록, 어느 쪽이든 1924 사망이라 통과"
+    },
+    {
+      "id": "us-frances-hodgson-burnett-a-little-princess",
+      "key": "se-frances-hodgson-burnett_a-little-princess",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "A Little Princess",
+      "author": "Frances Hodgson Burnett",
+      "titleKo": "소공녀",
+      "authorKo": "프랜시스 호지슨 버넷",
+      "publishedYear": 1905,
+      "authorDeathYear": 1924,
+      "countryOfOrigin": "US",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "frances-hodgson-burnett_a-little-princess"
+      },
+      "popularity": "「소공녀」 — 한국 아동 필독"
+    },
+    {
+      "id": "us-helen-keller-the-story-of-my-life",
+      "key": "se-helen-keller_the-story-of-my-life",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "The Story of My Life",
+      "author": "Helen Keller",
+      "titleKo": "헬렌 켈러 자서전",
+      "authorKo": "헬렌 켈러",
+      "publishedYear": 1903,
+      "authorDeathYear": 1968,
+      "countryOfOrigin": "US",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "helen-keller_the-story-of-my-life"
+      },
+      "popularity": "한국 위인전 단골",
+      "note": "작가 1968 사망 → 한국 선 밖. 미국 원산·1903 출판 → 본국(출판 95년) 만료로 통과(origin-term)"
+    },
+    {
+      "id": "us-frederick-douglass-narrative-of-the-life-of-frederick-douglass",
+      "key": "se-frederick-douglass_narrative-of-the-life-of-frederick-douglass",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "Narrative of the Life of Frederick Douglass",
+      "author": "Frederick Douglass",
+      "titleKo": "프레더릭 더글러스의 삶에 관한 이야기",
+      "authorKo": "프레더릭 더글러스",
+      "publishedYear": 1845,
+      "authorDeathYear": 1895,
+      "countryOfOrigin": "US",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "frederick-douglass_narrative-of-the-life-of-frederick-douglass"
+      },
+      "popularity": "Gutenberg 30일 #66"
+    },
+    {
+      "id": "us-jean-webster-daddy-long-legs",
+      "key": "ws-en-jean-webster_daddy-long-legs",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "Daddy-Long-Legs",
+      "author": "Jean Webster",
+      "titleKo": "키다리 아저씨",
+      "authorKo": "진 웹스터",
+      "publishedYear": 1912,
+      "authorDeathYear": 1916,
+      "countryOfOrigin": "US",
+      "level": "B1 중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "en",
+        "main": "Daddy-Long-Legs (Webster)"
+      },
+      "popularity": "「키다리 아저씨」 — 한국 아동 필독",
+      "note": "SE에 없음. en.wikisource 페이지 존재 확인(1,808 bytes, 하위 장 구조는 받기 전 확인)"
+    },
+    {
+      "id": "us-eleanor-h-porter-pollyanna",
+      "key": "ws-en-eleanor-h-porter_pollyanna",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "Pollyanna",
+      "author": "Eleanor H. Porter",
+      "titleKo": "폴리애나",
+      "authorKo": "엘리너 H. 포터",
+      "publishedYear": 1913,
+      "authorDeathYear": 1920,
+      "countryOfOrigin": "US",
+      "level": "B1 중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "en",
+        "main": "Pollyanna",
+        "pattern": "^Pollyanna/Chapter \\d+$"
+      },
+      "popularity": "아동 고전",
+      "note": "en.wikisource featured. pattern은 header next=[[/Chapter 1/]]로 추정"
+    },
+    {
+      "id": "us-sinclair-lewis-main-street",
+      "key": "se-sinclair-lewis_main-street",
+      "status": "loadable",
+      "country": "US",
+      "language": "English",
+      "title": "Main Street",
+      "author": "Sinclair Lewis",
+      "titleKo": "메인 스트리트",
+      "authorKo": "싱클레어 루이스",
+      "publishedYear": 1920,
+      "authorDeathYear": 1951,
+      "countryOfOrigin": "US",
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "sinclair-lewis_main-street"
+      },
+      "popularity": "미국 첫 노벨문학상"
+    },
+    {
+      "id": "us-john-steinbeck-of-mice-and-men",
+      "status": "blocked",
+      "country": "US",
+      "language": "English",
+      "title": "Of Mice and Men",
+      "author": "John Steinbeck",
+      "titleKo": "생쥐와 인간",
+      "authorKo": "존 스타인벡",
+      "publishedYear": 1937,
+      "authorDeathYear": 1968,
+      "countryOfOrigin": "US",
+      "level": "B1 중급",
+      "source": {
+        "provider": "pdsite"
+      },
+      "blocker": "작가 1968 사망(한국 존속) · 1937 출판(미국 2033년까지) — 둘 다 불가. 분노의 포도 동일.",
+      "popularity": "한국 교재 단골"
+    },
+    {
+      "id": "us-pearl-s-buck-the-good-earth",
+      "status": "blocked",
+      "country": "US",
+      "language": "English",
+      "title": "The Good Earth",
+      "author": "Pearl S. Buck",
+      "titleKo": "대지",
+      "authorKo": "펄 S. 벅",
+      "publishedYear": 1931,
+      "authorDeathYear": 1973,
+      "countryOfOrigin": "US",
+      "level": "B2 상급",
+      "source": {
+        "provider": "pdsite"
+      },
+      "blocker": "작가 1973 사망 · 1931 출판 — 미국 출판 95년 만료는 2027년 1월(검토 연도 2026엔 1930 이하만). 2027년 재검토 대상.",
+      "popularity": "한국 인지도 최상"
+    },
+    {
+      "id": "us-dale-carnegie-how-to-win-friends-and-influence-people",
+      "status": "blocked",
+      "country": "US",
+      "language": "English",
+      "title": "How to Win Friends and Influence People",
+      "author": "Dale Carnegie",
+      "titleKo": "카네기 인간관계론",
+      "authorKo": "데일 카네기",
+      "publishedYear": 1936,
+      "authorDeathYear": 1955,
+      "countryOfOrigin": "US",
+      "level": "B1 중급",
+      "source": {
+        "provider": "pdsite"
+      },
+      "blocker": "권리는 통과(1955 사망 → 한국 선) — 그러나 Faded Page·PGA 검색에 원문 없음. 적재 가능한 출처 미확보.",
+      "popularity": "한국 자기계발 스테디셀러"
+    },
+    {
+      "id": "fr-alphonse-daudet-la-derniere-classe",
+      "key": "ws-fr-alphonse-daudet_la-derniere-classe",
+      "status": "수록",
+      "country": "FR"
+    },
+    {
+      "id": "fr-guy-de-maupassant-la-parure",
+      "key": "ws-fr-guy-de-maupassant_la-parure",
+      "status": "수록",
+      "country": "FR"
+    },
+    {
+      "id": "fr-jules-verne-le-tour-du-monde-en-quatre-vingts-jours",
+      "key": "ws-fr-jules-verne_le-tour-du-monde-en-quatre-vingts-jours",
+      "status": "수록",
+      "country": "FR"
+    },
+    {
+      "id": "fr-rainer-maria-rilke-poemes-dedies-aux-amis-francais",
+      "key": "ws-fr-rainer-maria-rilke_poemes-dedies-aux-amis-francais",
+      "status": "수록",
+      "country": "FR"
+    },
+    {
+      "id": "fr-victor-hugo-les-miserables-1",
+      "key": "ws-fr-victor-hugo_les-miserables-1",
+      "status": "수록",
+      "country": "FR"
+    },
+    {
+      "id": "fr-victor-hugo-les-miserables-2",
+      "key": "ws-fr-victor-hugo_les-miserables-2",
+      "status": "수록",
+      "country": "FR"
+    },
+    {
+      "id": "fr-victor-hugo-les-miserables-3",
+      "key": "ws-fr-victor-hugo_les-miserables-3",
+      "status": "수록",
+      "country": "FR"
+    },
+    {
+      "id": "fr-victor-hugo-les-miserables-4",
+      "key": "ws-fr-victor-hugo_les-miserables-4",
+      "status": "수록",
+      "country": "FR"
+    },
+    {
+      "id": "fr-victor-hugo-les-miserables-5",
+      "key": "ws-fr-victor-hugo_les-miserables-5",
+      "status": "수록",
+      "country": "FR"
+    },
+    {
+      "id": "fr-albert-camus-l-etranger",
+      "key": "pd-fp-albert-camus_l-etranger",
+      "status": "수록",
+      "country": "FR"
+    },
+    {
+      "id": "fr-albert-camus-le-mythe-de-sisyphe",
+      "key": "pd-fp-albert-camus_le-mythe-de-sisyphe",
+      "status": "수록",
+      "country": "FR"
+    },
+    {
+      "id": "fr-antoine-de-saint-exupery-le-petit-prince",
+      "key": "pd-gau-antoine-de-saint-exupery_le-petit-prince",
+      "status": "수록",
+      "country": "FR"
+    },
+    {
+      "id": "fr-alexandre-dumas-le-comte-de-monte-cristo",
+      "key": "ws-fr-alexandre-dumas_le-comte-de-monte-cristo",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Le Comte de Monte-Cristo",
+      "author": "Alexandre Dumas",
+      "titleKo": "몬테크리스토 백작",
+      "authorKo": "알렉상드르 뒤마",
+      "publishedYear": 1844,
+      "authorDeathYear": 1870,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "B2 상급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Le Comte de Monte-Cristo",
+        "pattern": "^Le Comte de Monte-Cristo/Chapitre \\d+$"
+      },
+      "popularity": "Gutenberg 30일 #46(영역)",
+      "note": "117장(1889 판 djvu). 초장편 — 권 분할 필요"
+    },
+    {
+      "id": "fr-alexandre-dumas-les-trois-mousquetaires",
+      "key": "ws-fr-alexandre-dumas_les-trois-mousquetaires",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Les Trois Mousquetaires",
+      "author": "Alexandre Dumas",
+      "titleKo": "삼총사",
+      "authorKo": "알렉상드르 뒤마",
+      "publishedYear": 1844,
+      "authorDeathYear": 1870,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "B2 상급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Les Trois Mousquetaires",
+        "pattern": "^Les Trois Mousquetaires/(Préface|Chapitre \\d+|Épilogue)$"
+      },
+      "popularity": "한국 인지도 최상",
+      "note": "1849 판"
+    },
+    {
+      "id": "fr-jules-verne-vingt-mille-lieues-sous-les-mers",
+      "key": "ws-fr-jules-verne_vingt-mille-lieues-sous-les-mers",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Vingt mille lieues sous les mers",
+      "author": "Jules Verne",
+      "titleKo": "해저 2만 리",
+      "authorKo": "쥘 베른",
+      "publishedYear": 1870,
+      "authorDeathYear": 1905,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "B1 중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Vingt mille lieues sous les mers",
+        "pattern": "^Vingt mille lieues sous les mers/Partie [12]/Chapitre \\d+$"
+      },
+      "popularity": "한국 아동·SF 고전",
+      "note": "47장. 80일간의 세계일주 수록 후속"
+    },
+    {
+      "id": "fr-jules-verne-voyage-au-centre-de-la-terre",
+      "key": "ws-fr-jules-verne_voyage-au-centre-de-la-terre",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Voyage au centre de la Terre",
+      "author": "Jules Verne",
+      "titleKo": "지구 속 여행",
+      "authorKo": "쥘 베른",
+      "publishedYear": 1864,
+      "authorDeathYear": 1905,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "B1 중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Voyage au centre de la Terre",
+        "pattern": "^Voyage au centre de la Terre/Chapitre \\d+$"
+      },
+      "popularity": "SF 고전"
+    },
+    {
+      "id": "fr-gaston-leroux-le-fantome-de-l-opera",
+      "key": "ws-fr-gaston-leroux_le-fantome-de-l-opera",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Le Fantôme de l’Opéra",
+      "author": "Gaston Leroux",
+      "titleKo": "오페라의 유령",
+      "authorKo": "가스통 르루",
+      "publishedYear": 1910,
+      "authorDeathYear": 1927,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "B2 상급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Le Fantôme de l’Opéra",
+        "pattern": "^Le Fantôme de l’Opéra/(Avant-propos|Chapitre [IVXL]+|Épilogue)$"
+      },
+      "popularity": "Gutenberg 30일 #19(불어 원문)",
+      "note": "1926 판 djvu"
+    },
+    {
+      "id": "fr-maurice-leblanc-arsene-lupin-gentleman-cambrioleur",
+      "key": "ws-fr-maurice-leblanc_arsene-lupin-gentleman-cambrioleur",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Arsène Lupin gentleman-cambrioleur",
+      "author": "Maurice Leblanc",
+      "titleKo": "괴도 신사 아르센 뤼팽",
+      "authorKo": "모리스 르블랑",
+      "publishedYear": 1907,
+      "authorDeathYear": 1941,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "B1 중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Arsène Lupin gentleman-cambrioleur",
+        "pattern": "^Arsène Lupin gentleman-cambrioleur/(?!Texte entier|Dédicace|Préface).+$"
+      },
+      "popularity": "Gutenberg 30일 #23(영역) — 한국 인지도 최상",
+      "note": "단편 9편 — 단편 단위 분할에 좋음. 르블랑은 mort pour la France 아님(1941 병사)"
+    },
+    {
+      "id": "fr-gustave-flaubert-madame-bovary",
+      "key": "ws-fr-gustave-flaubert_madame-bovary",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Madame Bovary",
+      "author": "Gustave Flaubert",
+      "titleKo": "마담 보바리",
+      "authorKo": "귀스타브 플로베르",
+      "publishedYear": 1857,
+      "authorDeathYear": 1880,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "C1 고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Madame Bovary",
+        "pattern": "^Madame Bovary/(Première|Deuxième|Troisième) partie/\\d+$"
+      },
+      "popularity": "세계문학 필독",
+      "note": "Conard 1910 판"
+    },
+    {
+      "id": "fr-stendhal-le-rouge-et-le-noir",
+      "key": "ws-fr-stendhal_le-rouge-et-le-noir",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Le Rouge et le Noir",
+      "author": "Stendhal",
+      "titleKo": "적과 흑",
+      "authorKo": "스탕달",
+      "publishedYear": 1830,
+      "authorDeathYear": 1842,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "C1 고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Le Rouge et le Noir",
+        "pattern": "^Le Rouge et le Noir/Chapitre (premier|[IVXL]+)$"
+      },
+      "popularity": "세계문학 필독",
+      "note": "1854 판"
+    },
+    {
+      "id": "fr-victor-hugo-notre-dame-de-paris",
+      "key": "ws-fr-victor-hugo_notre-dame-de-paris",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Notre-Dame de Paris",
+      "author": "Victor Hugo",
+      "titleKo": "노트르담 드 파리",
+      "authorKo": "빅토르 위고",
+      "publishedYear": 1831,
+      "authorDeathYear": 1885,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "C1 고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Notre-Dame de Paris",
+        "pattern": "^Notre-Dame de Paris/(Préface|Livre .+)$"
+      },
+      "popularity": "뮤지컬로 한국 인지도 최상",
+      "note": "Livre 단위 하위면 11개 — 장(章) 분할은 Livre 안에서 다시"
+    },
+    {
+      "id": "fr-emile-zola-germinal",
+      "key": "ws-fr-emile-zola_germinal",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Germinal",
+      "author": "Émile Zola",
+      "titleKo": "제르미날",
+      "authorKo": "에밀 졸라",
+      "publishedYear": 1885,
+      "authorDeathYear": 1902,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "C1 고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Germinal",
+        "pattern": "^Germinal/Partie [IVX]+/Chapitre \\d+$"
+      },
+      "popularity": "자연주의 대표작"
+    },
+    {
+      "id": "fr-guy-de-maupassant-bel-ami",
+      "key": "ws-fr-guy-de-maupassant_bel-ami",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Bel-Ami",
+      "author": "Guy de Maupassant",
+      "titleKo": "벨아미",
+      "authorKo": "기 드 모파상",
+      "publishedYear": 1885,
+      "authorDeathYear": 1893,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "B2 상급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Bel-Ami/Édition Ollendorff, 1901",
+        "pattern": "^Bel-Ami/Édition Ollendorff, 1901/(Première|Deuxième) Partie/[IVX]+$"
+      },
+      "popularity": "모파상 장편 대표",
+      "note": "Bel-Ami는 판본 목록 면 — Ollendorff 1901 판(validé) 지정"
+    },
+    {
+      "id": "fr-guy-de-maupassant-boule-de-suif",
+      "key": "ws-fr-guy-de-maupassant_boule-de-suif",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Boule de suif",
+      "author": "Guy de Maupassant",
+      "titleKo": "비계 덩어리",
+      "authorKo": "기 드 모파상",
+      "publishedYear": 1880,
+      "authorDeathYear": 1893,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "B2 상급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Boule de suif (recueil)/Boule de Suif"
+      },
+      "popularity": "모파상 대표 단편",
+      "note": "단편 한 편(수록작 La Parure와 같은 방식). Boule de suif 면은 판본 목록"
+    },
+    {
+      "id": "fr-guy-de-maupassant-le-horla",
+      "key": "ws-fr-guy-de-maupassant_le-horla",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Le Horla",
+      "author": "Guy de Maupassant",
+      "titleKo": "오를라",
+      "authorKo": "기 드 모파상",
+      "publishedYear": 1887,
+      "authorDeathYear": 1893,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "B2 상급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Le Horla (recueil, Ollendorff 1895)/Le Horla"
+      },
+      "popularity": "환상 단편 대표"
+    },
+    {
+      "id": "fr-alphonse-daudet-lettres-de-mon-moulin",
+      "key": "ws-fr-alphonse-daudet_lettres-de-mon-moulin",
+      "status": "수록",
+      "country": "FR"
+    },
+    {
+      "id": "fr-alphonse-daudet-le-petit-chose",
+      "key": "ws-fr-alphonse-daudet_le-petit-chose",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Le Petit Chose",
+      "author": "Alphonse Daudet",
+      "titleKo": "꼬마 철학자(프티 쇼즈)",
+      "authorKo": "알퐁스 도데",
+      "publishedYear": 1868,
+      "authorDeathYear": 1897,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "B1 중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Le Petit Chose",
+        "pattern": "^Le Petit Chose/(Première|Deuxième) partie/\\d+$"
+      },
+      "popularity": "도데 자전 소설"
+    },
+    {
+      "id": "fr-edmond-rostand-cyrano-de-bergerac",
+      "key": "ws-fr-edmond-rostand_cyrano-de-bergerac",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Cyrano de Bergerac",
+      "author": "Edmond Rostand",
+      "titleKo": "시라노 드 베르주라크",
+      "authorKo": "에드몽 로스탕",
+      "publishedYear": 1897,
+      "authorDeathYear": 1918,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "C1 고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Cyrano de Bergerac (Rostand)",
+        "pattern": "^Cyrano de Bergerac \\(Rostand\\)/(Personnages|Acte [IV]+)$"
+      },
+      "popularity": "희곡 — 한국 공연 인지도 높음",
+      "note": "운문극(알렉상드랭). 로스탕 1918 독감 사망 — mort pour la France 아님"
+    },
+    {
+      "id": "fr-marcel-proust-du-cote-de-chez-swann",
+      "key": "ws-fr-marcel-proust_du-cote-de-chez-swann",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Du côté de chez Swann",
+      "author": "Marcel Proust",
+      "titleKo": "스완네 집 쪽으로",
+      "authorKo": "마르셀 프루스트",
+      "publishedYear": 1913,
+      "authorDeathYear": 1922,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "C2 마스터",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Du côté de chez Swann",
+        "pattern": "^Du côté de chez Swann/Partie [123]$"
+      },
+      "popularity": "『잃어버린 시간을 찾아서』 1권",
+      "note": "하위면 3개(부) — 장 분할 재설계 필요"
+    },
+    {
+      "id": "fr-charles-baudelaire-les-fleurs-du-mal",
+      "key": "ws-fr-charles-baudelaire_les-fleurs-du-mal",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Les Fleurs du mal",
+      "author": "Charles Baudelaire",
+      "titleKo": "악의 꽃",
+      "authorKo": "샤를 보들레르",
+      "publishedYear": 1857,
+      "authorDeathYear": 1867,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "C1 고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Les Fleurs du mal (1868)",
+        "pattern": "^Les Fleurs du mal \\(1868\\)/(?!Appendice).+$"
+      },
+      "popularity": "시집 대표",
+      "note": "1868 판(사후판, 162 하위면). 시 단위"
+    },
+    {
+      "id": "fr-victor-hugo-le-dernier-jour-d-un-condamne",
+      "key": "ws-fr-victor-hugo_le-dernier-jour-d-un-condamne",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Le Dernier Jour d’un condamné",
+      "author": "Victor Hugo",
+      "titleKo": "사형수 최후의 날",
+      "authorKo": "빅토르 위고",
+      "publishedYear": 1829,
+      "authorDeathYear": 1885,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "B2 상급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Le Dernier Jour d’un Condamné",
+        "pattern": "^Le Dernier Jour d’un Condamné/éd\\. 1910/\\d+$"
+      },
+      "popularity": "짧은 소설 — 교재 적합",
+      "note": "1910 판 하위면 49장"
+    },
+    {
+      "id": "fr-alexandre-dumas-fils-la-dame-aux-camelias",
+      "key": "ws-fr-alexandre-dumas-fils_la-dame-aux-camelias",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "La Dame aux camélias",
+      "author": "Alexandre Dumas fils",
+      "titleKo": "춘희(동백꽃 아가씨)",
+      "authorKo": "알렉상드르 뒤마 피스",
+      "publishedYear": 1848,
+      "authorDeathYear": 1895,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "B2 상급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "La Dame aux camélias",
+        "pattern": "^La Dame aux camélias/[IVXL]+$"
+      },
+      "popularity": "「라 트라비아타」 원작"
+    },
+    {
+      "id": "fr-alain-fournier-le-grand-meaulnes",
+      "key": "ws-fr-alain-fournier_le-grand-meaulnes",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Le Grand Meaulnes",
+      "author": "Alain-Fournier",
+      "titleKo": "대장 몬느",
+      "authorKo": "알랭푸르니에",
+      "publishedYear": 1913,
+      "authorDeathYear": 1914,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": true,
+      "level": "B2 상급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Le Grand Meaulnes",
+        "pattern": "^Le Grand Meaulnes/(I|II|III)/(\\d+|Épilogue)$"
+      },
+      "popularity": "프랑스 청소년 고전",
+      "note": "작가 1914 전사 — mortPourLaFrance=true(본국 사후 100년 → 2014 만료). 한국 선으로도 통과"
+    },
+    {
+      "id": "fr-voltaire-candide-ou-l-optimisme",
+      "key": "ws-fr-voltaire_candide-ou-l-optimisme",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Candide, ou l’Optimisme",
+      "author": "Voltaire",
+      "titleKo": "캉디드",
+      "authorKo": "볼테르",
+      "publishedYear": 1759,
+      "authorDeathYear": 1778,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "C1 고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "fr",
+        "main": "Candide, ou l’Optimisme/Beuchot 1829"
+      },
+      "popularity": "계몽주의 대표작",
+      "note": "Candide 면은 Œuvre 목록 — Beuchot 1829 판 면(432 bytes, 하위 링크 0 → 단일 면 전사 또는 색인 직결). 받기 전 구조 확인 필요"
+    },
+    {
+      "id": "fr-antoine-de-saint-exupery-vol-de-nuit",
+      "key": "pd-fp-antoine-de-saint-exupery_vol-de-nuit",
+      "status": "수록",
+      "country": "FR"
+    },
+    {
+      "id": "fr-albert-camus-les-justes",
+      "key": "pd-fp-albert-camus_les-justes",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Les Justes",
+      "author": "Albert Camus",
+      "titleKo": "정의의 사람들",
+      "authorKo": "알베르 카뮈",
+      "publishedYear": 1949,
+      "authorDeathYear": 1960,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "B2 상급",
+      "source": {
+        "provider": "pdsite",
+        "site": "fp",
+        "id": "20190562"
+      },
+      "popularity": "카뮈 희곡 대표",
+      "note": "불어 원문. 이방인·시지프 신화 수록 후속"
+    },
+    {
+      "id": "fr-albert-camus-l-exil-et-le-royaume",
+      "key": "pd-fp-albert-camus_l-exil-et-le-royaume",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "L’Exil et le Royaume",
+      "author": "Albert Camus",
+      "titleKo": "적지와 왕국",
+      "authorKo": "알베르 카뮈",
+      "publishedYear": 1957,
+      "authorDeathYear": 1960,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "B2 상급",
+      "source": {
+        "provider": "pdsite",
+        "site": "fp",
+        "id": "20161025"
+      },
+      "popularity": "카뮈 단편집(「손님」)",
+      "note": "불어 원문"
+    },
+    {
+      "id": "fr-albert-camus-caligula-suivi-de-le-malentendu",
+      "key": "pd-fp-albert-camus_caligula-suivi-de-le-malentendu",
+      "status": "loadable",
+      "country": "FR",
+      "language": "French",
+      "title": "Caligula, suivi de Le Malentendu",
+      "author": "Albert Camus",
+      "titleKo": "칼리굴라·오해",
+      "authorKo": "알베르 카뮈",
+      "publishedYear": 1944,
+      "authorDeathYear": 1960,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "B2 상급",
+      "source": {
+        "provider": "pdsite",
+        "site": "fp",
+        "id": "20161003"
+      },
+      "popularity": "카뮈 희곡",
+      "note": "FP 표기 1958(개정판). 불어 원문"
+    },
+    {
+      "id": "fr-albert-camus-la-peste",
+      "status": "blocked",
+      "country": "FR",
+      "language": "French",
+      "title": "La Peste",
+      "author": "Albert Camus",
+      "titleKo": "페스트",
+      "authorKo": "알베르 카뮈",
+      "publishedYear": 1947,
+      "authorDeathYear": 1960,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "B2 상급",
+      "source": {
+        "provider": "pdsite"
+      },
+      "blocker": "권리는 통과(1960 사망 → 한국 선) — Faded Page 카뮈 목록 7편에 없음, PGA에도 없음. 출처 미확보.",
+      "popularity": "한국 인지도 최상(팬데믹 재조명)"
+    },
+    {
+      "id": "fr-jean-paul-sartre-la-nausee",
+      "status": "blocked",
+      "country": "FR",
+      "language": "French",
+      "title": "La Nausée",
+      "author": "Jean-Paul Sartre",
+      "titleKo": "구토",
+      "authorKo": "장폴 사르트르",
+      "publishedYear": 1938,
+      "authorDeathYear": 1980,
+      "countryOfOrigin": "FR",
+      "mortPourLaFrance": false,
+      "level": "C1 고급",
+      "source": {
+        "provider": "pdsite"
+      },
+      "blocker": "작가 1980 사망 — 한국·프랑스 모두 존속.",
+      "popularity": "실존주의 대표"
+    },
+    {
+      "id": "be-maurice-maeterlinck-georgette-leblanc-the-blue-bird-alexander-teixeira-de-mattos",
+      "key": "se-maurice-maeterlinck_georgette-leblanc_the-blue-bird_alexander-teixeira-de-mattos",
+      "status": "loadable",
+      "country": "BE",
+      "language": "English",
+      "title": "The Children’s Blue Bird",
+      "author": "Maurice Maeterlinck & Georgette Leblanc",
+      "titleKo": "파랑새",
+      "authorKo": "모리스 마테를링크",
+      "publishedYear": 1913,
+      "authorDeathYear": 1949,
+      "countryOfOrigin": "BE",
+      "translator": {
+        "name": "Alexander Teixeira de Mattos",
+        "deathYear": 1921,
+        "publishedYear": 1913,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "maurice-maeterlinck_georgette-leblanc_the-blue-bird_alexander-teixeira-de-mattos"
+      },
+      "popularity": "「파랑새」 — 한국 아동 필독",
+      "note": "원작 희곡 L’Oiseau bleu(1908)의 조르제트 르블랑(1941 사망) 아동판 영역. 두 원작자 모두 1962 이전 사망. 불어 원문은 fr.wikisource 'L’Oiseau bleu (Maeterlinck)' 면 존재(274 bytes — 구조 확인 필요)"
+    },
+    {
+      "id": "be-georges-simenon-maigret-series",
+      "status": "blocked",
+      "country": "BE",
+      "language": "French",
+      "title": "Maigret (series)",
+      "author": "Georges Simenon",
+      "titleKo": "매그레 시리즈",
+      "authorKo": "조르주 심농",
+      "publishedYear": 1931,
+      "authorDeathYear": 1989,
+      "countryOfOrigin": "BE",
+      "level": "B1 중급",
+      "source": {
+        "provider": "pdsite"
+      },
+      "blocker": "작가 1989 사망 — 존속.",
+      "popularity": "벨기에 최다 판매 작가"
+    },
+    {
+      "id": "cn-lu-xun-gu-xiang",
+      "key": "ws-zh-lu-xun_gu-xiang",
+      "status": "수록",
+      "country": "CN"
+    },
+    {
+      "id": "cn-lu-xun-kong-yi-ji",
+      "key": "ws-zh-lu-xun_kong-yi-ji",
+      "status": "수록",
+      "country": "CN"
+    },
+    {
+      "id": "cn-zhu-ziqing-bei-ying",
+      "key": "ws-zh-zhu-ziqing_bei-ying",
+      "status": "수록",
+      "country": "CN"
+    },
+    {
+      "id": "cn-lu-xun-a-q-zheng-zhuan",
+      "key": "ws-zh-lu-xun_a-q-zheng-zhuan",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "阿Q正传",
+      "author": "鲁迅",
+      "titleKo": "아Q정전",
+      "authorKo": "루쉰",
+      "publishedYear": 1921,
+      "authorDeathYear": 1936,
+      "countryOfOrigin": "CN",
+      "level": "H6 마스터",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "阿Q正傳"
+      },
+      "popularity": "중국 현대문학 대표작 — 한국 교재 단골",
+      "note": "단일 면(<pages> 380–437쪽 전사, 1948 전집). 9장 — 쪽 안에서 장 경계 분할 필요"
+    },
+    {
+      "id": "cn-lu-xun-kuang-ren-ri-ji",
+      "key": "ws-zh-lu-xun_kuang-ren-ri-ji",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "狂人日记",
+      "author": "鲁迅",
+      "titleKo": "광인일기",
+      "authorKo": "루쉰",
+      "publishedYear": 1918,
+      "authorDeathYear": 1936,
+      "countryOfOrigin": "CN",
+      "level": "H6 마스터",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "狂人日記"
+      },
+      "popularity": "중국 최초 백화 소설",
+      "note": "단일 면"
+    },
+    {
+      "id": "cn-lu-xun-zhu-fu",
+      "key": "ws-zh-lu-xun_zhu-fu",
+      "status": "수록",
+      "country": "CN"
+    },
+    {
+      "id": "cn-lu-xun-yao",
+      "key": "ws-zh-lu-xun_yao",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "药",
+      "author": "鲁迅",
+      "titleKo": "약",
+      "authorKo": "루쉰",
+      "publishedYear": 1919,
+      "authorDeathYear": 1936,
+      "countryOfOrigin": "CN",
+      "level": "H5 고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "藥"
+      },
+      "popularity": "『납함』 단편",
+      "note": "단일 면"
+    },
+    {
+      "id": "cn-lu-xun-she-xi",
+      "key": "ws-zh-lu-xun_she-xi",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "社戏",
+      "author": "鲁迅",
+      "titleKo": "마을 연극",
+      "authorKo": "루쉰",
+      "publishedYear": 1922,
+      "authorDeathYear": 1936,
+      "countryOfOrigin": "CN",
+      "level": "H5 고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "社戲"
+      },
+      "popularity": "중국 교과서 수록",
+      "note": "단일 면"
+    },
+    {
+      "id": "cn-lu-xun-yi-jian-xiao-shi",
+      "key": "ws-zh-lu-xun_yi-jian-xiao-shi",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "一件小事",
+      "author": "鲁迅",
+      "titleKo": "작은 사건",
+      "authorKo": "루쉰",
+      "publishedYear": 1919,
+      "authorDeathYear": 1936,
+      "countryOfOrigin": "CN",
+      "level": "H4 상급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "一件小事"
+      },
+      "popularity": "초단편 — 입문 적합",
+      "note": "4쪽 분량 — 루쉰 입문 1순위"
+    },
+    {
+      "id": "cn-lu-xun-teng-ye-xian-sheng",
+      "key": "ws-zh-lu-xun_teng-ye-xian-sheng",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "藤野先生",
+      "author": "鲁迅",
+      "titleKo": "후지노 선생",
+      "authorKo": "루쉰",
+      "publishedYear": 1926,
+      "authorDeathYear": 1936,
+      "countryOfOrigin": "CN",
+      "level": "H5 고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "藤野先生"
+      },
+      "popularity": "중국 교과서 — 한·중·일 공통 소재",
+      "note": "『조화석습』 수록 산문"
+    },
+    {
+      "id": "cn-lu-xun-cong-bai-cao-yuan-dao-san-wei-shu-wu",
+      "key": "ws-zh-lu-xun_cong-bai-cao-yuan-dao-san-wei-shu-wu",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "从百草园到三味书屋",
+      "author": "鲁迅",
+      "titleKo": "백초원에서 삼미서옥으로",
+      "authorKo": "루쉰",
+      "publishedYear": 1926,
+      "authorDeathYear": 1936,
+      "countryOfOrigin": "CN",
+      "level": "H5 고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "從百草園到三味書屋"
+      },
+      "popularity": "중국 초중 교과서"
+    },
+    {
+      "id": "cn-zhu-ziqing-he-tang-yue-se",
+      "key": "ws-zh-zhu-ziqing_he-tang-yue-se",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "荷塘月色",
+      "author": "朱自清",
+      "titleKo": "연못의 달빛",
+      "authorKo": "주쯔칭",
+      "publishedYear": 1927,
+      "authorDeathYear": 1948,
+      "countryOfOrigin": "CN",
+      "level": "H5 고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "荷塘月色"
+      },
+      "popularity": "중국 교과서 산문 대표",
+      "note": "배영(수록) 작가"
+    },
+    {
+      "id": "cn-zhu-ziqing-cong-cong",
+      "key": "ws-zh-zhu-ziqing_cong-cong",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "匆匆",
+      "author": "朱自清",
+      "titleKo": "총총(바삐)",
+      "authorKo": "주쯔칭",
+      "publishedYear": 1922,
+      "authorDeathYear": 1948,
+      "countryOfOrigin": "CN",
+      "level": "H4 상급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "匆匆"
+      },
+      "popularity": "중국 초등 교과서",
+      "note": "초단편 산문"
+    },
+    {
+      "id": "cn-lao-she-luo-tuo-xiang-zi",
+      "key": "ws-zh-lao-she_luo-tuo-xiang-zi",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "骆驼祥子",
+      "author": "老舍",
+      "titleKo": "낙타 샹즈",
+      "authorKo": "라오서",
+      "publishedYear": 1937,
+      "authorDeathYear": 1966,
+      "countryOfOrigin": "CN",
+      "level": "H5 고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "駱駝祥子",
+        "pattern": "^駱駝祥子/(序|\\d+)$"
+      },
+      "popularity": "중국 현대 장편 대표",
+      "note": "작가 1966 사망 — 한국 선 밖, 중국 본국(사후 50년 → 2016 만료)으로 통과(origin-term). 위키문헌본은 1950 작가 교정본(晨光) — 판본 연도 1950 기록 검토. 베이징 구어"
+    },
+    {
+      "id": "cn-lao-she-cha-guan",
+      "key": "ws-zh-lao-she_cha-guan",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "茶馆",
+      "author": "老舍",
+      "titleKo": "찻집",
+      "authorKo": "라오서",
+      "publishedYear": 1957,
+      "authorDeathYear": 1966,
+      "countryOfOrigin": "CN",
+      "level": "H5 고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "茶馆",
+        "pattern": "^茶馆/(序幕|第[一二三]幕)$"
+      },
+      "popularity": "중국 현대 희곡 대표",
+      "note": "origin-term(CN). 면 제목이 간체 '茶馆'"
+    },
+    {
+      "id": "cn-xiao-hong-hu-lan-he-chuan",
+      "key": "ws-zh-xiao-hong_hu-lan-he-chuan",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "呼兰河传",
+      "author": "萧红",
+      "titleKo": "후란허 이야기",
+      "authorKo": "샤오훙",
+      "publishedYear": 1940,
+      "authorDeathYear": 1942,
+      "countryOfOrigin": "CN",
+      "level": "H5 고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "呼蘭河傳",
+        "pattern": "^呼蘭河傳/(第.章|尾聲)$"
+      },
+      "popularity": "20세기 중문 소설 100선 9위"
+    },
+    {
+      "id": "cn-xu-zhimo-zai-bie-kang-qiao",
+      "key": "ws-zh-xu-zhimo_zai-bie-kang-qiao",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "再别康桥",
+      "author": "徐志摩",
+      "titleKo": "다시 케임브리지와 작별하며",
+      "authorKo": "쉬즈모",
+      "publishedYear": 1928,
+      "authorDeathYear": 1931,
+      "countryOfOrigin": "CN",
+      "level": "H4 상급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "再別康橋"
+      },
+      "popularity": "중국 현대시 최고 애송시",
+      "note": "시 1편(<pages> 猛虎集 1932)"
+    },
+    {
+      "id": "cn-hu-shi-cha-bu-duo-xian-sheng-chuan",
+      "key": "ws-zh-hu-shi_cha-bu-duo-xian-sheng-chuan",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "差不多先生传",
+      "author": "胡适",
+      "titleKo": "차부둬 선생전",
+      "authorKo": "후스",
+      "publishedYear": 1924,
+      "authorDeathYear": 1962,
+      "countryOfOrigin": "CN",
+      "level": "H4 상급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "差不多先生傳"
+      },
+      "popularity": "중국 교과서 풍자 소품",
+      "note": "작가 1962 사망 → 한국 선 정확히 통과. 본문 직접 입력(textquality 50%) — 교정 상태 확인"
+    },
+    {
+      "id": "cn-xu-dishan-luo-hua-sheng",
+      "key": "ws-zh-xu-dishan_luo-hua-sheng",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "落花生",
+      "author": "许地山",
+      "titleKo": "땅콩",
+      "authorKo": "쉬디산",
+      "publishedYear": 1922,
+      "authorDeathYear": 1941,
+      "countryOfOrigin": "CN",
+      "level": "H3 중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "落花生"
+      },
+      "popularity": "중국 초등 교과서",
+      "note": "초단편 — 중국어 입문 1순위 후보"
+    },
+    {
+      "id": "cn-wen-yiduo-si-shui",
+      "key": "ws-zh-wen-yiduo_si-shui",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "死水",
+      "author": "闻一多",
+      "titleKo": "썩은 물",
+      "authorKo": "원이둬",
+      "publishedYear": 1928,
+      "authorDeathYear": 1946,
+      "countryOfOrigin": "CN",
+      "level": "H5 고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "死水"
+      },
+      "popularity": "중국 현대시 대표",
+      "note": "시 1편"
+    },
+    {
+      "id": "cn-liang-qichao-shao-nian-zhong-guo-shuo",
+      "key": "ws-zh-liang-qichao_shao-nian-zhong-guo-shuo",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "少年中国说",
+      "author": "梁启超",
+      "titleKo": "소년중국설",
+      "authorKo": "량치차오",
+      "publishedYear": 1900,
+      "authorDeathYear": 1929,
+      "countryOfOrigin": "CN",
+      "level": "H6 마스터",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "少年中國說"
+      },
+      "popularity": "중국 교과서 명문",
+      "note": "문언 혼합체"
+    },
+    {
+      "id": "cn-cao-xueqin-hong-lou-meng",
+      "key": "ws-zh-cao-xueqin_hong-lou-meng",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "红楼梦",
+      "author": "曹雪芹",
+      "titleKo": "홍루몽",
+      "authorKo": "조설근",
+      "publishedYear": 1791,
+      "authorDeathYear": 1763,
+      "countryOfOrigin": "CN",
+      "level": "H6 마스터",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "紅樓夢",
+        "pattern": "^紅樓夢/第\\d{3}回$"
+      },
+      "popularity": "4대 기서",
+      "note": "120회. publishedYear=정갑본 1791. 근대 백화 이전 문체"
+    },
+    {
+      "id": "cn-wu-chengen-xi-you-ji",
+      "key": "ws-zh-wu-chengen_xi-you-ji",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "西游记",
+      "author": "吴承恩",
+      "titleKo": "서유기",
+      "authorKo": "오승은",
+      "publishedYear": 1592,
+      "authorDeathYear": 1582,
+      "countryOfOrigin": "CN",
+      "level": "H6 마스터",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "西遊記",
+        "pattern": "^西遊記/第\\d{3}回$"
+      },
+      "popularity": "4대 기서 — 한국 인지도 최상",
+      "note": "100회"
+    },
+    {
+      "id": "cn-luo-guanzhong-san-guo-yan-yi",
+      "key": "ws-zh-luo-guanzhong_san-guo-yan-yi",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "三国演义",
+      "author": "罗贯中",
+      "titleKo": "삼국지연의",
+      "authorKo": "나관중",
+      "publishedYear": 1522,
+      "authorDeathYear": 1400,
+      "countryOfOrigin": "CN",
+      "level": "H6 마스터",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "三國演義",
+        "pattern": "^三國演義/第\\d{3}回$"
+      },
+      "popularity": "4대 기서 — 한국 인지도 최상",
+      "note": "120회. 작가 몰년 미상(14세기 말) — authorDeathYear는 보수적 대표값, 기록 시 근거 명시"
+    },
+    {
+      "id": "cn-kong-zi-lun-yu",
+      "key": "ws-zh-kong-zi_lun-yu",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "论语",
+      "author": "孔子 등",
+      "titleKo": "논어",
+      "authorKo": "공자",
+      "publishedYear": -400,
+      "authorDeathYear": -479,
+      "countryOfOrigin": "CN",
+      "level": "H6 마스터",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "論語",
+        "pattern": "^論語/.+第.+$"
+      },
+      "popularity": "동양 고전 최상위",
+      "note": "20편 하위면. 문언문 — 현대 중국어 학습과 별도 트랙"
+    },
+    {
+      "id": "cn-pu-songling-liao-zhai-zhi-yi",
+      "key": "ws-zh-pu-songling_liao-zhai-zhi-yi",
+      "status": "loadable",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "聊斋志异",
+      "author": "蒲松龄",
+      "titleKo": "요재지이",
+      "authorKo": "포송령",
+      "publishedYear": 1766,
+      "authorDeathYear": 1715,
+      "countryOfOrigin": "CN",
+      "level": "H6 마스터",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "聊齋志異",
+        "pattern": "^聊齋志異/第\\d{2}卷$"
+      },
+      "popularity": "괴담 고전",
+      "note": "권 단위 12면"
+    },
+    {
+      "id": "cn-sun-tzu-the-art-of-war-lionel-giles",
+      "key": "se-sun-tzu_the-art-of-war_lionel-giles",
+      "status": "loadable",
+      "country": "CN",
+      "language": "English",
+      "title": "The Art of War",
+      "author": "Sun Tzu",
+      "titleKo": "손자병법(영역)",
+      "authorKo": "손무",
+      "publishedYear": -500,
+      "authorDeathYear": -496,
+      "countryOfOrigin": "CN",
+      "translator": {
+        "name": "Lionel Giles",
+        "deathYear": 1958,
+        "publishedYear": 1910,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "sun-tzu_the-art-of-war_lionel-giles"
+      },
+      "popularity": "경영서로 한국 인지도 최상",
+      "note": "영어 학습자용 대안. 원문은 zh.wikisource '孫子兵法'(단일 면 31k)"
+    },
+    {
+      "id": "cn-shen-congwen-bian-cheng",
+      "key": "ws-zh-shen-congwen_bian-cheng",
+      "status": "blocked",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "边城",
+      "author": "沈从文",
+      "titleKo": "변성",
+      "authorKo": "선충원",
+      "publishedYear": 1934,
+      "authorDeathYear": 1988,
+      "countryOfOrigin": "CN",
+      "level": "H5 고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "邊城"
+      },
+      "blocker": "작가 1988 사망 — 한국·중국 모두 존속(위키문헌에도 없음).",
+      "popularity": "20세기 중문 소설 100선 2위"
+    },
+    {
+      "id": "cn-x",
+      "status": "blocked",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "家",
+      "author": "巴金",
+      "titleKo": "가(집)",
+      "authorKo": "바진",
+      "publishedYear": 1933,
+      "authorDeathYear": 2005,
+      "countryOfOrigin": "CN",
+      "level": "H5 고급",
+      "source": {
+        "provider": "wikisource"
+      },
+      "blocker": "작가 2005 사망 — 존속.",
+      "popularity": "중국 현대 3부작 대표"
+    },
+    {
+      "id": "cn-x-2",
+      "status": "blocked",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "京华烟云 / 吾国与吾民",
+      "author": "林语堂",
+      "titleKo": "경화연운·나의 나라 나의 국민",
+      "authorKo": "린위탕",
+      "publishedYear": 1939,
+      "authorDeathYear": 1976,
+      "countryOfOrigin": "CN",
+      "level": "H5 고급",
+      "source": {
+        "provider": "wikisource"
+      },
+      "blocker": "작가 1976 사망 — 중국 사후 50년은 2026년 말 만료 → 검토 연도 2027부터 origin-term 통과 예정(대만 원산 판정은 별도 확인).",
+      "popularity": "한국 인지도 높음"
+    },
+    {
+      "id": "cn-yu-dafu-gu-du-de-qiu-chen-lun",
+      "key": "ws-zh-yu-dafu_gu-du-de-qiu-chen-lun",
+      "status": "blocked",
+      "country": "CN",
+      "language": "Chinese",
+      "title": "故都的秋 / 沉沦",
+      "author": "郁达夫",
+      "titleKo": "고도의 가을·침륜",
+      "authorKo": "위다푸",
+      "publishedYear": 1934,
+      "authorDeathYear": 1945,
+      "countryOfOrigin": "CN",
+      "level": "H5 고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "zh",
+        "main": "故都的秋"
+      },
+      "blocker": "권리는 통과(1945 사망) — zh.wikisource에 '故都的秋'·'沉淪' 제목 면 없음(제목 질의 MISSING). 다른 제목/작품집 하위면 탐색 필요.",
+      "popularity": "중국 교과서 산문"
+    },
+    {
+      "id": "kr-choe-nam-seon-gimi-dongnip-seoneonseo",
+      "key": "ws-ko-choe-nam-seon_gimi-dongnip-seoneonseo",
+      "status": "수록",
+      "country": "KR"
+    },
+    {
+      "id": "kr-hyeon-jin-geon-unsu-joeun-nal",
+      "key": "ws-ko-hyeon-jin-geon_unsu-joeun-nal",
+      "status": "수록",
+      "country": "KR"
+    },
+    {
+      "id": "kr-kim-dong-in-gamja",
+      "key": "ws-ko-kim-dong-in_gamja",
+      "status": "수록",
+      "country": "KR"
+    },
+    {
+      "id": "kr-kim-so-wol-jindallaekkot",
+      "key": "ws-ko-kim-so-wol_jindallaekkot",
+      "status": "수록",
+      "country": "KR"
+    },
+    {
+      "id": "kr-kim-yu-jeong-dongbaekkkot",
+      "key": "ws-ko-kim-yu-jeong_dongbaekkkot",
+      "status": "수록",
+      "country": "KR"
+    },
+    {
+      "id": "kr-samil-centennial-swipgo-bareuge-ingneun-dongnip-seoneonseo",
+      "key": "ws-ko-samil-centennial_swipgo-bareuge-ingneun-dongnip-seoneonseo",
+      "status": "수록",
+      "country": "KR"
+    },
+    {
+      "id": "kr-yi-hyo-seok-memilkkot-pil-muryeop",
+      "key": "ws-ko-yi-hyo-seok_memilkkot-pil-muryeop",
+      "status": "수록",
+      "country": "KR"
+    },
+    {
+      "id": "kr-yi-sang-nalgae",
+      "key": "ws-ko-yi-sang_nalgae",
+      "status": "수록",
+      "country": "KR"
+    },
+    {
+      "id": "kr-yun-dong-ju-haneulgwa-baramgwa-byeolgwa-si",
+      "key": "ws-ko-yun-dong-ju_haneulgwa-baramgwa-byeolgwa-si",
+      "status": "수록",
+      "country": "KR"
+    },
+    {
+      "id": "kr-kim-yu-jeong-bombom",
+      "key": "ws-ko-kim-yu-jeong_bombom",
+      "status": "수록",
+      "country": "KR"
+    },
+    {
+      "id": "kr-kim-yu-jeong-sonakbi",
+      "key": "ws-ko-kim-yu-jeong_sonakbi",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "소낙비",
+      "author": "김유정",
+      "titleKo": "소낙비",
+      "authorKo": "김유정",
+      "publishedYear": 1935,
+      "authorDeathYear": 1937,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "소낙비"
+      },
+      "popularity": "김유정 등단작",
+      "note": "단일 면"
+    },
+    {
+      "id": "kr-kim-yu-jeong-geum-ttaneun-kongbat",
+      "key": "ws-ko-kim-yu-jeong_geum-ttaneun-kongbat",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "금 따는 콩밭",
+      "author": "김유정",
+      "titleKo": "금 따는 콩밭",
+      "authorKo": "김유정",
+      "publishedYear": 1935,
+      "authorDeathYear": 1937,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "금 따는 콩밭"
+      },
+      "popularity": "교과서 수록",
+      "note": "단일 면"
+    },
+    {
+      "id": "kr-kim-yu-jeong-manmubang",
+      "key": "ws-ko-kim-yu-jeong_manmubang",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "만무방",
+      "author": "김유정",
+      "titleKo": "만무방",
+      "authorKo": "김유정",
+      "publishedYear": 1935,
+      "authorDeathYear": 1937,
+      "countryOfOrigin": "KR",
+      "level": "고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "만무방"
+      },
+      "popularity": "교과서 수록",
+      "note": "단일 면"
+    },
+    {
+      "id": "kr-kim-yu-jeong-sangol-nageune",
+      "key": "ws-ko-kim-yu-jeong_sangol-nageune",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "산골 나그네",
+      "author": "김유정",
+      "titleKo": "산골 나그네",
+      "authorKo": "김유정",
+      "publishedYear": 1933,
+      "authorDeathYear": 1937,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "산골 나그네"
+      },
+      "popularity": "김유정 초기작",
+      "note": "단일 면"
+    },
+    {
+      "id": "kr-kim-yu-jeong-honggildongjeon",
+      "key": "ws-ko-kim-yu-jeong_honggildongjeon",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "홍길동전 (김유정)",
+      "author": "김유정",
+      "titleKo": "홍길동전 (김유정)",
+      "authorKo": "김유정",
+      "publishedYear": 1935,
+      "authorDeathYear": 1937,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "홍길동전 (김유정)"
+      },
+      "popularity": "홍길동 — 현대어 재화",
+      "note": "고전소설을 김유정이 현대어로 다시 쓴 판(28k) — 경판·완판 고어본보다 학습 적합"
+    },
+    {
+      "id": "kr-hyeon-jin-geon-bsagamgwa-reobeureteo",
+      "key": "ws-ko-hyeon-jin-geon_bsagamgwa-reobeureteo",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "B사감과 러브레터",
+      "author": "현진건",
+      "titleKo": "B사감과 러브레터",
+      "authorKo": "현진건",
+      "publishedYear": 1925,
+      "authorDeathYear": 1943,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "B사감과 러브레터"
+      },
+      "popularity": "교과서 수록",
+      "note": "운수 좋은 날(수록) 작가"
+    },
+    {
+      "id": "kr-hyeon-jin-geon-bincheo",
+      "key": "ws-ko-hyeon-jin-geon_bincheo",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "빈처",
+      "author": "현진건",
+      "titleKo": "빈처",
+      "authorKo": "현진건",
+      "publishedYear": 1921,
+      "authorDeathYear": 1943,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "빈처"
+      },
+      "popularity": "교과서 수록"
+    },
+    {
+      "id": "kr-hyeon-jin-geon-sul-gwonhaneun-sahoe",
+      "key": "ws-ko-hyeon-jin-geon_sul-gwonhaneun-sahoe",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "술 권하는 사회",
+      "author": "현진건",
+      "titleKo": "술 권하는 사회",
+      "authorKo": "현진건",
+      "publishedYear": 1921,
+      "authorDeathYear": 1943,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "술 권하는 사회"
+      },
+      "popularity": "교과서 수록"
+    },
+    {
+      "id": "kr-hyeon-jin-geon-gohyang",
+      "key": "ws-ko-hyeon-jin-geon_gohyang",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "고향",
+      "author": "현진건",
+      "titleKo": "고향",
+      "authorKo": "현진건",
+      "publishedYear": 1926,
+      "authorDeathYear": 1943,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "고향 (현진건)"
+      },
+      "popularity": "교과서 수록"
+    },
+    {
+      "id": "kr-kim-dong-in-baettaragi",
+      "key": "ws-ko-kim-dong-in_baettaragi",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "배따라기",
+      "author": "김동인",
+      "titleKo": "배따라기",
+      "authorKo": "김동인",
+      "publishedYear": 1921,
+      "authorDeathYear": 1951,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "배따라기"
+      },
+      "popularity": "교과서 수록 — 감자(수록) 작가"
+    },
+    {
+      "id": "kr-kim-dong-in-gwangyeom-sonata",
+      "key": "ws-ko-kim-dong-in_gwangyeom-sonata",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "광염 소나타",
+      "author": "김동인",
+      "titleKo": "광염 소나타",
+      "authorKo": "김동인",
+      "publishedYear": 1929,
+      "authorDeathYear": 1951,
+      "countryOfOrigin": "KR",
+      "level": "고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "광염 소나타"
+      },
+      "popularity": "유미주의 대표 단편"
+    },
+    {
+      "id": "kr-kim-dong-in-balgaraki-damatda",
+      "key": "ws-ko-kim-dong-in_balgaraki-damatda",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "발가락이 닮았다",
+      "author": "김동인",
+      "titleKo": "발가락이 닮았다",
+      "authorKo": "김동인",
+      "publishedYear": 1932,
+      "authorDeathYear": 1951,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "발가락이 닮았다"
+      },
+      "popularity": "교과서 수록"
+    },
+    {
+      "id": "kr-kim-dong-in-bukeun-san",
+      "key": "ws-ko-kim-dong-in_bukeun-san",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "붉은 산",
+      "author": "김동인",
+      "titleKo": "붉은 산",
+      "authorKo": "김동인",
+      "publishedYear": 1932,
+      "authorDeathYear": 1951,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "붉은 산"
+      },
+      "popularity": "교과서 수록"
+    },
+    {
+      "id": "kr-na-do-hyang-beongeori-samryongi",
+      "key": "ws-ko-na-do-hyang_beongeori-samryongi",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "벙어리 삼룡이",
+      "author": "나도향",
+      "titleKo": "벙어리 삼룡이",
+      "authorKo": "나도향",
+      "publishedYear": 1925,
+      "authorDeathYear": 1926,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "벙어리 삼룡이"
+      },
+      "popularity": "교과서 수록",
+      "note": "<pages> 1925 『여명』 스캔 전사 — 당대 표기(옛 맞춤법) 가능성. 표제 표현(장애 지칭) 주석 검토"
+    },
+    {
+      "id": "kr-na-do-hyang-mulrebanga",
+      "key": "ws-ko-na-do-hyang_mulrebanga",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "물레방아",
+      "author": "나도향",
+      "titleKo": "물레방아",
+      "authorKo": "나도향",
+      "publishedYear": 1925,
+      "authorDeathYear": 1926,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "물레방아"
+      },
+      "popularity": "교과서 수록"
+    },
+    {
+      "id": "kr-chae-man-sik-redimeideu-insaeng",
+      "key": "ws-ko-chae-man-sik_redimeideu-insaeng",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "레디메이드 인생",
+      "author": "채만식",
+      "titleKo": "레디메이드 인생",
+      "authorKo": "채만식",
+      "publishedYear": 1934,
+      "authorDeathYear": 1950,
+      "countryOfOrigin": "KR",
+      "level": "고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "레디메이드 인생"
+      },
+      "popularity": "교과서 수록 풍자 단편"
+    },
+    {
+      "id": "kr-chae-man-sik-chisuk",
+      "key": "ws-ko-chae-man-sik_chisuk",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "치숙",
+      "author": "채만식",
+      "titleKo": "치숙",
+      "authorKo": "채만식",
+      "publishedYear": 1938,
+      "authorDeathYear": 1950,
+      "countryOfOrigin": "KR",
+      "level": "고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "치숙"
+      },
+      "popularity": "교과서 수록 풍자 단편"
+    },
+    {
+      "id": "kr-chae-man-sik-taepyeongcheonha",
+      "key": "ws-ko-chae-man-sik_taepyeongcheonha",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "태평천하",
+      "author": "채만식",
+      "titleKo": "태평천하",
+      "authorKo": "채만식",
+      "publishedYear": 1938,
+      "authorDeathYear": 1950,
+      "countryOfOrigin": "KR",
+      "level": "고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "태평천하",
+        "pattern": "^태평천하/제\\d+장$"
+      },
+      "popularity": "풍자 장편 대표",
+      "note": "목차 링크 [[/제N장/]] — 하위면 이름 '태평천하/제1장' 형태(질의는 끝 슬래시 포함 시 MISSING이었음 — 받기 전 정확한 이름 확인)"
+    },
+    {
+      "id": "kr-chae-man-sik-takryu",
+      "key": "ws-ko-chae-man-sik_takryu",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "탁류",
+      "author": "채만식",
+      "titleKo": "탁류",
+      "authorKo": "채만식",
+      "publishedYear": 1937,
+      "authorDeathYear": 1950,
+      "countryOfOrigin": "KR",
+      "level": "고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "탁류",
+        "pattern": "^탁류/제\\d+장$"
+      },
+      "popularity": "장편 대표",
+      "note": "태평천하와 같은 하위면 구조"
+    },
+    {
+      "id": "kr-yi-gwang-su-mujeong",
+      "key": "ws-ko-yi-gwang-su_mujeong",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "무정",
+      "author": "이광수",
+      "titleKo": "무정",
+      "authorKo": "이광수",
+      "publishedYear": 1917,
+      "authorDeathYear": 1950,
+      "countryOfOrigin": "KR",
+      "level": "고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "무정",
+        "pattern": "^무정/\\d+장~\\d+장$"
+      },
+      "popularity": "한국 최초 근대 장편",
+      "note": "하위면 20장 묶음(1장~20장 129k). 작가 1950 납북 사망(연도 통설). 친일 행적 — 작가 소개문 신중"
+    },
+    {
+      "id": "kr-gye-yong-muk-baekchi-adada",
+      "key": "ws-ko-gye-yong-muk_baekchi-adada",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "백치 아다다",
+      "author": "계용묵",
+      "titleKo": "백치 아다다",
+      "authorKo": "계용묵",
+      "publishedYear": 1935,
+      "authorDeathYear": 1961,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "백치 아다다"
+      },
+      "popularity": "교과서 수록",
+      "note": "작가 1961 사망 → 한국 1962 선 통과. 표제 표현 주석 검토"
+    },
+    {
+      "id": "kr-sim-hun-sangroksu",
+      "key": "ws-ko-sim-hun_sangroksu",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "상록수",
+      "author": "심훈",
+      "titleKo": "상록수",
+      "authorKo": "심훈",
+      "publishedYear": 1935,
+      "authorDeathYear": 1936,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "상록수",
+        "pattern": "^상록수/제\\d+장$"
+      },
+      "popularity": "농촌계몽 장편 대표"
+    },
+    {
+      "id": "kr-sim-hun-geunali-omyeon",
+      "key": "ws-ko-sim-hun_geunali-omyeon",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "그날이 오면",
+      "author": "심훈",
+      "titleKo": "그날이 오면",
+      "authorKo": "심훈",
+      "publishedYear": 1949,
+      "authorDeathYear": 1936,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "그날이 오면/그날이 오면"
+      },
+      "popularity": "저항시 대표",
+      "note": "시 1편. 시집 면 '그날이 오면'(1949 유고집 하위면 다수)"
+    },
+    {
+      "id": "kr-yi-sang-ogamdo",
+      "key": "ws-ko-yi-sang_ogamdo",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "오감도",
+      "author": "이상",
+      "titleKo": "오감도",
+      "authorKo": "이상",
+      "publishedYear": 1934,
+      "authorDeathYear": 1937,
+      "countryOfOrigin": "KR",
+      "level": "고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "오감도"
+      },
+      "popularity": "한국 모더니즘 시 대표",
+      "note": "날개(수록) 작가. 15편 연작 단일 면"
+    },
+    {
+      "id": "kr-han-yong-un-nimui-chimmuk",
+      "key": "ws-ko-han-yong-un_nimui-chimmuk",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "님의 침묵",
+      "author": "한용운",
+      "titleKo": "님의 침묵",
+      "authorKo": "한용운",
+      "publishedYear": 1926,
+      "authorDeathYear": 1944,
+      "countryOfOrigin": "KR",
+      "level": "고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "님의 침묵",
+        "pattern": "^님의 침묵/.+$"
+      },
+      "popularity": "한국 대표 시집",
+      "note": "1926 회동서관본 스캔 — 옛한글/옛 맞춤법 틀({{옛한글}}). 현대 표기 학습자에게 난도 ↑"
+    },
+    {
+      "id": "kr-yi-yuk-sa-gwangya",
+      "key": "ws-ko-yi-yuk-sa_gwangya",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "광야",
+      "author": "이육사",
+      "titleKo": "광야",
+      "authorKo": "이육사",
+      "publishedYear": 1945,
+      "authorDeathYear": 1944,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "광야 (이육사)"
+      },
+      "popularity": "교과서 저항시",
+      "note": "시 1편 — 청포도와 묶어 한 권 권장"
+    },
+    {
+      "id": "kr-yi-yuk-sa-cheongpodo",
+      "key": "ws-ko-yi-yuk-sa_cheongpodo",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "청포도",
+      "author": "이육사",
+      "titleKo": "청포도",
+      "authorKo": "이육사",
+      "publishedYear": 1939,
+      "authorDeathYear": 1944,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "청포도"
+      },
+      "popularity": "교과서 시",
+      "note": "시 1편"
+    },
+    {
+      "id": "kr-yi-sang-hwa-ppaeatgin-deuledo-bomeun-oneunga",
+      "key": "ws-ko-yi-sang-hwa_ppaeatgin-deuledo-bomeun-oneunga",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "빼앗긴 들에도 봄은 오는가",
+      "author": "이상화",
+      "titleKo": "빼앗긴 들에도 봄은 오는가",
+      "authorKo": "이상화",
+      "publishedYear": 1926,
+      "authorDeathYear": 1943,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "빼앗긴 들에도 봄은 오는가"
+      },
+      "popularity": "교과서 저항시"
+    },
+    {
+      "id": "kr-kim-yeong-rang-morani-pigikkajineun",
+      "key": "ws-ko-kim-yeong-rang_morani-pigikkajineun",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "모란이 피기까지는",
+      "author": "김영랑",
+      "titleKo": "모란이 피기까지는",
+      "authorKo": "김영랑",
+      "publishedYear": 1934,
+      "authorDeathYear": 1950,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "영랑시집/모란이 피기까지는"
+      },
+      "popularity": "교과서 시",
+      "note": "『영랑시집』(1935) 하위면 — 시집 전체 적재도 가능"
+    },
+    {
+      "id": "kr-choe-seo-hae-talchulgi",
+      "key": "ws-ko-choe-seo-hae_talchulgi",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "탈출기",
+      "author": "최서해",
+      "titleKo": "탈출기",
+      "authorKo": "최서해",
+      "publishedYear": 1925,
+      "authorDeathYear": 1932,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "탈출기"
+      },
+      "popularity": "교과서 수록(신경향파)",
+      "note": "서간체 단편"
+    },
+    {
+      "id": "kr-na-hye-seok-gyeonghui",
+      "key": "ws-ko-na-hye-seok_gyeonghui",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "경희",
+      "author": "나혜석",
+      "titleKo": "경희",
+      "authorKo": "나혜석",
+      "publishedYear": 1918,
+      "authorDeathYear": 1948,
+      "countryOfOrigin": "KR",
+      "level": "고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "경희"
+      },
+      "popularity": "한국 최초 여성 근대 단편으로 재조명",
+      "note": "1918 표기"
+    },
+    {
+      "id": "kr-kim-man-jung-guunmong",
+      "key": "ws-ko-kim-man-jung_guunmong",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "구운몽",
+      "author": "김만중",
+      "titleKo": "구운몽",
+      "authorKo": "김만중",
+      "publishedYear": 1687,
+      "authorDeathYear": 1692,
+      "countryOfOrigin": "KR",
+      "level": "고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "구운몽"
+      },
+      "popularity": "고전소설 대표",
+      "note": "210k — 번역·고어 판본 확인 필요"
+    },
+    {
+      "id": "kr-jeong-ji-yong-hyangsu",
+      "key": "ws-ko-jeong-ji-yong_hyangsu",
+      "status": "loadable",
+      "country": "KR",
+      "language": "Korean",
+      "title": "향수",
+      "author": "정지용",
+      "titleKo": "향수",
+      "authorKo": "정지용",
+      "publishedYear": 1927,
+      "authorDeathYear": 1950,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "향수"
+      },
+      "popularity": "가곡으로 국민 애송시",
+      "note": "'향수' 면 존재(3,970 bytes)이나 정지용 작품인지 미확인 — '정지용 시집'(1935) 면도 존재. 받기 전 확인. 작가 1950 납북 사망(연도 통설)"
+    },
+    {
+      "id": "kr-yeom-sang-seop-samdae",
+      "key": "ws-ko-yeom-sang-seop_samdae",
+      "status": "blocked",
+      "country": "KR",
+      "language": "Korean",
+      "title": "삼대",
+      "author": "염상섭",
+      "titleKo": "삼대",
+      "authorKo": "염상섭",
+      "publishedYear": 1931,
+      "authorDeathYear": 1963,
+      "countryOfOrigin": "KR",
+      "level": "고급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "삼대"
+      },
+      "blocker": "작가 1963년 3월 사망 — 한국 1962 선을 넘김, 사후 70년(2033) 보호. 만세전·표본실의 청개구리 동일(위키문헌에도 없음).",
+      "popularity": "한국 근대 장편 대표"
+    },
+    {
+      "id": "kr-ju-yo-seop-sarangsonnimgwa-eomeoni",
+      "key": "ws-ko-ju-yo-seop_sarangsonnimgwa-eomeoni",
+      "status": "blocked",
+      "country": "KR",
+      "language": "Korean",
+      "title": "사랑손님과 어머니",
+      "author": "주요섭",
+      "titleKo": "사랑손님과 어머니",
+      "authorKo": "주요섭",
+      "publishedYear": 1935,
+      "authorDeathYear": 1972,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "사랑손님과 어머니"
+      },
+      "blocker": "작가 1972 사망 — 존속(2042).",
+      "popularity": "교과서 수록 — 인지도 최상"
+    },
+    {
+      "id": "kr-hwang-sun-won-sonagi",
+      "key": "ws-ko-hwang-sun-won_sonagi",
+      "status": "blocked",
+      "country": "KR",
+      "language": "Korean",
+      "title": "소나기",
+      "author": "황순원",
+      "titleKo": "소나기",
+      "authorKo": "황순원",
+      "publishedYear": 1953,
+      "authorDeathYear": 2000,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "소나기"
+      },
+      "blocker": "작가 2000 사망 — 존속.",
+      "popularity": "교과서 수록 — 인지도 최상"
+    },
+    {
+      "id": "kr-baek-seok-saseum",
+      "key": "ws-ko-baek-seok_saseum",
+      "status": "blocked",
+      "country": "KR",
+      "language": "Korean",
+      "title": "사슴",
+      "author": "백석",
+      "titleKo": "사슴",
+      "authorKo": "백석",
+      "publishedYear": 1936,
+      "authorDeathYear": 1996,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "사슴"
+      },
+      "blocker": "작가 1996 사망(북한) — 존속.",
+      "popularity": "시인들의 시인"
+    },
+    {
+      "id": "kr-yi-tae-jun-dalbam-bokdeokbang",
+      "key": "ws-ko-yi-tae-jun_dalbam-bokdeokbang",
+      "status": "blocked",
+      "country": "KR",
+      "language": "Korean",
+      "title": "달밤·복덕방",
+      "author": "이태준",
+      "titleKo": "달밤·복덕방",
+      "authorKo": "이태준",
+      "publishedYear": 1933,
+      "countryOfOrigin": "KR",
+      "level": "중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "ko",
+        "main": "달밤"
+      },
+      "blocker": "월북 후 몰년 불명(1970년대 추정) — 몰년 미확인은 불가(fail-closed). 위키문헌에도 면 없음.",
+      "popularity": "교과서 수록 단편"
+    },
+    {
+      "id": "ru-fyodor-dostoevsky-crime-and-punishment-constance-garnett",
+      "key": "se-fyodor-dostoevsky_crime-and-punishment_constance-garnett",
+      "status": "loadable",
+      "country": "RU",
+      "language": "English",
+      "title": "Crime and Punishment",
+      "author": "Fyodor Dostoevsky",
+      "titleKo": "죄와 벌",
+      "authorKo": "표도르 도스토옙스키",
+      "publishedYear": 1866,
+      "authorDeathYear": 1881,
+      "countryOfOrigin": "RU",
+      "translator": {
+        "name": "Constance Garnett",
+        "deathYear": 1946,
+        "publishedYear": 1914,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "fyodor-dostoevsky_crime-and-punishment_constance-garnett"
+      },
+      "popularity": "Gutenberg 30일 #6"
+    },
+    {
+      "id": "ru-fyodor-dostoevsky-the-brothers-karamazov-constance-garnett",
+      "key": "se-fyodor-dostoevsky_the-brothers-karamazov_constance-garnett",
+      "status": "loadable",
+      "country": "RU",
+      "language": "English",
+      "title": "The Brothers Karamazov",
+      "author": "Fyodor Dostoevsky",
+      "titleKo": "카라마조프가의 형제들",
+      "authorKo": "표도르 도스토옙스키",
+      "publishedYear": 1880,
+      "authorDeathYear": 1881,
+      "countryOfOrigin": "RU",
+      "translator": {
+        "name": "Constance Garnett",
+        "deathYear": 1946,
+        "publishedYear": 1912,
+        "countryOfOrigin": "GB"
+      },
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "fyodor-dostoevsky_the-brothers-karamazov_constance-garnett"
+      },
+      "popularity": "세계문학 최상위"
+    },
+    {
+      "id": "ru-fyodor-dostoevsky-notes-from-underground-constance-garnett",
+      "key": "se-fyodor-dostoevsky_notes-from-underground_constance-garnett",
+      "status": "loadable",
+      "country": "RU",
+      "language": "English",
+      "title": "Notes from Underground",
+      "author": "Fyodor Dostoevsky",
+      "titleKo": "지하로부터의 수기",
+      "authorKo": "표도르 도스토옙스키",
+      "publishedYear": 1864,
+      "authorDeathYear": 1881,
+      "countryOfOrigin": "RU",
+      "translator": {
+        "name": "Constance Garnett",
+        "deathYear": 1946,
+        "publishedYear": 1918,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "fyodor-dostoevsky_notes-from-underground_constance-garnett"
+      },
+      "popularity": "짧은 대표작"
+    },
+    {
+      "id": "ru-fyodor-dostoevsky-demons-constance-garnett",
+      "key": "se-fyodor-dostoevsky_demons_constance-garnett",
+      "status": "loadable",
+      "country": "RU",
+      "language": "English",
+      "title": "Demons",
+      "author": "Fyodor Dostoevsky",
+      "titleKo": "악령",
+      "authorKo": "표도르 도스토옙스키",
+      "publishedYear": 1872,
+      "authorDeathYear": 1881,
+      "countryOfOrigin": "RU",
+      "translator": {
+        "name": "Constance Garnett",
+        "deathYear": 1946,
+        "publishedYear": 1914,
+        "countryOfOrigin": "GB"
+      },
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "fyodor-dostoevsky_demons_constance-garnett"
+      },
+      "popularity": "5대 장편"
+    },
+    {
+      "id": "ru-leo-tolstoy-anna-karenina-constance-garnett",
+      "key": "se-leo-tolstoy_anna-karenina_constance-garnett",
+      "status": "loadable",
+      "country": "RU",
+      "language": "English",
+      "title": "Anna Karenina",
+      "author": "Leo Tolstoy",
+      "titleKo": "안나 카레니나",
+      "authorKo": "레프 톨스토이",
+      "publishedYear": 1878,
+      "authorDeathYear": 1910,
+      "countryOfOrigin": "RU",
+      "translator": {
+        "name": "Constance Garnett",
+        "deathYear": 1946,
+        "publishedYear": 1901,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "leo-tolstoy_anna-karenina_constance-garnett"
+      },
+      "popularity": "세계문학 최상위"
+    },
+    {
+      "id": "ru-leo-tolstoy-war-and-peace-louise-maude-aylmer-maude",
+      "key": "se-leo-tolstoy_war-and-peace_louise-maude_aylmer-maude",
+      "status": "loadable",
+      "country": "RU",
+      "language": "English",
+      "title": "War and Peace",
+      "author": "Leo Tolstoy",
+      "titleKo": "전쟁과 평화",
+      "authorKo": "레프 톨스토이",
+      "publishedYear": 1869,
+      "authorDeathYear": 1910,
+      "countryOfOrigin": "RU",
+      "translator": {
+        "name": "Louise Maude & Aylmer Maude",
+        "deathYear": 1939,
+        "publishedYear": 1922,
+        "countryOfOrigin": "GB"
+      },
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "leo-tolstoy_war-and-peace_louise-maude_aylmer-maude"
+      },
+      "popularity": "세계문학 최상위",
+      "note": "공역 — 번역자 기록은 둘(Louise Maude 1939 · Aylmer Maude 1938) 모두 남길 것. 스키마가 번역자 1명이면 늦은 쪽(Louise) 기록"
+    },
+    {
+      "id": "ru-leo-tolstoy-resurrection-louise-maude",
+      "key": "se-leo-tolstoy_resurrection_louise-maude",
+      "status": "loadable",
+      "country": "RU",
+      "language": "English",
+      "title": "Resurrection",
+      "author": "Leo Tolstoy",
+      "titleKo": "부활",
+      "authorKo": "레프 톨스토이",
+      "publishedYear": 1899,
+      "authorDeathYear": 1910,
+      "countryOfOrigin": "RU",
+      "translator": {
+        "name": "Louise Maude",
+        "deathYear": 1939,
+        "publishedYear": 1900,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "leo-tolstoy_resurrection_louise-maude"
+      },
+      "popularity": "한국 인지도 높음"
+    },
+    {
+      "id": "ru-anton-chekhov-short-fiction-constance-garnett",
+      "key": "se-anton-chekhov_short-fiction_constance-garnett",
+      "status": "loadable",
+      "country": "RU",
+      "language": "English",
+      "title": "Short Fiction",
+      "author": "Anton Chekhov",
+      "titleKo": "체호프 단편선",
+      "authorKo": "안톤 체호프",
+      "publishedYear": 1890,
+      "authorDeathYear": 1904,
+      "countryOfOrigin": "RU",
+      "translator": {
+        "name": "Constance Garnett",
+        "deathYear": 1946,
+        "publishedYear": 1916,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "anton-chekhov_short-fiction_constance-garnett"
+      },
+      "popularity": "단편 대표(「귀여운 여인」「개를 데리고 다니는 부인」)",
+      "note": "publishedYear=대표값"
+    },
+    {
+      "id": "ru-anton-chekhov-the-cherry-orchard-constance-garnett",
+      "key": "se-anton-chekhov_the-cherry-orchard_constance-garnett",
+      "status": "loadable",
+      "country": "RU",
+      "language": "English",
+      "title": "The Cherry Orchard",
+      "author": "Anton Chekhov",
+      "titleKo": "벚꽃 동산",
+      "authorKo": "안톤 체호프",
+      "publishedYear": 1904,
+      "authorDeathYear": 1904,
+      "countryOfOrigin": "RU",
+      "translator": {
+        "name": "Constance Garnett",
+        "deathYear": 1946,
+        "publishedYear": 1923,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "anton-chekhov_the-cherry-orchard_constance-garnett"
+      },
+      "popularity": "4대 희곡"
+    },
+    {
+      "id": "ru-anton-chekhov-the-seagull-constance-garnett",
+      "key": "se-anton-chekhov_the-seagull_constance-garnett",
+      "status": "loadable",
+      "country": "RU",
+      "language": "English",
+      "title": "The Seagull",
+      "author": "Anton Chekhov",
+      "titleKo": "갈매기",
+      "authorKo": "안톤 체호프",
+      "publishedYear": 1896,
+      "authorDeathYear": 1904,
+      "countryOfOrigin": "RU",
+      "translator": {
+        "name": "Constance Garnett",
+        "deathYear": 1946,
+        "publishedYear": 1923,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "anton-chekhov_the-seagull_constance-garnett"
+      },
+      "popularity": "4대 희곡"
+    },
+    {
+      "id": "ru-ivan-turgenev-fathers-and-children-constance-garnett",
+      "key": "se-ivan-turgenev_fathers-and-children_constance-garnett",
+      "status": "loadable",
+      "country": "RU",
+      "language": "English",
+      "title": "Fathers and Children",
+      "author": "Ivan Turgenev",
+      "titleKo": "아버지와 아들",
+      "authorKo": "이반 투르게네프",
+      "publishedYear": 1862,
+      "authorDeathYear": 1883,
+      "countryOfOrigin": "RU",
+      "translator": {
+        "name": "Constance Garnett",
+        "deathYear": 1946,
+        "publishedYear": 1895,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "ivan-turgenev_fathers-and-children_constance-garnett"
+      },
+      "popularity": "러시아 고전"
+    },
+    {
+      "id": "ru-nikolai-gogol-dead-souls-c-j-hogarth",
+      "key": "se-nikolai-gogol_dead-souls_c-j-hogarth",
+      "status": "loadable",
+      "country": "RU",
+      "language": "English",
+      "title": "Dead Souls",
+      "author": "Nikolai Gogol",
+      "titleKo": "죽은 혼",
+      "authorKo": "니콜라이 고골",
+      "publishedYear": 1842,
+      "authorDeathYear": 1852,
+      "countryOfOrigin": "RU",
+      "translator": {
+        "name": "C. J. Hogarth",
+        "deathYear": 1945,
+        "publishedYear": 1915,
+        "countryOfOrigin": "GB"
+      },
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "nikolai-gogol_dead-souls_c-j-hogarth"
+      },
+      "popularity": "러시아 고전",
+      "note": "Hogarth 몰년은 1945(Wikipedia·BookBrainz)/1942(LibraryThing) 갈림 — 어느 쪽이든 ≤1955라 판정 불변. 1945로 기록"
+    },
+    {
+      "id": "ru-nikolai-gogol-the-inspector-general-thomas-seltzer",
+      "key": "se-nikolai-gogol_the-inspector-general_thomas-seltzer",
+      "status": "loadable",
+      "country": "RU",
+      "language": "English",
+      "title": "The Inspector-General",
+      "author": "Nikolai Gogol",
+      "titleKo": "검찰관",
+      "authorKo": "니콜라이 고골",
+      "publishedYear": 1836,
+      "authorDeathYear": 1852,
+      "countryOfOrigin": "RU",
+      "translator": {
+        "name": "Thomas Seltzer",
+        "deathYear": 1943,
+        "publishedYear": 1916,
+        "countryOfOrigin": "US"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "nikolai-gogol_the-inspector-general_thomas-seltzer"
+      },
+      "popularity": "희곡 대표"
+    },
+    {
+      "id": "ru-fyodor-dostoevsky-the-idiot-eva-m-martin",
+      "key": "se-fyodor-dostoevsky_the-idiot_eva-m-martin",
+      "status": "blocked",
+      "country": "RU",
+      "language": "English",
+      "title": "The Idiot",
+      "author": "Fyodor Dostoevsky",
+      "titleKo": "백치",
+      "authorKo": "표도르 도스토옙스키",
+      "publishedYear": 1869,
+      "authorDeathYear": 1881,
+      "countryOfOrigin": "RU",
+      "translator": {
+        "name": "Eva M. Martin",
+        "deathYear": null,
+        "publishedYear": 1915,
+        "countryOfOrigin": "GB"
+      },
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "fyodor-dostoevsky_the-idiot_eva-m-martin"
+      },
+      "blocker": "번역자 Eva M. Martin 몰년 미확인 — 근거는 Goodreads 독자 블로그(1883–1940) 하나뿐. 권위 기록(VIAF·LC) 확인 후 loadable 전환. SE의 Garnett판 The Idiot은 리포 없음.",
+      "popularity": "5대 장편"
+    },
+    {
+      "id": "ru-leo-tolstoy-short-fiction-various-translators",
+      "key": "se-leo-tolstoy_short-fiction_various-translators",
+      "status": "blocked",
+      "country": "RU",
+      "language": "English",
+      "title": "Short Fiction (incl. What Men Live By)",
+      "author": "Leo Tolstoy",
+      "titleKo": "톨스토이 단편선(사람은 무엇으로 사는가)",
+      "authorKo": "레프 톨스토이",
+      "publishedYear": 1886,
+      "authorDeathYear": 1910,
+      "countryOfOrigin": "RU",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "leo-tolstoy_short-fiction_various-translators"
+      },
+      "blocker": "작품집 번역자 12명 중 R. S. Townsend 몰년 미확인, 'Everyman’s Library'는 익명 번역 → 묶음 전체는 불가. Maude 부부 번역분만 골라 받으면 가능(importer에 단편 선택 기능 필요).",
+      "popularity": "「사람은 무엇으로 사는가」 — 한국 인지도 최상"
+    },
+    {
+      "id": "ru-alexander-pushkin-eugene-onegin-henry-spalding",
+      "key": "se-alexander-pushkin_eugene-onegin_henry-spalding",
+      "status": "blocked",
+      "country": "RU",
+      "language": "English",
+      "title": "Eugene Onegin",
+      "author": "Alexander Pushkin",
+      "titleKo": "예브게니 오네긴",
+      "authorKo": "알렉산드르 푸시킨",
+      "publishedYear": 1833,
+      "authorDeathYear": 1837,
+      "countryOfOrigin": "RU",
+      "translator": {
+        "name": "Henry Spalding",
+        "deathYear": 1907,
+        "publishedYear": 1881,
+        "countryOfOrigin": "GB"
+      },
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "alexander-pushkin_eugene-onegin_henry-spalding"
+      },
+      "popularity": "운문 소설 대표",
+      "note": "Spalding 몰년 1907은 LibriVox 한 곳(1840–1907) — 승인 전 2차 확인 권장",
+      "blocker": "번역자 몰년이 출처 한 곳뿐 — 두 번째 출처로 확인한 뒤 loadable"
+    },
+    {
+      "id": "ru-mikhail-bulgakov-the-master-and-margarita",
+      "status": "blocked",
+      "country": "RU",
+      "language": "English",
+      "title": "The Master and Margarita",
+      "author": "Mikhail Bulgakov",
+      "titleKo": "거장과 마르가리타",
+      "authorKo": "미하일 불가코프",
+      "publishedYear": 1967,
+      "authorDeathYear": 1940,
+      "countryOfOrigin": "RU",
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks"
+      },
+      "blocker": "작가는 1940 사망으로 통과하나 영역(1967 Glenny·Ginsburg 등) 번역자 모두 존속 기간 — 번역 불가.",
+      "popularity": "러시아 20세기 대표"
+    },
+    {
+      "id": "de-karl-marx-capital",
+      "key": "ws-en-karl-marx_capital",
+      "status": "수록",
+      "country": "DE"
+    },
+    {
+      "id": "de-jacob-grimm-wilhelm-grimm-household-tales-margaret-hunt",
+      "key": "se-jacob-grimm_wilhelm-grimm_household-tales_margaret-hunt",
+      "status": "loadable",
+      "country": "DE",
+      "language": "English",
+      "title": "Household Tales",
+      "author": "Jacob & Wilhelm Grimm",
+      "titleKo": "그림 동화",
+      "authorKo": "그림 형제",
+      "publishedYear": 1812,
+      "authorDeathYear": 1863,
+      "countryOfOrigin": "DE",
+      "translator": {
+        "name": "Margaret Hunt",
+        "deathYear": 1912,
+        "publishedYear": 1884,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "jacob-grimm_wilhelm-grimm_household-tales_margaret-hunt"
+      },
+      "popularity": "동화 최상위",
+      "note": "authorDeathYear=빌헬름(1859)·야코프(1863) 중 늦은 쪽"
+    },
+    {
+      "id": "de-friedrich-nietzsche-thus-spake-zarathustra-thomas-common",
+      "key": "se-friedrich-nietzsche_thus-spake-zarathustra_thomas-common",
+      "status": "loadable",
+      "country": "DE",
+      "language": "English",
+      "title": "Thus Spake Zarathustra",
+      "author": "Friedrich Nietzsche",
+      "titleKo": "차라투스트라는 이렇게 말했다",
+      "authorKo": "프리드리히 니체",
+      "publishedYear": 1883,
+      "authorDeathYear": 1900,
+      "countryOfOrigin": "DE",
+      "translator": {
+        "name": "Thomas Common",
+        "deathYear": 1919,
+        "publishedYear": 1909,
+        "countryOfOrigin": "GB"
+      },
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "friedrich-nietzsche_thus-spake-zarathustra_thomas-common"
+      },
+      "popularity": "한국 인문 스테디셀러"
+    },
+    {
+      "id": "de-friedrich-nietzsche-beyond-good-and-evil-helen-zimmern",
+      "key": "se-friedrich-nietzsche_beyond-good-and-evil_helen-zimmern",
+      "status": "loadable",
+      "country": "DE",
+      "language": "English",
+      "title": "Beyond Good and Evil",
+      "author": "Friedrich Nietzsche",
+      "titleKo": "선악의 저편",
+      "authorKo": "프리드리히 니체",
+      "publishedYear": 1886,
+      "authorDeathYear": 1900,
+      "countryOfOrigin": "DE",
+      "translator": {
+        "name": "Helen Zimmern",
+        "deathYear": 1934,
+        "publishedYear": 1907,
+        "countryOfOrigin": "GB"
+      },
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "friedrich-nietzsche_beyond-good-and-evil_helen-zimmern"
+      },
+      "popularity": "니체 대표"
+    },
+    {
+      "id": "de-thomas-mann-buddenbrooks-h-t-lowe-porter",
+      "key": "se-thomas-mann_buddenbrooks_h-t-lowe-porter",
+      "status": "blocked",
+      "country": "DE",
+      "language": "English",
+      "title": "Buddenbrooks",
+      "author": "Thomas Mann",
+      "titleKo": "부덴브로크가의 사람들",
+      "authorKo": "토마스 만",
+      "publishedYear": 1901,
+      "authorDeathYear": 1955,
+      "countryOfOrigin": "DE",
+      "translator": {
+        "name": "H. T. Lowe-Porter",
+        "deathYear": 1963,
+        "publishedYear": 1924,
+        "countryOfOrigin": "US"
+      },
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "thomas-mann_buddenbrooks_h-t-lowe-porter"
+      },
+      "popularity": "노벨상 수상작",
+      "note": "원작 통과(1955 사망 → 한국 선). 번역자 Lowe-Porter 1963 사망 → 한국 선 밖 — 번역 원산을 US(Knopf 뉴욕 1924)로 볼 때만 출판 95년 만료로 통과. 런던 Secker 동시 출간 — 베른 5(4)(a) 동시 발행 시 최단 보호국 기준 해석 필요. 승인 전 원산 판정 확인",
+      "blocker": "번역 원산국 판정 필요(오너) — Lowe-Porter(1963 사망)는 한국 선 밖, 번역 판을 미국판(Knopf 뉴욕)으로 볼지가 갈린다"
+    },
+    {
+      "id": "de-thomas-mann-the-magic-mountain-h-t-lowe-porter",
+      "key": "se-thomas-mann_the-magic-mountain_h-t-lowe-porter",
+      "status": "blocked",
+      "country": "DE",
+      "language": "English",
+      "title": "The Magic Mountain",
+      "author": "Thomas Mann",
+      "titleKo": "마의 산",
+      "authorKo": "토마스 만",
+      "publishedYear": 1924,
+      "authorDeathYear": 1955,
+      "countryOfOrigin": "DE",
+      "translator": {
+        "name": "H. T. Lowe-Porter",
+        "deathYear": 1963,
+        "publishedYear": 1927,
+        "countryOfOrigin": "US"
+      },
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "thomas-mann_the-magic-mountain_h-t-lowe-porter"
+      },
+      "popularity": "20세기 독일 소설 대표",
+      "note": "Buddenbrooks와 같은 번역 원산 쟁점(Knopf 1927)",
+      "blocker": "번역 원산국 판정 필요(오너) — Lowe-Porter(1963 사망)는 한국 선 밖, 번역 판을 미국판(Knopf 뉴욕)으로 볼지가 갈린다"
+    },
+    {
+      "id": "de-thomas-mann-death-in-venice-and-seven-other-stories",
+      "key": "pd-fp-thomas-mann_death-in-venice-and-seven-other-stories",
+      "status": "blocked",
+      "country": "DE",
+      "language": "English",
+      "title": "Death in Venice and Seven Other Stories",
+      "author": "Thomas Mann",
+      "titleKo": "베니스에서의 죽음 외",
+      "authorKo": "토마스 만",
+      "publishedYear": 1912,
+      "authorDeathYear": 1955,
+      "countryOfOrigin": "DE",
+      "translator": {
+        "name": "H. T. Lowe-Porter",
+        "deathYear": 1963,
+        "publishedYear": 1930,
+        "countryOfOrigin": "US"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "pdsite",
+        "site": "fp",
+        "id": "20210546"
+      },
+      "popularity": "중편 대표",
+      "note": "Lowe-Porter 1930 Knopf(US) — 출판 95년 선(≤1930) 정확히 통과. 원산 쟁점은 Buddenbrooks와 같음",
+      "blocker": "번역 원산국 판정 필요(오너) — Lowe-Porter(1963 사망)는 한국 선 밖, 번역 판을 미국판(Knopf 뉴욕)으로 볼지가 갈린다"
+    },
+    {
+      "id": "de-hermann-hesse-demian-n-h-priday",
+      "key": "se-hermann-hesse_demian_n-h-priday",
+      "status": "blocked",
+      "country": "DE",
+      "language": "English",
+      "title": "Demian",
+      "author": "Hermann Hesse",
+      "titleKo": "데미안",
+      "authorKo": "헤르만 헤세",
+      "publishedYear": 1919,
+      "authorDeathYear": 1962,
+      "countryOfOrigin": "DE",
+      "translator": {
+        "name": "N. H. Priday",
+        "deathYear": null,
+        "publishedYear": 1923,
+        "countryOfOrigin": "US"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "hermann-hesse_demian_n-h-priday"
+      },
+      "blocker": "원작 통과(헤세 1962 사망 → 한국 선). 번역자 N. H. Priday(1923 뉴욕 Boni & Liveright) 몰년 확인 불가 — fail-closed. 몰년만 확인되면 US 출판 95년(1923)으로 통과 가능.",
+      "popularity": "한국 청소년 필독 최상위"
+    },
+    {
+      "id": "de-hermann-hesse-siddhartha-various-translators",
+      "key": "se-hermann-hesse_siddhartha_various-translators",
+      "status": "blocked",
+      "country": "DE",
+      "language": "English",
+      "title": "Siddhartha",
+      "author": "Hermann Hesse",
+      "titleKo": "싯다르타",
+      "authorKo": "헤르만 헤세",
+      "publishedYear": 1922,
+      "authorDeathYear": 1962,
+      "countryOfOrigin": "DE",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "hermann-hesse_siddhartha_various-translators"
+      },
+      "blocker": "SE판은 현대 PG 자원봉사 번역자들(생존) — 번역 불가.",
+      "popularity": "한국 인지도 높음"
+    },
+    {
+      "id": "de-hermann-hesse-steppenwolf-basil-creighton",
+      "key": "se-hermann-hesse_steppenwolf_basil-creighton",
+      "status": "blocked",
+      "country": "DE",
+      "language": "English",
+      "title": "Steppenwolf",
+      "author": "Hermann Hesse",
+      "titleKo": "황야의 이리",
+      "authorKo": "헤르만 헤세",
+      "publishedYear": 1927,
+      "authorDeathYear": 1962,
+      "countryOfOrigin": "DE",
+      "translator": {
+        "name": "Basil Creighton",
+        "deathYear": 1989,
+        "publishedYear": 1929,
+        "countryOfOrigin": "GB"
+      },
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "hermann-hesse_steppenwolf_basil-creighton"
+      },
+      "blocker": "번역자 Basil Creighton 1989 사망(PN Review 부고) — 1929 런던 Secker 초판(GB) → 사후 70년 존속.",
+      "popularity": "헤세 대표"
+    },
+    {
+      "id": "de-johann-wolfgang-von-goethe-the-sorrows-of-young-werther",
+      "key": "ws-en-johann-wolfgang-von-goethe_the-sorrows-of-young-werther",
+      "status": "blocked",
+      "country": "DE",
+      "language": "English",
+      "title": "The Sorrows of Young Werther",
+      "author": "Johann Wolfgang von Goethe",
+      "titleKo": "젊은 베르테르의 슬픔",
+      "authorKo": "요한 볼프강 폰 괴테",
+      "publishedYear": 1774,
+      "authorDeathYear": 1832,
+      "countryOfOrigin": "DE",
+      "level": "B2 상급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "en",
+        "main": "The Works of J. W. von Goethe/Volume 6/The Sorrows of Young Werther"
+      },
+      "blocker": "en.wikisource 면은 있음(Book 1·2 하위면) — 그러나 이 전집판 번역자 미표기·미확인. SE에는 리포 없음. 번역자 확인 시 loadable.",
+      "popularity": "한국 인지도 최상"
+    },
+    {
+      "id": "at-franz-kafka-the-metamorphosis-willa-muir-edwin-muir",
+      "key": "se-franz-kafka_the-metamorphosis_willa-muir_edwin-muir",
+      "status": "blocked",
+      "country": "AT",
+      "language": "English",
+      "title": "The Metamorphosis",
+      "author": "Franz Kafka",
+      "titleKo": "변신",
+      "authorKo": "프란츠 카프카",
+      "publishedYear": 1915,
+      "authorDeathYear": 1924,
+      "countryOfOrigin": "AT",
+      "translator": {
+        "name": "Willa Muir & Edwin Muir",
+        "deathYear": 1970,
+        "publishedYear": 1948,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "franz-kafka_the-metamorphosis_willa-muir_edwin-muir"
+      },
+      "blocker": "원작 통과(1924). SE 리포 franz-kafka_the-metamorphosis_willa-muir_edwin-muir는 ls-remote 응답 없음(자리표시). Muir 번역도 Willa Muir 1970 사망으로 불가. 독일어 원문은 지원 언어 밖.",
+      "popularity": "한국 인지도 최상"
+    },
+    {
+      "id": "ch-jean-jacques-rousseau-les-reveries-du-promeneur-solitaire",
+      "key": "ws-fr-jean-jacques-rousseau_les-reveries-du-promeneur-solitaire",
+      "status": "수록",
+      "country": "CH"
+    },
+    {
+      "id": "ch-johanna-spyri-heidi-elisabeth-p-stork",
+      "key": "se-johanna-spyri_heidi_elisabeth-p-stork",
+      "status": "blocked",
+      "country": "CH",
+      "language": "English",
+      "title": "Heidi",
+      "author": "Johanna Spyri",
+      "titleKo": "하이디",
+      "authorKo": "요한나 슈피리",
+      "publishedYear": 1881,
+      "authorDeathYear": 1901,
+      "countryOfOrigin": "CH",
+      "translator": {
+        "name": "Elisabeth P. Stork",
+        "deathYear": null,
+        "publishedYear": 1915,
+        "countryOfOrigin": "US"
+      },
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "johanna-spyri_heidi_elisabeth-p-stork"
+      },
+      "blocker": "번역자 Elisabeth P. Stork(1915 Lippincott) 몰년 확인 불가 — fail-closed(남편 C. W. Stork는 1971 사망, 무관).",
+      "popularity": "「알프스 소녀 하이디」 — 한국 인지도 최상"
+    },
+    {
+      "id": "es-miguel-de-cervantes-saavedra-don-quixote-john-ormsby",
+      "key": "se-miguel-de-cervantes-saavedra_don-quixote_john-ormsby",
+      "status": "loadable",
+      "country": "ES",
+      "language": "English",
+      "title": "Don Quixote",
+      "author": "Miguel de Cervantes Saavedra",
+      "titleKo": "돈키호테",
+      "authorKo": "미겔 데 세르반테스",
+      "publishedYear": 1605,
+      "authorDeathYear": 1616,
+      "countryOfOrigin": "ES",
+      "translator": {
+        "name": "John Ormsby",
+        "deathYear": 1895,
+        "publishedYear": 1885,
+        "countryOfOrigin": "GB"
+      },
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "miguel-de-cervantes-saavedra_don-quixote_john-ormsby"
+      },
+      "popularity": "세계문학 최상위",
+      "note": "초장편"
+    },
+    {
+      "id": "es-juan-ramon-jimenez-platero-and-i",
+      "status": "blocked",
+      "country": "ES",
+      "language": "English",
+      "title": "Platero and I",
+      "author": "Juan Ramón Jiménez",
+      "titleKo": "플라테로와 나",
+      "authorKo": "후안 라몬 히메네스",
+      "publishedYear": 1914,
+      "authorDeathYear": 1958,
+      "countryOfOrigin": "ES",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks"
+      },
+      "blocker": "원작 통과(1958 사망) — 영어 공개 번역본 출처 없음(SE·FP·PGA 미확인). 스페인어는 지원 언어 밖.",
+      "popularity": "노벨상 산문시"
+    },
+    {
+      "id": "es-federico-garcia-lorca-blood-wedding",
+      "status": "blocked",
+      "country": "ES",
+      "language": "English",
+      "title": "Blood Wedding",
+      "author": "Federico García Lorca",
+      "titleKo": "피의 결혼",
+      "authorKo": "페데리코 가르시아 로르카",
+      "publishedYear": 1933,
+      "authorDeathYear": 1936,
+      "countryOfOrigin": "ES",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks"
+      },
+      "blocker": "원작 통과(1936) — 영역 번역자 모두 존속 기간, 공개 출처 없음.",
+      "popularity": "스페인 현대 희곡 대표"
+    },
+    {
+      "id": "it-marcus-aurelius-meditations-george-long",
+      "key": "se-marcus-aurelius_meditations_george-long",
+      "status": "수록",
+      "country": "IT"
+    },
+    {
+      "id": "it-dante-alighieri-the-divine-comedy-henry-wadsworth-longfellow",
+      "key": "se-dante-alighieri_the-divine-comedy_henry-wadsworth-longfellow",
+      "status": "loadable",
+      "country": "IT",
+      "language": "English",
+      "title": "The Divine Comedy",
+      "author": "Dante Alighieri",
+      "titleKo": "신곡",
+      "authorKo": "단테 알리기에리",
+      "publishedYear": 1320,
+      "authorDeathYear": 1321,
+      "countryOfOrigin": "IT",
+      "translator": {
+        "name": "Henry Wadsworth Longfellow",
+        "deathYear": 1882,
+        "publishedYear": 1867,
+        "countryOfOrigin": "US"
+      },
+      "level": "C2 마스터",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "dante-alighieri_the-divine-comedy_henry-wadsworth-longfellow"
+      },
+      "popularity": "세계문학 최상위",
+      "note": "운문 직역"
+    },
+    {
+      "id": "it-giovanni-boccaccio-the-decameron-john-payne",
+      "key": "se-giovanni-boccaccio_the-decameron_john-payne",
+      "status": "loadable",
+      "country": "IT",
+      "language": "English",
+      "title": "The Decameron",
+      "author": "Giovanni Boccaccio",
+      "titleKo": "데카메론",
+      "authorKo": "조반니 보카치오",
+      "publishedYear": 1353,
+      "authorDeathYear": 1375,
+      "countryOfOrigin": "IT",
+      "translator": {
+        "name": "John Payne",
+        "deathYear": 1916,
+        "publishedYear": 1886,
+        "countryOfOrigin": "GB"
+      },
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "giovanni-boccaccio_the-decameron_john-payne"
+      },
+      "popularity": "고전",
+      "note": "성적 묘사 일부"
+    },
+    {
+      "id": "it-niccolo-machiavelli-the-prince-w-k-marriott",
+      "key": "se-niccolo-machiavelli_the-prince_w-k-marriott",
+      "status": "loadable",
+      "country": "IT",
+      "language": "English",
+      "title": "The Prince",
+      "author": "Niccolò Machiavelli",
+      "titleKo": "군주론",
+      "authorKo": "니콜로 마키아벨리",
+      "publishedYear": 1532,
+      "authorDeathYear": 1527,
+      "countryOfOrigin": "IT",
+      "translator": {
+        "name": "W. K. Marriott",
+        "deathYear": 1927,
+        "publishedYear": 1908,
+        "countryOfOrigin": "GB"
+      },
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "niccolo-machiavelli_the-prince_w-k-marriott"
+      },
+      "popularity": "한국 인문 스테디셀러",
+      "note": "Marriott 몰년 1927(PG·도서관 기록 '-1927')"
+    },
+    {
+      "id": "it-edmondo-de-amicis-heart-cuore",
+      "key": "ws-en-edmondo-de-amicis_heart-cuore",
+      "status": "loadable",
+      "country": "IT",
+      "language": "English",
+      "title": "Heart (Cuore)",
+      "author": "Edmondo De Amicis",
+      "titleKo": "사랑의 학교(쿠오레)",
+      "authorKo": "에드몬도 데 아미치스",
+      "publishedYear": 1886,
+      "authorDeathYear": 1908,
+      "countryOfOrigin": "IT",
+      "translator": {
+        "name": "Isabel F. Hapgood",
+        "deathYear": 1928,
+        "publishedYear": 1887,
+        "countryOfOrigin": "US"
+      },
+      "level": "B1 중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "en",
+        "main": "Heart (de Amicis)"
+      },
+      "popularity": "「사랑의 학교」 — 한국 아동 고전",
+      "note": "Hapgood 번역(1887 Crowell, 위키문헌 스캔은 1922 판). 면 존재 확인"
+    },
+    {
+      "id": "it-carlo-collodi-the-adventures-of-pinocchio",
+      "key": "se-carlo-collodi_the-adventures-of-pinocchio",
+      "status": "blocked",
+      "country": "IT",
+      "language": "English",
+      "title": "The Adventures of Pinocchio",
+      "author": "Carlo Collodi",
+      "titleKo": "피노키오",
+      "authorKo": "카를로 콜로디",
+      "publishedYear": 1883,
+      "authorDeathYear": 1890,
+      "countryOfOrigin": "IT",
+      "level": "A2 초급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "carlo-collodi_the-adventures-of-pinocchio"
+      },
+      "blocker": "SE판은 PG #16865(번역자 미표기·익명 번역) 기반 — 번역 기록 불가(fail-closed). PG #500 Carol Della Chiesa판은 번역자 1972 사망으로 불가.",
+      "popularity": "아동 최상위"
+    },
+    {
+      "id": "gr-homer-the-odyssey-william-cullen-bryant",
+      "key": "se-homer_the-odyssey_william-cullen-bryant",
+      "status": "loadable",
+      "country": "GR",
+      "language": "English",
+      "title": "The Odyssey",
+      "author": "Homer",
+      "titleKo": "오디세이아",
+      "authorKo": "호메로스",
+      "publishedYear": -700,
+      "authorDeathYear": -700,
+      "countryOfOrigin": "GR",
+      "translator": {
+        "name": "William Cullen Bryant",
+        "deathYear": 1878,
+        "publishedYear": 1871,
+        "countryOfOrigin": "US"
+      },
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "homer_the-odyssey_william-cullen-bryant"
+      },
+      "popularity": "Gutenberg 30일 #3(Butler판)",
+      "note": "운문역. publishedYear/authorDeathYear는 관례값(BC 8세기) — 스키마 정수 요구 시 기록 방식 확인"
+    },
+    {
+      "id": "gr-homer-the-iliad-william-cullen-bryant",
+      "key": "se-homer_the-iliad_william-cullen-bryant",
+      "status": "loadable",
+      "country": "GR",
+      "language": "English",
+      "title": "The Iliad",
+      "author": "Homer",
+      "titleKo": "일리아스",
+      "authorKo": "호메로스",
+      "publishedYear": -750,
+      "authorDeathYear": -700,
+      "countryOfOrigin": "GR",
+      "translator": {
+        "name": "William Cullen Bryant",
+        "deathYear": 1878,
+        "publishedYear": 1870,
+        "countryOfOrigin": "US"
+      },
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "homer_the-iliad_william-cullen-bryant"
+      },
+      "popularity": "서양 고전 최상위"
+    },
+    {
+      "id": "gr-plato-dialogues-benjamin-jowett",
+      "key": "se-plato_dialogues_benjamin-jowett",
+      "status": "loadable",
+      "country": "GR",
+      "language": "English",
+      "title": "Dialogues",
+      "author": "Plato",
+      "titleKo": "플라톤 대화편",
+      "authorKo": "플라톤",
+      "publishedYear": -380,
+      "authorDeathYear": -347,
+      "countryOfOrigin": "GR",
+      "translator": {
+        "name": "Benjamin Jowett",
+        "deathYear": 1893,
+        "publishedYear": 1871,
+        "countryOfOrigin": "GB"
+      },
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "plato_dialogues_benjamin-jowett"
+      },
+      "popularity": "「소크라테스의 변명」 포함"
+    },
+    {
+      "id": "gr-sophocles-oedipus-rex-francis-storr",
+      "key": "se-sophocles_oedipus-rex_francis-storr",
+      "status": "loadable",
+      "country": "GR",
+      "language": "English",
+      "title": "Oedipus Rex",
+      "author": "Sophocles",
+      "titleKo": "오이디푸스 왕",
+      "authorKo": "소포클레스",
+      "publishedYear": -429,
+      "authorDeathYear": -406,
+      "countryOfOrigin": "GR",
+      "translator": {
+        "name": "Francis Storr",
+        "deathYear": 1919,
+        "publishedYear": 1912,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "sophocles_oedipus-rex_francis-storr"
+      },
+      "popularity": "그리스 비극 대표"
+    },
+    {
+      "id": "gr-sophocles-antigone-francis-storr",
+      "key": "se-sophocles_antigone_francis-storr",
+      "status": "loadable",
+      "country": "GR",
+      "language": "English",
+      "title": "Antigone",
+      "author": "Sophocles",
+      "titleKo": "안티고네",
+      "authorKo": "소포클레스",
+      "publishedYear": -441,
+      "authorDeathYear": -406,
+      "countryOfOrigin": "GR",
+      "translator": {
+        "name": "Francis Storr",
+        "deathYear": 1919,
+        "publishedYear": 1912,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "sophocles_antigone_francis-storr"
+      },
+      "popularity": "그리스 비극 대표"
+    },
+    {
+      "id": "gr-aesop-fables-v-s-vernon-jones",
+      "key": "se-aesop_fables_v-s-vernon-jones",
+      "status": "blocked",
+      "country": "GR",
+      "language": "English",
+      "title": "Fables",
+      "author": "Aesop",
+      "titleKo": "이솝 우화",
+      "authorKo": "이솝",
+      "publishedYear": -550,
+      "authorDeathYear": -564,
+      "countryOfOrigin": "GR",
+      "translator": {
+        "name": "V. S. Vernon Jones",
+        "deathYear": null,
+        "publishedYear": 1912,
+        "countryOfOrigin": "GB"
+      },
+      "level": "A2 초급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "aesop_fables_v-s-vernon-jones"
+      },
+      "blocker": "번역자 V. S. Vernon Jones 몰년 — Goodreads 단일 근거(1875–1955), Treasury of Great Children's Books는 '신뢰할 전기 없음'. 권위 기록 확인 시 loadable(1955면 통과).",
+      "popularity": "아동 최상위"
+    },
+    {
+      "id": "dk-hans-christian-andersen-hans-andersen-s-fairy-tales",
+      "key": "ws-en-hans-christian-andersen_hans-andersen-s-fairy-tales",
+      "status": "loadable",
+      "country": "DK",
+      "language": "English",
+      "title": "Hans Andersen's Fairy Tales",
+      "author": "Hans Christian Andersen",
+      "titleKo": "안데르센 동화",
+      "authorKo": "한스 크리스티안 안데르센",
+      "publishedYear": 1835,
+      "authorDeathYear": 1875,
+      "countryOfOrigin": "DK",
+      "translator": {
+        "name": "Mrs. H. B. Paull (Susanna Mary Paull)",
+        "deathYear": 1888,
+        "publishedYear": 1888,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B1 중급",
+      "source": {
+        "provider": "wikisource",
+        "wiki": "en",
+        "main": "Hans Andersen's Fairy Tales"
+      },
+      "popularity": "동화 최상위(인어공주·성냥팔이 소녀)",
+      "note": "SE 'fairy-tales_various-translators' 리포는 ls-remote 응답 없음. en.wikisource 1888 Paull판(스캔 전사). 위키문헌 토론: 「벌거벗은 임금님」은 H. O. Sommer(1861–1940) 번역일 수 있음 — 어느 쪽이든 통과"
+    },
+    {
+      "id": "no-henrik-ibsen-a-dolls-house-r-farquharson-sharp",
+      "key": "se-henrik-ibsen_a-dolls-house_r-farquharson-sharp",
+      "status": "loadable",
+      "country": "NO",
+      "language": "English",
+      "title": "A Doll’s House",
+      "author": "Henrik Ibsen",
+      "titleKo": "인형의 집",
+      "authorKo": "헨리크 입센",
+      "publishedYear": 1879,
+      "authorDeathYear": 1906,
+      "countryOfOrigin": "NO",
+      "translator": {
+        "name": "R. Farquharson Sharp",
+        "deathYear": 1945,
+        "publishedYear": 1910,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "henrik-ibsen_a-dolls-house_r-farquharson-sharp"
+      },
+      "popularity": "근대극 대표"
+    },
+    {
+      "id": "no-henrik-ibsen-hedda-gabler-edmund-gosse-william-archer",
+      "key": "se-henrik-ibsen_hedda-gabler_edmund-gosse_william-archer",
+      "status": "loadable",
+      "country": "NO",
+      "language": "English",
+      "title": "Hedda Gabler",
+      "author": "Henrik Ibsen",
+      "titleKo": "헤다 가블레르",
+      "authorKo": "헨리크 입센",
+      "publishedYear": 1890,
+      "authorDeathYear": 1906,
+      "countryOfOrigin": "NO",
+      "translator": {
+        "name": "Edmund Gosse & William Archer",
+        "deathYear": 1928,
+        "publishedYear": 1891,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "henrik-ibsen_hedda-gabler_edmund-gosse_william-archer"
+      },
+      "popularity": "입센 대표",
+      "note": "공역 — 늦은 쪽 Gosse 1928 기록"
+    },
+    {
+      "id": "no-henrik-ibsen-ghosts-william-archer",
+      "key": "se-henrik-ibsen_ghosts_william-archer",
+      "status": "loadable",
+      "country": "NO",
+      "language": "English",
+      "title": "Ghosts",
+      "author": "Henrik Ibsen",
+      "titleKo": "유령",
+      "authorKo": "헨리크 입센",
+      "publishedYear": 1881,
+      "authorDeathYear": 1906,
+      "countryOfOrigin": "NO",
+      "translator": {
+        "name": "William Archer",
+        "deathYear": 1924,
+        "publishedYear": 1900,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "henrik-ibsen_ghosts_william-archer"
+      },
+      "popularity": "입센 대표"
+    },
+    {
+      "id": "no-knut-hamsun-hunger-george-egerton",
+      "key": "se-knut-hamsun_hunger_george-egerton",
+      "status": "loadable",
+      "country": "NO",
+      "language": "English",
+      "title": "Hunger",
+      "author": "Knut Hamsun",
+      "titleKo": "굶주림",
+      "authorKo": "크누트 함순",
+      "publishedYear": 1890,
+      "authorDeathYear": 1952,
+      "countryOfOrigin": "NO",
+      "translator": {
+        "name": "George Egerton (Mary Chavelita Dunne)",
+        "deathYear": 1945,
+        "publishedYear": 1899,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "knut-hamsun_hunger_george-egerton"
+      },
+      "popularity": "노벨상 — 모더니즘 선구",
+      "note": "작가 1952 사망 → 한국 선. 나치 협력 이력 — 소개문 신중"
+    },
+    {
+      "id": "se-selma-lagerlof-the-wonderful-adventures-of-nils-velma-swanston-howard",
+      "key": "se-selma-lagerlof_the-wonderful-adventures-of-nils_velma-swanston-howard",
+      "status": "loadable",
+      "country": "SE",
+      "language": "English",
+      "title": "The Wonderful Adventures of Nils",
+      "author": "Selma Lagerlöf",
+      "titleKo": "닐스의 신기한 여행",
+      "authorKo": "셀마 라겔뢰프",
+      "publishedYear": 1906,
+      "authorDeathYear": 1940,
+      "countryOfOrigin": "SE",
+      "translator": {
+        "name": "Velma Swanston Howard",
+        "deathYear": 1937,
+        "publishedYear": 1907,
+        "countryOfOrigin": "US"
+      },
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "selma-lagerlof_the-wonderful-adventures-of-nils_velma-swanston-howard"
+      },
+      "popularity": "아동 고전 — 한국 애니로 인지도 높음"
+    },
+    {
+      "id": "lb-kahlil-gibran-the-prophet",
+      "key": "se-kahlil-gibran_the-prophet",
+      "status": "loadable",
+      "country": "LB",
+      "language": "English",
+      "title": "The Prophet",
+      "author": "Kahlil Gibran",
+      "titleKo": "예언자",
+      "authorKo": "칼릴 지브란",
+      "publishedYear": 1923,
+      "authorDeathYear": 1931,
+      "countryOfOrigin": "US",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "kahlil-gibran_the-prophet"
+      },
+      "popularity": "한국 스테디셀러",
+      "note": "영어 원작(뉴욕 Knopf 1923) — 원산 US로도 기록 가능. PGA ebooks02/0200061h.html에도 있음"
+    },
+    {
+      "id": "in-rabindranath-tagore-gitanjali",
+      "key": "se-rabindranath-tagore_gitanjali",
+      "status": "loadable",
+      "country": "IN",
+      "language": "English",
+      "title": "Gitanjali",
+      "author": "Rabindranath Tagore",
+      "titleKo": "기탄잘리",
+      "authorKo": "라빈드라나트 타고르",
+      "publishedYear": 1912,
+      "authorDeathYear": 1941,
+      "countryOfOrigin": "IN",
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "rabindranath-tagore_gitanjali"
+      },
+      "popularity": "아시아 첫 노벨상 — 한국 인지도 높음",
+      "note": "작가 자역 영어판(1912) — 번역자=저자. ORIGIN_RULES에 IN 없음 → 한국 선(1941)으로 통과"
+    },
+    {
+      "id": "in-rabindranath-tagore-the-home-and-the-world-surendranath-tagore",
+      "key": "se-rabindranath-tagore_the-home-and-the-world_surendranath-tagore",
+      "status": "blocked",
+      "country": "IN",
+      "language": "English",
+      "title": "The Home and the World",
+      "author": "Rabindranath Tagore",
+      "titleKo": "집과 세상",
+      "authorKo": "라빈드라나트 타고르",
+      "publishedYear": 1916,
+      "authorDeathYear": 1941,
+      "countryOfOrigin": "IN",
+      "translator": {
+        "name": "Surendranath Tagore",
+        "deathYear": 1940,
+        "publishedYear": 1919,
+        "countryOfOrigin": "GB"
+      },
+      "level": "B2 상급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "rabindranath-tagore_the-home-and-the-world_surendranath-tagore"
+      },
+      "popularity": "타고르 장편",
+      "note": "Surendranath Tagore 몰년 1940(통설) — 승인 전 확인",
+      "blocker": "번역자 몰년이 출처 한 곳뿐 — 두 번째 출처로 확인한 뒤 loadable"
+    },
+    {
+      "id": "ir-omar-khayyam-the-rubaiyat-of-omar-khayyam-edward-fitzgerald",
+      "key": "se-omar-khayyam_the-rubaiyat-of-omar-khayyam_edward-fitzgerald",
+      "status": "loadable",
+      "country": "IR",
+      "language": "English",
+      "title": "The Rubáiyát of Omar Khayyám",
+      "author": "Omar Khayyam",
+      "titleKo": "루바이야트",
+      "authorKo": "오마르 하이얌",
+      "publishedYear": 1120,
+      "authorDeathYear": 1131,
+      "countryOfOrigin": "IR",
+      "translator": {
+        "name": "Edward FitzGerald",
+        "deathYear": 1883,
+        "publishedYear": 1859,
+        "countryOfOrigin": "GB"
+      },
+      "level": "C1 고급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "omar-khayyam_the-rubaiyat-of-omar-khayyam_edward-fitzgerald"
+      },
+      "popularity": "페르시아 4행시 — 영어 명역"
+    },
+    {
+      "id": "ca-l-m-montgomery-anne-of-green-gables",
+      "key": "se-l-m-montgomery_anne-of-green-gables",
+      "status": "loadable",
+      "country": "CA",
+      "language": "English",
+      "title": "Anne of Green Gables",
+      "author": "L. M. Montgomery",
+      "titleKo": "빨간 머리 앤",
+      "authorKo": "루시 모드 몽고메리",
+      "publishedYear": 1908,
+      "authorDeathYear": 1942,
+      "countryOfOrigin": "CA",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "l-m-montgomery_anne-of-green-gables"
+      },
+      "popularity": "한국 인지도 최상(Gutenberg 30일 #10 The Blue Castle 동작가)",
+      "note": "ORIGIN_RULES에 CA 없음 → 한국 선(1942)으로 통과. FP 20080509에도 있음"
+    },
+    {
+      "id": "ca-l-m-montgomery-anne-of-avonlea",
+      "key": "se-l-m-montgomery_anne-of-avonlea",
+      "status": "loadable",
+      "country": "CA",
+      "language": "English",
+      "title": "Anne of Avonlea",
+      "author": "L. M. Montgomery",
+      "titleKo": "에이번리의 앤",
+      "authorKo": "루시 모드 몽고메리",
+      "publishedYear": 1909,
+      "authorDeathYear": 1942,
+      "countryOfOrigin": "CA",
+      "level": "B1 중급",
+      "source": {
+        "provider": "standardebooks",
+        "repo": "l-m-montgomery_anne-of-avonlea"
+      },
+      "popularity": "앤 시리즈 2권"
+    },
+    {
+      "id": "nl-anne-frank-the-diary-of-a-young-girl",
+      "status": "blocked",
+      "country": "NL",
+      "language": "English",
+      "title": "The Diary of a Young Girl",
+      "author": "Anne Frank",
+      "titleKo": "안네의 일기",
+      "authorKo": "안네 프랑크",
+      "publishedYear": 1947,
+      "authorDeathYear": 1945,
+      "countryOfOrigin": "NL",
+      "level": "B1 중급",
+      "source": {
+        "provider": "pdsite"
+      },
+      "blocker": "원작은 통과(1945 사망) — 영역 B. M. Mooyaart-Doubleday 2017 사망으로 불가. 네덜란드어는 지원 언어 밖. 판본 편집자(오토 프랑크 1980 사망) 저작권 주장도 쟁점.",
+      "popularity": "한국 인지도 최상"
+    }
+  ]
+}

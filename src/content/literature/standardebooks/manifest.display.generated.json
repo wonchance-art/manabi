@@ -3001,6 +3001,130 @@
         }
       ]
     },
+    "se-l-frank-baum_the-wonderful-wizard-of-oz": {
+      "title": "The Wonderful Wizard of Oz",
+      "author": "L. Frank Baum",
+      "level": "A2 초급",
+      "total": 26,
+      "words": 39117,
+      "display": {
+        "titleKo": "오즈의 마법사",
+        "authorKo": "L. 프랭크 바움",
+        "binding": "tpl-cloth",
+        "coverTitle": "The Wonderful Wizard\nof Oz",
+        "coverPalette": "olive",
+        "coverOrnament": "gilt-title"
+      },
+      "literature": {
+        "publishedYear": 1900
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: The Cyclone"
+        },
+        {
+          "order": 2,
+          "title": "II: The Council with the Munchkins"
+        },
+        {
+          "order": 3,
+          "title": "III: How Dorothy Saved the Scarecrow"
+        },
+        {
+          "order": 4,
+          "title": "IV: The Road Through the Forest"
+        },
+        {
+          "order": 5,
+          "title": "V: The Rescue of the Tin Woodman"
+        },
+        {
+          "order": 6,
+          "title": "VI: The Cowardly Lion"
+        },
+        {
+          "order": 7,
+          "title": "VII: The Journey to the Great Oz"
+        },
+        {
+          "order": 8,
+          "title": "VIII: The Deadly Poppy Field"
+        },
+        {
+          "order": 9,
+          "title": "IX: The Queen of the Field Mice"
+        },
+        {
+          "order": 10,
+          "title": "X: The Guardian of the Gate"
+        },
+        {
+          "order": 11,
+          "title": "XI: The Wonderful City of Oz (1/2)"
+        },
+        {
+          "order": 12,
+          "title": "XI: The Wonderful City of Oz (2/2)"
+        },
+        {
+          "order": 13,
+          "title": "XII: The Search for the Wicked Witch (1/2)"
+        },
+        {
+          "order": 14,
+          "title": "XII: The Search for the Wicked Witch (2/2)"
+        },
+        {
+          "order": 15,
+          "title": "XIII: The Rescue"
+        },
+        {
+          "order": 16,
+          "title": "XIV: The Winged Monkeys"
+        },
+        {
+          "order": 17,
+          "title": "XV: The Discovery of Oz, the Terrible"
+        },
+        {
+          "order": 18,
+          "title": "XVI: The Magic Art of the Great Humbug"
+        },
+        {
+          "order": 19,
+          "title": "XVII: How the Balloon Was Launched"
+        },
+        {
+          "order": 20,
+          "title": "XVIII: Away to the South"
+        },
+        {
+          "order": 21,
+          "title": "XIX: Attacked by the Fighting Trees"
+        },
+        {
+          "order": 22,
+          "title": "XX: The Dainty China Country"
+        },
+        {
+          "order": 23,
+          "title": "XXI: The Lion Becomes the King of Beasts"
+        },
+        {
+          "order": 24,
+          "title": "XXII: The Country of the Quadlings"
+        },
+        {
+          "order": 25,
+          "title": "XXIII: Glinda the Good Witch Grants Dorothy’s Wish"
+        },
+        {
+          "order": 26,
+          "title": "XXIV: Home Again"
+        }
+      ]
+    },
     "se-lewis-carroll_alices-adventures-in-wonderland": {
       "title": "Alice’s Adventures in Wonderland",
       "author": "Lewis Carroll",
