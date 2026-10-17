@@ -19,6 +19,9 @@ test('new guest can start the published book and use its tools without two ident
   const start=f.page.locator('a.learn-resume').filter({hasText:'첫 페이지 열기'});await start.waitFor();
   assert.match(await start.getAttribute('href'),new RegExp(`${edition}#u01-start`));await capture(f,'home-new-320');
   await go(f,'/lessons');await f.page.getByRole('link',{name:'공부 시작하기 →',exact:true}).waitFor();
+  // 언어 단추는 서버 HTML로 먼저 보인다 — 수화 전에 누르면 클릭이 사라져 이 단계가 간헐 실패했다(main에서도 6회 중 2회, 2026-10-17 KST).
+  // 단추에 React 이벤트가 붙은 뒤(수화 완료) 누른다. 단언은 그대로.
+  await f.page.waitForFunction(()=>{const b=[...document.querySelectorAll('button')].find(el=>el.textContent.trim()==='영어');return !!b&&Object.keys(b).some(k=>k.startsWith('__reactProps'));});
   await f.page.getByRole('button',{name:'영어',exact:true}).click();
   const reading=f.page.getByRole('link',{name:'이 언어의 공개 읽을거리',exact:true});await reading.waitFor();assert.match(await reading.getAttribute('href'),/lang=English/);
   await capture(f,'books-unpublished-320');await go(f,`/books/japanese-n5?edition=${edition}`);
@@ -61,16 +64,19 @@ test('learn review tile separates no expressions and failed data with retry, wit
  }finally{await f.context.close();}
 });
 
-test('discovery retains language destinations, search reset, source labels and browser return',async()=>{
+// 발견 서가(SHELF-001, 오너 2026-10-16 KST 「지역학 치워버려 지우진 말고」)로 /discover에서 지역학 탐색(언어 링크 줄 · 검색 · 출처 표시)이
+// 내려갔다 — /studies는 그대로. 언어별 행선지는 「함께 읽는 글」(/discover?view=reading&lang=…)의 언어 단추가 맡는다.
+test('discovery keeps reading-language destinations and browser return, guest library entry',async()=>{
  const f=await fixture({guest:true,width:390});try{
   await go(f,'/discover');await f.page.getByRole('heading',{name:'발견',exact:true}).waitFor();
-  assert.match(await f.page.locator('.discovery-language-links').getByRole('link',{name:'일본어',exact:true}).getAttribute('href'),/lang=Japanese/);
-  await f.page.getByRole('searchbox',{name:'제목·소개 검색'}).fill('존재하지않는자료xyz');await f.page.getByRole('button',{name:'찾기',exact:true}).click();
-  await f.page.getByText('이 조합의 글은 아직 없어요.',{exact:true}).waitFor();await capture(f,'discover-empty-390');
-  await f.page.getByRole('button',{name:'전체 글 보기 →',exact:true}).click();await f.page.locator('.discovery-reading-item').first().waitFor();
-  const item=f.page.locator('.discovery-reading-item').first();const href=await item.getAttribute('href');assert.ok(await item.locator('.discovery-reading-item__source').innerText());
-  await item.scrollIntoViewIfNeeded();await capture(f,'discover-list-390');await item.click();await f.page.waitForURL(url=>url.pathname===href);await f.page.goBack();await item.waitFor();
-  assert.equal(new URL(f.page.url()).searchParams.get('q'),null);await capture(f,'discover-return-390');assert.equal(f.analysisCalls,0);
+  assert.equal(await f.page.locator('.discovery-language-links, #reading-index').count(),0);await capture(f,'discover-390');
+  await go(f,'/discover?view=reading&lang=Japanese');await f.page.getByRole('heading',{name:'함께 읽는 글',exact:true}).waitFor();
+  const japanese=f.page.getByRole('button',{name:'일본어',exact:true});await japanese.waitFor();assert.equal(await japanese.getAttribute('aria-pressed'),'true');
+  const back=f.page.getByRole('link',{name:'← 발견',exact:true});assert.equal(await back.getAttribute('href'),'/discover');await capture(f,'discover-reading-390');
+  await back.click();await f.page.waitForURL(url=>url.pathname==='/discover'&&!url.search);await f.page.getByRole('heading',{name:'발견',exact:true}).waitFor();
+  await f.page.goBack();await f.page.waitForURL(url=>url.searchParams.get('view')==='reading'&&url.searchParams.get('lang')==='Japanese');
+  await f.page.getByRole('heading',{name:'함께 읽는 글',exact:true}).waitFor();assert.equal(await japanese.getAttribute('aria-pressed'),'true');
+  await capture(f,'discover-return-390');assert.equal(f.analysisCalls,0);
   await go(f,'/materials');await f.page.getByRole('heading',{name:'내 서재',exact:true}).waitFor();
   assert.equal(await f.page.locator('.shelf-guest').getByRole('link',{name:'로그인',exact:true}).getAttribute('href'),'/auth?from=/materials');await capture(f,'library-guest-390');
  }finally{await f.context.close();}

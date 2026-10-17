@@ -206,7 +206,7 @@ test('save and study: Latin text needs one chip, a user choice is never overwrit
   assert.equal(await studyButton(f.page).isEnabled(),true);assert.equal(await f.page.getByText('글자를 보고 골랐어요',{exact:true}).count(),0);
   await f.page.locator('#composer-body').fill('今日は雨なので、家で本を読みました。');assert.equal(await english.getAttribute('aria-checked'),'true');
   f.failStudyRead();await studyButton(f.page).click();
-  await f.page.getByText('자료는 저장했어요. 학습 화면을 열지 못해 원본으로 엽니다.',{exact:true}).waitFor();await f.page.locator('.original-reader').waitFor();
+  await f.page.getByText('자료는 저장했어요. 학습 화면을 열지 못해 원본으로 열어요.',{exact:true}).waitFor();await f.page.locator('.original-reader').waitFor();
   assert.equal(new URL(f.page.url()).searchParams.has('study'),false);assert.equal(f.rows.length,1);assert.equal(f.rows[0].processed_json.metadata.language,'English');assert.equal(f.analysisCalls,0);
  }finally{await f.context.close();}
 });
