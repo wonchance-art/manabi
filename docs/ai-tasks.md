@@ -878,7 +878,11 @@
 
 ## Claude (claude/*)
 ### doing
-- **SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)** `claude/beautiful-lamport-po6fv0`:
+- **#1505 병합 후속 (2026-10-17 KST)** `claude/beautiful-lamport-po6fv0`: 손님 서재 서버 HTML부터 손님 화면 · 듣기 막대 속도 이름 · 글자 칸 aria-expanded ·
+  교재 hash 기록 Next tree(BOOK-HASH-RACE-001 후속) · 来い/来れる · 오쿠리가나 관행 가드 · 来 다음 토큰 표 useMemo ·
+  TOKEN-REFRESH-409-001(동시 갱신에서 진 요청이 인증 쿠키를 지워 로그아웃시키던 길 차단, 적대적 리뷰 차단 0).
+  오너 확인 대기: Gemini 선불 크레딧 소진(TTS 402 · 분석 뜻 조회) · N5 #1–5 원문 기준 재분석 · 뷰어 목업 10건.
+- ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로
   /api/suggestions/today와 공용화. 지역학은 발견에서만 내림(/studies · 콘텐츠 보존). 비로그인 서재 → 「서가에서 읽어 보기」.
   문학 · 그림 한 장 읽기 · 매거진(별도 세션 제작 중, 첫 호 전) 칸은 공개 결정 + 정본 판정(공개 metadata 위조 방어) 뒤. 계약 `discoverShelf.test.jsx`.
