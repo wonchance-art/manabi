@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createElement } from 'react';
+import { createElement, Fragment } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { QueryClient, QueryObserver } from '@tanstack/query-core';
 import { sliceBetween } from './helpers/sliceBetween';
@@ -15,9 +15,13 @@ const io = vi.hoisted(() => ({ calls: [], network: null }));
 vi.mock('../supabase', () => ({ supabase: { from: () => { if (!io.network) throw new Error('network not used in this test'); return io.network; }, auth: { getSession: async () => ({ data: { session: { user: { id: 'S' } } } }) } } }));
 vi.mock('../offlineCache', () => ({ cacheMaterial: async (...args) => { io.calls.push(['cacheMaterial', ...args]); }, getCachedMaterial: async (...args) => { io.calls.push(['getCachedMaterial', ...args]); return null; } }));
 vi.mock('../sharedStore', () => ({ getSharedCopy: async (...args) => { io.calls.push(['getSharedCopy', ...args]); return null; } }));
-const h = vi.hoisted(() => ({ links: [], pushed: [], cache: new Map(), prefetched: [] }));
+const h = vi.hoisted(() => ({ links: [], pushed: [], cache: new Map(), prefetched: [], pending: false, transitions: 0, inTransition: false, pushFlags: [], ref: null }));
+// useTransition · useRef 대역 — 정적 렌더(서버)에는 startTransition이 없고 렌더마다 ref가 새로 생긴다. 대기 상태를 렌더 사이에 잇는다.
+vi.mock('react', async (importOriginal) => { const R = await importOriginal(); return { ...R,
+  useTransition: () => [h.pending, (fn) => { h.transitions += 1; h.inTransition = true; try { fn(); } finally { h.inTransition = false; } }],
+  useRef: (v) => (h.ref ??= { current: v }) }; });
 vi.mock('next/link', () => ({ default: (props) => { h.links.push(props); return null; } }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: (u) => h.pushed.push(u), prefetch: (...args) => h.prefetched.push(args) }), useSearchParams: () => new URLSearchParams(), usePathname: () => '/materials' }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: (u) => { h.pushed.push(u); h.pushFlags.push(h.inTransition); }, prefetch: (...args) => h.prefetched.push(args) }), useSearchParams: () => new URLSearchParams(), usePathname: () => '/materials' }));
 vi.mock('@tanstack/react-query', () => ({ useQueryClient: () => ({ getQueryData: (key) => h.cache.get(JSON.stringify(key)) }) }));
 vi.mock('../AuthContext', () => ({ useAuth: () => ({ user: null }) }));
 
@@ -201,9 +205,9 @@ describe('R1 조기 조회 등록부 — 받아 쓰기와 폴백', () => {
   });
   it('배선: 서재 링크가 누르는 순간 누른 계정으로 띄우고(새 탭 · 수정키는 제외), 뷰어는 지금 계정으로 받는다', () => {
     const src = read('src/components/web/LibraryReaderLink.jsx');
-    const open = sliceBetween(src, 'const openReader = (href, event) => {', 'return { readerHref, openReader, router };');
+    const open = sliceBetween(src, 'const openReader = (href, event) => {', 'return { readerHref, openReader, router, pending');
     expect(open.indexOf('event.metaKey || event.ctrlKey')).toBeLessThan(open.indexOf('startEarlyMaterial(href, Date.now());'));
-    expect(open.indexOf('startEarlyMaterial(')).toBeLessThan(open.indexOf('router.push('));
+    expect(open.indexOf('startEarlyMaterial(')).toBeLessThan(open.indexOf('startTransition(() => router.push(next));'));
     const viewer = read('src/views/ViewerPage.jsx');
     expect(viewer).toContain("queryFn: () => loadMaterial(id, { cached: queryClient.getQueryData(['material', id]) !== undefined }),");
     expect(viewer).toContain("useEffect(() => { if (queryClient.getQueryData(['material', id]) !== undefined) discardEarlyMaterial(id); }, [id, queryClient]);");
@@ -257,5 +261,56 @@ describe('(c) 서재 행 Link — 화면 진입 prefetch 끄고 의도 시점에
     expect(b.prefetch).toBe(true);
     b.onFocus?.({ currentTarget: { matches: () => true } });
     expect(h.prefetched.filter(([u]) => u.startsWith('/viewer/51'))).toEqual([]);
+  });
+});
+
+describe('대기 밑줄(LIBRARY-PENDING-001) — 누른 링크에 탭과 같은 밑줄(APP-FEEL-003 .nav-pending), 응답 전까지', () => {
+  const render = (href) => { h.links.length = 0; renderToStaticMarkup(createElement(link.default, { href }, 'x')); return h.links[0]; };
+  const mark = (props) => renderToStaticMarkup(createElement(Fragment, null, props.children));
+  const ev = (extra = {}) => { const e = { button: 0, prevented: 0, preventDefault() { e.prevented += 1; }, ...extra }; return e; };
+  beforeEach(() => {
+    h.ref = null; h.pending = false; h.transitions = 0; h.pushed.length = 0; h.pushFlags.length = 0;
+    vi.stubGlobal('window', { location: { pathname: '/materials', search: '' }, scrollY: 640 });
+  });
+  afterEach(() => { vi.unstubAllGlobals(); h.pending = false; h.ref = null; });
+  it('평소엔 빈 밑줄 — 탭 밑줄과 같은 클래스(.nav-pending)에 서재 자리 표시만 더한다 · 화면 읽기에 숨김', () => {
+    expect(mark(render('/viewer/45'))).toBe('x<span class="nav-pending nav-pending--reader" aria-hidden="true"></span>');
+  });
+  it('누르면 router.push를 transition 안에서 부르고(이동이 붙을 때까지 대기) · 누른 링크만 data-pending', () => {
+    render('/viewer/45').onClick(ev());
+    expect(h.transitions).toBe(1);
+    expect(h.pushed).toEqual([expect.stringMatching(/^\/viewer\/45\?returnTo=.*restoreY%3D640/)]);
+    expect(h.pushFlags).toEqual([true]);
+    h.pending = true;
+    expect(mark(render('/viewer/45'))).toBe('x<span class="nav-pending nav-pending--reader" data-pending="true" aria-hidden="true"></span>');
+    expect(mark(render('/viewer/46'))).not.toContain('data-pending');
+  });
+  it('대기 중 같은 곳을 또 누르면 무시(기록 두 줄 없음 · 브라우저 이동도 막음) · 다른 곳은 바로 간다', () => {
+    render('/viewer/45').onClick(ev());
+    h.pending = true;
+    const again = ev();
+    render('/viewer/45').onClick(again);
+    expect(again.prevented).toBe(1);
+    expect(h.pushed).toHaveLength(1);
+    render('/viewer/46').onClick(ev());
+    expect(h.pushed.map((u) => u.split('?')[0])).toEqual(['/viewer/45', '/viewer/46']);
+  });
+  it('수정키 · 가운데 버튼(새 탭)은 브라우저 몫 — 막지 않고 이동 · 대기 표시도 없다', () => {
+    for (const extra of [{ metaKey: true }, { ctrlKey: true }, { shiftKey: true }, { altKey: true }, { button: 1 }]) {
+      const e = ev(extra);
+      render('/viewer/45').onClick(e);
+      expect(e.prevented).toBe(0);
+    }
+    expect(h.pushed).toEqual([]);
+    expect(h.transitions).toBe(0);
+    h.pending = true; // 다른 transition이 돌고 있어도 이 링크를 누른 적이 없으면 표시하지 않는다
+    expect(mark(render('/viewer/45'))).not.toContain('data-pending');
+  });
+  it('새 부품 없이 APP-FEEL-003 그대로 — NavPendingMark(useLinkStatus)는 router.push를 따라가지 못해 쓰지 않는다 · push는 transition 안 한 곳', () => {
+    const src = read('src/components/web/LibraryReaderLink.jsx');
+    expect(src).not.toMatch(/^import .*\b(NavPendingMark|useLinkStatus)\b/m);
+    expect(src.match(/router\.push\(/g)).toHaveLength(1);
+    expect(src).toContain('startTransition(() => router.push(next));');
+    expect(src).toContain('<span className="nav-pending nav-pending--reader" data-pending={pending === href || undefined} aria-hidden="true" />');
   });
 });

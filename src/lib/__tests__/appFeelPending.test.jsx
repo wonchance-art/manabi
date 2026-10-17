@@ -35,6 +35,11 @@ describe('이동 대기 표시(NavPendingMark = useLinkStatus)', () => {
     const css = sliceBetween(read('src/components/web/web-shell.css'), '/* ========= 앱 손맛 ③', '/* 눌림 —');
     expect(css).toContain('.nav-pending{position:absolute;left:14px;right:14px;bottom:4px;height:2px;border-radius:1px;background:currentColor;opacity:0;pointer-events:none}');
     expect(css).toContain('.lv-tabs a>.nav-pending{left:0;right:0;bottom:0}');
+    // 서재 카드 · 읽기 링크(LIBRARY-PENDING-001): 같은 밑줄(같은 깜빡임 · 지연 · 동작 줄이기)을 링크 아래 가장자리 전폭에, 행 링크는 행 밑줄 위에
+    expect(css).toContain('a:has(> .nav-pending--reader){position:relative}');
+    expect(css).toContain('.nav-pending--reader{left:0;right:0;bottom:0}');
+    expect(css).toContain('.shelf-row-link>.nav-pending--reader{bottom:-1px}');
+    expect(css).not.toMatch(/\.nav-pending--reader[^{]*\{[^}]*(animation|opacity|background)/); // 모양 · 깜빡임은 .nav-pending 하나
     expect(css).toContain('.nav-pending[data-pending]{animation:nav-pending 1.1s ease-in-out 100ms infinite}');
     expect(css).toContain('@media (prefers-reduced-motion:reduce){.nav-pending[data-pending]{animation:nav-pending-still 1ms 100ms forwards}}');
   });

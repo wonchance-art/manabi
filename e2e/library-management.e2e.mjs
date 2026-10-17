@@ -50,3 +50,23 @@ test('personal rename, favorites, revision conflict and minimum 320px keyboard c
  await f.page.getByRole('button',{name:'선택 해제'}).click();await f.page.locator('.shelf-row-link').first().focus();await f.page.keyboard.press('Control+a');await f.page.getByText('1개 선택',{exact:true}).waitFor();await overflow(f);
  }finally{await f.close();}
 });
+
+test('pressing a card shows the tab pending underline on that card only until the slow viewer reply; a second press is ignored (LIBRARY-PENDING-001)',async()=>{
+ const f=await fixture({management:true,width:390});try{
+ seed(f,3);let navigations=0;
+ // 느린 서버: 뷰어로 가는 이동(RSC · prefetch 아님)만 1.2초 늦춘다
+ await f.context.route(/\/viewer\/\d+/,async r=>{const h=r.request().headers();if(h.rsc&&!h['next-router-prefetch']){navigations++;await new Promise(res=>setTimeout(res,1200));}return r.fallback();});
+ await enter(f);const card=f.page.locator('.shelf-row-link').first();
+ await card.click();
+ await card.locator('.nav-pending[data-pending]').waitFor({state:'attached',timeout:1000});
+ assert.match(f.page.url(),/\/materials/); // 응답 전 — 아직 서재
+ assert.equal(await f.page.locator('.nav-pending[data-pending]').count(),1); // 누른 카드만
+ const look=await card.evaluate(a=>{const m=a.querySelector('.nav-pending'),s=getComputedStyle(m),mr=m.getBoundingClientRect(),ar=a.getBoundingClientRect();return {animation:s.animationName,delay:s.animationDelay,hidden:m.getAttribute('aria-hidden'),width:Math.round(mr.width-ar.width),bottom:Math.round(mr.bottom-ar.bottom),height:Math.round(mr.height)};});
+ assert.deepEqual(look,{animation:'nav-pending',delay:'0.1s',hidden:'true',width:0,bottom:1,height:2}); // 탭과 같은 밑줄 · 행 밑줄 자리
+ await card.click(); // 대기 중 같은 카드 — 무시
+ await f.page.waitForURL(/\/viewer\/\d+/,{timeout:60000});
+ assert.equal(navigations,1);
+ await f.page.goBack();await f.page.waitForURL(/\/materials/,{timeout:15000}); // 기록이 두 줄이면 뷰어에 남는다
+ await f.page.locator('.shelf-row').first().waitFor();assert.equal(await f.page.locator('.nav-pending[data-pending]').count(),0);
+ }finally{await f.close();}
+});
