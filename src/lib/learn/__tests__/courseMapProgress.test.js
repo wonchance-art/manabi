@@ -70,7 +70,8 @@ describe('getLessonProgress', () => {
   });
 
   it('원격 조회 실패 시 이 기기 진도로 폴백한다', async () => {
-    localStorage.setItem('en_read_chapters', JSON.stringify(['a1-01']));
+    // 로그인 계정의 기기 진도는 계정 키(LOCAL-PROGRESS-ACCOUNT-001 · refReadStore)
+    localStorage.setItem('en_read_chapters:user-1', JSON.stringify(['a1-01']));
     query.in.mockRejectedValue(new Error('offline'));
 
     const result = await getLessonProgress('user-1', {

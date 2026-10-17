@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { useAuth } from '../lib/AuthContext';
 import { langFromReadKey, syncReadRemote } from '../lib/refProgress';
+import { refDatesKey, refReadKey } from '../lib/refReadStore';
 
 /**
  * 레퍼런스 문법 챕터 읽음 기록 (localStorage)
@@ -14,10 +15,12 @@ import { langFromReadKey, syncReadRemote } from '../lib/refProgress';
  */
 export default function RefReadMark({ storageKey, slug }) {
   const ref = useRef(null);
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (!storageKey || !slug) return;
+    // 계정이 정해진 뒤에만 쓴다 — 확인 중에 쓰면 로그인한 사람의 읽음이 손님(옛) 키로 샌다(LOCAL-PROGRESS-ACCOUNT-001).
+    if (!storageKey || !slug || loading) return;
+    const readKey = refReadKey(storageKey, user?.id ?? null), datesKey = refDatesKey(storageKey, user?.id ?? null);
     const lang = langFromReadKey(storageKey);
     // 진입 즉시 기록 — [강의] 복귀 시 언어 유지·해당 챕터로 자동 스크롤용
     try {
@@ -28,16 +31,16 @@ export default function RefReadMark({ storageKey, slug }) {
     } catch {}
     const record = () => {
       try {
-        const arr = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const arr = JSON.parse(localStorage.getItem(readKey) || '[]');
         if (!arr.includes(slug)) {
           arr.push(slug);
-          localStorage.setItem(storageKey, JSON.stringify(arr));
+          localStorage.setItem(readKey, JSON.stringify(arr));
         }
         // 읽은 날짜 — 홈 '오늘 활동' 집계용 (slug → ts)
-        const dates = JSON.parse(localStorage.getItem(`${storageKey}_dates`) || '{}');
+        const dates = JSON.parse(localStorage.getItem(datesKey) || '{}');
         if (!dates[slug]) {
           dates[slug] = Date.now();
-          localStorage.setItem(`${storageKey}_dates`, JSON.stringify(dates));
+          localStorage.setItem(datesKey, JSON.stringify(dates));
         }
         // 홈 '이어서 학습' 카드용 — 마지막으로 학습한 언어·챕터
         if (lang) localStorage.setItem('ref_last_visit', JSON.stringify({ lang, slug, at: Date.now() }));
@@ -58,7 +61,7 @@ export default function RefReadMark({ storageKey, slug }) {
     });
     io.observe(el);
     return () => io.disconnect();
-  }, [storageKey, slug, user?.id]);
+  }, [storageKey, slug, user?.id, loading]);
 
   return <span ref={ref} aria-hidden="true" style={{ display: 'block', height: 1 }} />;
 }

@@ -12,6 +12,8 @@ import { JaText } from './refShared';
 import { supabase } from '../lib/supabase';
 import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { useAuth } from '../lib/AuthContext';
+import { addRefRead, setRefCheck } from '../lib/refReadStore';
+import { clearStudySource, readStudySource } from '../lib/studySourceHandoff';
 import { useToast } from '../lib/ToastContext';
 import { createGrammarRetry, gradeGrammarReview, ratingFromScore, sendGrammarGradeKeepalive } from '../lib/grammarSrs';
 import { sessionTokenFor } from '../lib/keepalive';
@@ -170,7 +172,7 @@ export default function StudySessionPage({
     // 텍스트가 없으면(직접 URL 진입 등) 일반 세션으로 조용히 진행.
     let sourceText = '';
     if (sourceMode) {
-      try { sourceText = localStorage.getItem(`study_source_${lang}`) || ''; } catch {}
+      sourceText = readStudySource(lang, user?.id ?? null); // 이 계정이 30분 안에 넘긴 글만(lib/studySourceHandoff)
     }
     (async () => {
       try {
@@ -200,7 +202,7 @@ export default function StudySessionPage({
         const data = await res.json().catch(() => ({}));
         if (res.ok && data.paragraph) {
           // 생성 성공 → 내 자료 소재는 1회용이므로 즉시 소거(재사용·다음 세션 오염 방지).
-          if (sourceText) { try { localStorage.removeItem(`study_source_${lang}`); } catch {} }
+          if (sourceText) clearStudySource(lang);
           const mapped = mapParagraphToItems(data.paragraph, paragraphMaterials);
           if (mapped.gradedCount >= 3) {
             // 워밍업 뒤에 문단 문항 + 만남 인지 문항을 이어붙이고 집계 기준을 갱신
@@ -940,15 +942,9 @@ export default function StudySessionPage({
       const passedNow = isChapterPassed(right, newItems.length);
       const checkResult = { right, total: newItems.length, passed: passedNow, at: Date.now() };
 
-      // localStorage 진도 기록 (게스트 호환)
-      try {
-        const map = JSON.parse(localStorage.getItem(`${readKey}_check`) || '{}');
-        map[meta.slug] = checkResult;
-        localStorage.setItem(`${readKey}_check`, JSON.stringify(map));
-        const reads = new Set(JSON.parse(localStorage.getItem(readKey) || '[]'));
-        reads.add(meta.slug);
-        localStorage.setItem(readKey, JSON.stringify([...reads]));
-      } catch {}
+      // 기기 진도 기록 — 세션 계정의 키에(LOCAL-PROGRESS-ACCOUNT-001 · lib/refReadStore)
+      setRefCheck(readKey, recorder, meta.slug, checkResult);
+      addRefRead(readKey, recorder, meta.slug);
 
       // progressStore: 진도 + SRS + 보상 일괄 처리
       recordLessonCompleted(recorder, {

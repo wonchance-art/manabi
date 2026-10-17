@@ -9,6 +9,8 @@ import { isRepeatedSignup } from './authErrors';
 import { migrateGuestDrillQueue } from './drillSrs';
 import { useToast } from './ToastContext';
 import { watchAccountMutations } from './accountQueryCache';
+import { REF_READ_KEYS, claimGuestRefProgress } from './refReadStore';
+import { clearAllStudySources } from './studySourceHandoff';
 import { pullProgress } from './refProgress';
 import { createProfileReadOnlyRefresh, recordExplicitProfileLogin } from './learningActivity';
 import { accountCacheReset, accountLeft, clearAccountQueries, noteAccount } from './accountQueryCache';
@@ -16,12 +18,7 @@ import { accountCacheReset, accountLeft, clearAccountQueries, noteAccount } from
 const AuthContext = createContext(null);
 
 // 레퍼런스 진도 동기화용 읽음 키 (언어명 → localStorage 키)
-const REF_READ_KEYS = {
-  Japanese: 'ja_read_chapters',
-  English: 'en_read_chapters',
-  French: 'fr_read_chapters',
-  Chinese: 'zh_read_chapters',
-};
+// (언어 → 키 바탕 REF_READ_KEYS는 lib/refReadStore — 계정 키 · 손님 몫 합치기와 한곳)
 
 // 세션 쿠키가 있는데 SDK 조각을 못 받았을 때 다시 복원하는 간격(그 밖에는 online 이벤트에서).
 const AUTH_RESTORE_RETRY_MS = [2000, 8000, 30000];
@@ -71,8 +68,11 @@ export function AuthProvider({ children, queryClient, onAccountLeft }) {
       if (accountCacheReset(lastSignedInRef.current, actorRef.current, nextActor)) {
         clearAccountQueries(queryClient);
         import('./offlineCache').then((cache) => cache.purgeOfflineForAccount(nextActor)).catch(() => {});
+        clearAllStudySources(); // 넘겨줄 글(/study?source=mine)은 넘긴 계정의 것 — 떠나면 지운다
       }
       if (left) accountLeftPendingRef.current = true;
+      // 손님 몫 레퍼런스 진도는 이 기기의 첫 로그인 계정에만 한 번 합친다 — 화면이 합친 값을 바로 읽게 그리기 전에.
+      if (nextActor) claimGuestRefProgress(nextActor);
       if (nextActor) lastSignedInRef.current = nextActor;
       authGenerationRef.current += 1;
       actorRef.current = nextUser?.id ?? null;

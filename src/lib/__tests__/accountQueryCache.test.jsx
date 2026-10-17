@@ -144,6 +144,22 @@ describe('AuthContext adoptUser — 계정이 있다가 바뀌는 순간 한 곳
     await auth.signOut(); await tick();
     expect(knownAccount()).toBe(null);
   });
+  it('LOCAL-PROGRESS-ACCOUNT-001: 첫 복원(손님 → A)이 손님 몫 진도를 A 키로 합치고, A → 손님 · B는 넘겨줄 글을 지우되 A 진도는 남긴다', async () => {
+    const data = new Map();
+    vi.stubGlobal('localStorage', { get length() { return data.size; }, key: i => [...data.keys()][i] ?? null,
+      getItem: k => (data.has(k) ? data.get(k) : null), setItem: (k, v) => data.set(k, String(v)), removeItem: k => data.delete(k) });
+    data.set('ja_read_chapters', JSON.stringify(['n5-01']));
+    const auth = await mount();
+    expect(auth.user.id).toBe('A');
+    expect(JSON.parse(data.get('ja_read_chapters:A'))).toEqual(['n5-01']);
+    expect(data.has('ja_read_chapters')).toBe(false);
+    data.set('study_source_Japanese', JSON.stringify({ owner: 'A', at: Date.now(), text: 'A의 본문' }));
+    await auth.signOut(); await tick();
+    expect(data.has('study_source_Japanese')).toBe(false);
+    await h.listener('SIGNED_IN', { user: user('B') }); await tick();
+    expect(JSON.parse(data.get('ja_read_chapters:A'))).toEqual(['n5-01']); // A의 진도는 A 키에 그대로
+    expect(data.has('ja_read_chapters:B')).toBe(false); // B에게 합쳐지지 않는다
+  });
   it('queryClient 없이 그려도(기존 하네스 · 시험) 아무것도 하지 않는다', () => {
     expect(() => clearAccountQueries(undefined)).not.toThrow();
   });

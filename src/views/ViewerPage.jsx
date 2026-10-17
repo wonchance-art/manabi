@@ -26,6 +26,7 @@ import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
 import { buildVocabularyWordIndex, countVocabularyDueInMaterial, findIndexedVocabulary, isIndexedVocabularyDue } from '../lib/vocabularyDueIndex';
 import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
 import { knownAccount, whenAccountKnown } from '../lib/accountQueryCache';
+import { writeStudySource } from '../lib/studySourceHandoff';
 import SaveContextButton, { saveContext } from '../components/learning/SaveContextButton';
 import MaterialChapterLinks from '../components/learning/MaterialChapterLinks';
 import ReadingSourceFocus from '../components/learning/ReadingSourceFocus';
@@ -4563,9 +4564,7 @@ export default function ViewerPage() {
                 href={`/study?source=mine&lang=${encodeURIComponent(materialLang)}`}
                 className="post-reading-actions__btn"
                 onClick={() => {
-                  try {
-                    localStorage.setItem(`study_source_${materialLang}`, (material.raw_text || '').slice(0, 1500));
-                  } catch {}
+                  writeStudySource(materialLang, (material.raw_text || '').slice(0, 1500), user?.id ?? null); // 계정 · 시각과 함께
                 }}
               >{vt("이 글로 연습")}</Link>
             )}
