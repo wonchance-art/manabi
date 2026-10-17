@@ -88,6 +88,9 @@ jobs:
       # @font-face · 서버 번들과 맞는지 본다. next 업그레이드로 파일 이름 규칙이 바뀌면 여기서 깨진다. 빌드 추가 없음.
       - name: 글꼴 힌트 산출 대조
         run: NEXT_FONT_GOOGLE_MOCKED_RESPONSES="$PWD/e2e/fixtures/google-fonts-mock.cjs" node scripts/fonts/check-font-hints.mjs
+      # 간체 중국어 독립 스타일시트 산출 대조(SC-LINK-001) — public CSS · 글꼴 · next/font 'Noto Sans SC'와 같은 덮는 범위. 빌드 추가 없음.
+      - name: 간체 독립 스타일시트 산출 대조
+        run: NEXT_FONT_GOOGLE_MOCKED_RESPONSES="$PWD/e2e/fixtures/google-fonts-mock.cjs" node scripts/fonts/check-sc-stylesheet.mjs
 
       # 브라우저는 러너에 미리 깔린 Google Chrome을 쓴다(playwright.config.mjs 기본 channel).
       - name: Chrome 확인

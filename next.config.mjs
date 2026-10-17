@@ -5,6 +5,9 @@ import { buildReleaseVersion } from './src/lib/releaseVersion.js';
 // 화면별 글꼴 미리 받기 주소(FONT-HINT-001) — 이번 빌드의 글꼴 입력(NEXT_FONT_GOOGLE_MOCKED_RESPONSES)에서
 // next/font 산출 파일 이름을 다시 계산한다. 쓰는 곳: src/components/fonts/fontHints.js.
 const { fontHintEnv } = createRequire(import.meta.url)('./scripts/fonts/next-font-file-url.cjs');
+// 간체 중국어 독립 스타일시트(SC-LINK-001 1단계) — 같은 글꼴 입력에서 public/_fonts/noto-sans-sc/에 CSS · 글꼴을 쓰고 주소를 env로 준다.
+// 글꼴 입력이 없는 실행(next dev · 테스트의 config import)은 아무것도 쓰지 않는다. 산출 대조: scripts/fonts/check-sc-stylesheet.mjs.
+const { scStylesheetEnv } = createRequire(import.meta.url)('./scripts/fonts/sc-stylesheet.cjs');
 
 const releaseVersion = {
   ...buildReleaseVersion(process.env),
@@ -70,6 +73,7 @@ const nextConfig = {
     // /api/version stays dynamic/no-store and still checks request-time identity.
     MANABI_BUILD_IDENTITY: JSON.stringify(releaseVersion),
     ...fontHintEnv(),
+    ...scStylesheetEnv(),
   },
 
   // 공개 서비스 기본 보안 헤더
