@@ -53,79 +53,112 @@ export function useClassSelectionVisibility(dockRef, bodyRef, first, last, selec
   },[dockRef,bodyRef,first,last,selectionKey,enabled]);
 }
 
+// 쪽 넘김 시트 자리(A안 data-dock · 목업 C data-compact)는 시트를 닫을 때만 지운다. 다른 단어로 바꿔 누르는 동안 지우면 새 판정
+// 전에 바닥 자리가 그려져 시트가 위→바닥→위로 튄다(리뷰 실측 390 top 134→396→134, 약 270ms). 효과 정리는 지우기를 한 프레임
+// 미뤄 두고, 같은 시트를 이어받는 다음 효과가 그 예약을 거둔다 — 이어받는 효과가 없으면(닫힘) 다음 프레임에 지워진다.
+const pendingSheetReset = new WeakMap();
+function resetPagedSheet(panel) {
+  panel.style.removeProperty('--reader-sheet-compact'); panel.style.removeProperty('--reader-sheet-top');
+  delete panel.dataset.compact; delete panel.dataset.dock;
+}
+
 export function useSelectedTokenVisibility(readerRef, tokenRefs, tokenId, enabled, revision) {
   useEffect(() => {
     const root = readerRef.current, token = tokenRefs.current[tokenId];
     if (!enabled || !root || !token) return;
-    const panel = root.closest('.viewer-layout')?.querySelector('.viewer-inspector');
-    let frame, settleFrame, releaseFrame, interrupted = false, compactFor = '';
+    const layout = root.closest('.viewer-layout');
+    let panel = null, frame, settleFrame, releaseFrame, interrupted = false, compactFor = '';
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(() => reveal()) : null;
+    const adopt = found => {
+      panel = found;
+      if (pendingSheetReset.has(found)) { cancelAnimationFrame(pendingSheetReset.get(found)); pendingSheetReset.delete(found); }
+      observer?.observe(found);
+    };
+    // 쪽 넘김 보기(READER-PAGED-001): 세로로 끌어오지 않는다 — 고른 단어의 쪽으로 넘기고, 바닥 시트가 단어를 덮으면 시트를
+    // 낮게 열거나(목업 C) 아래 절반의 단어면 머리줄 아래에 세운다(A안). 본문은 다시 흐르지 않는다.
+    const placePaged = pager => {
+      pager.reveal(token);
+      // 시트 자리는 단어(와 화면 크기)마다 한 번 정한다 — 카드 내용이 늦게 차도 시트가 출렁이지 않게(한자 창 등이 자리를 잡는다).
+      // 좌표는 visualViewport와 같은 계(배치 뷰포트 기준 offsetTop) — 키보드가 열려 보이는 영역이 바뀌면 다시 정한다.
+      const view = window.visualViewport, viewTop = view?.offsetTop || 0, viewHeight = view?.height || window.innerHeight;
+      const sizeKey = `${window.innerWidth}x${viewHeight}@${Math.round(viewTop)}`;
+      if (!panel || compactFor === sizeKey || getComputedStyle(panel).position !== 'fixed' || panel.classList.contains('is-expanded') || panel.classList.contains('is-collapsed')) return;
+      // 바닥 자리를 재고 같은 태스크 안에서 새 자리를 건다 — 그 사이에 그려지지 않는다.
+      delete panel.dataset.compact; delete panel.dataset.dock; panel.style.removeProperty('--reader-sheet-top');
+      const natural = panel.getBoundingClientRect();
+      // 낮춰도 카드의 첫 화면(표제어·뜻 + 바닥 등급 줄 — AE-R2 계약)은 스크롤 없이 남아야 한다: 그 높이를 실제 배치에서 잰다.
+      const word = panel.querySelector('#inspector-word:not([hidden])'), meaning = word?.querySelector('.word-detail-card__meaning'), actions = word?.querySelector('.reader-card-actions');
+      const scrolled = word?.querySelector('.reader-card-body')?.scrollTop || 0;
+      const core = meaning && actions ? Math.ceil(meaning.getBoundingClientRect().bottom + scrolled - natural.top + (natural.bottom - actions.getBoundingClientRect().top) + 12) : undefined;
+      // 카드 핵심이 아직 안 그려졌으면(처음 열 때 머리줄만 있는 시트 — 390 실측 57px) 잠그지 않는다: 다 차서 커질 때 다시 정한다.
+      compactFor = core ? sizeKey : '';
+      const tokenRect = token.getBoundingClientRect();
+      // A안: 아래 절반의 단어는 시트를 머리줄 아래에 세운다(data-dock="top" — paged-reader.css). 위 절반은 지금처럼 바닥(목업 C 낮추기).
+      const toolbarBottom = layout?.querySelector('.viewer-topbar')?.getBoundingClientRect().bottom;
+      const dock = pagedSheetDock({ tokenTop: tokenRect.top, tokenBottom: tokenRect.bottom, viewportTop: viewTop, viewportHeight: viewHeight,
+        topLimit: Math.max(Number.isFinite(toolbarBottom) ? toolbarBottom : 0, viewTop) + 8, naturalHeight: natural.height, ...(core ? { min: core } : null) });
+      if (dock.dock === 'top') {
+        panel.dataset.dock = 'top'; panel.style.setProperty('--reader-sheet-top', `${dock.top}px`);
+        if (dock.height !== null) { panel.style.setProperty('--reader-sheet-compact', `${dock.height}px`); panel.dataset.compact = 'true'; }
+      } else {
+        const height = compactSheetHeight({ tokenBottom: tokenRect.bottom, sheetTop: natural.top, sheetBottom: natural.bottom, ...(core ? { min: core } : null) });
+        if (height !== null && height < natural.height) { panel.style.setProperty('--reader-sheet-compact', `${height}px`); panel.dataset.compact = 'true'; }
+      }
+    };
     const reveal = () => {
       cancelAnimationFrame(frame); cancelAnimationFrame(settleFrame);
-      // Let modal teardown and the display-change anchor settle first.
-      frame = requestAnimationFrame(() => { settleFrame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => {
         if (interrupted || !token.isConnected || panel?.hidden) return;
-        // 쪽 넘김 보기(READER-PAGED-001): 세로로 끌어오지 않는다 — 고른 단어의 쪽으로 넘기고, 바닥 시트가 단어를
-        // 덮으면 시트를 낮게 연다(목업 C, 본문은 다시 흐르지 않는다).
+        // 쪽 넘김의 시트 자리는 첫 프레임 안에 정한다 — 이전 단어의 자리가 그 프레임까지 남아 있다.
         const pager = pagerFor(root);
-        if (pager) {
-          pager.reveal(token);
-          // 시트 높이는 단어(와 화면 크기)마다 한 번 정한다 — 카드 내용이 늦게 차도 시트가 출렁이지 않게(한자 창 등이 자리를 잡는다).
-          const sizeKey = `${window.innerWidth}x${window.visualViewport?.height || window.innerHeight}`;
-          if (panel && compactFor !== sizeKey && getComputedStyle(panel).position === 'fixed' && !panel.classList.contains('is-expanded') && !panel.classList.contains('is-collapsed')) {
-            compactFor = sizeKey;
-            delete panel.dataset.compact; delete panel.dataset.dock; panel.style.removeProperty('--reader-sheet-top');
-            const natural = panel.getBoundingClientRect();
-            // 낮춰도 카드의 첫 화면(표제어·뜻 + 바닥 등급 줄 — AE-R2 계약)은 스크롤 없이 남아야 한다: 그 높이를 실제 배치에서 잰다.
-            const word = panel.querySelector('#inspector-word:not([hidden])'), meaning = word?.querySelector('.word-detail-card__meaning'), actions = word?.querySelector('.reader-card-actions');
-            const scrolled = word?.querySelector('.reader-card-body')?.scrollTop || 0;
-            const core = meaning && actions ? Math.ceil(meaning.getBoundingClientRect().bottom + scrolled - natural.top + (natural.bottom - actions.getBoundingClientRect().top) + 12) : undefined;
-            const tokenRect = token.getBoundingClientRect();
-            // A안: 아래 절반의 단어는 시트를 머리줄 아래에 세운다(data-dock="top" — paged-reader.css). 위 절반은 지금처럼 바닥(목업 C 낮추기).
-            const toolbarBottom = root.closest('.viewer-layout')?.querySelector('.viewer-topbar')?.getBoundingClientRect().bottom;
-            const dock = pagedSheetDock({ tokenTop: tokenRect.top, tokenBottom: tokenRect.bottom, viewportHeight: window.visualViewport?.height || window.innerHeight,
-              topLimit: (Number.isFinite(toolbarBottom) ? toolbarBottom : 0) + 8, naturalHeight: natural.height, ...(core ? { min: core } : null) });
-            if (dock.dock === 'top') {
-              panel.dataset.dock = 'top'; panel.style.setProperty('--reader-sheet-top', `${dock.top}px`);
-              if (dock.height !== null) { panel.style.setProperty('--reader-sheet-compact', `${dock.height}px`); panel.dataset.compact = 'true'; }
-            } else {
-              const height = compactSheetHeight({ tokenBottom: tokenRect.bottom, sheetTop: natural.top, sheetBottom: natural.bottom, ...(core ? { min: core } : null) });
-              if (height !== null && height < natural.height) { panel.style.setProperty('--reader-sheet-compact', `${height}px`); panel.dataset.compact = 'true'; }
-            }
+        if (pager) { placePaged(pager); return; }
+        if (panel && (panel.dataset.dock || panel.dataset.compact)) resetPagedSheet(panel);
+        // Let modal teardown and the display-change anchor settle first.
+        settleFrame = requestAnimationFrame(() => {
+          if (interrupted || !token.isConnected || panel?.hidden) return;
+          if (panel?.classList.contains('viewer-inspector--board')) {
+            const bounds = readerVisibleBounds(root), rect = token.getBoundingClientRect();
+            const bottom = Math.ceil(bounds.top + rect.height + 24 - (window.visualViewport?.offsetTop || 0));
+            panel.style.setProperty('--reader-selected-bottom', `${bottom}px`);
           }
-          return;
-        }
-        if (panel?.classList.contains('viewer-inspector--board')) {
-          const bounds = readerVisibleBounds(root), rect = token.getBoundingClientRect();
-          const bottom = Math.ceil(bounds.top + rect.height + 24 - (window.visualViewport?.offsetTop || 0));
-          panel.style.setProperty('--reader-selected-bottom', `${bottom}px`);
-        }
-        const delta = selectedTokenScrollDelta(token.getBoundingClientRect(), readerVisibleBounds(root));
-        if (!Number.isFinite(delta) || Math.abs(delta) < 1) return;
-        root.dataset.selectionRevealing = 'true';
-        readerScrollTarget(root).scrollBy({ top: delta, behavior: 'instant' });
-        cancelAnimationFrame(releaseFrame);
-        releaseFrame = requestAnimationFrame(() => { releaseFrame = requestAnimationFrame(() => { delete root.dataset.selectionRevealing; }); });
-      }); });
+          const delta = selectedTokenScrollDelta(token.getBoundingClientRect(), readerVisibleBounds(root));
+          if (!Number.isFinite(delta) || Math.abs(delta) < 1) return;
+          root.dataset.selectionRevealing = 'true';
+          readerScrollTarget(root).scrollBy({ top: delta, behavior: 'instant' });
+          cancelAnimationFrame(releaseFrame);
+          releaseFrame = requestAnimationFrame(() => { releaseFrame = requestAnimationFrame(() => { delete root.dataset.selectionRevealing; }); });
+        });
+      });
     };
     // A user's own reading movement wins over a later font/viewport resize.
     const interrupt = e => {
       if (e.type === 'keydown' && token.contains(e.target) && ['Enter', ' '].includes(e.key)) return;
       if (!e.target?.closest?.('.reader-modal,.viewer-inspector')) interrupted = true;
     };
-    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(reveal) : null;
-    observer?.observe(root); if (panel) observer?.observe(panel);
-    const toolbar = root.closest('.viewer-layout')?.querySelector('.viewer-topbar');
+    const found = layout?.querySelector('.viewer-inspector');
+    if (found) adopt(found);
+    // 처음 열 때 시트가 같은 커밋에 없으면(뒤 커밋에 붙는다) 붙는 순간 이어받아 다시 정한다 — 목업 C 낮추기도 같은 길이다.
+    const arrival = !found && layout && typeof MutationObserver === 'function' ? new MutationObserver(() => {
+      const next = layout.querySelector('.viewer-inspector');
+      if (!next) return;
+      arrival.disconnect(); adopt(next); reveal();
+    }) : null;
+    arrival?.observe(layout, { childList: true, subtree: true });
+    observer?.observe(root);
+    const toolbar = layout?.querySelector('.viewer-topbar');
     if (toolbar) observer?.observe(toolbar);
     window.addEventListener('resize', reveal);
     window.visualViewport?.addEventListener('resize', reveal);
     for (const event of ['wheel', 'touchmove', 'pointerdown', 'keydown']) window.addEventListener(event, interrupt, { passive: true });
     reveal();
     return () => {
-      observer?.disconnect(); cancelAnimationFrame(frame); cancelAnimationFrame(settleFrame); cancelAnimationFrame(releaseFrame);
+      observer?.disconnect(); arrival?.disconnect(); cancelAnimationFrame(frame); cancelAnimationFrame(settleFrame); cancelAnimationFrame(releaseFrame);
       delete root.dataset.selectionRevealing;
       panel?.style.removeProperty('--reader-selected-bottom');
-      panel?.style.removeProperty('--reader-sheet-compact'); panel?.style.removeProperty('--reader-sheet-top');
-      if (panel) { delete panel.dataset.compact; delete panel.dataset.dock; }
+      if (panel) {
+        const closing = panel;
+        pendingSheetReset.set(closing, requestAnimationFrame(() => { pendingSheetReset.delete(closing); resetPagedSheet(closing); }));
+      }
       window.removeEventListener('resize', reveal); window.visualViewport?.removeEventListener('resize', reveal);
       for (const event of ['wheel', 'touchmove', 'pointerdown', 'keydown']) window.removeEventListener(event, interrupt);
     };
