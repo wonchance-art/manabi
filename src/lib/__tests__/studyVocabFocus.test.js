@@ -59,7 +59,11 @@ describe('초점 잇기 배선 — 화면은 그대로, 초점만', () => {
   it('온보딩: 질문이 바뀌면 그 제목으로, 시작하면 첫 문항으로 — 첫 질문(진입)은 그대로. 선택 상태를 화면 읽기에 알린다', () => {
     const onboarding = read('src/views/StudyOnboarding.jsx');
     const effect = sliceBetween(onboarding, 'const prevPhaseRef = useRef(phase);', '}, [phase]);');
-    expect(effect).toContain("if (prev === phase || prev === 'loading') return;");
+    expect(effect).toContain('if (prev === phase) return;');
+    // 백필 리로드(기초 · 배운 적)로 돌아온 첫 그림만 — 표시를 한 번 읽고 지운다. 그 밖의 진입(loading → 무엇이든)은 그대로 둔다.
+    expect(sliceBetween(effect, "if (prev === 'loading') {", "if (phase === 'session') {")).toContain("if (!resumed || phase !== 'session') return;");
+    expect(effect).toContain("resumed = sessionStorage.getItem(FOCUS_AFTER_RELOAD) === '1'; sessionStorage.removeItem(FOCUS_AFTER_RELOAD);");
+    expect(onboarding).toContain("try { sessionStorage.setItem(FOCUS_AFTER_RELOAD, '1'); } catch {}\n        window.location.reload();");
     expect(effect).toContain("document.querySelector('.study-item')");
     expect(effect).toContain("focusItemHead(item, item?.closest('.page-container'));");
     expect(effect).toContain("focusIfFree(headingRef.current, headingRef.current?.closest('.page-container'));");
