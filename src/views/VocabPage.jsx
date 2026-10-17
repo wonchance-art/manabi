@@ -20,7 +20,7 @@ import OfflineNotice, { PendingReviewsNotice } from '../components/OfflineNotice
 import ConfirmModal from '../components/ConfirmModal';
 import VocabularyExclusionList from '../components/VocabularyExclusionList';
 import VocabReview, { REVIEW_PREP_FAILED } from './VocabReview';
-import { CardGridSkeleton } from '../components/Skeleton';
+import { CardGridSkeleton, SkeletonLine } from '../components/Skeleton';
 import { failureMessage } from '../lib/errorMessage';
 import { detectLang, detectLangConfident, hasCjkText } from '../lib/constants';
 import { choiceLabels, choiceMeaning } from '../lib/meaningClean';
@@ -659,6 +659,8 @@ function VocabWorkspace({ reviewScope }) {
   const scopeCount = useMemo(() => (admission.quota && learningAvailable ? countFor(scope) : null), [countFor, scope, admission.quota, learningAvailable]);
   const session = scopeCount && scopeCount.status === 'ready' ? scopeCount : { status: 'pending', total: 0, due: 0, newAllowed: 0, newLocked: 0, deferred: 0,
     noMeaning: 0, backlog: null, byLang: scopeCount?.byLang || {}, queue: { items: [], ids: [], legacyIds: [], fsrsIds: [] } };
+  // 오늘 카드의 「준비 중」 — 제목 · 안내 줄이 같은 판정을 쓴다(VOCAB-FLOW-001).
+  const heroPending = admission.status !== 'ready' || session.status !== 'ready';
   // 세션 길이(§6-1 ③) — 「5분 ≈ 20 · 50 · 전부」는 서로 다른 카드 수(새 표현 포함, 학습 단계 · 재질문 제외). 줄 앞에서 자른다.
   // 버튼 숫자 = 시작하는 줄 길이(sessionCards.length).
   const lengthOptions = sessionLengthOptions(session.total);
@@ -1084,7 +1086,11 @@ function VocabWorkspace({ reviewScope }) {
   // handleScore → recordReviewCompleted, 새 일정 = FSRS controller)은 이 한 길이다. 본 복습은 두 엔진이 섞인 줄
   // (countReviewScope의 queue.items — FSRS 독점 해제, R1-B-1), 재대결은 예전 일정 카드만(기존 경로).
   const startSession = async (queueWords, { items = null, resumeFrom = null } = {}) => {
-    if (!(await admission.controller.refresh()) || !(await fsrsReview.controller.refresh()) || !workspaceAlive.current) return;
+    // 입장 한도 · FSRS 목록은 서로 기다릴 이유가 없는 읽기 둘이다 — 함께 보낸다(VOCAB-FLOW-001). 차례로 보내면 시작을 누른 뒤
+    // 첫 카드까지 왕복이 하나 더 들었다(픽스처 실측 390 · CPU 4배 · 지연 150ms: 입장 57–212 → FSRS 235–388 → 첫 질문 424–606ms).
+    // 둘 다 진행 중이면 같은 약속을 돌려주고(refresh 중복 방지), 하나라도 실패하면 지금처럼 시작하지 않는다.
+    const [admissionOk, fsrsOk] = await Promise.all([admission.controller.refresh(), fsrsReview.controller.refresh()]);
+    if (!admissionOk || !fsrsOk || !workspaceAlive.current) return;
     const planned = items
       ? items.filter(item => (item.engine === 'fsrs' ? fsrsStepValid(item.id)
         : fsrsReview.controller.canLegacy(item.id) && vocab.some(v => v.id === item.id && reviewAvailable(v) && reviewSupported(v))))
@@ -1463,8 +1469,13 @@ function VocabWorkspace({ reviewScope }) {
           <section className="card vocab-hero" aria-labelledby="review-today-title">
             <div className="vocab-hero__top"><span className="vocab-hero__kicker">이 범위에서 오늘</span><span className="manabi-eyebrow">01 / RECALL</span></div>
             {/* 「첫 표현」 안내는 정말 담은 표현이 없을 때만 — 좁힌 범위가 비었을 뿐이면 범위 문구가 말한다(교재 범위는 그 교재 기준). */}
-            <h2 id="review-today-title">{session.total ? '오늘 다시 볼 표현' : hasAnyWords ? '잠시, 읽기로 돌아가요.' : '첫 표현을 담아 보세요.'}</h2>
-            {admission.status !== 'ready' || session.status !== 'ready' ? <p aria-busy="true" className="review-room-note">복습 준비 중…</p> : session.total > 0 ? <>
+            {/* 준비 중(입장 한도 · FSRS 목록을 받는 중)에는 제목도 골격이다(VOCAB-FLOW-001 · LOADING-SKELETON-001 「받는 중엔 빈 상태 대신
+                골격」). session.total이 아직 0이라 「잠시, 읽기로 돌아가요.」(오늘 끝)가 0.1~1초 보였다가 「오늘 다시 볼 표현」으로 바뀌었다
+                (픽스처 실측 390 · CPU 4배: 1331 → 1482ms, FSRS 1초 지연 시 약 1초). 제목 자리 · 크기는 같다. */}
+            <h2 id="review-today-title">{heroPending
+              ? <><span className="sr-only">오늘 복습</span><SkeletonLine width="8em" height="1em" /></>
+              : session.total ? '오늘 다시 볼 표현' : hasAnyWords ? '잠시, 읽기로 돌아가요.' : '첫 표현을 담아 보세요.'}</h2>
+            {heroPending ? <p aria-busy="true" className="review-room-note">복습 준비 중…</p> : session.total > 0 ? <>
               <div className="review-room-number"><strong className="vocab-hero__num">{session.total}</strong><span>개의 표현</span></div>
               {/* 0인 갈래는 적지 않는다(learning-flow e2e 「복습 0」 금지) — 「복습 14 · 새 표현 4」(설계 §5-1). */}
               <p className="review-room-note">{[session.due > 0 && `복습 ${session.due}`, session.newAllowed > 0 && `새 표현 ${session.newAllowed}`].filter(Boolean).join(' · ')}</p>
