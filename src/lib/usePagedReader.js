@@ -81,6 +81,13 @@ export function fontsAffectReader(faces, families) {
   const names = new Set(families);
   return list.some(face => { const name = fontFamilyNames(face?.family)[0]; return !name || names.has(name); });
 }
+/** 다시 재기를 부르지 않아도 되는 변화 — 쪽 흐름 밖 칸(data-page-ignore: 쪽 보기에서 숨긴 진행 막대 등) 안의 바뀜만. 대상을 모르면 잰다. */
+export function mutationsAffectFlow(records) {
+  return [...(records || [])].some(record => {
+    const node = record?.target?.nodeType === 1 ? record.target : record?.target?.parentElement;
+    return !node?.closest?.('[data-page-ignore]');
+  });
+}
 export function firstIndexAtOrAfter(length, page, pageAt) {
   let low = 0, high = length;
   while (low < high) { const mid = (low + high) >> 1; if (pageAt(mid) < page) low = mid + 1; else high = mid; }
@@ -326,7 +333,12 @@ export function createPagedController(pages, options = () => ({})) {
     const watchProbes = () => { for (const probe of pages.querySelectorAll?.('[data-page-probe]') || []) resize?.observe(probe); };
     watchProbes();
     // 분석이 끝나 원문 줄이 토큰으로 바뀌거나 글자 크기가 바뀌면 흐름이 바뀐다 — 다시 재고 기준 토큰으로.
-    const mutation = typeof w.MutationObserver === 'function' ? new w.MutationObserver(() => { watchProbes(); schedule(); }) : null;
+    // 쪽 넘김마다 진행 막대(쪽 보기에서는 숨김, 쪽 상자 안)의 너비 · 숫자가 바뀌어 크기 변화 없이 쪽 전체를 다시 쟀다(PAGE-TURN-REMEASURE-001,
+    // 운영 실측 2026-10-17 KST viewer/45) — 흐름 밖 칸 안의 바뀜만이면 건너뛴다.
+    const mutation = typeof w.MutationObserver === 'function' ? new w.MutationObserver(records => {
+      if (!mutationsAffectFlow(records)) return;
+      watchProbes(); schedule();
+    }) : null;
     mutation?.observe(pages, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['style', 'hidden'] });
     return () => {
       pages.removeEventListener('scroll', handleScroll);

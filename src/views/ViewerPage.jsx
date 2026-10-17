@@ -4005,7 +4005,7 @@ export default function ViewerPage() {
 
       {/* Reading Progress Bar */}
       {isDone && (
-        <div className="viewer-progress-bar" aria-label={`읽기 진행률 ${readProgress}%`}>
+        <div className="viewer-progress-bar" aria-label={`읽기 진행률 ${readProgress}%`} data-page-ignore>
           <div className="viewer-progress-bar__fill" style={{ width: `${readProgress}%` }} />
           <span className="viewer-progress-bar__label">{readProgress}%</span>
         </div>

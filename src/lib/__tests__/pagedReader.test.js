@@ -1,8 +1,11 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { sliceBetween } from './helpers/sliceBetween';
 import { describe, expect, it, vi } from 'vitest';
 import {
   pageStep, pageCountFor, pageOfOffset, nearestPage, pageProgress, pageLabel, pageHeightFor,
   pageKeyAction, swipeDirection, firstIndexAtOrAfter, createPagedController, overlayOrigin,
-  fontFamilyNames, fontsAffectReader,
+  fontFamilyNames, fontsAffectReader, mutationsAffectFlow,
 } from '../usePagedReader';
 import { compactSheetHeight } from '../readingViewport';
 
@@ -299,5 +302,43 @@ describe('re-measure on fonts loadingdone only for reader fonts', () => {
     expect(frames).toHaveBeenCalledTimes(1); // 본문 글꼴을 모르면 전처럼 잰다
     detach();
     expect(listeners.loadingdone).toBeUndefined();
+  });
+});
+
+// 쪽 넘김의 크기 변화 없는 다시 재기(PAGE-TURN-REMEASURE-001) — 운영 실측(2026-10-17 KST, viewer/45 · 390폭): 쪽을 넘길 때마다 쪽 상자 안
+// 진행 막대(쪽 보기에서 display:none)의 width · % 숫자가 바뀌어 MutationObserver가 쪽 전체 다시 재기를 불렀다(ResizeObserver 0건).
+describe('page-turn mutations outside the page flow do not re-measure', () => {
+  it('ignores mutations that are all inside [data-page-ignore]; unknown targets still re-measure', () => {
+    const inside = { nodeType: 1, closest: (sel) => (sel === '[data-page-ignore]' ? {} : null) };
+    const flow = { nodeType: 1, closest: () => null };
+    expect(mutationsAffectFlow([{ type: 'attributes', target: inside }, { type: 'characterData', target: { nodeType: 3, parentElement: inside } }])).toBe(false);
+    expect(mutationsAffectFlow([{ type: 'attributes', target: inside }, { type: 'childList', target: flow }])).toBe(true);
+    expect(mutationsAffectFlow([{ type: 'childList', target: null }])).toBe(true);
+    expect(mutationsAffectFlow([])).toBe(false);
+  });
+  it('wiring: the observer returns early on ignored mutations; the hidden progress bar is marked', () => {
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/lib/usePagedReader.js'), 'utf8');
+    expect(sliceBetween(src, 'new w.MutationObserver(records => {', '}) : null;')).toContain('if (!mutationsAffectFlow(records)) return;\n      watchProbes(); schedule();');
+    const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+    expect(viewer).toContain('<div className="viewer-progress-bar" aria-label={`읽기 진행률 ${readProgress}%`} data-page-ignore>');
+    expect(fs.readFileSync(path.join(process.cwd(), 'src/components/viewer/paged-reader.css'), 'utf8')).toContain('.viewer-layout[data-reader-view="paged"] .viewer-progress-bar { display: none; }');
+  });
+  it('the attached controller skips a relayout for an ignored mutation and schedules one for a flow mutation', () => {
+    const reader = fakeReader();
+    let observe = null;
+    class FakeMO { constructor(cb) { observe = cb; } observe() {} disconnect() {} }
+    const doc = { activeElement: null, querySelector: () => null, addEventListener() {}, removeEventListener() {}, fonts: null };
+    Object.assign(reader.pages, { addEventListener() {}, removeEventListener() {}, parentElement: null, ownerDocument: doc });
+    reader.win.visualViewport = { height: 844, scale: 1, addEventListener() {}, removeEventListener() {} };
+    const frames = vi.fn(() => 1);
+    Object.assign(reader.win, { addEventListener() {}, removeEventListener() {}, requestAnimationFrame: frames, ResizeObserver: undefined, MutationObserver: FakeMO });
+    const c = createPagedController(reader.pages, () => ({ window: reader.win, document: doc, reducedMotion: () => true }));
+    const detach = c.attach();
+    const bar = { nodeType: 1, closest: (sel) => (sel === '[data-page-ignore]' ? {} : null) };
+    observe([{ type: 'attributes', target: bar }, { type: 'characterData', target: { nodeType: 3, parentElement: bar } }]);
+    expect(frames).not.toHaveBeenCalled();
+    observe([{ type: 'childList', target: { nodeType: 1, closest: () => null } }]);
+    expect(frames).toHaveBeenCalledTimes(1);
+    detach();
   });
 });
