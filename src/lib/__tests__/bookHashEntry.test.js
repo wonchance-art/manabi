@@ -149,6 +149,16 @@ describe('hash 기록에 같은 문서 tree를 함께 찍는다(BOOK-HASH-RACE-0
         if (url) out.restores.push({ url, tree: cur?.__PRIVATE_NEXTJS_INTERNALS_TREE });
         return original.replace(data, url);
       },
+      // pushState 패치도 같은 규칙(app-router.js 309행): 표지 있으면 그대로, 없으면 지금 기록의 표지 · tree를 복사하고 RESTORE.
+      pushState(data, _u, url) {
+        if (data?.__NA || data?._N) return original.push(data, url);
+        data = data == null ? {} : data;
+        const cur = entries[idx].state;
+        if (cur?.__NA) data.__NA = cur.__NA;
+        if (cur?.__PRIVATE_NEXTJS_INTERNALS_TREE) data.__PRIVATE_NEXTJS_INTERNALS_TREE = cur.__PRIVATE_NEXTJS_INTERNALS_TREE;
+        if (url) out.restores.push({ url, tree: cur?.__PRIVATE_NEXTJS_INTERNALS_TREE });
+        return original.push(data, url);
+      },
     };
     const env = {
       window: { history, location: { get href() { return entries[idx].url; } } },
@@ -192,6 +202,51 @@ describe('hash 기록에 같은 문서 tree를 함께 찍는다(BOOK-HASH-RACE-0
       announceFragmentUrl(`${BOOK}#u02-start`);
     });
     expect(env.entries[1].state).toEqual({ __NA: true });
+  });
+
+  // go()는 같은 문서를 다른 검색어 주소로 옮길 수 있다(?edition 없이 들어오면 bookHref가 붙이고, returnTo는 안전한 값으로 바뀐다).
+  // 옮긴 기록의 tree는 그 화면을 그린 tree다(book.edition 그대로) — Next 15 얕은 이동(표지 없는 pushState)도 똑같이 지금 tree를 복사한다.
+  const NO_SEARCH = 'https://manabi.test/books/japanese-n5';
+  it('go()의 얕은 이동 뒤에도: 그 기록에서 hash 이동 → 커밋 전 /materials → 뒤로가 교재 tree로 돌아온다', () => {
+    forgetRouterTree();
+    const env = nextModel({ url: `${NO_SEARCH}#u01-start`, state: { __NA: true, __PRIVATE_NEXTJS_INTERNALS_TREE: T_BOOK } });
+    withWindow(env, () => {
+      rememberRouterTree(); // BookReader가 붙을 때
+      // go()와 같은 모양 — 지금 기록 state를 펼쳐 읽던 자리만 빼고 표지째 pushState(다른 검색어 주소)
+      const navigationState = { ...env.window.history.state }; delete navigationState.manabiBookPosition;
+      env.window.history.pushState(navigationState, '', `${BOOK}#u02-start`);
+      rememberRouterTree(); // 그 기록에서 굴린 뒤 읽던 자리 기록(rememberPosition)
+      env.nativeHash(`${BOOK}#u03-start`);
+      announceFragmentUrl(`${BOOK}#u03-start`);
+      env.linkTo('https://manabi.test/materials', T_MAT);
+      expect(env.back()).toBe('traverse');
+    });
+    expect(env.out.reloads).toBe(0);
+    expect(env.out.traversed).toEqual([T_BOOK]);
+    expect(env.entries[1]).toEqual({ url: `${BOOK}#u02-start`, state: { __NA: true, __PRIVATE_NEXTJS_INTERNALS_TREE: T_BOOK } });
+    expect(env.entries[2].state).toEqual({ __NA: true, __PRIVATE_NEXTJS_INTERNALS_TREE: T_BOOK });
+  });
+
+  it('tree를 빼고 옮기는 길은 없다 — 표지 없이 넘기면 패치가 다시 복사하고, 표지만 남기면 traverse가 그 순간 tree(/materials)를 쓴다', () => {
+    const viaPatch = nextModel({ url: `${NO_SEARCH}#u01-start`, state: { __NA: true, __PRIVATE_NEXTJS_INTERNALS_TREE: T_BOOK } });
+    withWindow(viaPatch, () => viaPatch.window.history.pushState({}, '', `${BOOK}#u02-start`));
+    expect(viaPatch.entries[1].state).toEqual({ __NA: true, __PRIVATE_NEXTJS_INTERNALS_TREE: T_BOOK });
+    expect(viaPatch.out.restores).toEqual([{ url: `${BOOK}#u02-start`, tree: T_BOOK }]);
+    const markOnly = nextModel({ url: `${NO_SEARCH}#u01-start`, state: { __NA: true, __PRIVATE_NEXTJS_INTERNALS_TREE: T_BOOK } });
+    withWindow(markOnly, () => {
+      markOnly.window.history.pushState({ __NA: true }, '', `${BOOK}#u02-start`);
+      markOnly.linkTo('https://manabi.test/materials', T_MAT);
+      expect(markOnly.back()).toBe('traverse');
+    });
+    expect(markOnly.out.traversed).toEqual([T_MAT]); // 주소는 교재, 화면은 /materials — go()가 표지 · tree를 그대로 옮기는 이유
+  });
+
+  it('go()는 지금 기록의 Next 표지 · tree를 그대로 옮기고 읽던 자리만 뺀다', () => {
+    const go = sliceBetween(source, 'const go = useCallback(', '}, [book.edition, unit, update, reference, rememberPosition]);');
+    expect(go).toContain('const navigationState = { ...window.history.state };');
+    expect(go).toContain('delete navigationState.manabiBookPosition;');
+    expect(go).not.toMatch(/delete navigationState\.(?:__NA|__PRIVATE_NEXTJS_INTERNALS_TREE)/);
+    expect(go).toContain("window.history.pushState(navigationState, '', destination.pathname+destination.search+destination.hash);");
   });
 
   it('BookReader가 붙을 때와 읽던 자리를 남길 때 tree를 기억한다', () => {
