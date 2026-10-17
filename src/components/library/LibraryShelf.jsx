@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import {useEffect,useState,useRef} from 'react';
-import {useSearchParams,useRouter} from 'next/navigation';
+import {useSearchParams} from 'next/navigation';
 import {useInfiniteQuery,useQuery,useQueryClient} from '@tanstack/react-query';
 import {supabase} from '@/lib/supabase';
 import {langNameKo} from '@/lib/constants';
@@ -11,6 +11,7 @@ import {LIBRARY_LANGUAGES,libraryFilters,libraryNarrowed,libraryKey,libraryError
 import {libraryResume} from '@/lib/libraryActivity';
 import {safeLibraryReturn} from '@/lib/libraryReturn';
 import {keepPreviousForUser} from '@/lib/keepPreviousForUser';
+import {useCommittedReplace} from '@/lib/useCommittedReplace';
 import {libraryConversationsQuery,libraryListQuery,libraryRecentQuery} from '@/lib/libraryShelfQueries';
 import LibraryReaderLink from '@/components/web/LibraryReaderLink';
 import LibraryRow,{LibraryCover} from './LibraryRow';
@@ -48,7 +49,8 @@ function FilterDialog({filters,onApply,onClose}){
  </form></LibraryDialog>;
 }
 export default function LibraryShelf({user}){
- const params=useSearchParams(),router=useRouter(),cache=useQueryClient();
+ // 검색어만 바꾸는 이동은 반영을 확인한다 — 같은 경로 router.replace가 가끔 commit되지 않는다(useCommittedReplace).
+ const params=useSearchParams(),replace=useCommittedReplace(),cache=useQueryClient();
  const filters=libraryFilters(params),narrowed=libraryNarrowed(filters),trash=filters.scope==='trash';
  const [search,setSearch]=useState(filters.query),[dialog,setDialog]=useState(null),[menu,setMenu]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const [selecting,setSelecting]=useState(false),[selected,setSelected]=useState([]),[result,setResult]=useState(null),[pending,setPending]=useState(null),[folder,setFolder]=useState(''),[rename,setRename]=useState('');
@@ -73,7 +75,7 @@ export default function LibraryShelf({user}){
  useEffect(()=>{try{setPending(parsePendingOperation(localStorage.getItem(pendingOperationKey(user.id))));}catch{/* No persistence available. */}},[user.id]);
  useEffect(()=>setSearch(filters.query),[filters.query]);
  useEffect(()=>{if(!stale&&items.length<filters.shown&&hasNextPage&&!isFetching&&!isError)fetchNextPage();},[stale,filters.shown,items.length,hasNextPage,isFetching,isError,fetchNextPage]);
- function change(patch){const next=new URLSearchParams(params.toString());if(!Object.hasOwn(patch,'shown'))next.delete('shown');next.delete('restoreY');for(const [k,v]of Object.entries(patch)){if(v)next.set(k,String(v));else next.delete(k);}router.replace(`/materials${next.size?`?${next}`:''}`,{scroll:false});}
+ function change(patch){const next=new URLSearchParams(params.toString());if(!Object.hasOwn(patch,'shown'))next.delete('shown');next.delete('restoreY');for(const [k,v]of Object.entries(patch)){if(v)next.set(k,String(v));else next.delete(k);}replace(`/materials${next.size?`?${next}`:''}`,{scroll:false});}
  function remember(id,undo=false){const request=id?{id,undo}:null;setPending(request);try{if(request)localStorage.setItem(pendingOperationKey(user.id),JSON.stringify(request));else localStorage.removeItem(pendingOperationKey(user.id));}catch{/* Result can still be recovered in this tab. */}}
  async function finish(value){setResult(value);await invalidateLibrary(cache,user.id);setSelected([]);setDialog(null);setMenu(null);if(!value.items.some(x=>x.status==='pending'))remember(null);requestAnimationFrame(()=>listRef.current?.focus({preventScroll:true}));}
  async function apply(action,rows=selected,options={}){
