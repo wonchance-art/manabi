@@ -153,6 +153,10 @@
 .review-room-session:has(.review-grade-bar) { padding-bottom:calc(150px + env(safe-area-inset-bottom,0px)); }
 .review-grade-bar.is-locked .review-score-btn { opacity:.55; }
 .review-grade-guide { font-size:12px; color:var(--muted); text-align:center; margin:0 0 8px; line-height:1.6; overflow-wrap:anywhere; }
+/* 앞면(잠김)에서도 안내 줄 · 간격 글 자리를 둔다 — 정답 확인 때 막대가 자라지 않게(VOCAB-FLOW-001 C). 숨김(자리만). */
+.review-grade-guide--reserve { visibility:hidden; }
+/* 끝 화면 제목은 마지막 채점 뒤 초점을 받는 읽는 자리(tabIndex −1) — 고리를 그리지 않는다(#main-content h1 선례 · /study 「세션 완료」). */
+.review-done__title[tabindex="-1"]:focus { outline:none; }
 .review-grade-bar--practice .review-score-btn { min-height:52px; }
 .practice-key { margin-left:6px; font-size:11px; color:var(--muted); }
 .review-card--intro .review-card__body { display:flex; flex-direction:column; align-items:stretch; }

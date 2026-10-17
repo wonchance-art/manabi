@@ -159,6 +159,20 @@ describe('단어 카드 — 고른 것 하나만 · 펼치기 · 훈음 · 正�
     expect(pressed(card('all', { studying: true }))).toEqual(['o:false', 'x:true']);
   });
 
+  it('[O][X]는 어느 보기든 동그라미 아이콘만 — 이름표 글자 0 · 가운데 맞춤은 기본 .lv-fab(오너 2026-10-17)', () => {
+    for (const view of ['all', 'word', 'meaning']) {
+      const acts = sliceBetween(card(view), '<div class="lv-acts">', '</div>');
+      expect(count(acts, '<button')).toBe(2);
+      expect(acts).not.toMatch(/<span|안다<|모른다</);
+      expect(acts).toMatch(/aria-label="[^"]*안다/); // 화면 읽기 이름은 그대로
+    }
+    // 중국어 덮어쓰기가 기본 .lv-fab의 inline-grid · place-items(가운데)를 다시 풀지 않는다 — 탭 보기 아이콘 쏠림의 원인
+    const css = fs.readFileSync(new URL('../../components/levels/level-list.css', import.meta.url), 'utf8');
+    expect(css).toMatch(/\.lv-fab\{[^}]*display:inline-grid;place-items:center/);
+    const zhFab = [...css.matchAll(/\[data-language="zh"\][^{]*\.lv-fab(?![-\w])[^{]*\{([^}]*)\}/g)].map((m) => m[1]).join(';');
+    expect(zhFab).not.toMatch(/display:|padding:|min-width:|border-radius:|font:/);
+  });
+
   it('성조 색(옵션): 켜면 음절마다 lv-tone--N, 끄면 병음 한 덩어리 · 공부 중 카드는 data-studying', () => {
     const tone = (html) => [...html.matchAll(/lv-tone--(\d)">([^<]+)/g)].map((m) => `${m[2]}${m[1]}`);
     const toned = renderToStaticMarkup(<VocabCard entry={entry} lang="chinese" levelKey="h1" view="all" tone onPeek={() => {}} speak={() => {}}

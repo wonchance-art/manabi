@@ -124,7 +124,7 @@ describe('③ 서재 — 대기 문구 세 줄이 골격으로', () => {
     // 서버가 계정을 확인해 미리 받아 왔으면(serverUserId) 골격 없이 바로 서재 — 아니면 지금처럼 골격(LIBRARY-PREFETCH-001).
     // 세션 쿠키가 없으면(sessionHint === false) 골격 없이 손님 서재(LIBRARY-GUEST-HINT — 배움 B1과 같은 판정).
     expect(page).toContain('{loading&&!shelfUser&&sessionHint!==false?<LibraryShelfSkeleton/>:shelfUser?');
-    expect(shelf).toContain('(recent.isPending||(recent.data?.items?.length>0))&&<RecentReadsSkeleton/>');
+    expect(shelf).toContain('((recent.isPending&&!emptyBefore)||(recent.data?.items?.length>0))&&<RecentReadsSkeleton/>'); // 지난번 0개면 받는 동안 접는다(libraryRecentHint.test)
     expect(shelf).toContain('{(list.isPending||(stale&&!items.length))&&<ShelfRowsSkeleton/>}');
     for (const old of ['서재를 열고 있어요…', '읽던 곳을 확인하고 있어요…', '자료 목록 불러오는 중…</p>']) expect(page + shelf).not.toContain(old);
   });

@@ -42,6 +42,37 @@ describe('① 서버 분류 — 서비스 설정은 용량이 아니다', () => 
     }
   });
 
+  // Gemini 공식 오류 표: failed_precondition(400) — 「billing being disabled」 같은 전제 조건 실패. 결제를 켜기 전에는 풀리지 않는다.
+  const PRECONDITION_BILLING = { error: { code: 400, status: 'FAILED_PRECONDITION', message: 'Gemini API free tier is not available in your country. Please enable billing on your project in Google AI Studio.' } };
+  it('양성 — 400 FAILED_PRECONDITION(status 또는 ErrorInfo reason) + billing 문구는 서비스 설정', async () => {
+    const { isServiceConfigError, isCapacityError } = await freshLlm();
+    expect(isServiceConfigError(400, PRECONDITION_BILLING)).toBe(true);
+    expect(isServiceConfigError(400, JSON.stringify(PRECONDITION_BILLING))).toBe(true);
+    expect(isServiceConfigError(400, { error: { code: 400, status: 'INVALID_ARGUMENT', message: 'Billing is disabled for this project.',
+      details: [{ '@type': 'type.googleapis.com/google.rpc.ErrorInfo', reason: 'FAILED_PRECONDITION' }] } })).toBe(true);
+    expect(isServiceConfigError(400, 'FAILED_PRECONDITION: Please enable billing on your project.')).toBe(true);
+    expect(isCapacityError(400, PRECONDITION_BILLING)).toBe(false);
+  });
+
+  it('음성 — FAILED_PRECONDITION이라도 400이 아니거나 billing 문구가 없으면, 400 + billing이라도 FAILED_PRECONDITION이 아니면 아니다', async () => {
+    const { isServiceConfigError } = await freshLlm();
+    expect(isServiceConfigError(400, { error: { code: 400, status: 'FAILED_PRECONDITION', message: 'User location is not supported for the API use.' } })).toBe(false);
+    expect(isServiceConfigError(400, { error: { code: 400, status: 'INVALID_ARGUMENT', message: 'Invalid billing field in request.' } })).toBe(false);
+    expect(isServiceConfigError(403, { error: { code: 403, status: 'FAILED_PRECONDITION', message: 'Please enable billing.' } })).toBe(false);
+    expect(isServiceConfigError(429, { error: { code: 429, status: 'FAILED_PRECONDITION', message: 'check your plan and billing details' } })).toBe(false);
+    expect(isServiceConfigError(429, GEMINI_QUOTA)).toBe(false); // 429 + billing은 계속 혼잡
+  });
+
+  it('400 결제 비활성이면 다른 Gemini 모델을 건너뛰고 code service_config로 던진다', async () => {
+    const fetchSpy = vi.fn(async () => geminiFail(400, PRECONDITION_BILLING));
+    vi.stubGlobal('fetch', fetchSpy);
+    const { callLLM } = await freshLlm();
+    const err = await callLLM('standard', 'p', { retry: { max: 3, delays: [0, 0, 0] } }).catch((e) => e);
+    expect(err.code).toBe('service_config');
+    expect(err.status).toBe(400);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+
   it('음성 — 쿼터 429는 지금처럼 용량 재시도 · 폴백 모델을 탄다(서비스 설정으로 끊지 않는다)', async () => {
     const fetchSpy = vi.fn(async () => geminiFail(429, GEMINI_QUOTA));
     vi.stubGlobal('fetch', fetchSpy);
@@ -131,7 +162,11 @@ describe('② 분석 데이터 보호 — 뜻 빈 완료본을 만들지 않는�
   it('클라 분석은 429만 자동 재시도하고, 실패 응답의 줄은 기존 실패(failed_indices)로 남긴다 — 재분석은 완료 검사에서 멈춘다', () => {
     const text = read('src/lib/analyzeText.js');
     expect(text).toContain('if (res?.status !== 429 || attempt >= RATE_LIMIT_RETRIES) return res;');
-    expect(text).toContain("if (data?.code === 'service_config') serviceStopped = true;");
+    // 멈춤 표지는 한 helper(createServiceStop) — 하이브리드는 응답 code, 줄 단위는 오류(402 · 같은 판정)로 같은 표지를 쓴다.
+    expect(text).toContain("if (code === 'service_config' || (error && isServiceConfigError(error.status, String(error)))) stopped = true;");
+    expect(text).toContain('serviceStop.note({ code: data?.code });');
+    expect(text).toContain('if (serviceStop.note({ error: e })) break;');
+    expect(text.match(/const serviceStop = createServiceStop\(\);/g)).toHaveLength(2);
     expect(text).toContain('throw new Error(data?.error || `HTTP ${res.status}`);');
     const preserve = read('src/lib/reanalysisPreservation.js');
     expect(preserve).toContain("if (!completeAnalysis(result, rawText)) throw new Error('새 분석을 완료하지 못했어요. 기존 원문과 분석은 그대로 있어요.');");

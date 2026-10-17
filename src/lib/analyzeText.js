@@ -1,4 +1,5 @@
 import { callGemini, parseGeminiJSON, buildTokenizationPrompt } from './gemini';
+import { isServiceConfigError } from './errorMessage';
 import { canonizeTokenPos } from './server/posCanon';
 import { boundaryParagraphRequest, compactBoundaryText, readBoundaryEdits, settleBoundaryRecord } from './boundaryEdits';
 import { locateLineTokens, splitSentenceRanges } from './viewerSentenceLine';
@@ -174,6 +175,23 @@ export function tokensCoverLine(line, texts, language) {
  * - 실패해도 절대 중단하지 않음. 실패 줄은 failed 플레이스홀더로 보존.
  * - existingJson 전달 시 failed_indices 줄만 재시도 (성공 토큰 재사용).
  */
+/**
+ * 첫 「서비스 설정」(결제 · 크레딧) 실패에서 남은 요청을 멈추는 표지(GEMINI-402-GUARD) — 기다려도 풀리지 않는 실패라 긴 자료가
+ * 같은 벽에 요청을 계속 던지지 않게 한다. 하이브리드(서버 응답 code service_config)와 줄 단위(/api/gemini 402 · 같은 판정)가 같이 쓴다.
+ * 멈춘 뒤 남은 줄은 각 경로의 기존 실패 길(failed_indices — 이어서 분석으로 복구)로 끝낸다. 호출마다 새로 만든다(다음 분석은 처음부터 보낸다).
+ */
+export function createServiceStop() {
+  let stopped = false;
+  return {
+    get stopped() { return stopped; },
+    /** 서버 응답 본문(code) 또는 던져진 오류(status · 문자열)를 본다 — 오류 문자열은 분류에만 쓰고 화면에 싣지 않는다. 서비스 설정이면 멈춘다. */
+    note({ code, error } = {}) {
+      if (code === 'service_config' || (error && isServiceConfigError(error.status, String(error)))) stopped = true;
+      return stopped;
+    },
+  };
+}
+
 /**
  * 최종 상태 판정 — 성공 토큰이 하나도 없으면 'failed'.
  * 전량 실패를 'partial'로 두면 UI가 "분석 완료(재시도 필요)"라고 말해 실패를 가린다
@@ -462,12 +480,12 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
   };
 
   if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-  // 서버가 「서비스 설정」(결제 · 크레딧, code service_config)으로 실패하면 남은 요청은 보내지 않는다 — 기다려도 풀리지 않는
-  // 실패라 긴 자료가 같은 벽에 요청을 계속 던지던 것(GEMINI-402-GUARD). 남은 줄은 지금 실패 응답과 같은 길(결과 없음 → failed_indices)로 끝난다.
-  let serviceStopped = false;
+  // 서버가 「서비스 설정」(결제 · 크레딧, code service_config)으로 실패하면 남은 요청은 보내지 않는다(createServiceStop).
+  // 남은 줄은 지금 실패 응답과 같은 길(결과 없음 → failed_indices)로 끝난다.
+  const serviceStop = createServiceStop();
   for (const { units } of requests) {
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-    if (serviceStopped) { units.forEach(unit => unitResults.set(unit, null)); continue; }
+    if (serviceStop.stopped) { units.forEach(unit => unitResults.set(unit, null)); continue; }
     const sent = new Set(units);
     const boundariesBody = allSent.filter(item => sent.has(homeOf.get(item)))
       .map(item => boundaryToUnit(item.payload, homeOf.get(item), units.indexOf(homeOf.get(item))));
@@ -482,7 +500,7 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
       }, signal);
       const data = await res.json();
       if (!res.ok) {
-        if (data?.code === 'service_config') serviceStopped = true;
+        serviceStop.note({ code: data?.code });
         throw new Error(data?.error || `HTTP ${res.status}`);
       }
       if (isKorean && (data?.metadata?.language !== language || data?.metadata?.explanationLocale !== explanationLocale ||
@@ -536,6 +554,8 @@ async function analyzeLineByLineGemini(rawText, signal, { metadata, onBatch, exi
   let currentConcurrency = concurrency;
   const MIN_CONCURRENCY = 2;
   let capacityErrorStreak = 0;
+  // 첫 서비스 설정 실패 뒤에는 남은 줄을 보내지 않고 기존 실패 길(failed)로 끝낸다 — 하이브리드와 같은 표지(createServiceStop).
+  const serviceStop = createServiceStop();
 
   const isRetry = !!(existingJson?.failed_indices?.length);
   const failedSet = new Set(isRetry ? existingJson.failed_indices : []);
@@ -559,6 +579,7 @@ async function analyzeLineByLineGemini(rawText, signal, { metadata, onBatch, exi
       const line = lines[idx].trim();
       if (!line) return { idx, type: 'empty' };
       if (isRetry && !failedSet.has(idx)) return { idx, type: 'reuse' };
+      if (serviceStop.stopped) return { idx, type: 'failed', line };
 
       // 긴 문단(레미제라블 1,502단어 실측)은 한 요청이면 출력 캡(8192토큰)에 잘린 JSON이 된다 — 문장 끝에서 나눈 조각마다 요청하고
       // 토큰을 순서대로 잇는다. 조각 하나라도 끝내 실패하면 줄 전체를 실패로 남긴다(재시도는 줄 단위 현행).
@@ -579,12 +600,14 @@ async function analyzeLineByLineGemini(rawText, signal, { metadata, onBatch, exi
         const MAX_ATTEMPTS = 5;
         let lastError = null;
         for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+          if (serviceStop.stopped) break; // 같은 묶음의 다른 줄이 먼저 서비스 설정으로 멈췄다
           try {
             const raw = await callGemini(buildTokenizationPrompt(piece, lang), signal);
             return parseGeminiJSON(raw);
           } catch (e) {
             lastError = e;
             if (signal?.aborted) throw e;
+            if (serviceStop.note({ error: e })) break; // 기다려도 풀리지 않는다 — 재시도하지 않는다
             if (attempt < MAX_ATTEMPTS - 1) {
               const msg = (e.message || '').toLowerCase();
               const isCapacity = msg.includes('high demand') || msg.includes('overloaded') ||
@@ -604,7 +627,8 @@ async function analyzeLineByLineGemini(rawText, signal, { metadata, onBatch, exi
     const results = await Promise.all(promises);
 
     const failedInBatch = results.filter(r => r.type === 'failed').length;
-    if (failedInBatch >= batchIndices.length / 2) {
+    // 서비스 설정으로 멈춘 실패는 용량 압박이 아니다 — 동시성을 줄이며 3초씩 기다리지 않는다.
+    if (!serviceStop.stopped && failedInBatch >= batchIndices.length / 2) {
       capacityErrorStreak++;
       if (capacityErrorStreak >= 2 && currentConcurrency > MIN_CONCURRENCY) {
         const newConc = Math.max(MIN_CONCURRENCY, Math.floor(currentConcurrency / 2));

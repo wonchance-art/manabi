@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {build} from 'vite';
 import path from 'node:path';
+import {inactiveLearningReply} from './fixtures/learning-snapshot.mjs';
 const {PGlite}=await import(process.env.QA_PGLITE_MODULE||'@electric-sql/pglite');
 const base=process.env.QA_BASE||'http://127.0.0.1:8912',out=process.env.QA_OUT||'/private/tmp/manabi-class-history-qa';fs.mkdirSync(out,{recursive:true});
 const db=new PGlite();const uid='00000000-0000-4000-8000-000000000077',day='2026-09-10';
@@ -115,6 +116,9 @@ await context.route('**/api/learning/vocabulary',async r=>{
  assert.equal(body.word.user_id,student);assert.equal(body.source.kind,'reading');assert.notEqual(body.source.materialId,'10');contexts.push(body);return r.fulfill({json:{contextAdded:true}});
 });
 await context.addInitScript(()=>{localStorage.setItem('class_unlock:fixture-class',JSON.stringify({token:'fixture-class-token',exp:Date.now()+86400000,pwGen:1,name:'목요일의 중국어'}));});
+// 저장 단어 읽기(2026-10-14부터 GET /api/learning/vocabulary?view=learning snapshot) · FSRS 상태 · 한도 · 언어 계약 · 제외 목록은
+// 공용 합성 응답으로 답한다(learning-snapshot.mjs — 비활성 FSRS 계정, 저장 단어 없음). 해당 없는 요청은 위 처리로 넘긴다(나중 등록이 먼저 돈다).
+await context.route('**/api/learning/**',r=>{const reply=inactiveLearningReply(r.request(),{actorId:student,rows:[]});return reply?r.fulfill({status:reply.status,json:reply.json}):r.fallback();});
 const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));
 const check=label=>{report.checks.push(label);console.log(label);};
 const waitFor=async fn=>{for(let i=0;i<100;i++){if(await fn())return;await page.waitForTimeout(100);}throw new Error('condition timeout');};
@@ -134,7 +138,8 @@ await history.getByRole('searchbox').fill('');await history.getByRole('button',{
 await history.getByRole('button',{name:'교재 밖 표현만',exact:true})[activate]();
 for(const width of [1440,768,390]){await page.setViewportSize({width,height:1000});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:`${out}/history-${width}.png`});report.screens.push(`history-${width}.png`);}check('history layout fits desktop, tablet and mobile');
 await history.getByRole('button',{name:'교재에서 보기 ↗',exact:true})[activate]();await page.waitForURL(/viewer\/\d+/);await page.locator('[data-tid="id_0_word"][data-selected="true"]').waitFor();assert(page.url().includes('sourceEntry='));assert(!page.url().includes('sourceQuote='));check('history opens exact expression in canonical personal copy');
-await page.getByRole('link',{name:'← 수업으로',exact:true})[activate]();await page.getByRole('button',{name:'수업 기록',exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:'수업 기록',exact:true}).getAttribute('aria-pressed'),'true');check('return from source opens the class history context');
+// 수업 기록에서 연 출처의 복귀 링크는 「← 수업 기록」이다(readerReturnLabel — view=history).
+await page.getByRole('link',{name:'← 수업 기록',exact:true})[activate]();await page.getByRole('button',{name:'수업 기록',exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:'수업 기록',exact:true}).getAttribute('aria-pressed'),'true');check('return from source opens the class history context');
 assert.equal(report.errors.length,0,report.errors.join('\n'));check('no page runtime errors');
 } catch(error){console.error(error);report.failure=error.message;await page.screenshot({path:out+'/failure.png'});fs.writeFileSync(out+'/failure.html',await page.content());process.exitCode=1;}
 fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));await context.unrouteAll({behavior:'wait'});await browser.close();await db.close();

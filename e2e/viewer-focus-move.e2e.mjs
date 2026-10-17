@@ -438,6 +438,29 @@ const aiFor=(f,line)=>f.ai.filter(r=>r.line===line);
 const leftPanel=f=>f.page.locator('[data-panel="left"]').filter({visible:true});
 const sentenceTab=f=>f.page.locator('#inspector-sentence-tab').filter({visible:true});
 const closePanel=f=>f.page.getByRole('button',{name:'보조 패널 닫기',exact:true}).filter({visible:true}).click();
+// 단어를 실제 포인터로 누르고, 그 단어 카드가 열리는 DOM 변경을 본 MutationObserver(마이크로태스크)에서 [문장] 탭을 누른다.
+// 반환 시각은 브라우저 기준(openedAt · tappedAt = performance.now, epoch = 같은 시계의 Date 값 — 요청 기록 at과 비교).
+async function tapSentenceTabOnCardOpen(f,line,i){
+ const meaning=zh.dictionary[`id_${line}_${i}`].meaning;
+ await f.page.evaluate(meaning=>{
+  const visible=el=>!!el&&el.getClientRects().length>0;
+  const opened=()=>[...document.querySelectorAll('.word-detail-card__meaning')].some(el=>visible(el)&&el.textContent.trim()===meaning);
+  if(opened())throw new Error(`card for ${meaning} is already open`);
+  window.__tabTap=null;
+  const observer=new MutationObserver(()=>{
+   if(!opened())return;
+   const openedAt=performance.now(),tab=[...document.querySelectorAll('#inspector-sentence-tab')].find(visible);
+   if(!tab)return;
+   observer.disconnect();tab.click();
+   const tappedAt=performance.now();
+   window.__tabTap={openedAt,tappedAt,epoch:performance.timeOrigin+tappedAt};
+  });
+  observer.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true});
+ },meaning);
+ await token(f,line,i).click();
+ await f.page.waitForFunction(()=>window.__tabTap);
+ return f.page.evaluate(()=>window.__tabTap);
+}
 const cardOpen=(f,line,i)=>f.page.locator('.word-detail-card__meaning').filter({visible:true}).getByText(zh.dictionary[`id_${line}_${i}`].meaning,{exact:true}).waitFor();
 const noFocus={focusMode:false,autoSpeakOnClick:false};
 
@@ -494,9 +517,12 @@ test('AE-R2 ②: the [문장] tab starts at once under the same key, and a start
   await leftPanel(f).getByText('문장 번역 표지 2').first().waitFor();
   assert.equal(aiFor(f,2).length,1,`same sentence = one request even after tapping away: ${JSON.stringify(aiFor(f,2))}`);
   // 0.3초 전에 [문장] 탭 — 선처리를 기다리지 않고 사용자 요청으로 바로 시작, 이어지는 선처리는 그 요청에 합류.
-  await token(f,3,0).click();await cardOpen(f,3,0);
-  const tapped=Date.now();
-  await sentenceTab(f).click();
+  // 경합 제거: 「카드 대기(폴링) → 탭 클릭(확인)」 Playwright 왕복이 부하에서 0.3초를 넘으면 선처리가 먼저 나가고 탭이 그
+  // 요청에 합류했다(제품상 맞는 동작 — 같은 키 요청 1회 — 이지만 이 단계가 보려는 「0.3초 전 탭」이 아니다, 간헐 실패 2026-10-17).
+  // 카드가 열리는 DOM 변경의 마이크로태스크에서 탭을 누르면 0.3초 선처리 타이머(매크로태스크)보다 늘 먼저다.
+  const tap=await tapSentenceTabOnCardOpen(f,3,0);
+  assert.ok(tap.tappedAt-tap.openedAt<300,`precondition — tab tapped before the 0.3s prefetch: ${tap.tappedAt-tap.openedAt}ms`);
+  const tapped=tap.epoch;
   await f.page.waitForTimeout(1500);
   assert.equal(aiFor(f,3).length,1,`one request for line 3: ${JSON.stringify(f.ai)}`);
   assert.equal(aiFor(f,3)[0].purpose,'viewer-sentence','the tab itself started the request (no 0.3s wait)');

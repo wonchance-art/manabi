@@ -145,7 +145,7 @@ describe('⑥ 쪽 넘김 보기(READER-PAGED-001 목업 D) — 끝의 행동은 
     expect([...order].sort((x, y) => x - y)).toEqual(order);
     // 상단 막대(Aa·듣기)는 흐름 밖 — 어느 쪽에서든 보인다. 쪽 막대는 흐름 뒤.
     expect(src().indexOf('<div className="viewer-topbar">')).toBeLessThan(src().indexOf('<div ref={setPagesEl} className="reader-pages"'));
-    expect(src()).toContain("{pagedActive&&<PageBar pager={pager} barRef={pageBarRef} tr={vt}/>}");
+    expect(src()).toContain("{pagedActive&&<PageBar pager={pager} barRef={pageBarRef} tr={vt} extra={listenFollowable && listenStopped && !pagedSheetOpen ? (");
     // 스크롤 보기는 같은 DOM에 규칙만 없다(지금 그대로) — 보기를 바꿔도 본문이 다시 만들어지지 않는다.
     expect(src()).toContain("data-reader-pages={pagedActive?'paged':'scroll'}");
   });

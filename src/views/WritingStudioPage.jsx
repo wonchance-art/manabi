@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -19,6 +19,7 @@ import { recordActivity } from '../lib/streak';
 import { learnerHref } from '../lib/bookNavigation';
 import { friendlyToastMessage } from '../lib/errorMessage';
 import { authEntryHref } from '../lib/authRedirect';
+import { focusIfFree } from '../lib/focusAfterAction';
 
 const LANGS = [
   { key: 'Japanese', label: '일본어' },
@@ -60,6 +61,20 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
   const [gapAdded, setGapAdded] = useState({});    // 담은 표현(gapKey → true)
   const [gapBusy, setGapBusy] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
+
+  // 첨삭 전후 초점(WRITING-FOCUS-001) — 「첨삭 받기」 · 「고쳐서 다시 쓰기」 · 「새 작문 쓰기」는 누르면 화면이 바뀌며 사라져
+  // 초점이 body로 떨어졌다(키보드는 머리글부터 다시). 결과가 오면 결과 제목(화면 읽기 전용 h2)으로, 다시 쓰러 돌아오면
+  // 작문 칸으로 잇는다. 다른 곳에 살아 있는 초점은 뺏지 않는다(focusIfFree). 화면은 그대로다.
+  const resultHeadRef = useRef(null);
+  const textareaRef = useRef(null);
+  const hadResult = useRef(false);
+  useEffect(() => {
+    const scope = (resultHeadRef.current || textareaRef.current)?.closest('.page-container');
+    if (result) { hadResult.current = true; focusIfFree(resultHeadRef.current, scope); return; }
+    if (!hadResult.current) return;
+    hadResult.current = false;
+    focusIfFree(textareaRef.current, scope);
+  }, [result]);
 
   // 언어 기본값 — 프로필 학습 언어 → localStorage 순
   useEffect(() => {
@@ -420,7 +435,9 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
             </div>
           )}
           <textarea
+            ref={textareaRef}
             className="form-input"
+            aria-label={`${LANGS.find(l => l.key === language)?.label} 작문`}
             value={text}
             onChange={e => setText(e.target.value)}
             placeholder={`${LANGS.find(l => l.key === language)?.label}로 1~5문장을 써 보세요…`}
@@ -435,7 +452,9 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
               {loading ? '첨삭 중…' : '첨삭 받기'}
             </Button>
           </div>
-          {error && <p style={{ color: 'var(--danger)', fontSize: '0.85rem', marginTop: 8 }}>{error}</p>}
+          {/* 첨삭(AI — 긴 작업) 알림 — 영역은 늘 두고 내용만(LOADING-ANNOUNCE-002). 단추 글자(「첨삭 중…」)와 겹치지 않는 문구 */}
+          <span className="sr-only" role="status">{loading ? '첨삭을 받는 중이에요' : ''}</span>
+          {error && <p role="alert" style={{ color: 'var(--danger)', fontSize: '0.85rem', marginTop: 8 }}>{error}</p>}
         </div>
       )}
 
@@ -531,6 +550,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
       {/* 첨삭 결과 */}
       {result && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <h2 ref={resultHeadRef} tabIndex={-1} className="sr-only">첨삭 결과 — {result.score}점</h2>
           <div className="card" style={{ padding: '18px 20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
               <span style={{

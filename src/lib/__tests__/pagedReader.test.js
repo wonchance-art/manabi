@@ -3,11 +3,11 @@ import path from 'node:path';
 import { sliceBetween } from './helpers/sliceBetween';
 import { describe, expect, it, vi } from 'vitest';
 import {
-  pageStep, pageCountFor, pageOfOffset, nearestPage, pageProgress, pageLabel, pageHeightFor,
+  pageStep, pageCountFor, pageOfOffset, nearestPage, foreignScrollPage, pageProgress, pageLabel, pageHeightFor,
   pageKeyAction, swipeDirection, firstIndexAtOrAfter, createPagedController, overlayOrigin,
   fontFamilyNames, fontsAffectReader, mutationsAffectFlow,
 } from '../usePagedReader';
-import { compactSheetHeight } from '../readingViewport';
+import { compactSheetHeight, pagedSheetDock } from '../readingViewport';
 
 // 쪽 넘김 보기(READER-PAGED-001) — 쪽 계산·기준 토큰 복원·키 판정. DOM 없이 다단 상자를 흉내 낸다:
 // 토큰 i는 문서 순서로 perPage개씩 단을 채운다(다단은 문서 순서대로 채우므로 단 번호가 단조 증가).
@@ -192,7 +192,7 @@ describe('paged controller', () => {
     expect(c.captureAnchor(99)).toMatchObject({ kind: 'tail' });
     expect(c.captureAnchor(0)).toMatchObject({ kind: 'element' });
   });
-  it('snaps a foreign scroll (find, focus) to the nearest page, or to the focused element', () => {
+  it('snaps a foreign scroll (find, focus) to the nearest page, or to the element focus just moved to', () => {
     const reader = fakeReader();
     const c = controller(reader);
     reader.pages.scrollLeft = 348 * 2.3; // 브라우저 찾기가 어중간하게 끌고 감
@@ -200,10 +200,13 @@ describe('paged controller', () => {
     expect(c.state.page).toBe(2);
     expect(reader.pages.scrollLeft).toBe(696);
     c.handleScroll(); // 맞춤 자체가 낸 스크롤 이벤트는 무시하고 표식을 걷는다
-    reader.pages.ownerDocument.activeElement = reader.tokenEls[71];
-    reader.pages.scrollLeft = 348 * 6.2; // 포커스 이동의 nearest 정렬 — 가까운 쪽이 아니라 포커스의 쪽
+    // 포커스 이동(쪽 2의 마지막 낱말 — focusin은 쪽을 바꾸지 않음)이 낸 nearest 정렬 — 가까운 쪽(3)이 아니라 포커스의 쪽
+    reader.pages.ownerDocument.activeElement = reader.tokenEls[29];
+    c.handleFocusIn({ target: reader.tokenEls[29] });
+    expect(c.state.page).toBe(2);
+    reader.pages.scrollLeft = 348 * 2.6;
     c.handleScroll();
-    expect(c.state.page).toBe(7);
+    expect(c.state.page).toBe(2);
     c.handleFocusIn({ target: reader.tokenEls[5] });
     expect(c.state.page).toBe(0);
   });
@@ -340,5 +343,348 @@ describe('page-turn mutations outside the page flow do not re-measure', () => {
     observe([{ type: 'childList', target: { nodeType: 1, closest: () => null } }]);
     expect(frames).toHaveBeenCalledTimes(1);
     detach();
+  });
+});
+
+// Tab 초점이 다음 쪽 첫 줄의 문장 막대(.line-pick)에 들 때(PAGED-FOCUS-001, 2026-10-17 KST) — 막대는 낱말 왼쪽 여백에 떠서 단 사이 틈
+// (현재 쪽 끝)에 놓인다. 막대 자리로 쪽을 재면 넘어가지 않아 초점이 화면 밖에 남았다(390 실측: 막대 x 384~408 · 낱말 x 414 · 쪽 그대로).
+describe('focus on a line-head button follows its word page', () => {
+  const buttonOf = (reader, index) => {
+    const token = reader.tokenEls[index];
+    return { nodeType: 1, closest: () => token,
+      getClientRects() { return [this.getBoundingClientRect()]; },
+      getBoundingClientRect() { const r = token.getBoundingClientRect(); return { ...r, left: r.left - 30, right: r.left - 6, width: 24 }; } };
+  };
+  it('focusin on the button turns to the page of its word, not of the gap the button sits in', () => {
+    const reader = fakeReader();
+    const c = controller(reader);
+    c.goTo(1);
+    const button = buttonOf(reader, 20); // 20 = 쪽 2의 첫 낱말, 막대는 쪽 1과 2 사이 틈
+    reader.pages.contains = el => reader.tokenEls.includes(el) || el === button;
+    c.handleFocusIn({ target: button });
+    expect(c.state.page).toBe(2);
+    expect(reader.pages.scrollLeft).toBe(696);
+  });
+  it('the focus scroll that follows the button focus aligns to the word page too', () => {
+    let now = 5_000_000;
+    const spy = vi.spyOn(Date, 'now').mockImplementation(() => now);
+    try {
+      const reader = fakeReader();
+      const c = controller(reader);
+      c.goTo(1); now += 1000;
+      c.handleScroll(); // 우리 이동이 낸 스크롤 이벤트 — 표식을 걷는다
+      const button = buttonOf(reader, 20);
+      reader.pages.contains = el => reader.tokenEls.includes(el) || el === button;
+      reader.pages.ownerDocument.activeElement = button;
+      c.handleFocusIn({ target: button });
+      now += 200; // 우리 맞춤의 표식 시간(120ms)이 지난 뒤 도착한 브라우저의 포커스 스크롤 — 초점이 방금 바뀐 스크롤(500ms 안)
+      reader.pages.scrollLeft = 348 * 1.1;
+      c.handleScroll();
+      expect(c.state.page).toBe(2);
+    } finally { spy.mockRestore(); }
+  });
+  it('wiring: focus · scroll · release all measure through the word (focusPageTarget)', () => {
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/lib/usePagedReader.js'), 'utf8');
+    expect(src).toContain("const focusPageTarget = el => { const item = el?.closest?.(opt().focusSelector || FOCUS_ITEM); return item && item !== pages && pages.contains?.(item) ? item : el; };");
+    expect(src.match(/pageOf\(focusPageTarget\(active\)\)/g)).toHaveLength(1); // focusedPage 한 곳
+    // 스크롤 · 뗀 뒤 맞춤은 초점이 방금 바뀐 경우에만 초점 쪽(FOREIGN-SCROLL-001)
+    expect(sliceBetween(src, 'function handleScroll() {', '\n  }')).toContain('(Date.now() - focusAt < FOCUS_SCROLL_MS ? focusedPage() : null) ?? foreignScrollPage(left, page, { step, gap, count })');
+    expect(sliceBetween(src, 'function settleDeferred() {', '\n  }')).toContain('(byFocus ? focusedPage() : null) ?? nearestPage(');
+    expect(sliceBetween(src, 'function handleFocusIn(event) {', '\n  }')).toContain('focusAt = Date.now();');
+    expect(sliceBetween(src, 'function handleFocusIn(event) {', '\n  }')).toContain('const next = pageOf(focusPageTarget(target));');
+  });
+});
+
+// 초점이 본문 낱말에 그대로 남은 채 브라우저 찾기(Ctrl+F) · 화면 읽기 도구가 다른 쪽으로 스크롤하면(FOREIGN-SCROLL-001, 2026-10-17 KST)
+// 그 스크롤이 닿은 쪽으로 맞춘다 — 예전엔 handleScroll이 초점 낱말의 쪽으로 되돌려 찾은 글자가 화면에서 사라졌다.
+// 초점이 「방금」 바뀐 스크롤(Tab · 클릭이 낸 nearest 정렬)만 초점 쪽으로 끌어온다. Tab 초점 따라가기(focusin)는 그대로.
+describe('a foreign scroll with unchanged focus stays where it landed', () => {
+  const clock = start => { let now = start; const spy = vi.spyOn(Date, 'now').mockImplementation(() => now); return { tick: ms => { now += ms; }, restore: () => spy.mockRestore() }; };
+  it('find / screen reader: focus left on a word earlier does not pull the scroll back', () => {
+    const t = clock(1_000_000);
+    try {
+      const reader = fakeReader();
+      const c = controller(reader);
+      reader.pages.ownerDocument.activeElement = reader.tokenEls[5]; // 앞서 누른 낱말(쪽 0)에 초점이 남아 있다
+      c.handleFocusIn({ target: reader.tokenEls[5] });
+      t.tick(5000); // 한참 뒤 Ctrl+F
+      reader.pages.scrollLeft = 348 * 5.2;
+      c.handleScroll();
+      expect(c.state.page).toBe(5);
+      expect(reader.pages.scrollLeft).toBe(348 * 5);
+      t.tick(1000);
+      c.handleScroll(); // 맞춤이 낸 스크롤 — 표식만 걷는다
+      reader.pages.scrollLeft = 348 * 7.4; // 화면 읽기 도구의 다음 줄 스크롤
+      c.handleScroll();
+      expect(c.state.page).toBe(7);
+    } finally { t.restore(); }
+  });
+  it('the focus-driven scroll right after a focus change still aligns to the focused word', () => {
+    const t = clock(2_000_000);
+    try {
+      const reader = fakeReader();
+      const c = controller(reader);
+      c.goTo(2); t.tick(1000); c.handleScroll();
+      reader.pages.ownerDocument.activeElement = reader.tokenEls[29];
+      c.handleFocusIn({ target: reader.tokenEls[29] });
+      t.tick(16); // 다음 프레임의 스크롤 이벤트
+      reader.pages.scrollLeft = 348 * 2.6;
+      c.handleScroll();
+      expect(c.state.page).toBe(2);
+    } finally { t.restore(); }
+  });
+  it('after a press: a focus taken by the press aligns to it; a press without a focus change lands on the nearest page', () => {
+    const t = clock(3_000_000);
+    try {
+      const reader = fakeReader();
+      const c = controller(reader);
+      reader.pages.ownerDocument.activeElement = reader.tokenEls[5];
+      c.handleFocusIn({ target: reader.tokenEls[5] });
+      t.tick(5000);
+      c.handlePointerDown({ pointerId: 4, pointerType: 'mouse', clientX: 10, clientY: 10 }); // 초점은 그대로(글자 끌어 고르기 등)
+      reader.pages.scrollLeft = 348 * 3.2;
+      c.handleScroll();
+      expect(c.state.page).toBe(0);
+      c.handleRelease();
+      expect(c.state.page).toBe(3);
+    } finally { t.restore(); }
+  });
+});
+
+// 초점 귀속 대상(focusSelector)은 쪽 기준 요소(anchorSelector)와 따로다 — 원본 리더의 기준 요소는 본문 전체 article(.original-writing,
+// 여러 쪽에 걸침)이라, 그 안 초점을 article로 귀속하면 어느 쪽에 있든 첫 쪽으로 튄다(PAGED-FOCUS-001 리뷰 2026-10-17 KST).
+describe('focus attribution is separate from the page anchor selector', () => {
+  it('a focused element inside a multi-page anchor container measures by itself, not by the container', () => {
+    const reader = fakeReader();
+    const article = { nodeType: 1, getClientRects() { return [this.getBoundingClientRect()]; },
+      getBoundingClientRect() { const left = -reader.pages.scrollLeft; return { left, right: left + 300, top: 100, bottom: 700, width: 300, height: 600 }; } };
+    const link = { nodeType: 1, closest: sel => (sel === '.original-writing' ? article : null),
+      getClientRects() { return [this.getBoundingClientRect()]; },
+      getBoundingClientRect() { const left = 3 * 348 - reader.pages.scrollLeft; return { left, right: left + 40, top: 140, bottom: 170, width: 40, height: 30 }; } };
+    reader.pages.contains = el => reader.tokenEls.includes(el) || el === article || el === link;
+    const c = controller(reader, { anchorSelector: '.original-writing' });
+    c.handleFocusIn({ target: link });
+    expect(c.state.page).toBe(3);
+  });
+  it('wiring: focusPageTarget reads focusSelector (default word), never anchorSelector; the original reader passes no focusSelector', () => {
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/lib/usePagedReader.js'), 'utf8');
+    const fn = sliceBetween(src, 'const focusPageTarget = el =>', '\n');
+    expect(fn).toContain('opt().focusSelector || FOCUS_ITEM');
+    expect(fn).not.toContain('anchorSelector');
+    expect(src).toContain("const FOCUS_ITEM = '[data-source-token]';");
+    expect(src).toMatch(/latest\.current = \{[^}]*\bfocusSelector\b/);
+    const original = fs.readFileSync(path.join(process.cwd(), 'src/components/materials/OriginalMaterialReader.jsx'), 'utf8');
+    expect(original).toContain("anchorSelector:'.original-writing'");
+    expect(original).not.toMatch(/focusSelector/);
+  });
+});
+
+// 남의 스크롤이 「새로 드러낸」 쪽(FOREIGN-SCROLL-001 후속, 2026-10-17 KST). 화면 읽기 도구는 다음 쪽 앞머리 요소를 화면 끝에 겨우 보이게
+// (nearest 정렬) 스크롤한다 — 가장 가까운 쪽(반올림)은 지금 쪽이라 되돌아가 요소가 다시 화면 밖이 됐다(390: 쪽 454px, 다음 쪽 앞 약 160px).
+// 지금 쪽 옆 쪽의 글자 칸이 화면에 들어왔으면(단 사이 틈을 넘게 밀렸으면) 그 옆 쪽. 손으로 밀다 놓은 맞춤은 가장 가까운 쪽 그대로.
+describe('a foreign scroll lands on the page it newly revealed', () => {
+  const at390 = { step: 454, gap: 64, count: 10 }; // 390 폭: 단 390 + 틈 64
+  const nearAlign = (page, intoNext) => page * 454 + 64 + intoNext; // 다음 쪽 앞 intoNext px 요소의 오른쪽 끝을 화면 끝에 맞춘 스크롤
+
+  it('next page head (first ~160px) revealed at the right edge → the next page, where rounding went back', () => {
+    for (const into of [20, 100, 160, 180]) {
+      expect(foreignScrollPage(nearAlign(2, into), 2, at390), `${into}px`).toBe(3);
+    }
+    expect(nearestPage(nearAlign(2, 100), 454, 10)).toBe(2); // 반올림이었다면 되돌아간 경우
+    expect(nearestPage(nearAlign(2, 160), 454, 10)).toBe(2);
+  });
+  it('previous page tail revealed at the left edge → the previous page', () => {
+    // 앞 쪽 끝 요소의 왼쪽을 화면 왼쪽에 맞춤: 앞 쪽 단 안 300px 지점
+    expect(foreignScrollPage(454 + 300, 2, at390)).toBe(1);
+    expect(nearestPage(454 + 300, 454, 10)).toBe(2);
+  });
+  it('a nudge inside the column gap stays; a jump past the neighbour (find far away) is the nearest page; edges clamp', () => {
+    for (const nudge of [0, 1, 30, 64]) expect(foreignScrollPage(908 + nudge, 2, at390)).toBe(2);
+    for (const nudge of [-1, -30, -64]) expect(foreignScrollPage(908 + nudge, 2, at390)).toBe(2);
+    expect(foreignScrollPage(454 * 6.2, 2, at390)).toBe(6);
+    expect(foreignScrollPage(454 * 5.7, 2, at390)).toBe(6);
+    expect(foreignScrollPage(454 * 9 + 100, 9, at390)).toBe(9);
+    expect(foreignScrollPage(-200, 0, at390)).toBe(0);
+  });
+  it('find centring a match on the next page still lands on it (either half)', () => {
+    const centre = (page, x) => page * 454 + x - 390 / 2;
+    for (const x of [10, 150, 250, 380]) expect(foreignScrollPage(centre(3, x), 2, at390), `x ${x}`).toBe(3);
+    for (const x of [10, 150, 250, 380]) expect(foreignScrollPage(centre(1, x), 2, at390), `back x ${x}`).toBe(1);
+  });
+
+  const clock = start => { let now = start; const spy = vi.spyOn(Date, 'now').mockImplementation(() => now); return { tick: ms => { now += ms; }, restore: () => spy.mockRestore() }; };
+  it('controller: an unfocused foreign scroll to the next page head turns to it; the same offset after a press (hand swipe) keeps the nearest page', () => {
+    const t = clock(4_000_000);
+    try {
+      const reader = fakeReader(); // 단 300 + 틈 48 = 쪽 348
+      const c = controller(reader);
+      c.goTo(2); t.tick(1000); c.handleScroll();
+      reader.pages.scrollLeft = 2 * 348 + 48 + 100; // 화면 읽기 도구: 다음 쪽 앞 100px 요소를 화면 끝에
+      c.handleScroll();
+      expect(c.state.page).toBe(3);
+      expect(reader.pages.scrollLeft).toBe(3 * 348);
+
+      const swiped = fakeReader(), d = controller(swiped);
+      d.goTo(2); t.tick(1000); d.handleScroll();
+      d.handlePointerDown({ pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: 200, clientY: 300 });
+      swiped.pages.scrollLeft = 2 * 348 + 48 + 100;
+      d.handleScroll();
+      d.handleRelease();
+      expect(d.state.page).toBe(2); // 손으로 밀다 놓은 맞춤 = 가장 가까운 쪽(그대로)
+      expect(swiped.pages.scrollLeft).toBe(2 * 348);
+    } finally { t.restore(); }
+  });
+  it('wiring: only the unpressed, unfocused scroll path uses foreignScrollPage; release keeps nearestPage', () => {
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/lib/usePagedReader.js'), 'utf8');
+    expect(src.match(/foreignScrollPage\(/g)).toHaveLength(2); // 정의 + handleScroll 한 곳
+    expect(sliceBetween(src, 'function settleDeferred() {', '\n  }')).not.toContain('foreignScrollPage');
+    expect(sliceBetween(src, 'function settleDeferred() {', '\n  }')).toContain('?? nearestPage(pages.scrollLeft || 0, step, count)');
+  });
+});
+
+// 끝의 테두리 상자(NEXT-CARD-SPLIT-001): 1440 쪽 넘김에서 「다음 편」 카드(a.next-lesson-card)가 쪽 경계에서 둘로 갈라졌다(abaa 보고
+// 2026-10-17 KST). 같은 실측(8px씩 옮기기)에서 연결한 교재 단원(details.learning-links)과 토론 상자도 갈라졌다 — 쪽 넘김 상자 안에서만
+// 통째로 다음 쪽에 둔다(break-inside: avoid). 「다 읽었다면」 줄은 index.css가 이미 묶는다. 본문 문단 · 스크롤 보기에는 걸지 않는다.
+describe('end boxes stay whole across page boundaries', () => {
+  const read = (file) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
+  const css = read('src/components/viewer/paged-reader.css');
+  const viewer = read('src/views/ViewerPage.jsx');
+  const rule = '[data-reader-pages="paged"] :is(.next-lesson-card, .series-end-card, .learning-links, .viewer-comments) { break-inside: avoid; }';
+  it('paged-only rule keeps every end box whole — body text keeps filling pages', () => {
+    expect(css).toContain(rule);
+    expect(css.match(/break-inside:\s*avoid/g)).toHaveLength(1);
+    expect(read('src/index.css')).toContain('.post-reading { margin-top: 20px; break-inside: avoid; }'); // 「다 읽었다면」 줄은 원래 묶음
+  });
+  it('every card in the single 「다음」 slot uses one of the covered classes', () => {
+    const slot = sliceBetween(viewer, "{(isDone || isPending) && (() => {", 'return null;\n      })()}');
+    const roots = [...slot.matchAll(/className="([^"]+)"/g)].map((m) => m[1]).filter((c) => !/__/.test(c));
+    expect(roots.length).toBeGreaterThanOrEqual(5); // 다음 편 · 다음 과 · 다음 과 적기 · 다음 범위 · 완주(공허 통과 방지)
+    for (const c of roots) expect(['next-lesson-card', 'series-end-card'].some((k) => c.split(' ').includes(k)), c).toBe(true);
+  });
+  it('the linked-chapter box and the discussion box carry the covered classes', () => {
+    const links = read('src/components/learning/MaterialChapterLinks.jsx');
+    expect(links).toContain('<section className="learning-links learning-links--browse">');
+    expect(links).toContain('<details className="learning-links" onToggle=');
+    expect(read('src/views/ViewerComments.jsx')).toContain('<div className="card viewer-comments" style=');
+    expect(viewer).toContain('<MaterialChapterLinks lang={materialLang} kind="reading" materialId={id} />');
+  });
+});
+
+// 자동 이동 우선순위(LISTEN-FOLLOW, 2026-10-17 KST) — 듣기 따라가기 같은 자동 이동(reveal auto)은 사람과 다른 이동에 진다:
+// 본문을 누르는 중이거나 canAutoReveal()이 거절하면(시트 열림 · 드래그 범위 지정 · 키 차단) 옮기지도 기준을 바꾸지도 않는다.
+// 시트의 단어 보이기(useSelectedTokenVisibility)는 auto가 아니라 늘 이긴다.
+describe('auto reveal yields to people (listen follow)', () => {
+  it('canAutoReveal false → 다른 쪽 대상은 false · 쪽 · 기준 그대로, 같은 쪽 대상은 true(옮기지 않고 보인다), 보통 reveal은 지금처럼 옮긴다', () => {
+    const reader = fakeReader();
+    let allow = false;
+    const c = controller(reader, { canAutoReveal: () => allow });
+    expect(c.reveal(reader.tokenEls[57], { auto: true })).toBe(false);
+    expect(c.state.page).toBe(0);
+    expect(c.reveal(reader.tokenEls[4], { auto: true })).toBe(true); // 지금 쪽(0) — 밑줄은 달 수 있다
+    expect(c.state.page).toBe(0);
+    expect(c.reveal(reader.tokenEls[57])).toBe(true);
+    expect(c.state.page).toBe(5);
+    allow = true;
+    expect(c.reveal(reader.tokenEls[3], { auto: true })).toBe(true);
+    expect(c.state.page).toBe(0);
+  });
+  it('누르는 중에는 auto reveal을 거절하고, 손을 떼면 다시 받는다', () => {
+    const reader = fakeReader();
+    const c = controller(reader, { canAutoReveal: () => true });
+    c.handlePointerDown({ pointerId: 9, pointerType: 'mouse', clientX: 10, clientY: 10 });
+    expect(c.reveal(reader.tokenEls[57], { auto: true })).toBe(false);
+    expect(c.state.page).toBe(0);
+    c.handleRelease();
+    expect(c.reveal(reader.tokenEls[57], { auto: true })).toBe(true);
+    expect(c.state.page).toBe(5);
+  });
+  // 진도 보존(LISTEN-FOLLOW 리뷰 5-①) — 따라가기 전 듣기는 쪽을 옮기지 않아 읽기 진도(진행 막대 · 그룹 material_pct)가 그대로였다.
+  // 자동 이동은 쪽(progress · 쪽 막대)은 옮겨도 readProgress는 올리지 않는다. 사람의 넘김과 auto 아닌 reveal은 지금처럼 진도.
+  it('auto reveal은 readProgress를 올리지 않는다 — 다시 흐름(relayout)에도 그대로, 사람 넘김 · 보통 reveal은 올린다', () => {
+    const reader = fakeReader();
+    const c = controller(reader, { canAutoReveal: () => true });
+    const start = c.state.readProgress;
+    expect(c.reveal(reader.tokenEls[57], { auto: true })).toBe(true);
+    expect(c.state.page).toBe(5);
+    expect(c.state.readProgress).toBe(start);
+    expect(c.state.progress).not.toBe(start); // 쪽 막대의 지금 쪽 표시는 옮긴다
+    c.relayout();
+    expect(c.state.page).toBe(5);
+    expect(c.state.readProgress).toBe(start);
+    c.next({ user: true });
+    expect(c.state.page).toBe(6);
+    expect(c.state.readProgress).toBe(c.state.progress);
+    expect(c.reveal(reader.tokenEls[57], { auto: true })).toBe(true);
+    const held = c.state.readProgress;
+    expect(c.state.page).toBe(5);
+    expect(held).toBeGreaterThan(c.state.progress); // 6쪽 진도 그대로 — 자동으로 5쪽에 와도 내려가지 않는다(올라가지도 않는다)
+    expect(c.reveal(reader.tokenEls[3])).toBe(true); // [지금 문장으로] · 시트 단어 = auto 아님 → 진도
+    expect(c.state.page).toBe(0);
+    expect(c.state.readProgress).toBe(c.state.progress);
+  });
+  it('배선 — 쪽 넘김 진도는 readProgress(진행 막대 · 그룹 push), 쪽 막대 글은 progress', () => {
+    const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+    expect(viewer).toContain('const readProgress = pagedActive ? pager.readProgress : scrollReadProgress;');
+    expect(viewer).not.toContain('pagedActive ? pager.progress');
+    expect(viewer).toContain('useGroupReadPush(material?.id, user?.id, readProgress);');
+  });
+  it('배선 — 뷰어는 시트 · 범위 지정 · 키 차단을 canAutoReveal로 넘기고 듣기는 auto로만 옮긴다; 시트 단어 보이기는 auto가 아니다', () => {
+    const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+    expect(viewer).toContain('canAutoReveal: () => { const g = pagedGuard.current; return !(g.sheetOpen || g.dragging || g.blocked); },');
+    expect(sliceBetween(viewer, 'const handleListenSentence = useCallback((index) => {', '}, [listenRanges'))
+      .toContain('if (paged.reveal(el, { auto: true })) flushSync(() => setListenTokens(new Set(ids)));');
+    const layout = fs.readFileSync(path.join(process.cwd(), 'src/lib/useReaderLayout.js'), 'utf8');
+    expect(layout).toContain('pager.reveal(token);');
+    expect(layout).not.toContain('auto: true');
+    const hook = fs.readFileSync(path.join(process.cwd(), 'src/lib/usePagedReader.js'), 'utf8');
+    expect(sliceBetween(hook, 'function reveal(target, {', 'anchor = target.nodeType'))
+      .toContain("if (auto && (pressed || opt().canAutoReveal?.() === false)) return ready && pageOf(target) === page;");
+    // 훅이 뷰어의 판정을 컨트롤러로 넘긴다 — 빠지면 시트가 열려 있어도 듣기가 쪽을 옮긴다.
+    expect(sliceBetween(hook, 'export function usePagedReader({', '}) {')).toContain('canAutoReveal');
+    expect(hook).toContain('latest.current = { onUserPage, canSwipe, canKey, canAutoReveal,');
+  });
+});
+
+// 쪽 넘김 A안(VIEWER-AUDIT 2, 오너 「권장대로」 2026-10-17 KST): 고른 단어가 화면 아래 절반이면 시트를 머리줄 아래에 세운다.
+// 쪽 수 · 쪽 경계 · 시트 내용은 그대로 — 시트 자리만 바뀐다. 스크롤 보기 · 1440 옆 패널(position sticky)은 이 경로에 들지 않는다.
+describe('paged sheet dock (A안 — 고른 단어의 반대편)', () => {
+  const base = { viewportHeight: 844, topLimit: 120, naturalHeight: 440, min: 359 };
+  it('위 절반의 단어는 지금처럼 바닥(목업 C 낮추기 그대로), 아래 절반은 위에 선다', () => {
+    expect(pagedSheetDock({ ...base, tokenTop: 150, tokenBottom: 206 })).toEqual({ dock: 'bottom' });
+    expect(pagedSheetDock({ ...base, tokenTop: 395, tokenBottom: 447 })).toEqual({ dock: 'bottom' }); // 가운데 421 ≤ 422
+    expect(pagedSheetDock({ ...base, tokenTop: 684, tokenBottom: 740 })).toEqual({ dock: 'top', top: 120, height: null }); // 위 자리 552 ≥ 440
+  });
+  it('위에 세울 때 단어 위 자리가 모자라면 낮추되 카드 핵심(min) 아래로는 줄이지 않는다', () => {
+    expect(pagedSheetDock({ ...base, tokenTop: 520, tokenBottom: 576 })).toEqual({ dock: 'top', top: 120, height: 388 });
+    expect(pagedSheetDock({ ...base, tokenTop: 430, tokenBottom: 486 })).toEqual({ dock: 'top', top: 120, height: 359 });
+    expect(pagedSheetDock({ ...base, tokenTop: NaN, tokenBottom: 486 })).toEqual({ dock: 'bottom' });
+  });
+  it('원래 높이보다 키우지 않는다 — 긴 문장 카드는 핵심이 440을 넘는다(실측 445, viewer-word-card zh 390 long sentence)', () => {
+    expect(pagedSheetDock({ ...base, min: 445, tokenTop: 520, tokenBottom: 576 })).toEqual({ dock: 'top', top: 120, height: null });
+    expect(pagedSheetDock({ ...base, min: 440, tokenTop: 520, tokenBottom: 576 })).toEqual({ dock: 'top', top: 120, height: null });
+  });
+  it('배선: 쪽 넘김 경로에서만 정하고(바닥 낮추기와 한 갈래), 닫을 때 자리 표시를 지운다', () => {
+    const hook = fs.readFileSync(path.resolve(__dirname, '../useReaderLayout.js'), 'utf8');
+    const pagedBranch = sliceBetween(hook, 'function sheetViewport() {', 'export function useSelectedTokenVisibility');
+    expect(pagedBranch).toContain("const sheetPlaceable = panel => getComputedStyle(panel).position === 'fixed'"); // 1440 옆 패널(sticky)은 들지 않는다
+    expect(pagedBranch).toContain('const dock = pagedSheetDock({');
+    expect(pagedBranch).toMatch(/\n\s+if \(dock\.dock === 'top'\) \{\n\s+panel\.dataset\.dock = 'top';/);
+    expect(pagedBranch).toContain("panel.dataset.dock = 'top'; panel.style.setProperty('--reader-sheet-top', `${dock.top}px`);");
+    expect(pagedBranch).toContain('const height = compactSheetHeight({ tokenBottom: tokenRect.bottom'); // 위 절반은 지금 그대로
+    expect(pagedBranch).toContain("delete panel.dataset.compact; delete panel.dataset.dock; panel.style.removeProperty('--reader-sheet-top');");
+    expect(sliceBetween(hook, 'function resetPagedSheet(panel) {', 'export function useSelectedTokenVisibility')).toContain('delete panel.dataset.compact; delete panel.dataset.dock; delete panel.dataset.placing;'); // 닫힘 · 스크롤 보기 전환
+    expect(hook.split('pagedSheetDock(').length - 1).toBe(1); // 스크롤 보기 경로에는 없다
+    // 처음 열 때 자리(시트를 보이게 한 DOM 변경)는 본문이 붙은 뒤에도 걸려야 한다 — 자료가 오기 전 마운트에는 본문이 없다.
+    expect(hook).toContain('  }, [readerRef, revision]); // 본문(readerRef)은 자료가 온 뒤에 붙는다');
+  });
+  it('CSS: 1119 이하 쪽 넘김에서만 위에 세운다 — 펼침 · 접힘 상태는 지금 그대로', () => {
+    const css = fs.readFileSync(path.resolve(__dirname, '../../components/viewer/paged-reader.css'), 'utf8');
+    const narrow = sliceBetween(css, '@container reader (max-width: 1119px) {', '── 원본 리더 ──');
+    expect(narrow).toContain('.viewer-layout[data-reader-view="paged"] .viewer-inspector[data-dock="top"]:not(.is-expanded):not(.is-collapsed) { top: var(--reader-sheet-top, 64px); bottom: auto; max-height: calc(100dvh - var(--reader-keyboard-inset, 0px) - var(--reader-sheet-top, 64px) - max(8px, env(safe-area-inset-bottom))); }');
+    expect(css.split('[data-dock="top"]').length - 1).toBe(1);
+    // 처음 열 때 판정 전 숨김: 투명 + 누르기 막음. visibility는 초점을 막아(카드 첫 초점) 쓰지 않는다. 옮겨 가는 동작도 없다.
+    const placing = css.split('\n').filter(line => line.includes('[data-placing="true"]') && line.includes('{'));
+    expect(placing).toEqual(['    .viewer-layout[data-reader-view="paged"] .viewer-inspector[data-placing="true"] { opacity: 0; pointer-events: none; }']);
+    expect(narrow).toContain(placing[0]);
   });
 });

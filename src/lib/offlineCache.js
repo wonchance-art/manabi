@@ -45,8 +45,20 @@ export function openDb() {
       return;
     }
     const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onerror = () => reject(req.error);
-    req.onsuccess = () => resolve(req.result);
+    // 다른 탭이 옛 판 연결을 쥐고 있으면 판 올리기가 blocked에서 멈춘다 — 그대로 두면 이 약속이 끝나지 않아 캐시를 기다리는
+    // 화면이 「불러오는 중」에 묶였다(a3ba 리뷰 ⑤). blocked면 실패로 끝내고(호출부는 원래 오류 경로 · 조용한 실패), 다음 호출이
+    // 다시 열 수 있게 기억을 비운다. 막혔던 요청이 나중에 열리면 그 연결은 쓰지 않고 닫는다(다른 탭의 판 올리기를 또 막지 않게).
+    let settled = false;
+    req.onblocked = () => {
+      if (settled) return;
+      settled = true; _dbPromise = null;
+      reject(new Error('IndexedDB blocked'));
+    };
+    req.onerror = () => { if (settled) return; settled = true; reject(req.error); };
+    req.onsuccess = () => {
+      if (settled) { req.result.close(); return; }
+      settled = true; resolve(req.result);
+    };
     req.onupgradeneeded = (e) => {
       const db = e.target.result;
       if (!db.objectStoreNames.contains(STORE_MATERIALS)) {

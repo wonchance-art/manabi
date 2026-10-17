@@ -14,6 +14,11 @@ if (requestedFixture && !reviewCandidates.includes(requestedFixture)) throw new 
 const editionId = requestedFixture || current;
 const publishedFixtures = new Set([current, editionId]);
 const edition = JSON.parse(readFileSync(new URL(`${editionId}/bundle.json`, editionRoot), 'utf8'));
+// N4 표지 등 다른 교재는 켤 때만 발행한다(E2E_PUBLISHED_BOOKS=japanese-n4) — 기본은 지금처럼 N5만 발행돼 있다.
+// 켜면 그 교재의 index.json current 판본을 같은 방식(저장소의 해시 검증된 판본 파일)으로 비춘다.
+const extraBooks = new Map((process.env.E2E_PUBLISHED_BOOKS || '').split(',').map((id) => id.trim()).filter((id) => /^japanese-n[1-4]$/.test(id))
+  .map((id) => [id, JSON.parse(readFileSync(new URL(`${id}/index.json`, editionRoot), 'utf8')).current]));
+const bookOf = (url) => url.searchParams.get('book_id')?.replace(/^eq\./, '') || 'japanese-n5';
 
 function bearerClaims(input, init) {
   const headers = new Headers(input instanceof Request ? input.headers : undefined);
@@ -59,7 +64,15 @@ function mockResponse(url, claims) {
   // request escape to the nonexistent fixture host and wait on DNS/network retries.
   if (url.pathname.endsWith('/rest/v1/content_overrides')) return json([]);
   if (url.pathname.endsWith('/rest/v1/textbook_book_releases')) {
+    if (extraBooks.has(bookOf(url))) return json({ book_id: bookOf(url), edition_id: extraBooks.get(bookOf(url)), version: 1 });
     return json({ book_id: 'japanese-n5', edition_id: editionId, version: 1 });
+  }
+  if (url.pathname.endsWith('/rest/v1/textbook_book_editions') && extraBooks.has(bookOf(url))) {
+    const book = bookOf(url), requested = url.searchParams.get('edition_id')?.replace(/^eq\./, '');
+    if (requested && requested !== extraBooks.get(book)) return json(null);
+    const snapshot = JSON.parse(readFileSync(new URL(`${extraBooks.get(book)}/bundle.json`, editionRoot), 'utf8'));
+    return json({ book_id: book, edition_id: extraBooks.get(book), content_hash: snapshot.contentHash, manuscript: snapshot.manuscript,
+      artifact_manifest: snapshot.artifactManifest, published_at: '2026-10-17T00:00:00+09:00' });
   }
   if (url.pathname.endsWith('/rest/v1/textbook_book_editions')) {
     const requested = url.searchParams.get('edition_id')?.replace(/^eq\./, '');

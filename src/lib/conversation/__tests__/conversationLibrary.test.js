@@ -51,7 +51,7 @@ describe('서재 「대화」 묶음 조회', () => {
 describe('대화는 읽을거리 자리에 끼지 않는다(정적 계약)', () => {
   it('서재 화면이 「대화」 묶음을 그리고 목록 행에 대화 표시를 단다', () => {
     const shelf = read('components/library/LibraryShelf.jsx');
-    expect(shelf).toContain('<ConversationShelf query={conversations}/>');
+    expect(shelf).toContain('<ConversationShelf query={conversations} ownerId={user.id} ssr={ssr}/>');
     expect(shelf).toContain('conversationIds.has(String(row.material_id))');
     expect(read('components/library/LibraryRow.jsx')).toContain("row.conversation?'대화':null");
   });

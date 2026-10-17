@@ -118,6 +118,6 @@ describe('⑶ 페이지를 막지 않는다 — 예산 안에서 끝난 것만',
     expect(libraryPage).toContain('const shelfUser=user||(loading&&serverUserId?{id:serverUserId}:null);');
     expect(libraryPage).toContain('export default function LibraryPage({serverUserId=null,sessionHint}){');
     expect(libraryPage).toContain('{loading&&!shelfUser&&sessionHint!==false?<LibraryShelfSkeleton/>:');
-    expect(libraryPage).toContain('<LibraryShelf key={shelfUser.id} user={shelfUser}/>');
+    expect(libraryPage).toContain('<LibraryShelf key={shelfUser.id} user={shelfUser} ssr={!!serverUserId}/>');
   });
 });
