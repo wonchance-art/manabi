@@ -710,11 +710,13 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
       </div>
       <div className="lv-nav" id="lv-nav" hidden={!navOpen}>
         <p className="lv-crumb"><Link href={`/lessons?lang=${conf.language}`}>← 교재</Link></p>
+        {vocab && <span className="lv-nav__k" aria-hidden="true">레벨</span>}
         <nav className="lv-pills" aria-label="레벨">
           {conf.levels.map((key) => <Link key={key} href={levelListHref(lang, levelKinds(lang, key).includes(kind) ? kind : 'vocab', key)} aria-current={key === levelKey ? 'page' : undefined}
             aria-label={levelLabel(key)}>{levelPill(key)}<NavPendingMark /></Link>)}
         </nav>
         {/* 탭이 하나뿐인 레벨(H7 7–9 통합 밴드 = 단어만)은 종류 탭을 그리지 않는다. */}
+        {vocab && levelKinds(lang, levelKey).length > 1 && <span className="lv-nav__k" aria-hidden="true">목록</span>}
         {levelKinds(lang, levelKey).length > 1 && <nav className="lv-tabs" aria-label="목록 종류">
           {levelKinds(lang, levelKey).map((k) => <Link key={k} href={levelListHref(lang, k, levelKey)} aria-current={k === kind ? 'page' : undefined}>{LEVEL_KIND_LABEL[k]}<NavPendingMark /></Link>)}
         </nav>}
