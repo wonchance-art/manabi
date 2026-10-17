@@ -60,7 +60,7 @@ export const SECOND_GROUNDS = Object.freeze({
   isang: { ground: '#dccaa2', ink: '#6a3122', green: '#37452f' },
   gamja: { ground: '#c9785a', ink: '#1d1b22' },
   jindallae: { ground: '#def0cb', ink: '#0d100c', band: '#ecc485' },
-  'jeongeum-1948': { ground: '#c8b79e', ink: '#21190a', label: '#fef5e1', edge: '#9d8f78' },
+  'jeongeum-1948': { ground: '#e9d4b2', ink: '#21190a', label: '#fef5e1', edge: '#9d8f78' },
   'jeongeum-1955': { ground: '#ae9a6b', ink: '#0a150a', teal: '#2a5953' },
   'secker-diagonal': { ground: '#c9b8a4', ink: '#efe6d6', green: '#5aa66c' },
   'secker-numerals': { ground: '#b4524e', ink: '#f6efe6', pale: '#c6796f' },
@@ -556,22 +556,34 @@ function Reynal({ display, tone }) {
 
 /** 바탕 조각 — 잉크가 아니라 종이라 닳은 활자(잉크 층) 밖, 결(grain) 아래에 그린다. */
 export const SECOND_UNDER = {
-  // 갈포 결 — 사선 능직(오른쪽 위로 오르는 결) · 그 위에 붙인 흰 제첨(가장자리는 살짝 어둡게)
+  // 갈포 결 — 사선 능직: 오른쪽 아래로 21° 기운 또렷한 이랑(간격 1.05 · 밝은 올 · 어두운 골)에 고운 섬유 반점 두 겹과 아주 옅은 얼룩을 얹는다.
+  // 오너 대조 사진을 확대해 잰 값(2026-10-17 KST). 한 방향으로 늘인 잡음 결은 초점이 흐린 듯 어지러웠고(오너 「정신난만」), 큰 얼룩은 위장 무늬가 됐다 —
+  // 결은 규칙 이랑, 불규칙은 고운 반점 · 옅은 얼룩으로만. 그 위에 흰 제첨(가장자리는 살짝 어둡게).
   'jeongeum-1948': ({ tone, id }) => {
     const [x1, y1, x2, y2] = JEONGEUM_1948.label;
+    const speck = (seed, frequency, rgb) => (
+      <filter id={`${id}-fiber${seed}`} x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency={frequency} numOctaves="1" seed={seed} />
+        <feColorMatrix values={`0 0 0 0 ${rgb[0]}  0 0 0 0 ${rgb[1]}  0 0 0 0 ${rgb[2]}  0 0 0 3 -1.78`} />
+      </filter>
+    );
     return (
       <g>
         <defs>
-          {/* 한 방향으로 길게 늘인 잡음을 비스듬히 눕혀 능직 결을 낸다(규칙 무늬는 기계 줄무늬처럼 보였다) — 밝은 올 · 어두운 올 두 겹 */}
-          <filter id={`${id}-twill`} x="0" y="0" width="100%" height="100%">
-            <feTurbulence type="fractalNoise" baseFrequency=".22 2.4" numOctaves="2" seed="8" />
-            <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  2.2 0 0 0 -1.25" result="light" />
-            <feTurbulence type="fractalNoise" baseFrequency=".22 2.4" numOctaves="2" seed="21" />
-            <feColorMatrix values="0 0 0 0 .29  0 0 0 0 .23  0 0 0 0 .15  2.2 0 0 0 -1.2" />
-            <feMerge><feMergeNode /><feMergeNode in="light" /></feMerge>
+          <pattern id={`${id}-twill`} width="4" height="1.05" patternUnits="userSpaceOnUse" patternTransform="rotate(21)">
+            <rect width="4" height="1.05" fill="#3e2f1d" opacity=".24" /><rect y=".1" width="4" height=".38" fill="#fff" opacity=".38" />
+          </pattern>
+          {speck(4, 1.8, [1, 0.97, 0.9])}
+          {speck(9, 2.1, [0.2, 0.15, 0.08])}
+          <filter id={`${id}-mottle`} x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="12" />
+            <feColorMatrix values="0 0 0 0 .25  0 0 0 0 .19  0 0 0 0 .11  .24 0 0 0 -.108" />
           </filter>
         </defs>
-        <g transform="rotate(32 60 84)"><rect x="-60" y="-40" width="240" height="248" filter={`url(#${id}-twill)`} opacity=".55" /></g>
+        <rect width="120" height="168" fill={`url(#${id}-twill)`} />
+        <rect width="120" height="168" filter={`url(#${id}-fiber4)`} opacity=".95" />
+        <rect width="120" height="168" filter={`url(#${id}-fiber9)`} opacity=".45" />
+        <rect width="120" height="168" filter={`url(#${id}-mottle)`} />
         <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} fill={tone.label} stroke={tone.edge} strokeWidth=".35" />
       </g>
     );
