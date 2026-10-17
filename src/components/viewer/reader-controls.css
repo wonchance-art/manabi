@@ -683,6 +683,16 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
   .manabi-app .viewer-layout .reader-card-actions .save-grade__sub{display:none}
 }
 
+/* 좁은 폭 듣기 막대 한 줄(뷰어 감사 후속, 2026-10-17 KST) — 390에서 듣기를 시작하면 진행 수 · 속도 칩 · 지금 문장 줄 때문에
+   머리줄이 58→222px로 커져 쪽 이동 막대가 화면 밖(하단 y 1214 / 844)으로 밀렸다(운영 실측). 재생 컨트롤은 아이콘만 남기고
+   (접근 이름은 버튼 aria-label 그대로), 지금 문장 줄은 쪽 넘김 따라가기 중(본문 강조가 대신함)에만 숨긴다. 1440 · 스크롤 보기는 그대로. */
+@container reader (max-width:460px){
+  .manabi-app .viewer-layout .viewer-topbar .listen-controls__panel{flex-wrap:nowrap;gap:0;padding:0 2px}
+  .manabi-app .viewer-layout .viewer-topbar .listen-controls__progress,
+  .manabi-app .viewer-layout .viewer-topbar .listen-controls__rate{display:none}
+  .manabi-app .viewer-layout .viewer-topbar .listen-controls--follow .listen-controls__current{display:none}
+}
+
 /* Word-body hierarchy only. Existing panel scrolling and grading geometry stay intact. */
 .manabi-app .viewer-layout .reader-card-body .word-detail-card__meta{font-size:.75rem;line-height:1.5;gap:8px;letter-spacing:0;margin-bottom:8px}
 .manabi-app .viewer-layout .reader-card-body .reader-card-headword{align-items:flex-start;gap:12px;margin-bottom:8px}

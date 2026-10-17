@@ -3903,7 +3903,7 @@ export default function ViewerPage() {
             {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
               <button onClick={stopReanalysis} disabled={reanalyze.committing} className="grammar-btn grammar-btn--danger">{vt("분석 중단")}</button>
             )}
-            {ttsSupported && <ListenControls text={material?.raw_text} language={materialLang} stopSignal={activeModal?.kind} playbackRate={TTS_RATES[ttsRate].web} rateLabel={TTS_RATES[ttsRate].label} onSentence={handleListenSentence} compact uiLocale={uiLocale} />}
+            {ttsSupported && <ListenControls text={material?.raw_text} language={materialLang} stopSignal={activeModal?.kind} playbackRate={TTS_RATES[ttsRate].web} rateLabel={TTS_RATES[ttsRate].label} onSentence={handleListenSentence} followActive={listenFollowable} compact uiLocale={uiLocale} />}
             <button ref={settingsTrigger} className="viewer-tool viewer-tool--aa" aria-label={`Aa ${vt("읽기 설정")}`} title={vt("읽기 설정")} aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
               <span aria-hidden="true">Aa</span>
             </button>

@@ -13,7 +13,8 @@ export function listenRateText(playbackRate, rateLabel) {
 }
 
 // onSentence(i) — 지금 읽기 시작한 문장 번호(splitListenSentences 순서), 멈추면 null. 뷰어가 쪽 따라가기에 쓴다(listenFollow.js).
-export default function ListenControls({ text, language = 'Japanese', stopSignal, playbackRate, rateLabel, onSentence, compact = false, uiLocale = 'ko' }) {
+// followActive — 뷰어가 쪽 넘김 따라가기 중(본문이 읽는 줄을 강조) — 좁은 폭에서는 「지금 문장」 줄을 숨긴다(CSS, reader-controls.css).
+export default function ListenControls({ text, language = 'Japanese', stopSignal, playbackRate, rateLabel, onSentence, followActive = false, compact = false, uiLocale = 'ko' }) {
   const [supported, setSupported] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -115,7 +116,7 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
   const label=key=>compact?t(uiLocale,key):key;
 
   return (
-    <div className="listen-controls">
+    <div className={followActive ? 'listen-controls listen-controls--follow' : 'listen-controls'}>
       {!playing ? (
         // 뷰어 툴바(compact)도 보이는 라벨을 단다(AD-R2 §5) — 접근 이름 「본문 전체 듣기」 안에 보이는 「듣기」가 든다.
         // 재생 중 컨트롤(▶/⏸/⏹)은 지금처럼 아이콘만이다(설계 §9.2 — 라벨은 정지 상태 버튼에만).
