@@ -6,7 +6,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { sliceBetween } from './helpers/sliceBetween';
 
 vi.mock('next/link', () => ({ default: ({ children, prefetch, ...props }) => createElement('a', props, children) }));
-const h = vi.hoisted(() => ({ auth: { user: null, loading: true }, q: {} }));
+const h = vi.hoisted(() => ({ auth: { user: null, loading: true }, q: {}, cookies: [{ name: 'sb-e2e-auth-token', value: 'x' }] }));
+// 배움 대기 화면은 세션 쿠키로 손님 / 로그인 골격을 고른다(B1) — 여기서는 로그인 골격(쿠키 있음). 손님 골격은 guestLearnSkeleton.test.
+vi.mock('next/headers', () => ({ cookies: async () => ({ getAll: () => h.cookies }) }));
 vi.mock('../AuthContext', () => ({ useAuth: () => h.auth }));
 // 목표 칸(useGoalTrack)의 조회 대역 — queryKey 첫 칸으로 상태를 고른다(goal-catalog · goal-progress).
 vi.mock('@tanstack/react-query', () => ({
@@ -63,9 +65,9 @@ describe('① 발견 대기 화면 — src/app/(app)/discover/loading.jsx', () =
 });
 
 describe('② 배움 — home/loading.jsx와 화면 안 골격이 같은 칸', () => {
-  it('home/loading.jsx: 배움 칸 배치 그대로(이어 읽기 · 목표 · 오늘 목표 · 연속 · 단어 복습 · 오늘 문단)', () => {
+  it('home/loading.jsx: 배움 칸 배치 그대로(이어 읽기 · 목표 · 오늘 목표 · 연속 · 단어 복습 · 오늘 문단)', async () => {
     expect(fs.existsSync(path.join(ROOT, 'src/app/(app)/home/loading.jsx'))).toBe(true);
-    const html = render(createElement(HomeLoading));
+    const html = render(await HomeLoading());
     announced(html, '배움 화면');
     expect(html).toContain('<div class="learn-top" aria-hidden="true"><div class="learn-top__title"><h1>배움</h1>');
     expect(html).not.toContain('href='); // 대기 화면의 칸은 초점 · 이동이 없다(aria-hidden 안에 링크 0)
@@ -206,11 +208,11 @@ describe('④ 목표 칸 — 받는 중 · 없음 · 실패를 가른다', () =>
 describe('⑤ 대기 화면 회귀 — 스타일 · 두 번 바뀜 · 비로그인 버튼 · 튀는 줄', () => {
   /** 렌더된 골격에서 접두어가 같은 클래스를 모은다. */
   const classes = (html, prefix) => [...new Set([...html.matchAll(/class="([^"]+)"/g)].flatMap(m => m[1].split(/\s+/)).filter(c => c.startsWith(prefix)))];
-  it('A1 배움 대기 화면이 칸 CSS를 직접 부른다 — 첫 방문에 페이지 코드보다 먼저 그려져도 스타일이 있다', () => {
+  it('A1 배움 대기 화면이 칸 CSS를 직접 부른다 — 첫 방문에 페이지 코드보다 먼저 그려져도 스타일이 있다', async () => {
     expect(read('src/app/(app)/home/loading.jsx')).toContain("import '@/components/learn/learn.css';");
     const css = read('src/components/learn/learn.css');
     // learn-order-*는 휴대폰 순서 표식(필요한 것만 규칙이 있다) — 모양 클래스만 본다.
-    const used = classes(render(createElement(HomeLoading)), 'learn-').filter(c => !c.startsWith('learn-order-'));
+    const used = classes(render(await HomeLoading()), 'learn-').filter(c => !c.startsWith('learn-order-'));
     expect(used.length).toBeGreaterThan(5);
     for (const c of used) expect(css, c).toContain(`.${c}`);
   });

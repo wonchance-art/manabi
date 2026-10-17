@@ -60,7 +60,7 @@ describe('P1–P5 초기 전송 성능 수리 회귀', () => {
     const page = read('src/app/(app)/home/page.jsx');
     const home = read('src/views/HomePage.jsx');
     expect(page).toContain('readingCatalog(published.book)');
-    expect(page).toContain('<HomePage book={book} />');
+    expect(page).toContain('<HomePage book={book} sessionHint={sessionHint} />'); // 세션 쿠키 이름 유무(B1)만 더한다
     expect(page).not.toContain('buildContinueManifest');
     expect(home).not.toContain('ProfileStats');
     expect(home).not.toContain('pullProgress');

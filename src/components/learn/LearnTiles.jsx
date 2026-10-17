@@ -13,6 +13,22 @@ import { encounterLookupLang } from '@/lib/refVocabLookup';
 import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
 import { reducedMotion } from '@/lib/reducedMotion';
 
+/**
+ * 손님 배움의 로그인 칸 — 화면(HomePage, href 있음)과 대기 화면(home/loading.jsx, href 없는 자리표)이 같은 칸을 쓴다.
+ * 자리표는 href 없는 <a>라 초점 · 이동이 없고 실제 칸 스타일을 그대로 받는다(발견 대기 화면 선례).
+ */
+export function GuestLoginTile({ href }) {
+  const body = <>
+    <span>
+      <span className="learn-goal__title">로그인하면 여기에 쌓여요</span>
+      <span className="learn-goal__line">단어 복습 · 오늘 목표 · 레벨 어휘 · 기록</span>
+    </span>
+    <span className="learn-button-s">로그인</span>
+  </>;
+  const className = 'learn-tile learn-goal--empty learn-guest';
+  return href ? <Link href={href} prefetch={false} className={className}>{body}</Link> : <a className={className}>{body}</a>;
+}
+
 export function StatTile({ value, label, href, title, ariaLabel, className = '' }) {
   const body = <><span className="learn-stat__value">{value}</span><span className="learn-stat__label">{label}</span></>;
   const cls = `learn-tile learn-stat ${className}`.trim();

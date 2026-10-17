@@ -46,7 +46,7 @@ import ResumeTile from '@/components/learn/ResumeTile';
 import ParagraphTile from '@/components/learn/ParagraphTile';
 import { keepPreviousForUser } from '@/lib/keepPreviousForUser';
 import GoalTrackTile from '@/components/learn/GoalTrackTile';
-import { ReviewTile, StreakTile, TodayGoalTile } from '@/components/learn/LearnTiles';
+import { GuestLoginTile, ReviewTile, StreakTile, TodayGoalTile } from '@/components/learn/LearnTiles';
 import '@/components/learn/learn.css';
 import { authEntryHref } from '../lib/authRedirect';
 
@@ -113,7 +113,7 @@ function materialItem(material, lang) {
 const HSK_WORDS_ITEM = { key: 'hsk-words', href: '/chinese/vocab/h1', tone: 'progress',
   kicker: '중국어 · HSK', title: 'HSK 단어 목록', meta: '1급부터 ↗' };
 
-export default function HomePage({ book = null }) {
+export default function HomePage({ book = null, sessionHint }) {
   const { user, profile, loading: authLoading } = useAuth();
   const local = useReadingProgress(book?.edition);
   const resume = bookResume(book, local.progress, local.hasProgress);
@@ -186,19 +186,16 @@ export default function HomePage({ book = null }) {
     sub: `${learnLangLabel(lang)} 읽을거리`, href: '/discover', cta: '산책하기' };
   const resumePending = pending || (needSuggestion && recommendations.isLoading);
 
-  if (!authLoading && !user) {
+  // 손님 배치 — 서버가 세션 쿠키가 없다고 알려 주면(sessionHint === false) 로그인 확인을 기다리지 않는다(B1 — 오너 승인
+  // 2026-10-17 KST). 서버 HTML · 첫 그림 · 확인 뒤가 모두 같은 손님 배치라, 로그인 배치 골격이 0.7초 보였다가 바뀌던 것이 없다.
+  // 쿠키가 있는데 세션이 끝났으면(만료 등) 예전처럼 확인을 기다린다.
+  if (!user && (!authLoading || sessionHint === false)) {
     return <div className="manabi-page learn-page">
       <div className="learn-top"><div className="learn-top__title"><h1>배움</h1></div></div>
       <div className="learn-grid">
         <ResumeTile item={resumeItem} pending={resumePending} />
         <ParagraphTile state={{ kind: 'ready', sentence: GUEST_SAMPLE }} lang="Japanese" href="/study" kicker="오늘 문단 · 맛보기" />
-        <Link href={authEntryHref('/home')} prefetch={false} className="learn-tile learn-goal--empty learn-guest">
-          <span>
-            <span className="learn-goal__title">로그인하면 여기에 쌓여요</span>
-            <span className="learn-goal__line">단어 복습 · 오늘 목표 · 레벨 어휘 · 기록</span>
-          </span>
-          <span className="learn-button-s">로그인</span>
-        </Link>
+        <GuestLoginTile href={authEntryHref('/home')} />
       </div>
       {!local.storageAvailable && <p role="status" className="learn-note">이 브라우저에서는 읽던 위치를 저장할 수 없어요.</p>}
     </div>;

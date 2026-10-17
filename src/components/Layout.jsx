@@ -168,6 +168,7 @@ export default function Layout({ children }) {
     if (user) {
       await signOut();
       router.push('/auth');
+      router.refresh(); // 로그인 상태로 미리 받아 둔 배움 대기 화면을 버린다(B1) — 이동 뒤 차례로
     } else {
       router.push(authEntryHref(window.location.pathname + window.location.search + window.location.hash));
     }
