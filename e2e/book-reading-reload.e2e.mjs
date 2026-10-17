@@ -234,7 +234,7 @@ async function scrollCover(page,ratio=.6){
  await page.waitForFunction(y=>Math.abs((history.state?.manabiBookCover?.y??-99)-y)<2,y);
  return y;
 }
-for(const width of [390,1440])test(`${engine.name()} ${width}: the book cover keeps its own scroll position across routes, lessons, bfcache and reload`,async()=>{
+for(const width of [390,1440])test(`${engine.name()} ${width}: the book cover keeps its own scroll position across routes, lessons, bfcache and reload; fresh covers start at defaults`,async()=>{
  const f=await fixture(width),edition=editions[0],cover=`/books/japanese-n5?edition=${edition}`;try{
   await f.page.goto(cover);await coverAt(f.page,0);
   // ① 다른 화면(Next Link — 「교재」 breadcrumb)에 다녀오기: 표지가 다시 붙어도 그 자리
@@ -258,10 +258,21 @@ for(const width of [390,1440])test(`${engine.name()} ${width}: the book cover ke
   await f.page.evaluate(()=>{dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true}));dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));});
   await coverAt(f.page,deep,true,open);
   await f.page.reload();await coverAt(f.page,deep,true,open);
-  // ⑤ 새로 들어온 표지(새 기록)는 맨 위 · 현재 파트만 — 과의 「← 책 목차」(책 안 새 기록) · 새 탭
+  // ⑤ 높이가 모자라 잘라 옮긴 자리는 이 기록에 다시 쓰지 않는다 — 사용자가 움직이면 그때 새 자리
+  await f.page.evaluate(()=>history.replaceState({...history.state,manabiBookCover:{...history.state.manabiBookCover,y:99999}},'',location.href));
+  await f.page.reload();await f.page.locator('.manabi-book-home .manabi-toc-group').first().waitFor();
+  await f.page.waitForFunction(()=>scrollY>0&&Math.abs(scrollY-(document.documentElement.scrollHeight-innerHeight))<2);
+  await f.page.waitForTimeout(600);assert.equal(await f.page.evaluate(()=>history.state.manabiBookCover.y),99999);
+  assert.deepEqual(await openParts(f.page),open);
+  await f.page.evaluate(()=>scrollBy(0,-80));await f.page.waitForFunction(()=>history.state.manabiBookCover.y===Math.round(scrollY));
+  // ⑥ 새로 연 표지는 기본값(맨 위 · 지금 파트만 · 전체 목차 아님) — 과의 「← 책 목차」(책 안 새 기록) · 새 탭. 기록값은 돌아올 때만 쓴다.
   await last.locator('li a').nth(1).evaluate(link=>link.click());await settled(f.page,lesson);
   await f.page.locator('.manabi-reader-toolbar').getByRole('link',{name:'← 책 목차',exact:true}).evaluate(link=>link.click());
-  await f.page.waitForURL(url=>url.hash==='#cover');await coverAt(f.page,0,true);
+  await f.page.waitForURL(url=>url.hash==='#cover');await coverAt(f.page,0,false);assert.equal((await openParts(f.page)).length,1);
+  // 그 새 표지에서 뒤로 → 과, 다시 뒤로 → 앞서 펼쳐 둔 표지 기록은 그 값 그대로
+  await f.page.goBack();await settled(f.page,lesson);await f.page.goBack();
+  await f.page.waitForFunction(()=>history.state?.manabiBookCover?.all===true&&document.querySelectorAll('.manabi-book-home .manabi-tabs button')[1]?.getAttribute('aria-pressed')==='true');
+  assert.deepEqual(await openParts(f.page),open);
   const fresh=await f.context.newPage();await fresh.goto(cover);await coverAt(fresh,0);assert.equal((await openParts(fresh)).length,1);await fresh.close();
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}

@@ -36,6 +36,9 @@ function readingText(node) {
   return clone.textContent.trim();
 }
 
+/** 표지 목차에서 열려 있는 파트 이름들(BOOK-HOME-RESTORE-001) — 사용자가 연 파트까지 같아야 돌아왔을 때 높이가 같다. */
+const openTocParts = node => [...(node?.querySelectorAll('.manabi-book-home details[data-toc-part]') || [])].filter(group => group.open).map(group => group.dataset.tocPart);
+
 // 본문 위치로 바로 열기 — 첫 쪽 판정 · 하드 로드 감춤 한 줄 · 본문 골격은 bookEntryGate · BookReaderSkeleton(BOOK-HASH-ENTRY-001 · BOOK-ENTRY-SKELETON-001).
 
 export default function BookReader({ book, sectionIndex, preview = false, reference = false }) {
@@ -60,6 +63,9 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
   // 표지 자리(BOOK-HOME-RESTORE-001)에 쓰는 값 — 전체 목차 펼침은 표지가 다시 붙어도(다른 화면에서 뒤로) 이어진다.
   const [tocAll, setTocAll] = useState(false), [tocOpen, setTocOpen] = useState(null);
   const unitRef = useRef(unit), tocAllRef = useRef(tocAll);
+  // pendingCover = sync가 이 기록에서 찾은 표지 자리(스크롤 단계가 주소로 다시 찾지 않게). coverHold = 높이가 모자라 잘라 옮긴
+  // 자리 — 사용자가 움직이기 전까지는 잘린 값을 이 기록에 다시 쓰지 않는다(원래 자리를 지킨다).
+  const pendingCover = useRef(null), coverHold = useRef(null);
   unitRef.current = unit; tocAllRef.current = tocAll;
   const lesson = book.lessons.find(item => item.id === unit);
   useLibraryActivity({target_kind:'edition',target_id:book.edition,context:{bookId,page:active.startsWith(`${unit}-`)?active:pageId}},!reference&&!preview&&!loading&&!error&&!!lesson&&!!sections.length&&sections[0].unit===unit);
@@ -116,7 +122,10 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     // 열린 파트는 화면(details)에서 읽는다 — 사용자가 연 파트까지 같아야 돌아왔을 때 높이가 같다.
     // unit은 ref로 읽는다 — 의존성에 넣으면 쪽이 바뀔 때마다 sync 효과가 다시 돌아 앵커 이동이 되풀이된다.
     if (unitRef.current === 'cover') {
-      const open = [...(root.current?.querySelectorAll('.manabi-book-home details[data-toc-part]') || [])].filter(group => group.open).map(group => group.dataset.tocPart);
+      const open = openTocParts(root.current);
+      const hold = coverHold.current;
+      if (hold && Math.abs(window.scrollY - hold.top) < 1 && hold.all === tocAllRef.current && hold.open === JSON.stringify(open)) return;
+      coverHold.current = null;
       window.history.replaceState(withBookCoverPlace(window.history.state, { href: window.location.href, y: Math.round(window.scrollY), all: tocAllRef.current, open }), '', window.location.href);
       return;
     }
@@ -146,9 +155,12 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
         && saved.account === (user?.id || 'guest') && saved.reference === reference
         && Number.isFinite(saved.offset) && sectionIndex.some(section => section.id === saved.page) ? saved : null;
       if (position) id = position.page;
-      // 표지로 돌아오면 그 기록의 전체 목차 펼침부터 — 높이가 같아야 남긴 세로 위치로 맞는다(옮기기는 앵커 효과).
+      // 표지로 돌아오면(뒤로 · 앞으로 · 새로 고침 · bfcache) 그 기록의 전체 목차 · 열린 파트부터 — 높이가 같아야 남긴 세로 위치로
+      // 맞는다(옮기기는 앵커 효과가 pendingCover로). 자리 기록이 없는 표지(새로 연 표지)는 기본값(지금 파트만, 맨 위)이다.
       const coverPlace = id === 'cover' && restorePosition ? bookCoverPlaceOf(window.history.state, href) : null;
       if (coverPlace) { setTocAll(coverPlace.all); setTocOpen(coverPlace.open); }
+      else if (id === 'cover') { setTocAll(false); setTocOpen(null); }
+      pendingCover.current = coverPlace; coverHold.current = null;
       pendingPosition.current = position;
       pendingAnchor.current = id; setPageId(id); setActive(id);
       // The same hash can belong to entries with distinct reading positions.
@@ -309,8 +321,10 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
       }
       else if (id === 'cover') {
         // 표지 — 이 기록에 남긴 세로 위치로, 없으면(새로 들어온 표지) 맨 위로(BOOK-HOME-RESTORE-001). 더 내려갈 수 없으면 끝까지.
-        const place = bookCoverPlaceOf(window.history.state, window.location.href);
-        window.scrollTo({ top: place ? Math.min(place.y, Math.max(0, document.documentElement.scrollHeight - innerHeight)) : 0, behavior: 'instant' });
+        const place = pendingCover.current, top = place ? Math.min(place.y, Math.max(0, document.documentElement.scrollHeight - innerHeight)) : 0;
+        window.scrollTo({ top, behavior: 'instant' });
+        // 잘라 옮겼으면 그 자리 · 펼침이 그대로인 동안은 원래 값을 지킨다(rememberPosition이 건너뛴다).
+        if (place && top < place.y) coverHold.current = { top, all: tocAllRef.current, open: JSON.stringify(openTocParts(root.current)) };
       }
       else if (id === unit || id === `${unit}-start`) window.scrollTo({ top: 0, behavior: 'instant' });
       else (target || root.current)?.scrollIntoView({ block: 'start', behavior: 'instant' });
@@ -324,7 +338,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
         if (!focusIsLost(document) && active?.getClientRects?.().length === 0) active.blur();
         focusPageIfLost(document);
       }
-      pendingAnchor.current = null; pendingPosition.current = null;
+      pendingAnchor.current = null; pendingPosition.current = null; pendingCover.current = null;
       rememberPosition();
       if (!reference && /^u\d{2}/.test(id)) update({ page: id });
     }); });
@@ -384,6 +398,9 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     window.history.pushState(navigationState, '', destination.pathname+destination.search+destination.hash);
     setQuery('');
     pendingPosition.current = null; pendingAnchor.current = id; setPageId(id); setActive(id);
+    // 책 안에서 새로 연 표지(「← 책 목차」)는 새 기록이다 — 목차 펼침 · 열린 파트를 기본값으로, 자리는 맨 위.
+    pendingCover.current = null; coverHold.current = null;
+    if (id === 'cover') { setTocAll(false); setTocOpen(null); }
     focusAfterMove.current = true;
     setAnchorRequest(request => request + 1);
     if (!reference && /^u\d{2}/.test(id)) update({ page: id });
