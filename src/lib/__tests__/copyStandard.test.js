@@ -125,3 +125,108 @@ describe('실패 토스트 — failureMessage(errorMessage.js 정본)', () => {
     expect(failureMessage('저장하지 못했어요.', new Error('boom'))).not.toContain(UNKNOWN_ERROR_MESSAGE);
   });
 });
+
+// COPY-EN-001(2026-10-17 KST) — §1 「화면 문구에 영어 원문을 쓰지 않는다」. 읽기 확인의 「New Test」 「Close」처럼
+// 버튼 · 안내가 영어로 남아 있던 것을 기존 한국어 라벨로 바꿨다. 새 영어 라벨이 화면에 들어오지 않게 막는다.
+// 보는 자리: 영어만 있는 JSX 글(>Close<)과 aria-label · title · placeholder · alt 속성. 관리 화면(admin)과 개발 동결된 월드(world)는 밖이다.
+// 허용 목록 = 의도한 영어(상호 · 서비스 이름 · 키 이름 · 예시 주소)와 오너 결정 대기(영문 눈썹 글) — 파일 · 글 · 이유를 함께 적는다.
+const EN_EXCLUDED_DIRS = ['admin', 'world'];
+const EN_EXCLUDED_FILES = ['views/AdminPage.jsx', 'views/WorldPage.jsx', 'views/WorldMapPage.jsx'];
+const EN_OWNER_PENDING = '영문 눈썹 글(디자인 장식) — 한국어로 바꿀지 오너 결정 대기(COPY-EN-001 보고 2026-10-17 KST)';
+const EN_ALLOWLIST = [
+  { file: 'app/privacy/page.jsx', text: 'Supabase', reason: '처리 위탁 서비스 이름(고유명사)' },
+  { file: 'app/privacy/page.jsx', text: 'Google Gemini, Groq', reason: '처리 위탁 서비스 이름(고유명사)' },
+  { file: 'components/notes/NoteRecognition.jsx', text: 'Google Gemini', reason: '서비스 이름(고유명사)' },
+  { file: 'components/classroom/BoardInkRecognition.jsx', text: 'Google Gemini', reason: '서비스 이름(고유명사)' },
+  { file: 'components/LiteraturePublishPanel.jsx', text: 'src/content/art', reason: '저장 경로 표시(코드 경로)' },
+  { file: 'components/LiteraturePublishPanel.jsx', text: 'src/content/literature', reason: '저장 경로 표시(코드 경로)' },
+  { file: 'components/Layout.jsx', text: 'manabi', reason: '서비스 이름(로고)' },
+  { file: 'components/books/BookCover.jsx', text: 'manabi books', reason: '표지 상호(로고 글)' },
+  { file: 'components/levels/HanziBoard.jsx', text: 'Space', reason: '키보드 키 이름' },
+  { file: 'components/levels/HanziBoard.jsx', text: 'Esc', reason: '키보드 키 이름' },
+  { file: 'components/MaterialAddLinkSection.jsx', text: 'https://youtu.be/…', reason: '입력 예시 주소' },
+  { file: 'components/materials/MaterialComposer.jsx', text: 'https://', reason: '입력 예시 주소' },
+  { file: 'views/AuthPage.jsx', text: 'hello@example.com', reason: '입력 예시 메일 주소' },
+  ...[
+    ['components/materials/SuggestionReader.jsx', 'MANABI / READINGS'],
+    ['components/materials/OriginalMaterialReader.jsx', 'KEPT FOR ANOTHER DAY'],
+    ['components/materials/OriginalMaterialReader.jsx', 'ORIGINAL LINK'],
+    ['components/materials/PassageStudy.jsx', 'READ INTO LEARNING'],
+    ['components/materials/PassageStudy.jsx', 'A PASSAGE TO KEEP'],
+    ['components/materials/MaterialComposer.jsx', 'YOUR LIBRARY'],
+    ['components/materials/MaterialComposer.jsx', 'SAVED TO YOUR LIBRARY'],
+    ['components/materials/MaterialComposer.jsx', 'A PAGE OF YOUR OWN'],
+    ['components/notes/StudyNotePage.jsx', 'PERSONAL NOTEBOOK'],
+    ['components/notes/NoteVocabulary.jsx', 'MY WORDS'],
+    ['components/books/BookMaterials.jsx', 'BEYOND THE BOOK'],
+    ['components/books/BookReview.jsx', 'WORDS TO KEEP'],
+    ['views/VocabPage.jsx', 'THE REVIEW ROOM'],
+    ['components/classroom/ClassroomUI.jsx', 'MANABI / CLASS'],
+    ['components/classroom/ClassroomUI.jsx', 'manabi / class'],
+    ['views/ClassBoardPage.jsx', 'manabi / class'],
+    ['views/ClassHubPage.jsx', 'MANABI / CLASS'],
+  ].map(([file, text]) => ({ file, text, reason: EN_OWNER_PENDING })),
+];
+
+function englishLabels(files) {
+  const found = [];
+  for (const path of files) {
+    const file = relative(ROOT, path).replaceAll('\\', '/');
+    if (EN_EXCLUDED_FILES.includes(file) || file.split('/').some(part => EN_EXCLUDED_DIRS.includes(part))) continue;
+    const lines = stripComments(readFileSync(path, 'utf8')).split('\n');
+    lines.forEach((line, index) => {
+      const texts = [
+        ...[...line.matchAll(/>\s*([A-Za-z][A-Za-z '/&!?.,:-]{2,})\s*</g)].map(m => m[1].trim())
+          // 「count && <…」 「a?.b」 「x ? <…」처럼 JSX 사이의 코드 조각은 글이 아니다.
+          .filter(t => !/&&|\?\.|\w\.\w|\?$/.test(t)),
+        ...[...line.matchAll(/(?:aria-label|title|placeholder|alt)=["']([^"'{}]+)["']/g)].map(m => m[1]),
+      ].filter(t => /[A-Za-z]{3,}/.test(t) && !/[가-힣]/.test(t));
+      for (const text of texts) {
+        if (EN_ALLOWLIST.some(a => a.file === file && a.text === text)) continue;
+        found.push(`${file}:${index + 1} 「${text}」`);
+      }
+    });
+  }
+  return found;
+}
+
+describe('문구 린트 — 화면에 영어 라벨을 두지 않는다(copy-standard.md §1, COPY-EN-001)', () => {
+  it('src/app · src/components · src/views의 JSX 글 · 접근성 이름에 허용 목록 밖 영어가 없다', () => {
+    expect(englishLabels(SCREEN_FILES)).toEqual([]);
+  });
+
+  it('읽기 확인 결과는 기존 한국어 라벨을 쓴다(다시 풀기 · 닫기 · 채점 · 내 답 · 정답)', () => {
+    const src = readFileSync(join(ROOT, 'components/ReadingTest.jsx'), 'utf8');
+    for (const old of ['New Test', '>Close<', 'Submit & Grade', 'Your answer:', 'Correct:', 'Excellent!', 'Good job.', 'Try reading the passage']) {
+      expect(src, old).not.toContain(old);
+    }
+    for (const label of ['>다시 풀기</Button>', '>닫기</Button>', "'채점'", '내 답: {e.yourAnswer}', '정답: {e.correctAnswer}']) {
+      expect(src, label).toContain(label);
+    }
+    // 결과 세 문장은 뷰어 퀴즈(ViewerQuizModal)와 같은 글이다 — 한쪽만 바뀌면 같은 상황에 두 문구가 된다(§3).
+    const quiz = readFileSync(join(ROOT, 'views/ViewerQuizModal.jsx'), 'utf8');
+    for (const line of ['완벽해요! 내용을 완전히 이해했네요.', '잘 읽었어요. 틀린 부분을 다시 확인해보세요.', '단어를 복습하고 다시 읽어보세요.']) {
+      expect(src, line).toContain(line);
+      expect(quiz, line).toContain(line);
+    }
+  });
+
+  it('규칙이 영어 라벨을 잡고, 코드 조각 · 한국어 섞인 글은 잡지 않는다', () => {
+    const scan = (text) => {
+      const t = [...stripComments(text).matchAll(/>\s*([A-Za-z][A-Za-z '/&!?.,:-]{2,})\s*</g)].map(m => m[1].trim()).filter(x => !/&&|\?\.|\w\.\w|\?$/.test(x));
+      return [...t, ...[...text.matchAll(/(?:aria-label|title|placeholder|alt)=["']([^"'{}]+)["']/g)].map(m => m[1])].filter(x => /[A-Za-z]{3,}/.test(x) && !/[가-힣]/.test(x));
+    };
+    expect(scan('<Button onClick={reset}>New Test</Button>')).toEqual(['New Test']);
+    expect(scan('<button aria-label="Close dialog">×</button>')).toEqual(['Close dialog']);
+    expect(scan('{count > 0 && <span>{count}</span>}')).toEqual([]);
+    expect(scan('{seg.kanji? <b/> : null}')).toEqual([]);
+    expect(scan('<span>JLPT N5 단어</span><button aria-label="닫기">OK</button>')).toEqual([]);
+  });
+
+  it('영어 허용 목록의 각 글은 지금도 그 파일에 있다', () => {
+    for (const { file, text, reason } of EN_ALLOWLIST) {
+      expect(reason.length, file).toBeGreaterThan(5);
+      expect(readFileSync(join(ROOT, file), 'utf8'), `${file}: ${text}`).toContain(text);
+    }
+  });
+});

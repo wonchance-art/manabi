@@ -299,7 +299,7 @@ Rules:
             ))}
 
             <Button onClick={gradeTest} disabled={!allAnswered} style={{ width: '100%', marginTop: 16 }}>
-              {allAnswered ? '✓ Submit & Grade' : `${Object.keys(answers).length}/${questions.length} answered`}
+              {allAnswered ? '채점' : `${Object.keys(answers).length}/${questions.length} answered`}
             </Button>
           </div>
         )}
@@ -320,9 +320,10 @@ Rules:
               </div>
             )}
             <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: 24, fontSize: '0.9rem' }}>
-              {result.score === result.total ? 'Excellent! Perfect score.' :
-               result.score >= result.total * 0.6 ? 'Good job. Review the ones you missed.' :
-               'Try reading the passage again more carefully.'}
+              {/* 뷰어 퀴즈 결과(ViewerQuizModal)와 같은 세 문장 — 같은 상황은 같은 문구(copy-standard §3). 나누는 기준(60%)은 그대로. */}
+              {result.score === result.total ? '완벽해요! 내용을 완전히 이해했네요.' :
+               result.score >= result.total * 0.6 ? '잘 읽었어요. 틀린 부분을 다시 확인해보세요.' :
+               '단어를 복습하고 다시 읽어보세요.'}
             </p>
 
             {result.explanations.map((e, i) => (
@@ -333,8 +334,8 @@ Rules:
                 <p className="reading-test__result-q">{e.question}</p>
                 {!e.correct && (
                   <div className="reading-test__result-answers">
-                    <span className="reading-test__your-answer">Your answer: {e.yourAnswer}</span>
-                    <span className="reading-test__correct-answer">Correct: {e.correctAnswer}</span>
+                    <span className="reading-test__your-answer">내 답: {e.yourAnswer}</span>
+                    <span className="reading-test__correct-answer">정답: {e.correctAnswer}</span>
                   </div>
                 )}
                 <p className="reading-test__result-expl">{e.explanation}</p>
@@ -343,8 +344,8 @@ Rules:
             ))}
 
             <div style={{ display: 'flex', gap: 8, marginTop: 20, flexWrap: 'wrap' }}>
-              <Button variant="ghost" onClick={resetTest} style={{ flex: '1 1 120px' }}>New Test</Button>
-              {onClose && <Button variant="ghost" onClick={onClose} style={{ flex: '1 1 120px' }}>Close</Button>}
+              <Button variant="ghost" onClick={resetTest} style={{ flex: '1 1 120px' }}>다시 풀기</Button>
+              {onClose && <Button variant="ghost" onClick={onClose} style={{ flex: '1 1 120px' }}>닫기</Button>}
               {nextLesson && (
                 <Link href={`/viewer/${nextLesson.id}`} className="btn btn--primary btn--md" style={{ flex: '1 1 160px', justifyContent: 'center' }}>
                   다음 편 →
