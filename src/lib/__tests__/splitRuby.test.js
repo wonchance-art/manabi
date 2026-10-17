@@ -89,9 +89,28 @@ describe('splitRuby — 독음이 표면 읽기면 표면 앵커가 이긴다(�
 describe('본문 · 카드 · 미리보기 · 빠른 읽기가 기본형을 넘긴다(VIEWER-LANG-AUDIT)', () => {
   const read = (file) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
   it('토큰 독음 분해 자리마다 base_form을 함께 준다', () => {
-    expect(read('src/views/ViewerPage.jsx')).toContain('splitRuby(token.text, token.furigana, token.base_form)');
+    expect(read('src/views/ViewerPage.jsx')).toContain('splitRuby(token.text, token.furigana, token.base_form, nextTokenText(tokenId))');
     expect(read('src/views/ViewerPage.jsx')).toContain('splitRuby(headText, headReading, headIsBase ? undefined : selectedToken?.base_form)');
-    expect(read('src/views/QuickPage.jsx')).toContain('splitRuby(token.text, token.furigana, token.base_form)');
-    expect(read('src/components/viewer/ViewerPreview.jsx')).toContain('splitRuby(token.text,token.furigana,token.base_form)');
+    expect(read('src/views/QuickPage.jsx')).toContain('splitRuby(token.text, token.furigana, token.base_form, line?.[i + 1]?.text)');
+    expect(read('src/components/viewer/ViewerPreview.jsx')).toContain('splitRuby(token.text,token.furigana,token.base_form,shown[i+1]?.text)');
+  });
+});
+
+// 실제 분석 출력(analyzeLines + 운영 사전 캐시 읽기 — 2026-10-17 KST): 彼は来ない。 → 来 | ない, 来의 독음 = くる(캐시 기본형 읽기).
+describe('splitRuby — 来 | ない처럼 어미가 다음 토큰이면 다음 토큰 글자로 읽기를 고른다', () => {
+  it('来 + くる + 来る + 다음 ない → こ, ます → き, た → き, れば → く, 모르면 き', () => {
+    expect(splitRuby('来', 'くる', '来る', 'ない')).toEqual([{ kanji: '来', reading: 'こ' }]);
+    expect(splitRuby('来', 'くる', '来る', 'ます')).toEqual([{ kanji: '来', reading: 'き' }]);
+    expect(splitRuby('来', 'くる', '来る', 'た')).toEqual([{ kanji: '来', reading: 'き' }]);
+    expect(splitRuby('来', 'くる', '来る', 'れば')).toEqual([{ kanji: '来', reading: 'く' }]);
+    expect(splitRuby('来', 'くる', '来る')).toEqual([{ kanji: '来', reading: 'き' }]);
+  });
+  it('토큰 안 어미가 다음 토큰보다 먼저다 · 캐시가 없어 표면 읽기(こ)가 오면 그대로', () => {
+    expect(splitRuby('来な', 'くる', '来る', 'ます')[0].reading).toBe('こ');
+    expect(splitRuby('来', 'こ', '来る', 'ない')).toEqual([{ kanji: '来', reading: 'こ' }]);
+  });
+  it('카타카나 독음은 앵커가 맞지 않아 옛 폴백(전체 독음)으로 — 깨지지 않는다', () => {
+    expect(splitRuby('違い', 'チガウ', '違う')).toEqual([{ kanji: '違', reading: 'チガウ' }, { plain: 'い' }]);
+    expect(splitRuby('来', 'クル', '来る', 'ない')).toEqual([{ kanji: '来', reading: 'クル' }]);
   });
 });

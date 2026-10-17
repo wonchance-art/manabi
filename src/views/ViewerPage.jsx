@@ -4177,6 +4177,10 @@ export default function ViewerPage() {
           // 중국어 줄머리 금칙(ZH-GRID-001): 닫는 부호 묶음과 그 앞 토큰을 한 줄에 묶는 여백 표시.
           const zhMarks = zhGrid ? zhKinsokuMarks(json.sequence, id => json.dictionary[id]) : null;
 
+          // 바로 뒤 토큰 표기(splitRuby의 来 | ない 읽기 고르기) — 줄을 넘지 않는다(줄 끝이면 빈 글).
+          const seqAt = new Map(json.sequence.map((id, i) => [id, i]));
+          const lineOf = (id) => String(id).match(/^(?:id|failed)_(\d+)_/)?.[1];
+          const nextTokenText = (tokenId) => { const next = json.sequence[(seqAt.get(tokenId) ?? -2) + 1]; return next && lineOf(next) === lineOf(tokenId) ? json.dictionary[next]?.text || '' : ''; };
           const renderToken = (tokenId, lineHead = null, picked = false, paceSlice = null) => {
             const zhStyle = zhKinsokuStyle(zhMarks?.get(tokenId));
             // 체류 선의 자기 몫 구간(v2-I R1b) — 오른쪽부터 물러나므로 마지막 토큰이 먼저 빈다.
@@ -4226,7 +4230,7 @@ export default function ViewerPage() {
             // ruby는 토글과 무관하게 항상 만든다 — 폭 예약(ruby[data-pinyin])이 병음을 꺼도
             // 유지돼야 켤 때 글자가 밀리지 않는다(오너 요청 2026-08-19). 끌 때는 rt만 감춘다.
             const rubySegments = token.furigana
-              ? splitRuby(token.text, token.furigana, token.base_form) // 활용형은 기본형 읽기에서 한자 읽기만(違[ちが]い)
+              ? splitRuby(token.text, token.furigana, token.base_form, nextTokenText(tokenId)) // 활용형은 기본형 읽기에서 한자 읽기만(違[ちが]い) · 来 | ない는 다음 토큰으로 こ
               : null;
             // 발음 표기 3단(오너 확정 2026-08-27) — 감춰도 rt만 숨긴다(폭 예약 불변, furi-off 선례).
             // 「가려져 있다」는 **읽기가 실제로 붙는 토큰**에서만 참이다: furigana가 있어도

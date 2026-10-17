@@ -18,7 +18,7 @@ export default function ViewerPreview({settings:s,language,tokens=[]}) {
   const marks=zh?zhKinsokuMarks(shown.map((_,i)=>i),i=>shown[i]):null;
   return <div ref={ref} className={`reader-settings__preview reader-area--${s.theme}${s.wordStateHl?' reader-area--hl':''}`} lang={language==='Korean'?'ko':language==='Chinese'?'zh-Hans':language==='Japanese'?'ja':language==='French'?'fr':'en'} style={{fontSize:`${s.fontSize}rem`,fontFamily:language==='Korean'?"var(--font-noto-kr, 'Noto Sans KR'), sans-serif":readerFontFamily(language,s.fontFamily),gap:`var(--preview-row-gap) ${zh?0:s.charGap}rem`,'--char-gap':`${s.charGap}rem`,'--pinyin-size':`${s.pinyinSize}rem`,'--preview-row-gap':`max(${s.lineGap}px, var(--hl-row-gap-min, 0px))`,'--preview-rows':s.fontSize>2?1:2}}>
     {shown.map((token,i)=>{
-      const segments=phonetic&&token.furigana?splitRuby(token.text,token.furigana,token.base_form):null;
+      const segments=phonetic&&token.furigana?splitRuby(token.text,token.furigana,token.base_form,shown[i+1]?.text):null;
       const hidden=pronHiddenFor(s.pronDisplay,{isSaved:!!token.previewSaved,isKnown:!!token.previewKnown});
       const classes=['word-token',token.previewSaved&&'word-token--saved',token.previewDue&&'word-token--due',s.wordStateHl&&token.previewHighlight,token.previewPicked&&'word-token--picked'].filter(Boolean).join(' ');
       return <span key={i} className={classes} style={zhKinsokuStyle(marks?.get(i))||undefined}><span className={`surface${hidden?' surface--furi-off':''}`}>
