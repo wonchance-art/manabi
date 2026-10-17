@@ -1,4 +1,4 @@
-import { Black_Han_Sans, Dela_Gothic_One, GFS_Didot, Gochi_Hand, Goudy_Bookletter_1911, IM_Fell_English, Josefin_Sans, Jost, Kaushan_Script, Libre_Caslon_Display, Nanum_Myeongjo, Shippori_Mincho_B1, Song_Myung, Yellowtail, Yuji_Syuku } from 'next/font/google';
+import { Black_Han_Sans, Dela_Gothic_One, GFS_Didot, Gochi_Hand, Goudy_Bookletter_1911, IM_Fell_English, Josefin_Sans, Jost, Kaushan_Script, Libre_Caslon_Display, Nanum_Myeongjo, Noto_Serif_KR, Shippori_Mincho_B1, Song_Myung, Yellowtail, Yuji_Syuku } from 'next/font/google';
 
 // 「초판 장정」 2차 묶음(오너 「원본 책 재구성하는 방식으로 표지 만들기까지 완성」 2026-10-17 KST) — 한국어 7 · 영어 9 · 프랑스어 3.
 // 근거(실물 사진·서지 기록)는 docs/literature-pipeline.md §8.7, 키는 lib/firstEditionCover.js. 사람 몸 · 출판사 문장·모노그램 · 캐릭터 그림 ·
@@ -23,8 +23,9 @@ const caslon = Libre_Caslon_Display({ display: 'swap', preload: false, weight: '
 const shippori = Shippori_Mincho_B1({ display: 'swap', preload: false, weight: ['500', '800'], subsets: ['latin'], variable: '--font-fe-shippori' }); // 800 — 1925 『진달내ᄭᅩᆺ』 굵은 활자
 const yuji = Yuji_Syuku({ display: 'swap', preload: false, weight: '400', subsets: ['latin'], variable: '--font-fe-yuji' });
 const blackHan = Black_Han_Sans({ display: 'swap', preload: false, weight: '400', subsets: ['latin'], variable: '--font-fe-blackhan' });
+const krSerifBold = Noto_Serif_KR({ display: 'swap', preload: false, weight: ['600', '700'], subsets: ['latin'], variable: '--font-fe-kr-bold' }); // 1948 정음사 제첨 굵은 명조(저장소 사본의 600 · 700을 다시 쓴다)
 const dela = Dela_Gothic_One({ display: 'swap', preload: false, weight: '400', subsets: ['latin'], variable: '--font-fe-dela' }); // 굵은 고딕 한자(Black Han Sans에는 한자가 없다)
-export const SECOND_FONT_CLASS = [songMyung, myeongjo, josefin, jost, kaushan, yellowtail, gochi, goudy, fell, didot, caslon, shippori, yuji, blackHan, dela].map((font) => font.variable).filter(Boolean).join(' ');
+export const SECOND_FONT_CLASS = [songMyung, myeongjo, josefin, jost, kaushan, yellowtail, gochi, goudy, fell, didot, caslon, shippori, yuji, blackHan, dela, krSerifBold].map((font) => font.variable).filter(Boolean).join(' ');
 
 const stack = (variable, family, ...rest) => [`var(${variable}, "${family}")`, `"${family}"`, ...rest].join(', ');
 /** 한자 — 한글 글꼴 뒤에 둔다(한글 글꼴에 한자가 없으면 글자마다 이 글꼴로 내려온다). */
@@ -34,6 +35,7 @@ const BRUSH_HANJA = stack('--font-fe-yuji', 'Yuji Syuku', HANJA);
 export const KO_PRINT = `"Chosun Centennial", ${HANJA}`;
 const SONGMYUNG = stack('--font-fe-songmyung', 'Song Myung', HANJA);
 const MYEONGJO = stack('--font-fe-myeongjo', 'Nanum Myeongjo', HANJA);
+const KR_BOLD = stack('--font-fe-kr-bold', 'Noto Serif KR', HANJA);
 const HEAVY = stack('--font-fe-blackhan', 'Black Han Sans', stack('--font-fe-dela', 'Dela Gothic One', HANJA)); // 한자(詩)는 같은 굵은 고딕으로
 /** 옛한글 조합(ᄭᅩᆺ)이 되는 굵은 명조 — Noto Serif KR wght 700 제목 사본(first-edition-cover.css · public/fonts/manabi-old-hangul). Google Fonts 조각 파일은
  * 자모가 갈려 조합이 깨지고, 조선100년체 · 재민체는 옛한글 자모를 조합하지 못한다(실측). 굵기는 오너 대조 사진의 1925 활자에 맞췄다. */
@@ -58,6 +60,7 @@ export const SECOND_GROUNDS = Object.freeze({
   isang: { ground: '#dccaa2', ink: '#6a3122', green: '#37452f' },
   gamja: { ground: '#c9785a', ink: '#1d1b22' },
   jindallae: { ground: '#def0cb', ink: '#0d100c', band: '#ecc485' },
+  'jeongeum-1948': { ground: '#e9d4b2', ink: '#21190a', label: '#fef5e1', edge: '#9d8f78' },
   'jeongeum-1955': { ground: '#ae9a6b', ink: '#0a150a', teal: '#2a5953' },
   'secker-diagonal': { ground: '#c9b8a4', ink: '#efe6d6', green: '#5aa66c' },
   'secker-numerals': { ground: '#b4524e', ink: '#f6efe6', pale: '#c6796f' },
@@ -258,6 +261,38 @@ function Jindallae({ display, tone }) {
       {row(rtlGraphemes(display.coverTitle), L.title, OLD_HANGUL, 't')}
       <path d={L.rule} stroke={tone.ink} strokeWidth="1" />
       {row([...display.coverEdition], L.edition, HANJA, 'e', 800)}
+    </g>
+  );
+}
+
+// 『하늘과 바람과 별과 詩』 정음사 1948 초판 — 갈포 장정 · 흰 제첨(이중 테). 칸 · 줄 · 색은 오너가 준 대조 사진(복각 장정 입체 사진을 원근 보정해
+// 판 좌표로 편 값)에서 잰다. 제첨 종이와 천 결은 잉크가 아니라 UNDER, 테 · 글자만 잉크 층(닳은 활자)이다.
+const JEONGEUM_1948 = Object.freeze({
+  label: [20.6, 21.6, 101.6, 65.8], // 제첨 [왼쪽, 위, 오른쪽, 아래]
+  frames: [[22, 23.3, 100, 64.4], [23.2, 24.5, 98.8, 63.2]], // 바깥 · 안 테
+  title: { center: 61.2, step: 5.92, gap: 2.95, base: 36.5, size: 5.05, hanja: 6.2 }, // 낱말 사이는 한 칸에 gap을 더한다 · 「詩」는 조금 크다
+  author: { center: 61.1, step: 13.3, base: 46.8, size: 4.2 },
+  subtitle: { center: 60.9, step: 7.7, base: 55.6, size: 3.9 },
+});
+function Jeongeum1948({ display, tone }) {
+  const L = JEONGEUM_1948;
+  const title = [];
+  display.coverTitle.split(' ').forEach((word, w) => [...word].forEach((char) => title.push({ char, w })));
+  const words = display.coverTitle.split(' ').length;
+  const width = (title.length - 1) * L.title.step + (words - 1) * L.title.gap;
+  const spaced = (text, { center, step, base, size }, key) => {
+    const chars = [...text.replaceAll(' ', '')];
+    return chars.map((char, index) => <T key={`${key}${index}`} x={center + (index - (chars.length - 1) / 2) * step} y={base} size={size} font={HANJA} fill={tone.ink} weight={800}>{char}</T>);
+  };
+  return (
+    <g lang="ko">
+      {L.frames.map(([x1, y1, x2, y2]) => <rect key={x1} x={x1} y={y1} width={x2 - x1} height={y2 - y1} fill="none" stroke={tone.ink} strokeWidth=".3" opacity=".7" />)}
+      {title.map(({ char, w }, index) => {
+        const hanja = /\p{Script=Han}/u.test(char);
+        return <T key={`t${index}`} x={L.title.center - width / 2 + index * L.title.step + w * L.title.gap} y={L.title.base} size={hanja ? L.title.hanja : L.title.size} font={hanja ? HANJA : KR_BOLD} fill={tone.ink} weight={hanja ? 800 : 700}>{char}</T>;
+      })}
+      {spaced(display.coverAuthor, L.author, 'a')}
+      {spaced(display.coverSubtitle, L.subtitle, 's')}
     </g>
   );
 }
@@ -521,11 +556,43 @@ function Reynal({ display, tone }) {
 
 /** 바탕 조각 — 잉크가 아니라 종이라 닳은 활자(잉크 층) 밖, 결(grain) 아래에 그린다. */
 export const SECOND_UNDER = {
+  // 갈포 결 — 사선 능직: 오른쪽 아래로 21° 기운 또렷한 이랑(간격 1.05 · 밝은 올 · 어두운 골)에 고운 섬유 반점 두 겹과 아주 옅은 얼룩을 얹는다.
+  // 오너 대조 사진을 확대해 잰 값(2026-10-17 KST). 한 방향으로 늘인 잡음 결은 초점이 흐린 듯 어지러웠고(오너 「정신난만」), 큰 얼룩은 위장 무늬가 됐다 —
+  // 결은 규칙 이랑, 불규칙은 고운 반점 · 옅은 얼룩으로만. 그 위에 흰 제첨(가장자리는 살짝 어둡게).
+  'jeongeum-1948': ({ tone, id }) => {
+    const [x1, y1, x2, y2] = JEONGEUM_1948.label;
+    const speck = (seed, frequency, rgb) => (
+      <filter id={`${id}-fiber${seed}`} x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency={frequency} numOctaves="1" seed={seed} />
+        <feColorMatrix values={`0 0 0 0 ${rgb[0]}  0 0 0 0 ${rgb[1]}  0 0 0 0 ${rgb[2]}  0 0 0 3 -1.78`} />
+      </filter>
+    );
+    return (
+      <g>
+        <defs>
+          <pattern id={`${id}-twill`} width="4" height="1.05" patternUnits="userSpaceOnUse" patternTransform="rotate(21)">
+            <rect width="4" height="1.05" fill="#3e2f1d" opacity=".24" /><rect y=".1" width="4" height=".38" fill="#fff" opacity=".38" />
+          </pattern>
+          {speck(4, 1.8, [1, 0.97, 0.9])}
+          {speck(9, 2.1, [0.2, 0.15, 0.08])}
+          <filter id={`${id}-mottle`} x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="12" />
+            <feColorMatrix values="0 0 0 0 .25  0 0 0 0 .19  0 0 0 0 .11  .24 0 0 0 -.108" />
+          </filter>
+        </defs>
+        <rect width="120" height="168" fill={`url(#${id}-twill)`} />
+        <rect width="120" height="168" filter={`url(#${id}-fiber4)`} opacity=".95" />
+        <rect width="120" height="168" filter={`url(#${id}-fiber9)`} opacity=".45" />
+        <rect width="120" height="168" filter={`url(#${id}-mottle)`} />
+        <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} fill={tone.label} stroke={tone.edge} strokeWidth=".35" />
+      </g>
+    );
+  },
   jindallae: ({ tone }) => <rect x={JINDALLAE.band} y="0" width={120 - JINDALLAE.band} height="168" fill={tone.band} />,
 };
 
 export const SECOND_DRAW = {
-  gaebyeok: Gaebyeok, bakmun: Bakmun, dongbaek: Dongbaek, isang: Isang, gamja: Gamja, jindallae: Jindallae, 'jeongeum-1955': Jeongeum1955,
+  gaebyeok: Gaebyeok, bakmun: Bakmun, dongbaek: Dongbaek, isang: Isang, gamja: Gamja, jindallae: Jindallae, 'jeongeum-1948': Jeongeum1948, 'jeongeum-1955': Jeongeum1955,
   'secker-diagonal': SeckerDiagonal, 'secker-numerals': SeckerNumerals, 'scribner-blind': ScribnerBlind, 'scribner-plain': ScribnerPlain,
   'hogarth-bell': HogarthBell, huebsch: Huebsch, 'harper-blind': HarperBlind, 'ticknor-arabesque': TicknorArabesque, 'egerton-boards': EgertonBoards,
   'gallimard-blanche': GallimardBlanche, 'gallimard-essais': GallimardEssais, reynal: Reynal,
