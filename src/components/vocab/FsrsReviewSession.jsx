@@ -98,14 +98,16 @@ export default function FsrsReviewSession({ review, onExit, embedded = false, ca
         </div>
       </div>
       <div ref={bar} tabIndex={-1} className={`review-grade-bar${revealed ? '' : ' is-locked'}`} role="group" aria-label="기억 채점">
-        {revealed && <p className="review-score-guide review-grade-guide">{gradeGuide(word)}<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span></p>}
+        {/* 안내 줄 · 간격 글 자리는 앞면(잠김)에서도 비워 둔다 — 정답 확인 때 막대가 자라지 않게(VOCAB-FLOW-001 C). 잠김엔 숨김 · 화면 읽기 제외. */}
+        <p className={`review-score-guide review-grade-guide${revealed ? '' : ' review-grade-guide--reserve'}`} aria-hidden={!revealed || undefined}>{gradeGuide(word)}<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span></p>
         <div className="review-score-grid" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
           {RATINGS.map(({ rating, label, style }) => <button key={rating} type="button"
             onClick={() => grade(rating)} disabled={!revealed || !armed || disabled}
             className={`review-score-btn review-score-btn--${style}`} title={revealed ? current.previews?.[rating]?.due : undefined}>
             {label}<span className="save-grade__key" aria-hidden="true">{rating}</span>
             {/* 보조 글 첫 글자 띄어쓰기 = 화면 읽기 이름 「다시 10분」(GRADE-NAME-001). 줄 첫머리 공백이라 화면에는 그려지지 않는다. */}
-            {revealed && <small>{' '}{fsrsIntervalLabel(current.previews?.[rating]?.due, current.previewAt)}</small>}
+            {revealed ? <small>{' '}{fsrsIntervalLabel(current.previews?.[rating]?.due, current.previewAt)}</small>
+              : <small className="review-grade-guide--reserve" aria-hidden="true">{' '}{' '}</small>}
           </button>)}
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from 'react';
+import { focusIfFree } from '../lib/focusAfterAction';
 import Link from 'next/link';
 import Button from '../components/Button';
 import { detectLang, splitSentenceAroundWord } from '../lib/constants';
@@ -17,7 +18,8 @@ function ScoreSection({ word, onScore, armed = true, locked = false }) {
   const bar = useGradeBarFocus(locked, armed); // 뒷면이 열리면 막대(버튼 아님)로 초점 — FOCUS-AFTER-ACTION-001 C2
   return (
     <div ref={bar} tabIndex={-1} className={`review-grade-bar${locked ? ' is-locked' : ''}`} role="group" aria-label="기억 채점">
-      {!locked && <p className="review-score-guide review-grade-guide">{gradeGuide(word)}<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span></p>}
+      {/* 안내 줄 자리는 앞면(잠김)에서도 비워 둔다 — 정답 확인 때 막대가 73→100px로 자라던 것(VOCAB-FLOW-001 C). 잠김엔 숨김 · 화면 읽기 제외. */}
+      <p className={`review-score-guide review-grade-guide${locked ? ' review-grade-guide--reserve' : ''}`} aria-hidden={locked || undefined}>{gradeGuide(word)}<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span></p>
       {/* 숫자 배지 = 키 안내(W R2) — 라벨 텍스트는 버튼 첫 자식 그대로(saveGrade 계약이 이 소스에서 라벨을 뽑는다) */}
       <div className="review-score-grid" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
         <button onClick={() => onScore(1)} className="review-score-btn review-score-btn--again" disabled={off} title="오늘 다시 나와요">다시<span className="save-grade__key" aria-hidden="true">1</span></button>
@@ -90,7 +92,18 @@ function UpcomingCalendar({ projections, learningAvailable, now }) {
  * finish = { scopeLabel, total, again, cutRemaining?, onContinueCut?, waiting?:{count, nextAt, ready}, onResumeWaiting?,
  *            returnLink?:{href,label}, outOfScope?:{count,label,onClick} }
  */
+/**
+ * 끝 화면 제목으로 초점(VOCAB-FLOW-001 — /study 「세션 완료」 선례). 마지막 채점 단추가 사라지며 초점이 body로 떨어졌다(a3ba 탐침).
+ * 떨어진 초점만 줍는다(focusIfFree — 다른 곳에 살아 있는 초점은 뺏지 않는다). 제목은 읽는 자리라 고리를 그리지 않는다(tabIndex −1).
+ */
+function useEndTitleFocus() {
+  const title = useRef(null);
+  useEffect(() => { const el = title.current; focusIfFree(el, el?.closest('.page-container')); }, []);
+  return title;
+}
+
 function ReviewFinished({ finish = {}, bookReview, vocab, projections, learningAvailable, now, setTab }) {
+  const title = useEndTitleFocus();
   const { scopeLabel, total = 0, again = 0, cutRemaining = 0, onContinueCut, waiting, onResumeWaiting, returnLink, outOfScope } = finish;
   const returnTo = returnLink || (bookReview ? { href: bookReview.returnTo, label: '읽던 교재로 돌아가기' } : null);
   const mature = learningAvailable ? projections.filter(row => wordStage(row).key === 'mature').length : null;
@@ -98,7 +111,7 @@ function ReviewFinished({ finish = {}, bookReview, vocab, projections, learningA
     <div className="review-done">
       <div className="review-done__header">
         {scopeLabel && <p className="review-done__scope">{scopeLabel}</p>}
-        <h2 className="review-done__title">{cutRemaining > 0 ? `${total}개 끝 · 오늘 몫 ${cutRemaining}개 남음` : '오늘 몫 끝'}</h2>
+        <h2 ref={title} tabIndex={-1} className="review-done__title">{cutRemaining > 0 ? `${total}개 끝 · 오늘 몫 ${cutRemaining}개 남음` : '오늘 몫 끝'}</h2>
         <p className="review-done__summary">{[`${total}개`, again > 0 && `다시 ${again}`].filter(Boolean).join(' · ')}</p>
         {waiting?.count > 0 && <p className="review-done__waiting" role="status">「다시」 {waiting.count}개는 잠시 뒤 다시 나와요{waiting.nextAt && !waiting.ready ? <> · <time dateTime={waiting.nextAt}>{new Date(waiting.nextAt).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' })}</time></> : null}</p>}
       </div>
@@ -140,11 +153,12 @@ function ReviewFinished({ finish = {}, bookReview, vocab, projections, learningA
 
 /** 집중 연습 끝 — 일정은 바뀌지 않았다는 것과 「몰랐어요」가 흐릿 범위로 이어진다는 것만 말한다. */
 function PracticeFinished({ practice, setTab }) {
+  const title = useEndTitleFocus();
   return (
     <div className="review-done review-done--practice">
       <div className="review-done__header">
         <p className="review-done__scope">집중 연습</p>
-        <h2 className="review-done__title">집중 연습 {practice.total}개 끝</h2>
+        <h2 ref={title} tabIndex={-1} className="review-done__title">집중 연습 {practice.total}개 끝</h2>
         <p className="review-done__summary">{[`${practice.total}개`, practice.unknown > 0 && `몰랐어요 ${practice.unknown}`].filter(Boolean).join(' · ')}</p>
         <p className="review-room-note">일정은 바뀌지 않았어요.{practice.unknown > 0 ? ' 「몰랐어요」 표현은 「흐릿 · 위험」 범위에 나와요.' : ''}</p>
       </div>

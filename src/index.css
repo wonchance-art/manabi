@@ -1444,7 +1444,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
    (실측 390×900: 카드가 화면 아래 절반에서 시작, 세 번째 보기는 잘림).
    세션 중에는 페이지 크롬을 걷어내고 진행·나가기만 남긴다. */
 body.is-review-session .mobile-nav { display: none; }
-body.is-review-session .page-container { padding-top: 8px; }
+/* 위 여백은 끝 화면까지(is-review-chrome = 세션 + 끝 화면) — 끝으로 넘어가며 본문이 내려앉지 않게(VOCAB-FLOW-001 A). */
+body.is-review-chrome .page-container { padding-top: 8px; }
 
 .review-topbar {
   display: flex; align-items: center; gap: 12px;

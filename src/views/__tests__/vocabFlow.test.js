@@ -39,3 +39,69 @@ describe('VOCAB-FLOW-001 ② 오늘 카드 — 준비 중엔 제목도 골격(�
     expect(heading).toContain("session.total ? '오늘 다시 볼 표현' : hasAnyWords ? '잠시, 읽기로 돌아가요.' : '첫 표현을 담아 보세요.'");
   });
 });
+
+// ── 오너 「권장대로」(2026-10-17 KST) 목업 A · B · C ──
+const file = name => fs.readFileSync(path.join(ROOT, name), 'utf8');
+const strip = src => src.split('\n').filter(line => !line.trim().startsWith('//')).join('\n');
+
+describe('VOCAB-FLOW-001 A 끝 화면 — 세션 머리줄 유지, 복습방 머리는 「목록으로」 뒤에만', () => {
+  it('끝 화면 판정과 세션 머리줄 판정(sessionChrome)', () => {
+    expect(code).toContain("const onEndScreen = tab === 'review' && reviewFinished || tab === 'practice' && !!practice && practice.finished;");
+    expect(code).toContain('const sessionChrome = inSession || onEndScreen;');
+  });
+  it('복습방 머리 · 교재 범위 안내는 세션 · 끝 화면에 없고, 상단바는 둘 다에 있다(되돌리기는 끝 화면에서 빼기)', () => {
+    expect(code).toContain('{!sessionChrome && (\n        <header className="review-room-heading">');
+    expect(code).toContain('{isBookScope && !sessionChrome && <section className="review-room-scope review-room-book-scope"');
+    expect(code).toContain('{sessionChrome && (() => {');
+    expect(code).toContain("{tab === 'review' && !onEndScreen && <button type=\"button\" className=\"review-topbar__undo\"");
+  });
+  it('위 여백 8px도 끝 화면까지 — 하단 내비만 세션 중에 숨긴다', () => {
+    expect(code).toContain("document.body.classList.toggle('is-review-chrome', sessionChrome);");
+    expect(code).toContain("document.body.classList.toggle('is-review-session', inSession);");
+    const index = file('src/index.css');
+    expect(index).toContain('body.is-review-chrome .page-container { padding-top: 8px; }');
+    expect(index).not.toMatch(/body\.is-review-session \.page-container/);
+    expect(index).toContain('body.is-review-session .mobile-nav { display: none; }');
+  });
+});
+
+describe('VOCAB-FLOW-001 A+ 끝 화면 제목으로 초점 — 마지막 채점 뒤 body로 떨어지지 않게(/study 「세션 완료」 선례)', () => {
+  const review = strip(file('src/views/VocabReview.jsx'));
+  it('떨어진 초점만 줍는 훅(focusIfFree · 화면 안)이 복습 끝 · 집중 연습 끝 제목 둘 다에 붙는다', () => {
+    expect(review).toContain("useEffect(() => { const el = title.current; focusIfFree(el, el?.closest('.page-container')); }, []);");
+    expect(review.match(/const title = useEndTitleFocus\(\);/g)).toHaveLength(2);
+    expect(review.match(/<h2 ref=\{title\} tabIndex=\{-1\} className="review-done__title">/g)).toHaveLength(2);
+  });
+  it('제목은 읽는 자리라 초점 고리를 그리지 않는다', () => {
+    expect(file('src/components/web/review-room.css')).toContain('.review-done__title[tabindex="-1"]:focus { outline:none; }');
+  });
+});
+
+describe('VOCAB-FLOW-001 B 끝 알림 — 토스트 없음, 화면 읽기 공지는 늘 깔린 영역이', () => {
+  it('끝에서 토스트를 띄우지 않는다', () => {
+    expect(code).not.toContain("toast('이번 표현 복습을 마쳤어요'");
+  });
+  it('공지 영역은 조건 없이 그려 두고 내용만 끝에 넣는다(role=status · sr-only)', () => {
+    expect(code).toContain("<p className=\"sr-only review-finish-announce\" role=\"status\">{tab === 'review' && reviewFinished ? '이번 표현 복습을 마쳤어요' : ''}</p>");
+    const at = code.indexOf('<p className="sr-only review-finish-announce"');
+    expect(code.slice(at - 40, at)).not.toMatch(/&&\s*$/); // 영역 자체가 조건부면 내용과 함께 생겨 화면 읽기가 놓칠 수 있다
+  });
+});
+
+describe('VOCAB-FLOW-001 C 채점 막대 — 앞면에서도 둘째 줄 자리를 둔다(높이 고정)', () => {
+  const review = strip(file('src/views/VocabReview.jsx')), fsrs = strip(file('src/components/vocab/FsrsReviewSession.jsx'));
+  it('예전 일정 막대: 안내 줄을 늘 그리고, 잠김이면 자리만(숨김 · 화면 읽기 제외)', () => {
+    expect(review).toContain("<p className={`review-score-guide review-grade-guide${locked ? ' review-grade-guide--reserve' : ''}`} aria-hidden={locked || undefined}>");
+    expect(review).not.toContain('{!locked && <p className="review-score-guide');
+  });
+  it('새 일정 막대: 안내 줄 · 간격 글 둘 다 자리를 둔다', () => {
+    expect(fsrs).toContain("<p className={`review-score-guide review-grade-guide${revealed ? '' : ' review-grade-guide--reserve'}`} aria-hidden={!revealed || undefined}>");
+    expect(fsrs).toContain('<small className="review-grade-guide--reserve" aria-hidden="true">');
+    expect(fsrs).not.toContain('{revealed && <p className="review-score-guide');
+  });
+  it('자리 맡기는 visibility:hidden(높이 유지) — display:none이면 다시 자란다', () => {
+    const room = file('src/components/web/review-room.css');
+    expect(room).toContain('.review-grade-guide--reserve { visibility:hidden; }');
+    expect(room).not.toMatch(/\.review-grade-guide--reserve\s*\{[^}]*display:\s*none/);
+  });
+});

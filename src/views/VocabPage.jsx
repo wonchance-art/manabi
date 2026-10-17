@@ -959,7 +959,8 @@ function VocabWorkspace({ reviewScope }) {
   // 세션 끝 — 낙관 전진을 서버 정본과 재동기한다.
   const finishRun = () => {
     setReviewFinished(true);
-    toast('이번 표현 복습을 마쳤어요', 'celebrate', 5000);
+    // 끝 알림 토스트는 띄우지 않는다(VOCAB-FLOW-001 B) — 끝 화면 제목 「오늘 몫 끝」이 같은 말이고, 390에서 「목록으로」를 가렸다.
+    // 화면 읽기 공지는 늘 깔린 알림 영역(아래 review-finish-announce)이 맡는다(토스트 영역 aria-live가 하던 몫).
     // 세션 동안의 낙관 전진을 서버 정본과 재동기 — 채점 저장이 fire-and-forget이라
     // 여기서 한 번 무효화하지 않으면 다음 화면이 낡은 FSRS 값을 계속 본다.
     queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
@@ -1307,6 +1308,11 @@ function VocabWorkspace({ reviewScope }) {
   // 하단 네비는 Layout 소유라 컴포넌트에서 못 지운다 — body 클래스로 CSS에 알린다.
   // 훅은 아래 `if (!user)` 조기 return보다 **위**에 있어야 한다(#838 Hooks 순서 사고와 같은 자리).
   const inSession = tab === 'review' && !reviewFinished || tab === 'practice' && !!practice && !practice.finished;
+  // 끝 화면(복습 · 집중 연습) — 세션 머리줄을 그대로 두고 복습방 머리(「THE REVIEW ROOM 복습」)는 「목록으로」 뒤에만 그린다
+  // (VOCAB-FLOW-001 A, 오너 「권장대로」 2026-10-17 KST). 끝으로 넘어가는 순간 머리가 다시 생겨 본문이 390 +107px · 1440 +131px
+  // 내려앉았다(layout-shift 0.074 · 0.030, 입력 직후라 CLS 밖이지만 눈에 보인다).
+  const onEndScreen = tab === 'review' && reviewFinished || tab === 'practice' && !!practice && practice.finished;
+  const sessionChrome = inSession || onEndScreen;
   // W R2 — 지금 화면에 있는 4버튼 줄(상태로 판정, DOM 질의 금지). 집중 연습은 두 버튼 줄(키 1 · 2).
   const quizMode = effectiveMode === 'context' || effectiveMode === 'listening';
   // 처음 보는 표현 카드에는 채점 줄이 없다(Space = 「다음 →」).
@@ -1336,8 +1342,10 @@ function VocabWorkspace({ reviewScope }) {
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;
     document.body.classList.toggle('is-review-session', inSession);
-    return () => document.body.classList.remove('is-review-session');
-  }, [inSession]);
+    // 위 여백(8px)은 끝 화면까지 같게 — 끝으로 넘어가며 40px로 돌아가 본문이 32px 더 내려앉던 몫(A). 하단 내비는 끝 화면에서 다시 보인다.
+    document.body.classList.toggle('is-review-chrome', sessionChrome);
+    return () => document.body.classList.remove('is-review-session', 'is-review-chrome');
+  }, [inSession, sessionChrome]);
 
   if (!user && explicitScope) return <div className="page-container"><h1>{scopeHeading(explicitScope.scope)}</h1><p>담은 표현은 로그인한 계정에 보관돼요.</p><div className="manabi-row"><Link href={authEntryHref(serializeReviewScope(explicitScope.scope, { returnTo: explicitScope.returnTo }))}>로그인하고 이어가기 →</Link>{explicitScope.returnTo && <Link href={explicitScope.returnTo}>← 교재로</Link>}</div></div>;
   if (!user) {
@@ -1398,9 +1406,11 @@ function VocabWorkspace({ reviewScope }) {
         <Button variant="ghost" onClick={() => admission.controller.retryConfiguration().catch(() => {})}>다시 시도</Button>
       </div>}
       <PendingReviewsNotice count={pendingReviewCount} />
+      {/* 복습 끝 공지(B) — 화면 읽기 전용. 영역은 늘 그려 두고 내용만 넣는다(내용과 함께 생기는 status는 놓칠 수 있다). */}
+      <p className="sr-only review-finish-announce" role="status">{tab === 'review' && reviewFinished ? '이번 표현 복습을 마쳤어요' : ''}</p>
 
-      {/* 헤더 — 세션 중에는 없앤다. 부제와 총계는 아래 통계와 중복이라 뺐다. */}
-      {!inSession && (
+      {/* 헤더 — 세션 중 · 끝 화면에는 없앤다(끝 화면은 세션 머리줄 유지). 부제와 총계는 아래 통계와 중복이라 뺐다. */}
+      {!sessionChrome && (
         <header className="review-room-heading">
           <div><p className="manabi-eyebrow">THE REVIEW ROOM</p><h1>{tab === 'browse' ? '담은 표현' : scopeHeading(scope, { materialTitles })}</h1></div>
           {!isBookScope && <p>읽다가 담은 표현을,<br />내가 쓰는 말로.</p>}
@@ -1413,12 +1423,13 @@ function VocabWorkspace({ reviewScope }) {
         scope={scope} languages={[...languageCounts.keys()]} byLang={session.byLang} countFor={countFor}
         allVocab={allVocab} learningById={learningById} materialTitles={materialTitles} levels={scopeLevels || zhHskLevels}
         onChange={changeScope} onSelectLanguage={selectLanguage} />}
-      {isBookScope && !inSession && <section className="review-room-scope review-room-book-scope" aria-label="교재 범위 안내">
+      {isBookScope && !sessionChrome && <section className="review-room-scope review-room-book-scope" aria-label="교재 범위 안내">
         <p>같은 표현은 판본이 달라도 한 카드로 복습해요. 과별 답안 · 학습 완료와는 별개예요.</p>
         <div className="manabi-row"><Link href={reviewScope.returnTo}>← 교재로</Link>{bookExpressionListHref(reviewScope.returnTo) && <Link href={bookExpressionListHref(reviewScope.returnTo)} prefetch={false}>교재의 담은 표현</Link>}</div>
       </section>}
-      {/* 세션 상단바 — 나가기 · 진행(서로 다른 카드 n / N) · 🔈/🔇 · 되돌리기. 카드 안에는 문항만 남긴다. */}
-      {inSession && (() => {
+      {/* 세션 상단바 — 나가기 · 진행(서로 다른 카드 n / N) · 🔈/🔇 · 되돌리기. 카드 안에는 문항만 남긴다.
+          끝 화면에도 같은 자리에 남긴다(A). 되돌리기는 끝 화면에서 원래 쓸 수 없어(단축키도 꺼짐) 그리지 않는다. */}
+      {sessionChrome && (() => {
         const progress = tab === 'practice' ? { done: practice.idx, total: practice.total } : runProgress || { done: 0, total: 0 };
         const total = progress.total || 1;
         const doneCount = Math.min(progress.done, total);
@@ -1441,7 +1452,7 @@ function VocabWorkspace({ reviewScope }) {
               {doneCount} / {progress.total}
             </span>
             {ttsSupported && <ReviewSoundToggle on={soundOn} onToggle={toggleSound} />}
-            {tab === 'review' && <button type="button" className="review-topbar__undo" aria-label="직전 채점 되돌리기" title="되돌리기 Ctrl/⌘+Z"
+            {tab === 'review' && !onEndScreen && <button type="button" className="review-topbar__undo" aria-label="직전 채점 되돌리기" title="되돌리기 Ctrl/⌘+Z"
               disabled={!reviewKeysRef.current.canUndo} onClick={() => reviewKeysRef.current.undo?.()}>↶</button>}
           </div>
         );
@@ -1550,7 +1561,7 @@ function VocabWorkspace({ reviewScope }) {
                 {deckStats.stages.map(stage => `${stage.label} ${stage.count}`).join(' · ')}
               </p>
             )}
-            <VocabularyExclusionList vocab={allVocab} scopeIds={lookupSource ? scopeSourceIds || EMPTY_IDS : null} />
+            <VocabularyExclusionList vocab={allVocab} scopeIds={lookupSource ? scopeSourceIds || EMPTY_IDS : null} capabilities={koreanCapabilities} />
             {vocab.length === 0 ? (
               <p className="review-sec__empty">교재나 자료에서 단어를 저장하면 여기에 모여요.</p>
             ) : (
@@ -1656,7 +1667,7 @@ function VocabWorkspace({ reviewScope }) {
           </button>
           {missingMeaningOnly && <p className="review-room-note review-missing-meaning">뜻이 없는 표현만 보고 있어요. 뜻을 채우면 다음 복습부터 나와요.
             <button type="button" className="btn btn--ghost btn--sm" onClick={() => setMissingMeaningOnly(false)}>전체 보기</button></p>}
-          <VocabularyExclusionList vocab={allVocab} scopeIds={lookupSource ? scopeSourceIds || EMPTY_IDS : null} />
+          <VocabularyExclusionList vocab={allVocab} scopeIds={lookupSource ? scopeSourceIds || EMPTY_IDS : null} capabilities={koreanCapabilities} />
           {vocabList}
         </>
       ) : tab === 'review' ? (
