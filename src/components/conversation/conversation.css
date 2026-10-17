@@ -1,44 +1,142 @@
-/* 대화 모드 화면(v2-Z Z-R1 ③) — 뷰어 본문 자리. 색은 토큰만(docs/ui-conventions.md), 터치 영역 44px 이상. */
-.conv { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-.conv__meta { margin: 0; font-size: 0.82rem; color: var(--text-muted); }
-.conv__log { display: flex; flex-direction: column; gap: 14px; padding-bottom: 8px; }
-.conv__row { display: flex; flex-direction: column; gap: 6px; max-width: 92%; }
-.conv__row--tutor { align-self: flex-start; align-items: flex-start; }
-.conv__row--me { align-self: flex-end; align-items: flex-end; }
-.conv-bubble { padding: 10px 14px; border-radius: 16px; line-height: 1.6; word-break: break-word; }
-.conv-bubble--tutor { background: var(--bg-secondary); border: 1px solid var(--border); border-bottom-left-radius: 4px; color: var(--text-primary); }
-.conv-bubble--me { background: color-mix(in srgb, var(--primary) 14%, transparent); border-bottom-right-radius: 4px; color: var(--text-primary); white-space: pre-wrap; }
+/* 대화 모드 화면(v2-Z Z-R1 ③ → CONV-CHAT-001 ② 채팅앱 껍데기). 색은 토큰만(docs/ui-conventions.md), 터치 영역 44px 이상.
+   화면 전체 높이 = 머리 한 줄 · 혼자 스크롤하는 목록 · 맨 아래 입력창. position:fixed가 아니라 흐름 안의 세로 줄이라
+   iOS에서 입력창이 키보드와 어긋나지 않는다. 높이는 visualViewport(--conv-vh)가 있으면 그 값, 없으면 100dvh. */
+/* 메신저 대화방 팔레트(CONV-CHAT-001 3차, 오너 「실제 채팅앱처럼」 2026-10-16) — 국내 메신저 대화방의 관례 그대로:
+   푸른 회색 바탕 · 상대 말 흰 말풍선 · 내 말 노란 말풍선 · 첫 말풍선 꼬리 · 둥근 네모 프로필 · 말풍선 옆 작은 시각 · 흰 입력 막대.
+   값은 이 화면 범위의 토큰으로만 두고(셸은 늘 밝은 화면), 읽기 「어둡게」 테마에서는 어두운 값으로 바꾼다. 로고·마크 재현 없음. */
+.conv {
+  --chat-bg: #BACEE0; --chat-other: #FFFFFF; --chat-me: #FEE94E; --chat-ink: #191919; --chat-meta: #4E5D6C;
+  --chat-name: #3A4652; --chat-bar: #FFFFFF; --chat-field: #F3F4F6; --chat-line: #A9BCCD;
+  /* 프로필 바탕 8색(파스텔) + 튜터 — 사람마다 아이디로 고정(chatView profileLook). */
+  --chat-av-1: #FFD3D3; --chat-av-2: #FFE0BD; --chat-av-3: #FFF0AE; --chat-av-4: #D3F0C2;
+  --chat-av-5: #C2ECE4; --chat-av-6: #DCE8FF; --chat-av-7: #E2D6FF; --chat-av-8: #F7D0EA; --chat-av-tutor: #FFFFFF;
+  position: relative; display: flex; flex-direction: column; width: 100%; height: 100vh; height: var(--conv-vh, 100dvh); top: var(--conv-top, 0);
+  font-family: var(--font-noto-kr, 'Noto Sans KR'), sans-serif;
+  font-size: 1rem; line-height: 1.5; background: var(--chat-bg); color: var(--chat-ink);
+  -webkit-font-smoothing: antialiased;
+}
+/* 글꼴(CONV-CHAT-001 6차, 오너 「폰트는 이게 최선인가」 2026-10-16) — 메신저는 기기 글꼴 한 벌로 화면 전체를 쓴다.
+   두 대화방 모두 화면 글자는 Noto Sans KR 한 벌(앱 셸의 Manrope 혼용을 걷는다), 학습 언어 말은 그 언어 글꼴.
+   입력창·모두의 대화방 말풍선은 버튼·입력칸 기본 글꼴을 걷느라 font: inherit을 쓰는데, 그게 :lang() 글꼴을 덮어
+   일본어가 한국어 글꼴(한국식 한자 자형·가나 대체)로 그려졌다 — 여기서 학습 언어 글꼴을 한 단계 높은 선택자로 다시 건다. */
+.conv :is(.conv-lobby__bubble, .conv-bubble--pending, .conv__textarea):lang(ja) { font-family: var(--font-noto-jp, 'Noto Sans JP'), var(--font-noto-kr, 'Noto Sans KR'), sans-serif; }
+.conv :is(.conv-lobby__bubble, .conv-bubble--pending, .conv__textarea):lang(zh) { font-family: var(--font-noto-sc, 'Noto Sans SC'), var(--font-noto-kr, 'Noto Sans KR'), sans-serif; }
+.viewer-layout[data-reader-theme="dark"] .conv {
+  --chat-bg: #1E2932; --chat-other: #2E3A44; --chat-me: #E5CF3C; --chat-ink: #F1F3F5; --chat-meta: #A7B4C0;
+  --chat-name: #C9D3DC; --chat-bar: #26313A; --chat-field: #33404B; --chat-line: #33404B;
+  --chat-av-1: #5C3639; --chat-av-2: #5C4631; --chat-av-3: #57502E; --chat-av-4: #35502F;
+  --chat-av-5: #2B504A; --chat-av-6: #2F4467; --chat-av-7: #463A61; --chat-av-8: #573653; --chat-av-tutor: #3A4652;
+}
+.viewer-layout[data-reader-theme="dark"] .conv .conv-bubble--me { color: #191919; }
+.conv__head { flex: none; display: flex; align-items: center; gap: 4px; min-height: 52px; padding: 4px 4px; background: var(--chat-bg); }
+.conv__head > a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; color: var(--chat-ink); text-decoration: none; }
+.conv__title { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.conv__meta { margin: 0; font-size: 1.05rem; font-weight: 700; line-height: 1.3; color: var(--chat-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv__sub { margin: 0; font-size: 0.78rem; line-height: 1.3; color: var(--chat-meta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* 튜터 프로필 — 메신저처럼 상대 말 묶음의 첫 말풍선 옆에 동그라미 하나. 그림 대신 글자(국기·캐릭터 그림 금지). */
+.conv-avatar { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 15px; background: color-mix(in srgb, var(--primary) 22%, var(--chat-other)); color: var(--chat-ink); font-size: 0.9rem; font-weight: 700; }
+.conv-avatar--head { width: 36px; height: 36px; border-radius: 13px; margin-right: 6px; }
+/* 프로필 그림·색(CONV-CHAT-001 7차) — 동물 그림 기호 + 사람마다 다른 바탕. 튜터는 늘 같은 그림·흰 바탕. */
+.conv-avatar:is(.conv-avatar--tutor, [class*="conv-avatar--tone"]) { font-size: 1.35rem; font-weight: 400; line-height: 1; }
+.conv-avatar--head.conv-avatar--tutor { font-size: 1.2rem; }
+.conv-avatar--tutor { background: var(--chat-av-tutor); }
+.conv-avatar--tone1 { background: var(--chat-av-1); }
+.conv-avatar--tone2 { background: var(--chat-av-2); }
+.conv-avatar--tone3 { background: var(--chat-av-3); }
+.conv-avatar--tone4 { background: var(--chat-av-4); }
+.conv-avatar--tone5 { background: var(--chat-av-5); }
+.conv-avatar--tone6 { background: var(--chat-av-6); }
+.conv-avatar--tone7 { background: var(--chat-av-7); }
+.conv-avatar--tone8 { background: var(--chat-av-8); }
+/* 날짜 구분선 — 바탕 위 반투명 알약, 흰 글자(메신저 관례). */
+.conv__date { align-self: center; margin: 10px 0 4px; padding: 3px 12px; border-radius: 999px; background: color-mix(in srgb, var(--chat-ink) 18%, transparent); color: #fff; font-size: 0.75rem; }
+.conv__log { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 12px; padding: 8px 12px 16px; }
+.conv__row { display: flex; flex-direction: column; gap: 2px; }
+.conv__row--tutor { align-self: stretch; flex-direction: row; align-items: flex-start; gap: 8px; }
+.conv__stack { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.conv__name { margin: 0 0 4px; font-size: 0.78rem; color: var(--chat-name); }
+/* 듣기·번역은 마지막 말풍선 옆(메신저의 시각 자리) — 아래에 줄을 따로 두지 않는다. */
+.conv__line { display: flex; align-items: flex-end; gap: 2px; width: 100%; }
+.conv__line > .conv-bubble { max-width: min(calc(100% - 84px), 520px); }
+.conv__line--me { justify-content: flex-end; gap: 6px; }
+.conv__row--me { align-self: stretch; align-items: flex-end; }
+.conv__row--me > .conv-feedback, .conv__row--me > .conv-fb-toggle { align-self: flex-end; max-width: 80%; }
+/* 말풍선 — 모서리 14px, 테두리 없음. 묶음 첫 말풍선만 위 모서리에 꼬리(상대는 왼쪽, 나는 오른쪽). */
+.conv-bubble { position: relative; padding: 7px 11px; border-radius: 14px; line-height: 1.5; word-break: break-word; font-size: 0.97rem; }
+.conv-bubble--tutor { background: var(--chat-other); color: var(--chat-ink); }
+.conv-bubble--me { background: var(--chat-me); color: var(--chat-ink); white-space: pre-wrap; }
+.conv-bubble--tail.conv-bubble--tutor { border-top-left-radius: 3px; }
+.conv-bubble--tail.conv-bubble--me { border-top-right-radius: 3px; }
+.conv-bubble--tail::before { content: ''; position: absolute; top: 0; width: 9px; height: 10px; background: inherit; pointer-events: none; }
+.conv-bubble--tail.conv-bubble--tutor::before { left: -6px; clip-path: polygon(0 0, 100% 0, 100% 100%); }
+.conv-bubble--tail.conv-bubble--me::before { right: -6px; clip-path: polygon(0 0, 100% 0, 0 100%); }
+/* 말풍선 옆 시각 — 묶음 마지막 말풍선의 아래 끝, 작게. */
+.conv-time { flex: none; align-self: flex-end; padding-bottom: 1px; font-size: 0.68rem; line-height: 1.2; color: var(--chat-meta); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .conv-bubble--pending { opacity: 0.7; }
-.conv-bubble__line { display: contents; }
-.conv-bubble__actions { display: flex; flex-wrap: wrap; gap: 6px; }
-.conv-bubble__tx { margin: 0; font-size: 0.88rem; color: var(--text-secondary); }
+.conv-bubble--failed { opacity: 0.55; }
+.conv-bubble__send { display: flex; align-items: center; gap: 4px; }
+.conv-retry { flex: none; min-width: 44px; min-height: 44px; border: 0; border-radius: 50%; background: none; color: var(--danger); font-weight: 800; font-size: 1.1rem; cursor: pointer; }
+/* 대화 말풍선의 줄 높이 — 읽기 화면은 후리가나·병음 자리로 단어마다 2.2em을 잡는다. 대화에서는 읽기가 실제로
+   보이는 단어만 그 높이를 쓰고, 나머지는 메신저 줄 높이(1.5)로 줄인다. 면 칠 띠는 줄인 만큼(0.35em) 같이 올린다. */
+.conv-bubble .word-token:not(:has(ruby)), .conv-bubble .word-token:has(.surface--furi-off) { --hl-band-top: 0.23em; }
+.conv-bubble .word-token:not(:has(ruby)) .surface, .conv-bubble .word-token .surface--furi-off { line-height: 1.5; }
+/* 분석이 아직 붙지 않은 줄은 평문으로 그대로 읽힌다(흐린 읽기 화면 표시 아님) — 채워지면 조용히 단어로 바뀐다. */
+.manabi-app .viewer-layout .reader-area .conv :is(.conv-bubble, .conv-answer) .word-token--raw { opacity: 1; color: inherit; letter-spacing: normal; }
+.conv-bubble__actions { flex: none; display: flex; align-items: center; gap: 0; }
+.conv-act { min-width: 40px; min-height: 36px; padding: 0 8px; border: 0; border-radius: 999px; background: none; color: var(--chat-meta); font-size: 0.95rem; line-height: 1; cursor: pointer; }
+.conv-act[aria-expanded="true"] { color: var(--chat-ink); background: color-mix(in srgb, var(--chat-other) 70%, transparent); }
+.conv-act:hover, .conv-act:focus-visible { color: var(--chat-ink); }
+@media (pointer: coarse) { .conv-act { min-height: 44px; } }
+.conv-bubble__tx { max-width: min(calc(100% - 84px), 520px); margin: 2px 0 0; padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--chat-other) 60%, transparent); font-size: 0.88rem; color: var(--chat-ink); }
 .conv-bubble--typing { display: inline-flex; gap: 4px; padding: 14px 18px; }
-.conv-bubble--typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: conv-dot 1s infinite ease-in-out; }
+.conv-bubble--typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--chat-meta); animation: conv-dot 1s infinite ease-in-out; }
 .conv-bubble--typing span:nth-child(2) { animation-delay: 0.15s; }
 .conv-bubble--typing span:nth-child(3) { animation-delay: 0.3s; }
 @keyframes conv-dot { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .conv-bubble--typing span { animation: none; opacity: 0.6; } }
-/* 가장 새 턴 등장(CONV-TURN-IN-001) — 투명도 · 4px 위로, --transition-fast. 클래스는 turnRowClass가 마지막 턴에만 단다. */
-.conv__row--new { animation: conv-turn-in var(--transition-fast) both; }
-@keyframes conv-turn-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .conv__row--new { animation: none; } }
 .conv-wavy { text-decoration: underline wavy var(--warning); text-underline-offset: 4px; }
-.conv-feedback { align-self: stretch; border-left: 3px solid var(--warning); padding: 6px 10px; font-size: 0.9rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 6px; }
+.conv-fb-toggle { min-height: 44px; padding: 0 6px; border: 0; background: none; color: var(--chat-name); font: inherit; font-size: 0.85rem; cursor: pointer; }
+.conv-fb-toggle:hover, .conv-fb-toggle:focus-visible { color: var(--chat-ink); }
+/* 피드백 — 바탕 위 흰 카드(왼쪽 경고 선). 메신저의 안내 카드처럼 말풍선과 구분된다. */
+.conv-feedback { align-self: stretch; border-left: 3px solid var(--warning); border-radius: 4px 12px 12px 4px; padding: 8px 12px; background: var(--chat-other); font-size: 0.9rem; color: var(--chat-ink); display: flex; flex-direction: column; gap: 6px; }
 .conv-feedback p { margin: 0; }
 .conv-feedback__ok { color: var(--accent-text); font-weight: 600; }
-.conv-feedback__hint span { font-weight: 700; color: var(--text-primary); }
-.conv-feedback__label { font-weight: 700; color: var(--text-primary); }
+.conv-feedback__hint span { font-weight: 700; color: var(--chat-ink); }
+.conv-feedback__label { font-weight: 700; color: var(--chat-ink); }
 .conv-feedback__answer { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
-.conv-answer { color: var(--text-primary); line-height: 1.6; }
-.conv-chip { min-height: 44px; min-width: 44px; padding: 0 12px; border: 1px solid var(--border); border-radius: 999px; background: none; color: var(--text-secondary); font-size: 0.85rem; cursor: pointer; }
+.conv-answer { color: var(--chat-ink); line-height: 1.5; }
+.conv-chip { min-height: 44px; min-width: 44px; padding: 0 14px; border: 1px solid var(--chat-line); border-radius: 999px; background: var(--chat-other); color: var(--chat-ink); font-size: 0.85rem; cursor: pointer; }
 .conv-chip:disabled { opacity: 0.5; cursor: default; }
-.conv__notice { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--text-secondary); }
-.conv__input { position: sticky; bottom: 0; display: flex; gap: 6px; align-items: flex-end; padding: 8px 0; background: var(--bg-primary); }
-.conv__textarea { flex: 1; min-height: 44px; resize: none; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); color: var(--text-primary); font: inherit; }
-.conv__textarea:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
-.conv__icon { min-width: 44px; min-height: 44px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); color: var(--text-primary); cursor: pointer; }
-.conv__icon--send { background: var(--primary); color: #fff; border-color: transparent; }
+.conv__notice { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--chat-name); }
+.conv__jump { position: absolute; left: 50%; bottom: calc(76px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 5; min-height: 44px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--chat-other); color: var(--chat-ink); font: inherit; font-size: 0.88rem; box-shadow: 0 4px 14px color-mix(in srgb, var(--text-primary) 14%, transparent); cursor: pointer; }
+/* 입력 막대 — 흰 막대 · 테두리 없는 입력칸 · 노란 네모 보내기(메신저 관례). */
+.conv__input { flex: none; display: flex; gap: 6px; align-items: flex-end; padding: 6px 8px max(6px, env(safe-area-inset-bottom)); background: var(--chat-bar); }
+.conv__textarea { flex: 1; min-height: 44px; max-height: calc(1.5em * 5 + 22px); resize: none; padding: 10px 12px; border: 0; border-radius: 12px; background: var(--chat-field); color: var(--chat-ink); font: inherit; font-size: 1rem; line-height: 1.5; overflow-y: auto; }
+.conv__textarea::placeholder { color: var(--chat-meta); }
+.conv__textarea:focus { outline: 2px solid color-mix(in srgb, var(--chat-ink) 25%, transparent); outline-offset: 0; }
+.conv__icon { flex: none; min-width: 44px; min-height: 44px; border: 0; border-radius: 12px; background: var(--chat-field); color: var(--chat-ink); cursor: pointer; }
+.conv__icon--bare { background: none; font-size: 1.15rem; }
+.conv__icon--send { background: var(--chat-me); color: var(--chat-ink); font-size: 1.05rem; }
 .conv__icon:disabled { opacity: 0.5; cursor: default; }
+.conv__icon--send:disabled { background: var(--chat-field); color: var(--chat-meta); opacity: 1; }
+
+/* 뷰어 안에서 대화 자료를 열면(data-chat) 읽기 화면의 틀을 걷어 낸다 — 전역 메뉴·하단 탭·여백·쪽 넘김 없음.
+   개인 노트(study-notes.css)의 :has() 숨김 선례. 읽기 자료에는 data-chat이 없어 아무 영향이 없다. */
+.manabi-app:has(.viewer-layout[data-chat="true"]) > .gnb,
+.manabi-app:has(.viewer-layout[data-chat="true"]) > .mobile-nav,
+.manabi-app:has(.conv-page[data-chat="true"]) > .gnb,
+.manabi-app:has(.conv-page[data-chat="true"]) > .mobile-nav { display: none; }
+.manabi-app:has(.viewer-layout[data-chat="true"]) > .app-layout,
+.manabi-app:has(.conv-page[data-chat="true"]) > .app-layout { padding-top: 0; padding-bottom: 0; }
+.manabi-app .viewer-layout[data-chat="true"] { min-height: 0; padding: 0; gap: 0; }
+.manabi-app .viewer-layout[data-chat="true"] .viewer-center { padding: 0; }
+.manabi-app .viewer-layout[data-chat="true"] .reader-pages { padding: 0; overflow: visible; }
+.manabi-app .viewer-layout[data-chat="true"] .reader-area { display: block; min-height: 0; padding: 0; background: var(--bg-primary); }
+/* 못 한 줄은 화면이 알아서 채운다(CONV-CHAT-001 ①) — 대화에는 분석 · 복구 배너(「이어서 분석」)를 띄우지 않는다. */
+.manabi-app .viewer-layout[data-chat="true"] .analyzing-banner { display: none; }
+@container reader (min-width: 1120px) {
+  .manabi-app .viewer-layout[data-chat="true"] .viewer-inspector { top: 12px; height: calc(var(--conv-vh, 100dvh) - 24px); }
+}
 
 /* 새 대화(v2-Z Z-R2) — 주제·언어·수준 칩은 위 .conv-chip(44px) 그대로, 고른 칩은 aria-pressed로 표시. */
 .conv-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -61,7 +159,6 @@
 .conv-new__recent small { color: var(--text-muted); }
 
 /* 머리 ⋯(Z-R2) — 주제·수준 바꾸기 · 새 대화 · 지우기. */
-.conv__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .conv-menu { position: relative; }
 .conv-menu__list { position: absolute; right: 0; top: calc(100% + 4px); z-index: 20; display: flex; flex-direction: column; min-width: 180px; padding: 4px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); box-shadow: 0 6px 20px color-mix(in srgb, var(--text-primary) 14%, transparent); }
 .conv-menu__item { display: flex; align-items: center; min-height: 44px; padding: 0 12px; border: 0; border-radius: 8px; background: none; color: var(--text-primary); font: inherit; text-align: left; text-decoration: none; cursor: pointer; }
@@ -81,3 +178,112 @@
 .conv-chip--link { display: inline-flex; align-items: center; text-decoration: none; }
 .conv-chip--gap { border-color: var(--warning); }
 .conv-new__fix { padding-left: 8px; border-left: 3px solid var(--warning); }
+
+/* 대화 방 목록(CONV-CHAT-001 2차) — 메신저 「채팅」 탭. 한 줄 64px · 프로필 44px · 이름 + 마지막 말 한 줄 · 오른쪽 위 시각. */
+.conv-rooms { display: flex; flex-direction: column; gap: 4px; max-width: 720px; margin-inline: auto; padding-inline: 0; }
+.conv-rooms__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 52px; padding: 0 16px; }
+.conv-rooms__title { margin: 0; font-size: 1.35rem; color: var(--text-primary); }
+.conv-rooms__lang select { min-height: 44px; padding: 0 12px; border: 1px solid var(--border); border-radius: 999px; background: var(--bg-card); color: var(--text-primary); font: inherit; font-size: 0.9rem; }
+.conv-rooms__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.conv-rooms__row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 8px 16px; border: 0; background: none; color: var(--text-primary); font: inherit; text-align: left; text-decoration: none; cursor: pointer; }
+.conv-rooms__row:hover, .conv-rooms__row:focus-visible { background: var(--bg-secondary); }
+.conv-rooms__row:disabled { cursor: default; opacity: 0.7; }
+.conv-rooms__avatar { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 16px; background: var(--bg-secondary); font-size: 1.25rem; color: var(--text-primary); }
+.conv-rooms__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.conv-rooms__name { font-weight: 700; font-size: 0.98rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv-rooms__preview { font-size: 0.85rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv-rooms__time { flex: none; align-self: flex-start; margin-top: 6px; font-size: 0.75rem; color: var(--text-muted); }
+.conv-rooms__own input { width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 22px; background: var(--bg-card); color: var(--text-primary); font: inherit; }
+.conv-rooms .conv-new__note { padding: 8px 16px; }
+.conv-rooms .conv-new__error { padding: 0 16px; }
+
+/* 모두의 대화방(CONV-LOBBY-001) — 튜터 대화방 껍데기(.conv) 그대로. 데스크톱은 가운데 한 줄(메신저 웹). */
+.conv-page { width: 100%; max-width: 760px; margin: 0 auto; }
+.conv-page .conv__log { gap: 4px; }
+.conv-avatar--lobby, .conv-rooms__avatar--lobby { background: color-mix(in srgb, var(--primary) 22%, var(--bg-card)); }
+.conv-lobby__row { display: flex; align-items: flex-start; gap: 8px; }
+.conv-lobby__row--first { margin-top: 12px; }
+.conv-lobby__row--me { flex-direction: column; align-items: flex-end; gap: 2px; }
+.conv-lobby__gap { flex: none; width: 40px; }
+.conv-lobby__line { display: flex; align-items: flex-end; gap: 6px; width: 100%; }
+.conv-lobby__row--me .conv-lobby__line { justify-content: flex-end; }
+.conv-lobby__line > .conv-bubble { max-width: min(calc(100% - 64px), 520px); }
+.conv-lobby__row--me .conv-lobby__line > .conv-bubble { max-width: min(calc(100% - 90px), 520px); }
+.conv-lobby__bubble { min-height: 40px; font: inherit; font-size: 0.97rem; line-height: 1.5; text-align: left; white-space: pre-wrap; cursor: pointer; }
+.conv-lobby__bubble { border: 0; color: var(--chat-ink); }
+.conv-lobby__actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.conv-lobby__hidden { margin: 0; font-size: 0.75rem; color: var(--chat-name); }
+.conv-lobby__empty { margin: auto 0; padding: 24px 16px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.conv-rooms__row--lobby { border-bottom: 1px solid var(--border); }
+.conv-page .conv__date { margin: 14px 0 6px; }
+
+/* 앱 같은 움직임(CONV-CHAT-001 6차, 오너 「앱처럼 구동되도록 애니메이션」 2026-10-16) — 메신저 관례만, 짧게(0.25초 이하).
+   transform·opacity만 움직여 합성 단계에서 끝난다(레이아웃 재계산 없음). 「움직임 줄이기」를 켜면 모두 멈춘다.
+   · 방 들어가기: 오른쪽에서 살짝 밀려 들어온다(앞으로 가는 화면 전환).
+   · 새 말: 처음 그린 뒤에 도착한 말·보내는 중 내 말만 아래에서 떠오른다(useArrivals) — 지난 말은 그대로.
+   · 누름: 보내기·방 줄·말풍선이 손가락 아래에서 눌린다(탭 반짝임 대신). */
+@keyframes conv-enter { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
+@keyframes conv-pop { from { opacity: 0; transform: translateY(10px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes conv-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes conv-jump-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.conv { animation: conv-enter 0.24s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.conv-anim-in { animation: conv-pop 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) both; transform-origin: bottom left; }
+:is(.conv__row--me, .conv-lobby__row--me).conv-anim-in { transform-origin: bottom right; }
+.conv-anim-fade, .conv-lobby__actions, .conv-feedback, .conv-bubble__tx { animation: conv-fade 0.18s ease-out both; }
+.conv__jump { animation: conv-jump-in 0.2s ease-out both; }
+.conv button, .conv-rooms__row { -webkit-tap-highlight-color: transparent; }
+.conv__icon, .conv-chip, .conv-act { transition: transform 0.1s ease-out; }
+.conv__icon:active:not(:disabled), .conv-chip:active:not(:disabled), .conv-act:active { transform: scale(0.92); }
+.conv-lobby__bubble { transition: filter 0.1s ease-out; }
+.conv-lobby__bubble:active { filter: brightness(0.94); }
+.conv-rooms__row { transition: background-color 0.12s ease-out; }
+.conv-rooms__row:active:not(:disabled) { background: var(--bg-secondary); }
+@media (prefers-reduced-motion: reduce) {
+  .conv, .conv-anim-in, .conv-anim-fade, .conv-lobby__actions, .conv-feedback, .conv-bubble__tx, .conv__jump { animation: none; }
+  .conv__icon, .conv-chip, .conv-act, .conv-lobby__bubble, .conv-rooms__row { transition: none; }
+  .conv__icon:active:not(:disabled), .conv-chip:active:not(:disabled), .conv-act:active { transform: none; }
+}
+
+/* 휴대폰 틀(CONV-CHAT-001 9차, 오너 「[대화] 페이지 아예 중간에 스마트폰 스크린샷 크기로 넣어서 그 안에서 구동되게」 2026-10-17).
+   마우스로 쓰는 키 큰 화면(PC)에서만 방 목록·모두의 대화방·튜터 대화방을 가운데 휴대폰(390×844 비율) 안에 띄운다.
+   폰·태블릿(터치)은 틀이 display: contents로 사라져 지금 화면 그대로다. 폭 브레이크포인트를 새로 쓰지 않는다(ui-conventions §2 동결) —
+   입력 방식(hover·pointer)과 높이로만 고른다. 상태 표시줄은 화면 위에 겹치고(말풍선 바탕이 그 밑까지 깔린다), 홈 막대는 입력창 아래. */
+.phone-stage, .phone-stage__device, .phone-stage__screen { display: contents; }
+.phone-stage__status, .phone-stage__home { display: none; }
+@media (hover: hover) and (pointer: fine) and (min-height: 700px) {
+  /* 틀 윗변은 전역 메뉴 높이(방 목록 78px · 대화방 56px)와 상관없이 같은 자리(--phone-top)라 방을 오가도 휴대폰이 움직이지 않는다. */
+  .phone-stage { --phone-bezel: #15171A; --phone-status-ink: var(--text-primary); --phone-status-h: 34px; --phone-top: 98px;
+    display: flex; justify-content: center; align-items: flex-start; width: 100%;
+    padding: max(16px, calc(var(--phone-top) - var(--gnb-height, 64px))) 16px 20px; }
+  .phone-stage__device { position: relative; display: flex; flex-direction: column; flex: none;
+    /* 화면 폭은 휴대폰 그대로 390px(말풍선 줄바꿈이 폰과 같다). 높이는 창에 맞춰 줄인다(844 → 키 작은 창은 SE형 비율). */
+    width: min(410px, calc(100vw - 32px)); height: min(864px, calc(100dvh - var(--phone-top) - 20px - var(--phone-nav-room, 0px)));
+    border: 10px solid var(--phone-bezel); border-radius: 50px; overflow: hidden; background: var(--bg-primary);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-primary) 18%, transparent), 0 24px 60px color-mix(in srgb, var(--phone-bezel) 35%, transparent);
+    transform: translateZ(0); /* 틀 안의 position: fixed(메뉴·확인 창)가 틀을 기준으로 뜬다 */ }
+  .phone-stage__device:has(.conv) { --phone-status-ink: #191919; }
+  .viewer-layout[data-reader-theme="dark"] .phone-stage__device:has(.conv) { --phone-status-ink: #F1F3F5; }
+  .phone-stage__status { position: absolute; inset: 0 0 auto; z-index: 30; display: flex; align-items: center; justify-content: space-between;
+    height: var(--phone-status-h); padding: 4px 22px 0 28px; color: var(--phone-status-ink); font-size: 0.82rem; font-weight: 600;
+    font-variant-numeric: tabular-nums; pointer-events: none; }
+  .phone-stage__icons { display: inline-flex; align-items: center; gap: 5px; }
+  .phone-stage__screen { display: block; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+  .phone-stage__screen::-webkit-scrollbar { display: none; }
+  .phone-stage__home { position: absolute; left: 50%; bottom: 7px; z-index: 30; display: block; width: 34%; height: 5px; border-radius: 3px;
+    background: var(--phone-status-ink); opacity: 0.4; transform: translateX(-50%); pointer-events: none; }
+  /* 화면 안: 대화방은 틀 높이를 채우고(visualViewport 대신), 방 목록은 틀 안에서 스크롤한다. */
+  .phone-stage__screen .conv { height: 100%; top: 0; padding-top: var(--phone-status-h); }
+  .phone-stage__screen .conv__input { padding-bottom: 20px; }
+  .phone-stage__screen .conv__jump { bottom: 92px; }
+  .phone-stage__screen > .conv-page { max-width: none; height: 100%; }
+  .phone-stage__screen > .manabi-page.conv-rooms { max-width: none; min-height: 100%; margin: 0; padding: var(--phone-status-h) 0 24px; }
+  /* 틀이 있으면 대화방에서도 위 전역 메뉴를 그대로 둔다 — 휴대폰은 페이지 한가운데 놓인 화면이고, 메뉴로 다른 곳에 갈 수 있다.
+     (폰에서는 위 data-chat 규칙대로 메뉴를 걷어 화면 전체가 대화방이다.) */
+  .manabi-app:has(.phone-stage .conv) > .gnb { display: flex; }
+  .manabi-app:has(.phone-stage .conv) > .app-layout { padding-top: var(--gnb-height); padding-bottom: 0; }
+  .manabi-app .viewer-layout[data-chat="true"], .manabi-app .viewer-layout[data-chat="true"] .reader-area { background: transparent; }
+  /* 좁은 PC 창(셸 900 이하)의 방 목록은 하단 탭이 보이므로 그만큼 틀을 줄인다. */
+  @container manabi-shell (max-width: 900px) {
+    .manabi-app:not(.manabi-app--reading) .phone-stage:not(:has(.conv)) { --phone-nav-room: 80px; }
+  }
+}

@@ -112,10 +112,10 @@ describe('④ 서재 — 쓰기 지점이 무효화하므로 30초 캐시', () =
     .filter((f) => /\.(jsx?|tsx?)$/.test(f) && !f.includes('__tests__') && !f.startsWith('src/app/api/') && !f.startsWith('src/lib/server/'));
 
   it('읽던 곳·목록·받아두기 목록은 30초 캐시', () => {
-    // 읽던 곳 · 목록 · 대화 · 폴더의 키와 캐시 시간은 서버 미리 받기와 함께 쓰는 정본(libraryShelfQueries)에 있다.
+    // 읽던 곳 · 목록 · 폴더의 키와 캐시 시간은 서버 미리 받기와 함께 쓰는 정본(libraryShelfQueries)에 있다.
     const queries = read('src/lib/libraryShelfQueries.js');
     expect(queries).toContain('export const LIBRARY_SHELF_STALE_MS = 30000;');
-    for (const key of ["['library-recent', ownerId]", "['library-conversations', ownerId]", "['library-collections', ownerId]", "['personal-library', ownerId, keyFilters, pinnedIds]"]) {
+    for (const key of ["['library-recent', ownerId]", "['library-collections', ownerId]", "['personal-library', ownerId, keyFilters, pinnedIds]"]) {
       expect(queries).toContain(`queryKey: ${key}, staleTime: LIBRARY_SHELF_STALE_MS`);
     }
     expect(shelf).toContain('const recent=useQuery(libraryRecentQuery(supabase,user.id));');
