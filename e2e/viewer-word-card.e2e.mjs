@@ -262,7 +262,8 @@ function assertFirstScreen(g,{label,side=false,bottom='grades'}) {
 async function assertNoFoldsNoLegacyButtons(f,label) {
  const word=f.page.locator('#inspector-word').filter({visible:true});
  assert.equal(await word.locator('details').count(),0,`${label}: no <details> in the word tab`);
- assert.equal(await word.locator('[aria-expanded="false"]').count(),0,`${label}: no collapsed control in the word tab`);
+ // 글자 칸(data-inspect-key)은 글자 정보를 여는 토글이라 aria-expanded를 단다(VIEWER-AUDIT 접근성) — 카드 내용을 접는 칸이 아니다.
+ assert.equal(await word.locator('[aria-expanded="false"]:not([data-inspect-key])').count(),0,`${label}: no collapsed control in the word tab`);
  for(const name of ['번역','문장 번역','이 문장에서는?'])assert.equal(await word.getByRole('button',{name,exact:true}).count(),0,`${label}: no 「${name}」 button in the word tab`);
  const text=await word.innerText();
  for(const gone of ['이 문장에서','문맥상 · 사전','해석','문장 속 쓰임','상세 설명 보기','관련 문형 후보'])assert.ok(!text.includes(gone),`${label}: 「${gone}」 is gone`);
@@ -742,7 +743,7 @@ test('AE-R3 390 첫 화면 우선: 3줄 문장 + 体育场(안 2) — 표제어�
    const beside=card.querySelector('.word-fit-wrap > .reader-card-glyph');
    return {tight:card.querySelector('.reader-card-sentence')?.hasAttribute('data-tight'),
     below:below?{top:below.getBoundingClientRect().top,text:below.textContent,layout:below.dataset.layout}:null,meaningBottom:meaning.bottom,
-    beside:beside?{layout:beside.dataset.layout,text:beside.textContent}:null,details:card.querySelectorAll('details,[aria-expanded="false"]').length};
+    beside:beside?{layout:beside.dataset.layout,text:beside.textContent}:null,details:card.querySelectorAll('details,[aria-expanded="false"]:not([data-inspect-key])').length};
   });
   assert.equal(s.tight,true,'step 1: the sentence line drops to the 2-line budget');
   assert.ok(s.below,'step 2: the glyph rows move below the meaning line');
