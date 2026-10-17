@@ -256,3 +256,22 @@ describe('판·입력판·허브 배선 계약', () => {
     expect(read('src/components/Layout.jsx')).toContain('href="/class"');
   });
 });
+
+describe('viewerRouteId — 뷰어 주소 조각 풀기(Next 15 useParams는 인코딩된 채 준다)', () => {
+  it('팀 사본 local:<id>의 인코딩된 콜론을 풀어 isLocalId가 알아본다', async () => {
+    const { viewerRouteId, isLocalId, parseLocalId } = await import('../classBoard');
+    expect(viewerRouteId('local%3A7701')).toBe('local:7701');
+    expect(isLocalId(viewerRouteId('local%3A7701'))).toBe(true);
+    expect(parseLocalId(viewerRouteId('local%3A7701'))).toBe(7701);
+    expect(viewerRouteId('local:7701')).toBe('local:7701');
+    expect(viewerRouteId('45')).toBe('45');
+    expect(viewerRouteId('%E0%A4%A')).toBe('%E0%A4%A'); // 잘못된 인코딩은 그대로
+    expect(viewerRouteId(undefined)).toBeUndefined();
+  });
+  it('뷰어는 useParams의 id를 풀어서 쓴다', async () => {
+    const fs = await import('node:fs');
+    const src = fs.readFileSync('src/views/ViewerPage.jsx', 'utf8');
+    expect(src).toContain('const id = viewerRouteId(useParams().id);');
+    expect(src).not.toMatch(/const \{ id \} = useParams\(\);/);
+  });
+});

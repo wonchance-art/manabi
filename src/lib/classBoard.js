@@ -276,6 +276,14 @@ export function toPlainText(material) {
 /** 기기 사본을 여는 뷰어 id 접두 — `/viewer/local:<id>?team=<key>`. 네트워크 0 계약의 표식. */
 export const LOCAL_PREFIX = 'local:';
 export function isLocalId(id) { return typeof id === 'string' && id.startsWith(LOCAL_PREFIX); }
+/**
+ * 뷰어 주소의 [id] 조각 → 자료 id. Next 15 useParams는 조각을 인코딩된 채 준다 — 팀 사본 `local:<id>`의 콜론이 `%3A`로 와
+ * isLocalId가 놓치고 서버에 `id=eq.local%3A…`를 물었다(계정 경계 e2e ⑦ 실측, 2026-10-18 KST). 잘못된 인코딩은 그대로 둔다.
+ */
+export function viewerRouteId(raw) {
+  if (typeof raw !== 'string') return raw;
+  try { return decodeURIComponent(raw); } catch { return raw; }
+}
 export function parseLocalId(id) {
   if (!isLocalId(id)) return null;
   const n = Number(id.slice(LOCAL_PREFIX.length));

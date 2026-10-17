@@ -159,7 +159,7 @@ import { SENTENCE_TX_LOGIN_REQUIRED, SENTENCE_TX_QUERY, canonicalSentence, class
   sentenceBookMeaning, sentencePrefetchLimiter, sentenceTranslationKey, sentenceTranslationQuery, sentenceTxStats } from '../lib/sentenceTranslation';
 import { sentencePanelOriginal, sentencePanelTokenIds, sentencePatternHits, sentenceWordGlosses } from '../lib/viewerSentenceGlosses';
 import { useSentencePrefetch } from '../lib/useSentencePrefetch';
-import { isLocalId, parseLocalId, chaptersForLocalNav, isTeamRoot } from '../lib/classBoard';
+import { isLocalId, parseLocalId, chaptersForLocalNav, isTeamRoot, viewerRouteId } from '../lib/classBoard';
 import { getSharedCopy } from '../lib/sharedStore';
 import { readIndexCache } from '../lib/classClient';
 import { useRefVocabEntry, useRefVocabIndex } from '../lib/refVocabIndex';
@@ -367,7 +367,8 @@ export default function ViewerPage() {
   const languageSettings = useViewerLanguage();
   const { uiLocale, explanationLocale } = languageSettings;
   const vt = useCallback((text, values) => translateViewerText(uiLocale, text, values), [uiLocale]);
-  const { id } = useParams();
+  // 주소 조각은 인코딩된 채 온다(Next 15) — 팀 사본 local:<id>를 알아보려면 풀어서 쓴다(viewerRouteId).
+  const id = viewerRouteId(useParams().id);
   const noteRouter = useRouter();
   const originalParams = useSearchParams();
   // 로그인 뒤 이 자료 · 이 위치(returnTo 등 질의 포함)로 돌아온다 — 검증은 authEntryHref 규칙에 맡긴다.
