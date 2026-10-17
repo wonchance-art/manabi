@@ -21,6 +21,7 @@ import useLibraryActivity from '@/components/library/useLibraryActivity';
 import {LibraryReturnLink} from '@/components/web/LibraryReturnLink';
 import {safeLibraryReturn, libraryReaderHref} from '@/lib/libraryReturn';
 import { friendlyToastMessage } from '@/lib/errorMessage';
+import { rememberUnit, rememberedUnit } from './unitMemory';
 import { focusIsLost, focusPageIfLost } from '@/lib/routeFocus';
 
 function withoutRuby(node) {
@@ -197,15 +198,17 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
 
   useEffect(() => {
     const controller = new AbortController();
-    setExamples([]); setSections([]); setError(''); setQuery('');
-    if (!unit || unit === 'cover') { setLoading(false); return () => controller.abort(); }
-    setLoading(true);
+    setExamples([]); setError(''); setQuery('');
+    if (!unit || unit === 'cover') { setSections([]); setLoading(false); return () => controller.abort(); }
+    const memoryKey = `${bookId}:${book.edition}:${unit}`, remembered = preview ? null : rememberedUnit(memoryKey);
+    if (remembered) { setSections(remembered); setLoading(false); return () => controller.abort(); }
+    setSections([]); setLoading(true);
     fetch(`/api/books/${bookId}/${book.edition}/reading?unit=${unit}`, { signal: controller.signal })
       .then(async response => { const data = await response.json(); if (!response.ok) throw new Error(data.error || '본문을 불러오지 못했어요.'); return data; })
-      .then(data => { setSections(data.sections); setLoading(false); })
+      .then(data => { if (!preview) rememberUnit(memoryKey, data.sections); setSections(data.sections); setLoading(false); })
       .catch(cause => { if (cause.name !== 'AbortError') { setError(friendlyToastMessage(cause)); setLoading(false); } });
     return () => controller.abort();
-  }, [bookId, book.edition, unit]);
+  }, [bookId, book.edition, unit, preview]);
 
   useEffect(() => {
     const node = content.current;
