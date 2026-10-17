@@ -1006,7 +1006,9 @@
     손님 배움 골격(B1, 오너 승인 목업 ①): 세션 쿠키로 서버부터 손님 배치 — 회원 배치가 보이던 0.5~0.7초 → 0. 쪽 넘김 다시 재기 1 → 0회.
   · 같은 PR(PROFILES-PRIVACY-001 ①-hotfix · VIEW-WRITE-GRANT-001): **운영 public_profiles view가 anon · authenticated에 쓰기 권한을 가진 채 배포됨**
     (165910이 PUBLIC만 회수, security_invoker=false · 소유자 postgres → RLS 우회, profiles 삭제 시 19개 표 CASCADE). 악용 흔적 0(접근 로그 · 행 수).
-    보완 20261016170000(SELECT만) + 정의자 view 쓰기 권한 계약. 운영 즉시 적용은 오너 결정 대기.
+    보완 20261016170000(SELECT만) + 정의자 view 쓰기 권한 계약. 운영 즉시 적용 완료(2026-10-17 10:5x KST, 오너 승인 · relacl anon/authenticated=r 확인).
+    Inter 라틴 조각 전 페이지 미리 받기 제거(FONT-PRELOAD-001, −47kB) · 공개 캐시 응답 쿠키 세션 금지 계약(PUBLIC-CACHE-COOKIE-001).
+    언어별 뷰어 점검(VIEWER-LANG-AUDIT): 일본어 활용형 요미가나를 기본형 읽기에서 옮김 — 違[ちがう]い → 違[ちが]い · 待[まつ]っ → 待[ま]っ(원래 있던 결함).
   · 보류: CJK 가변 weight(@font-face −67%, brotli 전송 −2%) — 600 · 650 · 800 · 300 굵기가 실제 값으로 바뀌는 시각 변경이라 오너 확인 뒤(화면 6개 비교 자료 전달, 2026-10-17 KST).
 - ~~**WEB-FEEL-001 웹 손맛 — 복습 카드 넘김 · 앞면 클릭 펼치기 · 404 메뉴 (2026-10-16 KST, 오너 「일단 모바일은 제외하고 웹 위주로 ㄱㄱ」)**~~ → **완료: [#1499](https://github.com/wonchance-art/manabi/pull/1499) squash `2044dee`(2026-10-16 22:34 KST), 운영 사후 검수(버전 · hnd1 · 배움 0.50초 · 산책 0.57초 · 404 메뉴) 완료**. 아래 묶음 전부 포함:
   앱 출시 검토 결론 = Flutter 배제 · 웹(PWA) 유지, 이 세션은 웹 UX 증강. 실험 근거 = [복습 손맛 실험실](https://claude.ai/artifact/XsicDi53PnFEmBXPgB3LnH)
