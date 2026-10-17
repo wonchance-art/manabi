@@ -7,7 +7,8 @@
 // 이 한 판정을 쓴다(GEMINI-402-GUARD, 2026-10-17 KST — 운영 402 「Your prepayment credits are depleted」 실측).
 // HTTP 402이거나 **구체적인 크레딧 소진 문구**만 본다. 「billing」 단독은 쓰지 않는다 — 보통 쿼터 초과 429도
 // 「…check your plan and billing details」(Gemini) · 「…/settings/billing」(Groq)를 싣는데, 그건 기다리면 풀리는 혼잡이다.
-export const SERVICE_CONFIG_PATTERN = /prepayment credits|credits?\s+(?:are\s+|have been\s+)?(?:depleted|exhausted)/i;
+// Anthropic 크레딧 부족은 400 invalid_request_error 「Your credit balance is too low to access the Anthropic API…」로 온다(LLM-CLAUDE-001).
+export const SERVICE_CONFIG_PATTERN = /prepayment credits|credits?\s+(?:are\s+|have been\s+)?(?:depleted|exhausted)|credit balance is too low/i;
 // Gemini 400 FAILED_PRECONDITION + 결제 문구(공식 오류 표 failed_precondition — 「billing being disabled」)도 결제 · 설정 문제라 기다려도
 // 풀리지 않는다(GEMINI-402-GUARD 후속, 2026-10-17 KST). 400이면서 status(또는 ErrorInfo reason)가 FAILED_PRECONDITION이고 문구에 billing이
 // 있을 때만이다 — 429 + billing(보통 쿼터 초과)은 위 이유로 계속 혼잡이다.

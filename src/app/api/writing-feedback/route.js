@@ -3,6 +3,7 @@ import { getRefLang } from '@/content/refLangs';
 import { buildFeedbackPrompt, validateFeedback, FEEDBACK_SCHEMA, WRITING_LEVELS } from '@/lib/writingPrompts';
 import { attachTagLinks } from '@/lib/writingTagLink';
 import { callLLM } from '@/lib/server/llm';
+import { hasPrimaryLLMKey } from '@/lib/server/llmKeys';
 
 /**
  * 작문 AI 첨삭 — standard 티어의 3단 폴백(flash → flash-lite → Groq, llm.js)이되,
@@ -70,8 +71,7 @@ export async function POST(request) {
   }
 
   // Gemini 키가 없어도 Groq만으로 진행 가능 — 하드 실패는 두 키 모두 없을 때만
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey && !process.env.GROQ_API_KEY) {
+  if (!hasPrimaryLLMKey() && !process.env.GROQ_API_KEY) {
     return Response.json(
       { error: { message: '서버에 AI 키가 설정되지 않았어요 (GEMINI_API_KEY 또는 GROQ_API_KEY). Vercel 환경 변수를 확인해 주세요.' } },
       { status: 500 }

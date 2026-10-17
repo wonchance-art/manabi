@@ -18,6 +18,7 @@ export async function GET(request) {
     since,
     tiers,
     groqConfigured: !!process.env.GROQ_API_KEY,
+    anthropicConfigured: !!process.env.ANTHROPIC_API_KEY, // 있으면 Claude가 본선(LLM-CLAUDE-001) — 값은 읽지 않는다
     note: '인메모리 창 — 인스턴스 재시작에 초기화. 정본은 Vercel 로그의 [llm] 줄.',
   });
 }
