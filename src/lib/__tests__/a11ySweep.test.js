@@ -68,7 +68,7 @@ describe('①b 결과 알림 영역 2차 — 서재 · 노트 · 뷰어 더 알�
   it('일본어로는 대응어 실패(ViewerJapaneseMore) — 찾는 중 · 결과 두 갈래의 같은 자리에 같은 영역', () => {
     const src = read('src/components/viewer/ViewerJapaneseMore.jsx');
     expect(src).toContain("const notice=<span className=\"sr-only\" role=\"status\" id={noticeId}>{!query.isFetching&&query.isError?vt('대응어를 불러오지 못했어요.'):''}</span>;");
-    expect(src).toContain("if(query.isFetching)return <>{warnLine}{notice}<p role=\"status\">");
+    expect(src).toContain("if(query.isFetching)return <>{warnLine}{notice}<p aria-busy=\"true\">"); // 찾는 중 = 칸 안 짧은 대기(LOADING-ANNOUNCE-001 ①)
     expect(src).toMatch(/return <>\s*\{warnLine\}\s*\{notice\}\s*\{query\.isError&&<p className="reader-card-learn__ja-error" aria-hidden="true">/);
     expect(src).toContain('aria-describedby={noticeId}');
   });
@@ -137,6 +137,12 @@ describe('⑤ 상시 알림 영역의 보이는 사본 — aria-hidden + 이름 
     ['src/components/books/BookReader.jsx', "<span className=\"sr-only\" role=\"status\">{unit === 'reference'", '<p className="manabi-status" aria-hidden="true">'],
     ['src/views/ViewerPage.jsx', 'id="viewer-synant-notice"', '<p className="syn-ant__error" aria-hidden="true">'],
     ['src/views/ViewerPage.jsx', 'id="viewer-position-notice"', '<div className="error-banner"><span aria-hidden="true">'],
+    // 긴 작업 진행(LOADING-ANNOUNCE-001 ③ — loadingAnnounce.test.js)
+    ['src/views/ViewerPage.jsx', '<span className="sr-only" role="status">{wordDetail?.loading', '<p className="reader-card-learn__pending" aria-hidden="true">'],
+    ['src/views/ViewerPage.jsx', '<span className="sr-only" role="status">{isAnalyzing', '<span className="analyzing-banner__line" aria-hidden="true">{vt(analyzingLine)}</span>'],
+    ['src/views/ViewerPage.jsx', '<span className="sr-only" role="status">{isAnalyzing', '<span className="analyzing-banner__line" aria-hidden="true">{recoveryLine('],
+    ['src/components/admin/BulkAnalysisPanel.jsx', '<span className="sr-only" role="status">{running ?', '<span className="bulk-analysis__progress" aria-hidden="true">'],
+    ['src/components/LiteraturePublishPanel.jsx', '<span className="sr-only" role="status">{batch ?', '<span className="literature-batch__progress" aria-hidden="true">'],
   ];
   it('화면 코드의 상시 알림 영역은 모두 목록에 있다(새 영역은 칸과 함께 등록)', () => {
     const found = [];

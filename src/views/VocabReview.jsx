@@ -190,7 +190,7 @@ export default function VocabReview({
           : <ReviewFinished finish={finish || { total: new Set(reviewWords.filter(Boolean).map(word => word.id)).size }} bookReview={bookReview} vocab={vocab}
             projections={projections} learningAvailable={learningAvailable} now={now} setTab={setTab} />
       ) : admissionPending || admissionError ? (
-        <div className="card review-card review-card--center" role={admissionError ? 'alert' : 'status'}>
+        <div className="card review-card review-card--center" role={admissionError ? 'alert' : 'status'} aria-busy={!admissionError || undefined}>
           <p>{admissionError ? REVIEW_PREP_FAILED : '복습 준비 중…'}</p>
           {admissionError && <Button variant="ghost" onClick={onAdmissionRetry}>다시 시도</Button>}
         </div>

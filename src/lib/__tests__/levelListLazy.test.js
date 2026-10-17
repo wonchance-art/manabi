@@ -16,7 +16,7 @@ describe('⑴ 한자판 — 「한자」 탭에서만 받는다', () => {
   it('정적 import가 없고 next/dynamic으로 불러오며, 받는 동안 상태 문구를 보인다', () => {
     expect(staticImports(page)).not.toContain('@/components/levels/HanziBoard');
     expect(page).toContain("import dynamic from 'next/dynamic';");
-    expect(page).toMatch(/const HanziBoard = dynamic\(\(\) => import\('@\/components\/levels\/HanziBoard'\), \{\s*loading: \(\) => <p className="lv-empty" role="status">한자판 불러오는 중…<\/p>,\s*\}\);/);
+    expect(page).toMatch(/const HanziBoard = dynamic\(\(\) => import\('@\/components\/levels\/HanziBoard'\), \{\s*loading: \(\) => <p className="lv-empty" aria-busy="true">한자판 불러오는 중…<\/p>,\s*\}\);/);
     expect(page).not.toMatch(/ssr:\s*false/); // 서버 렌더는 기본값 그대로
   });
 });

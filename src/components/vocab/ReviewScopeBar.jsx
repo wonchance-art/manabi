@@ -191,7 +191,7 @@ function ReviewScopeSheet({ scope, countFor, allVocab, learningById, materialTit
               <Option key={level} active={draft.level === level} onClick={() => setDraft({ ...draft, level, source: draft.source?.kind === 'book' ? null : draft.source })}
                 count={ready({ ...draft, level })}>{scopeLevelLabel(level)}</Option>
             ))}
-          </div> : <p className="review-scope-sheet__muted" role="status">급수 표 불러오는 중…</p>)
+          </div> : <p className="review-scope-sheet__muted" aria-busy="true">급수 표 불러오는 중…</p>)
             : <p className="review-scope-sheet__muted">급수는 중국어만 고를 수 있어요. 일본어 N급은 준비 중이에요.</p>}
         </fieldset>
 

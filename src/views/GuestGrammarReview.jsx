@@ -50,7 +50,7 @@ export default function GuestGrammarReview() {
     return (
       <div className="page-container" style={{ maxWidth: 640, textAlign: 'center', paddingTop: 60 }}>
         <h1 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: 10 }}>문법 복습</h1>
-        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>이 기기에 쌓인 복습을 불러오는 중…</p>
+        <p aria-busy="true" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>이 기기에 쌓인 복습을 불러오는 중…</p>
       </div>
     );
   }

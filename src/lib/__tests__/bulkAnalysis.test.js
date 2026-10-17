@@ -37,12 +37,14 @@ describe('패널 배선 — 뷰어와 같은 정본 경로', () => {
     expect(fs.readFileSync('src/views/AdminPage.jsx', 'utf8')).toContain('<BulkAnalysisPanel ownerId={user?.id} toast={toast} />');
   });
   it('진행 알림 영역은 늘 그려 두고 내용만 바꾼다 · 「멈추기」는 영역 밖', () => {
-    const live = "<span role=\"status\" aria-live=\"polite\">{running ? `${running.done}/${running.total}편 분석하고 있어요…` : ''}</span>";
-    expect(panel).toContain(live);
+    // 낭독 영역은 약 10%마다만 바뀌고(LOADING-ANNOUNCE-001 ③ — announcedProgress), 한 편마다 바뀌는 보이는 사본은 숨긴다.
+    const live = "<span className=\"sr-only\" role=\"status\">{running ? `${announcedProgress(running.done, running.total)}/${running.total}편 분석하고 있어요…` : ''}</span>";
+    const visible = "<span className=\"bulk-analysis__progress\" aria-hidden=\"true\">{running ? `${running.done}/${running.total}편 분석하고 있어요…` : ''}</span>";
+    expect(panel).toContain(`${live}\n            ${visible}`);
     // 영역이 running 조건 안에서 생기면(내용과 함께 생기는 status) 화면 낭독기가 놓친다.
     expect(panel).not.toMatch(/running\s*\?\s*<p role="status"/);
-    // 영역 바로 뒤가 버튼 분기 — 「멈추기」는 영역(span) 안이 아니라 그 뒤 형제다.
-    expect(sliceBetween(panel, live).slice(live.length).trimStart().startsWith('{running')).toBe(true);
-    expect(sliceBetween(panel, '<span role="status"', '</span>')).not.toContain('멈추기');
+    // 영역 · 보이는 사본 바로 뒤가 버튼 분기 — 「멈추기」는 영역(span) 안이 아니라 그 뒤 형제다.
+    expect(sliceBetween(panel, visible).slice(visible.length).trimStart().startsWith('{running')).toBe(true);
+    expect(sliceBetween(panel, '<span className="sr-only" role="status"', '</span>')).not.toContain('멈추기');
   });
 });

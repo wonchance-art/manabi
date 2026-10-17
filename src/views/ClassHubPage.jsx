@@ -196,7 +196,7 @@ export default function ClassHubPage() {
         </form>
       )}
 
-      {teamError ? <div className="classroom-notice" role="alert">수업 목록을 불러오지 못했어요. <button onClick={()=>retryTeams()}>다시 시도</button></div> : isLoading ? <p role="status">수업을 불러오는 중…</p> : teams.length===0 ? <div className="classroom-empty"><b>첫 수업을 열어 보세요.</b><p>이름과 언어를 정하면 바로 시작할 수 있어요. 교재는 나중에 연결해도 돼요.</p></div> : (
+      {teamError ? <div className="classroom-notice" role="alert">수업 목록을 불러오지 못했어요. <button onClick={()=>retryTeams()}>다시 시도</button></div> : isLoading ? <p aria-busy="true">수업을 불러오는 중…</p> : teams.length===0 ? <div className="classroom-empty"><b>첫 수업을 열어 보세요.</b><p>이름과 언어를 정하면 바로 시작할 수 있어요. 교재는 나중에 연결해도 돼요.</p></div> : (
         <div className="classroom-hub-list">
           {teams.map(t=>{
             const book=t.bookKey?bookByKey.get(t.bookKey):null;

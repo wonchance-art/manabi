@@ -96,7 +96,7 @@ export default function ViewerSettings({settings:s,language,languageSettings,onC
         {/* 보기(READER-PAGED-001 목업 E) — 기본은 쪽 넘김, 스크롤은 지금 그대로의 대안. 위치는 보기 쪽이 기준 글자로 지킨다
             (keepPosition의 화면 좌표 기준점은 다단 쪽에서 맞지 않는다). */}
         <Choices label="보기" uiLocale={uiLocale} value={s.readerView||'paged'} items={choices([['paged','쪽 넘김'],['scroll','스크롤']])} onChange={v=>onReaderView?onReaderView(v):s.setReaderView?.(v)}/>
-        {s.fontFamily==='serif'&&fontStatus!=='ready'&&<p role="status">{tr(fontStatus==='error'?'명조를 불러오지 못해 고딕으로 표시하고 있어요.':'명조 글꼴을 불러오는 중이에요.')}</p>}
+        {s.fontFamily==='serif'&&fontStatus!=='ready'&&<p role="status" aria-busy={fontStatus!=='error'||undefined}>{tr(fontStatus==='error'?'명조를 불러오지 못해 고딕으로 표시하고 있어요.':'명조 글꼴을 불러오는 중이에요.')}</p>}
         <More uiLocale={uiLocale} count={changed(['pinyinSize','lineGap','charGap','fontFamily'])}>
         {language==='Chinese'&&<Slider uiLocale={uiLocale} label="병음 크기" value={s.pinyinSize} min={0.75} max={1} step={0.0625} display={`${Math.round(s.pinyinSize*16)}px`} onChange={v=>set('pinyinSize',v)}/>}
         <Slider uiLocale={uiLocale} label="줄 사이" value={s.lineGap} min={10} max={60} display={`${s.lineGap}px`} onChange={v=>set('lineGap',v)}/>

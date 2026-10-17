@@ -45,7 +45,7 @@ export default function ViewerJapaneseMore({userId,word,meaning,pos,dictEntry,ja
   if(!userId||dictLoading||!meaning)return warnLine;
   // 실패 알림 영역 — 찾는 중 · 결과 두 갈래의 같은 자리(두 번째 칸)에 늘 두고 내용만 넣는다. 보이는 줄은 숨기고 요청 버튼이 이유를 가리킨다(A11Y-SWEEP-001).
   const notice=<span className="sr-only" role="status" id={noticeId}>{!query.isFetching&&query.isError?vt('대응어를 불러오지 못했어요.'):''}</span>;
-  if(query.isFetching)return <>{warnLine}{notice}<p role="status">{vt('일본어를 찾는 중…')}</p></>;
+  if(query.isFetching)return <>{warnLine}{notice}<p aria-busy="true">{vt('일본어를 찾는 중…')}</p></>;
   return <>
     {warnLine}
     {notice}

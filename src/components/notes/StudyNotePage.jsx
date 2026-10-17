@@ -19,7 +19,7 @@ import '@/components/classroom/teaching-board.css';
 import './study-notes.css';
 import { friendlyToastMessage } from '@/lib/errorMessage';
 
-const Canvas = dynamic(()=>import('@/components/classroom/TeachingBoardCanvas').then(module=>module.SharedBoardCanvas), {ssr:false,loading:()=> <p className="note-loading" role="status">노트를 펼치고 있어요…</p>});
+const Canvas = dynamic(()=>import('@/components/classroom/TeachingBoardCanvas').then(module=>module.SharedBoardCanvas), {ssr:false,loading:()=> <p className="note-loading" aria-busy="true">노트를 펼치고 있어요…</p>});
 const noop=()=>{};
 
 export default function StudyNotePage({id}) {
@@ -81,7 +81,7 @@ function NoteEditor({owner,id}) {
   function backup(){const current=store.current();if(!current)return;actions.current?.flush();const blob=new Blob([JSON.stringify({format:'manabi-personal-note',...store.current()})],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`manabi-note-${id}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
   async function fork(){if(forking)return;setForking(true);try{actions.current?.flush();const current=store.current();const document={...current.document,key:crypto.randomUUID()};const result=await requestNote('/api/notes',{method:'POST',body:JSON.stringify({title:`${current.title} · 내 초안`,document})});void invalidateLibrary(queryClient,owner);router.push(`/notes/${result.id}`);}catch(error){setMessage(friendlyToastMessage(error));}finally{setForking(false);}}
   const leave=async()=>{actions.current?.flush();try{await store.sync();router.push('/materials?view=notes');}catch(error){setMessage(`${friendlyToastMessage(error)} 노트 정보에서 백업하거나 다시 저장해 주세요.`);}};
-  if(!store.ready)return <section className="manabi-page note-gate"><p role={store.error?'alert':'status'}>{store.error||'개인 노트를 불러오고 있어요…'}</p><Link href="/materials">내 서재</Link><button onClick={()=>window.location.reload()}>다시 시도</button></section>;
+  if(!store.ready)return <section className="manabi-page note-gate"><p role={store.error?'alert':'status'} aria-busy={!store.error||undefined}>{store.error||'개인 노트를 불러오고 있어요…'}</p><Link href="/materials">내 서재</Link><button onClick={()=>window.location.reload()}>다시 시도</button></section>;
   const value=store.value,saveLabel=store.error?'저장 확인 필요':store.saving?'저장 중…':'계정에 저장됨';
   return <main ref={root} className="personal-note" style={textbookThemeStyle(value.document.language)} data-review={review}>
     <div className="personal-note-canvas"><Canvas owner={owner} team={team} day="개인 노트" vocabularyIndex={vocabularyIndex} scope={noteScope(owner,id)} store={{ready:true,document:value.document.board,save:saveBoard,saving:store.saving,error:store.error}}

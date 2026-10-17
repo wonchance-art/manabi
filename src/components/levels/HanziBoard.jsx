@@ -129,7 +129,7 @@ function PatternCard({ ch, fn, patterns, onBack }) {
   const shown = list.length ? list : (patterns?.get(fn) || []).slice(0, 3);
   return <div className="hz-card hz-word">
     <button type="button" className="hz-back" onClick={onBack}>‹ <span {...ZH}>{ch}</span> 카드로</button>
-    {!patterns ? <p className="hz-note" role="status">불러오는 중…</p> : shown.length === 0 ? <p className="hz-note">이 글자의 문형을 찾지 못했어요</p>
+    {!patterns ? <p className="hz-note" aria-busy="true">불러오는 중…</p> : shown.length === 0 ? <p className="hz-note">이 글자의 문형을 찾지 못했어요</p>
       : shown.map((p) => <div key={p.id} className="lv-pat">
         <div className="lv-pat__head"><span className="lv-hw" {...ZH}>{p.pattern}</span>{p.ko && <span className="lv-pat__ko">{shortMeaning(p.ko)}</span>}</div>
         {p.conn && <p className="lv-formula">{p.conn}</p>}
@@ -291,7 +291,7 @@ export default function HanziBoard({ levelKey, groups, userId, mounted, words, s
     if (sub?.type === 'word') return <WordCard ch={ch} zh={sub.zh} dict={dict} tables={tables} words={words} say={say} onBack={() => setSub(null)} />;
     if (sub?.type === 'pattern') return <PatternCard ch={ch} fn={sub.fn} patterns={patterns} onBack={() => setSub(null)} />;
     const model = table?.chars?.[ch] ? hanziCardModel(ch, table.chars[ch], { dict, tables: tables || {} }) : null;
-    if (!model) return <p className="hz-note" role="status">불러오는 중…</p>;
+    if (!model) return <p className="hz-note" aria-busy="true">불러오는 중…</p>;
     return <AnswerCard model={model} words={words} say={say} onWord={(zh) => setSub({ type: 'word', zh })} onPattern={openPattern} />;
   };
 

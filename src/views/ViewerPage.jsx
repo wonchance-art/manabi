@@ -76,6 +76,7 @@ import { useVocabularyExclusions } from '../lib/useVocabularyExclusions';
 import { exclusionWord, findVocabularyExclusion } from '../lib/vocabularyExclusion';
 import { callGemini } from '../lib/gemini';
 import { fetchWordDetailText, peekWordDetailText, fetchSharedDetailText } from '../lib/wordDetail';
+import { announcedProgress } from '../lib/announceProgress';
 import { pinyinToneClass } from '../lib/pinyinTone';
 import { splitRuby, KANA_RE } from '../lib/splitRuby';
 import { pickedRangeOf } from '../lib/headwordPick';
@@ -2831,6 +2832,15 @@ export default function ViewerPage() {
   const isFailed = status === 'failed';
   const isDone = status === 'completed' || status === 'partial';
   const needsRecovery = !passageOf(material) && (isStaleAnalysis || (isDone && missingLineCount > 0));
+  // 분석 · 복구 배너 글(LOADING-ANNOUNCE-001 ③) — 보이는 줄과 상시 낭독 영역이 같은 글을 쓴다. 복구 숫자만 낭독 쪽이 약 10%마다 바뀐다.
+  const analyzingLine = reanalyze.committing ? '검증한 분석을 저장하고 있어요…' : reanalyzeMutation.isPending ? '새 분석을 준비하고 있어요. 기존 자료는 그대로 있어요.' : '문단 단위로 분석하고 있어요…';
+  const recoveryLine = (completed) => (reanalyze.committing
+    ? '검증한 분석을 저장하고 있어요…'
+    : reanalyze.recovery
+      ? `${reanalyze.recovery.total}곳 중 ${completed}곳을 복구했어요. 기존 내용은 그대로 볼 수 있어요.`
+      : reanalyzeMutation.isPending ? '새 분석을 준비하고 있어요. 기존 자료는 그대로 있어요.'
+        : missingLineCount > 0 ? `분석이 끝나지 않은 부분이 ${missingLineCount}곳 있어요.` : '분석 결과를 확인하고 마무리할 수 있어요.');
+  const recoveryShown = needsRecovery && user?.id === material?.owner_id;
   const isCompleted = readingProgress?.is_completed === true;
   const isWordSaved = isTokenSaved(savedWords, selectedToken, materialLang);
   keyHandlersRef.current = {
@@ -3336,7 +3346,7 @@ export default function ViewerPage() {
         );
       })()}
       {classMeaning?.editor||(!classStudyActive&&<div className={`word-detail-card__meaningrow${materialLang === 'English' && selectedToken.reading ? ' word-detail-card__meaningrow--tight' : ''}`}>
-        <div className="word-detail-card__meaning" lang={materialLang === 'Korean' ? effectiveExplanationLocale : undefined}>
+        <div className="word-detail-card__meaning" lang={materialLang === 'Korean' ? effectiveExplanationLocale : undefined} aria-busy={(materialLang === 'Korean' && !koreanPieceSelected && localizedWord.loading) || undefined}>
           {materialLang === 'Korean' ? (koreanPieceSelected ? koreanPieceMeaning(selectedToken) : localizedWord.loading ? vt('문맥 뜻을 불러오는 중…') : localizedWord.error ? <button onClick={localizedWord.retry}>{vt('다시 시도')}</button> : localizedWord.meaning) : refMeaning || selectedToken.meaning || '(뜻 없음)'}
         </div>
         {/* 리스트 단어는 자료 토큰이 아니라(id 없음) 이 자료의 교정 대상이 될 수 없다 */}
@@ -3463,10 +3473,12 @@ export default function ViewerPage() {
         <h3 className="reader-card-section__label">{vt('더 알아보기')}</h3>
         {/* 비슷한 말 실패 알림 — 영역은 늘 두고 내용만 넣는다. 보이는 줄은 숨기고 「✦ 비슷한 말 찾기」가 이유를 가리킨다(A11Y-SWEEP-001). */}
         <span className="sr-only" role="status" id="viewer-synant-notice">{synAntEligible(selectedToken,materialLang) && !synAnt?.loading && synAnt?.error ? vt("불러오지 못했어요.") : ''}</span>
-        {synAntEligible(selectedToken,materialLang) && (synAnt?.loading ? <p role="status">{vt("비슷한 말 불러오는 중…")}</p>
+        {synAntEligible(selectedToken,materialLang) && (synAnt?.loading ? <p aria-busy="true">{vt("비슷한 말 불러오는 중…")}</p>
           : synAnt && !synAnt.error ? <div className="syn-ant"><div className="syn-ant__row"><span>{vt("유의어")}</span>{renderSynAntChips(synAnt.syn)}</div><div className="syn-ant__row"><span>{vt("반의어")}</span>{renderSynAntChips(synAnt.ant)}</div>{!synAnt.syn.length&&!synAnt.ant.length&&<p>{vt("표시할 항목이 없어요.")}</p>}</div>
           : <>{synAnt?.error && <p className="syn-ant__error" aria-hidden="true">{vt("불러오지 못했어요.")}</p>}<button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" aria-describedby="viewer-synant-notice" onClick={() => setSynAntRequest(n => n + 1)}>{vt("✦ 비슷한 말 찾기")}</button></>)}
-        {wordDetail?.loading ? <p role="status">{vt("상세 설명 만드는 중…")}</p>
+        {/* 자세한 설명(AI 생성 — 긴 작업) 알림 — 영역은 늘 두고 내용만(LOADING-ANNOUNCE-001 ③). 보이는 줄은 한 번만 읽히게 숨긴다. */}
+        <span className="sr-only" role="status">{wordDetail?.loading ? vt("상세 설명 만드는 중…") : ''}</span>
+        {wordDetail?.loading ? <p className="reader-card-learn__pending" aria-hidden="true">{vt("상세 설명 만드는 중…")}</p>
           : wordDetail?.detail ? <div className="reader-card-learn__detail"><small>{vt('일반 사전 설명 · 본문과 다른 뜻이 포함될 수 있어요')}</small><div className="pdf-detail-popup__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(wordDetail.detail) }} /></div>
           : <button type="button" onClick={() => fetchWordDetail(selectedToken)} className="btn btn--ghost btn--sm reader-card-learn__ask">{vt("✦ 자세한 설명")}</button>}
         {/* 일본어로는(AE-R3 PR② — 일본어 대조 블록 대체, 설계서 §5): 日 줄이 숨겨졌을 때만(수업 모드는 자형 열이 없으므로 항상) —
@@ -3660,7 +3672,7 @@ export default function ViewerPage() {
               <div className="pdf-context__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(head) }} />
               {leftPanelResult === SENTENCE_TX_LOGIN_REQUIRED
                 ? <Link href={signInHref} className="reader-sentence__login">{vt('로그인하면 이 문장의 번역을 볼 수 있어요 →')}</Link>
-                : <p className="reader-sentence__pending" role="status">{vt('번역 중…')}</p>}
+                : <p className="reader-sentence__pending" aria-busy="true">{vt('번역 중…')}</p>}
             </>
           )}
         </div>
@@ -4085,9 +4097,11 @@ export default function ViewerPage() {
         <svg ref={sepArcRef} className="sep-arc" aria-hidden="true" />
         {/* 쪽 넘김 보기의 글자 크기 탐침(1em) — rem·글자 크기가 바뀌면 쪽을 다시 나눈다(usePagedReader). */}
         <span className="reader-page-probe" data-page-probe aria-hidden="true" />
+        {/* 분석 · 복구 진행 알림 — 영역은 배너 밖에 늘 두고 내용만(LOADING-ANNOUNCE-001 ③). 배너의 보이는 줄은 한 번만 읽히게 숨긴다. */}
+        <span className="sr-only" role="status">{isAnalyzing && !needsRecovery ? vt(analyzingLine) : recoveryShown ? recoveryLine(announcedProgress(reanalyze.recovery?.completed, reanalyze.recovery?.total)) : ''}</span>
         {isAnalyzing && !needsRecovery && (
           <div className="analyzing-banner">
-            <span>{vt(reanalyze.committing ? '검증한 분석을 저장하고 있어요…' : reanalyzeMutation.isPending ? '새 분석을 준비하고 있어요. 기존 자료는 그대로 있어요.' : '문단 단위로 분석하고 있어요…')}</span>
+            <span className="analyzing-banner__line" aria-hidden="true">{vt(analyzingLine)}</span>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button onClick={() => refetch()} className="analyzing-banner__refresh">{vt("새로고침")}</button>
               {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
@@ -4097,14 +4111,9 @@ export default function ViewerPage() {
           </div>
         )}
 
-        {needsRecovery && user?.id === material?.owner_id && (
+        {recoveryShown && (
           <div className="analyzing-banner" style={{ background: 'color-mix(in srgb, var(--warning-bright) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--warning-bright) 40%, transparent)' }}>
-            <span role="status" aria-live="polite">{reanalyze.committing
-              ? '검증한 분석을 저장하고 있어요…'
-              : reanalyze.recovery
-                ? `${reanalyze.recovery.total}곳 중 ${reanalyze.recovery.completed}곳을 복구했어요. 기존 내용은 그대로 볼 수 있어요.`
-                : reanalyzeMutation.isPending ? '새 분석을 준비하고 있어요. 기존 자료는 그대로 있어요.'
-                  : missingLineCount > 0 ? `분석이 끝나지 않은 부분이 ${missingLineCount}곳 있어요.` : '분석 결과를 확인하고 마무리할 수 있어요.'}</span>
+            <span className="analyzing-banner__line" aria-hidden="true">{recoveryLine(reanalyze.recovery?.completed)}</span>
             <div style={{ display: 'flex', gap: '8px' }}>
               {reanalyzeMutation.isPending
                 ? <button onClick={stopReanalysis} disabled={reanalyze.committing} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>{vt("⏹ 중단")}</button>

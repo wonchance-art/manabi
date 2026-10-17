@@ -1464,7 +1464,7 @@ function VocabWorkspace({ reviewScope }) {
             <div className="vocab-hero__top"><span className="vocab-hero__kicker">이 범위에서 오늘</span><span className="manabi-eyebrow">01 / RECALL</span></div>
             {/* 「첫 표현」 안내는 정말 담은 표현이 없을 때만 — 좁힌 범위가 비었을 뿐이면 범위 문구가 말한다(교재 범위는 그 교재 기준). */}
             <h2 id="review-today-title">{session.total ? '오늘 다시 볼 표현' : hasAnyWords ? '잠시, 읽기로 돌아가요.' : '첫 표현을 담아 보세요.'}</h2>
-            {admission.status !== 'ready' || session.status !== 'ready' ? <p role="status" className="review-room-note">복습 준비 중…</p> : session.total > 0 ? <>
+            {admission.status !== 'ready' || session.status !== 'ready' ? <p aria-busy="true" className="review-room-note">복습 준비 중…</p> : session.total > 0 ? <>
               <div className="review-room-number"><strong className="vocab-hero__num">{session.total}</strong><span>개의 표현</span></div>
               {/* 0인 갈래는 적지 않는다(learning-flow e2e 「복습 0」 금지) — 「복습 14 · 새 표현 4」(설계 §5-1). */}
               <p className="review-room-note">{[session.due > 0 && `복습 ${session.due}`, session.newAllowed > 0 && `새 표현 ${session.newAllowed}`].filter(Boolean).join(' · ')}</p>
@@ -1504,7 +1504,7 @@ function VocabWorkspace({ reviewScope }) {
           </section>
           {!isBookScope && <section className="review-room-grammar" aria-labelledby="review-grammar-title">
             <p className="manabi-eyebrow">02 / PATTERNS</p><h2 id="review-grammar-title">문법도 한 번 더.</h2>
-            {grammarLoading ? <p role="status">복습 일정을 확인하고 있어요…</p> : grammarError ? <p role="alert">문법 일정을 불러오지 못했어요. <button type="button" className="btn btn--ghost btn--sm" onClick={() => refetchGrammar()}>다시 시도</button></p> : <p>{dueGrammarCount ? `다시 확인할 문법 ${dueGrammarCount}개가 있어요.` : grammarQueue?.total ? '지금 복습할 문법이 없어요. 다음 일정에 다시 만나요.' : '이야기 학습에서 연습한 문법의 복습 일정이 여기에 모여요. N5 과별 답안과는 별개예요.'}</p>}
+            {grammarLoading ? <p aria-busy="true">복습 일정을 확인하고 있어요…</p> : grammarError ? <p role="alert">문법 일정을 불러오지 못했어요. <button type="button" className="btn btn--ghost btn--sm" onClick={() => refetchGrammar()}>다시 시도</button></p> : <p>{dueGrammarCount ? `다시 확인할 문법 ${dueGrammarCount}개가 있어요.` : grammarQueue?.total ? '지금 복습할 문법이 없어요. 다음 일정에 다시 만나요.' : '이야기 학습에서 연습한 문법의 복습 일정이 여기에 모여요. N5 과별 답안과는 별개예요.'}</p>}
             <Link href="/review/grammar" prefetch={false} className="manabi-link">{dueGrammarCount ? `문법 ${dueGrammarCount}개 →` : '문법 복습 확인 →'}</Link>
             <div className="review-room-extra"><p>글 한 편으로 함께 연습하고 싶다면</p><Link href="/study" prefetch={false} className="manabi-link">이야기로 연습 →</Link></div>
                   {confused.length >= CONFUSED_MIN && (

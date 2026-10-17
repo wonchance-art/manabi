@@ -65,13 +65,13 @@ export default function SuggestionReader({ id }) {
         <button type="button" aria-label="글자 크게" disabled={fontSize >= 28} onClick={() => setFontSize(n => Math.min(28, n + 2))}>A+</button>
       </div>}
     </nav>
-    {query.isPending ? <p role="status">읽을거리를 펼치고 있어요…</p> : query.isError ? <div className="suggestion-reader__state" role="alert"><h1 id="suggestion-title">{friendlyToastMessage(query.error, '자료를 불러오지 못했어요.')}</h1><p>저장된 주소를 다시 확인하거나 추천 목록으로 돌아가 주세요.</p>{query.error.status !== 404 && <button className="btn" onClick={() => query.refetch()}>다시 시도</button>}</div> : <>
+    {query.isPending ? <p aria-busy="true">읽을거리를 펼치고 있어요…</p> : query.isError ? <div className="suggestion-reader__state" role="alert"><h1 id="suggestion-title">{friendlyToastMessage(query.error, '자료를 불러오지 못했어요.')}</h1><p>저장된 주소를 다시 확인하거나 추천 목록으로 돌아가 주세요.</p>{query.error.status !== 404 && <button className="btn" onClick={() => query.refetch()}>다시 시도</button>}</div> : <>
       <header className="suggestion-reader__heading"><p className="manabi-eyebrow">MANABI / READINGS</p>
         <div className="suggestion-reader__meta"><span>{langNameKo(s.language)}</span>{s.level && <span>{s.level}</span>}<span>{source.kind === 'digest' ? '뉴스 브리핑' : source.kind === 'video' ? (readable ? '영상 자막' : '추천 영상') : '기사 발췌'}</span></div>
         <h1 id="suggestion-title" lang={contentLang}>{s.title}</h1>
         <p className="suggestion-reader__byline">{s.channel_name}{license && <span>{license}</span>}{s.date && <span>자료 수집 {s.date.replaceAll('-', '.')}</span>}</p>
         <div className="suggestion-reader__actions">
-          {readable && s.transcript?.trim() && (authLoading ? <span role="status">서재 확인 중…</span> : !user ? <Link className="manabi-link" href={authEntryHref(`/suggestions/${id}?from=${from}`)}>로그인하고 서재에 담기</Link> : <button className="btn btn--sm" onClick={keep} disabled={saving || !!savedId}>{savedId ? '✓ 서재에 담았어요' : saving ? '담는 중…' : '내 서재에 담기'}</button>)}
+          {readable && s.transcript?.trim() && (authLoading ? <span aria-busy="true">서재 확인 중…</span> : !user ? <Link className="manabi-link" href={authEntryHref(`/suggestions/${id}?from=${from}`)}>로그인하고 서재에 담기</Link> : <button className="btn btn--sm" onClick={keep} disabled={saving || !!savedId}>{savedId ? '✓ 서재에 담았어요' : saving ? '담는 중…' : '내 서재에 담기'}</button>)}
           {studyId && <Link className="manabi-link" href={`/viewer/${studyId}?study=1`}>단어 학습 ↗</Link>}
           {source.url && <a className="manabi-link" href={source.url} target="_blank" rel="noopener noreferrer">{source.label} ↗</a>}
         </div>

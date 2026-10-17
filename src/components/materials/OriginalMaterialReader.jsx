@@ -132,7 +132,7 @@ export default function OriginalMaterialReader({ material }) {
   return <section className="original-reader" onPointerDownCapture={markGesture} onWheelCapture={markGesture} onKeyDownCapture={markGesture} aria-labelledby="original-title"><div className="composer-top"><LibraryReturnLink /><Link href={`/materials/${material.id}/edit?returnTo=${encodeURIComponent(safeLibraryReturn(params.get('returnTo')))}`}>수정</Link></div>
     <header className="original-heading"><p className="manabi-eyebrow">KEPT FOR ANOTHER DAY</p><h1 id="original-title">{material.title}</h1><p>{new Date(material.created_at).toLocaleDateString('ko-KR')}<span>내가 담아 둔 자료</span></p></header>
     <OriginalPositionNotice sync={sync} sources={positionSources} onAccept={()=>applyPosition(sync.accept())}/>
-    {passageId&&origin.isPending&&<p role="status">학습 구간의 출처를 확인하는 중…</p>}
+    {passageId&&origin.isPending&&<p aria-busy="true">학습 구간의 출처를 확인하는 중…</p>}
     {passageId&&origin.isError&&<p role="alert">해당 구간의 출처를 열지 못했어요. 현재 자료는 그대로 읽을 수 있어요.</p>}
     {origin.data&&<PassageSourceFocus material={origin.data} sources={sources}/>}
     <PassageStudy material={material} sources={sources} preferredKey={preferredKey} {...(textOnly ? {

@@ -106,7 +106,7 @@ export default function FsrsReviewSession({ review, onExit, embedded = false, ca
           </button>)}
         </div>
       </div>
-    </> : <div className="review-room-state" role="status">
+    </> : <div className="review-room-state" role="status" aria-busy={busy || embedded || undefined}>
       <p>{busy || embedded ? '복습 준비 중…' : '지금 복습할 표현이 없어요. 다음 복습까지 새로운 문장을 만나 보세요.'}</p>
       {!embedded && nextWakeAt && <time dateTime={nextWakeAt}>{new Date(nextWakeAt).toLocaleTimeString()}</time>}
       {!embedded && <Button variant="ghost" disabled={busy} onClick={leave}>목록으로</Button>}

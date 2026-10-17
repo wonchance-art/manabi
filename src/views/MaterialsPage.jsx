@@ -690,7 +690,7 @@ export default function MaterialsPage({ libraryView = null }) {
       {dueVocabError && <div className="library-query-state" role="alert">표현을 불러오지 못했어요. <button type="button" onClick={() => refetchDueVocab()}>다시 시도</button></div>}
       {progressError && <div className="library-query-state" role="alert">읽음 기록을 불러오지 못했어요. <button type="button" onClick={() => refetchProgress()}>다시 시도</button></div>}
       {showPdfs && pdfsError && <div className="library-query-state" role="alert">PDF 목록을 불러오지 못했어요. <button type="button" onClick={() => refetchPdfs()}>다시 시도</button></div>}
-      {showPdfs && pdfsLoading && <p role="status">PDF 목록 확인 중…</p>}
+      {showPdfs && pdfsLoading && <p aria-busy="true">PDF 목록 확인 중…</p>}
       {(!tab || isLoading) ? (
         <CardGridSkeleton />
       ) : materialsError ? (

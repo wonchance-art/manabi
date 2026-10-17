@@ -244,7 +244,7 @@ function ReadingTrack({ track, user, selectedId }) {
           <div className="card" style={{ padding: '28px 18px', textAlign: 'center' }}>
             {activePending ? (
               // 서버 응답 전 — 로딩만. 재시도 버튼은 응답이 왔는데 상세가 없을 때만 띄운다(WALL-STATES-001 ⑤).
-              <p role="status" style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', margin: 0 }}>
+              <p aria-busy="true" style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', margin: 0 }}>
                 글과 문항 불러오는 중…
               </p>
             ) : !deniedGuest ? (

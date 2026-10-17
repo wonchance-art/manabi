@@ -476,7 +476,7 @@ function PdfRangesList({ pdfId }) {
     queryFn: () => fetchPdfAnalyzedRanges(pdfId),
   });
 
-  if (isLoading) return <div style={{ padding: 10, fontSize: '0.8rem', color: 'var(--text-muted)' }}>PDF 목록 불러오는 중…</div>;
+  if (isLoading) return <div aria-busy="true" style={{ padding: 10, fontSize: '0.8rem', color: 'var(--text-muted)' }}>PDF 목록 불러오는 중…</div>;
   if (ranges.length === 0) {
     return (
       <div style={{ padding: '10px 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>

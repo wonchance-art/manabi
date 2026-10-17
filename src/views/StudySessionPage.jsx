@@ -1545,7 +1545,7 @@ export default function StudySessionPage({
 
           {phase === 'feedback' && produceState?.status === 'grading' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14 }}>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>첨삭 확인 중…</p>
+              <p aria-busy="true" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>첨삭 확인 중…</p>
               <button type="button" onClick={skipProduceGrading} className="study-textlink">
                 건너뛰고 마치기
               </button>

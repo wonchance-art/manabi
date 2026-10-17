@@ -51,7 +51,7 @@ export default function PassageSources({ material }) {
     },
     getNextPageParam: page => page.offset + page.items.length < page.total ? page.offset + 20 : undefined,
   });
-  if (query.isPending) return <p role="status" className="passage-list-state">학습 구간을 확인하는 중…</p>;
+  if (query.isPending) return <p aria-busy="true" className="passage-list-state">학습 구간을 확인하는 중…</p>;
   if (query.isError) return <p role="alert">학습 구간을 불러오지 못했어요. <button onClick={() => query.refetch()}>다시 시도</button></p>;
   const pages = query.data?.pages || [], total = pages[0]?.total || 0;
   if (!total) return null;

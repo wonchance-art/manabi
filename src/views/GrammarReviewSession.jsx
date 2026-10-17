@@ -300,7 +300,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
         </div>
       </header>
 
-      {!questions && <p className="fr-check__lead">문항 준비 중…</p>}
+      {!questions && <p className="fr-check__lead" aria-busy="true">문항 준비 중…</p>}
 
       {questions && (
         <ol className="fr-quiz">

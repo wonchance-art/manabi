@@ -10,6 +10,7 @@ import { runPreservedReanalysis } from '../../lib/reanalysisPreservation';
 import { friendlyToastMessage } from '../../lib/errorMessage';
 import { invalidateLibrary } from '../../lib/libraryOperations';
 import { BULK_FAILURE_STOP, BULK_PENDING_STATUSES, bulkAnalysisTargets } from '../../lib/bulkAnalysis';
+import { announcedProgress } from '../../lib/announceProgress';
 
 // 분석 전 공개 자료 일괄 분석(BULK-ANALYZE-001) — 뷰어 「이 챕터 분석하기」와 같은 정본 경로(runPreservedReanalysis + analyzeText:
 // 서버 형태소 · 사전 · 뜻 생성, 소유자 RPC 저장, metadata 보존)를 한 편씩. 한 편이 실패하면 원본 그대로 두고 다음으로 —
@@ -74,14 +75,16 @@ export default function BulkAnalysisPanel({ ownerId, toast }) {
   return (
     <section className="card" aria-labelledby="bulk-analysis-title" style={{ marginBottom: '24px' }}>
       <h3 id="bulk-analysis-title">분석 전 공개 자료</h3>
-      {candidates.isPending ? <p role="status">분석 전 자료 불러오는 중…</p>
+      {candidates.isPending ? <p aria-busy="true">분석 전 자료 불러오는 중…</p>
         : candidates.isError ? <p role="alert">분석 전 자료를 불러오지 못했어요. <Button variant="secondary" size="sm" onClick={() => candidates.refetch()}>다시 시도</Button></p>
         : <>
           <p>내가 공개한 자료 중 아직 분석하지 않은 글 {targets.length}편이에요. 분석하면 뷰어에서 단어를 눌러 뜻을 보고 담을 수 있어요.</p>
           {/* 진행 알림 영역은 늘 그려 두고 내용만 바꾼다 — 내용과 함께 생기는 role=status는 화면 낭독기가 놓칠 수 있다
               (StudySessionPage grammarNotice와 같은 방식). 「멈추기」는 영역 밖이라 진행이 바뀔 때마다 버튼 이름을 다시 읽지 않는다. */}
           <p style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
-            <span role="status" aria-live="polite">{running ? `${running.done}/${running.total}편 분석하고 있어요…` : ''}</span>
+            {/* 낭독 영역은 약 10%마다만 바뀌고(announcedProgress), 한 편마다 바뀌는 보이는 줄은 한 번만 읽히게 숨긴다(LOADING-ANNOUNCE-001 ③). */}
+            <span className="sr-only" role="status">{running ? `${announcedProgress(running.done, running.total)}/${running.total}편 분석하고 있어요…` : ''}</span>
+            <span className="bulk-analysis__progress" aria-hidden="true">{running ? `${running.done}/${running.total}편 분석하고 있어요…` : ''}</span>
             {running
               ? <Button variant="secondary" size="sm" onClick={() => abortRef.current?.abort()}>멈추기</Button>
               : <Button disabled={targets.length === 0} onClick={() => setConfirming(true)}>{targets.length}편 분석하기</Button>}

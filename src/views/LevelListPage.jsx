@@ -38,7 +38,7 @@ import { reducedMotion } from '@/lib/reducedMotion';
 import NavPendingMark from '@/components/NavPendingMark';
 // 한자판은 HSK 1 · 2 「한자」 탭에서만 쓴다 — 단어 · 문형 목록 번들에 싣지 않는다.
 const HanziBoard = dynamic(() => import('@/components/levels/HanziBoard'), {
-  loading: () => <p className="lv-empty" role="status">한자판 불러오는 중…</p>,
+  loading: () => <p className="lv-empty" aria-busy="true">한자판 불러오는 중…</p>,
 });
 import '@/components/levels/level-list.css';
 
