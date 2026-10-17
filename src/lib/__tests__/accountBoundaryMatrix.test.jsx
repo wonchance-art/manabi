@@ -1,7 +1,7 @@
 // 계정 경계 순서표(ACCOUNT-BOUNDARY-MATRIX, 2026-10-17 KST) — AuthContext adoptUser 최종본 하나가 장면마다 무엇을 하는지 한 장에 고정한다.
 // 열: 화면 캐시(react-query) · 오프라인 정리(purgeOfflineForAccount) · 진도 수령(손님 몫 레퍼런스 진도) · 넘겨줄 글 삭제(study_source_*) ·
 //     mutation 감시(앞 계정이 시작해 뒤에 끝난 쓰기) · 화면 계정(knownAccount) · refresh 표시(aafb ②) · SC 힌트.
-// 아직 통합본에 없는 칸(PENDING)은 비워 둔다 — ②가 들어오면 아래 「대기 칸」 계약이 깨져 채우라고 알린다.
+// 아직 통합본에 없는 칸(PENDING)은 비워 둔다 — aafb ②(refresh) · a0a4 sc-link-3(SC 힌트 쿠키)이 들어오면 아래 「대기 칸」 계약이 깨져 채우라고 알린다.
 // 표의 각 칸은 실제 AuthProvider(훅 대역)를 돌려 확인한다 — 문서가 아니라 계약이다.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -187,7 +187,12 @@ describe('대기 칸 — 통합본에 아직 없는 열', () => {
     expect(read('src/app/providers.jsx')).not.toContain('onAccountLeft');
     expect(ACCOUNT_BOUNDARY_MATRIX.every(r => r.refresh === PENDING)).toBe(true);
   });
-  it('SC 힌트 칸 — 지금 adoptUser에 해당 단계가 없다(정의가 정해지면 채운다)', () => {
+  it('SC 힌트 칸(a0a4 sc-link-3 — 중국어 글꼴 힌트 쿠키 `manabi_sc=1`, 로그아웃 · 계정 이탈 때 syncScHintCookie(false)로 지워야 함)이 들어오면 이 계약이 깨진다 — 그때 표의 scHint 칸(A → 손님 · A → B · 손님 → B는 지움)을 채우고 실제 검사로 바꾼다', () => {
+    const files = [];
+    const walk = dir => { for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const p = path.join(dir, e.name); if (e.isDirectory()) { if (e.name !== '__tests__') walk(p); } else if (/\.(jsx?|mjs)$/.test(e.name)) files.push(p); } };
+    walk(path.join(ROOT, 'src'));
+    const withHint = files.filter(f => /syncScHintCookie|manabi_sc\b/.test(fs.readFileSync(f, 'utf8'))).map(f => path.relative(ROOT, f));
+    expect(withHint, 'sc-link-3이 들어왔다 — SC 힌트 칸을 채운다').toEqual([]);
     expect(ACCOUNT_BOUNDARY_MATRIX.every(r => r.scHint === PENDING)).toBe(true);
   });
 });
