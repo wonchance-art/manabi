@@ -5,6 +5,7 @@
  * 모든 쓰기가 RLS 아래에서 수행되게 한다(is_admin() 정책이 최종 방어선).
  */
 import { combineChunks, createServerClient, stringFromBase64URL } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -32,6 +33,16 @@ export async function createSupabaseServerClient() {
       },
     },
   });
+}
+
+/**
+ * 쿠키를 읽지도 쓰지도 않는 anon 클라이언트 — 공개 응답(누구에게나 같은 바이트, 공유 캐시에 맡길 수 있는 응답)을 만드는 조회 전용.
+ * 쿠키 세션 클라이언트(createSupabaseServerClient)로 조회하면 만료된 세션을 갱신하며 route handler 응답에 Set-Cookie(새 접근 ·
+ * 갱신 토큰)를 싣는다 — 그 응답이 `Cache-Control: public`이면 공유 캐시가 남의 세션 쿠키를 저장 · 재사용할 수 있다(ASSET-CACHE-COOKIE-001).
+ * 세션이 없으니 RLS는 anon 기준이다(공개 행만).
+ */
+export function createSupabasePublicClient() {
+  return createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
 }
 
 /**

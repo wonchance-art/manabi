@@ -26,6 +26,9 @@ describe('asset 경로 조회', () => {
     expect(route).toContain("'public, max-age=31536000, immutable'");
     expect(route).toMatch(/'Cache-Control':published\?PUBLIC_ASSET_CACHE:PREVIEW_ASSET_CACHE/);
     expect(route).toContain("PREVIEW_ASSET_CACHE='private, no-store'");
+    // public 응답을 만드는 발행 확인은 쿠키 없는 클라이언트로 — 쿠키 세션 클라이언트는 만료 세션을 갱신하며 Set-Cookie를 싣는다(ASSET-CACHE-COOKIE-001).
+    expect(route).toMatch(/const db=createSupabasePublicClient\(\);/);
+    expect(route).not.toMatch(/createSupabaseServerClient/);
   });
 });
 
