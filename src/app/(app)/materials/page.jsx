@@ -1,4 +1,6 @@
+import { cookies } from 'next/headers';
 import { HydrationBoundary } from '@tanstack/react-query';
+import { hasSupabaseSessionInJar } from '@/lib/authCookie';
 import LibraryPage from '@/components/web/LibraryPage';
 import { prefetchLibraryShelf } from '@/lib/server/libraryPrefetch';
 export const dynamic = 'force-dynamic';
@@ -7,6 +9,7 @@ export const metadata = { title: '내 서재', description: '읽던 글과 교�
 // 손님 · 실패 · 예산(800ms) 초과면 지금처럼 브라우저가 받는다 — 골격이 대신한다.
 export default async function Page({ searchParams }) {
   const prefetched = await prefetchLibraryShelf(await searchParams);
-  if (!prefetched) return <LibraryPage />;
+  // 세션 쿠키가 없으면(이름만 본다) 손님 서재를 서버 HTML부터 — 로그인 서재 골격이 보였다가 손님 화면으로 바뀌던 것(배움 B1과 같은 판정).
+  if (!prefetched) return <LibraryPage sessionHint={hasSupabaseSessionInJar(await cookies())} />;
   return <HydrationBoundary state={prefetched.state}><LibraryPage serverUserId={prefetched.userId} /></HydrationBoundary>;
 }

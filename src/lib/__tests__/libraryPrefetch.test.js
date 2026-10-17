@@ -109,11 +109,15 @@ describe('⑶ 페이지를 막지 않는다 — 예산 안에서 끝난 것만',
     expect(read('src/lib/server/libraryPrefetch.js')).toContain('export const LIBRARY_PREFETCH_BUDGET_MS = 800;');
     const page = read('src/app/(app)/materials/page.jsx');
     expect(page).toContain("import { HydrationBoundary } from '@tanstack/react-query';");
-    expect(page).toContain('if (!prefetched) return <LibraryPage />;');
+    // 미리 받지 못했으면 세션 쿠키 유무(이름만, 배움 B1과 같은 함수)를 넘긴다 — 손님은 로그인 서재 골격 없이 손님 화면.
+    expect(page).toContain('if (!prefetched) return <LibraryPage sessionHint={hasSupabaseSessionInJar(await cookies())} />;');
+    expect(page).toContain("import { hasSupabaseSessionInJar } from '@/lib/authCookie';");
     expect(page).toContain('<HydrationBoundary state={prefetched.state}><LibraryPage serverUserId={prefetched.userId} /></HydrationBoundary>');
     // 브라우저 첫 그림 = 서버 HTML(#418 없음): 로그인 확인 전에도 서버가 확인한 계정의 서재를 그린다.
     const libraryPage = read('src/components/web/LibraryPage.jsx');
     expect(libraryPage).toContain('const shelfUser=user||(loading&&serverUserId?{id:serverUserId}:null);');
+    expect(libraryPage).toContain('export default function LibraryPage({serverUserId=null,sessionHint}){');
+    expect(libraryPage).toContain('{loading&&!shelfUser&&sessionHint!==false?<LibraryShelfSkeleton/>:');
     expect(libraryPage).toContain('<LibraryShelf key={shelfUser.id} user={shelfUser}/>');
   });
 });
