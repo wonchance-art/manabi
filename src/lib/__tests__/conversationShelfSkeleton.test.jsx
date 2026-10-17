@@ -44,7 +44,7 @@ describe('대화 묶음 — 받는 중 자리 · 받은 뒤 상태', () => {
   });
   it('자리 · 실제 묶음이 같은 높이 옮기기 래퍼를 쓴다(골격 → 실제가 같은 DOM 자리)', () => {
     const src = read('src/components/library/ConversationShelf.jsx');
-    expect(src).toContain("const settle=useHeightSettle(query.isPending?'pending':'ready');");
+    expect(src).toContain("const settle=useHeightSettle(waiting?'pending':'ready');"); // waiting = 받는 중이고 지난번 0개가 아님(libraryRecentHint.test)
     expect(src.match(/<div ref=\{settle\}>/g)).toHaveLength(3);
   });
   it('로그인 확인 골격에도 같은 자리(읽던 곳과 목록 사이) — 다만 aria-hidden 안이라 링크가 아니다', () => {
