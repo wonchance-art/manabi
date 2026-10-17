@@ -25,14 +25,31 @@ function walk(dir, pick, out = []) {
   return out;
 }
 
-/** CSS에서 family별 (굵기 | unicode-range) 쌍을 모은다 — 정렬된 목록. */
+/**
+ * unicode-range를 값으로 맞춘다 — 빌드 CSS 압축기는 같은 범위를 다르게 쓴다(`U+0000-00FF` → `u+00??`, 실측 e2e:build).
+ * 토큰마다 [시작, 끝] 정수로 바꿔(?는 시작 0 · 끝 f) 정렬 · 병합한 뒤 `시작-끝` 16진 목록으로 돌려준다.
+ */
+export function normalizeRange(text) {
+  const spans = String(text || '').split(',').map((t) => t.trim().toLowerCase().replace(/^u\+/, '')).filter(Boolean).map((t) => {
+    const [a, b] = t.includes('-') ? t.split('-') : [t.replace(/\?/g, '0'), t.replace(/\?/g, 'f')];
+    return [parseInt(a, 16), parseInt(b, 16)];
+  }).sort((x, y) => x[0] - y[0] || x[1] - y[1]);
+  const merged = [];
+  for (const [a, b] of spans) {
+    const last = merged.at(-1);
+    if (last && a <= last[1] + 1) last[1] = Math.max(last[1], b); else merged.push([a, b]);
+  }
+  return merged.map(([a, b]) => `${a.toString(16)}-${b.toString(16)}`).join(',');
+}
+
+/** CSS에서 family별 (굵기 | unicode-range) 쌍을 모은다 — 정렬된 목록(범위는 값으로 맞춘 꼴). */
 export function faceKeys(cssText, family) {
   const keys = [];
   for (const m of cssText.matchAll(/@font-face\s*\{([^}]*)\}/g)) {
     const fam = /font-family:\s*(['"]?)([^;'"}]+)\1/.exec(m[1])?.[2]?.trim();
     if (fam !== family) continue;
     const weight = /font-weight:\s*([^;}]+)/.exec(m[1])?.[1]?.trim();
-    const range = (/unicode-range:\s*([^;}]+)/.exec(m[1])?.[1] || '').replace(/\s+/g, '').toLowerCase();
+    const range = normalizeRange(/unicode-range:\s*([^;}]+)/.exec(m[1])?.[1] || '');
     keys.push(`${weight}|${range}`);
   }
   return keys.sort();

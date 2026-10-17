@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { checkScStylesheet, faceKeys } from '../../../scripts/fonts/check-sc-stylesheet.mjs';
+import { checkScStylesheet, faceKeys, normalizeRange } from '../../../scripts/fonts/check-sc-stylesheet.mjs';
 
 /**
  * 계약: 간체 중국어(Noto Sans SC) 독립 스타일시트 — next/font 밖의 고정 주소 CSS(SC-LINK-001 1단계, 2026-10-17 KST).
@@ -72,6 +72,14 @@ describe('② 산출 대조 — public 산출물 · next/font 덮는 범위', ()
     const { publicDir, nextDir } = setup();
     expect(checkScStylesheet({ nextDir, publicDir, env })).toEqual([]);
   });
+  it('빌드 CSS가 압축기 꼴(소문자 · 공백 없음 · xx00-xxff → xx??)이어도 같은 범위로 통과한다', () => {
+    const { publicDir, nextDir } = setup();
+    const file = path.join(nextDir, 'static', 'css', 'a.css');
+    const min = fs.readFileSync(file, 'utf8').replace(/unicode-range:([^;}]+)/g, (_, r) => `unicode-range:${r.replace(/\s+/g, '').toLowerCase().replace(/u\+([0-9a-f]*)00-\1ff/g, 'u+$1??')}`);
+    expect(min).toMatch(/u\+[0-9a-f]*\?\?/);
+    fs.writeFileSync(file, min);
+    expect(checkScStylesheet({ nextDir, publicDir, env })).toEqual([]);
+  });
   it('CSS 없음 · 본문 바뀜 · 글꼴 없음 · 글꼴 바이트 바뀜 · next/font 없음 · 범위 다름을 각각 잡는다', () => {
     let s = setup(); fs.rmSync(path.join(s.publicDir, ...s.result.href.slice(1).split('/')));
     expect(checkScStylesheet({ nextDir: s.nextDir, publicDir: s.publicDir, env }).join()).toMatch(/① CSS가 public에 없다/);
@@ -85,6 +93,12 @@ describe('② 산출 대조 — public 산출물 · next/font 덮는 범위', ()
     expect(checkScStylesheet({ nextDir: s.nextDir, publicDir: s.publicDir, env }).join()).toMatch(/③ 빌드 CSS에 next\/font/);
     s = setup(); fs.writeFileSync(path.join(s.nextDir, 'static', 'css', 'a.css'), "@font-face{font-family:'Noto Sans SC';font-weight:400;src:url(/x.woff2);unicode-range:U+4e00}");
     expect(checkScStylesheet({ nextDir: s.nextDir, publicDir: s.publicDir, env }).join()).toMatch(/③ next\/font와 굵기 · unicode-range가 다르다/);
+  });
+  it('unicode-range는 값으로 비교한다 — 압축기의 와일드카드 · 대소문자 · 순서 · 겹침에 흔들리지 않는다(e2e:build 실측 u+00??)', () => {
+    expect(normalizeRange('U+0000-00FF, U+0131')).toBe(normalizeRange('u+00??,u+0131'));
+    expect(normalizeRange('U+4E00-4E7F, U+4E80-4EFF')).toBe(normalizeRange('u+4e??'));
+    expect(normalizeRange('U+0131, U+0000-00FF')).toBe(normalizeRange('U+0000-00FF,U+0131'));
+    expect(normalizeRange('U+0000-00FF')).not.toBe(normalizeRange('U+0000-00FE'));
   });
   it('글꼴 입력 없이 돌리면 통과로 치지 않는다', () => {
     expect(checkScStylesheet({ env: {} })).toEqual(['NEXT_FONT_GOOGLE_MOCKED_RESPONSES가 없다 — 빌드와 같은 글꼴 입력으로 실행한다']);
