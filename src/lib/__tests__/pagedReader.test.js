@@ -7,7 +7,7 @@ import {
   pageKeyAction, swipeDirection, firstIndexAtOrAfter, createPagedController, overlayOrigin,
   fontFamilyNames, fontsAffectReader, mutationsAffectFlow,
 } from '../usePagedReader';
-import { compactSheetHeight } from '../readingViewport';
+import { compactSheetHeight, pagedSheetDock } from '../readingViewport';
 
 // 쪽 넘김 보기(READER-PAGED-001) — 쪽 계산·기준 토큰 복원·키 판정. DOM 없이 다단 상자를 흉내 낸다:
 // 토큰 i는 문서 순서로 perPage개씩 단을 채운다(다단은 문서 순서대로 채우므로 단 번호가 단조 증가).
@@ -340,5 +340,43 @@ describe('page-turn mutations outside the page flow do not re-measure', () => {
     observe([{ type: 'childList', target: { nodeType: 1, closest: () => null } }]);
     expect(frames).toHaveBeenCalledTimes(1);
     detach();
+  });
+});
+
+// 쪽 넘김 A안(VIEWER-AUDIT 2, 오너 「권장대로」 2026-10-17 KST): 고른 단어가 화면 아래 절반이면 시트를 머리줄 아래에 세운다.
+// 쪽 수 · 쪽 경계 · 시트 내용은 그대로 — 시트 자리만 바뀐다. 스크롤 보기 · 1440 옆 패널(position sticky)은 이 경로에 들지 않는다.
+describe('paged sheet dock (A안 — 고른 단어의 반대편)', () => {
+  const base = { viewportHeight: 844, topLimit: 120, naturalHeight: 440, min: 359 };
+  it('위 절반의 단어는 지금처럼 바닥(목업 C 낮추기 그대로), 아래 절반은 위에 선다', () => {
+    expect(pagedSheetDock({ ...base, tokenTop: 150, tokenBottom: 206 })).toEqual({ dock: 'bottom' });
+    expect(pagedSheetDock({ ...base, tokenTop: 395, tokenBottom: 447 })).toEqual({ dock: 'bottom' }); // 가운데 421 ≤ 422
+    expect(pagedSheetDock({ ...base, tokenTop: 684, tokenBottom: 740 })).toEqual({ dock: 'top', top: 120, height: null }); // 위 자리 552 ≥ 440
+  });
+  it('위에 세울 때 단어 위 자리가 모자라면 낮추되 카드 핵심(min) 아래로는 줄이지 않는다', () => {
+    expect(pagedSheetDock({ ...base, tokenTop: 520, tokenBottom: 576 })).toEqual({ dock: 'top', top: 120, height: 388 });
+    expect(pagedSheetDock({ ...base, tokenTop: 430, tokenBottom: 486 })).toEqual({ dock: 'top', top: 120, height: 359 });
+    expect(pagedSheetDock({ ...base, tokenTop: NaN, tokenBottom: 486 })).toEqual({ dock: 'bottom' });
+  });
+  it('원래 높이보다 키우지 않는다 — 긴 문장 카드는 핵심이 440을 넘는다(실측 445, viewer-word-card zh 390 long sentence)', () => {
+    expect(pagedSheetDock({ ...base, min: 445, tokenTop: 520, tokenBottom: 576 })).toEqual({ dock: 'top', top: 120, height: null });
+    expect(pagedSheetDock({ ...base, min: 440, tokenTop: 520, tokenBottom: 576 })).toEqual({ dock: 'top', top: 120, height: null });
+  });
+  it('배선: 쪽 넘김 경로에서만 정하고(바닥 낮추기와 한 갈래), 닫을 때 자리 표시를 지운다', () => {
+    const hook = fs.readFileSync(path.resolve(__dirname, '../useReaderLayout.js'), 'utf8');
+    const pagedBranch = sliceBetween(hook, 'const pager = pagerFor(root);', "if (panel?.classList.contains('viewer-inspector--board'))");
+    expect(pagedBranch).toContain("getComputedStyle(panel).position === 'fixed'"); // 1440 옆 패널(sticky)은 들지 않는다
+    expect(pagedBranch).toContain('const dock = pagedSheetDock({');
+    expect(pagedBranch).toMatch(/\n\s+if \(dock\.dock === 'top'\) \{\n\s+panel\.dataset\.dock = 'top';/);
+    expect(pagedBranch).toContain("panel.dataset.dock = 'top'; panel.style.setProperty('--reader-sheet-top', `${dock.top}px`);");
+    expect(pagedBranch).toContain('const height = compactSheetHeight({ tokenBottom: tokenRect.bottom'); // 위 절반은 지금 그대로
+    expect(pagedBranch).toContain("delete panel.dataset.compact; delete panel.dataset.dock; panel.style.removeProperty('--reader-sheet-top');");
+    expect(hook).toContain('if (panel) { delete panel.dataset.compact; delete panel.dataset.dock; }');
+    expect(hook.split('pagedSheetDock(').length - 1).toBe(1); // 스크롤 보기 경로에는 없다
+  });
+  it('CSS: 1119 이하 쪽 넘김에서만 위에 세운다 — 펼침 · 접힘 상태는 지금 그대로', () => {
+    const css = fs.readFileSync(path.resolve(__dirname, '../../components/viewer/paged-reader.css'), 'utf8');
+    const narrow = sliceBetween(css, '@container reader (max-width: 1119px) {', '── 원본 리더 ──');
+    expect(narrow).toContain('.viewer-layout[data-reader-view="paged"] .viewer-inspector[data-dock="top"]:not(.is-expanded):not(.is-collapsed) { top: var(--reader-sheet-top, 64px); bottom: auto; }');
+    expect(css.split('[data-dock="top"]').length - 1).toBe(1);
   });
 });

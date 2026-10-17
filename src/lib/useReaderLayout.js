@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useRef,useState,useCallback} from 'react';
-import {captureReadingAnchor,restoreReadingAnchor,selectedTokenScrollDelta,compactSheetHeight} from './readingViewport';
+import {captureReadingAnchor,restoreReadingAnchor,selectedTokenScrollDelta,compactSheetHeight,pagedSheetDock} from './readingViewport';
 import {pagerFor} from './usePagedReader';
 
 // A split classroom scrolls its textbook column; ordinary reading scrolls the page.
@@ -73,14 +73,24 @@ export function useSelectedTokenVisibility(readerRef, tokenRefs, tokenId, enable
           const sizeKey = `${window.innerWidth}x${window.visualViewport?.height || window.innerHeight}`;
           if (panel && compactFor !== sizeKey && getComputedStyle(panel).position === 'fixed' && !panel.classList.contains('is-expanded') && !panel.classList.contains('is-collapsed')) {
             compactFor = sizeKey;
-            delete panel.dataset.compact;
+            delete panel.dataset.compact; delete panel.dataset.dock; panel.style.removeProperty('--reader-sheet-top');
             const natural = panel.getBoundingClientRect();
             // 낮춰도 카드의 첫 화면(표제어·뜻 + 바닥 등급 줄 — AE-R2 계약)은 스크롤 없이 남아야 한다: 그 높이를 실제 배치에서 잰다.
             const word = panel.querySelector('#inspector-word:not([hidden])'), meaning = word?.querySelector('.word-detail-card__meaning'), actions = word?.querySelector('.reader-card-actions');
             const scrolled = word?.querySelector('.reader-card-body')?.scrollTop || 0;
             const core = meaning && actions ? Math.ceil(meaning.getBoundingClientRect().bottom + scrolled - natural.top + (natural.bottom - actions.getBoundingClientRect().top) + 12) : undefined;
-            const height = compactSheetHeight({ tokenBottom: token.getBoundingClientRect().bottom, sheetTop: natural.top, sheetBottom: natural.bottom, ...(core ? { min: core } : null) });
-            if (height !== null && height < natural.height) { panel.style.setProperty('--reader-sheet-compact', `${height}px`); panel.dataset.compact = 'true'; }
+            const tokenRect = token.getBoundingClientRect();
+            // A안: 아래 절반의 단어는 시트를 머리줄 아래에 세운다(data-dock="top" — paged-reader.css). 위 절반은 지금처럼 바닥(목업 C 낮추기).
+            const toolbarBottom = root.closest('.viewer-layout')?.querySelector('.viewer-topbar')?.getBoundingClientRect().bottom;
+            const dock = pagedSheetDock({ tokenTop: tokenRect.top, tokenBottom: tokenRect.bottom, viewportHeight: window.visualViewport?.height || window.innerHeight,
+              topLimit: (Number.isFinite(toolbarBottom) ? toolbarBottom : 0) + 8, naturalHeight: natural.height, ...(core ? { min: core } : null) });
+            if (dock.dock === 'top') {
+              panel.dataset.dock = 'top'; panel.style.setProperty('--reader-sheet-top', `${dock.top}px`);
+              if (dock.height !== null) { panel.style.setProperty('--reader-sheet-compact', `${dock.height}px`); panel.dataset.compact = 'true'; }
+            } else {
+              const height = compactSheetHeight({ tokenBottom: tokenRect.bottom, sheetTop: natural.top, sheetBottom: natural.bottom, ...(core ? { min: core } : null) });
+              if (height !== null && height < natural.height) { panel.style.setProperty('--reader-sheet-compact', `${height}px`); panel.dataset.compact = 'true'; }
+            }
           }
           return;
         }
@@ -114,7 +124,8 @@ export function useSelectedTokenVisibility(readerRef, tokenRefs, tokenId, enable
       observer?.disconnect(); cancelAnimationFrame(frame); cancelAnimationFrame(settleFrame); cancelAnimationFrame(releaseFrame);
       delete root.dataset.selectionRevealing;
       panel?.style.removeProperty('--reader-selected-bottom');
-      panel?.style.removeProperty('--reader-sheet-compact'); if (panel) delete panel.dataset.compact;
+      panel?.style.removeProperty('--reader-sheet-compact'); panel?.style.removeProperty('--reader-sheet-top');
+      if (panel) { delete panel.dataset.compact; delete panel.dataset.dock; }
       window.removeEventListener('resize', reveal); window.visualViewport?.removeEventListener('resize', reveal);
       for (const event of ['wheel', 'touchmove', 'pointerdown', 'keydown']) window.removeEventListener(event, interrupt);
     };
