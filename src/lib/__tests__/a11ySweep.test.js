@@ -161,3 +161,33 @@ describe('⑤ 상시 알림 영역의 보이는 사본 — aria-hidden + 이름 
     }
   });
 });
+
+describe('⑥ 채점 버튼 이름 — 라벨과 간격 보조 글이 붙어 읽히지 않는다(GRADE-NAME-001)', () => {
+  // 「다시」 뒤에 <small>10분</small> · <span class="save-grade__sub">오늘 또</span>이 바로 붙으면 JSX가 줄바꿈 공백을 지워
+  // 화면 읽기 이름이 「다시10분」이 된다(CSS 세로 flex를 셈하지 않는 환경 — 스타일 없이 실측). 보조 글 안 첫머리에 {' '}를 둔다 —
+  // 보조 글은 버튼(세로 flex)의 따로 선 줄이라 줄 첫머리 공백은 그려지지 않는다(1440 · 390 화면 픽셀 같음 실측).
+  // 버튼 안 · 보조 글 밖에 두면 공백만 든 flex 항목이 생겨 gap 3px만큼 버튼이 커진다(실측) — 그래서 안쪽이다.
+  // aria-label로 덮어쓰지 않는다(보이는 글과 어긋남).
+  const SUB = /<small>|<span className="save-grade__sub">/g;
+  const buttons = walk(path.join(ROOT, 'src')).filter((f) => !f.includes('__tests__')).flatMap((file) => {
+    const src = fs.readFileSync(file, 'utf8');
+    return [...src.matchAll(/<button\b[\s\S]*?<\/button>/g)].map((m) => m[0])
+      .filter((b) => b.includes('review-score-btn')).map((button) => ({ file: path.relative(ROOT, file), button }));
+  });
+  const withSub = buttons.filter(({ button }) => { SUB.lastIndex = 0; return SUB.test(button); });
+
+  it('간격 보조 글이 있는 채점 버튼을 실제로 찾는다(FSRS 복습 · 뷰어 단어 카드 4등급)', () => {
+    expect([...new Set(withSub.map((b) => b.file))].sort()).toEqual(['src/components/vocab/FsrsReviewSession.jsx', 'src/views/ViewerPage.jsx']);
+  });
+
+  it('보조 글은 띄어쓰기 글({\' \'})로 시작한다', () => {
+    for (const { file, button } of withSub) {
+      for (const m of button.matchAll(SUB)) expect(button.slice(m.index + m[0].length), file).toMatch(/^\{' '\}/);
+    }
+  });
+
+  it('채점 버튼에 aria-label을 덮어쓰지 않는다 — 이름은 보이는 글에서', () => {
+    expect(buttons.length).toBeGreaterThanOrEqual(6);
+    for (const { file, button } of buttons) expect(button, file).not.toMatch(/aria-label=/);
+  });
+});

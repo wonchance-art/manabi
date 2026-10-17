@@ -3574,7 +3574,8 @@ export default function ViewerPage() {
                 >
                   <span className="save-grade__key" aria-hidden="true">{g.key}</span>
                   {vt(g.label)}
-                  <span className="save-grade__sub">{vt(g.sub)}</span>
+                  {/* 보조 글 첫 글자 띄어쓰기 = 화면 읽기 이름 「다시 오늘 또」(GRADE-NAME-001). 줄 첫머리 공백이라 화면에는 그려지지 않는다. */}
+                  <span className="save-grade__sub">{' '}{vt(g.sub)}</span>
                 </button>
               ))}
             </div>
