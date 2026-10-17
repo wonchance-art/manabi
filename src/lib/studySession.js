@@ -124,7 +124,7 @@ function buildVocabItems(vocab, meaningPool, vocabRungs = {}, dial = 'normal', e
   return (vocab || []).slice(0, 3).map(w => {
     const cleanPool = (meaningPool || []).map(m => choiceMeaning(m, w.word_text)); // 이 문항의 낱말 기준(네 보기 같은 규칙)
     let meaning = choiceMeaning(w.meaning, w.word_text); // 보기·정답·채점 기준을 정화된 값으로 통일(보기 규칙 — meaningClean choiceMeaning)
-    let word = { ...w, meaning };
+    let word = { ...w, meaning, meaningFull: w.meaningFull ?? w.meaning }; // 뜻 전문 — 답한 뒤 보여 준다(보기는 줄인 꼴)
     let type = vocabTypeForRung(vocabRungs[w.word_text] ?? 1, dial);
     let options = null;
     let sentence = null;
@@ -178,7 +178,7 @@ export function buildEncounterItems(encounterVocab, meaningPool, dial = 'normal'
       uid: uid('e'),
       type: 'vocab-choice',
       origin: 'encounter',
-      word: { ...w, meaning: set.correct },
+      word: { ...w, meaning: set.correct, meaningFull: w.meaningFull ?? w.meaning },
       options: set.options,
       effect: { kind: 'vocab', wordId: w.id ?? null, origin: 'encounter' },
     });
@@ -390,7 +390,7 @@ export function buildWarmupItems(recentEvents, vocabRows, meaningPool = [], dueS
     return {
       uid: uid('w'),
       type: 'vocab-choice',
-      word: { word_text: row.word_text, meaning: set.correct, furigana: row.furigana || null },
+      word: { word_text: row.word_text, meaning: set.correct, meaningFull: row.meaningFull ?? row.meaning, furigana: row.furigana || null },
       options: set.options,
       warmup: true,
       effect: { kind: 'warmup', key: row.word_text },

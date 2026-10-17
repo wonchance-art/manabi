@@ -3,6 +3,7 @@
 // 괄호 용례가 문제 낱말을 그대로 보였다. 규칙은 meaningClean.js(choiceMeaning · choiceLabels · choiceSet)가 정본이다.
 import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { sliceBetween } from './helpers/sliceBetween';
 import { choiceLabels, choiceMeaning, choiceSet, headClause, stripSourceLangInMeaning } from '../meaningClean';
 import { buildEncounterItems, buildWarmupItems, composeSession } from '../studySession';
 
@@ -123,6 +124,19 @@ describe('/study 문항에 배선 — 정답 · 보기 · 채점 기준이 같�
     const single = composeSession({ vocab: vocab.slice(0, 1), meaningPool: POOL, vocabRungs: { 'マジ／マジで': 1 } }).items.find(it => it.word?.word_text === 'マジ／マジで');
     expect(single.type).toBe('vocab-choice');
     noLeak(single);
+  });
+  it('답한 뒤에는 뜻 전문을 보여 준다 — 문항에 meaningFull을 싣고, 보기와 다를 때만 피드백 줄로(화면 검수 2026-10-17 KST)', () => {
+    const [enc] = buildEncounterItems([{ ...MAJI, meaningFull: MAJI.meaning }], POOL, 'normal', 0);
+    expect(enc.word.meaningFull).toBe(MAJI.meaning);
+    expect(buildWarmupItems([], [], POOL, new Set(), [MAJI])[0].word.meaningFull).toBe(MAJI.meaning);
+    const single = composeSession({ vocab: [{ id: 'a', ...MAJI }], meaningPool: POOL, vocabRungs: { 'マジ／マジで': 1 } }).items.find(it => it.word?.word_text === 'マジ／マジで');
+    expect(single.word.meaningFull).toBe(MAJI.meaning);
+    expect(single.word.meaning).toBe('진짜·레알');
+    const page = read('src/views/StudySessionPage.jsx');
+    const block = sliceBetween(page, "{item.type === 'vocab-choice' && (", '{/* ── 어휘: 단서회상');
+    expect(block).toContain("{phase === 'feedback' && item.word.meaningFull && item.word.meaningFull !== item.word.meaning && (");
+    expect(block).toContain('<div className="fr-quiz__answer">{item.word.meaningFull}</div>');
+    expect(read('src/lib/studyParagraph.js')).toContain('meaning: answer, meaningFull: q.answer');
   });
   it('문단 문항 · 집중 연습(맥락) 보기도 같은 규칙을 쓴다', () => {
     const paragraph = read('src/lib/studyParagraph.js');

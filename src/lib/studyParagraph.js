@@ -419,8 +419,8 @@ export function mapParagraphToItems(para, materials) {
         uid: uid('v'),
         type: 'vocab-choice',
         word: due
-          ? { ...due.row, meaning: answer }
-          : { word_text: q.key || q.prompt, meaning: answer, furigana: isNew?.pron || null },
+          ? { ...due.row, meaning: answer, meaningFull: q.answer }
+          : { word_text: q.key || q.prompt, meaning: answer, meaningFull: q.answer, furigana: isNew?.pron || null },
         options: set.options,
         effect: due ? { kind: 'vocab', wordId: due.row.id } : { kind: 'reading', key: `vocab:${q.key}` },
         _prio: 4,

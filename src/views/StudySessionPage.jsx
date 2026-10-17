@@ -1365,6 +1365,10 @@ export default function StudySessionPage({
               </button>
             ))}
           </div>
+          {/* 보기는 낱말이 드러나지 않게 줄인 꼴(meaningClean choiceMeaning)이다 — 답한 뒤에는 뜻 전문(용례 포함)을 보여 준다. */}
+          {phase === 'feedback' && item.word.meaningFull && item.word.meaningFull !== item.word.meaning && (
+            <div className="fr-quiz__answer">{item.word.meaningFull}</div>
+          )}
         </div>
       )}
 
