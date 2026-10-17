@@ -26,7 +26,8 @@ describe('VOCAB-FLOW-001 ① 복습 시작 — 입장 한도 · FSRS 목록을 �
 
 describe('VOCAB-FLOW-001 ② 오늘 카드 — 준비 중엔 제목도 골격(거짓 「오늘 끝」 없음)', () => {
   it('준비 판정 하나(heroPending)를 제목 · 안내 줄이 같이 쓴다', () => {
-    expect(code).toContain("const heroPending = admission.status !== 'ready' || session.status !== 'ready';");
+    // FSRS 목록을 받는 중에도 준비 중이다 — 그동안 예전 일정 카드가 0으로 세어져 「준비됨 · 0개」가 된다(빌드 실측).
+    expect(code).toContain("const heroPending = admission.status !== 'ready' || session.status !== 'ready' || fsrsReview.status === 'loading';");
     expect(code).toContain('{heroPending ? <p aria-busy="true" className="review-room-note">복습 준비 중…</p>');
   });
   it('제목은 준비 중 분기(골격 + 화면 읽기 이름)가 먼저이고, 끝 · 첫 표현 문구는 그 뒤에만 온다', () => {

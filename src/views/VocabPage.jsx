@@ -660,7 +660,10 @@ function VocabWorkspace({ reviewScope }) {
   const session = scopeCount && scopeCount.status === 'ready' ? scopeCount : { status: 'pending', total: 0, due: 0, newAllowed: 0, newLocked: 0, deferred: 0,
     noMeaning: 0, backlog: null, byLang: scopeCount?.byLang || {}, queue: { items: [], ids: [], legacyIds: [], fsrsIds: [] } };
   // 오늘 카드의 「준비 중」 — 제목 · 안내 줄이 같은 판정을 쓴다(VOCAB-FLOW-001).
-  const heroPending = admission.status !== 'ready' || session.status !== 'ready';
+  // FSRS 목록을 받는 중(status 'loading')도 준비 중이다 — 그동안 canLegacy가 거짓이라 예전 일정 카드가 0으로 세어져 session이
+  // 「준비됨 · 0개」가 되고, 제목이 「잠시, 읽기로 돌아가요.」로 0.15초쯤 보였다가 「6개」로 바뀌었다(빌드 실측 d8f15fc0, 390 · 1440).
+  // 시작 단추의 「복습 준비 중…」과 같은 판정이다. 받기 실패(error)는 준비 중으로 묶지 않는다(아래 다시 시도 안내가 맡는다).
+  const heroPending = admission.status !== 'ready' || session.status !== 'ready' || fsrsReview.status === 'loading';
   // 세션 길이(§6-1 ③) — 「5분 ≈ 20 · 50 · 전부」는 서로 다른 카드 수(새 표현 포함, 학습 단계 · 재질문 제외). 줄 앞에서 자른다.
   // 버튼 숫자 = 시작하는 줄 길이(sessionCards.length).
   const lengthOptions = sessionLengthOptions(session.total);
