@@ -109,7 +109,7 @@ export const FIRST_EDITION_BINDINGS = Object.freeze({
   jindallae: Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle', 'coverSubtitle', 'coverEdition'], optional: [], titleLines: 1, titleMax: 6, year: false, note: 'Jindallaekkot 1925 Jungang Seorim issue (470-1) — type only, old Hangul title' }),
   // 『하늘과 바람과 별과 詩』 정음사 1955 증보판(시 89 · 산문 4, 오너 「1955년 재판본으로」 2026-10-17 KST) — 국방색 종이 · 왼쪽 위 굵은 도안 글자 세로 제목
   // (하늘 · 바람 · 별 · 詩는 크게, 「과」는 작게). 표지 그림(학 · 붉은 꽃)은 김환기(1913–1974) 작품이라 한국에서 보호 중 — 그리지 않는다(1948 이정 판화도 같은 이유).
-  'jeongeum-1955': Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle'], optional: [], titleLines: 1, titleMax: 14, year: false, note: 'Jeongeumsa 1955 enlarged edition — heavy vertical title (painting omitted: Kim Whanki, protected)' }),
+  'jeongeum-1955': Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle', 'coverSubtitle'], optional: [], titleLines: 1, titleMax: 14, year: false, note: 'Jeongeumsa 1955 enlarged edition — heavy vertical title (painting omitted: Kim Whanki, protected)' }),
   // 영어
   // Secker & Warburg 1945 재킷 — 왼쪽 아래→오른쪽 위 대각선(위 회베이지 · 아래 초록) · 크림 손글씨풍 기울임 대문자 · 「by」 필기체 · 굵은 작가.
   'secker-diagonal': Object.freeze({ material: 'paper', script: 'en', required: ['coverTitle', 'coverSubtitle', 'coverAuthor'], optional: [], titleLines: 2, titleMax: 8, year: false, note: 'Secker & Warburg 1945 Animal Farm jacket' }),

@@ -161,7 +161,7 @@ describe('2차 묶음(오너 「원본 책 재구성 … 표지 만들기까지 
   it('한국 근대 표지 — 한글은 근대 활자(조선100년체) · 한자는 쇼호리 명조로 글자마다 넘어간다 · 옛한글 제목은 한 파일 글꼴(자모가 갈리지 않게)', () => {
     const css = read('src/components/books/first-edition-cover.css');
     expect(css).toMatch(/font-family:"Chosun Centennial";src:url\("\/fonts\/chosun-centennial\/[^"]+"\)[^}]*unicode-range:U\+1100-11FF,U\+3130-318F,U\+AC00-D7A3/u);
-    expect(css).toContain('font-family:"Manabi Old Hangul Title";src:url("/fonts/manabi-old-hangul/ManabiOldHangulTitle.woff2")');
+    expect(css).toContain('font-family:"Manabi Old Hangul Title";src:url("/fonts/manabi-old-hangul/ManabiOldHangulTitle-700.woff2")');
     for (const file of ['public/fonts/chosun-centennial/LICENSE.txt', 'public/fonts/manabi-old-hangul/OFL.txt']) expect(read(file).length).toBeGreaterThan(200);
     const source = read('src/components/books/FirstEditionCoverSecond.jsx');
     expect(source).toMatch(/KO_PRINT = `"Chosun Centennial", \$\{HANJA\}`/u);
@@ -169,6 +169,8 @@ describe('2차 묶음(오너 「원본 책 재구성 … 표지 만들기까지 
     // 1955 정음사 제목 — 손 도안 글자라 글자 칸을 실물에서 잰 값 그대로(9자), 「詩」도 굵은 고딕(명조로 떨어지지 않게)
     expect(source).toMatch(/const HEAVY = stack\('--font-fe-blackhan', 'Black Han Sans', stack\('--font-fe-dela', 'Dela Gothic One'/u);
     expect(source.match(/JEONGEUM_BOXES = Object\.freeze\(\[([\s\S]*?)\]\);/u)[1].match(/\[/gu)).toHaveLength(9);
+    expect(source).toMatch(/JEONGEUM_BYLINE = Object\.freeze\(\{ centers: \[[^\]]+\]/u); // 아래 줄 「尹東柱 詩集」 5자
+    expect(source).toMatch(/<rect x=\{L\.band\}/u); // 진달래꽃 오른쪽 책등 쪽 띠(오너 대조 사진)
   });
 });
 

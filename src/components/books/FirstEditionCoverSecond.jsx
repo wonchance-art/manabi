@@ -20,7 +20,7 @@ const caslon = Libre_Caslon_Display({ display: 'swap', preload: false, weight: '
 // 한글 표지 글꼴(송명 · 나눔명조 · 독도 …)에는 한자가 없어 金裕貞 著 · 詩集 · 開闢이 기기마다 다른 시스템 글꼴로 그려졌다(실측).
 // 한자는 쓰키지 활판 5호 명조(Shippori Mincho B1 — 당시 조선 인쇄소도 한자 활자는 일본에서 들여왔다), 붓 한자는 해서 붓(Yuji Syuku),
 // 1950년대 도안 글자는 Black Han Sans. 한글 활자는 조선100년체(1920년대 조선일보 활자 복원 — 원본 그대로 public/fonts, first-edition-cover.css).
-const shippori = Shippori_Mincho_B1({ display: 'swap', preload: false, weight: '500', subsets: ['latin'], variable: '--font-fe-shippori' });
+const shippori = Shippori_Mincho_B1({ display: 'swap', preload: false, weight: ['500', '800'], subsets: ['latin'], variable: '--font-fe-shippori' }); // 800 — 1925 『진달내ᄭᅩᆺ』 굵은 활자
 const yuji = Yuji_Syuku({ display: 'swap', preload: false, weight: '400', subsets: ['latin'], variable: '--font-fe-yuji' });
 const blackHan = Black_Han_Sans({ display: 'swap', preload: false, weight: '400', subsets: ['latin'], variable: '--font-fe-blackhan' });
 const dela = Dela_Gothic_One({ display: 'swap', preload: false, weight: '400', subsets: ['latin'], variable: '--font-fe-dela' }); // 굵은 고딕 한자(Black Han Sans에는 한자가 없다)
@@ -35,8 +35,8 @@ export const KO_PRINT = `"Chosun Centennial", ${HANJA}`;
 const SONGMYUNG = stack('--font-fe-songmyung', 'Song Myung', HANJA);
 const MYEONGJO = stack('--font-fe-myeongjo', 'Nanum Myeongjo', HANJA);
 const HEAVY = stack('--font-fe-blackhan', 'Black Han Sans', stack('--font-fe-dela', 'Dela Gothic One', HANJA)); // 한자(詩)는 같은 굵은 고딕으로
-/** 옛한글 조합(ᄭᅩᆺ)이 되는 명조 — 나눔명조 옛한글 제목 사본(first-edition-cover.css). Google Fonts 조각 파일(Noto Serif KR)은 자모가 갈려 조합이 깨지고,
- * 조선100년체 · 재민체는 옛한글 자모를 조합하지 못한다(실측). */
+/** 옛한글 조합(ᄭᅩᆺ)이 되는 굵은 명조 — Noto Serif KR wght 700 제목 사본(first-edition-cover.css · public/fonts/manabi-old-hangul). Google Fonts 조각 파일은
+ * 자모가 갈려 조합이 깨지고, 조선100년체 · 재민체는 옛한글 자모를 조합하지 못한다(실측). 굵기는 오너 대조 사진의 1925 활자에 맞췄다. */
 const OLD_HANGUL = `"Manabi Old Hangul Title", ${HANJA}`;
 const JOSEFIN = stack('--font-fe-josefin', 'Josefin Sans', 'Futura', 'sans-serif');
 const JOST = stack('--font-fe-jost', 'Jost', 'Futura', 'sans-serif');
@@ -57,8 +57,8 @@ export const SECOND_GROUNDS = Object.freeze({
   dongbaek: { ground: '#cdc5a6', ink: '#383d45', red: '#d6604f', pale: '#e2dbc3' },
   isang: { ground: '#dccaa2', ink: '#6a3122', green: '#37452f' },
   gamja: { ground: '#c9785a', ink: '#1d1b22' },
-  jindallae: { ground: '#687a55', ink: '#1d241a' },
-  'jeongeum-1955': { ground: '#a49061', ink: '#13201f' },
+  jindallae: { ground: '#def0cb', ink: '#0d100c', band: '#ecc485' },
+  'jeongeum-1955': { ground: '#ae9a6b', ink: '#0a150a', teal: '#2a5953' },
   'secker-diagonal': { ground: '#c9b8a4', ink: '#efe6d6', green: '#5aa66c' },
   'secker-numerals': { ground: '#b4524e', ink: '#f6efe6', pale: '#c6796f' },
   'scribner-blind': { ground: '#2f4a45', ink: '#1a2a26', light: '#4f716a' },
@@ -235,35 +235,55 @@ function Gamja({ display, tone }) {
   );
 }
 
-// 『진달내ᄭᅩᆺ』 1925 중앙서림 총판본(470-1) — 연초록 종이 · 활자만, 가로는 오른쪽→왼쪽: 오른쪽 위 작은 「金素月詩集」 · 큰 「진달내ᄭᅩᆺ」(글자 사이 넓게) ·
-// 제목 아래 가는 줄 · 맨 아래 「—1925—」. 옛한글 ᄭᅩᆺ은 조합되는 명조로(OLD_HANGUL).
+// 『진달내ᄭᅩᆺ』 1925 중앙서림 총판본(470-1) — 연초록 종이 · 오른쪽 책등 쪽 주황 띠 · 활자만, 가로는 오른쪽→왼쪽: 작은 「金素月詩集」과 그 아래 짧은 줄 ·
+// 큰 「진달내ᄭᅩᆺ」(글자 사이 넓게) · 제목 아래 굵은 줄 · 맨 아래 「—1925—」. 옛한글 ᄭᅩᆺ은 조합되는 명조로(OLD_HANGUL).
+// 판 배치 · 색은 오너가 준 대조 사진(중앙서림본 복각 표지)에서 잰 값(2026-10-17 KST) — 글자는 띠를 뺀 초록 면 가운데(x≈56)에 선다.
+// 색은 공통 낡음을 거친 렌더가 사진(바탕 #d3e4c0 · 띠 #e3bb7e)과 같도록 그만큼 밝게 둔다.
+const JINDALLAE = Object.freeze({
+  band: 105.1, // 오른쪽 띠(책등 쪽 종이)의 왼쪽 끝
+  subtitle: { center: 56.2, step: 7.07, base: 35.34, size: 5.56 }, subRule: 'M37 37.05h38.6',
+  title: { center: 56.3, step: 16.05, base: 50.4, size: 10.3 }, rule: 'M21.6 53.5h68.6',
+  edition: { center: 57.45, step: 5.85, base: 136.3, size: 4.34 },
+});
 function Jindallae({ display, tone }) {
+  const L = JINDALLAE;
+  const row = (chars, { center, step, base, size }, font, key, weight) => chars.map((char, index) => (
+    <T key={`${key}${index}`} x={center + (index - (chars.length - 1) / 2) * step} y={base} size={size} font={font} fill={tone.ink} weight={weight}>{char}</T>
+  ));
   return (
     <g lang="ko">
-      <T x={92} y={37} size={4.8} font={HANJA} fill={tone.ink} spacing="1.2" anchor="end">{rtl(display.coverSubtitle)}</T>
+      <rect x={L.band} y="0" width={120 - L.band} height="168" fill={tone.band} />
+      {row([...rtl(display.coverSubtitle)], L.subtitle, HANJA, 's', 800)}
+      <path d={L.subRule} stroke={tone.ink} strokeWidth=".6" />
       {/* 글자 사이를 letterSpacing으로 벌리면 옛한글 자모(ᄭ · ᅩ · ᆺ) 사이에도 틈이 생겨 조합이 깨진다 — 글자마다 자리를 준다 */}
-      {rtlGraphemes(display.coverTitle).map((char, index, all) => (
-        <T key={index} x={62 + (index - (all.length - 1) / 2) * 17.5} y={53} size={13.5} font={OLD_HANGUL} fill={tone.ink}>{char}</T>
-      ))}
-      <path d="M17 58h88" stroke={tone.ink} strokeWidth=".55" />
-      <T x={60} y={146} size={4.2} font={HANJA} fill={tone.ink} spacing="1.6">{display.coverEdition}</T>
+      {row(rtlGraphemes(display.coverTitle), L.title, OLD_HANGUL, 't')}
+      <path d={L.rule} stroke={tone.ink} strokeWidth="1" />
+      {row([...display.coverEdition], L.edition, HANJA, 'e', 800)}
     </g>
   );
 }
 
 // 『하늘과 바람과 별과 詩』 정음사 1955 증보판 — 황토색 종이 · 왼쪽 위에서 아래로 굵은 도안 글자 세로 제목. 낱말은 크게(가로가 조금 넓은 납작한 글자),
-// 「과」는 작게 앞 글자 오른쪽 아래에 오른쪽 맞춤으로 붙는다 · 「詩」도 같은 굵은 고딕. 손으로 그린 도안 글자라 간격이 고르지 않아,
-// 글자 칸(먹 상자 [위, 아래, 왼쪽, 오른쪽])은 복각 표지(더스토리 「1955년 정음사 오리지널 표지」)에서 글자마다 잰 값을 그대로 쓴다.
+// 「과」는 작게 앞 글자 오른쪽 아래에 오른쪽 맞춤으로 붙는다 · 「詩」도 같은 굵은 고딕 · 아래 가로로 청록 명조 「尹東柱 詩集」(尹 東 柱는 넓게, 詩集은 붙여).
+// 손으로 그린 도안 글자라 간격이 고르지 않아, 글자 칸(먹 상자 [위, 아래, 왼쪽, 오른쪽])은 오너가 준 대조 사진(2026-10-17 KST)에서 글자마다 잰 값을
+// 그대로 쓴다(사진 너비 = 판 너비, 세로 비율 그대로 — 판보다 긴 사진 아래 끝 8은 그림뿐이라 잘린다).
 // 표지 그림(학 · 붉은 꽃 · 색 면)은 김환기 작품이라 그리지 않는다 — 글자 자리만 실물대로.
 const JEONGEUM_BOXES = Object.freeze([
-  [12, 24.5, 10.3, 26], [26, 39.4, 10.3, 26], [40.8, 46.6, 19.2, 26.4], [48, 59.5, 10.8, 26], [62.2, 75.4, 10.3, 26],
-  [77.3, 83.5, 19.2, 26], [85, 98.2, 10.3, 25.7], [100, 106.8, 19.2, 26], [108.5, 123.4, 10.6, 26],
+  [7.5, 20.7, 10.8, 27.6], [22.2, 36.6, 9.9, 27.3], [37.5, 44.1, 19.8, 27.3], [45.6, 57.9, 10.8, 27.3], [60.6, 74.4, 10.2, 27],
+  [76.5, 82.8, 19.8, 27], [84.3, 98.4, 10.2, 26.7], [100.5, 107.7, 19.8, 26.7], [109.5, 125.1, 10.5, 27],
 ]);
-// 글꼴 먹 비율(글자 크기 1에 대한 먹 너비 · 높이) — 렌더 실측. 기준선은 dominant-baseline central에서 먹 높이의 1/10 위로 뜬다.
-const JEONGEUM_INK = Object.freeze({ hangul: { width: 0.765, height: 0.76 }, small: { width: 0.74, height: 0.74 }, hanja: { width: 0.94, height: 0.75 } });
+const JEONGEUM_BYLINE = Object.freeze({ centers: [25.5, 46.8, 67.8, 90.8, 105.3], top: 152.7, bottom: 162.9 });
+// 글꼴 먹 비율(글자 크기 1에 대한 먹 너비 · 높이) — 렌더 실측. 도안 글자의 먹은 dominant-baseline central에서 먹 높이의 1/10 위로 뜨고,
+// 명조 한자(아래 줄)는 1/20 아래로 처진다 — 둘 다 그만큼 되돌린다.
+const JEONGEUM_INK = Object.freeze({ hangul: { width: 0.765, height: 0.76 }, small: { width: 0.74, height: 0.74 }, hanja: { width: 0.94, height: 0.75 }, byline: { height: 0.9 } });
 function Jeongeum1955({ display, tone }) {
   const chars = display.coverTitle.split(' ').flatMap((word) => [...word]);
-  if (chars.length !== JEONGEUM_BOXES.length) throw new Error(`jeongeum-1955: 글자 칸은 실물 제목 ${JEONGEUM_BOXES.length}자에 맞춰 잰 값이다(${chars.length}자)`);
+  const byline = [...display.coverSubtitle.replaceAll(' ', '')];
+  if (chars.length !== JEONGEUM_BOXES.length || byline.length !== JEONGEUM_BYLINE.centers.length) {
+    throw new Error(`jeongeum-1955: 글자 칸은 실물 제목 ${JEONGEUM_BOXES.length}자 · 아래 줄 ${JEONGEUM_BYLINE.centers.length}자에 맞춰 잰 값이다`);
+  }
+  const B = JEONGEUM_BYLINE;
+  const bylineSize = (B.bottom - B.top) / JEONGEUM_INK.byline.height;
   return (
     <g lang="ko">
       {chars.map((char, index) => {
@@ -277,6 +297,11 @@ function Jeongeum1955({ display, tone }) {
           </g>
         );
       })}
+      <g>
+        {byline.map((char, index) => (
+          <text key={`b${index}`} x={B.centers[index]} y={((B.top + B.bottom) / 2 - (B.bottom - B.top) / 20).toFixed(2)} fontSize={bylineSize.toFixed(2)} textAnchor="middle" dominantBaseline="central" fill={tone.teal} style={{ fontFamily: HANJA }}>{char}</text>
+        ))}
+      </g>
     </g>
   );
 }

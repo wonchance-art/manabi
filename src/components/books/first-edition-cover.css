@@ -5,7 +5,7 @@
    그대로 쓴다(public/fonts/chosun-centennial/LICENSE.txt). 표지에 이 글꼴의 한글이 있을 때만 받는다(font-display: swap). */
 /* 옛한글 표지 제목(『진달내ᄭᅩᆺ』) — 나눔명조 옛한글을 제목 글자만 남겨 이름을 바꾼 OFL 사본(public/fonts/manabi-old-hangul/README.txt).
    한 파일이라 자모(ᄭ · ᅩ · ᆺ)가 한 글자로 조합된다(Google Fonts 조각 파일은 조합이 깨진다). */
-@font-face{font-family:"Manabi Old Hangul Title";src:url("/fonts/manabi-old-hangul/ManabiOldHangulTitle.woff2") format("woff2");font-display:swap;font-weight:400}
+@font-face{font-family:"Manabi Old Hangul Title";src:url("/fonts/manabi-old-hangul/ManabiOldHangulTitle-700.woff2") format("woff2");font-display:swap;font-weight:400}
 @font-face{font-family:"Chosun Centennial";src:url("/fonts/chosun-centennial/ChosunCentennial_ttf.ttf") format("truetype");font-display:swap;font-weight:400;unicode-range:U+1100-11FF,U+3130-318F,U+AC00-D7A3}
 .fe-cover{--fe-ground:#b5462f;display:block;width:60px;height:84px;flex:none;position:relative;background:var(--fe-ground);border-radius:1px 2px 2px 1px;overflow:hidden;box-shadow:inset 3px 0 0 color-mix(in srgb,#000 16%,transparent),inset 3.6px 0 0 color-mix(in srgb,#fff 6%,transparent)}
 .fe-cover__art{position:absolute;inset:0;width:100%;height:100%;display:block}
