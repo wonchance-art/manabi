@@ -538,8 +538,11 @@ export default function ViewerPage() {
   }, [metCode]);
   // 서버 정본 동기화(§4.5) — 로그인 시 쌍방 병합(5분 스로틀). 다른 기기에서 온 만남이 있을 때만
   // 진입 스냅샷을 한 번 다시 뜬다(세션 중 점 번짐 금지 원칙은 그대로 — 내 드래그는 반영 안 됨).
+  // 자료가 오기 전 materialLang은 기본값 'Japanese'다 — 그때 돌리면 다른 언어(ja)를 받고 그 언어의 5분 스로틀까지 써 버린다
+  // (서재 → 중국어 자료 진입 실측: ja · zh 두 번씩, 2026-10-17 KST). 자료가 온 뒤 그 언어로 한 번.
+  const materialReady = !!material;
   useEffect(() => {
-    if (!user?.id || !metCode) return undefined;
+    if (!user?.id || !metCode || !materialReady) return undefined;
     let cancel = false;
     (async () => {
       if (await syncVocabEncounters(supabase, user.id, metCode) && !cancel) {
@@ -547,7 +550,7 @@ export default function ViewerPage() {
       }
     })();
     return () => { cancel = true; };
-  }, [user?.id, metCode]);
+  }, [user?.id, metCode, materialReady]);
   // 지정(막대·드래그·이동) 문장 기록. 노트 저장은 더 이상 이것을 읽지 않는다 — 해설을 만든 문장(grammar.forText)을
   // 쓴다(AE-R2 §5.2). 지정 경로의 기록 자체는 focusMode 계약이 고정하고 있어 그대로 둔다.
   const [, setSelectedRangeText] = useState('');
@@ -890,7 +893,8 @@ export default function ViewerPage() {
 
   // 아는 단어 표시와 복습 보호 상태는 같은 DB 트랜잭션으로 바뀐다.
   const knownLangCode = knownWordsLang(materialLang, learningCapabilities.known);
-  const knownState = useKnownWords(knownLangCode, !!knownLangCode);
+  // 아는 단어도 자료가 온 뒤 그 언어로 — 기본값(ja)으로 먼저 받으면 중국어 자료에서 ja · zh 두 번 나갔다(위 만남 동기화와 같은 원인).
+  const knownState = useKnownWords(knownLangCode, !!knownLangCode && materialReady);
   const knownWordSet = useMemo(() => knownWordSetOf(knownState.data, exclusionState.data, knownLangCode), [knownState.data, exclusionState.data, knownLangCode]);
 
   // 스크롤 위치 저장(debounce 2s) + 재진입 시 자동 복원
