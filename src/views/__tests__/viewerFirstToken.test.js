@@ -28,7 +28,7 @@ describe('② 직접 진입 — 자료 조회를 하이드레이션 전에 띄�
   beforeEach(async () => {
     query.calls.length = 0;
     query.result = { data: { id: 45, title: '자료' }, error: null };
-    viewer = await import('../ViewerPage.jsx');
+    viewer = await import('../../lib/viewerMaterial'); // 조회 · 등록부는 lib/viewerMaterial로 옮겼다(VIEWER-ENTRY R1)
     viewer.takeEarlyMaterial('__reset__'); // 다른 테스트가 띄워 둔 것을 비운다(id가 달라 넘기지 않지만 상태를 정리)
   }, 120000);
 
@@ -59,7 +59,7 @@ describe('② 직접 진입 — 자료 조회를 하이드레이션 전에 띄�
 
   it('useQuery는 띄워 둔 조회를 먼저 받고, 없으면 전처럼 fetchMaterial로 받는다 · 모듈 평가 때 한 번 띄운다', () => {
     const source = read('src/views/ViewerPage.jsx');
-    expect(source).toContain('queryFn: () => takeEarlyMaterial(id) ?? fetchMaterial(id),');
+    expect(source).toContain('queryFn: () => loadMaterial(id, { owner: user?.id ?? null }),');
     expect(source).toContain("if (typeof window !== 'undefined') startEarlyMaterial(window.location.pathname);");
   });
 });

@@ -76,7 +76,7 @@ describe('배선', () => {
     expect(page).toContain('useEffect(() => { refreshCopies(); }, [user?.id, refreshCopies]);');
   });
   it('local: 뷰어가 화면 계정(아직 모르면 정해질 때까지)으로 연다 — 세션 조회 없이(네트워크 0)', () => {
-    const fn = sliceBetween(read('src/views/ViewerPage.jsx'), 'async function fetchMaterial(id) {', '// 직접 진입 첫 조회');
+    const fn = sliceBetween(read('src/lib/viewerMaterial.js'), 'export async function fetchMaterial(id) {', '\n}\n') /* 조회 정본은 lib/viewerMaterial(VIEWER-ENTRY R1) */;
     const local = sliceBetween(fn, 'if (isLocalId(id)) {', "return { ...copy.material, __local: true, __team: copy.team };");
     expect(local).toContain('const account = shown !== undefined ? shown : await whenAccountKnown();');
     expect(local).toContain('const copy = await getSharedCopy(parseLocalId(id), { account });');
@@ -95,7 +95,7 @@ describe('배선', () => {
     await expect(q.whenAccountKnown()).resolves.toBe('A');
   });
   it('남은 호출부가 계정 없는 옛 꼴로 부르지 않는다', () => {
-    for (const f of ['src/views/ClassTeamPage.jsx', 'src/lib/classClient.js', 'src/views/ViewerPage.jsx']) {
+    for (const f of ['src/views/ClassTeamPage.jsx', 'src/lib/classClient.js', 'src/views/ViewerPage.jsx', 'src/lib/viewerMaterial.js']) {
       expect(read(f), f).not.toMatch(/listSharedCopies\(\)|getSharedCopy\(entry\.id\)|getSharedCopy\(parseLocalId\(id\)\)/);
     }
   });

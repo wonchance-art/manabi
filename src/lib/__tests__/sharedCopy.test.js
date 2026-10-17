@@ -107,7 +107,7 @@ describe('local: 뷰어 — 네트워크 0', () => {
 
   it('뷰어 fetchMaterial은 local:이면 사본만 보고(서버 조회·캐시 폴백 없음) 없으면 LOCAL_MISSING', () => {
     const viewer = read('src/views/ViewerPage.jsx');
-    const fn = sliceBetween(viewer, 'async function fetchMaterial(id) {', '\n}\n');
+    const fn = sliceBetween(read('src/lib/viewerMaterial.js'), 'export async function fetchMaterial(id) {', '\n}\n'); // 조회 정본은 lib/viewerMaterial(VIEWER-ENTRY R1)
     const local = fn.indexOf('if (isLocalId(id)) {');
     const shared = fn.indexOf('getSharedCopy(parseLocalId(id), { account })'); // 계정별 사본(OFFLINE-ACCOUNT-SCOPE-001)
     const network = fn.indexOf(".from('reading_materials')");

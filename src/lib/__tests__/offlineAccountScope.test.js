@@ -137,7 +137,7 @@ describe('계정이 바뀌면 — 자동 캐시만 지우고, 받아 둔 자료 
 
 describe('배선', () => {
   it('뷰어 조회는 요청과 함께 계정을 잡아 적고, 폴백은 화면 계정(없으면 그 세션 계정)으로 읽는다', () => {
-    const fetch = sliceBetween(read('src/views/ViewerPage.jsx'), 'async function fetchMaterial(id) {', '// 직접 진입 첫 조회');
+    const fetch = sliceBetween(read('src/lib/viewerMaterial.js'), 'export async function fetchMaterial(id) {', '\n}\n') /* 조회 정본은 lib/viewerMaterial(VIEWER-ENTRY R1) */;
     expect(fetch.indexOf('const accountRequest = supabase.auth.getSession()')).toBeLessThan(fetch.indexOf(".from('reading_materials')"));
     expect(fetch).toContain('cacheMaterial(data, { owner: await accountRequest })');
     expect(fetch).toContain('getCachedMaterial(id, { account: shown !== undefined ? shown : await accountRequest })');

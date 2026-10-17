@@ -24,8 +24,6 @@ import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/rea
 import { supabase } from '../lib/supabase';
 import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
 import { buildVocabularyWordIndex, countVocabularyDueInMaterial, findIndexedVocabulary, isIndexedVocabularyDue } from '../lib/vocabularyDueIndex';
-import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
-import { knownAccount, whenAccountKnown } from '../lib/accountQueryCache';
 import { writeStudySource } from '../lib/studySourceHandoff';
 import SaveContextButton, { saveContext } from '../components/learning/SaveContextButton';
 import MaterialChapterLinks from '../components/learning/MaterialChapterLinks';
@@ -161,7 +159,7 @@ import { SENTENCE_TX_LOGIN_REQUIRED, SENTENCE_TX_QUERY, canonicalSentence, class
 import { sentencePanelOriginal, sentencePanelTokenIds, sentencePatternHits, sentenceWordGlosses } from '../lib/viewerSentenceGlosses';
 import { useSentencePrefetch } from '../lib/useSentencePrefetch';
 import { isLocalId, parseLocalId, chaptersForLocalNav, isTeamRoot, viewerRouteId } from '../lib/classBoard';
-import { getSharedCopy } from '../lib/sharedStore';
+import { loadMaterial, startEarlyMaterial } from '../lib/viewerMaterial';
 import { readIndexCache } from '../lib/classClient';
 import { useRefVocabEntry, useRefVocabIndex } from '../lib/refVocabIndex';
 import { zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
@@ -219,87 +217,8 @@ import { reducedMotion } from '../lib/reducedMotion';
 // 키는 REF_LANGS와 반드시 일치(user_vocabulary.language·/study 규약).
 const STUDY_LANGS = new Set(['Japanese', 'English', 'French', 'Chinese']);
 
-/**
- * 자료 조회 — 온라인이면 네트워크가 정본(계약 6)이고, 성공분은 오프라인용으로
- * 남긴다(사용자 조작 0 — 뷰어에 들어온 것 자체가 '이 자료를 읽는다'는 신호).
- * 네트워크가 죽었을 때만 캐시로 폴백한다: 지하철·비행기에서 읽던 자료가 이어진다(v2-N R1).
- * NOT_FOUND(자료가 실제로 없음)는 폴백하지 않는다 — 삭제된 자료가 캐시로 되살아나면
- * 그것이야말로 스테일이다.
- */
-async function fetchMaterial(id) {
-  // 팀 사본(v2-AB R2) — `local:<id>`는 **네트워크 0**: 기기 사본(sharedStore)만 연다. 없으면 LOCAL_MISSING
-  // (캐시 폴백·서버 조회 없음 — 받기는 팀 페이지만 한다). 사본이 없어도 팀 페이지로 돌아갈 길은 ?team=가 준다.
-  if (isLocalId(id)) {
-    // 팀 사본도 계정별(OFFLINE-ACCOUNT-SCOPE-001) — 화면 계정, 아직 모르면(첫 복원 전 직접 진입) 정해질 때까지 기다린다.
-    const shown = knownAccount();
-    const account = shown !== undefined ? shown : await whenAccountKnown(); // 세션 조회(토큰 갱신)도 하지 않는다 — 네트워크 0
-    const copy = await getSharedCopy(parseLocalId(id), { account });
-    if (!copy?.material) {
-      const err = new Error('LOCAL_MISSING');
-      err.code = 'LOCAL_MISSING';
-      throw err;
-    }
-    return { ...copy.material, __local: true, __team: copy.team };
-  }
-  // 기기 캐시는 계정별이다(OFFLINE-ACCOUNT-SCOPE-001) — 이 조회를 보내는 계정을 요청과 함께 잡는다(나란히 — 기다림을 늘리지 않음).
-  // 늦게 읽으면 로그아웃 · 계정 전환 뒤의 계정으로 적혀 남의 자료가 그 계정 몫이 된다.
-  const accountRequest = supabase.auth.getSession().then(({ data: auth }) => auth?.session?.user?.id ?? null, () => null);
-  try {
-    const { data, error } = await supabase
-      .from('reading_materials')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-    if (error) throw error;
-    if (!data) {
-      const err = new Error('NOT_FOUND');
-      err.code = 'NOT_FOUND';
-      throw err;
-    }
-    // fire-and-forget이되 완전 격리 — 캐시 실패가 아래 catch로 새면 네트워크
-    // 성공분이 캐시 폴백으로 빠진다(계약 4·6 동시 위반).
-    Promise.resolve().then(async () => cacheMaterial(data, { owner: await accountRequest })).catch(() => {});
-    return data;
-  } catch (err) {
-    if (err?.code === 'NOT_FOUND') throw err;
-    // 읽는 계정은 화면이 보고 있는 계정(AuthContext)이 정본 — 토큰이 만료된 채 오프라인이면 getSession은 손님을 돌려준다.
-    // 아직 정하지 않았으면(첫 복원 전 직접 진입) 요청과 함께 잡은 세션 계정.
-    const shown = knownAccount();
-    const cached = await getCachedMaterial(id, { account: shown !== undefined ? shown : await accountRequest });
-    if (!cached) throw err;   // 캐시가 없으면 기존 에러 화면 그대로(계약 5)
-    // 비로그인에게 책 장 본문은 없다(BOOK-GUEST-GATE-1) — 로그인했을 때 받아 둔 사본도 로그아웃 뒤에는 열지 않는다.
-    if (getBook(cached.processed_json?.metadata) && !(await supabase.auth.getSession()).data?.session) throw err;
-    return { ...cached, __offline: true };
-  }
-}
-
-// 직접 진입 첫 조회(VIEWER-FIRST-TOKEN-001) — 자료 조회는 하이드레이션이 끝나고 useQuery가 붙은 뒤에야 떠났다(그 사이 supabase-js
-// 청크도 그제야 받는다). 운영 /viewer/45에서 조회 시작 1.79s · 첫 단어 2.9s(2026-10-17 KST 실측). 이 모듈이 평가되는 순간(하이드레이션 전)
-// 주소의 자료 조회를 먼저 띄우고, useQuery가 같은 id로 한 번만 받아 쓴다. 같은 fetchMaterial이라 결과 · 오류 · 오프라인 폴백이 그대로다.
-// 늦게 쓰면(EARLY_MATERIAL_MAX_AGE_MS) 버리고 새로 받는다 — 오래된 응답을 화면에 내지 않는다. 팀 사본(local:)은 네트워크가 없어 띄우지 않는다.
-export const EARLY_MATERIAL_MAX_AGE_MS = 10000;
-let earlyMaterial = null;
-
-export function startEarlyMaterial(pathname, now = Date.now()) {
-  const match = /^\/viewer\/([^/?#]+)\/?$/.exec(pathname || '');
-  if (!match) return null;
-  let id;
-  try { id = decodeURIComponent(match[1]); } catch { return null; }
-  if (isLocalId(id)) return null;
-  const promise = fetchMaterial(id);
-  promise.catch(() => {}); // 쓰는 쪽(useQuery)이 오류를 받는다 — 여기서는 처리되지 않은 거부로 남기지 않는다
-  earlyMaterial = { id, promise, at: now };
-  return earlyMaterial;
-}
-
-/** 같은 id로 띄워 둔 조회를 한 번만 넘긴다(다시 받기 · 재시도는 새로 조회). 없거나 늦었으면 null. */
-export function takeEarlyMaterial(id, now = Date.now()) {
-  const early = earlyMaterial;
-  if (!early || early.id !== String(id)) return null;
-  earlyMaterial = null;
-  return now - early.at <= EARLY_MATERIAL_MAX_AGE_MS ? early.promise : null;
-}
-
+// 자료 조회 · 조기 조회 등록부는 lib/viewerMaterial(서재 카드도 같은 것을 띄운다 — VIEWER-ENTRY R1). 직접 진입은 이 모듈이 평가될 때
+// (하이드레이션 전) 주소의 자료를 띄운다(VIEWER-FIRST-TOKEN-001). 서재에서 이미 같은 자료를 띄웠으면 등록부가 그것을 그대로 둔다.
 if (typeof window !== 'undefined') startEarlyMaterial(window.location.pathname);
 
 // 단어창 훈음 루비 셀의 기준 칸 — 카드 병음 칸 폭(reader-controls.css `.word-fit ruby[data-pinyin] {width:max(1em,3.1rem)}`
@@ -395,7 +314,7 @@ export default function ViewerPage() {
 
   const { data: material, isLoading, error, refetch } = useQuery({
     queryKey: ['material', id],
-    queryFn: () => takeEarlyMaterial(id) ?? fetchMaterial(id),
+    queryFn: () => loadMaterial(id, { owner: user?.id ?? null }),
     refetchInterval: (query) => {
       const d = query.state.data;
       const s = d?.processed_json?.status || d?.status;
