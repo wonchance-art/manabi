@@ -3795,8 +3795,9 @@
         "titleKo": "진달래꽃",
         "authorKo": "김소월",
         "binding": "jindallae",
-        "coverTitle": "진달래꽃",
-        "coverSubtitle": "詩集"
+        "coverTitle": "진달내ᄭᅩᆺ",
+        "coverSubtitle": "金素月詩集",
+        "coverEdition": "—1925—"
       },
       "literature": {
         "schemaVersion": 1,
@@ -3937,9 +3938,7 @@
         "titleKo": "동백꽃",
         "authorKo": "김유정",
         "binding": "dongbaek",
-        "coverTitle": "동백꽃",
-        "coverAuthor": "金裕貞 著",
-        "coverSubtitle": "短篇集"
+        "coverTitle": "동백꽃"
       },
       "literature": {
         "schemaVersion": 1,
@@ -4109,7 +4108,7 @@
         "titleKo": "날개",
         "authorKo": "이상",
         "binding": "isang",
-        "coverTitle": "날개"
+        "coverTitle": "李箱選集"
       },
       "literature": {
         "schemaVersion": 1,
@@ -4173,17 +4172,15 @@
       "title": "하늘과 바람과 별과 시",
       "author": "윤동주",
       "level": "고급",
-      "total": 2,
+      "total": 7,
       "language": "Korean",
-      "size": 5413,
+      "size": 19557,
       "unit": "chars",
       "display": {
         "titleKo": "하늘과 바람과 별과 시",
         "authorKo": "윤동주",
-        "binding": "jeongeum",
-        "coverTitle": "하늘과바람과별과詩",
-        "coverSubtitle": "尹東柱遺稿集",
-        "coverImprint": "正音社"
+        "binding": "jeongeum-1955",
+        "coverTitle": "하늘과 바람과 별과 詩"
       },
       "literature": {
         "schemaVersion": 1,
@@ -4192,12 +4189,12 @@
         "wiki": "ko",
         "title": "하늘과 바람과 별과 시",
         "author": "윤동주",
-        "publishedYear": 1948,
+        "publishedYear": 1955,
         "authorDeathYear": 1945,
         "countryOfOrigin": "KR",
         "translator": null,
-        "url": "https://ko.wikisource.org/wiki/%ED%95%98%EB%8A%98%EA%B3%BC_%EB%B0%94%EB%9E%8C%EA%B3%BC_%EB%B3%84%EA%B3%BC_%EC%8B%9C_(1948%EB%85%84)",
-        "fetchedAt": "2026-10-16",
+        "url": "https://ko.wikisource.org/wiki/%ED%95%98%EB%8A%98%EA%B3%BC_%EB%B0%94%EB%9E%8C%EA%B3%BC_%EB%B3%84%EA%B3%BC_%EC%8B%9C_(1955%EB%85%84)",
+        "fetchedAt": "2026-10-17",
         "license": "CC-BY-SA-4.0",
         "rights": {
           "status": "approved",
@@ -4218,13 +4215,38 @@
       "chapters": [
         {
           "order": 1,
-          "title": "서시 외 17편",
-          "sha256": "f25853e7b191cb0e930baa3d61c4fcb8b025dff533af58b6e42e8c5ee12072ee"
+          "title": "서시 외 16편",
+          "sha256": "f1eeaa099d381521be71cb030e3496eeb0ee9c5b888d91d7f7bdca5765b02f21"
         },
         {
           "order": 2,
-          "title": "별 헤는 밤 외 12편",
-          "sha256": "38bd07f47a90d8b9160db5742b9e5058dbde38259be1e2eebd2520e2f8c43a0b"
+          "title": "길 외 13편",
+          "sha256": "8ff51b1337b9a3b48310d40ab96254d122dbbe5dfae6dbcc1b5a167b593c6d49"
+        },
+        {
+          "order": 3,
+          "title": "아우의 인상화 외 20편",
+          "sha256": "3116076d1ed97f6e31e76f1232b6a21c77e9aeb1626b41ce62390d4858563e0b"
+        },
+        {
+          "order": 4,
+          "title": "산림 외 24편",
+          "sha256": "bb00ffb2b2d775eb9f1a533e51d4d5e32073e6312f48fa3afd7cbb60e5282607"
+        },
+        {
+          "order": 5,
+          "title": "편지 외 12편",
+          "sha256": "142f4802ea0fbfa1a4733eceaf5f1577bc715610e9fcfec6eb74bf715649b232"
+        },
+        {
+          "order": 6,
+          "title": "별똥 떨어진데 외 1편",
+          "sha256": "ab4fa78432db81a01b0df7ae980d9b10fe6a3d462459d7291c2b1b66252ef941"
+        },
+        {
+          "order": 7,
+          "title": "종시",
+          "sha256": "d1060db3960636d019a47b5da02db0cdceeb82ba707508ebb90a738349245750"
         }
       ]
     },

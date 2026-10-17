@@ -1,14 +1,11 @@
-import { Dokdo, East_Sea_Dokdo, GFS_Didot, Gochi_Hand, Goudy_Bookletter_1911, IM_Fell_English, Josefin_Sans, Jost, Kaushan_Script, Kirang_Haerang, Libre_Caslon_Display, Nanum_Myeongjo, Song_Myung, Yellowtail } from 'next/font/google';
+import { Black_Han_Sans, GFS_Didot, Gochi_Hand, Goudy_Bookletter_1911, IM_Fell_English, Josefin_Sans, Jost, Kaushan_Script, Libre_Caslon_Display, Nanum_Myeongjo, Shippori_Mincho_B1, Song_Myung, Yellowtail, Yuji_Syuku } from 'next/font/google';
 
 // 「초판 장정」 2차 묶음(오너 「원본 책 재구성하는 방식으로 표지 만들기까지 완성」 2026-10-17 KST) — 한국어 7 · 영어 9 · 프랑스어 3.
 // 근거(실물 사진·서지 기록)는 docs/literature-pipeline.md §8.7, 키는 lib/firstEditionCover.js. 사람 몸 · 출판사 문장·모노그램 · 캐릭터 그림 ·
 // 실존 인물 서명은 그리지 않는다(Le Petit Prince의 왕자 · Moby-Dick 가운데 문장 · Hemingway 서명 · nrf). 좌표 120×168.
 // 글꼴은 실물 글자와 나란히 놓고 고른 당시 글꼴의 가장 가까운 공개 글꼴이다(오너 「폰트 구해가면서 적용시켜봐 당시 글꼴로. 원본 대조하면서」 —
 // 대조표는 §8.7). 배포 빌드는 저장소 사본(vendor/google-fonts)에서만 글꼴을 읽는다.
-const kirang = Kirang_Haerang({ display: 'swap', preload: false, weight: '400', subsets: ['latin'], variable: '--font-fe-kirang' }); // 『감자』 굵은 붓
-const songMyung = Song_Myung({ display: 'swap', preload: false, weight: '400', variable: '--font-fe-songmyung' }); // 옛 활자 명조 · 『동백꽃』 해서 붓
-const eastSea = East_Sea_Dokdo({ display: 'swap', preload: false, weight: '400', subsets: ['latin'], variable: '--font-fe-eastsea' }); // 『이상선집』 가는 행서 붓
-const dokdo = Dokdo({ display: 'swap', preload: false, weight: '400', subsets: ['latin'], variable: '--font-fe-dokdo' }); // 『진달내꽃』 거친 손글씨
+const songMyung = Song_Myung({ display: 'swap', preload: false, weight: '400', variable: '--font-fe-songmyung' }); // 해서 붓 — 『동백꽃』 · 『감자』 제목(굵기 하나 — weight를 주지 않는다)
 const myeongjo = Nanum_Myeongjo({ display: 'swap', preload: false, weight: ['700', '800'], subsets: ['latin'], variable: '--font-fe-myeongjo' }); // 『開闢』 · 문고 활자
 const josefin = Josefin_Sans({ display: 'swap', preload: false, weight: ['400', '600'], style: ['normal', 'italic'], subsets: ['latin'], variable: '--font-fe-josefin' }); // 1940년대 기하 산세리프
 const jost = Jost({ display: 'swap', preload: false, weight: '700', subsets: ['latin'], variable: '--font-fe-jost' }); // 굵은 그로테스크
@@ -19,14 +16,27 @@ const goudy = Goudy_Bookletter_1911({ display: 'swap', preload: false, weight: '
 const fell = IM_Fell_English({ display: 'swap', preload: false, weight: '400', subsets: ['latin'], variable: '--font-fe-fell' }); // 손으로 쓴 로만(Le Petit Prince)
 const didot = GFS_Didot({ display: 'swap', preload: false, weight: '400', subsets: ['latin'], variable: '--font-fe-didot' }); // Gallimard 디도
 const caslon = Libre_Caslon_Display({ display: 'swap', preload: false, weight: '400', subsets: ['latin'], variable: '--font-fe-caslon' }); // Scribner 1925 고전 세리프
-export const SECOND_FONT_CLASS = [kirang, songMyung, eastSea, dokdo, myeongjo, josefin, jost, kaushan, yellowtail, gochi, goudy, fell, didot, caslon].map((font) => font.variable).filter(Boolean).join(' ');
+// 근대 한국 책(오너 「근대 작품들 살펴보고 폰트 새로 적용. 현재는 너무 모던함」 2026-10-17 KST) — 한글과 한자를 따로 고른다.
+// 한글 표지 글꼴(송명 · 나눔명조 · 독도 …)에는 한자가 없어 金裕貞 著 · 詩集 · 開闢이 기기마다 다른 시스템 글꼴로 그려졌다(실측).
+// 한자는 쓰키지 활판 5호 명조(Shippori Mincho B1 — 당시 조선 인쇄소도 한자 활자는 일본에서 들여왔다), 붓 한자는 해서 붓(Yuji Syuku),
+// 1950년대 도안 글자는 Black Han Sans. 한글 활자는 조선100년체(1920년대 조선일보 활자 복원 — 원본 그대로 public/fonts, first-edition-cover.css).
+const shippori = Shippori_Mincho_B1({ display: 'swap', preload: false, weight: '500', subsets: ['latin'], variable: '--font-fe-shippori' });
+const yuji = Yuji_Syuku({ display: 'swap', preload: false, weight: '400', subsets: ['latin'], variable: '--font-fe-yuji' });
+const blackHan = Black_Han_Sans({ display: 'swap', preload: false, weight: '400', subsets: ['latin'], variable: '--font-fe-blackhan' });
+export const SECOND_FONT_CLASS = [songMyung, myeongjo, josefin, jost, kaushan, yellowtail, gochi, goudy, fell, didot, caslon, shippori, yuji, blackHan].map((font) => font.variable).filter(Boolean).join(' ');
 
 const stack = (variable, family, ...rest) => [`var(${variable}, "${family}")`, `"${family}"`, ...rest].join(', ');
-const KIRANG = stack('--font-fe-kirang', 'Kirang Haerang', 'cursive');
-const SONGMYUNG = stack('--font-fe-songmyung', 'Song Myung', '"Nanum Myeongjo"', 'serif');
-const EASTSEA = stack('--font-fe-eastsea', 'East Sea Dokdo', 'cursive');
-const DOKDO = stack('--font-fe-dokdo', 'Dokdo', 'cursive');
-const MYEONGJO = stack('--font-fe-myeongjo', 'Nanum Myeongjo', 'serif');
+/** 한자 — 한글 글꼴 뒤에 둔다(한글 글꼴에 한자가 없으면 글자마다 이 글꼴로 내려온다). */
+const HANJA = stack('--font-fe-shippori', 'Shippori Mincho B1', 'serif');
+const BRUSH_HANJA = stack('--font-fe-yuji', 'Yuji Syuku', HANJA);
+/** 근대 한글 활자 — 조선100년체(한자 없음 → HANJA). @font-face는 first-edition-cover.css(원본 TTF 그대로). */
+export const KO_PRINT = `"Chosun Centennial", ${HANJA}`;
+const SONGMYUNG = stack('--font-fe-songmyung', 'Song Myung', HANJA);
+const MYEONGJO = stack('--font-fe-myeongjo', 'Nanum Myeongjo', HANJA);
+const HEAVY = stack('--font-fe-blackhan', 'Black Han Sans', HANJA);
+/** 옛한글 조합(ᄭᅩᆺ)이 되는 명조 — 나눔명조 옛한글 제목 사본(first-edition-cover.css). Google Fonts 조각 파일(Noto Serif KR)은 자모가 갈려 조합이 깨지고,
+ * 조선100년체 · 재민체는 옛한글 자모를 조합하지 못한다(실측). */
+const OLD_HANGUL = `"Manabi Old Hangul Title", ${HANJA}`;
 const JOSEFIN = stack('--font-fe-josefin', 'Josefin Sans', 'Futura', 'sans-serif');
 const JOST = stack('--font-fe-jost', 'Jost', 'Futura', 'sans-serif');
 const KAUSHAN = stack('--font-fe-kaushan', 'Kaushan Script', 'cursive');
@@ -43,11 +53,11 @@ export const PERIOD_FONTS = Object.freeze({ FELL, DIDOT, CASLON, JOSEFIN, YELLOW
 export const SECOND_GROUNDS = Object.freeze({
   gaebyeok: { ground: '#1f1d1e', ink: '#b4302a', light: '#ece4d6' },
   bakmun: { ground: '#ddd0b2', ink: '#3a3024' },
-  dongbaek: { ground: '#d8cfbb', ink: '#1f1c1a' },
-  isang: { ground: '#d8c59f', ink: '#6c513e', green: '#647153' },
+  dongbaek: { ground: '#cdc5a6', ink: '#383d45', red: '#d6604f', pale: '#e2dbc3' },
+  isang: { ground: '#dccaa2', ink: '#6a3122', green: '#37452f' },
   gamja: { ground: '#c9785a', ink: '#1d1b22' },
-  jindallae: { ground: '#b5a271', ink: '#3f2c1b' },
-  jeongeum: { ground: '#a57146', ink: '#3b2e25', label: '#dfd0b6' },
+  jindallae: { ground: '#71836a', ink: '#1d241a' },
+  'jeongeum-1955': { ground: '#ab9f79', ink: '#1f3a45' },
   'secker-diagonal': { ground: '#c9b8a4', ink: '#efe6d6', green: '#5aa66c' },
   'secker-numerals': { ground: '#b4524e', ink: '#f6efe6', pale: '#c6796f' },
   'scribner-blind': { ground: '#2f4a45', ink: '#1a2a26', light: '#4f716a' },
@@ -79,6 +89,8 @@ function V({ x, y, size, step, font, fill, weight, text }) {
 }
 
 const rtl = (text) => [...text].reverse().join('');
+/** 오른쪽→왼쪽 가로쓰기 — 글자(자소 묶음) 단위로 뒤집는다(옛한글 ᄭᅩᆺ은 자모 셋이 한 글자). */
+const rtlGraphemes = (text) => [...new Intl.Segmenter('ko', { granularity: 'grapheme' }).segment(text)].map((part) => part.segment).reverse();
 
 /** 천 결 무늬 — 고운 평직(rotate 45) · 세로 골(rotate 90). */
 export function Weave({ id, color, ribbed = false }) {
@@ -114,7 +126,7 @@ function Gaebyeok({ display, tone }) {
       <rect x="14" y="14" width="92" height="32" fill={tone.ink} />
       <rect x="16.4" y="16.4" width="87.2" height="27.2" fill="none" stroke={tone.light} strokeWidth=".6" />
       <T x={60} y={38.5} size={21} font={MYEONGJO} fill={tone.light} weight="800" spacing="6">{rtl(display.coverImprint)}</T>
-      <V x={56} y={68} size={12.5} step={14.5} font={MYEONGJO} fill={tone.light} weight="800" text={display.coverTitle} />
+      <V x={56} y={68} size={12.5} step={14.5} font={KO_PRINT} fill={tone.light} text={display.coverTitle} />{/* 한글만 근대 활자(오너 「운수 좋은 날은 한글만 더 옛날 글꼴로」) */}
       <V x={84} y={74} size={6.4} step={7.6} font={MYEONGJO} fill={tone.ink} weight="700" text={display.coverAuthor} />
       <path d="M22 148h76" stroke={tone.ink} strokeWidth=".8" />
       <T x={60} y={158} size={5.4} font={MYEONGJO} fill={tone.light} weight="700" spacing="1.2">{rtl(display.coverEdition)}</T>
@@ -122,44 +134,71 @@ function Gaebyeok({ display, tone }) {
   );
 }
 
-// 박문문고 1941 — 문고 관례: 가는 이중 테 · 위 총서 이름 · 세로 제목 · 작가 · 아래 출판사(가로는 오른쪽→왼쪽, 시대 관례).
+// 박문문고 1941 — 문고 관례: 가는 이중 테 · 위 총서 이름 · 세로 제목 · 작가 · 아래 출판사(가로는 오른쪽→왼쪽, 시대 관례). 문고는 납활자 — 한글 조선100년체 · 한자 쓰키지 명조.
 function Bakmun({ display, tone }) {
   return (
     <g lang="ko">
       <rect x="7" y="7" width="106" height="154" fill="none" stroke={tone.ink} strokeWidth=".9" />
       <rect x="9.6" y="9.6" width="100.8" height="148.8" fill="none" stroke={tone.ink} strokeWidth=".35" />
-      {display.coverEdition && <T x={60} y={23} size={6} font={SONGMYUNG} fill={tone.ink} weight="600" spacing="2">{rtl(display.coverEdition)}</T>}
+      {display.coverEdition && <T x={60} y={23} size={6} font={HANJA} fill={tone.ink} spacing="2">{rtl(display.coverEdition)}</T>}
       <path d="M44 28h32" stroke={tone.ink} strokeWidth=".4" />
-      <V x={58} y={46} size={10.5} step={11.6} font={SONGMYUNG} fill={tone.ink} weight="700" text={display.coverTitle} />
-      <V x={84} y={50} size={6} step={7} font={SONGMYUNG} fill={tone.ink} weight="600" text={display.coverAuthor} />
+      <V x={58} y={46} size={10.5} step={11.6} font={KO_PRINT} fill={tone.ink} text={display.coverTitle} />
+      <V x={84} y={50} size={6} step={7} font={HANJA} fill={tone.ink} text={display.coverAuthor} />
       <path d="M44 140h32" stroke={tone.ink} strokeWidth=".4" />
-      <T x={60} y={151} size={5.4} font={SONGMYUNG} fill={tone.ink} spacing="1.4">{rtl(display.coverImprint)}</T>
+      <T x={60} y={151} size={5.4} font={HANJA} fill={tone.ink} spacing="1.4">{rtl(display.coverImprint)}</T>
     </g>
   );
 }
 
-// 『동백꽃』 1938 속표지 — 왼쪽 큰 붓글씨 세로 제목 · 그 위 작은 「短篇集」 · 오른쪽 아래 「金裕貞 著」.
+// 『동백꽃』 붉은 동백 판(오너 사진) — 회베이지 종이(밝은 얼룩) · 왼쪽 위 붓 세로 제목(먹빛) · 위 작은 동백 한 송이와 오른쪽 위로 뻗는 잎 ·
+// 아래 큰 동백과 둘레 잎 · 왼쪽 아래 떨어진 꽃잎. 꽃잎 · 잎은 스텐실처럼 바탕색 틈(잎맥 · 꽃잎 사이)이 남는다.
+const CAMELLIA_LEAVES = [
+  [66, 30, -55, 1.35], [78, 20, -25, 1.45], [94, 22, 0, 1.4], [104, 40, 30, 1.3], [86, 50, 60, 1.25], [100, 8, -50, 1.1],
+  [46, 116, -155, 1.45], [54, 96, -115, 1.4], [74, 88, -82, 1.55], [96, 94, -45, 1.5], [104, 118, -5, 1.4], [100, 144, 35, 1.45], [82, 154, 75, 1.2], [46, 142, 168, 1.3],
+];
 function Dongbaek({ display, tone }) {
+  const leaf = ([x, y, angle, scale]) => (
+    <g key={`${x}-${y}`} transform={`translate(${x} ${y}) rotate(${angle}) scale(${scale})`}>
+      <path d="M0 0C4-4.4 11-4.6 17 0C11 4.6 4 4.4 0 0z" fill={tone.ink} />
+      <path d="M1.6 0H15" stroke={tone.ground} strokeWidth=".45" strokeLinecap="round" />
+    </g>
+  );
+  const camellia = (cx, cy, r) => (
+    <g transform={`translate(${cx} ${cy})`}>
+      {[0, 1, 2, 3, 4].map((k) => <ellipse key={k} cx="0" cy={-r * 0.5} rx={r * 0.56} ry={r * 0.6} transform={`rotate(${k * 72 + 12})`} fill={tone.red} stroke={tone.pale} strokeWidth=".7" />)}
+      <circle r={r * 0.3} fill="#c4b67c" stroke={tone.pale} strokeWidth=".5" />
+    </g>
+  );
   return (
     <g lang="ko">
-      <V x={30} y={20} size={7.4} step={8.4} font={SONGMYUNG} fill={tone.ink} weight="600" text={display.coverSubtitle} />
-      <V x={46} y={66} size={31} step={31} font={SONGMYUNG} fill={tone.ink} text={display.coverTitle} />
-      <V x={86} y={98} size={8.6} step={10.2} font={SONGMYUNG} fill={tone.ink} weight="600" text={display.coverAuthor} />
+      <ellipse cx="34" cy="96" rx="26" ry="42" fill={tone.pale} opacity=".45" /><ellipse cx="94" cy="78" rx="24" ry="13" fill={tone.pale} opacity=".35" />
+      <path d="M58 40C70 30 86 22 116 14M70 120C84 110 98 106 116 110" fill="none" stroke={tone.ink} strokeWidth=".9" strokeLinecap="round" />
+      {CAMELLIA_LEAVES.map(leaf)}
+      {camellia(56, 40, 13)}
+      {camellia(74, 124, 21)}
+      <ellipse cx="26" cy="152" rx="7" ry="4" transform="rotate(-12 26 152)" fill={tone.red} stroke={tone.pale} strokeWidth=".5" />
+      <V x={22} y={24} size={14} step={15.5} font={SONGMYUNG} fill={tone.ink} text={display.coverTitle} />
     </g>
   );
 }
 
-// 『이상선집』 1949 — 바랜 크림 종이 얼룩 · 적갈 붓글씨 세로 제목 · 오른쪽에 날아가는 초록 새와 가는 물결선(판 안 제목만 작품 이름).
+// 『이상선집』 백양당 1949 — 바랜 크림 종이 얼룩 · 왼쪽에 위에서 아래로 큰 붓 한자 「李箱選集」(적갈) · 오른쪽 아래 짙은 초록 새(머리는 왼쪽,
+// 날개는 오른쪽 위로 펼침) · 새 왼쪽과 아래로 빠르게 그은 빗금(날아가는 자국).
+const ISANG_HATCH = [[50, 113, 16], [48, 118, 20], [52, 123, 14], [54, 128, 18], [60, 134, 12], [66, 142, 24], [74, 148, 18], [58, 108, 9]];
 function Isang({ display, tone }) {
   return (
     <g lang="ko">
-      <ellipse cx="90" cy="30" rx="22" ry="14" fill="#a8916a" opacity=".16" /><ellipse cx="24" cy="140" rx="18" ry="24" fill="#a8916a" opacity=".14" />
-      <V x={40} y={58} size={36} step={34} font={EASTSEA} fill={tone.ink} text={display.coverTitle} />
-      <g fill="none" stroke={tone.green} strokeWidth=".45" opacity=".7">
-        <path d="M60 104c8-4 14 4 22 0s14-4 22 0" /><path d="M64 110c8-4 14 4 22 0s12-4 20 0" /><path d="M58 98c6-3 12 2 18 0" />
+      <ellipse cx="92" cy="30" rx="22" ry="14" fill="#a8916a" opacity=".16" /><ellipse cx="96" cy="150" rx="18" ry="14" fill="#a8916a" opacity=".12" />
+      <V x={30} y={32} size={28} step={35} font={BRUSH_HANJA} fill={tone.ink} text={display.coverTitle} />
+      <g stroke={tone.green} strokeWidth=".5" strokeLinecap="round" opacity=".85">
+        {ISANG_HATCH.map(([x, y, width]) => <path key={`${x}-${y}`} d={`M${x} ${y}h${width}`} />)}
       </g>
-      <path d="M66 84c6-6 12-8 18-6 4-6 10-10 18-10-4 4-8 8-10 13 5 0 9 2 12 5-6-1-11 0-15 3-3 3-8 4-13 3-4 0-7-3-10-8z" fill={tone.green} />
-      <circle cx="98" cy="72.6" r=".8" fill="#2c3324" />
+      <g fill={tone.green}>
+        <path d="M70 120c3-4 8-5 12-3 6-7 15-13 30-17-6 5-10 10-13 15 7-1 11 0 15 2-7 1-12 3-16 8 2 4 2 10 0 15-3-4-7-6-12-7-4 1-10 0-14-3-1-3 0-7 3-10z" />
+        <path d="M68 121l-7-2.4 7-.9z" />
+        <path d="M84 128c2 6 7 11 5 20-4-5-7-10-7-16z" />
+      </g>
+      <circle cx="74" cy="118.4" r=".75" fill={tone.ground} />
     </g>
   );
 }
@@ -177,9 +216,9 @@ function Gamja({ display, tone }) {
       {loops(Array.from({ length: 13 }, (_, index) => [12 + index * 8, 9]))}
       {loops(Array.from({ length: 12 }, (_, index) => [6, 18 + index * 8]))}
       {loops(Array.from({ length: 12 }, (_, index) => [114, 18 + index * 8]))}
-      <V x={72} y={60} size={40} step={40} font={KIRANG} fill={tone.ink} text={display.coverTitle} />
-      <V x={96} y={28} size={7.4} step={8.6} font={SONGMYUNG} fill={tone.ink} weight="700" text={display.coverAuthor} />
-      <V x={44} y={34} size={7.8} step={9} font={SONGMYUNG} fill={tone.ink} weight="700" text={display.coverSubtitle} />
+      <V x={72} y={60} size={40} step={40} font={SONGMYUNG} fill={tone.ink} text={display.coverTitle} />{/* 굵은 붓 — 기랑해랑(현대 마커)에서 해서 붓으로 */}
+      <V x={96} y={28} size={7.4} step={8.6} font={HANJA} fill={tone.ink} text={display.coverAuthor} />
+      <V x={44} y={34} size={7.8} step={9} font={HANJA} fill={tone.ink} text={display.coverSubtitle} />
       <g fill={tone.ink}>
         {[[16, 118, -30], [44, 112, 20], [76, 116, -15], [104, 112, 30], [20, 154, 10], [80, 158, -20], [46, 160, 25]].map(([x, y, angle]) => (
           <ellipse key={`${x}-${y}`} cx={x} cy={y} rx="9" ry="3.4" transform={`rotate(${angle} ${x} ${y})`} />
@@ -195,49 +234,39 @@ function Gamja({ display, tone }) {
   );
 }
 
-// 『진달내꽃』 1925(470-4) — 위 짙은 붓띠 안에 밝게 빠진 제목(가로 오른쪽→왼쪽) · 그 아래 「詩集」 · 진달래 가지와 바위 선화 · 아래 짙은 띠.
-// 제목은 현대 표기(실물 「진달내ᄭᅩᆺ」의 옛한글은 글꼴·분석이 다루지 못한다 — 본문도 현대어 칸).
+// 『진달내ᄭᅩᆺ』 1925 중앙서림 총판본(470-1) — 연초록 종이 · 활자만, 가로는 오른쪽→왼쪽: 오른쪽 위 작은 「金素月詩集」 · 큰 「진달내ᄭᅩᆺ」(글자 사이 넓게) ·
+// 제목 아래 가는 줄 · 맨 아래 「—1925—」. 옛한글 ᄭᅩᆺ은 조합되는 명조로(OLD_HANGUL).
 function Jindallae({ display, tone }) {
-  const flower = (x, y, s) => (
-    <g key={`${x}-${y}`} transform={`translate(${x} ${y}) scale(${s})`} fill="none" stroke={tone.ink} strokeWidth=".7">
-      {[0, 1, 2, 3, 4].map((k) => <ellipse key={k} cx="0" cy="-3" rx="1.8" ry="3" transform={`rotate(${k * 72})`} />)}
-      <path d="M0 0l1.5-4M0 0l-1.4-4.2" />
-    </g>
-  );
   return (
     <g lang="ko">
-      <path d="M10 20c10-3 30 1 48-1s34-2 52 1l-2 8c2 5-1 11 1 17-16 2-34-1-50 1s-34 1-49-1c2-6-1-12 1-18z" fill={tone.ink} />
-      <T x={60} y={39} size={19} font={DOKDO} fill={tone.ground} spacing="1">{rtl(display.coverTitle)}</T>
-      <T x={36} y={58} size={7} font={SONGMYUNG} fill={tone.ink} weight="600" spacing="1.5">{rtl(display.coverSubtitle)}</T>
-      <g fill="none" stroke={tone.ink} strokeWidth=".75" strokeLinecap="round">
-        <path d="M22 138c4-18 10-34 14-56M30 112c6-6 10-14 12-22M27 124c-6-6-8-12-8-20M34 96c-5-4-7-9-7-15" />
-        <path d="M66 136c-2-12 4-22 14-26 10-4 20 2 24 10 2 6 0 12-4 16zM74 128c4-6 10-8 16-6M80 134c6-2 12-1 16 2M72 118c3-4 8-5 12-4" />
-      </g>
-      {[[36, 80, 1], [42, 88, 0.85], [27, 82, 0.9], [19, 102, 0.8], [30, 70, 0.8]].map(([x, y, s]) => flower(x, y, s))}
-      <path d="M12 146c14-2 30 1 48 0s32-2 48 0l-1 9c-16 2-32-1-48 0s-32 1-47-1z" fill={tone.ink} />
+      <T x={92} y={37} size={4.8} font={HANJA} fill={tone.ink} spacing="1.2" anchor="end">{rtl(display.coverSubtitle)}</T>
+      {/* 글자 사이를 letterSpacing으로 벌리면 옛한글 자모(ᄭ · ᅩ · ᆺ) 사이에도 틈이 생겨 조합이 깨진다 — 글자마다 자리를 준다 */}
+      {rtlGraphemes(display.coverTitle).map((char, index, all) => (
+        <T key={index} x={62 + (index - (all.length - 1) / 2) * 17.5} y={53} size={13.5} font={OLD_HANGUL} fill={tone.ink}>{char}</T>
+      ))}
+      <path d="M17 58h88" stroke={tone.ink} strokeWidth=".55" />
+      <T x={60} y={146} size={4.2} font={HANJA} fill={tone.ink} spacing="1.6">{display.coverEdition}</T>
     </g>
   );
 }
 
-// 『하늘과 바람과 별과 시』 정음사 1948 — 거친 갈포 결 · 흰 종이 제첨 · 둥근 모서리 테 안 3줄.
-function Jeongeum({ display, tone, id }) {
-  return (
-    <g lang="ko">
-      <defs>
-        <pattern id={`${id}-burlap`} width="2.4" height="2.4" patternUnits="userSpaceOnUse">
-          <rect width="2.4" height="2.4" fill={tone.ground} />
-          <path d="M0 .6H2.4M0 1.8H2.4" stroke="#000" strokeOpacity=".12" strokeWidth=".5" /><path d="M.6 0V2.4M1.8 0V2.4" stroke="#fff" strokeOpacity=".08" strokeWidth=".5" />
-        </pattern>
-      </defs>
-      <rect width="120" height="168" fill={`url(#${id}-burlap)`} />
-      <rect x="23" y="19" width="76" height="45" fill="#000" opacity=".12" />
-      <rect x="22" y="18" width="76" height="45" fill={tone.label} />
-      <rect x="26" y="22" width="68" height="37" rx="3" fill="none" stroke={tone.ink} strokeWidth=".5" />
-      <T x={60} y={31.5} size={4.6} font={SONGMYUNG} fill={tone.ink} weight="600" spacing=".6">{display.coverSubtitle}</T>
-      <T x={60} y={43.5} size={6.3} font={SONGMYUNG} fill={tone.ink} weight="700">{display.coverTitle}</T>
-      <T x={60} y={54} size={4.4} font={SONGMYUNG} fill={tone.ink} spacing="1">{display.coverImprint}</T>
-    </g>
-  );
+// 『하늘과 바람과 별과 詩』 정음사 1955 증보판 — 국방색 종이 · 왼쪽 위에서 아래로 굵은 도안 글자 세로 제목(낱말은 크게, 「과」는 작게 붙여).
+// 표지 그림(학 · 붉은 꽃 · 색 면)은 김환기 작품이라 그리지 않는다 — 글자 자리만 실물대로.
+function Jeongeum1955({ display, tone }) {
+  const out = [];
+  let top = 14; // 다음 글자 칸의 윗변 — 큰 글자는 18, 작은 「과」는 9.5 내려간다
+  display.coverTitle.split(' ').forEach((word, w) => {
+    const small = word.length > 1 && word.endsWith('과') ? '과' : '';
+    [...(small ? word.slice(0, -1) : word)].forEach((char, k) => {
+      out.push(<T key={`${w}-${k}`} x={22} y={top + 15} size={17} font={HEAVY} fill={tone.ink}>{char}</T>);
+      top += 18;
+    });
+    if (small) {
+      out.push(<T key={`${w}-s`} x={22} y={top + 7.6} size={8.5} font={HEAVY} fill={tone.ink}>{small}</T>);
+      top += 9.5;
+    }
+  });
+  return <g lang="ko">{out}</g>;
 }
 
 // ── 영어 ──
@@ -451,7 +480,7 @@ function Reynal({ display, tone }) {
 }
 
 export const SECOND_DRAW = {
-  gaebyeok: Gaebyeok, bakmun: Bakmun, dongbaek: Dongbaek, isang: Isang, gamja: Gamja, jindallae: Jindallae, jeongeum: Jeongeum,
+  gaebyeok: Gaebyeok, bakmun: Bakmun, dongbaek: Dongbaek, isang: Isang, gamja: Gamja, jindallae: Jindallae, 'jeongeum-1955': Jeongeum1955,
   'secker-diagonal': SeckerDiagonal, 'secker-numerals': SeckerNumerals, 'scribner-blind': ScribnerBlind, 'scribner-plain': ScribnerPlain,
   'hogarth-bell': HogarthBell, huebsch: Huebsch, 'harper-blind': HarperBlind, 'ticknor-arabesque': TicknorArabesque, 'egerton-boards': EgertonBoards,
   'gallimard-blanche': GallimardBlanche, 'gallimard-essais': GallimardEssais, reynal: Reynal,

@@ -130,6 +130,8 @@ export function parseWikisourceFragment(fragment, { upperSmallCaps = false } = {
     .replace(/<span itemprop="associatedMedia"[^>]*><\/span>/gu, '')
     // 「〃」 틀(ditto) — 화면에 보이지 않는 칸(__ditto_hidden)에 틀 인자가 날것으로 남는다(『자본론』 표 「{{{1}}}„」). 보이는 「„」만 둔다
     .replace(/<span class="__ditto_hidden"[^>]*>[\s\S]*?<\/span>/gu, '')
+    // 곁점(witju 틀 — 윤동주 「소낙비」 1955년판) — 글자 위의 점 표시만 지우고 글자는 둔다
+    .replace(/<ruby class="witju[^"]*">([^<]*)(?:<rp>[^<]*<\/rp>)?<rt>[\s•·∙・゜。.]*<\/rt>(?:<rp>[^<]*<\/rp>)?<\/ruby>/gu, '$1')
     .replace(/<span style="font-size:0; line-height:0; display:block" class="lettrine"><br\s*\/?><\/span>/gu, '');
   // 각주 번호·목록 — 옛 파서는 class="reference", Parsoid(영어 위키문헌)는 class="mw-ref reference" · "mw-references references".
   // 표보다 먼저 뺀다(『자본론』 통계표 칸 안 각주 번호 「642,607[143]」).
@@ -235,6 +237,34 @@ export function splitBlocks(blocks, target, measure) {
   return bounds.slice(1).map((end, index) => blocks.slice(bounds[index], end)).filter((group) => group.length > 0);
 }
 
+/**
+ * 시집용 균형 묶음 — 시 한 편은 자르지 않고, 묶음 수 n = round(전체 / 목표)에서 묶음마다 목표와의 차의 제곱 합이 가장 작게 나눈다.
+ * splitBlocks(누적 분량의 등분점)는 끝의 긴 산문(1955년판 「종시」)이 앞 글과 한 장으로 붙어 장이 목표의 두 배가 될 수 있다.
+ */
+export function splitBalanced(items, target, measure) {
+  const counts = items.map(measure);
+  const total = counts.reduce((sum, value) => sum + value, 0);
+  const parts = Math.max(1, Math.min(items.length, Math.round(total / target)));
+  const prefix = counts.reduce((acc, value) => [...acc, acc.at(-1) + value], [0]);
+  const cost = (from, to) => (prefix[to] - prefix[from] - target) ** 2;
+  // best[k][i] — 앞 i편을 k묶음으로 나눈 최소 비용, from[k][i] — 마지막 묶음의 시작
+  const best = [Array.from({ length: items.length + 1 }, (_, i) => (i === 0 ? 0 : Infinity))];
+  const from = [[]];
+  for (let k = 1; k <= parts; k += 1) {
+    best.push(Array(items.length + 1).fill(Infinity));
+    from.push([]);
+    for (let i = k; i <= items.length; i += 1) {
+      for (let j = k - 1; j < i; j += 1) {
+        const value = best[k - 1][j] + cost(j, i);
+        if (value < best[k][i]) [best[k][i], from[k][i]] = [value, j];
+      }
+    }
+  }
+  const bounds = [items.length];
+  for (let k = parts; k > 0; k -= 1) bounds.unshift(from[k][bounds[0]]);
+  return bounds.slice(1).map((end, index) => items.slice(bounds[index], end));
+}
+
 /** 권리 판정 — 한국 공개 가능(① 한국 만료 · ② 본국 만료, 공통 정본 rightsKorea). 판정 규칙이 없는 원산국은 ①로만 열린다. */
 export function wikisourceRightsVerdict(literature = {}) {
   // 공공누리 제1유형(「쉽고 바르게 읽는 3·1독립선언서」) — 보호기간이 아니라 이용 허락이 근거다
@@ -330,7 +360,7 @@ export function createWikisourceDraft(entry, files) {
       const titled = ownLine ? blocks : [{ text: name, names: [] }, ...blocks];
       return { name, blocks: titled.map((block) => ({ ...block, alternate: null })), file };
     });
-    const groups = splitBlocks(poems, target, (poem) => poem.blocks.reduce((sum, block) => sum + measure(block.text), 0));
+    const groups = splitBalanced(poems, target, (poem) => poem.blocks.reduce((sum, block) => sum + measure(block.text), 0));
     for (const group of groups) {
       pieces.push({
         title: group.length > 1 ? `${group[0].name} 외 ${group.length - 1}편` : group[0].name,

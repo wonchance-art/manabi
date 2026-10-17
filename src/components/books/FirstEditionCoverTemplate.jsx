@@ -1,5 +1,5 @@
 import { romanYear } from '../../lib/firstEditionCover';
-import { Blind, PERIOD_FONTS, T, Weave } from './FirstEditionCoverSecond';
+import { Blind, KO_PRINT, PERIOD_FONTS, T, Weave } from './FirstEditionCoverSecond';
 import { Fleuron, GARAMOND, KR_SERIF, Laid, Rule } from './FirstEditionCoverThird';
 
 // 틀 장정(LIT-IMPORT-1) — 작품 전용 그림 없이 표기 데이터(색 · 장식 · 글자 줄)로 짓는 초판식 앞표지. 키 · 색 · 장식 목록은
@@ -102,7 +102,7 @@ function TemplateCjkVertical({ display, tone }) {
   const longest = Math.max(...columns.map((line) => [...line].length));
   const step = Math.min(24, 92 / longest); // 제목 세로 길이 ≤ 92 — 아래 출판사 괘선(y 132) 위에서 끝난다
   const size = Math.min(columns.length > 1 ? 15 : 19, step * 0.85);
-  const face = /\p{Script=Hangul}/u.test(display.coverTitle + display.coverAuthor) ? KR_SERIF : SONG; // 한글 표지는 명조, 중국어는 송체
+  const face = /\p{Script=Hangul}/u.test(display.coverTitle + display.coverAuthor) ? KO_PRINT : SONG; // 한글 표지는 근대 활자(조선100년체 · 한자는 쓰키지 명조), 중국어는 송체
   const vertical = { writingMode: 'vertical-rl', textOrientation: 'upright', fontFamily: face }; // 섞인 라틴 글자(「阿Q正传」)도 눕히지 않는다
   const authorX = 76 - columns.length * size * 1.35 - 6;
   return (

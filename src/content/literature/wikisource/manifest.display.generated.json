@@ -2762,8 +2762,9 @@
         "titleKo": "진달래꽃",
         "authorKo": "김소월",
         "binding": "jindallae",
-        "coverTitle": "진달래꽃",
-        "coverSubtitle": "詩集"
+        "coverTitle": "진달내ᄭᅩᆺ",
+        "coverSubtitle": "金素月詩集",
+        "coverEdition": "—1925—"
       },
       "language": "Korean",
       "size": 18218,
@@ -2841,9 +2842,7 @@
         "titleKo": "동백꽃",
         "authorKo": "김유정",
         "binding": "dongbaek",
-        "coverTitle": "동백꽃",
-        "coverAuthor": "金裕貞 著",
-        "coverSubtitle": "短篇集"
+        "coverTitle": "동백꽃"
       },
       "language": "Korean",
       "size": 5102,
@@ -2926,7 +2925,7 @@
         "titleKo": "날개",
         "authorKo": "이상",
         "binding": "isang",
-        "coverTitle": "날개"
+        "coverTitle": "李箱選集"
       },
       "language": "Korean",
       "size": 16481,
@@ -2961,29 +2960,47 @@
       "title": "하늘과 바람과 별과 시",
       "author": "윤동주",
       "level": "고급",
-      "total": 2,
+      "total": 7,
       "display": {
         "titleKo": "하늘과 바람과 별과 시",
         "authorKo": "윤동주",
-        "binding": "jeongeum",
-        "coverTitle": "하늘과바람과별과詩",
-        "coverSubtitle": "尹東柱遺稿集",
-        "coverImprint": "正音社"
+        "binding": "jeongeum-1955",
+        "coverTitle": "하늘과 바람과 별과 詩"
       },
       "language": "Korean",
-      "size": 5413,
+      "size": 19557,
       "unit": "chars",
       "literature": {
-        "publishedYear": 1948
+        "publishedYear": 1955
       },
       "chapters": [
         {
           "order": 1,
-          "title": "서시 외 17편"
+          "title": "서시 외 16편"
         },
         {
           "order": 2,
-          "title": "별 헤는 밤 외 12편"
+          "title": "길 외 13편"
+        },
+        {
+          "order": 3,
+          "title": "아우의 인상화 외 20편"
+        },
+        {
+          "order": 4,
+          "title": "산림 외 24편"
+        },
+        {
+          "order": 5,
+          "title": "편지 외 12편"
+        },
+        {
+          "order": 6,
+          "title": "별똥 떨어진데 외 1편"
+        },
+        {
+          "order": 7,
+          "title": "종시"
         }
       ]
     },

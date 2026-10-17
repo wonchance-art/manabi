@@ -96,17 +96,20 @@ export const FIRST_EDITION_BINDINGS = Object.freeze({
   gaebyeok: Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle', 'coverAuthor', 'coverImprint', 'coverEdition'], optional: [], titleLines: 1, titleMax: 8, year: false, note: 'Gaebyeok 1924 — black ground, red/white incised masthead (record, no photo)' }),
   // 『이효석단편선』 박문문고 1941(A6, 레클람 문고 본뜸) — 표지 사진 미확인. 문고 관례(가는 이중 테 · 세로 제목 · 아래 출판사).
   bakmun: Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle', 'coverAuthor', 'coverImprint'], optional: ['coverEdition'], titleLines: 1, titleMax: 10, year: false, note: 'Bakmun bunko 1941 — series convention (no photo)' }),
-  // 『동백꽃』 1938 속표지 — 회베이지 종이 · 붓글씨 세로 제목 · 왼쪽 위 「短篇集」 · 오른쪽 아래 「金裕貞 著」(장정 하드커버는 무지).
-  dongbaek: Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle', 'coverAuthor', 'coverSubtitle'], optional: [], titleLines: 1, titleMax: 4, year: false, note: 'Dongbaekkot 1938 title page — brush vertical title' }),
-  // 『이상선집』 백양당 1949 — 바랜 크림 종이 · 붓글씨 세로 제목(적갈) · 오른쪽에 날아가는 초록 새와 가는 물결선. 판 안 제목만 작품 이름.
-  isang: Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle'], optional: [], titleLines: 1, titleMax: 4, year: false, note: 'Yi Sang seonjip 1949 — brush title, green bird' }),
+  // 『동백꽃』 붉은 동백 판(오너가 준 실물 사진 2026-10-17 KST — 판 미상) — 회베이지 종이 · 왼쪽 위 붓 세로 제목 · 붉은 동백 두 송이와 먹빛 잎(스텐실 찍기) · 떨어진 꽃잎.
+  // 1938 삼문사 판은 앞표지가 무지라 대신 이 판을 쓴다(오너 결정).
+  dongbaek: Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle'], optional: [], titleLines: 1, titleMax: 4, year: false, note: 'Dongbaekkot — red camellias, stencil leaves, brush title (owner photo)' }),
+  // 『이상선집』 백양당 1949(오너 「날개는 이상 선집」 2026-10-17 KST — 「날개」는 잡지 초출이라 첫 단행본) — 바랜 크림 종이 · 왼쪽 큰 붓 한자 세로 제목
+  // 「李箱選集」(적갈) · 오른쪽 아래 빗금을 끌고 나는 짙은 초록 새. 장정가 미확인(복각본 기준).
+  isang: Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle'], optional: [], titleLines: 1, titleMax: 4, year: false, note: 'Yi Sang seonjip 1949 — brush Hanja title, dark green bird' }),
   // 『감자』 한성도서 1935 — 주황 종이 · 위·좌·우 먹 덩굴 테 · 큰 붓글씨 세로 제목 · 오른쪽 「金東仁 作」 · 왼쪽 「短篇小說集」 · 아래 먹 꽃.
   gamja: Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle', 'coverAuthor', 'coverSubtitle'], optional: [], titleLines: 1, titleMax: 3, year: false, note: 'Gamja 1935 — orange paper, ink vine border and flowers' }),
-  // 『진달내꽃』 매문사 1925(등록문화재 470-4) — 황갈 종이 · 위 짙은 붓띠 안에 밝게 빠진 제목(가로 오른쪽→왼쪽) · 「詩集」 · 진달래 가지와 바위 선화 · 아래 짙은 띠.
-  jindallae: Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle', 'coverSubtitle'], optional: [], titleLines: 1, titleMax: 5, year: false, note: 'Jindallaekkot 1925 (470-4) — brush band, azalea and rock drawing' }),
-  // 『하늘과 바람과 별과 시』 정음사 1948 — 갈포(거친 베) 위 흰 종이 제첨 · 둥근 모서리 테 안 3줄(유고집 · 제목 · 출판사).
-  // 이정(1924–1995)의 청색 목판화 표지는 한국에서 보호 중이라 쓰지 않는다.
-  jeongeum: Object.freeze({ material: 'burlap', script: 'ko', required: ['coverTitle', 'coverSubtitle', 'coverImprint'], optional: [], titleLines: 1, titleMax: 12, year: false, note: 'Jeongeumsa 1948 — burlap with white paper label' }),
+  // 『진달내ᄭᅩᆺ』 매문사 1925 중앙서림 총판본(등록문화유산 470-1, 오너 「1925년 초판본 '달내ᄭᅩᆺ'으로」 2026-10-17 KST) — 연초록 종이 · 활자만:
+  // 작은 「金素月詩集」 · 큰 「진달내ᄭᅩᆺ」(가로 오른쪽→왼쪽) · 그 아래 가는 줄 · 맨 아래 「—1925—」. 그림 없음. 제목은 옛한글 그대로(표지만 — 본문은 현대어 칸).
+  jindallae: Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle', 'coverSubtitle', 'coverEdition'], optional: [], titleLines: 1, titleMax: 6, year: false, note: 'Jindallaekkot 1925 Jungang Seorim issue (470-1) — type only, old Hangul title' }),
+  // 『하늘과 바람과 별과 詩』 정음사 1955 증보판(시 89 · 산문 4, 오너 「1955년 재판본으로」 2026-10-17 KST) — 국방색 종이 · 왼쪽 위 굵은 도안 글자 세로 제목
+  // (하늘 · 바람 · 별 · 詩는 크게, 「과」는 작게). 표지 그림(학 · 붉은 꽃)은 김환기(1913–1974) 작품이라 한국에서 보호 중 — 그리지 않는다(1948 이정 판화도 같은 이유).
+  'jeongeum-1955': Object.freeze({ material: 'paper', script: 'ko', required: ['coverTitle'], optional: [], titleLines: 1, titleMax: 14, year: false, note: 'Jeongeumsa 1955 enlarged edition — heavy vertical title (painting omitted: Kim Whanki, protected)' }),
   // 영어
   // Secker & Warburg 1945 재킷 — 왼쪽 아래→오른쪽 위 대각선(위 회베이지 · 아래 초록) · 크림 손글씨풍 기울임 대문자 · 「by」 필기체 · 굵은 작가.
   'secker-diagonal': Object.freeze({ material: 'paper', script: 'en', required: ['coverTitle', 'coverSubtitle', 'coverAuthor'], optional: [], titleLines: 2, titleMax: 8, year: false, note: 'Secker & Warburg 1945 Animal Farm jacket' }),

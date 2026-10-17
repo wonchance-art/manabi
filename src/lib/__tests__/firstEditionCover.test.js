@@ -144,19 +144,28 @@ describe('2차 묶음(오너 「원본 책 재구성 … 표지 만들기까지 
       expect(draw(work.display)).toContain(`data-binding="${work.display.binding}"`);
     }
   });
-  it('그리지 않는 것 — 왕자 그림 · 소행성 · 출판사 문장 · nrf · 실존 인물 서명 · 이정 목판화(근거를 코드 주석에 남긴다)', () => {
+  it('그리지 않는 것 — 왕자 그림 · 소행성 · 출판사 문장 · nrf · 실존 인물 서명 · 김환기 · 이정 표지 그림(근거를 코드 주석에 남긴다)', () => {
     const source = read('src/components/books/FirstEditionCoverSecond.jsx');
     for (const note of ['왕자 그림 · 소행성은 그리지 않는다', '가운데 출판사 문장은 그리지 않는다', 'nrf 모노그램은 그리지 않는다', '실존 인물 서명이라 형태 없는 흘림으로만']) expect(source).toContain(note);
-    expect(read('src/lib/firstEditionCover.js')).toContain('이정(1924–1995)의 청색 목판화 표지는 한국에서 보호 중이라 쓰지 않는다');
+    expect(read('src/lib/firstEditionCover.js')).toContain('김환기(1913–1974) 작품이라 한국에서 보호 중 — 그리지 않는다(1948 이정 판화도 같은 이유)');
     // 3차 — 출판사 도안(종 · 문장) · 초상 · 일본 황실 16엽 국화 문장 모양(국화는 고르지 않게 흩은 꽃잎)
     const third = read('src/components/books/FirstEditionCoverThird.jsx');
     for (const note of ['출판사 도안(Bell and Daldy 종 · Swan Sonnenschein 문장)', '초상(프랭클린 권두 초상 · 베네딕트 사진)', '일본 황실 16엽 국화 문장 모양은 그리지 않는다', '대칭 16엽 원판(황실 문장) 모양이 되지 않게']) expect(third).toContain(note);
   });
   it('글꼴 — 실물과 대조해 고른 당시 글꼴 · 글꼴 변수는 늘 대체 이름을 품는다(정의 안 된 var()는 font-family 전체를 무효로 만든다)', () => {
     const source = read('src/components/books/FirstEditionCoverSecond.jsx') + read('src/components/books/FirstEditionCover.jsx') + read('src/components/books/FirstEditionCoverThird.jsx');
-    for (const family of ['EB_Garamond', 'Noto_Serif_KR', 'Kirang_Haerang', 'Song_Myung', 'East_Sea_Dokdo', 'Dokdo', 'Nanum_Myeongjo', 'Josefin_Sans', 'Jost', 'Kaushan_Script', 'Yellowtail', 'Gochi_Hand', 'Goudy_Bookletter_1911', 'IM_Fell_English', 'GFS_Didot']) expect(source).toContain(`${family}(`);
+    for (const family of ['EB_Garamond', 'Noto_Serif_KR', 'Shippori_Mincho_B1', 'Song_Myung', 'Yuji_Syuku', 'Black_Han_Sans', 'Nanum_Myeongjo', 'Josefin_Sans', 'Jost', 'Kaushan_Script', 'Yellowtail', 'Gochi_Hand', 'Goudy_Bookletter_1911', 'IM_Fell_English', 'GFS_Didot']) expect(source).toContain(`${family}(`);
     const bare = [...source.matchAll(/var\((--font-[a-z-]+)\)/gu)].map((match) => match[1]);
     expect(bare).toEqual([]);
+  });
+  it('한국 근대 표지 — 한글은 근대 활자(조선100년체) · 한자는 쇼호리 명조로 글자마다 넘어간다 · 옛한글 제목은 한 파일 글꼴(자모가 갈리지 않게)', () => {
+    const css = read('src/components/books/first-edition-cover.css');
+    expect(css).toMatch(/font-family:"Chosun Centennial";src:url\("\/fonts\/chosun-centennial\/[^"]+"\)[^}]*unicode-range:U\+1100-11FF,U\+3130-318F,U\+AC00-D7A3/u);
+    expect(css).toContain('font-family:"Manabi Old Hangul Title";src:url("/fonts/manabi-old-hangul/ManabiOldHangulTitle.woff2")');
+    for (const file of ['public/fonts/chosun-centennial/LICENSE.txt', 'public/fonts/manabi-old-hangul/OFL.txt']) expect(read(file).length).toBeGreaterThan(200);
+    const source = read('src/components/books/FirstEditionCoverSecond.jsx');
+    expect(source).toMatch(/KO_PRINT = `"Chosun Centennial", \$\{HANJA\}`/u);
+    expect(source).toContain('Intl.Segmenter'); // 자간(letterSpacing)은 옛한글 자모 조합을 깨서 글자 단위로 놓는다
   });
 });
 
