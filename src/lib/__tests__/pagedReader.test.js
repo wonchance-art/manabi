@@ -192,7 +192,7 @@ describe('paged controller', () => {
     expect(c.captureAnchor(99)).toMatchObject({ kind: 'tail' });
     expect(c.captureAnchor(0)).toMatchObject({ kind: 'element' });
   });
-  it('snaps a foreign scroll (find, focus) to the nearest page, or to the focused element', () => {
+  it('snaps a foreign scroll (find, focus) to the nearest page, or to the element focus just moved to', () => {
     const reader = fakeReader();
     const c = controller(reader);
     reader.pages.scrollLeft = 348 * 2.3; // 브라우저 찾기가 어중간하게 끌고 감
@@ -200,10 +200,13 @@ describe('paged controller', () => {
     expect(c.state.page).toBe(2);
     expect(reader.pages.scrollLeft).toBe(696);
     c.handleScroll(); // 맞춤 자체가 낸 스크롤 이벤트는 무시하고 표식을 걷는다
-    reader.pages.ownerDocument.activeElement = reader.tokenEls[71];
-    reader.pages.scrollLeft = 348 * 6.2; // 포커스 이동의 nearest 정렬 — 가까운 쪽이 아니라 포커스의 쪽
+    // 포커스 이동(쪽 2의 마지막 낱말 — focusin은 쪽을 바꾸지 않음)이 낸 nearest 정렬 — 가까운 쪽(3)이 아니라 포커스의 쪽
+    reader.pages.ownerDocument.activeElement = reader.tokenEls[29];
+    c.handleFocusIn({ target: reader.tokenEls[29] });
+    expect(c.state.page).toBe(2);
+    reader.pages.scrollLeft = 348 * 2.6;
     c.handleScroll();
-    expect(c.state.page).toBe(7);
+    expect(c.state.page).toBe(2);
     c.handleFocusIn({ target: reader.tokenEls[5] });
     expect(c.state.page).toBe(0);
   });
@@ -362,22 +365,116 @@ describe('focus on a line-head button follows its word page', () => {
     expect(c.state.page).toBe(2);
     expect(reader.pages.scrollLeft).toBe(696);
   });
-  it('a foreign scroll while the button holds focus aligns to the word page too', () => {
-    const reader = fakeReader();
-    const c = controller(reader);
-    c.goTo(1);
-    c.handleScroll(); // 우리 이동이 낸 스크롤 이벤트 — 표식을 걷는다
-    const button = buttonOf(reader, 20);
-    reader.pages.contains = el => reader.tokenEls.includes(el) || el === button;
-    reader.pages.ownerDocument.activeElement = button;
-    reader.pages.scrollLeft = 348 * 1.1; // 브라우저의 포커스 스크롤이 어중간하게 끌고 감
-    c.handleScroll();
-    expect(c.state.page).toBe(2);
+  it('the focus scroll that follows the button focus aligns to the word page too', () => {
+    let now = 5_000_000;
+    const spy = vi.spyOn(Date, 'now').mockImplementation(() => now);
+    try {
+      const reader = fakeReader();
+      const c = controller(reader);
+      c.goTo(1); now += 1000;
+      c.handleScroll(); // 우리 이동이 낸 스크롤 이벤트 — 표식을 걷는다
+      const button = buttonOf(reader, 20);
+      reader.pages.contains = el => reader.tokenEls.includes(el) || el === button;
+      reader.pages.ownerDocument.activeElement = button;
+      c.handleFocusIn({ target: button });
+      now += 200; // 우리 맞춤의 표식 시간(120ms)이 지난 뒤 도착한 브라우저의 포커스 스크롤 — 초점이 방금 바뀐 스크롤(500ms 안)
+      reader.pages.scrollLeft = 348 * 1.1;
+      c.handleScroll();
+      expect(c.state.page).toBe(2);
+    } finally { spy.mockRestore(); }
   });
   it('wiring: focus · scroll · release all measure through the word (focusPageTarget)', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/lib/usePagedReader.js'), 'utf8');
-    expect(src).toContain("const focusPageTarget = el => { const item = el?.closest?.(opt().anchorSelector || '[data-source-token]'); return item && item !== pages && pages.contains?.(item) ? item : el; };");
-    expect(src.match(/pageOf\(focusPageTarget\(active\)\)/g)).toHaveLength(2);
+    expect(src).toContain("const focusPageTarget = el => { const item = el?.closest?.(opt().focusSelector || FOCUS_ITEM); return item && item !== pages && pages.contains?.(item) ? item : el; };");
+    expect(src.match(/pageOf\(focusPageTarget\(active\)\)/g)).toHaveLength(1); // focusedPage 한 곳
+    // 스크롤 · 뗀 뒤 맞춤은 초점이 방금 바뀐 경우에만 초점 쪽(FOREIGN-SCROLL-001)
+    expect(sliceBetween(src, 'function handleScroll() {', '\n  }')).toContain('(Date.now() - focusAt < FOCUS_SCROLL_MS ? focusedPage() : null) ?? nearestPage(left, step, count)');
+    expect(sliceBetween(src, 'function settleDeferred() {', '\n  }')).toContain('(byFocus ? focusedPage() : null) ?? nearestPage(');
+    expect(sliceBetween(src, 'function handleFocusIn(event) {', '\n  }')).toContain('focusAt = Date.now();');
     expect(sliceBetween(src, 'function handleFocusIn(event) {', '\n  }')).toContain('const next = pageOf(focusPageTarget(target));');
+  });
+});
+
+// 초점이 본문 낱말에 그대로 남은 채 브라우저 찾기(Ctrl+F) · 화면 읽기 도구가 다른 쪽으로 스크롤하면(FOREIGN-SCROLL-001, 2026-10-17 KST)
+// 그 스크롤이 닿은 쪽으로 맞춘다 — 예전엔 handleScroll이 초점 낱말의 쪽으로 되돌려 찾은 글자가 화면에서 사라졌다.
+// 초점이 「방금」 바뀐 스크롤(Tab · 클릭이 낸 nearest 정렬)만 초점 쪽으로 끌어온다. Tab 초점 따라가기(focusin)는 그대로.
+describe('a foreign scroll with unchanged focus stays where it landed', () => {
+  const clock = start => { let now = start; const spy = vi.spyOn(Date, 'now').mockImplementation(() => now); return { tick: ms => { now += ms; }, restore: () => spy.mockRestore() }; };
+  it('find / screen reader: focus left on a word earlier does not pull the scroll back', () => {
+    const t = clock(1_000_000);
+    try {
+      const reader = fakeReader();
+      const c = controller(reader);
+      reader.pages.ownerDocument.activeElement = reader.tokenEls[5]; // 앞서 누른 낱말(쪽 0)에 초점이 남아 있다
+      c.handleFocusIn({ target: reader.tokenEls[5] });
+      t.tick(5000); // 한참 뒤 Ctrl+F
+      reader.pages.scrollLeft = 348 * 5.2;
+      c.handleScroll();
+      expect(c.state.page).toBe(5);
+      expect(reader.pages.scrollLeft).toBe(348 * 5);
+      t.tick(1000);
+      c.handleScroll(); // 맞춤이 낸 스크롤 — 표식만 걷는다
+      reader.pages.scrollLeft = 348 * 7.4; // 화면 읽기 도구의 다음 줄 스크롤
+      c.handleScroll();
+      expect(c.state.page).toBe(7);
+    } finally { t.restore(); }
+  });
+  it('the focus-driven scroll right after a focus change still aligns to the focused word', () => {
+    const t = clock(2_000_000);
+    try {
+      const reader = fakeReader();
+      const c = controller(reader);
+      c.goTo(2); t.tick(1000); c.handleScroll();
+      reader.pages.ownerDocument.activeElement = reader.tokenEls[29];
+      c.handleFocusIn({ target: reader.tokenEls[29] });
+      t.tick(16); // 다음 프레임의 스크롤 이벤트
+      reader.pages.scrollLeft = 348 * 2.6;
+      c.handleScroll();
+      expect(c.state.page).toBe(2);
+    } finally { t.restore(); }
+  });
+  it('after a press: a focus taken by the press aligns to it; a press without a focus change lands on the nearest page', () => {
+    const t = clock(3_000_000);
+    try {
+      const reader = fakeReader();
+      const c = controller(reader);
+      reader.pages.ownerDocument.activeElement = reader.tokenEls[5];
+      c.handleFocusIn({ target: reader.tokenEls[5] });
+      t.tick(5000);
+      c.handlePointerDown({ pointerId: 4, pointerType: 'mouse', clientX: 10, clientY: 10 }); // 초점은 그대로(글자 끌어 고르기 등)
+      reader.pages.scrollLeft = 348 * 3.2;
+      c.handleScroll();
+      expect(c.state.page).toBe(0);
+      c.handleRelease();
+      expect(c.state.page).toBe(3);
+    } finally { t.restore(); }
+  });
+});
+
+// 초점 귀속 대상(focusSelector)은 쪽 기준 요소(anchorSelector)와 따로다 — 원본 리더의 기준 요소는 본문 전체 article(.original-writing,
+// 여러 쪽에 걸침)이라, 그 안 초점을 article로 귀속하면 어느 쪽에 있든 첫 쪽으로 튄다(PAGED-FOCUS-001 리뷰 2026-10-17 KST).
+describe('focus attribution is separate from the page anchor selector', () => {
+  it('a focused element inside a multi-page anchor container measures by itself, not by the container', () => {
+    const reader = fakeReader();
+    const article = { nodeType: 1, getClientRects() { return [this.getBoundingClientRect()]; },
+      getBoundingClientRect() { const left = -reader.pages.scrollLeft; return { left, right: left + 300, top: 100, bottom: 700, width: 300, height: 600 }; } };
+    const link = { nodeType: 1, closest: sel => (sel === '.original-writing' ? article : null),
+      getClientRects() { return [this.getBoundingClientRect()]; },
+      getBoundingClientRect() { const left = 3 * 348 - reader.pages.scrollLeft; return { left, right: left + 40, top: 140, bottom: 170, width: 40, height: 30 }; } };
+    reader.pages.contains = el => reader.tokenEls.includes(el) || el === article || el === link;
+    const c = controller(reader, { anchorSelector: '.original-writing' });
+    c.handleFocusIn({ target: link });
+    expect(c.state.page).toBe(3);
+  });
+  it('wiring: focusPageTarget reads focusSelector (default word), never anchorSelector; the original reader passes no focusSelector', () => {
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/lib/usePagedReader.js'), 'utf8');
+    const fn = sliceBetween(src, 'const focusPageTarget = el =>', '\n');
+    expect(fn).toContain('opt().focusSelector || FOCUS_ITEM');
+    expect(fn).not.toContain('anchorSelector');
+    expect(src).toContain("const FOCUS_ITEM = '[data-source-token]';");
+    expect(src).toMatch(/latest\.current = \{[^}]*\bfocusSelector\b/);
+    const original = fs.readFileSync(path.join(process.cwd(), 'src/components/materials/OriginalMaterialReader.jsx'), 'utf8');
+    expect(original).toContain("anchorSelector:'.original-writing'");
+    expect(original).not.toMatch(/focusSelector/);
   });
 });
