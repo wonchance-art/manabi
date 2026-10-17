@@ -40,13 +40,14 @@ function fakeWorld({ withPanel = true } = {}) {
       return { top: 836 - height, bottom: 836, height };
     },
   };
-  const topbar = { getBoundingClientRect: () => ({ top: 68, bottom: 126 }) };
+  const bar = { bottom: 126 };
+  const topbar = { getBoundingClientRect: () => ({ top: 68, bottom: bar.bottom }) };
   const children = { panel: withPanel ? panel : null };
   const layout = { querySelector: sel => (sel === '.viewer-inspector' ? children.panel : sel === '.viewer-topbar' ? topbar : null) };
   const selected = { current: null };
   const root = { dataset: {}, closest: () => layout, querySelector: sel => (sel === '[data-selected]' ? selected.current : null) };
   const token = (top) => ({ isConnected: true, contains: () => false, getBoundingClientRect: () => ({ top, bottom: top + 56 }) });
-  return { panel, panelClasses, layout, root, token, selected, attach: () => { children.panel = panel; } };
+  return { panel, panelClasses, layout, root, token, selected, bar, attach: () => { children.panel = panel; } };
 }
 // 둘째 효과(처음 열 때 첫 그리기 전 자리) — 시트를 보이게 한 DOM 변경을 MutationObserver가 알린다.
 function useShowEffect(world) {
@@ -261,5 +262,73 @@ describe('pagedSheetDock — visualViewport 좌표계', () => {
     expect(pagedSheetDock({ ...base, viewportTop: 300, tokenTop: 480, tokenBottom: 536 }).dock).toBe('top'); // 508 > 500
     expect(pagedSheetDock({ ...base, tokenTop: 440, tokenBottom: 496 }).dock).toBe('top'); // offsetTop 0이면 가운데 200
     expect(pagedSheetDock({ ...base, viewportTop: NaN, tokenTop: 480, tokenBottom: 536 })).toEqual({ dock: 'bottom' });
+  });
+});
+
+// 비차단 2(B1 후속, 2026-10-17 KST): 따라갈 수 없는 쪽 넘김 자료(분석 어긋남 · 미분석 줄)는 듣기 「지금 문장」 줄이 보여 문장마다
+// 머리줄이 자라고 준다(390 실측 59→160px). 위에 세운 시트의 위 끝은 열 때의 머리줄 바닥으로 잠겨 있어 자란 머리줄과 겹쳤다.
+// 머리줄 크기 변화(ResizeObserver, 그리기 전)는 --reader-sheet-top만 다시 맞춘다 — 높이 · 위/바닥 판정은 그대로.
+describe('위에 세운 시트 — 머리줄이 문장마다 자라고 줄면 위 끝만 따라간다', () => {
+  const ro = () => { for (const observer of resizeCallbacks.filter(o => o.on)) observer.cb([]); };
+  it('문장마다 바뀌는 머리줄 바닥 + 8로 위 끝을 옮기고, 낮춘 높이 · 자리는 다시 정하지 않는다', () => {
+    const world = fakeWorld(), tokens = { a: world.token(531) };
+    world.panel.card = true;
+    useMountedEffect(world, tokens, 'a');
+    flushFrame();
+    expect(world.panel.dataset).toEqual({ dock: 'top', compact: 'true' });
+    expect(world.panel.style.getPropertyValue('--reader-sheet-top')).toBe('134px');
+    const height = world.panel.style.getPropertyValue('--reader-sheet-compact');
+    for (const bottom of [214, 150, 278, 126]) { // 긴 문장 · 짧은 문장 · 더 긴 문장 · 듣기 끝
+      world.bar.bottom = bottom; ro();
+      expect(world.panel.style.getPropertyValue('--reader-sheet-top')).toBe(`${bottom + 8}px`); // 같은 콜백(그리기 전)
+      flushFrame();
+      expect(world.panel.style.getPropertyValue('--reader-sheet-top')).toBe(`${bottom + 8}px`); // 다음 프레임의 끌어오기가 되돌리지 않는다
+      expect(world.panel.dataset).toEqual({ dock: 'top', compact: 'true' });
+      expect(world.panel.style.getPropertyValue('--reader-sheet-compact')).toBe(height);
+    }
+  });
+  it('펼친 동안 자란 머리줄도 맞춰 둔다 — 펼침을 풀면 지금 머리줄 아래에 선다(다시 판정 없음)', () => {
+    const world = fakeWorld(), tokens = { a: world.token(531) };
+    world.panel.card = true;
+    useMountedEffect(world, tokens, 'a');
+    flushFrame();
+    world.panelClasses.add('is-expanded');
+    world.bar.bottom = 214; ro(); flushFrame();
+    world.panelClasses.delete('is-expanded'); ro(); flushFrame();
+    expect(world.panel.dataset).toEqual({ dock: 'top', compact: 'true' });
+    expect(world.panel.style.getPropertyValue('--reader-sheet-top')).toBe('222px');
+  });
+  it('첫 열림 판정 중(data-placing)에는 건드리지 않는다 — 판정이 그때의 머리줄로 정한다', () => {
+    const world = fakeWorld(), tokens = { a: world.token(688) };
+    useMountedEffect(world, tokens, 'a');
+    expect(world.panel.dataset.placing).toBe('true');
+    world.bar.bottom = 214; ro();
+    expect(world.panel.style.getPropertyValue('--reader-sheet-top')).toBe('');
+    flushFrame();
+    expect(world.panel.dataset).toEqual({ dock: 'top' });
+    expect(world.panel.style.getPropertyValue('--reader-sheet-top')).toBe('222px');
+  });
+  it('바닥 시트 · 보이는 영역 위 끝 아래 머리줄', () => {
+    const low = fakeWorld(), tokens = { high: low.token(200) };
+    low.panel.card = true; // 핵심을 재 잠긴 바닥 시트 — 다시 판정이 지워 주지 않는다
+    useMountedEffect(low, tokens, 'high');
+    flushFrame();
+    low.bar.bottom = 278; ro(); flushFrame();
+    expect(low.panel.dataset.dock).toBeUndefined();
+    expect(low.panel.style.getPropertyValue('--reader-sheet-top')).toBe(''); // 바닥 시트에는 위 끝을 걸지 않는다
+    resizeCallbacks.forEach(o => { o.on = false; });
+    window.visualViewport.offsetTop = 300; window.visualViewport.height = 400; // 키보드 — 보이는 영역 300–700
+    const kb = fakeWorld(), more = { a: kb.token(560) };
+    useMountedEffect(kb, more, 'a');
+    flushFrame();
+    expect(kb.panel.style.getPropertyValue('--reader-sheet-top')).toBe('308px');
+    kb.bar.bottom = 214; ro();
+    expect(kb.panel.style.getPropertyValue('--reader-sheet-top')).toBe('308px'); // max(머리줄 214, 보이는 위 끝 300) + 8
+  });
+  it('배선 — 판정과 다시 맞추기가 같은 위 끝 식(sheetTopLimit)을 쓴다', async () => {
+    const fs = await import('node:fs'), path = await import('node:path');
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/lib/useReaderLayout.js'), 'utf8');
+    expect(src).toContain('topLimit: sheetTopLimit(layout, viewTop), naturalHeight: natural.height');
+    expect(src).toContain('new ResizeObserver(() => { holdSheet(); retopPagedSheet(panel, layout); reveal(); })');
   });
 });
