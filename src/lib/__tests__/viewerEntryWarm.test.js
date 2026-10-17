@@ -105,6 +105,20 @@ describe('R1 조기 조회 등록부 — 받아 쓰기와 폴백', () => {
       expect(lib.takeEarlyMaterial('45', 1300, { owner: 'A' })).toBe(null); // 버렸다 — 원래 계정에도 다시 넘기지 않는다
     }
   });
+  it('계정 기준은 화면 계정(knownAccount — 기기 캐시 계정 묶기와 같은 기준): 띄울 때 · 받을 때 따로 넘기지 않아도 그 값', async () => {
+    const accounts = await import('../accountQueryCache');
+    const f = fetchOnce();
+    accounts.noteAccount('A');
+    lib.startEarlyMaterial('/viewer/45', 1000, { fetch: f.fetch });
+    accounts.noteAccount('B'); // 계정 전환
+    expect(lib.takeEarlyMaterial('45', 1100)).toBe(null);
+    accounts.noteAccount('A');
+    lib.startEarlyMaterial('/viewer/45', 1200, { fetch: f.fetch });
+    expect(await lib.takeEarlyMaterial('45', 1300)).toEqual({ id: '45', n: 2 });
+    accounts.noteAccount(null); // 손님
+    lib.startEarlyMaterial('/viewer/45', 1400, { fetch: f.fetch });
+    expect(lib.takeEarlyMaterial('45', 1500, { owner: 'A' })).toBe(null);
+  });
   it('직접 진입(계정 모름)은 같은 첫 화면이라 그대로 받는다', async () => {
     const f = fetchOnce();
     lib.startEarlyMaterial('/viewer/45', 1000, { fetch: f.fetch });
@@ -153,8 +167,9 @@ describe('R1 조기 조회 등록부 — 받아 쓰기와 폴백', () => {
     expect(fetch).toHaveBeenCalledTimes(3);
     un();
   });
-  it('같은 자료를 두 번 띄우지 않는다 — 서재가 띄운 뒤 뷰어 모듈 평가(계정 모름)가 와도 그대로 둔다', () => {
+  it('같은 자료를 두 번 띄우지 않는다 — 서재가 띄운 뒤 뷰어 모듈 평가(같은 화면 계정)가 와도 그대로 둔다', async () => {
     const f = fetchOnce();
+    (await import('../accountQueryCache')).noteAccount('A'); // 앱 안 이동: 뷰어 모듈 평가 때 화면 계정 = 누른 계정
     const first = lib.startEarlyMaterial('/viewer/45', 1000, { owner: 'A', fetch: f.fetch });
     expect(lib.startEarlyMaterial('/viewer/45', 1200, { fetch: f.fetch })).toBe(first);
     expect(lib.startEarlyMaterial('/viewer/45', 1300, { owner: 'A', fetch: f.fetch })).toBe(first);
@@ -170,10 +185,10 @@ describe('R1 조기 조회 등록부 — 받아 쓰기와 폴백', () => {
   it('배선: 서재 링크가 누르는 순간 누른 계정으로 띄우고(새 탭 · 수정키는 제외), 뷰어는 지금 계정으로 받는다', () => {
     const src = read('src/components/web/LibraryReaderLink.jsx');
     const open = sliceBetween(src, 'const openReader = (href, event) => {', 'return { readerHref, openReader, router };');
-    expect(open.indexOf('event.metaKey || event.ctrlKey')).toBeLessThan(open.indexOf('startEarlyMaterial(href, Date.now(), { owner: user?.id ?? null });'));
+    expect(open.indexOf('event.metaKey || event.ctrlKey')).toBeLessThan(open.indexOf('startEarlyMaterial(href, Date.now());'));
     expect(open.indexOf('startEarlyMaterial(')).toBeLessThan(open.indexOf('router.push('));
     const viewer = read('src/views/ViewerPage.jsx');
-    expect(viewer).toContain("queryFn: () => loadMaterial(id, { owner: user?.id ?? null, cached: queryClient.getQueryData(['material', id]) !== undefined }),");
+    expect(viewer).toContain("queryFn: () => loadMaterial(id, { cached: queryClient.getQueryData(['material', id]) !== undefined }),");
     expect(viewer).toContain("useEffect(() => { if (queryClient.getQueryData(['material', id]) !== undefined) discardEarlyMaterial(id); }, [id, queryClient]);");
   });
   it('서재 누름: 이 자료가 캐시에 있으면(다시 누름) 띄우지 않는다 · 없으면 띄운다 · 수정키 클릭은 아무것도 안 한다', () => {

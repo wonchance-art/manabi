@@ -317,7 +317,7 @@ export default function ViewerPage() {
   useEffect(() => { if (queryClient.getQueryData(['material', id]) !== undefined) discardEarlyMaterial(id); }, [id, queryClient]);
   const { data: material, isLoading, error, refetch } = useQuery({
     queryKey: ['material', id],
-    queryFn: () => loadMaterial(id, { owner: user?.id ?? null, cached: queryClient.getQueryData(['material', id]) !== undefined }),
+    queryFn: () => loadMaterial(id, { cached: queryClient.getQueryData(['material', id]) !== undefined }), // 계정 = 화면 계정(knownAccount — 등록부 기본값)
     refetchInterval: (query) => {
       const d = query.state.data;
       const s = d?.processed_json?.status || d?.status;

@@ -86,8 +86,11 @@ export function viewerMaterialId(pathname) {
   try { return decodeURIComponent(match[1]); } catch { return null; }
 }
 
-/** owner: 누른 계정 id(로그인) · null(손님) · undefined(모름 — 직접 진입). 같은 id · 같은 계정으로 이미 띄웠으면 그것을 그대로 둔다. */
-export function startEarlyMaterial(pathname, now = Date.now(), { owner, fetch = fetchMaterial } = {}) {
+/**
+ * owner: 띄우는 계정 — 기본은 화면 계정(knownAccount: 기기 캐시 계정 묶기와 같은 기준, OFFLINE-ACCOUNT-SCOPE-001). id(로그인) · null(손님) ·
+ * undefined(아직 모름 — 하이드레이션 전 직접 진입). 같은 id · 같은 계정으로 이미 띄웠으면 그것을 그대로 둔다.
+ */
+export function startEarlyMaterial(pathname, now = Date.now(), { owner = knownAccount(), fetch = fetchMaterial } = {}) {
   const id = viewerMaterialId(pathname);
   if (!id || isLocalId(id)) return null;
   const live = earlyMaterial;
@@ -99,7 +102,7 @@ export function startEarlyMaterial(pathname, now = Date.now(), { owner, fetch = 
 }
 
 /** 같은 id로 띄워 둔 조회를 한 번만 넘긴다(다시 받기 · 재시도는 새로 조회). 없거나 · 늦었거나 · 다른 계정이 띄웠으면 null. */
-export function takeEarlyMaterial(id, now = Date.now(), { owner } = {}) {
+export function takeEarlyMaterial(id, now = Date.now(), { owner = knownAccount() } = {}) {
   const early = earlyMaterial;
   if (!early || early.id !== String(id)) return null;
   earlyMaterial = null;

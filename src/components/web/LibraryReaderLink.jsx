@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { libraryReaderHref, libraryBrowseReturn } from '@/lib/libraryReturn';
-import { useAuth } from '@/lib/AuthContext';
 import { startEarlyMaterial, viewerMaterialId } from '@/lib/viewerMaterial';
 import { intentPrefetchProps } from '@/lib/intentPrefetch';
 
@@ -46,7 +45,6 @@ export function useLibraryReader() {
   const router = useRouter();
   const params = useSearchParams();
   const pathname=usePathname();
-  const { user } = useAuth();
   const queryClient = useQueryClient();
   const readerHref = href => libraryReaderHref(href, libraryBrowseReturn(pathname,`?${params}`));
   const openReader = (href, event) => {
@@ -56,7 +54,7 @@ export function useLibraryReader() {
     if (materialId) {
       warmViewer(); // R2 — 터치는 여기서(실제 누름) 받는다. 이미 받았으면 그대로
       // R1 — 이 자료가 캐시에 있으면(다시 누름) 띄우지 않는다: 뷰어는 캐시가 빈 첫 조회에서만 등록부를 쓰니 띄워도 고아가 된다.
-      if (queryClient.getQueryData(['material', materialId]) === undefined) startEarlyMaterial(href, Date.now(), { owner: user?.id ?? null });
+      if (queryClient.getQueryData(['material', materialId]) === undefined) startEarlyMaterial(href, Date.now()); // 계정 = 화면 계정(knownAccount — 등록부 기본값)
     }
     router.push(libraryReaderHref(href, libraryBrowseReturn(window.location.pathname,window.location.search), window.scrollY));
   };
