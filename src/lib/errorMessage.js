@@ -5,7 +5,9 @@
 // 「서비스 설정」 오류 — AI 제공자 결제 · 크레딧 소진(Gemini 402, 같은 문구가 429 RESOURCE_EXHAUSTED로도 온다).
 // 기다려도 풀리지 않으므로 혼잡(재시도 · 「잠시 붐비고 있어요」)으로 보지 않는다. 서버(llm.js · tts) · 클라(gemini.js) · 안내 문구가
 // 이 한 판정을 쓴다(GEMINI-402-GUARD, 2026-10-17 KST — 운영 402 「Your prepayment credits are depleted」 실측).
-export const SERVICE_CONFIG_PATTERN = /prepayment|billing|credits?\s+(?:are\s+)?depleted/i;
+// HTTP 402이거나 **구체적인 크레딧 소진 문구**만 본다. 「billing」 단독은 쓰지 않는다 — 보통 쿼터 초과 429도
+// 「…check your plan and billing details」(Gemini) · 「…/settings/billing」(Groq)를 싣는데, 그건 기다리면 풀리는 혼잡이다.
+export const SERVICE_CONFIG_PATTERN = /prepayment credits|credits?\s+(?:are\s+|have been\s+)?(?:depleted|exhausted)/i;
 export function isServiceConfigError(status, detail) {
   if (status === 402) return true;
   let text = '';

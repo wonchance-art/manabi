@@ -9,6 +9,9 @@ vi.mock('react', () => ({ useCallback: fn => fn, useEffect: () => {}, useState: 
 // GEMINI-402-GUARD(2026-10-17 KST) 클라 쪽 — 안내 문구 · 재시도 없음 · 서버 음성 실패 기억 · 「(뜻 없음)」 화면 언어.
 const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
 const BILLING_MSG = 'Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing.';
+// 음성 사례(리뷰 차단 1) — 보통 쿼터 초과 429. 「billing」이 들어 있어도 혼잡이다.
+const GEMINI_QUOTA_MSG = 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits.';
+const GROQ_QUOTA_MSG = 'Rate limit reached for model `openai/gpt-oss-120b`. Please try again in 7m. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing';
 
 describe('① 안내 · 클라 재시도', () => {
   afterEach(() => { vi.unstubAllGlobals(); });
@@ -20,6 +23,26 @@ describe('① 안내 · 클라 재시도', () => {
     expect(friendlyToastMessage(Object.assign(new Error('API 요청 실패 (HTTP 402)'), { status: 402 }), 'x')).toBe(service);
     expect(friendlyToastMessage(new Error('The model is overloaded (503)'), 'x')).toBe('AI 서비스가 잠시 붐비고 있어요. 잠시 후 다시 시도해 주세요.');
     expect(isServiceConfigError(500, 'Internal Server Error')).toBe(false);
+  });
+
+  it('음성 — 쿼터 429(Gemini · Groq 「billing」 문구)는 서비스 설정 안내가 아니다', () => {
+    for (const msg of [GEMINI_QUOTA_MSG, GROQ_QUOTA_MSG]) {
+      expect(isServiceConfigError(429, msg)).toBe(false);
+      expect(friendlyToastMessage(Object.assign(new Error(msg), { status: 429 }), 'x')).not.toBe('서비스 설정에 문제가 있어요. 관리자에게 문의해 주세요.');
+    }
+  });
+
+  it('음성 — 쿼터 429는 callGemini가 지금처럼 다시 시도한다', async () => {
+    // 백오프(5초~)만 0으로 줄인다 — 다른 타이머는 그대로.
+    const realSetTimeout = globalThis.setTimeout;
+    vi.stubGlobal('setTimeout', (fn, ms, ...args) => realSetTimeout(fn, ms >= 5000 ? 0 : ms, ...args));
+    const fetchSpy = vi.fn(async () => ({ ok: false, status: 429, text: async () => JSON.stringify({ error: { message: GEMINI_QUOTA_MSG } }) }));
+    vi.stubGlobal('fetch', fetchSpy);
+    vi.resetModules();
+    const { callGemini } = await import('../gemini.js');
+    const err = await callGemini('p', undefined, { attempts: 2 }).catch((e) => e);
+    expect(err.status).toBe(429);
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
   });
 
   it('callGemini — 결제 문구 429는 한 번만 부르고 바로 던진다(용량 재시도 4회 · 5/10/20초 백오프 없음)', async () => {
