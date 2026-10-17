@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import { LEARN_LANG_KEY, learnLanguages } from '@/lib/learnDashboard';
+import { syncScHintCookie, wantsScFont } from '@/lib/scFontHint';
 
 /**
  * 「지금 언어」 — 배움 · 현황이 같은 칩 값을 따른다. 고른 칩은 이 기기에만 기억한다(편의 설정이라
@@ -15,6 +16,9 @@ export default function useLearnLanguage(profile, vocabCounts = null) {
   useEffect(() => {
     try { setPicked(localStorage.getItem(LEARN_LANG_KEY)); } catch { /* 저장소 차단 — 첫 학습 언어 */ }
   }, []);
+  // 중국어 학습자 힌트(SC-LINK-001 2단계 C) — 프로필이 온 뒤에만 고친다(손님 · 불러오는 중에는 건드리지 않는다).
+  const hasProfile = Boolean(profile);
+  useEffect(() => { if (hasProfile) syncScHintCookie(wantsScFont(langs)); }, [hasProfile, langs]);
   const lang = langs.includes(picked) ? picked : langs[0];
   const choose = next => {
     setPicked(next);

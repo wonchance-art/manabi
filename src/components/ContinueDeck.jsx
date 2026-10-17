@@ -1,4 +1,5 @@
 'use client';
+import { ZhSlot } from '@/components/fonts/ScFontLink';
 
 /**
  * 홈 알림 덱 (오너 지시 2026-08-24) — 홈의 알림성 진입을 **전부 한 자리에 겹쳐** 두고
@@ -34,7 +35,7 @@ function ContinueRow({ item }) {
     >
       <span className="deck-card__body">
         <span className="deck-card__kicker">{item.kicker}</span>
-        <span className="deck-card__title" lang={item.titleLang}>{item.title}</span>
+        <ZhSlot lang={item.titleLang}><span className="deck-card__title" lang={item.titleLang}>{item.title}</span></ZhSlot>
         {item.chips?.length > 0 && (
           <span className="deck-card__chips">
             {item.chips.map((c) => <span key={c} className="deck-card__chip">{c}</span>)}

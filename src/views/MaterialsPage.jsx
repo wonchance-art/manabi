@@ -1,4 +1,5 @@
 'use client';
+import { ZhSlot } from '@/components/fonts/ScFontLink';
 import {currentLibraryTarget,runLibraryOperation,invalidateLibrary,filterActiveSources} from '@/lib/libraryOperations';
 import { composerOf } from '@/lib/materialComposer';
 import { documentOf, isStudySnapshot, documentListRow } from '@/lib/materialDocument';
@@ -65,7 +66,7 @@ function SuggestionCard({ suggestion: s, router, from = 'materials' }) {
           <span className="suggestion-card__source">{s.channel_name}</span>
           {canStudy && <span className="suggestion-card__ready">✓ 바로 읽기</span>}
         </div>
-        <h3 className="suggestion-card__title" lang={encounterLookupLang(s.language) || undefined}>{s.title}</h3>
+        <ZhSlot lang={encounterLookupLang(s.language)}><h3 className="suggestion-card__title" lang={encounterLookupLang(s.language) || undefined}>{s.title}</h3></ZhSlot>
         <div className="suggestion-card__actions">
           {canStudy ? <button className="btn btn--primary btn--sm" onClick={handleStudy}>바로 읽기</button>
             : source.url ? <a className="btn btn--sm" href={source.url} target="_blank" rel="noopener noreferrer">{source.label} ↗</a>
@@ -926,15 +927,17 @@ export default function MaterialsPage({ libraryView = null }) {
                 title={previewText || undefined}
               >
                 <div className="mat-card__head">
-                  <h3 className="card__title" lang={encounterLookupLang(language) || undefined}>
-                    <Link
-                      href={readerHref(`/viewer/${m.id}`)}
-                      style={{ color: 'inherit', textDecoration: 'none' }}
-                      onClick={(e) => { e.stopPropagation(); openReader(`/viewer/${m.id}`, e); }}
-                    >
-                      {m.title}
-                    </Link>
-                  </h3>
+                  <ZhSlot lang={encounterLookupLang(language)}>
+                    <h3 className="card__title" lang={encounterLookupLang(language) || undefined}>
+                      <Link
+                        href={readerHref(`/viewer/${m.id}`)}
+                        style={{ color: 'inherit', textDecoration: 'none' }}
+                        onClick={(e) => { e.stopPropagation(); openReader(`/viewer/${m.id}`, e); }}
+                      >
+                        {m.title}
+                      </Link>
+                    </h3>
+                  </ZhSlot>
                   {/* 카드 액션은 ⋯ 메뉴 **하나** — 받아두기 · (내 자료) 공개 전환 · 삭제. 상시 버튼 부활 금지(계약).
                       카드 전체가 뷰어로 가는 클릭 대상이라 메뉴 안 클릭은 전부 가로챈다(받아두려다 자료가 열리면 다른 동작). */}
                   <details

@@ -1,4 +1,5 @@
 'use client';
+import { ZhSlot } from '@/components/fonts/ScFontLink';
 
 /**
  * 배움 · 현황이 함께 쓰는 작은 칸들 (LEARN-HOME-AK-001) — 예전 홈 메트로 위젯(ProfileStats)에서 떼어 냈다.
@@ -102,7 +103,7 @@ export function ReviewTile({ projections = [], lang, count = null, href, classNa
       </span>
       {word ? (
         <span className="learn-review__cycle" key={word.id ?? idx}>
-          <span className="learn-review__word" lang={encounterLookupLang(wordScopeLanguage(word)) || undefined}>{word.word_text}</span>
+          <ZhSlot lang={encounterLookupLang(wordScopeLanguage(word))}><span className="learn-review__word" lang={encounterLookupLang(wordScopeLanguage(word)) || undefined}>{word.word_text}</span></ZhSlot>
           <span className="learn-review__meaning">{word.meaning}</span>
         </span>
       ) : (

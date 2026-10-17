@@ -1,4 +1,5 @@
 'use client';
+import { ZhSlot } from '@/components/fonts/ScFontLink';
 
 /**
  * 묶음 카드(v2-P) — 자료 여럿을 카드 하나로 접고, 펼치면 줄 목록을 보여준다.
@@ -17,7 +18,7 @@ export default function MaterialGroupCard({ icon, art, title, subtitle, meta, fi
     <details className="card book-card group-card" open={open || undefined}>
       <summary className={art ? 'group-card__summary group-card__summary--art' : 'group-card__summary'}>
         {art && <span className="group-card__art">{art}</span>}
-        <span className="group-card__title" lang={lang}>{art ? title : <>{icon} {title}</>}</span>
+        <ZhSlot lang={lang}><span className="group-card__title" lang={lang}>{art ? title : <>{icon} {title}</>}</span></ZhSlot>
         {subtitle && <span className="group-card__subtitle">{subtitle}</span>}
         <span className="group-card__meta">{meta}</span>
         {fitLine && <span className="group-card__fit">{fitLine}</span>}
@@ -33,7 +34,7 @@ export default function MaterialGroupCard({ icon, art, title, subtitle, meta, fi
             onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), r.onClick?.())}
           >
             <span className="group-card__lead">{r.lead}</span>
-            <span className="group-card__rowtitle" lang={lang}>{r.title}</span>
+            <ZhSlot lang={lang}><span className="group-card__rowtitle" lang={lang}>{r.title}</span></ZhSlot>
             {r.right}
           </div>
         ))}

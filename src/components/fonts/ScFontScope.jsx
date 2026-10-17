@@ -1,5 +1,6 @@
 import { Noto_Sans_SC } from 'next/font/google';
 import ScFontBodyVariable from './ScFontBodyVariable';
+import { ScFontScopeMarker } from './ScFontLink';
 
 // 간체 중국어(Noto Sans SC)는 중국어를 그릴 수 있는 화면에만 건다(FONT-SC-SCOPE-001, 2026-10-17 KST).
 // 루트에 두면 모든 페이지 head CSS에 SC @font-face 303개(gz 약 91KB, 렌더 차단)가 실렸다. 중국어(lang zh* · :lang(zh) ·
@@ -19,7 +20,8 @@ export default function ScFontScope({ children }) {
   return (
     <div className={notoSc.variable} style={{ display: 'contents' }}>
       <ScFontBodyVariable className={notoSc.variable} />
-      {children}
+      {/* 범위 안 잎(ZhSlot)은 독립 스타일시트를 걸지 않는다 — @font-face 두 벌 · 이중 다운로드 방지(SC-LINK-001). */}
+      <ScFontScopeMarker>{children}</ScFontScopeMarker>
     </div>
   );
 }
