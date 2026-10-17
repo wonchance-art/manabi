@@ -2253,6 +2253,9 @@ export default function ViewerPage() {
   useEffect(() => {
     if (materialLang !== 'Chinese') return undefined;
     let alive = true;
+    // 日 줄 표는 유휴를 기다리지 않고 자료를 열자마자 받는다(VIEWER-LANG-4 ①, 오너 「권장대로」 2026-10-17 KST) — 카드보다 늦으면
+    // 日 줄이 뒤늦게 들어와 1440 옆 패널의 채점 버튼이 101px 밀렸다(실측). 정체 표(正)는 그대로 유휴 때. 같은 표 요청은 한 번이다.
+    loadJaWordsTable().then((t) => { if (alive && t) setJaWordsTable((cur) => cur || t); }).catch(() => {});
     const cancel = prefetchGlyphTables({ onLoad: ({ zheng, jaWords }) => {
       if (!alive) return;
       if (zheng) setHanjaTradTable((cur) => cur || zheng);

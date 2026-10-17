@@ -19,7 +19,9 @@
 .viewer-layout :is(.reader-area,.reader-card-source,.reader-settings__preview):lang(ko),
 .viewer-layout :is(.reader-area,.reader-card-source,.reader-settings__preview) :lang(ko) {font-family:var(--reader-font), 'Noto Sans KR', sans-serif;}
 .viewer-layout[data-reader-theme="dark"],
-.manabi-app:has(.viewer-layout[data-reader-theme="dark"]) > .gnb {
+.manabi-app:has(.viewer-layout[data-reader-theme="dark"]) > .gnb,
+body:has(.viewer-layout[data-reader-theme="dark"]),
+.manabi-app:has(.viewer-layout[data-reader-theme="dark"]) {
   --reader-paper:#202625; --reader-ink:#f0eee7; --reader-muted:#b7bfba; --reader-line:#4c5752; --reader-surface:#2b3430;
   --reader-selected:#394b41; --reader-accent:var(--book-dark-text); --reader-sound:var(--book-amber-dark-text);
   --tone-1:#a8c9ff; --tone-2:#99d7b2; --tone-3:#ebce84; --tone-4:#ffabb8; --tone-0:#c4cbc6;
@@ -36,6 +38,10 @@
   --gnb-bg:var(--reader-paper); color:var(--reader-ink); color-scheme:dark;
 }
 .manabi-app:has(.viewer-layout[data-reader-theme="dark"]) > .gnb .gnb__logo {color:var(--reader-ink);-webkit-text-fill-color:currentColor;}
+/* 어두운 읽기 테마의 바깥 여백(VIEWER-AUDIT 5, 오너 「권장대로」 2026-10-17 KST): 본문 상자만 칠해져 1440에서 좌우 20px 띠와
+   스크롤 끝 · 바운스 자리가 밝은 셸 종이로 남았다. 같은 팔레트(위 규칙)의 --reader-paper로 앱 셸과 body를 칠한다 — 종이 · 밝게는 그대로. */
+body:has(.viewer-layout[data-reader-theme="dark"]),
+.manabi-app:has(.viewer-layout[data-reader-theme="dark"]) {background:var(--reader-paper);color-scheme:dark;}
 .viewer-layout .viewer-center {width:100%;max-width:760px;flex:none;min-width:0;overflow:visible;margin:0 auto;padding:0 0 110px;}
 .viewer-layout .reader-area {background:var(--reader-paper);color:var(--reader-ink);border:0;border-radius:0;box-shadow:none;padding:20px 16px;margin-inline:0;}
 .viewer-layout .analyzing-banner {flex-wrap:wrap;gap:12px;color:var(--reader-ink);}
