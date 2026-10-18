@@ -193,11 +193,13 @@ describe('⑹ O · X 빠른 암기 보기 옵션(LEVEL-OX-AN-001)', () => {
     expect(panel).toContain('role="switch"');
   });
 
-  it('화면 배선: 채점 · 입력창 없음, O = 아는 단어 토글, X = 저장(아는 단어면 먼저 풀고), 훈음 · 正日은 뷰어 부품', () => {
+  it('화면 배선: 채점 · 입력창 없음, O = 아는 단어 토글(공부 중인 단어는 바퀴 답만), X = 저장(아는 단어면 먼저 풀고), 훈음 · 正日은 뷰어 부품', () => {
     const page = read('src/views/LevelListPage.jsx');
     expect(page).not.toMatch(/<input(?![^>]*type="search")|<textarea|grade/);
-    expect(sliceBetween(page, 'const markO = ', ';\n')).toContain('knownSet.has(entry.key) ? unmark(entry.key) : exclude(entry)');
-    const markX = sliceBetween(page, 'const markX = ', '\n  };');
+    const markO = sliceBetween(page, 'const markO = ', '\n  };');
+    expect(markO).toContain('if (knownSet.has(key)) { unmark(key); return rounds.cancel(key, \'all\'); }');
+    expect(markO).toContain('if (!studying) return exclude(entry);');
+    const markX = sliceBetween(page, 'const studyX = ', '\n  };');
     expect(markX).toContain('return save(entry);');
     // 아는 단어면 서버가 풀어 준 뒤에만 담는다(낙관 갱신이라 화면 상태로 기다리지 않는다) — 풀지 못하면 담지 않는다.
     expect(markX).toMatch(/try \{ await known\.mutation\.mutateAsync\(unmarkRequest\(entry\.key\)\); \} catch \{ return undefined; \}\n\s*return save\(entry\);/);
