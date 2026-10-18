@@ -1078,6 +1078,9 @@
     실측(10회 중앙값, 운영→Preview): 배움 1.84→0.73초 · 산책 2.32→1.08초 · 교재 1.59→1.14초(대조 서재 0.39→0.21초).
   · **REGION-HND1-001(같은 PR, 오너 「도쿄 ㄱㄱ」)**: 서버 함수가 iad1(미국 동부), DB가 도쿄 — 조회마다 태평양 왕복. `vercel.json`
     `regions: ["hnd1"]`(Hobby는 단일 지역 지정 가능 — Vercel 문서). cron도 도쿄에서 돈다. 계약 `vercel-deploy-policy.test.js`.
+- **FSRS-ANKI-R2 Anki 복습 일정 규칙 이식 (2026-10-18 KST~, 오너 「anki open source 뜻어보는 노력은 해야지」 → 권장 「핵심 셋」)** `claude/project-thread-jqlex2`:
+  Anki 소스(rslib scheduler) 대조표 `/mnt/project-files/notes/anki-scheduler-gap.md` — (a) 복습 통과 간격 하한(Anki `passing_fsrs_review_intervals` · 퍼즈 하한: 어려움 < 알맞음 < 쉬움, 이전 간격 아래로 안 줄임) · 학습/재학습 졸업 쉬움 ≥ 알맞음+1 ·
+  (b) 하루 이상 간격은 04:00 학습일 경계에 열림(DayLearn처럼) · 간격 표시는 일수 · (c) 세션 끝 대기 없애기(learn-ahead 20분) = 검증 SQL + 복원 SQL 따로, 운영 적용은 M09 경로.
 - **「그림 한 장 읽기」 미술관 해설 학습 — ART-P0-1 카탈로그 계약 (2026-10-14 KST, 오너 「좋아 가보자」)** `claude/project-thread-kpr8od`:
   해설 본문은 박물관 오픈데이터(ColBase 정부표준이용규약 2.0 · 시카고 미술관 CC BY)에서 그대로 받고, 작품 정보는 개체 4종(작가·장소·시대·작품, Wikidata QID 정규 키) + 큐레이션으로 쌓는다.
   · **ART-P0-1 병합([#1457](https://github.com/wonchance-art/manabi/pull/1457), 2026-10-14 KST)**: `src/content/art/*.json`(작품 0점·시대 1) + `src/lib/artCatalog.js` 계약(전시 여부 저장 금지·장소 역할 3종·날짜 원문 표기+범위·해설 라이선스 허용 목록·원문 해시·이미지 PD/CC0+alt·지역학 핀 대조) + 정보 카드 값 계산. 화면 진입점 0.
