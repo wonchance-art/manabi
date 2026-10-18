@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { bcp47ForLanguage } from '../lib/speechLang';
+import { speechTagForLanguage } from '../lib/speechLang';
 import ActionIcon from './ActionIcon';
 import {t} from '../lib/viewerMessages';
 import { splitListenSentences } from '../lib/listenFollow';
+// 소리를 내지 못한 이유는 단어 발음과 같은 길(TTS-GAP-001)로 알린다 — 같은 조건 · 같은 문구(providers의 SpeechUnavailableNotice 토스트).
+import { nativeSpeechAvailable, notifySpeechUnavailable, speechCanceled } from '../lib/useTTS';
 
 // 재생 중 속도 칸의 글자 — 뷰어는 Aa 「재생 속도」와 같은 이름(1× 등)을 넘긴다. playbackRate는 Web Speech에 넣는 실제 값(보통 0.85)이라
 // 그대로 보이면 설정은 1×인데 막대는 0.85×로 서로 다른 말을 했다(뷰어 기능 감사 2026-10-17 KST).
@@ -70,18 +72,19 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
     setCurrentSentence(sentences[i]);
     onSentenceRef.current?.(i);
     const utter = new window.SpeechSynthesisUtterance(sentences[i]);
-    utter.lang = bcp47ForLanguage(languageRef.current);
+    utter.lang = speechTagForLanguage(languageRef.current); // 단어 발음과 같은 태그(Korean → ko-KR)
     utter.rate = rateRef.current;
     // 음성 오류(엔진 · 목소리 없음 등) — 이 세션이면 재생 상태와 뷰어 강조를 정리한다(stop → onSentence(null)).
+    // 취소 · 끊김(단어 발음이 이어받음 등)은 정리만, 그 밖의 실패는 단어 발음과 같은 'failed' 안내(TTS-GAP-001).
     // 취소(cancel)로 끝난 옛 세션의 오류는 세션 번호가 달라 무시된다.
-    utter.onerror = () => { if (sessionRef.current === sessionId) stop(); };
+    utter.onerror = (event) => { if (sessionRef.current === sessionId) { if (speechCanceled(event)) stop(); else fail('failed'); } };
     utter.onend = () => {
       if (sessionRef.current !== sessionId) return;
       indexRef.current += 1;
       if (indexRef.current < sentencesRef.current.length) speakNext(sessionId);
       else stop();
     };
-    window.speechSynthesis.speak(utter);
+    try { window.speechSynthesis.speak(utter); } catch { fail('failed'); } // 엔진이 발화를 바로 거절(iOS 등) — useTTS와 같다
   }
 
   function play() {
@@ -91,6 +94,8 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
       return;
     }
     if (!sentencesRef.current.length) return;
+    // 이 기기에 그 언어의 목소리가 없으면(한국어 음성 없음) 시작하지 않고 단어 발음과 같은 'no-voice' 안내.
+    if (!nativeSpeechAvailable(languageRef.current)) { notifySpeechUnavailable('no-voice'); return; }
     const sessionId = ++sessionRef.current;
     indexRef.current = 0;
     setPlaying(true);
@@ -113,6 +118,11 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
     setPaused(false);
     setProgress(p => ({ ...p, current: 0 }));
     setCurrentSentence('');
+  }
+
+  function fail(reason) {
+    stop();
+    notifySpeechUnavailable(reason);
   }
 
   if (!supported || !text) return null;

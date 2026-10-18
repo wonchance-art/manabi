@@ -34,7 +34,6 @@ import {
 import {
   isReadingTestRequestCurrent,
 } from '../ReadingTest';
-import { VoiceOption } from '../TtsVoicePicker';
 import {
   persistQuestReviewGrade,
 } from '../world/QuestReview';
@@ -121,24 +120,6 @@ describe('components C-04~C-13 reliability fixes', () => {
     // 화면은 프롬프트를 만들지 않는다 — AI 호출은 서버 대화 턴 경로 하나
     const thread = source('../conversation/ConversationThread.jsx');
     expect(thread).not.toMatch(/callGemini|conversationSafetyRules/);
-  });
-
-  it('음성 옵션의 선택과 미리듣기를 형제 버튼으로 렌더한다', () => {
-    const markup = renderToStaticMarkup(
-      <VoiceOption
-        voice={{ voiceURI: 'voice-1', name: 'Kyoko', lang: 'ja-JP', localService: true }}
-        selected
-        onPick={() => {}}
-        onPreview={() => {}}
-      />,
-    );
-    const firstOpen = markup.indexOf('<button');
-    const firstClose = markup.indexOf('</button>', firstOpen);
-    const secondOpen = markup.indexOf('<button', firstOpen + 1);
-
-    expect(markup).toContain('role="option"');
-    expect(firstClose).toBeLessThan(secondOpen);
-    expect(markup.match(/<button/g)).toHaveLength(2);
   });
 
   it('복습 저장 실패를 성공 진행으로 바꾸지 않는다', async () => {

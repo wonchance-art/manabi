@@ -1,9 +1,9 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
-import { bcp47ForLanguage, voicePrefixForLanguage } from './speechLang';
+import { bcp47ForLanguage, speechTagForLanguage, voicePrefixForLanguage } from './speechLang';
 import { viewerLanguageInfo } from './viewerLanguage';
 
-const readerSpeechTag = language => viewerLanguageInfo(language)?.speechLocale || bcp47ForLanguage(language);
+const readerSpeechTag = speechTagForLanguage;
 const readerVoiceKey = language => viewerLanguageInfo(language)?.code || voicePrefixForLanguage(language);
 
 const VOICE_KEY = 'tts_voice'; // { ja: voiceURI, en: voiceURI }
@@ -98,11 +98,16 @@ export function notifySpeechUnavailable(reason, now = Date.now()) {
   return true;
 }
 
-/** 이 기기에서 그 언어를 브라우저 음성으로 낼 수 있는가 — speakFallback의 「낼 수 없음」 조건과 같다. */
-function nativeSpeechAvailable(language) {
+/** 이 기기에서 그 언어를 브라우저 음성으로 낼 수 있는가 — speakFallback의 「낼 수 없음」 조건과 같다. 본문 듣기(ListenControls)도 이 조건을 쓴다. */
+export function nativeSpeechAvailable(language) {
   if (!getTtsCapabilities().webSpeech) return false;
   if (viewerLanguageInfo(language)?.code !== 'ko') return true;
   return !!immediateSpeechVoice(window.speechSynthesis.getVoices(), language, loadStoredVoice(readerVoiceKey(language)));
+}
+
+/** 발화 오류가 취소 · 끊김(정지 · 다른 소리가 이어받음)인가 — 이것은 실패가 아니라 알리지 않는다. 본문 듣기도 같은 판정. */
+export function speechCanceled(event) {
+  return ['canceled', 'interrupted'].includes(event?.error);
 }
 
 // ── iOS: 서버 응답 뒤의 브라우저 음성이 탭 밖이라 막히는 문제(TTS-GAP-001 ③) ──
@@ -235,7 +240,7 @@ export function useTTS() {
       if (v) utter.voice = v;
     }
     if (onError) utter.onerror = event => {
-      if (!['canceled', 'interrupted'].includes(event.error)) onError();
+      if (!speechCanceled(event)) onError();
     };
     try { window.speechSynthesis.speak(utter); return true; } catch { return false; }
   }, []);

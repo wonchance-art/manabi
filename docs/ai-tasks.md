@@ -911,6 +911,12 @@
   Claude 본선(키 있을 때만) · TTS 빈틈 셋 · 측정 품질 세트 · 추정 비용 · 새 대화 의도 prefetch · 골격 · 시트 위 끝 · /home LCP ·
   SC 링크 2단계(일본어 학습자 · 손님 /home SC 0, 같은 글꼴 한 번만, /_fonts 1년 캐시) · 하이드레이션 갱신 대기(교재 서버 HTML 버림 6 → 0) · 교재 과 기억 · 골격 · 다음 과 미리 받기.
   오너 확인 대기: ANTHROPIC_API_KEY 넣기 · 실계정 390 시트 · iOS 음성 실기기. 다음 과제: N4 390 머리 버튼 줄 38px · 듣기 막대 실패 안내 · 팀 해제 기기 단위(제품 결정).
+- **#1516 병합 · 다음 묶음 #1519 (2026-10-18 KST)**: #1516 squash `e51a06f7`(02:42) · 운영 02:49 · 사후 점검 15/15 · 런타임 오류 0 · 손님 /home SC 0 · /_fonts 1년 캐시 확인.
+  #1519: 교재 표지 이어 읽기 줄 자리(BOOK-RESUME-HOLD-001, N4 · N5 390 CLS 0.024–0.029 → 0.0003, 실측 49 · 46px — 38px는 재현 안 됨) ·
+  본문 듣기 실패 안내 TTS-GAP 정본으로 · 낭독 태그 Korean ko-KR(speechTagForLanguage) · import 0 죽은 파일 4개 정리 ·
+  함께 읽는 글 · 서재 도구 고르기 줄 서버부터(DISCOVER-CHIP-CLS-001, 세션 쿠키 힌트 · 확인 중 손님 빈 상태 대신 기존 골격).
+  측정만: /discover 0.02–0.04는 한글 글꼴 늦은 교체(대체 글꼴 6% 넓어 칩 줄바꿈) — 기준 0.1 아래라 손대지 않음(권장).
+  390 CLS 전수(16경로 × 4상태): 로그인 /conversation/new 0.025 · /japanese/vocab/n5 0.029 → 다음 묶음(`claude/wip/login-cls`), /vocab 0.037–0.042 · /materials 0.066은 상태별 높이 목업 필요.
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로
   /api/suggestions/today와 공용화. 지역학은 발견에서만 내림(/studies · 콘텐츠 보존). 비로그인 서재 → 「서가에서 읽어 보기」.

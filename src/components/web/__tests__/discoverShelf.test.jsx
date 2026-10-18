@@ -66,6 +66,25 @@ describe('발견 화면 배선', () => {
     expect(read('src/views/MaterialsPage.jsx')).toContain("from={libraryView === 'public' ? 'reading' : 'materials'}");
     expect(read('src/views/MaterialsPage.jsx')).toContain('router.push(suggestionHref(s, from))');
   });
+  it('「함께 읽는 글」은 세션 쿠키(이름만)를 넘겨 로그인 고르기 줄을 서버부터 그린다(DISCOVER-CHIP-CLS-001)', () => {
+    // 서버 그림은 늘 로그인 확인 전 — 힌트가 없으면 확인 뒤 「안 읽은 것만」 칩이 끼며 390폭에서 줄이 접혀 목록을 밀었다.
+    expect(page()).toContain("import { hasSupabaseSessionInJar } from '@/lib/authCookie';");
+    expect(page()).toContain('<LazyMaterialsPage libraryView="public" sessionHint={hasSupabaseSessionInJar(await cookies())}/>');
+    expect(read('src/views/MaterialsPage.jsx')).toContain("export default function MaterialsPage({ libraryView = null, sessionHint = false })");
+  });
+  it('서재 도구(?tools=1 · ?sort=fit)도 같은 세션 쿠키 힌트를 넘긴다 — 손님(쿠키 없음)은 false 그대로', () => {
+    expect(read('src/components/web/LibraryPage.jsx')).toContain('<LazyMaterialsPage libraryView="allOwned" sessionHint={sessionHint===true}/>');
+    expect(read('src/app/(app)/materials/page.jsx')).toContain('<LibraryPage sessionHint={hasSupabaseSessionInJar(await cookies())} />');
+  });
+  it('확인 중인 로그인 사람에게는 손님 빈 상태 대신 기존 목록 골격 — 추천 칸도 목록이 정해진 뒤에만', () => {
+    const src = read('src/views/MaterialsPage.jsx');
+    expect(src).toContain('const signInPending = authLoading && sessionHint === true;');
+    // 목록 골격 · 추천 칸의 조건(!tab || isLoading — LIBRARY-GUEST-CLS-001 계약)이 확인 중도 「아직 정해지지 않음」으로 본다.
+    expect(src).toContain('const isLoading = materialsLoading || signInPending;');
+    expect(src).toMatch(/isLoading: materialsLoading, isFetched: materialsFetched/);
+    // 서재 도구: 확인 뒤 PDF 조회 줄이 골격 위에 끼지 않게 확인 중에도 같은 줄을 미리 둔다.
+    expect(src).toContain('{showPdfs && (pdfsLoading || signInPending) && <p aria-busy="true">PDF 목록 확인 중…</p>}');
+  });
   it('비로그인 서재는 서가로 안내한다', () => {
     expect(read('src/components/web/LibraryPage.jsx')).toContain('href="/discover">서가에서 읽어 보기</Link>');
   });
