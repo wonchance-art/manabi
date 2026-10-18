@@ -43,11 +43,13 @@ describe('새 대화 선택지', () => {
   it('화면: 프로필 기준 처음 선택 · 늦게 온 프로필에도 맞추되 직접 고른 뒤에는 덮지 않는다', () => {
     const page = read('views/NewConversationPage.jsx');
     expect(page).toContain('fallbackLanguage: preferredConversationLanguage(profile),');
-    const sync = sliceBetween(page, 'const picked = useRef(false);', '}, [initial.language, initial.level]);');
-    expect(sync).toContain('if (picked.current) return;');
+    // 그림 중에 맞춘다(CONV-LEVEL-HOLD-001) — effect면 확인 뒤 첫 그림이 기본 언어 칩으로 한 번 그려진 뒤 옮겨 갔다.
+    const sync = sliceBetween(page, 'const [picked, setPicked] = useState(false);', 'setLevel(initial.level);');
+    expect(sync).toContain('if (!picked && (language !== initial.language || level !== initial.level)) {');
     expect(sync).toContain('setLanguage(initial.language);');
-    expect(sliceBetween(page, 'function pickLanguage(next) {', 'setLanguage(next);')).toContain('picked.current = true;');
-    expect(page).toContain('onClick={() => { picked.current = true; setLevel(lv); }}');
+    expect(page).not.toContain('}, [initial.language, initial.level]);');
+    expect(sliceBetween(page, 'function pickLanguage(next) {', 'setLanguage(next);')).toContain('setPicked(true);');
+    expect(page).toContain('onClick={() => { setPicked(true); setLevel(lv); }}');
   });
   it('주제·언어·수준이 다 있어야 시작한다', () => {
     expect(canStartConversation({ topic: '여행', language: 'English', level: 'A2 초급' })).toBe(true);

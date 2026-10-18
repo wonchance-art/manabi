@@ -50,9 +50,9 @@
 .conv-new__group h2 small { margin-left: 6px; font-size: 0.8rem; font-weight: 400; color: var(--text-muted); }
 .conv-new__chips { display: flex; flex-wrap: wrap; gap: 8px; }
 /* 로그인 확인 중(CONV-SHELL-001) — 수준 골격 칸은 칩과 같은 상자(44px), 언어 칩은 누름만 잠근다(aria-disabled · 크기 그대로). */
-.conv-chip--skeleton { display: inline-grid; align-items: center; justify-items: stretch; cursor: default; }
-/* 골격 칸 폭 = 실제 칩 글 폭(CONV-LEVEL-HOLD-001) — 숨긴 글과 골격 줄을 한 칸에 겹친다. */
-.conv-chip--skeleton > * { grid-area: 1 / 1; }
+.conv-chip--skeleton { display: inline-flex; align-items: center; justify-content: center; cursor: default; position: relative; }
+/* 골격 칸 폭 = 실제 칩 글 폭(CONV-LEVEL-HOLD-001) — 숨긴 글이 폭을 잡고, 골격 줄은 그 위(안쪽 여백 안)에 겹친다. */
+.conv-chip--skeleton > .skeleton-line { position: absolute; left: 12px; top: calc(50% - 0.5em); }
 .conv-chip__size { visibility: hidden; }
 .conv-chip[aria-disabled="true"] { cursor: default; }
 .conv-chip[aria-pressed="true"] { border-color: var(--primary); color: var(--text-primary); background: color-mix(in srgb, var(--primary) 12%, transparent); font-weight: 600; }

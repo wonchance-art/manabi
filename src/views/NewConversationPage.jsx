@@ -46,12 +46,13 @@ export default function NewConversationPage() {
   const [ownTopic, setOwnTopic] = useState(CONVERSATION_TOPICS.includes(initial.topic) ? '' : initial.topic);
   const [writing, setWriting] = useState(!!ownTopic);
   // 프로필은 첫 그림 뒤에 올 수 있다 — 아직 직접 고르지 않았으면 처음 선택(언어 · 수준)을 프로필 기준으로 맞춘다. 고른 뒤에는 덮지 않는다.
-  const picked = useRef(false);
-  useEffect(() => {
-    if (picked.current) return;
+  // 그림 중에 맞춘다(effect가 아니라) — effect면 확인이 끝난 첫 그림이 기본(중국어) 수준 칩 3줄로 한 번 그려진 뒤 프로필 언어(일본어 2줄)로
+  // 줄어 「대화 시작」이 내려갔다 올라왔다(CONV-LEVEL-HOLD-001 실측, 프로필 일본어 · 영어에서 3회 중 1회).
+  const [picked, setPicked] = useState(false);
+  if (!picked && (language !== initial.language || level !== initial.level)) {
     setLanguage(initial.language);
     setLevel(initial.level);
-  }, [initial.language, initial.level]);
+  }
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
   const outputWords = useOutputWords(language, { enabled: !!user });
@@ -77,7 +78,7 @@ export default function NewConversationPage() {
   const ready = canStartConversation({ topic: chosenTopic, language, level });
 
   function pickLanguage(next) {
-    picked.current = true;
+    setPicked(true);
     setLanguage(next);
     setLevel(recommendedLevel(next, profileLevel(profile, next)));
     setError('');
@@ -145,11 +146,12 @@ export default function NewConversationPage() {
         <h2 id="conv-new-level">말 수준 <small>{!settled ? <SkeletonLine width="7em" /> : profileLevel(profile, language) ? '내 학습 수준 기준 추천' : '처음 단계부터'}</small></h2>
         {settled ? <div className="conv-new__chips">
           {conversationLevels(language).map((lv) => (
-            <button key={lv} type="button" className="conv-chip" aria-pressed={level === lv} onClick={() => { picked.current = true; setLevel(lv); }}>{lv}</button>
+            <button key={lv} type="button" className="conv-chip" aria-pressed={level === lv} onClick={() => { setPicked(true); setLevel(lv); }}>{lv}</button>
           ))}
         </div> : <SkeletonRegion className="conv-new__chips" label="대화" announce>
-          {/* 칸 수 · 폭은 지금 언어(주소 lang 또는 기본)의 실제 칩 그대로 — 글은 숨겨 폭만 잡아 390에서 줄바꿈이 같다(CONV-LEVEL-HOLD-001). */}
-          {conversationLevels(language).map((lv) => <span key={lv} className="conv-chip conv-chip--skeleton" aria-hidden="true"><SkeletonLine width="100%" height="1em" /><span className="conv-chip__size">{lv}</span></span>)}
+          {/* 칸 수 · 폭은 지금 언어(주소 lang 또는 기본)의 실제 칩 그대로 — 같은 button 상자(.manabi-page button의 글꼴까지)에 글은 숨겨
+              폭만 잡아 390에서 줄바꿈이 같다(CONV-LEVEL-HOLD-001). 초점 · 누름 없음(tabIndex -1 · aria-hidden · 동작 없음). */}
+          {conversationLevels(language).map((lv) => <button key={lv} type="button" tabIndex={-1} className="conv-chip conv-chip--skeleton" aria-hidden="true"><SkeletonLine width="calc(100% - 24px)" height="1em" /><span className="conv-chip__size">{lv}</span></button>)}
         </SkeletonRegion>}
       </section>
 

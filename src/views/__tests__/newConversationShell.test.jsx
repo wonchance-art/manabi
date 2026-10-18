@@ -38,8 +38,8 @@ describe('로그인 확인 중 — 머리글 · 선택지 먼저', () => {
     expect(chips).toHaveLength(4);
     for (const chip of chips) { expect(chip).toContain('aria-pressed="false"'); expect(chip).toContain('aria-disabled="true"'); }
     // 수준 이름은 보이지 않는다 — 골격 칸(aria-hidden) 안 숨긴 글(.conv-chip__size)로 폭만 잡는다. 칸 수 · 순서 = 지금 언어(기본 중국어)의 실제 칩.
-    expect(html).not.toMatch(/<button[^>]*>OT 입문/);
-    expect([...html.matchAll(/<span class="conv-chip conv-chip--skeleton" aria-hidden="true"><span aria-hidden="true" class="skeleton-line skeleton-line--inline" style="width:100%;height:1em"><\/span><span class="conv-chip__size">([^<]+)<\/span><\/span>/g)].map((m) => m[1]))
+    expect(html).not.toMatch(/<button(?![^>]*conv-chip--skeleton)[^>]*>OT 입문/); // 골격 button 안 숨긴 글만
+    expect([...html.matchAll(/<button type="button" tabindex="-1" class="conv-chip conv-chip--skeleton" aria-hidden="true"><span aria-hidden="true" class="skeleton-line skeleton-line--inline" style="width:calc\(100% - 24px\);height:1em"><\/span><span class="conv-chip__size">([^<]+)<\/span><\/button>/g)].map((m) => m[1]))
       .toEqual(conversationLevels('Chinese'));
     // 주소로 언어가 정해져 있으면 그 언어의 칩 수 · 글 폭(일본어 5칸)
     expect(render({ loading: true, query: 'lang=Japanese' }).match(/class="conv-chip__size">[^<]+/g).map((m) => m.split('>')[1])).toEqual(conversationLevels('Japanese'));
