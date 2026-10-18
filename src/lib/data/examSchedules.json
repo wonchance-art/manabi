@@ -1,1 +1,68 @@
-[]
+[
+  {
+    "exam": "HSK",
+    "levels": ["H1", "H2", "H3", "H4", "H5", "H6"],
+    "date": "2026-11-07",
+    "format": "IBT",
+    "region": "KR",
+    "register": { "from": "2026-09-23", "to": "2026-10-28" },
+    "result": "2026-11-23",
+    "source": "https://www.hsk.or.kr/?c1=100&c2=002&c3=002&c4=006",
+    "checkedAt": "2026-10-19"
+  },
+  {
+    "exam": "HSK",
+    "levels": ["H1", "H2", "H3", "H4", "H5", "H6"],
+    "date": "2026-11-07",
+    "format": "PBT",
+    "region": "KR",
+    "register": { "from": "2026-09-23", "to": "2026-10-11" },
+    "result": "2026-12-07",
+    "source": "https://www.hsk.or.kr/?c1=100&c2=001&c3=002&c4=009",
+    "checkedAt": "2026-10-19"
+  },
+  {
+    "exam": "HSK",
+    "levels": ["H7"],
+    "date": "2026-11-22",
+    "format": "IBT",
+    "region": "KR",
+    "register": { "from": "2026-10-06", "to": "2026-11-08" },
+    "result": "2026-12-22",
+    "source": "https://www.hsk.or.kr/?c1=400&c2=011&c3=001&v=44770",
+    "checkedAt": "2026-10-19"
+  },
+  {
+    "exam": "JLPT",
+    "levels": ["N5", "N4", "N3", "N2", "N1"],
+    "date": "2026-12-06",
+    "format": null,
+    "region": "KR",
+    "register": { "from": "2026-09-01", "to": "2026-10-04" },
+    "result": "2027-01-25",
+    "source": "https://www.jlpt.or.kr/html/information_01.html",
+    "checkedAt": "2026-10-19"
+  },
+  {
+    "exam": "HSK",
+    "levels": ["H1", "H2", "H3", "H4", "H5", "H6"],
+    "date": "2026-12-13",
+    "format": "IBT",
+    "region": "KR",
+    "register": { "from": "2026-10-29", "to": "2026-12-03" },
+    "result": "2026-12-28",
+    "source": "https://www.hsk.or.kr/?c1=100&c2=002&c3=002&c4=006",
+    "checkedAt": "2026-10-19"
+  },
+  {
+    "exam": "HSK",
+    "levels": ["H1", "H2", "H3", "H4", "H5", "H6"],
+    "date": "2026-12-13",
+    "format": "PBT",
+    "region": "KR",
+    "register": { "from": "2026-10-29", "to": "2026-11-16" },
+    "result": "2027-01-15",
+    "source": "https://www.hsk.or.kr/?c1=100&c2=001&c3=002&c4=009",
+    "checkedAt": "2026-10-19"
+  }
+]
