@@ -14,6 +14,7 @@ import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
+import { sessionHintScript } from '@/lib/authCookie';
 import { supabase } from '@/lib/supabase';
 import { useTTS } from '@/lib/useTTS';
 import { useKnownWords } from '@/lib/useKnownWords';
@@ -181,6 +182,9 @@ export function VocabCard({ entry: e, lang, levelKey, view, scoped = true, peek,
   </li>;
 }
 
+export const LV_PROG_HOLD_ID = 'lv-prog-hold';
+const LV_PROG_HOLD = sessionHintScript(LV_PROG_HOLD_ID, '.lv-bar .lv-prog--hold{display:flex}');
+
 export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups }) {
   const conf = LEVEL_LIST_LANGS[lang];
   // 서버가 줄여 보낸 항목(compactLevelEntry)을 여기 한 곳에서 되살린다 — 아래는 늘 key · fullMeaning이 있는 항목만 본다.
@@ -189,7 +193,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
   const hanzi = kind === 'hanzi';
   const wordsOn = vocab || hanzi; // 단어 저장 · 제외를 쓰는 탭
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const userId = user?.id || null;
   const { speak, supported: ttsSupported } = useTTS();
   const say = useCallback((text) => speak(text, conf.language), [speak, conf.language]);
@@ -732,6 +736,10 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
             onClick={() => setPrefs({ [key]: !prefs[key] })}><span>{label}{note && <small>{note}</small>}</span><i aria-hidden="true" /></button>)}
       </div>}
       {/* 진도 — 공부 화면에는 숫자 하나만(오너 2026-10-16 「숫자가 대거 적히면 시선이 분산」). 자세한 개수는 배움 입구 카드. */}
+      {/* 진도 줄 자리(LEVEL-PROG-HOLD-001) — 숫자는 로그인 · 붙은 뒤에만 있어 서버(정적) 그림엔 없다. 세션 쿠키가 있으면 그리기 전 한 줄이
+          같은 높이의 빈 줄(.lv-prog--hold, 평소 꺼짐)을 켜 붙은 뒤 진도 줄이 들어와도 보기 단추 · 목록이 밀리지 않는다. 손님은 그대로(꺼짐). */}
+      {vocab && !progress && (!mounted || authLoading || userId) && <><script dangerouslySetInnerHTML={{ __html: LV_PROG_HOLD }} />
+        <div className="lv-prog lv-prog--hold" aria-hidden="true"><span className="lv-meter" /></div></>}
       {progress && <div className="lv-prog">
         <span className="lv-meter" aria-hidden="true"><i className="lv-meter__k" style={{ width: `${(progress.known / progress.total) * 100}%` }} />
           <i className="lv-meter__s" style={{ width: `${(progress.studying / progress.total) * 100}%` }} /></span>

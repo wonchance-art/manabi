@@ -246,8 +246,12 @@ describe('머리 · 진도 · X 펼침(LEVEL-FLOW-001 — 디자인 검토 2026-
     }
   });
 
-  it('진도 줄: 숫자는 「N개 남음」 하나 + 「복습하기 →」(숫자 없음) — 로그인 · 붙은 뒤에만, 서버 렌더엔 없다', async () => {
-    expect(await render('chinese', 'vocab', 'h1')).not.toContain('lv-prog');
+  it('진도 줄: 숫자는 「N개 남음」 하나 + 「복습하기 →」(숫자 없음) — 로그인 · 붙은 뒤에만, 서버 렌더엔 숫자 없이 빈 자리만', async () => {
+    // 서버(정적) 그림에는 진도 숫자 · 막대 채움이 없다 — 같은 높이의 빈 자리(.lv-prog--hold, aria-hidden · 평소 꺼짐)만 간다(LEVEL-PROG-HOLD-001).
+    const ssr = await render('chinese', 'vocab', 'h1');
+    expect(ssr).toContain('<div class="lv-prog lv-prog--hold" aria-hidden="true"><span class="lv-meter"></span></div>');
+    expect(ssr).not.toMatch(/lv-prog__left|lv-prog__review|lv-meter__[ks]|개 남음/);
+    expect(await render('japanese', 'bunkei', 'n5')).not.toContain('lv-prog'); // 진도는 단어 탭만
     const prog = sliceBetween(page, '{progress && <div className="lv-prog">', '</div>}');
     expect([...prog.matchAll(/\$\{[^}]+\}개/g)].map((m) => m[0])).toEqual(["${progress.left.toLocaleString('en-US')}개"]);
     expect(prog).toContain('{progress.studying > 0 && <Link className="lv-prog__review" href={reviewHref} prefetch={false}>복습하기 →</Link>}');
@@ -348,5 +352,32 @@ describe('책장 타일', () => {
     expect(html).toContain('문형<b>77</b>');
     expect(html).not.toContain('→');
     expect(renderToStaticMarkup(<LevelTiles language="English" tiles={[{ levelKey: 'A1', vocab: 1, bunkei: 1 }]} />)).toBe('');
+  });
+});
+
+describe('진도 줄 자리(LEVEL-PROG-HOLD-001) — 세션 쿠키가 있으면 첫 그림부터 같은 높이', () => {
+  const css = fs.readFileSync('src/components/levels/level-list.css', 'utf8');
+  const page = fs.readFileSync('src/views/LevelListPage.jsx', 'utf8');
+  const run = async (cookie, existing = false) => {
+    const { default: vm } = await import('node:vm');
+    const { sessionHintScript } = await import('@/lib/authCookie');
+    const appended = [];
+    vm.runInNewContext(sessionHintScript('lv-prog-hold', '.lv-bar .lv-prog--hold{display:flex}'), { document: { cookie, getElementById: () => (existing ? {} : null), createElement: () => ({}), head: { appendChild: (n) => appended.push(n) } } });
+    return appended;
+  };
+  it('판정은 정본(SESSION_COOKIE)과 같다 — 세션 쿠키 · 조각 쿠키면 켜고, 손님 · code verifier면 그대로', async () => {
+    const { hasSupabaseSessionCookie } = await import('@/lib/authCookie');
+    for (const cookie of ['sb-proj-auth-token=x', 'theme=dark; sb-proj-auth-token.0=x', '', 'theme=dark', 'sb-proj-auth-token-code-verifier=x']) {
+      const nodes = await run(cookie);
+      expect(nodes.length, cookie).toBe(hasSupabaseSessionCookie(cookie) ? 1 : 0);
+      if (nodes.length) expect(nodes[0]).toEqual({ id: 'lv-prog-hold', textContent: '.lv-bar .lv-prog--hold{display:flex}' });
+    }
+    expect(await run('sb-proj-auth-token=x', true)).toHaveLength(0);
+  });
+  it('빈 자리는 평소 꺼짐 · 진도 줄과 같은 상자, 붙은 뒤 진도가 오면 그 자리에 진짜 줄 · 손님으로 확정되면 뺀다', () => {
+    expect(css).toContain('\n.lv-prog--hold{display:none}\n');
+    expect(css).toContain('.lv-prog{display:flex;align-items:center;gap:12px;font-size:12.5px;color:var(--muted);min-height:24px}');
+    expect(page).toContain("const LV_PROG_HOLD = sessionHintScript(LV_PROG_HOLD_ID, '.lv-bar .lv-prog--hold{display:flex}');");
+    expect(page).toContain('{vocab && !progress && (!mounted || authLoading || userId) && <><script dangerouslySetInnerHTML={{ __html: LV_PROG_HOLD }} />');
   });
 });
