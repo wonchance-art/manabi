@@ -73,7 +73,9 @@ describe('뷰어 배선', () => {
     expect(listen).toContain('const sentences = splitListenSentences(text);');
     expect(sliceBetween(listen, 'function speakNext(sessionId) {', 'const utter =')).toContain('onSentenceRef.current?.(i);');
     expect(sliceBetween(listen, 'function stop() {', 'setPlaying(false);')).toContain('onSentenceRef.current?.(null);');
-    expect(listen).toContain('utter.onerror = () => { if (sessionRef.current === sessionId) stop(); };');
+    // 음성 오류 — 이 세션만 정리(취소 · 끊김은 stop, 실패는 fail = stop + 단어 발음과 같은 안내). 동작 검사는 listenControlsSpeechNotice.test.jsx.
+    expect(listen).toContain("utter.onerror = (event) => { if (sessionRef.current === sessionId) { if (speechCanceled(event)) stop(); else fail('failed'); } };");
+    expect(sliceBetween(listen, 'function fail(reason) {', '}')).toContain('stop();');
     expect(viewer()).toContain('onSentence={handleListenSentence}');
   });
 });
