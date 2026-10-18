@@ -72,6 +72,10 @@ describe('발견 화면 배선', () => {
     expect(page()).toContain('<LazyMaterialsPage libraryView="public" sessionHint={hasSupabaseSessionInJar(await cookies())}/>');
     expect(read('src/views/MaterialsPage.jsx')).toContain("export default function MaterialsPage({ libraryView = null, sessionHint = false })");
   });
+  it('서재 도구(?tools=1 · ?sort=fit)도 같은 세션 쿠키 힌트를 넘긴다 — 손님(쿠키 없음)은 false 그대로', () => {
+    expect(read('src/components/web/LibraryPage.jsx')).toContain('<LazyMaterialsPage libraryView="allOwned" sessionHint={sessionHint===true}/>');
+    expect(read('src/app/(app)/materials/page.jsx')).toContain('<LibraryPage sessionHint={hasSupabaseSessionInJar(await cookies())} />');
+  });
   it('비로그인 서재는 서가로 안내한다', () => {
     expect(read('src/components/web/LibraryPage.jsx')).toContain('href="/discover">서가에서 읽어 보기</Link>');
   });
