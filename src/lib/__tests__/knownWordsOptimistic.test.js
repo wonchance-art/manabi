@@ -156,7 +156,7 @@ describe('레벨 목록 배선', () => {
 
   it('「풀고 담기」와 옮김 토스트는 서버 응답을 기다린다 — 화면 상태(effect)로 기다리지 않는다', () => {
     expect(page).not.toMatch(/pendingStudy|pendingExclude/);
-    const markX = page.match(/const markX = async \(entry\) => \{[\s\S]*?\n {2}\};/)?.[0];
+    const markX = page.match(/const studyX = async \(entry\) => \{[\s\S]*?\n {2}\};/)?.[0]; // 전체 · 탭 X 공통 담기(LEVEL-ROUND-001)
     expect(markX).toMatch(/try \{ await known\.mutation\.mutateAsync\(unmarkRequest\(entry\.key\)\); \} catch \{ return undefined; \}\n\s*return save\(entry\);/);
     const exclude = page.match(/const exclude = \(entry\) => \{[\s\S]*?\n {2}\};/)?.[0];
     expect(exclude).toContain('known.mutation.mutateAsync({ lang: conf.langCode, wordText: key, known: true }).then(() => {');

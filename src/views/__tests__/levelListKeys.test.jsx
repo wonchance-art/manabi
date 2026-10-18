@@ -4,7 +4,8 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { levelCardLabel, levelListKeyAction, levelListMove, levelListNearest } from '../../lib/levelListKeys';
 
-const h = vi.hoisted(() => ({ stub: false, slots: [], index: 0, effects: [], pending: new Set(), mutate: [], user: 'u1', rows: [], facets: null }));
+const h = vi.hoisted(() => ({ stub: false, slots: [], index: 0, effects: [], pending: new Set(), mutate: [], user: 'u1', rows: [], facets: null,
+  saved: [], answers: new Map(), answered: [], cancelled: [], sameDay: false }));
 vi.mock('react', async (importOriginal) => {
   const actual = await importOriginal();
   const on = () => h.stub;
@@ -32,6 +33,15 @@ vi.mock('@/lib/useKnownWords', () => ({ useKnownWords: () => ({ rows: h.rows, is
   mutation: { mutate: (r) => h.mutate.push(r), mutateAsync: (r) => { h.mutate.push(r); return Promise.resolve(); } } }) }));
 vi.mock('@/lib/useWordFacets', () => ({ useWordFacets: () => h.facets || ({ available: false, rows: [], mark: () => {} }) }));
 vi.mock('next/dynamic', () => ({ default: () => () => null }));
+// 단어장 대조 · 바퀴 답(LEVEL-ROUND-001) 대역 — 공부 중인 단어는 h.saved, 바퀴 답은 h.answers(키 `단어|보기`)로 준다.
+vi.mock('@/lib/levelList', async (importOriginal) => ({ ...await importOriginal(),
+  fetchSavedLevelKeysAll: () => Promise.resolve(new Set(h.saved)),
+  fetchSavedLevelKeys: (_c, _u, _l, keys) => Promise.resolve(new Set(keys.filter((k) => h.saved.includes(k)))) }));
+vi.mock('@/lib/useLevelAnswers', () => ({ useLevelAnswers: () => ({
+  get: (w, v) => h.answers.get(`${w}|${v}`) || null,
+  answer: (w, v, correct) => { h.answered.push([w, v, correct]); return { sameDay: h.sameDay }; },
+  cancel: (w, v) => { h.cancelled.push([w, v]); },
+}) }));
 
 const { default: LevelListPage, VocabCard } = await import('../LevelListPage.jsx');
 const { levelListData } = await import('../../lib/levelListData.js');
@@ -130,13 +140,15 @@ describe('③ 키로 고르기 — 자동 이동 · 진행 중 무시', () => {
   });
   const keys = () => renderStub().cards.map((c) => c.props.entry.key);
 
-  it('O → 지금 카드에 「안다」(클릭과 같은 경로) 후 다음 카드로', () => {
+  it('O → 지금 카드에 「안다」(클릭과 같은 경로) 후 다음 카드로', async () => {
     const [first, second] = keys();
     const { col, current } = renderStub();
     expect(current).toBe(first);
     const event = key('o');
     col.props.onKeyDown(event);
     expect(event.preventDefault).toHaveBeenCalled();
+    // 공부 중인 단어인지 먼저 확인한다(LEVEL-ROUND-001) — 단어장 대조 전이면 묻고 난 뒤에 옮긴다.
+    await new Promise((r) => setTimeout(r));
     expect(h.mutate).toEqual([{ lang: 'zh', wordText: first, known: true }]);
     expect(renderStub().current).toBe(second);
   });
@@ -269,3 +281,84 @@ describe('④ 탭 보기(탭별 O · X) — 켜기만 · 보내는 중 무시', 
   });
 });
 
+
+describe('⑤ 바퀴 답 · 공부 중인 단어의 O(LEVEL-ROUND-001 — 설계 2판 1번)', () => {
+  const tick = () => new Promise((r) => setTimeout(r));
+  const toastOf = () => walk(renderStub().tree, (n) => n.props?.className === 'lv-toast')[0];
+  const setup = async (view) => {
+    vi.unstubAllGlobals();
+    h.stub = true; h.slots = []; h.pending = new Set(); h.mutate = []; h.user = 'u1'; h.rows = [];
+    h.answers = new Map(); h.answered = []; h.cancelled = []; h.sameDay = false;
+    h.facets = view ? { available: true, rows: [], marks: [], sending: new Set(), mark(body) { this.marks.push(body); return true; }, isPending() { return false; } } : null;
+    const store = new Map(view ? [['manabi:level-list-view', JSON.stringify({ view })]] : []);
+    vi.stubGlobal('localStorage', { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v), removeItem: (k) => store.delete(k) });
+    renderStub(); runEffects(); await tick(); renderStub(); runEffects(); await tick();
+  };
+  const keys = () => renderStub().cards.map((c) => c.props.entry.key);
+
+  it('전체 보기: 공부 중인 단어의 O는 아는 단어로 옮기지 않고 이번 바퀴 O만 — 처음 한 번 안내', async () => {
+    h.saved = [];
+    await setup();
+    const [first] = keys();
+    h.saved = [first];
+    await setup();
+    renderStub().col.props.onKeyDown(key('o'));
+    await tick();
+    expect(h.mutate).toEqual([]);
+    expect(h.answered).toEqual([[first, 'all', true]]);
+    expect(toastOf()?.props.children[0].props.children).toBe('공부 중인 단어라 복습에는 그대로 나와요');
+    // O가 켜진 카드 = 이번 바퀴 O. 화면 읽기 이름은 「복습은 그대로」.
+    h.answers.set(`${first}|all`, { correct: true });
+    const card = renderStub().cards[0].props;
+    expect([card.known, card.keepReview]).toEqual([true, true]);
+  });
+
+  it('전체 보기: 원래 몰랐던(공부 중 아닌) 단어의 O는 지금처럼 아는 단어로 + 이번 바퀴 O', async () => {
+    h.saved = [];
+    await setup();
+    const [first] = keys();
+    renderStub().col.props.onKeyDown(key('o'));
+    await tick();
+    expect(h.mutate).toEqual([{ lang: 'zh', wordText: first, known: true }]);
+    expect(h.answered).toEqual([[first, 'all', true]]);
+  });
+
+  it('전체 보기 X — 이번 바퀴 X 한 건, 이미 X면 그 답만 취소(클릭)', async () => {
+    h.saved = [];
+    await setup();
+    const [first] = keys();
+    renderStub().cards[0].props.onX();
+    expect(h.answered).toEqual([[first, 'all', false]]);
+    h.answers.set(`${first}|all`, { correct: false });
+    renderStub().cards[0].props.onX();
+    expect(h.cancelled).toEqual([[first, 'all']]);
+    expect(h.answered).toHaveLength(1);
+  });
+
+  it('탭 O · X도 그 탭의 바퀴 답 — 탭 표시를 지우면 그 답도 취소', async () => {
+    h.saved = [];
+    await setup('word');
+    const [first, second] = keys();
+    renderStub().col.props.onKeyDown(key('o'));
+    expect(h.answered).toEqual([[first, 'word', true]]);
+    h.facets.rows = [{ word_text: second, facet: 'word', mark: 'x' }];
+    renderStub().cards[1].props.onX();
+    expect(h.cancelled).toEqual([[second, 'word']]);
+  });
+
+  it('「네 탭 모두 알아요 → 아는 단어로?」는 원래 알던 단어만 · 같은 날 다른 탭에서 본 뒤의 O는 세지 않는다', async () => {
+    const three = (w) => ['sentence', 'meaning', 'audio'].map((facet) => ({ word_text: w, facet, mark: 'o' }));
+    h.saved = [];
+    await setup('word');
+    const [first] = keys();
+    const ask = '네 탭 모두 알아요. 아는 단어로 옮길까요?';
+    const fourth = () => { h.facets.rows = three(first); renderStub().cards[0].props.onO(); return toastOf()?.props.children[0].props.children; };
+    expect(fourth()).toBe(ask);
+    h.slots = []; await setup('word'); h.sameDay = true;
+    expect(fourth()).not.toBe(ask); // 이번 O가 같은 날 다른 탭 뒤
+    h.slots = []; await setup('word'); h.answers.set(`${first}|meaning`, { correct: true, sameDay: true });
+    expect(fourth()).not.toBe(ask); // 앞서 누른 탭 O가 같은 날 다른 탭 뒤
+    h.saved = [first]; h.slots = []; await setup('word');
+    expect(fourth()).not.toBe(ask); // 공부 중인 단어 — 복습이 맡는다
+  });
+});

@@ -269,12 +269,12 @@ describe('머리 · 진도 · X 펼침(LEVEL-FLOW-001 — 디자인 검토 2026-
     expect(normalizeLevelPrefs({ peekOnX: false }).peekOnX).toBe(false);
     const panel = sliceBetween(page, '<div className="lv-settings" id="lv-settings">', '</div>}');
     expect(panel).toContain("['peekOnX', 'X 누르면 답 펼치기', '단어 · 문장 · 뜻 · 소리 탭']");
-    // 펼치기는 markX 한 곳뿐 — 클릭 · 키보드 X가 모두 이 길을 지난다.
+    // 펼치기는 studyX 한 곳뿐 — 클릭 · 키보드 X가 모두 이 길을 지난다.
     expect([...page.matchAll(/openPeek\(entry\.key\)/g)]).toHaveLength(1);
   });
 
   it('탭 보기에서 X = 그 카드를 펼쳐 답을 본다 · 「복습하기」 알림은 KST 하루 한 번', () => {
-    const markX = sliceBetween(page, 'const markX = async (entry) => {', '};'); // 아는 단어 풀기를 기다리므로 async
+    const markX = sliceBetween(page, 'const studyX = async (entry) => {', '};'); // 아는 단어 풀기를 기다리므로 async — 전체 · 탭 X 공통
     expect(markX).toContain("if (prefs.view !== 'all' && prefs.peekOnX) openPeek(entry.key);");
     const nudge = sliceBetween(page, 'const nudgeReview = () => {', '};');
     expect(nudge).toContain('if (localStorage.getItem(NUDGE_KEY) === kstDay()) return; localStorage.setItem(NUDGE_KEY, kstDay());');

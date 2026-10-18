@@ -63,7 +63,9 @@ describe('fetchSavedLevelKeysAll', () => {
     expect(page).toContain('fetchSavedLevelKeysAll(supabase, userId, conf.language, allEntries.map((e) => e.key))');
     const loadSaved = page.match(/const loadSaved = useCallback\(\(keys\) => \{[\s\S]*?\n {2}\}, /)?.[0];
     expect(loadSaved).toContain('fetchSavedLevelKeys(supabase, userId, conf.language, keys)');
-    expect(page.match(/fetchSavedLevelKeys\(/g)).toHaveLength(1);
+    // 그 밖에는 단어장 대조 전 O 한 곳뿐 — 공부 중인 단어인지 그 단어만 묻는다(LEVEL-ROUND-001).
+    expect(page.match(/fetchSavedLevelKeys\(/g)).toHaveLength(2);
+    expect(page.match(/const isStudying = async \(key\) => \{[\s\S]*?\n {2}\};/)?.[0]).toContain('fetchSavedLevelKeys(supabase, userId, conf.language, [key])');
     expect(read('src/lib/levelList.js')).toContain("import { readCompleteLegacyRows } from './legacyReviewSync';");
   });
 });
