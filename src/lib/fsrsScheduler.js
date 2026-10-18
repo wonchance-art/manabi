@@ -14,6 +14,21 @@ export const FSRS_POLICIES = Object.freeze({
 });
 /** 취소 · 중단 뒤 다시 묻기까지의 고정 대기(SQL next_question_at의 30초). 학습 단계와 무관하다. */
 export const FSRS_RETRY_SECONDS = 30;
+/**
+ * Anki learn-ahead(learn_ahead_secs 기본 1200초): 학습 · 재학습 카드는 기한 20분 전부터 물을 수 있다.
+ * 언제 앞당길지(다른 카드가 남지 않았을 때)는 화면이 정하고, 허용 여부는 서버가 fsrs_capabilities로 알린다.
+ */
+export const FSRS_LEARN_AHEAD_SECONDS = 1200;
+const AHEAD_STATES = new Set(['Learning', 'Relearning']);
+/**
+ * 이 카드를 처음 물을 수 있는 시각(ms). 학습 · 재학습이고 기한 너머 대기(되돌리기 · 중단 30초)가 없으면 기한 − learnAheadSeconds.
+ * 그 밖에는 기한과 nextQuestionAt 중 늦은 쪽.
+ */
+export function fsrsQuestionOpensAt(card, nextQuestionAt = null, learnAheadSeconds = 0) {
+  const due = schedulerTime(card.due), wait = nextQuestionAt == null ? due : schedulerTime(nextQuestionAt);
+  if (learnAheadSeconds > 0 && AHEAD_STATES.has(card.state) && wait <= due) return due - learnAheadSeconds * 1000;
+  return Math.max(due, wait);
+}
 export function fsrsPolicySteps(version) {
   if (!Object.hasOwn(FSRS_POLICIES, version)) throw new Error('unsupported_fsrs_card');
   return FSRS_POLICIES[version];
@@ -199,7 +214,8 @@ function graduatingDays(raw) {
  */
 export function previewFsrsRatings(input, at, { policyVersion = input?.policyVersion } = {}) {
   const card = validateFsrsCard(input), now = schedulerTime(at), policy = fsrsPolicySteps(policyVersion);
-  if (now < schedulerTime(card.due)) throw new Error('fsrs_card_not_due');
+  // 순수 계산은 learn-ahead 폭까지 받는다. 실제로 앞당겨 물을 수 있는지는 서버 · DB가 지킨다.
+  if (now < fsrsQuestionOpensAt(card, null, FSRS_LEARN_AHEAD_SECONDS)) throw new Error('fsrs_card_not_due');
   const elapsed = card.lastReview === null ? 0 : learningDay(now, card.timeZone, card.rolloverHour)
     - learningDay(card.lastReview, card.timeZone, card.rolloverHour);
   if (elapsed < 0) throw new Error('scheduler_clock_reversed');

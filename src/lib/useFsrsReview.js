@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { createFsrsLearningClient } from './fsrsLearningClient';
-import { previewFsrsRatings, validateFsrsCard } from './fsrsScheduler';
+import { FSRS_LEARN_AHEAD_SECONDS, FSRS_RETRY_SECONDS, fsrsQuestionOpensAt, previewFsrsRatings, validateFsrsCard } from './fsrsScheduler';
 import { fsrsQueueState } from './fsrsReviewSession';
 import { normalizeFsrsSaveRequest } from './fsrsOperationOutbox';
 import { normalizeAdmissionStatus } from './learningAdmission';
@@ -13,7 +13,7 @@ const uuid = () => globalThis.crypto.randomUUID();
 const settled = status => status === 'applied' || status === 'replayed';
 
 export function canAutoStartFsrsReview(state) {
-  return !state.current && !state.busy && state.ready.length > 0 &&
+  return !state.current && !state.busy && (state.ready.length > 0 || state.ahead?.length > 0) &&
     (!state.error || state.error.message === 'fsrs_sync_blocked');
 }
 
@@ -44,8 +44,11 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
   let disposed = false, started = false, timer = null, offset = 0, words = [], allowedIds = null;
   let generation = 0, readGeneration = 0, locked = false, refreshPromise = null;
   const listeners = new Set(), enrollments = new Map(), saves = new Map(), appliedOperations = new Set();
+  // 되돌리기 뒤 30초 재질문 대기(DB next_question_at) — 되돌린 카드의 기한이 더 늦으면 응답의 nextQuestionAt에 드러나지 않으므로
+  // learn-ahead가 그 30초 안에 묻지 않게 이 세션에서 기억한다.
+  const undoneAt = new Map();
   let state = { status: accountId ? 'loading' : 'ready', registryAvailable: !accountId,
-    enabled: false, cards: [], enrolledIds: [], pending: [], ready: [], nextWakeAt: null,
+    enabled: false, cards: [], enrolledIds: [], pending: [], ready: [], ahead: [], learnAheadSeconds: 0, nextWakeAt: null,
     current: null, busy: false, error: null, lastGrade: null, completed: 0, firstQuestionsToday: 0, enrollmentFailures: [],
     pendingSaves: [], saveFailures: [], admission: null };
   const publish = patch => {
@@ -83,17 +86,33 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
       const wake = Math.min(...cooldowns, next.nextWakeAt ? Date.parse(next.nextWakeAt) : Infinity);
       next.nextWakeAt = new Date(wake).toISOString();
     }
+    // Anki learn-ahead(FSRS-ANKI-R2): 아직 기한 전이지만 서버가 허용한 폭 안에 든 학습 · 재학습 카드. 다른 카드가 남지 않았을 때만
+    // 화면이 앞당겨 묻는다(기한 순). 폭에 들어오는 시각에도 한 번 깨어난다 — 표시하는 nextWakeAt(기한)은 바꾸지 않는다.
+    const readyIds = new Set(next.ready.map(entry => entry.cardId)), learnAhead = state.learnAheadSeconds;
+    const aheadCandidates = learnAhead > 0 ? entries.filter(entry => !readyIds.has(entry.cardId)
+      && ['Learning', 'Relearning'].includes(entry.card.state)
+      && !(entry.attempt && ['question', 'revealed'].includes(entry.attempt.phase))) : [];
+    const retry = FSRS_RETRY_SECONDS * 1000;
+    const opens = entry => Math.max(fsrsQuestionOpensAt(entry.card, entry.nextQuestionAt, learnAhead),
+      (undoneAt.get(entry.cardId) ?? -Infinity) + retry,
+      entry.attempt?.phase === 'abandoned' ? Date.parse(entry.attempt.revealedAt || entry.attempt.questionAt) + retry : -Infinity);
+    const ahead = aheadCandidates.filter(entry => opens(entry) <= time)
+      .sort((a, b) => Date.parse(a.card.due) - Date.parse(b.card.due) || a.cardId.localeCompare(b.cardId));
+    const aheadWake = aheadCandidates.map(opens).filter(value => value > time);
+    const wakeAt = Math.min(...aheadWake, next.nextWakeAt ? Date.parse(next.nextWakeAt) : Infinity);
     // 로딩 중 query의 기본 []와 scope 배열은 매 렌더 새 객체일 수 있다.
     // 같은 큐를 다시 알리면 effect→외부 store→렌더가 반복되므로 실제 출제 상태만 발행한다.
     const unchanged = state.nextWakeAt === next.nextWakeAt && state.ready.length === next.ready.length &&
       state.ready.every((entry, index) => entry.cardId === next.ready[index].cardId &&
         entry.card === next.ready[index].card && entry.attempt === next.ready[index].attempt &&
-        entry.nextQuestionAt === next.ready[index].nextQuestionAt);
-    if (!unchanged) publish({ ready: next.ready, nextWakeAt: next.nextWakeAt });
-    if (next.nextWakeAt) timer = setTimer(() => {
+        entry.nextQuestionAt === next.ready[index].nextQuestionAt) &&
+      state.ahead.length === ahead.length && state.ahead.every((entry, index) => entry.cardId === ahead[index].cardId
+        && entry.card === ahead[index].card && entry.nextQuestionAt === ahead[index].nextQuestionAt);
+    if (!unchanged) publish({ ready: next.ready, ahead, nextWakeAt: next.nextWakeAt });
+    if (Number.isFinite(wakeAt)) timer = setTimer(() => {
       // 브라우저 시계만 믿고 출제하지 않는다. 만기 때 서버의 소유권·제외 상태를 다시 읽는다.
       refresh().catch(() => {});
-    }, Math.min(2147483647, Math.max(1, Date.parse(next.nextWakeAt) - now() - offset)));
+    }, Math.min(2147483647, Math.max(1, wakeAt - now() - offset)));
   };
   const adopt = response => {
     if (!response?.cardId || !response.card) return;
@@ -147,6 +166,7 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
         publish({ cards, ...pendingPatch(pending), enrolledIds: [...new Set([...state.enrolledIds, ...cards.map(row => row.cardId), ...pendingEnrolledIds(pending)])],
           admission, firstQuestionsToday: admission?.active ? admission.used : snapshot.firstQuestionsToday ?? 0,
           enabled: snapshot.enabled === true, registryAvailable: true, status: 'ready',
+          learnAheadSeconds: snapshot.learnAheadSeconds === FSRS_LEARN_AHEAD_SECONDS ? FSRS_LEARN_AHEAD_SECONDS : 0,
           error: pending?.some(row => ['blocked', 'conflict', 'stale'].includes(row.status)) ? new Error('fsrs_sync_blocked') : null });
         const current = state.current;
         if (current && (!visibleWord(current.cardId) || !snapshot.enabled ||
@@ -261,7 +281,9 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
     if (cardId && state.current?.cardId === cardId) return true;
     return run(async token => {
       if (!(await refresh()) || disposed || token !== generation || !state.enabled) return false;
-      const entry = cardId ? state.ready.find(row => row.cardId === cardId) : state.ready[0];
+      // 기한 된 카드가 먼저다. 없을 때만 learn-ahead 카드(서버가 허용한 폭 안의 학습 · 재학습).
+      const entry = cardId ? state.ready.find(row => row.cardId === cardId) || state.ahead.find(row => row.cardId === cardId)
+        : state.ready[0] || state.ahead[0];
       if (!entry) return false;
       const current = { cardId: entry.cardId, card: clone(entry.card), word: visibleWord(entry.cardId),
         attempt: null, phase: 'question', previews: null, previewAt: null };
@@ -363,6 +385,7 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
         throw new Error('fsrs_sync_blocked');
       }
       if (result.response && settled(result.status)) adopt(result.response);
+      undoneAt.set(payload.cardId, now() + offset);
       const pending = await client.pending();
       if (disposed || token !== generation) return false;
       publish({ current: null, pending, lastGrade: null, completed: Math.max(0, state.completed - 1) });

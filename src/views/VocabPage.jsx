@@ -1147,10 +1147,15 @@ function VocabWorkspace({ reviewScope }) {
   useEffect(() => {
     if (stepReady || reviewFinished || !reviewQueue.length || isLoading || vocabError || koreanCapabilities.isLoading || !fsrsReview.registryAvailable) return;
     const next = reviewQueue.findIndex((step, index) => index > reviewIdx && stepValid(step));
-    if (next >= 0) setReviewIdx(next);
-    else { setReviewIdx(reviewQueue.length); finishRun(); }
+    if (next >= 0) { setReviewIdx(next); return; }
+    // Anki learn-ahead(FSRS-ANKI-R2): 남은 카드가 없으면 20분 안에 다시 물을 학습 · 재학습 카드를 기다리지 않고 지금 묻는다.
+    // 열지 못해 건너뛴 카드(다른 곳에서 채점 등)는 다시 끼우지 않는다 — 같은 카드를 되풀이해 붙이지 않게.
+    const ahead = fsrsReview.ahead.filter(entry => sessionFsrsIds.includes(entry.cardId)
+      && reviewQueue.findLast(step => step.id === entry.cardId)?.phase !== 'skipped').map(entry => ({ id: entry.cardId, engine: 'fsrs', phase: 'learn' }));
+    if (ahead.length) { setReviewQueue([...reviewQueue, ...ahead]); setReviewIdx(reviewQueue.length); return; }
+    setReviewIdx(reviewQueue.length); finishRun();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stepReady, reviewFinished, reviewQueue, reviewIdx, vocab, isLoading, vocabError, koreanCapabilities.isLoading, reviewSupported, reviewAvailable, fsrsReview.registryAvailable, fsrsReview.controller, fsrsStepValid]);
+  }, [stepReady, reviewFinished, reviewQueue, reviewIdx, vocab, isLoading, vocabError, koreanCapabilities.isLoading, reviewSupported, reviewAvailable, fsrsReview.registryAvailable, fsrsReview.controller, fsrsStepValid, fsrsReview.ahead, sessionFsrsIds]);
 
   // 새 일정 학습 단계(1분 · 10분 — 지금 정책은 30초 · 10분) 카드는 다시 물을 때가 되면 지금 카드 바로 뒤에 끼운다.
   useEffect(() => {
@@ -1164,10 +1169,11 @@ function VocabWorkspace({ reviewScope }) {
   const waitingFsrs = useMemo(() => {
     const cards = fsrsReview.cards.filter(entry => sessionFsrsIds.includes(entry.cardId) && ['Learning', 'Relearning'].includes(entry.card?.state));
     if (!cards.length) return null;
-    const readyIds = cards.filter(entry => fsrsReview.ready.some(row => row.cardId === entry.cardId)).map(entry => entry.cardId);
+    const readyIds = cards.filter(entry => fsrsReview.ready.some(row => row.cardId === entry.cardId)
+      || fsrsReview.ahead.some(row => row.cardId === entry.cardId)).map(entry => entry.cardId);
     const times = cards.map(entry => Math.max(Date.parse(entry.card.due), entry.nextQuestionAt ? Date.parse(entry.nextQuestionAt) : 0)).filter(Number.isFinite);
     return { count: cards.length, readyIds, ready: readyIds.length > 0, nextAt: times.length ? new Date(Math.min(...times)).toISOString() : null };
-  }, [fsrsReview.cards, fsrsReview.ready, sessionFsrsIds]);
+  }, [fsrsReview.cards, fsrsReview.ready, fsrsReview.ahead, sessionFsrsIds]);
   const resumeWaiting = () => {
     if (!waitingFsrs?.ready) return;
     const next = [...reviewQueue, ...waitingFsrs.readyIds.map(id => ({ id, engine: 'fsrs', phase: 'learn' }))];

@@ -220,12 +220,13 @@ describe('「다시」 재노출 — 준비된 카드로 세고, 건너뛰기 �
   // 지금 카드가 준비됐는지(stepReady)에 againWord가 빠지면, 아래 effect가 재노출을 「준비된 카드 없음」으로 보고
   // 다음 유효 단계로 건너뛰거나(마지막이면) 세션을 끝냈다 — 첫 「다시」 뒤 재노출 없이 「오늘 몫 끝」.
   const block = sliceBetween(page, '  const stepValid = step =>', '  // 새 일정 학습 단계');
-  const run = ({ queue, idx, againWord, candidateWord, fsrsStepWord, vocab }) => {
-    const calls = { idx: null, finished: 0 };
+  const run = ({ queue, idx, againWord, candidateWord, fsrsStepWord, vocab, ahead = [], sessionFsrsIds = [] }) => {
+    const calls = { idx: null, finished: 0, queue: null };
     const env = {
       reviewQueue: queue, reviewIdx: idx, againWord, candidateWord, fsrsStepWord, vocab,
       reviewFinished: false, isLoading: false, vocabError: null, koreanCapabilities: { isLoading: false },
-      fsrsReview: { registryAvailable: true, controller: { canLegacy: () => true } }, fsrsStepValid: () => true,
+      fsrsReview: { registryAvailable: true, ahead, controller: { canLegacy: () => true } }, fsrsStepValid: () => true, sessionFsrsIds,
+      setReviewQueue: value => { calls.queue = value; },
       reviewSupported: () => true, reviewAvailable: row => !row.last_reviewed_at,
       setReviewIdx: value => { calls.idx = value; }, finishRun: () => { calls.finished += 1; }, useEffect: fn => fn(),
     };
@@ -237,7 +238,7 @@ describe('「다시」 재노출 — 준비된 카드로 세고, 건너뛰기 �
   it('마지막 단계가 재노출이면 그 카드를 연다 — 세션을 끝내지 않는다', () => {
     const calls = run({ queue: [{ id: 'a', engine: 'legacy', phase: 'question' }, { id: 'a', engine: 'legacy', phase: 'again' }],
       idx: 1, againWord: graded, vocab: [graded] });
-    expect(calls).toEqual({ idx: null, finished: 0 });
+    expect(calls).toEqual({ idx: null, finished: 0, queue: null });
   });
 
   it('지금 카드가 빠졌을 때 다음 유효 단계 찾기에서도 재노출은 유효하다(채점돼 reviewAvailable이 거짓이어도)', () => {
@@ -252,6 +253,22 @@ describe('「다시」 재노출 — 준비된 카드로 세고, 건너뛰기 �
     const known = { ...graded, is_known: true };
     const calls = run({ queue: [{ id: 'b', engine: 'legacy', phase: 'question' }, { id: 'a', engine: 'legacy', phase: 'again' }],
       idx: 0, vocab: [{ id: 'b', is_excluded: true }, known] });
+    expect(calls.finished).toBe(1);
+  });
+
+  // Anki learn-ahead(FSRS-ANKI-R2): 남은 카드가 없을 때 20분 안의 학습 · 재학습 카드는 「잠시 뒤」로 끝내지 않고 지금 묻는다.
+  it('남은 카드가 없고 이 세션의 learn-ahead 카드가 있으면 끝내지 않고 줄 끝에 붙인다', () => {
+    const queue = [{ id: 'f', engine: 'fsrs', phase: 'question' }];
+    const calls = run({ queue, idx: 0, vocab: [], ahead: [{ cardId: 'f' }, { cardId: 'other' }], sessionFsrsIds: ['f'] });
+    expect(calls.finished).toBe(0);
+    expect(calls.queue).toEqual([...queue, { id: 'f', engine: 'fsrs', phase: 'learn' }]);
+    expect(calls.idx).toBe(1);
+  });
+
+  it('열지 못해 건너뛴 learn-ahead 카드는 다시 붙이지 않고 끝낸다', () => {
+    const queue = [{ id: 'f', engine: 'fsrs', phase: 'question' }, { id: 'f', engine: 'fsrs', phase: 'skipped' }];
+    const calls = run({ queue, idx: 1, vocab: [], ahead: [{ cardId: 'f' }], sessionFsrsIds: ['f'] });
+    expect(calls.queue).toBeNull();
     expect(calls.finished).toBe(1);
   });
 });

@@ -8,9 +8,9 @@ const START = Date.parse('2026-10-03T00:00:00Z');
 const disposers = [];
 afterEach(() => { disposers.splice(0).forEach(dispose => dispose()); });
 
-function setup({ enabled = true, dueIn = 0, registryAvailable = true, firstQuestionsToday = 0, dailyNewLimit = 15 } = {}) {
+function setup({ enabled = true, dueIn = 0, registryAvailable = true, firstQuestionsToday = 0, dailyNewLimit = 15, learnAheadSeconds, card: given } = {}) {
   let clock = START + 30000, number = 0, listener;
-  const card = introduceFsrsCard(START + dueIn);
+  const card = given || introduceFsrsCard(START + dueIn);
   const rows = [{ cardId: 'one', card, attempt: null, eligible: true }];
   const admission = () => {
     const used = firstQuestionsToday + rows.filter(row => row.firstQuestionAt).length;
@@ -24,7 +24,7 @@ function setup({ enabled = true, dueIn = 0, registryAvailable = true, firstQuest
   const client = {
     start: vi.fn(), dispose: vi.fn(),
     subscribe: vi.fn(fn => { listener = fn; return () => { listener = null; }; }),
-    load: vi.fn(async () => ({ version: 1, enabled, registryAvailable, cards: structuredClone(rows),
+    load: vi.fn(async () => ({ version: 1, enabled, registryAvailable, cards: structuredClone(rows), learnAheadSeconds,
       now: new Date(clock).toISOString(), firstQuestionsToday, admission: admission() })),
     pending: vi.fn(async () => structuredClone(pending)),
     question: vi.fn(async payload => {
@@ -311,5 +311,65 @@ describe('FSRS personal review lifecycle', () => {
     expect(controller.getSnapshot().enabled).toBe(false);
     await controller.refresh();
     expect(controller.getSnapshot().enrolledIds).toEqual(['one']);
+  });
+});
+
+// Anki learn-ahead(FSRS-ANKI-R2): 서버가 허용 폭(1200초)을 알릴 때만, 기한 전 20분 안의 학습 · 재학습 카드를 ahead로 낸다.
+describe('FSRS learn-ahead', () => {
+  // 처음 「알맞음」 → 학습 2단계(10분 뒤). 시계는 그 채점 1분 뒤 — 기한까지 9분 남음.
+  const learning = () => scheduleFsrsReview(introduceFsrsCard(START - 60000, { policyVersion: 'anki-v2' }), 3, START, { policyVersion: 'anki-v2' }).card;
+
+  it('허용 폭이 없으면 기한 전 학습 카드를 묻지 않는다', async () => {
+    const { controller, client } = setup({ card: learning() });
+    await controller.refresh();
+    expect(controller.getSnapshot().ready).toEqual([]);
+    expect(controller.getSnapshot().ahead).toEqual([]);
+    expect(await controller.question()).toBe(false);
+    expect(client.question).not.toHaveBeenCalled();
+  });
+
+  it('허용 폭 안이면 ahead로 내고 question으로 연다 · 화면 대기 시각(nextWakeAt)은 기한 그대로', async () => {
+    const card = learning();
+    expect(card.state).toBe('Learning');
+    const { controller, client } = setup({ card, learnAheadSeconds: 1200 });
+    await controller.refresh();
+    const snapshot = controller.getSnapshot();
+    expect(snapshot.ready).toEqual([]);
+    expect(snapshot.ahead.map(entry => entry.cardId)).toEqual(['one']);
+    expect(snapshot.nextWakeAt).toBe(card.due);
+    expect(canAutoStartFsrsReview(snapshot)).toBe(true);
+    expect(await controller.question('one')).toBe(true);
+    expect(client.question).toHaveBeenCalledTimes(1);
+  });
+
+  it('모르는 허용 폭 값은 0으로 본다 · 복습(Review) 카드는 앞당기지 않는다', async () => {
+    const odd = setup({ card: learning(), learnAheadSeconds: 99999 });
+    await odd.controller.refresh();
+    expect(odd.controller.getSnapshot().ahead).toEqual([]);
+    const review = scheduleFsrsReview(learning(), 4, START, { policyVersion: 'anki-v2' }).card;
+    expect(review.state).toBe('Review');
+    const later = setup({ card: review, learnAheadSeconds: 1200 });
+    await later.controller.refresh();
+    expect(later.controller.getSnapshot().ahead).toEqual([]);
+  });
+
+  it('중단 뒤 30초 재질문 대기 안에서는 앞당기지 않고 그 뒤에 깨어난다', async () => {
+    const card = learning();
+    const { controller, rows, timers } = setup({ card, learnAheadSeconds: 1200 });
+    const exposed = beginFsrsAttempt(card, { id: 'gone', userId: ACTOR, cardId: 'one', at: START + 20000 });
+    rows[0].attempt = { ...exposed, phase: 'abandoned', abandonedAt: exposed.questionAt };
+    await controller.refresh();
+    expect(controller.getSnapshot().ahead).toEqual([]);
+    expect(timers.at(-1).delay).toBe(20000);
+  });
+
+  it('폭 밖이면 폭에 드는 시각에 깨어난다', async () => {
+    const card = learning();
+    const { controller, timers, tick } = setup({ card, learnAheadSeconds: 1200 });
+    tick(-20 * 60000);
+    await controller.refresh();
+    expect(controller.getSnapshot().ahead).toEqual([]);
+    const wake = timers.at(-1).delay;
+    expect(wake).toBe(Date.parse(card.due) - 1200000 - (START + 30000 - 20 * 60000));
   });
 });

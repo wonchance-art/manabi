@@ -8,7 +8,7 @@ const id = '20000000-0000-0000-0000-000000000001';
 const introducedAt = '2026-10-02T18:59:00.000Z'; // KST 학습일 경계(04시) 직전
 const instant = seconds => new Date(Date.parse(introducedAt) + seconds * 1000).toISOString();
 const clone = value => JSON.parse(JSON.stringify(value));
-let authClient, serviceClient, stored, operations, enabled, applyError, databaseAt, policyLimit, policyVersion;
+let authClient, serviceClient, stored, operations, enabled, applyError, databaseAt, policyLimit, policyVersion, learnAheadSeconds;
 
 function request(action, extra = {}, now = instant(30)) {
   databaseAt = now;
@@ -17,10 +17,10 @@ function request(action, extra = {}, now = instant(30)) {
 }
 
 beforeEach(() => {
-  enabled = true; applyError = null; operations = new Map(); databaseAt = instant(30); policyLimit = 15; policyVersion = 'anki-seconds-v1';
+  enabled = true; applyError = null; operations = new Map(); databaseAt = instant(30); policyLimit = 15; policyVersion = 'anki-seconds-v1'; learnAheadSeconds = undefined;
   stored = { cardId: id, userId: owner, card: introduceFsrsCard(introducedAt), attempt: null,
     enrolled: true, excluded: false, eligible: true, firstQuestionAt: null };
-  authClient = { rpc: vi.fn(async () => ({ data: { version: 1, enabled, policyVersion } })) };
+  authClient = { rpc: vi.fn(async () => ({ data: { version: 1, enabled, policyVersion, learnAheadSeconds } })) };
   // 서버 RPC 경계의 메모리 대역. 권한/원자성 자체는 별도 SQL 계약에서 검증한다.
   serviceClient = { rpc: vi.fn(async (name, args) => {
     if (args.p_actor !== owner) return { error: { message: 'fsrs_forbidden' } };
@@ -117,6 +117,25 @@ describe('새 FSRS 서버 경계', () => {
     expect(enrolled.card).toMatchObject({ policyVersion: 'anki-v2', state: 'New', due: instant(160) });
     policyVersion = 'future-policy';
     await expect(request('question', {}, instant(200))).rejects.toMatchObject({ code: 'fsrs_storage_unavailable' });
+  });
+
+  it('learn-ahead는 서버가 1200초를 알릴 때만 — 학습 카드를 기한 20분 전부터 묻고 미리보기를 붙인다 · 새 카드는 그대로 기한(FSRS-ANKI-R2)', async () => {
+    // 첫 질문 → 「알맞음」 → 학습 2단계(10분 뒤 = 정답 본 instant(31) + 600초).
+    await request('question');
+    await request('reveal', { attemptId: 'question' }, instant(31));
+    const graded = await request('grade', { attemptId: 'question', rating: 3 }, instant(32));
+    expect(graded.card).toMatchObject({ state: 'Learning', step: 1, due: instant(631) });
+    const ask = (operationId, at) => request('question', { operationId, attemptId: operationId }, at);
+    await expect(ask('early', instant(100))).rejects.toMatchObject({ code: 'fsrs_card_not_due', status: 409 });
+    learnAheadSeconds = 99999;
+    await expect(ask('odd', instant(100))).rejects.toMatchObject({ code: 'fsrs_card_not_due' });
+    learnAheadSeconds = 1200;
+    const ahead = await ask('ahead', instant(100));
+    expect(ahead.attempt).toMatchObject({ phase: 'question', questionAt: instant(100) });
+    expect(Object.keys(ahead.previews)).toEqual(['1', '2', '3', '4']);
+    stored = null;
+    await request('enroll', {}, instant(700));
+    await expect(ask('fresh', instant(729))).rejects.toMatchObject({ code: 'fsrs_card_not_due' });
   });
 
   it('첫 질문은 정확한 due부터 가능하고 저장/문제 노출은 기억 갱신이나 평가가 아니다', async () => {
