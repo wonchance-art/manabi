@@ -17,6 +17,7 @@ import BookHome from '@/components/books/BookHome';
 import { RESUME_HINT_ID, resumeHintCss, resumeHintScript } from '@/components/books/bookEntryGate';
 import { readingProgressKey, validReadingProgress } from '@/lib/bookNavigation';
 import { bookResume } from '@/lib/webNavigation';
+import { sliceBetween } from './helpers/sliceBetween';
 
 const ROOT = path.resolve(__dirname, '../../..');
 const edition = 'f4a6411c0945bbd3f8767af7';
@@ -78,7 +79,7 @@ describe('BookHome 줄 자리', () => {
   it('붙기 전(!ready): 같은 칸(.book-resume-hold)에 그리기 전 한 줄 · 진짜 줄 · 보이지 않는 두 칸 — N4 · N5 같은 줄', () => {
     for (const level of ['N4', 'N5']) {
       const html = renderToStaticMarkup(createElement(BookHome, { book: { ...book, level }, progress: { page: 'u01-start', completed: [] }, ready: false }));
-      const hold = html.slice(html.indexOf('<div class="book-resume-hold">'), html.indexOf('</section>'));
+      const hold = sliceBetween(html, '<div class="book-resume-hold">', '</section>');
       expect(hold.startsWith('<div class="book-resume-hold"><script>')).toBe(true);
       expect(hold).toContain('<div class="manabi-row"><a class="manabi-button"');
       expect(hold).toContain(`<div class="manabi-row book-resume-ghost" data-edition="${edition}" aria-hidden="true"><span class="manabi-button">00과 이어 읽기 →</span><span class="manabi-link">00과 처음부터</span></div>`);
