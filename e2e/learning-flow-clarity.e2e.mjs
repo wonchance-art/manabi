@@ -146,6 +146,29 @@ test('language is the first review scope axis: list chips, count and start follo
  }finally{await f.context.close();}
 });
 
+// REVIEW-SHELF-CLS-001: 복습실 첫 그림은 「오늘」 카드 · 문법 칸이 정해진 뒤 한 번에 — 「복습 준비 중…」(25px)이 「오늘 2개」(628px)로 자라며
+// 아래 문법 · 담은 표현 칸을 밀었다(390 CLS 0.13). FSRS 목록 실패 · 입장 준비 실패는 정해진 것이라 골격이 남지 않는다.
+test('review room appears at once after the today card and grammar settle; FSRS or admission failure still reveals the room at 390px',async()=>{
+ const words=['駅','学校'].map((text,i)=>({id:`00000000-0000-4000-8000-${String(i+31).padStart(12,'0')}`,word_text:text,meaning:i?'학교':'역',language:'Japanese',interval:1,ease_factor:5,repetitions:1,next_review_at:'2026-01-02',last_reviewed_at:'2026-01-01',created_at:'2026-01-01'}));
+ for(const failure of [null,'fsrs','admission']){
+  const f=await fixture({width:390,reducedMotion:'no-preference'});try{
+   await f.context.route('**/rest/v1/user_vocabulary*',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(words)}));
+   await f.context.route('**/rest/v1/vocabulary_with_exclusions*',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(words.map(word=>({...word,is_excluded:false})))}));
+   await f.context.route('**/api/learning/vocabulary**',r=>{const url=new URL(r.request().url());if(url.searchParams.get('view')!=='learning')return r.fallback();return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(legacyLearningSnapshot({actorId:'00000000-0000-4000-8000-000000000172',rows:words,known:[],exclusions:[],fields:url.searchParams.get('fields')}))});});
+   if(failure==='fsrs')await f.context.route('**/api/learning/fsrs',r=>r.fulfill({status:500,contentType:'application/json',body:'{"ok":false}'}));
+   if(failure==='admission')await f.context.route('**/api/learning/admission',r=>r.fulfill({status:503,contentType:'application/json',body:'{"ok":false,"code":"learning_admission_unavailable"}'}));
+   await f.context.addInitScript(()=>{window.__roomShifts=[];new PerformanceObserver(list=>{for(const e of list.getEntries())for(const s of e.sources||[]){const el=s.node?.nodeType===1?s.node:s.node?.parentElement;if(el?.closest('.manabi-review-room'))window.__roomShifts.push(`${el.tagName}.${el.className} ${e.value.toFixed(4)} ${Math.round(s.previousRect.y)}->${Math.round(s.currentRect.y)}`);}}).observe({type:'layout-shift',buffered:true});});
+   await f.page.goto('/vocab',{waitUntil:'domcontentloaded',timeout:120000});
+   if(!failure)await f.page.getByRole('button',{name:'표현 2개 복습 →',exact:true}).waitFor();
+   if(failure==='fsrs')await f.page.getByText('복습 일정을 불러오지 못했어요.',{exact:false}).waitFor();
+   await f.page.locator('.review-dash .review-room-grammar').waitFor();await f.page.waitForTimeout(600);
+   assert.equal(await f.page.locator('.manabi-review-room .skeleton-grid').count(),0,`${failure||'data'}: skeleton left`);
+   if(!failure)assert.deepEqual(await f.page.evaluate(()=>window.__roomShifts),[],'review room moved after first paint');
+   await check(f,`review-room-first-paint-${failure||'data'}-390`);
+  }finally{await f.context.close();}
+ }
+});
+
 // REV-SCOPE-R1B-1: 한 줄(두 엔진 공통 카드) · 앞면 읽기 없음 · 뒷면 뜻 + 읽기 · 처음 보는 표현 · 이어 하기(새로고침) · 끝 화면 ·
 // 집중 연습(일정 무변경, 연습 기록만) · 뜻 없는 표현 제외 — 390px 가로 넘침 0.
 test('review session: one line, card faces, first-seen card, resume after reload, end screen and focus practice at 390px',async()=>{

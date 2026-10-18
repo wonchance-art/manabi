@@ -10,7 +10,7 @@ import { useToast } from '../lib/ToastContext';
 import { recordReviewCompleted } from '../lib/learn/progressStore';
 import { useTTS } from '../lib/useTTS';
 import { useLearningCapabilities } from '../lib/useLearningCapabilities';
-import { useFsrsReview, fsrsIntervalLabel } from '../lib/useFsrsReview';
+import { useFsrsReview, fsrsIntervalLabel, FSRS_LOADING_CAP_MS } from '../lib/useFsrsReview';
 import { useLearningAdmission } from '../lib/useLearningAdmission';
 import { isSettledFsrsActivity } from '../lib/learningActivity';
 import FsrsReviewSession from '../components/vocab/FsrsReviewSession';
@@ -666,6 +666,16 @@ function VocabWorkspace({ reviewScope }) {
   // 「준비됨 · 0개」가 되고, 제목이 「잠시, 읽기로 돌아가요.」로 0.15초쯤 보였다가 「6개」로 바뀌었다(빌드 실측 d8f15fc0, 390 · 1440).
   // 시작 단추의 「복습 준비 중…」과 같은 판정이다. 받기 실패(error)는 준비 중으로 묶지 않는다(아래 다시 시도 안내가 맡는다).
   const heroPending = admission.status !== 'ready' || session.status !== 'ready' || fsrsReview.status === 'loading';
+  // 첫 그림은 「오늘」 카드 · 문법 칸이 정해진 뒤 한 번에 그린다(REVIEW-SHELF-CLS-001 — 목업 A안
+  // scratchpad/mockups/cls-vocab-materials.md). 카드 안 「복습 준비 중…」(25px)이 최종 내용(첫 표현 312 · 오늘 n개 628–704px)으로
+  // 자라며 아래 문법 · 담은 표현 칸을 밀었다(390 합성 계정 CLS 0.13–0.16 · 문법 문구 1→2줄). 받는 중(입장 한도 · FSRS 목록 ·
+  // 문법 일정)만 기다린다 — 실패는 정해진 것이다. 한 번 드러나면 다시 골격으로 돌아가지 않고, 상한(FSRS_LOADING_CAP_MS)이 지나면
+  // 기다리지 않는다(그때는 카드 안 「복습 준비 중…」이 이어 말한다).
+  const roomLoading = admission.status === 'loading' || fsrsReview.status === 'loading' || (!isBookScope && grammarLoading);
+  const [roomRevealed, setRoomRevealed] = useState(false);
+  useEffect(() => { if (!roomLoading) setRoomRevealed(true); }, [roomLoading]);
+  useEffect(() => { const timer = setTimeout(() => setRoomRevealed(true), FSRS_LOADING_CAP_MS); return () => clearTimeout(timer); }, []);
+  const roomWaiting = !roomRevealed && roomLoading;
   // 세션 길이(§6-1 ③) — 「5분 ≈ 20 · 50 · 전부」는 서로 다른 카드 수(새 표현 포함, 학습 단계 · 재질문 제외). 줄 앞에서 자른다.
   // 버튼 숫자 = 시작하는 줄 길이(sessionCards.length).
   const lengthOptions = sessionLengthOptions(session.total);
@@ -1426,7 +1436,7 @@ function VocabWorkspace({ reviewScope }) {
 
 
       {/* 범위 막대(설계 §5-1) — 언어 칩(byLang) · 범위 칩 · ＋ 범위 시트. 세션 중 · 목록 화면에서는 걷어낸다. */}
-      {!inSession && tab === 'list' && user && learningAvailable && <ReviewScopeBar
+      {!inSession && tab === 'list' && user && learningAvailable && !roomWaiting && <ReviewScopeBar
         scope={scope} languages={[...languageCounts.keys()]} byLang={session.byLang} countFor={countFor}
         allVocab={allVocab} learningById={learningById} materialTitles={materialTitles} levels={scopeLevels || zhHskLevels}
         onChange={changeScope} onSelectLanguage={selectLanguage} />}
@@ -1465,7 +1475,7 @@ function VocabWorkspace({ reviewScope }) {
         );
       })()}
 
-      {isLoading || (tab !== 'review' && tab !== 'practice' && scopePending && !vocabError) ? (
+      {isLoading || (tab !== 'review' && tab !== 'practice' && scopePending && !vocabError) || (tab === 'list' && roomWaiting) ? (
         <CardGridSkeleton height={120} />
       ) : tab !== 'review' && tab !== 'practice' && scopeFailed ? (
         // 범위를 못 읽으면 닫는다(설계 §5-6) — 시작 버튼 없음, 「전체」로 바꾸지 않음, 저장 설정 그대로.
