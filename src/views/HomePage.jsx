@@ -38,7 +38,7 @@ import { countReviewScope, reviewScopeQuota, serializeReviewScope } from '@/lib/
 import { useLearningAdmission } from '@/lib/useLearningAdmission';
 import { DEFAULT_NEW_PER_DAY, NEW_PER_DAY_OPTIONS, loadIntroIds } from '@/lib/vocabStudy';
 import { levelResumeCard, readLevelSnapshot } from '@/lib/levelList';
-import { LEARN_LANGS, PREFETCH_WINDOW_MS, learnLangLabel, materialInLang, paragraphState } from '@/lib/learnDashboard';
+import { GUEST_RESUME_GLYPH, LEARN_LANGS, PREFETCH_WINDOW_MS, RESUME_GLYPH, learnLangLabel, materialInLang, paragraphState } from '@/lib/learnDashboard';
 import { encounterLookupLang } from '@/lib/refVocabLookup';
 import useLearnLanguage from '@/components/learn/useLearnLanguage';
 import LangChips from '@/components/learn/LangChips';
@@ -87,7 +87,7 @@ export async function fetchPrefetchedSentence(userId, lang, nowMs = Date.now()) 
   return data?.[0]?.sentence || null;
 }
 
-const GLYPH = { Japanese: 'あ', Chinese: '汉', English: 'A', French: 'É' };
+const GLYPH = RESUME_GLYPH;
 const GUEST_SAMPLE = '駅前の小さなパン屋で、今日も同じパンを買いました。';
 
 function bookItem(book, resume) {
@@ -122,7 +122,7 @@ function useBook(bookPromise, book) {
   return bookPromise ? use(bookPromise) : book;
 }
 
-function ResumeSlot({ bookPromise, book: bookValue, user, authLoading, isLoading, data, lang }) {
+function ResumeSlot({ bookPromise, book: bookValue, user, authLoading, isLoading, data, lang, pendingGlyph }) {
   const book = useBook(bookPromise, bookValue);
   const local = useReadingProgress(book?.edition);
   const resume = bookResume(book, local.progress, local.hasProgress);
@@ -154,7 +154,7 @@ function ResumeSlot({ bookPromise, book: bookValue, user, authLoading, isLoading
   else if (!pending) resumeItem = { lang, kicker: '산책', glyph: GLYPH[lang] || '文', title: '오늘 읽을 글을 골라 보세요',
     sub: `${learnLangLabel(lang)} 읽을거리`, href: '/discover', cta: '산책하기' };
   const resumePending = pending || (needSuggestion && recommendations.isLoading);
-  return <ResumeTile item={resumeItem} pending={resumePending} />;
+  return <ResumeTile item={resumeItem} pending={resumePending} glyph={pendingGlyph} />;
 }
 
 // 저장 불가 안내 — 판본(edition)별 읽은 위치 저장소를 읽어 본 뒤에만 안다(useReadingProgress). 판본을 기다리는 동안은 없다(예전과 같다).
@@ -206,14 +206,20 @@ export default function HomePage({ book = null, bookPromise, sessionHint }) {
   useEffect(() => { try { setHskResume(levelResumeCard(readLevelSnapshot(localStorage, 'chinese'))); } catch { /* 저장소 차단 — 1급부터 */ } }, []);
   const hskItem = hskResume ? { ...HSK_WORDS_ITEM, ...hskResume } : HSK_WORDS_ITEM;
 
+  // 손님 배치 판정 — 아래 손님 화면과 같은 조건(B1).
+  const guestLayout = !user && (!authLoading || sessionHint === false);
   // 이어 읽기 칸 · 저장 불가 안내 — 판본을 받는 동안은 배움 대기 화면과 같은 골격 칸(자리 · 모양 같음).
-  const resumeSlot = <Suspense fallback={<ResumeTile pending />}><ResumeSlot bookPromise={bookPromise} book={book} user={user} authLoading={authLoading} isLoading={isLoading} data={data} lang={lang} /></Suspense>;
+  // 손님이면 골격도 장식 글자(「あ」)를 첫 그림부터 그린다(HOME-GLYPH-LCP-001) — 손님 학습 언어는 늘 일본어라 글자를 서버도 안다.
+  // 붙은 뒤 늦게 끼던 130px 글자가 화면에서 가장 큰 글이라 LCP를 늦췄다. 자리는 absolute라 CLS 0.
+  // 로그인은 글자가 학습 언어 · 고른 칩 · 서재 자료로 정해져 서버가 모른다 — 골격에 글자 없음(그대로, 틀린 글자 → 바뀜 금지).
+  const pendingGlyph = guestLayout ? GUEST_RESUME_GLYPH : null;
+  const resumeSlot = <Suspense fallback={<ResumeTile pending glyph={pendingGlyph} />}><ResumeSlot bookPromise={bookPromise} book={book} user={user} authLoading={authLoading} isLoading={isLoading} data={data} lang={lang} pendingGlyph={pendingGlyph} /></Suspense>;
   const storageNote = <Suspense fallback={null}><StorageNote bookPromise={bookPromise} book={book} /></Suspense>;
 
   // 손님 배치 — 서버가 세션 쿠키가 없다고 알려 주면(sessionHint === false) 로그인 확인을 기다리지 않는다(B1 — 오너 승인
   // 2026-10-17 KST). 서버 HTML · 첫 그림 · 확인 뒤가 모두 같은 손님 배치라, 로그인 배치 골격이 0.7초 보였다가 바뀌던 것이 없다.
   // 쿠키가 있는데 세션이 끝났으면(만료 등) 예전처럼 확인을 기다린다.
-  if (!user && (!authLoading || sessionHint === false)) {
+  if (guestLayout) {
     return <div className="manabi-page learn-page">
       <div className="learn-top"><div className="learn-top__title"><h1>배움</h1></div></div>
       <div className="learn-grid">

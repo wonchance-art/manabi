@@ -66,19 +66,21 @@ describe('화면 배선 — 서버 HTML · 첫 그림이 손님 배치', () => {
     expect(page).toContain('<HomePage bookPromise={bookPromise} sessionHint={sessionHint} />');
     const home = read('src/views/HomePage.jsx');
     expect(home).toContain('export default function HomePage({ book = null, bookPromise, sessionHint })');
-    expect(home).toContain('if (!user && (!authLoading || sessionHint === false)) {');
+    expect(home).toContain('const guestLayout = !user && (!authLoading || sessionHint === false);');
+    expect(home).toContain('if (guestLayout) {');
     expect(read('src/app/(app)/home/loading.jsx')).toContain('if (!hasSupabaseSessionInJar(await cookies())) {');
   });
   it('손님 화면과 손님 골격이 같은 칸 순서 · 같은 로그인 칸(GuestLoginTile)', () => {
-    const guest = sliceBetween(read('src/views/HomePage.jsx'), 'if (!user && (!authLoading || sessionHint === false)) {', '</div>;');
+    const guest = sliceBetween(read('src/views/HomePage.jsx'), 'if (guestLayout) {', '</div>;');
     // 이어 읽기 칸은 판본을 받는 안쪽 Suspense(resumeSlot) — 대기 그림은 손님 골격과 같은 <ResumeTile pending />(LCP-UNSUSPEND).
+    // 손님 골격의 장식 글자(glyph)는 HOME-GLYPH-LCP-001 — homeResumeGlyph.test.jsx가 지킨다.
     const order = ['{resumeSlot}', "kicker=\"오늘 문단 · 맛보기\" />", "<GuestLoginTile href={authEntryHref('/home')} />"];
     const at = order.map(part => guest.indexOf(part));
     expect(at.every(i => i >= 0)).toBe(true);
     expect([...at].sort((a, b) => a - b)).toEqual(at);
     const home = read('src/views/HomePage.jsx');
-    expect(home).toContain('const resumeSlot = <Suspense fallback={<ResumeTile pending />}><ResumeSlot ');
-    expect(home).toContain('return <ResumeTile item={resumeItem} pending={resumePending} />;');
+    expect(home).toContain('const resumeSlot = <Suspense fallback={<ResumeTile pending glyph={pendingGlyph} />}><ResumeSlot ');
+    expect(home).toContain('return <ResumeTile item={resumeItem} pending={resumePending} glyph={pendingGlyph} />;');
     expect(renderToStaticMarkup(createElement(GuestLoginTile, { href: '/auth?from=%2Fhome' })))
       .toContain('<a href="/auth?from=%2Fhome" class="learn-tile learn-goal--empty learn-guest">');
   });

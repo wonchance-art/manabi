@@ -14,6 +14,14 @@ export const LEARN_LANGS = Object.freeze(Object.keys(LANG_NAME_KO));
 export const LEARN_LANG_KEY = 'learn_lang';
 
 /**
+ * 이어 읽기 칸의 장식 글자(learn-resume__glyph) — 언어별 한 글자, 언어를 모르면 「文」.
+ * 손님은 학습 언어가 늘 일본어라(learnLanguages(null) = ['Japanese']) 손님 글자는 서버도 안다 — 대기 골격이 같은 글자를
+ * 첫 그림부터 그린다(HOME-GLYPH-LCP-001). 대기 화면(loading.jsx · 서버 컴포넌트)도 같은 값을 써서 평범한 모듈에 둔다.
+ */
+export const RESUME_GLYPH = Object.freeze({ Japanese: 'あ', Chinese: '汉', English: 'A', French: 'É' });
+export const GUEST_RESUME_GLYPH = RESUME_GLYPH.Japanese;
+
+/**
  * 학습 언어 칩 목록 — 프로필 학습 언어(배열 · 문자열) 중 이름이 있는 언어. 학습 언어가 비어 있으면 담은 표현이 많은
  * 언어 순(복습방 기본 언어 규칙 — REV-SCOPE-R1A §9-4와 같은 결), 그것도 없으면 일본어.
  */
