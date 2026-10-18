@@ -47,12 +47,36 @@ export function schedulerTime(value) {
   return ms;
 }
 
+// 지역 달력 서식기는 시간대마다 한 번만 만든다(HOME-HYDRATION-001) — 만들기가 비싸(Node 실측: 새로 만들어 쓰기 452µs ·
+// 만들어 둔 것 쓰기 6.8µs) 카드마다 새로 만들면 카드 수에 비례해 주 스레드를 쓴다. 같은 옵션 · 같은 시간대면 결과가 같다.
+// 잘못된 시간대는 만들 때 RangeError — 저장하지 않으므로 예전처럼 매번 던진다.
+const DAY_FORMATS = new Map();
+// 서울은 1988-10-09 03:00 KDT(= 1988-10-08T18:00Z) 마지막 전환 뒤로 UTC+9 고정이다(IANA tzdata Asia/Seoul — 일광 절약 없음).
+// 그 뒤 시각은 서식기 없이 더해서 센다 — 페이지에서 처음 만드는 시간대 서식기는 ICU 시간대 자료를 여느라 한 번에
+// CPU×4 기준 150–360ms를 막았다(배움 로그인 첫 화면 LCP 전, useLearningAdmission → dayAt). 그 전 시각 · 다른 시간대는 지역 달력 그대로.
+// 결과가 같은지는 learningDayFormat.test가 Intl 결과와 대조한다(tzdata가 바뀌면 그 검사가 깨진다).
+const SEOUL_FIXED_FROM = Date.UTC(1988, 9, 8, 18);
+const SEOUL_OFFSET = 9 * 3600000;
+function dayFormat(timeZone) {
+  let format = DAY_FORMATS.get(timeZone);
+  if (!format) {
+    format = new Intl.DateTimeFormat('en-US', { timeZone, calendar: 'gregory', numberingSystem: 'latn',
+      era: 'short', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' });
+    DAY_FORMATS.set(timeZone, format);
+  }
+  return format;
+}
+
 // 학습 모델의 04시 경계다. 성장 통계의 KST 자정(growthStats)은 그대로 둔다.
 // 실제 시각에서 4시간을 빼면 DST 전환일에 잘못된 날짜가 되므로 지역 달력으로 계산한다.
 export function learningDay(value, timeZone = FSRS_POLICY.timeZone, rolloverHour = FSRS_POLICY.rolloverHour) {
   if (!Number.isInteger(rolloverHour) || rolloverHour < 0 || rolloverHour > 23) throw new Error('invalid_rollover');
-  const parts = new Intl.DateTimeFormat('en-US', { timeZone, calendar: 'gregory', numberingSystem: 'latn',
-    era: 'short', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' }).formatToParts(schedulerTime(value));
+  const ms = schedulerTime(value);
+  if (timeZone === 'Asia/Seoul' && ms >= SEOUL_FIXED_FROM) {
+    const local = ms + SEOUL_OFFSET, date = Math.floor(local / DAY);
+    return date - (Math.floor((local - date * DAY) / 3600000) < rolloverHour ? 1 : 0);
+  }
+  const parts = dayFormat(timeZone).formatToParts(ms);
   const fields = Object.fromEntries(parts.map(p => [p.type, p.value]));
   const year = fields.era === 'BC' ? 1 - Number(fields.year) : Number(fields.year);
   const day = new Date(0);

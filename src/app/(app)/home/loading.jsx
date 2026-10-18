@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { SkeletonRegion } from '@/components/Skeleton';
 import { hasSupabaseSessionInJar } from '@/lib/authCookie';
+import { GUEST_RESUME_GLYPH } from '@/lib/learnDashboard';
 // 칸 모양 CSS는 이 대기 화면이 직접 부른다 — 화면(HomePage)만 부르면 첫 방문 때 페이지 코드보다 대기 화면이 먼저 그려져
 // 골격이 스타일 없이(목록처럼) 0.3초 보였다(/ux-review Preview b5d2fc7 · 2026-10-17 KST).
 import '@/components/learn/learn.css';
@@ -24,7 +25,8 @@ export default async function Loading() {
       <SkeletonRegion className="manabi-page learn-page" label="배움 화면" announce>
         <div className="learn-top" aria-hidden="true"><div className="learn-top__title"><h1>배움</h1></div></div>
         <div className="learn-grid" aria-hidden="true">
-          <ResumeTile pending />
+          {/* 손님 장식 글자는 화면 골격과 같다(HOME-GLYPH-LCP-001) — 대기 화면 → 화면으로 바뀌어도 글자가 깜빡이지 않는다. */}
+          <ResumeTile pending glyph={GUEST_RESUME_GLYPH} />
           <ParagraphTile state={{ kind: 'empty' }} href="/study" kicker="오늘 문단 · 맛보기" pending />
           <GuestLoginTile />
         </div>

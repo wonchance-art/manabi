@@ -54,9 +54,9 @@ describe('/home 첫 HTML — 판본을 기다리지 않는다', () => {
 
   it('이어 읽기 칸의 대기 그림 = 배움 대기 화면(loading.jsx)의 그 칸 — 자리 · 모양이 같다', () => {
     const home = code(read('src/views/HomePage.jsx'));
-    expect(home).toContain('<Suspense fallback={<ResumeTile pending />}><ResumeSlot');
+    expect(home).toContain('<Suspense fallback={<ResumeTile pending glyph={pendingGlyph} />}><ResumeSlot');
     expect(home).toContain('<Suspense fallback={null}><StorageNote');
-    expect(code(read('src/app/(app)/home/loading.jsx'))).toContain('<ResumeTile pending />');
+    expect(code(read('src/app/(app)/home/loading.jsx'))).toContain('<ResumeTile pending />'); // 로그인 배치(손님은 장식 글자 — homeResumeGlyph.test)
   });
 
   it('판본이 필요한 판단(읽은 위치 · 목적지 고정 · 추천)은 모두 ResumeSlot 안에 있다 — 화면 본체는 판본을 읽지 않는다', () => {
@@ -67,7 +67,7 @@ describe('/home 첫 HTML — 판본을 기다리지 않는다', () => {
     expect(body).not.toContain('use(bookPromise)');
     const slot = sliceBetween(home, 'function ResumeSlot(', 'function StorageNote(');
     for (const part of ['useBook(bookPromise, bookValue)', 'useReadingProgress(book?.edition)', 'chooseResume(bookForLang, local.updatedAt, material)',
-      'return <ResumeTile item={resumeItem} pending={resumePending} />;']) expect(slot).toContain(part);
+      'return <ResumeTile item={resumeItem} pending={resumePending} glyph={pendingGlyph} />;']) expect(slot).toContain(part);
     // 탭 이동 골격은 그대로(LOADING-SKELETON-001)
     expect(fs.existsSync(path.join(ROOT, 'src/app/(app)/home/loading.jsx'))).toBe(true);
   });
