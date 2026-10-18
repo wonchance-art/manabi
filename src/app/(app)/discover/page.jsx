@@ -1,6 +1,8 @@
 import LazyMaterialsPage from '@/components/web/LazyMaterialsPage';
 import DiscoverShelf from '@/components/web/DiscoverShelf';
 import Link from 'next/link';
+import { cookies } from 'next/headers';
+import { hasSupabaseSessionInJar } from '@/lib/authCookie';
 import { SERIES_TITLE_ILIKE } from '@/lib/constants';
 import { kstDateString } from '@/lib/growthStats';
 import { publishedReading, readingCatalog } from '@/lib/server/bookReading';
@@ -10,7 +12,8 @@ export const dynamic = 'force-dynamic';
 export const metadata = { title: '발견', description: '누구나 읽는 서가 — 매일 오는 소식과 함께 읽는 글.' };
 export default async function Page({searchParams}) {
   const params=await searchParams;
-  if(params?.view==='reading')return <div className="manabi-page"><header className="manabi-page-heading"><div><Link className="manabi-link" href="/discover">← 발견</Link><h1>함께 읽는 글</h1></div><Link className="manabi-link" href="/materials">내 서재</Link></header><LazyMaterialsPage libraryView="public"/></div>;
+  // 세션 쿠키(이름만)를 넘겨 로그인 사람의 고르기 줄을 서버 HTML부터 그린다 — 확인 뒤 칩이 끼며 목록이 밀리던 것(DISCOVER-CHIP-CLS-001).
+  if(params?.view==='reading')return <div className="manabi-page"><header className="manabi-page-heading"><div><Link className="manabi-link" href="/discover">← 발견</Link><h1>함께 읽는 글</h1></div><Link className="manabi-link" href="/materials">내 서재</Link></header><LazyMaterialsPage libraryView="public" sessionHint={hasSupabaseSessionInJar(await cookies())}/></div>;
   // 지역학은 발견에서 내렸다(오너 「지역학 치워버려 지우진 말고」 2026-10-16 KST) — /studies 경로 · 콘텐츠는 그대로다.
   const client = suggestionClient();
   const [book, suggestions, looseCount, bookChapterCount] = await Promise.all([

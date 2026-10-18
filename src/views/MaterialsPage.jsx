@@ -163,7 +163,7 @@ function filterSuggestionsByProfile(suggestions, profile) {
   });
 }
 
-export default function MaterialsPage({ libraryView = null }) {
+export default function MaterialsPage({ libraryView = null, sessionHint = false }) {
   const { readerHref, openReader } = useLibraryReader();
   const { user, profile, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -211,6 +211,10 @@ export default function MaterialsPage({ libraryView = null }) {
   const [tabOverride, setTabOverride] = useState(() => searchParams.get('tab') === 'public' ? 'public' : null);
   const tab = libraryView ? (libraryView === 'public' ? 'public' : 'private') : tabOverride ?? (authLoading ? null : (user ? 'private' : 'public'));
   const setTab = setTabOverride;
+  // 로그인 사람의 고르기 줄(「안 읽은 것만」 칩 · 정렬 「내 수준 맞춤」)을 서버 HTML부터 그린다(DISCOVER-CHIP-CLS-001).
+  // sessionHint = 서버가 본 세션 쿠키(이름만 — hasSupabaseSessionInJar, 배움 B1 · 책 표지와 같은 판정). 서버 그림은 늘 로그인 확인 전이라
+  // 손님 줄로 그렸다가 확인 뒤 칩이 끼고 정렬이 넓어지며 390폭에서 셋째 줄로 접혀(+48px) 아래 목록을 밀었다. 쿠키가 없으면 지금 그대로다.
+  const signedInFilters = !!user || (authLoading && sessionHint === true);
   const [testScores, setTestScores] = useState({});
 
   useEffect(() => {
@@ -652,7 +656,7 @@ export default function MaterialsPage({ libraryView = null }) {
           ))}
           {/* 「안 읽은 것만」(v2-F R3) — 완독분만 걷어낸다(읽는 중은 남긴다).
               게스트는 진도가 없어 칩 자체를 두지 않는다. */}
-          {user && (
+          {signedInFilters && (
             <button
               onClick={() => setUnreadOnly(v => !v)}
               aria-pressed={unreadOnly}
@@ -682,7 +686,7 @@ export default function MaterialsPage({ libraryView = null }) {
             style={{ marginLeft: 'auto' }}
           >
             <option value="newest">최신순</option>
-            {user && <option value="fit">내 수준 맞춤</option>}
+            {signedInFilters && <option value="fit">내 수준 맞춤</option>}
             <option value="level">쉬운순</option>
             <option value="title">제목순</option>
           </select>

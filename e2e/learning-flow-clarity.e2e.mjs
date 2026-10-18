@@ -34,6 +34,27 @@ test('direct book entry has no invented library return; real context survives co
  }finally{await f.context.close();}
 });
 
+// DISCOVER-CHIP-CLS-001: 「함께 읽는 글」 고르기 줄은 첫 그림이 최종 모양이다. 서버 그림은 늘 로그인 확인 전이라 로그인 사람에게도
+// 손님 줄(칩 없음 · 좁은 정렬)을 그렸다가, 확인 뒤 「안 읽은 것만」이 끼고 정렬이 「내 수준 맞춤」만큼 넓어지며 390폭에서 줄이 하나 더 접혔다.
+// 세션 쿠키(이름만)로 서버부터 로그인 줄을 그린다 — 고르기 줄 안의 layout-shift 0 · 손님은 칩 없이 그대로.
+test('public reading filter row has its final shape on first paint for guest and signed-in at 390px',async()=>{
+ for(const guest of [true,false]){
+  const f=await fixture({guest,width:390});try{
+   f.rows.push({id:510,owner_id:'00000000-0000-4000-8000-000000000999',visibility:'public',title:'Une fenêtre ouverte',raw_text:'Bonjour.',processed_json:{status:'completed',metadata:{language:'French'},sequence:[],dictionary:{}},created_at:'2026-01-01'});
+   await f.page.addInitScript(()=>{window.__filterShifts=[];new PerformanceObserver(list=>{for(const e of list.getEntries())for(const s of e.sources||[]){const el=s.node?.nodeType===1?s.node:s.node?.parentElement;if(el?.closest('.materials-filters'))window.__filterShifts.push(`${el.tagName}.${el.className} ${e.value.toFixed(4)}`);}}).observe({type:'layout-shift',buffered:true});});
+   const html=await(await f.context.request.get('/discover?view=reading')).text();
+   assert.equal(html.includes('안 읽은 것만'),!guest,'server HTML draws the signed-in chip only with a session cookie');
+   assert.equal(html.includes('value="fit"'),!guest);
+   await f.page.goto('/discover?view=reading',{waitUntil:'domcontentloaded',timeout:120000});
+   await f.page.getByRole('link',{name:/Une fenêtre ouverte/}).first().waitFor({timeout:60000});await f.page.waitForTimeout(500);
+   assert.equal(await f.page.getByRole('button',{name:'안 읽은 것만',exact:true}).count(),guest?0:1);
+   assert.equal(await f.page.locator('.materials-filters option[value="fit"]').count(),guest?0:1);
+   assert.deepEqual(await f.page.evaluate(()=>window.__filterShifts),[],`${guest?'guest':'signed-in'} filter row moved after first paint`);
+   await check(f,`reading-filters-${guest?'guest':'signed'}-390`);
+  }finally{await f.context.close();}
+ }
+});
+
 test('final chapter offers review preparation for this book and exact edition, without starting a session',async()=>{
  const f=await fixture({guest:true});try{
   await f.page.goto(`/books/japanese-n5?edition=${edition}#u42-message-reading`,{waitUntil:'domcontentloaded',timeout:120000});

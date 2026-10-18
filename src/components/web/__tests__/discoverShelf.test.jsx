@@ -66,6 +66,12 @@ describe('발견 화면 배선', () => {
     expect(read('src/views/MaterialsPage.jsx')).toContain("from={libraryView === 'public' ? 'reading' : 'materials'}");
     expect(read('src/views/MaterialsPage.jsx')).toContain('router.push(suggestionHref(s, from))');
   });
+  it('「함께 읽는 글」은 세션 쿠키(이름만)를 넘겨 로그인 고르기 줄을 서버부터 그린다(DISCOVER-CHIP-CLS-001)', () => {
+    // 서버 그림은 늘 로그인 확인 전 — 힌트가 없으면 확인 뒤 「안 읽은 것만」 칩이 끼며 390폭에서 줄이 접혀 목록을 밀었다.
+    expect(page()).toContain("import { hasSupabaseSessionInJar } from '@/lib/authCookie';");
+    expect(page()).toContain('<LazyMaterialsPage libraryView="public" sessionHint={hasSupabaseSessionInJar(await cookies())}/>');
+    expect(read('src/views/MaterialsPage.jsx')).toContain("export default function MaterialsPage({ libraryView = null, sessionHint = false })");
+  });
   it('비로그인 서재는 서가로 안내한다', () => {
     expect(read('src/components/web/LibraryPage.jsx')).toContain('href="/discover">서가에서 읽어 보기</Link>');
   });
