@@ -14,7 +14,7 @@ vi.mock('@/lib/AuthContext', () => ({ useAuth: () => ({ user: null, loading: fal
 vi.mock('@/components/library/LibrarySaveButton', () => ({ default: () => null }));
 
 import BookHome from '@/components/books/BookHome';
-import { RESUME_HINT_ID, resumeHintCss, resumeHintScript } from '@/components/books/bookEntryGate';
+import { RESUME_HINT_ID, clearResumeHint, resumeHintCss, resumeHintScript } from '@/components/books/bookEntryGate';
 import { readingProgressKey, validReadingProgress } from '@/lib/bookNavigation';
 import { bookResume } from '@/lib/webNavigation';
 import { sliceBetween } from './helpers/sliceBetween';
@@ -90,6 +90,14 @@ describe('BookHome 줄 자리', () => {
     const html = render({ ready: true, hasProgress: true });
     const real = [...html.matchAll(/<a class="manabi-(?:button|link)" href="[^"]*">([^<]*)<\/a>/g)].slice(0, 2).map(m => m[1].replace(/\d/g, '0').replace(/<!-- -->/g, ''));
     expect(real).toEqual(['00과 이어 읽기 →', '00과 처음부터']);
+  });
+  it('붙은 뒤(ready) 그 판본의 style을 뗀다 — 클라이언트 이동으로 돌아온 표지가 낡은 판정으로 자리를 잡지 않게', () => {
+    expect(fs.readFileSync(path.join(ROOT, 'src/components/books/BookHome.jsx'), 'utf8')).toContain('useEffect(() => { if (ready) clearResumeHint(book.edition); }, [ready, book.edition]);');
+    const removed = [], asked = [];
+    vi.stubGlobal('document', { getElementById: (id) => { asked.push(id); return { remove: () => removed.push(id) }; } });
+    try { clearResumeHint(edition); } finally { vi.unstubAllGlobals(); }
+    expect(asked).toEqual([`${RESUME_HINT_ID}-${edition}`]);
+    expect(removed).toEqual(asked);
   });
   it('붙은 뒤(ready): 한 줄도 두 칸도 없다 — 진짜 줄만', () => {
     const html = render({ ready: true, hasProgress: true });

@@ -120,6 +120,11 @@ export function hashGate(on) {
 // 다른 책 · 판본으로 옮겨 가도 남은 style이 엉뚱한 자리를 잡지 않는다.
 export const RESUME_HINT_ID = 'book-resume-hint';
 export const resumeHintCss = (edition) => `.book-resume-hold>.book-resume-ghost[data-edition="${edition}"]{display:flex}`;
+/** 붙은 뒤(ready) 그 판본의 style을 뗀다 — 한 줄은 하드 로드에서만 돌아, 남겨 두면 클라이언트 이동으로 돌아온 표지가 그새 바뀐 기록에도
+ * 두 칸 자리를 잡았다가 줄어든다(역방향 밀림). 떼면 클라이언트 이동은 전과 같다(최대 한 번 밀림). */
+export function clearResumeHint(edition) {
+  if (typeof document !== 'undefined') document.getElementById(`${RESUME_HINT_ID}-${edition}`)?.remove();
+}
 export function resumeHintScript(edition, session = false) {
   if (!EDITION_ID.test(edition || '')) return '';
   const key = readingProgressKey(edition), prefix = key.slice(0, key.lastIndexOf(':') + 1);

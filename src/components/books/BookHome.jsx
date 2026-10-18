@@ -1,13 +1,13 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { useSearchParams } from 'next/navigation';
 import { libraryReaderHref } from '@/lib/libraryReturn';
 import { lessonGroups } from '@/lib/bookNavigation';
 import { bookResume } from '@/lib/webNavigation';
 import { BOOK_ID, bookHref as textbookHref } from '@/lib/textbook/contract';
-import { resumeHintScript } from './bookEntryGate';
+import { clearResumeHint, resumeHintScript } from './bookEntryGate';
 import BookCover from './BookCover';
 import LibrarySaveButton from '@/components/library/LibrarySaveButton';
 import {LibraryReturnLink} from '@/components/web/LibraryReturnLink';
@@ -33,6 +33,7 @@ export default function BookHome({ book, preview=false, progress, hasProgress = 
   // 이어 읽기 줄(BOOK-RESUME-HOLD-001 — bookEntryGate.resumeHintScript): 읽던 기록을 읽기 전(!ready)에는 그리기 전 한 줄과, 그 한 줄이 켜는
   // 보이지 않는 두 칸(「00과 이어 읽기 → · 00과 처음부터」 — 숫자 폭은 같다)을 진짜 줄과 같은 칸에 겹쳐 둔다. 붙은 뒤 두 칸이 되어도 줄 높이가 그대로다.
   const resumeHint = ready ? '' : resumeHintScript(book.edition, sessionHint);
+  useEffect(() => { if (ready) clearResumeHint(book.edition); }, [ready, book.edition]);
   const resumeRow = <div className="book-resume-hold">{resumeHint && <script dangerouslySetInnerHTML={{ __html: resumeHint }} />}
     <div className="manabi-row"><a className="manabi-button" href={readerHref(resume.page)}>{!ready ? '읽기 열기' : resume.started ? `${String(current.number).padStart(2, '0')}과 이어 읽기` : '첫 과부터 시작하기'} →</a>{resume.started && resume.page !== `${current.id}-start` && <a className="manabi-link" href={readerHref(`${current.id}-start`)}>{String(current.number).padStart(2, '0')}과 처음부터</a>}</div>
     {resumeHint && <div className="manabi-row book-resume-ghost" data-edition={book.edition} aria-hidden="true"><span className="manabi-button">00과 이어 읽기 →</span><span className="manabi-link">00과 처음부터</span></div>}</div>;
