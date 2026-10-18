@@ -45,6 +45,14 @@ import '@/components/levels/level-list.css';
 
 const svg = { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true };
 const SpeakerIcon = () => <svg {...svg} width={17} height={17} strokeWidth={1.5}><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5H4Z" /><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" /></svg>;
+// 듣기 단추 자리(LEVEL-SND-HOLD-001) — 소리 가능 여부는 붙은 뒤에야 알아 서버 그림엔 단추가 없었다. 붙으면 표제어 · 예문 옆 44px 단추가
+// 들어와 긴 예문이 한 줄 더 감기고(N4 · 중국어 첫 카드 +20–28px) 아래 카드가 밀렸다. 붙기 전(SND_HOLD)에는 같은 상자의 보이지 않는 자리.
+// 붙은 뒤 소리를 못 내는 기기면 자리를 뺀다(그때만 전과 같은 한 번의 밀림).
+export const SND_HOLD = 'snd-hold';
+function SndButton({ speak, text, label = '듣기', tabIndex }) {
+  if (speak === SND_HOLD) return <i className="lv-snd lv-snd--hold" />;
+  return speak ? <button type="button" className="lv-snd" aria-label={label} title={label} onClick={() => speak(text)} tabIndex={tabIndex}><SpeakerIcon /></button> : null;
+}
 const SearchIcon = () => <svg {...svg} width={17} height={17} strokeWidth={1.6}><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14M21 21l-5-5" /></svg>;
 const SpinIcon = () => <svg {...svg} width={20} height={20} strokeWidth={2.2}><path d="M12 3a9 9 0 1 0 9 9" /></svg>;
 const CrossIcon = () => <svg {...svg} strokeWidth={2}><path d="M6 6l12 12M18 6 6 18" /></svg>;
@@ -90,7 +98,7 @@ function Example({ ex, lang, speak, hideTranslation, tabIndex }) {
   const zh = lang === 'chinese';
   return <p className="lv-ex">
     <span className="lv-ex__text" lang={zh ? 'zh-CN' : 'ja'}>{zh ? ex.text : <Ruby text={ex.text} reading={ex.reading} />}</span>
-    {speak && <button type="button" className="lv-snd" aria-label="예문 듣기" title="예문 듣기" onClick={() => speak(ex.text)} tabIndex={tabIndex}><SpeakerIcon /></button>}
+    <SndButton speak={speak} text={ex.text} label="예문 듣기" tabIndex={tabIndex} />
     {zh && ex.reading && <span className="lv-ex__py">{ex.reading}</span>}
     {!hideTranslation && ex.ko && <span className="lv-ex__tr">{ex.ko}</span>}
   </p>;
@@ -146,7 +154,7 @@ export function VocabCard({ entry: e, lang, levelKey, view, scoped = true, peek,
   if (view === 'all') return <li className="lv-entry" {...state} {...card}>
     <div className="lv-entry__top">
       <div className="lv-entry__word"><Headword entry={e} lang={lang} levelKey={levelKey} hunCells={hunCells} tone={tone} />
-        {speak && <button type="button" className="lv-snd" aria-label="듣기" title="듣기" onClick={() => speak(e.word)} tabIndex={inner}><SpeakerIcon /></button>}</div>
+        <SndButton speak={speak} text={e.word} tabIndex={inner} /></div>
       {ox}
     </div>
     <GlyphLine rows={glyph} />
@@ -157,17 +165,17 @@ export function VocabCard({ entry: e, lang, levelKey, view, scoped = true, peek,
   const solo = view === 'word' ? <><div className="lv-entry__word"><Headword entry={e} lang={lang} levelKey={levelKey} hunCells={hunCells} bare /></div><GlyphLine rows={glyph} /></>
     : view === 'sentence' ? (e.ex ? <p className="lv-solo__ex" lang={zh ? 'zh-CN' : 'ja'}>{e.ex.text}</p> : <p className="lv-solo__ex lv-solo__none">예문 없음</p>)
       : view === 'meaning' ? <p className="lv-solo__mean">{e.meaning}</p>
-        : speak ? <button type="button" className="lv-solo__play" aria-label="듣기" title="듣기" onClick={() => speak(e.word)} tabIndex={inner}><SpeakerIcon /></button>
+        : speak === SND_HOLD ? <i className="lv-solo__play lv-snd--hold" /> : speak ? <button type="button" className="lv-solo__play" aria-label="듣기" title="듣기" onClick={() => speak(e.word)} tabIndex={inner}><SpeakerIcon /></button>
           : <p className="lv-solo__none">이 기기에서는 소리를 낼 수 없어요</p>;
   // 펼친 안에서 듣기를 누르면 10초를 다시 센다 — 듣는 중에 접히지 않게.
-  const say = speak && ((text) => { onRenew?.(); speak(text); });
-  const sndWord = say && <button type="button" className="lv-snd" aria-label="듣기" title="듣기" onClick={() => say(e.word)} tabIndex={inner}><SpeakerIcon /></button>;
+  const say = speak === SND_HOLD ? SND_HOLD : speak && ((text) => { onRenew?.(); speak(text); });
+  const sndWord = <SndButton speak={say} text={e.word} tabIndex={inner} />;
   const head = <div className="lv-entry__word"><Headword entry={e} lang={lang} levelKey={levelKey} hunCells={hunCells} tone={tone} />{sndWord}</div>;
   const mean = <p className="lv-mean">{e.meaning}</p>;
   const example = e.ex && <Example ex={e.ex} lang={lang} speak={say} tabIndex={inner} />;
   const rest = view === 'word' ? <><p className="lv-reveal__line">{readingLine(e, lang, levelKey, tone)}{sndWord}</p>{mean}{example}</>
     : view === 'sentence' ? <>{e.ex && <p className="lv-ex lv-ex--tail">
-      {say && <button type="button" className="lv-snd" aria-label="예문 듣기" title="예문 듣기" onClick={() => say(e.ex.text)} tabIndex={inner}><SpeakerIcon /></button>}
+      <SndButton speak={say} text={e.ex.text} label="예문 듣기" tabIndex={inner} />
       {zh && e.ex.reading && <span className="lv-ex__py">{e.ex.reading}</span>}
       {e.ex.ko && <span className="lv-ex__tr">{e.ex.ko}</span>}</p>}{head}{mean}</>
       : view === 'meaning' ? <>{head}<GlyphLine rows={glyph} />{example}</>
@@ -698,6 +706,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
   const groupId = (i) => `lv-${kind}-${i}`;
   const nav = shown.map((g, i) => ({ i, name: g.name, href: `#${groupId(i)}`, current: i === activeGroup }));
   const speakOk = mounted && ttsSupported;
+  const sndSpeak = speakOk ? say : mounted ? null : SND_HOLD; // 붙기 전 = 같은 상자 자리(LEVEL-SND-HOLD-001)
 
   return <div ref={pageRef} className={`manabi-page lv-page lv-page--${kind}`} data-language={conf.langCode} data-lv-restoring={restoring || undefined}>
     <div ref={barRef} className={vocab ? 'lv-bar lv-bar--sticky' : 'lv-bar'}>
@@ -770,7 +779,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
             <h2 id={`${groupId(gi)}-h`}>{g.name}<span>{g.count}</span></h2>
             <ul className="lv-entries">{g.entries.map((e) => vocab ? <VocabCard key={e.key} entry={e} lang={lang} levelKey={levelKey}
               view={prefs.view} scoped={!!facetView} peek={peek.get(e.key)?.phase} peekEpoch={peek.get(e.key)?.epoch} onPeek={() => togglePeek(e.key)} onRenew={() => renewPeek(e.key)}
-              speak={speakOk ? say : null}
+              speak={sndSpeak}
               hunCells={hunOf(e.word)} glyph={glyphOf(e.word)} tone={zhVocab && prefs.tone}
               known={facetView ? facetMark(facetIdx, e.key, facetView) === 'o' : knownSet.has(e.key)}
               studying={facetView ? facetMark(facetIdx, e.key, facetView) === 'x' : saved.has(e.key)} saving={saving.has(e.key)}
@@ -780,7 +789,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
               <div className="lv-pat__head"><span className="lv-hw" lang={lang === 'chinese' ? 'zh-CN' : 'ja'}>{e.pattern}</span>{e.ko && <span className="lv-pat__ko">{e.ko}</span>}</div>
               {e.conn && <p className="lv-formula">{e.conn}</p>}
               {e.note && <p className="lv-note">{e.note}</p>}
-              {e.exs.length > 0 && <div className="lv-pat__exs">{e.exs.map((ex, i) => <Example key={i} ex={ex} lang={lang} speak={speakOk ? say : null} />)}</div>}
+              {e.exs.length > 0 && <div className="lv-pat__exs">{e.exs.map((ex, i) => <Example key={i} ex={ex} lang={lang} speak={sndSpeak} />)}</div>}
             </li>)}</ul>
           </section>)}
           {/* 단어 목록은 「N개 남음」이 진도 줄 하나뿐이다 — 더 보기에 같은 말로 다른 숫자를 두지 않는다. */}

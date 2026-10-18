@@ -144,6 +144,9 @@
 .lv-py{font:400 15px var(--font-noto-sans,'Noto Sans'),sans-serif;color:var(--muted);letter-spacing:.01em}
 .lv-snd{width:44px;height:44px;margin:-10px 0;border:0;background:none;color:var(--muted);display:inline-grid;place-items:center;border-radius:50%;vertical-align:middle;cursor:pointer;flex:none}
 .lv-snd:hover{color:var(--ink);background:var(--lv-chip)}
+/* 듣기 단추 자리(LEVEL-SND-HOLD-001) — 붙기 전 같은 상자, 보이지 않음 · 누름 없음. 아이콘(17px)과 같은 빈 칸을 넣어 기준선(표제어 줄 align-items:baseline)까지 같게. */
+.lv-snd--hold{visibility:hidden;pointer-events:none}
+.lv-snd--hold::before{content:"";display:block;width:17px;height:17px}
 .lv-mean{margin:6px 0 0;font-size:16px;color:var(--ink)}
 .lv-ex{margin:14px 0 0;padding:2px 0 2px 16px;border-left:2px solid var(--lv-ex-rule)}
 .lv-ex+.lv-ex{margin-top:10px}

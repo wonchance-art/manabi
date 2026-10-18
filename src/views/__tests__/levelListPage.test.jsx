@@ -18,7 +18,7 @@ vi.mock('next/dynamic', async () => {
   return { default: () => board.default };
 });
 
-const { default: LevelListPage, VocabCard } = await import('../LevelListPage.jsx');
+const { default: LevelListPage, VocabCard, SND_HOLD } = await import('../LevelListPage.jsx');
 const { levelListData } = await import('../../lib/levelListData.js');
 const { normalizeLevelPrefs } = await import('../../lib/levelList.js');
 const { default: LevelTiles } = await import('../../components/levels/LevelTiles.jsx');
@@ -379,5 +379,29 @@ describe('진도 줄 자리(LEVEL-PROG-HOLD-001) — 세션 쿠키가 있으면 
     expect(css).toContain('.lv-prog{display:flex;align-items:center;gap:12px;font-size:12.5px;color:var(--muted);min-height:24px}');
     expect(page).toContain("const LV_PROG_HOLD = sessionHintScript(LV_PROG_HOLD_ID, '.lv-bar .lv-prog--hold{display:flex}');");
     expect(page).toContain('{vocab && !progress && (!mounted || authLoading || userId) && <><script dangerouslySetInnerHTML={{ __html: LV_PROG_HOLD }} />');
+  });
+});
+
+describe('듣기 단추 자리(LEVEL-SND-HOLD-001) — 붙기 전에도 같은 상자', () => {
+  const entry = { key: '学习', word: '学习', reading: 'xuéxí', meaning: '배우다', fullMeaning: '배우다', pos: '동사',
+    ex: { text: '我在学习汉语。', reading: 'wǒ zài xuéxí hànyǔ.', ko: '나는 중국어를 공부하고 있다.' } };
+  const card = (view, speak, peek) => renderToStaticMarkup(<VocabCard entry={entry} lang="chinese" levelKey="h1" view={view} peek={peek} onPeek={() => {}}
+    speak={speak} known={false} studying={false} saving={false} pendingKnown={false} onO={() => {}} onX={() => {}} />);
+  const shape = (html) => html.replace(/<button type="button" class="(lv-snd|lv-solo__play)"[^>]*>[\s\S]*?<\/button>/g, '[$1]').replace(/<i class="(lv-snd|lv-solo__play) lv-snd--hold"><\/i>/g, '[$1]');
+  it('자리는 진짜 단추와 같은 자리 · 같은 클래스(lv-snd)이고, 단추 · 이름 · 초점은 없다 — 모든 보기 · 펼침', () => {
+    for (const [view, peek] of [['all'], ['word', 'open'], ['sentence', 'open'], ['meaning', 'open'], ['sound', 'open']]) {
+      const held = card(view, SND_HOLD, peek), real = card(view, () => {}, peek);
+      expect(shape(held), view).toBe(shape(real));
+      expect(held, view).not.toMatch(/듣기|<button type="button" class="lv-snd/);
+    }
+    expect(card('all', SND_HOLD).match(/lv-snd--hold/g)).toHaveLength(2); // 표제어 · 예문
+    expect(card('all', null)).not.toContain('lv-snd'); // 소리를 못 내는 기기(붙은 뒤)는 자리도 없다
+  });
+  it('서버 그림 = 자리(붙기 전), 붙은 뒤 소리 가능하면 단추 · 못 내면 없음 — CSS는 보이지 않는 같은 상자', async () => {
+    const ssr = await render('japanese', 'vocab', 'n4');
+    expect(ssr).toContain('<i class="lv-snd lv-snd--hold"></i>');
+    expect(ssr).not.toMatch(/<button type="button" class="lv-snd"/);
+    expect(fs.readFileSync('src/views/LevelListPage.jsx', 'utf8')).toContain('const sndSpeak = speakOk ? say : mounted ? null : SND_HOLD;');
+    expect(fs.readFileSync('src/components/levels/level-list.css', 'utf8')).toContain('\n.lv-snd--hold{visibility:hidden;pointer-events:none}\n.lv-snd--hold::before{content:"";display:block;width:17px;height:17px}\n');
   });
 });
