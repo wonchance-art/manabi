@@ -13,13 +13,13 @@ vi.mock('next/headers', () => ({ cookies: async () => ({ getAll: () => [...ssr.j
 vi.mock('@supabase/ssr', async (importOriginal) => ({ ...(await importOriginal()), createServerClient: () => { ssr.created += 1; return { auth: ssr.auth }; } }));
 
 import { requireUserClaims } from '../supabaseServer';
-import { fetchConversations } from '../conversation/conversationLibrary';
+import { fetchConversationRooms } from '../conversation/conversationLibrary';
 import { filterActiveSources } from '../libraryOperations';
 
 // LIBRARY-PREFETCH-002 — 서재 미리 받기의 서버 대기를 줄인다.
 // ⑴ 신원은 JWT 서명을 서버에서 바로 검증(getClaims — 프로젝트 JWKS가 ES256 비대칭 키, 2026-10-17 KST 확인) — 인증 왕복 0.
 //    만료 · 서명 불일치 · 세션 없음은 requireUser처럼 { error } → 미리 받기 null → 지금처럼 브라우저가 받는다.
-// ⑵ 대화 조회의 두 왕복(대화 행 → 숨긴 항목)을 동시에 — 브라우저와 서버가 같은 fetchConversations.
+// ⑵ 대화 조회의 두 왕복(대화 행 → 숨긴 항목)을 동시에 — 대화 탭 방 목록(fetchConversationRooms). 대화는 서재에 없다(CONV-CHAT-001 8차).
 const ROOT = path.resolve(__dirname, '../../..');
 const read = (file) => fs.readFileSync(path.join(ROOT, file), 'utf8');
 
@@ -144,7 +144,7 @@ describe('⑵ 대화 조회 — 두 왕복을 동시에', () => {
   /** 표마다 50ms 뒤 답하는 가짜 클라이언트. 시작 · 끝 순서를 적는다. */
   function slowClient() {
     const log = [];
-    const reply = { reading_materials: [{ id: 1, title: 'a', marker: '1' }, { id: 2, title: 'b', marker: '1' }, { id: 3, title: '일반', marker: null }],
+    const reply = { reading_materials: [{ id: 1, title: 'a', marker: '1', preview: 'こんにちは', lastAt: '1760000000000' }, { id: 2, title: 'b', marker: '1', preview: 'x', lastAt: '1760000000000' }, { id: 3, title: '일반', marker: null }],
       library_item_state: [{ target_kind: 'material', target_id: '2' }] };
     const from = (table) => {
       const proxy = new Proxy({}, { get: (_, prop) => (prop === 'then'
@@ -160,7 +160,7 @@ describe('⑵ 대화 조회 — 두 왕복을 동시에', () => {
     try {
       const { client, log } = slowClient();
       let rows = null;
-      fetchConversations(client, 'u1').then((r) => { rows = r; });
+      fetchConversationRooms(client, 'u1').then((r) => { rows = r; });
       await vi.advanceTimersByTimeAsync(50); // 한 왕복(50ms)만 흘린다 — 차례로 띄우면 두 왕복(100ms)이 있어야 끝난다.
       expect(rows).not.toBeNull();
       // 겹침: 첫 응답이 오기 전에 두 표가 모두 출발했다.
@@ -176,8 +176,9 @@ describe('⑵ 대화 조회 — 두 왕복을 동시에', () => {
     const kept = await filterActiveSources(client, 'u1', [{ id: 1 }, { id: 2 }]);
     expect(kept.map((r) => r.id)).toEqual([1]);
   });
-  it('서버 · 브라우저가 같은 함수 — 대화 쿼리는 정본(libraryShelfQueries)의 fetchConversations 하나', () => {
-    expect(read('src/lib/libraryShelfQueries.js')).toContain('queryFn: () => fetchConversations(client, ownerId),');
+  it('대화 탭 방 목록이 이 조회를 쓰고, 서재 미리 받기에는 대화가 없다', () => {
+    expect(read('src/views/NewConversationPage.jsx')).toContain('fetchConversationRooms(supabase, user.id)');
+    expect(read('src/lib/libraryShelfQueries.js')).not.toMatch(/conversation/i);
     expect(read('src/lib/conversation/conversationLibrary.js')).toContain('hiddenLibraryKeys(client, userId),\n  ]);');
   });
 });

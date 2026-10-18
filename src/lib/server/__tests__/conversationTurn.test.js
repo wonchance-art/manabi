@@ -324,3 +324,50 @@ describe('Z-R3 순환 — 다시 꺼내기 · 새 단어 수', () => {
     expect(conv.turns.at(-1)).toMatchObject({ who: 'tutor', newWords: 3 }); // 가짜 분석기는 글자마다 명사 — 太·好·了 셋(！는 글자가 아니라 뺀다)
   });
 });
+
+describe('못 한 줄 자동 채우기(CONV-CHAT-001) — 사용자에게 「다시 분석」을 떠넘기지 않는다', () => {
+  const failedRow = () => {
+    const row = convRow({ raw: '你好！\n你周末做什么？' });
+    row.processed_json.sequence = ['id_0_0_1', 'br_0_1', 'failed_1_1'];
+    row.processed_json.dictionary = { id_0_0_1: { text: '你好！' }, br_0_1: { text: '\n', pos: '개행' }, failed_1_1: { text: '你周末做什么？', failed: true, original_line_idx: 1 } };
+    row.processed_json.failed_indices = [1];
+    row.processed_json.status = 'partial';
+    return row;
+  };
+
+  it('실패 토큰 자리에 분석 토큰을 끼우고 턴 수·하루 한도는 그대로 둔다', async () => {
+    const db = fakeDb([failedRow()]);
+    const callLLM = vi.fn();
+    const out = await runConversationTurn({ userId: USER, now: NOW, deps: deps(db, callLLM), body: { materialId: '7', action: 'analyze' } });
+    expect(out.status).toBe(200);
+    expect(out.body.analysis).toBe('ok');
+    expect(out.body.filled[1].remove).toBe('failed_1_1');
+    const json = db.store.get('7').processed_json;
+    expect(json.sequence.slice(0, 3)).toEqual(['id_0_0_1', 'br_0_1', `id_1_0_${NOW}`]);
+    expect(json.dictionary.failed_1_1).toBeUndefined();
+    expect(json.failed_indices).toEqual([]);
+    expect(json.metadata.conversation.turnCount).toBe(1);
+    expect(json.metadata.conversation.dayTurns).toBe(0);
+    expect(callLLM).not.toHaveBeenCalled();
+  });
+
+  it('분석이 또 안 되면 기록하지 않고 남은 줄만 알려 준다(화면이 간격을 두고 다시 맡긴다)', async () => {
+    const db = fakeDb([failedRow()]);
+    const out = await runConversationTurn({ userId: USER, now: NOW, deps: deps(db, vi.fn(), vi.fn(async () => null)), body: { materialId: '7', action: 'analyze' } });
+    expect(out.body).toMatchObject({ analysis: 'failed', missing: [1], filled: {} });
+    expect(db.writes).toHaveLength(0);
+  });
+
+  it('남의 대화는 채우지 않는다', async () => {
+    const db = fakeDb([{ ...failedRow(), owner_id: 'someone' }]);
+    const out = await runConversationTurn({ userId: USER, now: NOW, deps: deps(db, vi.fn()), body: { materialId: '7', action: 'analyze' } });
+    expect(out.status).toBe(404);
+  });
+
+  it('채울 줄이 없으면 분석기를 부르지 않는다', async () => {
+    const analyze = vi.fn();
+    const out = await runConversationTurn({ userId: USER, now: NOW, deps: deps(fakeDb([convRow()]), vi.fn(), analyze), body: { materialId: '7', action: 'analyze' } });
+    expect(out.body.filled).toEqual({});
+    expect(analyze).not.toHaveBeenCalled();
+  });
+});

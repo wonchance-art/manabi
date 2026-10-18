@@ -81,10 +81,10 @@ describe('대기 알림 규칙 — 정적 전수(src 전체)', () => {
       'src/components/materials/MaterialComposer.jsx', 'src/components/materials/MaterialEditor.jsx', 'src/components/notes/StudyNotePage.jsx',
       'src/components/web/LibraryPage.jsx', 'src/views/MaterialAddPage.jsx', 'src/views/VocabPage.jsx',
     ]);
-    // 새 대화는 로그인 확인 중에도 머리글 · 선택지를 그린다(CONV-SHELL-001) — 알림 하나는 골격 영역(SkeletonRegion announce)이 맡는다.
+    // 대화 첫 화면(방 목록)은 로그인 확인 중에도 머리 · 방 줄을 그린다(CONV-SHELL-001 → CONV-CHAT-001) — 알림 하나는 골격 영역이 맡는다.
     const conv = read('src/views/NewConversationPage.jsx');
     expect(conv.match(/<SkeletonRegion [^>]*\bannounce\b/g)).toHaveLength(1);
-    expect(conv).toContain('<SkeletonRegion className="conv-new__chips" label="대화" announce>');
+    expect(conv).toContain('<SkeletonRegion as="ul" className="conv-rooms__list" label="대화" announce>');
   });
 });
 

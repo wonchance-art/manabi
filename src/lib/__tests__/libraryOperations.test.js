@@ -45,7 +45,7 @@ describe('library management protocol',()=>{
   const cache={invalidateQueries:vi.fn().mockResolvedValue()};
   await invalidateLibrary(cache,'owner');
   const keys=cache.invalidateQueries.mock.calls.map(([q])=>q.queryKey);
-  expect(keys).toContainEqual(['library-conversations','owner']);
+  expect(keys).toContainEqual(['conversation-rooms','owner']);
   expect(keys).toContainEqual(['personal-library','owner']);
  });
 });

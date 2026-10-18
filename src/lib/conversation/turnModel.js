@@ -30,6 +30,9 @@ export const TUTOR_MAX_LINES = 3;
 export const TUTOR_MAX_LINE_LEN = 60;
 /** 새 문단 분석 예산 — 넘거나 실패하면 글만 돌려주고 화면은 「다시 분석」(기존 failed_indices 재시도). */
 export const CONVERSATION_ANALYZE_BUDGET_MS = 2500;
+// 못 한 줄 자동 채우기(CONV-CHAT-001) — 답장은 이미 화면에 있으니 기다릴 수 있다. 라우트 maxDuration(60초) 안.
+export const CONVERSATION_FILL_BUDGET_MS = 25000;
+export const CONVERSATION_FILL_MAX_LINES = 8;
 /** 분석기가 받는 언어(중·일·영). 밖의 대화는 평문으로 동작한다. */
 export const CONVERSATION_ANALYZED_LANGUAGES = Object.freeze(['Chinese', 'Japanese', 'English']);
 export const CONVERSATION_LANGUAGES = Object.freeze(['Chinese', 'Japanese', 'English', 'French']);
@@ -351,6 +354,82 @@ export function appendParagraphTokens(json, { lines, startLine, results, ts, lan
     status: failed.length ? 'partial' : 'completed',
   };
   return { json: next, added };
+}
+
+/** 아직 분석 못 한 줄(실패 토큰 `failed_<줄>_…`이 남은 줄) — 자동 채우기 대상. 오름차순. */
+export function missingConversationLines(json) {
+  const lines = new Set();
+  for (const id of json?.sequence || []) {
+    const m = /^failed_(\d+)_/.exec(id);
+    if (m) lines.add(Number(m[1]));
+  }
+  return [...lines].sort((a, b) => a - b);
+}
+
+/**
+ * 못 한 줄 채우기(CONV-CHAT-001) — 실패 토큰 자리에 분석 토큰을 끼운다. 다른 토큰 id·순서는 그대로다.
+ * 덮음 판정은 appendParagraphTokens와 같다(줄을 다 덮은 결과만). 판정에 못 미친 줄은 그대로 실패 줄로 남는다.
+ *
+ * @param {object} json - 지금 processed_json
+ * @param {object} p
+ * @param {number[]} p.lineNos - 채울 줄 번호
+ * @param {string[]} p.lines - 그 줄의 글(같은 순서)
+ * @param {object[]|null} p.results - /api/analyze 줄 결과(같은 순서)
+ * @param {number} p.ts - 새 id 시각
+ * @param {string} p.language
+ * @returns {{json: object, filled: Object<string, {remove: string, sequence: string[]}>, dictionary: object}}
+ */
+export function fillConversationLines(json, { lineNos, lines, results, ts, language }) {
+  const base = json && typeof json === 'object' ? json : {};
+  let sequence = [...(base.sequence || [])];
+  const dictionary = { ...(base.dictionary || {}) };
+  const filled = {};
+  const addedDictionary = {};
+  lineNos.forEach((lineNo, i) => {
+    const line = lines[i];
+    const result = results?.[i];
+    const ok = result && Array.isArray(result.sequence) && result.dictionary && !result.truncated
+      && result.sequence.length > 0
+      && tokensCoverLine(line, result.sequence.map((id) => result.dictionary[id]?.text ?? ''), language);
+    if (!ok) return;
+    const at = sequence.findIndex((id) => id.startsWith(`failed_${lineNo}_`));
+    if (at < 0) return;
+    const remove = sequence[at];
+    const ids = result.sequence.map((srvId, k) => {
+      const id = `id_${lineNo}_${k}_${ts}`;
+      dictionary[id] = result.dictionary[srvId];
+      addedDictionary[id] = result.dictionary[srvId];
+      return id;
+    });
+    sequence = [...sequence.slice(0, at), ...ids, ...sequence.slice(at + 1)];
+    delete dictionary[remove];
+    filled[lineNo] = { remove, sequence: ids };
+  });
+  const failed = (base.failed_indices || []).filter((n) => !(n in filled));
+  return {
+    json: { ...base, sequence, dictionary, failed_indices: failed, status: failed.length ? 'partial' : 'completed' },
+    filled,
+    dictionary: addedDictionary,
+  };
+}
+
+/** 채우기 응답을 캐시에 합친다 — 그 실패 토큰이 아직 있으면 같은 자리에 끼운다. 바뀐 게 없으면 null. */
+export function applyFillResult(material, body) {
+  const json = material?.processed_json;
+  if (!json || !body?.filled || !Object.keys(body.filled).length) return null;
+  let sequence = [...(json.sequence || [])];
+  const dictionary = { ...(json.dictionary || {}), ...(body.dictionary || {}) };
+  const done = [];
+  for (const [line, { remove, sequence: ids }] of Object.entries(body.filled)) {
+    const at = sequence.indexOf(remove);
+    if (at < 0) continue;
+    sequence = [...sequence.slice(0, at), ...ids, ...sequence.slice(at + 1)];
+    delete dictionary[remove];
+    done.push(Number(line));
+  }
+  if (!done.length) return null;
+  const failed = (json.failed_indices || []).filter((n) => !done.includes(n));
+  return { ...material, processed_json: { ...json, sequence, dictionary, failed_indices: failed, status: failed.length ? 'partial' : 'completed' } };
 }
 
 /* ─────────────── 프롬프트(§4-4) ─────────────── */

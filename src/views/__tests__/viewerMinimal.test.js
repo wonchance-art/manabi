@@ -97,7 +97,7 @@ describe('② 끝의 행동은 본문 아래 「다 읽었다면」 한 줄 + �
 
 describe('③ 안내문은 첫 자료에만, 데스크톱은 빈 패널이 대신한다', () => {
   it('reader-hint는 단어를 아직 안 담은 로그인 사용자에게만', () => {
-    expect(src()).toContain('{isDone && user && savedCount === 0 && (');
+    expect(src()).toContain('{isDone && user && savedCount === 0 && !conversation && ('); // 대화(채팅 껍데기)에는 안내문 없음
     expect((src().match(/className="reader-hint"/g) || []).length).toBe(1);
     // 게스트 배너가 같은 말을 하니 게스트에겐 두 번 말하지 않는다(배너는 ViewerGuestBanner — 미분석이면 원문 안내)
     expect(src()).toContain('{!user && <ViewerGuestBanner vt={vt} signInHref={signInHref} pending={isPending} />}');

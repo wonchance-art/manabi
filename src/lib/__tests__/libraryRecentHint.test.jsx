@@ -20,22 +20,18 @@ vi.mock('@tanstack/react-query', () => ({
 }));
 
 const { RecentReads } = await import('../../components/library/LibraryShelf');
-const { default: ConversationShelf } = await import('../../components/library/ConversationShelf');
 const { shelfHintKey } = await import('../../components/library/useShelfEmptyHint');
 const ROOT = path.resolve(__dirname, '../../..');
 const read = (file) => fs.readFileSync(path.join(ROOT, file), 'utf8');
 const user = { id: 'u1' };
 const withHints = (hints) => vi.stubGlobal('window', { localStorage: { getItem: (key) => hints[key] ?? null, setItem: () => {} } });
 const recentSkeleton = (props = {}) => renderToStaticMarkup(createElement(RecentReads, { user, ...props })).includes('shelf-recent-skeleton');
-const pending = { isPending: true, isSuccess: false, isError: false };
-const conversations = (props = {}) => renderToStaticMarkup(createElement(ConversationShelf, { query: pending, ownerId: 'u1', ...props }));
 
 afterEach(() => { vi.unstubAllGlobals(); h.q = {}; });
 
 describe('기기 기억 열쇠 — 계정 · 칸별', () => {
-  it('읽던 곳은 1f3d85bd와 같은 열쇠(기존 기록 그대로), 대화는 따로', () => {
+  it('읽던 곳은 1f3d85bd와 같은 열쇠(기존 기록 그대로)', () => {
     expect(shelfHintKey('recent', 'u1')).toBe('library-recent-seen:u1');
-    expect(shelfHintKey('conversations', 'u1')).toBe('library-conversations-seen:u1');
   });
 });
 
@@ -58,28 +54,6 @@ describe('읽던 곳 — 지난번 0개면 받는 동안 골격을 세우지 않
   });
 });
 
-describe('대화 — 지난번 0개면 받는 동안 0개 모양(입구 + 안내)', () => {
-  it('받는 중: 지난번 0개면 골격 대신 「새 대화」 입구와 안내 한 줄, 기록 없음 · 있었음이면 골격', () => {
-    withHints({ 'library-conversations-seen:u1': '0' });
-    const empty = conversations();
-    expect(empty).not.toContain('skeleton');
-    expect(empty).toContain('새 대화');
-    expect(empty).toContain('AI 튜터와 목표어로 이야기해요');
-    withHints({ 'library-conversations-seen:u1': '1' }); expect(conversations()).toContain('skeleton');
-    withHints({}); expect(conversations()).toContain('skeleton');
-  });
-  it('같은 예외: 서버가 그린 서재 · 저장소 불가 · 계정 모름은 골격', () => {
-    withHints({ 'library-conversations-seen:u1': '0' });
-    expect(conversations({ ssr: true })).toContain('skeleton');
-    expect(conversations({ ownerId: undefined })).toContain('skeleton');
-    vi.stubGlobal('window', { localStorage: { getItem: () => { throw new Error('blocked'); } } });
-    expect(conversations()).toContain('skeleton');
-  });
-  it('읽던 곳 기록은 대화에 번지지 않는다(칸별 열쇠)', () => {
-    withHints({ 'library-recent-seen:u1': '0' }); expect(conversations()).toContain('skeleton');
-  });
-});
-
 describe('배선', () => {
   const hook = read('src/components/library/useShelfEmptyHint.js');
   const shelf = read('src/components/library/LibraryShelf.jsx');
@@ -89,11 +63,10 @@ describe('배선', () => {
     expect(hook).toContain("const [hint]=useState(()=>!key||ssr||typeof window==='undefined'?null:readHint(key));");
     expect(hook).toContain("return hint==='0';");
   });
-  it('두 칸이 같은 훅을 쓰고, LibraryPage가 서버 그림 여부를 넘긴다', () => {
+  it('읽던 곳이 이 훅을 쓰고, LibraryPage가 서버 그림 여부를 넘긴다', () => {
     expect(sliceBetween(shelf, 'export function RecentReads(', 'function FilterDialog(')).toContain("useShelfEmptyHint('recent',user.id,ssr,recent,");
-    expect(read('src/components/library/ConversationShelf.jsx')).toContain("useShelfEmptyHint('conversations',ownerId,ssr,query,");
     expect(shelf).toContain('<RecentReads user={user} ssr={ssr}/>');
-    expect(shelf).toContain('<ConversationShelf query={conversations} ownerId={user.id} ssr={ssr}/>');
+    expect(shelf).not.toContain('ConversationShelf'); // 대화 묶음은 서재에 없다(CONV-CHAT-001 8차 「대화방에만」) — 대화방 목록이 맡는다
     expect(read('src/components/web/LibraryPage.jsx')).toContain('<LibraryShelf key={shelfUser.id} user={shelfUser} ssr={!!serverUserId}/>');
   });
   it('바닥 링크는 목록이 온 뒤(받는 중엔 없음)', () => {

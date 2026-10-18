@@ -3,7 +3,7 @@ import Loading from '@/app/(app)/loading';
 import NewConversationPage from '@/views/NewConversationPage';
 
 export const metadata = {
-  title: '새 대화',
+  title: '대화',
 };
 
 export default function Page() {

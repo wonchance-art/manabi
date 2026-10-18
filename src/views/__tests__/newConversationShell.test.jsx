@@ -1,6 +1,6 @@
-// CONV-SHELL-001 (오너 「권장대로」 목업 A, 2026-10-17 KST) — 새 대화는 로그인 확인 중에도 머리글 · 선택지를 먼저 그린다.
-// 주제 칩은 바로 누를 수 있고, 언어 칩(상수 4개)은 그려 두되 선택 표시 · 누름은 확인 뒤(aria-disabled · 크기 그대로),
-// 수준은 골격 3칸. 손님(세션 쿠키 없음)은 처음부터 손님 화면, 쿠키가 남았는데 세션이 끝났으면 같은 손님 화면(새 문구 없음).
+// CONV-SHELL-001 (오너 「권장대로」 목업 A, 2026-10-17 KST)의 방 목록판(CONV-CHAT-001) — 대화 첫 화면은 로그인 확인 중에도
+// 머리 · 방 줄을 먼저 그린다. 주제 방은 상수라 줄 자리가 그대로이고, 확인(프로필 포함)이 끝나면 미리보기만 채워지며 누를 수 있다.
+// 손님(세션 쿠키 없음)은 처음부터 손님 화면, 쿠키가 남았는데 세션이 끝났으면 같은 손님 화면(새 문구 없음).
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 
@@ -11,56 +11,47 @@ vi.mock('next/link', () => ({ default: ({ href, children, ...rest }) => <a href=
 vi.mock('@tanstack/react-query', () => ({ useQuery: () => ({ data: [] }) }));
 vi.mock('@/lib/useOutputWords', () => ({ useOutputWords: () => [] }));
 vi.mock('@/lib/supabase', () => ({ supabase: {} }));
+vi.mock('@/components/learn/useLearnLanguage', () => ({ default: (profile) => ({ langs: profile?.learning_language || [], lang: profile?.learning_language?.[0] || 'Japanese', choose() {} }) }));
 import NewConversationPage from '../NewConversationPage';
 
-const GUEST_COPY = '대화는 내 서재에 비공개로 남아요. 로그인하고 시작해 주세요.';
+const GUEST_COPY = 'AI 튜터와 주제별 방에서 이야기해요. 로그인하고 시작해 주세요.';
 const user = { id: 'u1' };
 const render = ({ cookie = 'sb-proj-auth-token=x', query = '', ...state }) => {
   globalThis.document = { cookie }; auth.query = query;
   auth.current = { user: null, profile: null, loading: false, profileLoading: false, ...state };
   return renderToStaticMarkup(<NewConversationPage />);
 };
-const languageChips = (html) => html.match(/<button type="button" class="conv-chip"[^>]*>(중국어|일본어|영어|프랑스어)<\/button>/g) || [];
+const roomNames = (html) => [...html.matchAll(/<span class="conv-rooms__name">([^<]+)<\/span>/g)].map((m) => m[1]);
 afterEach(() => { delete globalThis.document; });
 
-describe('로그인 확인 중 — 머리글 · 선택지 먼저', () => {
+describe('로그인 확인 중 — 머리 · 방 줄 먼저', () => {
   const html = render({ loading: true });
-  it('제목 · 안내 · 주제 칩(누를 수 있음)은 바로, 손님 문구는 없다', () => {
-    expect(html).toContain('<h1>새 대화</h1>');
-    expect(html).toContain('AI 튜터와 목표어로 이야기해요');
-    expect(html).toMatch(/<button type="button" class="conv-chip" aria-pressed="false">오늘 하루<\/button>/);
+  it('제목 · 모두의 대화방 · 주제 방 여섯이 바로 그려지고, 손님 문구 · 예전 한 줄 대기 화면은 없다', () => {
+    expect(html).toContain('<h1 class="conv-rooms__title">대화</h1>');
+    expect(roomNames(html)).toEqual(['모두의 대화방', '오늘 하루', '주말 계획', '여행', '음식', '학교·일', '취미']);
     expect(html).not.toContain(GUEST_COPY);
-    expect(html).not.toContain('role="status">대화 불러오는 중…</p>'); // 예전 한 줄 대기 화면
+    expect(html).not.toContain('role="status">대화 불러오는 중…</p>');
   });
-  it('언어 칩 넷은 그리되 선택 없음 · 누름 잠금(aria-disabled) — 수준은 골격 3칸 · 알림 한 줄 · 시작 잠김', () => {
-    const chips = languageChips(html);
-    expect(chips).toHaveLength(4);
-    for (const chip of chips) { expect(chip).toContain('aria-pressed="false"'); expect(chip).toContain('aria-disabled="true"'); }
-    expect(html).not.toContain('OT 입문');
-    expect(html.match(/conv-chip conv-chip--skeleton/g)).toHaveLength(3);
+  it('줄은 아직 누를 수 없다(링크 · 버튼 없음) — 미리보기는 골격, 알림은 한 줄', () => {
+    expect(html).not.toMatch(/<a [^>]*class="conv-rooms__row|<button [^>]*class="conv-rooms__row/);
+    expect(html.match(/class="skeleton-line /g)).toHaveLength(7);
+    expect(html.match(/role="status"/g)).toHaveLength(1);
     expect(html).toContain('<span class="skeleton-sr" role="status">대화 불러오는 중…</span>');
-    expect(html).toMatch(/<button type="button" class="manabi-button" disabled="">대화 시작<\/button>/);
-    // 주제까지 골라 시작 조건이 다 찼어도(주소 topic) 확인이 끝나기 전에는 잠겨 있다.
-    expect(render({ loading: true, query: 'topic=%EC%97%AC%ED%96%89' })).toMatch(/<button type="button" class="manabi-button" disabled="">대화 시작<\/button>/);
-    expect(render({ user, profile: { id: 'u1', learning_language: ['Japanese'] }, query: 'topic=%EC%97%AC%ED%96%89' })).toMatch(/<button type="button" class="manabi-button">대화 시작<\/button>/);
   });
-  it('프로필을 받는 중(profileLoading)도 같은 골격이다 — 선택이 중국어로 붙었다가 옮겨 가지 않게', () => {
+  it('프로필을 받는 중(profileLoading)도 같은 골격이다 — 언어가 옮겨 붙지 않게', () => {
     const waiting = render({ user, loading: false, profileLoading: true });
-    expect(languageChips(waiting).every(chip => chip.includes('aria-disabled="true"') && chip.includes('aria-pressed="false"'))).toBe(true);
-    expect(waiting.match(/conv-chip--skeleton/g)).toHaveLength(3);
+    expect(waiting).not.toMatch(/<button [^>]*class="conv-rooms__row/);
+    expect(waiting.match(/class="skeleton-line /g)).toHaveLength(7);
   });
 });
 
-describe('확인이 끝나면 — 선택만 붙고 자리는 그대로', () => {
-  it('프로필 첫 학습 언어가 선택되고 잠금이 풀리며 수준 칩이 들어온다. 언어 칩은 글 · 클래스가 같다', () => {
-    const before = render({ loading: true });
+describe('확인이 끝나면 — 같은 줄이 누를 수 있게 된다', () => {
+  it('방 이름 · 순서는 그대로, 주제 방은 버튼(누른 주제를 data-topic으로 기억), 골격 없음', () => {
+    const before = roomNames(render({ loading: true }));
     const after = render({ user, profile: { id: 'u1', learning_language: ['Japanese'] } });
-    const strip = (chip) => chip.replace(/ aria-pressed="[^"]*"| aria-disabled="[^"]*"/g, '');
-    expect(languageChips(after).map(strip)).toEqual(languageChips(before).map(strip));
-    expect(after).toContain('aria-pressed="true">일본어</button>');
-    expect(after).not.toContain('aria-disabled');
-    expect(after).not.toContain('conv-chip--skeleton');
-    expect(after).toContain('>N5 기초</button>');
+    expect(roomNames(after).slice(0, before.length)).toEqual(before);
+    expect(after).toMatch(/<button type="button" class="conv-rooms__row" data-topic="오늘 하루">/);
+    expect(after).not.toContain('skeleton-line');
   });
 });
 
@@ -68,12 +59,12 @@ describe('손님', () => {
   it('세션 쿠키가 없으면 확인 중에도 처음부터 손님 화면(골격 없음)', () => {
     const html = render({ loading: true, cookie: 'theme=dark' });
     expect(html).toContain(GUEST_COPY);
-    expect(html).not.toContain('conv-chip');
+    expect(html).not.toContain('skeleton');
   });
   it('쿠키가 남았는데 세션이 끝났으면(확인 끝 · 사용자 없음) 같은 손님 화면 — 새 문구 없음', () => {
     const html = render({ loading: false, cookie: 'sb-proj-auth-token=stale' });
     expect(html).toContain(GUEST_COPY);
     expect(html).toContain('<a href="/auth?from=/conversation/new" class="manabi-button">로그인</a>');
-    expect(html).not.toContain('conv-chip');
+    expect(html).not.toContain('skeleton');
   });
 });
