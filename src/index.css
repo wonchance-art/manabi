@@ -7676,6 +7676,17 @@ a.viewer-badge:hover {
 /* 목표 과정 — 언어·레벨 두 칸(D-Day 모달). 좁은 화면에서 두 칸이 한 줄에 들어오도록 폭을 나눈다. */
 .dday-goal { display: flex; gap: 6px; min-width: 0; }
 .dday-goal__sel { flex: 1 1 0; min-width: 0; padding: 6px 8px; font-size: 0.85rem; }
+/* 시험 일정에서 고르기(LEVEL-ROUND-001 K) — 시험 · 급수 단추는 눌림(aria-pressed)으로만 칠한다. 접수가 끝난 날짜는 흐리게. */
+.dday-exam__tabs, .dday-exam__levels { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 12px; font-size: 0.88rem; }
+.dday-exam__levels > span { margin-right: 4px; }
+.dday-exam__tabs button, .dday-exam__levels button, .dday-exam__dates button {
+  min-height: 44px; min-width: 44px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font: inherit; font-size: 0.85rem; cursor: pointer;
+}
+.dday-exam__tabs button[aria-pressed="true"], .dday-exam__levels button[aria-pressed="true"], .dday-exam__dates button[aria-pressed="true"] { border-color: var(--text-primary); font-weight: 700; }
+.dday-exam__dates { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 6px; }
+.dday-exam__dates button { width: 100%; text-align: left; border-radius: 10px; }
+.dday-exam__dates button.is-closed { color: var(--text-muted); }
+.dday-exam__note { margin: 0 0 12px; font-size: 0.78rem; color: var(--text-muted); }
 
 /* ── 궤도 줄 (v2-D R2) — 목표를 세운 사람에게만 뜨는 홈 머리 한 줄 ── */
 /* 카드 전체가 버튼이다(탭하면 상세 모달 — DdayTile·WeeklyTile의 타일→모달 정본 재사용).
