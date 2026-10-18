@@ -4,6 +4,7 @@ import {
   LEVEL_SOURCE, applyLevelAnswer, createLevelAnswerQueue, currentLevelRound, deleteLevelRounds, fetchLevelAnswers, fetchLevelRounds,
   insertLevelRounds, isSameDayAnswer, lastLevelAnswers, levelAnswerEvent, levelAnswerOf, levelAnswersOfView, levelCancelEvent,
   levelRoundProgress, levelRoundScope, levelRowsBetween, roundLabel,
+  LEVEL_NEXT_VIEW, LEVEL_ROUND_SPACING_DAYS, levelForgotten, levelRoundHint, levelRoundOrder, nextFullRoundAt,
 } from '../levelRounds.js';
 import { ACTIVITY_ONLY_SOURCES, isGradedReviewEvent } from '../weeklyReport.js';
 import fs from 'node:fs';
@@ -174,5 +175,61 @@ describe('바퀴(LEVEL-ROUND-001 ②) — 줄 없으면 1바퀴, 범위 · 진�
     expect(sql).not.toMatch(/profiles/i);
     expect(sql).toContain('REVOKE ALL ON public.user_level_rounds FROM PUBLIC, anon, authenticated;');
     expect(fs.readFileSync('docs/sql/user-level-rounds-rollback.sql', 'utf8')).toContain('DROP TABLE IF EXISTS public.user_level_rounds;');
+  });
+});
+
+describe('③ 섞기 · 잊은 수 · 다음 바퀴 안내(LEVEL-ROUND-001 ③)', () => {
+  const list = Array.from({ length: 30 }, (_, i) => `w${i}`);
+  it('1바퀴는 그대로, 2바퀴부터 섞는다 — 같은 씨앗 · 바퀴면 같은 순서, 바퀴가 바뀌면 다른 순서, 빠짐없이', () => {
+    expect(levelRoundOrder(list, { seed: 'zh|H1|all|g', round: 1 })).toBe(list);
+    const two = levelRoundOrder(list, { seed: 'zh|H1|all|g', round: 2 });
+    expect(two).not.toEqual(list);
+    expect([...two].sort()).toEqual([...list].sort());
+    expect(levelRoundOrder(list, { seed: 'zh|H1|all|g', round: 2 })).toEqual(two);
+    expect(levelRoundOrder(list, { seed: 'zh|H1|all|g', round: 3 })).not.toEqual(two);
+    expect(levelRoundOrder(list, { seed: 'zh|H1|meaning|g', round: 2 })).not.toEqual(two);
+  });
+
+  it('잊은 수 = 지난번 O(같은 날 다른 탭의 O 제외) → 이번 X', () => {
+    const before = new Map([['a', { correct: true }], ['b', { correct: true, sameDay: true }], ['c', { correct: false }], ['d', { correct: true }]]);
+    const now = new Map([['a', { correct: false }], ['b', { correct: false }], ['c', { correct: false }], ['d', { correct: true }], ['e', { correct: false }]]);
+    expect(levelForgotten(before, now)).toBe(1);
+    expect(levelForgotten(new Map(), now)).toBe(0);
+  });
+
+  it('간격은 「전부」 바퀴만 센다: 1주 → 1달 → 3달, 그 뒤 3달 · 「모른 것만」 바퀴는 넣지 않는다', () => {
+    const day = 86_400_000;
+    const end = KST('2026-10-18T12:00:00');
+    expect(LEVEL_ROUND_SPACING_DAYS).toEqual([7, 30, 90]);
+    expect(nextFullRoundAt([], 'all', end)).toBe(end + 7 * day); // 줄 없는 1바퀴
+    const r = (round_no, scope, s) => ({ view: 'all', round_no, scope, started_at: new Date(KST(s)).toISOString() });
+    // 1바퀴(줄 없음) → 2바퀴 모른 것만 — 직전 「전부」(1바퀴)의 끝 = 2바퀴 시작
+    expect(nextFullRoundAt([r(2, 'missed', '2026-10-10T09:00:00')], 'all', end)).toBe(KST('2026-10-10T09:00:00') + 7 * day);
+    expect(nextFullRoundAt([r(2, 'all', '2026-10-10T09:00:00')], 'all', end)).toBe(end + 30 * day);
+    const many = [r(2, 'all', '2026-09-01T09:00:00'), r(3, 'all', '2026-09-10T09:00:00'), r(4, 'all', '2026-10-01T09:00:00'), r(5, 'missed', '2026-10-02T09:00:00')];
+    expect(nextFullRoundAt(many, 'all', end)).toBe(KST('2026-10-02T09:00:00') + 90 * day);
+    expect(nextFullRoundAt(many, 'word', end)).toBe(end + 7 * day); // 보기마다 따로
+    expect(nextFullRoundAt([], 'all', NaN)).toBeNull();
+  });
+
+  it('안내 한 줄 — 다음 보기 권유(단어 → 뜻 → 소리) · KST 날짜 · 지났으면 「지금」', () => {
+    const now = KST('2026-10-18T12:00:00');
+    expect(LEVEL_NEXT_VIEW).toMatchObject({ all: 'meaning', word: 'meaning', meaning: 'audio', audio: null });
+    expect(levelRoundHint({ nextLabel: '뜻', dueAt: KST('2026-10-25T12:00:00'), nowMs: now })).toBe('다음 바퀴는 뜻 탭으로 — 1주 뒤(10월 25일)부터');
+    expect(levelRoundHint({ nextLabel: '소리', dueAt: KST('2026-10-19T01:00:00'), nowMs: now })).toBe('다음 바퀴는 소리 탭으로 — 내일부터');
+    expect(levelRoundHint({ dueAt: KST('2026-11-17T12:00:00'), nowMs: now })).toBe('처음부터 전부는 11월 17일부터');
+    expect(levelRoundHint({ dueAt: KST('2026-10-18T00:30:00'), nowMs: now })).toBe('처음부터 전부 다시 돌 때예요');
+    expect(levelRoundHint({ nextLabel: '뜻', dueAt: now - 1, nowMs: now })).toBe('다음 바퀴는 뜻 탭으로 — 지금 돌아도 좋아요');
+    expect(levelRoundHint({ dueAt: null })).toBeNull();
+  });
+
+  it('계약: 섞기는 shuffleHanzi 하나, 간격 [7, 30, 90]은 levelRounds 한 곳', () => {
+    const src = fs.readFileSync('src/lib/levelRounds.js', 'utf8');
+    expect(src).toContain('return shuffleHanzi(entries, rand);');
+    expect(src).not.toMatch(/Math\.random/);
+    const page = fs.readFileSync('src/views/LevelListPage.jsx', 'utf8');
+    expect(page).toContain('levelRoundOrder(scoped, {');
+    expect(page).not.toMatch(/\b(7|30|90)\s*\*\s*86_?400_?000|\[7,\s*30,\s*90\]/);
+    expect(page).not.toMatch(/sort\(\(\)\s*=>\s*Math\.random/);
   });
 });

@@ -275,7 +275,7 @@ describe('⑹ 진도 · 이어 하기 · 성조 색(LEVEL-FLOW-001 — 디자인
     writeLevelSnapshot(st, 'chinese', 'h1', { known: 182, studying: 47, total: 832, left: 603, view: 'meaning', at: 1 });
     writeLevelSnapshot(st, 'chinese', 'h2', { known: 3, studying: 0, total: 900, left: 897, view: 'all', at: 2 });
     const snap = readLevelSnapshot(st, 'chinese');
-    expect(snap.last).toEqual({ level: 'H2', view: 'all' });
+    expect(snap.last).toEqual({ level: 'H2', view: 'all', round: 1 });
     expect(snap.levels.H1).toMatchObject({ known: 182, studying: 47, total: 832 });
     expect(readLevelSnapshot(st, 'japanese')).toBeNull();
     st.setItem(LEVEL_SNAPSHOT_KEY, JSON.stringify({ chinese: { last: { level: '<x>' }, levels: {} } }));
@@ -292,6 +292,11 @@ describe('⑹ 진도 · 이어 하기 · 성조 색(LEVEL-FLOW-001 — 디자인
     writeLevelSnapshot(st, 'chinese', 'h3', { known: 0, studying: 0, total: 900, view: 'all', at: 2 });
     expect(levelResumeCard(readLevelSnapshot(st, 'chinese')).chips).toEqual(['알아요 0 / 900']);
     expect(levelResumeCard(null)).toBeNull();
+    // 2바퀴부터 제목에 바퀴(LEVEL-ROUND-001 ③) — 깨진 값은 1바퀴
+    writeLevelSnapshot(st, 'chinese', 'h1', { known: 1, studying: 0, total: 9, view: 'meaning', round: 2, at: 3 });
+    expect(levelResumeCard(readLevelSnapshot(st, 'chinese')).title).toBe('HSK 1 단어 · 두 바퀴째');
+    writeLevelSnapshot(st, 'chinese', 'h1', { known: 1, studying: 0, total: 9, view: 'all', round: 'x', at: 4 });
+    expect(levelResumeCard(readLevelSnapshot(st, 'chinese')).title).toBe('HSK 1 단어');
   });
 });
 

@@ -122,5 +122,5 @@ export function useLevelAnswers(userId, { lang, level, enabled = true }) {
     const round = roundOf(view);
     return lastLevelAnswers(round.startedAt == null ? [] : levelRowsBetween(rows, { before: round.startedAt }));
   }, [rows, roundOf]);
-  return { answers: current, get, answer, cancel, roundOf, before, roundsAvailable: rounds.available, startRound, undoRound, replaceRounds };
+  return { answers: current, get, answer, cancel, roundOf, before, roundRows: rounds.rows, roundsAvailable: rounds.available, startRound, undoRound, replaceRounds };
 }

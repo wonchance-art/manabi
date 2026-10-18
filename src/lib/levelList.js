@@ -3,6 +3,7 @@
 // 데이터 조립(무거운 콘텐츠 import)은 levelListData.js(서버 전용), 여기는 표기 · 대조 규칙만 둔다.
 import { normalizeKnownWord } from './knownWordControl';
 import { readCompleteLegacyRows } from './legacyReviewSync';
+import { roundLabel } from './levelRounds';
 import { zhHskLevelLabel } from './zhHskLevel';
 
 /** 주소의 언어 조각 → 화면 설정. 일본어 · 중국어만 연다(영어 AJ-2 · 프랑스어 FLELex 결정 전). */
@@ -272,7 +273,7 @@ export function writeLevelSnapshot(storage, lang, levelKey, snap) {
     const all = JSON.parse(storage.getItem(LEVEL_SNAPSHOT_KEY) || '{}') || {};
     const cur = all[lang] && typeof all[lang] === 'object' ? all[lang] : {};
     const key = String(levelKey).toUpperCase();
-    all[lang] = { last: { level: key, view: snap.view, at: snap.at }, levels: { ...(cur.levels || {}), [key]: { known: snap.known, studying: snap.studying, total: snap.total, at: snap.at } } };
+    all[lang] = { last: { level: key, view: snap.view, round: snap.round, at: snap.at }, levels: { ...(cur.levels || {}), [key]: { known: snap.known, studying: snap.studying, total: snap.total, at: snap.at } } };
     storage.setItem(LEVEL_SNAPSHOT_KEY, JSON.stringify(all));
   } catch { /* 저장소 없음 — 이어 하기 없이 */ }
 }
@@ -284,7 +285,8 @@ export function readLevelSnapshot(storage, lang) {
     for (const [k, l] of Object.entries(v.levels || {})) {
       if (/^[A-Z0-9]{2}$/.test(k) && [l?.known, l?.studying, l?.total].every((n) => Number.isInteger(n) && n >= 0)) levels[k] = l;
     }
-    return { last: { level: v.last.level, view: LEVEL_VIEWS.some((x) => x.id === v.last.view) ? v.last.view : 'all' }, levels };
+    const round = Number.isInteger(v.last.round) && v.last.round >= 1 ? v.last.round : 1;
+    return { last: { level: v.last.level, view: LEVEL_VIEWS.some((x) => x.id === v.last.view) ? v.last.view : 'all', round }, levels };
   } catch { return null; }
 }
 
@@ -296,7 +298,9 @@ export function levelResumeCard(snap, lang = 'chinese') {
   const level = snap?.last?.level;
   const l = level && snap.levels?.[level];
   if (!l || !LEVEL_LIST_LANGS[lang]?.levels.includes(level)) return null;
-  return { href: levelListHref(lang, 'vocab', level), title: `${levelLabel(level)} 단어`,
+  // 2바퀴부터는 「HSK 1 단어 · 두 바퀴째」(LEVEL-ROUND-001 ③) — 마지막 보기의 바퀴.
+  const round = snap.last.round > 1 ? ` · ${roundLabel(snap.last.round)}` : '';
+  return { href: levelListHref(lang, 'vocab', level), title: `${levelLabel(level)} 단어${round}`,
     chips: [`알아요 ${l.known.toLocaleString('en-US')} / ${l.total.toLocaleString('en-US')}`, ...(l.studying > 0 ? [`공부 중 ${l.studying.toLocaleString('en-US')}`] : [])],
     meta: '이어 하기 ↗' };
 }

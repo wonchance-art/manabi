@@ -24,7 +24,9 @@ import { knownWordKeys, knownWordSetOf, normalizeKnownWord } from '@/lib/knownWo
 import { WORD_FACETS, allFacetsKnown, facetIndex, facetMark } from '@/lib/wordFacets';
 import { useWordFacets } from '@/lib/useWordFacets';
 import { useLevelAnswers } from '@/lib/useLevelAnswers';
-import { levelAnswersOfView, levelRoundProgress, levelRoundScope, roundLabel } from '@/lib/levelRounds';
+import {
+  LEVEL_NEXT_VIEW, levelAnswersOfView, levelForgotten, levelRoundHint, levelRoundOrder, levelRoundProgress, levelRoundScope, nextFullRoundAt, roundLabel,
+} from '@/lib/levelRounds';
 import { authEntryHref } from '@/lib/authRedirect';
 import { hunRubyCells } from '@/lib/viewerHunRuby';
 import { glyphRows } from '@/lib/glyphColumn';
@@ -582,24 +584,39 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
     const studying = facetView ? new Set([...facetIdx].filter(([, m]) => m[facetView] === 'x').map(([w]) => w)) : saved;
     return levelProgress(allEntries, hiddenSet, studying);
   }, [vocab, mounted, userId, allEntries, roundScope, viewAnswers, facetView, facetIdx, hiddenSet, saved]);
-  // 이어 하기 — 배움 입구 카드가 읽는 이 기기의 사본(전체 기준 개수 + 마지막 보기).
+  // 끝 카드(LEVEL-ROUND-001 ③) — 잊은 수 · 다음 바퀴 안내(다른 보기 권유 + 「전부」 간격). 요약 자리라 숫자를 둔다.
+  const roundEnd = useMemo(() => {
+    if (!progress || progress.left !== 0 || !progress.total) return null;
+    const forgotten = recorded ? levelForgotten(levelAnswersOfView(rounds.before(answerView), answerView), viewAnswers) : 0;
+    let endedAt = 0;
+    for (const a of viewAnswers.values()) if (a.at > endedAt) endedAt = a.at;
+    const next = LEVEL_NEXT_VIEW[answerView];
+    const hint = levelRoundHint({ nextLabel: next ? LEVEL_VIEWS.find((v) => v.id === next)?.label : null,
+      dueAt: nextFullRoundAt(rounds.roundRows, answerView, endedAt || Date.now()) });
+    return { forgotten, hint };
+  }, [progress, recorded, rounds, answerView, viewAnswers]);
+  const lastViewRound = vocab ? round.round : 1;
+  // 이어 하기 — 배움 입구 카드가 읽는 이 기기의 사본(전체 기준 개수 + 마지막 보기 · 그 보기의 바퀴).
   useEffect(() => {
     if (!vocab || !mounted || !userId || !allEntries.length) return;
     const p = levelProgress(allEntries, knownSet, saved);
-    try { writeLevelSnapshot(localStorage, lang, levelKey, { ...p, view: prefs.view, at: Date.now() }); } catch { /* 저장소 없음 */ }
-  }, [vocab, mounted, userId, allEntries, knownSet, saved, lang, levelKey, prefs.view]);
+    try { writeLevelSnapshot(localStorage, lang, levelKey, { ...p, view: prefs.view, round: lastViewRound, at: Date.now() }); } catch { /* 저장소 없음 */ }
+  }, [vocab, mounted, userId, allEntries, knownSet, saved, lang, levelKey, prefs.view, lastViewRound]);
 
   const hideKnown = vocab && prefs.hideKnown;
+  const roundNo = round.round;
   const { shown, knownCount } = useMemo(() => {
     let known = 0;
     const filtered = groups.map((g) => {
-      const inRound = roundScope ? g.entries.filter((e) => roundScope.has(e.key)) : g.entries; // 이번 바퀴 범위 밖은 목록에서 뺀다
+      // 이번 바퀴 범위 밖은 목록에서 뺀다. 2바퀴부터는 묶음 안에서 섞는다(바퀴 번호가 씨앗 — 새로고침해도 같은 순서).
+      const scoped = roundScope ? g.entries.filter((e) => roundScope.has(e.key)) : g.entries;
+      const inRound = recorded ? levelRoundOrder(scoped, { seed: `${conf.langCode}|${levelKey}|${answerView}|${g.name}`, round: roundNo }) : scoped;
       const split = vocab ? splitKnown(inRound, hiddenSet) : { shown: inRound, known: [] };
       known += split.known.length;
       return { name: g.name, entries: (hideKnown ? split.shown : inRound).filter((e) => matchesLevelQuery(e, query)) };
     });
     return { shown: filtered.filter((g) => g.entries.length), knownCount: known };
-  }, [groups, vocab, roundScope, hiddenSet, query, hideKnown]);
+  }, [groups, vocab, roundScope, recorded, roundNo, answerView, conf.langCode, levelKey, hiddenSet, query, hideKnown]);
   // 찾기 말을 바꿀 때만 처음 150개로 — 첫 그리기 · 뒤로 가기 복원(찾던 말을 되살림)에서는 그린 개수를 그대로 둔다.
   const lastQuery = useRef(query);
   useEffect(() => {
@@ -891,12 +908,14 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
       {/* 바퀴 끝(LEVEL-ROUND-001 ②) — 진도 줄 자리에 끝 카드. 요약 자리라 숫자를 둔다(목업 2판 C). 바퀴 표가 없으면 지금처럼 「다 봤어요」. */}
       {progress && roundsOn && progress.left === 0 && progress.total > 0 ? <section className="lv-end" aria-label="바퀴 끝">
         <p className="lv-end__head">{round.round === 1 ? '한 바퀴 끝' : `${roundLabel(round.round)} 끝`}</p>
-        <p className="lv-end__line">{progress.studying > 0 ? `모른 단어 ${progress.studying.toLocaleString('en-US')}개` : '모른 단어를 다 잡았어요'}</p>
+        <p className="lv-end__line">{progress.studying > 0 ? `모른 단어 ${progress.studying.toLocaleString('en-US')}개` : '모른 단어를 다 잡았어요'}
+          {roundEnd?.forgotten > 0 && ` · 지난번에 안 단어 중 ${roundEnd.forgotten.toLocaleString('en-US')}개를 잊었어요`}</p>
         <div className="lv-end__acts">
           {progress.studying > 0 && <button type="button" className="lv-end__main" onClick={() => startRound('missed')}>모른 {progress.studying.toLocaleString('en-US')}개만 다시</button>}
           <button type="button" onClick={() => startRound('all')}>처음부터 전부</button>
           {progress.studying > 0 && <Link className="lv-prog__review" href={reviewHref} prefetch={false}>복습하기 →</Link>}
         </div>
+        {roundEnd?.hint && <p className="lv-end__next">{roundEnd.hint}</p>}
       </section> : progress && <div className="lv-prog">
         <span className="lv-meter" aria-hidden="true"><i className="lv-meter__k" style={{ width: `${(progress.known / progress.total) * 100}%` }} />
           <i className="lv-meter__s" style={{ width: `${(progress.studying / progress.total) * 100}%` }} /></span>
