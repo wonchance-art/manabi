@@ -179,9 +179,9 @@ describe('⑹ O · X 빠른 암기 보기 옵션(LEVEL-OX-AN-001)', () => {
   });
 
   it('저장된 설정 검증: 보기 전체 · 훈음 켬 · 한자 대조 · 숨기기 끔이 기본, 모르는 값은 버린다', () => {
-    expect(normalizeLevelPrefs(null)).toEqual({ view: 'all', hideKnown: false, hun: true, glyph: false, tone: false }); // 성조 색은 옵트인(오너 2026-08-19)
+    expect(normalizeLevelPrefs(null)).toEqual({ view: 'all', hideKnown: false, hun: true, glyph: false, tone: false, peekOnX: true }); // 성조 색은 옵트인(오너 2026-08-19)
     expect(normalizeLevelPrefs({ view: 'grade', hideKnown: true, hun: 'yes', glyph: true }))
-      .toEqual({ view: 'all', hideKnown: true, hun: true, glyph: true, tone: false });
+      .toEqual({ view: 'all', hideKnown: true, hun: true, glyph: true, tone: false, peekOnX: true });
     expect(normalizeLevelPrefs({ view: 'audio' }).view).toBe('audio');
   });
 
