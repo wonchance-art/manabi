@@ -24,7 +24,9 @@ import { knownWordKeys, knownWordSetOf, normalizeKnownWord } from '@/lib/knownWo
 import { WORD_FACETS, allFacetsKnown, facetIndex, facetMark } from '@/lib/wordFacets';
 import { useWordFacets } from '@/lib/useWordFacets';
 import { useLevelAnswers } from '@/lib/useLevelAnswers';
-import { levelAnswersOfView, levelRoundProgress, levelRoundScope, roundLabel } from '@/lib/levelRounds';
+import {
+  LEVEL_NEXT_VIEW, countLevelSave, levelAnswersOfView, levelExamHint, levelExamOf, levelForgotten, levelRoundHint, levelRoundOrder, levelRoundProgress, levelRoundScope, nextFullRoundAt, roundLabel,
+} from '@/lib/levelRounds';
 import { authEntryHref } from '@/lib/authRedirect';
 import { hunRubyCells } from '@/lib/viewerHunRuby';
 import { glyphRows } from '@/lib/glyphColumn';
@@ -213,7 +215,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
   const hanzi = kind === 'hanzi';
   const wordsOn = vocab || hanzi; // 단어 저장 · 제외를 쓰는 탭
   const pathname = usePathname();
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const userId = user?.id || null;
   const { speak, supported: ttsSupported } = useTTS();
   const say = useCallback((text) => speak(text, conf.language), [speak, conf.language]);
@@ -423,6 +425,13 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
     try { if (localStorage.getItem(NUDGE_KEY) === kstDay()) return; localStorage.setItem(NUDGE_KEY, kstDay()); } catch { return; }
     setToast({ message: '공부 중에 담았어요. 복습에서 다시 만나요', href: reviewHref, action: '복습하기' });
   };
+  // 하루 분량(LEVEL-ROUND-001 ④) — 복습은 새 카드 첫 질문을 하루 한도까지만 낸다. 오늘 담은 수가 남은 자리를 넘으면 하루 한 번 알린다(막지 않음).
+  // 자리는 복습 설정(dailyNewLimit) · 계정 한도의 정본(reviewScopeQuota)에서만 읽는다 — 새 숫자를 만들지 않는다.
+  const noteDailyLoad = (account) => import('@/lib/levelDailyLoad').then(({ levelNewQuota }) => levelNewQuota(account)).catch(() => null)
+    .then((quota) => {
+      try { if (!countLevelSave(localStorage, quota) || userRef.current !== account) return; } catch { return; }
+      setToast({ message: '오늘 복습 자리가 다 찼어요. 더 담으면 내일부터 나와요', href: reviewHref, action: '복습하기' });
+    });
 
   const save = async (entry) => {
     if (!userId) return loginToast('로그인하면 단어를 저장할 수 있어요');
@@ -439,7 +448,11 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
       const vocabulary = { language: conf.language, word_text: entry.key, base_form: entry.key,
         meaning: (entry.fullMeaning ?? entry.meaning).slice(0, 2000), furigana: entry.reading.slice(0, 500), pos: entry.pos.slice(0, 80) };
       const response = await client.save({ action: 'save', accountId: userId, operationId: newId(), cardId: newId(), vocabulary });
-      if (response?.ok === true || response?.status === 'pending' || response?.status === 'applied' || response?.status === 'replayed') { nudgeReview(); return done(true); }
+      if (response?.ok === true || response?.status === 'pending' || response?.status === 'applied' || response?.status === 'replayed') {
+        nudgeReview();
+        noteDailyLoad(userId);
+        return done(true);
+      }
       done(false);
       setToast({ message: /excluded|known/.test(response?.blockReason || '') ? '아는 단어로 옮긴 단어라 저장하지 않았어요' : '저장하지 못했어요. 잠시 후 다시 시도해 주세요' });
     } catch {
@@ -582,24 +595,44 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
     const studying = facetView ? new Set([...facetIdx].filter(([, m]) => m[facetView] === 'x').map(([w]) => w)) : saved;
     return levelProgress(allEntries, hiddenSet, studying);
   }, [vocab, mounted, userId, allEntries, roundScope, viewAnswers, facetView, facetIdx, hiddenSet, saved]);
-  // 이어 하기 — 배움 입구 카드가 읽는 이 기기의 사본(전체 기준 개수 + 마지막 보기).
+  // 시험 범위(J) — 목표 날짜(profiles.dday_date)가 남았고 이 레벨이 목표 급수 이하면 간격을 시험 사다리로 줄인다. 목표는 목표 창에서 정한 그대로.
+  const exam = useMemo(() => (vocab ? levelExamOf(profile, { language: conf.language, levels: conf.levels, level: levelKey }) : null),
+    [vocab, profile, conf.language, conf.levels, levelKey]);
+  // 끝 카드(LEVEL-ROUND-001 ③) — 잊은 수 · 다음 바퀴 안내(다른 보기 권유 + 「전부」 간격). 요약 자리라 숫자를 둔다.
+  const roundEnd = useMemo(() => {
+    if (!progress || progress.left !== 0 || !progress.total) return null;
+    const forgotten = recorded ? levelForgotten(levelAnswersOfView(rounds.before(answerView), answerView), viewAnswers) : 0;
+    let endedAt = 0;
+    for (const a of viewAnswers.values()) if (a.at > endedAt) endedAt = a.at;
+    const dueAt = nextFullRoundAt(rounds.roundRows, answerView, endedAt || Date.now(), exam);
+    // 시험 모드(J) — 목표 날짜까지 남은 날 · 다음 바퀴 · 마지막 총정리. 아니면 다음 보기 권유 + 「전부」 간격.
+    if (exam) return { forgotten, hint: levelExamHint({ examName: lang === 'japanese' ? `JLPT ${exam.level}` : levelLabel(exam.level), exam, dueAt }) };
+    const next = LEVEL_NEXT_VIEW[answerView];
+    const hint = levelRoundHint({ nextLabel: next ? LEVEL_VIEWS.find((v) => v.id === next)?.label : null, dueAt });
+    return { forgotten, hint: hint ? [hint] : [] };
+  }, [progress, recorded, rounds, answerView, viewAnswers, exam, lang]);
+  const lastViewRound = vocab ? round.round : 1;
+  // 이어 하기 — 배움 입구 카드가 읽는 이 기기의 사본(전체 기준 개수 + 마지막 보기 · 그 보기의 바퀴).
   useEffect(() => {
     if (!vocab || !mounted || !userId || !allEntries.length) return;
     const p = levelProgress(allEntries, knownSet, saved);
-    try { writeLevelSnapshot(localStorage, lang, levelKey, { ...p, view: prefs.view, at: Date.now() }); } catch { /* 저장소 없음 */ }
-  }, [vocab, mounted, userId, allEntries, knownSet, saved, lang, levelKey, prefs.view]);
+    try { writeLevelSnapshot(localStorage, lang, levelKey, { ...p, view: prefs.view, round: lastViewRound, at: Date.now() }); } catch { /* 저장소 없음 */ }
+  }, [vocab, mounted, userId, allEntries, knownSet, saved, lang, levelKey, prefs.view, lastViewRound]);
 
   const hideKnown = vocab && prefs.hideKnown;
+  const roundNo = round.round;
   const { shown, knownCount } = useMemo(() => {
     let known = 0;
     const filtered = groups.map((g) => {
-      const inRound = roundScope ? g.entries.filter((e) => roundScope.has(e.key)) : g.entries; // 이번 바퀴 범위 밖은 목록에서 뺀다
+      // 이번 바퀴 범위 밖은 목록에서 뺀다. 2바퀴부터는 묶음 안에서 섞는다(바퀴 번호가 씨앗 — 새로고침해도 같은 순서).
+      const scoped = roundScope ? g.entries.filter((e) => roundScope.has(e.key)) : g.entries;
+      const inRound = recorded ? levelRoundOrder(scoped, { seed: `${conf.langCode}|${levelKey}|${answerView}|${g.name}`, round: roundNo }) : scoped;
       const split = vocab ? splitKnown(inRound, hiddenSet) : { shown: inRound, known: [] };
       known += split.known.length;
       return { name: g.name, entries: (hideKnown ? split.shown : inRound).filter((e) => matchesLevelQuery(e, query)) };
     });
     return { shown: filtered.filter((g) => g.entries.length), knownCount: known };
-  }, [groups, vocab, roundScope, hiddenSet, query, hideKnown]);
+  }, [groups, vocab, roundScope, recorded, roundNo, answerView, conf.langCode, levelKey, hiddenSet, query, hideKnown]);
   // 찾기 말을 바꿀 때만 처음 150개로 — 첫 그리기 · 뒤로 가기 복원(찾던 말을 되살림)에서는 그린 개수를 그대로 둔다.
   const lastQuery = useRef(query);
   useEffect(() => {
@@ -891,12 +924,14 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
       {/* 바퀴 끝(LEVEL-ROUND-001 ②) — 진도 줄 자리에 끝 카드. 요약 자리라 숫자를 둔다(목업 2판 C). 바퀴 표가 없으면 지금처럼 「다 봤어요」. */}
       {progress && roundsOn && progress.left === 0 && progress.total > 0 ? <section className="lv-end" aria-label="바퀴 끝">
         <p className="lv-end__head">{round.round === 1 ? '한 바퀴 끝' : `${roundLabel(round.round)} 끝`}</p>
-        <p className="lv-end__line">{progress.studying > 0 ? `모른 단어 ${progress.studying.toLocaleString('en-US')}개` : '모른 단어를 다 잡았어요'}</p>
+        <p className="lv-end__line">{progress.studying > 0 ? `모른 단어 ${progress.studying.toLocaleString('en-US')}개` : '모른 단어를 다 잡았어요'}
+          {roundEnd?.forgotten > 0 && ` · 지난번에 안 단어 중 ${roundEnd.forgotten.toLocaleString('en-US')}개를 잊었어요`}</p>
         <div className="lv-end__acts">
           {progress.studying > 0 && <button type="button" className="lv-end__main" onClick={() => startRound('missed')}>모른 {progress.studying.toLocaleString('en-US')}개만 다시</button>}
           <button type="button" onClick={() => startRound('all')}>처음부터 전부</button>
           {progress.studying > 0 && <Link className="lv-prog__review" href={reviewHref} prefetch={false}>복습하기 →</Link>}
         </div>
+        {roundEnd?.hint.map((line) => <p key={line} className="lv-end__next">{line}</p>)}
       </section> : progress && <div className="lv-prog">
         <span className="lv-meter" aria-hidden="true"><i className="lv-meter__k" style={{ width: `${(progress.known / progress.total) * 100}%` }} />
           <i className="lv-meter__s" style={{ width: `${(progress.studying / progress.total) * 100}%` }} /></span>

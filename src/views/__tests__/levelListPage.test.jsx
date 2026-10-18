@@ -282,7 +282,7 @@ describe('머리 · 진도 · X 펼침(LEVEL-FLOW-001 — 디자인 검토 2026-
     expect(nudge).toContain('if (localStorage.getItem(NUDGE_KEY) === kstDay()) return; localStorage.setItem(NUDGE_KEY, kstDay());');
     expect(nudge).toContain("action: '복습하기'");
     expect(page).toContain('const kstDay = () => new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);');
-    expect(page).toMatch(/\{ nudgeReview\(\); return done\(true\); \}/); // 저장이 된 뒤에만
+    expect(page).toMatch(/\{\n\s*nudgeReview\(\);\n\s*noteDailyLoad\(userId\);\n\s*return done\(true\);/); // 저장이 된 뒤에만(하루 분량 알림도 — LEVEL-ROUND-001 ④)
   });
 });
 

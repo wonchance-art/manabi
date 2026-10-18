@@ -36,7 +36,7 @@ import { canReadSuggestion, suggestionHref, TODAY_SUGGESTIONS_KEY, fetchTodaySug
 import { fetchVocabularyLearningRows } from '@/lib/vocabularyLearningRows';
 import { countReviewScope, reviewScopeQuota, serializeReviewScope } from '@/lib/reviewScope';
 import { useLearningAdmission } from '@/lib/useLearningAdmission';
-import { DEFAULT_NEW_PER_DAY, NEW_PER_DAY_OPTIONS, loadIntroIds } from '@/lib/vocabStudy';
+import { DEFAULT_NEW_PER_DAY, loadIntroIds, loadNewPerDay } from '@/lib/vocabStudy';
 import { levelResumeCard, readLevelSnapshot } from '@/lib/levelList';
 import { GUEST_RESUME_GLYPH, LEARN_LANGS, PREFETCH_WINDOW_MS, RESUME_GLYPH, learnLangLabel, materialInLang, paragraphState } from '@/lib/learnDashboard';
 import { encounterLookupLang } from '@/lib/refVocabLookup';
@@ -181,9 +181,7 @@ export default function HomePage({ book = null, bookPromise, sessionHint }) {
   const admission = useLearningAdmission({ accountId: user?.id });
   const [device, setDevice] = useState({ newPerDay: DEFAULT_NEW_PER_DAY, introIds: [] });
   useEffect(() => {
-    let newPerDay = DEFAULT_NEW_PER_DAY;
-    try { const stored = parseInt(localStorage.getItem('vocab_new_per_day'), 10); if (NEW_PER_DAY_OPTIONS.includes(stored)) newPerDay = stored; } catch { /* 저장소 차단 — 기본값 */ }
-    setDevice({ newPerDay, introIds: loadIntroIds() });
+    setDevice({ newPerDay: loadNewPerDay(), introIds: loadIntroIds() });
   }, []);
   const quota = reviewScopeQuota(admission, { ...device, vocabIds: data?.vocab?.map(v => v.id) });
   const reviewCount = learnReviewCount({ snapshot: data?.learning, lang, quota, now: data?.now });

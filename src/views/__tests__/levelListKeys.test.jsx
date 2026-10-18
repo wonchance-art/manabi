@@ -26,7 +26,7 @@ vi.mock('react', async (importOriginal) => {
   };
 });
 vi.mock('next/navigation', () => ({ usePathname: () => '/chinese/vocab/h1' }));
-vi.mock('@/lib/AuthContext', () => ({ useAuth: () => ({ user: h.stub && h.user ? { id: h.user } : null }) }));
+vi.mock('@/lib/AuthContext', () => ({ useAuth: () => ({ user: h.stub && h.user ? { id: h.user } : null, profile: h.profile || null }) }));
 vi.mock('@/lib/supabase', () => ({ supabase: {} }));
 vi.mock('@/lib/useTTS', () => ({ useTTS: () => ({ speak: () => {}, supported: true }) }));
 vi.mock('@/lib/useKnownWords', () => ({ useKnownWords: () => ({ rows: h.rows, isPendingWord: (_lang, key) => h.pending.has(key),
@@ -41,6 +41,7 @@ vi.mock('@/lib/useLevelAnswers', () => ({ useLevelAnswers: () => ({
   answers: h.answers,
   roundOf: (v) => h.rounds?.[v] || { round: 1, scope: 'all', startedAt: null, recorded: false },
   before: () => h.before || new Map(),
+  roundRows: h.roundRows || [],
   roundsAvailable: !!h.rounds,
   startRound: (v, scope) => { h.started.push([v, scope]); return Promise.resolve({ view: v, round_no: 2, scope }); },
   undoRound: () => Promise.resolve(),
@@ -379,7 +380,7 @@ describe('⑥ 새 바퀴 · 끝 카드 · 초기화(LEVEL-ROUND-001 ②)', () =>
     vi.unstubAllGlobals();
     h.stub = true; h.slots = []; h.pending = new Set(); h.mutate = []; h.user = 'u1'; h.rows = []; h.facets = null;
     h.saved = saved; h.answered = []; h.cancelled = []; h.sameDay = false; h.started = []; h.replaced = [];
-    h.rounds = rounds; h.before = before; h.answers = new Map(answers.map(([w, c]) => [`${w}|all`, { correct: c }]));
+    h.rounds = rounds; h.before = before; h.answers = new Map(answers.map(([w, c, at]) => [`${w}|all`, { correct: c, at }])); h.roundRows = [];
     const store = new Map();
     vi.stubGlobal('localStorage', { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v), removeItem: (k) => store.delete(k) });
     renderStub(); runEffects(); await tick(); renderStub(); runEffects(); await tick();
@@ -422,7 +423,7 @@ describe('⑥ 새 바퀴 · 끝 카드 · 초기화(LEVEL-ROUND-001 ②)', () =>
     h.rows = [{ lang: 'zh', word_text: a }];
     await setup({ rounds: { all: { round: 2, scope: 'all', startedAt: 1, recorded: true } }, answers: [[a, true]] });
     h.rows = [{ lang: 'zh', word_text: a }];
-    renderStub().cards[0].props.onO();
+    renderStub().cards.find((c) => c.props.entry.key === a).props.onO(); // 2바퀴부터는 섞인 순서
     await tick();
     expect(h.cancelled).toEqual([[a, 'all']]);
     expect(h.mutate).toEqual([]);
@@ -442,5 +443,42 @@ describe('⑥ 새 바퀴 · 끝 카드 · 초기화(LEVEL-ROUND-001 ②)', () =>
     expect(h.replaced).toHaveLength(1);
     expect(h.replaced[0].map((r) => [r.view, r.round_no, r.scope])).toEqual(['all', 'word', 'sentence', 'meaning', 'audio'].map((v) => [v, 1, 'all']));
     expect(h.mutate).toEqual([{ lang: 'zh', wordText: '#reset:H1:0', known: false, removeKeys: [a] }]);
+  });
+
+  it('2바퀴부터 묶음 안에서 섞는다 — 바퀴 번호가 씨앗(다시 그려도 같은 순서), 새 1바퀴는 교재 순서', async () => {
+    await setup({ rounds: { all: { round: 1, scope: 'all', startedAt: 1, recorded: true } } });
+    const keysNow = () => renderStub().cards.map((c) => c.props.entry.key);
+    const textbook = keysNow();
+    expect(textbook).toEqual(allKeys.slice(0, textbook.length));
+    await setup({ rounds: { all: { round: 2, scope: 'all', startedAt: 1, recorded: true } } });
+    const second = keysNow();
+    expect(second).not.toEqual(textbook);
+    expect(keysNow()).toEqual(second);
+    await setup({ rounds: { all: { round: 3, scope: 'all', startedAt: 1, recorded: true } } });
+    expect(keysNow()).not.toEqual(second);
+  });
+
+  it('끝 카드 — 잊은 수(같은 날 다른 탭의 O는 빼고) · 다음 바퀴는 뜻 탭으로 · 「전부」 간격 날짜', async () => {
+    const [a, b, ...rest] = allKeys;
+    const at = Date.UTC(2026, 9, 18, 3); // 2026-10-18 12:00 KST
+    await setup({ rounds: { all: { round: 2, scope: 'all', startedAt: 1, recorded: true } },
+      before: new Map([[`${a}|all`, { correct: true }], [`${b}|all`, { correct: true, sameDay: true }]]),
+      answers: [[a, false, at], [b, false, at], ...rest.map((k) => [k, true, at])] });
+    const end = find('lv-end')[0];
+    expect(textOf(end)).toContain('모른 단어 2개 · 지난번에 안 단어 중 1개를 잊었어요');
+    // 바퀴 줄이 없으면(목 · 1바퀴) 첫 「전부」 끝 → 1주 뒤
+    expect(textOf(find('lv-end__next')[0])).toMatch(/^다음 바퀴는 뜻 탭으로 — /);
+  });
+
+  it('시험 모드(J) — 목표 급수 이하 레벨이면 끝 카드 안내가 「시험까지 · 마지막 총정리」 두 줄', async () => {
+    const at = Date.now();
+    const date = new Date(at + 9 * 3600_000 + 30 * 86_400_000).toISOString().slice(0, 10);
+    h.profile = { dday_date: date, goal_lang: 'Chinese', goal_level: 'H4' };
+    await setup({ rounds: { all: { round: 2, scope: 'all', startedAt: 1, recorded: true } }, answers: allKeys.map((k) => [k, true, at]) });
+    const lines = find('lv-end__next').map(textOf);
+    h.profile = null;
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toMatch(/^HSK 4 시험까지 30일/);
+    expect(lines[1]).toMatch(/^마지막 총정리 \d+월 \d+일 \(뜻 · 소리\)$/);
   });
 });

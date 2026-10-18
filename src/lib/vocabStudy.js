@@ -27,6 +27,13 @@ const todayStr = () => new Date().toISOString().slice(0, 10);
 // (repetitions는 이 스키마에서 lapses라 신규 판정에 쓰면 안 됨)
 export const isNewWord = (v) => !v.last_reviewed_at;
 
+// 이 기기의 하루 새 단어 한도(복습 설정) — 배움 칸 · 단어 목록이 같은 값을 읽는다. 없거나 깨졌으면 기본값.
+export function loadNewPerDay() {
+  if (typeof window === 'undefined') return DEFAULT_NEW_PER_DAY;
+  try { const stored = parseInt(localStorage.getItem('vocab_new_per_day'), 10); if (NEW_PER_DAY_OPTIONS.includes(stored)) return stored; } catch { /* 저장소 차단 */ }
+  return DEFAULT_NEW_PER_DAY;
+}
+
 // 오늘 새로 시작한 단어 ID 집합 (날짜 바뀌면 리셋)
 export function loadIntroIds() {
   if (typeof window === 'undefined') return [];
