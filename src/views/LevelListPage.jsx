@@ -1,7 +1,7 @@
 'use client';
 // 레벨별 단어 · 문형 목록(LEVEL-LIST-AJ-001) — 목업 docs/design/mocks/lv/lv.html 8판, 인계 #1337 6119208984 · 6146777048.
 // 단어(LEVEL-OX-AN-001 — 빠른 암기, 오너 지시 2026-10-15 · 목업 /mnt/project-files/notes/level-list-ox-mockup.md):
-// 찾기 + ⚙(아는 단어 숨기기 · 중국어 훈음(기본 켬) · 한자 대조), 보기 탭 하나 고르기 [전체 · 단어 · 문장 · 뜻 · 소리], 카드마다 [O][X].
+// 찾기 + ⚙(아는 단어 숨기기 · X 누르면 답 펼치기(기본 켬) · 중국어 훈음(기본 켬) · 한자 대조), 보기 탭 하나 고르기 [전체 · 단어 · 문장 · 뜻 · 소리], 카드마다 [O][X].
 // 탭 보기에서 카드를 누르면 나머지가 아래로 펼쳐지고, 다시 누르거나 10초가 지나면 접힌다(4판). 채점 · 입력창은 없다(채점 설계 폐기).
 // 문형: 읽기 전용(저장 · 번호 · 캡션 · 펼치기 없음).
 // X(모른다) = 공부 중인 단어로 저장 = /api/learning/vocabulary action:'save'(FSRS 직접 추가 정본, 기존 카드는 그대로 돌려받는다).
@@ -407,8 +407,8 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
   const markO = (entry) => (knownSet.has(entry.key) ? unmark(entry.key) : exclude(entry));
   const markX = async (entry) => {
     if (!userId) return loginToast('로그인하면 단어를 저장할 수 있어요');
-    // 모른다고 한 바로 그때 답을 본다(디자인 검토 B안) — 탭 보기에서 X를 누르면 그 카드를 펼친다(접기 · 10초는 그대로).
-    if (prefs.view !== 'all') openPeek(entry.key);
+    // 모른다고 한 바로 그때 답을 본다(디자인 검토 B안) — 탭 보기에서 X를 누르면 그 카드를 펼친다(접기 · 10초는 그대로). ⚙ 「X 누르면 답 펼치기」로 끌 수 있다.
+    if (prefs.view !== 'all' && prefs.peekOnX) openPeek(entry.key);
     if (!knownSet.has(entry.key)) return save(entry);
     // 아는 단어면 먼저 풀고, 서버가 풀어 준 뒤에만 공부 중으로 담는다(아는 단어는 저장이 막힌다). 풀지 못하면 담지 않는다.
     try { await known.mutation.mutateAsync(unmarkRequest(entry.key)); } catch { return undefined; }
@@ -726,6 +726,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
       </div>}
       {vocab && settingsOpen && <div className="lv-settings" id="lv-settings">
         {[['hideKnown', '아는 단어 숨기기', knownCount > 0 ? `${facetView ? `${LEVEL_VIEWS.find((v) => v.id === facetView)?.label} 탭 ` : ''}${knownCount}개` : null],
+          ['peekOnX', 'X 누르면 답 펼치기', '단어 · 문장 · 뜻 · 소리 탭'],
           ...(zhVocab ? [['hun', '훈음', '한자마다 뜻과 소리'], ['tone', '성조 색', '병음 1성 빨강 · 2성 초록 · 3성 파랑 · 4성 보라'], ['glyph', '한자 대조', '正 대만 정체 · 日 일본어 표기']] : [])]
           .map(([key, label, note]) => <button key={key} type="button" role="switch" className="lv-switch" aria-checked={prefs[key]}
             onClick={() => setPrefs({ [key]: !prefs[key] })}><span>{label}{note && <small>{note}</small>}</span><i aria-hidden="true" /></button>)}

@@ -21,14 +21,20 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
 ## 규칙 (계약 테스트가 강제)
 
 - **전시 여부를 저장하지 않는다.** `onView`·`onDisplay`·`exhibited`·`gallery`·`room` 키 금지. 화면은 늘 「소장」, 전시 여부는 원문 링크로.
-- **장소 역할은 셋**: `holding`(소장) · `depicted`(그림 속 장소) · `made`(제작지). 소장처 하나 이상. 같은 판화를 여러 곳이 소장하면 `holding`을 여럿.
+- **장르(`genre`)는 넷**(ART-GENRE-001, 2026-10-18 KST 오너 「권장대로 ㄱㄱ」): `print`(판화) · `painting`(회화) · `photograph`(사진) · `architecture`(건축).
+  장르가 정보 카드 작가 칸 이름을 정한다 — 그림(판화·회화) · 촬영(사진) · 설계(건축)(`ART_GENRE_ARTIST_ROLE`).
+- **장소 역할은 넷**: `holding`(소장) · `depicted`(그림 속 장소) · `made`(제작지) · `located`(소재지 — 건축만). 같은 판화를 여러 곳이 소장하면 `holding`을 여럿.
   `holding`에는 그 기관의 소장품 기록 HTTPS `url`이 필수 — 전시 여부·자세한 정보는 이 링크에서 본다.
+  건축이 아닌 작품은 소장처 하나 이상, **건축은 소장처 대신 소재지 하나 이상** — `located`에는 그 건물의 문화재 기록(문화유산 온라인) HTTPS `url`이 필수.
+- **Wikidata QID**는 작가·장소에 필수, 작품에는 있으면 싣는다(메이지 사진 낱장·건물 동처럼 항목이 없는 작품이 있다 — 없으면 키를 두지 않는다).
 - **날짜는 출처 표기 그대로** `date.text`(「江戸時代・安政4年(1857)」, 「c. 1830/33」)와 그 표기를 가져온 `date.source`(colbase|aic),
   정렬·묶음은 `startYear`·`endYear`·`certainty`(exact|circa|range). 출처 표기가 「江戸時代・19世紀」처럼 넓으면 연도 범위는 연작 간행 연도로 좁히고 `certainty: range`로 둔다(호에이도판 도카이도 1833–34).
-- **해설 본문**은 허용 라이선스만: `jp-gov-standard-2.0`(ColBase) · `cc-by-4.0`(시카고 미술관) · `cc-by-sa-4.0`(위키백과) · `cc0`.
+- **해설 본문**은 허용 라이선스만: `jp-gov-standard-2.0`(ColBase) · `cc-by-4.0`(시카고 미술관·문화유산 온라인) · `cc-by-sa-4.0`(위키백과) · `cc0`.
   `credit`(크레딧 줄)·HTTPS `sourceUrl`·`textSha256` 필수 — 받은 원문을 고치면 해시가 어긋나 테스트가 실패한다. 1,500자 상한(목표 200–600자).
-  `source`는 `colbase`(id `cobas-<번호>`) · `aic`(id 숫자)만 — 받는 곳이 정해진 출처만 싣는다(`cc-by-sa-4.0` 위키백과는 라이선스 목록에만 있고, 받기 경로를 만들기 전에는 실을 수 없다). 박물관 내부 메모(「(20131029_h21・22)」 같은 작업 번호)가 섞인 해설은 싣지 않는다.
-- **이미지**는 `public-domain`·`cc0`만, `alt`(한국어 대체 텍스트) 필수. 저작권이 남은 작품은 `image` 없이 해설만.
+  `source`는 `colbase`(id `cobas-<번호>`) · `aic`(id 숫자) · `bunka`(id `bunka-<번호>`)만 — 받는 곳이 정해진 출처만 싣는다(`cc-by-sa-4.0` 위키백과는 라이선스 목록에만 있고, 받기 경로를 만들기 전에는 실을 수 없다). 박물관 내부 메모(「(20131029_h21・22)」 같은 작업 번호)가 섞인 해설은 싣지 않는다.
+  읽기 표시(ColBase 「＠よみ＠」「+よみ+」, 문화유산 온라인 「【よみ】」)가 섞인 해설, **일본어 해설 칸에 영어 문장이 이어 붙은 해설**(湖畔 `cobas-159785` 실측)도 싣지 않는다.
+- **이미지**는 `public-domain`·`cc0`, 그리고 **ColBase 사진의 `cc-by-4.0`**(오너 결정 2026-10-18 KST — 캡션 `credit` 필수, 저작자 표시가 이용 조건)만, `alt`(한국어 대체 텍스트) 필수.
+  **그림을 싣는 작품은 작가가 `ART_PD_DIED_BY`(1955)년까지 세상을 떠났어야 한다** — 작품 자체의 저작권(사후 70년)이 어디서나 끝난 것만 싣는다. 저작권이 남은 작품은 `image` 없이 해설만.
   **그림 파일은 manabi가 직접 들고 있는 것만** — `public/art/<작품 id>.jpg`, `image.url`은 `/art/<작품 id>.jpg`(계약이 강제).
   미술관 서버에 바로 연결하지 않는다: 시카고 미술관 IIIF는 다른 사이트에 끼운 그림 요청을 봇 차단(Cloudflare)해 운영 화면에서 그림이 뜨지 않았다(ART-IMG-001, 2026-10-14 KST).
   지금 파일은 **메트로폴리탄 미술관 오픈 액세스(CC0)** 에서 받은 것이다(`sourceUrl` = 메트 작품 페이지, `credit` = 「Artist. Title, Date. The Metropolitan Museum of Art, <기증 기록>. CC0」,
@@ -37,7 +43,10 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
   작자 불명 사진·현대 복제·워터마크 파일은 쓰지 않는다. 亀戸梅屋舗는 브루클린 미술관 전질 사본이 공용에 없어(「100 views edo 0NN.jpg」 계열에서 030만 빠짐)
   레이크스 미술관 RP-P-1956-743(CC0)을 썼다(ART-IMG-002). 공용 API는 출구 IP 요청 제한(429)이 잦다 — `Retry-After`를 지켜 다시 묻고,
   썸네일 호스트 `thumb.wikimedia.org`는 환경에서 닫혀 있어 `upload.wikimedia.org/…/thumb/…/960px-…`(표준 크기만 준다)를 받아 로컬에서 줄였다.
-  ColBase 이미지는 권리 구분이 CC BY(`ccby`)라 이 허용 목록 밖이다 — 쓰려면 허용 목록·출처 표기 계약부터 바꾼다(오너 결정).
+  **ColBase 사진**(ART-GENRE-001)은 재팬서치 항목의 `contentsRightsType`이 `ccby`이고 소장관이 출처표(`ART_COLBASE_HOLDERS`)에 있을 때만 CC BY 4.0으로 싣는다.
+  파일은 항목 `contentsUrl`(`…/image/slideshow_s/…`, 긴 변 330px)과 같은 경로의 `slideshow_l`(긴 변 686px)을 **받은 바이트 그대로** 둔다(원본 `original`은 3000px·1MB라 쓰지 않는다).
+  캡션은 「<제목> · <작가 표기> · <소장관> 소장 · ColBase(국립문화재기구) · CC BY 4.0」. 근대 건축 옛 사진은 국립국회도서관 디지털화본(퍼블릭 도메인)을 위키미디어 공용에서 받는다 —
+  캡션 라이선스 이름은 「Public domain」.
 - **핵심 용어(`terms`)는 일본어 해설에 실제로 나오는 말**만 — 본문에서 만나야 단어 저장으로 이어진다.
 - **찾아볼 것(`lookFor`)은 그림이 있을 때만** — 그림을 보며 하는 질문이다. 화면 문구라 해요체(「…일까요?」·「…찾아봐요.」).
 - 민감 소장처(반환 논쟁·중화권)는 이름·도시 같은 **사실만** 적는다.
@@ -62,10 +71,11 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
 
 | 출처 | 해설 받는 곳 | 해설 라이선스 | 이미지 | 크레딧 |
 |---|---|---|---|---|
-| ColBase(국립문화재기구) | 재팬서치 항목 API `https://jpsearch.go.jp/api/item/cobas-<번호>`의 `common.description`(일본어)·`descriptionEn`(영어). ColBase 자체 API는 키가 필요하다 | ColBase 이용규약 = 정부표준이용규약 2.0 준거(CC BY 4.0 호환). 재팬서치의 ColBase `metadataRights`도 같은 규약 | `ccby` — 쓰지 않음 | 「ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로」(화면이 「출처:」를 앞에 붙인다) + 원문 페이지 `sourceUrl` |
+| ColBase(국립문화재기구) | 재팬서치 항목 API `https://jpsearch.go.jp/api/item/cobas-<번호>`의 `common.description`(일본어)·`descriptionEn`(영어). ColBase 자체 API는 키가 필요하다 | ColBase 이용규약 = 정부표준이용규약 2.0 준거(CC BY 4.0 호환). 재팬서치의 ColBase `metadataRights`도 같은 규약 | 항목 `contentsRightsType: ccby` → CC BY 4.0(ART-GENRE-001부터 사용, 캡션 필수) | 「ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로」(화면이 「출처:」를 앞에 붙인다) + 원문 페이지 `sourceUrl` |
 | 시카고 미술관(AIC) | `https://api.artic.edu/api/v1/artworks/<id>`의 `description`(HTML) | CC BY 4.0(`description` 필드만, 나머지는 CC0) | `is_public_domain`이면 CC0, IIIF `…/full/843,/0/default.jpg` 핫링크 허용 | 「Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로」(「출처:」·라이선스 이름은 화면이 붙인다) |
 | 메트로폴리탄 미술관 | — | — | 오픈 액세스 CC0(작품 이미지, `public/art`에 저장) | 그림 캡션 `image.credit` |
-| 위키미디어 공용 | — | — | 미술관 디지털화본(PD/CC0, `public/art`에 저장) — 지금은 레이크스 미술관 CC0 1점 | 그림 캡션 `image.credit` |
+| 문화유산 온라인(문화청) | 재팬서치 항목 API `https://jpsearch.go.jp/api/item/bunka-<번호>`의 `common.description`(일본어, 평문) | 재팬서치 데이터베이스 정보(`api/database/bunka`)의 `metadataRights` 「解説文：CC BY」(4.0). 문화청 자료(`provider: bunkazai`)만 — 미술관이 올린 해설은 크레딧을 만들지 않는다 | 「コンテンツによって異なります」 — 쓰지 않음 | 「문화유산 온라인(문화청) · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로」 + 원문 페이지 `sourceUrl` |
+| 위키미디어 공용 | — | — | 미술관·도서관 디지털화본(PD/CC0, `public/art`에 저장) — 레이크스 미술관 CC0 1점, 국립국회도서관 퍼블릭 도메인 3점 | 그림 캡션 `image.credit` |
 | Wikidata | QID·좌표·라벨 | CC0 | — | 의무 없음 |
 
 - 「편집: 서식 기호만 지우고 글자는 그대로」 — ColBase 규약은 편집·가공 시 그 사실을 따로 적으라고 한다. 우리는 HTML 태그를 벗기고 줄바꿈을 맞출 뿐 낱말은 바꾸지 않지만, 그것도 적는다(화면에 「HTML」 같은 코드 말은 쓰지 않는다).
@@ -121,6 +131,31 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
 | hiroshige-tsuki-no-misaki | 名所江戸百景 月の岬 | 江戸時代・安政4年(1857) (ColBase) | ja ColBase 118자 |
 | hiroshige-asakusa-tanbo-torinomachi-mode | 名所江戸百景 浅草田甫 酉の町詣 | 江戸時代・安政4年(1857) (ColBase) | ja ColBase 659자 |
 | hiroshige-ryogoku-hanabi | 名所江戸百景 両国花火 | 江戸時代・安政5年(1858) (ColBase) | ja ColBase 120자 |
+
+**셋째 묶음 — 장르 확장 (ART-GENRE-001, 2026-10-18 KST)** — 근대 회화·옛 사진은 도쿄 국립박물관 소장(ColBase 해설 + ColBase CC BY 사진),
+근대 건축은 국가 지정 문화재(문화유산 온라인 해설 CC BY 4.0 + 국립국회도서관 디지털화본 퍼블릭 도메인). 해설은 일본어만.
+
+| 작품 id | 장르 | 작품 | 날짜 표기(출처) | 소장·소재지 | 해설 | 그림 |
+|---|---|---|---|---|---|---|
+| kuroda-seiki-dokusho | 회화 | 読書(구로다 세이키) | 明治24年(1891) (ColBase) | 도쿄 국립박물관 | ja ColBase 125자 | ColBase CC BY |
+| asai-chu-gure-no-aki | 회화 | グレーの秋(아사이 주) | 明治34年(1901) (ColBase) | 도쿄 국립박물관 | ja ColBase 122자 | ColBase CC BY |
+| kishida-ryusei-reiko-bisho | 회화 | 麗子微笑(기시다 류세이) | 大正10年(1921) (ColBase) | 도쿄 국립박물관 | ja ColBase 842자 | ColBase CC BY |
+| yokoyama-matsusaburo-nikko-meisho-shashin | 사진 | 日光名勝写真(요코야마 마쓰사부로) | 明治2～3年(1869～70) (ColBase) | 도쿄 국립박물관 | ja ColBase 96자 | ColBase CC BY |
+| yokoyama-matsusaburo-kyu-edojo-shashincho | 사진 | 旧江戸城写真帖(요코야마 마쓰사부로) | 明治4年(1871) (ColBase) | 도쿄 국립박물관 | ja ColBase 130자 | ColBase CC BY |
+| uchida-kuichi-koraibashi | 사진 | 高麗橋(우치다 구이치) | 明治5年(1872) (ColBase) | 도쿄 국립박물관 | ja ColBase 129자 | ColBase CC BY |
+| bastien-tomioka-silk-mill | 건축 | 旧富岡製糸場 繰糸所(바스티앙 도면) | 1872 (문화유산 온라인) | 도미오카 제사장(소재지) | ja 문화유산 온라인 494자 | 2대 우타가와 구니테루 니시키에 1872, 국립국회도서관 PD |
+| katayama-tokuma-akasaka-palace | 건축 | 旧東宮御所（迎賓館赤坂離宮）(가타야마 도쿠마) | 1909 (문화유산 온라인) | 영빈관 아카사카 이궁(소재지) | ja 문화유산 온라인 278자 | 1909년 사진첩, 국립국회도서관 PD |
+| tatsuno-kingo-tokyo-station | 건축 | 東京駅丸ノ内本屋(다쓰노 긴고) | 1914 (문화유산 온라인) | 도쿄역(소재지) | ja 문화유산 온라인 323자 | 1914년 철도원 간행물 사진, 국립국회도서관 PD(WebP → JPEG, 크기 그대로) |
+
+셋째 묶음 큐레이션 `modern-western-painting-japan`(「近代洋画のはじまり」 N2 상급) · `meiji-early-photographs`(「明治初期の古写真」 N2 상급) ·
+`meiji-taisho-architecture`(「明治・大正の近代建築」 N1)은 **아직 게시 책(`ART_PUBLISHED_CURATIONS`)이 아니다** — 뷰어 카드가 장르별 작가 칸(촬영·설계)과
+「소재지」를 그리게 되는 후속(ART-READ-001 #1483 병합 뒤 장르 탭과 함께)에서 게시 책에 더한다.
+
+**넣지 못한 작품(셋째 묶음 기록):** 湖畔(`cobas-159785`) — 일본어 해설 칸에 영어 해설이 이어 붙어 있어 제외(계약이 거부한다).
+磯紡績所(`cobas-165850`) — 읽기 표시 「五代友厚＠ごだいともあつ＠」가 섞여 제외. 海の幸·生々流転(`bunka-199370`·`bunka-179952`) — 두 작품 해설이 같은 근대 미술 총론(1,048자)이라
+작품 해설이 아니어서 제외(총론에 읽기 표시 【】도 섞여 있다). 旧富岡製糸場 전체(`bunka-212090`) — 1,533자로 상한 초과라 繰糸所 기록을 썼다.
+국립서양미술관 등 국립미술관 소장품(재팬서치 `syozo`) — 작품 기록은 CC0이지만 해설 글이 없어 보류(오너 결정 2026-10-18 KST).
+문화유산 온라인 해설 가운데 미술관이 올린 것(`provider`가 `bunkazai`가 아닌 것)은 쓰지 않는다.
 
 큐레이션: `ukiyoe-landscape-hokusai-hiroshige`(여덟 점 연대순 · 게시 책 「北斎と広重の風景版画」 N2 상급) ·
 `ukiyoe-landscape-hokusai-hiroshige-2`(둘째 묶음 일곱 점 연대순 · 게시 책 「続・北斎と広重の風景版画」 N2 상급 — 첫 책과 작품이 겹치지 않는다) ·

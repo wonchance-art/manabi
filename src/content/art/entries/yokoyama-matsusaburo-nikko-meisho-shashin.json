@@ -1,0 +1,57 @@
+{
+  "id": "yokoyama-matsusaburo-nikko-meisho-shashin",
+  "genre": "photograph",
+  "artist": "yokoyama-matsusaburo",
+  "title": {
+    "native": "日光名勝写真",
+    "ko": "닛코 명승 사진",
+    "reading": "にっこうめいしょうしゃしん"
+  },
+  "date": {
+    "text": "明治2～3年(1869～70)",
+    "source": "colbase",
+    "startYear": 1869,
+    "endYear": 1870,
+    "certainty": "range"
+  },
+  "periods": [
+    "jp-meiji"
+  ],
+  "medium": {
+    "native": "鶏卵紙、台紙付写真",
+    "ko": "대지에 붙인 알부민(달걀흰자) 인화 사진"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/R-159"
+    },
+    {
+      "place": "nikko-shrines-temples",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-165962"
+    }
+  ],
+  "terms": [
+    "写真師",
+    "さきがけ",
+    "作例"
+  ],
+  "lookFor": [
+    "오른쪽 위에 세로로 적힌 제목을 찾아봐요.",
+    "멀리 골짜기 사이로 흐르는 강은 어디에 있을까요?",
+    "앞쪽 지붕들 사이에 선 잎 없는 나무는 어디일까요?"
+  ],
+  "image": {
+    "source": "colbase",
+    "sourceId": "cobas-165962",
+    "alt": "대지에 붙인 갈색 톤 사진. 앞쪽에 수풀과 낮은 지붕들이 있고, 그 너머 골짜기로 강이 흐르며 멀리 산이 흐릿하다. 오른쪽 위에 「日光總図」라고 적혀 있다."
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "bytes": 23783,
+  "fetchedAt": "2026-10-18",
+  "file": "uchida-kuichi-koraibashi.jpg",
+  "height": 520,
+  "record": {
+    "contentsRightsType": "ccby",
+    "contentsUrl": "https://colbase.nich.go.jp/media/tnm/R-564/image/slideshow_s/R-564_C0029151.jpg",
+    "contributor": "内田九一撮影",
+    "provider": "tnm",
+    "title": "高麗橋"
+  },
+  "sha256": "eefaa469cf1c284bfc1a6b541f6c02c537c52dccbac9e9640946182f0cee82bb",
+  "source": "colbase",
+  "sourceId": "cobas-165877",
+  "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/R-564",
+  "width": 686,
+  "workId": "uchida-kuichi-koraibashi"
+}

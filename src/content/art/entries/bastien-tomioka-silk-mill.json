@@ -1,0 +1,53 @@
+{
+  "id": "bastien-tomioka-silk-mill",
+  "genre": "architecture",
+  "artist": "edmond-auguste-bastien",
+  "title": {
+    "native": "旧富岡製糸場 繰糸所",
+    "ko": "옛 도미오카 제사장 — 실 켜는 공장동",
+    "reading": "とみおかせいしじょう そうしじょ"
+  },
+  "date": {
+    "text": "1872",
+    "source": "bunka",
+    "startYear": 1872,
+    "endYear": 1872,
+    "certainty": "exact"
+  },
+  "periods": [
+    "jp-meiji"
+  ],
+  "medium": {
+    "native": "木骨煉瓦造",
+    "ko": "목골 벽돌조(나무 뼈대에 벽돌 벽)"
+  },
+  "places": [
+    {
+      "place": "tomioka-silk-mill",
+      "role": "located",
+      "url": "https://online.bunka.go.jp/db/heritages/detail/124804"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "bunka",
+      "sourceId": "bunka-124804"
+    }
+  ],
+  "terms": [
+    "器械製糸",
+    "煉瓦",
+    "桁行"
+  ],
+  "lookFor": [
+    "가운데 높이 솟은 굴뚝을 찾아봐요.",
+    "오른쪽 아래 문으로 들어오는 마차를 찾아봐요.",
+    "멀리 뒤쪽에 보이는 산은 몇 봉우리일까요?"
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:NDL-DC 1312610-Utagawa Kuniteru-上州富岡製糸場-明治5-cmb.jpg",
+    "alt": "1872년 니시키에 세 장을 이어 붙인 그림. 붉은 벽돌 벽에 푸른 기와를 얹은 긴 건물들이 넓은 마당을 둘러싸고, 가운데 높은 굴뚝이 솟아 있다. 마당과 길에는 사람과 마차가 오가고 뒤로 산이 보인다."
+  }
+}
