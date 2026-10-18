@@ -10,7 +10,10 @@
 //   · 날짜는 출처마다 다르게 적는다 — 일본어 원문 표기(text)는 그대로 보이고, 영어 약식 표기는 연도 범위로 한국어를 만든다
 //     (artDateDisplay). 정렬·묶음은 연도 범위로만.
 //   · 해설 본문은 재사용이 허용된 라이선스만, 원문 해시로 묶는다(아오조라 textSha256 선례 — 손으로 고친 해설을 막는다).
-//   · 이미지는 퍼블릭 도메인/CC0만. 그 밖은 그림 없이 해설만(IP 하드리밋 ⑴과 별개로 저작권 보호).
+//   · 이미지는 퍼블릭 도메인/CC0, 그리고 ColBase 사진(CC BY 4.0 — 캡션 필수)만. 그 밖은 그림 없이 해설만(IP 하드리밋 ⑴과 별개로 저작권 보호).
+//     그림이 있는 작품은 작가가 ART_PD_DIED_BY년까지 세상을 떠났어야 한다 — 작품 자체의 저작권(사후 70년)이 어디서나 끝난 것만 싣는다.
+//   · 장르(ART-GENRE-001, 2026-10-18 KST 오너 「권장대로 ㄱㄱ」) — 판화·회화·사진·건축. 장르가 작가 칸 이름(그림·촬영·설계)과
+//     장소 요건(건축은 소장처 대신 소재지)을 정한다.
 
 /** 해설 본문 라이선스 — 공개 자료로 담을 수 있는 것만. 모르는 값은 실패(fail-closed). */
 export const ART_TEXT_LICENSE = Object.freeze({
@@ -28,8 +31,16 @@ export const ART_TEXT_LICENSE_LABEL = Object.freeze({
   [ART_TEXT_LICENSE.CC0]: 'CC0',
 });
 
-export const ART_IMAGE_LICENSES = Object.freeze(['public-domain', 'cc0']);
-export const ART_PLACE_ROLES = Object.freeze(['holding', 'depicted', 'made']);
+export const ART_IMAGE_LICENSES = Object.freeze(['public-domain', 'cc0', 'cc-by-4.0']);
+/** 캡션 없이는 쓸 수 없는 그림 라이선스 — 저작자 표시가 이용 조건이다. */
+const ART_IMAGE_ATTRIBUTION_REQUIRED = Object.freeze(['cc-by-4.0']);
+/** 그림을 싣는 작품의 작가 사망 연도 상한 — 2026년 기준 사후 70년이 끝난 해(日本·EU·미국 모두 보호 기간이 지난 선). */
+export const ART_PD_DIED_BY = 1955;
+/** 작품 장르 → 정보 카드 작가 칸 이름. 건축은 설계자, 사진은 촬영자가 그 칸에 온다. */
+export const ART_GENRE_ARTIST_ROLE = Object.freeze({ print: '그림', painting: '그림', photograph: '촬영', architecture: '설계' });
+export const ART_GENRES = Object.freeze(Object.keys(ART_GENRE_ARTIST_ROLE));
+/** 장소 역할 — 소장(holding)·그림 속 장소(depicted)·제작지(made)·소재지(located, 건축물이 서 있는 곳). */
+export const ART_PLACE_ROLES = Object.freeze(['holding', 'depicted', 'made', 'located']);
 export const ART_PLACE_KINDS = Object.freeze(['museum', 'temple', 'site', 'city', 'landscape']);
 export const ART_DATE_CERTAINTY = Object.freeze(['exact', 'circa', 'range']);
 export const ART_CURATION_KINDS = Object.freeze(['artist', 'period', 'theme']);
@@ -45,14 +56,18 @@ const QID = /^Q[1-9]\d*$/;
 const SHA256 = /^[0-9a-f]{64}$/;
 const LANGUAGE = /^(?:ja|zh|en|fr)$/;
 /** 해설 출처 — scripts/fetch-art-description.mjs가 받는 곳(src/lib/artSource.js ART_SOURCES)과 같은 이름·id 형식. */
-const SOURCE_ID = Object.freeze({ colbase: /^cobas-\d+$/, aic: /^\d+$/ });
+const SOURCE_ID = Object.freeze({ colbase: /^cobas-\d+$/, aic: /^\d+$/, bunka: /^bunka-\d+$/ });
 /** 박물관 내부 메모(「(20131029_h21・22)」 같은 작업 번호)가 섞인 해설 — 공개 해설이 아니다(ART-P0-2 실측). */
 /** 그림 파일 경로 — public/art 아래 파일(사이트 상대 주소). 지금 파일은 메트로폴리탄 미술관 오픈 액세스(CC0, images.metmuseum.org)에서,
- *  메트에 없는 亀戸梅屋舗만 레이크스 미술관 CC0 디지털화본을 위키미디어 공용(commons.wikimedia.org)에서 받았다. */
+ *  메트에 없는 亀戸梅屋舗만 레이크스 미술관 CC0 디지털화본을 위키미디어 공용(commons.wikimedia.org)에서 받았다.
+ *  장르 확장(ART-GENRE-001)의 근대 회화·옛 사진은 ColBase(CC BY 4.0), 근대 건축은 국립국회도서관 디지털화본(퍼블릭 도메인, 공용 경유). */
 export const ART_IMAGE_PATH = /^\/art\/[a-z0-9-]+\.(?:jpg|webp)$/;
 const INTERNAL_MEMO = /\d{8}_h\d+/;
-/** ColBase 읽기 표시(「宮＠みや＠は」「+かたきうち+」) — 원문 그대로 실으면 학습자에게 기호가 보인다. 고치지 않고 싣지 않는다(ART-AUTO-001 실측). */
-const READING_MARKS = /[＠@][\u3040-\u30ff]{1,12}[＠@]|\+[\u3040-\u30ff]{1,12}\+/;
+/** 읽기 표시 — ColBase(「宮＠みや＠は」「+かたきうち+」)·문화유산 온라인(「春草【しゆんそう】」). 원문 그대로 실으면 학습자에게 기호가 보인다.
+ *  고치지 않고 싣지 않는다(ART-AUTO-001·ART-GENRE-001 실측). */
+const READING_MARKS = /[＠@][\u3040-\u30ff]{1,12}[＠@]|\+[\u3040-\u30ff]{1,12}\+|【[\u3040-\u30ff]{1,12}】/;
+/** 일본어 해설에 섞인 영어 문장(낱말 여섯 개 이상이 띄어쓰기로 이어짐, 숫자 낱말 포함) — 湖畔(cobas-159785)처럼 일본어·영어 해설이 한 칸에 이어 붙은 원문은 일본어 장이 될 수 없다. */
+const ENGLISH_SENTENCE = /[A-Za-z]+(?:[ ,'’-]+(?:[A-Za-z]+|\d+)){5,}/;
 
 const isObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 const isText = (value) => typeof value === 'string' && value.trim().length > 0;
@@ -87,6 +102,8 @@ function checkIds(list, kind, errors) {
     if (ids.has(item.id)) errors.push(`${at}.id: 중복 ${item.id}`);
     ids.add(item.id);
     if (kind !== 'periods' && kind !== 'curations') {
+      // 작품은 Wikidata 항목이 없을 수 있다(메이지 사진 낱장 등) — 없으면 키를 두지 않고, 있으면 형식·중복을 본다.
+      if (kind === 'works' && item.wikidata === undefined) return;
       if (!QID.test(item.wikidata ?? '')) errors.push(`${at}.wikidata: Wikidata QID가 필요하다(표기 통합 정규 키)`);
       else if (qids.has(item.wikidata)) errors.push(`${at}.wikidata: 중복 ${item.wikidata}`);
       else qids.add(item.wikidata);
@@ -135,12 +152,14 @@ function checkDescription(description, at, errors) {
   if (!isText(description.text) || description.text.length > ART_LIMITS.descriptionMax) {
     errors.push(`${at}.text: 해설 1–${ART_LIMITS.descriptionMax}자`);
   } else if (INTERNAL_MEMO.test(description.text)) errors.push(`${at}.text: 박물관 내부 메모가 섞인 해설은 싣지 않는다`);
-  else if (READING_MARKS.test(description.text)) errors.push(`${at}.text: 읽기 표시(＠よみ＠·+よみ+)가 섞인 해설은 싣지 않는다`);
+  else if (READING_MARKS.test(description.text)) errors.push(`${at}.text: 읽기 표시(＠よみ＠·+よみ+·【よみ】)가 섞인 해설은 싣지 않는다`);
+  else if (description.language === 'ja' && ENGLISH_SENTENCE.test(description.text)) errors.push(`${at}.text: 일본어 해설에 영어 문장이 섞여 있다(싣지 않는다)`);
   if (!SHA256.test(description.textSha256 ?? '')) errors.push(`${at}.textSha256: 원문 해시가 필요하다`);
 }
 
 function checkWork(work, at, refs, errors) {
   if (!refs.artistIds.has(work.artist)) errors.push(`${at}.artist: 없는 작가 ${work.artist}`);
+  if (!ART_GENRES.includes(work.genre)) errors.push(`${at}.genre: ${ART_GENRES.join('|')}`);
   checkName(work.title, `${at}.title`, errors);
   const date = work.date;
   if (!isObject(date) || !isText(date.text)) errors.push(`${at}.date.text: 원문 표기가 필요하다`);
@@ -151,13 +170,19 @@ function checkWork(work, at, refs, errors) {
   if (!isObject(work.medium) || !isText(work.medium.native)) errors.push(`${at}.medium.native: 재료·기법 원문이 필요하다`);
 
   const places = Array.isArray(work.places) ? work.places : [];
+  const architecture = work.genre === 'architecture';
   places.forEach((entry, index) => {
     if (!refs.placeIds.has(entry?.place)) errors.push(`${at}.places[${index}]: 없는 장소 ${entry?.place}`);
     if (!ART_PLACE_ROLES.includes(entry?.role)) errors.push(`${at}.places[${index}].role: ${ART_PLACE_ROLES.join('|')}`);
     // 소장처는 그 기관의 소장품 기록 링크와 함께 — 전시 여부·자세한 정보는 이 링크에서 본다(저장하지 않으므로).
     if (entry?.role === 'holding' && !isHttps(entry.url)) errors.push(`${at}.places[${index}].url: 소장품 기록 HTTPS 링크가 필요하다`);
+    // 건축물의 소재지는 그 건물의 문화재 기록 링크와 함께 — 소장처 대신 이 링크에서 자세한 정보를 본다.
+    if (entry?.role === 'located' && !isHttps(entry.url)) errors.push(`${at}.places[${index}].url: 소재지는 문화재 기록 HTTPS 링크가 필요하다`);
+    if (entry?.role === 'located' && !architecture) errors.push(`${at}.places[${index}].role: 소재지(located)는 건축 작품에만`);
   });
-  if (!places.some((entry) => entry?.role === 'holding')) errors.push(`${at}.places: 소장처(holding)가 하나 이상 필요하다`);
+  if (architecture) {
+    if (!places.some((entry) => entry?.role === 'located')) errors.push(`${at}.places: 건축은 소재지(located)가 하나 이상 필요하다`);
+  } else if (!places.some((entry) => entry?.role === 'holding')) errors.push(`${at}.places: 소장처(holding)가 하나 이상 필요하다`);
 
   const descriptions = Array.isArray(work.descriptions) ? work.descriptions : [];
   if (descriptions.length === 0) errors.push(`${at}.descriptions: 해설이 하나 이상 필요하다`);
@@ -178,7 +203,11 @@ function checkWork(work, at, refs, errors) {
   if (Array.isArray(work.lookFor) && work.lookFor.length > 0 && !work.image) errors.push(`${at}.lookFor: 그림이 없으면 찾아볼 것을 두지 않는다`);
   if (work.image !== undefined && work.image !== null) {
     const image = work.image;
-    if (!ART_IMAGE_LICENSES.includes(image?.license)) errors.push(`${at}.image.license: 퍼블릭 도메인/CC0만(그 밖은 image 없이)`);
+    if (!ART_IMAGE_LICENSES.includes(image?.license)) errors.push(`${at}.image.license: ${ART_IMAGE_LICENSES.join('|')}만(그 밖은 image 없이)`);
+    if (ART_IMAGE_ATTRIBUTION_REQUIRED.includes(image?.license) && !isText(image?.credit)) errors.push(`${at}.image.credit: ${image.license} 그림은 캡션(저작자 표시)이 필요하다`);
+    // 작품 자체의 저작권 — 그림을 싣는 작품은 작가 사후 70년이 어디서나 끝난 것만.
+    const died = refs.artistDied?.get(work.artist);
+    if (Number.isInteger(died) && died > ART_PD_DIED_BY) errors.push(`${at}.image: 작가가 ${died}년에 세상을 떠났다 — ${ART_PD_DIED_BY}년까지 떠난 작가의 작품만 그림을 싣는다`);
     // 그림 파일은 manabi가 직접 들고 있는 것만(public/art) — 미술관 서버에 바로 연결하면 그쪽 봇 차단에 끊긴다(ART-IMG-001 실측).
     if (!ART_IMAGE_PATH.test(image?.url ?? '')) errors.push(`${at}.image.url: /art/<이름>.jpg|webp(public/art에 둔 파일)만`);
     if (!isHttps(image?.sourceUrl)) errors.push(`${at}.image.sourceUrl: 그림을 받은 원본 페이지 HTTPS 주소가 필요하다`);
@@ -221,7 +250,8 @@ export function validateArtCatalog(catalog, { studiesPinIds = null } = {}) {
   each(catalog.periods, 'periods', (item, at) => checkPeriod(item, at, errors));
   each(catalog.artists, 'artists', (item, at) => checkArtist(item, at, periodIds, errors));
   each(catalog.places, 'places', (item, at) => checkPlace(item, at, studiesPinIds, errors));
-  each(catalog.works, 'works', (item, at) => checkWork(item, at, { artistIds, placeIds, periodIds }, errors));
+  const artistDied = new Map((Array.isArray(catalog.artists) ? catalog.artists : []).filter(isObject).map((artist) => [artist.id, artist.died]));
+  each(catalog.works, 'works', (item, at) => checkWork(item, at, { artistIds, artistDied, placeIds, periodIds }, errors));
   each(catalog.curations, 'curations', (item, at) => checkCuration(item, at, workIds, errors));
   return errors;
 }
@@ -283,11 +313,13 @@ export function artInfoCard(catalog, workId) {
   return {
     id: work.id,
     title: work.title,
+    genre: work.genre,
     artist: artist && {
       id: artist.id,
       name: artist.name,
       years: yearSpan(artist.born, artist.died),
       life: artist.life,
+      role: ART_GENRE_ARTIST_ROLE[work.genre] ?? null,
     },
     date: {
       text: work.date.text,
@@ -298,6 +330,7 @@ export function artInfoCard(catalog, workId) {
     },
     medium: work.medium,
     holdings: placesFor('holding').map((place) => ({ ...place, label: '소장처' })),
+    located: placesFor('located').map((place) => ({ ...place, label: '소재지' })),
     depicted: placesFor('depicted'),
     made: placesFor('made'),
     terms: work.terms,

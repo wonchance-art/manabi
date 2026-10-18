@@ -2,8 +2,31 @@
   {
     "id": "jp-edo",
     "culture": "jp",
-    "label": { "ko": "에도 시대", "native": "江戸時代" },
+    "label": {
+      "ko": "에도 시대",
+      "native": "江戸時代"
+    },
     "startYear": 1603,
     "endYear": 1868
+  },
+  {
+    "id": "jp-meiji",
+    "culture": "jp",
+    "label": {
+      "ko": "메이지 시대",
+      "native": "明治時代"
+    },
+    "startYear": 1868,
+    "endYear": 1912
+  },
+  {
+    "id": "jp-taisho",
+    "culture": "jp",
+    "label": {
+      "ko": "다이쇼 시대",
+      "native": "大正時代"
+    },
+    "startYear": 1912,
+    "endYear": 1926
   }
 ]

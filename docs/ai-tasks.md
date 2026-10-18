@@ -1082,6 +1082,7 @@
   · **ART-P0-4(#1473)**: 둘째 책 「続・北斎と広重の風景版画」 7점(메트 CC0 그림) + 읽기 표시 해설 거부 계약. 宮 熱田神事는 읽기 표시로 제외.
   · **ART-AUTO-001 설계**: `docs/design/art-pipeline.md` — A안(수집 스냅샷 → 오프라인 후보표·빌드 --check → 세션 저작 → PR) · ColBase CC BY 그림 허용(오너 결정). 구현 순서 AUTO-1~4.
   · **ART-AUTO-1(이 브랜치)**: 출처 스냅샷 `src/content/art/sources/`(ColBase 15 · AIC 4 · 그림 15) + 작품별 `entries/` → `scripts/build-art.mjs` 생성물 works.json(이행 전후 바이트 동일) · `build-art --check` prebuild 연결. works.json은 이제 손으로 고치지 않는다.
+  · **ART-GENRE-001(오너 「권장대로 ㄱㄱ」 2026-10-18 KST)** `claude/art-genres`: 장르 확장 1단계 — 계약 `genre`(판화·회화·사진·건축 → 작가 칸 그림·촬영·설계) · 건축은 소장처 대신 소재지(`located` + 문화유산 온라인 기록 링크) · 해설 출처 `bunka`(문화유산 온라인, CC BY 4.0) · 그림 ColBase CC BY 4.0(캡션 필수) · 그림 싣는 작품은 작가 1955년까지 사망 · 읽기 표시 【】·일본어 칸 영어 문장 거부 · 작품 QID 선택. 실물 9점(근대 회화 3 · 메이지 사진 3 · 근대 건축 3)과 큐레이션 3 — **아직 게시 책 아님**(카드의 촬영·설계·소재지 표시와 장르 탭은 #1483 병합 뒤 후속). 보류: 국립서양미술관 등 해설 없는 소장품(오너 결정).
 - **대화 모드 v2-Z 전 라운드 (2026-10-14 KST, 오너 「전부 다 승인함」 — 인계 [CONVERSATION-V2Z-001](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6050886728))** `claude/project-thread-a2xmmk`:
   순서 = 인계문 §10 그대로 Z-R1 ①서버 → ②평가 묶음 → ③화면 → Z-R2 → Z-R3, PR 하나씩.
   · **Z-R1 ① 병합(#1438, 2026-10-14 KST)**: `/api/analyze` 핵심 → `analyzeCore.analyzeLines`(응답 동일) · `POST /api/conversation/turn` · 순수 규칙 `lib/conversation/turnModel.js`

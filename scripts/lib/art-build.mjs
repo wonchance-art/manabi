@@ -20,7 +20,7 @@ export const ART_FILES = Object.freeze({ entries: 'entries', order: 'order.json'
 const HAND_FILES = Object.freeze(['artists', 'places', 'periods', 'curations']);
 
 /** entries 작품 키 — works.json 키 순서 그대로. 그 밖의 키는 실패(쓴 값이 소리 없이 빠지지 않게). */
-export const ART_ENTRY_KEYS = Object.freeze(['id', 'wikidata', 'artist', 'title', 'series', 'date', 'periods', 'medium', 'places',
+export const ART_ENTRY_KEYS = Object.freeze(['id', 'wikidata', 'genre', 'artist', 'title', 'series', 'date', 'periods', 'medium', 'places',
   'descriptions', 'terms', 'lookFor', 'image']);
 const DESCRIPTION_REF_KEYS = Object.freeze(['language', 'source', 'sourceId']);
 const IMAGE_REF_KEYS = Object.freeze(['source', 'sourceId', 'alt']);

@@ -1,0 +1,57 @@
+{
+  "id": "uchida-kuichi-koraibashi",
+  "genre": "photograph",
+  "artist": "uchida-kuichi",
+  "title": {
+    "native": "高麗橋",
+    "ko": "고라이바시",
+    "reading": "こうらいばし"
+  },
+  "date": {
+    "text": "明治5年(1872)",
+    "source": "colbase",
+    "startYear": 1872,
+    "endYear": 1872,
+    "certainty": "exact"
+  },
+  "periods": [
+    "jp-meiji"
+  ],
+  "medium": {
+    "native": "鶏卵紙、台紙付写真",
+    "ko": "대지에 붙인 알부민(달걀흰자) 인화 사진"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/R-564"
+    },
+    {
+      "place": "koraibashi",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-165877"
+    }
+  ],
+  "terms": [
+    "鋳鉄橋",
+    "架け替え",
+    "直轄"
+  ],
+  "lookFor": [
+    "다리를 건너는 사람은 무엇을 지고 있을까요?",
+    "다리 위에 늘어선 가로등은 몇 개 보일까요?",
+    "다리 아래 강에 떠 있는 배를 찾아봐요."
+  ],
+  "image": {
+    "source": "colbase",
+    "sourceId": "cobas-165877",
+    "alt": "철제 아치로 받친 긴 다리가 강을 가로질러 건너편 기와지붕 마을로 이어진다. 다리 위에는 가로등이 늘어서 있고, 앞쪽에 짐을 멘 사람이 걸어간다. 오른쪽 위에 「大坂高麗橋」라고 적혀 있다."
+  }
+}

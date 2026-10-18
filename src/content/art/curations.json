@@ -76,5 +76,56 @@
       "hiroshige-asakusa-tanbo-torinomachi-mode",
       "hiroshige-ryogoku-hanabi"
     ]
+  },
+  {
+    "id": "modern-western-painting-japan",
+    "kind": "theme",
+    "title": {
+      "ko": "근대 서양화의 시작",
+      "native": "近代洋画のはじまり"
+    },
+    "level": "N2 상급",
+    "summary": {
+      "ko": "프랑스 그레 마을에서 그린 두 점과 다이쇼 시대의 초상 한 점. 메이지·다이쇼의 서양화 세 점을 연대순으로 읽는다."
+    },
+    "works": [
+      "kuroda-seiki-dokusho",
+      "asai-chu-gure-no-aki",
+      "kishida-ryusei-reiko-bisho"
+    ]
+  },
+  {
+    "id": "meiji-early-photographs",
+    "kind": "theme",
+    "title": {
+      "ko": "메이지 초기의 옛 사진",
+      "native": "明治初期の古写真"
+    },
+    "level": "N2 상급",
+    "summary": {
+      "ko": "닛코의 절과 신사, 무너져 가던 에도성, 쇠다리로 바뀐 오사카의 다리. 사진가 두 사람이 남긴 메이지 초기 사진 세 점을 연대순으로 읽는다."
+    },
+    "works": [
+      "yokoyama-matsusaburo-nikko-meisho-shashin",
+      "yokoyama-matsusaburo-kyu-edojo-shashincho",
+      "uchida-kuichi-koraibashi"
+    ]
+  },
+  {
+    "id": "meiji-taisho-architecture",
+    "kind": "theme",
+    "title": {
+      "ko": "메이지·다이쇼의 근대 건축",
+      "native": "明治・大正の近代建築"
+    },
+    "level": "N1",
+    "summary": {
+      "ko": "벽돌 공장, 서양식 궁전, 수도의 중앙역. 국가 지정 문화재 해설로 근대 건축 세 곳을 연대순으로 읽는다."
+    },
+    "works": [
+      "bastien-tomioka-silk-mill",
+      "katayama-tokuma-akasaka-palace",
+      "tatsuno-kingo-tokyo-station"
+    ]
   }
 ]
