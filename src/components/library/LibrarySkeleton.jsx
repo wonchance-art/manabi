@@ -62,6 +62,24 @@ export function ConversationShelfSkeleton({ live = true }) {
   );
 }
 
+/**
+ * 서재 몸(읽던 곳 · 대화 · 목록) 골격 — 로그인 확인 골격(아래)과, 서버 미리 받기를 놓친 서재가 세 칸이 정해질 때까지(LibraryShelf,
+ * REVIEW-SHELF-CLS-001) 같은 한 벌을 쓴다. live = 실제 서재 안(입구 링크가 그대로 쓰이고 목록 골격이 알림 하나를 맡는다).
+ */
+export function LibraryShelfBodySkeleton({ live = true }) {
+  return (
+    <>
+      <RecentReadsSkeleton />
+      <ConversationShelfSkeleton live={live} />
+      <section className="shelf-list-section">
+        {/* 도구(정렬 · 필터 · 선택)는 44px 단추라 머리줄 높이를 정한다 — 같은 높이 칸을 둬야 목록이 밀리지 않는다(실측 +17px). */}
+        <div className="shelf-section-heading"><h2>전체</h2><div className="shelf-list-tools"><SkeletonLine width="12em" height="44px" /></div></div>
+        <ShelfRowsSkeleton announce={live} />
+      </section>
+    </>
+  );
+}
+
 /** 로그인 확인 중(LibraryPage) — 머리줄 · 위치 목록 · 읽던 곳 · 목록 골격. 머리 글(「내 서재」)은 늘 같아서 글자 그대로. */
 export function LibraryShelfSkeleton() {
   return (
@@ -73,15 +91,7 @@ export function LibraryShelfSkeleton() {
       </header>
       <div className="shelf-workspace" aria-hidden="true">
         <nav className="shelf-folder-nav">{[3, 4, 3].map((w, i) => <span key={i} className="shelf-skeleton-nav"><SkeletonLine width={`${w}em`} /></span>)}</nav>
-        <div className="shelf-content">
-          <RecentReadsSkeleton />
-          <ConversationShelfSkeleton live={false} />
-          <section className="shelf-list-section">
-            {/* 도구(정렬 · 필터 · 선택)는 44px 단추라 머리줄 높이를 정한다 — 같은 높이 칸을 둬야 목록이 밀리지 않는다(실측 +17px). */}
-            <div className="shelf-section-heading"><h2>전체</h2><div className="shelf-list-tools"><SkeletonLine width="12em" height="44px" /></div></div>
-            <ShelfRowsSkeleton announce={false} />
-          </section>
-        </div>
+        <div className="shelf-content"><LibraryShelfBodySkeleton live={false} /></div>
       </div>
     </SkeletonRegion>
   );
