@@ -40,6 +40,7 @@ import MemoryHealthCard from '../components/learn/MemoryHealthCard';
 import '../components/learn/learn.css';
 import { authEntryHref } from '../lib/authRedirect';
 import { useDialogReturn } from '../lib/useDialogReturn';
+import { EXAM_KINDS, EXAM_SCHEDULES, examCheckedLine, examDateLine, examDatesFor, examGoalOf } from '../lib/examSchedules';
 
 /** 히트맵 — 최근 24주(168일), 가장 오른쪽 아래가 오늘. */
 export const HEATMAP_DAYS = 168;
@@ -259,6 +260,11 @@ function GoalEditor({ catalog, openSignal = 0 }) {
   const [goalLang, setGoalLang] = useState('');
   const [goalLevel, setGoalLevel] = useState('');
   const [busy, setBusy] = useState(false);
+  // 시험 일정에서 고르기(K) — exam = 'HSK' | 'JLPT' | ''(직접 입력). 대조한 일정이 하나도 없으면 단추 자체가 없다.
+  const [exam, setExam] = useState('');
+  const [examLevel, setExamLevel] = useState('');
+  const [examPick, setExamPick] = useState(null);
+  const examKinds = Object.keys(EXAM_KINDS).filter(k => EXAM_SCHEDULES.some(r => r.exam === k));
 
   useEffect(() => {
     setMounted(true);
@@ -292,6 +298,7 @@ function GoalEditor({ catalog, openSignal = 0 }) {
     setLabel(dday?.label || '');
     setGoalLang(profile?.goal_lang || '');
     setGoalLevel(profile?.goal_level || '');
+    setExam(''); setExamLevel(''); setExamPick(null);
     setOpen(true);
   }
   // 「목표 수정」 버튼 · ?goal=edit 진입이 신호를 올리면 연다(열 때마다 지금 값으로 채운다).
@@ -335,6 +342,15 @@ function GoalEditor({ catalog, openSignal = 0 }) {
     <>
       {open && (
         <TileModal title="목표 · D-Day" onClose={() => setOpen(false)}>
+          {examKinds.length > 0 && <div className="dday-exam__tabs" role="group" aria-label="목표 고르기">
+            {examKinds.map(k => <button key={k} type="button" aria-pressed={exam === k}
+              onClick={() => { setExam(k); setExamLevel(''); setExamPick(null); }}>{k}</button>)}
+            <button type="button" aria-pressed={!exam} onClick={() => setExam('')}>직접 입력</button>
+          </div>}
+          {exam ? <ExamPicker exam={exam} level={examLevel} pick={examPick}
+            onLevel={lv => { setExamLevel(lv); setExamPick(null); }} onPick={setExamPick}
+            busy={busy} onCancel={() => setOpen(false)}
+            onSave={() => { const g = examGoalOf(examPick, examLevel); persist(g.date, g.label, g.lang, g.level); }} /> : <>
           <div className="tile-modal__row">
             <span>날짜</span>
             <input type="date" className="form-input tile-modal__num" style={{ maxWidth: 160 }}
@@ -373,9 +389,42 @@ function GoalEditor({ catalog, openSignal = 0 }) {
             </Button>
             {dday && <Button size="sm" variant="secondary" onClick={() => persist('', '', '', '')} disabled={busy} style={{ flex: 1 }}>삭제</Button>}
           </div>
+          </>}
         </TileModal>
       )}
     </>
+  );
+}
+
+/**
+ * 시험 일정에서 고르기(K) — 급수 → 날짜 → 「이 날로 정하기」. 접수가 끝난 날짜도 보이되 흐리게(이미 접수한 사람).
+ * 날짜는 참고용이고 최종 확인은 공식 출처로 — 확인일과 출처 링크를 같이 둔다.
+ */
+function ExamPicker({ exam, level, pick, onLevel, onPick, onSave, onCancel, busy }) {
+  const kind = EXAM_KINDS[exam];
+  const dates = level ? examDatesFor(EXAM_SCHEDULES, exam, level) : [];
+  const source = (pick || dates[0])?.source;
+  return (
+    <div className="dday-exam">
+      <div className="dday-exam__levels" role="group" aria-label="급수">
+        <span>급수</span>
+        {kind.levels.map(lv => <button key={lv.key} type="button" aria-pressed={level === lv.key} onClick={() => onLevel(lv.key)}>{lv.label}</button>)}
+      </div>
+      {level && (dates.length ? <ul className="dday-exam__dates">
+        {dates.map(r => {
+          const line = examDateLine(r);
+          return <li key={`${r.date}|${r.format}`}><button type="button" aria-pressed={pick === r} className={line.closed ? 'is-closed' : undefined}
+            onClick={() => onPick(r)}>{line.text}</button></li>;
+        })}
+      </ul> : <p className="dday-exam__note">이 급수는 아직 확인한 일정이 없어요</p>)}
+      {level && dates.length > 0 && <p className="dday-exam__note">
+        {examCheckedLine(dates)} · 고사장마다 다를 수 있어요{source && <> · <a href={source} target="_blank" rel="noopener noreferrer">출처 ↗</a></>}
+      </p>}
+      <div style={{ display: 'flex', gap: 8 }}>
+        <Button size="sm" variant="secondary" onClick={onCancel} disabled={busy} style={{ flex: 1 }}>취소</Button>
+        <Button size="sm" onClick={onSave} disabled={!pick || busy} style={{ flex: 1 }}>{busy ? '저장 중…' : '이 날로 정하기'}</Button>
+      </div>
+    </div>
   );
 }
 
