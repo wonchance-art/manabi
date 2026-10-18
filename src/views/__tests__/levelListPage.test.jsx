@@ -19,6 +19,8 @@ vi.mock('next/dynamic', async () => {
 });
 
 const { default: LevelListPage, VocabCard, SND_HOLD } = await import('../LevelListPage.jsx');
+const { LEVEL_HUN_PX, hunHoldCells, hunShapeOf } = await import('../../lib/levelList.js');
+const { levelListData: levelData } = await import('../../lib/levelListData.js');
 const { levelListData } = await import('../../lib/levelListData.js');
 const { normalizeLevelPrefs } = await import('../../lib/levelList.js');
 const { default: LevelTiles } = await import('../../components/levels/LevelTiles.jsx');
@@ -65,12 +67,14 @@ describe('단어 목록', () => {
   it('중국어: 병음은 옆 · 아래 작은 줄, 위 읽기 없음 · 2026 급수 기준 출처', async () => {
     const html = await render('chinese', 'vocab', 'h1');
     expect(html).toContain('<h1>HSK 1 단어</h1>');
-    expect(html).toMatch(/<span class="lv-hw" lang="zh-CN">[^<]+<\/span><span class="lv-py">/);
+    // 표제어는 훈음 자리(LEVEL-HUN-HOLD-001)와 함께 — 글자 칸 + 빈 훈음 칸, 그 뒤 병음
+    expect(html).toMatch(/<span class="lv-hw lv-hw--hun" lang="zh-CN">(<span class="lv-hc"><span class="lv-hc__ch">[^<]<\/span>(<span class="word-fit__hun lv-hun-hold"[^>]*>(<span class="word-fit__hun-line">\u00a0<\/span>)+<\/span>)?<\/span>)+<\/span><span class="lv-py">/);
     expect(html).toContain('class="lv-ex__py"');
     expect(html).not.toContain('<ruby>');
     expect(html).toContain('中文水平考试 HSK 考试大纲');
-    // 서버 렌더는 훈음 표가 없어 훈음 줄 0(하이드레이션 같음) — 표는 붙은 뒤 받는다
-    expect(html).not.toContain('word-fit__hun');
+    // 서버 렌더는 훈음 표가 없어 훈음 글 0(하이드레이션 같음) — 표는 붙은 뒤 받고, 그 전에는 같은 상자의 빈 자리만(LEVEL-HUN-HOLD-001)
+    expect(html).not.toContain('data-label=');
+    expect(html).toContain('lv-hun-hold');
   });
 
   it('레벨 알약 · 탭 · 「← 교재」 — 보관함 · 문법 링크 0', async () => {
@@ -403,5 +407,32 @@ describe('듣기 단추 자리(LEVEL-SND-HOLD-001) — 붙기 전에도 같은 �
     expect(ssr).not.toMatch(/<button type="button" class="lv-snd"/);
     expect(fs.readFileSync('src/views/LevelListPage.jsx', 'utf8')).toContain('const sndSpeak = speakOk ? say : mounted ? null : SND_HOLD;');
     expect(fs.readFileSync('src/components/levels/level-list.css', 'utf8')).toContain('\n.lv-snd--hold{visibility:hidden;pointer-events:none}\n.lv-snd--hold::before{content:"";display:block;width:17px;height:17px}\n');
+  });
+});
+
+describe('훈음 자리(LEVEL-HUN-HOLD-001) — 표가 오기 전에도 같은 칸', () => {
+  const card = (entry, hunCells) => renderToStaticMarkup(<VocabCard entry={entry} lang="chinese" levelKey="h1" view="all" onPeek={() => {}}
+    speak={null} hunCells={hunCells} known={false} studying={false} saving={false} pendingKnown={false} onO={() => {}} onX={() => {}} />);
+  // 훈음 칸 = 같은 클래스 · 같은 --hun-n · 같은 data-wrap · 같은 줄 수. 글만 비었다(빈칸) — 줄 높이 · 칸 폭이 같다.
+  const shape = (html) => html.replace(/ data-label="[^"]*"| aria-hidden="true"/g, '').replace(/ lv-hun-hold/g, '')
+    .replace(/<span class="word-fit__hun-line">[^<]*<\/span>/g, '[line]');
+  it('서버가 실은 모양(hun)으로 그린 자리 = 표로 그린 진짜 훈음 칸의 상자 — HSK 1 전 단어', async () => {
+    const data = await levelData('chinese', 'vocab', 'h1');
+    const entries = data.groups.flatMap((g) => g.entries);
+    expect(entries.filter((e) => e.hun).length).toBeGreaterThan(entries.length * 0.9);
+    for (const e of entries) {
+      const real = hunRubyCells(e.word, tables, LEVEL_HUN_PX);
+      expect(e.hun, e.word).toBe(hunShapeOf(real));
+      if (!real) continue;
+      expect(shape(card({ ...e, key: e.key ?? e.word, fullMeaning: e.meaning }, hunHoldCells(e.word, e.hun))), e.word)
+        .toBe(shape(card({ ...e, key: e.key ?? e.word, fullMeaning: e.meaning }, real)));
+    }
+  });
+  it('모양이 글자 수와 다르거나 없으면 자리를 만들지 않는다 · 자리는 보이지 않는다', () => {
+    expect(hunHoldCells('爸爸', '1@2')).toBeNull();
+    expect(hunHoldCells('爸爸', undefined)).toBeNull();
+    expect(hunHoldCells('爸爸', '1@2.17,')).toEqual([{ ch: '爸', hold: true, lines: 1, wrap: false, hunN: 2.17 }, { ch: '爸', hold: true, lines: 0 }]);
+    expect(fs.readFileSync('src/components/levels/level-list.css', 'utf8')).toContain('\n.lv-hw .lv-hun-hold{visibility:hidden}\n');
+    expect(fs.readFileSync('src/views/LevelListPage.jsx', 'utf8')).toContain('hunCells={hunOf(e.word) || (hunHold ? hunHoldCells(e.word, e.hun) : null)}');
   });
 });

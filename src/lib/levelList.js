@@ -84,6 +84,27 @@ export function levelEntry(entry) {
 /** 화면이 받은 묶음 전체를 한 번에 되살린다(LevelListPage 진입점 한 곳). */
 export const levelGroupsOf = (groups) => (groups || []).map((g) => ({ ...g, entries: (g.entries || []).map(levelEntry) }));
 
+/** 단어 목록 표제어의 훈음 칸 크기(hunRubyCells 옵션) — 서버 자리 모양과 화면이 같은 값을 쓴다. */
+export const LEVEL_HUN_PX = Object.freeze({ glyphPx: 27, hunPx: 12 });
+/**
+ * 훈음 자리 모양(LEVEL-HUN-HOLD-001) — 훈음 표(약 400KB)는 화면이 늦게 받아, 받기 전 표제어가 훈음 없이 그려졌다가 붙으면
+ * 그 줄이 자라 카드가 밀렸다. 서버(정적 조립)가 글자마다 줄 수 · 칸 폭만 짧게 실어(「1@2.17,2w@3」, 훈음 없는 글자는 빈 칸) 그 자리를 먼저 잡는다.
+ */
+export function hunShapeOf(cells) {
+  if (!cells) return undefined;
+  return cells.map((c) => (c.label && c.lines?.length ? `${c.lines.length}${c.wrap ? 'w' : ''}@${c.hunN}` : '')).join(',');
+}
+/** 훈음 자리 모양 → 글자별 자리 칸(hold) — Headword가 HunCell 대신 같은 상자의 빈 칸을 그린다. 모양이 글자 수와 다르면 쓰지 않는다. */
+export function hunHoldCells(word, shape) {
+  if (typeof shape !== 'string' || !shape) return null;
+  const chars = [...String(word || '')], parts = shape.split(',');
+  if (parts.length !== chars.length) return null;
+  return chars.map((ch, i) => {
+    const m = /^([12])(w?)@(\d+(?:\.\d+)?)$/.exec(parts[i]);
+    return m ? { ch, hold: true, lines: Number(m[1]), wrap: !!m[2], hunN: Number(m[3]) } : { ch, hold: true, lines: 0 };
+  });
+}
+
 /** 일본어 표제어 표기 — N5 · N4는 가나 먼저 크게 + 한자 작게, N3부터 한자 위 읽기. */
 export function jaHeadMode(levelKey) {
   return ['N5', 'N4'].includes(String(levelKey || '').toUpperCase()) ? 'kana' : 'ruby';

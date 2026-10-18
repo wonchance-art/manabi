@@ -30,7 +30,7 @@ import { alignFurigana } from '@/views/refShared';
 import {
   LEVEL_LIST_LANGS, LEVEL_KIND_LABEL, levelKinds, levelLabel, levelPill, levelListHref, jaHeadMode, matchesLevelQuery, splitKnown, fetchSavedLevelKeys, fetchSavedLevelKeysAll, levelGroupsOf,
   LEVEL_PEEK_CLOSE_MS, LEVEL_PEEK_MS, LEVEL_PREFS_DEFAULT, LEVEL_VIEWS, normalizeLevelPrefs, levelProgress, pinyinSyllables, writeLevelSnapshot,
-  levelPlaceOf, withLevelPlace,
+  levelPlaceOf, withLevelPlace, LEVEL_HUN_PX, hunHoldCells,
 } from '@/lib/levelList';
 import { pinyinToneNumber } from '@/lib/pinyinTone';
 import { ZH_SCOPE_LEVELS, serializeReviewScope } from '@/lib/reviewScopeUrl';
@@ -49,6 +49,12 @@ const SpeakerIcon = () => <svg {...svg} width={17} height={17} strokeWidth={1.5}
 // 들어와 긴 예문이 한 줄 더 감기고(N4 · 중국어 첫 카드 +20–28px) 아래 카드가 밀렸다. 붙기 전(SND_HOLD)에는 같은 상자의 보이지 않는 자리.
 // 붙은 뒤 소리를 못 내는 기기면 자리를 뺀다(그때만 전과 같은 한 번의 밀림).
 export const SND_HOLD = 'snd-hold';
+// 훈음 자리(LEVEL-HUN-HOLD-001) — HunCell과 같은 상자(.word-fit__hun · --hun-n · 줄 수)에 빈 줄. 보이지 않고 읽히지 않는다.
+function HunHold({ cell }) {
+  if (!cell.lines) return null;
+  return <span className="word-fit__hun lv-hun-hold" lang="ko" aria-hidden="true" data-wrap={cell.wrap ? '1' : undefined} style={{ '--hun-n': cell.hunN }}>
+    {Array.from({ length: cell.lines }, (_, i) => <span key={i} className="word-fit__hun-line">{'\u00a0'}</span>)}</span>;
+}
 function SndButton({ speak, text, label = '듣기', tabIndex }) {
   if (speak === SND_HOLD) return <i className="lv-snd lv-snd--hold" />;
   return speak ? <button type="button" className="lv-snd" aria-label={label} title={label} onClick={() => speak(text)} tabIndex={tabIndex}><SpeakerIcon /></button> : null;
@@ -87,7 +93,7 @@ function Ruby({ text, reading }) {
 function Headword({ entry, lang, levelKey, hunCells, bare = false, tone = false }) {
   const py = !bare && entry.reading && (lang === 'chinese' ? <Pinyin text={entry.reading} word={entry.word} tone={tone} /> : <span className="lv-py">{entry.reading}</span>);
   if (lang === 'chinese' && hunCells) return <><span className="lv-hw lv-hw--hun" lang="zh-CN">{hunCells.map((c, i) => <span key={i} className="lv-hc">
-    <span className="lv-hc__ch">{c.ch}</span><HunCell cell={c} /></span>)}</span>{py}</>;
+    <span className="lv-hc__ch">{c.ch}</span>{c.hold ? <HunHold cell={c} /> : <HunCell cell={c} />}</span>)}</span>{py}</>;
   if (lang === 'chinese') return <><span className="lv-hw" lang="zh-CN">{entry.word}</span>{py}</>;
   const hasKanji = entry.reading && entry.reading !== entry.word && alignFurigana(entry.word, entry.reading);
   if (jaHeadMode(levelKey) === 'kana' && hasKanji) return <><span className="lv-hw" lang="ja">{entry.reading}</span>{!bare && <span className="lv-kj" lang="ja">{entry.word}</span>}</>;
@@ -215,6 +221,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
   const [navOpen, setNavOpen] = useState(kind !== 'vocab');
   const [searchOpen, setSearchOpen] = useState(false);
   const [tables, setTables] = useState({});
+  const [hunDone, setHunDone] = useState(false); // 훈음 표 받기가 끝났는가(성공 · 실패) — 그 전에는 서버 자리 모양으로 칸을 잡는다
   const [saved, setSaved] = useState(() => new Set());
   const [saving, setSaving] = useState(() => new Set());
   const [toast, setToast] = useState(null);
@@ -287,11 +294,11 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
     if (prefs.hun) jobs.push(safe(Promise.all([import('@/lib/data/hanjaKo.json'), import('@/lib/data/hanjaHun.json')])
       .then(([ko, hun]) => ({ ko: ko.default || ko, hun: hun.default || hun }))));
     if (prefs.glyph) jobs.push(safe(loadJaWordsTable().then((ja) => ({ ja }))));
-    Promise.all(jobs).then((parts) => { if (alive) setTables((cur) => Object.assign({}, cur, ...parts)); });
+    Promise.all(jobs).then((parts) => { if (alive) { setTables((cur) => Object.assign({}, cur, ...parts)); setHunDone(true); } });
     return () => { alive = false; };
   }, [zhVocab, mounted, prefs.hun, prefs.glyph]);
   const hunOf = useCallback((word) => (zhVocab && prefs.hun && tables.ko && tables.hun
-    ? hunRubyCells(word, { koTable: tables.ko, hunTable: tables.hun, tradTable: tables.trad || null }, { glyphPx: 27, hunPx: 12 }) : null),
+    ? hunRubyCells(word, { koTable: tables.ko, hunTable: tables.hun, tradTable: tables.trad || null }, LEVEL_HUN_PX) : null),
   [zhVocab, prefs.hun, tables]);
   const glyphOf = useCallback((word) => (zhVocab && prefs.glyph && (tables.trad || tables.ja)
     ? glyphRows({ word, tradTable: tables.trad || null, jaTable: tables.ja || null }) : null), [zhVocab, prefs.glyph, tables]);
@@ -706,6 +713,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
   const groupId = (i) => `lv-${kind}-${i}`;
   const nav = shown.map((g, i) => ({ i, name: g.name, href: `#${groupId(i)}`, current: i === activeGroup }));
   const speakOk = mounted && ttsSupported;
+  const hunHold = zhVocab && prefs.hun && !hunDone; // 훈음 자리(LEVEL-HUN-HOLD-001) — 표가 오기 전 · 서버 그림
   const sndSpeak = speakOk ? say : mounted ? null : SND_HOLD; // 붙기 전 = 같은 상자 자리(LEVEL-SND-HOLD-001)
 
   return <div ref={pageRef} className={`manabi-page lv-page lv-page--${kind}`} data-language={conf.langCode} data-lv-restoring={restoring || undefined}>
@@ -780,7 +788,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
             <ul className="lv-entries">{g.entries.map((e) => vocab ? <VocabCard key={e.key} entry={e} lang={lang} levelKey={levelKey}
               view={prefs.view} scoped={!!facetView} peek={peek.get(e.key)?.phase} peekEpoch={peek.get(e.key)?.epoch} onPeek={() => togglePeek(e.key)} onRenew={() => renewPeek(e.key)}
               speak={sndSpeak}
-              hunCells={hunOf(e.word)} glyph={glyphOf(e.word)} tone={zhVocab && prefs.tone}
+              hunCells={hunOf(e.word) || (hunHold ? hunHoldCells(e.word, e.hun) : null)} glyph={glyphOf(e.word)} tone={zhVocab && prefs.tone}
               known={facetView ? facetMark(facetIdx, e.key, facetView) === 'o' : knownSet.has(e.key)}
               studying={facetView ? facetMark(facetIdx, e.key, facetView) === 'x' : saved.has(e.key)} saving={saving.has(e.key)}
               pendingKnown={mounted && !!userId && known.isPendingWord(conf.langCode, e.key)}
