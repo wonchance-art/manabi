@@ -16,6 +16,8 @@ describe('K 공식 시험 일정', () => {
     expect(isExamRow(row({ levels: ['N3'] }))).toBe(false);
     expect(isExamRow(row({ date: '12/13' }))).toBe(false);
     expect(isExamRow(row({ format: 'ONLINE' }))).toBe(false);
+    expect(isExamRow(row({ edition: '2.0' }))).toBe(true);
+    expect(isExamRow(row({ edition: '3.0' }))).toBe(false); // 표시는 개편 전 회차만
   });
 
   it('날짜 목록 — 그 시험 · 급수의 오늘 이후, 가까운 순', () => {
@@ -29,6 +31,8 @@ describe('K 공식 시험 일정', () => {
     expect(examDateLine(row(), KST('2026-10-25T12:00:00')).text).toBe('12월 13일(일) IBT · D-49 · 접수 마감 11월 9일');
     expect(examDateLine(row(), KST('2026-11-10T09:00:00'))).toEqual({ text: '12월 13일(일) IBT · D-33 · 접수 끝남', closed: true });
     expect(examDateLine(row({ register: null, format: null }), KST('2026-12-13T09:00:00')).text).toBe('12월 13일(일) · D-Day');
+    // 개편 전 회차 — 우리 목록(새 대강)과 범위가 달라 이름을 붙인다
+    expect(examDateLine(row({ date: '2026-11-07', edition: '2.0', register: null }), KST('2026-10-19T12:00:00')).text).toBe('11월 7일(토) IBT 기존 HSK · D-19');
   });
 
   it('저장 값 — 날짜 · 이름(12자 안) · 목표 과정(7–9급은 과정이 없어 비움)', () => {

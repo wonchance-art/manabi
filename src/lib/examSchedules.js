@@ -23,7 +23,7 @@ export function isExamRow(r) {
   const kind = EXAM_KINDS[r?.exam];
   return !!kind && Array.isArray(r.levels) && r.levels.length > 0 && r.levels.every((l) => kind.levels.some((x) => x.key === l))
     && DATE.test(r.date || '') && DATE.test(r.checkedAt || '') && OFFICIAL.test(r.source || '')
-    && (r.format == null || ['IBT', 'PBT'].includes(r.format))
+    && (r.format == null || ['IBT', 'PBT'].includes(r.format)) && (r.edition == null || (r.exam === 'HSK' && r.edition === '2.0'))
     && (r.register == null || (DATE.test(r.register.from || '') && DATE.test(r.register.to || '')));
 }
 export const EXAM_SCHEDULES = Object.freeze(rows.filter(isExamRow));
@@ -38,11 +38,12 @@ export function examDatesFor(list, exam, level, nowMs = Date.now()) {
     .sort((a, b) => a.date.localeCompare(b.date) || String(a.format).localeCompare(String(b.format)));
 }
 
-/** 날짜 줄 — 「12월 13일(일) IBT · D-55 · 접수 마감 11월 9일」. closed = 접수가 끝남(흐리게 — 이미 접수한 사람용). */
+/** 날짜 줄 — 「12월 13일(일) IBT · D-55 · 접수 마감 11월 9일」. closed = 접수가 끝남(흐리게 — 이미 접수한 사람용).
+ *  edition '2.0' = 개편(HSK 3.0, 2026-12 시행) 전 회차 — 우리 단어 목록(새 대강)과 출제 범위가 달라 「기존 HSK」를 붙인다. */
 export function examDateLine(r, nowMs = Date.now()) {
   const today = kstDateString(nowMs);
   const days = Math.round((at(r.date) - kstDayStartMs(nowMs)) / DAY_MS);
-  const head = `${monthDay(r.date)}(${WEEKDAYS[new Date(at(r.date) + 9 * 3600_000).getUTCDay()]})${r.format ? ` ${r.format}` : ''} · ${days === 0 ? 'D-Day' : `D-${days}`}`;
+  const head = `${monthDay(r.date)}(${WEEKDAYS[new Date(at(r.date) + 9 * 3600_000).getUTCDay()]})${r.format ? ` ${r.format}` : ''}${r.edition === '2.0' ? ' 기존 HSK' : ''} · ${days === 0 ? 'D-Day' : `D-${days}`}`;
   const reg = r.register;
   if (!reg) return { text: head, closed: false };
   if (today > reg.to) return { text: `${head} · 접수 끝남`, closed: true };
