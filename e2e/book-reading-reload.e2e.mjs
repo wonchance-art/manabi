@@ -317,7 +317,8 @@ for(const bookId of ['japanese-n5','japanese-n4'])test(`${engine.name()} 390: th
   const ready=await f.page.locator('.manabi-book-home .manabi-toc-group').first().waitFor({timeout:8000}).then(()=>true,()=>false);
   if(!ready&&bookId==='japanese-n4'&&!(process.env.E2E_PUBLISHED_BOOKS||'').split(',').includes('japanese-n4')){t.skip('N4 is not published by this fixture server');return;}
   assert.ok(ready,`${bookId} cover did not render`);
-  const edition=new URL(await f.page.locator('.manabi-book-hero a.manabi-button').getAttribute('href'),baseURL).searchParams.get('edition');
+  // N5 표지 로딩 뼈대(books/loading.jsx)의 href 없는 버튼이 잠깐 같이 있을 수 있다 — 진짜 줄의 링크만 잡는다.
+  const edition=new URL(await f.page.locator('.manabi-book-hero a.manabi-button[href]').getAttribute('href'),baseURL).searchParams.get('edition');
   await f.page.evaluate(key=>localStorage.setItem(key,JSON.stringify({page:'u03-patterns',completed:['u01','u02'],updatedAt:'2026-10-01T00:00:00.000Z'})),progressKey(edition));
   await f.page.addInitScript(()=>{window.__shift=[];try{new PerformanceObserver(list=>{for(const e of list.getEntries())if(!e.hadRecentInput)window.__shift.push(e.value);}).observe({type:'layout-shift',buffered:true});}catch{window.__shift=null;}});
   await f.page.reload();
