@@ -202,14 +202,51 @@ const DAY_MS = 86_400_000;
  * 다음 「처음부터 전부」 권장 시각 — 「전부」 바퀴만 센다(「모른 것만」은 간격에 넣지 않음). 줄 없는 1바퀴도 「전부」다.
  * 직전 「전부」 바퀴의 끝 = 그 뒤 바퀴의 시작, 뒤 바퀴가 없으면 endedAt(지금 바퀴의 마지막 답). 모르면 null.
  */
-export function nextFullRoundAt(roundRows, view, endedAt) {
+export function nextFullRoundAt(roundRows, view, endedAt, exam = null) {
   const mine = (roundRows || []).filter((r) => r?.view === view).sort((a, b) => a.round_no - b.round_no);
   if (!mine.length || mine[0].round_no > 1) mine.unshift({ round_no: 1, scope: 'all' });
   let fulls = 0, last = -1;
   mine.forEach((r, i) => { if (r.scope !== 'missed') { fulls += 1; last = i; } });
   const end = mine[last + 1] ? Date.parse(mine[last + 1].started_at) : endedAt;
   if (!Number.isFinite(end)) return null;
-  return end + LEVEL_ROUND_SPACING_DAYS[Math.min(fulls, LEVEL_ROUND_SPACING_DAYS.length) - 1] * DAY_MS;
+  const usual = end + LEVEL_ROUND_SPACING_DAYS[Math.min(fulls, LEVEL_ROUND_SPACING_DAYS.length) - 1] * DAY_MS;
+  if (!exam) return usual;
+  // 시험 모드(J) — 사다리의 다음 칸(직전 「전부」 끝에서 2일 이상 뒤)과 평소 간격 중 이른 쪽. 총정리(D-3)를 넘기면 null(안내만).
+  const from = kstDayStartMs(end) + 2 * DAY_MS;
+  const step = LEVEL_EXAM_LADDER_DAYS.map((d) => exam.examMs - d * DAY_MS).find((t) => t >= from);
+  return step == null ? null : Math.min(usual, step);
+}
+
+/**
+ * 시험 모드 사다리(J, 오너 「HSK 시험 앞두고 쭉 확인하는 상황에선?」) — 시험 n일 전마다 「처음부터 전부」. 시험이 가까울수록 간격이
+ * 짧아진다(가장 좋은 간격은 남은 기간에 비례 — Cepeda 외 2008). 마지막 칸 = D-3 총정리. 평소 [7, 30, 90]과 함께 여기 한 곳.
+ */
+export const LEVEL_EXAM_LADDER_DAYS = Object.freeze([60, 30, 14, 7, 3]);
+
+/**
+ * 이 레벨이 시험 범위인가 — 목표 날짜(profiles.dday_date)가 아직 안 왔고, 목표 언어가 같고, 이 레벨이 목표 급수 이하(HSK · JLPT 어휘는
+ * 아래 급을 포함한다). 아니면 null — 평소 간격. levels = 그 언어 목록의 급수 순서(쉬운 것부터).
+ */
+export function levelExamOf(profile, { language, levels, level, nowMs = Date.now() }) {
+  const date = String(profile?.dday_date || '');
+  if (!language || profile?.goal_lang !== language || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+  const goal = levels.indexOf(String(profile.goal_level || '').toUpperCase());
+  const here = levels.indexOf(String(level || '').toUpperCase());
+  if (goal < 0 || here < 0 || here > goal) return null;
+  const examMs = Date.parse(`${date}T00:00:00+09:00`);
+  const daysLeft = Math.round((examMs - kstDayStartMs(nowMs)) / DAY_MS);
+  return daysLeft > 0 ? { examMs, daysLeft, level: levels[goal] } : null;
+}
+
+/** 시험 모드 끝 카드 안내 두 줄 — 「HSK 4 시험까지 21일 · 다음 바퀴 10월 27일」 · 「마지막 총정리 11월 5일 (뜻 · 소리)」. */
+export function levelExamHint({ examName, exam, dueAt, nowMs = Date.now() }) {
+  const md = (t) => { const [, m, d] = kstDateString(t).split('-').map(Number); return `${m}월 ${d}일`; };
+  const today = kstDayStartMs(nowMs);
+  const total = exam.examMs - 3 * DAY_MS;
+  const next = dueAt == null || dueAt === total ? '' : kstDayStartMs(dueAt) > today ? ` · 다음 바퀴 ${md(dueAt)}` : ' · 지금 처음부터 전부 돌기 좋아요';
+  const last = today < total ? `마지막 총정리 ${md(total)} (뜻 · 소리)`
+    : today === total ? '오늘 총정리 — 뜻 · 소리 탭으로 처음부터 전부' : '시험 전까지 총정리에서 모른 것만 다시';
+  return [`${examName} 시험까지 ${exam.daysLeft}일${next}`, last];
 }
 
 /** 끝 카드의 다음 바퀴 안내 한 줄 — 「다음 바퀴는 뜻 탭으로 — 1주 뒤(10월 25일)부터」. 막지 않고 날짜만 권한다. */

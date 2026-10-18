@@ -25,7 +25,7 @@ import { WORD_FACETS, allFacetsKnown, facetIndex, facetMark } from '@/lib/wordFa
 import { useWordFacets } from '@/lib/useWordFacets';
 import { useLevelAnswers } from '@/lib/useLevelAnswers';
 import {
-  LEVEL_NEXT_VIEW, countLevelSave, levelAnswersOfView, levelForgotten, levelRoundHint, levelRoundOrder, levelRoundProgress, levelRoundScope, nextFullRoundAt, roundLabel,
+  LEVEL_NEXT_VIEW, countLevelSave, levelAnswersOfView, levelExamHint, levelExamOf, levelForgotten, levelRoundHint, levelRoundOrder, levelRoundProgress, levelRoundScope, nextFullRoundAt, roundLabel,
 } from '@/lib/levelRounds';
 import { authEntryHref } from '@/lib/authRedirect';
 import { hunRubyCells } from '@/lib/viewerHunRuby';
@@ -215,7 +215,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
   const hanzi = kind === 'hanzi';
   const wordsOn = vocab || hanzi; // 단어 저장 · 제외를 쓰는 탭
   const pathname = usePathname();
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const userId = user?.id || null;
   const { speak, supported: ttsSupported } = useTTS();
   const say = useCallback((text) => speak(text, conf.language), [speak, conf.language]);
@@ -595,17 +595,22 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
     const studying = facetView ? new Set([...facetIdx].filter(([, m]) => m[facetView] === 'x').map(([w]) => w)) : saved;
     return levelProgress(allEntries, hiddenSet, studying);
   }, [vocab, mounted, userId, allEntries, roundScope, viewAnswers, facetView, facetIdx, hiddenSet, saved]);
+  // 시험 범위(J) — 목표 날짜(profiles.dday_date)가 남았고 이 레벨이 목표 급수 이하면 간격을 시험 사다리로 줄인다. 목표는 목표 창에서 정한 그대로.
+  const exam = useMemo(() => (vocab ? levelExamOf(profile, { language: conf.language, levels: conf.levels, level: levelKey }) : null),
+    [vocab, profile, conf.language, conf.levels, levelKey]);
   // 끝 카드(LEVEL-ROUND-001 ③) — 잊은 수 · 다음 바퀴 안내(다른 보기 권유 + 「전부」 간격). 요약 자리라 숫자를 둔다.
   const roundEnd = useMemo(() => {
     if (!progress || progress.left !== 0 || !progress.total) return null;
     const forgotten = recorded ? levelForgotten(levelAnswersOfView(rounds.before(answerView), answerView), viewAnswers) : 0;
     let endedAt = 0;
     for (const a of viewAnswers.values()) if (a.at > endedAt) endedAt = a.at;
+    const dueAt = nextFullRoundAt(rounds.roundRows, answerView, endedAt || Date.now(), exam);
+    // 시험 모드(J) — 목표 날짜까지 남은 날 · 다음 바퀴 · 마지막 총정리. 아니면 다음 보기 권유 + 「전부」 간격.
+    if (exam) return { forgotten, hint: levelExamHint({ examName: lang === 'japanese' ? `JLPT ${exam.level}` : levelLabel(exam.level), exam, dueAt }) };
     const next = LEVEL_NEXT_VIEW[answerView];
-    const hint = levelRoundHint({ nextLabel: next ? LEVEL_VIEWS.find((v) => v.id === next)?.label : null,
-      dueAt: nextFullRoundAt(rounds.roundRows, answerView, endedAt || Date.now()) });
-    return { forgotten, hint };
-  }, [progress, recorded, rounds, answerView, viewAnswers]);
+    const hint = levelRoundHint({ nextLabel: next ? LEVEL_VIEWS.find((v) => v.id === next)?.label : null, dueAt });
+    return { forgotten, hint: hint ? [hint] : [] };
+  }, [progress, recorded, rounds, answerView, viewAnswers, exam, lang]);
   const lastViewRound = vocab ? round.round : 1;
   // 이어 하기 — 배움 입구 카드가 읽는 이 기기의 사본(전체 기준 개수 + 마지막 보기 · 그 보기의 바퀴).
   useEffect(() => {
@@ -926,7 +931,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
           <button type="button" onClick={() => startRound('all')}>처음부터 전부</button>
           {progress.studying > 0 && <Link className="lv-prog__review" href={reviewHref} prefetch={false}>복습하기 →</Link>}
         </div>
-        {roundEnd?.hint && <p className="lv-end__next">{roundEnd.hint}</p>}
+        {roundEnd?.hint.map((line) => <p key={line} className="lv-end__next">{line}</p>)}
       </section> : progress && <div className="lv-prog">
         <span className="lv-meter" aria-hidden="true"><i className="lv-meter__k" style={{ width: `${(progress.known / progress.total) * 100}%` }} />
           <i className="lv-meter__s" style={{ width: `${(progress.studying / progress.total) * 100}%` }} /></span>

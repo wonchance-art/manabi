@@ -26,7 +26,7 @@ vi.mock('react', async (importOriginal) => {
   };
 });
 vi.mock('next/navigation', () => ({ usePathname: () => '/chinese/vocab/h1' }));
-vi.mock('@/lib/AuthContext', () => ({ useAuth: () => ({ user: h.stub && h.user ? { id: h.user } : null }) }));
+vi.mock('@/lib/AuthContext', () => ({ useAuth: () => ({ user: h.stub && h.user ? { id: h.user } : null, profile: h.profile || null }) }));
 vi.mock('@/lib/supabase', () => ({ supabase: {} }));
 vi.mock('@/lib/useTTS', () => ({ useTTS: () => ({ speak: () => {}, supported: true }) }));
 vi.mock('@/lib/useKnownWords', () => ({ useKnownWords: () => ({ rows: h.rows, isPendingWord: (_lang, key) => h.pending.has(key),
@@ -468,5 +468,17 @@ describe('⑥ 새 바퀴 · 끝 카드 · 초기화(LEVEL-ROUND-001 ②)', () =>
     expect(textOf(end)).toContain('모른 단어 2개 · 지난번에 안 단어 중 1개를 잊었어요');
     // 바퀴 줄이 없으면(목 · 1바퀴) 첫 「전부」 끝 → 1주 뒤
     expect(textOf(find('lv-end__next')[0])).toMatch(/^다음 바퀴는 뜻 탭으로 — /);
+  });
+
+  it('시험 모드(J) — 목표 급수 이하 레벨이면 끝 카드 안내가 「시험까지 · 마지막 총정리」 두 줄', async () => {
+    const at = Date.now();
+    const date = new Date(at + 9 * 3600_000 + 30 * 86_400_000).toISOString().slice(0, 10);
+    h.profile = { dday_date: date, goal_lang: 'Chinese', goal_level: 'H4' };
+    await setup({ rounds: { all: { round: 2, scope: 'all', startedAt: 1, recorded: true } }, answers: allKeys.map((k) => [k, true, at]) });
+    const lines = find('lv-end__next').map(textOf);
+    h.profile = null;
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toMatch(/^HSK 4 시험까지 30일/);
+    expect(lines[1]).toMatch(/^마지막 총정리 \d+월 \d+일 \(뜻 · 소리\)$/);
   });
 });

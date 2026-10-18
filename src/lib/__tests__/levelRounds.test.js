@@ -4,7 +4,7 @@ import {
   LEVEL_SOURCE, applyLevelAnswer, createLevelAnswerQueue, currentLevelRound, deleteLevelRounds, fetchLevelAnswers, fetchLevelRounds,
   insertLevelRounds, isSameDayAnswer, lastLevelAnswers, levelAnswerEvent, levelAnswerOf, levelAnswersOfView, levelCancelEvent,
   levelRoundProgress, levelRoundScope, levelRowsBetween, roundLabel,
-  LEVEL_NEXT_VIEW, LEVEL_ROUND_SPACING_DAYS, LEVEL_SAVES_KEY, countLevelSave, levelForgotten, levelRoundHint, levelRoundOrder, nextFullRoundAt,
+  LEVEL_NEXT_VIEW, LEVEL_ROUND_SPACING_DAYS, LEVEL_SAVES_KEY, countLevelSave, LEVEL_EXAM_LADDER_DAYS, levelExamHint, levelExamOf, levelForgotten, levelRoundHint, levelRoundOrder, nextFullRoundAt,
 } from '../levelRounds.js';
 import { ACTIVITY_ONLY_SOURCES, isGradedReviewEvent } from '../weeklyReport.js';
 import fs from 'node:fs';
@@ -256,5 +256,53 @@ describe('④ 하루 분량 알림(LEVEL-ROUND-001 ④)', () => {
     const load = fs.readFileSync('src/lib/levelDailyLoad.js', 'utf8');
     expect(load).toContain('reviewScopeQuota({ quota, compatibility: canUseLegacyAdmissionCompatibility(quota) }');
     expect(load).toContain('newPerDay: loadNewPerDay()');
+  });
+});
+
+describe('J 시험 모드 — 목표 날짜까지 간격 줄이기', () => {
+  const day = 86_400_000;
+  const levels = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7'];
+  const now = KST('2026-10-15T12:00:00');
+  const profile = { dday_date: '2026-11-14', goal_lang: 'Chinese', goal_level: 'H4' };
+  it('목표 언어 · 급수 이하 레벨 · 날짜가 남았을 때만 — 급수는 누적(HSK 4면 1~4급)', () => {
+    expect(levelExamOf(profile, { language: 'Chinese', levels, level: 'h2', nowMs: now })).toEqual({ examMs: KST('2026-11-14T00:00:00'), daysLeft: 30, level: 'H4' });
+    expect(levelExamOf(profile, { language: 'Chinese', levels, level: 'H5', nowMs: now })).toBeNull();
+    expect(levelExamOf(profile, { language: 'Japanese', levels: ['N5', 'N4'], level: 'N5', nowMs: now })).toBeNull();
+    expect(levelExamOf({ ...profile, dday_date: '2026-10-15' }, { language: 'Chinese', levels, level: 'H1', nowMs: now })).toBeNull(); // 시험 날부터 평소대로
+    expect(levelExamOf({ ...profile, dday_date: null }, { language: 'Chinese', levels, level: 'H1', nowMs: now })).toBeNull();
+    expect(levelExamOf({ ...profile, goal_level: 'OT' }, { language: 'Chinese', levels, level: 'H1', nowMs: now })).toBeNull();
+    expect(levelExamOf(null, { language: 'Chinese', levels, level: 'H1', nowMs: now })).toBeNull();
+  });
+
+  it('사다리 — 시험 60 · 30 · 14 · 7 · 3일 전 중 직전 「전부」 끝에서 2일 이상 뒤의 첫 칸, 평소 간격이 더 이르면 그쪽, D-3을 넘기면 null', () => {
+    expect(LEVEL_EXAM_LADDER_DAYS).toEqual([60, 30, 14, 7, 3]);
+    const exam = { examMs: KST('2026-11-14T00:00:00') };
+    const end = (s) => KST(s);
+    // 30일 남음 · 두 번째 「전부」(평소 30일) → D-14
+    const second = [{ view: 'all', round_no: 2, scope: 'all', started_at: new Date(KST('2026-10-01T09:00:00')).toISOString() }];
+    expect(nextFullRoundAt(second, 'all', end('2026-10-15T12:00:00'), exam)).toBe(exam.examMs - 14 * day);
+    // 첫 「전부」면 평소 7일이 더 이르다
+    expect(nextFullRoundAt([], 'all', end('2026-10-15T12:00:00'), exam)).toBe(end('2026-10-15T12:00:00') + 7 * day);
+    // 7일 남음 → D-3, D-4에 끝냈으면 null(총정리 직전)
+    expect(nextFullRoundAt(second, 'all', end('2026-11-07T12:00:00'), exam)).toBe(exam.examMs - 3 * day);
+    expect(nextFullRoundAt(second, 'all', end('2026-11-10T12:00:00'), exam)).toBeNull();
+  });
+
+  it('끝 카드 두 줄 — 시험까지 · 다음 바퀴 · 마지막 총정리(뜻 · 소리), 총정리 날 · 뒤 문구', () => {
+    const exam = { examMs: KST('2026-11-14T00:00:00'), daysLeft: 30 };
+    expect(levelExamHint({ examName: 'HSK 4', exam, dueAt: KST('2026-10-31T00:00:00'), nowMs: now }))
+      .toEqual(['HSK 4 시험까지 30일 · 다음 바퀴 10월 31일', '마지막 총정리 11월 11일 (뜻 · 소리)']);
+    expect(levelExamHint({ examName: 'HSK 4', exam, dueAt: KST('2026-11-11T00:00:00'), nowMs: now })[0]).toBe('HSK 4 시험까지 30일');
+    expect(levelExamHint({ examName: 'HSK 4', exam: { ...exam, daysLeft: 3 }, dueAt: null, nowMs: KST('2026-11-11T09:00:00') }))
+      .toEqual(['HSK 4 시험까지 3일', '오늘 총정리 — 뜻 · 소리 탭으로 처음부터 전부']);
+    expect(levelExamHint({ examName: 'JLPT N3', exam: { ...exam, daysLeft: 1 }, dueAt: null, nowMs: KST('2026-11-13T09:00:00') })[1])
+      .toBe('시험 전까지 총정리에서 모른 것만 다시');
+  });
+
+  it('계약: 목표는 profiles 그대로(새 표 · 새 목표 저장 없음) · 간격 함수는 nextFullRoundAt 하나', () => {
+    const page = fs.readFileSync('src/views/LevelListPage.jsx', 'utf8');
+    expect(page).toContain('levelExamOf(profile, { language: conf.language, levels: conf.levels, level: levelKey })');
+    expect(page).toContain('nextFullRoundAt(rounds.roundRows, answerView, endedAt || Date.now(), exam)');
+    expect(page).not.toContain("from('profiles')"); // 읽기만 — 목표 저장은 목표 창(ProfileStats) 한 곳
   });
 });
