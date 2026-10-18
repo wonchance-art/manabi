@@ -111,3 +111,88 @@ export function applyLevelAnswer(answers, word, view, answer) {
   if (answer) next.set(keyOf(word, view), answer); else next.delete(keyOf(word, view));
   return next;
 }
+
+// ── 바퀴(LEVEL-ROUND-001 ② — 설계 2판 B · G 2번) ─────────────────────────────────────────────
+// 바퀴 줄(user_level_rounds) = 보기마다 「몇 번째 바퀴가 언제 어떤 범위로 시작했나」. 답은 started_at 뒤의 것만 이번 바퀴다.
+// 줄이 없으면(표 미적용 · 아직 새 바퀴를 안 시작함) 지금까지의 답 전부가 1바퀴다 — 화면은 지금(상태 기준)처럼 그린다.
+
+export const LEVEL_ROUNDS_TABLE = 'user_level_rounds';
+const ROUND_WORDS = ['한', '두', '세', '네', '다섯', '여섯', '일곱', '여덟', '아홉', '열'];
+/** 「두 바퀴째」 — 공부 화면 숫자는 하나(오너 2026-10-16)라 바퀴는 글로 쓴다. 열을 넘으면 숫자. */
+export const roundLabel = (n) => `${ROUND_WORDS[n - 1] || n} 바퀴째`;
+
+/** 보기의 지금 바퀴 — { round, scope, startedAt(ms | null), recorded }. */
+export function currentLevelRound(roundRows, view) {
+  let best = null;
+  for (const r of roundRows || []) if (r?.view === view && (!best || r.round_no > best.round_no)) best = r;
+  if (!best) return { round: 1, scope: 'all', startedAt: null, recorded: false };
+  return { round: best.round_no, scope: best.scope === 'missed' ? 'missed' : 'all', startedAt: Date.parse(best.started_at), recorded: true };
+}
+
+/** rows(최신 순)를 시각으로 자른다 — since 이상 · before 미만. */
+export function levelRowsBetween(rows, { since = null, before = null } = {}) {
+  return (rows || []).filter((r) => {
+    const t = Date.parse(r?.created_at);
+    return Number.isFinite(t) && (since == null || t >= since) && (before == null || t < before);
+  });
+}
+
+/**
+ * 이번 바퀴 범위(단어 키 Set). 전부 = 레벨 전체. 모른 것만 = 바퀴 시작 직전 그 보기의 마지막 답이 X인 단어,
+ * 답이 없던 단어는 지금 상태(stateMissed — 전체 보기 = 공부 중, 탭 = 그 탭 X)로 본다(1바퀴는 답 기록 이전에도 있었으니까).
+ */
+export function levelRoundScope(keys, round, { before, stateMissed } = {}) {
+  if (round.scope !== 'missed') return new Set(keys);
+  const out = new Set();
+  for (const key of keys) {
+    const last = before?.get(key);
+    if (last ? last.correct === false : stateMissed?.has(key)) out.add(key);
+  }
+  return out;
+}
+
+/** 이번 바퀴 진도 — 범위 중 답한 수 · O · X · 남은 수. answers = 단어 → 답(이번 바퀴). */
+export function levelRoundProgress(scope, answers) {
+  let known = 0, studying = 0;
+  for (const key of scope) {
+    const a = answers.get(key);
+    if (a?.correct === true) known += 1;
+    else if (a?.correct === false) studying += 1;
+  }
+  const total = scope.size;
+  return { total, known, studying, left: total - known - studying };
+}
+
+/** 단어 · 보기 키 Map → 한 보기의 단어 → 답 Map. */
+export function levelAnswersOfView(answers, view) {
+  const out = new Map();
+  const tail = `|${view}`;
+  for (const [key, a] of answers || []) if (key.endsWith(tail)) out.set(key.slice(0, -tail.length), a);
+  return out;
+}
+
+const isMissingTable = (error) => ['42P01', 'PGRST205'].includes(error?.code) || /user_level_rounds/.test(error?.message || '') && /does not exist|schema cache/.test(error?.message || '');
+
+/** 이 레벨의 바퀴 줄 — { available, rows }. 표가 없으면 available=false(화면은 1바퀴로 물러선다), 다른 오류는 reject. */
+export async function fetchLevelRounds(client, userId, { lang, level }) {
+  const { data, error } = await client.from(LEVEL_ROUNDS_TABLE).select('view, round_no, scope, started_at')
+    .eq('user_id', userId).eq('lang', lang).eq('level', level).order('round_no', { ascending: true });
+  if (error) { if (isMissingTable(error)) return { available: false, rows: [] }; throw error; }
+  return { available: true, rows: Array.isArray(data) ? data : [] };
+}
+
+export async function insertLevelRounds(client, userId, { lang, level }, rounds) {
+  const rows = rounds.map((r) => ({ user_id: userId, lang, level, view: r.view, round_no: r.round_no, scope: r.scope, started_at: r.started_at }));
+  const { error } = await client.from(LEVEL_ROUNDS_TABLE).insert(rows);
+  if (error) throw error;
+  return rows;
+}
+
+/** 바퀴 줄 지우기 — views가 없으면 이 레벨 전부, 있으면 그 보기 · 바퀴 번호(round_no)만. */
+export async function deleteLevelRounds(client, userId, { lang, level }, { view = null, round = null } = {}) {
+  let q = client.from(LEVEL_ROUNDS_TABLE).delete().eq('user_id', userId).eq('lang', lang).eq('level', level);
+  if (view) q = q.eq('view', view);
+  if (round) q = q.eq('round_no', round);
+  const { error } = await q;
+  if (error) throw error;
+}

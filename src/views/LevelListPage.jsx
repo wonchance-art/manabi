@@ -24,6 +24,7 @@ import { knownWordKeys, knownWordSetOf, normalizeKnownWord } from '@/lib/knownWo
 import { WORD_FACETS, allFacetsKnown, facetIndex, facetMark } from '@/lib/wordFacets';
 import { useWordFacets } from '@/lib/useWordFacets';
 import { useLevelAnswers } from '@/lib/useLevelAnswers';
+import { levelAnswersOfView, levelRoundProgress, levelRoundScope, roundLabel } from '@/lib/levelRounds';
 import { authEntryHref } from '@/lib/authRedirect';
 import { hunRubyCells } from '@/lib/viewerHunRuby';
 import { glyphRows } from '@/lib/glyphColumn';
@@ -222,6 +223,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
   const [prefs, setPrefsState] = useState(LEVEL_PREFS_DEFAULT);
   const [peek, setPeek] = useState(() => new Map()); // 단어 키 → { phase: 'open' | 'closing', epoch }
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [resetAsk, setResetAsk] = useState(false); // ⚙ 「이 레벨 기록 초기화」 확인 줄
   // 머리 접기(디자인 검토 A안) — 단어 목록은 레벨 · 목록 종류를 ▾ 안에 접고 찾기는 돋보기로 연다. 문형 · 한자는 지금처럼 펼친 채.
   const [navOpen, setNavOpen] = useState(kind !== 'vocab');
   const [searchOpen, setSearchOpen] = useState(false);
@@ -334,13 +336,33 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
     for (const key of saved) if (!knownSet.has(key) && rounds.get(key, 'all')?.correct === true) set.add(key);
     return set;
   }, [saved, knownSet, rounds]);
-  // 숨길 단어 — 전체 탭은 아는 단어 + 공부 중인 단어의 이번 바퀴 O, 나머지 탭은 아는 단어 + 그 탭에서 O 한 단어.
+  // 지금 보기의 바퀴(LEVEL-ROUND-001 ②) — 줄이 없으면 1바퀴(지금까지 전부, 상태 기준 표시). 새 바퀴부터는 카드의 O · X가
+  // 이번 바퀴 답이고, 범위(전부 · 모른 것만) 밖 단어는 목록에서 빠진다. 지난 바퀴 표시는 상태(아는 단어 · 단어장 · 탭 표시)로 남는다.
+  const answerView = facetView || 'all';
+  const round = rounds.roundOf(answerView);
+  const recorded = vocab && round.recorded;
+  const viewAnswers = useMemo(() => levelAnswersOfView(rounds.answers, answerView), [rounds.answers, answerView]);
+  // 지금 상태로 본 「모른다」 — 전체 = 공부 중(아는 단어 아님), 탭 = 그 탭 X. 답 기록 이전의 1바퀴를 「모른 것만」이 읽는다.
+  const stateMissed = useMemo(() => (facetView
+    ? new Set([...facetIdx].filter(([, m]) => m[facetView] === 'x').map(([w]) => w))
+    : new Set([...saved].filter((k) => !knownSet.has(k) && !keptSet.has(k)))), [facetView, facetIdx, saved, knownSet, keptSet]);
+  const roundScope = useMemo(() => (recorded
+    ? levelRoundScope(allEntries.map((e) => e.key), round, { before: levelAnswersOfView(rounds.before(answerView), answerView), stateMissed })
+    : null), [recorded, allEntries, round, rounds, answerView, stateMissed]);
+  // 카드의 O · X — 새 바퀴면 이번 바퀴 답, 1바퀴면 상태(전체 = 아는 단어 · 공부 중, 탭 = 그 탭 표시).
+  const markOf = (key) => {
+    if (recorded) { const a = viewAnswers.get(key); return a ? (a.correct ? 'o' : 'x') : null; }
+    if (facetView) return facetMark(facetIdx, key, facetView);
+    return knownSet.has(key) || keptSet.has(key) ? 'o' : saved.has(key) ? 'x' : null;
+  };
+  // 숨길 단어 — 새 바퀴는 이번 바퀴 O. 1바퀴의 전체 탭은 아는 단어 + 공부 중인 단어의 이번 바퀴 O, 나머지 탭은 아는 단어 + 그 탭에서 O 한 단어.
   const hiddenSet = useMemo(() => {
+    if (recorded) return new Set([...viewAnswers].filter(([, a]) => a.correct).map(([k]) => k));
     const set = new Set(knownSet);
     if (!facetView) { for (const key of keptSet) set.add(key); return set; }
     for (const [word, marks] of facetIdx) if (marks[facetView] === 'o') set.add(word);
     return set;
-  }, [facetView, knownSet, keptSet, facetIdx]);
+  }, [recorded, viewAnswers, facetView, knownSet, keptSet, facetIdx]);
 
   // 저장됨 — 이미 단어장에 있는 단어는 처음부터 「저장됨」.
   useEffect(() => {
@@ -455,6 +477,14 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
   const markO = async (entry) => {
     if (!userId) return exclude(entry);
     const key = entry.key;
+    // 새 바퀴: 이번 바퀴 O를 켜고 끈다. 끄면 답만 취소(아는 단어 표시는 X로 푼다). 켜면 상태 규칙은 1바퀴와 같다.
+    if (recorded) {
+      if (viewAnswers.get(key)?.correct === true) return rounds.cancel(key, 'all');
+      rounds.answer(key, 'all', true);
+      if (knownSet.has(key)) return undefined;
+      if (await isStudying(key)) { noteKept(); return undefined; }
+      return exclude(entry);
+    }
     if (keptSet.has(key)) return rounds.cancel(key, 'all');
     if (knownSet.has(key)) { unmark(key); return rounds.cancel(key, 'all'); }
     const studying = await isStudying(key);
@@ -466,7 +496,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
   // 전체 보기 X — 공부 중으로 담고 이번 바퀴 X. 이번 바퀴에 이미 X면 그 답만 취소한다(담긴 카드는 그대로 — 지금과 같음).
   const markX = (entry) => {
     if (!userId) return loginToast('로그인하면 단어를 저장할 수 있어요');
-    if (rounds.get(entry.key, 'all')?.correct === false) return rounds.cancel(entry.key, 'all');
+    if (viewAnswers.get(entry.key)?.correct === false) return rounds.cancel(entry.key, 'all');
     rounds.answer(entry.key, 'all', false);
     return studyX(entry);
   };
@@ -484,8 +514,9 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
   const markFacetO = (entry) => {
     if (!userId) return loginToast('로그인하면 아는 단어를 기록할 수 있어요');
     const facet = facetView, label = LEVEL_VIEWS.find((v) => v.id === facet)?.label;
-    const mark = facetMark(facetIdx, entry.key, facet) === 'o' ? null : 'o';
-    facets.mark({ wordText: entry.key, facet, mark });
+    const mark = markOf(entry.key) === 'o' ? null : 'o';
+    // 새 바퀴에서 끄기는 이번 바퀴 답만 취소한다 — 지난 바퀴의 탭 표시는 남는다.
+    if (!(recorded && !mark) && facetMark(facetIdx, entry.key, facet) !== mark) facets.mark({ wordText: entry.key, facet, mark });
     if (!mark) return rounds.cancel(entry.key, facet);
     const { sameDay } = rounds.answer(entry.key, facet, true);
     const after = new Map(facetIdx).set(normalizeKnownWord(entry.key), { ...facetIdx.get(normalizeKnownWord(entry.key)), [facet]: 'o' });
@@ -494,24 +525,63 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
     if (allFacetsKnown(after, entry.key) && !knownSet.has(entry.key) && !saved.has(entry.key) && settled) {
       setToast({ message: '네 탭 모두 알아요. 아는 단어로 옮길까요?', action: '옮기기', onAction: () => { exclude(entry); setToast(null); } });
     } else if (prefs.hideKnown) {
-      setToast({ message: `${label} 탭에서 숨겼어요`, action: '되돌리기', onAction: () => { facets.mark({ wordText: entry.key, facet, mark: null }); setToast(null); } });
+      setToast({ message: `${label} 탭에서 숨겼어요`, action: '되돌리기', onAction: () => {
+        if (!recorded) facets.mark({ wordText: entry.key, facet, mark: null });
+        rounds.cancel(entry.key, facet); setToast(null);
+      } });
     }
   };
   // 탭별 X — 그 탭에 X를 남기고 공부 중인 단어로 담는다(studyX). 이미 X면 그 탭 기록만 지운다(담긴 카드는 그대로).
   const markFacetX = (entry) => {
     if (!userId) return loginToast('로그인하면 단어를 저장할 수 있어요');
-    if (facetMark(facetIdx, entry.key, facetView) === 'x') { rounds.cancel(entry.key, facetView); return facets.mark({ wordText: entry.key, facet: facetView, mark: null }); }
-    facets.mark({ wordText: entry.key, facet: facetView, mark: 'x' });
+    if (markOf(entry.key) === 'x') { rounds.cancel(entry.key, facetView); return recorded ? undefined : facets.mark({ wordText: entry.key, facet: facetView, mark: null }); }
+    if (facetMark(facetIdx, entry.key, facetView) !== 'x') facets.mark({ wordText: entry.key, facet: facetView, mark: 'x' });
     rounds.answer(entry.key, facetView, false);
     studyX(entry);
   };
 
+  // 새 바퀴(LEVEL-ROUND-001 ②) — 지금 보기에 한 줄. 실패면 알리기만(목록은 그대로).
+  const roundFailed = () => setToast({ message: '바퀴를 시작하지 못했어요. 잠시 후 다시 시도해 주세요' });
+  const startRound = (roundScope, { undo = false } = {}) => rounds.startRound(answerView, roundScope).then((started) => {
+    if (typeof window !== 'undefined') window.scrollTo?.({ top: 0 });
+    if (undo) setToast({ message: '새 바퀴를 시작했어요', action: '되돌리기', onAction: () => { rounds.undoRound(started).catch(roundFailed); setToast(null); } });
+  }, roundFailed);
+  // 이 레벨 초기화(오너 2026-10-18) — 아는 단어 표시 · 탭 O · X · 바퀴 줄을 지우고 보기마다 새 1바퀴. 단어장 카드 · 복습 일정 · 답 기록은 남긴다.
+  // 지운 것을 들고 있다가 「되돌리기」로 다시 쓴다.
+  const resetLevel = async () => {
+    setResetAsk(false);
+    setSettingsOpen(false);
+    const keys = new Set(allEntries.map((e) => normalizeKnownWord(e.key)));
+    const knownKeys = known.rows.filter((r) => r.lang === conf.langCode && keys.has(normalizeKnownWord(r.word_text))).map((r) => r.word_text);
+    const facetRows = facets.rows.filter((r) => keys.has(normalizeKnownWord(r.word_text)));
+    const startedAt = new Date().toISOString();
+    try {
+      const beforeRounds = await rounds.replaceRounds(LEVEL_VIEWS.map((v) => ({ view: v.id, round_no: 1, scope: 'all', started_at: startedAt })));
+      for (let i = 0; i < knownKeys.length; i += 150) {
+        await known.mutation.mutateAsync({ lang: conf.langCode, wordText: `#reset:${levelKey}:${i}`, known: false, removeKeys: knownKeys.slice(i, i + 150) });
+      }
+      if (facetRows.length) await facets.clear([...new Set(facetRows.map((r) => r.word_text))]);
+      setToast({ message: '이 레벨 기록을 지웠어요', action: '되돌리기', onAction: async () => {
+        setToast(null);
+        try {
+          await rounds.replaceRounds(beforeRounds);
+          if (knownKeys.length) await known.restoreMany(conf.langCode, knownKeys);
+          if (facetRows.length) await facets.restore(facetRows);
+        } catch { setToast({ message: '되돌리지 못했어요. 잠시 후 다시 시도해 주세요' }); }
+      } });
+    } catch {
+      setToast({ message: '초기화하지 못했어요. 잠시 후 다시 시도해 주세요' });
+    }
+  };
+  const roundsOn = vocab && mounted && !!userId && rounds.roundsAvailable;
+
   // 진도(지금 탭) — 아는 = 숨김 기준과 같은 집합, 공부 중 = 전체 탭은 단어장 저장, 탭 보기는 그 탭의 X.
   const progress = useMemo(() => {
     if (!vocab || !mounted || !userId || !allEntries.length) return null;
+    if (roundScope) return levelRoundProgress(roundScope, viewAnswers);
     const studying = facetView ? new Set([...facetIdx].filter(([, m]) => m[facetView] === 'x').map(([w]) => w)) : saved;
     return levelProgress(allEntries, hiddenSet, studying);
-  }, [vocab, mounted, userId, allEntries, facetView, facetIdx, hiddenSet, saved]);
+  }, [vocab, mounted, userId, allEntries, roundScope, viewAnswers, facetView, facetIdx, hiddenSet, saved]);
   // 이어 하기 — 배움 입구 카드가 읽는 이 기기의 사본(전체 기준 개수 + 마지막 보기).
   useEffect(() => {
     if (!vocab || !mounted || !userId || !allEntries.length) return;
@@ -523,12 +593,13 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
   const { shown, knownCount } = useMemo(() => {
     let known = 0;
     const filtered = groups.map((g) => {
-      const split = vocab ? splitKnown(g.entries, hiddenSet) : { shown: g.entries, known: [] };
+      const inRound = roundScope ? g.entries.filter((e) => roundScope.has(e.key)) : g.entries; // 이번 바퀴 범위 밖은 목록에서 뺀다
+      const split = vocab ? splitKnown(inRound, hiddenSet) : { shown: inRound, known: [] };
       known += split.known.length;
-      return { name: g.name, entries: (hideKnown ? split.shown : g.entries).filter((e) => matchesLevelQuery(e, query)) };
+      return { name: g.name, entries: (hideKnown ? split.shown : inRound).filter((e) => matchesLevelQuery(e, query)) };
     });
     return { shown: filtered.filter((g) => g.entries.length), knownCount: known };
-  }, [groups, vocab, hiddenSet, query, hideKnown]);
+  }, [groups, vocab, roundScope, hiddenSet, query, hideKnown]);
   // 찾기 말을 바꿀 때만 처음 150개로 — 첫 그리기 · 뒤로 가기 복원(찾던 말을 되살림)에서는 그린 개수를 그대로 둔다.
   const lastQuery = useRef(query);
   useEffect(() => {
@@ -613,7 +684,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
       // 진행 중(아는 단어 반영 중 · 공부 중으로 담는 중 · 탭 기록 보내는 중)인 카드는 클릭처럼 막는다 — 다음 카드로도 넘어가지 않는다.
       if (saving.has(entry.key) || (mounted && known.isPendingWord(conf.langCode, entry.key)) || (facetView && facets.isPending?.(entry.key))) return;
       // 키보드는 켜기만 한다(목업 「O 안다 · X 모른다」) — 이미 그 표시면 풀지 않고 다음 카드로만. 버튼 클릭(aria-pressed)은 그대로 켜고 끈다.
-      const mark = facetView ? facetMark(facetIdx, entry.key, facetView) : (hiddenSet.has(entry.key) ? 'o' : rounds.get(entry.key, 'all')?.correct === false ? 'x' : null);
+      const mark = !recorded && !facetView ? (hiddenSet.has(entry.key) ? 'o' : rounds.get(entry.key, 'all')?.correct === false ? 'x' : null) : markOf(entry.key);
       if (action === 'o' && mark !== 'o') { if (facetView) markFacetO(entry); else markO(entry); }
       if (action === 'x' && mark !== 'x') { if (facetView) markFacetX(entry); else markX(entry); }
       moveFrom(entry.key, 1);
@@ -802,16 +873,34 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
           ...(zhVocab ? [['hun', '훈음', '한자마다 뜻과 소리'], ['tone', '성조 색', '병음 1성 빨강 · 2성 초록 · 3성 파랑 · 4성 보라'], ['glyph', '한자 대조', '正 대만 정체 · 日 일본어 표기']] : [])]
           .map(([key, label, note]) => <button key={key} type="button" role="switch" className="lv-switch" aria-checked={prefs[key]}
             onClick={() => setPrefs({ [key]: !prefs[key] })}><span>{label}{note && <small>{note}</small>}</span><i aria-hidden="true" /></button>)}
+        {/* 바퀴(LEVEL-ROUND-001 ②) — 맨 아래. 섞기 같은 스위치는 두지 않는다(오너 「직관적이고 심플하게」). */}
+        {roundsOn && <div className="lv-rounds">
+          <button type="button" className="lv-rounds__btn" onClick={() => { setSettingsOpen(false); startRound('all', { undo: true }); }}>새 바퀴 시작<small>이 보기에서 처음부터 전부</small></button>
+          {resetAsk ? <div className="lv-rounds__ask" role="group" aria-label="이 레벨 기록 초기화">
+            <p>이 레벨의 아는 단어 표시 · 탭 O · X · 바퀴를 지우고 처음부터 시작해요. 단어장 카드와 복습 일정은 그대로예요.</p>
+            <button type="button" onClick={() => setResetAsk(false)}>취소</button>
+            <button type="button" className="lv-rounds__danger" onClick={resetLevel}>초기화</button>
+          </div> : <button type="button" className="lv-rounds__btn" onClick={() => setResetAsk(true)}>이 레벨 기록 초기화<small>아는 단어 표시도 함께 지워요</small></button>}
+        </div>}
       </div>}
       {/* 진도 — 공부 화면에는 숫자 하나만(오너 2026-10-16 「숫자가 대거 적히면 시선이 분산」). 자세한 개수는 배움 입구 카드. */}
       {/* 진도 줄 자리(LEVEL-PROG-HOLD-001) — 숫자는 로그인 · 붙은 뒤에만 있어 서버(정적) 그림엔 없다. 세션 쿠키가 있으면 그리기 전 한 줄이
           같은 높이의 빈 줄(.lv-prog--hold, 평소 꺼짐)을 켜 붙은 뒤 진도 줄이 들어와도 보기 단추 · 목록이 밀리지 않는다. 손님은 그대로(꺼짐). */}
       {vocab && !progress && (!mounted || authLoading || userId) && <><script dangerouslySetInnerHTML={{ __html: LV_PROG_HOLD }} />
         <div className="lv-prog lv-prog--hold" aria-hidden="true"><span className="lv-meter" /></div></>}
-      {progress && <div className="lv-prog">
+      {/* 바퀴 끝(LEVEL-ROUND-001 ②) — 진도 줄 자리에 끝 카드. 요약 자리라 숫자를 둔다(목업 2판 C). 바퀴 표가 없으면 지금처럼 「다 봤어요」. */}
+      {progress && roundsOn && progress.left === 0 && progress.total > 0 ? <section className="lv-end" aria-label="바퀴 끝">
+        <p className="lv-end__head">{round.round === 1 ? '한 바퀴 끝' : `${roundLabel(round.round)} 끝`}</p>
+        <p className="lv-end__line">{progress.studying > 0 ? `모른 단어 ${progress.studying.toLocaleString('en-US')}개` : '모른 단어를 다 잡았어요'}</p>
+        <div className="lv-end__acts">
+          {progress.studying > 0 && <button type="button" className="lv-end__main" onClick={() => startRound('missed')}>모른 {progress.studying.toLocaleString('en-US')}개만 다시</button>}
+          <button type="button" onClick={() => startRound('all')}>처음부터 전부</button>
+          {progress.studying > 0 && <Link className="lv-prog__review" href={reviewHref} prefetch={false}>복습하기 →</Link>}
+        </div>
+      </section> : progress && <div className="lv-prog">
         <span className="lv-meter" aria-hidden="true"><i className="lv-meter__k" style={{ width: `${(progress.known / progress.total) * 100}%` }} />
           <i className="lv-meter__s" style={{ width: `${(progress.studying / progress.total) * 100}%` }} /></span>
-        <span className="lv-prog__left">{progress.left > 0 ? `${progress.left.toLocaleString('en-US')}개 남음` : '다 봤어요'}</span>
+        <span className="lv-prog__left">{recorded && round.round > 1 ? `${roundLabel(round.round)} · ` : ''}{progress.left > 0 ? `${progress.left.toLocaleString('en-US')}개 남음` : '다 봤어요'}</span>
         {progress.studying > 0 && <Link className="lv-prog__review" href={reviewHref} prefetch={false}>복습하기 →</Link>}
       </div>}
       {vocab && <div className="lv-view" role="group" aria-label="보기">
@@ -833,15 +922,15 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
         <div className="lv-col" ref={listRef} onKeyDown={vocab ? onCardKey : undefined}>
           {/* 마우스를 쓰는 화면에서만 보인다(복습방 .review-keys-hint — pointer: fine). */}
           {vocab && shown.length > 0 && <p className="lv-keys review-keys-hint">⌨ ↑↓ 카드 이동 · O 안다 · X 모른다 · Space 펼치기</p>}
-          {shown.length === 0 && <p className="lv-empty" role="status">{query ? '이 레벨에서 찾지 못했어요' : '모든 단어를 아는 단어로 옮겼어요. 「아는 단어 숨기기」를 끄면 다시 보여요'}</p>}
+          {shown.length === 0 && <p className="lv-empty" role="status">{query ? '이 레벨에서 찾지 못했어요' : recorded ? '이번 바퀴를 다 돌았어요. 「아는 단어 숨기기」를 끄면 다시 보여요' : '모든 단어를 아는 단어로 옮겼어요. 「아는 단어 숨기기」를 끄면 다시 보여요'}</p>}
           {visible.map((g, gi) => g.entries.length > 0 && <section key={g.name} className="lv-group" id={groupId(gi)} data-lv-group={gi} aria-labelledby={`${groupId(gi)}-h`}>
             <h2 id={`${groupId(gi)}-h`}>{g.name}<span>{g.count}</span></h2>
             <ul className="lv-entries">{g.entries.map((e) => vocab ? <VocabCard key={e.key} entry={e} lang={lang} levelKey={levelKey}
               view={prefs.view} scoped={!!facetView} peek={peek.get(e.key)?.phase} peekEpoch={peek.get(e.key)?.epoch} onPeek={() => togglePeek(e.key)} onRenew={() => renewPeek(e.key)}
               speak={sndSpeak}
               hunCells={hunOf(e.word) || (hunHold ? hunHoldCells(e.word, e.hun) : null)} glyph={glyphOf(e.word)} tone={zhVocab && prefs.tone}
-              known={facetView ? facetMark(facetIdx, e.key, facetView) === 'o' : knownSet.has(e.key) || keptSet.has(e.key)}
-              studying={facetView ? facetMark(facetIdx, e.key, facetView) === 'x' : saved.has(e.key)} keepReview={!facetView && keptSet.has(e.key)} saving={saving.has(e.key)}
+              known={markOf(e.key) === 'o'}
+              studying={recorded || facetView ? markOf(e.key) === 'x' : saved.has(e.key)} keepReview={!facetView && keptSet.has(e.key)} saving={saving.has(e.key)}
               pendingKnown={mounted && !!userId && known.isPendingWord(conf.langCode, e.key)}
               onO={() => (facetView ? markFacetO(e) : markO(e))} onX={() => (facetView ? markFacetX(e) : markX(e))} onPrepareX={mounted && userId ? prepareSave : undefined}
               current={e.key === currentKey} onCardFocus={() => setCursorKey(e.key)} /> : <li key={e.key} className="lv-pat" data-lv-pat={e.key}>

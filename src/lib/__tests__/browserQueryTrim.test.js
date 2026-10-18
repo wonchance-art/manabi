@@ -90,7 +90,9 @@ describe('③ 아는 단어 — 60초 캐시 · 1000행 페이지', () => {
     expect(onSuccess, 'onSuccess를 못 찾았다').toBeTruthy();
     expect(onSuccess).toContain("client.setQueryData(['known-words', body.accountId, body.lang]");
     expect(onSuccess).toContain("client.setQueryData(['known-words-all', body.accountId]");
-    expect(onSuccess).toMatch(/\['known-words', 'known-words-all',[\s\S]*?client\.invalidateQueries\(\{ queryKey: \[prefix, body\.accountId\] \}\)/);
+    // 무효화 목록은 한 곳(KNOWN_CONSUMERS) — 레벨 초기화 되돌리기(restoreMany)도 같은 목록을 쓴다(LEVEL-ROUND-001 ②).
+    expect(onSuccess).toContain('return refreshKnownConsumers(client, body.accountId);');
+    expect(hook).toMatch(/const KNOWN_CONSUMERS = \['known-words', 'known-words-all',[\s\S]*?client\.invalidateQueries\(\{ queryKey: \[prefix, accountId\] \}\)/);
   });
 
   it('1000행씩 순차로 읽는다', async () => {

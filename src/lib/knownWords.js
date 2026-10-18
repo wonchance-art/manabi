@@ -59,6 +59,16 @@ export async function markKnown(userId, langCode, wordText) {
   if (error) throw error;
 }
 
+/** 여러 단어를 한 번에 표시(초기화 되돌리기 — LEVEL-ROUND-001 ②). 같은 upsert라 다시 보내도 같은 결과다. 묶음 500개. */
+export async function markKnownMany(userId, langCode, words) {
+  const list = [...new Set(words || [])].filter(Boolean);
+  for (let i = 0; i < list.length; i += 500) {
+    const { error } = await supabase.from('user_known_words')
+      .upsert(list.slice(i, i + 500).map((word_text) => ({ user_id: userId, lang: langCode, word_text })), { onConflict: 'user_id,lang,word_text', ignoreDuplicates: true });
+    if (error) throw error;
+  }
+}
+
 export async function unmarkKnown(userId, langCode, wordText) {
   const keys = Array.isArray(wordText) ? wordText : [wordText];
   if (!keys.length) return;

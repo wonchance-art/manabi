@@ -1,8 +1,9 @@
 // 단어 목록 바퀴 답(LEVEL-ROUND-001) — 같은 날 규칙 · 마지막 답 · 대기 → 확정 · 읽기 페이지 · 활동 전용.
 import { describe, expect, it } from 'vitest';
 import {
-  LEVEL_SOURCE, applyLevelAnswer, createLevelAnswerQueue, fetchLevelAnswers, isSameDayAnswer, lastLevelAnswers,
-  levelAnswerEvent, levelAnswerOf, levelCancelEvent,
+  LEVEL_SOURCE, applyLevelAnswer, createLevelAnswerQueue, currentLevelRound, deleteLevelRounds, fetchLevelAnswers, fetchLevelRounds,
+  insertLevelRounds, isSameDayAnswer, lastLevelAnswers, levelAnswerEvent, levelAnswerOf, levelAnswersOfView, levelCancelEvent,
+  levelRoundProgress, levelRoundScope, levelRowsBetween, roundLabel,
 } from '../levelRounds.js';
 import { ACTIVITY_ONLY_SOURCES, isGradedReviewEvent } from '../weeklyReport.js';
 import fs from 'node:fs';
@@ -113,5 +114,65 @@ describe('활동 전용 — 정답률 · 다이얼 · 산출에 넣지 않는다
     const hook = fs.readFileSync('src/lib/useLevelAnswers.js', 'utf8');
     expect(hook).toContain("import { logReviewEvents } from './reviewEvents';");
     expect(hook).not.toMatch(/fsrs|persistVocabGrade|user_vocabulary/i);
+  });
+});
+
+describe('바퀴(LEVEL-ROUND-001 ②) — 줄 없으면 1바퀴, 범위 · 진도 · 글로 쓴 바퀴', () => {
+  const rounds = [
+    { view: 'all', round_no: 2, scope: 'missed', started_at: '2026-10-19T01:00:00Z' },
+    { view: 'all', round_no: 3, scope: 'all', started_at: '2026-10-26T01:00:00Z' },
+    { view: 'meaning', round_no: 1, scope: 'all', started_at: '2026-10-19T00:00:00Z' },
+  ];
+  it('보기마다 가장 큰 바퀴 번호, 줄이 없으면 1바퀴(전부 · 시작 시각 없음)', () => {
+    expect(currentLevelRound(rounds, 'all')).toEqual({ round: 3, scope: 'all', startedAt: Date.parse('2026-10-26T01:00:00Z'), recorded: true });
+    expect(currentLevelRound(rounds, 'meaning').round).toBe(1);
+    expect(currentLevelRound(rounds, 'word')).toEqual({ round: 1, scope: 'all', startedAt: null, recorded: false });
+    expect(currentLevelRound([], 'all').recorded).toBe(false);
+  });
+  it('바퀴는 글로 — 「두 바퀴째」, 열을 넘으면 숫자', () => {
+    expect([1, 2, 3, 10, 11].map(roundLabel)).toEqual(['한 바퀴째', '두 바퀴째', '세 바퀴째', '열 바퀴째', '11 바퀴째']);
+  });
+  it('모른 것만 = 시작 직전 마지막 답이 X, 답 없던 단어는 지금 상태(공부 중 · 탭 X)로', () => {
+    const before = new Map([['a', { correct: false }], ['b', { correct: true }]]);
+    const scope = levelRoundScope(['a', 'b', 'c', 'd'], { scope: 'missed' }, { before, stateMissed: new Set(['b', 'c']) });
+    expect([...scope]).toEqual(['a', 'c']); // b는 마지막 답이 O라 상태(X)보다 답이 이긴다
+    expect([...levelRoundScope(['a', 'b'], { scope: 'all' }, { before })]).toEqual(['a', 'b']);
+  });
+  it('진도 — 범위 안 단어만 센다', () => {
+    const answers = new Map([['a', { correct: true }], ['c', { correct: false }], ['z', { correct: true }]]);
+    expect(levelRoundProgress(new Set(['a', 'b', 'c']), answers)).toEqual({ total: 3, known: 1, studying: 1, left: 1 });
+  });
+  it('시각으로 자르기 · 보기 하나 뽑기', () => {
+    const rows = [{ created_at: '2026-10-19T02:00:00Z' }, { created_at: '2026-10-19T01:00:00Z' }, { created_at: '2026-10-18T01:00:00Z' }];
+    expect(levelRowsBetween(rows, { before: Date.parse('2026-10-19T01:00:00Z') })).toEqual([rows[2]]);
+    expect(levelRowsBetween(rows, { since: Date.parse('2026-10-19T01:00:00Z') })).toEqual([rows[0], rows[1]]);
+    const map = new Map([['爸爸|all', { correct: true }], ['爸爸|word', { correct: false }], ['a|b|all', { correct: false }]]);
+    expect([...levelAnswersOfView(map, 'all')]).toEqual([['爸爸', { correct: true }], ['a|b', { correct: false }]]);
+  });
+  it('표가 없으면(42P01 · PGRST205) available=false로 물러서고, 다른 오류는 reject', async () => {
+    const client = (error, data = []) => ({ from: () => { const c = { select: () => c, eq: () => c, order: () => Promise.resolve({ data, error }) }; return c; } });
+    expect(await fetchLevelRounds(client({ code: 'PGRST205', message: "Could not find the table 'public.user_level_rounds' in the schema cache" }), 'u', { lang: 'zh', level: 'h1' }))
+      .toEqual({ available: false, rows: [] });
+    expect(await fetchLevelRounds(client({ code: '42P01' }), 'u', { lang: 'zh', level: 'h1' })).toEqual({ available: false, rows: [] });
+    expect(await fetchLevelRounds(client(null, [{ view: 'all' }]), 'u', { lang: 'zh', level: 'h1' })).toEqual({ available: true, rows: [{ view: 'all' }] });
+    await expect(fetchLevelRounds(client({ code: '500', message: 'boom' }), 'u', { lang: 'zh', level: 'h1' })).rejects.toMatchObject({ message: 'boom' });
+  });
+  it('쓰기 · 지우기 — 본인 · 언어 · 레벨로 좁힌다', async () => {
+    const calls = [];
+    const chain = (t) => { const c = { insert: (rows) => { calls.push(['insert', t, rows]); return Promise.resolve({ error: null }); },
+      delete: () => { calls.push(['delete', t]); return c; }, eq: (k, v) => { calls.push(['eq', k, v]); return c; }, then: (f) => Promise.resolve({ error: null }).then(f) }; return c; };
+    const client = { from: (t) => chain(t) };
+    await insertLevelRounds(client, 'u', { lang: 'zh', level: 'h1' }, [{ view: 'all', round_no: 2, scope: 'missed', started_at: 'T' }]);
+    expect(calls[0]).toEqual(['insert', 'user_level_rounds', [{ user_id: 'u', lang: 'zh', level: 'h1', view: 'all', round_no: 2, scope: 'missed', started_at: 'T' }]]);
+    calls.length = 0;
+    await deleteLevelRounds(client, 'u', { lang: 'zh', level: 'h1' }, { view: 'all', round: 2 });
+    expect(calls).toEqual([['delete', 'user_level_rounds'], ['eq', 'user_id', 'u'], ['eq', 'lang', 'zh'], ['eq', 'level', 'h1'], ['eq', 'view', 'all'], ['eq', 'round_no', 2]]);
+  });
+  it('표는 auth.users만 참조하고 되돌리기 SQL이 있다(profiles 금지 — 10-16 장애)', () => {
+    const sql = fs.readFileSync('supabase/migrations/20261019020000_user_level_rounds.sql', 'utf8').replace(/^--.*$/gm, '');
+    expect(sql).toContain('REFERENCES auth.users(id) ON DELETE CASCADE');
+    expect(sql).not.toMatch(/profiles/i);
+    expect(sql).toContain('REVOKE ALL ON public.user_level_rounds FROM PUBLIC, anon, authenticated;');
+    expect(fs.readFileSync('docs/sql/user-level-rounds-rollback.sql', 'utf8')).toContain('DROP TABLE IF EXISTS public.user_level_rounds;');
   });
 });

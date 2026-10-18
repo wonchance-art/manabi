@@ -86,6 +86,21 @@
 .lv-switch i::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--lv-card);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 25%,transparent);transition:transform .15s ease}
 .lv-switch[aria-checked=true] i{background:var(--ink)}
 .lv-switch[aria-checked=true] i::after{transform:translateX(16px)}
+/* 바퀴(LEVEL-ROUND-001 ②) — ⚙ 맨 아래 「새 바퀴 시작」 · 「이 레벨 기록 초기화」, 진도 줄 자리의 끝 카드. */
+.lv-rounds{border-top:1px solid var(--lv-line)}
+.lv-rounds__btn{display:block;width:100%;min-height:52px;border:0;background:none;padding:0;font:inherit;font-size:14px;color:var(--ink);cursor:pointer;text-align:left}
+.lv-rounds__btn+.lv-rounds__btn{border-top:1px solid var(--lv-line)}
+.lv-rounds__btn small{display:block;font-size:12px;color:var(--muted);margin-top:1px}
+.lv-rounds__ask{border-top:1px solid var(--lv-line);padding:10px 0 12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.lv-rounds__ask p{flex:1 1 100%;margin:0;font-size:13px;color:var(--ink);line-height:1.5}
+.lv-rounds__ask button,.lv-end__acts button{min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--lv-line);background:var(--lv-card);font:inherit;font-size:14px;color:var(--ink);cursor:pointer}
+.lv-rounds__ask .lv-rounds__danger{background:var(--ink);border-color:var(--ink);color:var(--lv-card)}
+.lv-end{border:1px solid var(--lv-line);border-radius:12px;background:var(--lv-card);padding:12px 16px}
+.lv-end__head{margin:0;font-size:12.5px;color:var(--muted)}
+.lv-end__line{margin:2px 0 10px;font-size:15px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.lv-end__acts{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.lv-end__acts .lv-end__main{background:var(--ink);border-color:var(--ink);color:var(--lv-card)}
+.lv-end__acts .lv-prog__review{margin-block:0}
 .lv-view{display:flex;gap:2px;padding:3px;border-radius:12px;background:var(--lv-chip)}
 .lv-view button{flex:1 1 0;min-height:40px;border:0;border-radius:9px;background:none;font:inherit;font-size:14px;color:var(--muted);cursor:pointer}
 .lv-view button:hover{color:var(--ink)}
