@@ -1,0 +1,19 @@
+{
+  "bytes": 161629,
+  "fetchedAt": "2026-10-18",
+  "file": "asai-chu-gure-no-aki.jpg",
+  "height": 686,
+  "record": {
+    "contentsRightsType": "ccby",
+    "contentsUrl": "https://colbase.nich.go.jp/media/tnm/A-11171/image/slideshow_s/A-11171_C0054748.jpg",
+    "contributor": "浅井忠筆",
+    "provider": "tnm",
+    "title": "グレーの秋"
+  },
+  "sha256": "271cfc83e443acbaf5e5250e82e424d743f2f19d058a9075dcea8daf66405656",
+  "source": "colbase",
+  "sourceId": "cobas-47669",
+  "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-11171",
+  "width": 503,
+  "workId": "asai-chu-gure-no-aki"
+}

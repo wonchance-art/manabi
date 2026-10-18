@@ -1,0 +1,57 @@
+{
+  "id": "asai-chu-gure-no-aki",
+  "genre": "painting",
+  "artist": "asai-chu",
+  "title": {
+    "native": "グレーの秋",
+    "ko": "그레의 가을",
+    "reading": "ぐれーのあき"
+  },
+  "date": {
+    "text": "明治34年(1901)",
+    "source": "colbase",
+    "startYear": 1901,
+    "endYear": 1901,
+    "certainty": "exact"
+  },
+  "periods": [
+    "jp-meiji"
+  ],
+  "medium": {
+    "native": "カンバス・油彩",
+    "ko": "캔버스에 유채"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/A-11171"
+    },
+    {
+      "place": "grez-sur-loing",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-47669"
+    }
+  ],
+  "terms": [
+    "留学",
+    "戸外",
+    "秀作"
+  ],
+  "lookFor": [
+    "나무줄기 사이로 보이는 울타리는 어디쯤 있을까요?",
+    "땅에 떨어진 노란 잎은 화면 어느 쪽에 많을까요?",
+    "왼쪽 아래 화가의 서명을 찾아봐요."
+  ],
+  "image": {
+    "source": "colbase",
+    "sourceId": "cobas-47669",
+    "alt": "노랗게 물든 키 큰 나무들이 잔디밭 위에 서 있고, 땅에는 낙엽이 흩어져 있다. 나무 뒤로 낮은 울타리와 숲이 흐릿하게 보인다."
+  }
+}

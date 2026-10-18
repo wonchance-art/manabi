@@ -62,6 +62,32 @@ describe('artSourceText — 출처 응답 → 카탈로그 해설 text', () => {
       .toBe('A. T, 1857. Rijksmuseum, Amsterdam, RP-1. CC0 (via Wikimedia Commons)');
   });
 
+  it('ColBase 그림(ART-GENRE-001): 항목 권리가 ccby이고 소장관을 알 때만 CC BY 4.0, 캡션이 소장관·ColBase·라이선스를 밝힌다', () => {
+    const json = { common: { title: '読書', contributor: ['黒田清輝筆', 'By Kuroda Seiki'], provider: 'tnm', contentsRightsType: 'ccby',
+      contentsUrl: ['https://colbase.nich.go.jp/media/tnm/A-1/image/slideshow_s/A-1.jpg'], linkUrl: 'https://colbase.nich.go.jp/collection_items/tnm/A-1' } };
+    const record = ART_IMAGE_SOURCES.colbase.record(json);
+    expect(record).toEqual({ title: '読書', contributor: '黒田清輝筆', provider: 'tnm', contentsRightsType: 'ccby',
+      contentsUrl: 'https://colbase.nich.go.jp/media/tnm/A-1/image/slideshow_s/A-1.jpg' });
+    expect(ART_IMAGE_SOURCES.colbase.sourceUrl(json)).toBe('https://colbase.nich.go.jp/collection_items/tnm/A-1');
+    expect(ART_IMAGE_SOURCES.colbase.license(record)).toBe('cc-by-4.0');
+    expect(ART_IMAGE_SOURCES.colbase.license({ ...record, contentsRightsType: 'incr' }), '권리 표기가 다르면 쓰지 않는다').toBeNull();
+    expect(ART_IMAGE_SOURCES.colbase.license({ ...record, provider: 'unknown' }), '모르는 소장관').toBeNull();
+    expect(ART_IMAGE_SOURCES.colbase.credit(record, ART_IMAGE_LICENSE_LABEL['cc-by-4.0']))
+      .toBe('読書 · 黒田清輝筆 · 도쿄 국립박물관 소장 · ColBase(국립문화재기구) · CC BY 4.0');
+    expect(ART_IMAGE_LICENSE_LABEL['public-domain']).toBe('Public domain');
+  });
+
+  it('문화유산 온라인 해설(ART-GENRE-001): CC BY 4.0, 문화청 자료(bunkazai)만 크레딧을 만든다', () => {
+    const json = { id: 'bunka-1', common: { linkUrl: 'https://online.bunka.go.jp/db/heritages/detail/1', provider: 'bunkazai', title: '甲', temporal: ['1914'], description: '\u3000本文。\n', contentsUrl: ['x'] } };
+    const snapshot = ART_SOURCES.bunka.snapshot(json, 'bunka-1');
+    expect(snapshot).toEqual({ id: 'bunka-1', linkUrl: 'https://online.bunka.go.jp/db/heritages/detail/1', provider: 'bunkazai', title: '甲', temporal: ['1914'], description: '\u3000本文。\n' });
+    expect(artSourceText(ART_SOURCES.bunka.snapshotRaw(snapshot)), '문단 머리 전각 공백은 그대로').toBe('\u3000本文。');
+    expect(ART_SOURCES.bunka.snapshotUrl(snapshot)).toBe('https://online.bunka.go.jp/db/heritages/detail/1');
+    expect(ART_SOURCES.bunka.license).toBe('cc-by-4.0');
+    expect(ART_SOURCES.bunka.credit(snapshot)).toBe('문화유산 온라인(문화청) · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로');
+    expect(ART_SOURCES.bunka.credit({ ...snapshot, provider: 'apmoa' }), '미술관이 올린 해설은 크레딧을 만들지 않는다').toBeNull();
+  });
+
   it('문자열이 아니면 빈 문자열', () => {
     expect(artSourceText(null)).toBe('');
     expect(artSourceText(undefined)).toBe('');

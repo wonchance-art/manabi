@@ -1,0 +1,19 @@
+{
+  "bytes": 60728,
+  "fetchedAt": "2026-10-18",
+  "file": "kuroda-seiki-dokusho.jpg",
+  "height": 686,
+  "record": {
+    "contentsRightsType": "ccby",
+    "contentsUrl": "https://colbase.nich.go.jp/media/tnm/A-10937/image/slideshow_s/A-10937_C0007927.jpg",
+    "contributor": "黒田清輝筆",
+    "provider": "tnm",
+    "title": "読書"
+  },
+  "sha256": "2934b08467c9e353cc868a00e5c84eef055989e66415f1116d5f920a2b889e61",
+  "source": "colbase",
+  "sourceId": "cobas-47590",
+  "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-10937",
+  "width": 562,
+  "workId": "kuroda-seiki-dokusho"
+}

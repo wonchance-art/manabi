@@ -1,0 +1,20 @@
+{
+  "bytes": 72291,
+  "file": "tatsuno-kingo-tokyo-station.jpg",
+  "height": 369,
+  "note": "ART-GENRE-001 — 1914년 철도원 간행 『東京市街高架鉄道建築概要』 8쪽 사진(국립국회도서관 디지털 컬렉션, 퍼블릭 도메인)을 위키미디어 공용에서 받았다. upload.wikimedia.org 960px 썸네일(WebP)을 로컬에서 JPEG로 바꿨다(크기 그대로).",
+  "record": {
+    "accession": "doi:10.11501/1914851",
+    "artist": "鉄道院東京改良事務所 (Railway Agency, Tokyo Improvement Office)",
+    "date": "1914",
+    "holder": "National Diet Library",
+    "license": "public-domain",
+    "title": "Tokyo Station, from 東京市街高架鉄道建築概要"
+  },
+  "sha256": "7f7c7aadef0ffd6ea485b0b9e9b4dacdfedc9ab7b2d595c0143a2a26fd9491cb",
+  "source": "commons",
+  "sourceId": "File:Tokyo Station (1914).webp",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tokyo_Station_(1914).webp",
+  "width": 960,
+  "workId": "tatsuno-kingo-tokyo-station"
+}

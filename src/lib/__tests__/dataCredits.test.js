@@ -52,6 +52,7 @@ const MARKERS = [
   { re: /Wikidata/, id: 'wikidata' },
   { re: /metmuseum\.org/, id: 'metropolitan-museum-of-art' },
   { re: /commons\.wikimedia\.org/, id: 'wikimedia-commons' },
+  { re: /文化遺産オンライン/, id: 'bunka-online' },
 ];
 
 describe('자료 출처 — 코드의 원천 표지와 화면 목록이 갈리지 않는다', () => {

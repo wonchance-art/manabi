@@ -1,0 +1,54 @@
+{
+  "id": "katayama-tokuma-akasaka-palace",
+  "wikidata": "Q555255",
+  "genre": "architecture",
+  "artist": "katayama-tokuma",
+  "title": {
+    "native": "旧東宮御所（迎賓館赤坂離宮）",
+    "ko": "옛 도구고쇼(영빈관 아카사카 이궁)",
+    "reading": "きゅうとうぐうごしょ（げいひんかんあかさかりきゅう）"
+  },
+  "date": {
+    "text": "1909",
+    "source": "bunka",
+    "startYear": 1909,
+    "endYear": 1909,
+    "certainty": "exact"
+  },
+  "periods": [
+    "jp-meiji"
+  ],
+  "medium": {
+    "native": "石造及び鉄骨煉瓦造",
+    "ko": "석조·철골 벽돌조"
+  },
+  "places": [
+    {
+      "place": "akasaka-palace",
+      "role": "located",
+      "url": "https://online.bunka.go.jp/db/heritages/detail/203786"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "bunka",
+      "sourceId": "bunka-203786"
+    }
+  ],
+  "terms": [
+    "宮殿",
+    "記念建築",
+    "意匠"
+  ],
+  "lookFor": [
+    "가운데 현관 위 지붕에 솟은 장식을 찾아봐요.",
+    "현관으로 가는 길 양옆에 선 높은 등 기둥은 몇 개일까요?",
+    "좌우 끝 건물이 앞으로 튀어나온 모양을 찾아봐요."
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:Togu-Gosho 0025 1.jpg",
+    "alt": "1909년 무렵의 도구고쇼. 넓은 앞마당 끝에 좌우로 긴 석조 궁전이 서 있고, 가운데 현관 지붕과 양 끝 지붕에 장식이 솟아 있다. 길 양옆에 등을 얹은 높은 기둥이 서 있다. 흑백 사진."
+  }
+}
