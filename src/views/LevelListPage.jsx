@@ -25,7 +25,7 @@ import { WORD_FACETS, allFacetsKnown, facetIndex, facetMark } from '@/lib/wordFa
 import { useWordFacets } from '@/lib/useWordFacets';
 import { useLevelAnswers } from '@/lib/useLevelAnswers';
 import {
-  LEVEL_NEXT_VIEW, levelAnswersOfView, levelForgotten, levelRoundHint, levelRoundOrder, levelRoundProgress, levelRoundScope, nextFullRoundAt, roundLabel,
+  LEVEL_NEXT_VIEW, countLevelSave, levelAnswersOfView, levelForgotten, levelRoundHint, levelRoundOrder, levelRoundProgress, levelRoundScope, nextFullRoundAt, roundLabel,
 } from '@/lib/levelRounds';
 import { authEntryHref } from '@/lib/authRedirect';
 import { hunRubyCells } from '@/lib/viewerHunRuby';
@@ -425,6 +425,13 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
     try { if (localStorage.getItem(NUDGE_KEY) === kstDay()) return; localStorage.setItem(NUDGE_KEY, kstDay()); } catch { return; }
     setToast({ message: '공부 중에 담았어요. 복습에서 다시 만나요', href: reviewHref, action: '복습하기' });
   };
+  // 하루 분량(LEVEL-ROUND-001 ④) — 복습은 새 카드 첫 질문을 하루 한도까지만 낸다. 오늘 담은 수가 남은 자리를 넘으면 하루 한 번 알린다(막지 않음).
+  // 자리는 복습 설정(dailyNewLimit) · 계정 한도의 정본(reviewScopeQuota)에서만 읽는다 — 새 숫자를 만들지 않는다.
+  const noteDailyLoad = (account) => import('@/lib/levelDailyLoad').then(({ levelNewQuota }) => levelNewQuota(account)).catch(() => null)
+    .then((quota) => {
+      try { if (!countLevelSave(localStorage, quota) || userRef.current !== account) return; } catch { return; }
+      setToast({ message: '오늘 복습 자리가 다 찼어요. 더 담으면 내일부터 나와요', href: reviewHref, action: '복습하기' });
+    });
 
   const save = async (entry) => {
     if (!userId) return loginToast('로그인하면 단어를 저장할 수 있어요');
@@ -441,7 +448,11 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
       const vocabulary = { language: conf.language, word_text: entry.key, base_form: entry.key,
         meaning: (entry.fullMeaning ?? entry.meaning).slice(0, 2000), furigana: entry.reading.slice(0, 500), pos: entry.pos.slice(0, 80) };
       const response = await client.save({ action: 'save', accountId: userId, operationId: newId(), cardId: newId(), vocabulary });
-      if (response?.ok === true || response?.status === 'pending' || response?.status === 'applied' || response?.status === 'replayed') { nudgeReview(); return done(true); }
+      if (response?.ok === true || response?.status === 'pending' || response?.status === 'applied' || response?.status === 'replayed') {
+        nudgeReview();
+        noteDailyLoad(userId);
+        return done(true);
+      }
       done(false);
       setToast({ message: /excluded|known/.test(response?.blockReason || '') ? '아는 단어로 옮긴 단어라 저장하지 않았어요' : '저장하지 못했어요. 잠시 후 다시 시도해 주세요' });
     } catch {

@@ -4,7 +4,7 @@ import {
   LEVEL_SOURCE, applyLevelAnswer, createLevelAnswerQueue, currentLevelRound, deleteLevelRounds, fetchLevelAnswers, fetchLevelRounds,
   insertLevelRounds, isSameDayAnswer, lastLevelAnswers, levelAnswerEvent, levelAnswerOf, levelAnswersOfView, levelCancelEvent,
   levelRoundProgress, levelRoundScope, levelRowsBetween, roundLabel,
-  LEVEL_NEXT_VIEW, LEVEL_ROUND_SPACING_DAYS, levelForgotten, levelRoundHint, levelRoundOrder, nextFullRoundAt,
+  LEVEL_NEXT_VIEW, LEVEL_ROUND_SPACING_DAYS, LEVEL_SAVES_KEY, countLevelSave, levelForgotten, levelRoundHint, levelRoundOrder, nextFullRoundAt,
 } from '../levelRounds.js';
 import { ACTIVITY_ONLY_SOURCES, isGradedReviewEvent } from '../weeklyReport.js';
 import fs from 'node:fs';
@@ -231,5 +231,30 @@ describe('③ 섞기 · 잊은 수 · 다음 바퀴 안내(LEVEL-ROUND-001 ③)'
     expect(page).toContain('levelRoundOrder(scoped, {');
     expect(page).not.toMatch(/\b(7|30|90)\s*\*\s*86_?400_?000|\[7,\s*30,\s*90\]/);
     expect(page).not.toMatch(/sort\(\(\)\s*=>\s*Math\.random/);
+  });
+});
+
+describe('④ 하루 분량 알림(LEVEL-ROUND-001 ④)', () => {
+  const memory = () => { const m = new Map(); return { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, v), m }; };
+  const noon = KST('2026-10-18T12:00:00');
+  it('오늘 담은 수가 남은 새 카드 자리를 넘으면 한 번만 true · 자리를 모르면 세기만 · KST 자정에 새로', () => {
+    const st = memory();
+    const quota = { remaining: 2 };
+    expect([1, 2, 3, 4].map(() => countLevelSave(st, quota, noon))).toEqual([false, false, true, false]);
+    expect(JSON.parse(st.getItem(LEVEL_SAVES_KEY))).toEqual({ day: '2026-10-18', n: 4, told: true });
+    expect(countLevelSave(st, null, KST('2026-10-19T00:00:00'))).toBe(false); // 다음 날 — 0부터
+    expect(countLevelSave(st, { remaining: 0 }, KST('2026-10-19T01:00:00'))).toBe(true);
+    st.setItem(LEVEL_SAVES_KEY, '{');
+    expect(countLevelSave(st, { remaining: 0 }, noon)).toBe(true); // 깨진 값은 버린다
+  });
+
+  it('계약: 자리는 reviewScopeQuota 하나(dailyNewLimit 정본) · 목록 화면은 import()로만', () => {
+    const page = fs.readFileSync('src/views/LevelListPage.jsx', 'utf8');
+    expect(page).toContain("import('@/lib/levelDailyLoad')");
+    expect(page).not.toMatch(/^import[^;]*(levelDailyLoad|useLearningAdmission|reviewScope'|learningAdmission)/m);
+    expect(page).not.toMatch(/DEFAULT_NEW_PER_DAY|vocab_new_per_day/);
+    const load = fs.readFileSync('src/lib/levelDailyLoad.js', 'utf8');
+    expect(load).toContain('reviewScopeQuota({ quota, compatibility: canUseLegacyAdmissionCompatibility(quota) }');
+    expect(load).toContain('newPerDay: loadNewPerDay()');
   });
 });

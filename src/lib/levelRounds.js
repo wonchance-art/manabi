@@ -223,6 +223,24 @@ export function levelRoundHint({ nextLabel = null, dueAt, nowMs = Date.now() }) 
   return nextLabel ? `다음 바퀴는 ${nextLabel} 탭으로 — ${when}` : `처음부터 전부는 ${when}`;
 }
 
+/** 하루 분량(LEVEL-ROUND-001 ④) — 이 기기에서 오늘(KST) 목록으로 새로 담은 수. */
+export const LEVEL_SAVES_KEY = 'manabi:level-saves-today';
+/**
+ * 담기 하나를 세고, 오늘 담은 수가 복습의 남은 새 카드 자리(quota = reviewScopeQuota — 복습 설정 dailyNewLimit · 계정 한도의 정본)를
+ * 넘었으면 true — 하루 한 번만. 막지 않고 알리기만 한다. quota를 모르면(읽기 전 · 실패) 세기만 한다.
+ */
+export function countLevelSave(storage, quota, nowMs = Date.now()) {
+  const day = kstDateString(nowMs);
+  let cur = null;
+  try { cur = JSON.parse(storage.getItem(LEVEL_SAVES_KEY) || 'null'); } catch { cur = null; }
+  const today = cur?.day === day;
+  const n = (today && Number.isInteger(cur.n) ? cur.n : 0) + 1;
+  const told = today && cur.told === true;
+  const over = !!quota && Number.isInteger(quota.remaining) && n > quota.remaining;
+  storage.setItem(LEVEL_SAVES_KEY, JSON.stringify({ day, n, told: told || over }));
+  return over && !told;
+}
+
 /** 단어 · 보기 키 Map → 한 보기의 단어 → 답 Map. */
 export function levelAnswersOfView(answers, view) {
   const out = new Map();
