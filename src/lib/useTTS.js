@@ -1,9 +1,9 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
-import { bcp47ForLanguage, voicePrefixForLanguage } from './speechLang';
+import { bcp47ForLanguage, speechTagForLanguage, voicePrefixForLanguage } from './speechLang';
 import { viewerLanguageInfo } from './viewerLanguage';
 
-const readerSpeechTag = language => viewerLanguageInfo(language)?.speechLocale || bcp47ForLanguage(language);
+const readerSpeechTag = speechTagForLanguage;
 const readerVoiceKey = language => viewerLanguageInfo(language)?.code || voicePrefixForLanguage(language);
 
 const VOICE_KEY = 'tts_voice'; // { ja: voiceURI, en: voiceURI }

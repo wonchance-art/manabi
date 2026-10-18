@@ -120,7 +120,7 @@ describe('본문 듣기 — 소리를 낼 수 없으면 단어 발음과 같은 
     voices = [ja, ko];
     let tree = await mount();
     tree = tap(tree, '본문 전체 듣기');
-    expect(utterances.map((u) => u.text)).toEqual(['안녕하세요.']);
+    expect(utterances.map((u) => [u.text, u.lang]), '단어 발음과 같은 ko-KR(en-US 폴백 아님)').toEqual([['안녕하세요.', 'ko-KR']]);
     voices = []; utterances = [];
     tree = await mount({ language: 'Japanese', text: JA_TEXT });
     tree = tap(tree, '본문 전체 듣기');

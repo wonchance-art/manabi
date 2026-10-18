@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { bcp47ForLanguage } from '../lib/speechLang';
+import { speechTagForLanguage } from '../lib/speechLang';
 import ActionIcon from './ActionIcon';
 import {t} from '../lib/viewerMessages';
 import { splitListenSentences } from '../lib/listenFollow';
@@ -72,7 +72,7 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
     setCurrentSentence(sentences[i]);
     onSentenceRef.current?.(i);
     const utter = new window.SpeechSynthesisUtterance(sentences[i]);
-    utter.lang = bcp47ForLanguage(languageRef.current);
+    utter.lang = speechTagForLanguage(languageRef.current); // 단어 발음과 같은 태그(Korean → ko-KR)
     utter.rate = rateRef.current;
     // 음성 오류(엔진 · 목소리 없음 등) — 이 세션이면 재생 상태와 뷰어 강조를 정리한다(stop → onSentence(null)).
     // 취소 · 끊김(단어 발음이 이어받음 등)은 정리만, 그 밖의 실패는 단어 발음과 같은 'failed' 안내(TTS-GAP-001).
