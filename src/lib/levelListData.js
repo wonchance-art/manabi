@@ -9,7 +9,8 @@ import { JAPANESE_VOCAB_REF } from './japaneseVocabRegistry';
 import { getBunkei as getJaBunkei, countBunkei as countJaBunkei } from '../content/japanese';
 import { getVocab as getZhVocab, getBunkei as getZhBunkei, countBunkei as countZhBunkei, ZH_LEVEL_META, ZH_HSK79_VOCAB } from '../content/chinese';
 import { loadZhHskLevels, zhHskLevelOf } from './zhHskLevel';
-import { LEVEL_LIST_LANGS, compactLevelEntry, levelKinds, levelWordKey, shortMeaning } from './levelList';
+import { LEVEL_HUN_PX, LEVEL_LIST_LANGS, compactLevelEntry, hunShapeOf, levelKinds, levelWordKey, shortMeaning } from './levelList';
+import { hunRubyCells } from './viewerHunRuby';
 import { loadHanziTable } from './zhHanzi';
 
 const bunkeiOf = { japanese: getJaBunkei, chinese: getZhBunkei };
@@ -68,13 +69,27 @@ function chineseDictionary() {
   return map;
 }
 
+// 훈음 자리 모양(LEVEL-HUN-HOLD-001) — 화면과 같은 표 · 같은 함수(hunRubyCells, 정체 꼴로 찾기)로 서버에서 줄 수 · 칸 폭만 센다.
+let hunTablesPromise = null;
+function loadHunTables() {
+  if (!hunTablesPromise) hunTablesPromise = Promise.all([import('./data/hanjaKo.json'), import('./data/hanjaHun.json'), import('./data/hanjaTrad.json')])
+    .then(([ko, hun, trad]) => ({ koTable: ko.default || ko, hunTable: hun.default || hun, tradTable: trad.default || trad }))
+    .catch((error) => { hunTablesPromise = null; throw error; });
+  return hunTablesPromise;
+}
+function hunShapeField(word, tables) {
+  const hun = hunShapeOf(hunRubyCells(word, tables, LEVEL_HUN_PX));
+  return hun ? { hun } : {};
+}
+
 async function chineseVocabGroups(levelKey) {
   const level = Number(String(levelKey).slice(1));
-  const table = await loadZhHskLevels();
+  const [table, hunTables] = await Promise.all([loadZhHskLevels(), loadHunTables()]);
   const groups = ZH_POS_GROUPS.map((g) => ({ name: g.name, entries: [] }));
   for (const [key, w] of chineseDictionary()) {
     if (zhHskLevelOf(key, table) !== level) continue;
-    groups[zhGroupOf(w.pos)].entries.push(compactLevelEntry({ key, word: w.zh, reading: w.pinyin || '', meaning: shortMeaning(w.ko), fullMeaning: w.ko || '', pos: w.pos || '', ex: zhExample(w.ex) }));
+    groups[zhGroupOf(w.pos)].entries.push(compactLevelEntry({ key, word: w.zh, reading: w.pinyin || '', meaning: shortMeaning(w.ko), fullMeaning: w.ko || '', pos: w.pos || '', ex: zhExample(w.ex),
+      ...hunShapeField(w.zh, hunTables) }));
   }
   for (const g of groups) g.entries.sort((a, b) => pinyinOrder(a.reading).localeCompare(pinyinOrder(b.reading)) || a.word.localeCompare(b.word, 'zh'));
   return groups.filter((g) => g.entries.length);
