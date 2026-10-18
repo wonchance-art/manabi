@@ -15,7 +15,7 @@ export const isWordFacet = (facet) => WORD_FACETS.includes(facet);
 export async function fetchWordFacets(userId, lang) {
   const rows = [];
   for (let offset = 0; ; offset += 500) {
-    const { data, error } = await supabase.from('user_word_facets').select('word_text, facet, mark')
+    const { data, error } = await supabase.from('user_word_facets').select('word_text, facet, mark, marked_at')
       .eq('user_id', userId).eq('lang', lang).order('word_text').order('facet').range(offset, offset + 499);
     if (error) throw error;
     rows.push(...(data || []));
@@ -31,6 +31,24 @@ export async function setWordFacet(userId, lang, wordText, facet, mark) {
     ? await base.upsert({ user_id: userId, lang, word_text: wordText, facet, mark, marked_at: new Date().toISOString() }, { onConflict: 'user_id,lang,word_text,facet' })
     : await base.delete().eq('user_id', userId).eq('lang', lang).eq('word_text', wordText).eq('facet', facet);
   if (error) throw error;
+}
+
+/** 여러 단어의 탭 표시 지우기(레벨 초기화 — LEVEL-ROUND-001 ②). 묶음 150개(.in URL 길이). */
+export async function clearWordFacets(userId, lang, words) {
+  const list = [...new Set(words || [])].filter(Boolean);
+  for (let i = 0; i < list.length; i += 150) {
+    const { error } = await supabase.from('user_word_facets').delete().eq('user_id', userId).eq('lang', lang).in('word_text', list.slice(i, i + 150));
+    if (error) throw error;
+  }
+}
+
+/** 지운 탭 표시 되살리기(초기화 되돌리기) — 원래 marked_at 그대로. */
+export async function restoreWordFacets(userId, lang, rows) {
+  for (let i = 0; i < (rows || []).length; i += 500) {
+    const { error } = await supabase.from('user_word_facets').upsert(rows.slice(i, i + 500).map((r) => ({ user_id: userId, lang, word_text: r.word_text,
+      facet: r.facet, mark: r.mark, ...(r.marked_at ? { marked_at: r.marked_at } : {}) })), { onConflict: 'user_id,lang,word_text,facet' });
+    if (error) throw error;
+  }
 }
 
 /** 행 → Map(단어 → { facet: mark }). 대조는 아는 단어와 같은 NFC 정규화. */

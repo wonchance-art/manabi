@@ -256,7 +256,9 @@ describe('머리 · 진도 · X 펼침(LEVEL-FLOW-001 — 디자인 검토 2026-
     expect(ssr).toContain('<div class="lv-prog lv-prog--hold" aria-hidden="true"><span class="lv-meter"></span></div>');
     expect(ssr).not.toMatch(/lv-prog__left|lv-prog__review|lv-meter__[ks]|개 남음/);
     expect(await render('japanese', 'bunkei', 'n5')).not.toContain('lv-prog'); // 진도는 단어 탭만
-    const prog = sliceBetween(page, '{progress && <div className="lv-prog">', '</div>}');
+    const prog = sliceBetween(page, ': progress && <div className="lv-prog">', '</div>}');
+    // 바퀴 끝 카드(LEVEL-ROUND-001 ②)는 진도 줄 자리의 요약이라 숫자를 둔다 — 공부 중 진도 줄은 여전히 숫자 하나.
+    expect(sliceBetween(page, '<section className="lv-end" aria-label="바퀴 끝">', '</section>')).toContain('모른 단어 ${progress.studying');
     expect([...prog.matchAll(/\$\{[^}]+\}개/g)].map((m) => m[0])).toEqual(["${progress.left.toLocaleString('en-US')}개"]);
     expect(prog).toContain('{progress.studying > 0 && <Link className="lv-prog__review" href={reviewHref} prefetch={false}>복습하기 →</Link>}');
     expect(prog).not.toMatch(/progress\.(known|studying|total)\}/); // 아는 · 공부 중 개수는 배움 입구 카드에만

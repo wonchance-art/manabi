@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { levelCardLabel, levelListKeyAction, levelListMove, levelListNearest } from '../../lib/levelListKeys';
 
 const h = vi.hoisted(() => ({ stub: false, slots: [], index: 0, effects: [], pending: new Set(), mutate: [], user: 'u1', rows: [], facets: null,
-  saved: [], answers: new Map(), answered: [], cancelled: [], sameDay: false }));
+  saved: [], answers: new Map(), answered: [], cancelled: [], sameDay: false, rounds: null, before: null, started: [], replaced: [] }));
 vi.mock('react', async (importOriginal) => {
   const actual = await importOriginal();
   const on = () => h.stub;
@@ -38,6 +38,13 @@ vi.mock('@/lib/levelList', async (importOriginal) => ({ ...await importOriginal(
   fetchSavedLevelKeysAll: () => Promise.resolve(new Set(h.saved)),
   fetchSavedLevelKeys: (_c, _u, _l, keys) => Promise.resolve(new Set(keys.filter((k) => h.saved.includes(k)))) }));
 vi.mock('@/lib/useLevelAnswers', () => ({ useLevelAnswers: () => ({
+  answers: h.answers,
+  roundOf: (v) => h.rounds?.[v] || { round: 1, scope: 'all', startedAt: null, recorded: false },
+  before: () => h.before || new Map(),
+  roundsAvailable: !!h.rounds,
+  startRound: (v, scope) => { h.started.push([v, scope]); return Promise.resolve({ view: v, round_no: 2, scope }); },
+  undoRound: () => Promise.resolve(),
+  replaceRounds: (rows) => { h.replaced.push(rows); return Promise.resolve([]); },
   get: (w, v) => h.answers.get(`${w}|${v}`) || null,
   answer: (w, v, correct) => { h.answered.push([w, v, correct]); return { sameDay: h.sameDay }; },
   cancel: (w, v) => { h.cancelled.push([w, v]); },
@@ -288,7 +295,7 @@ describe('⑤ 바퀴 답 · 공부 중인 단어의 O(LEVEL-ROUND-001 — 설계
   const setup = async (view) => {
     vi.unstubAllGlobals();
     h.stub = true; h.slots = []; h.pending = new Set(); h.mutate = []; h.user = 'u1'; h.rows = [];
-    h.answers = new Map(); h.answered = []; h.cancelled = []; h.sameDay = false;
+    h.answers = new Map(); h.answered = []; h.cancelled = []; h.sameDay = false; h.rounds = null; h.before = null; h.started = []; h.replaced = [];
     h.facets = view ? { available: true, rows: [], marks: [], sending: new Set(), mark(body) { this.marks.push(body); return true; }, isPending() { return false; } } : null;
     const store = new Map(view ? [['manabi:level-list-view', JSON.stringify({ view })]] : []);
     vi.stubGlobal('localStorage', { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v), removeItem: (k) => store.delete(k) });
@@ -360,5 +367,80 @@ describe('⑤ 바퀴 답 · 공부 중인 단어의 O(LEVEL-ROUND-001 — 설계
     expect(fourth()).not.toBe(ask); // 앞서 누른 탭 O가 같은 날 다른 탭 뒤
     h.saved = [first]; h.slots = []; await setup('word');
     expect(fourth()).not.toBe(ask); // 공부 중인 단어 — 복습이 맡는다
+  });
+});
+
+describe('⑥ 새 바퀴 · 끝 카드 · 초기화(LEVEL-ROUND-001 ②)', () => {
+  const tick = () => new Promise((r) => setTimeout(r));
+  const find = (cls) => walk(renderStub().tree, (n) => typeof n.props?.className === 'string' && n.props.className.split(' ').includes(cls));
+  const textOf = (node) => (node == null || typeof node === 'boolean' ? '' : typeof node !== 'object' ? String(node)
+    : Array.isArray(node) ? node.map(textOf).join('') : textOf(node.props?.children));
+  const setup = async ({ rounds = null, answers = [], before = null, saved = [] } = {}) => {
+    vi.unstubAllGlobals();
+    h.stub = true; h.slots = []; h.pending = new Set(); h.mutate = []; h.user = 'u1'; h.rows = []; h.facets = null;
+    h.saved = saved; h.answered = []; h.cancelled = []; h.sameDay = false; h.started = []; h.replaced = [];
+    h.rounds = rounds; h.before = before; h.answers = new Map(answers.map(([w, c]) => [`${w}|all`, { correct: c }]));
+    const store = new Map();
+    vi.stubGlobal('localStorage', { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v), removeItem: (k) => store.delete(k) });
+    renderStub(); runEffects(); await tick(); renderStub(); runEffects(); await tick();
+  };
+  const allKeys = data.groups.flatMap((g) => g.entries.map((e) => e.key ?? e.word));
+  const two = { all: { round: 2, scope: 'missed', startedAt: 1, recorded: true } };
+
+  it('「모른 것만」 바퀴 — 범위(시작 직전 X) 단어만 목록에, 카드 O · X는 이번 바퀴 답, 진도 줄은 「두 바퀴째 · N개 남음」', async () => {
+    const [a, b, c] = allKeys;
+    await setup({ rounds: two, before: new Map([[`${a}|all`, { correct: false }], [`${b}|all`, { correct: false }], [`${c}|all`, { correct: true }]]),
+      answers: [[a, true]] });
+    const { cards } = renderStub();
+    expect(cards.map((x) => x.props.entry.key)).toEqual([a, b]);
+    expect(cards.map((x) => [x.props.known, x.props.studying])).toEqual([[true, false], [false, false]]);
+    expect(textOf(find('lv-prog__left')[0])).toBe('두 바퀴째 · 1개 남음');
+  });
+
+  it('범위를 다 답하면 진도 줄 자리에 끝 카드 — 「모른 N개만 다시」 · 「처음부터 전부」 · 복습하기', async () => {
+    const [a, b] = allKeys;
+    await setup({ rounds: two, before: new Map([[`${a}|all`, { correct: false }], [`${b}|all`, { correct: false }]]), answers: [[a, true], [b, false]] });
+    const end = find('lv-end')[0];
+    expect(textOf(end)).toContain('두 바퀴째 끝');
+    expect(textOf(end)).toContain('모른 단어 1개');
+    expect(find('lv-prog')).toHaveLength(0);
+    const buttons = walk(end, (n) => n.type === 'button');
+    expect(buttons.map(textOf)).toEqual(['모른 1개만 다시', '처음부터 전부']);
+    buttons[0].props.onClick();
+    buttons[1].props.onClick();
+    expect(h.started).toEqual([['all', 'missed'], ['all', 'all']]);
+  });
+
+  it('바퀴 표가 없으면 끝 카드 · ⚙ 바퀴 단추 없이 지금처럼(1바퀴)', async () => {
+    await setup({ rounds: null });
+    expect(find('lv-end')).toHaveLength(0);
+    expect(find('lv-rounds')).toHaveLength(0);
+  });
+
+  it('새 바퀴에서 O를 다시 누르면 이번 바퀴 답만 취소 — 아는 단어 표시는 그대로(해제는 X로)', async () => {
+    const [a] = allKeys;
+    h.rows = [{ lang: 'zh', word_text: a }];
+    await setup({ rounds: { all: { round: 2, scope: 'all', startedAt: 1, recorded: true } }, answers: [[a, true]] });
+    h.rows = [{ lang: 'zh', word_text: a }];
+    renderStub().cards[0].props.onO();
+    await tick();
+    expect(h.cancelled).toEqual([[a, 'all']]);
+    expect(h.mutate).toEqual([]);
+  });
+
+  it('⚙ 「이 레벨 기록 초기화」 — 한 번 더 묻고, 보기마다 새 1바퀴 + 이 레벨 아는 단어 표시만 지운다', async () => {
+    const [a] = allKeys;
+    await setup({ rounds: { all: { round: 3, scope: 'all', startedAt: 1, recorded: true } } });
+    h.rows = [{ lang: 'zh', word_text: a }, { lang: 'zh', word_text: '不在这个级别' }];
+    walk(renderStub().tree, (n) => n.props?.className === 'lv-gear' && n.props['aria-label'] === '설정')[0].props.onClick();
+    const ask = () => walk(renderStub().tree, (n) => n.type === 'button' && textOf(n).startsWith('이 레벨 기록 초기화'))[0];
+    ask().props.onClick();
+    const confirm = walk(renderStub().tree, (n) => n.props?.className === 'lv-rounds__danger')[0];
+    expect(textOf(walk(renderStub().tree, (n) => n.props?.className === 'lv-rounds__ask')[0])).toContain('단어장 카드와 복습 일정은 그대로예요');
+    await confirm.props.onClick();
+    await tick();
+    expect(h.replaced).toHaveLength(1);
+    expect(h.replaced[0].map((r) => [r.view, r.round_no, r.scope])).toEqual(['all', 'word', 'sentence', 'meaning', 'audio'].map((v) => [v, 1, 'all']));
+    expect(h.mutate).toEqual([{ lang: 'zh', wordText: '#reset:H1:0', known: false, removeKeys: [a] }]);
   });
 });
