@@ -37,10 +37,39 @@ function subsetFontUrls(css, subset) {
   return [...urls];
 }
 
-/** next-font-loader와 같은 함수 · 같은 틀로 파일 이름을 만든다(`static/media/<hash>-s.woff2`). */
-function nextFontMediaName(content) {
+/**
+ * next-font-loader emitFontFile과 같은 함수 · 같은 틀로 파일 이름을 만든다 — `static/media/[hash]{-s}{.p}.[ext]`
+ * (`-s` = 대체 글꼴 크기 보정 지표가 있을 때, `.p` = preload 대상 subset의 파일일 때).
+ */
+function nextFontEmittedName(content, { ext = 'woff2', sizeAdjust = true, preload = false } = {}) {
   const { interpolateName } = require('next/dist/compiled/loader-utils3');
-  return interpolateName({ resourcePath: '/next-font-file-url.cjs', rootContext: '/' }, 'static/media/[hash]-s.woff2', { context: '/', content });
+  return interpolateName({ resourcePath: '/next-font-file-url.cjs', rootContext: '/' }, `static/media/[hash]${sizeAdjust ? '-s' : ''}${preload ? '.p' : ''}.${ext}`, { context: '/', content });
+}
+
+/** FONT-HINT-001 힌트용 — preload: false 선언(루트 Noto Sans)의 이름(`static/media/<hash>-s.woff2`). */
+function nextFontMediaName(content) {
+  return nextFontEmittedName(content, { sizeAdjust: true, preload: false });
+}
+
+/**
+ * next/font google 선언 하나가 Google CSS의 글꼴 주소 각각을 어떤 `/_next/static/media/…` 주소로 바꾸는지(SC-LINK-001 리뷰 B1).
+ * next 15.5 google loader와 같은 함수(findFontFilesInCss · getFallbackFontOverrideMetrics)와 같은 규칙을 쓴다 —
+ * 독립 스타일시트가 이 주소를 그대로 가리키면 next/font @font-face와 두 벌이 있어도 같은 바이트를 한 번만 받는다.
+ * opts는 그 next/font 호출의 인자(subsets · preload 기본 true · adjustFontFallback 기본 true)와 같아야 한다(계약이 대조).
+ */
+function nextFontUrlMap(css, { family, subsets, preload = true, adjustFontFallback = true }) {
+  const { findFontFilesInCss } = require('next/dist/compiled/@next/font/dist/google/find-font-files-in-css');
+  const { getFallbackFontOverrideMetrics } = require('next/dist/compiled/@next/font/dist/google/get-fallback-font-override-metrics');
+  const sizeAdjust = Boolean(adjustFontFallback && getFallbackFontOverrideMetrics(family));
+  const declarations = String(css).split('body {', 1)[0];
+  const map = new Map();
+  for (const { googleFontFileUrl, preloadFontFile } of findFontFilesInCss(declarations, preload ? subsets : undefined)) {
+    if (!googleFontFileUrl.startsWith('/')) throw new Error(`글꼴 주소가 로컬 파일이 아니다: ${googleFontFileUrl}`);
+    const ext = /\.(woff|woff2|eot|ttf|otf)$/.exec(googleFontFileUrl)?.[1];
+    if (!ext) throw new Error(`글꼴 확장자를 모른다: ${googleFontFileUrl}`);
+    map.set(googleFontFileUrl, `/_next/${nextFontEmittedName(fs.readFileSync(googleFontFileUrl), { ext, sizeAdjust, preload: preloadFontFile })}`);
+  }
+  return map;
 }
 
 /** 응답 모듈(module[cssUrl] → CSS)에서 힌트 하나의 href(`/_next/static/media/…`)를 구한다. */
@@ -65,4 +94,4 @@ function fontHintEnv(env = process.env) {
   return Object.fromEntries(Object.values(FONT_HINTS).map((hint) => [hint.env, fontHintHref(responses, hint)]));
 }
 
-module.exports = { FONT_HINTS, subsetFontUrls, nextFontMediaName, fontHintHref, fontHintEnv };
+module.exports = { FONT_HINTS, subsetFontUrls, nextFontEmittedName, nextFontMediaName, nextFontUrlMap, fontHintHref, fontHintEnv };

@@ -18,15 +18,18 @@ import LibraryRow,{LibraryCover} from './LibraryRow';
 import LibraryCollections,{LibraryDialog,useCollections} from './LibraryCollections';
 import {operationTarget,currentLibraryTarget,selectedRange,folderPaths,prepareOperation,continueOperation,libraryRpc,invalidateLibrary,libraryOperationError,pendingOperationKey,parsePendingOperation,operationCounts} from '@/lib/libraryOperations';
 import {RecentReadsSkeleton,ShelfRowsSkeleton} from './LibrarySkeleton';
+import {useShelfEmptyHint} from './useShelfEmptyHint';
 import './library.css';
 
 function QueryFailure({query,label}){return query.isError?<div className="shelf-query-error" role="alert"><p>{label} · {libraryError(query.error)}</p><button onClick={()=>query.refetch()}>다시 시도</button></div>:null;}
 // 서재 쿼리는 30초 캐시한다 — 쓰기 지점이 모두 무효화한다(browserQueryTrim.test.js가 지킨다).
 // 읽던 곳·목록: 열람 기록(useLibraryActivity)·읽은 위치(useScrollRestore)·서재 작업과 자료 추가·공개 범위(invalidateLibrary).
 // 받아두기 목록(library-pinned): 자료실의 받아두기 토글이 무효화한다.
-function RecentReads({user}){
+// 읽던 곳이 없던 계정(이 기기에서 지난번 0개)은 받는 동안 골격을 세우지 않는다 — 규칙 · 예외는 useShelfEmptyHint 한 곳.
+export function RecentReads({user,ssr=false}){
  const [more,setMore]=useState(false),[rows,setRows]=useState([]);
  const recent=useQuery(libraryRecentQuery(supabase,user.id));
+ const emptyBefore=useShelfEmptyHint('recent',user.id,ssr,recent,recent.data?.items?.length||0);
  useEffect(()=>{
   const items=[...(recent.data?.items||[])];
   const ordered=items.sort((a,b)=>Date.parse(b.opened_at)-Date.parse(a.opened_at)).slice(0,3);
@@ -34,7 +37,7 @@ function RecentReads({user}){
   setRows(ordered.map(row=>({...row,resume:libraryResume(row,user.id,storage)})));
  },[recent.data,user.id]);
  // 받는 중 · 받은 직후 줄을 고르는 한 프레임은 골격(LOADING-SKELETON-001) — 비었다가 카드가 들어오며 아래가 밀리지 않게.
- if(!rows.length)return <>{(recent.isPending||(recent.data?.items?.length>0))&&<RecentReadsSkeleton/>}<QueryFailure query={recent} label="읽던 곳"/></>;
+ if(!rows.length)return <>{((recent.isPending&&!emptyBefore)||(recent.data?.items?.length>0))&&<RecentReadsSkeleton/>}<QueryFailure query={recent} label="읽던 곳"/></>;
  return <section className={`shelf-recent${more?' is-expanded':''}`} aria-labelledby="shelf-recent-title"><div className="shelf-section-heading"><h2 id="shelf-recent-title">읽던 곳에서</h2>{rows.length>1&&<button className="shelf-recent-toggle" aria-expanded={more} onClick={()=>setMore(!more)}>{more?'접기':'다른 읽던 자료'}</button>}</div><div className="shelf-recent-grid">{rows.map((row,index)=><LibraryReaderLink key={libraryKey(row)} href={row.resume.href} className={`shelf-recent-card${index?' shelf-recent-extra':''}`}><LibraryCover row={row}/><div><small>{row.language?langNameKo(row.language):'읽던 자료'}</small><h3 lang={encounterLookupLang(row.language)||undefined}>{row.title}</h3><p>{row.resume.label} <span aria-hidden="true">↗</span></p></div></LibraryReaderLink>)}</div><QueryFailure query={recent} label="읽던 곳"/></section>;
 }
 function FilterDialog({filters,onApply,onClose}){
@@ -47,7 +50,7 @@ function FilterDialog({filters,onApply,onClose}){
   <button className="manabi-button" type="submit">적용</button>
  </form></LibraryDialog>;
 }
-export default function LibraryShelf({user}){
+export default function LibraryShelf({user,ssr=false}){
  // 검색어만 바꾸는 이동은 반영을 확인한다 — 같은 경로 router.replace가 가끔 commit되지 않는다(useCommittedReplace).
  const params=useSearchParams(),replace=useCommittedReplace(),cache=useQueryClient();
  const filters=libraryFilters(params),narrowed=libraryNarrowed(filters),trash=filters.scope==='trash';
@@ -56,7 +59,7 @@ export default function LibraryShelf({user}){
  const anchor=useRef(null),attempt=useRef(null),listRef=useRef(null);
  const collections=useCollections(user.id),folders=folderPaths(collections.data||[]);
  const currentCollection=folders.find(c=>c.id===filters.collection),returnTo=safeLibraryReturn(`/materials?${params}`);
- const pinned=useQuery({queryKey:['library-pinned',user.id],enabled:filters.pinned,queryFn:pinnedMaterialIds,staleTime:30000});
+ const pinned=useQuery({queryKey:['library-pinned',user.id],enabled:filters.pinned,queryFn:()=>pinnedMaterialIds(user.id),staleTime:30000});
  const listQuery=libraryListQuery(supabase,user.id,filters,pinned.data),keyFilters=listQuery.queryKey[2];
  // 조건을 바꾸는 동안 이전 목록을 흐리게 남긴다(LIST-KEEP — 비었다가 다시 차며 높이가 튀던 것). 같은 계정일 때만.
  const list=useInfiniteQuery({...listQuery,enabled:!filters.pinned||pinned.isSuccess,placeholderData:keepPreviousForUser(user.id)});
@@ -91,7 +94,7 @@ export default function LibraryShelf({user}){
  const navigation=<><button aria-current={!filters.collection&&filters.scope==='all'?'page':undefined} onClick={()=>change({collection:'',scope:''})}>전체</button><button aria-current={filters.scope==='favorites'?'page':undefined} onClick={()=>change({collection:'',scope:'favorites'})}>즐겨찾기</button><button aria-current={filters.scope==='unfiled'?'page':undefined} onClick={()=>change({collection:'',scope:'unfiled'})}>미분류</button><div className="shelf-folder-heading"><span>폴더</span><button aria-label="폴더 관리" onClick={()=>setDialog('collections')}>＋</button></div>{folders.map(f=><button key={f.id} className="shelf-folder-link" aria-current={filters.collection===f.id?'page':undefined} title={f.path} onClick={()=>change({collection:f.id,scope:''})}>{f.path}</button>)}<button className="shelf-trash-link" aria-current={trash?'page':undefined} onClick={()=>change({collection:'',scope:'trash'})}>휴지통</button></>;
  return <div className="shelf-layout shelf-managed"><header className="shelf-header"><h1>내 서재</h1><form role="search" onSubmit={e=>{e.preventDefault();change({q:search.trim()});}}><label className="shelf-sr" htmlFor="library-search">제목·파일명 검색</label><input id="library-search" type="search" maxLength={120} value={search} placeholder="검색" onChange={e=>{setSearch(e.target.value);if(!e.target.value)change({q:''});}}/><button type="submit" aria-label="검색">↗</button></form><Link className="manabi-button" href={libraryComposerHref(returnTo,filters.collection)}>자료 추가</Link></header>
  <div className="shelf-workspace"><nav className="shelf-folder-nav" aria-label="서재 위치">{navigation}</nav><div className="shelf-content">
- {!narrowed&&!search&&<RecentReads user={user}/>}
+ {!narrowed&&!search&&<RecentReads user={user} ssr={ssr}/>}
  <section className="shelf-list-section" aria-labelledby="shelf-list-title"><div className="shelf-section-heading"><h2 id="shelf-list-title">{currentCollection?.path||({trash:'휴지통',favorites:'즐겨찾기',unfiled:'미분류'})[filters.scope]||'전체'} <span className="shelf-count">{list.isSuccess&&!stale?total:''}</span></h2><div className="shelf-list-tools"><label className="shelf-sr" htmlFor="library-sort">정렬</label><select id="library-sort" value={filters.sort} onChange={e=>change({sort:e.target.value})}><option value="newest">최근 저장순</option><option value="opened">최근 열어본 순</option><option value="title">제목순</option>{filters.sort==='level'&&<option value="level">급수순</option>}</select><button onClick={()=>setDialog('filters')} aria-label="자료 필터">필터</button><button aria-pressed={selecting} disabled={busy} onClick={()=>{setSelecting(!selecting);setSelected([]);}}>{selecting?'취소':'선택'}</button></div></div>
  <QueryFailure query={collections} label="폴더"/><QueryFailure query={pinned} label="기기 보관"/><QueryFailure query={list} label="자료 목록"/>
  {filters.collection&&collections.isSuccess&&!currentCollection&&<p role="status">폴더가 없어요. <button onClick={()=>change({collection:''})}>전체</button></p>}
@@ -109,7 +112,7 @@ export default function LibraryShelf({user}){
  <span className="sr-only" role="status" id="shelf-organize-notice">{[pendingLine,resultLine].filter(Boolean).join(' ')}</span>
  {pendingLine&&<div className="shelf-notice"><span aria-hidden="true">{pendingLine} </span><button aria-describedby="shelf-organize-notice" onClick={()=>resume(pending.id,pending.undo)}>다시 시도</button></div>}
  {result&&<div className="shelf-notice"><span aria-hidden="true">{resultLine}</span>{(counts.conflict||counts.unavailable)>0&&<button aria-describedby="shelf-organize-notice" disabled={busy||!!pending} onClick={async()=>{setBusy(true);try{const failed=result.items.filter(x=>['conflict','unavailable'].includes(x.status));setSelected(await Promise.all(failed.map(x=>currentLibraryTarget(supabase,x))));setSelecting(true);setResult(null);}catch(e){setError(libraryOperationError(e));}finally{setBusy(false);}}}>실패 항목 다시 선택</button>}{counts.success>0&&<button aria-describedby="shelf-organize-notice" disabled={busy||!!pending} onClick={()=>resume(result.id,true)}>되돌리기</button>}<button aria-label="결과 닫기" disabled={busy} onClick={()=>setResult(null)}>×</button></div>}
- <footer className="shelf-footer"><Link href="/study/library">지난 이야기</Link><Link href="/vocab">복습</Link><Link href="/materials?tools=1&view=owned">자료 상세 보기</Link></footer>
+ {!list.isPending&&<footer className="shelf-footer"><Link href="/study/library">지난 이야기</Link><Link href="/vocab">복습</Link><Link href="/materials?tools=1&view=owned">자료 상세 보기</Link></footer>}
  </div></div>
  {dialog==='filters'&&<FilterDialog filters={filters} onApply={change} onClose={close}/>}
  {dialog==='collections'&&<LibraryCollections ownerId={user.id} onClose={close} initialParent={filters.collection} onSelect={id=>change({collection:id,scope:''})}/>}

@@ -23,6 +23,11 @@
 //    provider·fallbackDepth·ms·in·out·thinking·ok·status, 프롬프트 본문은 절대 싣지 않는다) + 인메모리 티어·모델별
 //    집계(getLLMStats — 인스턴스 재시작에 초기화되므로 로그가 정본, 집계는 창). 테스트 러너(VITEST)에서는
 //    LLM_LOG=on일 때만 로그를 낸다.
+//  - Claude 본선(LLM-CLAUDE-001, 오너 결정 2026-10-17 KST — Gemini 선불 크레딧 소진 402 후속): ANTHROPIC_API_KEY가 있으면
+//    후보 순서가 Claude(ANTHROPIC_TIERS · 품질 경로는 ANTHROPIC_QUALITY) → Gemini(키가 있을 때) → Groq가 된다. 키가 없으면
+//    후보 목록에 Claude가 없어 위 Gemini → Groq 경로와 요청·순서·오류가 그대로다. 형식 변환(contents/parts → messages,
+//    responseSchema → structured output, JSON MIME만 있으면 꼬리 한 줄 + 추출)은 이 파일의 anthropic* 함수 한 곳이다.
+//    샘플링 인자(temperature 등)는 Claude Haiku 5.5 · Sonnet 5.5가 거부(400)해 싣지 않는다.
 
 // 「서비스 설정」 판정의 정본은 errorMessage.js 한 곳(서버 · 클라 · 안내 문구가 같이 쓴다 — GEMINI-402-GUARD).
 import { isServiceConfigError } from '../errorMessage.js';
@@ -40,6 +45,39 @@ export const TIER_NAMES = Object.freeze(Object.keys(TIERS));
  * (#1077 AA R3-a). 출력 단가가 본선 lite보다 낮다(폴백 단가 ≤ 본선 원칙).
  */
 export const GROQ_MODEL = 'openai/gpt-oss-120b';
+
+/**
+ * Claude 모델별 요청 설정 — 운영(callLLM)과 측정(benchOnce)이 같은 표를 쓴다.
+ * thinkingOff: 운영 thinking 기본 off일 때 싣는 값. Haiku 5.5는 disabled(effort high 이하에서만 허용),
+ * Sonnet 5.5는 disabled가 400이라 between_tools(도구 없는 요청에서는 추론 없음, effort high 이하에서만 허용).
+ */
+export const ANTHROPIC_MODELS = Object.freeze({
+  'claude-haiku-5-5': Object.freeze({ thinkingOff: Object.freeze({ type: 'disabled' }), effort: 'low' }),
+  'claude-sonnet-5-5': Object.freeze({ thinkingOff: Object.freeze({ type: 'between_tools' }), effort: 'medium' }),
+});
+
+/** Claude 티어 표 — ANTHROPIC_API_KEY가 있을 때만 쓰인다. 대량 · 반복 과제(뜻 조회 · 품사 판별 · 수업 조회 · 프록시)는 Haiku. */
+export const ANTHROPIC_TIERS = Object.freeze({
+  light: Object.freeze({ primary: 'claude-haiku-5-5', fallbacks: Object.freeze([]) }),
+  standard: Object.freeze({ primary: 'claude-haiku-5-5', fallbacks: Object.freeze([]) }),
+});
+
+/**
+ * 품질 경로 — standard 호출 중 품질 체감이 큰 과제(회화 · 작문 첨삭 · 오늘의 문단)와 뜻 검증(생성기 Haiku와 다른 모델이어야
+ * 자기 승인이 아니다 — fetchMeanings verifyMeaningBatch의 'self' 규칙)은 Sonnet 5.5, 막히면 Haiku로. 호출부는 지금처럼
+ * 티어 + route(텔레메트리 라벨)만 말한다 — 라벨이 바뀌면 llm.test가 잡는다(조용히 Haiku로 떨어지지 않게).
+ */
+export const ANTHROPIC_QUALITY = Object.freeze({ primary: 'claude-sonnet-5-5', fallbacks: Object.freeze(['claude-haiku-5-5']) });
+export const ANTHROPIC_QUALITY_ROUTES = Object.freeze(['conversation-turn', 'writing-feedback', 'study-paragraph', 'verifyMeanings']);
+
+/** 이 호출이 Claude로 갈 때의 모델 순서(키가 없으면 빈 배열). */
+export function anthropicChain(tier, route) {
+  if (!process.env.ANTHROPIC_API_KEY || !ANTHROPIC_TIERS[tier]) return [];
+  const spec = tier === 'standard' && ANTHROPIC_QUALITY_ROUTES.includes(route) ? ANTHROPIC_QUALITY : ANTHROPIC_TIERS[tier];
+  return [spec.primary, ...spec.fallbacks];
+}
+
+export { hasPrimaryLLMKey } from './llmKeys.js';
 
 /**
  * 구버전 클라 번들 하위호환 — 배포 직후 캐시된 클라가 보내는 body.model(옛 이름)을 티어로 매핑한다.
@@ -134,9 +172,15 @@ export function resolveTier({ tier, model } = {}) {
 /** 용량 오류 판정 — 기존 5곳 관용구의 합집합(상태 0은 네트워크 실패). 「서비스 설정」(결제 · 크레딧)은 429로 와도 용량이 아니다. */
 export function isCapacityError(status, detail) {
   if (isServiceConfigError(status, detail)) return false;
-  if (status === 429 || status === 503 || status === 0) return true;
+  if (status === 429 || status === 503 || status === 529 || status === 0) return true; // 529 = Anthropic overloaded_error
   const text = JSON.stringify(detail ?? '').toLowerCase();
   return CAPACITY_WORDS.some((w) => text.includes(w));
+}
+
+/** 제공자 단위 「서비스 설정」 — 공통 판정 + Anthropic 401(키) · 403(권한)은 기다려도 풀리지 않는 설정 문제다. */
+function isProviderConfigError(provider, status, detail) {
+  if (isServiceConfigError(status, detail)) return true;
+  return provider === 'anthropic' && (status === 401 || status === 403);
 }
 
 function toContents(input) {
@@ -235,6 +279,179 @@ async function groqOnce(contents, generationConfig, { groqKey, signal }) {
   return { ok: true, status: res.status, text, usage: normalizeGroqUsage(data?.usage) };
 }
 
+// ───────────── Claude(Anthropic) — 운영 본선(LLM-CLAUDE-001) ─────────────
+// SDK는 지연 로드한다(키가 없는 배포 · Gemini 경로에서는 불러오지 않는다). 재시도는 SDK가 아니라 위 체인이 한다(maxRetries 0).
+
+/** JSON MIME만 있고 스키마가 없을 때 붙이는 꼬리 — Groq의 「JSON 객체」 꼬리와 달리 배열 응답도 허용한다(측정 꼬리와 같은 말). */
+const ANTHROPIC_JSON_TAIL = '\n\nJSON만 출력하세요(설명·코드 블록 없이).';
+const ANTHROPIC_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+// 비스트리밍 요청은 SDK가 max_tokens로 예상 시간을 재 10분을 넘으면 거부한다 — 그 아래(≈21K)에서 넉넉히.
+const ANTHROPIC_DEFAULT_MAX_TOKENS = 16000;
+const ANTHROPIC_MAX_TOKENS_CAP = 20000;
+/** Claude가 거부한 선택 필드(인스턴스 로컬) — `${model}:thinking`. 같은 모델에 두 번 부딪히지 않는다(Gemini thinking 메모와 같은 관례). */
+const anthropicRejected = new Set();
+
+/**
+ * Gemini responseSchema(OpenAPI 부분집합 — 대문자 type · nullable) → Claude structured output JSON Schema.
+ * 모든 객체에 additionalProperties:false(필수), nullable은 anyOf[…, null], 지원 밖 키워드(propertyOrdering · min/max 등)는 버린다.
+ * 의미(필드 · 필수 · enum · 설명)는 그대로 옮긴다.
+ */
+export function toClaudeSchema(schema) {
+  if (!schema || typeof schema !== 'object') return {};
+  const out = {};
+  const type = typeof schema.type === 'string' ? schema.type.toLowerCase() : null;
+  if (type) out.type = type;
+  if (typeof schema.description === 'string' && schema.description) out.description = schema.description;
+  if (Array.isArray(schema.enum)) out.enum = [...schema.enum];
+  if (type === 'object' || (!type && schema.properties)) {
+    out.type = 'object';
+    out.properties = {};
+    for (const [key, value] of Object.entries(schema.properties || {})) out.properties[key] = toClaudeSchema(value);
+    const required = (schema.required || []).filter((key) => key in out.properties);
+    if (required.length) out.required = required;
+    out.additionalProperties = false;
+  }
+  if (type === 'array' && schema.items) out.items = toClaudeSchema(schema.items);
+  if (Array.isArray(schema.anyOf)) out.anyOf = schema.anyOf.map(toClaudeSchema);
+  return schema.nullable === true ? { anyOf: [out, { type: 'null' }] } : out;
+}
+
+/**
+ * 입력 → Claude messages. 문자열은 user 한 턴(문자열 그대로). Gemini contents는 role model → assistant, 파트 순서 유지,
+ * text → text 블록, inline_data/inlineData 이미지 → image 블록, PDF → document 블록. 그 밖의 파트(오디오 · fileData 등)는
+ * 옮기지 않고 unsupported로 돌려준다 — 체인이 다음 제공자로 넘긴다.
+ */
+export function toAnthropicMessages(input, { jsonTail = false } = {}) {
+  if (typeof input === 'string') return { messages: [{ role: 'user', content: jsonTail ? input + ANTHROPIC_JSON_TAIL : input }] };
+  const messages = [];
+  for (const c of toContents(input)) {
+    const blocks = [];
+    for (const p of c?.parts || []) {
+      if (typeof p?.text === 'string') { if (p.text) blocks.push({ type: 'text', text: p.text }); continue; }
+      const inline = p?.inline_data || p?.inlineData;
+      const mime = inline?.mime_type || inline?.mimeType;
+      if (inline?.data && ANTHROPIC_IMAGE_TYPES.has(mime)) {
+        blocks.push({ type: 'image', source: { type: 'base64', media_type: mime, data: inline.data } });
+      } else if (inline?.data && mime === 'application/pdf') {
+        blocks.push({ type: 'document', source: { type: 'base64', media_type: mime, data: inline.data } });
+      } else {
+        return { unsupported: mime || Object.keys(p || {})[0] || 'part' };
+      }
+    }
+    if (blocks.length) messages.push({ role: c?.role === 'model' ? 'assistant' : 'user', content: blocks });
+  }
+  if (!messages.length) return { unsupported: 'empty' };
+  if (jsonTail) {
+    const lastUser = [...messages].reverse().find((m) => m.role === 'user');
+    const lastText = lastUser && [...lastUser.content].reverse().find((b) => b.type === 'text');
+    if (lastText) lastText.text += ANTHROPIC_JSON_TAIL;
+    else if (lastUser) lastUser.content.push({ type: 'text', text: ANTHROPIC_JSON_TAIL.trim() });
+  }
+  return { messages };
+}
+
+/** 꼬리 방식 JSON 응답에서 JSON 본문만 — 코드 블록 · 앞뒤 설명을 걷어 낸다. 못 찾으면 원문 그대로(호출부 파서가 판정). */
+export function extractJsonText(text) {
+  const raw = String(text ?? '').trim();
+  const tryParse = (s) => { try { JSON.parse(s); return true; } catch { return false; } };
+  if (tryParse(raw)) return raw;
+  const unfenced = raw.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+  if (tryParse(unfenced)) return unfenced;
+  const starts = [unfenced.indexOf('{'), unfenced.indexOf('[')].filter((i) => i >= 0);
+  if (!starts.length) return raw;
+  const start = Math.min(...starts);
+  const end = Math.max(unfenced.lastIndexOf('}'), unfenced.lastIndexOf(']'));
+  const slice = end > start ? unfenced.slice(start, end + 1) : '';
+  return slice && tryParse(slice) ? slice : raw;
+}
+
+/** Claude usage → 공통 단위. out은 Gemini(candidatesTokenCount)처럼 추론 제외, 입력은 캐시 읽기 · 쓰기까지 합친다. */
+export function normalizeAnthropicUsage(u) {
+  const output = Number(u?.output_tokens) || 0;
+  const thinking = Math.min(output, Number(u?.output_tokens_details?.thinking_tokens) || 0);
+  return {
+    in: (Number(u?.input_tokens) || 0) + (Number(u?.cache_creation_input_tokens) || 0) + (Number(u?.cache_read_input_tokens) || 0),
+    out: output - thinking,
+    thinking,
+  };
+}
+
+async function loadAnthropic() {
+  const { default: Anthropic } = await import('@anthropic-ai/sdk');
+  return Anthropic;
+}
+
+/** SDK 오류 → 체인 결과. 상태가 없는 것(연결 · 시간 초과 · 취소)은 Gemini fetch 실패와 같은 status 0 · network. */
+function anthropicFailure(Anthropic, e) {
+  if (e instanceof Anthropic.APIError && Number(e.status) > 0) {
+    const body = e.error && typeof e.error === 'object' ? e.error : null;
+    return { ok: false, status: e.status, code: 'http', detail: body?.error ? body : { error: { type: body?.type || null, message: e.message } } };
+  }
+  return { ok: false, status: 0, code: 'network', detail: { error: e?.message || 'failed' } };
+}
+
+/**
+ * Claude 1회(+ 거부된 선택 필드를 뺀 즉시 재요청 1회). 던지지 않는다 — geminiOnce와 같은 결과 모양.
+ * JSON: responseSchema가 있으면 output_config.format(json_schema), MIME만 있으면 꼬리 + extractJsonText.
+ * 스키마를 거부(400)하면 같은 모델을 꼬리 방식으로 즉시 1회 다시 부른다(폴백 모델로 강등되지 않게).
+ */
+async function anthropicOnce(model, input, generationConfig, { key, signal, timeoutMs, thinkingOff }) {
+  const spec = ANTHROPIC_MODELS[model] || {};
+  const wantJson = generationConfig?.responseMimeType === 'application/json';
+  const schema = wantJson && generationConfig?.responseSchema ? toClaudeSchema(generationConfig.responseSchema) : null;
+  const requested = Number(generationConfig?.maxOutputTokens);
+  const maxTokens = Math.min(ANTHROPIC_MAX_TOKENS_CAP, requested > 0 ? Math.floor(requested) : ANTHROPIC_DEFAULT_MAX_TOKENS);
+  let Anthropic;
+  try { Anthropic = await loadAnthropic(); } catch (e) {
+    return { ok: false, status: 0, code: 'sdk_unavailable', detail: { error: e?.message || 'sdk load failed' } };
+  }
+  const client = new Anthropic({ apiKey: key, maxRetries: 0, timeout: Number(timeoutMs) > 0 ? Number(timeoutMs) : 10 * 60 * 1000 });
+
+  const attempt = async ({ useSchema, useThinking }) => {
+    const converted = toAnthropicMessages(input, { jsonTail: wantJson && !useSchema });
+    if (converted.unsupported) return { ok: false, status: 400, code: 'unsupported_input', detail: { error: { message: `unsupported part: ${converted.unsupported}` } } };
+    const outputConfig = {
+      ...(thinkingOff && spec.effort ? { effort: spec.effort } : {}),
+      ...(useSchema ? { format: { type: 'json_schema', schema } } : {}),
+    };
+    const body = {
+      model,
+      max_tokens: maxTokens,
+      ...(useThinking ? { thinking: spec.thinkingOff } : {}),
+      ...(Object.keys(outputConfig).length ? { output_config: outputConfig } : {}),
+      messages: converted.messages,
+    };
+    let msg;
+    try {
+      msg = await client.messages.create(body, { signal });
+    } catch (e) {
+      return anthropicFailure(Anthropic, e);
+    }
+    if (msg?.stop_reason === 'refusal') {
+      return { ok: false, status: 200, code: 'refusal', detail: { stop_reason: 'refusal', category: msg?.stop_details?.category ?? null } };
+    }
+    const text = (msg?.content || []).filter((b) => b?.type === 'text').map((b) => b.text).join('');
+    if (!text) return { ok: false, status: 200, code: 'empty', detail: { stop_reason: msg?.stop_reason ?? null } };
+    return {
+      ok: true, status: 200, text: wantJson && !useSchema ? extractJsonText(text) : text,
+      usage: normalizeAnthropicUsage(msg?.usage),
+    };
+  };
+
+  const thinkingKey = `${model}:thinking`;
+  const useThinking = !!(thinkingOff && spec.thinkingOff && !anthropicRejected.has(thinkingKey));
+  let r = await attempt({ useSchema: !!schema, useThinking });
+  if (!r.ok && r.status === 400 && !isServiceConfigError(r.status, r.detail)) {
+    if (useThinking && mentionsThinking(r.detail)) {
+      anthropicRejected.add(thinkingKey);
+      r = await attempt({ useSchema: !!schema, useThinking: false });
+    } else if (schema && r.code === 'http') {
+      r = await attempt({ useSchema: false, useThinking });
+    }
+  }
+  return r;
+}
+
 // ───────────── 모델 비교 측정 전용(LLM-BENCH-001, #1077 AA R3-b) ─────────────
 // 관리자 측정 API(/api/admin/llm-bench)만 부른다. callLLM(운영 경로)·티어·폴백·텔레메트리와 무관하다 —
 // 여기 모델은 운영 요청에 쓰이지 않는다. 모델 식별자가 이 파일에만 산다는 계약(llm.test.js)을 따라 표를 여기에 둔다.
@@ -244,8 +461,51 @@ export const BENCH_MODELS = Object.freeze({
   'gemini-3.5-flash-lite': Object.freeze({ provider: 'gemini', model: 'gemini-3.5-flash-lite', env: 'GEMINI_API_KEY', label: 'Gemini 3.5 Flash-Lite (light 현행)', price: [0.30, 2.50] }),
   'gpt-oss-120b': Object.freeze({ provider: 'groq', model: GROQ_MODEL, env: 'GROQ_API_KEY', label: 'Groq gpt-oss-120b (최종 폴백)', price: [0.15, 0.60] }),
   'claude-haiku-5-5': Object.freeze({ provider: 'anthropic', model: 'claude-haiku-5-5', env: 'ANTHROPIC_API_KEY', label: 'Claude Haiku 5.5 (thinking 끔)', price: [0.10, 0.50] }),
+  'claude-sonnet-5-5': Object.freeze({ provider: 'anthropic', model: 'claude-sonnet-5-5', env: 'ANTHROPIC_API_KEY', label: 'Claude Sonnet 5.5 (품질 경로 · thinking 끔)', price: [2.00, 10.00] }),
   'gpt-6-luna': Object.freeze({ provider: 'openai', model: 'gpt-6-luna', env: 'OPENAI_API_KEY', label: 'GPT-6 Luna (reasoning none)', price: [0.10, 0.50] }),
 });
+/**
+ * 운영 모델 → 단가($/MTok [입력, 출력]) — 측정 표(BENCH_MODELS)의 단가를 그대로 쓴다(단가가 사는 곳은 한 곳). 공개가 기준 추정이며 청구액이 아니다.
+ * 추론(thinking) 토큰은 세 제공자 모두 출력으로 청구되므로 출력 단가로 센다. Haiku 5.5의 100K 넘는 프롬프트 요율(입출력 5배)은 반영하지 않는다
+ * (운영 프롬프트는 수천 토큰 — 넘는 호출이 생기면 과소 추정).
+ */
+export const MODEL_PRICES = Object.freeze(Object.fromEntries(Object.values(BENCH_MODELS).map((s) => [s.model, Object.freeze({ provider: s.provider, price: s.price })])));
+export const PRICE_AS_OF = '2026-10-17 KST(Gemini · Groq · OpenAI는 2026-10-09 공개가)';
+
+/** 토큰 → 추정 비용(달러). 단가를 모르는 모델은 null(0으로 숨기지 않는다). */
+export function estimateCostUsd(model, usage) {
+  const p = MODEL_PRICES[model];
+  if (!p) return null;
+  const [pin, pout] = p.price;
+  const inT = Number(usage?.in) || 0;
+  const outT = (Number(usage?.out) || 0) + (Number(usage?.thinking) || 0);
+  return Number(((inT * pin + outT * pout) / 1e6).toFixed(6));
+}
+
+/**
+ * 인메모리 창(getLLMStats) → provider · 모델별 추정 비용. 인스턴스 하나의 창이라 운영 전체가 아니다 — 월 추정은 로그 스크립트
+ * (scripts/eval/llm-cost-from-logs.mjs)가 한다.
+ */
+export function llmCostSummary(snapshot = getLLMStats()) {
+  const byModel = new Map();
+  for (const models of Object.values(snapshot?.tiers || {})) {
+    for (const [model, b] of Object.entries(models || {})) {
+      const row = byModel.get(model) || { model, provider: MODEL_PRICES[model]?.provider ?? null, calls: 0, ok: 0, in: 0, out: 0, thinking: 0 };
+      for (const k of ['calls', 'ok', 'in', 'out', 'thinking']) row[k] += Number(b?.[k]) || 0;
+      byModel.set(model, row);
+    }
+  }
+  const rows = [...byModel.values()].map((r) => ({ ...r, costUsd: estimateCostUsd(r.model, r) })).sort((a, b) => (b.costUsd ?? 0) - (a.costUsd ?? 0));
+  const unpriced = rows.filter((r) => r.costUsd == null && (r.in || r.out || r.thinking)).map((r) => r.model);
+  return {
+    priceAsOf: PRICE_AS_OF,
+    since: snapshot?.since ?? null,
+    byModel: rows,
+    totalUsd: Number(rows.reduce((a, r) => a + (r.costUsd ?? 0), 0).toFixed(6)),
+    unpriced,
+  };
+}
+
 const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 // Gemini 밖 모델에는 JSON 강제 모드를 쓰지 않는다 — 우리 프롬프트는 배열을 요구하는데 json_object는 객체만 허용한다.
 // 대신 같은 꼬리 한 줄을 세 모델에 똑같이 붙인다(공정 비교).
@@ -270,22 +530,23 @@ async function openAICompatOnce(endpoint, key, body, signal) {
   return { ok: true, status: res.status, text, usage: normalizeGroqUsage(data?.usage) };
 }
 
-async function anthropicOnce(model, prompt, { key, signal, maxTokens }) {
-  // 지연 로드 — 이 SDK는 측정 경로에서만 쓰여 운영 함수 번들에 싣지 않는다.
-  const { default: Anthropic } = await import('@anthropic-ai/sdk');
+async function anthropicBenchOnce(model, prompt, { key, signal, maxTokens }) {
+  // 지연 로드 — 운영 본선(anthropicOnce)과 같은 SDK · 같은 모델 설정 표(ANTHROPIC_MODELS)를 쓴다.
+  const Anthropic = await loadAnthropic();
   const client = new Anthropic({ apiKey: key, maxRetries: 0 });
+  const spec = ANTHROPIC_MODELS[model] || ANTHROPIC_MODELS['claude-haiku-5-5'];
   try {
-    // Haiku 5.5: 샘플링 인자(temperature 등)는 400 — 보내지 않는다. thinking 끔은 effort high 이하에서만 허용.
+    // 샘플링 인자(temperature 등)는 400 — 보내지 않는다. thinking 끔은 effort high 이하에서만 허용(모델별 값은 표).
     const msg = await client.messages.create({
       model, max_tokens: maxTokens,
-      thinking: { type: 'disabled' },
-      output_config: { effort: 'low' },
+      thinking: spec.thinkingOff,
+      output_config: { effort: spec.effort },
       messages: [{ role: 'user', content: prompt }],
     }, { signal });
     if (msg.stop_reason === 'refusal') return { ok: false, status: 200, code: 'refusal', detail: { stop_reason: 'refusal' } };
     const text = msg.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
     if (!text) return { ok: false, status: 200, code: 'empty', detail: { stop_reason: msg.stop_reason } };
-    return { ok: true, status: 200, text, usage: { in: msg.usage?.input_tokens || 0, out: msg.usage?.output_tokens || 0, thinking: 0 }, stop: msg.stop_reason };
+    return { ok: true, status: 200, text, usage: normalizeAnthropicUsage(msg.usage), stop: msg.stop_reason };
   } catch (e) {
     if (e instanceof Anthropic.APIError) return { ok: false, status: e.status || 0, code: 'http', detail: { type: e.error?.error?.type || null, message: e.message } };
     return { ok: false, status: 0, code: 'network', detail: { error: e?.message || 'failed' } };
@@ -294,10 +555,10 @@ async function anthropicOnce(model, prompt, { key, signal, maxTokens }) {
 
 /**
  * 측정 1회 — 같은 프롬프트를 모델 하나에. 운영과 같게: Gemini는 THINKING_OFF_CONFIG(+ 호출부의 temperature 0·JSON MIME),
- * Groq는 reasoning low, Luna는 reasoning none, Haiku는 thinking 끔·effort low.
+ * Groq는 reasoning low, Luna는 reasoning none, Claude는 ANTHROPIC_MODELS 표(Haiku disabled · Sonnet between_tools + effort).
  * @returns {Promise<{ok, text?, ms, usage?, status, code?, detail?}>} — 던지지 않는다. 키 없음은 code 'no_key'.
  */
-export async function benchOnce(id, prompt, { json = false, timeoutMs = 45_000, maxTokens = 4096 } = {}) {
+export async function benchOnce(id, prompt, { json = false, timeoutMs = 45_000, maxTokens = 4096, generationConfig = null } = {}) {
   const spec = BENCH_MODELS[id];
   if (!spec) return { ok: false, code: 'unknown_model', status: 400, ms: 0 };
   const key = process.env[spec.env];
@@ -306,6 +567,20 @@ export async function benchOnce(id, prompt, { json = false, timeoutMs = 45_000, 
   const signal = makeSignal(null, timeoutMs);
   const tailed = json ? prompt + BENCH_JSON_TAIL : prompt;
   let r;
+  // 품질 세트(LLM-BENCH-QUALITY-001) — 운영 호출부의 generationConfig(temperature · 응답 스키마)를 그대로 받아 운영과 같은 요청 형식으로
+  // 보낸다: Gemini는 responseSchema + 최소 thinking, Claude는 운영 anthropicOnce(structured output · 모델 표). Groq · OpenAI는 아래 꼬리 방식.
+  if (generationConfig && (spec.provider === 'gemini' || spec.provider === 'anthropic')) {
+    if (spec.provider === 'anthropic') {
+      r = await anthropicOnce(spec.model, prompt, generationConfig, { key, signal, timeoutMs, thinkingOff: true });
+    } else {
+      const cfg = { ...generationConfig, thinkingConfig: THINKING_OFF_CONFIG };
+      r = await geminiOnce(spec.model, toContents(prompt), cfg, { apiKey: key, signal });
+      if (!r.ok && r.status === 400 && mentionsThinking(r.detail)) {
+        r = await geminiOnce(spec.model, toContents(prompt), generationConfig, { apiKey: key, signal: makeSignal(null, timeoutMs) });
+      }
+    }
+    return { ...r, ms: Date.now() - started };
+  }
   if (spec.provider === 'gemini') {
     const cfg = { temperature: 0, ...(json ? { responseMimeType: 'application/json' } : {}), thinkingConfig: THINKING_OFF_CONFIG };
     r = await geminiOnce(spec.model, toContents(prompt), cfg, { apiKey: key, signal });
@@ -319,7 +594,7 @@ export async function benchOnce(id, prompt, { json = false, timeoutMs = 45_000, 
     // 추론 모델은 기본값 밖 temperature를 거부할 수 있어 보내지 않는다.
     r = await openAICompatOnce(OPENAI_ENDPOINT, key, { model: spec.model, messages: [{ role: 'user', content: tailed }], reasoning_effort: 'none' }, signal);
   } else {
-    r = await anthropicOnce(spec.model, tailed, { key, signal, maxTokens });
+    r = await anthropicBenchOnce(spec.model, tailed, { key, signal, maxTokens });
   }
   return { ...r, ms: Date.now() - started };
 }
@@ -364,9 +639,10 @@ export async function callLLM(tier, input, opts = {}) {
 async function callLLMInner(tier, input, opts, started) {
   const spec = TIERS[tier];
   if (!spec) throw new LLMError(`unknown tier: ${tier}`, { code: 'unknown_tier', status: 400 });
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const apiKey = process.env.GEMINI_API_KEY;
   const groqKey = opts.groq === false ? '' : process.env.GROQ_API_KEY;
-  if (!apiKey && !groqKey) throw new LLMError('LLM API key missing', { code: 'no_key', status: 500 });
+  if (!anthropicKey && !apiKey && !groqKey) throw new LLMError('LLM API key missing', { code: 'no_key', status: 500 });
 
   const contents = toContents(input);
   const generationConfig = buildGenerationConfig(opts);
@@ -380,25 +656,39 @@ async function callLLMInner(tier, input, opts, started) {
     tier, model, provider, fallbackDepth: depth, ms: Date.now() - started, usage, route,
   });
 
-  const chain = apiKey ? [spec.primary, ...spec.fallbacks] : [];
-  let lastGemini = null;
+  // 후보 순서 — Claude(키가 있을 때만) → Gemini(키가 있을 때만). Claude 키가 없으면 Gemini 티어 표 그대로다.
+  const chain = [
+    ...anthropicChain(tier, route).map((model) => ({ provider: 'anthropic', model })),
+    ...(apiKey ? [spec.primary, ...spec.fallbacks].map((model) => ({ provider: 'gemini', model })) : []),
+  ];
+
+  const geminiCall = async (model) => {
+    const withThinking = thinkingOff && !thinkingUnsupported.has(model);
+    const cfg = withThinking ? { ...generationConfig, thinkingConfig: THINKING_OFF_CONFIG } : generationConfig;
+    let r = await geminiOnce(model, contents, cfg, { apiKey, signal: makeSignal(opts.signal, opts.timeoutMs) });
+    if (!r.ok && r.status === 400 && withThinking && mentionsThinking(r.detail)) {
+      thinkingUnsupported.add(model);
+      r = await geminiOnce(model, contents, generationConfig, { apiKey, signal: makeSignal(opts.signal, opts.timeoutMs) });
+    }
+    return r;
+  };
+  const anthropicCall = (model) => anthropicOnce(model, input, generationConfig, {
+    key: anthropicKey, signal: makeSignal(opts.signal, opts.timeoutMs), timeoutMs: opts.timeoutMs, thinkingOff,
+  });
+
+  const lastByProvider = {};
+  const blocked = new Set(); // 「서비스 설정」으로 막힌 제공자 — 같은 키의 다른 모델도 같은 답이다
   let last = null;
-  let depth = 0;
   let giveUp = false;
-  for (const model of chain) {
+  for (let depth = 0; depth < chain.length && !giveUp; depth++) {
+    const { provider, model } = chain[depth];
+    if (blocked.has(provider)) continue;
     for (let attempt = 0; attempt <= retryMax; attempt++) {
-      const withThinking = thinkingOff && !thinkingUnsupported.has(model);
-      const cfg = withThinking ? { ...generationConfig, thinkingConfig: THINKING_OFF_CONFIG } : generationConfig;
-      const signal = makeSignal(opts.signal, opts.timeoutMs);
-      let r = await geminiOnce(model, contents, cfg, { apiKey, signal });
-      if (!r.ok && r.status === 400 && withThinking && mentionsThinking(r.detail)) {
-        thinkingUnsupported.add(model);
-        r = await geminiOnce(model, contents, generationConfig, { apiKey, signal: makeSignal(opts.signal, opts.timeoutMs) });
-      }
-      if (r.ok) return { text: r.text, meta: meta(model, 'gemini', depth, r.usage) };
-      last = lastGemini = { ...r, model, provider: 'gemini' };
+      const r = provider === 'anthropic' ? await anthropicCall(model) : await geminiCall(model);
+      if (r.ok) return { text: r.text, meta: meta(model, provider, depth, r.usage) };
+      last = lastByProvider[provider] = { ...r, model, provider, depth };
       if (opts.signal?.aborted) {
-        throw new LLMError('aborted', { code: 'aborted', status: 0, model, provider: 'gemini', fallbackDepth: depth });
+        throw new LLMError('aborted', { code: 'aborted', status: 0, model, provider, fallbackDepth: depth });
       }
       if (attempt === retryMax || !isCapacityError(r.status, r.detail)) break;
       const delay = delays[attempt] ?? delays[delays.length - 1] ?? 0;
@@ -406,10 +696,9 @@ async function callLLMInner(tier, input, opts, started) {
       console.warn(`[llm] capacity retry ${attempt + 1}/${retryMax} in ${delay}ms (${model} ${r.status})`);
       await sleep(delay);
     }
-    depth++;
-    if (giveUp) break;
-    // 결제 · 크레딧이 막히면 같은 키의 다른 Gemini 모델도 같은 답이다 — 나머지 모델은 건너뛰고 Groq(다른 제공자)만 본다.
-    if (lastGemini && isServiceConfigError(lastGemini.status, lastGemini.detail)) break;
+    // 결제 · 크레딧 · 키가 막히면 같은 제공자의 나머지 모델은 건너뛰고 다른 제공자(Gemini · Groq)만 본다.
+    const failed = lastByProvider[provider];
+    if (failed && isProviderConfigError(provider, failed.status, failed.detail)) blocked.add(provider);
   }
 
   if (groqKey && !pastDeadline()) {
@@ -417,19 +706,20 @@ async function callLLMInner(tier, input, opts, started) {
       groqKey, signal: makeSignal(opts.signal, opts.groqTimeoutMs ?? opts.timeoutMs),
     });
     if (r.ok) return { text: r.text, meta: meta(GROQ_MODEL, 'groq', chain.length, r.usage) };
-    last = { ...r, model: GROQ_MODEL, provider: 'groq' };
+    last = { ...r, model: GROQ_MODEL, provider: 'groq', depth: chain.length };
   }
 
-  const primary = lastGemini || last;
+  // 실패 상태 · 본문은 본선 제공자(후보 첫 제공자 — Claude 키가 있으면 Claude, 없으면 Gemini) 쪽을 우선한다.
+  const primary = (chain.length ? lastByProvider[chain[0].provider] : null) || lastByProvider.gemini || last;
   throw new LLMError(
     primary ? `LLM ${primary.provider} ${primary.model} failed (${primary.code} ${primary.status})` : 'LLM unavailable',
     {
-      code: primary && isServiceConfigError(primary.status, primary.detail) ? 'service_config' : (primary?.code || 'exhausted'),
+      code: primary && isProviderConfigError(primary.provider, primary.status, primary.detail) ? 'service_config' : (primary?.code || 'exhausted'),
       status: primary?.status ?? 0,
       detail: primary?.detail ?? null,
       model: primary?.model ?? null,
       provider: primary?.provider ?? null,
-      fallbackDepth: primary?.provider === 'groq' ? chain.length : Math.max(0, depth - 1),
+      fallbackDepth: primary?.depth ?? 0,
     },
   );
 }

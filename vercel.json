@@ -2,7 +2,8 @@
   "git": {
     "deploymentEnabled": {
       "codex/*": false,
-      "codex2/*": false
+      "codex2/*": false,
+      "claude/wip/**": false
     }
   },
   "regions": ["hnd1"],

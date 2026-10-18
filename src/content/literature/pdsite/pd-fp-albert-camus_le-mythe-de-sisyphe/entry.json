@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "provider": "pdsite",
+  "site": "fp",
+  "key": "pd-fp-albert-camus_le-mythe-de-sisyphe",
+  "url": "https://www.fadedpage.com/showbook.php?pid=20160912",
+  "title": "Le Mythe de Sisyphe",
+  "author": "Albert Camus",
+  "language": "French",
+  "level": "C1 고급",
+  "publishedYear": 1942,
+  "authorDeathYear": 1960,
+  "countryOfOrigin": "FR",
+  "mortPourLaFrance": false,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "FR",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "시지프 신화",
+    "authorKo": "알베르 카뮈",
+    "binding": "gallimard-essais",
+    "coverTitle": "Le Mythe\nde Sisyphe",
+    "coverAuthor": "Albert Camus",
+    "coverEdition": "Les Essais XII",
+    "coverImprint": "Gallimard"
+  },
+  "parse": {
+    "part": "^h1:(Un raisonnement absurde|L’homme absurde|La création absurde|Le mythe de Sisyphe|L’espoir et l’absurde dans l’œuvre de Franz Kafka)$",
+    "chapter": "^h1:",
+    "stop": "^p:ŒUVRES D’ALBERT CAMUS$"
+  },
+  "file": {
+    "path": "20160912.html",
+    "url": "https://www.fadedpage.com/books/20160912/html.php",
+    "encoding": "utf-8",
+    "sha256": "3e385c4fdc3587aa1ee8cc78e38d58841c7c4fa372b99f1dd86bcbc3f944e880",
+    "fetchedAt": "2026-10-17"
+  }
+}

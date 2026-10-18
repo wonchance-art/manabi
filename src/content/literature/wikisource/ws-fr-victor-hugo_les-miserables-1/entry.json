@@ -1,0 +1,951 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "fr",
+  "key": "ws-fr-victor-hugo_les-miserables-1",
+  "main": "Les Misérables",
+  "url": "https://fr.wikisource.org/wiki/Les_Mis%C3%A9rables",
+  "title": "Les Misérables, tome I : Fantine",
+  "author": "Victor Hugo",
+  "level": "C1 고급",
+  "publishedYear": 1862,
+  "authorDeathYear": 1885,
+  "countryOfOrigin": "FR",
+  "mortPourLaFrance": false,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "FR",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "레 미제라블 1부",
+    "authorKo": "빅토르 위고",
+    "binding": "pagnerre",
+    "coverAuthor": "Victor Hugo",
+    "coverTitle": "Les\nMisérables",
+    "coverPart": "Première partie",
+    "coverPartTitle": "Fantine",
+    "coverTome": "Tome premier",
+    "coverPlace": "Paris",
+    "coverImprint": "Pagnerre, libraire-éditeur",
+    "coverYear": 1862
+  },
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "Les Misérables/Tome 1/Livre 1/01",
+      "revid": 7060042,
+      "timestamp": "2017-11-19T14:24:48Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "prp",
+          "sha256": "42882348664253eae8f9cb09e780e14c47d29f9eb314827112120447f3f7d9df"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 1/02",
+      "revid": 7060046,
+      "timestamp": "2017-11-19T14:25:23Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "002.html",
+          "extract": "prp",
+          "sha256": "ad9e62ff0266139daa3df3981909ba725c5cb0c1cc5b564fc056e82014272061"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 1/03",
+      "revid": 7060049,
+      "timestamp": "2017-11-19T14:25:37Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "003.html",
+          "extract": "prp",
+          "sha256": "9cf2b2cc27d3299240464357921e8ca6e56251b850f637e07f73216da97c4443"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 1/04",
+      "revid": 7060052,
+      "timestamp": "2017-11-19T14:25:51Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "004.html",
+          "extract": "prp",
+          "sha256": "d85e9b7d5fa056ae3c3bdddb286020a7562244c44d380d6f14db2b10a6734b87"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 1/05",
+      "revid": 7060056,
+      "timestamp": "2017-11-19T14:26:07Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "005.html",
+          "extract": "prp",
+          "sha256": "688caea07b72c53222c1211cbe2112bb10f8bde596cd979b39a8b93aaed6c3bc"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 1/06",
+      "revid": 7060130,
+      "timestamp": "2017-11-19T14:38:18Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "006.html",
+          "extract": "prp",
+          "sha256": "7b6e57b5e3f2b378ae2d19a4a865a0fdffe5af21e861cb8c8e779cf7d417938f"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 1/07",
+      "revid": 7060133,
+      "timestamp": "2017-11-19T14:38:59Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "007.html",
+          "extract": "prp",
+          "sha256": "351dead3e046ea5dfc24672f52812d61b0976d34c2226e07888c04a1e19a234a"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 1/08",
+      "revid": 7060136,
+      "timestamp": "2017-11-19T14:39:37Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "008.html",
+          "extract": "prp",
+          "sha256": "5021a5d24e21c2f937dc2d01eb62c9d26059f622acb11e0071378a6125f2ec74"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 1/09",
+      "revid": 7060142,
+      "timestamp": "2017-11-19T14:40:34Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "009.html",
+          "extract": "prp",
+          "sha256": "cf04b80f883527375908a6059d1de8e08319cb4b877eb81c53d25355f724b406"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 1/10",
+      "revid": 7060147,
+      "timestamp": "2017-11-19T14:44:21Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "010.html",
+          "extract": "prp",
+          "sha256": "831ce29119c758951b507103c8c84411e9d65a93789d8faaa31399631ef12d1c"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 1/11",
+      "revid": 7060262,
+      "timestamp": "2017-11-19T15:26:33Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "011.html",
+          "extract": "prp",
+          "sha256": "55ee695a73a963b0920aba2bd12c33e571633b275d9587add016aedf086bd207"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 1/12",
+      "revid": 7060266,
+      "timestamp": "2017-11-19T15:27:17Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "012.html",
+          "extract": "prp",
+          "sha256": "3f224209a151428543eeb0751f2e560d8df130908749e38d5c62bcd07cdade85"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 1/13",
+      "revid": 7060267,
+      "timestamp": "2017-11-19T15:27:59Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "013.html",
+          "extract": "prp",
+          "sha256": "d6f25b451463233242c9ae24c33294adeacfe3146e919fc4bb1189c9f77b975b"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 1/14",
+      "revid": 7060268,
+      "timestamp": "2017-11-19T15:28:44Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "014.html",
+          "extract": "prp",
+          "sha256": "c0aa420d413bc870396137da1330913b01c4563a3958c5ae084742fc4361fdeb"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 2/01",
+      "revid": 7060286,
+      "timestamp": "2017-11-19T15:44:47Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "015.html",
+          "extract": "prp",
+          "sha256": "50156ffeb790aae0da51fd34e9cf977098f5f745adf8d56cf1fd7c7ba0e3e321"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 2/02",
+      "revid": 7060287,
+      "timestamp": "2017-11-19T15:45:59Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "016.html",
+          "extract": "prp",
+          "sha256": "30b2b524df0e167d230d3c8587fb6a4f95acda9a88be2f2f499e089c2f4322fd"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 2/03",
+      "revid": 15896345,
+      "timestamp": "2026-06-29T21:54:46Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "017.html",
+          "extract": "prp",
+          "sha256": "51472f42693f3565875bfef2c630e0fa3584bc8e455bedfe8923ecd41f216270"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 2/04",
+      "revid": 7060289,
+      "timestamp": "2017-11-19T15:47:36Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "018.html",
+          "extract": "prp",
+          "sha256": "08c87c3bb113122635cac41108b6ef3df5260019e2938ae8531dbb3829fb1a09"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 2/05",
+      "revid": 7060291,
+      "timestamp": "2017-11-19T15:48:11Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "019.html",
+          "extract": "prp",
+          "sha256": "67149d81f78fffdb092966fff5f3ef489b0d62eaefea2c24bafb57d326e5fb20"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 2/06",
+      "revid": 7060292,
+      "timestamp": "2017-11-19T15:49:04Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "020.html",
+          "extract": "prp",
+          "sha256": "7b573565a8849258945086b05071b03b5ed73c401573715033ed61bc56fc4937"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 2/07",
+      "revid": 7060293,
+      "timestamp": "2017-11-19T15:50:50Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "021.html",
+          "extract": "prp",
+          "sha256": "2562284a2bef157f1a607ff13d9646c93a1983c3b6c2017e8148d980b115929e"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 2/08",
+      "revid": 7060294,
+      "timestamp": "2017-11-19T15:51:39Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "022.html",
+          "extract": "prp",
+          "sha256": "d7714dca093aeea834873e39865e04a697fda9a7fcde6f1c696d1b9a81be31a2"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 2/09",
+      "revid": 7060295,
+      "timestamp": "2017-11-19T15:52:17Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "023.html",
+          "extract": "prp",
+          "sha256": "f02d3d783f696fea0565d4303af643423499327255d2de42612fca22456909d6"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 2/10",
+      "revid": 7060299,
+      "timestamp": "2017-11-19T15:53:12Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "024.html",
+          "extract": "prp",
+          "sha256": "b9b0400fbb9f0073672a24bdf39e7a5b2aeb55ff0a52ad06d341defbf28e16ee"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 2/11",
+      "revid": 7060303,
+      "timestamp": "2017-11-19T15:55:34Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "025.html",
+          "extract": "prp",
+          "sha256": "d89ee680ed9966d08bf35ad390e75e998903513af45d057eb68d7d7a80970d7f"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 2/12",
+      "revid": 7060304,
+      "timestamp": "2017-11-19T15:56:38Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "026.html",
+          "extract": "prp",
+          "sha256": "0ec56dcb48cd3b8bf0316cb307ed67372408ec9b9fa1bd036108abc4245936f4"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 2/13",
+      "revid": 7060307,
+      "timestamp": "2017-11-19T15:57:54Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "027.html",
+          "extract": "prp",
+          "sha256": "41026e611cdcfa097511b8eb17eea4f16786c98daa96a76c0a9a763bd9361677"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 3/01",
+      "revid": 7060311,
+      "timestamp": "2017-11-19T15:59:33Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "028.html",
+          "extract": "prp",
+          "sha256": "6804f6bfb20e479a2a707b434b60314a287055e53c57b1779c3b1c4473672c25"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 3/02",
+      "revid": 7060341,
+      "timestamp": "2017-11-19T16:08:57Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "029.html",
+          "extract": "prp",
+          "sha256": "c8c2e9e2391dabc6c43d2f4d51a425478df8eef81c954b19696d3384ce90c32f"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 3/03",
+      "revid": 7060343,
+      "timestamp": "2017-11-19T16:09:46Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "030.html",
+          "extract": "prp",
+          "sha256": "672e306e3df3615de682a2dd314e4b929e7f6ffd1895a128712417d02d3cf334"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 3/04",
+      "revid": 7060345,
+      "timestamp": "2017-11-19T16:10:17Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "031.html",
+          "extract": "prp",
+          "sha256": "af08b1afa933bf44dae279fb8d4e4df3c4937cf51db94c8557f23b930bac513a"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 3/05",
+      "revid": 7060348,
+      "timestamp": "2017-11-19T16:10:50Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "032.html",
+          "extract": "prp",
+          "sha256": "dd9767fa4a093a986125f4c5bc6a518f6b63782a3f8503ff8725be364ad58587"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 3/06",
+      "revid": 7060349,
+      "timestamp": "2017-11-19T16:11:23Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "033.html",
+          "extract": "prp",
+          "sha256": "9c0416e2f5a9bf164be5e8ce9ffae82ea0a8b9d8f484ba7f620db265987d6b4c"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 3/07",
+      "revid": 7060358,
+      "timestamp": "2017-11-19T16:15:17Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "034.html",
+          "extract": "prp",
+          "sha256": "3300a8f0e26a7bce3eaca44510ebb7536427cfd4048bc7c0384880bd28ded6d0"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 3/08",
+      "revid": 7060366,
+      "timestamp": "2017-11-19T16:18:53Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "035.html",
+          "extract": "prp",
+          "sha256": "ae60c2ace07e7c65fc7a552723583dc0234231645979a58fb911bab35c7ca832"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 3/09",
+      "revid": 13735232,
+      "timestamp": "2023-11-24T13:30:22Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "036.html",
+          "extract": "prp",
+          "sha256": "df5f7ab0cc6b4ed5be4f81ec14a7a7fd484a6e4c6f0b247ad9636f43f3ea512e"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 4/01",
+      "revid": 7060394,
+      "timestamp": "2017-11-19T16:29:13Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "037.html",
+          "extract": "prp",
+          "sha256": "9903200517b4b31e8b547fae36682c37ef7f15c7a25460351d49d376981da3a1"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 4/02",
+      "revid": 7060401,
+      "timestamp": "2017-11-19T16:31:29Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "038.html",
+          "extract": "prp",
+          "sha256": "67433fa7512db7ee24839ac0776d44ff5843b745ab346b8270c9c8b04fdb5705"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 4/03",
+      "revid": 7060428,
+      "timestamp": "2017-11-19T16:40:37Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "039.html",
+          "extract": "prp",
+          "sha256": "8cc36b0914363277df52144fb59ffab28c9021c7447cebdb51e691e0a0e51703"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 5/01",
+      "revid": 9370858,
+      "timestamp": "2019-01-19T07:26:14Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "040.html",
+          "extract": "prp",
+          "sha256": "3570e76594e232c858f82c16510c6b5243e6525b718a12303f0b7e6ad2d67902"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 5/02",
+      "revid": 9370856,
+      "timestamp": "2019-01-19T07:25:54Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "041.html",
+          "extract": "prp",
+          "sha256": "23812ded573f943e8d445a96bf0c138fdbd3908e5ccfcf120638dd30dbbc5752"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 5/03",
+      "revid": 9370855,
+      "timestamp": "2019-01-19T07:25:34Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "042.html",
+          "extract": "prp",
+          "sha256": "5cf45874a970c098a2cd4b72f3adba4a8fadbffa58d6988598dec283f0bebef6"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 5/04",
+      "revid": 9370853,
+      "timestamp": "2019-01-19T07:24:22Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "043.html",
+          "extract": "prp",
+          "sha256": "7fb212b6f7882a6051a218efdf602cf61e7436cf18b4441f14bb1c07605d3632"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 5/05",
+      "revid": 9369614,
+      "timestamp": "2019-01-18T19:28:15Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "044.html",
+          "extract": "prp",
+          "sha256": "1b93dd4e23c1330c021ff4e7561e11ec5320253101e20b8dd4d6f8205d65befa"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 5/06",
+      "revid": 10099347,
+      "timestamp": "2019-12-13T12:18:51Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "045.html",
+          "extract": "prp",
+          "sha256": "6fbca4a706492e45f9a380cc6ec483180fb429cf3e3c2061f40b32ba18887acc"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 5/07",
+      "revid": 9370862,
+      "timestamp": "2019-01-19T07:29:04Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "046.html",
+          "extract": "prp",
+          "sha256": "5b87717388087f3f1513cc2e4303fe58933adc95d5581ff1187487f34273826e"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 5/08",
+      "revid": 9370863,
+      "timestamp": "2019-01-19T07:29:31Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "047.html",
+          "extract": "prp",
+          "sha256": "ebc9de76513a329f7bbd7df6b6eee48186c99938b42c1ed0a81d45f9138da272"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 5/09",
+      "revid": 9370864,
+      "timestamp": "2019-01-19T07:29:50Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "048.html",
+          "extract": "prp",
+          "sha256": "95f89ef6685c60f1021c0f5651646fb0f77e112973ebdba13b3734c06d006497"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 5/10",
+      "revid": 9370865,
+      "timestamp": "2019-01-19T07:30:07Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "049.html",
+          "extract": "prp",
+          "sha256": "e942a5bea5e34a07f23fdbb8c576a446b1cff0eab2363f7287ce4ca062305063"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 5/11",
+      "revid": 9370866,
+      "timestamp": "2019-01-19T07:30:24Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "050.html",
+          "extract": "prp",
+          "sha256": "6b7f68f47162bbc3741bf35229d5344bfb98f0e5cd84f89dee01e08e178bc216"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 5/12",
+      "revid": 9370868,
+      "timestamp": "2019-01-19T07:30:43Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "051.html",
+          "extract": "prp",
+          "sha256": "b8923a2e8085451757754af53edb511755ce4c720d3291109a3cd0e3003962be"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 5/13",
+      "revid": 9370869,
+      "timestamp": "2019-01-19T07:31:32Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "052.html",
+          "extract": "prp",
+          "sha256": "e2c734c96ee39e715a274aaa16315612d97de38c633518155036f68767047b8f"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 6/01",
+      "revid": 9370871,
+      "timestamp": "2019-01-19T07:32:38Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "053.html",
+          "extract": "prp",
+          "sha256": "dc4038fc4d5acef89671de2a83ea23821f99aaf94500e74f92b9a7815d98cd08"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 6/02",
+      "revid": 9370872,
+      "timestamp": "2019-01-19T07:32:56Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "054.html",
+          "extract": "prp",
+          "sha256": "ac9cfb1a23e8e6098ab797d145801508f8572c363afb8c8c57141e53c37d5b2a"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 7/01",
+      "revid": 9370874,
+      "timestamp": "2019-01-19T07:33:20Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "055.html",
+          "extract": "prp",
+          "sha256": "d645e8a02fb44e79327ce9c988086c172c6c9118c16c8bf84e427bc7ab2724e3"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 7/02",
+      "revid": 9370875,
+      "timestamp": "2019-01-19T07:33:33Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "056.html",
+          "extract": "prp",
+          "sha256": "be558176de4d42675dd5ad063b4dedde298c0ec25888bcbba674bbcdf9633e8e"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 7/03",
+      "revid": 9370876,
+      "timestamp": "2019-01-19T07:33:49Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "057.html",
+          "extract": "prp",
+          "sha256": "35a62717d86aa69430e062ee951565e9188c5b668c4a7f2175adbd69313bbfa9"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 7/04",
+      "revid": 9370877,
+      "timestamp": "2019-01-19T07:34:06Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "058.html",
+          "extract": "prp",
+          "sha256": "eb58a86c6d7818dba7e13c555a325f1ce8f337982167cf395f929afa62c59d9e"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 7/05",
+      "revid": 9370878,
+      "timestamp": "2019-01-19T07:34:28Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "059.html",
+          "extract": "prp",
+          "sha256": "309f23c7248da44d891b6687896e07951b3e16923248c7a12d411d28ba9f28d7"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 7/06",
+      "revid": 9370879,
+      "timestamp": "2019-01-19T07:34:45Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "060.html",
+          "extract": "prp",
+          "sha256": "6f8cbfd343cce3f7ba5270096780b816c305b4b33765c3904f194b8bdd3179eb"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 7/07",
+      "revid": 9370880,
+      "timestamp": "2019-01-19T07:35:05Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "061.html",
+          "extract": "prp",
+          "sha256": "23764517487cf0354d6f5c170e8708e2537ebc555ceda7ccddbf7e806c629d6e"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 7/08",
+      "revid": 9370881,
+      "timestamp": "2019-01-19T07:35:19Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "062.html",
+          "extract": "prp",
+          "sha256": "4e6a4b755109916358627fc67e960d1c0c142ba76cc3811b6f78d38eff81d52b"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 7/09",
+      "revid": 9370882,
+      "timestamp": "2019-01-19T07:35:30Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "063.html",
+          "extract": "prp",
+          "sha256": "463b46335161de80e8b3e8ea03f3a1461368246988292f939cff3100c86ea034"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 7/10",
+      "revid": 9370883,
+      "timestamp": "2019-01-19T07:35:44Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "064.html",
+          "extract": "prp",
+          "sha256": "f025a47988b2ca49a6b346a39780999f7e35f3b4e61e348c7f9c4ae065179a6e"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 7/11",
+      "revid": 9370884,
+      "timestamp": "2019-01-19T07:35:56Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "065.html",
+          "extract": "prp",
+          "sha256": "0128811326ee9e5ed2af6d110870d7f90900d7d0d80be5464c42c89993baa053"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 8/01",
+      "revid": 9370886,
+      "timestamp": "2019-01-19T07:36:28Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "066.html",
+          "extract": "prp",
+          "sha256": "34c5575fc92eb0c89b4cccc60f95575ece182e19191911be4775023942e0dd0d"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 8/02",
+      "revid": 9370887,
+      "timestamp": "2019-01-19T07:36:41Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "067.html",
+          "extract": "prp",
+          "sha256": "43305fd919d5ff0a7799fa375bd6531ab8724bf96bd0b5e53f659112655adda3"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 8/03",
+      "revid": 9370888,
+      "timestamp": "2019-01-19T07:36:53Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "068.html",
+          "extract": "prp",
+          "sha256": "f95c985701a4ea5247e32ef48f4b816335d7b074bc7c1a95a6473d80b36dc647"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 8/04",
+      "revid": 9370889,
+      "timestamp": "2019-01-19T07:37:08Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "069.html",
+          "extract": "prp",
+          "sha256": "9ec6805529164ec457f38f183df291336d2fb0c21a379f3edc72cdaa7e53de73"
+        }
+      ]
+    },
+    {
+      "page": "Les Misérables/Tome 1/Livre 8/05",
+      "revid": 9370890,
+      "timestamp": "2019-01-19T07:37:21Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "070.html",
+          "extract": "prp",
+          "sha256": "42cf239ee3f70b513e964147a440676afa7221f06d5d5fb51a70050ad643424d"
+        }
+      ]
+    }
+  ]
+}

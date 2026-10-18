@@ -19,13 +19,16 @@ import '@/components/classroom/teaching-board.css';
 import './study-notes.css';
 import { friendlyToastMessage } from '@/lib/errorMessage';
 
-const Canvas = dynamic(()=>import('@/components/classroom/TeachingBoardCanvas').then(module=>module.SharedBoardCanvas), {ssr:false,loading:()=> <p className="note-loading" aria-busy="true">노트를 펼치고 있어요…</p>});
+// 판서 캔버스 묶음(약 360KB)은 노트를 받은 뒤에야 받기 시작해 「노트 → 캔버스」가 직렬이었다(LEARN-PAGES 실측 2026-10-17 KST:
+// 1440 노트 응답 0.73초 뒤 캔버스 묶음 시작 → 그림 2.25초). 편집기가 마운트되는 즉시(노트 조회와 동시에) 같은 import로 미리 받는다.
+const loadCanvas=()=>import('@/components/classroom/TeachingBoardCanvas');
+const Canvas = dynamic(()=>loadCanvas().then(module=>module.SharedBoardCanvas), {ssr:false,loading:()=> <p className="note-loading" aria-busy="true">노트를 펼치고 있어요…</p>});
 const noop=()=>{};
 
 export default function StudyNotePage({id}) {
   const {user,loading}=useAuth();
   if(loading)return <p className="manabi-page" role="status">내 노트를 확인하고 있어요…</p>;
-  if(!user)return <section className="manabi-page note-gate"><h1>나만의 학습 노트<span>.</span></h1><p>듣고 적은 표현을 모아 내 단어장으로 이어가세요.</p><Link className="manabi-button" href={`/auth?from=${encodeURIComponent(`/notes/${id}`)}`}>로그인하고 노트 열기 ↗</Link></section>;
+  if(!user)return <section className="manabi-page note-gate"><h1>나만의 학습 노트<span>.</span></h1><p>듣고 적은 표현을 모아 내 단어장으로 이어가세요.</p><Link className="manabi-button" prefetch={false} href={`/auth?from=${encodeURIComponent(`/notes/${id}`)}`}>로그인하고 노트 열기 ↗</Link></section>;
   return id==='new'?<CreateNote key={user.id} owner={user.id}/>:<NoteEditor key={`${user.id}:${id}`} owner={user.id} id={id}/>;
 }
 
@@ -41,10 +44,11 @@ function CreateNote({owner}) {
       const result=await requestNote('/api/notes',{method:'POST',body:JSON.stringify(attempt.current)});void invalidateLibrary(queryClient,owner);router.replace(`/notes/${result.id}`);
     }catch(cause){if([400,403,404,413].includes(cause.status))attempt.current=null;setError(friendlyToastMessage(cause));setBusy(false);}
   }
-  return <main className="manabi-page note-create" style={textbookThemeStyle(language)}><Link className="manabi-link" href="/materials">← 내 서재</Link><small>PERSONAL NOTEBOOK</small><h1>듣고, 적고.<br/>내 것으로<span>.</span></h1><p>자유롭게 필기하고, 배운 표현은 한 번에 정리하세요.</p><form onSubmit={create}><label>노트 제목<input autoFocus maxLength={200} placeholder="오늘 배운 일본어" value={title} disabled={busy||!!attempt.current} onChange={event=>setTitle(event.target.value)}/></label><label>공부하는 언어<select value={language} disabled={busy||!!attempt.current} onChange={event=>setLanguage(event.target.value)}>{BOARD_LANGUAGES.map(lang=><option key={lang} value={lang}>{langNameKo(lang)}</option>)}</select></label>{params.get('material')&&<p>열어 둔 교재를 이 노트의 출처로 연결해요.</p>}<button className="manabi-button" disabled={busy}>{busy?'노트 만드는 중…':error?'같은 노트 다시 저장':'노트 펼치기 ↗'}</button>{error&&<p role="alert">{error}</p>}</form><small>내 계정에만 보관돼요. 수업 팀에 자동 공유되지 않아요.</small></main>;
+  return <main className="manabi-page note-create" style={textbookThemeStyle(language)}><Link className="manabi-link" prefetch={false} href="/materials">← 내 서재</Link><small>PERSONAL NOTEBOOK</small><h1>듣고, 적고.<br/>내 것으로<span>.</span></h1><p>자유롭게 필기하고, 배운 표현은 한 번에 정리하세요.</p><form onSubmit={create}><label>노트 제목<input autoFocus maxLength={200} placeholder="오늘 배운 일본어" value={title} disabled={busy||!!attempt.current} onChange={event=>setTitle(event.target.value)}/></label><label>공부하는 언어<select value={language} disabled={busy||!!attempt.current} onChange={event=>setLanguage(event.target.value)}>{BOARD_LANGUAGES.map(lang=><option key={lang} value={lang}>{langNameKo(lang)}</option>)}</select></label>{params.get('material')&&<p>열어 둔 교재를 이 노트의 출처로 연결해요.</p>}<button className="manabi-button" disabled={busy}>{busy?'노트 만드는 중…':error?'같은 노트 다시 저장':'노트 펼치기 ↗'}</button>{error&&<p role="alert">{error}</p>}</form><small>내 계정에만 보관돼요. 수업 팀에 자동 공유되지 않아요.</small></main>;
 }
 
 function NoteEditor({owner,id}) {
+  useEffect(()=>{void loadCanvas().catch(noop);},[]);
   const store=useStudyNote(owner,id),actions=useRef(null),router=useRouter(),params=useSearchParams(),queryClient=useQueryClient();
   const saved=useQuery({queryKey:['vocab',owner],queryFn:()=>fetchVocab(owner)});
   const vocabularyIndex=useMemo(()=>({byKey:new Map((saved.data||[]).map(row=>[row.id,row]))}),[saved.data]);
@@ -81,12 +85,12 @@ function NoteEditor({owner,id}) {
   function backup(){const current=store.current();if(!current)return;actions.current?.flush();const blob=new Blob([JSON.stringify({format:'manabi-personal-note',...store.current()})],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`manabi-note-${id}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
   async function fork(){if(forking)return;setForking(true);try{actions.current?.flush();const current=store.current();const document={...current.document,key:crypto.randomUUID()};const result=await requestNote('/api/notes',{method:'POST',body:JSON.stringify({title:`${current.title} · 내 초안`,document})});void invalidateLibrary(queryClient,owner);router.push(`/notes/${result.id}`);}catch(error){setMessage(friendlyToastMessage(error));}finally{setForking(false);}}
   const leave=async()=>{actions.current?.flush();try{await store.sync();router.push('/materials?view=notes');}catch(error){setMessage(`${friendlyToastMessage(error)} 노트 정보에서 백업하거나 다시 저장해 주세요.`);}};
-  if(!store.ready)return <section className="manabi-page note-gate"><p role={store.error?'alert':'status'} aria-busy={!store.error||undefined}>{store.error||'개인 노트를 불러오고 있어요…'}</p><Link href="/materials">내 서재</Link><button onClick={()=>window.location.reload()}>다시 시도</button></section>;
+  if(!store.ready)return <section className="manabi-page note-gate"><p role={store.error?'alert':'status'} aria-busy={!store.error||undefined}>{store.error||'개인 노트를 불러오고 있어요…'}</p><Link prefetch={false} href="/materials">내 서재</Link><button onClick={()=>window.location.reload()}>다시 시도</button></section>;
   const value=store.value,saveLabel=store.error?'저장 확인 필요':store.saving?'저장 중…':'계정에 저장됨';
   return <main ref={root} className="personal-note" style={textbookThemeStyle(value.document.language)} data-review={review}>
     <div className="personal-note-canvas"><Canvas owner={owner} team={team} day="개인 노트" vocabularyIndex={vocabularyIndex} scope={noteScope(owner,id)} store={{ready:true,document:value.document.board,save:saveBoard,saving:store.saving,error:store.error}}
       actionsRef={actions} onLayout={noop} onClose={leave} onReady={setReady} personal={{onOrganize:organize,onRecognize:setCapture,onLeave:leave,onBackup:backup,saveLabel}}
-      navigation={<div className="note-information"><label>노트 제목<input aria-label="노트 제목" maxLength={200} value={value.title} onChange={event=>store.change({title:event.target.value})}/></label><p>나에게만 보이는 학습 노트</p><p role="status">{saveLabel}</p><button onClick={()=>{actions.current?.flush();store.sync().catch(error=>setMessage(friendlyToastMessage(error)));}}>계정에 저장</button><button onClick={backup}>노트와 정리 목록 백업</button>{value.document.origin&&<Link href={`/viewer/${value.document.origin.materialId}`}>연결한 교재 · {value.document.origin.title} ↗</Link>}{store.conflict&&<button disabled={forking} onClick={fork}>{forking?'내 초안 보관 중…':'내 초안을 새 노트로 보관'}</button>}<p>펜은 자유 필기, 글자 도구는 텍스트 입력이에요. 일본어 입력창에서 기기의 필기 입력을 사용할 수 있어요.</p></div>}/></div>
+      navigation={<div className="note-information"><label>노트 제목<input aria-label="노트 제목" maxLength={200} value={value.title} onChange={event=>store.change({title:event.target.value})}/></label><p>나에게만 보이는 학습 노트</p><p role="status">{saveLabel}</p><button onClick={()=>{actions.current?.flush();store.sync().catch(error=>setMessage(friendlyToastMessage(error)));}}>계정에 저장</button><button onClick={backup}>노트와 정리 목록 백업</button>{value.document.origin&&<Link prefetch={false} href={`/viewer/${value.document.origin.materialId}`}>연결한 교재 · {value.document.origin.title} ↗</Link>}{store.conflict&&<button disabled={forking} onClick={fork}>{forking?'내 초안 보관 중…':'내 초안을 새 노트로 보관'}</button>}<p>펜은 자유 필기, 글자 도구는 텍스트 입력이에요. 일본어 입력창에서 기기의 필기 입력을 사용할 수 있어요.</p></div>}/></div>
     {review&&<NoteVocabulary saved={saved} message={store.error||message} noteId={id} note={value.document} sync={store.sync} onClose={closeReview} onFocus={focus} onChange={updater=>{const current=store.current();store.change({document:{...current.document,candidates:updater(current.document.candidates)}});}}/>}
     {capture&&<NoteRecognition noteId={id} capture={capture} sync={store.sync} current={store.current} onApply={applyRecognition} onClose={()=>setCapture(null)}/>}
     {message&&!review&&<div className="note-notice" role="status">{message}<button aria-label="안내 닫기" onClick={()=>setMessage('')}>×</button></div>}

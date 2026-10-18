@@ -25,7 +25,8 @@ const TOKENIZER = 'kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (
 const LIMITS = { maxTokens: BOUNDARY_LIMITS.maxTokens, maxChars: BOUNDARY_LIMITS.maxChars.Japanese, maxEdits: BOUNDARY_LIMITS.maxEdits };
 
 const wanted = process.argv.slice(2).filter((arg) => arg.startsWith('aozora-'));
-const dirs = readdirSync(LITERATURE_ROOT).filter((dir) => dir.startsWith('aozora-') && (!wanted.length || wanted.includes(dir))).sort();
+const wantedWs = process.argv.slice(2).filter((arg) => arg.startsWith('ws-zh-'));
+const dirs = wantedWs.length && !wanted.length ? [] : readdirSync(LITERATURE_ROOT).filter((dir) => dir.startsWith('aozora-') && (!wanted.length || wanted.includes(dir))).sort();
 let total = 0;
 for (const dir of dirs) {
   const base = path.join(LITERATURE_ROOT, dir);
@@ -37,6 +38,26 @@ for (const dir of dirs) {
   const count = by('ruby') + by('ruby-repeat') + by('katakana');
   total += count;
   console.log(`${entry.title}\t묶기 ${count}(루비 ${by('ruby')} · 같은 낱말 ${by('ruby-repeat')} · 카타카나 ${by('katakana')})`);
+}
+// 위키문헌 중국어(LIT-SRC-WS-1) — 교정본의 고유명사 밑줄(nameMarks)이 jieba(분석기와 같은 tokenizeZhLine)로 쪼개지는 자리.
+{
+  const { tokenizeZhLine } = await import('../../src/lib/server/tokenizeZh.js');
+  const { createWikisourceDraft } = await import('../../src/lib/wikisource.js');
+  const { WIKISOURCE_ROOT, WIKISOURCE_FILES } = await import('../lib/wikisource-build.mjs');
+  const ZH_TOKENIZER = 'jieba-wasm + fixZhTagged (src/lib/server/tokenizeZh.js)';
+  const ZH_LIMITS = { maxTokens: BOUNDARY_LIMITS.maxTokens, maxChars: BOUNDARY_LIMITS.maxChars.Chinese, maxEdits: BOUNDARY_LIMITS.maxEdits };
+  const zhDirs = readdirSync(WIKISOURCE_ROOT).filter((dir) => dir.startsWith('ws-zh-') && (!wantedWs.length || wantedWs.includes(dir))).sort();
+  for (const dir of (wanted.length && !wantedWs.length) ? [] : zhDirs) {
+    const base = path.join(WIKISOURCE_ROOT, dir);
+    const entry = JSON.parse(readFileSync(path.join(base, WIKISOURCE_FILES.entry), 'utf8'));
+    const files = entry.files.flatMap((file) => file.variants.map((item) => ({ path: item.path, text: readFileSync(path.join(base, WIKISOURCE_FILES.source, item.path), 'utf8') })));
+    const { chapters } = createWikisourceDraft(entry, files);
+    const merges = await literatureBoundaryMerges(chapters, async (line) => tokenizeZhLine(line), ZH_LIMITS);
+    writeFileSync(path.join(base, LITERATURE_BOUNDARY_FILE), serializeBoundaries(merges, ZH_TOKENIZER));
+    const by = (reason) => merges.reduce((sum, chapter) => sum + chapter.edits.filter((edit) => edit.reason === reason).length, 0);
+    total += by('name') + by('name-repeat');
+    console.log(`${entry.title}\t묶기 ${by('name') + by('name-repeat')}(밑줄 ${by('name')} · 같은 낱말 ${by('name-repeat')})`);
+  }
 }
 console.log(`합계 ${total}곳`);
 const { works, errors } = await buildLiterature();

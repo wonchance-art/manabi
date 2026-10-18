@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "zh",
+  "key": "ws-zh-lu-xun_zhu-fu",
+  "main": "祝福",
+  "url": "https://zh.wikisource.org/wiki/%E7%A5%9D%E7%A6%8F",
+  "title": "祝福",
+  "author": "鲁迅",
+  "level": "H5 고급",
+  "publishedYear": 1924,
+  "authorDeathYear": 1936,
+  "countryOfOrigin": "CN",
+  "mortPourLaFrance": null,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "CN",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "축복",
+    "authorKo": "루쉰",
+    "binding": "tpl-cjk-vertical",
+    "coverTitle": "祝福",
+    "coverAuthor": "鲁迅",
+    "coverPalette": "grey"
+  },
+  "fetchedAt": "2026-10-17",
+  "files": [
+    {
+      "page": "祝福",
+      "revid": 2523954,
+      "timestamp": "2025-01-31T14:24:35Z",
+      "variants": [
+        {
+          "variant": "zh-hans",
+          "path": "001.zh-hans.html",
+          "extract": "body",
+          "sha256": "62619b2033d1ed0efffcaebe8aa511bc8368f656bb58c80f81a4b1d69f1664d7"
+        },
+        {
+          "variant": "zh-hant",
+          "path": "001.zh-hant.html",
+          "extract": "body",
+          "sha256": "2e093b1f2017ce27ca8afd543d973f61077f2deadb2c742ea7ecf1183420f4aa"
+        }
+      ]
+    }
+  ]
+}

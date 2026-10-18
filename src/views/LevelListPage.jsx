@@ -1,7 +1,7 @@
 'use client';
 // 레벨별 단어 · 문형 목록(LEVEL-LIST-AJ-001) — 목업 docs/design/mocks/lv/lv.html 8판, 인계 #1337 6119208984 · 6146777048.
 // 단어(LEVEL-OX-AN-001 — 빠른 암기, 오너 지시 2026-10-15 · 목업 /mnt/project-files/notes/level-list-ox-mockup.md):
-// 찾기 + ⚙(아는 단어 숨기기 · 중국어 훈음(기본 켬) · 한자 대조), 보기 탭 하나 고르기 [전체 · 단어 · 문장 · 뜻 · 소리], 카드마다 [O][X].
+// 찾기 + ⚙(아는 단어 숨기기 · X 누르면 답 펼치기(기본 켬) · 중국어 훈음(기본 켬) · 한자 대조), 보기 탭 하나 고르기 [전체 · 단어 · 문장 · 뜻 · 소리], 카드마다 [O][X].
 // 탭 보기에서 카드를 누르면 나머지가 아래로 펼쳐지고, 다시 누르거나 10초가 지나면 접힌다(4판). 채점 · 입력창은 없다(채점 설계 폐기).
 // 문형: 읽기 전용(저장 · 번호 · 캡션 · 펼치기 없음).
 // X(모른다) = 공부 중인 단어로 저장 = /api/learning/vocabulary action:'save'(FSRS 직접 추가 정본, 기존 카드는 그대로 돌려받는다).
@@ -96,13 +96,13 @@ function Example({ ex, lang, speak, hideTranslation, tabIndex }) {
 }
 
 /** [O] 안다(아는 단어) · [X] 모른다(공부 중인 단어) — 누른 쪽이 채워진다. 아는 단어가 먼저다(저장돼 있어도 O면 O만). */
-function OxButtons({ scope, known, studying, saving, pendingKnown, onO, onX, onPrepareX, showLabels = false, tabIndex }) {
+function OxButtons({ scope, known, studying, saving, pendingKnown, onO, onX, onPrepareX, tabIndex }) {
   return <div className="lv-acts">
     <button type="button" className="lv-fab lv-fab--o" aria-pressed={known} aria-label={scope ? `${scope} 탭에서 안다` : '안다 — 아는 단어로'} title="안다"
-      onClick={onO} disabled={pendingKnown} tabIndex={tabIndex}><CircleIcon />{showLabels && <span>안다</span>}</button>
+      onClick={onO} disabled={pendingKnown} tabIndex={tabIndex}><CircleIcon /></button>
     <button type="button" className={`lv-fab lv-fab--x${saving ? ' lv-fab--busy' : ''}`} aria-pressed={!known && studying}
       aria-label={saving ? '공부 중인 단어로 담는 중' : `${scope ? `${scope} 탭에서 ` : ''}모른다 — 공부 중인 단어로`} title="모른다"
-      aria-disabled={saving || undefined} onClick={saving ? undefined : onX} onPointerEnter={onPrepareX} onFocus={onPrepareX} disabled={pendingKnown} tabIndex={tabIndex}>{saving ? <SpinIcon /> : <CrossIcon />}{showLabels && <span>모른다</span>}</button>
+      aria-disabled={saving || undefined} onClick={saving ? undefined : onX} onPointerEnter={onPrepareX} onFocus={onPrepareX} disabled={pendingKnown} tabIndex={tabIndex}>{saving ? <SpinIcon /> : <CrossIcon />}</button>
   </div>;
 }
 
@@ -136,8 +136,8 @@ export function VocabCard({ entry: e, lang, levelKey, view, scoped = true, peek,
   // 펼쳐 보기 · O · X)은 지금 카드에서만 Tab으로 닿고(0), 다른 카드에서는 -1 — 단축키가 없는 듣기도 키보드로 쓸 수 있게.
   const roving = current !== undefined;
   const inner = roving ? (current ? 0 : -1) : undefined;
-  // 이름표(안다 · 모른다)는 전체 보기 카드에만 — 탭 보기는 한 줄 카드라 동그라미만(디자인 검토 A안, 화면 읽기 이름은 그대로).
-  const ox = <OxButtons scope={scope} showLabels={lang === 'chinese' && view === 'all'} known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} onPrepareX={onPrepareX} tabIndex={inner} />;
+  // O · X는 어느 보기든 동그라미만 — 이름표(안다 · 모른다)는 화면 읽기 이름에만 남긴다(오너 2026-10-17 「O X 버튼만」).
+  const ox = <OxButtons scope={scope} known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} onPrepareX={onPrepareX} tabIndex={inner} />;
   // 상태는 카드 자체에 — 아는 단어는 흐리게, 공부 중은 왼쪽 줄(점선 테두리는 「임시」로 읽혀 뺐다).
   const state = { 'data-known': known || undefined, 'data-studying': (!known && studying) || undefined };
   const card = roving ? { 'data-lv-card': e.key, role: 'listitem', tabIndex: current ? 0 : -1, onFocus: onCardFocus,
@@ -407,8 +407,8 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
   const markO = (entry) => (knownSet.has(entry.key) ? unmark(entry.key) : exclude(entry));
   const markX = async (entry) => {
     if (!userId) return loginToast('로그인하면 단어를 저장할 수 있어요');
-    // 모른다고 한 바로 그때 답을 본다(디자인 검토 B안) — 탭 보기에서 X를 누르면 그 카드를 펼친다(접기 · 10초는 그대로).
-    if (prefs.view !== 'all') openPeek(entry.key);
+    // 모른다고 한 바로 그때 답을 본다(디자인 검토 B안) — 탭 보기에서 X를 누르면 그 카드를 펼친다(접기 · 10초는 그대로). ⚙ 「X 누르면 답 펼치기」로 끌 수 있다.
+    if (prefs.view !== 'all' && prefs.peekOnX) openPeek(entry.key);
     if (!knownSet.has(entry.key)) return save(entry);
     // 아는 단어면 먼저 풀고, 서버가 풀어 준 뒤에만 공부 중으로 담는다(아는 단어는 저장이 막힌다). 풀지 못하면 담지 않는다.
     try { await known.mutation.mutateAsync(unmarkRequest(entry.key)); } catch { return undefined; }
@@ -710,11 +710,13 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
       </div>
       <div className="lv-nav" id="lv-nav" hidden={!navOpen}>
         <p className="lv-crumb"><Link href={`/lessons?lang=${conf.language}`}>← 교재</Link></p>
+        {vocab && <span className="lv-nav__k" aria-hidden="true">레벨</span>}
         <nav className="lv-pills" aria-label="레벨">
           {conf.levels.map((key) => <Link key={key} href={levelListHref(lang, levelKinds(lang, key).includes(kind) ? kind : 'vocab', key)} aria-current={key === levelKey ? 'page' : undefined}
             aria-label={levelLabel(key)}>{levelPill(key)}<NavPendingMark /></Link>)}
         </nav>
         {/* 탭이 하나뿐인 레벨(H7 7–9 통합 밴드 = 단어만)은 종류 탭을 그리지 않는다. */}
+        {vocab && levelKinds(lang, levelKey).length > 1 && <span className="lv-nav__k" aria-hidden="true">목록</span>}
         {levelKinds(lang, levelKey).length > 1 && <nav className="lv-tabs" aria-label="목록 종류">
           {levelKinds(lang, levelKey).map((k) => <Link key={k} href={levelListHref(lang, k, levelKey)} aria-current={k === kind ? 'page' : undefined}>{LEVEL_KIND_LABEL[k]}<NavPendingMark /></Link>)}
         </nav>}
@@ -724,6 +726,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
       </div>}
       {vocab && settingsOpen && <div className="lv-settings" id="lv-settings">
         {[['hideKnown', '아는 단어 숨기기', knownCount > 0 ? `${facetView ? `${LEVEL_VIEWS.find((v) => v.id === facetView)?.label} 탭 ` : ''}${knownCount}개` : null],
+          ['peekOnX', 'X 누르면 답 펼치기', '단어 · 문장 · 뜻 · 소리 탭'],
           ...(zhVocab ? [['hun', '훈음', '한자마다 뜻과 소리'], ['tone', '성조 색', '병음 1성 빨강 · 2성 초록 · 3성 파랑 · 4성 보라'], ['glyph', '한자 대조', '正 대만 정체 · 日 일본어 표기']] : [])]
           .map(([key, label, note]) => <button key={key} type="button" role="switch" className="lv-switch" aria-checked={prefs[key]}
             onClick={() => setPrefs({ [key]: !prefs[key] })}><span>{label}{note && <small>{note}</small>}</span><i aria-hidden="true" /></button>)}

@@ -2,6 +2,7 @@
   {
     "id": "hokusai-kanagawa-oki-nami-ura",
     "wikidata": "Q252485",
+    "genre": "print",
     "artist": "katsushika-hokusai",
     "title": {
       "native": "冨嶽三十六景 神奈川沖浪裏",
@@ -96,6 +97,7 @@
   {
     "id": "hokusai-gaifu-kaisei",
     "wikidata": "Q3565037",
+    "genre": "print",
     "artist": "katsushika-hokusai",
     "title": {
       "native": "冨嶽三十六景 凱風快晴",
@@ -186,6 +188,7 @@
   {
     "id": "hokusai-bushu-tamagawa",
     "wikidata": "Q18173390",
+    "genre": "print",
     "artist": "katsushika-hokusai",
     "title": {
       "native": "冨嶽三十六景 武州玉川",
@@ -270,6 +273,7 @@
   {
     "id": "hiroshige-shono-hakuu",
     "wikidata": "Q75090509",
+    "genre": "print",
     "artist": "utagawa-hiroshige",
     "title": {
       "native": "東海道五拾三次之内 庄野 白雨",
@@ -350,6 +354,7 @@
   {
     "id": "hiroshige-kuwana-shichiri-no-watashi",
     "wikidata": "Q75090473",
+    "genre": "print",
     "artist": "utagawa-hiroshige",
     "title": {
       "native": "東海道五拾三次之内 桑名 七里渡口",
@@ -425,6 +430,7 @@
   {
     "id": "hiroshige-ohashi-atake-no-yudachi",
     "wikidata": "Q5826309",
+    "genre": "print",
     "artist": "utagawa-hiroshige",
     "title": {
       "native": "名所江戸百景 大はしあたけの夕立",
@@ -519,6 +525,7 @@
   {
     "id": "hiroshige-kameido-umeyashiki",
     "wikidata": "Q21127606",
+    "genre": "print",
     "artist": "utagawa-hiroshige",
     "title": {
       "native": "名所江戸百景 亀戸梅屋舗",
@@ -609,6 +616,7 @@
   {
     "id": "hiroshige-fukagawa-susaki-jumantsubo",
     "wikidata": "Q60176427",
+    "genre": "print",
     "artist": "utagawa-hiroshige",
     "title": {
       "native": "名所江戸百景 深川洲崎十万坪",
@@ -707,6 +715,7 @@
   {
     "id": "hokusai-gohyaku-rakanji-sazaido",
     "wikidata": "Q18173408",
+    "genre": "print",
     "artist": "katsushika-hokusai",
     "title": {
       "native": "冨嶽三十六景 五百らかん寺さゞゐどう",
@@ -791,6 +800,7 @@
   {
     "id": "hokusai-onmayagashi-ryogokubashi-yuhimi",
     "wikidata": "Q18173407",
+    "genre": "print",
     "artist": "katsushika-hokusai",
     "title": {
       "native": "冨嶽三十六景 御厩川岸より両国橋夕陽見",
@@ -883,6 +893,7 @@
   {
     "id": "hiroshige-asakusa-kinryuzan",
     "wikidata": "Q60176419",
+    "genre": "print",
     "artist": "utagawa-hiroshige",
     "title": {
       "native": "名所江戸百景 浅草金龍山",
@@ -967,6 +978,7 @@
   {
     "id": "hiroshige-komagatado-azumabashi",
     "wikidata": "Q60175408",
+    "genre": "print",
     "artist": "utagawa-hiroshige",
     "title": {
       "native": "名所江戸百景 駒形堂吾嬬橋",
@@ -1055,6 +1067,7 @@
   {
     "id": "hiroshige-tsuki-no-misaki",
     "wikidata": "Q60176403",
+    "genre": "print",
     "artist": "utagawa-hiroshige",
     "title": {
       "native": "名所江戸百景 月の岬",
@@ -1139,6 +1152,7 @@
   {
     "id": "hiroshige-asakusa-tanbo-torinomachi-mode",
     "wikidata": "Q60176422",
+    "genre": "print",
     "artist": "utagawa-hiroshige",
     "title": {
       "native": "名所江戸百景 浅草田甫 酉の町詣",
@@ -1223,6 +1237,7 @@
   {
     "id": "hiroshige-ryogoku-hanabi",
     "wikidata": "Q19938878",
+    "genre": "print",
     "artist": "utagawa-hiroshige",
     "title": {
       "native": "名所江戸百景 両国花火",
@@ -1302,6 +1317,587 @@
       "width": 417,
       "height": 625,
       "alt": "어두운 밤하늘에 붉은 불꽃 줄기가 높이 솟았다 떨어지고, 오른쪽 위에는 별 모양 불꽃이 흩어져 있다. 아래로는 긴 다리가 푸른 강을 가로지르고, 강 위에 등불을 단 놀잇배와 작은 배들이 떠 있다."
+    }
+  },
+  {
+    "id": "kuroda-seiki-dokusho",
+    "wikidata": "Q115236835",
+    "genre": "painting",
+    "artist": "kuroda-seiki",
+    "title": {
+      "native": "読書",
+      "ko": "독서",
+      "reading": "どくしょ"
+    },
+    "date": {
+      "text": "明治24年(1891)",
+      "source": "colbase",
+      "startYear": 1891,
+      "endYear": 1891,
+      "certainty": "exact"
+    },
+    "periods": [
+      "jp-meiji"
+    ],
+    "medium": {
+      "native": "カンヴァス・油彩",
+      "ko": "캔버스에 유채"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10937"
+      },
+      {
+        "place": "grez-sur-loing",
+        "role": "made"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-47590",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-10937",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "読書する女性像は知性ある有閑的生活を思わせ、当時、好んで描かれた。本図は1890年から91年にかけてパリ近郊の農村グレー・シュル・ロアンで、マリア・ビョーという少女をモデルに制作され、1891年のサロンに出品された。黒田にとって初めてのサロン入選作。",
+        "textSha256": "f34d5b540f44fc13ef152abf761fb3f44c6ca7dde92b8b108fc7703886923fa5"
+      }
+    ],
+    "terms": [
+      "有閑",
+      "サロン",
+      "入選"
+    ],
+    "lookFor": [
+      "책장을 넘기는 손가락은 어디에 있을까요?",
+      "덧창 틈으로 들어온 빛이 가장 밝게 닿은 곳은 어디일까요?",
+      "왼쪽 벽에 세로로 쓴 화가의 서명을 찾아봐요."
+    ],
+    "image": {
+      "url": "/art/kuroda-seiki-dokusho.jpg",
+      "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-10937",
+      "license": "cc-by-4.0",
+      "credit": "読書 · 黒田清輝筆 · 도쿄 국립박물관 소장 · ColBase(국립문화재기구) · CC BY 4.0",
+      "width": 562,
+      "height": 686,
+      "alt": "붉은 블라우스에 짙은 남색 치마를 입은 젊은 여성이 덧창이 닫힌 창가 의자에 앉아 고개를 숙이고 책장을 넘긴다. 왼쪽 벽에 세로로 쓴 서명이 있다."
+    }
+  },
+  {
+    "id": "asai-chu-gure-no-aki",
+    "genre": "painting",
+    "artist": "asai-chu",
+    "title": {
+      "native": "グレーの秋",
+      "ko": "그레의 가을",
+      "reading": "ぐれーのあき"
+    },
+    "date": {
+      "text": "明治34年(1901)",
+      "source": "colbase",
+      "startYear": 1901,
+      "endYear": 1901,
+      "certainty": "exact"
+    },
+    "periods": [
+      "jp-meiji"
+    ],
+    "medium": {
+      "native": "カンバス・油彩",
+      "ko": "캔버스에 유채"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/A-11171"
+      },
+      {
+        "place": "grez-sur-loing",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-47669",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-11171",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "　約2年半のフランス留学中、浅井はしばしばパリ近郊の村グレーに出かけ風景スケッチや土地の人間をモデルとした人物画を制作しました。戸外での印象を的確にとらえ、暮れ行く秋の光を画面いっぱいに取り込んだ本図は、浅井の後期作品を代表する秀作といえます。",
+        "textSha256": "8001815996b3578b6e9de98bbce5dc80519086af9adff0dce1ec5a9fd5ff7dc7"
+      }
+    ],
+    "terms": [
+      "留学",
+      "戸外",
+      "秀作"
+    ],
+    "lookFor": [
+      "나무줄기 사이로 보이는 울타리는 어디쯤 있을까요?",
+      "땅에 떨어진 노란 잎은 화면 어느 쪽에 많을까요?",
+      "왼쪽 아래 화가의 서명을 찾아봐요."
+    ],
+    "image": {
+      "url": "/art/asai-chu-gure-no-aki.jpg",
+      "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-11171",
+      "license": "cc-by-4.0",
+      "credit": "グレーの秋 · 浅井忠筆 · 도쿄 국립박물관 소장 · ColBase(국립문화재기구) · CC BY 4.0",
+      "width": 503,
+      "height": 686,
+      "alt": "노랗게 물든 키 큰 나무들이 잔디밭 위에 서 있고, 땅에는 낙엽이 흩어져 있다. 나무 뒤로 낮은 울타리와 숲이 흐릿하게 보인다."
+    }
+  },
+  {
+    "id": "kishida-ryusei-reiko-bisho",
+    "wikidata": "Q130638134",
+    "genre": "painting",
+    "artist": "kishida-ryusei",
+    "title": {
+      "native": "麗子微笑",
+      "ko": "레이코의 미소",
+      "reading": "れいこびしょう"
+    },
+    "date": {
+      "text": "大正10年(1921)",
+      "source": "colbase",
+      "startYear": 1921,
+      "endYear": 1921,
+      "certainty": "exact"
+    },
+    "periods": [
+      "jp-taisho"
+    ],
+    "medium": {
+      "native": "カンバス・油彩",
+      "ko": "캔버스에 유채"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10568"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-47552",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-10568",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "7歳の愛娘を描く。北方ルネサンスの画家デューラーの影響を受けて、克明写実な人物画に執着した劉生だが、そこには「内なる美」を求めたキリスト教信者としての宗教観を見ることができる。時代に逆行した個性的な画風ではあるが、確固たる存在感がある。\n\n　これは油絵の技法で描かれた少女の半身像です。鮮やかな色どりの肩掛けの下から覗く着物や赤い帯、おかっぱのヘアスタイルは、いかにもある時期の、日本の少女のいでたちです。しかし、長い眉と切れ長の目でほほえむ少女の表情は、何かしら意味ありげにも見えます。頭に対してアンバランスに小さい手や、緻密に描きこまれた肩掛けなどともあいまって、画面全体に神秘的な雰囲気が漂っています。\n　作者の岸田劉生は、本格的な西洋絵画の技法を学び作品をあらわした洋画家です。明治２４年、1891年東京に生まれ、昭和4年、1929年に38歳という若さで世を去りました。日本近代洋画のパイオニアであった黒田清輝に師事した岸田劉生は、短い生涯の間にも、洋画の表現と技法を貪欲に取り込み、みずからのものとして消化し、数多くの話題作を発表します。15世紀から16世紀のヨーロッパ・フランドル絵画に感化され描いた、硬質で緻密な描写と表現の作品は、高い評価を受けました。\n　この少女のモデルとなったのは、娘の麗子で、当時満７歳でした。劉生は生涯にわたり、油彩、水彩、素描などで愛娘（まなむすめ）の姿を描き続けました。彼じしんの作風の変化や、娘の成長にともなって、麗子の表し方も作品により様々です。中でもこの「麗子微笑」は、数ある麗子像の代表作として知られ、特徴的な表情や神秘的な雰囲気から、かのレオナルド・ダ・ヴィンチの名作「モナ・リザ」を参考にしているとの指摘もあります。また劉生がのこした日記によれば、それまでのフランドル絵画ふうの硬質な印象ではなく、より柔らかみやあでやかさを加えており、モチーフの一部は、17世紀から18世紀のスペインの画家、ゴヤの絵画を参考にしたとのことです。",
+        "textSha256": "5cc95e7770a41f80af2c0f12167b4d17eb49ee3ce4908774ff125655d9b3126f"
+      }
+    ],
+    "terms": [
+      "半身像",
+      "肩掛け",
+      "愛娘"
+    ],
+    "lookFor": [
+      "레이코가 두 손에 쥐고 있는 것은 무슨 색일까요?",
+      "어깨걸이의 털실 무늬에는 어떤 색들이 섞여 있을까요?",
+      "머리 크기와 견주어 손은 어떻게 그려졌을까요?"
+    ],
+    "image": {
+      "url": "/art/kishida-ryusei-reiko-bisho.jpg",
+      "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-10568",
+      "license": "cc-by-4.0",
+      "credit": "麗子微笑 · 岸田劉生筆 · 도쿄 국립박물관 소장 · ColBase(국립문화재기구) · CC BY 4.0",
+      "width": 574,
+      "height": 686,
+      "alt": "단발머리 소녀가 붉은색과 여러 색 털실로 짠 어깨걸이를 두르고 살짝 웃으며 오른쪽을 바라본다. 두 손에 녹색 열매를 쥐고 있고 배경은 어둡다."
+    }
+  },
+  {
+    "id": "yokoyama-matsusaburo-nikko-meisho-shashin",
+    "genre": "photograph",
+    "artist": "yokoyama-matsusaburo",
+    "title": {
+      "native": "日光名勝写真",
+      "ko": "닛코 명승 사진",
+      "reading": "にっこうめいしょうしゃしん"
+    },
+    "date": {
+      "text": "明治2～3年(1869～70)",
+      "source": "colbase",
+      "startYear": 1869,
+      "endYear": 1870,
+      "certainty": "range"
+    },
+    "periods": [
+      "jp-meiji"
+    ],
+    "medium": {
+      "native": "鶏卵紙、台紙付写真",
+      "ko": "대지에 붙인 알부민(달걀흰자) 인화 사진"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/R-159"
+      },
+      {
+        "place": "nikko-shrines-temples",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-165962",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/R-159",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "明治2年から3年にかけて、写真師横山松三郎が日光山を訪れて撮影した山内の堂舎や近辺の風景の写真。翌年の「旧江戸城写真帖」に先行する文化財写真のさきがけで、日本写真史上きわめて貴重な作例である。",
+        "textSha256": "4f91fecc9b948b9201fcf51f2f7f0a57f92877fe320ca8a4d163fe853d821ecc"
+      }
+    ],
+    "terms": [
+      "写真師",
+      "さきがけ",
+      "作例"
+    ],
+    "lookFor": [
+      "오른쪽 위에 세로로 적힌 제목을 찾아봐요.",
+      "멀리 골짜기 사이로 흐르는 강은 어디에 있을까요?",
+      "앞쪽 지붕들 사이에 선 잎 없는 나무는 어디일까요?"
+    ],
+    "image": {
+      "url": "/art/yokoyama-matsusaburo-nikko-meisho-shashin.jpg",
+      "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/R-159",
+      "license": "cc-by-4.0",
+      "credit": "日光名勝写真 · 横山松三郎撮影 · 도쿄 국립박물관 소장 · ColBase(국립문화재기구) · CC BY 4.0",
+      "width": 686,
+      "height": 529,
+      "alt": "대지에 붙인 갈색 톤 사진. 앞쪽에 수풀과 낮은 지붕들이 있고, 그 너머 골짜기로 강이 흐르며 멀리 산이 흐릿하다. 오른쪽 위에 「日光總図」라고 적혀 있다."
+    }
+  },
+  {
+    "id": "yokoyama-matsusaburo-kyu-edojo-shashincho",
+    "genre": "photograph",
+    "artist": "yokoyama-matsusaburo",
+    "title": {
+      "native": "旧江戸城写真帖",
+      "ko": "옛 에도성 사진첩",
+      "reading": "きゅうえどじょうしゃしんじょう"
+    },
+    "date": {
+      "text": "明治4年(1871)",
+      "source": "colbase",
+      "startYear": 1871,
+      "endYear": 1871,
+      "certainty": "exact"
+    },
+    "periods": [
+      "jp-meiji"
+    ],
+    "medium": {
+      "native": "アルバム",
+      "ko": "사진첩(손으로 색을 입힌 알부민 인화 64장)"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/R-2282"
+      },
+      {
+        "place": "edo-castle",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-173967",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/R-2282",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "明治4年(1871)、太政官少史(だじょうかんしょうし)蜷川式胤が横山松三郎に撮影を、高橋由一に焼き付けされた写真を着色させた、江戸城を写した古写真。現在は綴じ糸が外れているが、フランス製鶏卵紙に焼き付けられた64枚の写真が台紙に貼られ、アルバム仕立てとなる。",
+        "textSha256": "bfc3775768595ae968f36c1ec5b16b672eddd80fe9fa0c33a244710ff264281b"
+      }
+    ],
+    "terms": [
+      "古写真",
+      "鶏卵紙",
+      "着色"
+    ],
+    "lookFor": [
+      "사진 위에 먹으로 적어 넣은 작은 글씨는 몇 군데일까요?",
+      "나무숲 너머로 보이는 망루 지붕은 어디에 있을까요?",
+      "사진에 덧칠한 색은 어디에서 보일까요?"
+    ],
+    "image": {
+      "url": "/art/yokoyama-matsusaburo-kyu-edojo-shashincho.jpg",
+      "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/R-2282",
+      "license": "cc-by-4.0",
+      "credit": "旧江戸城写真帖 · 横山松三郎撮影 · 도쿄 국립박물관 소장 · ColBase(국립문화재기구) · CC BY 4.0",
+      "width": 686,
+      "height": 509,
+      "alt": "사진첩의 한 면. 흙빛 빈터 앞쪽에 기와를 얹은 흰 벽 건물이 있고, 그 뒤로 나무숲과 망루 지붕이 보인다. 하늘과 나무에 옅게 색이 칠해져 있고 건물마다 이름이 작게 적혀 있다."
+    }
+  },
+  {
+    "id": "uchida-kuichi-koraibashi",
+    "genre": "photograph",
+    "artist": "uchida-kuichi",
+    "title": {
+      "native": "高麗橋",
+      "ko": "고라이바시",
+      "reading": "こうらいばし"
+    },
+    "date": {
+      "text": "明治5年(1872)",
+      "source": "colbase",
+      "startYear": 1872,
+      "endYear": 1872,
+      "certainty": "exact"
+    },
+    "periods": [
+      "jp-meiji"
+    ],
+    "medium": {
+      "native": "鶏卵紙、台紙付写真",
+      "ko": "대지에 붙인 알부민(달걀흰자) 인화 사진"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/R-564"
+      },
+      {
+        "place": "koraibashi",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-165877",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/R-564",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "高麗橋は大阪中心部の東横堀川にかかる橋です。商業の中心地にあり、江戸時代は幕府直轄の橋でした。明治３年(1870)、英国から輸入した資材により架け替えられ、日本最古の鋳鉄橋の一つでもあります。老朽化のため昭和4年(1929)に鉄筋コンクリート橋となりました。",
+        "textSha256": "c623cb29466a25b1d1fac7e754d0f073d68d2823bb1fc20a33b075adaaf2f368"
+      }
+    ],
+    "terms": [
+      "鋳鉄橋",
+      "架け替え",
+      "直轄"
+    ],
+    "lookFor": [
+      "다리를 건너는 사람은 무엇을 지고 있을까요?",
+      "다리 위에 늘어선 가로등은 몇 개 보일까요?",
+      "다리 아래 강에 떠 있는 배를 찾아봐요."
+    ],
+    "image": {
+      "url": "/art/uchida-kuichi-koraibashi.jpg",
+      "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/R-564",
+      "license": "cc-by-4.0",
+      "credit": "高麗橋 · 内田九一撮影 · 도쿄 국립박물관 소장 · ColBase(국립문화재기구) · CC BY 4.0",
+      "width": 686,
+      "height": 520,
+      "alt": "철제 아치로 받친 긴 다리가 강을 가로질러 건너편 기와지붕 마을로 이어진다. 다리 위에는 가로등이 늘어서 있고, 앞쪽에 짐을 멘 사람이 걸어간다. 오른쪽 위에 「大坂高麗橋」라고 적혀 있다."
+    }
+  },
+  {
+    "id": "bastien-tomioka-silk-mill",
+    "genre": "architecture",
+    "artist": "edmond-auguste-bastien",
+    "title": {
+      "native": "旧富岡製糸場 繰糸所",
+      "ko": "옛 도미오카 제사장 — 실 켜는 공장동",
+      "reading": "とみおかせいしじょう そうしじょ"
+    },
+    "date": {
+      "text": "1872",
+      "source": "bunka",
+      "startYear": 1872,
+      "endYear": 1872,
+      "certainty": "exact"
+    },
+    "periods": [
+      "jp-meiji"
+    ],
+    "medium": {
+      "native": "木骨煉瓦造",
+      "ko": "목골 벽돌조(나무 뼈대에 벽돌 벽)"
+    },
+    "places": [
+      {
+        "place": "tomioka-silk-mill",
+        "role": "located",
+        "url": "https://online.bunka.go.jp/db/heritages/detail/124804"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "bunka",
+        "sourceId": "bunka-124804",
+        "sourceUrl": "https://online.bunka.go.jp/db/heritages/detail/124804",
+        "credit": "문화유산 온라인(문화청) · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "旧富岡製糸場は，明治政府が設立した模範的な器械製糸工場である。フランス人の生糸検査人ブリュナの企画指導のもと，横須賀造船所の技師バスティアンが図面を作成し，施工は日本人があたり，明治５年１０月４日に操業を開始した。３棟はいずれも木造の軸組に壁を煉瓦積とした木骨煉瓦造である。\n繰糸所は敷地の中心に位置する繰糸を行う建物で，桁行が１４０メートルと長大である。キングポストトラスの小屋組や高い天井，鉄製ガラス窓で明るい大空間を実現している。\n東西の置繭所は，繰糸所と直交方向に建つ桁行１０４メートル，二階建，ほぼ同形の建物である。繭を乾燥，貯蔵し，乾燥のために多数の窓を持つ。東置繭所は入口正面の建物でアーチの要石に「明治五年」の銘を刻む。\n旧富岡製糸場は，明治政府が推進した産業近代化の政策を端的に物語る官営の器械製糸工場で，繰糸所と東西の置繭所は，我が国の製糸工場建築の模範となった。\n極東地域において，西洋，特にフランスの技術を導入し，日本固有の技術と融合させることで産業革命を成し遂げ，世界の絹文化の発展に大きく貢献した我が国の絹産業の拠点施設であり，文化史的に深い意義を有している。",
+        "textSha256": "3ce03c3be3e9bd162e53202c0609a0ffacf33697b87c10c4168e401f886425e6"
+      }
+    ],
+    "terms": [
+      "器械製糸",
+      "煉瓦",
+      "桁行"
+    ],
+    "lookFor": [
+      "가운데 높이 솟은 굴뚝을 찾아봐요.",
+      "오른쪽 아래 문으로 들어오는 마차를 찾아봐요.",
+      "멀리 뒤쪽에 보이는 산은 몇 봉우리일까요?"
+    ],
+    "image": {
+      "url": "/art/bastien-tomioka-silk-mill.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:NDL-DC_1312610-Utagawa_Kuniteru-%E4%B8%8A%E5%B7%9E%E5%AF%8C%E5%B2%A1%E8%A3%BD%E7%B3%B8%E5%A0%B4-%E6%98%8E%E6%B2%BB5-cmb.jpg",
+      "license": "public-domain",
+      "credit": "Utagawa Kuniteru II. 上州富岡製糸場 (Tomioka Silk Mill, Jōshū), nishiki-e triptych, 1872. National Diet Library, Persistent ID 1312610. Public domain (via Wikimedia Commons)",
+      "width": 960,
+      "height": 473,
+      "alt": "1872년 니시키에 세 장을 이어 붙인 그림. 붉은 벽돌 벽에 푸른 기와를 얹은 긴 건물들이 넓은 마당을 둘러싸고, 가운데 높은 굴뚝이 솟아 있다. 마당과 길에는 사람과 마차가 오가고 뒤로 산이 보인다."
+    }
+  },
+  {
+    "id": "katayama-tokuma-akasaka-palace",
+    "wikidata": "Q555255",
+    "genre": "architecture",
+    "artist": "katayama-tokuma",
+    "title": {
+      "native": "旧東宮御所（迎賓館赤坂離宮）",
+      "ko": "옛 도구고쇼(영빈관 아카사카 이궁)",
+      "reading": "きゅうとうぐうごしょ（げいひんかんあかさかりきゅう）"
+    },
+    "date": {
+      "text": "1909",
+      "source": "bunka",
+      "startYear": 1909,
+      "endYear": 1909,
+      "certainty": "exact"
+    },
+    "periods": [
+      "jp-meiji"
+    ],
+    "medium": {
+      "native": "石造及び鉄骨煉瓦造",
+      "ko": "석조·철골 벽돌조"
+    },
+    "places": [
+      {
+        "place": "akasaka-palace",
+        "role": "located",
+        "url": "https://online.bunka.go.jp/db/heritages/detail/203786"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "bunka",
+        "sourceId": "bunka-203786",
+        "sourceUrl": "https://online.bunka.go.jp/db/heritages/detail/203786",
+        "credit": "문화유산 온라인(문화청) · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "　旧東宮御所は，皇太子明宮嘉仁親王，のちの大正天皇のための御住居として明治42年に建設された宮殿建築である。\n　明治期におけるわが国最大の記念建築であり，本格的な西欧の建築様式を採用しつつ，彫刻等の装飾にはわが国独特の主題を用い，精緻な工芸技術が駆使されており，意匠的に高い価値がある。\n　西欧の建築意匠や技術の習得に始まった明治期の建築界において，意匠的にも，また当時の先端技術を導入している点でも，日本人建築家の設計による建築の到達点を示しており，明治以降，昭和戦前に建設されたわが国の建築を代表するものの一つとして，文化史的意義の特に深いものである。",
+        "textSha256": "d0c1c35bd097c01580621aeb9a545f7ac73a5455157020b691839d8bc4f4d4e6"
+      }
+    ],
+    "terms": [
+      "宮殿",
+      "記念建築",
+      "意匠"
+    ],
+    "lookFor": [
+      "가운데 현관 위 지붕에 솟은 장식을 찾아봐요.",
+      "현관으로 가는 길 양옆에 선 높은 등 기둥은 몇 개일까요?",
+      "좌우 끝 건물이 앞으로 튀어나온 모양을 찾아봐요."
+    ],
+    "image": {
+      "url": "/art/katayama-tokuma-akasaka-palace.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Togu-Gosho_0025_1.jpg",
+      "license": "public-domain",
+      "credit": "Photographer unknown. Togu-Gosho, from The Century Album of Tokyo Views, Japan, 1909. National Diet Library, YDM23880. Public domain (via Wikimedia Commons)",
+      "width": 960,
+      "height": 657,
+      "alt": "1909년 무렵의 도구고쇼. 넓은 앞마당 끝에 좌우로 긴 석조 궁전이 서 있고, 가운데 현관 지붕과 양 끝 지붕에 장식이 솟아 있다. 길 양옆에 등을 얹은 높은 기둥이 서 있다. 흑백 사진."
+    }
+  },
+  {
+    "id": "tatsuno-kingo-tokyo-station",
+    "genre": "architecture",
+    "artist": "tatsuno-kingo",
+    "title": {
+      "native": "東京駅丸ノ内本屋",
+      "ko": "도쿄역 마루노우치 역사",
+      "reading": "とうきょうえきまるのうちほんや"
+    },
+    "date": {
+      "text": "1914",
+      "source": "bunka",
+      "startYear": 1914,
+      "endYear": 1914,
+      "certainty": "exact"
+    },
+    "periods": [
+      "jp-taisho"
+    ],
+    "medium": {
+      "native": "鉄骨煉瓦造",
+      "ko": "철골 벽돌조"
+    },
+    "places": [
+      {
+        "place": "tokyo-station",
+        "role": "located",
+        "url": "https://online.bunka.go.jp/db/heritages/detail/187936"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "bunka",
+        "sourceId": "bunka-187936",
+        "sourceUrl": "https://online.bunka.go.jp/db/heritages/detail/187936",
+        "credit": "문화유산 온라인(문화청) · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "　東京駅丸ノ内本屋は，皇居から東へ一直線に延びる通称行幸通りの正面に位置している。明治41年３月25日着工，大正３年12月14日に竣工した。設計は辰野金吾で，辰野葛西事務所によって実施案がまとめられた。\n　南北折曲り延長約３３５ｍに及ぶ長大な建築で，中央棟の南北に両翼を長く延ばし，建設当初は，地上３階建であった。建築様式は，いわゆる辰野式フリー・クラシックの様式になる。\n　東京駅丸ノ内本屋は，わが国鉄道網の起点となる停車場の中心施設であるとともに，明治の市区改正計画に基づき建設された首都東京を象徴する貴重な建築である。\n　煉瓦を主体とする建造物のうち最大規模の建築で，当時，日本建築界を主導した辰野金吾の集大成となる作品として，価値が高い。",
+        "textSha256": "53a2b03dd0963a9d2652889cae0d87e017b7e71ba86e8c62d578511777692da5"
+      }
+    ],
+    "terms": [
+      "竣工",
+      "起点",
+      "煉瓦"
+    ],
+    "lookFor": [
+      "양 끝에 솟은 둥근 지붕은 몇 개일까요?",
+      "가운데 입구 앞 광장에는 무엇이 놓여 있을까요?",
+      "건물의 긴 날개는 좌우로 어디까지 뻗었을까요?"
+    ],
+    "image": {
+      "url": "/art/tatsuno-kingo-tokyo-station.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tokyo_Station_(1914).webp",
+      "license": "public-domain",
+      "credit": "鉄道院東京改良事務所 (Railway Agency, Tokyo Improvement Office). Tokyo Station, from 東京市街高架鉄道建築概要, 1914. National Diet Library, doi:10.11501/1914851. Public domain (via Wikimedia Commons)",
+      "width": 960,
+      "height": 369,
+      "alt": "1914년 무렵의 도쿄역. 넓은 광장 너머로 가로로 아주 긴 벽돌 건물이 서 있고, 양 끝에 둥근 돔 지붕이 하나씩 솟아 있다. 흑백 사진."
     }
   }
 ]

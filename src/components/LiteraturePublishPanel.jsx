@@ -69,8 +69,11 @@ import { announcedProgress } from '../lib/announceProgress';
 import { literatureBatchTargets, literatureResumeTargets } from '../lib/literaturePublish';
 import { literatureWork } from '../lib/literatureCanonical';
 import LiteratureCover from './books/LiteratureCover';
-import VictorianCover from './books/VictorianCover';
 import { standardEbooksWork } from '../lib/standardEbooksCanonical';
+import FirstEditionCover from './books/FirstEditionCover';
+import CanonicalCover from './books/CanonicalCover';
+import { wikisourceWork } from '../lib/wikisourceCanonical';
+import { pdSiteWork } from '../lib/pdSiteCanonical';
 
 const LITERATURE_API = '/api/admin/literature';
 const FAILURE_STOP = 3; // 연달아 이만큼 실패하면 공통 원인(할당량·네트워크)으로 보고 멈춘다
@@ -81,11 +84,12 @@ const CONFLICT_LABEL = { 'text-differs': '정본과 원문이 다름', 'duplicat
 export function BookCover({ bookKey, scale = 1 }) {
   const work = literatureWork(bookKey);
   const english = work ? null : standardEbooksWork(bookKey); // 영어 정본 — 빅토리아 천 장정(LIT-SRC-EN-1)
-  if (!work?.display && !english?.display) return null;
+  const world = work || english ? null : wikisourceWork(bookKey) || pdSiteWork(bookKey); // 위키문헌 · 전자책 사이트 정본 — 초판 장정(LIT-SRC-WS-1 · PD-1)
+  if (!work?.display && !english?.display && !world?.display) return null;
   return (
     <span style={{ display: 'inline-block', width: 60 * scale, height: 84 * scale, overflow: 'hidden', verticalAlign: 'middle', flex: 'none' }}>
       <span style={{ display: 'block', width: 60, transform: `scale(${scale})`, transformOrigin: '0 0' }}>
-        {work ? <LiteratureCover work={work} /> : <VictorianCover work={english} />}
+        {work ? <LiteratureCover work={work} /> : english ? <CanonicalCover work={english} /> : <FirstEditionCover work={world} />}
       </span>
     </span>
   );
@@ -138,7 +142,7 @@ function EvidenceCell({ book, kind }) {
   const { rights } = book;
   return (
     <td className="admin-table__muted">
-      {rights.basis === 'public-domain' ? '퍼블릭 도메인' : rights.basis} · 초출 {rights.publishedYear} · 작가 {rights.authorDeathYear} 사망 · {rights.charset}
+      {rightsBasisLabel(rights)} · 초출 {rights.publishedYear} · {rightsPeopleText(rights)} · {rights.charset}
       {' · '}{rights.reviewedJurisdictions.join('·')} 검토({rights.reviewedBy}, {rights.reviewedAt})
       {' · '}<a href={rights.evidenceUrl} target="_blank" rel="noopener noreferrer">{rights.evidenceLabel || '도서 카드'}</a>
     </td>
@@ -151,8 +155,8 @@ function confirmTextOf(confirm, kind) {
     case 'batch': return `${confirm.books.map((book) => `${book.title}(${book.total}장)`).join(' · ')}. 모두 비공개로 넣고 이 화면에서 한 장씩 분석해요. 근거는 표의 「${KIND[kind].evidence}」 칸과 같아요. 검수와 공개는 작품마다 따로 해요.`;
     case 'prepare': return `${confirm.book.total}장을 비공개로 넣고 이 화면에서 한 번씩 분석해요. ${prepareBasis(confirm.book, kind)}. 공개 전에는 다른 사용자에게 보이지 않아요.`;
     case 'release': return '모든 장의 검수를 마쳤어요. 공개하면 모든 사용자가 읽을 수 있어요. 분석 결과는 같이 쓰고, 단어 상태는 사람마다 따로예요.';
-    case 'review': return `분석이 저자 루비 낱말 ${confirm.item.boundary}곳을 둘 이상으로 나눴어요(${confirm.item.boundaryWords.join('·')}). 이름이나 한 낱말이면 장을 열어 「한 단어로 묶기」로 고쳐 주세요. 그대로 두어도 되는 자리라면 검수 완료로 표시해요.`;
-    case 'reviewMany': return `${confirm.chapters.map((chapter) => chapter.title).join(' · ')}. 「뜻 확인 필요」가 없고 쪼개진 저자 루비 낱말도 없는 장이에요. 한 번에 검수 완료로 표시해요.`;
+    case 'review': return `분석이 원문의 한 낱말 표시(저자 루비 · 고유명사 밑줄) ${confirm.item.boundary}곳을 둘 이상으로 나눴어요(${confirm.item.boundaryWords.join('·')}). 이름이나 한 낱말이면 장을 열어 「한 단어로 묶기」로 고쳐 주세요. 그대로 두어도 되는 자리라면 검수 완료로 표시해요.`;
+    case 'reviewMany': return `${confirm.chapters.map((chapter) => chapter.title).join(' · ')}. 「뜻 확인 필요」가 없고 쪼개진 표시 낱말(저자 루비 · 고유명사)도 없는 장이에요. 한 번에 검수 완료로 표시해요.`;
     default: return '';
   }
 }
@@ -160,7 +164,19 @@ function confirmTextOf(confirm, kind) {
 /** 「게시」 확인창의 근거 한 줄. */
 const prepareBasis = (book, kind) => (kind === 'art'
   ? `근거: ${artSourceGroups(book.provenance).join(' / ')} · 카탈로그 원문 대조`
-  : `근거: 작가 ${book.rights.authorDeathYear} 사망 · ${book.rights.reviewedJurisdictions.join('·')} 검토`);
+  : `근거: ${rightsPeopleText(book.rights)} · ${book.rights.reviewedJurisdictions.join('·')} 검토`);
+
+/** 권리 근거 이름 — 퍼블릭 도메인 · 공공누리 제1유형(출처 표시 조건 이용). 모르는 값은 그대로(감출 이유가 없다). */
+const rightsBasisLabel = (rights) => ({ 'public-domain': '퍼블릭 도메인', 'kogl-type1': '공공누리 제1유형' })[rights.basis] ?? rights.basis;
+
+/** 판정을 가른 사람 · 기관 — 작가 몰년(없으면 뺀다) · 번역자 몰년과 번역 판 · 공공누리 배포 기관. */
+function rightsPeopleText(rights) {
+  const parts = [];
+  if (Number.isInteger(rights.authorDeathYear)) parts.push(`작가 ${rights.authorDeathYear} 사망`);
+  for (const translator of [rights.translator].flat().filter(Boolean)) parts.push(`번역 ${translator.name}(${translator.publishedYear ?? '?'}년 판 · ${translator.deathYear ?? '?'} 사망)`);
+  if (rights.holder) parts.push(`배포 기관 ${rights.holder}`);
+  return parts.join(' · ') || '작가 기록 없음';
+}
 
 const analyzedCount = (book) => book.chapters.filter((chapter) => chapter.material?.status === 'completed').length;
 
@@ -405,7 +421,8 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
         </p>
       ) : (
         <p className="admin-table__muted" style={{ margin: '0 0 12px' }}>
-          青空文庫·Standard Ebooks 퍼블릭 도메인 원작(리포 <code>src/content/literature</code>). 「게시」를 누르면 장들을 비공개로 준비하고 이 화면에서
+          青空文庫·Standard Ebooks·위키문헌·전자책 사이트에서 가져온 정본 책(리포 <code>src/content/literature</code> — 한국에서 보호기간이 끝났거나
+          공공누리 제1유형인 원문만). 「게시」를 누르면 장들을 비공개로 준비하고 이 화면에서
           한 번씩 분석해요. 장을 열어 「뜻 확인 필요」(문맥 뜻 제안)를 확정하고 장마다 「검수 완료」를 누른 뒤 「공개」하면 산책에 보여요.
           분석과 검수 결과는 모든 사용자가 같이 쓰고, 단어 상태만 사람마다 따로예요.
         </p>

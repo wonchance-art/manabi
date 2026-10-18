@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {VIEWER_PREF_KEY,readViewerPreferences,writeViewerPreferences,validateViewerPreferences,viewerDefaults,fontChoices} from '../viewerPreferences';
+import {TAB_KEYS,VIEWER_PREF_KEY,readViewerPreferences,writeViewerPreferences,validateViewerPreferences,viewerDefaults,fontChoices} from '../viewerPreferences';
 import {pinyinCellWidth,PINYIN_MEASURE_SYLLABLES} from '../pinyinLayout';
 import {READING_PRESETS,presetActive} from '../readingSheet';
 const storage=(entries={})=>{const data=new Map(Object.entries(entries));return {getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)};};
@@ -29,7 +29,7 @@ describe('viewer preferences migration and isolation',()=>{
  // Y 설계 ③(#1077 5548350811) — 제거한 「탭하면 발음 보기」(pronReveal)의 저장값은 읽지 않고,
  // 같은 묶음의 다른 설정·다른 언어·공통 값은 그대로 둔다. 다음 쓰기에서 그 키만 빠진다.
  it('ignores a stored pronReveal while preserving every other saved preference',()=>{
-  const saved={fontSize:2.2,pinyinSize:1,lineGap:30,charGap:.5,fontFamily:'serif',pronDisplay:'unknown',pronReveal:true,autoSpeakOnClick:true,
+  const saved={fontSize:2.2,pinyinSize:1,lineGap:30,charGap:.5,fontFamily:'serif',zhScript:'hant',pronDisplay:'unknown',pronReveal:true,autoSpeakOnClick:true,
    showHanjaKo:true,showToneColors:true,focusMode:true,wordStateHl:true,showPatterns:true,patternFilter:'due',autoPace:true,paceCpm:300,paceStep:2};
   const store=storage({[VIEWER_PREF_KEY]:JSON.stringify({version:2,common:{theme:'dark',ttsRate:'fast'},languages:{Chinese:saved,Japanese:{pronDisplay:'none',pronReveal:true,fontSize:1.2}}})});
   const read=readViewerPreferences(store,'Chinese');
@@ -93,4 +93,10 @@ describe('pinyin width',()=>{
   expect(seen).toEqual(PINYIN_MEASURE_SYLLABLES);expect(pinyinCellWidth(()=>10,48)).toBe(50);
  });
  it('invalid measurements cannot poison CSS width',()=>{expect(pinyinCellWidth(()=>NaN,26)).toBe(28);});
+ it('zhScript(번체로 읽기, LIT-SRC-WS-1) — 기본 간체 · hans/hant만 · 글자 탭에 속한다',()=>{
+  expect(viewerDefaults('Chinese').zhScript).toBe('hans');
+  expect(validateViewerPreferences({zhScript:'hant'},'Chinese').zhScript).toBe('hant');
+  expect(validateViewerPreferences({zhScript:'traditional'},'Chinese').zhScript).toBe('hans');
+  expect(TAB_KEYS.type).toContain('zhScript');
+ });
 });

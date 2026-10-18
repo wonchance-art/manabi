@@ -20,6 +20,7 @@ vi.mock('next/dynamic', async () => {
 
 const { default: LevelListPage, VocabCard } = await import('../LevelListPage.jsx');
 const { levelListData } = await import('../../lib/levelListData.js');
+const { normalizeLevelPrefs } = await import('../../lib/levelList.js');
 const { default: LevelTiles } = await import('../../components/levels/LevelTiles.jsx');
 
 const { hunRubyCells } = await import('../../lib/viewerHunRuby.js');
@@ -159,6 +160,20 @@ describe('단어 카드 — 고른 것 하나만 · 펼치기 · 훈음 · 正�
     expect(pressed(card('all', { studying: true }))).toEqual(['o:false', 'x:true']);
   });
 
+  it('[O][X]는 어느 보기든 동그라미 아이콘만 — 이름표 글자 0 · 가운데 맞춤은 기본 .lv-fab(오너 2026-10-17)', () => {
+    for (const view of ['all', 'word', 'meaning']) {
+      const acts = sliceBetween(card(view), '<div class="lv-acts">', '</div>');
+      expect(count(acts, '<button')).toBe(2);
+      expect(acts).not.toMatch(/<span|안다<|모른다</);
+      expect(acts).toMatch(/aria-label="[^"]*안다/); // 화면 읽기 이름은 그대로
+    }
+    // 중국어 덮어쓰기가 기본 .lv-fab의 inline-grid · place-items(가운데)를 다시 풀지 않는다 — 탭 보기 아이콘 쏠림의 원인
+    const css = fs.readFileSync(new URL('../../components/levels/level-list.css', import.meta.url), 'utf8');
+    expect(css).toMatch(/\.lv-fab\{[^}]*display:inline-grid;place-items:center/);
+    const zhFab = [...css.matchAll(/\[data-language="zh"\][^{]*\.lv-fab(?![-\w])[^{]*\{([^}]*)\}/g)].map((m) => m[1]).join(';');
+    expect(zhFab).not.toMatch(/display:|padding:|min-width:|border-radius:|font:/);
+  });
+
   it('성조 색(옵션): 켜면 음절마다 lv-tone--N, 끄면 병음 한 덩어리 · 공부 중 카드는 data-studying', () => {
     const tone = (html) => [...html.matchAll(/lv-tone--(\d)">([^<]+)/g)].map((m) => `${m[2]}${m[1]}`);
     const toned = renderToStaticMarkup(<VocabCard entry={entry} lang="chinese" levelKey="h1" view="all" tone onPeek={() => {}} speak={() => {}}
@@ -195,6 +210,22 @@ describe('머리 · 진도 · X 펼침(LEVEL-FLOW-001 — 디자인 검토 2026-
     expect(fs.readFileSync('src/components/levels/level-list.css', 'utf8')).toContain('.lv-nav[hidden]{display:none}');
   });
 
+  it('▾를 열면 카드 하나 — 「레벨」 · 「목록」 이름표 + 꽉 찬 세그먼트, ← 교재는 맨 아래(오너 2026-10-17 「자연스럽게」)', async () => {
+    const nav = (html) => sliceBetween(html, '<div class="lv-nav" id="lv-nav"', '<div class="lv-view"');
+    const keys = (html) => [...nav(html).matchAll(/<span class="lv-nav__k" aria-hidden="true">([^<]+)<\/span>/g)].map((m) => m[1]);
+    const h1 = await render('chinese', 'vocab', 'h1');
+    expect(keys(h1)).toEqual(['레벨', '목록']);
+    expect(nav(h1).indexOf('lv-nav__k')).toBeLessThan(nav(h1).indexOf('class="lv-pills"'));
+    expect(keys(await render('chinese', 'vocab', 'h7'))).toEqual(['레벨']); // 목록 탭이 없으면 이름표도 없다
+    // 문형 · 한자(펼친 머리)에는 이름표를 그리지 않는다
+    expect(await render('chinese', 'bunkei', 'h1')).not.toContain('lv-nav__k');
+    const css = fs.readFileSync('src/components/levels/level-list.css', 'utf8');
+    expect(css).toMatch(/\.lv-bar--sticky \.lv-nav\{[^}]*border:1px solid var\(--lv-line\);border-radius:12px;background:var\(--lv-card\)/); // ⚙ 설정과 같은 카드
+    expect(css).toMatch(/\.lv-bar--sticky \.lv-pills\{display:grid;grid-auto-flow:column;grid-auto-columns:minmax\(0,1fr\)/);
+    expect(css).toMatch(/\.lv-bar--sticky \.lv-crumb\{order:9/);
+    expect(css).toContain('@media (prefers-reduced-motion:reduce){.lv-bar--sticky :is(.lv-nav,.lv-settings,.lv-tools){animation:none}}'); // 내려오는 움직임은 줄이기 설정에서 끈다
+  });
+
   it('넓은 화면 균형: 묶음은 가운데 · 단어 목록은 목차 없이 680px 한 줄 + 품사 칩(오너 2026-10-16 「1440에서 균형」)', async () => {
     const css = fs.readFileSync('src/components/levels/level-list.css', 'utf8');
     expect(css).toContain('.lv-page>*{max-width:904px;margin-inline:auto}');
@@ -225,9 +256,18 @@ describe('머리 · 진도 · X 펼침(LEVEL-FLOW-001 — 디자인 검토 2026-
     expect(page).not.toMatch(/<h2[^\n]*\/\{|lv-toc[^\n]*count/);
   });
 
+  it('⚙ 「X 누르면 답 펼치기」 — 기본 켬, 끄면 X는 기록만(카드는 접힌 채)', () => {
+    expect(normalizeLevelPrefs({}).peekOnX).toBe(true);
+    expect(normalizeLevelPrefs({ peekOnX: false }).peekOnX).toBe(false);
+    const panel = sliceBetween(page, '<div className="lv-settings" id="lv-settings">', '</div>}');
+    expect(panel).toContain("['peekOnX', 'X 누르면 답 펼치기', '단어 · 문장 · 뜻 · 소리 탭']");
+    // 펼치기는 markX 한 곳뿐 — 클릭 · 키보드 X가 모두 이 길을 지난다.
+    expect([...page.matchAll(/openPeek\(entry\.key\)/g)]).toHaveLength(1);
+  });
+
   it('탭 보기에서 X = 그 카드를 펼쳐 답을 본다 · 「복습하기」 알림은 KST 하루 한 번', () => {
     const markX = sliceBetween(page, 'const markX = async (entry) => {', '};'); // 아는 단어 풀기를 기다리므로 async
-    expect(markX).toContain("if (prefs.view !== 'all') openPeek(entry.key);");
+    expect(markX).toContain("if (prefs.view !== 'all' && prefs.peekOnX) openPeek(entry.key);");
     const nudge = sliceBetween(page, 'const nudgeReview = () => {', '};');
     expect(nudge).toContain('if (localStorage.getItem(NUDGE_KEY) === kstDay()) return; localStorage.setItem(NUDGE_KEY, kstDay());');
     expect(nudge).toContain("action: '복습하기'");

@@ -32,6 +32,9 @@ export function fsrsIntervalLabel(due, at) {
   return `${Math.round(seconds / 86400)}d`;
 }
 
+/** ready가 아닌 상태(loading · error)에서 시작한 FSRS 목록 읽기가 이보다 오래 끝나지 않으면 오류로 내린다(다시 시도). 목록 요청 상한(15초)보다 조금 길다. */
+export const FSRS_LOADING_CAP_MS = 20000;
+
 /** DB 상태만 문제의 기준으로 삼는다. 대기 중인 연산은 재출제나 옛 채점 경로로 보내지 않는다. */
 export function createFsrsReviewController({ accountId, client, now = Date.now, makeId = uuid,
   setTimer = setTimeout, clearTimer = clearTimeout, eventTarget = globalThis.window,
@@ -101,10 +104,26 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
     publish({ cards: [...state.cards.filter(row => row.cardId !== response.cardId), entry],
       enrolledIds: [...new Set([...state.enrolledIds, response.cardId])] });
   };
-  async function refresh() {
+  async function refresh({ retry = false } = {}) {
     if (disposed || !accountId) return false;
     if (refreshPromise) return refreshPromise;
     const token = generation, readToken = ++readGeneration;
+    // 읽기 상한(FSRS-LOADING-CAP, 2026-10-17 KST) — 목록 GET은 요청 상한이 있지만 대기 연산 읽기(IndexedDB)는 막히면(blocked ·
+    // 다른 탭) 끝나지 않아, 상태가 'loading'에 묶여 오늘 카드가 골격 · 시작 단추가 「복습 준비 중…」에 멈췄다. ready가 아닌 상태
+    // (loading · error)에서 시작한 읽기는 FSRS_LOADING_CAP_MS를 넘기면 오류로 내린다 — 화면은 기존 「복습 일정을 불러오지 못했어요.
+    // 다시 시도」. 다시 시도(retry)는 누른 즉시 'loading'으로 올려 기존 대기 표시(「복습 준비 중…」)를 보이고, 저장소가 계속 묶여 있으면
+    // 상한 뒤 다시 오류로 내려온다. ready 뒤 배경 재읽기(포커스 · 한도 변경)는 화면을 그대로 두므로 걸지 않는다.
+    // 다시 시도가 새 읽기를 보내게 진행 중 약속을 비운다. 늦게 도착한 결과는 세대 검사를 따른다: 그사이 새 읽기가 없으면 반영(스스로 회복),
+    // 다시 시도가 시작됐으면 버린다(readGeneration).
+    if (retry && state.status === 'error') publish({ status: 'loading', error: null });
+    const capTimer = state.status !== 'ready' ? setTimer(() => {
+      if (disposed || token !== generation || readToken !== readGeneration || state.status === 'ready') return;
+      const error = new Error('fsrs_load_timeout');
+      refreshPromise = null;
+      logLearningFailure('fsrs load', error);
+      publish({ registryAvailable: false, status: 'error', error });
+      queue();
+    }, FSRS_LOADING_CAP_MS) : null;
     refreshPromise = (async () => {
       let pending;
       try {
@@ -146,7 +165,10 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
           queue();
         }
         return false;
-      } finally { if (token === generation && readToken === readGeneration) refreshPromise = null; }
+      } finally {
+        if (capTimer !== null) clearTimer(capTimer);
+        if (token === generation && readToken === readGeneration) refreshPromise = null;
+      }
     })();
     return refreshPromise;
   }

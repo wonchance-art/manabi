@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import Button from '../Button';
 import { canAutoStartFsrsReview, fsrsIntervalLabel } from '../../lib/useFsrsReview';
 import { gradeGuide, isCardRevealClick, revealTrigger } from '../../lib/reviewCard';
-import { ReviewBack, ReviewCardMeta, ReviewHeadword, useGradeBarFocus, useScoreArmed } from './ReviewCardParts';
+import { ReviewBack, ReviewCardMeta, ReviewHeadword, useGradeBarFocus, useRevealFocus, useScoreArmed } from './ReviewCardParts';
 
 const RATINGS = [
   { rating: 1, label: '다시', style: 'again' },
@@ -39,6 +39,9 @@ export default function FsrsReviewSession({ review, onExit, embedded = false, ca
   const revealed = current?.phase === 'revealed' && (!embedded || current.cardId === cardId);
   const armed = useScoreArmed(revealed, current?.attempt?.id || cardId);
   const bar = useGradeBarFocus(!revealed, armed); // 뒷면이 열리면 막대(버튼 아님)로 초점 — FOCUS-AFTER-ACTION-001 C2(예전 일정 카드와 같은 규격)
+  const word0 = current?.word && (!embedded || current.cardId === cardId);
+  const revealRef = useRevealFocus(!!word0 && !revealed, current?.attempt?.id || null, busy || !current?.attempt); // 새 카드 「정답 확인하기」로 초점(STUDY-FOCUS-001)
+  const headwordId = useId(); // 그 단추가 표제어를 함께 읽게(aria-describedby)
   const reveal = async trigger => {
     if (await controller.reveal()) onReveal?.(trigger, current?.word);
   };
@@ -88,21 +91,23 @@ export default function FsrsReviewSession({ review, onExit, embedded = false, ca
         <div className={`review-card__body${revealed ? '' : ' review-card__body--front'}`}
           onClick={event => { if (!revealed && !disabled && current.attempt && isCardRevealClick(event)) reveal(revealTrigger(event)); }}>
           <ReviewCardMeta label="복습" word={word} />
-          <ReviewHeadword word={word} revealed={revealed} />
+          <ReviewHeadword word={word} revealed={revealed} id={headwordId} />
           {revealed ? <ReviewBack word={word} speak={speak} ttsSupported={ttsSupported} />
-            : <Button variant="secondary" size="lg" disabled={disabled || !current.attempt} className="review-reveal-btn"
-              onClick={event => reveal(revealTrigger(event))}>정답 확인하기<span className="review-keys-hint review-keys-hint--space" aria-hidden="true"> · Space</span></Button>}
+            : <Button ref={revealRef} variant="secondary" size="lg" disabled={disabled || !current.attempt} className="review-reveal-btn"
+              aria-describedby={headwordId} onClick={event => reveal(revealTrigger(event))}>정답 확인하기<span className="review-keys-hint review-keys-hint--space" aria-hidden="true"> · Space</span></Button>}
         </div>
       </div>
       <div ref={bar} tabIndex={-1} className={`review-grade-bar${revealed ? '' : ' is-locked'}`} role="group" aria-label="기억 채점">
-        {revealed && <p className="review-score-guide review-grade-guide">{gradeGuide(word)}<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span></p>}
+        {/* 안내 줄 · 간격 글 자리는 앞면(잠김)에서도 비워 둔다 — 정답 확인 때 막대가 자라지 않게(VOCAB-FLOW-001 C). 잠김엔 숨김 · 화면 읽기 제외. */}
+        <p className={`review-score-guide review-grade-guide${revealed ? '' : ' review-grade-guide--reserve'}`} aria-hidden={!revealed || undefined}>{gradeGuide(word)}<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span></p>
         <div className="review-score-grid" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
           {RATINGS.map(({ rating, label, style }) => <button key={rating} type="button"
             onClick={() => grade(rating)} disabled={!revealed || !armed || disabled}
             className={`review-score-btn review-score-btn--${style}`} title={revealed ? current.previews?.[rating]?.due : undefined}>
             {label}<span className="save-grade__key" aria-hidden="true">{rating}</span>
             {/* 보조 글 첫 글자 띄어쓰기 = 화면 읽기 이름 「다시 10분」(GRADE-NAME-001). 줄 첫머리 공백이라 화면에는 그려지지 않는다. */}
-            {revealed && <small>{' '}{fsrsIntervalLabel(current.previews?.[rating]?.due, current.previewAt)}</small>}
+            {revealed ? <small>{' '}{fsrsIntervalLabel(current.previews?.[rating]?.due, current.previewAt)}</small>
+              : <small className="review-grade-guide--reserve" aria-hidden="true">{'\u00a0'}</small>}
           </button>)}
         </div>
       </div>

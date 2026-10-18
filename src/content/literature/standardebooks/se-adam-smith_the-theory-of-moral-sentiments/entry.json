@@ -1,0 +1,265 @@
+{
+  "schemaVersion": 1,
+  "provider": "standardebooks",
+  "repo": "standardebooks/adam-smith_the-theory-of-moral-sentiments",
+  "commit": "1a94d8d93245868d08d895d4fc26a2e50db9855a",
+  "url": "https://standardebooks.org/ebooks/adam-smith/the-theory-of-moral-sentiments",
+  "title": "The Theory of Moral Sentiments",
+  "author": "Adam Smith",
+  "publishedYear": 1759,
+  "authorDeathYear": 1790,
+  "countryOfOrigin": "GB",
+  "level": "C1 고급",
+  "display": {
+    "titleKo": "도덕감정론",
+    "authorKo": "애덤 스미스",
+    "binding": "millar-1759",
+    "coverTitle": "The\nTheory\nof\nMoral Sentiments.",
+    "coverAuthor": "By Adam Smith,",
+    "coverSubtitle": "PROFESSOR of MORAL PHILOSOPHY",
+    "coverPlace": "London:",
+    "coverImprint": "Printed for A. MILLAR",
+    "coverYear": 1759
+  },
+  "files": [
+    {
+      "path": "chapter-1-1-1.xhtml",
+      "sha256": "3e0254b0c4ed4f09efe36e9dd881db05d2a32e4d986450785fb4a69e246fd5d2"
+    },
+    {
+      "path": "chapter-1-1-2.xhtml",
+      "sha256": "9950144ca96e896bf3d205f99d40d2a9b4792ecb234a7c9efacd3de5fd57982e"
+    },
+    {
+      "path": "chapter-1-1-3.xhtml",
+      "sha256": "de6c80707ff154c4e2af2c67b5d137d498011bbb657fdebef9ca8d87705f84e3"
+    },
+    {
+      "path": "chapter-1-1-4.xhtml",
+      "sha256": "bb35e01aa900cff97b7213bc3f67197a7c4ebab7f47215916647e50ba1d19993"
+    },
+    {
+      "path": "chapter-1-1-5.xhtml",
+      "sha256": "7ce24035c0ef3b9178656317f543664ab6681f8cf617090b8c54c8e19021f9df"
+    },
+    {
+      "path": "section-1-2.xhtml",
+      "sha256": "c13e6ff2b51f08c9ce56e844e49f129873a7b7dd08dddbcc5cc6bf695a7c14b5"
+    },
+    {
+      "path": "chapter-1-2-1.xhtml",
+      "sha256": "7fd6b13e92cb425d828c0afe2e60b806bf13c5a50f52cd6c7285d1057a59f2ca"
+    },
+    {
+      "path": "chapter-1-2-2.xhtml",
+      "sha256": "fd6573208fd4891a94665f58bb59277b90ce6357f7d97cdfd48daa0ea4ff4236"
+    },
+    {
+      "path": "chapter-1-2-3.xhtml",
+      "sha256": "2bbf7633400b944df486513a6cf64fc6d15612eda0bd3add46e012da11416855"
+    },
+    {
+      "path": "chapter-1-2-4.xhtml",
+      "sha256": "cd739b71d2ad0ca6f199d81009a5f72eb22268bcba9eebcf46ab56353197b0f7"
+    },
+    {
+      "path": "chapter-1-2-5.xhtml",
+      "sha256": "dddc22f29df4a4bf3a48e00d5101333ae20dfa9cde2f7f1f47a42636759ffb1f"
+    },
+    {
+      "path": "chapter-1-3-1.xhtml",
+      "sha256": "6b8ed38dc22d316faf5c8deaf5ceb84764c8d0795722fe49e3e634bf9b0c242f"
+    },
+    {
+      "path": "chapter-1-3-2.xhtml",
+      "sha256": "fd88d70ceb017bb7976f2ccf39237c89b9fb0416537d6547aa97692e632d73b4"
+    },
+    {
+      "path": "chapter-1-3-3.xhtml",
+      "sha256": "cddab9ce6cca379a7b451d5fcaee237c7114a14ebae5092972ef89395a083250"
+    },
+    {
+      "path": "section-2-1.xhtml",
+      "sha256": "4388b6426e65bdb5d6ed6f8415f139e7d8c888897622517a1ab9025a0f942bca"
+    },
+    {
+      "path": "chapter-2-1-1.xhtml",
+      "sha256": "db5e75cdd200f4fcb9392e26bfb92050be3401130b3651a37a1cb1a7e82c41e0"
+    },
+    {
+      "path": "chapter-2-1-2.xhtml",
+      "sha256": "d3bcde4216ccfc1042548adc753388062b5f906850c239c9855b5161e8f60768"
+    },
+    {
+      "path": "chapter-2-1-3.xhtml",
+      "sha256": "893147fa7d2cff028f14ebebbc277877a5a179903d649314c65901eccd8a67ad"
+    },
+    {
+      "path": "chapter-2-1-4.xhtml",
+      "sha256": "81d2817c5b133d6f2eea41b3a61209db002a89e359f47543a099fe1a57cf21da"
+    },
+    {
+      "path": "chapter-2-1-5.xhtml",
+      "sha256": "a0bf988f9fe9ba8db54903188a67077cb6bebe4d3d31b8440bb155f98e3d06d7"
+    },
+    {
+      "path": "chapter-2-2-1.xhtml",
+      "sha256": "9edc2c7ad39c2bfc00864937f38179e7fae1a5a694bc18474e9809dc8d8e3494"
+    },
+    {
+      "path": "chapter-2-2-2.xhtml",
+      "sha256": "f697016a8719b892d5ad9943de35516dff5d9cc4524b7b58e9b7fbf678385a39"
+    },
+    {
+      "path": "chapter-2-2-3.xhtml",
+      "sha256": "c04fba0946579915800cb6ed3464a3e7696935741fb5461b9f85f36820a94b0c"
+    },
+    {
+      "path": "section-2-3.xhtml",
+      "sha256": "ed971f5e14785e6e747624f2e5ef79c21a960afd8df162fa554b52af1847432e"
+    },
+    {
+      "path": "chapter-2-3-1.xhtml",
+      "sha256": "3e5c691e2fcd9296bd9347e38f0a0871bacb2ff3500fe965df7e28291deee82d"
+    },
+    {
+      "path": "chapter-2-3-2.xhtml",
+      "sha256": "0959171c9c5d592b742474def0891e6d6b3a165c6df0ca7bdeb9d3c21aef6c62"
+    },
+    {
+      "path": "chapter-2-3-3.xhtml",
+      "sha256": "e05fd3ccf8112334473fc46a7dfbdb63481240348112a2ffa6a47dda7608deff"
+    },
+    {
+      "path": "chapter-3-1.xhtml",
+      "sha256": "2f085fd70945d49f4f0af1c660985ec0c5d8b9b38ceac4c6c333eb08fdab3c56"
+    },
+    {
+      "path": "chapter-3-2.xhtml",
+      "sha256": "05235372680a88842475d555cdb2db740f3c3bf455eed5cb9dc47421e13be24b"
+    },
+    {
+      "path": "chapter-3-3.xhtml",
+      "sha256": "20b605c10b745619d0ed055fcc72d200a3481f83346baa4857dc7eac9b70609e"
+    },
+    {
+      "path": "chapter-3-4.xhtml",
+      "sha256": "0971257ab2827a6a2326b88ac50d85f90dae491bf6ae4c70c54d07c3066cbab2"
+    },
+    {
+      "path": "chapter-3-5.xhtml",
+      "sha256": "3e78277ceb90c52e448c91c87a6862922010c496a161a7cc3bf4f0ce8929170e"
+    },
+    {
+      "path": "chapter-3-6.xhtml",
+      "sha256": "5344a3dec888f9ade5d22fe82eaa67608ce6e163d2b7cae90f079c7c27d0bd1a"
+    },
+    {
+      "path": "chapter-4-1.xhtml",
+      "sha256": "e33e2acfd24ab0a7981e0a8069621748f4a7835d19a0a8e905c177254f1864ec"
+    },
+    {
+      "path": "chapter-4-2.xhtml",
+      "sha256": "c5d8e451c2ec97159e773d231879f064d0afe25a074db82890979d42507a57d2"
+    },
+    {
+      "path": "chapter-5-1.xhtml",
+      "sha256": "a62721f5d424d63612e34911987c0ff1d2239baef39d8e74161cd7749a7bab81"
+    },
+    {
+      "path": "chapter-5-2.xhtml",
+      "sha256": "fc9b874e43373e033708e0f9c826bc898710094a460465e5516d49dc3126623f"
+    },
+    {
+      "path": "part-6.xhtml",
+      "sha256": "3ba69fc3743a9645f4aa08c45e58b1ac18c65501a513d0a1e7ee2097ea632094"
+    },
+    {
+      "path": "section-6-1.xhtml",
+      "sha256": "35e99707296f57937e90f7ca2fc926d0925250b9dfd2e12ca4878822dbc65d17"
+    },
+    {
+      "path": "section-6-2.xhtml",
+      "sha256": "0b554d12b81e99066133be23645c5de0e93c409e6fb4b53d1f1f05e6ecd4dc01"
+    },
+    {
+      "path": "chapter-6-2-1.xhtml",
+      "sha256": "e4d286eea7ad07f1abe77dc5982573c84e5e473e69cf62fbd31445a1beaa653c"
+    },
+    {
+      "path": "chapter-6-2-2.xhtml",
+      "sha256": "5d7d4a8022afbcaa3094dcb273afe13fbe44e5703615f388bfaebb2ef9447957"
+    },
+    {
+      "path": "chapter-6-2-3.xhtml",
+      "sha256": "6a48f54dede56170a05bdf805b96802571e46e83c6b2478be83ea3b5d872019d"
+    },
+    {
+      "path": "section-6-3.xhtml",
+      "sha256": "795c3227f06203ca7300fac96a6c97701c02b36f021b1c75f587c007f3f58247"
+    },
+    {
+      "path": "section-6-conclusion.xhtml",
+      "sha256": "7c55d6bd29f4f8f0551a44144b6028c962354a2e0570a4aa3e9e739737f5ec6f"
+    },
+    {
+      "path": "section-7-1.xhtml",
+      "sha256": "25b629f7b03fd7dc26741f205c3e31708f86c8a463fa69a3597330b761b9f20b"
+    },
+    {
+      "path": "section-7-2.xhtml",
+      "sha256": "4523f17ce8679f0290279d8107b41dd63a3a8ca6061fcd60e6f9e9462ff9d7a1"
+    },
+    {
+      "path": "chapter-7-2-1.xhtml",
+      "sha256": "38fb17bccee226705e695964ec45e2b330cb02df8603716a86391e12fbba6f95"
+    },
+    {
+      "path": "chapter-7-2-2.xhtml",
+      "sha256": "9ab24851adbb9d5d07ad7c065a18c662b4de7808ec360eb5a59934659755fe72"
+    },
+    {
+      "path": "chapter-7-2-3.xhtml",
+      "sha256": "9b318cb4d7ac00bf6c72b61ab21ac0f84bf699315798f5830c64e3e9cc472eef"
+    },
+    {
+      "path": "chapter-7-2-4.xhtml",
+      "sha256": "b92c2ab4249821eb985c4243203dc88b11240956ef3002fd421ed28326322a1f"
+    },
+    {
+      "path": "section-7-3.xhtml",
+      "sha256": "ce832977f8ff3c02cb6bca1cd32b92d5f73a5b976e8be67a46a500588cecebff"
+    },
+    {
+      "path": "chapter-7-3-1.xhtml",
+      "sha256": "5fd0ecfdaa44965681b5f64ad9ab42b87d0bcf730dd3165bee6086e508ebed64"
+    },
+    {
+      "path": "chapter-7-3-2.xhtml",
+      "sha256": "9cf9c192afb36e3e2425043296d8409f67ec93916b0dec10e0c5a030bc6db8fd"
+    },
+    {
+      "path": "chapter-7-3-3.xhtml",
+      "sha256": "2f2e431804e6a8ed26d9077dc9064daeefbec114efb00490cab689e4ae317ede"
+    },
+    {
+      "path": "section-7-4.xhtml",
+      "sha256": "496fe05c5faa4b7e425c1286ded4298302b8f5713d8d095c9195cff5f04bc671"
+    },
+    {
+      "path": "considerations.xhtml",
+      "sha256": "ab56aadbf46e9885f28aa3416cf47790f2962cf4155655c011aa54e5c0ffe6f9"
+    }
+  ],
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-17",
+    "reviewedJurisdictions": [
+      "GB",
+      "KR"
+    ],
+    "evidenceUrl": "https://standardebooks.org/ebooks/adam-smith/the-theory-of-moral-sentiments"
+  }
+}

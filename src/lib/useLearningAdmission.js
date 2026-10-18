@@ -140,16 +140,27 @@ export function logLearningFailure(where, error) {
   console.warn(`[learning] ${where} 실패`, error?.code || error?.name || 'error', error?.status ?? '');
 }
 
+/**
+ * 질문(question) 직전 한도 다시 읽기를 건너뛰는 창(VOCAB-START-3, 2026-10-17 KST). 복습 시작(startSession)이 입장 한도를 막 읽고
+ * 줄을 짠 뒤 첫 카드를 묻는데, question이 다시 GET부터 해 시작 뒤 첫 카드까지 왕복이 하나 더 들었다(입장 → FSRS → 입장 다시).
+ * question이 한도에서 쓰는 것은 정책 판(expectedPolicyRevision)과 호환 여부뿐이다 — 판이 그 사이 바뀌면 서버가 409로 거절하고
+ * 아래 다시 읽기가 그대로 돈다. 사용량 · 새 표현 한도는 서버 입장 RPC가 정본이다. 짧게 둔다(사람이 카드를 읽는 동안이면 다시 읽는다).
+ */
+export const QUESTION_QUOTA_FRESH_MS = 2000;
+
 export function createLearningAdmissionController({ accountId, client, onQuota = () => {},
   eventTarget = globalThis.window, visibilityTarget = globalThis.document,
-  setTimer = setTimeout, clearTimer = clearTimeout } = {}) {
+  setTimer = setTimeout, clearTimer = clearTimeout, now = () => Date.now() } = {}) {
   let disposed = false, started = false, generation = 0, requestGeneration = 0, readGeneration = 0, loading = null, working = null;
-  let timer = null;
+  let timer = null, quotaAt = null; // quotaAt = 이 기기 시계로 한도를 받은 때(읽기 · 입장 · 설정 응답 모두)
   const listeners = new Set();
   let state = { status: 'loading', quota: null, current: null, busy: false, error: null };
   const publish = patch => { if (!disposed) { state = { ...state, ...patch }; listeners.forEach(listener => listener()); } };
+  // 막 받은 한도 — 오류 · 한도 없음 · 진행 중 읽기(포커스 · 날 바뀜)가 있으면 아니다(그 읽기를 기다린다).
+  const quotaFresh = () => state.status === 'ready' && !!state.quota && !loading && quotaAt !== null && now() - quotaAt >= 0 && now() - quotaAt <= QUESTION_QUOTA_FRESH_MS;
   const applyQuota = quota => {
     const validated = normalizeAdmissionStatus(quota, { actorId: accountId });
+    quotaAt = now();
     publish({ quota: validated, status: 'ready' });
     if (timer !== null) clearTimer(timer);
     timer = setTimer(() => { timer = null; refresh(); }, Math.min(2147483647, Math.max(1, Date.parse(nextAdmissionDayAt(validated)) - Date.parse(validated.now))));
@@ -182,7 +193,8 @@ export function createLearningAdmissionController({ accountId, client, onQuota =
     publish({ current: null, busy: true, error: null });
     const promise = (async () => {
       try {
-        if (!(await refresh()) || disposed || token !== generation || questionToken !== requestGeneration) return false;
+        // 막 받은 한도면 다시 읽지 않는다(VOCAB-START-3 — 복습 시작 직후 첫 카드의 중복 GET). 아니면 지금처럼 먼저 읽는다.
+        if (!(quotaFresh() || await refresh()) || disposed || token !== generation || questionToken !== requestGeneration) return false;
         if (canUseLegacyAdmissionCompatibility(state.quota)) {
           publish({ current: { accountId, cardId, questionKey, compatibility: true } }); return true;
         }

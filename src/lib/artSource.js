@@ -105,10 +105,34 @@ export const ART_SOURCES = Object.freeze({
       return holder ? `ColBase(국립문화재기구) · ${holder} 소장 · 재팬서치 경유 · ${ART_EDIT_NOTE}` : null;
     },
   }),
+  // 문화유산 온라인(文化遺産オンライン, 문화청) — 재팬서치 항목 API(bunka-<번호>)의 common.description(일본어, 평문).
+  // 재팬서치 데이터베이스 정보(api/database/bunka)의 metadataRights가 「解説文：CC BY」(4.0)다. 건축·국가 지정 문화재 해설(ART-GENRE-001).
+  // 문화청 자료(provider bunkazai)만 — 각 미술관이 올린 해설은 크레딧을 만들지 않는다(빌드 실패).
+  bunka: Object.freeze({
+    languages: Object.freeze(['ja']),
+    apiUrl: (id) => `https://jpsearch.go.jp/api/item/${encodeURIComponent(id)}`,
+    rawText: (json) => json?.common?.description ?? '',
+    pageUrl: (id, json) => json?.common?.linkUrl ?? `https://jpsearch.go.jp/item/${encodeURIComponent(id)}`,
+    license: ART_TEXT_LICENSE.CC_BY_4,
+    snapshot: (json, id) => {
+      const common = json?.common ?? {};
+      return {
+        id: json?.id ?? id,
+        linkUrl: common.linkUrl ?? null,
+        provider: common.provider ?? null,
+        title: common.title ?? null,
+        temporal: common.temporal ?? null,
+        description: common.description ?? null,
+      };
+    },
+    snapshotRaw: (snapshot) => snapshot?.description ?? '',
+    snapshotUrl: (snapshot) => ART_SOURCES.bunka.pageUrl(snapshot.id, { common: snapshot }),
+    credit: (snapshot) => (snapshot?.provider === 'bunkazai' ? `문화유산 온라인(문화청) · 재팬서치 경유 · ${ART_EDIT_NOTE}` : null),
+  }),
 });
 
 /** 그림 캡션 끝에 붙는 라이선스 이름. 표에 없는 라이선스는 캡션을 만들지 않는다(빌드 실패). */
-export const ART_IMAGE_LICENSE_LABEL = Object.freeze({ cc0: 'CC0' });
+export const ART_IMAGE_LICENSE_LABEL = Object.freeze({ cc0: 'CC0', 'public-domain': 'Public domain', 'cc-by-4.0': 'CC BY 4.0' });
 
 /**
  * 그림 출처 — public/art 파일을 어디서 받았나(ART-AUTO-1). 스냅샷 `sources/images/<작품 id>.json`의 `record`에서
@@ -129,6 +153,25 @@ export const ART_IMAGE_SOURCES = Object.freeze({
     creditFields: Object.freeze(['artistDisplayName', 'title', 'objectDate', 'creditLine']),
     license: (record) => (record?.isPublicDomain === true ? 'cc0' : null),
     credit: (record, label) => `${record.artistDisplayName}. ${record.title}, ${record.objectDate}. The Metropolitan Museum of Art, ${record.creditLine}. ${label}`,
+  }),
+  // ColBase 사진 — 재팬서치 항목 API(cobas-<번호>). 항목의 contentsRightsType이 ccby일 때만 CC BY 4.0(오너 결정 2026-10-18 KST).
+  // 파일은 contentsUrl의 slideshow_s(작은 미리보기) 대신 같은 경로의 slideshow_l(긴 변 700px 안팎)을 받은 바이트 그대로 둔다.
+  colbase: Object.freeze({
+    apiUrl: (id) => `https://jpsearch.go.jp/api/item/${encodeURIComponent(id)}`,
+    record: (json) => {
+      const common = json?.common ?? {};
+      return {
+        title: common.title ?? null,
+        contributor: Array.isArray(common.contributor) ? common.contributor[0] ?? null : common.contributor ?? null,
+        provider: common.provider ?? null,
+        contentsRightsType: common.contentsRightsType ?? null,
+        contentsUrl: Array.isArray(common.contentsUrl) ? common.contentsUrl[0] ?? null : null,
+      };
+    },
+    sourceUrl: (json) => json?.common?.linkUrl ?? null,
+    creditFields: Object.freeze(['title', 'contributor', 'provider']),
+    license: (record) => (record?.contentsRightsType === 'ccby' && Object.hasOwn(ART_COLBASE_HOLDERS, record?.provider ?? '') ? 'cc-by-4.0' : null),
+    credit: (record, label) => `${record.title} · ${record.contributor} · ${ART_COLBASE_HOLDERS[record.provider]} 소장 · ColBase(국립문화재기구) · ${label}`,
   }),
   // 위키미디어 공용 경유 미술관 디지털화본 — 공용 API는 요청 제한(429)이 잦아 record를 파일 페이지에서 손으로 옮긴다(ART-IMG-002).
   commons: Object.freeze({

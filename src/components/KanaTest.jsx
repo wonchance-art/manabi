@@ -4,6 +4,7 @@ import { kanaList, acceptedRomaji, SET_LABELS, ALL_SETS } from '../lib/gojuon';
 import { toRomaji } from '../lib/kanaRomaji';
 import { useAuth } from '../lib/AuthContext';
 import { syncCheckRemote } from '../lib/refProgress';
+import { accountScopedKey } from '../lib/refReadStore';
 import Button from './Button';
 
 function shuffle(arr) {
@@ -50,9 +51,10 @@ export default function KanaTest({ kind, slug, storageKey, lang }) {
     const passed = total > 0 && finalRight / total >= 0.8;
     if (slug && storageKey && typeof window !== 'undefined') {
       try {
-        const cur = JSON.parse(localStorage.getItem(storageKey) || '{}');
+        const key = accountScopedKey(storageKey, user?.id ?? null); // 이 계정의 확인 점수(LOCAL-PROGRESS-ACCOUNT-001)
+        const cur = JSON.parse(localStorage.getItem(key) || '{}');
         cur[slug] = { right: finalRight, total, passed, at: Date.now() };
-        localStorage.setItem(storageKey, JSON.stringify(cur));
+        localStorage.setItem(key, JSON.stringify(cur));
       } catch { /* ignore */ }
     }
     // 통과 + 로그인 사용자면 서버에도 기록(RefPatternCheck과 같은 경로) — 공부 모드 온보딩이

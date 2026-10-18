@@ -1,0 +1,57 @@
+{
+  "id": "yokoyama-matsusaburo-kyu-edojo-shashincho",
+  "genre": "photograph",
+  "artist": "yokoyama-matsusaburo",
+  "title": {
+    "native": "旧江戸城写真帖",
+    "ko": "옛 에도성 사진첩",
+    "reading": "きゅうえどじょうしゃしんじょう"
+  },
+  "date": {
+    "text": "明治4年(1871)",
+    "source": "colbase",
+    "startYear": 1871,
+    "endYear": 1871,
+    "certainty": "exact"
+  },
+  "periods": [
+    "jp-meiji"
+  ],
+  "medium": {
+    "native": "アルバム",
+    "ko": "사진첩(손으로 색을 입힌 알부민 인화 64장)"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/R-2282"
+    },
+    {
+      "place": "edo-castle",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-173967"
+    }
+  ],
+  "terms": [
+    "古写真",
+    "鶏卵紙",
+    "着色"
+  ],
+  "lookFor": [
+    "사진 위에 먹으로 적어 넣은 작은 글씨는 몇 군데일까요?",
+    "나무숲 너머로 보이는 망루 지붕은 어디에 있을까요?",
+    "사진에 덧칠한 색은 어디에서 보일까요?"
+  ],
+  "image": {
+    "source": "colbase",
+    "sourceId": "cobas-173967",
+    "alt": "사진첩의 한 면. 흙빛 빈터 앞쪽에 기와를 얹은 흰 벽 건물이 있고, 그 뒤로 나무숲과 망루 지붕이 보인다. 하늘과 나무에 옅게 색이 칠해져 있고 건물마다 이름이 작게 적혀 있다."
+  }
+}

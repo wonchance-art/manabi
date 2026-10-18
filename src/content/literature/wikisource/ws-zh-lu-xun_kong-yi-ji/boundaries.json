@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "jieba-wasm + fixZhTagged (src/lib/server/tokenizeZh.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "d93c6d35a1c60e7a6a1648700f209ee7059fa2f73ac82d79aa3f26e5c3e6d1cc",
+      "edits": [
+        {
+          "line": 0,
+          "start": 0,
+          "end": 2,
+          "text": "鲁镇",
+          "reason": "name"
+        },
+        {
+          "line": 2,
+          "start": 12,
+          "end": 16,
+          "text": "咸亨酒店",
+          "reason": "name"
+        }
+      ]
+    }
+  ]
+}

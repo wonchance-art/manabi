@@ -10,16 +10,16 @@
 // 고르게 나눈다(목표 SE_TARGET_WORDS 단어) — 「A Scandal in Bohemia (2/4)」. 문단 한가운데는 자르지 않는다.
 // 바꾼 점(edits — 뷰어 출처 줄이 밝힌다): 장 분할, 글자 정리(단어 결합자·줄 안 공백 제거 등 보이지 않는 조판 문자), 삽화 생략.
 
+import { koreaPublicDomainVerdict, translatorRecords } from './rightsKorea.js';
+
 export const SE_PROVIDER = 'standardebooks';
 export const SE_BOOK_VERSION = 1;
 export const SE_LANGUAGE = 'English';
 export const SE_TARGET_WORDS = 2200;
 export const SE_LICENSE = 'CC0-1.0';
 export const SE_EDITS = Object.freeze(['chapter-split-by-manabi', 'typography-normalized', 'illustrations-omitted']);
-// 지금 판정할 수 있는 원산국 — 사후 70년(영국) · 출판 95년(미국). 다른 나라는 예외 규칙(프랑스 전쟁 연장 등)을 먼저 적는다.
-export const SE_SUPPORTED_ORIGINS = Object.freeze(['GB', 'US']);
 
-const KEY_PATTERN = /^se-[a-z0-9]+(?:-[a-z0-9]+)*_[a-z0-9]+(?:-[a-z0-9]+)*$/u;
+const KEY_PATTERN = /^se-[a-z0-9]+(?:-[a-z0-9]+)*(?:_[a-z0-9]+(?:-[a-z0-9]+)*){1,4}$/u; // 번역본은 _<번역자>가 붙는다(명상록 george-long) · 공저 · 번역자 둘(전쟁과 평화 louise-maude_aylmer-maude)
 const SHA256 = /^[0-9a-f]{64}$/u;
 const COMMIT = /^[0-9a-f]{40}$/u;
 
@@ -40,10 +40,10 @@ function normalizeTypography(text) {
   return text.replace(/[⁠­​ ]/gu, '').replace(/[   ]/gu, ' ');
 }
 
-/** 요소 안쪽 → 글자(줄바꿈 <br/>만 살린다). 태그가 남으면 throw(모르는 구조를 글자로 흘리지 않는다). */
+/** 요소 안쪽 → 글자(줄바꿈 <br/>만 살린다). 태그가 남으면 throw(모르는 구조를 글자로 흘리지 않는다). 책 안 상호참조 <a>(명상록 「[Book IV]」)는 글자만. */
 function blockText(inner) {
   const flat = inner.replace(/\s+/gu, ' ').replace(/<br\s*\/>/gu, '\n');
-  const stripped = flat.replace(/<\/?(?:span|em|i|b|strong|abbr|time|q|cite|small|sup|sub|var|code|bdi|dfn|s|u)\b[^>]*>/gu, '');
+  const stripped = flat.replace(/<\/?(?:span|em|i|b|strong|abbr|time|q|cite|small|sup|sub|var|code|bdi|dfn|s|u|a)\b[^>]*>/gu, '');
   if (/[<>]/u.test(stripped)) throw new Error(`본문 블록에 모르는 태그가 있다: ${stripped.slice(0, 80)}`);
   return normalizeTypography(decodeEntities(stripped)).split('\n').map((line) => line.replace(/ {2,}/gu, ' ').trim()).filter(Boolean).join('\n');
 }
@@ -58,11 +58,17 @@ export function parseStandardEbooksXhtml(xhtml) {
   const title = /<title>([\s\S]*?)<\/title>/u.exec(xhtml);
   const body = /<body\b[^>]*>([\s\S]*)<\/body>/u.exec(xhtml);
   if (!title || !body) throw new Error('XHTML에 <title>과 <body>가 있어야 한다');
+  const notesOmitted = /epub:type="noteref"/u.test(body[1]);
   const content = body[1]
+    .replace(/<!--[\s\S]*?-->/gu, '') // 편집 주석(「<!--sic-->」) — 본문이 아니다
     .replace(/<figure\b[\s\S]*?<\/figure>/gu, '')
     .replace(/<hgroup\b[\s\S]*?<\/hgroup>/gu, '')
     .replace(/<h2\b[\s\S]*?<\/h2>/gu, '')
-    .replace(/<li\b[^>]*>(\s*<p\b[\s\S]*?)<\/li>/gu, '$1'); // 문단을 품은 목록 항목(일지·편지) — 안쪽 문단을 그대로
+    .replace(/<li\b[^>]*>(\s*<p\b[\s\S]*?)<\/li>/gu, '$1') // 문단을 품은 목록 항목(일지·편지) — 안쪽 문단을 그대로
+    .replace(/<table\b[\s\S]*?<\/table>/gu, tableToBlock) // 표(월든 집 짓기 비용 · 개츠비 일과표) — 행마다 한 줄인 문단 하나
+    .replace(/<img\b[^>]*\balt="([^"]*)"[^>]*\/?>/gu, '$1') // 글 속 작은 그림(모비 딕 퀴퀘그의 서명 표시) — 그림 대신 대체 글자
+    .replace(/(<\/p>\s*)<cite\b[^>]*>([\s\S]*?)<\/cite>/gu, '$1<p>— $2</p>') // 제사(題詞) 출처 — 「— Job」 한 줄 문단
+    .replace(/<a\b[^>]*epub:type="noteref"[^>]*>[\s\S]*?<\/a>/gu, ''); // 미주 번호 — 미주는 싣지 않는다
   const blocks = [];
   const pattern = /<(p|h[3-6]|li)\b[^>]*>([\s\S]*?)<\/\1>/gu;
   for (const match of content.matchAll(pattern)) {
@@ -74,7 +80,21 @@ export function parseStandardEbooksXhtml(xhtml) {
   const leftover = content.replace(pattern, '').replace(/<[^>]+>/gu, '');
   if (leftover.trim()) throw new Error(`알려진 블록 밖에 본문 글자가 있다: ${leftover.trim().slice(0, 80)}`);
   if (blocks.length === 0) throw new Error('본문 문단이 없다');
-  return { title: blockText(title[1]), blocks };
+  return { title: blockText(title[1]), blocks, notesOmitted };
+}
+
+/** 표 → 문단 하나(행마다 한 줄, 칸 글자는 공백으로). 칸 안 꾸밈 태그는 글자만 남긴다 — 표는 드물고 글자가 전부다. */
+function tableToBlock(table) {
+  const flat = (inner) => normalizeTypography(decodeEntities(inner.replace(/<\/?(?:div|p|br|td|th|li)\b[^>]*>/gu, ' ').replace(/<[^>]+>/gu, ''))).replace(/\s+/gu, ' ').trim();
+  const lines = [];
+  const caption = /<caption\b[^>]*>([\s\S]*?)<\/caption>/u.exec(table);
+  if (caption && flat(caption[1])) lines.push(flat(caption[1]));
+  for (const row of table.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gu)) {
+    const cells = [...row[1].matchAll(/<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]>/gu)].map((cell) => flat(cell[1])).filter(Boolean);
+    if (cells.length) lines.push(cells.join(' '));
+  }
+  const escape = (line) => line.replace(/[<>&]/gu, (char) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[char]);
+  return lines.length ? `<p>${lines.map(escape).join('<br/>')}</p>` : '';
 }
 
 export const wordCount = (text) => (String(text).match(/\S+/gu) || []).length;
@@ -105,34 +125,18 @@ export function splitBlocksByWords(blocks, target = SE_TARGET_WORDS) {
   return bounds.slice(1).map((end, index) => blocks.slice(bounds[index], end)).filter((group) => group.length > 0);
 }
 
-/**
- * 권리 판정(원산국 만료 + 미국 + 한국) — 기준 연도는 검토일(rights.reviewedAt)의 해라 결정적이다.
- *   사후 70년: 작가가 기준 연도 - 71년 이전 사망(2026년 검토면 1955년 이전 사망) — 영국 원산·한국 모두 이 선(한국은 1962년 이전
- *              사망 작품이 이미 만료라 더 이르다).
- *   미국: 출판이 기준 연도 - 96년 이전(2026년이면 1930년 이전 출판 — 1930년 출판작은 2026-01-01 만료).
- *   번역자가 있으면 불가(원어 원문만), 원산국이 SE_SUPPORTED_ORIGINS 밖이면 불가(나라별 예외를 먼저 적는다 — fail-closed).
- * @returns {{ok: boolean, reasons: string[], reviewYear: number|null}}
- */
-export function standardEbooksRightsVerdict({ publishedYear, authorDeathYear, countryOfOrigin, translator = null, rights } = {}) {
-  const reasons = [];
-  const reviewYear = /^\d{4}-\d{2}-\d{2}$/u.test(rights?.reviewedAt ?? '') ? Number(rights.reviewedAt.slice(0, 4)) : null;
-  if (reviewYear == null) reasons.push('rights.reviewedAt(YYYY-MM-DD)가 필요하다');
-  if (!Number.isInteger(publishedYear)) reasons.push('publishedYear가 필요하다');
-  if (!Number.isInteger(authorDeathYear)) reasons.push('authorDeathYear가 필요하다');
-  if (!SE_SUPPORTED_ORIGINS.includes(countryOfOrigin)) reasons.push(`원산국 ${countryOfOrigin ?? '없음'}은 아직 판정 규칙이 없다(${SE_SUPPORTED_ORIGINS.join('·')})`);
-  if (translator) reasons.push('번역본은 넣지 않는다(원어 원문만)');
-  if (reviewYear != null && Number.isInteger(authorDeathYear) && authorDeathYear > reviewYear - 71) reasons.push(`작가 ${authorDeathYear} 사망 — 사후 70년이 끝나지 않았다`);
-  if (reviewYear != null && Number.isInteger(publishedYear) && publishedYear > reviewYear - 96) reasons.push(`${publishedYear} 출판 — 미국 보호기간이 끝나지 않았다`);
-  return { ok: reasons.length === 0, reasons, reviewYear };
+/** 권리 판정 — 한국 공개 가능(① 한국 만료 · ② 본국 만료, 공통 정본 rightsKorea). */
+export function standardEbooksRightsVerdict(literature = {}) {
+  return koreaPublicDomainVerdict(literature);
 }
 
-/** 게시 가능한 권리 기록인가 — 승인·퍼블릭 도메인 · 원산국·미국·한국 검토 · 판정 통과 · 판 라이선스 CC0. */
+/** 게시 가능한 권리 기록인가 — 승인·퍼블릭 도메인 · 원산국·한국 검토 · 판정 통과 · 판 라이선스 CC0. */
 export function standardEbooksRightsPublishable(literature) {
   const rights = literature?.rights;
   if (literature?.provider !== SE_PROVIDER || rights?.status !== 'approved' || rights?.basis !== 'public-domain') return false;
   if (literature.license !== SE_LICENSE) return false;
   const jurisdictions = Array.isArray(rights.reviewedJurisdictions) ? rights.reviewedJurisdictions : [];
-  if (!['US', 'KR', literature.countryOfOrigin].every((code) => jurisdictions.includes(code))) return false;
+  if (![literature.countryOfOrigin, ...translatorRecords(literature.translator).map((record) => record?.countryOfOrigin), 'KR'].filter(Boolean).every((code) => jurisdictions.includes(code))) return false;
   return standardEbooksRightsVerdict(literature).ok;
 }
 
@@ -140,7 +144,7 @@ function validateEntry(entry) {
   const problems = [];
   if (entry?.schemaVersion !== SE_BOOK_VERSION) problems.push(`schemaVersion ${SE_BOOK_VERSION}`);
   if (entry?.provider !== SE_PROVIDER) problems.push(`provider '${SE_PROVIDER}'`);
-  if (!/^standardebooks\/[a-z0-9-]+_[a-z0-9-]+$/u.test(entry?.repo ?? '')) problems.push('repo(standardebooks/<작가>_<작품>)');
+  if (!/^standardebooks\/[a-z0-9-]+(?:_[a-z0-9-]+){1,4}$/u.test(entry?.repo ?? '')) problems.push('repo(standardebooks/<작가>_<작품>[_<번역자>])');
   if (!COMMIT.test(entry?.commit ?? '')) problems.push('commit(40자 SHA)');
   if (!/^https:\/\/standardebooks\.org\/ebooks\//u.test(entry?.url ?? '')) problems.push('url(standardebooks.org/ebooks/…)');
   for (const field of ['title', 'author', 'level']) if (typeof entry?.[field] !== 'string' || !entry[field].trim()) problems.push(field);
@@ -167,8 +171,10 @@ export function createStandardEbooksDraft(entry, files, { targetWords = SE_TARGE
     throw new Error('본문 파일이 entry.files와 다르다');
   }
   const pieces = [];
+  let notesOmitted = false;
   for (const file of files) {
-    const { title, blocks } = parseStandardEbooksXhtml(file.text);
+    const { title, blocks, notesOmitted: notes } = parseStandardEbooksXhtml(file.text);
+    notesOmitted ||= notes;
     const groups = splitBlocksByWords(blocks, targetWords);
     groups.forEach((group, index) => pieces.push({
       title: groups.length > 1 ? `${title} (${index + 1}/${groups.length})` : title,
@@ -187,13 +193,13 @@ export function createStandardEbooksDraft(entry, files, { targetWords = SE_TARGE
     publishedYear: entry.publishedYear,
     authorDeathYear: entry.authorDeathYear,
     countryOfOrigin: entry.countryOfOrigin,
-    translator: null,
+    translator: entry.translator ?? null,
     repo: entry.repo,
     commit: entry.commit,
     url: entry.url,
     license: SE_LICENSE,
     rights: entry.rights,
-    edits: [...SE_EDITS],
+    edits: [...SE_EDITS, ...(notesOmitted ? ['notes-omitted'] : [])],
   };
   const chapters = pieces.map((piece, index) => {
     const order = index + 1;

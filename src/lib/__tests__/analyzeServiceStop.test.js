@@ -40,3 +40,49 @@ describe('서비스 설정 실패 → 남은 요청 멈춤', () => {
     expect(json.failed_indices).toHaveLength(100);
   });
 });
+
+// 줄 단위 경로(일·영·중·한 밖 언어 — 프랑스어 등, analyzeLineByLineGemini)도 같은 표지(createServiceStop)로 멈춘다.
+// /api/gemini는 서비스 설정을 402로 돌려준다(route.js) — 클라 callGemini는 재시도하지 않고, 줄 재시도(최대 5회)도 하지 않는다.
+const FRENCH = Array.from({ length: 20 }, (_, k) => `Ligne ${k}.`).join('\n');
+const tokenized = (line) => {
+  const words = line.match(/[A-Za-z0-9]+|\S/g) || [];
+  return JSON.stringify({ sequence: words.map((_, k) => `w${k}`), dictionary: Object.fromEntries(words.map((text, k) => [`w${k}`, { text, pos: '명사', meaning: text }])) });
+};
+function geminiRoute(calls, fail) {
+  return vi.fn(async (url, init) => {
+    const body = JSON.parse(init.body);
+    calls.push(body);
+    const failure = fail(calls.length);
+    if (failure) return { ok: false, status: failure.status, text: async () => JSON.stringify(failure.body), json: async () => failure.body };
+    const line = /Ligne \d+\./.exec(JSON.stringify(body))?.[0] || 'Ligne';
+    const data = { candidates: [{ content: { parts: [{ text: tokenized(line) }] } }] };
+    return { ok: true, status: 200, text: async () => JSON.stringify(data), json: async () => data };
+  });
+}
+
+describe('줄 단위 경로 — 서비스 설정 실패 → 남은 줄 멈춤', () => {
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  it('첫 묶음에서 402가 오면 다음 묶음 줄은 보내지 않고, 재시도도 없이 전부 실패(failed_indices · 복구 가능)로 남는다', async () => {
+    const calls = [];
+    vi.stubGlobal('fetch', geminiRoute(calls, () => ({ status: 402, body: { error: { message: 'Your prepayment credits are depleted.' } } })));
+    const json = await analyzeText(FRENCH, signal(), { metadata: { language: 'French' }, concurrency: 6 });
+    expect(calls).toHaveLength(6); // 첫 묶음 6줄만(동시에 이미 떠난 요청) — 재시도 0 · 다음 묶음 0
+    expect(json.failed_indices).toHaveLength(20);
+    expect(json.status).toBe('failed');
+    // 멈춤은 그 분석에만 — 다음 분석(이어서 분석)은 처음부터 보낸다.
+    const again = [];
+    vi.stubGlobal('fetch', geminiRoute(again, () => null));
+    const retried = await analyzeText(FRENCH, signal(), { metadata: { language: 'French' }, existingJson: json, concurrency: 6 });
+    expect(again).toHaveLength(20);
+    expect(retried.failed_indices).toHaveLength(0);
+  });
+
+  it('표식 없는 실패(일시 502)는 지금처럼 그 줄을 다시 보내고 나머지도 계속 보낸다', async () => {
+    const calls = [];
+    vi.stubGlobal('fetch', geminiRoute(calls, (n) => (n === 1 ? { status: 502, body: { error: { message: 'Bad Gateway' } } } : null)));
+    const json = await analyzeText(FRENCH, signal(), { metadata: { language: 'French' }, concurrency: 6 });
+    expect(calls).toHaveLength(21); // 20줄 + 실패한 한 줄의 재시도 1
+    expect(json.failed_indices).toHaveLength(0);
+  });
+});

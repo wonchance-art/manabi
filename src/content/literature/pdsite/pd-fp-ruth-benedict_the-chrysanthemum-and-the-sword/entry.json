@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "provider": "pdsite",
+  "site": "fp",
+  "key": "pd-fp-ruth-benedict_the-chrysanthemum-and-the-sword",
+  "url": "https://www.fadedpage.com/showbook.php?pid=20190750",
+  "title": "The Chrysanthemum and the Sword",
+  "author": "Ruth Benedict",
+  "language": "English",
+  "level": "C1 고급",
+  "publishedYear": 1946,
+  "authorDeathYear": 1948,
+  "countryOfOrigin": "US",
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "US",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "국화와 칼",
+    "authorKo": "루스 베네딕트",
+    "binding": "houghton-1946",
+    "coverTitle": "The\nChrysanthemum\nand the Sword",
+    "coverAuthor": "Ruth Benedict"
+  },
+  "parse": {
+    "chapter": "^h1:\\d+$",
+    "subtitle": "^h3:",
+    "start": "^h1:1$",
+    "stop": "^p:THE END$"
+  },
+  "file": {
+    "path": "20190750.html",
+    "url": "https://www.fadedpage.com/books/20190750/html.php",
+    "encoding": "utf-8",
+    "sha256": "57018a941caa848ad68016304b8b7624c61b83138eb148d3084be63c25f8ea0e",
+    "fetchedAt": "2026-10-17"
+  }
+}

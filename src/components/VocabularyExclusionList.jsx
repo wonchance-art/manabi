@@ -5,9 +5,14 @@ import { LANG_NAME_KO } from '../lib/constants';
 import { useVocabularyExclusions } from '../lib/useVocabularyExclusions';
 import { useKnownWords } from '../lib/useKnownWords';
 import { useLearningCapabilities } from '../lib/useLearningCapabilities';
-export default function VocabularyExclusionList({ vocab = [], scopeIds = null }) {
+// capabilities: 부모(복습방)가 이미 읽은 한국어 학습 능력(useLearningCapabilities('Korean')). 넘겨받으면 다시 읽지 않는다
+// (VOCAB-FLOW-001 D) — 이 목록이 마운트될 때마다 staleTime 0 쿼리가 능력 읽기를 한 번 더 보냈고(진입 · 목록 전환마다),
+// 그동안 부모의 한국어 능력이 「확인 중」으로 깜빡였다. staleTime 0 계약(능력은 늘 서버에서 새로)은 그대로 — 부모의 한 읽기를 같이 쓴다.
+// 넘겨받지 않으면 예전처럼 스스로 읽는다(언어 null = 쿼리 꺼짐).
+export default function VocabularyExclusionList({ vocab = [], scopeIds = null, capabilities = null }) {
   const state = useVocabularyExclusions(), known = useKnownWords();
-  const korean = useLearningCapabilities('Korean');
+  const own = useLearningCapabilities(capabilities ? null : 'Korean');
+  const korean = capabilities || own;
   const items = scopedVocabularyExclusions(state.rows, vocab, scopeIds);
   const marks = scopedKnownWords(known.rows, state.rows, vocab, scopeIds).filter(row => KNOWN_LANGUAGES[row.lang]);
   const legacy = items.filter(entry => !known.rows.some(row => KNOWN_LANGUAGES[row.lang] === entry.language

@@ -1,0 +1,54 @@
+{
+  "id": "kishida-ryusei-reiko-bisho",
+  "wikidata": "Q130638134",
+  "genre": "painting",
+  "artist": "kishida-ryusei",
+  "title": {
+    "native": "麗子微笑",
+    "ko": "레이코의 미소",
+    "reading": "れいこびしょう"
+  },
+  "date": {
+    "text": "大正10年(1921)",
+    "source": "colbase",
+    "startYear": 1921,
+    "endYear": 1921,
+    "certainty": "exact"
+  },
+  "periods": [
+    "jp-taisho"
+  ],
+  "medium": {
+    "native": "カンバス・油彩",
+    "ko": "캔버스에 유채"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10568"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-47552"
+    }
+  ],
+  "terms": [
+    "半身像",
+    "肩掛け",
+    "愛娘"
+  ],
+  "lookFor": [
+    "레이코가 두 손에 쥐고 있는 것은 무슨 색일까요?",
+    "어깨걸이의 털실 무늬에는 어떤 색들이 섞여 있을까요?",
+    "머리 크기와 견주어 손은 어떻게 그려졌을까요?"
+  ],
+  "image": {
+    "source": "colbase",
+    "sourceId": "cobas-47552",
+    "alt": "단발머리 소녀가 붉은색과 여러 색 털실로 짠 어깨걸이를 두르고 살짝 웃으며 오른쪽을 바라본다. 두 손에 녹색 열매를 쥐고 있고 배경은 어둡다."
+  }
+}

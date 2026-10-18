@@ -1,4 +1,5 @@
 'use client';
+import { ZhSlot } from '@/components/fonts/ScFontLink';
 /**
  * 이어 읽기 칸 — 시안 C(위아래 나눔, 오너 확정 2026-10-09). 머리 = 언어 색(v2 --ja/--zh/--en/--fr),
  * 본문 = 원어 제목(주) + 한국어 제목(부), 맨 아래 = [진도 숫자][막대][버튼] — DOM 순서도 이대로.
@@ -31,12 +32,13 @@ export default function ResumeTile({ item, pending = false, onClick }) {
     .filter(Boolean).join(' · ');
   return (
     <Link href={item.href} prefetch={false} onClick={onClick} className={`learn-tile learn-resume lang-${code} learn-order-resume`} aria-label={label}>
-      <span className="learn-resume__glyph" lang={item.glyphLang || code} aria-hidden="true">{item.glyph}</span>
+      <ZhSlot lang={item.glyphLang || code}><span className="learn-resume__glyph" lang={item.glyphLang || code} aria-hidden="true">{item.glyph}</span></ZhSlot>
       <span className="learn-resume__head">
         <span className="learn-resume__kicker">{item.kicker}</span>
         {item.number && <span className="learn-resume__num">{item.number}</span>}
       </span>
       <span className="learn-resume__body">
+        {/* 제목은 중국어여도 Noto Serif KR로 그린다(learn.css .learn-resume__title) — SC를 기다리지 않는다(ZhSlot 없음, 계약 SC_LINK_NOT_SC). */}
         <span className="learn-resume__title" lang={item.titleLang || undefined}>{item.title}</span>
         {item.sub && <span className="learn-resume__sub">{item.sub}</span>}
       </span>

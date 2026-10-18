@@ -9,6 +9,26 @@ export const HASH_GATE_CSS = ':root .book-reader>.manabi-book-home,:root .manabi
 // 과가 아닌 쪽(책 사용법 guide- · 찾기 reference- · 문화 읽기 culture- …)은 과 머리에 부제 · 목표 · 과 번호가 없다 — 본문 골격의 그 칸을 뺀다.
 export const HASH_GATE_PLAIN_CSS = ':root .book-entry-skeleton .book-entry-lesson{display:none}';
 
+// 표지(책 목차) 자리(BOOK-HOME-RESTORE-001) — 표지에는 쪽(article)이 없어 읽던 자리(manabiBookPosition)를 남기지 못했고,
+// 돌아오면 sync가 'cover'를 맨 위로 옮겼다(/books/japanese-n5 369px → 다른 화면 → 뒤로 → 0px). LEVEL-RESTORE-001(levelList
+// levelPlaceOf)과 같은 방식으로 이 기록(history entry)에 { 주소 · 세로 위치 · 전체 목차 펼침 · 열린 파트 }만 남긴다: 기록마다 따로라 새로 들어온
+// 표지(링크 · 주소 입력)는 맨 위에서 시작하고, 뒤로 · 앞으로 · 새로 고침 · bfcache로 돌아오면 그 자리다. 읽던 자리와 키를 나눈다 —
+// 그 키는 본문으로 열리는가(HASH_GATE · readerEntry)의 판정이라, 표지 자리가 들어가면 표지 대신 본문 골격이 비친다.
+export const BOOK_COVER_PLACE_KEY = 'manabiBookCover';
+const BOOK_COVER_PLACE_MAX = 1e6;
+/** history.state → 이 주소의 표지 자리 { y, all, open }. open = 열린 파트 이름들(없으면 null = 기본: 지금 파트). 다른 주소 · 망가진 값이면 null. */
+export function bookCoverPlaceOf(state, href) {
+  const p = state && typeof state === 'object' ? state[BOOK_COVER_PLACE_KEY] : null;
+  if (!p || typeof p !== 'object' || p.href !== href) return null;
+  if (!Number.isFinite(p.y) || p.y < 0 || p.y > BOOK_COVER_PLACE_MAX) return null;
+  const open = Array.isArray(p.open) ? p.open.filter((part) => typeof part === 'string' && part.length <= 200).slice(0, 50) : null;
+  return { y: p.y, all: p.all === true, open };
+}
+/** Next의 기록 값(__NA · tree)과 읽던 자리를 그대로 두고 표지 자리만 바꾼 새 state. */
+export function withBookCoverPlace(state, place) {
+  return { ...(state && typeof state === 'object' ? state : {}), [BOOK_COVER_PLACE_KEY]: place };
+}
+
 /** 주소 hash → 쪽 id(web- · pdf- · audio- 접두는 같은 쪽). 비었거나 깨졌으면 'cover'. */
 export const pageFromHash = (hash) => {
   let id;
@@ -65,6 +85,7 @@ export function announceFragmentUrl(href) {
   const own = { ...(window.history.state || {}) };
   delete own.__NA; delete own.__PRIVATE_NEXTJS_INTERNALS_TREE;
   if (own.manabiBookPosition && own.manabiBookPosition.href !== href) delete own.manabiBookPosition;
+  if (own[BOOK_COVER_PLACE_KEY] && own[BOOK_COVER_PLACE_KEY].href !== href) delete own[BOOK_COVER_PLACE_KEY];
   window.history.replaceState(own, '', href);
   // 고유 hash 이동의 새 기록은 state가 null이라 패치가 붙일 표지가 없다 — `{}`로 남은 기록으로 뒤로 가면 Next가 새로 고친다
   // (onPopState의 !__NA). 표지를 직접 찍는다(표지가 있으면 패치를 지나가 RESTORE가 더 생기지 않는다). 같은 문서의 tree를

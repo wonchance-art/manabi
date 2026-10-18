@@ -118,7 +118,8 @@ describe('중국어 격자 계약', () => {
     expect(zhRule('\\.zh-cell')).toContain('width:var(--zh-cell);');
     expect(zhRule('\\.zh-run')).toContain('width:calc((var(--zh-cells,1) * var(--zh-cell)) + ((var(--zh-cells,1) - 1) * var(--char-gap,0px)));');
     // 본문 모든 경로(실패 토큰·병음 없는 토큰·병음 조각 사이 글자·음절 수가 어긋난 한자)가 칸으로 나뉜다.
-    expect((viewer + tokenView).match(/zhGrid \? <ZhText text=\{token\.text\} \/> : token\.text/g)?.length).toBe(2); // 실패 칸(뷰어) · 낱말 칸(ReaderToken)
+    // 화면 글자는 shownText(번체로 읽기면 같은 자리의 번체 — LIT-SRC-WS-1, 아니면 token.text)
+    expect((viewer + tokenView).match(/zhGrid \? <ZhText text=\{shownText\} \/> : shownText/g)?.length).toBe(2); // 실패 칸(뷰어) · 낱말 칸(ReaderToken)
     expect(tokenView).toContain('zhGrid ? <ZhText key={i} text={seg.plain} /> : <span key={i}>{seg.plain}</span>');
     expect(tokenView).toContain('zhGrid && !seg.pinyin ? <ZhText text={seg.kanji} /> : seg.kanji');
     expect(preview).toContain('zh?<ZhText text={token.text}/>:token.text');
@@ -136,8 +137,8 @@ describe('중국어 격자 계약', () => {
   });
 
   it('줄머리 금칙 표시는 본문과 Aa 미리보기가 같은 함수를 쓴다', () => {
-    expect(viewer).toContain('zhKinsokuMarks(json.sequence, id => json.dictionary[id])');
-    expect(preview).toContain('zhKinsokuMarks(shown.map((_,i)=>i),i=>shown[i])');
+    expect(viewer).toContain('zhKinsokuMarks(material?.processed_json?.sequence || [], id => material?.processed_json?.dictionary?.[id], materialLang)'); // 자료 단위 useMemo(KINSOKU-MEMO-001)
+    expect(preview).toContain('zhKinsokuMarks(shown.map((_,i)=>i),i=>shown[i],language)');
     expect(viewer).toContain('useZhGridRuns(readerRef, zhGrid);');
     expect(preview).toContain('useZhGridRuns(ref,zh);');
   });
@@ -149,9 +150,10 @@ describe('중국어·병음 폰트 계약', () => {
   const layout = read('src/app/layout.jsx');
 
   it('레이아웃이 두 폰트를 로드하고 CSS 변수로 노출한다', () => {
-    expect(layout).toMatch(/Noto_Sans_SC\(\{[^}]*variable: '--font-noto-sc'/s);
+    // SC는 중국어를 그릴 수 있는 세그먼트만 싣는다(FONT-SC-SCOPE-001 — src/components/fonts/ScFontScope.jsx, 지도는 fontScope.test.js).
+    expect(read('src/components/fonts/ScFontScope.jsx')).toMatch(/Noto_Sans_SC\(\{[^}]*variable: '--font-noto-sc'/s);
     expect(layout).toMatch(/const notoSans = Noto_Sans\(\{[^}]*variable: '--font-noto-sans'/s);
-    expect(layout).toContain('${notoSc.variable} ${notoSans.variable}');
+    expect(layout).toContain('${notoJp.variable} ${notoSans.variable}');
   });
 
   it('lang="zh*" 요소는 간체 표준 자형으로 렌더된다(한글 폴백은 KR)', () => {

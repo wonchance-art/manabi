@@ -1,0 +1,19 @@
+{
+  "bytes": 114123,
+  "fetchedAt": "2026-10-18",
+  "file": "yokoyama-matsusaburo-nikko-meisho-shashin.jpg",
+  "height": 529,
+  "record": {
+    "contentsRightsType": "ccby",
+    "contentsUrl": "https://colbase.nich.go.jp/media/tnm/R-159/image/slideshow_s/R-159_E0018329.jpg",
+    "contributor": "横山松三郎撮影",
+    "provider": "tnm",
+    "title": "日光名勝写真"
+  },
+  "sha256": "42d4f1d7c8915cf27118121c8b590000189d17edd4beb65434f6fa365455e317",
+  "source": "colbase",
+  "sourceId": "cobas-165962",
+  "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/R-159",
+  "width": 686,
+  "workId": "yokoyama-matsusaburo-nikko-meisho-shashin"
+}

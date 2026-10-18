@@ -1,0 +1,4538 @@
+{
+  "schemaVersion": 1,
+  "works": {
+    "ws-en-karl-marx_capital": {
+      "title": "Capital, Volume I",
+      "author": "Karl Marx",
+      "level": "C1 고급",
+      "total": 114,
+      "language": "English",
+      "size": 244979,
+      "unit": "words",
+      "display": {
+        "titleKo": "자본론 1권",
+        "authorKo": "카를 마르크스",
+        "binding": "sonnenschein-1887",
+        "coverTitle": "Capital."
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-en-karl-marx_capital",
+        "wiki": "en",
+        "title": "Capital, Volume I",
+        "author": "Karl Marx",
+        "publishedYear": 1867,
+        "authorDeathYear": 1883,
+        "countryOfOrigin": "DE",
+        "translator": {
+          "name": "Samuel Moore, Edward Aveling; rev. Ernest Untermann",
+          "deathYear": 1956,
+          "publishedYear": 1906,
+          "countryOfOrigin": "US"
+        },
+        "url": "https://en.wikisource.org/wiki/Das_Kapital_(Moore%2C_1906)",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "DE",
+            "US",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Chapter I: Commodities (1/8)",
+          "sha256": "adfbf71e685e66f7964d9e6a6fad65515c8435b383ac65c9aac3be8766cf6f50"
+        },
+        {
+          "order": 2,
+          "title": "Chapter I: Commodities (2/8)",
+          "sha256": "c391f3b78e7018e7f21c7c0193aa48a3ebf30b86603b25ac57198982eb080463"
+        },
+        {
+          "order": 3,
+          "title": "Chapter I: Commodities (3/8)",
+          "sha256": "3a7d24ccf23d1042ed5292a5767db4cfb7b7490d1616089098f75f9b60288fbb"
+        },
+        {
+          "order": 4,
+          "title": "Chapter I: Commodities (4/8)",
+          "sha256": "5aba05c1c8cc9dc83cc59c927ebfe2b125f60f76dcb3ff12d1ee67a8e30bbae4"
+        },
+        {
+          "order": 5,
+          "title": "Chapter I: Commodities (5/8)",
+          "sha256": "3c30b21ae4f4858a77563fd62fe9f3b7325e5164e560bc15e6269bf0d023bd90"
+        },
+        {
+          "order": 6,
+          "title": "Chapter I: Commodities (6/8)",
+          "sha256": "217aac6581bc65ab05b17bcb6629cebf29ee97e0f618359d820390208bc0072f"
+        },
+        {
+          "order": 7,
+          "title": "Chapter I: Commodities (7/8)",
+          "sha256": "c3063571802337e1810b1c9551db50cd38d0db624c1642083d1e1f4349155105"
+        },
+        {
+          "order": 8,
+          "title": "Chapter I: Commodities (8/8)",
+          "sha256": "155711a93e08051fb3c13b3eab138e3d71b2a0438618a429ef47f41861428f38"
+        },
+        {
+          "order": 9,
+          "title": "Chapter II: Exchange",
+          "sha256": "9715beab8323c04a3becf52f605b5deb3b7b32b82903f3c2a02329db30d9dc9e"
+        },
+        {
+          "order": 10,
+          "title": "Chapter III: Money, or the Circulation of Commodities (1/8)",
+          "sha256": "e17f297419685fabe7bd3fc423d5171cc9069776f4236cf6377995b70acf53b5"
+        },
+        {
+          "order": 11,
+          "title": "Chapter III: Money, or the Circulation of Commodities (2/8)",
+          "sha256": "2cd74e6018df39b05c0a93fc7ba9e4776d8d5bbdf25a4d65ef26ec1ac69ccad6"
+        },
+        {
+          "order": 12,
+          "title": "Chapter III: Money, or the Circulation of Commodities (3/8)",
+          "sha256": "15024385e7fe5c0952a85a8857acd8321ece822331f99e599ce913e210741075"
+        },
+        {
+          "order": 13,
+          "title": "Chapter III: Money, or the Circulation of Commodities (4/8)",
+          "sha256": "8e828e9df2b6fe7a3f3fa8f7edc18dfb9fb4f75353ed5df7ac28c15361fffd0f"
+        },
+        {
+          "order": 14,
+          "title": "Chapter III: Money, or the Circulation of Commodities (5/8)",
+          "sha256": "6acfde277fe98c73e364726732be79ff2d8d6e7d4a7bff1e99c06bab8d050e50"
+        },
+        {
+          "order": 15,
+          "title": "Chapter III: Money, or the Circulation of Commodities (6/8)",
+          "sha256": "661d63b3584b578f20d742ebe27a11a49612b6debee02433dd9566d740753657"
+        },
+        {
+          "order": 16,
+          "title": "Chapter III: Money, or the Circulation of Commodities (7/8)",
+          "sha256": "d99cb4a0dfc601e6c2f3986b56c1db803f99dfbe650d5916d9a2a61adf3f552f"
+        },
+        {
+          "order": 17,
+          "title": "Chapter III: Money, or the Circulation of Commodities (8/8)",
+          "sha256": "1af2f3b1238b4a662e9a0ded5bf5688fcda91eab48dd584bc7344f6defa98e8a"
+        },
+        {
+          "order": 18,
+          "title": "Chapter IV: The General Formula for Capital",
+          "sha256": "899e769b3bc5484b6743d5b83c2d25edd1aa354253b8cdc28af15d803655bb19"
+        },
+        {
+          "order": 19,
+          "title": "Chapter V: Contradictions in the General Formula of Capital (1/2)",
+          "sha256": "1dc138a5f3de4387cdfd746751183b1f7665be4328fa534abb9a504ddc193630"
+        },
+        {
+          "order": 20,
+          "title": "Chapter V: Contradictions in the General Formula of Capital (2/2)",
+          "sha256": "d72f0ec9744b680280c0c3e127700e2abe2caed4f6ad916e8967c9a172d4ac99"
+        },
+        {
+          "order": 21,
+          "title": "Chapter VI: The Buying and Selling of Labour-power (1/2)",
+          "sha256": "ddcc1896b8b374bd4bd13f1443d3c7ed2fc46e7378939e12515e6494946e696c"
+        },
+        {
+          "order": 22,
+          "title": "Chapter VI: The Buying and Selling of Labour-power (2/2)",
+          "sha256": "3541dd47296c865f632f00d0c7214c0a635a5071fe46f70137882f7040ee7385"
+        },
+        {
+          "order": 23,
+          "title": "Chapter VII: The Labour-process and the Process of Producing Surplus-value (1/4)",
+          "sha256": "4b76507739483b0ccd2bcc9ecd6010d9db4bc165c70dc3b1b0bae450fd601043"
+        },
+        {
+          "order": 24,
+          "title": "Chapter VII: The Labour-process and the Process of Producing Surplus-value (2/4)",
+          "sha256": "b1abbeddfc5dbb42d8f95c07b3e986a90da34e4875ab98b5eb956dda74002679"
+        },
+        {
+          "order": 25,
+          "title": "Chapter VII: The Labour-process and the Process of Producing Surplus-value (3/4)",
+          "sha256": "259c77f200bea0889d92510157acdd12428f1e7da5a74a63f5ade42e7d2a8eef"
+        },
+        {
+          "order": 26,
+          "title": "Chapter VII: The Labour-process and the Process of Producing Surplus-value (4/4)",
+          "sha256": "5436cce273267a60e61aac0c58288836727e92cb6949502f3001a3a7eac7a5e7"
+        },
+        {
+          "order": 27,
+          "title": "Chapter VIII: Constant Capital and Variable Capital (1/2)",
+          "sha256": "c6bc1d5ffc763ebdd70d4edbfd8657ba9d507ee28ded3cad6722d9abd81497c4"
+        },
+        {
+          "order": 28,
+          "title": "Chapter VIII: Constant Capital and Variable Capital (2/2)",
+          "sha256": "ea7184a0b25857a2d402af322c5c0cced25447a3ebdf8ad489283674fd42af8a"
+        },
+        {
+          "order": 29,
+          "title": "Chapter IX: The Rate of Surplus-value (1/3)",
+          "sha256": "16956a267884f8aed6c4e987841f2cff244a8753f2db2d2bfde5e2e49fff8906"
+        },
+        {
+          "order": 30,
+          "title": "Chapter IX: The Rate of Surplus-value (2/3)",
+          "sha256": "28f75d9999d8160a6bd557ea2b98dd04e0e933da5b576fc3e5dd78182dc4dd70"
+        },
+        {
+          "order": 31,
+          "title": "Chapter IX: The Rate of Surplus-value (3/3)",
+          "sha256": "916504643a9f2548e0fdc824c07e703aa19c47ed6bf1abdc3a77f67219f7635f"
+        },
+        {
+          "order": 32,
+          "title": "Chapter X: The Working Day (1/10)",
+          "sha256": "64f58e209dd8d2e43d3254cf018201d3e2b7699aad01896c629049137c567d85"
+        },
+        {
+          "order": 33,
+          "title": "Chapter X: The Working Day (2/10)",
+          "sha256": "3a4b71512ff0532a2ab1081d958d8548eb5cca55a20a9ba17fc659ff8157676d"
+        },
+        {
+          "order": 34,
+          "title": "Chapter X: The Working Day (3/10)",
+          "sha256": "6d29fa654d77be0b8222dc5c6221cb7f1d06009d977d6d83c978d9da9e458f62"
+        },
+        {
+          "order": 35,
+          "title": "Chapter X: The Working Day (4/10)",
+          "sha256": "5d104ee4e37c0bb43dae31f8a7efef646890b1e94614eb9c9137f37e33dcbd66"
+        },
+        {
+          "order": 36,
+          "title": "Chapter X: The Working Day (5/10)",
+          "sha256": "fd25a4e73dd3a3f54112e4384239c9e874959e23b07579e3ef96d50115568212"
+        },
+        {
+          "order": 37,
+          "title": "Chapter X: The Working Day (6/10)",
+          "sha256": "6b148afe157c3e6ddb56beb33eff5c201186496af5ca1509095fadcc1e58752a"
+        },
+        {
+          "order": 38,
+          "title": "Chapter X: The Working Day (7/10)",
+          "sha256": "c16d9f15848d00382cbe7dafce366e1f5e69eb06f862e7977f6f5bb9d5ab15c0"
+        },
+        {
+          "order": 39,
+          "title": "Chapter X: The Working Day (8/10)",
+          "sha256": "c521bfe242dc0cc6a4bc6db2c732d20bed94ccac7d6a8393ad2a13e03364e3a7"
+        },
+        {
+          "order": 40,
+          "title": "Chapter X: The Working Day (9/10)",
+          "sha256": "83b76682414be62b7330a3c2665caab1a364895a31a4df03be1cf554a6a183f0"
+        },
+        {
+          "order": 41,
+          "title": "Chapter X: The Working Day (10/10)",
+          "sha256": "28223a95c877a3af54646dcba835f516240441968bdc5f6eeac8c5a855c2a265"
+        },
+        {
+          "order": 42,
+          "title": "Chapter XI: Rate and Mass of Surplus-value (1/2)",
+          "sha256": "4fd09da3b13720a58116c8284c672a68d952e690bdac58cd67ccc67919d99d7b"
+        },
+        {
+          "order": 43,
+          "title": "Chapter XI: Rate and Mass of Surplus-value (2/2)",
+          "sha256": "8561dc63fa88f8aac9a09ebc56a05cf2dd3b593733f498c848be2cfb1b353150"
+        },
+        {
+          "order": 44,
+          "title": "Chapter XII: The Concept of Relative Surplus-value (1/2)",
+          "sha256": "edaec1dc713ecd245772b1323132128b2d18f969e35f370345bdaed6c07ef526"
+        },
+        {
+          "order": 45,
+          "title": "Chapter XII: The Concept of Relative Surplus-value (2/2)",
+          "sha256": "0280c93f2cc08cdec93bfcf9c44a3f8732d2dad4cbbaf80e504c96a6c3e85cce"
+        },
+        {
+          "order": 46,
+          "title": "Chapter XIII: Co-operation (1/2)",
+          "sha256": "db80e364703ba0dbba3c45f237bca4cd43fce3485d660cbe9b1fff2cb66e8e9a"
+        },
+        {
+          "order": 47,
+          "title": "Chapter XIII: Co-operation (2/2)",
+          "sha256": "f2b1c1e54f1a945953d0f7e289f281eeb1c31067b6e473e60246535679bc1652"
+        },
+        {
+          "order": 48,
+          "title": "Chapter XIV: Division of Labour and Manufacture (1/5)",
+          "sha256": "ae6c4e918b73ff0d092ded37e814f0e5382165872c9dc879d134c4f1136acb1f"
+        },
+        {
+          "order": 49,
+          "title": "Chapter XIV: Division of Labour and Manufacture (2/5)",
+          "sha256": "ba3e4c1610fa96e935a0feaeade40f0e89f6114fc0afa3b8728606b58ba794db"
+        },
+        {
+          "order": 50,
+          "title": "Chapter XIV: Division of Labour and Manufacture (3/5)",
+          "sha256": "1edfd161cc82c21a1df3808d079b5095b70b36f6d4008e24f2122eb5a1ddd306"
+        },
+        {
+          "order": 51,
+          "title": "Chapter XIV: Division of Labour and Manufacture (4/5)",
+          "sha256": "266ea2b601decc6de303b6245ee1a3035f92e68f39084061b3073729c8b2ddf3"
+        },
+        {
+          "order": 52,
+          "title": "Chapter XIV: Division of Labour and Manufacture (5/5)",
+          "sha256": "aab27e09aa3ac035e4299ba52f6e89838fc434949331f0f099beefe10a9bb085"
+        },
+        {
+          "order": 53,
+          "title": "Chapter XV: Machinery and Modern Industry (1/21)",
+          "sha256": "b3ece60abb0a30029586ec0413631e0f9f068228f21f2f919cbd706bdfdf326b"
+        },
+        {
+          "order": 54,
+          "title": "Chapter XV: Machinery and Modern Industry (2/21)",
+          "sha256": "20cdb3266fe87dfffc208473229bc8c7c63255610f79ebe708f84628d756e791"
+        },
+        {
+          "order": 55,
+          "title": "Chapter XV: Machinery and Modern Industry (3/21)",
+          "sha256": "b7a32b94a883712cd6348ac457bf8fa358262b12dc6667d80d22a3eec12e892b"
+        },
+        {
+          "order": 56,
+          "title": "Chapter XV: Machinery and Modern Industry (4/21)",
+          "sha256": "607cb0d249a06a5f95e678f358f793863dfd9b070b87320293acfe18cbdb7f65"
+        },
+        {
+          "order": 57,
+          "title": "Chapter XV: Machinery and Modern Industry (5/21)",
+          "sha256": "2d8d8838b17fb6f032ae4cefcf358cab9ca501f6da4b30865ae5e09882f06022"
+        },
+        {
+          "order": 58,
+          "title": "Chapter XV: Machinery and Modern Industry (6/21)",
+          "sha256": "8def1f0885760299e4dbb14800de8498e053dc335a9f7a52c7d85020ae486816"
+        },
+        {
+          "order": 59,
+          "title": "Chapter XV: Machinery and Modern Industry (7/21)",
+          "sha256": "ea21f8b8c88c9ed69f1fd6a44b9d20c96b7d688bd5b8b863f276f60beff02b93"
+        },
+        {
+          "order": 60,
+          "title": "Chapter XV: Machinery and Modern Industry (8/21)",
+          "sha256": "53e935a243610a6ae8bb643a7b72fa97616edb36e28443c1ecfda06f4847d9cd"
+        },
+        {
+          "order": 61,
+          "title": "Chapter XV: Machinery and Modern Industry (9/21)",
+          "sha256": "41c049c522dd80c5ee8013d825c14ef22cd1a8acf7fbc139b1ecad4c9b659a39"
+        },
+        {
+          "order": 62,
+          "title": "Chapter XV: Machinery and Modern Industry (10/21)",
+          "sha256": "b2042118a84218bc81bbeb81da4baf6abb6895115ec47325994046b86c90351d"
+        },
+        {
+          "order": 63,
+          "title": "Chapter XV: Machinery and Modern Industry (11/21)",
+          "sha256": "9205c4846093d47c02771bf5be18e0bf898b2ac238ec944c068f003aaac47eae"
+        },
+        {
+          "order": 64,
+          "title": "Chapter XV: Machinery and Modern Industry (12/21)",
+          "sha256": "0dd7e83c8e321c3bca7f7a468ef322f08af060c065407deab628245372f99d78"
+        },
+        {
+          "order": 65,
+          "title": "Chapter XV: Machinery and Modern Industry (13/21)",
+          "sha256": "5dae832fdeca2822b5b89523d39ab7260d8e58cdb18e6473aa47e840f6bec9c1"
+        },
+        {
+          "order": 66,
+          "title": "Chapter XV: Machinery and Modern Industry (14/21)",
+          "sha256": "0c2cac1119ec6dc7d46ebd85dae3fb3e459090cfd567a73edebc8d9e1cb14926"
+        },
+        {
+          "order": 67,
+          "title": "Chapter XV: Machinery and Modern Industry (15/21)",
+          "sha256": "581cc92bf28ac9181622878a2d409546d455ea6cafd3ee183c213b0be539abb4"
+        },
+        {
+          "order": 68,
+          "title": "Chapter XV: Machinery and Modern Industry (16/21)",
+          "sha256": "4cadd82f176b6f480ac265fc2668f7056483d6c624c67e438499f834c3c830c9"
+        },
+        {
+          "order": 69,
+          "title": "Chapter XV: Machinery and Modern Industry (17/21)",
+          "sha256": "641da16114cc2df146885e4cd7afc0a3b75d38afcefb7d77c908bf75b69bfd89"
+        },
+        {
+          "order": 70,
+          "title": "Chapter XV: Machinery and Modern Industry (18/21)",
+          "sha256": "0b2536aa0c289d8efb79ffa9ee96a544144fe3fadf99e47b0805b020c32d3aae"
+        },
+        {
+          "order": 71,
+          "title": "Chapter XV: Machinery and Modern Industry (19/21)",
+          "sha256": "83fc3ec12fb65af18b0eb4956e6d58d6a06bc8864c88e0d98dfe7774d5ba7635"
+        },
+        {
+          "order": 72,
+          "title": "Chapter XV: Machinery and Modern Industry (20/21)",
+          "sha256": "2ef198c825f803ca516d324e63a6e5e0e766a1d897b0db5ba3556689680ca2e8"
+        },
+        {
+          "order": 73,
+          "title": "Chapter XV: Machinery and Modern Industry (21/21)",
+          "sha256": "d5b2161dbf3d07361fc620e4baae8a4c3944781801a58cb5b6ad39e7222d8ac4"
+        },
+        {
+          "order": 74,
+          "title": "Chapter XVI: Absolute and Relative Surplus-value (1/2)",
+          "sha256": "d8927abf1bd31f73691060ab6485d8a3a08778925224905ff7f9293dce547e92"
+        },
+        {
+          "order": 75,
+          "title": "Chapter XVI: Absolute and Relative Surplus-value (2/2)",
+          "sha256": "1485a031620f78da7ad411605fc516aedd9f3b405725eef1d06456fca6b43b46"
+        },
+        {
+          "order": 76,
+          "title": "Chapter XVII: Changes of Magnitude in the Price of Labour-power and in Surplus-value (1/2)",
+          "sha256": "d7124924489a9a6464d1a1287e234226822693ea30456725592f00d7b9f3c8d5"
+        },
+        {
+          "order": 77,
+          "title": "Chapter XVII: Changes of Magnitude in the Price of Labour-power and in Surplus-value (2/2)",
+          "sha256": "1be262a47e85fd06fdb0b56ef7b219d08cce85542efa767261d59ef9f870bac6"
+        },
+        {
+          "order": 78,
+          "title": "Chapter XVIII: Various Formulæ for the Rate of Surplus-value",
+          "sha256": "54dfaf0b7bd72ef8d9dd755c4305923051423ea4d2381c2087afd190c0cbde33"
+        },
+        {
+          "order": 79,
+          "title": "Chapter XIX: The Transformation of the Value (and Respectively the Price) of Labour-power Into Wages",
+          "sha256": "cc58cfcb247b60155640df042af90dbfff467346d49cfc45bc0ce23fc891b6c9"
+        },
+        {
+          "order": 80,
+          "title": "Chapter XX: Time-wages",
+          "sha256": "17643e62c2d590642e144752bd95529b56e9dc377a261ac5833601f516311492"
+        },
+        {
+          "order": 81,
+          "title": "Chapter XXI: Piece-wages",
+          "sha256": "4021ae51a4b99c9b558433a0b8688f31a53f39946bdd51d252d2cd903418886d"
+        },
+        {
+          "order": 82,
+          "title": "Chapter XXII: National Differences of Wages",
+          "sha256": "9c606dc3f53772eee0fdf6023d92a1aa9f6b1984c46781bdc2d8c896de5a02e2"
+        },
+        {
+          "order": 83,
+          "title": "Chapter XXIII: Simple Reproduction (1/2)",
+          "sha256": "335db39080137a44d0fa5317dce9a1331658a9ef573068c79854531e82dc9022"
+        },
+        {
+          "order": 84,
+          "title": "Chapter XXIII: Simple Reproduction (2/2)",
+          "sha256": "644e91bb75225119dd852121a7805a336a67d3ede01137b6bb772afb1004d036"
+        },
+        {
+          "order": 85,
+          "title": "Chapter XXIV: Conversion of Surplus-value Into Capital (1/5)",
+          "sha256": "320b0e48c6d9fa2cd159d2b97fbea159361a6ccfef0fe681f7b62dd21e71a837"
+        },
+        {
+          "order": 86,
+          "title": "Chapter XXIV: Conversion of Surplus-value Into Capital (2/5)",
+          "sha256": "1ecf80d861756823a6af75347faf9b8d45053735f305475c807f5e88e96620b1"
+        },
+        {
+          "order": 87,
+          "title": "Chapter XXIV: Conversion of Surplus-value Into Capital (3/5)",
+          "sha256": "887d05e0410a78420ee8e624273cdb906dcd8df52188be7b8152c34c12ad80db"
+        },
+        {
+          "order": 88,
+          "title": "Chapter XXIV: Conversion of Surplus-value Into Capital (4/5)",
+          "sha256": "f4d703da8700f4e9beaf340511d30df12d62def2131d695b7511dd13642f946b"
+        },
+        {
+          "order": 89,
+          "title": "Chapter XXIV: Conversion of Surplus-value Into Capital (5/5)",
+          "sha256": "ee7d313e09088a7bd9e08c089f34baa24a1443dbac5c631fc896e57c32716f08"
+        },
+        {
+          "order": 90,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (1/15)",
+          "sha256": "3c22ae8b5b5d0e24df30ababc5f7efe98a84e8c31f01c2aed76cb4bb567ae84d"
+        },
+        {
+          "order": 91,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (2/15)",
+          "sha256": "e4f3203f5a9e154354a0403c1657795f8f9396e4e33e036aaee007686343b8a8"
+        },
+        {
+          "order": 92,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (3/15)",
+          "sha256": "4ef254d0eb24fb78a1213a96b7b0ef65c6e79aaecdef31a2edb705e8b6162690"
+        },
+        {
+          "order": 93,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (4/15)",
+          "sha256": "1f2e9584ac20349613a33a62bca70f6d93b1a913c5e703c9277de48a9c7a3b39"
+        },
+        {
+          "order": 94,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (5/15)",
+          "sha256": "64bf65d67e987a4dc821737ab5a896b4a29acb7fc0c98e4215a69e8707d79127"
+        },
+        {
+          "order": 95,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (6/15)",
+          "sha256": "ca940918f2b0f696995a7da2ff50ed6842078fb691b749005a7cf1029bc96bde"
+        },
+        {
+          "order": 96,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (7/15)",
+          "sha256": "530ac442d61327e5a4ef22e11cf916c9702e6bd85ff6b98e5087176daed4ff78"
+        },
+        {
+          "order": 97,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (8/15)",
+          "sha256": "352e5d1d06aa88490e92475fd02eee8394abb773bc7f06aae3b4eb77828a906e"
+        },
+        {
+          "order": 98,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (9/15)",
+          "sha256": "2994310118b23bc1d904230391e50378ef8d9f799b54c8a6acd7809c102e5cae"
+        },
+        {
+          "order": 99,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (10/15)",
+          "sha256": "2e8b981f1b9349c5e4d3d2e2c0a051b8fb6b6addc48fb5f0db1ca716e5d9ba47"
+        },
+        {
+          "order": 100,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (11/15)",
+          "sha256": "dd7c9ab7092848fe1ea7c05c992c17a8ba8e11c8f4d60c308c4525782b55a5a2"
+        },
+        {
+          "order": 101,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (12/15)",
+          "sha256": "fb8eabfdbed43ae2c038a61955989f9a92bb1cf19f9eae4b2675ec6c2fd2ddda"
+        },
+        {
+          "order": 102,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (13/15)",
+          "sha256": "05040e5101f8a7c2690d5d2cf8a9b5d81b6e2d08ab822882aa0b8899fb2c1f66"
+        },
+        {
+          "order": 103,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (14/15)",
+          "sha256": "a516105e1ad3d0717ac9a745b6efa10ef59843c33a4b2147e7d345e63e1935ba"
+        },
+        {
+          "order": 104,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (15/15)",
+          "sha256": "e1533bfdf7ac7b2288e01eeef6003b1094a1fe6991233d29de35d6cc1e4a1e8e"
+        },
+        {
+          "order": 105,
+          "title": "Chapter XXVI: The Secret of Primitive Accumulation",
+          "sha256": "8d3ba4041c3b2e5d333d689dcf0b81872020fab75aa60cdb9d9c01fed7e25801"
+        },
+        {
+          "order": 106,
+          "title": "Chapter XXVII: Expropriation of the Agricultural Population From the Land (1/2)",
+          "sha256": "2508a73d6789269fa83ae9b48152fbc4570003c021cf6fe26b68b19378b614d2"
+        },
+        {
+          "order": 107,
+          "title": "Chapter XXVII: Expropriation of the Agricultural Population From the Land (2/2)",
+          "sha256": "914c7511c7faba2d8c1abf55f11312f5fabc62f1c45d15fbe7bcceeed7a5a0a8"
+        },
+        {
+          "order": 108,
+          "title": "Chapter XXVIII: Bloody Legislation Against the Expropriated, From the End of the 15Th Century. Forcing Down of Wages by Acts of Parliament",
+          "sha256": "3048d21d52a60bf2ab3b1c037f9572718a41986500fe17a2767f1db0b3c343e3"
+        },
+        {
+          "order": 109,
+          "title": "Chapter XXIX: Genesis of the Capitalist Farmer",
+          "sha256": "d92cbaad54c49384824a36358e93e96222ce1a9d8f66d3e2e5276a50fd45f22e"
+        },
+        {
+          "order": 110,
+          "title": "Chapter XXX: Reaction of the Agricultural Revolution on Industry. Creation of the Home Market for Industrial Capital",
+          "sha256": "8016617415626ce4dec4c51ab1b83091a20fb393c1bfa46ccc8bb45fb5522645"
+        },
+        {
+          "order": 111,
+          "title": "Chapter XXXI: Genesis of the Industrial Capitalist (1/2)",
+          "sha256": "afa00a0fc17c898a13d65ef197f8b0da0d4bd975efe9f264060749d5f5c1338d"
+        },
+        {
+          "order": 112,
+          "title": "Chapter XXXI: Genesis of the Industrial Capitalist (2/2)",
+          "sha256": "6b391ff3c83d9af5cc74cc85c74dc9a0d9290eb6cb51e680e07a8cb7acd0e0ca"
+        },
+        {
+          "order": 113,
+          "title": "Chapter XXXII: Historical Tendency of Capitalist Accumulation",
+          "sha256": "003b8893be50707910c58b512e61eb683ae239152b8a907285239e107b3f9faa"
+        },
+        {
+          "order": 114,
+          "title": "Chapter XXXIII: The Modern Theory of Colonisation",
+          "sha256": "a2f87ee66bad233d5356ad1fd5c66706f9af63e8ccda8f9aa0177298def5d5c0"
+        }
+      ]
+    },
+    "ws-fr-alphonse-daudet_la-derniere-classe": {
+      "title": "La Dernière Classe",
+      "author": "Alphonse Daudet",
+      "level": "B1 중급",
+      "total": 1,
+      "language": "French",
+      "size": 1715,
+      "unit": "words",
+      "display": {
+        "titleKo": "마지막 수업",
+        "authorKo": "알퐁스 도데",
+        "binding": "lemerre",
+        "coverTitle": "La dernière\nClasse",
+        "coverAuthor": "Alphonse Daudet",
+        "coverPlace": "Paris",
+        "coverImprint": "Alphonse Lemerre, éditeur",
+        "coverSubtitle": "Récit d’un petit Alsacien.",
+        "coverYear": 1873
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-fr-alphonse-daudet_la-derniere-classe",
+        "wiki": "fr",
+        "title": "La Dernière Classe",
+        "author": "Alphonse Daudet",
+        "publishedYear": 1872,
+        "authorDeathYear": 1897,
+        "countryOfOrigin": "FR",
+        "mortPourLaFrance": false,
+        "translator": null,
+        "url": "https://fr.wikisource.org/wiki/Les_Contes_du_lundi%2FLa_Derni%C3%A8re_classe",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "FR",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "La Dernière Classe",
+          "sha256": "6c8751e19e108aceb80cf1c62318932326fed67baa7a317f3f4f212d7efcc8e3"
+        }
+      ]
+    },
+    "ws-fr-alphonse-daudet_lettres-de-mon-moulin": {
+      "title": "Lettres de mon moulin",
+      "author": "Alphonse Daudet",
+      "level": "B1 중급",
+      "total": 27,
+      "language": "French",
+      "size": 48163,
+      "unit": "words",
+      "display": {
+        "titleKo": "풍차 방앗간 편지",
+        "authorKo": "알퐁스 도데",
+        "binding": "tpl-wrapper",
+        "coverTitle": "Lettres de mon\nmoulin",
+        "coverAuthor": "Alphonse Daudet",
+        "coverPalette": "yellow",
+        "coverOrnament": "double-rule",
+        "coverYear": 1869
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-fr-alphonse-daudet_lettres-de-mon-moulin",
+        "wiki": "fr",
+        "title": "Lettres de mon moulin",
+        "author": "Alphonse Daudet",
+        "publishedYear": 1869,
+        "authorDeathYear": 1897,
+        "countryOfOrigin": "FR",
+        "mortPourLaFrance": false,
+        "translator": null,
+        "url": "https://fr.wikisource.org/wiki/Lettres_de_mon_moulin",
+        "fetchedAt": "2026-10-17",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "FR",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "AVANT-PROPOS",
+          "sha256": "356bfc2cd354d4b180e41e95627066d2988b1832adecec8ac33aa3e242b4106b"
+        },
+        {
+          "order": 2,
+          "title": "INSTALLATION.",
+          "sha256": "5544e231144dad4e79b3722abe04bf951de96ac6abe676194e4d812c3a7f6e6a"
+        },
+        {
+          "order": 3,
+          "title": "LA DILIGENCE DE BEAUCAIRE.",
+          "sha256": "ad567379d540efc43bfb44970314cb91c333f2995f428dfa876b290f1dc5b0e5"
+        },
+        {
+          "order": 4,
+          "title": "LE SECRET DE MAÎTRE CORNILLE",
+          "sha256": "a0fc8a6759486a7cf8b9607304cc3ce0f96821d8887dc247e60f0babfafeeb32"
+        },
+        {
+          "order": 5,
+          "title": "LA CHÈVRE DE M. SEGUIN",
+          "sha256": "542e043a7dc1e79eb508fc30878807f66690c64e3f551ddc7680caa476c1c303"
+        },
+        {
+          "order": 6,
+          "title": "LES ÉTOILES.",
+          "sha256": "10d7a022850d8839d72ac701228a91d8c97b06ae4330fa57fdecbe7582f0d309"
+        },
+        {
+          "order": 7,
+          "title": "L’ARLÉSIENNE",
+          "sha256": "6347f89d76e533b5a6de7debe55720ecf6bec5750f411c81c6772c307fcab565"
+        },
+        {
+          "order": 8,
+          "title": "LA MULE DU PAPE. (1/2)",
+          "sha256": "405e4346a12a3562fc55ba21f459aa4d2135bc1893097485cc2e4c5a17c32e2f"
+        },
+        {
+          "order": 9,
+          "title": "LA MULE DU PAPE. (2/2)",
+          "sha256": "41243d997162490a34dffe310ab0fca4a0241e827903fcfe992892987a44fb0d"
+        },
+        {
+          "order": 10,
+          "title": "LE PHARE DES SANGUINAIRES",
+          "sha256": "29afbb2f1b565110c8deb3630f4f2aa8875439473f9468b1a0d5bff507ae7679"
+        },
+        {
+          "order": 11,
+          "title": "L’AGONIE DE LA SÉMILLANTE",
+          "sha256": "1227390a4f36f51ed89ea5804c1f9ceb93dd2beccf5f4636e0c76739a92cb75a"
+        },
+        {
+          "order": 12,
+          "title": "LES DOUANIERS",
+          "sha256": "38d0dc380d3f5f029290dc18aca0de8999e1a2785989a8ea31bff51b59b1f1f8"
+        },
+        {
+          "order": 13,
+          "title": "LE CURÉ DE CUCUGNAN.",
+          "sha256": "a3b9d8fb6d505a36c3ae2e01d5bdec19a4efd815ecdbcea9b72c962a7033b1f1"
+        },
+        {
+          "order": 14,
+          "title": "LES VIEUX.",
+          "sha256": "a53fa8313724418008cd3f35ad3e580deae4c6b665cf8757ba857cd7e09295dd"
+        },
+        {
+          "order": 15,
+          "title": "BALLADES EN PROSE. · I. LA MORT DU DAUPHIN · II. LE SOUS-PRÉFET AUX CHAMPS.",
+          "sha256": "71a5fa477b16c4577a207bc9e29c7f5ecb37d0b084440c371468b1617096f22f"
+        },
+        {
+          "order": 16,
+          "title": "LE PORTEFEUILLE DE BIXIOU.",
+          "sha256": "4906cae0300f9a65e92b0fab44504abe24280481d5cbe59c80927ff1307cbc0e"
+        },
+        {
+          "order": 17,
+          "title": "LA LÉGENDE DE L’HOMME À LA CERVELLE D’OR.",
+          "sha256": "d70cbdaac9ad2dd506efa80479d91745872e98368bc62d26b4e50a25b2db62e4"
+        },
+        {
+          "order": 18,
+          "title": "LE POÈTE MISTRAL.",
+          "sha256": "03e12b5264bd005f5d5e65755850d0512ffeb0a64a05805908447efe9b47d109"
+        },
+        {
+          "order": 19,
+          "title": "LES TROIS MESSES BASSES.",
+          "sha256": "c7b4d09e09a707524d08cbcadfca6775e8d553989065cf4e31a77c4e9c29677b"
+        },
+        {
+          "order": 20,
+          "title": "LES ORANGES",
+          "sha256": "f9f32bffbb80a5b51523d46250c1e771af08c1b29bfc6725e5275af98ae65acc"
+        },
+        {
+          "order": 21,
+          "title": "LES DEUX AUBERGES.",
+          "sha256": "97d65f9c81589b4ea1c4329cd3d06db026e99c0cf3897e55fd939063f9c6dd95"
+        },
+        {
+          "order": 22,
+          "title": "À MILIANAH. (1/2)",
+          "sha256": "e08886c0ff28c4862548f097241183c3028c3bdbefa81706d956e611fb8be300"
+        },
+        {
+          "order": 23,
+          "title": "À MILIANAH. (2/2)",
+          "sha256": "a3d07eb76219afd368ead0bed5a8231610fc86c0f0a8aa339f6449a69f90a2bb"
+        },
+        {
+          "order": 24,
+          "title": "LES SAUTERELLES.",
+          "sha256": "5eaa8c762bce6d2a2285eec429bc2599d4dcbfbefc0a46de014d995d613d33ab"
+        },
+        {
+          "order": 25,
+          "title": "L’ÉLIXIR DU RÉVÉREND PÈRE GAUCHER.",
+          "sha256": "0b0cc8d7971fe630551dbde60b0b40f4ebcf247ca6170dc971c7f6124f2fc238"
+        },
+        {
+          "order": 26,
+          "title": "EN CAMARGUE. · I. LE DÉPART · II. LA CABANE. · III. À L’ESPÈRE ! (À L’AFFÛT !) · IV. LE ROUGE ET LE BLANC. · V. LE VACCARÈS.",
+          "sha256": "c0010dd7824e51b81fddced9fb17cd173dd4a21548e94afd79b1b4b45142f79d"
+        },
+        {
+          "order": 27,
+          "title": "NOSTALGIE DE CASERNES.",
+          "sha256": "a8bbb952eddff9c5a2959e3f7ec9f846d3f27952ad2266567c0d45b23515fa37"
+        }
+      ]
+    },
+    "ws-fr-guy-de-maupassant_la-parure": {
+      "title": "La Parure",
+      "author": "Guy de Maupassant",
+      "level": "B1 중급",
+      "total": 1,
+      "language": "French",
+      "size": 2817,
+      "unit": "words",
+      "display": {
+        "titleKo": "목걸이",
+        "authorKo": "기 드 모파상",
+        "binding": "marpon",
+        "coverTitle": "La\nParure",
+        "coverAuthor": "Guy de Maupassant",
+        "coverPlace": "Paris",
+        "coverImprint": "C. Marpon & E. Flammarion",
+        "coverEdition": "Sixième mille"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-fr-guy-de-maupassant_la-parure",
+        "wiki": "fr",
+        "title": "La Parure",
+        "author": "Guy de Maupassant",
+        "publishedYear": 1884,
+        "authorDeathYear": 1893,
+        "countryOfOrigin": "FR",
+        "mortPourLaFrance": false,
+        "translator": null,
+        "url": "https://fr.wikisource.org/wiki/Contes_du_jour_et_de_la_nuit_(%C3%A9d._Flammarion%2C_1885)%2FLa_Parure",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "FR",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "La Parure",
+          "sha256": "c72800323be0ab48911c9794ab9a3ed8e15463cab826ca539906cd730e9b55ca"
+        }
+      ]
+    },
+    "ws-fr-jean-jacques-rousseau_les-reveries-du-promeneur-solitaire": {
+      "title": "Les Rêveries du promeneur solitaire",
+      "author": "Jean-Jacques Rousseau",
+      "level": "C1 고급",
+      "total": 20,
+      "language": "French",
+      "size": 40726,
+      "unit": "words",
+      "display": {
+        "titleKo": "고독한 산책자의 몽상",
+        "authorKo": "장 자크 루소",
+        "binding": "geneve-1782",
+        "coverTitle": "Les\nConfessions\nde\nJ. J. Rousseau,",
+        "coverPartTitle": "Suivies\ndes Rêveries",
+        "coverSubtitle": "Du Promeneur Solitaire.",
+        "coverTome": "Tome second.",
+        "coverPlace": "A Geneve.",
+        "coverYear": 1782
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-fr-jean-jacques-rousseau_les-reveries-du-promeneur-solitaire",
+        "wiki": "fr",
+        "title": "Les Rêveries du promeneur solitaire",
+        "author": "Jean-Jacques Rousseau",
+        "publishedYear": 1782,
+        "authorDeathYear": 1778,
+        "countryOfOrigin": "CH",
+        "translator": null,
+        "url": "https://fr.wikisource.org/wiki/Les_R%C3%AAveries_du_promeneur_solitaire",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "CH",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "PREMIÈRE PROMENADE.",
+          "sha256": "3b362ec3abfde516c0903b6988965eb7e898b22932963427043376cf90a30fbc"
+        },
+        {
+          "order": 2,
+          "title": "DEUXIEME PROMENADE. (1/2)",
+          "sha256": "2f034c6c520ee2df1edecf60b4132ba5cf148d9e21f4f3c2480e7496ab8abdde"
+        },
+        {
+          "order": 3,
+          "title": "DEUXIEME PROMENADE. (2/2)",
+          "sha256": "a0acd75fd915e3cebb735aaee61b9fd043c8a13ae448d6f873645b9b16431fb5"
+        },
+        {
+          "order": 4,
+          "title": "TROISIEME PROMENADE. (1/2)",
+          "sha256": "ea857ef5534087899e25f69a5a4dee87c31018fce962479e4bd3fc9125d2217c"
+        },
+        {
+          "order": 5,
+          "title": "TROISIEME PROMENADE. (2/2)",
+          "sha256": "7f0c42e63f804b9f4ea728d185ea2ecfe9c283bb23348e97423187dc548ec518"
+        },
+        {
+          "order": 6,
+          "title": "QUATRIEME PROMENADE. (1/3)",
+          "sha256": "f3ac544400a71e74e1110b9c149276c8f875da7fd4f0e35115531940bb796aea"
+        },
+        {
+          "order": 7,
+          "title": "QUATRIEME PROMENADE. (2/3)",
+          "sha256": "b9e02921fe3483530a13997f1b5c9c6f5d2ea063307984f72d9e5a1a58ed46d3"
+        },
+        {
+          "order": 8,
+          "title": "QUATRIEME PROMENADE. (3/3)",
+          "sha256": "b81ee9d769fe4388c894c5e5c68bce94c8d7220f2a3ccb381fab46038caae1af"
+        },
+        {
+          "order": 9,
+          "title": "CINQUIEME PROMENADE. (1/2)",
+          "sha256": "5712b4a97f39d4debc6bd881abf88271e938c95581223ac69491dfdd0a8ab0a4"
+        },
+        {
+          "order": 10,
+          "title": "CINQUIEME PROMENADE. (2/2)",
+          "sha256": "ea7c612d4e19f2d2658558540c9215275644f922c5d09cee11833e7b20895d52"
+        },
+        {
+          "order": 11,
+          "title": "SIXIEME PROMENADE. (1/2)",
+          "sha256": "f9326644c36cba4a458ef04ed3a629d15c98fbfea1470d26ba4f6ec171adba43"
+        },
+        {
+          "order": 12,
+          "title": "SIXIEME PROMENADE. (2/2)",
+          "sha256": "14bc87b36a1d42b908e3c2419abdbace11cfc774b3ef8a71f52a7e12793e7aaf"
+        },
+        {
+          "order": 13,
+          "title": "SEPTIEME PROMENADE. (1/3)",
+          "sha256": "49b3920a22ecc02eb31b6877e6011de7c286a582594e260f4c7fcfeccdfbe3fc"
+        },
+        {
+          "order": 14,
+          "title": "SEPTIEME PROMENADE. (2/3)",
+          "sha256": "ce52fa3fed9f5825c9195ade8212608791a45756ec485402c4a64e6b6c5f4645"
+        },
+        {
+          "order": 15,
+          "title": "SEPTIEME PROMENADE. (3/3)",
+          "sha256": "d42f045e68d09d3c6a54f6c1297eda98d9e370b98794f0f86388815019a81b43"
+        },
+        {
+          "order": 16,
+          "title": "HUITIEME PROMENADE. (1/2)",
+          "sha256": "d6a6d0944f3d74cedefc421b5d74c6da28d1179492fb202a41f12eafc8ce8f4e"
+        },
+        {
+          "order": 17,
+          "title": "HUITIEME PROMENADE. (2/2)",
+          "sha256": "4283a3500cf81fa26098c86b3015044a2bf091a4c2a67707d7403ece7c5e5d80"
+        },
+        {
+          "order": 18,
+          "title": "NEUVIEME PROMENADE. (1/2)",
+          "sha256": "d2836d1afcda14dfb8b45a5a37cf9d4cdcda7e1405a9589ba1680171f33de1ab"
+        },
+        {
+          "order": 19,
+          "title": "NEUVIEME PROMENADE. (2/2)",
+          "sha256": "421ff9c32de30f44dde36689d438edb65c41d55dc2974da80d0687082d004c1e"
+        },
+        {
+          "order": 20,
+          "title": "DIXIEME PROMENADE.",
+          "sha256": "eca2b6cc6dc2d83547d4fb0c763a7b1c453b38ad2d73d9fc717ebb18ddd629d6"
+        }
+      ]
+    },
+    "ws-fr-jules-verne_le-tour-du-monde-en-quatre-vingts-jours": {
+      "title": "Le Tour du monde en quatre-vingts jours",
+      "author": "Jules Verne",
+      "level": "B2 상급",
+      "total": 37,
+      "language": "French",
+      "size": 69108,
+      "unit": "words",
+      "display": {
+        "titleKo": "80일간의 세계 일주",
+        "authorKo": "쥘 베른",
+        "binding": "hetzel",
+        "coverTitle": "Le\nTour du monde\nen\n80 jours",
+        "coverAuthor": "Jules Verne",
+        "coverEdition": "Illustré"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-fr-jules-verne_le-tour-du-monde-en-quatre-vingts-jours",
+        "wiki": "fr",
+        "title": "Le Tour du monde en quatre-vingts jours",
+        "author": "Jules Verne",
+        "publishedYear": 1872,
+        "authorDeathYear": 1905,
+        "countryOfOrigin": "FR",
+        "mortPourLaFrance": false,
+        "translator": null,
+        "url": "https://fr.wikisource.org/wiki/Le_Tour_du_monde_en_quatre-vingts_jours",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "FR",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I. DANS LEQUEL PHILEAS FOGG ET PASSEPARTOUT S’ACCEPTENT RÉCIPROQUEMENT, L’UN COMME MAÎTRE, L’AUTRE COMME DOMESTIQUE.",
+          "sha256": "bb10d3dbc86b0d8a99c18ee879e36e6c587bc3c9e075d31c4cd5a1660ab5f98f"
+        },
+        {
+          "order": 2,
+          "title": "II. OÙ PASSEPARTOUT EST CONVAINCU QU’IL A ENFIN TROUVÉ SON IDÉAL.",
+          "sha256": "a047ae5b986a1e0b558e3f096793ff6b7052d8d5a40010c1f3cb4c7858b99536"
+        },
+        {
+          "order": 3,
+          "title": "III. OÙ S’ENGAGE UNE CONVERSATION QUI POURRA COÛTER CHER À PHILEAS FOGG.",
+          "sha256": "3028983008e174775e0d48b984660edcb25205199b876d40c29ac52f9542c560"
+        },
+        {
+          "order": 4,
+          "title": "IV. DANS LEQUEL PHILEAS FOGG STUPÉFIE PASSEPARTOUT, SON DOMESTIQUE.",
+          "sha256": "bddfeb62a2870e5b91010012a7f289b3cdca98787abf79015fdaad1e88420b1c"
+        },
+        {
+          "order": 5,
+          "title": "V. DANS LEQUEL UNE NOUVELLE VALEUR APPARAÎT SUR LA PLACE DE LONDRES.",
+          "sha256": "ab17d91c7b39ad9d48c55eea8ae7bb4bfcbb80131bd22a36f2ee110d804a2784"
+        },
+        {
+          "order": 6,
+          "title": "VI. DANS LEQUEL L’AGENT FIX MONTRE UNE IMPATIENCE BIEN LÉGITIME.",
+          "sha256": "38733491fe5819bc6656a6522f84d39d103f3e89b6757a879b6bff695fa9ca9d"
+        },
+        {
+          "order": 7,
+          "title": "VII. QUI TÉMOIGNE UNE FOIS DE PLUS DE L’INUTILITÉ DES PASSE-PORTS EN MATIÈRE DE POLICE.",
+          "sha256": "57d3a14ceabbe4768d07a067f271e5facad0e91e66e06e7724caeacbbb1a818b"
+        },
+        {
+          "order": 8,
+          "title": "VIII. DANS LEQUEL PASSEPARTOUT PARLE UN PEU PLUS PEUT-ÊTRE QU’IL NE CONVIENDRAIT.",
+          "sha256": "2018347424b62039417788979c0bf9df2bfd5f11e548d81c530164266c3f2829"
+        },
+        {
+          "order": 9,
+          "title": "IX. OÙ LA MER ROUGE ET LA MER DES INDES SE MONTRENT PROPICES AUX DESSEINS DE PHILEAS FOGG.",
+          "sha256": "242ad49781b389f0213cc109edbae5663029f94ec792467d42a738f84f668ae0"
+        },
+        {
+          "order": 10,
+          "title": "X. OÙ PASSEPARTOUT EST TROP HEUREUX D’EN ÊTRE QUITTE EN PERDANT SA CHAUSSURE.",
+          "sha256": "a89b4f947ac4019586743aadcd612d70982ad0a356ae2f9061bcad1953875409"
+        },
+        {
+          "order": 11,
+          "title": "XI. OÙ PHILEAS FOGG ACHÈTE UNE MONTURE À UN PRIX FABULEUX.",
+          "sha256": "6dd96f11da19abd84ca2c0c0be6271e1c49396246956a307aa7221a5df25921f"
+        },
+        {
+          "order": 12,
+          "title": "XII. OÙ PHILEAS FOGG ET SES COMPAGNONS S’AVENTURENT À TRAVERS LES FORÊTS DE L’INDE ET CE QUI S’ENSUIT.",
+          "sha256": "19f13899b29025b2b05405c446a169c96ef855a8f9b0d7bfe0cd067478f76192"
+        },
+        {
+          "order": 13,
+          "title": "XIII. DANS LEQUEL PASSEPARTOUT PROUVE UNE FOIS DE PLUS QUE LA FORTUNE SOURIT AUX AUDACIEUX.",
+          "sha256": "fe2e58288edafc1cb90a7df09119c0a56c092e8e89951f2cfdbe65662fd4b5f9"
+        },
+        {
+          "order": 14,
+          "title": "XIV. DANS LEQUEL PHILEAS FOGG DESCEND TOUTE L’ADMIRABLE VALLÉE DU GANGE SANS MÊME SONGER À LA VOIR.",
+          "sha256": "9bcf1cf95eb80d37d6dfffef3c6edc37a5f42020a84f0f818321a83ea424f07a"
+        },
+        {
+          "order": 15,
+          "title": "XV. OÙ LE SAC AUX BANK-NOTES S’ALLÈGE ENCORE DE QUELQUES MILLIERS DE LIVRES.",
+          "sha256": "d75337482497852edaec9e4e80fe9301c334cbe446d8973f1a0dadbaf81d6783"
+        },
+        {
+          "order": 16,
+          "title": "XVI. OÙ FIX N’A PAS L’AIR DE CONNAÎTRE DU TOUT LES CHOSES DONT ON LUI PARLE.",
+          "sha256": "f902441a34add09a21c4729096a823df7c4aeab74bc2307c5053ef6a88886ac4"
+        },
+        {
+          "order": 17,
+          "title": "XVII. OÙ IL EST QUESTION DE CHOSES ET D’AUTRES PENDANT LA TRAVERSÉE DE SINGAPORE À HONG-KONG.",
+          "sha256": "f408b910465f7ab8c98a738a538488f43fe2d2ba54de8fbf7c1c1acc85b7286d"
+        },
+        {
+          "order": 18,
+          "title": "XVIII. DANS LEQUEL PHILEAS FOGG, PASSEPARTOUT, FIX, CHACUN DE SON CÔTÉ, VA À SES AFFAIRES.",
+          "sha256": "618d3f9e1351ec831e6a52b407eb547918fb301c9f9bf00212603869f1630138"
+        },
+        {
+          "order": 19,
+          "title": "XIX. OÙ PASSEPARTOUT PREND UN TROP VIF INTÉRÊT À SON MAÎTRE, ET CE QUI S’ENSUIT.",
+          "sha256": "76d70839f3f69b453f852872a734af3a45aa52bbf4ea52234d06f0d75f846785"
+        },
+        {
+          "order": 20,
+          "title": "XX. DANS LEQUEL FIX ENTRE DIRECTEMENT EN RELATION AVEC PHILEAS FOGG.",
+          "sha256": "a982758d7d482311433fd38d9fb6f1efa5691aebd94250177e9be660de77dc96"
+        },
+        {
+          "order": 21,
+          "title": "XXI. OÙ LE PATRON DE LA « TANKADÈRE » RISQUE FORT DE PERDRE UNE PRIME DE DEUX CENTS LIVRES.",
+          "sha256": "721332d21375c594801fbf0178c2a99e684649c443e63a075ab1eea03b617639"
+        },
+        {
+          "order": 22,
+          "title": "XXII. OÙ PASSEPARTOUT VOIT BIEN QUE, MÊME AUX ANTIPODES, IL EST PRUDENT D’AVOIR QUELQUE ARGENT DANS SA POCHE.",
+          "sha256": "e0b6211b6fffbc5cf0bb0de62962ea9ff44a22adbd8fe334e48620415998d0ef"
+        },
+        {
+          "order": 23,
+          "title": "XXIII. DANS LEQUEL LE NEZ DE PASSEPARTOUT S’ALLONGE DÉMESURÉMENT.",
+          "sha256": "b577844c70bdca8fe4bf3e1520c4a20314631cbcacfc548abc7cb9e8699d4982"
+        },
+        {
+          "order": 24,
+          "title": "XXIV. PENDANT LEQUEL S’ACCOMPLIT LA TRAVERSÉE DE L’OCÉAN PACIFIQUE.",
+          "sha256": "01c674734e4beb6f3083a05c7203f4b8d7b0a60320ddd7f7c78de1e76ef1a644"
+        },
+        {
+          "order": 25,
+          "title": "XXV. OÙ L’ON DONNE UN LÉGER APERÇU DE SAN-FRANCISCO, UN JOUR DE MEETING.",
+          "sha256": "2f6a3c9b9d8333e3bc87c507bb14499d0f84b95f0ae224a0bed383be0490b0d7"
+        },
+        {
+          "order": 26,
+          "title": "XXVI. DANS LEQUEL ON PREND LE TRAIN EXPRESS DU CHEMIN DE FER DU PACIFIQUE.",
+          "sha256": "4ef101d20370e6ead60a3a5e617de4929f044f36394c80a75b2f80035524e786"
+        },
+        {
+          "order": 27,
+          "title": "XXVII. DANS LEQUEL PASSEPARTOUT SUIT, AVEC UNE VITESSE DE VINGT MILLES À L’HEURE, UN COURS D’HISTOIRE MORMONE.",
+          "sha256": "7e15a63c01acd1499792c93568474d0755049b7db8e0fc83459c80703f51c8be"
+        },
+        {
+          "order": 28,
+          "title": "XXVIII. DANS LEQUEL PASSEPARTOUT NE PUT PARVENIR À FAIRE ENTENDRE LE LANGAGE DE LA RAISON.",
+          "sha256": "93522c724c0f1f5421f5f97bd90b247f5058e47b0cd294472de97e70c63a1c66"
+        },
+        {
+          "order": 29,
+          "title": "XXIX. OÙ IL SERA FAIT LE RÉCIT D’INCIDENTS DIVERS QUI NE SE RENCONTRENT QUE SUR LES RAIL-ROADS DE L’UNION.",
+          "sha256": "75d05f6564a3573f9bfa1131dfafdd93a55f848fe47ca8633f3848f5b593dd28"
+        },
+        {
+          "order": 30,
+          "title": "XXX. DANS LEQUEL PHILEAS FOGG FAIT TOUT SIMPLEMENT SON DEVOIR.",
+          "sha256": "97bc20949d81ded5a5e64ac9fc3bf7abd35fd2d40f134acaff0fa68cf69379b2"
+        },
+        {
+          "order": 31,
+          "title": "XXXI. DANS LEQUEL L’INSPECTEUR FIX PREND TRÈS-SÉRIEUSEMENT LES INTÉRÊTS DE PHILEAS FOGG.",
+          "sha256": "6ce579ad65c3770f81fcbcc11821e9a5e445eb68e147a768c0db9b8fa00a9178"
+        },
+        {
+          "order": 32,
+          "title": "XXXII. DANS LEQUEL PHILEAS FOGG ENGAGE UNE LUTTE DIRECTE CONTRE LA MAUVAISE CHANCE",
+          "sha256": "0762fa1204ca68a7587c8b48433d568a08a9db2fad9e6039e58f2f3e5ed74b26"
+        },
+        {
+          "order": 33,
+          "title": "XXXIII. OÙ PHILEAS FOGG SE MONTRE À LA HAUTEUR DES CIRCONSTANCES.",
+          "sha256": "50c2dd73e9f137d712d79676c1960cdddbce75cb7aad2c4712f679e40bd4f559"
+        },
+        {
+          "order": 34,
+          "title": "XXXIV. QUI PROCURE À PASSEPARTOUT L’OCCASION DE FAIRE UN JEU DE MOTS ATROCE, MAIS PEUT-ÊTRE INÉDIT.",
+          "sha256": "3b522477587e27c48508926dfd2ff793fbe0178d7d5204972edc0a28a0f1d16a"
+        },
+        {
+          "order": 35,
+          "title": "XXXV. DANS LEQUEL PASSEPARTOUT NE SE FAIT PAS RÉPÉTER DEUX FOIS L’ORDRE QUE SON MAÎTRE LUI DONNE.",
+          "sha256": "287f10ca3b083d842acabeeb26d40fa8d7d0416b3b4b0f5d8ef3424406950441"
+        },
+        {
+          "order": 36,
+          "title": "XXXVI. DANS LEQUEL PHILEAS FOGG FAIT DE NOUVEAU PRIME SUR LE MARCHÉ.",
+          "sha256": "84446d21cda935d60bb8eab2aa8fdaa1d35206396b270d57e31f835f66aeb363"
+        },
+        {
+          "order": 37,
+          "title": "XXXVII. DANS LEQUEL IL EST PROUVÉ QUE PHILEAS FOGG N’A RIEN GAGNÉ À FAIRE CE TOUR DU MONDE, SI CE N’EST LE BONHEUR.",
+          "sha256": "464cdbce7ecd5099904f0fc20bd35dfc448e5e1dfcbd25b013f80b93b95694ea"
+        }
+      ]
+    },
+    "ws-fr-rainer-maria-rilke_poemes-dedies-aux-amis-francais": {
+      "title": "Poèmes dédiés aux amis français",
+      "author": "Rainer Maria Rilke",
+      "level": "C1 고급",
+      "total": 1,
+      "language": "French",
+      "size": 374,
+      "unit": "words",
+      "display": {
+        "titleKo": "프랑스 벗들에게 바치는 시",
+        "authorKo": "라이너 마리아 릴케",
+        "binding": "hartmann-1935",
+        "coverTitle": "Poèmes\nfrançais",
+        "coverAuthor": "Rainer Maria Rilke",
+        "coverImprint": "Paul Hartmann, éditeur",
+        "coverEdition": "11, rue Cujas – Paris Vᵉ",
+        "coverYear": 1935
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-fr-rainer-maria-rilke_poemes-dedies-aux-amis-francais",
+        "wiki": "fr",
+        "title": "Poèmes dédiés aux amis français",
+        "author": "Rainer Maria Rilke",
+        "publishedYear": 1935,
+        "authorDeathYear": 1926,
+        "countryOfOrigin": "FR",
+        "mortPourLaFrance": false,
+        "translator": null,
+        "url": "https://fr.wikisource.org/wiki/Po%C3%A8mes_fran%C3%A7ais_(Rilke)%2FCarnet_de_poche",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "FR",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "À Madame la Baronne de Brimont 외 4편",
+          "sha256": "909f0f9461f648b1b03bf303a0cc9bc462661b16bf0a313b14724f5185f954b0"
+        }
+      ]
+    },
+    "ws-fr-victor-hugo_les-miserables-1": {
+      "title": "Les Misérables, tome I : Fantine",
+      "author": "Victor Hugo",
+      "level": "C1 고급",
+      "total": 76,
+      "language": "French",
+      "size": 113678,
+      "unit": "words",
+      "display": {
+        "titleKo": "레 미제라블 1부",
+        "authorKo": "빅토르 위고",
+        "binding": "pagnerre",
+        "coverTitle": "Les\nMisérables",
+        "coverAuthor": "Victor Hugo",
+        "coverPart": "Première partie",
+        "coverPartTitle": "Fantine",
+        "coverTome": "Tome premier",
+        "coverPlace": "Paris",
+        "coverImprint": "Pagnerre, libraire-éditeur",
+        "coverYear": 1862
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-fr-victor-hugo_les-miserables-1",
+        "wiki": "fr",
+        "title": "Les Misérables, tome I : Fantine",
+        "author": "Victor Hugo",
+        "publishedYear": 1862,
+        "authorDeathYear": 1885,
+        "countryOfOrigin": "FR",
+        "mortPourLaFrance": false,
+        "translator": null,
+        "url": "https://fr.wikisource.org/wiki/Les_Mis%C3%A9rables",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "FR",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I. M. MYRIEL",
+          "sha256": "0079ea2e3441def4466cce4aa453676687d5b0a9bff380b81b8525a41adea9a4"
+        },
+        {
+          "order": 2,
+          "title": "II. M. MYRIEL DEVIENT MONSEIGNEUR BIENVENU",
+          "sha256": "94d21b69f99a3549e7702afb40254af4c7842c37411a2f2778681c183dba63c9"
+        },
+        {
+          "order": 3,
+          "title": "III. À BON ÉVÊQUE DUR ÉVÊCHÉ",
+          "sha256": "782e1bb6ac23fe69c65f11ed2dbc9ef234ff14cbb59c333ab450ec4257964a8a"
+        },
+        {
+          "order": 4,
+          "title": "IV. LES ŒUVRES SEMBLABLES AUX PAROLES",
+          "sha256": "6369c8ab7381cec63fb6a07ee5d0d9b1a44bf9d5136cba847ec65eee306d7f92"
+        },
+        {
+          "order": 5,
+          "title": "V. QUE MONSEIGNEUR BIENVENU FAISAIT DURER TROP LONGTEMPS SES SOUTANES",
+          "sha256": "a4b486ee984487d2bf84be4a95f46071e1f32efe5fe601f14572af8cedfe5cc7"
+        },
+        {
+          "order": 6,
+          "title": "VI. PAR QUI IL FAISAIT GARDER SA MAISON",
+          "sha256": "deede50915921cbf6b74af85ba1654afecb71b097d07755d7e240988cb111cfc"
+        },
+        {
+          "order": 7,
+          "title": "VII. CRAVATTE",
+          "sha256": "0cb51a38e6261c233b8bfed4752398e7e0e8d54898215e4ce4ad08a6eb7a4ee1"
+        },
+        {
+          "order": 8,
+          "title": "VIII. PHILOSOPHIE APRÈS BOIRE",
+          "sha256": "a181bf637aac28789a24113725ea508ffc646dc8ab5e8d397f904f64b80af27a"
+        },
+        {
+          "order": 9,
+          "title": "IX. LE FRÈRE RACONTÉ PAR LA SŒUR",
+          "sha256": "2e435cd4a3fddad0b29d06e40b7291865458aaae71bacc837006611159eab871"
+        },
+        {
+          "order": 10,
+          "title": "X. L’ÉVÊQUE EN PRÉSENCE D’UNE LUMIÈRE INCONNUE (1/2)",
+          "sha256": "c800300b11d312ebf4b28206b55b90c93e32fb0bfc31b9dbcaff4a3093369097"
+        },
+        {
+          "order": 11,
+          "title": "X. L’ÉVÊQUE EN PRÉSENCE D’UNE LUMIÈRE INCONNUE (2/2)",
+          "sha256": "700088a72223c767852edb0866003a5f322279bc5be4dadd625cf8b3a68c1800"
+        },
+        {
+          "order": 12,
+          "title": "XI. UNE RESTRICTION",
+          "sha256": "89bdef4c499bb8cf2bed6946ea03b57b70fcf8e59a3fe634b8c3407a98d65a72"
+        },
+        {
+          "order": 13,
+          "title": "XII. SOLITUDE DE MONSEIGNEUR BIENVENU",
+          "sha256": "7611963dd26b2a1adef61e6a9b2d771a53f335b90a42a8c61c92697b423d956b"
+        },
+        {
+          "order": 14,
+          "title": "XIII. CE QU’IL CROYAIT",
+          "sha256": "0f0c77e31d37941dbccf1388d3ba89817b8f8228e73cc31f419843f32b8763f9"
+        },
+        {
+          "order": 15,
+          "title": "XIV. CE QU’IL PENSAIT",
+          "sha256": "fe9989001e23b435197757344dd29a381bb1c2fac2bfce5767337340d49f29e1"
+        },
+        {
+          "order": 16,
+          "title": "I. LE SOIR D’UN JOUR DE MARCHE (1/2)",
+          "sha256": "738613eccc292c9099bb346482798138c2a52ca8195d44c87a3f16ccfad3abd5"
+        },
+        {
+          "order": 17,
+          "title": "I. LE SOIR D’UN JOUR DE MARCHE (2/2)",
+          "sha256": "22036c2bd41b95e04ddab6a2c9f45b91c05b5c1a75efe43af7025c9512a08eba"
+        },
+        {
+          "order": 18,
+          "title": "II. LA PRUDENCE CONSEILLÉE À LA SAGESSE",
+          "sha256": "5f77a87d4a53b7fdfeebc7951487157ca44f903d8bac4c991e1ec137bcd22244"
+        },
+        {
+          "order": 19,
+          "title": "III. HÉROÏSME DE L’OBÉISSANCE PASSIVE",
+          "sha256": "3bedb4abba723e11213bbea76df5ad402e9e1df7eddb596d4b9cf9c1bee16bbe"
+        },
+        {
+          "order": 20,
+          "title": "IV. DÉTAILS SUR LES FROMAGERIES DE PONTARLIER",
+          "sha256": "8dd2f56c5769af15b89b1e0673596f9e497a26090cfd55af9344a3c6ef6ade4f"
+        },
+        {
+          "order": 21,
+          "title": "V. TRANQUILLITÉ",
+          "sha256": "ebd1942ad7e700824832522049d25dbb21638f9af0188970a3705727cf5cec4c"
+        },
+        {
+          "order": 22,
+          "title": "VI. JEAN VALJEAN",
+          "sha256": "f3232d6117af32be4180ffea35f4d93aeb583168052447872179fc1b7ad878ff"
+        },
+        {
+          "order": 23,
+          "title": "VII. LE DEDANS DU DÉSESPOIR",
+          "sha256": "893f19d7d8e52a73e6c43476c9eb05502225300e2f7e73c4124d06eb681658da"
+        },
+        {
+          "order": 24,
+          "title": "VIII. L’ONDE ET L’OMBRE",
+          "sha256": "d71b3909b032239e2fef3f0151c0201af56fa86afcf61a901d8c66ca94890628"
+        },
+        {
+          "order": 25,
+          "title": "IX. NOUVEAUX GRIEFS",
+          "sha256": "52a7dd29af13dac7db7d811f4c7fec579b55f622f6ced7b8c36dec1a6f3aa8da"
+        },
+        {
+          "order": 26,
+          "title": "X. L’HOMME RÉVEILLÉ",
+          "sha256": "714cf11bd7adf3be3ef21e555928fcc432cabb9a21434332c2f9364357e360c6"
+        },
+        {
+          "order": 27,
+          "title": "XI. CE QU’IL FAIT",
+          "sha256": "85d585013dca1d4d60fc72a834e11448728073ef3c8d63b6ebec4b5dd28d4218"
+        },
+        {
+          "order": 28,
+          "title": "XII. L’ÉVÊQUE TRAVAILLE",
+          "sha256": "6ddbda0419bed7303b9a09495824b38f18f39b383fba067f76ace107f38b7577"
+        },
+        {
+          "order": 29,
+          "title": "XIII. PETIT-GERVAIS",
+          "sha256": "2d533ecceef0c25b64a9bfb084a97698641c3bd2b66e1ee17de9aa3fc94a26f9"
+        },
+        {
+          "order": 30,
+          "title": "I. L’ANNÉE 1817",
+          "sha256": "e55be41189eed599e1a007bc05d8f6869dd0207e35fbaea381964b87a7af7a52"
+        },
+        {
+          "order": 31,
+          "title": "II. DOUBLE QUATUOR",
+          "sha256": "fb835daed04371ca423ea9182d3b8382420093887d9320c770ea88a5b2146338"
+        },
+        {
+          "order": 32,
+          "title": "III. QUATRE À QUATRE",
+          "sha256": "61c136e6ff9142eb31f427767b1eff8ddba5b37f05ce21bef3d406977754b5df"
+        },
+        {
+          "order": 33,
+          "title": "IV. THOLOMYÈS EST SI JOYEUX QU’IL CHANTE UNE CHANSON ESPAGNOLE",
+          "sha256": "94b220e78f1b1d05d7879db5307d2dad51745f2ed47976dc39b7e8a819ed0df5"
+        },
+        {
+          "order": 34,
+          "title": "V. CHEZ BOMBARDA",
+          "sha256": "da4c506d964c87cca47588dc1c3ee166d297131c784c0ac4368e7f4335f980e7"
+        },
+        {
+          "order": 35,
+          "title": "VI. CHAPITRE OÙ L’ON S’ADORE",
+          "sha256": "36be9d5362feca6f25dcafc56341761b8fa48ee931be30a82ad2c73cca5a1f43"
+        },
+        {
+          "order": 36,
+          "title": "VII. SAGESSE DE THOLOMYÈS",
+          "sha256": "2908f467056b48f2bce6edec722231a8e2b326181ad6db1413ec41e989f4ad9f"
+        },
+        {
+          "order": 37,
+          "title": "VIII. MORT D’UN CHEVAL",
+          "sha256": "b5515ab71bbe6b46a68c7e33ae88aef98e5c11c3f6b42f74379059b86b5c0ef5"
+        },
+        {
+          "order": 38,
+          "title": "IX. FIN JOYEUSE DE LA JOIE",
+          "sha256": "757e5d9cb2c16db1e0e7138a3781c2b37e4ec0e38f63870adcc84bccd7fc531e"
+        },
+        {
+          "order": 39,
+          "title": "I. UNE MÈRE QUI EN RENCONTRE UNE AUTRE",
+          "sha256": "dc12bc4059fc12e95e4c0c120cb01544eb47cbba9bc03201d4ea2982ddfd81e8"
+        },
+        {
+          "order": 40,
+          "title": "II. PREMIÈRE ESQUISSE DE DEUX FIGURES LOUCHES",
+          "sha256": "145a653e5b304ea9b3718646a92ada8c8fb38a8f6cc4a3b69605c4f220138e35"
+        },
+        {
+          "order": 41,
+          "title": "III. L’ALOUETTE.",
+          "sha256": "eaaf23f14524ac5d89fea239946fdb50a3b1eb1858a04d84175bcb142e37ecde"
+        },
+        {
+          "order": 42,
+          "title": "I. HISTOIRE D’UN PROGRÈS DANS LES VERROTERIES NOIRES",
+          "sha256": "0a359288de01e17d2e9b0b8b7a8928acadfa29d470227e6e3fb4d79411aaca7b"
+        },
+        {
+          "order": 43,
+          "title": "II. MADELEINE",
+          "sha256": "ebbd10157f428aa0b1b5b3e74fe65b1357e4cdecc6345f317b1d586ba4475e41"
+        },
+        {
+          "order": 44,
+          "title": "III. SOMMES DÉPOSÉES CHEZ LAFFITTE",
+          "sha256": "0e9458ef284c5596e781ca77c078b2e09c55478cb8eea73081453947ddf30cb6"
+        },
+        {
+          "order": 45,
+          "title": "IV. M. MADELEINE EN DEUIL",
+          "sha256": "d721d3116b587e019b971dcd636a25a2f912fbc9b80c0d50f232e40bc7cc9a71"
+        },
+        {
+          "order": 46,
+          "title": "V. VAGUES ÉCLAIRS À L’HORIZON",
+          "sha256": "d9b0bc8e109d795b0e5cff1cbd913653cbb464026e74b5aaf7c99e3049317027"
+        },
+        {
+          "order": 47,
+          "title": "VI. LE PÈRE FAUCHELEVENT",
+          "sha256": "04f755a37b98963dad43cb54ffe0ff6a722fd1c1f92e7a96a7f4869dd7b31ce8"
+        },
+        {
+          "order": 48,
+          "title": "VII. FAUCHELEVENT DEVIENT JARDINIER À PARIS",
+          "sha256": "a5f34ba9daff62bef6162db2e9c312991b69c61c4be43062a5698ba83cc1088b"
+        },
+        {
+          "order": 49,
+          "title": "VIII. MADAME VICTURNIEN DÉPENSE TRENTE-CINQ FRANCS POUR LA MORALE",
+          "sha256": "64c50d96f25b447f10d7d43947f426a5422087b9fa49c65be21ebdc692f3f636"
+        },
+        {
+          "order": 50,
+          "title": "IX. SUCCÈS DE MADAME VICTURNIEN",
+          "sha256": "1902a3c8fd5bbfc0118a2201b82fa03013eaaf5936db363f130ead04d9db68f9"
+        },
+        {
+          "order": 51,
+          "title": "X. SUITE DU SUCCÈS",
+          "sha256": "58d6c1ec4f2549f439635e4ef1bb852236d5170948522ab4ec3bd8d24aa67ef6"
+        },
+        {
+          "order": 52,
+          "title": "XI. CHRISTUS NOS LIBERAVIT",
+          "sha256": "adf9283060705935efee06db43c38fdb19c605a53cce39853125aa3425eb4c7d"
+        },
+        {
+          "order": 53,
+          "title": "XII. LE DÉSŒUVREMENT DE M. BAMATABOIS",
+          "sha256": "8e897e040017d381a78466778a4f2e438cfb8fcc5f1f3c9b96b0f1e554256463"
+        },
+        {
+          "order": 54,
+          "title": "XIII. SOLUTION DE QUELQUES QUESTIONS DE POLICE MUNICIPALE (1/2)",
+          "sha256": "303cf31e66083a9e34c5eed7592c115140be344c6498cb252c50bcb15e438626"
+        },
+        {
+          "order": 55,
+          "title": "XIII. SOLUTION DE QUELQUES QUESTIONS DE POLICE MUNICIPALE (2/2)",
+          "sha256": "ad1b188f6b4d3b4ce20e130c03753663673c0b6a109968cc51d54ab99990b21a"
+        },
+        {
+          "order": 56,
+          "title": "I. COMMENCEMENT DU REPOS",
+          "sha256": "1d259caf0aeeaedb6ff6b6dd9f9277254fec8a606f837fc54a111064bc4a55b5"
+        },
+        {
+          "order": 57,
+          "title": "II. COMMENT JEAN PEUT DEVENIR CHAMP",
+          "sha256": "07a035c624487e21a7c86b5676b2dcb6978ef90e2d14e5972620f31d7b8aea11"
+        },
+        {
+          "order": 58,
+          "title": "I. LA SŒUR SIMPLICE",
+          "sha256": "e8f25ba108f9a5565f44f9cd3444407b94e5bd51797e8248cc422cfc6c54f919"
+        },
+        {
+          "order": 59,
+          "title": "II. PERSPICACITÉ DE MAÎTRE SCAUFFLAIRE",
+          "sha256": "e5c76e1cf84ce9b89504f8fffdc3f3e395bb7cf85ba6ac4742870ffd4e04960e"
+        },
+        {
+          "order": 60,
+          "title": "III. UNE TEMPÊTE SOUS UN CRÂNE (1/3)",
+          "sha256": "633e0e110d21e02207ae3e2948c7a6dd88fc2f2dd214a61f24669540a44d5583"
+        },
+        {
+          "order": 61,
+          "title": "III. UNE TEMPÊTE SOUS UN CRÂNE (2/3)",
+          "sha256": "0c233f2383d30b00f84dc9d75bf1bd298d7ac51657fa1550770a3ca738d8dc0a"
+        },
+        {
+          "order": 62,
+          "title": "III. UNE TEMPÊTE SOUS UN CRÂNE (3/3)",
+          "sha256": "9332d24e2246384f76df2bd9d8e52fbebd421ada407a5908105bda46bf00b7ac"
+        },
+        {
+          "order": 63,
+          "title": "IV. FORMES QUE PREND LA SOUFFRANCE PENDANT LE SOMMEIL",
+          "sha256": "7e51a619e5ef0d47c8d55d8bfd79b215f87f3c904c205703b7960f1a95fbf357"
+        },
+        {
+          "order": 64,
+          "title": "V. BÂTONS DANS LES ROUES (1/2)",
+          "sha256": "42ff7652ae59fe70c5749638c40a7fdec6ee9c4c9fe8c02048a64b12e716817a"
+        },
+        {
+          "order": 65,
+          "title": "V. BÂTONS DANS LES ROUES (2/2)",
+          "sha256": "c742b33eba02b2e09ae9f6bb13ac12439b61c373df3dd9ffbd19b90c019a5325"
+        },
+        {
+          "order": 66,
+          "title": "VI. LA SŒUR SIMPLICE MISE À L’ÉPREUVE",
+          "sha256": "8cdbd73d113234ff6f69d104af0facdf3339db99e7f8ca81da597645673d4c4d"
+        },
+        {
+          "order": 67,
+          "title": "VII. LE VOYAGEUR ARRIVÉ PREND SES PRÉCAUTIONS POUR REPARTIR",
+          "sha256": "e08c849609aa4ab425bca78d3424df81c9d304a3bc976149192149084d258e91"
+        },
+        {
+          "order": 68,
+          "title": "VIII. ENTRÉE DE FAVEUR",
+          "sha256": "bf7988634a7b1f69cce17faef055e43e81265f48abe15bfd7f9ccfb4ebc6b044"
+        },
+        {
+          "order": 69,
+          "title": "IX. UN LIEU OÙ DES CONVICTIONS SONT EN TRAIN DE SE FORMER",
+          "sha256": "32811ef7ef6d8b12ac434e8a5b6a9cd31fd32fe5caf9145c8286bf0eff7c3b2a"
+        },
+        {
+          "order": 70,
+          "title": "X. LE SYSTÈME DE DÉNÉGATIONS",
+          "sha256": "16fe7999c533157a54d232a4e7d04df62e4f969832b6de8e98165005f9fabc78"
+        },
+        {
+          "order": 71,
+          "title": "XI. CHAMPMATHIEU DE PLUS EN PLUS ÉTONNÉ",
+          "sha256": "bb863b3eb7bf1a807cc1ca5e69156800ec716e90ffa0ef07002351938537cc25"
+        },
+        {
+          "order": 72,
+          "title": "I. DANS QUEL MIROIR M. MADELEINE REGARDE SES CHEVEUX",
+          "sha256": "fc696e66099597a3010d01a0774e9b05f942d1ce488f64338014591801376454"
+        },
+        {
+          "order": 73,
+          "title": "II. FANTINE HEUREUSE",
+          "sha256": "55dfac587e167cf35500d3df061957165056fd774905bab104215e27a194e6ce"
+        },
+        {
+          "order": 74,
+          "title": "III. JAVERT CONTENT",
+          "sha256": "e7578102bbf356a7449573e73f47aad86989c04783deaa8834af6e76dbd8b55d"
+        },
+        {
+          "order": 75,
+          "title": "IV. L’AUTORITÉ REPREND SES DROITS",
+          "sha256": "ccced00181a66b90b378fbcc8b027b678f46f2d0b6130cc7bcabc71ee40d7c80"
+        },
+        {
+          "order": 76,
+          "title": "V. TOMBEAU CONVENABLE",
+          "sha256": "d44944784c6f536ce555c4a50b756249eb1eec1b89dc28244655b388002f7c88"
+        }
+      ]
+    },
+    "ws-fr-victor-hugo_les-miserables-2": {
+      "title": "Les Misérables, tome II : Cosette",
+      "author": "Victor Hugo",
+      "level": "C1 고급",
+      "total": 77,
+      "language": "French",
+      "size": 97113,
+      "unit": "words",
+      "display": {
+        "titleKo": "레 미제라블 2부",
+        "authorKo": "빅토르 위고",
+        "binding": "pagnerre",
+        "coverTitle": "Les\nMisérables",
+        "coverAuthor": "Victor Hugo",
+        "coverPart": "Deuxième partie",
+        "coverPartTitle": "Cosette",
+        "coverTome": "Tome deuxième",
+        "coverPlace": "Paris",
+        "coverImprint": "Pagnerre, libraire-éditeur",
+        "coverYear": 1862
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-fr-victor-hugo_les-miserables-2",
+        "wiki": "fr",
+        "title": "Les Misérables, tome II : Cosette",
+        "author": "Victor Hugo",
+        "publishedYear": 1862,
+        "authorDeathYear": 1885,
+        "countryOfOrigin": "FR",
+        "mortPourLaFrance": false,
+        "translator": null,
+        "url": "https://fr.wikisource.org/wiki/Les_Mis%C3%A9rables",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "FR",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I. CE QU’ON RENCONTRE EN VENANT DE NIVELLES",
+          "sha256": "f5943a2ace9eb648c062d011f6ad885d8b59c281e1e6156711908b1c6f43d0a1"
+        },
+        {
+          "order": 2,
+          "title": "II. HOUGOMONT",
+          "sha256": "ced6e9bec3443117c117949cb0b97616e24452e2685ff371732255f0e0a18240"
+        },
+        {
+          "order": 3,
+          "title": "III. LE 18 JUIN 1815",
+          "sha256": "eef8a3c77216c0e9234fe6a5d54c8828973137b5836dfee577ef38ebe0592ccd"
+        },
+        {
+          "order": 4,
+          "title": "IV. A",
+          "sha256": "8c68873af61162627e71fbb76f30c8a29ed75a760688b630e2600baae7cc6f84"
+        },
+        {
+          "order": 5,
+          "title": "V. LE « QUID OBSCURUM » DES BATAILLES",
+          "sha256": "d5870d0d19aea5c8bed5762429fcc89a72c12679557ec92dbb36292d20a9e80e"
+        },
+        {
+          "order": 6,
+          "title": "VI. QUATRE HEURES DE L’APRÈS-MIDI",
+          "sha256": "13b602f2f2632fd5ddc1089cc4b98f391fd7a1d2fcac9e13c922ac716a089b75"
+        },
+        {
+          "order": 7,
+          "title": "VII. NAPOLÉON DE BELLE HUMEUR",
+          "sha256": "2f552c285ca9182c0d573676feebd4a01bb1333ff94ce5d941aeef6e776a7543"
+        },
+        {
+          "order": 8,
+          "title": "VIII. L’EMPEREUR FAIT UNE QUESTION AU GUIDE LACOSTE",
+          "sha256": "b026e89165225c6b47a62dc739bfadf38a6cf8a13bcb234f118fa524593088a2"
+        },
+        {
+          "order": 9,
+          "title": "IX. L’INATTENDU",
+          "sha256": "951a2a9d97873b68e36e030af2b0a44db420f54e48c112796cd853757d46f4ba"
+        },
+        {
+          "order": 10,
+          "title": "X. LE PLATEAU DE MONT-SAINT-JEAN",
+          "sha256": "4d34c3f7a21b6481b12d846da478ada103eddb0a8e41e54e55106fd8e60d23dc"
+        },
+        {
+          "order": 11,
+          "title": "XI. MAUVAIS GUIDE À NAPOLÉON, BON GUIDE À BÜLOW",
+          "sha256": "f89764db895509b12baad168db30bfacad82cfc00c32ee722e8ed19a4b275525"
+        },
+        {
+          "order": 12,
+          "title": "XII. LA GARDE",
+          "sha256": "918f3f0f5fd16162f23c6214acd55cab7b9034d8a4c594b150113ed20d1485e2"
+        },
+        {
+          "order": 13,
+          "title": "XIII. LA CATASTROPHE",
+          "sha256": "19cbd1a932a0b65734521d28327d9c557f255c440901478795ac54c8a5b6d659"
+        },
+        {
+          "order": 14,
+          "title": "XIV. LE DERNIER CARRÉ",
+          "sha256": "105329aa1b71c71a9db794a767499b05ba27fc05a689af02576cfac9ea3c70a2"
+        },
+        {
+          "order": 15,
+          "title": "XVI. QUOT LIBRAS IN DUCE ?",
+          "sha256": "cb1cd43f06e9f6bac5d9aec41cc419cc00ffcab728f30f3252696f4db95c04f2"
+        },
+        {
+          "order": 16,
+          "title": "XVII. FAUT-IL TROUVER BON WATERLOO ?",
+          "sha256": "383cea6f18241ec40af953a23e915107a82c53f331c261b8f0500bff9f329de2"
+        },
+        {
+          "order": 17,
+          "title": "XVIII. RECRUDESCENCE DU DROIT DIVIN",
+          "sha256": "547efed84d355821575570e9f791f629a2e5b132aa2cf1d9d7715ed17f05f454"
+        },
+        {
+          "order": 18,
+          "title": "XIX. LE CHAMP DE BATAILLE LA NUIT",
+          "sha256": "8d22e4a9ed5747009f2253b1d5d7b067d0e350f47ab1dd3aec63dad5de30746f"
+        },
+        {
+          "order": 19,
+          "title": "I. LE NUMÉRO 24601 DEVIENT LE NUMÉRO 9430",
+          "sha256": "3fe6e5a5bf96c55a9b25d56f2f90d083264bb46eb5c0efdff7d6576bf6268bd4"
+        },
+        {
+          "order": 20,
+          "title": "II. OÙ ON LIRA DEUX VERS QUI SONT PEUT-ÊTRE DU DIABLE",
+          "sha256": "7b5acdd551ea1ec9ff3fad999ba334f4aaf9583e4b86eb88757173e07976b6af"
+        },
+        {
+          "order": 21,
+          "title": "III. QU’IL FALLAIT QUE LA CHAÎNE DE LA MANILLE EÛT SUBI UN CERTAIN TRAVAIL PRÉPARATOIRE POUR ÊTRE AINSI BRISÉE D’UN COUP DE MARTEAU",
+          "sha256": "bd9dcbe824c1435d75e64012ed6bfa97f8238363932442fe632282e3454f3d2c"
+        },
+        {
+          "order": 22,
+          "title": "I. LA QUESTION DE L’EAU À MONTFERMEIL",
+          "sha256": "310138da763a5d17f520d2f9e453248809fb088ba6a2bfc8715880586f968b2a"
+        },
+        {
+          "order": 23,
+          "title": "II. DEUX PORTRAITS COMPLÉTÉS",
+          "sha256": "8e7fd910bff0b46bb8cb6793f5acb342be513df088bf33edd619e188c76b4bb4"
+        },
+        {
+          "order": 24,
+          "title": "III. IL FAUT DU VIN AUX HOMMES ET DE L’EAU AUX CHEVAUX",
+          "sha256": "fa5e8e6a51ba061c290ed02226af7e95ca3e85502dccdbcf29a1cbf1ea890980"
+        },
+        {
+          "order": 25,
+          "title": "IV. ENTRÉE EN SCÈNE D’UNE POUPÉE",
+          "sha256": "d6075ff47da7f5f86108422d9052d4327467e262dda33123e7cb7d0a85679e85"
+        },
+        {
+          "order": 26,
+          "title": "V. LA PETITE TOUTE SEULE",
+          "sha256": "bef147f955901918165d56b484a1156667a8d55485d44bd121ee26ee79ca8475"
+        },
+        {
+          "order": 27,
+          "title": "VI. QUI PEUT-ÊTRE PROUVE L’INTELLIGENCE DE BOULATRUELLE",
+          "sha256": "d469f0fdac476499dd589bb282d583a351affd8601376c225288d922837e46d5"
+        },
+        {
+          "order": 28,
+          "title": "VII. COSETTE CÔTE À CÔTE DANS L’OMBRE AVEC L’INCONNU",
+          "sha256": "218a85daa9143e857516db34190709aeb332c949319535d3c0b73569e02e4ce2"
+        },
+        {
+          "order": 29,
+          "title": "VIII. DÉSAGRÉMENT DE RECEVOIR CHEZ SOI UN PAUVRE QUI EST PEUT-ÊTRE UN RICHE (1/3)",
+          "sha256": "c8d9813ddced258c2267c573cb701945393809c95594d8f94cf8334504caa988"
+        },
+        {
+          "order": 30,
+          "title": "VIII. DÉSAGRÉMENT DE RECEVOIR CHEZ SOI UN PAUVRE QUI EST PEUT-ÊTRE UN RICHE (2/3)",
+          "sha256": "2038d9233f0bf359bd2379591edb7056df2bbe3396ec9258178d18a1b0806e5d"
+        },
+        {
+          "order": 31,
+          "title": "VIII. DÉSAGRÉMENT DE RECEVOIR CHEZ SOI UN PAUVRE QUI EST PEUT-ÊTRE UN RICHE (3/3)",
+          "sha256": "4d2dad29ee0fa0104fdd656c354b71954acf0b1421bc40767f5409394d763007"
+        },
+        {
+          "order": 32,
+          "title": "IX. THÉNARDIER À LA MANŒUVRE",
+          "sha256": "169544abd49699351ea36a10c569a4093d80196a25f8743df8ecde2952f03fc5"
+        },
+        {
+          "order": 33,
+          "title": "X. QUI CHERCHE LE MIEUX PEUT TROUVER LE PIRE",
+          "sha256": "408ce89302585f7bda1d728ca52b578f075a6cb9e33f03a0d93f99fdbe9ff949"
+        },
+        {
+          "order": 34,
+          "title": "XI. LE NUMÉRO 9430 REPARAÎT ET COSETTE LE GAGNE À LA LOTERIE",
+          "sha256": "efc7de71e821e93606caacdbf14e1f89573588c8f658ac438ccf680eeb3751e2"
+        },
+        {
+          "order": 35,
+          "title": "I. MAÎTRE GORBEAU",
+          "sha256": "b030f6ae48bad7d598e8d7e65eb301be6b96787953c5f9ea7523359d2b9b7855"
+        },
+        {
+          "order": 36,
+          "title": "II. NID POUR HIBOU ET FAUVETTE",
+          "sha256": "0e8c1a79552a2ad24040409500710ebad5a05fde892c3ac497653da5f4e0c196"
+        },
+        {
+          "order": 37,
+          "title": "III. DEUX MALHEURS MÊLÉS FONT DU BONHEUR",
+          "sha256": "b38ef6ba7f0b6e127efe8390789871090d7c6a3167ffcda375ad6e8c24620636"
+        },
+        {
+          "order": 38,
+          "title": "IV. LES REMARQUES DE LA PRINCIPALE LOCATAIRE",
+          "sha256": "f82881bd0c2bc6250312f7f834025247a5dd74a91de84a38e3c08281f63e9316"
+        },
+        {
+          "order": 39,
+          "title": "V. UNE PIÈCE DE CINQ FRANCS QUI TOMBE À TERRE FAIT DU BRUIT",
+          "sha256": "0d2a3136b28c9c326f30b2aacc4ac832504d126c4b3e24579cb8204d60c15165"
+        },
+        {
+          "order": 40,
+          "title": "I. LES ZIGZAGS DE LA STRATÉGIE",
+          "sha256": "f9a642697e91825a8991423c0e3d532074e3c87bf3f17b470b92a09c4a332b15"
+        },
+        {
+          "order": 41,
+          "title": "II. IL EST HEUREUX QUE LE PONT D’AUSTERLITZ PORTE VOITURES",
+          "sha256": "1b6cb67f6a584103d2ef9702815c016ed8efa9a80b9c662509acdc7bb4451fd7"
+        },
+        {
+          "order": 42,
+          "title": "III. VOIR LE PLAN DE PARIS DE 1727",
+          "sha256": "d52283b91704018217abcb0f2fdac155da168c89aab948309a7b1a4a3f021e41"
+        },
+        {
+          "order": 43,
+          "title": "IV. LES TÂTONNEMENTS DE L’ÉVASION",
+          "sha256": "8e9cf497be521c0aa5fb936d04821024c5b173fe9c65899eff71ece8490b8c68"
+        },
+        {
+          "order": 44,
+          "title": "V. QUI SERAIT IMPOSSIBLE AVEC L’ÉCLAIRAGE AU GAZ",
+          "sha256": "6a3b6fb1a3c6f56c05eb7963823994de3d48d764f8a824358cc3caec82013ed5"
+        },
+        {
+          "order": 45,
+          "title": "VI. COMMENCEMENT D’UNE ÉNIGME",
+          "sha256": "f99903c509e0a9a47b4c0aea7ade1513b768c942218547c46ae744f2ebbecbb0"
+        },
+        {
+          "order": 46,
+          "title": "VII. SUITE DE L’ÉNIGME",
+          "sha256": "bc8cf4b255fbba9a53bc65a3dbd280ba1791dc2ec59a62ace5024c56b190055d"
+        },
+        {
+          "order": 47,
+          "title": "VIII. L’ÉNIGME REDOUBLE",
+          "sha256": "95310da9b2d3737b0755f90ba7e0c3d585bb0e491a4abfc852c1047a807b1fc2"
+        },
+        {
+          "order": 48,
+          "title": "IX. L’HOMME AU GRELOT",
+          "sha256": "523bd63424e144e8ce9effb5445e18a45852358a9c853a154890d492ce3155c9"
+        },
+        {
+          "order": 49,
+          "title": "X. OÙ IL EST EXPLIQUÉ COMMENT JAVERT A FAIT BUISSON CREUX",
+          "sha256": "92695d5feeb3c9c8b47c679f790b43b1dc7d597f7c09d35470faa9773d53bcca"
+        },
+        {
+          "order": 50,
+          "title": "I. PETITE RUE PICPUS, NUMÉRO 62",
+          "sha256": "0e4c77b920b4ae30fd0e682ca3f9094129f81c4c57de52cb1c3eae2bda9fc5af"
+        },
+        {
+          "order": 51,
+          "title": "II. L’OBÉDIENCE DE MARTIN VERGA",
+          "sha256": "43572e19478af03064b6fe5646c1efe6fc2d189163ec6c037f5392dd49227d7a"
+        },
+        {
+          "order": 52,
+          "title": "III. SÉVÉRITÉS",
+          "sha256": "6dfeabd4b5da9e6be4d695b0c1572c5020f21e348871e329e4f593191465abe7"
+        },
+        {
+          "order": 53,
+          "title": "IV. GAÎTÉS",
+          "sha256": "f4f6a404a3ee4d662eeb3e0b8eb9c378ccb209d7915b4ebc784e21d521a66d8c"
+        },
+        {
+          "order": 54,
+          "title": "V. DISTRACTIONS",
+          "sha256": "f9ddf6c3c01a4b79853b239e4ea87e4ca4fb91dcde3ddf3b49caa385fb176af8"
+        },
+        {
+          "order": 55,
+          "title": "VI. LE PETIT COUVENT",
+          "sha256": "1879010a50eb9fe894e8ea0e302ead1697e3780c7444fe539efd7fce97c1190e"
+        },
+        {
+          "order": 56,
+          "title": "VII. QUELQUES SILHOUETTES DE CETTE OMBRE",
+          "sha256": "b169a8f9eb4a6aeb7eb3ba18fc010807bad74bee6a7b6d6a7f87befa7256f70e"
+        },
+        {
+          "order": 57,
+          "title": "VIII. POST CORDA LAPIDES",
+          "sha256": "23840f86bfe199f115e755de85891bd647b563a3b748ca5b3066bbc3c26da107"
+        },
+        {
+          "order": 58,
+          "title": "IX. UN SIÈCLE SOUS UNE GUIMPE",
+          "sha256": "091facc02b524eb188fa22604e18113cae1811424263ea384411626e1249a451"
+        },
+        {
+          "order": 59,
+          "title": "X. ORIGINE DE L’ADORATION PERPÉTUELLE",
+          "sha256": "a93b192ab33a51f3c075809d326e474c9368aba673cfcbcbba0c9ba7b52c6218"
+        },
+        {
+          "order": 60,
+          "title": "XI. FIN DU PETIT-PICPUS",
+          "sha256": "eb19fe85c863fa31de237f6140720ce45fb7732784833f81c60fd8e6dbb89f7f"
+        },
+        {
+          "order": 61,
+          "title": "I. LE COUVENT, IDÉE ABSTRAITE",
+          "sha256": "f67121543ff70bacf9173512d6b1fb92a33c05cb642f53d8ed6d1c5c980d20f5"
+        },
+        {
+          "order": 62,
+          "title": "II. LE COUVENT, FAIT HISTORIQUE",
+          "sha256": "ecd0b60d381864b41100c838c25e13270202569786a1f6f773b172d68e55608b"
+        },
+        {
+          "order": 63,
+          "title": "III. À QUELLE CONDITION ON PEUT RESPECTER LE PASSÉ",
+          "sha256": "e61a861e4139de01100028c82e5306208dbb05098f6ce1f6849cd6dd87ac1e69"
+        },
+        {
+          "order": 64,
+          "title": "IV. LE COUVENT AU POINT DE VUE DES PRINCIPES",
+          "sha256": "eb0c123ccca2cade9c0437f07c01963328e5db98fabfa97c15b51d8c3b7da08a"
+        },
+        {
+          "order": 65,
+          "title": "V. LA PRIÈRE",
+          "sha256": "b882b80b43e1aa0fe2ee164cce44479382502a0f3529520b38398127d131fce5"
+        },
+        {
+          "order": 66,
+          "title": "VI. BONTÉ ABSOLUE DE LA PRIÈRE",
+          "sha256": "d229fe2398e354b27132c594b804c953c700aba2fc0aceb865a669bc81dbc7fc"
+        },
+        {
+          "order": 67,
+          "title": "VII. PRÉCAUTIONS À PRENDRE DANS LE BLÂME",
+          "sha256": "6dd7b9001353477f01d8bf902a1336ced3a39a4b3765216e5d0afbfaebb84a49"
+        },
+        {
+          "order": 68,
+          "title": "VIII. FOI, LOI",
+          "sha256": "544f86dd81d84413c787b8f2f0849b0b4889c0dec3406a4b1daf87261e2405dc"
+        },
+        {
+          "order": 69,
+          "title": "I. OÙ IL EST TRAITÉ DE LA MANIÈRE D’ENTRER AU COUVENT",
+          "sha256": "a5401327b4e8dd8c160cae06e6f1ea81ea55c8ceb269d61c073bb226be83dea8"
+        },
+        {
+          "order": 70,
+          "title": "II. FAUCHELEVENT EN PRÉSENCE DE LA DIFFICULTÉ",
+          "sha256": "a36bde4bf7a680fb1951825d48bfebeb55393803a25f82ff1713c190c424f4f3"
+        },
+        {
+          "order": 71,
+          "title": "III. MÈRE INNOCENTE",
+          "sha256": "01cf8c3f9a8778b6381c0faf43ded3e511053f75762afa7c700681768f0fbd32"
+        },
+        {
+          "order": 72,
+          "title": "IV. OÙ JEAN VALJEAN A TOUT À FAIT L’AIR D’AVOIR LU AUSTIN CASTILLEJO",
+          "sha256": "3923b6afcff14ddc2ab30d0b086a7933174d1f8462e8b236216487143faaf3db"
+        },
+        {
+          "order": 73,
+          "title": "V. IL NE SUFFIT PAS D’ÊTRE IVROGNE POUR ÊTRE IMMORTEL",
+          "sha256": "10c1573d4480e569a8d6b61f134517ef5cda67f834a23b7cfbb961fa8e7e3fa8"
+        },
+        {
+          "order": 74,
+          "title": "VI. ENTRE QUATRE PLANCHES",
+          "sha256": "66bd7e32f23aef947cca42f709e9459ce57fb402653107949b8f7c5a3ed33a37"
+        },
+        {
+          "order": 75,
+          "title": "VII. OÙ L’ON TROUVERA L’ORIGINE DU MOT : NE PAS PERDRE LA CARTE",
+          "sha256": "624762f6ae6eebca692f04ada89c45151f3034a5375a78289ea152ef71e30345"
+        },
+        {
+          "order": 76,
+          "title": "VIII. INTERROGATOIRE RÉUSSI",
+          "sha256": "33ecd56259808c1c38372ad97f86d300e1a5c2b8ad6bb75804d5fe03678751e2"
+        },
+        {
+          "order": 77,
+          "title": "IX. CLÔTURE",
+          "sha256": "195139862f0fc7ddc8568c1d28969eb5db24018e2094325bf9cbbb6d93e6c571"
+        }
+      ]
+    },
+    "ws-fr-victor-hugo_les-miserables-3": {
+      "title": "Les Misérables, tome III : Marius",
+      "author": "Victor Hugo",
+      "level": "C1 고급",
+      "total": 80,
+      "language": "French",
+      "size": 87614,
+      "unit": "words",
+      "display": {
+        "titleKo": "레 미제라블 3부",
+        "authorKo": "빅토르 위고",
+        "binding": "pagnerre",
+        "coverTitle": "Les\nMisérables",
+        "coverAuthor": "Victor Hugo",
+        "coverPart": "Troisième partie",
+        "coverPartTitle": "Marius",
+        "coverTome": "Tome troisième",
+        "coverPlace": "Paris",
+        "coverImprint": "Pagnerre, libraire-éditeur",
+        "coverYear": 1862
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-fr-victor-hugo_les-miserables-3",
+        "wiki": "fr",
+        "title": "Les Misérables, tome III : Marius",
+        "author": "Victor Hugo",
+        "publishedYear": 1862,
+        "authorDeathYear": 1885,
+        "countryOfOrigin": "FR",
+        "mortPourLaFrance": false,
+        "translator": null,
+        "url": "https://fr.wikisource.org/wiki/Les_Mis%C3%A9rables",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "FR",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I. PARVULUS",
+          "sha256": "ba5215c06c48a74e2f75f4bf6a0ee89d70d003af1d9b7707b53b40e701c298c0"
+        },
+        {
+          "order": 2,
+          "title": "II. QUELQUES-UNS DE SES SIGNES PARTICULIERS",
+          "sha256": "22e07842d59d2a204564be39855bd01a600e7ef7ace5f2fa423eb8d7ab1c112b"
+        },
+        {
+          "order": 3,
+          "title": "III. IL EST AGRÉABLE",
+          "sha256": "0596538a959921ba259ae6de848284a8539c096033dc1c576b6d59ff15ecb4cd"
+        },
+        {
+          "order": 4,
+          "title": "IV. IL PEUT ÊTRE UTILE",
+          "sha256": "c48b3237b2a049ec15ca144ae2ea725b5f3c109f6e181b8e7708a415ab9230e6"
+        },
+        {
+          "order": 5,
+          "title": "V. SES FRONTIÈRES",
+          "sha256": "7ae3e5cf08306d9b5aee5fc270918bd7d7d867e93b868d6c7c8d2921eff46a65"
+        },
+        {
+          "order": 6,
+          "title": "VI. UN PEU D’HISTOIRE",
+          "sha256": "a97e760b2825b0ec23d664a9e51293381be15fa8153e065dfffeb5bcf140dd84"
+        },
+        {
+          "order": 7,
+          "title": "VII. LE GAMIN AURAIT SA PLACE DANS LES CLASSIFICATIONS DE L’INDE",
+          "sha256": "24e5d16f8853144f179885dd3af4f4b7bebdd2057f8dca475282b9ab432f9ecc"
+        },
+        {
+          "order": 8,
+          "title": "VIII. OÙ ON LIRA UN MOT CHARMANT DU DERNIER ROI",
+          "sha256": "83c9c8c72d5b951e50f40c0649c7430552602928ba8c3bc3809d306b5a51e9b2"
+        },
+        {
+          "order": 9,
+          "title": "IX. LA VIEILLE ÂME DE LA GAULE",
+          "sha256": "a34d41b5e27d5339cf5e94b86fb995c5092828641295f9766bdc7da2d7254c6a"
+        },
+        {
+          "order": 10,
+          "title": "X. ECCE PARIS, ECCE HOMO",
+          "sha256": "6683fcc603e876b3309b64fb5642c72df3fc21478a00bfc63c1152677f012bdb"
+        },
+        {
+          "order": 11,
+          "title": "XI. RAILLER, RÉGNER",
+          "sha256": "c789cff309d16d97e13dfe1eea0aabd3e6f0f784d901721a2e8bc8e238da4eaf"
+        },
+        {
+          "order": 12,
+          "title": "XII. L’AVENIR LATENT DANS LE PEUPLE",
+          "sha256": "e511acefa58caac98e2a2ddc72053bdb36a8a4945285014d2a84923164fc4503"
+        },
+        {
+          "order": 13,
+          "title": "XIII. LE PETIT GAVROCHE",
+          "sha256": "78b2cf0e2ee2fc74a9f405cbe2817a9e0e29e7762c0f5f244f8e27d4bef281b6"
+        },
+        {
+          "order": 14,
+          "title": "I. QUATREVINGT-DIX ANS ET TRENTE-DEUX DENTS",
+          "sha256": "a2b88320eb368d193cb3f777c8a8d44da257ef2aae438bc5f6cf42d2bc26781c"
+        },
+        {
+          "order": 15,
+          "title": "II. TEL MAÎTRE, TEL LOGIS",
+          "sha256": "50eb14781bcfa7ba3be99decd8b971292157a4045736302554cfe869cb0c47c4"
+        },
+        {
+          "order": 16,
+          "title": "III. Luc-Esprit",
+          "sha256": "6dad8bd8ea3735d57d3f473ff0c03663abf653202cb8365ff662600a334d1c7e"
+        },
+        {
+          "order": 17,
+          "title": "IV. ASPIRANT CENTENAIRE",
+          "sha256": "1fa258116a8518f56ca37b7fb150f72f5d598441fe7e50da8af7b50c22a4836a"
+        },
+        {
+          "order": 18,
+          "title": "V. BASQUE ET NICOLETTE",
+          "sha256": "442bce6383238743a18f43e18eccc081aeb4bed6bda447206d2044ab3a4ebefd"
+        },
+        {
+          "order": 19,
+          "title": "VI. OÙ L’ON ENTREVOIT LA MAGNON ET SES DEUX PETITS",
+          "sha256": "7bac41fcc540642f81ff8c154cea055ca40ef9937e32a29678dd4a38d867055a"
+        },
+        {
+          "order": 20,
+          "title": "VII. RÈGLE : NE RECEVOIR PERSONNE QUE LE SOIR",
+          "sha256": "cd82a1e4352e84a5969698c10c04db267bc0dd9d14f2058e48973220026f60ad"
+        },
+        {
+          "order": 21,
+          "title": "VIII. LES DEUX NE FONT PAS LA PAIRE",
+          "sha256": "7c561859efc8be94191c482571563aadb80880cc3bbbef37ee003c14b1971118"
+        },
+        {
+          "order": 22,
+          "title": "I. UN ANCIEN SALON",
+          "sha256": "4775a5680b436fb99dc9f265d6314548da929348b9bec114415f134b52dab53c"
+        },
+        {
+          "order": 23,
+          "title": "II. UN DES SPECTRES ROUGES DE CE TEMPS-LA",
+          "sha256": "c8b98baec0bc3f5abfb632a547db0cdcd5e38e3a9a590e5f96f1fc96abb941ad"
+        },
+        {
+          "order": 24,
+          "title": "III. REQUIESCANT",
+          "sha256": "a5401847d8826ddd068ce6cff5373a2b97110c5b1a51cd509eaf6d58ce78e756"
+        },
+        {
+          "order": 25,
+          "title": "IV. FIN DU BRIGAND",
+          "sha256": "9657669883520576cfebad3456a0e8312eea93bbc845f4d04c2a43932437bb30"
+        },
+        {
+          "order": 26,
+          "title": "V. L’UTILITÉ D’ALLER À LA MESSE POUR DEVENIR RÉVOLUTIONNAIRE",
+          "sha256": "da1223625a19f99ad111658a8175ca98c83b2336d28f8b7cc7589d57587b42eb"
+        },
+        {
+          "order": 27,
+          "title": "VI. CE QUE C’EST QUE D’AVOIR RENCONTRÉ UN MARGUILLIER",
+          "sha256": "afe396915beef2a684b15405b4f30015c7373e85ac65f8a1336a7088d944c20c"
+        },
+        {
+          "order": 28,
+          "title": "VII. QUELQUE COTILLON",
+          "sha256": "bcf4d22467525c762cbfb4ce030d7da96365b0ed245cabb4c1681288ede21160"
+        },
+        {
+          "order": 29,
+          "title": "VIII. MARBRE CONTRE GRANIT",
+          "sha256": "eeb7b45ea9c89f2288c57f668f046fa2078af6537b7ab85fef6170d973204499"
+        },
+        {
+          "order": 30,
+          "title": "I. UN GROUPE QUI A FAILLI DEVENIR HISTORIQUE (1/2)",
+          "sha256": "d55eff296bdd92a8e9eb31522b6c944efce64289258a08c2a6ce999655a07498"
+        },
+        {
+          "order": 31,
+          "title": "I. UN GROUPE QUI A FAILLI DEVENIR HISTORIQUE (2/2)",
+          "sha256": "bd90e95eb50c81eaa70ad65e2f2e72a015be816da923860aba0c1b4cd4620101"
+        },
+        {
+          "order": 32,
+          "title": "II. ORAISON FUNÈBRE DE BLONDEAU, PAR BOSSUET",
+          "sha256": "3aa19d22a63cc4bc07799e37a152691ab7f34070b60f0ee322cdbb8a66782673"
+        },
+        {
+          "order": 33,
+          "title": "III. LES ÉTONNEMENTS DE MARIUS",
+          "sha256": "31070d6bb3992a1f3b43b73bdd697c0783102a34a9b00db4fb1fe440035bf091"
+        },
+        {
+          "order": 34,
+          "title": "IV. L’ARRIÈRE-SALLE DU CAFÉ MUSAIN",
+          "sha256": "4f79c8dce8d9b760344c3d45b02b6c3fb573d9dcb1959bea532c58807d9dd295"
+        },
+        {
+          "order": 35,
+          "title": "V. ÉLARGISSEMENT DE L’HORIZON",
+          "sha256": "ab27cc6bbbe4d8f1aee23497c5642fbdc1b671db5be08fa24036938ade7c66ef"
+        },
+        {
+          "order": 36,
+          "title": "VI. RES ANGUSTA",
+          "sha256": "5cb3d9c7be1066e2f814eb6781d56d57f8758f18c2c7a0ea6220a7b84dec5f96"
+        },
+        {
+          "order": 37,
+          "title": "I. MARIUS INDIGENT",
+          "sha256": "1cef30810cc8d8863e349c348b577ac9f44ea4954e273eb90ac856bfbcc990ad"
+        },
+        {
+          "order": 38,
+          "title": "II. MARIUS PAUVRE",
+          "sha256": "dcf54e1814e6850592c0ee3c25a88838e44b61b52300303b43d3a215421d6b81"
+        },
+        {
+          "order": 39,
+          "title": "III. MARIUS GRANDI",
+          "sha256": "8eddb534e40a52c5fbd83191461c5d753ddb4721651bda00776516b61bbccf8a"
+        },
+        {
+          "order": 40,
+          "title": "IV. M. MABEUF",
+          "sha256": "be71e76454b7b3350ce500ab0956fca5067cbd7f7a8c8b26f8423232769fa8d5"
+        },
+        {
+          "order": 41,
+          "title": "V. PAUVRETÉ, BONNE VOISINE DE MISÈRE",
+          "sha256": "1b4f9df3f93435a433436495323229f752f8fa85960b90244e9d87483c2ccaef"
+        },
+        {
+          "order": 42,
+          "title": "VI. LE REMPLAÇANT",
+          "sha256": "05b97adc9f23e910a9c72a8bdbe0a7af93773ef199ae4e1a91c506d6d62f56d3"
+        },
+        {
+          "order": 43,
+          "title": "I. LE SOBRIQUET, MODE DE FORMATION DES NOMS DE FAMILLE",
+          "sha256": "47438ddea0310ff3a382ef770000bfb43b002311a2966cfdd54e961b87379b5a"
+        },
+        {
+          "order": 44,
+          "title": "II. LUX FACTA EST",
+          "sha256": "4245620c7dfcf9fad7d393ca3dccb5cff65a106b963c1e45f00af9538beaec0a"
+        },
+        {
+          "order": 45,
+          "title": "III. EFFET DE PRINTEMPS",
+          "sha256": "5902b8dfb5ed6dfaec592f824827dc79fa88e0f072f35cfca98609878e004ca9"
+        },
+        {
+          "order": 46,
+          "title": "IV. COMMENCEMENT D’UNE GRANDE MALADIE",
+          "sha256": "eea587f027722882b3c30e17654f7190870d91f374fcaade7a532326953849ad"
+        },
+        {
+          "order": 47,
+          "title": "V. DIVERS COUPS DE FOUDRE TOMBENT SUR MAME BOUGON",
+          "sha256": "58be75cc533d7b87cca8dca7d163640a4fed1dcce0522f922737e07d1b40bf52"
+        },
+        {
+          "order": 48,
+          "title": "VI. FAIT PRISONNIER",
+          "sha256": "4f4b5eab45a90140f42f93057ae77a93d3d9c0aa5484764c0d050eb9f0bf5979"
+        },
+        {
+          "order": 49,
+          "title": "VII. AVENTURE DE LA LETTRE U LIVRÉE AUX CONJECTURES",
+          "sha256": "4dd2fb17df3486bf12b8fe733ba515b489782318dd9417a8741f4ac4ef67fc33"
+        },
+        {
+          "order": 50,
+          "title": "VIII. LES INVALIDES EUX-MÊMES PEUVENT ÊTRE HEUREUX",
+          "sha256": "727d9f2e8a710ffe916159e887de066650aef5901572aff65c3c1847e49975a9"
+        },
+        {
+          "order": 51,
+          "title": "IX. ÉCLIPSE",
+          "sha256": "a0dadbed3462c6a85b93ee360975a363813956fd478b0b17ec130d7864e758b4"
+        },
+        {
+          "order": 52,
+          "title": "I. LES MINES ET LES MINEURS",
+          "sha256": "6f5b2f34b19fe161799ce59ec7166ee53d43e3648a8ab7587e3a29b5129f8719"
+        },
+        {
+          "order": 53,
+          "title": "II. LE BAS-FOND",
+          "sha256": "3a5bb843b53233ddf12e2c19673eeffea5ef79ed3f868eef216fa1c5eef7e30e"
+        },
+        {
+          "order": 54,
+          "title": "III. BABET, GUEULEMER, CLAQUESOUS ET MONTPARNASSE",
+          "sha256": "151fbbfe120494942efeddfe486d2ec9667864ef849365fafc5f06e81b94ff22"
+        },
+        {
+          "order": 55,
+          "title": "IV. COMPOSITION DE LA TROUPE",
+          "sha256": "eb56b5bca6ff015f6c2e92567b0152db7d8e6b4b20b249b6c04f42406e8385ed"
+        },
+        {
+          "order": 56,
+          "title": "I. MARIUS CHERCHANT UNE FILLE EN CHAPEAU RENCONTRE UN HOMME EN CASQUETTE",
+          "sha256": "f4b9ac152fe14967f14b4ea51843efbd644d66e5b9e09cf8ab548142fa84d462"
+        },
+        {
+          "order": 57,
+          "title": "II. TROUVAILLE",
+          "sha256": "2189f1759c1c17d7b38756cfa3045307ec61173562dc4bcc0bc25f9b34878421"
+        },
+        {
+          "order": 58,
+          "title": "III. QUADRIFRONS",
+          "sha256": "d1e0767eb753cfd5482aab5f7c8c4a22740e7dbdd50cfc5059c9a946ecb2369b"
+        },
+        {
+          "order": 59,
+          "title": "IV. UNE ROSE DANS LA MISÈRE",
+          "sha256": "b2d2395048d25b6a7b85b54cddf4fdf0d159f1dde0cceef8e44952617f315c9a"
+        },
+        {
+          "order": 60,
+          "title": "V. LE JUDAS DE LA PROVIDENCE",
+          "sha256": "1d3e50838f0aec8d8f3962d6a1c7714e17f0b07485f7861427e9214f279946d4"
+        },
+        {
+          "order": 61,
+          "title": "VI. L’HOMME FAUVE AU GÎTE",
+          "sha256": "075900bfc514e3a606800c2c072803a94299d3b0f454d6f98d9367698d7f646e"
+        },
+        {
+          "order": 62,
+          "title": "VII. STRATÉGIE ET TACTIQUE",
+          "sha256": "f966e4f3592b5a2f7478b2e4fdb6e068fbe1df830897eabd03af78c9f0a8c003"
+        },
+        {
+          "order": 63,
+          "title": "VIII. LE RAYON DANS LE BOUGE",
+          "sha256": "551695ac52c9236e12202e17864ebe9df1a2a8ccdbeb793ebfd64aa6965a260b"
+        },
+        {
+          "order": 64,
+          "title": "IX. JONDRETTE PLEURE PRESQUE",
+          "sha256": "7e7ed2fae010bc580f63d2234d46c97bc1a5387b10e0ace4f3f8022aefb6300d"
+        },
+        {
+          "order": 65,
+          "title": "X. TARIF DES CABRIOLETS DE RÉGIE : DEUX FRANCS L’HEURE",
+          "sha256": "b9b48d78eecb3f833b2d1c00fe6f678434396a65dfa62a8b0d7d6ec8c7f3cdb1"
+        },
+        {
+          "order": 66,
+          "title": "XI. OFFRES DE SERVICE DE LA MISÈRE À LA DOULEUR",
+          "sha256": "0cb89696c83b88b97771d1914e3e935d15f7b259f41abd5368466a4f86d13a1c"
+        },
+        {
+          "order": 67,
+          "title": "XII. EMPLOI DE LA PIÈCE DE CINQ FRANCS DE M. LEBLANC",
+          "sha256": "e6396802b138353a52e1cec4e8e4b50dc655c48b0b4579cd51ee371ad14b8370"
+        },
+        {
+          "order": 68,
+          "title": "XIII. SOLUS CUM SOLO, IN LOCO REMOTO NON COGITABUNTUR ORARE PATER NOSTER",
+          "sha256": "94ea428ce7ba9f60e5e4659e75c34a2349035914c9de2148d339af9898f10b7f"
+        },
+        {
+          "order": 69,
+          "title": "XIV. OÙ UN AGENT DE POLICE DONNE DEUX COUPS DE POING À UN AVOCAT",
+          "sha256": "59923944e4f24382b25302684b7c07b2c1e793143abaad5bf9594b5fbf2ba2d7"
+        },
+        {
+          "order": 70,
+          "title": "XV. JONDRETTE FAIT SON EMPLETTE",
+          "sha256": "c6765c8994aa963ae0ec18ca626303691db7334eadedf0acbdd76d347ceaa56b"
+        },
+        {
+          "order": 71,
+          "title": "XVI. OÙ L’ON RETROUVERA LA CHANSON SUR UN AIR ANGLAIS À LA MODE EN 1832",
+          "sha256": "83ebb844ee9cd3ea19993dc11d835a1bb81dab8804fa335caec607075b67ad7d"
+        },
+        {
+          "order": 72,
+          "title": "XVII. EMPLOI DE LA PIÈCE DE CINQ FRANCS DE MARIUS",
+          "sha256": "18dd915e13ea153cb28666fc8efdccb0dcdfe85ff6fd3de39825742819baf965"
+        },
+        {
+          "order": 73,
+          "title": "XVIII. LES DEUX CHAISES DE MARIUS SE FONT VIS-À-VIS",
+          "sha256": "b31fa833c441068b4dd86867757aa30f336b026c66a29421b5d37443aa9b30a3"
+        },
+        {
+          "order": 74,
+          "title": "XIX. SE PRÉOCCUPER DES FONDS OBSCURS",
+          "sha256": "02f12801df822f818302358ff5fff0e170aa7182354bf75fec1340f438dbff61"
+        },
+        {
+          "order": 75,
+          "title": "XX. LE GUET-APENS (1/4)",
+          "sha256": "62e74e1556ac5f59d719ae3327ce88e2b974c88df81338487c1a9295f3ed77e8"
+        },
+        {
+          "order": 76,
+          "title": "XX. LE GUET-APENS (2/4)",
+          "sha256": "e9d9d67f7aebe5e5f83013b42ea2aa1b3b27b72929430bc8201ee651da726c6f"
+        },
+        {
+          "order": 77,
+          "title": "XX. LE GUET-APENS (3/4)",
+          "sha256": "7b43c8e816613dbee7c8fdbddd98c4c464627fe81b6c8e1218951b367b5fdc65"
+        },
+        {
+          "order": 78,
+          "title": "XX. LE GUET-APENS (4/4)",
+          "sha256": "b437fe147cdc084bdf4fba4f294fb70eababcea4b40de7599328643d02e62448"
+        },
+        {
+          "order": 79,
+          "title": "XXI. ON DEVRAIT TOUJOURS COMMENCER PAR ARRÊTER LES VICTIMES",
+          "sha256": "2d733165ad70c10a760488a7039d8e61be0b1f0e8b8b4a6f0f640a02dac716d7"
+        },
+        {
+          "order": 80,
+          "title": "XXII. LE PETIT QUI CRIAIT AU TOME DEUX",
+          "sha256": "9a3b2269ab3e7bd4d95582e4cf1404d399a66c278c82948169cc111d6f6a4117"
+        }
+      ]
+    },
+    "ws-fr-victor-hugo_les-miserables-4": {
+      "title": "Les Misérables, tome IV : L’Idylle rue Plumet et l’Épopée rue Saint-Denis",
+      "author": "Victor Hugo",
+      "level": "C1 고급",
+      "total": 84,
+      "language": "French",
+      "size": 124323,
+      "unit": "words",
+      "display": {
+        "titleKo": "레 미제라블 4부",
+        "authorKo": "빅토르 위고",
+        "binding": "pagnerre",
+        "coverTitle": "Les\nMisérables",
+        "coverAuthor": "Victor Hugo",
+        "coverPart": "Quatrième partie",
+        "coverPartTitle": "L’Idylle rue Plumet\net l’Épopée rue Saint-Denis",
+        "coverTome": "Tome quatrième",
+        "coverPlace": "Paris",
+        "coverImprint": "Pagnerre, libraire-éditeur",
+        "coverYear": 1862
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-fr-victor-hugo_les-miserables-4",
+        "wiki": "fr",
+        "title": "Les Misérables, tome IV : L’Idylle rue Plumet et l’Épopée rue Saint-Denis",
+        "author": "Victor Hugo",
+        "publishedYear": 1862,
+        "authorDeathYear": 1885,
+        "countryOfOrigin": "FR",
+        "mortPourLaFrance": false,
+        "translator": null,
+        "url": "https://fr.wikisource.org/wiki/Les_Mis%C3%A9rables",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "FR",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I. BIEN COUPÉ",
+          "sha256": "e0ed2d68685dfb51dbfb50d7752f9a0e49fe993218919df52b629d49bf598a81"
+        },
+        {
+          "order": 2,
+          "title": "II. MAL COUSU",
+          "sha256": "6f5cfff7ff34ab410836712e9a17310e691a63370b6634f7347e41cf5eb11fc7"
+        },
+        {
+          "order": 3,
+          "title": "III. LOUIS-PHILIPPE",
+          "sha256": "f44c03c9167f84e151e5ac8cf0e1f9c31997a232a2792945c3a962bae4885295"
+        },
+        {
+          "order": 4,
+          "title": "IV. LÉZARDES SOUS LA FONDATION",
+          "sha256": "3c7b80478a19e42e460e0bc6f1507cdac4835cfcb98d0d8952feaca7c56aa7d0"
+        },
+        {
+          "order": 5,
+          "title": "V. FAITS D’OÙ L’HISTOIRE SORT ET QUE L’HISTOIRE IGNORE (1/2)",
+          "sha256": "53111d5c1c035bc62327f2b56d28eca8840332b5ee9ecce9879efc5fdd6d00e1"
+        },
+        {
+          "order": 6,
+          "title": "V. FAITS D’OÙ L’HISTOIRE SORT ET QUE L’HISTOIRE IGNORE (2/2)",
+          "sha256": "4bf08382b68664e606422cc518ff0c99950a98d88d354f6482c2ed5194da68ba"
+        },
+        {
+          "order": 7,
+          "title": "VI. ENJOLRAS ET SES LIEUTENANTS",
+          "sha256": "e3593a14cd583739e748ad97a11415217fd2c7608a8f17ef57cd214361086c5c"
+        },
+        {
+          "order": 8,
+          "title": "I. LE CHAMP DE L’ALOUETTE",
+          "sha256": "b6a856cb4600fd0668658292b3c36fbcb61ea80a6f0995c59ebd41bd2c7ebfe5"
+        },
+        {
+          "order": 9,
+          "title": "II. FORMATION EMBRYONNAIRE DES CRIMES DANS L’INCUBATION DES PRISONS",
+          "sha256": "71a4d922763ab288659c2144eb8f9f29410e9a98c80ff37f60f969d192e6f553"
+        },
+        {
+          "order": 10,
+          "title": "III. APPARITION AU PÈRE MABEUF",
+          "sha256": "defad42ba14d0bb2f67f38b53f9136650b3824bc7d018a112f3c5c17831a9098"
+        },
+        {
+          "order": 11,
+          "title": "IV. APPARITION À MARIUS",
+          "sha256": "9ad8f5b8c9f0a27dabe682fb98c3f39560df7f88523908de9543b1edce6894b0"
+        },
+        {
+          "order": 12,
+          "title": "I. LA MAISON À SECRET",
+          "sha256": "ea24f9b4d321ce0a1fd80ff03838e6127b4f82e148a7fea62649d7351c2b1d28"
+        },
+        {
+          "order": 13,
+          "title": "II. JEAN VALJEAN GARDE NATIONAL",
+          "sha256": "10f8d125c563458b6a5e6ed2e3fc3c7ce682028db65f9240ae0d4170a57e60af"
+        },
+        {
+          "order": 14,
+          "title": "III. FOLIIS AC FRONDIBUS",
+          "sha256": "273a119acd8eac9459a8ec10d9cc79c41a0a0d3810d33ba35e390365584194dd"
+        },
+        {
+          "order": 15,
+          "title": "IV. CHANGEMENT DE GRILLE",
+          "sha256": "207e4f404753d39f5883ad8512e28d1d649549f1af0e0dc24c3107a4f218b540"
+        },
+        {
+          "order": 16,
+          "title": "V. LA ROSE S’APERÇOIT QU’ELLE EST UNE MACHINE DE GUERRE",
+          "sha256": "367c217b1e8959673c6b758d0cd6a72138dbdac0c53c63544666be5c0419b88f"
+        },
+        {
+          "order": 17,
+          "title": "VI. LA BATAILLE COMMENCE",
+          "sha256": "2372aae27b4ac3d039e9297fc8b48baf18195efd1444dc979ce7826284fed2d7"
+        },
+        {
+          "order": 18,
+          "title": "VII. À TRISTESSE, TRISTESSE ET DEMIE",
+          "sha256": "f7048a1faab52157babce417e21ca6e045ddaf00ea48f1948d3a5c012268cc46"
+        },
+        {
+          "order": 19,
+          "title": "VIII. LA CADÈNE (1/2)",
+          "sha256": "a6811a50e8c09c3c2c38bbbcaabe423672a1066905518354136a39851a293b6d"
+        },
+        {
+          "order": 20,
+          "title": "VIII. LA CADÈNE (2/2)",
+          "sha256": "7d7d0cb91d172e76d70bdbdd21071f862c913782d6b8adb03417764fcb5d3105"
+        },
+        {
+          "order": 21,
+          "title": "I. BLESSURE AU DEHORS, GUÉRISON AU DEDANS",
+          "sha256": "0815c26bc2f1f796b6d3ee89281e1ad9d9e77f9db3418fa8bc740ed662e8b685"
+        },
+        {
+          "order": 22,
+          "title": "II. LA MÈRE PLUTARQUE N’EST PAS EMBARRASSÉE POUR EXPLIQUER UN PHÉNOMÈNE",
+          "sha256": "f3b6501aac66960b40302e360749ca6d93a8016161844715d17e3342be2d98fb"
+        },
+        {
+          "order": 23,
+          "title": "I. LA SOLITUDE ET LA CASERNE COMBINÉES",
+          "sha256": "0c6a28cb887f44740cc394e4577562378189bc0a9ae2122612fc046ce0866419"
+        },
+        {
+          "order": 24,
+          "title": "II. PEURS DE COSETTE",
+          "sha256": "24b71a4171e84625059b66d8bd028fa07b6a4f501cd5a762de747f5732321cf1"
+        },
+        {
+          "order": 25,
+          "title": "III. ENRICHIES DES COMMENTAIRES DE TOUSSAINT",
+          "sha256": "3e4df49b908e67b353413624c128ec80a58b88b637864ca413769fc6aa64ade6"
+        },
+        {
+          "order": 26,
+          "title": "IV. UN CŒUR SOUS UNE PIERRE",
+          "sha256": "882eda2261e3c4cc1491b30786740b50b2b9b28939640c10132fdbe0ccbe880a"
+        },
+        {
+          "order": 27,
+          "title": "V. COSETTE APRÈS LA LETTRE",
+          "sha256": "be7ef3e042874619a5f9bca3693e4bc0c89b968ab9cdb5279244c604b27587f6"
+        },
+        {
+          "order": 28,
+          "title": "VI. LES VIEUX SONT FAITS POUR SORTIR À PROPOS",
+          "sha256": "fce7558fecf2adbca30711274c76875eb7b12fd2abe97477232689e9c68aa03a"
+        },
+        {
+          "order": 29,
+          "title": "I. MÉCHANTE ESPIÈGLERIE DU VENT",
+          "sha256": "ec0c889d69de3300b22677e16258f4cdcb84d8a182cc6b572680951ed16fd241"
+        },
+        {
+          "order": 30,
+          "title": "II. OÙ LE PETIT GAVROCHE TIRE PARTI DE NAPOLÉON LE GRAND (1/4)",
+          "sha256": "da73f608c1bdca2486d1521a7ca2dcc889c27a390e74d59f8e829a6536176fa0"
+        },
+        {
+          "order": 31,
+          "title": "II. OÙ LE PETIT GAVROCHE TIRE PARTI DE NAPOLÉON LE GRAND (2/4)",
+          "sha256": "bfe77a1a6b69748d57ec76f0d94a614061a07f3a061abd970bf92c3b95fcce91"
+        },
+        {
+          "order": 32,
+          "title": "II. OÙ LE PETIT GAVROCHE TIRE PARTI DE NAPOLÉON LE GRAND (3/4)",
+          "sha256": "16e5d4908144d7d9eb43ebe2f9941c66365d942f8e9634658fd4859f512dc383"
+        },
+        {
+          "order": 33,
+          "title": "II. OÙ LE PETIT GAVROCHE TIRE PARTI DE NAPOLÉON LE GRAND (4/4)",
+          "sha256": "0d2482cab3a8fd6a948a8793c054cee7c74fa709d79c702efa0dc10e2ec33d83"
+        },
+        {
+          "order": 34,
+          "title": "III. LES PÉRIPÉTIES DE L’ÉVASION (1/2)",
+          "sha256": "a9f191487ffa789ba5a4dc89e08afac708d7cbd2ad2d999584a741ab4ffd64b7"
+        },
+        {
+          "order": 35,
+          "title": "III. LES PÉRIPÉTIES DE L’ÉVASION (2/2)",
+          "sha256": "56fee382a08089dc6013b1688febaac1d75f388686a0f7372f1752755e3149b4"
+        },
+        {
+          "order": 36,
+          "title": "I. ORIGINE",
+          "sha256": "832c290889e4811da88dcd9365c24e84a761c4d1da973c754357d10488fd48bf"
+        },
+        {
+          "order": 37,
+          "title": "II. RACINES",
+          "sha256": "ad014b2a86d0fc0a2f1cd25db7240564c84ac85ed3e6368ccea9eb66d15decae"
+        },
+        {
+          "order": 38,
+          "title": "III. ARGOT QUI PLEURE ET ARGOT QUI RIT",
+          "sha256": "734eeb2237433b5976a13a9ee1cd12688854d71f8ba85f31584b5eba95821b64"
+        },
+        {
+          "order": 39,
+          "title": "IV. LES DEUX DEVOIRS : VEILLER ET ESPÉRER",
+          "sha256": "cd181faf9c9c0c70736da8fd4b4f44a32fd6c2672f415479639a9ae658886e02"
+        },
+        {
+          "order": 40,
+          "title": "I. PLEINE LUMIÈRE",
+          "sha256": "748d2b662bc30e16115b99a0110cd10ac01b08ed44881108c13aae2e8f3a306a"
+        },
+        {
+          "order": 41,
+          "title": "II. L’ÉTOURDISSEMENT DU BONHEUR COMPLET",
+          "sha256": "9a920570ae76bcde845be46c3a3f7ef1a2fe768dc41b74e633e211e57f7b2f48"
+        },
+        {
+          "order": 42,
+          "title": "III. COMMENCEMENT D’OMBRE",
+          "sha256": "6f15f16f6dfa3ab96aa7a995ca37dbf27dd1d39da6646c729935cc1038f08a6f"
+        },
+        {
+          "order": 43,
+          "title": "IV. CAB ROULE EN ANGLAIS ET JAPPE EN ARGOT",
+          "sha256": "93ec2269b261c1bd2f8923fb2a85641dc05a38f3bace3e63e5d282773e816384"
+        },
+        {
+          "order": 44,
+          "title": "V. CHOSES DE LA NUIT",
+          "sha256": "eb915ae4ac89b1c66d94e52f428ea95840126bbcbf7a4647d204988b6da3ed69"
+        },
+        {
+          "order": 45,
+          "title": "VI. MARIUS REDEVIENT RÉEL AU POINT DE DONNER SON ADRESSE À COSETTE",
+          "sha256": "bc344f8d21cde2b63b59891cc676c25a26beab7a2842aef29ab3358759a71e94"
+        },
+        {
+          "order": 46,
+          "title": "VII. LE VIEUX CŒUR ET LE JEUNE CŒUR EN PRÉSENCE (1/2)",
+          "sha256": "6c6a56b27d9f9d12624bd4e65359330904e85f3cf0b6101e8183e64cec27d50e"
+        },
+        {
+          "order": 47,
+          "title": "VII. LE VIEUX CŒUR ET LE JEUNE CŒUR EN PRÉSENCE (2/2)",
+          "sha256": "84a8e9b844cd2bb7f8b92769af808c6bc0c4844268750409524cfde749953f60"
+        },
+        {
+          "order": 48,
+          "title": "I. JEAN VALJEAN",
+          "sha256": "4ca7cc2bfe2a2a4813909293359386ff66820b4025cba3b5eb76f56337c3f090"
+        },
+        {
+          "order": 49,
+          "title": "II. MARIUS",
+          "sha256": "cd9ea930b42a40a57d15fc10acb73562614a925028e9c7ab86c44dd28b5b30e6"
+        },
+        {
+          "order": 50,
+          "title": "III. M. MABEUF",
+          "sha256": "609959c1d9f673e2a851a6e5edc358d747e99ea9bda9368f8279a5b08e025b11"
+        },
+        {
+          "order": 51,
+          "title": "I. LA SURFACE DE LA QUESTION",
+          "sha256": "bd4d893555acfdb3a55512e5fa543d67c01b1c093c958395e132fd1dff15231c"
+        },
+        {
+          "order": 52,
+          "title": "II. LE FOND DE LA QUESTION",
+          "sha256": "4873dbce469540862e2aebd10c356fcf4f889959d46f40c39147deffb879a56a"
+        },
+        {
+          "order": 53,
+          "title": "III. UN ENTERREMENT : OCCASION DE RENAÎTRE",
+          "sha256": "c46b663b856151f764caf3647e11fc4ea9c983f8b38a488ff088b0adb911a13a"
+        },
+        {
+          "order": 54,
+          "title": "IV. LES BOUILLONNEMENTS D’AUTREFOIS",
+          "sha256": "578a73acbdc82247c8164c5bfee5e6643bec73c1d1198118e0a7cdd8c173c26f"
+        },
+        {
+          "order": 55,
+          "title": "V. ORIGINALITÉ DE PARIS",
+          "sha256": "d83fd43ccd13e158e443b32c87156b67f5cac2ca088bf657e96bf886c6f03da6"
+        },
+        {
+          "order": 56,
+          "title": "I. QUELQUES ÉCLAIRCISSEMENTS SUR LES ORIGINES DE LA POÉSIE DE GAVROCHE. INFLUENCE D’UN ACADÉMICIEN SUR CETTE POÉSIE",
+          "sha256": "7071ed4d5bbae31d1c1d1ad2a9fad3c33bd55a254044a04d4e8dc579db2a60dd"
+        },
+        {
+          "order": 57,
+          "title": "II. GAVROCHE EN MARCHE",
+          "sha256": "e21a4c22cf606d98ce0a909bfebae1da5e6739725611acdcadb2020d1c5f04b1"
+        },
+        {
+          "order": 58,
+          "title": "III. JUSTE INDIGNATION D’UN PERRUQUIER",
+          "sha256": "c80a9cb2c23095d910732263a5bebc194aec823c53a2fa36e8be0de1ceff5628"
+        },
+        {
+          "order": 59,
+          "title": "IV. L’ENFANT S’ÉTONNE DU VIEILLARD",
+          "sha256": "391c5e8613d9a6c3591ecaa79cebea8ed4929cbe344b54531dfc2a575cb37f64"
+        },
+        {
+          "order": 60,
+          "title": "V. LE VIEILLARD",
+          "sha256": "2918586c4a547b9a92a52c2008dcb144c8f99f00bea628e7f814b3e2cb3a6c3e"
+        },
+        {
+          "order": 61,
+          "title": "VI. RECRUES",
+          "sha256": "4963286d80d4a37399984db718e2a2a82f85e18503800e393e015d85afa40e6d"
+        },
+        {
+          "order": 62,
+          "title": "I. HISTOIRE DE CORINTHE DEPUIS SA FONDATION",
+          "sha256": "d6cac879518dbd073ff69ab4edeef2144c4cfba1a56a557b94e1ce8f954150e6"
+        },
+        {
+          "order": 63,
+          "title": "II. GAITÉS PRÉALABLES (1/2)",
+          "sha256": "d9eb0084b61092e0716f3c10264aa01a40ee109d206fa6f12403fab4a019eb53"
+        },
+        {
+          "order": 64,
+          "title": "II. GAITÉS PRÉALABLES (2/2)",
+          "sha256": "f8d66da2c6dd9439224997b238bc3b081f6b9a72f9aceb88ac63a5c099a464e6"
+        },
+        {
+          "order": 65,
+          "title": "III. LA NUIT COMMENCE À SE FAIRE SUR GRANTAIRE",
+          "sha256": "2d31e822502858d86f4228e7b0ce36f83928824c1eb744970b45b4c102ed53ed"
+        },
+        {
+          "order": 66,
+          "title": "IV. ESSAI DE CONSOLATION SUR LA VEUVE HUCHELOUP",
+          "sha256": "dfa568f2ff4db61e22cc990c2e9194dd812f9ee7d79e718c7efd628eb8b445af"
+        },
+        {
+          "order": 67,
+          "title": "V. LES PRÉPARATIFS",
+          "sha256": "c5fee7a1ed1ed57481732373cb4c0b646f17565a2d3fa23df512aaaad87010e5"
+        },
+        {
+          "order": 68,
+          "title": "VI. EN ATTENDANT",
+          "sha256": "45b1688bdfdae6b07b6ba9140ceed8a4dd40c9eea780ccfc1e14b10eae2885c0"
+        },
+        {
+          "order": 69,
+          "title": "VII. L’HOMME RECRUTÉ RUE DES BILLETTES",
+          "sha256": "a54c141a7480fb8faf801024ce5fce2dc96cebaa781dd44be2fcc27b417ab12e"
+        },
+        {
+          "order": 70,
+          "title": "VIII. PLUSIEURS POINTS D’INTERROGATION À PROPOS D’UN NOMMÉ LE CABUC QUI NE SE NOMMAIT PEUT-ÊTRE PAS LE CABUC",
+          "sha256": "89d83cb7f281f41b4999375835eb9a3561058235f1e0a05503a7941225e40936"
+        },
+        {
+          "order": 71,
+          "title": "I. DE LA RUE PLUMET AU QUARTIER SAINT-DENIS",
+          "sha256": "3c20a0ece7e543365430729c98c7259fc1c094ade30589f57e5c90f79c1dad8e"
+        },
+        {
+          "order": 72,
+          "title": "II. PARIS À VOL DE HIBOU",
+          "sha256": "7ce3ab075c54d303cf2ba71f2ede6531bbf8496422f64eed70dd19ab638b7ff7"
+        },
+        {
+          "order": 73,
+          "title": "III. L’EXTRÊME BORD",
+          "sha256": "1b06599dbe85dcfc0a95d6ea64a29c644a7913d9f37a962679bda858300715ca"
+        },
+        {
+          "order": 74,
+          "title": "I. LE DRAPEAU. — PREMIER ACTE",
+          "sha256": "dbf41d09d8b686249501b83d005e364c8c7a059fdd31519d2894827e4e0b8f88"
+        },
+        {
+          "order": 75,
+          "title": "II. LE DRAPEAU. — DEUXIÈME ACTE",
+          "sha256": "e807bccb5e22068d61c9b3b708682ffbbb7bb6d0347bdb60c079b6f244514ff5"
+        },
+        {
+          "order": 76,
+          "title": "III. GAVROCHE AURAIT MIEUX FAIT D’ACCEPTER LA CARABINE D’ENJOLRAS",
+          "sha256": "dd2bceba43874534c895e82a4a00a1dbad669c50ed6ea729a286388414a7b262"
+        },
+        {
+          "order": 77,
+          "title": "IV. LE BARIL DE POUDRE",
+          "sha256": "707c94b0f8344ca0563f693faddbe8352e9e096619b0b83716e312a8cb7e7ce5"
+        },
+        {
+          "order": 78,
+          "title": "V. FIN DES VERS DE JEAN PROUVAIRE",
+          "sha256": "9c696ea24f66a76bc4fe029e79840f72b9fc3e08746b371ec46410eaa4e909f6"
+        },
+        {
+          "order": 79,
+          "title": "VI. L’AGONIE DE LA MORT APRÈS L’AGONIE DE LA VIE",
+          "sha256": "79aafbfb1d84cbce1d27ee51575591e306d951028538d8c843cf991cfd3f0139"
+        },
+        {
+          "order": 80,
+          "title": "VII. GAVROCHE PROFOND CALCULATEUR DES DISTANCES",
+          "sha256": "aa42d67658f081219d0d1a1770c7d736d35fb73f6ffa5391108d52cdbc596809"
+        },
+        {
+          "order": 81,
+          "title": "I. BUVARD, BAVARD",
+          "sha256": "b0956b2ce6afc8fbafbfdd30950928ae95dda84ae0ca7a07efc0ea373b626125"
+        },
+        {
+          "order": 82,
+          "title": "II. LE GAMIN ENNEMI DES LUMIÈRES",
+          "sha256": "e704a67eb3f4b2052df2ce86a61d446db77fca2b1a7bd1e7811d0c6258da53f4"
+        },
+        {
+          "order": 83,
+          "title": "III. PENDANT QUE COSETTE ET TOUSSAINT DORMENT",
+          "sha256": "9c38dffdbee76bfb57961e2647612fefcd65ec4a217fe0eff5226c5c04d73d53"
+        },
+        {
+          "order": 84,
+          "title": "IV. LES EXCÈS DE ZÈLE DE GAVROCHE",
+          "sha256": "4819e1cb40eadd83c1777c67d0a54917485ec4a09fcf18568fd9a35bf7ab4f21"
+        }
+      ]
+    },
+    "ws-fr-victor-hugo_les-miserables-5": {
+      "title": "Les Misérables, tome V : Jean Valjean",
+      "author": "Victor Hugo",
+      "level": "C1 고급",
+      "total": 73,
+      "language": "French",
+      "size": 101976,
+      "unit": "words",
+      "display": {
+        "titleKo": "레 미제라블 5부",
+        "authorKo": "빅토르 위고",
+        "binding": "pagnerre",
+        "coverTitle": "Les\nMisérables",
+        "coverAuthor": "Victor Hugo",
+        "coverPart": "Cinquième partie",
+        "coverPartTitle": "Jean Valjean",
+        "coverTome": "Tome cinquième",
+        "coverPlace": "Paris",
+        "coverImprint": "Pagnerre, libraire-éditeur",
+        "coverYear": 1862
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-fr-victor-hugo_les-miserables-5",
+        "wiki": "fr",
+        "title": "Les Misérables, tome V : Jean Valjean",
+        "author": "Victor Hugo",
+        "publishedYear": 1862,
+        "authorDeathYear": 1885,
+        "countryOfOrigin": "FR",
+        "mortPourLaFrance": false,
+        "translator": null,
+        "url": "https://fr.wikisource.org/wiki/Les_Mis%C3%A9rables",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "FR",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I. LA CHARYBDE DU FAUBOURG SAINT-ANTOINE ET LA SCYLLA DU FAUBOURG DU TEMPLE",
+          "sha256": "f0efd172350f98927e556a493fc0b48c1ed2c183cfaf9e6ce0b7f559dde6ec7f"
+        },
+        {
+          "order": 2,
+          "title": "II. QUE FAIRE DANS L’ABÎME À MOINS QUE L’ON NE CAUSE",
+          "sha256": "ec22b308eabfdd783b040093f8d539a725f9193fab283ad0b1c1e7d9557d6876"
+        },
+        {
+          "order": 3,
+          "title": "III. ÉCLAIRCISSEMENT ET ASSOMBRISSEMENT",
+          "sha256": "ac566fc2a71c270188d5a35e852f0cec43a8769affb6653d7a9228fc827cbe6b"
+        },
+        {
+          "order": 4,
+          "title": "IV. CINQ DE MOINS, UN DE PLUS",
+          "sha256": "75a988b344f7b5bfdda69956f8273d48e3910554caacb35ea05dc31365228f7e"
+        },
+        {
+          "order": 5,
+          "title": "V. QUEL HORIZON ON VOIT DU HAUT DE LA BARRICADE",
+          "sha256": "1ca3dc0991315574e9b467f0ed1d8564b9675838d19816a615aca7631c7ab63f"
+        },
+        {
+          "order": 6,
+          "title": "VI. MARIUS HAGARD, JAVERT LACONIQUE",
+          "sha256": "37683189e0748a064875caf08e309a74855de4aa153f5e80890716040a4f36ba"
+        },
+        {
+          "order": 7,
+          "title": "VII. LA SITUATION S’AGGRAVE",
+          "sha256": "b8bd48b6322113b0a7ba02f4b84d4749f973321c5cb2c52bacb34971d9b1e811"
+        },
+        {
+          "order": 8,
+          "title": "VIII. LES ARTILLEURS SE FONT PRENDRE AU SÉRIEUX",
+          "sha256": "3986b4f6c217f0d58abeca12460b783b9babca63f962ff6372a646ca0a2e6d16"
+        },
+        {
+          "order": 9,
+          "title": "IX. EMPLOI DE CE VIEUX TALENT DE BRACONNIER ET DE CE COUP DE FUSIL INFAILLIBLE QUI A INFLUÉ SUR LA CONDAMNATION DE 1796",
+          "sha256": "8f2258cf03c0c723bc5fc79fc12333a3b53e10b3bdae5a4c772b6a76687ccb4a"
+        },
+        {
+          "order": 10,
+          "title": "X. AURORE",
+          "sha256": "a25bde2f8b1b7f53f7cbb4f133f8ac37b84cf831a4a4827a604b406e31dd9dd1"
+        },
+        {
+          "order": 11,
+          "title": "XI. LE COUP DE FUSIL QUI NE MANQUE RIEN ET QUI NE TUE PERSONNE",
+          "sha256": "0397985ea92c6cf38470727ee835038901e273e11b92ec1b842e35f18e7a9133"
+        },
+        {
+          "order": 12,
+          "title": "XII. LE DÉSORDRE PARTISAN DE L’ORDRE",
+          "sha256": "ed4e75075bedbd5738fe33ea3e789ba94f955915733114dcdc5853330eaaa641"
+        },
+        {
+          "order": 13,
+          "title": "XIII. LUEURS QUI PASSENT",
+          "sha256": "0cbf1a5da17469abec1716d1c08c3ae9088773572c554e8807f1746924386819"
+        },
+        {
+          "order": 14,
+          "title": "XIV. OÙ ON LIRA LE NOM DE LA MAÎTRESSE D’ENJOLRAS",
+          "sha256": "b5cfdad01b84f2e05932e77d72a9d2cd4dc9124227fee4a3b7da6d2db610f53f"
+        },
+        {
+          "order": 15,
+          "title": "XV. GAVROCHE DEHORS",
+          "sha256": "668e0a64f73b91b57c5f30d0b012f6a17ba557d0bc0ae81821958d701c909402"
+        },
+        {
+          "order": 16,
+          "title": "XVI. COMMENT DE FRÈRE ON DEVIENT PÈRE",
+          "sha256": "10951916320a683f54ca811664aeeb2271696b31f4e977b7b66451f867957d39"
+        },
+        {
+          "order": 17,
+          "title": "XVII. MORTUUS PATER FILIUM MORITURUM EXPECTAT",
+          "sha256": "fcd4e8844bfcf3272b84d4cf078350bbe06c34fae8da5f2ffad656e4173e778c"
+        },
+        {
+          "order": 18,
+          "title": "XVIII. LE VAUTOUR DEVENU PROIE",
+          "sha256": "66a3c0f5a456f441abb87014e017a48d8ad09893a74374d33960c06d848bb621"
+        },
+        {
+          "order": 19,
+          "title": "XIX. JEAN VALJEAN SE VENGE",
+          "sha256": "65e873b4b76b902725cecb4ed6933415d5b125f6666035be499409f3a205a992"
+        },
+        {
+          "order": 20,
+          "title": "XX. LES MORTS ONT RAISON ET LES VIVANTS N’ONT PAS TORT (1/2)",
+          "sha256": "b6400fb38208c8ca90cdec549c723a973f66959e9595b339ea185a1be1d829d8"
+        },
+        {
+          "order": 21,
+          "title": "XX. LES MORTS ONT RAISON ET LES VIVANTS N’ONT PAS TORT (2/2)",
+          "sha256": "f2696238bfbe35c92eaf05ece0c0cc7c3082879ccd61c57ad9fd8cd199ead4fd"
+        },
+        {
+          "order": 22,
+          "title": "XXI. LES HÉROS",
+          "sha256": "12294c111be64cb59f4c88358089ed9944a7e369a580682f99df70e7c788b735"
+        },
+        {
+          "order": 23,
+          "title": "XXII. PIED À PIED",
+          "sha256": "7d857cb330ca325a4783b5d4fe93b8020c362433673cf6cd4d788cbd39cbbb50"
+        },
+        {
+          "order": 24,
+          "title": "XXIII. ORESTE À JEUN ET PYLADE IVRE",
+          "sha256": "617fc857060bc796cf0f8509d59f901b071578445bde66c0d85c562b3293beda"
+        },
+        {
+          "order": 25,
+          "title": "XXIV. PRISONNIER",
+          "sha256": "e67d530c222bc7a45900278aecf4fd9010e5ac9f35ce82e82490971e957e0ee8"
+        },
+        {
+          "order": 26,
+          "title": "I. LA TERRE APPAUVRIE PAR LA MER",
+          "sha256": "f36a3f7ade471dca1991010029adfde4bb2a119b8d2f41ad9eff9c961e7d076d"
+        },
+        {
+          "order": 27,
+          "title": "II. L’HISTOIRE ANCIENNE DE L’ÉGOUT",
+          "sha256": "0a0096b5d8b5a9f889d3a1310578ce0b146cf536441f6fc1854153c9e975b148"
+        },
+        {
+          "order": 28,
+          "title": "III. BRUNESEAU",
+          "sha256": "6288a7c56b34902eae9e85fd550d964a76f3ee02453ac000eaf79b4e3464dd1c"
+        },
+        {
+          "order": 29,
+          "title": "IV. DÉTAILS IGNORÉS",
+          "sha256": "6c057e574f899599373b622b2ed6ceb4227dacae92b928bffcd7808afab2f15c"
+        },
+        {
+          "order": 30,
+          "title": "V. PROGRÈS ACTUEL",
+          "sha256": "21f88939519376eae3b6b3fac75859717c6374d16df3f377dab7fa2ee6fc30e2"
+        },
+        {
+          "order": 31,
+          "title": "VI. PROGRÈS FUTUR",
+          "sha256": "e88a9bf2271102f270833a2af26924a429c7da6b6fd531e0ddf507b5165726e2"
+        },
+        {
+          "order": 32,
+          "title": "I. LE CLOAQUE ET SES SURPRISES",
+          "sha256": "de9e5c5e42567a414d2f1942ef1fc632ea14825ed695f12b1427561c2cf4664b"
+        },
+        {
+          "order": 33,
+          "title": "II. EXPLICATION",
+          "sha256": "2d82b3b96ab64bc396adbfcac99a5c446b06bb6a1eded5beda5db4d047dcf21c"
+        },
+        {
+          "order": 34,
+          "title": "III. L’HOMME FILÉ",
+          "sha256": "13aaf60eb059553cd7de0f166c983f6c63fb604dcd2b7fe9f914a3cecacd3d84"
+        },
+        {
+          "order": 35,
+          "title": "IV. LUI AUSSI PORTE SA CROIX",
+          "sha256": "b67108c753197b0106aa37c77a6238b2fedf663ff4dafb6ec6d45f737bd907fe"
+        },
+        {
+          "order": 36,
+          "title": "V. POUR LE SABLE COMME POUR LA FEMME IL Y A UNE FINESSE QUI EST PERFIDIE",
+          "sha256": "9bbba6c298fd90c77e734299c4d4d0509b258183974a5711d2653057073e12bc"
+        },
+        {
+          "order": 37,
+          "title": "VI. LE FONTIS",
+          "sha256": "a22a85cd2f115e515b25156cbf835323723f5736e0a4a272dbf424fb0a988941"
+        },
+        {
+          "order": 38,
+          "title": "VII. QUELQUEFOIS ON ÉCHOUE OÙ L’ON CROIT DÉBARQUER",
+          "sha256": "1bf9d290baad3799b967936f432582153894be4565060044791783a46882da7c"
+        },
+        {
+          "order": 39,
+          "title": "VIII. LE PAN DE L’HABIT DÉCHIRÉ",
+          "sha256": "1d62c84066a92854a28f06e02d77bb5a613fc223fc20d5d27e3f32b4420acb2f"
+        },
+        {
+          "order": 40,
+          "title": "IX. MARIUS FAIT L’EFFET D’ÊTRE MORT À QUELQU’UN QUI S’Y CONNAÎT",
+          "sha256": "b012c546f7877fa7e11076a3f02d3e6583eb9a3478884e6d91c2a1e0f31e8fe6"
+        },
+        {
+          "order": 41,
+          "title": "X. RENTRÉE DE L’ENFANT PRODIGUE DE SA VIE",
+          "sha256": "ab98ba835b3c14ca72cd2791128e8c7015272bdb8daffcf220b27adac3852880"
+        },
+        {
+          "order": 42,
+          "title": "XI. ÉBRANLEMENT DANS L’ABSOLU",
+          "sha256": "f3f5db67b76ca7e9afd16e21e0ecfcf5056ca8c3920809c727b5f41b330bfd07"
+        },
+        {
+          "order": 43,
+          "title": "XII. L’AÏEUL",
+          "sha256": "94e290fa5a5eb796a5b2e8395cb1f9593b2561970c502b09357484e423e6b3a8"
+        },
+        {
+          "order": 44,
+          "title": "I. OÙ L’ON REVOIT L’ARBRE À L’EMPLÂTRE DE ZINC",
+          "sha256": "18e92078796cdea84c57f217aab526182acca56cb8243e5b3138cce4f64b2cad"
+        },
+        {
+          "order": 45,
+          "title": "II. MARIUS, EN SORTANT DE LA GUERRE CIVILE, S’APPRÊTE À LA GUERRE DOMESTIQUE",
+          "sha256": "7ca7d5c4a61de98dc5aead3a3eee4482e2978781e19a9b2bc22a43f29c8fcc96"
+        },
+        {
+          "order": 46,
+          "title": "III. MARIUS ATTAQUE",
+          "sha256": "4507858f97a801ade9588db8477abff96fab114075c1fe38cc44e91af78b1f78"
+        },
+        {
+          "order": 47,
+          "title": "IV. MADEMOISELLE GILLENORMAND FINIT PAR NE PLUS TROUVER MAUVAIS QUE M. FAUCHELEVENT SOIT ENTRÉ AVEC QUELQUE CHOSE SOUS LE BRAS",
+          "sha256": "31b07f1fa7a82f49f98ad38b7b5a059522148a1eeb2e7740f1f1774336b5d75d"
+        },
+        {
+          "order": 48,
+          "title": "V. DÉPOSEZ PLUTÔT VOTRE ARGENT DANS TELLE FORÊT QUE CHEZ TEL NOTAIRE",
+          "sha256": "916e600c80eb5731d408fe7e646743eb1dcf991485568be3292bb16e054115e7"
+        },
+        {
+          "order": 49,
+          "title": "VI. LES DEUX VIEILLARDS FONT TOUT, CHACUN À LEUR FAÇON, POUR QUE COSETTE SOIT HEUREUSE",
+          "sha256": "89ab4756b68054cdf17b98b631421178426c925a88b8520a8f3fd3f619336e7d"
+        },
+        {
+          "order": 50,
+          "title": "VII. LES EFFETS DE RÊVE MÊLÉS AU BONHEUR",
+          "sha256": "d844cfcd462e60d63df56e54a6633f7d812a5dcdcf292d93a7ff7a4d417472c4"
+        },
+        {
+          "order": 51,
+          "title": "VIII. DEUX HOMMES IMPOSSIBLES À RETROUVER",
+          "sha256": "54299054867ef20b72f5d4d6cd9ffd694f09a356b1a01e0c0342875c2a009e3b"
+        },
+        {
+          "order": 52,
+          "title": "I. LE 16 FÉVRIER 1833",
+          "sha256": "b05dd7fe04b5cf5c00d516fe2094942c8ba7dfa87e5e57d278bb12fbeafd56e6"
+        },
+        {
+          "order": 53,
+          "title": "II. JEAN VALJEAN A TOUJOURS SON BRAS EN ÉCHARPE (1/2)",
+          "sha256": "28c4a0443aab49e5e5977743393599a75b7fcd7010fcbbe74e12289211736439"
+        },
+        {
+          "order": 54,
+          "title": "II. JEAN VALJEAN A TOUJOURS SON BRAS EN ÉCHARPE (2/2)",
+          "sha256": "6e183b45384891d9fe40af1c55d55348890d16c51af9332e55c192ce5676eb70"
+        },
+        {
+          "order": 55,
+          "title": "III. L’INSÉPARABLE",
+          "sha256": "17baae475f36c917222cfbec5e37dc6361068c41d04d8396ae0bb72dc4569133"
+        },
+        {
+          "order": 56,
+          "title": "IV. IMMORTALE JECUR",
+          "sha256": "8b895806c38d1a7d3dad992d687831a98f545d7a9ddbd4fba778bf76e063d1b3"
+        },
+        {
+          "order": 57,
+          "title": "I. LE SEPTIÈME CERCLE ET LE HUITIÈME CIEL (1/3)",
+          "sha256": "1d54caa0a2144da312771a92e19dc278010fab4deaee853501fd5694df9bc4fc"
+        },
+        {
+          "order": 58,
+          "title": "I. LE SEPTIÈME CERCLE ET LE HUITIÈME CIEL (2/3)",
+          "sha256": "16ae93cebebcc93fce2d5419aa323a17802d73290b7f3e550c1658da199e1b1b"
+        },
+        {
+          "order": 59,
+          "title": "I. LE SEPTIÈME CERCLE ET LE HUITIÈME CIEL (3/3)",
+          "sha256": "4ae340151f6584a18f349fc02e573bc7b1f992a9c3f16e54c6d93a751b9b8f75"
+        },
+        {
+          "order": 60,
+          "title": "II. LES OBSCURITÉS QUE PEUT CONTENIR UNE RÉVÉLATION",
+          "sha256": "addeb1e233bf9b8d4da4ffcbf0ef329a1a28318b18cbec540ed2633424542d41"
+        },
+        {
+          "order": 61,
+          "title": "I. LA CHAMBRE D’EN BAS",
+          "sha256": "23866e5f98aa8ac0d2c89f43e5c315af9493c4799ccb18a1f7c0c64fbca136f0"
+        },
+        {
+          "order": 62,
+          "title": "II. AUTRE PAS EN ARRIÈRE",
+          "sha256": "5ff87bd931aada33bf39b5cb2e5445b4aba4a084a9a6ea32e10019d400181c26"
+        },
+        {
+          "order": 63,
+          "title": "III. ILS SE SOUVIENNENT DU JARDIN DE LA RUE PLUMET",
+          "sha256": "a04d9dcb3312ab72318bc5d98489869787a51faca739d19f4ccef99b97e5ba34"
+        },
+        {
+          "order": 64,
+          "title": "IV. L’ATTRACTION ET L’EXTINCTION",
+          "sha256": "94159c14c3fd5f058c4c75c1f9a5d9b82b736ce21ae7e47c43bb687a1f94e638"
+        },
+        {
+          "order": 65,
+          "title": "I. PITIÉ POUR LES MALHEUREUX, MAIS INDULGENCE POUR LES HEUREUX",
+          "sha256": "c2aaf256f9e59af06c83e30be232f1734a6dd10627bccc082c9c6bea1a33f49c"
+        },
+        {
+          "order": 66,
+          "title": "II. DERNIÈRES PALPITATIONS DE LA LAMPE SANS HUILE",
+          "sha256": "8c900be16938367f6b04a08b6cb989a8ae09af15a409b371472b5c989cbf1470"
+        },
+        {
+          "order": 67,
+          "title": "III. UNE PLUME PÈSE À QUI SOULEVAIT LA CHARRETTE FAUCHELEVENT",
+          "sha256": "7a9b65f516a1a6d14dd4c972f8e0d92f2ab71d838bc814105c116557dd764bcc"
+        },
+        {
+          "order": 68,
+          "title": "IV. BOUTEILLE D’ENCRE QUI NE RÉUSSIT QU’À BLANCHIR (1/3)",
+          "sha256": "bcd9a86152ac03026fd6694d5e09723e02ae0ea1b7f2055a89d4469724f53fc9"
+        },
+        {
+          "order": 69,
+          "title": "IV. BOUTEILLE D’ENCRE QUI NE RÉUSSIT QU’À BLANCHIR (2/3)",
+          "sha256": "544f2989fb551dd932cf03998e3150254538d8aa78761935d26f525bad27d44f"
+        },
+        {
+          "order": 70,
+          "title": "IV. BOUTEILLE D’ENCRE QUI NE RÉUSSIT QU’À BLANCHIR (3/3)",
+          "sha256": "b67ef649ecf3bee8eb2c60b698c2c506a2f69336e78bc31a0952a379530f1bc7"
+        },
+        {
+          "order": 71,
+          "title": "V. NUIT DERRIÈRE LAQUELLE IL Y A LE JOUR (1/2)",
+          "sha256": "00f8211a2d557ca88d00168520b868f9f5107c5cf4308d14841b503079176812"
+        },
+        {
+          "order": 72,
+          "title": "V. NUIT DERRIÈRE LAQUELLE IL Y A LE JOUR (2/2)",
+          "sha256": "6222be17ea2f8bb555d65c3222e54a829193968ad94495ec5b3a829c8217020b"
+        },
+        {
+          "order": 73,
+          "title": "VI. L’HERBE CACHE ET LA PLUIE EFFACE",
+          "sha256": "1e3c0f9e7ec4cf3ba8274e1dd8b8aeb7152cecfd36cdf3cd6905d0e0fa6f1d02"
+        }
+      ]
+    },
+    "ws-ko-choe-nam-seon_gimi-dongnip-seoneonseo": {
+      "title": "宣言書",
+      "author": "崔南善",
+      "level": "고급",
+      "total": 1,
+      "language": "Korean",
+      "size": 1965,
+      "unit": "chars",
+      "display": {
+        "titleKo": "기미독립선언서",
+        "authorKo": "최남선 기초 · 민족 대표 33인",
+        "binding": "boseongsa-1919",
+        "coverTitle": "宣言書"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-ko-choe-nam-seon_gimi-dongnip-seoneonseo",
+        "wiki": "ko",
+        "title": "宣言書",
+        "author": "崔南善",
+        "publishedYear": 1919,
+        "authorDeathYear": 1957,
+        "countryOfOrigin": "KR",
+        "translator": null,
+        "url": "https://ko.wikisource.org/wiki/3%C2%B71%EB%8F%85%EB%A6%BD%EC%84%A0%EC%96%B8%EC%84%9C",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "宣言書",
+          "sha256": "213a8f60149c6c38128fa147d31e8f222dae76921a11e33c869a9327403d3f72"
+        }
+      ]
+    },
+    "ws-ko-hyeon-jin-geon_unsu-joeun-nal": {
+      "title": "운수 좋은 날",
+      "author": "현진건",
+      "level": "고급",
+      "total": 3,
+      "language": "Korean",
+      "size": 7654,
+      "unit": "chars",
+      "display": {
+        "titleKo": "운수 좋은 날",
+        "authorKo": "현진건",
+        "binding": "gaebyeok",
+        "coverTitle": "운수 좋은 날",
+        "coverAuthor": "玄鎭健",
+        "coverImprint": "開闢",
+        "coverEdition": "第四十八號"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-ko-hyeon-jin-geon_unsu-joeun-nal",
+        "wiki": "ko",
+        "title": "운수 좋은 날",
+        "author": "현진건",
+        "publishedYear": 1924,
+        "authorDeathYear": 1943,
+        "countryOfOrigin": "KR",
+        "translator": null,
+        "url": "https://ko.wikisource.org/wiki/%EC%9A%B4%EC%88%98_%EC%A2%8B%EC%9D%80_%EB%82%A0",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "운수 좋은 날 (1/3)",
+          "sha256": "fb7b0e71688c0de133890513e1822fe1c912c4318692081b9886c2d8b80a8c45"
+        },
+        {
+          "order": 2,
+          "title": "운수 좋은 날 (2/3)",
+          "sha256": "028177e324ac9911e7d9c2b6efa788c47e57ad7bb8f1164c789244edd4a8f5df"
+        },
+        {
+          "order": 3,
+          "title": "운수 좋은 날 (3/3)",
+          "sha256": "ea165abc1757ea4ae8a45f4cd2a0a41ee9ba364bdbecc76a0531f7f9905a4699"
+        }
+      ]
+    },
+    "ws-ko-kim-dong-in_gamja": {
+      "title": "감자",
+      "author": "김동인",
+      "level": "고급",
+      "total": 2,
+      "language": "Korean",
+      "size": 4643,
+      "unit": "chars",
+      "display": {
+        "titleKo": "감자",
+        "authorKo": "김동인",
+        "binding": "gamja",
+        "coverTitle": "감자",
+        "coverAuthor": "金東仁 作",
+        "coverSubtitle": "短篇小說集"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-ko-kim-dong-in_gamja",
+        "wiki": "ko",
+        "title": "감자",
+        "author": "김동인",
+        "publishedYear": 1925,
+        "authorDeathYear": 1951,
+        "countryOfOrigin": "KR",
+        "translator": null,
+        "url": "https://ko.wikisource.org/wiki/%EA%B0%90%EC%9E%90",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "감자 (1/2)",
+          "sha256": "a1d00abb6b046df9b2945eb8137fec158c331668e9d4ed4eb582712a5f9746c9"
+        },
+        {
+          "order": 2,
+          "title": "감자 (2/2)",
+          "sha256": "2efcac444177768bc751b71ce41c8b3cac5d7a71bd5a49d3302395765d74744d"
+        }
+      ]
+    },
+    "ws-ko-kim-so-wol_jindallaekkot": {
+      "title": "진달래꽃",
+      "author": "김소월",
+      "level": "고급",
+      "total": 6,
+      "language": "Korean",
+      "size": 18218,
+      "unit": "chars",
+      "display": {
+        "titleKo": "진달래꽃",
+        "authorKo": "김소월",
+        "binding": "jindallae",
+        "coverTitle": "진달내ᄭᅩᆺ",
+        "coverSubtitle": "金素月詩集",
+        "coverEdition": "—1925—"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-ko-kim-so-wol_jindallaekkot",
+        "wiki": "ko",
+        "title": "진달래꽃",
+        "author": "김소월",
+        "publishedYear": 1925,
+        "authorDeathYear": 1934,
+        "countryOfOrigin": "KR",
+        "translator": null,
+        "url": "https://ko.wikisource.org/wiki/%EC%A7%84%EB%8B%AC%EB%9E%98%EA%BD%83_(%EC%8B%9C%EC%A7%91)",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "먼 후일 외 21편",
+          "sha256": "48dbd5866173e399296e55fcfbe1ca76045d2b41501d6f84f593f485a4a9dfe6"
+        },
+        {
+          "order": 2,
+          "title": "꿈 1 외 24편",
+          "sha256": "e9987adb5a84b668039c33b560c6476c8ae932f63b7f1d1a21d990b6e4d33f07"
+        },
+        {
+          "order": 3,
+          "title": "가을 저녁에 외 29편",
+          "sha256": "870409958560ab758a05ac75211f94c5bb157e054706910c8eb61dc9526d6d0f"
+        },
+        {
+          "order": 4,
+          "title": "여름의 달밤 외 11편",
+          "sha256": "9adb86d773011601b5ae5de6c45a4a85f80b4fb17b8bd69223c613bb59221287"
+        },
+        {
+          "order": 5,
+          "title": "열락 외 16편",
+          "sha256": "55c9437e510eb5101757d33da10862aab3516d295021e00a01aadc9407c9dae7"
+        },
+        {
+          "order": 6,
+          "title": "춘향과 이도령 외 19편",
+          "sha256": "4fb710a5bb9fbd9c8f5c3e8ea98b8a780a4f934a33739816cc51687c3403c466"
+        }
+      ]
+    },
+    "ws-ko-kim-yu-jeong_bombom": {
+      "title": "봄봄",
+      "author": "김유정",
+      "level": "중급",
+      "total": 3,
+      "language": "Korean",
+      "size": 8297,
+      "unit": "chars",
+      "display": {
+        "titleKo": "봄봄",
+        "authorKo": "김유정",
+        "binding": "tpl-cjk-vertical",
+        "coverTitle": "봄봄",
+        "coverAuthor": "김유정",
+        "coverPalette": "cream"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-ko-kim-yu-jeong_bombom",
+        "wiki": "ko",
+        "title": "봄봄",
+        "author": "김유정",
+        "publishedYear": 1935,
+        "authorDeathYear": 1937,
+        "countryOfOrigin": "KR",
+        "translator": null,
+        "url": "https://ko.wikisource.org/wiki/%EB%B4%84%EB%B4%84",
+        "fetchedAt": "2026-10-17",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "봄봄 (1/3)",
+          "sha256": "3d16b7184be13dd73e6eeda5362d5ef25f37aad4accafc5a287505327248530a"
+        },
+        {
+          "order": 2,
+          "title": "봄봄 (2/3)",
+          "sha256": "89df9fde5fa8e1ea7edac92dc241a77d56b8de8c3e004778915ccdac289b6e17"
+        },
+        {
+          "order": 3,
+          "title": "봄봄 (3/3)",
+          "sha256": "18380f9b95cbe495c510b2659900d11cd4d10aa08a9d42862cebf818c171606e"
+        }
+      ]
+    },
+    "ws-ko-kim-yu-jeong_dongbaekkkot": {
+      "title": "동백꽃",
+      "author": "김유정",
+      "level": "고급",
+      "total": 2,
+      "language": "Korean",
+      "size": 5102,
+      "unit": "chars",
+      "display": {
+        "titleKo": "동백꽃",
+        "authorKo": "김유정",
+        "binding": "dongbaek",
+        "coverTitle": "동백꽃"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-ko-kim-yu-jeong_dongbaekkkot",
+        "wiki": "ko",
+        "title": "동백꽃",
+        "author": "김유정",
+        "publishedYear": 1936,
+        "authorDeathYear": 1937,
+        "countryOfOrigin": "KR",
+        "translator": null,
+        "url": "https://ko.wikisource.org/wiki/%EB%8F%99%EB%B0%B1%EA%BD%83",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "동백꽃 (1/2)",
+          "sha256": "8e8e86b490aab5acfe33dab338fe77f8b550d0120501ddc125cdc45263680ca1"
+        },
+        {
+          "order": 2,
+          "title": "동백꽃 (2/2)",
+          "sha256": "b5fceb3b86f3bfeff0331ca3d09836107b9afbaf0f2b1c57b80805e9d48cf112"
+        }
+      ]
+    },
+    "ws-ko-samil-centennial_swipgo-bareuge-ingneun-dongnip-seoneonseo": {
+      "title": "쉽고 바르게 읽는 3.1독립선언서",
+      "author": "3·1운동 및 대한민국임시정부 수립 100주년 기념사업 추진위원회",
+      "level": "중급",
+      "total": 1,
+      "language": "Korean",
+      "size": 2138,
+      "unit": "chars",
+      "display": {
+        "titleKo": "쉽고 바르게 읽는 3·1독립선언서",
+        "authorKo": "3·1운동·임시정부 100주년 기념사업 추진위원회",
+        "binding": "boseongsa-1919",
+        "coverTitle": "宣言書"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-ko-samil-centennial_swipgo-bareuge-ingneun-dongnip-seoneonseo",
+        "wiki": "ko",
+        "title": "쉽고 바르게 읽는 3.1독립선언서",
+        "author": "3·1운동 및 대한민국임시정부 수립 100주년 기념사업 추진위원회",
+        "publishedYear": 2019,
+        "authorDeathYear": null,
+        "countryOfOrigin": "KR",
+        "translator": null,
+        "url": "https://ko.wikisource.org/wiki/3%C2%B71%EB%8F%85%EB%A6%BD%EC%84%A0%EC%96%B8%EC%84%9C",
+        "fetchedAt": "2026-10-17",
+        "license": "KOGL-1",
+        "rights": {
+          "status": "approved",
+          "basis": "kogl-type1",
+          "holder": "3·1운동 및 대한민국임시정부 수립 100주년 기념사업 추진위원회",
+          "reviewedJurisdictions": [
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "쉽고 바르게 읽는 3.1독립선언서",
+          "sha256": "1b1b524dcefca8e28f410fa0c81decf81ae5f60bfc6fba0ea533101ba3f541b0"
+        }
+      ]
+    },
+    "ws-ko-yi-hyo-seok_memilkkot-pil-muryeop": {
+      "title": "메밀꽃 필 무렵",
+      "author": "이효석",
+      "level": "고급",
+      "total": 2,
+      "language": "Korean",
+      "size": 6210,
+      "unit": "chars",
+      "display": {
+        "titleKo": "메밀꽃 필 무렵",
+        "authorKo": "이효석",
+        "binding": "bakmun",
+        "coverTitle": "메밀꽃 필 무렵",
+        "coverAuthor": "李孝石",
+        "coverImprint": "博文書館",
+        "coverEdition": "博文文庫"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-ko-yi-hyo-seok_memilkkot-pil-muryeop",
+        "wiki": "ko",
+        "title": "메밀꽃 필 무렵",
+        "author": "이효석",
+        "publishedYear": 1936,
+        "authorDeathYear": 1942,
+        "countryOfOrigin": "KR",
+        "translator": null,
+        "url": "https://ko.wikisource.org/wiki/%EB%A9%94%EB%B0%80%EA%BD%83_%ED%95%84_%EB%AC%B4%EB%A0%B5",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "메밀꽃 필 무렵 (1/2)",
+          "sha256": "ed999c0cdc53a352ba4b407e8fcc9919b3c325315bf46da677f9055f78a03056"
+        },
+        {
+          "order": 2,
+          "title": "메밀꽃 필 무렵 (2/2)",
+          "sha256": "983c94f63a6742d1dcb5a3cbadda2229c5a8f1b81a0b65947f01335de9cf8940"
+        }
+      ]
+    },
+    "ws-ko-yi-sang_nalgae": {
+      "title": "날개",
+      "author": "이상",
+      "level": "고급",
+      "total": 5,
+      "language": "Korean",
+      "size": 16481,
+      "unit": "chars",
+      "display": {
+        "titleKo": "날개",
+        "authorKo": "이상",
+        "binding": "isang",
+        "coverTitle": "李箱選集"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-ko-yi-sang_nalgae",
+        "wiki": "ko",
+        "title": "날개",
+        "author": "이상",
+        "publishedYear": 1936,
+        "authorDeathYear": 1937,
+        "countryOfOrigin": "KR",
+        "translator": null,
+        "url": "https://ko.wikisource.org/wiki/%EB%82%A0%EA%B0%9C",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "날개 (1/5)",
+          "sha256": "ffda2e03f3a0a7041ded4e269d5552b7fe44a9629ac83d81cfc6cc92100b3485"
+        },
+        {
+          "order": 2,
+          "title": "날개 (2/5)",
+          "sha256": "47a7202d8152ac3449623d2d2d03c3ec14ec3f721d4f2ad6a96e65f451f4a5a7"
+        },
+        {
+          "order": 3,
+          "title": "날개 (3/5)",
+          "sha256": "02ae4c9f912f03a00b69e67b5f97862cd8483df8909fc10be4abae08e1f3d1d8"
+        },
+        {
+          "order": 4,
+          "title": "날개 (4/5)",
+          "sha256": "f9718f26e3b783dcd709f9bea94ff7dc1b0e57d9ad17cf5b945b94dca0ca0932"
+        },
+        {
+          "order": 5,
+          "title": "날개 (5/5)",
+          "sha256": "310a5595f67db46a6f858c1e9a063b1c21e81f28d880c88703c81b0eaff571e0"
+        }
+      ]
+    },
+    "ws-ko-yun-dong-ju_haneulgwa-baramgwa-byeolgwa-si": {
+      "title": "하늘과 바람과 별과 시",
+      "author": "윤동주",
+      "level": "고급",
+      "total": 7,
+      "language": "Korean",
+      "size": 19557,
+      "unit": "chars",
+      "display": {
+        "titleKo": "하늘과 바람과 별과 시",
+        "authorKo": "윤동주",
+        "binding": "jeongeum-1948",
+        "coverTitle": "하늘과 바람과 별과 詩",
+        "coverAuthor": "尹東柱",
+        "coverSubtitle": "遺稿集"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-ko-yun-dong-ju_haneulgwa-baramgwa-byeolgwa-si",
+        "wiki": "ko",
+        "title": "하늘과 바람과 별과 시",
+        "author": "윤동주",
+        "publishedYear": 1955,
+        "authorDeathYear": 1945,
+        "countryOfOrigin": "KR",
+        "translator": null,
+        "url": "https://ko.wikisource.org/wiki/%ED%95%98%EB%8A%98%EA%B3%BC_%EB%B0%94%EB%9E%8C%EA%B3%BC_%EB%B3%84%EA%B3%BC_%EC%8B%9C_(1955%EB%85%84)",
+        "fetchedAt": "2026-10-17",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "서시 외 16편",
+          "sha256": "f1eeaa099d381521be71cb030e3496eeb0ee9c5b888d91d7f7bdca5765b02f21"
+        },
+        {
+          "order": 2,
+          "title": "길 외 13편",
+          "sha256": "8ff51b1337b9a3b48310d40ab96254d122dbbe5dfae6dbcc1b5a167b593c6d49"
+        },
+        {
+          "order": 3,
+          "title": "아우의 인상화 외 20편",
+          "sha256": "3116076d1ed97f6e31e76f1232b6a21c77e9aeb1626b41ce62390d4858563e0b"
+        },
+        {
+          "order": 4,
+          "title": "산림 외 24편",
+          "sha256": "bb00ffb2b2d775eb9f1a533e51d4d5e32073e6312f48fa3afd7cbb60e5282607"
+        },
+        {
+          "order": 5,
+          "title": "편지 외 12편",
+          "sha256": "142f4802ea0fbfa1a4733eceaf5f1577bc715610e9fcfec6eb74bf715649b232"
+        },
+        {
+          "order": 6,
+          "title": "별똥 떨어진데 외 1편",
+          "sha256": "ab4fa78432db81a01b0df7ae980d9b10fe6a3d462459d7291c2b1b66252ef941"
+        },
+        {
+          "order": 7,
+          "title": "종시",
+          "sha256": "d1060db3960636d019a47b5da02db0cdceeb82ba707508ebb90a738349245750"
+        }
+      ]
+    },
+    "ws-zh-lu-xun_gu-xiang": {
+      "title": "故乡",
+      "author": "鲁迅",
+      "level": "H5 고급",
+      "total": 2,
+      "language": "Chinese",
+      "size": 4976,
+      "unit": "chars",
+      "display": {
+        "titleKo": "고향",
+        "authorKo": "루쉰",
+        "binding": "nahan",
+        "coverTitle": "故乡",
+        "coverAuthor": "鲁迅"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-zh-lu-xun_gu-xiang",
+        "wiki": "zh",
+        "title": "故乡",
+        "author": "鲁迅",
+        "publishedYear": 1921,
+        "authorDeathYear": 1936,
+        "countryOfOrigin": "CN",
+        "translator": null,
+        "url": "https://zh.wikisource.org/wiki/%E6%95%85%E9%84%89",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "CN",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "script": "zh-hans",
+        "scriptVariants": [
+          "zh-hant"
+        ],
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted",
+          "script-variant-by-wikisource"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "故乡 (1/2)",
+          "sha256": "d0443385abbbd6c61b5fffe8d0bb35794d6f4ca4d5ab9615cfc0feebb82542a2",
+          "variants": {
+            "zh-hant": "5c7aedcacb01d0027c96a88fb3d7e95f75f7d325f4c5e685aca0c390507cb083"
+          }
+        },
+        {
+          "order": 2,
+          "title": "故乡 (2/2)",
+          "sha256": "2092f616751e89bf7cc930e6786a7a098ec319bfd816686282492524e4458c18",
+          "variants": {
+            "zh-hant": "05eadd8ad33ffc3b408f00be47c1971fae41927eae70a7f6bb32ddd67077ae28"
+          }
+        }
+      ]
+    },
+    "ws-zh-lu-xun_kong-yi-ji": {
+      "title": "孔乙己",
+      "author": "鲁迅",
+      "level": "H5 고급",
+      "total": 1,
+      "language": "Chinese",
+      "size": 2611,
+      "unit": "chars",
+      "display": {
+        "titleKo": "쿵이지",
+        "authorKo": "루쉰",
+        "binding": "nahan",
+        "coverTitle": "孔乙己",
+        "coverAuthor": "鲁迅"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-zh-lu-xun_kong-yi-ji",
+        "wiki": "zh",
+        "title": "孔乙己",
+        "author": "鲁迅",
+        "publishedYear": 1919,
+        "authorDeathYear": 1936,
+        "countryOfOrigin": "CN",
+        "translator": null,
+        "url": "https://zh.wikisource.org/wiki/%E5%AD%94%E4%B9%99%E5%B7%B1",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "CN",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "script": "zh-hans",
+        "scriptVariants": [
+          "zh-hant"
+        ],
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted",
+          "script-variant-by-wikisource"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "孔乙己",
+          "sha256": "d93c6d35a1c60e7a6a1648700f209ee7059fa2f73ac82d79aa3f26e5c3e6d1cc",
+          "variants": {
+            "zh-hant": "b14148414b8fa91dba0b0d8fb2ec2d7a7d71c7e4a193503976c648a1145d7c86"
+          }
+        }
+      ]
+    },
+    "ws-zh-lu-xun_zhu-fu": {
+      "title": "祝福",
+      "author": "鲁迅",
+      "level": "H5 고급",
+      "total": 4,
+      "language": "Chinese",
+      "size": 9182,
+      "unit": "chars",
+      "display": {
+        "titleKo": "축복",
+        "authorKo": "루쉰",
+        "binding": "tpl-cjk-vertical",
+        "coverTitle": "祝福",
+        "coverAuthor": "鲁迅",
+        "coverPalette": "grey"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-zh-lu-xun_zhu-fu",
+        "wiki": "zh",
+        "title": "祝福",
+        "author": "鲁迅",
+        "publishedYear": 1924,
+        "authorDeathYear": 1936,
+        "countryOfOrigin": "CN",
+        "translator": null,
+        "url": "https://zh.wikisource.org/wiki/%E7%A5%9D%E7%A6%8F",
+        "fetchedAt": "2026-10-17",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "CN",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "script": "zh-hans",
+        "scriptVariants": [
+          "zh-hant"
+        ],
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted",
+          "script-variant-by-wikisource"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "祝福 (1/4)",
+          "sha256": "305eb6dd605dd5d2a19e5f63695d26a54140e3f05f86185cd561f86814d41efe",
+          "variants": {
+            "zh-hant": "5111faf98305f2afff966ac984bee328ec49d96e41c2d37a4eef3caefd7ad360"
+          }
+        },
+        {
+          "order": 2,
+          "title": "祝福 (2/4)",
+          "sha256": "2c9c59d7828158769866e6a7d44cca8b02d1d383a901a5fb93ca84630ca43028",
+          "variants": {
+            "zh-hant": "751b4348b2790647fbfecdd5976d7ab73c002b7c5060c568e196aa019386ab59"
+          }
+        },
+        {
+          "order": 3,
+          "title": "祝福 (3/4)",
+          "sha256": "3f6c3eabfc3242fc55485895e27b9fac59650a1b8bd5f4387315aa775174a7cf",
+          "variants": {
+            "zh-hant": "820d2f5f3012bc710a4ed610c1316e40ea8e9af65554c3fc5b9d329f0d96bcc9"
+          }
+        },
+        {
+          "order": 4,
+          "title": "祝福 (4/4)",
+          "sha256": "2596c1d16ae7a124e9d8d1d8179c7d72e1aeffd5c4a7efa86be80301b03ad4ec",
+          "variants": {
+            "zh-hant": "f1ddd324b9ab918637a6d4bd4f88e99e60f4bc765fd8da97cb6e3ad9d44ff4d5"
+          }
+        }
+      ]
+    },
+    "ws-zh-zhu-ziqing_bei-ying": {
+      "title": "背影",
+      "author": "朱自清",
+      "level": "H4 상급",
+      "total": 1,
+      "language": "Chinese",
+      "size": 1329,
+      "unit": "chars",
+      "display": {
+        "titleKo": "아버지의 뒷모습",
+        "authorKo": "주쯔칭",
+        "binding": "kaiming",
+        "coverTitle": "背影",
+        "coverAuthor": "朱自清",
+        "coverImprint": "开明书店"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "wikisource",
+        "workKey": "ws-zh-zhu-ziqing_bei-ying",
+        "wiki": "zh",
+        "title": "背影",
+        "author": "朱自清",
+        "publishedYear": 1925,
+        "authorDeathYear": 1948,
+        "countryOfOrigin": "CN",
+        "translator": null,
+        "url": "https://zh.wikisource.org/wiki/%E8%83%8C%E5%BD%B1",
+        "fetchedAt": "2026-10-16",
+        "license": "CC-BY-SA-4.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedJurisdictions": [
+            "CN",
+            "KR"
+          ],
+          "reviewer": "claude",
+          "reviewedAt": "2026-10-17"
+        },
+        "script": "zh-hans",
+        "scriptVariants": [
+          "zh-hant"
+        ],
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted",
+          "script-variant-by-wikisource"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "背影",
+          "sha256": "6f691e371502b4c8f1daacf998476f4e0fcc8e67ac81677ae64bbe9a8ada6e66",
+          "variants": {
+            "zh-hant": "943ec3c308ab1aa7e278c64a317a5cbb3ecba76898ca60ce5d98a2dd71de234a"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1444,7 +1444,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
    (실측 390×900: 카드가 화면 아래 절반에서 시작, 세 번째 보기는 잘림).
    세션 중에는 페이지 크롬을 걷어내고 진행·나가기만 남긴다. */
 body.is-review-session .mobile-nav { display: none; }
-body.is-review-session .page-container { padding-top: 8px; }
+/* 위 여백은 끝 화면까지(is-review-chrome = 세션 + 끝 화면) — 끝으로 넘어가며 본문이 내려앉지 않게(VOCAB-FLOW-001 A). */
+body.is-review-chrome .page-container { padding-top: 8px; }
 
 .review-topbar {
   display: flex; align-items: center; gap: 12px;
@@ -2994,6 +2995,22 @@ a.viewer-badge:hover {
 @keyframes pace-drain {
   from { transform: scaleX(1); }
   to   { transform: scaleX(0); }
+}
+/* ── 듣기 따라가기 밑줄(뷰어 감사 목업 6 · 1단계, 2026-10-17 KST) ──
+   읽는 문장의 토큰 아래 은은한 선 — 고른 문장 띠(--picked)와 구별되고 문장 지정 막대(.line-pick)를 띄우지 않는다.
+   체류 선과 같은 자리 · 색(--pace-line)이지만 줄지 않는다. 체류 선(.word-token::after)은 스크롤 보기 전용이고 따라가기는
+   쪽 넘김 보기 전용이라 같은 의사 요소를 함께 쓰는 순간이 없다. */
+.word-token--listening { position: relative; }
+.word-token--listening::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--hl-band-top) + var(--hl-band-h) + 0.05em);
+  height: 2px;
+  border-radius: 1px;
+  background: var(--pace-line);
+  pointer-events: none;
 }
 .reader-area--pacing .word-token--picked { position: relative; }
 .reader-area--pacing .word-token--picked::after {
@@ -7525,6 +7542,10 @@ a.viewer-badge:hover {
 .study-sent--tap { cursor: pointer; }
 
 /* ── 세션 진행 막대 · 문항 전환 ── */
+/* 오프라인 동안만 진행 막대 아래 한 줄(STUDY-OFFLINE-LINE) — 헤더 줄 아래 여백(20px) 안에 붙인다. */
+/* 문항 머리(STUDY-FOCUS-001) — 새 문항마다 초점이 오는 질문/제목(tabIndex −1). 누를 곳이 아니라 읽을 곳이라 고리를 그리지 않는다. */
+.study-item [data-item-head]:focus, .study-item [data-item-head]:focus-visible { outline: none; }
+.study-offline-line { margin: -12px 0 16px; font-size: 0.8125rem; color: var(--text-muted); }
 .study-progress {
   flex: 1; height: 10px; overflow: hidden;
   border-radius: var(--radius-full); background: var(--bg-secondary);

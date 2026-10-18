@@ -1,6 +1,1088 @@
 {
   "schemaVersion": 1,
   "works": {
+    "se-adam-smith_the-theory-of-moral-sentiments": {
+      "title": "The Theory of Moral Sentiments",
+      "author": "Adam Smith",
+      "level": "C1 고급",
+      "total": 86,
+      "words": 159744,
+      "display": {
+        "titleKo": "도덕감정론",
+        "authorKo": "애덤 스미스",
+        "binding": "millar-1759",
+        "coverTitle": "The\nTheory\nof\nMoral Sentiments.",
+        "coverAuthor": "By Adam Smith,",
+        "coverSubtitle": "PROFESSOR of MORAL PHILOSOPHY",
+        "coverPlace": "London:",
+        "coverImprint": "Printed for A. MILLAR",
+        "coverYear": 1759
+      },
+      "literature": {
+        "publishedYear": 1759
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: Of Sympathy"
+        },
+        {
+          "order": 2,
+          "title": "II: Of the Pleasure of Mutual Sympathy"
+        },
+        {
+          "order": 3,
+          "title": "III: Of the Manner in Which We Judge of the Propriety or Impropriety of the Affections of Other Men, by Their Concord or Dissonance with Our Own"
+        },
+        {
+          "order": 4,
+          "title": "IV: The Same Subject Continued"
+        },
+        {
+          "order": 5,
+          "title": "V: Of the Amiable and Respectable Virtues"
+        },
+        {
+          "order": 6,
+          "title": "Section II: Of the Degrees of the Different Passions Which Are Consistent with Propriety"
+        },
+        {
+          "order": 7,
+          "title": "I: Of the Passions Which Take Their Origin from the Body"
+        },
+        {
+          "order": 8,
+          "title": "II: Of Those Passions Which Take Their Origin from a Particular Turn or Habit of the Imagination"
+        },
+        {
+          "order": 9,
+          "title": "III: Of the Unsocial Passions"
+        },
+        {
+          "order": 10,
+          "title": "IV: Of the Social Passions"
+        },
+        {
+          "order": 11,
+          "title": "V: Of the Selfish Passions"
+        },
+        {
+          "order": 12,
+          "title": "I: That Though Our Sympathy with Sorrow Is Generally a More Lively Sensation Than Our Sympathy with Joy, It Commonly Falls Much More Short of the Violence of What Is Naturally Felt by the Person Principally Concerned"
+        },
+        {
+          "order": 13,
+          "title": "II: Of the Origin of Ambition, and of the Distinction of Ranks (1/2)"
+        },
+        {
+          "order": 14,
+          "title": "II: Of the Origin of Ambition, and of the Distinction of Ranks (2/2)"
+        },
+        {
+          "order": 15,
+          "title": "III: Of the Corruption of Our Moral Sentiments, Which Is Occasioned by This Disposition to Admire the Rich and the Great, and to Despise or Neglect Persons of Poor and Mean Condition"
+        },
+        {
+          "order": 16,
+          "title": "Section I: Of the Sense of Merit and Demerit"
+        },
+        {
+          "order": 17,
+          "title": "I: That Whatever Appears to Be the Proper Object of Gratitude, Appears to Deserve Reward; and That, in the Same Manner, Whatever Appears to Be the Proper Object of Resentment, Appears to Deserve Punishment"
+        },
+        {
+          "order": 18,
+          "title": "II: Of the Proper Objects of Gratitude and Resentment"
+        },
+        {
+          "order": 19,
+          "title": "III: That Where There Is No Approbation of the Conduct of the Person Who Confers the Benefit, There Is Little Sympathy with the Gratitude of Him Who Receives It: And That, on the Contrary, Where There Is No Disapprobation of the Motives of the Person Who Does the Mischief, There Is No Sort of Sympathy with the Resentment of Him Who Suffers It"
+        },
+        {
+          "order": 20,
+          "title": "IV: Recapitulation of the Foregoing Chapters"
+        },
+        {
+          "order": 21,
+          "title": "V: The Analysis of the Sense of Merit and Demerit"
+        },
+        {
+          "order": 22,
+          "title": "I: Comparison of Those Two Virtues"
+        },
+        {
+          "order": 23,
+          "title": "II: Of the Sense of Justice, of Remorse, and of the Consciousness of Merit"
+        },
+        {
+          "order": 24,
+          "title": "III: Of the Utility of This Constitution of Nature"
+        },
+        {
+          "order": 25,
+          "title": "Section III: Of the Influence of Fortune Upon the Sentiments of Mankind, with Regard to the Merit or Demerit of Their Actions"
+        },
+        {
+          "order": 26,
+          "title": "I: Of the Causes of This Influence of Fortune"
+        },
+        {
+          "order": 27,
+          "title": "II: Of the Extent of This Influence of Fortune (1/2)"
+        },
+        {
+          "order": 28,
+          "title": "II: Of the Extent of This Influence of Fortune (2/2)"
+        },
+        {
+          "order": 29,
+          "title": "III: Of the Final Cause of This Irregularity of Sentiments"
+        },
+        {
+          "order": 30,
+          "title": "I: Of the Principle of Self-Approbation and of Self-Disapprobation"
+        },
+        {
+          "order": 31,
+          "title": "II: Of the Love of Praise, and of That of Praiseworthiness; and of the Dread of Blame, and of That of Blameworthiness (1/4)"
+        },
+        {
+          "order": 32,
+          "title": "II: Of the Love of Praise, and of That of Praiseworthiness; and of the Dread of Blame, and of That of Blameworthiness (2/4)"
+        },
+        {
+          "order": 33,
+          "title": "II: Of the Love of Praise, and of That of Praiseworthiness; and of the Dread of Blame, and of That of Blameworthiness (3/4)"
+        },
+        {
+          "order": 34,
+          "title": "II: Of the Love of Praise, and of That of Praiseworthiness; and of the Dread of Blame, and of That of Blameworthiness (4/4)"
+        },
+        {
+          "order": 35,
+          "title": "III: Of the Influence and Authority of Conscience (1/5)"
+        },
+        {
+          "order": 36,
+          "title": "III: Of the Influence and Authority of Conscience (2/5)"
+        },
+        {
+          "order": 37,
+          "title": "III: Of the Influence and Authority of Conscience (3/5)"
+        },
+        {
+          "order": 38,
+          "title": "III: Of the Influence and Authority of Conscience (4/5)"
+        },
+        {
+          "order": 39,
+          "title": "III: Of the Influence and Authority of Conscience (5/5)"
+        },
+        {
+          "order": 40,
+          "title": "IV: Of the Nature of Self-Deceit, and of the Origin and Use of General Rules"
+        },
+        {
+          "order": 41,
+          "title": "V: Of the Influence and Authority of the General Rules of Morality, and That They Are Justly Regarded as the Laws of the Deity (1/2)"
+        },
+        {
+          "order": 42,
+          "title": "V: Of the Influence and Authority of the General Rules of Morality, and That They Are Justly Regarded as the Laws of the Deity (2/2)"
+        },
+        {
+          "order": 43,
+          "title": "VI: In What Cases the Sense of Duty Ought to Be the Sole Principle of Our Conduct; and in What Cases It Ought to Concur with Other Motives (1/2)"
+        },
+        {
+          "order": 44,
+          "title": "VI: In What Cases the Sense of Duty Ought to Be the Sole Principle of Our Conduct; and in What Cases It Ought to Concur with Other Motives (2/2)"
+        },
+        {
+          "order": 45,
+          "title": "I: Of the Beauty Which the Appearance of Utility Bestows Upon All the Productions of Art, and of the Extensive Influence of This Species of Beauty (1/2)"
+        },
+        {
+          "order": 46,
+          "title": "I: Of the Beauty Which the Appearance of Utility Bestows Upon All the Productions of Art, and of the Extensive Influence of This Species of Beauty (2/2)"
+        },
+        {
+          "order": 47,
+          "title": "II: Of the Beauty Which the Appearance of Utility Bestows Upon the Characters and the Actions of Men; and How Far the Perception of This Beauty May Be Regarded as One of the Original Principles of Approbation"
+        },
+        {
+          "order": 48,
+          "title": "I: Of the Influence of Custom and Fashion Upon Our Notions of Beauty and Deformity"
+        },
+        {
+          "order": 49,
+          "title": "II: Of the Influence of Custom and Fashion Upon Moral Sentiments (1/2)"
+        },
+        {
+          "order": 50,
+          "title": "II: Of the Influence of Custom and Fashion Upon Moral Sentiments (2/2)"
+        },
+        {
+          "order": 51,
+          "title": "Part VI: Of the Character of Virtue"
+        },
+        {
+          "order": 52,
+          "title": "Section I: Of the Character of the Individual, So Far as It Affects His Own Happiness; or of Prudence"
+        },
+        {
+          "order": 53,
+          "title": "Section II: Of the Character of the Individual, So Far as It Can Affect the Happiness of Other People"
+        },
+        {
+          "order": 54,
+          "title": "I: Of the Order in Which Individuals Are Recommended by Nature to Our Care and Attention (1/2)"
+        },
+        {
+          "order": 55,
+          "title": "I: Of the Order in Which Individuals Are Recommended by Nature to Our Care and Attention (2/2)"
+        },
+        {
+          "order": 56,
+          "title": "II: Of the Order in Which Societies Are by Nature Recommended to Our Beneficence"
+        },
+        {
+          "order": 57,
+          "title": "III: Of Universal Benevolence"
+        },
+        {
+          "order": 58,
+          "title": "Section III: Of Self-Command (1/5)"
+        },
+        {
+          "order": 59,
+          "title": "Section III: Of Self-Command (2/5)"
+        },
+        {
+          "order": 60,
+          "title": "Section III: Of Self-Command (3/5)"
+        },
+        {
+          "order": 61,
+          "title": "Section III: Of Self-Command (4/5)"
+        },
+        {
+          "order": 62,
+          "title": "Section III: Of Self-Command (5/5)"
+        },
+        {
+          "order": 63,
+          "title": "Conclusion of the Sixth Part"
+        },
+        {
+          "order": 64,
+          "title": "Section I: Of the Questions Which Ought to Be Examined in a Theory of Moral Sentiments"
+        },
+        {
+          "order": 65,
+          "title": "Section II: Of the Different Accounts Which Have Been Given of the Nature of Virtue"
+        },
+        {
+          "order": 66,
+          "title": "I: Of Those Systems Which Make Virtue Consist in Propriety (1/5)"
+        },
+        {
+          "order": 67,
+          "title": "I: Of Those Systems Which Make Virtue Consist in Propriety (2/5)"
+        },
+        {
+          "order": 68,
+          "title": "I: Of Those Systems Which Make Virtue Consist in Propriety (3/5)"
+        },
+        {
+          "order": 69,
+          "title": "I: Of Those Systems Which Make Virtue Consist in Propriety (4/5)"
+        },
+        {
+          "order": 70,
+          "title": "I: Of Those Systems Which Make Virtue Consist in Propriety (5/5)"
+        },
+        {
+          "order": 71,
+          "title": "II: Of Those Systems Which Make Virtue Consist in Prudence"
+        },
+        {
+          "order": 72,
+          "title": "III: Of Those Systems Which Make Virtue Consist in Benevolence"
+        },
+        {
+          "order": 73,
+          "title": "IV: Of Licentious Systems (1/2)"
+        },
+        {
+          "order": 74,
+          "title": "IV: Of Licentious Systems (2/2)"
+        },
+        {
+          "order": 75,
+          "title": "Section III: Of the Different Systems Which Have Been Formed Concerning the Principle of Approbation"
+        },
+        {
+          "order": 76,
+          "title": "I: Of Those Systems Which Deduce the Principle of Approbation from Self-Love"
+        },
+        {
+          "order": 77,
+          "title": "II: Of Those Systems Which Make Reason the Principle of Approbation"
+        },
+        {
+          "order": 78,
+          "title": "III: Of Those Systems Which Make Sentiment the Principle of Approbation"
+        },
+        {
+          "order": 79,
+          "title": "Section IV: Of the Manner in Which Different Authors Have Treated of the Practical Rules of Morality (1/3)"
+        },
+        {
+          "order": 80,
+          "title": "Section IV: Of the Manner in Which Different Authors Have Treated of the Practical Rules of Morality (2/3)"
+        },
+        {
+          "order": 81,
+          "title": "Section IV: Of the Manner in Which Different Authors Have Treated of the Practical Rules of Morality (3/3)"
+        },
+        {
+          "order": 82,
+          "title": "Considerations Concerning the First Formation of Languages, etc., etc. (1/5)"
+        },
+        {
+          "order": 83,
+          "title": "Considerations Concerning the First Formation of Languages, etc., etc. (2/5)"
+        },
+        {
+          "order": 84,
+          "title": "Considerations Concerning the First Formation of Languages, etc., etc. (3/5)"
+        },
+        {
+          "order": 85,
+          "title": "Considerations Concerning the First Formation of Languages, etc., etc. (4/5)"
+        },
+        {
+          "order": 86,
+          "title": "Considerations Concerning the First Formation of Languages, etc., etc. (5/5)"
+        }
+      ]
+    },
+    "se-adam-smith_the-wealth-of-nations": {
+      "title": "The Wealth of Nations",
+      "author": "Adam Smith",
+      "level": "C1 고급",
+      "total": 173,
+      "words": 377020,
+      "display": {
+        "titleKo": "국부론",
+        "authorKo": "애덤 스미스",
+        "binding": "strahan-1776",
+        "coverTitle": "An\nInquiry\ninto the\nNature and Causes\nof the\nWealth of Nations.",
+        "coverAuthor": "By ADAM SMITH, LL.D. and F.R.S.",
+        "coverTome": "Vol. I.",
+        "coverPlace": "London:",
+        "coverImprint": "W. Strahan; and T. Cadell",
+        "coverYear": 1776
+      },
+      "literature": {
+        "publishedYear": 1776
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: Of the Division of Labour (1/2)"
+        },
+        {
+          "order": 2,
+          "title": "I: Of the Division of Labour (2/2)"
+        },
+        {
+          "order": 3,
+          "title": "II: Of the Principle Which Gives Occasion to the Division of Labour"
+        },
+        {
+          "order": 4,
+          "title": "III: That the Division of Labour Is Limited by the Extent of the Market"
+        },
+        {
+          "order": 5,
+          "title": "IV: Of the Origin and Use of Money"
+        },
+        {
+          "order": 6,
+          "title": "V: Of the Real and Nominal Price of Commodities, or of Their Price in Labour, and Their Price in Money (1/3)"
+        },
+        {
+          "order": 7,
+          "title": "V: Of the Real and Nominal Price of Commodities, or of Their Price in Labour, and Their Price in Money (2/3)"
+        },
+        {
+          "order": 8,
+          "title": "V: Of the Real and Nominal Price of Commodities, or of Their Price in Labour, and Their Price in Money (3/3)"
+        },
+        {
+          "order": 9,
+          "title": "VI: Of the Component Parts of the Price of Commodities"
+        },
+        {
+          "order": 10,
+          "title": "VII: Of the Natural and Market Price of Commodities (1/2)"
+        },
+        {
+          "order": 11,
+          "title": "VII: Of the Natural and Market Price of Commodities (2/2)"
+        },
+        {
+          "order": 12,
+          "title": "VIII: Of the Wages of Labour (1/4)"
+        },
+        {
+          "order": 13,
+          "title": "VIII: Of the Wages of Labour (2/4)"
+        },
+        {
+          "order": 14,
+          "title": "VIII: Of the Wages of Labour (3/4)"
+        },
+        {
+          "order": 15,
+          "title": "VIII: Of the Wages of Labour (4/4)"
+        },
+        {
+          "order": 16,
+          "title": "IX: Of the Profits of Stock (1/2)"
+        },
+        {
+          "order": 17,
+          "title": "IX: Of the Profits of Stock (2/2)"
+        },
+        {
+          "order": 18,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (1/8)"
+        },
+        {
+          "order": 19,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (2/8)"
+        },
+        {
+          "order": 20,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (3/8)"
+        },
+        {
+          "order": 21,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (4/8)"
+        },
+        {
+          "order": 22,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (5/8)"
+        },
+        {
+          "order": 23,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (6/8)"
+        },
+        {
+          "order": 24,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (7/8)"
+        },
+        {
+          "order": 25,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (8/8)"
+        },
+        {
+          "order": 26,
+          "title": "XI: Of the Rent of Land (1/22)"
+        },
+        {
+          "order": 27,
+          "title": "XI: Of the Rent of Land (2/22)"
+        },
+        {
+          "order": 28,
+          "title": "XI: Of the Rent of Land (3/22)"
+        },
+        {
+          "order": 29,
+          "title": "XI: Of the Rent of Land (4/22)"
+        },
+        {
+          "order": 30,
+          "title": "XI: Of the Rent of Land (5/22)"
+        },
+        {
+          "order": 31,
+          "title": "XI: Of the Rent of Land (6/22)"
+        },
+        {
+          "order": 32,
+          "title": "XI: Of the Rent of Land (7/22)"
+        },
+        {
+          "order": 33,
+          "title": "XI: Of the Rent of Land (8/22)"
+        },
+        {
+          "order": 34,
+          "title": "XI: Of the Rent of Land (9/22)"
+        },
+        {
+          "order": 35,
+          "title": "XI: Of the Rent of Land (10/22)"
+        },
+        {
+          "order": 36,
+          "title": "XI: Of the Rent of Land (11/22)"
+        },
+        {
+          "order": 37,
+          "title": "XI: Of the Rent of Land (12/22)"
+        },
+        {
+          "order": 38,
+          "title": "XI: Of the Rent of Land (13/22)"
+        },
+        {
+          "order": 39,
+          "title": "XI: Of the Rent of Land (14/22)"
+        },
+        {
+          "order": 40,
+          "title": "XI: Of the Rent of Land (15/22)"
+        },
+        {
+          "order": 41,
+          "title": "XI: Of the Rent of Land (16/22)"
+        },
+        {
+          "order": 42,
+          "title": "XI: Of the Rent of Land (17/22)"
+        },
+        {
+          "order": 43,
+          "title": "XI: Of the Rent of Land (18/22)"
+        },
+        {
+          "order": 44,
+          "title": "XI: Of the Rent of Land (19/22)"
+        },
+        {
+          "order": 45,
+          "title": "XI: Of the Rent of Land (20/22)"
+        },
+        {
+          "order": 46,
+          "title": "XI: Of the Rent of Land (21/22)"
+        },
+        {
+          "order": 47,
+          "title": "XI: Of the Rent of Land (22/22)"
+        },
+        {
+          "order": 48,
+          "title": "Introduction"
+        },
+        {
+          "order": 49,
+          "title": "I: Of the Division of Stock"
+        },
+        {
+          "order": 50,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (1/9)"
+        },
+        {
+          "order": 51,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (2/9)"
+        },
+        {
+          "order": 52,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (3/9)"
+        },
+        {
+          "order": 53,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (4/9)"
+        },
+        {
+          "order": 54,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (5/9)"
+        },
+        {
+          "order": 55,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (6/9)"
+        },
+        {
+          "order": 56,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (7/9)"
+        },
+        {
+          "order": 57,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (8/9)"
+        },
+        {
+          "order": 58,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (9/9)"
+        },
+        {
+          "order": 59,
+          "title": "III: Of the Accumulation of Capital, or of Productive and Unproductive Labour (1/4)"
+        },
+        {
+          "order": 60,
+          "title": "III: Of the Accumulation of Capital, or of Productive and Unproductive Labour (2/4)"
+        },
+        {
+          "order": 61,
+          "title": "III: Of the Accumulation of Capital, or of Productive and Unproductive Labour (3/4)"
+        },
+        {
+          "order": 62,
+          "title": "III: Of the Accumulation of Capital, or of Productive and Unproductive Labour (4/4)"
+        },
+        {
+          "order": 63,
+          "title": "IV: Of Stock Lent at Interest (1/2)"
+        },
+        {
+          "order": 64,
+          "title": "IV: Of Stock Lent at Interest (2/2)"
+        },
+        {
+          "order": 65,
+          "title": "V: Of the Different Employment of Capitals (1/3)"
+        },
+        {
+          "order": 66,
+          "title": "V: Of the Different Employment of Capitals (2/3)"
+        },
+        {
+          "order": 67,
+          "title": "V: Of the Different Employment of Capitals (3/3)"
+        },
+        {
+          "order": 68,
+          "title": "I: Of the Natural Progress of Opulence"
+        },
+        {
+          "order": 69,
+          "title": "II: Of the Discouragement of Agriculture in the Ancient State of Europe After the Fall of the Roman Empire (1/2)"
+        },
+        {
+          "order": 70,
+          "title": "II: Of the Discouragement of Agriculture in the Ancient State of Europe After the Fall of the Roman Empire (2/2)"
+        },
+        {
+          "order": 71,
+          "title": "III: Of the Rise and Progress of Cities and Towns, After the Fall of the Roman Empire (1/2)"
+        },
+        {
+          "order": 72,
+          "title": "III: Of the Rise and Progress of Cities and Towns, After the Fall of the Roman Empire (2/2)"
+        },
+        {
+          "order": 73,
+          "title": "IV: How the Commerce of the Towns Contributed to the Improvement of the Country (1/2)"
+        },
+        {
+          "order": 74,
+          "title": "IV: How the Commerce of the Towns Contributed to the Improvement of the Country (2/2)"
+        },
+        {
+          "order": 75,
+          "title": "Introduction"
+        },
+        {
+          "order": 76,
+          "title": "I: Of the Principle of the Commercial or Mercantile System (1/4)"
+        },
+        {
+          "order": 77,
+          "title": "I: Of the Principle of the Commercial or Mercantile System (2/4)"
+        },
+        {
+          "order": 78,
+          "title": "I: Of the Principle of the Commercial or Mercantile System (3/4)"
+        },
+        {
+          "order": 79,
+          "title": "I: Of the Principle of the Commercial or Mercantile System (4/4)"
+        },
+        {
+          "order": 80,
+          "title": "II: Of Restraints Upon the Importation from Foreign Countries of Such Goods as Can Be Produced at Home (1/4)"
+        },
+        {
+          "order": 81,
+          "title": "II: Of Restraints Upon the Importation from Foreign Countries of Such Goods as Can Be Produced at Home (2/4)"
+        },
+        {
+          "order": 82,
+          "title": "II: Of Restraints Upon the Importation from Foreign Countries of Such Goods as Can Be Produced at Home (3/4)"
+        },
+        {
+          "order": 83,
+          "title": "II: Of Restraints Upon the Importation from Foreign Countries of Such Goods as Can Be Produced at Home (4/4)"
+        },
+        {
+          "order": 84,
+          "title": "III: Of the Extraordinary Restraints Upon the Importation of Goods of Almost All Kinds, from Those Countries with Which the Balance Is Supposed to Be Disadvantageous (1/5)"
+        },
+        {
+          "order": 85,
+          "title": "III: Of the Extraordinary Restraints Upon the Importation of Goods of Almost All Kinds, from Those Countries with Which the Balance Is Supposed to Be Disadvantageous (2/5)"
+        },
+        {
+          "order": 86,
+          "title": "III: Of the Extraordinary Restraints Upon the Importation of Goods of Almost All Kinds, from Those Countries with Which the Balance Is Supposed to Be Disadvantageous (3/5)"
+        },
+        {
+          "order": 87,
+          "title": "III: Of the Extraordinary Restraints Upon the Importation of Goods of Almost All Kinds, from Those Countries with Which the Balance Is Supposed to Be Disadvantageous (4/5)"
+        },
+        {
+          "order": 88,
+          "title": "III: Of the Extraordinary Restraints Upon the Importation of Goods of Almost All Kinds, from Those Countries with Which the Balance Is Supposed to Be Disadvantageous (5/5)"
+        },
+        {
+          "order": 89,
+          "title": "IV: Of Drawbacks"
+        },
+        {
+          "order": 90,
+          "title": "V: Of Bounties (1/7)"
+        },
+        {
+          "order": 91,
+          "title": "V: Of Bounties (2/7)"
+        },
+        {
+          "order": 92,
+          "title": "V: Of Bounties (3/7)"
+        },
+        {
+          "order": 93,
+          "title": "V: Of Bounties (4/7)"
+        },
+        {
+          "order": 94,
+          "title": "V: Of Bounties (5/7)"
+        },
+        {
+          "order": 95,
+          "title": "V: Of Bounties (6/7)"
+        },
+        {
+          "order": 96,
+          "title": "V: Of Bounties (7/7)"
+        },
+        {
+          "order": 97,
+          "title": "VI: Of Treaties of Commerce (1/2)"
+        },
+        {
+          "order": 98,
+          "title": "VI: Of Treaties of Commerce (2/2)"
+        },
+        {
+          "order": 99,
+          "title": "VII: Of Colonies (1/17)"
+        },
+        {
+          "order": 100,
+          "title": "VII: Of Colonies (2/17)"
+        },
+        {
+          "order": 101,
+          "title": "VII: Of Colonies (3/17)"
+        },
+        {
+          "order": 102,
+          "title": "VII: Of Colonies (4/17)"
+        },
+        {
+          "order": 103,
+          "title": "VII: Of Colonies (5/17)"
+        },
+        {
+          "order": 104,
+          "title": "VII: Of Colonies (6/17)"
+        },
+        {
+          "order": 105,
+          "title": "VII: Of Colonies (7/17)"
+        },
+        {
+          "order": 106,
+          "title": "VII: Of Colonies (8/17)"
+        },
+        {
+          "order": 107,
+          "title": "VII: Of Colonies (9/17)"
+        },
+        {
+          "order": 108,
+          "title": "VII: Of Colonies (10/17)"
+        },
+        {
+          "order": 109,
+          "title": "VII: Of Colonies (11/17)"
+        },
+        {
+          "order": 110,
+          "title": "VII: Of Colonies (12/17)"
+        },
+        {
+          "order": 111,
+          "title": "VII: Of Colonies (13/17)"
+        },
+        {
+          "order": 112,
+          "title": "VII: Of Colonies (14/17)"
+        },
+        {
+          "order": 113,
+          "title": "VII: Of Colonies (15/17)"
+        },
+        {
+          "order": 114,
+          "title": "VII: Of Colonies (16/17)"
+        },
+        {
+          "order": 115,
+          "title": "VII: Of Colonies (17/17)"
+        },
+        {
+          "order": 116,
+          "title": "VIII: Conclusion of the Mercantile System (1/4)"
+        },
+        {
+          "order": 117,
+          "title": "VIII: Conclusion of the Mercantile System (2/4)"
+        },
+        {
+          "order": 118,
+          "title": "VIII: Conclusion of the Mercantile System (3/4)"
+        },
+        {
+          "order": 119,
+          "title": "VIII: Conclusion of the Mercantile System (4/4)"
+        },
+        {
+          "order": 120,
+          "title": "IX: Of the Agricultural Systems, or of Those Systems of Political Œconomy, Which Represent the Produce of Land as Either the Sole or the Principal Source of the Revenue and Wealth of Every Country (1/5)"
+        },
+        {
+          "order": 121,
+          "title": "IX: Of the Agricultural Systems, or of Those Systems of Political Œconomy, Which Represent the Produce of Land as Either the Sole or the Principal Source of the Revenue and Wealth of Every Country (2/5)"
+        },
+        {
+          "order": 122,
+          "title": "IX: Of the Agricultural Systems, or of Those Systems of Political Œconomy, Which Represent the Produce of Land as Either the Sole or the Principal Source of the Revenue and Wealth of Every Country (3/5)"
+        },
+        {
+          "order": 123,
+          "title": "IX: Of the Agricultural Systems, or of Those Systems of Political Œconomy, Which Represent the Produce of Land as Either the Sole or the Principal Source of the Revenue and Wealth of Every Country (4/5)"
+        },
+        {
+          "order": 124,
+          "title": "IX: Of the Agricultural Systems, or of Those Systems of Political Œconomy, Which Represent the Produce of Land as Either the Sole or the Principal Source of the Revenue and Wealth of Every Country (5/5)"
+        },
+        {
+          "order": 125,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (1/23)"
+        },
+        {
+          "order": 126,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (2/23)"
+        },
+        {
+          "order": 127,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (3/23)"
+        },
+        {
+          "order": 128,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (4/23)"
+        },
+        {
+          "order": 129,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (5/23)"
+        },
+        {
+          "order": 130,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (6/23)"
+        },
+        {
+          "order": 131,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (7/23)"
+        },
+        {
+          "order": 132,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (8/23)"
+        },
+        {
+          "order": 133,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (9/23)"
+        },
+        {
+          "order": 134,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (10/23)"
+        },
+        {
+          "order": 135,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (11/23)"
+        },
+        {
+          "order": 136,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (12/23)"
+        },
+        {
+          "order": 137,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (13/23)"
+        },
+        {
+          "order": 138,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (14/23)"
+        },
+        {
+          "order": 139,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (15/23)"
+        },
+        {
+          "order": 140,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (16/23)"
+        },
+        {
+          "order": 141,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (17/23)"
+        },
+        {
+          "order": 142,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (18/23)"
+        },
+        {
+          "order": 143,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (19/23)"
+        },
+        {
+          "order": 144,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (20/23)"
+        },
+        {
+          "order": 145,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (21/23)"
+        },
+        {
+          "order": 146,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (22/23)"
+        },
+        {
+          "order": 147,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (23/23)"
+        },
+        {
+          "order": 148,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (1/18)"
+        },
+        {
+          "order": 149,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (2/18)"
+        },
+        {
+          "order": 150,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (3/18)"
+        },
+        {
+          "order": 151,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (4/18)"
+        },
+        {
+          "order": 152,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (5/18)"
+        },
+        {
+          "order": 153,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (6/18)"
+        },
+        {
+          "order": 154,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (7/18)"
+        },
+        {
+          "order": 155,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (8/18)"
+        },
+        {
+          "order": 156,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (9/18)"
+        },
+        {
+          "order": 157,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (10/18)"
+        },
+        {
+          "order": 158,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (11/18)"
+        },
+        {
+          "order": 159,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (12/18)"
+        },
+        {
+          "order": 160,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (13/18)"
+        },
+        {
+          "order": 161,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (14/18)"
+        },
+        {
+          "order": 162,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (15/18)"
+        },
+        {
+          "order": 163,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (16/18)"
+        },
+        {
+          "order": 164,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (17/18)"
+        },
+        {
+          "order": 165,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (18/18)"
+        },
+        {
+          "order": 166,
+          "title": "III: Of Public Debts (1/8)"
+        },
+        {
+          "order": 167,
+          "title": "III: Of Public Debts (2/8)"
+        },
+        {
+          "order": 168,
+          "title": "III: Of Public Debts (3/8)"
+        },
+        {
+          "order": 169,
+          "title": "III: Of Public Debts (4/8)"
+        },
+        {
+          "order": 170,
+          "title": "III: Of Public Debts (5/8)"
+        },
+        {
+          "order": 171,
+          "title": "III: Of Public Debts (6/8)"
+        },
+        {
+          "order": 172,
+          "title": "III: Of Public Debts (7/8)"
+        },
+        {
+          "order": 173,
+          "title": "III: Of Public Debts (8/8)"
+        }
+      ]
+    },
     "se-arthur-conan-doyle_the-adventures-of-sherlock-holmes": {
       "title": "The Adventures of Sherlock Holmes",
       "author": "Arthur Conan Doyle",
@@ -210,6 +1292,140 @@
         }
       ]
     },
+    "se-benjamin-franklin_the-autobiography-of-benjamin-franklin": {
+      "title": "The Autobiography of Benjamin Franklin",
+      "author": "Benjamin Franklin",
+      "level": "C1 고급",
+      "total": 28,
+      "words": 61489,
+      "display": {
+        "titleKo": "프랭클린 자서전",
+        "authorKo": "벤저민 프랭클린",
+        "binding": "buisson-1791",
+        "coverTitle": "Mémoires\nde la vie privée\nde Benjamin Franklin,\nécrits par lui-même,\net adressés a son fils;",
+        "coverPartTitle": "Suivis d’un Précis historique\nde sa Vie politique,",
+        "coverPlace": "A Paris,",
+        "coverImprint": "Chez Buisson, Libraire",
+        "coverEdition": "1791."
+      },
+      "literature": {
+        "publishedYear": 1791
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: Ancestry and Early Youth in Boston (1/2)"
+        },
+        {
+          "order": 2,
+          "title": "I: Ancestry and Early Youth in Boston (2/2)"
+        },
+        {
+          "order": 3,
+          "title": "II: Beginning Life as a Printer (1/2)"
+        },
+        {
+          "order": 4,
+          "title": "II: Beginning Life as a Printer (2/2)"
+        },
+        {
+          "order": 5,
+          "title": "III: Arrival in Philadelphia"
+        },
+        {
+          "order": 6,
+          "title": "IV: First Visit to Boston"
+        },
+        {
+          "order": 7,
+          "title": "V: Early Friends in Philadelphia"
+        },
+        {
+          "order": 8,
+          "title": "VI: First Visit to London (1/2)"
+        },
+        {
+          "order": 9,
+          "title": "VI: First Visit to London (2/2)"
+        },
+        {
+          "order": 10,
+          "title": "VII: Beginning Business in Philadelphia (1/2)"
+        },
+        {
+          "order": 11,
+          "title": "VII: Beginning Business in Philadelphia (2/2)"
+        },
+        {
+          "order": 12,
+          "title": "VIII: Business Success and First Public Service (1/2)"
+        },
+        {
+          "order": 13,
+          "title": "VIII: Business Success and First Public Service (2/2)"
+        },
+        {
+          "order": 14,
+          "title": "IX: Plan for Attaining Moral Perfection (1/2)"
+        },
+        {
+          "order": 15,
+          "title": "IX: Plan for Attaining Moral Perfection (2/2)"
+        },
+        {
+          "order": 16,
+          "title": "X: Poor Richard’s Almanac and Other Activities"
+        },
+        {
+          "order": 17,
+          "title": "XI: Interest in Public Affairs"
+        },
+        {
+          "order": 18,
+          "title": "XII: Defense of the Province"
+        },
+        {
+          "order": 19,
+          "title": "XIII: Public Services and Duties (1749–1753) (1/2)"
+        },
+        {
+          "order": 20,
+          "title": "XIII: Public Services and Duties (1749–1753) (2/2)"
+        },
+        {
+          "order": 21,
+          "title": "XIV: Albany Plan of Union"
+        },
+        {
+          "order": 22,
+          "title": "XV: Quarrels with the Proprietary Governors"
+        },
+        {
+          "order": 23,
+          "title": "XVI: Braddock’s Expedition (1/2)"
+        },
+        {
+          "order": 24,
+          "title": "XVI: Braddock’s Expedition (2/2)"
+        },
+        {
+          "order": 25,
+          "title": "XVII: Franklin’s Defense of the Frontier"
+        },
+        {
+          "order": 26,
+          "title": "XVIII: Scientific Experiments"
+        },
+        {
+          "order": 27,
+          "title": "XIX: Agent of Pennsylvania in London (1/2)"
+        },
+        {
+          "order": 28,
+          "title": "XIX: Agent of Pennsylvania in London (2/2)"
+        }
+      ]
+    },
     "se-charles-dickens_a-christmas-carol": {
       "title": "A Christmas Carol",
       "author": "Charles Dickens",
@@ -283,6 +1499,1632 @@
         }
       ]
     },
+    "se-f-scott-fitzgerald_the-great-gatsby": {
+      "title": "The Great Gatsby",
+      "author": "F. Scott Fitzgerald",
+      "level": "B2 상급",
+      "total": 22,
+      "words": 48105,
+      "display": {
+        "titleKo": "위대한 개츠비",
+        "authorKo": "F. 스콧 피츠제럴드",
+        "binding": "scribner-blind",
+        "coverTitle": "The Great\nGatsby",
+        "coverAuthor": "By F. Scott Fitzgerald"
+      },
+      "literature": {
+        "publishedYear": 1925
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I (1/3)"
+        },
+        {
+          "order": 2,
+          "title": "I (2/3)"
+        },
+        {
+          "order": 3,
+          "title": "I (3/3)"
+        },
+        {
+          "order": 4,
+          "title": "II (1/2)"
+        },
+        {
+          "order": 5,
+          "title": "II (2/2)"
+        },
+        {
+          "order": 6,
+          "title": "III (1/3)"
+        },
+        {
+          "order": 7,
+          "title": "III (2/3)"
+        },
+        {
+          "order": 8,
+          "title": "III (3/3)"
+        },
+        {
+          "order": 9,
+          "title": "IV (1/2)"
+        },
+        {
+          "order": 10,
+          "title": "IV (2/2)"
+        },
+        {
+          "order": 11,
+          "title": "V (1/2)"
+        },
+        {
+          "order": 12,
+          "title": "V (2/2)"
+        },
+        {
+          "order": 13,
+          "title": "VI (1/2)"
+        },
+        {
+          "order": 14,
+          "title": "VI (2/2)"
+        },
+        {
+          "order": 15,
+          "title": "VII (1/4)"
+        },
+        {
+          "order": 16,
+          "title": "VII (2/4)"
+        },
+        {
+          "order": 17,
+          "title": "VII (3/4)"
+        },
+        {
+          "order": 18,
+          "title": "VII (4/4)"
+        },
+        {
+          "order": 19,
+          "title": "VIII (1/2)"
+        },
+        {
+          "order": 20,
+          "title": "VIII (2/2)"
+        },
+        {
+          "order": 21,
+          "title": "IX (1/2)"
+        },
+        {
+          "order": 22,
+          "title": "IX (2/2)"
+        }
+      ]
+    },
+    "se-henry-david-thoreau_walden": {
+      "title": "Walden",
+      "author": "Henry David Thoreau",
+      "level": "C1 고급",
+      "total": 50,
+      "words": 106216,
+      "display": {
+        "titleKo": "월든",
+        "authorKo": "헨리 데이비드 소로",
+        "binding": "ticknor-arabesque",
+        "coverTitle": "Walden"
+      },
+      "literature": {
+        "publishedYear": 1854
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Economy (1/12)"
+        },
+        {
+          "order": 2,
+          "title": "Economy (2/12)"
+        },
+        {
+          "order": 3,
+          "title": "Economy (3/12)"
+        },
+        {
+          "order": 4,
+          "title": "Economy (4/12)"
+        },
+        {
+          "order": 5,
+          "title": "Economy (5/12)"
+        },
+        {
+          "order": 6,
+          "title": "Economy (6/12)"
+        },
+        {
+          "order": 7,
+          "title": "Economy (7/12)"
+        },
+        {
+          "order": 8,
+          "title": "Economy (8/12)"
+        },
+        {
+          "order": 9,
+          "title": "Economy (9/12)"
+        },
+        {
+          "order": 10,
+          "title": "Economy (10/12)"
+        },
+        {
+          "order": 11,
+          "title": "Economy (11/12)"
+        },
+        {
+          "order": 12,
+          "title": "Economy (12/12)"
+        },
+        {
+          "order": 13,
+          "title": "Where I Lived, and What I Lived For (1/3)"
+        },
+        {
+          "order": 14,
+          "title": "Where I Lived, and What I Lived For (2/3)"
+        },
+        {
+          "order": 15,
+          "title": "Where I Lived, and What I Lived For (3/3)"
+        },
+        {
+          "order": 16,
+          "title": "Reading (1/2)"
+        },
+        {
+          "order": 17,
+          "title": "Reading (2/2)"
+        },
+        {
+          "order": 18,
+          "title": "Sounds (1/3)"
+        },
+        {
+          "order": 19,
+          "title": "Sounds (2/3)"
+        },
+        {
+          "order": 20,
+          "title": "Sounds (3/3)"
+        },
+        {
+          "order": 21,
+          "title": "Solitude (1/2)"
+        },
+        {
+          "order": 22,
+          "title": "Solitude (2/2)"
+        },
+        {
+          "order": 23,
+          "title": "Visitors (1/2)"
+        },
+        {
+          "order": 24,
+          "title": "Visitors (2/2)"
+        },
+        {
+          "order": 25,
+          "title": "The Bean-Field (1/2)"
+        },
+        {
+          "order": 26,
+          "title": "The Bean-Field (2/2)"
+        },
+        {
+          "order": 27,
+          "title": "The Village"
+        },
+        {
+          "order": 28,
+          "title": "The Ponds (1/4)"
+        },
+        {
+          "order": 29,
+          "title": "The Ponds (2/4)"
+        },
+        {
+          "order": 30,
+          "title": "The Ponds (3/4)"
+        },
+        {
+          "order": 31,
+          "title": "The Ponds (4/4)"
+        },
+        {
+          "order": 32,
+          "title": "Baker Farm"
+        },
+        {
+          "order": 33,
+          "title": "Higher Laws (1/2)"
+        },
+        {
+          "order": 34,
+          "title": "Higher Laws (2/2)"
+        },
+        {
+          "order": 35,
+          "title": "Brute Neighbors (1/2)"
+        },
+        {
+          "order": 36,
+          "title": "Brute Neighbors (2/2)"
+        },
+        {
+          "order": 37,
+          "title": "House-Warming (1/3)"
+        },
+        {
+          "order": 38,
+          "title": "House-Warming (2/3)"
+        },
+        {
+          "order": 39,
+          "title": "House-Warming (3/3)"
+        },
+        {
+          "order": 40,
+          "title": "Former Inhabitants and Winter Visitors (1/2)"
+        },
+        {
+          "order": 41,
+          "title": "Former Inhabitants and Winter Visitors (2/2)"
+        },
+        {
+          "order": 42,
+          "title": "Winter Animals (1/2)"
+        },
+        {
+          "order": 43,
+          "title": "Winter Animals (2/2)"
+        },
+        {
+          "order": 44,
+          "title": "The Pond in Winter (1/2)"
+        },
+        {
+          "order": 45,
+          "title": "The Pond in Winter (2/2)"
+        },
+        {
+          "order": 46,
+          "title": "Spring (1/3)"
+        },
+        {
+          "order": 47,
+          "title": "Spring (2/3)"
+        },
+        {
+          "order": 48,
+          "title": "Spring (3/3)"
+        },
+        {
+          "order": 49,
+          "title": "Conclusion (1/2)"
+        },
+        {
+          "order": 50,
+          "title": "Conclusion (2/2)"
+        }
+      ]
+    },
+    "se-herman-melville_moby-dick": {
+      "title": "Moby Dick",
+      "author": "Herman Melville",
+      "level": "C1 고급",
+      "total": 150,
+      "words": 205458,
+      "display": {
+        "titleKo": "모비 딕",
+        "authorKo": "허먼 멜빌",
+        "binding": "harper-blind",
+        "coverTitle": "Moby-Dick"
+      },
+      "literature": {
+        "publishedYear": 1851
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: Loomings"
+        },
+        {
+          "order": 2,
+          "title": "II: The Carpetbag"
+        },
+        {
+          "order": 3,
+          "title": "III: The Spouter-Inn (1/3)"
+        },
+        {
+          "order": 4,
+          "title": "III: The Spouter-Inn (2/3)"
+        },
+        {
+          "order": 5,
+          "title": "III: The Spouter-Inn (3/3)"
+        },
+        {
+          "order": 6,
+          "title": "IV: The Counterpane"
+        },
+        {
+          "order": 7,
+          "title": "V: Breakfast"
+        },
+        {
+          "order": 8,
+          "title": "VI: The Street"
+        },
+        {
+          "order": 9,
+          "title": "VII: The Chapel"
+        },
+        {
+          "order": 10,
+          "title": "VIII: The Pulpit"
+        },
+        {
+          "order": 11,
+          "title": "IX: The Sermon (1/2)"
+        },
+        {
+          "order": 12,
+          "title": "IX: The Sermon (2/2)"
+        },
+        {
+          "order": 13,
+          "title": "X: A Bosom Friend"
+        },
+        {
+          "order": 14,
+          "title": "XI: Nightgown"
+        },
+        {
+          "order": 15,
+          "title": "XII: Biographical"
+        },
+        {
+          "order": 16,
+          "title": "XIII: Wheelbarrow"
+        },
+        {
+          "order": 17,
+          "title": "XIV: Nantucket"
+        },
+        {
+          "order": 18,
+          "title": "XV: Chowder"
+        },
+        {
+          "order": 19,
+          "title": "XVI: The Ship (1/2)"
+        },
+        {
+          "order": 20,
+          "title": "XVI: The Ship (2/2)"
+        },
+        {
+          "order": 21,
+          "title": "XVII: The Ramadan"
+        },
+        {
+          "order": 22,
+          "title": "XVIII: His Mark"
+        },
+        {
+          "order": 23,
+          "title": "XIX: The Prophet"
+        },
+        {
+          "order": 24,
+          "title": "XX: All Astir"
+        },
+        {
+          "order": 25,
+          "title": "XXI: Going Aboard"
+        },
+        {
+          "order": 26,
+          "title": "XXII: Merry Christmas"
+        },
+        {
+          "order": 27,
+          "title": "XXIII: The Lee Shore"
+        },
+        {
+          "order": 28,
+          "title": "XXIV: The Advocate"
+        },
+        {
+          "order": 29,
+          "title": "XXV: Postscript"
+        },
+        {
+          "order": 30,
+          "title": "XXVI: Knights and Squires"
+        },
+        {
+          "order": 31,
+          "title": "XXVII: Knights and Squires"
+        },
+        {
+          "order": 32,
+          "title": "XXVIII: Ahab"
+        },
+        {
+          "order": 33,
+          "title": "XXIX: Enter Ahab; To Him, Stubb"
+        },
+        {
+          "order": 34,
+          "title": "XXX: The Pipe"
+        },
+        {
+          "order": 35,
+          "title": "XXXI: Queen Mab"
+        },
+        {
+          "order": 36,
+          "title": "XXXII: Cetology (1/2)"
+        },
+        {
+          "order": 37,
+          "title": "XXXII: Cetology (2/2)"
+        },
+        {
+          "order": 38,
+          "title": "XXXIII: The Specksnyder"
+        },
+        {
+          "order": 39,
+          "title": "XXXIV: The Cabin-Table"
+        },
+        {
+          "order": 40,
+          "title": "XXXV: The Masthead"
+        },
+        {
+          "order": 41,
+          "title": "XXXVI: The Quarterdeck"
+        },
+        {
+          "order": 42,
+          "title": "XXXVII: Sunset"
+        },
+        {
+          "order": 43,
+          "title": "XXXVIII: Dusk"
+        },
+        {
+          "order": 44,
+          "title": "XXXIX: First Night-Watch"
+        },
+        {
+          "order": 45,
+          "title": "XL: Midnight, Forecastle"
+        },
+        {
+          "order": 46,
+          "title": "XLI: Moby Dick (1/2)"
+        },
+        {
+          "order": 47,
+          "title": "XLI: Moby Dick (2/2)"
+        },
+        {
+          "order": 48,
+          "title": "XLII: The Whiteness of the Whale"
+        },
+        {
+          "order": 49,
+          "title": "XLIII: Hark!"
+        },
+        {
+          "order": 50,
+          "title": "XLIV: The Chart"
+        },
+        {
+          "order": 51,
+          "title": "XLV: The Affidavit"
+        },
+        {
+          "order": 52,
+          "title": "XLVI: Surmises"
+        },
+        {
+          "order": 53,
+          "title": "XLVII: The Mat-Maker"
+        },
+        {
+          "order": 54,
+          "title": "XLVIII: The First Lowering (1/2)"
+        },
+        {
+          "order": 55,
+          "title": "XLVIII: The First Lowering (2/2)"
+        },
+        {
+          "order": 56,
+          "title": "XLIX: The Hyena"
+        },
+        {
+          "order": 57,
+          "title": "L: Ahab’s Boat and Crew. Fedallah"
+        },
+        {
+          "order": 58,
+          "title": "LI: The Spirit-Spout"
+        },
+        {
+          "order": 59,
+          "title": "LII: The Albatross"
+        },
+        {
+          "order": 60,
+          "title": "LIII: The Gam"
+        },
+        {
+          "order": 61,
+          "title": "LIV: The Town-Ho’s Story (1/4)"
+        },
+        {
+          "order": 62,
+          "title": "LIV: The Town-Ho’s Story (2/4)"
+        },
+        {
+          "order": 63,
+          "title": "LIV: The Town-Ho’s Story (3/4)"
+        },
+        {
+          "order": 64,
+          "title": "LIV: The Town-Ho’s Story (4/4)"
+        },
+        {
+          "order": 65,
+          "title": "LV: Of the Monstrous Pictures of Whales"
+        },
+        {
+          "order": 66,
+          "title": "LVI: Of the Less Erroneous Pictures of Whales, and the True Pictures of Whaling Scenes"
+        },
+        {
+          "order": 67,
+          "title": "LVII: Of Whales in Paint; in Teeth; in Wood; in Sheet-Iron; in Stone; in Mountains; in Stars"
+        },
+        {
+          "order": 68,
+          "title": "LVIII: Brit"
+        },
+        {
+          "order": 69,
+          "title": "LIX: Squid"
+        },
+        {
+          "order": 70,
+          "title": "LX: The Line"
+        },
+        {
+          "order": 71,
+          "title": "LXI: Stubb Kills a Whale"
+        },
+        {
+          "order": 72,
+          "title": "LXII: The Dart"
+        },
+        {
+          "order": 73,
+          "title": "LXIII: The Crotch"
+        },
+        {
+          "order": 74,
+          "title": "LXIV: Stubb’s Supper"
+        },
+        {
+          "order": 75,
+          "title": "LXV: The Whale as a Dish"
+        },
+        {
+          "order": 76,
+          "title": "LXVI: The Shark Massacre"
+        },
+        {
+          "order": 77,
+          "title": "LXVII: Cutting In"
+        },
+        {
+          "order": 78,
+          "title": "LXVIII: The Blanket"
+        },
+        {
+          "order": 79,
+          "title": "LXIX: The Funeral"
+        },
+        {
+          "order": 80,
+          "title": "LXX: The Sphynx"
+        },
+        {
+          "order": 81,
+          "title": "LXXI: The Jeroboam’s Story"
+        },
+        {
+          "order": 82,
+          "title": "LXXII: The Monkey-Rope"
+        },
+        {
+          "order": 83,
+          "title": "LXXIII: Stubb and Flask Kill a Right Whale; and Then Have a Talk Over Him"
+        },
+        {
+          "order": 84,
+          "title": "LXXIV: The Sperm Whale’s Head—Contrasted View"
+        },
+        {
+          "order": 85,
+          "title": "LXXV: The Right Whale’s Head—Contrasted View"
+        },
+        {
+          "order": 86,
+          "title": "LXXVI: The Battering-Ram"
+        },
+        {
+          "order": 87,
+          "title": "LXXVII: The Great Heidelburgh Tun"
+        },
+        {
+          "order": 88,
+          "title": "LXXVIII: Cistern and Buckets"
+        },
+        {
+          "order": 89,
+          "title": "LXXIX: The Prairie"
+        },
+        {
+          "order": 90,
+          "title": "LXXX: The Nut"
+        },
+        {
+          "order": 91,
+          "title": "LXXXI: The Pequod Meets the Virgin (1/2)"
+        },
+        {
+          "order": 92,
+          "title": "LXXXI: The Pequod Meets the Virgin (2/2)"
+        },
+        {
+          "order": 93,
+          "title": "LXXXII: The Honor and Glory of Whaling"
+        },
+        {
+          "order": 94,
+          "title": "LXXXIII: Jonah Historically Regarded"
+        },
+        {
+          "order": 95,
+          "title": "LXXXIV: Pitchpoling"
+        },
+        {
+          "order": 96,
+          "title": "LXXXV: The Fountain"
+        },
+        {
+          "order": 97,
+          "title": "LXXXVI: The Tail"
+        },
+        {
+          "order": 98,
+          "title": "LXXXVII: The Grand Armada (1/2)"
+        },
+        {
+          "order": 99,
+          "title": "LXXXVII: The Grand Armada (2/2)"
+        },
+        {
+          "order": 100,
+          "title": "LXXXVIII: Schools and Schoolmasters"
+        },
+        {
+          "order": 101,
+          "title": "LXXXIX: Fast-Fish and Loose-Fish"
+        },
+        {
+          "order": 102,
+          "title": "XC: Heads or Tails"
+        },
+        {
+          "order": 103,
+          "title": "XCI: The Pequod Meets the Rose-Bud"
+        },
+        {
+          "order": 104,
+          "title": "XCII: Ambergris"
+        },
+        {
+          "order": 105,
+          "title": "XCIII: The Castaway"
+        },
+        {
+          "order": 106,
+          "title": "XCIV: A Squeeze of the Hand"
+        },
+        {
+          "order": 107,
+          "title": "XCV: The Cassock"
+        },
+        {
+          "order": 108,
+          "title": "XCVI: The Try-Works"
+        },
+        {
+          "order": 109,
+          "title": "XCVII: The Lamp"
+        },
+        {
+          "order": 110,
+          "title": "XCVIII: Stowing Down and Clearing Up"
+        },
+        {
+          "order": 111,
+          "title": "XCIX: The Doubloon"
+        },
+        {
+          "order": 112,
+          "title": "C: Leg and Arm"
+        },
+        {
+          "order": 113,
+          "title": "CI: The Decanter"
+        },
+        {
+          "order": 114,
+          "title": "CII: A Bower in the Arsacides"
+        },
+        {
+          "order": 115,
+          "title": "CIII: Measurement of the Whale’s Skeleton"
+        },
+        {
+          "order": 116,
+          "title": "CIV: The Fossil Whale"
+        },
+        {
+          "order": 117,
+          "title": "CV: Does the Whale’s Magnitude Diminish?—Will He Perish?"
+        },
+        {
+          "order": 118,
+          "title": "CVI: Ahab’s Leg"
+        },
+        {
+          "order": 119,
+          "title": "CVII: The Carpenter"
+        },
+        {
+          "order": 120,
+          "title": "CVIII: Ahab and the Carpenter"
+        },
+        {
+          "order": 121,
+          "title": "CIX: Ahab and Starbuck in the Cabin"
+        },
+        {
+          "order": 122,
+          "title": "CX: Queequeg in His Coffin"
+        },
+        {
+          "order": 123,
+          "title": "CXI: The Pacific"
+        },
+        {
+          "order": 124,
+          "title": "CXII: The Blacksmith"
+        },
+        {
+          "order": 125,
+          "title": "CXIII: The Forge"
+        },
+        {
+          "order": 126,
+          "title": "CXIV: The Gilder"
+        },
+        {
+          "order": 127,
+          "title": "CXV: The Pequod Meets the Bachelor"
+        },
+        {
+          "order": 128,
+          "title": "CXVI: The Dying Whale"
+        },
+        {
+          "order": 129,
+          "title": "CXVII: The Whale Watch"
+        },
+        {
+          "order": 130,
+          "title": "CXVIII: The Quadrant"
+        },
+        {
+          "order": 131,
+          "title": "CXIX: The Candles"
+        },
+        {
+          "order": 132,
+          "title": "CXX: The Deck Towards the End of the First Night Watch"
+        },
+        {
+          "order": 133,
+          "title": "CXXI: Midnight.—The Forecastle Bulwarks"
+        },
+        {
+          "order": 134,
+          "title": "CXXII: Midnight Aloft.—Thunder and Lightning"
+        },
+        {
+          "order": 135,
+          "title": "CXXIII: The Musket"
+        },
+        {
+          "order": 136,
+          "title": "CXXIV: The Needle"
+        },
+        {
+          "order": 137,
+          "title": "CXXV: The Log and Line"
+        },
+        {
+          "order": 138,
+          "title": "CXXVI: The Life-Buoy"
+        },
+        {
+          "order": 139,
+          "title": "CXXVII: The Deck"
+        },
+        {
+          "order": 140,
+          "title": "CXXVIII: The Pequod Meets the Rachel"
+        },
+        {
+          "order": 141,
+          "title": "CXXIX: The Cabin"
+        },
+        {
+          "order": 142,
+          "title": "CXXX: The Hat"
+        },
+        {
+          "order": 143,
+          "title": "CXXXI: The Pequod Meets the Delight"
+        },
+        {
+          "order": 144,
+          "title": "CXXXII: The Symphony"
+        },
+        {
+          "order": 145,
+          "title": "CXXXIII: The Chase—First Day (1/2)"
+        },
+        {
+          "order": 146,
+          "title": "CXXXIII: The Chase—First Day (2/2)"
+        },
+        {
+          "order": 147,
+          "title": "CXXXIV: The Chase—Second Day"
+        },
+        {
+          "order": 148,
+          "title": "CXXXV: The Chase—Third Day (1/2)"
+        },
+        {
+          "order": 149,
+          "title": "CXXXV: The Chase—Third Day (2/2)"
+        },
+        {
+          "order": 150,
+          "title": "Epilogue"
+        }
+      ]
+    },
+    "se-james-joyce_a-portrait-of-the-artist-as-a-young-man": {
+      "title": "A Portrait of the Artist as a Young Man",
+      "author": "James Joyce",
+      "level": "C1 고급",
+      "total": 39,
+      "words": 84801,
+      "display": {
+        "titleKo": "젊은 예술가의 초상",
+        "authorKo": "제임스 조이스",
+        "binding": "huebsch",
+        "coverTitle": "A Portrait of\nthe Artist as\na Young Man",
+        "coverAuthor": "James Joyce"
+      },
+      "literature": {
+        "publishedYear": 1916
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I (1/8)"
+        },
+        {
+          "order": 2,
+          "title": "I (2/8)"
+        },
+        {
+          "order": 3,
+          "title": "I (3/8)"
+        },
+        {
+          "order": 4,
+          "title": "I (4/8)"
+        },
+        {
+          "order": 5,
+          "title": "I (5/8)"
+        },
+        {
+          "order": 6,
+          "title": "I (6/8)"
+        },
+        {
+          "order": 7,
+          "title": "I (7/8)"
+        },
+        {
+          "order": 8,
+          "title": "I (8/8)"
+        },
+        {
+          "order": 9,
+          "title": "II (1/7)"
+        },
+        {
+          "order": 10,
+          "title": "II (2/7)"
+        },
+        {
+          "order": 11,
+          "title": "II (3/7)"
+        },
+        {
+          "order": 12,
+          "title": "II (4/7)"
+        },
+        {
+          "order": 13,
+          "title": "II (5/7)"
+        },
+        {
+          "order": 14,
+          "title": "II (6/7)"
+        },
+        {
+          "order": 15,
+          "title": "II (7/7)"
+        },
+        {
+          "order": 16,
+          "title": "III (1/8)"
+        },
+        {
+          "order": 17,
+          "title": "III (2/8)"
+        },
+        {
+          "order": 18,
+          "title": "III (3/8)"
+        },
+        {
+          "order": 19,
+          "title": "III (4/8)"
+        },
+        {
+          "order": 20,
+          "title": "III (5/8)"
+        },
+        {
+          "order": 21,
+          "title": "III (6/8)"
+        },
+        {
+          "order": 22,
+          "title": "III (7/8)"
+        },
+        {
+          "order": 23,
+          "title": "III (8/8)"
+        },
+        {
+          "order": 24,
+          "title": "IV (1/4)"
+        },
+        {
+          "order": 25,
+          "title": "IV (2/4)"
+        },
+        {
+          "order": 26,
+          "title": "IV (3/4)"
+        },
+        {
+          "order": 27,
+          "title": "IV (4/4)"
+        },
+        {
+          "order": 28,
+          "title": "V (1/12)"
+        },
+        {
+          "order": 29,
+          "title": "V (2/12)"
+        },
+        {
+          "order": 30,
+          "title": "V (3/12)"
+        },
+        {
+          "order": 31,
+          "title": "V (4/12)"
+        },
+        {
+          "order": 32,
+          "title": "V (5/12)"
+        },
+        {
+          "order": 33,
+          "title": "V (6/12)"
+        },
+        {
+          "order": 34,
+          "title": "V (7/12)"
+        },
+        {
+          "order": 35,
+          "title": "V (8/12)"
+        },
+        {
+          "order": 36,
+          "title": "V (9/12)"
+        },
+        {
+          "order": 37,
+          "title": "V (10/12)"
+        },
+        {
+          "order": 38,
+          "title": "V (11/12)"
+        },
+        {
+          "order": 39,
+          "title": "V (12/12)"
+        }
+      ]
+    },
+    "se-jane-austen_pride-and-prejudice": {
+      "title": "Pride and Prejudice",
+      "author": "Jane Austen",
+      "level": "B2 상급",
+      "total": 65,
+      "words": 121497,
+      "display": {
+        "titleKo": "오만과 편견",
+        "authorKo": "제인 오스틴",
+        "binding": "egerton-boards",
+        "coverTitle": "Pride and\nPrejudice"
+      },
+      "literature": {
+        "publishedYear": 1813
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I"
+        },
+        {
+          "order": 2,
+          "title": "II"
+        },
+        {
+          "order": 3,
+          "title": "III"
+        },
+        {
+          "order": 4,
+          "title": "IV"
+        },
+        {
+          "order": 5,
+          "title": "V"
+        },
+        {
+          "order": 6,
+          "title": "VI"
+        },
+        {
+          "order": 7,
+          "title": "VII"
+        },
+        {
+          "order": 8,
+          "title": "VIII"
+        },
+        {
+          "order": 9,
+          "title": "IX"
+        },
+        {
+          "order": 10,
+          "title": "X"
+        },
+        {
+          "order": 11,
+          "title": "XI"
+        },
+        {
+          "order": 12,
+          "title": "XII"
+        },
+        {
+          "order": 13,
+          "title": "XIII"
+        },
+        {
+          "order": 14,
+          "title": "XIV"
+        },
+        {
+          "order": 15,
+          "title": "XV"
+        },
+        {
+          "order": 16,
+          "title": "XVI (1/2)"
+        },
+        {
+          "order": 17,
+          "title": "XVI (2/2)"
+        },
+        {
+          "order": 18,
+          "title": "XVII"
+        },
+        {
+          "order": 19,
+          "title": "XVIII (1/2)"
+        },
+        {
+          "order": 20,
+          "title": "XVIII (2/2)"
+        },
+        {
+          "order": 21,
+          "title": "XIX"
+        },
+        {
+          "order": 22,
+          "title": "XX"
+        },
+        {
+          "order": 23,
+          "title": "XXI"
+        },
+        {
+          "order": 24,
+          "title": "XXII"
+        },
+        {
+          "order": 25,
+          "title": "XXIII"
+        },
+        {
+          "order": 26,
+          "title": "XXIV"
+        },
+        {
+          "order": 27,
+          "title": "XXV"
+        },
+        {
+          "order": 28,
+          "title": "XXVI"
+        },
+        {
+          "order": 29,
+          "title": "XXVII"
+        },
+        {
+          "order": 30,
+          "title": "XXVIII"
+        },
+        {
+          "order": 31,
+          "title": "XXIX"
+        },
+        {
+          "order": 32,
+          "title": "XXX"
+        },
+        {
+          "order": 33,
+          "title": "XXXI"
+        },
+        {
+          "order": 34,
+          "title": "XXXII"
+        },
+        {
+          "order": 35,
+          "title": "XXXIII"
+        },
+        {
+          "order": 36,
+          "title": "XXXIV"
+        },
+        {
+          "order": 37,
+          "title": "XXXV"
+        },
+        {
+          "order": 38,
+          "title": "XXXVI"
+        },
+        {
+          "order": 39,
+          "title": "XXXVII"
+        },
+        {
+          "order": 40,
+          "title": "XXXVIII"
+        },
+        {
+          "order": 41,
+          "title": "XXXIX"
+        },
+        {
+          "order": 42,
+          "title": "XL"
+        },
+        {
+          "order": 43,
+          "title": "XLI"
+        },
+        {
+          "order": 44,
+          "title": "XLII"
+        },
+        {
+          "order": 45,
+          "title": "XLIII (1/2)"
+        },
+        {
+          "order": 46,
+          "title": "XLIII (2/2)"
+        },
+        {
+          "order": 47,
+          "title": "XLIV"
+        },
+        {
+          "order": 48,
+          "title": "XLV"
+        },
+        {
+          "order": 49,
+          "title": "XLVI"
+        },
+        {
+          "order": 50,
+          "title": "XLVII (1/2)"
+        },
+        {
+          "order": 51,
+          "title": "XLVII (2/2)"
+        },
+        {
+          "order": 52,
+          "title": "XLVIII"
+        },
+        {
+          "order": 53,
+          "title": "XLIX"
+        },
+        {
+          "order": 54,
+          "title": "L"
+        },
+        {
+          "order": 55,
+          "title": "LI"
+        },
+        {
+          "order": 56,
+          "title": "LII"
+        },
+        {
+          "order": 57,
+          "title": "LIII"
+        },
+        {
+          "order": 58,
+          "title": "LIV"
+        },
+        {
+          "order": 59,
+          "title": "LV"
+        },
+        {
+          "order": 60,
+          "title": "LVI"
+        },
+        {
+          "order": 61,
+          "title": "LVII"
+        },
+        {
+          "order": 62,
+          "title": "LVIII"
+        },
+        {
+          "order": 63,
+          "title": "LIX"
+        },
+        {
+          "order": 64,
+          "title": "LX"
+        },
+        {
+          "order": 65,
+          "title": "LXI"
+        }
+      ]
+    },
+    "se-john-stuart-mill_on-liberty": {
+      "title": "On Liberty",
+      "author": "John Stuart Mill",
+      "level": "C1 고급",
+      "total": 22,
+      "words": 46565,
+      "display": {
+        "titleKo": "자유론",
+        "authorKo": "존 스튜어트 밀",
+        "binding": "parker-1859",
+        "coverTitle": "On Liberty"
+      },
+      "literature": {
+        "publishedYear": 1859
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: Introductory (1/3)"
+        },
+        {
+          "order": 2,
+          "title": "I: Introductory (2/3)"
+        },
+        {
+          "order": 3,
+          "title": "I: Introductory (3/3)"
+        },
+        {
+          "order": 4,
+          "title": "II: Of the Liberty of Thought and Discussion (1/7)"
+        },
+        {
+          "order": 5,
+          "title": "II: Of the Liberty of Thought and Discussion (2/7)"
+        },
+        {
+          "order": 6,
+          "title": "II: Of the Liberty of Thought and Discussion (3/7)"
+        },
+        {
+          "order": 7,
+          "title": "II: Of the Liberty of Thought and Discussion (4/7)"
+        },
+        {
+          "order": 8,
+          "title": "II: Of the Liberty of Thought and Discussion (5/7)"
+        },
+        {
+          "order": 9,
+          "title": "II: Of the Liberty of Thought and Discussion (6/7)"
+        },
+        {
+          "order": 10,
+          "title": "II: Of the Liberty of Thought and Discussion (7/7)"
+        },
+        {
+          "order": 11,
+          "title": "III: Of Individuality, as One of the Elements of Well-Being (1/4)"
+        },
+        {
+          "order": 12,
+          "title": "III: Of Individuality, as One of the Elements of Well-Being (2/4)"
+        },
+        {
+          "order": 13,
+          "title": "III: Of Individuality, as One of the Elements of Well-Being (3/4)"
+        },
+        {
+          "order": 14,
+          "title": "III: Of Individuality, as One of the Elements of Well-Being (4/4)"
+        },
+        {
+          "order": 15,
+          "title": "IV: Of the Limits to the Authority of Society Over the Individual (1/4)"
+        },
+        {
+          "order": 16,
+          "title": "IV: Of the Limits to the Authority of Society Over the Individual (2/4)"
+        },
+        {
+          "order": 17,
+          "title": "IV: Of the Limits to the Authority of Society Over the Individual (3/4)"
+        },
+        {
+          "order": 18,
+          "title": "IV: Of the Limits to the Authority of Society Over the Individual (4/4)"
+        },
+        {
+          "order": 19,
+          "title": "V: Applications (1/4)"
+        },
+        {
+          "order": 20,
+          "title": "V: Applications (2/4)"
+        },
+        {
+          "order": 21,
+          "title": "V: Applications (3/4)"
+        },
+        {
+          "order": 22,
+          "title": "V: Applications (4/4)"
+        }
+      ]
+    },
+    "se-l-frank-baum_the-wonderful-wizard-of-oz": {
+      "title": "The Wonderful Wizard of Oz",
+      "author": "L. Frank Baum",
+      "level": "A2 초급",
+      "total": 26,
+      "words": 39117,
+      "display": {
+        "titleKo": "오즈의 마법사",
+        "authorKo": "L. 프랭크 바움",
+        "binding": "tpl-cloth",
+        "coverTitle": "The Wonderful Wizard\nof Oz",
+        "coverPalette": "olive",
+        "coverOrnament": "gilt-title"
+      },
+      "literature": {
+        "publishedYear": 1900
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: The Cyclone"
+        },
+        {
+          "order": 2,
+          "title": "II: The Council with the Munchkins"
+        },
+        {
+          "order": 3,
+          "title": "III: How Dorothy Saved the Scarecrow"
+        },
+        {
+          "order": 4,
+          "title": "IV: The Road Through the Forest"
+        },
+        {
+          "order": 5,
+          "title": "V: The Rescue of the Tin Woodman"
+        },
+        {
+          "order": 6,
+          "title": "VI: The Cowardly Lion"
+        },
+        {
+          "order": 7,
+          "title": "VII: The Journey to the Great Oz"
+        },
+        {
+          "order": 8,
+          "title": "VIII: The Deadly Poppy Field"
+        },
+        {
+          "order": 9,
+          "title": "IX: The Queen of the Field Mice"
+        },
+        {
+          "order": 10,
+          "title": "X: The Guardian of the Gate"
+        },
+        {
+          "order": 11,
+          "title": "XI: The Wonderful City of Oz (1/2)"
+        },
+        {
+          "order": 12,
+          "title": "XI: The Wonderful City of Oz (2/2)"
+        },
+        {
+          "order": 13,
+          "title": "XII: The Search for the Wicked Witch (1/2)"
+        },
+        {
+          "order": 14,
+          "title": "XII: The Search for the Wicked Witch (2/2)"
+        },
+        {
+          "order": 15,
+          "title": "XIII: The Rescue"
+        },
+        {
+          "order": 16,
+          "title": "XIV: The Winged Monkeys"
+        },
+        {
+          "order": 17,
+          "title": "XV: The Discovery of Oz, the Terrible"
+        },
+        {
+          "order": 18,
+          "title": "XVI: The Magic Art of the Great Humbug"
+        },
+        {
+          "order": 19,
+          "title": "XVII: How the Balloon Was Launched"
+        },
+        {
+          "order": 20,
+          "title": "XVIII: Away to the South"
+        },
+        {
+          "order": 21,
+          "title": "XIX: Attacked by the Fighting Trees"
+        },
+        {
+          "order": 22,
+          "title": "XX: The Dainty China Country"
+        },
+        {
+          "order": 23,
+          "title": "XXI: The Lion Becomes the King of Beasts"
+        },
+        {
+          "order": 24,
+          "title": "XXII: The Country of the Quadlings"
+        },
+        {
+          "order": 25,
+          "title": "XXIII: Glinda the Good Witch Grants Dorothy’s Wish"
+        },
+        {
+          "order": 26,
+          "title": "XXIV: Home Again"
+        }
+      ]
+    },
     "se-lewis-carroll_alices-adventures-in-wonderland": {
       "title": "Alice’s Adventures in Wonderland",
       "author": "Lewis Carroll",
@@ -347,6 +3189,420 @@
         {
           "order": 12,
           "title": "XII: Alice’s Evidence"
+        }
+      ]
+    },
+    "se-marcus-aurelius_meditations_george-long": {
+      "title": "Meditations",
+      "author": "Marcus Aurelius",
+      "level": "C1 고급",
+      "total": 20,
+      "words": 45366,
+      "display": {
+        "titleKo": "명상록",
+        "authorKo": "마르쿠스 아우렐리우스",
+        "binding": "bell-daldy-1862",
+        "coverTitle": "Thoughts"
+      },
+      "literature": {
+        "publishedYear": 180
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Book I"
+        },
+        {
+          "order": 2,
+          "title": "Book II"
+        },
+        {
+          "order": 3,
+          "title": "Book III"
+        },
+        {
+          "order": 4,
+          "title": "Book IV (1/2)"
+        },
+        {
+          "order": 5,
+          "title": "Book IV (2/2)"
+        },
+        {
+          "order": 6,
+          "title": "Book V (1/2)"
+        },
+        {
+          "order": 7,
+          "title": "Book V (2/2)"
+        },
+        {
+          "order": 8,
+          "title": "Book VI (1/2)"
+        },
+        {
+          "order": 9,
+          "title": "Book VI (2/2)"
+        },
+        {
+          "order": 10,
+          "title": "Book VII (1/2)"
+        },
+        {
+          "order": 11,
+          "title": "Book VII (2/2)"
+        },
+        {
+          "order": 12,
+          "title": "Book VIII (1/2)"
+        },
+        {
+          "order": 13,
+          "title": "Book VIII (2/2)"
+        },
+        {
+          "order": 14,
+          "title": "Book IX (1/2)"
+        },
+        {
+          "order": 15,
+          "title": "Book IX (2/2)"
+        },
+        {
+          "order": 16,
+          "title": "Book X (1/2)"
+        },
+        {
+          "order": 17,
+          "title": "Book X (2/2)"
+        },
+        {
+          "order": 18,
+          "title": "Book XI (1/2)"
+        },
+        {
+          "order": 19,
+          "title": "Book XI (2/2)"
+        },
+        {
+          "order": 20,
+          "title": "Book XII"
+        }
+      ]
+    },
+    "se-thomas-mann_short-fiction_various-translators": {
+      "title": "Short Fiction",
+      "author": "Thomas Mann",
+      "level": "B2 상급",
+      "total": 74,
+      "words": 157339,
+      "display": {
+        "titleKo": "토니오 크뢰거 · 베니스에서의 죽음 외",
+        "authorKo": "토마스 만",
+        "binding": "tpl-jacket",
+        "coverTitle": "Short Fiction",
+        "coverAuthor": "Thomas Mann",
+        "coverPalette": "buff"
+      },
+      "literature": {
+        "publishedYear": 1930
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Little Herr Friedemann (1/4)"
+        },
+        {
+          "order": 2,
+          "title": "Little Herr Friedemann (2/4)"
+        },
+        {
+          "order": 3,
+          "title": "Little Herr Friedemann (3/4)"
+        },
+        {
+          "order": 4,
+          "title": "Little Herr Friedemann (4/4)"
+        },
+        {
+          "order": 5,
+          "title": "Little Louise (1/3)"
+        },
+        {
+          "order": 6,
+          "title": "Little Louise (2/3)"
+        },
+        {
+          "order": 7,
+          "title": "Little Louise (3/3)"
+        },
+        {
+          "order": 8,
+          "title": "Tobias Mindernickel (1/2)"
+        },
+        {
+          "order": 9,
+          "title": "Tobias Mindernickel (2/2)"
+        },
+        {
+          "order": 10,
+          "title": "The Wardrobe (1/2)"
+        },
+        {
+          "order": 11,
+          "title": "The Wardrobe (2/2)"
+        },
+        {
+          "order": 12,
+          "title": "The Path to the Cemetery (1/2)"
+        },
+        {
+          "order": 13,
+          "title": "The Path to the Cemetery (2/2)"
+        },
+        {
+          "order": 14,
+          "title": "The Infant Prodigy (1/2)"
+        },
+        {
+          "order": 15,
+          "title": "The Infant Prodigy (2/2)"
+        },
+        {
+          "order": 16,
+          "title": "Tristan (1/7)"
+        },
+        {
+          "order": 17,
+          "title": "Tristan (2/7)"
+        },
+        {
+          "order": 18,
+          "title": "Tristan (3/7)"
+        },
+        {
+          "order": 19,
+          "title": "Tristan (4/7)"
+        },
+        {
+          "order": 20,
+          "title": "Tristan (5/7)"
+        },
+        {
+          "order": 21,
+          "title": "Tristan (6/7)"
+        },
+        {
+          "order": 22,
+          "title": "Tristan (7/7)"
+        },
+        {
+          "order": 23,
+          "title": "Tonio Kröger (1/11)"
+        },
+        {
+          "order": 24,
+          "title": "Tonio Kröger (2/11)"
+        },
+        {
+          "order": 25,
+          "title": "Tonio Kröger (3/11)"
+        },
+        {
+          "order": 26,
+          "title": "Tonio Kröger (4/11)"
+        },
+        {
+          "order": 27,
+          "title": "Tonio Kröger (5/11)"
+        },
+        {
+          "order": 28,
+          "title": "Tonio Kröger (6/11)"
+        },
+        {
+          "order": 29,
+          "title": "Tonio Kröger (7/11)"
+        },
+        {
+          "order": 30,
+          "title": "Tonio Kröger (8/11)"
+        },
+        {
+          "order": 31,
+          "title": "Tonio Kröger (9/11)"
+        },
+        {
+          "order": 32,
+          "title": "Tonio Kröger (10/11)"
+        },
+        {
+          "order": 33,
+          "title": "Tonio Kröger (11/11)"
+        },
+        {
+          "order": 34,
+          "title": "At the Prophet’s"
+        },
+        {
+          "order": 35,
+          "title": "How Jappe Fought Do Escobar (1/3)"
+        },
+        {
+          "order": 36,
+          "title": "How Jappe Fought Do Escobar (2/3)"
+        },
+        {
+          "order": 37,
+          "title": "How Jappe Fought Do Escobar (3/3)"
+        },
+        {
+          "order": 38,
+          "title": "Death in Venice (1/13)"
+        },
+        {
+          "order": 39,
+          "title": "Death in Venice (2/13)"
+        },
+        {
+          "order": 40,
+          "title": "Death in Venice (3/13)"
+        },
+        {
+          "order": 41,
+          "title": "Death in Venice (4/13)"
+        },
+        {
+          "order": 42,
+          "title": "Death in Venice (5/13)"
+        },
+        {
+          "order": 43,
+          "title": "Death in Venice (6/13)"
+        },
+        {
+          "order": 44,
+          "title": "Death in Venice (7/13)"
+        },
+        {
+          "order": 45,
+          "title": "Death in Venice (8/13)"
+        },
+        {
+          "order": 46,
+          "title": "Death in Venice (9/13)"
+        },
+        {
+          "order": 47,
+          "title": "Death in Venice (10/13)"
+        },
+        {
+          "order": 48,
+          "title": "Death in Venice (11/13)"
+        },
+        {
+          "order": 49,
+          "title": "Death in Venice (12/13)"
+        },
+        {
+          "order": 50,
+          "title": "Death in Venice (13/13)"
+        },
+        {
+          "order": 51,
+          "title": "Bashan and I (1/17)"
+        },
+        {
+          "order": 52,
+          "title": "Bashan and I (2/17)"
+        },
+        {
+          "order": 53,
+          "title": "Bashan and I (3/17)"
+        },
+        {
+          "order": 54,
+          "title": "Bashan and I (4/17)"
+        },
+        {
+          "order": 55,
+          "title": "Bashan and I (5/17)"
+        },
+        {
+          "order": 56,
+          "title": "Bashan and I (6/17)"
+        },
+        {
+          "order": 57,
+          "title": "Bashan and I (7/17)"
+        },
+        {
+          "order": 58,
+          "title": "Bashan and I (8/17)"
+        },
+        {
+          "order": 59,
+          "title": "Bashan and I (9/17)"
+        },
+        {
+          "order": 60,
+          "title": "Bashan and I (10/17)"
+        },
+        {
+          "order": 61,
+          "title": "Bashan and I (11/17)"
+        },
+        {
+          "order": 62,
+          "title": "Bashan and I (12/17)"
+        },
+        {
+          "order": 63,
+          "title": "Bashan and I (13/17)"
+        },
+        {
+          "order": 64,
+          "title": "Bashan and I (14/17)"
+        },
+        {
+          "order": 65,
+          "title": "Bashan and I (15/17)"
+        },
+        {
+          "order": 66,
+          "title": "Bashan and I (16/17)"
+        },
+        {
+          "order": 67,
+          "title": "Bashan and I (17/17)"
+        },
+        {
+          "order": 68,
+          "title": "Disorder and Early Sorrow (1/7)"
+        },
+        {
+          "order": 69,
+          "title": "Disorder and Early Sorrow (2/7)"
+        },
+        {
+          "order": 70,
+          "title": "Disorder and Early Sorrow (3/7)"
+        },
+        {
+          "order": 71,
+          "title": "Disorder and Early Sorrow (4/7)"
+        },
+        {
+          "order": 72,
+          "title": "Disorder and Early Sorrow (5/7)"
+        },
+        {
+          "order": 73,
+          "title": "Disorder and Early Sorrow (6/7)"
+        },
+        {
+          "order": 74,
+          "title": "Disorder and Early Sorrow (7/7)"
         }
       ]
     }

@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { refCheckKey, refReadKey } from './refReadStore';
 // rt: 접두 판별의 단일 원천 — 독해 트랙 네임스페이스 규칙은 readingProgress.js 가 소유한다.
 import { isReadingSlug } from './readingProgress';
 
@@ -101,18 +102,20 @@ export async function pullProgress(userId, readKeys, { force = false } = {}) {
 
     for (const [lang, readKey] of Object.entries(readKeys)) {
       const remote = byLang[lang] || new Map();
-      const checkKey = `${readKey}_check`;
+      // 이 계정의 키만 합친다(LOCAL-PROGRESS-ACCOUNT-001) — 옛 무계정 키(손님 몫)나 다른 계정의 키는 이 계정 서버 기록에 올리지 않는다.
+      const ownReadKey = refReadKey(readKey, userId);
+      const checkKey = refCheckKey(readKey, userId);
 
       // 읽음 — 합집합 (서버→로컬 추가, 로컬 전용은 서버로)
       let localRead;
-      try { localRead = new Set(JSON.parse(localStorage.getItem(readKey) || '[]')); }
+      try { localRead = new Set(JSON.parse(localStorage.getItem(ownReadKey) || '[]')); }
       catch { localRead = new Set(); }
       // 자가 치유 — 과거(필터 이전) 병합이 섞어 넣은 rt: 잔재를 로컬 Set 에서 걷어낸다.
       // 남겨두면 완주율이 계속 부풀고, 아래 push 루프가 rt: 를 챕터 읽음처럼 되밀어 올린다.
       const cleanRead = new Set([...localRead].filter(s => !isReadingSlug(s)));
       const mergedRead = mergeChapterRead(cleanRead, remote);
       if (cleanRead.size !== localRead.size || mergedRead.size !== cleanRead.size) {
-        localStorage.setItem(readKey, JSON.stringify([...mergedRead]));
+        localStorage.setItem(ownReadKey, JSON.stringify([...mergedRead]));
         changed = true;
       }
       for (const slug of mergedRead) {

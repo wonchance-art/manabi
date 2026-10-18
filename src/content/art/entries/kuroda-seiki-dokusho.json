@@ -1,0 +1,58 @@
+{
+  "id": "kuroda-seiki-dokusho",
+  "wikidata": "Q115236835",
+  "genre": "painting",
+  "artist": "kuroda-seiki",
+  "title": {
+    "native": "読書",
+    "ko": "독서",
+    "reading": "どくしょ"
+  },
+  "date": {
+    "text": "明治24年(1891)",
+    "source": "colbase",
+    "startYear": 1891,
+    "endYear": 1891,
+    "certainty": "exact"
+  },
+  "periods": [
+    "jp-meiji"
+  ],
+  "medium": {
+    "native": "カンヴァス・油彩",
+    "ko": "캔버스에 유채"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10937"
+    },
+    {
+      "place": "grez-sur-loing",
+      "role": "made"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-47590"
+    }
+  ],
+  "terms": [
+    "有閑",
+    "サロン",
+    "入選"
+  ],
+  "lookFor": [
+    "책장을 넘기는 손가락은 어디에 있을까요?",
+    "덧창 틈으로 들어온 빛이 가장 밝게 닿은 곳은 어디일까요?",
+    "왼쪽 벽에 세로로 쓴 화가의 서명을 찾아봐요."
+  ],
+  "image": {
+    "source": "colbase",
+    "sourceId": "cobas-47590",
+    "alt": "붉은 블라우스에 짙은 남색 치마를 입은 젊은 여성이 덧창이 닫힌 창가 의자에 앉아 고개를 숙이고 책장을 넘긴다. 왼쪽 벽에 세로로 쓴 서명이 있다."
+  }
+}

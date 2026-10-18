@@ -5,7 +5,10 @@ export const MAIN_NAV = Object.freeze([
   // intentPrefetch = 마우스가 머물거나 키보드 포커스가 올 때만 대기 화면까지 받는다(APP-FEEL-004, src/lib/intentPrefetch.js).
   // 서재는 붙이지 않는다 — 자체 loading이 없어 AUTO가 라우터 상태만 받는다(골격 이득 없이 붙잡힘 위험만).
   { href: '/home', label: '배움', icon: 'learn', prefetch: false, intentPrefetch: true },
-  { href: '/conversation/new', label: '대화', icon: 'chat', prefetch: false },
+  // 대화도 의도 prefetch(CONV-INTENT-001 — 오너 「권장대로」 2026-10-17 KST). 서버 데이터가 없는 정적 화면이라 대기 화면 없이도 auto가
+  // 화면 RSC를 통째로 받는다(클릭 뒤 서버 요청 0). 실측(통합 빌드 20b5239e · 1440 합성 로그인 · 7회 중앙값): 클릭 → 「새 대화」 제목
+  // 469 → 401ms, 첫 반응(주소) 179 → 103ms, 요청 수 7건 그대로(앞당김). 머물기만 하고 안 누르면 RSC 12.6KB(4분에 한 번).
+  { href: '/conversation/new', label: '대화', icon: 'chat', prefetch: false, intentPrefetch: true },
   { href: '/materials', label: '서재', icon: 'library', prefetch: false },
   // 산책도 화면 진입 prefetch를 끈다(BFCACHE-A-001 — 오너 승인 2026-10-17 KST 선택지 A). Next 15.5 RSC prefetch 응답은
   // no-store라 받기만 해도 Chrome이 그 화면을 bfcache에 넣지 않는다(JsNetworkRequestReceivedCacheControlNoStoreResource) —
@@ -21,8 +24,9 @@ export function navigationOwner(pathname) {
   if (/^\/conversation(?:\/|$)/.test(pathname)) return '/conversation/new';
   if (/^\/(?:discover|studies|world|suggestions)(?:\/|$)/.test(pathname)) return '/discover';
   // 메뉴에서 빠진 교재 · 복습 · 학습 경로는 배움 소속이다 — 어느 메뉴에도 불이 안 들어오는 화면을 만들지 않는다(정정 2026-10-11).
-  if (/^\/(?:lessons|books|vocab|review|study|learn|progress)(?:\/|$)/.test(pathname)) return '/home';
-  if (/^\/(?:materials|viewer|library|pdf|epub|groups)(?:\/|$)/.test(pathname)) return '/materials';
+  // 작문은 배움(학습 순환의 산출 — 단어장 · 오늘 학습에서 연다), 빠른 분석은 서재(자료 추가로 이어진다) 소속(오너 「권장대로」 2026-10-17 KST).
+  if (/^\/(?:lessons|books|vocab|review|study|learn|progress|writing)(?:\/|$)/.test(pathname)) return '/home';
+  if (/^\/(?:materials|viewer|library|pdf|epub|groups|quick)(?:\/|$)/.test(pathname)) return '/materials';
   return pathname === '/home' ? '/home' : null;
 }
 // Published-book reading counts never incorporate legacy quizzes or vocabulary schedules.

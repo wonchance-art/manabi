@@ -1,4 +1,5 @@
 import { callGemini, parseGeminiJSON, buildTokenizationPrompt } from './gemini';
+import { isServiceConfigError } from './errorMessage';
 import { canonizeTokenPos } from './server/posCanon';
 import { boundaryParagraphRequest, compactBoundaryText, readBoundaryEdits, settleBoundaryRecord } from './boundaryEdits';
 import { locateLineTokens, splitSentenceRanges } from './viewerSentenceLine';
@@ -14,6 +15,11 @@ export const ANALYZE_MAX_LINE_LEN = 200;
 // 100줄을 꽉 채우지 않고 예산 안에서 묶는다. 실측(2026-10-12, 실제 토크나이저): 중국어 판별 대상 ≈0.24개/자 → 400자 ≈ 100개,
 // 영어(사전 채워진 상태) ≈0.05개/자 → 2000자 ≈ 100개, 일본어는 판별이 없어 뜻 조회(캐시 의존)만 — 800자.
 export const ANALYZE_PACK_MAX_CHARS = { Chinese: 400, Japanese: 800, English: 2000 };
+/** 한국어 요청 예산 — 문단 배치와 같다(8줄 · 1600자). 서버 캡(KOREAN_ANALYSIS_LIMITS 100줄 · 2000자) 안이고 LLM 출력 캡을 넘지 않게. */
+/** Gemini 줄 분석(프랑스어 등) 한 요청의 글자 상한 — 약 100단어 · 토큰 130개 남짓, 출력 캡 8192토큰의 절반 아래. */
+export const GEMINI_LINE_MAX_CHARS = 600;
+export const KOREAN_PACK_MAX_LINES = 8;
+export const KOREAN_PACK_MAX_CHARS = 1600;
 // 429(분당 20회 초과) — Retry-After(초)만큼 기다렸다가 다시 보낸다. 값이 없거나 이상하면 기본, 너무 길면 상한.
 export const RATE_LIMIT_RETRIES = 2;
 const RETRY_AFTER_DEFAULT_SEC = 5;
@@ -56,6 +62,35 @@ export function splitAnalysisLine(line, { language, maxLen = ANALYZE_MAX_LINE_LE
     start = end;
   }
   return segments.length ? segments : [{ start: 0, end: text.length }];
+}
+
+/**
+ * 한국어 줄을 서버 줄 캡(KOREAN_ANALYSIS_LIMITS.lineLength 200자) 안의 잇닿은 원문 조각 [{text, start}]로 — 공백도 조각에 남겨
+ * 이으면 줄 그대로다(한국어 토큰은 공백까지 원문을 덮는다). 칼선은 문장 끝 → 공백 뒤 낱말 첫머리 → 캡 자리 순, 모두 글자(자소 묶음)
+ * 경계에서만 — 옛한글 풀어쓴 자모를 가르지 않는다. 문단 하나가 한 줄인 정본 책(날개 · 독립선언서 955자 실측)이 분석을 끝낼 수 있게.
+ */
+export function koreanLineUnits(line, maxLen = ANALYZE_MAX_LINE_LEN) {
+  const text = String(line ?? '');
+  if (text.length <= maxLen) return [{ text, start: 0 }];
+  const graphemes = new Set([text.length]);
+  for (const { index } of new Intl.Segmenter('ko', { granularity: 'grapheme' }).segment(text)) graphemes.add(index);
+  const sentenceEnds = new Set(splitSentenceRanges(text, { language: 'Korean' }).map((range) => range.end));
+  const afterSentence = (p) => { let q = p; while (q > 0 && SPACE.test(text[q - 1])) q -= 1; return q < p && sentenceEnds.has(q); };
+  const tests = [afterSentence, (p) => SPACE.test(text[p - 1]) && !SPACE.test(text[p]), () => true];
+  const units = [];
+  let start = 0;
+  while (text.length - start > maxLen) {
+    const limit = start + maxLen;
+    let end = -1;
+    for (const test of tests) {
+      for (let p = limit; p > start && end < 0; p -= 1) if (graphemes.has(p) && test(p)) end = p;
+      if (end > 0) break;
+    }
+    units.push({ text: text.slice(start, end), start });
+    start = end;
+  }
+  units.push({ text: text.slice(start), start });
+  return units;
 }
 
 /**
@@ -141,6 +176,23 @@ export function tokensCoverLine(line, texts, language) {
  * - existingJson 전달 시 failed_indices 줄만 재시도 (성공 토큰 재사용).
  */
 /**
+ * 첫 「서비스 설정」(결제 · 크레딧) 실패에서 남은 요청을 멈추는 표지(GEMINI-402-GUARD) — 기다려도 풀리지 않는 실패라 긴 자료가
+ * 같은 벽에 요청을 계속 던지지 않게 한다. 하이브리드(서버 응답 code service_config)와 줄 단위(/api/gemini 402 · 같은 판정)가 같이 쓴다.
+ * 멈춘 뒤 남은 줄은 각 경로의 기존 실패 길(failed_indices — 이어서 분석으로 복구)로 끝낸다. 호출마다 새로 만든다(다음 분석은 처음부터 보낸다).
+ */
+export function createServiceStop() {
+  let stopped = false;
+  return {
+    get stopped() { return stopped; },
+    /** 서버 응답 본문(code) 또는 던져진 오류(status · 문자열)를 본다 — 오류 문자열은 분류에만 쓰고 화면에 싣지 않는다. 서비스 설정이면 멈춘다. */
+    note({ code, error } = {}) {
+      if (code === 'service_config' || (error && isServiceConfigError(error.status, String(error)))) stopped = true;
+      return stopped;
+    },
+  };
+}
+
+/**
  * 최종 상태 판정 — 성공 토큰이 하나도 없으면 'failed'.
  * 전량 실패를 'partial'로 두면 UI가 "분석 완료(재시도 필요)"라고 말해 실패를 가린다
  * (#969 — 중국어 EPUB 전량 실패가 '완료'로 표시된 사고).
@@ -212,7 +264,7 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
       }
       paragraphs.push({ lineIndices: [i], lines: [''], empty: true });
     } else {
-      // 한국어 요청은 단일 LLM 출력 캡 안의 작은 배치. 긴 줄은 별도 요청에서 정직하게 실패한다.
+      // 한국어 요청은 단일 LLM 출력 캡 안의 작은 배치. 긴 줄은 혼자 문단이 되고 캡 안 조각(koreanLineUnits)으로 나눠 보낸다.
       if (isKorean && currentPara.lines.length && (currentPara.lines.length >= 8 || lines[i].length > 200 ||
           currentPara.lines.some((line) => line.length > 200) ||
           currentPara.lines.reduce((sum, line) => sum + line.length, 0) + lines[i].length > 1600)) {
@@ -253,7 +305,8 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
 
   // 3. 문단 계획 — 분석할 문단은 요청 줄(조각)을 미리 만든다. 서버 줄 캡(ANALYZE_MAX_LINE_LEN)을 넘는 중·일·영 줄은 문장 단위
   // 조각으로 나눠 보내고 결과를 원래 줄로 잇는다(id_<줄>_<순번>은 줄 안에서 이어 매긴다 — 보통 분석한 줄과 같은 모양).
-  // 경계 기록은 그 구간이 든 조각에 조각 좌표로 싣고, 칼선은 기록 구간 안에 두지 않는다. 한국어는 나누지 않는다(현행).
+  // 경계 기록은 그 구간이 든 조각에 조각 좌표로 싣고, 칼선은 기록 구간 안에 두지 않는다. 한국어는 잇닿은 원문 조각(koreanLineUnits)
+  // 으로 나누고 조각 토큰의 원문 위치(sourceSpan)를 줄 좌표로 옮겨 잇는다.
   const homeOf = new Map(); // 기록 항목 → 실은 조각
   const allSent = []; // 실은 기록 항목(문단 순서 · 문단 안은 기록 목록 순서)
   const plans = paragraphs.map((para) => {
@@ -265,7 +318,12 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
     const lineUnits = para.lines.map((text, li) => {
       const records = sentBoundaries.filter(item => item.payload.line === li);
       // 한 조각이면 지금처럼 그 줄 기록을 모두 싣는다(옮김·pending은 서버가 정한다). 여러 조각이면 구간이 든 조각에만.
-      const { units: own, homes } = analysisLineUnits(text, records.map(item => item.payload), { language, split: !isKorean });
+      if (isKorean) {
+        const own = koreanLineUnits(text).map(piece => ({ ...piece, offset: 0, sent: [] }));
+        units.push(...own);
+        return own;
+      }
+      const { units: own, homes } = analysisLineUnits(text, records.map(item => item.payload), { language });
       units.push(...own);
       records.forEach((item, k) => { if (homes[k]) { homes[k].sent.push(item); homeOf.set(item, homes[k]); } });
       return own;
@@ -276,7 +334,7 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
 
   // 4. 요청 묶기 — 중·일·영은 분석할 문단의 조각을 문단을 넘어 한 요청에 묶는다(≤ANALYZE_MAX_LINES줄 · 언어별 글자 예산).
   // 서버는 사용자당 분당 20회라, 문단마다 한 번씩 보내면 20문단 넘는 자료가 429로 partial이 됐다(2026-10-12 실계정 재현).
-  // 재사용 문단은 보내지 않는다. 한국어는 문단(8줄 · 1600자 배치) = 요청 그대로다.
+  // 재사용 문단은 보내지 않는다. 한국어는 문단(8줄 · 1600자 배치) = 요청 — 긴 줄을 나눈 조각도 같은 예산으로 묶는다.
   const charBudget = ANALYZE_PACK_MAX_CHARS[language] ?? ANALYZE_PACK_MAX_CHARS.English;
   const requests = [];
   let chunk = null;
@@ -284,8 +342,8 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
     if (plan.kind !== 'analyze') continue;
     if (isKorean) chunk = null;
     for (const unit of plan.units) {
-      if (!chunk || chunk.units.length >= ANALYZE_MAX_LINES
-          || (!isKorean && chunk.units.length && chunk.chars + unit.text.length > charBudget)) {
+      if (!chunk || chunk.units.length >= (isKorean ? KOREAN_PACK_MAX_LINES : ANALYZE_MAX_LINES)
+          || (chunk.units.length && chunk.chars + unit.text.length > (isKorean ? KOREAN_PACK_MAX_CHARS : charBudget))) {
         chunk = { units: [], chars: 0 };
         requests.push(chunk);
       }
@@ -344,32 +402,33 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
     for (let li = 0; li < para.lineIndices.length; li++) {
       const idx = para.lineIndices[li];
       const results = lineUnits[li].map(unit => unitResults.get(unit));
-      const result = results[0];
 
       // 한국어: 토큰을 이으면 원문 줄과 같아야 한다(현행). 중·일·영: 조각이 하나라도 없거나 잘렸거나(truncated)
       // 줄을 다 덮지 못하면 실패(복구 가능)로 남긴다 — 뒷부분이 사라진 줄을 조용히 '완료'로 저장하지 않는다.
       const validLine = isKorean
-        ? !!result && Array.isArray(result.sequence) && !!result.dictionary &&
-          result.sequence.map((id) => result.dictionary[id]?.text ?? '').join('') === lines[idx]
+        ? results.every(item => item && Array.isArray(item.sequence) && item.dictionary) &&
+          results.flatMap(item => item.sequence.map((id) => item.dictionary[id]?.text ?? '')).join('') === lines[idx]
         : results.every(item => item && Array.isArray(item.sequence) && item.dictionary && !item.truncated) &&
           tokensCoverLine(para.lines[li], results.flatMap(item => item.sequence.map(id => item.dictionary[id]?.text ?? '')), language);
       if (validLine) {
         let pi = 0;
-        for (const item of results) {
+        results.forEach((item, k) => {
+          const shift = isKorean ? lineUnits[li][k].start : 0; // 조각 좌표 → 줄 좌표
           for (const srvId of item.sequence) {
             const newId = `id_${idx}_${pi++}_${timestamp}`;
             currentJson.sequence.push(newId);
             const token = item.dictionary[srvId];
+            const span = token.sourceSpan ? { start: token.sourceSpan.start + shift, end: token.sourceSpan.end + shift } : null;
             currentJson.dictionary[newId] = isKorean ? { ...token,
-              ...(token.sourceSpan ? { sourceSpan: { ...token.sourceSpan, lineIndex: idx,
-                start: lineOffsets[idx] + token.sourceSpan.start, end: lineOffsets[idx] + token.sourceSpan.end,
-                lineStart: token.sourceSpan.start, lineEnd: token.sourceSpan.end } } : {}),
-              ...(token.selectionGroup ? { selectionGroup: `ko_${idx}_${token.sourceSpan?.start}_${token.sourceSpan?.end}` } : {}),
+              ...(span ? { sourceSpan: { ...token.sourceSpan, lineIndex: idx,
+                start: lineOffsets[idx] + span.start, end: lineOffsets[idx] + span.end,
+                lineStart: span.start, lineEnd: span.end } } : {}),
+              ...(token.selectionGroup ? { selectionGroup: `ko_${idx}_${span?.start}_${span?.end}` } : {}),
               ...(token.failed ? { original_line_idx: idx } : {}),
             } : token;
           }
-        }
-        if (isKorean && (result.failed || result.sequence.some((id) => result.dictionary[id]?.failed))) {
+        });
+        if (isKorean && results.some(item => item.failed || item.sequence.some((id) => item.dictionary[id]?.failed))) {
           currentJson.failed_indices.push(idx);
         }
         // 경계 기록 갱신 — 서버가 조각마다 받은 순서대로 boundaryApplied를 돌려준다. 좌표는 줄 좌표로 되돌린다.
@@ -421,12 +480,12 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
   };
 
   if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-  // 서버가 「서비스 설정」(결제 · 크레딧, code service_config)으로 실패하면 남은 요청은 보내지 않는다 — 기다려도 풀리지 않는
-  // 실패라 긴 자료가 같은 벽에 요청을 계속 던지던 것(GEMINI-402-GUARD). 남은 줄은 지금 실패 응답과 같은 길(결과 없음 → failed_indices)로 끝난다.
-  let serviceStopped = false;
+  // 서버가 「서비스 설정」(결제 · 크레딧, code service_config)으로 실패하면 남은 요청은 보내지 않는다(createServiceStop).
+  // 남은 줄은 지금 실패 응답과 같은 길(결과 없음 → failed_indices)로 끝난다.
+  const serviceStop = createServiceStop();
   for (const { units } of requests) {
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-    if (serviceStopped) { units.forEach(unit => unitResults.set(unit, null)); continue; }
+    if (serviceStop.stopped) { units.forEach(unit => unitResults.set(unit, null)); continue; }
     const sent = new Set(units);
     const boundariesBody = allSent.filter(item => sent.has(homeOf.get(item)))
       .map(item => boundaryToUnit(item.payload, homeOf.get(item), units.indexOf(homeOf.get(item))));
@@ -441,7 +500,7 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
       }, signal);
       const data = await res.json();
       if (!res.ok) {
-        if (data?.code === 'service_config') serviceStopped = true;
+        serviceStop.note({ code: data?.code });
         throw new Error(data?.error || `HTTP ${res.status}`);
       }
       if (isKorean && (data?.metadata?.language !== language || data?.metadata?.explanationLocale !== explanationLocale ||
@@ -495,6 +554,8 @@ async function analyzeLineByLineGemini(rawText, signal, { metadata, onBatch, exi
   let currentConcurrency = concurrency;
   const MIN_CONCURRENCY = 2;
   let capacityErrorStreak = 0;
+  // 첫 서비스 설정 실패 뒤에는 남은 줄을 보내지 않고 기존 실패 길(failed)로 끝낸다 — 하이브리드와 같은 표지(createServiceStop).
+  const serviceStop = createServiceStop();
 
   const isRetry = !!(existingJson?.failed_indices?.length);
   const failedSet = new Set(isRetry ? existingJson.failed_indices : []);
@@ -518,36 +579,56 @@ async function analyzeLineByLineGemini(rawText, signal, { metadata, onBatch, exi
       const line = lines[idx].trim();
       if (!line) return { idx, type: 'empty' };
       if (isRetry && !failedSet.has(idx)) return { idx, type: 'reuse' };
+      if (serviceStop.stopped) return { idx, type: 'failed', line };
 
-      const MAX_ATTEMPTS = 5;
-      let lastError = null;
-      for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-        try {
-          const raw = await callGemini(buildTokenizationPrompt(line, lang), signal);
-          const payload = parseGeminiJSON(raw);
-          return { idx, type: 'success', payload, line };
-        } catch (e) {
-          lastError = e;
-          if (signal?.aborted) throw e;
-          if (attempt < MAX_ATTEMPTS - 1) {
-            const msg = (e.message || '').toLowerCase();
-            const isCapacity = msg.includes('high demand') || msg.includes('overloaded') ||
-              msg.includes('unavailable') || msg.includes('503') || msg.includes('resource_exhausted');
-            const isRate = msg.includes('429') || msg.includes('too many') || msg.includes('요청이 너무');
-            const baseDelay = isCapacity ? 5000 : isRate ? 2000 : 1000;
-            const delay = baseDelay * Math.pow(2, attempt);
-            await new Promise(r => setTimeout(r, delay));
-          }
+      // 긴 문단(레미제라블 1,502단어 실측)은 한 요청이면 출력 캡(8192토큰)에 잘린 JSON이 된다 — 문장 끝에서 나눈 조각마다 요청하고
+      // 토큰을 순서대로 잇는다. 조각 하나라도 끝내 실패하면 줄 전체를 실패로 남긴다(재시도는 줄 단위 현행).
+      const pieces = splitAnalysisLine(line, { language: lang, maxLen: GEMINI_LINE_MAX_CHARS }).map(({ start, end }) => line.slice(start, end));
+      const payload = { sequence: [], dictionary: {} };
+      for (const piece of pieces) {
+        const part = await analyzeGeminiPiece(piece);
+        if (!Array.isArray(part?.sequence) || !part.dictionary) return { idx, type: 'failed', line };
+        for (const id of part.sequence) {
+          const key = String(payload.sequence.length);
+          payload.sequence.push(key);
+          payload.dictionary[key] = part.dictionary[id];
         }
       }
-      console.error(`[analyzeText] line ${idx} permanently failed: ${lastError?.message}`);
-      return { idx, type: 'failed', line };
+      return { idx, type: 'success', payload, line };
+
+      async function analyzeGeminiPiece(piece) {
+        const MAX_ATTEMPTS = 5;
+        let lastError = null;
+        for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+          if (serviceStop.stopped) break; // 같은 묶음의 다른 줄이 먼저 서비스 설정으로 멈췄다
+          try {
+            const raw = await callGemini(buildTokenizationPrompt(piece, lang), signal);
+            return parseGeminiJSON(raw);
+          } catch (e) {
+            lastError = e;
+            if (signal?.aborted) throw e;
+            if (serviceStop.note({ error: e })) break; // 기다려도 풀리지 않는다 — 재시도하지 않는다
+            if (attempt < MAX_ATTEMPTS - 1) {
+              const msg = (e.message || '').toLowerCase();
+              const isCapacity = msg.includes('high demand') || msg.includes('overloaded') ||
+                msg.includes('unavailable') || msg.includes('503') || msg.includes('resource_exhausted');
+              const isRate = msg.includes('429') || msg.includes('too many') || msg.includes('요청이 너무');
+              const baseDelay = isCapacity ? 5000 : isRate ? 2000 : 1000;
+              const delay = baseDelay * Math.pow(2, attempt);
+              await new Promise(r => setTimeout(r, delay));
+            }
+          }
+        }
+        console.error(`[analyzeText] line ${idx} permanently failed: ${lastError?.message}`);
+        return null;
+      }
     });
 
     const results = await Promise.all(promises);
 
     const failedInBatch = results.filter(r => r.type === 'failed').length;
-    if (failedInBatch >= batchIndices.length / 2) {
+    // 서비스 설정으로 멈춘 실패는 용량 압박이 아니다 — 동시성을 줄이며 3초씩 기다리지 않는다.
+    if (!serviceStop.stopped && failedInBatch >= batchIndices.length / 2) {
       capacityErrorStreak++;
       if (capacityErrorStreak >= 2 && currentConcurrency > MIN_CONCURRENCY) {
         const newConc = Math.max(MIN_CONCURRENCY, Math.floor(currentConcurrency / 2));

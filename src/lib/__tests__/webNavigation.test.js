@@ -18,13 +18,16 @@ describe('approved navigation and current edition resume', () => {
     expect(navigationOwner('/conversation-other')).toBe(null);
     for (const item of MAIN_NAV) expect(navigationOwner(item.href)).toBe(item.href);
     // 메뉴에서 빠진 교재 · 복습 · 학습 경로는 배움 소속이다(정정 2026-10-11) — 어느 메뉴에도 불이 안 들어오는 화면이 없게.
-    for (const path of ['/vocab', '/vocab?lang=Chinese', '/review/grammar', '/study', '/learn/course', '/lessons', '/books/japanese-n5', '/progress']) {
+    for (const path of ['/vocab', '/vocab?lang=Chinese', '/review/grammar', '/study', '/learn/course', '/lessons', '/books/japanese-n5', '/progress', '/writing']) {
       expect(navigationOwner(path.split('?')[0]), path).toBe('/home');
     }
     expect(navigationOwner('/study/library')).toBe('/materials');
     expect(navigationOwner('/studies/france/fr-culture')).toBe('/discover');
     expect(navigationOwner('/viewer/a-material')).toBe('/materials');
     expect(navigationOwner('/groups')).toBe('/materials');
+    expect(navigationOwner('/quick')).toBe('/materials'); // 빠른 분석 → 자료로 저장(서재)
+    expect(navigationOwner('/writing-other')).toBe(null);
+    expect(navigationOwner('/quickly')).toBe(null);
     expect(navigationOwner('/vocabulary-other')).toBe(null);
     expect(navigationOwner('/materials-other')).toBe(null);
     expect(navigationOwner('/admin')).toBe(null);

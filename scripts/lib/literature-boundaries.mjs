@@ -18,7 +18,8 @@ import { createHash } from 'node:crypto';
 
 export const LITERATURE_BOUNDARY_FILE = 'boundaries.json';
 export const LITERATURE_BOUNDARY_VERSION = 1;
-export const BOUNDARY_REASONS = Object.freeze(['ruby', 'ruby-repeat', 'katakana']);
+// name · name-repeat — 위키문헌 중국어 교정본의 고유명사 밑줄(专名线, metadata.literature.nameMarks — LIT-SRC-WS-1). 루비와 같은 자리 규칙.
+export const BOUNDARY_REASONS = Object.freeze(['ruby', 'ruby-repeat', 'katakana', 'name', 'name-repeat']);
 
 const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest('hex');
 const compact = (value) => String(value ?? '').replace(/\s+/gu, '');
@@ -59,7 +60,8 @@ function splitRegion(spans, start, end, limits) {
 
 /**
  * 한 작품의 장들 → 장마다 묶기 기록 [{order, textSha256, edits: [{line, start, end, text, reason}]}].
- * chapters: 빌드 초안의 장({order, rawText, metadata.literature.rubyLocks}) · tokenizeLine: async (줄) => [{text}] (분석기와 같은 것).
+ * chapters: 빌드 초안의 장({order, rawText, metadata.literature.rubyLocks | nameMarks}) · tokenizeLine: async (줄) => [{text}] (분석기와 같은 것).
+ * 표시 자리({start, base} — 장 원문 좌표)는 아오조라 저자 루비(rubyLocks → ruby)와 위키문헌 고유명사 밑줄(nameMarks → name)을 같은 규칙으로 쓴다.
  */
 export async function literatureBoundaryMerges(chapters, tokenizeLine, limits = { maxTokens: 8, maxChars: 12, maxEdits: 200 }) {
   // 1) 장마다 줄 토큰 경계를 한 번만 잰다.
@@ -71,12 +73,14 @@ export async function literatureBoundaryMerges(chapters, tokenizeLine, limits = 
     measured.push({ chapter, lines, spansByLine });
   }
   // 2) 저자 루비 자리 — 쪼개진 기준은 작품 전체의 「이름 같은 낱말」 목록에도 올린다(다른 자리 묶기).
-  const names = new Set();
+  const names = new Map(); // 쪼개졌던 표시 낱말 → 다른 자리의 이유(ruby-repeat | name-repeat)
   const lineStarts = (lines) => { const starts = []; let at = 0; for (const line of lines) { starts.push(at); at += line.length + 1; } return starts; };
   const rubyByChapter = measured.map(({ chapter, lines, spansByLine }) => {
     const starts = lineStarts(lines);
     const edits = [];
-    for (const lock of chapter.metadata.literature.rubyLocks || []) {
+    const literature = chapter.metadata.literature;
+    const marks = [...(literature.rubyLocks || []).map((lock) => ({ ...lock, reason: 'ruby' })), ...(literature.nameMarks || []).map((mark) => ({ ...mark, reason: 'name' }))];
+    for (const lock of marks) {
       if (lock.base.length < 2) continue;
       let line = starts.length - 1;
       while (line > 0 && starts[line] > lock.start) line -= 1;
@@ -85,8 +89,8 @@ export async function literatureBoundaryMerges(chapters, tokenizeLine, limits = 
       const start = compact(lines[line].slice(0, lock.start - starts[line])).length;
       const end = start + compact(lock.base).length;
       if (!splitRegion(spans, start, end, limits)) continue;
-      edits.push({ line, start, end, text: compact(lock.base), reason: 'ruby' });
-      if (NAME_LIKE.test(lock.base)) names.add(compact(lock.base));
+      edits.push({ line, start, end, text: compact(lock.base), reason: lock.reason });
+      if (NAME_LIKE.test(lock.base)) names.set(compact(lock.base), `${lock.reason}-repeat`);
     }
     return edits;
   });
@@ -105,9 +109,9 @@ export async function literatureBoundaryMerges(chapters, tokenizeLine, limits = 
     spansByLine.forEach((spans, line) => {
       if (!spans) return;
       const text = compact(lines[line]);
-      for (const name of names) {
+      for (const [name, reason] of names) {
         for (let at = text.indexOf(name); at >= 0; at = text.indexOf(name, at + 1)) {
-          if (splitRegion(spans, at, at + name.length, limits)) take({ line, start: at, end: at + name.length, text: name, reason: 'ruby-repeat' });
+          if (splitRegion(spans, at, at + name.length, limits)) take({ line, start: at, end: at + name.length, text: name, reason });
         }
       }
     });
@@ -135,8 +139,9 @@ export function serializeBoundaries(chapters, tokenizer) {
 /**
  * 빌드: boundaries.json → 장 metadata.viewerBoundaries(분석 요청에 실리는 「한 단어로 묶기」 기록, 모두 pending으로 시작).
  * 장 원문 해시가 다르면 throw — 원문·장 나눔이 바뀐 뒤 낡은 좌표로 엉뚱한 자리를 묶지 않게(다시 만든다).
+ * prefix: 기록 id·source의 출처 이름(아오조라 'aozora' · 위키문헌 'wikisource').
  */
-export function withBoundaryMerges(draft, boundaries) {
+export function withBoundaryMerges(draft, boundaries, prefix = 'aozora') {
   if (!boundaries) return draft;
   if (boundaries.schemaVersion !== LITERATURE_BOUNDARY_VERSION || !Array.isArray(boundaries.chapters)) throw new Error(`${LITERATURE_BOUNDARY_FILE} 형식이 아니다`);
   const byOrder = new Map(boundaries.chapters.map((chapter) => [chapter.order, chapter]));
@@ -152,7 +157,7 @@ export function withBoundaryMerges(draft, boundaries) {
         if (!BOUNDARY_REASONS.includes(edit.reason) || compact(lines[edit.line] ?? '').slice(edit.start, edit.end) !== edit.text) {
           throw new Error(`${LITERATURE_BOUNDARY_FILE} ${chapter.order}장 기록 ${k + 1}이 원문 자리와 다르다`);
         }
-        return { id: `aozora_${chapter.order}_${k}`, line: edit.line, start: edit.start, end: edit.end, text: edit.text, cuts: [], base: [], status: 'pending', source: `aozora-${edit.reason}` };
+        return { id: `${prefix}_${chapter.order}_${k}`, line: edit.line, start: edit.start, end: edit.end, text: edit.text, cuts: [], base: [], status: 'pending', source: `${prefix}-${edit.reason}` };
       });
       return { ...chapter, metadata: { ...chapter.metadata, viewerBoundaries: { version: 1, edits } } };
     }),

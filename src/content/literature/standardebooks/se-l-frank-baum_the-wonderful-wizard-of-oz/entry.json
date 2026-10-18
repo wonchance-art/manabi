@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "provider": "standardebooks",
+  "repo": "standardebooks/l-frank-baum_the-wonderful-wizard-of-oz",
+  "commit": "36104f0b9ace47debd6ac19cec9dc91b3858e83a",
+  "url": "https://standardebooks.org/ebooks/l-frank-baum/the-wonderful-wizard-of-oz",
+  "title": "The Wonderful Wizard of Oz",
+  "author": "L. Frank Baum",
+  "publishedYear": 1900,
+  "authorDeathYear": 1919,
+  "countryOfOrigin": "US",
+  "level": "A2 초급",
+  "display": {
+    "titleKo": "오즈의 마법사",
+    "authorKo": "L. 프랭크 바움",
+    "binding": "tpl-cloth",
+    "coverTitle": "The Wonderful Wizard\nof Oz",
+    "coverPalette": "olive",
+    "coverOrnament": "gilt-title"
+  },
+  "files": [
+    {
+      "path": "chapter-1.xhtml",
+      "sha256": "f9fdf29b9000a11777afabb8ff3c5ef2819438a3a092976d39620ef4382316c0"
+    },
+    {
+      "path": "chapter-2.xhtml",
+      "sha256": "427d5d2d8a8e7806104fce68f1641904d8c61a4c513a047c906eed427085be60"
+    },
+    {
+      "path": "chapter-3.xhtml",
+      "sha256": "464fa3a6a371dde781d8eb9a0853f5843c35310b2a1d2b60f71fe53773fe9734"
+    },
+    {
+      "path": "chapter-4.xhtml",
+      "sha256": "a6cffbd33421bda32e4d96ec540d1dbc6a47dd680e81165a4b2dbf6a6f0b2bd2"
+    },
+    {
+      "path": "chapter-5.xhtml",
+      "sha256": "32f4b43f50ad72947e4ac44c6462920aaa9fadc4c9eda69d9a689d1e1a0b9dd8"
+    },
+    {
+      "path": "chapter-6.xhtml",
+      "sha256": "1d4bb240443b6dd64e779813124d22567fe767ac5a377d0947ea47291285160f"
+    },
+    {
+      "path": "chapter-7.xhtml",
+      "sha256": "3e98da2c19a5d5b6a2ca21c5a266d952597faf363d54760dfc7352d7bdf51d68"
+    },
+    {
+      "path": "chapter-8.xhtml",
+      "sha256": "56a306ad6399221c4658d90a5f1ce2e35e0aad32d64c118f062896d8f8514520"
+    },
+    {
+      "path": "chapter-9.xhtml",
+      "sha256": "03a39de4d85fe2e95a1bd2e83a32e97921ed28e17aa286748933955c1a859337"
+    },
+    {
+      "path": "chapter-10.xhtml",
+      "sha256": "d16b8396bd027ccc422a435db50a4c88f3c189bd0b675709f7d20f7e46e42556"
+    },
+    {
+      "path": "chapter-11.xhtml",
+      "sha256": "cf44208731371a0ca84730b0a5b613639d690e8fba37962af73aeb338d6b9082"
+    },
+    {
+      "path": "chapter-12.xhtml",
+      "sha256": "98d8d53edf5d95c2976898a3ac58feebc41b0db1cd0573c9ead004a72a90344e"
+    },
+    {
+      "path": "chapter-13.xhtml",
+      "sha256": "c8b01306f99d4a4d35e0b4b85c98134f0ebaca34098f55e79a63294fca896803"
+    },
+    {
+      "path": "chapter-14.xhtml",
+      "sha256": "e2baabc33728f376e769aee8c4d4c0af7db9cbbe35022239cb10fc08ee9d495a"
+    },
+    {
+      "path": "chapter-15.xhtml",
+      "sha256": "1cac05bf521c4511859bc17ba34757da744c70cb1bff632b85490b2601950553"
+    },
+    {
+      "path": "chapter-16.xhtml",
+      "sha256": "a0c799125984f9d66997154ff8bf020b0a9851962b9fc6e2cc7294a4045218b1"
+    },
+    {
+      "path": "chapter-17.xhtml",
+      "sha256": "8e88b10701696288fbe297aeb2ebf734d8b5a5c7461d4cadb4fac4dacec1cd9d"
+    },
+    {
+      "path": "chapter-18.xhtml",
+      "sha256": "6dad66feab9371456a1c582cbdd71ce42bf1e8270708131b91208d4493e17948"
+    },
+    {
+      "path": "chapter-19.xhtml",
+      "sha256": "30621d7c1e24f014cfd229762963e6bee72322959de34a30a6aeac96514c0285"
+    },
+    {
+      "path": "chapter-20.xhtml",
+      "sha256": "2959ffb486de855220d78ffcd71074b33496e0a9746c2f09e1a6ce256b080892"
+    },
+    {
+      "path": "chapter-21.xhtml",
+      "sha256": "56f3480ccb3c7bbddfe8fb5801554e5fecd416fa38ef8a5ff440d3a5b3ca247a"
+    },
+    {
+      "path": "chapter-22.xhtml",
+      "sha256": "bd6df29f6e0e00fc86a20b0e4c4654193b357220e5ecd256d3c3062fda33dcd2"
+    },
+    {
+      "path": "chapter-23.xhtml",
+      "sha256": "01cd04d16febee8b730f651b26ce9db32b40c32680c925cd23582bf214ba689e"
+    },
+    {
+      "path": "chapter-24.xhtml",
+      "sha256": "ccaeab1c92e2390bd225b339b818b015c54f5c068c47f168175da207b5e8e4f5"
+    }
+  ],
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-17",
+    "reviewedJurisdictions": [
+      "US",
+      "KR"
+    ],
+    "evidenceUrl": "https://standardebooks.org/ebooks/l-frank-baum/the-wonderful-wizard-of-oz"
+  }
+}

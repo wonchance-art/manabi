@@ -3,6 +3,7 @@ import { memo } from 'react';
 import { splitRuby } from '../../lib/splitRuby';
 import { pinyinToneClass } from '../../lib/pinyinTone';
 import { pronHiddenFor } from '../../lib/readingSheet';
+import { variantPieces } from '../../lib/scriptVariant';
 import { ZhText } from './ZhText';
 
 /**
@@ -18,8 +19,10 @@ import { ZhText } from './ZhText';
 function ReaderToken({
   tokenId, token, className, selected, paceStyle, tokenRefs,
   lineHeadText, lineHeadRawIdx, linePickLabel, onLinePick, onTokenClick,
-  pronDisplay, isKnown, isSaved, patternMark, zhGrid, showToneColors, nextText = '',
+  pronDisplay, isKnown, isSaved, patternMark, zhGrid, showToneColors, nextText = '', variantText,
 }) {
+  // 번체로 읽기(LIT-SRC-WS-1) — 화면 글자만 같은 자리의 번체로(분석 · 데이터 속성은 간체 그대로). 없으면 원문 그대로.
+  const shownText = variantText ?? token.text;
   // ruby는 토글과 무관하게 항상 만든다 — 폭 예약(ruby[data-pinyin])이 병음을 꺼도 유지돼야 켤 때 글자가 밀리지 않는다.
   // 활용형은 기본형 읽기에서 한자 읽기만(違[ちが]い) · 来 | ない는 바로 뒤 토큰 표기(nextText, 같은 줄)로 こ를 고른다.
   const rubySegments = token.furigana ? splitRuby(token.text, token.furigana, token.base_form, nextText) : null;
@@ -58,7 +61,7 @@ function ReaderToken({
       {linePick}
       {rubySegments ? (
         <span className={`surface${furiOff ? ' surface--furi-off' : ''}`} {...wordAction}>
-          {rubySegments.map((seg, i) =>
+          {variantPieces(rubySegments, variantText).map((seg, i) =>
             seg.kanji
               ? <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined}
                   data-yomi={seg.pinyin ? undefined : '1'}>
@@ -68,7 +71,7 @@ function ReaderToken({
           )}{mark}
         </span>
       ) : (
-        <span className="surface" {...wordAction}>{zhGrid ? <ZhText text={token.text} /> : token.text}{mark}</span>
+        <span className="surface" {...wordAction}>{zhGrid ? <ZhText text={shownText} /> : shownText}{mark}</span>
       )}
     </div>
   );

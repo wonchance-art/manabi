@@ -2,6 +2,7 @@
 import {chromium,webkit} from 'playwright-core';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
+import {inactiveLearningReply} from './fixtures/learning-snapshot.mjs';
 const {PGlite}=await import(process.env.QA_PGLITE_MODULE||'@electric-sql/pglite');
 const base=process.env.QA_BASE||'http://127.0.0.1:3102',out=process.env.QA_OUT||'/private/tmp/manabi-unified-qa';fs.mkdirSync(out,{recursive:true});
 const db=new PGlite();const uid='00000000-0000-4000-8000-000000000077',day='2026-09-10';
@@ -79,6 +80,9 @@ await context.route('**/rest/v1/**',async r=>{
 });
 await context.route('**/api/suggestions/today',r=>r.fulfill({json:[]}));
 await context.route('**/api/analyze',async r=>{if(analysisDelay)await new Promise(resolve=>setTimeout(resolve,analysisDelay));if(analysisFail)return r.fulfill({status:503,json:{error:'검수 분석 실패'}});const {lines}=r.request().postDataJSON();analyzedLines.push(lines);try{await r.fulfill({json:{results:lines.map(line=>({sequence:['word'],dictionary:{word:{text:line,meaning:emptyMeaning?'':'검수 표현의 뜻',pos:'명사',furigana:'よみ'}}}))}});}catch{}});
+// 저장 단어 읽기(2026-10-14부터 GET /api/learning/vocabulary?view=learning snapshot) · FSRS 상태 · 한도 · 언어 계약 · 제외 목록은
+// 공용 합성 응답으로 답한다(learning-snapshot.mjs — 비활성 FSRS 계정, 저장 단어 없음). 해당 없는 요청은 위 처리로 넘긴다(나중 등록이 먼저 돈다).
+await context.route('**/api/learning/**',r=>{const reply=inactiveLearningReply(r.request(),{actorId:uid,rows:[]});return reply?r.fulfill({status:reply.status,json:reply.json}):r.fallback();});
 const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));
 const check=label=>{report.checks.push(label);console.log(label);};
 const waitFor=async fn=>{for(let i=0;i<100;i++){if(await fn())return;await page.waitForTimeout(100);}throw new Error('condition timeout');};
@@ -171,7 +175,14 @@ try {
   const overflow=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,elements:[...document.querySelectorAll('body *')].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&(r.right>innerWidth+1||r.left< -1)}).slice(0,30).map(e=>({tag:e.tagName,cls:e.className,left:e.getBoundingClientRect().left,right:e.getBoundingClientRect().right,text:e.textContent?.slice(0,100)}))}));if(overflow.scroll>overflow.width+1)console.log(JSON.stringify(overflow));
   assert.equal(overflow.scroll>overflow.width+1,false,`overflow ${viewport.width}`);
   await dock.getByRole('button',{name:'크게 보기',exact:true})[activate]();await dialog.waitFor();
-  await dialog.getByRole('button',{name:'뜻 가리기'})[activate]();
+  // 크게 보기 표시 설정은 「병음 · 한자 훈음 · 뜻」 토글(aria-pressed, WordDisplayControls)이다 — 「뜻 가리기」 단추 · 안내 문구는 없어졌다.
+  // 뜻을 끄면 토글이 꺼지고 글자 그래픽의 이름(aria-label 「글자, 읽기, 뜻」)에서 뜻이 빠진다.
+  const meaningToggle=dialog.getByRole('group',{name:'표현 표시 설정'}).getByRole('button',{name:'뜻',exact:true});
+  const shownLabel=await dialog.locator('.teaching-word-graphic').first().getAttribute('aria-label');
+  assert.equal(await meaningToggle.getAttribute('aria-pressed'),'true');await meaningToggle[activate]();
+  await waitFor(async()=>await meaningToggle.getAttribute('aria-pressed')==='false');
+  const hiddenLabel=await dialog.locator('.teaching-word-graphic').first().getAttribute('aria-label');
+  assert(hiddenLabel.length<shownLabel.length&&shownLabel.startsWith(hiddenLabel),`meaning hidden: ${shownLabel} -> ${hiddenLabel}`);
   await page.screenshot({path:out+`/presentation-${viewport.width}.png`});
   await dialog.getByRole('button',{name:'교재로 돌아가기 ×'})[activate]();
   await page.screenshot({path:out+`/reader-${viewport.width}.png`});

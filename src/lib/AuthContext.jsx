@@ -8,25 +8,30 @@ import { authCallbackUrl } from './authRedirect';
 import { isRepeatedSignup } from './authErrors';
 import { migrateGuestDrillQueue } from './drillSrs';
 import { useToast } from './ToastContext';
+import { watchAccountMutations } from './accountQueryCache';
+import { REF_READ_KEYS, claimGuestRefProgress } from './refReadStore';
+import { clearAllStudySources } from './studySourceHandoff';
+import { syncScHintCookie } from './scFontHint';
 import { pullProgress } from './refProgress';
 import { createProfileReadOnlyRefresh, recordExplicitProfileLogin } from './learningActivity';
+import { accountCacheReset, accountLeft, clearAccountQueries, noteAccount } from './accountQueryCache';
 
 const AuthContext = createContext(null);
 
 // 레퍼런스 진도 동기화용 읽음 키 (언어명 → localStorage 키)
-const REF_READ_KEYS = {
-  Japanese: 'ja_read_chapters',
-  English: 'en_read_chapters',
-  French: 'fr_read_chapters',
-  Chinese: 'zh_read_chapters',
-};
+// (언어 → 키 바탕 REF_READ_KEYS는 lib/refReadStore — 계정 키 · 손님 몫 합치기와 한곳)
 
 // 세션 쿠키가 있는데 SDK 조각을 못 받았을 때 다시 복원하는 간격(그 밖에는 online 이벤트에서).
 const AUTH_RESTORE_RETRY_MS = [2000, 8000, 30000];
 
 const STREAK_MILESTONES = { 7: '🔥 7일 연속 학습 달성!', 30: '🏆 30일 연속 학습 달성!', 100: '🌟 100일 연속 학습 달성!' };
 
-export function AuthProvider({ children }) {
+// queryClient: providers.jsx가 넘긴다 — 계정이 바뀌면 계정에 딸린 캐시를 비운다(AUTH-CACHE-CLEAR-001 · lib/accountQueryCache).
+// onAccountLeft: providers.jsx가 router.refresh를 넘긴다 — 같은 순간(A → 손님 · A → B)에 서버 렌더 데이터도 버린다(AUTH-ROUTER-REFRESH-001).
+//   서버 컴포넌트가 쿠키 세션으로 그린 A의 데이터(서재 HydrationBoundary · /study · /writing · /review/grammar · 관리 화면 · 뷰어 제목)는
+//   react-query가 아니라 RSC 페이로드 · 라우터 캐시에 있다 — 지금 화면과 뒤로 가기 캐시에 남아 B에게 보였다. 로그아웃 버튼마다 따로
+//   부르던 router.refresh(Layout · MyPage — 계정 삭제 · 다른 탭 전환은 빠져 있었다)를 이 한 관문으로 모았다.
+export function AuthProvider({ children, queryClient, onAccountLeft }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -41,6 +46,11 @@ export function AuthProvider({ children }) {
   const unloadingRef = useRef(false);
 
   const actorRef = useRef(null);
+  const lastSignedInRef = useRef(null); // 이 탭에서 마지막으로 들어와 있던 계정(손님 → B 때 앞선 A의 늦은 쓰기를 비우는 판정)
+  // 계정이 떠난 뒤 그리기가 끝나면(아래 effect) 한 번 서버 렌더를 버린다. 콜백은 최신 것을 쓴다(렌더마다 새 함수여도 effect를 다시 걸지 않게).
+  const accountLeftPendingRef = useRef(false);
+  const onAccountLeftRef = useRef(onAccountLeft);
+  onAccountLeftRef.current = onAccountLeft;
   const authGenerationRef = useRef(0);
   const explicitLoginRequestRef = useRef(0);
   const mountedRef = useRef(true);
@@ -49,7 +59,25 @@ export function AuthProvider({ children }) {
   const profileReaderRef = useRef(null);
 
   function adoptUser(nextUser) {
-    if (actorRef.current !== (nextUser?.id ?? null)) {
+    const nextActor = nextUser?.id ?? null;
+    noteAccount(nextActor);
+    if (actorRef.current !== nextActor) {
+      // A → 손님 · A → B(· 손님 → B인데 앞서 A): 새 user로 그리기(setUser) 전에 A의 캐시를 비운다 — 같은 키(['material', id] 등)를
+      // B가 받아 그리지 않게. 기기 캐시(IndexedDB)도 새 계정이 열 수 없는 기록을 지운다(대기 연산은 보존 — offlineCache).
+      // 서버 렌더 버리기(router.refresh)는 계정이 떠날 때만(A → 손님 · A → B) — 손님 → B는 로그인 화면이 이미 새로 그린다.
+      const left = accountLeft(actorRef.current, nextActor);
+      if (accountCacheReset(lastSignedInRef.current, actorRef.current, nextActor)) {
+        clearAccountQueries(queryClient);
+        import('./offlineCache').then((cache) => cache.purgeOfflineForAccount(nextActor)).catch(() => {});
+        clearAllStudySources(); // 넘겨줄 글(/study?source=mine)은 넘긴 계정의 것 — 떠나면 지운다
+        // 간체 글꼴 힌트도 이 판정에서 지운다(SC-LINK-001 리뷰 N2) — 다음 계정은 배움 화면에서 자기 학습 언어로 다시 쓴다.
+        // 처음 계정을 맞을 때(손님 → 계정, 앞선 계정 없음)는 지우지 않는다.
+        syncScHintCookie(false);
+      }
+      if (left) accountLeftPendingRef.current = true;
+      // 손님 몫 레퍼런스 진도는 이 기기의 첫 로그인 계정에만 한 번 합친다 — 화면이 합친 값을 바로 읽게 그리기 전에.
+      if (nextActor) claimGuestRefProgress(nextActor);
+      if (nextActor) lastSignedInRef.current = nextActor;
       authGenerationRef.current += 1;
       actorRef.current = nextUser?.id ?? null;
       loginActorRef.current = null;
@@ -86,8 +114,13 @@ export function AuthProvider({ children }) {
   }
 
   // refresh와 로그인은 별개다. 누락된 프로필도 읽기 중에는 생성하지 않는다.
-  async function refreshProfileReadOnly(userId) {
-    try { return await profileReaderRef.current.refresh(userId); }
+  // 밖에서 부르는 refreshProfileReadOnly · fetchProfile은 「쓰기 뒤 재읽기」다 — 늘 새로 읽는다(공유하지 않음).
+  async function refreshProfileReadOnly(userId) { return readProfile(userId); }
+  // 세션 경로(getSession · 인증 알림)만 같은 계정의 진행 중 읽기를 공유한다(PROFILE-READ-SHARE-001) — 페이지 로드마다
+  // 두 경로가 몇 ms 차이로 같은 읽기를 보냈다. 쓰기 경계 뒤에 시작된 읽기만 합류한다(learningActivity 참고).
+  function readSessionProfile(userId) { return readProfile(userId, { share: true }); }
+  async function readProfile(userId, options) {
+    try { return await profileReaderRef.current.refresh(userId, options); }
     catch (err) {
       if (mountedRef.current && actorRef.current === userId) {
         setProfileSettledFor(userId); // 실패도 끝 — 받는 중으로 영원히 두지 않는다
@@ -114,6 +147,14 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // 서버 렌더 버리기 — 새 계정(또는 손님)으로 그린 뒤에 한 번. effect라 로그아웃 버튼의 이동(router.push('/auth'))이 먼저 나가고
+  // 새로고침이 뒤따른다(예전 Layout의 「이동 뒤 차례로」 순서 — 이동이 새로고침을 버리지 않게). 손님 → 계정 · 같은 계정은 부르지 않는다.
+  useEffect(() => {
+    if (!accountLeftPendingRef.current) return;
+    accountLeftPendingRef.current = false;
+    onAccountLeftRef.current?.();
+  }, [user]);
+
   useEffect(() => {
     mountedRef.current = true;
     return () => {
@@ -123,6 +164,9 @@ export function AuthProvider({ children }) {
       subscriptionRef.current?.unsubscribe();
     };
   }, []);
+
+  // 계정을 가로지른 mutation의 늦은 쓰기를 지운다(MUTATION-ACCOUNT-GEN-001 — lib/accountQueryCache.watchAccountMutations).
+  useEffect(() => (queryClient ? watchAccountMutations(queryClient) : undefined), [queryClient]);
 
   // 이동 시작을 표시 — bfcache 복원(persisted)까지 고려해 pageshow에서 되돌린다.
   useEffect(() => {
@@ -148,6 +192,9 @@ export function AuthProvider({ children }) {
       typeof document !== 'undefined' && hasSupabaseSessionCookie(document.cookie);
     if (!hasSessionCookie) {
       guestConfirmedRef.current = true;
+      noteAccount(null); // 쿠키가 없으면 손님이 확정이다 — 기기 캐시 읽기(whenAccountKnown)가 기다리지 않게
+      // 손님 확정 — 세션 쿠키가 없다(만료 · 다른 탭 로그아웃 뒤). 학습자 힌트를 남기지 않는다(SC-LINK-001 리뷰 N2).
+      syncScHintCookie(false);
       // 게스트 확정도 Provider 값을 바꾼다 — 스트리밍 본문이 다 온 뒤에(whenDocumentParsed).
       const stopWaiting = whenDocumentParsed(() => { if (!cancelled) setLoading(false); });
       return () => { cancelled = true; stopWaiting(); };
@@ -184,7 +231,7 @@ export function AuthProvider({ children }) {
             adoptUser(session?.user ?? null);
             if (session?.user) {
               hadSessionRef.current = true;
-              fetchProfile(session.user.id, session.user.user_metadata);
+              readSessionProfile(session.user.id); // 세션 경로 — 알림 경로와 진행 중 읽기 공유
             }
             setLoading(false);
           });
@@ -197,6 +244,7 @@ export function AuthProvider({ children }) {
           // 그 뒤에도 online이 오면 다시 복원한다(복원되면 user가 들어온다).
           if (!restored && retries < AUTH_RESTORE_RETRY_MS.length) { retryTimer = setTimeout(restore, AUTH_RESTORE_RETRY_MS[retries++]); return; }
           setLoading(false);
+          noteAccount(null); // 복원을 포기한 확정(손님) — 기다리던 기기 캐시 읽기를 풀어 준다
         });
     };
     window.addEventListener('online', restore);
@@ -225,7 +273,7 @@ export function AuthProvider({ children }) {
       if (session?.user) {
         hadSessionRef.current = true;
         // SDK는 cookie 복원/탭 복귀에도 SIGNED_IN을 보낸다. 이벤트는 로그인 쓰기의 증거가 아니다.
-        refreshProfileReadOnly(session.user.id);
+        readSessionProfile(session.user.id); // 세션 경로 — getSession 경로와 진행 중 읽기 공유
       } else {
         setProfile(null);
         // 세션이 있다가 사라진 경우 — 명시적 로그아웃이 아니면 만료로 간주

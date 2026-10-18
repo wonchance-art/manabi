@@ -8,6 +8,8 @@ import { JaText } from './refShared';
 import { stripInlineReadings } from '../lib/studyParagraph';
 import { GROWTH_LABELS, GROWTH_COPY } from '../lib/growthStats';
 import { authEntryHref } from '../lib/authRedirect';
+import { knownAccount } from '../lib/accountQueryCache';
+import { writeStudySource } from '../lib/studySourceHandoff';
 
 /** 날짜 포맷 — YYYY.M.D (ko) */
 function fmtDate(at) {
@@ -112,7 +114,7 @@ function MySourceComposer({ lang, langCode }) {
   function start() {
     const t = text.trim();
     if (!t) return;
-    try { localStorage.setItem(`study_source_${lang}`, t.slice(0, SOURCE_MAX)); } catch {}
+    writeStudySource(lang, t.slice(0, SOURCE_MAX), knownAccount() ?? null); // 계정 · 시각과 함께(lib/studySourceHandoff)
     router.push(`/study?source=mine&lang=${encodeURIComponent(lang)}`);
   }
 

@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "fr",
+  "key": "ws-fr-alphonse-daudet_la-derniere-classe",
+  "main": "Les Contes du lundi/La Dernière classe",
+  "url": "https://fr.wikisource.org/wiki/Les_Contes_du_lundi%2FLa_Derni%C3%A8re_classe",
+  "title": "La Dernière Classe",
+  "author": "Alphonse Daudet",
+  "level": "B1 중급",
+  "publishedYear": 1872,
+  "authorDeathYear": 1897,
+  "countryOfOrigin": "FR",
+  "mortPourLaFrance": false,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "FR",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "마지막 수업",
+    "authorKo": "알퐁스 도데",
+    "binding": "lemerre",
+    "coverAuthor": "Alphonse Daudet",
+    "coverTitle": "La dernière\nClasse",
+    "coverSubtitle": "Récit d’un petit Alsacien.",
+    "coverPlace": "Paris",
+    "coverImprint": "Alphonse Lemerre, éditeur",
+    "coverYear": 1873
+  },
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "Les Contes du lundi/La Dernière classe",
+      "revid": 10790647,
+      "timestamp": "2020-10-16T21:12:51Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "prp",
+          "sha256": "0f0afd693ffd166c2f54af21266f830baf75ce2a7763605f813c0ed7df570084"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "ko",
+  "key": "ws-ko-kim-yu-jeong_bombom",
+  "main": "봄봄",
+  "url": "https://ko.wikisource.org/wiki/%EB%B4%84%EB%B4%84",
+  "title": "봄봄",
+  "author": "김유정",
+  "level": "중급",
+  "publishedYear": 1935,
+  "authorDeathYear": 1937,
+  "countryOfOrigin": "KR",
+  "mortPourLaFrance": null,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "봄봄",
+    "authorKo": "김유정",
+    "binding": "tpl-cjk-vertical",
+    "coverTitle": "봄봄",
+    "coverAuthor": "김유정",
+    "coverPalette": "cream"
+  },
+  "fetchedAt": "2026-10-17",
+  "files": [
+    {
+      "page": "봄봄",
+      "revid": 458652,
+      "timestamp": "2026-08-26T05:48:43Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "body",
+          "sha256": "1422f9aa4470fe35f52df8f839a9bc89b1ea291a7bf06a2b1cb930236fcc168f"
+        }
+      ]
+    }
+  ]
+}

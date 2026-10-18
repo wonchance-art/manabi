@@ -1,4 +1,5 @@
 'use client';
+import { ZhSlot } from '@/components/fonts/ScFontLink';
 import {currentLibraryTarget,runLibraryOperation,invalidateLibrary,filterActiveSources} from '@/lib/libraryOperations';
 import { composerOf } from '@/lib/materialComposer';
 import { documentOf, isStudySnapshot, documentListRow } from '@/lib/materialDocument';
@@ -35,8 +36,11 @@ import LiteratureCover from '../components/books/LiteratureCover';
 // 표지 · 제목은 표시용 대조표만(LIT-DISPLAY-001) — 전체 대조표(해시 · 크레딧)는 뷰어 출처 줄 몫이라 서재 번들에 싣지 않는다.
 import { literatureWorkOfBook } from '../lib/literatureWorks';
 import { literatureChapterIncipit } from '../lib/literatureIncipits';
-import VictorianCover from '../components/books/VictorianCover';
+import CanonicalCover from '../components/books/CanonicalCover';
+import FirstEditionCover from '../components/books/FirstEditionCover';
 import { standardEbooksWorkOfBook } from '../lib/standardEbooksWorks';
+import { wikisourceWorkOfBook } from '../lib/wikisourceWorks';
+import { pdSiteWorkOfBook } from '../lib/pdSiteWorks';
 import { isCanonicalBookKey } from '../lib/canonicalBookKey';
 import { literatureChapterLabel, literatureDivisionLabel } from '../lib/literatureDisplay';
 import SuggestionArtwork from '../components/SuggestionArtwork';
@@ -62,7 +66,7 @@ function SuggestionCard({ suggestion: s, router, from = 'materials' }) {
           <span className="suggestion-card__source">{s.channel_name}</span>
           {canStudy && <span className="suggestion-card__ready">✓ 바로 읽기</span>}
         </div>
-        <h3 className="suggestion-card__title" lang={encounterLookupLang(s.language) || undefined}>{s.title}</h3>
+        <ZhSlot lang={encounterLookupLang(s.language)}><h3 className="suggestion-card__title" lang={encounterLookupLang(s.language) || undefined}>{s.title}</h3></ZhSlot>
         <div className="suggestion-card__actions">
           {canStudy ? <button className="btn btn--primary btn--sm" onClick={handleStudy}>바로 읽기</button>
             : source.url ? <a className="btn btn--sm" href={source.url} target="_blank" rel="noopener noreferrer">{source.label} ↗</a>
@@ -242,11 +246,11 @@ export default function MaterialsPage({ libraryView = null }) {
   useEffect(() => {
     let alive = true;
     import('../lib/offlineCache')
-      .then(({ pinnedMaterialIds }) => pinnedMaterialIds())
+      .then(({ pinnedMaterialIds }) => pinnedMaterialIds(user?.id ?? null)) // 이 계정이 받아 둔 것만(OFFLINE-ACCOUNT-SCOPE-001)
       .then((ids) => { if (alive) setPinnedIds(ids); })
       .catch(() => { /* 큐를 못 쓰는 환경(사생활 모드) — 배지가 안 뜰 뿐 */ });
     return () => { alive = false; };
-  }, []);
+  }, [user?.id]);
 
   // 받아두기 토글. 자료실 목록 행에는 뷰어가 읽는 raw_text·source_pdf_id·page_start·
   // page_end·status가 **없어서**(실측) 전체 행을 한 번 더 받아 담는다 — 목록 행을
@@ -256,7 +260,7 @@ export default function MaterialsPage({ libraryView = null }) {
     try {
       const cache = await import('../lib/offlineCache');
       if (pinnedIds.has(id)) {
-        await cache.unpinMaterial(id);
+        await cache.unpinMaterial(id, { owner: user?.id ?? null });
         queryClient.invalidateQueries({ queryKey: ['library-pinned', user?.id] });
         setPinnedIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
         toast('받아두기를 해제했어요.', 'info');
@@ -265,7 +269,7 @@ export default function MaterialsPage({ libraryView = null }) {
       const { data, error } = await supabase
         .from('reading_materials').select('*').eq('id', id).maybeSingle();
       if (error || !data) throw error || new Error('NOT_FOUND');
-      await cache.pinMaterial(data);
+      await cache.pinMaterial(data, { owner: user?.id ?? null });
       queryClient.invalidateQueries({ queryKey: ['library-pinned', user?.id] });
       setPinnedIds((prev) => new Set(prev).add(id));
       toast('받아뒀어요 — 연결이 없어도 열려요.', 'success');
@@ -771,10 +775,22 @@ export default function MaterialsPage({ libraryView = null }) {
               const english = work || !canonicalCovers ? null : standardEbooksWorkOfBook(b);
               const englishChapterOf = (c) => english?.chapters.find((item) => item.order === c._bookOrder);
               const englishProps = english ? {
-                art: <VictorianCover work={english} />,
+                art: <CanonicalCover work={english} />,
                 title: <span lang="en">{english.title}</span>,
                 subtitle: [english.display?.titleKo, english.display?.authorKo, english.literature?.publishedYear && `${english.literature.publishedYear}년 발표`].filter(Boolean).join(' · '),
                 meta: [english.level, english.words && `${english.words.toLocaleString()}단어`, `${english.total}장`, `읽음 ${readDone}/${b.chapters.length}`].filter(Boolean).join(' · ') + pendingNote,
+                fitLine: fitLineOf(bf, '장'),
+              } : null;
+              // 위키문헌(LIT-SRC-WS-1 — 중·불·한) · 전자책 사이트(LIT-SRC-PD-1 — 영·불) 정본 — 초판 장정 표지 + 원제·한국어 제목 + 장 제목.
+              // 분량은 중국어·한국어 글자 · 영어·프랑스어 단어.
+              const world = work || english || !canonicalCovers ? null : wikisourceWorkOfBook(b) || pdSiteWorkOfBook(b); // 공개 목록은 정본 표지 닫음(SE와 같은 fail closed)
+              const worldLang = { Chinese: 'zh-Hans', French: 'fr', Korean: 'ko', English: 'en' }[world?.language] || undefined;
+              const worldChapterOf = (c) => world?.chapters.find((item) => item.order === c._bookOrder);
+              const worldProps = world ? {
+                art: <FirstEditionCover work={world} />,
+                title: <ZhSlot lang={worldLang}><span lang={worldLang}>{world.title}</span></ZhSlot>, // 위키문헌 중국어 원제 — 간체 독립 스타일시트(SC-LINK-001)
+                subtitle: [world.display?.titleKo, world.display?.authorKo, world.literature?.publishedYear && `${world.literature.publishedYear}년 발표`].filter(Boolean).join(' · '),
+                meta: [world.level, world.size && `${world.size.toLocaleString()}${world.unit === 'chars' ? '자' : '단어'}`, `${world.total}장`, `읽음 ${readDone}/${b.chapters.length}`].filter(Boolean).join(' · ') + pendingNote,
                 fitLine: fitLineOf(bf, '장'),
               } : null;
               return (
@@ -787,12 +803,14 @@ export default function MaterialsPage({ libraryView = null }) {
                   fitLine={fitLineOf(bf, '과')}
                   {...literatureProps}
                   {...englishProps}
+                  {...worldProps}
                   rows={b.chapters.map((c) => ({
                     key: c.id,
                     onClick: () => openReader(`/viewer/${c.id}`),
                     lead: work ? literatureLead(c._bookOrder) : c._bookOrder,
                     title: work ? <span lang="ja">{literatureChapterIncipit(b.key, c._bookOrder) || c.title}</span>
                       : english ? <span lang="en">{englishChapterOf(c)?.title || c.title}</span>
+                      : world ? <ZhSlot lang={worldLang}><span lang={worldLang}>{worldChapterOf(c)?.title || c.title}</span></ZhSlot>
                       : c.title.includes(' — ') ? c.title.split(' — ').slice(1).join(' — ') : c.title,
                     right: chapterTags(c),
                   }))}
@@ -909,15 +927,17 @@ export default function MaterialsPage({ libraryView = null }) {
                 title={previewText || undefined}
               >
                 <div className="mat-card__head">
-                  <h3 className="card__title" lang={encounterLookupLang(language) || undefined}>
-                    <Link
-                      href={readerHref(`/viewer/${m.id}`)}
-                      style={{ color: 'inherit', textDecoration: 'none' }}
-                      onClick={(e) => { e.stopPropagation(); openReader(`/viewer/${m.id}`, e); }}
-                    >
-                      {m.title}
-                    </Link>
-                  </h3>
+                  <ZhSlot lang={encounterLookupLang(language)}>
+                    <h3 className="card__title" lang={encounterLookupLang(language) || undefined}>
+                      <Link
+                        href={readerHref(`/viewer/${m.id}`)}
+                        style={{ color: 'inherit', textDecoration: 'none' }}
+                        onClick={(e) => { e.stopPropagation(); openReader(`/viewer/${m.id}`, e); }}
+                      >
+                        {m.title}
+                      </Link>
+                    </h3>
+                  </ZhSlot>
                   {/* 카드 액션은 ⋯ 메뉴 **하나** — 받아두기 · (내 자료) 공개 전환 · 삭제. 상시 버튼 부활 금지(계약).
                       카드 전체가 뷰어로 가는 클릭 대상이라 메뉴 안 클릭은 전부 가로챈다(받아두려다 자료가 열리면 다른 동작). */}
                   <details

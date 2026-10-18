@@ -56,32 +56,58 @@ function tx(mode, fn) {
   })).catch(() => null);
 }
 
-/** 사본 저장 — { id, team, updatedAt, material }. */
-export async function putSharedCopy({ id, team, updatedAt = null, contentRevision = null, material }) {
+/* ── 계정 경계(OFFLINE-ACCOUNT-SCOPE-001 · 팀 사본, 2026-10-17 KST) ──
+ * 사본이 계정을 몰라, 같은 기기에서 A(로그인 학생)가 받은 팀 자료 사본을 B가 local: 뷰어 · 팀 페이지 목록으로 열었다.
+ * 로그인 계정의 사본은 계정을 붙인 키(`acct:<계정>:<id>`)로 따로 둔다 — 같은 과를 A · B가 각자 받아도 서로 덮지 않고(본인 사본 보존),
+ * 읽을 때 지금 계정의 것만 보인다(남에게 숨김). 지우지 않는다 — A가 다시 로그인하면 그대로(만료 7일은 그대로).
+ * 손님 사본(로그인 없이 팀 암호로 받은 것)과 이 판 이전 사본은 지금처럼 id 키 · 누구에게나 — 팀 해제(class_unlock)가 기기 단위라
+ * 손님 사본은 원래 그 기기의 몫이다. 키 경로(id) · DB 판(1)은 그대로다(판 올림 없음).
+ */
+const accountOf = (account) => (typeof account === 'string' && account ? account : null);
+/** 저장 키 — 로그인 계정이면 계정을 붙이고, 손님이면 자료 id 그대로(이전 판과 같은 자리). */
+export const copyKey = (id, owner) => (accountOf(owner) ? `acct:${accountOf(owner)}:${id}` : id);
+/** 이 사본을 지금 계정이 볼 수 있나 — 계정 사본은 그 계정만, 손님 · 이전 판 사본은 누구나. */
+export function copyVisible(entry, account) {
+  if (!entry) return false;
+  return !entry.owner || entry.owner === accountOf(account);
+}
+const view = (entry) => (entry && Object.prototype.hasOwnProperty.call(entry, 'copyId') ? { ...entry, id: entry.copyId } : entry);
+
+/** 사본 저장 — { id, team, updatedAt, material, owner }. owner = 받은 계정(손님 null). */
+export async function putSharedCopy({ id, team, updatedAt = null, contentRevision = null, material, owner = null }) {
   if (!id || !material) return false;
-  const r = await tx('readwrite', (store) => store.put({ id, team, updatedAt, contentRevision, material, savedAt: Date.now() }));
+  const who = accountOf(owner);
+  const r = await tx('readwrite', (store) => store.put({ id: copyKey(id, who), copyId: id, owner: who, team, updatedAt, contentRevision, material, savedAt: Date.now() }));
   return r !== null;
 }
 
-/** 사본 조회 — 만료분은 지우고 null. */
-export async function getSharedCopy(id) {
-  const entry = await tx('readonly', (store) => store.get(id));
-  if (!entry) return null;
-  if (isCopyExpired(entry)) { await deleteSharedCopy(id); return null; }
-  return entry;
-}
-
-/** 살아 있는 사본 전부(만료분은 지운다). */
-export async function listSharedCopies() {
-  const all = (await tx('readonly', (store) => store.getAll())) || [];
-  const alive = [];
-  for (const e of all) {
-    if (isCopyExpired(e)) await deleteSharedCopy(e.id);
-    else alive.push(e);
+/** 사본 조회 — 지금 계정(account)의 사본이 먼저, 없으면 손님 · 이전 판 사본. 만료분은 지우고 건너뛴다. */
+export async function getSharedCopy(id, { account = null } = {}) {
+  const who = accountOf(account);
+  for (const key of who ? [copyKey(id, who), id] : [id]) {
+    const entry = await tx('readonly', (store) => store.get(key));
+    if (!entry || !copyVisible(entry, who)) continue;
+    if (isCopyExpired(entry)) { await tx('readwrite', (store) => store.delete(key)); continue; }
+    return view(entry);
   }
-  return alive;
+  return null;
 }
 
-export async function deleteSharedCopy(id) {
-  await tx('readwrite', (store) => store.delete(id));
+/** 지금 계정이 볼 수 있는 살아 있는 사본(만료분은 지운다 — 누구 것이든 7일 규칙 그대로). 같은 과는 계정 사본을 앞세운다. */
+export async function listSharedCopies({ account = null } = {}) {
+  const who = accountOf(account);
+  const all = (await tx('readonly', (store) => store.getAll())) || [];
+  const byId = new Map();
+  for (const e of all) {
+    if (isCopyExpired(e)) { await tx('readwrite', (store) => store.delete(e.id)); continue; }
+    if (!copyVisible(e, who)) continue;
+    const entry = view(e), seen = byId.get(String(entry.id));
+    if (!seen || (!seen.owner && entry.owner)) byId.set(String(entry.id), entry);
+  }
+  return [...byId.values()];
+}
+
+/** 사본 지우기 — 그 계정(account)의 자리만(손님이면 id 자리). */
+export async function deleteSharedCopy(id, { account = null } = {}) {
+  await tx('readwrite', (store) => store.delete(copyKey(id, account)));
 }

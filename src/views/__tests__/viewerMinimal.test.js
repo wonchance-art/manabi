@@ -65,7 +65,7 @@ describe('② 끝의 행동은 본문 아래 「다 읽었다면」 한 줄 + �
     expect([...order].sort((x, y) => x - y)).toEqual(order);
     expect((row.match(/className="post-reading-actions__btn/g) || []).length).toBe(5); // 완료 2상태 + 셋
     // 이벤트·퀴즈·핸드오프는 자리만 옮겼다 — 오늘 학습 핸드오프 키·읽기 완료 mutation 그대로
-    expect(row).toContain('localStorage.setItem(`study_source_${materialLang}`');
+    expect(row).toContain('writeStudySource(materialLang, (material.raw_text || \'\').slice(0, 1500), user?.id ?? null);'); // 계정 · 시각과 함께(studySourceHandoff)
     expect(row).toContain('/study?source=mine&lang=');
     expect(src()).toContain('const markCompleteMutation = useReadingCompletion({');
   });
@@ -145,7 +145,7 @@ describe('⑥ 쪽 넘김 보기(READER-PAGED-001 목업 D) — 끝의 행동은 
     expect([...order].sort((x, y) => x - y)).toEqual(order);
     // 상단 막대(Aa·듣기)는 흐름 밖 — 어느 쪽에서든 보인다. 쪽 막대는 흐름 뒤.
     expect(src().indexOf('<div className="viewer-topbar">')).toBeLessThan(src().indexOf('<div ref={setPagesEl} className="reader-pages"'));
-    expect(src()).toContain("{pagedActive&&<PageBar pager={pager} barRef={pageBarRef} tr={vt}/>}");
+    expect(src()).toContain("{pagedActive&&<PageBar pager={pager} barRef={pageBarRef} tr={vt} extra={listenFollowable && listenStopped && !pagedSheetOpen ? (");
     // 스크롤 보기는 같은 DOM에 규칙만 없다(지금 그대로) — 보기를 바꿔도 본문이 다시 만들어지지 않는다.
     expect(src()).toContain("data-reader-pages={pagedActive?'paged':'scroll'}");
   });

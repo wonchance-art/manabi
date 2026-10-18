@@ -1,0 +1,1245 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "ko",
+  "key": "ws-ko-yun-dong-ju_haneulgwa-baramgwa-byeolgwa-si",
+  "main": "하늘과 바람과 별과 시 (1955년)",
+  "url": "https://ko.wikisource.org/wiki/%ED%95%98%EB%8A%98%EA%B3%BC_%EB%B0%94%EB%9E%8C%EA%B3%BC_%EB%B3%84%EA%B3%BC_%EC%8B%9C_(1955%EB%85%84)",
+  "title": "하늘과 바람과 별과 시",
+  "author": "윤동주",
+  "level": "고급",
+  "publishedYear": 1955,
+  "authorDeathYear": 1945,
+  "countryOfOrigin": "KR",
+  "mortPourLaFrance": null,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "하늘과 바람과 별과 시",
+    "authorKo": "윤동주",
+    "binding": "jeongeum-1948",
+    "coverTitle": "하늘과 바람과 별과 詩",
+    "coverAuthor": "尹東柱",
+    "coverSubtitle": "遺稿集"
+  },
+  "fetchedAt": "2026-10-17",
+  "collection": true,
+  "files": [
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/서시",
+      "revid": 182399,
+      "timestamp": "2017-10-29T15:11:13Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "prp",
+          "sha256": "ce007e70b9db9f23a9a665ce5779864d7336d7bf06441abfed402ff63330c5ae"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/자화상",
+      "revid": 177762,
+      "timestamp": "2017-06-24T07:08:43Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "002.html",
+          "extract": "prp",
+          "sha256": "f3e4b7a5101a5500a57b60b0c09850d21c53a470641b8e5131de29daa8682547"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/소년",
+      "revid": 177868,
+      "timestamp": "2017-06-24T09:54:20Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "003.html",
+          "extract": "prp",
+          "sha256": "47101ca000c63fe321f9b50a56d6119458fa769ce5089c694fc3ab8d577cb3d8"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/눈오는 지도",
+      "revid": 177867,
+      "timestamp": "2017-06-24T09:54:10Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "004.html",
+          "extract": "prp",
+          "sha256": "798415da2402c5e91490c2f09ab69357bf31a8c3af73a3c57a468f1f1000f0d7"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/돌아와 보는 밤",
+      "revid": 177866,
+      "timestamp": "2017-06-24T09:54:05Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "005.html",
+          "extract": "prp",
+          "sha256": "d6da86a77b615c1356f433ec3ee382876d0a3255c7336d572675ab86706aeacc"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/병원",
+      "revid": 177865,
+      "timestamp": "2017-06-24T09:53:52Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "006.html",
+          "extract": "prp",
+          "sha256": "75ca54d88c443252e488e338b47b482ff69f4afd472da4d1d2b9ef4696c0f2a4"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/새로운 길",
+      "revid": 177776,
+      "timestamp": "2017-06-24T07:29:31Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "007.html",
+          "extract": "prp",
+          "sha256": "6f9558fa4673c6243ed4576d473e7ba6426d2862776adaa151d1ed61e3b65e8d"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/간판없는 거리",
+      "revid": 177863,
+      "timestamp": "2017-06-24T09:49:40Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "008.html",
+          "extract": "prp",
+          "sha256": "692b3001705db48ed7067f994e22d28a8a14d32459788e216f864f5448371bbc"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/태초의 아침",
+      "revid": 177864,
+      "timestamp": "2017-06-24T09:53:39Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "009.html",
+          "extract": "prp",
+          "sha256": "4a5e75e626bd82cfab84cd32b0635190b90a73f77024a59b9a10344b7abafb45"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/또 태초의 아침",
+      "revid": 177870,
+      "timestamp": "2017-06-24T09:55:38Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "010.html",
+          "extract": "prp",
+          "sha256": "b041c3b98468cc001adda357da6afd1dffbd89196e2a1ef96cfc4d5a11e39755"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/새벽이 올때까지",
+      "revid": 177871,
+      "timestamp": "2017-06-24T09:56:13Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "011.html",
+          "extract": "prp",
+          "sha256": "db3b6e2d4f6c105fc5fe39c7afea1682fb1ee1129570c49f1ad8a06f4f10e201"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/무서운 시간",
+      "revid": 177878,
+      "timestamp": "2017-06-24T10:01:38Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "012.html",
+          "extract": "prp",
+          "sha256": "941f58ff2218437412d816ad1cb7ccc7500ae650e57e69b1e805a0c442fafc43"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/십자가",
+      "revid": 177873,
+      "timestamp": "2017-06-24T09:58:27Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "013.html",
+          "extract": "prp",
+          "sha256": "84c838638fe3b4443d1927371b533f65edf3e16384f3d5b6247279639a5e205c"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/바람이 불어",
+      "revid": 177875,
+      "timestamp": "2017-06-24T09:59:57Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "014.html",
+          "extract": "prp",
+          "sha256": "7b18f20b0ad86487c878381f6775b001cffc7fd606f0d9d202639c6acc5426da"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/슬픈 족속",
+      "revid": 177877,
+      "timestamp": "2017-06-24T10:01:09Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "015.html",
+          "extract": "prp",
+          "sha256": "58ef65ad5229e8c8530858c234b0771bfb950b58545047192ade65c1e55e3483"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/눈 감고 간다",
+      "revid": 177879,
+      "timestamp": "2017-06-24T10:03:03Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "016.html",
+          "extract": "prp",
+          "sha256": "374137a3e3f66cbbd3f9eb339fa88bbde55bd8b57c4ee131d2cf6def655eedd3"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/또 다른 고향",
+      "revid": 178142,
+      "timestamp": "2017-06-25T14:26:45Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "017.html",
+          "extract": "prp",
+          "sha256": "8e3e1a6c9570a04c6bbd141a34aae91309b1cb8d1ec9b234489188ebdd4ed614"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/길",
+      "revid": 177881,
+      "timestamp": "2017-06-24T10:04:50Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "018.html",
+          "extract": "prp",
+          "sha256": "40b26cd495be545ead25bc20935824103c7ed02824ecda0d40f147aaaef31c7b"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/별헤는 밤",
+      "revid": 177882,
+      "timestamp": "2017-06-24T10:07:08Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "019.html",
+          "extract": "prp",
+          "sha256": "1844c8342421f15ee26378004454fc1b0ccdf2e63e7ec9fb681ed5f811edbc5b"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/흰 그림자",
+      "revid": 186322,
+      "timestamp": "2018-04-14T07:29:15Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "020.html",
+          "extract": "prp",
+          "sha256": "9263976d1e83805c02332e47a8442e0d840b83663ec4c47a76d4885e1e172c4b"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/사랑스런 추억",
+      "revid": 178053,
+      "timestamp": "2017-06-25T13:17:00Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "021.html",
+          "extract": "prp",
+          "sha256": "5171f6cb1b7080ae2fe3478c464cfadb804a6007dd1c4a6ad84fa0b5f69788dc"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/흐르는 거리",
+      "revid": 186324,
+      "timestamp": "2018-04-14T07:29:50Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "022.html",
+          "extract": "prp",
+          "sha256": "37a238a9451bb4912d22ae3fe2c48303b42eea1e2ebed0141f2a58f10c44fdb2"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/쉽게 씨워진 시",
+      "revid": 178451,
+      "timestamp": "2017-07-04T05:38:26Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "023.html",
+          "extract": "prp",
+          "sha256": "bb2adea0a5a15968a09050c96a5b9c727af422fc3ca7a9dfa38de6f97eaeb716"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/봄 1",
+      "revid": 178447,
+      "timestamp": "2017-07-04T05:37:11Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "024.html",
+          "extract": "prp",
+          "sha256": "6af59b2f7b5f1e5aba403a18094e8ba9be72c1d75a5718ce96225be12cff02b2"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/참회록",
+      "revid": 178452,
+      "timestamp": "2017-07-04T05:38:29Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "025.html",
+          "extract": "prp",
+          "sha256": "619752884e5cbf7c6a3ff13fdf77d97405274e5cdf41fb5b6b4f698d9292e940"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/간",
+      "revid": 178062,
+      "timestamp": "2017-06-25T13:25:24Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "026.html",
+          "extract": "prp",
+          "sha256": "f0eb56276d5e66f9cb2eb526a42443fdcdf3b0ae3b97ad83f1f3f9d62aa555a5"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/위로",
+      "revid": 178068,
+      "timestamp": "2017-06-25T13:31:50Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "027.html",
+          "extract": "prp",
+          "sha256": "5c9f205ce18be9a4290d580632a777482aff424b6e7e19bbda06e91a46b8e29a"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/팔복",
+      "revid": 178528,
+      "timestamp": "2017-07-04T10:14:17Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "028.html",
+          "extract": "prp",
+          "sha256": "07566972f8d38caa46d0d0730f7cf2c5c4c5555964fe168fcc74b676772d67d2"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/못자는밤",
+      "revid": 459440,
+      "timestamp": "2026-09-11T02:20:28Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "029.html",
+          "extract": "prp",
+          "sha256": "9fc2754f2d23ca974f61e05f882cfd1f830fb9f4afbd73a6ffe39fb301a41c0a"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/달같이",
+      "revid": 178529,
+      "timestamp": "2017-07-04T10:14:23Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "030.html",
+          "extract": "prp",
+          "sha256": "6f717c11d52ef3361a866d4f0afc7d8417c9c53aebbd66f072d9201c3768b17c"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/고추 밭",
+      "revid": 178076,
+      "timestamp": "2017-06-25T13:37:46Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "031.html",
+          "extract": "prp",
+          "sha256": "400a34dd1fb0c0d5c2677994cc964fbbd107dfa8d2a75c0e0584518ac7cfc88b"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/아우의 인상화",
+      "revid": 178219,
+      "timestamp": "2017-06-27T06:29:13Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "032.html",
+          "extract": "prp",
+          "sha256": "31245886451058365a8016b7b27e562bb917b7a686b96e21396003129d9e20ef"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/사랑의 전당",
+      "revid": 178079,
+      "timestamp": "2017-06-25T13:39:11Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "033.html",
+          "extract": "prp",
+          "sha256": "8f38237385473f2d88bff1d9a69d718054d7b057a1170da56af93a39bea6d144"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/이적",
+      "revid": 178080,
+      "timestamp": "2017-06-25T13:40:18Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "034.html",
+          "extract": "prp",
+          "sha256": "186dccbd6614abbe6d2b6e05a7ef41bc59ec1d8006a30de775e94b9bfa86c006"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/비오는 밤",
+      "revid": 178081,
+      "timestamp": "2017-06-25T13:40:52Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "035.html",
+          "extract": "prp",
+          "sha256": "fa416684edbe15fbaaa73d99e8d142473023a888ed90c546b43d854ae2773427"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/산골물",
+      "revid": 178082,
+      "timestamp": "2017-06-25T13:41:23Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "036.html",
+          "extract": "prp",
+          "sha256": "6391264db546ba589d4ebf63d35d34d159852cad90de9e8a3a3a1f89877f0eec"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/유언",
+      "revid": 178083,
+      "timestamp": "2017-06-25T13:43:21Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "037.html",
+          "extract": "prp",
+          "sha256": "d1468dee270c864a23fe9c54c1ba2bf685e72f15075c89818ee7c4da8fa40be8"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/창",
+      "revid": 178084,
+      "timestamp": "2017-06-25T13:43:50Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "038.html",
+          "extract": "prp",
+          "sha256": "e5f530d8ce05f48152442d09548db2ba43df2ca1b002b52b9659190e62278900"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/바다",
+      "revid": 178085,
+      "timestamp": "2017-06-25T13:44:35Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "039.html",
+          "extract": "prp",
+          "sha256": "4cc8e9903e86e31c0564545d71ba8b72a82d44d75e69ef2662c52520ec679c4b"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/비로봉",
+      "revid": 178086,
+      "timestamp": "2017-06-25T13:45:00Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "040.html",
+          "extract": "prp",
+          "sha256": "a1306c9942c69aaaaba82a6693fdfadad42a6b87b48bb95e70ac410a9f022822"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/산협의 오후",
+      "revid": 178087,
+      "timestamp": "2017-06-25T13:45:32Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "041.html",
+          "extract": "prp",
+          "sha256": "b101593e65e134612d606244a11deeaa1255183be429b2281b9c02314a4325a3"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/명상",
+      "revid": 178088,
+      "timestamp": "2017-06-25T13:46:04Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "042.html",
+          "extract": "prp",
+          "sha256": "3cad0c21590e27f27ecd49f5ae9c24d6e4c9f298f9db7be8767a7c87be894a42"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/소낙비",
+      "revid": 178089,
+      "timestamp": "2017-06-25T13:46:35Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "043.html",
+          "extract": "prp",
+          "sha256": "b61b49f3aabaef4915ee806f06609fbc22c9668f8ddef91d56ad2aaaa50c4476"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/한란계",
+      "revid": 178095,
+      "timestamp": "2017-06-25T13:50:09Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "044.html",
+          "extract": "prp",
+          "sha256": "7336c1a75e7eec151d89d156f92ff92079102bd2e467cf7f211bda8559772cdc"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/풍경",
+      "revid": 178096,
+      "timestamp": "2017-06-25T13:50:30Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "045.html",
+          "extract": "prp",
+          "sha256": "b3913193cacb10aa6ed8da233fa031ae638f3f73e91e6e8f9fbf6c0ee3b82d4f"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/달밤",
+      "revid": 178097,
+      "timestamp": "2017-06-25T13:51:18Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "046.html",
+          "extract": "prp",
+          "sha256": "71a3adba50f47cec40d4c94985efb5a66ac6ff6307c251f0b08aa90db18d7432"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/장",
+      "revid": 178098,
+      "timestamp": "2017-06-25T13:51:47Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "047.html",
+          "extract": "prp",
+          "sha256": "39ddd93fb336ba0e0d886fea6bb4d9421ca5ad8ad79b031a3c31ef6ffdd44a9c"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/밤",
+      "revid": 178099,
+      "timestamp": "2017-06-25T13:52:21Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "048.html",
+          "extract": "prp",
+          "sha256": "88cd9a9084b356450ddabb43cdb66f7b1258fd2cd2bda38b99501dc618d2bcb5"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/황혼이 바다가 되어",
+      "revid": 178100,
+      "timestamp": "2017-06-25T13:53:01Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "049.html",
+          "extract": "prp",
+          "sha256": "2a640a6aa0cb8492ed078e2ca6a79bb148d1fc4e069ce3e792c13d71e21ba27d"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/아침",
+      "revid": 178103,
+      "timestamp": "2017-06-25T13:55:35Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "050.html",
+          "extract": "prp",
+          "sha256": "caeb12471e3261f5f08defb3e84f27a5da0aedea3132abee001d50833d1600ce"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/빨래",
+      "revid": 178105,
+      "timestamp": "2017-06-25T13:56:26Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "051.html",
+          "extract": "prp",
+          "sha256": "a5126a2b84602687ced7654cdd94396f8fc6a87cbc305e42fad6d7a7968449e0"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/꿈은 깨어지고",
+      "revid": 178106,
+      "timestamp": "2017-06-25T13:57:34Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "052.html",
+          "extract": "prp",
+          "sha256": "7faa99d894fd2b6226e0c4c9f9804bf7ea36ef14df012c4c394d327e17e417fd"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/산림",
+      "revid": 178107,
+      "timestamp": "2017-06-25T13:59:49Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "053.html",
+          "extract": "prp",
+          "sha256": "c58536bb7d58286c1d9024c3f375eb0e871f645211727ec0e165c28599bddac9"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/이런날",
+      "revid": 178455,
+      "timestamp": "2017-07-04T06:05:19Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "054.html",
+          "extract": "prp",
+          "sha256": "be55d70b5d4945b9d456a29f0e2149917be9b7837ae77acb8f1546314b182ad2"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/산상",
+      "revid": 178456,
+      "timestamp": "2017-07-04T06:06:16Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "055.html",
+          "extract": "prp",
+          "sha256": "694fc17508da448d2d55d4c65b0e61eafa5cb5b484e5a9ebd57f5dc02d226efd"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/양지쪽",
+      "revid": 178457,
+      "timestamp": "2017-07-04T06:06:54Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "056.html",
+          "extract": "prp",
+          "sha256": "cd06a958394ca2d026e1c7d1108793912218f8491b8d021d15a9d98209cc01c4"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/닭",
+      "revid": 178458,
+      "timestamp": "2017-07-04T06:09:50Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "057.html",
+          "extract": "prp",
+          "sha256": "80900a136a997ae5b9b2f9ebca9425f4a1a18e26f14f0df2cfa1b2e8f2d5fbc3"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/가슴 1",
+      "revid": 178459,
+      "timestamp": "2017-07-04T06:11:18Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "058.html",
+          "extract": "prp",
+          "sha256": "b8182a2ab5bd3c49142193d5f00e9083c2af802a7495dbc59eb2c7d379080bae"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/가슴 2",
+      "revid": 178460,
+      "timestamp": "2017-07-04T06:11:39Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "059.html",
+          "extract": "prp",
+          "sha256": "4d4c78010eca33d802ca6d02c862e591cd71f043ec7c495dc74eb42a9d77c542"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/비둘기",
+      "revid": 178461,
+      "timestamp": "2017-07-04T06:12:40Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "060.html",
+          "extract": "prp",
+          "sha256": "9e4c82e84252482f038e0913139579ded33bd2a2a7dc7e6132af29590815e3e8"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/황혼",
+      "revid": 178462,
+      "timestamp": "2017-07-04T06:13:25Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "061.html",
+          "extract": "prp",
+          "sha256": "e3c7655f22435a6700c6b13486bad1ab88a227edbfda79443b17b5dae74c8490"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/남쪽 하늘",
+      "revid": 178463,
+      "timestamp": "2017-07-04T06:13:57Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "062.html",
+          "extract": "prp",
+          "sha256": "5a88a0e634bc74f9c5fadb1882f7fcff222e65df0472b4a7d4b0754c46051bfe"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/창공",
+      "revid": 178464,
+      "timestamp": "2017-07-04T06:14:34Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "063.html",
+          "extract": "prp",
+          "sha256": "f5d2378439d0dc52e15f15c72d2c7f208f664b5acd17bc33d08c1895a3156168"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/거리에서",
+      "revid": 178465,
+      "timestamp": "2017-07-04T06:15:32Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "064.html",
+          "extract": "prp",
+          "sha256": "ed6a7c4b1313d3267c92d547d6199efdd95f1192a0505350fe0393edc9044914"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/삶과 죽음",
+      "revid": 178466,
+      "timestamp": "2017-07-04T06:16:48Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "065.html",
+          "extract": "prp",
+          "sha256": "bdc62991dacd1300fa3948b9ceb688ee434cd8f39bf8966dbbd70b8108da435c"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/초 한대",
+      "revid": 178467,
+      "timestamp": "2017-07-04T06:17:29Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "066.html",
+          "extract": "prp",
+          "sha256": "63b94c81364868ca0cfab3bef2e891f8cc95fb85045b1e77d2dd52f135d8ced5"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/산울림",
+      "revid": 178468,
+      "timestamp": "2017-07-04T06:26:30Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "067.html",
+          "extract": "prp",
+          "sha256": "5fa0fba0705339fc421a6eb36dc1ea0e1c1872c52945ca58195bcf7727b86611"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/해바라기 얼굴",
+      "revid": 178469,
+      "timestamp": "2017-07-04T06:26:32Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "068.html",
+          "extract": "prp",
+          "sha256": "4eeb3c604ee6447715bb4b4e340a42da71643910035c585f7d3257b5ccc644aa"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/귀뜨라미와 나와",
+      "revid": 178470,
+      "timestamp": "2017-07-04T06:26:33Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "069.html",
+          "extract": "prp",
+          "sha256": "de27be4fd96f37d7ea6228b137044e536f669cc9ae8323f059f5003a780c92ac"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/애기의 새벽",
+      "revid": 178471,
+      "timestamp": "2017-07-04T06:26:34Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "070.html",
+          "extract": "prp",
+          "sha256": "3cc401a869e23f38a53035204c859812555e16264a0bcc2cfb82181d4ca82b81"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/햇빛·바람",
+      "revid": 178472,
+      "timestamp": "2017-07-04T06:26:35Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "071.html",
+          "extract": "prp",
+          "sha256": "5bf5ebaa1979146a3129b90cb5a8ecaa6d8ccd6cd74a002d786d8e504c946274"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/반디불",
+      "revid": 178473,
+      "timestamp": "2017-07-04T06:27:55Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "072.html",
+          "extract": "prp",
+          "sha256": "be86827a6099c9c20ba63dfff5e44ab68e26e3eb8f74c7e00b07e642ff49cbbb"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/둘 다",
+      "revid": 186075,
+      "timestamp": "2018-04-08T11:28:51Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "073.html",
+          "extract": "prp",
+          "sha256": "20403c5a25682639be7a7fba9910e1d435939f302d972eca8b4047b7dd253ac3"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/거짓부리",
+      "revid": 178475,
+      "timestamp": "2017-07-04T06:29:01Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "074.html",
+          "extract": "prp",
+          "sha256": "715104fd1e3ec0161ac67a4b6bd99c87a224ce84e6b5c35c7b675515c5bde67a"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/눈",
+      "revid": 178477,
+      "timestamp": "2017-07-04T06:30:31Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "075.html",
+          "extract": "prp",
+          "sha256": "1bf7125a1d1c19530cb0196161658e96bff7d9534b12718ad864f85b95704a35"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/참새",
+      "revid": 178478,
+      "timestamp": "2017-07-04T06:30:58Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "076.html",
+          "extract": "prp",
+          "sha256": "ac96c6b6f6f9116b5cac0d7ee6fda7d5d1eaae7c794caf0a1176b18c4aa5e6ff"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/버선본",
+      "revid": 178479,
+      "timestamp": "2017-07-04T06:31:25Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "077.html",
+          "extract": "prp",
+          "sha256": "c06a6f95ef95c95cf6d02c94e572a181aed2b418f03a2cf2661a1c2a74d24fcd"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/편지",
+      "revid": 178481,
+      "timestamp": "2017-07-04T06:32:13Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "078.html",
+          "extract": "prp",
+          "sha256": "1856945d3d9cc0a6c403a86a3d40d3509cd8b3e291cf2b43bc64c12812e310f5"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/봄 2",
+      "revid": 178539,
+      "timestamp": "2017-07-04T10:42:01Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "079.html",
+          "extract": "prp",
+          "sha256": "195ed5b596c2f1250fcbd1b423e40ac532544f788452bf984fe93df035426dd3"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/무얼 먹구 사나",
+      "revid": 178540,
+      "timestamp": "2017-07-04T10:42:23Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "080.html",
+          "extract": "prp",
+          "sha256": "a0ce2576767e9459729b0b9f56e04f939f8cc1300b4cb859cc21747542bafe81"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/굴뚝",
+      "revid": 178538,
+      "timestamp": "2017-07-04T10:41:38Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "081.html",
+          "extract": "prp",
+          "sha256": "4fe1a8d9380d59c2aa68c3ff42bc2067d966e29311205e0270bc17afd5d0b763"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/햇비",
+      "revid": 178485,
+      "timestamp": "2017-07-04T06:35:53Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "082.html",
+          "extract": "prp",
+          "sha256": "2cd8a9c846cbd66e86dcb602c95ed720b9e7e8b163e53caf40c40a809ea4f931"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/빗자루",
+      "revid": 178487,
+      "timestamp": "2017-07-04T06:36:51Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "083.html",
+          "extract": "prp",
+          "sha256": "571da894ac06a8b982ca7b4ec4b2abce655b44fd3e1fb782ce13ccabfd1d379e"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/기왓장 내외",
+      "revid": 178489,
+      "timestamp": "2017-07-04T06:39:23Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "084.html",
+          "extract": "prp",
+          "sha256": "81ab5ca5638e40d636ff544f59e1818477f7c846eefed7188860b4b5da3cf489"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/오줌싸개지도",
+      "revid": 178490,
+      "timestamp": "2017-07-04T06:39:47Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "085.html",
+          "extract": "prp",
+          "sha256": "847b1c409c106dae0a7c8e2c2488704568b843f9c505d53e71180a9a46e3eb65"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/병아리",
+      "revid": 178492,
+      "timestamp": "2017-07-04T06:41:05Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "086.html",
+          "extract": "prp",
+          "sha256": "182158085e04ca4138990291f62898320bbc2eb3633b510b257baf46847c41e5"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/조개껍질",
+      "revid": 178493,
+      "timestamp": "2017-07-04T06:41:48Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "087.html",
+          "extract": "prp",
+          "sha256": "31f28325e828ad12b3c366cd579f435b7385b2d90fe7e53c95f947adf040db46"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/겨울",
+      "revid": 178494,
+      "timestamp": "2017-07-04T06:42:50Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "088.html",
+          "extract": "prp",
+          "sha256": "630919cb9632f4af6ba372d40a656133e482f9500bf3983f3470cd365a57b244"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/트루게네프의 언덕",
+      "revid": 178495,
+      "timestamp": "2017-07-04T06:43:38Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "089.html",
+          "extract": "prp",
+          "sha256": "607030d89fccabc364570b1e494c517d1a4ef3f6f8064e20017eecf68e641971"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/달을 쏘다",
+      "revid": 178501,
+      "timestamp": "2017-07-04T07:20:57Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "090.html",
+          "extract": "prp",
+          "sha256": "6a5f5a5de00dc5564e5efea8c25363f257a7decd802f7a030e04b221ac39d0fe"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/별똥 떨어진데",
+      "revid": 178642,
+      "timestamp": "2017-07-12T11:12:33Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "091.html",
+          "extract": "prp",
+          "sha256": "4c043719b218c2edb3e441f99cbf5431df5e95c0becc1200a87886c5b324b099"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/화원에 꽃이 핀다",
+      "revid": 178992,
+      "timestamp": "2017-07-17T08:17:53Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "092.html",
+          "extract": "prp",
+          "sha256": "173b35de7c27a963d599005bc102a4b7efbd4abeae45145edfb9f4c024892ac8"
+        }
+      ]
+    },
+    {
+      "page": "하늘과 바람과 별과 시 (1955년)/종시",
+      "revid": 179044,
+      "timestamp": "2017-07-18T09:02:00Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "093.html",
+          "extract": "prp",
+          "sha256": "1b74335ff2a34eb5cc2194245c5d477ec9a071c6d1b910732bb1e09194fc4638"
+        }
+      ]
+    }
+  ]
+}

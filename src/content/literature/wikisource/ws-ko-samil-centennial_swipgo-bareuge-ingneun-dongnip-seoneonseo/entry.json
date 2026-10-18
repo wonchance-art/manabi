@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "ko",
+  "key": "ws-ko-samil-centennial_swipgo-bareuge-ingneun-dongnip-seoneonseo",
+  "main": "3·1독립선언서",
+  "section": "쉽고_바르게_읽는_3.1독립선언서",
+  "url": "https://ko.wikisource.org/wiki/3%C2%B71%EB%8F%85%EB%A6%BD%EC%84%A0%EC%96%B8%EC%84%9C",
+  "title": "쉽고 바르게 읽는 3.1독립선언서",
+  "author": "3·1운동 및 대한민국임시정부 수립 100주년 기념사업 추진위원회",
+  "level": "중급",
+  "publishedYear": 2019,
+  "authorDeathYear": null,
+  "countryOfOrigin": "KR",
+  "mortPourLaFrance": null,
+  "rights": {
+    "status": "approved",
+    "basis": "kogl-type1",
+    "holder": "3·1운동 및 대한민국임시정부 수립 100주년 기념사업 추진위원회",
+    "reviewedJurisdictions": [
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "쉽고 바르게 읽는 3·1독립선언서",
+    "authorKo": "3·1운동·임시정부 100주년 기념사업 추진위원회",
+    "binding": "boseongsa-1919",
+    "coverTitle": "宣言書"
+  },
+  "fetchedAt": "2026-10-17",
+  "files": [
+    {
+      "page": "3·1독립선언서",
+      "revid": 459928,
+      "timestamp": "2026-09-24T00:47:34Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "section:쉽고_바르게_읽는_3.1독립선언서",
+          "sha256": "f7c0c5ed8b01df7f1b1e96b0552c9c1493dabe4fc61a209d84d7242b6b41d750"
+        }
+      ]
+    }
+  ]
+}

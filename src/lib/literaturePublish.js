@@ -19,6 +19,9 @@ import { ART_TEXT_LICENSE_LABEL } from './artCatalog.js';
 import { countAttachedReviewHints, reviewHintCoverage } from './literatureReviewHints.js';
 import { senseReviewItems } from './viewerSenseReview.js';
 import { SE_PROVIDER, standardEbooksRightsPublishable } from './standardEbooks.js';
+import { WS_PROVIDER, wikisourceRightsPublishable } from './wikisource.js';
+import { PD_PROVIDER, PD_SITES, pdSiteRightsPublishable } from './pdSite.js';
+import { translatorRecords } from './rightsKorea.js';
 
 /** 분석 전이거나 검수 기록이 한 번도 없는데 공개된 장 — 사용자에게 「분석 전」·「검수 전」 장이 보이는 상태. rows: {visibility, status, review} */
 export const literatureExposedRows = (rows = []) => rows.filter((row) => row.visibility === 'public' && (row.status !== 'completed' || !row.review));
@@ -27,7 +30,8 @@ export const literatureExposedRows = (rows = []) => rows.filter((row) => row.vis
 export const chapterReviewed = (row) => typeof row?.review?.viewerRevision === 'string' && row.review.viewerRevision === row.revision;
 
 /** 이 장에 남은 「뜻 확인 필요」 수(검수 힌트 표식 + 경계 후보) — 0이어야 검수 완료를 받는다. */
-export const literatureReviewRemaining = (json) => senseReviewItems(json, 'Japanese').length;
+// 뷰어와 같은 판정(자료 언어 기준) — 일본어로 고정하면 중국어 장에 뷰어가 띄운 「뜻 확인 필요」를 관리자 게이트가 0으로 셌다(감사 2026-10-17).
+export const literatureReviewRemaining = (json) => senseReviewItems(json, json?.metadata?.language ?? 'Japanese').length;
 
 export const LITERATURE_PUBLISH_STATE = Object.freeze({
   UNPUBLISHED: 'unpublished',
@@ -39,7 +43,9 @@ export const LITERATURE_PUBLISH_STATE = Object.freeze({
 /**
  * 빌드 산출물이 여전히 공개 가능한 기록인가 — 게시 직전에 한 번 더(fail-closed). 출처별 판정:
  * 'aozora' → 권리 기록(aozoraRightsPublishable) · 'art' → 카탈로그 대조(artBookPublishable)
- * · 'standardebooks' → 권리 기록(standardEbooksRightsPublishable — 원산국·미국·한국, LIT-SRC-EN-1) · 그 밖 → 불가.
+ * · 'standardebooks' → 권리 기록(standardEbooksRightsPublishable — 원산국·미국·한국, LIT-SRC-EN-1)
+ * · 'wikisource' → 권리 기록(wikisourceRightsPublishable — 한국 법: 한국 만료 또는 본국 만료, LIT-SRC-WS-1)
+ * · 'pdsite' → 권리 기록(pdSiteRightsPublishable — 같은 판정, LIT-SRC-PD-1) · 그 밖 → 불가.
  */
 export function literatureBookPublishable(book) {
   if (!Array.isArray(book?.chapters) || book.chapters.length === 0) return false;
@@ -48,12 +54,16 @@ export function literatureBookPublishable(book) {
     case 'aozora': return aozoraRightsPublishable(literature.rights, literature.attribution, literature);
     case ART_BOOK_PROVIDER: return artBookPublishable(book);
     case SE_PROVIDER: return standardEbooksRightsPublishable(literature);
+    case WS_PROVIDER: return wikisourceRightsPublishable(literature);
+    case PD_PROVIDER: return pdSiteRightsPublishable(literature);
     default: return false;
   }
 }
 
 /** 저자 루비 잠금 — 큐레이션 책(현대 해설문)처럼 키가 없는 장은 빈 목록. */
 const rubyLocksOf = (chapter) => chapter.metadata.literature?.rubyLocks ?? [];
+/** 원문이 한 낱말로 표시한 자리 — 저자 루비(아오조라) + 고유명사 밑줄(위키문헌 중국어 专名线 · nameMarks). 둘 다 {start, end, base}(원문 좌표). */
+const wordMarksOf = (chapter) => [...rubyLocksOf(chapter), ...(chapter.metadata.literature?.nameMarks ?? [])];
 
 /** 아오조라 권리 근거 — 관리자 화면 「권리 근거」 칸. */
 function aozoraRightsSummary(literature) {
@@ -82,6 +92,51 @@ function standardEbooksRightsSummary(literature) {
     authorDeathYear: literature.authorDeathYear,
     charset: `Standard Ebooks · ${literature.license}`,
     evidenceLabel: 'Standard Ebooks 판',
+  };
+}
+
+/** Wikisource 권리 근거 — 같은 칸 모양(charset 자리에 위키문헌 · 전사 라이선스). 근거 링크는 위키문헌 원문 쪽. */
+function wikisourceRightsSummary(literature) {
+  return {
+    basis: literature.rights.basis,
+    reviewedBy: literature.rights.reviewedBy ?? literature.rights.reviewer,
+    reviewedAt: literature.rights.reviewedAt,
+    reviewedJurisdictions: literature.rights.reviewedJurisdictions,
+    evidenceUrl: literature.url,
+    publishedYear: literature.publishedYear,
+    authorDeathYear: literature.authorDeathYear,
+    charset: `Wikisource(${literature.wiki}) · ${literature.license}`,
+    evidenceLabel: '위키문헌 원문',
+  };
+}
+
+/** 전자책 사이트 권리 근거 — 같은 칸 모양(charset 자리에 사이트 이름 · 한국 판정 근거). 근거 링크는 사이트 책 쪽. */
+function pdSiteRightsSummary(literature) {
+  return {
+    basis: literature.rights.basis,
+    reviewedBy: literature.rights.reviewedBy ?? literature.rights.reviewer,
+    reviewedAt: literature.rights.reviewedAt,
+    reviewedJurisdictions: literature.rights.reviewedJurisdictions,
+    evidenceUrl: literature.url,
+    publishedYear: literature.publishedYear,
+    authorDeathYear: literature.authorDeathYear,
+    charset: `${PD_SITES[literature.site]?.name ?? literature.site} · ${literature.rightsBasis === 'korea-term' ? '한국 보호기간 만료' : '본국 보호기간 만료'}`,
+    evidenceLabel: '사이트 책 쪽',
+  };
+}
+
+/**
+ * 권리 칸에 판정을 가른 기록을 더한다 — 번역자(원작 · 번역 둘 다 공개 가능해야 한다 — 자본론 · 명상록)와 공공누리 배포 기관.
+ * 없으면 칸을 만들지 않는다(원작 단독 · 퍼블릭 도메인 책은 지금 모양 그대로).
+ */
+function withRightsRecords(summary, literature) {
+  // 번역자가 여럿이면(모음집) 모두 — 관리자 칸은 사람마다 판 · 몰년
+  const translators = translatorRecords(literature.translator).filter((item) => item && typeof item === 'object');
+  const record = (item) => ({ name: item.name, deathYear: item.deathYear ?? null, publishedYear: item.publishedYear ?? null });
+  return {
+    ...summary,
+    ...(translators.length ? { translator: Array.isArray(literature.translator) ? translators.map(record) : record(translators[0]) } : {}),
+    ...(literature.rights?.holder ? { holder: literature.rights.holder } : {}),
   };
 }
 
@@ -223,8 +278,10 @@ export function literatureBookSummary(book, rows = []) {
     level: book.book.level,
     total: book.book.total,
     publishable: literatureBookPublishable(book),
-    ...(provider === 'aozora' ? { rights: aozoraRightsSummary(literature) } : {}),
-    ...(provider === SE_PROVIDER ? { rights: standardEbooksRightsSummary(literature) } : {}),
+    ...(provider === 'aozora' ? { rights: withRightsRecords(aozoraRightsSummary(literature), literature) } : {}),
+    ...(provider === SE_PROVIDER ? { rights: withRightsRecords(standardEbooksRightsSummary(literature), literature) } : {}),
+    ...(provider === WS_PROVIDER ? { rights: withRightsRecords(wikisourceRightsSummary(literature), literature) } : {}),
+    ...(provider === PD_PROVIDER ? { rights: withRightsRecords(pdSiteRightsSummary(literature), literature) } : {}),
     ...(provider === ART_BOOK_PROVIDER ? { provenance: artProvenanceSummary(book) } : {}),
     plan,
     stage: literatureStage(book, rows),
@@ -246,14 +303,14 @@ export function literatureBookSummary(book, rows = []) {
  * rows: [{order, processed_json}]
  */
 /**
- * 분석 뒤에도 쪼개진 저자 루비 낱말(AOZORA-P1-10) — 2자 이상 루비 기준이 분석 토큰 둘 이상에 걸친 자리. 빌드가 미리 실은
+ * 분석 뒤에도 쪼개진 저자 루비 낱말(AOZORA-P1-10) · 고유명사(중국어 专名线) — 2자 이상 표시 낱말이 분석 토큰 둘 이상에 걸친 자리. 빌드가 미리 실은
  * 「한 단어로 묶기」 기록으로도 못 묶은 곳(양 끝이 분석기 토큰 안쪽)이라 검수자가 뷰어에서 직접 묶거나 그대로 둘지 정한다.
  * 고유명사(苦沙弥 → 苦|沙弥)가 형태소로 갈리면 뜻·저자 루비가 모두 어긋나므로 「검수 완료」 전에 보여 준다.
  * 토큰을 원문 자리에 잇지 못하면(원문과 다른 분석) null — 셀 수 없음을 0으로 속이지 않는다.
  */
 export function literatureBoundaryIssues(chapter, json) {
   if (!Array.isArray(json?.sequence) || !json.sequence.length) return null;
-  const locks = rubyLocksOf(chapter).filter((lock) => lock.base.length >= 2).sort((a, b) => a.start - b.start);
+  const locks = wordMarksOf(chapter).filter((lock) => lock.base.length >= 2).sort((a, b) => a.start - b.start);
   if (!locks.length) return { count: 0, words: [] };
   let spans;
   try {
