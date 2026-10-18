@@ -162,14 +162,15 @@ export const LEVEL_VIEWS = Object.freeze([
 export const LEVEL_PEEK_MS = 10_000;
 /** 접히는 움직임 길이 — CSS lv-close와 같다. 움직임 줄이기 설정이면 0. */
 export const LEVEL_PEEK_CLOSE_MS = 200;
-export const LEVEL_PREFS_DEFAULT = Object.freeze({ view: 'all', hideKnown: false, hun: true, glyph: false, tone: false });
+// peekOnX — 탭 보기에서 X를 누르면 그 카드를 펼쳐 답을 본다(LEVEL-FLOW-001 기본). 오너 2026-10-18 「x 누를 때 창 열리는 것도 옵션으로」 → ⚙ 스위치, 기본 켬.
+export const LEVEL_PREFS_DEFAULT = Object.freeze({ view: 'all', hideKnown: false, hun: true, glyph: false, tone: false, peekOnX: true });
 
 /** 저장된 값 → 검증한 설정. 모르는 값은 버리고 기본값으로. */
 export function normalizeLevelPrefs(raw) {
   const src = raw && typeof raw === 'object' ? raw : {};
   const flag = (k) => (typeof src[k] === 'boolean' ? src[k] : LEVEL_PREFS_DEFAULT[k]);
   return { view: LEVEL_VIEWS.some((v) => v.id === src.view) ? src.view : 'all',
-    hideKnown: flag('hideKnown'), hun: flag('hun'), glyph: flag('glyph'), tone: flag('tone') };
+    hideKnown: flag('hideKnown'), hun: flag('hun'), glyph: flag('glyph'), tone: flag('tone'), peekOnX: flag('peekOnX') };
 }
 
 // ── 뒤로 가기 자리(LEVEL-RESTORE-001) ──
