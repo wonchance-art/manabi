@@ -55,6 +55,35 @@ test('public reading filter row has its final shape on first paint for guest and
  }
 });
 
+// DISCOVER-CHIP-CLS-001 후속 — 서재 도구(/materials?tools=1)도 같은 세션 쿠키 판정으로 로그인 고르기 줄을 서버부터 그리고,
+// 확인 중인 로그인 사람에게는 손님 빈 상태(「로그인하고 자료 올리기」) 대신 기존 목록 골격을 보인다. 쿠키 없는 손님은 지금 그대로.
+// 골격은 확인 뒤 끼는 줄(「PDF 목록 확인 중…」)에 밀려 내려가지 않는다 — PDF가 목록보다 먼저 끝나 그 줄이 빠지며 올라가는 것은 이전부터의 순서 문제라 따로 본다.
+test('signed-in reading and tools lists never flash the guest empty state or a late chip; guests keep today\'s server HTML',async()=>{
+ const views=[{path:'/discover?view=reading',owner:'00000000-0000-4000-8000-000000000999',visibility:'public',title:'Une fenêtre ouverte',guestServer:'아직 함께 읽는 글이 없어요.',signedNot:'아직 함께 읽는 글이 없어요.'},{path:'/materials?tools=1',owner:'00000000-0000-4000-8000-000000000172',visibility:'private',title:'Ma fenêtre privée',guestServer:'skeleton-grid',signedNot:'자료는 계정에 저장돼요.'}];
+ for(const view of views)for(const guest of [true,false]){
+  const f=await fixture({guest,width:390});try{
+   f.rows.push({id:520,owner_id:view.owner,visibility:view.visibility,title:view.title,raw_text:'Bonjour.',processed_json:{status:'completed',metadata:{language:'French'},sequence:[],dictionary:{}},created_at:'2026-01-01'});
+   await f.page.addInitScript(()=>{window.__guestFlash=false;window.__filterShifts=[];window.__skeletonShifts=[];
+    new MutationObserver(()=>{if(document.querySelector('.materials-page .empty-state')?.textContent.includes('로그인하고 자료 올리기'))window.__guestFlash=true;}).observe(document,{subtree:true,childList:true,characterData:true});
+    new PerformanceObserver(list=>{for(const e of list.getEntries())for(const s of e.sources||[]){const el=s.node?.nodeType===1?s.node:s.node?.parentElement;if(el?.closest('.materials-filters'))window.__filterShifts.push(`${el.tagName}.${el.className} ${e.value.toFixed(4)}`);if(el?.closest('.skeleton-grid')&&s.currentRect.y>s.previousRect.y)window.__skeletonShifts.push(`${el.className} ${e.value.toFixed(4)} ${s.previousRect.y}->${s.currentRect.y}`);}}).observe({type:'layout-shift',buffered:true});});
+   const html=await(await f.context.request.get(view.path)).text();
+   const label=`${guest?'guest':'signed-in'} ${view.path}`;
+   assert.equal(html.includes('안 읽은 것만'),!guest,`${label}: server chip`);
+   if(guest)assert.ok(html.includes(view.guestServer),`${label}: guest server HTML unchanged`);
+   else{assert.ok(!html.includes('로그인하고 자료 올리기')&&!html.includes(view.signedNot),`${label}: no guest empty state in server HTML`);assert.ok(html.includes('skeleton-grid'),`${label}: list skeleton while sign-in is checked`);}
+   await f.page.goto(view.path,{waitUntil:'domcontentloaded',timeout:120000});
+   if(guest)await f.page.locator('.materials-page .empty-state, .materials-page .feature-grid').first().waitFor({timeout:60000});
+   else await f.page.getByRole('link',{name:new RegExp(view.title)}).first().waitFor({timeout:60000});
+   await f.page.waitForTimeout(500);
+   assert.equal(await f.page.getByRole('button',{name:'안 읽은 것만',exact:true}).count(),guest?0:1,`${label}: final chip`);
+   if(!guest)assert.equal(await f.page.evaluate(()=>window.__guestFlash),false,`${label}: guest empty state flashed`);
+   assert.deepEqual(await f.page.evaluate(()=>window.__filterShifts),[],`${label}: filter row moved after first paint`);
+   assert.deepEqual(await f.page.evaluate(()=>window.__skeletonShifts),[],`${label}: list skeleton pushed down while loading`);
+   await check(f,`reading-pending-${guest?'guest':'signed'}-${view.path.includes('tools')?'tools':'reading'}-390`);
+  }finally{await f.context.close();}
+ }
+});
+
 test('final chapter offers review preparation for this book and exact edition, without starting a session',async()=>{
  const f=await fixture({guest:true});try{
   await f.page.goto(`/books/japanese-n5?edition=${edition}#u42-message-reading`,{waitUntil:'domcontentloaded',timeout:120000});

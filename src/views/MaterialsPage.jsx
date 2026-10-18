@@ -215,6 +215,9 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
   // sessionHint = 서버가 본 세션 쿠키(이름만 — hasSupabaseSessionInJar, 배움 B1 · 책 표지와 같은 판정). 서버 그림은 늘 로그인 확인 전이라
   // 손님 줄로 그렸다가 확인 뒤 칩이 끼고 정렬이 넓어지며 390폭에서 셋째 줄로 접혀(+48px) 아래 목록을 밀었다. 쿠키가 없으면 지금 그대로다.
   const signedInFilters = !!user || (authLoading && sessionHint === true);
+  // 같은 힌트로 확인 중 목록 자리는 기존 목록 골격이다(아래 isLoading) — 로그인 사람에게 손님 빈 상태(「로그인하고 자료 올리기」)가 잠깐 보였다.
+  // 쿠키 없는 손님은 지금 그대로(함께 읽는 글은 서버부터 빈 상태 · 서재 도구는 골격). 추천 칸도 목록이 정해진 뒤에만(LIBRARY-GUEST-CLS-001).
+  const signInPending = authLoading && sessionHint === true;
   const [testScores, setTestScores] = useState({});
 
   useEffect(() => {
@@ -412,7 +415,7 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
     return dueVocabError ? null : countVocabularyDueInMaterial(dueVocabIndex, material);
   }
 
-  const { data: materials = [], isLoading, isFetched: materialsFetched, error: materialsError, refetch: refetchMaterials } = useQuery({
+  const { data: materials = [], isLoading: materialsLoading, isFetched: materialsFetched, error: materialsError, refetch: refetchMaterials } = useQuery({
     queryKey: ['materials', tab, user?.id, langFilter, levelFilter, searchQuery, !!libraryView],
     queryFn: () => fetchMaterials({ tab, userId: user?.id, langFilter, levelFilter, searchQuery, includeOwnedPublic: !!libraryView }),
     // 기본 탭이 로그인 여부로 갈리므로 auth 확정 전에 쏘면 버릴 쿼리가 된다.
@@ -420,6 +423,8 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
     // 한 번 그려지고 책 카탈로그 RPC를 한 번 더 부른다(리뷰 2026-10-17 KST). 확인이 끝난 뒤 한 번만 받는다.
     enabled: !!tab && !(libraryView === 'public' && authLoading),
   });
+  // 목록 자리가 아직 정해지지 않았다 = 조회 중 또는 세션 쿠키가 있는 사람의 로그인 확인 중(signInPending). 골격 · 추천 칸이 같은 값을 본다.
+  const isLoading = materialsLoading || signInPending;
 
   // 발견 서가 「오늘의 소식 · 전체 보기」(#today-news, B2 A안 — 오너 「권장대로」 2026-10-17 KST): 목록과 소식이 둘 다 들어온 뒤
   // 한 번만 그 칸 제목으로 내려가 초점을 둔다 — 위 목록이 늦게 들어오면 칸이 밀려 먼저 내려간 자리가 어긋난다.
@@ -718,7 +723,8 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
       {dueVocabError && <div className="library-query-state" role="alert">표현을 불러오지 못했어요. <button type="button" onClick={() => refetchDueVocab()}>다시 시도</button></div>}
       {progressError && <div className="library-query-state" role="alert">읽음 기록을 불러오지 못했어요. <button type="button" onClick={() => refetchProgress()}>다시 시도</button></div>}
       {showPdfs && pdfsError && <div className="library-query-state" role="alert">PDF 목록을 불러오지 못했어요. <button type="button" onClick={() => refetchPdfs()}>다시 시도</button></div>}
-      {showPdfs && pdfsLoading && <p aria-busy="true">PDF 목록 확인 중…</p>}
+      {/* 확인 중(signInPending)에도 같은 줄을 둔다 — 확인 뒤 PDF 조회가 이 줄을 끼우며 아래 골격을 26px 밀었다(서재 도구 390폭). */}
+      {showPdfs && (pdfsLoading || signInPending) && <p aria-busy="true">PDF 목록 확인 중…</p>}
       {(!tab || isLoading) ? (
         <CardGridSkeleton />
       ) : materialsError ? (
