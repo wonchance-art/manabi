@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { fsrs, State } from 'ts-fsrs';
-import { FSRS_POLICY, introduceFsrsCard, learningDay, previewFsrsRatings, scheduleFsrsReview, validateFsrsCard } from '../fsrsScheduler.js';
+import { FSRS_POLICY, introduceFsrsCard, learningDay, learningDayStart, previewFsrsRatings, scheduleFsrsReview, validateFsrsCard } from '../fsrsScheduler.js';
+import { fsrsIntervalLabel } from '../useFsrsReview.js';
 
 const at = '2026-10-03T09:00:00.000Z';
 const plus = (time, seconds) => new Date(Date.parse(time) + seconds * 1000).toISOString();
@@ -75,19 +76,22 @@ describe('full-state FSRS with explicit Anki seconds policy', () => {
     expect(learningDay(plus(before, -7200), 'America/New_York')).toBe(learningDay(before, 'America/New_York'));
   });
 
-  it('has full memory and long-due parity with pinned native engine on matching calendar days', () => {
+  it('has full memory and interval parity with pinned native engine on matching calendar days', () => {
     const card = grade(grade(introduced(), 3), 3);
+    // 기한은 04:00 경계(KST)라 UTC 날짜 차이를 쓰는 엔진과 하루가 어긋날 수 있다 — 두 달력이 같은 날 수를 세는 시각에서 비교한다.
+    const now = plus(card.due, 6 * 3600);
     const native = fsrs({ enable_fuzz: false, request_retention: 0.9 }).repeat({
       due: new Date(card.due), stability: card.stability, difficulty: card.difficulty,
       elapsed_days: card.elapsedDays, scheduled_days: card.scheduledDays,
       reps: card.reps, lapses: card.lapses, state: State.Review, learning_steps: card.step,
       last_review: new Date(card.lastReview),
-    }, new Date(card.due));
-    const next = previewFsrsRatings(card, card.due);
+    }, new Date(now));
+    const next = previewFsrsRatings(card, now);
+    expect(next[3].card.elapsedDays).toBe(native[3].log.elapsed_days);
     for (const rating of [1, 2, 3, 4]) {
       expect(next[rating].card.stability).toBe(native[rating].card.stability);
       expect(next[rating].card.difficulty).toBe(native[rating].card.difficulty);
-      expect(next[rating].card.due).toBe(native[rating].card.due.toISOString());
+      if (rating > 1) expect(next[rating].card.scheduledDays).toBe(native[rating].card.scheduled_days);
       expect(next[rating].card.reps).toBe(native[rating].card.reps);
       expect(next[rating].card.lapses).toBe(native[rating].card.lapses);
     }
@@ -153,5 +157,64 @@ describe('learning-step policy anki-v2 alongside anki-seconds-v1', () => {
     // 정책을 알리지 않으면 카드 정책 그대로(이전 동작).
     expect(previewFsrsRatings(old, old.due)[1].card.policyVersion).toBe('anki-seconds-v1');
     expect(() => previewFsrsRatings(old, old.due, { policyVersion: 'future-policy' })).toThrow('unsupported_fsrs_card');
+  });
+});
+
+// Anki 공개 소스 대조(rslib/src/scheduler, main b35dc8c — /mnt/project-files/notes/anki-scheduler-gap.md).
+describe('Anki review rules: day-based due, passing floors, Easy above Good', () => {
+  const review = () => grade(grade(introduced(), 3), 3);
+
+  it('opens multi-day reviews at the 04:00 learning-day boundary, not grade time + N×24h', () => {
+    const card = review(), late = '2026-10-10T14:00:00.000Z'; // 23:00 KST
+    const next = previewFsrsRatings(card, late);
+    for (const rating of [2, 3, 4]) {
+      const { scheduledDays, due } = next[rating].card;
+      expect(due).toBe(new Date(learningDayStart(learningDay(late) + scheduledDays)).toISOString());
+      expect(new Date(Date.parse(due) + 9 * 3600000).toISOString().slice(11, 16)).toBe('04:00');
+      expect(learningDay(due) - learningDay(late)).toBe(scheduledDays);
+    }
+    // 04:00 전(새벽 2시)에 채점해도 그 학습일은 전날이다.
+    const dawn = '2026-10-10T17:00:00.000Z'; // 10-11 02:00 KST
+    expect(learningDay(previewFsrsRatings(card, dawn)[3].card.due) - learningDay(dawn)).toBe(previewFsrsRatings(card, dawn)[3].card.scheduledDays);
+    // 학습 단계는 그대로 초 단위다.
+    expect(delay(next[1], late)).toBe(600);
+  });
+
+  it('finds the rollover instant in other zones across DST', () => {
+    for (const time of ['2026-03-08T12:00:00Z', '2026-11-01T12:00:00Z', '2026-07-01T12:00:00Z']) {
+      const day = learningDay(time, 'America/New_York'), start = learningDayStart(day, 'America/New_York');
+      expect(learningDay(start, 'America/New_York')).toBe(day);
+      expect(learningDay(start - 1, 'America/New_York')).toBe(day - 1);
+    }
+  });
+
+  it('never shrinks a passing review inside the fuzz range and keeps Hard < Good < Easy', () => {
+    const card = review(), base = previewFsrsRatings(card, card.due);
+    const good = base[3].card.scheduledDays;
+    expect(good).toBeGreaterThan(2);
+    // 이전 간격이 이번 알맞음보다 하루 길어도(퍼짐 범위 안) 알맞음은 이전 간격 아래로 내려가지 않는다.
+    const next = previewFsrsRatings({ ...card, scheduledDays: good + 1 }, card.due);
+    expect(next[3].card.scheduledDays).toBe(good + 1);
+    expect(next[2].card.scheduledDays).toBeGreaterThanOrEqual(1);
+    expect(next[3].card.scheduledDays).toBeGreaterThan(next[2].card.scheduledDays);
+    expect(next[4].card.scheduledDays).toBeGreaterThan(next[3].card.scheduledDays);
+    // 범위를 크게 벗어나 줄었으면(모수 변경 등) 하한을 두지 않는다.
+    expect(previewFsrsRatings({ ...card, scheduledDays: good * 10 }, card.due)[3].card.scheduledDays).toBe(good);
+  });
+
+  it('graduates Easy from learning and relearning at least one day above Good', () => {
+    const learning = grade(introduced(), 3), fromLearning = previewFsrsRatings(learning, learning.due);
+    expect(fromLearning[3].card.state).toBe('Review');
+    expect(fromLearning[4].card.scheduledDays).toBeGreaterThanOrEqual(fromLearning[3].card.scheduledDays + 1);
+    const relearning = grade(review(), 1), fromRelearning = previewFsrsRatings(relearning, relearning.due);
+    expect(relearning.state).toBe('Relearning');
+    expect(fromRelearning[4].card.scheduledDays).toBeGreaterThanOrEqual(fromRelearning[3].card.scheduledDays + 1);
+  });
+
+  it('labels multi-day buttons by interval days, not hours left until the boundary', () => {
+    const card = review(), late = '2026-10-10T14:00:00.000Z';
+    const next = previewFsrsRatings(card, late)[3].card;
+    expect(fsrsIntervalLabel(next.due, late, next.scheduledDays)).toBe(`${next.scheduledDays}d`);
+    expect(fsrsIntervalLabel(plus(late, 600), late)).toBe('10m');
   });
 });

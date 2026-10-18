@@ -23,7 +23,9 @@ export function isNewFsrsManualInsert(row, accountId) {
     !row.is_excluded && !row.is_known;
 }
 
-export function fsrsIntervalLabel(due, at) {
+/** 며칠 단위 복습은 기한이 그날 04:00 경계라 남은 시각이 아니라 간격 일수(scheduledDays)로 보여 준다(Anki와 같음). */
+export function fsrsIntervalLabel(due, at, scheduledDays = 0) {
+  if (Number.isSafeInteger(scheduledDays) && scheduledDays > 0) return `${scheduledDays}d`;
   const seconds = Math.max(0, Math.round((Date.parse(due) - Date.parse(at)) / 1000));
   if (!Number.isFinite(seconds)) return '';
   if (seconds < 60) return `${seconds}s`;
@@ -272,7 +274,7 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
         const at = entry.attempt.revealedAt;
         publish({ current: { ...current, attempt: clone(entry.attempt), phase: entry.attempt.phase,
           previews: at ? Object.fromEntries(Object.entries(previewFsrsRatings(entry.card, at))
-            .map(([rating, result]) => [rating, { due: result.card.due }])) : null, previewAt: at } });
+            .map(([rating, result]) => [rating, { due: result.card.due, scheduledDays: result.card.scheduledDays }])) : null, previewAt: at } });
         return true;
       }
       // 문제를 실제로 열 때만 question을 보낸다. 목록·읽기·저장에서는 호출하지 않는다.
@@ -308,7 +310,7 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
       validateFsrsCard(response.card);
       const at = response.now || response.attempt.revealedAt;
       const previews = response.previews || Object.fromEntries(Object.entries(previewFsrsRatings(response.card, at))
-        .map(([rating, result]) => [rating, { due: result.card.due }]));
+        .map(([rating, result]) => [rating, { due: result.card.due, scheduledDays: result.card.scheduledDays }]));
       adopt(response);
       publish({ current: { ...current, card: clone(response.card), attempt: clone(response.attempt),
         phase: 'revealed', previews, previewAt: at } });

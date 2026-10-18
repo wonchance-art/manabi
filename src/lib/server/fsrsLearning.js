@@ -130,7 +130,7 @@ function result(raw, userId, now, operationId, duplicate = false, policyVersion 
     const previewAt = state.attempt?.phase === 'revealed' ? state.attempt.revealedAt : at;
     try {
       response.previews = Object.fromEntries(Object.entries(previewFsrsRatings(state.card, previewAt, { policyVersion }))
-        .map(([rating, preview]) => [rating, { due: preview.card.due }]));
+        .map(([rating, preview]) => [rating, { due: preview.card.due, scheduledDays: preview.card.scheduledDays }]));
     } catch { /* 평가 결과가 이미 반영된 재전송에는 이전 미리보기를 붙이지 않는다. */ }
   }
   return response;
