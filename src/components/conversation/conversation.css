@@ -244,13 +244,25 @@
   .conv__icon:active:not(:disabled), .conv-chip:active:not(:disabled), .conv-act:active { transform: none; }
 }
 
+/* 폰 크기에서 방 목록은 앱 첫 화면(CONV-CHAT-001 10차, 오너 「모바일에선 실제 앱에 들어와있는 상태」 2026-10-18).
+   셸이 하단 탭 폭(900 이하)이면 위 전역 메뉴(로고·검색·내 정보)를 걷고, 「대화」 머리가 맨 위에 붙어 있다 — 메신저 「채팅」 탭.
+   하단 탭(배움·대화·서재·산책)은 앱의 탭 막대로 그대로 둔다. 방에 들어가면 위 data-chat 규칙대로 화면 전체가 대화방이다. */
+@container manabi-shell (max-width: 900px) {
+  .manabi-app:has(.conv-rooms) > .gnb { display: none; }
+  .manabi-app:has(.conv-rooms) > .app-layout { padding-top: 0; }
+  .manabi-app .manabi-page.conv-rooms { padding-top: env(safe-area-inset-top, 0px); padding-inline: 0; }
+  .conv-rooms__head { position: sticky; top: 0; z-index: 5; background: var(--bg-primary); }
+}
+
 /* 휴대폰 틀(CONV-CHAT-001 9차, 오너 「[대화] 페이지 아예 중간에 스마트폰 스크린샷 크기로 넣어서 그 안에서 구동되게」 2026-10-17).
-   마우스로 쓰는 키 큰 화면(PC)에서만 방 목록·모두의 대화방·튜터 대화방을 가운데 휴대폰(390×844 비율) 안에 띄운다.
-   폰·태블릿(터치)은 틀이 display: contents로 사라져 지금 화면 그대로다. 폭 브레이크포인트를 새로 쓰지 않는다(ui-conventions §2 동결) —
-   입력 방식(hover·pointer)과 높이로만 고른다. 상태 표시줄은 화면 위에 겹치고(말풍선 바탕이 그 밑까지 깔린다), 홈 막대는 입력창 아래. */
+   마우스로 쓰는 키 큰 PC 화면에서만 방 목록·모두의 대화방·튜터 대화방을 가운데 휴대폰(390×844 비율) 안에 띄운다.
+   폰·태블릿(터치)과 폰 크기 창(셸 600 이하, 10차 「모바일 사이즈에선 안나타나도록」)은 틀이 display: contents로 사라져 앱 화면 그대로다.
+   폭 뷰포트 브레이크포인트를 새로 쓰지 않는다(ui-conventions §2 동결) — 입력 방식(hover·pointer)·높이와 셸 컨테이너 폭(정본 600 티어)으로 고른다.
+   상태 표시줄은 화면 위에 겹치고(말풍선 바탕이 그 밑까지 깔린다), 홈 막대는 입력창 아래. */
 .phone-stage, .phone-stage__device, .phone-stage__screen { display: contents; }
 .phone-stage__status, .phone-stage__home { display: none; }
 @media (hover: hover) and (pointer: fine) and (min-height: 700px) {
+ @container manabi-shell (min-width: 601px) {
   /* 틀 윗변은 전역 메뉴 높이(방 목록 78px · 대화방 56px)와 상관없이 같은 자리(--phone-top)라 방을 오가도 휴대폰이 움직이지 않는다. */
   .phone-stage { --phone-bezel: #15171A; --phone-status-ink: var(--text-primary); --phone-status-h: 34px; --phone-top: 98px;
     display: flex; justify-content: center; align-items: flex-start; width: 100%;
@@ -271,19 +283,24 @@
   .phone-stage__screen::-webkit-scrollbar { display: none; }
   .phone-stage__home { position: absolute; left: 50%; bottom: 7px; z-index: 30; display: block; width: 34%; height: 5px; border-radius: 3px;
     background: var(--phone-status-ink); opacity: 0.4; transform: translateX(-50%); pointer-events: none; }
-  /* 화면 안: 대화방은 틀 높이를 채우고(visualViewport 대신), 방 목록은 틀 안에서 스크롤한다. */
+  /* 화면 안: 대화방은 틀 높이를 채우고(visualViewport 대신), 방 목록은 틀 안에서 스크롤한다.
+     방 목록 머리는 상태 표시줄 자리까지 덮고 위에 붙어 있다(폰의 앱 첫 화면과 같은 모습). */
   .phone-stage__screen .conv { height: 100%; top: 0; padding-top: var(--phone-status-h); }
   .phone-stage__screen .conv__input { padding-bottom: 20px; }
   .phone-stage__screen .conv__jump { bottom: 92px; }
   .phone-stage__screen > .conv-page { max-width: none; height: 100%; }
-  .phone-stage__screen > .manabi-page.conv-rooms { max-width: none; min-height: 100%; margin: 0; padding: var(--phone-status-h) 0 24px; }
-  /* 틀이 있으면 대화방에서도 위 전역 메뉴를 그대로 둔다 — 휴대폰은 페이지 한가운데 놓인 화면이고, 메뉴로 다른 곳에 갈 수 있다.
-     (폰에서는 위 data-chat 규칙대로 메뉴를 걷어 화면 전체가 대화방이다.) */
-  .manabi-app:has(.phone-stage .conv) > .gnb { display: flex; }
+  .phone-stage__screen > .manabi-page.conv-rooms { max-width: none; min-height: 100%; margin: 0; padding: 0 0 24px; }
+  .phone-stage__screen > p.conv-rooms, .phone-stage__screen > .conv-rooms > .conv-rooms__title:first-child { padding-top: var(--phone-status-h); }
+  .phone-stage__screen .conv-rooms__head { position: sticky; top: 0; z-index: 5; padding-top: var(--phone-status-h); background: var(--bg-primary); }
+  /* 틀이 있으면 대화방·방 목록에서도 위 전역 메뉴를 그대로 둔다 — 휴대폰은 페이지 한가운데 놓인 화면이고, 메뉴로 다른 곳에 갈 수 있다.
+     (폰에서는 위 data-chat·10차 규칙대로 메뉴를 걷어 화면 전체가 앱이다.) */
+  .manabi-app:has(.phone-stage :is(.conv, .conv-rooms)) > .gnb { display: flex; }
   .manabi-app:has(.phone-stage .conv) > .app-layout { padding-top: var(--gnb-height); padding-bottom: 0; }
+  .manabi-app:has(.phone-stage .conv-rooms) > .app-layout { padding-top: var(--gnb-height); }
   .manabi-app .viewer-layout[data-chat="true"], .manabi-app .viewer-layout[data-chat="true"] .reader-area { background: transparent; }
   /* 좁은 PC 창(셸 900 이하)의 방 목록은 하단 탭이 보이므로 그만큼 틀을 줄인다. */
   @container manabi-shell (max-width: 900px) {
     .manabi-app:not(.manabi-app--reading) .phone-stage:not(:has(.conv)) { --phone-nav-room: 80px; }
   }
+ }
 }

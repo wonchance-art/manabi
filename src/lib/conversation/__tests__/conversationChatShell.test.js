@@ -138,6 +138,16 @@ describe('PC 휴대폰 틀(9차)', () => {
     expect(frame).toContain('@media (hover: hover) and (pointer: fine) and (min-height: 700px) {');
     expect(frame).not.toMatch(/@media[^{]*(max|min)-width/);
   });
+  it('폰 크기 창(셸 600 이하)에서는 마우스로 써도 틀이 없다 — 10차 「모바일 사이즈에선 안나타나도록」', () => {
+    expect(frame).toMatch(/@media \(hover: hover\) and \(pointer: fine\) and \(min-height: 700px\) \{\s*@container manabi-shell \(min-width: 601px\) \{/);
+  });
+  it('폰 크기에서 방 목록은 앱 첫 화면 — 위 전역 메뉴를 걷고 「대화」 머리가 위에 붙는다, 하단 탭은 그대로(10차)', () => {
+    const app = sliceBetween(css, '@container manabi-shell (max-width: 900px) {\n  .manabi-app:has(.conv-rooms) > .gnb', '/* 휴대폰 틀');
+    expect(app).toContain('.manabi-app:has(.conv-rooms) > .gnb { display: none; }');
+    expect(app).toContain('.conv-rooms__head { position: sticky; top: 0;');
+    expect(app).not.toContain('.mobile-nav');
+    expect(frame).toContain('.manabi-app:has(.phone-stage :is(.conv, .conv-rooms)) > .gnb { display: flex; }');
+  });
   it('화면 폭은 폰 그대로 390px, 틀 윗변은 메뉴 높이와 상관없이 같은 자리 — 방을 오가도 휴대폰이 움직이지 않는다', () => {
     expect(frame).toContain('width: min(410px, calc(100vw - 32px));');
     expect(frame).toContain('border: 10px solid var(--phone-bezel);');
