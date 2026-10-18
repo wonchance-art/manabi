@@ -271,3 +271,29 @@ describe('만남 인지 문항 ref', () => {
     });
   });
 });
+
+describe('기록 유실 표면화(/study 인라인 한 줄)', () => {
+  beforeEach(() => { vi.clearAllMocks(); });
+  const grammar = { uid: 'g-1', type: 'grammar-cloze', quiz: { ko: '' }, effect: { kind: 'grammar-due', srs: { slug: 'a1-etre' } } };
+  const vocab = { uid: 'v-1', word: { id: 'w1', word_text: 'bonjour', meaning: '안녕' }, effect: { kind: 'vocab', wordId: 'w1' } };
+
+  it('서버에도 큐에도 못 담았으면 { ok:false, lost:true }를 돌려준다(던지지 않는다)', async () => {
+    const error = new Error('offline-queue-unavailable');
+    vi.mocked(recordReviewCompleted).mockResolvedValueOnce({ ok: false, lost: true, error });
+    await expect(recordStudyReviewCompleted('user-1', { correct: true, item: grammar, lang: 'French' }))
+      .resolves.toEqual({ ok: false, lost: true, error });
+    vi.mocked(recordReviewCompleted).mockResolvedValueOnce({ ok: false, lost: true, error });
+    await expect(recordStudyReviewCompleted('user-1', { correct: true, item: vocab, lang: 'French' }))
+      .resolves.toMatchObject({ ok: false, lost: true });
+  });
+
+  it('큐에 담겼으면(오프라인) 유실이 아니다', async () => {
+    vi.mocked(recordReviewCompleted).mockResolvedValueOnce({ ok: true, queued: true, reviewedAt: 'x' });
+    await expect(recordStudyReviewCompleted('user-1', { correct: true, item: vocab, lang: 'French' })).resolves.toBeUndefined();
+  });
+
+  it('유실 아닌 거절(아는 단어 등)은 지금처럼 던진다', async () => {
+    vi.mocked(recordReviewCompleted).mockResolvedValueOnce({ ok: false, error: new Error('vocabulary_excluded') });
+    await expect(recordStudyReviewCompleted('user-1', { correct: true, item: vocab, lang: 'French' })).rejects.toThrow('vocabulary_excluded');
+  });
+});

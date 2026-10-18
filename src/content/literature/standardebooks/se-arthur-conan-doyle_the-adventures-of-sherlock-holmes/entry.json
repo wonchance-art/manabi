@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "provider": "standardebooks",
+  "repo": "standardebooks/arthur-conan-doyle_the-adventures-of-sherlock-holmes",
+  "commit": "48ec456ea50987a81f564821457b9fb32cc2bfc6",
+  "url": "https://standardebooks.org/ebooks/arthur-conan-doyle/the-adventures-of-sherlock-holmes",
+  "title": "The Adventures of Sherlock Holmes",
+  "author": "Arthur Conan Doyle",
+  "publishedYear": 1892,
+  "authorDeathYear": 1930,
+  "countryOfOrigin": "GB",
+  "level": "B2 상급",
+  "display": {
+    "titleKo": "셜록 홈즈의 모험",
+    "authorKo": "아서 코넌 도일",
+    "coverKicker": "The Adventures of",
+    "coverTitle": "Sherlock\nHolmes",
+    "coverAuthor": "A. Conan Doyle",
+    "cloth": "pale-blue",
+    "binding": "pictorial"
+  },
+  "files": [
+    {
+      "path": "a-scandal-in-bohemia.xhtml",
+      "sha256": "f43eb48c0e360f113ea47b9b9154f0a47d5946c38e5b3b82f0fa0bc665c182a1"
+    },
+    {
+      "path": "the-redheaded-league.xhtml",
+      "sha256": "151fd4a83cedcc63a314313b6fe80e508c0c2545c4cba15b8df0f5557d8ec314"
+    },
+    {
+      "path": "a-case-of-identity.xhtml",
+      "sha256": "3da1ec6203aca159c3a8594a73af4c595b5c799bfc675b5d112b8d79aace5cce"
+    },
+    {
+      "path": "the-boscombe-valley-mystery.xhtml",
+      "sha256": "2d1800b7e363ddff8ad0cd13ea13b0b147169df50c250f5a8331bc2ac21915e3"
+    },
+    {
+      "path": "the-five-orange-pips.xhtml",
+      "sha256": "ce329574bf5ccca4f3c9d2122a6f6e29fd1954465fccb07758fa6342d27f2f78"
+    },
+    {
+      "path": "the-man-with-the-twisted-lip.xhtml",
+      "sha256": "822e618bf68c97f9412c19aac981a45129e819212d7afc73eacb0622ce673c7a"
+    },
+    {
+      "path": "the-adventure-of-the-blue-carbuncle.xhtml",
+      "sha256": "a8550337d012c09ad3f67237aa82165f2a6e9e4646d6cba4c0eeebed33259201"
+    },
+    {
+      "path": "the-adventure-of-the-speckled-band.xhtml",
+      "sha256": "b59209c14d19744934312bdb7851a6dc977f31989081b54c790fa9cbaf6596f8"
+    },
+    {
+      "path": "the-adventure-of-the-engineers-thumb.xhtml",
+      "sha256": "4d2a68e779f6983d33bdfa67ddaf75fa459928a813f3506129042bf8c69e2355"
+    },
+    {
+      "path": "the-adventure-of-the-noble-bachelor.xhtml",
+      "sha256": "39de0eff5e030045a492f55db5fac7307d5a0c4d08983b2ef6ab6cba98d56d47"
+    },
+    {
+      "path": "the-adventure-of-the-beryl-coronet.xhtml",
+      "sha256": "1ccab043f7af01e3070c0552e4fc8dc72152051108ae8dd2ae2597f33c890a7e"
+    },
+    {
+      "path": "the-adventure-of-the-copper-beeches.xhtml",
+      "sha256": "3db6e094afc893a64c40d8ef408eb6212ffd72982b42c1a3664980382479d4d5"
+    }
+  ],
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-16",
+    "reviewedJurisdictions": [
+      "GB",
+      "US",
+      "KR"
+    ],
+    "evidenceUrl": "https://standardebooks.org/ebooks/arthur-conan-doyle/the-adventures-of-sherlock-holmes"
+  }
+}

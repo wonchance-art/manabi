@@ -72,7 +72,8 @@ try {
  await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last().click();await page.waitForURL('**/home');await page.waitForLoadState('networkidle');
  for(const width of [320,390,768,1440]) {
   material=original();mode='slow';await page.setViewportSize({width,height:900});await open('width'+width);
-  await page.getByText('분석이 끝나지 않은 부분이 2곳 있어요.',{exact:true}).waitFor();
+  // 보이는 배너 줄에서 찾는다 — 같은 글이 배너 밖 상시 알림 영역(sr-only)에도 있다(LOADING-ANNOUNCE-001 ③ · e95f31b3 선례).
+  await page.locator('.analyzing-banner').getByText('분석이 끝나지 않은 부분이 2곳 있어요.',{exact:true}).waitFor();
   const rect=await resume().boundingBox();assert(rect.height>=44);await shot('before-'+width);
   const before=structuredClone(material.processed_json.dictionary.id_0_0_resume),start=commits;
   await resume().focus();await page.keyboard.press('Enter');
@@ -87,6 +88,10 @@ try {
  material=original();mode='slow';await open('abort');const before=structuredClone(material),beforeCommit=commits;
  await resume().click();await page.getByRole('button',{name:'⏹ 중단',exact:true}).click();await resume().waitFor();
  await page.waitForTimeout(1500);assert.equal(commits,beforeCommit);assert.deepEqual(material,before);await pass('stop never replaces the old source');
+ // 이 검사는 스크롤 보기에서 잰다(2026-10-17 KST 실측). 1440 기본은 쪽 넘김 보기라 scrollIntoViewIfNeeded로 굴린 가로 위치를
+ // 쪽 넘김이 곧바로 쪽 경계로 되돌려(44ms) 「읽던 자리」가 그 낱말이 아니게 된다 — 세로 y 비교가 604px 이동으로 실패하던 까닭이다
+ // (main에서도 같다). 쪽 넘김 보기에서는 복구 뒤에도 같은 쪽에 머문다(같은 실측: 쪽 1 → 쪽 1).
+ await page.evaluate(()=>{const k='viewer_preferences_v2';let v;try{v=JSON.parse(localStorage.getItem(k)||'null');}catch{v=null;}v=v&&typeof v==='object'?v:{version:2,languages:{}};v.common={...(v.common||{}),readerView:'scroll'};localStorage.setItem(k,JSON.stringify(v));});
  material=original();mode='slow';await open('read-during-recovery');await resume().click();
  const reading=page.locator('[data-source-token="id_12_0_resume"]');
  await reading.scrollIntoViewIfNeeded();const topBefore=(await reading.boundingBox()).y;

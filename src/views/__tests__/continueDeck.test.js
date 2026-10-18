@@ -53,8 +53,9 @@ describe('홈 알림 덱 계약', () => {
   });
 
   it('⑷ prefers-reduced-motion을 존중한다 — JS 스크롤과 CSS 양쪽', () => {
-    expect(deck).toContain("prefers-reduced-motion: reduce");
-    expect(deck).toContain("behavior: reduced ? 'auto' : 'smooth'");
+    // 판정은 공통 reducedMotion()(src/lib/reducedMotion.js = matchMedia('(prefers-reduced-motion: reduce)'))으로 옮겼다(MOTION-R2).
+    expect(deck).toMatch(/import \{ reducedMotion \} from '[^']*reducedMotion'/);
+    expect(deck).toContain("behavior: reducedMotion() ? 'auto' : 'smooth'");
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]{0,200}continue-deck__scroller \{ scroll-behavior: auto; \}/);
   });
 
@@ -84,6 +85,14 @@ describe('홈 알림 덱 계약', () => {
     expect(home).not.toContain('<GroupEntryCard');
     expect(fs.existsSync(path.join(process.cwd(), 'src/components/ForecastCard.jsx'))).toBe(false);
     expect(fs.existsSync(path.join(process.cwd(), 'src/components/GroupEntryCard.jsx'))).toBe(false);
+  });
+
+  it('HSK 단어 임시 입구는 덱과 같은 카드 양식으로 배움 맨 아래에 있다(오너 지시 2026-10-15 KST)', () => {
+    const home = read('src/views/HomePage.jsx');
+    expect(home).toContain("href: '/chinese/vocab/h1'");
+    expect(home).toContain('<ContinueDeck items={[hskItem]} />');
+    // 맨 아래 — 이어서 덱보다 뒤에 온다.
+    expect(home.indexOf('<ContinueDeck items={[hskItem]} />')).toBeGreaterThan(home.indexOf('<ContinueDeck items={continueDeckItems} />'));
   });
 
   it('예보의 침묵 계약은 유지된다 — 흐려질 단어가 0이면 항목 자체가 없다', () => {

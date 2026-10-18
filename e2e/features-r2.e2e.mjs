@@ -92,11 +92,13 @@ async function mockAccount(context, { material, reread = false, outputWords = fa
     if (table === 'reading_progress' && reread && select.includes('reading_materials(title')) {
       return reply(route, [{ material_id: 92001, is_completed: true, completed_at: '2026-07-01T00:00:00.000Z', reading_materials: { title: '오래된 E2E 읽기' } }]);
     }
-    if (table === 'user_vocabulary' && outputWords && select.includes('last_reviewed_at')) {
-      return reply(route, [{ id: 'word-1', word_text: 'practice', meaning: '연습하다', language: 'English', last_reviewed_at: new Date().toISOString() }]);
+    // 오늘 복습한 말(fetchTodayReviewRows)은 count=exact 완전 페이지만 받는다 — 행 id와 content-range 총수가 없으면
+    // 불완전으로 거부해 칩을 그리지 않는다. 후보는 제외를 반영한 active_vocabulary view에서 읽는다.
+    if (table === 'active_vocabulary' && outputWords && select.includes('last_reviewed_at')) {
+      return reply(route, [{ id: 'word-1', word_text: 'practice', meaning: '연습하다', language: 'English', last_reviewed_at: new Date().toISOString() }], { 'content-range': '0-0/1' });
     }
     if (table === 'review_events' && outputWords) {
-      return reply(route, [{ source: 'vocab', correct: true, created_at: new Date().toISOString(), detail: { word_id: 'word-1' } }]);
+      return reply(route, [{ id: 'event-1', source: 'vocab', item_key: 'vocab:word-1', correct: true, created_at: new Date().toISOString(), detail: { word_id: 'word-1' } }], { 'content-range': '0-0/1' });
     }
     if (table === 'study_group_members') return reply(route, []);
     return reply(route, []);
@@ -174,7 +176,7 @@ before(async () => {
 
 after(async () => { try { await browser?.close(); } finally { await stopServer(); } });
 
-test('받아쓰기: 지정 문장을 가린 채 입력·채점하고 diff와 본문 보기를 렌더한다', async () => {
+test('받아쓰기: 지정 문장을 가린 채 입력·채점하고 diff와 원문 보기를 렌더한다', async () => {
   await fresh(async (page, context) => {
     await mockAccount(context, { material: viewerMaterial() });
     await context.route('**/api/analyze', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [{ sequence: ['a', 'b'], dictionary: { a: { text: 'Hello', base_form: 'hello', meaning: '안녕하세요' }, b: { text: 'world', base_form: 'world', meaning: '세계' } } }] }) }));
@@ -188,7 +190,8 @@ test('받아쓰기: 지정 문장을 가린 채 입력·채점하고 diff와 본
     await dialog.getByRole('button', { name: '채점', exact: true }).click();
     await visible(dialog.getByText(/정답률 \d+%/), 'accuracy');
     await visible(dialog.getByText('파랑 = 놓친 글자 · 취소선 = 잘못 들어간 글자', { exact: true }), 'diff legend');
-    await dialog.getByRole('button', { name: '본문 보기', exact: true }).click();
+    // 공개 버튼 문구는 「원문 보기」(docs/manabi-viewer-reading-controls.md §활동 — 받아쓰기 답 가림 · 원문 보기).
+    await dialog.getByRole('button', { name: '원문 보기', exact: true }).click();
     await visible(dialog.getByText(`"${SENTENCE}"`, { exact: true }), 'revealed original');
   });
 });

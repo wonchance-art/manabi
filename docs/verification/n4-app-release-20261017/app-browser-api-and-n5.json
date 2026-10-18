@@ -1,0 +1,274 @@
+{
+  "scope": "Actual local Next API section integrity and visible N5 baseline, synthetic learner/backend only",
+  "editionId": "f4a6411c0945bbd3f8767af7",
+  "passed": true,
+  "api": [
+    {
+      "unit": "u01",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u02",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u03",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u04",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u05",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u06",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u07",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u08",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u09",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u10",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u11",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u12",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u13",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u14",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u15",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u16",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u17",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u18",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u19",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u20",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u21",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u22",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u23",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u24",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u25",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u26",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u27",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u28",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u29",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u30",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u31",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u32",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u33",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u34",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u35",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u36",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u37",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u38",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u39",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u40",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u41",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    },
+    {
+      "unit": "u42",
+      "status": 200,
+      "sections": 4,
+      "exactSource": true
+    }
+  ],
+  "n5": {
+    "title": "누구의 노트예요?",
+    "expected": "누구의 노트예요?",
+    "toolbar": "← 책 목차일본어 · N5 / 03과담은 표현참고 자료어휘·문형·한자이 과의 연결 자료문화 읽기집중 읽기"
+  },
+  "screenshots": [
+    "n5-nonregression-1440.png",
+    "n5-nonregression-320.png"
+  ],
+  "checks": [
+    "All 42 application reading endpoints return exact sections from final immutable HTML",
+    "N5 actual visible H1 matches preserved source and correct N5 label remains in toolbar; desktop and mobile no overflow"
+  ],
+  "laterLayoutFix": "The later N4-only choice-label span CSS fix does not alter reading API sections or N5; complete N4 app geometry is recorded separately in APP-MATRIX.json",
+  "errors": []
+}

@@ -62,6 +62,15 @@ export function toSuggestionArticle(video, { source, channelName, level } = {}) 
   };
 }
 
+/** 채널 제목 — youtubei.js 버전마다 metadata/header 쪽으로 갈려 넓게 받는다. 없으면 ''. */
+export function channelTitleOf(channel) {
+  const t = channel?.metadata?.title
+    ?? channel?.header?.title?.text
+    ?? channel?.header?.page_title
+    ?? channel?.header?.author?.name;
+  return typeof t === 'string' ? t.trim() : '';
+}
+
 /** 채널 노드에서 영상 배열을 꺼낸다 — youtubei.js 버전마다 필드가 갈려 넓게 받는다. */
 export function pickVideoNodes(feed) {
   return feed?.videos || feed?.contents || feed?.results || [];
@@ -86,7 +95,11 @@ export async function fetchYoutubeChannel(count = 2, config = {}, deps = {}) {
 
     const channel = await yt.getChannel(browseId);
     const feed = await channel.getVideos();
-    const videos = normalizeVideoList(pickVideoNodes(feed), probeBudget(count));
+    // 채널 탭 카드(LockupView)의 첫 메타 줄은 채널명이 아니라 **조회수**다(운영 실측
+    // 2026-10-16: channel_name 「12K views」). 채널 수집에서는 채널 자신의 제목이 정본이다.
+    const channelTitle = channelTitleOf(channel);
+    const videos = normalizeVideoList(pickVideoNodes(feed), probeBudget(count))
+      .map((v) => (channelTitle ? { ...v, channel: channelTitle } : v));
 
     // 라이선스가 설정에 명시된 채널(VOA = 퍼블릭 도메인)은 **본문까지** 담는다(F R5).
     // 순환 import를 피하려고 동적으로 가져온다 — youtubeShareable이 이 파일을 쓴다.
@@ -108,7 +121,7 @@ export async function fetchYoutubeChannel(count = 2, config = {}, deps = {}) {
       if (!isListable(probe, langCode)) continue;
       out.push(toSuggestionArticle(v, {
         source: 'youtube_ondemand',
-        channelName: channel?.metadata?.title || '',
+        channelName: channelTitle,
         level,
       }));
     }

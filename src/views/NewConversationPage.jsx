@@ -3,7 +3,7 @@
 // 주제·언어·수준을 고르면 서버 대화 턴 경로가 비공개 대화 자료를 만들고 수준에 맞춘 첫 질문까지 받아 온다.
 // 「써 볼 말」은 오늘 복습한 말(useOutputWords) 표시만이다 — 첫 질문 프롬프트에 함께 넘긴다.
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/AuthContext';
@@ -15,27 +15,53 @@ import { startTopicConversation } from '@/lib/conversation/conversationClient';
 import { fetchConversations, fetchConversationTurns, conversationHref, conversationShelfMeta } from '@/lib/conversation/conversationLibrary';
 import { conversationCorrections } from '@/lib/conversation/conversationLoop';
 import {
-  CONVERSATION_TOPICS, canStartConversation, conversationLevels, newConversationDefaults, recommendedLevel,
+  CONVERSATION_TOPICS, canStartConversation, conversationLevels, newConversationDefaults, preferredConversationLanguage, recommendedLevel,
 } from '@/lib/conversation/newConversation';
 import { safeReaderReturn } from '@/lib/libraryReturn';
 import { friendlyToastMessage } from '@/lib/errorMessage';
+import { focusIfFree } from '@/lib/focusAfterAction';
+import { hasSupabaseSessionCookie } from '@/lib/authCookie';
+import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
 import '@/components/conversation/conversation.css';
 
 const RECENT = 3;
 
 export default function NewConversationPage() {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, profileLoading } = useAuth();
+  // 로그인 확인 중에도 머리글 · 선택지를 먼저(CONV-SHELL-001 — 오너 「권장대로」 목업 A, 2026-10-17 KST). 예전에는 확인이 끝날 때까지
+  // 「대화 불러오는 중…」 한 줄뿐이라 클릭 → 제목이 약 0.4초였다. 주제 칩은 상수라 바로 누를 수 있고, 언어 칩(상수 4개)은 그려 두되
+  // 선택 표시 · 누름은 확인 뒤에 켠다(프로필 첫 학습 언어가 들어올 때 선택만 붙고 자리는 그대로). 수준은 지금 언어의 칩 수 · 폭 그대로 글을 숨긴 골격(CONV-LEVEL-HOLD-001 — 예전 3칸 한 줄은 390에서 실제 칩 3줄로 바뀌며 아래를 104px 밀었다).
+  // 손님은 세션 쿠키가 없으면 처음부터 손님 화면(배움과 같은 판정 함수). 쿠키가 남았는데 세션이 끝났으면 골격 뒤 같은 손님 화면.
+  // 이 화면은 useSearchParams로 클라이언트에서만 그려지므로 첫 그림에서 쿠키를 읽어도 서버 그림과 어긋나지 않는다.
+  const [guestGuess] = useState(() => typeof document !== 'undefined' && !hasSupabaseSessionCookie(document.cookie));
+  const settled = !loading && !profileLoading;
   const router = useRouter();
   const params = useSearchParams();
-  const initial = useMemo(() => newConversationDefaults(params, { profileLevelOf: (l) => profileLevel(profile, l) }), [params, profile]);
+  const initial = useMemo(() => newConversationDefaults(params, {
+    profileLevelOf: (l) => profileLevel(profile, l), fallbackLanguage: preferredConversationLanguage(profile),
+  }), [params, profile]);
   const [language, setLanguage] = useState(initial.language);
   const [level, setLevel] = useState(initial.level);
   const [topic, setTopic] = useState(CONVERSATION_TOPICS.includes(initial.topic) ? initial.topic : '');
   const [ownTopic, setOwnTopic] = useState(CONVERSATION_TOPICS.includes(initial.topic) ? '' : initial.topic);
   const [writing, setWriting] = useState(!!ownTopic);
+  // 프로필은 첫 그림 뒤에 올 수 있다 — 아직 직접 고르지 않았으면 처음 선택(언어 · 수준)을 프로필 기준으로 맞춘다. 고른 뒤에는 덮지 않는다.
+  // 그림 중에 맞춘다(effect가 아니라) — effect면 확인이 끝난 첫 그림이 기본(중국어) 수준 칩 3줄로 한 번 그려진 뒤 프로필 언어(일본어 2줄)로
+  // 줄어 「대화 시작」이 내려갔다 올라왔다(CONV-LEVEL-HOLD-001 실측, 프로필 일본어 · 영어에서 3회 중 1회).
+  const [picked, setPicked] = useState(false);
+  if (!picked && (language !== initial.language || level !== initial.level)) {
+    setLanguage(initial.language);
+    setLevel(initial.level);
+  }
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
   const outputWords = useOutputWords(language, { enabled: !!user });
+  // 시작 실패 뒤 「대화 시작」으로 초점(CONV-FOCUS-001) — 누르는 동안 잠겨(disabled) 초점이 body로 떨어졌다. 알림(role=alert)과 함께
+  // 다시 누를 자리를 준다. 다른 곳에 살아 있는 초점은 뺏지 않는다.
+  const startRef = useRef(null);
+  useEffect(() => {
+    if (error && !starting) focusIfFree(startRef.current, startRef.current?.closest('.conv-new'));
+  }, [error, starting]);
   const recent = useQuery({
     queryKey: ['library-conversations', user?.id], enabled: !!user, staleTime: 30000,
     queryFn: () => fetchConversations(supabase, user.id),
@@ -52,6 +78,7 @@ export default function NewConversationPage() {
   const ready = canStartConversation({ topic: chosenTopic, language, level });
 
   function pickLanguage(next) {
+    setPicked(true);
     setLanguage(next);
     setLevel(recommendedLevel(next, profileLevel(profile, next)));
     setError('');
@@ -69,8 +96,7 @@ export default function NewConversationPage() {
     }
   }
 
-  if (loading) return <p className="manabi-page" role="status">불러오는 중…</p>;
-  if (!user) {
+  if (!user && (!loading || guestGuess)) {
     return (
       <div className="manabi-page conv-new">
         <h1>새 대화</h1>
@@ -110,18 +136,23 @@ export default function NewConversationPage() {
         <h2 id="conv-new-lang">언어</h2>
         <div className="conv-new__chips">
           {CONVERSATION_LANGUAGES.map((l) => (
-            <button key={l} type="button" className="conv-chip" aria-pressed={language === l} onClick={() => pickLanguage(l)}>{langNameKo(l)}</button>
+            <button key={l} type="button" className="conv-chip" aria-pressed={settled && language === l} aria-disabled={!settled || undefined}
+              onClick={() => { if (settled) pickLanguage(l); }}>{langNameKo(l)}</button>
           ))}
         </div>
       </section>
 
       <section className="conv-new__group" aria-labelledby="conv-new-level">
-        <h2 id="conv-new-level">말 수준 <small>{profileLevel(profile, language) ? '내 학습 수준 기준 추천' : '처음 단계부터'}</small></h2>
-        <div className="conv-new__chips">
+        <h2 id="conv-new-level">말 수준 <small>{!settled ? <SkeletonLine width="7em" /> : profileLevel(profile, language) ? '내 학습 수준 기준 추천' : '처음 단계부터'}</small></h2>
+        {settled ? <div className="conv-new__chips">
           {conversationLevels(language).map((lv) => (
-            <button key={lv} type="button" className="conv-chip" aria-pressed={level === lv} onClick={() => setLevel(lv)}>{lv}</button>
+            <button key={lv} type="button" className="conv-chip" aria-pressed={level === lv} onClick={() => { setPicked(true); setLevel(lv); }}>{lv}</button>
           ))}
-        </div>
+        </div> : <SkeletonRegion className="conv-new__chips" label="대화" announce>
+          {/* 칸 수 · 폭은 지금 언어(주소 lang 또는 기본)의 실제 칩 그대로 — 같은 button 상자(.manabi-page button의 글꼴까지)에 글은 숨겨
+              폭만 잡아 390에서 줄바꿈이 같다(CONV-LEVEL-HOLD-001). 초점 · 누름 없음(tabIndex -1 · aria-hidden · 동작 없음). */}
+          {conversationLevels(language).map((lv) => <button key={lv} type="button" tabIndex={-1} className="conv-chip conv-chip--skeleton" aria-hidden="true"><SkeletonLine width="calc(100% - 24px)" height="1em" /><span className="conv-chip__size">{lv}</span></button>)}
+        </SkeletonRegion>}
       </section>
 
       {(outputWords.length > 0 || pastFixes.length > 0) && (
@@ -133,7 +164,7 @@ export default function NewConversationPage() {
       )}
 
       <div className="conv-new__start">
-        <button type="button" className="manabi-button" disabled={!ready || starting} onClick={start}>
+        <button ref={startRef} type="button" className="manabi-button" disabled={!settled || !ready || starting} onClick={start}>
           {starting ? '첫 질문을 받는 중…' : '대화 시작'}
         </button>
         <p className="conv-new__note">대화는 내 서재에 비공개로 남아요. 언제든 지울 수 있어요.</p>
@@ -142,7 +173,7 @@ export default function NewConversationPage() {
 
       {recentRows.length > 0 && (
         <section className="conv-new__group" aria-labelledby="conv-new-recent">
-          <h2 id="conv-new-recent">이어서 하기</h2>
+          <h2 id="conv-new-recent">이어 하기</h2>
           <ul className="conv-new__recent">
             {recentRows.map((row) => (
               <li key={row.id}>

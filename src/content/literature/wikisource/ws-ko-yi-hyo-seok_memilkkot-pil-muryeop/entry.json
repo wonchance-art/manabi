@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "ko",
+  "key": "ws-ko-yi-hyo-seok_memilkkot-pil-muryeop",
+  "main": "메밀꽃 필 무렵",
+  "url": "https://ko.wikisource.org/wiki/%EB%A9%94%EB%B0%80%EA%BD%83_%ED%95%84_%EB%AC%B4%EB%A0%B5",
+  "title": "메밀꽃 필 무렵",
+  "author": "이효석",
+  "level": "고급",
+  "publishedYear": 1936,
+  "authorDeathYear": 1942,
+  "countryOfOrigin": "KR",
+  "mortPourLaFrance": null,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "메밀꽃 필 무렵",
+    "authorKo": "이효석",
+    "binding": "bakmun",
+    "coverTitle": "메밀꽃 필 무렵",
+    "coverAuthor": "李孝石",
+    "coverImprint": "博文書館",
+    "coverEdition": "博文文庫"
+  },
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "메밀꽃 필 무렵",
+      "revid": 426852,
+      "timestamp": "2026-05-04T04:21:22Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "body",
+          "sha256": "febd89bc0d95d70c267c9260faf1284da239bf2d55eccd481628b3d88b6ead2a"
+        }
+      ]
+    }
+  ]
+}

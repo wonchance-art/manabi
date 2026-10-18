@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "provider": "pdsite",
+  "site": "gau",
+  "key": "pd-gau-george-orwell_homage-to-catalonia",
+  "url": "https://gutenberg.net.au/ebooks02/0201111h.html",
+  "title": "Homage to Catalonia",
+  "author": "George Orwell",
+  "language": "English",
+  "level": "B2 상급",
+  "publishedYear": 1938,
+  "authorDeathYear": 1950,
+  "countryOfOrigin": "GB",
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "GB",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "카탈로니아 찬가",
+    "authorKo": "조지 오웰",
+    "binding": "tpl-jacket",
+    "coverTitle": "Homage to\nCatalonia",
+    "coverAuthor": "George Orwell",
+    "coverPalette": "cream"
+  },
+  "parse": {
+    "chapter": "^h2:(?:CHAPTER|Chapter|CHAPITRE|Chapitre) [IVXLC\\d]+\\.?$",
+    "stop": "^h2:THE END$"
+  },
+  "file": {
+    "path": "0201111h.html",
+    "url": "https://gutenberg.net.au/ebooks02/0201111h.html",
+    "encoding": "utf-8",
+    "sha256": "af5dd221606ffb567a3abf9d4500bba85a90c5b7d5ac40c12ff86067dfe0723f",
+    "fetchedAt": "2026-10-17"
+  }
+}

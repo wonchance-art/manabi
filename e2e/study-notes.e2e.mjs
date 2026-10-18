@@ -125,8 +125,8 @@ try{
  const beforeInk=JSON.stringify((await remote()).document.board.pages[0].elements.find(el=>el.type==='freedraw').points);
  const first=review.locator('.note-candidate').first();await first.getByRole('button',{name:'한자·사전',exact:true}).click();await first.getByRole('button',{name:'橋 다리',exact:true}).click();
  await review.getByRole('button',{name:'뜻 있는 항목 모두 선택',exact:true}).click();await screen('02-desktop-review');
- await review.getByRole('button',{name:'선택한 2개 담기',exact:true}).click();await review.getByText('검수용 단어 저장 실패',{exact:true}).waitFor();await first.getByRole('button',{name:'같은 뜻이에요 · 문맥만 연결',exact:true}).click();
- await first.getByText('기존 단어에 문맥 연결',{exact:true}).waitFor();await review.getByRole('button',{name:'선택한 1개 담기',exact:true}).click();await review.getByText('새로 담음',{exact:true}).waitFor();
+ await review.getByRole('button',{name:'선택한 2개 담기',exact:true}).click();await review.locator('.note-row-error').getByText('검수용 단어 저장 실패',{exact:true}).waitFor();await first.getByRole('button',{name:'같은 뜻이에요 · 문맥만 연결',exact:true}).click();
+ await first.locator('.note-saved').getByText('기존 단어에 문맥 연결',{exact:true}).waitFor();await review.getByRole('button',{name:'선택한 1개 담기',exact:true}).click();await review.locator('.note-saved').getByText('새로 담음',{exact:true}).waitFor();
  assert.deepEqual((await db.query('select * from user_vocabulary where id=$1',[oldVocab])).rows[0],originalVocab);
  assert.equal((await db.query('select count(*)::int n from user_vocabulary')).rows[0].n,2);assert.equal((await db.query('select count(*)::int n from vocabulary_contexts')).rows[0].n,2);
  assert.equal(JSON.stringify((await remote()).document.board.pages[0].elements.find(el=>el.type==='freedraw').points),beforeInk);
@@ -184,7 +184,7 @@ try{
  assert.equal((await db.query('select count(*)::int n from user_vocabulary')).rows[0].n,2,'recognition does not save vocabulary automatically');
  await review.getByRole('button',{name:'단어 정리 닫기',exact:true}).click();await page.setViewportSize({width:1440,height:1000});await capture();await recognition.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await review.waitFor();
  assert.equal(await review.locator('.note-candidate').count(),1);assert.equal(await review.getByRole('textbox',{name:'箸 뜻',exact:true}).inputValue(),'젓가락 · 수업 메모');
- await review.getByRole('button',{name:'뜻 있는 항목 모두 선택',exact:true}).click();await review.getByRole('button',{name:'선택한 1개 담기',exact:true}).click();await review.getByText('새로 담음',{exact:true}).waitFor();
+ await review.getByRole('button',{name:'뜻 있는 항목 모두 선택',exact:true}).click();await review.getByRole('button',{name:'선택한 1개 담기',exact:true}).click();await review.locator('.note-saved').getByText('새로 담음',{exact:true}).waitFor();
  assert.equal(JSON.stringify(noteResponse(await noteRow(inkId)).document.board.pages[0].elements.filter(el=>el.type==='freedraw')),originalStrokes);
  check('explicit crop preview sends only selected ink; cancel sends nothing; failed recognition retries, kana alternatives preserve edits, deduplicate and save with unchanged strokes');
  await review.getByRole('button',{name:'단어 정리 닫기',exact:true}).click();await capture();recognitionMode='slow';await recognition.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await waitFor(()=>recognitionCalls.length===4);await recognition.getByRole('button',{name:'필기 인식 취소',exact:true}).click();await page.waitForTimeout(1800);

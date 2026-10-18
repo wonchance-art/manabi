@@ -1,5 +1,6 @@
 // 학습 보상 시각 효과 — canvas-confetti 래퍼.
 // 정답·매치·완료 등 짧은 모먼트에 사용.
+import { reducedMotion } from './reducedMotion';
 
 const COLOR_MAP = {
   primary: ['#5b8def', '#a3c4ff', '#dde9ff'],
@@ -50,7 +51,7 @@ async function getConfetti() {
 // 작은 sparkle — 정답/매치 직후
 export async function fireSparkle({ source, count = 12, colors = 'accent' } = {}) {
   if (typeof window === 'undefined') return;
-  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+  if (reducedMotion()) return;
   const confetti = await getConfetti();
   if (!confetti) return;
   confetti({
@@ -70,7 +71,7 @@ export async function fireSparkle({ source, count = 12, colors = 'accent' } = {}
 // 큰 폭발 — 강의 완료 / 미션 클리어
 export async function fireBurst({ source, colors = ['primary', 'accent'] } = {}) {
   if (typeof window === 'undefined') return;
-  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+  if (reducedMotion()) return;
   const confetti = await getConfetti();
   if (!confetti) return;
   const origin = getOrigin(source);

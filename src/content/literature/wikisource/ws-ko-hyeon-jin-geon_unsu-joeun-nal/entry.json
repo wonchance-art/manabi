@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "ko",
+  "key": "ws-ko-hyeon-jin-geon_unsu-joeun-nal",
+  "main": "운수 좋은 날",
+  "url": "https://ko.wikisource.org/wiki/%EC%9A%B4%EC%88%98_%EC%A2%8B%EC%9D%80_%EB%82%A0",
+  "title": "운수 좋은 날",
+  "author": "현진건",
+  "level": "고급",
+  "publishedYear": 1924,
+  "authorDeathYear": 1943,
+  "countryOfOrigin": "KR",
+  "mortPourLaFrance": null,
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "운수 좋은 날",
+    "authorKo": "현진건",
+    "binding": "gaebyeok",
+    "coverTitle": "운수 좋은 날",
+    "coverAuthor": "玄鎭健",
+    "coverImprint": "開闢",
+    "coverEdition": "第四十八號"
+  },
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "운수 좋은 날",
+      "revid": 465986,
+      "timestamp": "2026-10-16T01:07:13Z",
+      "variants": [
+        {
+          "variant": null,
+          "path": "001.html",
+          "extract": "body",
+          "sha256": "09bae467194d6d2f6abef7c56425e2aaf25f376381c6850dc9d28bf471f8815d"
+        }
+      ]
+    }
+  ]
+}

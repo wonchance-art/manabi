@@ -1,0 +1,1531 @@
+{
+  "scope": "Actual local Next BookReader geometry only; synthetic learner/backend; functional acceptance is separate",
+  "editionId": "f4a6411c0945bbd3f8767af7",
+  "contentHash": "f4a6411c0945bbd3f8767af72619474fadd45d0fbd0f403463c2c04ccd1b27c5",
+  "bundleHash": "16c62d4ae663e23de47b8538d29622c45e59af9d341473120c9023fb2a6d459a",
+  "widths": [
+    320,
+    390,
+    768,
+    1440
+  ],
+  "observations": [
+    {
+      "unit": "u01",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 5,
+      "formulas": 2
+    },
+    {
+      "unit": "u01",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 5,
+      "formulas": 2
+    },
+    {
+      "unit": "u01",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 5,
+      "formulas": 2
+    },
+    {
+      "unit": "u01",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 5,
+      "formulas": 2
+    },
+    {
+      "unit": "u02",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u02",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u02",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u02",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u03",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u03",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u03",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u03",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u04",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u04",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u04",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u04",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u05",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u05",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u05",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u05",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u06",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u06",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u06",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u06",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u07",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u07",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u07",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u07",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u08",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u08",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u08",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u08",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u09",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u09",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u09",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u09",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u10",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u10",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u10",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u10",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u11",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u11",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u11",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u11",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u12",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u12",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u12",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u12",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u13",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u13",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u13",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u13",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u14",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u14",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u14",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u14",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u15",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u15",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u15",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u15",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u16",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u16",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u16",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u16",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u17",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u17",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u17",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u17",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u18",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u18",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u18",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u18",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u19",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u19",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u19",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u19",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u20",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u20",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u20",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u20",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u21",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u21",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u21",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u21",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u22",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u22",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u22",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u22",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u23",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u23",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u23",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u23",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u24",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u24",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u24",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u24",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u25",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 1
+    },
+    {
+      "unit": "u25",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 1
+    },
+    {
+      "unit": "u25",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 1
+    },
+    {
+      "unit": "u25",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 1
+    },
+    {
+      "unit": "u26",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u26",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u26",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u26",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u27",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u27",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u27",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u27",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u28",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u28",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u28",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u28",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u29",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u29",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u29",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u29",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u30",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u30",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u30",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u30",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u31",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u31",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u31",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u31",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u32",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u32",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u32",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u32",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u33",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u33",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u33",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u33",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u34",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u34",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u34",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u34",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u35",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u35",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u35",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u35",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u36",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u36",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u36",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u36",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u37",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u37",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u37",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u37",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u38",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u38",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u38",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u38",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u39",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u39",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u39",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u39",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u40",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u40",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u40",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u40",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u41",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u41",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u41",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u41",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 3,
+      "studyRows": 0,
+      "formulas": 2
+    },
+    {
+      "unit": "u42",
+      "width": 320,
+      "scrollWidth": 320,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 4
+    },
+    {
+      "unit": "u42",
+      "width": 390,
+      "scrollWidth": 390,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 4
+    },
+    {
+      "unit": "u42",
+      "width": 768,
+      "scrollWidth": 768,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 4
+    },
+    {
+      "unit": "u42",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sectionCount": 4,
+      "questions": 6,
+      "studyRows": 0,
+      "formulas": 4
+    }
+  ],
+  "failures": [],
+  "errors": [],
+  "startedAt": "2026-10-17T05:06:14.280Z",
+  "passed": true,
+  "finishedAt": "2026-10-17T05:06:46.689Z"
+}

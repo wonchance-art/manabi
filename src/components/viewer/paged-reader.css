@@ -67,7 +67,18 @@ html .viewer-layout[data-reader-view="paged"] > .viewer-center { padding-bottom:
   .viewer-layout[data-reader-view="paged"]:has(.viewer-inspector:not([hidden])) .reader-pagebar { visibility: hidden; }
   /* 고른 단어가 시트 밑에 깔리면 시트를 낮게 연다(본문은 그대로) — 높이는 useSelectedTokenVisibility가 잰다. */
     .viewer-layout[data-reader-view="paged"] .viewer-inspector[data-compact="true"]:not(.is-expanded):not(.is-collapsed) { height: var(--reader-sheet-compact, 40dvh); }
+  /* A안(VIEWER-AUDIT 2): 고른 단어가 화면 아래 절반이면 시트를 머리줄 아래에 세운다 — 자리는 useSelectedTokenVisibility가 잰다(--reader-sheet-top). */
+    .viewer-layout[data-reader-view="paged"] .viewer-inspector[data-dock="top"]:not(.is-expanded):not(.is-collapsed) { top: var(--reader-sheet-top, 64px); bottom: auto; max-height: calc(100dvh - var(--reader-keyboard-inset, 0px) - var(--reader-sheet-top, 64px) - max(8px, env(safe-area-inset-bottom))); }
+  /* ↑ 위에 세운 시트도 키보드에 걸리지 않는다 — 보이는 바닥(배치 높이 − 키보드 여백, useReaderLayout --reader-keyboard-inset)에서 멈춘다. */
+  /* 처음 열 때 자리 판정 전(1프레임, 늦어도 2프레임)은 투명 · 누르기 막음 — 바닥 자리가 그려졌다 위로 튀지 않게. opacity라 초점은 들어간다(visibility 금지). */
+    .viewer-layout[data-reader-view="paged"] .viewer-inspector[data-placing="true"] { opacity: 0; pointer-events: none; }
 }
+
+/* 끝의 테두리 상자(다음 편 · 다음 과 · 다음 범위 · 완주 카드, 연결한 교재 단원, 토론)는 한 덩어리다 — 쪽 경계에서 둘로
+   쪼개지지 않게 통째로 다음 쪽에 둔다(NEXT-CARD-SPLIT-001, 2026-10-17 KST 실측: 1440에서 a.next-lesson-card가 두 쪽에 갈라졌고,
+   토론 상자는 자연 배치에서 101px · 69px로 갈라져 있었다). 쪽보다 큰 상자(댓글이 많은 토론 · 펼친 긴 연결 목록)는 브라우저가
+   그대로 나눈다. 「다 읽었다면」 줄(.post-reading)은 index.css가 이미 묶는다. 본문 문단 · 스크롤 보기에는 걸지 않는다. */
+[data-reader-pages="paged"] :is(.next-lesson-card, .series-end-card, .learning-links, .viewer-comments) { break-inside: avoid; }
 
 /* ── 원본 리더 ── 본문 글만 쪽으로 나눈다(첨부 파일 읽기는 스크롤 그대로). */
 .original-pages-frame { position: relative; max-width: 760px; }

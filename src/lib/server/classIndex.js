@@ -12,6 +12,18 @@ import { createClient } from '@supabase/supabase-js';
 import { getTeam } from '../classBoard';
 import {classHistoryEntries,filterClassHistory} from '../classStudyHistory';
 import { getBook } from '../bookMeta';
+import { isCanonicalLiteratureMaterial } from '../literatureCanonical';
+import { isArtBookMaterial } from '../artBookProvider';
+
+/**
+ * 정본 책(青空文庫 · Standard Ebooks · 위키문헌 · 전자책 사이트 · 그림 큐레이션)은 수업 자료로 내주지 않는다(BOOK-GUEST-GATE-1, 오너 「팀 화면 접근은 가능해도
+ * 정본 책 접근은 못하도록」 2026-10-16 KST). 팀 화면은 수업 암호가 열쇠라 로그인 없이 열린다 — 정본 책 본문은 로그인 뒤에만이다.
+ * 순수 — metadata만 본다. 팀 목차 · 장 열기 · 출처 · 사본 만들기(copy 라우트)가 같은 판정을 쓴다.
+ */
+export function isProtectedBookMetadata(metadata) {
+  const material = { processed_json: { metadata } };
+  return isCanonicalLiteratureMaterial(material) || isArtBookMaterial(material);
+}
 
 export function serviceClient() {
   return createClient(
@@ -44,7 +56,7 @@ const updatedOf = (row) => row?.updated_at || row?.processed_json?.metadata?.upd
 /** 순수 — 조회 행들을 학생 목록으로. 팀에 속하지 않는 행은 여기서도 걸러진다(2차 방어). */
 export function indexFromRows({ team, chapterRows = [], noteRows = [] }) {
   const chapters = chapterRows
-    .filter((r) => getBook(r.processed_json?.metadata)?.key === team.bookKey)
+    .filter((r) => getBook(r.processed_json?.metadata)?.key === team.bookKey && !isProtectedBookMetadata(r.processed_json?.metadata))
     .map((r) => ({
       id: r.id, title: r.title, order: getBook(r.processed_json?.metadata).order,
       status: r.processed_json?.status || 'idle', updatedAt: updatedOf(r), contentRevision:revisionOf(r),
@@ -94,7 +106,7 @@ export async function buildTeamIndex(admin, root, team, historyOptions=null) {
 export function materialBelongsToTeam(row, team, root) {
   if (!row || !team || !root || row.owner_id !== root.owner_id) return null;
   const meta = row.processed_json?.metadata;
-  if (team.bookKey && getBook(meta)?.key === team.bookKey) return 'chapter';
+  if (team.bookKey && getBook(meta)?.key === team.bookKey) return isProtectedBookMetadata(meta) ? null : 'chapter';
   const t = getTeam(meta);
   if (t && !t.root && t.key === team.key && t.day) return 'note';
   return null;

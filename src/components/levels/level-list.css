@@ -2,13 +2,14 @@
    새 색은 --lv-* 토큰 — 다크 값과 함께 index.css에 등록하고, 셸(.manabi-app)은 늘 밝은 화면이라 여기서 라이트 값으로 고정한다
    (web-shell.css --accent-text · --warning-text와 같은 방식, COLOR-V2-UNIFY-001). 장미(--ja)는 저장과 선택 표시에만 쓴다.
    접힘은 셸 컨테이너(manabi-shell) 폭으로 — 새 뷰포트 쿼리를 만들지 않는다(ui-conventions §2). */
-.manabi-app{--lv-card:#fffdf9;--lv-line:#e2ddd2;--lv-chip:#ece8df;--lv-chip-hover:#e2ddd2;--lv-field:#ede9e0;--lv-have:#f3e4e7;--lv-busy:#b77885;--lv-formula:#efeae0;--lv-ex-rule:#d9c4c9;--lv-warn:#8a5a12;--lv-faint:#a3a399;--lv-miss:#fbf1f3;--lv-warnbg:#f6eedd;--lv-ok:#2f6b4f}
+.manabi-app{--lv-tone-1:#c0392b;--lv-tone-2:#2e7d32;--lv-tone-3:#1565c0;--lv-tone-4:#6a3fb5;--lv-tone-0:#7a7a72;--lv-card:#fffdf9;--lv-line:#e2ddd2;--lv-chip:#ece8df;--lv-chip-hover:#e2ddd2;--lv-field:#ede9e0;--lv-have:#f3e4e7;--lv-busy:#b77885;--lv-formula:#efeae0;--lv-ex-rule:#d9c4c9;--lv-warn:#8a5a12;--lv-faint:#a3a399;--lv-miss:#fbf1f3;--lv-warnbg:#f6eedd;--lv-ok:#2f6b4f}
 
 /* 책장 타일 */
 .lv-shelf{margin-top:52px}
 .lv-shelf h2{margin:0 0 16px;font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--muted)}
 .lv-tiles{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
 .lv-tiles--6{grid-template-columns:repeat(6,minmax(0,1fr))}
+.lv-tiles--7{grid-template-columns:repeat(7,minmax(0,1fr))}
 .lv-tile{background:var(--lv-card);border:1px solid var(--lv-line);border-radius:12px;padding:18px 18px 10px;display:flex;flex-direction:column;min-width:0}
 .lv-tile__lv{font:700 26px/1 var(--font-manrope),sans-serif;letter-spacing:-.02em;margin-bottom:12px;color:var(--ink)}
 .lv-tile__go{display:flex;justify-content:space-between;align-items:center;min-height:44px;border-top:1px solid var(--lv-line);font-size:13px;color:var(--ink);text-decoration:none}
@@ -16,15 +17,58 @@
 .lv-tile__go:hover{color:var(--ja)}
 
 /* 목록 화면 */
-.lv-page>*{max-width:904px}
-.lv-crumb{margin:0 0 14px;font-size:13px}
+/* 넓은 화면 균형(오너 2026-10-16 「1440에서 균형」) — 묶음은 가운데. 단어 목록은 목차 없이 680px 한 줄(폰과 같은 구조). */
+.lv-page>*{max-width:904px;margin-inline:auto}
+.lv-page--vocab>*{max-width:680px}
+.lv-crumb{margin:0;font-size:13px}
 .lv-crumb a{color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;min-height:44px}
-.lv-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+/* 머리(디자인 검토 2026-10-16 A안) — 단어 목록은 한 덩어리로 화면 위에 붙어 다닌다: 제목 ▾ · 찾기 · ⚙ / 진도 막대 한 줄 / 보기 스위치.
+   레벨 알약 · 목록 종류 · ← 교재는 ▾ 안(.lv-nav). 문형 · 한자는 붙지 않고 펼친 채 — 예전 배치(제목 옆 알약). */
+.lv-bar{display:grid;gap:10px}
+.lv-bar--sticky{position:sticky;top:var(--gnb-height,78px);z-index:20;background:var(--paper);padding-block:8px 10px;border-bottom:1px solid var(--lv-line)}
+.lv-bar:not(.lv-bar--sticky){grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:14px 16px}
+.lv-bar:not(.lv-bar--sticky) .lv-nav{display:contents}
+.lv-bar:not(.lv-bar--sticky) .lv-crumb{order:-1;grid-column:1/-1;margin-bottom:-6px}
+.lv-bar:not(.lv-bar--sticky) .lv-tabs{grid-column:1/-1;margin-top:8px}
+.lv-head{display:flex;align-items:center;gap:4px;min-width:0}
 .lv-head h1{font:700 38px/1.1 var(--font-manrope),var(--font-noto-kr),sans-serif;letter-spacing:-.025em;margin:0;color:var(--ink)}
+.lv-bar--sticky .lv-head h1{font-size:24px;letter-spacing:-.015em}
+.lv-navbtn{width:44px;height:44px;border:0;border-radius:12px;background:none;color:var(--muted);display:inline-grid;place-items:center;cursor:pointer;flex:none}
+.lv-navbtn:hover{background:var(--lv-chip);color:var(--ink)}
+.lv-navbtn svg{transition:transform .15s ease}
+.lv-navbtn[aria-expanded=true] svg{transform:rotate(180deg)}
+.lv-head__tools{margin-left:auto;display:flex;gap:6px}
+.lv-nav{display:grid;gap:10px;justify-items:start}
+.lv-nav[hidden]{display:none} /* 위 display가 hidden 속성을 이기지 않게 — 접힌 ▾ */
+/* ▾를 열면(단어 목록) 레벨 · 목록을 ⚙ 설정과 같은 카드 하나에 — 이름표 + 꽉 찬 세그먼트(아래 보기 탭과 같은 모양),
+   ← 교재는 맨 아래 조용한 줄. 열 때 살짝 내려오며 나타난다(⚙ · 찾기도 같이). 오너 2026-10-17 「토글 열었을 때 자연스럽게」 */
+.lv-bar--sticky .lv-nav{justify-items:stretch;gap:6px;border:1px solid var(--lv-line);border-radius:12px;background:var(--lv-card);padding:12px 12px 2px;margin-top:8px}
+.lv-nav__k{font-size:12px;line-height:1.5;color:var(--muted);padding-left:2px}
+.lv-nav__k~.lv-nav__k{margin-top:6px}
+.lv-bar--sticky .lv-pills{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);border-radius:12px;flex-wrap:nowrap}
+.lv-bar--sticky .lv-pills a{min-width:0;min-height:40px;border-radius:9px;font-size:14px;padding:0}
+.lv-bar--sticky .lv-tabs{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:2px;padding:3px;border:0;border-radius:12px;background:var(--lv-chip)}
+.lv-bar--sticky .lv-tabs a{min-height:40px;padding:0;justify-content:center;align-items:center;border-radius:9px}
+.lv-bar--sticky .lv-tabs a[aria-current=page]{background:var(--lv-card);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 12%,transparent)}
+.lv-bar--sticky .lv-crumb{order:9;margin-top:6px;border-top:1px solid var(--lv-line)}
+.lv-bar--sticky :is(.lv-nav,.lv-settings,.lv-tools){animation:lv-drop .16s ease-out}
+@keyframes lv-drop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.lv-bar--sticky :is(.lv-nav,.lv-settings,.lv-tools){animation:none}}
+.lv-prog{display:flex;align-items:center;gap:12px;font-size:12.5px;color:var(--muted);min-height:24px}
+/* 진도 줄 자리(LEVEL-PROG-HOLD-001) — 평소 꺼짐, 세션 쿠키가 있으면 그리기 전 한 줄(sessionHintScript)이 켠다. 같은 높이 · 빈 진도 막대. */
+.lv-prog--hold{display:none}
+.lv-meter{flex:1 1 auto;min-width:60px;height:6px;border-radius:999px;background:var(--lv-chip);display:flex;overflow:hidden}
+.lv-meter i{display:block;height:100%;transition:width .3s ease}
+.lv-meter__k{background:var(--lv-ok)}
+.lv-meter__s{background:var(--ja)}
+.lv-prog__left{flex:none;font-variant-numeric:tabular-nums}
+.lv-prog__review{flex:none;color:var(--ja);font-weight:700;text-decoration:none;min-height:44px;display:inline-flex;align-items:center;margin-block:-10px}
+.lv-prog__review:hover{text-decoration:underline}
+.lv-tone--1{color:var(--lv-tone-1)}.lv-tone--2{color:var(--lv-tone-2)}.lv-tone--3{color:var(--lv-tone-3)}.lv-tone--4{color:var(--lv-tone-4)}.lv-tone--0{color:var(--lv-tone-0)}
 .lv-pills{display:flex;gap:2px;background:var(--lv-chip);border-radius:999px;padding:3px;flex-wrap:wrap}
 .lv-pills a{font:600 12.5px var(--font-manrope),sans-serif;min-width:44px;min-height:44px;display:grid;place-items:center;border-radius:999px;color:var(--muted);text-decoration:none;padding:0 6px}
 .lv-pills a[aria-current=page]{background:var(--lv-card);color:var(--ink);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 12%,transparent)}
-.lv-tabs{display:flex;gap:26px;margin:22px 0;border-bottom:1px solid var(--lv-line);font-size:14px}
+.lv-tabs{display:flex;gap:26px;margin:0;border-bottom:1px solid var(--lv-line);font-size:14px;justify-self:stretch}
 .lv-tabs a{color:var(--muted);text-decoration:none;padding:0 0 11px;min-height:44px;display:inline-flex;align-items:flex-end}
 .lv-tabs a[aria-current=page]{color:var(--ink);font-weight:700;box-shadow:inset 0 -2px 0 var(--ink)}
 .lv-tools{display:flex;gap:10px;align-items:center}
@@ -42,23 +86,52 @@
 .lv-switch i::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--lv-card);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 25%,transparent);transition:transform .15s ease}
 .lv-switch[aria-checked=true] i{background:var(--ink)}
 .lv-switch[aria-checked=true] i::after{transform:translateX(16px)}
-.lv-view{display:flex;gap:4px;margin-top:14px;border-bottom:1px solid var(--lv-line)}
-.lv-view button{flex:1 1 0;max-width:96px;min-height:44px;border:0;background:none;font:inherit;font-size:14px;color:var(--muted);cursor:pointer;box-shadow:inset 0 -2px 0 transparent}
+.lv-view{display:flex;gap:2px;padding:3px;border-radius:12px;background:var(--lv-chip)}
+.lv-view button{flex:1 1 0;min-height:40px;border:0;border-radius:9px;background:none;font:inherit;font-size:14px;color:var(--muted);cursor:pointer}
 .lv-view button:hover{color:var(--ink)}
-.lv-view button[aria-pressed=true]{color:var(--ink);font-weight:700;box-shadow:inset 0 -2px 0 var(--ja)}
-.lv-split{display:grid;grid-template-columns:168px minmax(0,680px);gap:56px;margin-top:36px}
-.lv-split--wide{grid-template-columns:minmax(0,1fr)}
-.lv-toc{list-style:none;margin:0;padding:0;font-size:13px;position:sticky;top:calc(var(--gnb-height,78px) + 16px);align-self:start;max-height:calc(100vh - var(--gnb-height,78px) - 32px);overflow:auto}
-.lv-toc a{display:block;padding:6px 0 6px 14px;color:var(--muted);text-decoration:none;line-height:1.5}
-.lv-toc a[aria-current=true]{color:var(--ink);font-weight:700;position:relative}
-.lv-toc a[aria-current=true]::before{content:'';position:absolute;left:0;top:calc(.75em + 3px);width:6px;height:6px;border-radius:50%;background:var(--ja)}
-.lv-chips{display:none;gap:8px;overflow-x:auto;margin:18px 0 0;padding-bottom:4px;scrollbar-width:none}
-.lv-page--bunkei .lv-chips{display:flex}
+.lv-view button[aria-pressed=true]{background:var(--lv-card);color:var(--ink);font-weight:700;box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 12%,transparent)}
+/* 고른 것 하나만 — 가린 칸 없이 그 줄만 크게(3판). 누르면 그 줄은 제자리, 나머지만 아래로 펼친다(4판). */
+.lv-entry.lv-entry--solo{cursor:pointer;padding:8px 10px 8px 18px} /* .lv-entry 기본 여백(아래 정의)을 이긴다 */
+.lv-solo__row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px}
+.lv-solo{flex:1 1 auto;min-width:0}
+.lv-solo__mean{margin:0;font-size:18px;line-height:1.5;color:var(--ink)}
+.lv-solo__ex{margin:0;font-size:20px;line-height:1.6;color:var(--ink);overflow-wrap:anywhere}
+.lv-entry--solo .lv-acts{gap:8px}
+.lv-entry--solo .lv-fab--o,.lv-entry--solo .lv-fab--x{width:44px;height:44px}
+.lv-entry--solo .lv-solo__play{width:44px;height:44px}
+.lv-solo__none{margin:0;font-size:13px;color:var(--lv-faint)}
+.lv-solo__play{width:56px;height:56px;border-radius:50%;border:0;background:var(--lv-chip);color:var(--ink);display:inline-grid;place-items:center;cursor:pointer}
+.lv-solo__play:hover{background:var(--lv-chip-hover)}
+.lv-solo__play svg{width:24px;height:24px}
+.lv-reveal{display:grid;grid-template-rows:1fr;animation:lv-open .22s ease-out}
+.lv-entry[data-peek=closing] .lv-reveal{grid-template-rows:0fr;opacity:0;animation:lv-close .2s ease-in}
+.lv-reveal__in{min-height:0;overflow:hidden}
+.lv-reveal__body{margin-top:14px;padding-top:2px;border-top:1px solid var(--lv-line)}
+.lv-reveal__body>:first-child{margin-top:12px}
+.lv-reveal__line{margin:0;display:flex;align-items:center;gap:10px;min-height:44px}
+.lv-reveal__time{display:block;height:2px;margin-top:14px;border-radius:2px;background:var(--lv-ex-rule);transform-origin:left center;animation:lv-time linear forwards}
+.lv-ex--tail{display:flex;flex-direction:column;gap:2px;position:relative;padding-right:44px}
+.lv-ex--tail .lv-snd{position:absolute;right:0;top:50%;transform:translateY(-50%);margin:0}
+@keyframes lv-open{from{grid-template-rows:0fr;opacity:0}to{grid-template-rows:1fr;opacity:1}}
+@keyframes lv-close{from{grid-template-rows:1fr;opacity:1}to{grid-template-rows:0fr;opacity:0}}
+@keyframes lv-time{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.lv-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.lv-sr:focus-visible{position:static;width:auto;height:auto;margin:0;clip:auto;padding:0 12px;min-height:44px;border-radius:999px;background:var(--lv-chip);color:var(--ink);font-size:13px}
+.lv-split{display:grid;grid-template-columns:minmax(0,1fr);margin-top:24px}
+.lv-chips{display:none;gap:8px;overflow-x:auto;margin:18px auto 0;padding-bottom:4px;scrollbar-width:none}
+.lv-page--bunkei .lv-chips,.lv-page--vocab .lv-chips{display:flex}
 .lv-chips a{flex:none;font-size:12.5px;padding:0 14px;min-height:44px;display:inline-flex;align-items:center;border-radius:999px;background:var(--lv-chip);color:var(--muted);text-decoration:none}
 .lv-chips a[aria-current=true]{background:var(--ink);color:var(--paper)}
 .lv-col{min-width:0}
-.lv-group{content-visibility:auto;contain-intrinsic-size:auto 1200px;scroll-margin-top:calc(var(--gnb-height,78px) + 12px)}
+/* 키보드 안내 한 줄(LEVEL-KEYS-001) — 보이고 숨는 것은 복습방 .review-keys-hint(pointer: fine)가 정한다. 여기서는 줄 모양만. */
+.lv-keys{margin:0 0 12px;font-size:12px;color:var(--muted)}
+@media (pointer:fine){.lv-keys.review-keys-hint{display:block}}
+/* 키로 옮긴 카드가 붙어 다니는 머리(GNB + .lv-bar--sticky) 밑에 숨지 않게 — 묶음 이동과 같은 여백(--lv-bar-h). */
+.lv-entry[data-lv-card]{scroll-margin-top:calc(var(--gnb-height,78px) + var(--lv-bar-h,0px) + 12px);scroll-margin-bottom:12px}
+.lv-group{content-visibility:auto;contain-intrinsic-size:auto 1200px;scroll-margin-top:calc(var(--gnb-height,78px) + var(--lv-bar-h,0px) + 12px)}
 .lv-group+.lv-group{margin-top:44px}
+/* 뒤로 가기 자리 되살리는 동안(LEVEL-RESTORE-001)만 묶음 생략을 끈다 — 어림 높이(1200px)가 아니라 실제 높이로 그 자리에 서게. */
+.lv-page[data-lv-restoring] .lv-group{content-visibility:visible}
 .lv-group h2{margin:0;font-size:12.5px;font-weight:700;letter-spacing:.04em;color:var(--muted);display:flex;gap:8px;align-items:baseline}
 .lv-group h2 span{font-weight:500;color:var(--lv-faint)}
 .lv-entries{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
@@ -68,16 +141,17 @@
 .lv-hw{font-size:27px;font-weight:400;line-height:1.35;letter-spacing:.02em;color:var(--ink);overflow-wrap:anywhere}
 .lv-hw rt,.lv-ex__text rt{font-size:.5em;color:var(--muted);letter-spacing:0}
 .lv-kj{font-size:15px;color:var(--muted)}
-.lv-py{font:400 15px var(--font-manrope),sans-serif;color:var(--muted);letter-spacing:.01em}
-.lv-snd{width:44px;height:44px;margin:-10px -6px;border:0;background:none;color:var(--lv-faint);display:inline-grid;place-items:center;border-radius:50%;vertical-align:middle;cursor:pointer;flex:none}
+.lv-py{font:400 15px var(--font-noto-sans,'Noto Sans'),sans-serif;color:var(--muted);letter-spacing:.01em}
+.lv-snd{width:44px;height:44px;margin:-10px 0;border:0;background:none;color:var(--muted);display:inline-grid;place-items:center;border-radius:50%;vertical-align:middle;cursor:pointer;flex:none}
 .lv-snd:hover{color:var(--ink);background:var(--lv-chip)}
+/* 듣기 단추 자리(LEVEL-SND-HOLD-001) — 붙기 전 같은 상자, 보이지 않음 · 누름 없음. 아이콘(17px)과 같은 빈 칸을 넣어 기준선(표제어 줄 align-items:baseline)까지 같게. */
+.lv-snd--hold{visibility:hidden;pointer-events:none}
+.lv-snd--hold::before{content:"";display:block;width:17px;height:17px}
 .lv-mean{margin:6px 0 0;font-size:16px;color:var(--ink)}
-.lv-veil{display:inline-block;width:132px;height:22px;min-height:22px;vertical-align:middle;border-radius:6px;border:0;background:var(--lv-chip);cursor:pointer;position:relative}
-.lv-veil::after{content:'';position:absolute;inset:-11px 0}
 .lv-ex{margin:14px 0 0;padding:2px 0 2px 16px;border-left:2px solid var(--lv-ex-rule)}
 .lv-ex+.lv-ex{margin-top:10px}
 .lv-ex__text{font-size:17px;line-height:2.2;color:var(--ink)}
-.lv-ex__py{display:block;font:400 13px/1.5 var(--font-manrope),sans-serif;color:var(--muted);margin-top:-2px}
+.lv-ex__py{display:block;font:400 13px/1.5 var(--font-noto-sans,'Noto Sans'),sans-serif;color:var(--muted);margin-top:-2px}
 .lv-ex__tr{display:block;font-size:13px;color:var(--muted);line-height:1.5}
 .lv-ex__py+.lv-ex__tr{margin-top:2px}
 .lv-acts{display:flex;align-items:center;gap:10px;flex:none}
@@ -90,20 +164,22 @@
 .lv-fab--have{background:var(--lv-have);color:var(--ja);cursor:default}
 .lv-fab--ex{background:var(--lv-chip);color:var(--ink)}
 .lv-fab--ex:hover{background:var(--lv-chip-hover)}
-.lv-fab--o,.lv-fab--x{background:var(--lv-chip);color:var(--ink)}
-.lv-fab--o:hover,.lv-fab--x:hover{background:var(--lv-chip-hover)}
+.lv-fab--o,.lv-fab--x{width:48px;height:48px;background:var(--lv-card);color:var(--ink);border:1px solid var(--lv-line);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 10%,transparent)}
+.lv-fab--o:hover,.lv-fab--x:hover{background:var(--lv-chip);border-color:var(--lv-chip-hover)}
 .lv-fab--o:active,.lv-fab--x:active{transform:scale(.96)}
-.lv-fab--o[aria-pressed=true]{background:var(--lv-ok);color:#fff}
-.lv-fab--x[aria-pressed=true]{background:var(--ja);color:#fff}
+.lv-fab--o[aria-pressed=true]{background:var(--lv-ok);border-color:var(--lv-ok);color:#fff}
+.lv-fab--x[aria-pressed=true]{background:var(--ja);border-color:var(--ja);color:#fff}
 .lv-fab--x.lv-fab--busy{background:var(--lv-busy);color:#fff}
 .lv-fab:disabled{cursor:progress;opacity:.6}
-.lv-entry[data-known]{border-style:dashed}
-.lv-entry[data-hidden]{cursor:pointer}
-.lv-veil--word{width:96px;height:32px;min-height:32px}
+/* 상태(디자인 검토 A안) — 아는 단어는 글자를 흐리게(버튼은 그대로 또렷), 공부 중은 왼쪽 로즈 줄. 점선은 「임시」로 읽혀 뺐다. */
+.lv-entry[data-known] :is(.lv-solo,.lv-entry__word,.lv-mean,.lv-ex,.lv-glyph){opacity:.55}
+.lv-entry[data-studying]{border-color:color-mix(in srgb,var(--ja) 40%,var(--lv-line));box-shadow:inset 3px 0 0 var(--ja)}
 .lv-hw--hun{display:inline-flex;align-items:flex-start;gap:2px}
 .lv-hc{display:inline-flex;flex-direction:column;align-items:center}
 .lv-hw .word-fit__hun{display:inline-flex;flex-direction:column;align-items:center;min-width:calc(var(--hun-n,0) * 1em);padding:0 2px;font-family:var(--font-noto-kr),sans-serif;font-size:12px;font-weight:400;line-height:1.35;letter-spacing:0;color:var(--muted);white-space:nowrap;text-align:center}
 .lv-hw .word-fit__hun[data-wrap]{max-width:calc(var(--hun-n,0) * 1em);white-space:normal;overflow-wrap:anywhere}
+/* 훈음 자리(LEVEL-HUN-HOLD-001) — 표가 오기 전 같은 상자 · 같은 줄 수의 빈 칸. */
+.lv-hw .lv-hun-hold{visibility:hidden}
 .lv-glyph{margin:6px 0 0;display:flex;flex-wrap:wrap;gap:4px 18px;font-size:15px;color:var(--ink)}
 .lv-glyph>span{display:inline-flex;align-items:baseline;gap:6px}
 .lv-glyph b{font-size:12px;font-weight:700;color:var(--muted)}
@@ -121,20 +197,22 @@
 .lv-more{margin:18px 0 0;display:flex;justify-content:center}
 .lv-more button{min-height:44px;padding:0 22px;border-radius:12px;border:1px solid var(--lv-line);background:var(--lv-card);font-weight:600;font-size:13px;color:var(--ink);cursor:pointer}
 .lv-src{margin:30px 0 0;font-size:11.5px;color:var(--lv-faint)}
-.lv-toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;display:flex;gap:18px;align-items:center;background:var(--ink);color:var(--paper);border-radius:12px;padding:8px 10px 8px 18px;font-size:13.5px;box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 25%,transparent);max-width:calc(100vw - 32px)}
+.lv-toast{position:fixed;left:50%;bottom:calc(var(--mobile-nav-height,0px) + 24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;gap:18px;align-items:center;background:var(--ink);color:var(--paper);border-radius:12px;padding:8px 10px 8px 18px;font-size:13.5px;box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 25%,transparent);max-width:calc(100vw - 32px);width:max-content}
 .lv-toast:empty{display:none}
 .lv-toast button,.lv-toast a{border:0;background:none;color:var(--lv-have);font:inherit;font-weight:700;min-height:44px;padding:0 8px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
 .lv-page :focus-visible,.lv-shelf :focus-visible{outline:2px solid var(--ja);outline-offset:2px}
-@media (prefers-reduced-motion:reduce){.lv-fab,.lv-switch i,.lv-switch i::after{transition:none}.lv-fab--save:hover,.lv-fab--save:active,.lv-fab--ex:active,.lv-fab--o:active,.lv-fab--x:active{transform:none}.lv-fab--busy svg{animation:none}}
+@media (prefers-reduced-motion:reduce){.lv-reveal,.lv-entry[data-peek=closing] .lv-reveal,.lv-reveal__time{animation:none}.lv-navbtn svg,.lv-meter i{transition:none}.lv-fab,.lv-switch i,.lv-switch i::after{transition:none}.lv-fab--save:hover,.lv-fab--save:active,.lv-fab--ex:active,.lv-fab--o:active,.lv-fab--x:active{transform:none}.lv-fab--busy svg{animation:none}}
 @container manabi-shell (max-width:900px){
-  .lv-split{grid-template-columns:minmax(0,1fr);margin-top:22px}
-  .lv-toc{display:none}
+  .lv-split{margin-top:22px}
   .lv-chips{display:flex}
-  .lv-tiles,.lv-tiles--6{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .lv-pills{order:2}
+  .lv-tiles,.lv-tiles--6,.lv-tiles--7{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .lv-bar:not(.lv-bar--sticky){grid-template-columns:minmax(0,1fr)}
   .lv-head h1{font-size:30px}
+  .lv-bar--sticky .lv-head h1{font-size:21px}
   .lv-hw{font-size:23px}
   .lv-entry{padding:16px 16px 18px;display:flex;flex-direction:column}
+  .lv-entry--solo{display:block}
+  .lv-solo__row .lv-acts{margin:0;align-self:center}
   .lv-entry__top{display:contents}
   .lv-entry__word{order:0}
   .lv-mean{order:1}
@@ -142,5 +220,62 @@
   .lv-ex{order:2}
   .lv-acts{order:9;align-self:flex-end;margin:12px -1px -1px 0;gap:4px}
   .lv-fab{width:42px;height:42px;outline-offset:3px}
+  .lv-fab--o,.lv-fab--x{width:46px;height:46px}
   .lv-acts .lv-fab{box-sizing:content-box;border:1px solid transparent;background-clip:padding-box}
+  .lv-acts .lv-fab--o,.lv-acts .lv-fab--x{box-sizing:border-box;border-color:var(--lv-line)}
+  .lv-acts .lv-fab[aria-pressed=true]{border-color:transparent}
 }
+
+/* HSK 읽기 위계 — 기존 뷰어의 SC/TC/JP · 병음 Noto Sans와 웹 셸 토큰을 잇는다.
+   훈음·대조를 함께 켜도 표제어/병음/예문을 서로 다른 줄에서 읽고, 듣기 터치 영역은 글과 겹치지 않는다. */
+.lv-page--vocab[data-language="zh"] .lv-entry{border-radius:12px;padding:22px 24px;overflow-wrap:anywhere}
+.lv-page--vocab[data-language="zh"] .lv-entry__top{align-items:flex-start;gap:20px}
+.lv-page--vocab[data-language="zh"] .lv-entry__word{display:grid;grid-template-columns:minmax(0,1fr) 44px;grid-template-areas:"head sound" "reading sound";gap:6px 12px;flex:1}
+.lv-page--vocab[data-language="zh"] .lv-hw{grid-area:head;justify-self:start;font-size:27px;line-height:1.4;letter-spacing:0}
+.lv-page--vocab[data-language="zh"] .lv-hw--hun{flex-wrap:wrap;gap:4px;row-gap:8px}
+.lv-page--vocab[data-language="zh"] .lv-hw .word-fit__hun{line-height:1.5;margin-top:2px}
+.lv-page--vocab[data-language="zh"] .lv-py{grid-area:reading}
+.lv-page--vocab[data-language="zh"] :is(.lv-py,.lv-ex__py){font-family:var(--font-noto-sans),sans-serif;font-size:15px;line-height:1.7;letter-spacing:0;overflow-wrap:anywhere}
+.lv-page--vocab[data-language="zh"] .lv-snd{margin:0;border:1px solid var(--lv-line);background:var(--lv-field);color:var(--muted);touch-action:manipulation;transition:background .15s ease,color .15s ease}
+.lv-page--vocab[data-language="zh"] .lv-entry__word>.lv-snd{grid-area:sound;align-self:start}
+.lv-page--vocab[data-language="zh"] .lv-snd:hover{background:var(--lv-chip-hover);color:var(--ink)}
+.lv-page--vocab[data-language="zh"] .lv-snd:active{background:var(--lv-chip);color:var(--ink)}
+.lv-page--vocab[data-language="zh"] .lv-glyph{gap:8px 20px;margin:14px 0 0;font-size:18px;line-height:1.6}
+.lv-page--vocab[data-language="zh"] .lv-glyph>span{flex-wrap:wrap;gap:4px 8px;min-width:0}
+.lv-page--vocab[data-language="zh"] .lv-glyph small{font-size:14px;line-height:1.6}
+.lv-page--vocab[data-language="zh"] .lv-mean{margin-top:14px;font-size:17px;line-height:1.65}
+.lv-page--vocab[data-language="zh"] .lv-ex{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:4px 10px;align-items:start;margin-top:16px;padding:0 0 0 14px}
+.lv-page--vocab[data-language="zh"] .lv-ex__text{font-size:20px;line-height:1.75;min-width:0}
+.lv-page--vocab[data-language="zh"] .lv-ex>.lv-snd{grid-column:2;grid-row:1}
+.lv-page--vocab[data-language="zh"] :is(.lv-ex__py,.lv-ex__tr){grid-column:1/-1;margin:0}
+.lv-page--vocab[data-language="zh"] .lv-ex__tr{font-size:14px;line-height:1.75;overflow-wrap:anywhere}
+.lv-page--vocab[data-language="zh"] .lv-acts{gap:8px}
+/* O · X는 전체 보기 · 탭 보기 모두 이름표 없는 동그라미(오너 2026-10-17 「O X 버튼만」) — 가운데 맞춤은 기본 .lv-fab(inline-grid · place-items)에 맡긴다. */
+.lv-page--vocab[data-language="zh"] .lv-fab{touch-action:manipulation}
+.lv-page--vocab[data-language="zh"] .lv-fab svg{width:20px;height:20px;flex:none}
+.lv-page--vocab[data-language="zh"] .lv-fab[aria-pressed=true]{border-color:transparent}
+.lv-page--vocab[data-language="zh"] .lv-solo{min-width:0}
+.lv-page--vocab[data-language="zh"] .lv-solo__row{flex-wrap:nowrap}
+.lv-page--vocab[data-language="zh"] .lv-entry--solo{padding:8px 10px 8px 18px}
+.lv-page--vocab[data-language="zh"] .lv-solo>.lv-entry__word{display:block}
+.lv-page--vocab[data-language="zh"] .lv-solo__ex{font-size:22px;line-height:1.8}
+.lv-page--vocab[data-language="zh"] .lv-solo__mean{font-size:20px;line-height:1.7;overflow-wrap:anywhere}
+.lv-page--vocab[data-language="zh"] .lv-solo__play{border:1px solid var(--lv-line);background:var(--lv-field);color:var(--muted);touch-action:manipulation}
+.lv-page--vocab[data-language="zh"] .lv-gear{border:1px solid var(--lv-line)}
+.lv-page--vocab[data-language="zh"] .lv-view button{touch-action:manipulation}
+.lv-page--vocab[data-language="zh"] .lv-switch{padding-block:10px;line-height:1.6}
+.lv-page--vocab[data-language="zh"] .lv-switch small{font-size:13px;line-height:1.6}
+@container manabi-shell (max-width:900px){
+  .lv-page--vocab[data-language="zh"] .lv-entry{padding:18px}
+  .lv-page--vocab[data-language="zh"] .lv-acts{align-self:stretch;justify-content:flex-end;margin:18px 0 0;gap:10px}
+  .lv-page--vocab[data-language="zh"] .lv-acts .lv-fab{box-sizing:border-box;background-clip:border-box}
+  .lv-page--vocab[data-language="zh"] .lv-entry--solo{padding:8px 8px 8px 16px}
+  .lv-page--vocab[data-language="zh"] .lv-solo__row{flex-direction:row;align-items:center;gap:10px}
+  .lv-page--vocab[data-language="zh"] .lv-solo__row .lv-acts{align-self:center;margin:0;gap:6px}
+  .lv-page--vocab[data-language="zh"] .lv-solo__ex{font-size:19px}
+}
+@media (prefers-reduced-motion:reduce){.lv-page--vocab[data-language="zh"] .lv-snd{transition:none}}
+.lv-page--vocab[data-language="zh"] .lv-ex--tail{padding-right:0}
+.lv-page--vocab[data-language="zh"] .lv-ex--tail .lv-snd{position:static;inset:auto;transform:none}
+.lv-page--vocab[data-language="zh"] .lv-ex--tail .lv-ex__py{grid-column:1;grid-row:1}
+.lv-page--vocab[data-language="zh"] .lv-ex--tail .lv-ex__tr{grid-column:1}

@@ -13,6 +13,9 @@ import './web/focused-reader.css';
 import { librarySearchHref } from '@/lib/libraryReturn';
 import { authEntryHref } from '@/lib/authRedirect';
 import VersionBadge from './VersionBadge';
+import NavPendingMark from './NavPendingMark';
+import { focusPageIfLost, watchPageHeading } from '@/lib/routeFocus';
+import { intentPrefetchProps } from '@/lib/intentPrefetch';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
 import ActionIcon from './ActionIcon';
@@ -26,6 +29,7 @@ import { failureMessage } from '@/lib/errorMessage';
 function ReaderSiteMenu({ isAdmin }) {
   const ref = useRef(null);
   const pathname = usePathname();
+  const router = useRouter();
   useEffect(() => { if (ref.current) ref.current.open = false; }, [pathname]);
   useEffect(() => {
     const closeOutside = e => { if (ref.current && !ref.current.contains(e.target)) ref.current.open = false; };
@@ -43,7 +47,7 @@ function ReaderSiteMenu({ isAdmin }) {
     <summary aria-label="메뉴" title="메뉴" data-icon-action><ActionIcon name="menu"/></summary>
     <nav aria-label="읽기 화면 내비게이션" onClick={e => { if (e.target.closest('a')) ref.current.open = false; }}>
       {/* 집중 읽기에서는 기본 메뉴가 숨으므로 이 메뉴가 지금 위치를 알려야 한다(뷰어 = 서재 — M09 6155101880) */}
-      {MAIN_NAV.map(item => <Link key={item.href} href={item.href} prefetch={item.prefetch} aria-current={navigationOwner(pathname) === item.href ? 'page' : undefined}>{item.label}</Link>)}
+      {MAIN_NAV.map(item => <Link key={item.href} href={item.href} prefetch={item.prefetch} {...intentPrefetchProps(router, item, navigationOwner(pathname) === item.href)} aria-current={navigationOwner(pathname) === item.href ? 'page' : undefined}>{item.label}<NavPendingMark /></Link>)}
       {isAdmin && <Link href="/class" prefetch={false}>수업</Link>}
       {isAdmin && <Link href="/admin" prefetch={false}>관리</Link>}
     </nav>
@@ -51,12 +55,26 @@ function ReaderSiteMenu({ isAdmin }) {
 }
 
 export default function Layout({ children }) {
-  const { user, profile, isAdmin, signOut } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const focusedReading = isFocusedReadingRoute(pathname);
   const isNavActive = href => navigationOwner(pathname) === href;
   const { theme, toggleTheme } = useTheme();
+
+  // 화면이 바뀐 뒤 포커스가 body로 떨어졌으면(누른 카드 · 탭이 사라졌다) 새 화면의 첫 제목(h1, 없으면 본문)으로 옮긴다(APP-FEEL-003, 2026-10-17 KST).
+  // 운영 실측: 배움 → 교재 카드 · 단어 목록 → 문형 탭 · 뷰어 「다음 편」 뒤 activeElement = body — 키보드 · 화면 읽기가 처음부터 다시 찾았다.
+  // 다른 곳에 포커스가 살아 있으면(GNB 탭을 눌렀다 등) 빼앗지 않는다. 첫 마운트 · 해시만 바뀐 이동(pathname 같음)은 건너뛴다.
+  const lastPathname = useRef(null);
+  useEffect(() => {
+    if (lastPathname.current === null || lastPathname.current === pathname) { lastPathname.current = pathname; return undefined; }
+    lastPathname.current = pathname;
+    // 옮긴 자리를 2초 지킨다(watchPageHeading — 사용자 조작 · 다음 이동에 끝): 본문이면 실제 제목이 보일 때 그리로,
+    // 제목이면 그 제목이 빠지거나 감춰져 포커스가 body로 떨어질 때 다음 제목(없으면 본문)으로.
+    let stopWatch = null;
+    const frame = requestAnimationFrame(() => { if (focusPageIfLost(document)) stopWatch = watchPageHeading(document); });
+    return () => { cancelAnimationFrame(frame); stopWatch?.(); };
+  }, [pathname]);
   const [isOffline, setIsOffline] = useState(false);
   const [resendingConfirm, setResendingConfirm] = useState(false);
   const toast = useToast();
@@ -146,13 +164,11 @@ export default function Layout({ children }) {
     return () => clearInterval(timer);
   }, [user]);
 
-  async function handleAuthClick() {
-    if (user) {
-      await signOut();
-      router.push('/auth');
-    } else {
-      router.push(authEntryHref(window.location.pathname + window.location.search + window.location.hash));
-    }
+  // 머리말의 이 단추는 손님에게만 그린다(로그인 상태는 「내 계정」) — 로그인 진입만 한다. 예전 로그아웃 갈래(user일 때 signOut →
+  // push('/auth') → refresh)는 화면에서 누를 수 없는 죽은 경로라 지웠다(AUTH-ROUTER-REFRESH-001, 2026-10-18 KST). 로그아웃 진입점은
+  // 내 정보 · 계정 삭제 · 임베드뿐이고 모두 AuthContext 관문(onAccountLeft → router.refresh)을 지난다(accountRouterRefresh.test).
+  function handleAuthClick() {
+    router.push(authEntryHref(window.location.pathname + window.location.search + window.location.hash));
   }
 
   // 핵심 네비게이션만 노출 — 부가 기능(가이드·통계)은 프로필 안쪽으로
@@ -175,10 +191,12 @@ export default function Layout({ children }) {
               key={l.href}
               href={l.href}
               prefetch={l.prefetch}
+              {...intentPrefetchProps(router, l, isNavActive(l.href))}
               className={`gnb__link gnb__link--text ${isNavActive(l.href) ? 'active' : ''}`}
               aria-current={isNavActive(l.href) ? 'page' : undefined}
             >
               {l.label}
+              <NavPendingMark />
             </Link>
           ))}
         </nav>
@@ -291,11 +309,13 @@ export default function Layout({ children }) {
             key={l.href}
             href={l.href}
             prefetch={l.prefetch}
+            {...intentPrefetchProps(router, l, isNavActive(l.href))}
             className={`mobile-nav__link ${isNavActive(l.href) ? 'active' : ''}`}
             aria-current={isNavActive(l.href) ? 'page' : undefined}
           >
             <ActionIcon name={l.icon}/>
             <span>{l.label}</span>
+            <NavPendingMark />
           </Link>
         ))}
       </nav>

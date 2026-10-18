@@ -189,7 +189,7 @@ export default function InlineEditForm({ lang, slug, path, kind, onDone, onCance
   }
 
   if (loading) {
-    return <span className="admin-edit__loading">불러오는 중…</span>;
+    return <span className="admin-edit__loading" aria-busy="true">불러오는 중…</span>;
   }
   if (value == null && error) {
     return (

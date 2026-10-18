@@ -3,6 +3,7 @@ import { chromium } from 'playwright-core';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {vocabEncounterStorageKey} from '../src/lib/world/storageSchema.js';
+import {legacyLearningSnapshot} from './fixtures/learning-snapshot.mjs';
 const base=process.env.QA_BASE||'http://127.0.0.1:8898',out=process.env.QA_OUT||'/private/tmp/manabi-viewer-controls-qa';
 fs.mkdirSync(out,{recursive:true});
 const browser=await chromium.launch({executablePath:process.env.QA_CHROME||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
@@ -15,6 +16,8 @@ const session={user,access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:uid
 const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*','access-control-expose-headers':'content-range'};
 let known=[],records=[],vocab=[],reads=[],contexts=[],analysisMode='fail',saveFail=false,writeFail=false,analysisCalls=0;
 const writes=[];
+// user_vocabulary.id는 uuid다 — 학습 snapshot 규약(fetchVocabularyLearningRows)이 문자열 id를 요구한다.
+const vocabId=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 let progressGate=null,releaseProgress;
 let japaneseRows={},japaneseFail=false,japaneseDelay=0,japaneseCalls=[];
 await context.route('**/*', r => r.request().url().startsWith(base) ? r.continue() : r.abort());
@@ -52,7 +55,7 @@ await context.route('**/rest/v1/**',async r=>{
   }
   if(table==='reading_progress'){const row=Array.isArray(body)?body[0]:body;reads=reads.filter(r=>String(r.material_id)!==String(row.material_id));reads.push({...row,is_completed:false,updated_at:new Date().toISOString()});return send([row]);}
   if(table==='user_vocabulary'){
-   if(method==='POST'){const rows=(Array.isArray(body)?body:[body]).map(row=>({...row,id:89001+vocab.length,created_at:new Date().toISOString()}));vocab.push(...rows);return send(rows);}
+   if(method==='POST'){const rows=(Array.isArray(body)?body:[body]).map((row,i)=>({...row,id:vocabId(89001+vocab.length+i),created_at:new Date().toISOString()}));vocab.push(...rows);return send(rows);}
    const rows=vocab.filter(row=>String(row.id)===url.searchParams.get('id')?.slice(3));rows.forEach(row=>Object.assign(row,body));return send(rows);
   }
   return send([]);
@@ -86,6 +89,10 @@ await context.route('**/api/analyze',async r=>{
 });
 await context.route('**/api/gemini',r=>r.fulfill({json:{text:'검수용 설명'}}));
 await context.route('**/api/learning/**',r=>{
+ const learningUrl=new URL(r.request().url());
+ // 뷰어의 단어 상태 색은 /api/learning/vocabulary?view=learning(fetchVocabularyLearningRows) snapshot에서 온다 — REST user_vocabulary 직접 조회가 아니다.
+ if(r.request().method()==='GET'&&learningUrl.pathname==='/api/learning/vocabulary'&&learningUrl.searchParams.get('view')==='learning')
+  return r.fulfill({json:legacyLearningSnapshot({actorId:uid,rows:vocab,known,fields:learningUrl.searchParams.get('fields')})});
  if(r.request().method()==='POST'){
   const payload=r.request().postDataJSON();const word=vocab.find(v=>v.word_text===payload.word?.word_text)||vocab.at(-1);contexts.push({id:'context-1',user_id:uid,vocabulary_id:word?.id,material_id:payload.source?.materialId,quote:payload.source?.quote,locator:{tokenId:payload.source?.tokenId}});return r.fulfill({json:{ok:true,context:{id:'context-1'},vocabulary:{id:word?.id}}});
  }
@@ -125,7 +132,7 @@ await context.route('**/api/gemini',async r=>{
  const prompt=r.request().postDataJSON()?.contents?.[0]?.parts?.[0]?.text||'';
  if(prompt.includes('중국어 학습자의 일본어 의미 대조')){
   japaneseCalls.push(prompt);if(japaneseDelay)await delay(japaneseDelay);
-  return japaneseFail?r.fulfill({status:500,json:{error:{message:'fixture Japanese failure'}}}):r.fulfill({json:{candidates:[{content:{parts:[{text:JSON.stringify({form:prompt.includes('周末')?'週末':'大切にする',warn:null})}]}}]}});
+  return japaneseFail?r.fulfill({status:500,json:{error:{message:'fixture Japanese failure'}}}):r.fulfill({json:{candidates:[{content:{parts:[{text:JSON.stringify({form:prompt.includes('朋友')?'友人':prompt.includes('周末')?'週末':'大切にする',warn:null})}]}}]}});
  }
  if(prompt.includes('evidence')){
   readingPrompt=prompt;return r.fulfill({json:{candidates:[{content:{parts:[{text:JSON.stringify({questions:Array.from({length:5},(_,i)=>({type:'mcq',question:`第${i+1}题：周末我们去哪里？`,options:['公园','学校','医院','机场'],answer:readingInvalid?9:0,explanation:'원문에서 공원에 간다고 설명합니다.',evidence:raw[1]}))})}]}}]}});
@@ -151,6 +158,9 @@ await context.route('**/api/analyze',async r=>{
 
 const baseline=structuredClone(records),checks=[];
 const wordA=()=>page.locator('[data-tid="id_0_2_audit"]'),wordB=()=>page.locator('[data-tid="id_1_0_audit"]');
+// 일본어 요청 경로용 단어 — 周末은 확인된 일본어 표기(JMdict 파생 jaWords.json 週末 しゅうまつ)가 있어 日 줄에 바로 오르고
+// 요청 버튼이 없다(AE-R3 §3 ⑵). 표에 없는 朋友로 「없음 · 다른 뜻 · 실패 · 재시도 · 취소」를 시험한다.
+const wordJ=()=>page.locator('[data-tid="id_2_2_audit"]');
 async function tap(loc){await loc.evaluate(e=>window.scrollBy(0,e.getBoundingClientRect().top-180));await loc.click();}
 async function fresh(width=1138,height=900,suffix=''){
  race=false;detailWait=0;analysisFail=false;reanalysis=false;japaneseFail=false;japaneseDelay=0;japaneseCalls=[];japaneseRows={爱惜:{meanings:[{meaning:'아끼다',ja:{form:'愛惜',warn:null}}]}};analysisMode='ok';readingInvalid=false;writeFail=false;records=structuredClone(baseline);known=[];vocab=[];contexts=[];reads=[];writes.length=0;
@@ -163,12 +173,15 @@ async function fresh(width=1138,height=900,suffix=''){
 function pass(name){checks.push(name);console.log('PASS '+name);}
 async function shotAt(name){await page.screenshot({path:out+'/'+name+'.png'});}
 await context.addInitScript(()=>{window.SpeechRecognition=class{start(){window.__speechLang=this.lang;}stop(){this.onend?.();}abort(){this.onend?.();}};});
-async function aa(tab){await page.getByRole('button',{name:'Aa 읽기 설정',exact:true}).click();if(tab)await page.getByRole('tab',{name:tab,exact:true}).click();}
+// 읽기 설정 창은 지연 로드된다(viewerLazyPanels) — 창이 실제로 열린 뒤에 키를 누른다. 열리기 전 Esc는 단어 카드를 닫는다(실측).
+async function aa(tab){await page.getByRole('button',{name:'Aa 읽기 설정',exact:true}).click();await dialog().waitFor();if(tab)await page.getByRole('tab',{name:tab,exact:true}).click();}
 async function closeAa(){await page.getByRole('button',{name:'읽기 설정 닫기',exact:true}).click();}
 const dialog=()=>page.getByRole('dialog',{name:'읽기 설정',exact:true});
 const panel=()=>page.locator('.viewer-inspector');
 const pref=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('viewer_preferences_v2')));
-async function range(name,value){const input=page.getByRole('slider',{name,exact:true});await input.evaluate((el,v)=>{const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;setter.call(el,String(v));el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},value);}
+// 병음 크기 · 줄 사이 · 글자 사이 · 서체는 「세부 설정」(details) 안이다(AD-R2 Aa) — 닫혀 있으면 사람처럼 연다.
+async function openMore(){const more=page.locator('.reader-settings details.reader-settings__more:not([open]) > summary');if(await more.count())await more.first().click();}
+async function range(name,value){const input=page.getByRole('slider',{name,exact:true});if(!await input.count())await openMore();await input.evaluate((el,v)=>{const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;setter.call(el,String(v));el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},value);}
 const selectedLine=()=>page.locator('.reader-area .word-token--picked').first().getAttribute('data-tid');
 try {
  await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last().click();await page.waitForURL('**/home');
@@ -198,7 +211,7 @@ try {
   if(process.env.QA_SELECTION_WIDTH&&width!==Number(process.env.QA_SELECTION_WIDTH))continue;
   await fresh(width,900);
   known=[{word_text:'要',lang:'zh'}];
-  vocab=[['身体',1],['尽量',-1]].map(([word,days],i)=>({id:88001+i,user_id:uid,word_text:word,base_form:word,language:'Chinese',meaning:'상태 검수',next_review_at:new Date(Date.now()+days*86400000).toISOString(),repetitions:2}));
+  vocab=[['身体',1],['尽量',-1]].map(([word,days],i)=>({id:vocabId(88001+i),user_id:uid,word_text:word,base_form:word,language:'Chinese',meaning:'상태 검수',next_review_at:new Date(Date.now()+days*86400000).toISOString(),repetitions:2}));
   await page.evaluate(key=>localStorage.setItem(key,JSON.stringify(['你'])),vocabEncounterStorageKey('zh'));
   await page.reload();await wordA().waitFor();
   await aa('글자·배경');await page.getByRole('button',{name,exact:true}).click();await page.getByRole('tab',{name:'학습 표시',exact:true}).click();await page.getByRole('checkbox',{name:/^단어 상태/}).check();await delay(250);
@@ -214,7 +227,7 @@ try {
   const during=await colors(sampleSelector);
   const left=await first.boundingBox();assert(left.x>=12,'reader must retain an inner margin');
   const grips=await page.locator('.range-grip').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right};}));
-  assert(grips.length===2&&grips.every(r=>r.left>=0&&r.right<=width),'both drag handles must remain inside the viewport');
+  assert(grips.length===2&&grips.every(r=>r.left>=0&&r.right<=width),'both drag handles must remain inside the viewport: '+JSON.stringify(grips));
   assert.equal(during.filter(t=>t.class.includes('picked')).length,before.length,'drag must select the full range');
   for(let i=0;i<before.length;i++)assert.notEqual(during[i].color,before[i].color,`drag color unchanged at token ${i}`);
   await shotAt(`selection-${theme}-${width}-drag`);await page.mouse.up();await delay(300);
@@ -276,14 +289,18 @@ try {
  if(!process.env.QA_SELECTION_ONLY){
  // The compact inspector keeps core meaning / Japanese visible and extra tools reachable.
  await fresh(390,844);await tap(wordA());
- await panel().getByText('愛惜',{exact:true}).waitFor();
- // AE-R3 PR②(설계서 §5·§7.2): 일본어 대조 블록 대신 더 알아보기 「일본어로는」 한 줄 — 같은 표기는 한 번만.
- assert.equal(await panel().getByText('愛惜',{exact:true}).count(),1,'same form and meaning appear only once');
+ // AE-R3 PR②(설계서 §5·§7.2): 일본어 대조 블록 대신 더 알아보기 「일본어로는」 한 줄 — 같은 일본어 표기는 한 번만.
+ // 자형 열의 正(대만 정체, lang=zh-Hant-TW)은 다른 정보다 — 爱惜의 정체가 마침 愛惜이라 같은 글자가 한 번 더 나온다.
+ // 두 자리를 각각 기다린 뒤 전체 집합을 고정한다(일본어 한 번 + 正 한 번, 그 밖 0).
+ await panel().getByLabel('더 알아보기').getByText('愛惜',{exact:true}).waitFor();
+ await panel().getByLabel('대만 정체').getByText('愛惜',{exact:true}).waitFor();
+ assert.deepEqual(await panel().getByText('愛惜',{exact:true}).evaluateAll(es=>es.map(e=>e.closest('[lang]')?.getAttribute('lang')).sort()),['ja','zh-Hant-TW'],'same form and meaning appear only once');
  assert.equal(await panel().locator('.reader-card-learn__ja').count(),1);
  assert.equal(japaneseCalls.length,0,'dictionary data must not trigger AI');
  assert.equal(await panel().locator('footer').count(),0,'no repeated footer rail');
  assert.equal(await panel().locator('#inspector-word details').count(),0,'AE-R1: no folds in the word tab');
- assert(await panel().getByText('새 단어 저장 · 얼마나 알겠어요?',{exact:true}).isVisible());
+ // 저장 등급 줄의 안내는 「얼마나 알겠어요?」 + 오른쪽 「아는 단어」(AD-R3 확정 목업 · docs/manabi-viewer-v2-ad-r3.md §단어창).
+ assert(await panel().locator('.save-grade__guide').getByText('얼마나 알겠어요?',{exact:true}).isVisible());
  await shotAt('minimal-mobile-default');
  assert(await panel().locator('.reader-card-sentence').isVisible(),'AE-R1: the sentence line replaces the quoted line');
  await panel().getByRole('button',{name:'뜻·발음 수정',exact:true}).click();assert(await panel().locator('input').first().isVisible());await panel().getByRole('button',{name:'뜻·발음 수정',exact:true}).click();
@@ -298,11 +315,11 @@ try {
  assert.equal(writes.filter(w=>['user_vocabulary','reading_materials','morpheme_dictionary'].includes(w.table)).length,0);
  pass('minimal card preserves editing, character lookup, context, synonyms, details, keyboard tabs and fixed saving');
  // Another dictionary sense must never be shown as the translation of this sense.
- japaneseRows.周末={meanings:[{meaning:'다른 뜻',ja:{form:'間違い'}}]};
- await page.keyboard.press('Escape');await tap(wordB());await panel().getByRole('button',{name:'✦ 일본어로는?',exact:true}).waitFor();
+ japaneseRows.朋友={meanings:[{meaning:'다른 뜻',ja:{form:'間違い'}}]};
+ await page.keyboard.press('Escape');await tap(wordJ());await panel().getByRole('button',{name:'✦ 일본어로는?',exact:true}).waitFor();
  assert(!(await panel().innerText()).includes('間違い'));japaneseFail=true;
- await panel().getByRole('button',{name:'✦ 일본어로는?',exact:true}).click();await panel().getByText('대응어를 불러오지 못했어요.',{exact:true}).waitFor();
- japaneseFail=false;await panel().getByRole('button',{name:'✦ 일본어로는?',exact:true}).click();await panel().getByText('週末',{exact:true}).waitFor();
+ await panel().getByRole('button',{name:'✦ 일본어로는?',exact:true}).click();await panel().locator('.reader-card-learn__ja-error').getByText('대응어를 불러오지 못했어요.',{exact:true}).waitFor();
+ japaneseFail=false;await panel().getByRole('button',{name:'✦ 일본어로는?',exact:true}).click();await panel().getByText('友人',{exact:true}).waitFor();
  // 「AI」 표 보임 단언은 오너 결정(단어창 「AI」 표시 없음, 10-07 23:45 KST)으로 반대로 — 설계서 §7.2.
  assert.equal(await panel().locator('.reader-card-learn__ja').count(),1);assert.equal(await panel().getByText('AI',{exact:true}).count(),0);
  assert.equal(writes.filter(w=>w.table==='morpheme_dictionary').length,0);
@@ -311,18 +328,19 @@ try {
  await fresh(590,869);records[0].processed_json.dictionary.id_0_2_audit={text:'勉强',base_form:'勉强',meaning:'억지로 하다',furigana:'miǎn qiǎng',pos:'동사'};japaneseRows.勉强={meanings:[{meaning:'억지로 하다',ja:{form:'無理強い',warn:'공부'}}]};
  await page.reload();await wordA().waitFor();await tap(wordA());await panel().getByText('無理強い',{exact:true}).waitFor();
  // AE-R3 PR②: 글자 변환 꼴(勉強)은 日 줄에 오르지 않는다(warn → 日 숨김), 正 줄은 대만 정체, 경고는 「일본어로는」 줄.
- assert.equal(await panel().locator('.reader-card-glyph__row--ja').count(),0);assert.equal(await panel().locator('.reader-card-glyph__row--zheng .reader-card-glyph__form').innerText(),'勉強');assert((await panel().locator('.reader-card-learn__ja').innerText()).includes('공부'));
+ assert.equal(await panel().locator('.reader-card-glyph__row--ja').count(),0);// 正 꼴은 글자마다 칸(.reader-card-glyph__ch, 표제어 글자 칸 맞춤 — AE-R3 §4)이라 innerText가 칸마다 줄을 나눈다. 글자는 textContent로, 한 줄은 칸의 위치로 본다.
+ assert.equal(await panel().locator('.reader-card-glyph__row--zheng .reader-card-glyph__form').textContent(),'勉強');assert.equal(new Set(await panel().locator('.reader-card-glyph__row--zheng .reader-card-glyph__ch').evaluateAll(es=>es.map(e=>Math.round(e.getBoundingClientRect().top)))).size,1,'zheng form stays on one line');assert((await panel().locator('.reader-card-learn__ja').innerText()).includes('공부'));
  await shotAt('minimal-japanese-different-meaning');pass('shinjitai, semantic equivalent and false-friend meaning are distinct');
  // A delayed answer for A cannot be attached to word B.
  await fresh(390,844);japaneseRows={};await tap(wordA());japaneseDelay=1200;
- await panel().getByRole('button',{name:'✦ 일본어로는?',exact:true}).click();await page.keyboard.press('Escape');await tap(wordB());await delay(1500);
+ await panel().getByRole('button',{name:'✦ 일본어로는?',exact:true}).click();await page.keyboard.press('Escape');await tap(wordJ());await delay(1500);
  assert(!(await panel().innerText()).includes('大切にする'));await panel().getByRole('button',{name:'✦ 일본어로는?',exact:true}).waitFor();
  pass('Japanese lookup cancellation prevents stale word answers');
 
  if(!process.env.QA_MINIMAL_ONLY){
  await fresh(1440,1000);await tap(wordA());await page.locator('.viewer-inspector .word-detail-card').waitFor();await shotAt('desktop-word');
  assert.equal(await page.locator('.word-detail-card').count(),1);assert.equal(await panel().evaluate(e=>getComputedStyle(e).position),'sticky');pass('desktop has one inspector and one word card');
- await aa();assert(await panel().isHidden());assert(await dialog().evaluate(e=>e.matches(':modal')));assert((await dialog().innerText()).includes('글자·배경'));await shotAt('desktop-aa');
+ await aa();assert(await panel().isHidden());assert(await dialog().evaluate(e=>e.matches(':modal')));assert.equal(await dialog().getByRole('tab',{name:'글자·배경',exact:true}).getAttribute('aria-selected'),'true','Aa opens on the type tab');/* 탭은 아이콘 + 짧은 이름(글자·표시·읽기), 긴 이름은 aria-label — ViewerSettings tabNames */await shotAt('desktop-aa');
  await range('본문 크기',2);await range('병음 크기',1);await range('줄 사이',30);await range('글자 사이',.3);
  const previewLayout=await page.evaluate(()=>{
   const preview=document.querySelector('.reader-settings__preview'),body=document.querySelector('.reader-area');
@@ -333,6 +351,10 @@ try {
  await page.getByRole('tab',{name:'학습 표시',exact:true}).click();await page.getByRole('checkbox',{name:'단어 상태',exact:false}).check();await page.getByRole('button',{name:'이번 변경 되돌리기',exact:true}).click();assert.equal((await pref()).languages.Chinese.fontSize,1.6);assert.equal((await pref()).languages.Chinese.wordStateHl,false);pass('opening snapshot survives tab changes and restores all preferences');
  await page.getByRole('checkbox',{name:'단어 상태',exact:false}).check();await page.getByRole('tab',{name:'글자·배경',exact:true}).click();await range('본문 크기',2.4);await page.getByRole('button',{name:'이 탭 기본값',exact:true}).click();assert.equal((await pref()).languages.Chinese.fontSize,1.6);assert.equal((await pref()).languages.Chinese.wordStateHl,true);await closeAa();assert(await panel().isVisible());pass('tab reset leaves another tab intact; inspector resumes');
  // Pinyin is readable and identical across syllables; revealing never changes widths.
+ // 글꼴 전제(2026-10-17 KST 실측): 이 단계는 진짜 Noto Sans가 실린 빌드에서만 뜻이 있다. e2e:build의 대역 글꼴
+ // (e2e/fixtures/google-fonts-mock.cjs — 라틴 글리프 없는 woff2)이면 본문은 글자별 폴백(시스템 sans)으로 그리고 칸 폭을 재는
+ // canvas는 다른 폴백으로 재서 zhuāng이 DOM 52.5px · canvas 46.2px → 칸 49px를 넘는다. 진짜 글꼴(vendor/google-fonts, scripts/next-build.mjs)
+ // 빌드에서는 DOM = canvas = 56.2px · 칸 59px로 넘침 0. 대역 빌드에서 이 단언이 실패하면 제품 결함이 아니라 빌드 글꼴을 먼저 본다.
  await fresh(390,844);await aa('글자·배경');await range('본문 크기',.8);await range('병음 크기',1);await closeAa();
  const metrics=await page.locator('.reader-area ruby[data-pinyin]').evaluateAll(nodes=>nodes.map(n=>{const a=n.querySelector('.rt-an'),r=n.getBoundingClientRect(),ar=a.getBoundingClientRect();return {cell:r.width,font:parseFloat(getComputedStyle(a).fontSize),width:ar.width};}));
  assert(metrics.length>20);assert(metrics.every(m=>m.font>=15.9&&m.width<=m.cell+1));assert.equal(new Set(metrics.map(m=>Math.round(m.cell))).size,1);await shotAt('mobile-pinyin-large');pass('16px pinyin stays uniform and contained with minimum body size');
@@ -352,13 +374,15 @@ try {
  await page.setViewportSize({width:390,height:820});await delay(150);assert(Math.abs(await page.evaluate(()=>scrollY)-manualY)<2);pass('manual reading scroll wins over a later sheet resize');
  await fresh(390,844);await tap(wordA());await page.locator('.reader-card-body').getByRole('button',{name:'✦ 비슷한 말 찾기',exact:true}).click();await page.locator('.syn-ant__chip').first().waitFor();
  const controls=await page.locator('.save-grade').boundingBox(),panelBounds=await panel().boundingBox(),tabs=await page.locator('.viewer-inspector__tabs').boundingBox();assert(controls.y>=tabs.y+tabs.height&&controls.y+controls.height<=panelBounds.y+panelBounds.height);await shotAt('mobile-card-actions');pass('mobile grades remain fixed below scrolling details and a single top rail');
- await page.getByRole('button',{name:'Aa 읽기 설정',exact:true}).click();await page.keyboard.press('1');assert.equal(vocab.length,0);await page.keyboard.press('Escape');assert(await panel().isVisible());await page.getByRole('button',{name:'보조 패널 닫기',exact:true}).click();await page.keyboard.press('1');assert.equal(vocab.length,0);pass('modal and closed inspector cannot grade a hidden card');
+ await aa();await page.keyboard.press('1');assert.equal(vocab.length,0);await page.keyboard.press('Escape');assert(await panel().isVisible());await page.getByRole('button',{name:'보조 패널 닫기',exact:true}).click();await page.keyboard.press('1');assert.equal(vocab.length,0);pass('modal and closed inspector cannot grade a hidden card');
  // Theme changes reach the body, native modal and inspector surfaces.
  for(const [choice,name] of [['dark','어둡게'],['light','밝게'],['sepia','종이']]){
   await aa('글자·배경');await page.getByRole('button',{name,exact:true}).click();const surface=await dialog().evaluate(e=>getComputedStyle(e).backgroundColor);assert.notEqual(surface,'rgba(0, 0, 0, 0)');await closeAa();await tap(wordA());assert.equal(await panel().evaluate(e=>getComputedStyle(e).backgroundColor),surface);assert.equal(await page.locator('.viewer-layout').getAttribute('data-reader-theme'),choice);await shotAt('mobile-theme-'+choice);await page.getByRole('button',{name:'보조 패널 닫기',exact:true}).click();
  }pass('three opaque themes propagate to reader, dialog and inspector');
  // Opening settings does not start the pacer; explicit start and holds are independent.
- await fresh(1138,900);await aa('읽기 진행');await page.getByRole('checkbox',{name:/문장 집중/}).check();await page.getByRole('checkbox',{name:/자동 진행 허용/}).check();await closeAa();
+ // 자동 진행은 스크롤 보기에서만 쓴다(READER-PAGED-001 — 기본 보기는 쪽 넘김, 쪽 넘김에서는 「자동 진행 허용」이 꺼진 채 이유를 보인다).
+ // 허용 토글은 「읽기 진행」 탭의 「세부 설정」 안이다(AD-R2 Aa). 사람이 고르는 순서 그대로 스크롤을 고르고 세부 설정을 연다.
+ await fresh(1138,900);await aa('글자·배경');await dialog().getByRole('button',{name:'스크롤',exact:true}).click();await page.getByRole('tab',{name:'읽기 진행',exact:true}).click();await page.getByRole('checkbox',{name:/문장 집중/}).check();await dialog().locator('details.reader-settings__more > summary').click();await page.getByRole('checkbox',{name:/자동 진행 허용/}).check();await closeAa();
  assert.equal(await page.locator('.reader-area--pacing').count(),0);await page.getByRole('button',{name:'자동 진행 시작',exact:true}).click();await page.locator('.reader-area--pacing').waitFor();const first=await selectedLine();await aa('읽기 진행');await delay(1600);assert.equal(await selectedLine(),first);await closeAa();await delay(300);assert.equal(await selectedLine(),first);await page.getByRole('button',{name:'자동 진행 중지',exact:true}).click();await aa();await closeAa();assert.equal(await page.locator('.reader-area--pacing').count(),0);pass('explicit pacer start, modal hold, resume grace and manual stop');
  // Dictation dialog replaces activity chooser; no answer in underlying accessibility tree.
  await page.getByRole('button',{name:'학습',exact:true}).click();await page.getByRole('button',{name:/^받아쓰기/}).click();await page.getByRole('button',{name:'▷ 듣고 시작',exact:true}).first().click();await page.getByRole('textbox',{name:'받아쓰기 입력',exact:true}).fill('초안 보관');
@@ -396,17 +420,18 @@ try {
  // Simulate a mobile keyboard's visual viewport without touching a user's keyboard.
  await fresh(390,844);await tap(wordA());await page.evaluate(()=>{const vv=window.visualViewport;Object.defineProperty(vv,'height',{configurable:true,value:440});vv.dispatchEvent(new Event('resize'));});await delay(80);
  assert((await panel().boundingBox()).y+(await panel().boundingBox()).height<=441);await shotAt('mobile-keyboard');await aa();const modalBox=await dialog().boundingBox();assert(modalBox.y+modalBox.height<=441);await page.keyboard.press('Escape');await page.evaluate(()=>{delete window.visualViewport.height;window.visualViewport.dispatchEvent(new Event('resize'));});pass('visual viewport changes keep inspector actions and modal above the keyboard');
- // Retrying a failed answer must not append the student's message again.
- await fresh();await page.evaluate(()=>localStorage.removeItem('conversation:94001'));
- let conversationFails=true,conversationPrompts=[];
- await context.route('**/api/gemini',r=>{const prompt=r.request().postDataJSON()?.contents?.[0]?.parts?.[0]?.text||'';if(!prompt.includes('language tutor'))return r.fallback();conversationPrompts.push(prompt);return conversationFails?r.fulfill({status:500,json:{error:{message:'fixture answer error'}}}):r.fulfill({json:{candidates:[{content:{parts:[{text:'周末你喜欢做什么？'}]}}]}});});
- await page.getByRole('button',{name:'학습',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:/^회화 연습/}).click();await page.getByRole('button',{name:'대화 시작',exact:true}).click();await page.getByRole('button',{name:'답변 다시 받기',exact:true}).waitFor();conversationFails=false;await page.getByRole('button',{name:'답변 다시 받기',exact:true}).click();await page.getByPlaceholder('중국어로 자유롭게 답변해 보세요').waitFor();await page.getByText('周末你喜欢做什么？',{exact:true}).waitFor();
- conversationFails=true;await page.getByPlaceholder('중국어로 자유롭게 답변해 보세요').fill('我喜欢读书。');await page.getByRole('button',{name:'보내기',exact:true}).click();await page.getByRole('button',{name:'답변 다시 받기',exact:true}).waitFor();conversationFails=false;await page.getByRole('button',{name:'답변 다시 받기',exact:true}).click();await page.locator('.conversation-msg--ai').last().getByText('周末你喜欢做什么？',{exact:true}).waitFor();assert.equal(await page.locator('.conversation-msg--user').count(),1);assert.equal((conversationPrompts.at(-1).match(/Student: 我喜欢读书。/g)||[]).length,1);await page.keyboard.press('Escape');pass('conversation start and answer retry preserve a single student message');
+ // 뷰어 안 클라이언트 회화(「회화 연습」 · language tutor 프롬프트)는 서버 조립 대화로 바뀌었다 — 「학습」 창의 「대화」가
+ // 대화 자료를 만들어 /viewer/<대화 id>로 연다(ViewerPage openConversation). 답변 재시도 · 학생 말 1회 보존 계약은
+ // 서버 경로의 소관이다(src/lib/server/__tests__/conversationTurn.test.js). 여기서는 창의 입구만 지킨다.
+ await fresh();
+ await page.getByRole('button',{name:'학습',exact:true}).click();const activities=page.getByRole('dialog',{name:'학습',exact:true});
+ await activities.getByRole('button',{name:/^대화/}).waitFor();assert.equal(await activities.getByRole('button',{name:/^회화 연습/}).count(),0);
+ assert.match(await activities.getByRole('button',{name:/^대화/}).innerText(),/이 자료를 주제로 대화해요/);await page.keyboard.press('Escape');pass('activities offer the material conversation entry (server-assembled conversation)');
  if(process.env.QA_REAL_FONTS==='1'){
   await fresh(1440,1000);const cdp=await context.newCDPSession(page);await cdp.send('DOM.enable');await cdp.send('CSS.enable');
   const fontEvidence=async(selector='[data-tid="id_0_2_audit"] .surface ruby[data-pinyin]')=>{const {root}=await cdp.send('DOM.getDocument');const {nodeId}=await cdp.send('DOM.querySelector',{nodeId:root.nodeId,selector});return (await cdp.send('CSS.getPlatformFontsForNode',{nodeId})).fonts;};
   const sans=await fontEvidence();assert(sans.some(f=>/Noto ?Sans ?SC/i.test(f.familyName)),JSON.stringify(sans));
-  await aa();await page.getByRole('button',{name:'명조',exact:true}).click();await page.waitForFunction(()=>[...document.fonts].some(f=>/Noto.*Serif.*SC/i.test(f.family)&&f.status==='loaded'),null,{timeout:60000});await page.evaluate(()=>document.fonts.ready);
+  await aa();await openMore();/* 서체는 「세부 설정」 안(AD-R2 Aa) */await page.getByRole('button',{name:'명조',exact:true}).click();await page.waitForFunction(()=>[...document.fonts].some(f=>/Noto.*Serif.*SC/i.test(f.family)&&f.status==='loaded'),null,{timeout:60000});await page.evaluate(()=>document.fonts.ready);
   const previewSerif=await fontEvidence('.reader-settings__preview .surface ruby[data-pinyin]');assert(previewSerif.some(f=>/Noto ?Serif ?SC/i.test(f.familyName)),JSON.stringify(previewSerif));await shotAt('desktop-aa-serif-real');await closeAa();await page.evaluate(()=>document.fonts.ready);
   const serif=await fontEvidence();assert(serif.some(f=>/Noto ?Serif ?SC/i.test(f.familyName)),JSON.stringify(serif));await shotAt('desktop-serif-real');
   fs.writeFileSync(out+'/real-fonts.json',JSON.stringify({sans,serif,previewSerif},null,2));await cdp.detach();pass('deployed Chinese glyphs use real Noto Sans SC and Noto Serif SC faces');

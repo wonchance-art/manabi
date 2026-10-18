@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "18b0e04da8c19e970eae1db33046b17be05d97bcee78fd434234313f777a9275",
+      "edits": [
+        {
+          "line": 0,
+          "start": 16,
+          "end": 18,
+          "text": "幻燈",
+          "reason": "ruby"
+        },
+        {
+          "line": 64,
+          "start": 33,
+          "end": 36,
+          "text": "鉄砲弾",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "dd344867d96458d71362cba761aa304c3da4458e1239ca4c2b35559bc4705e90",
+      "edits": [
+        {
+          "line": 2,
+          "start": 5,
+          "end": 7,
+          "text": "円石",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 28,
+          "end": 31,
+          "text": "金雲母",
+          "reason": "ruby"
+        },
+        {
+          "line": 64,
+          "start": 2,
+          "end": 4,
+          "text": "幻燈",
+          "reason": "ruby-repeat"
+        }
+      ]
+    }
+  ]
+}

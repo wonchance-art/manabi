@@ -111,7 +111,8 @@ export function attributionParts(source) {
  * ─────────────────────────────────────────────────────────────*/
 
 const AOZORA_EDIT_CODES = ['ruby-reading-aid', 'chapter-split-by-manabi'];
-const AOZORA_SMALL_KANA_EDIT = 'small-kana-as-full'; // aozoraMaterial.AOZORA_SMALL_KANA_EDIT — Unicode에 없는 작은 가나를 보통 크기로
+const AOZORA_SMALL_KANA_EDIT = 'small-kana-as-full';
+const AOZORA_UNPROOFREAD_EDIT = 'unproofread-source'; // aozoraMaterial.AOZORA_UNPROOFREAD_EDIT — 교정자 없는 입력본(오너 승인 수록) // aozoraMaterial.AOZORA_SMALL_KANA_EDIT — Unicode에 없는 작은 가나를 보통 크기로
 
 /** 도서 카드 링크는 青空文庫 HTTPS 주소일 때만 건다 — 공개 자료 metadata에 임의 링크(javascript: 등)가 실려도 그리지 않는다. */
 function aozoraCardHref(value) {
@@ -123,10 +124,115 @@ function aozoraCardHref(value) {
   }
 }
 
+/* Standard Ebooks 정본 책(LIT-SRC-EN-1) — 같은 「출처 한 줄」 문법. 판 기여는 CC0라 표기 의무는 없지만, 출처·판 링크·우리가 바꾼 점을
+ * 밝힌다(아오조라와 같은 원칙). 판 링크는 standardebooks.org HTTPS 주소일 때만 건다. */
+function standardEbooksHref(value) {
+  try {
+    const url = new URL(String(value || ''));
+    return url.protocol === 'https:' && url.hostname === 'standardebooks.org' ? url.href : '';
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Standard Ebooks 장의 출처 줄 재료 — 「원작 퍼블릭 도메인」은 권리 기록이 approved·public-domain일 때만.
+ * @returns {{author:string, publishedYear:number|null, url:string, publicDomain:boolean, editNote:boolean, notesNote:boolean}|null}
+ */
+/* 번역본 정본(오너 「되는 언어로만」 2026-10-17 KST)의 번역 크레딧 — 권리 기록이 구조화된 번역자({name, publishedYear})일 때만.
+ * 출처 줄에 「번역 George Long, 1862」로 원작 크레딧 뒤에 붙는다. 없으면 null(원어 원문). */
+export function translatorCredit(literature) {
+  const t = literature && typeof literature === 'object' ? literature.translator : null;
+  // 번역자가 여럿인 모음집(토마스 만 단편집)은 「번역 Kenneth Burke, 1925 · Herman George Scheffauer, 1928」 — 한 줄에 판마다 이름 · 해
+  if (Array.isArray(t)) {
+    const named = t.filter((item) => item && typeof item === 'object' && typeof item.name === 'string' && item.name.trim());
+    if (!named.length) return null;
+    return { name: named.map((item) => (Number.isInteger(item.publishedYear) ? `${item.name.trim()}, ${item.publishedYear}` : item.name.trim())).join(' · '), publishedYear: null };
+  }
+  if (!t || typeof t !== 'object' || typeof t.name !== 'string' || !t.name.trim()) return null;
+  return { name: t.name.trim(), publishedYear: Number.isInteger(t.publishedYear) ? t.publishedYear : null };
+}
+
+export function standardEbooksAttributionParts(literature) {
+  if (!literature || typeof literature !== 'object' || literature.provider !== 'standardebooks') return null;
+  const rights = literature.rights && typeof literature.rights === 'object' ? literature.rights : {};
+  const edits = Array.isArray(literature.edits) ? literature.edits : [];
+  return {
+    author: typeof literature.author === 'string' ? literature.author.trim() : '',
+    publishedYear: Number.isInteger(literature.publishedYear) ? literature.publishedYear : null,
+    url: standardEbooksHref(literature.url),
+    publicDomain: rights.status === 'approved' && rights.basis === LICENSE_PUBLIC_DOMAIN,
+    editNote: ['chapter-split-by-manabi', 'typography-normalized', 'illustrations-omitted'].every((code) => edits.includes(code)),
+    notesNote: edits.includes('notes-omitted'), // 미주를 뺀 판(모비 딕 등)
+    translator: translatorCredit(literature),
+  };
+}
+
+/* Wikisource 정본 책(LIT-SRC-WS-1) — 같은 「출처 한 줄」 문법. 원작은 퍼블릭 도메인이지만 위키문헌의 전사·교정은 CC BY-SA 4.0이라
+ * 출처(위키문헌) · 원문 링크 · 라이선스 링크 · 우리가 바꾼 점을 밝힌다(저작자 표시 — 제목·출처·라이선스). 원문 링크는 zh/fr 위키문헌 HTTPS만. */
+const WIKISOURCE_HOSTS = Object.freeze({ zh: 'zh.wikisource.org', fr: 'fr.wikisource.org', ko: 'ko.wikisource.org', en: 'en.wikisource.org' });
+function wikisourceHref(value, wiki) {
+  try {
+    const url = new URL(String(value || ''));
+    return url.protocol === 'https:' && Object.hasOwn(WIKISOURCE_HOSTS, wiki) && url.hostname === WIKISOURCE_HOSTS[wiki] ? url.href : '';
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Wikisource 장의 출처 줄 재료 — 「원작 퍼블릭 도메인」은 권리 기록이 approved·public-domain일 때만. license는 CC BY-SA 4.0일 때만 링크.
+ * @returns {{wiki:string, author:string, publishedYear:number|null, url:string, publicDomain:boolean, ccBySa:boolean, editNote:boolean, scriptNote:boolean}|null}
+ */
+export function wikisourceAttributionParts(literature) {
+  if (!literature || typeof literature !== 'object' || literature.provider !== 'wikisource' || !Object.hasOwn(WIKISOURCE_HOSTS, literature.wiki)) return null;
+  const rights = literature.rights && typeof literature.rights === 'object' ? literature.rights : {};
+  const edits = Array.isArray(literature.edits) ? literature.edits : [];
+  return {
+    wiki: literature.wiki,
+    author: typeof literature.author === 'string' ? literature.author.trim() : '',
+    publishedYear: Number.isInteger(literature.publishedYear) ? literature.publishedYear : null,
+    url: wikisourceHref(literature.url, literature.wiki),
+    publicDomain: rights.status === 'approved' && rights.basis === LICENSE_PUBLIC_DOMAIN,
+    ccBySa: literature.license === 'CC-BY-SA-4.0',
+    // 공공누리 제1유형 — 배포 기관(출처 표시 의무). 승인된 kogl-type1 기록일 때만
+    kogl: rights.status === 'approved' && rights.basis === 'kogl-type1' && literature.license === 'KOGL-1' && typeof rights.holder === 'string' && rights.holder.trim() ? rights.holder.trim() : null,
+    editNote: ['chapter-split-by-manabi', 'typography-normalized', 'illustrations-omitted', 'notes-omitted'].every((code) => edits.includes(code)),
+    scriptNote: edits.includes('script-variant-by-wikisource'),
+    translator: translatorCredit(literature),
+  };
+}
+
+/* 퍼블릭 도메인 전자책 사이트 정본 책(LIT-SRC-PD-1) — 같은 「출처 한 줄」 문법. 사이트 이름 · 작가 · 「한국에서 퍼블릭 도메인」 · 책 쪽 링크 ·
+ * 우리가 바꾼 점. 사이트 저작권 표시는 그 나라 기준이라 우리는 한국 판정만 밝힌다. 링크는 그 사이트 HTTPS만. */
+const PD_SITE_HOSTS = Object.freeze({ fp: 'www.fadedpage.com', gau: 'gutenberg.net.au' });
+const PD_SITE_NAMES = Object.freeze({ fp: 'Faded Page', gau: 'Project Gutenberg Australia' });
+/**
+ * @returns {{site:string, siteName:string, author:string, publishedYear:number|null, url:string, publicDomain:boolean, editNote:boolean, notesNote:boolean}|null}
+ */
+export function pdSiteAttributionParts(literature) {
+  if (!literature || typeof literature !== 'object' || literature.provider !== 'pdsite' || !Object.hasOwn(PD_SITE_HOSTS, literature.site)) return null;
+  const rights = literature.rights && typeof literature.rights === 'object' ? literature.rights : {};
+  const edits = Array.isArray(literature.edits) ? literature.edits : [];
+  let url = '';
+  try { const parsed = new URL(String(literature.url || '')); url = parsed.protocol === 'https:' && parsed.hostname === PD_SITE_HOSTS[literature.site] ? parsed.href : ''; } catch { url = ''; }
+  return {
+    site: literature.site,
+    siteName: PD_SITE_NAMES[literature.site],
+    author: typeof literature.author === 'string' ? literature.author.trim() : '',
+    publishedYear: Number.isInteger(literature.publishedYear) ? literature.publishedYear : null,
+    url,
+    publicDomain: rights.status === 'approved' && rights.basis === LICENSE_PUBLIC_DOMAIN,
+    editNote: ['chapter-split-by-manabi', 'typography-normalized', 'illustrations-omitted'].every((code) => edits.includes(code)),
+    notesNote: edits.includes('notes-omitted'),
+    translator: translatorCredit(literature),
+  };
+}
+
 /**
  * 아오조라 장의 출처 줄 재료. 「원작 퍼블릭 도메인」은 권리 기록이 approved·public-domain일 때만 쓴다(없는 권리를 주장하지 않는다).
  * 底本은 첫 줄(서명·출판사)만 — 들여쓴 연속 줄(발행일·판차)은 metadata에 남고 한 줄 표기에는 넣지 않는다.
- * @returns {{provider:string, sourceBook:string, inputter:string, proofreader:string, cardUrl:string, publicDomain:boolean, editNote:boolean, smallKanaNote:boolean}|null}
+ * @returns {{provider:string, sourceBook:string, inputter:string, proofreader:string, cardUrl:string, publicDomain:boolean, editNote:boolean, smallKanaNote:boolean, unproofreadNote:boolean}|null}
  */
 export function literatureAttributionParts(literature) {
   if (!literature || typeof literature !== 'object' || literature.provider !== 'aozora') return null;
@@ -143,5 +249,6 @@ export function literatureAttributionParts(literature) {
     publicDomain: rights.status === 'approved' && rights.basis === LICENSE_PUBLIC_DOMAIN,
     editNote: AOZORA_EDIT_CODES.every((code) => edits.includes(code)),
     smallKanaNote: edits.includes(AOZORA_SMALL_KANA_EDIT),
+    unproofreadNote: edits.includes(AOZORA_UNPROOFREAD_EDIT),
   };
 }

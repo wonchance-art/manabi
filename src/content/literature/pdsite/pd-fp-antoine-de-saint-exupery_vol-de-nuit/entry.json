@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "provider": "pdsite",
+  "site": "fp",
+  "key": "pd-fp-antoine-de-saint-exupery_vol-de-nuit",
+  "url": "https://www.fadedpage.com/showbook.php?pid=20150364",
+  "title": "Vol de nuit",
+  "author": "Antoine de Saint-Exupéry",
+  "language": "French",
+  "level": "B2 상급",
+  "publishedYear": 1931,
+  "authorDeathYear": 1944,
+  "countryOfOrigin": "FR",
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "FR",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "야간 비행",
+    "authorKo": "앙투안 드 생텍쥐페리",
+    "binding": "tpl-wrapper",
+    "coverTitle": "Vol de nuit",
+    "coverAuthor": "Antoine de Saint-Exupéry",
+    "coverPalette": "yellow",
+    "coverOrnament": "double-rule",
+    "coverYear": 1931
+  },
+  "parse": {
+    "chapter": "^h1:[IVXLC]+\\.?$",
+    "stop": "^p:FIN$"
+  },
+  "file": {
+    "path": "20150364.html",
+    "url": "https://www.fadedpage.com/books/20150364/html.php",
+    "encoding": "utf-8",
+    "sha256": "c3bea3d4535961d984c570996e86e32dc0ad1819e7cf10de75cc0a03c1018fb1",
+    "fetchedAt": "2026-10-17"
+  }
+}

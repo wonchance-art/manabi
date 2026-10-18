@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { ART_CATALOG } from '../../content/art/index.js';
 import { JP_MAP_PINS } from '../../content/studies/japanMapPins.js';
 import {
+  ART_GENRE_ARTIST_ROLE,
+  ART_PD_DIED_BY,
   artCurationWorks,
   artDateDisplay,
   artDescriptionHashMismatches,
@@ -32,7 +34,7 @@ function fixture() {
     ],
     works: [
       {
-        id: 'work-a', wikidata: 'Q5', artist: 'artist-a',
+        id: 'work-a', wikidata: 'Q5', genre: 'print', artist: 'artist-a',
         title: { native: '甲図', ko: '갑 그림', reading: 'こうず' },
         date: { text: '天保2～5年頃', startYear: 1831, endYear: 1834, certainty: 'range' },
         periods: ['jp-edo'], medium: { native: '木版多色摺', ko: '다색 목판화' },
@@ -49,7 +51,7 @@ function fixture() {
         image: { url: '/art/work-a.jpg', sourceUrl: 'https://example.org/a', license: 'public-domain', alt: '큰 파도 아래 작은 배들' },
       },
       {
-        id: 'work-b', wikidata: 'Q6', artist: 'artist-a',
+        id: 'work-b', wikidata: 'Q6', genre: 'painting', artist: 'artist-a',
         title: { native: '乙図', ko: '을 그림' },
         date: { text: 'c. 1840', startYear: 1838, endYear: 1842, certainty: 'circa' },
         periods: ['jp-edo'], medium: { native: '木版' },
@@ -120,10 +122,14 @@ describe('정본 카탈로그(src/content/art) — 실제 리포 데이터', () 
     }
   });
 
-  it('크레딧은 실제 출처 이름을 담는다 — ColBase는 정부표준이용규약 2.0, 시카고 미술관은 CC BY 4.0', () => {
+  it('크레딧은 실제 출처 이름을 담는다 — ColBase는 정부표준이용규약 2.0, 시카고 미술관·문화유산 온라인은 CC BY 4.0', () => {
     for (const work of ART_CATALOG.works) {
       for (const description of work.descriptions) {
-        const expected = { colbase: ['ColBase', 'jp-gov-standard-2.0'], aic: ['Art Institute of Chicago', 'cc-by-4.0'] }[description.source];
+        const expected = {
+          colbase: ['ColBase', 'jp-gov-standard-2.0'],
+          aic: ['Art Institute of Chicago', 'cc-by-4.0'],
+          bunka: ['문화유산 온라인(문화청)', 'cc-by-4.0'],
+        }[description.source];
         expect(description.credit, `${work.id} ${description.sourceId}`).toContain(expected[0]);
         expect(description.license).toBe(expected[1]);
       }
@@ -138,8 +144,35 @@ describe('정본 카탈로그(src/content/art) — 실제 리포 데이터', () 
       const file = path.join(process.cwd(), 'public', image.url);
       expect(fs.existsSync(file), `${file} 없음`).toBe(true);
       expect(jpegSize(fs.readFileSync(file)), id).toEqual({ width: image.width, height: image.height });
-      expect(image.license).toBe('cc0');
+      expect(['cc0', 'public-domain', 'cc-by-4.0'], id).toContain(image.license);
       expect(image.credit, id).toMatch(/\S/);
+      // CC BY 그림은 ColBase 사진뿐이고, 캡션이 소장관·ColBase·라이선스를 밝힌다(저작자 표시).
+      if (image.license === 'cc-by-4.0') expect(image.credit, id).toMatch(/소장 · ColBase\(국립문화재기구\) · CC BY 4\.0$/);
+    }
+  });
+
+  it('장르(ART-GENRE-001): 우키요에는 판화, 새 큐레이션은 회화·사진·건축 세 점씩 — 연대순, 서로 겹치지 않는다', () => {
+    const genres = new Set(ART_CATALOG.works.map((work) => work.genre));
+    expect(genres).toEqual(new Set(['print', 'painting', 'photograph', 'architecture']));
+    for (const curationId of ['ukiyoe-landscape-hokusai-hiroshige', 'ukiyoe-landscape-hokusai-hiroshige-2']) {
+      expect(new Set(artCurationWorks(ART_CATALOG, curationId).map((work) => work.genre)), curationId).toEqual(new Set(['print']));
+    }
+    const seen = new Set();
+    for (const [curationId, genre] of [['modern-western-painting-japan', 'painting'], ['meiji-early-photographs', 'photograph'], ['meiji-taisho-architecture', 'architecture']]) {
+      const works = artCurationWorks(ART_CATALOG, curationId);
+      expect(works.map((work) => work.genre), curationId).toEqual([genre, genre, genre]);
+      const starts = works.map((work) => work.date.startYear);
+      expect(starts, curationId).toEqual([...starts].sort((a, b) => a - b));
+      for (const work of works) { expect(seen.has(work.id), work.id).toBe(false); seen.add(work.id); }
+    }
+  });
+
+  it('건축은 소장처 대신 소재지 — 문화유산 온라인 기록 링크와 함께', () => {
+    for (const work of ART_CATALOG.works.filter((item) => item.genre === 'architecture')) {
+      const located = work.places.filter((entry) => entry.role === 'located');
+      expect(located.length, work.id).toBeGreaterThan(0);
+      for (const entry of located) expect(entry.url, work.id).toMatch(/^https:\/\/online\.bunka\.go\.jp\/db\/heritages\/detail\/\d+$/);
+      expect(work.descriptions.map((description) => description.source), work.id).toEqual(['bunka']);
     }
   });
 });
@@ -180,7 +213,7 @@ describe('artCatalog 계약 — fail-closed', () => {
     expect(validateArtCatalog(catalog).join('\n')).toMatch(/image\.url: \/art\//);
   });
 
-  it('이미지는 퍼블릭 도메인/CC0 + 대체 텍스트만', () => {
+  it('이미지는 퍼블릭 도메인/CC0/CC BY 4.0 + 대체 텍스트만', () => {
     const catalog = fixture();
     catalog.works[0].image = { ...catalog.works[0].image, license: 'cc-by-nc', alt: '' };
     const errors = validateArtCatalog(catalog).join('\n');
@@ -188,13 +221,67 @@ describe('artCatalog 계약 — fail-closed', () => {
     expect(errors).toMatch(/image.alt/);
   });
 
-  it('소장처 하나 이상, 장소 역할 3종, 없는 참조는 실패', () => {
+  it('CC BY 그림은 캡션(저작자 표시)이 있어야 한다', () => {
+    const catalog = fixture();
+    catalog.works[0].image = { ...catalog.works[0].image, license: 'cc-by-4.0' };
+    expect(validateArtCatalog(catalog).join('\n')).toMatch(/cc-by-4\.0 그림은 캡션/);
+    catalog.works[0].image.credit = '甲図 · 작가 갑 · 갑 박물관 소장 · ColBase(국립문화재기구) · CC BY 4.0';
+    expect(validateArtCatalog(catalog)).toEqual([]);
+  });
+
+  it(`그림을 싣는 작품은 작가가 ${ART_PD_DIED_BY}년까지 세상을 떠났어야 한다(작품 저작권 — 사후 70년)`, () => {
+    const catalog = fixture();
+    catalog.artists[0].died = ART_PD_DIED_BY + 1;
+    catalog.artists[0].born = 1900;
+    expect(validateArtCatalog(catalog).join('\n')).toMatch(/년까지 떠난 작가의 작품만 그림을 싣는다/);
+    delete catalog.works[0].image;
+    catalog.works[0].lookFor = [];
+    expect(validateArtCatalog(catalog), '그림이 없으면 해설만 싣는다').toEqual([]);
+    const boundary = fixture();
+    boundary.artists[0].died = ART_PD_DIED_BY;
+    expect(validateArtCatalog(boundary), `${ART_PD_DIED_BY}년에 떠난 작가는 그림을 싣는다`).toEqual([]);
+  });
+
+  it('장르는 정해진 넷만 — 작가 칸 이름이 장르를 따른다', () => {
+    const catalog = fixture();
+    catalog.works[0].genre = 'sculpture';
+    delete catalog.works[1].genre;
+    const errors = validateArtCatalog(catalog);
+    expect(errors.filter((error) => error.includes('.genre: print|painting|photograph|architecture'))).toHaveLength(2);
+    expect(ART_GENRE_ARTIST_ROLE).toEqual({ print: '그림', painting: '그림', photograph: '촬영', architecture: '설계' });
+  });
+
+  it('건축은 소재지(located) + 문화재 기록 링크, 소재지는 건축에만', () => {
+    const catalog = fixture();
+    catalog.works[0].genre = 'architecture';
+    let errors = validateArtCatalog(catalog).join('\n');
+    expect(errors).toMatch(/건축은 소재지\(located\)가 하나 이상/);
+    catalog.works[0].places = [{ place: 'museum-a', role: 'located' }];
+    errors = validateArtCatalog(catalog).join('\n');
+    expect(errors).toMatch(/소재지는 문화재 기록 HTTPS 링크/);
+    catalog.works[0].places[0].url = 'https://online.bunka.go.jp/db/heritages/detail/1';
+    expect(validateArtCatalog(catalog)).toEqual([]);
+    catalog.works[1].places.push({ place: 'museum-a', role: 'located', url: 'https://online.bunka.go.jp/db/heritages/detail/2' });
+    expect(validateArtCatalog(catalog).join('\n')).toMatch(/소재지\(located\)는 건축 작품에만/);
+  });
+
+  it('작품의 Wikidata QID는 없을 수 있다 — 있으면 형식 검사', () => {
+    const catalog = fixture();
+    delete catalog.works[1].wikidata;
+    expect(validateArtCatalog(catalog)).toEqual([]);
+    catalog.works[1].wikidata = 'not-a-qid';
+    expect(validateArtCatalog(catalog).join('\n')).toMatch(/works\[1\]\.wikidata/);
+    delete catalog.artists[0].wikidata;
+    expect(validateArtCatalog(catalog).join('\n'), '작가·장소는 여전히 필수').toMatch(/artists\[0\]\.wikidata/);
+  });
+
+  it('소장처 하나 이상, 장소 역할 4종, 없는 참조는 실패', () => {
     const catalog = fixture();
     catalog.works[1].places = [{ place: 'nowhere', role: 'stored' }];
     catalog.works[1].artist = 'ghost';
     const errors = validateArtCatalog(catalog).join('\n');
     expect(errors).toMatch(/없는 장소 nowhere/);
-    expect(errors).toMatch(/role: holding\|depicted\|made/);
+    expect(errors).toMatch(/role: holding\|depicted\|made\|located/);
     expect(errors).toMatch(/소장처\(holding\)가 하나 이상/);
     expect(errors).toMatch(/없는 작가 ghost/);
   });
@@ -268,12 +355,23 @@ describe('artCatalog 계약 — fail-closed', () => {
     expect(validateArtCatalog(catalog).join('\n')).toMatch(/works\[1\]\.lookFor: 그림이 없으면/);
   });
 
-  it('읽기 표시(＠よみ＠·+よみ+)가 섞인 해설은 싣지 않는다', () => {
-    for (const text of ['宮＠みや＠は、熱田神宮に由来する。', '+かたきうち+の場面。']) {
+  it('읽기 표시(＠よみ＠·+よみ+·【よみ】)가 섞인 해설은 싣지 않는다', () => {
+    for (const text of ['宮＠みや＠は、熱田神宮に由来する。', '+かたきうち+の場面。', '春草【しゆんそう】、観山【かんざん】らによって']) {
       const catalog = fixture();
       catalog.works[0].descriptions[0].text = text;
       expect(validateArtCatalog(catalog).join('\n'), text).toMatch(/읽기 표시/);
     }
+  });
+
+  it('일본어 해설에 영어 문장이 섞이면 싣지 않는다 — 영어 해설·짧은 로마자는 그대로', () => {
+    const catalog = fixture();
+    catalog.works[0].descriptions[0].text = '箱根芦ノ湖畔で描かれた作品。This painting was created in 1897 at Ashinoko Lake in Hakone.';
+    expect(validateArtCatalog(catalog).join('\n')).toMatch(/영어 문장/);
+    catalog.works[0].descriptions[0].text = 'ColBase（国立文化財機構）の解説。Kuroda Seikiの作品。';
+    expect(validateArtCatalog(catalog).join('\n')).not.toMatch(/영어 문장/);
+    const english = fixture();
+    english.works[1].descriptions[0].text = 'This painting was created in 1897 at a lake in Hakone.';
+    expect(validateArtCatalog(english).join('\n')).not.toMatch(/영어 문장/);
   });
 
   it('박물관 내부 메모가 섞인 해설은 싣지 않는다', () => {
@@ -335,6 +433,18 @@ describe('정보 카드·탐색', () => {
       expect(date.display, work.id).not.toMatch(/\bc\.|\//);
       for (const period of date.periods) expect(date.text.includes(period.native), `${work.id}: 시대 중복`).toBe(false);
     }
+  });
+
+  it('카드: 장르와 작가 칸 이름 · 건축은 「소재지」', () => {
+    const catalog = fixture();
+    expect(artInfoCard(catalog, 'work-a')).toMatchObject({ genre: 'print', artist: { role: '그림' }, located: [] });
+    catalog.works[0].genre = 'architecture';
+    catalog.works[0].places = [{ place: 'museum-a', role: 'located', url: 'https://online.bunka.go.jp/db/heritages/detail/1' }];
+    const card = artInfoCard(catalog, 'work-a');
+    expect(card.artist.role).toBe('설계');
+    expect(card.holdings).toEqual([]);
+    expect(card.located.map((place) => [place.id, place.label, place.url])).toEqual([['museum-a', '소재지', 'https://online.bunka.go.jp/db/heritages/detail/1']]);
+    expect(artInfoCard(ART_CATALOG, 'uchida-kuichi-koraibashi').artist.role).toBe('촬영');
   });
 
   it('카드: 허용 밖 이미지는 그리지 않는다', () => {

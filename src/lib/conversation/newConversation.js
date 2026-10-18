@@ -19,6 +19,17 @@ export function recommendedLevel(language, profileValue) {
   return levels[0] || '';
 }
 
+/**
+ * 새 대화의 처음 언어 — 프로필의 첫 학습 언어(대화가 받는 언어만), 없으면 중국어(오너 「권장대로」 2026-10-17 KST).
+ * 예전에는 프로필과 무관하게 중국어였다 — 일본어 학습자도 「중국어 · OT 입문」으로 열렸다(합성 로그인 실측).
+ * learning_language는 배열(현행)과 문자열(옛 행)을 둘 다 받는다.
+ */
+export function preferredConversationLanguage(profile) {
+  const raw = profile?.learning_language;
+  const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
+  return list.find((language) => CONVERSATION_LANGUAGES.includes(language)) || 'Chinese';
+}
+
 /** 주소 → 처음 선택(「주제·수준 바꾸기」가 지금 대화 값으로 연다). 모르는 값은 버린다. */
 export function newConversationDefaults(params, { profileLevelOf = () => null, fallbackLanguage = 'Chinese' } = {}) {
   const lang = params.get('lang');

@@ -125,10 +125,10 @@ function OwnerView({ root, user, teamKey, toast }) {
   return <ClassroomShell lang={team.lang} teamHome>
     <header className="class-team-heading"><div><span className="classroom-eyebrow">MANABI CLASS · {LANG_NAME_KO[team.lang]}</span><h1>{team.name}</h1></div><div className="class-team-actions"><button className="classroom-text-button" onClick={()=>copyToClipboard(shareLink,toast,'수업 링크를 복사했어요.')}>학생 초대</button><button ref={settingsButton} className="classroom-text-button" aria-expanded={settingsOpen} onClick={()=>setSettingsOpen(v=>!v)}>설정</button></div></header>
     {settingsOpen&&<ClassTeamSettings root={root} user={user} onClose={()=>{setSettingsOpen(false);settingsButton.current?.focus();}}/>}
-    {tab==='book'&&<section className="class-team-start" aria-label="수업 시작"><ClassCover team={team} small/><div><span className="classroom-eyebrow">{dayLabel(todayKey())} 수업</span><h2>{start?chapterLabel(start.title):team.bookKey?'교재를 확인하고 있어요':'교재 없이 함께 배우기'}</h2><p>{start?'교재를 펼친 채 뜻을 확인하고, 오늘 배운 표현을 남깁니다.':'표현을 입력해 설명하고 수업 기록에 남길 수 있어요.'}</p>{!chaptersError&&!chaptersLoading&&<Link className="classroom-button" href={startHref}>{team.chapterId&&start?'수업 이어하기':'수업 시작'} <span aria-hidden="true">→</span></Link>}{chaptersLoading&&<p role="status">교재를 불러오는 중…</p>}{chaptersError&&<p role="alert">교재를 불러오지 못했어요. <button className="classroom-text-button" onClick={()=>retryChapters()}>다시 시도</button></p>}</div></section>}
+    {tab==='book'&&<section className="class-team-start" aria-label="수업 시작"><ClassCover team={team} small/><div><span className="classroom-eyebrow">{dayLabel(todayKey())} 수업</span><h2>{start?chapterLabel(start.title):team.bookKey?'교재를 확인하고 있어요':'교재 없이 함께 배우기'}</h2><p>{start?'교재를 펼친 채 뜻을 확인하고, 오늘 배운 표현을 남깁니다.':'표현을 입력해 설명하고 수업 기록에 남길 수 있어요.'}</p>{!chaptersError&&!chaptersLoading&&<Link className="classroom-button" href={startHref}>{team.chapterId&&start?'수업 이어하기':'수업 시작'} <span aria-hidden="true">→</span></Link>}{chaptersLoading&&<p aria-busy="true">교재를 불러오는 중…</p>}{chaptersError&&<p role="alert">교재를 불러오지 못했어요. <button className="classroom-text-button" onClick={()=>retryChapters()}>다시 시도</button></p>}</div></section>}
     <div className="classroom-tabs" aria-label="수업 자료 종류">{team.course&&<button aria-pressed={tab==='course'} onClick={()=>setTab('course')}>코스</button>}<button aria-pressed={tab==='book'} onClick={()=>setTab('book')}>교재</button><button aria-pressed={tab==='notes'} onClick={()=>setTab('notes')}>수업 기록 {notes.length||''}</button></div>
     {tab==='course'&&team.course?<CourseTab teamKey={teamKey} user={user} root={root}/>:tab==='notes'?<>
-      {notesLoading?<p role="status">수업 노트를 불러오는 중…</p>:notesError?<div className="classroom-notice" role="alert">노트를 불러오지 못했어요. <button onClick={()=>retryNotes()}>다시 시도</button></div>:latest&&<Link href={openHref(latest.id)} className="classroom-featured-note"><span className="classroom-eyebrow">최근 수업 노트</span><h2>{dayLabel(latest.day)}에 함께 배운 것들.</h2><p>{latest.title}</p><b>노트 읽기 →</b></Link>}
+      {notesLoading?<p aria-busy="true">수업 노트를 불러오는 중…</p>:notesError?<div className="classroom-notice" role="alert">노트를 불러오지 못했어요. <button onClick={()=>retryNotes()}>다시 시도</button></div>:latest&&<Link href={openHref(latest.id)} className="classroom-featured-note"><span className="classroom-eyebrow">최근 수업 노트</span><h2>{dayLabel(latest.day)}에 함께 배운 것들.</h2><p>{latest.title}</p><b>노트 읽기 →</b></Link>}
       {!notesLoading&&!notesError&&<ClassStudyHistory notes={history} coverage={coverageQuery.data||[]} chapters={chapters} onOpen={n=>router.push(classEntryHref(openHref(n.id),teamKey,n))} onCopy={n=>copyNote(n.id)}/>}</>
       :team.bookKey?<><MaterialGroupCard open title={chapters[0]?.title?.split(' — ')[0]||'수업 교재'} meta={`공유된 ${chapters.length}과${team.bookTotal?` · 전체 ${team.bookTotal}과`:''}`} rows={chapters.map(c=>({key:c.id,onClick:()=>router.push(openHref(c.id)),lead:c.order,title:chapterLabel(c.title),right:String(c.id)===team.chapterId?<span>이어서 볼 과</span>:null}))}/>{chapters.length>0&&<ClassTextbookNotes user={user} teamKey={teamKey} chapters={chapters} initialId={start?.id}/>}</>:<div className="classroom-empty"><b>자유롭게 배우는 수업이에요.</b><p>교재를 연결하면 이곳에서 바로 펼쳐볼 수 있어요.</p><button className="classroom-button classroom-button--quiet" onClick={()=>setSettingsOpen(true)}>교재 연결</button></div>}
   </ClassroomShell>;
@@ -157,10 +157,15 @@ function StudentView({ teamKey, user, toast }) {
   const [studentTab,setStudentTab]=useState(()=>{const view=search.get('view');return search.get('day')||view==='history'?'notes':view==='book'||view==='course'?view:null;});
   const [bannerOff, setBannerOffState] = useState(true);
 
+  // 이 계정 · 손님 사본만(OFFLINE-ACCOUNT-SCOPE-001). 계정은 ref로 읽는다 — refreshCopies가 바뀌면 진입 효과(목록 받기)가
+  // 로그인 확인마다 다시 돌기 때문이다. 계정이 바뀌면 아래 효과가 사본 목록만 다시 읽는다.
+  const copyAccount = useRef(user?.id ?? null);
+  copyAccount.current = user?.id ?? null;
   const refreshCopies = useCallback(async () => {
-    const list = await listSharedCopies();
+    const list = await listSharedCopies({ account: copyAccount.current });
     setCopies(new Map(list.map((e) => [e.id, e])));
   }, []);
+  useEffect(() => { refreshCopies(); }, [user?.id, refreshCopies]);
 
   const relock = useCallback((message) => {
     clearUnlock(teamKey);
@@ -265,7 +270,7 @@ function StudentView({ teamKey, user, toast }) {
     if (offline) { toast(existing ? '사본이 낡았지만 오프라인이라 그대로 열어요.' : '온라인에서 받아야 해요.', existing ? 'info' : 'warning'); if (existing) router.push(destination(localViewerHref(id, teamKey))); return; }
     setRow(id, true);
     try {
-      await ensureSharedCopy(teamKey, unlock.token, entry, {refresh:true});
+      await ensureSharedCopy(teamKey, unlock.token, entry, {refresh:true, owner:user?.id ?? null});
       await refreshCopies();
       router.push(destination(localViewerHref(id, teamKey)));
     } catch (err) {
@@ -287,7 +292,7 @@ function StudentView({ teamKey, user, toast }) {
   async function copyNotePlain(n) {
     if (!unlock) return;
     try {
-      const copy = await ensureSharedCopy(teamKey, unlock.token, n);
+      const copy = await ensureSharedCopy(teamKey, unlock.token, n, {owner:user?.id ?? null});
       await refreshCopies();
       await copyToClipboard(classroomPlainText(copy.material), toast, '정리본을 복사했어요.');
     } catch (err) { toast('복사하지 못했어요 — ' + errMsg(err), 'error'); }

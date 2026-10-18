@@ -1,5 +1,6 @@
 // 단어장 데이터 입출력 — Supabase fetch · CSV/Anki 가져오기·내보내기
 import { supabase } from './supabase';
+import { readCompleteLegacyRows } from './legacyReviewSync';
 import { detectLangConfident, hasCjkText } from './constants';
 import { cacheVocabSnapshot, getCachedVocabSnapshot } from './offlineCache';
 import { calculateFSRS } from './fsrs';
@@ -79,6 +80,21 @@ export function gradeToInitialStats(grade, now = () => new Date().toISOString())
   return grade === 1 ? { ...stats, next_review_at: now() } : stats;
 }
 
+/**
+ * 카드 저장 행의 읽기(EN-SAVE-IPA-001). 표제어가 기본형(visits → visit)이면 사전 행 읽기를 쓴다 — 일본어 토큰 독음은
+ * 표면 읽기일 수 있어(食べ + たべ) 기본형 읽기로 쓰면 틀린다. 영어만 예외: 분석기가 토큰 furigana에 **기본형 IPA**를 둔다
+ * (rests → /rest/, 운영 표본 2026-10-17 KST) — 사전 행 읽기가 없을 때 비워 저장하면 복습 카드에서도 발음이 사라지므로 토큰 IPA로.
+ * 대체는 `/…/` IPA 모양일 때만 — 저장 행 읽기는 처음 넣을 때만 쓰이므로(ignoreDuplicates) 틀린 값은 고쳐지지 않는다.
+ * 표제어 = 표면이면 지금처럼 토큰 독음(furigana → reading). 다른 언어는 바뀌지 않는다.
+ */
+export function cardSaveReading({ language, headIsBase, headReading, token }) {
+  if (!headIsBase) return token?.furigana || token?.reading;
+  if (headReading) return headReading;
+  if (language !== 'English') return headReading;
+  const ipa = token?.furigana || token?.reading;
+  return typeof ipa === 'string' && /^\/.+\/$/.test(ipa.trim()) ? ipa : null; // /…/ 모양만 — 손 교정 한글 · 옛 분석본 값은 기본형 읽기로 굳히지 않는다
+}
+
 export function buildVocabRow({
   userId, surface, base, meaning, pos, reading, language,
   sourceSentence, sourceMaterialId, sourceRef, grade, now = () => new Date().toISOString(),
@@ -125,14 +141,20 @@ export async function fetchVocab(userId) {
   }
 }
 
+function byNextReview(a, b) {
+  const x = a.next_review_at ? Date.parse(a.next_review_at) : Infinity;
+  const y = b.next_review_at ? Date.parse(b.next_review_at) : Infinity;
+  return x === y ? String(a.id).localeCompare(String(b.id)) : x < y ? -1 : 1;
+}
+
 async function fetchVocabFromNetwork(userId) {
   // 단어 본체는 무조건 fetch — JOIN 실패 시에도 단어장이 비어 보이지 않게
-  const { data, error } = await supabase
+  // PostgREST 기본 상한(1000행)에 잘리지 않게 정본 완전 조회로 — page는 바뀌지 않는 id 순으로 넘기고
+  // (복습으로 next_review_at이 바뀌어도 page가 어긋나지 않게), 화면 순서(next_review_at 오름차순, 없으면 뒤)는 받은 뒤 맞춘다.
+  const data = (await readCompleteLegacyRows(() => supabase
     .from('vocabulary_with_exclusions')
-    .select('*')
-    .eq('user_id', userId)
-    .order('next_review_at', { ascending: true });
-  if (error) throw error;
+    .select('*', { count: 'exact' })
+    .eq('user_id', userId))).sort(byNextReview);
 
   // language가 비어 있는 옛 행 backfill.
   //

@@ -73,6 +73,12 @@ function runtimeErrors(page) {
   return errors;
 }
 
+// 관리자 화면은 프로필(관리자 여부)이 하이드레이션 뒤에 온다. 관리자 연필이 보인 뒤에 문항을 만진다 — 판정은 그대로,
+// 기다리는 시점만 명시한다(ADMIN-EDIT-STABLE-001: 연필이 붙어도 내용은 다시 마운트되지 않지만, 테스트가 관리자 상태를 전제한다).
+async function waitForAdminChrome(page) {
+  await page.locator('.admin-edit__pencil').first().waitFor({ state: 'attached', timeout: config.timeout });
+}
+
 async function assertVisible(locator, label) {
   await locator.waitFor({ state: 'visible', timeout: config.timeout });
   assert.equal(await locator.isVisible(), true, `${label} should be visible`);
@@ -412,7 +418,7 @@ test('review access: 비로그인 사용자는 복습방에서 오류 대신 로
     await assertVisible(page.getByRole('link', { name: '로그인하고 단어장 쓰기', exact: true }), 'signed-out review room login link');
     await page.goto('/vocab?lang=Chinese', { waitUntil: 'domcontentloaded' });
     await assertVisible(page.getByRole('link', { name: '로그인하고 이어가기 →', exact: true }), 'signed-out scoped review login link');
-    assert.equal(await page.getByText('단어장을 불러오지 못했어요').count(), 0);
+    assert.equal(await page.getByText('복습 화면을 불러오지 못했어요').count(), 0);
   });
 });
 
@@ -454,8 +460,10 @@ test('visibility: 일반 사용자에게 미완성 내비와 독해 트랙 진�
     // 기본 데스크톱 viewport 에서는 CSS 로 숨겨져 role locator 대상에서 빠지므로
     // DOM 계약 자체를 확인하는 안정적인 aria-label selector 를 사용한다.
     const mobileNav = page.locator('nav[aria-label="모바일 내비게이션"]');
-    assert.deepEqual(await desktopNav.locator('a').allTextContents(), ['배움', '서재', '산책']);
-    assert.deepEqual(await mobileNav.locator('a').allTextContents(), ['배움', '서재', '산책'], 'mobile tab bar shows icon + the same three labels');
+    // 「대화」는 오너 지시(NAV-CONVERSATION-001)로 배움·서재 사이에 열었다 — 로그인 학습자용 공개 경로.
+    assert.deepEqual(await desktopNav.locator('a').allTextContents(), ['배움', '대화', '서재', '산책']);
+    assert.deepEqual(await mobileNav.locator('a').allTextContents(), ['배움', '대화', '서재', '산책'], 'mobile tab bar shows icon + the same four labels');
+    assert.equal(await desktopNav.locator('a[href="/conversation/new"]').count(), 1);
     await assertVisible(page.getByRole('link', { name: '일본어 N5 책 둘러보기', exact: true }), 'published N5 book');
     assert.equal(await page.locator('.lessons-list__group-header').count(), 0, 'legacy level lists stay in the administrator archive');
     assert.equal(await desktopNav.locator('a[href="/learn"]').count(), 0);
@@ -493,6 +501,7 @@ test('chapter story: 관리자 보관함 N5 챕터에서 조립·빈칸 채점�
       'N5 story heading'
     );
     await assertVisible(page.getByRole('button', { name: /はじめまして/ }).first(), 'N5 story dialogue');
+    await waitForAdminChrome(page);
 
     const orderQuestion = page.getByRole('listitem').filter({
       has: page.getByText('문장 만들기', { exact: true }),
@@ -550,6 +559,7 @@ test('chapter quiz: N4 자동사·타동사 챕터를 열고 첫 문항을 채�
     );
     const patternCheck = page.locator('.fr-check');
     await assertVisible(patternCheck, 'intransitive/transitive pattern check');
+    await waitForAdminChrome(page);
     const firstQuestion = page.locator('.fr-check .fr-quiz__item').first();
     await firstQuestion.locator('.fr-quiz__opt').first().click();
     await assertVisible(firstQuestion.locator('.fr-quiz__answer'), 'graded pattern answer');
@@ -570,6 +580,7 @@ test('chapter story: N5 이자카야 문화 도어의 장면과 산출 문항을
       'izakaya story heading'
     );
     await assertVisible(page.locator('[role="button"][aria-expanded]').filter({ hasText: /なんめいさまですか/ }).first(), 'izakaya dialogue');
+    await waitForAdminChrome(page);
     const produceQuestion = page.getByRole('listitem').filter({
       has: page.getByText('문장 만들기 (모범답 확인)', { exact: true }),
     });
@@ -594,22 +605,27 @@ test('vocab performance: N3 초기 DOM과 savedSet 요청을 예산 안에 유�
     assert.equal(rows, 150, `N3 initial rows should be progressive, got ${rows}`);
     assert.ok(nodes < 10000, `N3 initial DOM ${nodes} nodes exceeded 10000`);
 
+    // a9dc9f51: 목록 전체 「저장됨」은 키 150개씩 표기 · 기본형으로 묻던 분할(N3 30요청) 대신 그 언어 단어장을
+    // id 순 1000행 page로 읽는다. 예산 = 키 목록을 주소에 싣는 요청 0 · 언어 단어장 읽기 1회 이상 · 주소 8000자 미만.
     const deadline = Date.now() + config.timeout;
+    const vocabReads = () => restRequests.filter(url => new URL(url).pathname.endsWith('/user_vocabulary'));
     let savedRequests = [];
     while (Date.now() < deadline) {
-      savedRequests = restRequests.filter(url => {
-        const parsed = new URL(url);
-        return parsed.pathname.endsWith('/user_vocabulary') && parsed.searchParams.has('word_text');
-      });
-      if (savedRequests.length > 1) break;
+      savedRequests = vocabReads().filter(url => new URL(url).searchParams.get('language') === 'eq.Japanese');
+      if (savedRequests.length > 0) break;
       await page.waitForTimeout(50);
     }
-    assert.ok(savedRequests.length > 1, 'savedSet lookup should be split into multiple requests');
+    assert.ok(savedRequests.length > 0, 'savedSet should read the Japanese vocabulary list');
+    assert.ok(savedRequests.every(url => !new URL(url).searchParams.has('word_text')),
+      'savedSet must not put level keys into the URL (old per-chunk fan-out)');
+    assert.ok(savedRequests.length <= 3, `savedSet issued ${savedRequests.length} requests (budget 3)`);
     assert.ok(
       Math.max(...savedRequests.map(url => url.length)) < 8000,
       `savedSet URL exceeded 8000 chars: ${Math.max(...savedRequests.map(url => url.length))}`
     );
 
+    // LEVEL-FLOW-001: 찾기 칸은 붙는 머리의 찾기 버튼을 눌러야 열린다.
+    await page.getByRole('button', { name: '찾기', exact: true }).click();
     await page.getByRole('searchbox', { name: 'N3 단어에서 찾기' }).fill('頬');
     await assertVisible(page.locator('.lv-entry').filter({ hasText: '頬' }), 'word beyond initial slice remains searchable');
   });

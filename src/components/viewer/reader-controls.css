@@ -14,12 +14,14 @@
   font-family:var(--font-noto-kr),sans-serif;
 }
 .viewer-layout[data-reader-theme="light"] { --reader-paper:#fff; --reader-surface:#f4f6f5; }
-.viewer-layout:lang(zh-CN), .reader-modal:lang(zh-CN) {font-family:var(--font-noto-sc), 'Noto Sans SC', var(--font-noto-kr), sans-serif;}
-.viewer-layout:lang(zh-TW), .reader-modal:lang(zh-TW) {font-family:var(--font-noto-tc), 'Noto Sans TC', var(--font-noto-kr), sans-serif;}
+.viewer-layout:lang(zh-CN), .reader-modal:lang(zh-CN) {font-family:var(--font-noto-sc, 'Noto Sans SC'), 'Noto Sans SC', var(--font-noto-kr), sans-serif;}
+.viewer-layout:lang(zh-TW), .reader-modal:lang(zh-TW) {font-family:var(--font-noto-tc, 'Noto Sans TC'), var(--font-noto-kr, 'Noto Sans KR'), sans-serif;}
 .viewer-layout :is(.reader-area,.reader-card-source,.reader-settings__preview):lang(ko),
 .viewer-layout :is(.reader-area,.reader-card-source,.reader-settings__preview) :lang(ko) {font-family:var(--reader-font), 'Noto Sans KR', sans-serif;}
 .viewer-layout[data-reader-theme="dark"],
-.manabi-app:has(.viewer-layout[data-reader-theme="dark"]) > .gnb {
+.manabi-app:has(.viewer-layout[data-reader-theme="dark"]) > .gnb,
+body:has(.viewer-layout[data-reader-theme="dark"]),
+.manabi-app:has(.viewer-layout[data-reader-theme="dark"]) {
   --reader-paper:#202625; --reader-ink:#f0eee7; --reader-muted:#b7bfba; --reader-line:#4c5752; --reader-surface:#2b3430;
   --reader-selected:#394b41; --reader-accent:var(--book-dark-text); --reader-sound:var(--book-amber-dark-text);
   --tone-1:#a8c9ff; --tone-2:#99d7b2; --tone-3:#ebce84; --tone-4:#ffabb8; --tone-0:#c4cbc6;
@@ -36,6 +38,10 @@
   --gnb-bg:var(--reader-paper); color:var(--reader-ink); color-scheme:dark;
 }
 .manabi-app:has(.viewer-layout[data-reader-theme="dark"]) > .gnb .gnb__logo {color:var(--reader-ink);-webkit-text-fill-color:currentColor;}
+/* 어두운 읽기 테마의 바깥 여백(VIEWER-AUDIT 5, 오너 「권장대로」 2026-10-17 KST): 본문 상자만 칠해져 1440에서 좌우 20px 띠와
+   스크롤 끝 · 바운스 자리가 밝은 셸 종이로 남았다. 같은 팔레트(위 규칙)의 --reader-paper로 앱 셸과 body를 칠한다 — 종이 · 밝게는 그대로. */
+body:has(.viewer-layout[data-reader-theme="dark"]),
+.manabi-app:has(.viewer-layout[data-reader-theme="dark"]) {background:var(--reader-paper);color-scheme:dark;}
 .viewer-layout .viewer-center {width:100%;max-width:760px;flex:none;min-width:0;overflow:visible;margin:0 auto;padding:0 0 110px;}
 .viewer-layout .reader-area {background:var(--reader-paper);color:var(--reader-ink);border:0;border-radius:0;box-shadow:none;padding:20px 16px;margin-inline:0;}
 .viewer-layout .analyzing-banner {flex-wrap:wrap;gap:12px;color:var(--reader-ink);}
@@ -65,6 +71,10 @@
    Its own em must be the surface's: headings enlarge only .surface, so the frame follows them. */
 .viewer-layout .word-token[data-selected="true"] {position:relative;}
 .viewer-layout .word-token[data-selected="true"] .surface::before {animation:none;}
+/* 앱 손맛 ①: 방금 담은 토큰은 대개 카드가 열린(선택된) 그 토큰이다 — 위 animation:none(선택 중 복습 펄스 끄기)이 특이도로
+   담기 긋기(index.css .word-token--just-saved)까지 끄므로 긋기만 되살린다. 기점 · 좌표는 index.css 규칙 그대로. */
+.viewer-layout .word-token--just-saved[data-selected="true"] .surface::before {animation:hlStroke .22s var(--ease-settle) both;}
+@media (prefers-reduced-motion:reduce) { .viewer-layout .word-token--just-saved[data-selected="true"] .surface::before {animation:none;transform:none;} }
 .viewer-layout .word-token[data-selected="true"]::before {content:"";position:absolute;z-index:1;left:0;right:0;top:calc(var(--hl-band-top) - var(--hl-frame-top));height:calc(var(--hl-frame-top) + var(--hl-band-h) + var(--hl-frame-bottom));border:1.5px solid var(--word-selection-line,color-mix(in srgb,var(--reader-ink) 55%,transparent));border-radius:6px;pointer-events:none;}
 .viewer-layout .word-token--pattern:is(.word-token--saved,.word-token--due) {--hl-frame-bottom:calc(var(--hl-mark-gap) * 2 + 5.5px);}
 .viewer-layout .viewer-h1 .word-token[data-selected="true"]::before {font-size:1.5em;}
@@ -126,9 +136,24 @@
 .viewer-layout[data-pron-spacing="natural"] {--zh-cell:1em;}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) {--zh-pitch:calc(var(--zh-cell) + var(--char-gap,0px));}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .word-token {margin-left:calc(var(--char-gap,0px) / 2 - (var(--zh-pull,0) * var(--zh-pitch)));margin-right:calc(var(--char-gap,0px) / 2 + (var(--zh-hold,0) * var(--zh-pitch)));}
+/* Japanese 禁則 (JA-KINSOKU, mockup viewer-lang-4 §4 · JLREQ §3.1.7): the same --zh-hold/--zh-pull marks as Chinese, without the
+   grid. Words keep their flex column gap (--char-gap); a closing mark is one full-width em, so one mark = 1em + one gap.
+   A word before 。、」 reserves that on its right and the mark gives it back on its left — boxes do not move, but the word
+   wraps together with its marks. Multi-character marks over-reserve by a gap at most (wraps a cell early, never late). */
+.viewer-layout[data-language="Japanese"] :is(.reader-area,.reader-settings__preview) {--ja-pitch:calc(1em + var(--char-gap,0px));}
+.viewer-layout[data-language="Japanese"] :is(.reader-area,.reader-settings__preview) .word-token {margin-left:calc(0px - (var(--zh-pull,0) * var(--ja-pitch)));margin-right:calc(var(--zh-hold,0) * var(--ja-pitch));}
+/* Headings enlarge only .surface (index.css .viewer-h1/h2/h3 .surface 1.5/1.25/1.1em), so a heading's closing mark is wider than
+   the token em. Reserve at the heading size — same factors as the selection frame above (JA-KINSOKU-HEAD). Declared on the token,
+   so the em resolves at the token (= body em) and the factor scales it; both sides of a mark sit in the same heading and still cancel. */
+.viewer-layout[data-language="Japanese"] :is(.reader-area,.reader-settings__preview) .viewer-h1 .word-token {--ja-pitch:calc(1.5em + var(--char-gap,0px));}
+.viewer-layout[data-language="Japanese"] :is(.reader-area,.reader-settings__preview) .viewer-h2 .word-token {--ja-pitch:calc(1.25em + var(--char-gap,0px));}
+.viewer-layout[data-language="Japanese"] :is(.reader-area,.reader-settings__preview) .viewer-h3 .word-token {--ja-pitch:calc(1.1em + var(--char-gap,0px));}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .zh-cell {display:inline-flex;justify-content:center;width:var(--zh-cell);}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .zh-run {display:inline-flex;justify-content:center;white-space:nowrap;width:calc((var(--zh-cells,1) * var(--zh-cell)) + ((var(--zh-cells,1) - 1) * var(--char-gap,0px)));}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) :is(ruby,.zh-cell,.zh-run) + :is(ruby,.zh-cell,.zh-run) {margin-left:var(--char-gap,0px);}
+/* 병음이 글자 수와 안 맞는 옛 분석(요미 경로 ruby[data-yomi])은 한 ruby에 격자 칸이 줄줄이 든다 — inline-flex 한 줄이면
+   긴 토큰이 본문 밖으로 수천 px 나간다(viewer-reading-controls e2e 390px 실측 3342px). 칸 단위로 줄을 넘긴다. */
+.viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .word-token ruby[data-yomi] {flex-wrap:wrap;max-width:100%;}
 /* Touch layouts put the sentence bar inline before the line's first word (index.css: 24px hit width, margin -9px/+3px,
    so it takes 18px of the line — #1323). In Chinese it takes exactly one cell instead: width = pitch + 9 - 3 keeps the
    same margins (bar stays at left 9px, hit area ≥ 24px), so a paragraph's first line is indented by one column and
@@ -175,7 +200,7 @@
 .reader-sentence__icon {flex-shrink:0;min-width:44px;min-height:44px;border:0;background:none;color:inherit;cursor:pointer;}
 .reader-sentence__icon:first-of-type {color:var(--reader-accent);}
 .reader-sentence__pending {margin:0;font-size:.9rem;line-height:1.75;color:var(--reader-muted);}
-.reader-sentence__login {display:inline-flex;align-items:center;min-height:44px;font-size:.9rem;line-height:1.5;color:var(--reader-accent);text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere;}
+.reader-sentence__login,.reader-card-learn__login,.reading-test__login {display:inline-flex;align-items:center;min-height:44px;font-size:.9rem;line-height:1.5;color:var(--reader-accent);text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere;}
 .reader-sentence__actions {display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
 .reader-sentence__actions:empty {display:none;}
 .reader-sentence__actions .grammar-detail__toggle {width:auto;margin-top:0;flex:0 1 auto;}
@@ -214,6 +239,10 @@
 .reader-card-learn__ask {flex:0 1 auto;}
 /* 하단 저장 줄(§2.1): ✓ 단어장에 있음 · 다음 복습 날짜 [이 문맥 추가] ☐ 아는 단어 — 넘치면 두 줄. */
 .save-grade__saved {display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:0;}
+/* 등급 줄 → 「✓ 담은 표현에 있음」 줄로 바뀌는 순간만(앱 손맛 ①) 새 줄이 4px 내려앉는다. 이미 담긴 단어를 열 때는
+   돌지 않는다(--fresh = 방금 담은 토큰, ViewerPage justSaved). 0.16s · 감속 곡선 · transform/opacity만. */
+.save-grade__saved--fresh {animation:settleIn .16s var(--ease-settle) both;}
+@media (prefers-reduced-motion:reduce) { .save-grade__saved--fresh {animation:none;animation-delay:0s;} }
 .save-grade__status {display:inline-flex;align-items:center;flex-wrap:wrap;gap:0 6px;margin-right:auto;font-size:.8125rem;color:var(--reader-muted);}
 .viewer-layout .reader-card-actions .save-grade__in:disabled {padding:0;border:0;background:transparent;color:var(--reader-ink);font-weight:600;opacity:1;min-height:44px;}
 .save-grade__next::before {content:'· ';}
@@ -405,7 +434,7 @@
 .reader-card-glyph__label {flex:none;width:1em;font-size:.8125rem;line-height:inherit;color:var(--reader-muted);text-align:center;}
 .reader-card-glyph[data-layout="table"] .reader-card-glyph__label {width:1.75rem;font-size:.8125rem;text-align:start;}
 .reader-card-glyph__form {display:inline-flex;flex:none;}
-.viewer-layout .reader-card-glyph [lang="zh-Hant-TW"] {font-family:var(--font-noto-tc),'Noto Sans TC',var(--font-noto-kr),sans-serif;}
+.viewer-layout .reader-card-glyph [lang="zh-Hant-TW"] {font-family:var(--font-noto-tc, 'Noto Sans TC'),var(--font-noto-kr, 'Noto Sans KR'),sans-serif;}
 .viewer-layout .reader-card-glyph [lang="ja"] {font-family:var(--font-noto-jp),'Noto Sans JP',var(--font-noto-kr),sans-serif;}
 .reader-card-glyph__ch {display:inline-block;width:1em;text-align:center;}
 .reader-card-glyph__ch.is-diff {color:var(--reader-accent);}
@@ -485,7 +514,11 @@
 .viewer-inspector__actions>button:disabled {opacity:.45;cursor:default;}
 @container reader (min-width:1120px) {
   .manabi-app .viewer-layout[data-inspector-open="true"]>.viewer-center {flex:1;min-width:0;}
-  .manabi-app .viewer-layout .viewer-inspector {top:80px;height:auto;max-height:calc(100dvh - 104px);box-shadow:none;}
+  /* 높이는 위 옆 패널 규칙(height:calc(100dvh - 112px))을 그대로 쓴다 — 내용만큼 자라던 height:auto를 뺐다(CARD-SENSES-SHIFT-001,
+     오너 「권장대로」 B안 2026-10-17 KST). 우리 사전 예문이 늦게 오면 패널이 자라 채점 줄이 106.8px 밀렸다. 패널 높이가 고정이면
+     390 시트와 같은 칸 배치(.viewer-inspector .word-detail-card 세로 flex · .reader-card-body 스크롤 · .reader-card-actions flex:none)로
+     채점 줄이 패널 아래에 머물고, 늦게 온 내용은 본문 스크롤 안에서만 자란다. */
+  .manabi-app .viewer-layout .viewer-inspector {top:80px;max-height:calc(100dvh - 104px);box-shadow:none;}
 }
 @container reader (max-width:600px) {
   .manabi-app .viewer-layout .viewer-header {padding-block:24px 18px;}
@@ -650,6 +683,21 @@
   .manabi-app .viewer-layout .reader-card-actions .save-grade__sub{display:none}
 }
 
+/* 좁은 폭 듣기 막대 한 줄(뷰어 감사 후속, 2026-10-17 KST) — 390에서 듣기를 시작하면 진행 수 · 속도 칩 · 지금 문장 줄 때문에
+   머리줄이 58→222px로 커져 쪽 이동 막대가 화면 밖(하단 y 1214 / 844)으로 밀렸다(운영 실측). 재생 컨트롤은 아이콘만 남기고
+   (접근 이름은 버튼 aria-label 그대로), 지금 문장 줄은 쪽 넘김 따라가기 자료(본문 강조가 대신함)에서 숨긴다. 1440 · 스크롤 보기는 그대로.
+   멈춘 동안에도 숨긴다 — 다시 보이면 머리줄이 59→160px로 커져 쪽이 다시 흐르고(19→14쪽) [지금 문장으로] 칩과 쪽 막대가
+   화면 밖(y 1104 / 844)으로 밀렸다(2026-10-17 KST 390 실측). 멈춘 동안의 길잡이는 칩이 맡는다. */
+@container reader (max-width:460px){
+  .manabi-app .viewer-layout .viewer-topbar .listen-controls__panel{flex-wrap:nowrap;gap:0;padding:0 2px}
+  .manabi-app .viewer-layout .viewer-topbar .listen-controls__progress,
+  .manabi-app .viewer-layout .viewer-topbar .listen-controls__rate{display:none}
+}
+/* 따라가기 화면의 지금 문장 줄은 폭과 상관없이 숨긴다(B1, 2026-10-17 KST) — 줄 높이가 문장 길이를 따라 머리줄을 71↔222px로
+   바꿔 문장마다 쪽이 다시 흘렀다(768 · 1024 · 1440 실측: 7↔10쪽, 긴 문장 첫 낱말 4~6/26회 화면 밖). 지금 문장은 본문 밑줄 ·
+   [지금 문장으로] 칩 · 상태 알림이 알린다. 따라갈 수 없는 화면(스크롤 보기 · 분석 어긋남)은 --follow가 없어 줄이 그대로 보인다. */
+.manabi-app .viewer-layout .viewer-topbar .listen-controls--follow .listen-controls__current{display:none}
+
 /* Word-body hierarchy only. Existing panel scrolling and grading geometry stay intact. */
 .manabi-app .viewer-layout .reader-card-body .word-detail-card__meta{font-size:.75rem;line-height:1.5;gap:8px;letter-spacing:0;margin-bottom:8px}
 .manabi-app .viewer-layout .reader-card-body .reader-card-headword{align-items:flex-start;gap:12px;margin-bottom:8px}
@@ -746,7 +794,6 @@
 .hanja-pop[data-compact] {--hanja-pop-h:152px;padding:6px 8px 6px 12px;}
 .hanja-pop__arrow {position:absolute;top:-7px;left:calc(var(--hanja-pop-arrow,24px) - 6px);width:12px;height:12px;background:var(--reader-paper);border-left:1px solid var(--hanja-pop-line);border-top:1px solid var(--hanja-pop-line);transform:rotate(45deg);}
 .hanja-pop[data-shifted] .hanja-pop__arrow {display:none;}
-.hanja-pop__sr {position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;}
 .hanja-pop :is(.hanja-pop__close,.hanja-pop__back) {display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;min-width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:10px;background:transparent;color:var(--reader-muted);cursor:pointer;}
 .hanja-pop .hanja-pop__close {position:absolute;top:2px;right:2px;}
 .hanja-pop .hanja-pop__back {margin-left:-8px;}
@@ -870,7 +917,6 @@
 .viewer-boundary-confirm__scope label {display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:.875rem;color:var(--reader-ink);}
 .viewer-boundary-confirm__scope input {width:18px;height:18px;margin:0;accent-color:var(--reader-accent);}
 .viewer-boundary-confirm__note {margin:0;font-size:.8125rem;line-height:1.5;color:var(--reader-muted);}
-.viewer-boundary-confirm .sr-only,.viewer-boundary-split .sr-only {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;}
 .reader-card-boundary,.reader-card-boundary-undo {display:flex;flex-wrap:wrap;align-items:center;gap:0 4px;margin:-6px 0 8px;font-size:.8125rem;color:var(--reader-muted);}
 .reader-card-boundary button,.reader-card-boundary-undo button {min-height:44px;}
 .viewer-boundary-split {display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin:0 0 10px;max-width:100%;}

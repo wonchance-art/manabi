@@ -153,6 +153,10 @@
 .review-room-session:has(.review-grade-bar) { padding-bottom:calc(150px + env(safe-area-inset-bottom,0px)); }
 .review-grade-bar.is-locked .review-score-btn { opacity:.55; }
 .review-grade-guide { font-size:12px; color:var(--muted); text-align:center; margin:0 0 8px; line-height:1.6; overflow-wrap:anywhere; }
+/* 앞면(잠김)에서도 안내 줄 · 간격 글 자리를 둔다 — 정답 확인 때 막대가 자라지 않게(VOCAB-FLOW-001 C). 숨김(자리만). */
+.review-grade-guide--reserve { visibility:hidden; }
+/* 끝 화면 제목은 마지막 채점 뒤 초점을 받는 읽는 자리(tabIndex −1) — 고리를 그리지 않는다(#main-content h1 선례 · /study 「세션 완료」). */
+.review-done__title[tabindex="-1"]:focus { outline:none; }
 .review-grade-bar--practice .review-score-btn { min-height:52px; }
 .practice-key { margin-left:6px; font-size:11px; color:var(--muted); }
 .review-card--intro .review-card__body { display:flex; flex-direction:column; align-items:stretch; }
@@ -198,9 +202,16 @@ body:has(.review-grade-bar) .review-known-undo { bottom:calc(140px + env(safe-ar
 .review-done__calendar-head span:first-child { font-weight:700; color:var(--ink); }
 .review-done__bars { display:flex; gap:4px; align-items:flex-end; height:50px; }
 .review-done__bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; min-width:0; }
-.review-done__bar { width:100%; background:var(--rule); border-radius:2px; transition:height .4s; }
+/* 복습 끝 마무리(앱 손맛 ②) — 막대가 바닥에서 솟는다. 예전 transition:height는 막대가 처음부터 최종 높이로
+   그려져 한 번도 돌지 않던 죽은 효과라 지웠다. 높이(레이아웃)는 그대로 두고 scaleY만 움직이며, 날짜 순서대로
+   10ms씩 뒤따른다(--i = 막대 순번, VocabReview 인라인). 7개 = 240 + 60ms, 0.3초 상한 안. */
+.review-done__bar { width:100%; background:var(--rule); border-radius:2px; transform-origin:bottom; animation:barGrow .24s var(--ease-settle) both; animation-delay:calc(var(--i, 0) * 10ms); }
+@keyframes barGrow { from { transform:scaleY(0); } to { transform:scaleY(1); } }
 .review-done__bar.has-count { background:var(--ja); }
 .review-done__bar-day,.review-done__bar-count { font-size:.65rem; color:var(--muted); }
 .review-done__bar-count { font-weight:700; color:var(--ja); }
 .review-done__actions .btn { min-height:44px; }
-@media (prefers-reduced-motion: reduce) { .review-done__bar { transition:none; } }
+/* 모션 축소: 막대는 처음부터 최종 높이. 전역 규칙이 남기는 delay도 직접 0으로. 제목은 index.css(.review-done__title) 몫. */
+@media (prefers-reduced-motion: reduce) {
+  .review-done__bar { animation:none; animation-delay:0s; transform:none; }
+}

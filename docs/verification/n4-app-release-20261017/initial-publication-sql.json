@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "checks": [
+    "exact SQL verifies UTF-8 canonical hashes, registers N4 once and preserves N5",
+    "changed N5 release aborts without N4 registration",
+    "removed existing administrator role aborts without impersonation",
+    "any prior N4 draft blocks first publication",
+    "changed existing N5 artifact hash blocks first publication"
+  ],
+  "scope": "Disposable PGlite using exact prepared SQL and synthetic administrator. No production writes or actual account verification."
+}

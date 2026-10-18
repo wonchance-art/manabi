@@ -11,6 +11,7 @@
  */
 import { supabase } from './supabase';
 import { enqueueGrammarReview } from './grammarSrs';
+import { claimGuestDevice } from './refReadStore';
 
 /**
  * 통과 글 id 를 담는 localStorage Set 키의 **베이스**(챕터용 Set 과 절대 혼합 금지).
@@ -404,7 +405,9 @@ export async function pullReadingProgress(userId) {
   // uk(목적지)에 병합분을 즉시 영속해 로컬은 서버 실패에도 보존한다. 다만 **게스트 원본 키는
   // 여기서 비우지 않는다**(P2-5·P3-8): 서버 bulk push 성공 + uk 쓰기 성공을 확인한 뒤에만 비운다.
   // push 가 실패했는데 게스트를 비우면 재시도 근거가 사라진다.
-  const guestSet = readSetFromKey(guestReadingKey());
+  // 손님 몫은 이 기기의 첫 로그인 계정만 받는다(LOCAL-PROGRESS-ACCOUNT-001 · refReadStore.claimGuestDevice — 레퍼런스 진도와 같은 판정).
+  // 다른 계정이 이미 받는 기기면 손님 진행분은 손님 화면에만 남고 이 계정 서버 기록으로 올리지 않는다.
+  const guestSet = claimGuestDevice(userId) ? readSetFromKey(guestReadingKey()) : new Set();
   const hadGuest = guestSet.size > 0;
   let ukWritten = true; // uk(목적지) 쓰기 성공 여부 — 실패 시 게스트 원본을 지우지 않는다(P3-8)
   if (hadGuest) {

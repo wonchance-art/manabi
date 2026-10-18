@@ -8,13 +8,15 @@ import './paged-reader.css';
 
 const label = (tr, pager) => tr ? tr('{page} / {count}쪽 · {percent}%', { page: pager.page + 1, count: pager.count, percent: pager.progress }) : pageLabel(pager.page, pager.count);
 
-export default function PageBar({ pager, barRef, tr, className = '' }) {
+// extra — 쪽 표시 옆에 잠깐 둘 조작(듣기 따라가기 [지금 문장으로] 등). 막대 높이(52px) 안이라 본문이 다시 흐르지 않는다.
+export default function PageBar({ pager, barRef, tr, className = '', extra = null }) {
   const name = text => (tr ? tr(text) : text);
   return (
     <nav ref={barRef} className={`reader-pagebar ${className}`} aria-label={name('쪽 이동')} data-ready={pager.ready || undefined}>
       <button type="button" className="reader-pagebar__btn" aria-label={name('이전 쪽')} title={name('이전 쪽')} aria-keyshortcuts="ArrowLeft PageUp"
         disabled={!pager.ready || pager.page <= 0} onClick={() => pager.prev()} data-icon-action><ActionIcon name="previous" /></button>
       <span className="reader-pagebar__pos" role="status" aria-live="polite">{pager.ready ? label(tr, pager) : ''}</span>
+      {extra}
       <button type="button" className="reader-pagebar__btn" aria-label={name('다음 쪽')} title={name('다음 쪽')} aria-keyshortcuts="ArrowRight PageDown"
         disabled={!pager.ready || pager.page >= pager.count - 1} onClick={() => pager.next()} data-icon-action><ActionIcon name="next" /></button>
     </nav>

@@ -1,0 +1,469 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "486b3148b96ebf9245817e3825d1f97f9ee774f3a15c9139b0d8ea9a857d933d",
+      "edits": [
+        {
+          "line": 4,
+          "start": 145,
+          "end": 148,
+          "text": "百姓家",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 1,
+          "end": 3,
+          "text": "兵十",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 17,
+          "end": 19,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 16,
+          "start": 8,
+          "end": 10,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 16,
+          "start": 145,
+          "end": 147,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 18,
+          "start": 0,
+          "end": 2,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 20,
+          "start": 0,
+          "end": 2,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 22,
+          "start": 124,
+          "end": 126,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 26,
+          "start": 27,
+          "end": 29,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "91cd18764402affab0f2341d1ee288eab1f1dcd3fff4e20de6ce6289c50cc805",
+      "edits": [
+        {
+          "line": 0,
+          "start": 12,
+          "end": 14,
+          "text": "弥助",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 49,
+          "end": 51,
+          "text": "弥助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 69,
+          "end": 72,
+          "text": "鍛冶屋",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 73,
+          "end": 76,
+          "text": "新兵衛",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 86,
+          "end": 89,
+          "text": "新兵衛",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 36,
+          "end": 38,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 1,
+          "end": 3,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 56,
+          "end": 59,
+          "text": "屋根瓦",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 39,
+          "end": 41,
+          "text": "話声",
+          "reason": "ruby"
+        },
+        {
+          "line": 16,
+          "start": 14,
+          "end": 16,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 18,
+          "start": 10,
+          "end": 12,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 24,
+          "start": 1,
+          "end": 3,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 24,
+          "start": 39,
+          "end": 41,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 24,
+          "start": 89,
+          "end": 91,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "textSha256": "c5b2c9e90f9a74e39d1e5698f0778b70aaed7cbfc66bf3f95214766b45b54759",
+      "edits": [
+        {
+          "line": 0,
+          "start": 0,
+          "end": 2,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 0,
+          "end": 2,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 12,
+          "end": 14,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 30,
+          "end": 32,
+          "text": "弥助",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 62,
+          "end": 64,
+          "text": "弥助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 14,
+          "start": 131,
+          "end": 133,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 14,
+          "start": 187,
+          "end": 189,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 18,
+          "start": 31,
+          "end": 33,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 18,
+          "start": 55,
+          "end": 57,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 18,
+          "start": 59,
+          "end": 61,
+          "text": "午飯",
+          "reason": "ruby"
+        },
+        {
+          "line": 18,
+          "start": 68,
+          "end": 70,
+          "text": "茶椀",
+          "reason": "ruby"
+        },
+        {
+          "line": 18,
+          "start": 99,
+          "end": 101,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 18,
+          "start": 140,
+          "end": 142,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 22,
+          "start": 24,
+          "end": 26,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 26,
+          "start": 25,
+          "end": 27,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "textSha256": "77ecc77e2af02c957a7d7cd264d006dec8c4531009a9d53d9c313ffd6703bdfa",
+      "edits": [
+        {
+          "line": 0,
+          "start": 67,
+          "end": 69,
+          "text": "話声",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 25,
+          "end": 27,
+          "text": "話声",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 44,
+          "end": 46,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 47,
+          "end": 49,
+          "text": "加助",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 8,
+          "end": 10,
+          "text": "加助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 13,
+          "end": 15,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 28,
+          "start": 0,
+          "end": 2,
+          "text": "加助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 28,
+          "start": 40,
+          "end": 42,
+          "text": "加助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 28,
+          "start": 71,
+          "end": 74,
+          "text": "吉兵衛",
+          "reason": "ruby"
+        },
+        {
+          "line": 28,
+          "start": 142,
+          "end": 145,
+          "text": "坊主頭",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "textSha256": "10e45ce6f7ff4f5dc7d56148746b58ac4d8880b5331703d2bc37915f8d1b9e43",
+      "edits": [
+        {
+          "line": 0,
+          "start": 31,
+          "end": 33,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 34,
+          "end": 36,
+          "text": "加助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 79,
+          "end": 81,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 11,
+          "end": 13,
+          "text": "加助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 7,
+          "end": 9,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 17,
+          "end": 19,
+          "text": "加助",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "textSha256": "36bc23076c33c0f85147d1a7d9cee1fd08a14ef3edff2762a982e10cb4fcbe4c",
+      "edits": [
+        {
+          "line": 0,
+          "start": 17,
+          "end": 19,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 29,
+          "end": 31,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 4,
+          "end": 6,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 0,
+          "end": 2,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 56,
+          "end": 58,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 5,
+          "end": 7,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 16,
+          "start": 0,
+          "end": 2,
+          "text": "兵十",
+          "reason": "ruby-repeat"
+        }
+      ]
+    }
+  ]
+}

@@ -36,6 +36,24 @@ export function safeReaderReturn(value) {
   return safeLibraryReturn(value);
 }
 
+// 「함께 읽는 글」 목록 키 — /discover?view=reading이 읽는 것만, 이 순서로 옮긴다. 개인 서재 키(tab · tools · scope ·
+// collection · outline · kind · state)는 옮기지 않는다.
+const PUBLIC_READING_KEYS = Object.freeze(['q', 'lang', 'level', 'sort', 'unread', 'pinned', 'shown', 'restoreY']);
+
+/**
+ * 뷰어 「←」가 실제로 갈 주소(READER-RETURN-001). 저장된 returnTo가 공개 목록(/materials?tab=public…)이면
+ * 옛 주소 리다이렉트(/materials → /discover)를 거치지 않고 곧장 /discover?view=reading으로 — 거치면 화면이 세 번 바뀌고
+ * 위치(restoreY)를 잃었다. 그 밖(서재 · 수업 · 거절된 입력)은 safeReaderReturn 결과 그대로다.
+ */
+export function readerReturnHref(value) {
+  const back = safeReaderReturn(value);
+  const url = new URL(back, 'https://manabi.invalid');
+  if (url.pathname !== '/materials' || url.searchParams.get('tab') !== 'public') return back;
+  const out = new URLSearchParams([['view', 'reading']]);
+  for (const key of PUBLIC_READING_KEYS) { const v = url.searchParams.get(key); if (v !== null) out.set(key, v); }
+  return `/discover?${out}`;
+}
+
 export function readerReturnLabel(value) {
   const url = new URL(safeReaderReturn(value), 'https://manabi.invalid');
   if (url.pathname.startsWith('/class/')) {
@@ -43,6 +61,17 @@ export function readerReturnLabel(value) {
     return url.searchParams.get('view') === 'history' ? '← 수업 기록' : '← 수업으로';
   }
   return url.searchParams.get('tab') === 'public' ? '← 발견' : '← 내 서재';
+}
+
+// 손님은 서재가 없다 — 맥락 없이 연 뷰어의 「←」는 산책(/discover)으로(뷰어 기능 감사 2026-10-17 KST). 뷰어의 아이콘 버튼이라
+// 그림은 같고 접근 이름 · 툴팁 · 이동처만 바뀐다. 쓸 수 있는 returnTo가 있으면(그대로 받은 /materials 포함) 그쪽이 우선이다.
+// 맥락 없음 = returnTo가 없거나 거절돼 기본 /materials로 떨어진 경우(LibraryReturnLink onlyWithContext와 같은 판정).
+export const GUEST_READER_RETURN = Object.freeze({ href: '/discover', label: '← 산책' });
+export function readerReturnTarget(value, { guest = false } = {}) {
+  const back = safeReaderReturn(value);
+  const noContext = !value || (back === '/materials' && value !== '/materials');
+  if (guest && noContext) return { ...GUEST_READER_RETURN, guestDefault: true };
+  return { href: readerReturnHref(value), label: readerReturnLabel(value), guestDefault: false };
 }
 
 export function libraryReaderHref(href, returnTo, scrollY = null) {

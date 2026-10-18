@@ -8,10 +8,10 @@
  * 규칙
  *   一  뒤 4성·경성 → yí · 뒤 1·2·3성 → yì · 끝자리 → yī
  *       예외(yī 유지): 一가 **끝음절인 어휘**(第一·周一·之一·万一·统一·唯一·初一·同一·如一·十一),
- *       숫자 나열(一九九八), 관용구 数一数二, 첩어 一一(yīyī). 이 목록은 콘텐츠 표제어 전수에서 뽑았다.
- *   不  뒤 4성 → bú · 그 밖 → bù · A不A(앞뒤 음절이 성조까지 같음)와 가능보어는 경성 유지
+ *       숫자 나열(一九九八), 관용구 数一数二 · 独一无二 · 举一反三, 첩어 一一(yīyī), 一线(=第一线). 이 목록은 콘텐츠 표제어 전수에서 뽑았다.
+ *   不  뒤 4성 → bú · 그 밖 → bù · A不A(앞뒤 음절이 성조까지 같음)와 가능보어는 경성 유지 · 可不是는 kěbúshi(경성 是의 본래 4성)
  *   个  수사·지시사 뒤(양사 자리) → 경성 ge · 그 밖 → gè
- *       예외(gè 유지): 个子·个体·个性·个别·整个·各个·个人(양사 자리가 아닐 때)
+ *       예외(gè 유지): 个子·个体·个性·个别·个案·整个·各个·个人(양사 자리가 아닐 때)
  *
  * 손대지 않는 것: 이미 경성으로 적힌 一·不(V一V·가능보어), 음절 정렬이 안 되는 줄(儿화 등).
  */
@@ -41,11 +41,11 @@ export function syllabify(w) {
 const FORM = { yi: { 1:'yī', 2:'yí', 4:'yì' }, bu: { 0:'bu', 2:'bú', 4:'bù' }, ge: { 0:'ge', 4:'gè' } };
 const DIGIT = new Set([...'零一二三四五六七八九']);
 const CLS_PREV = new Set([...'一二三四五六七八九十两几半百千万零每这那哪某多']);
-const GE_WORD_NEXT = new Set(['子', '体', '性', '别']);
+const GE_WORD_NEXT = new Set(['子', '体', '性', '别', '案']); // 个案 gè'àn — HSK 2026 7–9급
 const GE_WORD_PREV = new Set(['整', '各']);
 const YI_KEEP_PREV = new Set(['第', '周', '之', '万', '统', '十', '唯', '单', '专', '归', '初', '同', '如', '一']); // 一一 yīyī(현대한어사전) — HSK 2026 6급
 const YI_SANDHI_CTX = new Set(['周一片', '之一切']);   // 앞 글자가 다른 단어인 자리(四周|一片·总之|一切)
-const YI_KEEP_CTX = new Set(['数一数']);              // 数一数二
+const YI_KEEP_CTX = new Set(['数一数', '独一无', '举一反', '一线']); // 数一数二 · 独一无二 · 举一反三 · 一线(=第一线) — 뒤 둘은 HSK 2026 7–9급 원문
 
 /** i번째 글자의 규범 표기. null이면 규칙 밖(손대지 않는다). */
 export function sandhiTarget(chars, syls, i) {
@@ -62,6 +62,7 @@ export function sandhiTarget(chars, syls, i) {
   }
   if (c === '不' && b === 'bu') {
     if (toneOf(cur) === 0) return null;
+    if (prev === '可' && next === '是') return cap(FORM.bu[2]); // 可不是 kěbúshi — 경성 是(본래 4성) 앞 · HSK 2026 7–9급 원문
     if (prev && next && prev === next && syls[i - 1] === syls[i + 1]) return cap(FORM.bu[0]);
     if (nt === null) return cap(FORM.bu[4]);
     return cap(nt === 4 ? FORM.bu[2] : FORM.bu[4]);

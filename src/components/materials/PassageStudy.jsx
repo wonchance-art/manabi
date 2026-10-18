@@ -112,7 +112,7 @@ export default function PassageStudy({ material, sources, preferredKey, primary 
         <p className="passage-origin">{material.title}<span>{draft.item.title ? `${draft.item.title} · ` : ''}{passageLocation(draft.item.source)}</span></p>
         {!draft.quote && sourceChoices.length > 1 && <div className="passage-source-choice"><label htmlFor="passage-source">구간을 고를 위치</label><select id="passage-source" value={draft.item.key} disabled={busy} onChange={event => chooseSource(event.target.value)}>{sourceChoices.map(item => <option key={item.key} value={item.key}>{item.title ? `${item.title} · ` : ''}{passageLocation(item.source)}</option>)}</select></div>}
         {!draft.quote && !draft.manual && <div className="passage-picker">
-          <p>공부할 글을 눌러 고르세요. 다음 블록은 선택한 뒤 이어 붙일 수 있어요.</p>
+          <p>공부할 글을 눌러 골라 주세요. 다음 블록은 선택한 뒤 이어 붙일 수 있어요.</p>
           <div className="passage-blocks">{blocks.slice(0, shownBlocks).map((block, index) => <button key={block.start} type="button" aria-label={`${index + 1}번째 글 선택`} onClick={() => pick(index)}>{block.text}</button>)}{shownBlocks < blocks.length && <button onClick={() => setShownBlocks(value => value + 40)}>다음 글 펼치기</button>}</div>
         </div>}
         {draft.quote && <>

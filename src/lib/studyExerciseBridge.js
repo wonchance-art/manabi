@@ -148,9 +148,12 @@ export async function recordStudyReviewCompleted(userId, {
     }
   }
 
+  // 서버에도 큐에도 못 담은 기록(progressStore lost) — 끝까지 다 보낸 뒤 하나라도 있으면 { ok:false, lost:true }.
+  let lost = null;
   for (const reviewRef of reviewRefs) {
     if (!userId || reviewRef.type !== 'vocab') {
-      await recordReviewCompleted(userId, reviewRef);
+      const saved = await recordReviewCompleted(userId, reviewRef);
+      if (saved?.lost) lost = saved;
       continue;
     }
 
@@ -167,6 +170,8 @@ export async function recordStudyReviewCompleted(userId, {
       });
     }
     const saved = await recordReviewCompleted(userId, reviewRef, nextStats);
+    if (saved?.lost) { lost = saved; continue; }
     if (saved?.ok === false) throw saved.error || new Error('review-save-failed');
   }
+  return lost ? { ok: false, lost: true, error: lost.error } : undefined;
 }

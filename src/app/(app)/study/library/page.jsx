@@ -7,7 +7,7 @@ import { fsrsServiceClient } from '@/lib/server/fsrsLearning';
 import { readVocabularyLearningSnapshot } from '@/lib/server/fsrsVocabulary';
 import { projectVocabularyLearningRows } from '@/lib/vocabularyLearningRows';
 
-export const metadata = { title: '서재' };
+export const metadata = { title: '지난 이야기' };
 export const dynamic = 'force-dynamic';
 
 /**

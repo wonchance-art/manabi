@@ -40,7 +40,7 @@ describe('뷰어 배선(ViewerPage)', () => {
   });
 
   it('파트너 탐색은 같은 줄(rawIdx 접두) + data-text 정확 일치 — 토큰이 표기를 싣는다', () => {
-    expect(viewer).toContain('data-text={token.text}');
+    expect(fs.readFileSync('src/components/viewer/ReaderToken.jsx', 'utf8')).toContain('data-text={token.text}'); // 낱말 칸(ReaderToken)이 표기를 싣는다
     expect(viewer).toMatch(/el\.dataset\.text === partner/);
     expect(viewer).toMatch(/\^\(\?:id\|failed\)_\$\{m\[1\]\}_/);
   });
@@ -50,7 +50,7 @@ describe('뷰어 배선(ViewerPage)', () => {
   });
 
   it('한 번만 그려진다 — 대시 드로우온 1회, reduced-motion이면 즉시 완성선', () => {
-    expect(viewer).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
+    expect(viewer).toMatch(/if \(!reducedMotion\(\)\) \{\s*const len = path\.getTotalLength\(\);/); // 판정은 정본 reducedMotion(N2)
     expect(viewer).toMatch(/strokeDashoffset = '0'/);
     expect(viewer).not.toMatch(/setInterval|animation-iteration-count/);
   });

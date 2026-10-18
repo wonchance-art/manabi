@@ -10,6 +10,7 @@
 import { parseJsonLenient } from './fetchMeanings.js';
 import { isCanonPos } from './posCanon';
 import { callLLM } from './llm.js';
+import { hasPrimaryLLMKey } from './llmKeys.js';
 import { buildZhPosPrompt, tallyZhSense, validateZhSensePick, zhSensePickFrom } from './zhSenseReview.js';
 
 // AD-R4 중국어 「이 문장 뜻」 검수(설계서 docs/manabi-viewer-v2-ad-r4.md §4) — 코드 상수로 꺼진 채 출시한다.
@@ -90,8 +91,7 @@ export async function disambiguateZhPos(lines, marks, opts = {}) {
   const { deadlineMs = null, senseStats = null } = opts;
   const picks = new Map();
   if (!marks.length) return picks;
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return picks; // 뜻 조회와 달리 없어도 치명 아님 — 기존 pos로 폴백
+  if (!hasPrimaryLLMKey()) return picks; // 뜻 조회와 달리 없어도 치명 아님 — 기존 pos로 폴백
   if (deadlineMs != null && Date.now() >= deadlineMs) return picks;
 
   try {

@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -13,8 +14,11 @@ import Button from '../components/Button';
 import AccountSettings from '../components/AccountSettings';
 import InstallPrompt from '../components/InstallPrompt';
 import { friendlyToastMessage } from '../lib/errorMessage';
+import { authEntryHref } from '../lib/authRedirect';
 
 export default function MyPage() {
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInHref = authEntryHref(usePathname());
   const { user, profile, fetchProfile, signOut } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -166,7 +170,7 @@ export default function MyPage() {
     return (
       <div className="page-container mypage-noauth">
         <h2 className="mypage-noauth__title">로그인이 필요해요</h2>
-        <Link href="/auth" className="btn btn--primary btn--md">로그인하러 가기</Link>
+        <Link href={signInHref} className="btn btn--primary btn--md">로그인하러 가기</Link>
       </div>
     );
   }
@@ -186,7 +190,7 @@ export default function MyPage() {
             {streak > 0 && <> · {streak}일 연속</>}
           </p>
         </div>
-        <Button variant="ghost" size="sm" onClick={signOut}>로그아웃</Button>
+        <Button variant="ghost" size="sm" onClick={() => signOut() /* 서버 렌더 버리기는 AuthContext 관문(AUTH-ROUTER-REFRESH-001) */}>로그아웃</Button>
       </div>
 
 

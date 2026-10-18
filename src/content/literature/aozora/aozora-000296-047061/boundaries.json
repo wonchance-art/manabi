@@ -1,0 +1,1316 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "5c293d11114db1b90c607efcefe2ab53aebcb1bae8f6e2438407d2dcca088130",
+      "edits": [
+        {
+          "line": 0,
+          "start": 61,
+          "end": 63,
+          "text": "貴賤",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 259,
+          "end": 262,
+          "text": "実語教",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 420,
+          "end": 422,
+          "text": "力役",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 166,
+          "end": 168,
+          "text": "貴賤",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 136,
+          "end": 138,
+          "text": "貴賤",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 39,
+          "end": 42,
+          "text": "一人前",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 47,
+          "end": 50,
+          "text": "一人前",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "9ba233045b61a30771c01b7ce5744a4161c1690a7885a176e08738dc5a90f491",
+      "edits": [
+        {
+          "line": 2,
+          "start": 57,
+          "end": 59,
+          "text": "居処",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 28,
+          "end": 30,
+          "text": "不覊",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 358,
+          "end": 360,
+          "text": "身本",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "textSha256": "0fe07a7f9199371f80ee6daa852700c983e6a8ad4b4083fd62f9beafe6afef23",
+      "edits": []
+    },
+    {
+      "order": 4,
+      "textSha256": "5dc3ffa562829e558db2de3e7ed138fa681bdd5da6e09cba8ffd415cbb4199f8",
+      "edits": [
+        {
+          "line": 2,
+          "start": 299,
+          "end": 302,
+          "text": "執行金",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "textSha256": "7561b8b6c571f3c781941d53fcf27b2e3bdf6c50105192bce3d5e318f49ac155",
+      "edits": [
+        {
+          "line": 18,
+          "start": 211,
+          "end": 213,
+          "text": "苛刻",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "textSha256": "1e685d0615d2596aaf0da1853048f0ea8ea05dbde9c174ad493d37e3ebd23f7f",
+      "edits": []
+    },
+    {
+      "order": 7,
+      "textSha256": "e96ca7ecabfcc9d061fbadeb3a82b75acbb5beb4df1dd772bc8e8edcd9fbf031",
+      "edits": [
+        {
+          "line": 8,
+          "start": 46,
+          "end": 48,
+          "text": "貴賤",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 9,
+          "end": 13,
+          "text": "今川義元",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 22,
+          "end": 26,
+          "text": "織田信長",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 42,
+          "end": 45,
+          "text": "桶狭間",
+          "reason": "ruby"
+        },
+        {
+          "line": 18,
+          "start": 210,
+          "end": 212,
+          "text": "洪大",
+          "reason": "ruby"
+        },
+        {
+          "line": 18,
+          "start": 442,
+          "end": 446,
+          "text": "一人扶持",
+          "reason": "ruby"
+        },
+        {
+          "line": 22,
+          "start": 7,
+          "end": 10,
+          "text": "名目金",
+          "reason": "ruby"
+        },
+        {
+          "line": 22,
+          "start": 179,
+          "end": 182,
+          "text": "名目金",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "textSha256": "8b2ac4a7472f5a5b9db63967730b32f129333ee74a3dff35a1e6e55fa7550ae5",
+      "edits": [
+        {
+          "line": 0,
+          "start": 343,
+          "end": 347,
+          "text": "ブリテン",
+          "reason": "katakana"
+        },
+        {
+          "line": 2,
+          "start": 80,
+          "end": 82,
+          "text": "刺衝",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 119,
+          "end": 121,
+          "text": "刺衝",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 143,
+          "end": 145,
+          "text": "放頓",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 270,
+          "end": 272,
+          "text": "刺衝",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 284,
+          "end": 286,
+          "text": "刺衝",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 308,
+          "end": 310,
+          "text": "放頓",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 278,
+          "end": 280,
+          "text": "賤劣",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 517,
+          "end": 519,
+          "text": "下民",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "textSha256": "06b8579d4d851adaba2fe267ce4aacab4d32b7aef8cc86f10197814269cdd57a",
+      "edits": [
+        {
+          "line": 14,
+          "start": 332,
+          "end": 334,
+          "text": "刺衝",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "textSha256": "f9f4a13338eb6ece745ed13e4abd9eea8b90a754b7ac53f88a3700387327b64b",
+      "edits": []
+    },
+    {
+      "order": 11,
+      "textSha256": "b106e65de88432e7639721a96a24c9067ca29492292e6dd70d0a329d79ab9ba7",
+      "edits": []
+    },
+    {
+      "order": 12,
+      "textSha256": "a258a5d4be82ea9a0b6845d5b5fbc1ba503c73e77d9a634d1278179b9a47660a",
+      "edits": [
+        {
+          "line": 12,
+          "start": 72,
+          "end": 74,
+          "text": "潴滞",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 151,
+          "end": 153,
+          "text": "在昔",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 13,
+      "textSha256": "41a9b0ada8d3ffd458c276d9354f9c6898cdd8e187594a72938217af10a227c6",
+      "edits": [
+        {
+          "line": 2,
+          "start": 58,
+          "end": 60,
+          "text": "衆庶",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 259,
+          "end": 261,
+          "text": "力役",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 544,
+          "end": 546,
+          "text": "愍笑",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 14,
+      "textSha256": "a7d06b703b3f65fbe1e9f4220a0ae8465d4cc7831de20cb2b508e206768ccc41",
+      "edits": [
+        {
+          "line": 10,
+          "start": 239,
+          "end": 241,
+          "text": "不筋",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 15,
+      "textSha256": "cd602b0e7928aafd73c1ec001d4e8596e2f425768f18429fed0ee95dd4041132",
+      "edits": [
+        {
+          "line": 10,
+          "start": 20,
+          "end": 24,
+          "text": "太田資美",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 16,
+      "textSha256": "c0de345be5b88780272a6ff0d79fceed5a1ae4ad942336859639032ffa5f9da0",
+      "edits": [
+        {
+          "line": 10,
+          "start": 42,
+          "end": 44,
+          "text": "貴賤",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 346,
+          "end": 349,
+          "text": "一人前",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 378,
+          "end": 381,
+          "text": "一人前",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 148,
+          "end": 151,
+          "text": "一人前",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 189,
+          "end": 192,
+          "text": "一人前",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 426,
+          "end": 428,
+          "text": "不筋",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 17,
+      "textSha256": "a6ffe7ce44cc2fcef6320e56c1a23f008fdf7f75324ce89fa9ed24ee2dd97a13",
+      "edits": [
+        {
+          "line": 10,
+          "start": 736,
+          "end": 741,
+          "text": "佐倉宗五郎",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 18,
+      "textSha256": "a4ef64d559e77b9a7acf9c6893db9d432ff397364bc9af62a6a9f494c93bf7b9",
+      "edits": [
+        {
+          "line": 0,
+          "start": 5,
+          "end": 10,
+          "text": "エイランド",
+          "reason": "katakana"
+        },
+        {
+          "line": 0,
+          "start": 76,
+          "end": 79,
+          "text": "一人前",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 162,
+          "end": 164,
+          "text": "行在",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 13,
+          "end": 15,
+          "text": "居処",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 16,
+          "start": 65,
+          "end": 67,
+          "text": "貴賤",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 19,
+      "textSha256": "d563a9d0c4646ad0b82014cd3ab34bc6f3cb5608973b5946c8ffbd0c325f17da",
+      "edits": [
+        {
+          "line": 0,
+          "start": 178,
+          "end": 180,
+          "text": "淫夫",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 245,
+          "end": 247,
+          "text": "淫夫",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 331,
+          "end": 333,
+          "text": "淫夫",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 344,
+          "end": 346,
+          "text": "淫夫",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 16,
+          "start": 4,
+          "end": 6,
+          "text": "貴賤",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 20,
+      "textSha256": "0d2de35bf2d5c37949a559a325ae3c68aab5bb26d6307d51623352e133680a00",
+      "edits": [
+        {
+          "line": 4,
+          "start": 240,
+          "end": 242,
+          "text": "居処",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 134,
+          "end": 136,
+          "text": "家什",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 325,
+          "end": 327,
+          "text": "不覊",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 380,
+          "end": 382,
+          "text": "蠢愚",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 21,
+      "textSha256": "f99731902406e630969fa22e548179df9c7bae27c647b3e0d65f3ea750c61c12",
+      "edits": [
+        {
+          "line": 0,
+          "start": 174,
+          "end": 176,
+          "text": "洪大",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 248,
+          "end": 250,
+          "text": "挽碓",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 257,
+          "end": 259,
+          "text": "挽碓",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 361,
+          "end": 363,
+          "text": "驚駭",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 22,
+      "textSha256": "b3531524354daeed5b6b52eef0351b84bcbcaac0fb44e0d05361e3eb98d0e5fd",
+      "edits": [
+        {
+          "line": 2,
+          "start": 272,
+          "end": 274,
+          "text": "今人",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 20,
+          "end": 22,
+          "text": "不覊",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 23,
+      "textSha256": "2abf948f8a9235e095f5f7c8d4c2eb1b2261bab29a27a2fd7c0529fe2d0a40a5",
+      "edits": [
+        {
+          "line": 4,
+          "start": 61,
+          "end": 63,
+          "text": "不覊",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 10,
+          "end": 14,
+          "text": "沈湎冒色",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 68,
+          "end": 70,
+          "text": "遊冶",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 101,
+          "end": 103,
+          "text": "遊冶",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 204,
+          "end": 206,
+          "text": "遊冶",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 84,
+          "end": 88,
+          "text": "沈湎冒色",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 24,
+      "textSha256": "5e6531ea664067e08fef8d4d8b8e07779c323083963e4b3c8d9a820be678f43b",
+      "edits": [
+        {
+          "line": 0,
+          "start": 7,
+          "end": 9,
+          "text": "貴賤",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 25,
+      "textSha256": "985d17bf2e42e13a119a60fda01023d9bd864eb6f0292bd340b1748c7888ebfe",
+      "edits": [
+        {
+          "line": 2,
+          "start": 25,
+          "end": 27,
+          "text": "極内",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 222,
+          "end": 225,
+          "text": "不了簡",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 7,
+          "end": 9,
+          "text": "貴賤",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 59,
+          "end": 61,
+          "text": "貴賤",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 26,
+      "textSha256": "32e5bf0ab471c55e14ea9f2e915762c6ccb523b316d8d9757fb105294b5eb95b",
+      "edits": [
+        {
+          "line": 4,
+          "start": 72,
+          "end": 74,
+          "text": "在昔",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 27,
+      "textSha256": "5f5b305301087b43ff636bceaa4ebc444397f76dd3d5a6d53eda2131e9f1b877",
+      "edits": [
+        {
+          "line": 2,
+          "start": 182,
+          "end": 184,
+          "text": "刺衝",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 428,
+          "end": 430,
+          "text": "今人",
+          "reason": "ruby"
+        },
+        {
+          "line": 16,
+          "start": 90,
+          "end": 92,
+          "text": "在昔",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 20,
+          "start": 233,
+          "end": 235,
+          "text": "勁敵",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 28,
+      "textSha256": "ead4ac82a377780c7e8aaeba73ca349f0c5a93f0975f3fcc4a78c59ea383fcb8",
+      "edits": [
+        {
+          "line": 0,
+          "start": 30,
+          "end": 32,
+          "text": "怨望",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 41,
+          "end": 43,
+          "text": "貪吝",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 171,
+          "end": 173,
+          "text": "貪吝",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 295,
+          "end": 297,
+          "text": "貪吝",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 81,
+          "end": 83,
+          "text": "無妄",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 29,
+          "end": 31,
+          "text": "穎敏",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 151,
+          "end": 153,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 160,
+          "end": 162,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 8,
+          "end": 10,
+          "text": "欺詐",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 37,
+          "end": 39,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 120,
+          "end": 122,
+          "text": "欺詐",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 144,
+          "end": 146,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 164,
+          "end": 166,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 179,
+          "end": 181,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 218,
+          "end": 220,
+          "text": "疑猜",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 235,
+          "end": 237,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 0,
+          "end": 2,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 72,
+          "end": 74,
+          "text": "業作",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 111,
+          "end": 113,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 188,
+          "end": 190,
+          "text": "貧賤",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 249,
+          "end": 251,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 288,
+          "end": 290,
+          "text": "貴賤",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 341,
+          "end": 343,
+          "text": "貧賤",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 10,
+          "end": 12,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 13,
+          "end": 15,
+          "text": "貧賤",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 355,
+          "end": 357,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 29,
+      "textSha256": "de5a655fdaf1f51c42d116851e083e17d900bd3f38ba00f75dee1a5d4d631072",
+      "edits": [
+        {
+          "line": 0,
+          "start": 29,
+          "end": 31,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 15,
+          "end": 17,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 183,
+          "end": 185,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 335,
+          "end": 337,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 457,
+          "end": 459,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 37,
+          "end": 39,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 44,
+          "end": 46,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 77,
+          "end": 79,
+          "text": "業作",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 240,
+          "end": 242,
+          "text": "貪吝",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 308,
+          "end": 310,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 114,
+          "end": 116,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 11,
+          "end": 13,
+          "text": "業作",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 56,
+          "end": 58,
+          "text": "僻邑",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 183,
+          "end": 185,
+          "text": "怯弱",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 283,
+          "end": 285,
+          "text": "讐敵",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 296,
+          "end": 298,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 14,
+          "start": 280,
+          "end": 282,
+          "text": "怨望",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 14,
+          "start": 398,
+          "end": 400,
+          "text": "讐敵",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 16,
+          "start": 19,
+          "end": 21,
+          "text": "業作",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 16,
+          "start": 119,
+          "end": 121,
+          "text": "貧賤",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 30,
+      "textSha256": "a310fade3f6139a96fa3cbc6f1fb4930de4eb97c48ff7e327421e0e06cd16a4f",
+      "edits": [
+        {
+          "line": 2,
+          "start": 264,
+          "end": 266,
+          "text": "活物",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 44,
+          "end": 50,
+          "text": "フランキリン",
+          "reason": "katakana"
+        },
+        {
+          "line": 14,
+          "start": 186,
+          "end": 190,
+          "text": "遊冶懶惰",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 472,
+          "end": 474,
+          "text": "蚊帷",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 31,
+      "textSha256": "d7af630682f7e23eb8d77e441a028883126eae65703796072fd238425fb25a3c",
+      "edits": [
+        {
+          "line": 6,
+          "start": 30,
+          "end": 32,
+          "text": "遊冶",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 54,
+          "end": 56,
+          "text": "鰥寡",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 84,
+          "end": 87,
+          "text": "御救米",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 32,
+      "textSha256": "9af07d2bad01ca1b15c6d1fcbd336f75dfde5cc07c68fe86fee65d988ab34177",
+      "edits": [
+        {
+          "line": 0,
+          "start": 5,
+          "end": 7,
+          "text": "偽詐",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 98,
+          "end": 101,
+          "text": "家相見",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 218,
+          "end": 220,
+          "text": "偽詐",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 274,
+          "end": 276,
+          "text": "偽詐",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 96,
+          "end": 100,
+          "text": "ガリレオ",
+          "reason": "katakana"
+        },
+        {
+          "line": 4,
+          "start": 248,
+          "end": 250,
+          "text": "巫蠱",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 79,
+          "end": 81,
+          "text": "直達",
+          "reason": "ruby"
+        },
+        {
+          "line": 16,
+          "start": 7,
+          "end": 9,
+          "text": "西施",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 33,
+      "textSha256": "b0040170059f0ee624786894d709f5f7a3ab268bd322c77c8d51d7f443e6e2df",
+      "edits": [
+        {
+          "line": 2,
+          "start": 268,
+          "end": 270,
+          "text": "耶蘇",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 153,
+          "end": 157,
+          "text": "衆生済度",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 548,
+          "end": 552,
+          "text": "衆生済度",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 34,
+      "textSha256": "7cb395f6da50b1f62bae62e85cfce56b8b204120be80726b4d6cea60e6233134",
+      "edits": [
+        {
+          "line": 0,
+          "start": 0,
+          "end": 2,
+          "text": "不覊",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 226,
+          "end": 229,
+          "text": "奴隷使",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 173,
+          "end": 175,
+          "text": "噂咄",
+          "reason": "ruby"
+        },
+        {
+          "line": 12,
+          "start": 380,
+          "end": 384,
+          "text": "御召縮緬",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 110,
+          "end": 112,
+          "text": "雑物",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 35,
+      "textSha256": "55a1f124845673118e584e76c369df36b0bc5a299131345a0c7ee4b3fd8b5a1f",
+      "edits": [
+        {
+          "line": 10,
+          "start": 124,
+          "end": 127,
+          "text": "児女子",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 501,
+          "end": 503,
+          "text": "穎敏",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 36,
+      "textSha256": "7fe50fe967898a621b179423e33265a44b953dc512192860682f0bbbc42f9652",
+      "edits": [
+        {
+          "line": 8,
+          "start": 351,
+          "end": 353,
+          "text": "活物",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 37,
+      "textSha256": "f0e4cee155f234322419095ad736d08bfbec4e80ab79703aa55c29e3c654e9f7",
+      "edits": [
+        {
+          "line": 4,
+          "start": 255,
+          "end": 257,
+          "text": "洒掃",
+          "reason": "ruby"
+        },
+        {
+          "line": 16,
+          "start": 445,
+          "end": 448,
+          "text": "旅籠屋",
+          "reason": "ruby"
+        },
+        {
+          "line": 18,
+          "start": 194,
+          "end": 196,
+          "text": "遊冶",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 18,
+          "start": 369,
+          "end": 371,
+          "text": "五尾",
+          "reason": "ruby"
+        }
+      ]
+    }
+  ]
+}

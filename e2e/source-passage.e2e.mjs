@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {fixture} from './fixtures/library-v4-backend.mjs';
+import {fixture,OWNER} from './fixtures/library-v4-backend.mjs';
+import {inactiveLearningReply} from './fixtures/learning-snapshot.mjs';
 const shots=process.env.COMPOSER_SCREENSHOTS;
 async function setup(options={}){
  const f=await fixture({...options,sourcePassages:true,originalPositions:true});let calls=0,fail=false;
@@ -9,12 +10,18 @@ async function setup(options={}){
   const method=r.request().method(),p=method==='POST'||method==='PATCH'?r.request().postDataJSON():null;
   const headers={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'GET,POST,PATCH,OPTIONS'};
   if(method==='OPTIONS')return r.fulfill({status:204,headers});
-  if(p){writes.push({method,p});if(method==='POST')vocab.push(...(Array.isArray(p)?p:[p]).map(row=>({...row,id:89001+vocab.length,created_at:new Date().toISOString()})));else vocab.forEach(row=>Object.assign(row,p));}
+  if(p){writes.push({method,p});if(method==='POST')vocab.push(...(Array.isArray(p)?p:[p]).map(row=>({...row,id:String(89001+vocab.length),created_at:new Date().toISOString()})));else vocab.forEach(row=>Object.assign(row,p));}
   return r.fulfill({json:vocab,headers});
  });
  await f.context.route('**/api/learning/**',r=>{
-  if(r.request().method()==='POST'){contexts.push(r.request().postDataJSON());return r.fulfill({json:{ok:true,context:{id:'source-1'},vocabulary:{id:89001}}});}
-  return r.fulfill({json:{contexts:contexts.map(p=>({id:'source-1',kind:'reading',quote:p.source.quote,href:`/viewer/${p.source.materialId}?sourceToken=${encodeURIComponent(p.source.tokenId)}`})),links:[]}});
+  // 저장 단어 읽기는 2026-10-14(dc69aab4)부터 GET /api/learning/vocabulary?view=learning snapshot이다. 이 처리가 그 GET과 FSRS 상태 ·
+  // 한도까지 문맥 목록으로 답해 「저장한 단어를 불러오지 못했어요」 → 채점 막대가 잠겼다(viewer-reliability 530ba965와 같은 원인).
+  // 공용 합성 응답(저장 단어 = 위 user_vocabulary 행, snapshot 규약대로 id는 문자열)으로 먼저 답하고, 문맥 저장 · 조회는 그대로 둔다.
+  const reply=inactiveLearningReply(r.request(),{actorId:OWNER,rows:()=>vocab});
+  if(reply)return r.fulfill({status:reply.status,json:reply.json});
+  if(r.request().method()==='POST'){contexts.push(r.request().postDataJSON());return r.fulfill({json:{ok:true,context:{id:'source-1'},vocabulary:{id:'89001'}}});}
+  // 문맥 주소는 dc69aab4부터 화면이 material_id · locator로 다시 만든다(sourceHref) — 응답의 href는 쓰지 않는다. 저장 요청의 출처를 그대로 돌려준다.
+  return r.fulfill({json:{contexts:contexts.map(p=>({id:'source-1',kind:'reading',material_id:p.source.materialId,locator:{tokenId:p.source.tokenId,...(p.source.surface?{surface:p.source.surface}:{})},quote:p.source.quote})),links:[]}});
  });
  await f.context.route('**/api/analyze',async r=>{calls++;const p=r.request().postDataJSON();
   if(fail)return r.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Synthetic interruption'})});
@@ -83,7 +90,10 @@ test('lost response reuses one snapshot; small screens, keyboard and manual inpu
   f.losePassageReply();await f.page.getByRole('button',{name:'이 부분 공부하기',exact:true}).click();await f.page.getByRole('alert').filter({hasText:'구간을 열지 못했어요'}).waitFor();assert.equal(f.rows.length,2);assert.equal(f.calls,0);
   await start(f);assert.equal(f.rows.length,2);assert.equal(f.calls,1);
   await f.page.getByRole('link',{name:'원본의 작성한 본문으로 ↗'}).click();await f.page.locator('.original-reader').waitFor();
-  const open=f.page.getByRole('button',{name:'일부만 고르기',exact:true});await open.focus();await f.page.keyboard.press('Enter');await f.page.keyboard.press('Escape');assert.equal(await open.evaluate(el=>el===document.activeElement),true);
+  // 본문이 그려지기 전(구간 목록이 비어 있는 동안) 이 단추는 disabled다 — 쓸 수 있게 된 뒤에 초점을 둔다. 그 뒤로 다시 disabled로
+  // 깜박이지 않는 것은 제품 쪽 고정이다(PASSAGE-OPENER-FOCUS-001: 출처를 받은 뒤 동기화가 다시 돌 때 본문을 내리던 결함 — 그때 초점이
+  // 제목으로 가고 Enter · Esc가 헛돌았다). 아래 「Esc로 닫으면 여는 단추로」 단언은 그대로.
+  const open=f.page.getByRole('button',{name:'일부만 고르기',exact:true});for(let i=0;!(await open.isEnabled());i++){assert.ok(i<100,'opener stays disabled');await f.page.waitForTimeout(50);}await open.focus();await f.page.keyboard.press('Enter');await f.page.keyboard.press('Escape');assert.equal(await open.evaluate(el=>el===document.activeElement),true);
   await open.click();await f.page.getByRole('button',{name:'추출된 글이 어색한가요? 직접 입력',exact:true}).click();await f.page.getByLabel('학습할 내용',{exact:true}).fill('A sentence I transcribed.');
   await f.page.locator('dialog').getByLabel('학습 언어',{exact:true}).selectOption('');assert.equal(await f.page.getByRole('button',{name:'이 부분 공부하기',exact:true}).isDisabled(),true);await f.page.locator('dialog').getByLabel('학습 언어',{exact:true}).selectOption('English');await start(f);
   assert.equal(f.rows[2].processed_json.metadata.composer.passage.manual,true);assert.equal(f.rows[2].processed_json.metadata.composer.passage.quote,undefined);
@@ -109,11 +119,14 @@ test('explicit expression saving keeps the passage source; review returns to the
   await create(f);await pick(f);await start(f);assert.equal(f.vocab.length,0);
   const child=f.rows[1];await f.page.locator('.word-token').first().click();
   await f.page.getByRole('button',{name:'뜻·발음 수정',exact:true}).first().click();await f.page.locator('.token-edit__input').first().fill('자료 안에서 고친 뜻');await f.page.locator('.token-edit__actions').getByRole('button',{name:'저장',exact:true}).click();await f.page.getByText('수정을 저장했어요',{exact:true}).waitFor();assert.ok(Object.values(child.processed_json.dictionary).some(token=>token.meaning==='자료 안에서 고친 뜻'));
-  await f.page.locator('.save-grade button').first().click();await f.page.getByRole('button',{name:'저장됨',exact:true}).first().waitFor();
+  await f.page.locator('.save-grade button').first().click();await f.page.getByRole('button',{name:'✓ 담은 표현에 있음',exact:true}).first().waitFor();
   assert.equal(f.vocab.length,1);assert.equal(String(f.vocab[0].source_material_id),String(child.id));assert.equal(String(f.contexts[0].source.materialId),String(child.id));
-  f.vocab[0].next_review_at='2026-01-01';f.vocab[0].interval=1;
-  await f.page.goto('/vocab');await f.page.locator('.review-room-settings summary').click();await f.page.getByLabel('복습 방식',{exact:true}).selectOption('flash');await f.page.getByRole('button',{name:'표현 1개 복습 →',exact:true}).click();await f.page.getByRole('button',{name:'정답 확인하기',exact:true}).click();await f.page.locator('.learning-links summary').click();
-  const before=f.writes.filter(w=>w.method==='PATCH').length,popupPromise=f.page.waitForEvent('popup');await f.page.getByRole('link',{name:'자료 속 문장 열기 ↗',exact:true}).click();const popup=await popupPromise;
+  // 한 번도 복습하지 않은 표현은 「처음 보는 표현」(채점 없음 · 답 공개)으로 열린다(REV-SCOPE-R1B-1) — 답을 가린 채점 카드로 보려고 한 번 복습한 표현으로 둔다.
+  f.vocab[0].next_review_at='2026-01-01';f.vocab[0].interval=1;f.vocab[0].last_reviewed_at='2025-12-31';
+  // 저장 줄 표시는 「✓ 담은 표현에 있음」, 복습 방식 선택은 REV-SCOPE-R1B-1에서 없어졌다(본 복습 = 플래시).
+  await f.page.goto('/vocab');await f.page.getByRole('button',{name:'표현 1개 복습 →',exact:true}).click();await f.page.getByRole('button',{name:'정답 확인하기',exact:true}).click();
+  // 문맥이 하나면 그 문맥이 카드의 대표 출처(「이 문장 열기 ↗」)이고, 둘째부터만 「다른 문맥」 접힘에 든다(review-room과 같은 규칙).
+  const before=f.writes.filter(w=>w.method==='PATCH').length,popupPromise=f.page.waitForEvent('popup');await f.page.getByRole('link',{name:'이 문장 열기 ↗',exact:true}).click();const popup=await popupPromise;
   await popup.locator('.learning-source-highlight').waitFor();await popup.getByRole('link',{name:'원본의 작성한 본문으로 ↗'}).click();await popup.getByText('원본에서 해당 구간을 표시했어요.',{exact:true}).waitFor();await popup.close();
   assert.equal(f.writes.filter(w=>w.method==='PATCH').length,before);assert.equal(f.rows.length,2);await noOverflow(f);
  }finally{await f.close();}

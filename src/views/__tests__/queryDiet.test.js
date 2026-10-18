@@ -76,6 +76,7 @@ describe('쿼리 다이어트 계약', () => {
     expect(read('src/lib/vocabularyDueIndex.js')).toContain('material?.processed_json?.dictionary');
     // fetchVocab: 단어장 화면이 전 컬럼 소비자(etym·hanja 포함) — select('*') 유지
     const io = read('src/lib/vocabIO.js');
-    expect(io).toMatch(/from\('vocabulary_with_exclusions'\)\s*\.select\('\*'\)/);
+    // 1000행 상한 대응(정본 완전 조회)으로 exact count가 붙었다 — 전 컬럼 소비라는 의도는 그대로다.
+    expect(io).toMatch(/from\('vocabulary_with_exclusions'\)\s*\.select\('\*'(?:, \{ count: 'exact' \})?\)/);
   });
 });

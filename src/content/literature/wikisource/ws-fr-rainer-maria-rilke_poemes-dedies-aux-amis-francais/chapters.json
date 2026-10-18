@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "book": {
+    "key": "ws-fr-rainer-maria-rilke_poemes-dedies-aux-amis-francais",
+    "title": "Poèmes dédiés aux amis français",
+    "author": "Rainer Maria Rilke",
+    "level": "C1 고급",
+    "total": 1
+  },
+  "chapters": [
+    {
+      "order": 1,
+      "title": "À Madame la Baronne de Brimont 외 4편",
+      "materialTitle": "Poèmes dédiés aux amis français — À Madame la Baronne de Brimont 외 4편",
+      "rawText": "À Madame la Baronne de Brimont\n\nÀ Madame la Baronne de Brimont.\n\nPour trouver Dieu il faut être heureux\ncar ceux qui par détresse l’inventent\nvont trop vite et cherchent trop peu\nl’intimité de son absence ardente.\n\nVergers\n\nÀ Madame Jeanne-René Dubost.\n\nÔ le ruban léger dont les bouts flottent,\npoème sur un thème éternel\nqu’écrit soudain un doux vent polyglotte,\nqui te lirait selon ton sens réel,\nflottant adieu, qu’attendrait-il encore\nde cette vie à l’abandon fatal,\noù parfois un jardin hivernal\nrend apparent la statue d’une Flore…\n\nMuzot, ce 9 juillet 1926.\n\nLe Grand Pardon\n\nÀ Mademoiselle Adrienne Monnier.\n\nOn raconte, mais est-ce qu’on sait ?\nQuelque part l’Ange de l’Oubli,\nradieux, tend sa figure au vent\nqui tourne nos pages. Borne pure.\nEt derrière lui tout ce pays\nque nul plus ne saurait apprendre :\nqu’il faut avoir su, autrefois,\nmorceau par morceau, tel que nos sens\ntel que la colère nous le cassait\nà nos besoins. (Sans vouloir à présent\nnier les inattendues guérisons\nentre les choses, qui nous prenaient à témoins\nsans que nous eussions jamais su les appeler…\nEt malgré tout, les fruits\nsupportaient nos noms, et les astres\nne les secouaient que rarement :\nces noms spongieux qui buvaient des larmes…\nCes noms dont le plus tendre encor\nn’est que le moule d’un cri).\n\nCe 29 Juin 1926. En tête d’un exemplaire de « Vergers »\n\nÀ Jules Supervielle.\n\nNos pertes, n’est-ce sur vous\nque nos rêves s’érigent ?\nSeulement nos rêves ? Que dis-je ?\nPertes, vous portez tous\nnos plus tendres élans.\nVous êtes ces caves anciennes\noù les vins de nos vignes deviennent\ngrands insensiblement.\nC’est sur vos voûtes qu’on pose\ntous ces étages émus.\nQu’est-ce en somme, la rose\nque la fête d’un fruit perdu ?\n\nÉcrit sur un exemplaire de « Vergers »\n\nBorder un enfant dans son lit\n\nBorder un enfant dans son lit\nfermer cette lettre de vie\nqui arrivera ce soir.\nOn la lira en compagnie,\nce qu’elle contient sera dit\nà haute voix dans le noir…\nsera dit, sera répété\npar de profonds échos,\ncomme dans de l’eau reflété\net peut-être compris trop tôt.\n\nVers envoyés en post-scriptum\ndans une lettre à Jules Supervielle,\nle 15 Janvier 1926.",
+      "metadata": {
+        "language": "French",
+        "level": "C1 고급",
+        "book": {
+          "key": "ws-fr-rainer-maria-rilke_poemes-dedies-aux-amis-francais",
+          "title": "Poèmes dédiés aux amis français",
+          "author": "Rainer Maria Rilke",
+          "order": 1,
+          "total": 1
+        },
+        "literature": {
+          "schemaVersion": 1,
+          "provider": "wikisource",
+          "workKey": "ws-fr-rainer-maria-rilke_poemes-dedies-aux-amis-francais",
+          "wiki": "fr",
+          "title": "Poèmes dédiés aux amis français",
+          "author": "Rainer Maria Rilke",
+          "publishedYear": 1935,
+          "authorDeathYear": 1926,
+          "countryOfOrigin": "FR",
+          "mortPourLaFrance": false,
+          "translator": null,
+          "url": "https://fr.wikisource.org/wiki/Po%C3%A8mes_fran%C3%A7ais_(Rilke)%2FCarnet_de_poche",
+          "fetchedAt": "2026-10-16",
+          "license": "CC-BY-SA-4.0",
+          "rights": {
+            "status": "approved",
+            "basis": "public-domain",
+            "reviewedJurisdictions": [
+              "FR",
+              "KR"
+            ],
+            "reviewer": "claude",
+            "reviewedAt": "2026-10-17"
+          },
+          "edits": [
+            "chapter-split-by-manabi",
+            "typography-normalized",
+            "illustrations-omitted",
+            "notes-omitted"
+          ],
+          "sourcePage": "Poèmes français (Rilke)/Carnet de poche/Poèmes dédiés aux amis français/À Madame la Baronne de Brimont",
+          "revid": 15168445
+        }
+      }
+    }
+  ],
+  "diagnostics": {
+    "pageCount": 5,
+    "chapterCount": 1,
+    "size": 374,
+    "unit": "words",
+    "minChapter": 374,
+    "maxChapter": 374
+  }
+}

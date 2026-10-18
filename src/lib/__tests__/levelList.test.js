@@ -3,13 +3,14 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { sliceBetween } from './helpers/sliceBetween.js';
 import { levelListData, levelTileCounts, ZH_POS_GROUPS } from '../levelListData.js';
-import { LEVEL_LIST_LANGS, shortMeaning, levelWordKey, matchesLevelQuery, splitKnown, levelLabel, levelPill, levelListHref, jaHeadMode,
-  LEVEL_PEEK_MS, LEVEL_VIEWS, normalizeLevelPrefs, levelCardShows } from '../levelList.js';
+import { LEVEL_LIST_LANGS, levelKinds, shortMeaning, levelWordKey, matchesLevelQuery, splitKnown, levelLabel, levelPill, levelListHref, jaHeadMode,
+  LEVEL_PEEK_CLOSE_MS, LEVEL_PEEK_MS, LEVEL_VIEWS, normalizeLevelPrefs, levelProgress, pinyinSyllables, writeLevelSnapshot, readLevelSnapshot,
+  levelResumeCard, LEVEL_SNAPSHOT_KEY, levelGroupsOf } from '../levelList.js';
 import { knownWordSetOf, normalizeKnownWord } from '../knownWordControl.js';
 import { exclusionWord } from '../vocabularyExclusion.js';
 import { JAPANESE_VOCAB_REF } from '../japaneseVocabRegistry.js';
 import { countBunkei as countJaBunkei } from '../../content/japanese/index.js';
-import { countBunkei as countZhBunkei, getVocab as getZhVocab, ZH_LEVEL_META } from '../../content/chinese/index.js';
+import { countBunkei as countZhBunkei, getVocab as getZhVocab, ZH_LEVEL_META, ZH_HSK79_VOCAB } from '../../content/chinese/index.js';
 import { loadZhHskLevels, zhHskLevelOf } from '../zhHskLevel.js';
 import { legacyTextbookTarget, learnerHref } from '../bookNavigation.js';
 
@@ -28,6 +29,11 @@ describe('⑴ 숫자 = 데이터 개수', () => {
       expect(tiles.map((t) => t.levelKey)).toEqual(LEVEL_LIST_LANGS[lang].levels);
       for (const t of tiles) {
         expect(t.vocab, `${lang} ${t.levelKey}`).toBe(total(await levelListData(lang, 'vocab', t.levelKey)));
+        if (!levelKinds(lang, t.levelKey).includes('bunkei')) { // HSK 7–9 = 단어만 — 문형 줄 없음
+          expect(t.bunkei, `${lang} ${t.levelKey}`).toBeUndefined();
+          expect(await levelListData(lang, 'bunkei', t.levelKey)).toBeNull();
+          continue;
+        }
         expect(t.bunkei, `${lang} ${t.levelKey}`).toBe(total(await levelListData(lang, 'bunkei', t.levelKey)));
         expect(t.bunkei).toBe((lang === 'japanese' ? countJaBunkei : countZhBunkei)(t.levelKey));
         expect(t.vocab).toBeGreaterThan(0);
@@ -55,11 +61,13 @@ describe('⑴ 숫자 = 데이터 개수', () => {
 describe('⑵ 중국어 단어 = 우리 사전 ∩ HSK 2026 급수', () => {
   it('각 레벨의 단어는 2026 표 급수가 그 레벨이고, 우리 사전에 있으며, 두 레벨에 겹치지 않는다', async () => {
     const table = await loadZhHskLevels();
-    const dict = new Set(ZH_LEVEL_META.flatMap((m) => (getZhVocab(m.key)?.themes || []).flatMap((t) => t.words.map((w) => w.zh))));
+    const sets = [...ZH_LEVEL_META.map((m) => getZhVocab(m.key)), ...ZH_HSK79_VOCAB]; // 7–9 보강은 레지스트리 밖 세트
+    const dict = new Set(sets.flatMap((set) => (set?.themes || []).flatMap((t) => t.words.map((w) => w.zh))));
     const seen = new Map();
     for (const key of LEVEL_LIST_LANGS.chinese.levels) {
       const data = await levelListData('chinese', 'vocab', key);
-      for (const e of data.groups.flatMap((g) => g.entries)) {
+      // 서버 조립은 줄인 꼴(compactLevelEntry) — 화면과 같은 복원(levelGroupsOf)으로 대조 키를 본다.
+      for (const e of levelGroupsOf(data.groups).flatMap((g) => g.entries)) {
         expect(zhHskLevelOf(e.word, table), e.word).toBe(Number(key.slice(1)));
         expect(dict.has(e.word), e.word).toBe(true);
         expect(seen.has(e.key), `${e.word}: ${seen.get(e.key)} · ${key}`).toBe(false);
@@ -151,21 +159,29 @@ describe('⑷ 표기 규칙', () => {
 });
 
 describe('⑹ O · X 빠른 암기 보기 옵션(LEVEL-OX-AN-001)', () => {
-  it('보기 탭: 하나만 고른다 — 전체 · 단어 · 문장 · 뜻 · 소리, 가린 칸을 누르면 10초 동안 전부', () => {
-    expect(LEVEL_VIEWS.map((v) => v.label)).toEqual(['전체', '단어', '문장', '뜻', '소리']);
-    expect(levelCardShows('all')).toEqual({ word: true, sentence: true, meaning: true, audio: true, hidden: false });
-    expect(levelCardShows('word')).toEqual({ word: true, sentence: true, meaning: false, audio: false, hidden: true });
-    expect(levelCardShows('sentence')).toEqual({ word: false, sentence: true, meaning: false, audio: false, hidden: true });
-    expect(levelCardShows('meaning')).toEqual({ word: false, sentence: false, meaning: true, audio: false, hidden: true });
-    expect(levelCardShows('audio')).toEqual({ word: false, sentence: false, meaning: false, audio: true, hidden: true });
-    expect(levelCardShows('meaning', true).hidden).toBe(false);
+  it('보기 탭: 하나만 고른다 — 전체 · 단어 · 문장 · 뜻 · 소리, 카드를 누르면 10초 동안 전부', () => {
+    expect(LEVEL_VIEWS.map((v) => v.label)).toEqual(['전체', '글자', '문장', '뜻', '소리']); // 「단어」 → 「글자」(위 줄 목록 종류 「단어」와 겹침 — 디자인 검토 A안)
     expect(LEVEL_PEEK_MS).toBe(10_000);
   });
 
+  it('펼치기(4판): 다시 누르면 접기 · 10초 뒤 접기 · 접힘 움직임은 CSS와 같은 길이 · 움직임 줄이기면 즉시', () => {
+    const page = read('src/views/LevelListPage.jsx');
+    const css = read('src/components/levels/level-list.css');
+    expect(sliceBetween(page, 'const togglePeek = ', ';\n')).toContain("peekRef.current.get(key)?.phase === 'open' ? closePeek(key) : openPeek(key)");
+    expect(sliceBetween(page, 'const openPeek = ', '\n  }, [')).toContain('setTimeout(() => closePeek(key), LEVEL_PEEK_MS)');
+    const close = sliceBetween(page, 'const closePeek = ', '\n  }, [');
+    expect(close).toContain('if (reducedMotion()) { timers.delete(key); return setPhase(key, null); }'); // 판정은 정본 reducedMotion(N2)
+    expect(close).toContain('LEVEL_PEEK_CLOSE_MS');
+    expect(LEVEL_PEEK_CLOSE_MS).toBe(200);
+    expect(css).toContain('animation:lv-close .2s ease-in');
+    expect(css).toMatch(/@keyframes lv-open\{from\{grid-template-rows:0fr/);
+    expect(css).toMatch(/prefers-reduced-motion:reduce\)\{\.lv-reveal,[^}]*animation:none/);
+  });
+
   it('저장된 설정 검증: 보기 전체 · 훈음 켬 · 한자 대조 · 숨기기 끔이 기본, 모르는 값은 버린다', () => {
-    expect(normalizeLevelPrefs(null)).toEqual({ view: 'all', hideKnown: false, hun: true, glyph: false });
+    expect(normalizeLevelPrefs(null)).toEqual({ view: 'all', hideKnown: false, hun: true, glyph: false, tone: false, peekOnX: true }); // 성조 색은 옵트인(오너 2026-08-19)
     expect(normalizeLevelPrefs({ view: 'grade', hideKnown: true, hun: 'yes', glyph: true }))
-      .toEqual({ view: 'all', hideKnown: true, hun: true, glyph: true });
+      .toEqual({ view: 'all', hideKnown: true, hun: true, glyph: true, tone: false, peekOnX: true });
     expect(normalizeLevelPrefs({ view: 'audio' }).view).toBe('audio');
   });
 
@@ -183,7 +199,8 @@ describe('⑹ O · X 빠른 암기 보기 옵션(LEVEL-OX-AN-001)', () => {
     expect(sliceBetween(page, 'const markO = ', ';\n')).toContain('knownSet.has(entry.key) ? unmark(entry.key) : exclude(entry)');
     const markX = sliceBetween(page, 'const markX = ', '\n  };');
     expect(markX).toContain('return save(entry);');
-    expect(markX).toContain('pendingStudy.current = entry;');
+    // 아는 단어면 서버가 풀어 준 뒤에만 담는다(낙관 갱신이라 화면 상태로 기다리지 않는다) — 풀지 못하면 담지 않는다.
+    expect(markX).toMatch(/try \{ await known\.mutation\.mutateAsync\(unmarkRequest\(entry\.key\)\); \} catch \{ return undefined; \}\n\s*return save\(entry\);/);
     expect(page).toContain("import { hunRubyCells } from '@/lib/viewerHunRuby';");
     expect(page).toContain("import HunCell from '@/components/viewer/HunCell';");
     expect(page).toContain("import { glyphRows } from '@/lib/glyphColumn';");
@@ -203,7 +220,7 @@ describe('⑸ 저장 · 제외 · 링크 배선', () => {
   });
 
   it('제외 = 아는 단어 표시(useKnownWords), 되돌리기 = 해제 — 로그인 전에는 둘 다 안내만', () => {
-    expect(page).toContain('known.mutation.mutate({ lang: conf.langCode, wordText: entry.key, known: true });');
+    expect(page).toContain('known.mutation.mutateAsync({ lang: conf.langCode, wordText: key, known: true }).then(() => {');
     expect(page).toContain('known: false');
     expect(page).toMatch(/if \(!userId\) return loginToast\('로그인하면 단어를 저장할 수 있어요'\);/);
     expect(page).toMatch(/if \(!userId\) return loginToast\('로그인하면 아는 단어로 옮길 수 있어요'\);/);
@@ -219,10 +236,87 @@ describe('⑸ 저장 · 제외 · 링크 배선', () => {
     for (const f of ['src/views/LevelListPage.jsx', 'src/components/levels/LevelTiles.jsx']) {
       expect(read(f), f).not.toMatch(/grammar|legacy-textbooks|ArchiveLink/);
     }
-    for (const lang of ['japanese', 'chinese']) for (const kind of ['vocab', 'bunkei']) for (const key of LEVEL_LIST_LANGS[lang].levels) {
+    for (const lang of ['japanese', 'chinese']) for (const key of LEVEL_LIST_LANGS[lang].levels) for (const kind of levelKinds(lang, key)) {
       const href = levelListHref(lang, kind, key);
       expect(legacyTextbookTarget(href), href).toBeNull();
       expect(learnerHref(href)).toBe(href);
     }
+  });
+});
+
+describe('⑹ 진도 · 이어 하기 · 성조 색(LEVEL-FLOW-001 — 디자인 검토 2026-10-16 KST, 오너 「숫자가 대거 적히면 시선이 분산」)', () => {
+  const memory = () => { const m = new Map(); return { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, String(v)) }; };
+
+  it('진도: 아는 쪽이 먼저 — 저장돼 있어도 아는 단어면 아는 쪽으로만 센다', () => {
+    const entries = ['a', 'b', 'c', 'd'].map((key) => ({ key }));
+    expect(levelProgress(entries, new Set(['a', 'b']), new Set(['b', 'c']))).toEqual({ total: 4, known: 2, studying: 1, left: 1 });
+    expect(levelProgress([], null, null)).toEqual({ total: 0, known: 0, studying: 0, left: 0 });
+  });
+
+  it('병음 음절: 글자 수와 맞을 때만 가른다 — n · ng 뒤 모음은 「\'」 없으면 앞 자음을 성모로', () => {
+    expect(pinyinSyllables('xuéxí', 2)).toEqual(['xué', 'xí']);
+    expect(pinyinSyllables('píngguǒ', 2)).toEqual(['píng', 'guǒ']);
+    expect(pinyinSyllables('dàngāo', 2)).toEqual(['dàn', 'gāo']); // 蛋糕 — 「dàng|āo」가 아니다
+    expect(pinyinSyllables('Xī\'ān', 2)).toEqual(['Xī', 'ān']);
+    expect(pinyinSyllables('tiān ānmén', 3)).toEqual(['tiān', 'ān', 'mén']);
+    expect(pinyinSyllables('xuéxí', 3)).toBeNull(); // 儿화 · 다음자 등 수가 안 맞으면 색 없이
+    expect(pinyinSyllables('', 1)).toBeNull();
+  });
+
+  it('성조 색은 기본 끔(옵트인 — 오너 확정 2026-08-19)', () => {
+    expect(normalizeLevelPrefs({}).tone).toBe(false);
+    expect(normalizeLevelPrefs({ tone: true }).tone).toBe(true);
+  });
+
+  it('이어 하기 사본: 레벨마다 쌓고 마지막 레벨 · 보기를 남긴다 — 깨진 값은 버린다', () => {
+    const st = memory();
+    writeLevelSnapshot(st, 'chinese', 'h1', { known: 182, studying: 47, total: 832, left: 603, view: 'meaning', at: 1 });
+    writeLevelSnapshot(st, 'chinese', 'h2', { known: 3, studying: 0, total: 900, left: 897, view: 'all', at: 2 });
+    const snap = readLevelSnapshot(st, 'chinese');
+    expect(snap.last).toEqual({ level: 'H2', view: 'all' });
+    expect(snap.levels.H1).toMatchObject({ known: 182, studying: 47, total: 832 });
+    expect(readLevelSnapshot(st, 'japanese')).toBeNull();
+    st.setItem(LEVEL_SNAPSHOT_KEY, JSON.stringify({ chinese: { last: { level: '<x>' }, levels: {} } }));
+    expect(readLevelSnapshot(st, 'chinese')).toBeNull();
+    st.setItem(LEVEL_SNAPSHOT_KEY, '{');
+    expect(readLevelSnapshot(st, 'chinese')).toBeNull();
+  });
+
+  it('배움 입구 카드: 마지막 레벨로 · 자세한 개수는 여기에만 · 기록 없으면 1급부터 그대로', () => {
+    const st = memory();
+    writeLevelSnapshot(st, 'chinese', 'h1', { known: 1182, studying: 47, total: 1832, view: 'all', at: 1 });
+    expect(levelResumeCard(readLevelSnapshot(st, 'chinese'))).toEqual({ href: '/chinese/vocab/h1', title: 'HSK 1 단어',
+      chips: ['알아요 1,182 / 1,832', '공부 중 47'], meta: '이어 하기 ↗' });
+    writeLevelSnapshot(st, 'chinese', 'h3', { known: 0, studying: 0, total: 900, view: 'all', at: 2 });
+    expect(levelResumeCard(readLevelSnapshot(st, 'chinese')).chips).toEqual(['알아요 0 / 900']);
+    expect(levelResumeCard(null)).toBeNull();
+  });
+});
+
+describe('⑺ HSK 7–9 통합 밴드(오너 2026-10-16 「7~9를 통째로」)', () => {
+  it('H7 하나 = 「HSK 7–9」 · 알약 「7–9」, 탭은 단어 하나(문형 · 한자 없음)', () => {
+    expect(LEVEL_LIST_LANGS.chinese.levels.at(-1)).toBe('H7');
+    expect(LEVEL_LIST_LANGS.chinese.levels).not.toContain('H8');
+    expect([levelLabel('H7'), levelPill('h7')]).toEqual(['HSK 7–9', '7–9']);
+    expect(levelKinds('chinese', 'H7')).toEqual(['vocab']);
+    expect(levelKinds('chinese', 'H6')).toEqual(['vocab', 'bunkei']);
+  });
+
+  it('단어 = 우리 사전 ∩ 2026 대강 7–9(표 7), 1–6급 목록과 겹치지 않는다', async () => {
+    const table = await loadZhHskLevels();
+    const data = await levelListData('chinese', 'vocab', 'h7');
+    // 서버 조립은 줄인 꼴(compactLevelEntry) — 화면과 같은 복원(levelGroupsOf)으로 대조 키를 본다.
+    const keys = levelGroupsOf(data.groups).flatMap((g) => g.entries.map((e) => e.key));
+    expect(keys.length).toBeGreaterThan(5500); // 대강 7–9 표제어 5,562(1–6급과 겹친 것 제외) — 빠짐은 zhHsk2026Fill 계약
+    expect(keys.filter((k) => zhHskLevelOf(k, table) !== 7)).toEqual([]);
+    const h6 = new Set(levelGroupsOf((await levelListData('chinese', 'vocab', 'h6')).groups).flatMap((g) => g.entries.map((e) => e.key)));
+    expect(keys.filter((k) => h6.has(k))).toEqual([]);
+    expect(data.groups.flatMap((g) => g.entries).filter((e) => !e.meaning)).toEqual([]); // 뜻 없는 줄 0
+  });
+
+  it('/chinese/vocab/h7은 열린 주소, 없는 /chinese/bunkei/h7 · /chinese/vocab/h8은 열지 않는다', () => {
+    expect(legacyTextbookTarget('/chinese/vocab/h7')).toBeNull();
+    expect(legacyTextbookTarget('/chinese/bunkei/h7')).not.toBeNull();
+    expect(legacyTextbookTarget('/chinese/vocab/h8')).not.toBeNull();
   });
 });

@@ -19,7 +19,7 @@ vi.mock('../supabase', () => ({ supabase: { auth: { getSession: async () => ({ d
 
 import { POST } from '../../app/api/analyze/route.js';
 import { reset, routeFetch } from '../server/__tests__/helpers/boundaryRouteHarness.js';
-import { ANALYZE_PACK_MAX_CHARS, analyzeText, retryAfterMs } from '../analyzeText';
+import { ANALYZE_PACK_MAX_CHARS, analyzeText, koreanLineUnits, retryAfterMs } from '../analyzeText';
 import { inspectAnalysisCoverage } from '../analysisCoverage';
 
 const FIXTURE = path.join(process.cwd(), 'src/lib/__tests__/__snapshots__/analyzePacking.perParagraph.json');
@@ -187,6 +187,31 @@ describe('문단을 넘어 묶기 — 요청 수', () => {
     expect(calls.map((c) => c.lines)).toEqual([['첫 문단입니다.'], ['둘째 문단입니다.'], ['셋째 문단입니다.']]);
     expect(json).toMatchObject({ status: 'completed', failed_indices: [] });
   });
+
+  it('한국어 긴 줄(문단 하나가 한 줄 — 서버 캡 200자 초과)은 잇닿은 조각으로 보내고 원문 위치를 줄 좌표로 잇는다', async () => {
+    const calls = [];
+    vi.stubGlobal('fetch', koreanSpanServer(calls));
+    const sentence = '나는 그 일을 오래 생각하였다. ';
+    const long = sentence.repeat(30).trimEnd(); // 약 500자 한 줄
+    const raw = `머리말.\n\n${long}`;
+    const json = await analyzeText(raw, signal(), { metadata: { language: 'Korean' } });
+    const sent = calls.flatMap((c) => c.lines);
+    expect(sent.every((line) => line.length <= 200)).toBe(true);
+    expect(sent.slice(1).join('')).toBe(long); // 공백도 조각에 남는다 — 이으면 줄 그대로
+    expect(sent.slice(1, -1).every((line) => line.endsWith('. '))).toBe(true); // 문장 끝에서 자른다
+    expect(json).toMatchObject({ status: 'completed', failed_indices: [] });
+    const tokens = json.sequence.map((id) => json.dictionary[id]).filter((t) => t.sourceSpan?.lineIndex === 2);
+    expect(tokens.map((t) => long.slice(t.sourceSpan.lineStart, t.sourceSpan.lineEnd))).toEqual(tokens.map((t) => t.text));
+    expect(tokens.every((t) => raw.slice(t.sourceSpan.start, t.sourceSpan.end) === t.text)).toBe(true);
+  });
+
+  it('koreanLineUnits — 캡 안이면 한 조각 · 옛한글 풀어쓴 자모는 가르지 않는다', () => {
+    expect(koreanLineUnits('짧은 줄')).toEqual([{ text: '짧은 줄', start: 0 }]);
+    const old = '\u1100\u119E\u11AB'.repeat(250); // 공백 · 문장 끝 없는 옛한글 750자 — 캡 자리 칼선도 글자 경계
+    const units = koreanLineUnits(old);
+    expect(units.map((u) => u.text).join('')).toBe(old);
+    expect(units.every((u) => u.text.length <= 200 && u.start % 3 === 0)).toBe(true);
+  });
 });
 
 /** 한국어 가짜 서버 — 줄 하나 = 토큰 하나. 앞의 limited번은 429. */
@@ -200,6 +225,29 @@ function koreanServer(calls, { limited = 0, headers } = {}) {
     return { ok: true, status: 200, json: async () => ({
       metadata: { language: 'Korean', explanationLocale: 'ko', analysisVersion: 'ko-llm-v1' },
       results: body.lines.map((text) => ({ sequence: ['k0'], dictionary: { k0: { text, meaning: '뜻' } } })),
+    }) };
+  });
+}
+
+/** 한국어 가짜 서버(원문 위치) — 공백 · 낱말마다 토큰, sourceSpan은 요청 줄 좌표(실서버와 같다). 200자 넘는 줄은 413. */
+function koreanSpanServer(calls) {
+  return vi.fn(async (url, init) => {
+    const body = JSON.parse(init.body);
+    calls.push({ url, ...body });
+    if (body.lines.some((line) => line.length > 200)) return { ok: false, status: 413, json: async () => ({ error: 'source_too_large' }) };
+    return { ok: true, status: 200, json: async () => ({
+      metadata: { language: 'Korean', explanationLocale: 'ko', analysisVersion: 'ko-llm-v1' },
+      results: body.lines.map((line, k) => {
+        const sequence = [];
+        const dictionary = {};
+        for (const m of line.matchAll(/\s+|\S+/gu)) {
+          const id = `ko_${k}_${sequence.length}`;
+          sequence.push(id);
+          dictionary[id] = { text: m[0], meaning: '뜻', sourceSpan: { start: m.index, end: m.index + m[0].length, unit: 'utf16', lineIndex: k },
+            selectionGroup: `ko_${k}_${m.index}_${m.index + m[0].length}` };
+        }
+        return { sequence, dictionary };
+      }),
     }) };
   });
 }

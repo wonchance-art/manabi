@@ -1,0 +1,53 @@
+{
+  "id": "tatsuno-kingo-tokyo-station",
+  "genre": "architecture",
+  "artist": "tatsuno-kingo",
+  "title": {
+    "native": "東京駅丸ノ内本屋",
+    "ko": "도쿄역 마루노우치 역사",
+    "reading": "とうきょうえきまるのうちほんや"
+  },
+  "date": {
+    "text": "1914",
+    "source": "bunka",
+    "startYear": 1914,
+    "endYear": 1914,
+    "certainty": "exact"
+  },
+  "periods": [
+    "jp-taisho"
+  ],
+  "medium": {
+    "native": "鉄骨煉瓦造",
+    "ko": "철골 벽돌조"
+  },
+  "places": [
+    {
+      "place": "tokyo-station",
+      "role": "located",
+      "url": "https://online.bunka.go.jp/db/heritages/detail/187936"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "bunka",
+      "sourceId": "bunka-187936"
+    }
+  ],
+  "terms": [
+    "竣工",
+    "起点",
+    "煉瓦"
+  ],
+  "lookFor": [
+    "양 끝에 솟은 둥근 지붕은 몇 개일까요?",
+    "가운데 입구 앞 광장에는 무엇이 놓여 있을까요?",
+    "건물의 긴 날개는 좌우로 어디까지 뻗었을까요?"
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:Tokyo Station (1914).webp",
+    "alt": "1914년 무렵의 도쿄역. 넓은 광장 너머로 가로로 아주 긴 벽돌 건물이 서 있고, 양 끝에 둥근 돔 지붕이 하나씩 솟아 있다. 흑백 사진."
+  }
+}

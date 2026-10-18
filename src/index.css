@@ -97,11 +97,16 @@
   /* Transition */
   --transition-fast: 0.15s ease;
   --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 내려앉는 감속 곡선(앱 손맛 — 오너 「처음에 하려던 앱처럼 효과」 2026-10-16). 빠르게 출발해 끝에서 길게 멈춘다.
+     카드 넘김 · 담기 형광 · 줄 바뀜 · 복습 끝 막대가 같은 곡선을 쓴다 — 효과마다 곡선을 새로 적지 않는다. */
+  --ease-settle: cubic-bezier(0.23, 1, 0.32, 1);
 
   /* 레벨별 단어 · 문형 목록(LEVEL-LIST-AJ-001) — 다크 값. 셸(.manabi-app)은 밝은 화면이라 level-list.css가 라이트 값으로 고정한다. */
   --lv-card: #26231f; --lv-line: #3a352e; --lv-chip: #34302a; --lv-chip-hover: #3f3a33; --lv-field: #2e2a25;
   --lv-have: #4a2c33; --lv-busy: #8c5462; --lv-formula: #332f28; --lv-ex-rule: #6b4a52; --lv-warn: #e1b36a; --lv-faint: #8a877e;
   --lv-miss: #3d262c; --lv-warnbg: #352c1d; --lv-ok: #8cc7a6; /* 한자 탭(HANZI-TAB-AL-001) */
+  /* 단어 목록 병음 성조 색(⚙ 옵트인) — 뷰어 성조 색과 같은 값(--tone-*) */
+  --lv-tone-1: #e8705f; --lv-tone-2: #6fbf73; --lv-tone-3: #6aa9e8; --lv-tone-4: #b48ae8; --lv-tone-0: #9a9a9a;
 }
 
 /* ========= Light Theme (warm cream) ========= */
@@ -131,6 +136,7 @@
   --lv-card: #fffdf9; --lv-line: #e2ddd2; --lv-chip: #ece8df; --lv-chip-hover: #e2ddd2; --lv-field: #ede9e0;
   --lv-have: #f3e4e7; --lv-busy: #b77885; --lv-formula: #efeae0; --lv-ex-rule: #d9c4c9; --lv-warn: #8a5a12; --lv-faint: #a3a399;
   --lv-miss: #fbf1f3; --lv-warnbg: #f6eedd; --lv-ok: #2f6b4f;
+  --lv-tone-1: #c0392b; --lv-tone-2: #2e7d32; --lv-tone-3: #1565c0; --lv-tone-4: #6a3fb5; --lv-tone-0: #7a7a72;
 }
 
 /* ========= Reset ========= */
@@ -622,6 +628,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.875rem;
 }
 
+/* 라우트 대기(app/(app)/loading.jsx): 0.4초 뒤에야 보인다 — 짧은 대기에서 스피너가 골격 앞에 깜빡이지 않게.
+   opacity만 바꾼다(글은 화면 읽기에 그대로). 동작 줄이기면 서서히 대신 0.4초 뒤 한 번에. */
+.route-loading .spinner-wrap {
+  animation: route-loading-in 0.16s ease-out 0.4s both;
+}
+@keyframes route-loading-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-loading .spinner-wrap { animation: route-loading-in 1ms 0.4s both; }
+}
+
 /* ========= Button ========= */
 .btn {
   display: inline-flex;
@@ -1059,6 +1078,28 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   gap: 16px;
 }
 
+/* 골격 글줄(LOADING-SKELETON-001, Skeleton.jsx SkeletonLine) — 감싼 요소의 줄 안에 앉아 줄 높이를 지킨다. */
+.skeleton-line--inline {
+  display: inline-block;
+  vertical-align: middle;
+  max-width: 100%;
+}
+/* 화면 읽기 전용 글자(보이지 않고 읽힌다) — 정본 한 곳(N1 교차 검토 2026-10-17 KST). 같은 선언을 파일마다 다시 쓰던
+   클래스는 이 목록에 이름만 더한다: .sr-only(일반 · 서재 자료 추가 · 뷰어 경계 수정 legend) · .skeleton-sr(SkeletonRegion
+   「〔무엇〕 불러오는 중…」) · .group-card__sr(「1/2」를 날짜로 읽지 않게 「2부분 중 1」) · .hanja-pop__sr(한자 음의 원 훈).
+   선언이 다른 것(clip: rect · 여백 없음 · 포커스 때 보이기)은 계산값이 달라지므로 각 파일에 둔다 — srOnlyCanon.test.js 목록. */
+.sr-only,
+.skeleton-sr,
+.group-card__sr,
+.hanja-pop__sr {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+/* 모션 축소: 반짝임 없이 정지 회색 칸. 전역 규칙은 길이만 줄여 한 번 깜빡이므로 여기서 직접 끈다. */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton, .skeleton-line { animation: none; }
+}
+
 /* ── 풀폭 단어 행(row) — 섹터 고정폭 정렬, 정보 풍부 ── */
 .vocab-list { display: flex; flex-direction: column; gap: 8px; }
 /* 2행 그리드 — 1행: 품사·듣기·단어·뜻·우측 (한 라인) / 2행: 발음(단어 아래)·예문(뜻 아래) */
@@ -1403,7 +1444,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
    (실측 390×900: 카드가 화면 아래 절반에서 시작, 세 번째 보기는 잘림).
    세션 중에는 페이지 크롬을 걷어내고 진행·나가기만 남긴다. */
 body.is-review-session .mobile-nav { display: none; }
-body.is-review-session .page-container { padding-top: 8px; }
+/* 위 여백은 끝 화면까지(is-review-chrome = 세션 + 끝 화면) — 끝으로 넘어가며 본문이 내려앉지 않게(VOCAB-FLOW-001 A). */
+body.is-review-chrome .page-container { padding-top: 8px; }
 
 .review-topbar {
   display: flex; align-items: center; gap: 12px;
@@ -1436,6 +1478,24 @@ body.is-review-session .page-container { padding-top: 8px; }
   /* 390px에서 좌우 40px씩 먹으면 단어가 줄바꿈된다 — 화면 폭에 따라 준다 */
   padding: clamp(20px, 6vw, 40px);
   text-align: center;
+}
+
+/* 카드 넘김 — 다음 카드가 오른쪽에서 짧게 들어온다(복습 손맛 실험실 제안안, 2026-10-16).
+   key로 카드마다 새로 그려지므로 한 장마다 한 번만 돈다. 0.3초 이하 · 감속 곡선. */
+.review-card--turn { animation: reviewCardTurn 0.24s var(--ease-settle); }
+@keyframes reviewCardTurn {
+  from { opacity: 0.35; transform: translateX(14px); }
+  to { opacity: 1; transform: none; }
+}
+/* 앞면 몸통은 눌러서 펼칠 수 있다(정본 입력은 「정답 확인하기」 버튼). */
+.review-card__body--front { cursor: pointer; }
+@media (prefers-reduced-motion: reduce) {
+  .review-card--turn { animation: none; }
+}
+/* 새 줄이 제자리에 내려앉는다(담은 표현 줄 · 복습 끝 제목) — 4px만, 좌표는 그대로(transform). */
+@keyframes settleIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
 }
 
 .review-card--center {
@@ -1982,10 +2042,15 @@ a.viewer-badge:hover {
   color: var(--warning);
 }
 /* 수집 배지는 무채색으로 내렸지만 **팝은 남긴다** — 단어를 담은 순간의 되먹임은 색이
-   아니라 움직임이 나른다. 움직임을 끈 사용자에게는 애니메이션만 사라진다. */
+   아니라 움직임이 나른다. 움직임을 끈 사용자에게는 애니메이션만 사라진다.
+   붙는 자리 = 「N개 수집」의 숫자(.viewer-stats__count) — 수가 늘 때만 key로 새로 그려 한 번 돈다
+   (첫 렌더·불러오기 완료는 제외, ViewerPage collectPopKey). 0.3초 상한 안(0.4 → 0.2s).
+   transform은 인라인 상자에 안 먹으므로 숫자는 inline-block이고, 그러면 링크 밑줄이 숫자에 안 이어지므로
+   밑줄을 숫자 상자에 그대로 물려받게 한다(text-decoration: inherit — 같은 기준선이라 한 줄로 보인다). */
 .viewer-badge--pop {
-  animation: vocabCounterPop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  animation: vocabCounterPop 0.2s cubic-bezier(0.34,1.56,0.64,1);
 }
+.viewer-stats__count { display: inline-block; text-decoration: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .viewer-badge--pop { animation: none; }
 }
@@ -2238,8 +2303,6 @@ a.viewer-badge:hover {
   white-space: nowrap;
 }
 .group-card__tag { font-size: 0.72rem; flex-shrink: 0; }
-/* 화면 읽기 프로그램 전용 글자(「1/2」를 날짜로 읽지 않게 「2부분 중 1」) */
-.group-card__sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .group-card__tag--done { color: var(--primary-light); }
 .group-card__tag--due { color: var(--warning); }
 .group-card__tag--muted { color: var(--text-muted); }
@@ -2534,7 +2597,6 @@ a.viewer-badge:hover {
   font-size: 0.5em;
   color: var(--primary-light);
   font-weight: 400;
-  opacity: 0.85;
   user-select: none;
   /* 병음처럼 공백 포함 독음이 rt 안에서 접히면 글자 배열이 흔들린다 — 한 줄 고정 */
   white-space: nowrap;
@@ -2934,6 +2996,22 @@ a.viewer-badge:hover {
   from { transform: scaleX(1); }
   to   { transform: scaleX(0); }
 }
+/* ── 듣기 따라가기 밑줄(뷰어 감사 목업 6 · 1단계, 2026-10-17 KST) ──
+   읽는 문장의 토큰 아래 은은한 선 — 고른 문장 띠(--picked)와 구별되고 문장 지정 막대(.line-pick)를 띄우지 않는다.
+   체류 선과 같은 자리 · 색(--pace-line)이지만 줄지 않는다. 체류 선(.word-token::after)은 스크롤 보기 전용이고 따라가기는
+   쪽 넘김 보기 전용이라 같은 의사 요소를 함께 쓰는 순간이 없다. */
+.word-token--listening { position: relative; }
+.word-token--listening::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--hl-band-top) + var(--hl-band-h) + 0.05em);
+  height: 2px;
+  border-radius: 1px;
+  background: var(--pace-line);
+  pointer-events: none;
+}
 .reader-area--pacing .word-token--picked { position: relative; }
 .reader-area--pacing .word-token--picked::after {
   content: '';
@@ -2975,6 +3053,23 @@ a.viewer-badge:hover {
 }
 .word-token--saved .surface::before {
   border-bottom: 2px solid var(--primary-light);
+}
+/* 담는 순간(앱 손맛 ①) — 방금 담은 그 토큰 하나만 형광펜이 왼쪽에서 오른쪽으로 그어진다.
+   띠(::before)의 좌표(top·height·left·right·밑줄 칸)는 위 규칙들 그대로이고 scaleX만 움직인다 —
+   transform은 레이아웃을 바꾸지 않으므로 문형 밑줄(.pattern-mark)·선택 테두리·이음매와 자리가 겹치지 않는다.
+   클래스는 ViewerPage가 저장 확인 직후 붙이고 짧은 타이머로 뗀다(다시 그려도 재생되지 않게 일회성). */
+.word-token--just-saved .surface::before {
+  transform-origin: left center;
+  animation: hlStroke 0.22s var(--ease-settle) both;
+}
+@keyframes hlStroke {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+/* 모션 축소: 긋기 없이 최종 형광·밑줄만(색 변화는 그대로). 전역 규칙은 길이만 줄이고 뷰어 규칙
+   (reader-controls.css `.viewer-layout *`)은 ::before를 덮지 않으므로 여기서 직접 끈다. */
+@media (prefers-reduced-motion: reduce) {
+  .word-token--just-saved .surface::before { animation: none; transform: none; }
 }
 
 /* 복습 대상: 불투명도 복원 + 부드러운 펄스(밴드 모양 글로우) */
@@ -4483,7 +4578,6 @@ a.viewer-badge:hover {
   font-size: 0.5em;
   color: var(--primary-light);
   font-weight: 400;
-  opacity: 0.85;
   user-select: none;
   white-space: nowrap;
   text-align: center;
@@ -5269,159 +5363,6 @@ a.viewer-badge:hover {
 
 /* 회화 — A/B 턴 시각 분리 + 자동재생 + 가리기 토글 */
 
-/* ========= TTS Voice Picker ========= */
-.tts-voice {
-  position: relative;
-  display: inline-flex;
-}
-.tts-voice__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: border-color var(--lp-trans-fast), background var(--lp-trans-fast);
-  font-family: system-ui, sans-serif;
-}
-.tts-voice__btn:hover {
-  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
-  background: var(--bg-elevated);
-}
-.tts-voice__name {
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-.tts-voice__chev {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-}
-.tts-voice__popover {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  min-width: 280px;
-  max-width: 340px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  z-index: 80;
-  overflow: hidden;
-}
-.tts-voice__head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  background: var(--bg-elevated);
-}
-.tts-voice__sample {
-  background: transparent;
-  border: 1px solid var(--border);
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-.tts-voice__sample:hover { color: var(--primary-light); border-color: var(--primary); }
-.tts-voice__list {
-  list-style: none;
-  padding: 6px 0;
-  margin: 0;
-  max-height: 260px;
-  overflow-y: auto;
-}
-.tts-voice__option {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  transition: background var(--lp-trans-fast);
-}
-.tts-voice__option:hover {
-  background: var(--bg-elevated);
-}
-.tts-voice__option.is-selected {
-  background: color-mix(in srgb, var(--primary) 10%, transparent);
-}
-.tts-voice__option.is-selected::before {
-  content: '✓';
-  color: var(--primary-light);
-  font-weight: 700;
-  margin-right: 4px;
-}
-.tts-voice__option-name {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 0.88rem;
-  color: var(--text-primary);
-  font-weight: 600;
-  overflow: hidden;
-}
-.tts-voice__option-meta {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  font-weight: 400;
-}
-.tts-voice__play {
-  flex-shrink: 0;
-  background: transparent;
-  border: 1px solid var(--border);
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-  transition: all var(--lp-trans-fast);
-}
-.tts-voice__play:hover {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
-}
-.tts-voice__hint {
-  padding: 10px 14px;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  line-height: 1.5;
-  background: var(--bg-elevated);
-  border-top: 1px solid var(--border);
-}
-
-@media (max-width: 600px) {
-  .tts-voice__popover {
-    min-width: 240px;
-    right: -8px;
-  }
-  .tts-voice__name {
-    max-width: 80px;
-  }
-}
-
 /* ========= Lesson Vocab (오늘의 단어 미니 사전) ========= */
 
 /* ========= JaText 시각 강조 (vocab 단어 + 조사 「は」) ========= */
@@ -5733,8 +5674,12 @@ a.viewer-badge:hover {
 
 .toast__icon { font-size: 1.1rem; flex-shrink: 0; }
 .toast__msg  { line-height: 1.4; }
-/* 컨테이너는 아래 화면 클릭을 막지 않도록 none, 토스트 자체는 눌린다 — 액션 버튼이 호출부 인라인 없이도 동작(WALL-STATES-001). */
-.toast { pointer-events: auto; }
+/* 컨테이너도 토스트 바탕도 아래 화면 클릭을 막지 않는다(none) — 안의 조작 요소만 눌린다(auto). 액션 버튼은 호출부 인라인 없이도
+   동작한다(WALL-STATES-001). 바탕까지 auto였을 때는 좁은 화면에서 하단 토스트가 단어 카드의 「아는 단어」 같은 주 동작 위에
+   얹혀 그 탭을 가로챘고, 포인터가 올라가 있는 동안 멈추는 자동 닫힘(TOAST-MOTION-001)과 겹쳐 마우스로는 끝내 누를 수 없었다
+   (e2e viewer-exclusion 「실패/중복/이동 뒤…」 390px 실측 2026-10-17 KST). 멈춤은 이제 토스트 안 버튼에 포인터를 올렸을 때 · 포커스로. */
+.toast { pointer-events: none; }
+.toast :is(button, a, input, select, textarea, summary, [role="button"]) { pointer-events: auto; }
 .toast__body { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
 .toast__close {
   flex-shrink: 0;
@@ -5750,6 +5695,12 @@ a.viewer-badge:hover {
   cursor: pointer;
 }
 .toast__close:hover { color: var(--text-primary); }
+/* 퇴장(TOAST-MOTION-001): ToastContext가 toast--leaving을 단 뒤 TOAST_LEAVE_MS(160ms)에 지운다 — 투명도 · 4px 아래로. */
+.toast { transition: opacity var(--transition-fast), transform var(--transition-fast); }
+.toast--leaving { animation: none; opacity: 0; transform: translateY(4px); pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  .toast, .toast--leaving { animation: none; transition: none; }
+}
 
 /* 종류별 색은 불투명한 --bg-elevated 위에 얹는다(M09 실측 2026-10-13). .toast-container는 body 직속이라 밝은 셸(.manabi-app)
    밖의 루트 토큰을 받는데, 예전처럼 배경이 반투명이면 밝은 본문이 비쳐 루트의 밝은 --text-primary가 그 위에서 거의 안 보였다.
@@ -5779,6 +5730,8 @@ a.viewer-badge:hover {
   font-weight: 700;
   margin-bottom: 16px;
   color: var(--text-primary);
+  /* 발견 서가 「전체 보기」(#today-news)로 내려올 때 고정 머리줄(GNB) 아래에 서게 — 가려지면 초점이 보이지 않는다(실측 2026-10-17 KST). */
+  scroll-margin-top: calc(var(--gnb-height, 78px) + 12px);
 }
 
 .suggestions-grid {
@@ -6313,6 +6266,11 @@ a.viewer-badge:hover {
 .review-done__title {
   font-size: 1.5rem; font-weight: 800; color: var(--text-primary);
   margin-bottom: 6px;
+  /* 복습 끝 마무리(앱 손맛 ②) — 「오늘 몫 끝」이 제자리에 내려앉는다(막대 솟기는 review-room.css). */
+  animation: settleIn 0.2s var(--ease-settle) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .review-done__title { animation: none; animation-delay: 0s; }
 }
 .review-done__sub {
   font-size: 0.88rem; color: var(--text-secondary);
@@ -7429,6 +7387,35 @@ a.viewer-badge:hover {
   text-underline-offset: 4px;
 }
 .study-sent--tap { cursor: pointer; }
+
+/* ── 세션 진행 막대 · 문항 전환 ── */
+/* 오프라인 동안만 진행 막대 아래 한 줄(STUDY-OFFLINE-LINE) — 헤더 줄 아래 여백(20px) 안에 붙인다. */
+/* 문항 머리(STUDY-FOCUS-001) — 새 문항마다 초점이 오는 질문/제목(tabIndex −1). 누를 곳이 아니라 읽을 곳이라 고리를 그리지 않는다. */
+.study-item [data-item-head]:focus, .study-item [data-item-head]:focus-visible { outline: none; }
+.study-offline-line { margin: -12px 0 16px; font-size: 0.8125rem; color: var(--text-muted); }
+.study-progress {
+  flex: 1; height: 10px; overflow: hidden;
+  border-radius: var(--radius-full); background: var(--bg-secondary);
+}
+.study-progress__fill {
+  height: 100%; border-radius: var(--radius-full); background: var(--accent);
+  transition: width 0.3s ease;
+}
+/* 문항 한 장이 제자리에 내려앉는다 — key(uid)로 문항마다 한 번만, 4px · 0.16초(settleIn 재사용). */
+.study-item { animation: settleIn 0.16s var(--ease-settle) both; }
+@media (prefers-reduced-motion: reduce) {
+  .study-progress__fill { transition: none; }
+  .study-item { animation: none; }
+}
+/* 세션 도중 로그인이 풀림 — 기록을 멈췄다는 안내 한 줄 + 로그인 버튼 */
+.study-auth-lost {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin: 10px 0 0; padding: 10px 14px;
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  background: var(--bg-secondary); font-size: 0.9rem; font-weight: 700;
+}
+/* 이 문항 기록만 못 담음 — 세션은 이어진다 */
+.study-record-lost { margin: 12px 0 0; font-size: 0.8rem; color: var(--text-muted); }
 /* 비-ja 문장 속 재료 단어 — 탭 가능(미묘한 밑줄) */
 .study-word {
   cursor: pointer;
@@ -7512,7 +7499,16 @@ a.viewer-badge:hover {
 .fr-quiz__opt:hover:not(:disabled) { border-color: var(--primary); color: var(--text-primary); }
 .fr-quiz__opt.is-correct { border-color: var(--accent); color: var(--accent-text); font-weight: 700; }
 /* 정답 피드백 — 색상 외 기호 표시(색각 보조) */
-.fr-quiz__opt.is-correct::after { content: '✓'; margin-left: auto; padding-left: 8px; font-weight: 700; }
+.fr-quiz__opt.is-correct::after { content: '✓'; margin-left: auto; padding-left: 8px; font-weight: 700;
+  /* 채점 도장(앱 손맛) — ✓만 제자리에서 찍힌다. 칸 색 · 테두리는 원래대로 바로 바뀌고, 끝 상태는 그대로 남는다. */
+  transform-origin: 70% 50%; animation: stampIn 0.16s var(--ease-settle) both; }
+@keyframes stampIn {
+  from { opacity: 0; transform: scale(0.4); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fr-quiz__opt.is-correct::after { animation: none; animation-delay: 0s; }
+}
 .fr-quiz__opt.is-wrong { border-color: var(--danger); color: var(--danger); }
 .fr-quiz__opt.is-locked { opacity: 0.5; }
 .fr-quiz__opt:disabled { cursor: default; }
@@ -8001,7 +7997,10 @@ a.viewer-badge:hover {
 .learn-cta .lessons-continue__meta { color: var(--primary-light); font-size: 1.05rem; }
 
 /* ========= 관리자 인라인 편집 (InlineEdit) =========
-   문장 오른쪽 끝(본문 컬럼 밖 여백)에 은은한 연필. 관리자 계정에서만 렌더된다. */
+   문장 오른쪽 끝(본문 컬럼 밖 여백)에 은은한 연필. 관리자 계정에서만 렌더된다.
+   연필은 내용 앞의 높이 0 기준점(.admin-edit__anchor) 안에 있다 — 내용을 감싸지 않는다(감싸면 관리자 여부가 바뀔 때
+   내용이 다시 마운트됐다, ADMIN-EDIT-STABLE-001). 기준점의 위쪽 = 내용의 위쪽이라 예전 자리(우상단)에 그대로 놓인다. */
+.admin-edit__anchor { display: block; position: relative; height: 0; }
 .admin-edit__pencil {
   position: absolute;
   top: 2px;
@@ -8023,7 +8022,8 @@ a.viewer-badge:hover {
   transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   z-index: 5;
 }
-.admin-edit:hover > .admin-edit__pencil,
+.admin-edit__anchor:has(+ :hover) > .admin-edit__pencil,
+.admin-edit__pencil:hover,
 .admin-edit__pencil:focus-visible {
   opacity: 1;
   color: var(--text-primary);

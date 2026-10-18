@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { buildLiterature, LITERATURE_FILES, LITERATURE_OUTPUTS, LITERATURE_ROOT } from '../../../scripts/lib/literature-build.mjs';
+import { LITERATURE_BOUNDARY_FILE, LITERATURE_BOUNDARY_VERSION } from '../../../scripts/lib/literature-boundaries.mjs';
 import { aozoraFixture, sha256, sampleEntry } from './helpers/aozoraFixtures.js';
 import { literatureIncipit } from '../literatureDisplay.js';
 
@@ -67,7 +68,7 @@ describe('build-literature — 생성·결정성·낡음', () => {
 });
 
 describe('build-literature — 게시 목록·뷰어 대조표(AOZORA-P0-2)', () => {
-  it('작품 폴더에서 index.generated.js(서버 게시용)와 manifest.generated.json(뷰어 대조용)을 만든다', async () => {
+  it('작품 폴더에서 index.generated.js(서버 게시용) · manifest.generated.json(뷰어 대조용) · 표시용 표 둘(화면 표지·제목 · 장 첫 문장)을 만든다', async () => {
     const root = workspace([sample()]);
     await buildLiterature({ root });
     expect(readFileSync(path.join(root, LITERATURE_OUTPUTS.index), 'utf8'))
@@ -79,6 +80,14 @@ describe('build-literature — 게시 목록·뷰어 대조표(AOZORA-P0-2)', ()
     // 표지·목차 표기(AOZORA-P0-5) — entry.json display + 나눈 방식
     expect(manifest.works['aozora-000001-000001']).toMatchObject({ division: 'heading', display: sampleEntry().display });
     expect(manifest.works['aozora-000001-000001'].literature).not.toHaveProperty('rubyLocks');
+    // 표시용 표(LIT-DISPLAY-001) — 전체 표에서 파생: 장은 순서·이름만, 크레딧은 발표 연도만, 장 첫 문장은 따로
+    const display = JSON.parse(readFileSync(path.join(root, LITERATURE_OUTPUTS.display), 'utf8'));
+    const work = manifest.works['aozora-000001-000001'];
+    expect(display.works['aozora-000001-000001']).toEqual({ title: work.title, author: work.author, level: work.level, total: work.total,
+      division: work.division, chars: work.chars, display: work.display, literature: { publishedYear: work.literature.publishedYear },
+      chapters: work.chapters.map((chapter) => ({ order: chapter.order, title: chapter.title })) });
+    const incipits = JSON.parse(readFileSync(path.join(root, LITERATURE_OUTPUTS.incipits), 'utf8'));
+    expect(incipits.works['aozora-000001-000001']).toEqual(Object.fromEntries(work.chapters.map((chapter) => [String(chapter.order), chapter.incipit])));
   });
 
   it('--check: 손댄 대조표·목록은 실패', async () => {
@@ -89,6 +98,16 @@ describe('build-literature — 게시 목록·뷰어 대조표(AOZORA-P0-2)', ()
     expect((await buildLiterature({ root, check: true })).errors).toEqual([expect.stringContaining(`${LITERATURE_OUTPUTS.manifest}가 작품 폴더와 다르다`)]);
   });
 
+  it.each(['display', 'incipits'])('--check: 손댄 표시용 표(%s)도 실패 — 화면이 읽는 표가 전체 표와 갈라지지 않게', async (output) => {
+    const root = workspace([sample()]);
+    await buildLiterature({ root });
+    const file = path.join(root, LITERATURE_OUTPUTS[output]);
+    const table = JSON.parse(readFileSync(file, 'utf8'));
+    table.works['aozora-000001-000001'] = { ...table.works['aozora-000001-000001'], forged: true }; // 전체 표에 없는 값을 끼워 넣는다
+    writeFileSync(file, `${JSON.stringify(table, null, 2)}\n`);
+    expect((await buildLiterature({ root, check: true })).errors).toEqual([expect.stringContaining(`${LITERATURE_OUTPUTS[output]}가 작품 폴더와 다르다`)]);
+  });
+
   it('한 편이라도 실패하면 목록·대조표를 다시 쓰지 않는다(깨진 작품이 빠진 채 목록이 줄지 않게)', async () => {
     const root = workspace([sample()]);
     await buildLiterature({ root });
@@ -96,6 +115,43 @@ describe('build-literature — 게시 목록·뷰어 대조표(AOZORA-P0-2)', ()
     writeFileSync(path.join(root, 'aozora-000001-000001', LITERATURE_FILES.source), source.replace('霧', '雲'));
     expect((await buildLiterature({ root })).errors).toEqual([expect.stringContaining('SHA-256')]);
     expect(readFileSync(path.join(root, LITERATURE_OUTPUTS.index), 'utf8')).toBe(before);
+  });
+});
+
+describe('build-literature — 단어 경계 미리 묶기(AOZORA-P1-10)', () => {
+  /** 빌드한 장들에서 장마다 첫 두 글자를 묶는 boundaries.json(경계 생성기 대신 — 형식·대조만 본다). */
+  async function withBoundaries(root, edit = (boundaries) => boundaries) {
+    await buildLiterature({ root });
+    const dir = path.join(root, 'aozora-000001-000001');
+    const { chapters } = JSON.parse(readFileSync(path.join(dir, LITERATURE_FILES.chapters), 'utf8'));
+    const boundaries = {
+      schemaVersion: LITERATURE_BOUNDARY_VERSION,
+      tokenizer: 'fake',
+      chapters: chapters.map((chapter) => {
+        const line = chapter.rawText.split('\n').findIndex((item) => item.replace(/\s+/gu, '').length >= 2);
+        const text = chapter.rawText.split('\n')[line].replace(/\s+/gu, '').slice(0, 2);
+        return { order: chapter.order, textSha256: sha256(chapter.rawText), edits: [{ line, start: 0, end: 2, text, reason: 'katakana' }] };
+      }),
+    };
+    writeFileSync(path.join(dir, LITERATURE_BOUNDARY_FILE), `${JSON.stringify(edit(boundaries), null, 2)}\n`);
+    return dir;
+  }
+
+  it('boundaries.json이 있으면 장 metadata.viewerBoundaries로 싣고(분석 요청에 실린다), --check 통과', async () => {
+    const root = workspace([sample()]);
+    const dir = await withBoundaries(root);
+    expect((await buildLiterature({ root })).works[0].status).toBe('written');
+    const { chapters, diagnostics } = JSON.parse(readFileSync(path.join(dir, LITERATURE_FILES.chapters), 'utf8'));
+    expect(chapters.map((chapter) => chapter.metadata.viewerBoundaries.edits.map((edit) => [edit.id, edit.status, edit.cuts])))
+      .toEqual([[['aozora_1_0', 'pending', []]], [['aozora_2_0', 'pending', []]]]);
+    expect(diagnostics.boundaryMergeCount).toBe(2);
+    expect((await buildLiterature({ root, check: true })).errors).toEqual([]);
+  });
+
+  it('원문과 어긋난 boundaries.json(낡은 해시)은 실패 — 엉뚱한 자리를 묶지 않는다', async () => {
+    const root = workspace([sample()]);
+    await withBoundaries(root, (boundaries) => ({ ...boundaries, chapters: boundaries.chapters.map((chapter) => ({ ...chapter, textSha256: '0'.repeat(64) })) }));
+    expect((await buildLiterature({ root })).errors.join('\n')).toContain('boundaries.mjs로 다시 만든다');
   });
 });
 
@@ -123,7 +179,8 @@ describe('build-literature — fail-closed', () => {
   });
 
   it('문단 한가운데를 가르는 장 경계는 실패(문장이 두 장으로 찢긴다)', async () => {
-    const long = `${'長い一文が続いていく。'.repeat(700)}`;
+    // 문장 끝(。)이 없는 장문 — 문장 끝 분할로도 장 상한 안에 들 수 없다
+    const long = `${'長い一文が続いていく、'.repeat(700)}`;
     const text = source.replace('　向こう岸に着いたとき、霧はすっかり晴れていた。', `　${long}`);
     const root = workspace([{ ...sample({ textSha256: sha256(text) }), source: text }]);
     const result = await buildLiterature({ root });

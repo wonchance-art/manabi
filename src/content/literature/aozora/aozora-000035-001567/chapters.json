@@ -290,6 +290,44 @@
               "reading": "たた"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_1_0",
+              "line": 0,
+              "start": 14,
+              "end": 18,
+              "text": "邪智暴虐",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_1",
+              "line": 32,
+              "start": 5,
+              "end": 7,
+              "text": "下賤",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_2",
+              "line": 34,
+              "start": 6,
+              "end": 8,
+              "text": "悧巧",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -550,6 +588,44 @@
               "reading": "かな"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_2_0",
+              "line": 10,
+              "start": 475,
+              "end": 479,
+              "text": "木葉微塵",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_1",
+              "line": 10,
+              "start": 533,
+              "end": 535,
+              "text": "繋舟",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_2",
+              "line": 28,
+              "start": 214,
+              "end": 217,
+              "text": "韋駄天",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -738,6 +814,33 @@
               "reading": "ひ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_3_0",
+              "line": 0,
+              "start": 5,
+              "end": 7,
+              "text": "潺々",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_1",
+              "line": 0,
+              "start": 78,
+              "end": 80,
+              "text": "滾々",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     }
@@ -758,6 +861,7 @@
       3684,
       3497,
       2777
-    ]
+    ],
+    "boundaryMergeCount": 8
   }
 }

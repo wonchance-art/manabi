@@ -85,7 +85,7 @@ export default function BookDraftPanel({
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {/* 오늘 적은 과를 바로 연다 — 열면서 분석된다(등록 시 분석 안 함 원칙 그대로) */}
             {readHref && <Link href={readHref} className="btn btn--primary btn--sm">바로 읽기</Link>}
-            <Button size="sm" variant={readHref ? 'secondary' : undefined} onClick={onDone}>자료실에서 책 보기</Button>
+            <Button size="sm" variant={readHref ? 'secondary' : undefined} onClick={onDone}>서재에서 책 보기</Button>
           </div>
         ) : (
           <Button size="sm" onClick={onRegister} disabled={registering || !draft.title.trim()}>

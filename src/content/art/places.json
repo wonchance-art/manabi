@@ -327,5 +327,89 @@
     "city": "암스테르담",
     "lat": 52.36,
     "lng": 4.885277777
+  },
+  {
+    "id": "grez-sur-loing",
+    "wikidata": "Q251748",
+    "kind": "city",
+    "name": {
+      "native": "Grez-sur-Loing",
+      "ko": "그레쉬르루앵"
+    },
+    "city": "그레쉬르루앵",
+    "lat": 48.315277777,
+    "lng": 2.688888888
+  },
+  {
+    "id": "edo-castle",
+    "wikidata": "Q865913",
+    "kind": "site",
+    "name": {
+      "native": "江戸城",
+      "ko": "에도성"
+    },
+    "city": "도쿄",
+    "lat": 35.688322222,
+    "lng": 139.754388888
+  },
+  {
+    "id": "nikko-shrines-temples",
+    "wikidata": "Q1063133",
+    "kind": "temple",
+    "name": {
+      "native": "日光の社寺",
+      "ko": "닛코의 신사와 절"
+    },
+    "city": "닛코",
+    "lat": 36.7565,
+    "lng": 139.5994
+  },
+  {
+    "id": "koraibashi",
+    "wikidata": "Q849402",
+    "kind": "site",
+    "name": {
+      "native": "高麗橋",
+      "ko": "고라이바시"
+    },
+    "city": "오사카",
+    "lat": 34.68931,
+    "lng": 135.50968
+  },
+  {
+    "id": "tokyo-station",
+    "wikidata": "Q283196",
+    "kind": "site",
+    "name": {
+      "native": "東京駅",
+      "ko": "도쿄역"
+    },
+    "city": "도쿄",
+    "lat": 35.680833333,
+    "lng": 139.766944444
+  },
+  {
+    "id": "tomioka-silk-mill",
+    "wikidata": "Q7818931",
+    "kind": "site",
+    "name": {
+      "native": "富岡製糸場",
+      "ko": "도미오카 제사장"
+    },
+    "city": "도미오카",
+    "lat": 36.255121,
+    "lng": 138.887428
+  },
+  {
+    "id": "akasaka-palace",
+    "wikidata": "Q555255",
+    "kind": "site",
+    "name": {
+      "native": "迎賓館赤坂離宮",
+      "ko": "영빈관 아카사카 이궁"
+    },
+    "city": "도쿄",
+    "lat": 35.68,
+    "lng": 139.72861111
   }
 ]

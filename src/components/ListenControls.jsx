@@ -1,11 +1,22 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { bcp47ForLanguage } from '../lib/speechLang';
+import { speechTagForLanguage } from '../lib/speechLang';
 import ActionIcon from './ActionIcon';
 import {t} from '../lib/viewerMessages';
+import { splitListenSentences } from '../lib/listenFollow';
+// 소리를 내지 못한 이유는 단어 발음과 같은 길(TTS-GAP-001)로 알린다 — 같은 조건 · 같은 문구(providers의 SpeechUnavailableNotice 토스트).
+import { nativeSpeechAvailable, notifySpeechUnavailable, speechCanceled } from '../lib/useTTS';
 
-export default function ListenControls({ text, language = 'Japanese', stopSignal, playbackRate, compact = false, uiLocale = 'ko' }) {
+// 재생 중 속도 칸의 글자 — 뷰어는 Aa 「재생 속도」와 같은 이름(1× 등)을 넘긴다. playbackRate는 Web Speech에 넣는 실제 값(보통 0.85)이라
+// 그대로 보이면 설정은 1×인데 막대는 0.85×로 서로 다른 말을 했다(뷰어 기능 감사 2026-10-17 KST).
+export function listenRateText(playbackRate, rateLabel) {
+  return rateLabel || `${playbackRate}×`;
+}
+
+// onSentence(i) — 지금 읽기 시작한 문장 번호(splitListenSentences 순서), 멈추면 null. 뷰어가 쪽 따라가기에 쓴다(listenFollow.js).
+// followActive — 뷰어가 쪽 넘김 따라가기 중(본문이 읽는 줄을 강조) — 좁은 폭에서는 「지금 문장」 줄을 숨긴다(CSS, reader-controls.css).
+export default function ListenControls({ text, language = 'Japanese', stopSignal, playbackRate, rateLabel, onSentence, followActive = false, compact = false, uiLocale = 'ko' }) {
   const [supported, setSupported] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -17,6 +28,8 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
   const sessionRef = useRef(0);
   const rateRef = useRef(rate);
   const languageRef = useRef(language);
+  const onSentenceRef = useRef(onSentence);
+  onSentenceRef.current = onSentence;
 
   rateRef.current = playbackRate ?? rate;
   languageRef.current = language;
@@ -32,12 +45,9 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
     setPlaying(false);
     setPaused(false);
     setCurrentSentence('');
+    onSentenceRef.current?.(null);
     if (!text) { sentencesRef.current = []; return; }
-    const sentences = text
-      .replace(/\n+/g, ' ')
-      .split(/(?<=[。.!?！？])\s*/)
-      .map(s => s.trim())
-      .filter(Boolean);
+    const sentences = splitListenSentences(text);
     sentencesRef.current = sentences;
     setProgress({ current: 0, total: sentences.length });
   }, [text, language]);
@@ -45,9 +55,10 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
   useEffect(() => () => {
     sessionRef.current += 1;
     if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
+    onSentenceRef.current?.(null);
   }, []);
 
-  useEffect(()=>{sessionRef.current+=1;window.speechSynthesis?.cancel();setPlaying(false);setPaused(false);setCurrentSentence('');},[stopSignal]);
+  useEffect(()=>{sessionRef.current+=1;window.speechSynthesis?.cancel();setPlaying(false);setPaused(false);setCurrentSentence('');onSentenceRef.current?.(null);},[stopSignal]);
 
   function speakNext(sessionId) {
     if (sessionRef.current !== sessionId) return;
@@ -59,16 +70,21 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
     }
     setProgress({ current: i + 1, total: sentences.length });
     setCurrentSentence(sentences[i]);
+    onSentenceRef.current?.(i);
     const utter = new window.SpeechSynthesisUtterance(sentences[i]);
-    utter.lang = bcp47ForLanguage(languageRef.current);
+    utter.lang = speechTagForLanguage(languageRef.current); // 단어 발음과 같은 태그(Korean → ko-KR)
     utter.rate = rateRef.current;
+    // 음성 오류(엔진 · 목소리 없음 등) — 이 세션이면 재생 상태와 뷰어 강조를 정리한다(stop → onSentence(null)).
+    // 취소 · 끊김(단어 발음이 이어받음 등)은 정리만, 그 밖의 실패는 단어 발음과 같은 'failed' 안내(TTS-GAP-001).
+    // 취소(cancel)로 끝난 옛 세션의 오류는 세션 번호가 달라 무시된다.
+    utter.onerror = (event) => { if (sessionRef.current === sessionId) { if (speechCanceled(event)) stop(); else fail('failed'); } };
     utter.onend = () => {
       if (sessionRef.current !== sessionId) return;
       indexRef.current += 1;
       if (indexRef.current < sentencesRef.current.length) speakNext(sessionId);
       else stop();
     };
-    window.speechSynthesis.speak(utter);
+    try { window.speechSynthesis.speak(utter); } catch { fail('failed'); } // 엔진이 발화를 바로 거절(iOS 등) — useTTS와 같다
   }
 
   function play() {
@@ -78,6 +94,8 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
       return;
     }
     if (!sentencesRef.current.length) return;
+    // 이 기기에 그 언어의 목소리가 없으면(한국어 음성 없음) 시작하지 않고 단어 발음과 같은 'no-voice' 안내.
+    if (!nativeSpeechAvailable(languageRef.current)) { notifySpeechUnavailable('no-voice'); return; }
     const sessionId = ++sessionRef.current;
     indexRef.current = 0;
     setPlaying(true);
@@ -94,6 +112,7 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
   function stop() {
     sessionRef.current += 1;
     window.speechSynthesis.cancel();
+    onSentenceRef.current?.(null);
     indexRef.current = 0;
     setPlaying(false);
     setPaused(false);
@@ -101,11 +120,16 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
     setCurrentSentence('');
   }
 
+  function fail(reason) {
+    stop();
+    notifySpeechUnavailable(reason);
+  }
+
   if (!supported || !text) return null;
   const label=key=>compact?t(uiLocale,key):key;
 
   return (
-    <div className="listen-controls">
+    <div className={followActive ? 'listen-controls listen-controls--follow' : 'listen-controls'}>
       {!playing ? (
         // 뷰어 툴바(compact)도 보이는 라벨을 단다(AD-R2 §5) — 접근 이름 「본문 전체 듣기」 안에 보이는 「듣기」가 든다.
         // 재생 중 컨트롤(▶/⏸/⏹)은 지금처럼 아이콘만이다(설계 §9.2 — 라벨은 정지 상태 버튼에만).
@@ -122,7 +146,7 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
           <button className="listen-controls__btn" onClick={stop} aria-label={label('정지')} title={label('정지')} data-icon-action={compact||undefined}>{compact?<ActionIcon name="stop"/>:'⏹'}</button>
           <span className="listen-controls__progress">{progress.current}/{progress.total}</span>
           {playbackRate != null ? (
-            <span className="listen-controls__rate" title={compact?label('재생 속도'):'Aa 읽기 설정에서 재생 속도를 바꿀 수 있어요'}>{playbackRate}×</span>
+            <span className="listen-controls__rate" title={compact?label('재생 속도'):'Aa 읽기 설정에서 재생 속도를 바꿀 수 있어요'}>{listenRateText(playbackRate, rateLabel)}</span>
           ) : <select
             className="listen-controls__rate"
             value={rate}

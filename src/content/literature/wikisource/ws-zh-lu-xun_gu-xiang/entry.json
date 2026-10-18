@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "provider": "wikisource",
+  "wiki": "zh",
+  "key": "ws-zh-lu-xun_gu-xiang",
+  "main": "故鄉",
+  "url": "https://zh.wikisource.org/wiki/%E6%95%85%E9%84%89",
+  "title": "故乡",
+  "author": "鲁迅",
+  "level": "H5 고급",
+  "publishedYear": 1921,
+  "authorDeathYear": 1936,
+  "countryOfOrigin": "CN",
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedJurisdictions": [
+      "CN",
+      "KR"
+    ],
+    "reviewer": "claude",
+    "reviewedAt": "2026-10-17"
+  },
+  "display": {
+    "titleKo": "고향",
+    "authorKo": "루쉰",
+    "binding": "nahan",
+    "coverTitle": "故乡",
+    "coverAuthor": "鲁迅"
+  },
+  "fetchedAt": "2026-10-16",
+  "files": [
+    {
+      "page": "故鄉",
+      "revid": 2570945,
+      "timestamp": "2025-06-18T14:08:57Z",
+      "variants": [
+        {
+          "variant": "zh-hans",
+          "path": "001.zh-hans.html",
+          "extract": "prp",
+          "sha256": "dfd6ca723623c1571fe098a72e050df02f9ccfab3a2c6b55c52aa75ca06e3c89"
+        },
+        {
+          "variant": "zh-hant",
+          "path": "001.zh-hant.html",
+          "extract": "prp",
+          "sha256": "b698acbc4f02a8a5894dc45d4788cb43173bb6167d97b87a6182f32bb77d9216"
+        }
+      ]
+    }
+  ]
+}

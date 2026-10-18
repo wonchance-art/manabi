@@ -36,6 +36,12 @@ describe('팀 메타 — metadata.team 하나로 루트·정리본을 가른다'
     expect(getTeam({})).toBeNull();
     expect(getTeam({ team: { key: 'BAD KEY', root: true } })).toBeNull();
     expect(isTeamRoot({ processed_json: { metadata: ROOT_META } })).toBe(true);
+    // 작은 모듈(classTeamRoot)의 판정은 getTeam(...)?.root === true와 같다 — 형식이 틀린 key · root 값까지.
+    for (const team of [ROOT_META.team, NOTE_META.team, { key: 'BAD KEY', root: true }, { key: 'a', root: 'true' }, { key: 'a' }, null, 'a', []]) {
+      const metadata = { team };
+      expect(isTeamRoot({ processed_json: { metadata } })).toBe(getTeam(metadata)?.root === true);
+    }
+    expect(isTeamRoot(null)).toBe(false);
     expect(isDayNote({ processed_json: { metadata: NOTE_META } })).toBe(true);
     expect(isDayNote({ processed_json: { metadata: ROOT_META } })).toBe(false);
   });
@@ -243,6 +249,29 @@ describe('판·입력판·허브 배선 계약', () => {
 
   it('루트 행은 자료실 목록에서 숨고, 관리자 내비에 수업 링크가 있다', () => {
     expect(read('src/views/MaterialsPage.jsx')).toContain('!isTeamRoot(material)');
+    // 자료 목록은 작은 모듈에서 판정만 가져온다 — classBoard(수업 일정 · 공휴일 묶음)를 싣지 않는다(2026-10-17 KST 번들 조사).
+    expect(read('src/views/MaterialsPage.jsx')).toContain("import { isTeamRoot } from '../lib/classTeamRoot';");
+    expect(read('src/views/MaterialsPage.jsx')).not.toMatch(/from '\.\.\/lib\/classBoard'/);
+    expect(read('src/lib/classTeamRoot.js')).not.toMatch(/^import /m);
     expect(read('src/components/Layout.jsx')).toContain('href="/class"');
+  });
+});
+
+describe('viewerRouteId — 뷰어 주소 조각 풀기(Next 15 useParams는 인코딩된 채 준다)', () => {
+  it('팀 사본 local:<id>의 인코딩된 콜론을 풀어 isLocalId가 알아본다', async () => {
+    const { viewerRouteId, isLocalId, parseLocalId } = await import('../classBoard');
+    expect(viewerRouteId('local%3A7701')).toBe('local:7701');
+    expect(isLocalId(viewerRouteId('local%3A7701'))).toBe(true);
+    expect(parseLocalId(viewerRouteId('local%3A7701'))).toBe(7701);
+    expect(viewerRouteId('local:7701')).toBe('local:7701');
+    expect(viewerRouteId('45')).toBe('45');
+    expect(viewerRouteId('%E0%A4%A')).toBe('%E0%A4%A'); // 잘못된 인코딩은 그대로
+    expect(viewerRouteId(undefined)).toBeUndefined();
+  });
+  it('뷰어는 useParams의 id를 풀어서 쓴다', async () => {
+    const fs = await import('node:fs');
+    const src = fs.readFileSync('src/views/ViewerPage.jsx', 'utf8');
+    expect(src).toContain('const id = viewerRouteId(useParams().id);');
+    expect(src).not.toMatch(/const \{ id \} = useParams\(\);/);
   });
 });

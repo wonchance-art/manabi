@@ -1,10 +1,11 @@
 import { useEffect, useId, useRef } from 'react';
+import { focusIfFree } from '../lib/focusAfterAction';
 import Link from 'next/link';
 import Button from '../components/Button';
 import { detectLang, splitSentenceAroundWord } from '../lib/constants';
 import VocabularyContexts from '../components/learning/VocabularyContexts';
-import { ReviewCardMeta, ReviewHeadword, ReviewReadingRow, langTag } from '../components/vocab/ReviewCardParts';
-import { gradeGuide, revealTrigger } from '../lib/reviewCard';
+import { ReviewCardMeta, ReviewHeadword, ReviewReadingRow, langTag, useGradeBarFocus, useRevealFocus } from '../components/vocab/ReviewCardParts';
+import { gradeGuide, isCardRevealClick, revealTrigger } from '../lib/reviewCard';
 import { wordStage } from '../lib/growthStats';
 import { vocabularyReviewCalendar } from '../lib/vocabularyLearningRows';
 
@@ -14,9 +15,11 @@ import { vocabularyReviewCalendar } from '../lib/vocabularyLearningRows';
  */
 function ScoreSection({ word, onScore, armed = true, locked = false }) {
   const off = locked || !armed;
+  const bar = useGradeBarFocus(locked, armed); // 뒷면이 열리면 막대(버튼 아님)로 초점 — FOCUS-AFTER-ACTION-001 C2
   return (
-    <div className={`review-grade-bar${locked ? ' is-locked' : ''}`} role="group" aria-label="기억 채점">
-      {!locked && <p className="review-score-guide review-grade-guide">{gradeGuide(word)}<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span></p>}
+    <div ref={bar} tabIndex={-1} className={`review-grade-bar${locked ? ' is-locked' : ''}`} role="group" aria-label="기억 채점">
+      {/* 안내 줄 자리는 앞면(잠김)에서도 비워 둔다 — 정답 확인 때 막대가 73→100px로 자라던 것(VOCAB-FLOW-001 C). 잠김엔 숨김 · 화면 읽기 제외. */}
+      <p className={`review-score-guide review-grade-guide${locked ? ' review-grade-guide--reserve' : ''}`} aria-hidden={locked || undefined}>{gradeGuide(word)}<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span></p>
       {/* 숫자 배지 = 키 안내(W R2) — 라벨 텍스트는 버튼 첫 자식 그대로(saveGrade 계약이 이 소스에서 라벨을 뽑는다) */}
       <div className="review-score-grid" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
         <button onClick={() => onScore(1)} className="review-score-btn review-score-btn--again" disabled={off} title="오늘 다시 나와요">다시<span className="save-grade__key" aria-hidden="true">1</span></button>
@@ -74,7 +77,7 @@ function UpcomingCalendar({ projections, learningAvailable, now }) {
         {days.map((d, i) => (
           <div key={i} className="review-done__bar-col">
             <div className={`review-done__bar${d.count > 0 ? ' has-count' : ''}`}
-              style={{ height: d.count > 0 ? `${Math.max(8, (d.count / max) * 40)}px` : '2px' }} title={`${d.key}: ${d.count}개`} />
+              style={{ height: d.count > 0 ? `${Math.max(8, (d.count / max) * 40)}px` : '2px', '--i': i }} title={`${d.key}: ${d.count}개`} />
             <span className="review-done__bar-day">{d.key.slice(5).replace('-', '/')}</span>
             {d.count > 0 && <span className="review-done__bar-count">{d.count}</span>}
           </div>
@@ -87,9 +90,23 @@ function UpcomingCalendar({ projections, learningAvailable, now }) {
 /**
  * 끝 화면(§5-5) — 「전체 복습 끝」이라고 하지 않는다(기존 계약). 학습 단계 카드가 남았으면 끝이 아니라 「잠시 뒤」.
  * finish = { scopeLabel, total, again, cutRemaining?, onContinueCut?, waiting?:{count, nextAt, ready}, onResumeWaiting?,
- *            returnLink?:{href,label}, outOfScope?:{count,label,onClick} }
+ *            returnLink?:{href,label}, outOfScope?:{count,label,onClick}, onTitleNotFocused?:() => void }
  */
+/**
+ * 끝 화면 제목으로 초점(VOCAB-FLOW-001 — /study 「세션 완료」 선례). 마지막 채점 단추가 사라지며 초점이 body로 떨어졌다(a3ba 탐침).
+ * 떨어진 초점만 줍는다 — 범위 없이 focusIfFree(초점이 body일 때만, canTakeFocus(undefined) = focusIsLost). 화면 안 범위
+ * (.page-container)를 주면 상단바(🔈 · ← 나가기)에 둔 초점까지 뺏었다(🔈에 두고 숫자키로 마지막 채점 — a3ba 리뷰 ②).
+ * 제목은 읽는 자리라 고리를 그리지 않는다(tabIndex −1). 초점을 옮기지 못했으면(다른 곳에 초점이 살아 있음) onNotFocused로 알린다 —
+ * 그때만 끝 공지를 읽힌다(초점이 간 제목과 같은 말을 두 번 읽지 않게).
+ */
+function useEndTitleFocus(onNotFocused) {
+  const title = useRef(null);
+  useEffect(() => { if (!focusIfFree(title.current)) onNotFocused?.(); }, []); // eslint-disable-line react-hooks/exhaustive-deps -- 끝 화면이 열린 그 한 번
+  return title;
+}
+
 function ReviewFinished({ finish = {}, bookReview, vocab, projections, learningAvailable, now, setTab }) {
+  const title = useEndTitleFocus(finish.onTitleNotFocused);
   const { scopeLabel, total = 0, again = 0, cutRemaining = 0, onContinueCut, waiting, onResumeWaiting, returnLink, outOfScope } = finish;
   const returnTo = returnLink || (bookReview ? { href: bookReview.returnTo, label: '읽던 교재로 돌아가기' } : null);
   const mature = learningAvailable ? projections.filter(row => wordStage(row).key === 'mature').length : null;
@@ -97,7 +114,7 @@ function ReviewFinished({ finish = {}, bookReview, vocab, projections, learningA
     <div className="review-done">
       <div className="review-done__header">
         {scopeLabel && <p className="review-done__scope">{scopeLabel}</p>}
-        <h2 className="review-done__title">{cutRemaining > 0 ? `${total}개 끝 · 오늘 몫 ${cutRemaining}개 남음` : '오늘 몫 끝'}</h2>
+        <h2 ref={title} tabIndex={-1} className="review-done__title">{cutRemaining > 0 ? `${total}개 끝 · 오늘 몫 ${cutRemaining}개 남음` : '오늘 몫 끝'}</h2>
         <p className="review-done__summary">{[`${total}개`, again > 0 && `다시 ${again}`].filter(Boolean).join(' · ')}</p>
         {waiting?.count > 0 && <p className="review-done__waiting" role="status">「다시」 {waiting.count}개는 잠시 뒤 다시 나와요{waiting.nextAt && !waiting.ready ? <> · <time dateTime={waiting.nextAt}>{new Date(waiting.nextAt).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' })}</time></> : null}</p>}
       </div>
@@ -139,11 +156,12 @@ function ReviewFinished({ finish = {}, bookReview, vocab, projections, learningA
 
 /** 집중 연습 끝 — 일정은 바뀌지 않았다는 것과 「몰랐어요」가 흐릿 범위로 이어진다는 것만 말한다. */
 function PracticeFinished({ practice, setTab }) {
+  const title = useEndTitleFocus();
   return (
     <div className="review-done review-done--practice">
       <div className="review-done__header">
         <p className="review-done__scope">집중 연습</p>
-        <h2 className="review-done__title">집중 연습 {practice.total}개 끝</h2>
+        <h2 ref={title} tabIndex={-1} className="review-done__title">집중 연습 {practice.total}개 끝</h2>
         <p className="review-done__summary">{[`${practice.total}개`, practice.unknown > 0 && `몰랐어요 ${practice.unknown}`].filter(Boolean).join(' · ')}</p>
         <p className="review-room-note">일정은 바뀌지 않았어요.{practice.unknown > 0 ? ' 「몰랐어요」 표현은 「흐릿 · 위험」 범위에 나와요.' : ''}</p>
       </div>
@@ -178,6 +196,9 @@ export default function VocabReview({
   }, [reviewIdx, mode, ttsSupported, currentWord, speak]);
 
   const reveal = event => { setShowAnswer(true); setShowHint?.(false); onReveal?.(revealTrigger(event)); };
+  // 새 카드가 열리면 「정답 확인하기」로 초점(STUDY-FOCUS-001) — 시작 · 채점 단추가 사라져 body로 떨어지던 자리.
+  const revealRef = useRevealFocus(mode === 'flash' && !reviewFinished && !showAnswer && !!currentWord, currentWord?.id);
+  const headwordId = useId(); // 「정답 확인하기」가 표제어를 함께 읽게(aria-describedby)
   const finishBar = practice
     ? (showAnswer && mode !== 'listening' ? <PracticeButtons onResult={handleScore} armed={armed} /> : null)
     : currentWord && mode === 'flash' && <ScoreSection word={currentWord} onScore={handleScore} armed={armed} locked={!showAnswer} />;
@@ -189,14 +210,15 @@ export default function VocabReview({
           : <ReviewFinished finish={finish || { total: new Set(reviewWords.filter(Boolean).map(word => word.id)).size }} bookReview={bookReview} vocab={vocab}
             projections={projections} learningAvailable={learningAvailable} now={now} setTab={setTab} />
       ) : admissionPending || admissionError ? (
-        <div className="card review-card review-card--center" role={admissionError ? 'alert' : 'status'}>
+        <div className="card review-card review-card--center" role={admissionError ? 'alert' : 'status'} aria-busy={!admissionError || undefined}>
           <p>{admissionError ? REVIEW_PREP_FAILED : '복습 준비 중…'}</p>
           {admissionError && <Button variant="ghost" onClick={onAdmissionRetry}>다시 시도</Button>}
         </div>
       ) : reviewWords.length > 0 && currentWord ? (
         <>
           {practice && <p className="review-practice-banner" role="note">집중 연습 · 일정은 바뀌지 않아요</p>}
-          <div className="card review-card" style={{ padding: 0 }}>
+          {/* key = 카드마다 새로 그려 넘김 효과(review-card--turn)가 한 장마다 한 번 돈다. */}
+          <div key={currentWord.id} className="card review-card review-card--turn" style={{ padding: 0 }}>
             <div className="review-card__progress review-card__progress--tools">
               <div className="review-card__tools">
                 {mode === 'flash' && !showAnswer && currentWord?.source_sentence && (
@@ -217,12 +239,13 @@ export default function VocabReview({
               </div>
             </div>
 
-            <div className="review-card__body">
+            <div className={`review-card__body${mode === 'flash' && !showAnswer ? ' review-card__body--front' : ''}`}
+              onClick={event => { if (mode === 'flash' && !showAnswer && isCardRevealClick(event)) reveal(event); }}>
               <ReviewCardMeta label={metaLabel} word={currentWord} />
               {mode !== 'flash' && <p className="review-room-prompt">{showAnswer ? '뜻을 확인했어요.' : mode === 'typing' ? '이 표현의 뜻을 써 보세요.' : mode === 'context' ? '문장 속 표현의 뜻을 골라 보세요.' : '듣고, 뜻을 골라 보세요.'}</p>}
               {/* 표제어 — 앞면은 글자만(읽기 · 소리 없음). 문맥 · 듣기 갈래는 답을 보기 전까지 숨긴다(예문이 없으면 단어가 문제). */}
               {((mode !== 'context' && mode !== 'listening') || showAnswer || (mode === 'context' && !currentWord.source_sentence)) && (
-                <ReviewHeadword word={currentWord} revealed={showAnswer} />
+                <ReviewHeadword word={currentWord} revealed={showAnswer} id={headwordId} />
               )}
 
               {/* 플래시카드(본 복습 · 집중 연습 「스스로 확인」) */}
@@ -241,7 +264,7 @@ export default function VocabReview({
                     );
                   })()}
                   {!showAnswer && (
-                    <Button variant="secondary" size="lg" onClick={reveal} className="review-reveal-btn">
+                    <Button ref={revealRef} variant="secondary" size="lg" onClick={reveal} className="review-reveal-btn" aria-describedby={headwordId}>
                       {practice ? '뜻 보기' : '정답 확인하기'}<span className="review-keys-hint review-keys-hint--space" aria-hidden="true"> · Space</span>
                     </Button>
                   )}

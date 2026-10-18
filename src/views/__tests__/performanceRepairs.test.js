@@ -7,7 +7,7 @@ import { sliceBetween } from '../../lib/__tests__/helpers/sliceBetween';
 const read = (file) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
 
 describe('P1–P5 초기 전송 성능 수리 회귀', () => {
-  it('P1: root는 실제 sans weight만 로드하고 serif는 app scope에 둔다', () => {
+  it('P1: root는 실제 sans weight만 로드하고 serif는 app scope, 번체 TC는 세그먼트 scope에 둔다', () => {
     const rootLayout = read('src/app/layout.jsx');
     const appLayout = read('src/app/(app)/layout.jsx');
     const css = read('src/index.css');
@@ -15,6 +15,8 @@ describe('P1–P5 초기 전송 성능 수리 회귀', () => {
     expect(rootLayout).not.toContain("'300'");
     expect(rootLayout).not.toContain('Noto_Serif_KR');
     expect(rootLayout).toContain('Noto_Sans_JP');
+    // 대만 번체 TC는 루트가 아니라 번체를 그리는 세그먼트 범위(TcFontScope)에서만 싣는다 — 지도는 src/app/__tests__/fontScope.test.js.
+    expect(rootLayout).not.toContain('Noto_Sans_TC');
     expect(rootLayout).toContain("subsets: ['latin']");
     expect(appLayout).toContain('Noto_Serif_KR');
     expect(appLayout).toContain('className={notoSerifKr.variable}');
@@ -45,6 +47,12 @@ describe('P1–P5 초기 전송 성능 수리 회귀', () => {
     expect(layout).toContain('const navLinks = MAIN_NAV');
     expect(layout).toContain('const mobileNavLinks = MAIN_NAV');
     expect(layout.split('prefetch={l.prefetch}').length - 1).toBe(2);
+    // 의도 prefetch(APP-FEEL-004)는 뷰포트 prefetch를 되살리지 않는다 — 포인터 · 포커스 · 터치에만, 대기 화면까지(kind 'auto')만 받는다.
+    expect(MAIN_NAV.find(item => item.href === '/home')).toEqual(expect.objectContaining({ prefetch: false, intentPrefetch: true }));
+    // 서재는 자체 loading이 없어 AUTO가 라우터 상태만 받는다 — 의도 prefetch도 붙이지 않는다(붙잡힘 위험만).
+    expect(MAIN_NAV.find(item => item.href === '/materials').intentPrefetch).toBeUndefined();
+    expect(read('src/lib/intentPrefetch.js')).toContain("router.prefetch(href, { kind: 'auto' });");
+    expect(layout).not.toMatch(/prefetch=\{true\}/);
     expect(layout).not.toContain('/review/grammar');
   });
 
@@ -52,7 +60,8 @@ describe('P1–P5 초기 전송 성능 수리 회귀', () => {
     const page = read('src/app/(app)/home/page.jsx');
     const home = read('src/views/HomePage.jsx');
     expect(page).toContain('readingCatalog(published.book)');
-    expect(page).toContain('<HomePage book={book} />');
+    // 세션 쿠키 이름 유무(B1)만 더한다. 판본은 약속으로 넘긴다(LCP-UNSUSPEND) — 같은 작은 카탈로그(readingCatalog)다.
+    expect(page).toContain('<HomePage bookPromise={bookPromise} sessionHint={sessionHint} />');
     expect(page).not.toContain('buildContinueManifest');
     expect(home).not.toContain('ProfileStats');
     expect(home).not.toContain('pullProgress');

@@ -8,45 +8,26 @@
 //   ② 원문 수정 차단 — 저자 루비 잠금은 정본 raw_text 기준 문자 위치다. 원문을 고치면 위치가 낡아 잠금이 통째로 꺼지고
 //      (applyMaterialRubyLocks fail-closed) 출처 대조도 깨진다. metadata.literature.provider가 'aozora'인 자료는
 //      원문 수정(rawTextOverride)을 받지 않는다 — 분석·재분석·단어 교정은 그대로 된다.
+// 화면 표지 · 제목(literatureWork · literatureWorkOfBook · literatureDisplayTitle)은 표시용 대조표만 읽는 literatureWorks로 옮겼다
+// (LIT-DISPLAY-001 — 홈 번들에 전체 대조표가 실리지 않게). 여기서는 다시 내보내기만 한다 — 화면 파일은 literatureWorks를 직접 import한다.
 import manifest from '../content/literature/aozora/manifest.generated.json';
-import { literatureChapterTitle } from './literatureDisplay';
+import { canonicalChapterOf } from './literatureDisplay';
+
+export { literatureDisplayTitle, literatureWork, literatureWorkOfBook } from './literatureWorks';
 
 export const CANONICAL_LITERATURE_EDIT_BLOCKED = '정본 책의 원문은 고칠 수 없어요. 단어 뜻·발음 교정과 다시 분석은 그대로 쓸 수 있어요.';
 
+/** 원문 수정을 막는 정본 문학책 출처 — 青空文庫 · Standard Ebooks(LIT-SRC-EN-1) · Wikisource(LIT-SRC-WS-1) · 전자책 사이트(LIT-SRC-PD-1). 큐레이션 책('art')은 artBookProvider가 따로 막는다. */
+export const CANONICAL_LITERATURE_PROVIDERS = Object.freeze(['aozora', 'standardebooks', 'wikisource', 'pdsite']);
+
 /** 정본 문학책 자료인가(원문 수정 차단 판정) — metadata만 본다(동기). */
 export function isCanonicalLiteratureMaterial(material) {
-  return material?.processed_json?.metadata?.literature?.provider === 'aozora';
+  return CANONICAL_LITERATURE_PROVIDERS.includes(material?.processed_json?.metadata?.literature?.provider);
 }
 
-/** 책 key → 정본 대조표의 작품(표지·목차 표기 — literatureDisplay). 정본이 아니면 null. */
-export function literatureWork(key, works = manifest.works) {
-  return typeof key === 'string' && Object.hasOwn(works, key) ? works[key] : null;
-}
-
-/** 책 묶음(groupByBook) → 정본 작품. 첫 장이 아오조라 정본 자료이고 key가 대조표에 있을 때만(아니면 null — 일반 책 표기 그대로). */
-export function literatureWorkOfBook(book, works = manifest.works) {
-  const metadata = book?.chapters?.[0]?.processed_json?.metadata;
-  return metadata?.literature?.provider === 'aozora' ? literatureWork(book.key, works) : null;
-}
-
-/** 자료 metadata.book → 정본 대조표의 {work, chapter}. 표에 없는 작품·장이면 null. */
+/** 자료 metadata.book → 정본 대조표(전체 — 장 원문 해시 · 크레딧)의 {work, chapter}. 표에 없는 작품·장이면 null. */
 export function canonicalLiteratureChapter(metadata, works = manifest.works) {
-  if (metadata?.literature?.provider !== 'aozora') return null;
-  const key = metadata?.book?.key;
-  const order = Number(metadata?.book?.order);
-  const work = typeof key === 'string' && Object.hasOwn(works, key) ? works[key] : null;
-  const chapter = work?.chapters.find((item) => item.order === order) || null;
-  return work && chapter ? { work, chapter } : null;
-}
-
-/**
- * 저장된 자료 제목 대신 보일 정본 장 제목(「鼻 (1/2)」 · 「ごん狐 — 一」 · 「手袋を買いに」). 정본 장이 아니면 저장된 제목 그대로.
- * 예전 표기(「鼻 — 1편」)로 서재에 옮겨 둔 사본도 다시 받지 않고 표를 따르게 한다 — 책 카드(literatureWorkOfBook)와 같은
- * metadata 판정이다(제목 표기만 바꾸므로 원문 해시 대조는 하지 않는다 — 크레딧은 verifiedCanonicalLiterature 몫).
- */
-export function literatureDisplayTitle(metadata, storedTitle, works = manifest.works) {
-  const found = canonicalLiteratureChapter(metadata, works);
-  return found ? literatureChapterTitle(found.work, found.chapter.order) : storedTitle;
+  return canonicalChapterOf(metadata, 'aozora', works);
 }
 
 export async function sha256Hex(text) {

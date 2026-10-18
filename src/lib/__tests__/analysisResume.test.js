@@ -102,6 +102,21 @@ describe('resume commits only a complete, preserved candidate', () => {
     expect(saved.processed_json.dictionary.id_0_0_old).toEqual(source.processed_json.dictionary.id_0_0_old);
     expect(completeAnalysis(saved.processed_json, source.raw_text)).toBe(true);
   });
+  it('French long paragraphs are sent in sentence pieces under the Gemini output cap and joined in order', async () => {
+    callGemini.mockReset();
+    const sentence = 'Il marchait longtemps dans la nuit froide. ';
+    const paragraph = sentence.repeat(40).trim(); // about 1,700 characters in one line
+    callGemini.mockImplementation(async (piece) => JSON.stringify({
+      sequence: piece.split(' ').map((_, k) => String(k)),
+      dictionary: Object.fromEntries(piece.split(' ').map((word, k) => [String(k), { text: word, pos: '명사', meaning: '뜻' }])),
+    }));
+    const json = await analyzeText(paragraph, signal(), { metadata: { language: 'French' } });
+    const pieces = callGemini.mock.calls.map(([piece]) => piece);
+    expect(pieces.length).toBeGreaterThan(2);
+    expect(pieces.every((piece) => piece.length <= 600 && piece.endsWith('froide.'))).toBe(true);
+    expect(json.status).toBe('completed');
+    expect(json.sequence.map((id) => json.dictionary[id].text).join(' ')).toBe(paragraph);
+  });
   it('does not replace healthy neighbors with failed responses from their shared paragraph', async () => {
     const source = material(['甲。', '乙。']); source.processed_json.dictionary.id_1_0_old.failed = true;
     const result = analysis(['甲。', '乙。'], 'new'); result.status = 'partial'; result.failed_indices = [0]; result.dictionary.id_0_0_new.failed = true;

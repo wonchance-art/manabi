@@ -89,3 +89,59 @@ describe('HSK 2026 1~6급 — 우리 사전 빠짐 0', () => {
     }
   });
 });
+
+// 7–9급 통합 밴드(LEVEL-HSK79-001 — 오너 2026-10-16 KST 「HSK 7~9도 추가 · 통째로 · 이전에 확보한 pdf로」).
+// 1~6급에 없는 7–9급 표제어 중 우리 사전에 없던 4,246개를 「HSK7–9 2026 보강」(h7_hsk2026_a~e.js)으로 채웠다.
+// 콘텐츠 레벨 세트가 아니라 ZH_HSK79_VOCAB으로만 내보낸다(레지스트리 · 교재 보관함 · 목표 레벨 커버리지 밖).
+const FILL79_THEME = 'HSK7–9 2026 보강';
+const FILL79_COUNT = 4246;
+const POS79 = { ...POS, 拟声: '의성어' };
+const fill79 = Object.entries(themesByFile).flatMap(([f, themes]) => themes.filter((t) => t.name === FILL79_THEME).map((t) => [f, t.words]));
+/** 7–9급 표제어(1~6급에 있는 것은 뺀다) → 대강 첫 항목 */
+const source79 = new Map();
+for (const e of SOURCE) {
+  const hw = e.headword ?? e.word;
+  if (e.level !== '7-9' || source2026.has(hw) || source79.has(hw)) continue;
+  source79.set(hw, e);
+}
+
+describe('HSK 2026 7–9급 — 우리 사전 빠짐 0', () => {
+  it('7–9급 표제어가 전부 우리 사전 어딘가에 있다', () => {
+    const dict = new Set(Object.values(modules).flat().map((w) => w.zh));
+    expect([...source79.keys()].filter((w) => !dict.has(w))).toEqual([]);
+  });
+
+  it(`채운 주제는 h7_hsk2026_* 파일에만, 모두 ${FILL79_COUNT}개`, () => {
+    for (const [f] of fill79) expect(f).toMatch(/^h7_hsk2026_[a-e]\.js$/);
+    expect(fill79.flatMap(([, words]) => words).length).toBe(FILL79_COUNT);
+  });
+
+  it('채운 항목은 7–9급 2026 단어이고, 병음은 원문 그대로 · 품사는 원문 첫 갈래 · 뜻 · 예문(표제어 포함)이 있다', () => {
+    const bad = [];
+    for (const w of fill79.flatMap(([, words]) => words)) {
+      const src = source79.get(w.zh);
+      const firstPos = src?.pos.split('、')[0].replace(/[（）()]/g, '');
+      const pos = firstPos ? POS79[firstPos] : '표현';
+      if (!src) bad.push(`${w.zh}: 1~6급에 없는 7–9급 2026 단어가 아님`);
+      else if (w.pinyin !== src.pinyin) bad.push(`${w.zh}: 병음 ${w.pinyin} ≠ 원문 ${src.pinyin}`);
+      else if (w.pos !== pos) bad.push(`${w.zh}: 품사 ${w.pos} ≠ ${pos}`);
+      if (!w.ko?.trim() || !w.ex?.zh?.includes(w.zh) || !w.ex?.pinyin?.trim() || !w.ex?.ko?.trim()) bad.push(`${w.zh}: 뜻 · 예문 누락`);
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('채운 단어는 다른 사전 파일과 겹치지 않는다', () => {
+    const count = new Map();
+    for (const w of Object.values(modules).flat()) count.set(w.zh, (count.get(w.zh) ?? 0) + 1);
+    expect(fill79.flatMap(([, words]) => words).map((w) => w.zh).filter((zh) => count.get(zh) !== 1)).toEqual([]);
+  });
+
+  it('콘텐츠 레벨 세트(레지스트리)가 아니라 ZH_HSK79_VOCAB으로만 나간다 — H6 교재 · 목표 커버리지에 섞이지 않는다', async () => {
+    const zh = await import('../../content/chinese/index.js');
+    expect(zh.ZH_HSK79_VOCAB.flatMap((m) => m.themes.flatMap((t) => t.words)).length).toBe(FILL79_COUNT);
+    const registryWords = new Set(zh.ZH_LEVEL_META.flatMap((m) => (zh.getVocab(m.key)?.themes || []).flatMap((t) => t.words.map((w) => w.zh))));
+    expect(fill79.flatMap(([, words]) => words).filter((w) => registryWords.has(w.zh))).toEqual([]);
+    const index = fs.readFileSync(path.join(ROOT, 'src/lib/refVocabIndex.js'), 'utf8');
+    for (const x of 'abcde') expect(index).toContain(`import('../content/chinese/vocab/h7_hsk2026_${x}').then((m) => ({ level: 'H7', mod: m }))`);
+  });
+});

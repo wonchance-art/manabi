@@ -32,6 +32,8 @@ const SYMBOL_GAIJI = Object.freeze({
   始め角括弧: '［',
   終わり角括弧: '］',
   米印: '※',
+  // Unicode에 한 글자가 없는 기호 — 같은 글자를 늘어놓은 표기로(뜻·소리 변화 없음). 실물 ドグラ・マグラ(「感嘆符二つ」는 ‼ U+203C로 이미 풀린다).
+  感嘆符三つ: '！！！',
 });
 
 function invariant(condition, message) {
@@ -75,6 +77,11 @@ function headingMark(description) {
   if (match) return { type: 'heading-open', level: HEADING_LEVEL[match[2]] };
   match = description.match(/^(同行|窓)?([大中小])見出し終わり$/u);
   if (match) return { type: 'heading-close', level: HEADING_LEVEL[match[2]] };
+  // 여러 줄 見出し(「ここから中見出し」… 「ここで中見出し終わり」) — 사이 줄들을 한 표제로 묶는다(실물 学問のすすめ 九編).
+  match = description.match(/^ここから([大中小])見出し$/u);
+  if (match) return { type: 'heading-block-open', level: HEADING_LEVEL[match[1]] };
+  match = description.match(/^ここで([大中小])見出し終わり$/u);
+  if (match) return { type: 'heading-block-close', level: HEADING_LEVEL[match[1]] };
   if (/^ここ(から|で).*見出し/u.test(description)) return { type: 'heading-unsupported' };
   return null;
 }
@@ -120,7 +127,14 @@ function parseInline(source, lineNumber, ctx) {
     pushText(children, source.slice(cursor, match.index));
     cursor = match.index + match[0].length;
     if (match[1] != null) {
-      children.push({ type: 'ruby', base: match[1], reading: match[2] });
+      // ｜ 루비 기준 안의 외자(「｜御※［＃「飮のへん＋善」、第4水準2-92-71］《ごぜん》」 — 실물 吾輩は猫である)도 그 글자로 푼다.
+      // 예전에는 주석 글자가 그대로 기준이 되어 본문에 「※［＃…］」가 남았다. 못 풀면 〓 + 미해결 외자로 센다(fail-closed).
+      const base = match[1].replace(/※［＃([^］\n]+)］/gu, (all, description) => {
+        const node = gaijiNode(description.trim());
+        ctx.gaiji.push({ ...node, line: lineNumber });
+        return node.status === 'resolved' ? node.char : '〓';
+      });
+      children.push({ type: 'ruby', base, reading: match[2] });
     } else if (match[3] != null) {
       const previous = children.at(-1);
       // 해결된 외자에 걸린 루비(「※［＃「目＋匡」、第3水準1-88-81］《まぶた》」) — 외자는 한자 한 글자이므로 앞 한자 연속과 함께 기준이 된다.
@@ -137,7 +151,11 @@ function parseInline(source, lineNumber, ctx) {
         children.push({ type: 'ruby', base, reading: match[3] });
         continue;
       }
-      const start = previous?.type === 'text' ? trailingRunStart(previous.value) : -1;
+      let start = previous?.type === 'text' ? trailingRunStart(previous.value) : -1;
+      // 물음표·느낌표 한 글자에 붙은 루비(「？《インタロゲーションマーク》」 — 실물 ドグラ・マグラ) — 그 한 글자를 기준으로 삼는다.
+      // 괄호(「《よみ》) 같은 다른 기호는 기준이 될 수 없으니 여전히 경고.
+      // 읽기 보조가 아닌 주석 루비라 잠금 대상은 아니다(aozoraRubyLockable). 공백 뒤 루비는 여전히 경고.
+      if (start < 0 && previous?.type === 'text' && /[？！?!]$/u.test(previous.value)) start = previous.value.length - 1;
       if (start < 0) {
         ctx.warnings.push({ code: previous?.type === 'gaiji' ? 'RUBY_ON_GAIJI' : 'RUBY_WITHOUT_BASE', line: lineNumber, source });
         pushText(children, match[0]);
@@ -297,11 +315,38 @@ export function parseAozoraText(source) {
   const headerLines = lines.slice(0, headerEnd).map((line) => line.trim()).filter(Boolean);
   const ctx = { notes: [], gaiji: [], warnings: [] };
   const blocks = [];
+  let open = null; // 여러 줄 見出し — { level, line, children }
   for (let index = bodyStart; index < bodyEnd; index += 1) {
     const line = lines[index];
     if (!line.trim()) continue;
-    blocks.push(...lineBlocks(parseInline(line, index + 1, ctx), index + 1, ctx));
+    const children = parseInline(line, index + 1, ctx);
+    const opener = children.find((child) => child.type === 'heading-block-open');
+    const closer = children.find((child) => child.type === 'heading-block-close');
+    const rest = children.filter((child) => !child.type.startsWith('heading-block-'));
+    if (opener || closer) {
+      // 여는·닫는 주석은 그 줄에 홀로 있어야 한다(같은 줄 본문은 어디에 붙을지 모른다 — 사람이 보게 경고).
+      if (isContent(rest)) ctx.warnings.push({ code: 'BLOCK_HEADING_WITH_TEXT', line: index + 1 });
+      if (opener) {
+        if (open) ctx.warnings.push({ code: 'NESTED_BLOCK_HEADING', line: index + 1 });
+        open = { level: opener.level, line: index + 1, children: [] };
+      } else if (!open || closer.level !== open.level) {
+        ctx.warnings.push({ code: 'UNOPENED_HEADING', line: index + 1 });
+      } else {
+        const heading = trimChildren(open.children);
+        if (isContent(heading)) blocks.push({ type: 'heading', level: open.level, children: heading, line: open.line });
+        open = null;
+      }
+      continue;
+    }
+    if (open) {
+      // 사이 줄은 전각 공백 하나로 잇는다(연속 표제를 한 줄로 합치는 투영과 같은 이음).
+      if (open.children.length) open.children.push({ type: 'text', value: '\u3000' });
+      open.children.push(...trimChildren(rest.filter((child) => !child.type.startsWith('heading-'))));
+      continue;
+    }
+    blocks.push(...lineBlocks(children, index + 1, ctx));
   }
+  if (open) ctx.warnings.push({ code: 'UNCLOSED_HEADING', line: open.line });
   if (colophonStart < 0) ctx.warnings.push({ code: 'NO_COLOPHON' });
   return freezeDeep({
     schemaVersion: AOZORA_DOCUMENT_VERSION,

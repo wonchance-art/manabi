@@ -14,6 +14,7 @@
  * 언어 칩은 레벨 어휘 · 기억 건강 · 아는 단어를 그 언어로 거른다. 복습 개수 칸은 없다(진입 링크만 범위 주소).
  * 휴대폰은 한 격자를 펴고 클래스 order로 순서를 정한다(진행바 → 오늘 목표 · 연속 → 이번 주 · 아는 단어 → 히트맵 → 레벨 어휘 → 기억 건강).
  */
+import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
@@ -27,6 +28,8 @@ import { fetchKnownWords, knownWordsLang } from '../lib/knownWords';
 import { LANG_NAME_KO, detectLang } from '../lib/constants';
 import Button from '../components/Button';
 import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
+// 약점 칸 — import가 빠져 queryFn이 ReferenceError로 늘 실패했다(no-undef 전수, 2026-10-17 KST).
+import { fetchWeaknessRows } from '../lib/weaknessRows';
 import { kstDayStartMs, kstDateString } from '../lib/growthStats';
 import useLearnLanguage from '../components/learn/useLearnLanguage';
 import LangChips from '../components/learn/LangChips';
@@ -35,6 +38,8 @@ import { StatTile, StreakTile, TodayGoalTile } from '../components/learn/LearnTi
 import LevelVocabCard from '../components/learn/LevelVocabCard';
 import MemoryHealthCard from '../components/learn/MemoryHealthCard';
 import '../components/learn/learn.css';
+import { authEntryHref } from '../lib/authRedirect';
+import { useDialogReturn } from '../lib/useDialogReturn';
 
 /** 히트맵 — 최근 24주(168일), 가장 오른쪽 아래가 오늘. */
 export const HEATMAP_DAYS = 168;
@@ -54,6 +59,8 @@ export async function fetchProfileStats(userId, now = Date.now()) {
 }
 
 export default function ProfileStats() {
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInHref = authEntryHref(usePathname());
   const { user, profile, loading: authLoading } = useAuth();
   const catalog = useGoalCatalog(!!user);
   const [goalSignal, setGoalSignal] = useState(0);
@@ -101,7 +108,7 @@ export default function ProfileStats() {
       <div className="manabi-page learn-page">
         <Link href="/home" prefetch={false} className="learn-crumb">← 배움</Link>
         <div className="learn-top"><div className="learn-top__title"><h1>현황</h1></div></div>
-        <div className="manabi-inline-state learn-login" role="status"><span>로그인이 필요해요.</span><Link href="/auth" prefetch={false} className="learn-button-s">로그인</Link></div>
+        <div className="manabi-inline-state learn-login" role="status"><span>로그인이 필요해요.</span><Link href={signInHref} prefetch={false} className="learn-button-s">로그인</Link></div>
       </div>
     );
   }
@@ -374,8 +381,10 @@ function GoalEditor({ catalog, openSignal = 0 }) {
 
 /** 타일 공용 미니 모달 */
 function TileModal({ title, onClose, children }) {
+  // 열면 창 안으로 · Esc로 닫기 · 닫으면 연 타일로 포커스(useDialogReturn — ConfirmModal 선례).
+  const dialogRef = useDialogReturn(onClose);
   return (
-    <div className="tile-modal__overlay" onClick={onClose} role="dialog" aria-label={title}>
+    <div className="tile-modal__overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label={title} ref={dialogRef} tabIndex={-1}>
       <div className="card tile-modal" onClick={e => e.stopPropagation()}>
         <div className="tile-modal__head">
           <h3 className="tile-modal__title">{title}</h3>

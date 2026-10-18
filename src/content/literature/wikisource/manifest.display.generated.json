@@ -1,0 +1,3128 @@
+{
+  "schemaVersion": 1,
+  "works": {
+    "ws-en-karl-marx_capital": {
+      "title": "Capital, Volume I",
+      "author": "Karl Marx",
+      "level": "C1 고급",
+      "total": 114,
+      "display": {
+        "titleKo": "자본론 1권",
+        "authorKo": "카를 마르크스",
+        "binding": "sonnenschein-1887",
+        "coverTitle": "Capital."
+      },
+      "language": "English",
+      "size": 244979,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1867
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Chapter I: Commodities (1/8)"
+        },
+        {
+          "order": 2,
+          "title": "Chapter I: Commodities (2/8)"
+        },
+        {
+          "order": 3,
+          "title": "Chapter I: Commodities (3/8)"
+        },
+        {
+          "order": 4,
+          "title": "Chapter I: Commodities (4/8)"
+        },
+        {
+          "order": 5,
+          "title": "Chapter I: Commodities (5/8)"
+        },
+        {
+          "order": 6,
+          "title": "Chapter I: Commodities (6/8)"
+        },
+        {
+          "order": 7,
+          "title": "Chapter I: Commodities (7/8)"
+        },
+        {
+          "order": 8,
+          "title": "Chapter I: Commodities (8/8)"
+        },
+        {
+          "order": 9,
+          "title": "Chapter II: Exchange"
+        },
+        {
+          "order": 10,
+          "title": "Chapter III: Money, or the Circulation of Commodities (1/8)"
+        },
+        {
+          "order": 11,
+          "title": "Chapter III: Money, or the Circulation of Commodities (2/8)"
+        },
+        {
+          "order": 12,
+          "title": "Chapter III: Money, or the Circulation of Commodities (3/8)"
+        },
+        {
+          "order": 13,
+          "title": "Chapter III: Money, or the Circulation of Commodities (4/8)"
+        },
+        {
+          "order": 14,
+          "title": "Chapter III: Money, or the Circulation of Commodities (5/8)"
+        },
+        {
+          "order": 15,
+          "title": "Chapter III: Money, or the Circulation of Commodities (6/8)"
+        },
+        {
+          "order": 16,
+          "title": "Chapter III: Money, or the Circulation of Commodities (7/8)"
+        },
+        {
+          "order": 17,
+          "title": "Chapter III: Money, or the Circulation of Commodities (8/8)"
+        },
+        {
+          "order": 18,
+          "title": "Chapter IV: The General Formula for Capital"
+        },
+        {
+          "order": 19,
+          "title": "Chapter V: Contradictions in the General Formula of Capital (1/2)"
+        },
+        {
+          "order": 20,
+          "title": "Chapter V: Contradictions in the General Formula of Capital (2/2)"
+        },
+        {
+          "order": 21,
+          "title": "Chapter VI: The Buying and Selling of Labour-power (1/2)"
+        },
+        {
+          "order": 22,
+          "title": "Chapter VI: The Buying and Selling of Labour-power (2/2)"
+        },
+        {
+          "order": 23,
+          "title": "Chapter VII: The Labour-process and the Process of Producing Surplus-value (1/4)"
+        },
+        {
+          "order": 24,
+          "title": "Chapter VII: The Labour-process and the Process of Producing Surplus-value (2/4)"
+        },
+        {
+          "order": 25,
+          "title": "Chapter VII: The Labour-process and the Process of Producing Surplus-value (3/4)"
+        },
+        {
+          "order": 26,
+          "title": "Chapter VII: The Labour-process and the Process of Producing Surplus-value (4/4)"
+        },
+        {
+          "order": 27,
+          "title": "Chapter VIII: Constant Capital and Variable Capital (1/2)"
+        },
+        {
+          "order": 28,
+          "title": "Chapter VIII: Constant Capital and Variable Capital (2/2)"
+        },
+        {
+          "order": 29,
+          "title": "Chapter IX: The Rate of Surplus-value (1/3)"
+        },
+        {
+          "order": 30,
+          "title": "Chapter IX: The Rate of Surplus-value (2/3)"
+        },
+        {
+          "order": 31,
+          "title": "Chapter IX: The Rate of Surplus-value (3/3)"
+        },
+        {
+          "order": 32,
+          "title": "Chapter X: The Working Day (1/10)"
+        },
+        {
+          "order": 33,
+          "title": "Chapter X: The Working Day (2/10)"
+        },
+        {
+          "order": 34,
+          "title": "Chapter X: The Working Day (3/10)"
+        },
+        {
+          "order": 35,
+          "title": "Chapter X: The Working Day (4/10)"
+        },
+        {
+          "order": 36,
+          "title": "Chapter X: The Working Day (5/10)"
+        },
+        {
+          "order": 37,
+          "title": "Chapter X: The Working Day (6/10)"
+        },
+        {
+          "order": 38,
+          "title": "Chapter X: The Working Day (7/10)"
+        },
+        {
+          "order": 39,
+          "title": "Chapter X: The Working Day (8/10)"
+        },
+        {
+          "order": 40,
+          "title": "Chapter X: The Working Day (9/10)"
+        },
+        {
+          "order": 41,
+          "title": "Chapter X: The Working Day (10/10)"
+        },
+        {
+          "order": 42,
+          "title": "Chapter XI: Rate and Mass of Surplus-value (1/2)"
+        },
+        {
+          "order": 43,
+          "title": "Chapter XI: Rate and Mass of Surplus-value (2/2)"
+        },
+        {
+          "order": 44,
+          "title": "Chapter XII: The Concept of Relative Surplus-value (1/2)"
+        },
+        {
+          "order": 45,
+          "title": "Chapter XII: The Concept of Relative Surplus-value (2/2)"
+        },
+        {
+          "order": 46,
+          "title": "Chapter XIII: Co-operation (1/2)"
+        },
+        {
+          "order": 47,
+          "title": "Chapter XIII: Co-operation (2/2)"
+        },
+        {
+          "order": 48,
+          "title": "Chapter XIV: Division of Labour and Manufacture (1/5)"
+        },
+        {
+          "order": 49,
+          "title": "Chapter XIV: Division of Labour and Manufacture (2/5)"
+        },
+        {
+          "order": 50,
+          "title": "Chapter XIV: Division of Labour and Manufacture (3/5)"
+        },
+        {
+          "order": 51,
+          "title": "Chapter XIV: Division of Labour and Manufacture (4/5)"
+        },
+        {
+          "order": 52,
+          "title": "Chapter XIV: Division of Labour and Manufacture (5/5)"
+        },
+        {
+          "order": 53,
+          "title": "Chapter XV: Machinery and Modern Industry (1/21)"
+        },
+        {
+          "order": 54,
+          "title": "Chapter XV: Machinery and Modern Industry (2/21)"
+        },
+        {
+          "order": 55,
+          "title": "Chapter XV: Machinery and Modern Industry (3/21)"
+        },
+        {
+          "order": 56,
+          "title": "Chapter XV: Machinery and Modern Industry (4/21)"
+        },
+        {
+          "order": 57,
+          "title": "Chapter XV: Machinery and Modern Industry (5/21)"
+        },
+        {
+          "order": 58,
+          "title": "Chapter XV: Machinery and Modern Industry (6/21)"
+        },
+        {
+          "order": 59,
+          "title": "Chapter XV: Machinery and Modern Industry (7/21)"
+        },
+        {
+          "order": 60,
+          "title": "Chapter XV: Machinery and Modern Industry (8/21)"
+        },
+        {
+          "order": 61,
+          "title": "Chapter XV: Machinery and Modern Industry (9/21)"
+        },
+        {
+          "order": 62,
+          "title": "Chapter XV: Machinery and Modern Industry (10/21)"
+        },
+        {
+          "order": 63,
+          "title": "Chapter XV: Machinery and Modern Industry (11/21)"
+        },
+        {
+          "order": 64,
+          "title": "Chapter XV: Machinery and Modern Industry (12/21)"
+        },
+        {
+          "order": 65,
+          "title": "Chapter XV: Machinery and Modern Industry (13/21)"
+        },
+        {
+          "order": 66,
+          "title": "Chapter XV: Machinery and Modern Industry (14/21)"
+        },
+        {
+          "order": 67,
+          "title": "Chapter XV: Machinery and Modern Industry (15/21)"
+        },
+        {
+          "order": 68,
+          "title": "Chapter XV: Machinery and Modern Industry (16/21)"
+        },
+        {
+          "order": 69,
+          "title": "Chapter XV: Machinery and Modern Industry (17/21)"
+        },
+        {
+          "order": 70,
+          "title": "Chapter XV: Machinery and Modern Industry (18/21)"
+        },
+        {
+          "order": 71,
+          "title": "Chapter XV: Machinery and Modern Industry (19/21)"
+        },
+        {
+          "order": 72,
+          "title": "Chapter XV: Machinery and Modern Industry (20/21)"
+        },
+        {
+          "order": 73,
+          "title": "Chapter XV: Machinery and Modern Industry (21/21)"
+        },
+        {
+          "order": 74,
+          "title": "Chapter XVI: Absolute and Relative Surplus-value (1/2)"
+        },
+        {
+          "order": 75,
+          "title": "Chapter XVI: Absolute and Relative Surplus-value (2/2)"
+        },
+        {
+          "order": 76,
+          "title": "Chapter XVII: Changes of Magnitude in the Price of Labour-power and in Surplus-value (1/2)"
+        },
+        {
+          "order": 77,
+          "title": "Chapter XVII: Changes of Magnitude in the Price of Labour-power and in Surplus-value (2/2)"
+        },
+        {
+          "order": 78,
+          "title": "Chapter XVIII: Various Formulæ for the Rate of Surplus-value"
+        },
+        {
+          "order": 79,
+          "title": "Chapter XIX: The Transformation of the Value (and Respectively the Price) of Labour-power Into Wages"
+        },
+        {
+          "order": 80,
+          "title": "Chapter XX: Time-wages"
+        },
+        {
+          "order": 81,
+          "title": "Chapter XXI: Piece-wages"
+        },
+        {
+          "order": 82,
+          "title": "Chapter XXII: National Differences of Wages"
+        },
+        {
+          "order": 83,
+          "title": "Chapter XXIII: Simple Reproduction (1/2)"
+        },
+        {
+          "order": 84,
+          "title": "Chapter XXIII: Simple Reproduction (2/2)"
+        },
+        {
+          "order": 85,
+          "title": "Chapter XXIV: Conversion of Surplus-value Into Capital (1/5)"
+        },
+        {
+          "order": 86,
+          "title": "Chapter XXIV: Conversion of Surplus-value Into Capital (2/5)"
+        },
+        {
+          "order": 87,
+          "title": "Chapter XXIV: Conversion of Surplus-value Into Capital (3/5)"
+        },
+        {
+          "order": 88,
+          "title": "Chapter XXIV: Conversion of Surplus-value Into Capital (4/5)"
+        },
+        {
+          "order": 89,
+          "title": "Chapter XXIV: Conversion of Surplus-value Into Capital (5/5)"
+        },
+        {
+          "order": 90,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (1/15)"
+        },
+        {
+          "order": 91,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (2/15)"
+        },
+        {
+          "order": 92,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (3/15)"
+        },
+        {
+          "order": 93,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (4/15)"
+        },
+        {
+          "order": 94,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (5/15)"
+        },
+        {
+          "order": 95,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (6/15)"
+        },
+        {
+          "order": 96,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (7/15)"
+        },
+        {
+          "order": 97,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (8/15)"
+        },
+        {
+          "order": 98,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (9/15)"
+        },
+        {
+          "order": 99,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (10/15)"
+        },
+        {
+          "order": 100,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (11/15)"
+        },
+        {
+          "order": 101,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (12/15)"
+        },
+        {
+          "order": 102,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (13/15)"
+        },
+        {
+          "order": 103,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (14/15)"
+        },
+        {
+          "order": 104,
+          "title": "Chapter XXV: The General Law of Capitalist Accumulation (15/15)"
+        },
+        {
+          "order": 105,
+          "title": "Chapter XXVI: The Secret of Primitive Accumulation"
+        },
+        {
+          "order": 106,
+          "title": "Chapter XXVII: Expropriation of the Agricultural Population From the Land (1/2)"
+        },
+        {
+          "order": 107,
+          "title": "Chapter XXVII: Expropriation of the Agricultural Population From the Land (2/2)"
+        },
+        {
+          "order": 108,
+          "title": "Chapter XXVIII: Bloody Legislation Against the Expropriated, From the End of the 15Th Century. Forcing Down of Wages by Acts of Parliament"
+        },
+        {
+          "order": 109,
+          "title": "Chapter XXIX: Genesis of the Capitalist Farmer"
+        },
+        {
+          "order": 110,
+          "title": "Chapter XXX: Reaction of the Agricultural Revolution on Industry. Creation of the Home Market for Industrial Capital"
+        },
+        {
+          "order": 111,
+          "title": "Chapter XXXI: Genesis of the Industrial Capitalist (1/2)"
+        },
+        {
+          "order": 112,
+          "title": "Chapter XXXI: Genesis of the Industrial Capitalist (2/2)"
+        },
+        {
+          "order": 113,
+          "title": "Chapter XXXII: Historical Tendency of Capitalist Accumulation"
+        },
+        {
+          "order": 114,
+          "title": "Chapter XXXIII: The Modern Theory of Colonisation"
+        }
+      ]
+    },
+    "ws-fr-alphonse-daudet_la-derniere-classe": {
+      "title": "La Dernière Classe",
+      "author": "Alphonse Daudet",
+      "level": "B1 중급",
+      "total": 1,
+      "display": {
+        "titleKo": "마지막 수업",
+        "authorKo": "알퐁스 도데",
+        "binding": "lemerre",
+        "coverTitle": "La dernière\nClasse",
+        "coverAuthor": "Alphonse Daudet",
+        "coverPlace": "Paris",
+        "coverImprint": "Alphonse Lemerre, éditeur",
+        "coverSubtitle": "Récit d’un petit Alsacien.",
+        "coverYear": 1873
+      },
+      "language": "French",
+      "size": 1715,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1872
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "La Dernière Classe"
+        }
+      ]
+    },
+    "ws-fr-alphonse-daudet_lettres-de-mon-moulin": {
+      "title": "Lettres de mon moulin",
+      "author": "Alphonse Daudet",
+      "level": "B1 중급",
+      "total": 27,
+      "display": {
+        "titleKo": "풍차 방앗간 편지",
+        "authorKo": "알퐁스 도데",
+        "binding": "tpl-wrapper",
+        "coverTitle": "Lettres de mon\nmoulin",
+        "coverAuthor": "Alphonse Daudet",
+        "coverPalette": "yellow",
+        "coverOrnament": "double-rule",
+        "coverYear": 1869
+      },
+      "language": "French",
+      "size": 48163,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1869
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "AVANT-PROPOS"
+        },
+        {
+          "order": 2,
+          "title": "INSTALLATION."
+        },
+        {
+          "order": 3,
+          "title": "LA DILIGENCE DE BEAUCAIRE."
+        },
+        {
+          "order": 4,
+          "title": "LE SECRET DE MAÎTRE CORNILLE"
+        },
+        {
+          "order": 5,
+          "title": "LA CHÈVRE DE M. SEGUIN"
+        },
+        {
+          "order": 6,
+          "title": "LES ÉTOILES."
+        },
+        {
+          "order": 7,
+          "title": "L’ARLÉSIENNE"
+        },
+        {
+          "order": 8,
+          "title": "LA MULE DU PAPE. (1/2)"
+        },
+        {
+          "order": 9,
+          "title": "LA MULE DU PAPE. (2/2)"
+        },
+        {
+          "order": 10,
+          "title": "LE PHARE DES SANGUINAIRES"
+        },
+        {
+          "order": 11,
+          "title": "L’AGONIE DE LA SÉMILLANTE"
+        },
+        {
+          "order": 12,
+          "title": "LES DOUANIERS"
+        },
+        {
+          "order": 13,
+          "title": "LE CURÉ DE CUCUGNAN."
+        },
+        {
+          "order": 14,
+          "title": "LES VIEUX."
+        },
+        {
+          "order": 15,
+          "title": "BALLADES EN PROSE. · I. LA MORT DU DAUPHIN · II. LE SOUS-PRÉFET AUX CHAMPS."
+        },
+        {
+          "order": 16,
+          "title": "LE PORTEFEUILLE DE BIXIOU."
+        },
+        {
+          "order": 17,
+          "title": "LA LÉGENDE DE L’HOMME À LA CERVELLE D’OR."
+        },
+        {
+          "order": 18,
+          "title": "LE POÈTE MISTRAL."
+        },
+        {
+          "order": 19,
+          "title": "LES TROIS MESSES BASSES."
+        },
+        {
+          "order": 20,
+          "title": "LES ORANGES"
+        },
+        {
+          "order": 21,
+          "title": "LES DEUX AUBERGES."
+        },
+        {
+          "order": 22,
+          "title": "À MILIANAH. (1/2)"
+        },
+        {
+          "order": 23,
+          "title": "À MILIANAH. (2/2)"
+        },
+        {
+          "order": 24,
+          "title": "LES SAUTERELLES."
+        },
+        {
+          "order": 25,
+          "title": "L’ÉLIXIR DU RÉVÉREND PÈRE GAUCHER."
+        },
+        {
+          "order": 26,
+          "title": "EN CAMARGUE. · I. LE DÉPART · II. LA CABANE. · III. À L’ESPÈRE ! (À L’AFFÛT !) · IV. LE ROUGE ET LE BLANC. · V. LE VACCARÈS."
+        },
+        {
+          "order": 27,
+          "title": "NOSTALGIE DE CASERNES."
+        }
+      ]
+    },
+    "ws-fr-guy-de-maupassant_la-parure": {
+      "title": "La Parure",
+      "author": "Guy de Maupassant",
+      "level": "B1 중급",
+      "total": 1,
+      "display": {
+        "titleKo": "목걸이",
+        "authorKo": "기 드 모파상",
+        "binding": "marpon",
+        "coverTitle": "La\nParure",
+        "coverAuthor": "Guy de Maupassant",
+        "coverPlace": "Paris",
+        "coverImprint": "C. Marpon & E. Flammarion",
+        "coverEdition": "Sixième mille"
+      },
+      "language": "French",
+      "size": 2817,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1884
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "La Parure"
+        }
+      ]
+    },
+    "ws-fr-jean-jacques-rousseau_les-reveries-du-promeneur-solitaire": {
+      "title": "Les Rêveries du promeneur solitaire",
+      "author": "Jean-Jacques Rousseau",
+      "level": "C1 고급",
+      "total": 20,
+      "display": {
+        "titleKo": "고독한 산책자의 몽상",
+        "authorKo": "장 자크 루소",
+        "binding": "geneve-1782",
+        "coverTitle": "Les\nConfessions\nde\nJ. J. Rousseau,",
+        "coverPartTitle": "Suivies\ndes Rêveries",
+        "coverSubtitle": "Du Promeneur Solitaire.",
+        "coverTome": "Tome second.",
+        "coverPlace": "A Geneve.",
+        "coverYear": 1782
+      },
+      "language": "French",
+      "size": 40726,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1782
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "PREMIÈRE PROMENADE."
+        },
+        {
+          "order": 2,
+          "title": "DEUXIEME PROMENADE. (1/2)"
+        },
+        {
+          "order": 3,
+          "title": "DEUXIEME PROMENADE. (2/2)"
+        },
+        {
+          "order": 4,
+          "title": "TROISIEME PROMENADE. (1/2)"
+        },
+        {
+          "order": 5,
+          "title": "TROISIEME PROMENADE. (2/2)"
+        },
+        {
+          "order": 6,
+          "title": "QUATRIEME PROMENADE. (1/3)"
+        },
+        {
+          "order": 7,
+          "title": "QUATRIEME PROMENADE. (2/3)"
+        },
+        {
+          "order": 8,
+          "title": "QUATRIEME PROMENADE. (3/3)"
+        },
+        {
+          "order": 9,
+          "title": "CINQUIEME PROMENADE. (1/2)"
+        },
+        {
+          "order": 10,
+          "title": "CINQUIEME PROMENADE. (2/2)"
+        },
+        {
+          "order": 11,
+          "title": "SIXIEME PROMENADE. (1/2)"
+        },
+        {
+          "order": 12,
+          "title": "SIXIEME PROMENADE. (2/2)"
+        },
+        {
+          "order": 13,
+          "title": "SEPTIEME PROMENADE. (1/3)"
+        },
+        {
+          "order": 14,
+          "title": "SEPTIEME PROMENADE. (2/3)"
+        },
+        {
+          "order": 15,
+          "title": "SEPTIEME PROMENADE. (3/3)"
+        },
+        {
+          "order": 16,
+          "title": "HUITIEME PROMENADE. (1/2)"
+        },
+        {
+          "order": 17,
+          "title": "HUITIEME PROMENADE. (2/2)"
+        },
+        {
+          "order": 18,
+          "title": "NEUVIEME PROMENADE. (1/2)"
+        },
+        {
+          "order": 19,
+          "title": "NEUVIEME PROMENADE. (2/2)"
+        },
+        {
+          "order": 20,
+          "title": "DIXIEME PROMENADE."
+        }
+      ]
+    },
+    "ws-fr-jules-verne_le-tour-du-monde-en-quatre-vingts-jours": {
+      "title": "Le Tour du monde en quatre-vingts jours",
+      "author": "Jules Verne",
+      "level": "B2 상급",
+      "total": 37,
+      "display": {
+        "titleKo": "80일간의 세계 일주",
+        "authorKo": "쥘 베른",
+        "binding": "hetzel",
+        "coverTitle": "Le\nTour du monde\nen\n80 jours",
+        "coverAuthor": "Jules Verne",
+        "coverEdition": "Illustré"
+      },
+      "language": "French",
+      "size": 69108,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1872
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I. DANS LEQUEL PHILEAS FOGG ET PASSEPARTOUT S’ACCEPTENT RÉCIPROQUEMENT, L’UN COMME MAÎTRE, L’AUTRE COMME DOMESTIQUE."
+        },
+        {
+          "order": 2,
+          "title": "II. OÙ PASSEPARTOUT EST CONVAINCU QU’IL A ENFIN TROUVÉ SON IDÉAL."
+        },
+        {
+          "order": 3,
+          "title": "III. OÙ S’ENGAGE UNE CONVERSATION QUI POURRA COÛTER CHER À PHILEAS FOGG."
+        },
+        {
+          "order": 4,
+          "title": "IV. DANS LEQUEL PHILEAS FOGG STUPÉFIE PASSEPARTOUT, SON DOMESTIQUE."
+        },
+        {
+          "order": 5,
+          "title": "V. DANS LEQUEL UNE NOUVELLE VALEUR APPARAÎT SUR LA PLACE DE LONDRES."
+        },
+        {
+          "order": 6,
+          "title": "VI. DANS LEQUEL L’AGENT FIX MONTRE UNE IMPATIENCE BIEN LÉGITIME."
+        },
+        {
+          "order": 7,
+          "title": "VII. QUI TÉMOIGNE UNE FOIS DE PLUS DE L’INUTILITÉ DES PASSE-PORTS EN MATIÈRE DE POLICE."
+        },
+        {
+          "order": 8,
+          "title": "VIII. DANS LEQUEL PASSEPARTOUT PARLE UN PEU PLUS PEUT-ÊTRE QU’IL NE CONVIENDRAIT."
+        },
+        {
+          "order": 9,
+          "title": "IX. OÙ LA MER ROUGE ET LA MER DES INDES SE MONTRENT PROPICES AUX DESSEINS DE PHILEAS FOGG."
+        },
+        {
+          "order": 10,
+          "title": "X. OÙ PASSEPARTOUT EST TROP HEUREUX D’EN ÊTRE QUITTE EN PERDANT SA CHAUSSURE."
+        },
+        {
+          "order": 11,
+          "title": "XI. OÙ PHILEAS FOGG ACHÈTE UNE MONTURE À UN PRIX FABULEUX."
+        },
+        {
+          "order": 12,
+          "title": "XII. OÙ PHILEAS FOGG ET SES COMPAGNONS S’AVENTURENT À TRAVERS LES FORÊTS DE L’INDE ET CE QUI S’ENSUIT."
+        },
+        {
+          "order": 13,
+          "title": "XIII. DANS LEQUEL PASSEPARTOUT PROUVE UNE FOIS DE PLUS QUE LA FORTUNE SOURIT AUX AUDACIEUX."
+        },
+        {
+          "order": 14,
+          "title": "XIV. DANS LEQUEL PHILEAS FOGG DESCEND TOUTE L’ADMIRABLE VALLÉE DU GANGE SANS MÊME SONGER À LA VOIR."
+        },
+        {
+          "order": 15,
+          "title": "XV. OÙ LE SAC AUX BANK-NOTES S’ALLÈGE ENCORE DE QUELQUES MILLIERS DE LIVRES."
+        },
+        {
+          "order": 16,
+          "title": "XVI. OÙ FIX N’A PAS L’AIR DE CONNAÎTRE DU TOUT LES CHOSES DONT ON LUI PARLE."
+        },
+        {
+          "order": 17,
+          "title": "XVII. OÙ IL EST QUESTION DE CHOSES ET D’AUTRES PENDANT LA TRAVERSÉE DE SINGAPORE À HONG-KONG."
+        },
+        {
+          "order": 18,
+          "title": "XVIII. DANS LEQUEL PHILEAS FOGG, PASSEPARTOUT, FIX, CHACUN DE SON CÔTÉ, VA À SES AFFAIRES."
+        },
+        {
+          "order": 19,
+          "title": "XIX. OÙ PASSEPARTOUT PREND UN TROP VIF INTÉRÊT À SON MAÎTRE, ET CE QUI S’ENSUIT."
+        },
+        {
+          "order": 20,
+          "title": "XX. DANS LEQUEL FIX ENTRE DIRECTEMENT EN RELATION AVEC PHILEAS FOGG."
+        },
+        {
+          "order": 21,
+          "title": "XXI. OÙ LE PATRON DE LA « TANKADÈRE » RISQUE FORT DE PERDRE UNE PRIME DE DEUX CENTS LIVRES."
+        },
+        {
+          "order": 22,
+          "title": "XXII. OÙ PASSEPARTOUT VOIT BIEN QUE, MÊME AUX ANTIPODES, IL EST PRUDENT D’AVOIR QUELQUE ARGENT DANS SA POCHE."
+        },
+        {
+          "order": 23,
+          "title": "XXIII. DANS LEQUEL LE NEZ DE PASSEPARTOUT S’ALLONGE DÉMESURÉMENT."
+        },
+        {
+          "order": 24,
+          "title": "XXIV. PENDANT LEQUEL S’ACCOMPLIT LA TRAVERSÉE DE L’OCÉAN PACIFIQUE."
+        },
+        {
+          "order": 25,
+          "title": "XXV. OÙ L’ON DONNE UN LÉGER APERÇU DE SAN-FRANCISCO, UN JOUR DE MEETING."
+        },
+        {
+          "order": 26,
+          "title": "XXVI. DANS LEQUEL ON PREND LE TRAIN EXPRESS DU CHEMIN DE FER DU PACIFIQUE."
+        },
+        {
+          "order": 27,
+          "title": "XXVII. DANS LEQUEL PASSEPARTOUT SUIT, AVEC UNE VITESSE DE VINGT MILLES À L’HEURE, UN COURS D’HISTOIRE MORMONE."
+        },
+        {
+          "order": 28,
+          "title": "XXVIII. DANS LEQUEL PASSEPARTOUT NE PUT PARVENIR À FAIRE ENTENDRE LE LANGAGE DE LA RAISON."
+        },
+        {
+          "order": 29,
+          "title": "XXIX. OÙ IL SERA FAIT LE RÉCIT D’INCIDENTS DIVERS QUI NE SE RENCONTRENT QUE SUR LES RAIL-ROADS DE L’UNION."
+        },
+        {
+          "order": 30,
+          "title": "XXX. DANS LEQUEL PHILEAS FOGG FAIT TOUT SIMPLEMENT SON DEVOIR."
+        },
+        {
+          "order": 31,
+          "title": "XXXI. DANS LEQUEL L’INSPECTEUR FIX PREND TRÈS-SÉRIEUSEMENT LES INTÉRÊTS DE PHILEAS FOGG."
+        },
+        {
+          "order": 32,
+          "title": "XXXII. DANS LEQUEL PHILEAS FOGG ENGAGE UNE LUTTE DIRECTE CONTRE LA MAUVAISE CHANCE"
+        },
+        {
+          "order": 33,
+          "title": "XXXIII. OÙ PHILEAS FOGG SE MONTRE À LA HAUTEUR DES CIRCONSTANCES."
+        },
+        {
+          "order": 34,
+          "title": "XXXIV. QUI PROCURE À PASSEPARTOUT L’OCCASION DE FAIRE UN JEU DE MOTS ATROCE, MAIS PEUT-ÊTRE INÉDIT."
+        },
+        {
+          "order": 35,
+          "title": "XXXV. DANS LEQUEL PASSEPARTOUT NE SE FAIT PAS RÉPÉTER DEUX FOIS L’ORDRE QUE SON MAÎTRE LUI DONNE."
+        },
+        {
+          "order": 36,
+          "title": "XXXVI. DANS LEQUEL PHILEAS FOGG FAIT DE NOUVEAU PRIME SUR LE MARCHÉ."
+        },
+        {
+          "order": 37,
+          "title": "XXXVII. DANS LEQUEL IL EST PROUVÉ QUE PHILEAS FOGG N’A RIEN GAGNÉ À FAIRE CE TOUR DU MONDE, SI CE N’EST LE BONHEUR."
+        }
+      ]
+    },
+    "ws-fr-rainer-maria-rilke_poemes-dedies-aux-amis-francais": {
+      "title": "Poèmes dédiés aux amis français",
+      "author": "Rainer Maria Rilke",
+      "level": "C1 고급",
+      "total": 1,
+      "display": {
+        "titleKo": "프랑스 벗들에게 바치는 시",
+        "authorKo": "라이너 마리아 릴케",
+        "binding": "hartmann-1935",
+        "coverTitle": "Poèmes\nfrançais",
+        "coverAuthor": "Rainer Maria Rilke",
+        "coverImprint": "Paul Hartmann, éditeur",
+        "coverEdition": "11, rue Cujas – Paris Vᵉ",
+        "coverYear": 1935
+      },
+      "language": "French",
+      "size": 374,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1935
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "À Madame la Baronne de Brimont 외 4편"
+        }
+      ]
+    },
+    "ws-fr-victor-hugo_les-miserables-1": {
+      "title": "Les Misérables, tome I : Fantine",
+      "author": "Victor Hugo",
+      "level": "C1 고급",
+      "total": 76,
+      "display": {
+        "titleKo": "레 미제라블 1부",
+        "authorKo": "빅토르 위고",
+        "binding": "pagnerre",
+        "coverTitle": "Les\nMisérables",
+        "coverAuthor": "Victor Hugo",
+        "coverPart": "Première partie",
+        "coverPartTitle": "Fantine",
+        "coverTome": "Tome premier",
+        "coverPlace": "Paris",
+        "coverImprint": "Pagnerre, libraire-éditeur",
+        "coverYear": 1862
+      },
+      "language": "French",
+      "size": 113678,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1862
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I. M. MYRIEL"
+        },
+        {
+          "order": 2,
+          "title": "II. M. MYRIEL DEVIENT MONSEIGNEUR BIENVENU"
+        },
+        {
+          "order": 3,
+          "title": "III. À BON ÉVÊQUE DUR ÉVÊCHÉ"
+        },
+        {
+          "order": 4,
+          "title": "IV. LES ŒUVRES SEMBLABLES AUX PAROLES"
+        },
+        {
+          "order": 5,
+          "title": "V. QUE MONSEIGNEUR BIENVENU FAISAIT DURER TROP LONGTEMPS SES SOUTANES"
+        },
+        {
+          "order": 6,
+          "title": "VI. PAR QUI IL FAISAIT GARDER SA MAISON"
+        },
+        {
+          "order": 7,
+          "title": "VII. CRAVATTE"
+        },
+        {
+          "order": 8,
+          "title": "VIII. PHILOSOPHIE APRÈS BOIRE"
+        },
+        {
+          "order": 9,
+          "title": "IX. LE FRÈRE RACONTÉ PAR LA SŒUR"
+        },
+        {
+          "order": 10,
+          "title": "X. L’ÉVÊQUE EN PRÉSENCE D’UNE LUMIÈRE INCONNUE (1/2)"
+        },
+        {
+          "order": 11,
+          "title": "X. L’ÉVÊQUE EN PRÉSENCE D’UNE LUMIÈRE INCONNUE (2/2)"
+        },
+        {
+          "order": 12,
+          "title": "XI. UNE RESTRICTION"
+        },
+        {
+          "order": 13,
+          "title": "XII. SOLITUDE DE MONSEIGNEUR BIENVENU"
+        },
+        {
+          "order": 14,
+          "title": "XIII. CE QU’IL CROYAIT"
+        },
+        {
+          "order": 15,
+          "title": "XIV. CE QU’IL PENSAIT"
+        },
+        {
+          "order": 16,
+          "title": "I. LE SOIR D’UN JOUR DE MARCHE (1/2)"
+        },
+        {
+          "order": 17,
+          "title": "I. LE SOIR D’UN JOUR DE MARCHE (2/2)"
+        },
+        {
+          "order": 18,
+          "title": "II. LA PRUDENCE CONSEILLÉE À LA SAGESSE"
+        },
+        {
+          "order": 19,
+          "title": "III. HÉROÏSME DE L’OBÉISSANCE PASSIVE"
+        },
+        {
+          "order": 20,
+          "title": "IV. DÉTAILS SUR LES FROMAGERIES DE PONTARLIER"
+        },
+        {
+          "order": 21,
+          "title": "V. TRANQUILLITÉ"
+        },
+        {
+          "order": 22,
+          "title": "VI. JEAN VALJEAN"
+        },
+        {
+          "order": 23,
+          "title": "VII. LE DEDANS DU DÉSESPOIR"
+        },
+        {
+          "order": 24,
+          "title": "VIII. L’ONDE ET L’OMBRE"
+        },
+        {
+          "order": 25,
+          "title": "IX. NOUVEAUX GRIEFS"
+        },
+        {
+          "order": 26,
+          "title": "X. L’HOMME RÉVEILLÉ"
+        },
+        {
+          "order": 27,
+          "title": "XI. CE QU’IL FAIT"
+        },
+        {
+          "order": 28,
+          "title": "XII. L’ÉVÊQUE TRAVAILLE"
+        },
+        {
+          "order": 29,
+          "title": "XIII. PETIT-GERVAIS"
+        },
+        {
+          "order": 30,
+          "title": "I. L’ANNÉE 1817"
+        },
+        {
+          "order": 31,
+          "title": "II. DOUBLE QUATUOR"
+        },
+        {
+          "order": 32,
+          "title": "III. QUATRE À QUATRE"
+        },
+        {
+          "order": 33,
+          "title": "IV. THOLOMYÈS EST SI JOYEUX QU’IL CHANTE UNE CHANSON ESPAGNOLE"
+        },
+        {
+          "order": 34,
+          "title": "V. CHEZ BOMBARDA"
+        },
+        {
+          "order": 35,
+          "title": "VI. CHAPITRE OÙ L’ON S’ADORE"
+        },
+        {
+          "order": 36,
+          "title": "VII. SAGESSE DE THOLOMYÈS"
+        },
+        {
+          "order": 37,
+          "title": "VIII. MORT D’UN CHEVAL"
+        },
+        {
+          "order": 38,
+          "title": "IX. FIN JOYEUSE DE LA JOIE"
+        },
+        {
+          "order": 39,
+          "title": "I. UNE MÈRE QUI EN RENCONTRE UNE AUTRE"
+        },
+        {
+          "order": 40,
+          "title": "II. PREMIÈRE ESQUISSE DE DEUX FIGURES LOUCHES"
+        },
+        {
+          "order": 41,
+          "title": "III. L’ALOUETTE."
+        },
+        {
+          "order": 42,
+          "title": "I. HISTOIRE D’UN PROGRÈS DANS LES VERROTERIES NOIRES"
+        },
+        {
+          "order": 43,
+          "title": "II. MADELEINE"
+        },
+        {
+          "order": 44,
+          "title": "III. SOMMES DÉPOSÉES CHEZ LAFFITTE"
+        },
+        {
+          "order": 45,
+          "title": "IV. M. MADELEINE EN DEUIL"
+        },
+        {
+          "order": 46,
+          "title": "V. VAGUES ÉCLAIRS À L’HORIZON"
+        },
+        {
+          "order": 47,
+          "title": "VI. LE PÈRE FAUCHELEVENT"
+        },
+        {
+          "order": 48,
+          "title": "VII. FAUCHELEVENT DEVIENT JARDINIER À PARIS"
+        },
+        {
+          "order": 49,
+          "title": "VIII. MADAME VICTURNIEN DÉPENSE TRENTE-CINQ FRANCS POUR LA MORALE"
+        },
+        {
+          "order": 50,
+          "title": "IX. SUCCÈS DE MADAME VICTURNIEN"
+        },
+        {
+          "order": 51,
+          "title": "X. SUITE DU SUCCÈS"
+        },
+        {
+          "order": 52,
+          "title": "XI. CHRISTUS NOS LIBERAVIT"
+        },
+        {
+          "order": 53,
+          "title": "XII. LE DÉSŒUVREMENT DE M. BAMATABOIS"
+        },
+        {
+          "order": 54,
+          "title": "XIII. SOLUTION DE QUELQUES QUESTIONS DE POLICE MUNICIPALE (1/2)"
+        },
+        {
+          "order": 55,
+          "title": "XIII. SOLUTION DE QUELQUES QUESTIONS DE POLICE MUNICIPALE (2/2)"
+        },
+        {
+          "order": 56,
+          "title": "I. COMMENCEMENT DU REPOS"
+        },
+        {
+          "order": 57,
+          "title": "II. COMMENT JEAN PEUT DEVENIR CHAMP"
+        },
+        {
+          "order": 58,
+          "title": "I. LA SŒUR SIMPLICE"
+        },
+        {
+          "order": 59,
+          "title": "II. PERSPICACITÉ DE MAÎTRE SCAUFFLAIRE"
+        },
+        {
+          "order": 60,
+          "title": "III. UNE TEMPÊTE SOUS UN CRÂNE (1/3)"
+        },
+        {
+          "order": 61,
+          "title": "III. UNE TEMPÊTE SOUS UN CRÂNE (2/3)"
+        },
+        {
+          "order": 62,
+          "title": "III. UNE TEMPÊTE SOUS UN CRÂNE (3/3)"
+        },
+        {
+          "order": 63,
+          "title": "IV. FORMES QUE PREND LA SOUFFRANCE PENDANT LE SOMMEIL"
+        },
+        {
+          "order": 64,
+          "title": "V. BÂTONS DANS LES ROUES (1/2)"
+        },
+        {
+          "order": 65,
+          "title": "V. BÂTONS DANS LES ROUES (2/2)"
+        },
+        {
+          "order": 66,
+          "title": "VI. LA SŒUR SIMPLICE MISE À L’ÉPREUVE"
+        },
+        {
+          "order": 67,
+          "title": "VII. LE VOYAGEUR ARRIVÉ PREND SES PRÉCAUTIONS POUR REPARTIR"
+        },
+        {
+          "order": 68,
+          "title": "VIII. ENTRÉE DE FAVEUR"
+        },
+        {
+          "order": 69,
+          "title": "IX. UN LIEU OÙ DES CONVICTIONS SONT EN TRAIN DE SE FORMER"
+        },
+        {
+          "order": 70,
+          "title": "X. LE SYSTÈME DE DÉNÉGATIONS"
+        },
+        {
+          "order": 71,
+          "title": "XI. CHAMPMATHIEU DE PLUS EN PLUS ÉTONNÉ"
+        },
+        {
+          "order": 72,
+          "title": "I. DANS QUEL MIROIR M. MADELEINE REGARDE SES CHEVEUX"
+        },
+        {
+          "order": 73,
+          "title": "II. FANTINE HEUREUSE"
+        },
+        {
+          "order": 74,
+          "title": "III. JAVERT CONTENT"
+        },
+        {
+          "order": 75,
+          "title": "IV. L’AUTORITÉ REPREND SES DROITS"
+        },
+        {
+          "order": 76,
+          "title": "V. TOMBEAU CONVENABLE"
+        }
+      ]
+    },
+    "ws-fr-victor-hugo_les-miserables-2": {
+      "title": "Les Misérables, tome II : Cosette",
+      "author": "Victor Hugo",
+      "level": "C1 고급",
+      "total": 77,
+      "display": {
+        "titleKo": "레 미제라블 2부",
+        "authorKo": "빅토르 위고",
+        "binding": "pagnerre",
+        "coverTitle": "Les\nMisérables",
+        "coverAuthor": "Victor Hugo",
+        "coverPart": "Deuxième partie",
+        "coverPartTitle": "Cosette",
+        "coverTome": "Tome deuxième",
+        "coverPlace": "Paris",
+        "coverImprint": "Pagnerre, libraire-éditeur",
+        "coverYear": 1862
+      },
+      "language": "French",
+      "size": 97113,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1862
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I. CE QU’ON RENCONTRE EN VENANT DE NIVELLES"
+        },
+        {
+          "order": 2,
+          "title": "II. HOUGOMONT"
+        },
+        {
+          "order": 3,
+          "title": "III. LE 18 JUIN 1815"
+        },
+        {
+          "order": 4,
+          "title": "IV. A"
+        },
+        {
+          "order": 5,
+          "title": "V. LE « QUID OBSCURUM » DES BATAILLES"
+        },
+        {
+          "order": 6,
+          "title": "VI. QUATRE HEURES DE L’APRÈS-MIDI"
+        },
+        {
+          "order": 7,
+          "title": "VII. NAPOLÉON DE BELLE HUMEUR"
+        },
+        {
+          "order": 8,
+          "title": "VIII. L’EMPEREUR FAIT UNE QUESTION AU GUIDE LACOSTE"
+        },
+        {
+          "order": 9,
+          "title": "IX. L’INATTENDU"
+        },
+        {
+          "order": 10,
+          "title": "X. LE PLATEAU DE MONT-SAINT-JEAN"
+        },
+        {
+          "order": 11,
+          "title": "XI. MAUVAIS GUIDE À NAPOLÉON, BON GUIDE À BÜLOW"
+        },
+        {
+          "order": 12,
+          "title": "XII. LA GARDE"
+        },
+        {
+          "order": 13,
+          "title": "XIII. LA CATASTROPHE"
+        },
+        {
+          "order": 14,
+          "title": "XIV. LE DERNIER CARRÉ"
+        },
+        {
+          "order": 15,
+          "title": "XVI. QUOT LIBRAS IN DUCE ?"
+        },
+        {
+          "order": 16,
+          "title": "XVII. FAUT-IL TROUVER BON WATERLOO ?"
+        },
+        {
+          "order": 17,
+          "title": "XVIII. RECRUDESCENCE DU DROIT DIVIN"
+        },
+        {
+          "order": 18,
+          "title": "XIX. LE CHAMP DE BATAILLE LA NUIT"
+        },
+        {
+          "order": 19,
+          "title": "I. LE NUMÉRO 24601 DEVIENT LE NUMÉRO 9430"
+        },
+        {
+          "order": 20,
+          "title": "II. OÙ ON LIRA DEUX VERS QUI SONT PEUT-ÊTRE DU DIABLE"
+        },
+        {
+          "order": 21,
+          "title": "III. QU’IL FALLAIT QUE LA CHAÎNE DE LA MANILLE EÛT SUBI UN CERTAIN TRAVAIL PRÉPARATOIRE POUR ÊTRE AINSI BRISÉE D’UN COUP DE MARTEAU"
+        },
+        {
+          "order": 22,
+          "title": "I. LA QUESTION DE L’EAU À MONTFERMEIL"
+        },
+        {
+          "order": 23,
+          "title": "II. DEUX PORTRAITS COMPLÉTÉS"
+        },
+        {
+          "order": 24,
+          "title": "III. IL FAUT DU VIN AUX HOMMES ET DE L’EAU AUX CHEVAUX"
+        },
+        {
+          "order": 25,
+          "title": "IV. ENTRÉE EN SCÈNE D’UNE POUPÉE"
+        },
+        {
+          "order": 26,
+          "title": "V. LA PETITE TOUTE SEULE"
+        },
+        {
+          "order": 27,
+          "title": "VI. QUI PEUT-ÊTRE PROUVE L’INTELLIGENCE DE BOULATRUELLE"
+        },
+        {
+          "order": 28,
+          "title": "VII. COSETTE CÔTE À CÔTE DANS L’OMBRE AVEC L’INCONNU"
+        },
+        {
+          "order": 29,
+          "title": "VIII. DÉSAGRÉMENT DE RECEVOIR CHEZ SOI UN PAUVRE QUI EST PEUT-ÊTRE UN RICHE (1/3)"
+        },
+        {
+          "order": 30,
+          "title": "VIII. DÉSAGRÉMENT DE RECEVOIR CHEZ SOI UN PAUVRE QUI EST PEUT-ÊTRE UN RICHE (2/3)"
+        },
+        {
+          "order": 31,
+          "title": "VIII. DÉSAGRÉMENT DE RECEVOIR CHEZ SOI UN PAUVRE QUI EST PEUT-ÊTRE UN RICHE (3/3)"
+        },
+        {
+          "order": 32,
+          "title": "IX. THÉNARDIER À LA MANŒUVRE"
+        },
+        {
+          "order": 33,
+          "title": "X. QUI CHERCHE LE MIEUX PEUT TROUVER LE PIRE"
+        },
+        {
+          "order": 34,
+          "title": "XI. LE NUMÉRO 9430 REPARAÎT ET COSETTE LE GAGNE À LA LOTERIE"
+        },
+        {
+          "order": 35,
+          "title": "I. MAÎTRE GORBEAU"
+        },
+        {
+          "order": 36,
+          "title": "II. NID POUR HIBOU ET FAUVETTE"
+        },
+        {
+          "order": 37,
+          "title": "III. DEUX MALHEURS MÊLÉS FONT DU BONHEUR"
+        },
+        {
+          "order": 38,
+          "title": "IV. LES REMARQUES DE LA PRINCIPALE LOCATAIRE"
+        },
+        {
+          "order": 39,
+          "title": "V. UNE PIÈCE DE CINQ FRANCS QUI TOMBE À TERRE FAIT DU BRUIT"
+        },
+        {
+          "order": 40,
+          "title": "I. LES ZIGZAGS DE LA STRATÉGIE"
+        },
+        {
+          "order": 41,
+          "title": "II. IL EST HEUREUX QUE LE PONT D’AUSTERLITZ PORTE VOITURES"
+        },
+        {
+          "order": 42,
+          "title": "III. VOIR LE PLAN DE PARIS DE 1727"
+        },
+        {
+          "order": 43,
+          "title": "IV. LES TÂTONNEMENTS DE L’ÉVASION"
+        },
+        {
+          "order": 44,
+          "title": "V. QUI SERAIT IMPOSSIBLE AVEC L’ÉCLAIRAGE AU GAZ"
+        },
+        {
+          "order": 45,
+          "title": "VI. COMMENCEMENT D’UNE ÉNIGME"
+        },
+        {
+          "order": 46,
+          "title": "VII. SUITE DE L’ÉNIGME"
+        },
+        {
+          "order": 47,
+          "title": "VIII. L’ÉNIGME REDOUBLE"
+        },
+        {
+          "order": 48,
+          "title": "IX. L’HOMME AU GRELOT"
+        },
+        {
+          "order": 49,
+          "title": "X. OÙ IL EST EXPLIQUÉ COMMENT JAVERT A FAIT BUISSON CREUX"
+        },
+        {
+          "order": 50,
+          "title": "I. PETITE RUE PICPUS, NUMÉRO 62"
+        },
+        {
+          "order": 51,
+          "title": "II. L’OBÉDIENCE DE MARTIN VERGA"
+        },
+        {
+          "order": 52,
+          "title": "III. SÉVÉRITÉS"
+        },
+        {
+          "order": 53,
+          "title": "IV. GAÎTÉS"
+        },
+        {
+          "order": 54,
+          "title": "V. DISTRACTIONS"
+        },
+        {
+          "order": 55,
+          "title": "VI. LE PETIT COUVENT"
+        },
+        {
+          "order": 56,
+          "title": "VII. QUELQUES SILHOUETTES DE CETTE OMBRE"
+        },
+        {
+          "order": 57,
+          "title": "VIII. POST CORDA LAPIDES"
+        },
+        {
+          "order": 58,
+          "title": "IX. UN SIÈCLE SOUS UNE GUIMPE"
+        },
+        {
+          "order": 59,
+          "title": "X. ORIGINE DE L’ADORATION PERPÉTUELLE"
+        },
+        {
+          "order": 60,
+          "title": "XI. FIN DU PETIT-PICPUS"
+        },
+        {
+          "order": 61,
+          "title": "I. LE COUVENT, IDÉE ABSTRAITE"
+        },
+        {
+          "order": 62,
+          "title": "II. LE COUVENT, FAIT HISTORIQUE"
+        },
+        {
+          "order": 63,
+          "title": "III. À QUELLE CONDITION ON PEUT RESPECTER LE PASSÉ"
+        },
+        {
+          "order": 64,
+          "title": "IV. LE COUVENT AU POINT DE VUE DES PRINCIPES"
+        },
+        {
+          "order": 65,
+          "title": "V. LA PRIÈRE"
+        },
+        {
+          "order": 66,
+          "title": "VI. BONTÉ ABSOLUE DE LA PRIÈRE"
+        },
+        {
+          "order": 67,
+          "title": "VII. PRÉCAUTIONS À PRENDRE DANS LE BLÂME"
+        },
+        {
+          "order": 68,
+          "title": "VIII. FOI, LOI"
+        },
+        {
+          "order": 69,
+          "title": "I. OÙ IL EST TRAITÉ DE LA MANIÈRE D’ENTRER AU COUVENT"
+        },
+        {
+          "order": 70,
+          "title": "II. FAUCHELEVENT EN PRÉSENCE DE LA DIFFICULTÉ"
+        },
+        {
+          "order": 71,
+          "title": "III. MÈRE INNOCENTE"
+        },
+        {
+          "order": 72,
+          "title": "IV. OÙ JEAN VALJEAN A TOUT À FAIT L’AIR D’AVOIR LU AUSTIN CASTILLEJO"
+        },
+        {
+          "order": 73,
+          "title": "V. IL NE SUFFIT PAS D’ÊTRE IVROGNE POUR ÊTRE IMMORTEL"
+        },
+        {
+          "order": 74,
+          "title": "VI. ENTRE QUATRE PLANCHES"
+        },
+        {
+          "order": 75,
+          "title": "VII. OÙ L’ON TROUVERA L’ORIGINE DU MOT : NE PAS PERDRE LA CARTE"
+        },
+        {
+          "order": 76,
+          "title": "VIII. INTERROGATOIRE RÉUSSI"
+        },
+        {
+          "order": 77,
+          "title": "IX. CLÔTURE"
+        }
+      ]
+    },
+    "ws-fr-victor-hugo_les-miserables-3": {
+      "title": "Les Misérables, tome III : Marius",
+      "author": "Victor Hugo",
+      "level": "C1 고급",
+      "total": 80,
+      "display": {
+        "titleKo": "레 미제라블 3부",
+        "authorKo": "빅토르 위고",
+        "binding": "pagnerre",
+        "coverTitle": "Les\nMisérables",
+        "coverAuthor": "Victor Hugo",
+        "coverPart": "Troisième partie",
+        "coverPartTitle": "Marius",
+        "coverTome": "Tome troisième",
+        "coverPlace": "Paris",
+        "coverImprint": "Pagnerre, libraire-éditeur",
+        "coverYear": 1862
+      },
+      "language": "French",
+      "size": 87614,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1862
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I. PARVULUS"
+        },
+        {
+          "order": 2,
+          "title": "II. QUELQUES-UNS DE SES SIGNES PARTICULIERS"
+        },
+        {
+          "order": 3,
+          "title": "III. IL EST AGRÉABLE"
+        },
+        {
+          "order": 4,
+          "title": "IV. IL PEUT ÊTRE UTILE"
+        },
+        {
+          "order": 5,
+          "title": "V. SES FRONTIÈRES"
+        },
+        {
+          "order": 6,
+          "title": "VI. UN PEU D’HISTOIRE"
+        },
+        {
+          "order": 7,
+          "title": "VII. LE GAMIN AURAIT SA PLACE DANS LES CLASSIFICATIONS DE L’INDE"
+        },
+        {
+          "order": 8,
+          "title": "VIII. OÙ ON LIRA UN MOT CHARMANT DU DERNIER ROI"
+        },
+        {
+          "order": 9,
+          "title": "IX. LA VIEILLE ÂME DE LA GAULE"
+        },
+        {
+          "order": 10,
+          "title": "X. ECCE PARIS, ECCE HOMO"
+        },
+        {
+          "order": 11,
+          "title": "XI. RAILLER, RÉGNER"
+        },
+        {
+          "order": 12,
+          "title": "XII. L’AVENIR LATENT DANS LE PEUPLE"
+        },
+        {
+          "order": 13,
+          "title": "XIII. LE PETIT GAVROCHE"
+        },
+        {
+          "order": 14,
+          "title": "I. QUATREVINGT-DIX ANS ET TRENTE-DEUX DENTS"
+        },
+        {
+          "order": 15,
+          "title": "II. TEL MAÎTRE, TEL LOGIS"
+        },
+        {
+          "order": 16,
+          "title": "III. Luc-Esprit"
+        },
+        {
+          "order": 17,
+          "title": "IV. ASPIRANT CENTENAIRE"
+        },
+        {
+          "order": 18,
+          "title": "V. BASQUE ET NICOLETTE"
+        },
+        {
+          "order": 19,
+          "title": "VI. OÙ L’ON ENTREVOIT LA MAGNON ET SES DEUX PETITS"
+        },
+        {
+          "order": 20,
+          "title": "VII. RÈGLE : NE RECEVOIR PERSONNE QUE LE SOIR"
+        },
+        {
+          "order": 21,
+          "title": "VIII. LES DEUX NE FONT PAS LA PAIRE"
+        },
+        {
+          "order": 22,
+          "title": "I. UN ANCIEN SALON"
+        },
+        {
+          "order": 23,
+          "title": "II. UN DES SPECTRES ROUGES DE CE TEMPS-LA"
+        },
+        {
+          "order": 24,
+          "title": "III. REQUIESCANT"
+        },
+        {
+          "order": 25,
+          "title": "IV. FIN DU BRIGAND"
+        },
+        {
+          "order": 26,
+          "title": "V. L’UTILITÉ D’ALLER À LA MESSE POUR DEVENIR RÉVOLUTIONNAIRE"
+        },
+        {
+          "order": 27,
+          "title": "VI. CE QUE C’EST QUE D’AVOIR RENCONTRÉ UN MARGUILLIER"
+        },
+        {
+          "order": 28,
+          "title": "VII. QUELQUE COTILLON"
+        },
+        {
+          "order": 29,
+          "title": "VIII. MARBRE CONTRE GRANIT"
+        },
+        {
+          "order": 30,
+          "title": "I. UN GROUPE QUI A FAILLI DEVENIR HISTORIQUE (1/2)"
+        },
+        {
+          "order": 31,
+          "title": "I. UN GROUPE QUI A FAILLI DEVENIR HISTORIQUE (2/2)"
+        },
+        {
+          "order": 32,
+          "title": "II. ORAISON FUNÈBRE DE BLONDEAU, PAR BOSSUET"
+        },
+        {
+          "order": 33,
+          "title": "III. LES ÉTONNEMENTS DE MARIUS"
+        },
+        {
+          "order": 34,
+          "title": "IV. L’ARRIÈRE-SALLE DU CAFÉ MUSAIN"
+        },
+        {
+          "order": 35,
+          "title": "V. ÉLARGISSEMENT DE L’HORIZON"
+        },
+        {
+          "order": 36,
+          "title": "VI. RES ANGUSTA"
+        },
+        {
+          "order": 37,
+          "title": "I. MARIUS INDIGENT"
+        },
+        {
+          "order": 38,
+          "title": "II. MARIUS PAUVRE"
+        },
+        {
+          "order": 39,
+          "title": "III. MARIUS GRANDI"
+        },
+        {
+          "order": 40,
+          "title": "IV. M. MABEUF"
+        },
+        {
+          "order": 41,
+          "title": "V. PAUVRETÉ, BONNE VOISINE DE MISÈRE"
+        },
+        {
+          "order": 42,
+          "title": "VI. LE REMPLAÇANT"
+        },
+        {
+          "order": 43,
+          "title": "I. LE SOBRIQUET, MODE DE FORMATION DES NOMS DE FAMILLE"
+        },
+        {
+          "order": 44,
+          "title": "II. LUX FACTA EST"
+        },
+        {
+          "order": 45,
+          "title": "III. EFFET DE PRINTEMPS"
+        },
+        {
+          "order": 46,
+          "title": "IV. COMMENCEMENT D’UNE GRANDE MALADIE"
+        },
+        {
+          "order": 47,
+          "title": "V. DIVERS COUPS DE FOUDRE TOMBENT SUR MAME BOUGON"
+        },
+        {
+          "order": 48,
+          "title": "VI. FAIT PRISONNIER"
+        },
+        {
+          "order": 49,
+          "title": "VII. AVENTURE DE LA LETTRE U LIVRÉE AUX CONJECTURES"
+        },
+        {
+          "order": 50,
+          "title": "VIII. LES INVALIDES EUX-MÊMES PEUVENT ÊTRE HEUREUX"
+        },
+        {
+          "order": 51,
+          "title": "IX. ÉCLIPSE"
+        },
+        {
+          "order": 52,
+          "title": "I. LES MINES ET LES MINEURS"
+        },
+        {
+          "order": 53,
+          "title": "II. LE BAS-FOND"
+        },
+        {
+          "order": 54,
+          "title": "III. BABET, GUEULEMER, CLAQUESOUS ET MONTPARNASSE"
+        },
+        {
+          "order": 55,
+          "title": "IV. COMPOSITION DE LA TROUPE"
+        },
+        {
+          "order": 56,
+          "title": "I. MARIUS CHERCHANT UNE FILLE EN CHAPEAU RENCONTRE UN HOMME EN CASQUETTE"
+        },
+        {
+          "order": 57,
+          "title": "II. TROUVAILLE"
+        },
+        {
+          "order": 58,
+          "title": "III. QUADRIFRONS"
+        },
+        {
+          "order": 59,
+          "title": "IV. UNE ROSE DANS LA MISÈRE"
+        },
+        {
+          "order": 60,
+          "title": "V. LE JUDAS DE LA PROVIDENCE"
+        },
+        {
+          "order": 61,
+          "title": "VI. L’HOMME FAUVE AU GÎTE"
+        },
+        {
+          "order": 62,
+          "title": "VII. STRATÉGIE ET TACTIQUE"
+        },
+        {
+          "order": 63,
+          "title": "VIII. LE RAYON DANS LE BOUGE"
+        },
+        {
+          "order": 64,
+          "title": "IX. JONDRETTE PLEURE PRESQUE"
+        },
+        {
+          "order": 65,
+          "title": "X. TARIF DES CABRIOLETS DE RÉGIE : DEUX FRANCS L’HEURE"
+        },
+        {
+          "order": 66,
+          "title": "XI. OFFRES DE SERVICE DE LA MISÈRE À LA DOULEUR"
+        },
+        {
+          "order": 67,
+          "title": "XII. EMPLOI DE LA PIÈCE DE CINQ FRANCS DE M. LEBLANC"
+        },
+        {
+          "order": 68,
+          "title": "XIII. SOLUS CUM SOLO, IN LOCO REMOTO NON COGITABUNTUR ORARE PATER NOSTER"
+        },
+        {
+          "order": 69,
+          "title": "XIV. OÙ UN AGENT DE POLICE DONNE DEUX COUPS DE POING À UN AVOCAT"
+        },
+        {
+          "order": 70,
+          "title": "XV. JONDRETTE FAIT SON EMPLETTE"
+        },
+        {
+          "order": 71,
+          "title": "XVI. OÙ L’ON RETROUVERA LA CHANSON SUR UN AIR ANGLAIS À LA MODE EN 1832"
+        },
+        {
+          "order": 72,
+          "title": "XVII. EMPLOI DE LA PIÈCE DE CINQ FRANCS DE MARIUS"
+        },
+        {
+          "order": 73,
+          "title": "XVIII. LES DEUX CHAISES DE MARIUS SE FONT VIS-À-VIS"
+        },
+        {
+          "order": 74,
+          "title": "XIX. SE PRÉOCCUPER DES FONDS OBSCURS"
+        },
+        {
+          "order": 75,
+          "title": "XX. LE GUET-APENS (1/4)"
+        },
+        {
+          "order": 76,
+          "title": "XX. LE GUET-APENS (2/4)"
+        },
+        {
+          "order": 77,
+          "title": "XX. LE GUET-APENS (3/4)"
+        },
+        {
+          "order": 78,
+          "title": "XX. LE GUET-APENS (4/4)"
+        },
+        {
+          "order": 79,
+          "title": "XXI. ON DEVRAIT TOUJOURS COMMENCER PAR ARRÊTER LES VICTIMES"
+        },
+        {
+          "order": 80,
+          "title": "XXII. LE PETIT QUI CRIAIT AU TOME DEUX"
+        }
+      ]
+    },
+    "ws-fr-victor-hugo_les-miserables-4": {
+      "title": "Les Misérables, tome IV : L’Idylle rue Plumet et l’Épopée rue Saint-Denis",
+      "author": "Victor Hugo",
+      "level": "C1 고급",
+      "total": 84,
+      "display": {
+        "titleKo": "레 미제라블 4부",
+        "authorKo": "빅토르 위고",
+        "binding": "pagnerre",
+        "coverTitle": "Les\nMisérables",
+        "coverAuthor": "Victor Hugo",
+        "coverPart": "Quatrième partie",
+        "coverPartTitle": "L’Idylle rue Plumet\net l’Épopée rue Saint-Denis",
+        "coverTome": "Tome quatrième",
+        "coverPlace": "Paris",
+        "coverImprint": "Pagnerre, libraire-éditeur",
+        "coverYear": 1862
+      },
+      "language": "French",
+      "size": 124323,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1862
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I. BIEN COUPÉ"
+        },
+        {
+          "order": 2,
+          "title": "II. MAL COUSU"
+        },
+        {
+          "order": 3,
+          "title": "III. LOUIS-PHILIPPE"
+        },
+        {
+          "order": 4,
+          "title": "IV. LÉZARDES SOUS LA FONDATION"
+        },
+        {
+          "order": 5,
+          "title": "V. FAITS D’OÙ L’HISTOIRE SORT ET QUE L’HISTOIRE IGNORE (1/2)"
+        },
+        {
+          "order": 6,
+          "title": "V. FAITS D’OÙ L’HISTOIRE SORT ET QUE L’HISTOIRE IGNORE (2/2)"
+        },
+        {
+          "order": 7,
+          "title": "VI. ENJOLRAS ET SES LIEUTENANTS"
+        },
+        {
+          "order": 8,
+          "title": "I. LE CHAMP DE L’ALOUETTE"
+        },
+        {
+          "order": 9,
+          "title": "II. FORMATION EMBRYONNAIRE DES CRIMES DANS L’INCUBATION DES PRISONS"
+        },
+        {
+          "order": 10,
+          "title": "III. APPARITION AU PÈRE MABEUF"
+        },
+        {
+          "order": 11,
+          "title": "IV. APPARITION À MARIUS"
+        },
+        {
+          "order": 12,
+          "title": "I. LA MAISON À SECRET"
+        },
+        {
+          "order": 13,
+          "title": "II. JEAN VALJEAN GARDE NATIONAL"
+        },
+        {
+          "order": 14,
+          "title": "III. FOLIIS AC FRONDIBUS"
+        },
+        {
+          "order": 15,
+          "title": "IV. CHANGEMENT DE GRILLE"
+        },
+        {
+          "order": 16,
+          "title": "V. LA ROSE S’APERÇOIT QU’ELLE EST UNE MACHINE DE GUERRE"
+        },
+        {
+          "order": 17,
+          "title": "VI. LA BATAILLE COMMENCE"
+        },
+        {
+          "order": 18,
+          "title": "VII. À TRISTESSE, TRISTESSE ET DEMIE"
+        },
+        {
+          "order": 19,
+          "title": "VIII. LA CADÈNE (1/2)"
+        },
+        {
+          "order": 20,
+          "title": "VIII. LA CADÈNE (2/2)"
+        },
+        {
+          "order": 21,
+          "title": "I. BLESSURE AU DEHORS, GUÉRISON AU DEDANS"
+        },
+        {
+          "order": 22,
+          "title": "II. LA MÈRE PLUTARQUE N’EST PAS EMBARRASSÉE POUR EXPLIQUER UN PHÉNOMÈNE"
+        },
+        {
+          "order": 23,
+          "title": "I. LA SOLITUDE ET LA CASERNE COMBINÉES"
+        },
+        {
+          "order": 24,
+          "title": "II. PEURS DE COSETTE"
+        },
+        {
+          "order": 25,
+          "title": "III. ENRICHIES DES COMMENTAIRES DE TOUSSAINT"
+        },
+        {
+          "order": 26,
+          "title": "IV. UN CŒUR SOUS UNE PIERRE"
+        },
+        {
+          "order": 27,
+          "title": "V. COSETTE APRÈS LA LETTRE"
+        },
+        {
+          "order": 28,
+          "title": "VI. LES VIEUX SONT FAITS POUR SORTIR À PROPOS"
+        },
+        {
+          "order": 29,
+          "title": "I. MÉCHANTE ESPIÈGLERIE DU VENT"
+        },
+        {
+          "order": 30,
+          "title": "II. OÙ LE PETIT GAVROCHE TIRE PARTI DE NAPOLÉON LE GRAND (1/4)"
+        },
+        {
+          "order": 31,
+          "title": "II. OÙ LE PETIT GAVROCHE TIRE PARTI DE NAPOLÉON LE GRAND (2/4)"
+        },
+        {
+          "order": 32,
+          "title": "II. OÙ LE PETIT GAVROCHE TIRE PARTI DE NAPOLÉON LE GRAND (3/4)"
+        },
+        {
+          "order": 33,
+          "title": "II. OÙ LE PETIT GAVROCHE TIRE PARTI DE NAPOLÉON LE GRAND (4/4)"
+        },
+        {
+          "order": 34,
+          "title": "III. LES PÉRIPÉTIES DE L’ÉVASION (1/2)"
+        },
+        {
+          "order": 35,
+          "title": "III. LES PÉRIPÉTIES DE L’ÉVASION (2/2)"
+        },
+        {
+          "order": 36,
+          "title": "I. ORIGINE"
+        },
+        {
+          "order": 37,
+          "title": "II. RACINES"
+        },
+        {
+          "order": 38,
+          "title": "III. ARGOT QUI PLEURE ET ARGOT QUI RIT"
+        },
+        {
+          "order": 39,
+          "title": "IV. LES DEUX DEVOIRS : VEILLER ET ESPÉRER"
+        },
+        {
+          "order": 40,
+          "title": "I. PLEINE LUMIÈRE"
+        },
+        {
+          "order": 41,
+          "title": "II. L’ÉTOURDISSEMENT DU BONHEUR COMPLET"
+        },
+        {
+          "order": 42,
+          "title": "III. COMMENCEMENT D’OMBRE"
+        },
+        {
+          "order": 43,
+          "title": "IV. CAB ROULE EN ANGLAIS ET JAPPE EN ARGOT"
+        },
+        {
+          "order": 44,
+          "title": "V. CHOSES DE LA NUIT"
+        },
+        {
+          "order": 45,
+          "title": "VI. MARIUS REDEVIENT RÉEL AU POINT DE DONNER SON ADRESSE À COSETTE"
+        },
+        {
+          "order": 46,
+          "title": "VII. LE VIEUX CŒUR ET LE JEUNE CŒUR EN PRÉSENCE (1/2)"
+        },
+        {
+          "order": 47,
+          "title": "VII. LE VIEUX CŒUR ET LE JEUNE CŒUR EN PRÉSENCE (2/2)"
+        },
+        {
+          "order": 48,
+          "title": "I. JEAN VALJEAN"
+        },
+        {
+          "order": 49,
+          "title": "II. MARIUS"
+        },
+        {
+          "order": 50,
+          "title": "III. M. MABEUF"
+        },
+        {
+          "order": 51,
+          "title": "I. LA SURFACE DE LA QUESTION"
+        },
+        {
+          "order": 52,
+          "title": "II. LE FOND DE LA QUESTION"
+        },
+        {
+          "order": 53,
+          "title": "III. UN ENTERREMENT : OCCASION DE RENAÎTRE"
+        },
+        {
+          "order": 54,
+          "title": "IV. LES BOUILLONNEMENTS D’AUTREFOIS"
+        },
+        {
+          "order": 55,
+          "title": "V. ORIGINALITÉ DE PARIS"
+        },
+        {
+          "order": 56,
+          "title": "I. QUELQUES ÉCLAIRCISSEMENTS SUR LES ORIGINES DE LA POÉSIE DE GAVROCHE. INFLUENCE D’UN ACADÉMICIEN SUR CETTE POÉSIE"
+        },
+        {
+          "order": 57,
+          "title": "II. GAVROCHE EN MARCHE"
+        },
+        {
+          "order": 58,
+          "title": "III. JUSTE INDIGNATION D’UN PERRUQUIER"
+        },
+        {
+          "order": 59,
+          "title": "IV. L’ENFANT S’ÉTONNE DU VIEILLARD"
+        },
+        {
+          "order": 60,
+          "title": "V. LE VIEILLARD"
+        },
+        {
+          "order": 61,
+          "title": "VI. RECRUES"
+        },
+        {
+          "order": 62,
+          "title": "I. HISTOIRE DE CORINTHE DEPUIS SA FONDATION"
+        },
+        {
+          "order": 63,
+          "title": "II. GAITÉS PRÉALABLES (1/2)"
+        },
+        {
+          "order": 64,
+          "title": "II. GAITÉS PRÉALABLES (2/2)"
+        },
+        {
+          "order": 65,
+          "title": "III. LA NUIT COMMENCE À SE FAIRE SUR GRANTAIRE"
+        },
+        {
+          "order": 66,
+          "title": "IV. ESSAI DE CONSOLATION SUR LA VEUVE HUCHELOUP"
+        },
+        {
+          "order": 67,
+          "title": "V. LES PRÉPARATIFS"
+        },
+        {
+          "order": 68,
+          "title": "VI. EN ATTENDANT"
+        },
+        {
+          "order": 69,
+          "title": "VII. L’HOMME RECRUTÉ RUE DES BILLETTES"
+        },
+        {
+          "order": 70,
+          "title": "VIII. PLUSIEURS POINTS D’INTERROGATION À PROPOS D’UN NOMMÉ LE CABUC QUI NE SE NOMMAIT PEUT-ÊTRE PAS LE CABUC"
+        },
+        {
+          "order": 71,
+          "title": "I. DE LA RUE PLUMET AU QUARTIER SAINT-DENIS"
+        },
+        {
+          "order": 72,
+          "title": "II. PARIS À VOL DE HIBOU"
+        },
+        {
+          "order": 73,
+          "title": "III. L’EXTRÊME BORD"
+        },
+        {
+          "order": 74,
+          "title": "I. LE DRAPEAU. — PREMIER ACTE"
+        },
+        {
+          "order": 75,
+          "title": "II. LE DRAPEAU. — DEUXIÈME ACTE"
+        },
+        {
+          "order": 76,
+          "title": "III. GAVROCHE AURAIT MIEUX FAIT D’ACCEPTER LA CARABINE D’ENJOLRAS"
+        },
+        {
+          "order": 77,
+          "title": "IV. LE BARIL DE POUDRE"
+        },
+        {
+          "order": 78,
+          "title": "V. FIN DES VERS DE JEAN PROUVAIRE"
+        },
+        {
+          "order": 79,
+          "title": "VI. L’AGONIE DE LA MORT APRÈS L’AGONIE DE LA VIE"
+        },
+        {
+          "order": 80,
+          "title": "VII. GAVROCHE PROFOND CALCULATEUR DES DISTANCES"
+        },
+        {
+          "order": 81,
+          "title": "I. BUVARD, BAVARD"
+        },
+        {
+          "order": 82,
+          "title": "II. LE GAMIN ENNEMI DES LUMIÈRES"
+        },
+        {
+          "order": 83,
+          "title": "III. PENDANT QUE COSETTE ET TOUSSAINT DORMENT"
+        },
+        {
+          "order": 84,
+          "title": "IV. LES EXCÈS DE ZÈLE DE GAVROCHE"
+        }
+      ]
+    },
+    "ws-fr-victor-hugo_les-miserables-5": {
+      "title": "Les Misérables, tome V : Jean Valjean",
+      "author": "Victor Hugo",
+      "level": "C1 고급",
+      "total": 73,
+      "display": {
+        "titleKo": "레 미제라블 5부",
+        "authorKo": "빅토르 위고",
+        "binding": "pagnerre",
+        "coverTitle": "Les\nMisérables",
+        "coverAuthor": "Victor Hugo",
+        "coverPart": "Cinquième partie",
+        "coverPartTitle": "Jean Valjean",
+        "coverTome": "Tome cinquième",
+        "coverPlace": "Paris",
+        "coverImprint": "Pagnerre, libraire-éditeur",
+        "coverYear": 1862
+      },
+      "language": "French",
+      "size": 101976,
+      "unit": "words",
+      "literature": {
+        "publishedYear": 1862
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I. LA CHARYBDE DU FAUBOURG SAINT-ANTOINE ET LA SCYLLA DU FAUBOURG DU TEMPLE"
+        },
+        {
+          "order": 2,
+          "title": "II. QUE FAIRE DANS L’ABÎME À MOINS QUE L’ON NE CAUSE"
+        },
+        {
+          "order": 3,
+          "title": "III. ÉCLAIRCISSEMENT ET ASSOMBRISSEMENT"
+        },
+        {
+          "order": 4,
+          "title": "IV. CINQ DE MOINS, UN DE PLUS"
+        },
+        {
+          "order": 5,
+          "title": "V. QUEL HORIZON ON VOIT DU HAUT DE LA BARRICADE"
+        },
+        {
+          "order": 6,
+          "title": "VI. MARIUS HAGARD, JAVERT LACONIQUE"
+        },
+        {
+          "order": 7,
+          "title": "VII. LA SITUATION S’AGGRAVE"
+        },
+        {
+          "order": 8,
+          "title": "VIII. LES ARTILLEURS SE FONT PRENDRE AU SÉRIEUX"
+        },
+        {
+          "order": 9,
+          "title": "IX. EMPLOI DE CE VIEUX TALENT DE BRACONNIER ET DE CE COUP DE FUSIL INFAILLIBLE QUI A INFLUÉ SUR LA CONDAMNATION DE 1796"
+        },
+        {
+          "order": 10,
+          "title": "X. AURORE"
+        },
+        {
+          "order": 11,
+          "title": "XI. LE COUP DE FUSIL QUI NE MANQUE RIEN ET QUI NE TUE PERSONNE"
+        },
+        {
+          "order": 12,
+          "title": "XII. LE DÉSORDRE PARTISAN DE L’ORDRE"
+        },
+        {
+          "order": 13,
+          "title": "XIII. LUEURS QUI PASSENT"
+        },
+        {
+          "order": 14,
+          "title": "XIV. OÙ ON LIRA LE NOM DE LA MAÎTRESSE D’ENJOLRAS"
+        },
+        {
+          "order": 15,
+          "title": "XV. GAVROCHE DEHORS"
+        },
+        {
+          "order": 16,
+          "title": "XVI. COMMENT DE FRÈRE ON DEVIENT PÈRE"
+        },
+        {
+          "order": 17,
+          "title": "XVII. MORTUUS PATER FILIUM MORITURUM EXPECTAT"
+        },
+        {
+          "order": 18,
+          "title": "XVIII. LE VAUTOUR DEVENU PROIE"
+        },
+        {
+          "order": 19,
+          "title": "XIX. JEAN VALJEAN SE VENGE"
+        },
+        {
+          "order": 20,
+          "title": "XX. LES MORTS ONT RAISON ET LES VIVANTS N’ONT PAS TORT (1/2)"
+        },
+        {
+          "order": 21,
+          "title": "XX. LES MORTS ONT RAISON ET LES VIVANTS N’ONT PAS TORT (2/2)"
+        },
+        {
+          "order": 22,
+          "title": "XXI. LES HÉROS"
+        },
+        {
+          "order": 23,
+          "title": "XXII. PIED À PIED"
+        },
+        {
+          "order": 24,
+          "title": "XXIII. ORESTE À JEUN ET PYLADE IVRE"
+        },
+        {
+          "order": 25,
+          "title": "XXIV. PRISONNIER"
+        },
+        {
+          "order": 26,
+          "title": "I. LA TERRE APPAUVRIE PAR LA MER"
+        },
+        {
+          "order": 27,
+          "title": "II. L’HISTOIRE ANCIENNE DE L’ÉGOUT"
+        },
+        {
+          "order": 28,
+          "title": "III. BRUNESEAU"
+        },
+        {
+          "order": 29,
+          "title": "IV. DÉTAILS IGNORÉS"
+        },
+        {
+          "order": 30,
+          "title": "V. PROGRÈS ACTUEL"
+        },
+        {
+          "order": 31,
+          "title": "VI. PROGRÈS FUTUR"
+        },
+        {
+          "order": 32,
+          "title": "I. LE CLOAQUE ET SES SURPRISES"
+        },
+        {
+          "order": 33,
+          "title": "II. EXPLICATION"
+        },
+        {
+          "order": 34,
+          "title": "III. L’HOMME FILÉ"
+        },
+        {
+          "order": 35,
+          "title": "IV. LUI AUSSI PORTE SA CROIX"
+        },
+        {
+          "order": 36,
+          "title": "V. POUR LE SABLE COMME POUR LA FEMME IL Y A UNE FINESSE QUI EST PERFIDIE"
+        },
+        {
+          "order": 37,
+          "title": "VI. LE FONTIS"
+        },
+        {
+          "order": 38,
+          "title": "VII. QUELQUEFOIS ON ÉCHOUE OÙ L’ON CROIT DÉBARQUER"
+        },
+        {
+          "order": 39,
+          "title": "VIII. LE PAN DE L’HABIT DÉCHIRÉ"
+        },
+        {
+          "order": 40,
+          "title": "IX. MARIUS FAIT L’EFFET D’ÊTRE MORT À QUELQU’UN QUI S’Y CONNAÎT"
+        },
+        {
+          "order": 41,
+          "title": "X. RENTRÉE DE L’ENFANT PRODIGUE DE SA VIE"
+        },
+        {
+          "order": 42,
+          "title": "XI. ÉBRANLEMENT DANS L’ABSOLU"
+        },
+        {
+          "order": 43,
+          "title": "XII. L’AÏEUL"
+        },
+        {
+          "order": 44,
+          "title": "I. OÙ L’ON REVOIT L’ARBRE À L’EMPLÂTRE DE ZINC"
+        },
+        {
+          "order": 45,
+          "title": "II. MARIUS, EN SORTANT DE LA GUERRE CIVILE, S’APPRÊTE À LA GUERRE DOMESTIQUE"
+        },
+        {
+          "order": 46,
+          "title": "III. MARIUS ATTAQUE"
+        },
+        {
+          "order": 47,
+          "title": "IV. MADEMOISELLE GILLENORMAND FINIT PAR NE PLUS TROUVER MAUVAIS QUE M. FAUCHELEVENT SOIT ENTRÉ AVEC QUELQUE CHOSE SOUS LE BRAS"
+        },
+        {
+          "order": 48,
+          "title": "V. DÉPOSEZ PLUTÔT VOTRE ARGENT DANS TELLE FORÊT QUE CHEZ TEL NOTAIRE"
+        },
+        {
+          "order": 49,
+          "title": "VI. LES DEUX VIEILLARDS FONT TOUT, CHACUN À LEUR FAÇON, POUR QUE COSETTE SOIT HEUREUSE"
+        },
+        {
+          "order": 50,
+          "title": "VII. LES EFFETS DE RÊVE MÊLÉS AU BONHEUR"
+        },
+        {
+          "order": 51,
+          "title": "VIII. DEUX HOMMES IMPOSSIBLES À RETROUVER"
+        },
+        {
+          "order": 52,
+          "title": "I. LE 16 FÉVRIER 1833"
+        },
+        {
+          "order": 53,
+          "title": "II. JEAN VALJEAN A TOUJOURS SON BRAS EN ÉCHARPE (1/2)"
+        },
+        {
+          "order": 54,
+          "title": "II. JEAN VALJEAN A TOUJOURS SON BRAS EN ÉCHARPE (2/2)"
+        },
+        {
+          "order": 55,
+          "title": "III. L’INSÉPARABLE"
+        },
+        {
+          "order": 56,
+          "title": "IV. IMMORTALE JECUR"
+        },
+        {
+          "order": 57,
+          "title": "I. LE SEPTIÈME CERCLE ET LE HUITIÈME CIEL (1/3)"
+        },
+        {
+          "order": 58,
+          "title": "I. LE SEPTIÈME CERCLE ET LE HUITIÈME CIEL (2/3)"
+        },
+        {
+          "order": 59,
+          "title": "I. LE SEPTIÈME CERCLE ET LE HUITIÈME CIEL (3/3)"
+        },
+        {
+          "order": 60,
+          "title": "II. LES OBSCURITÉS QUE PEUT CONTENIR UNE RÉVÉLATION"
+        },
+        {
+          "order": 61,
+          "title": "I. LA CHAMBRE D’EN BAS"
+        },
+        {
+          "order": 62,
+          "title": "II. AUTRE PAS EN ARRIÈRE"
+        },
+        {
+          "order": 63,
+          "title": "III. ILS SE SOUVIENNENT DU JARDIN DE LA RUE PLUMET"
+        },
+        {
+          "order": 64,
+          "title": "IV. L’ATTRACTION ET L’EXTINCTION"
+        },
+        {
+          "order": 65,
+          "title": "I. PITIÉ POUR LES MALHEUREUX, MAIS INDULGENCE POUR LES HEUREUX"
+        },
+        {
+          "order": 66,
+          "title": "II. DERNIÈRES PALPITATIONS DE LA LAMPE SANS HUILE"
+        },
+        {
+          "order": 67,
+          "title": "III. UNE PLUME PÈSE À QUI SOULEVAIT LA CHARRETTE FAUCHELEVENT"
+        },
+        {
+          "order": 68,
+          "title": "IV. BOUTEILLE D’ENCRE QUI NE RÉUSSIT QU’À BLANCHIR (1/3)"
+        },
+        {
+          "order": 69,
+          "title": "IV. BOUTEILLE D’ENCRE QUI NE RÉUSSIT QU’À BLANCHIR (2/3)"
+        },
+        {
+          "order": 70,
+          "title": "IV. BOUTEILLE D’ENCRE QUI NE RÉUSSIT QU’À BLANCHIR (3/3)"
+        },
+        {
+          "order": 71,
+          "title": "V. NUIT DERRIÈRE LAQUELLE IL Y A LE JOUR (1/2)"
+        },
+        {
+          "order": 72,
+          "title": "V. NUIT DERRIÈRE LAQUELLE IL Y A LE JOUR (2/2)"
+        },
+        {
+          "order": 73,
+          "title": "VI. L’HERBE CACHE ET LA PLUIE EFFACE"
+        }
+      ]
+    },
+    "ws-ko-choe-nam-seon_gimi-dongnip-seoneonseo": {
+      "title": "宣言書",
+      "author": "崔南善",
+      "level": "고급",
+      "total": 1,
+      "display": {
+        "titleKo": "기미독립선언서",
+        "authorKo": "최남선 기초 · 민족 대표 33인",
+        "binding": "boseongsa-1919",
+        "coverTitle": "宣言書"
+      },
+      "language": "Korean",
+      "size": 1965,
+      "unit": "chars",
+      "literature": {
+        "publishedYear": 1919
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "宣言書"
+        }
+      ]
+    },
+    "ws-ko-hyeon-jin-geon_unsu-joeun-nal": {
+      "title": "운수 좋은 날",
+      "author": "현진건",
+      "level": "고급",
+      "total": 3,
+      "display": {
+        "titleKo": "운수 좋은 날",
+        "authorKo": "현진건",
+        "binding": "gaebyeok",
+        "coverTitle": "운수 좋은 날",
+        "coverAuthor": "玄鎭健",
+        "coverImprint": "開闢",
+        "coverEdition": "第四十八號"
+      },
+      "language": "Korean",
+      "size": 7654,
+      "unit": "chars",
+      "literature": {
+        "publishedYear": 1924
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "운수 좋은 날 (1/3)"
+        },
+        {
+          "order": 2,
+          "title": "운수 좋은 날 (2/3)"
+        },
+        {
+          "order": 3,
+          "title": "운수 좋은 날 (3/3)"
+        }
+      ]
+    },
+    "ws-ko-kim-dong-in_gamja": {
+      "title": "감자",
+      "author": "김동인",
+      "level": "고급",
+      "total": 2,
+      "display": {
+        "titleKo": "감자",
+        "authorKo": "김동인",
+        "binding": "gamja",
+        "coverTitle": "감자",
+        "coverAuthor": "金東仁 作",
+        "coverSubtitle": "短篇小說集"
+      },
+      "language": "Korean",
+      "size": 4643,
+      "unit": "chars",
+      "literature": {
+        "publishedYear": 1925
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "감자 (1/2)"
+        },
+        {
+          "order": 2,
+          "title": "감자 (2/2)"
+        }
+      ]
+    },
+    "ws-ko-kim-so-wol_jindallaekkot": {
+      "title": "진달래꽃",
+      "author": "김소월",
+      "level": "고급",
+      "total": 6,
+      "display": {
+        "titleKo": "진달래꽃",
+        "authorKo": "김소월",
+        "binding": "jindallae",
+        "coverTitle": "진달내ᄭᅩᆺ",
+        "coverSubtitle": "金素月詩集",
+        "coverEdition": "—1925—"
+      },
+      "language": "Korean",
+      "size": 18218,
+      "unit": "chars",
+      "literature": {
+        "publishedYear": 1925
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "먼 후일 외 21편"
+        },
+        {
+          "order": 2,
+          "title": "꿈 1 외 24편"
+        },
+        {
+          "order": 3,
+          "title": "가을 저녁에 외 29편"
+        },
+        {
+          "order": 4,
+          "title": "여름의 달밤 외 11편"
+        },
+        {
+          "order": 5,
+          "title": "열락 외 16편"
+        },
+        {
+          "order": 6,
+          "title": "춘향과 이도령 외 19편"
+        }
+      ]
+    },
+    "ws-ko-kim-yu-jeong_bombom": {
+      "title": "봄봄",
+      "author": "김유정",
+      "level": "중급",
+      "total": 3,
+      "display": {
+        "titleKo": "봄봄",
+        "authorKo": "김유정",
+        "binding": "tpl-cjk-vertical",
+        "coverTitle": "봄봄",
+        "coverAuthor": "김유정",
+        "coverPalette": "cream"
+      },
+      "language": "Korean",
+      "size": 8297,
+      "unit": "chars",
+      "literature": {
+        "publishedYear": 1935
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "봄봄 (1/3)"
+        },
+        {
+          "order": 2,
+          "title": "봄봄 (2/3)"
+        },
+        {
+          "order": 3,
+          "title": "봄봄 (3/3)"
+        }
+      ]
+    },
+    "ws-ko-kim-yu-jeong_dongbaekkkot": {
+      "title": "동백꽃",
+      "author": "김유정",
+      "level": "고급",
+      "total": 2,
+      "display": {
+        "titleKo": "동백꽃",
+        "authorKo": "김유정",
+        "binding": "dongbaek",
+        "coverTitle": "동백꽃"
+      },
+      "language": "Korean",
+      "size": 5102,
+      "unit": "chars",
+      "literature": {
+        "publishedYear": 1936
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "동백꽃 (1/2)"
+        },
+        {
+          "order": 2,
+          "title": "동백꽃 (2/2)"
+        }
+      ]
+    },
+    "ws-ko-samil-centennial_swipgo-bareuge-ingneun-dongnip-seoneonseo": {
+      "title": "쉽고 바르게 읽는 3.1독립선언서",
+      "author": "3·1운동 및 대한민국임시정부 수립 100주년 기념사업 추진위원회",
+      "level": "중급",
+      "total": 1,
+      "display": {
+        "titleKo": "쉽고 바르게 읽는 3·1독립선언서",
+        "authorKo": "3·1운동·임시정부 100주년 기념사업 추진위원회",
+        "binding": "boseongsa-1919",
+        "coverTitle": "宣言書"
+      },
+      "language": "Korean",
+      "size": 2138,
+      "unit": "chars",
+      "literature": {
+        "publishedYear": 2019
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "쉽고 바르게 읽는 3.1독립선언서"
+        }
+      ]
+    },
+    "ws-ko-yi-hyo-seok_memilkkot-pil-muryeop": {
+      "title": "메밀꽃 필 무렵",
+      "author": "이효석",
+      "level": "고급",
+      "total": 2,
+      "display": {
+        "titleKo": "메밀꽃 필 무렵",
+        "authorKo": "이효석",
+        "binding": "bakmun",
+        "coverTitle": "메밀꽃 필 무렵",
+        "coverAuthor": "李孝石",
+        "coverImprint": "博文書館",
+        "coverEdition": "博文文庫"
+      },
+      "language": "Korean",
+      "size": 6210,
+      "unit": "chars",
+      "literature": {
+        "publishedYear": 1936
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "메밀꽃 필 무렵 (1/2)"
+        },
+        {
+          "order": 2,
+          "title": "메밀꽃 필 무렵 (2/2)"
+        }
+      ]
+    },
+    "ws-ko-yi-sang_nalgae": {
+      "title": "날개",
+      "author": "이상",
+      "level": "고급",
+      "total": 5,
+      "display": {
+        "titleKo": "날개",
+        "authorKo": "이상",
+        "binding": "isang",
+        "coverTitle": "李箱選集"
+      },
+      "language": "Korean",
+      "size": 16481,
+      "unit": "chars",
+      "literature": {
+        "publishedYear": 1936
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "날개 (1/5)"
+        },
+        {
+          "order": 2,
+          "title": "날개 (2/5)"
+        },
+        {
+          "order": 3,
+          "title": "날개 (3/5)"
+        },
+        {
+          "order": 4,
+          "title": "날개 (4/5)"
+        },
+        {
+          "order": 5,
+          "title": "날개 (5/5)"
+        }
+      ]
+    },
+    "ws-ko-yun-dong-ju_haneulgwa-baramgwa-byeolgwa-si": {
+      "title": "하늘과 바람과 별과 시",
+      "author": "윤동주",
+      "level": "고급",
+      "total": 7,
+      "display": {
+        "titleKo": "하늘과 바람과 별과 시",
+        "authorKo": "윤동주",
+        "binding": "jeongeum-1948",
+        "coverTitle": "하늘과 바람과 별과 詩",
+        "coverAuthor": "尹東柱",
+        "coverSubtitle": "遺稿集"
+      },
+      "language": "Korean",
+      "size": 19557,
+      "unit": "chars",
+      "literature": {
+        "publishedYear": 1955
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "서시 외 16편"
+        },
+        {
+          "order": 2,
+          "title": "길 외 13편"
+        },
+        {
+          "order": 3,
+          "title": "아우의 인상화 외 20편"
+        },
+        {
+          "order": 4,
+          "title": "산림 외 24편"
+        },
+        {
+          "order": 5,
+          "title": "편지 외 12편"
+        },
+        {
+          "order": 6,
+          "title": "별똥 떨어진데 외 1편"
+        },
+        {
+          "order": 7,
+          "title": "종시"
+        }
+      ]
+    },
+    "ws-zh-lu-xun_gu-xiang": {
+      "title": "故乡",
+      "author": "鲁迅",
+      "level": "H5 고급",
+      "total": 2,
+      "display": {
+        "titleKo": "고향",
+        "authorKo": "루쉰",
+        "binding": "nahan",
+        "coverTitle": "故乡",
+        "coverAuthor": "鲁迅"
+      },
+      "language": "Chinese",
+      "size": 4976,
+      "unit": "chars",
+      "literature": {
+        "publishedYear": 1921
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "故乡 (1/2)"
+        },
+        {
+          "order": 2,
+          "title": "故乡 (2/2)"
+        }
+      ]
+    },
+    "ws-zh-lu-xun_kong-yi-ji": {
+      "title": "孔乙己",
+      "author": "鲁迅",
+      "level": "H5 고급",
+      "total": 1,
+      "display": {
+        "titleKo": "쿵이지",
+        "authorKo": "루쉰",
+        "binding": "nahan",
+        "coverTitle": "孔乙己",
+        "coverAuthor": "鲁迅"
+      },
+      "language": "Chinese",
+      "size": 2611,
+      "unit": "chars",
+      "literature": {
+        "publishedYear": 1919
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "孔乙己"
+        }
+      ]
+    },
+    "ws-zh-lu-xun_zhu-fu": {
+      "title": "祝福",
+      "author": "鲁迅",
+      "level": "H5 고급",
+      "total": 4,
+      "display": {
+        "titleKo": "축복",
+        "authorKo": "루쉰",
+        "binding": "tpl-cjk-vertical",
+        "coverTitle": "祝福",
+        "coverAuthor": "鲁迅",
+        "coverPalette": "grey"
+      },
+      "language": "Chinese",
+      "size": 9182,
+      "unit": "chars",
+      "literature": {
+        "publishedYear": 1924
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "祝福 (1/4)"
+        },
+        {
+          "order": 2,
+          "title": "祝福 (2/4)"
+        },
+        {
+          "order": 3,
+          "title": "祝福 (3/4)"
+        },
+        {
+          "order": 4,
+          "title": "祝福 (4/4)"
+        }
+      ]
+    },
+    "ws-zh-zhu-ziqing_bei-ying": {
+      "title": "背影",
+      "author": "朱自清",
+      "level": "H4 상급",
+      "total": 1,
+      "display": {
+        "titleKo": "아버지의 뒷모습",
+        "authorKo": "주쯔칭",
+        "binding": "kaiming",
+        "coverTitle": "背影",
+        "coverAuthor": "朱自清",
+        "coverImprint": "开明书店"
+      },
+      "language": "Chinese",
+      "size": 1329,
+      "unit": "chars",
+      "literature": {
+        "publishedYear": 1925
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "背影"
+        }
+      ]
+    }
+  }
+}

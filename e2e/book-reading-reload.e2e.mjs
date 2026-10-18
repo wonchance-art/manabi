@@ -212,3 +212,120 @@ test(`${engine.name()}: reload rejects wrong-edition and missing-article snapsho
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });
+
+// 표지(책 목차) 뒤로 가기 자리(BOOK-HOME-RESTORE-001) — 표지에서 다른 화면 · 과에 다녀오면 맨 위로 갔다(369px → 0px).
+// 이 기록의 표지 자리(manabiBookCover: 세로 위치 · 전체 목차 · 열린 파트)로 돌아오고, 새로 들어온 표지는 맨 위에서 시작한다.
+const openParts=page=>page.evaluate(()=>[...document.querySelectorAll('.manabi-book-home details[data-toc-part]')].filter(d=>d.open).map(d=>d.dataset.tocPart));
+async function coverAt(page,y,all=false,open=null){
+ await page.locator('.manabi-book-home .manabi-toc-group').first().waitFor();await page.evaluate(()=>document.fonts.ready);
+ await page.waitForFunction(({y,all})=>{
+  const saved=history.state?.manabiBookCover,tabs=document.querySelectorAll('.manabi-book-home .manabi-tabs button');
+  return saved?.href===location.href&&Math.abs(saved.y-y)<2&&Math.abs(scrollY-y)<2&&saved.all===all&&tabs[1]?.getAttribute('aria-pressed')===String(all);
+ },{y,all});
+ await page.waitForTimeout(300); // 늦은 그리기가 자리를 다시 옮기지 않는다
+ const now=await page.evaluate(()=>scrollY);
+ assert.ok(Math.abs(now-y)<2,JSON.stringify({y,now}));
+ if(open)assert.deepEqual(await openParts(page),open);
+}
+async function scrollCover(page,ratio=.6){
+ await page.locator('.manabi-book-home .manabi-toc-group').first().waitFor();await page.evaluate(()=>document.fonts.ready);
+ const y=await page.evaluate(ratio=>{const max=document.documentElement.scrollHeight-innerHeight;const y=Math.round(Math.min(369,max*ratio));scrollTo(0,y);return y;},ratio);
+ assert.ok(y>40,`cover too short to scroll: ${y}`);
+ await page.waitForFunction(y=>Math.abs((history.state?.manabiBookCover?.y??-99)-y)<2,y);
+ return y;
+}
+for(const width of [390,1440])test(`${engine.name()} ${width}: the book cover keeps its own scroll position across routes, lessons, bfcache and reload; fresh covers start at defaults`,async()=>{
+ const f=await fixture(width),edition=editions[0],cover=`/books/japanese-n5?edition=${edition}`;try{
+  await f.page.goto(cover);await coverAt(f.page,0);
+  // ① 다른 화면(Next Link — 「교재」 breadcrumb)에 다녀오기: 표지가 다시 붙어도 그 자리
+  const y=await scrollCover(f.page);
+  await f.page.locator('.manabi-book-home .manabi-breadcrumb').getByRole('link',{name:'교재',exact:true}).evaluate(link=>link.click());
+  await f.page.waitForURL(url=>url.pathname==='/lessons');await f.page.goBack();await coverAt(f.page,y);
+  // ② 전체 목차를 펼치고 마지막 파트를 열어 내린 뒤 과를 열고 뒤로: 펼침 · 열린 파트 · 자리가 함께
+  await f.page.getByRole('button',{name:'전체 42과',exact:true}).click();
+  const last=f.page.locator('.manabi-book-home details[data-toc-part]').last();
+  await last.locator('summary').click();await f.page.waitForFunction(()=>[...document.querySelectorAll('.manabi-book-home details[data-toc-part]')].at(-1).open);
+  const deep=await last.locator('li a').nth(1).evaluate(link=>{link.scrollIntoView({block:'center',behavior:'instant'});return Math.round(scrollY);});
+  assert.ok(deep>y,`deep ${deep} <= ${y}`);
+  const open=await openParts(f.page);assert.ok(open.length>=2,JSON.stringify(open));
+  await f.page.waitForFunction(({y,open})=>{const s=history.state?.manabiBookCover;return s?.y===y&&s.all===true&&JSON.stringify(s.open)===JSON.stringify(open);},{y:deep,open});
+  const lesson=await last.locator('li a').nth(1).evaluate(link=>{link.click();return new URL(link.href).hash.slice(1);});
+  await settled(f.page,lesson);await f.page.goBack();await coverAt(f.page,deep,true,open);
+  // ③ 다른 화면에 다녀와 표지가 다시 붙어도 펼침 · 열린 파트 · 자리가 이어진다
+  await f.page.locator('.manabi-book-home .manabi-breadcrumb').getByRole('link',{name:'교재',exact:true}).evaluate(link=>link.click());
+  await f.page.waitForURL(url=>url.pathname==='/lessons');await f.page.goBack();await coverAt(f.page,deep,true,open);
+  // ④ bfcache 복귀(persisted pageshow) · 새로 고침
+  await f.page.evaluate(()=>{dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true}));dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));});
+  await coverAt(f.page,deep,true,open);
+  await f.page.reload();await coverAt(f.page,deep,true,open);
+  // ⑤ 높이가 모자라 잘라 옮긴 자리는 이 기록에 다시 쓰지 않는다 — 사용자가 움직이면 그때 새 자리
+  await f.page.evaluate(()=>history.replaceState({...history.state,manabiBookCover:{...history.state.manabiBookCover,y:99999}},'',location.href));
+  await f.page.reload();await f.page.locator('.manabi-book-home .manabi-toc-group').first().waitFor();
+  await f.page.waitForFunction(()=>scrollY>0&&Math.abs(scrollY-(document.documentElement.scrollHeight-innerHeight))<2);
+  await f.page.waitForTimeout(600);assert.equal(await f.page.evaluate(()=>history.state.manabiBookCover.y),99999);
+  assert.deepEqual(await openParts(f.page),open);
+  await f.page.evaluate(()=>scrollBy(0,-80));await f.page.waitForFunction(()=>history.state.manabiBookCover.y===Math.round(scrollY));
+  // ⑥ 새로 연 표지는 기본값(맨 위 · 지금 파트만 · 전체 목차 아님) — 과의 「← 책 목차」(책 안 새 기록) · 새 탭. 기록값은 돌아올 때만 쓴다.
+  await last.locator('li a').nth(1).evaluate(link=>link.click());await settled(f.page,lesson);
+  await f.page.locator('.manabi-reader-toolbar').getByRole('link',{name:'← 책 목차',exact:true}).evaluate(link=>link.click());
+  await f.page.waitForURL(url=>url.hash==='#cover');await coverAt(f.page,0,false);assert.equal((await openParts(f.page)).length,1);
+  // 그 새 표지에서 뒤로 → 과, 다시 뒤로 → 앞서 펼쳐 둔 표지 기록은 그 값 그대로
+  await f.page.goBack();await settled(f.page,lesson);await f.page.goBack();
+  await f.page.waitForFunction(()=>history.state?.manabiBookCover?.all===true&&document.querySelectorAll('.manabi-book-home .manabi-tabs button')[1]?.getAttribute('aria-pressed')==='true');
+  assert.deepEqual(await openParts(f.page),open);
+  const fresh=await f.context.newPage();await fresh.goto(cover);await coverAt(fresh,0);assert.equal((await openParts(fresh)).length,1);await fresh.close();
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// N4 표지(#1510 /books/japanese-n4)도 같은 표지 자리를 쓴다. 이 합성 서버는 기본으로 N5만 발행하므로
+// E2E_PUBLISHED_BOOKS=japanese-n4로 띄운 서버에서만 돈다(없으면 건너뛴다 — 이유를 남긴다).
+test(`${engine.name()} 390: the N4 book cover keeps its own scroll position too`,async t=>{
+ const f=await fixture(390);try{
+  await f.page.goto('/books/japanese-n4');
+  const ready=await f.page.locator('.manabi-book-home .manabi-toc-group').first().waitFor({timeout:8000}).then(()=>true,()=>false);
+  // 이 실행이 N4를 켰다고 밝혔으면(E2E_PUBLISHED_BOOKS) 건너뛰지 않고 실패한다 — CI의 N4 실행이 조용히 빈 통과가 되지 않게.
+  if(!ready&&(process.env.E2E_PUBLISHED_BOOKS||'').split(',').includes('japanese-n4'))assert.fail('N4 cover did not render on a server started with E2E_PUBLISHED_BOOKS=japanese-n4');
+  if(!ready){t.skip('N4 is not published by this fixture server (start it with E2E_PUBLISHED_BOOKS=japanese-n4)');return;}
+  // 하이드레이션 직후 한 순간 .book-reader가 둘일 수 있다(CI 실측 — 원인은 따로 추적) — 개수가 아니라 「모두 N4」를 본다.
+  assert.deepEqual([...new Set(await f.page.locator('.book-reader').evaluateAll(els=>els.map(el=>el.dataset.bookId)))],['japanese-n4']);
+  await coverAt(f.page,0);
+  const y=await scrollCover(f.page);
+  await f.page.locator('.manabi-book-home .manabi-breadcrumb').getByRole('link',{name:'교재',exact:true}).evaluate(link=>link.click());
+  await f.page.waitForURL(url=>url.pathname==='/lessons');await f.page.goBack();await coverAt(f.page,y);
+  await f.page.getByRole('button',{name:/^전체 \d+과$/}).click();
+  const last=f.page.locator('.manabi-book-home details[data-toc-part]').last();
+  await last.locator('summary').click();await f.page.waitForFunction(()=>[...document.querySelectorAll('.manabi-book-home details[data-toc-part]')].at(-1).open);
+  const deep=await last.locator('li a').first().evaluate(link=>{link.scrollIntoView({block:'center',behavior:'instant'});return Math.round(scrollY);});
+  const open=await openParts(f.page);
+  await f.page.waitForFunction(({y,open})=>{const s=history.state?.manabiBookCover;return s?.y===y&&s.all===true&&JSON.stringify(s.open)===JSON.stringify(open);},{y:deep,open});
+  const lesson=await last.locator('li a').first().evaluate(link=>{link.click();return new URL(link.href).hash.slice(1);});
+  assert.equal(new URL(f.page.url()).pathname,'/books/japanese-n4');
+  await settled(f.page,lesson);await f.page.goBack();await coverAt(f.page,deep,true,open);
+  await last.locator('li a').first().evaluate(link=>link.click());await settled(f.page,lesson);
+  await f.page.locator('.manabi-reader-toolbar').getByRole('link',{name:'← 책 목차',exact:true}).evaluate(link=>link.click());
+  await f.page.waitForURL(url=>url.pathname==='/books/japanese-n4'&&url.hash==='#cover');await coverAt(f.page,0,false);
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// 표지 이어 읽기 줄 자리(BOOK-RESUME-HOLD-001): 읽던 기록이 과 중간이면 붙은 뒤 「NN과 이어 읽기 → · NN과 처음부터」 두 칸이 되어
+// 390폭에서 둘째 칸이 다음 줄로 넘어가 책 머리가 자랐다(담기 버튼 · 목차 49px 밀림, CLS 0.024–0.029). 그리기 전 한 줄이 같은 높이를 잡는다.
+for(const bookId of ['japanese-n5','japanese-n4'])test(`${engine.name()} 390: the ${bookId} cover holds the resume row height while a mid-lesson record loads`,async t=>{
+ const f=await fixture(390);try{
+  await f.page.goto(`/books/${bookId}`);
+  const ready=await f.page.locator('.manabi-book-home .manabi-toc-group').first().waitFor({timeout:8000}).then(()=>true,()=>false);
+  if(!ready&&bookId==='japanese-n4'&&!(process.env.E2E_PUBLISHED_BOOKS||'').split(',').includes('japanese-n4')){t.skip('N4 is not published by this fixture server');return;}
+  assert.ok(ready,`${bookId} cover did not render`);
+  const edition=new URL(await f.page.locator('.manabi-book-hero a.manabi-button').getAttribute('href'),baseURL).searchParams.get('edition');
+  await f.page.evaluate(key=>localStorage.setItem(key,JSON.stringify({page:'u03-patterns',completed:['u01','u02'],updatedAt:'2026-10-01T00:00:00.000Z'})),progressKey(edition));
+  await f.page.addInitScript(()=>{window.__shift=[];try{new PerformanceObserver(list=>{for(const e of list.getEntries())if(!e.hadRecentInput)window.__shift.push(e.value);}).observe({type:'layout-shift',buffered:true});}catch{window.__shift=null;}});
+  await f.page.reload();
+  await f.page.locator('.manabi-book-hero a.manabi-link',{hasText:'03과 처음부터'}).waitFor();await f.page.evaluate(()=>document.fonts.ready);await f.page.waitForTimeout(500);
+  const shift=await f.page.evaluate(()=>window.__shift);
+  if(shift===null){t.skip('layout-shift entries are not reported by this engine');return;}
+  assert.ok(shift.reduce((a,b)=>a+b,0)<0.005,JSON.stringify(shift));
+  assert.equal(await f.page.locator('.book-resume-ghost').count(),0);
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});

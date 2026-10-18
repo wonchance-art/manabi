@@ -249,7 +249,7 @@ describe('한자 대조 배선 계약', () => {
 
   it('배치 — 「일본어로는」 줄(더 알아보기)은 헤더가 아니라 뜻 아래에 있다', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
-    const meaningAt = src.indexOf("refMeaning || selectedToken.meaning || '(뜻 없음)'");
+    const meaningAt = src.indexOf("refMeaning || selectedToken.meaning || vt('(뜻 없음)')");
     const lineAt = src.indexOf('<ViewerJapaneseMore');
     expect(meaningAt).toBeGreaterThan(-1);
     expect(lineAt).toBeGreaterThan(meaningAt);
@@ -340,7 +340,7 @@ describe('R0+ 正 꼴 훈음 조회', () => {
 // (표제어, 한글, 한자) 중복 제거 = 2,474쌍(2026-10-07 실측, 설계 세션 기준과 같은 수).
 // 비교는 첫 음절 두음법칙을 양쪽 다 정규화한다(노판 = 로판 — 두음은 표시 관례이지 음 오류가 아니다).
 describe('R0+ 회귀 — 우리 사전 한자어 표기 2,474쌍', () => {
-  const FILL_2026 = /^HSK[1-6] 2026 보강$/;
+  const FILL_2026 = /^HSK(?:[1-6]|7–9) 2026 보강$/;
   const ko = readData('hanjaKo.json');
   const hun = readData('hanjaHun.json');
   const trad = readData('hanjaTrad.json');
@@ -387,7 +387,7 @@ describe('R0+ 회귀 — 우리 사전 한자어 표기 2,474쌍', () => {
 
   // HSK 2026 보강(ZH-LEVEL-2026-001 ④, 2026-10-13 KST)의 한자어 표기는 위 기준 말뭉치에 섞지 않고 따로 고정한다.
   // 불일치 4건은 표기 오류가 아니라 조회가 단어 안 본음·속음(렬→열 · 렴 · 률→율)을 모르는 기존 한계다.
-  it('HSK 2026 보강 표기 — 불일치는 본음·속음 4건뿐', async () => {
+  it('HSK 2026 보강 표기 — 불일치는 단어 안 음(본음·속음 · 다음자) 조회 한계뿐', async () => {
     const dir = path.join(process.cwd(), 'src/content/chinese/vocab');
     const off = [];
     for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.js')).sort()) {
@@ -403,7 +403,11 @@ describe('R0+ 회귀 — 우리 사전 한자어 표기 2,474쌍', () => {
         }
       }
     }
-    expect(off.sort()).toEqual(['失恋(실연)', '率(률)', '肺炎(폐렴)', '自律(자율)'].sort());
+    // HSK 7–9 보강(LEVEL-HSK79-001, 2026-10-16 KST) 19건도 표기 오류가 아니라 같은 조회 한계다 — 단어 안 두음·속음(了 요 · 屡 누 · 列 · 裂 열 ·
+    // 牡丹 모란), 다음자(乐 악 · 推 퇴 · 状 장 · 易 이 · 便 변 · 辰 신 · 咽 열 · 魄 박 · 络 낙 · 不 부), 정체 후보(征 → 徵 · 斗 → 鬪).
+    expect(off.sort()).toEqual(['失恋(실연)', '率(률)', '肺炎(폐렴)', '自律(자율)',
+      '一目了然(일목요연)', '不动产(부동산)', '不当(부당)', '乐谱(악보)', '出征(출정)', '呜咽(오열)', '屡屡(누누)', '序列(서열)', '推敲(퇴고)', '斗志(투지)',
+      '牡丹(모란)', '状元(장원)', '破裂(파열)', '简易(간이)', '粪便(분변)', '络绎不绝(낙역부절)', '诞辰(탄신)', '陈列(진열)', '魄力(박력)'].sort());
   });
 });
 

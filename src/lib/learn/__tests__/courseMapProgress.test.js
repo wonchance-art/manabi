@@ -51,8 +51,10 @@ describe('getLessonProgress', () => {
     });
   });
 
-  it('로그인 진도는 원격과 이 기기 값을 합친다', async () => {
-    localStorage.setItem('studied_lesson', JSON.stringify(['a1-01']));
+  it('로그인 진도는 원격과 이 계정의 기기 값을 합치고, 손님 강의 이벤트(studied_lesson)는 섞지 않는다', async () => {
+    // LOCAL-PROGRESS-ACCOUNT-001 — 손님 완료가 섞이면 「완료」로 보여 그 계정이 자기 서버 기록을 만들 수 없었다.
+    localStorage.setItem('studied_lesson', JSON.stringify(['a1-03'])); // 이 기기의 손님 완료 — 로그인 화면엔 안 섞임
+    localStorage.setItem('en_read_chapters:user-1', JSON.stringify(['a1-01'])); // 이 계정의 기기 진도
     query.in.mockResolvedValue({
       data: [{ slug: 'a1-02', read: false, passed: true }],
       error: null,
@@ -60,17 +62,20 @@ describe('getLessonProgress', () => {
 
     const result = await getLessonProgress('user-1', {
       lang: 'English',
-      slugs: ['a1-01', 'a1-02'],
+      slugs: ['a1-01', 'a1-02', 'a1-03'],
     });
 
     expect(result).toEqual({
       completedSlugs: ['a1-01', 'a1-02'],
       source: 'remote',
     });
+    // 손님 화면은 그대로 손님 완료를 본다
+    expect((await getLessonProgress(undefined, { lang: 'English', slugs: ['a1-03'] })).completedSlugs).toEqual(['a1-03']);
   });
 
   it('원격 조회 실패 시 이 기기 진도로 폴백한다', async () => {
-    localStorage.setItem('en_read_chapters', JSON.stringify(['a1-01']));
+    // 로그인 계정의 기기 진도는 계정 키(LOCAL-PROGRESS-ACCOUNT-001 · refReadStore)
+    localStorage.setItem('en_read_chapters:user-1', JSON.stringify(['a1-01']));
     query.in.mockRejectedValue(new Error('offline'));
 
     const result = await getLessonProgress('user-1', {

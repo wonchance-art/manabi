@@ -7,11 +7,11 @@ import {currentLibraryTarget,runLibraryOperation,invalidateLibrary,libraryOperat
 import LibraryCollections from './LibraryCollections';
 import './library.css';
 // Whole-source organization remains separate from expression saving and FSRS.
-export default function LibrarySaveButton({material=null,edition=null}){
+export default function LibrarySaveButton({material=null,edition=null,bookTitle='일본어 N5'}){
  const {user}=useAuth(),cache=useQueryClient();
  const [open,setOpen]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const publicMaterial=!!material&&material.visibility==='public'&&material.owner_id!==user?.id;
- const target=edition?{target_kind:'edition',target_id:edition,title:'일본어 N5'}:{target_kind:'material',target_id:String(material?.id),title:material?.title};
+ const target=edition?{target_kind:'edition',target_id:edition,title:bookTitle}:{target_kind:'material',target_id:String(material?.id),title:material?.title};
  const bookmark=useQuery({queryKey:['library-bookmark',user?.id,target.target_kind,target.target_id],enabled:!!user&&(publicMaterial||!!edition),queryFn:async()=>{
   const state=await currentLibraryTarget(supabase,target);
   if(state.revision)return {...state,saved:state.state==='active'};

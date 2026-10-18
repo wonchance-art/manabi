@@ -3,9 +3,10 @@
     "deploymentEnabled": {
       "codex/*": false,
       "codex2/*": false,
-      "claude/*": false
+      "claude/wip/**": false
     }
   },
+  "regions": ["hnd1"],
   "ignoreCommand": "bash scripts/vercel-ignore.sh",
   "crons": [
     {

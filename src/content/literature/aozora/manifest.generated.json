@@ -12,7 +12,7 @@
         "titleReading": "じょせいと",
         "titleKo": "여학생",
         "authorKo": "다자이 오사무",
-        "cover": "lilac",
+        "cover": "shiracha",
         "motif": "umbrella-rose"
       },
       "literature": {
@@ -124,6 +124,100 @@
         }
       ]
     },
+    "aozora-000035-000277": {
+      "title": "駈込み訴え",
+      "author": "太宰治",
+      "level": "N2 상급",
+      "total": 5,
+      "division": "split",
+      "chars": 13491,
+      "display": {
+        "titleReading": "かけこみうったえ",
+        "titleKo": "직소",
+        "authorKo": "다자이 오사무",
+        "cover": "suou",
+        "motif": "silver-coins"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000035-000277",
+        "personId": "000035",
+        "workId": "277",
+        "title": "駈込み訴え",
+        "author": "太宰治",
+        "publishedYear": 1940,
+        "authorDeathYear": 1948,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000035/card277.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000035/files/277_ruby_33097.zip",
+        "sourceSha256": "70a8bf6258d91b0fba149abaf5419e925f84866c45599d7dedc6d0bf728b9886",
+        "textSha256": "8eb9583b849dc11ed39545face9328dae16668fe597c6956bc31a160386643d5",
+        "attribution": {
+          "author": "太宰治",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-15",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000035/card277.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「走れメロス」新潮文庫、新潮社",
+            "1967（昭和42）年7月10日発行",
+            "1985（昭和60）年9月15日40刷改版",
+            "1988（昭和63）年10月10日48刷"
+          ],
+          "parentBook": [],
+          "inputter": "文咲苺子",
+          "proofreader": "高橋真也"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1/5",
+          "incipit": "申し上げます。",
+          "sha256": "d2e2f9306621d0ba90e0bfb12cf7e5d18c12e0631e21082f14d9b40c5706ada0"
+        },
+        {
+          "order": 2,
+          "title": "2/5",
+          "incipit": "あの人は、誰のものでもない。",
+          "sha256": "ee6e7b8e8bb3447007ce0b7147900d639b907e6a0512887232422dd5187f16c8"
+        },
+        {
+          "order": 3,
+          "title": "3/5",
+          "incipit": "だけれども、私は、口惜しいのです。",
+          "sha256": "9896b6e29fbf53369ee6fe1a82fc65a1b3a3f6bc2084782eb48f2aec524c7593"
+        },
+        {
+          "order": 4,
+          "title": "4/5",
+          "incipit": "まだそのほかに、饑饉があるの、地震が起るの…",
+          "sha256": "607244ee25a99b0d87f784fd8508d392aab765a0ec2a3515914cc4e0fa5ffa76"
+        },
+        {
+          "order": 5,
+          "title": "5/5",
+          "incipit": "私があの人を売ろうとたくらんでいた寸刻以前までの…",
+          "sha256": "fbc7451995b331b43aed7f9cf053fdfd974f4b004c4c75eb9f293624915de824"
+        }
+      ]
+    },
     "aozora-000035-000301": {
       "title": "人間失格",
       "author": "太宰治",
@@ -135,7 +229,7 @@
         "titleReading": "にんげんしっかく",
         "titleKo": "인간 실격",
         "authorKo": "다자이 오사무",
-        "cover": "fog",
+        "cover": "usugaki",
         "motif": "clown-photos"
       },
       "literature": {
@@ -348,7 +442,7 @@
         "titleReading": "しゃよう",
         "titleKo": "사양",
         "authorKo": "다자이 오사무",
-        "cover": "apricot",
+        "cover": "kinari",
         "motif": "setting-sun"
       },
       "literature": {
@@ -604,7 +698,7 @@
         "titleReading": "はしれメロス",
         "titleKo": "달려라 메로스",
         "authorKo": "다자이 오사무",
-        "cover": "aegean",
+        "cover": "odo",
         "motif": "melos-run"
       },
       "literature": {
@@ -688,7 +782,7 @@
         "titleReading": "れもん",
         "titleKo": "레몬",
         "authorKo": "가지이 모토지로",
-        "cover": "dove",
+        "cover": "usunezumi",
         "motif": "lemon-books"
       },
       "literature": {
@@ -753,6 +847,76 @@
         }
       ]
     },
+    "aozora-000074-000427": {
+      "title": "桜の樹の下には",
+      "author": "梶井基次郎",
+      "level": "N2 상급",
+      "total": 1,
+      "division": "whole",
+      "chars": 1760,
+      "display": {
+        "titleReading": "さくらのきのしたには",
+        "titleKo": "벚나무 아래에는",
+        "authorKo": "가지이 모토지로",
+        "cover": "umenezumi",
+        "motif": "sakura-roots",
+        "coverTitle": "桜の樹の\n下には"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000074-000427",
+        "personId": "000074",
+        "workId": "427",
+        "title": "桜の樹の下には",
+        "author": "梶井基次郎",
+        "publishedYear": 1928,
+        "authorDeathYear": 1932,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000074/card427.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000074/files/427_ruby_19792.zip",
+        "sourceSha256": "44a58d4467d0ae59f70990739a6eaa9c3b871077ce9fd24329ce2c09e94b0144",
+        "textSha256": "7e52dbd91ec93114044f2dbfda74a5b3bbd0ea3dc7d9f568c8ae72ddb3325825",
+        "attribution": {
+          "author": "梶井基次郎",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-15",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000074/card427.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「檸檬・ある心の風景　他二十編」旺文社文庫、旺文社",
+            "1972（昭和47）年12月10日初版発行",
+            "1974（昭和49）年第4刷発行"
+          ],
+          "parentBook": [],
+          "inputter": "j.utiyama",
+          "proofreader": "earthian"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "전문",
+          "incipit": "桜の樹の下には屍体が埋まっている！",
+          "sha256": "968547a3216d1e5228622d4cced8df8a3090e1e3acf2eb10d2ac2bb2b2a3e6cf"
+        }
+      ]
+    },
     "aozora-000081-000456": {
       "title": "銀河鉄道の夜",
       "author": "宮沢賢治",
@@ -764,7 +928,7 @@
         "titleReading": "ぎんがてつどうのよる",
         "titleKo": "은하철도의 밤",
         "authorKo": "미야자와 겐지",
-        "cover": "ultramarine",
+        "cover": "ai",
         "motif": "night-train"
       },
       "literature": {
@@ -934,7 +1098,7 @@
         "titleReading": "かぜのまたさぶろう",
         "titleKo": "바람의 마타사부로",
         "authorKo": "미야자와 겐지",
-        "cover": "meadow",
+        "cover": "moegi",
         "motif": "wind-hill"
       },
       "literature": {
@@ -1053,6 +1217,89 @@
         }
       ]
     },
+    "aozora-000081-000466": {
+      "title": "オツベルと象",
+      "author": "宮沢賢治",
+      "level": "N3 중급",
+      "total": 3,
+      "division": "heading",
+      "chars": 5819,
+      "display": {
+        "titleReading": "オツベルとぞう",
+        "titleKo": "오츠베르와 코끼리",
+        "authorKo": "미야자와 겐지",
+        "cover": "namakabe",
+        "motif": "white-elephant"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000081-000466",
+        "personId": "000081",
+        "workId": "466",
+        "title": "オツベルと象",
+        "author": "宮沢賢治",
+        "publishedYear": 1926,
+        "authorDeathYear": 1933,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000081/card466.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000081/files/466_ruby_1478.zip",
+        "sourceSha256": "a13a59019b3fe65096f985f8de54623abcd606d5276707a45e25b7b87571462b",
+        "textSha256": "27b76a7174ae656028af401c716b10f9467cde4041c6f0cf3f4eb99952732c07",
+        "attribution": {
+          "author": "宮沢賢治",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-15",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000081/card466.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「新編　銀河鉄道の夜」新潮文庫、新潮社",
+            "1989（平成元）年6月15日発行"
+          ],
+          "parentBook": [
+            "「新修宮沢賢治全集　第十三巻」筑摩書房",
+            "1980（昭和55）年3月"
+          ],
+          "inputter": "r.sawai",
+          "proofreader": "篠宮康彰"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "第一日曜",
+          "incipit": "……ある牛飼いがものがたる",
+          "sha256": "c059059a3acaf2bc837e6ae338ee55ba67804b60cfd1bb88359f4d167be1f0f6"
+        },
+        {
+          "order": 2,
+          "title": "第二日曜",
+          "incipit": "オツベルときたら大したもんだ。",
+          "sha256": "31779ca10dfc2a622a5d279e83664c0d32a856e0f0f41851b43310bc3ba17369"
+        },
+        {
+          "order": 3,
+          "title": "第五日曜",
+          "incipit": "オツベルかね、そのオツベルは…",
+          "sha256": "3ef8b0b44aad7e0563788d10530191cb0fc3e0a86790018c74ce1984c46507e4"
+        }
+      ]
+    },
     "aozora-000081-000470": {
       "title": "セロ弾きのゴーシュ",
       "author": "宮沢賢治",
@@ -1064,7 +1311,7 @@
         "titleReading": "セロひきのゴーシュ",
         "titleKo": "첼로 켜는 고슈",
         "authorKo": "미야자와 겐지",
-        "cover": "walnut",
+        "cover": "cha",
         "motif": "cello-night",
         "coverTitle": "セロ弾きの\nゴーシュ"
       },
@@ -1156,7 +1403,7 @@
         "titleReading": "よだかのほし",
         "titleKo": "쏙독새의 별",
         "authorKo": "미야자와 겐지",
-        "cover": "nightjar",
+        "cover": "nibi",
         "motif": "nightjar-star"
       },
       "literature": {
@@ -1235,7 +1482,7 @@
         "titleReading": "ちゅうもんのおおいりょうりてん",
         "titleKo": "주문이 많은 요리점",
         "authorKo": "미야자와 겐지",
-        "cover": "forest",
+        "cover": "sumi",
         "motif": "forest-doors",
         "coverTitle": "注文の多い\n料理店"
       },
@@ -1312,7 +1559,7 @@
         "titleReading": "やまなし",
         "titleKo": "돌배",
         "authorKo": "미야자와 겐지",
-        "cover": "pear",
+        "cover": "hanada",
         "motif": "crab-pear"
       },
       "literature": {
@@ -1377,6 +1624,946 @@
         }
       ]
     },
+    "aozora-000096-002093": {
+      "title": "ドグラ・マグラ",
+      "author": "夢野久作",
+      "level": "N1 심화",
+      "total": 146,
+      "division": "split",
+      "chars": 428144,
+      "display": {
+        "titleReading": "ドグラ・マグラ",
+        "titleKo": "도구라 마구라",
+        "authorKo": "유메노 규사쿠",
+        "cover": "susutake",
+        "motif": "clock-spiral",
+        "coverTitle": "ドグラ・\nマグラ"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000096-002093",
+        "personId": "000096",
+        "workId": "2093",
+        "title": "ドグラ・マグラ",
+        "author": "夢野久作",
+        "publishedYear": 1935,
+        "authorDeathYear": 1936,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000096/card2093.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000096/files/2093_ruby_28087.zip",
+        "sourceSha256": "1d5143674b64ebc771c0365d891e5c48b85da2b32d7cc203b6541e4ac3c813b7",
+        "textSha256": "817cbc92d675046848e0fdaf311d018a2e249a5cd94817ba44b6720eefc35ed5",
+        "attribution": {
+          "author": "夢野久作",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-15",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000096/card2093.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「夢野久作全集9」ちくま文庫、筑摩書房",
+            "1992（平成4）年4月22日第1刷発行",
+            "2002（平成14）年9月5日第4刷発行"
+          ],
+          "parentBook": [],
+          "inputter": "砂場清隆",
+          "proofreader": "ドグラマグラを世に出す会"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1/146",
+          "incipit": "巻頭歌",
+          "sha256": "b85621c0fa14034e99592a6f4e426d34084c2ee0a84e085d51d752270abb3b50"
+        },
+        {
+          "order": 2,
+          "title": "2/146",
+          "incipit": "それは聞いている者の心臓を虚空に吊るし上げる程の…",
+          "sha256": "4e32d1662af131319e00cdda80b99a03f0e9836d563c1acd09ebb2e0cc4e4cee"
+        },
+        {
+          "order": 3,
+          "title": "3/146",
+          "incipit": "……とモウすこしで叫びかけるところであったが…",
+          "sha256": "15d3899b3f4e12a29764eb7e4cb3ee97d417ac46936022064a18c7487ca7963a"
+        },
+        {
+          "order": 4,
+          "title": "4/146",
+          "incipit": "こう気が付くと、私はいよいよたまらなくなって…",
+          "sha256": "af84e967d9e9f71df8bd295fa235988ec2486cfceb9efe8c79fe5b8502a70eb8"
+        },
+        {
+          "order": 5,
+          "title": "5/146",
+          "incipit": "するとその時であった。",
+          "sha256": "98b3b040562b1500c0af0765cbdcb682b99377ca6994c09526ffbff9204b9d87"
+        },
+        {
+          "order": 6,
+          "title": "6/146",
+          "incipit": "……ここはたしかに九州帝国大学の中の精神病科の病…",
+          "sha256": "7a39259d1111a28143fc02d16973688b7cd2506f25569d370fe01fcb63f04513"
+        },
+        {
+          "order": 7,
+          "title": "7/146",
+          "incipit": "「さようで……しかし単にそれだけでは…",
+          "sha256": "a1d3f9f2feb98364bc2c4706d6857d213f983ada5eda84b27c187e745d1174c4"
+        },
+        {
+          "order": 8,
+          "title": "8/146",
+          "incipit": "……で……そのような次第で御座いますからして、現在…",
+          "sha256": "4ae778693b61946b0cebb2f680555ec26f43248bfa1c462de125e9a7882fbd72"
+        },
+        {
+          "order": 9,
+          "title": "9/146",
+          "incipit": "「さようで……あなたはその怪事件の裏面に隠れてい…",
+          "sha256": "ec9e34243bb8dccf11062da7612ddf7b197066ae056d0c21856a64f0cbe793a5"
+        },
+        {
+          "order": 10,
+          "title": "10/146",
+          "incipit": "「お出来になります。",
+          "sha256": "c300ce788d62ae0771fdcdd78bd02eb7d4db8631730091f3e595a7e7e8740586"
+        },
+        {
+          "order": 11,
+          "title": "11/146",
+          "incipit": "……けれども……又考えてみると私は…",
+          "sha256": "00efd54cc7912a955dd80bd8e5dce0502914831adc3fe6b2b078fcce0f084cd8"
+        },
+        {
+          "order": 12,
+          "title": "12/146",
+          "incipit": "と一人の看護婦が云ったので、ふり返ってみると…",
+          "sha256": "495bf761e32e85da63537b7ecb822175ba9e63e036d8abc0c210066a2dedc808"
+        },
+        {
+          "order": 13,
+          "title": "13/146",
+          "incipit": "新しいタオルで包んだ大きな枕の中に…",
+          "sha256": "14910a47f3ccb9f4921cd41c51d3311e1d519e550b7c644af2751c258872860e"
+        },
+        {
+          "order": 14,
+          "title": "14/146",
+          "incipit": "「……それは……この令嬢が、眼を醒しておられる間にも…",
+          "sha256": "fe6b0262467a3f805e93f0626f63e5f332c8cc781f26ba3eef583f9f8df113d7"
+        },
+        {
+          "order": 15,
+          "title": "15/146",
+          "incipit": "……今の今まで私が夢にも想像し得なかったばかりか…",
+          "sha256": "23bd95a193ed99336a89cd299dbceb5a872641ceb250ee84dc2030116533ae2d"
+        },
+        {
+          "order": 16,
+          "title": "16/146",
+          "incipit": "その玄関の扉はピッタリと閉め切ってあったが多分ま…",
+          "sha256": "126de9315ba14c1b8d7c6ccffe5a96eb6eb08d84a34727e98f33585071da121c"
+        },
+        {
+          "order": 17,
+          "title": "17/146",
+          "incipit": "私が先刻から感じていた……何もかも出鱈目ではない…",
+          "sha256": "48ba929035087ce527c3e2dd1252f7904ff4864fa2a4030c31e07c2472551c5c"
+        },
+        {
+          "order": 18,
+          "title": "18/146",
+          "incipit": "一番最初の第一行が……ブウウ――ンンン……ンンン…",
+          "sha256": "d14107f686801a1d72ef2372245698dd139c3360c61624a8a613d8381d530523"
+        },
+        {
+          "order": 19,
+          "title": "19/146",
+          "incipit": "「……さあ……それにつきましても私は迷わされまし…",
+          "sha256": "bccc32d0d24d22b9454387455c522e71639f52e52efcd120f3914bed49effa75"
+        },
+        {
+          "order": 20,
+          "title": "20/146",
+          "incipit": "――同じく精神病者が一家を毒殺する目的の下に煎じ…",
+          "sha256": "5118b4f9498c6c21855183b8c9b6f84e26fe2afb4b5085d2b7b71b6198f05234"
+        },
+        {
+          "order": 21,
+          "title": "21/146",
+          "incipit": "「……あなたの中に潜伏しております過去の御記憶は…",
+          "sha256": "30f03dba2fc7822d8ec41db7fd7e7778f8ba32fafb2071f5931729f251b77ba6"
+        },
+        {
+          "order": 22,
+          "title": "22/146",
+          "incipit": "「……ところでその正木先生が…",
+          "sha256": "bdb5441006868a54f5e05ea77d3c7df0fb70c703c090cc74d03833a1b72776f9"
+        },
+        {
+          "order": 23,
+          "title": "23/146",
+          "incipit": "「……さようで……その『胎児の夢』と申します論文…",
+          "sha256": "a3fbec45f3c8eecb4b6ad9e5c57b0d70b5141b4b33b9309d241d9e2aeace5a22"
+        },
+        {
+          "order": 24,
+          "title": "24/146",
+          "incipit": "……すなわち、この論文『胎児の夢』の一篇は…",
+          "sha256": "aa4c8a6e63e47337e5c495c8799cb11fa20c9d65ecddeb4430e2eba83eb8e312"
+        },
+        {
+          "order": 25,
+          "title": "25/146",
+          "incipit": "「……その内容は只今お眼にかけますが…",
+          "sha256": "a1604134de19964694d0516bc9fdcf775fcd0182122f29ff9d8623760e7fdd17"
+        },
+        {
+          "order": 26,
+          "title": "26/146",
+          "incipit": "「それじゃこの斎藤先生は、正木先生に後を譲るために…",
+          "sha256": "789b109969e92e7084dcfbb91c6989de156667e941c608348f03fc48e29d9bf6"
+        },
+        {
+          "order": 27,
+          "title": "27/146",
+          "incipit": "「ちょうど斎藤先生の葬儀の式場に…",
+          "sha256": "6ced51f2536cb2c70ec58e8c4ba79847f8ae60d68e21048768eb8736741818dc"
+        },
+        {
+          "order": 28,
+          "title": "28/146",
+          "incipit": "「その反対です。",
+          "sha256": "a686b1e83547aa2995481fc6d6bb313b6f71a5bcfab9671aa6d05388e33d435e"
+        },
+        {
+          "order": 29,
+          "title": "29/146",
+          "incipit": "▼ア――あ。",
+          "sha256": "68f27cf3d8a9b23acaf40e44f1fce1183f63a96dd62be00892ba828dc6a7be68"
+        },
+        {
+          "order": 30,
+          "title": "30/146",
+          "incipit": "▼あ――ア――ああア。",
+          "sha256": "c5c452f00c3f86fb52abc0ef6a3a31eb80ab141868d841744be468beaa6401e9"
+        },
+        {
+          "order": 31,
+          "title": "31/146",
+          "incipit": "▼あ――ア。",
+          "sha256": "2de03ede79c875b1469afc8aebf67af26884f10fb0599cd6d84f5d077608f09e"
+        },
+        {
+          "order": 32,
+          "title": "32/146",
+          "incipit": "▼あ――ア。",
+          "sha256": "26bc43a84b30d7479d631e6912147df748ad73857d67ce3bc349e2d7c07cee34"
+        },
+        {
+          "order": 33,
+          "title": "33/146",
+          "incipit": "▼あ――ア。",
+          "sha256": "033152abb4b393da20f32c2714a7a89fc9f52f95d9aed5994bb7991c59dbdf1b"
+        },
+        {
+          "order": 34,
+          "title": "34/146",
+          "incipit": "▼あ――ア。",
+          "sha256": "98ecf4b6a1da34162a16c8fdf4fa4e9616a3f2be48a65d8b21035b5d18cfb020"
+        },
+        {
+          "order": 35,
+          "title": "35/146",
+          "incipit": "▼あ――ア。",
+          "sha256": "2ce3d8702fcb2229810c83e1e8d75654a709fbdcdc9aeb00468e4e428a5bcab1"
+        },
+        {
+          "order": 36,
+          "title": "36/146",
+          "incipit": "▼スチャラカ、チャカポコ。",
+          "sha256": "a955190e8dcdefb865d97d723f03c2a9742c1a969d5fddb4127a97b2d4cd9938"
+        },
+        {
+          "order": 37,
+          "title": "37/146",
+          "incipit": "すなわち、いずれにしても斯様に観察して来ると…",
+          "sha256": "f9e6d2b4efc913ef391d186d6703846a93b5109f6f4b378a2f4b1d97f05c9610"
+        },
+        {
+          "order": 38,
+          "title": "38/146",
+          "incipit": "もっとも前以て断っておくが、この探偵事実談を聞いても…",
+          "sha256": "ab9eecf32b2410239ab70b8f6799b76b2c8298dde08789e598325455c7a2317e"
+        },
+        {
+          "order": 39,
+          "title": "39/146",
+          "incipit": "ところでこのシークボーイ……アンポンタン・ポカン君は…",
+          "sha256": "e2a86f0cffd78b9720e73d703019ad1631361666045b5b2263aa111526156041"
+        },
+        {
+          "order": 40,
+          "title": "40/146",
+          "incipit": "という難問に引っかけて、ヘポメニアス氏の頭を幾日…",
+          "sha256": "027842d1550a5ef5835631d39000b4b14152f4c8214df84f9e44b2d374cb9c93"
+        },
+        {
+          "order": 41,
+          "title": "41/146",
+          "incipit": "しかもそのマッタダ中に、そんな研究を編み出した脳髄と…",
+          "sha256": "a7ca4f0be3f15d497552219ee26fdef03d7fabc35399a81493472dfc0b918a79"
+        },
+        {
+          "order": 42,
+          "title": "42/146",
+          "incipit": "『人間の脳髄』が何よりも先に研究を遂げておかねば…",
+          "sha256": "04882ee698a7b3b1aebfa15ce3f76e3365fa856f276e20b66a5fb6f5b24e9bb1"
+        },
+        {
+          "order": 43,
+          "title": "43/146",
+          "incipit": "赤い主義者は、その党員の一人一人を細胞と呼んでいる。",
+          "sha256": "a698a08a3be4cfec08ca96a74e02de47c8da96c50100d651a89a12f8ab469a7a"
+        },
+        {
+          "order": 44,
+          "title": "44/146",
+          "incipit": "……それでも、まだわからなければモウ一度…",
+          "sha256": "13b9c468b138dd12ab20d68bd69007d0ee64f97064b51b4e4973d1fcfb658bf9"
+        },
+        {
+          "order": 45,
+          "title": "45/146",
+          "incipit": "と……いうのは他の理由でもない。",
+          "sha256": "e2043c8d3ac8db6aeeaa7242ae98b1a0bbd9d70875ccb77cb44cd79944badcb3"
+        },
+        {
+          "order": 46,
+          "title": "46/146",
+          "incipit": "「……エヘン……人間の脳髄というものは…",
+          "sha256": "ee3549718a6c684ba2307591955c66c17142bbd389050a69de44ec02d1a7858c"
+        },
+        {
+          "order": 47,
+          "title": "47/146",
+          "incipit": "その好適例として持て来いの標本は、現在、ここに突立って…",
+          "sha256": "6db47858587fe5bf14449c8b6ee7498684d73e381b0ee4c057799a906e5c2794"
+        },
+        {
+          "order": 48,
+          "title": "48/146",
+          "incipit": "そのマン丸い細胞の一粒は、母胎に宿ると間もなく…",
+          "sha256": "9649716faa303fab51bae432aa9f56283fd3e71122a19de4de2b170f11450ae6"
+        },
+        {
+          "order": 49,
+          "title": "49/146",
+          "incipit": "この事実を最もよく立証している者は無邪気な小児である。",
+          "sha256": "37468e4321ce2510c298a0cf9a228ae3fd95ed23269c58f496416c9430652dc3"
+        },
+        {
+          "order": 50,
+          "title": "50/146",
+          "incipit": "（一）夢の中の出来事は、その進行して行く移り変り…",
+          "sha256": "0aa004d9ef890f2d9320a6054a3cd59ebf0aef25a82bbd2c33a6f5c192531dd1"
+        },
+        {
+          "order": 51,
+          "title": "51/146",
+          "incipit": "◇備考　斯様に偉大な内容を持つ細胞の大集団が…",
+          "sha256": "20fc0468a4727671757778ffdc5a93d846c8ef51bac0db4888ad55c97003053c"
+        },
+        {
+          "order": 52,
+          "title": "52/146",
+          "incipit": "夢の正体が、細胞の発育、分裂、増殖に伴う…",
+          "sha256": "708ed090ce9cc01700952aa7a6d42d4f648aee37a232abf89021633c65d51a41"
+        },
+        {
+          "order": 53,
+          "title": "53/146",
+          "incipit": "然らば、その吾々の記憶に残っていない「胎児の夢」…",
+          "sha256": "797eb2c1e5f37b188b3ddc2145a949500443dc1f91bba5341bdb5c24249bb8ee"
+        },
+        {
+          "order": 54,
+          "title": "54/146",
+          "incipit": "胎児の先祖代々に当る人間たちは、お互い同志の生存競争や…",
+          "sha256": "7d8d5e9957684c53e386d33f49e017564e190f66feed12dc65dcee3bbc5e9b89"
+        },
+        {
+          "order": 55,
+          "title": "55/146",
+          "incipit": "イヤ。",
+          "sha256": "7111534570833c4c166163e9c039219dabb137b00ab17001cd8ad46566b6e97d"
+        },
+        {
+          "order": 56,
+          "title": "56/146",
+          "incipit": "お待ち遠さま……サテ然るにだ……吾輩の極楽行きの…",
+          "sha256": "921c0f6097dbce8893c02db15091cd28fc11566bab13b7a0be5c8f10780cb5c7"
+        },
+        {
+          "order": 57,
+          "title": "57/146",
+          "incipit": "次にあらわしまするはその横に突立て…",
+          "sha256": "2320368fbae1257c7cbc1ca0d30e01a1bf4648d8b999a0f4789894f965018be1"
+        },
+        {
+          "order": 58,
+          "title": "58/146",
+          "incipit": "……と……失望、落胆、軽蔑…",
+          "sha256": "324f06c6bc162cb2f8e4595eef21e9b912d432bcd41b31dd4a2af7f101c7b665"
+        },
+        {
+          "order": 59,
+          "title": "59/146",
+          "incipit": "然るに、それが幾歳の時で御座いましたか…",
+          "sha256": "045af02d9eaaa8685c857d67a467d07f3b6743dd215ab8848e4943875f23b976"
+        },
+        {
+          "order": 60,
+          "title": "60/146",
+          "incipit": "諸君は常識の世界に住んでいながら…",
+          "sha256": "de3e190b365afc48962a44089d0fe40641ccf03bb94af6d851fca12ce5e47bb8"
+        },
+        {
+          "order": 61,
+          "title": "61/146",
+          "incipit": "ところでこの空想とか、幻覚とかいう奴が…",
+          "sha256": "9f299e4cb36015692f4fd12e4aae9a6ffcd4b530577c49a4ea57f6188b5c5e4c"
+        },
+        {
+          "order": 62,
+          "title": "62/146",
+          "incipit": "又は、古い講談、随筆、伝説…",
+          "sha256": "58d8e2b2008df35807be55cd6bcb02d1b5eaa11bf9e965a7535c81ad56b46585"
+        },
+        {
+          "order": 63,
+          "title": "63/146",
+          "incipit": "アハアハアハ。",
+          "sha256": "7d8c0aa0587dc71bd2dcc24c0b6fd15d28d77fb903b9fe74434c63c77ea0aa65"
+        },
+        {
+          "order": 64,
+          "title": "64/146",
+          "incipit": "ところで斯様に、一人一人の人間の骨相を調べましてから…",
+          "sha256": "aba9738cde9e977e7b0a12a816947e4b6ec9348a42a1c36af5b5dcf4d390dc01"
+        },
+        {
+          "order": 65,
+          "title": "65/146",
+          "incipit": "……十一時を打ち終りますと同時に、眼の前の闇黒の中で…",
+          "sha256": "1937d25cd930e37470be419ca0a29aa5a7fc8e8a6ada8c229d73bf75fdc0761d"
+        },
+        {
+          "order": 66,
+          "title": "66/146",
+          "incipit": "当年流行の新月色に、眼も眩ゆい春霞と…",
+          "sha256": "542c8735871a6701bf4c077bb9ce12b3ff1aa75a30ddd4c4236991b79fe77e29"
+        },
+        {
+          "order": 67,
+          "title": "67/146",
+          "incipit": "そればかりでは御座いませぬ。",
+          "sha256": "bbe038300bc7d106628bf042c079320e1ff57766682a17ec9182f37b49cb1c68"
+        },
+        {
+          "order": 68,
+          "title": "68/146",
+          "incipit": "あれは今の屍体冷蔵室と、法医学教室の裏手に連なる…",
+          "sha256": "8e53353b770f258755629087cb619ef0b32cc3b0a72aa52e623e88fefeff0a0f"
+        },
+        {
+          "order": 69,
+          "title": "69/146",
+          "incipit": "次に若林博士は今一度、屍体をあお向けにして…",
+          "sha256": "c28859544d1a38bd5b9ec2f94309438725b25353c5a8a75d9d8ea2962b323ada"
+        },
+        {
+          "order": 70,
+          "title": "70/146",
+          "incipit": "しかしまだテルテル坊主の屍体には…",
+          "sha256": "ac9f717a0c4c15616949125629a43ea6107a41add804d7c136bea5354344b479"
+        },
+        {
+          "order": 71,
+          "title": "71/146",
+          "incipit": "今更に眼を瞠らせる少女の全身の美しさ……否…",
+          "sha256": "e7f255210fb2a4d0a7534cf3ce81c22e3f214c7d1ef77bd2634c70d89ee09190"
+        },
+        {
+          "order": 72,
+          "title": "72/146",
+          "incipit": "「知っているぐらいじゃない……これだろう……花嫁…",
+          "sha256": "fb97548efdfceb2770b1fa6f65517b0194a3e42b46062a82fabd864edc01de3f"
+        },
+        {
+          "order": 73,
+          "title": "73/146",
+          "incipit": "「そうだとも……君なぞは疾っくに気が付いているだろうが…",
+          "sha256": "e58a7e26678cd185e2974e02440fbb8bb90dbd8fda9884820479f489419cabdc"
+        },
+        {
+          "order": 74,
+          "title": "74/146",
+          "incipit": "……この事件は如何なる心理遺伝の爆発に依て生じた…",
+          "sha256": "ca467ee4af6fc2faac62866fc10b6fbe1f7c3ffff79b27d4f259fbae850e69d5"
+        },
+        {
+          "order": 75,
+          "title": "75/146",
+          "incipit": "――東京から直方へ来たわけは、母が卜筮を立てたんだそうです。",
+          "sha256": "f675a4a15411e8bef2c8bef96d70361968086bcc1d240dffb6612b0d53502a50"
+        },
+        {
+          "order": 76,
+          "title": "76/146",
+          "incipit": "――それから、これは警察では云いませんでしたが…",
+          "sha256": "178e8fec2481f1c0d1860d8e155f777cb270022ae9760d8c7c609a30babfccb4"
+        },
+        {
+          "order": 77,
+          "title": "77/146",
+          "incipit": "――そうすると間もなく、この直方の町中で知らない…",
+          "sha256": "8151e60d2f053ef55b15dda14b9928be86618708ef9093a13fe19cef2539f15a"
+        },
+        {
+          "order": 78,
+          "title": "78/146",
+          "incipit": "――ずっと古い昔の事は存じませぬが…",
+          "sha256": "22f28e71e2ea9e19edcf3f0fbc3e636975c3e1a3ef30159e95bddc1b12fc44e1"
+        },
+        {
+          "order": 79,
+          "title": "79/146",
+          "incipit": "▲附記　呉一郎の第一回の発作に関する事件記録の要…",
+          "sha256": "d2a7b64037b23fbb52a863d622859e42a9bf7b2b23689bd75d3e3432cb4276ca"
+        },
+        {
+          "order": 80,
+          "title": "80/146",
+          "incipit": "呉一郎が、同夜に限りて夜半の覚醒を見たるは…",
+          "sha256": "73a5dafd3249ac5149e64ca0e0ef245b1bdb76ebf485e2dfe784a33fbe3a9a0a"
+        },
+        {
+          "order": 81,
+          "title": "81/146",
+          "incipit": "因みに、この事件に依って研究さるべき呉一郎の夢中…",
+          "sha256": "c0aaa7ff301fca82b6201e5866637ce48d479794d618d25dfaccb7210ddcf9a6"
+        },
+        {
+          "order": 82,
+          "title": "82/146",
+          "incipit": "次に如上の研究考察をこの事件と照合するに…",
+          "sha256": "560d815108f9679899100058f68ad9be70bc7b57e446cf1952aef6e604073d34"
+        },
+        {
+          "order": 83,
+          "title": "83/146",
+          "incipit": "因みに、呉一郎の夢中遊行の発作をここまで支持し来…",
+          "sha256": "87ef36f1e427b6073cb076fa29a226adc2d2f665cd260760f98978ad778b1910"
+        },
+        {
+          "order": 84,
+          "title": "84/146",
+          "incipit": "次に呉一郎が覚醒後、警察に於て…",
+          "sha256": "210b6fe47d6d99a62bc0c7cf8fb81bf541b894a93751b6b27912894e9b01510f"
+        },
+        {
+          "order": 85,
+          "title": "85/146",
+          "incipit": "――呉様のお家は、千俵余米と申しまして…",
+          "sha256": "b1f424face00dddf9caf4652f22dcd0b5433ee7bfd805ee16b79f44c63848b2b"
+        },
+        {
+          "order": 86,
+          "title": "86/146",
+          "incipit": "――私は呉様のお家に祟る絵巻物があるという事をか…",
+          "sha256": "f1d4632a54bc2caab09ac8c9c5335b24574dc592f02d1182a494dc05a302f4a9"
+        },
+        {
+          "order": 87,
+          "title": "87/146",
+          "incipit": "――それから昨晩、家中の者が一人残らず寝静まって…",
+          "sha256": "2efcfae16be3ae6c7a6ba703eccf73f2c4a5f15ddf684e3c72fe8917b532f0e2"
+        },
+        {
+          "order": 88,
+          "title": "88/146",
+          "incipit": "――お八代さんはその時に私を抱え起しながら何か尋…",
+          "sha256": "1fa919e6c9449fb8d0bfbcbe71ec62f040b3127fe780532c1cc2d4fbc384f637"
+        },
+        {
+          "order": 89,
+          "title": "89/146",
+          "incipit": "――もっともこの巻物の祟りと申しますのも久しい事…",
+          "sha256": "c054bfe0a3a7cb20aa6c1cb817d1b8a023fb72e98f0811e2ea49be9eb1083cba"
+        },
+        {
+          "order": 90,
+          "title": "90/146",
+          "incipit": "その最初を如何にと申すに…",
+          "sha256": "6ab8c8d26ef2476809743482ca9ed0b39c984b7eeb3bf37153c5eea02e57637d"
+        },
+        {
+          "order": 91,
+          "title": "91/146",
+          "incipit": "虹汀聞き果てゝ打ち案ずる事稍久…",
+          "sha256": "1077caa1b655a96aa3259c42b521804e64401ad2b42ac68bc9e963306bb3bf6a"
+        },
+        {
+          "order": 92,
+          "title": "92/146",
+          "incipit": "思ひもかけぬ旅僧の手練に、さしもの大勢あしらひ兼ね…",
+          "sha256": "e855cb2e8e0c2e5a8af74cd80cb6a7c0de78ed82ca04281a8cf6932c20f3a307"
+        },
+        {
+          "order": 93,
+          "title": "93/146",
+          "incipit": "――と申しまする仔細はほかでも御座いませぬ。",
+          "sha256": "14edb07d796a73d1a6ca109c3645fdae463a7ce1f87628c6537c4c95fc610848"
+        },
+        {
+          "order": 94,
+          "title": "94/146",
+          "incipit": "――その時にも虫が知らせたとでも申しましょうか…",
+          "sha256": "7bb7f92f3b1be17bdc579ae9893f4a7c2e85dd241deec8f55346bc2035debb61"
+        },
+        {
+          "order": 95,
+          "title": "95/146",
+          "incipit": "◆備考　（一）姪浜入口の国道沿い…",
+          "sha256": "80cc4cfaaaa856fb82e0623fbdbb678970428bc3bcbfc1a4bd076c1853ab3c7f"
+        },
+        {
+          "order": 96,
+          "title": "96/146",
+          "incipit": "中央の丸卓子の上には正木博士所持のものらしい古洋傘と…",
+          "sha256": "182f9db36a229bcaf9017464594c967ec525952e7ad7f3e5dcbdd2083ece500e"
+        },
+        {
+          "order": 97,
+          "title": "97/146",
+          "incipit": "【映画】　解放治療場中央の桐の葉にチョイチョイ枯…",
+          "sha256": "c44c102f71968328b5a9c0056687d340fd7d5b040c07382e63dc19904f1c5787"
+        },
+        {
+          "order": 98,
+          "title": "98/146",
+          "incipit": "呉一郎は、それでも何かしら不安そうに鍬の上げ下げ…",
+          "sha256": "f989dc1d0ae0f065e6897b097106f40bb53422c3ae5fe53fde86a7305b4472d3"
+        },
+        {
+          "order": 99,
+          "title": "99/146",
+          "incipit": "「アハハハハハ。",
+          "sha256": "f6f27e89b7d654357c8f2d5bcb7d58185f16c1cea7f9370a5d0ca1c6b7bfbd3a"
+        },
+        {
+          "order": 100,
+          "title": "100/146",
+          "incipit": "「ウン。",
+          "sha256": "32a522707467f89e8d7d396030604047977d4d136ecb800ca7bac12fac475633"
+        },
+        {
+          "order": 101,
+          "title": "101/146",
+          "incipit": "「元来彼奴はコンナ策略にかけては独特のスゴ腕を持…",
+          "sha256": "ceb01437a4ac5fc1fd3aa6efac58ab699b9003a738b88f20764698293e716ddf"
+        },
+        {
+          "order": 102,
+          "title": "102/146",
+          "incipit": "「……ところでだ。",
+          "sha256": "c0e01183256a1233e1793198d1c3fb4443bf73514079b6d703b21a6946bbc4db"
+        },
+        {
+          "order": 103,
+          "title": "103/146",
+          "incipit": "この大暖炉は、万一この実験が失敗するか…",
+          "sha256": "49c85af6070f42dc50a2511c241a7a9ea00a4d13d7dcf5b46bf035feb9eea67d"
+        },
+        {
+          "order": 104,
+          "title": "104/146",
+          "incipit": "青空の光りと照し合っている場内一面の白砂の上を…",
+          "sha256": "031343bb8debc913c89462da9e7dfb91e11f00271a74d325e1f579d6bbb0dc89"
+        },
+        {
+          "order": 105,
+          "title": "105/146",
+          "incipit": "「……しっかりしろ。",
+          "sha256": "87ac395c6375ad2d6f9b7ab7af2a86504816b655d17cdb0d6d853d5d81c39bd6"
+        },
+        {
+          "order": 106,
+          "title": "106/146",
+          "incipit": "いつの間にか又眼を閉じていた私は、唯…",
+          "sha256": "115d1dfd3547a719b6024fdf9457584d32cafeb52b3dea445fd1bda4648cfdab"
+        },
+        {
+          "order": 107,
+          "title": "107/146",
+          "incipit": "「出来なければ仕方がない。",
+          "sha256": "3b7f898fafde7ba0b4fa04462f36544144f1168c38843289c5e6ffdc399b7c53"
+        },
+        {
+          "order": 108,
+          "title": "108/146",
+          "incipit": "「……ソ……そんな乱暴な……セ……先生……誤解です……」",
+          "sha256": "21e35758d75a3f41be52d6b32749cc0ff53a4611a25bc2ae542d35dd375364e3"
+        },
+        {
+          "order": 109,
+          "title": "109/146",
+          "incipit": "と私は鸚鵡返しに返事をした。",
+          "sha256": "cd2e7edb01ca5a9c6fb4f3a2f4dd8aaa89d6bae55fe66f6a5804c0968f12265f"
+        },
+        {
+          "order": 110,
+          "title": "110/146",
+          "incipit": "と正木博士は曖気をしながら反り返った。",
+          "sha256": "ce6c3a3542bc1eb67e4a9fae408ed8dde724e21705492fb650d416ff426bf663"
+        },
+        {
+          "order": 111,
+          "title": "111/146",
+          "incipit": "「……ワア……凄い事になったんですね。",
+          "sha256": "d0291687021bf6efadcfa87d3342867278550effaaaae7df23c6dec189e91433"
+        },
+        {
+          "order": 112,
+          "title": "112/146",
+          "incipit": "「よく見ると、それは、自分が手ずから絞め殺して白…",
+          "sha256": "3c7ab7d6ab8dcb2de1ab5a502d4e3dc1108fa157bd745ecae943adca9e226684"
+        },
+        {
+          "order": 113,
+          "title": "113/146",
+          "incipit": "「ウン……この妹の方は姉と違ってチョットお侠なと…",
+          "sha256": "dab6c79705cd2b63250fec840b2b766bbbb6631d33beef339c394b1b2aca8a67"
+        },
+        {
+          "order": 114,
+          "title": "114/146",
+          "incipit": "「無論、大いに一般の同情を惹いたろうと思われる。",
+          "sha256": "86d7da5cad4093bf23b6e868bd474553208068e53388c6d746414d84457380de"
+        },
+        {
+          "order": 115,
+          "title": "115/146",
+          "incipit": "象牙の篦を結び付けた暗褐色の紐を解いて巻物をすこ…",
+          "sha256": "2faf4cbbe00baa990c320a6d3f67c04afb4c12442ef437b2d46bbb82ad475eb1"
+        },
+        {
+          "order": 116,
+          "title": "116/146",
+          "incipit": "勿論、この絵巻物を開いた最初のうちこそ…",
+          "sha256": "5e66acd80f3b6688a2a599e236bed2ef89d4ca3b83d884d93f9191041de37412"
+        },
+        {
+          "order": 117,
+          "title": "117/146",
+          "incipit": "「……この川柳は狐憑きが…",
+          "sha256": "b129f47a9b95e7a6b010ae11b0b2ba83a47910cd50013dff4543ae7dee3511e2"
+        },
+        {
+          "order": 118,
+          "title": "118/146",
+          "incipit": "「こいつを具体的に説明するとこうであったろうと思う。",
+          "sha256": "78748bb432a0de72d64fa64e5f617811dbcbe67ced93dd755220087bd5d48b92"
+        },
+        {
+          "order": 119,
+          "title": "119/146",
+          "incipit": "「……それそれ。",
+          "sha256": "7fa223f6b025dac97e996bcb32cbf2dc0c88968317a173b0bc01ee94eb853bac"
+        },
+        {
+          "order": 120,
+          "title": "120/146",
+          "incipit": "「ウン。",
+          "sha256": "8971d6bf545171b596a915cc7ab91d20489c4a5d6af74d7506342a53980838af"
+        },
+        {
+          "order": 121,
+          "title": "121/146",
+          "incipit": "「……どうだ。",
+          "sha256": "4dbe901fb976903c9deb029087dba7d5e948c3315eeefc89d598d40d7258855f"
+        },
+        {
+          "order": 122,
+          "title": "122/146",
+          "incipit": "「……出来ないと云うんだろう。",
+          "sha256": "c242b1a2162b8bb8ce6627e5d8e180d236b48fd5896b55ac9933baa40d05a777"
+        },
+        {
+          "order": 123,
+          "title": "123/146",
+          "incipit": "「……法律……法律なんてものは、どうでもいいんです。",
+          "sha256": "6996d875d3622fd32e4b73165f2ce0a5071ce05331de9c5065b406ceaf0af748"
+        },
+        {
+          "order": 124,
+          "title": "124/146",
+          "incipit": "「……ねえ先生……たとい悪戯にしろ何にしろ…",
+          "sha256": "b9bb93a8e502361b50e1a750d57cdfe7914c81c9debb0aac72ebac1f7a046320"
+        },
+        {
+          "order": 125,
+          "title": "125/146",
+          "incipit": "「……君はまだ犯罪の隠蔽心理とか…",
+          "sha256": "103441a6e3aad85c3aebac77b35b89ecd3191d0a3142496aa75abe6a8457f8f2"
+        },
+        {
+          "order": 126,
+          "title": "126/146",
+          "incipit": "こう云ううちに正木博士は大卓子の北の端にピタリと立止まった。",
+          "sha256": "03b4373fd62ed5d3a757128315a6a1b215a83340d0cd7c32228749cd3d647b84"
+        },
+        {
+          "order": 127,
+          "title": "127/146",
+          "incipit": "正木博士は私の前を通り抜けつつ振り返って冷笑した。",
+          "sha256": "03acddb021d708bd8ac4cec58218d36be23ae31b8149eea7aaf923ee96951172"
+        },
+        {
+          "order": 128,
+          "title": "128/146",
+          "incipit": "……今まで一種の敵愾心をもって…",
+          "sha256": "ebae76694891fe6ab7986a619952b7496ac9f1bf4a43599da62dc14450b89e09"
+        },
+        {
+          "order": 129,
+          "title": "129/146",
+          "incipit": "……しかしＷは失望しなかった。",
+          "sha256": "7cbba75d1b5f17549b41e82ef1b66e038b7d18d9d3a64184a9f5c0736a97fb3b"
+        },
+        {
+          "order": 130,
+          "title": "130/146",
+          "incipit": "……その運命の魔神……胎児が出生してみると…",
+          "sha256": "d954688f5956d9c0ceec1f5243178cd11831655c2c2744379ad0485add02aeb6"
+        },
+        {
+          "order": 131,
+          "title": "131/146",
+          "incipit": "「ＷとＭの性格の相違は、その後も引続いて発揮された。",
+          "sha256": "8fb30a96f1f0176d92d1747bd5af5f2139f996d9fb2c787851ffe35e8de93a51"
+        },
+        {
+          "order": 132,
+          "title": "132/146",
+          "incipit": "……というのはＭも実際のところ…",
+          "sha256": "68403c3ed725182449afeed8cb8500fcb32f463663fc96792b4e1ff1ab34b91f"
+        },
+        {
+          "order": 133,
+          "title": "133/146",
+          "incipit": "「……かくしてこの実験の進行に関する第一の障害……",
+          "sha256": "54e7c4b24ff908f9857bff3cc98d3de49d24a673edca05f70ef1de8a579b7158"
+        },
+        {
+          "order": 134,
+          "title": "134/146",
+          "incipit": "「……というのは、ほかでもない。",
+          "sha256": "1a7af983ff6400200ba9ca9585d9e5637b0490ae78c3e29f0966044b87d269de"
+        },
+        {
+          "order": 135,
+          "title": "135/146",
+          "incipit": "……吾輩は断言しておく……。",
+          "sha256": "a8aa2886c7beb4487a7095686306af7bf441f6d9b4e5ea40613987ede16b810b"
+        },
+        {
+          "order": 136,
+          "title": "136/146",
+          "incipit": "と叫ぶと眼が眩みそうになった私は…",
+          "sha256": "d8c0587c405167aeb1bb1b354d415971d5ba49f399ed4e8389a0ee14dbf5ff1c"
+        },
+        {
+          "order": 137,
+          "title": "137/146",
+          "incipit": "小使が出て行ったあとの扉がガチャガチャと閉まると…",
+          "sha256": "d8070090bbd4649bbce6a2cb63e92ae723227870689f3b05d1380fcd0d123011"
+        },
+        {
+          "order": 138,
+          "title": "138/146",
+          "incipit": "……アハ……アハ……こんな馬鹿馬鹿しい……間の抜…",
+          "sha256": "d0b411c6e59d34d64defc408cc5b53d8878edcfe3e28817db7851e5ac77dd8d9"
+        },
+        {
+          "order": 139,
+          "title": "139/146",
+          "incipit": "表装の刺繍と内部の紺色の紙の上に…",
+          "sha256": "4cd3163f3a09409bce3f6d7e3fb25686309d6e2b4b3e6c36822ba685c93517c8"
+        },
+        {
+          "order": 140,
+          "title": "140/146",
+          "incipit": "私の手は再び反射的に絵巻物を持ち直して白い処を捲…",
+          "sha256": "cd21c90ff2ca948f0915b5f67d9062f0ef5011d1fb246c19b9cfdde098fa931e"
+        },
+        {
+          "order": 141,
+          "title": "141/146",
+          "incipit": "……実に男らしい尊い、申分のない紳士的態度を…",
+          "sha256": "3ea8f9001ba6ab0b2ea333be105d41b485bb4accf19941c4744745f978495cea"
+        },
+        {
+          "order": 142,
+          "title": "142/146",
+          "incipit": "……いつの間にか往来に倒れているのを誰か扶け起し…",
+          "sha256": "5c7bf48f673a1beebefa8c1a20372c9cc8e09b7b60e1b7b8005acd6818faa9d6"
+        },
+        {
+          "order": 143,
+          "title": "143/146",
+          "incipit": "それは大正十五年の十月二十日……正面の壁のカレン…",
+          "sha256": "c83b3be6ba4de3734e1ac219e1ecbb564c2e32aaf2b49788c1e83d751101abfb"
+        },
+        {
+          "order": 144,
+          "title": "144/146",
+          "incipit": "然るに本日午後五時頃、大学裏海岸を通りかかった沙…",
+          "sha256": "eab5e18229c3ab17ea635e54d3b8ceba2f79241fb6360f2be85588b2c4569af8"
+        },
+        {
+          "order": 145,
+          "title": "145/146",
+          "incipit": "……私は今朝から二重の幻覚に陥っていたのだ。",
+          "sha256": "e99af98b94e4864a7c289078be73f4337a680c74c24fefb0b6c6499a4bd1d4f4"
+        },
+        {
+          "order": 146,
+          "title": "146/146",
+          "incipit": "……死んだ父親の罪悪を、白昼公然と発き立てている…",
+          "sha256": "711ab3a371860e5fa25557fa1a132bfff96a64ddbddefd80aeb698609ccdf2a5"
+        }
+      ]
+    },
     "aozora-000119-000624": {
       "title": "山月記",
       "author": "中島敦",
@@ -1388,7 +2575,7 @@
         "titleReading": "さんげつき",
         "titleKo": "산월기",
         "authorKo": "나카지마 아쓰시",
-        "cover": "twilight",
+        "cover": "torinoko",
         "motif": "moon-tiger"
       },
       "literature": {
@@ -1463,7 +2650,7 @@
         "titleReading": "ごんぎつね",
         "titleKo": "여우 곤",
         "authorKo": "니이미 난키치",
-        "cover": "vermilion",
+        "cover": "bengara",
         "motif": "higanbana"
       },
       "literature": {
@@ -1563,7 +2750,7 @@
         "titleReading": "てぶくろをかいに",
         "titleKo": "장갑을 사러",
         "authorKo": "니이미 난키치",
-        "cover": "snow",
+        "cover": "tetsukon",
         "motif": "snow-night"
       },
       "literature": {
@@ -1633,7 +2820,7 @@
         "titleReading": "たかせぶね",
         "titleKo": "다카세부네",
         "authorKo": "모리 오가이",
-        "cover": "river",
+        "cover": "fukamidori",
         "motif": "night-boat"
       },
       "literature": {
@@ -1716,7 +2903,7 @@
         "titleReading": "ぼっちゃん",
         "titleKo": "도련님",
         "authorKo": "나쓰메 소세키",
-        "cover": "sky",
+        "cover": "haimidori",
         "motif": "steam-sea"
       },
       "literature": {
@@ -1986,7 +3173,7 @@
         "titleReading": "ぶんちょう",
         "titleKo": "문조",
         "authorKo": "나쓰메 소세키",
-        "cover": "cream",
+        "cover": "karashi",
         "motif": "birdcage"
       },
       "literature": {
@@ -2076,7 +3263,7 @@
         "titleReading": "こころ",
         "titleKo": "마음",
         "authorKo": "나쓰메 소세키",
-        "cover": "mustard",
+        "cover": "shu",
         "motif": "kamakura-letter"
       },
       "literature": {
@@ -2789,6 +3976,1164 @@
         }
       ]
     },
+    "aozora-000148-000789": {
+      "title": "吾輩は猫である",
+      "author": "夏目漱石",
+      "level": "N1 심화",
+      "total": 113,
+      "division": "heading",
+      "chars": 322737,
+      "display": {
+        "titleReading": "わがはいはねこである",
+        "titleKo": "나는 고양이로소이다",
+        "authorKo": "나쓰메 소세키",
+        "cover": "nezumi",
+        "motif": "cat-study",
+        "coverTitle": "吾輩は猫\nである"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000148-000789",
+        "personId": "000148",
+        "workId": "789",
+        "title": "吾輩は猫である",
+        "author": "夏目漱石",
+        "publishedYear": 1905,
+        "authorDeathYear": 1916,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000148/card789.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000148/files/789_ruby_5639.zip",
+        "sourceSha256": "6545750b89ee2c57f215a65079eeab56ee7c997373b7b86e5b00ae74fe69208f",
+        "textSha256": "6bad4af644a8cef1e3f0f33cd3dc905ad3a9c1afeea94d790399ed6c61387326",
+        "attribution": {
+          "author": "夏目漱石",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-15",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000148/card789.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「夏目漱石全集1」ちくま文庫、筑摩書房",
+            "1987（昭和62）年9月29日第1刷発行"
+          ],
+          "parentBook": [
+            "「筑摩全集類聚版　夏目漱石全集　1」筑摩書房",
+            "1971（昭和46）年4月5日初版"
+          ],
+          "inputter": "柴田卓治",
+          "proofreader": "渡部峰子（一）、おのしげひこ（二、五）、田尻幹二（三）、高橋真也（四、七、八、十、十一）、しず（六）、瀬戸さえ子（九）"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "一 (1/4)",
+          "incipit": "吾輩は猫である。",
+          "sha256": "f6b2167ff495166ac148ad95f2165bbcf15120747e6f83a12bb0a677b61f60bb"
+        },
+        {
+          "order": 2,
+          "title": "一 (2/4)",
+          "incipit": "吾輩は人間と同居して彼等を観察すればするほど…",
+          "sha256": "b07a67d9084375a4c8457a72b15358697b48db89abd9540376f860acc7a126bb"
+        },
+        {
+          "order": 3,
+          "title": "一 (3/4)",
+          "incipit": "吾輩の家の裏に十坪ばかりの茶園がある。",
+          "sha256": "d68502aef260fc075685496f6fb71061ade2c6ac048c30ea0722d338a18ec20e"
+        },
+        {
+          "order": 4,
+          "title": "一 (4/4)",
+          "incipit": "教師といえば吾輩の主人も近頃に至っては到底水彩画…",
+          "sha256": "ad5955fff23ca7b1ae0336e1c0fbf9f94cf1641434c0d4322a7d48d498bc9061"
+        },
+        {
+          "order": 5,
+          "title": "二 (1/14)",
+          "incipit": "吾輩は新年来多少有名になったので…",
+          "sha256": "219038f309805cad5f138d2ada056cfd9b6123b9f3693ceb99a0a8af24cc2eb5"
+        },
+        {
+          "order": 6,
+          "title": "二 (2/14)",
+          "incipit": "「しばらく御無沙汰をしました。",
+          "sha256": "5e99c5eb31ae118108aea3721c5ee6b3b6c4e31b6bee5136f6fe67b5de3745b0"
+        },
+        {
+          "order": 7,
+          "title": "二 (3/14)",
+          "incipit": "寒月君と出掛けた主人はどこをどう歩行いたものか…",
+          "sha256": "b18d5fb2983f0a4ceb03dcfce4a20a0d7b2be3f8643cd8f5cbfd01c1718a7c1a"
+        },
+        {
+          "order": 8,
+          "title": "二 (4/14)",
+          "incipit": "これも決して長く続く事はあるまい。",
+          "sha256": "8a1937fc11dd8f1477019163a224a7af65277a1f06b570b4290d89d33eebd00c"
+        },
+        {
+          "order": 9,
+          "title": "二 (5/14)",
+          "incipit": "すると不思議な事にこの時だけは後足二本で立つ事が出来た。",
+          "sha256": "e3d34f4c15c9ee13b9889ed766cd6257e296306c934b709762c933cd8881d540"
+        },
+        {
+          "order": 10,
+          "title": "二 (6/14)",
+          "incipit": "障子の中で二絃琴の音がぱったりやむと…",
+          "sha256": "bc88680126be4b47c823051a9f72fc0ae23c3a5d6477740204e2550d74340f29"
+        },
+        {
+          "order": 11,
+          "title": "二 (7/14)",
+          "incipit": "大方これから行くつもりのところを…",
+          "sha256": "c26327105ac4a5f43238ebf8f82dafac23fcf735091f27cb837fd563353feedc"
+        },
+        {
+          "order": 12,
+          "title": "二 (8/14)",
+          "incipit": "白はなるべくその時代の人を写し出すのが主で…",
+          "sha256": "c52df940082bf6997dc77a4f1297064c8f405983a6363f048d8f8902f529f287"
+        },
+        {
+          "order": 13,
+          "title": "二 (9/14)",
+          "incipit": "「是非共二三十羽の孔雀を捕獲致さざる可らずと存候。",
+          "sha256": "616e280c9ace989b576c732fd7f552dc9da72396ad02f5f9b698b0841000873e"
+        },
+        {
+          "order": 14,
+          "title": "二 (10/14)",
+          "incipit": "「あんな声を出して何の呪いになるか知らん。",
+          "sha256": "855c628fe594f7976c5168eb9003c33093cc92792e71f0ba7f0e54a5234d71ec"
+        },
+        {
+          "order": 15,
+          "title": "二 (11/14)",
+          "incipit": "「たしか暮の二十七日と記憶しているがね。",
+          "sha256": "301a4fd102a3b53214289abc34ffb51316f83188c63e1d824c594b5dddce77cc"
+        },
+        {
+          "order": 16,
+          "title": "二 (12/14)",
+          "incipit": "「すべて曖々然として昧々然たるかたで行くつもりかね」",
+          "sha256": "921803595cb58473cf1633582d47a98daca997e3791af5bb08c40ebdc45f84e4"
+        },
+        {
+          "order": 17,
+          "title": "二 (13/14)",
+          "incipit": "万一の事を考えると今の内に有為転変の理…",
+          "sha256": "2dafcea7060047c6cfb27d597a25329aaa139c4dd450a792d65f6085755b4965"
+        },
+        {
+          "order": 18,
+          "title": "二 (14/14)",
+          "incipit": "「はい遅くなりまして、仏師屋へ参りましたらちょう…",
+          "sha256": "d929aec546d531e705f20a336ebbead23dea1bf3260f054ea6ba1c0e4c18354d"
+        },
+        {
+          "order": 19,
+          "title": "三 (1/12)",
+          "incipit": "三毛子は死ぬ。",
+          "sha256": "432a2bb027fd044329d0bee07d4ebbe2dc62a1c251c27b77e935fffb4ec8ef0f"
+        },
+        {
+          "order": 20,
+          "title": "三 (2/12)",
+          "incipit": "「また巨人引力かね」と立ったまま主人に聞く。",
+          "sha256": "08fc5c1864552b39276476deb134f94ed827a491d5d2a8888669ce6c7bae8ccb"
+        },
+        {
+          "order": 21,
+          "title": "三 (3/12)",
+          "incipit": "九冊が六冊になり、六冊が三冊になっても代価は…",
+          "sha256": "ea2595de966515cc52df932307661a8e401843b02da9e0b9688699ebfc265cdc"
+        },
+        {
+          "order": 22,
+          "title": "三 (4/12)",
+          "incipit": "「罪人を絞罪の刑に処すると云う事は重にアングロサ…",
+          "sha256": "41d4a65322547ef9bf3b7efe5db392941759045d9aa743ae6fb47ab2ac2dfe46"
+        },
+        {
+          "order": 23,
+          "title": "三 (5/12)",
+          "incipit": "二三日は事もなく過ぎたが…",
+          "sha256": "6dac3e344e971edf16482f9416adb83e8900cf05c6d31b5eaeaf36b76f1d8874"
+        },
+        {
+          "order": 24,
+          "title": "三 (6/12)",
+          "incipit": "「金田って人を知ってるか」と主人は無雑作に迷亭に聞く。",
+          "sha256": "890ed61aa7208f0043e36e3a24e2cb420769e653536956100d7ee92e17262b1b"
+        },
+        {
+          "order": 25,
+          "title": "三 (7/12)",
+          "incipit": "悪口の交換では到底鼻子の敵でないと自覚した主人は…",
+          "sha256": "19b414c1f93ef00b2c05c3275475e5f2b33a821d2640088342bb17b15ef26377"
+        },
+        {
+          "order": 26,
+          "title": "三 (8/12)",
+          "incipit": "主人は不満な口気で「第一気に喰わん顔だ」と悪らし…",
+          "sha256": "8070f2ba7c2fd147e798540f72344ba26e553de2327909587544af7d203e7559"
+        },
+        {
+          "order": 27,
+          "title": "三 (9/12)",
+          "incipit": "吾輩は今まで向う横丁へ足を踏み込んだ事はない。",
+          "sha256": "5453aa8caf682a35a32e01f8b061b6af6901f7d9f9c5970733bacd0de843ee27"
+        },
+        {
+          "order": 28,
+          "title": "三 (10/12)",
+          "incipit": "猫の足はあれども無きがごとし…",
+          "sha256": "68bdfd8aa34cbbcdc7d85c005d7a61bdf5ee682d15023daae2639eff4d180487"
+        },
+        {
+          "order": 29,
+          "title": "三 (11/12)",
+          "incipit": "帰って見ると、奇麗な家から急に汚ない所へ移ったので…",
+          "sha256": "0440ea8e1e35fa094c8a9f1d62aa474b84541f371a0602ca8883d2820cb58785"
+        },
+        {
+          "order": 30,
+          "title": "三 (12/12)",
+          "incipit": "「さてただ今まで弁じましたのは――」「先生弁じま…",
+          "sha256": "d54239016052306fd4c19bd1f3a89cf26ef3d97e1e2b111ad2161f2a8c222f55"
+        },
+        {
+          "order": 31,
+          "title": "四 (1/8)",
+          "incipit": "例によって金田邸へ忍び込む。",
+          "sha256": "cc1729b53858fbbd6bbc90b88e0d020e5b2cf401f3107f5e5ed7be8428be87a3"
+        },
+        {
+          "order": 32,
+          "title": "四 (2/8)",
+          "incipit": "「なるほどあの男が水島さんを教えた事がございます…",
+          "sha256": "f0da26d9378640e5616d4d64344509e4b35d13a74b8219a1171b06cc00cde1d4"
+        },
+        {
+          "order": 33,
+          "title": "四 (3/8)",
+          "incipit": "「そう云ってやったら当人も励みになって勉強する事でしょう。",
+          "sha256": "5cf6ddc93fac5bd7241dfc6f58526a79d10413ad747812c085b22b2e469c6da1"
+        },
+        {
+          "order": 34,
+          "title": "四 (4/8)",
+          "incipit": "「嫁にくるときからあるのか…",
+          "sha256": "8f08ffb1daf46e912247a44525a75c8143256b3b25137b26313e56bafa3d414d"
+        },
+        {
+          "order": 35,
+          "title": "四 (5/8)",
+          "incipit": "「十八金だよ」と鈴木君は笑いながら答えたが「君も…",
+          "sha256": "0aef571097d11f062fac8a8fb2461c6732cc30ce547d703453fb898c6ae771f4"
+        },
+        {
+          "order": 36,
+          "title": "四 (6/8)",
+          "incipit": "「君考えても分るじゃないか…",
+          "sha256": "bbdba618f9569322fc4a5a1de28027f1fc28ebd3874d1a385bad33e307c7c518"
+        },
+        {
+          "order": 37,
+          "title": "四 (7/8)",
+          "incipit": "「十年前の言草なんか誰が覚えているものか…",
+          "sha256": "7339f3d70a20c4c485e2e1af5b20f0d2d15537f7772105f5d879428a9b25f82e"
+        },
+        {
+          "order": 38,
+          "title": "四 (8/8)",
+          "incipit": "「そこでこの矛盾なる現象の説明を明記して…",
+          "sha256": "f7bf150c19f630fb712b58010560f0daf136d926398112fd7f21ef62cc72c564"
+        },
+        {
+          "order": 39,
+          "title": "五 (1/8)",
+          "incipit": "二十四時間の出来事を洩れなく書いて…",
+          "sha256": "e4f468c205ca76f1981205efccaa87b37bf4a52fb352121fd8dff348e90bf415"
+        },
+        {
+          "order": 40,
+          "title": "五 (2/8)",
+          "incipit": "吾輩はこの間に早く主人夫婦を起してやりたいものだ…",
+          "sha256": "63f899fabe8ead95515370a13eac493cf5e749f03fbeae42724698e4bec6d146"
+        },
+        {
+          "order": 41,
+          "title": "五 (3/8)",
+          "incipit": "吾輩の眼前に悠然とあらわれた陰士の顔を見るとその…",
+          "sha256": "fc6369153590729b235ba20e5f9d2148ecfd9d1b38bfeb703b3141dcf916126e"
+        },
+        {
+          "order": 42,
+          "title": "五 (4/8)",
+          "incipit": "「まあ、そうですな」と答える。",
+          "sha256": "d56a3a8e10f771cdfaaf332ad953b1b39e73b33bbd871ae25c88f757acb3e546"
+        },
+        {
+          "order": 43,
+          "title": "五 (5/8)",
+          "incipit": "「禿はみんなバクテリヤですばい」",
+          "sha256": "752e809e40578e0261bfc7de51e6c33978086bcc2a06949bd8cf17ece92a7cfa"
+        },
+        {
+          "order": 44,
+          "title": "五 (6/8)",
+          "incipit": "「ええ今まで九州の炭坑におりましたが…",
+          "sha256": "b5ac2fbb90def2e91a15a103915ba71530820b18a6fb574d96dfd6ba25586770"
+        },
+        {
+          "order": 45,
+          "title": "五 (7/8)",
+          "incipit": "せんだってじゅうから日本は露西亜と大戦争をしているそうだ。",
+          "sha256": "ac0f98d9a3550ed5dd3830d90722a8cb82521303d9292c00ebe3867c31c9747c"
+        },
+        {
+          "order": 46,
+          "title": "五 (8/8)",
+          "incipit": "戸棚の中でことことと音がしだす。",
+          "sha256": "739fbc4877c6bf6f904470e33f9429696377adfeac0c0375106b3066f36b2ab4"
+        },
+        {
+          "order": 47,
+          "title": "六 (1/9)",
+          "incipit": "こう暑くては猫といえどもやり切れない。",
+          "sha256": "1aa78215231b16111827f35661a178e2a0526a39aa5f4daf44dbe3e2a1d345a2"
+        },
+        {
+          "order": 48,
+          "title": "六 (2/9)",
+          "incipit": "迷亭はそんな事には頓着なく「奥さん、昨日はね…",
+          "sha256": "48d3857ab17741d4adbc8a4843d088cd00f3d1ef476142e98fab28ee3d1c58c9"
+        },
+        {
+          "order": 49,
+          "title": "六 (3/9)",
+          "incipit": "迷亭君は今度は右の袂の中から赤いケース入りの鋏を…",
+          "sha256": "2c1503899c457a3c64c0737396ad2f444850d1938b01c0e83390ca14bd151bf4"
+        },
+        {
+          "order": 50,
+          "title": "六 (4/9)",
+          "incipit": "「寒月君博士論文はもう脱稿するのかね」と主人が聞…",
+          "sha256": "9a986aafcd4a1c21ec832817c9af22177bd7ca374683422d24ea0e3b7c7504ba"
+        },
+        {
+          "order": 51,
+          "title": "六 (5/9)",
+          "incipit": "「僕のも大分神秘的で、故小泉八雲先生に話したら非…",
+          "sha256": "17a80cae112a720cbedd21cbd052b30c1c7f9ad05e207d8dc04afd64a97057ce"
+        },
+        {
+          "order": 52,
+          "title": "六 (6/9)",
+          "incipit": "「あの鬘はどこで買ったのか…",
+          "sha256": "ddcec397e208d13997ce7a8f468f719b5d584ff08be8a33fecd6abbce2e11229"
+        },
+        {
+          "order": 53,
+          "title": "六 (7/9)",
+          "incipit": "「本当さ。",
+          "sha256": "0ce7403db7e42ee20ddd64be9ad74e394eb319960ac75d812364ea291fb8eee6"
+        },
+        {
+          "order": 54,
+          "title": "六 (8/9)",
+          "incipit": "ここへ東風君さえくれば、主人の家へ出入する変人は…",
+          "sha256": "6624afa32fd6611a5ff58229acf40897f9057d76ee8d68ac82d82d68ab14767e"
+        },
+        {
+          "order": 55,
+          "title": "六 (9/9)",
+          "incipit": "主人は少々談話の局面を展開して見たくなったと見えて…",
+          "sha256": "b798363c966baef1199e0ca6179ea21a9b3ce1f7fec1d62d79f6363ee65bf83e"
+        },
+        {
+          "order": 56,
+          "title": "七 (1/9)",
+          "incipit": "吾輩は近頃運動を始めた。",
+          "sha256": "4f8782633138da067c96db16a788ff7578590ef3e09bde9760ae8521938d4ea1"
+        },
+        {
+          "order": 57,
+          "title": "七 (2/9)",
+          "incipit": "その方法を云うとまず庭へ出て、一匹の蟷螂をさがし出す。",
+          "sha256": "1361596f92fbfcc2f1a1a998dbeb6efbfef579f12e5e6e4aafd5142380ae480d"
+        },
+        {
+          "order": 58,
+          "title": "七 (3/9)",
+          "incipit": "これは長くかく必要もないから、ちょっと述べておく。",
+          "sha256": "b6d797c19f0cd4245b95e0e3563de753c01a47bca9ba6ea847f3d4f4973674b3"
+        },
+        {
+          "order": 59,
+          "title": "七 (4/9)",
+          "incipit": "手を翻せば雨、手を覆せば雲とはこの事だ。",
+          "sha256": "e4b4b033d0722fd7f8deb0afbf43728a6617d6de41d267c8eb1e4f27d7e6d1d9"
+        },
+        {
+          "order": 60,
+          "title": "七 (5/9)",
+          "incipit": "失礼があってはならんと念に念を入れて顔まで着物をきせた。",
+          "sha256": "d940c9d11c48fdc11759d042b13ac4e010687a62610dc6c431cbc1b629c54fe2"
+        },
+        {
+          "order": 61,
+          "title": "七 (6/9)",
+          "incipit": "何だかごちゃごちゃしていて何にから記述していいか分らない。",
+          "sha256": "bc467e171f9e37f5b1d0cf60ff8ec69e2c97b26015d2add315b0aa254d3c4284"
+        },
+        {
+          "order": 62,
+          "title": "七 (7/9)",
+          "incipit": "湯槽の方はこれぐらいにして板間を見渡すと…",
+          "sha256": "cddc81ea6f320db723c71aa64a4873ba8f2e8beee9b6cb347435455a948c9d29"
+        },
+        {
+          "order": 63,
+          "title": "七 (8/9)",
+          "incipit": "いかに馬鹿でも病気でも主人に変りはない。",
+          "sha256": "dbd28d7d08374f2237d46e1c961afc05461ab2c4df6ac80031aa36392691dbc0"
+        },
+        {
+          "order": 64,
+          "title": "七 (9/9)",
+          "incipit": "「Archaiomelesidonophruni…",
+          "sha256": "26d67cb1e97ef9020599ec0de55754e6c299ee7afeb8cd05cc5b2f28463c9de8"
+        },
+        {
+          "order": 65,
+          "title": "八 (1/10)",
+          "incipit": "垣巡りと云う運動を説明した時に…",
+          "sha256": "5823ac8f72d4b961209684169217bc8b11f6af61bf0e41644f733d4d55cf0f87"
+        },
+        {
+          "order": 66,
+          "title": "八 (2/10)",
+          "incipit": "全体人にからかうのは面白いものである。",
+          "sha256": "5422244bf5e11016c54ca47aa0140fb8427811b70268a1b2f933b047c2bd9dbd"
+        },
+        {
+          "order": 67,
+          "title": "八 (3/10)",
+          "incipit": "垣の出来た翌日から、垣の出来ぬ前と同様に彼等は北…",
+          "sha256": "7fef5f9cd91754ace7c4b53bb51bc3ce98e8458e22814b77868f01200b4bc92c"
+        },
+        {
+          "order": 68,
+          "title": "八 (4/10)",
+          "incipit": "聞くところによればユーゴーは快走船の上へ寝転んで…",
+          "sha256": "85c261e47714ae1bbb662152a1d8bfbae7ec7429189096ac9b3ec7bac46550a9"
+        },
+        {
+          "order": 69,
+          "title": "八 (5/10)",
+          "incipit": "ある日の午後、吾輩は例のごとく椽側へ出て午睡をし…",
+          "sha256": "fdf222769032b66ebe8a2198066d29bb87b5641d9edb13ae39a80d9cf49635f0"
+        },
+        {
+          "order": 70,
+          "title": "八 (6/10)",
+          "incipit": "縦隊を少し右へ離れて運動場の方面には砲隊が形勝の…",
+          "sha256": "04feb01ddc0ac6ce468c79025b7e41510f7980c159fc51bfea8933ea6e25b840"
+        },
+        {
+          "order": 71,
+          "title": "八 (7/10)",
+          "incipit": "こうなってはいかに消極的なる主人といえども応戦し…",
+          "sha256": "6daee669a170bbad397a622dea6eae87f76c8f5739cff5df75f068214c8a0912"
+        },
+        {
+          "order": 72,
+          "title": "八 (8/10)",
+          "incipit": "吾輩はすでに小事件を叙し了り…",
+          "sha256": "ce6c7b296721b24d3505603e5d0ffe00564e3a5d89db0173a3ecd6a8d798730f"
+        },
+        {
+          "order": 73,
+          "title": "八 (9/10)",
+          "incipit": "「君はよかろうが僕はよくない。",
+          "sha256": "86e1a01b0b5865d8733b7d221a9cd277f0835754dd7fd2fa13808a9e58033f2d"
+        },
+        {
+          "order": 74,
+          "title": "八 (10/10)",
+          "incipit": "「僕か、そうさな僕なんかは――まあ自然薯くらいな…",
+          "sha256": "517c091d6e9cd0fed7695297b7ca78e27b71f8dd883a8f7148a2e9eba93472eb"
+        },
+        {
+          "order": 75,
+          "title": "九 (1/10)",
+          "incipit": "主人は痘痕面である。",
+          "sha256": "01bcf0b5eb1f46e46be16a86d19f9f6e6170a8624ddc216cf337e6ada31438a3"
+        },
+        {
+          "order": 76,
+          "title": "九 (2/10)",
+          "incipit": "机の前には薄っぺらなメリンスの座布団があって…",
+          "sha256": "947c937aabeb701b9e4c8f4384d4151cd9751e65e2f8187602b4f1e522be71db"
+        },
+        {
+          "order": 77,
+          "title": "九 (3/10)",
+          "incipit": "こんどは顔を横に向けて半面に光線を受けた所を鏡に…",
+          "sha256": "57e371ad09ab8ed01babd8af39b73c6a98cf7f8cb9e54985c568e05e78a14ad2"
+        },
+        {
+          "order": 78,
+          "title": "九 (4/10)",
+          "incipit": "今度は髯をねじり始めた。",
+          "sha256": "7c3c0f7b69865a44e7b3c4e12f5ad02125a1e5bcda4434158f38faa6cc16a5e0"
+        },
+        {
+          "order": 79,
+          "title": "九 (5/10)",
+          "incipit": "吾の人を人と思うとき、他の吾を吾と思わぬ時…",
+          "sha256": "174894627b758137be075ee4a5318679fc2e9d7841d818c490ae67579f042598"
+        },
+        {
+          "order": 80,
+          "title": "九 (6/10)",
+          "incipit": "「いや始めて御目にかかります…",
+          "sha256": "74756081dfe42571ca2056bc0e29fe9e7286a95f47bc5ef6ada495bffb71787c"
+        },
+        {
+          "order": 81,
+          "title": "九 (7/10)",
+          "incipit": "「なるほど」と今度もなるほどですましてしまった。",
+          "sha256": "5db5289aed3cc5d57aa746ad558e5f5b19f28193f766a346e5edaa30d89967f9"
+        },
+        {
+          "order": 82,
+          "title": "九 (8/10)",
+          "incipit": "「そうさ、当人に云わせるとすこぶるありがたいものさ。",
+          "sha256": "7ee24150a4b744970f38f410b8026dfee053c1774fd182088c4341a80dae99a5"
+        },
+        {
+          "order": 83,
+          "title": "九 (9/10)",
+          "incipit": "玄関へ飛び出した迷亭は何かしきりに弁じていたが…",
+          "sha256": "8ef949f9dd44cde2d3176b66c587df34629d32922791b8848da9194851d8dd23"
+        },
+        {
+          "order": 84,
+          "title": "九 (10/10)",
+          "incipit": "迷亭が帰ってから、そこそこに晩飯をすまして…",
+          "sha256": "4160c4edd276e767cb6b0e0b67d1119715bb3842f83dcb144a890d6bb28d9b3f"
+        },
+        {
+          "order": 85,
+          "title": "十 (1/13)",
+          "incipit": "「あなた、もう七時ですよ」と襖越しに細君が声を掛けた。",
+          "sha256": "056f0589fcd31563ec55152e672fe1d908bacaee412670f1ad56752bc03649d3"
+        },
+        {
+          "order": 86,
+          "title": "十 (2/13)",
+          "incipit": "顔を洗うと云ったところで、上の二人が幼稚園の生徒で…",
+          "sha256": "3270d44866dca8823608f39e0f45a65a24179050451cfaec4c2530d769ce884f"
+        },
+        {
+          "order": 87,
+          "title": "十 (3/13)",
+          "incipit": "「どっちが馬鹿だか分りゃしない」と妻君ぷんとして…",
+          "sha256": "bc813b29669b05eda84cb9117b20f0a691cbff242d12a4959be36d2b7814ed5e"
+        },
+        {
+          "order": 88,
+          "title": "十 (4/13)",
+          "incipit": "このあくびがまた鯨の遠吠のようにすこぶる変調を極…",
+          "sha256": "5b30c9241edf1eb2bf7ce82ec9bb8d24cb5d72dccad43a4bd7da077291ba6df3"
+        },
+        {
+          "order": 89,
+          "title": "十 (5/13)",
+          "incipit": "坊ばが一大活躍を試みて箸を刎ね上げた時は…",
+          "sha256": "046095dd3931e42eef7f84c98e42c1d518b466e37dd9d3b2bf293adb86f04620"
+        },
+        {
+          "order": 90,
+          "title": "十 (6/13)",
+          "incipit": "「ホホホホ旨いのね。",
+          "sha256": "f53f7060ab785f513fcb7b72be3bbb283d02b74f1dfc981ecad273dec8c539a6"
+        },
+        {
+          "order": 91,
+          "title": "十 (7/13)",
+          "incipit": "「そうね。",
+          "sha256": "075beb536b6cec72f9021f96f0b8bb3e821db0e92c7bd17afc754bd93955e3a0"
+        },
+        {
+          "order": 92,
+          "title": "十 (8/13)",
+          "incipit": "「それもそうだけれども――あの方こそ…",
+          "sha256": "b29d00e523ce1a72e5b5971a1afbffc0c967df87cabd2a55b41880c570ca23f5"
+        },
+        {
+          "order": 93,
+          "title": "十 (9/13)",
+          "incipit": "「来月から這入るつもりだ」",
+          "sha256": "88172a8219403621c7a78e97ad7952b9c5cf100c9874e075b6ca89278bb01b30"
+        },
+        {
+          "order": 94,
+          "title": "十 (10/13)",
+          "incipit": "主人は座布団を押しやりながら…",
+          "sha256": "dfc72950b466ea66ce535dce37f4c4fb6fcbfe47847a728026b4d85d4d752b1b"
+        },
+        {
+          "order": 95,
+          "title": "十 (11/13)",
+          "incipit": "「で、君はあすこの娘を知ってるのか。",
+          "sha256": "22f7bcad06b04c718b8c520b8ffe60442e16c33365cf71198ec2a80cc71f6949"
+        },
+        {
+          "order": 96,
+          "title": "十 (12/13)",
+          "incipit": "いやしくも人間に生れる以上は踏んだり、蹴たり…",
+          "sha256": "6ad754bd76312efa0f31aa3a2fa45aa99dd6eb82e6e2ce4da6305e7b74dcd740"
+        },
+        {
+          "order": 97,
+          "title": "十 (13/13)",
+          "incipit": "「ちっとも恥かしい事はないじゃありませんか」と今…",
+          "sha256": "f740d44849b6b198183b70e255fc7cf4d5365aa0f0c42cbe1001ef1a260501af"
+        },
+        {
+          "order": 98,
+          "title": "十一 (1/16)",
+          "incipit": "床の間の前に碁盤を中に据えて迷亭君と独仙君が対坐している。",
+          "sha256": "ffa895839bcc5584fd7975cac6b2a007ea29540bbd7b51f1327996d0255b0b6f"
+        },
+        {
+          "order": 99,
+          "title": "十一 (2/16)",
+          "incipit": "「そそっかしい鼠だね。",
+          "sha256": "60b8fb65a309f59f6559a79b5383b15fa5373a93f55ed7b7666d633350b51595"
+        },
+        {
+          "order": 100,
+          "title": "十一 (3/16)",
+          "incipit": "「それじゃ君やってくれたまえ。",
+          "sha256": "e8dd1777f7b325c4c0115b1deb228c16df995d4ea7e10b77058962b8cac5054c"
+        },
+        {
+          "order": 101,
+          "title": "十一 (4/16)",
+          "incipit": "「乗らない方が仕合せだよ。",
+          "sha256": "c1ba9846f95e52983ddd5ed838a0418ab0671b5296bb281fe189b386fd5097b6"
+        },
+        {
+          "order": 102,
+          "title": "十一 (5/16)",
+          "incipit": "「かしこまりました。",
+          "sha256": "02b270b1a00426e798609ef5ea997ab915426921aa50aeb75bd34a8976f7d725"
+        },
+        {
+          "order": 103,
+          "title": "十一 (6/16)",
+          "incipit": "「おいそんな安いヴァイオリンがあるのかい。",
+          "sha256": "d269049ec871f26a711182093704979d3d44ef799c557028e871cf09259f0114"
+        },
+        {
+          "order": 104,
+          "title": "十一 (7/16)",
+          "incipit": "「まだ音がしないもので露見した事がある。",
+          "sha256": "457d501053a95d201e592441fc05d6bdb81c633b8f3b1229f750a1095ca78db3"
+        },
+        {
+          "order": 105,
+          "title": "十一 (8/16)",
+          "incipit": "「九時だよ。",
+          "sha256": "8734bac92838dbb041e838e2eb0afc9990d89ca813ed7e85c939afaab10a6ad3"
+        },
+        {
+          "order": 106,
+          "title": "十一 (9/16)",
+          "incipit": "「いつって、国へ帰ったら、ちゃんと、うちで待ってたのです。",
+          "sha256": "117a647f23ab5cc65f05c4d517f1c78692d1a23fae13824f9f6f6b329c70fb0f"
+        },
+        {
+          "order": 107,
+          "title": "十一 (10/16)",
+          "incipit": "「僕はこんな話を聞いた」と主人が後をつける。",
+          "sha256": "14c3978604ce5193aaa8c9fda420e65d9bb136d3052332cdb5926db61a5f770c"
+        },
+        {
+          "order": 108,
+          "title": "十一 (11/16)",
+          "incipit": "「聞いたよ。",
+          "sha256": "b64fe82640c94671a7999aee91fdc85279d94f806193e17452027410b3baed09"
+        },
+        {
+          "order": 109,
+          "title": "十一 (12/16)",
+          "incipit": "「いよいよもって御免蒙ります」",
+          "sha256": "0a5c9a9c93a26f1088a08e4152dd12de6a24c793f7afc1026cb82abedfcfc8c4"
+        },
+        {
+          "order": 110,
+          "title": "十一 (13/16)",
+          "incipit": "「先生私はその説には全然反対です」と東風君はこの…",
+          "sha256": "d53062024d0a5f05ba3f55b8abd178d19cd05ab7e2feee6f173e0c240c6d11b5"
+        },
+        {
+          "order": 111,
+          "title": "十一 (14/16)",
+          "incipit": "「ソクラチスは婦女子を御するは人間の最大難事と云えり。",
+          "sha256": "e90a28f750477da01d7cdec44e1a41a015b4dc6e50702645cdeeca9c1c70dcb5"
+        },
+        {
+          "order": 112,
+          "title": "十一 (15/16)",
+          "incipit": "「お見やげでござります。",
+          "sha256": "48a033bf0194bb3bd69880cfea9906fd2da388621e8b3b6d724bc3e3dd2e860e"
+        },
+        {
+          "order": 113,
+          "title": "十一 (16/16)",
+          "incipit": "陶然とはこんな事を云うのだろうと思いながら、あてもなく…",
+          "sha256": "eb3fa59b467bc294e966309c60cad16f800f11f1d68d2ed7c65e3e0e8e93de28"
+        }
+      ]
+    },
+    "aozora-000148-000799": {
+      "title": "夢十夜",
+      "author": "夏目漱石",
+      "level": "N2 상급",
+      "total": 10,
+      "division": "heading",
+      "chars": 16171,
+      "display": {
+        "titleReading": "ゆめじゅうや",
+        "titleKo": "몽십야",
+        "authorKo": "나쓰메 소세키",
+        "cover": "fujinezumi",
+        "motif": "lily-dream"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000148-000799",
+        "personId": "000148",
+        "workId": "799",
+        "title": "夢十夜",
+        "author": "夏目漱石",
+        "publishedYear": 1908,
+        "authorDeathYear": 1916,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000148/card799.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000148/files/799_ruby_6024.zip",
+        "sourceSha256": "bbcba67c68db31aca5d24d8cab5ec17a1c85f9730b183f14895bb0b6d5ae19b8",
+        "textSha256": "3e71a09047500381e8f1fd06ea482f7eb7975599d11b725444e0b98a67ead226",
+        "attribution": {
+          "author": "夏目漱石",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-15",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000148/card799.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「夏目漱石全集10巻」ちくま文庫、筑摩書房",
+            "1988（昭和63）年7月26日第1刷発行",
+            "1996（平成8）年7月15日第5刷発行"
+          ],
+          "parentBook": [
+            "「筑摩全集類聚版夏目漱石全集」筑摩書房",
+            "1971（昭和46）年4月〜1972（昭和47）年1月"
+          ],
+          "inputter": "野口英司",
+          "proofreader": null
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi",
+          "unproofread-source"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "第一夜",
+          "incipit": "こんな夢を見た。",
+          "sha256": "e5d44f258adcdb1074b7c328c52f1ee20944dfcd68e2a7a08a39e82cc8ced296"
+        },
+        {
+          "order": 2,
+          "title": "第二夜",
+          "incipit": "こんな夢を見た。",
+          "sha256": "5b50c9afb07896ad5b6c4bc831ad6618a9d85b05dff15f909f85e8697da05f5e"
+        },
+        {
+          "order": 3,
+          "title": "第三夜",
+          "incipit": "こんな夢を見た。",
+          "sha256": "867182e8904acfb799194f0719e6a127ca4e718fe66f2a2a57fae4f153e56760"
+        },
+        {
+          "order": 4,
+          "title": "第四夜",
+          "incipit": "広い土間の真中に涼み台のようなものを据えて…",
+          "sha256": "265e7be8e715219f294cc6bcdea7787936686597c1118914ce6486f797d050e7"
+        },
+        {
+          "order": 5,
+          "title": "第五夜",
+          "incipit": "こんな夢を見た。",
+          "sha256": "d77bab6656cad75cfc389f800281fd174347680742a6117c943b5a3cb8231ca9"
+        },
+        {
+          "order": 6,
+          "title": "第六夜",
+          "incipit": "運慶が護国寺の山門で仁王を刻んでいると云う評判だから…",
+          "sha256": "74f4388a63054024be3e90a6bae454bbf3a660c0ba1c977bf533ca6c892e0d7f"
+        },
+        {
+          "order": 7,
+          "title": "第七夜",
+          "incipit": "何でも大きな船に乗っている。",
+          "sha256": "6c839000e3be48fa58ed3dd4838a6b3ea357ea06801bdd4d7f977d58e5061003"
+        },
+        {
+          "order": 8,
+          "title": "第八夜",
+          "incipit": "床屋の敷居を跨いだら、白い着物を着てかたまってい…",
+          "sha256": "656944cb4d749661b1fd3ca083dfce8df712bf3e3866e92b76fb474a4afc215a"
+        },
+        {
+          "order": 9,
+          "title": "第九夜",
+          "incipit": "世の中が何となくざわつき始めた。",
+          "sha256": "8268ede9cdfe4da16a608251e8fb6f492afff003aa3ba4a4de0881c8a76e2dc7"
+        },
+        {
+          "order": 10,
+          "title": "第十夜",
+          "incipit": "庄太郎が女に攫われてから七日目の晩にふらりと帰って来て…",
+          "sha256": "eff78dc0a19a824f167d5fa3d11d45bd12781060d00c04dc263a7990a1047be7"
+        }
+      ]
+    },
+    "aozora-000296-047061": {
+      "title": "学問のすすめ",
+      "author": "福沢諭吉",
+      "level": "N1 심화",
+      "total": 37,
+      "division": "heading",
+      "chars": 87005,
+      "display": {
+        "titleReading": "がくもんのすすめ",
+        "titleKo": "학문의 권장",
+        "authorKo": "후쿠자와 유키치",
+        "cover": "nando",
+        "motif": "lamp-book"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000296-047061",
+        "personId": "000296",
+        "workId": "47061",
+        "title": "学問のすすめ",
+        "author": "福沢諭吉",
+        "publishedYear": 1872,
+        "authorDeathYear": 1901,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000296/card47061.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000296/files/47061_ruby_28378.zip",
+        "sourceSha256": "aeaa2fffa2de412163da8a4267550e5f23b5fc75a5ef321a73e7fe5d570a3b54",
+        "textSha256": "992b26db38ce357fef474c72e0db8c520aaa9bc128d1df94166696fef337a470",
+        "attribution": {
+          "author": "福沢諭吉",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-15",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000296/card47061.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「日本の名著　33　福沢諭吉」中公バックス、中央公論社",
+            "1984（昭和59）年7月20日初版発行"
+          ],
+          "parentBook": [
+            "「福沢諭吉全集　第三巻」岩波書店",
+            "1959（昭和34）年4月"
+          ],
+          "inputter": "任天堂株式会社",
+          "proofreader": "松永正敏"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "初編 (1/2)",
+          "incipit": "「天は人の上に人を造らず人の下に人を造らず」と言えり。",
+          "sha256": "5c293d11114db1b90c607efcefe2ab53aebcb1bae8f6e2438407d2dcca088130"
+        },
+        {
+          "order": 2,
+          "title": "初編 (2/2)",
+          "incipit": "しかるを支那人などのごとく…",
+          "sha256": "9ba233045b61a30771c01b7ce5744a4161c1690a7885a176e08738dc5a90f491"
+        },
+        {
+          "order": 3,
+          "title": "端書",
+          "incipit": "このたび余輩の故郷中津に学校を開くにつき…",
+          "sha256": "0fe07a7f9199371f80ee6daa852700c983e6a8ad4b4083fd62f9beafe6afef23"
+        },
+        {
+          "order": 4,
+          "title": "二編　端書",
+          "incipit": "学問とは広き言葉にて、無形の学問もあり、有形の学問もあり。",
+          "sha256": "5dc3ffa562829e558db2de3e7ed138fa681bdd5da6e09cba8ffd415cbb4199f8"
+        },
+        {
+          "order": 5,
+          "title": "人は同等なること",
+          "incipit": "初編の首に、人は万人みな同じ位にて生まれながら上…",
+          "sha256": "7561b8b6c571f3c781941d53fcf27b2e3bdf6c50105192bce3d5e318f49ac155"
+        },
+        {
+          "order": 6,
+          "title": "三編　国は同等なること",
+          "incipit": "およそ人とさえ名あれば、富めるも貧しきも、強きも弱きも…",
+          "sha256": "1e685d0615d2596aaf0da1853048f0ea8ea05dbde9c174ad493d37e3ebd23f7f"
+        },
+        {
+          "order": 7,
+          "title": "一身独立して一国独立すること",
+          "incipit": "前条に言えるごとく、国と国とは同等なれども…",
+          "sha256": "e96ca7ecabfcc9d061fbadeb3a82b75acbb5beb4df1dd772bc8e8edcd9fbf031"
+        },
+        {
+          "order": 8,
+          "title": "四編　学者の職分を論ず (1/2)",
+          "incipit": "近来ひそかに識者の言を聞くに…",
+          "sha256": "8b2ac4a7472f5a5b9db63967730b32f129333ee74a3dff35a1e6e55fa7550ae5"
+        },
+        {
+          "order": 9,
+          "title": "四編　学者の職分を論ず (2/2)",
+          "incipit": "右所論をもって考うれば、方今わが国の文明を進むるには…",
+          "sha256": "06b8579d4d851adaba2fe267ce4aacab4d32b7aef8cc86f10197814269cdd57a"
+        },
+        {
+          "order": 10,
+          "title": "付録",
+          "incipit": "本論につき二、三の問答あり、よってこれを巻末に記す。",
+          "sha256": "f9f4a13338eb6ece745ed13e4abd9eea8b90a754b7ac53f88a3700387327b64b"
+        },
+        {
+          "order": 11,
+          "title": "五編",
+          "incipit": "『学問のすすめ』はもと民間の読本または小学の教授…",
+          "sha256": "b106e65de88432e7639721a96a24c9067ca29492292e6dd70d0a329d79ab9ba7"
+        },
+        {
+          "order": 12,
+          "title": "明治七年一月一日の詞 (1/2)",
+          "incipit": "わが輩今日慶応義塾にありて明治七年一月一日に逢えり。",
+          "sha256": "a258a5d4be82ea9a0b6845d5b5fbc1ba503c73e77d9a634d1278179b9a47660a"
+        },
+        {
+          "order": 13,
+          "title": "明治七年一月一日の詞 (2/2)",
+          "incipit": "いま政府に常備の兵隊あり…",
+          "sha256": "41a9b0ada8d3ffd458c276d9354f9c6898cdd8e187594a72938217af10a227c6"
+        },
+        {
+          "order": 14,
+          "title": "六編　国法の貴きを論ず (1/2)",
+          "incipit": "政府は国民の名代にて、国民の思うところに従い事を…",
+          "sha256": "a7d06b703b3f65fbe1e9f4220a0ae8465d4cc7831de20cb2b508e206768ccc41"
+        },
+        {
+          "order": 15,
+          "title": "六編　国法の貴きを論ず (2/2)",
+          "incipit": "かくありてこそはじめて真の義士とも称すべきはずなるに…",
+          "sha256": "cd602b0e7928aafd73c1ec001d4e8596e2f425768f18429fed0ee95dd4041132"
+        },
+        {
+          "order": 16,
+          "title": "七編　国民の職分を論ず (1/2)",
+          "incipit": "第六編に国法の貴きを論じ…",
+          "sha256": "c0de345be5b88780272a6ff0d79fceed5a1ae4ad942336859639032ffa5f9da0"
+        },
+        {
+          "order": 17,
+          "title": "七編　国民の職分を論ず (2/2)",
+          "incipit": "第一　節を屈して政府に従うははなはだよろしからず。",
+          "sha256": "a6ffe7ce44cc2fcef6320e56c1a23f008fdf7f75324ce89fa9ed24ee2dd97a13"
+        },
+        {
+          "order": 18,
+          "title": "八編　わが心をもって他人の身を制すべからず (1/2)",
+          "incipit": "アメリカのエイランドなる人の著わしたる『モラル・…",
+          "sha256": "a4ef64d559e77b9a7acf9c6893db9d432ff397364bc9af62a6a9f494c93bf7b9"
+        },
+        {
+          "order": 19,
+          "title": "八編　わが心をもって他人の身を制すべからず (2/2)",
+          "incipit": "『女大学』という書に、「婦人に三従の道あり…",
+          "sha256": "d563a9d0c4646ad0b82014cd3ab34bc6f3cb5608973b5946c8ffbd0c325f17da"
+        },
+        {
+          "order": 20,
+          "title": "九編　学問の旨を二様に記して　中津の旧友に贈る文 (1/2)",
+          "incipit": "人の心身の働きを細かに見れば…",
+          "sha256": "0d2de35bf2d5c37949a559a325ae3c68aab5bb26d6307d51623352e133680a00"
+        },
+        {
+          "order": 21,
+          "title": "九編　学問の旨を二様に記して　中津の旧友に贈る文 (2/2)",
+          "incipit": "古より世にかかる人物なかりせば…",
+          "sha256": "f99731902406e630969fa22e548179df9c7bae27c647b3e0d65f3ea750c61c12"
+        },
+        {
+          "order": 22,
+          "title": "十編　前編のつづき、中津の旧友に贈る (1/2)",
+          "incipit": "前編に学問の旨を二様に分けてこれを論じ…",
+          "sha256": "b3531524354daeed5b6b52eef0351b84bcbcaac0fb44e0d05361e3eb98d0e5fd"
+        },
+        {
+          "order": 23,
+          "title": "十編　前編のつづき、中津の旧友に贈る (2/2)",
+          "incipit": "ただ、今の学者の成業を待ち…",
+          "sha256": "2abf948f8a9235e095f5f7c8d4c2eb1b2261bab29a27a2fd7c0529fe2d0a40a5"
+        },
+        {
+          "order": 24,
+          "title": "十一編　名分をもって偽君子を生ずるの論 (1/2)",
+          "incipit": "第八編に、上下貴賤の名分よりして夫婦・親子の間に…",
+          "sha256": "5e6531ea664067e08fef8d4d8b8e07779c323083963e4b3c8d9a820be678f43b"
+        },
+        {
+          "order": 25,
+          "title": "十一編　名分をもって偽君子を生ずるの論 (2/2)",
+          "incipit": "この風儀はひとり政府のみに限らず、商家にも、学塾にも…",
+          "sha256": "985d17bf2e42e13a119a60fda01023d9bd864eb6f0292bd340b1748c7888ebfe"
+        },
+        {
+          "order": 26,
+          "title": "十二編　演説の法を勧むるの説",
+          "incipit": "演説とは英語にてスピイチと言い…",
+          "sha256": "32e5bf0ab471c55e14ea9f2e915762c6ccb523b316d8d9757fb105294b5eb95b"
+        },
+        {
+          "order": 27,
+          "title": "人の品行は高尚ならざるべからざるの論",
+          "incipit": "前条に「方今わが国においてもっとも憂うべきは人民…",
+          "sha256": "5f5b305301087b43ff636bceaa4ebc444397f76dd3d5a6d53eda2131e9f1b877"
+        },
+        {
+          "order": 28,
+          "title": "十三編　怨望の人間に害あるを論ず (1/2)",
+          "incipit": "およそ人間に不徳の筒条多しといえども…",
+          "sha256": "ead4ac82a377780c7e8aaeba73ca349f0c5a93f0975f3fcc4a78c59ea383fcb8"
+        },
+        {
+          "order": 29,
+          "title": "十三編　怨望の人間に害あるを論ず (2/2)",
+          "incipit": "元来人の性情において働きに自由を得ざれば…",
+          "sha256": "de5a655fdaf1f51c42d116851e083e17d900bd3f38ba00f75dee1a5d4d631072"
+        },
+        {
+          "order": 30,
+          "title": "十四編　心事の棚卸し",
+          "incipit": "人の世を渡る有様を見るに、心に思うよりも案外に悪をなし…",
+          "sha256": "a310fade3f6139a96fa3cbc6f1fb4930de4eb97c48ff7e327421e0e06cd16a4f"
+        },
+        {
+          "order": 31,
+          "title": "世話の字の義",
+          "incipit": "世話の字に二つの意味あり、一は「保護」の義なり…",
+          "sha256": "d7af630682f7e23eb8d77e441a028883126eae65703796072fd238425fb25a3c"
+        },
+        {
+          "order": 32,
+          "title": "十五編　事物を疑いて取捨を断ずること (1/2)",
+          "incipit": "信の世界に偽詐多く、疑いの世界に真理多し。",
+          "sha256": "9af07d2bad01ca1b15c6d1fcbd336f75dfde5cc07c68fe86fee65d988ab34177"
+        },
+        {
+          "order": 33,
+          "title": "十五編　事物を疑いて取捨を断ずること (2/2)",
+          "incipit": "仮りに今、東西の風俗習慣を交易して開化先生の評論に付し…",
+          "sha256": "b0040170059f0ee624786894d709f5f7a3ab268bd322c77c8d51d7f443e6e2df"
+        },
+        {
+          "order": 34,
+          "title": "十六編　手近く独立を守ること",
+          "incipit": "不覊独立の語は近来世間の話にも聞くところなれども…",
+          "sha256": "7cb395f6da50b1f62bae62e85cfce56b8b204120be80726b4d6cea60e6233134"
+        },
+        {
+          "order": 35,
+          "title": "心事と働きと相当すべきの論",
+          "incipit": "議論と実業と両ながらそのよろしきを得ざるべからず…",
+          "sha256": "55a1f124845673118e584e76c369df36b0bc5a299131345a0c7ee4b3fd8b5a1f"
+        },
+        {
+          "order": 36,
+          "title": "十七編　人望論 (1/2)",
+          "incipit": "十人の見るところ、百人の指すところにて…",
+          "sha256": "7fe50fe967898a621b179423e33265a44b953dc512192860682f0bbbc42f9652"
+        },
+        {
+          "order": 37,
+          "title": "十七編　人望論 (2/2)",
+          "incipit": "また今日不弁なる人の言を聞くに…",
+          "sha256": "f0e4cee155f234322419095ad736d08bfbec4e80ab79703aa55c29e3c654e9f7"
+        }
+      ]
+    },
     "aozora-000879-000042": {
       "title": "鼻",
       "author": "芥川龍之介",
@@ -2800,7 +5145,7 @@
         "titleReading": "はな",
         "titleKo": "코",
         "authorKo": "아쿠타가와 류노스케",
-        "cover": "ink",
+        "cover": "yamabuki",
         "motif": "ink-steam"
       },
       "literature": {
@@ -2879,7 +5224,7 @@
         "titleReading": "くものいと",
         "titleKo": "거미줄",
         "authorKo": "아쿠타가와 류노스케",
-        "cover": "abyss",
+        "cover": "uguisu",
         "motif": "lotus-thread"
       },
       "literature": {
@@ -2961,7 +5306,7 @@
         "titleReading": "らしょうもん",
         "titleKo": "라쇼몬",
         "authorKo": "아쿠타가와 류노스케",
-        "cover": "rust",
+        "cover": "kon",
         "motif": "rain-gate"
       },
       "literature": {
@@ -3040,7 +5385,7 @@
         "titleReading": "とししゅん",
         "titleKo": "두자춘",
         "authorKo": "아쿠타가와 류노스케",
-        "cover": "peach",
+        "cover": "haijiro",
         "motif": "peach-house"
       },
       "literature": {
@@ -3140,7 +5485,7 @@
         "titleReading": "トロッコ",
         "titleKo": "광차",
         "authorKo": "아쿠타가와 류노스케",
-        "cover": "olive",
+        "cover": "kogecha",
         "motif": "dusk-rails"
       },
       "literature": {
@@ -3217,7 +5562,7 @@
         "titleReading": "さくらのもりのまんかいのした",
         "titleKo": "만개한 벚꽃 숲 아래",
         "authorKo": "사카구치 안고",
-        "cover": "cherry",
+        "cover": "ebi",
         "motif": "blossom-storm",
         "coverTitle": "桜の森の\n満開の下"
       },
@@ -3319,7 +5664,7 @@
         "titleReading": "しせい",
         "titleKo": "문신",
         "authorKo": "다니자키 준이치로",
-        "cover": "amber",
+        "cover": "kaki",
         "motif": "spider-web"
       },
       "literature": {
@@ -3386,6 +5731,127 @@
         }
       ]
     },
+    "aozora-001383-056642": {
+      "title": "陰翳礼讃",
+      "author": "谷崎潤一郎",
+      "level": "N1 심화",
+      "total": 9,
+      "division": "split",
+      "chars": 30887,
+      "display": {
+        "titleReading": "いんえいらいさん",
+        "titleKo": "그늘에 대하여",
+        "authorKo": "다니자키 준이치로",
+        "cover": "kobicha",
+        "motif": "lacquer-candle"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-001383-056642",
+        "personId": "001383",
+        "workId": "56642",
+        "title": "陰翳礼讃",
+        "author": "谷崎潤一郎",
+        "publishedYear": 1933,
+        "authorDeathYear": 1965,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/001383/card56642.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/001383/files/56642_ruby_59574.zip",
+        "sourceSha256": "67a392b507e7021dd75a6280654f7da44423f7393f2a8b6cfc7ab6855843829c",
+        "textSha256": "094bf84ca105d52d2ff73ddccc8ea093af673727656fe281c3f2db1593745818",
+        "attribution": {
+          "author": "谷崎潤一郎",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-15",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/001383/card56642.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「陰翳礼讃　改版」中公文庫、中央公論新社",
+            "1975（昭和50）年10月10日初版発行",
+            "1995（平成7）年9月18日改版発行",
+            "2013（平成25）年1月10日改版24刷発行"
+          ],
+          "parentBook": [
+            "「谷崎潤一郎全集　第二十巻」中央公論社",
+            "1982（昭和57）年12月25日"
+          ],
+          "inputter": "砂場清隆",
+          "proofreader": "門田裕志"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1/9",
+          "incipit": "○",
+          "sha256": "6ab0fffa2d3017e717f975804e00e413c3e017041357c8ddb927094b5ffdba79"
+        },
+        {
+          "order": 2,
+          "title": "2/9",
+          "incipit": "いくら美人の玉の肌でも、お臀や足を人前へ出しては…",
+          "sha256": "066f1a0df1fab46a196490d1b0566b52fbf2ea7b81c3e4bb9ba4a69b122197e3"
+        },
+        {
+          "order": 3,
+          "title": "3/9",
+          "incipit": "紙と云うものは支那人の発明であると聞くが…",
+          "sha256": "91b57967f9f83d5f8cd5df545da5cb19bcdd6fd1bf946e3d8e651fc945483d49"
+        },
+        {
+          "order": 4,
+          "title": "4/9",
+          "incipit": "まことにそれは、畳の上に幾すじもの小川が流れ…",
+          "sha256": "ee4836731825a57d6044faef983076c2431542b1b728a1d71347ff74727e078b"
+        },
+        {
+          "order": 5,
+          "title": "5/9",
+          "incipit": "さればそれらの砂壁がその明るさを乱さないようにと…",
+          "sha256": "8d385419934131c4b52d1f61ed95aeb59b03a201ea57896e8c8056eeaacfe991"
+        },
+        {
+          "order": 6,
+          "title": "6/9",
+          "incipit": "私は前に、蒔絵と云うものは暗い所で見て貰うように…",
+          "sha256": "00b192fc05b85b3d8ad60966bf16af755cec68b93734bda869794997a29bb460"
+        },
+        {
+          "order": 7,
+          "title": "7/9",
+          "incipit": "知っての通り文楽の芝居では…",
+          "sha256": "e22fb2d5e0517a12608f27f531a8bc5bd53e9b21a228b74b4baa6c9d0d0abdcd"
+        },
+        {
+          "order": 8,
+          "title": "8/9",
+          "incipit": "こうしてみると、かつて白皙人種が有色人種を排斥し…",
+          "sha256": "283a51bf13dcfca586d66d4206ef56530eb716628b8442b06ea69fbd641f9063"
+        },
+        {
+          "order": 9,
+          "title": "9/9",
+          "incipit": "彼処は北向きの高台に拠っていて…",
+          "sha256": "663552503993023fc750e85ec26e29d9d4b8a67cd40ebfeb032d5113f56ede69"
+        }
+      ]
+    },
     "aozora-001779-056648": {
       "title": "人間椅子",
       "author": "江戸川乱歩",
@@ -3397,7 +5863,7 @@
         "titleReading": "にんげんいす",
         "titleKo": "인간 의자",
         "authorKo": "에도가와 란포",
-        "cover": "jet",
+        "cover": "enji",
         "motif": "deco-chair"
       },
       "literature": {

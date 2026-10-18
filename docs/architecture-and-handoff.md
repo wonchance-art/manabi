@@ -144,6 +144,26 @@ LEARN-CONTRACT-CATALOG-001(#1399)로 운영 정의를 `supabase/tests/fixtures/m
 이 범위의 SQL은 그 fixture 위 PGlite에서 「적용·복원 후 Korean ready + FSRS 계약 넷 게시=실측 + snapshot 동일」을 단언한 뒤에만
 운영에 낸다(본보기 r3: capability 상수 재게시 뒤 같은 트랜잭션에서 `fsrs_private.settings.contract_hash` 재게시).
 사후 게이트에 `/api/learning/capabilities`뿐 아니라 FSRS snapshot·저장·복습 경로를 넣는다.
+**CI 계약(FINGERPRINT-REPIN-001, 2026-10-17):** `src/lib/__tests__/migrationFingerprintRepin.test.js`가 관측 이후 마이그레이션마다
+이 범위(capability · FSRS core · manual · admission · activity — 범위는 위 fixture의 지문 함수 본문에서 읽는다)를 건드리는 DDL · 권한 문이
+있으면 같은 파일의 재게시 문 · 적용 후 지문 검사 · 이유 있는 `-- fingerprint-scope-optout: <scope> — <이유>` 중 하나를 요구한다(연쇄:
+capability 재게시 → core, activity → admission). #1504 `20261016150000_anon_book_catalog.sql`은 `KNOWN_VIOLATIONS`에 고칠 때까지 남는다.
+동적 짝(FINGERPRINT-REPIN-002): `supabase/tests/post-observation-migrations.mjs`가 같은 fixture 위에 관측 뒤 마이그레이션을 차례로
+적용하며 핀 넷 · 모든 언어 ready를 실제 지문으로 확인한다(CI). 이 검사가 정적 계약이 못 보는 길도 재현했다 — **다른 표가 `profiles`를
+FK로 참조하기만 해도** profiles에 내부 트리거가 붙어 activity(→ admission) 지문이 바뀐다(CONV-LOBBY-001, `20261016061725` → `075000` 복구).
+고칠 재게시 초안은 `node supabase/tests/post-observation-migrations.mjs <초안.sql>`로 이어 적용해 본다(지문 재계산은 `search_path=''`에서).
+운영 상태를 상수로 박은 수리 마이그레이션(191500)은 `supabase/tests/lib/production-constants.mjs`가 그 여섯 상수만 같은 순간의 fixture 값으로 바꿔 적용한다(`korean-capability-repin.mjs`와 공유).
+
+### 4.9-2 LLM 관문은 `src/lib/server/llm.js` 하나 — 제공자 순서는 키가 정한다 (LLM-CLAUDE-001, 2026-10-17 KST)
+호출부는 티어(`light`/`standard`)와 route 라벨만 말하고, 모델 · 폴백 · 형식 변환 · 재시도 · `[llm]` 텔레메트리(키 11개)는 llm.js가 정한다.
+`ANTHROPIC_API_KEY`가 있으면 후보가 **Claude → Gemini(키가 있을 때) → Groq** 순이 된다: 두 티어 모두 `claude-haiku-5-5`, standard 중
+품질 경로(`ANTHROPIC_QUALITY_ROUTES` — 회화 · 작문 첨삭 · 오늘의 문단 · 뜻 검증)는 `claude-sonnet-5-5` → Haiku. 키가 없으면 Claude가 후보에 없어
+Gemini → Groq 요청이 그대로다(llmClaude.test.js가 본문 바이트 동일을 고정). Gemini 전용 형식은 llm.js 안에서만 바뀐다 — contents/parts →
+messages(이미지 · PDF 블록), `responseSchema` → structured output(`output_config.format`, 객체마다 additionalProperties:false · nullable → anyOf null),
+MIME만 있으면 JSON 꼬리 한 줄 + 추출. Claude 4.6+ 계열은 temperature를 거부해 싣지 않는다. 오류 축은 errorMessage.js의 `isServiceConfigError`
+하나(크레딧 부족 400 「credit balance is too low」 · 402 → 서비스 설정, Claude 401/403은 llm.js 안에서만 설정)이고 429 · 529는 혼잡이다.
+**route 라벨이 품질 모델을 고르므로 라벨을 바꾸면 표도 같이 바꾼다**(계약이 잡는다). 음성(`/api/tts`)은 Claude에 음성 API가 없어 Gemini 전용으로
+남고, 실패하면 클라(useTTS)가 브라우저 내장 음성으로 넘긴다. 품질 비교는 /admin/llm-bench(Haiku 5.5 · Sonnet 5.5 · 현행 Gemini).
 
 ### 4.9 ui 이벤트 규약 (행동 계측 — review_events 재사용, 마이그레이션 0)
 예보 탭·푸시 같은 **행동 계측**은 신규 테이블 없이 `review_events`에 `source:'ui'`로 적재한다 (헌법 3 — 신규 테이블 최후의 수단). 형태: `{source:'ui', item_key:'-', correct:true, detail:{qtype, ...}}`. `correct`는 NOT NULL이라 의미 없이 `true`로 채우고, **종류는 `detail.qtype`로 구분**한다(집계는 `detail->>'qtype'` 필터 — `admin_v3_metrics`). qtype 종류: `forecast_tap`(예보 카드 탭), `push_optin`(구독 동의), `push_sent`(발송), `push_open`(알림 클릭). **rung·FSRS 계산은 `source:'vocab'`만 보므로 ui 이벤트와 무간섭**(skillRung/fsrs 필터). **EWMA 다이얼은 필터가 없어 구멍이었다** — studyMaterials의 gradedEvents가 `ui`·`dict`를 제외하고 공급한다(2026-07 정정). 새 source 추가 시 이 세 필터(skillRung·fsrs·gradedEvents)를 모두 점검하라. 저용량(하루 수 건) 전제이며, **월 1만 건을 초과하면 분리 테이블로 승격**한다(레드팀 응답 §7). 적재는 `logReviewEvents`(reviewEvents.js) 재사용, 실패는 조용히 무시.

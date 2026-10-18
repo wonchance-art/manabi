@@ -1,0 +1,93 @@
+{
+  "passed": true,
+  "editionId": "f4a6411c0945bbd3f8767af7",
+  "contentHash": "f4a6411c0945bbd3f8767af72619474fadd45d0fbd0f403463c2c04ccd1b27c5",
+  "assetBundleHash": "16c62d4ae663e23de47b8538d29622c45e59af9d341473120c9023fb2a6d459a",
+  "files": [
+    {
+      "path": "app.js",
+      "sha256": "6061cd705ec59f946187a8b9d65304623ca662faad23826de055dd3d65d55d17",
+      "identical": true
+    },
+    {
+      "path": "bundle.json",
+      "sha256": "705dcc8323ea21cc20b5d7804df0cb87d7e129715aa93ff77f0bbcacca9994af",
+      "identical": true
+    },
+    {
+      "path": "font-audit.json",
+      "sha256": "198e927ff098fe76ac8ecc08b3833f74ab426c56efa20e1eacff55a5b6555b2c",
+      "identical": true
+    },
+    {
+      "path": "font-licenses/NotoCJK-system-copyright.txt",
+      "sha256": "849f4ea9c214fa4ac3593b770c699f387534b11ce671264c1b10d85bdcb5997b",
+      "identical": true
+    },
+    {
+      "path": "fonts/JP.woff",
+      "sha256": "2bca77df48e6fdb1a62ef0fb2e6ecd230ce09cd3a5a09a7c1c86530078e785eb",
+      "identical": true
+    },
+    {
+      "path": "fonts/JPS.woff",
+      "sha256": "c1fa91ad733456c1ec3967d0e92fa9c1c50f6f230a00cbf5c1b4c97d768feb6f",
+      "identical": true
+    },
+    {
+      "path": "fonts/KR.woff",
+      "sha256": "56cd2610755f397d7cdda068c841d2859edbe20d0c212c477e05618a633df297",
+      "identical": true
+    },
+    {
+      "path": "fonts/KRB.woff",
+      "sha256": "77c8b934b8d9c831a25753c16b8363c484626ea405749f4e56b0446516555e7b",
+      "identical": true
+    },
+    {
+      "path": "fonts/KRS.woff",
+      "sha256": "94be6c884ad4a3371d4ff469d878179509e13ddc4ff795d91ea62535062fcd48",
+      "identical": true
+    },
+    {
+      "path": "index.html",
+      "sha256": "a34056b94f99b66f35bc2eae47da2831f119ae356ab7991fc38fc1f2b75bc23d",
+      "identical": true
+    },
+    {
+      "path": "style.css",
+      "sha256": "20ddd0c6fcf04b9059472d4452d897722e760dc4459781f08ee3e2bd78f3f1fe",
+      "identical": true
+    }
+  ],
+  "fontFilesUnchanged": [
+    {
+      "path": "fonts/JP.woff",
+      "unchangedFromCC28": true
+    },
+    {
+      "path": "fonts/JPS.woff",
+      "unchangedFromCC28": true
+    },
+    {
+      "path": "fonts/KR.woff",
+      "unchangedFromCC28": true
+    },
+    {
+      "path": "fonts/KRB.woff",
+      "unchangedFromCC28": true
+    },
+    {
+      "path": "fonts/KRS.woff",
+      "unchangedFromCC28": true
+    }
+  ],
+  "sourceIndexUnchanged": true,
+  "manuscriptWithoutTemplateHashesUnchanged": true,
+  "templateHashChanges": {
+    "n4-web.css": {
+      "before": "b415b48edc2b2ec10307fb51ebec7b0bd0000f5007253e39bf577900ebed751e",
+      "after": "739e4fdcc8371767dff05453c7f5ae380badc662a31d526a6de80c6ef38b4b49"
+    }
+  }
+}

@@ -1,0 +1,912 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "4cffc59fd911cba716da9e9311eedc7aa6f693a5bccca1f276614112fe210f33",
+      "edits": [
+        {
+          "line": 16,
+          "start": 92,
+          "end": 94,
+          "text": "耕助",
+          "reason": "ruby"
+        },
+        {
+          "line": 22,
+          "start": 52,
+          "end": 54,
+          "text": "一郎",
+          "reason": "ruby"
+        },
+        {
+          "line": 32,
+          "start": 36,
+          "end": 38,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 38,
+          "start": 60,
+          "end": 62,
+          "text": "半靴",
+          "reason": "ruby"
+        },
+        {
+          "line": 40,
+          "start": 57,
+          "end": 59,
+          "text": "一郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 56,
+          "start": 14,
+          "end": 17,
+          "text": "又三郎",
+          "reason": "ruby"
+        },
+        {
+          "line": 62,
+          "start": 18,
+          "end": 20,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 62,
+          "start": 38,
+          "end": 40,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 62,
+          "start": 56,
+          "end": 58,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 66,
+          "start": 17,
+          "end": 19,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 66,
+          "start": 46,
+          "end": 48,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 74,
+          "start": 16,
+          "end": 19,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 78,
+          "start": 11,
+          "end": 14,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 88,
+          "start": 8,
+          "end": 11,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "0bc3e344b9a0b425cf0fe1ea7531d5110a6f8db022bbaab501312a409b177792",
+      "edits": [
+        {
+          "line": 18,
+          "start": 57,
+          "end": 60,
+          "text": "下駄箱",
+          "reason": "ruby"
+        },
+        {
+          "line": 20,
+          "start": 13,
+          "end": 16,
+          "text": "下駄箱",
+          "reason": "ruby"
+        },
+        {
+          "line": 62,
+          "start": 16,
+          "end": 19,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 72,
+          "start": 68,
+          "end": 70,
+          "text": "勇治",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "textSha256": "4e680863e7d7a813f943a5075c4bc0d2a7833d2b52abf7a09dc5f66201e2e85d",
+      "edits": [
+        {
+          "line": 20,
+          "start": 4,
+          "end": 7,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 22,
+          "start": 1,
+          "end": 4,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 24,
+          "start": 1,
+          "end": 4,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 24,
+          "start": 5,
+          "end": 8,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 34,
+          "start": 3,
+          "end": 5,
+          "text": "一郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 34,
+          "start": 83,
+          "end": 85,
+          "text": "一郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 34,
+          "start": 131,
+          "end": 133,
+          "text": "一郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 48,
+          "start": 126,
+          "end": 128,
+          "text": "一郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 52,
+          "start": 14,
+          "end": 16,
+          "text": "何間",
+          "reason": "ruby"
+        },
+        {
+          "line": 62,
+          "start": 12,
+          "end": 15,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "textSha256": "dcb771002d6cd61e3bc053d3d681f21e37c730f49cd4c6f42cec502ac2e5d19f",
+      "edits": [
+        {
+          "line": 14,
+          "start": 14,
+          "end": 16,
+          "text": "甲助",
+          "reason": "ruby"
+        },
+        {
+          "line": 38,
+          "start": 25,
+          "end": 27,
+          "text": "一郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 46,
+          "start": 75,
+          "end": 77,
+          "text": "一郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 54,
+          "start": 1,
+          "end": 4,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 56,
+          "start": 8,
+          "end": 11,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 62,
+          "start": 1,
+          "end": 4,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 94,
+          "start": 1,
+          "end": 5,
+          "text": "春日明神",
+          "reason": "ruby"
+        },
+        {
+          "line": 98,
+          "start": 1,
+          "end": 5,
+          "text": "春日明神",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "textSha256": "dc113b71ab356a84b486f07840f2be7163f0983290cf1862df84d0d8986a7cb3",
+      "edits": [
+        {
+          "line": 42,
+          "start": 28,
+          "end": 30,
+          "text": "一郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 46,
+          "start": 4,
+          "end": 7,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 50,
+          "start": 5,
+          "end": 8,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 94,
+          "start": 24,
+          "end": 26,
+          "text": "一郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 96,
+          "start": 30,
+          "end": 32,
+          "text": "一郎",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "textSha256": "5d116274f19eab73e54f8dc71fbd0801e750889dee4a0c6c9151fd3a884c078a",
+      "edits": [
+        {
+          "line": 20,
+          "start": 10,
+          "end": 14,
+          "text": "パチパチ",
+          "reason": "katakana"
+        },
+        {
+          "line": 24,
+          "start": 76,
+          "end": 79,
+          "text": "シイン",
+          "reason": "katakana"
+        },
+        {
+          "line": 46,
+          "start": 17,
+          "end": 20,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 52,
+          "start": 1,
+          "end": 4,
+          "text": "伊佐戸",
+          "reason": "ruby"
+        },
+        {
+          "line": 62,
+          "start": 2,
+          "end": 5,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 64,
+          "start": 0,
+          "end": 3,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 64,
+          "start": 22,
+          "end": 25,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 66,
+          "start": 0,
+          "end": 3,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 66,
+          "start": 58,
+          "end": 61,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 78,
+          "start": 11,
+          "end": 13,
+          "text": "一郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 90,
+          "start": 1,
+          "end": 4,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 92,
+          "start": 4,
+          "end": 6,
+          "text": "一郎",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "textSha256": "dc6ba88b26fe91eb1ed38b5097e9f4e1895ba723b4eb3c628cfb47d746c011e4",
+      "edits": [
+        {
+          "line": 12,
+          "start": 1,
+          "end": 4,
+          "text": "笹長根",
+          "reason": "ruby"
+        },
+        {
+          "line": 38,
+          "start": 9,
+          "end": 11,
+          "text": "一郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 48,
+          "start": 6,
+          "end": 9,
+          "text": "葡萄蔓",
+          "reason": "ruby"
+        },
+        {
+          "line": 48,
+          "start": 19,
+          "end": 21,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 50,
+          "start": 26,
+          "end": 28,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 56,
+          "start": 22,
+          "end": 24,
+          "text": "承吉",
+          "reason": "ruby"
+        },
+        {
+          "line": 60,
+          "start": 43,
+          "end": 45,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 64,
+          "start": 26,
+          "end": 28,
+          "text": "一郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 66,
+          "start": 4,
+          "end": 7,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 66,
+          "start": 34,
+          "end": 37,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 80,
+          "start": 8,
+          "end": 10,
+          "text": "小助",
+          "reason": "ruby"
+        },
+        {
+          "line": 80,
+          "start": 40,
+          "end": 42,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 80,
+          "start": 56,
+          "end": 59,
+          "text": "葡萄藪",
+          "reason": "ruby"
+        },
+        {
+          "line": 88,
+          "start": 40,
+          "end": 42,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 88,
+          "start": 66,
+          "end": 69,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 88,
+          "start": 115,
+          "end": 117,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 92,
+          "start": 29,
+          "end": 31,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 100,
+          "start": 4,
+          "end": 6,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 100,
+          "start": 60,
+          "end": 62,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 100,
+          "start": 86,
+          "end": 88,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 102,
+          "start": 5,
+          "end": 8,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 102,
+          "start": 13,
+          "end": 15,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 106,
+          "start": 0,
+          "end": 2,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 106,
+          "start": 31,
+          "end": 33,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "textSha256": "0d9441e9ef09fd157d4bebfe830201b3058b201fd2745c219f4007f47e5d27b9",
+      "edits": [
+        {
+          "line": 0,
+          "start": 15,
+          "end": 17,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 4,
+          "end": 6,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 31,
+          "end": 33,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 47,
+          "end": 49,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 4,
+          "end": 7,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 4,
+          "end": 7,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 16,
+          "start": 3,
+          "end": 5,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 18,
+          "start": 4,
+          "end": 7,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 22,
+          "start": 3,
+          "end": 5,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 24,
+          "start": 0,
+          "end": 2,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 26,
+          "start": 10,
+          "end": 13,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 28,
+          "start": 40,
+          "end": 44,
+          "text": "パチパチ",
+          "reason": "katakana"
+        },
+        {
+          "line": 28,
+          "start": 63,
+          "end": 65,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 30,
+          "start": 4,
+          "end": 7,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 36,
+          "start": 0,
+          "end": 2,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 74,
+          "start": 0,
+          "end": 2,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 80,
+          "start": 0,
+          "end": 2,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 92,
+          "start": 0,
+          "end": 2,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 94,
+          "start": 1,
+          "end": 3,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 106,
+          "start": 1,
+          "end": 4,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 112,
+          "start": 3,
+          "end": 6,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 118,
+          "start": 1,
+          "end": 4,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "textSha256": "a7ef6c370aec1d349f04d4b98373bdccda2c77afe4bd7f060aeb69b5acc4f75e",
+      "edits": [
+        {
+          "line": 16,
+          "start": 32,
+          "end": 34,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 34,
+          "start": 59,
+          "end": 61,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 50,
+          "start": 1,
+          "end": 4,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 54,
+          "start": 4,
+          "end": 7,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 96,
+          "start": 61,
+          "end": 64,
+          "text": "赤砂利",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "textSha256": "89aafe399ee0d966a7d0802d4c186cb9af3600cb95a0680a12715017dfc93caa",
+      "edits": [
+        {
+          "line": 10,
+          "start": 51,
+          "end": 53,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 24,
+          "end": 26,
+          "text": "一郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 30,
+          "start": 15,
+          "end": 17,
+          "text": "耕助",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 54,
+          "start": 1,
+          "end": 4,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 60,
+          "start": 106,
+          "end": 108,
+          "text": "一郎",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 11,
+      "textSha256": "f2073011a8f6b8c24954bf97c6e0ecbd9bd03c944a0f908ea9dec0043a64522b",
+      "edits": [
+        {
+          "line": 0,
+          "start": 8,
+          "end": 11,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 8,
+          "end": 11,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 32,
+          "start": 19,
+          "end": 21,
+          "text": "一郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 56,
+          "start": 4,
+          "end": 7,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 58,
+          "start": 1,
+          "end": 4,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 60,
+          "start": 4,
+          "end": 7,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 60,
+          "start": 55,
+          "end": 58,
+          "text": "油合羽",
+          "reason": "ruby"
+        },
+        {
+          "line": 72,
+          "start": 48,
+          "end": 50,
+          "text": "単衣",
+          "reason": "ruby"
+        },
+        {
+          "line": 80,
+          "start": 4,
+          "end": 7,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 84,
+          "start": 1,
+          "end": 4,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 94,
+          "start": 18,
+          "end": 21,
+          "text": "又三郎",
+          "reason": "ruby-repeat"
+        }
+      ]
+    }
+  ]
+}

@@ -21,15 +21,12 @@ import { VOCAB_UPSERT, buildVocabRow } from '../vocabIO';
 import { normalizeSlug, slugAliases } from '../world/storageSchema.js';
 import { recordLessonActivity } from './learningActivity';
 import { withLegacyReviewOnlineLock } from '../legacyReviewSync';
+import { REF_READ_KEYS, refCheckKey, refReadKey } from '../refReadStore';
 
 export { normalizeSlug } from '../world/storageSchema.js';
 
-const LESSON_READ_KEYS = {
-  Japanese: 'ja_read_chapters',
-  English: 'en_read_chapters',
-  French: 'fr_read_chapters',
-  Chinese: 'zh_read_chapters',
-};
+// 레퍼런스 진도 키 바탕 — 계정 키는 refReadStore가 만든다(LOCAL-PROGRESS-ACCOUNT-001).
+const LESSON_READ_KEYS = REF_READ_KEYS;
 
 // ────────────────────────────────────────────────────────────────────
 // 공개 인터페이스 (소비 페이지에서 이 함수들만 호출)
@@ -53,7 +50,7 @@ export async function getLessonProgress(userId, { lang, slugs = [], vocabLessons
   if (!lang) return { completedSlugs: [], source: userId ? 'local-fallback' : 'guest' };
 
   const allowed = new Set(slugs.map((slug) => normalizeSlug(slug)).filter(Boolean));
-  const localCompleted = readLocalLessonProgress(lang, allowed, vocabLessons);
+  const localCompleted = readLocalLessonProgress(lang, allowed, vocabLessons, userId);
 
   if (!userId || allowed.size === 0) {
     return {
@@ -175,7 +172,8 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
     );
     // 큐에 못 담았으면 그건 진짜 유실이다 — 성공이라 말하면 안 된다(사생활 모드 등).
     // reviewedAt 동봉(W R2) — undo가 outbox 항목(itemKey + reviewedAt)을 찾아 지우는 열쇠
-    return queued ? { ok: true, queued: true, reviewedAt } : { ok: false, error: new Error('offline-queue-unavailable') };
+    // lost: 서버에도 기기 큐에도 없다 — 화면이 「이 문항 기록을 저장하지 못했어요」를 띄우는 유일한 경우.
+    return queued ? { ok: true, queued: true, reviewedAt } : { ok: false, lost: true, error: new Error('offline-queue-unavailable') };
   }
 
   // 로그인 경로: 복습 이벤트 + SRS + 보상
@@ -215,7 +213,7 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
     // 큐마저 못 쓰는 환경(사생활 모드 등)에서만 실패를 표면화한다 — 콘솔만 남기면
     // 채점 유실이 무증상이 된다(과거 조용한 실패 사고).
     console.error('[progressStore] reviewCompleted 오류:', err);
-    return { ok: false, error: err };
+    return { ok: false, lost: true, error: err };
   }
 }
 
@@ -368,6 +366,7 @@ export function migrateSlugProgressKeys(
   storage = defaultLocalStorage(),
   lang,
   aliases = slugAliases,
+  accountId = null,
 ) {
   if (!storage || !aliases || typeof aliases !== 'object' || Object.keys(aliases).length === 0) {
     return false;
@@ -376,8 +375,8 @@ export function migrateSlugProgressKeys(
   let changed = migrateStoredSlugArray(storage, 'studied_lesson', aliases);
   const readKey = LESSON_READ_KEYS[lang];
   if (readKey) {
-    changed = migrateStoredSlugArray(storage, readKey, aliases) || changed;
-    changed = migrateStoredSlugMap(storage, `${readKey}_check`, aliases) || changed;
+    changed = migrateStoredSlugArray(storage, refReadKey(readKey, accountId), aliases) || changed;
+    changed = migrateStoredSlugMap(storage, refCheckKey(readKey, accountId), aliases) || changed;
   }
   return changed;
 }
@@ -409,11 +408,11 @@ function recordProgressLocal(slug, source, lang) {
   } catch {}
 }
 
-function readLocalLessonProgress(lang, allowed, vocabLessons = []) {
+function readLocalLessonProgress(lang, allowed, vocabLessons = [], accountId = null) {
   const completed = new Set();
   const storage = defaultLocalStorage();
   if (!storage) return completed;
-  migrateSlugProgressKeys(storage, lang);
+  migrateSlugProgressKeys(storage, lang, slugAliases, accountId);
 
   const addStoredArray = (key) => {
     try {
@@ -426,16 +425,18 @@ function readLocalLessonProgress(lang, allowed, vocabLessons = []) {
     } catch {}
   };
 
-  // F2 게스트 이벤트 키.
-  addStoredArray('studied_lesson');
+  // F2 게스트 이벤트 키 — 손님 화면에만. 로그인 계정은 그 계정 기록만 읽는다(LOCAL-PROGRESS-ACCOUNT-001): 손님 완료가 섞이면
+  // 강의 완료 표시 · 코스 지도가 「완료」로 보여 그 계정이 「완료」를 눌러 자기 서버 기록을 만들 수 없었다. 손님 몫은 서버로 올리지 않는다.
+  if (!accountId) addStoredArray('studied_lesson');
 
   // 기존 레퍼런스 진도 키. progressStore가 유지하는 무손실 폴백 계약이다.
   const readKey = LESSON_READ_KEYS[lang];
   if (readKey) {
-    addStoredArray(readKey);
+    // 이 계정(손님이면 옛 키)의 레퍼런스 진도만(LOCAL-PROGRESS-ACCOUNT-001)
+    addStoredArray(refReadKey(readKey, accountId));
 
     try {
-      const checks = JSON.parse(storage.getItem(`${readKey}_check`) || '{}');
+      const checks = JSON.parse(storage.getItem(refCheckKey(readKey, accountId)) || '{}');
       if (checks && typeof checks === 'object' && !Array.isArray(checks)) {
         for (const [slug, result] of Object.entries(checks)) {
           const normalizedSlug = normalizeSlug(slug);

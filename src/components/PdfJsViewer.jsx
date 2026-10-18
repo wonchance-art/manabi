@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Spinner from './Spinner';
 import { reconstructPdfPageText } from '../lib/pdfText';
+import { reducedMotion } from '../lib/reducedMotion';
 
 export const PDFJS_PAGE_WINDOW_RADIUS = 1;
 export const PDFJS_MAX_RENDERED_PAGES = PDFJS_PAGE_WINDOW_RADIUS * 2 + 1;
@@ -196,7 +197,7 @@ export default function PdfJsViewer({ pdfUrl, onPageText, onPageChange, initialP
     const currentPage = pages?.querySelector(`[data-page-number="${pageNumber}"]`);
     if (!pages || !currentPage) return undefined;
     const frame = requestAnimationFrame(() => {
-      pages.scrollTo({ top: currentPage.offsetTop, behavior: 'smooth' });
+      pages.scrollTo({ top: currentPage.offsetTop, behavior: reducedMotion() ? 'auto' : 'smooth' });
     });
     return () => cancelAnimationFrame(frame);
   }, [pageNumber, pageWindow]);

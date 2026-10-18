@@ -15,17 +15,17 @@
 
 import { COURSE_KEY_RE } from './classCourse.js';
 import { parseSchedule } from './classSchedule.js';
+import { TEAM_KEY_RE, isTeamKey, isTeamRoot } from './classTeamRoot.js';
 
-/** 팀 키 — URL 조각. 소문자·숫자·하이픈 1~16자, 하이픈으로 시작하지 않는다(`/class/a`). 생성 후 불변. */
-export const TEAM_KEY_RE = /^[a-z0-9][a-z0-9-]{0,15}$/;
+/** 팀 키(TEAM_KEY_RE) — URL 조각. 소문자·숫자·하이픈 1~16자, 하이픈으로 시작하지 않는다(`/class/a`). 생성 후 불변.
+ *  팀 루트 판정(isTeamRoot)과 함께 의존성 없는 classTeamRoot.js가 정본이다(자료 목록 번들). */
+export { TEAM_KEY_RE, isTeamRoot };
 /** 암호 최소 길이(설계 §0 숫자). */
 export const TEAM_PW_MIN = 6;
 /** 태블릿 판 폴링 간격 — Broadcast가 끊겨도 이 안에 최신(계약 R1 ③). */
 export const BOARD_POLL_MS = 15_000;
 /** Broadcast 채널 이름 — 판은 이 채널의 신호를 「다시 읽어라」로만 쓴다(내용은 RLS 조회가 정본). */
 export const classChannelName = (key) => `class:${key}`;
-
-const isTeamKey = (v) => typeof v === 'string' && TEAM_KEY_RE.test(v);
 
 /** metadata에서 팀 정보 추출(형식 검증) — 아니면 null. 루트·정리본 공용. */
 export function getTeam(metadata) {
@@ -52,10 +52,6 @@ export function getTeam(metadata) {
   return out;
 }
 
-/** 팀 루트 자료인가 — 자료실 목록에서 숨기는 판정(설정 행이 자료로 보이면 안 된다). */
-export function isTeamRoot(material) {
-  return getTeam(material?.processed_json?.metadata)?.root === true;
-}
 
 /** 그날 정리본인가. */
 export function isDayNote(material) {
@@ -280,6 +276,14 @@ export function toPlainText(material) {
 /** 기기 사본을 여는 뷰어 id 접두 — `/viewer/local:<id>?team=<key>`. 네트워크 0 계약의 표식. */
 export const LOCAL_PREFIX = 'local:';
 export function isLocalId(id) { return typeof id === 'string' && id.startsWith(LOCAL_PREFIX); }
+/**
+ * 뷰어 주소의 [id] 조각 → 자료 id. Next 15 useParams는 조각을 인코딩된 채 준다 — 팀 사본 `local:<id>`의 콜론이 `%3A`로 와
+ * isLocalId가 놓치고 서버에 `id=eq.local%3A…`를 물었다(계정 경계 e2e ⑦ 실측, 2026-10-18 KST). 잘못된 인코딩은 그대로 둔다.
+ */
+export function viewerRouteId(raw) {
+  if (typeof raw !== 'string') return raw;
+  try { return decodeURIComponent(raw); } catch { return raw; }
+}
 export function parseLocalId(id) {
   if (!isLocalId(id)) return null;
   const n = Number(id.slice(LOCAL_PREFIX.length));

@@ -6,7 +6,7 @@
  */
 
 import { levelBand } from './writingPrompts';
-import { stripSourceLangInMeaning } from './studySession';
+import { choiceMeaning, choiceSet } from './meaningClean';
 
 const LANG_NAME = { Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' };
 
@@ -409,15 +409,19 @@ export function mapParagraphToItems(para, materials) {
       const isNew = q.focus === 'new-word' ? findNewWord(q.key) : null;
       // normalizeParagraphText가 한자(가나) 인라인 독음은 이미 제거 — 여기선 뜻에 병기된
       // 원어(라틴·순가나 등)까지 정리해 보기·정답·채점 기준을 정화값으로 통일.
-      const answer = stripSourceLangInMeaning(q.answer);
-      const distractors = q.distractors.map(stripSourceLangInMeaning);
+      // 보기 규칙(meaningClean choiceMeaning · choiceSet): 괄호 용례가 문제 낱말을 드러내지 않게, 네 보기에 같은 규칙.
+      // 괄호를 빼서 보기가 겹치면(드묾) 예전처럼 정화값 그대로 낸다 — 문단 문항을 버리지 않는다.
+      const cleanAnswer = choiceMeaning(q.answer, q.key || q.prompt);
+      const cleanDistractors = q.distractors.map(d => choiceMeaning(d, q.key || q.prompt));
+      const set = choiceSet(cleanAnswer, cleanDistractors, q.key || q.prompt) || { correct: cleanAnswer, options: [cleanAnswer, ...cleanDistractors] };
+      const answer = set.correct;
       graded.push({
         uid: uid('v'),
         type: 'vocab-choice',
         word: due
-          ? { ...due.row, meaning: answer }
-          : { word_text: q.key || q.prompt, meaning: answer, furigana: isNew?.pron || null },
-        options: [answer, ...distractors],
+          ? { ...due.row, meaning: answer, meaningFull: q.answer }
+          : { word_text: q.key || q.prompt, meaning: answer, meaningFull: q.answer, furigana: isNew?.pron || null },
+        options: set.options,
         effect: due ? { kind: 'vocab', wordId: due.row.id } : { kind: 'reading', key: `vocab:${q.key}` },
         _prio: 4,
       });

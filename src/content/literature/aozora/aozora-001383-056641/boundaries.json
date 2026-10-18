@@ -1,0 +1,242 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "2e6e79e31fe431ddecca53049d877f304ac73c1e3cdb4429bb9806591a981a12",
+      "edits": [
+        {
+          "line": 0,
+          "start": 73,
+          "end": 75,
+          "text": "華魁",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 17,
+          "end": 20,
+          "text": "駕籠舁",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 7,
+          "end": 10,
+          "text": "刺青師",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 31,
+          "end": 33,
+          "text": "奴平",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 76,
+          "end": 78,
+          "text": "絖地",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 117,
+          "end": 120,
+          "text": "達磨金",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 138,
+          "end": 140,
+          "text": "朱刺",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 29,
+          "end": 32,
+          "text": "刺青師",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 47,
+          "end": 49,
+          "text": "畫工",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 4,
+          "end": 7,
+          "text": "刺青師",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 139,
+          "end": 141,
+          "text": "朱刺",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 14,
+          "start": 14,
+          "end": 17,
+          "text": "知死期",
+          "reason": "ruby"
+        },
+        {
+          "line": 26,
+          "start": 21,
+          "end": 23,
+          "text": "平清",
+          "reason": "ruby"
+        },
+        {
+          "line": 28,
+          "start": 60,
+          "end": 63,
+          "text": "房楊枝",
+          "reason": "ruby"
+        },
+        {
+          "line": 28,
+          "start": 78,
+          "end": 81,
+          "text": "萬年青",
+          "reason": "ruby"
+        },
+        {
+          "line": 30,
+          "start": 12,
+          "end": 14,
+          "text": "藝妓",
+          "reason": "ruby"
+        },
+        {
+          "line": 34,
+          "start": 19,
+          "end": 23,
+          "text": "岩井杜若",
+          "reason": "ruby"
+        },
+        {
+          "line": 38,
+          "start": 28,
+          "end": 30,
+          "text": "此方",
+          "reason": "ruby"
+        },
+        {
+          "line": 42,
+          "start": 12,
+          "end": 14,
+          "text": "平清",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 44,
+          "start": 21,
+          "end": 24,
+          "text": "備後表",
+          "reason": "ruby"
+        },
+        {
+          "line": 46,
+          "start": 26,
+          "end": 28,
+          "text": "平清",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 54,
+          "start": 7,
+          "end": 9,
+          "text": "紂王",
+          "reason": "ruby"
+        },
+        {
+          "line": 54,
+          "start": 10,
+          "end": 12,
+          "text": "寵妃",
+          "reason": "ruby"
+        },
+        {
+          "line": 54,
+          "start": 13,
+          "end": 15,
+          "text": "末喜",
+          "reason": "ruby"
+        },
+        {
+          "line": 54,
+          "start": 25,
+          "end": 29,
+          "text": "瑠璃珊瑚",
+          "reason": "ruby"
+        },
+        {
+          "line": 54,
+          "start": 62,
+          "end": 64,
+          "text": "羅綾",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "aa234be4530aa10b11c04722b3e40bcec1eaf9cf2c4ec654f261b2fa6760580f",
+      "edits": [
+        {
+          "line": 22,
+          "start": 24,
+          "end": 26,
+          "text": "突俯",
+          "reason": "ruby"
+        },
+        {
+          "line": 30,
+          "start": 31,
+          "end": 33,
+          "text": "突俯",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 40,
+          "start": 129,
+          "end": 131,
+          "text": "妙相",
+          "reason": "ruby"
+        },
+        {
+          "line": 42,
+          "start": 56,
+          "end": 59,
+          "text": "刺青師",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 48,
+          "start": 17,
+          "end": 19,
+          "text": "土州",
+          "reason": "ruby"
+        },
+        {
+          "line": 52,
+          "start": 13,
+          "end": 15,
+          "text": "櫓声",
+          "reason": "ruby"
+        }
+      ]
+    }
+  ]
+}

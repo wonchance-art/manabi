@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { buildTokenExplainPrompt, parseTokenExplain, sanitizeTokenExplain } from '@/lib/server/explainToken';
 import { callLLM } from '@/lib/server/llm';
+import { hasPrimaryLLMKey } from '@/lib/server/llmKeys';
 
 /**
  * 오답 해설 "왜?" — 오답 직후(인코딩 최강 순간) 왜 정답이 맞고 학습자의 선택이
@@ -65,8 +66,7 @@ export async function POST(request) {
   }
 
   // Gemini 키가 없어도 Groq만으로 진행 — 하드 실패는 두 키 모두 없을 때만
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey && !process.env.GROQ_API_KEY) {
+  if (!hasPrimaryLLMKey() && !process.env.GROQ_API_KEY) {
     return Response.json(
       { error: { message: '서버에 AI 키가 설정되지 않았어요.' } },
       { status: 500 }

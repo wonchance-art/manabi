@@ -1,0 +1,359 @@
+{
+  "status": "N4_WEB_REVIEW_CANDIDATE_READY_NOT_PUBLISHED",
+  "asOfKST": "2026-10-17",
+  "userTask": "N4 교재 제작. N5 제작 방식 그대로 전수 받아서 진행. 에이전트 풀가동.",
+  "baseCommit": "519045bebe16a05cb8f9aafdc7f31b5a346b23a0",
+  "mainObservedAtCloseout": "0cd6a0ce00e3878d59898fa1618f29bc934beb40",
+  "mainAdvanceImpact": "One unrelated level-list commit; no N4 new paths or pinned N5 assets overlap. No main merge/deployment performed.",
+  "editionId": "642061d6374d2197e85002e2",
+  "contentHash": "642061d6374d2197e85002e2f9df36adc81fb61620efe4c738fe9c064f11b4d4",
+  "assetBundleHash": "b9c11dcbf5121f756b11a6dbd1e19b7d5a79431df57a9e928fe1183dadcfc9fe",
+  "statistics": {
+    "lessons": 42,
+    "sections": 174,
+    "vocabularyOccurrences": 504,
+    "distinctVocabularyHeadwords": 415,
+    "coreExplanationBlocks": 81,
+    "multipleChoiceQuestions": 126,
+    "oralPrompts": 84,
+    "readingTexts": 42,
+    "dialogueChecks": 42,
+    "writingPrompts": 42,
+    "cumulativeSets": 6,
+    "cumulativePrompts": 18,
+    "answerStorageKeys": 312
+  },
+  "inheritance": {
+    "n5ManuscriptEdition": "8a8c1c1fd452773810abaf8c",
+    "canonicalJSONHashRule": true,
+    "n5LearningSequenceAndManuscriptSchema": true,
+    "n5OriginalToolingRecovered": false,
+    "n4RendererExplicitReimplementation": true,
+    "oldN5FilesUnchanged": 175,
+    "legacyN4ReferenceFilesUnchanged": 6
+  },
+  "verification": {
+    "fullVitest": {
+      "command": "npm test -- --maxWorkers=2",
+      "files": 623,
+      "tests": 7474,
+      "passed": true
+    },
+    "changedFilesESLint": "PASS",
+    "structuralArtifact": "PASS",
+    "twoFinalBuilds": {
+      "files": 11,
+      "byteIdentical": true
+    },
+    "independentContent": {
+      "all42LessonHashesMatch": true,
+      "multipleChoice126": true,
+      "dialogueReadingOralWriting": true,
+      "cumulative18": true,
+      "openReportedP0P1P2": 0,
+      "method": "Different author/reviewer agents read source, compare answers and internal source evidence. No human native-speaker certification or additional external model API evaluation."
+    },
+    "browser": {
+      "editionId": "642061d6374d2197e85002e2",
+      "viewports": [
+        320,
+        390,
+        768,
+        1440
+      ],
+      "lessonTopBottomConditions": 336,
+      "horizontalOverflow": 0,
+      "finalReadingBodiesMatch42": true,
+      "cumulative18RenderedAndRevealed": true,
+      "saveReloadKeyboardHistorySearchEditionIsolation": "PASS",
+      "renderedJapaneseKoreanGlyphs": 1134,
+      "fontFaces": 5,
+      "missingRequiredGlyphs": 0,
+      "basis": "Full first-candidate matrix plus final two-lesson/text/font/edition delta; unchanged DOM and runtime evidence reused."
+    }
+  },
+  "sourceManifest": {
+    "base": "519045bebe16a05cb8f9aafdc7f31b5a346b23a0",
+    "files": [
+      {
+        "path": "book.json",
+        "bytes": 22805,
+        "sha256": "b0e8b5ee4e72f2a4ba44a466490adcb7c462ad8524c258fc0b944eafd4daef4b"
+      },
+      {
+        "path": "lessons/u01.json",
+        "bytes": 14562,
+        "sha256": "e45339b0fa40b5d207f804f14bc1e74d24606f119aef11dc3b35af16635534fa"
+      },
+      {
+        "path": "lessons/u02.json",
+        "bytes": 20143,
+        "sha256": "ff3b7cd136e94e7611a09439a4e77e2bf5233c8668069fcf845e9262ac8d5666"
+      },
+      {
+        "path": "lessons/u03.json",
+        "bytes": 20568,
+        "sha256": "8fd56bece99ad44ee7f395c5bb724ca00fad54349b8753545cfe670574ed0d55"
+      },
+      {
+        "path": "lessons/u04.json",
+        "bytes": 20196,
+        "sha256": "d9d7f8ea4b0abd181c4a0539fad07a2252e51545d9b497785e3d93dcc3f3cd5a"
+      },
+      {
+        "path": "lessons/u05.json",
+        "bytes": 20689,
+        "sha256": "7569ce93e2bfb92c12af249fc2ca88187d69e358231158f516ce74ecee27df94"
+      },
+      {
+        "path": "lessons/u06.json",
+        "bytes": 20383,
+        "sha256": "9560d4f2f9b655ced5c985eafe5008db80282b57a306dade6d8996b20f0392e8"
+      },
+      {
+        "path": "lessons/u07.json",
+        "bytes": 20367,
+        "sha256": "3ccc6718143c0999297845e2985bbf6b6b1c37945f762139ed0645c9e086ae36"
+      },
+      {
+        "path": "lessons/u08.json",
+        "bytes": 20681,
+        "sha256": "8cf81328026fcb5e6e905f397cc76f7af4a5ed73f0262bf77e44a501ef2f7d2c"
+      },
+      {
+        "path": "lessons/u09.json",
+        "bytes": 20357,
+        "sha256": "d51b8173e4af91c4be5931683247d2be7ea87b327cf9a2948210116c7f8f83c4"
+      },
+      {
+        "path": "lessons/u10.json",
+        "bytes": 20686,
+        "sha256": "b8182d397c01632486244b92b514a4302fe5dd2c9e465dda6df875dba5a9428c"
+      },
+      {
+        "path": "lessons/u11.json",
+        "bytes": 21104,
+        "sha256": "36f70d954e3fea7b3a5554e738c32cc021e606756d8e1f2aba9aac3b0fef5d4b"
+      },
+      {
+        "path": "lessons/u12.json",
+        "bytes": 20902,
+        "sha256": "27a415ef53eb77e327879d0ef76f76059c020292a1665e363d8a957e40f282c6"
+      },
+      {
+        "path": "lessons/u13.json",
+        "bytes": 20006,
+        "sha256": "e8d0f6f99bb15d4ca430cd7bee536a086c1a614cb54882d2268403b6d3c7413b"
+      },
+      {
+        "path": "lessons/u14.json",
+        "bytes": 20896,
+        "sha256": "d50a1b8e71b1c52d892d792f1cf90d99d12090490e6841227674117d87982619"
+      },
+      {
+        "path": "lessons/u15.json",
+        "bytes": 20687,
+        "sha256": "72dd1b57d711eb3803149614454799a0ddcf8a7e91589a870a1c3291e5c50ba9"
+      },
+      {
+        "path": "lessons/u16.json",
+        "bytes": 20512,
+        "sha256": "b4b34fc8d5b8aa5ef7adc21db301969f3ee4819d86ace14e716dd38949d24e41"
+      },
+      {
+        "path": "lessons/u17.json",
+        "bytes": 20190,
+        "sha256": "d1c14cd3f6e92d36fa0b08bc173f59b712ce0f88e68d672c3492f31867249355"
+      },
+      {
+        "path": "lessons/u18.json",
+        "bytes": 21068,
+        "sha256": "f3ad87c640604aa866c76c4b5cfa73deb5b755bb80f9ffe41f7403905a3fb105"
+      },
+      {
+        "path": "lessons/u19.json",
+        "bytes": 21179,
+        "sha256": "fac29d9bc66785ccb5c838c8c4500ac180fc49b60daa8685b83258a079f5f64c"
+      },
+      {
+        "path": "lessons/u20.json",
+        "bytes": 20694,
+        "sha256": "1c9d9af81bf2ceb11b9fcb7003c8ab4c4471048493f1b89acfe007877407675f"
+      },
+      {
+        "path": "lessons/u21.json",
+        "bytes": 20549,
+        "sha256": "802584cdc094360d80653a935b33f79a463ed75f72438fbd777acbe10d39c9b3"
+      },
+      {
+        "path": "lessons/u22.json",
+        "bytes": 20996,
+        "sha256": "a929da3bada1499a2d66478856cc6316e84c13aab2913f8b9994d4bab6b5b199"
+      },
+      {
+        "path": "lessons/u23.json",
+        "bytes": 20482,
+        "sha256": "41894051954a6e002d04f0b0ca6d6490563b0f5e8e03ddb46143338ba497cc60"
+      },
+      {
+        "path": "lessons/u24.json",
+        "bytes": 20412,
+        "sha256": "2d0b8788f94527fa5e36692c65232de2ec145526c98e1c2864213e40a56bb747"
+      },
+      {
+        "path": "lessons/u25.json",
+        "bytes": 19859,
+        "sha256": "e5d9ba27c9f92d8bdb3bc62dea3f0be577a8ba10bcd10a434682c3f6fbba1798"
+      },
+      {
+        "path": "lessons/u26.json",
+        "bytes": 20375,
+        "sha256": "b0b592c5a6f4d703e92e1875f627558a0f33bc5d9643ac091c919265c7f3c09d"
+      },
+      {
+        "path": "lessons/u27.json",
+        "bytes": 20667,
+        "sha256": "f5324a67a6bd44d56faf15805cceb4e9acb9d530bdb3af2a6a0a0d1d476e89cd"
+      },
+      {
+        "path": "lessons/u28.json",
+        "bytes": 21061,
+        "sha256": "08871c5b87bf3d9c575ec2bec96a2b508a2a9efdd4a4ca120fef59a5f00c0d18"
+      },
+      {
+        "path": "lessons/u29.json",
+        "bytes": 14552,
+        "sha256": "d7e6011cfb0d34a3fcd5fe805cdb2fa95e4be1593d4630d3a62869cddd47a0e5"
+      },
+      {
+        "path": "lessons/u30.json",
+        "bytes": 14711,
+        "sha256": "fc500738215f5db13201638658e0cee7ce9abc702a8db560b36b208fe906dfd3"
+      },
+      {
+        "path": "lessons/u31.json",
+        "bytes": 14098,
+        "sha256": "6b0fcbbcfa47cd8f3d1345c61d6823aa4b3ee1b9f1fb9362a507f3378d36ff99"
+      },
+      {
+        "path": "lessons/u32.json",
+        "bytes": 14244,
+        "sha256": "8356a0e3507d2d8de9e3e900bd94b6a1c9f2b1f95da269305d2d6fffdcd23250"
+      },
+      {
+        "path": "lessons/u33.json",
+        "bytes": 14534,
+        "sha256": "67449c98d80d87ab5341c1188270bbb76688daae553aecb175cc37d1cf4bc390"
+      },
+      {
+        "path": "lessons/u34.json",
+        "bytes": 14725,
+        "sha256": "d74c1c6a11b4da9e7d011afa2b685acf7ffaa63b9adcf8f0da26fc3b20b81f99"
+      },
+      {
+        "path": "lessons/u35.json",
+        "bytes": 15014,
+        "sha256": "a6d568caf34e673c0f91e5debb9c4e433bff397b45e0c0c562cb84c1473bc2dd"
+      },
+      {
+        "path": "lessons/u36.json",
+        "bytes": 15351,
+        "sha256": "66811eb430f5180fbc9caee6371452637a7cdf69d2f18b09d9af75ca29528979"
+      },
+      {
+        "path": "lessons/u37.json",
+        "bytes": 14513,
+        "sha256": "92aa3dba2eb88946bb3c98a09e976b9f07e0a41b8416e9b057fb832db0a9105c"
+      },
+      {
+        "path": "lessons/u38.json",
+        "bytes": 14864,
+        "sha256": "9354b8baa386122d62228649db9cc9c80090d6b9619c1c488bf561c07c818343"
+      },
+      {
+        "path": "lessons/u39.json",
+        "bytes": 14451,
+        "sha256": "33ff6f385f57483f4da0cbb897955c6de43d44a422632dd9b0afbf9cc89358b2"
+      },
+      {
+        "path": "lessons/u40.json",
+        "bytes": 14324,
+        "sha256": "4b018eeeac2fab1510990c217f75409eca970bd4caea3fddaad3dc59f843154c"
+      },
+      {
+        "path": "lessons/u41.json",
+        "bytes": 14845,
+        "sha256": "8b83758017ca171e64b417116ad61d7ba5e43a5996e55b95614770e93b07bc3d"
+      },
+      {
+        "path": "lessons/u42.json",
+        "bytes": 16423,
+        "sha256": "52abbbff51a99485ad2c7c287222885727e4e24e238756ddf1434b04250023f9"
+      },
+      {
+        "path": "syllabus.json",
+        "bytes": 41646,
+        "sha256": "7b96d14f705d5bee7754146f1d208d06fae849a50c489563b94dd2598fb3b9e1"
+      }
+    ],
+    "sourceTreeSHA256": "1ebccb3ab1c1b9a0173b0132346a67d1a36a21e0def1270b50f8cea8e0ed55ac"
+  },
+  "reviewedLessonHashes": {
+    "u01": "e45339b0fa40b5d207f804f14bc1e74d24606f119aef11dc3b35af16635534fa",
+    "u02": "ff3b7cd136e94e7611a09439a4e77e2bf5233c8668069fcf845e9262ac8d5666",
+    "u03": "8fd56bece99ad44ee7f395c5bb724ca00fad54349b8753545cfe670574ed0d55",
+    "u04": "d9d7f8ea4b0abd181c4a0539fad07a2252e51545d9b497785e3d93dcc3f3cd5a",
+    "u05": "7569ce93e2bfb92c12af249fc2ca88187d69e358231158f516ce74ecee27df94",
+    "u06": "9560d4f2f9b655ced5c985eafe5008db80282b57a306dade6d8996b20f0392e8",
+    "u07": "3ccc6718143c0999297845e2985bbf6b6b1c37945f762139ed0645c9e086ae36",
+    "u08": "8cf81328026fcb5e6e905f397cc76f7af4a5ed73f0262bf77e44a501ef2f7d2c",
+    "u09": "d51b8173e4af91c4be5931683247d2be7ea87b327cf9a2948210116c7f8f83c4",
+    "u10": "b8182d397c01632486244b92b514a4302fe5dd2c9e465dda6df875dba5a9428c",
+    "u11": "36f70d954e3fea7b3a5554e738c32cc021e606756d8e1f2aba9aac3b0fef5d4b",
+    "u12": "27a415ef53eb77e327879d0ef76f76059c020292a1665e363d8a957e40f282c6",
+    "u13": "e8d0f6f99bb15d4ca430cd7bee536a086c1a614cb54882d2268403b6d3c7413b",
+    "u14": "d50a1b8e71b1c52d892d792f1cf90d99d12090490e6841227674117d87982619",
+    "u15": "72dd1b57d711eb3803149614454799a0ddcf8a7e91589a870a1c3291e5c50ba9",
+    "u16": "b4b34fc8d5b8aa5ef7adc21db301969f3ee4819d86ace14e716dd38949d24e41",
+    "u17": "d1c14cd3f6e92d36fa0b08bc173f59b712ce0f88e68d672c3492f31867249355",
+    "u18": "f3ad87c640604aa866c76c4b5cfa73deb5b755bb80f9ffe41f7403905a3fb105",
+    "u19": "fac29d9bc66785ccb5c838c8c4500ac180fc49b60daa8685b83258a079f5f64c",
+    "u20": "1c9d9af81bf2ceb11b9fcb7003c8ab4c4471048493f1b89acfe007877407675f",
+    "u21": "802584cdc094360d80653a935b33f79a463ed75f72438fbd777acbe10d39c9b3",
+    "u22": "a929da3bada1499a2d66478856cc6316e84c13aab2913f8b9994d4bab6b5b199",
+    "u23": "41894051954a6e002d04f0b0ca6d6490563b0f5e8e03ddb46143338ba497cc60",
+    "u24": "2d0b8788f94527fa5e36692c65232de2ec145526c98e1c2864213e40a56bb747",
+    "u25": "e5d9ba27c9f92d8bdb3bc62dea3f0be577a8ba10bcd10a434682c3f6fbba1798",
+    "u26": "b0b592c5a6f4d703e92e1875f627558a0f33bc5d9643ac091c919265c7f3c09d",
+    "u27": "f5324a67a6bd44d56faf15805cceb4e9acb9d530bdb3af2a6a0a0d1d476e89cd",
+    "u28": "08871c5b87bf3d9c575ec2bec96a2b508a2a9efdd4a4ca120fef59a5f00c0d18",
+    "u29": "d7e6011cfb0d34a3fcd5fe805cdb2fa95e4be1593d4630d3a62869cddd47a0e5",
+    "u30": "fc500738215f5db13201638658e0cee7ce9abc702a8db560b36b208fe906dfd3",
+    "u31": "6b0fcbbcfa47cd8f3d1345c61d6823aa4b3ee1b9f1fb9362a507f3378d36ff99",
+    "u32": "8356a0e3507d2d8de9e3e900bd94b6a1c9f2b1f95da269305d2d6fffdcd23250",
+    "u33": "67449c98d80d87ab5341c1188270bbb76688daae553aecb175cc37d1cf4bc390",
+    "u34": "d74c1c6a11b4da9e7d011afa2b685acf7ffaa63b9adcf8f0da26fc3b20b81f99",
+    "u35": "a6d568caf34e673c0f91e5debb9c4e433bff397b45e0c0c562cb84c1473bc2dd",
+    "u36": "66811eb430f5180fbc9caee6371452637a7cdf69d2f18b09d9af75ca29528979",
+    "u37": "92aa3dba2eb88946bb3c98a09e976b9f07e0a41b8416e9b057fb832db0a9105c",
+    "u38": "9354b8baa386122d62228649db9cc9c80090d6b9619c1c488bf561c07c818343",
+    "u39": "33ff6f385f57483f4da0cbb897955c6de43d44a422632dd9b0afbf9cc89358b2",
+    "u40": "4b018eeeac2fab1510990c217f75409eca970bd4caea3fddaad3dc59f843154c",
+    "u41": "8b83758017ca171e64b417116ad61d7ba5e43a5996e55b95614770e93b07bc3d",
+    "u42": "52abbbff51a99485ad2c7c287222885727e4e24e238756ddf1434b04250023f9"
+  },
+  "notPerformed": [
+    "N4 registration in existing app/database",
+    "N4 production publication/deployment/merge",
+    "New audio or listening proficiency verification",
+    "PDF publication",
+    "Real-account SRS/content-save integration",
+    "Human learner time/effect or official JLPT exhaustive coverage validation"
+  ],
+  "limitations": [
+    "Original N5 rebuild/package tooling was unavailable; documented contract was reimplemented.",
+    "Some compound text remains without ruby annotation (for example u29 午後五時); no claim of complete furigana coverage. Supplied readings and glyph coverage are separate checks.",
+    "Planned +1/+3/+7 retrieval is distinct from demonstrated lesson-specific retrieval; no retention experiment.",
+    "Vocabulary occurrence/headword counts include N5 review and are not certified new N4 vocabulary totals."
+  ]
+}

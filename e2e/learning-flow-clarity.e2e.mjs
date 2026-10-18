@@ -24,12 +24,64 @@ test('direct book entry has no invented library return; real context survives co
   await f.page.getByRole('link',{name:'첫 과부터 시작하기 →',exact:true}).waitFor();assert.equal(await f.page.getByRole('link',{name:'← 내 서재',exact:true}).count(),0);
   const back='/materials?tab=public&q=school&shown=40&restoreY=520';
   await f.page.goto(`/books/japanese-n5?edition=${edition}&returnTo=${encodeURIComponent(back)}`,{waitUntil:'domcontentloaded',timeout:120000});
-  const discover=f.page.getByRole('link',{name:'← 발견',exact:true});await discover.waitFor();assert.equal(await discover.getAttribute('href'),back);
+  // READER-RETURN-001: 저장 주소(returnTo)는 /materials?tab=public…, 「← 발견」은 옛 주소를 거치지 않고 곧장 함께 읽는 글로.
+  const reading='/discover?view=reading&q=school&shown=40&restoreY=520';
+  const discover=f.page.getByRole('link',{name:'← 발견',exact:true});await discover.waitFor();assert.equal(await discover.getAttribute('href'),reading);
   await f.page.getByRole('link',{name:'첫 과부터 시작하기 →',exact:true}).click();await f.page.locator('#u01-start').waitFor();
-  assert.equal(await f.page.getByRole('link',{name:'← 발견',exact:true}).getAttribute('href'),back);
+  assert.equal(await f.page.getByRole('link',{name:'← 발견',exact:true}).getAttribute('href'),reading);
   const cover=f.page.getByRole('link',{name:'← 책 목차',exact:true});assert.equal(new URL(await cover.getAttribute('href'),f.page.url()).searchParams.get('returnTo'),back);
-  await check(f,'book-context-320');await cover.click();await f.page.getByRole('link',{name:/과 이어 읽기/}).waitFor();assert.equal(await discover.getAttribute('href'),back);
+  await check(f,'book-context-320');await cover.click();await f.page.getByRole('link',{name:/과 이어 읽기/}).waitFor();assert.equal(await discover.getAttribute('href'),reading);
  }finally{await f.context.close();}
+});
+
+// DISCOVER-CHIP-CLS-001: 「함께 읽는 글」 고르기 줄은 첫 그림이 최종 모양이다. 서버 그림은 늘 로그인 확인 전이라 로그인 사람에게도
+// 손님 줄(칩 없음 · 좁은 정렬)을 그렸다가, 확인 뒤 「안 읽은 것만」이 끼고 정렬이 「내 수준 맞춤」만큼 넓어지며 390폭에서 줄이 하나 더 접혔다.
+// 세션 쿠키(이름만)로 서버부터 로그인 줄을 그린다 — 고르기 줄 안의 layout-shift 0 · 손님은 칩 없이 그대로.
+test('public reading filter row has its final shape on first paint for guest and signed-in at 390px',async()=>{
+ for(const guest of [true,false]){
+  const f=await fixture({guest,width:390});try{
+   f.rows.push({id:510,owner_id:'00000000-0000-4000-8000-000000000999',visibility:'public',title:'Une fenêtre ouverte',raw_text:'Bonjour.',processed_json:{status:'completed',metadata:{language:'French'},sequence:[],dictionary:{}},created_at:'2026-01-01'});
+   await f.page.addInitScript(()=>{window.__filterShifts=[];new PerformanceObserver(list=>{for(const e of list.getEntries())for(const s of e.sources||[]){const el=s.node?.nodeType===1?s.node:s.node?.parentElement;if(el?.closest('.materials-filters'))window.__filterShifts.push(`${el.tagName}.${el.className} ${e.value.toFixed(4)}`);}}).observe({type:'layout-shift',buffered:true});});
+   const html=await(await f.context.request.get('/discover?view=reading')).text();
+   assert.equal(html.includes('안 읽은 것만'),!guest,'server HTML draws the signed-in chip only with a session cookie');
+   assert.equal(html.includes('value="fit"'),!guest);
+   await f.page.goto('/discover?view=reading',{waitUntil:'domcontentloaded',timeout:120000});
+   await f.page.getByRole('link',{name:/Une fenêtre ouverte/}).first().waitFor({timeout:60000});await f.page.waitForTimeout(500);
+   assert.equal(await f.page.getByRole('button',{name:'안 읽은 것만',exact:true}).count(),guest?0:1);
+   assert.equal(await f.page.locator('.materials-filters option[value="fit"]').count(),guest?0:1);
+   assert.deepEqual(await f.page.evaluate(()=>window.__filterShifts),[],`${guest?'guest':'signed-in'} filter row moved after first paint`);
+   await check(f,`reading-filters-${guest?'guest':'signed'}-390`);
+  }finally{await f.context.close();}
+ }
+});
+
+// DISCOVER-CHIP-CLS-001 후속 — 서재 도구(/materials?tools=1)도 같은 세션 쿠키 판정으로 로그인 고르기 줄을 서버부터 그리고,
+// 확인 중인 로그인 사람에게는 손님 빈 상태(「로그인하고 자료 올리기」) 대신 기존 목록 골격을 보인다. 쿠키 없는 손님은 지금 그대로.
+// 골격은 확인 뒤 끼는 줄(「PDF 목록 확인 중…」)에 밀려 내려가지 않는다 — PDF가 목록보다 먼저 끝나 그 줄이 빠지며 올라가는 것은 이전부터의 순서 문제라 따로 본다.
+test('signed-in reading and tools lists never flash the guest empty state or a late chip; guests keep today\'s server HTML',async()=>{
+ const views=[{path:'/discover?view=reading',owner:'00000000-0000-4000-8000-000000000999',visibility:'public',title:'Une fenêtre ouverte',guestServer:'아직 함께 읽는 글이 없어요.',signedNot:'아직 함께 읽는 글이 없어요.'},{path:'/materials?tools=1',owner:'00000000-0000-4000-8000-000000000172',visibility:'private',title:'Ma fenêtre privée',guestServer:'skeleton-grid',signedNot:'자료는 계정에 저장돼요.'}];
+ for(const view of views)for(const guest of [true,false]){
+  const f=await fixture({guest,width:390});try{
+   f.rows.push({id:520,owner_id:view.owner,visibility:view.visibility,title:view.title,raw_text:'Bonjour.',processed_json:{status:'completed',metadata:{language:'French'},sequence:[],dictionary:{}},created_at:'2026-01-01'});
+   await f.page.addInitScript(()=>{window.__guestFlash=false;window.__filterShifts=[];window.__skeletonShifts=[];
+    new MutationObserver(()=>{if(document.querySelector('.materials-page .empty-state')?.textContent.includes('로그인하고 자료 올리기'))window.__guestFlash=true;}).observe(document,{subtree:true,childList:true,characterData:true});
+    new PerformanceObserver(list=>{for(const e of list.getEntries())for(const s of e.sources||[]){const el=s.node?.nodeType===1?s.node:s.node?.parentElement;if(el?.closest('.materials-filters'))window.__filterShifts.push(`${el.tagName}.${el.className} ${e.value.toFixed(4)}`);if(el?.closest('.skeleton-grid')&&s.currentRect.y>s.previousRect.y)window.__skeletonShifts.push(`${el.className} ${e.value.toFixed(4)} ${s.previousRect.y}->${s.currentRect.y}`);}}).observe({type:'layout-shift',buffered:true});});
+   const html=await(await f.context.request.get(view.path)).text();
+   const label=`${guest?'guest':'signed-in'} ${view.path}`;
+   assert.equal(html.includes('안 읽은 것만'),!guest,`${label}: server chip`);
+   if(guest)assert.ok(html.includes(view.guestServer),`${label}: guest server HTML unchanged`);
+   else{assert.ok(!html.includes('로그인하고 자료 올리기')&&!html.includes(view.signedNot),`${label}: no guest empty state in server HTML`);assert.ok(html.includes('skeleton-grid'),`${label}: list skeleton while sign-in is checked`);}
+   await f.page.goto(view.path,{waitUntil:'domcontentloaded',timeout:120000});
+   if(guest)await f.page.locator('.materials-page .empty-state, .materials-page .feature-grid').first().waitFor({timeout:60000});
+   else await f.page.getByRole('link',{name:new RegExp(view.title)}).first().waitFor({timeout:60000});
+   await f.page.waitForTimeout(500);
+   assert.equal(await f.page.getByRole('button',{name:'안 읽은 것만',exact:true}).count(),guest?0:1,`${label}: final chip`);
+   if(!guest)assert.equal(await f.page.evaluate(()=>window.__guestFlash),false,`${label}: guest empty state flashed`);
+   assert.deepEqual(await f.page.evaluate(()=>window.__filterShifts),[],`${label}: filter row moved after first paint`);
+   assert.deepEqual(await f.page.evaluate(()=>window.__skeletonShifts),[],`${label}: list skeleton pushed down while loading`);
+   await check(f,`reading-pending-${guest?'guest':'signed'}-${view.path.includes('tools')?'tools':'reading'}-390`);
+  }finally{await f.context.close();}
+ }
 });
 
 test('final chapter offers review preparation for this book and exact edition, without starting a session',async()=>{
@@ -92,6 +144,29 @@ test('language is the first review scope axis: list chips, count and start follo
   await languages.getByRole('button',{name:'일본어 1',exact:true}).waitFor();assert.equal(await languages.getByRole('button',{name:'일본어 1',exact:true}).getAttribute('aria-pressed'),'true');
   assert.equal(await f.page.evaluate(()=>localStorage.getItem('vocab_reviewScope')),'lang=French');
  }finally{await f.context.close();}
+});
+
+// REVIEW-SHELF-CLS-001: 복습실 첫 그림은 「오늘」 카드 · 문법 칸이 정해진 뒤 한 번에 — 「복습 준비 중…」(25px)이 「오늘 2개」(628px)로 자라며
+// 아래 문법 · 담은 표현 칸을 밀었다(390 CLS 0.13). FSRS 목록 실패 · 입장 준비 실패는 정해진 것이라 골격이 남지 않는다.
+test('review room appears at once after the today card and grammar settle; FSRS or admission failure still reveals the room at 390px',async()=>{
+ const words=['駅','学校'].map((text,i)=>({id:`00000000-0000-4000-8000-${String(i+31).padStart(12,'0')}`,word_text:text,meaning:i?'학교':'역',language:'Japanese',interval:1,ease_factor:5,repetitions:1,next_review_at:'2026-01-02',last_reviewed_at:'2026-01-01',created_at:'2026-01-01'}));
+ for(const failure of [null,'fsrs','admission']){
+  const f=await fixture({width:390,reducedMotion:'no-preference'});try{
+   await f.context.route('**/rest/v1/user_vocabulary*',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(words)}));
+   await f.context.route('**/rest/v1/vocabulary_with_exclusions*',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(words.map(word=>({...word,is_excluded:false})))}));
+   await f.context.route('**/api/learning/vocabulary**',r=>{const url=new URL(r.request().url());if(url.searchParams.get('view')!=='learning')return r.fallback();return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(legacyLearningSnapshot({actorId:'00000000-0000-4000-8000-000000000172',rows:words,known:[],exclusions:[],fields:url.searchParams.get('fields')}))});});
+   if(failure==='fsrs')await f.context.route('**/api/learning/fsrs',r=>r.fulfill({status:500,contentType:'application/json',body:'{"ok":false}'}));
+   if(failure==='admission')await f.context.route('**/api/learning/admission',r=>r.fulfill({status:503,contentType:'application/json',body:'{"ok":false,"code":"learning_admission_unavailable"}'}));
+   await f.context.addInitScript(()=>{window.__roomShifts=[];new PerformanceObserver(list=>{for(const e of list.getEntries())for(const s of e.sources||[]){const el=s.node?.nodeType===1?s.node:s.node?.parentElement;if(el?.closest('.manabi-review-room'))window.__roomShifts.push(`${el.tagName}.${el.className} ${e.value.toFixed(4)} ${Math.round(s.previousRect.y)}->${Math.round(s.currentRect.y)}`);}}).observe({type:'layout-shift',buffered:true});});
+   await f.page.goto('/vocab',{waitUntil:'domcontentloaded',timeout:120000});
+   if(!failure)await f.page.getByRole('button',{name:'표현 2개 복습 →',exact:true}).waitFor();
+   if(failure==='fsrs')await f.page.getByText('복습 일정을 불러오지 못했어요.',{exact:false}).waitFor();
+   await f.page.locator('.review-dash .review-room-grammar').waitFor();await f.page.waitForTimeout(600);
+   assert.equal(await f.page.locator('.manabi-review-room .skeleton-grid').count(),0,`${failure||'data'}: skeleton left`);
+   if(!failure)assert.deepEqual(await f.page.evaluate(()=>window.__roomShifts),[],'review room moved after first paint');
+   await check(f,`review-room-first-paint-${failure||'data'}-390`);
+  }finally{await f.context.close();}
+ }
 });
 
 // REV-SCOPE-R1B-1: 한 줄(두 엔진 공통 카드) · 앞면 읽기 없음 · 뒷면 뜻 + 읽기 · 처음 보는 표현 · 이어 하기(새로고침) · 끝 화면 ·

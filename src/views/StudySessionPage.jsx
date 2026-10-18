@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { seededShuffle } from '../lib/seededShuffle';
 import Button from '../components/Button';
@@ -11,7 +12,11 @@ import { JaText } from './refShared';
 import { supabase } from '../lib/supabase';
 import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { useAuth } from '../lib/AuthContext';
-import { gradeGrammarReview, ratingFromScore } from '../lib/grammarSrs';
+import { addRefRead, setRefCheck } from '../lib/refReadStore';
+import { clearStudySource, readStudySource } from '../lib/studySourceHandoff';
+import { useToast } from '../lib/ToastContext';
+import { createGrammarRetry, gradeGrammarReview, ratingFromScore, sendGrammarGradeKeepalive } from '../lib/grammarSrs';
+import { sessionTokenFor } from '../lib/keepalive';
 import { createReviewEventBatcher, logReviewEvents } from '../lib/reviewEvents';
 import { hasVapidKey, isPushSupported, isIosNeedsInstall, getSubscriptionState, subscribePush } from '../lib/push';
 import { sentenceIncludesWord } from '../lib/skillRung';
@@ -24,6 +29,12 @@ import { fetchWeeklyReportRows } from '../lib/weeklyReportRows';
 import { splitSentenceAroundWord } from '../lib/constants';
 import { mapParagraphToItems } from '../lib/studyParagraph';
 import { ARCHIVED_TEXTBOOK_NOTICE, learnerHref } from '../lib/bookNavigation';
+import { authEntryHref } from '../lib/authRedirect';
+import { focusIfFree, focusItemHead, ignoreHeldKey } from '../lib/focusAfterAction';
+import { STUDY_OFFLINE_LINE } from '../lib/studyUnavailable';
+
+/** 문법 일정을 끝내 못 보냈다(재시도 상한 · 오프라인으로 화면 떠남) — copy-standard 실패 + 보존 여부 한 문장. */
+const GRAMMAR_NOT_SAVED = '문법 복습 일정을 저장하지 못했어요. 이 문법은 다음 학습에 다시 나와요.';
 
 /** 로컬 날짜 YYYY-MM-DD — 격일 산출 문항 노출 판정용 */
 function ymdLocal(d) {
@@ -49,13 +60,25 @@ export default function StudySessionPage({
   session = null, paragraphMaterials = null, pregenerated = null, warmup = [], encounterItems = [], dial = 'normal',
   sourceMode = false,
   lang, langCode, langName, readKey,
-  band = 'beginner', languages = [], signedOut = false, shuffleSeed = '',
+  band = 'beginner', languages = [], signedOut = false, shuffleSeed = '', sessionUserId = null,
 }) {
+  // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
+  const signInHref = authEntryHref(usePathname());
   // 입문 레벨(N5 등) 일본어 배려 — 답변 중에도 요미가나·후리가나를 보여준다.
   const kanjiCare = band === 'beginner' && langCode === 'ja';
   // 문단 발음 상시 노출은 입문에 한정 — 비입문은 문장 탭으로 지연 공개(한자 읽기 인출 기회 확보).
   const alwaysShowPron = band === 'beginner';
-  const { user, fetchProfile } = useAuth();
+  const { user, fetchProfile, loading: authLoading } = useAuth();
+  // 세션 계정 — 서버가 확인한 사용자로 시작할 때 고정한다. 도중에 로그아웃하거나 다른 계정이 되면 기록을 멈추고
+  // 로그인을 안내한다(로그인 없는 기록은 기기 로컬로 새고, 다른 계정이면 남의 기록이 된다). 기록하는 곳은 recorderRef만 본다.
+  const sessionUserRef = useRef(sessionUserId || null);
+  if (!sessionUserRef.current && user?.id) sessionUserRef.current = user.id;
+  const authLost = !!sessionUserRef.current && !authLoading && user?.id !== sessionUserRef.current;
+  const recorderRef = useRef(null);
+  recorderRef.current = authLost ? null : sessionUserRef.current;
+  const [lostRecordUid, setLostRecordUid] = useState(null); // 큐에도 못 담은 문항(첫 시도 uid — 재출제 -r에는 다시 띄우지 않는다) — 인라인 한 줄
+  const [grammarGaveUp, setGrammarGaveUp] = useState(false); // 문법 일정 재시도 상한을 넘겨 버렸다 — 한 줄 알림
+  const toast = useToast();
   const { speak: ttsSpeak, supported: ttsSupported } = useTTS();
   // 프리페치된 문단이 있으면 API 없이 즉시 매핑 (마운트 전 결정) — 로딩 화면 스킵.
   const pregenMapped = useMemo(
@@ -118,7 +141,21 @@ export default function StudySessionPage({
   // 문항 확정(settle) 시점 사이드이펙트용 refs (렌더 유발 없이 동기 접근)
   const batcherRef = useRef(null);                 // review_events 마이크로배치 큐
   const grammarAggRef = useRef(new Map());         // slug → { srs, right, total } 챕터별 누적
-  const recordedRef = useRef(new Set());           // 이미 기록한 orig uid (중복 방지)
+  // 문법 재스케줄 보류함 — 저장 실패(오프라인 등)한 챕터 채점을 남겨 online · 세션 종료 · 화면 떠남 · pagehide 때 다시 보낸다.
+  // 같은 화면 안(메모리)까지다. 기기 큐(reviewOutbox · fsrsOperationOutbox)를 검토했지만 싣지 않았다 — reviewOutbox는
+  // 어휘 이벤트 행(flush가 review_events로 insert) · user_vocabulary FSRS 전용이고 같은 저장소의 다른 형식을 kind 제외 목록으로
+  // 거르는 소비자(pendingReviews · flush · 단어장 대기 수)가 여럿이라 새 형식이 이벤트로 새고, fsrsOperationOutbox는 서버 FSRS
+  // 작업(UUID 어휘 카드) 계약이다. 대신 오프라인이면 횟수를 쓰지 않고, 닫힐 때는 keepalive로 보내고, 못 보내고 떠나면 알린다.
+  const pendingGrammarRef = useRef(null);
+  const grammarGiveUpsRef = useRef(0);            // 포기한 문법 일정 수 — 화면을 떠난 뒤(알림 영역이 없을 때) 포기도 토스트로 알린다
+  if (!pendingGrammarRef.current) {
+    pendingGrammarRef.current = createGrammarRetry({ grade: gradeGrammarReview, onGiveUp: () => { grammarGiveUpsRef.current += 1; setGrammarGaveUp(true); } });
+  }
+  const grammarTokenRef = useRef(null);            // keepalive용 세션 계정 토큰 { userId, token } — 보류가 생길 때 받아 둔다
+  const heldSettlesRef = useRef([]);               // 로그인이 풀린 동안 확정한 문항 — 같은 세션 계정이 돌아오면 그때 기록한다
+  const heldEventsRef = useRef([]);                // 같은 이유로 멈춰 둔 review_events(어시스트 · 해설 · 산출)
+  const effectsHeldRef = useRef(false);            // 로그인이 풀린 채 끝나 못 한 세션 종료 이펙트
+  const recordedRef = useRef(new Set());           // 이미 확정한 orig uid (중복 방지) — 기록했거나, 로그인이 풀려 heldSettlesRef에 보류했다
   const itemShownAtRef = useRef(Date.now());       // 현재 문항 표시 시각 (rt_ms 계산)
   const assistSeenRef = useRef(new Set());         // 재료 단어 어시스트 열람 기록(세션당 단어별 1회)
   const listenAutoRef = useRef(null);              // 듣기 자동재생 1회 가드(uid 기준)
@@ -135,7 +172,7 @@ export default function StudySessionPage({
     // 텍스트가 없으면(직접 URL 진입 등) 일반 세션으로 조용히 진행.
     let sourceText = '';
     if (sourceMode) {
-      try { sourceText = localStorage.getItem(`study_source_${lang}`) || ''; } catch {}
+      sourceText = readStudySource(lang, user?.id ?? null); // 이 계정이 30분 안에 넘긴 글만(lib/studySourceHandoff)
     }
     (async () => {
       try {
@@ -165,7 +202,7 @@ export default function StudySessionPage({
         const data = await res.json().catch(() => ({}));
         if (res.ok && data.paragraph) {
           // 생성 성공 → 내 자료 소재는 1회용이므로 즉시 소거(재사용·다음 세션 오염 방지).
-          if (sourceText) { try { localStorage.removeItem(`study_source_${lang}`); } catch {} }
+          if (sourceText) clearStudySource(lang);
           const mapped = mapParagraphToItems(data.paragraph, paragraphMaterials);
           if (mapped.gradedCount >= 3) {
             // 워밍업 뒤에 문단 문항 + 만남 인지 문항을 이어붙이고 집계 기준을 갱신
@@ -202,6 +239,42 @@ export default function StudySessionPage({
 
   // 문항 전환 시 팝오버·듣기 실패표시·오답 해설 리셋
   useEffect(() => { setActiveWord(null); setListenFailed(false); setExplainState(null); }, [item?.uid]);
+  // FOCUS-AFTER-ACTION-001 C3 — 답하면 보기 · 입력칸이 잠겨 초점이 사라졌다. 피드백에 들어서면 「계속 →」/「결과 보기 →」로 잇는다
+  // (산출 문항은 자체 버튼이라 제외). 초점이 세션 화면 밖이면 뺏지 않는다. 화면 아래쪽 버튼이라 preventScroll(focusIfFree).
+  const continueRef = useRef(null);
+  useEffect(() => {
+    if (phase !== 'feedback' || item?.type === 'produce-writing') return;
+    const button = continueRef.current;
+    focusIfFree(button, button?.closest('.page-container'));
+  }, [phase, item?.uid, item?.type]);
+  // STUDY-FOCUS-001 — 「계속 →」을 누르면 그 단추가 사라져 초점이 body로 떨어졌고, 키보드로는 머리글 메뉴부터 2~12번 Tab을
+  // 눌러야 다음 문항에 닿았다(합성 로그인 실측 2026-10-17 KST). 새 문항의 질문/제목 머리(headId · data-item-head)로 잇는다 —
+  // 첫 답 컨트롤로 보내면 설명 · 문단 카드에서 내용을 건너뛴다(리뷰 차단). 다른 곳에 살아 있는 초점은 뺏지 않는다(focusIfFree).
+  // 첫 문항(화면 진입)은 화면 이동 초점(제목, routeFocus)에, 온보딩 「시작하기 →」 뒤 첫 문항은 StudyOnboarding에 맡긴다.
+  const itemRef = useRef(null);
+  const headId = useId();
+  const firstItemUidRef = useRef(item?.uid);
+  useEffect(() => {
+    if (phase !== 'answer' || !item?.uid || item.uid === firstItemUidRef.current) return;
+    const root = itemRef.current;
+    focusItemHead(root, root?.closest('.page-container'));
+  }, [phase, item?.uid]);
+  // 오프라인 동안만 진행 막대 아래 한 줄(STUDY-OFFLINE-LINE, 오너 「권장대로」 2026-10-17 KST) — 답은 기기 보류함에 남았다가
+  // 연결되면 저장된다(Layout의 online 동기화). 서버 렌더 · 첫 그림은 온라인으로 두고 붙은 뒤 navigator.onLine을 읽는다.
+  const [offline, setOffline] = useState(false);
+  useEffect(() => {
+    const sync = () => setOffline(typeof navigator !== 'undefined' && navigator.onLine === false);
+    sync();
+    window.addEventListener('online', sync); window.addEventListener('offline', sync);
+    return () => { window.removeEventListener('online', sync); window.removeEventListener('offline', sync); };
+  }, []);
+  // 마지막 「결과 보기 →」도 누르면 사라진다 — 결과 화면 제목(「세션 완료」)으로 잇는다.
+  const resultHeadingRef = useRef(null);
+  useEffect(() => {
+    if (!finished) return;
+    const heading = resultHeadingRef.current;
+    focusIfFree(heading, heading?.closest('.page-container'));
+  }, [finished]);
 
   // 재료 단어 팝오버 — 바깥 탭 시 닫기(트리거·팝오버는 stopPropagation으로 유지)
   useEffect(() => {
@@ -341,20 +414,56 @@ export default function StudySessionPage({
     return () => clearTimeout(t);
   }, [parking]);
 
-  // ── 탭 닫힘·백그라운드 전환 시 잔여 이벤트 flush + 중도 이탈 스트릭(best-effort) ──
+  // ── 탭 닫힘·백그라운드 전환 시 잔여 이벤트 flush + 문법 보류분 keepalive + 중도 이탈 스트릭(best-effort) ──
   useEffect(() => {
     function onPageHide() {
+      // 세션 계정일 때만 — 계정이 바뀐 뒤 flush하면 A의 이벤트가 B의 토큰으로 나가 RLS에 막혀 조용히 사라진다.
+      // 알려진 한계(리뷰 N3, 2026-10-17 KST): 로그인이 풀린 채(authLost) 탭을 닫으면 보류한 문항(heldSettlesRef) ·
+      // 이벤트(heldEventsRef) · 배치에 남은 이벤트 · 문법 보류분은 보낼 계정 토큰이 없어 여기서 함께 사라진다.
+      // 화면에는 「로그인이 필요해요」 배너가 떠 있다. 문구를 바꾸려면 오너 목업이 먼저라 지금은 동작만 이대로 둔다.
+      const recorder = recorderRef.current;
+      if (!recorder) return;
       batcherRef.current?.flush();
+      beaconPendingGrammar(recorder);
       // 1문항 이상 답변했고 아직 fireEffects 전이면 활동 기록 시도(스트릭 RPC는 멱등).
-      if (!streakSentRef.current && recordedRef.current.size > 0 && user?.id) {
+      if (!streakSentRef.current && recordedRef.current.size > 0) {
         streakSentRef.current = true;
-        recordActivity(user.id, () => fetchProfile?.(user.id));
+        recordActivity(recorder, () => fetchProfile?.(recorder));
       }
     }
     window.addEventListener('pagehide', onPageHide);
     return () => window.removeEventListener('pagehide', onPageHide);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  // ── 연결이 돌아오면 보류한 문법 재스케줄을 다시 보낸다. 화면을 떠날 때(「홈으로」 등)도 한 번 —
+  // 그 시도가 끝난 뒤에도 남았거나(오프라인 · 서버 오류 · 토큰 만료 · 로그인 풀림) 그 시도에서 포기했으면, 보류함은 이 화면과
+  // 함께 사라지므로 조용히 버리지 않고 전역 토스트로 알린다(연결 여부와 무관 — 알림 영역은 화면과 함께 사라졌다). ──
+  // retryPendingGrammar는 ref만 읽어 첫 렌더의 함수로도 지금 계정을 본다.
+  useEffect(() => {
+    window.addEventListener('online', retryPendingGrammar);
+    return () => {
+      window.removeEventListener('online', retryPendingGrammar);
+      const box = pendingGrammarRef.current, giveUpsBefore = grammarGiveUpsRef.current;
+      if (box.size() === 0) return;
+      Promise.resolve(retryPendingGrammar()).catch(() => {}).then(() => {
+        if (box.size() > 0 || grammarGiveUpsRef.current > giveUpsBefore) toast(GRAMMAR_NOT_SAVED, 'warning', 6000);
+      });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── 로그인이 풀렸다가 같은 세션 계정이 돌아왔다 — 멈춰 둔 기록을 그 계정에 보낸다 ──
+  // recorderRef는 세션 계정이 아니면 null이라, 다른 계정으로 로그인해서는 여기 오지 않는다(A의 기록이 B에 가지 않는다).
+  useEffect(() => {
+    const recorder = recorderRef.current;
+    if (authLost || !recorder) return;
+    for (const entry of heldSettlesRef.current.splice(0)) writeSettle(recorder, entry);
+    const events = heldEventsRef.current.splice(0);
+    if (events.length) { const batcher = getBatcher(); for (const event of events) batcher.add(event); }
+    if (effectsHeldRef.current) { effectsHeldRef.current = false; fireEffects(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLost]);
 
   // 문법 due 챕터별 문항 수 (재출제 제외) — 챕터 마지막 문항 판정에 사용
   const grammarCounts = useMemo(
@@ -414,13 +523,15 @@ export default function StudySessionPage({
     next();
   }
 
-  /** review_events 마이크로배치 큐 — user 확정 후 1회 생성 */
+  /** review_events 마이크로배치 큐 — 세션 계정으로 1회 생성 */
   function getBatcher() {
-    if (!batcherRef.current && user?.id) {
-      batcherRef.current = createReviewEventBatcher(user.id, { size: 4 });
-    }
+    const recorder = recorderRef.current;
+    // 로그인이 풀렸거나 계정이 바뀌었다 — 보내지 않고 멈춰 둔다(같은 세션 계정이 돌아오면 복귀 효과가 보낸다).
+    if (!recorder) return sessionUserRef.current ? heldEventsBox : null;
+    if (!batcherRef.current) batcherRef.current = createReviewEventBatcher(recorder, { size: 4 });
     return batcherRef.current;
   }
+  const heldEventsBox = { add: event => { if (event) heldEventsRef.current.push(event); } };
 
   /**
    * 세션에 등장한 어휘 단어(word_text) 목록 — 산출 문장 포함 판정용.
@@ -531,30 +642,50 @@ export default function StudySessionPage({
    */
   function recordSettle(ok, it, result = null, response = null) {
     if (!it?.effect) return;
-    const rt_ms = Date.now() - itemShownAtRef.current;
-    const eff = it.effect;
+    // 문법 챕터 정답 누적은 기록 여부와 무관하게 먼저 센다 — 로그인이 풀린 동안의 문항도 챕터 분모를 채워야
+    // 돌아왔을 때 그 챕터가 재스케줄된다.
+    const entry = { ok, it, result, response, rtMs: Date.now() - itemShownAtRef.current, chapter: tallyGrammar(ok, it) };
+    // 세션 계정이 아니면(로그아웃 · 계정 바뀜) 지금은 쓰지 않는다 — 기기 로컬 · 남의 계정으로 새지 않게.
+    // 버리지도 않는다: 같은 세션 계정이 돌아오면 복귀 효과가 writeSettle로 그 계정에 기록한다.
+    const recorder = recorderRef.current;
+    if (!recorder) { heldSettlesRef.current.push(entry); return; }
+    writeSettle(recorder, entry);
+  }
 
-    // 답안 완료 기록은 F2 단일 경계로 보낸다. 게스트도 같은 호출을 거쳐 로컬 폴백한다.
+  /** 문법 due 문항 정답 누적 — 챕터 마지막 문항이면 그 챕터의 재스케줄 채점({ srs, rating })을 돌려준다. */
+  function tallyGrammar(ok, it) {
+    if (it.effect.kind !== 'grammar-due') return null;
+    const slug = it.effect.srs.slug;
+    // 챕터별 정답 누적 → 마지막 문항에서 챕터 정답률로 재스케줄
+    const agg = grammarAggRef.current.get(slug) || { srs: it.effect.srs, right: 0, total: 0 };
+    agg.total++; if (ok) agg.right++;
+    grammarAggRef.current.set(slug, agg);
+    if (agg.total < (grammarCounts[slug] || 0)) return null;
+    return { srs: agg.srs, rating: ratingFromScore(agg.right, agg.total) };
+  }
+
+  /** 확정한 문항을 세션 계정에 기록한다(recordSettle · 복귀 효과 공통). */
+  function writeSettle(recorder, { ok, it, result, response, rtMs, chapter }) {
+    // 답안 완료 기록은 F2 단일 경계로 보낸다. recorder는 세션 계정뿐이다 — 게스트 · 로그인 풀림은 여기 오지 않는다
+    // (게스트는 이 화면 대신 signedOut 안내를 본다).
     // response는 settle의 pickedValue다 — 여기까지 오지 않아 v2-A R1 진단이 유형까지만
     // 볼 수 있었다(글자 어긋남은 응답이 있어야 난다). 오답 적재는 브리지가 판단한다.
-    recordStudyReviewCompleted(user?.id, {
+    recordStudyReviewCompleted(recorder, {
       correct: ok,
       item: it,
       lang,
-      rtMs: rt_ms,
+      rtMs,
       result,
       response,
-    });
+    }).then(saved => {
+      // 서버에도 큐에도 못 담았을 때만 알린다(큐에 담긴 기록은 연결이 돌아오면 간다). 첫 시도 uid로 — 재출제(-r)에는 띄우지 않는다.
+      if (saved?.lost) setLostRecordUid(it.uid);
+    }, () => { /* 저장 거절(아는 단어 등)은 기존처럼 조용히 — 세션은 이어진다. */ });
 
-    if (eff.kind === 'grammar-due' && user?.id) {
-      const slug = eff.srs.slug;
-      // 챕터별 정답 누적 → 마지막 문항에서 챕터 정답률로 재스케줄
-      const agg = grammarAggRef.current.get(slug) || { srs: eff.srs, right: 0, total: 0 };
-      agg.total++; if (ok) agg.right++;
-      grammarAggRef.current.set(slug, agg);
-      if (agg.total >= (grammarCounts[slug] || 0)) {
-        gradeGrammarReview({ ...agg.srs, user_id: user.id }, ratingFromScore(agg.right, agg.total));
-      }
+    if (chapter) {
+      // 실패하면 보류함에 남는다(같은 챕터는 마지막 채점만) — 결과를 버리면 일정이 조용히 사라진다.
+      pendingGrammarRef.current.submit({ ...chapter.srs, user_id: recorder }, chapter.rating)
+        .then(saved => { if (!saved) rememberGrammarToken(recorder); }, () => {});
     }
   }
 
@@ -573,7 +704,7 @@ export default function StudySessionPage({
         setQueue(prev => [...prev, { ...item, uid: `${orig}-r` }]);
       }
     }
-    // 재출제(-r)는 기록·SRS 제외. 첫 시도만 1회 기록.
+    // 재출제(-r)는 기록·SRS 제외. 첫 시도만 1회 — 로그인이 풀렸으면 recordSettle이 버리지 않고 보류한다.
     if (!isRetryItem && !recordedRef.current.has(orig)) {
       recordedRef.current.add(orig);
       recordSettle(ok, item, result, pickedValue);
@@ -606,13 +737,13 @@ export default function StudySessionPage({
    * 재시도 가능. 자동 담김 금지 — 수집은 명시적 선택.
    */
   async function saveEncounterWord() {
-    if (!user?.id || !item?.word?.word_text || encounterSaveState) return;
+    if (!recorderRef.current || !item?.word?.word_text || encounterSaveState) return;
     setEncounterSaveState('saving');
     try {
       // 세션 단어는 이미 사전 표제어라 surface/base가 갈리지 않는다 — 그래도 조립은
       // 정본으로 보내, 나중에 필드가 늘 때 이 자리만 뒤처지지 않게 한다.
       const { error } = await supabase.from('user_vocabulary').upsert([buildVocabRow({
-        userId: user.id,
+        userId: recorderRef.current,
         surface: item.word.word_text,
         base: item.word.word_text,
         reading: item.word.furigana,
@@ -635,11 +766,12 @@ export default function StudySessionPage({
    * @returns {Promise<boolean>} 저장 성공 여부(결과 화면 안내 문구 표시용)
    */
   async function saveUserNext(text, score) {
-    if (!user?.id) return false;
+    const recorder = recorderRef.current;
+    if (!recorder) return false;
     try {
       const { data, error: loadError } = await supabase.from('study_paragraphs')
         .select('id, paragraph')
-        .eq('user_id', user.id).eq('lang', lang).eq('status', 'used')
+        .eq('user_id', recorder).eq('lang', lang).eq('status', 'used')
         .order('used_at', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false }).limit(1);
       if (loadError) return false;
@@ -735,13 +867,13 @@ export default function StudySessionPage({
 
     // 세션에서 쓴 문장을 writing_practice에도 남긴다 — 작문(/writing) 히스토리에 노출.
     // WritingStudioPage.persist(:171)와 동일한 컬럼·형태. 세션 흐름은 막지 않되 저장 오류를 기록한다.
-    if (user?.id) {
+    if (recorderRef.current) {
       const allErrors = (feedback.sentences || []).flatMap(
         s => (s.errors || []).map(e => ({ ...e, sentence: s.original }))
       );
       const pat = item.targetPattern?.pattern || '';
       void persistWritingPractice({
-        user_id: user.id,
+        user_id: recorderRef.current,
         sentence: textVal,
         corrected: feedback.sentences.map(s => s.corrected).join('\n'),
         feedback: feedback.summary,
@@ -765,6 +897,29 @@ export default function StudySessionPage({
     next();
   }
 
+  /** 보류한 문법 재스케줄 재시도 — 세션 계정의 채점만 보낸다(오프라인이면 보류함이 횟수를 쓰지 않고 기다린다). */
+  function retryPendingGrammar() {
+    const owner = recorderRef.current;
+    if (!owner) return Promise.resolve();
+    return pendingGrammarRef.current.retry(row => row.user_id === owner).catch(() => {});
+  }
+
+  /** keepalive용 토큰을 미리 받아 둔다 — pagehide에서는 기다릴 수 없다. 세션 계정의 토큰일 때만(정본 sessionTokenFor). */
+  function rememberGrammarToken(owner) {
+    sessionTokenFor(owner).then((token) => {
+      if (token && recorderRef.current === owner) grammarTokenRef.current = { userId: owner, token };
+    }, () => {});
+  }
+
+  /** 페이지가 닫힐 때 문법 보류분을 keepalive로 — 토큰이 없으면 보통 재시도로. 둘 다 세션 계정 몫만. */
+  function beaconPendingGrammar(owner) {
+    const held = grammarTokenRef.current;
+    if (held?.userId !== owner) { retryPendingGrammar(); return; }
+    pendingGrammarRef.current.beacon(row => row.user_id === owner,
+      (row, rating, { reviewedAt }) => sendGrammarGradeKeepalive(row, rating, { reviewedAt, accessToken: held.token }))
+      .catch(() => {});
+  }
+
   /**
    * 세션 종료 사이드이펙트 — 1회.
    * 문항별 기록(이벤트·어휘 FSRS·문법 재스케줄)은 settle 시점에 이미 처리됐고,
@@ -772,7 +927,10 @@ export default function StudySessionPage({
    *  신규 챕터 통과 판정 · 새 단어 자동 등록 · 잔여 이벤트 flush · 활동 기록.
    */
   function fireEffects() {
-    if (effectsFired.current || !user?.id) return;
+    const recorder = recorderRef.current;
+    if (effectsFired.current) return;
+    // 로그인이 풀린 채 끝났다 — 버리지 않고 같은 세션 계정이 돌아오면 복귀 효과가 한 번 다시 부른다.
+    if (!recorder) { effectsHeldRef.current = true; return; }
     effectsFired.current = true;
     const results = Object.values(firstResults);
 
@@ -784,18 +942,12 @@ export default function StudySessionPage({
       const passedNow = isChapterPassed(right, newItems.length);
       const checkResult = { right, total: newItems.length, passed: passedNow, at: Date.now() };
 
-      // localStorage 진도 기록 (게스트 호환)
-      try {
-        const map = JSON.parse(localStorage.getItem(`${readKey}_check`) || '{}');
-        map[meta.slug] = checkResult;
-        localStorage.setItem(`${readKey}_check`, JSON.stringify(map));
-        const reads = new Set(JSON.parse(localStorage.getItem(readKey) || '[]'));
-        reads.add(meta.slug);
-        localStorage.setItem(readKey, JSON.stringify([...reads]));
-      } catch {}
+      // 기기 진도 기록 — 세션 계정의 키에(LOCAL-PROGRESS-ACCOUNT-001 · lib/refReadStore)
+      setRefCheck(readKey, recorder, meta.slug, checkResult);
+      addRefRead(readKey, recorder, meta.slug);
 
       // progressStore: 진도 + SRS + 보상 일괄 처리
-      recordLessonCompleted(user.id, {
+      recordLessonCompleted(recorder, {
         lang,
         slug: meta.slug,
         source: 'lesson',
@@ -805,7 +957,7 @@ export default function StudySessionPage({
     // 오늘 배운 새 단어 → progressStore로 통합 (FSRS 복습 루프 진입)
     if (genStatus === 'ready' && paragraphMaterials?.newWords?.length) {
       for (const w of paragraphMaterials.newWords) {
-        recordNewWord(user.id, {
+        recordNewWord(recorder, {
           word: w.word,
           pron: w.pron || '',
           meaning: w.meaning || '',
@@ -815,10 +967,11 @@ export default function StudySessionPage({
       }
     }
 
-    // 잔여 이벤트 flush (마지막 마이크로배치)
+    // 잔여 이벤트 flush (마지막 마이크로배치) · 보류한 문법 재스케줄 재시도
     batcherRef.current?.flush();
+    retryPendingGrammar();
     // recordActivity는 progressStore 내부에서 처리됨
-    fetchProfile?.(user.id);
+    fetchProfile?.(recorder);
   }
 
   const renderMain = (text, pron) =>
@@ -844,7 +997,7 @@ export default function StudySessionPage({
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20 }}>
           로그인하면 어휘·문법·독해가 섞인 맞춤 세션으로 매일 이어서 학습할 수 있어요.
         </p>
-        <Link href="/auth" className="btn btn--primary btn--md">로그인 →</Link>
+        <Link href={signInHref} className="btn btn--primary btn--md">로그인 →</Link>
         <p style={{ marginTop: 14 }}>
           <Link href="/lessons" className="study-textlink">로그인 없이 교재 둘러보기 →</Link>
         </p>
@@ -885,6 +1038,22 @@ export default function StudySessionPage({
     );
   }
 
+  // 문법 일정 포기 한 줄 — 알림 영역은 늘 그려 두고 내용만 바꾼다(내용과 함께 생기는 role=status는 화면 낭독기가 놓칠 수 있다).
+  // 진행 · 결과 화면 루트의 같은 자리(첫 자식)에 두어 화면이 바뀌어도 같은 영역이 이어진다.
+  const grammarNotice = (
+    <div role="status" aria-live="polite">
+      {grammarGaveUp && <p className="study-record-lost">{GRAMMAR_NOT_SAVED}</p>}
+    </div>
+  );
+
+  // 로그인이 풀렸거나 다른 계정이 됐다 — 기록은 멈췄다. 세션 화면 · 결과 화면 맨 위에 안내(copy-standard 「로그인 필요」).
+  const authBanner = authLost && (
+    <div className="study-auth-lost" role="alert">
+      <span>로그인이 필요해요</span>
+      <Link href={signInHref} className="btn btn--primary btn--sm">로그인</Link>
+    </div>
+  );
+
   // ── 결과 화면 ──
   if (finished) {
     const newItems = Object.values(firstResults).filter(r => r.item.effect?.kind === 'new-chapter');
@@ -920,6 +1089,8 @@ export default function StudySessionPage({
 
     return (
       <div className="page-container" style={{ maxWidth: 640 }}>
+        {grammarNotice}
+        {authBanner}
         {/* 1. 요약 */}
         <div style={{ textAlign: 'center', margin: '28px 0 20px' }}>
           <div style={{
@@ -928,7 +1099,7 @@ export default function StudySessionPage({
             border: `6px solid ${pct >= 80 ? 'var(--accent)' : pct >= 50 ? 'var(--warning)' : 'var(--danger)'}`,
             fontSize: '1.5rem', fontWeight: 700,
           }}>{pct}%</div>
-          <h1 style={{ fontSize: '1.3rem', fontWeight: 700 }}>세션 완료</h1>
+          <h1 ref={resultHeadingRef} tabIndex={-1} style={{ fontSize: '1.3rem', fontWeight: 700 }}>세션 완료</h1>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: 6, fontWeight: 700 }}>
             강해진 기억 {rightCount} · 곧 다시 만날 {wrong.length}
             {skipped.size > 0 && ` · 건너뜀 ${skipped.size}`}
@@ -1040,14 +1211,14 @@ export default function StudySessionPage({
   // ── 진행 화면 ──
   return (
     <div className="page-container" style={{ maxWidth: 640 }}>
+      {grammarNotice}
+      {authBanner}
       {/* 헤더 — 나가기 · 진행바 · 언어 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '10px 0 20px' }}>
         <Link href="/home" aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem', padding: '6px 10px', margin: '-6px -4px -6px -10px' }}>✕</Link>
-        <div style={{ flex: 1, height: 10, borderRadius: 'var(--radius-full)', background: 'var(--bg-secondary)', overflow: 'hidden' }}>
-          <div style={{
-            height: '100%', borderRadius: 'var(--radius-full)', background: 'var(--accent)',
-            width: `${progressPct}%`, transition: 'width 0.3s ease',
-          }} />
+        <div className="study-progress" role="progressbar" aria-label="세션 진행" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPct}
+          aria-valuetext={`${progressDone}/${progressTotal}`}>
+          <div className="study-progress__fill" style={{ width: `${progressPct}%` }} />
         </div>
         <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700, flexShrink: 0 }}>
           {isRetry ? '오답 다시 풀기'
@@ -1056,6 +1227,12 @@ export default function StudySessionPage({
         </span>
       </div>
 
+      {/* 오프라인 한 줄 — 알림 영역은 늘 두고 내용만 넣는다(A11Y-SWEEP-001). 보이는 줄은 한 번만 읽히게 aria-hidden. */}
+      <span className="sr-only" role="status">{offline ? STUDY_OFFLINE_LINE : ''}</span>
+      {offline && <p className="study-offline-line" aria-hidden="true">{STUDY_OFFLINE_LINE}</p>}
+
+      {/* 문항 한 장 — uid마다 새로 그려 짧게 내려앉는다(.study-item, 0.16초 · 모션 축소 시 없음). */}
+      <div key={item.uid} ref={itemRef} className="study-item">
       {isRetry && (
         <div style={{ fontSize: '0.75rem', color: 'var(--warning)', fontWeight: 700, marginBottom: 8 }}>↻ 다시 도전</div>
       )}
@@ -1067,7 +1244,7 @@ export default function StudySessionPage({
       {/* ── 오늘의 문단 (읽기 카드) ── */}
       {item.type === 'paragraph' && (
         <div className="card" style={{ padding: '22px 20px' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-light)', marginBottom: 14 }}>
+          <div id={headId} tabIndex={-1} data-item-head="" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-light)', marginBottom: 14 }}>
             {paragraphMaterials?.weekly ? '이번 주 헷갈린 것들' : '오늘의 문단'}
           </div>
           {item.preQuestion?.q && (
@@ -1161,7 +1338,7 @@ export default function StudySessionPage({
       {/* ── 티칭 카드 ── */}
       {item.type === 'teach' && (
         <div className="card" style={{ padding: '22px 20px' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-light)', marginBottom: 10 }}>
+          <div id={headId} tabIndex={-1} data-item-head="" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-light)', marginBottom: 10 }}>
             새로 배우기 · {item.chapter.level} #{item.chapter.order} {item.chapter.title}
           </div>
           <div className="fr-pattern" style={{ borderColor: 'var(--primary)' }}>
@@ -1202,13 +1379,13 @@ export default function StudySessionPage({
             </div>
           )}
           <div className="fr-quiz__prompt" lang={langCode} style={{ fontSize: '1.3rem' }}>
-            {item.word.word_text}
+            <span id={headId} tabIndex={-1} data-item-head="">{item.word.word_text}</span>
             <RefSpeak text={item.word.word_text} lang={lang} size="xs" />
           </div>
           {item.word.furigana && (kanjiCare || phase === 'feedback') && (
             <div className="fr-quiz__sub">{item.word.furigana}</div>
           )}
-          <div className="fr-quiz__opts fr-quiz__opts--col">
+          <div className="fr-quiz__opts fr-quiz__opts--col" role="group" aria-labelledby={headId}>
             {prepared.options.map(opt => (
               <button key={opt} type="button" disabled={phase === 'feedback'}
                 className={`fr-quiz__opt ${phase === 'feedback' ? (opt === item.word.meaning ? 'is-correct' : opt === picked ? 'is-wrong' : 'is-locked') : ''}`}
@@ -1217,6 +1394,10 @@ export default function StudySessionPage({
               </button>
             ))}
           </div>
+          {/* 보기는 낱말이 드러나지 않게 줄인 꼴(meaningClean choiceMeaning)이다 — 답한 뒤에는 뜻 전문(용례 포함)을 보여 준다. */}
+          {phase === 'feedback' && item.word.meaningFull && item.word.meaningFull !== item.word.meaning && (
+            <div className="fr-quiz__answer">{item.word.meaningFull}</div>
+          )}
         </div>
       )}
 
@@ -1226,7 +1407,7 @@ export default function StudySessionPage({
           {item.type === 'vocab-cloze' ? (
             <>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 6 }}>빈칸에 알맞은 단어를 입력하세요</div>
-              <div className="fr-quiz__prompt" lang={langCode}>
+              <div className="fr-quiz__prompt" lang={langCode} id={headId} tabIndex={-1} data-item-head="">
                 {(() => {
                   const { parts, term } = splitSentenceAroundWord(item.sentence.main, item.word.word_text, item.word.furigana);
                   const blankLen = Math.max(2, (term || item.word.word_text || '').length);
@@ -1240,17 +1421,17 @@ export default function StudySessionPage({
               <div className="fr-quiz__sub">“{item.word.meaning}”</div>
             </>
           ) : item.type === 'vocab-typing' ? (
-            <div className="fr-quiz__prompt">“{item.word.meaning}”</div>
+            <div className="fr-quiz__prompt" id={headId} tabIndex={-1} data-item-head="">“{item.word.meaning}”</div>
           ) : (
             <div className="fr-quiz__prompt" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              🔊 듣고 입력하세요 <RefSpeak text={item.word.word_text} lang={lang} size="sm" />
+              <span id={headId} tabIndex={-1} data-item-head="">🔊 듣고 입력하세요</span> <RefSpeak text={item.word.word_text} lang={lang} size="sm" />
               {listenFailed && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>재생이 안 되면 ▷</span>}
             </div>
           )}
           <input
             type="text" className="form-input" lang={langCode} value={typing}
             onChange={e => setTyping(e.target.value)} disabled={phase === 'feedback'}
-            placeholder={langName + '로 입력'}
+            placeholder={langName + '로 입력'} aria-describedby={headId}
             enterKeyHint="go"
             onKeyDown={e => {
               if (e.key !== 'Enter') return;
@@ -1301,6 +1482,7 @@ export default function StudySessionPage({
           lang={lang}
           langCode={langCode}
           renderMain={renderMain}
+          headId={headId}
         />
       )}
 
@@ -1311,14 +1493,14 @@ export default function StudySessionPage({
             {item.sentence.isKoreanPrompt ? '내용 이해' : '독해'}
           </div>
           {item.sentence.isKoreanPrompt ? (
-            <div className="fr-quiz__prompt">{item.sentence.main}</div>
+            <div className="fr-quiz__prompt" id={headId} tabIndex={-1} data-item-head="">{item.sentence.main}</div>
           ) : (
             <div className="fr-quiz__prompt" lang={langCode}>
-              {renderMain(item.sentence.main, (kanjiCare || phase === 'feedback') ? item.sentence.pron : null)}
+              <span id={headId} tabIndex={-1} data-item-head="">{renderMain(item.sentence.main, (kanjiCare || phase === 'feedback') ? item.sentence.pron : null)}</span>
               <RefSpeak text={item.sentence.main} lang={lang} size="xs" />
             </div>
           )}
-          <div className="fr-quiz__opts fr-quiz__opts--col">
+          <div className="fr-quiz__opts fr-quiz__opts--col" role="group" aria-labelledby={headId}>
             {prepared.options.map(opt => (
               <button key={opt} type="button" disabled={phase === 'feedback'}
                 className={`fr-quiz__opt ${phase === 'feedback' ? (opt === item.correct ? 'is-correct' : opt === picked ? 'is-wrong' : 'is-locked') : ''}`}
@@ -1343,7 +1525,7 @@ export default function StudySessionPage({
           </div>
           {item.serial ? (
             <>
-              <div className="fr-quiz__prompt" style={{ fontSize: '1rem', lineHeight: 1.6 }}>
+              <div className="fr-quiz__prompt" id={headId} tabIndex={-1} data-item-head="" style={{ fontSize: '1rem', lineHeight: 1.6 }}>
                 주인공이 다음에 어떻게 할까요? 이야기의 다음 문장을 <span style={{ fontWeight: 700 }}>{langName}</span>로 한 문장 쓰세요.
               </div>
               {item.context && (
@@ -1360,7 +1542,7 @@ export default function StudySessionPage({
             </>
           ) : (
             <>
-              <div className="fr-quiz__prompt" style={{ fontSize: '1rem', lineHeight: 1.6 }}>
+              <div className="fr-quiz__prompt" id={headId} tabIndex={-1} data-item-head="" style={{ fontSize: '1rem', lineHeight: 1.6 }}>
                 이야기를 이어서 — <span lang={langCode} style={{ fontWeight: 700 }}>{item.targetPattern.pattern}</span>
                 {item.targetPattern.patternKo && <span style={{ color: 'var(--text-muted)' }}> ({item.targetPattern.patternKo})</span>}
                 을(를) 써서 한 문장
@@ -1379,7 +1561,7 @@ export default function StudySessionPage({
                 className="form-input" lang={langCode} value={typing}
                 onChange={e => setTyping(e.target.value.slice(0, 200))}
                 placeholder={`${langName}로 1~2문장`}
-                rows={2} maxLength={200} autoFocus
+                rows={2} maxLength={200} autoFocus aria-describedby={headId}
                 style={{ marginTop: 12, fontSize: '1.05rem', resize: 'vertical', width: '100%' }}
               />
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10 }}>
@@ -1391,9 +1573,11 @@ export default function StudySessionPage({
             </>
           )}
 
+          {/* 첨삭(AI — 긴 작업) 알림 — 영역은 늘 두고 내용만, 끝 상태(받지 못함)까지 같은 영역에(LOADING-ANNOUNCE-002). 보이는 줄은 한 번만 읽히게 숨긴다. */}
+          <span className="sr-only" role="status">{phase === 'feedback' && produceState?.status === 'grading' ? '첨삭 확인 중…' : phase === 'feedback' && produceState?.status === 'error' ? '첨삭을 받지 못했어요 — 다음에 다시 해 봐요' : ''}</span>
           {phase === 'feedback' && produceState?.status === 'grading' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14 }}>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>첨삭 확인 중…</p>
+              <p className="study-produce__pending" aria-hidden="true" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>첨삭 확인 중…</p>
               <button type="button" onClick={skipProduceGrading} className="study-textlink">
                 건너뛰고 마치기
               </button>
@@ -1431,7 +1615,7 @@ export default function StudySessionPage({
           })()}
 
           {phase === 'feedback' && produceState?.status === 'error' && (
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: 14 }}>
+            <p className="study-produce__error" aria-hidden="true" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: 14 }}>
               첨삭을 받지 못했어요 — 다음에 다시 해 봐요
             </p>
           )}
@@ -1481,14 +1665,23 @@ export default function StudySessionPage({
         </div>
       )}
 
+      {/* 서버에도 기기 큐에도 못 담은 기록 — 그 문항 첫 시도에만 한 줄(세션은 막지 않는다). 재출제(-r)는 uid가 달라 다시 띄우지 않는다.
+          알림 영역은 문항마다 먼저 그려 두고 내용만 넣는다 — 내용과 함께 생기는 role=status는 화면 낭독기가 놓칠 수 있다. */}
+      <div role="status" aria-live="polite">
+        {phase === 'feedback' && lostRecordUid === item.uid && (
+          <p className="study-record-lost">이 문항 기록을 저장하지 못했어요. 세션은 계속할 수 있어요.</p>
+        )}
+      </div>
+
       {/* 계속 버튼 (산출 문항은 자체 버튼 사용) */}
       {phase === 'feedback' && item.type !== 'produce-writing' && (
-        <div style={{ marginTop: 18 }}>
-          <Button onClick={next} style={{ width: '100%' }}>
+        <div style={{ marginTop: 18 }} onKeyDown={ignoreHeldKey}>
+          <Button ref={continueRef} onClick={next} style={{ width: '100%' }}>
             {idx + 1 >= queue.length ? '결과 보기 →' : '계속 →'}
           </Button>
         </div>
       )}
+      </div>
 
       {/* 언어 전환 (세션 시작 전 첫 문항에서만) */}
       {idx === 0 && phase === 'answer' && languages.length > 1 && (

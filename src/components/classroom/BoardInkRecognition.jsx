@@ -76,6 +76,8 @@ export default function BoardInkRecognition({rootId,team,capture,isCurrent,onPla
       </>}
     </div>
     <footer>{error&&<p role="alert">{error}</p>}{message&&<p role="status">{message}</p>}
+      {/* 필기 인식(AI — 긴 작업) 알림 — 버튼 글자만 바뀌던 것을 버튼 밖 상시 영역에도(LOADING-ANNOUNCE-002). */}
+      <span className="sr-only" role="status">{busy?'선택한 필기를 읽는 중…':''}</span>
       {!rows?<button className="board-ink-primary" disabled={busy} onClick={recognize}>{busy?'선택한 필기를 읽는 중…':error?'다시 인식':'이 부분 인식하기'}</button>:<button className="board-ink-primary" disabled={!values.length||applying} onClick={()=>place(needsPage)}>{applying?'놓는 중…':needsPage?`새 판에 ${values.length}개 놓기`:`선택한 ${values.length}개 판에 놓기`}</button>}
       <small>{busy?'다른 부분에 필기를 계속해도 돼요. 닫으면 결과를 적용하지 않아요.':rows?'수업 기록·개인 단어장에 자동으로 저장하지 않아요.':'전체 판·교재는 보내지 않아요.'}</small>
     </footer></>}

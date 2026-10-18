@@ -57,13 +57,15 @@ async function open(material,{guest=false,dict='ok',prefs={focusMode:false,autoS
  await f.context.route(/\/api\/analyze(\/korean)?$/,r=>r.fulfill({contentType:'application/json',body:JSON.stringify({results:[]})}));
  // 픽스처 뒤에 등록한 경로가 먼저 받는다 — morpheme_dictionary 요청만 세고 합성 행으로 답한다.
  // PR ③: 공유 detail_text 지연 조회(select=detail_text)는 f.detail로 따로 센다 — f.single은 카드 사전 행(뜻·읽기) 단건 조회만.
- f.bulk=[];f.single=[];f.detail=[];f.requests=[];
+ f.bulk=[];f.single=[];f.detail=[];f.requests=[];f.positions=[];f.sequence=material.sequence;
  // AE-R2 PR②: 카드가 0.3초 열려 있으면 그 줄 번역 선처리(/api/gemini, purpose 'viewer-sentence-prefetch')가 1회 나간다 —
  // 쓰기도 단어 설명 AI도 아니라 아래 「쓰기 0」·「AI 호출 0」 단언에서 그것만 뺀다(다른 AI 호출은 그대로 잡는다).
  f.page.on('request',req=>{
   let purpose;
   if(/\/api\/gemini/.test(req.url()))try{purpose=req.postDataJSON()?.purpose;}catch{purpose=undefined;}
   f.requests.push({method:req.method(),url:req.url(),...(purpose===SENTENCE_PREFETCH?{purpose}:{})});
+  // 위치 저장(reading_progress upsert)의 토큰 번호 — positionSaved가 「그 탭의」 저장인지 가린다. f.requests 항목 모양은 그대로.
+  if(req.method()==='POST'&&req.url().includes('/rest/v1/reading_progress')){let idx;try{const b=req.postDataJSON();idx=(Array.isArray(b)?b[0]:b)?.last_token_idx;}catch{idx=undefined;}f.positions.push({at:f.requests.length-1,idx});}
  });
  const rows=rowOverride||dictRows[material.language]||{};
  await f.context.route('**/rest/v1/morpheme_dictionary**',route=>{
@@ -262,7 +264,8 @@ function assertFirstScreen(g,{label,side=false,bottom='grades'}) {
 async function assertNoFoldsNoLegacyButtons(f,label) {
  const word=f.page.locator('#inspector-word').filter({visible:true});
  assert.equal(await word.locator('details').count(),0,`${label}: no <details> in the word tab`);
- assert.equal(await word.locator('[aria-expanded="false"]').count(),0,`${label}: no collapsed control in the word tab`);
+ // 글자 칸(data-inspect-key)은 글자 정보를 여는 토글이라 aria-expanded를 단다(VIEWER-AUDIT 접근성) — 카드 내용을 접는 칸이 아니다.
+ assert.equal(await word.locator('[aria-expanded="false"]:not([data-inspect-key])').count(),0,`${label}: no collapsed control in the word tab`);
  for(const name of ['번역','문장 번역','이 문장에서는?'])assert.equal(await word.getByRole('button',{name,exact:true}).count(),0,`${label}: no 「${name}」 button in the word tab`);
  const text=await word.innerText();
  for(const gone of ['이 문장에서','문맥상 · 사전','해석','문장 속 쓰임','상세 설명 보기','관련 문형 후보'])assert.ok(!text.includes(gone),`${label}: 「${gone}」 is gone`);
@@ -469,6 +472,15 @@ test('ko and en materials: sentence line · headword · meaning · bottom render
 // 단어장(user_vocabulary)·FSRS·사전 쓰기는 0이어야 한다(정본 §0.2). 합성 백엔드(f.rows)만 바뀐다.
 const twoSenses={...dictRows.Chinese,壮观:{meanings:[{meaning:'웅장하다, 장관이다',priority:1,pos:'형용사'},{meaning:'장관, 웅장한 경관',priority:2,pos:'명사'}],reading:'zhuàng guān',pos:'형용사·명사'}};
 const writesSince=(f,mark)=>f.requests.slice(mark).filter(r=>!['GET','HEAD','OPTIONS'].includes(r.method)&&notPrefetch(r));
+// 로그인 뷰어의 단어 탭은 읽던 자리를 저장한다(useScrollRestore — 마지막 예약 2초 뒤 reading_progress POST 1건, 의도된 쓰기).
+// 탭 직후에 writesSince의 mark를 잡으면 그 POST가 「쓰기 0 · 교정 쓰기만」 세기 안으로 늦게 들어온다(AE-R4 · AD-R4 실측 2026-10-17 KST).
+// since = 마지막 탭 직전의 f.requests.length, id = 그 탭의 토큰 — since 뒤에 「그 토큰 번호」의 POST가 온 것을 본 다음 mark를 잡는다
+// (앞 탭의 저장이 경계에 걸쳐 먼저 와도 속지 않는다 · 세기 구간의 다른 쓰기는 그대로 잡힌다). 비로그인은 저장하지 않으므로 쓰지 않는다.
+const positionSaved=(f,since,id)=>{
+ const idx=f.sequence.indexOf(id);
+ assert.ok(idx>=0,`positionSaved: unknown token ${id}`);
+ return until(()=>f.positions.some(p=>p.at>=since&&p.idx===idx),8000);
+};
 const visibleHeader=f=>f.page.locator('.viewer-inspector__header').filter({visible:true});
 
 test('owner: tapping another dictionary sense corrects this spot only; 「되돌리기」 restores the previous value',{timeout:180000},async()=>{
@@ -477,6 +489,7 @@ test('owner: tapping another dictionary sense corrects this spot only; 「되돌
  const f=await open(m,{prefs:zhPrefs,own:true,rows:twoSenses});
  try{
   await until(()=>f.bulk.length>=1);
+  const tapMark=f.requests.length;
   await tap(f,'id_0_7','웅장하다, 장관이다');
   const senses=f.page.locator('#inspector-word .reader-card-senses');
   await senses.waitFor();
@@ -487,6 +500,7 @@ test('owner: tapping another dictionary sense corrects this spot only; 「되돌
   const box=await pick.boundingBox();
   assert.ok(box.height>=44,`sense row target ≥ 44px: ${box.height}`);
   const stored=()=>f.rows.find(r=>r.id===94171).processed_json.dictionary.id_0_7;
+  await positionSaved(f,tapMark,'id_0_7');
   const mark=f.requests.length;
   await pick.click();
   const meaning=f.page.locator('#inspector-word .word-detail-card__meaning');
@@ -520,11 +534,13 @@ test('not the owner: dictionary senses are display-only and there is no ⋯ menu
  const f=await open(m,{prefs:zhPrefs,rows:twoSenses});
  try{
   await until(()=>f.bulk.length>=1);
+  const tapMark=f.requests.length;
   await tap(f,'id_0_7','웅장하다, 장관이다');
   const senses=f.page.locator('#inspector-word .reader-card-senses');
   await senses.waitFor();
   assert.equal(await senses.locator('.reader-card-sense').count(),2);
   assert.equal(await senses.locator('button').count(),0,'no pressable sense line');
+  await positionSaved(f,tapMark,'id_0_7');
   const mark=f.requests.length;
   await senses.getByText('장관, 웅장한 경관',{exact:true}).click();
   await f.page.waitForTimeout(600);
@@ -664,6 +680,8 @@ test('AE-R3 390 · 1440: 壮观 안 1 — 正 壯觀 · 日 壮観 そうかん,
    await tap(f,'id_0_7','웅장하다, 장관이다');
    await f.page.locator('#inspector-word .reader-card-glyph').filter({visible:true}).waitFor();
    await f.page.locator('#inspector-word .word-fit__hun').filter({visible:true}).first().waitFor();
+   // 日 줄은 일본어 표기 표(jaWords.json — 지연 import)가 도착한 뒤에 선다(실측 훈음 뒤 약 0.2초) — 그 줄을 기다린 뒤 잰다.
+   await f.page.locator('#inspector-word .reader-card-glyph__row--ja').filter({visible:true}).first().waitFor();
    await f.page.waitForTimeout(300);
    const g=await glyphGeometry(f.page);
    const label=`壮观 ${width}`;
@@ -740,7 +758,7 @@ test('AE-R3 390 첫 화면 우선: 3줄 문장 + 体育场(안 2) — 표제어�
    const beside=card.querySelector('.word-fit-wrap > .reader-card-glyph');
    return {tight:card.querySelector('.reader-card-sentence')?.hasAttribute('data-tight'),
     below:below?{top:below.getBoundingClientRect().top,text:below.textContent,layout:below.dataset.layout}:null,meaningBottom:meaning.bottom,
-    beside:beside?{layout:beside.dataset.layout,text:beside.textContent}:null,details:card.querySelectorAll('details,[aria-expanded="false"]').length};
+    beside:beside?{layout:beside.dataset.layout,text:beside.textContent}:null,details:card.querySelectorAll('details,[aria-expanded="false"]:not([data-inspect-key])').length};
   });
   assert.equal(s.tight,true,'step 1: the sentence line drops to the 2-line budget');
   assert.ok(s.below,'step 2: the glyph rows move below the meaning line');
@@ -878,9 +896,11 @@ test('AE-R4 390 · 1440: 壮观의 观 → 한자 창(머리 · 구성 · 같은
   const label=`观 ${width}`;
   try{
    await until(()=>f.bulk.length>=1);
+   const tapMark=f.requests.length;
    await tap(f,'id_0_7','웅장하다, 장관이다');
    await visibleCard(f.page).locator('.word-fit__hun').first().waitFor();
    await f.page.waitForTimeout(400);
+   await positionSaved(f,tapMark,'id_0_7'); // 탭의 위치 저장 POST가 아래 「창을 쓰는 동안 쓰기 0」 세기 안으로 늦게 들어오지 않게
    const before=await cardBoxes(f.page);
    const mark=f.requests.length;
    // 키보드만: 표제어 글자에 포커스 → Enter로 연다 → 창으로 포커스
@@ -1109,12 +1129,19 @@ test('AD-R4 390 owner: 「뜻 확인 필요 2개 [보기]」 → 시트 [문장]
   assert.equal(await tip.innerText(),'ⓘ 문맥과 다를 수 있어요');
   const g=await measure(f.page);
   assertFirstScreen(g,{label:'zh 390 card with ⓘ'});
-  const tipBox=await tip.boundingBox();
-  assert.ok(tipBox.y>=g.meaning.bottom-.5,'ⓘ sits under the meaning line');
+  // 뜻 줄과 ⓘ는 한 번에 잰다 — 따로 재면 그 사이 시트가 자리를 옮길 수 있다(쪽 넘김 A안, 연달아 돌릴 때 2/2 실패 2026-10-17).
+  const order=await f.page.evaluate(()=>{
+   const panel=[...document.querySelectorAll('.viewer-inspector')].find(el=>el.getClientRects().length);
+   const box=s=>[...panel.querySelectorAll(s)].find(el=>el.getClientRects().length)?.getBoundingClientRect();
+   const meaning=box('#inspector-word .word-detail-card__meaning'),tip=box('#inspector-word .reader-card-meaning-check');
+   return {meaningBottom:meaning.bottom,tipTop:tip.top};
+  });
+  assert.ok(order.tipTop>=order.meaningBottom-.5,`ⓘ sits under the meaning line ${JSON.stringify(order)}`);
   const senses=f.page.locator('#inspector-word .reader-card-senses');
   await senses.waitFor();
   assert.equal(await senses.locator('.reader-card-sense.is-current').count(),0,'context meaning outside the dictionary list: no painted line');
   if(process.env.COMPOSER_SCREENSHOTS)await f.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/sense-review-card-390.png`});
+  const tapMark=f.requests.length;
   await tap(f,'id_0_6','전화');
   assert.equal(await f.page.locator('#inspector-word .reader-card-meaning-check').count(),0,'no ⓘ without the marker');
   // [보기] → 목록(새 화면 아님 — 시트 [문장] 탭 자리)
@@ -1142,6 +1169,7 @@ test('AD-R4 390 owner: 「뜻 확인 필요 2개 [보기]」 → 시트 [문장]
   assert.doesNotMatch(listText+(await line.innerText()),/\bAI\b|인공지능/,'no 「AI」 label');
   if(process.env.COMPOSER_SCREENSHOTS)await f.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/sense-review-list-390.png`});
   // 후보 교정 1회 → 그 토큰의 표식 삭제 · N 감소, 쓰기는 기존 교정 경로 하나
+  await positionSaved(f,tapMark,'id_0_6'); // 위 두 탭(id_0_9 · id_0_6)의 위치 저장이 아래 「교정 쓰기만」 세기에 늦게 들어오지 않게
   const mark=f.requests.length;
   await da.getByRole('button',{name:'때리다, 치다'}).click();
   await until(()=>storedToken(f,'id_0_3').meaning==='때리다, 치다');

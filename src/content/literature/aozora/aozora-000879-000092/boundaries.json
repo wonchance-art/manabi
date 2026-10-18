@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "c59a8dea51fa5b58891d49555a44d67dc9a6f1d082c71e993d0d6f1816fdcf98",
+      "edits": [
+        {
+          "line": 0,
+          "start": 12,
+          "end": 16,
+          "text": "御釈迦様",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 3,
+          "end": 7,
+          "text": "御釈迦様",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 98,
+          "end": 100,
+          "text": "三途",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 12,
+          "end": 14,
+          "text": "陀多",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 53,
+          "end": 55,
+          "text": "陀多",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 180,
+          "end": 182,
+          "text": "陀多",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 0,
+          "end": 4,
+          "text": "御釈迦様",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 23,
+          "end": 25,
+          "text": "陀多",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 155,
+          "end": 159,
+          "text": "御釈迦様",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "0a9bc9ad215917ebff449e2d1b2da23a0df94f8f2c78db88f32d03c8e28e0570",
+      "edits": [
+        {
+          "line": 0,
+          "start": 38,
+          "end": 40,
+          "text": "陀多",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 270,
+          "end": 272,
+          "text": "陀多",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 21,
+          "end": 23,
+          "text": "陀多",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 130,
+          "end": 132,
+          "text": "陀多",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 10,
+          "end": 12,
+          "text": "陀多",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 68,
+          "end": 70,
+          "text": "陀多",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 135,
+          "end": 137,
+          "text": "陀多",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 216,
+          "end": 218,
+          "text": "数限",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 281,
+          "end": 283,
+          "text": "陀多",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 4,
+          "end": 6,
+          "text": "陀多",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 30,
+          "end": 32,
+          "text": "陀多",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 64,
+          "end": 66,
+          "text": "陀多",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "textSha256": "f8967034616f312853cc35368a7af7763ac563756e83881fb5b97d451a25c7cf",
+      "edits": [
+        {
+          "line": 0,
+          "start": 0,
+          "end": 4,
+          "text": "御釈迦様",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 45,
+          "end": 47,
+          "text": "陀多",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 121,
+          "end": 123,
+          "text": "陀多",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 162,
+          "end": 166,
+          "text": "御釈迦様",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 41,
+          "end": 45,
+          "text": "御釈迦様",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 46,
+          "end": 48,
+          "text": "御足",
+          "reason": "ruby"
+        }
+      ]
+    }
+  ]
+}

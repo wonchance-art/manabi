@@ -115,10 +115,22 @@ describe('parseAozoraText — 見出し 주석의 여러 형태', () => {
     expect(aozoraDocumentToPlainText(document)).toBe('一\n\n朝が来た。');
   });
 
-  it('지목 글자와 표제 글이 다르거나 여러 줄 見出し면 경고로 남긴다(사람 확인)', () => {
+  it('지목 글자와 표제 글이 다르면 경고로 남긴다(사람 확인)', () => {
     expect(parseAozoraText(wrap('第一の章［＃「一」は中見出し］')).warnings.map((item) => item.code)).toEqual(['HEADING_TARGET_MISMATCH']);
-    expect(parseAozoraText(wrap('［＃ここから中見出し］\n一\n［＃ここで中見出し終わり］')).warnings.map((item) => item.code))
+    // 지원하지 않는 여러 줄 표제(窓 見出し의 블록형)는 여전히 경고
+    expect(parseAozoraText(wrap('［＃ここから窓中見出し］\n一\n［＃ここで窓中見出し終わり］')).warnings.map((item) => item.code))
       .toEqual(['UNSUPPORTED_HEADING', 'UNSUPPORTED_HEADING']);
+  });
+
+  it('여러 줄 見出し(「ここから中見出し」…「ここで中見出し終わり」)는 사이 줄을 전각 공백으로 이은 표제 하나(실물 学問のすすめ 九編)', () => {
+    const document = parseAozoraText(wrap('［＃ここから中見出し］\n学問の旨を二様に記して\n中津の旧友に贈る文\n［＃ここで中見出し終わり］\n本文が続く。'));
+    expect(document.warnings).toEqual([]);
+    expect(document.blocks.map((block) => [block.type, aozoraBlockText(block)]))
+      .toEqual([['heading', '学問の旨を二様に記して\u3000中津の旧友に贈る文'], ['paragraph', '本文が続く。']]);
+    expect(document.blocks[0].level).toBe(2);
+    // 닫히지 않은 블록·짝 없는 닫기는 경고
+    expect(parseAozoraText(wrap('［＃ここから中見出し］\n一')).warnings.map((item) => item.code)).toEqual(['UNCLOSED_HEADING']);
+    expect(parseAozoraText(wrap('本文。\n［＃ここで中見出し終わり］')).warnings.map((item) => item.code)).toEqual(['UNOPENED_HEADING']);
   });
 });
 
@@ -163,6 +175,24 @@ describe('parseAozoraText — 외자·깨진 루비·경계', () => {
     const baseless = parseAozoraText(wrap('「《よみ》」'));
     expect(baseless.warnings.map((item) => item.code)).toEqual(['RUBY_WITHOUT_BASE']);
     expect(aozoraDocumentToPlainText(baseless)).toBe('「《よみ》」');
+    // 물음표·느낌표 한 글자에는 붙는다(실물 ドグラ・マグラ 「　？《インタロゲーションマーク》」)
+    const mark = parseAozoraText(wrap('……　？《インタロゲーションマーク》　……'));
+    expect(mark.warnings).toEqual([]);
+    expect(mark.blocks[0].children.find((child) => child.type === 'ruby')).toEqual({ type: 'ruby', base: '？', reading: 'インタロゲーションマーク' });
+  });
+
+  it('｜ 루비 기준 안의 외자도 그 글자로 푼다 — 주석 글자가 본문에 새지 않는다(실물 吾輩は猫である 「｜御※［＃…］《ごぜん》」)', () => {
+    const document = parseAozoraText(wrap('一日｜御※［＃「飮のへん＋善」、第4水準2-92-71］《ごぜん》をいただく'));
+    const ruby = document.blocks[0].children.find((child) => child.type === 'ruby');
+    expect(ruby.base).toMatch(/^御[^※［］]$/u);
+    expect(document.gaiji.map((item) => item.status)).toEqual(['resolved']);
+    expect(aozoraDocumentToPlainText(document)).not.toMatch(/[※［］]/u);
+  });
+
+  it('Unicode에 한 글자가 없는 기호 외자는 같은 글자를 늘어놓아 해결(실물 ドグラ・マグラ 「感嘆符三つ」)', () => {
+    const document = parseAozoraText(wrap('来た※［＃感嘆符三つ、626-10］'));
+    expect(document.gaiji.map((item) => [item.status, item.char])).toEqual([['resolved', '！！！']]);
+    expect(aozoraDocumentToPlainText(document)).toBe('来た！！！');
   });
 
   it('판권이 없으면 경고 — 크레딧 없는 공개를 막는 근거', () => {

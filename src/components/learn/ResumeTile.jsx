@@ -1,4 +1,5 @@
 'use client';
+import { ZhSlot } from '@/components/fonts/ScFontLink';
 /**
  * 이어 읽기 칸 — 시안 C(위아래 나눔, 오너 확정 2026-10-09). 머리 = 언어 색(v2 --ja/--zh/--en/--fr),
  * 본문 = 원어 제목(주) + 한국어 제목(부), 맨 아래 = [진도 숫자][막대][버튼] — DOM 순서도 이대로.
@@ -6,14 +7,33 @@
  */
 import Link from 'next/link';
 import { encounterLookupLang } from '@/lib/refVocabLookup';
+import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
 
-export default function ResumeTile({ item, pending = false, onClick }) {
+// 장식 글자 — 골격 · 실제 칸이 같은 부품으로 그려 표시(요소 · 클래스 · lang)가 같다. 위치는 칸 기준 absolute라 자리를 밀지 않는다.
+function ResumeGlyph({ glyph, lang }) {
+  return <ZhSlot lang={lang}><span className="learn-resume__glyph" lang={lang} aria-hidden="true">{glyph}</span></ZhSlot>;
+}
+
+/**
+ * glyph: 골격일 때 첫 그림부터 그릴 장식 글자(일본어 칸 「あ」 — 골격 머리 색이 lang-ja라 일본어 글자만 받는다).
+ * 부르는 쪽이 최종 글자를 확실히 알 때만 넘긴다(손님 — HOME-GLYPH-LCP-001). 모르면 비워 둔다(예전 골격 그대로).
+ */
+export default function ResumeTile({ item, pending = false, onClick, glyph = null }) {
   if (pending || !item) {
+    // 골격(LOADING-SKELETON-001): 머리 · 제목 두 줄 · 맨 아래 단추 자리 — 실제 칸과 같은 자리, 글만 회색 줄.
     return (
-      <div className="learn-tile learn-resume lang-ja learn-order-resume" role="status">
-        <span className="learn-resume__head"><span className="learn-resume__kicker">이어 읽기</span></span>
-        <span className="learn-resume__body"><span className="learn-resume__sub">읽던 위치 불러오는 중…</span></span>
-      </div>
+      <SkeletonRegion className="learn-tile learn-resume lang-ja learn-order-resume" label="읽던 위치">
+        {glyph && <ResumeGlyph glyph={glyph} lang="ja" />}
+        <span className="learn-resume__head" aria-hidden="true"><span className="learn-resume__kicker">이어 읽기</span></span>
+        <span className="learn-resume__body" aria-hidden="true">
+          <span className="learn-resume__title"><SkeletonLine width="70%" /></span>
+          <span className="learn-resume__sub"><SkeletonLine width="45%" /></span>
+        </span>
+        <span className="learn-resume__bottom" aria-hidden="true">
+          <span className="learn-resume__spacer" />
+          <SkeletonLine className="learn-skeleton-pill" width="7.5em" height="40px" />
+        </span>
+      </SkeletonRegion>
     );
   }
   const code = encounterLookupLang(item.lang) || 'ja';
@@ -22,12 +42,13 @@ export default function ResumeTile({ item, pending = false, onClick }) {
     .filter(Boolean).join(' · ');
   return (
     <Link href={item.href} prefetch={false} onClick={onClick} className={`learn-tile learn-resume lang-${code} learn-order-resume`} aria-label={label}>
-      <span className="learn-resume__glyph" lang={item.glyphLang || code} aria-hidden="true">{item.glyph}</span>
+      <ResumeGlyph glyph={item.glyph} lang={item.glyphLang || code} />
       <span className="learn-resume__head">
         <span className="learn-resume__kicker">{item.kicker}</span>
         {item.number && <span className="learn-resume__num">{item.number}</span>}
       </span>
       <span className="learn-resume__body">
+        {/* 제목은 중국어여도 Noto Serif KR로 그린다(learn.css .learn-resume__title) — SC를 기다리지 않는다(ZhSlot 없음, 계약 SC_LINK_NOT_SC). */}
         <span className="learn-resume__title" lang={item.titleLang || undefined}>{item.title}</span>
         {item.sub && <span className="learn-resume__sub">{item.sub}</span>}
       </span>

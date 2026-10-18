@@ -14,12 +14,12 @@
  * - 예보 탭 기록(buildForecastTapEvent → logReviewEvents)은 오늘 문단 칸으로 옮겼다.
  * - 휴대폰 순서(이어 읽기 → 단어 복습 → 오늘 문단 → 상태 묶음)는 클래스 order로 정한다(nth-child 금지).
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, use, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
-import { literatureDisplayTitle } from '@/lib/literatureCanonical';
+import { literatureDisplayTitle } from '@/lib/literatureWorks'; // 표시용 대조표만(LIT-DISPLAY-001) — 전체 대조표를 홈 번들에 싣지 않는다
 import { bookHref } from '@/lib/textbook/contract';
 import { bookResume, chooseResume, recentMaterial } from '@/lib/webNavigation';
 import useReadingProgress from '@/components/books/useReadingProgress';
@@ -32,20 +32,23 @@ import { logReviewEvents } from '@/lib/reviewEvents';
 import { getIdealLevel } from '@/lib/levels';
 import { rankSuggestions } from '@/lib/suggestionRank';
 import { detectLang, langNameKo } from '@/lib/constants';
-import { canReadSuggestion, suggestionHref } from '@/lib/suggestionReading';
+import { canReadSuggestion, suggestionHref, TODAY_SUGGESTIONS_KEY, fetchTodaySuggestions } from '@/lib/suggestionReading';
 import { fetchVocabularyLearningRows } from '@/lib/vocabularyLearningRows';
 import { countReviewScope, reviewScopeQuota, serializeReviewScope } from '@/lib/reviewScope';
 import { useLearningAdmission } from '@/lib/useLearningAdmission';
 import { DEFAULT_NEW_PER_DAY, NEW_PER_DAY_OPTIONS, loadIntroIds } from '@/lib/vocabStudy';
-import { LEARN_LANGS, PREFETCH_WINDOW_MS, learnLangLabel, materialInLang, paragraphState } from '@/lib/learnDashboard';
+import { levelResumeCard, readLevelSnapshot } from '@/lib/levelList';
+import { GUEST_RESUME_GLYPH, LEARN_LANGS, PREFETCH_WINDOW_MS, RESUME_GLYPH, learnLangLabel, materialInLang, paragraphState } from '@/lib/learnDashboard';
 import { encounterLookupLang } from '@/lib/refVocabLookup';
 import useLearnLanguage from '@/components/learn/useLearnLanguage';
 import LangChips from '@/components/learn/LangChips';
 import ResumeTile from '@/components/learn/ResumeTile';
 import ParagraphTile from '@/components/learn/ParagraphTile';
+import { keepPreviousForUser } from '@/lib/keepPreviousForUser';
 import GoalTrackTile from '@/components/learn/GoalTrackTile';
-import { ReviewTile, StreakTile, TodayGoalTile } from '@/components/learn/LearnTiles';
+import { GuestLoginTile, ReviewTile, StreakTile, TodayGoalTile } from '@/components/learn/LearnTiles';
 import '@/components/learn/learn.css';
+import { authEntryHref } from '../lib/authRedirect';
 
 export async function fetchHomeData(userId, nowMs = Date.now()) {
   // 전체 두 코호트를 같은 snapshot에서 합친 뒤 센다. 구형 due WHERE로 먼저 자르지 않는다.
@@ -84,14 +87,7 @@ export async function fetchPrefetchedSentence(userId, lang, nowMs = Date.now()) 
   return data?.[0]?.sentence || null;
 }
 
-async function fetchSuggestions() {
-  const response = await fetch('/api/suggestions/today');
-  if (!response.ok) throw new Error('추천을 불러오지 못했어요.');
-  const rows = await response.json();
-  return Array.isArray(rows) ? rows : [];
-}
-
-const GLYPH = { Japanese: 'あ', Chinese: '汉', English: 'A', French: 'É' };
+const GLYPH = RESUME_GLYPH;
 const GUEST_SAMPLE = '駅前の小さなパン屋で、今日も同じパンを買いました。';
 
 function bookItem(book, resume) {
@@ -101,7 +97,7 @@ function bookItem(book, resume) {
     // 원어 제목이 비면 한국어 제목이 주 제목(지금 동작과 같음) — 42과 원어 제목 저작은 별도 콘텐츠 작업.
     title: titleJa || lesson.title, titleLang: titleJa ? 'ja' : 'ko', sub: titleJa ? lesson.title : lesson.subtitle,
     count: { done: resume.completed, total: resume.total }, href: bookHref(book.edition, resume.page),
-    cta: resume.started ? '이어서 읽기' : '첫 페이지 열기' };
+    cta: resume.started ? '이어 읽기' : '첫 페이지 열기' };
 }
 
 function materialItem(material, lang) {
@@ -111,46 +107,25 @@ function materialItem(material, lang) {
     // 서재에 예전 표기(「鼻 — 1편」)로 옮겨 둔 정본 문학책도 정본 표기(「鼻 (1/2)」)로(AOZORA-P0-5 — 다시 받지 않아도 된다)
     title: literatureDisplayTitle({ book: m.book, literature: { provider: m.provider } }, m.title),
     titleLang: encounterLookupLang(materialLang) || undefined, sub: m.level || null,
-    href: `/viewer/${m.id}`, cta: '이어서 읽기' };
+    href: `/viewer/${m.id}`, cta: '이어 읽기' };
 }
 
-export default function HomePage({ book = null }) {
-  const { user, profile, loading: authLoading } = useAuth();
+const HSK_WORDS_ITEM = { key: 'hsk-words', href: '/chinese/vocab/h1', tone: 'progress',
+  kicker: '중국어 · HSK', title: 'HSK 단어 목록', meta: '1급부터 ↗' };
+
+// 교재 판본(book)은 서버가 기다리지 않고 약속(bookPromise)으로 넘긴다(LCP-UNSUSPEND — 조정 승인 2026-10-17 KST).
+// 판본이 필요한 것은 이어 읽기 칸과 저장 불가 안내뿐이라, 그 둘만 안쪽 Suspense에서 받는다 — 맛보기 문단 · 로그인 칸 ·
+// 제목은 서버 첫 HTML(뼈대)에 바로 들어간다(예전엔 화면 전체가 판본 조회 뒤 스트리밍 조각으로 늦게 끼워졌다).
+// 대기 그림은 배움 대기 화면(loading.jsx)과 같은 <ResumeTile pending /> — 자리 · 모양이 같다.
+// book(값)도 받는다 — 판본을 이미 가진 호출부 · 테스트용. 약속이 있으면 약속이 우선이다.
+function useBook(bookPromise, book) {
+  return bookPromise ? use(bookPromise) : book;
+}
+
+function ResumeSlot({ bookPromise, book: bookValue, user, authLoading, isLoading, data, lang, pendingGlyph }) {
+  const book = useBook(bookPromise, bookValue);
   const local = useReadingProgress(book?.edition);
   const resume = bookResume(book, local.progress, local.hasProgress);
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['home-v3', user?.id], queryFn: () => fetchHomeData(user.id),
-    enabled: !!user && !authLoading, staleTime: 60000, refetchOnWindowFocus: true,
-  });
-  const { langs, lang, choose } = useLearnLanguage(profile, data?.vocabByLang);
-  const paragraph = useQuery({
-    queryKey: ['learn-paragraph', user?.id, lang], queryFn: () => fetchPrefetchedSentence(user.id, lang),
-    enabled: !!user && !authLoading, staleTime: 300000,
-  });
-  // 새 표현 한도 — 복습방과 같은 입력(reviewScopeQuota): 서버 한도, 호환 모드면 이 기기의 하루 한도 − 오늘 시작한 수.
-  const admission = useLearningAdmission({ accountId: user?.id });
-  const [device, setDevice] = useState({ newPerDay: DEFAULT_NEW_PER_DAY, introIds: [] });
-  useEffect(() => {
-    let newPerDay = DEFAULT_NEW_PER_DAY;
-    try { const stored = parseInt(localStorage.getItem('vocab_new_per_day'), 10); if (NEW_PER_DAY_OPTIONS.includes(stored)) newPerDay = stored; } catch { /* 저장소 차단 — 기본값 */ }
-    setDevice({ newPerDay, introIds: loadIntroIds() });
-  }, []);
-  const quota = reviewScopeQuota(admission, { ...device, vocabIds: data?.vocab?.map(v => v.id) });
-  const reviewCount = learnReviewCount({ snapshot: data?.learning, lang, quota, now: data?.now });
-  const reviewHref = serializeReviewScope({ lang });
-
-  const forecast = data?.forecastByLang?.[lang];
-  const forecastWords = forecast?.count > 0 && forecast.top3?.length > 0 && forecast.top3.map(w => w.word_text);
-  const onForecastTap = () => {
-    if (user?.id && forecast) { try { logReviewEvents(user.id, [buildForecastTapEvent(lang, forecast)]); } catch { /* Existing optional telemetry. */ } }
-  };
-  const rereadItem = useRereadCandidate();
-  const groupItem = useGroupEntryItem({ invite: false });
-  // 대화 모드 v2-Z Z-R2 — 읽은 말을 꺼내 쓰는 입구(자료 없이 시작). 고른 학습 언어로 새 대화 화면을 연다.
-  const conversationItem = { key: 'conversation', href: newConversationHref({ language: lang }), tone: 'progress',
-    kicker: '말해 보기', title: 'AI 튜터와 목표어로 대화', meta: '새 대화 ↗' };
-  const continueDeckItems = [rereadItem, conversationItem, groupItem].filter(Boolean);
-
   // 이어 읽기 — 일본어는 교재 기록과 서재 자료를 실제 시각으로 비교, 다른 언어는 그 언어의 서재 자료 → 산책 추천.
   const pending = authLoading || (!!book && !local.ready) || (!!user && isLoading);
   const material = recentMaterial((data?.recentProgress || []).filter(row => materialInLang(row, lang)));
@@ -163,7 +138,7 @@ export default function HomePage({ book = null }) {
   if (!pending && !choice.current) choice.current = { key: choiceKey, kind: chooseResume(bookForLang, local.updatedAt, material), material };
   const kind = choice.current?.kind || null;
   const needSuggestion = !pending && !kind && !(lang === 'Japanese' && !book);
-  const recommendations = useQuery({ queryKey: ['today-suggestions'], queryFn: fetchSuggestions, staleTime: 300000, enabled: needSuggestion });
+  const recommendations = useQuery({ queryKey: TODAY_SUGGESTIONS_KEY, queryFn: fetchTodaySuggestions, staleTime: 300000, enabled: needSuggestion });
   const suggestion = useMemo(() => rankSuggestions((recommendations.data || []).filter(canReadSuggestion), {
     langs: [lang], fitOf: () => null,
     levelOf: s => getIdealLevel(s.language, data?.vocabByLang?.[s.language] || 0),
@@ -179,22 +154,80 @@ export default function HomePage({ book = null }) {
   else if (!pending) resumeItem = { lang, kicker: '산책', glyph: GLYPH[lang] || '文', title: '오늘 읽을 글을 골라 보세요',
     sub: `${learnLangLabel(lang)} 읽을거리`, href: '/discover', cta: '산책하기' };
   const resumePending = pending || (needSuggestion && recommendations.isLoading);
+  return <ResumeTile item={resumeItem} pending={resumePending} glyph={pendingGlyph} />;
+}
 
-  if (!authLoading && !user) {
+// 저장 불가 안내 — 판본(edition)별 읽은 위치 저장소를 읽어 본 뒤에만 안다(useReadingProgress). 판본을 기다리는 동안은 없다(예전과 같다).
+function StorageNote({ bookPromise, book: bookValue }) {
+  const book = useBook(bookPromise, bookValue);
+  const local = useReadingProgress(book?.edition);
+  return !local.storageAvailable ? <p role="status" className="learn-note">이 브라우저에서는 읽던 위치를 저장할 수 없어요.</p> : null;
+}
+
+export default function HomePage({ book = null, bookPromise, sessionHint }) {
+  const { user, profile, loading: authLoading } = useAuth();
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['home-v3', user?.id], queryFn: () => fetchHomeData(user.id),
+    enabled: !!user && !authLoading, staleTime: 60000, refetchOnWindowFocus: true,
+  });
+  const { langs, lang, choose } = useLearnLanguage(profile, data?.vocabByLang);
+  // 언어 칩을 바꾸는 동안 이전 언어의 문단을 흐리게 남긴다(LIST-KEEP — 「시작하면 오늘 문단을 만들어요」 거짓 빈 상태가
+  // 잠깐 끼던 것). 결과에 언어를 함께 담아, 남긴 문장의 lang 속성이 그 문장의 언어를 따른다. 같은 계정일 때만.
+  const paragraph = useQuery({
+    queryKey: ['learn-paragraph', user?.id, lang], queryFn: async () => ({ lang, sentence: await fetchPrefetchedSentence(user.id, lang) }),
+    enabled: !!user && !authLoading, staleTime: 300000, placeholderData: keepPreviousForUser(user?.id),
+  });
+  // 새 표현 한도 — 복습방과 같은 입력(reviewScopeQuota): 서버 한도, 호환 모드면 이 기기의 하루 한도 − 오늘 시작한 수.
+  const admission = useLearningAdmission({ accountId: user?.id });
+  const [device, setDevice] = useState({ newPerDay: DEFAULT_NEW_PER_DAY, introIds: [] });
+  useEffect(() => {
+    let newPerDay = DEFAULT_NEW_PER_DAY;
+    try { const stored = parseInt(localStorage.getItem('vocab_new_per_day'), 10); if (NEW_PER_DAY_OPTIONS.includes(stored)) newPerDay = stored; } catch { /* 저장소 차단 — 기본값 */ }
+    setDevice({ newPerDay, introIds: loadIntroIds() });
+  }, []);
+  const quota = reviewScopeQuota(admission, { ...device, vocabIds: data?.vocab?.map(v => v.id) });
+  const reviewCount = learnReviewCount({ snapshot: data?.learning, lang, quota, now: data?.now });
+  const reviewHref = serializeReviewScope({ lang });
+
+  const forecast = data?.forecastByLang?.[lang];
+  const forecastWords = forecast?.count > 0 && forecast.top3?.length > 0 && forecast.top3.map(w => w.word_text);
+  const paragraphTileState = paragraphState({ sentence: paragraph.data?.sentence, forecastWords });
+  const onForecastTap = () => {
+    if (user?.id && forecast) { try { logReviewEvents(user.id, [buildForecastTapEvent(lang, forecast)]); } catch { /* Existing optional telemetry. */ } }
+  };
+  const rereadItem = useRereadCandidate();
+  const groupItem = useGroupEntryItem({ invite: false });
+  // 대화 모드 v2-Z Z-R2 — 읽은 말을 꺼내 쓰는 입구(자료 없이 시작). 고른 학습 언어로 새 대화 화면을 연다.
+  const conversationItem = { key: 'conversation', href: newConversationHref({ language: lang }), tone: 'progress',
+    kicker: '말해 보기', title: 'AI 튜터와 목표어로 대화', meta: '새 대화 ↗' };
+  const continueDeckItems = [rereadItem, conversationItem, groupItem].filter(Boolean);
+  // HSK 단어 — 이 기기에 남은 진도가 있으면 마지막 레벨로 이어 하기(붙은 뒤에 읽는다 — 서버 렌더와 첫 렌더는 「1급부터」로 같다).
+  const [hskResume, setHskResume] = useState(null);
+  useEffect(() => { try { setHskResume(levelResumeCard(readLevelSnapshot(localStorage, 'chinese'))); } catch { /* 저장소 차단 — 1급부터 */ } }, []);
+  const hskItem = hskResume ? { ...HSK_WORDS_ITEM, ...hskResume } : HSK_WORDS_ITEM;
+
+  // 손님 배치 판정 — 아래 손님 화면과 같은 조건(B1).
+  const guestLayout = !user && (!authLoading || sessionHint === false);
+  // 이어 읽기 칸 · 저장 불가 안내 — 판본을 받는 동안은 배움 대기 화면과 같은 골격 칸(자리 · 모양 같음).
+  // 손님이면 골격도 장식 글자(「あ」)를 첫 그림부터 그린다(HOME-GLYPH-LCP-001) — 손님 학습 언어는 늘 일본어라 글자를 서버도 안다.
+  // 붙은 뒤 늦게 끼던 130px 글자가 화면에서 가장 큰 글이라 LCP를 늦췄다. 자리는 absolute라 CLS 0.
+  // 로그인은 글자가 학습 언어 · 고른 칩 · 서재 자료로 정해져 서버가 모른다 — 골격에 글자 없음(그대로, 틀린 글자 → 바뀜 금지).
+  const pendingGlyph = guestLayout ? GUEST_RESUME_GLYPH : null;
+  const resumeSlot = <Suspense fallback={<ResumeTile pending glyph={pendingGlyph} />}><ResumeSlot bookPromise={bookPromise} book={book} user={user} authLoading={authLoading} isLoading={isLoading} data={data} lang={lang} pendingGlyph={pendingGlyph} /></Suspense>;
+  const storageNote = <Suspense fallback={null}><StorageNote bookPromise={bookPromise} book={book} /></Suspense>;
+
+  // 손님 배치 — 서버가 세션 쿠키가 없다고 알려 주면(sessionHint === false) 로그인 확인을 기다리지 않는다(B1 — 오너 승인
+  // 2026-10-17 KST). 서버 HTML · 첫 그림 · 확인 뒤가 모두 같은 손님 배치라, 로그인 배치 골격이 0.7초 보였다가 바뀌던 것이 없다.
+  // 쿠키가 있는데 세션이 끝났으면(만료 등) 예전처럼 확인을 기다린다.
+  if (guestLayout) {
     return <div className="manabi-page learn-page">
       <div className="learn-top"><div className="learn-top__title"><h1>배움</h1></div></div>
       <div className="learn-grid">
-        <ResumeTile item={resumeItem} pending={resumePending} />
+        {resumeSlot}
         <ParagraphTile state={{ kind: 'ready', sentence: GUEST_SAMPLE }} lang="Japanese" href="/study" kicker="오늘 문단 · 맛보기" />
-        <Link href="/auth" prefetch={false} className="learn-tile learn-goal--empty learn-guest">
-          <span>
-            <span className="learn-goal__title">로그인하면 여기에 쌓여요</span>
-            <span className="learn-goal__line">단어 복습 · 오늘 목표 · 레벨 어휘 · 기록</span>
-          </span>
-          <span className="learn-button-s">로그인</span>
-        </Link>
+        <GuestLoginTile href={authEntryHref('/home')} />
       </div>
-      {!local.storageAvailable && <p role="status" className="learn-note">이 브라우저에서는 읽던 위치를 저장할 수 없어요.</p>}
+      {storageNote}
     </div>;
   }
 
@@ -205,16 +238,21 @@ export default function HomePage({ book = null }) {
     </div>
     {error && <div className="manabi-inline-state" role="alert">학습 기록을 불러오지 못했어요. 읽기와 책장은 계속 이용할 수 있어요. <button type="button" onClick={() => refetch()}>다시 시도</button></div>}
     <div className="learn-grid">
-      <ResumeTile item={resumeItem} pending={resumePending} />
+      {resumeSlot}
       <div className="learn-quad learn-order-status">
         <GoalTrackTile />
         <TodayGoalTile vocab={data?.vocab || []} projections={data?.learning?.projections || []} profile={profile} empty={!data} />
         <StreakTile profile={profile} />
       </div>
-      <ReviewTile projections={data?.learning?.projections || []} lang={lang} count={reviewCount} href={reviewHref} className="learn-order-review" />
-      <ParagraphTile state={paragraphState({ sentence: paragraph.data, forecastWords })} lang={lang} href={`/study?lang=${lang}`} onForecastTap={onForecastTap} />
+      {/* 처음 받는 중에는 빈 상태(「아직 수집한 단어가 없어요」 · 「시작하면 오늘 문단을 만들어요」) 대신 골격(LOADING-SKELETON-001). */}
+      <ReviewTile projections={data?.learning?.projections || []} lang={lang} count={reviewCount} href={reviewHref} className="learn-order-review"
+        pending={!data && (authLoading || isLoading)} />
+      <ParagraphTile state={paragraphTileState} lang={paragraphTileState.kind === 'ready' ? paragraph.data?.lang || lang : lang} busy={paragraph.isPlaceholderData}
+        pending={paragraph.isPending} href={`/study?lang=${lang}`} onForecastTap={onForecastTap} />
     </div>
-    {!local.storageAvailable && <p role="status" className="learn-note">이 브라우저에서는 읽던 위치를 저장할 수 없어요.</p>}
+    {storageNote}
     {continueDeckItems.length > 0 && <section className="learn-more" aria-label="이어서"><ContinueDeck items={continueDeckItems} /></section>}
+    {/* 임시 입구(오너 지시 2026-10-15 KST) — HSK 단어 목록이 내비에 자리를 잡을 때까지. 덱과 같은 카드 양식. */}
+    <section className="learn-more" aria-label="HSK 단어"><ContinueDeck items={[hskItem]} /></section>
   </div>;
 }

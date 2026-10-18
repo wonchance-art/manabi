@@ -1,4 +1,5 @@
 'use client';
+import { ZhSlot } from '@/components/fonts/ScFontLink';
 
 /**
  * 홈 알림 덱 (오너 지시 2026-08-24) — 홈의 알림성 진입을 **전부 한 자리에 겹쳐** 두고
@@ -22,6 +23,7 @@
  */
 import { useRef, useState } from 'react';
 import Link from 'next/link';
+import { reducedMotion } from '../lib/reducedMotion';
 
 function ContinueRow({ item }) {
   return (
@@ -33,7 +35,7 @@ function ContinueRow({ item }) {
     >
       <span className="deck-card__body">
         <span className="deck-card__kicker">{item.kicker}</span>
-        <span className="deck-card__title" lang={item.titleLang}>{item.title}</span>
+        <ZhSlot lang={item.titleLang}><span className="deck-card__title" lang={item.titleLang}>{item.title}</span></ZhSlot>
         {item.chips?.length > 0 && (
           <span className="deck-card__chips">
             {item.chips.map((c) => <span key={c} className="deck-card__chip">{c}</span>)}
@@ -56,9 +58,7 @@ export default function ContinueDeck({ items }) {
   const goTo = (i) => {
     const el = scrollerRef.current?.children?.[i];
     if (!el) return;
-    const reduced = typeof window !== 'undefined'
-      && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest', inline: 'start' });
+    el.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'nearest', inline: 'start' });
   };
 
   // 활성 장은 스크롤 위치에서 역산한다(별도 상태 동기화 없이 스크롤이 진실).

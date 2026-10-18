@@ -1,0 +1,4886 @@
+{
+  "schemaVersion": 1,
+  "works": {
+    "se-adam-smith_the-theory-of-moral-sentiments": {
+      "title": "The Theory of Moral Sentiments",
+      "author": "Adam Smith",
+      "level": "C1 고급",
+      "total": 86,
+      "words": 159744,
+      "display": {
+        "titleKo": "도덕감정론",
+        "authorKo": "애덤 스미스",
+        "binding": "millar-1759",
+        "coverTitle": "The\nTheory\nof\nMoral Sentiments.",
+        "coverAuthor": "By Adam Smith,",
+        "coverSubtitle": "PROFESSOR of MORAL PHILOSOPHY",
+        "coverPlace": "London:",
+        "coverImprint": "Printed for A. MILLAR",
+        "coverYear": 1759
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-adam-smith_the-theory-of-moral-sentiments",
+        "title": "The Theory of Moral Sentiments",
+        "author": "Adam Smith",
+        "publishedYear": 1759,
+        "authorDeathYear": 1790,
+        "countryOfOrigin": "GB",
+        "translator": null,
+        "repo": "standardebooks/adam-smith_the-theory-of-moral-sentiments",
+        "commit": "1a94d8d93245868d08d895d4fc26a2e50db9855a",
+        "url": "https://standardebooks.org/ebooks/adam-smith/the-theory-of-moral-sentiments",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "GB",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/adam-smith/the-theory-of-moral-sentiments"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: Of Sympathy",
+          "sha256": "d7598547962c98e8a827fdbab97e0a8e488aaff9725b43b53555b0678d4aa917"
+        },
+        {
+          "order": 2,
+          "title": "II: Of the Pleasure of Mutual Sympathy",
+          "sha256": "a84d4ae2c2ab1607686e48b139be8b4b4bb599aab5b87076c3f2a9d0c83124b6"
+        },
+        {
+          "order": 3,
+          "title": "III: Of the Manner in Which We Judge of the Propriety or Impropriety of the Affections of Other Men, by Their Concord or Dissonance with Our Own",
+          "sha256": "3b88758c5a3271e877034b33d0e764fec16e441eb3a462abade7f596cefa39f6"
+        },
+        {
+          "order": 4,
+          "title": "IV: The Same Subject Continued",
+          "sha256": "008b985171dd0672514c456defb9094c9b38e94707579a03c449549db674eb8a"
+        },
+        {
+          "order": 5,
+          "title": "V: Of the Amiable and Respectable Virtues",
+          "sha256": "526886753785e6f910df995a557a6752efa84a0212bdc518c5da9ac41dc4ac1b"
+        },
+        {
+          "order": 6,
+          "title": "Section II: Of the Degrees of the Different Passions Which Are Consistent with Propriety",
+          "sha256": "7641fdde1d3196eb452e2fc67e5b95c34aa974a6b8caeb5e6a31ec9aceeeb2ed"
+        },
+        {
+          "order": 7,
+          "title": "I: Of the Passions Which Take Their Origin from the Body",
+          "sha256": "958a75ac12f02091dd7f75d8a2a14644a4e4ff4d9614a7d1b3d2518042327d6c"
+        },
+        {
+          "order": 8,
+          "title": "II: Of Those Passions Which Take Their Origin from a Particular Turn or Habit of the Imagination",
+          "sha256": "e6772c9a211833f76b4f55059e5aca2e488de25ce4a80744c2beb8bdfdc7139a"
+        },
+        {
+          "order": 9,
+          "title": "III: Of the Unsocial Passions",
+          "sha256": "27082d7ee45aed81626b509216d24846334389790f1a3f2f47316bdeca40a62e"
+        },
+        {
+          "order": 10,
+          "title": "IV: Of the Social Passions",
+          "sha256": "d9172b2cd534dcfe63c5fc071103929574cbfea2a94a3239afa3f47fb87fcafe"
+        },
+        {
+          "order": 11,
+          "title": "V: Of the Selfish Passions",
+          "sha256": "33b0e7de891febac0c346cee96715599441f9e3cc35afadb1d5e9c853126c795"
+        },
+        {
+          "order": 12,
+          "title": "I: That Though Our Sympathy with Sorrow Is Generally a More Lively Sensation Than Our Sympathy with Joy, It Commonly Falls Much More Short of the Violence of What Is Naturally Felt by the Person Principally Concerned",
+          "sha256": "5c5f0cc87a3ee311fe3db6ce4455389f22c3aa905c7a20c09ca0be4fc06f6c8d"
+        },
+        {
+          "order": 13,
+          "title": "II: Of the Origin of Ambition, and of the Distinction of Ranks (1/2)",
+          "sha256": "4850690f7b2692e07fd306b9e1bd823b88c1fb1dbda998bc8c3c57d6bef87054"
+        },
+        {
+          "order": 14,
+          "title": "II: Of the Origin of Ambition, and of the Distinction of Ranks (2/2)",
+          "sha256": "a18dd33a05da0bface8defd2c5b3bbdc626301702734d6b0281b07d696b02f5d"
+        },
+        {
+          "order": 15,
+          "title": "III: Of the Corruption of Our Moral Sentiments, Which Is Occasioned by This Disposition to Admire the Rich and the Great, and to Despise or Neglect Persons of Poor and Mean Condition",
+          "sha256": "8f8d3d11e7979e0c2c4a3da5bf3d2d85ff0d44c7536f760cafec358bf28eefbc"
+        },
+        {
+          "order": 16,
+          "title": "Section I: Of the Sense of Merit and Demerit",
+          "sha256": "2f478ec3802939886890a7086dceace0b3391d14305a6ee480d70100e379b326"
+        },
+        {
+          "order": 17,
+          "title": "I: That Whatever Appears to Be the Proper Object of Gratitude, Appears to Deserve Reward; and That, in the Same Manner, Whatever Appears to Be the Proper Object of Resentment, Appears to Deserve Punishment",
+          "sha256": "9b4a7ce0c29cfb6241cf91c433e49d832fd33f1688ae2c570edbae297892dfd4"
+        },
+        {
+          "order": 18,
+          "title": "II: Of the Proper Objects of Gratitude and Resentment",
+          "sha256": "46f246f7db44dfac23b85cde3f78a554a747ebd1f74865603a49a44d6e5cc96e"
+        },
+        {
+          "order": 19,
+          "title": "III: That Where There Is No Approbation of the Conduct of the Person Who Confers the Benefit, There Is Little Sympathy with the Gratitude of Him Who Receives It: And That, on the Contrary, Where There Is No Disapprobation of the Motives of the Person Who Does the Mischief, There Is No Sort of Sympathy with the Resentment of Him Who Suffers It",
+          "sha256": "518a9990da7868edf556c3a0933e207739a0d592366345c5a4a2a3f0d7f9701f"
+        },
+        {
+          "order": 20,
+          "title": "IV: Recapitulation of the Foregoing Chapters",
+          "sha256": "921d0e8b4dd39d16fd15ddf571e49de0b61c8b930074ffab6db4f9165685ac04"
+        },
+        {
+          "order": 21,
+          "title": "V: The Analysis of the Sense of Merit and Demerit",
+          "sha256": "573e55cf9919b1eae38c506d0568f9d3e3f1e1892e8a09f31dfb83dc41bc71f7"
+        },
+        {
+          "order": 22,
+          "title": "I: Comparison of Those Two Virtues",
+          "sha256": "98691368e514eb44ee00647a7748ccfd7201d6bbcfeef870e38094417aa9f905"
+        },
+        {
+          "order": 23,
+          "title": "II: Of the Sense of Justice, of Remorse, and of the Consciousness of Merit",
+          "sha256": "76f0c9f34f3b2f1186e1000f7b4710b9f57ce9aab6d3da6a414bfd64d6ea3bf9"
+        },
+        {
+          "order": 24,
+          "title": "III: Of the Utility of This Constitution of Nature",
+          "sha256": "4ccaab3984a9baf589d9fc13a04630b1a8c4162f7106657fb3b5c68c43631a8a"
+        },
+        {
+          "order": 25,
+          "title": "Section III: Of the Influence of Fortune Upon the Sentiments of Mankind, with Regard to the Merit or Demerit of Their Actions",
+          "sha256": "aa1eca9f4235b289fa25c2b69c1ebdfcc765390fdf2648d6478de512f53b11a5"
+        },
+        {
+          "order": 26,
+          "title": "I: Of the Causes of This Influence of Fortune",
+          "sha256": "acbea0fd8b5e0f40d01a1b809cc1a6d6360ced3a24ef1967888bc1f416c7fb0a"
+        },
+        {
+          "order": 27,
+          "title": "II: Of the Extent of This Influence of Fortune (1/2)",
+          "sha256": "eb8bbf140ce7f4277e949f06400da41afa366fe42b38f4ddc77ad020963483ca"
+        },
+        {
+          "order": 28,
+          "title": "II: Of the Extent of This Influence of Fortune (2/2)",
+          "sha256": "c4afca1cb2bc7bc8d7449ed1626ec36fe00203ad08ae122c40e651b6c2ef641c"
+        },
+        {
+          "order": 29,
+          "title": "III: Of the Final Cause of This Irregularity of Sentiments",
+          "sha256": "0d33d9c75cc0740bf84fe3a66c9323c23c3441081339aca498c324a88a622a41"
+        },
+        {
+          "order": 30,
+          "title": "I: Of the Principle of Self-Approbation and of Self-Disapprobation",
+          "sha256": "ec55c8aa498ee93c1e0136ad42f1790b483b16097a2220102ef78415e0186d36"
+        },
+        {
+          "order": 31,
+          "title": "II: Of the Love of Praise, and of That of Praiseworthiness; and of the Dread of Blame, and of That of Blameworthiness (1/4)",
+          "sha256": "7ef4d4ed1e7639c504031bddcc28e9efb5f4648d21ccb105971f5a2f2d65b0e8"
+        },
+        {
+          "order": 32,
+          "title": "II: Of the Love of Praise, and of That of Praiseworthiness; and of the Dread of Blame, and of That of Blameworthiness (2/4)",
+          "sha256": "249fa4078f1e761c4ca8bd57b03d8172de140448ece61b0b485cc6605b72264e"
+        },
+        {
+          "order": 33,
+          "title": "II: Of the Love of Praise, and of That of Praiseworthiness; and of the Dread of Blame, and of That of Blameworthiness (3/4)",
+          "sha256": "7c0112562dc23f470aaff2e07d936ccce0ca39fceb977b72cd3d0660820a5f0f"
+        },
+        {
+          "order": 34,
+          "title": "II: Of the Love of Praise, and of That of Praiseworthiness; and of the Dread of Blame, and of That of Blameworthiness (4/4)",
+          "sha256": "666b527392651a0085cbff8518bfdb7e70b583e93da8d6da6efed1cc68e5e781"
+        },
+        {
+          "order": 35,
+          "title": "III: Of the Influence and Authority of Conscience (1/5)",
+          "sha256": "de4b778b993069d08a424bb15fea156fe2ae56f32f0d681d44ae67c278d305ab"
+        },
+        {
+          "order": 36,
+          "title": "III: Of the Influence and Authority of Conscience (2/5)",
+          "sha256": "d661ada44e80b42e6a9fff7890df90c6b5644687dd3940afc36081a69ac8d16d"
+        },
+        {
+          "order": 37,
+          "title": "III: Of the Influence and Authority of Conscience (3/5)",
+          "sha256": "047a0658bddeb24e40f08355baa4e537f7e4e6b1a990bd88ce5cb9fca40a3ea7"
+        },
+        {
+          "order": 38,
+          "title": "III: Of the Influence and Authority of Conscience (4/5)",
+          "sha256": "57dce13c6643b06d92453dc980da69fdc50eccb462a4ea3176102e193be96a10"
+        },
+        {
+          "order": 39,
+          "title": "III: Of the Influence and Authority of Conscience (5/5)",
+          "sha256": "8151f90ee1bdf86df8a85dd25890e7ec05d019442aafc1548ad9f88d54e4ae32"
+        },
+        {
+          "order": 40,
+          "title": "IV: Of the Nature of Self-Deceit, and of the Origin and Use of General Rules",
+          "sha256": "84aeb057fbfa17e96c859046d79f2ffae3f05ea8acbb3eb267260f5dab4a3b37"
+        },
+        {
+          "order": 41,
+          "title": "V: Of the Influence and Authority of the General Rules of Morality, and That They Are Justly Regarded as the Laws of the Deity (1/2)",
+          "sha256": "ddcc627d51d24670be470854894bf431d0c7ef121c88183f07b7b58a0d95f1bc"
+        },
+        {
+          "order": 42,
+          "title": "V: Of the Influence and Authority of the General Rules of Morality, and That They Are Justly Regarded as the Laws of the Deity (2/2)",
+          "sha256": "b36520bacafa1ff9c5a2a93ca6dbdce86bd4cc8bea1d3fab5745bc5e95d9455f"
+        },
+        {
+          "order": 43,
+          "title": "VI: In What Cases the Sense of Duty Ought to Be the Sole Principle of Our Conduct; and in What Cases It Ought to Concur with Other Motives (1/2)",
+          "sha256": "444e119933ecbab47a2478052eba9f10500a56acad8aebd9f0718d153b0b9b86"
+        },
+        {
+          "order": 44,
+          "title": "VI: In What Cases the Sense of Duty Ought to Be the Sole Principle of Our Conduct; and in What Cases It Ought to Concur with Other Motives (2/2)",
+          "sha256": "a2a6996518179eae4248a966f077b0a04ff3d55126a43f09ed4908bbd2d876f9"
+        },
+        {
+          "order": 45,
+          "title": "I: Of the Beauty Which the Appearance of Utility Bestows Upon All the Productions of Art, and of the Extensive Influence of This Species of Beauty (1/2)",
+          "sha256": "5512254b0271aa6c1b7d39b85866c50c6f28752262e3261d7cb84d9ca15ea89a"
+        },
+        {
+          "order": 46,
+          "title": "I: Of the Beauty Which the Appearance of Utility Bestows Upon All the Productions of Art, and of the Extensive Influence of This Species of Beauty (2/2)",
+          "sha256": "feb51e2389b731d9b2a80bf89370a9faaf974ed7dca0ab13e1c7f310843c24e6"
+        },
+        {
+          "order": 47,
+          "title": "II: Of the Beauty Which the Appearance of Utility Bestows Upon the Characters and the Actions of Men; and How Far the Perception of This Beauty May Be Regarded as One of the Original Principles of Approbation",
+          "sha256": "29a930386bf1081f4300f3753d7bbb09014c511734cd2f0cebf02aae4d08b5c2"
+        },
+        {
+          "order": 48,
+          "title": "I: Of the Influence of Custom and Fashion Upon Our Notions of Beauty and Deformity",
+          "sha256": "033d1d6a219da5a63a39d4dfe678c01de66ee861608f3d76231e29a936cb5b32"
+        },
+        {
+          "order": 49,
+          "title": "II: Of the Influence of Custom and Fashion Upon Moral Sentiments (1/2)",
+          "sha256": "a5504f5309b9734ca7317616414180e461ee1cae667148ee43ac0ac4d21a19c5"
+        },
+        {
+          "order": 50,
+          "title": "II: Of the Influence of Custom and Fashion Upon Moral Sentiments (2/2)",
+          "sha256": "f76751dbf1c123ceabd562cc963b2e8862a3856d678b0e6132a75c3b0afbdd37"
+        },
+        {
+          "order": 51,
+          "title": "Part VI: Of the Character of Virtue",
+          "sha256": "c1d6b16b1dcb06fda57e67ee1c94ce3cbef2a0e56d8c425bdc14881cd9a6a80e"
+        },
+        {
+          "order": 52,
+          "title": "Section I: Of the Character of the Individual, So Far as It Affects His Own Happiness; or of Prudence",
+          "sha256": "dab53d7536b391c7034e42a73c38465633d80346ffbd5af8af942daf729a8d5a"
+        },
+        {
+          "order": 53,
+          "title": "Section II: Of the Character of the Individual, So Far as It Can Affect the Happiness of Other People",
+          "sha256": "d193437a51c0f59b33c2aed080be550d57f56994439b485f032ee2aaa35e35ab"
+        },
+        {
+          "order": 54,
+          "title": "I: Of the Order in Which Individuals Are Recommended by Nature to Our Care and Attention (1/2)",
+          "sha256": "eeded8a3984a622da57776245ba76546730d4e9c92f61fba61edb2a69034051e"
+        },
+        {
+          "order": 55,
+          "title": "I: Of the Order in Which Individuals Are Recommended by Nature to Our Care and Attention (2/2)",
+          "sha256": "04a7a3dc2e6a3b7e23620455e4e86bf3e5f2e855dee7b9ea58586c37f49fe84a"
+        },
+        {
+          "order": 56,
+          "title": "II: Of the Order in Which Societies Are by Nature Recommended to Our Beneficence",
+          "sha256": "f5153ce978847a88091bde0aabc3929be0afd8ad1237652a68876b8ca7099480"
+        },
+        {
+          "order": 57,
+          "title": "III: Of Universal Benevolence",
+          "sha256": "c1ce821ce11ec99b4ee85555723eb81fedd2986089c481af97701a78f224c365"
+        },
+        {
+          "order": 58,
+          "title": "Section III: Of Self-Command (1/5)",
+          "sha256": "993bcc26fff7e7acd8c2089dff1673bdeeaefc3e9b94bf064c010b0d6767fe2c"
+        },
+        {
+          "order": 59,
+          "title": "Section III: Of Self-Command (2/5)",
+          "sha256": "297173d7f6b8f08b23c9216bf9d37b15ec9d4ecb2c498fa8e9c53cedac44c46f"
+        },
+        {
+          "order": 60,
+          "title": "Section III: Of Self-Command (3/5)",
+          "sha256": "f73b99cd8cfbdc25c93c8e6294cb242b537bc07b3366bbf6cc0eb80350a0f757"
+        },
+        {
+          "order": 61,
+          "title": "Section III: Of Self-Command (4/5)",
+          "sha256": "13d24ada5859bb27391ac2e1864fa4fe66029851ed0d33fde35343cf2f3072da"
+        },
+        {
+          "order": 62,
+          "title": "Section III: Of Self-Command (5/5)",
+          "sha256": "fda0818f0c57cf05142c3e823697fae2218fad6ab5ebf1a83c63487851228ca0"
+        },
+        {
+          "order": 63,
+          "title": "Conclusion of the Sixth Part",
+          "sha256": "04c8ea6383b71df092c497192a52767a5ff1c6b56eefd77f33aee0fc79c9f13c"
+        },
+        {
+          "order": 64,
+          "title": "Section I: Of the Questions Which Ought to Be Examined in a Theory of Moral Sentiments",
+          "sha256": "03239872c904a8f7d97e371114460f49b316cec055bf093d1874c7df4fcc378e"
+        },
+        {
+          "order": 65,
+          "title": "Section II: Of the Different Accounts Which Have Been Given of the Nature of Virtue",
+          "sha256": "f93b60a79aa873a45b8fbb649938799102c23a32c8989e8120f8cdbee8470639"
+        },
+        {
+          "order": 66,
+          "title": "I: Of Those Systems Which Make Virtue Consist in Propriety (1/5)",
+          "sha256": "63a16bcb6ec72feeefbdd9f3514ba2520d05da3115b27a4d120012acc12484b4"
+        },
+        {
+          "order": 67,
+          "title": "I: Of Those Systems Which Make Virtue Consist in Propriety (2/5)",
+          "sha256": "b5c246a555528cdf128147b9e42b0f655fa9cd300967351c186caf1e3479bb04"
+        },
+        {
+          "order": 68,
+          "title": "I: Of Those Systems Which Make Virtue Consist in Propriety (3/5)",
+          "sha256": "b86e45039079c2cf8b10423dc6892bfa00c0c3e581fdc58509f4300f65c06b7c"
+        },
+        {
+          "order": 69,
+          "title": "I: Of Those Systems Which Make Virtue Consist in Propriety (4/5)",
+          "sha256": "1bbfcc510463cfcb8977602b4438eda7ac3c0979ba56a5f21e5c6fff0c198289"
+        },
+        {
+          "order": 70,
+          "title": "I: Of Those Systems Which Make Virtue Consist in Propriety (5/5)",
+          "sha256": "12b759c3d6a847b38bf909214de9a82da977cbf1481a56431b625822d315e995"
+        },
+        {
+          "order": 71,
+          "title": "II: Of Those Systems Which Make Virtue Consist in Prudence",
+          "sha256": "34772d7ac46ea9f405de95f913f6d234a4c36564689c2c699de6de884f152e44"
+        },
+        {
+          "order": 72,
+          "title": "III: Of Those Systems Which Make Virtue Consist in Benevolence",
+          "sha256": "7959c1d44075601d7cda0b8d4a7645c6f36a3e635955f7a753c93bde22ef90fe"
+        },
+        {
+          "order": 73,
+          "title": "IV: Of Licentious Systems (1/2)",
+          "sha256": "1af7e667465a3e27c66f73cbe8052c08f6e9acaa81288a4d495f49949f327eb9"
+        },
+        {
+          "order": 74,
+          "title": "IV: Of Licentious Systems (2/2)",
+          "sha256": "f12b9d2a878a733ec297977c5ef3170a3c47dfaf11a180fcf054043e5800419b"
+        },
+        {
+          "order": 75,
+          "title": "Section III: Of the Different Systems Which Have Been Formed Concerning the Principle of Approbation",
+          "sha256": "85281a57f4acd0a4790a8f4b52fc67949111cf34cba0377d687bf671ff43c326"
+        },
+        {
+          "order": 76,
+          "title": "I: Of Those Systems Which Deduce the Principle of Approbation from Self-Love",
+          "sha256": "4f64e0dfdfd53fbbfbf3aeef92fe842b2cf2c1bdbd143a966ea524c3299a0849"
+        },
+        {
+          "order": 77,
+          "title": "II: Of Those Systems Which Make Reason the Principle of Approbation",
+          "sha256": "cab82a9997323a89e002f1b33a0220a49c864e95449da437de3a06dd63f198ca"
+        },
+        {
+          "order": 78,
+          "title": "III: Of Those Systems Which Make Sentiment the Principle of Approbation",
+          "sha256": "113e111defb2613f0f39a9c8ee61a39f4b781b81b382bd357dbfd91a88bd7793"
+        },
+        {
+          "order": 79,
+          "title": "Section IV: Of the Manner in Which Different Authors Have Treated of the Practical Rules of Morality (1/3)",
+          "sha256": "9805a636d4d140453f85cc8658f73d8a1a07ca0094ca57c6f9e99c4dce5344ef"
+        },
+        {
+          "order": 80,
+          "title": "Section IV: Of the Manner in Which Different Authors Have Treated of the Practical Rules of Morality (2/3)",
+          "sha256": "3b76d4a8b9cd427ed58d9e8da55a5b66192beeda857bfb7a71fcd62e5a0bbced"
+        },
+        {
+          "order": 81,
+          "title": "Section IV: Of the Manner in Which Different Authors Have Treated of the Practical Rules of Morality (3/3)",
+          "sha256": "ef2ae0b0d7f4aa8e36de12abe2d1588adf41ac72242eedd9e732caf1d3e5f123"
+        },
+        {
+          "order": 82,
+          "title": "Considerations Concerning the First Formation of Languages, etc., etc. (1/5)",
+          "sha256": "2923c581232021f5f1ee5762eefeb17afe94c717295aa5b38cd6c25087d9c585"
+        },
+        {
+          "order": 83,
+          "title": "Considerations Concerning the First Formation of Languages, etc., etc. (2/5)",
+          "sha256": "4d7617e015b2055b751af9e67c1d3e63fd1d10e71f2c14a531a47e45866597d6"
+        },
+        {
+          "order": 84,
+          "title": "Considerations Concerning the First Formation of Languages, etc., etc. (3/5)",
+          "sha256": "3d204325aca55c2dad976c1fc7fd5c3a4b19743f2ed4451f45970bb66567bc94"
+        },
+        {
+          "order": 85,
+          "title": "Considerations Concerning the First Formation of Languages, etc., etc. (4/5)",
+          "sha256": "a2b41f538b32da48a9819e71e79cb700abcc12bad921a9db6198fbd24bb0d321"
+        },
+        {
+          "order": 86,
+          "title": "Considerations Concerning the First Formation of Languages, etc., etc. (5/5)",
+          "sha256": "673b957efd6bc8e3f251e3757a190a56c17104a35f5592ff8842b89d3c3a44bc"
+        }
+      ]
+    },
+    "se-adam-smith_the-wealth-of-nations": {
+      "title": "The Wealth of Nations",
+      "author": "Adam Smith",
+      "level": "C1 고급",
+      "total": 173,
+      "words": 377020,
+      "display": {
+        "titleKo": "국부론",
+        "authorKo": "애덤 스미스",
+        "binding": "strahan-1776",
+        "coverTitle": "An\nInquiry\ninto the\nNature and Causes\nof the\nWealth of Nations.",
+        "coverAuthor": "By ADAM SMITH, LL.D. and F.R.S.",
+        "coverTome": "Vol. I.",
+        "coverPlace": "London:",
+        "coverImprint": "W. Strahan; and T. Cadell",
+        "coverYear": 1776
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-adam-smith_the-wealth-of-nations",
+        "title": "The Wealth of Nations",
+        "author": "Adam Smith",
+        "publishedYear": 1776,
+        "authorDeathYear": 1790,
+        "countryOfOrigin": "GB",
+        "translator": null,
+        "repo": "standardebooks/adam-smith_the-wealth-of-nations",
+        "commit": "9f0165edc4ef95194dd34d2e5d8c7f3aff965614",
+        "url": "https://standardebooks.org/ebooks/adam-smith/the-wealth-of-nations",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "GB",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/adam-smith/the-wealth-of-nations"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: Of the Division of Labour (1/2)",
+          "sha256": "b2a98d638aebcce6389d80be93c95afbb5a5c9d9ae4ccf71a566be6f5b6f0ed2"
+        },
+        {
+          "order": 2,
+          "title": "I: Of the Division of Labour (2/2)",
+          "sha256": "7df027fddf88bf7a788df69aa2face12fbcede4d14119567dccc26673edbc28b"
+        },
+        {
+          "order": 3,
+          "title": "II: Of the Principle Which Gives Occasion to the Division of Labour",
+          "sha256": "9b54123476f6eb3d278aa379e49450b3f5e34cb28ec75abea592d45b0352c671"
+        },
+        {
+          "order": 4,
+          "title": "III: That the Division of Labour Is Limited by the Extent of the Market",
+          "sha256": "1c7a745026459fb3f7237a60cd3f1d4d1c95d2b3ad339b4597aedd92551e19eb"
+        },
+        {
+          "order": 5,
+          "title": "IV: Of the Origin and Use of Money",
+          "sha256": "467bad6f433ac1d2f0936dd59dda373b13cdb1195d8cb3c51a1a0b3ce3e0c3cf"
+        },
+        {
+          "order": 6,
+          "title": "V: Of the Real and Nominal Price of Commodities, or of Their Price in Labour, and Their Price in Money (1/3)",
+          "sha256": "afeb6f0c28fccf30d271a2351798e262df451cffabce62335de41b369cdcc0c3"
+        },
+        {
+          "order": 7,
+          "title": "V: Of the Real and Nominal Price of Commodities, or of Their Price in Labour, and Their Price in Money (2/3)",
+          "sha256": "5b501d063d212b01fb0a018a3154f2472652d365b7f1e332b245ceafc2381dc4"
+        },
+        {
+          "order": 8,
+          "title": "V: Of the Real and Nominal Price of Commodities, or of Their Price in Labour, and Their Price in Money (3/3)",
+          "sha256": "5d99db19a8bd7e388043373b64051b318e3cff5c0684be2e8b376bb81a449b64"
+        },
+        {
+          "order": 9,
+          "title": "VI: Of the Component Parts of the Price of Commodities",
+          "sha256": "f04df9cc3d221178101b22ddbc6bf742e99a9c79808498f92022097f4d5438c7"
+        },
+        {
+          "order": 10,
+          "title": "VII: Of the Natural and Market Price of Commodities (1/2)",
+          "sha256": "919981ec78f90bd830d8d38a9b2f278ff5c89715d1b04ad2a2dd17922ca67955"
+        },
+        {
+          "order": 11,
+          "title": "VII: Of the Natural and Market Price of Commodities (2/2)",
+          "sha256": "ca5a1a6f0168c50f638eb6a7daf139e9fb05cec2ade3d4bb09d237397014f392"
+        },
+        {
+          "order": 12,
+          "title": "VIII: Of the Wages of Labour (1/4)",
+          "sha256": "f8f8ac4c332709a22ce8d02a2a55a67231913624cfb599b06719aa5906988a57"
+        },
+        {
+          "order": 13,
+          "title": "VIII: Of the Wages of Labour (2/4)",
+          "sha256": "d262b7d766435e37a217843e8770f2f8299ed3f72b9fc2e2caa24294f2a105c6"
+        },
+        {
+          "order": 14,
+          "title": "VIII: Of the Wages of Labour (3/4)",
+          "sha256": "ee56938c7a43d5ad3ce4f4aecd8f5e887836d9b620530bfabe6448aa728da8bb"
+        },
+        {
+          "order": 15,
+          "title": "VIII: Of the Wages of Labour (4/4)",
+          "sha256": "20aadee2f28f6d568c3e1f50f43b245e4033f980310547d41800e77317fd0bdf"
+        },
+        {
+          "order": 16,
+          "title": "IX: Of the Profits of Stock (1/2)",
+          "sha256": "98b08bc815cce9ee036f153c9b28e81b4e6295165a335da4bf4bee58c4962ce0"
+        },
+        {
+          "order": 17,
+          "title": "IX: Of the Profits of Stock (2/2)",
+          "sha256": "ffa513945ef2201ad01ebdf607e38a91e442806393a8f76ca33b81ec38f47100"
+        },
+        {
+          "order": 18,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (1/8)",
+          "sha256": "9e813b6540cf8e05b1890ec2777d19fe74347830e0869d7c4bf51a4ce64e6200"
+        },
+        {
+          "order": 19,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (2/8)",
+          "sha256": "80636119da65bae5992dabf43ba6cb8145c0064810d969c8861db83dd2fb2210"
+        },
+        {
+          "order": 20,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (3/8)",
+          "sha256": "7d970780d4f1bc4f8b05dd626500758d6cd642d487b3b2bacf20a2c451b73ee1"
+        },
+        {
+          "order": 21,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (4/8)",
+          "sha256": "1f6b99035676b4d4267681a921b0a229b1b54894d4b5296adf807fd52ae2a38a"
+        },
+        {
+          "order": 22,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (5/8)",
+          "sha256": "c5bc55e0b2f63e025d63d7f6f6de76e237915bf5293063c114f77c60f2e7190a"
+        },
+        {
+          "order": 23,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (6/8)",
+          "sha256": "6d9ba276ae9eae7f6335eeb7461154bdaf92bf4dc899e8ee35dccf3b1e8b9249"
+        },
+        {
+          "order": 24,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (7/8)",
+          "sha256": "0f156ec3c9a76cf76becdc68b0db2e84d633808d02b44651a28642860fe26cac"
+        },
+        {
+          "order": 25,
+          "title": "X: Of Wages and Profit in the Different Employments of Labour and Stock (8/8)",
+          "sha256": "7f4cb7854ef5aa4f4c5f21b73fcbd6e9f41957901a6442f0b0baacd59c489267"
+        },
+        {
+          "order": 26,
+          "title": "XI: Of the Rent of Land (1/22)",
+          "sha256": "3f228d5e79de5052618949e97125507fb4677a66a2304a1b2a5ce71d6a349299"
+        },
+        {
+          "order": 27,
+          "title": "XI: Of the Rent of Land (2/22)",
+          "sha256": "11cd250c25173edc36827461d48907636c39d958d75ca8328a7a8c616e3b6bb4"
+        },
+        {
+          "order": 28,
+          "title": "XI: Of the Rent of Land (3/22)",
+          "sha256": "87a97afb885b94a685618f558447f1dc62ed0a130001b9792e48613506daeb77"
+        },
+        {
+          "order": 29,
+          "title": "XI: Of the Rent of Land (4/22)",
+          "sha256": "9fdaa41bdd391702c7673c34cae92e021d62eacf690cc2df4789ad759a50681e"
+        },
+        {
+          "order": 30,
+          "title": "XI: Of the Rent of Land (5/22)",
+          "sha256": "3653dbcc000a86620ac815f89e1350cda177cd3de12579e2c719aab56f174126"
+        },
+        {
+          "order": 31,
+          "title": "XI: Of the Rent of Land (6/22)",
+          "sha256": "ac349ecbf530a75aa6f10060c78d3b10179f0a32235c2f5e5e2d9bda8fb046c3"
+        },
+        {
+          "order": 32,
+          "title": "XI: Of the Rent of Land (7/22)",
+          "sha256": "f5171a1f5acf3f51f4f4952e1f94e4b054cf4f77066c3adee1806c50cf0eae9b"
+        },
+        {
+          "order": 33,
+          "title": "XI: Of the Rent of Land (8/22)",
+          "sha256": "950932db5e3c3ba68c141ef521d26ea60a645bb915256d4aa08ebd2979389b54"
+        },
+        {
+          "order": 34,
+          "title": "XI: Of the Rent of Land (9/22)",
+          "sha256": "2544a1b329404a1b7c12504c1303c6f39b3a3ec057f618fad632ddf9c53e25f1"
+        },
+        {
+          "order": 35,
+          "title": "XI: Of the Rent of Land (10/22)",
+          "sha256": "80ea1876a63cf77377e17a0d016adcf332a960811383d202e424b7f25f73ad09"
+        },
+        {
+          "order": 36,
+          "title": "XI: Of the Rent of Land (11/22)",
+          "sha256": "d5ce7912d01dbeb33b683ed16ca0c4479d4d15ebff4b10a7c98e6a42409381ba"
+        },
+        {
+          "order": 37,
+          "title": "XI: Of the Rent of Land (12/22)",
+          "sha256": "07cf24dc3fb73a4ddd841d9c4837bf2b96c7ef7a73f30dabf6e76f3a8da0f15c"
+        },
+        {
+          "order": 38,
+          "title": "XI: Of the Rent of Land (13/22)",
+          "sha256": "fb5e886855507c58c10346dbb054eedf9e56fdba4040cd15a60879c5ede91ded"
+        },
+        {
+          "order": 39,
+          "title": "XI: Of the Rent of Land (14/22)",
+          "sha256": "7e42be6f6889426b4075b50f9c826a35049925c9dc74e8ed854cb1454b546650"
+        },
+        {
+          "order": 40,
+          "title": "XI: Of the Rent of Land (15/22)",
+          "sha256": "c14a9f286aa9d2a7990ed021cdb27f51e94048d2f97edcbaff7eb8aec7939260"
+        },
+        {
+          "order": 41,
+          "title": "XI: Of the Rent of Land (16/22)",
+          "sha256": "dc49c8991d2972ba6c06b33201624fcbeb26eae25acfd292f270fccd7a7fa42d"
+        },
+        {
+          "order": 42,
+          "title": "XI: Of the Rent of Land (17/22)",
+          "sha256": "6b88944dc252ba0e0e7e574e312d12c57b591e73679006aa1115a05444fadd4b"
+        },
+        {
+          "order": 43,
+          "title": "XI: Of the Rent of Land (18/22)",
+          "sha256": "c6f4bb66a21920abfd8b3765c90723747f92c0cd4a82f11476f2bb10a9905dc9"
+        },
+        {
+          "order": 44,
+          "title": "XI: Of the Rent of Land (19/22)",
+          "sha256": "87a4ef4f73db3fe27d3bb1d24c9ca650d9382dfa28fe736c9b92da56c5532524"
+        },
+        {
+          "order": 45,
+          "title": "XI: Of the Rent of Land (20/22)",
+          "sha256": "1bd12f084e6597a7f182041a423c5ec3d8bc9e086e4f3e3673d3a9131241b661"
+        },
+        {
+          "order": 46,
+          "title": "XI: Of the Rent of Land (21/22)",
+          "sha256": "358f24c5721e2db732614447d9518a2586d60776a6b32d38a501608901241070"
+        },
+        {
+          "order": 47,
+          "title": "XI: Of the Rent of Land (22/22)",
+          "sha256": "c641e61294a450fb7eebda374fc45155cad3a77dfe6bd9d0dc0d5696453e73ba"
+        },
+        {
+          "order": 48,
+          "title": "Introduction",
+          "sha256": "4d1279923b58b84679564be940f79dcf8e6b2894a68ccedffbb5e12e47866568"
+        },
+        {
+          "order": 49,
+          "title": "I: Of the Division of Stock",
+          "sha256": "681d5feb5cfa266a07a876f4904155b561499da8448d77490348e36c2af194b3"
+        },
+        {
+          "order": 50,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (1/9)",
+          "sha256": "c7dc8923b5bac618e3fba229fd29a52bc77acf28055c689d48f5df7b5a799199"
+        },
+        {
+          "order": 51,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (2/9)",
+          "sha256": "66b7d67d041885f0bea22bacfaafdb9e54ccb9a4774c9a75ecd3a75c36e6cae2"
+        },
+        {
+          "order": 52,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (3/9)",
+          "sha256": "c8d01ecbb1d633f52709a8edf08c3815ee57afa4ecbbeafa66d7356bf48ab15e"
+        },
+        {
+          "order": 53,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (4/9)",
+          "sha256": "84c6f1c2f1825f86527d12df667b4d7f46486df92d984a17a10e37a9480e5d44"
+        },
+        {
+          "order": 54,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (5/9)",
+          "sha256": "5335a4349444086ce0b96362b28367214b03fb915f124b38f0e5a1cd63dfeac3"
+        },
+        {
+          "order": 55,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (6/9)",
+          "sha256": "55ff2c5262f76f352733e892b50c8dfac65e15f8848c49a6d033f9b4c69801a5"
+        },
+        {
+          "order": 56,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (7/9)",
+          "sha256": "49a6507079907ff92138fe0ef5faab6b9aaa14f1bbd18d935598ac4e93a98996"
+        },
+        {
+          "order": 57,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (8/9)",
+          "sha256": "e365ebea904abb264b5981a273e01f6755669a45dd1af1341f65d83de6483602"
+        },
+        {
+          "order": 58,
+          "title": "II: Of Money Considered as a Particular Branch of the General Stock of the Society, or of the Expense of Maintaining the National Capital (9/9)",
+          "sha256": "76aca42e5eb3b57556496e9fccbde141dbfc060fae8a26594cee34c903f54fee"
+        },
+        {
+          "order": 59,
+          "title": "III: Of the Accumulation of Capital, or of Productive and Unproductive Labour (1/4)",
+          "sha256": "2bfa36eb9439d5c269be35933f8d473bb2f11e8c2685782a4b3c77008997ac4c"
+        },
+        {
+          "order": 60,
+          "title": "III: Of the Accumulation of Capital, or of Productive and Unproductive Labour (2/4)",
+          "sha256": "1e7159ed82c762052ff5db6a64df590993c0aa2c676c00707db34ec4ecb65e98"
+        },
+        {
+          "order": 61,
+          "title": "III: Of the Accumulation of Capital, or of Productive and Unproductive Labour (3/4)",
+          "sha256": "5486f33f203844106e9657f26608fd16352eac46336bfd1f66524b685d19ab7c"
+        },
+        {
+          "order": 62,
+          "title": "III: Of the Accumulation of Capital, or of Productive and Unproductive Labour (4/4)",
+          "sha256": "8ee0b2460595801f632739e60bf7115ac00feaeaede2838805d0ffffc556ff37"
+        },
+        {
+          "order": 63,
+          "title": "IV: Of Stock Lent at Interest (1/2)",
+          "sha256": "b4f4ab5b1bda2f996c194518b4a0f97e501fcefadd2bfd165ee07db31cf8105b"
+        },
+        {
+          "order": 64,
+          "title": "IV: Of Stock Lent at Interest (2/2)",
+          "sha256": "633d058f1a03bd9d856a75364184c32c8649a7d15d9c8850469a734ea33ef950"
+        },
+        {
+          "order": 65,
+          "title": "V: Of the Different Employment of Capitals (1/3)",
+          "sha256": "7ab5c17dbc97888f74c50f6c727b552197fc4af8308f07935181143a10e7a2aa"
+        },
+        {
+          "order": 66,
+          "title": "V: Of the Different Employment of Capitals (2/3)",
+          "sha256": "ed7d06018321395949a9662fe93a0ff2e7e4ae7073ef5e054431ac21519c92a5"
+        },
+        {
+          "order": 67,
+          "title": "V: Of the Different Employment of Capitals (3/3)",
+          "sha256": "8b36a21ada85f38fdcc9c5f77a310f2338734f4da179ed9e2beb60d63cb010d3"
+        },
+        {
+          "order": 68,
+          "title": "I: Of the Natural Progress of Opulence",
+          "sha256": "84f0891b0f09bf027b75b7cf65fe04dcf27d189dbda3ca8bebdb31935ad74781"
+        },
+        {
+          "order": 69,
+          "title": "II: Of the Discouragement of Agriculture in the Ancient State of Europe After the Fall of the Roman Empire (1/2)",
+          "sha256": "9c05525b097af3d49c320af63ab116c12b988b0965e93abb4b2a3a870587144c"
+        },
+        {
+          "order": 70,
+          "title": "II: Of the Discouragement of Agriculture in the Ancient State of Europe After the Fall of the Roman Empire (2/2)",
+          "sha256": "574e4b33bda9495762a119413f2eac26c76e53ce38cb637efcfb5c16fc657cb2"
+        },
+        {
+          "order": 71,
+          "title": "III: Of the Rise and Progress of Cities and Towns, After the Fall of the Roman Empire (1/2)",
+          "sha256": "8786d9bd234854323a4623d1840f66c772e6df304438b45b94449481d3187e4b"
+        },
+        {
+          "order": 72,
+          "title": "III: Of the Rise and Progress of Cities and Towns, After the Fall of the Roman Empire (2/2)",
+          "sha256": "12781759a4b74dc4ec2eeebbfddb01628fed3190f61c60d02ab95f7cd9f6a929"
+        },
+        {
+          "order": 73,
+          "title": "IV: How the Commerce of the Towns Contributed to the Improvement of the Country (1/2)",
+          "sha256": "a0f4632f673c9f3ca5d0830b3b7aa93ef7557546515d380ec6467f8902e5dea6"
+        },
+        {
+          "order": 74,
+          "title": "IV: How the Commerce of the Towns Contributed to the Improvement of the Country (2/2)",
+          "sha256": "94a9a066453b83041e812a9962a835c303183ef72a197813f6b884d49c4eee45"
+        },
+        {
+          "order": 75,
+          "title": "Introduction",
+          "sha256": "6c780cbc41239b96a9331c436766155f9493c36d3d786f99fbf7efd78b14a94e"
+        },
+        {
+          "order": 76,
+          "title": "I: Of the Principle of the Commercial or Mercantile System (1/4)",
+          "sha256": "b303829598b0777f6b43a99669d9fb378e80fadd1707ebf92934ddd04603295d"
+        },
+        {
+          "order": 77,
+          "title": "I: Of the Principle of the Commercial or Mercantile System (2/4)",
+          "sha256": "c6c4b964e914e0de466c3ba4d553dbaad749be187e2f5502f8a263f7ac38c896"
+        },
+        {
+          "order": 78,
+          "title": "I: Of the Principle of the Commercial or Mercantile System (3/4)",
+          "sha256": "1bcdaa75a1b95c358b12b1e0788f901f287ef827f86a30c5c15654987a503c33"
+        },
+        {
+          "order": 79,
+          "title": "I: Of the Principle of the Commercial or Mercantile System (4/4)",
+          "sha256": "73b7d2cfc9fd16984bc6e57cc7b2bdc9098d637ca22a77295a42218a7f6ad2df"
+        },
+        {
+          "order": 80,
+          "title": "II: Of Restraints Upon the Importation from Foreign Countries of Such Goods as Can Be Produced at Home (1/4)",
+          "sha256": "594c5b657b690813adb83ea6f9b73fe75cbbf566c234bad662454885f90fd43e"
+        },
+        {
+          "order": 81,
+          "title": "II: Of Restraints Upon the Importation from Foreign Countries of Such Goods as Can Be Produced at Home (2/4)",
+          "sha256": "2cee4055eb8e4d0b9bc220fad189befee6d90ca4f12deec9c9c1b337b83cc657"
+        },
+        {
+          "order": 82,
+          "title": "II: Of Restraints Upon the Importation from Foreign Countries of Such Goods as Can Be Produced at Home (3/4)",
+          "sha256": "f8ae0998efac8c4b61f93f8ecc7aa3229903138aa6f830e21f1a2557ec5be544"
+        },
+        {
+          "order": 83,
+          "title": "II: Of Restraints Upon the Importation from Foreign Countries of Such Goods as Can Be Produced at Home (4/4)",
+          "sha256": "faf012f61ae69016984da82694756a24e4587fd9db9d7b7ea14f4ead52be6b73"
+        },
+        {
+          "order": 84,
+          "title": "III: Of the Extraordinary Restraints Upon the Importation of Goods of Almost All Kinds, from Those Countries with Which the Balance Is Supposed to Be Disadvantageous (1/5)",
+          "sha256": "c17b76624e1f010e2905f100675641a2b8ad0c88f1585c20e11d843b18a632ed"
+        },
+        {
+          "order": 85,
+          "title": "III: Of the Extraordinary Restraints Upon the Importation of Goods of Almost All Kinds, from Those Countries with Which the Balance Is Supposed to Be Disadvantageous (2/5)",
+          "sha256": "2237e923a77a338caef1e5176d886b85c4c5ad2b22a717d3f17d49700963c521"
+        },
+        {
+          "order": 86,
+          "title": "III: Of the Extraordinary Restraints Upon the Importation of Goods of Almost All Kinds, from Those Countries with Which the Balance Is Supposed to Be Disadvantageous (3/5)",
+          "sha256": "de1f22af1a514400c72f4aa8c775242ecb020430fb672856663dc819cd7ed407"
+        },
+        {
+          "order": 87,
+          "title": "III: Of the Extraordinary Restraints Upon the Importation of Goods of Almost All Kinds, from Those Countries with Which the Balance Is Supposed to Be Disadvantageous (4/5)",
+          "sha256": "d1d39f70548e0a729ec8a74952d5a241d2a79614e109088f95945df5df12a67f"
+        },
+        {
+          "order": 88,
+          "title": "III: Of the Extraordinary Restraints Upon the Importation of Goods of Almost All Kinds, from Those Countries with Which the Balance Is Supposed to Be Disadvantageous (5/5)",
+          "sha256": "bd5981a784d122802641985bdb7632430d88e0fc7f5d4ae646f84e98150d8007"
+        },
+        {
+          "order": 89,
+          "title": "IV: Of Drawbacks",
+          "sha256": "d652a200fbad0d576182688a7d949714c007c8f3daeed46413fc8b2ac90959cc"
+        },
+        {
+          "order": 90,
+          "title": "V: Of Bounties (1/7)",
+          "sha256": "53deec1e1c6ade6248cc24eff9af01d8004dcbd4df8aa9b3d2085a076d63d7b0"
+        },
+        {
+          "order": 91,
+          "title": "V: Of Bounties (2/7)",
+          "sha256": "a06b0da219984b877395e534d7f6e95eb2dd9ede9a7d64f0fdf3c545990c75c0"
+        },
+        {
+          "order": 92,
+          "title": "V: Of Bounties (3/7)",
+          "sha256": "becd7f187e1dbc7ae03a6458015f814ea89c480c8eed590031dc755f7a27ec70"
+        },
+        {
+          "order": 93,
+          "title": "V: Of Bounties (4/7)",
+          "sha256": "1908bfba4866fb95419314b1add6347c9972901501a095112671aca9feae6af5"
+        },
+        {
+          "order": 94,
+          "title": "V: Of Bounties (5/7)",
+          "sha256": "ad748f241bd778a2f412ceaa2521e9d16f6d70f91d1bea3623f75d359891e747"
+        },
+        {
+          "order": 95,
+          "title": "V: Of Bounties (6/7)",
+          "sha256": "99ea2673139d556f1a270958a18af21b4b18e5eaf6207aba5f5f098f414eca4a"
+        },
+        {
+          "order": 96,
+          "title": "V: Of Bounties (7/7)",
+          "sha256": "fd2e84f2e3e74c11bdbb12ce4c8b90b258aaccd16f190c7af3e1feaa674b45ac"
+        },
+        {
+          "order": 97,
+          "title": "VI: Of Treaties of Commerce (1/2)",
+          "sha256": "7f25697ec6e0eb62f6d3aaa43719e3dd17017606400ec6a171824be70bfdd03c"
+        },
+        {
+          "order": 98,
+          "title": "VI: Of Treaties of Commerce (2/2)",
+          "sha256": "5d8d29971f152a14618c62e5b44ed52b70a30d4daef065c1d770089e888249d5"
+        },
+        {
+          "order": 99,
+          "title": "VII: Of Colonies (1/17)",
+          "sha256": "498e36e5f99d512bf1efb23613b0f34a78e5d85201b40b61b491e0abdb867659"
+        },
+        {
+          "order": 100,
+          "title": "VII: Of Colonies (2/17)",
+          "sha256": "edc05d7cea5d51eaedbeab6628fbc3ca89524bec0128b06a294f6a0f75253a8a"
+        },
+        {
+          "order": 101,
+          "title": "VII: Of Colonies (3/17)",
+          "sha256": "2fe65d69ab831b68fd37709fd4cb78040694e40dc9c99c6fee7f5cf4c4546db0"
+        },
+        {
+          "order": 102,
+          "title": "VII: Of Colonies (4/17)",
+          "sha256": "5e7b2fb47e51b3cf21f9ab134c98dcfb0bf31a2aed0ddf34d1322f736757ce42"
+        },
+        {
+          "order": 103,
+          "title": "VII: Of Colonies (5/17)",
+          "sha256": "52abc6379f3961061ed9082da24893321c81bf437f7c2536c07e20aa7a27adee"
+        },
+        {
+          "order": 104,
+          "title": "VII: Of Colonies (6/17)",
+          "sha256": "1980a69d0e114941bdff412a969e579ee8801a9a1fc6af1ae49a683b99100940"
+        },
+        {
+          "order": 105,
+          "title": "VII: Of Colonies (7/17)",
+          "sha256": "d7979adb445fd24ac058d112a015cbfdc70079c30d3ba2c7b1d971c13bc5ad02"
+        },
+        {
+          "order": 106,
+          "title": "VII: Of Colonies (8/17)",
+          "sha256": "023cf62d6a6f4af8d4f2e59b887780b0778dcac63cb19c31a01a39c02f52586e"
+        },
+        {
+          "order": 107,
+          "title": "VII: Of Colonies (9/17)",
+          "sha256": "40d6ab194497c1a0e197decb3e1b21beed97010ac45cd01a53fd7c04a1080d37"
+        },
+        {
+          "order": 108,
+          "title": "VII: Of Colonies (10/17)",
+          "sha256": "164779b541b48dd2815100d78a1416036673f289e604cf3342c2625567cd5ec1"
+        },
+        {
+          "order": 109,
+          "title": "VII: Of Colonies (11/17)",
+          "sha256": "ad17df028af4d1371311d526d6276ea037346fb2086a493bcc7e8c667d1fe64b"
+        },
+        {
+          "order": 110,
+          "title": "VII: Of Colonies (12/17)",
+          "sha256": "4ca8312d79c5aa922286fe754ccab79da4376793304d6cb563dc236aa0154aa3"
+        },
+        {
+          "order": 111,
+          "title": "VII: Of Colonies (13/17)",
+          "sha256": "c6410420083e6a5f1cbbe1ce30400ecebe423242612a33100e0347107bf4319d"
+        },
+        {
+          "order": 112,
+          "title": "VII: Of Colonies (14/17)",
+          "sha256": "d4ad59dfc43a3f31ce08b312a4ba14e06da47892deda2315de51272cca9a7456"
+        },
+        {
+          "order": 113,
+          "title": "VII: Of Colonies (15/17)",
+          "sha256": "2ed78c79b338dd5c81c03a49c25780488aaed2c0e6379cea453b3afcae431054"
+        },
+        {
+          "order": 114,
+          "title": "VII: Of Colonies (16/17)",
+          "sha256": "a8dc63714800b55c4665412a117cf405d53e9b6baf432f84608689cc3f63d120"
+        },
+        {
+          "order": 115,
+          "title": "VII: Of Colonies (17/17)",
+          "sha256": "3da591d1eab76dfdfbf52bde11734816fbb753d88891d2a3784fc1aa7202e6d1"
+        },
+        {
+          "order": 116,
+          "title": "VIII: Conclusion of the Mercantile System (1/4)",
+          "sha256": "fd53d1a717759a87a90e534dd7e7d16a1401f16cb3516f202db4e4b02526031b"
+        },
+        {
+          "order": 117,
+          "title": "VIII: Conclusion of the Mercantile System (2/4)",
+          "sha256": "e156d8975d86d158d2d113226bb840bd332a5aff0f387f2a92601dc94e1fcbb3"
+        },
+        {
+          "order": 118,
+          "title": "VIII: Conclusion of the Mercantile System (3/4)",
+          "sha256": "18ed0cf1e30c6db9f22522d4b3b54f4841fa48cc93f78d52efdce4f98bce2dbb"
+        },
+        {
+          "order": 119,
+          "title": "VIII: Conclusion of the Mercantile System (4/4)",
+          "sha256": "fc48aa5ef43a772a2e6439b59b5424ba4935c3cd592f4d9d109988f3b800f098"
+        },
+        {
+          "order": 120,
+          "title": "IX: Of the Agricultural Systems, or of Those Systems of Political Œconomy, Which Represent the Produce of Land as Either the Sole or the Principal Source of the Revenue and Wealth of Every Country (1/5)",
+          "sha256": "6007d918ffd289e68095e10b4fa4dc30140e275aa0a26ecb3c9d2023978a98bb"
+        },
+        {
+          "order": 121,
+          "title": "IX: Of the Agricultural Systems, or of Those Systems of Political Œconomy, Which Represent the Produce of Land as Either the Sole or the Principal Source of the Revenue and Wealth of Every Country (2/5)",
+          "sha256": "9b85052f22ee9da3b60d9ab8eee30d3bf483916f42c5ff499dfb0ef0fbaa7dff"
+        },
+        {
+          "order": 122,
+          "title": "IX: Of the Agricultural Systems, or of Those Systems of Political Œconomy, Which Represent the Produce of Land as Either the Sole or the Principal Source of the Revenue and Wealth of Every Country (3/5)",
+          "sha256": "60b9ae0c3f122c79de29d918452f0f9b52c07a7b0220dae54cecdf24019621d3"
+        },
+        {
+          "order": 123,
+          "title": "IX: Of the Agricultural Systems, or of Those Systems of Political Œconomy, Which Represent the Produce of Land as Either the Sole or the Principal Source of the Revenue and Wealth of Every Country (4/5)",
+          "sha256": "a8ec99e493b42ab9cffc7670bab7279bf4a95e79ba010c87d071bea4c7c49f55"
+        },
+        {
+          "order": 124,
+          "title": "IX: Of the Agricultural Systems, or of Those Systems of Political Œconomy, Which Represent the Produce of Land as Either the Sole or the Principal Source of the Revenue and Wealth of Every Country (5/5)",
+          "sha256": "e08fc5cb552c35dda5b279cff501b1718519e5fa811675144bfe6a18aa93c6c9"
+        },
+        {
+          "order": 125,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (1/23)",
+          "sha256": "9559b39beecf2a8e90ea92ed9e877dbafe4613ff78b9bab739a853ffd86e818d"
+        },
+        {
+          "order": 126,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (2/23)",
+          "sha256": "c270796d9bb54ba07386f778a7b8c49155e964d96e7fbe50976c7bf2e3e27e14"
+        },
+        {
+          "order": 127,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (3/23)",
+          "sha256": "55230b8bcd1a3da9646cb9a302d96149240ff61e5b706eab8a1f14557d71dae2"
+        },
+        {
+          "order": 128,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (4/23)",
+          "sha256": "42382ad548cac2e1928f9659afe2e851b30417f897d2fa53daa20bf9da7612a8"
+        },
+        {
+          "order": 129,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (5/23)",
+          "sha256": "a6e7010f1e071f2af29eb70d49cbb4a770701cb3911c291172fc4b5bbee0bbf0"
+        },
+        {
+          "order": 130,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (6/23)",
+          "sha256": "564449fa918bf8c828a2796eef67a7eb69163ab979a0717e6f3eed5c12b05749"
+        },
+        {
+          "order": 131,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (7/23)",
+          "sha256": "42f6d8a144e5a0207121d01bbfdc7fc4a32bc4233a121e89faf090583f65ec19"
+        },
+        {
+          "order": 132,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (8/23)",
+          "sha256": "5046301df4bc957bb8e981eb713e5491dffa6d26504bc48987c3618bccd4adf4"
+        },
+        {
+          "order": 133,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (9/23)",
+          "sha256": "ed019cda587f3231aeafd097853f2343c9f6645ee9e8655462697e36ee52ce58"
+        },
+        {
+          "order": 134,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (10/23)",
+          "sha256": "2eba6330c9e335d596cb84277caba7e6b075216d3b259c745bbf29e63b632afb"
+        },
+        {
+          "order": 135,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (11/23)",
+          "sha256": "db0180275621ae2a1a3313054cd8c77771de5de7027fdb19190727b4b20907b7"
+        },
+        {
+          "order": 136,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (12/23)",
+          "sha256": "0521b42a80138121fb057876dfddfe3460d9ce6d4236c0203452bb241cc74ade"
+        },
+        {
+          "order": 137,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (13/23)",
+          "sha256": "07401b668a89b32d756192309ede0a2f13480f8acae66a78ff986d5ca44d0903"
+        },
+        {
+          "order": 138,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (14/23)",
+          "sha256": "a0b9af952b8dd6278984a386201ad154142d904062711a8b8647df78bd51ccd5"
+        },
+        {
+          "order": 139,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (15/23)",
+          "sha256": "2d5c0977a967132a672362eab03c9bd813c8ac271fa1e91b203e4cbfbe37173b"
+        },
+        {
+          "order": 140,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (16/23)",
+          "sha256": "7889c534e7b94a64f716ca0867b8261134bdf8885655fe7e732bd6427dcd1962"
+        },
+        {
+          "order": 141,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (17/23)",
+          "sha256": "d39b21549b390c699c6d7f1d2857fc52cb1f54976ea510e334044a6903467cab"
+        },
+        {
+          "order": 142,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (18/23)",
+          "sha256": "f2b47275581fca0140f0ecbf99bda846f9e8354dd4fcc63d03d2d731e9345146"
+        },
+        {
+          "order": 143,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (19/23)",
+          "sha256": "9a44e7424387df004d65b4ec57486c17c31ce957d6d3c0189527c55bbe52ff9b"
+        },
+        {
+          "order": 144,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (20/23)",
+          "sha256": "331017706f034fd430af6adfb3d21334c4b910da100fa50a839f4ac735d7ae4b"
+        },
+        {
+          "order": 145,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (21/23)",
+          "sha256": "571760f1101ed8e7595d1a11f891ed66202953593a0651c271eeb2df639ef9d5"
+        },
+        {
+          "order": 146,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (22/23)",
+          "sha256": "3237f357cbc8b4fa2d0d8a6a01ba178f3c648f513b17060eb3e0bbe39b82dae8"
+        },
+        {
+          "order": 147,
+          "title": "I: Of the Expenses of the Sovereign or Commonwealth (23/23)",
+          "sha256": "48f9cb234e2d622b8972f8ccf1b28f7eb0405571750c5ffbad4bb09749338e69"
+        },
+        {
+          "order": 148,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (1/18)",
+          "sha256": "fecd58258a45965ae61611701650ab95549bf568b338f12be70b7536bb9c670f"
+        },
+        {
+          "order": 149,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (2/18)",
+          "sha256": "639be983abfa6463392ff86cadb5bfa1972a9871d0512e739e40e5f924f3cd22"
+        },
+        {
+          "order": 150,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (3/18)",
+          "sha256": "64f6b0f1a61d756caa189b71529722f7e942b5945c7f90243b03c45bd7119614"
+        },
+        {
+          "order": 151,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (4/18)",
+          "sha256": "a6697ce5be350c48a4fbe78284975e7a6a705ef6f6a3b36f2555d0e6665f139b"
+        },
+        {
+          "order": 152,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (5/18)",
+          "sha256": "2d5a7f1246e30d5b1e490275ab01e2cba8d6543377ac0b06d008cb0a401ecf64"
+        },
+        {
+          "order": 153,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (6/18)",
+          "sha256": "2d055512b064d067c92edacbb21a8afc7b1459efb5e7a22e85e17cb195a8689a"
+        },
+        {
+          "order": 154,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (7/18)",
+          "sha256": "267b2c4dd6c4a83285e41c22101e80214ba92adcb3f8c983b6e66391f300aa60"
+        },
+        {
+          "order": 155,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (8/18)",
+          "sha256": "bb2ab9bbec55686acb1d2ba5b55f242362260bbad53f0dd5eaa3ce7f8255cacf"
+        },
+        {
+          "order": 156,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (9/18)",
+          "sha256": "5bad18a33098ef05ee0409185164f63e0655837a87de3858c3d14fb7f3546615"
+        },
+        {
+          "order": 157,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (10/18)",
+          "sha256": "164bc8293178dc8d63ef000b4c50565fbba3b78ff4b09d9e945731e6c91c7f3a"
+        },
+        {
+          "order": 158,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (11/18)",
+          "sha256": "eadf667725a8739b38b5bb97ba82c7fdeb544cc4ceb8be8f7189788f979e8c46"
+        },
+        {
+          "order": 159,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (12/18)",
+          "sha256": "060548757164b911ab5a54a1aee100925201c2d5025173ad679235e0c4abc743"
+        },
+        {
+          "order": 160,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (13/18)",
+          "sha256": "e122255a7be0fde3fbc68adaec6e5d45ea53bb46fdbf3f113cd6d2216b8949b8"
+        },
+        {
+          "order": 161,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (14/18)",
+          "sha256": "893160a9781297e194f684806c8a03c8d61f0f97925ba81161f84b7a81d32ea8"
+        },
+        {
+          "order": 162,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (15/18)",
+          "sha256": "c2287350960bc40f6cf6ebd868d61562aefe8999f24774a89865d31bd82b1977"
+        },
+        {
+          "order": 163,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (16/18)",
+          "sha256": "00b182dc081826af2a760b70c3adf9d64c93102a0fa8363ac45e15ec6e25fa16"
+        },
+        {
+          "order": 164,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (17/18)",
+          "sha256": "5b4e076fe9dff0caebb1e6e29c08ed407d1e5856ee64de5cde2d18b781f40a30"
+        },
+        {
+          "order": 165,
+          "title": "II: Of the Sources of the General or Public Revenue of the Society (18/18)",
+          "sha256": "7fea47af5913f089428a3b2b4d980e418ddbddbc90ffa885a7d336d21208fddc"
+        },
+        {
+          "order": 166,
+          "title": "III: Of Public Debts (1/8)",
+          "sha256": "f8ac9b8f43c94d66ac0eee56820963b80446b00dd6bc7cb9b24469616cbb0867"
+        },
+        {
+          "order": 167,
+          "title": "III: Of Public Debts (2/8)",
+          "sha256": "9811f0a90d9a4cca97702154d2d4143d1ef4a85e660f9c2e0f0dc44bc61c1cfd"
+        },
+        {
+          "order": 168,
+          "title": "III: Of Public Debts (3/8)",
+          "sha256": "450ff59d85c72098a422d4f05da7d4773d77ef4f947f406795e6a97b3e5fbbeb"
+        },
+        {
+          "order": 169,
+          "title": "III: Of Public Debts (4/8)",
+          "sha256": "8178b02689f7cdd4f0740fedda716874e2e2df4dd4fe1ca0afd253735ada4598"
+        },
+        {
+          "order": 170,
+          "title": "III: Of Public Debts (5/8)",
+          "sha256": "13a0c018cdb5317fd387ecbafafedeff0609a4a3693f4b839ead2bb802a54552"
+        },
+        {
+          "order": 171,
+          "title": "III: Of Public Debts (6/8)",
+          "sha256": "ddfb32d7acae34f2b8ea2039615358c002db35660db8137bcea70b0319be0d1c"
+        },
+        {
+          "order": 172,
+          "title": "III: Of Public Debts (7/8)",
+          "sha256": "0150b70a05a871f76de180f60fa17c677334264b940452ff88e2ce1b44e05070"
+        },
+        {
+          "order": 173,
+          "title": "III: Of Public Debts (8/8)",
+          "sha256": "858d2ca4a7f34993a4f7e0c8543255f663023901251e9b515a9478cf53d9b4c1"
+        }
+      ]
+    },
+    "se-arthur-conan-doyle_the-adventures-of-sherlock-holmes": {
+      "title": "The Adventures of Sherlock Holmes",
+      "author": "Arthur Conan Doyle",
+      "level": "B2 상급",
+      "total": 47,
+      "words": 104582,
+      "display": {
+        "titleKo": "셜록 홈즈의 모험",
+        "authorKo": "아서 코넌 도일",
+        "coverTitle": "Sherlock\nHolmes",
+        "coverKicker": "The Adventures of",
+        "coverAuthor": "A. Conan Doyle",
+        "cloth": "pale-blue",
+        "binding": "pictorial"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-arthur-conan-doyle_the-adventures-of-sherlock-holmes",
+        "title": "The Adventures of Sherlock Holmes",
+        "author": "Arthur Conan Doyle",
+        "publishedYear": 1892,
+        "authorDeathYear": 1930,
+        "countryOfOrigin": "GB",
+        "translator": null,
+        "repo": "standardebooks/arthur-conan-doyle_the-adventures-of-sherlock-holmes",
+        "commit": "48ec456ea50987a81f564821457b9fb32cc2bfc6",
+        "url": "https://standardebooks.org/ebooks/arthur-conan-doyle/the-adventures-of-sherlock-holmes",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-16",
+          "reviewedJurisdictions": [
+            "GB",
+            "US",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/arthur-conan-doyle/the-adventures-of-sherlock-holmes"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "A Scandal in Bohemia (1/4)",
+          "sha256": "77f41fa08d89a34243923c936452ce8e041bd87bdd068a664d03fe533a385099"
+        },
+        {
+          "order": 2,
+          "title": "A Scandal in Bohemia (2/4)",
+          "sha256": "04e84e87c150e6c9e9b92523e4104f65ced066f8d17085698a1c82a33c85afce"
+        },
+        {
+          "order": 3,
+          "title": "A Scandal in Bohemia (3/4)",
+          "sha256": "9267de78481c07fa3c07a12cf53ec6855ec4f5c441f2d195f3c869bf07073177"
+        },
+        {
+          "order": 4,
+          "title": "A Scandal in Bohemia (4/4)",
+          "sha256": "11b433acdfd8b30e59a700fb7f1ddfaecabbd97a932c64db20ba4cc2cea37375"
+        },
+        {
+          "order": 5,
+          "title": "The Redheaded League (1/4)",
+          "sha256": "b4ee8c0fe3399ec7dedd8dd0d9cc1b2742cc7e5db715ac9bffba95438ab95252"
+        },
+        {
+          "order": 6,
+          "title": "The Redheaded League (2/4)",
+          "sha256": "959a1ebb25e56d7d579966b3447360ed7c98578f19e099580fe468059b5b2b3c"
+        },
+        {
+          "order": 7,
+          "title": "The Redheaded League (3/4)",
+          "sha256": "1a1ca6260dbeab28265f3c78414c575691545c05044e3d6f757cfb709465fbaa"
+        },
+        {
+          "order": 8,
+          "title": "The Redheaded League (4/4)",
+          "sha256": "9385dbb3ad1a2c3ab91af72cec15e977bea948388f698efd8d4a0f861e217a26"
+        },
+        {
+          "order": 9,
+          "title": "A Case of Identity (1/3)",
+          "sha256": "a5d10bdc7b944bdd1cc2bab42ed145926eaf1d6ba9cbf95355e24e6dd0316c62"
+        },
+        {
+          "order": 10,
+          "title": "A Case of Identity (2/3)",
+          "sha256": "16248ad250992beebe7477ae59569f8a8983b4a252e96abc10f59536840ecbac"
+        },
+        {
+          "order": 11,
+          "title": "A Case of Identity (3/3)",
+          "sha256": "cfdbfc2d37d130436c36814901a06e7947baa42fb6776584eff92e90ed7029be"
+        },
+        {
+          "order": 12,
+          "title": "The Boscombe Valley Mystery (1/4)",
+          "sha256": "585deb24aa4df391573cecf950f1b7cbb8170477e95d6c7693c5d9a1dab82dcd"
+        },
+        {
+          "order": 13,
+          "title": "The Boscombe Valley Mystery (2/4)",
+          "sha256": "eed1c4482a0660647d011b9664353c2cb2a15c0ca37c120da44c922b834c1321"
+        },
+        {
+          "order": 14,
+          "title": "The Boscombe Valley Mystery (3/4)",
+          "sha256": "72506e080ae746e9869f970a1939a496a23100c6aeae06b7c22cdb8318558efb"
+        },
+        {
+          "order": 15,
+          "title": "The Boscombe Valley Mystery (4/4)",
+          "sha256": "d1702b16000c8f18fad3b4d2a9c392b7720f7827ff71f52cf86822f663676c98"
+        },
+        {
+          "order": 16,
+          "title": "The Five Orange Pips (1/3)",
+          "sha256": "33fa901550aa6a1b17ba8afb96be37c1dde85b2dc79a5dcc265dda34d0e486d5"
+        },
+        {
+          "order": 17,
+          "title": "The Five Orange Pips (2/3)",
+          "sha256": "551b6cb585f6c84ed8bd9bd8be4aa4442c562ba92e58d6bf451cd7555a68dc91"
+        },
+        {
+          "order": 18,
+          "title": "The Five Orange Pips (3/3)",
+          "sha256": "315f8d308cc2d5e6fb09bd2428a78599389c20de710b3f38328887ecefafa23b"
+        },
+        {
+          "order": 19,
+          "title": "The Man with the Twisted Lip (1/4)",
+          "sha256": "6f79d4bf20cbc488b8d3a830c6d08f4844fa7d2df6da5dda7d3c85fcba0cc624"
+        },
+        {
+          "order": 20,
+          "title": "The Man with the Twisted Lip (2/4)",
+          "sha256": "6f6ca810b56006943562eca96d234a01f88308d3b1f7d44b87feb63ef3732815"
+        },
+        {
+          "order": 21,
+          "title": "The Man with the Twisted Lip (3/4)",
+          "sha256": "77c72ef32a6d162b7f9ad82e564905245e97e7e09434f19e92b4605b3d0fb4ee"
+        },
+        {
+          "order": 22,
+          "title": "The Man with the Twisted Lip (4/4)",
+          "sha256": "44a5f708c6835e8ba7d9dbb83bd3fdd80ef309f190059e5519ec245224e4ee7a"
+        },
+        {
+          "order": 23,
+          "title": "The Adventure of the Blue Carbuncle (1/4)",
+          "sha256": "f04e551e58876677afcae8afcaf361fac462f886be40c98012705323a2ed7fb7"
+        },
+        {
+          "order": 24,
+          "title": "The Adventure of the Blue Carbuncle (2/4)",
+          "sha256": "a1e9bc9f726bdf9a6bee0312bdf405813243cefeb1dc2ef777b8b8ff0c1ffb02"
+        },
+        {
+          "order": 25,
+          "title": "The Adventure of the Blue Carbuncle (3/4)",
+          "sha256": "9df99d0ce956ebbc5a16669ba25e1b0bd3c5eb03926a24f88b57cf653c78a6cd"
+        },
+        {
+          "order": 26,
+          "title": "The Adventure of the Blue Carbuncle (4/4)",
+          "sha256": "31ad95ba26067397b49dfda4cf70d1eff3c4bf12eb5fdb042676dcc1acd823af"
+        },
+        {
+          "order": 27,
+          "title": "The Adventure of the Speckled Band (1/4)",
+          "sha256": "a73a2cadc4a2a2c43883aa30d91d11e79295fb1d71c2f56d098f90a9e3ab8cbd"
+        },
+        {
+          "order": 28,
+          "title": "The Adventure of the Speckled Band (2/4)",
+          "sha256": "6f4cd017040eee7233353bf805c198eb3d6e7ebab818359cd9ee529c4c178eb6"
+        },
+        {
+          "order": 29,
+          "title": "The Adventure of the Speckled Band (3/4)",
+          "sha256": "4afe27c1a93c347e4e7df9c5cf2873f703d7122904446dad8afded75005ce7c2"
+        },
+        {
+          "order": 30,
+          "title": "The Adventure of the Speckled Band (4/4)",
+          "sha256": "2dd258c5ab6b49a7a5bf4439f1acd1f909c881dc11c29a2219dc48e4df2ff49c"
+        },
+        {
+          "order": 31,
+          "title": "The Adventure of the Engineer’s Thumb (1/4)",
+          "sha256": "fcc6ab42f1667c7548867a5823a65b3972473eae59e483d3a94aa1496def4c30"
+        },
+        {
+          "order": 32,
+          "title": "The Adventure of the Engineer’s Thumb (2/4)",
+          "sha256": "f5d4f1006d781feae48260a925e031902425ffef0ae68f41eedd8951035ce277"
+        },
+        {
+          "order": 33,
+          "title": "The Adventure of the Engineer’s Thumb (3/4)",
+          "sha256": "3f62ff34b7a5712806b6079e2febfcd713632886ff773d637767c7ac69cf20bd"
+        },
+        {
+          "order": 34,
+          "title": "The Adventure of the Engineer’s Thumb (4/4)",
+          "sha256": "4b6511d6e5c2d0ddade9460bcbd447ced363026d1e45b3959d22ddc9ab6c3b4f"
+        },
+        {
+          "order": 35,
+          "title": "The Adventure of the Noble Bachelor (1/4)",
+          "sha256": "7ec2e698ef63437d9ce4286c47d369d07dd563b08e565766bbab12799c0c69d6"
+        },
+        {
+          "order": 36,
+          "title": "The Adventure of the Noble Bachelor (2/4)",
+          "sha256": "0b7bb977fa9abe6a886c80f7e3f9297fb260bdb7253223f705455b064b0c9c90"
+        },
+        {
+          "order": 37,
+          "title": "The Adventure of the Noble Bachelor (3/4)",
+          "sha256": "91dc7f9a8f9bcd1ec22a40c40cf7d632a631150603ba4bf3cecd3cfca1ba9980"
+        },
+        {
+          "order": 38,
+          "title": "The Adventure of the Noble Bachelor (4/4)",
+          "sha256": "cae6769111d56ff740b330898286a1e5ecfa8780665ea9632f53d18fd71f5c74"
+        },
+        {
+          "order": 39,
+          "title": "The Adventure of the Beryl Coronet (1/4)",
+          "sha256": "1d07fdf1eb4d26dedec878f10d30f7f070fc9d314491491b33c30051ed210413"
+        },
+        {
+          "order": 40,
+          "title": "The Adventure of the Beryl Coronet (2/4)",
+          "sha256": "7e2b262830c4ecf43b4ae85bde960fecdd20b21e3dddedc2e26b0f0d3f4d247e"
+        },
+        {
+          "order": 41,
+          "title": "The Adventure of the Beryl Coronet (3/4)",
+          "sha256": "f792c2e858ca79de46afbb086b87b17fa19314b6534300d638b682ac876f4aac"
+        },
+        {
+          "order": 42,
+          "title": "The Adventure of the Beryl Coronet (4/4)",
+          "sha256": "cea617b734726ea1487d58bcc04c2a9f756d1de2e715bc16416feb6b3e019a19"
+        },
+        {
+          "order": 43,
+          "title": "The Adventure of the Copper Beeches (1/5)",
+          "sha256": "2ad46ecdc14434dd7e46ea6d37136669f2e7606e1836e9ff1fb5abd59fff2e7f"
+        },
+        {
+          "order": 44,
+          "title": "The Adventure of the Copper Beeches (2/5)",
+          "sha256": "4d9be2933fae4e890fb8d80eb3a2a0ab33e84a7b536b121ad576ff893b739760"
+        },
+        {
+          "order": 45,
+          "title": "The Adventure of the Copper Beeches (3/5)",
+          "sha256": "ac6f384099ed5e95bdffefae7b9bfffc33b76c9a670f901773e4fe6840f4c916"
+        },
+        {
+          "order": 46,
+          "title": "The Adventure of the Copper Beeches (4/5)",
+          "sha256": "1f3318ead33d0827738e8eb2427ff58ca2113364fc76feca42344fd0f2d1f60d"
+        },
+        {
+          "order": 47,
+          "title": "The Adventure of the Copper Beeches (5/5)",
+          "sha256": "31fae422436d31f6eacf2f2ac43ebfea5484914630795784a21a514c1db436c9"
+        }
+      ]
+    },
+    "se-benjamin-franklin_the-autobiography-of-benjamin-franklin": {
+      "title": "The Autobiography of Benjamin Franklin",
+      "author": "Benjamin Franklin",
+      "level": "C1 고급",
+      "total": 28,
+      "words": 61489,
+      "display": {
+        "titleKo": "프랭클린 자서전",
+        "authorKo": "벤저민 프랭클린",
+        "binding": "buisson-1791",
+        "coverTitle": "Mémoires\nde la vie privée\nde Benjamin Franklin,\nécrits par lui-même,\net adressés a son fils;",
+        "coverPartTitle": "Suivis d’un Précis historique\nde sa Vie politique,",
+        "coverPlace": "A Paris,",
+        "coverImprint": "Chez Buisson, Libraire",
+        "coverEdition": "1791."
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-benjamin-franklin_the-autobiography-of-benjamin-franklin",
+        "title": "The Autobiography of Benjamin Franklin",
+        "author": "Benjamin Franklin",
+        "publishedYear": 1791,
+        "authorDeathYear": 1790,
+        "countryOfOrigin": "US",
+        "translator": null,
+        "repo": "standardebooks/benjamin-franklin_the-autobiography-of-benjamin-franklin",
+        "commit": "9e71f1cca87cf88649de02668ccbdd9c1cf582b3",
+        "url": "https://standardebooks.org/ebooks/benjamin-franklin/the-autobiography-of-benjamin-franklin",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "US",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/benjamin-franklin/the-autobiography-of-benjamin-franklin"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: Ancestry and Early Youth in Boston (1/2)",
+          "sha256": "5e0bc6c2bacd4e816b9a91f2515da905d0186e9a4c7d3f6ef165eba5d62ef406"
+        },
+        {
+          "order": 2,
+          "title": "I: Ancestry and Early Youth in Boston (2/2)",
+          "sha256": "b16a36f4ca1702159fb22a295866858e44da18d5377b72080701de781a298330"
+        },
+        {
+          "order": 3,
+          "title": "II: Beginning Life as a Printer (1/2)",
+          "sha256": "8f6b48e8bbf8d27c155f2eb38a67834ce8eff1a907bb7b711e7c8b225da90e66"
+        },
+        {
+          "order": 4,
+          "title": "II: Beginning Life as a Printer (2/2)",
+          "sha256": "2f7b3339622d74ca31bde2bbe585d0028af84644491f952fea86f64b8f9cfd3c"
+        },
+        {
+          "order": 5,
+          "title": "III: Arrival in Philadelphia",
+          "sha256": "ec13d72c9501df20f12c8fc314fffd136dce7bc0f03e77279a35ca271d748635"
+        },
+        {
+          "order": 6,
+          "title": "IV: First Visit to Boston",
+          "sha256": "01ec0ee05f8de99779a51d407cf5df9d5019c5b7ad55af1636202fd8d641e5f1"
+        },
+        {
+          "order": 7,
+          "title": "V: Early Friends in Philadelphia",
+          "sha256": "36684f4ff004fb6d3b4717c8af818883ba0476d86fa98c16d490cf71475b7cba"
+        },
+        {
+          "order": 8,
+          "title": "VI: First Visit to London (1/2)",
+          "sha256": "a5e7e4925044c01946f1e2fcf80ece001ba3bf5bacab832b17daf6054724a490"
+        },
+        {
+          "order": 9,
+          "title": "VI: First Visit to London (2/2)",
+          "sha256": "6794371a0a9a5ef6cb33e40b04efb35c4beb38de6fdf706f761155601ff3dded"
+        },
+        {
+          "order": 10,
+          "title": "VII: Beginning Business in Philadelphia (1/2)",
+          "sha256": "7fb54a930e15b4d5eb9513331260aa892ad2ae73766e325393ccf9996672e17a"
+        },
+        {
+          "order": 11,
+          "title": "VII: Beginning Business in Philadelphia (2/2)",
+          "sha256": "87cf3243e2bd1b582f0389023c1bc34245d6a26667d834cd26a351b099866d0a"
+        },
+        {
+          "order": 12,
+          "title": "VIII: Business Success and First Public Service (1/2)",
+          "sha256": "6a2f8b3a44651d94f05c96100d8b18ffc3555672e16f650d36ee440503dc08f0"
+        },
+        {
+          "order": 13,
+          "title": "VIII: Business Success and First Public Service (2/2)",
+          "sha256": "0baf348aad5e804412f45a335c76daa88b0a92eb143fbfdf3c695e40252450fc"
+        },
+        {
+          "order": 14,
+          "title": "IX: Plan for Attaining Moral Perfection (1/2)",
+          "sha256": "cda8090ea693c9c1eac622f6d8d7fd2371975aa0aa84fec35a8a135ee2548ca1"
+        },
+        {
+          "order": 15,
+          "title": "IX: Plan for Attaining Moral Perfection (2/2)",
+          "sha256": "69a8411e18bae2b07de3b895c01f07285848933f234a0e26f5b085228be966c2"
+        },
+        {
+          "order": 16,
+          "title": "X: Poor Richard’s Almanac and Other Activities",
+          "sha256": "28deced7543eb514d4962c0f27a497e316aa5cbac56e3040ea2d72577d17e632"
+        },
+        {
+          "order": 17,
+          "title": "XI: Interest in Public Affairs",
+          "sha256": "8f5826ec256736fc6f45b474c90341c2f678879339b3959ddb6c202aa55b3a0d"
+        },
+        {
+          "order": 18,
+          "title": "XII: Defense of the Province",
+          "sha256": "f8d8e42b3c124c2274257918aaf1cffb42840db132de5fb33c1ba806405e6e05"
+        },
+        {
+          "order": 19,
+          "title": "XIII: Public Services and Duties (1749–1753) (1/2)",
+          "sha256": "faef8173a4064fc40199959962954bbae09b1e8eb0ee4a5ac17c00f0c162e920"
+        },
+        {
+          "order": 20,
+          "title": "XIII: Public Services and Duties (1749–1753) (2/2)",
+          "sha256": "443af78a979028599ebc876e7f4ceb13c5628bf35e48870e6dd5439d0da124bc"
+        },
+        {
+          "order": 21,
+          "title": "XIV: Albany Plan of Union",
+          "sha256": "68164a150da96b8321c43adb1ed8d355ae6bf5942aa240cc760067f579ffbd26"
+        },
+        {
+          "order": 22,
+          "title": "XV: Quarrels with the Proprietary Governors",
+          "sha256": "4b2e37d3887d74248885c33f72b6e32a5c9f6569e110dac45af4240a2ca824d5"
+        },
+        {
+          "order": 23,
+          "title": "XVI: Braddock’s Expedition (1/2)",
+          "sha256": "47d9a3cfeb3d5727e124012253ac3db4b667e024d836d119ce062073ceb9ed8f"
+        },
+        {
+          "order": 24,
+          "title": "XVI: Braddock’s Expedition (2/2)",
+          "sha256": "a90e76391520c485f98d455ddec4a9639b5c12d209db5f96c033159c28220063"
+        },
+        {
+          "order": 25,
+          "title": "XVII: Franklin’s Defense of the Frontier",
+          "sha256": "5af9598b4dbb46285b59c6e080301a8172c08fa034812f7af6db532b143c0e95"
+        },
+        {
+          "order": 26,
+          "title": "XVIII: Scientific Experiments",
+          "sha256": "83270aeaed3d2c71bb0f53ce2876d2d7bdbec26572ac4a71dc2c9b31c1731217"
+        },
+        {
+          "order": 27,
+          "title": "XIX: Agent of Pennsylvania in London (1/2)",
+          "sha256": "39e63b2f20cad5c16a39b62ab5f477a70fd70f713cf20ef031079ad88e87edaf"
+        },
+        {
+          "order": 28,
+          "title": "XIX: Agent of Pennsylvania in London (2/2)",
+          "sha256": "610866fece7495edbd873f36540174d638d052e998bcae05556d29dbb27bed9b"
+        }
+      ]
+    },
+    "se-charles-dickens_a-christmas-carol": {
+      "title": "A Christmas Carol",
+      "author": "Charles Dickens",
+      "level": "B2 상급",
+      "total": 13,
+      "words": 28442,
+      "display": {
+        "titleKo": "크리스마스 캐럴",
+        "authorKo": "찰스 디킨스",
+        "coverTitle": "Christmas\nCarol",
+        "coverKicker": "A",
+        "coverAuthor": "Charles Dickens",
+        "cloth": "cinnamon",
+        "binding": "wreath"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-charles-dickens_a-christmas-carol",
+        "title": "A Christmas Carol",
+        "author": "Charles Dickens",
+        "publishedYear": 1843,
+        "authorDeathYear": 1870,
+        "countryOfOrigin": "GB",
+        "translator": null,
+        "repo": "standardebooks/charles-dickens_a-christmas-carol",
+        "commit": "dd1fb9f80b0c3fcfa2686449468f094eeadb3ff4",
+        "url": "https://standardebooks.org/ebooks/charles-dickens/a-christmas-carol",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-16",
+          "reviewedJurisdictions": [
+            "GB",
+            "US",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/charles-dickens/a-christmas-carol"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Stave I: Marley’s Ghost (1/3)",
+          "sha256": "1f3d5e0101bd5a93731ee34c133448c54673b7c91004b01182b84037687a4fda"
+        },
+        {
+          "order": 2,
+          "title": "Stave I: Marley’s Ghost (2/3)",
+          "sha256": "17a47450de80408c7b14feaa4bf1270e2fe9679adf18f1ba2145d126a6c7860a"
+        },
+        {
+          "order": 3,
+          "title": "Stave I: Marley’s Ghost (3/3)",
+          "sha256": "0971e282d2572d7c06b69206fc067de017c54f4524b9ad2f09a7ff7cf0441875"
+        },
+        {
+          "order": 4,
+          "title": "Stave II: The First of the Three Spirits (1/3)",
+          "sha256": "e27290dd1766feca7d9645310ed5ea3e2fcc88aba7b71a39c2ab8b8732be5d5f"
+        },
+        {
+          "order": 5,
+          "title": "Stave II: The First of the Three Spirits (2/3)",
+          "sha256": "e4acd1be11322f566106c9fa44869083d124700e873faf6e4ea99df8c5ff0a67"
+        },
+        {
+          "order": 6,
+          "title": "Stave II: The First of the Three Spirits (3/3)",
+          "sha256": "883d42bd9e575cc337b122e2c5f3d454405b04eb10c28f38ce1446d47e0aeb65"
+        },
+        {
+          "order": 7,
+          "title": "Stave III: The Second of the Three Spirits (1/4)",
+          "sha256": "edaba363143631d1538177fa80c6ce95cf7df159bcd13a0d44b20e7f3aed2f38"
+        },
+        {
+          "order": 8,
+          "title": "Stave III: The Second of the Three Spirits (2/4)",
+          "sha256": "b11a7d5c8e78ff1dcdd3757861eda2a4f5e0a9a6f2f2a01fce3722834616020f"
+        },
+        {
+          "order": 9,
+          "title": "Stave III: The Second of the Three Spirits (3/4)",
+          "sha256": "f9bd708fbc04ee37f82e39db0b06463f1ab91ee9f4c29cd1846b1d3398b4326f"
+        },
+        {
+          "order": 10,
+          "title": "Stave III: The Second of the Three Spirits (4/4)",
+          "sha256": "5f0c8b5fe34273343bc577a3e8c15147b9bc2709e3dc43415b5d0c846de80cd3"
+        },
+        {
+          "order": 11,
+          "title": "Stave IV: The Last of the Spirits (1/2)",
+          "sha256": "5c225347f3c1a675dbbff17c354ada8b91203a813ca65d9bc6e03764fba3fe62"
+        },
+        {
+          "order": 12,
+          "title": "Stave IV: The Last of the Spirits (2/2)",
+          "sha256": "a2b328b977452d5cb57e47192ab4e65c061037acbb9d405591fd1580f17e3ef6"
+        },
+        {
+          "order": 13,
+          "title": "Stave V: The End of It",
+          "sha256": "6e9ff0e380268cc93e1a810b8931ad53404049c4a3b393d03f11b7a6d67319c9"
+        }
+      ]
+    },
+    "se-f-scott-fitzgerald_the-great-gatsby": {
+      "title": "The Great Gatsby",
+      "author": "F. Scott Fitzgerald",
+      "level": "B2 상급",
+      "total": 22,
+      "words": 48105,
+      "display": {
+        "titleKo": "위대한 개츠비",
+        "authorKo": "F. 스콧 피츠제럴드",
+        "binding": "scribner-blind",
+        "coverTitle": "The Great\nGatsby",
+        "coverAuthor": "By F. Scott Fitzgerald"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-f-scott-fitzgerald_the-great-gatsby",
+        "title": "The Great Gatsby",
+        "author": "F. Scott Fitzgerald",
+        "publishedYear": 1925,
+        "authorDeathYear": 1940,
+        "countryOfOrigin": "US",
+        "translator": null,
+        "repo": "standardebooks/f-scott-fitzgerald_the-great-gatsby",
+        "commit": "fe47c8c04f5175d45f9410f4e3ca64c257ae0acc",
+        "url": "https://standardebooks.org/ebooks/f-scott-fitzgerald/the-great-gatsby",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "US",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/f-scott-fitzgerald/the-great-gatsby"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I (1/3)",
+          "sha256": "34b6318e4769422004be9757336a8c26accd4e5319ced21dac4d30b77682533d"
+        },
+        {
+          "order": 2,
+          "title": "I (2/3)",
+          "sha256": "3a8f4c5970fc2f7a219da6085a377d6c11385c6fd5b18c37066de96d3a71c729"
+        },
+        {
+          "order": 3,
+          "title": "I (3/3)",
+          "sha256": "b5d4f69c853211d357e3e6cb66f9a67757e1f776327c2288d8dcb0c95f63361d"
+        },
+        {
+          "order": 4,
+          "title": "II (1/2)",
+          "sha256": "ac7593667e61448ee9ca7acc938fbc116354794673b667096901443c487f6f0d"
+        },
+        {
+          "order": 5,
+          "title": "II (2/2)",
+          "sha256": "41310bfcd5d42f7d2bc0e06d1eb046241aaba1d5e9b8f0c9c1b67ec1854a4770"
+        },
+        {
+          "order": 6,
+          "title": "III (1/3)",
+          "sha256": "639868e32e86612b41b07182d5c0b550f7888a179329a8466145dce228308c5f"
+        },
+        {
+          "order": 7,
+          "title": "III (2/3)",
+          "sha256": "ac47a13a1285385ce66e1e8ee7d0aef0fb0f8e9a101e3e02e2aa9bf095842e92"
+        },
+        {
+          "order": 8,
+          "title": "III (3/3)",
+          "sha256": "9e19134d2ed24e868b5b0bc425f0eea635e04b79e71952997018353183a70cd6"
+        },
+        {
+          "order": 9,
+          "title": "IV (1/2)",
+          "sha256": "e143660006eea7ab7fc198d4d7f41e2e0f5e39189c6af93e7b53b47a99aa3c7d"
+        },
+        {
+          "order": 10,
+          "title": "IV (2/2)",
+          "sha256": "c0c5bb191acb2d4cb61b1a7d4c0e7c38eb4fa8d2d082267cdfd32463735e0642"
+        },
+        {
+          "order": 11,
+          "title": "V (1/2)",
+          "sha256": "7e96c7bff9fca6372e96c7fa694e1fefbfde89d9e9405adebc90c98e798ac2d9"
+        },
+        {
+          "order": 12,
+          "title": "V (2/2)",
+          "sha256": "46808df0bd1b118101157b723794db2d4f3e8d0496fad0876d6ebef290bbace9"
+        },
+        {
+          "order": 13,
+          "title": "VI (1/2)",
+          "sha256": "1004284fee30f13c536492b43f4aa169675950c491a3a69f45f080e393791c81"
+        },
+        {
+          "order": 14,
+          "title": "VI (2/2)",
+          "sha256": "1cd1537b4ebd6e4753d024ba486e47468ef76b8c5486cb9a093cb0635e3fbab3"
+        },
+        {
+          "order": 15,
+          "title": "VII (1/4)",
+          "sha256": "51f51b94078178220f4ea948e2875a824821aac611d3b8c1c0b05b9fa3fd6502"
+        },
+        {
+          "order": 16,
+          "title": "VII (2/4)",
+          "sha256": "7c436f67c7c5ceb0a17ce7ed4d1198e1507ebab365724cd1e4c41a2b483aad65"
+        },
+        {
+          "order": 17,
+          "title": "VII (3/4)",
+          "sha256": "2ff4f4266d378df46de4f13cd30522b991d3b992a9bdb44186939e997ef1eeec"
+        },
+        {
+          "order": 18,
+          "title": "VII (4/4)",
+          "sha256": "8cf613df154179d3bc1952e87a13260b2c4e0385e687acac82a5ba893e0ca78f"
+        },
+        {
+          "order": 19,
+          "title": "VIII (1/2)",
+          "sha256": "a22010810f9c2d6bd9df85d71c68efd6b54c5803a641dcd67aa7291dda64f38f"
+        },
+        {
+          "order": 20,
+          "title": "VIII (2/2)",
+          "sha256": "0db5be191f10094afa8be9dade12a645bbe747b1e4a2878dd640274c9493a1f8"
+        },
+        {
+          "order": 21,
+          "title": "IX (1/2)",
+          "sha256": "c6a8019745eae3adbd413b6bfb2bc282dd7cc344b58d1b4ff031b3e5b522a9c2"
+        },
+        {
+          "order": 22,
+          "title": "IX (2/2)",
+          "sha256": "3c12f8efa31eda6d1a48165b17cba454a6a53417a8afbbbe0a9c753c419bd112"
+        }
+      ]
+    },
+    "se-henry-david-thoreau_walden": {
+      "title": "Walden",
+      "author": "Henry David Thoreau",
+      "level": "C1 고급",
+      "total": 50,
+      "words": 106216,
+      "display": {
+        "titleKo": "월든",
+        "authorKo": "헨리 데이비드 소로",
+        "binding": "ticknor-arabesque",
+        "coverTitle": "Walden"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-henry-david-thoreau_walden",
+        "title": "Walden",
+        "author": "Henry David Thoreau",
+        "publishedYear": 1854,
+        "authorDeathYear": 1862,
+        "countryOfOrigin": "US",
+        "translator": null,
+        "repo": "standardebooks/henry-david-thoreau_walden",
+        "commit": "af72c4ac0793569939ab3d038cbda440b60da940",
+        "url": "https://standardebooks.org/ebooks/henry-david-thoreau/walden",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "US",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/henry-david-thoreau/walden"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Economy (1/12)",
+          "sha256": "bac8b5339438c3cdb5c884f5e8f2e336005baddabeaf44190e45f6159ed2e256"
+        },
+        {
+          "order": 2,
+          "title": "Economy (2/12)",
+          "sha256": "b13722723c7cd045703ddf9183cf3ac50195cdfd7c07e385c3ae15bf1729d3fd"
+        },
+        {
+          "order": 3,
+          "title": "Economy (3/12)",
+          "sha256": "e83b3592c9b6ad0fb14b53687424458b77e6a7f281ae591ed5103deb98719cbb"
+        },
+        {
+          "order": 4,
+          "title": "Economy (4/12)",
+          "sha256": "7ab040c3e2640cff656534f2569ab0babb05986d7bd0ced281fe6734780e761d"
+        },
+        {
+          "order": 5,
+          "title": "Economy (5/12)",
+          "sha256": "d48fcaf606a39f63cb274dc7022b6abc1cb35c64dbd1721873a8245a07fb0b05"
+        },
+        {
+          "order": 6,
+          "title": "Economy (6/12)",
+          "sha256": "3bb80fa7fb66be6729ff42a0e0523b1abf7aa74bc4c37558956c977661be67aa"
+        },
+        {
+          "order": 7,
+          "title": "Economy (7/12)",
+          "sha256": "4b8a57c7610b7b4c74d6e98c27db46044fda3252f966ff2b2e781e7f524f8e1c"
+        },
+        {
+          "order": 8,
+          "title": "Economy (8/12)",
+          "sha256": "a367136fd8677e7fd71932121e2a716c191018766eea083ac0f914229f26c3ba"
+        },
+        {
+          "order": 9,
+          "title": "Economy (9/12)",
+          "sha256": "05dc4cdc489ec25f11c670bbd695fdceee8837e5f8473e9ccaeddf352b42ba61"
+        },
+        {
+          "order": 10,
+          "title": "Economy (10/12)",
+          "sha256": "c53e0c9d4782a533d98a91267d88740f6b48e8cd4a92c8b84c3bc7188aad651e"
+        },
+        {
+          "order": 11,
+          "title": "Economy (11/12)",
+          "sha256": "8bbd10650dba9f3cd1b7533a1af3fe6cc545e396c5765a4d39b89dfd44bca341"
+        },
+        {
+          "order": 12,
+          "title": "Economy (12/12)",
+          "sha256": "39753e84be51239d81babcc3c41e1fd03e00cf7e4e03f5a6f92ea83c2fa34230"
+        },
+        {
+          "order": 13,
+          "title": "Where I Lived, and What I Lived For (1/3)",
+          "sha256": "a219641cf3c277be89da38c76712f597c386a55a260e758591f78fd3a4401e0a"
+        },
+        {
+          "order": 14,
+          "title": "Where I Lived, and What I Lived For (2/3)",
+          "sha256": "ebfdf3e2b3da4a8cd45df4194a1cfbc9197761cd97c15da66cdf0e4a915f11dc"
+        },
+        {
+          "order": 15,
+          "title": "Where I Lived, and What I Lived For (3/3)",
+          "sha256": "b3e37992c44dc5c32b308e634c7baa2a436991d57e36f325dd8c4de7cd2984f1"
+        },
+        {
+          "order": 16,
+          "title": "Reading (1/2)",
+          "sha256": "82d671839b3dc025c184d8763f080f5af558b1f4808242a941aae7fdc6ef3c1d"
+        },
+        {
+          "order": 17,
+          "title": "Reading (2/2)",
+          "sha256": "7c0b1765f8fc222d66da8aaa0b84dcd5b9046b15aa6282cfed7ef0d7a216fccf"
+        },
+        {
+          "order": 18,
+          "title": "Sounds (1/3)",
+          "sha256": "8569ccd126310ec7a40a04ff64ec5dc2522ae9637ac2c017d7cd05d8673342ce"
+        },
+        {
+          "order": 19,
+          "title": "Sounds (2/3)",
+          "sha256": "eaf4e183da3507ce3e968fa711ae08a08ad111bf4cd1633e64519dc48ac29e15"
+        },
+        {
+          "order": 20,
+          "title": "Sounds (3/3)",
+          "sha256": "f7bd4924c94a1206e402a63742c068553129f3ef6106085f57f8e900b27a0e11"
+        },
+        {
+          "order": 21,
+          "title": "Solitude (1/2)",
+          "sha256": "84d461c0e572eca2796cf7e00502fd2a113e8d8066d550703fedbad379be94bd"
+        },
+        {
+          "order": 22,
+          "title": "Solitude (2/2)",
+          "sha256": "0f122ebefab54c14326aaebabf9b1a10ec588c573ea768e90020e69e954bade8"
+        },
+        {
+          "order": 23,
+          "title": "Visitors (1/2)",
+          "sha256": "117a1a55e90cdf2cf0a4b18647164772d2e47eec29be7dbfda2de33b9aed5d16"
+        },
+        {
+          "order": 24,
+          "title": "Visitors (2/2)",
+          "sha256": "b30125850c563e2739dbbc5eff27069062ac0c6f120693dcb381285dfe68a225"
+        },
+        {
+          "order": 25,
+          "title": "The Bean-Field (1/2)",
+          "sha256": "95069235c183c2a920ddfede918e016f82bf1f65a8f1a31e9a647caa0f7bb04c"
+        },
+        {
+          "order": 26,
+          "title": "The Bean-Field (2/2)",
+          "sha256": "a7b84e9d92cc216359411ea74e9e345128f9fe2f7133b52c2706e78b778125e9"
+        },
+        {
+          "order": 27,
+          "title": "The Village",
+          "sha256": "f38ad0767503c177b71ec8e9f08ad6226778af1d1320b2ace45b7f3f5f7c0a12"
+        },
+        {
+          "order": 28,
+          "title": "The Ponds (1/4)",
+          "sha256": "af00400c240f80a1b88e02d2dfea8538470f62ac962c929ff7c45924dd37bac1"
+        },
+        {
+          "order": 29,
+          "title": "The Ponds (2/4)",
+          "sha256": "9e01aa679d4c36e04c481c18dce24d204a4a838ba14e7fa643a2931f011ec712"
+        },
+        {
+          "order": 30,
+          "title": "The Ponds (3/4)",
+          "sha256": "b04d21f6a5b3cb9ad9f763d1b0af8a3ad89ab85e6efa9aea6504aee66fffef7e"
+        },
+        {
+          "order": 31,
+          "title": "The Ponds (4/4)",
+          "sha256": "03df5b2cf5b75b7b8cd9ef2be15301b892dd7e029ab326f707121616fb604277"
+        },
+        {
+          "order": 32,
+          "title": "Baker Farm",
+          "sha256": "875c85e6fe61a340e8a844c04efb2b0c6fae3ea2e8f11cef37a3b81eed5f7a09"
+        },
+        {
+          "order": 33,
+          "title": "Higher Laws (1/2)",
+          "sha256": "69ffa3371c44aa34c8e5923bf4d9c3db38eb365ede47e02f33825b9a236210c1"
+        },
+        {
+          "order": 34,
+          "title": "Higher Laws (2/2)",
+          "sha256": "499441ed53e979a28e0972084b241b962924cde60abe0c043c8a303a98a1af09"
+        },
+        {
+          "order": 35,
+          "title": "Brute Neighbors (1/2)",
+          "sha256": "3afe7a20505e9c0b8e89cf109e130897933b472a43c8e7ccfce46f339826389f"
+        },
+        {
+          "order": 36,
+          "title": "Brute Neighbors (2/2)",
+          "sha256": "776bcfb883ddb8cbbed52d6e74e0a5b58e3f66f6536e37abfe615f9fde83b6ae"
+        },
+        {
+          "order": 37,
+          "title": "House-Warming (1/3)",
+          "sha256": "b21dc5f2e6fe8822300226e4950f92eb8b773153b709d15eb15f5ca49f8b231e"
+        },
+        {
+          "order": 38,
+          "title": "House-Warming (2/3)",
+          "sha256": "be5096c2862cdbbe2ef42fcee96c6eea8a0b044df3f67a8a42e9cdd60f3f0156"
+        },
+        {
+          "order": 39,
+          "title": "House-Warming (3/3)",
+          "sha256": "a36d395b1122bbbdae9474226aa368e6ed3ef665f737e8db5170576879887d19"
+        },
+        {
+          "order": 40,
+          "title": "Former Inhabitants and Winter Visitors (1/2)",
+          "sha256": "6c1fd28e575db183d9e290865dc1f03a546121b7a93b98b27dc6f3bbd3c6298c"
+        },
+        {
+          "order": 41,
+          "title": "Former Inhabitants and Winter Visitors (2/2)",
+          "sha256": "d0d060e97bb59a404a0f93d47512e27795c78fd5d4a1c7d45eb7428acf2f4d96"
+        },
+        {
+          "order": 42,
+          "title": "Winter Animals (1/2)",
+          "sha256": "2af49e54e0391175c57dfe6911cc7a42a48d81190ee3c487964fd9417dd421d6"
+        },
+        {
+          "order": 43,
+          "title": "Winter Animals (2/2)",
+          "sha256": "f5edac8a7c2f62279fc58a5fbd60b562f7886916e2e8380f0b911c0b2bf182be"
+        },
+        {
+          "order": 44,
+          "title": "The Pond in Winter (1/2)",
+          "sha256": "fe067ce60dece1c0f86ca3d014305db7310e47cc5ae0b64c52306ecdb90c6e74"
+        },
+        {
+          "order": 45,
+          "title": "The Pond in Winter (2/2)",
+          "sha256": "3427c766275bd52e034b70973b216abca97f95454ba8041113a9a0920122979a"
+        },
+        {
+          "order": 46,
+          "title": "Spring (1/3)",
+          "sha256": "8e6d45fcbbb40b3cbd4fdf9e215579ba33d97a0b7f7add50ad12617e58fcd71b"
+        },
+        {
+          "order": 47,
+          "title": "Spring (2/3)",
+          "sha256": "bf6c6c57a00f1cb36d416524b42b4fcda19851c2f19f04d459202d70deba44b7"
+        },
+        {
+          "order": 48,
+          "title": "Spring (3/3)",
+          "sha256": "ba9df5e97a25b27647e0d95387fa097da4867163450faeed74c506b7d7f90ed3"
+        },
+        {
+          "order": 49,
+          "title": "Conclusion (1/2)",
+          "sha256": "99bbf278596fb9533a1634e663435d4e5ddc50f0ddaf21be4a39d2d54a3eb0d7"
+        },
+        {
+          "order": 50,
+          "title": "Conclusion (2/2)",
+          "sha256": "8b6c7840954e41e8d9f4fec8877261840d7fffac306f58f5c833791342593d3c"
+        }
+      ]
+    },
+    "se-herman-melville_moby-dick": {
+      "title": "Moby Dick",
+      "author": "Herman Melville",
+      "level": "C1 고급",
+      "total": 150,
+      "words": 205458,
+      "display": {
+        "titleKo": "모비 딕",
+        "authorKo": "허먼 멜빌",
+        "binding": "harper-blind",
+        "coverTitle": "Moby-Dick"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-herman-melville_moby-dick",
+        "title": "Moby Dick",
+        "author": "Herman Melville",
+        "publishedYear": 1851,
+        "authorDeathYear": 1891,
+        "countryOfOrigin": "US",
+        "translator": null,
+        "repo": "standardebooks/herman-melville_moby-dick",
+        "commit": "013b51e2d9d6bb28b1d054bfc30beeeff4b85480",
+        "url": "https://standardebooks.org/ebooks/herman-melville/moby-dick",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "US",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/herman-melville/moby-dick"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: Loomings",
+          "sha256": "7992fab6fe0626a1c3010c89a006d798c9f649fc83f15bf896dd301f8f108e90"
+        },
+        {
+          "order": 2,
+          "title": "II: The Carpetbag",
+          "sha256": "da2724bc54278ab8924272a9734f771fee78207cfe55e41f8722b66f7c2b4fee"
+        },
+        {
+          "order": 3,
+          "title": "III: The Spouter-Inn (1/3)",
+          "sha256": "989b87668c56cc1a550c416e0fca5d2a041adcb9519d49da3f1c7f90a2a34acc"
+        },
+        {
+          "order": 4,
+          "title": "III: The Spouter-Inn (2/3)",
+          "sha256": "762cf0979599d2eb972ae96b3e65742864ca3739e216d14eb04834a0848e7b04"
+        },
+        {
+          "order": 5,
+          "title": "III: The Spouter-Inn (3/3)",
+          "sha256": "5d2a0dd69586f6e8932c306923526426bd21833eab5e7a691fdc517355960ff9"
+        },
+        {
+          "order": 6,
+          "title": "IV: The Counterpane",
+          "sha256": "47454be50e8dafab009637e5163183c81471757c1b5586bfc674513b5168a636"
+        },
+        {
+          "order": 7,
+          "title": "V: Breakfast",
+          "sha256": "bf2e532a60305d9ccf6a684818de30ee6b1df98e4c0762d16659da0314a6a535"
+        },
+        {
+          "order": 8,
+          "title": "VI: The Street",
+          "sha256": "47262dff4bc22a65856607d145ebea4d062e2ab91823ffde386c3368f0f6ce83"
+        },
+        {
+          "order": 9,
+          "title": "VII: The Chapel",
+          "sha256": "4a3e6a961a8e9b0e6f7dff5943a42aacbd4d8c202240602bd94698ec97027fab"
+        },
+        {
+          "order": 10,
+          "title": "VIII: The Pulpit",
+          "sha256": "448d22c082da6a2c840e882c7536a5af646563c1702cc4b908b12235ed675d0d"
+        },
+        {
+          "order": 11,
+          "title": "IX: The Sermon (1/2)",
+          "sha256": "155804aead015afaa6e762f21d9a47217c9fd5cd1eb32a0fa8afd2493a6d0563"
+        },
+        {
+          "order": 12,
+          "title": "IX: The Sermon (2/2)",
+          "sha256": "7113b52d08b7448b8cdd0df756748ee88daf05aa9b17c73a01a5d4d40626f092"
+        },
+        {
+          "order": 13,
+          "title": "X: A Bosom Friend",
+          "sha256": "0b49f78241eec7f9e02245d72a5f6465474f622666d8e652d231551ed1c53d4b"
+        },
+        {
+          "order": 14,
+          "title": "XI: Nightgown",
+          "sha256": "b666d0d76568c25dc58739c3bf6464b0e5518bd34b8e32c6c587063aade43196"
+        },
+        {
+          "order": 15,
+          "title": "XII: Biographical",
+          "sha256": "c960a84e92a01a906586a6f8f32c3075a2125921e259a1585c5c971dd25aca94"
+        },
+        {
+          "order": 16,
+          "title": "XIII: Wheelbarrow",
+          "sha256": "db6cbb69214593268dcb0c90c0dd49c1df9df350bd1a64ae9dd71dbb6cb6a8b9"
+        },
+        {
+          "order": 17,
+          "title": "XIV: Nantucket",
+          "sha256": "5ce20fa5b1c4871f5efa6c40562995da4e31b1adacfa087cfb00de3acd94ef22"
+        },
+        {
+          "order": 18,
+          "title": "XV: Chowder",
+          "sha256": "2652fce98d01f7a9fab9093e9a151c64e1b47b2306ab26ad3175c8a4412ac3ff"
+        },
+        {
+          "order": 19,
+          "title": "XVI: The Ship (1/2)",
+          "sha256": "54e5695fe24b0795dc6ab4ddaed3989cde183ae7274e14ca0b56de99bdf2b20c"
+        },
+        {
+          "order": 20,
+          "title": "XVI: The Ship (2/2)",
+          "sha256": "d343aedb509d426cf65ca3a9d0ef06314336358460305cc739af6923de99b281"
+        },
+        {
+          "order": 21,
+          "title": "XVII: The Ramadan",
+          "sha256": "14209d4b4b01b8886abff1e25d7b0f7f2c21438a66f153702c660a3553f6a3d3"
+        },
+        {
+          "order": 22,
+          "title": "XVIII: His Mark",
+          "sha256": "2a2db873336b0f6aa0df02bb0e74a5d1ca5ed2016d37c29601b88eed2a1bbcd8"
+        },
+        {
+          "order": 23,
+          "title": "XIX: The Prophet",
+          "sha256": "bde7ed4f3e81e0b4dfc69bcc6d4ec69e68793acc1a3344d0d9c20f0b99b1f32f"
+        },
+        {
+          "order": 24,
+          "title": "XX: All Astir",
+          "sha256": "07c6cdd40ac35084bf76b7b1303d5d9dd27824dd0378c3248d30bc551c4d64da"
+        },
+        {
+          "order": 25,
+          "title": "XXI: Going Aboard",
+          "sha256": "7e22409ba2a5b21cb52d3531810ba0a1d16661d042094e07819375299adad36a"
+        },
+        {
+          "order": 26,
+          "title": "XXII: Merry Christmas",
+          "sha256": "d8e8471014762ce9c2cb905a8f0a5ec53161792d0dce286655e2dcbc43f3ae78"
+        },
+        {
+          "order": 27,
+          "title": "XXIII: The Lee Shore",
+          "sha256": "ec1c570eed4ed454a3fb053a1ff04fed50d5dc2742b1660437e9836570a5aa95"
+        },
+        {
+          "order": 28,
+          "title": "XXIV: The Advocate",
+          "sha256": "b265a69d6d93835e58285d4bdcc6eb229381870ada8a579f7554e6d6abc5064f"
+        },
+        {
+          "order": 29,
+          "title": "XXV: Postscript",
+          "sha256": "9b22aab82c40e70539becd36658dcaad412b080be530cc593ef80723a2f4d7da"
+        },
+        {
+          "order": 30,
+          "title": "XXVI: Knights and Squires",
+          "sha256": "908c6666d331cd729306c78f441b9b559b058a32c43e6877159989bf74381a93"
+        },
+        {
+          "order": 31,
+          "title": "XXVII: Knights and Squires",
+          "sha256": "4b207408a2045067493c4f7bb15df1d17aa7a8df9cc665d2d98f6bf870f796f9"
+        },
+        {
+          "order": 32,
+          "title": "XXVIII: Ahab",
+          "sha256": "cc435c83a88a6c6cdce11232d27a69ee464311f4054a6ca9a2eca2b353d2064c"
+        },
+        {
+          "order": 33,
+          "title": "XXIX: Enter Ahab; To Him, Stubb",
+          "sha256": "d218448b8955f458be392255fef57597d5f2aa72e5897f237e744c35ba40b087"
+        },
+        {
+          "order": 34,
+          "title": "XXX: The Pipe",
+          "sha256": "e5a6e146aaf9ae782665abc0bed09d6766b831b3cab276e2d7c89183a5e7666c"
+        },
+        {
+          "order": 35,
+          "title": "XXXI: Queen Mab",
+          "sha256": "e3779dd23534ec3861a74dd35583635c408075a1c5d5f8d7f241138b01203fbb"
+        },
+        {
+          "order": 36,
+          "title": "XXXII: Cetology (1/2)",
+          "sha256": "d6592d8e683ceaaccf705edb1b4ff7d37666ffef8638817d0910d20ee9eddab2"
+        },
+        {
+          "order": 37,
+          "title": "XXXII: Cetology (2/2)",
+          "sha256": "3f9df904ab2d061bfbb61896ad7d80c1f7da83d3feba9e14f89d5854da68a516"
+        },
+        {
+          "order": 38,
+          "title": "XXXIII: The Specksnyder",
+          "sha256": "d291d4a1445bd44ac8711df27f3967eea0f6880108c3306324ed0fcae9ca12f0"
+        },
+        {
+          "order": 39,
+          "title": "XXXIV: The Cabin-Table",
+          "sha256": "f16cb79da8fe2865c027b5808931a3e5bfee805723bff3369426747778f6d55c"
+        },
+        {
+          "order": 40,
+          "title": "XXXV: The Masthead",
+          "sha256": "c285c4298f2bb27d315d6a62633cab5848445acf0fc57edc6e25057480e5fc9c"
+        },
+        {
+          "order": 41,
+          "title": "XXXVI: The Quarterdeck",
+          "sha256": "ef18ae19bdea31a20d7d8052ee5b809c4bf4dc199b057897f23598c26d739f26"
+        },
+        {
+          "order": 42,
+          "title": "XXXVII: Sunset",
+          "sha256": "e4b9f9dadcb8a237a9060b4b769ebee518576e430f12b3806c918b9b17755498"
+        },
+        {
+          "order": 43,
+          "title": "XXXVIII: Dusk",
+          "sha256": "0d006ca9857bbb14a5ffa40772b108fa80141a078213d5495da6263f450bfc06"
+        },
+        {
+          "order": 44,
+          "title": "XXXIX: First Night-Watch",
+          "sha256": "0e3e8364cd63a383a75df827fd63afe94860fea07dfb96af4f49eaec5ca53103"
+        },
+        {
+          "order": 45,
+          "title": "XL: Midnight, Forecastle",
+          "sha256": "dfafd079a4944c4f37443c84397b4bb7d984bfc6441298213d066814fb591b22"
+        },
+        {
+          "order": 46,
+          "title": "XLI: Moby Dick (1/2)",
+          "sha256": "0fa04d93423e48498944c5488e8d4f37d162bfde4e1d790a4a8edecddb3e33ba"
+        },
+        {
+          "order": 47,
+          "title": "XLI: Moby Dick (2/2)",
+          "sha256": "7b15ad48617f466a4ed80a9ac69dba4391250e39d0865b87ff28d8913a997eca"
+        },
+        {
+          "order": 48,
+          "title": "XLII: The Whiteness of the Whale",
+          "sha256": "2351fa979151a321ca0dbc1568bb4def593bf557a146926d41e6fc81b602371b"
+        },
+        {
+          "order": 49,
+          "title": "XLIII: Hark!",
+          "sha256": "aa6fadad8361f9d216f97d88b0a1113ca32ec75df7cadc28c7bdb508fb1f7d64"
+        },
+        {
+          "order": 50,
+          "title": "XLIV: The Chart",
+          "sha256": "58241d2e69f8889d8c7fc906dc0937cc4c97f781461556f26be703c59a39b32a"
+        },
+        {
+          "order": 51,
+          "title": "XLV: The Affidavit",
+          "sha256": "0c942eba33293e45f8aedf6e1061fa07765490cbb6c97fe2acd6a266c0452120"
+        },
+        {
+          "order": 52,
+          "title": "XLVI: Surmises",
+          "sha256": "2d3cd838b9c675a5b038bf9b9ff5eb483e2bb10720f6b091b9f5bebf9fbcbcdc"
+        },
+        {
+          "order": 53,
+          "title": "XLVII: The Mat-Maker",
+          "sha256": "33e7b4289247e4e94c7b3a588ee2d1c1ff673af00a41a6bf005f2ad37703e180"
+        },
+        {
+          "order": 54,
+          "title": "XLVIII: The First Lowering (1/2)",
+          "sha256": "fe895714fdc1f7ee574bcaa322fc40e51748b5ec2481a4d0175a316cffab5635"
+        },
+        {
+          "order": 55,
+          "title": "XLVIII: The First Lowering (2/2)",
+          "sha256": "96f861254240f475997419e3b6778febed61e4119ddbf9b7a9ddf1d9d5fcc7fa"
+        },
+        {
+          "order": 56,
+          "title": "XLIX: The Hyena",
+          "sha256": "b1133138b0ad5cc8051dc3f7c81fa3be4f45698f92134baa991f6b72686cd805"
+        },
+        {
+          "order": 57,
+          "title": "L: Ahab’s Boat and Crew. Fedallah",
+          "sha256": "ca1ea0ea1f848a7d61b0fd7b9adfd9a74160bd1f241108444af1885d8ff2f757"
+        },
+        {
+          "order": 58,
+          "title": "LI: The Spirit-Spout",
+          "sha256": "7da1f178acb08357910c9c526516726d49747debf1d432b93c6a2ada3605b5a2"
+        },
+        {
+          "order": 59,
+          "title": "LII: The Albatross",
+          "sha256": "8619ea2ccc022e305aab06d9c2fc29fe0f2ec976efc14442f6c03e7e4db33df6"
+        },
+        {
+          "order": 60,
+          "title": "LIII: The Gam",
+          "sha256": "a344665db07f8bec9515445edba90ee91ed77265254b26fe39d1452c223422d1"
+        },
+        {
+          "order": 61,
+          "title": "LIV: The Town-Ho’s Story (1/4)",
+          "sha256": "0dcb4a6446f1fd953c246f73e831e41cd0e3bfa191b93681814a3f7a46153d88"
+        },
+        {
+          "order": 62,
+          "title": "LIV: The Town-Ho’s Story (2/4)",
+          "sha256": "bb2edbc8ace9bcb41bad0d48821f80f3daaa6d30651d445bd2e1693f51146896"
+        },
+        {
+          "order": 63,
+          "title": "LIV: The Town-Ho’s Story (3/4)",
+          "sha256": "861d1bcd8ecee30c0c52b2c5afcaff19f053dffd99d1a30cba0e30b74f80d0f8"
+        },
+        {
+          "order": 64,
+          "title": "LIV: The Town-Ho’s Story (4/4)",
+          "sha256": "9e0fd3df80dd16bde3afc34930ea5ac73fc3d35c2a9e5cb8ebb2ab254373a6b8"
+        },
+        {
+          "order": 65,
+          "title": "LV: Of the Monstrous Pictures of Whales",
+          "sha256": "ec54eec189ea9719a97a027c8330b100ac11c072cce35ebdefa13fc1dbb8e04c"
+        },
+        {
+          "order": 66,
+          "title": "LVI: Of the Less Erroneous Pictures of Whales, and the True Pictures of Whaling Scenes",
+          "sha256": "b3b690ccedb4a5d6c37e506b340afaa986382bdb2d60e23ade2720ac5ec6b1f6"
+        },
+        {
+          "order": 67,
+          "title": "LVII: Of Whales in Paint; in Teeth; in Wood; in Sheet-Iron; in Stone; in Mountains; in Stars",
+          "sha256": "591b8cbd122f4fb96dffde0f7e9aeabe73c306bff0b27ecb3c5adc5840627586"
+        },
+        {
+          "order": 68,
+          "title": "LVIII: Brit",
+          "sha256": "cdbb62cb24b1e9aec7b2ebcc968f649d6cf74d96137d7c7546a838dfb25186fa"
+        },
+        {
+          "order": 69,
+          "title": "LIX: Squid",
+          "sha256": "68a23a42695fc77c810b6db4fb69c803d9e7bb85aecb5660752349549e80e36e"
+        },
+        {
+          "order": 70,
+          "title": "LX: The Line",
+          "sha256": "01a9ed52cfbeea302aa6b152c073b3a4eea8046ea7d5e8d5c95cdc06a3538511"
+        },
+        {
+          "order": 71,
+          "title": "LXI: Stubb Kills a Whale",
+          "sha256": "981dbe05dc4057dabd7fb4dca7742f7b21f585fc99740b64177f5b4ce492df3a"
+        },
+        {
+          "order": 72,
+          "title": "LXII: The Dart",
+          "sha256": "3649cae44082c704c9fe269ba2978716601fdf2203c899364c366c9874f49747"
+        },
+        {
+          "order": 73,
+          "title": "LXIII: The Crotch",
+          "sha256": "58f4cf4295750a817611bf8d8d089905961b2e19a71bd8e7ab37576cf2183d5b"
+        },
+        {
+          "order": 74,
+          "title": "LXIV: Stubb’s Supper",
+          "sha256": "555fe587e2914c72b1cc495861395b45b704ffde773e649d6abae9204624e0e4"
+        },
+        {
+          "order": 75,
+          "title": "LXV: The Whale as a Dish",
+          "sha256": "ed9b5fd5d48c28cd39a6a81014b7151f016efebdf2821a3e17fc03c4d7989d41"
+        },
+        {
+          "order": 76,
+          "title": "LXVI: The Shark Massacre",
+          "sha256": "dbe11cc75cef548d7856338e93740a75da09a965c9b3936d635df8f3f6d9c667"
+        },
+        {
+          "order": 77,
+          "title": "LXVII: Cutting In",
+          "sha256": "d5de4d73656a40e39b6bab1df743b7ec381bfb2f52adb2430f2037126ae6b354"
+        },
+        {
+          "order": 78,
+          "title": "LXVIII: The Blanket",
+          "sha256": "6c1fbbec7b2bbda9fe6ce01f728c381d18bcfae0e55eb9f669bc8ba056fe002e"
+        },
+        {
+          "order": 79,
+          "title": "LXIX: The Funeral",
+          "sha256": "596fcdf5d01d25bf30f96ef38e8f4b78629190da470f351b393ad44a0fce0e06"
+        },
+        {
+          "order": 80,
+          "title": "LXX: The Sphynx",
+          "sha256": "0dc3cd10f65ddfe0e6a17cdc599c54dcb951dfcc73c4fc2a02ce866e53cd0e4d"
+        },
+        {
+          "order": 81,
+          "title": "LXXI: The Jeroboam’s Story",
+          "sha256": "01a13d99457db06a62ba85361693b096ace3bdb7ee03887929cd60a52b8a2d88"
+        },
+        {
+          "order": 82,
+          "title": "LXXII: The Monkey-Rope",
+          "sha256": "3eee130b4e8e5cc99b306a0cbe72a9fd890edfc960d1229b7324641ff2187720"
+        },
+        {
+          "order": 83,
+          "title": "LXXIII: Stubb and Flask Kill a Right Whale; and Then Have a Talk Over Him",
+          "sha256": "448c65b81657c12fa46fc6aa22aae74278add236c85d56177324ebf09dfb79e1"
+        },
+        {
+          "order": 84,
+          "title": "LXXIV: The Sperm Whale’s Head—Contrasted View",
+          "sha256": "848c7d9336b0f67e0801cfa5fd29b36f1c13cbc0802705648a68ee81d78876c2"
+        },
+        {
+          "order": 85,
+          "title": "LXXV: The Right Whale’s Head—Contrasted View",
+          "sha256": "af9dae6e99366d8dbd4ec8011e4e14c0c9a7555a91c01ed4561388e8ebebeffc"
+        },
+        {
+          "order": 86,
+          "title": "LXXVI: The Battering-Ram",
+          "sha256": "d318af99c9e8f1e9082eefdece21a63ba273cb73a90449869887faa533b4e699"
+        },
+        {
+          "order": 87,
+          "title": "LXXVII: The Great Heidelburgh Tun",
+          "sha256": "2be98ea81e11c82870a4a7f707875b849355c419c03c9ca4c744d55922752365"
+        },
+        {
+          "order": 88,
+          "title": "LXXVIII: Cistern and Buckets",
+          "sha256": "9ea5a2871e2e7d2b1ac7569a0a064c7cf87511f893313e1edc913033af1872ca"
+        },
+        {
+          "order": 89,
+          "title": "LXXIX: The Prairie",
+          "sha256": "2a855a9a9ea8b8bb213fc12d67f90d379296a579e9bf33d1b1c2f3133191bc17"
+        },
+        {
+          "order": 90,
+          "title": "LXXX: The Nut",
+          "sha256": "699740a2525e34a4aadb9a4ce98d1a2c8ecb26a4d7d8a74a251ba7c37cae770c"
+        },
+        {
+          "order": 91,
+          "title": "LXXXI: The Pequod Meets the Virgin (1/2)",
+          "sha256": "6b702b6208b4ca71e0d1b7bcd17faaa912946b5fac282c1ef9feda1e8a507549"
+        },
+        {
+          "order": 92,
+          "title": "LXXXI: The Pequod Meets the Virgin (2/2)",
+          "sha256": "f66008e2101d2f01f9d2715bcd3243b3408acd4302ae43c1dc66367c974e3a2f"
+        },
+        {
+          "order": 93,
+          "title": "LXXXII: The Honor and Glory of Whaling",
+          "sha256": "136bbd3665167b5a7ff04a56ea376dc5763e7462a2fa0c7a2848d3d60f47d36b"
+        },
+        {
+          "order": 94,
+          "title": "LXXXIII: Jonah Historically Regarded",
+          "sha256": "14200b3e8ecb3046ed4ba07424589abd84a078bec342f17c2f3236a61ba59b0d"
+        },
+        {
+          "order": 95,
+          "title": "LXXXIV: Pitchpoling",
+          "sha256": "f8379fbcbdce41d7507386ca147b71ee82816bfebfe487f28464ebb0587b01ab"
+        },
+        {
+          "order": 96,
+          "title": "LXXXV: The Fountain",
+          "sha256": "1f1af7aaa844f03b3e93fc561f912d9f89544c855fa55ec464572c754795773b"
+        },
+        {
+          "order": 97,
+          "title": "LXXXVI: The Tail",
+          "sha256": "42733c41418d7843e5afaf3bc595e11c4797c47549d44e753ad48386aab7cc10"
+        },
+        {
+          "order": 98,
+          "title": "LXXXVII: The Grand Armada (1/2)",
+          "sha256": "eafbca6fa53fc15c0b25ff47bf6b9ad9151ff36be2f57c73de6fe5c9805b9af2"
+        },
+        {
+          "order": 99,
+          "title": "LXXXVII: The Grand Armada (2/2)",
+          "sha256": "498e7b3b3712e623ac52780f697a449f14b94f59e54dda90b1553ff1716285be"
+        },
+        {
+          "order": 100,
+          "title": "LXXXVIII: Schools and Schoolmasters",
+          "sha256": "4130dc168ce15c25c32b59584c6d7691f1878578cc0259308c94a1d0970ad502"
+        },
+        {
+          "order": 101,
+          "title": "LXXXIX: Fast-Fish and Loose-Fish",
+          "sha256": "e6da53e61518bd8c2f735673e179dd34beb6593f29ddd6ee58bbc3597f038859"
+        },
+        {
+          "order": 102,
+          "title": "XC: Heads or Tails",
+          "sha256": "ec03a6d5f50aac937b9bd50ffcead93eee3fb802b3ca55748803bb210905a0a5"
+        },
+        {
+          "order": 103,
+          "title": "XCI: The Pequod Meets the Rose-Bud",
+          "sha256": "cffdb27a7e873762ecadf075f7be0b381bf45e8b6ac79f5d1759bb7eb927b896"
+        },
+        {
+          "order": 104,
+          "title": "XCII: Ambergris",
+          "sha256": "458501528f1bec222619fc1a37ef61f05b4d1706fd19c322fe0c91e832b51006"
+        },
+        {
+          "order": 105,
+          "title": "XCIII: The Castaway",
+          "sha256": "0ac975d07d40466b4d5895a5a75274bf76a17990661b1fb799d19d20da0f0457"
+        },
+        {
+          "order": 106,
+          "title": "XCIV: A Squeeze of the Hand",
+          "sha256": "286073309a09058feb6e685dca53b91939b26c77141ef12afb093cb9e945d90e"
+        },
+        {
+          "order": 107,
+          "title": "XCV: The Cassock",
+          "sha256": "2966c967f1eb08aeaa43251f9cab5e06b402bc7f62c5f82efaf96da28a58a487"
+        },
+        {
+          "order": 108,
+          "title": "XCVI: The Try-Works",
+          "sha256": "0d5d9e4fa19974797b6679388c25bbcad30c749594c920bdf79595105a6e25f0"
+        },
+        {
+          "order": 109,
+          "title": "XCVII: The Lamp",
+          "sha256": "d903164ddbb7c0d4fd44af183d2c3e025d4e93049c02eef6e1204cfc1a10c437"
+        },
+        {
+          "order": 110,
+          "title": "XCVIII: Stowing Down and Clearing Up",
+          "sha256": "f52bd5b1e196a4129a76f054708eda666e24772e3ba4484f3d35833f59dcabf5"
+        },
+        {
+          "order": 111,
+          "title": "XCIX: The Doubloon",
+          "sha256": "be5cb7e594c08f7d6199cbd52993d4ea615d3a26a573cfdaf31268385b50c45a"
+        },
+        {
+          "order": 112,
+          "title": "C: Leg and Arm",
+          "sha256": "13c8947e0039eb0c01a83a970ce4446a9c6dabe5697b33f6e7c41fb546646897"
+        },
+        {
+          "order": 113,
+          "title": "CI: The Decanter",
+          "sha256": "f1a4b2eb9c20a984c1ac68748aa2645e33b88866e8ce3351794bf17bcb946295"
+        },
+        {
+          "order": 114,
+          "title": "CII: A Bower in the Arsacides",
+          "sha256": "11d61368cc5fdec246baa5857c849d298015293227e7b2c9bd93707a58921a02"
+        },
+        {
+          "order": 115,
+          "title": "CIII: Measurement of the Whale’s Skeleton",
+          "sha256": "c673ee1f28d8cc5c8f510e39195568175a6de721803b842ebcf02c0134439a82"
+        },
+        {
+          "order": 116,
+          "title": "CIV: The Fossil Whale",
+          "sha256": "21f1622810a7b6f3dff213b381ef1e5544d2b40f200ccbccbd8920b7c00c5d7f"
+        },
+        {
+          "order": 117,
+          "title": "CV: Does the Whale’s Magnitude Diminish?—Will He Perish?",
+          "sha256": "58f0cd2e73ea5311d9ef1e417c20d20905652f7018eb837c0cbd9b7ee1292818"
+        },
+        {
+          "order": 118,
+          "title": "CVI: Ahab’s Leg",
+          "sha256": "5399fedb940ee08f8037525025ae869a7bc14b8dc44945e771027d6de693c845"
+        },
+        {
+          "order": 119,
+          "title": "CVII: The Carpenter",
+          "sha256": "0e70c2d630881669005c27268c90d0d079df059787387a8f577dfa5f11336ecc"
+        },
+        {
+          "order": 120,
+          "title": "CVIII: Ahab and the Carpenter",
+          "sha256": "44ff4e250d1a5ee0d6ef278610c9a4223b387dea4f7f7323d6372553ce68a9f5"
+        },
+        {
+          "order": 121,
+          "title": "CIX: Ahab and Starbuck in the Cabin",
+          "sha256": "1a5dab6fda97dd279fb63bfe9be99b0e0cdfb7b8f88eaf7fb6366e4acc28159e"
+        },
+        {
+          "order": 122,
+          "title": "CX: Queequeg in His Coffin",
+          "sha256": "26238f5204d754f05ceeb8b9a78954236fc6322df3e803467d69b769f307c71e"
+        },
+        {
+          "order": 123,
+          "title": "CXI: The Pacific",
+          "sha256": "2b4caf5e616110936cf9dd29917b0452cccaee5ec1852ab76f3e0a6f5f324f66"
+        },
+        {
+          "order": 124,
+          "title": "CXII: The Blacksmith",
+          "sha256": "b4950207fe6a6b88b4408740dd02b267c5c266b7f90c8fd5eb2a6482b1285b06"
+        },
+        {
+          "order": 125,
+          "title": "CXIII: The Forge",
+          "sha256": "46b2e79a7ef90c9807b02961ba0a6aa8e59130431a7a773fb282d8530f8b437f"
+        },
+        {
+          "order": 126,
+          "title": "CXIV: The Gilder",
+          "sha256": "058d4ec1d1570dbc62f3b0fb32c4baf50c3645e62d63c0d18106a1ab1b80cad7"
+        },
+        {
+          "order": 127,
+          "title": "CXV: The Pequod Meets the Bachelor",
+          "sha256": "775bbe625af6c59ce45064eca5d642f4f0517e07496c6d2f1a6d25a0b70bc1ab"
+        },
+        {
+          "order": 128,
+          "title": "CXVI: The Dying Whale",
+          "sha256": "5b296b9286ffa539cdb1bcf4532f2ad3f6e15ef0b7db75aa295df1f08b0dec5b"
+        },
+        {
+          "order": 129,
+          "title": "CXVII: The Whale Watch",
+          "sha256": "179a4928dd597e8c0a55924250fda19bc3cbce504a8b37da05ef3b775b56dd1f"
+        },
+        {
+          "order": 130,
+          "title": "CXVIII: The Quadrant",
+          "sha256": "15fc711178b36401410b4c66d8885f3a6af0a340edf16a613de6833f221991f5"
+        },
+        {
+          "order": 131,
+          "title": "CXIX: The Candles",
+          "sha256": "33b60fabc229f97d6020a0cd1ea362ba42c6c182ace4dca570593ede6cbbe431"
+        },
+        {
+          "order": 132,
+          "title": "CXX: The Deck Towards the End of the First Night Watch",
+          "sha256": "c1703518bd2454c4a4a61e81fc91f44f111bdb9e4355f66afa920783933bc870"
+        },
+        {
+          "order": 133,
+          "title": "CXXI: Midnight.—The Forecastle Bulwarks",
+          "sha256": "f7e7a2bd269df746b8e197d4bcce70ebbbf8550142ac1073ea244cb97f3a3758"
+        },
+        {
+          "order": 134,
+          "title": "CXXII: Midnight Aloft.—Thunder and Lightning",
+          "sha256": "3ab4d25bde3f33c022844d479afb38bdfe140a0748bf30ed76430605d96a6498"
+        },
+        {
+          "order": 135,
+          "title": "CXXIII: The Musket",
+          "sha256": "80468e3003523e564ce1a6005b8b43719bda2f39a6695dd5733efe0e8d5b4832"
+        },
+        {
+          "order": 136,
+          "title": "CXXIV: The Needle",
+          "sha256": "4e51fe99c78521d6a0259b0246b140f4356850db0797db52b0a6ae84999a05e0"
+        },
+        {
+          "order": 137,
+          "title": "CXXV: The Log and Line",
+          "sha256": "7af270fab0e0afa53879324305fe88f0fa410f822d3095745e326f8856099630"
+        },
+        {
+          "order": 138,
+          "title": "CXXVI: The Life-Buoy",
+          "sha256": "e01be846ea3abd71455bb77e1250de1251b628c95b647f8adc3e126bfaeb0d98"
+        },
+        {
+          "order": 139,
+          "title": "CXXVII: The Deck",
+          "sha256": "196166cc347ce2558ff278d83f07ed76089dd81283897107c39066035586ac51"
+        },
+        {
+          "order": 140,
+          "title": "CXXVIII: The Pequod Meets the Rachel",
+          "sha256": "21bb6e0c6a402c3d9d2b2c14c488eaa77aad7530d771bb49d174fb5b24e49a01"
+        },
+        {
+          "order": 141,
+          "title": "CXXIX: The Cabin",
+          "sha256": "510340d1a5ab5e0c6b2cb2c869cbdc8ae4a6212bd2fe63b45216d3500114fc5d"
+        },
+        {
+          "order": 142,
+          "title": "CXXX: The Hat",
+          "sha256": "cfde87812c26de57e41a32ecb7ec204b7beacb27c221090e41254b891756858b"
+        },
+        {
+          "order": 143,
+          "title": "CXXXI: The Pequod Meets the Delight",
+          "sha256": "2522533e737a01c9f87b675f4f817d4f34679fedabd594b5c00b95a1d2cb100b"
+        },
+        {
+          "order": 144,
+          "title": "CXXXII: The Symphony",
+          "sha256": "68ec796e96c14e7e3d9a51c5aae2e2670effd605a93dda76459f0a10db86e26f"
+        },
+        {
+          "order": 145,
+          "title": "CXXXIII: The Chase—First Day (1/2)",
+          "sha256": "c1121b93e5cfbcc823df795c741787a539f0e87f0b13206fdf03b6a8f998f031"
+        },
+        {
+          "order": 146,
+          "title": "CXXXIII: The Chase—First Day (2/2)",
+          "sha256": "744f79d116679e18bec626adcfd65981d6b8ecd0d782a180958204260a15ebf7"
+        },
+        {
+          "order": 147,
+          "title": "CXXXIV: The Chase—Second Day",
+          "sha256": "83673e4e43cd2af7c8c5925af9391e431ee533cd70c30ddf4e6a8dae51930b93"
+        },
+        {
+          "order": 148,
+          "title": "CXXXV: The Chase—Third Day (1/2)",
+          "sha256": "41a60628d747e1769f3802380b4825932b414f45f08ace849fd91a4e8767b63c"
+        },
+        {
+          "order": 149,
+          "title": "CXXXV: The Chase—Third Day (2/2)",
+          "sha256": "6701261ef507adbce1bb6d1c21d55257752db651140d07c5b4671be7c4cb84b1"
+        },
+        {
+          "order": 150,
+          "title": "Epilogue",
+          "sha256": "b0355e2e87ed5fad4dc18862716d4514e3efe6b91f3fc6011ffa1dd9ef546184"
+        }
+      ]
+    },
+    "se-james-joyce_a-portrait-of-the-artist-as-a-young-man": {
+      "title": "A Portrait of the Artist as a Young Man",
+      "author": "James Joyce",
+      "level": "C1 고급",
+      "total": 39,
+      "words": 84801,
+      "display": {
+        "titleKo": "젊은 예술가의 초상",
+        "authorKo": "제임스 조이스",
+        "binding": "huebsch",
+        "coverTitle": "A Portrait of\nthe Artist as\na Young Man",
+        "coverAuthor": "James Joyce"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-james-joyce_a-portrait-of-the-artist-as-a-young-man",
+        "title": "A Portrait of the Artist as a Young Man",
+        "author": "James Joyce",
+        "publishedYear": 1916,
+        "authorDeathYear": 1941,
+        "countryOfOrigin": "IE",
+        "translator": null,
+        "repo": "standardebooks/james-joyce_a-portrait-of-the-artist-as-a-young-man",
+        "commit": "e0e2424279c6465074eff58b4a5238d210a99de4",
+        "url": "https://standardebooks.org/ebooks/james-joyce/a-portrait-of-the-artist-as-a-young-man",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "IE",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/james-joyce/a-portrait-of-the-artist-as-a-young-man"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I (1/8)",
+          "sha256": "f36655be32ea5889129023327103ca9180abfb5519597029722780621ca0f75b"
+        },
+        {
+          "order": 2,
+          "title": "I (2/8)",
+          "sha256": "add77e1d9a54d4e1d93563b8264c482f9d9a837c074014c2463e38eb39a13d15"
+        },
+        {
+          "order": 3,
+          "title": "I (3/8)",
+          "sha256": "07caa11841491a171573d03a00332e38deee8f9621f10c99b7973725f65e77a3"
+        },
+        {
+          "order": 4,
+          "title": "I (4/8)",
+          "sha256": "a5e2303fc6ff09fe99efb9a49fab59ed08a4b3006b7db66f6115d9e5ce93e094"
+        },
+        {
+          "order": 5,
+          "title": "I (5/8)",
+          "sha256": "7fa46f9c2dea5ec9b2f27cd6da7f97355df4e5ff061fc80b3c1cace70b0310fb"
+        },
+        {
+          "order": 6,
+          "title": "I (6/8)",
+          "sha256": "c5d70ba7eca36c8e9a4acc340a363b3d509e144517b36ab823e4e050996263e9"
+        },
+        {
+          "order": 7,
+          "title": "I (7/8)",
+          "sha256": "abec6fc5900b0633ebfcb5b0e39629a59b256c4b46d82c38ad08c8f9dd9f14a6"
+        },
+        {
+          "order": 8,
+          "title": "I (8/8)",
+          "sha256": "30c6ee0906735dfc4d6e1d2b5b7fd87334c66ee12d8e7012776994df67bdc74c"
+        },
+        {
+          "order": 9,
+          "title": "II (1/7)",
+          "sha256": "23cd3d43458c9d7c12d7ab3c2f783e3a263285c5761aa5c56d041cd06889098f"
+        },
+        {
+          "order": 10,
+          "title": "II (2/7)",
+          "sha256": "28421c5a1bf3f72c98e5cec918c171533e24295ea8d618e6d326403c6ac4d6a8"
+        },
+        {
+          "order": 11,
+          "title": "II (3/7)",
+          "sha256": "43de42485a21102a07e458b43d72eeba670f477ed88bfbdba71396c953921a9d"
+        },
+        {
+          "order": 12,
+          "title": "II (4/7)",
+          "sha256": "51d019037e0bfced453a864181ac200071b3b8550876e9898e477780e7196156"
+        },
+        {
+          "order": 13,
+          "title": "II (5/7)",
+          "sha256": "45ca059c33c084530aa4ba0703b2933d68e7cc0a3a1cd2e78eea913a679d80dc"
+        },
+        {
+          "order": 14,
+          "title": "II (6/7)",
+          "sha256": "f0c09e3b0276188cc9e6b7773a225b12dea5447eb9891b1cb6034dd89ca3cf66"
+        },
+        {
+          "order": 15,
+          "title": "II (7/7)",
+          "sha256": "5b23ecb1ed2d390fd07fba645fd29c3f9e94ec086fc588bab8420c809fcea544"
+        },
+        {
+          "order": 16,
+          "title": "III (1/8)",
+          "sha256": "55a59b942b93f118ea97868c9c32d484c659b1447ae33290fb6b1b16839f3d5d"
+        },
+        {
+          "order": 17,
+          "title": "III (2/8)",
+          "sha256": "83c6ffd9c9b7099717d7d69d9edd9373a4b727a40d4fb31e6f74b1d1efaf8921"
+        },
+        {
+          "order": 18,
+          "title": "III (3/8)",
+          "sha256": "920426aec3d83aa6ba0a27986a1b5c551d1057ada6ce5babc43fcbad7366eff1"
+        },
+        {
+          "order": 19,
+          "title": "III (4/8)",
+          "sha256": "ad16d0353c3145e617b0bb8911b2129f35baf29cdc9a9e0ba11390d78015987f"
+        },
+        {
+          "order": 20,
+          "title": "III (5/8)",
+          "sha256": "043717a963a352f17c6c5b8aefb6f363cfee1162da6ab4f7578110acfc8dd2cc"
+        },
+        {
+          "order": 21,
+          "title": "III (6/8)",
+          "sha256": "ba870087e0123c72e70ab92625afb7e97ef756a1efa9476fe07abe9ac8652a1f"
+        },
+        {
+          "order": 22,
+          "title": "III (7/8)",
+          "sha256": "b3b01f47abbd1375bf68869c74febf2a7246324582a45a5dfcef48a7da321c76"
+        },
+        {
+          "order": 23,
+          "title": "III (8/8)",
+          "sha256": "4e62206fc6850e4b08769dbdb5e2a3b5b097fdb0e3db69179e571cbbba26bfa4"
+        },
+        {
+          "order": 24,
+          "title": "IV (1/4)",
+          "sha256": "92f7ee9030a9175c6b585064bf095617cc4b698539c9c1824de65e9194760a9c"
+        },
+        {
+          "order": 25,
+          "title": "IV (2/4)",
+          "sha256": "38963a060e6038f6d33457946160747b42d81cce0e3e00e2ff8c497b60ffe8de"
+        },
+        {
+          "order": 26,
+          "title": "IV (3/4)",
+          "sha256": "1a64bd211b28706b328371ac8251e82707cb21254b659fa483df918381e8fd8d"
+        },
+        {
+          "order": 27,
+          "title": "IV (4/4)",
+          "sha256": "cdc150b7deb1d5f1cf103eb0c9ba661cfb401d561f0ece31e3ff5b612be56004"
+        },
+        {
+          "order": 28,
+          "title": "V (1/12)",
+          "sha256": "4b971e3259ad75d625a0c49e875a0c1f21a33db6cc985cda449b7adb65839092"
+        },
+        {
+          "order": 29,
+          "title": "V (2/12)",
+          "sha256": "128dbe7cf26d248011aba123e0ebd7ec1743d059dcb18293670d6ffe83f5bb1b"
+        },
+        {
+          "order": 30,
+          "title": "V (3/12)",
+          "sha256": "65e6a9f2e06a6647d92daaa9f0419725fc466e1f5dbba2273721f7c1a670690d"
+        },
+        {
+          "order": 31,
+          "title": "V (4/12)",
+          "sha256": "5a62dc2ee06aba60369d5c4c327518730af775c56738417d0e2733e4fa1f1406"
+        },
+        {
+          "order": 32,
+          "title": "V (5/12)",
+          "sha256": "8c289202fcf3f247f648f3d776866fa61931927b27690f66cfb6f4ff38661a7c"
+        },
+        {
+          "order": 33,
+          "title": "V (6/12)",
+          "sha256": "41e8531437430cb4982dd52a43d4f1028bc9951a91ba6afd95bcd4a215a2e4d0"
+        },
+        {
+          "order": 34,
+          "title": "V (7/12)",
+          "sha256": "5b18eb8c6a75ce9fb9e730dbad7c3e2285f8fb9db60053f0fb91d434c9746339"
+        },
+        {
+          "order": 35,
+          "title": "V (8/12)",
+          "sha256": "4188cead4574202f7d46b90ce01e08c97b29484988caa9cfd0a3757a09aeb1e3"
+        },
+        {
+          "order": 36,
+          "title": "V (9/12)",
+          "sha256": "5bf2482a6f213de42831c464702d1e1704d5c25f4107a296aaacb39ee8e248ea"
+        },
+        {
+          "order": 37,
+          "title": "V (10/12)",
+          "sha256": "fa9192d733f4ce4d99f5d0821418f3fd21fd70025be04588db486971f361a535"
+        },
+        {
+          "order": 38,
+          "title": "V (11/12)",
+          "sha256": "dfd987ffa547ba9714dd9d7ad55aa4c03e406227d2ec81954ae3770300a748a9"
+        },
+        {
+          "order": 39,
+          "title": "V (12/12)",
+          "sha256": "19299093e4e3560793bfa122d156c4611f94a2896f0a52339f944e28003b5525"
+        }
+      ]
+    },
+    "se-jane-austen_pride-and-prejudice": {
+      "title": "Pride and Prejudice",
+      "author": "Jane Austen",
+      "level": "B2 상급",
+      "total": 65,
+      "words": 121497,
+      "display": {
+        "titleKo": "오만과 편견",
+        "authorKo": "제인 오스틴",
+        "binding": "egerton-boards",
+        "coverTitle": "Pride and\nPrejudice"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-jane-austen_pride-and-prejudice",
+        "title": "Pride and Prejudice",
+        "author": "Jane Austen",
+        "publishedYear": 1813,
+        "authorDeathYear": 1817,
+        "countryOfOrigin": "GB",
+        "translator": null,
+        "repo": "standardebooks/jane-austen_pride-and-prejudice",
+        "commit": "ed94a32be3e875c0814568050c7544e03aad3ef5",
+        "url": "https://standardebooks.org/ebooks/jane-austen/pride-and-prejudice",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "GB",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/jane-austen/pride-and-prejudice"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I",
+          "sha256": "8247e3d5899e87358dabefb88ed5ee536de220f17f7d029b0665f982a9e6cfc3"
+        },
+        {
+          "order": 2,
+          "title": "II",
+          "sha256": "2fb5072a2b9fa32eaf4d2739a75f1139b80db566cc6092a008627949258b7122"
+        },
+        {
+          "order": 3,
+          "title": "III",
+          "sha256": "8b5c5a8efc6a40adb19e4cd4d9f716e4c0ce7ebf7b966a04863b045d1701b28a"
+        },
+        {
+          "order": 4,
+          "title": "IV",
+          "sha256": "3cc97a4886b13c1d2f3e5589bc777dc2d78b3eb624d85514ab675021dde5ca80"
+        },
+        {
+          "order": 5,
+          "title": "V",
+          "sha256": "888cfa03cdbecbd82f9c9e293c6089a39b6aaeb052cf8c24ad4037fa45425010"
+        },
+        {
+          "order": 6,
+          "title": "VI",
+          "sha256": "65a3764a7cc73440a097c54ad2c676bd6ea0324b7eb28ab8358c7939d585e6b6"
+        },
+        {
+          "order": 7,
+          "title": "VII",
+          "sha256": "bfb677eff064a1c4033043a9582e5627734afda0e9f41577a433374b1c44adcd"
+        },
+        {
+          "order": 8,
+          "title": "VIII",
+          "sha256": "49ba904ef567fc6aa954206d2d3ae94893337c9dc34b7b81beb100dd7083f836"
+        },
+        {
+          "order": 9,
+          "title": "IX",
+          "sha256": "ef97e1147ee6e4d15ac2bcb48a979aebccddc2ccb178fcaf54c4b5468cdb13b8"
+        },
+        {
+          "order": 10,
+          "title": "X",
+          "sha256": "14aa8d68c9f77c4150bae0174a4ee41d3b63db16960fe27234fe0bf54cb47fe7"
+        },
+        {
+          "order": 11,
+          "title": "XI",
+          "sha256": "8e091c475a2388b6cf348b36242cc5063c4268cc11a85382aa093e94f67fda18"
+        },
+        {
+          "order": 12,
+          "title": "XII",
+          "sha256": "4f8d36ebf9b42d3faac43a5f0b8177a5a1fcb32309c62912366821b01f009d51"
+        },
+        {
+          "order": 13,
+          "title": "XIII",
+          "sha256": "592b3c769861482001f951223dc3009583a85be1d16c8d79300c4285841af35c"
+        },
+        {
+          "order": 14,
+          "title": "XIV",
+          "sha256": "be69d2304e2c68290b0c893e05dc80aabd3e79b4390e4b11adff619761421f06"
+        },
+        {
+          "order": 15,
+          "title": "XV",
+          "sha256": "dc96fd07c99645294f86e51bf4922cf87476eaddb6cefe79ccb2df5981320643"
+        },
+        {
+          "order": 16,
+          "title": "XVI (1/2)",
+          "sha256": "2a4d5b15c49cd482dfb2c56fc0cdca59188c84133b5b28d3c6c686e8deb79e93"
+        },
+        {
+          "order": 17,
+          "title": "XVI (2/2)",
+          "sha256": "3176215d1cbe6788d5d93a1b0cc30da280335bedb15c3cbcb923f51c19435f98"
+        },
+        {
+          "order": 18,
+          "title": "XVII",
+          "sha256": "c0cc8fa0782b60d2e16f1244ce8ad624a759d8637855b984c316147a3150cd6e"
+        },
+        {
+          "order": 19,
+          "title": "XVIII (1/2)",
+          "sha256": "cc031ad7f1b98de38b5683a549e4f87864b907c0193454b8c71a5a94880db3a9"
+        },
+        {
+          "order": 20,
+          "title": "XVIII (2/2)",
+          "sha256": "1e8da4f057e48e638b0e850ead165e49a360d98d43df3f04c83d7691c0e20c9e"
+        },
+        {
+          "order": 21,
+          "title": "XIX",
+          "sha256": "af0971ae69cdd51b25f397a70b7435b711137bbd4143d956be791d3656b990f7"
+        },
+        {
+          "order": 22,
+          "title": "XX",
+          "sha256": "25d0860093cd3d91f159edd5cc1eef59fddfd42fca1f4f36533eb016dc003a15"
+        },
+        {
+          "order": 23,
+          "title": "XXI",
+          "sha256": "a9369112ce1aa164c0834e939fff90760a4d85b60a0ab56e2c8de77aad4ed5ab"
+        },
+        {
+          "order": 24,
+          "title": "XXII",
+          "sha256": "fa29c4a64a54e2ff850f73521bddd8018e2731f7f39b1c3d5eae6ce457acdf3e"
+        },
+        {
+          "order": 25,
+          "title": "XXIII",
+          "sha256": "db7e1711cdd339f9656da8abdfc535426518dbd9b3cbfebdef05f0a4de4b9fff"
+        },
+        {
+          "order": 26,
+          "title": "XXIV",
+          "sha256": "d474b13300d9371c805b60c268fa932644ca482370db243101f063d18636a930"
+        },
+        {
+          "order": 27,
+          "title": "XXV",
+          "sha256": "3c8e288f8c3732f2062682235ca9eeb01a0b8fa0c52a237de486a4755199290d"
+        },
+        {
+          "order": 28,
+          "title": "XXVI",
+          "sha256": "db6179b0f3350a856ecfc21ebcfdcd31c47932f75b84a586b2ce8567b90380e9"
+        },
+        {
+          "order": 29,
+          "title": "XXVII",
+          "sha256": "768ea4ead3c39379ada1322646594254831d876cb0c3ea92650c4affc0224be7"
+        },
+        {
+          "order": 30,
+          "title": "XXVIII",
+          "sha256": "24c7114c667288d54178d43755af643195eb418b64d98bc2fe99f59b9c79a547"
+        },
+        {
+          "order": 31,
+          "title": "XXIX",
+          "sha256": "60fa110f9f2fecdd50778b8dc2fcc5f3978bec51311e4e442260b389ffe9ab95"
+        },
+        {
+          "order": 32,
+          "title": "XXX",
+          "sha256": "51d6b131ed9549eb44745eba77aff124dc2c9fe3fc19435a00e4eda315a17127"
+        },
+        {
+          "order": 33,
+          "title": "XXXI",
+          "sha256": "ebfbf2a3a960693e2f9af24d0c3b35d989d775a16c1f33c71de1c110158f0e2c"
+        },
+        {
+          "order": 34,
+          "title": "XXXII",
+          "sha256": "bedd4cb25b230042b35daebc36cb184a2afd24862bdb188b2bbc1ccd7d781ccb"
+        },
+        {
+          "order": 35,
+          "title": "XXXIII",
+          "sha256": "a6803bfb7590c1957cde4eb6a25f47892e6d56e8e45b67fcf9fbaa0ccee9ec55"
+        },
+        {
+          "order": 36,
+          "title": "XXXIV",
+          "sha256": "20d35b929a3dc2eb13aa65d78d7968c65eef602bebc6b41335634e20963651ba"
+        },
+        {
+          "order": 37,
+          "title": "XXXV",
+          "sha256": "6d942a0628603befb76bd16a159ba6159a9ba5b2748f0f7746cd0db9fdc7a799"
+        },
+        {
+          "order": 38,
+          "title": "XXXVI",
+          "sha256": "5b634983c989b497184dd26fd08c7c5dd6514d5971ce560ffdfc56ef248a6f27"
+        },
+        {
+          "order": 39,
+          "title": "XXXVII",
+          "sha256": "fed6232206951f720e968770db20a91e703c2021a229a49994ab5eca2627df31"
+        },
+        {
+          "order": 40,
+          "title": "XXXVIII",
+          "sha256": "32675d16df8625433dd493a7799ef99e215c1bc3925ae712ada1eee299b52210"
+        },
+        {
+          "order": 41,
+          "title": "XXXIX",
+          "sha256": "f3539d6a2aa2afacb9fda052a00b884a9c49c02f13f33d9a606ab128d55dfc39"
+        },
+        {
+          "order": 42,
+          "title": "XL",
+          "sha256": "bbb1a808c49691137039481b9e2937fec9e361ed55ecb76f3cb79b071fe664f6"
+        },
+        {
+          "order": 43,
+          "title": "XLI",
+          "sha256": "1ebce1fbca5c43ed9166542a44078b04bfbdb4fd452fa73d80d0ac721e3ca230"
+        },
+        {
+          "order": 44,
+          "title": "XLII",
+          "sha256": "255cb628f8f3e374f6624ba568b0db106a8a86bfd95e804f47a8c5bfef0bc8bb"
+        },
+        {
+          "order": 45,
+          "title": "XLIII (1/2)",
+          "sha256": "9da9948e7b287ea2e066cb97e1e7547eff3569cdfd0e957c6cf2d523495081e3"
+        },
+        {
+          "order": 46,
+          "title": "XLIII (2/2)",
+          "sha256": "8b59fbcf3c39940007b9b1918b7ab6c5912af8ea27ab1b9693693891a71392d1"
+        },
+        {
+          "order": 47,
+          "title": "XLIV",
+          "sha256": "0e56ae6a862dd7df77d527a6662c287e8e04d0be52e7452f28871216d0ed4ad6"
+        },
+        {
+          "order": 48,
+          "title": "XLV",
+          "sha256": "6f75becac80ca2b20cad5a5c3a379e9dd431ddaaf29b1f71193ef3700350cad4"
+        },
+        {
+          "order": 49,
+          "title": "XLVI",
+          "sha256": "6a02f47947e4226139e92538a2b253b7e919561005613e8576ede9e53e35ea00"
+        },
+        {
+          "order": 50,
+          "title": "XLVII (1/2)",
+          "sha256": "09ca2620da2451aaff076d170e3c9a400e10125f3c1d004d6f44dcf2222e6560"
+        },
+        {
+          "order": 51,
+          "title": "XLVII (2/2)",
+          "sha256": "3dae805ac60d20c6b113a92b71f8754055fa70aa1b35081c1ca4155b9593e173"
+        },
+        {
+          "order": 52,
+          "title": "XLVIII",
+          "sha256": "ed36260cc7c7f40d355e79b7ac6c5787859eef23bc378e3f8fbd2cc312cea36d"
+        },
+        {
+          "order": 53,
+          "title": "XLIX",
+          "sha256": "2ea90968a7bf7fc8483aeea38d7b95815e44697e7edd78eacd2a13d0e80afdea"
+        },
+        {
+          "order": 54,
+          "title": "L",
+          "sha256": "0907c06c3bcd1fb9e77c6c7a14b3917bcd8b824262b40af4263105989fa715d8"
+        },
+        {
+          "order": 55,
+          "title": "LI",
+          "sha256": "e173c54243b019f556bc6038687931c336ee87fad3697dc308b958fb1e50fb52"
+        },
+        {
+          "order": 56,
+          "title": "LII",
+          "sha256": "6d11e38d096e4280126500f2d33e88a8b898332011abcd160369fbe328fd7605"
+        },
+        {
+          "order": 57,
+          "title": "LIII",
+          "sha256": "b33db12d6368e625e221bebfbbcbb43efd51bed91788cdc44c587687fd29e4d0"
+        },
+        {
+          "order": 58,
+          "title": "LIV",
+          "sha256": "fdc09e23f525a51b56233363f983540663c32bb503873133baa2bceb1a252974"
+        },
+        {
+          "order": 59,
+          "title": "LV",
+          "sha256": "ea112f3f0486dd888c774ef81ff5cea8fa53d0c04054a2e68c731685fdb0a911"
+        },
+        {
+          "order": 60,
+          "title": "LVI",
+          "sha256": "2032f148b58adb13a51a0eae046af1bce21f36c0f498026663c07422b1d112d3"
+        },
+        {
+          "order": 61,
+          "title": "LVII",
+          "sha256": "f50b2fe8732025c9e419d8c38fc1214796afac9f6ca2c1cff2c185c8fd75565f"
+        },
+        {
+          "order": 62,
+          "title": "LVIII",
+          "sha256": "b8060bcc864658ec4ffe4e13a5a76256b1b5b06ecf5205dfbee05c6bf4d608e5"
+        },
+        {
+          "order": 63,
+          "title": "LIX",
+          "sha256": "427c6ae9191d65995e10dcaf035cbaa24114bebdc63b7b005801c999b91219ac"
+        },
+        {
+          "order": 64,
+          "title": "LX",
+          "sha256": "14ddbbb05dcaa5d1ca85fbc1df5ffaf26afecab0a64dd270c42f670571fdc686"
+        },
+        {
+          "order": 65,
+          "title": "LXI",
+          "sha256": "6daba046032df5abd817fc08cd7ff726377d70dd8e7a64df14e82867c53c7000"
+        }
+      ]
+    },
+    "se-john-stuart-mill_on-liberty": {
+      "title": "On Liberty",
+      "author": "John Stuart Mill",
+      "level": "C1 고급",
+      "total": 22,
+      "words": 46565,
+      "display": {
+        "titleKo": "자유론",
+        "authorKo": "존 스튜어트 밀",
+        "binding": "parker-1859",
+        "coverTitle": "On Liberty"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-john-stuart-mill_on-liberty",
+        "title": "On Liberty",
+        "author": "John Stuart Mill",
+        "publishedYear": 1859,
+        "authorDeathYear": 1873,
+        "countryOfOrigin": "GB",
+        "translator": null,
+        "repo": "standardebooks/john-stuart-mill_on-liberty",
+        "commit": "88e44565f1b64b9a47e1fe65f4d8f113245edca1",
+        "url": "https://standardebooks.org/ebooks/john-stuart-mill/on-liberty",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "GB",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/john-stuart-mill/on-liberty"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: Introductory (1/3)",
+          "sha256": "8eab68fa5b87ec917af0153d3a64f0aa1f07c07348d5386396e31260a1cf57fc"
+        },
+        {
+          "order": 2,
+          "title": "I: Introductory (2/3)",
+          "sha256": "df5e661de534741d8a8d7ef1ea94a42e95cb7d163e5b6ed5e4503abdcb5fe948"
+        },
+        {
+          "order": 3,
+          "title": "I: Introductory (3/3)",
+          "sha256": "e608c69498367920ef6ba9e7c3aa9ab1c11ad04c0b31de3236bc407e12952177"
+        },
+        {
+          "order": 4,
+          "title": "II: Of the Liberty of Thought and Discussion (1/7)",
+          "sha256": "6d94c8b7d50a8075f26aa7d0505e68a9cfaf5de334d4809b56e86a5b51082174"
+        },
+        {
+          "order": 5,
+          "title": "II: Of the Liberty of Thought and Discussion (2/7)",
+          "sha256": "a9da2e3f4d13622e520c03c72e3210fae1d6f95c93d8dff836773a0dd58f0ffc"
+        },
+        {
+          "order": 6,
+          "title": "II: Of the Liberty of Thought and Discussion (3/7)",
+          "sha256": "c97ce2e6c462ad4d6dd5ea1be4f7bbc35f5df15e22d2fd3277400b69e2346786"
+        },
+        {
+          "order": 7,
+          "title": "II: Of the Liberty of Thought and Discussion (4/7)",
+          "sha256": "6289a2cf66b17f35c759223650d1a77cc918a2381d90efdc28ae40b1bfc97fae"
+        },
+        {
+          "order": 8,
+          "title": "II: Of the Liberty of Thought and Discussion (5/7)",
+          "sha256": "38fe942aab46b3bff7ce1f6527faac2009c605dc792dd31a8285e9da5bc3d55c"
+        },
+        {
+          "order": 9,
+          "title": "II: Of the Liberty of Thought and Discussion (6/7)",
+          "sha256": "56cd931cf49beb6df5d365c52b8561cb471afb80a68757491f3d093a3e99adab"
+        },
+        {
+          "order": 10,
+          "title": "II: Of the Liberty of Thought and Discussion (7/7)",
+          "sha256": "a282ce89a5d375964fea0a716a4704e3d9e5d28456426dc5b38fc07ff2638687"
+        },
+        {
+          "order": 11,
+          "title": "III: Of Individuality, as One of the Elements of Well-Being (1/4)",
+          "sha256": "6505e5913819f47b8163d54814e9cd6b0720c399a01e58caa2d88e27b37f7486"
+        },
+        {
+          "order": 12,
+          "title": "III: Of Individuality, as One of the Elements of Well-Being (2/4)",
+          "sha256": "0b5bbd17bfeca8b8fdfcfc37d5bdbbc7d8bd0546bf12657ca289e3b2e1febe3e"
+        },
+        {
+          "order": 13,
+          "title": "III: Of Individuality, as One of the Elements of Well-Being (3/4)",
+          "sha256": "0b3f8e59ece166337b759f93665608d8869fdd62f811fd8f476904e5f7314019"
+        },
+        {
+          "order": 14,
+          "title": "III: Of Individuality, as One of the Elements of Well-Being (4/4)",
+          "sha256": "c2e72048f4b05d90052945748bfe5243c55646298e6d7bdb15cf3e1e5cac4316"
+        },
+        {
+          "order": 15,
+          "title": "IV: Of the Limits to the Authority of Society Over the Individual (1/4)",
+          "sha256": "e3095d85ce7377e87f23b2e4f56e68060e1f1b352c39de95bf42da62d3211189"
+        },
+        {
+          "order": 16,
+          "title": "IV: Of the Limits to the Authority of Society Over the Individual (2/4)",
+          "sha256": "1fe1dd9dc713da23d3fca0121f52acb6baddaffb31e648398dadfb03d36c574d"
+        },
+        {
+          "order": 17,
+          "title": "IV: Of the Limits to the Authority of Society Over the Individual (3/4)",
+          "sha256": "d1886fbe36980120b006640daf793864356336e0a0400083a4970be21b5c621b"
+        },
+        {
+          "order": 18,
+          "title": "IV: Of the Limits to the Authority of Society Over the Individual (4/4)",
+          "sha256": "a9c4005ed117ca75fb86411292ba966e2f282c589c10b262b3998e23d77e5089"
+        },
+        {
+          "order": 19,
+          "title": "V: Applications (1/4)",
+          "sha256": "b9767549495aeaf15c08c5fb63f8f6b6821c88df8025f13d9f7e48f12d1fed81"
+        },
+        {
+          "order": 20,
+          "title": "V: Applications (2/4)",
+          "sha256": "30c6739ee3b41a8b43c9e0e871cf45dddafab8636916155ff6da3ff21f6aca37"
+        },
+        {
+          "order": 21,
+          "title": "V: Applications (3/4)",
+          "sha256": "f66835047a8f277b98989448a9d9e8d4d1b443a7ad0f24ccb6a20f69b8a5c0c1"
+        },
+        {
+          "order": 22,
+          "title": "V: Applications (4/4)",
+          "sha256": "01ffb7f0965d4b762a1c05b8c505f2c819ba10c3fc84198d4c70111e045cd057"
+        }
+      ]
+    },
+    "se-l-frank-baum_the-wonderful-wizard-of-oz": {
+      "title": "The Wonderful Wizard of Oz",
+      "author": "L. Frank Baum",
+      "level": "A2 초급",
+      "total": 26,
+      "words": 39117,
+      "display": {
+        "titleKo": "오즈의 마법사",
+        "authorKo": "L. 프랭크 바움",
+        "binding": "tpl-cloth",
+        "coverTitle": "The Wonderful Wizard\nof Oz",
+        "coverPalette": "olive",
+        "coverOrnament": "gilt-title"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-l-frank-baum_the-wonderful-wizard-of-oz",
+        "title": "The Wonderful Wizard of Oz",
+        "author": "L. Frank Baum",
+        "publishedYear": 1900,
+        "authorDeathYear": 1919,
+        "countryOfOrigin": "US",
+        "translator": null,
+        "repo": "standardebooks/l-frank-baum_the-wonderful-wizard-of-oz",
+        "commit": "36104f0b9ace47debd6ac19cec9dc91b3858e83a",
+        "url": "https://standardebooks.org/ebooks/l-frank-baum/the-wonderful-wizard-of-oz",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "US",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/l-frank-baum/the-wonderful-wizard-of-oz"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: The Cyclone",
+          "sha256": "1d8c591969dd338fd8f251e3b83d991a76b5a7e5c715b503953c5ce4775ec320"
+        },
+        {
+          "order": 2,
+          "title": "II: The Council with the Munchkins",
+          "sha256": "4684ac513d246c4f5805295778d8265b23c558ee023ab2f9807b426499afe483"
+        },
+        {
+          "order": 3,
+          "title": "III: How Dorothy Saved the Scarecrow",
+          "sha256": "ce0965d3cdc54b97b1ef2ea8151b12d833bb3a4c3e23518634e57c8c1cb0c0a4"
+        },
+        {
+          "order": 4,
+          "title": "IV: The Road Through the Forest",
+          "sha256": "b8b13504d6c412eb825c859696229536968dd2a825fec13e1dfef88106a6d850"
+        },
+        {
+          "order": 5,
+          "title": "V: The Rescue of the Tin Woodman",
+          "sha256": "11801abc79c51e27565a9dd7c92d9c0a4defdf1d1610638662bc222490df95d8"
+        },
+        {
+          "order": 6,
+          "title": "VI: The Cowardly Lion",
+          "sha256": "a1289f6a0120734b0fb53c3d7c65469b19acbb3c559eb2e02d41467557371912"
+        },
+        {
+          "order": 7,
+          "title": "VII: The Journey to the Great Oz",
+          "sha256": "bb2abede13f49413af9308a435a236dbab18fa6708f343fc1f28aca903b7d22a"
+        },
+        {
+          "order": 8,
+          "title": "VIII: The Deadly Poppy Field",
+          "sha256": "0bb6a33fad8d1234da824844871ab3f5cfb503c469e7701ec25feb8404ea4228"
+        },
+        {
+          "order": 9,
+          "title": "IX: The Queen of the Field Mice",
+          "sha256": "3cc5183ec151bcf7267ba0bbe053086458505e04c1e056f2235247d7ab0732ab"
+        },
+        {
+          "order": 10,
+          "title": "X: The Guardian of the Gate",
+          "sha256": "ee36fc1848e1b8d8e8376ec3a7b3ba42b8f9e96c0d58752b90981ca96dcfbc6a"
+        },
+        {
+          "order": 11,
+          "title": "XI: The Wonderful City of Oz (1/2)",
+          "sha256": "8b1a908a987fd62cd224c713e2b184f7d9cdf0239a08e6ee8d941a5152bcb808"
+        },
+        {
+          "order": 12,
+          "title": "XI: The Wonderful City of Oz (2/2)",
+          "sha256": "37756901facf45ab443b6869f02a88b604bb6746b1d9f36652c94136845dbadf"
+        },
+        {
+          "order": 13,
+          "title": "XII: The Search for the Wicked Witch (1/2)",
+          "sha256": "7f80753c13200b092c8c711b061c08b1829dcff716f8479b8072e362c930ce73"
+        },
+        {
+          "order": 14,
+          "title": "XII: The Search for the Wicked Witch (2/2)",
+          "sha256": "07b6ea982229550dfbe5ca91b067b29c80f4864a6826ed7b56652e6a5f3a3935"
+        },
+        {
+          "order": 15,
+          "title": "XIII: The Rescue",
+          "sha256": "7acde35c4b1e2917df7e4c0b2d2c2ccac0c7b4bec182fa69037919f31532b23e"
+        },
+        {
+          "order": 16,
+          "title": "XIV: The Winged Monkeys",
+          "sha256": "a744589466514005033f8f8c69e7a4b4e661ab74f009755659163da88fe8ee30"
+        },
+        {
+          "order": 17,
+          "title": "XV: The Discovery of Oz, the Terrible",
+          "sha256": "1a6e4d158edf5e9fc732326808cace488b521dfba718dcc217f4519654fa3ef2"
+        },
+        {
+          "order": 18,
+          "title": "XVI: The Magic Art of the Great Humbug",
+          "sha256": "9be1f5f89e32cd61aa9d597b275b847fe4cb91649c749b626fe98eeac235ccd2"
+        },
+        {
+          "order": 19,
+          "title": "XVII: How the Balloon Was Launched",
+          "sha256": "901a314b382c07095ba454285d638fba7eb3bd322a4feffbbdf43bf089a90e64"
+        },
+        {
+          "order": 20,
+          "title": "XVIII: Away to the South",
+          "sha256": "552685b2db86abf960b48f2537c4b9c8cc509403afc660d16250e68dbe16d3fb"
+        },
+        {
+          "order": 21,
+          "title": "XIX: Attacked by the Fighting Trees",
+          "sha256": "0aba5cdeb2018b4d487e289fbb769f4004991e9de9b2ad28c1694b8291d33849"
+        },
+        {
+          "order": 22,
+          "title": "XX: The Dainty China Country",
+          "sha256": "5e5c38ee7d602e2c175f23622c16a751225d306ac869b83c12872ad1e12fee5f"
+        },
+        {
+          "order": 23,
+          "title": "XXI: The Lion Becomes the King of Beasts",
+          "sha256": "847d2bebc99b392ca7ca2a094bd0d1656bf11607b10459467685611ee4426103"
+        },
+        {
+          "order": 24,
+          "title": "XXII: The Country of the Quadlings",
+          "sha256": "bdd906d7c94d9f71ebba14ba82dfea6045f4ab9332ba9c401723f800d64ebaf5"
+        },
+        {
+          "order": 25,
+          "title": "XXIII: Glinda the Good Witch Grants Dorothy’s Wish",
+          "sha256": "a2e37db5e5372565ec534f641f55fa7d6c7d82473d6b3658026b9841140027ca"
+        },
+        {
+          "order": 26,
+          "title": "XXIV: Home Again",
+          "sha256": "c1214e2379c09e58805f431f9ccb5431055ffe018e0b461c3f87c052b880a43d"
+        }
+      ]
+    },
+    "se-lewis-carroll_alices-adventures-in-wonderland": {
+      "title": "Alice’s Adventures in Wonderland",
+      "author": "Lewis Carroll",
+      "level": "B1 중급",
+      "total": 12,
+      "words": 26325,
+      "display": {
+        "titleKo": "이상한 나라의 앨리스",
+        "authorKo": "루이스 캐럴",
+        "coverTitle": "Alice in\nWonderland",
+        "cloth": "madder-red",
+        "binding": "medallion"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-lewis-carroll_alices-adventures-in-wonderland",
+        "title": "Alice’s Adventures in Wonderland",
+        "author": "Lewis Carroll",
+        "publishedYear": 1865,
+        "authorDeathYear": 1898,
+        "countryOfOrigin": "GB",
+        "translator": null,
+        "repo": "standardebooks/lewis-carroll_alices-adventures-in-wonderland",
+        "commit": "9ecdf2ffa23098e7cb3c72157d7c3031b6f59903",
+        "url": "https://standardebooks.org/ebooks/lewis-carroll/alices-adventures-in-wonderland/john-tenniel",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-16",
+          "reviewedJurisdictions": [
+            "GB",
+            "US",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/lewis-carroll/alices-adventures-in-wonderland/john-tenniel"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "I: Down the Rabbit-Hole",
+          "sha256": "a205e2614377dddc7413150aeddc4aced6453dd3670547e65fb70b009661843b"
+        },
+        {
+          "order": 2,
+          "title": "II: The Pool of Tears",
+          "sha256": "79cab5e7ea862744b699869d52714346dda29b5108a0c139cdd5b79986e5858a"
+        },
+        {
+          "order": 3,
+          "title": "III: A Caucus-Race and a Long Tale",
+          "sha256": "72d99db6299d9f7dedd4502cfa5fa14348630eb30a597131999696e3efaa6cd5"
+        },
+        {
+          "order": 4,
+          "title": "IV: The Rabbit Sends in a Little Bill",
+          "sha256": "f38b252155e509eccd37bb7167b1d4ce1063338328423d2d60ca8fa99d79dbb3"
+        },
+        {
+          "order": 5,
+          "title": "V: Advice from a Caterpillar",
+          "sha256": "3a6d0e704ae1b69d1832ae06a2566629bb58b253e2d822f1017b49c793a244cc"
+        },
+        {
+          "order": 6,
+          "title": "VI: Pig and Pepper",
+          "sha256": "75d327ce3cb8925259e464e63bb4a298b6a71c9a9607a19585effec5b1ccb375"
+        },
+        {
+          "order": 7,
+          "title": "VII: A Mad Tea-Party",
+          "sha256": "9a7284a88cae1390f723505fa7c0060d4b5ca2836327e9def1ebff39f74630ec"
+        },
+        {
+          "order": 8,
+          "title": "VIII: The Queen’s Croquet-Ground",
+          "sha256": "33a67fa687cad1693c597385700b3b178584901eeb68514a4e045989d5873233"
+        },
+        {
+          "order": 9,
+          "title": "IX: The Mock Turtle’s Story",
+          "sha256": "a7464b9652899a7053f8d3edddd9b6c340961b8ae3682340698865b537d197fc"
+        },
+        {
+          "order": 10,
+          "title": "X: The Lobster Quadrille",
+          "sha256": "ef2661c1cf4e0aaee368655c4162907d1d2b4ce2053e4d9c9d87ac4d9816098c"
+        },
+        {
+          "order": 11,
+          "title": "XI: Who Stole the Tarts?",
+          "sha256": "8d0f8531f7b1d6e9697f93c583b85e2cf65d3912a8a6c10d42b962b45c2d0db1"
+        },
+        {
+          "order": 12,
+          "title": "XII: Alice’s Evidence",
+          "sha256": "3761d99e1e2ab658355c55fd37cc545f1ebf7b9dc14b171f94800b56bc7cb598"
+        }
+      ]
+    },
+    "se-marcus-aurelius_meditations_george-long": {
+      "title": "Meditations",
+      "author": "Marcus Aurelius",
+      "level": "C1 고급",
+      "total": 20,
+      "words": 45366,
+      "display": {
+        "titleKo": "명상록",
+        "authorKo": "마르쿠스 아우렐리우스",
+        "binding": "bell-daldy-1862",
+        "coverTitle": "Thoughts"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-marcus-aurelius_meditations_george-long",
+        "title": "Meditations",
+        "author": "Marcus Aurelius",
+        "publishedYear": 180,
+        "authorDeathYear": 180,
+        "countryOfOrigin": "IT",
+        "translator": {
+          "name": "George Long",
+          "deathYear": 1879,
+          "publishedYear": 1862,
+          "countryOfOrigin": "GB"
+        },
+        "repo": "standardebooks/marcus-aurelius_meditations_george-long",
+        "commit": "3a47d37d9f1df94de235d53839f4b254ce2953d5",
+        "url": "https://standardebooks.org/ebooks/marcus-aurelius/meditations/george-long",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "IT",
+            "GB",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/marcus-aurelius/meditations/george-long"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted",
+          "notes-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Book I",
+          "sha256": "799e5ec869c97f7d6a2fcb380cdd847b81828cb91e9df17c766207ae445caa00"
+        },
+        {
+          "order": 2,
+          "title": "Book II",
+          "sha256": "87e9043461bb83d88774bdd7e694f335ff37debe3fd229cfc0b33230bb4cfc00"
+        },
+        {
+          "order": 3,
+          "title": "Book III",
+          "sha256": "9bf6f15d6344597d33e5a7718a5a209efe1aa2bc397a4bcc2dfeafcc5fa9d743"
+        },
+        {
+          "order": 4,
+          "title": "Book IV (1/2)",
+          "sha256": "26e30310974182523d55d9ff10b3713e9b2edc15e27a4876265be3821847d614"
+        },
+        {
+          "order": 5,
+          "title": "Book IV (2/2)",
+          "sha256": "c301af26067b50a8d4fb546fa3323691658166ca5bc0f7aa61acf1ffc0d8b0df"
+        },
+        {
+          "order": 6,
+          "title": "Book V (1/2)",
+          "sha256": "c696f380b3e5abce1e769557633da8786e22f190a568f006881085e8a99a4707"
+        },
+        {
+          "order": 7,
+          "title": "Book V (2/2)",
+          "sha256": "7b9c4976f8bf0394557e3b2bc5d5b20ac80e6895b975a175254473753f76648e"
+        },
+        {
+          "order": 8,
+          "title": "Book VI (1/2)",
+          "sha256": "a324598600a1c8eae9f616a633ed69b8c356b309ee9d81e19d7d7330987d2a48"
+        },
+        {
+          "order": 9,
+          "title": "Book VI (2/2)",
+          "sha256": "0095fe8f7fd57ad3d6a7cd92612bbe5cfa287cccf351ea23480d6a27a39e3cfd"
+        },
+        {
+          "order": 10,
+          "title": "Book VII (1/2)",
+          "sha256": "96f199b06da0741fdb5a3778543518531eb4e05eb48f592a2e30c7801f486ce5"
+        },
+        {
+          "order": 11,
+          "title": "Book VII (2/2)",
+          "sha256": "a9ea94a8acb515684e21a24477b9ffefcffa19681638ad8595cd132130f01add"
+        },
+        {
+          "order": 12,
+          "title": "Book VIII (1/2)",
+          "sha256": "d49577541ba0ac04ee172c0204156b5e703438dbfff4f54e96a7ac74c796a493"
+        },
+        {
+          "order": 13,
+          "title": "Book VIII (2/2)",
+          "sha256": "f48c5253efe259bd89a0baaa6bed8838dd5993b64d72d548c9096c54fc887c9c"
+        },
+        {
+          "order": 14,
+          "title": "Book IX (1/2)",
+          "sha256": "aedbca13285f495a179495370a9cef68e4f3acb40b743c57fd2bd8f7c61122d8"
+        },
+        {
+          "order": 15,
+          "title": "Book IX (2/2)",
+          "sha256": "889d8bac79704afb8c58da14cf61ba92a9afedfa8c0573aa83a39c91d8b0b72f"
+        },
+        {
+          "order": 16,
+          "title": "Book X (1/2)",
+          "sha256": "966d7a651e525f8de3e8c646d247be2280241baf2456a073e6a1e8154e577214"
+        },
+        {
+          "order": 17,
+          "title": "Book X (2/2)",
+          "sha256": "72cac362b30655a5bcc6272e28b1ddebc00ad92891df1452164bc0e49e3c2c29"
+        },
+        {
+          "order": 18,
+          "title": "Book XI (1/2)",
+          "sha256": "6873e78750e3008f1cdd9be9abf5787922aaca98a1639322b59af64d4dad0676"
+        },
+        {
+          "order": 19,
+          "title": "Book XI (2/2)",
+          "sha256": "84f7e7f45a6424e6a5997efa47e2a7ab5b55379b16d415d9bd763d841a0aee6b"
+        },
+        {
+          "order": 20,
+          "title": "Book XII",
+          "sha256": "0d5423c90261f33722b3f1bf166001fe37a49ec11a9059bf4454bcd4045bd240"
+        }
+      ]
+    },
+    "se-thomas-mann_short-fiction_various-translators": {
+      "title": "Short Fiction",
+      "author": "Thomas Mann",
+      "level": "B2 상급",
+      "total": 74,
+      "words": 157339,
+      "display": {
+        "titleKo": "토니오 크뢰거 · 베니스에서의 죽음 외",
+        "authorKo": "토마스 만",
+        "binding": "tpl-jacket",
+        "coverTitle": "Short Fiction",
+        "coverAuthor": "Thomas Mann",
+        "coverPalette": "buff"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "standardebooks",
+        "workKey": "se-thomas-mann_short-fiction_various-translators",
+        "title": "Short Fiction",
+        "author": "Thomas Mann",
+        "publishedYear": 1930,
+        "authorDeathYear": 1955,
+        "countryOfOrigin": "DE",
+        "translator": [
+          {
+            "name": "Kenneth Burke",
+            "deathYear": 1993,
+            "publishedYear": 1924,
+            "countryOfOrigin": "US"
+          },
+          {
+            "name": "Herman George Scheffauer",
+            "deathYear": 1927,
+            "publishedYear": 1928,
+            "countryOfOrigin": "US"
+          }
+        ],
+        "repo": "standardebooks/thomas-mann_short-fiction_various-translators",
+        "commit": "717653fc4475841d5fde1fa93613423afb4144c2",
+        "url": "https://standardebooks.org/ebooks/thomas-mann/short-fiction/various-translators",
+        "license": "CC0-1.0",
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-17",
+          "reviewedJurisdictions": [
+            "DE",
+            "US",
+            "KR"
+          ],
+          "evidenceUrl": "https://standardebooks.org/ebooks/thomas-mann/short-fiction/various-translators"
+        },
+        "edits": [
+          "chapter-split-by-manabi",
+          "typography-normalized",
+          "illustrations-omitted"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Little Herr Friedemann (1/4)",
+          "sha256": "eaa5c2432750cff239d7a74a56357ce0131151efcdba2fe0fd74fc66d7ef7f8b"
+        },
+        {
+          "order": 2,
+          "title": "Little Herr Friedemann (2/4)",
+          "sha256": "1cac7a725019fccb90d2311e7b760b75b32629fccc58c3297954a2ceb6d6fe72"
+        },
+        {
+          "order": 3,
+          "title": "Little Herr Friedemann (3/4)",
+          "sha256": "ba1036d76dd31f94c4048bb696eb4cd392f6ea72575af9b24fb8c37cd9921eac"
+        },
+        {
+          "order": 4,
+          "title": "Little Herr Friedemann (4/4)",
+          "sha256": "c1b6a6153a3f768697ab0b1e9f17079cefd95fb404218950dbe8d6112c6c6791"
+        },
+        {
+          "order": 5,
+          "title": "Little Louise (1/3)",
+          "sha256": "26ba8b1166cf6fbdd013a6c1cb10b1f95c0f18ba99cde6598f0d3095a906259d"
+        },
+        {
+          "order": 6,
+          "title": "Little Louise (2/3)",
+          "sha256": "c5340b480bb3cf88874b1301a9c47ce5ba60d04e07a3712ba34a29d77fc52434"
+        },
+        {
+          "order": 7,
+          "title": "Little Louise (3/3)",
+          "sha256": "a14ebded8e8615b5cebf0c1ee321e522331a1f1f8e03d7b57b86e56cb5726bb5"
+        },
+        {
+          "order": 8,
+          "title": "Tobias Mindernickel (1/2)",
+          "sha256": "5a352fd2ac422784cfcdbe3bb6bb26aad462db8ded12509bb249e28676924a4b"
+        },
+        {
+          "order": 9,
+          "title": "Tobias Mindernickel (2/2)",
+          "sha256": "7fe81a8ced92f2c695d098807f8c9340b1d924698cbd6e2cdc2ba53d8f822bba"
+        },
+        {
+          "order": 10,
+          "title": "The Wardrobe (1/2)",
+          "sha256": "dba6b9ceaa2fc40a0709ab01dbcd5545e7346c6c272d34dd58362cbf6022a251"
+        },
+        {
+          "order": 11,
+          "title": "The Wardrobe (2/2)",
+          "sha256": "6da8bfc8ffc67e6e2563e3d03422c873a7bd272ecf4bb3f6ff55305340c92fb0"
+        },
+        {
+          "order": 12,
+          "title": "The Path to the Cemetery (1/2)",
+          "sha256": "15d6887644075639c63cd72f3997691f99762c53a879277a7bc10bcdd8c3367e"
+        },
+        {
+          "order": 13,
+          "title": "The Path to the Cemetery (2/2)",
+          "sha256": "96fe28780ce7a0e997d6a4574343f617d2e22494900a45a834c789c926465538"
+        },
+        {
+          "order": 14,
+          "title": "The Infant Prodigy (1/2)",
+          "sha256": "f5a4db62db72d7000308a0e9cf0c52ecb6d0a1d39c97f6bbd097d3a038d2ef2f"
+        },
+        {
+          "order": 15,
+          "title": "The Infant Prodigy (2/2)",
+          "sha256": "48f9a42a33f648e01974e6b52a41fc331ff3988cd8bdb57d8a32cd54c2a4b337"
+        },
+        {
+          "order": 16,
+          "title": "Tristan (1/7)",
+          "sha256": "5bc77596bbeb8818d328c0066a806d8edf12ba21ff2fbd62658206353b6e4196"
+        },
+        {
+          "order": 17,
+          "title": "Tristan (2/7)",
+          "sha256": "6e15c203afb5937b1676946d852cf3dbf392179d9f977b5c43d9a838c7543c2e"
+        },
+        {
+          "order": 18,
+          "title": "Tristan (3/7)",
+          "sha256": "30963c7d808068abdc32ce029c747fc2d78e1f9a1f6c6251145aa44e3a50ffb0"
+        },
+        {
+          "order": 19,
+          "title": "Tristan (4/7)",
+          "sha256": "7cdda729b624ecf2a4f767f7c8e117397df25b255df88a85e93416a212d9e7d4"
+        },
+        {
+          "order": 20,
+          "title": "Tristan (5/7)",
+          "sha256": "3f6988850368d0835caa5ca6dc438d14df7c0cda6a8c376ddc0aa2a4a9805447"
+        },
+        {
+          "order": 21,
+          "title": "Tristan (6/7)",
+          "sha256": "f88652909b1ba4b9194dac31b7581ce9c3ce3bbf493d6798be2747487bc63dcc"
+        },
+        {
+          "order": 22,
+          "title": "Tristan (7/7)",
+          "sha256": "9f2c2bf5d4b9fadac508b6705190384cb02d59e29158c0900bf699d435bc33cc"
+        },
+        {
+          "order": 23,
+          "title": "Tonio Kröger (1/11)",
+          "sha256": "867e1d63526f1c59021bf0e3575a23628c141292f0e7c7cc49a7310b2bfc077f"
+        },
+        {
+          "order": 24,
+          "title": "Tonio Kröger (2/11)",
+          "sha256": "1c4f09bcf0574052a556a93169814a3c7c5b2b8bdbe02c255cd9b6a39d13d3f4"
+        },
+        {
+          "order": 25,
+          "title": "Tonio Kröger (3/11)",
+          "sha256": "81320ce1c27f1544fbcab8da6c05b315890b6fbecbeed509803cbd6ff5d9d9d8"
+        },
+        {
+          "order": 26,
+          "title": "Tonio Kröger (4/11)",
+          "sha256": "4897362ad4922ba128bfc5d2a0aaa7bc74b670cf2560b12cb3090d03b3adfa5e"
+        },
+        {
+          "order": 27,
+          "title": "Tonio Kröger (5/11)",
+          "sha256": "eeb79be412f33789b9f314a323de250f02d70fa2fd1c3b5e0ab4d475daa66792"
+        },
+        {
+          "order": 28,
+          "title": "Tonio Kröger (6/11)",
+          "sha256": "6ceb50002e39da88f883de76a42354ed466c5283b21d32d1eaa7f72f1551be3b"
+        },
+        {
+          "order": 29,
+          "title": "Tonio Kröger (7/11)",
+          "sha256": "eb9cf987be1581eaf1f4dd524918d53d16dd07b384cd5dbbcfe56e6f5558aafd"
+        },
+        {
+          "order": 30,
+          "title": "Tonio Kröger (8/11)",
+          "sha256": "71c8e655eb423a46545e73b9351fd684aa3d65a06c7c1e11cf54727dcd159923"
+        },
+        {
+          "order": 31,
+          "title": "Tonio Kröger (9/11)",
+          "sha256": "60c6944690719fcaeb1cb4e8666495f713157828eb1df967da97507e6ac2f0ce"
+        },
+        {
+          "order": 32,
+          "title": "Tonio Kröger (10/11)",
+          "sha256": "75574c6aa2dab20cf5e401e44f134c956a93f87709b825d48a5abe00f5be4061"
+        },
+        {
+          "order": 33,
+          "title": "Tonio Kröger (11/11)",
+          "sha256": "104e22b680113e840d79beef79f3bd81118433aa5ecba8b3fd08f79afaaab7fc"
+        },
+        {
+          "order": 34,
+          "title": "At the Prophet’s",
+          "sha256": "b1a43e86df16c91b4da602cd782414821695ca08b45c57463f398a6a7ee926cd"
+        },
+        {
+          "order": 35,
+          "title": "How Jappe Fought Do Escobar (1/3)",
+          "sha256": "5fff42ab4c6324e9ad022d92d50af03dc4e20105430fa971e3047108de06e6a0"
+        },
+        {
+          "order": 36,
+          "title": "How Jappe Fought Do Escobar (2/3)",
+          "sha256": "7edb8986868534e946661e658e618d0e18f722cc47aeece9f8c403b50da8137f"
+        },
+        {
+          "order": 37,
+          "title": "How Jappe Fought Do Escobar (3/3)",
+          "sha256": "bb3bd6cdbae47755c119c16fc4433a60b61ab6a7e9348f98317644eb9c4f39e8"
+        },
+        {
+          "order": 38,
+          "title": "Death in Venice (1/13)",
+          "sha256": "cb2d50afdfdeb3ad06cbb5f9d21c693e07b41576572f9de21a2ea6794e6a5870"
+        },
+        {
+          "order": 39,
+          "title": "Death in Venice (2/13)",
+          "sha256": "e2168424c150cb98d083c0a242c0e1651611749a5e3d443bfac7f6a30a0d1fc4"
+        },
+        {
+          "order": 40,
+          "title": "Death in Venice (3/13)",
+          "sha256": "834ef99a3249cc655283d3455cc41ba3a26ad5afd1210b1cf21d38f41d5833a2"
+        },
+        {
+          "order": 41,
+          "title": "Death in Venice (4/13)",
+          "sha256": "d3884e93c0414ce70b48a24c58c24587c5c56171815d926925079c5c893dff8f"
+        },
+        {
+          "order": 42,
+          "title": "Death in Venice (5/13)",
+          "sha256": "c1bd8102bb1ea6e5525689ebe75b92bff44787781c4440c185cc16c576e758c5"
+        },
+        {
+          "order": 43,
+          "title": "Death in Venice (6/13)",
+          "sha256": "0f7e00dded52b7f10895e0283d07278bd57f9a7d24c30d481603fcee8bca27b0"
+        },
+        {
+          "order": 44,
+          "title": "Death in Venice (7/13)",
+          "sha256": "7dfa80c6722afcc3c742bc28b3bee1ced2f438380ca12c91578d3e6ceb6a1ca9"
+        },
+        {
+          "order": 45,
+          "title": "Death in Venice (8/13)",
+          "sha256": "b278410c2bafca87a48f01d1dd930e39fb41b7c1a89c47bbaf806b4fc6ab284e"
+        },
+        {
+          "order": 46,
+          "title": "Death in Venice (9/13)",
+          "sha256": "7bca478fe9cb470f387dfb01a730cbd60248544c81f95c855144a68b9ef93415"
+        },
+        {
+          "order": 47,
+          "title": "Death in Venice (10/13)",
+          "sha256": "33372f7a29a8a72c51424f04f4c56cdfd663d7445bf65b8a8c4864f95e78f3d3"
+        },
+        {
+          "order": 48,
+          "title": "Death in Venice (11/13)",
+          "sha256": "520563cbe445d46a389e8325d53dda8820b14db517c30123fa2454d27a37dead"
+        },
+        {
+          "order": 49,
+          "title": "Death in Venice (12/13)",
+          "sha256": "0bf5e81a7c29c1ac295ddfb46a7ec73c33d03ac7643386c1195da23ff746db00"
+        },
+        {
+          "order": 50,
+          "title": "Death in Venice (13/13)",
+          "sha256": "f2456f7451dba69813d8b9ac8a2950e3049240c387db8509e1493312708e307b"
+        },
+        {
+          "order": 51,
+          "title": "Bashan and I (1/17)",
+          "sha256": "a90d3e5d8d945e01108812cc06b36627f99590de98a5221cc2d201bed57d7d2f"
+        },
+        {
+          "order": 52,
+          "title": "Bashan and I (2/17)",
+          "sha256": "aab7cf0afde95306de14663fe6253e59981e5b90b703a13bc81ef7946271bdf4"
+        },
+        {
+          "order": 53,
+          "title": "Bashan and I (3/17)",
+          "sha256": "a6518e2ee90baef4c3fd2166d2295d870b2ab9b208578f06ac300554c65698b2"
+        },
+        {
+          "order": 54,
+          "title": "Bashan and I (4/17)",
+          "sha256": "b14523594484e25faf0a04cc95b9261465462582f98b6a8075d487b0c8cb8bfe"
+        },
+        {
+          "order": 55,
+          "title": "Bashan and I (5/17)",
+          "sha256": "53245b7d4b695da7776fe4f00579290ee8b8f8808a81ce482ca8c1052f141f62"
+        },
+        {
+          "order": 56,
+          "title": "Bashan and I (6/17)",
+          "sha256": "499f6567014eb632e334c39d9bbcb8de10bf1e33783dca7ded6e66508d3f3f7d"
+        },
+        {
+          "order": 57,
+          "title": "Bashan and I (7/17)",
+          "sha256": "be8d0d8c044593b21d84b23be7f9f5d441782a325f44eaba299e96a35bae12c2"
+        },
+        {
+          "order": 58,
+          "title": "Bashan and I (8/17)",
+          "sha256": "b0134b83b48f4345ee5bc1a643b7e97676bb46a14a6182ad9959d1b36906478c"
+        },
+        {
+          "order": 59,
+          "title": "Bashan and I (9/17)",
+          "sha256": "a8ad5f3930ee696108110a61590dfaa6c459eb9f6d5288c9b6e90496bd98eef5"
+        },
+        {
+          "order": 60,
+          "title": "Bashan and I (10/17)",
+          "sha256": "5bc7331d02d48fff25695a5bee5f479cb6da90c6396e5be5d707f1f4ddb70637"
+        },
+        {
+          "order": 61,
+          "title": "Bashan and I (11/17)",
+          "sha256": "8a5e2f3c19cc4cfa83acc7020d4e64eac6d6a5203dc81dd0ecbb253bd102a865"
+        },
+        {
+          "order": 62,
+          "title": "Bashan and I (12/17)",
+          "sha256": "298deab85959adfe4d98937644a3c99fef42360ffd6310b139b3a4447605c9c8"
+        },
+        {
+          "order": 63,
+          "title": "Bashan and I (13/17)",
+          "sha256": "aab2363545f1056b04f8d2b8ace022ad0d8bd912a12220b709408908619cdcbc"
+        },
+        {
+          "order": 64,
+          "title": "Bashan and I (14/17)",
+          "sha256": "7c45fd451761298eb4cf705aec91fb8893627fa91e50deb1ceea81373fcc7a3a"
+        },
+        {
+          "order": 65,
+          "title": "Bashan and I (15/17)",
+          "sha256": "8fc05677a1320caab51a3b22f6ffb1ec570009a5e059021f49dc4e1b564ac223"
+        },
+        {
+          "order": 66,
+          "title": "Bashan and I (16/17)",
+          "sha256": "c4f07969cf960d1ecea2fc4c5fe39536a2000dbc95e8633db460053a3311e2c1"
+        },
+        {
+          "order": 67,
+          "title": "Bashan and I (17/17)",
+          "sha256": "beb32aed7764cfe68b348454748aef737c032a4d74a9ad8eebf100c8ebda787d"
+        },
+        {
+          "order": 68,
+          "title": "Disorder and Early Sorrow (1/7)",
+          "sha256": "a23e4f8001f7ee7ebb511de098452442f958bd7d1c4808e3ef7192d5ed5de3d2"
+        },
+        {
+          "order": 69,
+          "title": "Disorder and Early Sorrow (2/7)",
+          "sha256": "aaa5f5a191cb761fcb1be94c85b1fd4427106f84ffe5926adb057b62086c12d6"
+        },
+        {
+          "order": 70,
+          "title": "Disorder and Early Sorrow (3/7)",
+          "sha256": "bc45723c7a46612160f9eac5c734d5fe53a02e9c0892a82c86b2490deec77f32"
+        },
+        {
+          "order": 71,
+          "title": "Disorder and Early Sorrow (4/7)",
+          "sha256": "b86b7ffa6e28614ad08cfe56d525a68607fdecc64769822041c66d560be82330"
+        },
+        {
+          "order": 72,
+          "title": "Disorder and Early Sorrow (5/7)",
+          "sha256": "90b91350fb69936f702e111ae32cb2fb6009d2d7fce65310bd46574bf4078a80"
+        },
+        {
+          "order": 73,
+          "title": "Disorder and Early Sorrow (6/7)",
+          "sha256": "c3787501db8780a570a88f970a18aa902fae4022cdcadc9b5d7a53bac963c116"
+        },
+        {
+          "order": 74,
+          "title": "Disorder and Early Sorrow (7/7)",
+          "sha256": "5e90b7de9e056fd531c5cdcaa3832f63dec554f94b6c32286d24f462dac0a875"
+        }
+      ]
+    }
+  }
+}

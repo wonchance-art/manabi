@@ -1,5 +1,5 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-const h = vi.hoisted(() => ({ slots: [], index: 0, effects: [], cleanups: [], profile: new Map(), writes: [], reads: [], listener: null, session: null, sessionDeferred: null, emitInitial: false, deferred: null }));
+const h = vi.hoisted(() => ({ slots: [], index: 0, effects: [], cleanups: [], profile: new Map(), writes: [], reads: [], listener: null, session: null, sessionDeferred: null, emitInitial: false, deferred: null, failLoads: 0 }));
 vi.mock('react', async importOriginal => {
   const actual = await importOriginal();
   return { ...actual,
@@ -21,7 +21,7 @@ vi.mock('../supabase', () => {
     signInWithPassword:vi.fn(async()=>({data:{session:{user:{id:'A',user_metadata:{name:'A'}}}},error:null})),
     signOut:vi.fn(async()=>{h.listener?.('SIGNED_OUT',null);return{};}),
   }};
-  return {supabase:client,getSupabase:vi.fn(async()=>client)};
+  return {supabase:client,getSupabase:vi.fn(async()=>{if(h.failLoads>0){h.failLoads-=1;throw new Error('chunk load failed');}return client;})};
 });
 vi.mock('../ToastContext',()=>({useToast:()=>vi.fn()}));
 vi.mock('../refProgress',()=>({pullProgress:vi.fn(async()=>{})}));
@@ -35,11 +35,23 @@ async function effects(){for(const fn of h.effects.splice(0)){const cleanup=fn()
 const tick=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
 async function mount(){render();await effects();return render();}
 
-beforeEach(()=>{h.slots=[];h.index=0;h.effects=[];h.cleanups=[];h.profile=new Map([['A',row('A')],['B',row('B')]]);h.writes=[];h.reads=[];h.listener=null;h.session={user:user('A')};h.sessionDeferred=null;h.emitInitial=false;h.deferred=null;
+beforeEach(()=>{h.failLoads=0;h.slots=[];h.index=0;h.effects=[];h.cleanups=[];h.profile=new Map([['A',row('A')],['B',row('B')]]);h.writes=[];h.reads=[];h.listener=null;h.session={user:user('A')};h.sessionDeferred=null;h.emitInitial=false;h.deferred=null;
  vi.stubGlobal('document',{cookie:'sb-test-auth-token=x'});
  vi.stubGlobal('window',{addEventListener:vi.fn(),removeEventListener:vi.fn(),location:{origin:'http://fixture',pathname:'/home',search:''}});
 });
 afterEach(()=>{for(const fn of h.cleanups)fn();vi.unstubAllGlobals();});
+
+// PROFILE-READ-SHARE-001 — 페이지 로드의 세션 경로(getSession · INITIAL_SESSION/SIGNED_IN 알림)는 같은 계정의 진행 중 읽기를 공유한다.
+// 쓰기 뒤 재읽기(refreshProfileReadOnly · fetchProfile)는 공유하지 않는다. 경쟁 순서 표 = profileReadShare.test.js 머리말.
+const fullReads=()=>h.reads.filter(r=>r.fields==='*').length;
+describe('PROFILE-READ-SHARE-001 — 로그인 상태 페이지 로드당 profiles 읽기 1회',()=>{
+ it('알림 먼저(INITIAL_SESSION이 세션 확인보다 먼저): 세션 확인은 진행 중 읽기에 합류 — 읽기 1 · 프로필 적용',async()=>{let resolve;h.deferred=new Promise(r=>{resolve=r;});h.emitInitial=true;await mount();await tick();expect(fullReads()).toBe(1);resolve({data:row('A'),error:null});await tick();expect(render().profile).toEqual(row('A'));expect(fullReads()).toBe(1);expect(h.writes).toEqual([]);});
+ it('세션 확인 먼저: 뒤에 온 INITIAL_SESSION 알림이 진행 중 읽기에 합류 — 읽기 1',async()=>{let resolve;h.deferred=new Promise(r=>{resolve=r;});await mount();expect(fullReads()).toBe(1);await h.listener('INITIAL_SESSION',{user:user('A')});await tick();expect(fullReads()).toBe(1);resolve({data:row('A'),error:null});await tick();expect(render().profile).toEqual(row('A'));});
+ it('쓰기 중: 세션 읽기 진행 중의 쓰기 뒤 재읽기는 새로 읽고, 늦게 온 옛 읽기는 덮지 못한다',async()=>{let resolve;h.deferred=new Promise(r=>{resolve=r;});const auth=await mount();h.profile.set('A',{...row('A'),streak_count:7});await auth.refreshProfileReadOnly('A');expect(fullReads()).toBe(2);resolve({data:row('A'),error:null});await tick();expect(render().profile.streak_count).toBe(7);});
+ it('로그아웃 중: 진행 중 세션 읽기는 로그아웃 뒤 프로필을 되살리지 못한다',async()=>{let resolve;h.deferred=new Promise(r=>{resolve=r;});const auth=await mount();await auth.signOut();resolve({data:row('A'),error:null});await tick();expect(render().profile).toBeNull();expect(render().user).toBeNull();});
+ it('배선: 세션 경로 둘(getSession · 인증 알림)만 공유 읽기, 밖에서 부르는 재읽기(refreshProfileReadOnly = fetchProfile)는 공유하지 않는다',async()=>{const fs=await import('node:fs');const src=fs.readFileSync(new URL('../AuthContext.jsx',import.meta.url),'utf8').split('\n').filter(l=>!l.trim().startsWith('//')).join('\n');expect(src.match(/readSessionProfile\(session\.user\.id\)/g)).toHaveLength(2);expect(src).toContain('async function refreshProfileReadOnly(userId) { return readProfile(userId); }');expect(src).toContain('function readSessionProfile(userId) { return readProfile(userId, { share: true }); }');expect(src).toContain('const fetchProfile = refreshProfileReadOnly;');expect(src.match(/share: true/g)).toHaveLength(1);});
+ it('계정 전환 중: 옛 계정 읽기 진행 중의 새 계정 알림은 합류하지 않고 새로 읽는다',async()=>{let resolve;h.deferred=new Promise(r=>{resolve=r;});await mount();await h.listener('TOKEN_REFRESHED',{user:user('B')});await tick();expect(fullReads()).toBe(2);resolve({data:{...row('A'),streak_count:999},error:null});await tick();expect(render().user.id).toBe('B');expect(render().profile).toEqual(row('B'));});
+});
 
 describe('AuthProvider profile reads never manufacture learning activity',()=>{
  it('initial session and repeated fetchProfile only SELECT despite old login date',async()=>{let auth=await mount();expect(auth.user.id).toBe('A');expect(auth.profile).toEqual(row('A'));expect(h.writes).toEqual([]);expect(auth.fetchProfile).toBe(auth.refreshProfileReadOnly);await auth.fetchProfile('A');await auth.refreshProfileReadOnly('A');expect(h.writes).toEqual([]);expect(render().profile.streak_count).toBe(6);});
@@ -52,4 +64,25 @@ describe('AuthProvider profile reads never manufacture learning activity',()=>{
  it('an auth event winning the initial session race ends loading and cannot be overwritten by old getSession',async()=>{let resolve;h.sessionDeferred=new Promise(r=>{resolve=r;});h.emitInitial=true;await mount();expect(render().loading).toBe(false);await h.listener('TOKEN_REFRESHED',{user:user('B')});await tick();resolve({data:{session:{user:user('A')}}});await tick();expect(render().user.id).toBe('B');expect(render().profile.id).toBe('B');expect(render().loading).toBe(false);expect(h.writes).toEqual([]);});
  it('repeated SIGNED_IN notification for the current actor is still a read, not another login mutation',async()=>{await mount();await h.listener('SIGNED_IN',{user:user('A')});await tick();expect(h.writes).toEqual([]);});
  it('sign-out invalidates an in-flight profile refresh before it can repopulate profile',async()=>{const auth=await mount();let resolve;h.deferred=new Promise(r=>{resolve=r;});const pending=auth.refreshProfileReadOnly('A');await auth.signOut();resolve({data:row('A'),error:null});await pending;expect(render().profile).toBeNull();expect(render().user).toBeNull();expect(h.writes).toEqual([]);});
+
+ // 병합 전 교차 리뷰 S1: SDK 조각을 못 받아 다시 해 볼 차례가 남은 동안은 「확인 중」(loading) — user=null을 로그아웃으로 내보내지 않는다.
+ it('SDK load retries keep loading true until the cap, then settle signed-out; a successful retry restores the account without a guest flash',async()=>{
+  vi.useFakeTimers();
+  try{
+   h.failLoads=4; // 첫 시도 + 2 · 8 · 30초 재시도 모두 실패
+   await mount();
+   const seen=[render().loading];
+   for(const ms of [2000,8000,30000]){await vi.advanceTimersByTimeAsync(ms);await effects();seen.push(render().loading);}
+   expect(seen).toEqual([true,true,true,false]); // 차례를 다 쓴 뒤에만 확정
+   expect(render().user).toBeNull();
+   for(const fn of h.cleanups.splice(0))fn();
+   h.slots=[];h.index=0;h.effects=[];
+   h.failLoads=1; // 첫 시도만 실패 — 2초 뒤 재시도로 복원
+   await mount();
+   expect(render()).toMatchObject({loading:true,user:null});
+   await vi.advanceTimersByTimeAsync(2000);await effects();
+   expect(render().loading).toBe(false);
+   expect(render().user.id).toBe('A');
+  }finally{vi.useRealTimers();}
+ });
 });

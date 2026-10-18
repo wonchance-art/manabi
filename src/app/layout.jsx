@@ -1,12 +1,16 @@
-import { Inter, Noto_Sans, Noto_Sans_KR, Noto_Sans_JP, Noto_Sans_SC, Noto_Sans_TC } from 'next/font/google';
+import { Inter, Noto_Sans, Noto_Sans_KR, Noto_Sans_JP } from 'next/font/google';
 import '../index.css';
 import Providers from './providers';
 
+// Inter는 미리 받지 않는다(FONT-PRELOAD-001): 앱 화면(.manabi-app)은 Noto Sans KR · Manrope가 먼저라 Inter 라틴 조각(47kB)이
+// 모든 페이지에서 미리 받아지고 쓰이지 않았다(Preview b8fc2b62 실측 2026-10-17 KST — 배움 · 산책 · 교재 · 뷰어 · 로그인 · 단어 목록 ·
+// /study, 390 · 1440). 미리 받기만 뺀다 — @font-face는 그대로라 쓰는 곳(한국어 뷰어 「Inter」 선택 등)은 그때 받는다.
 const inter = Inter({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-inter',
   display: 'swap',
+  preload: false,
 });
 
 const notoKr = Noto_Sans_KR({
@@ -25,29 +29,23 @@ const notoJp = Noto_Sans_JP({
   display: 'swap',
 });
 
-// 중국어 본문 — 간체 표준 자형(오너 확정 2026-08-19, 폰트 시연장 비교 후 선택).
-// 이전엔 중국어 전용 폰트가 없어 KR/JP 폰트의 자형(間·直·骨 등이 비대륙형)으로 렌더됐다.
-const notoSc = Noto_Sans_SC({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
-  variable: '--font-noto-sc',
-  display: 'swap',
-});
+// 중국어 본문(간체 Noto Sans SC — 오너 확정 2026-08-19)은 중국어를 그릴 수 있는 세그먼트만 싣는다 —
+// src/components/fonts/ScFontScope.jsx(FONT-SC-SCOPE-001). 루트에 두면 모든 페이지가 SC @font-face 303개를 받았다.
 
-// 대만 번체 안내·해설은 간체 자형과 독립된 글꼴을 사용한다.
-const notoTc = Noto_Sans_TC({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
-  variable: '--font-noto-tc',
-  display: 'swap',
-});
+// 대만 번체(Noto Sans TC)는 번체를 그리는 세그먼트(viewer · pdf · suggestions · chinese)만 싣는다 —
+// src/components/fonts/TcFontScope.jsx. 루트에 두면 모든 페이지가 TC @font-face 325개를 받았다.
 
 // 병음 전용 라틴 — 성조 부호(ā á ǎ à…) 전 범위 보장, SC와 같은 계열(오너 확정).
+// 미리 받기는 그리는 세그먼트(viewer · pdf · suggestions · chinese · quick)만 건다(FONT-HINT-001, 2026-10-17 KST):
+// 루트 preload는 쓰지 않는 화면까지 라틴 조각을 미리 받았다(빌드 실측: /home · /discover · /vocab 첫 진입 −36.5kB,
+// 중국어 뷰어는 1회 다운로드 · 교체 시점 같거나 빠름 · 최종 픽셀 동일, 390 · 1440). 선언은 여기 한 벌뿐이다 —
+// 세그먼트에서 다시 선언하면 @font-face가 두 벌 생겨 두 번 받는다. 힌트: src/components/fonts/fontHints.js.
 const notoSans = Noto_Sans({
   subsets: ['latin'],
   weight: ['400', '500', '700'],
   variable: '--font-noto-sans',
   display: 'swap',
+  preload: false,
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -64,7 +62,7 @@ export const metadata = {
   alternates: { canonical: '/' },
   openGraph: {
     title: 'manabi — 언어마다, 나만의 한 권',
-    description: '일본어·영어 원문을 AI로 해부하고, FSRS로 과학적으로 복습하세요.',
+    description: '일본어·영어·프랑스어·중국어 학습 도구 — 문법 교재, 매일 조립되는 학습 세션, FSRS 복습, 형태소 해부 읽기.',
     url: SITE_URL,
     type: 'website',
     siteName: 'manabi',
@@ -73,7 +71,7 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'manabi — 언어마다, 나만의 한 권',
-    description: '일본어·영어 원문을 AI로 해부하고, FSRS로 과학적으로 복습하세요.',
+    description: '일본어·영어·프랑스어·중국어 학습 도구 — 문법 교재, 매일 조립되는 학습 세션, FSRS 복습, 형태소 해부 읽기.',
   },
   robots: {
     index: true,
@@ -81,6 +79,15 @@ export const metadata = {
     googleBot: { index: true, follow: true, 'max-image-preview': 'large' },
   },
 };
+
+// 미리 열 Supabase 출처 — 값이 없거나 주소가 아니면 힌트를 빼고 넘어간다(힌트 하나 때문에 모든 화면이 깨지지 않게).
+const SUPABASE_ORIGIN = (() => {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin;
+  } catch {
+    return null;
+  }
+})();
 
 export default function RootLayout({ children }) {
   return (
@@ -93,6 +100,10 @@ export default function RootLayout({ children }) {
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.webmanifest" />
+        {/* Supabase 연결을 HTML을 읽는 동안 미리 연다(VIEWER-FIRST-TOKEN-001). 첫 조회(뷰어 자료 등)가 CORS 사전 요청 앞에서 TCP·TLS를
+            새로 맺느라 389ms를 썼다(운영 /viewer/45 실측, 2026-10-17 KST). supabase-js는 자격 증명 없이 보내므로 crossOrigin="anonymous"여야
+            그 연결을 다시 쓴다. */}
+        {SUPABASE_ORIGIN && <link rel="preconnect" href={SUPABASE_ORIGIN} crossOrigin="anonymous" />}
         {/* 테마 깜빡임 방지 + SW 등록 */}
         <script
           dangerouslySetInnerHTML={{
@@ -114,7 +125,7 @@ export default function RootLayout({ children }) {
           />
         )}
       </head>
-      <body className={`${inter.variable} ${notoKr.variable} ${notoJp.variable} ${notoSc.variable} ${notoSans.variable} ${notoTc.variable}`}>
+      <body className={`${inter.variable} ${notoKr.variable} ${notoJp.variable} ${notoSans.variable}`}>
         <Providers>{children}</Providers>
       </body>
     </html>

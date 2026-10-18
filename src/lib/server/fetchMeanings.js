@@ -1,5 +1,6 @@
 import { isCanonPos } from './posCanon';
 import { callLLM } from './llm.js';
+import { hasPrimaryLLMKey } from './llmKeys.js';
 // 서버 전용 — 미싱 형태소들의 의미를 Gemini에 배치 요청
 
 // 뜻 조회는 단순 구조화 작업 — thinking 없는 flash-lite(light 티어)가 4배 빠르고 품질 동등(실측 배치당 12.7s→3.2s).
@@ -311,8 +312,7 @@ export async function fetchMeaningsForMissing(missing, language, supabase, opts 
   const errors = [];
   if (missing.length === 0) return { result, errors };
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY not set');
+  if (!hasPrimaryLLMKey()) throw new Error('GEMINI_API_KEY not set');
 
   // 검증 보류 메모 — 최근 보류된 새 단어는 다시 생성·검증하지 않고 보류 뜻(폐기면 빈 뜻)을 그대로 돌려준다.
   // 무한 재생성 방지: 보류 단어가 요청마다 MAX_MISSING 예산과 호출 비용을 다시 쓰지 않는다.
@@ -360,7 +360,8 @@ export async function fetchMeaningsForMissing(missing, language, supabase, opts 
       }
       const errMsg = `HTTP ${err?.status ?? 0}: ${JSON.stringify(err?.detail ?? err?.message ?? '').slice(0, 300)}`;
       console.warn('[fetchMeanings] batch failed:', errMsg);
-      errors.push({ stage: 'http', batch: batchOffset, error: errMsg });
+      // code: llm.js LLMError 코드 — 'service_config'(결제 · 크레딧)면 analyzeCore가 뜻 빈 완료본 대신 실패로 끝낸다.
+      errors.push({ stage: 'http', batch: batchOffset, error: errMsg, code: err?.code ?? null });
       return;
     }
 

@@ -1,15 +1,24 @@
-import {createSupabaseServerClient,requireAdmin} from '@/lib/supabaseServer';
-import {candidate,readEdition,respond,respondError,textbookError} from '@/lib/textbook/server';
+import {BOOK_ID,isBookId} from '@/lib/textbook/contract';
+import {createSupabasePublicClient,requireAdmin} from '@/lib/supabaseServer';
+import {cachedCandidate,readEditionStamp,respond,respondError,textbookError} from '@/lib/textbook/server';
 import {verifiedAsset} from '@/lib/textbook/assetFile';
 export const runtime='nodejs';export const dynamic='force-dynamic';
-export async function GET(request,{params}){try{const {edition}=await params;const db=await createSupabaseServerClient();let published=null;try{published=await readEdition(db,edition)}catch(e){if(e.status!==503)throw e;}
+// 공개 판본(발행 기록 있음 + 해시 일치)의 파일은 판본 id가 주소에 든 고정 출력물이라 브라우저 · CDN이 오래 보관해도 된다.
+// 관리자 미리보기(미공개 판본)는 공개 전이므로 지금처럼 보관하지 않는다. 오류 응답은 respond()의 no-store 그대로.
+// 발행 확인은 쿠키 없는 anon 클라이언트로 한다(textbook_editions_read: anon 읽기 허용) — 쿠키 세션 클라이언트는 만료 세션을 갱신하며
+// 이 응답에 Set-Cookie를 실을 수 있어, public 응답과 섞이면 공유 캐시가 남의 세션을 보관한다(ASSET-CACHE-COOKIE-001).
+// 쿠키는 미리보기(발행 기록 없음)의 관리자 확인(requireAdmin)에서만 읽고, 그 응답은 private, no-store다.
+const PUBLIC_ASSET_CACHE='public, max-age=31536000, immutable';
+const PREVIEW_ASSET_CACHE='private, no-store';
+export async function GET(request,{params,bookId=BOOK_ID}){try{if(!isBookId(bookId))throw textbookError(404,'교재를 찾을 수 없어요.');const {edition}=await params;const db=createSupabasePublicClient();let published=null;try{published=bookId===BOOK_ID?await readEditionStamp(db,edition):await readEditionStamp(db,edition,bookId)}catch(e){if(e.status!==503)throw e;}
  if(!published){const auth=await requireAdmin();if(auth.error)return respond({error:'아직 공개되지 않은 판본이에요.'},auth.status===401?401:404)}
- const bundle=await candidate(edition);if(published&&(published.content_hash!==bundle.contentHash||JSON.stringify(published.artifact_manifest)!==JSON.stringify(bundle.artifactManifest))){
+ const bundle=bookId===BOOK_ID?await cachedCandidate(edition):await cachedCandidate(edition,bookId);if(published&&(published.content_hash!==bundle.contentHash||JSON.stringify(published.artifact_manifest)!==JSON.stringify(bundle.artifactManifest))){
   // JSONB key ordering may differ; content hash remains authoritative, compare the artifact digest explicitly.
   if(published.content_hash!==bundle.contentHash||published.artifact_manifest?.bundleHash!==bundle.artifactManifest.bundleHash)throw textbookError(503,'판본과 출력본이 일치하지 않아요.');
  }
  const file=new URL(request.url).searchParams.get('file')||'index.html';
+ if(!Object.hasOwn(bundle.assets||{},file))throw textbookError(404,'파일을 찾을 수 없어요.');
  if(file.endsWith('.pdf')&&bundle.artifactManifest.media?.pdf===false)throw textbookError(404,'PDF는 다듬고 있어요. 웹 교재를 이용해 주세요.');
  const {bytes,type}=await verifiedAsset(bundle,file);
- return new Response(bytes,{headers:{'Content-Type':type,'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff',...(file.endsWith('.pdf')?{'Content-Disposition':'inline; filename="manabi-japanese-n5.pdf"'}:{})}});
+ return new Response(bytes,{headers:{'Content-Type':type,'Cache-Control':published?PUBLIC_ASSET_CACHE:PREVIEW_ASSET_CACHE,'X-Content-Type-Options':'nosniff',...(file.endsWith('.pdf')?{'Content-Disposition':`inline; filename="manabi-${bookId}.pdf"`}:{})}});
  }catch(e){return respondError(e)}}

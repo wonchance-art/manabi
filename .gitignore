@@ -28,6 +28,9 @@ npm-debug.log*
 # Claude Code 로컬 상태 (메모리/워크트리)
 .claude/
 
+# UX 점검 산출물(scripts/ux-audit.mjs — 캡처 · 보고서)
+.ux-audit/
+
 # Supabase CLI 로컬 캐시
 supabase/.temp/
 
@@ -43,3 +46,6 @@ scripts/data/
 
 # Local synthetic QA evidence; never public auth/session data.
 .qa/
+
+# 간체 중국어 독립 스타일시트 산출물 — 빌드가 글꼴 입력에서 만든다(scripts/fonts/sc-stylesheet.cjs, SC-LINK-001)
+/public/_fonts/

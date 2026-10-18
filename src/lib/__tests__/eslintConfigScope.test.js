@@ -50,4 +50,10 @@ describe('ESLint 설정 범위 — .jsx 누락 회귀 차단', () => {
     const ruleIds = result.messages.map((m) => m.ruleId);
     expect(ruleIds).toContain('react-hooks/rules-of-hooks');
   });
+  it('화면 코드는 정의되지 않은 이름을 잡는다(no-undef) — 꺼지면 ReferenceError가 lint 초록으로 숨는다', async () => {
+    const config = await eslint.calculateConfigForFile('src/components/notes/StudyNotePage.jsx');
+    expect(config.rules['no-undef']?.[0]).toBe(2);
+    const [result] = await eslint.lintText('export function f() { return notDefinedAnywhere; }\n', { filePath: 'src/lib/__probe__.js' });
+    expect(result.messages.map((m) => m.ruleId)).toContain('no-undef');
+  });
 });

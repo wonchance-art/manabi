@@ -77,7 +77,12 @@ export async function POST(request) {
   }
 
   try {
-    const { results, stats } = await analyzeLines({ lines, language, boundaryRequest, truncatedLines, startedAt });
+    const { results, stats, meaningFailure } = await analyzeLines({ lines, language, boundaryRequest, truncatedLines, startedAt });
+    // 뜻 조회가 「서비스 설정」(결제 · 크레딧)으로 막혔으면 뜻 빈 토큰을 돌려주지 않는다 — 클라(analyzeText)는 이 요청의 줄을
+    // 기존 실패(복구 가능)로 남기고, 재분석은 원문 · 기존 분석을 그대로 둔다(GEMINI-402-GUARD). 429가 아니라 자동 재시도도 없다.
+    if (meaningFailure === 'service_config') {
+      return Response.json({ error: 'meaning service unavailable', code: 'service_config' }, { status: 502 });
+    }
     return Response.json({ results, stats });
   } catch (err) {
     console.error('[api/analyze] error:', err);

@@ -3,8 +3,9 @@ import { readFileSync, existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { LEVELS } from '../../constants';
 import {
-  CONVERSATION_TOPICS, canStartConversation, conversationLevels, newConversationDefaults, newConversationHref, recommendedLevel,
+  CONVERSATION_TOPICS, canStartConversation, conversationLevels, newConversationDefaults, newConversationHref, preferredConversationLanguage, recommendedLevel,
 } from '../newConversation';
+import { sliceBetween } from '../../__tests__/helpers/sliceBetween';
 
 const read = (rel) => readFileSync(new URL(`../../../${rel}`, import.meta.url), 'utf8');
 
@@ -27,6 +28,28 @@ describe('새 대화 선택지', () => {
   it('모르는 언어·수준은 버리고 기본값으로', () => {
     const d = newConversationDefaults(new URLSearchParams('lang=Klingon&level=Z9'), { profileLevelOf: (l) => (l === 'Chinese' ? 'H2 초급' : null) });
     expect(d).toEqual({ language: 'Chinese', level: 'H2 초급', topic: '' });
+  });
+  it('처음 언어 = 프로필의 첫 학습 언어(배열 · 옛 문자열), 없거나 모르는 언어면 중국어', () => {
+    expect(preferredConversationLanguage({ learning_language: ['Japanese', 'Chinese'] })).toBe('Japanese');
+    expect(preferredConversationLanguage({ learning_language: 'French' })).toBe('French');
+    expect(preferredConversationLanguage({ learning_language: ['Korean', 'English'] })).toBe('English');
+    expect(preferredConversationLanguage({ learning_language: [] })).toBe('Chinese');
+    expect(preferredConversationLanguage(null)).toBe('Chinese');
+    // 주소의 lang이 있으면 그것이 먼저다(「주제·수준 바꾸기」)
+    const d = newConversationDefaults(new URLSearchParams('lang=English'), { fallbackLanguage: preferredConversationLanguage({ learning_language: ['Japanese'] }) });
+    expect(d.language).toBe('English');
+    expect(newConversationDefaults(new URLSearchParams(''), { fallbackLanguage: 'Japanese' }).language).toBe('Japanese');
+  });
+  it('화면: 프로필 기준 처음 선택 · 늦게 온 프로필에도 맞추되 직접 고른 뒤에는 덮지 않는다', () => {
+    const page = read('views/NewConversationPage.jsx');
+    expect(page).toContain('fallbackLanguage: preferredConversationLanguage(profile),');
+    // 그림 중에 맞춘다(CONV-LEVEL-HOLD-001) — effect면 확인 뒤 첫 그림이 기본 언어 칩으로 한 번 그려진 뒤 옮겨 갔다.
+    const sync = sliceBetween(page, 'const [picked, setPicked] = useState(false);', 'setLevel(initial.level);');
+    expect(sync).toContain('if (!picked && (language !== initial.language || level !== initial.level)) {');
+    expect(sync).toContain('setLanguage(initial.language);');
+    expect(page).not.toContain('}, [initial.language, initial.level]);');
+    expect(sliceBetween(page, 'function pickLanguage(next) {', 'setLanguage(next);')).toContain('setPicked(true);');
+    expect(page).toContain('onClick={() => { setPicked(true); setLevel(lv); }}');
   });
   it('주제·언어·수준이 다 있어야 시작한다', () => {
     expect(canStartConversation({ topic: '여행', language: 'English', level: 'A2 초급' })).toBe(true);
