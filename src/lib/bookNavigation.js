@@ -18,9 +18,11 @@ export function lessonGroups(lessons) {
 export const readingProgressKey = (edition, userId) => `manabi-book-progress:${edition}:${userId || 'guest'}`;
 export const readingDraftKey = (edition, userId) => `manabi-book-answers:${edition}:${userId || 'guest'}`;
 export const emptyReadingProgress = () => ({ page: 'u01-start', completed: [] });
+/** 읽던 자리로 받는 쪽 id(u01 ~ u42, 꼬리 선택). 표지 이어 읽기 줄의 그리기 전 판정(bookEntryGate.resumeHintScript)도 같은 식을 쓴다. */
+export const READING_PAGE = /^u(0[1-9]|[1-3][0-9]|4[0-2])(?:-[a-z0-9_-]+)?$/;
 export function validReadingProgress(value) {
   const source = value && typeof value === 'object' ? value : {};
-  const page = /^u(0[1-9]|[1-3][0-9]|4[0-2])(?:-[a-z0-9_-]+)?$/.test(source.page || '') ? source.page : 'u01-start';
+  const page = READING_PAGE.test(source.page || '') ? source.page : 'u01-start';
   return { page, completed: [...new Set((Array.isArray(source.completed) ? source.completed : []).filter(id => /^u(0[1-9]|[1-3][0-9]|4[0-2])$/.test(id)))] };
 }
 

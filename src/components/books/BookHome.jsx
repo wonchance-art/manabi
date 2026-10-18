@@ -7,6 +7,7 @@ import { libraryReaderHref } from '@/lib/libraryReturn';
 import { lessonGroups } from '@/lib/bookNavigation';
 import { bookResume } from '@/lib/webNavigation';
 import { BOOK_ID, bookHref as textbookHref } from '@/lib/textbook/contract';
+import { resumeHintScript } from './bookEntryGate';
 import BookCover from './BookCover';
 import LibrarySaveButton from '@/components/library/LibrarySaveButton';
 import {LibraryReturnLink} from '@/components/web/LibraryReturnLink';
@@ -29,11 +30,17 @@ export default function BookHome({ book, preview=false, progress, hasProgress = 
   const resume = bookResume(book, progress, hasProgress);
   const current = resume.lesson;
   const groups = lessonGroups(book.lessons);
+  // 이어 읽기 줄(BOOK-RESUME-HOLD-001 — bookEntryGate.resumeHintScript): 읽던 기록을 읽기 전(!ready)에는 그리기 전 한 줄과, 그 한 줄이 켜는
+  // 보이지 않는 두 칸(「00과 이어 읽기 → · 00과 처음부터」 — 숫자 폭은 같다)을 진짜 줄과 같은 칸에 겹쳐 둔다. 붙은 뒤 두 칸이 되어도 줄 높이가 그대로다.
+  const resumeHint = ready ? '' : resumeHintScript(book.edition, sessionHint);
+  const resumeRow = <div className="book-resume-hold">{resumeHint && <script dangerouslySetInnerHTML={{ __html: resumeHint }} />}
+    <div className="manabi-row"><a className="manabi-button" href={readerHref(resume.page)}>{!ready ? '읽기 열기' : resume.started ? `${String(current.number).padStart(2, '0')}과 이어 읽기` : '첫 과부터 시작하기'} →</a>{resume.started && resume.page !== `${current.id}-start` && <a className="manabi-link" href={readerHref(`${current.id}-start`)}>{String(current.number).padStart(2, '0')}과 처음부터</a>}</div>
+    {resumeHint && <div className="manabi-row book-resume-ghost" data-edition={book.edition} aria-hidden="true"><span className="manabi-button">00과 이어 읽기 →</span><span className="manabi-link">00과 처음부터</span></div>}</div>;
   return <div className="manabi-page manabi-book-home"><p className="manabi-breadcrumb"><LibraryReturnLink onlyWithContext/><Link href="/lessons" prefetch={false}>교재</Link><span>/</span>일본어 · {level}</p>
     {level === 'N4' ? <>
-    <section className="manabi-book-hero"><BookCover level={level} title={book.title} /><div><p className="manabi-eyebrow">일본어 · {level}{preview && ' · 검수 중'}</p><h1>{book.title}</h1><div className="manabi-row"><a className="manabi-button" href={readerHref(resume.page)}>{!ready ? '읽기 열기' : resume.started ? `${String(current.number).padStart(2, '0')}과 이어 읽기` : '첫 과부터 시작하기'} →</a>{resume.started && resume.page !== `${current.id}-start` && <a className="manabi-link" href={readerHref(`${current.id}-start`)}>{String(current.number).padStart(2, '0')}과 처음부터</a>}</div></div></section>
+    <section className="manabi-book-hero"><BookCover level={level} title={book.title} /><div><p className="manabi-eyebrow">일본어 · {level}{preview && ' · 검수 중'}</p><h1>{book.title}</h1>{resumeRow}</div></section>
     </> : <>
-    <section className="manabi-book-hero"><BookCover /><div><p className="manabi-eyebrow">일본어 · {level}{preview && ' · 검수 중'}</p><h1>작은 문장으로<br />시작하는 일본어</h1><div className="manabi-row"><a className="manabi-button" href={readerHref(resume.page)}>{!ready ? '읽기 열기' : resume.started ? `${String(current.number).padStart(2, '0')}과 이어 읽기` : '첫 과부터 시작하기'} →</a>{resume.started && resume.page !== `${current.id}-start` && <a className="manabi-link" href={readerHref(`${current.id}-start`)}>{String(current.number).padStart(2, '0')}과 처음부터</a>}</div></div></section>
+    <section className="manabi-book-hero"><BookCover /><div><p className="manabi-eyebrow">일본어 · {level}{preview && ' · 검수 중'}</p><h1>작은 문장으로<br />시작하는 일본어</h1>{resumeRow}</div></section>
     </>}
     {!preview&&(sessionHint ? <div className="book-library-slot" data-pending={authLoading ? '' : undefined}><LibrarySaveButton edition={book.edition} bookTitle={`일본어 ${level}`}/></div> : <LibrarySaveButton edition={book.edition} bookTitle={`일본어 ${level}`}/>)}
     <div className="manabi-book-body"><section><div className="manabi-section-heading"><h2>목차</h2><span>{resume.completed} / {resume.total}과 학습</span></div>
