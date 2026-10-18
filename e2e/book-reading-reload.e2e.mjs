@@ -308,3 +308,24 @@ test(`${engine.name()} 390: the N4 book cover keeps its own scroll position too`
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });
+
+// 표지 이어 읽기 줄 자리(BOOK-RESUME-HOLD-001): 읽던 기록이 과 중간이면 붙은 뒤 「NN과 이어 읽기 → · NN과 처음부터」 두 칸이 되어
+// 390폭에서 둘째 칸이 다음 줄로 넘어가 책 머리가 자랐다(담기 버튼 · 목차 49px 밀림, CLS 0.024–0.029). 그리기 전 한 줄이 같은 높이를 잡는다.
+for(const bookId of ['japanese-n5','japanese-n4'])test(`${engine.name()} 390: the ${bookId} cover holds the resume row height while a mid-lesson record loads`,async t=>{
+ const f=await fixture(390);try{
+  await f.page.goto(`/books/${bookId}`);
+  const ready=await f.page.locator('.manabi-book-home .manabi-toc-group').first().waitFor({timeout:8000}).then(()=>true,()=>false);
+  if(!ready&&bookId==='japanese-n4'&&!(process.env.E2E_PUBLISHED_BOOKS||'').split(',').includes('japanese-n4')){t.skip('N4 is not published by this fixture server');return;}
+  assert.ok(ready,`${bookId} cover did not render`);
+  const edition=new URL(await f.page.locator('.manabi-book-hero a.manabi-button').getAttribute('href'),baseURL).searchParams.get('edition');
+  await f.page.evaluate(key=>localStorage.setItem(key,JSON.stringify({page:'u03-patterns',completed:['u01','u02'],updatedAt:'2026-10-01T00:00:00.000Z'})),progressKey(edition));
+  await f.page.addInitScript(()=>{window.__shift=[];try{new PerformanceObserver(list=>{for(const e of list.getEntries())if(!e.hadRecentInput)window.__shift.push(e.value);}).observe({type:'layout-shift',buffered:true});}catch{window.__shift=null;}});
+  await f.page.reload();
+  await f.page.locator('.manabi-book-hero a.manabi-link',{hasText:'03과 처음부터'}).waitFor();await f.page.evaluate(()=>document.fonts.ready);await f.page.waitForTimeout(500);
+  const shift=await f.page.evaluate(()=>window.__shift);
+  if(shift===null){t.skip('layout-shift entries are not reported by this engine');return;}
+  assert.ok(shift.reduce((a,b)=>a+b,0)<0.005,JSON.stringify(shift));
+  assert.equal(await f.page.locator('.book-resume-ghost').count(),0);
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
