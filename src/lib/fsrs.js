@@ -13,8 +13,9 @@
  *   reps, lapses, state (New/Learning/Review/Relearning), last_review
  */
 
-import { fsrs, Rating, State, createEmptyCard } from 'ts-fsrs';
+import { fsrs, Rating, State, createEmptyCard, S_MIN, S_MAX } from 'ts-fsrs';
 import { assertLegacyFsrsAllowed } from './fsrsLegacyBoundary.js';
+import { FSRS_POLICY, fsrsPolicySteps, introduceFsrsCard, previewFsrsRatings, schedulerTime } from './fsrsScheduler.js';
 
 // 기본 파라미터로 스케줄러 생성 (한번만)
 const scheduler = fsrs();
@@ -95,6 +96,72 @@ export function calculateFSRS(rating, prevStats) {
     repetitions: lapses,
     next_review_at: nextReview.toISOString(),
   };
+}
+
+/**
+ * 단어 카드 학습 단계(오너 지시 2026-10-19 KST — 「뷰어 쪽에도 이번에 적용한 anki 값대로 분, 날짜 수」).
+ * 복습실 FSRS 카드의 운영 정책 anki-v2(학습 1분 · 10분, 재학습 10분)를 옛 일정 단어 행에도 같은 계산으로 건다 —
+ * 새 단어 다시 1분 · 어려움 6분 · 알맞음 10분 · 쉬움 8일, 복습 중 단어의 다시 = 10분 재학습.
+ * 계산은 FSRS 카드 정본(fsrsScheduler previewFsrsRatings)을 그대로 쓴다(손계산 금지). 복습 단계(하루 이상) 단어의
+ * 어려움 · 알맞음 · 쉬움은 지금까지와 같은 calculateFSRS(일 단위) — 바뀌는 것은 하루 안쪽 단계뿐이다.
+ * 옛 행에는 단계 칸이 없어 마지막 채점 → 다음 복습 간격으로 단계를 읽는다(하루 미만 = 학습 · 재학습 단계).
+ * 채점한 적 없이 등급과 함께 담은 행은 첫 안정도로 담은 등급을 읽는다(알맞음 이상 = 둘째 단계 · 쉬움 = 졸업).
+ * 문법 · 드릴 카드는 이 함수를 쓰지 않는다(calculateFSRS 그대로).
+ */
+export const VOCAB_STEP_POLICY = 'anki-v2';
+const STEPS = fsrsPolicySteps(VOCAB_STEP_POLICY);
+const DAY_MS = 24 * 3600 * 1000;
+const INITIAL_S = (() => {
+  const first = previewFsrsRatings(introduceFsrsCard(0, { policyVersion: VOCAB_STEP_POLICY }), STEPS.learning[0] * 1000);
+  return { good: first[3].card.stability, easy: first[4].card.stability };
+})();
+const timeOf = (value) => { try { return value == null ? NaN : schedulerTime(value); } catch { return NaN; } };
+
+/** 옛 단어 행의 단계 — { state: 'New' | 'Learning' | 'Relearning' | 'Review', step }. */
+export function vocabStepPhase(prev) {
+  const S = Number(prev?.interval) || 0;
+  if (S <= 0) return { state: 'New', step: 0 };
+  const due = timeOf(prev.next_review_at), last = timeOf(prev.last_reviewed_at);
+  if (Number.isFinite(last)) {
+    if (!Number.isFinite(due) || due - last >= DAY_MS) return { state: 'Review', step: 0 };
+    if ((prev.repetitions ?? 0) > 0) return { state: 'Relearning', step: 0 };
+    return { state: 'Learning', step: due - last >= STEPS.learning[1] * 1000 - 1000 ? 1 : 0 };
+  }
+  if (S >= INITIAL_S.easy - 1e-6) return { state: 'Review', step: 0 };
+  return { state: 'Learning', step: S >= INITIAL_S.good - 1e-6 ? 1 : 0 };
+}
+
+/**
+ * 단어 채점 — calculateFSRS와 같은 입출력({ interval, ease_factor, repetitions, next_review_at }).
+ * prev에 last_reviewed_at · created_at이 있으면 단계를 그대로 잇는다. at = 채점 시각(기본 지금).
+ */
+export function calculateVocabFSRS(rating, prev, at = Date.now()) {
+  const now = timeOf(at instanceof Date ? at.getTime() : at);
+  if (!Number.isFinite(now)) return calculateFSRS(rating, prev);
+  const phase = vocabStepPhase(prev);
+  if (phase.state === 'Review') {
+    const next = calculateFSRS(rating, prev);
+    return rating === 1 ? { ...next, next_review_at: new Date(now + STEPS.relearning[0] * 1000).toISOString() } : next;
+  }
+  try {
+    let card;
+    if (phase.state === 'New') card = introduceFsrsCard(now - STEPS.learning[0] * 1000, { policyVersion: VOCAB_STEP_POLICY });
+    else {
+      const seen = [timeOf(prev.last_reviewed_at), timeOf(prev.created_at)].find(Number.isFinite);
+      const last = Math.min(Number.isFinite(seen) ? seen : now, now);
+      const due = Math.max(last, Math.min(Number.isFinite(timeOf(prev.next_review_at)) ? timeOf(prev.next_review_at) : now, now));
+      const lapses = Math.max(0, prev.repetitions ?? 0);
+      card = { version: 1, engine: FSRS_POLICY.engine, policyVersion: VOCAB_STEP_POLICY, timeZone: FSRS_POLICY.timeZone,
+        rolloverHour: FSRS_POLICY.rolloverHour, introducedAt: new Date(last).toISOString(), revision: 0, state: phase.state, step: phase.step,
+        stability: Math.min(S_MAX, Math.max(S_MIN, Number(prev.interval))), difficulty: Math.min(10, Math.max(1, Number(prev.ease_factor) || 5)),
+        reps: lapses + 1, lapses, due: new Date(due).toISOString(), lastReview: new Date(last).toISOString(), scheduledDays: 0, elapsedDays: 0 };
+    }
+    const next = previewFsrsRatings(card, now)[rating].card;
+    return { interval: next.stability, ease_factor: next.difficulty, repetitions: phase.state === 'New' ? 0 : Math.max(0, prev.repetitions ?? 0),
+      next_review_at: next.due };
+  } catch {
+    return calculateFSRS(rating, prev); // 단계를 못 읽는 행(손상 · 범위 밖 값) — 예전 계산
+  }
 }
 
 /**

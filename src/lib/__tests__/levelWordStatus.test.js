@@ -89,12 +89,9 @@ describe('HSK 단어 페이지 상태 칸', () => {
 });
 
 describe('네 칸 채점 미리보기', () => {
-  it('담지 않은 단어 = 담으면서 첫 채점(다시 오늘 · 그 밖은 저장 등급 간격)', () => {
+  it('담지 않은 단어 = 담으면서 첫 채점(학습 단계 anki-v2 — 1분 · 6분 · 10분 · 8일, 문서 표와 같다)', () => {
     const p = gradePreviews({ projection: null, row: null, at });
-    expect(p[1].label).toBe('오늘');
-    expect(p[2].label).toBe('1일');
-    expect(p[3].ms).toBeGreaterThan(p[2].ms);
-    expect(p[4].ms).toBeGreaterThan(p[3].ms);
+    expect([1, 2, 3, 4].map((g) => p[g].label)).toEqual(['1분', '6분', '10분', '8일']);
     expect(gradeEngine({ projection: null, row: null, at })).toBe('save');
   });
 

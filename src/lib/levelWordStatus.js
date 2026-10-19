@@ -5,7 +5,7 @@
 // 상태 칸(문서 「단어 설명 형식」): ☆ 담지 않음 · 오늘(오늘 복습) · 복습(복습 중) · 졸업(졸업한 단어).
 //   졸업 = 다음 복습까지 90일 이상 + 기존 「아는 단어」 표시(복습 제외 포함). 졸업한 단어도 365일 안에 돌아온다(간격 상한).
 //   두 글자 이내 · 같은 폭 칸. 화면 읽기에는 온전한 말(aria).
-import { calculateFSRS } from './fsrs.js';
+import { calculateVocabFSRS } from './fsrs.js';
 import { currentIndexedProjection, findIndexedVocabulary } from './vocabularyDueIndex.js';
 import { projectVocabularyLearning } from './vocabularyLearningRead.js';
 import { SAVE_GRADES, gradeToInitialStats } from './vocabIO.js';
@@ -100,18 +100,37 @@ export function daysSinceReview(projection, at = Date.now()) {
 }
 
 /** 간격 글자 — 다음 복습까지(ms). 0 이하 = 오늘, 1분 안(학습 첫 단계 30초)은 1분. */
+/** 간격 → { n, unit } — 1시간 미만 분 · 하루 미만 시간 · 그 밖 일. 0 이하(지금)는 null. 뷰어는 단위별 번역 글을 고른다. */
+export function intervalAmount(ms) {
+  if (!Number.isFinite(ms) || ms <= 0) return null;
+  if (ms < 3600_000) return { n: Math.max(1, Math.round(ms / 60_000)), unit: '분' };
+  if (ms < DAY) return { n: Math.round(ms / 3600_000), unit: '시간' };
+  return { n: Math.round(ms / DAY), unit: '일' };
+}
 export function intervalLabel(ms) {
   if (!Number.isFinite(ms)) return '';
-  if (ms <= 0) return '오늘';
-  if (ms < 3600_000) return `${Math.max(1, Math.round(ms / 60_000))}분`;
-  if (ms < DAY) return `${Math.round(ms / 3600_000)}시간`;
-  return `${Math.round(ms / DAY)}일`;
+  const a = intervalAmount(ms);
+  return a ? `${a.n}${a.unit}` : '오늘';
+}
+
+/** 옛 일정 단어 행 하나의 네 칸 간격 — 단어 페이지와 뷰어 인라인 복습이 같은 계산(calculateVocabFSRS)을 쓴다. */
+export function legacyGradePreviews(row, at = Date.now()) {
+  if (!row) return null;
+  const now = schedulerTime(at);
+  const out = {};
+  for (const g of SAVE_GRADES) {
+    const next = calculateVocabFSRS(g.grade, { interval: row.interval ?? 0, ease_factor: row.ease_factor ?? 0,
+      repetitions: row.repetitions ?? 0, next_review_at: row.next_review_at, last_reviewed_at: row.last_reviewed_at, created_at: row.created_at }, now);
+    const ms = schedulerTime(next.next_review_at) - now;
+    out[g.grade] = { label: intervalLabel(ms), ms };
+  }
+  return out;
 }
 
 /**
  * 네 칸의 다음 간격 — 엔진마다 실제 계산과 같은 함수를 쓴다(손계산 금지).
- *   담지 않은 단어 = 담으면서 첫 채점(gradeToInitialStats — 뷰어 저장 등급과 같다)
- *   옛 일정 카드 = calculateFSRS(뷰어 인라인 복습과 같다)
+ *   담지 않은 단어 = 담으면서 첫 채점(gradeToInitialStats — 뷰어 저장 등급과 같다 · 1분 · 6분 · 10분 · 8일)
+ *   옛 일정 카드 = calculateVocabFSRS(뷰어 인라인 복습과 같다 · 학습 단계 anki-v2)
  *   FSRS 카드 = previewFsrsRatings(복습실과 같다 · 카드의 학습 단계 정책) — 복습 차례가 아니면 null(채점할 수 없다).
  * 반환: { 1: { label, ms }, … } 또는 null.
  */
@@ -121,7 +140,7 @@ export function gradePreviews({ projection, row, at = Date.now() } = {}) {
   if (!projection || !row) {
     for (const g of SAVE_GRADES) {
       const ms = schedulerTime(gradeToInitialStats(g.grade, () => new Date(now).toISOString()).next_review_at) - now;
-      out[g.grade] = { label: g.grade === 1 ? '오늘' : intervalLabel(ms), ms };
+      out[g.grade] = { label: intervalLabel(ms), ms };
     }
     return out;
   }
@@ -136,13 +155,7 @@ export function gradePreviews({ projection, row, at = Date.now() } = {}) {
       return out;
     } catch { return null; }
   }
-  for (const g of SAVE_GRADES) {
-    const next = calculateFSRS(g.grade, { interval: row.interval ?? 0, ease_factor: row.ease_factor ?? 0,
-      repetitions: row.repetitions ?? 0, next_review_at: row.next_review_at });
-    const ms = schedulerTime(next.next_review_at) - Date.now();
-    out[g.grade] = { label: intervalLabel(ms), ms };
-  }
-  return out;
+  return legacyGradePreviews(row, now);
 }
 
 /** FSRS 카드 원형(투영 memory → 카드). 투영은 카드 칸을 그대로 옮겨 담는다. */

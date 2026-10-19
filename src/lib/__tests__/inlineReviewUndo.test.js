@@ -75,7 +75,7 @@ describe('useInlineReview — 훅 단위: prev·reviewedAt 반환', () => {
     vi.doMock('../streak', () => ({ recordActivity: vi.fn() }));
     vi.doMock('../reviewEvents', () => ({ logReviewEvents: vi.fn() }));
     const persist = vi.fn().mockResolvedValue(undefined);
-    vi.doMock('../fsrs', () => ({ calculateFSRS: () => ({ interval: 1, ease_factor: 5, repetitions: 0, next_review_at: 'N' }), persistVocabGrade: persist }));
+    vi.doMock('../fsrs', () => ({ calculateVocabFSRS: () => ({ interval: 1, ease_factor: 5, repetitions: 0, next_review_at: 'N' }), persistVocabGrade: persist }));
     const { useInlineReview } = await import('../useInlineReview');
     const config = useInlineReview({ user: { id: 'u' }, fetchProfile: vi.fn(), toast: vi.fn() });
     const vocab = { id: 'v', word_text: 'x', interval: 2, ease_factor: 3, repetitions: 1, next_review_at: 'A', last_reviewed_at: null };

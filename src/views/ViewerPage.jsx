@@ -71,6 +71,7 @@ import { insertConfirmedVocabulary, preservePendingVocabularyReviews } from '../
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage, failureMessage } from '../lib/errorMessage';
 import { SAVE_GRADES, VOCAB_UPSERT, buildVocabRow, cardSaveReading } from '../lib/vocabIO';
+import { intervalAmount, legacyGradePreviews } from '../lib/levelWordStatus';
 import { useVocabularyExclusions } from '../lib/useVocabularyExclusions';
 import { exclusionWord, findVocabularyExclusion } from '../lib/vocabularyExclusion';
 import { callGemini } from '../lib/gemini';
@@ -3546,9 +3547,16 @@ export default function ViewerPage() {
       })()}
       {user && (exclusionState.isError || knownState.isError) && <button type="button" className="btn btn--ghost btn--sm" onClick={() => { exclusionState.refetch(); knownState.refetch(); }}>{vt("다시 시도")}</button>}
 
-      {user && learningCapabilities.review && !koreanPieceSelected && findSavedVocab(savedWords, selectedToken, materialLang) && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending && (
+      {user && learningCapabilities.review && !koreanPieceSelected && findSavedVocab(savedWords, selectedToken, materialLang) && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending && (() => {
         // W R3㉮ — 척도를 정본에 맞춘다: 모름/애매/알아=1/2/3(Easy 없음)이 아니라 복습 화면과 같은 4등급.
         // 라벨·순서·클래스 = SAVE_GRADES(복습 화면 ScoreSection과 동일 계약). 키 1~4·⌘Z는 카드 리스너.
+        // 보조 글 = 이 단어의 다음 간격(학습 단계 anki-v2 — 단어 페이지 네 칸과 같은 계산 legacyGradePreviews, 2026-10-19 KST).
+        const gaps = legacyGradePreviews(findSavedVocab(savedWords, selectedToken, materialLang));
+        const gapText = (ms) => {
+          const a = intervalAmount(ms);
+          return !a ? vt('오늘') : a.unit === '분' ? vt('{n}분 뒤', a) : a.unit === '시간' ? vt('{n}시간 뒤', a) : vt('{n}일 뒤', a);
+        };
+        return (
         <div style={{ padding: '10px 12px', background: 'color-mix(in srgb, var(--warning) 10%, transparent)', borderRadius: 'var(--radius-md)', marginBottom: 12, border: '1px solid var(--warning)' }}>
 
           <div className="review-score-grid save-grade save-grade--inline">
@@ -3563,11 +3571,13 @@ export default function ViewerPage() {
               >
                 <span className="save-grade__key" aria-hidden="true">{g.key}</span>
                 {vt(g.label)}
+                {gaps?.[g.grade] && <span className="save-grade__sub">{' '}{gapText(gaps[g.grade].ms)}</span>}
               </button>
             ))}
           </div>
         </div>
-      )}
+        );
+      })()}
       {!user && material?.__local && !koreanPieceSelected && (
         // 팀 사본(v2-AB R2 S2) — 담기 CTA. 「로그인이 필요합니다」 토스트 대신 돌아올 길이 있는 시트.
         <div className="save-grade__guest">
@@ -3610,7 +3620,7 @@ export default function ViewerPage() {
                 >
                   <span className="save-grade__key" aria-hidden="true">{g.key}</span>
                   {vt(g.label)}
-                  {/* 보조 글 첫 글자 띄어쓰기 = 화면 읽기 이름 「다시 오늘 또」(GRADE-NAME-001). 줄 첫머리 공백이라 화면에는 그려지지 않는다. */}
+                  {/* 보조 글 첫 글자 띄어쓰기 = 화면 읽기 이름 「다시 1분 뒤」(GRADE-NAME-001). 줄 첫머리 공백이라 화면에는 그려지지 않는다. */}
                   <span className="save-grade__sub">{' '}{vt(g.sub)}</span>
                 </button>
               ))}

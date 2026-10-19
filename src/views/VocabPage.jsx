@@ -774,9 +774,9 @@ function VocabWorkspace({ reviewScope }) {
       && admission.controller.getSnapshot().current?.cardId === currentWord?.id;
     if (!currentActor() || !currentQuestion() || !currentWord || !fsrsReview.controller.canLegacy(currentWord.id) || !reviewSupported(currentWord) || currentWord.is_excluded || scoringRef.current) return;
     scoringRef.current = true;
-    let calculateFSRS;
+    let calculateVocabFSRS;
     try {
-      ({ calculateFSRS } = await import('../lib/fsrs'));
+      ({ calculateVocabFSRS } = await import('../lib/fsrs'));
     } catch {
       if (!currentActor()) return;
       scoringRef.current = false;
@@ -798,11 +798,13 @@ function VocabWorkspace({ reviewScope }) {
       legacyBudgetCompatibility: admission.current?.compatibility === true,
     };
     const prevInterval = currentWord.interval ?? 0;
-    const nextStats = calculateFSRS(rating, {
+    const nextStats = calculateVocabFSRS(rating, {
       interval: prevInterval,
       ease_factor: currentWord.ease_factor ?? 0,
       repetitions: currentWord.repetitions ?? 0,
       next_review_at: currentWord.next_review_at,
+      last_reviewed_at: currentWord.last_reviewed_at,
+      created_at: currentWord.created_at,
     });
     // progressStore로 통합: 복습 기록 + SRS + 보상 일괄 처리
     const qtype = ({ flash: 'flash', context: 'choice', typing: 'typing', listening: 'listening' })[effectiveMode] || 'choice';
@@ -816,7 +818,7 @@ function VocabWorkspace({ reviewScope }) {
       correct: rating > 1,
       detail: { word_id: currentWord.id, meaning: currentWord.meaning, rating, mode: effectiveMode, qtype },
     }, {
-      // calculateFSRS 반환 키를 그대로 쓴다 — DB 컬럼과 동일(snake_case).
+      // calculateVocabFSRS 반환 키를 그대로 쓴다 — DB 컬럼과 동일(snake_case).
       // 이전엔 easeFactor(비존재 컬럼)를 보내고 repetitions를 빠뜨려, PostgREST가 UPDATE 전체를
       // 거부 → 채점해도 SRS가 전진하지 않는 조용한 실패였다(PATCH 페이로드 실측으로 확인).
       interval: nextStats.interval ?? 0,

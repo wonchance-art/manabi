@@ -18,7 +18,7 @@ vi.mock('@tanstack/react-query', () => ({
   useMutation: (config) => config,
 }));
 vi.mock('../fsrs', () => ({
-  calculateFSRS: vi.fn(() => ({ interval: 3, ease_factor: 2.6, repetitions: 1, next_review_at: '2026-09-10T00:00:00.000Z' })),
+  calculateVocabFSRS: vi.fn(() => ({ interval: 3, ease_factor: 2.6, repetitions: 1, next_review_at: '2026-09-10T00:00:00.000Z' })),
 }));
 
 const { useInlineReview, patchVocabWordsCache } = await import('../useInlineReview');
