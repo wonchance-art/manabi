@@ -29,6 +29,7 @@ export function jlptWordLang(levelKey) {
     levelHref: (key) => `/japanese/vocab/${String(key).toLowerCase()}`,
     levelRank: (level) => -level, // 같은 순위면 N5 먼저
     tag: (level) => `N${level}`,
+    title: (level) => `JLPT N${level} 단어`,
     scope: 'JLPT N5–N1 전체',
     indexUrl: '/api/level-index/japanese',
     placeholder: '가나 · 한자 · 뜻',

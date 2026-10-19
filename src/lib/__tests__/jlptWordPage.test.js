@@ -112,3 +112,14 @@ describe('화면 — HSK와 같은 공통 화면에 JLPT 판', () => {
     expect(page).toMatch(/jaHeadMode\(levelKey\) === 'kana'/);
   });
 });
+
+describe('짧은 뜻 — 표제어를 되풀이한 한자 괄호 · 끝 마침표를 뗀다(시안 ⑳)', async () => {
+  const { jaPlainMeaning } = await import('../levelListData.js');
+  it('표제어 · 정자 꼴 괄호만 뗀다', () => {
+    expect(jaPlainMeaning('경의(敬意)', '敬意')).toBe('경의');
+    expect(jaPlainMeaning('경영(經營)', '経営')).toBe('경영');
+    expect(jaPlainMeaning('형벌, 형(刑).', '刑')).toBe('형벌, 형');
+    expect(jaPlainMeaning('경기 (경제 상황)', '景気')).toBe('경기 (경제 상황)');
+    expect(jaPlainMeaning('사전(辭典)', '辞書')).toBe('사전(辭典)');
+  });
+});

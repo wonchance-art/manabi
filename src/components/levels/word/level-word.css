@@ -9,8 +9,9 @@
 .manabi-app:has(.lw-page)>.app-layout{padding-top:0;padding-bottom:0}
 
 .lw-page{--lw-top-h:57px;max-width:680px;margin:0 auto;padding:0 16px 40px;color:var(--ink);min-height:100dvh}
-.lw-page[data-mode=one]{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
-.lw-page button{font:inherit;color:inherit}
+.lw-page[data-mode=one]{padding-bottom:calc(126px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column}
+/* 단추 기본은 낮은 우선순위(:where) — 클래스 규칙(☆ 장미색 20px 등)이 덮이지 않게. */
+:where(.lw-page) button{font:inherit;color:inherit}
 .lw-page :focus-visible{outline:2px solid var(--lw-rose);outline-offset:2px}
 
 /* ① 상단바 한 줄 — 아이콘(홈) · 「HSK 4 단어 ▾」 · 돋보기 · 설정. 아이콘은 상자 없이 24px, 누르는 자리 44px. */
@@ -25,7 +26,8 @@
 .lw-icon[aria-expanded=true]{background:var(--lw-chip)}
 .lw-top--search{gap:6px}
 .lw-top--search .lw-searchbox{animation:lwFade .15s var(--ease-settle) both}
-.lw-searchbox{flex:1 1 auto;min-width:0;display:flex;align-items:center;height:44px;border-radius:12px;background:var(--lw-field);outline:2px solid var(--lw-rose);outline-offset:-2px;padding-left:14px}
+.lw-searchbox{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px;height:44px;border-radius:12px;background:var(--lw-field);outline:2px solid var(--lw-rose);outline-offset:-2px;padding-left:14px}
+.lw-searchbox>svg{flex:none;color:var(--muted)}
 .lw-searchbox input{flex:1 1 auto;min-width:0;height:100%;border:0;background:none;font:inherit;font-size:16px;color:var(--ink);outline:none}
 .lw-searchbox input,.lw-searchbox input:focus-visible{appearance:none;-webkit-appearance:none;outline:none;box-shadow:none}
 .lw-searchbox input::-webkit-search-cancel-button,.lw-searchbox input::-webkit-search-decoration{-webkit-appearance:none;display:none}
@@ -61,8 +63,9 @@
 /* 병음 성조 색 · 태그 · 상태 칸 · 듣기 */
 .lw-py{font-size:15px;color:var(--muted);letter-spacing:.2px}
 .lw-tone--1{color:var(--lw-tone-1)}.lw-tone--2{color:var(--lw-tone-2)}.lw-tone--3{color:var(--lw-tone-3)}.lw-tone--4{color:var(--lw-tone-4)}.lw-tone--0{color:var(--lw-tone-0)}
-.lw-tag{flex:none;width:52px;text-align:center;font-size:11.5px;font-weight:700;color:var(--muted);white-space:nowrap}
-.lw-tag--empty{display:inline-block}
+.lw-tag{flex:none;width:52px;text-align:center;font-size:11.5px;font-weight:700;color:var(--muted);white-space:nowrap;background:var(--lw-chip);border-radius:6px;padding:2px 0}
+.lw-tag--empty{background:none}
+.lw-tag--empty{display:inline-block;align-self:stretch}
 .lw-status{flex:none;width:44px;min-height:44px;display:inline-grid;place-items:center;font-size:11.5px;font-weight:700;border:0;background:none;padding:0;position:relative}
 .lw-status::before{content:'';position:absolute;width:38px;height:22px;border-radius:6px;border:1px solid transparent;box-sizing:border-box;z-index:-1}
 .lw-status{isolation:isolate}
@@ -111,7 +114,8 @@
 .lw-ex__w[aria-expanded=true]{background:var(--lw-today-bg);border-radius:3px}
 .lw-ex__py{font-size:13px;color:var(--muted)}
 /* JLPT 예문 후리가나 — 한자 위 작은 읽기, 줄 사이를 넓혀 위 줄과 닿지 않게. */
-.lw-ex__text rt{font-size:10px;color:var(--muted);font-weight:400}
+.lw-ex__text ruby{ruby-align:center}
+.lw-ex__text rt{font-size:10px;color:var(--muted);font-weight:400} /* 읽기가 길어도 한자 사이를 벌리지 않는다(接 客 → 接客) */
 .lw-page[data-language=ja] .lw-ex__text{line-height:2.1}
 .lw-ex__ko{font-size:13.5px;color:var(--muted)}
 
@@ -136,23 +140,25 @@
 .lw-empty{color:var(--muted);text-align:center;padding:32px 0;font-size:14px}
 
 /* 한 단어 모드 — 단어 52px 고정 자리, 아래 답 자리. 네 칸은 화면 아래 고정. */
-.lw-one{padding-top:20px}
-.lw-one__card{background:var(--lw-card);border:1px solid var(--lw-line);border-radius:14px;padding:18px 16px 20px;display:grid;gap:12px}
+.lw-one{padding:14px 0 12px;flex:1 0 auto;display:flex;flex-direction:column}
+.lw-one__card{flex:1 0 auto;background:var(--lw-card);border:1px solid var(--lw-line);border-radius:14px;padding:8px 16px 16px;display:flex;flex-direction:column;gap:10px}
 .lw-one__card.is-turning{animation:reviewCardTurn .24s var(--ease-settle)}
-.lw-one__front{min-height:96px;display:grid;place-items:center;text-align:center;container-type:inline-size}
+.lw-one__front{min-height:96px;display:grid;place-items:center;text-align:center;container-type:inline-size;border-bottom:1px dashed var(--lw-line)}
 /* 긴 표제어(おはようございます · 9글자)는 카드 폭에 맞춰 줄인다 — --n = 글자 수(fitty 대신 cqi 선례). */
 .lw-one__hw{font-size:min(52px,calc(94cqi / var(--n,1)));line-height:1.25;font-weight:600;white-space:nowrap}
 .lw-one__solo{font-size:20px;line-height:1.7;text-align:center}
-.lw-one__reveal{justify-self:center;min-height:48px;padding:0 22px;border:1px solid var(--rule);border-radius:999px;background:var(--paper);cursor:pointer;font-size:15px;font-weight:600}
+.lw-one__reveal{align-self:center;margin:auto 0;min-height:48px;padding:0 22px;border:1px solid var(--rule);border-radius:999px;background:var(--paper);cursor:pointer;font-size:15px;font-weight:600}
 .lw-one__reveal:active{transform:scale(.985)}
-.lw-one__back{display:grid;gap:12px;animation:settleIn .16s var(--ease-settle) both}
-.lw-one__meta{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
-.lw-one__meta .lw-py{font-size:18px}
-.lw-one__mean{margin:0;font-size:18px;font-weight:700;text-align:center;line-height:1.55}
-.lw-one__chips{display:flex;justify-content:center;gap:6px}
+.lw-one__back{display:grid;gap:10px;animation:settleIn .16s var(--ease-settle) both}
+.lw-one__meta{display:flex;align-items:center;gap:6px;min-height:44px}
+.lw-one__meta .lw-py{flex:1 1 auto;min-width:0;font-size:17px}
+.lw-one__meta .lw-listen{margin-left:auto}
+.lw-one__meta .lw-py+.lw-listen{margin-left:0}
+.lw-one__mean{margin:-6px 0 0;font-size:18px;font-weight:700;line-height:1.55}
+.lw-one__chips{display:flex;gap:6px}
 .lw-gradebar{position:fixed;left:0;right:0;bottom:0;z-index:28;background:color-mix(in srgb,var(--paper) 94%,transparent);backdrop-filter:blur(6px);border-top:1px solid var(--lw-line);padding:8px 16px calc(10px + env(safe-area-inset-bottom,0px))}
 .lw-gradebar__in{max-width:648px;margin:0 auto;display:grid;gap:6px}
-.lw-gradebar__guide{margin:0;text-align:center;font-size:12.5px;color:var(--muted)}
+.lw-gradebar__guide{margin:0;min-height:1.5em;text-align:center;font-size:12.5px;line-height:1.5;color:var(--muted)}
 
 /* 끝 화면 */
 .lw-done{padding:32px 0 24px;display:grid;gap:16px;text-align:center;animation:settleIn .2s var(--ease-settle) both}
@@ -175,9 +181,10 @@
 /* 찾기 결과 · 줄 형식 */
 .lw-results{padding-top:8px}
 .lw-results__status{margin:4px 0 8px;font-size:13px;color:var(--muted)}
-.lw-results h2{margin:14px 0 4px;font-size:13px;font-weight:700;color:var(--muted)}
-.lw-results ul{list-style:none;margin:0;padding:0}
-.lw-results li{border-bottom:1px solid var(--lw-line)}
+.lw-results h2{margin:14px 0 6px;font-size:13px;font-weight:700;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.lw-results h2 span{font-variant-numeric:tabular-nums}
+.lw-results ul{list-style:none;margin:0;padding:0 4px 0 14px;background:var(--lw-card);border:1px solid var(--lw-line);border-radius:12px;overflow:hidden}
+.lw-results li+li{border-top:1px solid var(--lw-line)}
 .lw-row{display:flex;align-items:center;min-height:56px}
 .lw-row__main{flex:1 1 auto;min-width:0;display:grid;gap:1px;border:0;background:none;text-align:left;padding:6px 0;cursor:pointer}
 .lw-row__head{display:flex;align-items:baseline;gap:8px;min-width:0}
@@ -188,8 +195,10 @@
 .lw-results__none span{font-size:13.5px;color:var(--muted)}
 
 /* 예문 단어 창 — 누른 단어 자리에서 커지며 나타남(settleIn). */
-.lw-pop{position:fixed;z-index:45;width:min(340px,calc(100vw - 32px));background:var(--lw-card);border:1px solid var(--lw-line);border-radius:12px;padding:6px 12px 10px;box-shadow:0 12px 32px color-mix(in srgb,var(--ink) 16%,transparent);display:grid;gap:8px;animation:settleIn .16s var(--ease-settle) both}
+.lw-pop{position:fixed;z-index:45;width:min(300px,calc(100vw - 32px));background:var(--lw-card);border:1px solid var(--lw-line);border-radius:12px;padding:6px 12px 10px;box-shadow:0 12px 32px color-mix(in srgb,var(--ink) 16%,transparent);display:grid;gap:8px;animation:settleIn .16s var(--ease-settle) both}
 .lw-pop__open{justify-self:end;min-height:44px;border:0;background:none;color:var(--lw-rose);font-weight:700;cursor:pointer;font-size:14px}
+/* 예문 단어 창 안에서는 시안 ⑱처럼 아래 칸 — 위 구분선 · 왼쪽 정렬 */
+.lw-pop .lw-pop__open{justify-self:stretch;min-height:40px;border-top:1px solid var(--lw-line);margin:0 -12px -10px;padding:0 14px;font-weight:600;font-size:13px;display:flex;align-items:center}
 
 /* 제목 ▾ 시트 · 단어 카드 창 — 아래에서 올라오고 뒷배경이 어두워짐, 손잡이를 아래로 끌면 닫힘. */
 .lw-scrim{position:fixed;inset:0;z-index:50;background:color-mix(in srgb,var(--ink) 34%,transparent);animation:lwFade .2s var(--ease-settle) both}
@@ -197,8 +206,9 @@
 .lw-sheet__handle{display:grid;place-items:center;height:28px;cursor:grab;touch-action:none}
 .lw-sheet__handle::before{content:'';width:40px;height:5px;border-radius:999px;background:var(--rule)}
 .lw-sheet__rows{display:grid;gap:14px;padding-bottom:6px}
-.lw-sheet__row{display:grid;gap:6px}
-.lw-sheet__row>span{font-size:12.5px;font-weight:700;color:var(--muted)}
+.lw-sheet__rows{gap:10px}
+.lw-sheet__row{display:grid;grid-template-columns:40px minmax(0,1fr);align-items:center;gap:8px}
+.lw-sheet__row>span{font-size:13px;color:var(--muted)}
 .lw-sheet .lw-seg{grid-template-columns:repeat(var(--n,2),minmax(0,1fr))}
 .lw-sheet .lw-seg a{min-height:40px;border-radius:10px;display:grid;place-items:center;font-size:14px;font-weight:600;color:var(--muted);text-decoration:none}
 .lw-sheet .lw-seg a[aria-current=page]{background:var(--lw-card);color:var(--ink);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 14%,transparent)}

@@ -11,7 +11,7 @@ function Section({ title, rows, statusOf, onSave, savingKey, popKey, onOpen, ton
   const [limit, setLimit] = useState(PAGE);
   if (!rows.length) return null;
   return <section aria-label={title}>
-    <h2>{title} · {rows.length}</h2>
+    <h2>{title}<span>{rows.length}</span></h2>
     <ul>{rows.slice(0, limit).map((r) => <li key={`${r.level}:${r.word}`}>
       <WordRow word={r.word} reading={r.reading} meaning={r.meaning} level={r.level} status={statusOf(r.word)} tone={tone}
         onSave={() => onSave(r)} saving={savingKey === r.word} pop={popKey === r.word} onOpen={() => onOpen(r)} />

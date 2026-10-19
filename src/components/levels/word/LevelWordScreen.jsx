@@ -154,7 +154,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
   // 글자 칸 표(판의 loadTiles — 훈 · 음 · 정체/정자 · 한자 창) — 붙은 뒤 한 번 받는다. 받기 전에는 칸을 그리지 않는다.
   // kr = 글자별 읽기(JLPT — 빌드 때 실은 「けい,けん」).
   const [charTables, setCharTables] = useState(null);
-  useEffect(() => { if (mounted) cfg.loadTiles().then(setCharTables, () => {}); }, [mounted, cfg]);
+  useEffect(() => { if (mounted) cfg.loadTiles().then(setCharTables, () => setCharTables(false)); }, [mounted, cfg]);
   const tileCache = useRef(new Map());
   const tilesOf = useCallback((word, kr) => {
     if (!charTables) return null;
@@ -207,12 +207,16 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
   // ── 리스트 ──
   useEffect(() => setLimit(LEVEL_WORD_LIST_PAGE), [prefs.range]);
   useEffect(() => {
-    if (!jumpTo || prefs.mode !== 'list') return;
+    if (!jumpTo || prefs.mode !== 'list' || charTables === null) return; // false = 표를 못 받음(칸 없이 옮긴다)
     const at = rangeEntries.findIndex((e) => e.key === jumpTo);
     if (at >= limit) { setLimit(at + 20); return; }
-    document.getElementById(`lw-w-${at}`)?.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' });
+    // 글자 칸 표가 붙은 뒤(카드 높이가 정해진 뒤)에 바로 옮긴다 — 먼 거리를 부드럽게 굴리면 그사이 위 카드가 자라 다른 단어에 멈췄다(?w=準備 실측).
+    const go = () => document.getElementById(`lw-w-${at}`)?.scrollIntoView({ block: 'center' });
+    go();
+    const raf = requestAnimationFrame(go);
     setJumpTo(null);
-  }, [jumpTo, prefs.mode, rangeEntries, limit]);
+    return () => cancelAnimationFrame(raf);
+  }, [jumpTo, prefs.mode, rangeEntries, limit, charTables]);
 
   // ── 채점 ──
   const inFlight = useRef(new Set());
@@ -389,7 +393,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
 
   useEffect(() => { if (done && prefs.mode === 'one' && session?.graded) document.getElementById('lw-done-title')?.focus({ preventScroll: true }); }, [done, prefs.mode, session?.graded]);
 
-  const title = `${cfg.tag(level)} 단어`;
+  const title = cfg.title(level);
   const tone = prefs.tone;
   const currentInfo = current ? cardInfo(current.key) : null;
   const gradeNote = (info) => (info?.status && !info.previews && info.projection?.source === 'fsrs-v1'
@@ -404,6 +408,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
       ? <header className="lw-top lw-top--search">
         <button type="button" className="lw-icon" aria-label="찾기 닫기" onClick={closeSearch}><BackIcon /></button>
         <label className="lw-searchbox"><span className="sr-only">단어 찾기</span>
+          <SearchIcon size={18} />
           <input type="search" autoFocus value={query} onChange={(e) => setQuery(e.target.value)} enterKeyHint="search"
             placeholder={cfg.placeholder} autoComplete="off" autoCapitalize="off" spellCheck={false} />
           {query && <button type="button" className="lw-icon" aria-label="지우기" onClick={() => setQuery('')}><ClearIcon /></button>}
@@ -460,7 +465,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
           {session && current && <OneWordCard entry={current} level={level} view={prefs.view} info={currentInfo} tiles={tilesOf(current.word, current.kr)}
             speak={speak} tone={tone} revealed={revealed} onReveal={() => setRevealed(true)} turnKey={turn ? `${turn}:${current.key}` : null}
             onWord={onExampleWord} openKey={pop?.id} onSave={() => onStar(current)} saving={saving === current.key} pop={pops.has(current.key)} />}
-          {session && current && <GradeBar previews={currentInfo.previews} onGrade={(r) => onGrade(current, r)} disabled={!ready} note={gradeNote(currentInfo)} />}
+          {session && current && <GradeBar previews={currentInfo.previews} onGrade={(r) => onGrade(current, r)} disabled={!ready} note={gradeNote(currentInfo)} guide={revealed} />}
         </div>
         : <>
           <ul className="lw-list">

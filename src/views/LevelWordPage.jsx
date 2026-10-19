@@ -24,6 +24,7 @@ export const HSK_WORD_LANG = Object.freeze({
   levelHref: (key) => `/chinese/vocab/${String(key).toLowerCase()}`,
   levelRank: (level) => level,
   tag: (level) => `HSK ${level}`,
+  title: (level) => `HSK ${level} 단어`,
   scope: 'HSK 1–7 전체',
   indexUrl: '/api/level-index/chinese',
   placeholder: '한자 · 병음 · 뜻',

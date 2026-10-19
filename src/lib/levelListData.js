@@ -15,6 +15,7 @@ import { loadHanziTable } from './zhHanzi';
 import { alignFurigana } from './jaFurigana';
 import { splitKanjiReadings } from './jaKanjiReading';
 import { decodeJaPieces, jaExampleKey, jaExampleWords } from './jaExampleWords';
+import jaJeongja from './data/jaJeongja.json';
 
 const bunkeiOf = { japanese: getJaBunkei, chinese: getZhBunkei };
 const bunkeiCountOf = { japanese: countJaBunkei, chinese: countZhBunkei };
@@ -164,6 +165,17 @@ async function loadJaReadingTable() {
   return jaReadingTable;
 }
 
+/**
+ * JLPT 짧은 뜻 — 표제어를 그대로 되풀이한 한자 괄호를 뗀다(경의(敬意) → 경의 · 경영(經營) → 경영, 정자 꼴도 같다고 본다) · 끝 마침표도(시안 ⑳).
+ * 괄호 안이 표제어(또는 그 정자 꼴)와 같을 때만 떼고, 다른 한자를 밝히는 괄호는 남긴다. 뜻 원문(fullMeaning)은 그대로.
+ */
+export function jaPlainMeaning(meaning, word) {
+  const same = new Set([String(word || ''), [...String(word || '')].map((c) => jaJeongja.j[c] || c).join('')]);
+  return String(meaning || '')
+    .replace(/[(（]([\p{Script=Han}々]+)[)）]/gu, (m, inner) => (same.has(inner) ? '' : m))
+    .replace(/[.。]\s*$/u, '').trim();
+}
+
 const jaExtrasMemo = new Map();
 /**
  * JLPT 단어 화면 묶음 — 글자별 읽기(kr) · 예문 후리가나(furi) · 예문 단어 나눔(seg · lem). 레벨마다 한 번(책장 타일 수와 화면이 같이 부른다).
@@ -181,7 +193,10 @@ function withJapaneseWordExtras(levelKey, groups) {
           const split = jaExampleWords(ex.text, e.word, decodeJaPieces(pieceTable[jaExampleKey(ex.text)], ex.text), furi);
           ex = { ...ex, ...(furi ? { furi } : {}), ...(split || {}) };
         }
-        return { ...e, ...(kr ? { kr } : {}), ...(ex ? { ex } : {}) };
+        // 짧은 뜻만 다듬고 원문은 fullMeaning에 남긴다(줄인 꼴 계약 — 다르면 싣는다).
+        const meaning = jaPlainMeaning(e.meaning, e.word);
+        const plain = meaning === e.meaning ? {} : { meaning, fullMeaning: e.fullMeaning ?? e.meaning };
+        return { ...e, ...plain, ...(kr ? { kr } : {}), ...(ex ? { ex } : {}) };
       }) }));
     }).catch((error) => { jaExtrasMemo.delete(levelKey); throw error; }));
   }
@@ -203,7 +218,8 @@ export async function japaneseLevelIndex() {
         if (seen.has(word) || (e.key && e.key !== word)) continue;
         seen.add(word);
         const kr = JA_HAN.test(word) ? jaKanjiReadingField(word, e.reading, table) : undefined;
-        rows.push(kr ? [word, e.reading, e.meaning, Number(levelKey.slice(1)), kr] : [word, e.reading, e.meaning, Number(levelKey.slice(1))]);
+        const meaning = jaPlainMeaning(e.meaning, word);
+        rows.push(kr ? [word, e.reading, meaning, Number(levelKey.slice(1)), kr] : [word, e.reading, meaning, Number(levelKey.slice(1))]);
       }
     }
   }

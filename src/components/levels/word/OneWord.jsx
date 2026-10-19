@@ -31,10 +31,11 @@ export function OneWordCard({ entry: e, level, view, info, tiles, speak, tone, r
   </section>;
 }
 
-/** 화면 아래 고정 네 칸 + 안내 한 줄. */
-export function GradeBar({ previews, onGrade, disabled, note }) {
+/** 화면 아래 고정 네 칸 + 안내 한 줄 — 안내는 뒷면에서만(앞면 「안내 문구 없음」), 자리는 늘 잡아 네 칸이 움직이지 않는다. */
+export function GradeBar({ previews, onGrade, disabled, note, guide = true }) {
+  const text = useWordLang().guide;
   return <div className="lw-gradebar"><div className="lw-gradebar__in">
-    <p className="lw-gradebar__guide">{useWordLang().guide}</p>
+    <p className="lw-gradebar__guide" aria-hidden={!guide || undefined}>{guide ? text : null}</p>
     <GradeButtons previews={previews} onGrade={onGrade} disabled={disabled} note={note} />
   </div></div>;
 }
