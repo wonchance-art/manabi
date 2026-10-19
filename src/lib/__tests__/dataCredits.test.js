@@ -37,6 +37,7 @@ const MARKERS = [
   { re: /kuromoji/, id: 'kuromoji-ipadic' },
   { re: /open-anki-jlpt-decks/, id: 'open-anki-jlpt-decks' },
   { re: /JMdict/, id: 'jmdict' },
+  { re: /KANJIDIC2/, id: 'kanjidic2' },
   { re: /Unihan/, id: 'unihan' },
   { re: /BabelStone/, id: 'babelstone-ids' },
   { re: /opencc-data/, id: 'opencc' },
