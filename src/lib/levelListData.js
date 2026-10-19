@@ -95,6 +95,22 @@ async function chineseVocabGroups(levelKey) {
   return groups.filter((g) => g.entries.length);
 }
 
+/**
+ * 찾기 색인(HSK 단어 페이지 개편) — 우리 사전 중 HSK 2026 급수가 있는 단어 전부를 [표제어, 병음, 짧은 뜻, 급수] 한 줄씩.
+ * 레벨 목록과 같은 사전 · 같은 급수 표 · 같은 짧은 뜻이라 찾기 결과와 목록 칸이 갈리지 않는다. 급수 → 병음 순.
+ * 대조 키가 표제어와 다른 줄(괄호 · 쌍반점 표기)은 키로 싣는다 — 화면은 표제어를 대조 키로 쓴다.
+ */
+export async function chineseLevelIndex() {
+  const table = await loadZhHskLevels();
+  const rows = [];
+  for (const [key, w] of chineseDictionary()) {
+    const level = zhHskLevelOf(key, table);
+    if (!level) continue;
+    rows.push([key, w.pinyin || '', shortMeaning(w.ko), level]);
+  }
+  return rows.sort((a, b) => a[3] - b[3] || pinyinOrder(a[1]).localeCompare(pinyinOrder(b[1])) || a[0].localeCompare(b[0], 'zh'));
+}
+
 function bunkeiGroups(lang, levelKey) {
   const bunkei = bunkeiOf[lang](levelKey);
   if (!bunkei) return null;
