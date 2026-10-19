@@ -93,9 +93,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
-        <meta name="theme-color" content="#994A5A" />
+        <meta name="theme-color" content="#F6F4EE" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        {/* 휴대폰 맨 위 상태 표시줄(시각 · 배터리) — 투명 표시줄(검은 반투명 값)은 표시줄을 비워 두고 페이지를 그 밑으로 밀어 넣어
+            흰 글자가 화면 머리 위에 겹쳤다. default = 표시줄이 제 칸을 갖고 페이지는 그 아래에서 시작한다(오너 지시 2026-10-19 KST). */}
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="manabi" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

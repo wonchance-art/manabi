@@ -222,7 +222,8 @@ R3에서 `myplan` 격자를 실제로 옮겨 그 차이를 실측했다 — 260p
 
 | 이름 | 값 | 같은 값을 쓰는 곳 |
 |---|---|---|
-| manabi 로즈 | `#994A5A` | `.manabi-app --primary` = `theme-color` meta = manifest `theme_color` = 아이콘 바탕 = 글자 로고 점 |
+| manabi 로즈 | `#994A5A` | `.manabi-app --primary` = 아이콘 바탕 = 글자 로고 점 |
+| 화면 바탕 | `#F6F4EE` | `.manabi-app --paper` = `theme-color` meta = manifest `theme_color`(휴대폰 상태 표시줄 · 주소창 — 오너 지시 2026-10-19 KST). iOS 표시줄은 `default`(투명 `black-translucent` 금지 — 시각 · 배터리가 머리 위에 겹친다) |
 | 크림 | `#FFF4E6` | 아이콘의 m |
 | 해바라기 | `#FFD04D` | 아이콘의 점 |
 | 종이 | `#FFFDF9` | `.manabi-app` 바탕 = manifest `background_color`(설치 앱 첫 화면) = 공유 미리보기 바탕 |
