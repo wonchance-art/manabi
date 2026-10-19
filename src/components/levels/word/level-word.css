@@ -96,7 +96,9 @@
 .lw-tile__zheng{color:var(--muted)}
 .lw-tile__info{min-width:0;display:flex;flex-direction:column;font-size:12.5px;line-height:var(--lh)}
 .lw-tiles--small .lw-tile__info{font-size:12px}
-.lw-tile__hun{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lw-tile__hun{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lw-tile__hun b{font-weight:700}
+.lw-tile__kana{margin-left:4px;color:var(--muted)}
 .lw-tile__piece{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
 .lw-tile__pch{display:inline-block;width:16px;color:var(--ink)}
 
@@ -108,6 +110,9 @@
 .lw-ex__w[data-self]{text-decoration:underline solid var(--lw-rose);text-decoration-thickness:2px}
 .lw-ex__w[aria-expanded=true]{background:var(--lw-today-bg);border-radius:3px}
 .lw-ex__py{font-size:13px;color:var(--muted)}
+/* JLPT 예문 후리가나 — 한자 위 작은 읽기, 줄 사이를 넓혀 위 줄과 닿지 않게. */
+.lw-ex__text rt{font-size:10px;color:var(--muted);font-weight:400}
+.lw-page[data-language=ja] .lw-ex__text{line-height:2.1}
 .lw-ex__ko{font-size:13.5px;color:var(--muted)}
 
 /* 리스트 카드 */
@@ -117,7 +122,7 @@
 .lw-card{transition:transform .12s var(--ease-settle)}
 .lw-card__head{display:flex;align-items:center;gap:4px;min-width:0}
 .lw-card__word{flex:1 1 auto;min-width:0;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px}
-.lw-card__hw{font-size:28px;font-weight:600;line-height:1.3}
+.lw-card__hw{font-size:max(20px,min(28px,calc(190px / var(--n,1))));font-weight:600;line-height:1.3} /* 긴 가나 표제어(おはようございます)는 줄여 한 줄 */
 .lw-card__mean{margin:0;font-size:16px;font-weight:700;line-height:1.55}
 .lw-card__solo{margin:0;font-size:18px;line-height:1.7;cursor:pointer}
 .lw-card__more{display:grid;gap:10px;animation:settleIn .16s var(--ease-settle) both}
@@ -134,8 +139,9 @@
 .lw-one{padding-top:20px}
 .lw-one__card{background:var(--lw-card);border:1px solid var(--lw-line);border-radius:14px;padding:18px 16px 20px;display:grid;gap:12px}
 .lw-one__card.is-turning{animation:reviewCardTurn .24s var(--ease-settle)}
-.lw-one__front{min-height:96px;display:grid;place-items:center;text-align:center}
-.lw-one__hw{font-size:52px;line-height:1.25;font-weight:600}
+.lw-one__front{min-height:96px;display:grid;place-items:center;text-align:center;container-type:inline-size}
+/* 긴 표제어(おはようございます · 9글자)는 카드 폭에 맞춰 줄인다 — --n = 글자 수(fitty 대신 cqi 선례). */
+.lw-one__hw{font-size:min(52px,calc(94cqi / var(--n,1)));line-height:1.25;font-weight:600;white-space:nowrap}
 .lw-one__solo{font-size:20px;line-height:1.7;text-align:center}
 .lw-one__reveal{justify-self:center;min-height:48px;padding:0 22px;border:1px solid var(--rule);border-radius:999px;background:var(--paper);cursor:pointer;font-size:15px;font-weight:600}
 .lw-one__reveal:active{transform:scale(.985)}

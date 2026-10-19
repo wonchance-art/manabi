@@ -8,7 +8,7 @@ import { LEVEL_WORD_STATUS } from '../levelWordStatus';
 const read = (f) => fs.readFileSync(f, 'utf8');
 const CSS = 'src/components/levels/word/level-word.css';
 const PAGE_FILES = [
-  'src/views/LevelWordPage.jsx',
+  'src/views/LevelWordPage.jsx', 'src/views/JlptWordPage.jsx',
   ...fs.readdirSync('src/components/levels/word').filter((f) => f.endsWith('.jsx')).map((f) => `src/components/levels/word/${f}`),
   'src/lib/useLevelWordGrade.js', 'src/lib/levelFsrsGrade.js', 'src/lib/levelWordStatus.js', 'src/lib/levelWordSession.js', 'src/lib/levelCharTiles.js',
 ];
@@ -84,7 +84,7 @@ describe('움직임 — 0.3초 이하 · --ease-settle · 동작 줄이기면 �
   });
   it('JS가 붙이는 움직임(시트 닫힘 · 모드 전환 · 알림)도 reducedMotion()을 거친다', () => {
     expect(read('src/components/levels/word/WordSheets.jsx')).toMatch(/reducedMotion\(\) \? undefined : \{ transition: 'transform \.2s var\(--ease-settle\)' \}/);
-    const page = read('src/views/LevelWordPage.jsx');
+    const page = read('src/components/levels/word/LevelWordScreen.jsx');
     expect(page).toMatch(/startViewTransition/);
     const calls = page.split('\n').filter((line) => /document\.startViewTransition\(/.test(line));
     expect(calls.length).toBeGreaterThan(0);

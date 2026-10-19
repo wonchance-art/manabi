@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { reducedMotion } from '@/lib/reducedMotion';
 import { CharTiles, WordRow } from './WordParts';
+import { useWordLang } from './wordLang';
 
 const CLOSE_DRAG_PX = 80;
 
@@ -51,9 +52,10 @@ function Seg({ label, items, value, onPick }) {
 
 /** 제목 ▾ 시트 — 레벨 · 모드 · 보기 · 범위 네 줄의 분할 단추(제목 · ✕ 없음). */
 export function TitleSheet({ levels, levelKey, mode, view, range, views, ranges, links, onMode, onView, onRange, onClose }) {
+  const L = useWordLang();
   return <Sheet label="보기 설정" onClose={onClose}>
     <div className="lw-sheet__rows">
-      <Seg label="레벨" value={levelKey} items={levels.map((k) => ({ id: k, label: k.slice(1), aria: `HSK ${k.slice(1)}`, href: `/chinese/vocab/${k.toLowerCase()}` }))} />
+      <Seg label="레벨" value={levelKey} items={levels.map((k) => ({ id: k, label: L.levelPill(k), aria: L.tag(L.levelOf(k)), href: L.levelHref(k) }))} />
       <Seg label="모드" value={mode} onPick={onMode} items={[{ id: 'one', label: '한 단어' }, { id: 'list', label: '리스트' }]} />
       <Seg label="보기" value={view} onPick={onView} items={views} />
       <Seg label="범위" value={range} onPick={onRange} items={ranges.map((r) => ({ id: r, label: r }))} />

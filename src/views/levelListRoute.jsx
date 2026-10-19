@@ -4,8 +4,8 @@ import LevelListPage from '@/views/LevelListPage';
 import { levelListData } from '@/lib/levelListData';
 import { LEVEL_KIND_LABEL as KIND_LABEL, LEVEL_LIST_LANGS, levelKinds, levelLabel } from '@/lib/levelList';
 
-// View = 그 라우트의 화면. HSK 단어는 새 단어 페이지(LevelWordPage — 오너 확정 2026-10-19 KST)를 chinese/vocab 라우트가 넘긴다 —
-// 일본어 라우트가 중국어 화면 부품을 불러오지 않게(간체 글꼴 범위 · fontScope 계약). JLPT는 다음 PR.
+// View = 그 라우트의 화면. 단어는 새 단어 페이지(오너 확정 2026-10-19 KST)를 각 라우트가 넘긴다 — HSK = LevelWordPage, JLPT = JlptWordPage.
+// 일본어 라우트가 중국어 화면 부품을 불러오지 않게(간체 글꼴 범위 · fontScope 계약).
 export function levelListRoute(lang, kind, View = LevelListPage) {
   const conf = LEVEL_LIST_LANGS[lang];
   return {
@@ -19,6 +19,8 @@ export function levelListRoute(lang, kind, View = LevelListPage) {
         ? `${conf.name} ${levelLabel(key)} 한자 — 글자만 보고 읽어 보고, 모르는 글자는 바로 체크`
         : lang === 'chinese' && kind === 'vocab'
           ? `${conf.name} ${levelLabel(key)} 단어 — 한 단어씩 네 칸으로 채점하고, HSK 1–7 전체에서 찾기`
+        : lang === 'japanese' && kind === 'vocab'
+          ? `${conf.name} ${levelLabel(key)} 단어 — 한 단어씩 네 칸으로 채점하고, JLPT N5–N1 전체에서 찾기`
           : `${conf.name} ${levelLabel(key)} ${KIND_LABEL[kind]} 목록 — 뜻 · 예문 · 듣기, 단어는 바로 복습에 저장`;
       return { title, description, alternates: { canonical: `/${lang}/${kind}/${key.toLowerCase()}` }, openGraph: { title, description } };
     },

@@ -12,6 +12,9 @@ import { loadZhHskLevels, zhHskLevelOf } from './zhHskLevel';
 import { LEVEL_HUN_PX, LEVEL_LIST_LANGS, compactLevelEntry, hunShapeOf, levelKinds, levelWordKey, shortMeaning } from './levelList';
 import { hunRubyCells } from './viewerHunRuby';
 import { loadHanziTable } from './zhHanzi';
+import { alignFurigana } from './jaFurigana';
+import { splitKanjiReadings } from './jaKanjiReading';
+import { decodeJaPieces, jaExampleKey, jaExampleWords } from './jaExampleWords';
 
 const bunkeiOf = { japanese: getJaBunkei, chinese: getZhBunkei };
 const bunkeiCountOf = { japanese: countJaBunkei, chinese: countZhBunkei };
@@ -130,6 +133,83 @@ async function withExampleSegments(groups) {
   }) }));
 }
 
+// ── JLPT 단어 페이지(오너 확정 2026-10-19 KST · 문서 「일본어 판에서 달라지는 점」) — 빌드 때 계산해 싣는다 ──
+
+const JA_HAN = /[\p{Script=Han}々]/u;
+
+/** 글자별 읽기 문자열 — 표제어 글자마다 쉼표로(가나 자리는 빈 칸). 経験 → 「けい,けん」, 話し合い → 「はな,,あ,」. 없으면 undefined. */
+export function jaKanjiReadingField(word, reading, table) {
+  const parts = splitKanjiReadings(word, reading, table);
+  return parts ? parts.join(',') : undefined;
+}
+
+/** 예문 후리가나 — alignFurigana 결과를 [시작, 글자 수, 읽기](글자 = 코드 포인트) 목록으로. 맞추지 못하면 null. */
+export function jaExampleFurigana(text, reading) {
+  const parts = alignFurigana(text, reading);
+  if (!parts) return null;
+  const out = [];
+  let at = 0;
+  for (const p of parts) {
+    const n = [...p.text].length;
+    if (p.rt) out.push([at, n, p.rt]);
+    at += n;
+  }
+  return at === [...String(text)].length && out.length ? out : null;
+}
+
+let jaReadingTable = null;
+async function loadJaReadingTable() {
+  jaReadingTable ||= import('./data/jaKanjiReadings.json').then((m) => (m.default || m).r)
+    .catch((error) => { jaReadingTable = null; throw error; });
+  return jaReadingTable;
+}
+
+const jaExtrasMemo = new Map();
+/**
+ * JLPT 단어 화면 묶음 — 글자별 읽기(kr) · 예문 후리가나(furi) · 예문 단어 나눔(seg · lem). 레벨마다 한 번(책장 타일 수와 화면이 같이 부른다).
+ * 예문 형태소 분석은 미리 만든 표(jaExampleWords.json — 시험이 만들고 신선도를 지킨다)를 쓴다. 표에 없는 예문은 나누지 않는다.
+ */
+function withJapaneseWordExtras(levelKey, groups) {
+  if (!jaExtrasMemo.has(levelKey)) {
+    jaExtrasMemo.set(levelKey, Promise.all([loadJaReadingTable(), import('./data/jaExampleWords.json')]).then(([table, words]) => {
+      const pieceTable = (words.default || words).v;
+      return groups.map((g) => ({ ...g, entries: g.entries.map((e) => {
+        const kr = jaKanjiReadingField(e.word, e.reading, table);
+        let ex = e.ex;
+        if (ex?.text) {
+          const furi = jaExampleFurigana(ex.text, ex.reading);
+          const split = jaExampleWords(ex.text, e.word, decodeJaPieces(pieceTable[jaExampleKey(ex.text)], ex.text), furi);
+          ex = { ...ex, ...(furi ? { furi } : {}), ...(split || {}) };
+        }
+        return { ...e, ...(kr ? { kr } : {}), ...(ex ? { ex } : {}) };
+      }) }));
+    }).catch((error) => { jaExtrasMemo.delete(levelKey); throw error; }));
+  }
+  return jaExtrasMemo.get(levelKey);
+}
+
+/**
+ * 찾기 색인(JLPT) — N5–N1 단어 전부를 [표제어, 읽기, 짧은 뜻, 급수(5–1), 글자별 읽기?] 한 줄씩. 같은 표제어는 낮은 레벨(N5 쪽) 하나만.
+ * 레벨 목록과 같은 단어 · 같은 짧은 뜻이라 찾기 결과와 목록 칸이 갈리지 않는다.
+ */
+export async function japaneseLevelIndex() {
+  const table = await loadJaReadingTable();
+  const rows = [];
+  const seen = new Set();
+  for (const levelKey of LEVEL_LIST_LANGS.japanese.levels) {
+    for (const g of japaneseVocabGroups(levelKey) || []) {
+      for (const e of g.entries) {
+        const word = e.word;
+        if (seen.has(word) || (e.key && e.key !== word)) continue;
+        seen.add(word);
+        const kr = JA_HAN.test(word) ? jaKanjiReadingField(word, e.reading, table) : undefined;
+        rows.push(kr ? [word, e.reading, e.meaning, Number(levelKey.slice(1)), kr] : [word, e.reading, e.meaning, Number(levelKey.slice(1))]);
+      }
+    }
+  }
+  return rows;
+}
+
 /**
  * 찾기 색인(HSK 단어 페이지 개편) — 우리 사전 중 HSK 2026 급수가 있는 단어 전부를 [표제어, 병음, 짧은 뜻, 급수] 한 줄씩.
  * 레벨 목록과 같은 사전 · 같은 급수 표 · 같은 짧은 뜻이라 찾기 결과와 목록 칸이 갈리지 않는다. 급수 → 병음 순.
@@ -185,8 +265,9 @@ export async function levelListData(lang, kind, levelParam) {
     : kind === 'bunkei' ? bunkeiGroups(lang, levelKey)
     : lang === 'japanese' ? japaneseVocabGroups(levelKey) : await chineseVocabGroups(levelKey);
   if (!groups) return null;
-  // 예문 단어 나눔은 HSK 단어 화면만 쓴다(책장 타일 수 · 일본어 · 문형은 분석기를 부르지 않는다).
+  // 예문 단어 나눔은 단어 화면만 쓴다(문형 · 한자는 분석기를 부르지 않는다). 일본어는 글자별 읽기 · 예문 후리가나도 같이.
   if (lang === 'chinese' && kind === 'vocab') return { lang, kind, levelKey, groups: await withExampleSegments(groups) };
+  if (lang === 'japanese' && kind === 'vocab') return { lang, kind, levelKey, groups: await withJapaneseWordExtras(levelKey, groups) };
   return { lang, kind, levelKey, groups };
 }
 
