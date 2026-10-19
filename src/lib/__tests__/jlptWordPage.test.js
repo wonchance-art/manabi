@@ -5,7 +5,6 @@ import jeongja from '../data/jaJeongja.json';
 import { splitKanjiReadings } from '../jaKanjiReading.js';
 import { jaCharTiles, loadJaCharTables } from '../levelCharTiles.js';
 import { indexEntry, kanaKey, queryKind, searchLevelIndex } from '../levelWordIndex.js';
-import { entriesInRange, rangeOfPos } from '../levelWordStatus.js';
 import { japaneseLevelIndex } from '../levelListData.js';
 import { JAPANESE_VOCAB_REF } from '../japaneseVocabRegistry';
 
@@ -82,18 +81,6 @@ describe('찾기 — 가나 · 한자 · 뜻, JLPT N5–N1 전체', () => {
     expect(new Set(index.map((r) => r[3]))).toEqual(new Set([5, 4, 3, 2, 1]));
     expect(new Set(index.map((r) => r[0])).size).toBe(index.length);
     expect(index.find((r) => r[0] === '経験')).toEqual(['経験', 'けいけん', expect.any(String), 3, 'けい,けん']);
-  });
-});
-
-describe('범위 — JLPT 묶음은 주제라 품사로 가른다', () => {
-  it('품사 → 범위', () => {
-    expect(['명사', '대명사', '동사(1)', 'い형용사', 'な형용사', '부사', '표현', ''].map(rangeOfPos))
-      .toEqual(['명사', '명사', '동사', '형용사', '형용사', '부사', '기타', '기타']);
-  });
-  it('단어마다 범위를 본다(묶음 이름이 아니라)', () => {
-    const groups = [{ name: '여행', entries: [{ word: '旅行', pos: '명사' }, { word: '行く', pos: '동사(1)' }] }];
-    expect(entriesInRange(groups, '동사', (e) => rangeOfPos(e.pos)).map((e) => e.word)).toEqual(['行く']);
-    expect(entriesInRange(groups, '전체', (e) => rangeOfPos(e.pos))).toHaveLength(2);
   });
 });
 

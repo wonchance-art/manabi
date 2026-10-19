@@ -31,12 +31,12 @@ export function waitLabel(ms) {
   return `${Math.round(sec / 3600)}시간 뒤`;
 }
 
-/** 기다리는 카드의 남은 시간(오늘 할 줄 ③) — 스스로 1초마다 줄어든다(목록 전체를 다시 그리지 않게). */
+/** 기다리는 카드의 남은 시간(오늘 할 줄 ③) — 스스로 1초마다 줄어든다(목록 전체를 다시 그리지 않게). 배경 없는 회색 글자. */
 export function WaitChip({ at }) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
   const label = waitLabel(at - now);
-  return <span className="lw-chip lw-chip--wait" role="timer" aria-label={label ? `${label} 다시` : '곧 다시'}>{label || '곧'}</span>;
+  return <span className="lw-time" role="timer" aria-label={label ? `${label} 다시` : '곧 다시'}>{label || '곧'}</span>;
 }
 
 export function LevelTag({ level }) {

@@ -1,6 +1,6 @@
 'use client';
 // HSK 단어 페이지(오너 확정 2026-10-19 KST · 문서 「HSK 단어 페이지 개편 구현 정리」 · 시안 9판) — /chinese/vocab/h1–h7.
-// 화면은 JLPT와 같은 공통 화면(LevelWordScreen)이고, 여기서는 HSK 판만 정한다: 병음(성조 색) · 간체/정체 글자 칸 · HSK 1–7 색인 · 품사 묶음 범위.
+// 화면은 JLPT와 같은 공통 화면(LevelWordScreen)이고, 여기서는 HSK 판만 정한다: 병음(성조 색) · 간체/정체 글자 칸 · HSK 1–7 색인.
 import LevelWordScreen from '@/components/levels/word/LevelWordScreen';
 import { pinyinSyllables } from '@/lib/levelList';
 import { pinyinToneNumber } from '@/lib/pinyinTone';
@@ -34,7 +34,6 @@ export const HSK_WORD_LANG = Object.freeze({
   aidLabel: '성조 색',
   Reading: Pinyin,
   head: (e) => ({ hw: e.word, sub: e.reading }),
-  rangeOf: null, // 묶음이 이미 품사(ZH_POS_GROUPS)
   loadTiles: loadLevelCharTables,
   tilesOf: (word, _kr, tables) => levelCharTiles(word, tables),
 });

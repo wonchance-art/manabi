@@ -21,26 +21,6 @@ export const LEVEL_WORD_STATUS = Object.freeze({
   grad: Object.freeze({ id: 'grad', short: '졸업', label: '졸업한 단어' }),
 });
 
-/** 범위 ▾ — 서버 묶음(ZH_POS_GROUPS 이름) → 범위. 대명사 · 수 · 양사 · 기능어 · 표현(성어)은 기타. */
-export const LEVEL_RANGES = Object.freeze(['전체', '명사', '동사', '형용사', '부사', '기타']);
-export function rangeOfGroup(groupName) {
-  return ['명사', '동사', '형용사', '부사'].includes(groupName) ? groupName : '기타';
-}
-/** 일본어 단어 품사 → 범위(JLPT 묶음은 주제라 품사로 가른다) — 동사(1) · い형용사 · 부사·의태어 · 명사·속어. 표현 · 접두사 · 감탄사는 기타. */
-export function rangeOfPos(pos) {
-  const head = String(pos || '').split('·')[0].trim();
-  if (head === '명사' || head === '대명사') return '명사';
-  if (head.startsWith('동사')) return '동사';
-  if (head.endsWith('형용사')) return '형용사';
-  if (head === '부사') return '부사';
-  return '기타';
-}
-/** 범위 안 단어 — entryRange가 있으면 단어마다(일본어 품사), 없으면 묶음 이름으로(중국어 품사 묶음). */
-export function entriesInRange(groups, range, entryRange = null) {
-  if (entryRange) return (groups || []).flatMap((g) => g.entries).filter((e) => range === '전체' || entryRange(e) === range);
-  return (groups || []).flatMap((g) => (range === '전체' || rangeOfGroup(g.name) === range ? g.entries : []));
-}
-
 /**
  * 상태 — projection = 이 단어의 단어장 행 학습 투영(없으면 null), known = 아는 단어 표시.
  * 오늘 = 다음 복습이 오늘 학습일(04시 경계) 안. 일정이 없는 담긴 단어(막 ☆로 담음)도 오늘.

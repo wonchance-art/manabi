@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { introduceFsrsCard, scheduleFsrsReview } from '../fsrsScheduler.js';
 import { projectVocabularyLearning } from '../vocabularyLearningRead.js';
 import {
-  GRAD_DAYS, HARD_LAPSES, LEVEL_RANGES, LEVEL_WORD_STATUS, OLD_DAYS, daysSinceReview, entriesInRange, gradeEngine,
-  gradePreviews, gradeToastText, intervalLabel, lapsesOf, levelProgressPercent, levelWordGraded, levelWordStatus, rangeOfGroup, todayAgainAt,
+  GRAD_DAYS, HARD_LAPSES, LEVEL_WORD_STATUS, OLD_DAYS, daysSinceReview, gradeEngine,
+  gradePreviews, gradeToastText, intervalLabel, lapsesOf, levelProgressPercent, levelWordGraded, levelWordStatus, todayAgainAt,
 } from '../levelWordStatus.js';
 import {
-  gradeLevelSession, nextLevelScope, sessionCurrent, sessionDone, sessionDue, sessionNextAt, sessionOrder, sessionWaiting, skipLevelSession,
+  gradeLevelSession, nextLevelKey, sessionCurrent, sessionDone, sessionDue, sessionNextAt, sessionOrder, sessionWaiting, skipLevelSession,
   startLevelSession, undoLevelSession,
 } from '../levelWordSession.js';
 
@@ -77,15 +77,6 @@ describe('HSK 단어 페이지 상태 칸', () => {
     expect(OLD_DAYS).toBe(60);
     expect(daysSinceReview(legacy({ last_reviewed_at: iso(at - 61 * DAY) }).projection, at)).toBe(61);
     expect(daysSinceReview(legacy().projection, at)).toBeNull();
-  });
-
-  it('범위 ▾ — 대명사 · 수 · 양사 · 기능어 · 표현은 기타', () => {
-    expect(LEVEL_RANGES).toEqual(['전체', '명사', '동사', '형용사', '부사', '기타']);
-    expect(rangeOfGroup('대명사 · 수 · 양사')).toBe('기타');
-    expect(rangeOfGroup('동사')).toBe('동사');
-    const groups = [{ name: '명사', entries: [{ key: 'a' }] }, { name: '기능어', entries: [{ key: 'b' }] }, { name: '표현', entries: [{ key: 'c' }] }];
-    expect(entriesInRange(groups, '전체').map((e) => e.key)).toEqual(['a', 'b', 'c']);
-    expect(entriesInRange(groups, '기타').map((e) => e.key)).toEqual(['b', 'c']);
   });
 });
 
@@ -197,11 +188,8 @@ describe('오늘 할 줄 — 한 단어 · 리스트 모드가 같이 쓴다(오
     expect(s.graded).toBe(0);
   });
 
-  it('계속 진행 = 다음 품사 · 기타 다음은 다음 레벨 전체 · 마지막이면 없음', () => {
-    const levels = ['h1', 'h2'];
-    expect(nextLevelScope({ levels, levelKey: 'h1', range: '명사', ranges: LEVEL_RANGES })).toEqual({ levelKey: 'h1', range: '동사' });
-    expect(nextLevelScope({ levels, levelKey: 'h1', range: '기타', ranges: LEVEL_RANGES })).toEqual({ levelKey: 'h2', range: '전체' });
-    expect(nextLevelScope({ levels, levelKey: 'h1', range: '전체', ranges: LEVEL_RANGES })).toEqual({ levelKey: 'h2', range: '전체' });
-    expect(nextLevelScope({ levels, levelKey: 'h2', range: '전체', ranges: LEVEL_RANGES })).toBeNull();
+  it('계속 진행 = 다음 레벨 · 마지막이면 없음(품사 범위는 없앴다)', () => {
+    expect(nextLevelKey(['h1', 'h2'], 'h1')).toBe('h2');
+    expect(nextLevelKey(['h1', 'h2'], 'h2')).toBeNull();
   });
 });

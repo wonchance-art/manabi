@@ -54,9 +54,6 @@
 /* ④ 진행바 — 범위 ▾ · 막대 · %. 상단바 아래에 붙고, 붙으면 그림자. */
 .lw-prog{position:sticky;top:calc(var(--lw-top-h) + env(safe-area-inset-top,0px));z-index:25;background:var(--paper);display:flex;align-items:center;gap:12px;min-height:48px;margin:0 -16px;padding:0 16px;transition:box-shadow .2s var(--ease-settle)}
 .lw-prog[data-stuck]{box-shadow:0 6px 14px rgba(37,39,33,.07)}
-.lw-range{position:relative;flex:none;display:inline-flex;align-items:center}
-.lw-range select{appearance:none;-webkit-appearance:none;min-height:44px;border:0;background:none;font:inherit;font-size:14px;font-weight:700;color:var(--ink);padding:0 22px 0 0;cursor:pointer}
-.lw-range svg{position:absolute;right:0;pointer-events:none;color:var(--muted)}
 .lw-bar{flex:1 1 auto;height:4px;border-radius:999px;background:var(--lw-chip);overflow:hidden}
 .lw-bar i{display:block;height:100%;width:100%;background:var(--lw-rose);border-radius:inherit;transform-origin:left;transform:scaleX(var(--p,0));transition:transform .24s var(--ease-settle)}
 .lw-pct{flex:none;min-width:38px;text-align:right;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted)}
@@ -136,8 +133,11 @@
 .lw-chip{justify-self:start;display:inline-flex;align-items:center;min-height:24px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:700;color:var(--grade-hard);background:var(--lw-warnbg)}
 .lw-card__chips{display:flex;flex-wrap:wrap;gap:6px}
 .lw-card__chips .lw-chip{justify-self:auto}
-.lw-chip--wait{color:var(--muted);background:var(--lw-chip);font-variant-numeric:tabular-nums}
-.lw-chip--due{color:var(--lw-today);background:var(--lw-today-bg)}
+/* 남은 시간 · 시간 됨 — 맨 아래 줄 오른쪽 끝, 배경 없이 읽기와 같은 회색, 같은 줄 글자와 기준선 맞춤 */
+.lw-tailrow{display:flex;align-items:baseline;gap:10px}
+.lw-tailrow>:first-child{flex:1 1 auto;min-width:0}
+.lw-time{flex:none;margin-left:auto;font-size:13px;font-weight:400;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lw-card__head>.lw-time{align-self:center}
 .lw-later{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;min-height:48px;margin-top:16px;border:1px dashed var(--rule);border-radius:12px;background:none;color:var(--muted);font-size:14px;font-weight:600;cursor:pointer}
 .lw-later[aria-expanded=true] svg{transform:rotate(180deg)}
 .lw-reverse{display:grid;gap:8px}

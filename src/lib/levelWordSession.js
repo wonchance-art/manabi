@@ -3,7 +3,7 @@
 //
 // 줄 순서: ① 시간이 된 카드(기다리다 차례가 온 카드, 먼저 된 것부터) ② 오늘 복습 · 담지 않은 새 단어(목록 순) ③ 기다리는 카드(남은 시간 짧은 순).
 // 채점해서 다음 차례가 오늘 안(다시 1분 · 어려움 6분 …)이면 그 시각까지 ③에서 기다리고, 내일 이후면 줄에서 빠진다.
-// 줄에 기다리는 카드만 남으면 한 단어 모드는 가장 먼저 될 카드를 앞당겨 이어간다. 둘 다 비면 끝(「오늘 이 범위 끝」).
+// 줄에 기다리는 카드만 남으면 한 단어 모드는 가장 먼저 될 카드를 앞당겨 이어간다. 둘 다 비면 끝(「오늘 이 레벨 끝」).
 // 되돌리기는 직전 상태로 — 화면이 기록 되돌리기와 같이 부른다.
 
 const byAt = (a, b) => a.at - b.at;
@@ -67,14 +67,8 @@ export function undoLevelSession(session) {
   return { ...prev, history: session.history.slice(0, -1) };
 }
 
-/**
- * 끝 화면의 「계속 진행」 — 다음 범위. 품사 범위면 다음 품사(기타 다음은 다음 레벨 전체), 전체면 다음 레벨 전체.
- * 마지막 레벨의 끝이면 null.
- */
-export function nextLevelScope({ levels, levelKey, range, ranges }) {
-  const order = ranges.filter((r) => r !== '전체');
-  const at = order.indexOf(range);
-  if (at >= 0 && at < order.length - 1) return { levelKey, range: order[at + 1] };
+/** 끝 화면의 「계속 진행」 — 다음 레벨(품사 범위는 없앴다, 오너 2026-10-20 KST). 마지막 레벨이면 null. */
+export function nextLevelKey(levels, levelKey) {
   const li = levels.indexOf(levelKey);
-  return li >= 0 && li < levels.length - 1 ? { levelKey: levels[li + 1], range: '전체' } : null;
+  return li >= 0 && li < levels.length - 1 ? levels[li + 1] : null;
 }

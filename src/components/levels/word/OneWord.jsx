@@ -1,12 +1,12 @@
 'use client';
 // 한 단어 모드(문서 「한 단어 모드」) — 앞면: 단어 52px 고정 자리 + 「정답 확인 · Space」 하나. 뒷면: 단어는 같은 자리,
-// 그 아래 읽기(HSK 병음 성조 색 · JLPT 가나) · 듣기 · 레벨 태그, 뜻, 글자 칸, 예문. 네 칸은 화면 아래 고정(앞면에서도 누를 수 있다).
+// 그 아래 읽기(HSK 병음 성조 색 · JLPT 가나) · 듣기 · 담은 단어 상태(레벨 태그 · ☆는 찾기에만 — 오너 2026-10-20 KST), 뜻, 글자 칸, 예문. 네 칸은 화면 아래 고정(앞면에서도 누를 수 있다).
 // 보기 탭은 앞면에 무엇을 보일지만 정한다(단어 · 문장 · 뜻 · 소리). 오래된 단어는 뜻을 앞에(반대 방향).
-import { CharTiles, GradeButtons, LevelTag, Listen, Reading, StatusPill } from './WordParts';
+import { CharTiles, GradeButtons, Listen, Reading, StatusPill } from './WordParts';
 import { Example } from './WordCard';
 import { useWordLang } from './wordLang';
 
-export function OneWordCard({ entry: e, level, view, info, tiles, speak, tone, revealed, onReveal, onWord, openKey, turnKey, onSave, saving, pop }) {
+export function OneWordCard({ entry: e, view, info, tiles, speak, tone, revealed, onReveal, onWord, openKey, turnKey, pop }) {
   const L = useWordLang();
   const { hw, sub } = L.head(e);
   const old = info.old != null;
@@ -21,8 +21,8 @@ export function OneWordCard({ entry: e, level, view, info, tiles, speak, tone, r
     <div className="lw-one__front">{top}</div>
     {!revealed && <button type="button" className="lw-one__reveal" onClick={onReveal} aria-keyshortcuts="Space">정답 확인 · Space</button>}
     {revealed && <div className="lw-one__back">
-      <div className="lw-one__meta"><Reading text={sub} word={hw} tone={tone} /><Listen speak={speak} text={e.word} /><LevelTag level={level} />
-        <StatusPill status={info.status} onSave={onSave} busy={saving} pop={pop} /></div>
+      <div className="lw-one__meta"><Reading text={sub} word={hw} tone={tone} /><Listen speak={speak} text={e.word} />
+        {info.status && info.status !== 'new' && <StatusPill status={info.status} pop={pop} />}</div>
       {info.hard ? <div className="lw-one__chips"><span className="lw-chip">자주 틀린 단어 · {info.hard}번</span></div> : null}
       <p className="lw-one__mean">{e.meaning}</p>
       <CharTiles tiles={tiles} />
@@ -43,10 +43,10 @@ export function GradeBar({ previews, onGrade, disabled, note, guide = true, labe
   </div></div>;
 }
 
-/** 끝 화면 — 「오늘 이 범위 끝」 + 큰 칸 둘(학습 · 내일) + 네 색 칸(누른 횟수, 숫자만) + [계속 진행] [리스트로]. */
+/** 끝 화면 — 「오늘 이 레벨 끝」 + 큰 칸 둘(학습 · 내일) + 네 색 칸(누른 횟수, 숫자만) + [계속 진행] [리스트로]. */
 export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabel }) {
   return <section className="lw-done" aria-labelledby="lw-done-title">
-    <h2 id="lw-done-title" tabIndex={-1}>오늘 이 범위 끝</h2>
+    <h2 id="lw-done-title" tabIndex={-1}>오늘 이 레벨 끝</h2>
     <div className="lw-done__big">
       <div><b>{graded}</b><span>학습</span></div>
       <div><b>{tomorrow}</b><span>내일</span></div>

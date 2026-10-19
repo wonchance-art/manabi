@@ -4,11 +4,10 @@
 //   읽기 = 가나(성조 색 없음) · 가나만 있는 단어(メモ)는 읽기 줄 · 글자 칸 없음 · N5 · N4는 가나 표제어(jaHeadMode — 한자는 읽기 줄)
 //   글자 칸 = 훈음 + 이 단어 속 읽기(経 날 경 けい — 빌드 때 KANJIDIC2로 나눈 kr), 아래 회색 = 한국 정자(経 → 經)
 //   예문 = 후리가나(빌드 때 alignFurigana) · 단어 나눔과 원형(빌드 때 형태소 분석 — して → する)
-//   찾기 = 가나(가타카나는 히라가나로) · 한자 · 뜻으로 N5–N1 전체 · 범위 = 품사(동사(1) · い형용사 …)
+//   찾기 = 가나(가타카나는 히라가나로) · 한자 · 뜻으로 N5–N1 전체
 // 이 파일은 중국어 부품을 부르지 않는다(일본어 라우트 — 간체 글꼴 범위 밖, fontScope 계약).
 import LevelWordScreen from '@/components/levels/word/LevelWordScreen';
 import { jaHeadMode } from '@/lib/levelList';
-import { rangeOfPos } from '@/lib/levelWordStatus';
 import { jaCharTiles, loadJaCharTables } from '@/lib/levelCharTiles';
 
 const HAN = /\p{Script=Han}/u;
@@ -40,7 +39,6 @@ export function jlptWordLang(levelKey) {
     Reading: Kana,
     // N5 · N4는 가나 표제어 + 한자는 읽기 줄(jaHeadMode — 옛 목록과 같은 규칙). 한자가 없는 단어는 표제어만.
     head: (e) => (kana && HAN.test(e.word) && e.reading ? { hw: e.reading, sub: e.word } : { hw: e.word, sub: e.reading }),
-    rangeOf: (e) => rangeOfPos(e.pos),
     loadTiles: loadJaCharTables,
     tilesOf: (word, kr, tables) => jaCharTiles(word, kr, tables),
   };
