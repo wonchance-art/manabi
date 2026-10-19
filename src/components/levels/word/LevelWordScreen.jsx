@@ -535,7 +535,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
           </>}
           {!rangeEntries.length && <p className="lw-empty">이 범위에는 단어가 없어요</p>}
           {focusEntry && <GradeBar previews={focusInfo.previews} onGrade={(r) => onGrade(focusEntry, r, { next: true })} note={gradeNote(focusInfo)}
-            disabled={!ready || focusLocked} label={focusLocked ? '단어를 떠올린 뒤 카드를 눌러 확인해요' : <><b lang={cfg.hw}>{cfg.head(focusEntry).hw}</b> 채점</>} />}
+            disabled={!ready || focusLocked} label={focusLocked ? '단어를 떠올린 뒤 카드를 눌러 확인해요' : <b lang={cfg.hw}>{cfg.head(focusEntry).hw}</b>} />}
         </>}
 
     {pop && popRow && <WordPopup anchor={pop.anchor} row={popRow} tiles={tilesOf(popRow.word, popRow.kr)} tone={tone} status={statusOfWord(pop.text)}

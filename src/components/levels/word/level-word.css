@@ -168,7 +168,7 @@
 .lw-gradebar{position:fixed;left:0;right:0;bottom:0;z-index:28;background:color-mix(in srgb,var(--paper) 94%,transparent);backdrop-filter:blur(6px);border-top:1px solid var(--lw-line);padding:8px 16px calc(10px + env(safe-area-inset-bottom,0px))}
 .lw-gradebar__in{max-width:648px;margin:0 auto;display:grid;gap:6px}
 .lw-gradebar__guide{margin:0;min-height:1.5em;text-align:center;font-size:12.5px;line-height:1.5;color:var(--muted)}
-.lw-gradebar__guide b{color:var(--ink);font-size:14px;font-weight:600;margin-right:2px}
+.lw-gradebar__guide b{color:var(--ink);font-size:14px;font-weight:600}
 
 /* 끝 화면 */
 .lw-done{padding:32px 0 24px;display:grid;gap:16px;text-align:center;animation:settleIn .2s var(--ease-settle) both}

@@ -33,7 +33,7 @@ export function OneWordCard({ entry: e, level, view, info, tiles, speak, tone, r
 
 /**
  * 화면 아래 고정 네 칸 + 안내 한 줄 — 안내는 뒷면에서만(앞면 「안내 문구 없음」), 자리는 늘 잡아 네 칸이 움직이지 않는다.
- * 리스트 모드는 label(「準備 채점」 — 지금 채점할 가운데 카드)을 안내 자리에 둔다.
+ * 리스트 모드는 label(지금 채점할 카드의 단어 — 準備)을 안내 자리에 둔다.
  */
 export function GradeBar({ previews, onGrade, disabled, note, guide = true, label = null }) {
   const text = useWordLang().guide;
