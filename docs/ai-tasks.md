@@ -881,7 +881,12 @@
 - **HSK 단어 페이지 개편 (2026-10-19 KST, 오너 「좋아 작업 진행해」 · 진동만 제외)** `claude/project-thread-qiz34v`: 정본 = 문서 「HSK 단어 페이지」 rev 17.
   /chinese/vocab/hN을 새 화면(LevelWordPage)으로 — 상단바 한 줄 · 한 단어 모드(기본) · 리스트 · 찾기(HSK 1–7) · 글자 칸 · 상태 칸(☆ · 오늘 · 복습 · 졸업 90일) ·
   네 칸 색 토큰(복습실 공유) · 되돌리기 한 길(`inlineGradeUndo.js`) · 예문 단어 나눔(빌드 때, 분석기와 같은 분할) · 0.3초 이하 움직임 + 동작 줄이기.
-  새 표 없음(단어당 카드 하나, 옛 일정 = 언제든 · FSRS 카드 = 복습 차례에만). 계약 `levelWordPageContract.test.js` · `levelWordStatus.test.js`. JLPT 판은 다음 PR.
+  새 표 없음(단어당 카드 하나, 옛 일정 = 언제든 · FSRS 카드 = 복습 차례에만). 계약 `levelWordPageContract.test.js` · `levelWordStatus.test.js`.
+- **JLPT 단어 페이지 (2026-10-19 KST, 오너 「JLPT 판 아직 안됐으면 진행」)** 같은 브랜치 · 같은 PR: 문서 「일본어 판에서 달라지는 점」 · 시안 ⑰–㉑.
+  /japanese/vocab/nN을 HSK와 같은 공통 화면(`LevelWordScreen` + 판 설정 `wordLang`)으로 — 가나 읽기(성조 색 없음) · N5/N4 가나 표제어(jaHeadMode) ·
+  글자 칸 첫 줄 훈음 + 단어 속 읽기(`jaKanjiReadings.json` KANJIDIC2 CC BY-SA, 97% 나눔 · 숙자훈은 빈칸) · 아래 회색 한국 정자(`jaJeongja.json` OpenCC) ·
+  예문 후리가나(alignFurigana) · 단어 나눔 + 원형(`jaExampleWords.json` — 페이지 조립 안 kuromoji 첫 적재가 깨져 시험이 미리 만든다) ·
+  찾기 N5–N1 가나/한자/뜻(`/api/level-index/japanese`) · 범위 = 품사(rangeOfPos). 계약 `jlptWordPage.test.js` · `jaExampleWordsBuild.test.js` · smoke N3 예산(.lw-card 150).
 - **#1505 병합 후속 (2026-10-17 KST)** `claude/beautiful-lamport-po6fv0`: 손님 서재 서버 HTML부터 손님 화면 · 듣기 막대 속도 이름 · 글자 칸 aria-expanded ·
   교재 hash 기록 Next tree(BOOK-HASH-RACE-001 후속) · 来い/来れる · 오쿠리가나 관행 가드 · 来 다음 토큰 표 useMemo ·
   TOKEN-REFRESH-409-001(동시 갱신에서 진 요청이 인증 쿠키를 지워 로그아웃시키던 길 차단, 적대적 리뷰 차단 0).
