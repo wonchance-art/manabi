@@ -6,6 +6,8 @@
 //   졸업 = 다음 복습까지 90일 이상 + 기존 「아는 단어」 표시(복습 제외 포함). 졸업한 단어도 365일 안에 돌아온다(간격 상한).
 //   두 글자 이내 · 같은 폭 칸. 화면 읽기에는 온전한 말(aria).
 import { calculateFSRS } from './fsrs.js';
+import { currentIndexedProjection, findIndexedVocabulary } from './vocabularyDueIndex.js';
+import { projectVocabularyLearning } from './vocabularyLearningRead.js';
 import { SAVE_GRADES, gradeToInitialStats } from './vocabIO.js';
 import { learningDay, previewFsrsRatings, schedulerTime } from './fsrsScheduler.js';
 
@@ -42,6 +44,31 @@ export function levelWordStatus({ projection, known = false, at = Date.now() } =
   const nextMs = schedulerTime(next), now = schedulerTime(at);
   if (learningDay(nextMs) <= learningDay(now)) return 'today';
   return nextMs - now >= GRAD_DAYS * DAY ? 'grad' : 'review';
+}
+
+/**
+ * 단어 키 → { row, projection } — 뷰어와 같은 단어장 색인(['vocab-words', userId])에서 찾는다.
+ * 막 담은 행(색인 뒤에 들어온 행)과 채점 전송 중인 행은 색인 투영이 없다 — 옛 일정 카드로 그 행의 칸만 읽어 바로 보이게 한다
+ * (새로 받기 전까지의 화면 값. 저장 · 채점은 늘 서버 정본으로).
+ */
+export function levelRowProjection(index, key, language = 'Chinese', at = Date.now()) {
+  if (!index?.byKey) return { row: null, projection: null };
+  const row = findIndexedVocabulary(index, { text: key, base_form: key }, language);
+  if (!row) return { row: null, projection: null };
+  let projection = currentIndexedProjection(index, row, at);
+  if (!projection && row.user_id === index.actorId) {
+    const registered = index.registryById?.get(row.id);
+    if (registered?.enrolled) projection = index.projectionsById.get(row.id) || null;
+    else {
+      const { __pendingReview, ...vocabulary } = row;
+      try {
+        projection = projectVocabularyLearning({ actorId: index.actorId, vocabulary, enabled: index.enabled, registryAvailable: true,
+          complete: true, at: Math.max(schedulerTime(at), schedulerTime(index.now)), registry: registered || { cardId: row.id, userId: index.actorId,
+            enrolled: false, card: null, known: false, excluded: false, eligible: true, nextQuestionAt: null, firstQuestionAt: null } });
+      } catch { projection = null; }
+    }
+  }
+  return { row, projection };
 }
 
 /** 한 번이라도 채점했는가(진행바 % — 복습 · 졸업 포함). 첫 채점과 함께 담은 단어도 센다(기억 값이 있다). */
@@ -148,4 +175,15 @@ export function gradeToastText(grade, preview) {
   const label = preview?.label;
   if (!label) return g.label;
   return label === '오늘' ? `${g.label} · 오늘 다시` : `${g.label} · ${label} 뒤 다시`;
+}
+
+/** 끝 화면 「내일」 — 다음 복습이 내일 학습일(04시 경계)인 단어 수. */
+export function dueTomorrowCount(projections, at = Date.now()) {
+  const tomorrow = learningDay(schedulerTime(at)) + 1;
+  let n = 0;
+  for (const p of projections || []) {
+    const next = p?.review?.available ? p.review.nextQuestionAt : null;
+    if (next !== null && next !== undefined && learningDay(schedulerTime(next)) === tomorrow) n += 1;
+  }
+  return n;
 }
