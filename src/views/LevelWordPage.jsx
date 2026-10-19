@@ -325,6 +325,16 @@ export default function LevelWordPage({ levelKey, groups: rawGroups }) {
   // ── 상단 · 시트 · 설정 ──
   const [sheetOpen, setSheetOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const settingsRef = useRef(null);
+  useEffect(() => {
+    if (!settingsOpen) return undefined;
+    // 해 단추 · 창 밖을 누르거나 Esc면 닫는다(단추 자체는 onClick이 토글).
+    const onDown = (event) => { if (!settingsRef.current?.contains(event.target)) setSettingsOpen(false); };
+    const onKey = (event) => { if (event.key === 'Escape') { setSettingsOpen(false); settingsRef.current?.querySelector('button')?.focus(); } };
+    window.addEventListener('pointerdown', onDown, true);
+    window.addEventListener('keydown', onKey);
+    return () => { window.removeEventListener('pointerdown', onDown, true); window.removeEventListener('keydown', onKey); };
+  }, [settingsOpen]);
   const progRef = useRef(null);
   const [stuck, setStuck] = useState(false);
   useEffect(() => {
@@ -404,9 +414,9 @@ export default function LevelWordPage({ levelKey, groups: rawGroups }) {
         <h1 className="lw-title"><button type="button" onClick={onTitle} title="맨 위로 · 보기 설정">{title}</button></h1>
         <button type="button" className="lw-title__caret lw-icon" aria-label="레벨 · 모드 · 보기 · 범위" aria-haspopup="dialog" onClick={() => setSheetOpen(true)}><CaretIcon /></button>
         <button type="button" className="lw-icon" aria-label="단어 찾기" onClick={openSearch}><SearchIcon /></button>
-        <span style={{ position: 'relative' }}>
+        <span style={{ position: 'relative' }} ref={settingsRef}>
           <button type="button" className="lw-icon" aria-label="설정" aria-expanded={settingsOpen} onClick={() => setSettingsOpen((v) => !v)}><SunIcon /></button>
-          {settingsOpen && <div className="lw-settings" role="group" aria-label="설정">
+          {settingsOpen && <div className="lw-settings" role="group" aria-label="화면 설정">
             <label>성조 색<input type="checkbox" checked={tone} onChange={(e) => setPrefs({ tone: e.target.checked })} /></label>
           </div>}
         </span>

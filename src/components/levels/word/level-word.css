@@ -27,6 +27,8 @@
 .lw-top--search .lw-searchbox{animation:lwFade .15s var(--ease-settle) both}
 .lw-searchbox{flex:1 1 auto;min-width:0;display:flex;align-items:center;height:44px;border-radius:12px;background:var(--lw-field);outline:2px solid var(--lw-rose);outline-offset:-2px;padding-left:14px}
 .lw-searchbox input{flex:1 1 auto;min-width:0;height:100%;border:0;background:none;font:inherit;font-size:16px;color:var(--ink);outline:none}
+.lw-searchbox input,.lw-searchbox input:focus-visible{appearance:none;-webkit-appearance:none;outline:none;box-shadow:none}
+.lw-searchbox input::-webkit-search-cancel-button,.lw-searchbox input::-webkit-search-decoration{-webkit-appearance:none;display:none}
 .lw-searchbox input::placeholder{color:var(--muted)}
 .lw-searchbox .lw-icon{color:var(--muted)}
 
@@ -159,9 +161,9 @@
 .lw-done__actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
 
 /* 되돌리기 안내 — 네 칸 위(한 단어) 또는 화면 아래(리스트). 올라왔다 .15s에 사라짐, 손가락을 올리면 멈춤. */
-.lw-undo{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;transform:translateX(-50%);display:flex;align-items:center;gap:12px;background:var(--ink);color:var(--paper);border-radius:12px;padding:4px 6px 4px 16px;font-size:14px;max-width:calc(100vw - 32px);width:max-content;box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 25%,transparent);animation:toast-in .2s var(--ease-settle) both;transition:opacity .15s var(--ease-settle),transform .15s var(--ease-settle)}
+.lw-undo{position:fixed;left:0;right:0;margin-inline:auto;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:12px;background:var(--ink);color:var(--paper);border-radius:12px;padding:4px 6px 4px 16px;font-size:14px;max-width:calc(100vw - 32px);width:max-content;box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 25%,transparent);animation:toast-in .2s var(--ease-settle) both;transition:opacity .15s var(--ease-settle),transform .15s var(--ease-settle)}
 .lw-page[data-mode=one] .lw-undo{bottom:calc(132px + env(safe-area-inset-bottom,0px))}
-.lw-undo.is-leaving{opacity:0;transform:translate(-50%,4px)}
+.lw-undo.is-leaving{opacity:0;transform:translateY(4px)}
 .lw-undo button,.lw-undo a{min-height:44px;border:0;background:none;color:var(--lw-today-bg);font-weight:700;padding:0 10px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
 
 /* 찾기 결과 · 줄 형식 */
