@@ -3,10 +3,11 @@ import { introduceFsrsCard, scheduleFsrsReview } from '../fsrsScheduler.js';
 import { projectVocabularyLearning } from '../vocabularyLearningRead.js';
 import {
   GRAD_DAYS, HARD_LAPSES, LEVEL_RANGES, LEVEL_WORD_STATUS, OLD_DAYS, daysSinceReview, entriesInRange, gradeEngine,
-  gradePreviews, gradeToastText, intervalLabel, lapsesOf, levelProgressPercent, levelWordGraded, levelWordStatus, rangeOfGroup,
+  gradePreviews, gradeToastText, intervalLabel, lapsesOf, levelProgressPercent, levelWordGraded, levelWordStatus, rangeOfGroup, todayAgainAt,
 } from '../levelWordStatus.js';
 import {
-  AGAIN_GAP, gradeLevelSession, nextLevelScope, sessionCurrent, sessionDone, skipLevelSession, startLevelSession, undoLevelSession,
+  gradeLevelSession, nextLevelScope, sessionCurrent, sessionDone, sessionDue, sessionNextAt, sessionOrder, sessionWaiting, skipLevelSession,
+  startLevelSession, undoLevelSession,
 } from '../levelWordSession.js';
 
 const actorId = 'learner';
@@ -128,36 +129,67 @@ describe('네 칸 채점 미리보기', () => {
   });
 });
 
-describe('한 단어 모드 세션 줄', () => {
+describe('오늘 할 줄 — 한 단어 · 리스트 모드가 같이 쓴다(오너 확정 2026-10-19 KST)', () => {
   const entries = ['a', 'b', 'c', 'd', 'e', 'f'].map((key) => ({ key }));
   const status = { a: 'new', b: 'today', c: 'review', d: 'grad', e: 'today', f: 'new' };
+  const T = 1_000_000;
+  const MIN = 60_000;
 
-  it('오늘 복습 먼저 · 그다음 새 단어 · 복습 중 · 졸업은 빠진다', () => {
-    const s = startLevelSession(entries, (k) => status[k]);
-    expect(s.queue).toEqual(['b', 'e', 'a', 'f']);
+  it('오늘 복습 먼저 · 그다음 새 단어 · 복습 중 · 졸업은 빠진다 · 오늘 뒤에 올 카드는 기다린다', () => {
+    const s = startLevelSession(entries, (k) => status[k], (k) => (k === 'e' ? T + 5 * MIN : 0), T);
+    expect(s.queue).toEqual(['b', 'a', 'f']);
+    expect(s.waiting).toEqual([{ key: 'e', at: T + 5 * MIN }]);
     expect(s.total).toBe(4);
-    expect(sessionCurrent(s)).toBe('b');
+    expect(sessionCurrent(s, T)).toBe('b');
+    expect(sessionNextAt(s, T)).toBe(T + 5 * MIN);
   });
 
-  it(`다시는 ${AGAIN_GAP}장 뒤 · 줄이 짧으면 끝에서 이어간다`, () => {
-    let s = startLevelSession(entries, (k) => status[k]);
-    s = gradeLevelSession(s, 'b', 1);
-    expect(s.queue).toEqual(['e', 'a', 'f', 'b']);
-    s = gradeLevelSession(s, 'e', 3);
-    s = gradeLevelSession(s, 'a', 1);
-    expect(s.queue).toEqual(['f', 'b', 'a']);
-    expect(s.counts).toEqual({ 1: 2, 2: 0, 3: 1, 4: 0 });
-    expect(gradeLevelSession(s, 'b', 3)).toBe(s); // 지금 카드가 아니면 그대로
-    s = gradeLevelSession(gradeLevelSession(gradeLevelSession(s, 'f', 4), 'b', 3), 'a', 2);
+  it('시간이 된 카드 → 새 카드 → 기다리는 카드(남은 시간 짧은 순) · 내일 이후는 줄에서 빠진다', () => {
+    let s = startLevelSession(entries, (k) => status[k], () => 0, T);
+    s = gradeLevelSession(s, 'b', 1, T + MIN); // 다시 1분
+    s = gradeLevelSession(s, 'e', 2, T + 6 * MIN); // 어려움 6분
+    s = gradeLevelSession(s, 'a', 4, null); // 쉬움 — 내일 이후
+    expect(sessionOrder(s, T)).toEqual(['f']);
+    expect(sessionWaiting(s, T).map((w) => w.key)).toEqual(['b', 'e']);
+    expect(sessionOrder(s, T + 2 * MIN)).toEqual(['b', 'f']); // 1분이 지나 맨 위로
+    expect(sessionDue(s, T + 7 * MIN)).toEqual(['b', 'e']);
+    expect(s.counts).toEqual({ 1: 1, 2: 1, 3: 0, 4: 1 });
+  });
+
+  it('리스트는 줄 어디의 카드든 채점한다 · 줄 밖 카드는 오늘 안으로 돌아올 때만 들어온다', () => {
+    let s = startLevelSession(entries, (k) => status[k], () => 0, T);
+    s = gradeLevelSession(s, 'f', 3, null);
+    expect(s.queue).toEqual(['b', 'e', 'a']);
+    expect(gradeLevelSession(s, 'c', 3, null)).toBe(s); // 다음에 볼 단어 · 내일 이후 → 그대로
+    s = gradeLevelSession(s, 'c', 1, T + MIN);
+    expect(sessionWaiting(s, T).map((w) => w.key)).toEqual(['c']);
+  });
+
+  it('기다리는 카드만 남으면 한 단어 모드는 가장 먼저 될 카드를 앞당긴다 · 둘 다 비면 끝', () => {
+    let s = startLevelSession([{ key: 'a' }], () => 'new', () => 0, T);
+    s = gradeLevelSession(s, 'a', 1, T + MIN);
+    expect(sessionOrder(s, T)).toEqual([]);
+    expect(sessionCurrent(s, T)).toBe('a');
+    expect(sessionDone(s)).toBe(false);
+    s = gradeLevelSession(s, 'a', 3, null);
     expect(sessionDone(s)).toBe(true);
-    expect(s.graded).toBe(6);
+    expect(s.graded).toBe(2);
   });
 
-  it('되돌리기 = 그 카드가 다시 맨 앞 · 넘기기는 세지 않는다', () => {
-    let s = startLevelSession(entries, (k) => status[k]);
-    s = gradeLevelSession(s, 'b', 4);
+  it('다음 차례가 오늘 안이면 기다리는 시각, 내일 이후면 null', () => {
+    const noon = Date.parse('2026-10-19T03:00:00Z'); // KST 정오
+    expect(todayAgainAt({ ms: 10 * MIN }, noon)).toBe(noon + 10 * MIN);
+    expect(todayAgainAt({ ms: 8 * 86_400_000 }, noon)).toBeNull();
+    expect(todayAgainAt({ ms: 0 }, noon)).toBeNull();
+    expect(todayAgainAt(null, noon)).toBeNull();
+  });
+
+  it('되돌리기 = 그 카드가 채점 전 자리로 · 넘기기는 세지 않는다', () => {
+    let s = startLevelSession(entries, (k) => status[k], () => 0, T);
+    s = gradeLevelSession(s, 'b', 1, T + MIN);
     s = undoLevelSession(s);
     expect(s.queue[0]).toBe('b');
+    expect(s.waiting).toEqual([]);
     expect(s.graded).toBe(0);
     expect(undoLevelSession(s)).toBe(s);
     s = skipLevelSession(s, 'b');

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import { calculateFSRS, calculateVocabFSRS, vocabStepPhase, VOCAB_STEP_POLICY } from '../fsrs';
 import { FSRS_POLICIES } from '../fsrsScheduler';
@@ -38,7 +38,12 @@ describe('단어 학습 단계 — anki-v2', () => {
     expect(vocabStepPhase({ ...row, last_reviewed_at: iso(at - 3 * DAY) })).toEqual({ state: 'Review', step: 0 });
   });
 
+  afterEach(() => vi.useRealTimers());
+
   it('복습 단계 단어: 다시 = 10분 재학습(기억 상태는 예전 계산 그대로), 그 밖은 예전 일 단위 계산 그대로', () => {
+    // 예전 계산(calculateFSRS)은 지금 시각을 읽는다 — 같은 시각으로 맞춰 비교한다(날이 바뀌는 자정 무렵에 하루 어긋났다, 2026-10-20 00:12 KST 실측).
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(at);
     const review = { interval: 20, ease_factor: 5, repetitions: 0, next_review_at: iso(at), last_reviewed_at: iso(at - 20 * DAY) };
     const again = calculateVocabFSRS(1, review, at);
     expect(gap(again)).toBe(10 * MIN);

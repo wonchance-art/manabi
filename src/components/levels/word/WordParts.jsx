@@ -1,6 +1,7 @@
 'use client';
 // 단어 페이지 부품(오너 확정 2026-10-19 KST · 문서 「단어 설명 형식」) — 한 단어 모드 · 리스트 · 찾기 · 예문 창이 같이 쓴다.
 // HSK · JLPT 두 판이 같이 쓴다: 표제어 lang · 태그 · 읽기 줄(병음 · 가나)은 판(useWordLang)에서 받는다.
+import { useEffect, useState } from 'react';
 import { SAVE_GRADES } from '@/lib/vocabIO';
 import { LEVEL_WORD_STATUS } from '@/lib/levelWordStatus';
 import { useWordLang } from './wordLang';
@@ -19,6 +20,23 @@ export function Reading({ text, word, tone = true }) {
   const L = useWordLang();
   if (!text || text === word) return null;
   return <L.Reading text={text} word={word} tone={tone} />;
+}
+
+/** 남은 시간 글자 — 1분 미만 초 · 1시간 미만 분(올림) · 그 밖 시간. 0 이하면 null. */
+export function waitLabel(ms) {
+  if (!Number.isFinite(ms) || ms <= 0) return null;
+  const sec = Math.ceil(ms / 1000);
+  if (sec < 60) return `${sec}초 뒤`;
+  if (sec < 3600) return `${Math.ceil(sec / 60)}분 뒤`;
+  return `${Math.round(sec / 3600)}시간 뒤`;
+}
+
+/** 기다리는 카드의 남은 시간(오늘 할 줄 ③) — 스스로 1초마다 줄어든다(목록 전체를 다시 그리지 않게). */
+export function WaitChip({ at }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
+  const label = waitLabel(at - now);
+  return <span className="lw-chip lw-chip--wait" role="timer" aria-label={label ? `${label} 다시` : '곧 다시'}>{label || '곧'}</span>;
 }
 
 export function LevelTag({ level }) {

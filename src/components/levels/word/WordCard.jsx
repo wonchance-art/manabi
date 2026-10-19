@@ -1,9 +1,10 @@
 'use client';
-// 리스트 모드 카드(문서 「리스트 모드」) — 머리 줄(단어 · 읽기 · 듣기 · 레벨 태그 · 상태) → 뜻 → 글자 칸 → 예문 → 네 칸.
-// 보기 탭이 전체가 아니면 고른 것 하나만 남기고, 누르면 나머지가 네 칸 아래로 펼쳐진다(네 칸은 펼치기 전후 같은 자리).
+// 리스트 모드 카드(문서 「리스트 모드」) — 머리 줄(단어 · 읽기 · 듣기 · 레벨 태그 · 상태) → 뜻 → 글자 칸 → 예문.
+// 네 칸은 카드마다 붙이지 않고 화면 아래 한 줄(가운데 카드를 채점 — 오너 확정 2026-10-19 KST 「아래 고정」). 단어 카드 창(grades)만 카드 안에 둔다.
+// 보기 탭이 전체가 아니면 고른 것 하나만 남기고, 누르면 나머지가 아래로 펼쳐진다. 카드를 누르면 그 카드가 채점 대상(onPick).
 // 어려운 단어(자주 틀린 단어 · N번) · 오래된 단어(N일 만에 — 뜻을 보고 단어 떠올리기)는 오늘 복습 카드에만.
 import { useState } from 'react';
-import { CharTiles, GradeButtons, LevelTag, Listen, Reading, StatusPill } from './WordParts';
+import { CharTiles, GradeButtons, LevelTag, Listen, Reading, StatusPill, WaitChip } from './WordParts';
 import { useWordLang } from './wordLang';
 
 const HAN = /\p{Script=Han}/u;
@@ -66,7 +67,8 @@ export function Example({ ex, word, speak, onWord, openKey, showText = true, ton
  * info = { status, previews, hard(번), old(일) } — 화면이 상태 · 채점 미리보기를 계산해 넘긴다.
  * view = 'all' | 'word' | 'sentence' | 'meaning' | 'sound'.
  */
-export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, tone, onGrade, onSave, saving, pop, onWord, openKey, note, id }) {
+export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, tone, onGrade, onSave, saving, pop, onWord, openKey, note, id,
+  grades: inline = false, focused = false, onPick, onShow, due = false, wait = null }) {
   const L = useWordLang();
   const [open, setOpen] = useState(false);
   const [shown, setShown] = useState(false);
@@ -78,18 +80,24 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
     <span className="lw-card__word"><span className="lw-card__hw" lang={L.hw} style={{ '--n': [...String(hw || '')].length }}>{hw}</span>{reading}</span>
     {listen}<LevelTag level={level} /><StatusPill status={info.status} onSave={onSave} busy={saving} pop={pop} />
   </div>;
-  const chips = info.hard ? <span className="lw-chip">자주 틀린 단어 · {info.hard}번</span> : null;
+  // 오늘 할 줄 표시 — 기다리는 카드는 남은 시간, 기다리다 차례가 온 카드는 「시간 됨」.
+  const chips = info.hard || wait || due ? <span className="lw-card__chips">
+    {wait ? <WaitChip at={wait} /> : due ? <span className="lw-chip lw-chip--due">시간 됨</span> : null}
+    {info.hard ? <span className="lw-chip">자주 틀린 단어 · {info.hard}번</span> : null}
+  </span> : null;
   const mean = <p className="lw-card__mean">{e.meaning}</p>;
   const ex = <Example ex={e.ex} word={e.word} speak={speak} onWord={onWord} openKey={openKey} tone={tone} />;
-  const grades = <GradeButtons previews={info.previews} onGrade={onGrade} note={note} />;
+  const grades = inline ? <GradeButtons previews={info.previews} onGrade={onGrade} note={note} /> : null;
+  const pick = (event) => { if (!event.target.closest('button, a')) onPick?.(); };
+  const attrs = { id, 'data-key': e.key, 'data-focus': focused || undefined };
   if (reverse) {
-    return <li className="lw-card" id={id} data-key={e.key}>
-      <div className="lw-reverse"><span className="lw-reverse__label">{info.old}일 만에 · 뜻 보고 단어 떠올리기</span>{mean}
-        <button type="button" className="lw-reverse__show" onClick={() => setShown(true)}>떠올렸으면 눌러서 단어 보기</button></div>
+    return <li className="lw-card" {...attrs} onClick={pick}>
+      {chips}<div className="lw-reverse"><span className="lw-reverse__label">{info.old}일 만에 · 뜻 보고 단어 떠올리기</span>{mean}
+        <button type="button" className="lw-reverse__show" onClick={() => { setShown(true); onShow?.(); onPick?.(); }}>떠올렸으면 눌러서 단어 보기</button></div>
     </li>;
   }
   if (view === 'all') {
-    return <li className="lw-card" id={id} data-key={e.key}>{head}{chips}{mean}<CharTiles tiles={tiles} />{ex}{grades}</li>;
+    return <li className="lw-card" {...attrs} onClick={pick}>{head}{chips}{mean}<CharTiles tiles={tiles} />{ex}{grades}</li>;
   }
   const solo = view === 'word' ? <div className="lw-card__head"><span className="lw-card__word"><span className="lw-card__hw" lang={L.hw} style={{ '--n': [...String(hw || '')].length }}>{hw}</span></span>
     <LevelTag level={level} /><StatusPill status={info.status} onSave={onSave} busy={saving} pop={pop} /></div>
@@ -100,8 +108,8 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
     : view === 'sentence' ? <>{e.ex && <Example ex={e.ex} word={e.word} speak={speak} showText={false} tone={tone} />}{head}{mean}<CharTiles tiles={tiles} /></>
       : view === 'meaning' ? <>{head}<CharTiles tiles={tiles} />{ex}</>
         : <>{head}{mean}<CharTiles tiles={tiles} />{ex}</>;
-  const toggle = (event) => { if (!event.target.closest('button, a')) setOpen((v) => !v); };
-  return <li className="lw-card" id={id} data-key={e.key} data-view={view} onClick={toggle}>
+  const toggle = (event) => { if (!event.target.closest('button, a')) { setOpen((v) => !v); onPick?.(); } };
+  return <li className="lw-card" {...attrs} data-view={view} onClick={toggle}>
     {solo}{chips}
     <button type="button" className="sr-only" aria-expanded={open} onClick={() => setOpen((v) => !v)}>{open ? '접기' : '펼쳐 보기'}</button>
     {grades}

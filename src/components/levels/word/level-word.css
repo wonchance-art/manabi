@@ -9,7 +9,8 @@
 .manabi-app:has(.lw-page)>.app-layout{padding-top:0;padding-bottom:0}
 
 .lw-page{--lw-top-h:57px;max-width:680px;margin:0 auto;padding:0 16px 40px;color:var(--ink);min-height:100dvh}
-.lw-page[data-mode=one]{padding-bottom:calc(126px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column}
+.lw-page[data-mode=one],.lw-page[data-mode=list]{padding-bottom:calc(126px + env(safe-area-inset-bottom,0px))}
+.lw-page[data-mode=one]{display:flex;flex-direction:column}
 /* 단추 기본은 낮은 우선순위(:where) — 클래스 규칙(☆ 장미색 20px 등)이 덮이지 않게. */
 :where(.lw-page) button{font:inherit;color:inherit}
 .lw-page :focus-visible{outline:2px solid var(--lw-rose);outline-offset:2px}
@@ -123,7 +124,9 @@
 .lw-list{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:12px}
 .lw-card{background:var(--lw-card);border:1px solid var(--lw-line);border-radius:12px;padding:14px 14px 12px;display:grid;gap:10px;scroll-margin-top:calc(var(--lw-top-h) + 60px)}
 .lw-card:active:not(:has(button:active)){transform:scale(.985)}
-.lw-card{transition:transform .12s var(--ease-settle)}
+.lw-card{transition:transform .12s var(--ease-settle),border-color .15s var(--ease-settle),box-shadow .15s var(--ease-settle)}
+/* 채점 대상(가운데 카드) — 아래 네 칸이 이 카드를 채점한다. */
+.lw-list[data-main]>.lw-card[data-focus]{border-color:var(--lw-rose);box-shadow:0 0 0 1px var(--lw-rose)}
 .lw-card__head{display:flex;align-items:center;gap:4px;min-width:0}
 .lw-card__word{flex:1 1 auto;min-width:0;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px}
 .lw-card__hw{font-size:max(20px,min(28px,calc(190px / var(--n,1))));font-weight:600;line-height:1.3} /* 긴 가나 표제어(おはようございます)는 줄여 한 줄 */
@@ -131,6 +134,12 @@
 .lw-card__solo{margin:0;font-size:18px;line-height:1.7;cursor:pointer}
 .lw-card__more{display:grid;gap:10px;animation:settleIn .16s var(--ease-settle) both}
 .lw-chip{justify-self:start;display:inline-flex;align-items:center;min-height:24px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:700;color:var(--grade-hard);background:var(--lw-warnbg)}
+.lw-card__chips{display:flex;flex-wrap:wrap;gap:6px}
+.lw-card__chips .lw-chip{justify-self:auto}
+.lw-chip--wait{color:var(--muted);background:var(--lw-chip);font-variant-numeric:tabular-nums}
+.lw-chip--due{color:var(--lw-today);background:var(--lw-today-bg)}
+.lw-later{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;min-height:48px;margin-top:16px;border:1px dashed var(--rule);border-radius:12px;background:none;color:var(--muted);font-size:14px;font-weight:600;cursor:pointer}
+.lw-later[aria-expanded=true] svg{transform:rotate(180deg)}
 .lw-reverse{display:grid;gap:8px}
 .lw-reverse__label{font-size:12.5px;font-weight:700;color:var(--lw-rose)}
 .lw-reverse__show{min-height:52px;border:1px dashed var(--rule);border-radius:10px;background:none;color:var(--muted);cursor:pointer;font-size:14px}
@@ -159,6 +168,7 @@
 .lw-gradebar{position:fixed;left:0;right:0;bottom:0;z-index:28;background:color-mix(in srgb,var(--paper) 94%,transparent);backdrop-filter:blur(6px);border-top:1px solid var(--lw-line);padding:8px 16px calc(10px + env(safe-area-inset-bottom,0px))}
 .lw-gradebar__in{max-width:648px;margin:0 auto;display:grid;gap:6px}
 .lw-gradebar__guide{margin:0;min-height:1.5em;text-align:center;font-size:12.5px;line-height:1.5;color:var(--muted)}
+.lw-gradebar__guide b{color:var(--ink);font-size:14px;font-weight:600;margin-right:2px}
 
 /* 끝 화면 */
 .lw-done{padding:32px 0 24px;display:grid;gap:16px;text-align:center;animation:settleIn .2s var(--ease-settle) both}
@@ -174,7 +184,7 @@
 
 /* 되돌리기 안내 — 네 칸 위(한 단어) 또는 화면 아래(리스트). 올라왔다 .15s에 사라짐, 손가락을 올리면 멈춤. */
 .lw-undo{position:fixed;left:0;right:0;margin-inline:auto;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:12px;background:var(--ink);color:var(--paper);border-radius:12px;padding:4px 6px 4px 16px;font-size:14px;max-width:calc(100vw - 32px);width:max-content;box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 25%,transparent);animation:toast-in .2s var(--ease-settle) both;transition:opacity .15s var(--ease-settle),transform .15s var(--ease-settle)}
-.lw-page[data-mode=one] .lw-undo{bottom:calc(132px + env(safe-area-inset-bottom,0px))}
+.lw-page[data-mode=one] .lw-undo,.lw-page[data-mode=list] .lw-undo{bottom:calc(132px + env(safe-area-inset-bottom,0px))}
 .lw-undo.is-leaving{opacity:0;transform:translateY(4px)}
 .lw-undo button,.lw-undo a{min-height:44px;border:0;background:none;color:var(--lw-today-bg);font-weight:700;padding:0 10px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
 

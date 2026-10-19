@@ -887,6 +887,9 @@
   글자 칸 첫 줄 훈음 + 단어 속 읽기(`jaKanjiReadings.json` KANJIDIC2 CC BY-SA, 97% 나눔 · 숙자훈은 빈칸) · 아래 회색 한국 정자(`jaJeongja.json` OpenCC) ·
   예문 후리가나(alignFurigana) · 단어 나눔 + 원형(`jaExampleWords.json` — 페이지 조립 안 kuromoji 첫 적재가 깨져 시험이 미리 만든다) ·
   찾기 N5–N1 가나/한자/뜻(`/api/level-index/japanese`) · 범위 = 품사(rangeOfPos). 계약 `jlptWordPage.test.js` · `jaExampleWordsBuild.test.js` · smoke N3 예산(.lw-card 150).
+- **단어 페이지 「오늘 할 줄」 (2026-10-20 KST, 오너 「아래 고정」 · 줄 우선순위 지시)** 같은 PR: 리스트의 카드마다 붙던 네 칸을 화면 아래 한 줄로(맨 위 카드 · 누른 카드 채점).
+  두 모드가 같은 줄(`levelWordSession`) — ① 시간이 된 카드 ② 오늘 복습 · 새 단어 ③ 기다리는 카드(남은 시간), 내일 이후 · 졸업은 「다음에 볼 단어」에 접음.
+  「다시」 3장 뒤(AGAIN_GAP)는 실제 시각(다음 차례가 오늘 안이면 기다림)으로 바꿨다. 계약 `levelWordStatus.test.js`.
 - **#1505 병합 후속 (2026-10-17 KST)** `claude/beautiful-lamport-po6fv0`: 손님 서재 서버 HTML부터 손님 화면 · 듣기 막대 속도 이름 · 글자 칸 aria-expanded ·
   교재 hash 기록 Next tree(BOOK-HASH-RACE-001 후속) · 来い/来れる · 오쿠리가나 관행 가드 · 来 다음 토큰 표 useMemo ·
   TOKEN-REFRESH-409-001(동시 갱신에서 진 요청이 인증 쿠키를 지워 로그아웃시키던 길 차단, 적대적 리뷰 차단 0).

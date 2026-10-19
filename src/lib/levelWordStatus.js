@@ -110,6 +110,16 @@ export function daysSinceReview(projection, at = Date.now()) {
   return Math.floor((schedulerTime(at) - schedulerTime(last)) / DAY);
 }
 
+/** 다음 차례 시각(ms) — 투영의 nextQuestionAt. 없으면(지금 차례) 0. */
+export const nextDueMs = (projection) => (projection?.review?.nextQuestionAt ? schedulerTime(projection.review.nextQuestionAt) : 0);
+/** 채점 미리보기의 다음 차례가 오늘 안이면 그 시각(ms) — 오늘 할 줄에서 기다린다. 내일 이후면 null(줄에서 빠진다). */
+export function todayAgainAt(preview, at = Date.now()) {
+  const ms = Number(preview?.ms);
+  if (!Number.isFinite(ms) || ms <= 0) return null;
+  const now = schedulerTime(at), next = now + ms;
+  return learningDay(next) === learningDay(now) ? next : null;
+}
+
 /** 간격 글자 — 다음 복습까지(ms). 0 이하 = 오늘, 1분 안(학습 첫 단계 30초)은 1분. */
 /** 간격 → { n, unit } — 1시간 미만 분 · 하루 미만 시간 · 그 밖 일. 0 이하(지금)는 null. 뷰어는 단위별 번역 글을 고른다. */
 export function intervalAmount(ms) {
