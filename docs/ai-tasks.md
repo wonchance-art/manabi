@@ -878,6 +878,10 @@
 
 ## Claude (claude/*)
 ### doing
+- **HSK 단어 페이지 개편 (2026-10-19 KST, 오너 「좋아 작업 진행해」 · 진동만 제외)** `claude/project-thread-qiz34v`: 정본 = 문서 「HSK 단어 페이지」 rev 17.
+  /chinese/vocab/hN을 새 화면(LevelWordPage)으로 — 상단바 한 줄 · 한 단어 모드(기본) · 리스트 · 찾기(HSK 1–7) · 글자 칸 · 상태 칸(☆ · 오늘 · 복습 · 졸업 90일) ·
+  네 칸 색 토큰(복습실 공유) · 되돌리기 한 길(`inlineGradeUndo.js`) · 예문 단어 나눔(빌드 때, 분석기와 같은 분할) · 0.3초 이하 움직임 + 동작 줄이기.
+  새 표 없음(단어당 카드 하나, 옛 일정 = 언제든 · FSRS 카드 = 복습 차례에만). 계약 `levelWordPageContract.test.js` · `levelWordStatus.test.js`. JLPT 판은 다음 PR.
 - **#1505 병합 후속 (2026-10-17 KST)** `claude/beautiful-lamport-po6fv0`: 손님 서재 서버 HTML부터 손님 화면 · 듣기 막대 속도 이름 · 글자 칸 aria-expanded ·
   교재 hash 기록 Next tree(BOOK-HASH-RACE-001 후속) · 来い/来れる · 오쿠리가나 관행 가드 · 来 다음 토큰 표 useMemo ·
   TOKEN-REFRESH-409-001(동시 갱신에서 진 요청이 인증 쿠키를 지워 로그아웃시키던 길 차단, 적대적 리뷰 차단 0).
@@ -1080,7 +1084,7 @@
     `regions: ["hnd1"]`(Hobby는 단일 지역 지정 가능 — Vercel 문서). cron도 도쿄에서 돈다. 계약 `vercel-deploy-policy.test.js`.
 - **REV-SCOPE-R1B-2 학습 단계 정책 SQL (2026-10-14 12:40 KST~, 오너 「여기서 진행」 — 인계 [#1337 R1-B](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6106712130), R1-B-1 #1450 위에서)** `claude/project-thread-jqlex2`:
   anki-v2(학습 1분 · 10분, 재학습 10분) — `valid_card`가 anki-seconds-v1 · anki-v2 둘 다 받고 New 검사는 카드 정책 첫 단계로 · `fsrs_capabilities` 정책값 · 지문 재게시 SQL + 복원 SQL ·
-  PGlite(M09 fixture) 검증 · 코드는 받은 정책값을 따른다. **운영 미적용** — SQL 검수 · 오너 확인 뒤 별도. 결과는 #1337 보고.
+  PGlite(M09 fixture) 검증 · 코드는 받은 정책값을 따른다. **운영 적용됨**(10-15경 적용 · 10-19 KST 운영 DB에서 `fsrs_capabilities` 정책 anki-v2 확인 — 이 줄의 「운영 미적용」은 낡은 기록이었다). 결과는 #1337 보고.
 - **「그림 한 장 읽기」 미술관 해설 학습 — ART-P0-1 카탈로그 계약 (2026-10-14 KST, 오너 「좋아 가보자」)** `claude/project-thread-kpr8od`:
   해설 본문은 박물관 오픈데이터(ColBase 정부표준이용규약 2.0 · 시카고 미술관 CC BY)에서 그대로 받고, 작품 정보는 개체 4종(작가·장소·시대·작품, Wikidata QID 정규 키) + 큐레이션으로 쌓는다.
   · **ART-P0-1 병합([#1457](https://github.com/wonchance-art/manabi/pull/1457), 2026-10-14 KST)**: `src/content/art/*.json`(작품 0점·시대 1) + `src/lib/artCatalog.js` 계약(전시 여부 저장 금지·장소 역할 3종·날짜 원문 표기+범위·해설 라이선스 허용 목록·원문 해시·이미지 PD/CC0+alt·지역학 핀 대조) + 정보 카드 값 계산. 화면 진입점 0.
