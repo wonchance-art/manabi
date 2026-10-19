@@ -165,10 +165,11 @@ describe('움직임만 바꾼다 — 저장 · 채점 · 기록 호출은 그대
       'insertConfirmedVocabulary(queryClient, user.id, inserted[0]);',
       'const saved = await saveKoreanVocabulary(savedToken, g);',
       'const linked = await attachReadingContext(savedToken);',
-      "import { logReviewEvents } from '../lib/reviewEvents';",
-      'logReviewEvents(user.id, [{',
+      "import { revertInlineGrade } from '../lib/inlineGradeUndo';",
+      'await revertInlineGrade(supabase, { userId: user.id, last });',
       'const inlineReview = useInlineReview({ user, fetchProfile, toast });',
     ]) expect(viewer).toContain(call);
+    expect(read('src/lib/inlineGradeUndo.js')).toContain('logReviewEvents(userId, [{');
   });
   it('복습 채점 경로(VocabReview → VocabPage handleScore → recordReviewCompleted · persistVocabGrade · logReviewEvents)', () => {
     expect(read(REVIEW)).toContain('<ScoreSection word={currentWord} onScore={handleScore} armed={armed} locked={!showAnswer} />');

@@ -36,16 +36,19 @@ describe('인라인 복습 R3㉮ — 척도 정렬·스냅샷 재료·undo (View
   });
 
   it('undo 뒤 user_vocabulary 5필드가 스냅샷과 동일(last_reviewed_at 원값) + vocab-words 무효화로 「복습 시점이에요」가 다시 보인다', () => {
+    // 서버 되돌리기는 단어 페이지와 같은 한 길(inlineGradeUndo.revertInlineGrade — 2026-10-19 KST 뷰어에서 옮김).
     const undo = sliceBetween(viewer, 'const undoInlineGrade = async () => {', '\n  };');
-    expect(undo).toContain("const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev || {};");
-    expect(undo).toContain('.update({ ...prevStats, last_reviewed_at: prevReviewedAt })');
-    expect(undo).toContain(".eq('user_id', user.id).eq('last_reviewed_at', last.reviewedAt).select('id')");
-    expect(undo).toContain('if (!data?.length) throw');
+    expect(undo).toContain('await revertInlineGrade(supabase, { userId: user.id, last });');
     expect(undo).toContain("queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });");
+    const revert = read('src/lib/inlineGradeUndo.js');
+    expect(revert).toContain("const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev || {};");
+    expect(revert).toContain('.update({ ...prevStats, last_reviewed_at: prevReviewedAt })');
+    expect(revert).toContain(".eq('user_id', userId).eq('last_reviewed_at', last.reviewedAt).select('id')");
+    expect(revert).toContain('if (!data?.length) throw');
     // 보상 이벤트 정확히 1건 — source ui · undo_of.reviewed_at = 원 채점 시각
-    expect(undo.match(/logReviewEvents\(/g)).toHaveLength(1);
-    expect(undo).toContain("lang: last.lang, source: 'ui', item_key: last.itemKey, correct: true,");
-    expect(undo).toContain("detail: { qtype: 'undo', undo_of: { item_key: last.itemKey, rating: last.rating, reviewed_at: last.reviewedAt } },");
+    expect(revert.match(/logReviewEvents\(/g)).toHaveLength(1);
+    expect(revert).toContain("lang: last.lang, source: 'ui', item_key: last.itemKey, correct: true,");
+    expect(revert).toContain("detail: { qtype: 'undo', undo_of: { item_key: last.itemKey, rating: last.rating, reviewed_at: last.reviewedAt } },");
     // 스냅샷은 훅이 준 재료로 호출부가 만든다 — 성공 뒤에만
     const g = sliceBetween(viewer, 'const gradeInline = (rating) => {', '\n  };');
     expect(g).toContain('prev: res.prev, reviewedAt: res.reviewedAt,');

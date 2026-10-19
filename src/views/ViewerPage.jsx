@@ -67,7 +67,6 @@ import { useReanalyzeUI } from '../lib/useReanalyzeUI';
 import { useReadingCompletion } from '../lib/useReadingCompletion';
 import { useGrammarNoteSave } from '../lib/useGrammarNoteSave';
 import { useInlineReview, patchVocabWordsCache } from '../lib/useInlineReview';
-import { assertLegacyFsrsAllowed } from '../lib/fsrsLegacyBoundary';
 import { insertConfirmedVocabulary, preservePendingVocabularyReviews } from '../lib/viewerVocabularyCache';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage, failureMessage } from '../lib/errorMessage';
@@ -209,7 +208,7 @@ import { scriptVariantSurfaces, variantPieces } from '../lib/scriptVariant';
 import { isArtBookMaterial } from '../lib/artBookProvider';
 import { useArtBookChapter } from '../lib/useArtBookChapter';
 import ViewerArtCard from '../components/viewer/ViewerArtCard';
-import { logReviewEvents } from '../lib/reviewEvents';
+import { revertInlineGrade } from '../lib/inlineGradeUndo';
 import { reducedMotion } from '../lib/reducedMotion';
 
 // 공부 모드 지원 언어 키 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
@@ -2642,24 +2641,8 @@ export default function ViewerPage() {
     if (!last || inlineReviewMutation.isPending || undoBusy.current || Date.now() > last.expiresAt) return;
     undoBusy.current = true;
     try {
-      await assertLegacyFsrsAllowed(supabase, { userId: user.id, cardId: last.wordId,
-        itemKey: last.itemKey, language: last.lang });
-      if (last.queued) {
-        // 기존 outbox는 전송과 삭제 사이의 잠금을 제공하지 않는다. 성공을 가장해
-        // 화면만 되돌리거나 전송 중인 기록을 지우지 않고, 후속 outbox 개편까지 보존한다.
-        throw new Error('오프라인에 저장한 채점은 동기화 중일 수 있어 여기서 취소할 수 없어요.');
-      } else {
-        const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev || {};
-        const { data, error } = await supabase.from('user_vocabulary')
-          .update({ ...prevStats, last_reviewed_at: prevReviewedAt }).eq('id', last.wordId)
-          .eq('user_id', user.id).eq('last_reviewed_at', last.reviewedAt).select('id');
-        if (error) throw error;
-        if (!data?.length) throw new Error('이후 복습 기록이 있어 되돌리지 않았어요.');
-        logReviewEvents(user.id, [{
-          lang: last.lang, source: 'ui', item_key: last.itemKey, correct: true,
-          detail: { qtype: 'undo', undo_of: { item_key: last.itemKey, rating: last.rating, reviewed_at: last.reviewedAt } },
-        }]);
-      }
+      // 서버 되돌리기(경계 확인 · 큐 보존 · 마지막 채점일 때만 · undo 이벤트)는 단어 페이지와 같은 한 길.
+      await revertInlineGrade(supabase, { userId: user.id, last });
       // 낙관 반영을 prev로 되돌린 뒤 무효화 — 오프라인이면 refetch가 실패해도 카드가 「복습 시점이에요」로 돌아온다
       patchVocabWordsCache(queryClient, user?.id, last.wordId, last.prev || {});
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
