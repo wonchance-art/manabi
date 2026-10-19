@@ -96,6 +96,41 @@ async function chineseVocabGroups(levelKey) {
 }
 
 /**
+ * 예문 단어 나눔(HSK 단어 페이지 「예문 단어 창」) — 앱 분석기와 같은 분할(tokenizeZhLine = jieba-wasm + fixZhTagged)의 조각 길이(글자 수) 배열.
+ * 카드 단어는 분할이 갈라도 한 조각으로 묶는다(장미색 한 칸). 조각을 이어 붙여 원문이 안 되면(분할기가 글자를 건너뜀) null — 화면은 나누지 않고 그린다.
+ * 정적 조립(generateStaticParams)이라 빌드 때 한 번 돈다. 화면은 분석기를 받지 않는다.
+ */
+export function exampleSegments(text, word, pieces) {
+  const chars = [...String(text || '')];
+  if (!chars.length || !pieces?.length || pieces.join('') !== chars.join('')) return null;
+  const cuts = new Set([0, chars.length]);
+  let at = 0;
+  for (const p of pieces) { at += [...p].length; cuts.add(at); }
+  const w = [...String(word || '')];
+  if (w.length > 1) {
+    for (let i = 0; i + w.length <= chars.length; i++) {
+      if (w.every((c, j) => chars[i + j] === c)) {
+        for (let k = i + 1; k < i + w.length; k++) cuts.delete(k);
+        cuts.add(i); cuts.add(i + w.length);
+        i += w.length - 1;
+      }
+    }
+  }
+  const sorted = [...cuts].sort((a, b) => a - b);
+  const seg = sorted.slice(1).map((c, i) => c - sorted[i]);
+  return seg.length > 1 ? seg : null;
+}
+
+async function withExampleSegments(groups) {
+  const { tokenizeZhLine } = await import('./server/tokenizeZh');
+  return groups.map((g) => ({ ...g, entries: g.entries.map((e) => {
+    if (!e.ex?.text) return e;
+    const seg = exampleSegments(e.ex.text, e.word, tokenizeZhLine(e.ex.text).map((t) => t.text));
+    return seg ? { ...e, ex: { ...e.ex, seg } } : e;
+  }) }));
+}
+
+/**
  * 찾기 색인(HSK 단어 페이지 개편) — 우리 사전 중 HSK 2026 급수가 있는 단어 전부를 [표제어, 병음, 짧은 뜻, 급수] 한 줄씩.
  * 레벨 목록과 같은 사전 · 같은 급수 표 · 같은 짧은 뜻이라 찾기 결과와 목록 칸이 갈리지 않는다. 급수 → 병음 순.
  * 대조 키가 표제어와 다른 줄(괄호 · 쌍반점 표기)은 키로 싣는다 — 화면은 표제어를 대조 키로 쓴다.
@@ -150,6 +185,8 @@ export async function levelListData(lang, kind, levelParam) {
     : kind === 'bunkei' ? bunkeiGroups(lang, levelKey)
     : lang === 'japanese' ? japaneseVocabGroups(levelKey) : await chineseVocabGroups(levelKey);
   if (!groups) return null;
+  // 예문 단어 나눔은 HSK 단어 화면만 쓴다(책장 타일 수 · 일본어 · 문형은 분석기를 부르지 않는다).
+  if (lang === 'chinese' && kind === 'vocab') return { lang, kind, levelKey, groups: await withExampleSegments(groups) };
   return { lang, kind, levelKey, groups };
 }
 
