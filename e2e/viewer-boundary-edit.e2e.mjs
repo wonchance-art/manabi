@@ -666,7 +666,18 @@ test('390 owner ko: ⋯ 나누기(형태소 칼선만) → 도서관 │ 에서(
   assert.deepEqual(koLine(f,0),['저는',' ','도서관','에서',' ','공부했어요','.'],'kept after reload');
   // 전체 재분석 → 서버는 어절만 → 뷰어가 다시 나눔(기록 applied, 요청에 경계를 싣지 않음)
   const mark2=f.requests.length;
-  await f.page.getByRole('button',{name:'학습',exact:true}).click();await f.page.getByRole('dialog',{name:'학습'}).getByRole('button',{name:/^자료 관리/}).click();
+  await f.page.getByRole('button',{name:'학습',exact:true}).click();
+  { // DIAG(임시): CI에서만 자료 관리가 안 보이는 원인 확인
+    const dlg=f.page.getByRole('dialog',{name:'학습'});
+    const ok=await dlg.getByRole('button',{name:/^자료 관리/}).waitFor({timeout:8000}).then(()=>true,()=>false);
+    if(!ok){
+      const dialogs=await f.page.getByRole('dialog').allInnerTexts().catch(e=>String(e));
+      const st=row(f)?.status;const owner=row(f)?.owner_id;
+      const status=await f.page.locator('[role=status]').allInnerTexts().catch(()=>[]);
+      throw new Error('DIAG '+JSON.stringify({dialogs,st,owner,status,url:f.page.url(),reqs:f.requests.slice(-15).map(r=>r.method+' '+r.url.slice(0,160))}));
+    }
+  }
+  await f.page.getByRole('dialog',{name:'학습'}).getByRole('button',{name:/^자료 관리/}).click();
   await f.page.locator('.reanalyze-panel__item').filter({hasText:'전체 분석'}).click();
   await f.page.getByRole('dialog',{name:'자료 관리'}).getByRole('button',{name:'전체 분석',exact:true}).click(); // WALL-STATES-001 ④: 전체 분석은 한 번 더 확인
   await f.page.getByText('분석을 마쳤어요',{exact:true}).waitFor({timeout:30000});
