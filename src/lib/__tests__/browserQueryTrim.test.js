@@ -91,7 +91,9 @@ describe('③ 아는 단어 — 60초 캐시 · 1000행 페이지', () => {
     expect(onSuccess).toContain("client.setQueryData(['known-words', body.accountId, body.lang]");
     expect(onSuccess).toContain("client.setQueryData(['known-words-all', body.accountId]");
     // 무효화 목록은 한 곳(KNOWN_CONSUMERS) — 레벨 초기화 되돌리기(restoreMany)도 같은 목록을 쓴다(LEVEL-ROUND-001 ②).
-    expect(onSuccess).toContain('return refreshKnownConsumers(client, body.accountId);');
+    // 재조회는 기다리지 않는다 — 기다리면 그 단어가 재조회 내내 「진행 중」으로 잠긴다(단어 목록 O · X 지연).
+    expect(onSuccess).toContain('refreshKnownConsumers(client, body.accountId).catch(');
+    expect(onSuccess).not.toMatch(/(return|await) refreshKnownConsumers/);
     expect(hook).toMatch(/const KNOWN_CONSUMERS = \['known-words', 'known-words-all',[\s\S]*?client\.invalidateQueries\(\{ queryKey: \[prefix, accountId\] \}\)/);
   });
 
