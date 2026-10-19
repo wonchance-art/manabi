@@ -18,6 +18,7 @@ import { assertLegacyFsrsAllowed } from './fsrsLegacyBoundary.js';
 
 // 기본 파라미터로 스케줄러 생성 (한번만)
 const scheduler = fsrs();
+export const LEGACY_MAX_INTERVAL_DAYS = 365;
 
 /**
  * 1/2/3/4 rating → ts-fsrs Rating enum
@@ -83,7 +84,8 @@ export function calculateFSRS(rating, prevStats) {
   const lapses = newCard.lapses ?? prevStats?.repetitions ?? 0;
 
   // next_review_at: 우리는 "일 단위 반올림" 사용 (VocabReview가 하루 단위로 복습 큐잉)
-  const intervalDays = Math.max(1, Math.round(S));
+  // 간격 상한은 FSRS 카드와 같은 365일(fsrsScheduler FSRS_POLICY.maximumInterval) — 옛 경로 카드도 1년 안에 돌아온다.
+  const intervalDays = Math.min(LEGACY_MAX_INTERVAL_DAYS, Math.max(1, Math.round(S)));
   const nextReview = new Date();
   nextReview.setDate(nextReview.getDate() + intervalDays);
 
