@@ -27,7 +27,8 @@ import {
   levelProgressPercent, levelRowProjection, levelWordGraded, levelWordStatus, nextDueMs, todayAgainAt,
 } from '@/lib/levelWordStatus';
 import {
-  gradeLevelSession, nextLevelScope, sessionCurrent, sessionDone, sessionDue, sessionHas, sessionNextAt, sessionWaiting, startLevelSession,
+  gradeLevelSession, nextLevelScope, sessionCurrent, sessionDone, sessionDue, sessionHas, sessionNextAt, sessionOrder, sessionWaiting,
+  startLevelSession,
 } from '@/lib/levelWordSession';
 import { indexEntry, searchLevelIndex } from '@/lib/levelWordIndex';
 import { useLevelWordGrade } from '@/lib/useLevelWordGrade';
@@ -197,6 +198,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
     if (wanted && next.queue.includes(wanted)) next = { ...next, queue: [wanted, ...next.queue.filter((k) => k !== wanted)] };
     if (back?.path === pathname) try { sessionStorage.removeItem(RETURN_KEY); } catch { /* 없음 */ }
     setSession(next);
+    setHeadKey(wanted && next.queue.includes(wanted) ? wanted : null);
     setRevealed(false);
     if (wanted && byKey.has(wanted)) setJumpTo(wanted);
   }, [ready, scope, rangeEntries, table, pathname, byKey]);
@@ -207,10 +209,16 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
     const t = setTimeout(() => setClock(Date.now()), Math.max(0, nextAt - Date.now()) + 50);
     return () => clearTimeout(t);
   }, [nextAt]);
-  const currentKey = sessionCurrent(session, clock);
+  // 지금 보고 있는 카드(head) — 두 모드가 같이 쓴다. 기다리던 카드가 시간이 돼도 보던 카드를 밀어내지 않고 바로 다음 차례로 선다.
+  // head가 줄에서 빠지면(채점) 다음 차례 = 시간이 된 카드 → 오늘 복습 · 새 단어 → (그것도 없으면) 가장 먼저 될 기다리는 카드.
+  const [headKey, setHeadKey] = useState(null);
+  const head = !session ? null : sessionOrder(session, clock).includes(headKey) ? headKey : sessionCurrent(session, clock);
+  useEffect(() => { if (head !== headKey) setHeadKey(head); }, [head, headKey]);
+  const currentKey = head;
   const current = currentKey ? byKey.get(currentKey) : null;
   const done = sessionDone(session);
-  const folded = prefs.mode === 'one' && !!session && session.graded > 0 && !done;
+  // 모드 · 보기 줄은 첫 채점 뒤 접힌다(두 모드 모두 — 문서 「상단 네 줄」). 다시 바꾸려면 제목 시트.
+  const folded = !!session && session.graded > 0 && !done;
   const rowsRef = useHeightSettle(folded);
 
   // ── 리스트 — 같은 오늘 할 줄: ① 시간이 된 카드 ② 오늘 복습 · 새 단어 ③ 기다리는 카드(남은 시간), 그 밖(내일 이후 · 졸업)은 「다음에 볼 단어」에 접는다 ──
@@ -221,10 +229,11 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
     const due = sessionDue(session, clock);
     const waiting = sessionWaiting(session, clock);
     const pick = (keys) => keys.map((k) => byKey.get(k)).filter(Boolean);
-    const active = pick([...due, ...session.queue]);
+    const order = sessionOrder(session, clock);
+    const active = pick(order.includes(head) ? [head, ...order.filter((k) => k !== head)] : order);
     return { active, due: new Set(due), waiting: waiting.map((w) => ({ entry: byKey.get(w.key), at: w.at })).filter((w) => w.entry),
       later: rangeEntries.filter((e) => !sessionHas(session, e.key)) };
-  }, [session, clock, byKey, rangeEntries]);
+  }, [session, clock, head, byKey, rangeEntries]);
   useEffect(() => { setLimit(LEVEL_WORD_LIST_PAGE); setLaterLimit(LEVEL_WORD_LIST_PAGE); setLaterOpen(false); }, [prefs.range]);
   const cardEl = (key) => document.querySelector(`.lw-list[data-main] .lw-card[data-key="${CSS.escape(key)}"]`);
   useEffect(() => {
@@ -242,8 +251,8 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
     return () => cancelAnimationFrame(raf);
   }, [jumpTo, prefs.mode, listed, limit, laterOpen, laterLimit, charTables]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 리스트의 채점 대상(아래 네 칸) = 줄 맨 위 카드. 카드를 누르면 그 카드(오너 확정 2026-10-19 KST 「아래 고정」 · 「오늘 할 줄」).
-  // 맨 위가 아닌 카드를 채점하면 그 다음 카드가 대상으로 이어진다.
+  // 리스트의 채점 대상(아래 네 칸) = 줄 맨 위 카드(head). 카드를 누르면 그 카드(오너 확정 2026-10-19 KST 「아래 고정」 · 「오늘 할 줄」).
+  // 누른 카드를 채점하면 그 다음 카드가 대상으로 이어지고, 맨 위 카드를 채점하면 다음 차례가 맨 위로 온다.
   const [focusKey, setFocusKey] = useState(null);
   const [shownOld, setShownOld] = useState(() => new Set()); // 「N일 만에」 카드 중 단어를 본 것 — 보기 전에는 네 칸을 잠근다
   const pickCard = useCallback((key) => setFocusKey(key), []);
@@ -258,8 +267,8 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
     onShow={() => setShownOld((set) => new Set(set).add(e.key))} />;
   const followFocus = useCallback((key) => {
     const at = listOrder.findIndex((e) => e.key === key);
-    setFocusKey(at > 0 ? listOrder[at + 1]?.key ?? null : null);
-  }, [listOrder]);
+    setFocusKey(key !== head && at >= 0 ? listOrder[at + 1]?.key ?? null : null);
+  }, [listOrder, head]);
 
   // ── 채점 ──
   const inFlight = useRef(new Set());
@@ -289,21 +298,21 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
       }
       const res = await grader.grade(entry, rating);
       if (!res.ok) {
-        if (advance) setSession(before);
+        if (advance) { setSession(before); setHeadKey(head); }
         if (res.reason === 'not-due') setNotice({ id: Date.now(), text: '복습실 카드라 복습 차례에만 채점할 수 있어요', href: '/review', action: '복습실', ms: 5000 });
         return undefined;
       }
       setClock(Date.now());
       if (info.status === 'new') popKey(entry.key);
       setNotice({ id: Date.now(), text: gradeToastText(rating, info.previews?.[rating]), action: grader.undoable(res.undo) ? '되돌리기' : null,
-        onAction: grader.undoable(res.undo) ? () => undoRef.current?.({ undo: res.undo, sessionBefore: advance ? before : null, key: entry.key }) : null });
-      lastRef.current = { undo: res.undo, sessionBefore: advance ? before : null, key: entry.key };
+        onAction: grader.undoable(res.undo) ? () => undoRef.current?.({ undo: res.undo, sessionBefore: advance ? before : null, headBefore: advance ? head : null, key: entry.key }) : null });
+      lastRef.current = { undo: res.undo, sessionBefore: advance ? before : null, headBefore: advance ? head : null, key: entry.key };
     } catch (error) {
-      if (advance) setSession(before);
+      if (advance) { setSession(before); setHeadKey(head); }
       toast(failureMessage('채점하지 못했어요.', error), 'error');
     } finally { inFlight.current.delete(entry.key); }
     return undefined;
-  }, [userId, ready, askLogin, cardInfo, session, prefs.mode, currentKey, followFocus, known.mutation, known.rows, queryClient, grader, toast, cfg.code]);
+  }, [userId, ready, askLogin, cardInfo, session, prefs.mode, currentKey, head, followFocus, known.mutation, known.rows, queryClient, grader, toast, cfg.code]);
 
   const lastRef = useRef(null);
   const undoRef = useRef(null);
@@ -313,7 +322,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
     setNotice(null);
     try {
       await grader.undo(last.undo);
-      if (last.sessionBefore) { setSession(last.sessionBefore); setRevealed(false); setTurn((n) => n + 1); }
+      if (last.sessionBefore) { setSession(last.sessionBefore); setHeadKey(last.headBefore); setRevealed(false); setTurn((n) => n + 1); }
       setClock(Date.now());
       setNotice({ id: Date.now(), text: '되돌렸어요', ms: 2500 });
     } catch (error) {
