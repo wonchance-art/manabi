@@ -1,5 +1,5 @@
 /** 새 FSRS의 문제 노출·회상·보상 경계를 검증하는 순수 상태 전이. DB 권한 검증을 대체하지 않는다. */
-import { scheduleFsrsReview, schedulerTime, validateFsrsCard } from './fsrsScheduler.js';
+import { FSRS_LEARN_AHEAD_SECONDS, fsrsQuestionOpensAt, scheduleFsrsReview, schedulerTime, validateFsrsCard } from './fsrsScheduler.js';
 
 const identity = value => typeof value === 'string' && value.length > 0 && value.length <= 200;
 const copy = value => JSON.parse(JSON.stringify(value));
@@ -13,7 +13,7 @@ function validateAttempt(attempt) {
   validateFsrsCard(attempt.card);
   if (typeof attempt.eligible !== 'boolean' || !['question', 'revealed'].includes(attempt.phase)) throw new Error('invalid_attempt_state');
   const question = schedulerTime(attempt.questionAt);
-  if (question < schedulerTime(attempt.card.due)) throw new Error('fsrs_card_not_due');
+  if (question < fsrsQuestionOpensAt(attempt.card, null, FSRS_LEARN_AHEAD_SECONDS)) throw new Error('fsrs_card_not_due');
   if (attempt.phase === 'question') {
     if (attempt.revealedAt !== null || attempt.hintedAt !== null) throw new Error('invalid_attempt_state');
   } else {

@@ -1,5 +1,5 @@
 /** FSRS-ANKI-007 실행 후보. 완전한 상태 저장 계약을 통과하기 전에는 기존 어댑터에 연결하지 않는다. */
-import { FSRSAlgorithm, FSRSVersion, S_MIN, S_MAX, date_scheduler } from 'ts-fsrs';
+import { FSRSAlgorithm, FSRSVersion, S_MIN, S_MAX } from 'ts-fsrs';
 
 export const FSRS_POLICY = Object.freeze({
   version: 'anki-seconds-v1', engine: 'v5.3.2 using FSRS-6.0',
@@ -14,6 +14,21 @@ export const FSRS_POLICIES = Object.freeze({
 });
 /** 취소 · 중단 뒤 다시 묻기까지의 고정 대기(SQL next_question_at의 30초). 학습 단계와 무관하다. */
 export const FSRS_RETRY_SECONDS = 30;
+/**
+ * Anki learn-ahead(learn_ahead_secs 기본 1200초): 학습 · 재학습 카드는 기한 20분 전부터 물을 수 있다.
+ * 언제 앞당길지(다른 카드가 남지 않았을 때)는 화면이 정하고, 허용 여부는 서버가 fsrs_capabilities로 알린다.
+ */
+export const FSRS_LEARN_AHEAD_SECONDS = 1200;
+const AHEAD_STATES = new Set(['Learning', 'Relearning']);
+/**
+ * 이 카드를 처음 물을 수 있는 시각(ms). 학습 · 재학습이고 기한 너머 대기(되돌리기 · 중단 30초)가 없으면 기한 − learnAheadSeconds.
+ * 그 밖에는 기한과 nextQuestionAt 중 늦은 쪽.
+ */
+export function fsrsQuestionOpensAt(card, nextQuestionAt = null, learnAheadSeconds = 0) {
+  const due = schedulerTime(card.due), wait = nextQuestionAt == null ? due : schedulerTime(nextQuestionAt);
+  if (learnAheadSeconds > 0 && AHEAD_STATES.has(card.state) && wait <= due) return due - learnAheadSeconds * 1000;
+  return Math.max(due, wait);
+}
 export function fsrsPolicySteps(version) {
   if (!Object.hasOwn(FSRS_POLICIES, version)) throw new Error('unsupported_fsrs_card');
   return FSRS_POLICIES[version];
@@ -85,6 +100,36 @@ export function learningDay(value, timeZone = FSRS_POLICY.timeZone, rolloverHour
   return Math.floor(day.getTime() / DAY) - (Number(fields.hour) < rolloverHour ? 1 : 0);
 }
 
+const WALL_FORMATS = new Map();
+function wallTime(ms, timeZone) {
+  let format = WALL_FORMATS.get(timeZone);
+  if (!format) {
+    format = new Intl.DateTimeFormat('en-US', { timeZone, calendar: 'gregory', numberingSystem: 'latn', era: 'short',
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' });
+    WALL_FORMATS.set(timeZone, format);
+  }
+  const f = Object.fromEntries(format.formatToParts(ms).map(p => [p.type, p.value]));
+  const wall = new Date(0);
+  wall.setUTCFullYear(f.era === 'BC' ? 1 - Number(f.year) : Number(f.year), Number(f.month) - 1, Number(f.day));
+  wall.setUTCHours(Number(f.hour), Number(f.minute), Number(f.second), 0);
+  return wall.getTime();
+}
+
+/**
+ * 학습일 day가 시작하는 실제 시각(그날 지역 시간 rolloverHour시). Anki는 며칠 단위 복습의 기한을 날짜로 저장해
+ * 그 날 경계에 한꺼번에 연다(rslib scheduler/answering/learning.rs · timing.rs) — 채점한 시각 + N×24시간이 아니다.
+ */
+export function learningDayStart(day, timeZone = FSRS_POLICY.timeZone, rolloverHour = FSRS_POLICY.rolloverHour) {
+  if (!Number.isSafeInteger(day)) throw new Error('invalid_scheduler_time');
+  const target = day * DAY + rolloverHour * 3600000;
+  if (timeZone === 'Asia/Seoul' && target - SEOUL_OFFSET >= SEOUL_FIXED_FROM) return target - SEOUL_OFFSET;
+  // 다른 시간대: 지역 벽시계와의 차이로 두 번 맞춘다. 그 시각이 없는 날(일광 절약 시작)은 그 뒤 첫 시각이 경계다.
+  let ms = target;
+  for (let i = 0; i < 3; i++) ms = target - (wallTime(ms, timeZone) - ms);
+  while (learningDay(ms, timeZone, rolloverHour) < day) ms += 3600000;
+  return ms;
+}
+
 export function validateFsrsCard(card) {
   if (!card || card.version !== 1 || card.engine !== FSRS_POLICY.engine ||
       !Object.hasOwn(FSRS_POLICIES, card.policyVersion) || !STATES.includes(card.state)) throw new Error('unsupported_fsrs_card');
@@ -135,30 +180,57 @@ function stepPlan(card, rating, policy) {
   return card.step + 1 < steps.length ? { state, step: card.step + 1, seconds: steps[card.step + 1] } : null;
 }
 
+const clampDays = (value, minimum) => Math.min(FSRS_POLICY.maximumInterval, Math.max(Math.round(value), Math.min(minimum, FSRS_POLICY.maximumInterval)));
+// Anki fuzz.rs fuzz_bounds의 위쪽 끝 — 이전 간격이 이 안이면 「거의 안 늘었어도 줄이지는 않는다」.
+function fuzzUpper(interval) {
+  const delta = interval < 2.5 ? 0 : [[2.5, 7, 0.15], [7, 20, 0.1], [20, Infinity, 0.05]]
+    .reduce((sum, [start, end, factor]) => sum + factor * Math.max(0, Math.min(interval, end) - start), 1);
+  return Math.min(FSRS_POLICY.maximumInterval, Math.round(interval + delta));
+}
+// Anki minimum_review_fuzz_interval: 늘었으면 이전 + 1, 퍼짐 범위 안이면 이전 그대로, 그보다 줄었으면(모수 변경) 하한 없음.
+function previousFloor(interval, previous) {
+  if (Math.round(interval) > previous) return previous + 1;
+  return previous <= fuzzUpper(interval) ? previous : 0;
+}
+/**
+ * 복습 카드를 맞혔을 때(어려움 · 알맞음 · 쉬움)의 간격 — Anki review.rs passing_fsrs_review_intervals와 같다.
+ * 어려움 ≥ 1, 알맞음 ≥ 어려움 + 1, 쉬움 ≥ 알맞음 + 1이고, 셋 다 이전 간격 아래로 줄지 않는다. 퍼짐(fuzz)은 아직 끈다.
+ */
+function passingReviewDays(raw, previous) {
+  const hard = clampDays(raw[1], Math.max(1, previousFloor(raw[1], previous)));
+  const good = clampDays(raw[2], Math.max(hard + 1, previousFloor(raw[2], previous)));
+  const easy = clampDays(raw[3], Math.max(good + 1, previousFloor(raw[3], previous)));
+  return [clampDays(raw[0], 1), hard, good, easy];
+}
+/** 학습 · 재학습에서 졸업할 때 — 「쉬움」은 「알맞음」보다 하루 이상 길다(Anki learning.rs · relearning.rs answer_easy). */
+function graduatingDays(raw) {
+  const [again, hard, good] = raw.slice(0, 3).map(value => clampDays(value, 1));
+  return [again, hard, good, clampDays(raw[3], good + 1)];
+}
+
 /**
  * 같은 카드와 한 번 캡처한 시각으로 네 버튼의 실제 전이를 계산한다. 미리 복습하지 않는다.
  * policyVersion = 채점 뒤 카드의 정책(서버가 알린 지금 정책). 생략하면 카드의 정책을 그대로 쓴다.
  */
 export function previewFsrsRatings(input, at, { policyVersion = input?.policyVersion } = {}) {
   const card = validateFsrsCard(input), now = schedulerTime(at), policy = fsrsPolicySteps(policyVersion);
-  if (now < schedulerTime(card.due)) throw new Error('fsrs_card_not_due');
+  // 순수 계산은 learn-ahead 폭까지 받는다. 실제로 앞당겨 물을 수 있는지는 서버 · DB가 지킨다.
+  if (now < fsrsQuestionOpensAt(card, null, FSRS_LEARN_AHEAD_SECONDS)) throw new Error('fsrs_card_not_due');
   const elapsed = card.lastReview === null ? 0 : learningDay(now, card.timeZone, card.rolloverHour)
     - learningDay(card.lastReview, card.timeZone, card.rolloverHour);
   if (elapsed < 0) throw new Error('scheduler_clock_reversed');
   const memory = [1, 2, 3, 4].map(rating => algorithm.next_state({ stability: card.stability, difficulty: card.difficulty }, elapsed, rating));
-  const days = memory.map(m => algorithm.next_interval(m.stability, elapsed));
-  if (card.state === 'Review') {
-    days[1] = Math.min(days[1], days[2]);
-    days[2] = Math.min(FSRS_POLICY.maximumInterval, Math.max(days[2], days[1] + 1));
-    days[3] = Math.min(FSRS_POLICY.maximumInterval, Math.max(days[3], days[2] + 1));
-  }
+  // Anki처럼 반올림 전 간격으로 하한을 정한다. ts-fsrs next_interval = max(1, round(이 값))과 같은 수식이다.
+  const raw = memory.map(m => Math.min(FSRS_POLICY.maximumInterval, Math.max(1, m.stability * algorithm.intervalModifier)));
+  const days = card.state === 'Review' ? passingReviewDays(raw, card.scheduledDays) : graduatingDays(raw);
   return Object.fromEntries([1, 2, 3, 4].map(rating => {
     const step = stepPlan(card, rating, policy), scheduledDays = step ? 0 : days[rating - 1];
     const next = { ...card, ...memory[rating - 1], policyVersion, revision: card.revision + 1,
       state: step?.state || 'Review', step: step?.step || 0, scheduledDays, elapsedDays: elapsed,
       reps: card.reps + 1, lapses: card.lapses + (card.state === 'Review' && rating === 1 ? 1 : 0),
       lastReview: new Date(now).toISOString(),
-      due: step ? new Date(now + step.seconds * 1000).toISOString() : date_scheduler(new Date(now), scheduledDays, true).toISOString() };
+      due: new Date(step ? now + step.seconds * 1000
+        : learningDayStart(learningDay(now, card.timeZone, card.rolloverHour) + scheduledDays, card.timeZone, card.rolloverHour)).toISOString() };
     validateFsrsCard(next);
     return [rating, { card: next, log: { rating, reviewedAt: next.lastReview, policyVersion: card.policyVersion,
       previousRevision: card.revision, elapsedDays: elapsed, previousState: card.state,

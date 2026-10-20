@@ -49,7 +49,7 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
   const isDue = !!projection && isVocabularyReviewDue(projection, now);
   const memory = projection?.memory;
   const reps = memory?.lapses;
-  const interval = memory?.due && (memory?.lastReview || memory?.introducedAt) ? fsrsIntervalLabel(memory.due, memory.lastReview || memory.introducedAt) : '—';
+  const interval = memory?.due && (memory?.lastReview || memory?.introducedAt) ? fsrsIntervalLabel(memory.due, memory.lastReview || memory.introducedAt, memory.state === 'Review' ? memory.scheduledDays : 0) : '—';
   const measured = projection ? vocabularyRetrievability(projection, now) : null;
   const retention = measured == null ? null : Math.round(measured * 100);
   const retentionLabel = retention == null ? '—' : `${retention}%`;

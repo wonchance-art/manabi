@@ -51,6 +51,7 @@ jobs:
       - run: node supabase/tests/korean-source-passage.mjs
       - run: node supabase/tests/learning-contract-catalog.mjs
       - run: node supabase/tests/fsrs-anki-v2-policy.mjs
+      - run: node supabase/tests/fsrs-learn-ahead.mjs
       - run: node supabase/tests/anon-book-catalog.mjs
       - run: node scripts/verification/n4-book-support.mjs
       - run: node supabase/tests/korean-capability-repin.mjs
