@@ -2,7 +2,7 @@
 // 리스트 모드 카드(문서 「리스트 모드」) — 머리 줄(단어 · 읽기 · 듣기 · 레벨 태그 · 상태) → 뜻 → 글자 칸 → 예문.
 // 네 칸은 카드마다 붙이지 않고 화면 아래 한 줄(가운데 카드를 채점 — 오너 확정 2026-10-19 KST 「아래 고정」). 단어 카드 창(grades)만 카드 안에 둔다.
 // 보기 탭이 전체가 아니면 고른 것 하나만 남기고, 누르면 나머지가 아래로 펼쳐진다. 카드를 누르면 그 카드가 채점 대상(onPick).
-// 레벨 태그 · ☆(담기)는 찾기 · 예문 단어 창에서 연 카드(search)에만 — 레벨 페이지 카드는 이미 그 레벨이고 채점이 곧 담기다(오너 2026-10-20 KST).
+// 레벨 태그 · 상태(☆ 담기 · 오늘 · 복습 · 졸업)는 찾기 · 예문 단어 창에서 연 카드(search)에만 — 레벨 페이지 카드는 이미 그 레벨이고 채점이 곧 담기다(오너 2026-10-20 KST).
 // 남은 시간 · 「시간 됨」은 줄을 늘리지 않고 카드 맨 아래 줄 오른쪽 끝에 회색 글자로(같은 줄 글자와 기준선 맞춤).
 // 어려운 단어(자주 틀린 단어 · N번) · 오래된 단어(N일 만에 — 뜻을 보고 단어 떠올리기)는 오늘 복습 카드에만.
 import { useState } from 'react';
@@ -82,9 +82,7 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
   const reverse = view === 'all' && info.old != null && !shown;
   const listen = <Listen speak={speak} text={e.word} />;
   const reading = <Reading text={sub} word={hw} tone={tone} />;
-  // 레벨 페이지 카드는 담은 단어의 상태(오늘 · 복습 · 졸업)만, 찾기 카드는 레벨 태그 + 상태(☆ 담기 포함).
-  const marks = search ? <><LevelTag level={level} /><StatusPill status={info.status} onSave={onSave} busy={saving} pop={pop} /></>
-    : info.status && info.status !== 'new' ? <StatusPill status={info.status} pop={pop} /> : null;
+  const marks = search ? <><LevelTag level={level} /><StatusPill status={info.status} onSave={onSave} busy={saving} pop={pop} /></> : null;
   const head = <div className="lw-card__head">
     <span className="lw-card__word"><span className="lw-card__hw" lang={L.hw} style={{ '--n': [...String(hw || '')].length }}>{hw}</span>{reading}</span>
     {listen}{marks}

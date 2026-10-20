@@ -567,7 +567,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
             onList={() => switchMode('list')} />}
           {session && current && <OneWordCard entry={current} view={prefs.view} info={currentInfo} tiles={tilesOf(current.word, current.kr)}
             speak={speak} tone={tone} revealed={revealed} onReveal={() => setRevealed(true)} turnKey={turn ? `${turn}:${current.key}` : null}
-            onWord={onExampleWord} openKey={pop?.id} pop={pops.has(current.key)} />}
+            onWord={onExampleWord} openKey={pop?.id} />}
           {session && current && <GradeBar previews={currentInfo.previews} onGrade={(r) => onGrade(current, r)} disabled={!ready} note={gradeNote(currentInfo)} guide={revealed} />}
         </div>
         : <>
