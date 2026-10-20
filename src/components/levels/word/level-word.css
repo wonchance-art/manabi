@@ -134,6 +134,8 @@
 .lw-card__mean{margin:0;font-size:16px;font-weight:700;line-height:1.55}
 .lw-card__solo{margin:0;font-size:18px;line-height:1.7;cursor:pointer}
 .lw-card__more{display:grid;gap:10px;animation:settleIn .16s var(--ease-settle) both}
+/* 펼친 부분 위 점선 — 한 단어 카드 앞 · 뒤 점선과 같은 선, 선 → 첫 글자 간격도 한 단어 카드(약 19px)에 맞춘다(오너 2026-10-20 KST 시안 A) */
+.lw-card[data-view] .lw-card__more{border-top:1px dashed var(--lw-line);padding-top:4px}
 .lw-chip{justify-self:start;display:inline-flex;align-items:center;min-height:24px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:700;color:var(--grade-hard);background:var(--lw-warnbg)}
 .lw-card__chips{display:flex;flex-wrap:wrap;gap:6px}
 .lw-card__chips .lw-chip{justify-self:auto}
