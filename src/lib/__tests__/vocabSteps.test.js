@@ -64,6 +64,9 @@ describe('단어 학습 단계 — anki-v2', () => {
   });
 
   it('간격 상한 365일은 그대로', () => {
+    // 일 단위 계산은 지금 시각에서 센다 — 기준 시각(at)에 맞춰 둔다(at에서 하루가 지나자 366.0003일로 실패, 2026-10-20 12:01 KST CI 실측).
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(at);
     const review = { interval: 300, ease_factor: 1, repetitions: 0, next_review_at: iso(at), last_reviewed_at: iso(at - 300 * DAY) };
     expect(gap(calculateVocabFSRS(4, review, at)) / DAY).toBeLessThanOrEqual(366);
   });
