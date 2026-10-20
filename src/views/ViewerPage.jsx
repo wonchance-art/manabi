@@ -2387,6 +2387,15 @@ export default function ViewerPage() {
     setSenseReviewDismissed(senseReviewKey);
     try { localStorage.setItem(senseReviewKey, '1'); } catch { /* 개인 편의 — 실패해도 이번 화면에서는 닫힌다 */ }
   };
+  // 위쪽 배지 줄(복습 가능 · 아는/새 단어 · 수집) ✕(오너 2026-10-20 KST 「x표시 만들어서 끌 수 있게」) — 이 자료만, 이 브라우저에.
+  // 닫을 때의 복습 가능 수를 적어 두고, 그보다 늘면 다시 보인다(복습으로 가는 길을 영영 끊지 않는다).
+  const badgesKey = `viewer-badges-dismissed:${id}`;
+  const [badgesDismissedAt, setBadgesDismissedAt] = useState(null); // null = 닫은 적 없음 · 숫자 = 닫을 때 복습 가능 수
+  useEffect(() => {
+    let stored = null;
+    try { const raw = localStorage.getItem(badgesKey); stored = raw === null ? null : Number(raw) || 0; } catch { stored = null; }
+    setBadgesDismissedAt(stored);
+  }, [badgesKey]);
   const [senseReviewIds, setSenseReviewIds] = useState(null); // null = 목록 닫힘
   const senseReviewOpen = senseReviewIds !== null;
   useEffect(() => { setSenseReviewIds(null); }, [id]);
@@ -2875,6 +2884,12 @@ export default function ViewerPage() {
 
   // 이 자료에서 복습 가능한 단어 수 (현재 로드된 토큰 기준)
   const dueInMaterial = countVocabularyDueInMaterial(savedWords, material);
+  const badgesDismissed = badgesDismissedAt !== null && (user ? dueInMaterial : 0) <= badgesDismissedAt;
+  const dismissBadges = () => {
+    const at = user ? dueInMaterial : 0;
+    setBadgesDismissedAt(at);
+    try { localStorage.setItem(badgesKey, String(at)); } catch { /* 개인 편의 — 실패해도 이번 화면에서는 닫힌다 */ }
+  };
 
   // 리스트(문장 분석 결과)와 단어 카드는 독립 조각 — 리스트 단어를 탭하면 카드가
   // 리스트 위에 붙는다(② 오너 승인, 팝업 대체). 합성은 아래 rightPanelContent에서.
@@ -3941,7 +3956,7 @@ export default function ViewerPage() {
             (inline-block 하나 vs 전체 폭 둘) 세로도 3줄을 먹었다. 한 줄로 모은다.
             인라인 style 3벌은 공용 클래스로 — v2-K R1 토큰화가 남긴 나머지다. */}
         {savedWordsError && <p role="alert">{vt("저장한 단어를 불러오지 못했어요.")} <button type="button" onClick={() => refetchSavedWords()}>{vt("다시 시도")}</button></p>}
-        {((user && dueInMaterial > 0) || coverage || collectedInMaterial > 0) && (
+        {!badgesDismissed && ((user && dueInMaterial > 0) || coverage || collectedInMaterial > 0) && (
           <div className="viewer-badges">
             {user && dueInMaterial > 0 && (
               <span className="viewer-badge viewer-badge--due" title={vt("복습할 것")}>
@@ -3957,6 +3972,7 @@ export default function ViewerPage() {
                   <span key={collectPopKey} className={`viewer-stats__count${collectPopKey ? ' viewer-badge--pop' : ''}`}>{collectedInMaterial}</span>)}</Link>}
               </span>
             )}
+            <button type="button" className="viewer-badges__close" aria-label={vt('단어 현황 닫기')} title={vt('단어 현황 닫기')} onClick={dismissBadges} data-icon-action><ActionIcon name="close"/></button>
           </div>
         )}
         {/* AD-R4 PR③ 「뜻 확인 필요 N개 [보기]」(설계서 §6.1·§6.4) — 통계 줄 아래 한 줄. 소유자만 · N>0만 · ✕는 이 viewerRevision 동안. 「AI」 표시 없음. */}

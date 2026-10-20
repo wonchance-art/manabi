@@ -65,7 +65,17 @@ describe('① 자료 범위 배지가 한 컨테이너 안 — 폭 어긋남의 
   it('배지가 하나도 없으면 래퍼를 그리지 않는다 — 빈 여백만 남는 줄 금지', () => {
     // 개정(AD-R2 PR ①, VIEWER-V2-ROUNDS-001 §5 「크롬 정리」): 이 자료에서 담은 수(「N개 수집 → 단어장」)가 셋째 조건으로 들어왔다.
     // 커버리지 표본 미달이어도 수집이 있으면 줄을 그린다 — 조건이 하나도 없으면 여전히 래퍼 0.
-    expect(header()).toMatch(/\{\(\(user && dueInMaterial > 0\) \|\| coverage \|\| collectedInMaterial > 0\) && \(\s*\n\s*<div className="viewer-badges">/);
+    // 개정(오너 2026-10-20 KST 「x표시 만들어서 끌 수 있게」): 줄 끝 ✕로 닫으면 !badgesDismissed가 앞에 선다.
+    expect(header()).toMatch(/\{!badgesDismissed && \(\(user && dueInMaterial > 0\) \|\| coverage \|\| collectedInMaterial > 0\) && \(\s*\n\s*<div className="viewer-badges">/);
+  });
+
+  it('줄 끝 ✕ — 이 자료만 닫고, 복습 가능 수가 닫을 때보다 늘면 다시 보인다', () => {
+    const wrap = sliceBetween(header(), '<div className="viewer-badges">', '</div>\n        )}');
+    expect(wrap).toContain(`<button type="button" className="viewer-badges__close" aria-label={vt('단어 현황 닫기')}`);
+    expect(wrap).toContain('onClick={dismissBadges}');
+    const src = read(VIEWER);
+    expect(src).toContain('const badgesKey = `viewer-badges-dismissed:${id}`;');
+    expect(src).toContain('const badgesDismissed = badgesDismissedAt !== null && (user ? dueInMaterial : 0) <= badgesDismissedAt;');
   });
 });
 
