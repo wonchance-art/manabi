@@ -601,7 +601,7 @@ test('vocab performance: N3 초기 DOM과 단어장 읽기를 예산 안에 유�
     const startedAt = Date.now();
     await page.goto('/japanese/vocab/n3', { waitUntil: 'load', timeout: config.timeout * 2 });
     // JLPT 단어 페이지(HSK와 같은 공통 화면 — 2026-10-19 KST): 옛 목록 카드(.lv-entry) → 리스트 모드 카드(.lw-card).
-    // 예산(150개 점진 · DOM)은 그대로. 첫 화면은 한 단어 모드라 리스트로 바꿔 잰다.
+    // 첫 화면은 한 단어 모드라 리스트로 바꿔 잰다. 리스트는 한 번에 20장(설정 10 · 20 · 50, 2026-10-20 KST)만 펼친다.
     await page.getByRole('button', { name: '리스트', exact: true }).click();
     await assertVisible(page.locator('.lw-card').first(), 'N3 first vocabulary card');
     const elapsed = Date.now() - startedAt;
@@ -609,7 +609,7 @@ test('vocab performance: N3 초기 DOM과 단어장 읽기를 예산 안에 유�
     const nodes = await page.locator('*').count();
 
     assert.ok(elapsed < 8000, `N3 vocab load ${elapsed}ms exceeded 8000ms`);
-    assert.equal(rows, 150, `N3 initial cards should be progressive, got ${rows}`);
+    assert.equal(rows, 20, `N3 list should open one page of 20 cards, got ${rows}`);
     assert.ok(nodes < 10000, `N3 initial DOM ${nodes} nodes exceeded 10000`);
 
     // 상태(오늘 · 복습 · 졸업)는 뷰어와 같은 단어장 snapshot(GET /api/learning/vocabulary?view=learning) 한 번으로 센다 —

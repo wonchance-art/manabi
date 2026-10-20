@@ -109,3 +109,15 @@ describe('예문 단어 나눔(빌드 때) — exampleSegments', () => {
     expect(exampleSegments('𠮷他', '他', ['𠮷', '他'])).toEqual([1, 1]);
   });
 });
+
+describe('리스트 한 번에 — 설정 10 · 20 · 50, 기본 20(오너 2026-10-20 KST)', () => {
+  const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
+  it('고르는 수와 기본값', () => {
+    expect(screen).toMatch(/LEVEL_WORD_PAGE_SIZES = Object\.freeze\(\[10, 20, 50\]\)/);
+    expect(screen).toMatch(/LEVEL_WORD_PREFS = Object\.freeze\(\{[^}]*page: 20 \}\)/);
+  });
+  it('시간이 된 카드는 page장 위에 더한다 · 첫 리스트 예산은 20장', () => {
+    expect(screen).toMatch(/const shown = limit \+ \(listed\?\.due\.size \|\| 0\)/);
+    expect(fs.readFileSync('e2e/smoke.e2e.mjs', 'utf8')).toMatch(/assert\.equal\(rows, 20,/);
+  });
+});

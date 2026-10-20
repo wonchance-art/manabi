@@ -76,8 +76,10 @@ export const LEVEL_WORD_VIEWS = Object.freeze([
   { id: 'all', label: '전체' }, { id: 'word', label: '단어' }, { id: 'sentence', label: '문장' }, { id: 'meaning', label: '뜻' }, { id: 'sound', label: '소리' },
 ]);
 // 한 단어 모드가 기본. 품사 범위(전체 ▾)는 없앴다 — 늘 레벨 전체(오너 2026-10-20 KST 「그 기능은 아예 없애」).
-export const LEVEL_WORD_PREFS = Object.freeze({ mode: 'one', view: 'all', tone: true });
-export const LEVEL_WORD_LIST_PAGE = 150;
+// 리스트는 아직 채점하지 않은 카드를 한 번에 page장까지 펼친다(오너 2026-10-20 KST — 설정에서 10 · 20 · 50, 기본 20).
+// 채점하면 아래 카드가 올라와 다시 page장 · 기다리는 카드와 「다음에 볼 단어」는 세지 않는다 · 시간이 된 카드는 그 위에 더한다.
+export const LEVEL_WORD_PAGE_SIZES = Object.freeze([10, 20, 50]);
+export const LEVEL_WORD_PREFS = Object.freeze({ mode: 'one', view: 'all', tone: true, page: 20 });
 const NOTICE_MS = 8000;
 
 export function normalizeLevelWordPrefs(raw) {
@@ -86,6 +88,7 @@ export function normalizeLevelWordPrefs(raw) {
     mode: p.mode === 'list' ? 'list' : 'one',
     view: LEVEL_WORD_VIEWS.some((v) => v.id === p.view) ? p.view : 'all',
     tone: p.tone !== false,
+    page: LEVEL_WORD_PAGE_SIZES.includes(p.page) ? p.page : LEVEL_WORD_PREFS.page,
   };
 }
 
@@ -207,7 +210,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
   const [saving, setSaving] = useState(null);
   const popKey = (key) => setPops((s) => new Set(s).add(key));
 
-  const [limit, setLimit] = useState(LEVEL_WORD_LIST_PAGE);
+  const [limit, setLimit] = useState(LEVEL_WORD_PREFS.page);
   const [jumpTo, setJumpTo] = useState(null); // 리스트에서 그 단어로(로그인 뒤 · 다른 레벨 단어 카드에서)
 
   // ── 한 단어 세션 ──
@@ -252,7 +255,8 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
 
   // ── 리스트 — 같은 오늘 할 줄: ① 시간이 된 카드 ② 오늘 복습 · 새 단어 ③ 기다리는 카드(남은 시간), 그 밖(내일 이후 · 졸업)은 「다음에 볼 단어」에 접는다 ──
   const [laterOpen, setLaterOpen] = useState(false);
-  const [laterLimit, setLaterLimit] = useState(LEVEL_WORD_LIST_PAGE);
+  const [laterLimit, setLaterLimit] = useState(LEVEL_WORD_PREFS.page);
+  useEffect(() => { setLimit(prefs.page); setLaterLimit(prefs.page); }, [prefs.page]);
   const listed = useMemo(() => {
     if (!session) return null;
     const due = sessionDue(session, clock);
@@ -263,6 +267,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
     return { active, due: new Set(due), waiting: waiting.map((w) => ({ entry: byKey.get(w.key), at: w.at })).filter((w) => w.entry),
       later: allEntries.filter((e) => !sessionHas(session, e.key)) };
   }, [session, clock, head, byKey, allEntries]);
+  const shown = limit + (listed?.due.size || 0); // 시간이 된 카드는 page장 위에 더한다(지금 카드를 밀어내지 않게)
   const cardEl = (key) => document.querySelector(`.lw-list[data-main] .lw-card[data-key="${CSS.escape(key)}"]`);
   // 기다리던 카드가 시간이 되어 지금 카드 다음 자리로 올라오면 펼쳐 보인다(처음 그릴 때 · 지금 카드는 빼고).
   const dueSeen = useRef(null);
@@ -279,7 +284,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
   useEffect(() => {
     if (!jumpTo || prefs.mode !== 'list' || charTables === null || !listed) return; // charTables false = 표를 못 받음(칸 없이 옮긴다)
     const at = listed.active.findIndex((e) => e.key === jumpTo);
-    if (at >= limit) { setLimit(at + 20); return; }
+    if (at >= shown) { setLimit(at + prefs.page); return; }
     const later = listed.later.findIndex((e) => e.key === jumpTo);
     if (later >= 0 && (!laterOpen || later >= laterLimit)) { setLaterOpen(true); setLaterLimit(Math.max(laterLimit, later + 20)); return; }
     // 글자 칸 표가 붙은 뒤(카드 높이가 정해진 뒤)에 바로 옮긴다 — 먼 거리를 부드럽게 굴리면 그사이 위 카드가 자라 다른 단어에 멈췄다(?w=準備 실측).
@@ -289,15 +294,15 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
     pickCard(jumpTo);
     setJumpTo(null);
     return () => cancelAnimationFrame(raf);
-  }, [jumpTo, prefs.mode, listed, limit, laterOpen, laterLimit, charTables]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [jumpTo, prefs.mode, listed, shown, laterOpen, laterLimit, charTables]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 리스트의 채점 대상(아래 네 칸) = 줄 맨 위 카드(head). 카드를 누르면 그 카드(오너 확정 2026-10-19 KST 「아래 고정」 · 「오늘 할 줄」).
   // 누른 카드를 채점하면 그 다음 카드가 대상으로 이어지고, 맨 위 카드를 채점하면 다음 차례가 맨 위로 온다.
   const [focusKey, setFocusKey] = useState(null);
   const [shownOld, setShownOld] = useState(() => new Set()); // 「N일 만에」 카드 중 단어를 본 것 — 보기 전에는 네 칸을 잠근다
   const pickCard = useCallback((key) => setFocusKey(key), []);
-  const listOrder = useMemo(() => (listed ? [...listed.active.slice(0, limit), ...listed.waiting.map((w) => w.entry),
-    ...(laterOpen ? listed.later.slice(0, laterLimit) : [])] : []), [listed, limit, laterOpen, laterLimit]);
+  const listOrder = useMemo(() => (listed ? [...listed.active.slice(0, shown), ...listed.waiting.map((w) => w.entry),
+    ...(laterOpen ? listed.later.slice(0, laterLimit) : [])] : []), [listed, shown, laterOpen, laterLimit]);
   const focusEntry = prefs.mode === 'list' ? listOrder.find((e) => e.key === focusKey) || listOrder[0] || null : null;
   const focusInfo = focusEntry ? cardInfo(focusEntry.key) : null;
   const focusLocked = !!focusInfo && focusInfo.old != null && prefs.view === 'all' && !shownOld.has(focusEntry.key);
@@ -534,6 +539,10 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
           <button type="button" className="lw-icon" aria-label="설정" aria-expanded={settingsOpen} onClick={() => setSettingsOpen((v) => !v)}><SunIcon /></button>
           {settingsOpen && <div className="lw-settings" role="group" aria-label="화면 설정">
             <label>{cfg.aidLabel}<input type="checkbox" checked={tone} onChange={(e) => setPrefs({ tone: e.target.checked })} /></label>
+            <div className="lw-settings__row"><span id="lw-page-size">리스트 한 번에</span>
+              <span className="lw-settings__seg" role="group" aria-labelledby="lw-page-size">
+                {LEVEL_WORD_PAGE_SIZES.map((n) => <button key={n} type="button" aria-pressed={prefs.page === n} onClick={() => setPrefs({ page: n })}>{n}</button>)}
+              </span></div>
           </div>}
         </span>
       </header>}
@@ -573,8 +582,9 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
         : <>
           {!listed && <p className="lw-empty" aria-busy="true">단어를 고르는 중…</p>}
           {listed && <>
-            {listed.active.length > 0 && <ul className="lw-list" data-main="">{listed.active.slice(0, limit).map((e) => listCard(e, { due: listed.due.has(e.key) }))}</ul>}
-            {listed.active.length > limit && <div className="lw-more"><button type="button" onClick={() => setLimit((n) => n + LEVEL_WORD_LIST_PAGE)}>더 보기 · {listed.active.length - limit}개</button></div>}
+            {listed.active.length > 0 && <ul className="lw-list" data-main="">{listed.active.slice(0, shown).map((e) => listCard(e, { due: listed.due.has(e.key) }))}</ul>}
+            {listed.active.length > shown && <div className="lw-more"><button type="button" onClick={() => setLimit((n) => n + prefs.page)}>
+              다음 {Math.min(prefs.page, listed.active.length - shown)}개 보기 · 남은 {listed.active.length - shown}개</button></div>}
             {listed.waiting.length > 0 && <ul className="lw-list" data-main="" aria-label="기다리는 카드">{listed.waiting.map((w) => listCard(w.entry, { wait: w.at }))}</ul>}
             {!listed.active.length && !listed.waiting.length && allEntries.length > 0 && <p className="lw-empty">오늘 이 레벨은 다 봤어요</p>}
             {listed.later.length > 0 && <>
@@ -582,7 +592,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
                 다음에 볼 단어 {listed.later.length}개<CaretIcon /></button>
               {laterOpen && <ul className="lw-list" data-main="" aria-label="다음에 볼 단어">{listed.later.slice(0, laterLimit).map((e) => listCard(e))}</ul>}
               {laterOpen && listed.later.length > laterLimit && <div className="lw-more">
-                <button type="button" onClick={() => setLaterLimit((n) => n + LEVEL_WORD_LIST_PAGE)}>더 보기 · {listed.later.length - laterLimit}개</button></div>}
+                <button type="button" onClick={() => setLaterLimit((n) => n + prefs.page)}>다음 {Math.min(prefs.page, listed.later.length - laterLimit)}개 보기 · 남은 {listed.later.length - laterLimit}개</button></div>}
             </>}
           </>}
           {!allEntries.length && <p className="lw-empty">이 레벨에는 단어가 없어요</p>}
