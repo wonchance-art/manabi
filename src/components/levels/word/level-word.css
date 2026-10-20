@@ -151,7 +151,13 @@
 /* 한 단어 모드 — 단어 52px 고정 자리, 아래 답 자리. 네 칸은 화면 아래 고정. */
 .lw-one{padding:14px 0 12px;flex:1 0 auto;display:flex;flex-direction:column}
 .lw-one__card{flex:1 0 auto;background:var(--lw-card);border:1px solid var(--lw-line);border-radius:14px;padding:8px 16px 16px;display:flex;flex-direction:column;gap:10px}
-.lw-one__card.is-turning{animation:reviewCardTurn .24s var(--ease-settle)}
+.lw-one__card.is-turning{animation:lwCardIn .2s var(--ease-settle)} /* 앞 카드가 왼쪽으로 밀려난 뒤 오른쪽에서 들어온다 */
+@keyframes lwCardIn{from{transform:translateX(28px);opacity:0}}
+/* 리스트 — 시간이 된 카드가 펼쳐진 뒤 테두리 한 번 반짝 · 「시간 됨」 톡 */
+.lw-card.is-arrived{animation:lwArrive .3s var(--ease-settle)}
+.lw-card.is-arrived .lw-time{animation:lwTimePop .22s var(--ease-settle)}
+@keyframes lwArrive{50%{border-color:var(--lw-rose);box-shadow:0 0 0 2px color-mix(in srgb,var(--lw-rose) 55%,transparent)}}
+@keyframes lwTimePop{0%{transform:scale(.6)}60%{transform:scale(1.12)}}
 .lw-one__front{min-height:96px;display:grid;place-items:center;text-align:center;container-type:inline-size;border-bottom:1px dashed var(--lw-line)}
 /* 긴 표제어(おはようございます · 9글자)는 카드 폭에 맞춰 줄인다 — --n = 글자 수(fitty 대신 cqi 선례). */
 .lw-one__hw{font-size:min(52px,calc(94cqi / var(--n,1)));line-height:1.25;font-weight:600;white-space:nowrap}
@@ -228,7 +234,7 @@
 @keyframes lwFade{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){
   .lw-top--search .lw-searchbox,.lw-settings,.lw-rows.is-height-settling,.lw-bar i,.lw-status.is-popping,.lw-grade,.lw-card,.lw-card__more,.lw-one__card.is-turning,
-  .lw-one__back,.lw-done,.lw-undo,.lw-pop,.lw-scrim,.lw-sheet,.lw-prog{animation:none;transition:none}
+  .lw-one__back,.lw-done,.lw-undo,.lw-pop,.lw-scrim,.lw-sheet,.lw-prog,.lw-card.is-arrived,.lw-card.is-arrived .lw-time{animation:none;transition:none}
   .lw-grade:active:not(:disabled),.lw-card:active:not(:has(button:active)),.lw-one__reveal:active{transform:none}
 }
 /* 모드 전환(한 단어 ↔ 리스트) — View Transitions API(없는 브라우저는 바로 바뀜). 0.2초 겹침. */

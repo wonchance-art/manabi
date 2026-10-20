@@ -42,6 +42,36 @@ import { WordLangContext } from '@/components/levels/word/wordLang';
 import '@/components/levels/word/level-word.css';
 
 const RETURN_KEY = 'manabi:level-word-return';
+
+// 카드 움직임(오너 2026-10-20 KST 「애니메이션 시안」 추천 조합) — 한 단어: 왼쪽으로 밀려남(0.18초) → 오른쪽에서 들어옴(CSS lwCardIn).
+// 리스트: 채점한 카드가 접히며 사라지고(0.24초, 아래 카드가 따라 올라옴) · 시간이 된 카드는 자리가 펼쳐진 뒤 테두리 한 번 반짝(is-arrived).
+// 높이는 CSS로 auto까지 못 늘려 Web Animations로 잰다. 동작 줄이기면 없다.
+const EASE = 'cubic-bezier(0.23,1,0.32,1)';
+const LIST_GAP = 12; // .lw-list gap — 접힌 카드 자리의 간격까지 거둔다
+const SHUT = { height: '0px', opacity: 0, paddingTop: '0px', paddingBottom: '0px', borderTopWidth: '0px', borderBottomWidth: '0px' };
+// 시작 시각을 지금으로 박는다 — 큰 목록을 다시 그린 직후에는 문서 시계가 그 앞 프레임에 머물러 있어(실측 0.34초)
+// 그대로 두면 펼침이 시작하자마자 끝난다. 시계가 따라올 때까지는 첫 장면(backwards)을 보인다.
+function play(el, frames, duration, fill) {
+  const anim = el.animate(frames, { duration, easing: EASE, fill });
+  anim.startTime = performance.now();
+  return anim;
+}
+function playLeave(el, one) {
+  if (one) return play(el, [{ transform: 'none', opacity: 1 }, { transform: 'translateX(-24px)', opacity: 0 }], 180, 'both');
+  el.style.overflow = 'hidden';
+  return play(el, [{ height: `${el.offsetHeight}px`, opacity: 1, marginBottom: '0px' }, { ...SHUT, marginBottom: `-${LIST_GAP}px` }], 240, 'both');
+}
+function playArrive(el) {
+  const h = el.offsetHeight;
+  el.style.overflow = 'hidden';
+  const open = play(el, [{ ...SHUT, marginTop: `-${LIST_GAP}px`, boxSizing: 'border-box' }, { height: `${h}px`, opacity: 1, marginTop: '0px', boxSizing: 'border-box' }], 200, 'backwards');
+  open.finished.then(() => {
+    el.style.overflow = '';
+    el.classList.add('is-arrived');
+    el.addEventListener('animationend', () => el.classList.remove('is-arrived'), { once: true });
+  }, () => { el.style.overflow = ''; });
+}
+
 export const LEVEL_WORD_VIEWS = Object.freeze([
   { id: 'all', label: '전체' }, { id: 'word', label: '단어' }, { id: 'sentence', label: '문장' }, { id: 'meaning', label: '뜻' }, { id: 'sound', label: '소리' },
 ]);
@@ -184,6 +214,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
   const [session, setSession] = useState(null);
   const [revealed, setRevealed] = useState(false);
   const [turn, setTurn] = useState(0);
+  const leaving = useRef(false); // 나가는 움직임 동안은 다음 채점을 받지 않는다(줄이 어긋나지 않게)
   const scope = `${userId || 'guest'}:${levelKey}`;
   const startedFor = useRef(null);
   useEffect(() => {
@@ -233,6 +264,18 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
       later: allEntries.filter((e) => !sessionHas(session, e.key)) };
   }, [session, clock, head, byKey, allEntries]);
   const cardEl = (key) => document.querySelector(`.lw-list[data-main] .lw-card[data-key="${CSS.escape(key)}"]`);
+  // 기다리던 카드가 시간이 되어 지금 카드 다음 자리로 올라오면 펼쳐 보인다(처음 그릴 때 · 지금 카드는 빼고).
+  const dueSeen = useRef(null);
+  useLayoutEffect(() => {
+    if (!listed || prefs.mode !== 'list') { dueSeen.current = null; return; }
+    const prev = dueSeen.current;
+    dueSeen.current = listed.due;
+    if (!prev || reducedMotion()) return;
+    for (const key of listed.due) {
+      const el = !prev.has(key) && key !== head ? cardEl(key) : null;
+      if (el?.animate) playArrive(el);
+    }
+  }, [listed, prefs.mode, head]);
   useEffect(() => {
     if (!jumpTo || prefs.mode !== 'list' || charTables === null || !listed) return; // charTables false = 표를 못 받음(칸 없이 옮긴다)
     const at = listed.active.findIndex((e) => e.key === jumpTo);
@@ -271,7 +314,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
   const inFlight = useRef(new Set());
   const onGrade = useCallback(async (entry, rating, opts = {}) => {
     if (!userId) return askLogin(entry.key);
-    if (!ready || inFlight.current.has(entry.key)) return undefined;
+    if (!ready || inFlight.current.has(entry.key) || leaving.current) return undefined;
     const info = cardInfo(entry.key);
     if (info.known && rating > 1) {
       setNotice({ id: Date.now(), text: '졸업한 단어예요. 「다시」를 누르면 복습으로 돌아와요', ms: 4000 });
@@ -283,9 +326,21 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
     const moved = gradeLevelSession(session, entry.key, rating, todayAgainAt(info.previews?.[rating]));
     const advance = moved !== session;
     if (advance) {
-      if (opts.next) followFocus(entry.key);
-      setSession(moved);
-      if (prefs.mode === 'one' && currentKey === entry.key) { setRevealed(false); setTurn((n) => n + 1); }
+      const one = prefs.mode === 'one';
+      const el = reducedMotion() ? null : one ? (currentKey === entry.key ? document.querySelector('.lw-one__card') : null) : cardEl(entry.key);
+      let anim = null;
+      if (el?.animate) {
+        leaving.current = true;
+        anim = playLeave(el, one);
+        await anim.finished.catch(() => {});
+        leaving.current = false;
+      }
+      flushSync(() => {
+        if (opts.next) followFocus(entry.key);
+        setSession(moved);
+        if (one && currentKey === entry.key) { setRevealed(false); setTurn((n) => n + 1); }
+      });
+      if (anim) { anim.cancel(); el.style.overflow = ''; } // 같은 카드가 다시 그려져도 접힌 채 남지 않게
     }
     try {
       if (info.known) {
