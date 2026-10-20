@@ -137,7 +137,7 @@
 .lw-chip{justify-self:start;display:inline-flex;align-items:center;min-height:24px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:700;color:var(--grade-hard);background:var(--lw-warnbg)}
 .lw-card__chips{display:flex;flex-wrap:wrap;gap:6px}
 .lw-card__chips .lw-chip{justify-self:auto}
-/* 남은 시간 · 시간 됨 — 맨 아래 줄 오른쪽 끝, 배경 없이 읽기와 같은 회색, 같은 줄 글자와 기준선 맞춤 */
+/* 남은 시간 · 아까 본 단어 — 맨 아래 줄 오른쪽 끝, 배경 없이 읽기와 같은 회색, 같은 줄 글자와 기준선 맞춤 */
 .lw-tailrow{display:flex;align-items:baseline;gap:10px}
 .lw-tailrow>:first-child{flex:1 1 auto;min-width:0}
 .lw-time{flex:none;margin-left:auto;font-size:13px;font-weight:400;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -157,7 +157,7 @@
 .lw-one__card{flex:1 0 auto;background:var(--lw-card);border:1px solid var(--lw-line);border-radius:14px;padding:8px 16px 16px;display:flex;flex-direction:column;gap:10px}
 .lw-one__card.is-turning{animation:lwCardIn .2s var(--ease-settle)} /* 앞 카드가 왼쪽으로 밀려난 뒤 오른쪽에서 들어온다 */
 @keyframes lwCardIn{from{transform:translateX(28px);opacity:0}}
-/* 리스트 — 시간이 된 카드가 펼쳐진 뒤 테두리 한 번 반짝 · 「시간 됨」 톡 */
+/* 리스트 — 시간이 된 카드가 펼쳐진 뒤 테두리 한 번 반짝 · 「아까 본 단어」 톡 */
 .lw-card.is-arrived{animation:lwArrive .3s var(--ease-settle)}
 .lw-card.is-arrived .lw-time{animation:lwTimePop .22s var(--ease-settle)}
 @keyframes lwArrive{50%{border-color:var(--lw-rose);box-shadow:0 0 0 2px color-mix(in srgb,var(--lw-rose) 55%,transparent)}}

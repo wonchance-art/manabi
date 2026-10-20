@@ -3,7 +3,7 @@
 // 네 칸은 카드마다 붙이지 않고 화면 아래 한 줄(가운데 카드를 채점 — 오너 확정 2026-10-19 KST 「아래 고정」). 단어 카드 창(grades)만 카드 안에 둔다.
 // 보기 탭이 전체가 아니면 고른 것 하나만 남기고, 누르면 나머지가 아래로 펼쳐진다. 카드를 누르면 그 카드가 채점 대상(onPick).
 // 레벨 태그 · 상태(☆ 담기 · 오늘 · 복습 · 졸업)는 찾기 · 예문 단어 창에서 연 카드(search)에만 — 레벨 페이지 카드는 이미 그 레벨이고 채점이 곧 담기다(오너 2026-10-20 KST).
-// 남은 시간 · 「시간 됨」은 줄을 늘리지 않고 카드 맨 아래 줄 오른쪽 끝에 회색 글자로(같은 줄 글자와 기준선 맞춤).
+// 남은 시간 · 「아까 본 단어」는 줄을 늘리지 않고 카드 맨 아래 줄 오른쪽 끝에 회색 글자로(같은 줄 글자와 기준선 맞춤).
 // 어려운 단어(자주 틀린 단어 · N번) · 오래된 단어(N일 만에 — 뜻을 보고 단어 떠올리기)는 오늘 복습 카드에만.
 import { useState } from 'react';
 import { CharTiles, GradeButtons, LevelTag, Listen, Reading, StatusPill, WaitChip } from './WordParts';
@@ -87,8 +87,8 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
     <span className="lw-card__word"><span className="lw-card__hw" lang={L.hw} style={{ '--n': [...String(hw || '')].length }}>{hw}</span>{reading}</span>
     {listen}{marks}
   </div>;
-  // 오늘 할 줄 표시 — 기다리는 카드는 남은 시간, 기다리다 차례가 온 카드는 「시간 됨」. 맨 아래 줄 끝에 붙인다.
-  const time = wait ? <WaitChip at={wait} /> : due ? <span className="lw-time">시간 됨</span> : null;
+  // 오늘 할 줄 표시 — 기다리는 카드는 남은 시간, 기다리다 차례가 온 카드는 「아까 본 단어」(오너 2026-10-20 KST). 맨 아래 줄 끝에 붙인다.
+  const time = wait ? <WaitChip at={wait} /> : due ? <span className="lw-time">아까 본 단어</span> : null;
   const chips = info.hard ? <span className="lw-card__chips"><span className="lw-chip">자주 틀린 단어 · {info.hard}번</span></span> : null;
   const meanLine = (tail) => (tail ? <p className="lw-card__mean lw-tailrow"><span>{e.meaning}</span>{tail}</p> : <p className="lw-card__mean">{e.meaning}</p>);
   const mean = meanLine(null);
