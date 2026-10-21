@@ -95,7 +95,7 @@ export function CharTiles({ tiles, small = false }) {
       <span className="lw-tile__glyph" lang={L.hw}>{t.ch}{t.zheng && t.zheng !== t.ch && <span className="lw-tile__zheng" lang={L.zheng}>{t.zheng}</span>}</span>
       <span className="lw-tile__info">
         <span className="lw-tile__hun"><b>{t.label || ' '}</b>{t.kana && <span className="lw-tile__kana" lang={L.hw}>{t.kana}</span>}</span>
-        {t.pieces.slice(0, 2).map((p, j) => <span key={j} className="lw-tile__piece"><span className="lw-tile__pch" lang={L.piece}>{p.ch}</span>{p.label}</span>)}
+        {t.pieces.slice(0, 2).map((p, j) => <span key={j} className="lw-tile__piece"><span className="lw-tile__pch" lang={L.piece}>{p.ch}</span>{p.label}{j === 1 && t.pieces.length > 2 ? ' …' : ''}</span>)}
       </span>
     </li>)}
   </ul>;

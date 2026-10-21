@@ -644,7 +644,7 @@ test('vocab performance: N3 초기 DOM과 단어장 읽기를 예산 안에 유�
 
     // 찾기 — 머리의 찾기 단추로 열고, 첫 150개 밖 단어도 JLPT 전체 색인에서 찾는다.
     await page.getByRole('button', { name: '단어 찾기', exact: true }).click();
-    await page.getByRole('searchbox', { name: '단어 찾기' }).fill('頬');
+    await page.getByRole('searchbox', { name: 'JLPT N5–N1 전체에서 찾기' }).fill('頬'); // 시안 ⑨ — 찾는 범위를 읽어 준다
     await assertVisible(page.locator('.lw-row').filter({ hasText: '頬' }).first(), 'word beyond initial slice remains searchable');
   });
 });

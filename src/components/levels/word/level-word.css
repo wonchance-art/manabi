@@ -29,6 +29,7 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-icon:hover{background:var(--lw-chip)}
 .lw-icon[aria-expanded=true]{background:var(--lw-chip)}
 .lw-top--search{gap:6px}
+.lw-top--search[data-stuck]{box-shadow:0 6px 14px rgba(37,39,33,.07)} /* 내려 본 찾기 결과 위 — 진행바와 같은 그림자 */
 .lw-top--search .lw-searchbox{animation:lwFade .15s var(--ease-settle) both}
 .lw-searchbox{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px;height:44px;border-radius:12px;background:var(--lw-field);outline:2px solid var(--lw-rose);outline-offset:-2px;padding-left:14px}
 .lw-searchbox>svg{flex:none;color:var(--muted)}
@@ -98,8 +99,6 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-grade{min-height:56px;border:1px solid var(--rule);border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;padding:4px 2px;transition:transform .12s var(--ease-settle)}
 .lw-grade:active:not(:disabled){transform:scale(.985)}
 .lw-grade:disabled{cursor:default;opacity:.55}
-/* 펼치기 전(시안 ⑦-2) — 칸은 흐리게, 누르면 먼저 펼친다 */
-.lw-gradebar[data-locked] .lw-grade:not(:disabled),.lw-gradebar[data-locked] .lw-two__btn:not(:disabled){opacity:.45}
 .lw-grade__name{font-size:13px;color:var(--ink)}
 .lw-grade__gap{font-size:14px;font-weight:700}
 .lw-grade--again{background:var(--grade-again-bg)}.lw-grade--again .lw-grade__gap{color:var(--grade-again)}
@@ -148,6 +147,7 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-card__hw{font-size:max(20px,min(28px,calc(190px / var(--n,1))));font-weight:600;line-height:1.3} /* 긴 가나 표제어(おはようございます)는 줄여 한 줄 */
 .lw-card__mean{margin:0;font-size:16px;font-weight:700;line-height:1.55}
 .lw-card__solo{margin:0;font-size:18px;line-height:1.7;cursor:pointer}
+.lw-card__solo .lw-ex__text{font-size:inherit;line-height:inherit} /* 문장 탭 펼친 카드 — 접힌 줄과 같은 크기 */
 .lw-card__more{display:grid;grid-template-rows:1fr;animation:settleIn .16s var(--ease-settle) both}
 .lw-card__in{min-height:0;display:grid;gap:10px}
 /* 접힐 때(⑥-2) — 옛 목록 4판 「닫히는 중」과 같은 방식: 칸 높이를 0으로, 카드 사이 간격(gap 10px)까지 같이 줄인다. */
@@ -233,8 +233,8 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-done__counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 .lw-done__counts--two{grid-template-columns:repeat(2,minmax(0,1fr))}
 .lw-done__n{border-radius:3px;padding:8px 0 6px;border:1px solid var(--rule);display:grid;gap:0}
-/* 칸이 차례로(⑥-4) — 40ms씩 늦게, 한 칸은 0.2초. */
-.lw-done__n{animation:settleIn .2s var(--ease-settle) both}
+/* 칸이 차례로(⑥-4) — 40ms씩 늦게, 한 칸은 0.18초(마지막 칸 늦춤 0.12초를 더해도 0.3초 안). */
+.lw-done__n{animation:settleIn .18s var(--ease-settle) both}
 .lw-done__n:nth-child(2){animation-delay:.04s}
 .lw-done__n:nth-child(3){animation-delay:.08s}
 .lw-done__n:nth-child(4){animation-delay:.12s}

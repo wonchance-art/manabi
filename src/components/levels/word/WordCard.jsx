@@ -6,7 +6,7 @@
 // 남은 시간 · 「아까 본 단어」는 줄을 늘리지 않고 카드 맨 아래 줄 오른쪽 끝에 회색 글자로(같은 줄 글자와 기준선 맞춤).
 // 어려운 단어(자주 틀린 단어 · N번)는 오늘 복습 카드에만. 오래된 단어의 반대 방향은 뜻 연습 탭이 맡는다(네 영역 체크 — 오너 승인 2026-10-21 KST).
 // 네 영역 줄(단어 · 문장 · 뜻 · 소리)과 「2일 뒤 복습」은 펼친 부분 맨 아래 · 전체 탭 카드 · 찾기 카드에만.
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { reducedMotion } from '@/lib/reducedMotion';
 import { CharTiles, GradeButtons, LevelTag, Listen, Reading, StatusPill, WaitChip } from './WordParts';
 import { AreaRow } from './WordAreas';
@@ -31,14 +31,9 @@ function Furigana({ text, from, furi }) {
   return out;
 }
 
-/**
- * 예문 — 빌드 때 나눈 단어 길이(seg)로 단어마다 점선 밑줄, 카드 단어는 장미색. 누르면 예문 단어 창(찾는 말 = 원형 lem, 없으면 조각 그대로).
- * lem(일본어) = 0 누르지 않음(조사 · 기호) · 1 조각 그대로 · '원형'(して → する). lem이 없으면(중국어) 한자 조각만 누른다.
- * 후리가나(furi)는 tone(설정의 「예문 후리가나」)이 켜졌을 때만. 후리가나를 맞추지 못한 예문 · 본문을 따로 그린 예문(문장 탭)은 읽기 줄을 보인다.
- */
-export function Example({ ex, word, speak, onWord, openKey, showText = true, tone = true, tail = null }) {
+/** 예문 본문 — 단어마다 누르는 조각(Example · 문장 탭 펼친 카드가 같이 쓴다). */
+function ExampleWords({ ex, word, onWord, openKey, tone = true }) {
   const L = useWordLang();
-  if (!ex?.text) return null;
   const chars = [...ex.text];
   const parts = [];
   if (Array.isArray(ex.seg) && ex.seg.reduce((a, b) => a + b, 0) === chars.length) {
@@ -51,19 +46,30 @@ export function Example({ ex, word, speak, onWord, openKey, showText = true, ton
     return HAN.test(p.text) ? p.text : null;
   };
   const furi = tone ? ex.furi : null;
+  return <span className="lw-ex__text" lang={L.hw}>{parts.map((p, i) => {
+    const look = lookupOf(p, i);
+    const body = <Furigana text={p.text} from={p.from} furi={furi} />;
+    return look
+      ? <button key={i} type="button" className="lw-ex__w" data-self={look === word || p.text === word || undefined} aria-haspopup="dialog"
+        aria-expanded={openKey === `${i}:${look}` || undefined} onClick={(e) => { e.stopPropagation(); onWord(look, e.currentTarget, `${i}:${look}`); }}>{body}</button>
+      : <span key={i}>{body}</span>;
+  })}</span>;
+}
+
+/**
+ * 예문 — 빌드 때 나눈 단어 길이(seg)로 단어마다 점선 밑줄, 카드 단어는 장미색. 누르면 예문 단어 창(찾는 말 = 원형 lem, 없으면 조각 그대로).
+ * lem(일본어) = 0 누르지 않음(조사 · 기호) · 1 조각 그대로 · '원형'(して → する). lem이 없으면(중국어) 한자 조각만 누른다.
+ * 후리가나(furi)는 tone(설정의 「예문 후리가나」)이 켜졌을 때만. 후리가나를 맞추지 못한 예문 · 본문을 따로 그린 예문(문장 탭)은 읽기 줄을 보인다.
+ */
+export function Example({ ex, word, speak, onWord, openKey, showText = true, tone = true, tail = null }) {
+  const L = useWordLang();
+  if (!ex?.text) return null;
   const py = ex.reading && (!ex.furi || !showText);
   const last = ex.ko ? 'ko' : py ? 'py' : 'text';
   const end = (key) => (last === key ? tail : null); // 맨 아래 줄 끝(남은 시간)
   return <div className="lw-ex">
     {showText && <p className="lw-ex__line">
-      <span className="lw-ex__text" lang={L.hw}>{parts.map((p, i) => {
-        const look = lookupOf(p, i);
-        const body = <Furigana text={p.text} from={p.from} furi={furi} />;
-        return look
-          ? <button key={i} type="button" className="lw-ex__w" data-self={look === word || p.text === word || undefined} aria-haspopup="dialog"
-            aria-expanded={openKey === `${i}:${look}` || undefined} onClick={(e) => { e.stopPropagation(); onWord(look, e.currentTarget, `${i}:${look}`); }}>{body}</button>
-          : <span key={i}>{body}</span>;
-      })}</span>
+      <ExampleWords ex={ex} word={word} onWord={onWord} openKey={openKey} tone={tone} />
       <Listen speak={speak} text={ex.text} label="예문 듣기" />{end('text')}
     </p>}
     {py && (end('py') ? <span className="lw-ex__py lw-tailrow"><span lang={L.exReading}>{ex.reading}</span>{tail}</span>
@@ -75,13 +81,12 @@ export function Example({ ex, word, speak, onWord, openKey, showText = true, ton
 /**
  * info = { status, previews, hard(번) } — 화면이 상태 · 채점 미리보기를 계산해 넘긴다.
  * view = 'all' | 'word' | 'sentence' | 'meaning' | 'sound'. areas = 네 영역(levelWordAreas) · next = 「2일 뒤 복습」.
- * onOpen = 펼침(같은 날 규칙 — 이 기기에서 이 단어를 펼쳐 봤다). shown = 화면이 펼친다(펼치기 전에 아래 칸을 누름 — 시안 ⑦-2).
+ * onOpen = 펼침(같은 날 규칙 — 이 기기에서 이 단어를 펼쳐 봤다).
  */
 export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, tone, onGrade, onSave, saving, pop, onWord, openKey, note, id,
-  grades: inline = false, search = false, focused = false, onPick, onOpen, shown = false, due = false, wait = null, areas = null, next = null }) {
+  grades: inline = false, search = false, focused = false, onPick, onOpen, due = false, wait = null, areas = null, next = null }) {
   const L = useWordLang();
   const [open, setOpen] = useState(false); // false | true | 'closing'(접히는 0.2초 — 오너 2026-10-21 KST ⑥-2)
-  useEffect(() => { if (shown) setOpen(true); }, [shown]);
   const { hw, sub } = L.head(e);
   const listen = <Listen speak={speak} text={e.word} />;
   const reading = <Reading text={sub} word={hw} tone={tone} />;
@@ -108,7 +113,10 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
   const soloLine = (cls, body, lang) => (time ? <p className={`${cls} lw-tailrow`}><span lang={lang}>{body}</span>{time}</p> : <p className={cls} lang={lang}>{body}</p>);
   const solo = view === 'word' ? <div className="lw-card__head"><span className="lw-card__word"><span className="lw-card__hw" lang={L.hw} style={{ '--n': [...String(hw || '')].length }}>{hw}</span></span>
     {marks}{time}</div>
-    : view === 'sentence' ? (e.ex?.text ? soloLine('lw-card__solo', e.ex.text, L.hw) : soloLine('lw-card__solo', '예문 없음'))
+    // 문장 탭은 펼친 뒤에만 예문 단어를 바로 누른다(시안 ⑦ 「펼친 뒤 · 예문 단어 바로 누름」) — 접힌 채로 누르면 카드가 펼쳐진다.
+    : view === 'sentence' ? (!e.ex?.text ? soloLine('lw-card__solo', '예문 없음')
+      : open === true ? soloLine('lw-card__solo', <ExampleWords ex={e.ex} word={e.word} onWord={onWord} openKey={openKey} tone={tone} />)
+        : soloLine('lw-card__solo', e.ex.text, L.hw))
       : view === 'meaning' ? soloLine('lw-card__solo lw-card__mean', e.meaning)
         : <div className="lw-card__head"><Listen speak={speak} text={e.word} /><span className="lw-card__word" />{time}</div>;
   const rest = view === 'word' ? <>{<span className="lw-card__word">{reading}{listen}</span>}{mean}<CharTiles tiles={tiles} />{ex}</>

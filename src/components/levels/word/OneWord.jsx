@@ -32,11 +32,11 @@ export function OneWordCard({ entry: e, view, info, tiles, speak, tone, revealed
 /**
  * 화면 아래 고정 네 칸 + 안내 한 줄 — 안내는 뒷면에서만(앞면 「안내 문구 없음」), 자리는 늘 잡아 네 칸이 움직이지 않는다.
  * 리스트 모드는 label(지금 채점할 카드의 단어 — 準備)을 안내 자리에 둔다.
- * locked = 아직 펼치기 전(시안 ⑦-2) — 칸이 흐리고, 누르면 화면이 먼저 펼친다(채점은 다음 누름).
+ * 앞면에서도 바로 누를 수 있다(답을 펼치지 않고 채점 — 오너 결정, 2026-10-21 KST 재확인: 시안 ⑦-2 「확인 전 채점 막기」는 넣지 않는다).
  */
-export function GradeBar({ previews, onGrade, disabled, note, guide = true, label = null, locked = false }) {
+export function GradeBar({ previews, onGrade, disabled, note, guide = true, label = null }) {
   const text = useWordLang().guide;
-  return <div className="lw-gradebar" data-locked={locked || undefined}><div className="lw-gradebar__in">
+  return <div className="lw-gradebar"><div className="lw-gradebar__in">
     <p className="lw-gradebar__guide" aria-hidden={(!guide && !label) || undefined}>{label || (guide ? text : null)}</p>
     <GradeButtons previews={previews} onGrade={onGrade} disabled={disabled} note={note} />
   </div></div>;
@@ -72,7 +72,7 @@ export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabe
       <div className="lw-done__row">
         {capped ? <button type="button" className="lw-btn" onClick={onBrowse}>전체 훑어보기</button>
           : onNext && <button type="button" className={`lw-btn${soundCount > 0 ? '' : ' lw-btn--primary'}`} onClick={onNext}>{nextLabel} 이어서</button>}
-        <button type="button" className="lw-btn" onClick={onList}>리스트로</button>
+        {onList && <button type="button" className="lw-btn" onClick={onList}>리스트로</button>}
       </div>
     </div>
   </section>;

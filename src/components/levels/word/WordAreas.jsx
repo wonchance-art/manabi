@@ -32,9 +32,9 @@ export function PracticeIntro({ counts }) {
   </div>;
 }
 
-/** 연습 두 칸 — 화면 아래 고정(네 칸 자리). 키 1 = 다시 볼래요 · 2 = 알아요. label = 리스트에서 지금 답할 카드 안내. locked = 펼치기 전(GradeBar와 같다). */
-export function PracticeBar({ onAnswer, disabled = false, label = null, locked = false }) {
-  return <div className="lw-gradebar" data-locked={locked || undefined}><div className="lw-gradebar__in">
+/** 연습 두 칸 — 화면 아래 고정(네 칸 자리). 키 1 = 다시 볼래요 · 2 = 알아요. label = 리스트에서 지금 답할 카드 안내. */
+export function PracticeBar({ onAnswer, disabled = false, label = null }) {
+  return <div className="lw-gradebar"><div className="lw-gradebar__in">
     <p className="lw-gradebar__guide" aria-hidden={!label || undefined}>{label}</p>
     <div className="lw-two" role="group" aria-label="떠올랐나요">
       <button type="button" className="lw-two__btn lw-two__btn--again" aria-keyshortcuts="1" disabled={disabled}
