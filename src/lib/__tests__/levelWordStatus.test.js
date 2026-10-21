@@ -3,11 +3,11 @@ import { introduceFsrsCard, scheduleFsrsReview } from '../fsrsScheduler.js';
 import { projectVocabularyLearning } from '../vocabularyLearningRead.js';
 import {
   GRAD_DAYS, HARD_LAPSES, LEVEL_WORD_STATUS, OLD_DAYS, daysSinceReview, gradeEngine,
-  gradePreviews, gradeToastText, intervalLabel, lapsesOf, levelProgressPercent, levelWordGraded, levelWordStatus, todayAgainAt,
+  gradePreviews, gradeToastText, intervalLabel, lapsesOf, levelProgressPercent, levelWordGraded, levelWordStatus, todayAgainAt, newStartedToday,
 } from '../levelWordStatus.js';
 import {
-  gradeLevelSession, nextLevelKey, sessionCurrent, sessionDone, sessionDue, sessionNextAt, sessionOrder, sessionWaiting, skipLevelSession,
-  startLevelSession, undoLevelSession,
+  gradeLevelSession, moreLevelSession, nextLevelKey, pullLevelSession, sessionCurrent, sessionDone, sessionDue, sessionNextAt, sessionOrder,
+  sessionWaiting, skipLevelSession, startLevelSession, undoLevelSession,
 } from '../levelWordSession.js';
 
 const actorId = 'learner';
@@ -120,6 +120,23 @@ describe('네 칸 채점 미리보기', () => {
   });
 });
 
+describe('오늘 새로 시작한 단어 수(하루 새 단어 몫 — 시안 ⑧)', () => {
+  it('그 언어 · 오늘 학습일(04시 경계)에 생기고 일정이 잡힌 행만 센다 — DB 마이크로초 시각도 읽는다', () => {
+    const rows = [
+      { id: 1, language: 'Chinese', created_at: '2026-10-19T01:00:00.123456+00:00', next_review_at: '2026-10-20T01:00:00Z' }, // 10:00 KST 오늘
+      { id: 2, language: 'Chinese', created_at: '2026-10-18T18:30:00+00:00', next_review_at: '2026-10-20T01:00:00Z' }, // 03:30 KST — 어제 학습일
+      { id: 3, language: 'Chinese', created_at: '2026-10-19T02:00:00Z', next_review_at: null }, // ☆로만 담음
+      { id: 4, language: 'Japanese', created_at: '2026-10-19T02:00:00Z', next_review_at: '2026-10-20T01:00:00Z' },
+      { id: 5, language: 'Chinese', created_at: '2026-10-19T02:00:00Z', next_review_at: null }, // FSRS 카드 — 일정은 투영에
+    ];
+    const byKey = new Map(rows.flatMap((r) => [[`s:${r.id}`, r], [`b:${r.id}`, r]]));
+    const projectionsById = new Map([[5, { review: { nextQuestionAt: '2026-10-19T02:10:00Z' } }]]);
+    expect(newStartedToday({ byKey, projectionsById }, 'Chinese', at)).toBe(2);
+    expect(newStartedToday({ byKey, projectionsById }, 'Japanese', at)).toBe(1);
+    expect(newStartedToday(null, 'Chinese', at)).toBe(0);
+  });
+});
+
 describe('오늘 할 줄 — 한 단어 · 리스트 모드가 같이 쓴다(오너 확정 2026-10-19 KST)', () => {
   const entries = ['a', 'b', 'c', 'd', 'e', 'f'].map((key) => ({ key }));
   const status = { a: 'new', b: 'today', c: 'review', d: 'grad', e: 'today', f: 'new' };
@@ -154,6 +171,30 @@ describe('오늘 할 줄 — 한 단어 · 리스트 모드가 같이 쓴다(오
     expect(gradeLevelSession(s, 'c', 3, null)).toBe(s); // 다음에 볼 단어 · 내일 이후 → 그대로
     s = gradeLevelSession(s, 'c', 1, T + MIN);
     expect(sessionWaiting(s, T).map((w) => w.key)).toEqual(['c']);
+  });
+
+  it('하루 새 단어(시안 ⑧) — 새 단어만 newCap개, 오늘 복습 · 기다리는 카드는 한도 밖 · 더 단추는 남긴 새 단어를 이어 세운다', () => {
+    const many = [...entries, { key: 'g' }, { key: 'h' }];
+    const st = { ...status, g: 'new', h: 'new' };
+    let s = startLevelSession(many, (k) => st[k], (k) => (k === 'e' ? T + 5 * MIN : 0), T, { newCap: 2 });
+    expect(s.queue).toEqual(['b', 'a', 'f']);
+    expect(s.held).toEqual(['g', 'h']);
+    expect(s.waiting.map((w) => w.key)).toEqual(['e']);
+    expect(startLevelSession(many, (k) => st[k], () => 0, T, { newCap: -3 }).queue).toEqual(['b', 'e']); // 이미 넘게 시작한 날
+    s = gradeLevelSession(gradeLevelSession(gradeLevelSession(s, 'b', 3, null), 'a', 3, null), 'f', 3, null);
+    s = gradeLevelSession(s, 'e', 3, null);
+    expect(sessionDone(s)).toBe(true); // 남긴 새 단어는 끝을 막지 않는다
+    const more = moreLevelSession(s, 1, (k) => k !== 'g'); // g는 그사이 다른 곳에서 채점됨
+    expect(more.queue).toEqual(['h']);
+    expect(more.held).toEqual([]);
+    expect(moreLevelSession(more, 5)).toBe(more);
+    const pulled = pullLevelSession(startLevelSession(many, (k) => st[k], () => 0, T, { newCap: 0 }), 'h');
+    expect(pulled.queue[0]).toBe('h');
+    expect(pulled.held).toEqual(['a', 'f', 'g']);
+    // 남긴 새 단어를 리스트(다음에 볼 단어)에서 「다시」로 채점하면 기다리는 카드로 옮기고 남긴 줄에서는 뺀다.
+    const again = gradeLevelSession(startLevelSession(many, (k) => st[k], () => 0, T, { newCap: 0 }), 'g', 1, T + MIN);
+    expect(again.held).toEqual(['a', 'f', 'h']);
+    expect(again.waiting.map((w) => w.key)).toEqual(['g']);
   });
 
   it('기다리는 카드만 남으면 한 단어 모드는 가장 먼저 될 카드를 앞당긴다 · 둘 다 비면 끝', () => {

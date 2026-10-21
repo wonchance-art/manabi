@@ -6,7 +6,7 @@
 // 남은 시간 · 「아까 본 단어」는 줄을 늘리지 않고 카드 맨 아래 줄 오른쪽 끝에 회색 글자로(같은 줄 글자와 기준선 맞춤).
 // 어려운 단어(자주 틀린 단어 · N번)는 오늘 복습 카드에만. 오래된 단어의 반대 방향은 뜻 연습 탭이 맡는다(네 영역 체크 — 오너 승인 2026-10-21 KST).
 // 네 영역 줄(단어 · 문장 · 뜻 · 소리)과 「2일 뒤 복습」은 펼친 부분 맨 아래 · 전체 탭 카드 · 찾기 카드에만.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { reducedMotion } from '@/lib/reducedMotion';
 import { CharTiles, GradeButtons, LevelTag, Listen, Reading, StatusPill, WaitChip } from './WordParts';
 import { AreaRow } from './WordAreas';
@@ -75,12 +75,13 @@ export function Example({ ex, word, speak, onWord, openKey, showText = true, ton
 /**
  * info = { status, previews, hard(번) } — 화면이 상태 · 채점 미리보기를 계산해 넘긴다.
  * view = 'all' | 'word' | 'sentence' | 'meaning' | 'sound'. areas = 네 영역(levelWordAreas) · next = 「2일 뒤 복습」.
- * onOpen = 펼침(같은 날 규칙 — 이 기기에서 이 단어를 펼쳐 봤다).
+ * onOpen = 펼침(같은 날 규칙 — 이 기기에서 이 단어를 펼쳐 봤다). shown = 화면이 펼친다(펼치기 전에 아래 칸을 누름 — 시안 ⑦-2).
  */
 export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, tone, onGrade, onSave, saving, pop, onWord, openKey, note, id,
-  grades: inline = false, search = false, focused = false, onPick, onOpen, due = false, wait = null, areas = null, next = null }) {
+  grades: inline = false, search = false, focused = false, onPick, onOpen, shown = false, due = false, wait = null, areas = null, next = null }) {
   const L = useWordLang();
   const [open, setOpen] = useState(false); // false | true | 'closing'(접히는 0.2초 — 오너 2026-10-21 KST ⑥-2)
+  useEffect(() => { if (shown) setOpen(true); }, [shown]);
   const { hw, sub } = L.head(e);
   const listen = <Listen speak={speak} text={e.word} />;
   const reading = <Reading text={sub} word={hw} tone={tone} />;

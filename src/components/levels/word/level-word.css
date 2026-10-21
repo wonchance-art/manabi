@@ -98,6 +98,8 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-grade{min-height:56px;border:1px solid var(--rule);border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;padding:4px 2px;transition:transform .12s var(--ease-settle)}
 .lw-grade:active:not(:disabled){transform:scale(.985)}
 .lw-grade:disabled{cursor:default;opacity:.55}
+/* 펼치기 전(시안 ⑦-2) — 칸은 흐리게, 누르면 먼저 펼친다 */
+.lw-gradebar[data-locked] .lw-grade:not(:disabled),.lw-gradebar[data-locked] .lw-two__btn:not(:disabled){opacity:.45}
 .lw-grade__name{font-size:13px;color:var(--ink)}
 .lw-grade__gap{font-size:14px;font-weight:700}
 .lw-grade--again{background:var(--grade-again-bg)}.lw-grade--again .lw-grade__gap{color:var(--grade-again)}
@@ -188,6 +190,11 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-more button,.lw-btn{min-height:44px;padding:0 18px;border:1px solid var(--rule);border-radius:10px;background:var(--lw-card);cursor:pointer;font-size:14px;font-weight:600}
 .lw-btn--primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .lw-empty{color:var(--muted);text-align:center;padding:32px 0;font-size:14px}
+/* 리스트 · 오늘 새 단어 몫을 다 함(시안 ⑧) */
+.lw-capped{display:grid;gap:10px;text-align:center;padding:20px 0 8px}
+.lw-capped p{margin:0}
+.lw-capped__t{font-size:17px;font-weight:700}
+.lw-capped__s{font-size:13px;color:var(--muted)}
 
 /* 한 단어 모드 — 단어 52px 고정 자리, 아래 답 자리. 네 칸은 화면 아래 고정. */
 .lw-one{padding:14px 0 12px;flex:1 0 auto;display:flex;flex-direction:column}
