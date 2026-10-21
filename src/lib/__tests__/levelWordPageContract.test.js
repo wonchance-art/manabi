@@ -121,8 +121,9 @@ describe('리스트 한 번에 — 설정 10 · 20 · 50, 기본 20(오너 2026-
     expect(screen).toMatch(/LEVEL_WORD_PAGE_SIZES = Object\.freeze\(\[10, 20, 50\]\)/);
     expect(screen).toMatch(/LEVEL_WORD_PREFS = Object\.freeze\(\{[^}]*page: 20\b/);
   });
-  it('시간이 된 카드는 page장 위에 더한다 · 첫 리스트 예산은 20장', () => {
+  // 첫 리스트 = page장(20)과 하루 새 단어 몫(기본 15 — 시안 ⑧, 2026-10-21 KST) 중 작은 쪽. smoke N3 계정은 복습할 단어가 없어 15장.
+  it('시간이 된 카드는 page장 위에 더한다 · 첫 리스트 예산은 하루 새 단어 몫 15장', () => {
     expect(screen).toMatch(/const shown = limit \+ \(listed\?\.due\.size \|\| 0\)/);
-    expect(fs.readFileSync('e2e/smoke.e2e.mjs', 'utf8')).toMatch(/assert\.equal\(rows, 20,/);
+    expect(fs.readFileSync('e2e/smoke.e2e.mjs', 'utf8')).toMatch(/assert\.equal\(rows, 15,/);
   });
 });
