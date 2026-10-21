@@ -2,7 +2,7 @@
    상단 네 줄(상단바 · 모드 · 보기 · 진행바) 중 상단바와 진행바만 붙는다 — sticky가 동작하도록 네 줄은 형제다.
    움직임은 모두 0.3초 이하 · --ease-settle, 동작 줄이기면 없다(맨 아래 블록). 다크 모드 없음(셸이 늘 밝다). */
 .manabi-app{--lw-card:#fffdf9;--lw-chip:#ece8df;--lw-line:#e2ddd2;--lw-field:#ede9e0;--lw-tile:#efeae0;--lw-ex-rule:#d9c4c9;--lw-rose:#994a5a;
-  --lw-today:#7e3b49;--lw-today-bg:#f7e9ec;--lw-today-line:#ebd3d9;--lw-grad-line:#cfe0d5;--lw-grad-bg:#e8f1eb;--lw-review:#3b3d36;
+  --lw-today:#7e3b49;--lw-today-bg:#f7e9ec;--lw-today-line:#ebd3d9;--lw-grad-line:#cfe0d5;--lw-grad-bg:#e8f1eb;--lw-review:#3b3d36;--lw-ex-dot:#b9b4a8;--lw-ex-hit:#f3e4e7;--lw-row-cur:#fbf1f3;
   --lw-tone-1:#c0392b;--lw-tone-2:#2e7d32;--lw-tone-3:#1565c0;--lw-tone-4:#6a3fb5;--lw-tone-0:#7a7a72;--lw-warnbg:#f6eedd}
 /* 이 페이지는 'manabi. · 배움/복습/서재' 줄과 아래 탭 줄을 두지 않는다 — 앱 아이콘이 홈(문서 「상단바 한 줄」). 개인 노트 선례(study-notes.css). */
 .manabi-app:has(.lw-page)>.gnb,.manabi-app:has(.lw-page)>.mobile-nav{display:none}
@@ -46,8 +46,8 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-rows[hidden]{display:none}
 .lw-rows.is-height-settling{overflow:hidden;transition:height .2s var(--ease-settle)}
 .lw-seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px;padding:3px;border-radius:12px;background:var(--lw-chip)}
-.lw-seg button{min-height:40px;border:0;border-radius:10px;background:none;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer}
-.lw-seg button[aria-pressed=true]{background:var(--lw-card);color:var(--ink);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 14%,transparent)}
+.lw-seg button{min-height:40px;border:0;border-radius:10px;background:none;font-size:14px;font-weight:400;color:var(--muted);cursor:pointer}
+.lw-seg button[aria-pressed=true]{font-weight:700;background:var(--lw-card);color:var(--ink);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 14%,transparent)}
 /* 고른 표시가 미끄러진다(⑥-3, iOS 분할 단추 선례) — 칸 너비가 같아 표시 하나를 --i칸만큼 옮긴다. */
 .lw-seg[data-thumb]{position:relative}
 .lw-seg[data-thumb]::before{content:'';position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px - (var(--n,2) - 1) * 2px) / var(--n,2));border-radius:10px;background:var(--lw-card);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 14%,transparent);transform:translateX(calc(var(--i,0) * (100% + 2px)));transition:transform .2s var(--ease-settle)}
@@ -72,9 +72,10 @@ html:has(.lw-page){overscroll-behavior-y:none}
 /* ④ 진행바 — 범위 ▾ · 막대 · %. 상단바 아래에 붙고, 붙으면 그림자. */
 .lw-prog{position:sticky;top:calc(var(--lw-top-h) + env(safe-area-inset-top,0px));z-index:25;background:var(--paper);display:flex;align-items:center;gap:12px;min-height:48px;margin:0 -16px;padding:0 16px;transition:box-shadow .2s var(--ease-settle)}
 .lw-prog[data-stuck]{box-shadow:0 6px 14px rgba(37,39,33,.07)}
-.lw-bar{flex:1 1 auto;height:4px;border-radius:999px;background:var(--lw-chip);overflow:hidden}
-.lw-bar i{display:block;height:100%;width:100%;background:var(--lw-rose);border-radius:inherit;transform-origin:left;transform:scaleX(var(--p,0));transition:transform .24s var(--ease-settle)}
-.lw-pct{flex:none;min-width:38px;text-align:right;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted)}
+/* 캔버스 값 — 먹색 채움 · % 12.5px 보통(오너 2026-10-21 KST 「시안대로」) */
+.lw-bar{flex:1 1 auto;height:4px;border-radius:2px;background:var(--lw-chip);overflow:hidden}
+.lw-bar i{display:block;height:100%;width:100%;background:var(--ink);border-radius:inherit;transform-origin:left;transform:scaleX(var(--p,0));transition:transform .24s var(--ease-settle)}
+.lw-pct{flex:none;min-width:34px;text-align:right;font-size:12.5px;font-weight:400;font-variant-numeric:tabular-nums;color:var(--muted)}
 
 /* 병음 성조 색 · 태그 · 상태 칸 · 듣기 */
 .lw-py{font-size:15px;color:var(--muted);letter-spacing:.2px}
@@ -100,7 +101,7 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-grade:active:not(:disabled){transform:scale(.985)}
 .lw-grade:disabled{cursor:default;opacity:.55}
 .lw-grade__name{font-size:13px;color:var(--ink)}
-.lw-grade__gap{font-size:14px;font-weight:700}
+.lw-grade__gap{font-size:12px;font-weight:700}
 .lw-grade--again{background:var(--grade-again-bg)}.lw-grade--again .lw-grade__gap{color:var(--grade-again)}
 .lw-grade--hard{background:var(--grade-hard-bg)}.lw-grade--hard .lw-grade__gap{color:var(--grade-hard)}
 .lw-grade--good{background:var(--grade-good-bg)}.lw-grade--good .lw-grade__gap{color:var(--grade-good)}
@@ -113,40 +114,44 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-tile{display:flex;gap:10px;background:var(--lw-tile);border-radius:10px;padding:8px 10px;min-width:0}
 .lw-tile__glyph{flex:none;display:flex;flex-direction:column;font-size:calc(var(--lh) * 1.25);line-height:calc(var(--lh) * 1.5);font-weight:500}
 .lw-tile__zheng{color:var(--muted)}
-.lw-tile__info{min-width:0;display:flex;flex-direction:column;font-size:12.5px;line-height:var(--lh)}
+.lw-tile__info{min-width:0;display:flex;flex-direction:column;font-size:12px;line-height:var(--lh)}
 .lw-tiles--small .lw-tile__info{font-size:12px}
 .lw-tile__hun{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lw-tile__hun b{font-weight:700}
 .lw-tile__kana{margin-left:4px;color:var(--muted)}
-.lw-tile__piece{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
-.lw-tile__pch{display:inline-block;width:16px;color:var(--ink)}
+.lw-tile__piece{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--lw-review)}
+.lw-tile__pch{display:inline-block;width:16px;color:var(--ink);font-weight:500}
 
 /* 예문 — 왼쪽 줄. 단어마다 점선 밑줄, 카드 단어는 장미색 밑줄. */
-.lw-ex{margin:0;border-left:3px solid var(--lw-ex-rule);padding:2px 0 2px 12px;display:grid;gap:2px}
+/* 캔버스 값 — 왼쪽 줄 2px · 들여 14px · 본문 20px(한 단어 뒷면 18px · 12px) · 단어 사이 5px */
+.lw-ex{margin:0;border-left:2px solid var(--lw-ex-rule);padding:2px 0 2px 14px;display:grid;gap:2px}
 .lw-ex__line{display:flex;align-items:flex-start;gap:4px}
-.lw-ex__text{flex:1 1 auto;min-width:0;font-size:17px;line-height:1.75}
-.lw-ex__w{border:0;background:none;padding:0;font:inherit;color:inherit;cursor:pointer;text-decoration:underline dotted color-mix(in srgb,var(--ink) 35%,transparent);text-underline-offset:5px;text-decoration-thickness:1px}
+.lw-ex__text{flex:1 1 auto;min-width:0;font-size:20px;line-height:1.75}
+.lw-ex__text>*+*{margin-left:5px}
+.lw-one__back .lw-ex{padding-left:12px}
+.lw-one__back .lw-ex__text{font-size:18px}
+.lw-ex__w{border:0;background:none;padding:0;font:inherit;color:inherit;cursor:pointer;text-decoration:underline dotted var(--lw-ex-dot);text-underline-offset:5px;text-decoration-thickness:1px}
 .lw-ex__w[data-self]{text-decoration:underline solid var(--lw-rose);text-decoration-thickness:2px}
-.lw-ex__w[aria-expanded=true]{background:var(--lw-today-bg);border-radius:3px}
+.lw-ex__w[aria-expanded=true]{background:var(--lw-ex-hit);color:var(--lw-today);border-radius:4px;box-shadow:0 0 0 2px var(--lw-ex-hit)}
 .lw-ex__py{font-size:13px;color:var(--muted)}
 /* JLPT 예문 후리가나 — 한자 위 작은 읽기, 줄 사이를 넓혀 위 줄과 닿지 않게. */
 .lw-ex__text ruby{ruby-align:center}
 .lw-ex__text rt{font-size:10px;color:var(--muted);font-weight:400} /* 읽기가 길어도 한자 사이를 벌리지 않는다(接 客 → 接客) */
 .lw-page[data-language=ja] .lw-ex__text{line-height:2.1}
-.lw-ex__ko{font-size:13.5px;color:var(--muted)}
+.lw-ex__ko{font-size:14px;color:var(--muted)}
 
 /* 리스트 카드 */
 .lw-list{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:12px}
-.lw-card{background:var(--lw-card);border:1px solid var(--lw-line);border-radius:12px;padding:14px 14px 12px;display:grid;gap:10px;scroll-margin-top:calc(var(--lw-top-h) + 60px)}
+.lw-card{background:var(--lw-card);border:1px solid var(--lw-line);border-radius:14px;padding:14px 14px 14px 16px;display:grid;gap:10px;scroll-margin-top:calc(var(--lw-top-h) + 60px)}
 .lw-card:active:not(:has(button:active)){transform:scale(.985)}
 .lw-card{transition:transform .12s var(--ease-settle),border-color .15s var(--ease-settle),box-shadow .15s var(--ease-settle)}
 /* 채점 대상(가운데 카드) — 아래 네 칸이 이 카드를 채점한다. */
 .lw-list[data-main]>.lw-card[data-focus]{border-color:var(--lw-rose);box-shadow:0 0 0 1px var(--lw-rose)}
 .lw-card__head{display:flex;align-items:center;gap:4px;min-width:0}
 .lw-card__word{flex:1 1 auto;min-width:0;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px}
-.lw-card__hw{font-size:max(20px,min(28px,calc(190px / var(--n,1))));font-weight:600;line-height:1.3} /* 긴 가나 표제어(おはようございます)는 줄여 한 줄 */
-.lw-card__mean{margin:0;font-size:16px;font-weight:700;line-height:1.55}
-.lw-card__solo{margin:0;font-size:18px;line-height:1.7;cursor:pointer}
+.lw-card__hw{font-size:max(20px,min(30px,calc(190px / var(--n,1))));font-weight:500;line-height:1.2} /* 긴 가나 표제어(おはようございます)는 줄여 한 줄 */
+.lw-card__mean{margin:0;font-size:17px;font-weight:400;line-height:1.6}
+.lw-card__solo{margin:0;font-size:21px;line-height:1.7;cursor:pointer}
 .lw-card__solo .lw-ex__text{font-size:inherit;line-height:inherit} /* 문장 탭 펼친 카드 — 접힌 줄과 같은 크기 */
 .lw-card__more{display:grid;grid-template-rows:1fr;animation:settleIn .16s var(--ease-settle) both}
 .lw-card__in{min-height:0;display:grid;gap:10px}
@@ -155,7 +160,7 @@ html:has(.lw-page){overscroll-behavior-y:none}
 @keyframes lwMoreClose{from{grid-template-rows:1fr;opacity:1}to{grid-template-rows:0fr;opacity:0;margin-top:-10px;padding-top:0;border-top-color:transparent}}
 /* 펼친 부분 위 점선 — 한 단어 카드 앞 · 뒤 점선과 같은 선, 선 → 첫 글자 간격도 한 단어 카드(약 19px)에 맞춘다(오너 2026-10-20 KST 시안 A) */
 .lw-card[data-view] .lw-card__more{border-top:1px dashed var(--lw-line);padding-top:4px}
-.lw-chip{justify-self:start;display:inline-flex;align-items:center;min-height:24px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:700;color:var(--grade-hard);background:var(--lw-warnbg)}
+.lw-chip{justify-self:start;display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;color:var(--grade-hard);background:var(--lw-warnbg)}
 .lw-card__chips{display:flex;flex-wrap:wrap;gap:6px}
 .lw-card__chips .lw-chip{justify-self:auto}
 /* 남은 시간 · 아까 본 단어 — 맨 아래 줄 오른쪽 끝, 배경 없이 읽기와 같은 회색, 같은 줄 글자와 기준선 맞춤 */
@@ -198,7 +203,8 @@ html:has(.lw-page){overscroll-behavior-y:none}
 
 /* 한 단어 모드 — 단어 52px 고정 자리, 아래 답 자리. 네 칸은 화면 아래 고정. */
 .lw-one{padding:14px 0 12px;flex:1 0 auto;display:flex;flex-direction:column}
-.lw-one__card{flex:1 0 auto;background:var(--lw-card);border:1px solid var(--lw-line);border-radius:14px;padding:8px 16px 16px;display:flex;flex-direction:column;gap:10px}
+/* 캔버스 값 — 종이 카드(모서리 3px · 옅은 그림자) */
+.lw-one__card{flex:1 0 auto;background:var(--sheet);border:1px solid var(--rule);border-radius:3px;box-shadow:0 8px 28px rgba(37,39,33,.04);padding:8px 16px 14px;display:flex;flex-direction:column;gap:10px}
 .lw-one__card.is-turning{animation:lwCardIn .2s var(--ease-settle)} /* 앞 카드가 왼쪽으로 밀려난 뒤 오른쪽에서 들어온다 */
 @keyframes lwCardIn{from{transform:translateX(28px);opacity:0}}
 /* 리스트 — 시간이 된 카드가 펼쳐진 뒤 테두리 한 번 반짝 · 「아까 본 단어」 톡 */
@@ -208,9 +214,10 @@ html:has(.lw-page){overscroll-behavior-y:none}
 @keyframes lwTimePop{0%{transform:scale(.6)}60%{transform:scale(1.12)}}
 .lw-one__front{min-height:96px;display:grid;place-items:center;text-align:center;container-type:inline-size;border-bottom:1px dashed var(--lw-line)}
 /* 긴 표제어(おはようございます · 9글자)는 카드 폭에 맞춰 줄인다 — --n = 글자 수(fitty 대신 cqi 선례). */
-.lw-one__hw{font-size:min(52px,calc(94cqi / var(--n,1)));line-height:1.25;font-weight:600;white-space:nowrap}
+.lw-one__hw{font-size:min(52px,calc(94cqi / var(--n,1)));line-height:1.25;font-weight:500;white-space:nowrap}
 .lw-one__solo{font-size:20px;line-height:1.7;text-align:center}
-.lw-one__reveal{align-self:center;margin:auto 0;min-height:48px;padding:0 22px;border:1px solid var(--rule);border-radius:999px;background:var(--paper);cursor:pointer;font-size:15px;font-weight:600}
+.lw-one__reveal{align-self:center;margin:auto 0;min-height:48px;padding:0 22px;border:1px solid var(--rule);border-radius:999px;background:var(--sheet);cursor:pointer;font-size:14px;font-weight:400}
+.lw-one__key{color:var(--muted)}
 .lw-one__reveal:active{transform:scale(.985)}
 .lw-one__back{display:grid;gap:10px;animation:settleIn .16s var(--ease-settle) both}
 .lw-one__meta{display:flex;align-items:center;gap:6px;min-height:44px}
@@ -249,23 +256,26 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-btn--primary small{color:var(--lw-chip)}
 
 /* 되돌리기 안내 — 네 칸 위(한 단어) 또는 화면 아래(리스트). 올라왔다 .15s에 사라짐, 손가락을 올리면 멈춤. */
-.lw-undo{position:fixed;left:0;right:0;margin-inline:auto;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:12px;background:var(--ink);color:var(--paper);border-radius:12px;padding:4px 6px 4px 16px;font-size:14px;max-width:calc(100vw - 32px);width:max-content;box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 25%,transparent);animation:toast-in .2s var(--ease-settle) both;transition:opacity .15s var(--ease-settle),transform .15s var(--ease-settle)}
+/* 캔버스 값(㉒) — 밝은 종이 카드 · 좌우 16px 꽉 · 「되돌리기」 장미색 */
+.lw-undo{position:fixed;left:16px;right:16px;margin-inline:auto;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--sheet);color:var(--ink);border:1px solid var(--rule);border-radius:3px;padding:4px 6px 4px 14px;font-size:13px;max-width:648px;box-shadow:0 6px 18px rgba(37,39,33,.10);animation:toast-in .2s var(--ease-settle) both;transition:opacity .15s var(--ease-settle),transform .15s var(--ease-settle)}
 .lw-page[data-mode=one] .lw-undo,.lw-page[data-mode=list] .lw-undo{bottom:calc(132px + env(safe-area-inset-bottom,0px))}
 .lw-undo.is-leaving{opacity:0;transform:translateY(4px)}
-.lw-undo button,.lw-undo a{min-height:44px;border:0;background:none;color:var(--lw-today-bg);font-weight:700;padding:0 10px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.lw-undo button,.lw-undo a{min-height:44px;border:0;background:none;color:var(--lw-rose);font-size:13px;font-weight:700;padding:0 12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
 
 /* 찾기 결과 · 줄 형식 */
 .lw-results{padding-top:8px}
 .lw-results__status{margin:4px 0 8px;font-size:13px;color:var(--muted)}
 .lw-results h2{margin:14px 0 6px;font-size:13px;font-weight:700;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
 .lw-results h2 span{font-variant-numeric:tabular-nums}
-.lw-results ul{list-style:none;margin:0;padding:0 4px 0 14px;background:var(--lw-card);border:1px solid var(--lw-line);border-radius:12px;overflow:hidden}
+.lw-results ul{list-style:none;margin:0;padding:0;background:var(--lw-card);border:1px solid var(--lw-line);border-radius:14px;overflow:hidden}
 .lw-results li+li{border-top:1px solid var(--lw-line)}
+.lw-results li{padding:0 4px 0 14px}
+.lw-results li:has(.lw-row[data-current]){background:var(--lw-row-cur)} /* 지금 카드 단어(시안 ⑨) */
 .lw-row{display:flex;align-items:center;min-height:56px}
 .lw-row__main{flex:1 1 auto;min-width:0;display:grid;gap:1px;border:0;background:none;text-align:left;padding:6px 0;cursor:pointer}
 .lw-row__head{display:flex;align-items:baseline;gap:8px;min-width:0}
-.lw-row__word{font-size:18px;font-weight:600}
-.lw-row__mean{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lw-row__word{font-size:19px;font-weight:500}
+.lw-row__mean{font-size:13.5px;color:var(--lw-review);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lw-results__none{text-align:center;padding:40px 0;display:grid;gap:6px}
 .lw-results__none b{font-size:16px}
 .lw-results__none span{font-size:13.5px;color:var(--muted)}
@@ -283,9 +293,9 @@ html:has(.lw-page){overscroll-behavior-y:none}
 @keyframes lwSheetDown{from{transform:translateY(var(--dy,0px))}to{transform:translateY(100%)}}
 @keyframes lwFadeOut{to{opacity:0}}
 .lw-scrim{position:fixed;inset:0;z-index:50;background:color-mix(in srgb,var(--ink) 34%,transparent);animation:lwFade .2s var(--ease-settle) both}
-.lw-sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;max-width:680px;margin:0 auto;background:var(--paper);border-radius:16px 16px 0 0;padding:0 16px calc(16px + env(safe-area-inset-bottom,0px));max-height:88dvh;overflow:auto;animation:viewerSheetUp .24s var(--ease-settle) both;touch-action:pan-y}
+.lw-sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;max-width:680px;margin:0 auto;background:var(--paper);border-radius:18px 18px 0 0;padding:0 16px calc(16px + env(safe-area-inset-bottom,0px));max-height:88dvh;overflow:auto;animation:viewerSheetUp .24s var(--ease-settle) both;touch-action:pan-y}
 .lw-sheet__handle{display:grid;place-items:center;height:28px;cursor:grab;touch-action:none}
-.lw-sheet__handle::before{content:'';width:40px;height:5px;border-radius:999px;background:var(--rule)}
+.lw-sheet__handle::before{content:'';width:40px;height:4px;border-radius:999px;background:var(--rule)}
 .lw-sheet__rows{display:grid;gap:14px;padding-bottom:6px}
 .lw-sheet__rows{gap:10px}
 .lw-sheet__row{display:grid;grid-template-columns:40px minmax(0,1fr);align-items:center;gap:8px}

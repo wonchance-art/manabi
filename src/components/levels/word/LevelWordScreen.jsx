@@ -743,7 +743,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
     {searchOpen
       ? <WordSearchResults query={deferred} result={result} level={level} loading={dict.state === 'loading'} fallback={dict.state === 'failed'}
         statusOf={statusOfWord} onSave={(r) => onStar(entryOfRow(r))} savingKey={saving} popKey={null} tone={tone}
-        onOpen={(r) => setCard({ word: r.word, row: r })} />
+        onOpen={(r) => setCard({ word: r.word, row: r })} currentWord={current?.word ?? null} />
       : browse && prefs.mode === 'one'
         ? <div className="lw-one">
           {browseEntry && <OneWordCard entry={browseEntry} view="all" info={cardInfo(browseEntry.key)} tiles={tilesOf(browseEntry.word, browseEntry.kr)}

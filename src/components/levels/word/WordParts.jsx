@@ -104,13 +104,13 @@ export function CharTiles({ tiles, small = false }) {
 /**
  * 줄 형식 — 단어 + 병음 / 뜻 한 줄 · HSK 태그(52px) · 상태 칸(44px). 찾기 결과 · 예문 단어 창이 같이 쓴다.
  */
-export function WordRow({ word, reading, meaning, level, status, onSave, onOpen, tone = true, saving = false, pop = false }) {
+export function WordRow({ word, reading, meaning, level, status, onSave, onOpen, tone = true, saving = false, pop = false, current = false }) {
   const L = useWordLang();
   const body = <>
     <span className="lw-row__head"><span className="lw-row__word" lang={L.hw}>{word}</span><Reading text={reading} word={word} tone={tone} /></span>
     <span className="lw-row__mean">{meaning}</span>
   </>;
-  return <div className="lw-row">
+  return <div className="lw-row" data-current={current || undefined}>
     {onOpen ? <button type="button" className="lw-row__main" onClick={onOpen}>{body}</button> : <span className="lw-row__main">{body}</span>}
     {level ? <LevelTag level={level} /> : <i className="lw-tag lw-tag--empty" />}
     <StatusPill status={status} onSave={onSave} busy={saving} pop={pop} />

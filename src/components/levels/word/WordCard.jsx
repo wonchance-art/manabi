@@ -107,7 +107,8 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
   const areaRow = <AreaRow areas={areas} next={next} />;
   if (view === 'all') {
     const last = e.ex?.text ? <Example ex={e.ex} word={e.word} speak={speak} onWord={onWord} openKey={openKey} tone={tone} tail={time} /> : null;
-    return <li className="lw-card" {...attrs} onClick={pick}>{head}{chips}{last ? mean : meanLine(time)}<CharTiles tiles={tiles} />{last}{areaRow}{grades}</li>;
+    // 「자주 틀린 단어」 칩은 단어 위(캔버스 ⑧).
+    return <li className="lw-card" {...attrs} onClick={pick}>{chips}{head}{last ? mean : meanLine(time)}<CharTiles tiles={tiles} />{last}{areaRow}{grades}</li>;
   }
   // 접힌 카드는 한 줄뿐 — 남은 시간은 그 줄 끝.
   const soloLine = (cls, body, lang) => (time ? <p className={`${cls} lw-tailrow`}><span lang={lang}>{body}</span>{time}</p> : <p className={cls} lang={lang}>{body}</p>);
@@ -131,7 +132,7 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
   const closed = (event) => { if (event.target === event.currentTarget && open === 'closing') setOpen(false); };
   const toggle = (event) => { if (!event.target.closest('button, a')) { flip(); onPick?.(); } };
   return <li className="lw-card" {...attrs} data-view={view} onClick={toggle}>
-    {solo}{chips}
+    {chips}{solo}
     <button type="button" className="sr-only" aria-expanded={open === true} onClick={flip}>{open === true ? '접기' : '펼쳐 보기'}</button>
     {grades}
     {open && <div className="lw-card__more" data-closing={open === 'closing' || undefined} onAnimationEnd={closed}><div className="lw-card__in">{rest}{areaRow}</div></div>}

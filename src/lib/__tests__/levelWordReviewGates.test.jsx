@@ -97,3 +97,26 @@ describe('시안 · 설계 문서 대조 후속(2026-10-21 KST)', () => {
     expect(screen).toContain('<>복습실 카드 · <WaitChip at={at} /> 채점해요</>');
   });
 });
+
+describe('캔버스 시각 값(오너 2026-10-21 KST 「시안대로」 · 보기 탭 밑줄만 ⑥ 승인대로)', () => {
+  const card = fs.readFileSync('src/components/levels/word/WordCard.jsx', 'utf8');
+  it.each([
+    ['진행바 먹색 · % 12.5px 보통', 'background:var(--ink);border-radius:inherit;transform-origin:left;'],
+    ['진행바 %', 'font-size:12.5px;font-weight:400;'],
+    ['한 단어 카드 종이', '.lw-one__card{flex:1 0 auto;background:var(--sheet);border:1px solid var(--rule);border-radius:3px;box-shadow:0 8px 28px rgba(37,39,33,.04);'],
+    ['되돌리기 밝은 카드 · 좌우 꽉', '.lw-undo{position:fixed;left:16px;right:16px;'],
+    ['되돌리기 장미색', 'background:none;color:var(--lw-rose);font-size:13px;font-weight:700;padding:0 12px;'],
+    ['자주 틀린 단어 알약', 'padding:3px 10px;border-radius:999px;'],
+    ['리스트 카드 글자', '.lw-card__mean{margin:0;font-size:17px;font-weight:400;line-height:1.6}'],
+    ['예문 2px · 20px', '.lw-ex{margin:0;border-left:2px solid var(--lw-ex-rule);padding:2px 0 2px 14px;'],
+    ['누른 예문 단어', '.lw-ex__w[aria-expanded=true]{background:var(--lw-ex-hit);color:var(--lw-today);'],
+    ['간격 글자 12px', '.lw-grade__gap{font-size:12px;font-weight:700}'],
+    ['시트 18px · 손잡이 4px', 'border-radius:18px 18px 0 0;'],
+    ['찾기 지금 단어 줄', '.lw-results li:has(.lw-row[data-current]){background:var(--lw-row-cur)}'],
+  ])('%s', (_, rule) => { expect(css).toContain(rule); });
+  it('칩은 단어 위 · 「· Space」는 회색', () => {
+    expect(card).toContain('{chips}{head}');
+    expect(card).toContain('{chips}{solo}');
+    expect(fs.readFileSync('src/components/levels/word/OneWord.jsx', 'utf8')).toContain('정답 확인 <span className="lw-one__key">· Space</span>');
+  });
+});

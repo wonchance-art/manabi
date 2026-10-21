@@ -18,7 +18,7 @@ export function OneWordCard({ entry: e, view, info, tiles, speak, tone, revealed
   const top = revealed ? <span className="lw-one__hw" lang={L.hw} style={{ '--n': [...hw].length }}>{hw}</span> : front;
   return <section className={`lw-one__card${turnKey ? ' is-turning' : ''}`} key={turnKey || e.key} aria-label={`${e.word} 카드`}>
     <div className="lw-one__front">{top}</div>
-    {!revealed && <button type="button" className="lw-one__reveal" onClick={onReveal} aria-keyshortcuts="Space">정답 확인 · Space</button>}
+    {!revealed && <button type="button" className="lw-one__reveal" onClick={onReveal} aria-keyshortcuts="Space">정답 확인 <span className="lw-one__key">· Space</span></button>}
     {revealed && <div className="lw-one__back">
       <div className="lw-one__meta"><Reading text={sub} word={hw} tone={tone} /><Listen speak={speak} text={e.word} /></div>
       {info.hard ? <div className="lw-one__chips"><span className="lw-chip">자주 틀린 단어 · {info.hard}번</span></div> : null}

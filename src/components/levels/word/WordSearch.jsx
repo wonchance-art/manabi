@@ -7,20 +7,21 @@ import { useWordLang } from './wordLang';
 
 const PAGE = 60;
 
-function Section({ title, rows, statusOf, onSave, savingKey, popKey, onOpen, tone }) {
+function Section({ title, rows, statusOf, onSave, savingKey, popKey, onOpen, tone, currentWord }) {
   const [limit, setLimit] = useState(PAGE);
   if (!rows.length) return null;
   return <section aria-label={title}>
     <h2>{title}<span>{rows.length}</span></h2>
     <ul>{rows.slice(0, limit).map((r) => <li key={`${r.level}:${r.word}`}>
       <WordRow word={r.word} reading={r.reading} meaning={r.meaning} level={r.level} status={statusOf(r.word)} tone={tone}
-        onSave={() => onSave(r)} saving={savingKey === r.word} pop={popKey === r.word} onOpen={() => onOpen(r)} />
+        onSave={() => onSave(r)} saving={savingKey === r.word} pop={popKey === r.word} onOpen={() => onOpen(r)} current={r.word === currentWord} />
     </li>)}</ul>
     {rows.length > limit && <div className="lw-more"><button type="button" onClick={() => setLimit((n) => n + PAGE)}>더 보기 · {rows.length - limit}개</button></div>}
   </section>;
 }
 
-export function WordSearchResults({ query, result, level, loading, fallback, statusOf, onSave, savingKey, popKey, onOpen, tone }) {
+// currentWord = 지금 보던 카드 단어 — 그 줄에 옅은 바탕(캔버스 ⑨).
+export function WordSearchResults({ query, result, level, loading, fallback, statusOf, onSave, savingKey, popKey, onOpen, tone, currentWord = null }) {
   const L = useWordLang();
   if (!query.trim()) return <div className="lw-results"><p className="lw-results__status">{L.searchHint}</p></div>;
   if (loading && !result) return <div className="lw-results"><p className="lw-results__status" aria-busy="true">사전을 받는 중…</p></div>;
@@ -30,7 +31,7 @@ export function WordSearchResults({ query, result, level, loading, fallback, sta
   }
   return <div className="lw-results">
     <p className="lw-results__status" role="status">{result.total}개 · {fallback ? `${L.tag(level)} 안에서` : `${L.scope}에서`}</p>
-    <Section key={`c:${query}`} title={`현재 레벨 · ${L.tag(level)}`} rows={result.current} {...{ statusOf, onSave, savingKey, popKey, onOpen, tone }} />
-    <Section key={`o:${query}`} title="다른 레벨" rows={result.other} {...{ statusOf, onSave, savingKey, popKey, onOpen, tone }} />
+    <Section key={`c:${query}`} title={`현재 레벨 · ${L.tag(level)}`} rows={result.current} {...{ statusOf, onSave, savingKey, popKey, onOpen, tone, currentWord }} />
+    <Section key={`o:${query}`} title="다른 레벨" rows={result.other} {...{ statusOf, onSave, savingKey, popKey, onOpen, tone, currentWord }} />
   </div>;
 }
