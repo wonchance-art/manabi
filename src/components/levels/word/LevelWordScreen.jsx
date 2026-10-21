@@ -582,6 +582,25 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
     const go = () => flushSync(() => setPrefs({ mode }));
     if (typeof document !== 'undefined' && document.startViewTransition && !reducedMotion()) document.startViewTransition(go); else go();
   };
+  // 보기 탭도 모드와 같은 0.2초 겹침(⑥-3). 줄(.lw-rows)은 따로 이름을 붙여 겹치지 않고, 고른 표시가 미끄러지는 게 그대로 보인다.
+  const switchView = (view) => {
+    if (view === prefs.view) return;
+    const go = () => flushSync(() => setPrefs({ view }));
+    if (typeof document !== 'undefined' && document.startViewTransition && !reducedMotion()) document.startViewTransition(go); else go();
+  };
+  // 탭 밑줄 — 고른 탭의 자리 · 너비를 재서 막대 하나를 옮긴다(탭 글자 폭이 달라 칸 수로는 못 정한다). 글꼴이 늦게 와도 다시 잰다.
+  const tabsRef = useRef(null);
+  const [tabBar, setTabBar] = useState(null);
+  useLayoutEffect(() => {
+    let live = true;
+    const measure = () => {
+      const b = live && tabsRef.current?.querySelector('button[aria-pressed="true"]');
+      if (b && b.offsetWidth) setTabBar((old) => (old?.x === b.offsetLeft && old?.w === b.offsetWidth ? old : { x: b.offsetLeft, w: b.offsetWidth }));
+    };
+    measure();
+    document.fonts?.ready?.then(measure);
+    return () => { live = false; };
+  }, [prefs.view, folded, searchOpen, mounted]);
   // 제목: 내려와 있거나 줄이 접혀 있으면 맨 위로 가며 펼치고, 이미 맨 위에 다 보이면 시트를 연다.
   const onTitle = () => {
     if (window.scrollY <= 0 && !folded) { setSheetOpen(true); return; }
@@ -672,12 +691,13 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
 
     {!searchOpen && <>
       <div className="lw-rows" ref={rowsRef} hidden={folded || undefined}>
-        <div className="lw-seg" role="group" aria-label="모드">
+        <div className="lw-seg" role="group" aria-label="모드" data-thumb="" style={{ '--i': prefs.mode === 'list' ? 1 : 0 }}>
           {[['one', '한 단어'], ['list', '리스트']].map(([id, label]) => <button key={id} type="button" aria-pressed={prefs.mode === id} onClick={() => switchMode(id)}>{label}</button>)}
         </div>
-        <div className="lw-tabs" role="group" aria-label="보기">
+        <div className="lw-tabs" role="group" aria-label="보기" ref={tabsRef} data-bar={tabBar ? '' : undefined}>
           {/* 탭은 이름만 — 영역 %는 단어마다 영역 줄에 있다(오너 2026-10-21 KST 「상단 퍼센트는 없애도 된다」). */}
-          {LEVEL_WORD_VIEWS.map((v) => <button key={v.id} type="button" aria-pressed={prefs.view === v.id} onClick={() => setPrefs({ view: v.id })}>{v.label}</button>)}
+          {LEVEL_WORD_VIEWS.map((v) => <button key={v.id} type="button" aria-pressed={prefs.view === v.id} onClick={() => switchView(v.id)}>{v.label}</button>)}
+          {tabBar && <i className="lw-tabs__bar" aria-hidden="true" style={{ '--x': tabBar.x, '--w': tabBar.w }} />}
         </div>
       </div>
       {userId && <div className="lw-prog" ref={progRef} data-stuck={stuck || undefined}>
@@ -758,7 +778,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
             disabled={!ready} label={<b lang={cfg.hw}>{cfg.head(focusEntry).hw}</b>} />}
         </>}
 
-    {pop && popRow && <WordPopup anchor={pop.anchor} row={popRow} tiles={tilesOf(popRow.word, popRow.kr)} tone={tone} status={statusOfWord(pop.text)}
+    {pop && popRow && <WordPopup key={pop.id} anchor={pop.anchor} row={popRow} tiles={tilesOf(popRow.word, popRow.kr)} tone={tone} status={statusOfWord(pop.text)}
       onSave={() => onStar(entryOfRow(popRow))} onClose={() => setPop(null)}
       onOpen={() => { setCard({ word: pop.text, row: popRow }); setPop(null); }} />}
 

@@ -3,7 +3,7 @@
 // 그 아래 읽기(HSK 병음 성조 색 · JLPT 가나) · 듣기 (레벨 태그 · 상태는 찾기에만 — 오너 2026-10-20 KST), 뜻, 글자 칸, 예문. 네 칸은 화면 아래 고정(앞면에서도 누를 수 있다).
 // 보기 탭은 앞면에 무엇을 보일지만 정한다(단어 · 문장 · 뜻 · 소리 · 전체). 훈음(글자 칸)은 뒷면에만.
 // 오래된 단어의 반대 방향(뜻 보고 단어 떠올리기)은 뜻 연습 탭이 맡는다(네 영역 체크 — 오너 승인 2026-10-21 KST).
-import { CharTiles, GradeButtons, Listen, Reading } from './WordParts';
+import { CharTiles, CountUp, GradeButtons, Listen, Reading } from './WordParts';
 import { Example } from './WordCard';
 import { useWordLang } from './wordLang';
 
@@ -49,9 +49,9 @@ export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabe
   const cells = [[1, 'again', '다시'], [2, 'hard', '어려움'], [3, 'good', '알맞음'], [4, 'easy', '쉬움']];
   return <section className="lw-done" aria-labelledby="lw-done-title">
     <h2 id="lw-done-title" tabIndex={-1}>오늘 이 레벨 끝</h2>
-    <p className="lw-done__sum"><b>{graded}</b>번 채점했어요{tomorrow > 0 && <> · 내일 <b>{tomorrow}</b>개가 돌아와요</>}</p>
+    <p className="lw-done__sum"><b><CountUp n={graded} /></b>번 채점했어요{tomorrow > 0 && <> · 내일 <b><CountUp n={tomorrow} /></b>개가 돌아와요</>}</p>
     <div className="lw-done__counts" aria-label="누른 횟수">
-      {cells.map(([n, cls, label]) => <span key={n} className={`lw-done__n lw-grade--${cls}`}><b>{counts[n]}</b><small>{label}</small></span>)}
+      {cells.map(([n, cls, label]) => <span key={n} className={`lw-done__n lw-grade--${cls}`}><b><CountUp n={counts[n]} /></b><small>{label}</small></span>)}
     </div>
     <div className="lw-done__actions">
       {soundCount > 0 && <button type="button" className="lw-btn lw-btn--primary lw-btn--wide" onClick={onSound}>소리로 확인할 단어 {soundCount}개

@@ -2,6 +2,7 @@
 // 네 영역 체크 화면 조각(오너 승인 2026-10-21 KST · 시안 「단어 네 영역 체크」) — 판정은 lib/levelWordAreas.
 // 영역 줄(펼친 카드 맨 아래 · 찾기 카드) · 연습 탭 두 칸(다시 볼래요 · 알아요) · 연습 안내 · 연습 끝 화면 · 전체 탭 넘기기.
 import { AREA_LABEL, AREA_STATES, LEVEL_AREAS, areaPercent, shownState } from '@/lib/levelWordAreas';
+import { CountUp } from './WordParts';
 
 /**
  * 영역 줄 — 단어 · 문장 · 뜻 · 소리, 칸마다 기억 확률 %(오너 선택 2026-10-21 KST 「영역별 기억 확률」). 색은 맞힘 · 놓침 · 처음,
@@ -61,10 +62,10 @@ const DONE_VERB = { sentence: '읽었어요', meaning: '떠올렸어요', audio:
 export function PracticeDone({ area, hits, misses, onAgain, moreCount = 0, onMore, onWordTab }) {
   return <section className="lw-done" aria-labelledby="lw-done-title">
     <h2 id="lw-done-title" tabIndex={-1}>{AREA_LABEL[area]} 연습 끝</h2>
-    <p className="lw-done__sum"><b>{hits + misses}</b>개 {DONE_VERB[area]}</p>
+    <p className="lw-done__sum"><b><CountUp n={hits + misses} /></b>개 {DONE_VERB[area]}</p>
     <div className="lw-done__counts lw-done__counts--two" aria-label="답한 수">
-      <span className="lw-done__n lw-done__n--know"><b>{hits}</b><small>알아요</small></span>
-      <span className="lw-done__n lw-done__n--again"><b>{misses}</b><small>다시 볼래요</small></span>
+      <span className="lw-done__n lw-done__n--know"><b><CountUp n={hits} /></b><small>알아요</small></span>
+      <span className="lw-done__n lw-done__n--again"><b><CountUp n={misses} /></b><small>다시 볼래요</small></span>
     </div>
     <div className="lw-done__actions">
       {misses > 0 && <button type="button" className="lw-btn lw-btn--primary lw-btn--wide" onClick={onAgain}>놓친 {misses}개 한 번 더

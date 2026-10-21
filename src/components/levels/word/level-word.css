@@ -47,9 +47,21 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px;padding:3px;border-radius:12px;background:var(--lw-chip)}
 .lw-seg button{min-height:40px;border:0;border-radius:10px;background:none;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer}
 .lw-seg button[aria-pressed=true]{background:var(--lw-card);color:var(--ink);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 14%,transparent)}
+/* 고른 표시가 미끄러진다(⑥-3, iOS 분할 단추 선례) — 칸 너비가 같아 표시 하나를 --i칸만큼 옮긴다. */
+.lw-seg[data-thumb]{position:relative}
+.lw-seg[data-thumb]::before{content:'';position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px - (var(--n,2) - 1) * 2px) / var(--n,2));border-radius:10px;background:var(--lw-card);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 14%,transparent);transform:translateX(calc(var(--i,0) * (100% + 2px)));transition:transform .2s var(--ease-settle)}
+.lw-seg[data-thumb] button{position:relative}
+.lw-seg[data-thumb] button[aria-pressed=true]{background:none;box-shadow:none}
 .lw-tabs{display:flex;gap:22px;border-bottom:1px solid var(--lw-line);font-size:14px;overflow-x:auto;scrollbar-width:none}
 .lw-tabs button{flex:none;min-height:44px;border:0;background:none;padding:0;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;display:inline-flex;flex-direction:column;align-items:center;justify-content:center}
 .lw-tabs button[aria-pressed=true]{color:var(--ink);font-weight:700;border-bottom-color:var(--ink)}
+.lw-tabs{position:relative}
+.lw-tabs[data-bar] button[aria-pressed=true]{border-bottom-color:transparent}
+.lw-tabs__bar{position:absolute;left:0;bottom:0;height:2px;width:calc(var(--w) * 1px);background:var(--ink);pointer-events:none;transform:translateX(calc(var(--x) * 1px));transition:transform .2s var(--ease-settle),width .2s var(--ease-settle)}
+/* 모드 · 보기 전환의 화면 겹침에서 줄은 빼서(따로 이름) 고른 표시가 미끄러지는 게 보이게 한다. */
+.lw-rows{view-transition-name:lw-rows}
+::view-transition-old(lw-rows){display:none}
+::view-transition-new(lw-rows){animation:none}
 /* 연습 탭 안내 · 순서 칩 */
 .lw-practice{display:grid;gap:6px;margin:4px 0 0}
 .lw-practice__note{margin:0;font-size:12.5px;color:var(--grade-hard);background:var(--lw-warnbg);border-radius:8px;padding:6px 10px}
@@ -134,7 +146,11 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-card__hw{font-size:max(20px,min(28px,calc(190px / var(--n,1))));font-weight:600;line-height:1.3} /* 긴 가나 표제어(おはようございます)는 줄여 한 줄 */
 .lw-card__mean{margin:0;font-size:16px;font-weight:700;line-height:1.55}
 .lw-card__solo{margin:0;font-size:18px;line-height:1.7;cursor:pointer}
-.lw-card__more{display:grid;gap:10px;animation:settleIn .16s var(--ease-settle) both}
+.lw-card__more{display:grid;grid-template-rows:1fr;animation:settleIn .16s var(--ease-settle) both}
+.lw-card__in{min-height:0;display:grid;gap:10px}
+/* 접힐 때(⑥-2) — 옛 목록 4판 「닫히는 중」과 같은 방식: 칸 높이를 0으로, 카드 사이 간격(gap 10px)까지 같이 줄인다. */
+.lw-card__more[data-closing]{overflow:hidden;pointer-events:none;animation:lwMoreClose .2s var(--ease-settle) both}
+@keyframes lwMoreClose{from{grid-template-rows:1fr;opacity:1}to{grid-template-rows:0fr;opacity:0;margin-top:-10px;padding-top:0;border-top-color:transparent}}
 /* 펼친 부분 위 점선 — 한 단어 카드 앞 · 뒤 점선과 같은 선, 선 → 첫 글자 간격도 한 단어 카드(약 19px)에 맞춘다(오너 2026-10-20 KST 시안 A) */
 .lw-card[data-view] .lw-card__more{border-top:1px dashed var(--lw-line);padding-top:4px}
 .lw-chip{justify-self:start;display:inline-flex;align-items:center;min-height:24px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:700;color:var(--grade-hard);background:var(--lw-warnbg)}
@@ -210,6 +226,11 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-done__counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 .lw-done__counts--two{grid-template-columns:repeat(2,minmax(0,1fr))}
 .lw-done__n{border-radius:3px;padding:8px 0 6px;border:1px solid var(--rule);display:grid;gap:0}
+/* 칸이 차례로(⑥-4) — 40ms씩 늦게, 한 칸은 0.2초. */
+.lw-done__n{animation:settleIn .2s var(--ease-settle) both}
+.lw-done__n:nth-child(2){animation-delay:.04s}
+.lw-done__n:nth-child(3){animation-delay:.08s}
+.lw-done__n:nth-child(4){animation-delay:.12s}
 .lw-done__n b{font-size:18px;font-variant-numeric:tabular-nums}
 .lw-done__n small{font-size:12px;color:var(--muted)}
 .lw-done__counts .lw-grade--again b,.lw-done__n--again b{color:var(--grade-again)}.lw-done__counts .lw-grade--hard b{color:var(--grade-hard)}
@@ -249,6 +270,11 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-pop .lw-pop__open{justify-self:stretch;min-height:40px;border-top:1px solid var(--lw-line);margin:0 -12px -10px;padding:0 14px;font-weight:600;font-size:13px;display:flex;align-items:center}
 
 /* 제목 ▾ 시트 · 단어 카드 창 — 아래에서 올라오고 뒷배경이 어두워짐, 손잡이를 아래로 끌면 닫힘. */
+.lw-scrim.is-closing,.lw-pop.is-closing{pointer-events:none;animation:lwFadeOut .2s var(--ease-settle) both}
+.lw-pop.is-closing{animation-duration:.12s}
+.lw-sheet.is-closing{pointer-events:none;animation:lwSheetDown .2s var(--ease-settle) both}
+@keyframes lwSheetDown{from{transform:translateY(var(--dy,0px))}to{transform:translateY(100%)}}
+@keyframes lwFadeOut{to{opacity:0}}
 .lw-scrim{position:fixed;inset:0;z-index:50;background:color-mix(in srgb,var(--ink) 34%,transparent);animation:lwFade .2s var(--ease-settle) both}
 .lw-sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;max-width:680px;margin:0 auto;background:var(--paper);border-radius:16px 16px 0 0;padding:0 16px calc(16px + env(safe-area-inset-bottom,0px));max-height:88dvh;overflow:auto;animation:viewerSheetUp .24s var(--ease-settle) both;touch-action:pan-y}
 .lw-sheet__handle{display:grid;place-items:center;height:28px;cursor:grab;touch-action:none}
@@ -273,11 +299,15 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-mini{display:inline-flex;gap:2px;padding:2px;border-radius:10px;background:var(--lw-chip)}
 .lw-mini button{min-width:44px;min-height:44px;border:0;border-radius:8px;background:none;font-size:14px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;cursor:pointer}
 .lw-mini button[aria-pressed=true]{background:var(--paper);color:var(--ink);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 14%,transparent)}
+.lw-mini[data-thumb]{position:relative}
+.lw-mini[data-thumb]::before{content:'';position:absolute;top:2px;bottom:2px;left:2px;width:44px;border-radius:8px;background:var(--paper);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 14%,transparent);transform:translateX(calc(var(--i,0) * 46px));transition:transform .2s var(--ease-settle)}
+.lw-mini[data-thumb] button{position:relative;width:44px}
+.lw-mini[data-thumb] button[aria-pressed=true]{background:none;box-shadow:none}
 .lw-sheet .lw-card{border:0;padding:0;background:none}
 @keyframes lwFade{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){
   .lw-top--search .lw-searchbox,.lw-rows.is-height-settling,.lw-bar i,.lw-status.is-popping,.lw-grade,.lw-two__btn,.lw-card,.lw-card__more,.lw-one__card.is-turning,
-  .lw-switch i,.lw-switch i::after,.lw-one__back,.lw-done,.lw-undo,.lw-pop,.lw-scrim,.lw-sheet,.lw-prog,.lw-card.is-arrived,.lw-card.is-arrived .lw-time{animation:none;transition:none}
+  .lw-switch i,.lw-switch i::after,.lw-seg[data-thumb]::before,.lw-mini[data-thumb]::before,.lw-tabs__bar,.lw-card__more[data-closing],.lw-done__n,.lw-scrim.is-closing,.lw-pop.is-closing,.lw-sheet.is-closing,.lw-one__back,.lw-done,.lw-undo,.lw-pop,.lw-scrim,.lw-sheet,.lw-prog,.lw-card.is-arrived,.lw-card.is-arrived .lw-time{animation:none;transition:none}
   .lw-grade:active:not(:disabled),.lw-two__btn:active:not(:disabled),.lw-card:active:not(:has(button:active)),.lw-one__reveal:active{transform:none}
 }
 /* 모드 전환(한 단어 ↔ 리스트) — View Transitions API(없는 브라우저는 바로 바뀜). 0.2초 겹침. */

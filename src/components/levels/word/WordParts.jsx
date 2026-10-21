@@ -1,7 +1,8 @@
 'use client';
 // 단어 페이지 부품(오너 확정 2026-10-19 KST · 문서 「단어 설명 형식」) — 한 단어 모드 · 리스트 · 찾기 · 예문 창이 같이 쓴다.
 // HSK · JLPT 두 판이 같이 쓴다: 표제어 lang · 태그 · 읽기 줄(병음 · 가나)은 판(useWordLang)에서 받는다.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { reducedMotion } from '@/lib/reducedMotion';
 import { SAVE_GRADES } from '@/lib/vocabIO';
 import { LEVEL_WORD_STATUS } from '@/lib/levelWordStatus';
 import { useWordLang } from './wordLang';
@@ -114,4 +115,25 @@ export function WordRow({ word, reading, meaning, level, status, onSave, onOpen,
     {level ? <LevelTag level={level} /> : <i className="lw-tag lw-tag--empty" />}
     <StatusPill status={status} onSave={onSave} busy={saving} pop={pop} />
   </div>;
+}
+
+/** 끝 화면 숫자 — 앞 값(처음은 0)에서 n까지 0.3초에 올라간다(⑥-4 · 보상 순간은 짧게). 화면 읽기는 처음부터 n, 동작 줄이기면 바로 n. */
+export function CountUp({ n }) {
+  const from = useRef(0);
+  const [shown, setShown] = useState(0);
+  useEffect(() => {
+    const start = from.current;
+    from.current = n;
+    if (reducedMotion() || start === n) { setShown(n); return undefined; }
+    let raf = 0;
+    const t0 = performance.now();
+    const step = (t) => {
+      const k = Math.min(1, (t - t0) / 300);
+      setShown(Math.round(start + (n - start) * (1 - (1 - k) ** 3)));
+      if (k < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [n]);
+  return <><span aria-hidden="true">{shown}</span><span className="sr-only">{n}</span></>;
 }

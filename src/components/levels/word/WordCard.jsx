@@ -7,6 +7,7 @@
 // 어려운 단어(자주 틀린 단어 · N번)는 오늘 복습 카드에만. 오래된 단어의 반대 방향은 뜻 연습 탭이 맡는다(네 영역 체크 — 오너 승인 2026-10-21 KST).
 // 네 영역 줄(단어 · 문장 · 뜻 · 소리)과 「2일 뒤 복습」은 펼친 부분 맨 아래 · 전체 탭 카드 · 찾기 카드에만.
 import { useState } from 'react';
+import { reducedMotion } from '@/lib/reducedMotion';
 import { CharTiles, GradeButtons, LevelTag, Listen, Reading, StatusPill, WaitChip } from './WordParts';
 import { AreaRow } from './WordAreas';
 import { useWordLang } from './wordLang';
@@ -79,7 +80,7 @@ export function Example({ ex, word, speak, onWord, openKey, showText = true, ton
 export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, tone, onGrade, onSave, saving, pop, onWord, openKey, note, id,
   grades: inline = false, search = false, focused = false, onPick, onOpen, due = false, wait = null, areas = null, next = null }) {
   const L = useWordLang();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false); // false | true | 'closing'(접히는 0.2초 — 오너 2026-10-21 KST ⑥-2)
   const { hw, sub } = L.head(e);
   const listen = <Listen speak={speak} text={e.word} />;
   const reading = <Reading text={sub} word={hw} tone={tone} />;
@@ -113,12 +114,17 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
     : view === 'sentence' ? <>{e.ex && <Example ex={e.ex} word={e.word} speak={speak} showText={false} tone={tone} />}{head}{mean}<CharTiles tiles={tiles} /></>
       : view === 'meaning' ? <>{head}<CharTiles tiles={tiles} />{ex}</>
         : <>{head}{mean}<CharTiles tiles={tiles} />{ex}</>;
-  const flip = () => { if (!open) onOpen?.(); setOpen(!open); };
+  const flip = () => {
+    if (open === true) { setOpen(reducedMotion() ? false : 'closing'); return; }
+    if (!open) onOpen?.();
+    setOpen(true);
+  };
+  const closed = (event) => { if (event.target === event.currentTarget && open === 'closing') setOpen(false); };
   const toggle = (event) => { if (!event.target.closest('button, a')) { flip(); onPick?.(); } };
   return <li className="lw-card" {...attrs} data-view={view} onClick={toggle}>
     {solo}{chips}
-    <button type="button" className="sr-only" aria-expanded={open} onClick={flip}>{open ? '접기' : '펼쳐 보기'}</button>
+    <button type="button" className="sr-only" aria-expanded={open === true} onClick={flip}>{open === true ? '접기' : '펼쳐 보기'}</button>
     {grades}
-    {open && <div className="lw-card__more">{rest}{areaRow}</div>}
+    {open && <div className="lw-card__more" data-closing={open === 'closing' || undefined} onAnimationEnd={closed}><div className="lw-card__in">{rest}{areaRow}</div></div>}
   </li>;
 }

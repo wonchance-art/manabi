@@ -46,3 +46,30 @@ describe('제목 시트 — 레벨 · 목록 · 보기', () => {
     expect(screen).toContain('`p${roundOn ? round.answers.size : 0}`');
   });
 });
+
+// 계약: 움직임 ⑥ 1~4(오너 2026-10-21 KST 「1~4」) — 닫힘도 움직이고, 고른 표시는 미끄러지고, 끝 화면 숫자는 올라간다. 모두 동작 줄이기면 없음.
+describe('움직임 ⑥ — 닫힘 · 미끄러짐 · 끝 화면', () => {
+  const read = (f) => fs.readFileSync(f, 'utf8');
+  const sheets = read('src/components/levels/word/WordSheets.jsx');
+  const css = read('src/components/levels/word/level-word.css');
+  it('시트 · 예문 단어 창은 닫히는 중을 거쳐 닫힌다 — 동작 줄이기면 바로', () => {
+    expect(sheets).toMatch(/if \(reducedMotion\(\)\) \{ latest\.current\(\); return; \}/);
+    expect(sheets.match(/useClosing\(onClose, \d+\)/g)).toHaveLength(2);
+    expect(sheets).not.toMatch(/onClick=\{onClose\}|\) onClose\(\);/);
+    expect(css).toMatch(/\.lw-sheet\.is-closing\{[^}]*animation:lwSheetDown/);
+  });
+  it('리스트 카드 접힘도 움직인다 — 동작 줄이기면 바로 접힘', () => {
+    expect(read('src/components/levels/word/WordCard.jsx')).toMatch(/setOpen\(reducedMotion\(\) \? false : 'closing'\)/);
+    expect(css).toMatch(/\.lw-card__more\[data-closing\]\{[^}]*animation:lwMoreClose/);
+  });
+  it('모드 칸 · 탭 밑줄 · 리스트 한 번에 칸은 고른 표시가 미끄러진다', () => {
+    expect(css).toMatch(/\.lw-seg\[data-thumb\]::before\{[^}]*transition:transform/);
+    expect(css).toMatch(/\.lw-mini\[data-thumb\]::before\{[^}]*transition:transform/);
+    expect(css).toMatch(/\.lw-tabs__bar\{[^}]*transition:transform/);
+    expect(read('src/components/levels/word/LevelWordScreen.jsx')).toMatch(/onClick=\{\(\) => switchView\(v\.id\)\}/);
+  });
+  it('끝 화면 숫자 — 화면 읽기는 처음부터 최종 값', async () => {
+    const { CountUp } = await import('@/components/levels/word/WordParts');
+    expect(renderToStaticMarkup(<CountUp n={20} />)).toBe('<span aria-hidden="true">0</span><span class="sr-only">20</span>');
+  });
+});

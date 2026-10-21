@@ -1,40 +1,61 @@
 'use client';
 // 제목 ▾ 시트 · 단어 카드 창 · 예문 단어 창 — 뷰어 시트와 같은 움직임(viewerSheetUp · 손잡이를 아래로 끌면 닫힘).
 import Link from 'next/link';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { reducedMotion } from '@/lib/reducedMotion';
 import { CharTiles, WordRow } from './WordParts';
 import { useWordLang } from './wordLang';
 
 const CLOSE_DRAG_PX = 80;
 
+/**
+ * 닫힘 움직임 — 닫기를 부르면 ms 동안 「닫히는 중」으로 두었다가 onClose(열릴 때만 움직이고 닫힐 때 뚝 사라지던 것, 오너 2026-10-21 KST ⑥-1).
+ * 동작 줄이기면 바로 닫는다. 타이머라 animationend가 안 와도(숨은 탭) 닫히고, 먼저 지워지면 정리된다.
+ */
+function useClosing(onClose, ms) {
+  const [closing, setClosing] = useState(false);
+  const latest = useRef(onClose);
+  latest.current = onClose;
+  const timer = useRef(null);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const close = useCallback(() => {
+    if (timer.current) return;
+    if (reducedMotion()) { latest.current(); return; }
+    setClosing(true);
+    timer.current = setTimeout(() => latest.current(), ms);
+  }, [ms]);
+  return [closing, close];
+}
+
 /** 아래 시트 — Esc · 뒷배경 · 손잡이 끌기로 닫힌다. 열리면 첫 조작 요소에 초점, 닫히면 연 자리로 돌려준다. */
 export function Sheet({ label, onClose, children }) {
   const ref = useRef(null);
   const drag = useRef(null);
   const [dy, setDy] = useState(0);
+  const [closing, close] = useClosing(onClose, 200);
   useLayoutEffect(() => {
     const opener = document.activeElement;
     ref.current?.querySelector('a, button:not(.lw-sheet__handle), input, select')?.focus({ preventScroll: true });
     return () => { if (opener && document.contains(opener)) opener.focus({ preventScroll: true }); };
   }, []);
   useEffect(() => {
-    const onKey = (event) => { if (event.key === 'Escape') { event.stopPropagation(); onClose(); } };
+    const onKey = (event) => { if (event.key === 'Escape') { event.stopPropagation(); close(); } };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, [onClose]);
+  }, [close]);
   const down = (event) => { drag.current = { y: event.clientY, id: event.pointerId }; event.currentTarget.setPointerCapture?.(event.pointerId); };
   const move = (event) => { if (drag.current?.id === event.pointerId) setDy(Math.max(0, event.clientY - drag.current.y)); };
   const up = (event) => {
     if (drag.current?.id !== event.pointerId) return;
     drag.current = null;
-    if (dy > CLOSE_DRAG_PX) onClose(); else setDy(0);
+    if (dy > CLOSE_DRAG_PX) close(); else setDy(0);
   };
   return <>
-    <div className="lw-scrim" onClick={onClose} aria-hidden="true" />
-    <div className="lw-sheet" role="dialog" aria-modal="true" aria-label={label} ref={ref}
-      style={dy ? { transform: `translateY(${dy}px)`, transition: 'none' } : reducedMotion() ? undefined : { transition: 'transform .2s var(--ease-settle)' }}>
-      <button type="button" className="lw-sheet__handle" aria-label="닫기" onClick={onClose}
+    <div className={`lw-scrim${closing ? ' is-closing' : ''}`} onClick={close} aria-hidden="true" />
+    {/* 닫히는 중에는 끌던 자리(--dy)에서 아래로 내려간다. */}
+    <div className={`lw-sheet${closing ? ' is-closing' : ''}`} role="dialog" aria-modal="true" aria-label={label} ref={ref}
+      style={closing ? { '--dy': `${dy}px` } : dy ? { transform: `translateY(${dy}px)`, transition: 'none' } : reducedMotion() ? undefined : { transition: 'transform .2s var(--ease-settle)' }}>
+      <button type="button" className="lw-sheet__handle" aria-label="닫기" onClick={close}
         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} />
       {children}
     </div>
@@ -64,7 +85,7 @@ export function TitleSheet({ levels, levelKey, kinds, aidLabel, aid, page, pageS
         <div className="lw-sheet__view">
           <button type="button" role="switch" className="lw-switch" aria-checked={aid} onClick={() => onAid(!aid)}>{aidLabel}<i aria-hidden="true" /></button>
           <div className="lw-sheet__page"><span id="lw-page-size">리스트 한 번에</span>
-            <span className="lw-mini" role="group" aria-labelledby="lw-page-size">
+            <span className="lw-mini" role="group" aria-labelledby="lw-page-size" data-thumb="" style={{ '--i': Math.max(0, pageSizes.indexOf(page)) }}>
               {pageSizes.map((n) => <button key={n} type="button" aria-pressed={page === n} onClick={() => onPage(n)}>{n}</button>)}
             </span></div>
         </div></div>
@@ -75,6 +96,7 @@ export function TitleSheet({ levels, levelKey, kinds, aidLabel, aid, page, pageS
 /** 예문 단어 창 — 누른 단어 바로 아래(넘치면 위)에 줄 형식 + 글자 칸 + 「단어 카드 열기 ›」. */
 export function WordPopup({ anchor, row, tiles, tone, status, onSave, onOpen, onClose }) {
   const ref = useRef(null);
+  const [closing, close] = useClosing(onClose, 120);
   const [pos, setPos] = useState(null);
   useLayoutEffect(() => {
     const r = anchor?.getBoundingClientRect?.();
@@ -86,15 +108,15 @@ export function WordPopup({ anchor, row, tiles, tone, status, onSave, onOpen, on
     setPos({ left, top });
   }, [anchor, row]);
   useEffect(() => {
-    const onKey = (event) => { if (event.key === 'Escape') onClose(); };
-    const onDown = (event) => { if (!ref.current?.contains(event.target) && event.target !== anchor) onClose(); };
-    const onScroll = () => onClose();
+    const onKey = (event) => { if (event.key === 'Escape') close(); };
+    const onDown = (event) => { if (!ref.current?.contains(event.target) && event.target !== anchor) close(); };
+    const onScroll = () => close();
     window.addEventListener('keydown', onKey);
     window.addEventListener('pointerdown', onDown, true);
     window.addEventListener('scroll', onScroll, { passive: true, once: true });
     return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('pointerdown', onDown, true); window.removeEventListener('scroll', onScroll); };
-  }, [anchor, onClose]);
-  return <div className="lw-pop" role="dialog" aria-label={`${row.word} 단어`} ref={ref} style={pos ? { left: pos.left, top: pos.top } : { visibility: 'hidden', left: 0, top: 0 }}>
+  }, [anchor, close]);
+  return <div className={`lw-pop${closing ? ' is-closing' : ''}`} role="dialog" aria-label={`${row.word} 단어`} ref={ref} style={pos ? { left: pos.left, top: pos.top } : { visibility: 'hidden', left: 0, top: 0 }}>
     <WordRow word={row.word} reading={row.reading} meaning={row.meaning || '사전에 없는 단어예요'} level={row.level} status={status} onSave={onSave} tone={tone} />
     <CharTiles tiles={tiles} small />
     {onOpen && <button type="button" className="lw-pop__open" onClick={onOpen}>단어 카드 열기 ›</button>}
