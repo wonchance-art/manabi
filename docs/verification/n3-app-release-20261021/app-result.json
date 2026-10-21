@@ -1,0 +1,34 @@
+{
+  "passed": true,
+  "scope": "Actual local Next app, synthetic learner and isolated HTTP memory backend only",
+  "editionId": "4978c146953f14140bcb49d2",
+  "contentHash": "4978c146953f14140bcb49d21bc58d236195ad73d1568dc0d516c2546547aaf5",
+  "bundleHash": "1dfbabcd4369412ca5d80f5a3ba5c01070f9f233dc2dcd787f8235eef8dbad62",
+  "records": [
+    {
+      "file": "CANDIDATE-PREFLIGHT.json",
+      "sha256": "6bdd72e3cc162bf2b6a1f75384233950da41c012882a6353244c29829bbfa251"
+    },
+    {
+      "file": "ACCEPTANCE.json",
+      "sha256": "ac0ff540a5129e7bafebea5edd0e5dfcd8c52a65819bf2a9ae543715d2da105f"
+    },
+    {
+      "file": "API-ALL48-ASSETS.json",
+      "sha256": "f00bc9f8335d2911b53baf72c7aaa46d3e9c71008d3e380c3211b83539e30b04"
+    },
+    {
+      "file": "HTTP-PERSISTENCE-EVIDENCE.json",
+      "sha256": "20bfe61746fc726c02de6e3d2eadc4fa94cf06f6b78f135f3b76cc1d0d865998"
+    },
+    {
+      "file": "APP-MATRIX.json",
+      "sha256": "68934428973b1cc6d2b7da443d3cea78d5e03605961473c1e95a45bcc53dd3ad"
+    }
+  ],
+  "actualOperatingLogin": false,
+  "postgresRlsVerified": false,
+  "hostedPublication": false,
+  "ttsVerified": false,
+  "fullStateFsrsEnrollment": false
+}

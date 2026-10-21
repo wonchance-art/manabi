@@ -1,0 +1,24 @@
+/* N3 additions to the unchanged N5 visual language. Generated after pinned N5 CSS. */
+/* The standalone body is the query container; its zero-margin inline size is the viewport. */
+body{container-type:inline-size}
+.sidebar nav a{display:flex;gap:12px;padding:12px;border:1px solid var(--line);border-radius:6px;font-size:13px;line-height:1.6;background:#fff;color:var(--ink)}
+.sidebar nav a.active{border-color:var(--edge);background:#f4e6ef;color:var(--mauve)}
+.sidebar nav a b{font-size:12px}.draft-banner{max-width:790px;margin:0 auto 16px;font-size:12px;color:var(--muted)}
+.hide-meanings .meaning{visibility:hidden}.hide-readings .reading-note{visibility:hidden}
+.hide-readings rt{visibility:hidden}
+.reading-note{display:block;font-family:JP,serif;font-size:12px;color:var(--muted);line-height:1.6}
+.n3-unit-links{display:flex;flex-wrap:wrap;gap:6px 18px;margin:18px 0;font-size:12px}
+.n3-unit-links a,.book-links a{min-height:44px;display:inline-flex;align-items:center}
+.n3-answer{margin:16px 0;padding:15px 18px;border:1px solid var(--edge);border-radius:6px;background:#fff9f5}
+.n3-answer summary{cursor:pointer;min-height:30px;font-size:13px;color:var(--mauve)}
+.n3-answer p{font-size:14px}.n3-answer [lang=ja]{font-size:19px}.paper{scroll-margin-top:18px;overflow-wrap:anywhere}
+.n3-reference{display:grid;grid-template-columns:1fr 1fr;gap:10px}.n3-reference>div{border:1px solid var(--line);border-radius:5px;padding:12px 15px;min-width:0}
+.n3-reference [lang=ja]{font-size:19px}.n3-reference p{font-size:13px;margin:4px 0}.n3-reference a{font-size:12px}
+.reading{white-space:pre-line}.oral{grid-template-columns:1fr}.check label [lang=ja]{font-size:18px}
+.words>div{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.example>[lang=ja]{display:block}
+.n3-study-row{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.n3-study-row b{font-size:12px}.n3-study-row [lang=ja]{font-size:18px}.n3-study-row p{font-size:12px;margin:4px 0}
+input:focus-visible{outline:3px solid #b98fa8;outline-offset:3px}.check input{min-width:18px;min-height:18px}
+@container(max-width:700px){.layout{display:block}.sidebar{position:relative;max-height:none;padding:18px 16px}.sidebar h1{font-size:20px;margin:8px 0 14px}.sidebar nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-height:230px;overflow:auto}.sidebar .small{display:none}main{padding:16px 12px 80px}.paper{padding:24px 20px}.top{padding:12px 18px;gap:14px}.top>span{font-size:11px}.words{padding:9px 12px}.turn{gap:9px;padding:12px}.turn>b{flex-basis:40px}.n3-reference{grid-template-columns:1fr}.modebar{gap:6px}.modebar button,.modebar a{font-size:12px}.paper h2{font-size:24px}}
+
+/* Preserve wrapped ruby answer labels at narrow widths. */
+.check label>span{min-width:0;flex:1;overflow-wrap:anywhere}

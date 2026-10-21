@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "portsClosed": {
+    "49121": true,
+    "49122": true
+  },
+  "activeQAOrHelperProcesses": [],
+  "activeChromiumProcesses": [],
+  "unrelatedProcessesStopped": false,
+  "knownOwnedZombieProcesses": "Exited reparented zombies remain but execute no code and own no listeners."
+}

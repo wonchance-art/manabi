@@ -1,0 +1,675 @@
+{
+  "status": "passed-independent-source-language-review",
+  "reviewer": "/root/n3_curriculum",
+  "author": "/root/n3_author_a",
+  "checkedAt": "2026-10-21T11:38:07.128502+00:00",
+  "scope": "All source fields of A-authored u01-u16: explanations, examples, dialogue, comprehension, 48 MCQ, 32 oral tasks, 16 readings and 16 writing tasks; contextual reading, allowed alternatives, actual N4/N3 recall function and first-presentation/review labels. Own book excluded; book is independently reviewed by /root. Rendered/browser/account/deployment are separate gates.",
+  "pinnedN5Edition": "8a8c1c1fd452773810abaf8c",
+  "pinnedN4Edition": "f4a6411c0945bbd3f8767af7",
+  "units": {
+    "u01": {
+      "status": "passed",
+      "sourceSha256": "6de044387febf5b81ac9106373e0ff3782845c8c738420724ea7d65b1ab189b1",
+      "method": "reused-identical-source-review",
+      "observations": {
+        "reusedReceipt": "U01-INDEPENDENT-REVIEW.json",
+        "sourceIdentical": true,
+        "resolved": [
+          "U01-WRITING-UTTERANCE-PURPOSE",
+          "U01-CONTEXTUAL-KURU-READING"
+        ]
+      },
+      "actualN3Recall": [],
+      "actualN4Recall": [
+        {
+          "unit": 2,
+          "fieldPath": "reading",
+          "quote": "「本がなくても大丈夫です」と言ってから",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[1]",
+          "retrievedUse": "인용한 말을 と言う로 받아 친구에게 전달하는 행위를 표현해요."
+        },
+        {
+          "unit": 3,
+          "fieldPath": "dialog[7].ja",
+          "quote": "本を読むことが好きです",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[2]",
+          "retrievedUse": "책을 읽는 행동을 こと로 명사화해 好き의 대상으로 써요."
+        }
+      ],
+      "wordOccurrences": 12,
+      "firstPresentationLabelOccurrences": 8,
+      "mcq": 3,
+      "oral": 2
+    },
+    "u02": {
+      "status": "passed",
+      "sourceSha256": "2bdb06738013046df419da4f1c2abfc3fa422359a396019f447ea3c60a5c983c",
+      "method": "independent-complete-review-plus-word-label-delta",
+      "observations": {
+        "meaning": "Definition というのは and sourced report ということだ separated; ground-floor assembly and availability of second floor do not imply exclusive second-floor assignment.",
+        "answers": "All three MCQ answers unique; dialogue, reading answer and next action preserve permission vs assigned room; free answer alternatives scoped.",
+        "readings": "話す会はなすかい,二階にかい,来てきて/来るくる,言葉ことば and compound maps checked in actual strings.",
+        "recall": "N3u01 name-introduction quote; corrected N4u02 reported-quotation evidence rather than incorrectly claiming N4u18.",
+        "resolved": [
+          "U02-RECALL-SOURCE-18-TO-02",
+          "U02-PLAIN-FORM-FIRST"
+        ]
+      },
+      "actualN3Recall": [
+        {
+          "unit": 1,
+          "fieldPath": "dialog[0].ja",
+          "quote": "「交流会」という言葉"
+        }
+      ],
+      "actualN4Recall": [
+        {
+          "unit": 2,
+          "fieldPath": "patterns[1].examples[1].ja",
+          "quote": "担当者は、参加は無料だと言っていました。",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[1]"
+        }
+      ],
+      "wordOccurrences": 12,
+      "firstPresentationLabelOccurrences": 6,
+      "mcq": 3,
+      "oral": 2
+    },
+    "u03": {
+      "status": "passed",
+      "sourceSha256": "0c47ffc83d0b604739c2474c56aeb5d34301bc02a7befb25a75aa326a4078815",
+      "method": "independent-complete-review-plus-word-label-delta",
+      "observations": {
+        "meaning": "Generic reputation is not a survey of every participant or a truth guarantee; 20 participants are last year record, current year remains undecided.",
+        "answers": "Origin of reputation vs numeric record, year and limits agree across dialogue/reading/MCQ/writing.",
+        "readings": "二十人にじゅうにん,紹介文しょうかいぶん,人数にんずう,分けてわけて and 言われていますいわれています checked.",
+        "recall": "N3u02 ということです in actual example and N4u18 だったそうです in actual dialogue.",
+        "resolved": [
+          "U03-PLAIN-FORM-FIRST"
+        ]
+      },
+      "actualN3Recall": [
+        {
+          "unit": 2,
+          "fieldPath": "patterns[1].examples[1].ja",
+          "quote": "ということです"
+        }
+      ],
+      "actualN4Recall": [
+        {
+          "unit": 18,
+          "fieldPath": "dialog[2].ja",
+          "quote": "二十人だったそうです",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[17]"
+        }
+      ],
+      "wordOccurrences": 12,
+      "firstPresentationLabelOccurrences": 4,
+      "mcq": 3,
+      "oral": 2
+    },
+    "u04": {
+      "status": "passed",
+      "sourceSha256": "cee796554acbd1f4378c4e021ab5d4a30a5aea8acdb4177f5627669c02c66479",
+      "method": "independent-complete-review-plus-word-label-delta",
+      "observations": {
+        "meaning": "について and に関して overlap without fake single-answer synonym discrimination; adnominal についての/に関する explicitly shown as same core families.",
+        "answers": "Submission destination is ground-floor reception; books optional. Two topics and free-response form conditions remain exact.",
+        "readings": "申込書もうしこみしょ,関するかんする,来なくてもこなくても,何なに plus compound maps checked.",
+        "recall": "N3u01 quoted event name and N4u04 embedded wh-clause quote actual-source matched.",
+        "resolved": [
+          "U04-PREMATURE-N-RASHII",
+          "U04-ADNOMINAL-SOURCE-TRACE"
+        ]
+      },
+      "actualN3Recall": [
+        {
+          "unit": 1,
+          "fieldPath": "dialog[0].ja",
+          "quote": "「まちの読書週間」という行事"
+        }
+      ],
+      "actualN4Recall": [
+        {
+          "unit": 4,
+          "fieldPath": "dialog[2].ja",
+          "quote": "申込書をどこに出すか知りたいです",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[3]"
+        }
+      ],
+      "wordOccurrences": 12,
+      "firstPresentationLabelOccurrences": 6,
+      "mcq": 3,
+      "oral": 2
+    },
+    "u05": {
+      "status": "passed",
+      "sourceSha256": "4e2f58d63938014b540fb33ed4db179a0cf6869bc9ab33f09d8c8040ea1832b4",
+      "method": "independent-complete-review-plus-word-label-delta",
+      "observations": {
+        "meaning": "Action target に対して vs perspective にとって separated; Jun as planned single reviewer does not establish all participants understood.",
+        "answers": "First-time visitors, entrance/reception map and review process consistent. Wrong Korean first-arriving label corrected.",
+        "readings": "来ましたきました/来るくる,読んでもらってよんでもらって,初参加はつさんか and remaining contextual maps checked.",
+        "recall": "N3u04 topic and N4u34 beneficiary perspective quoted in actual dialogue.",
+        "resolved": [
+          "U05-FIRST-TIME-VS-FIRST-ARRIVING",
+          "U05-UNNEEDED-UNTARGETED-CONNECTOR"
+        ]
+      },
+      "actualN3Recall": [
+        {
+          "unit": 4,
+          "fieldPath": "dialog[0].ja",
+          "quote": "参加方法について"
+        }
+      ],
+      "actualN4Recall": [
+        {
+          "unit": 34,
+          "fieldPath": "dialog[4].ja",
+          "quote": "読んでもらいます",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[33]"
+        }
+      ],
+      "wordOccurrences": 12,
+      "firstPresentationLabelOccurrences": 5,
+      "mcq": 3,
+      "oral": 2
+    },
+    "u06": {
+      "status": "passed",
+      "sourceSha256": "b5a0cd1e4fb90a73790ff50b7d3b9eeefca4f132531371a80188c5b56817e3d7",
+      "method": "independent-complete-review-plus-verified-corrections",
+      "observations": {
+        "meaning": "として expresses Jun representative role; Rina replaces Mio at reception tomorrow; collecting questions is a separate assignment.",
+        "answers": "Dialogue, reading, all three checks, both oral tasks and writing preserve actor/time/recipient. The ambiguous Junは request was corrected to the vocative ジュンさん、.",
+        "readings": "受付係うけつけがかり,代わってかわって,明日あした and inflected contextual keys checked.",
+        "recall": "Actual N3u05 target expression and pinned N4u11 することになっています function as assigned arrangement.",
+        "resolved": [
+          "U06-VOCATIVE-REQUEST-ACTOR"
+        ]
+      },
+      "actualN3Recall": [
+        {
+          "unit": 5,
+          "fieldPath": "dialog[1].ja",
+          "quote": "参加者に対して"
+        }
+      ],
+      "actualN4Recall": [
+        {
+          "unit": 11,
+          "fieldPath": "reading",
+          "quote": "することになっています",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[10]"
+        }
+      ],
+      "wordOccurrences": 12,
+      "firstPresentationLabelOccurrences": 7,
+      "mcq": 3,
+      "oral": 2
+    },
+    "u07": {
+      "status": "passed",
+      "sourceSha256": "7bd237ebcb0bfa9c1ed43f2f2ddbcd4c76c2fbd66a73eadc2eadfc0534d8200b",
+      "method": "independent-complete-review-plus-word-label-delta",
+      "observations": {
+        "meaning": "Intended audience 向け vs suitability 向き distinguished while admitting overlap; child-targeted short picture book may suit adult beginners by stated evidence.",
+        "answers": "Creation target, text length, large type and many illustrations support assessment; no universal audience suitability or prohibition invented.",
+        "readings": "初心者向け/向き,人向けひとむけ,子ども向け/向き,二冊選にさつえら,大人おとな checked in actual source.",
+        "recall": "N3u06 として and N4u07 読みやすい/u14 書いておきます actual-source matched.",
+        "resolved": []
+      },
+      "actualN3Recall": [
+        {
+          "unit": 6,
+          "fieldPath": "dialog[4].ja",
+          "quote": "初心者向きの本として"
+        }
+      ],
+      "actualN4Recall": [
+        {
+          "unit": 7,
+          "fieldPath": "dialog[1].ja",
+          "quote": "読みやすい",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[6]"
+        },
+        {
+          "unit": 14,
+          "fieldPath": "reading",
+          "quote": "書いておきます",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[13]"
+        }
+      ],
+      "wordOccurrences": 12,
+      "firstPresentationLabelOccurrences": 4,
+      "mcq": 3,
+      "oral": 2
+    },
+    "u08": {
+      "status": "passed",
+      "sourceSha256": "d1719b2e3ca21d242471b1adf77e9c0d9f848ef5b5eeee44dc8adfaadc2bc645",
+      "method": "independent-complete-review-plus-verified-corrections",
+      "observations": {
+        "meaning": "によって states variation; に比べて compares matching metrics. Last year actual participants20 and prepared seats20 are separately stated; current plan30 seats is not confirmed attendance.",
+        "answers": "Dialogue, reading, listen_why, reading_why, MCQ and writing now use explicit last-year20-seat/current-plan30-seat comparison. Current actual attendance stays undecided.",
+        "readings": "二十人分にじゅうにんぶん,三十人分さんじゅうにんぶん,三十人分用意さんじゅうにんぶんようい and other actual strings checked.",
+        "recall": "N3u03 sourced record/u07 target; N4u09 用意する予定です retained. Incorrect N4u12 association with adjectiveくなる was removed.",
+        "resolved": [
+          "U08-COMPARABLE-METRIC-BASELINE",
+          "U08-SEAT-PHRASE-NATURALNESS",
+          "U08-WRONG-N4-U12-RECALL",
+          "U08-UNUSED-VOCAB"
+        ]
+      },
+      "actualN3Recall": [
+        {
+          "unit": 3,
+          "fieldPath": "reading",
+          "quote": "記録によると"
+        },
+        {
+          "unit": 7,
+          "fieldPath": "dialog[0].ja",
+          "quote": "参加者向け"
+        }
+      ],
+      "actualN4Recall": [
+        {
+          "unit": 9,
+          "fieldPath": "dialog[3].ja",
+          "quote": "用意する予定です",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[8]"
+        }
+      ],
+      "wordOccurrences": 12,
+      "firstPresentationLabelOccurrences": 3,
+      "mcq": 3,
+      "oral": 2
+    },
+    "u09": {
+      "status": "passed",
+      "sourceSha256": "18f4460ac8e499396487c4a928266f6d3550a6608fd8ffb17abef58c253510ad",
+      "method": "independent-complete-review-plus-verified-corrections",
+      "observations": {
+        "meaning": "最中に and ているところに show ongoing activity when another event arrives; receiving desk instruction does not prove desk placement completed.",
+        "answers": "Sorting underway, telephone then Rina arrival, instruction received and remaining work all agree across every task and alternative.",
+        "readings": "最中さいちゅう,後あと,準備室じゅんびしつ,右側みぎがわ,一度確認いちどかくにん checked.",
+        "recall": "N3u02 ということです; N4u29 あいだに and u16 incoming てくる are actual functional citations. Preparation no longer falsely attributes progressive ている to N4u13.",
+        "resolved": [
+          "U09-PROGRESSIVE-PREREQUISITE-TRACE"
+        ]
+      },
+      "actualN3Recall": [
+        {
+          "unit": 2,
+          "fieldPath": "reading",
+          "quote": "置くということです"
+        }
+      ],
+      "actualN4Recall": [
+        {
+          "unit": 29,
+          "fieldPath": "reading",
+          "quote": "待っているあいだに",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[28]"
+        },
+        {
+          "unit": 16,
+          "fieldPath": "patterns[0].examples[0].ja",
+          "quote": "かかってきました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[15]"
+        }
+      ],
+      "wordOccurrences": 12,
+      "firstPresentationLabelOccurrences": 4,
+      "mcq": 3,
+      "oral": 2
+    },
+    "u10": {
+      "status": "passed",
+      "sourceSha256": "ef6a271742f76223486d64d1b64ff5bdc4b342720786a2ba9eb9f6d258f63a55",
+      "method": "independent-complete-review-plus-verified-corrections",
+      "observations": {
+        "meaning": "うちに separates using an ongoing opportunity from change during repeated action; ないうちに marks before a change without guaranteeing it happens. All future plans remain plans.",
+        "answers": "Rina rereads before next-afternoon book return and before forgetting; Mio plans photos while few people present. Writing explicitly permits proposing a shared action.",
+        "readings": "空いているあいている,来てもきても,今夜こんや,所ところ and actual maps checked.",
+        "recall": "N3u09 最中, N4u14 ておく and u16 change てきた match actual usages.",
+        "resolved": [
+          "U10-NA-ADJECTIVE-CONNECTION",
+          "U10-RETURN-TIME-ATTACHMENT"
+        ]
+      },
+      "actualN3Recall": [
+        {
+          "unit": 9,
+          "fieldPath": "reading",
+          "quote": "メモを書いている最中に"
+        }
+      ],
+      "actualN4Recall": [
+        {
+          "unit": 14,
+          "fieldPath": "dialog[0].ja",
+          "quote": "書いておきます",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[13]"
+        },
+        {
+          "unit": 16,
+          "fieldPath": "dialog[2].ja",
+          "quote": "分かってきました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[15]"
+        }
+      ],
+      "wordOccurrences": 12,
+      "firstPresentationLabelOccurrences": 5,
+      "mcq": 3,
+      "oral": 2
+    },
+    "u11": {
+      "status": "passed",
+      "sourceSha256": "001f6eb4a34fcf340457d7d326f57aa9b3ffc106610703d26ebec2b2380ae66c",
+      "method": "independent-complete-review-plus-word-label-delta",
+      "observations": {
+        "meaning": "Event recurrence たびに vs per-unit ごとに; each table receives one leaflet, rest interval is 30 minutes. Natural overlapping forms admitted.",
+        "answers": "Actor roles and repetition unit preserved in dialogue, reading, MCQ and writing; no one-per-entire-room error.",
+        "readings": "三十分さんじゅっぷん,一枚いちまい,相談会そうだんかい,時間ごとじかんごと checked.",
+        "recall": "N3u10 ないうちに/u07 向け and N4u11 ことにしています are functional current-source quotations.",
+        "resolved": []
+      },
+      "actualN3Recall": [
+        {
+          "unit": 10,
+          "fieldPath": "reading",
+          "quote": "忘れないうちに"
+        },
+        {
+          "unit": 7,
+          "fieldPath": "reading",
+          "quote": "人向けに"
+        }
+      ],
+      "actualN4Recall": [
+        {
+          "unit": 11,
+          "fieldPath": "dialog[5].ja",
+          "quote": "休むことにしています",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[10]"
+        }
+      ],
+      "wordOccurrences": 12,
+      "firstPresentationLabelOccurrences": 6,
+      "mcq": 3,
+      "oral": 2
+    },
+    "u12": {
+      "status": "passed",
+      "sourceSha256": "35e95c0fdac4f7162ce091a2b959b7635a3c6256ceaf291389cd7b9ca434a773",
+      "method": "independent-complete-review-plus-word-label-delta",
+      "observations": {
+        "meaning": "Explicit Mon-Wed-Fri anchors 一日おき to every other day; broad Mon-Fri span does not entail daily action. Last-year busy hours are not guaranteed for current year.",
+        "answers": "All comprehension and MCQ calendar/uncertainty distinctions correct; free writing retains interval, actual dates and span.",
+        "readings": "一日おきいちにちおき,午後一時ごごいちじ,三時さんじ,weekday readings and 日程にってい checked.",
+        "recall": "N3u11 repeated event/u03 cited record plus N4u04 uncertainty question preserved.",
+        "resolved": []
+      },
+      "actualN3Recall": [
+        {
+          "unit": 11,
+          "fieldPath": "dialog[2].ja",
+          "quote": "配るたびに"
+        },
+        {
+          "unit": 3,
+          "fieldPath": "dialog[3].ja",
+          "quote": "記録によると"
+        }
+      ],
+      "actualN4Recall": [
+        {
+          "unit": 4,
+          "fieldPath": "reading",
+          "quote": "かどうかは、まだ分かりません",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[3]"
+        }
+      ],
+      "wordOccurrences": 12,
+      "firstPresentationLabelOccurrences": 6,
+      "mcq": 3,
+      "oral": 2
+    },
+    "u13": {
+      "status": "passed",
+      "sourceSha256": "d659ad1646b48488a43942baed8e1f0970b8c0cfd082b3a2e29452038b693e8d",
+      "method": "independent-complete-review-plus-verified-corrections",
+      "observations": {
+        "meaning": "たとたん immediate event is distinguished from てはじめて awareness after experience. Font problem was discovered; revision and verified improvement remain incomplete.",
+        "answers": "All tasks preserve discovery vs planned correction; listening explanation now quotes actual 字が… rather than adding words inside a direct quote.",
+        "readings": "開けあけ,入ったはいった,入ってはいって,光ひかり,気がつくきがつく checked in context.",
+        "recall": "N3u10 少ないうちに and actual pinned N4u07 読みにくい/u08 読んでみよう volitional citation. Unintroduced u18 compound 書き直す removed from reading/why and unused 見直す replaced.",
+        "resolved": [
+          "U13-PREMATURE-NAOSU-COMPOUND",
+          "U13-NONVERBATIM-DIRECT-QUOTE"
+        ]
+      },
+      "actualN3Recall": [
+        {
+          "unit": 10,
+          "fieldPath": "dialog[0].ja",
+          "quote": "人が少ないうちに"
+        }
+      ],
+      "actualN4Recall": [
+        {
+          "unit": 7,
+          "fieldPath": "dialog[5].ja",
+          "quote": "読みにくい",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[6]"
+        },
+        {
+          "unit": 8,
+          "fieldPath": "reading",
+          "quote": "読んでみようと言いました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[7]"
+        }
+      ],
+      "wordOccurrences": 12,
+      "firstPresentationLabelOccurrences": 7,
+      "mcq": 3,
+      "oral": 2
+    },
+    "u14": {
+      "status": "passed",
+      "sourceSha256": "478b832367919540c58973f45a4af0513a81a8467fba1fe49f3e9ae215072091",
+      "method": "independent-complete-review-plus-verified-corrections",
+      "observations": {
+        "meaning": "て以来 continues from a past event to now. Library return is the main errand; poster handoff accompanies it. Jun has not departed; Rina already checked poster contents.",
+        "answers": "Dialogue, reading, checks, oral and writing agree on primary/additional errand, continuing habit, completed content check vs future trip. listen_why now quotes actual two sentences separately.",
+        "readings": "図書館としょかん,以来いらい,主な おもな,用事ようじ,毎回記録まいかいきろく checked.",
+        "recall": "N3u13 書いてはじめて/u10 忘れないうちに; N4u14 確認してあります actual prepared state.",
+        "resolved": [
+          "U14-NONVERBATIM-DIRECT-QUOTE"
+        ]
+      },
+      "actualN3Recall": [
+        {
+          "unit": 13,
+          "fieldPath": "dialog[2].ja",
+          "quote": "書いてはじめて"
+        },
+        {
+          "unit": 10,
+          "fieldPath": "reading",
+          "quote": "忘れないうちに"
+        }
+      ],
+      "actualN4Recall": [
+        {
+          "unit": 14,
+          "fieldPath": "dialog[4].ja",
+          "quote": "確認してあります",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[13]"
+        }
+      ],
+      "wordOccurrences": 12,
+      "firstPresentationLabelOccurrences": 5,
+      "mcq": 3,
+      "oral": 2
+    },
+    "u15": {
+      "status": "passed",
+      "sourceSha256": "0adbfaccfa94b918c0d40b0a6ea9b63db0ef742cf51a2259f8f6d92591bcfa12",
+      "method": "independent-complete-review-plus-verified-corrections",
+      "observations": {
+        "meaning": "ようとする attempt/immediate before does not alone decide success. Near miss is explicit もう少しで plus sending stopped; date correction/rechecking are still planned.",
+        "answers": "All three MCQ answers unique; actor Jun attempted poster/Rina nearly sent file remains consistent across dialogue, reading, oral and writing; permitted alternative 送りませんでした preserves noncompletion.",
+        "readings": "貼るはる/貼ろうはろう,日付ひづけ,送信そうしん,止めるとめる,失敗しっぱい and all actual maps checked.",
+        "recall": "N3u14 参加して以来; N4u08 確認しようと思います and u10 使うことにします match intended functions.",
+        "resolved": []
+      },
+      "actualN3Recall": [
+        {
+          "unit": 14,
+          "fieldPath": "reading",
+          "quote": "参加して以来"
+        }
+      ],
+      "actualN4Recall": [
+        {
+          "unit": 8,
+          "fieldPath": "reading",
+          "quote": "確認しようと思います",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[7]"
+        },
+        {
+          "unit": 10,
+          "fieldPath": "dialog[5].ja",
+          "quote": "使うことにします",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[9]"
+        }
+      ],
+      "wordOccurrences": 12,
+      "firstPresentationLabelOccurrences": 5,
+      "mcq": 3,
+      "oral": 2
+    },
+    "u16": {
+      "status": "passed",
+      "sourceSha256": "0b53941a8e5cbb19e0fba6b408ac099f6f779e45197c431771bfcfaa729e3f73",
+      "method": "independent-complete-review-plus-verified-corrections",
+      "observations": {
+        "meaning": "だす marks sudden onset; かける/かけの marks begun but unfinished reading in this passage. Next-day revision can be completed while subsequent reading remains unfinished. Rain end is unknown.",
+        "answers": "Dialogue/reading/three checks/two oral/writing distinguish started, unfinished, planned continuation and unverified rain end; no claim that no letters were read.",
+        "readings": "降りふり,笑わら,入りはいり vs 入れいれ,濡ぬ,全部ぜんぶ,印刷いんさつ,読みかけよみかけ,続きつづき checked in actual strings.",
+        "recall": "N3u15 貼ろうとした; N4u17 持ったまま/u04 かどうか match actual functions. Extra Vます+始める was removed from reading and note rather than treated as taught by standalone はじめる.",
+        "resolved": [
+          "U16-UNTARGETED-HAJIMERU-COMPOUND"
+        ]
+      },
+      "actualN3Recall": [
+        {
+          "unit": 15,
+          "fieldPath": "reading",
+          "quote": "ポスターを貼ろうとしたとき"
+        }
+      ],
+      "actualN4Recall": [
+        {
+          "unit": 17,
+          "fieldPath": "dialog[3].ja",
+          "quote": "案内を持ったまま",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[16]"
+        },
+        {
+          "unit": 4,
+          "fieldPath": "reading",
+          "quote": "やんだかどうか",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[3]"
+        }
+      ],
+      "wordOccurrences": 12,
+      "firstPresentationLabelOccurrences": 5,
+      "mcq": 3,
+      "oral": 2
+    }
+  },
+  "acceptedUnitNumbers": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+  ],
+  "notYetApprovedWithinAssignedRange": [],
+  "outsideThisReviewerLanguageAcceptance": [
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48
+  ],
+  "wordLabels": {
+    "candidateDecisionsChecked": 32,
+    "sameLexemeOrNewNotationMarkedReview": 30,
+    "retainedDistinctHomophones": [
+      {
+        "unit": "u10",
+        "current": "機会=기회",
+        "previous": "機械=기계",
+        "reading": "きかい"
+      },
+      {
+        "unit": "u14",
+        "current": "習慣=습관",
+        "previous": "週間=주간",
+        "reading": "しゅうかん"
+      }
+    ],
+    "authorEvidence": "/workspace/scratch/n3-integration/team/author-a/WORD-STATUS-DECISIONS.json",
+    "claim": "Candidate-based first-presentation/review consistency, not certified JLPT new-word inventory."
+  },
+  "limitations": [
+    "Independent model review; no native-human certification or learning-effect trial.",
+    "Source reading support is separate from actual rendered ruby/browser verification.",
+    "No acceptance of authored book by its own author; parent provides that review.",
+    "Other 32 lessons require their respective independent review receipts."
+  ]
+}

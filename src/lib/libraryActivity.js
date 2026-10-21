@@ -33,7 +33,7 @@ export function libraryResume(row,ownerId,storage){
  if(row.target_kind==='edition'){
   let value=null;
   try{value=JSON.parse(storage?.getItem(readingProgressKey(row.target_id,ownerId))||'null');}catch{/* Device-local position is optional. */}
-  if(value?.page===validReadingProgress(value).page){href=bookHref(row.target_id,value.page,libraryEditionBookId(row));label=`${Number(value.page.slice(1,3))}과부터 · 이 기기`;}
+  if(value?.page===validReadingProgress(value,libraryEditionBookId(row)).page){href=bookHref(row.target_id,value.page,libraryEditionBookId(row));label=`${Number(value.page.slice(1,3))}과부터 · 이 기기`;}
   else {href=bookHref(row.target_id,context.page||'cover',libraryEditionBookId(row));label=context.page?'읽던 과 열기':'책 열기';}
  }else if(row.target_kind==='pdf'&&!context.materialId){
   let page=null;try{page=Number(storage?.getItem(legacyPdfPositionKey(ownerId,row.target_id)));}catch{/* Exact position is optional. */}

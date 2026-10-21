@@ -10,7 +10,7 @@ import LevelTiles from '@/components/levels/LevelTiles';
 import useReadingProgress from './useReadingProgress';
 
 function ContinueBook({ book }) {
-  const local = useReadingProgress(book.edition);
+  const local = useReadingProgress(book.edition, book.bookId || BOOK_ID);
   const resume = bookResume(book, local.progress, local.hasProgress);
   if (!resume) return null;
   return <section className="shelf-resume" aria-label="읽던 교재"><span className="shelf-resume__mark" aria-hidden="true">あ</span><div><p className="manabi-eyebrow">일본어 {book.level || 'N5'}</p><h2>{String(resume.lesson.number).padStart(2, '0')}과 · {resume.lesson.title}</h2><p>{resume.completed} / {resume.total}과 학습 · 이 브라우저의 기록</p></div><Link className="manabi-button" href={bookHref(book.edition, resume.page, book.bookId || BOOK_ID)}>{resume.started ? '이어 읽기' : '공부 시작하기'} →</Link></section>;
@@ -29,6 +29,6 @@ export default function Bookshelf({ book, books = book ? [book] : [], initialLan
     })}</div>
     {levelTiles[selected]?.length > 0 && <LevelTiles language={selected} tiles={levelTiles[selected]} />}
     {selected !== 'all' && selected !== 'Japanese' && <p className="manabi-series-notice" role="status"><Link className="manabi-link" href={`/materials?tab=public&lang=${selected}`}>이 언어의 공개 읽을거리</Link></p>}
-    {profile?.role === 'admin' && <p className="manabi-admin-entry"><Link href="/admin/books/japanese-n5">N5 원고 편집</Link><Link href="/admin/books/japanese-n4">N4 원고 편집·검수</Link><Link href="/admin/legacy-textbooks">기존 교재 보관함 →</Link></p>}
+    {profile?.role === 'admin' && <p className="manabi-admin-entry"><Link href="/admin/books/japanese-n5">N5 원고 편집</Link><Link href="/admin/books/japanese-n4">N4 원고 편집·검수</Link><Link href="/admin/books/japanese-n3">N3 원고 편집·검수</Link><Link href="/admin/legacy-textbooks">기존 교재 보관함 →</Link></p>}
   </div>;
 }

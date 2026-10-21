@@ -38,6 +38,11 @@ const nextConfig = {
     // 문자 집합으로 해석된다 — '*'로 쓴다. reading 경로는 자동 추적으로 bundle.json·index.html을 받는다.
     '/api/books/japanese-n5/*/asset': ['./src/content/textbookEditions/**/*'],
     '/api/books/japanese-n4/*/asset': ['./src/content/textbookEditions/**/*'],
+    '/api/books/japanese-n3/*/asset': ['./src/content/textbookEditions/**/*'],
+    '/api/books/japanese-n3/*/reading': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/**/index.html', './src/content/textbookEditions/japanese-n3/index.json'],
+    '/api/admin/books/japanese-n3': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/japanese-n3/index.json'],
+    '/books/japanese-n3': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/**/index.html', './src/content/textbookEditions/japanese-n3/index.json'],
+    '/books/japanese-n3/**': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/japanese-n3/index.json'],
     '/api/books/japanese-n4/*/reading': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/**/index.html', './src/content/textbookEditions/japanese-n4/index.json'],
     '/api/admin/books/japanese-n4': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/japanese-n4/index.json'],
     '/books/japanese-n4': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/**/index.html', './src/content/textbookEditions/japanese-n4/index.json'],

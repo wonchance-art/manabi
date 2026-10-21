@@ -3,11 +3,19 @@ export const BOOK_ID = 'japanese-n5';
 export const BOOKS = Object.freeze({
   'japanese-n5': Object.freeze({id:'japanese-n5',level:'N5',language:'Japanese',lessons:42,slugPrefix:'n5-book'}),
   'japanese-n4': Object.freeze({id:'japanese-n4',level:'N4',language:'Japanese',lessons:42,slugPrefix:'n4-book'}),
+  'japanese-n3': Object.freeze({id:'japanese-n3',level:'N3',language:'Japanese',lessons:48,slugPrefix:'n3-book',reviewAfterLessons:Object.freeze([8,16,24,32,40,48])}),
 });
 export const isBookId = id => typeof id==='string'&&Object.hasOwn(BOOKS,id);
 export const bookUnitSlug = (bookId,lesson) => isBookId(bookId)&&Number.isInteger(lesson)&&lesson>=1&&lesson<=BOOKS[bookId].lessons?`${BOOKS[bookId].slugPrefix}-u${String(lesson).padStart(2,'0')}`:null;
 export const EDITION_ID = /^[a-f0-9]{24}$/;
-export const BOOK_UNIT_SLUG = /^n[45]-book-u(0[1-9]|[1-3][0-9]|4[0-2])$/;
+// Each book keeps its own final lesson; accepting N3 must not admit N5/N4 lesson 43.
+export const BOOK_UNIT_SLUG = new RegExp(`^(?:${Object.values(BOOKS).map(book=>`${book.slugPrefix}-u(?:${Array.from({length:book.lessons},(_,i)=>String(i+1).padStart(2,'0')).join('|')})`).join('|')})$`);
+export function isBookPage(bookId,page,{cover=true}={}) {
+  if(!isBookId(bookId)||typeof page!=='string')return false;
+  if(cover&&page==='cover')return true;
+  const match=/^u(0[1-9]|[1-9][0-9])(?:-[a-z0-9_-]+)?$/.exec(page);
+  return !!match&&Number(match[1])<=BOOKS[bookId].lessons;
+}
 const locked = new Set(['id','bookId','number','language','level','version','revision','source','editorialChanges','type','kind','target','targets','page_order','pattern_pages','shape','source_ids','unit','start','stage','reviewed','additionalUnit','duration','audioEnabled','save_practice','role','answer_group']);
 export function editableFields(value, path=[], result=[]) {
   if (typeof value==='string') { result.push({path,value}); return result; }

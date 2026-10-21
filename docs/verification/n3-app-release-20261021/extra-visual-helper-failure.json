@@ -1,0 +1,54 @@
+{
+  "passed": false,
+  "countedAsAcceptanceGate": false,
+  "captureCompleted": true,
+  "script": "/workspace/scratch/n3-integration/team/browser/attempt-005/capture-extra-visual-as-run.mjs",
+  "scriptSha256": "b67d05519328152cefdea9c8c6f898690fa314ff8fed1649cc2e0251a4bf9d4f",
+  "failure": "Final all-writes equality assertion failed after three images were captured. Concurrent matrix reading and the extra reader visit legitimately appended library_reading_activity entries.",
+  "originalExecution": "exec session 4674 stderr retained in tool transcript; full raw stderr and before/after snapshot bytes were not separately persisted, so no complete independent write-audit artifact is claimed.",
+  "observedFailureExcerpt": [
+    "AssertionError: after.writes differed from before.writes",
+    "Additional POST table library_reading_activity, bookId japanese-n3, pages u28-start/u29-start/u30-start/u45-start/u31-start/u32-start",
+    "Failure at capture-extra-visual.mjs:23:179 (the final after.writes assertion)"
+  ],
+  "learningStateEqualityAssertionsCompletedBeforeFinalFailure": [
+    "after.words === before.words",
+    "after.contexts === before.contexts",
+    "after.admitted === before.admitted"
+  ],
+  "noNewSavedExpressionOrAdmissionOrGradeObserved": "The first three deep-equality assertions passed. No full before/after snapshot bytes remain; this auxiliary helper is not counted as a completed validation gate.",
+  "actualExistingActivityEvidence": {
+    "receipt": "/workspace/scratch/n3-integration/team/browser/attempt-005/HTTP-PERSISTENCE-EVIDENCE.json",
+    "observedRequestFields": {
+      "table": "library_reading_activity",
+      "method": "POST",
+      "params": {
+        "on_conflict": "owner_id,target_kind,target_id"
+      }
+    },
+    "observedWrite": {
+      "table": "library_reading_activity",
+      "method": "POST",
+      "body": {
+        "owner_id": "00000000-0000-4000-8000-000000000042",
+        "target_kind": "edition",
+        "target_id": "4978c146953f14140bcb49d2",
+        "context": {
+          "bookId": "japanese-n3",
+          "page": "u01-start"
+        }
+      }
+    },
+    "endpointFromObservedTableAndQuery": "http://127.0.0.1:49122/rest/v1/library_reading_activity?on_conflict=owner_id%2Ctarget_kind%2Ctarget_id",
+    "endpointEncoding": "Reconstructed from the actual fixture-read table and query fields, not a separately captured raw URL.",
+    "productionCall": "src/lib/libraryActivity.js:24 upsert into library_reading_activity"
+  },
+  "newProductChanges": false,
+  "expectationsChangedToObtainPass": false,
+  "rerunClaimed": false,
+  "images": [
+    "mobile-u45-source-save-dialog-390.png",
+    "mobile-n3-saved-review-390.png",
+    "desktop-n3-saved-review-1440.png"
+  ]
+}

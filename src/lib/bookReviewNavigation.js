@@ -1,5 +1,5 @@
-import { BOOK_ID, isBookId } from './textbook/contract';
-import { BOOK_LESSONS, safeBookReturn, serializeReviewScope } from './reviewScopeUrl';
+import { BOOK_ID, BOOKS, isBookId } from './textbook/contract';
+import { safeBookReturn, serializeReviewScope } from './reviewScopeUrl';
 
 // 돌아갈 곳 판정은 범위 주소 정본(reviewScope)이 소유한다 — 여기서는 기존 import 경로만 이어 준다.
 export { safeBookReturn };
@@ -8,11 +8,11 @@ export { safeBookReturn };
  * 교재 범위 복습 주소(REV-SCOPE-R1A) — 범위 주소 정본(serializeReviewScope)으로 만든다.
  * 과 범위를 주지 않으면 교재 전체(1–42과). 옛 `?book=japanese-n5&returnTo=` 주소는 parseReviewScope가 같은 범위로 읽는다.
  */
-export function bookReviewHref(returnTo, { from = 1, to = BOOK_LESSONS, bookId } = {}) {
+export function bookReviewHref(returnTo, { from = 1, to, bookId } = {}) {
   const safe=safeBookReturn(returnTo,bookId||null);
   const selectedBook=bookId||(safe?new URL(safe,'https://manabi.invalid').pathname.slice('/books/'.length):BOOK_ID);
   if(!isBookId(selectedBook))return null;
-  return serializeReviewScope({ lang: 'Japanese', level: null, source: { kind: 'book', bookId:selectedBook, from, to }, state: 'due' }, { returnTo:safe });
+  return serializeReviewScope({ lang: 'Japanese', level: null, source: { kind: 'book', bookId:selectedBook, from, to:to??BOOKS[selectedBook].lessons }, state: 'due' }, { returnTo:safe });
 }
 
 /** 「교재의 담은 표현」 목록(/books/japanese-n5/review) — 돌아갈 판본 · 위치를 그대로 넘긴다. 안전한 돌아갈 곳이 없으면 null. */
@@ -56,9 +56,10 @@ async function fetchScopeIds(path, options) {
 }
 
 /** 교재 범위의 내 단어 id + 단어별 과(chapter_slug — 복습 줄의 띄우기 단위, REV-SCOPE-R1B-1). 실패 규칙은 아래와 같다. */
-export function fetchBookScope({ signal, fetcher = fetch, from = 1, to = BOOK_LESSONS,bookId=BOOK_ID } = {}) {
+export function fetchBookScope({ signal, fetcher = fetch, from = 1, to,bookId=BOOK_ID } = {}) {
   if(!isBookId(bookId))throw new Error('이 교재의 표현 범위를 불러오지 못했어요.');
-  const range = from === 1 && to === BOOK_LESSONS ? '' : `&from=${from}&to=${to}`;
+  const end=to??BOOKS[bookId].lessons;
+  const range = from === 1 && end === BOOKS[bookId].lessons ? '' : `&from=${from}&to=${end}`;
   const book=bookId===BOOK_ID?'':`&book=${bookId}`;
   return collectScope(`/api/learning/book-review?scope=1${book}${range}`, { signal, fetcher, failure: '이 교재의 표현 범위를 불러오지 못했어요.' });
 }

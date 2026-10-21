@@ -1,7 +1,7 @@
 'use client';
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import Link from 'next/link';
-import {bookHref as textbookHref,editableFields,validateManuscript,withField} from '@/lib/textbook/contract';
+import {BOOKS,bookHref as textbookHref,editableFields,validateManuscript,withField} from '@/lib/textbook/contract';
 import './books.css';
 import { friendlyToastMessage } from '@/lib/errorMessage';
 const names={title:'제목',subtitle:'부제',goal:'학습 목표',scene:'장면',words:'준비 단어',ja:'일본어',ko:'한국어',body:'설명',note:'도움말',lead:'도입',prompt:'질문',answer:'정답',why:'해설',formula:'문형',label:'표제',examples:'예문',patterns:'핵심 표현',study_pages:'표현 설명',practice_pages:'확인 활동',review_pages:'누적 복습',dialog:'대화',oral:'말하기',reading:'읽기 본문',meaning:'뜻',reading_question:'읽기 질문',reading_answer:'읽기 정답',reading_why:'읽기 해설',writing_prompt:'내 문장 질문',writing_sample:'내 문장 예시',checks:'확인 문제',cue:'제시문',options:'선택지',rows:'표',tasks:'문항',kanji:'한자 읽기',preparation:'준비 안내',prerequisite:'앞에서 배운 것',next:'다음 과 연결',culture:'문화 설명',culture_title:'문화 제목',spelling:'표기',readings:'읽는 법',text:'본문',items:'항목',parts:'부분',help:'도움말',closing:'마무리',translation:'번역'};
@@ -9,7 +9,7 @@ const label=path=>path.map(k=>typeof k==='number'?`${k+1}번`:names[k]||(/^[\u30
 function download(book,name=`${book.bookId || 'japanese-n5'}-manuscript.json`){const url=URL.createObjectURL(new Blob([JSON.stringify(book,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 export default function BookEditor({bookId='japanese-n5'}){
   const api=`/api/admin/books/${bookId}`;
-  const level=bookId==='japanese-n4'?'N4':'N5';
+  const level=BOOKS[bookId]?.level||'N5';
   const bookHref=(edition,page='cover')=>textbookHref(edition,page,bookId);
   const [data,setData]=useState(null),[book,setBook]=useState(null),[group,setGroup]=useState('lesson:0'),[search,setSearch]=useState(''),[limit,setLimit]=useState(80),[pending,setPending]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState(''),[dirty,setDirty]=useState(false);
   const busy=useRef(false),loadId=useRef(0);
@@ -42,7 +42,7 @@ export default function BookEditor({bookId='japanese-n5'}){
   return <div className="book-editor"><header className="book-toolbar"><div><Link href="/admin/textbooks?lang=Japanese">교재 관리자</Link><h1>일본어 {level} · 한 권 편집</h1><p>과별 내용과 번역을 편집하고, 검수한 교재를 한 판본으로 발행해요.</p></div>{data&&<Link className="btn btn--ghost" target="_blank" href={bookHref(data.candidate.editionId)}>검수용 교재 열기</Link>}</header>
     {error&&<p role="alert">{error}</p>}{message&&<p role="status">{message}</p>}
     {!data?<><p>편집 저장소를 불러오고 있어요. 연결 설정이 끝나야 초안을 저장할 수 있어요.</p><button className="btn btn--ghost" type="button" onClick={()=>load()}>다시 시도</button></>:<>
-      <div className="book-editor__state"><strong>{dirty?'저장하지 않은 변경이 있어요.':data.draft?'비공개 초안이 저장되어 있어요.':'검수한 원고에서 시작해요.'}</strong><p>{data.candidate.pdfEnabled===false?'42과 · 웹 교재':`${data.candidate.pages}쪽`} · {ready?'현재 원고와 검수용 출력본이 일치해요.':'초안을 저장하고 교재를 다시 제작·검수하면 발행할 수 있어요.'}</p><p>미리보기는 마지막으로 검수한 출력본이에요. 수정한 초안은 원고 파일로 내보내 제작 과정에 전달해 주세요.</p></div>
+      <div className="book-editor__state"><strong>{dirty?'저장하지 않은 변경이 있어요.':data.draft?'비공개 초안이 저장되어 있어요.':'검수한 원고에서 시작해요.'}</strong><p>{data.candidate.pdfEnabled===false?`${data.base.lessons.length}과 · 웹 교재`:`${data.candidate.pages}쪽`} · {ready?'현재 원고와 검수용 출력본이 일치해요.':'초안을 저장하고 교재를 다시 제작·검수하면 발행할 수 있어요.'}</p><p>미리보기는 마지막으로 검수한 출력본이에요. 수정한 초안은 원고 파일로 내보내 제작 과정에 전달해 주세요.</p></div>
       <section className="book-editor__candidate" aria-label="검수 후보 선택">
         <label>검수할 판본<select value={data.candidate.editionId} disabled={pending||dirty} onChange={e=>load(e.target.value)}>{data.candidates.map((item,i)=><option key={item.editionId} value={item.editionId}>{i===0?'최신 검수 후보':'이전 판본'} · {item.editionId.slice(0,8)} · {item.pdfEnabled === false ? `${item.pages}개 웹 구간` : `${item.pages}쪽`}{data.release?.edition_id===item.editionId?' · 현재 공개 중':''}</option>)}</select></label>
         <p>현재 공개 중: {data.release?.edition_id?.slice(0,8)||'아직 없음'}. 후보 선택만으로 공개 교재나 저장된 초안은 바뀌지 않아요.</p>

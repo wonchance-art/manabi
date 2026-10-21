@@ -49,7 +49,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
   const { user, loading: authLoading } = useAuth();
   const params = useSearchParams();
   const returnTo = params.get('returnTo');
-  const { progress, update, storageAvailable, hasProgress, ready } = useReadingProgress(book.edition);
+  const { progress, update, storageAvailable, hasProgress, ready } = useReadingProgress(book.edition, book.bookId || BOOK_ID);
   const content = useRef(null), root = useRef(null), toolbar = useRef(null), referenceMenu = useRef(null), dialog = useRef(null), dialogOrigin = useRef(null), pendingAnchor = useRef(null), pendingPosition = useRef(null);
   // 책 안 이동(목차 → 과 · 다음 과 · ← 책 목차 · 뒤로 · 앞으로)은 pathname이 같아 전역 되찾기(Layout · routeFocus)가 건너뛴다 —
   // 누른 링크가 새 쪽에서 사라지면 초점이 body로 떨어졌다(키보드 둘러보기 Preview 8d2b681 실측). 첫 진입(새로 열기)은 옮기지 않는다.
@@ -60,7 +60,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
   const [sections, setSections] = useState([]), [loading, setLoading] = useState(false), [error, setError] = useState('');
   const [focus, setFocus] = useState(false), [selection, setSelection] = useState(null), [expression, setExpression] = useState(''), [meaning, setMeaning] = useState('');
   const [examples, setExamples] = useState([]), [panel, setPanel] = useState('selection'), [query, setQuery] = useState(''), [searchCount, setSearchCount] = useState(0), [draftStatus, setDraftStatus] = useState('');
-  const unit = readingUnit(pageId, sectionIndex);
+  const unit = readingUnit(pageId, sectionIndex, bookId);
   // 표지 자리(BOOK-HOME-RESTORE-001)에 쓰는 값 — 전체 목차 펼침은 표지가 다시 붙어도(다른 화면에서 뒤로) 이어진다.
   const [tocAll, setTocAll] = useState(false), [tocOpen, setTocOpen] = useState(null);
   const unitRef = useRef(unit), tocAllRef = useRef(tocAll);
@@ -383,10 +383,10 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
 
   useEffect(() => {
     const search = query.trim().toLocaleLowerCase();
-    const cards = [...(content.current?.querySelectorAll('.lex-card,.kanji-card,.grammar-recall,.n4-reference > [data-search]') || [])];
+    const cards = [...(content.current?.querySelectorAll('.lex-card,.kanji-card,.grammar-recall,.n4-reference > [data-search],.n3-reference > [data-search]') || [])];
     cards.forEach(card => { card.hidden = !!search && !String(card.dataset.search || card.textContent).toLocaleLowerCase().includes(search); });
     setSearchCount(cards.filter(card => !card.hidden).length);
-    if (unit === 'reference') content.current?.querySelectorAll('article').forEach(article => { article.hidden = !!search && !article.querySelector('.lex-card:not([hidden]),.kanji-card:not([hidden]),.grammar-recall:not([hidden]),.n4-reference > [data-search]:not([hidden])'); });
+    if (unit === 'reference') content.current?.querySelectorAll('article').forEach(article => { article.hidden = !!search && !article.querySelector('.lex-card:not([hidden]),.kanji-card:not([hidden]),.grammar-recall:not([hidden]),.n4-reference > [data-search]:not([hidden]),.n3-reference > [data-search]:not([hidden])'); });
   }, [query, sections, unit]);
 
   const go = useCallback((id, originAnchor) => {
@@ -465,7 +465,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     observer.observe(node);
     return () => observer.disconnect();
   }, [bookId, book.edition, nextUnit, preview, sections]); // sections: 과 끝 줄은 본문을 다 받은 뒤에 붙는다
-  const title = lesson ? lesson.title : ({ guide: level === 'N4' ? '문장을 이어 갈 준비' : '첫 문장 전에, 가볍게 준비', reference: level === 'N4' ? '단어·문형 찾아보기' : '단어·문형·한자 찾기', materials: '일본어로 넓히는 일상' }[unit] || '교재 위치를 찾지 못했어요');
+  const title = lesson ? lesson.title : ({ guide: level === 'N3' ? '상황과 생각을 전할 준비' : level === 'N4' ? '문장을 이어 갈 준비' : '첫 문장 전에, 가볍게 준비', reference: level !== 'N5' ? '단어·문형 찾아보기' : '단어·문형·한자 찾기', materials: '일본어로 넓히는 일상' }[unit] || '교재 위치를 찾지 못했어요');
   return <div ref={root} data-book-id={bookId} className={`book-reader${focus ? ' is-focused' : ''}`} onClick={interact}>
     <BookEditionFonts book={book} />
     {reference && <div className="manabi-preview-note" role="note"><strong>복습 원문 참고</strong><p>읽던 위치는 바뀌지 않아요. 확인 후 복습하던 탭으로 돌아가세요.</p><a data-reading-resume className="manabi-link" href={bookHref(book.edition, active || pageId)}>여기부터 이어읽기 →</a></div>}

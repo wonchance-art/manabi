@@ -1,0 +1,78 @@
+{
+  "passed": true,
+  "scope": "Exact candidate actual local Next and isolated synthetic HTTP backend only",
+  "editionId": "4978c146953f14140bcb49d2",
+  "contentHash": "4978c146953f14140bcb49d21bc58d236195ad73d1568dc0d516c2546547aaf5",
+  "bundleHash": "1dfbabcd4369412ca5d80f5a3ba5c01070f9f233dc2dcd787f8235eef8dbad62",
+  "functionalChecks": 14,
+  "automaticGeometryObservations": 192,
+  "directlyViewedPNGs": 15,
+  "mainResult": {
+    "path": "/workspace/scratch/n3-integration/team/browser/attempt-005/RESULT.json",
+    "sha256": "4c1c88d509fb6002cf4aa27748cd8e8b2fa4d8c41e9e4a2680a3c18d52cc68f2"
+  },
+  "visualReview": {
+    "path": "/workspace/scratch/n3-integration/team/author-c/APP-QA-VISUAL-REVIEW.json",
+    "sha256": "d52ede8e78735cb4d2399f49fa2a81efa28c9178657d57e47c2ec7796ad77607"
+  },
+  "sourcePreservation": {
+    "path": "/workspace/scratch/n3-integration/team/author-c/APP-QA-SOURCE-PRESERVATION.json",
+    "sha256": "e02b5c8e32aa2c565d6653d28af82b393bd23be548251b1c8d1e7ac708917e99",
+    "unchangedFiles": 50
+  },
+  "cleanup": {
+    "path": "/workspace/scratch/n3-integration/team/author-c/APP-QA-CLEANUP.json",
+    "sha256": "d50e80c98d3d5237d3d563726c0b205046850ab9aee627ea666ad795726dc983",
+    "passed": true
+  },
+  "auxiliaryHelper": {
+    "passed": false,
+    "countedAsGate": false,
+    "receipt": "/workspace/scratch/n3-integration/team/author-c/EXTRA-VISUAL-HELPER-FAILURE.json"
+  },
+  "attemptHistory": [
+    {
+      "attempt": 1,
+      "class": "product-bookshelf-N3-lookup-omission",
+      "receipt": "/workspace/scratch/n3-integration/team/author-c/APP-QA-FIRST-FAILURE.json"
+    },
+    {
+      "attempt": 2,
+      "class": "product-N3-search-selector-omission",
+      "receipt": "/workspace/scratch/n3-integration/team/author-c/APP-QA-ATTEMPT002-FAILURE.json"
+    },
+    {
+      "attempt": 3,
+      "class": "QA-launcher-missing-local-dummy-service-key",
+      "receipt": "/workspace/scratch/n3-integration/team/author-c/APP-QA-ATTEMPT003-FAILURE.json"
+    },
+    {
+      "attempt": 4,
+      "class": "QA-actual-browser-origin-vs-local-Next-origin-mismatch",
+      "receipt": "/workspace/scratch/n3-integration/team/author-c/APP-QA-ATTEMPT004-FAILURE.json"
+    },
+    {
+      "attempt": 5,
+      "class": "main-functional-and-layout-PASS",
+      "receipt": "/workspace/scratch/n3-integration/team/browser/attempt-005/RESULT.json"
+    }
+  ],
+  "reproducibleLauncher": {
+    "path": "/workspace/scratch/n3-integration/team/app/run-actual-app-qa.sh",
+    "sha256": "7de4416207b261d54538be7f876c0c56ac1af5a05420168b27f17e40b75460ca",
+    "defaultBase": "http://localhost:49121",
+    "serviceBackend": "http://127.0.0.1:49122",
+    "serviceKey": "Explicit synthetic loopback-only constant; no operating credentials",
+    "bashSyntaxPassed": true,
+    "runbookSha256": "5e799d8767b9f20edacf69b82c9881cee7d381cff049d39cdde11bd81362aa50"
+  },
+  "originBeforeAfter": "/workspace/scratch/n3-integration/team/browser/attempt-005/ORIGIN-ALIGNMENT.json",
+  "realAccountLogin": false,
+  "postgresRlsVerified": false,
+  "externalDeploymentVerified": false,
+  "ttsVerified": false,
+  "fullStateFsrsEnrollment": false,
+  "productCodeChangedByReviewer": false,
+  "originalExpectationsAndTimeoutsChanged": false,
+  "productionNextBuildMayProceed": true
+}

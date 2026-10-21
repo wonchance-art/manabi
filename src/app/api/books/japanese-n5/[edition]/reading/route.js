@@ -1,4 +1,4 @@
-import { BOOK_ID, isBookId } from '@/lib/textbook/contract';
+import { BOOK_ID, isBookId, isBookPage } from '@/lib/textbook/contract';
 import { publishedReading, readingSections } from '@/lib/server/bookReading';
 import { respond, respondError, textbookError } from '@/lib/textbook/server';
 
@@ -15,7 +15,7 @@ export async function GET(request, { params, bookId = BOOK_ID }) {
     const { edition } = await params;
     const { book, preview } = await publishedReading(edition, true, bookId);
     const unit = new URL(request.url).searchParams.get('unit');
-    if (!/^(u(0[1-9]|[1-3][0-9]|4[0-2])|guide|materials|reference)$/.test(unit || '')) throw textbookError(400, '읽을 부분을 선택해 주세요.');
+    if (!['guide', 'materials', 'reference'].includes(unit) && !(/^u\d{2}$/.test(unit || '') && isBookPage(bookId, unit, { cover: false }))) throw textbookError(400, '읽을 부분을 선택해 주세요.');
     const sections = (await readingSections(book.editionId, bookId)).filter(section => section.unit === unit);
     if (!sections.length) throw textbookError(404, '본문을 찾지 못했어요.');
     const body = { edition: book.editionId, unit, sections };

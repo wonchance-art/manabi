@@ -1,0 +1,346 @@
+{
+  "passed": true,
+  "before": {
+    "bookData": {
+      "drafts": {
+        "rows": 0,
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      "editions": {
+        "rows": 3,
+        "digest": "9d2af8839772d1dd455245a995c7988f"
+      },
+      "releases": {
+        "rows": 2,
+        "digest": "9c44bbee9ca3ed37ed94ae13a15f216e"
+      }
+    },
+    "learnerData": {
+      "contexts": {
+        "rows": 343,
+        "digest": "bff93882437329f910900b516108a075"
+      },
+      "vocabulary": {
+        "rows": 1607,
+        "digest": "86c1ef5e91eae6126d8678d507b06b61"
+      },
+      "libraryState": {
+        "rows": 24,
+        "digest": "f4c4fd4c58828be7562a32131f0e8fa9"
+      }
+    },
+    "bookSecurity": {
+      "rls": [
+        {
+          "acl": [
+            "postgres=arwdDxtm/postgres",
+            "service_role=arwdDxtm/postgres",
+            "authenticated=arw/postgres"
+          ],
+          "rls": true,
+          "table": "textbook_book_drafts",
+          "forced": false
+        },
+        {
+          "acl": [
+            "postgres=arwdDxtm/postgres",
+            "service_role=arwdDxtm/postgres",
+            "anon=r/postgres",
+            "authenticated=ar/postgres"
+          ],
+          "rls": true,
+          "table": "textbook_book_editions",
+          "forced": false
+        },
+        {
+          "acl": [
+            "postgres=arwdDxtm/postgres",
+            "service_role=arwdDxtm/postgres",
+            "anon=r/postgres",
+            "authenticated=arw/postgres"
+          ],
+          "rls": true,
+          "table": "textbook_book_releases",
+          "forced": false
+        }
+      ],
+      "policies": [
+        {
+          "cmd": "ALL",
+          "qual": "( SELECT is_admin() AS is_admin)",
+          "roles": [
+            "authenticated"
+          ],
+          "tablename": "textbook_book_drafts",
+          "permissive": "PERMISSIVE",
+          "policyname": "textbook_draft_admin",
+          "schemaname": "public",
+          "with_check": "( SELECT is_admin() AS is_admin)"
+        },
+        {
+          "cmd": "INSERT",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "tablename": "textbook_book_editions",
+          "permissive": "PERMISSIVE",
+          "policyname": "textbook_editions_insert",
+          "schemaname": "public",
+          "with_check": "(( SELECT is_admin() AS is_admin) AND (published_by = ( SELECT auth.uid() AS uid)))"
+        },
+        {
+          "cmd": "SELECT",
+          "qual": "true",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "tablename": "textbook_book_editions",
+          "permissive": "PERMISSIVE",
+          "policyname": "textbook_editions_read",
+          "schemaname": "public",
+          "with_check": null
+        },
+        {
+          "cmd": "INSERT",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "tablename": "textbook_book_releases",
+          "permissive": "PERMISSIVE",
+          "policyname": "textbook_releases_insert",
+          "schemaname": "public",
+          "with_check": "(( SELECT is_admin() AS is_admin) AND (updated_by = ( SELECT auth.uid() AS uid)))"
+        },
+        {
+          "cmd": "SELECT",
+          "qual": "true",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "tablename": "textbook_book_releases",
+          "permissive": "PERMISSIVE",
+          "policyname": "textbook_releases_read",
+          "schemaname": "public",
+          "with_check": null
+        },
+        {
+          "cmd": "UPDATE",
+          "qual": "( SELECT is_admin() AS is_admin)",
+          "roles": [
+            "authenticated"
+          ],
+          "tablename": "textbook_book_releases",
+          "permissive": "PERMISSIVE",
+          "policyname": "textbook_releases_update",
+          "schemaname": "public",
+          "with_check": "(( SELECT is_admin() AS is_admin) AND (updated_by = ( SELECT auth.uid() AS uid)))"
+        }
+      ],
+      "functions": [
+        {
+          "acl": [
+            "postgres=X/postgres",
+            "authenticated=X/postgres"
+          ],
+          "name": "catalog_sources",
+          "owner": "16388",
+          "config": [
+            "search_path=\"\""
+          ],
+          "schema": "library_private",
+          "definer": false
+        },
+        {
+          "acl": [
+            "postgres=X/postgres",
+            "authenticated=X/postgres",
+            "service_role=X/postgres"
+          ],
+          "name": "library_target_accessible",
+          "owner": "16388",
+          "config": [
+            "search_path=\"\""
+          ],
+          "schema": "public",
+          "definer": false
+        }
+      ]
+    }
+  },
+  "after": {
+    "bookData": {
+      "drafts": {
+        "rows": 0,
+        "digest": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      "editions": {
+        "rows": 3,
+        "digest": "9d2af8839772d1dd455245a995c7988f"
+      },
+      "releases": {
+        "rows": 2,
+        "digest": "9c44bbee9ca3ed37ed94ae13a15f216e"
+      }
+    },
+    "learnerData": {
+      "contexts": {
+        "rows": 343,
+        "digest": "bff93882437329f910900b516108a075"
+      },
+      "vocabulary": {
+        "rows": 1607,
+        "digest": "86c1ef5e91eae6126d8678d507b06b61"
+      },
+      "libraryState": {
+        "rows": 24,
+        "digest": "f4c4fd4c58828be7562a32131f0e8fa9"
+      }
+    },
+    "bookSecurity": {
+      "rls": [
+        {
+          "acl": [
+            "postgres=arwdDxtm/postgres",
+            "service_role=arwdDxtm/postgres",
+            "authenticated=arw/postgres"
+          ],
+          "rls": true,
+          "table": "textbook_book_drafts",
+          "forced": false
+        },
+        {
+          "acl": [
+            "postgres=arwdDxtm/postgres",
+            "service_role=arwdDxtm/postgres",
+            "anon=r/postgres",
+            "authenticated=ar/postgres"
+          ],
+          "rls": true,
+          "table": "textbook_book_editions",
+          "forced": false
+        },
+        {
+          "acl": [
+            "postgres=arwdDxtm/postgres",
+            "service_role=arwdDxtm/postgres",
+            "anon=r/postgres",
+            "authenticated=arw/postgres"
+          ],
+          "rls": true,
+          "table": "textbook_book_releases",
+          "forced": false
+        }
+      ],
+      "policies": [
+        {
+          "cmd": "ALL",
+          "qual": "( SELECT is_admin() AS is_admin)",
+          "roles": [
+            "authenticated"
+          ],
+          "tablename": "textbook_book_drafts",
+          "permissive": "PERMISSIVE",
+          "policyname": "textbook_draft_admin",
+          "schemaname": "public",
+          "with_check": "( SELECT is_admin() AS is_admin)"
+        },
+        {
+          "cmd": "INSERT",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "tablename": "textbook_book_editions",
+          "permissive": "PERMISSIVE",
+          "policyname": "textbook_editions_insert",
+          "schemaname": "public",
+          "with_check": "(( SELECT is_admin() AS is_admin) AND (published_by = ( SELECT auth.uid() AS uid)))"
+        },
+        {
+          "cmd": "SELECT",
+          "qual": "true",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "tablename": "textbook_book_editions",
+          "permissive": "PERMISSIVE",
+          "policyname": "textbook_editions_read",
+          "schemaname": "public",
+          "with_check": null
+        },
+        {
+          "cmd": "INSERT",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "tablename": "textbook_book_releases",
+          "permissive": "PERMISSIVE",
+          "policyname": "textbook_releases_insert",
+          "schemaname": "public",
+          "with_check": "(( SELECT is_admin() AS is_admin) AND (updated_by = ( SELECT auth.uid() AS uid)))"
+        },
+        {
+          "cmd": "SELECT",
+          "qual": "true",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "tablename": "textbook_book_releases",
+          "permissive": "PERMISSIVE",
+          "policyname": "textbook_releases_read",
+          "schemaname": "public",
+          "with_check": null
+        },
+        {
+          "cmd": "UPDATE",
+          "qual": "( SELECT is_admin() AS is_admin)",
+          "roles": [
+            "authenticated"
+          ],
+          "tablename": "textbook_book_releases",
+          "permissive": "PERMISSIVE",
+          "policyname": "textbook_releases_update",
+          "schemaname": "public",
+          "with_check": "(( SELECT is_admin() AS is_admin) AND (updated_by = ( SELECT auth.uid() AS uid)))"
+        }
+      ],
+      "functions": [
+        {
+          "acl": [
+            "postgres=X/postgres",
+            "authenticated=X/postgres"
+          ],
+          "name": "catalog_sources",
+          "owner": "16388",
+          "config": [
+            "search_path=\"\""
+          ],
+          "schema": "library_private",
+          "definer": false
+        },
+        {
+          "acl": [
+            "postgres=X/postgres",
+            "authenticated=X/postgres",
+            "service_role=X/postgres"
+          ],
+          "name": "library_target_accessible",
+          "owner": "16388",
+          "config": [
+            "search_path=\"\""
+          ],
+          "schema": "public",
+          "definer": false
+        }
+      ]
+    }
+  },
+  "scope": "Actual production aggregate complete-row digests and existing RLS/table grants/function owner/security/search_path/ACL before/after additive N3 support; no learner contents returned."
+}

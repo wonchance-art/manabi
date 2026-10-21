@@ -1,0 +1,131 @@
+{
+  "prepared": true,
+  "executed": false,
+  "bookId": "japanese-n3",
+  "editionId": "4978c146953f14140bcb49d2",
+  "contentHash": "4978c146953f14140bcb49d21bc58d236195ad73d1568dc0d516c2546547aaf5",
+  "bundleHash": "1dfbabcd4369412ca5d80f5a3ba5c01070f9f233dc2dcd787f8235eef8dbad62",
+  "sourceBundleSha256": "8d0d1b4a785c05bbe131bbb0b80db7c5749bd294c5de8e2e019c700454728607",
+  "verificationSha256": "f8240e6e60adf2a70810ffa7d2a0ceb119e02fbc189868a0574770dae63d3ef3",
+  "sqlSha256": "710262e9032a3cd13323657b592fa30ce09d641d54a81e12eed9ed6970d60232",
+  "sqlBytes": 732522,
+  "baselineSha256": "bdfe500527e84c332253233db2a52a9e13018ea3aa71c46d108269200073da1e",
+  "baselineBookData": {
+    "drafts": {
+      "rows": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "editions": {
+      "rows": 3,
+      "digest": "9d2af8839772d1dd455245a995c7988f"
+    },
+    "releases": {
+      "rows": 2,
+      "digest": "9c44bbee9ca3ed37ed94ae13a15f216e"
+    }
+  },
+  "verified": {
+    "canonicalUtf8Manuscript": true,
+    "canonicalAssets": true,
+    "exactDerivedHtmlPagesSourceManifest": true,
+    "actualAssetBytes": true,
+    "actualFontCmaps": true,
+    "lessons": 48,
+    "sections": 198,
+    "qaEvidence": [
+      {
+        "scope": "structure",
+        "path": "structure.json",
+        "sha256": "df991ed2a4e3a6e494c9d4813374fe7b91a28226417b211ddf23e3f9d5cd03f1"
+      },
+      {
+        "scope": "structure",
+        "path": "reproducibility.json",
+        "sha256": "df3537f862e91b7f1ee3974605faf43619751e304137bb3d93004cebc316ec55"
+      },
+      {
+        "scope": "language",
+        "path": "language.json",
+        "sha256": "c4871c7ce08e300a7fb9e0ce140d68dee8d427da554053bb9a2cc4b59fab0d54"
+      },
+      {
+        "scope": "language",
+        "path": "book-language.json",
+        "sha256": "462b61dace7f7b2ade04f412ae51bf61368308bbde4381681fe03f89a04b96c9"
+      },
+      {
+        "scope": "language",
+        "path": "a-language.json",
+        "sha256": "ebf422ba21fa98456cf81d50857f260e7f6ef6204ce1c26350fa4c14f0115fb7"
+      },
+      {
+        "scope": "language",
+        "path": "a-order-delta.json",
+        "sha256": "c578a8893fafe2b385328115f99ddc7e8c0e7a7e80a83a184d4a4bf2727ded9c"
+      },
+      {
+        "scope": "language",
+        "path": "b-language.json",
+        "sha256": "11dd32a906757e669d267a06377ef6515210a5c876fb37b9a49d5d1d027afdd4"
+      },
+      {
+        "scope": "language",
+        "path": "c-language.json",
+        "sha256": "6b1dce76ab0e75d9d5cb1226330b589d7dacf59f07b9358857b958d431a94913"
+      },
+      {
+        "scope": "language",
+        "path": "c-order-delta.json",
+        "sha256": "d66f2eb8047df708fa2928977074e86260ad1ef9e36a9693cca1d86708ef9206"
+      },
+      {
+        "scope": "language",
+        "path": "curriculum.json",
+        "sha256": "f3adc29e58992e7c72c5c421b37f0bb2023bcf3d6a5ecc9648a359ffb3d26ca5"
+      },
+      {
+        "scope": "language",
+        "path": "coverage.json",
+        "sha256": "b21bf066fd331f4b660abc133dd5d6d71a8855b1bfd9d56e6f34bb273c0543af"
+      },
+      {
+        "scope": "language",
+        "path": "word-status.json",
+        "sha256": "0d0d14b6e0c70ce8dad3896391c3e93a1734f2d80bbf7a5b5757054202679918"
+      },
+      {
+        "scope": "language",
+        "path": "language-acceptance-matrix.json",
+        "sha256": "5e84f51d77408ec16275499e3f0e219024da88aee8d52b13cf52eed093d331af"
+      },
+      {
+        "scope": "language",
+        "path": "language-oracle.json",
+        "sha256": "d171e48682a2a0b1178d2db6179f5b6f337720f0cbe3c88c13de79d4f1bd7d38"
+      },
+      {
+        "scope": "language",
+        "path": "language-audit.json",
+        "sha256": "3dbcecba45110aaa8586fa30df349e9fd911f5d2edc38112300225b534392119"
+      },
+      {
+        "scope": "language",
+        "path": "language-audit-final-delta.json",
+        "sha256": "922138572e451c5eeb5fd77f8e2800bb8d432115070be9418d394f67af49cdd2"
+      },
+      {
+        "scope": "browser",
+        "path": "standalone-browser.json",
+        "sha256": "b79663effc45c780b2363e73028952671dd26e9326cfd7059e4330bef6e4bac7"
+      },
+      {
+        "scope": "browser",
+        "path": "standalone-visual.json",
+        "sha256": "018831458d2af11a89146d0b44f55fb4849ca486d861594234713b66a7bfa8f0"
+      }
+    ]
+  },
+  "executionMode": "administrative-database-initial-registration",
+  "actualAccountLoginVerified": false,
+  "productionWrites": false
+}

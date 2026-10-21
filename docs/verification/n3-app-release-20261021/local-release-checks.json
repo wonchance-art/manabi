@@ -1,0 +1,33 @@
+{
+  "passed": true,
+  "vitest": {
+    "files": 770,
+    "tests": 9121,
+    "logSha256": "b1a4770df5a834919f473728928e80aaed82119ae8841879d1bbca9ff7ccd1ea"
+  },
+  "lint": {
+    "exitCode": 0,
+    "logSha256": "ca47fc59c5528bc93ef2ffe5a7b38ec448c3a99e4b8d388379b363f8469f7814"
+  },
+  "productionBuild": {
+    "exitCode": 0,
+    "fonts": "actual vendored Google fonts and five N3 subsets",
+    "supabase": "CI fetch mock, no operating credentials",
+    "logSha256": "3a0c7898c33cffe63968c2eb55b8bc9cdf1658374cb4498b6aa1c2678ec40a88"
+  },
+  "publishedBrowserSmoke": {
+    "passed": true,
+    "tests": 2,
+    "failed": 0,
+    "logSha256": "73298fef6cc9123c871f359abc36d87c3c5fc661fb369a034bf4e5903d32711f",
+    "checks": [
+      "N3 bookshelf keyboard navigation to all48 lessons and exact u48 text",
+      "N3 reference search matched/no-match/clear actual DOM"
+    ]
+  },
+  "limitations": [
+    "Synthetic app learner is not an operating account",
+    "Auxiliary screenshot helper write-audit failure excluded",
+    "First production build omitted CI preload and was stopped; retry configuration corrected only"
+  ]
+}
