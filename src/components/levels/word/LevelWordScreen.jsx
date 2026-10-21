@@ -39,7 +39,7 @@ import { indexEntry, searchLevelIndex } from '@/lib/levelWordIndex';
 import { useLevelWordGrade } from '@/lib/useLevelWordGrade';
 import { recordActivity } from '@/lib/streak';
 import { useHeightSettle } from '@/lib/useHeightSettle';
-import { BackIcon, CaretIcon, CharTiles, ClearIcon, SearchIcon, SunIcon, WordRow } from '@/components/levels/word/WordParts';
+import { BackIcon, CaretIcon, CharTiles, ClearIcon, SearchIcon, WordRow } from '@/components/levels/word/WordParts';
 import { WordCard } from '@/components/levels/word/WordCard';
 import { GradeBar, OneWordCard, OneWordDone } from '@/components/levels/word/OneWord';
 import { BrowseBar, PracticeBar, PracticeDone, PracticeIntro } from '@/components/levels/word/WordAreas';
@@ -49,6 +49,7 @@ import { WordLangContext } from '@/components/levels/word/wordLang';
 import '@/components/levels/word/level-word.css';
 
 const RETURN_KEY = 'manabi:level-word-return';
+const SHEET_KIND_ORDER = ['vocab', 'hanzi', 'bunkei'];
 
 // 카드 움직임(오너 2026-10-20 KST 「애니메이션 시안」 추천 조합) — 한 단어: 왼쪽으로 밀려남(0.18초) → 오른쪽에서 들어옴(CSS lwCardIn).
 // 리스트: 채점한 카드가 접히며 사라지고(0.24초, 아래 카드가 따라 올라옴) · 시간이 된 카드는 자리가 펼쳐진 뒤 테두리 한 번 반짝(is-arrived).
@@ -320,9 +321,12 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
   const browseEntry = browse ? allEntries[Math.min(browseAt, allEntries.length - 1)] || null : null;
   useEffect(() => { if (browseEntry && prefs.mode === 'one') areaRec.noteOpen(browseEntry.key, 'all'); }, [browseEntry, prefs.mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 모드 · 보기 줄은 첫 채점(연습 탭은 첫 답) 뒤 접힌다(두 모드 모두 — 문서 「상단 네 줄」). 다시 바꾸려면 제목 시트.
-  const folded = practice ? roundOn && round.answers.size > 0 && !roundDone
-    : !browse && !!session && session.graded > 0 && !done;
+  // 모드 · 보기 줄은 첫 채점(연습 탭은 첫 답) 뒤 접힌다(두 모드 모두 — 문서 「상단 네 줄」). 다시 바꾸려면 제목을 눌러
+  // 맨 위로 가며 펼친다(오너 2026-10-21 KST — 모드 · 보기는 페이지 줄에만 있다). 펼친 줄은 다음 채점 · 답에서 다시 접힌다.
+  const foldKey = practice ? `p${roundOn ? round.answers.size : 0}` : `g${session?.graded ?? 0}`;
+  const [unfoldedAt, setUnfoldedAt] = useState(null);
+  const folded = unfoldedAt !== foldKey && (practice ? roundOn && round.answers.size > 0 && !roundDone
+    : !browse && !!session && session.graded > 0 && !done);
   const rowsRef = useHeightSettle(folded);
 
   // ── 리스트 — 같은 오늘 할 줄: ① 시간이 된 카드 ② 오늘 복습 · 새 단어 ③ 기다리는 카드(남은 시간), 그 밖(내일 이후 · 졸업)은 「다음에 볼 단어」에 접는다 ──
@@ -536,7 +540,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
   const searchEntries = dict.state === 'ready' ? dict.entries : dict.state === 'failed' ? levelOnly : null;
   const result = useMemo(() => (searchEntries ? searchLevelIndex(searchEntries, deferred, level, { mode: cfg.mode, levelRank: cfg.levelRank }) : null),
     [searchEntries, deferred, level, cfg]);
-  const openSearch = () => { savedScroll.current = window.scrollY; setSearchOpen(true); setSettingsOpen(false); loadDict(); };
+  const openSearch = () => { savedScroll.current = window.scrollY; setSearchOpen(true); loadDict(); };
   const closeSearch = () => {
     setSearchOpen(false);
     setQuery('');
@@ -560,19 +564,8 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
   }, [byKey, dict.entries, level]);
   const onExampleWord = useCallback((text, anchor, id) => { loadDict(); setPop({ text, anchor, id }); }, [loadDict]);
 
-  // ── 상단 · 시트 · 설정 ──
+  // ── 상단 · 제목 시트(레벨 · 목록 · 보기 — 해 모양 설정 창은 여기로 합쳤다, 오너 2026-10-21 KST) ──
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const settingsRef = useRef(null);
-  useEffect(() => {
-    if (!settingsOpen) return undefined;
-    // 해 단추 · 창 밖을 누르거나 Esc면 닫는다(단추 자체는 onClick이 토글).
-    const onDown = (event) => { if (!settingsRef.current?.contains(event.target)) setSettingsOpen(false); };
-    const onKey = (event) => { if (event.key === 'Escape') { setSettingsOpen(false); settingsRef.current?.querySelector('button')?.focus(); } };
-    window.addEventListener('pointerdown', onDown, true);
-    window.addEventListener('keydown', onKey);
-    return () => { window.removeEventListener('pointerdown', onDown, true); window.removeEventListener('keydown', onKey); };
-  }, [settingsOpen]);
   const progRef = useRef(null);
   const [stuck, setStuck] = useState(false);
   useEffect(() => {
@@ -590,14 +583,17 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
     const go = () => flushSync(() => setPrefs({ mode }));
     if (typeof document !== 'undefined' && document.startViewTransition && !reducedMotion()) document.startViewTransition(go); else go();
   };
+  // 제목: 내려와 있거나 줄이 접혀 있으면 맨 위로 가며 펼치고, 이미 맨 위에 다 보이면 시트를 연다.
   const onTitle = () => {
+    if (window.scrollY <= 0 && !folded) { setSheetOpen(true); return; }
+    if (folded) setUnfoldedAt(foldKey);
     if (window.scrollY > 0) window.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' });
-    else setSheetOpen(true);
   };
   const next = nextLevelKey(conf.levels, levelKey);
   const goNext = () => { if (next) router.push(cfg.levelHref(next)); };
-  const otherLinks = levelKinds(cfg.lang, levelKey).filter((k) => k !== 'vocab')
-    .map((k) => ({ href: `/${cfg.lang}/${k}/${levelKey.toLowerCase()}`, label: `${LEVEL_KIND_LABEL[k]} 목록` }));
+  // 목록 칸 — 제목 「HSK 1 단어」의 「단어」 자리를 바꾼다(단어 · 한자 · 문형 순, 그 레벨에 있는 것만).
+  const kindLinks = SHEET_KIND_ORDER.filter((k) => levelKinds(cfg.lang, levelKey).includes(k))
+    .map((k) => ({ id: k, label: LEVEL_KIND_LABEL[k], href: k === 'vocab' ? cfg.levelHref(levelKey) : `/${cfg.lang}/${k}/${levelKey.toLowerCase()}` }));
 
   // ── 키보드 — Space 정답 확인 · 1–4 채점(리스트는 아래 네 칸의 대상 카드) · Ctrl/⌘+Z 되돌리기(복습실과 같은 키) ──
   const keyState = useRef({});
@@ -670,19 +666,9 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/favicon.svg" alt="" width={32} height={32} />
         </Link>
-        <h1 className="lw-title"><button type="button" onClick={onTitle} title="맨 위로 · 보기 설정">{title}</button></h1>
-        <button type="button" className="lw-title__caret lw-icon" aria-label="레벨 · 모드 · 보기" aria-haspopup="dialog" onClick={() => setSheetOpen(true)}><CaretIcon /></button>
+        <h1 className="lw-title"><button type="button" onClick={onTitle} title="맨 위로 · 레벨 · 목록 · 보기">{title}</button></h1>
+        <button type="button" className="lw-title__caret lw-icon" aria-label="레벨 · 목록 · 보기" aria-haspopup="dialog" onClick={() => setSheetOpen(true)}><CaretIcon /></button>
         <button type="button" className="lw-icon" aria-label="단어 찾기" onClick={openSearch}><SearchIcon /></button>
-        <span style={{ position: 'relative' }} ref={settingsRef}>
-          <button type="button" className="lw-icon" aria-label="설정" aria-expanded={settingsOpen} onClick={() => setSettingsOpen((v) => !v)}><SunIcon /></button>
-          {settingsOpen && <div className="lw-settings" role="group" aria-label="화면 설정">
-            <label>{cfg.aidLabel}<input type="checkbox" checked={tone} onChange={(e) => setPrefs({ tone: e.target.checked })} /></label>
-            <div className="lw-settings__row"><span id="lw-page-size">리스트 한 번에</span>
-              <span className="lw-settings__seg" role="group" aria-labelledby="lw-page-size">
-                {LEVEL_WORD_PAGE_SIZES.map((n) => <button key={n} type="button" aria-pressed={prefs.page === n} onClick={() => setPrefs({ page: n })}>{n}</button>)}
-              </span></div>
-          </div>}
-        </span>
       </header>}
 
     {!searchOpen && <>
@@ -791,8 +777,8 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
         </div>}
     </Sheet>}
 
-    {sheetOpen && <TitleSheet levels={conf.levels} levelKey={levelKey} mode={prefs.mode} view={prefs.view} views={LEVEL_WORD_VIEWS} links={otherLinks}
-      onMode={(m) => { switchMode(m); }} onView={(v) => setPrefs({ view: v })} onClose={() => setSheetOpen(false)} />}
+    {sheetOpen && <TitleSheet levels={conf.levels} levelKey={levelKey} kinds={kindLinks} aidLabel={cfg.aidLabel} aid={tone}
+      page={prefs.page} pageSizes={LEVEL_WORD_PAGE_SIZES} onAid={(v) => setPrefs({ tone: v })} onPage={(n) => setPrefs({ page: n })} onClose={() => setSheetOpen(false)} />}
 
     {notice && <Notice key={notice.id} notice={notice} onDone={dropNotice} />}
   </div></WordLangContext.Provider>;

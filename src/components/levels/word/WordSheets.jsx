@@ -50,15 +50,24 @@ function Seg({ label, items, value, onPick }) {
     </div></div>;
 }
 
-/** 제목 ▾ 시트 — 레벨 · 모드 · 보기 세 줄의 분할 단추(제목 · ✕ 없음). */
-export function TitleSheet({ levels, levelKey, mode, view, views, links, onMode, onView, onClose }) {
+/**
+ * 제목 ▾ 시트 — 레벨 · 목록 · 보기(오너 2026-10-21 KST 「두 곳」 안: 페이지 줄 = 지금 공부하는 방식, 제목 = 나머지 전부).
+ * 모드 · 보기 탭은 페이지 줄에만 둔다(시트에 또 두면 겹친다). 목록은 그 레벨에 있는 것만(한자 1 · 2급, 7–9급은 단어뿐이라 줄 없음).
+ */
+export function TitleSheet({ levels, levelKey, kinds, aidLabel, aid, page, pageSizes, onAid, onPage, onClose }) {
   const L = useWordLang();
-  return <Sheet label="보기 설정" onClose={onClose}>
+  return <Sheet label="레벨 · 목록 · 보기" onClose={onClose}>
     <div className="lw-sheet__rows">
       <Seg label="레벨" value={levelKey} items={levels.map((k) => ({ id: k, label: L.levelPill(k), aria: L.tag(L.levelOf(k)), href: L.levelHref(k) }))} />
-      <Seg label="모드" value={mode} onPick={onMode} items={[{ id: 'one', label: '한 단어' }, { id: 'list', label: '리스트' }]} />
-      <Seg label="보기" value={view} onPick={onView} items={views} />
-      {links?.length > 0 && <div className="lw-sheet__links">{links.map((l) => <Link key={l.href} href={l.href}>{l.label}</Link>)}</div>}
+      {kinds.length > 1 && <Seg label="목록" value="vocab" items={kinds} />}
+      <div className="lw-sheet__row lw-sheet__row--top"><span>보기</span>
+        <div className="lw-sheet__view">
+          <button type="button" role="switch" className="lw-switch" aria-checked={aid} onClick={() => onAid(!aid)}>{aidLabel}<i aria-hidden="true" /></button>
+          <div className="lw-sheet__page"><span id="lw-page-size">리스트 한 번에</span>
+            <span className="lw-mini" role="group" aria-labelledby="lw-page-size">
+              {pageSizes.map((n) => <button key={n} type="button" aria-pressed={page === n} onClick={() => onPage(n)}>{n}</button>)}
+            </span></div>
+        </div></div>
     </div>
   </Sheet>;
 }

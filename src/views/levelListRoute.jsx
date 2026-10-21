@@ -18,7 +18,7 @@ export function levelListRoute(lang, kind, View = LevelListPage) {
       const description = kind === 'hanzi'
         ? `${conf.name} ${levelLabel(key)} 한자 — 글자만 보고 읽어 보고, 모르는 글자는 바로 체크`
         : lang === 'chinese' && kind === 'vocab'
-          ? `${conf.name} ${levelLabel(key)} 단어 — 한 단어씩 네 칸으로 채점하고, HSK 1–7 전체에서 찾기`
+          ? `${conf.name} ${levelLabel(key)} 단어 — 한 단어씩 네 칸으로 채점하고, HSK 1–9 전체에서 찾기`
         : lang === 'japanese' && kind === 'vocab'
           ? `${conf.name} ${levelLabel(key)} 단어 — 한 단어씩 네 칸으로 채점하고, JLPT N5–N1 전체에서 찾기`
           : `${conf.name} ${levelLabel(key)} ${KIND_LABEL[kind]} 목록 — 뜻 · 예문 · 듣기, 단어는 바로 복습에 저장`;

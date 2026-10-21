@@ -39,13 +39,6 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-searchbox .lw-icon{color:var(--muted)}
 
 /* 설정 — 성조 색 하나(지금처럼 끄기 가능). */
-.lw-settings{position:absolute;right:8px;top:calc(100% + 6px);z-index:31;background:var(--lw-card);border:1px solid var(--lw-line);border-radius:12px;padding:6px;box-shadow:0 10px 28px color-mix(in srgb,var(--ink) 12%,transparent);animation:settleIn .16s var(--ease-settle) both;min-width:200px}
-.lw-settings label{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:44px;padding:0 10px;font-size:14px;cursor:pointer}
-.lw-settings input{width:20px;height:20px;accent-color:var(--lw-rose)}
-.lw-settings__row{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:52px;padding:0 4px 0 10px;font-size:14px;white-space:nowrap}
-.lw-settings__seg{display:inline-flex;gap:2px;padding:2px;border-radius:10px;background:var(--lw-chip)}
-.lw-settings__seg button{min-width:44px;min-height:44px;border:0;border-radius:8px;background:none;font-size:14px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;cursor:pointer}
-.lw-settings__seg button[aria-pressed=true]{background:var(--lw-card);color:var(--ink);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 14%,transparent)}
 
 /* ② · ③ 모드 · 보기 — 첫 채점 뒤 접힌다(높이 0.2초). */
 .lw-rows{display:grid;gap:10px;padding:12px 0 2px}
@@ -270,13 +263,24 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-sheet .lw-seg{grid-template-columns:repeat(var(--n,2),minmax(0,1fr))}
 .lw-sheet .lw-seg a{min-height:40px;border-radius:10px;display:grid;place-items:center;font-size:14px;font-weight:600;color:var(--muted);text-decoration:none}
 .lw-sheet .lw-seg a[aria-current=page]{background:var(--lw-card);color:var(--ink);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 14%,transparent)}
-.lw-sheet__links{display:flex;gap:18px;font-size:13.5px;padding-top:4px}
-.lw-sheet__links a{min-height:44px;display:inline-flex;align-items:center;color:var(--muted)}
+/* 보기 — 도움 스위치(성조 색 · 예문 후리가나) + 리스트 한 번에. 예전 해 모양 창을 시트로 옮겼다(오너 2026-10-21 KST). */
+.lw-sheet__row--top{align-items:start}
+.lw-sheet__row--top>span{padding-top:14px}
+.lw-sheet__view{border-radius:12px;background:var(--lw-card);border:1px solid var(--lw-line);padding:0 4px 0 12px}
+.lw-switch{display:flex;width:100%;justify-content:space-between;align-items:center;gap:16px;min-height:48px;border:0;background:none;padding:0 8px 0 0;font:inherit;font-size:14px;color:var(--ink);cursor:pointer;text-align:left}
+.lw-switch i{flex:none;width:40px;height:24px;border-radius:999px;background:var(--lw-chip);position:relative;transition:background .15s var(--ease-settle)}
+.lw-switch i::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--paper);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 25%,transparent);transition:transform .15s var(--ease-settle)}
+.lw-switch[aria-checked=true] i{background:var(--ink)}
+.lw-switch[aria-checked=true] i::after{transform:translateX(16px)}
+.lw-sheet__page{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:52px;border-top:1px solid var(--lw-line);font-size:14px;white-space:nowrap}
+.lw-mini{display:inline-flex;gap:2px;padding:2px;border-radius:10px;background:var(--lw-chip)}
+.lw-mini button{min-width:44px;min-height:44px;border:0;border-radius:8px;background:none;font-size:14px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;cursor:pointer}
+.lw-mini button[aria-pressed=true]{background:var(--paper);color:var(--ink);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 14%,transparent)}
 .lw-sheet .lw-card{border:0;padding:0;background:none}
 @keyframes lwFade{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){
-  .lw-top--search .lw-searchbox,.lw-settings,.lw-rows.is-height-settling,.lw-bar i,.lw-status.is-popping,.lw-grade,.lw-two__btn,.lw-card,.lw-card__more,.lw-one__card.is-turning,
-  .lw-one__back,.lw-done,.lw-undo,.lw-pop,.lw-scrim,.lw-sheet,.lw-prog,.lw-card.is-arrived,.lw-card.is-arrived .lw-time{animation:none;transition:none}
+  .lw-top--search .lw-searchbox,.lw-rows.is-height-settling,.lw-bar i,.lw-status.is-popping,.lw-grade,.lw-two__btn,.lw-card,.lw-card__more,.lw-one__card.is-turning,
+  .lw-switch i,.lw-switch i::after,.lw-one__back,.lw-done,.lw-undo,.lw-pop,.lw-scrim,.lw-sheet,.lw-prog,.lw-card.is-arrived,.lw-card.is-arrived .lw-time{animation:none;transition:none}
   .lw-grade:active:not(:disabled),.lw-two__btn:active:not(:disabled),.lw-card:active:not(:has(button:active)),.lw-one__reveal:active{transform:none}
 }
 /* 모드 전환(한 단어 ↔ 리스트) — View Transitions API(없는 브라우저는 바로 바뀜). 0.2초 겹침. */

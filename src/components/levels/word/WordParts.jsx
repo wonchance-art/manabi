@@ -10,7 +10,6 @@ const svg = { fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', stro
 export const SpeakerIcon = () => <svg {...svg} width={20} height={20} strokeWidth={1.6}><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5H4Z" /><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" /></svg>;
 export const SearchIcon = ({ size = 24 }) => <svg {...svg} width={size} height={size} strokeWidth={1.7}><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14M21 21l-5-5" /></svg>;
 // 해 모양 설정(문서 「상단바 한 줄」) — 상자 없는 24px.
-export const SunIcon = () => <svg {...svg} width={24} height={24} strokeWidth={1.7}><circle cx="12" cy="12" r="4" /><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4" /></svg>;
 export const BackIcon = () => <svg {...svg} width={24} height={24} strokeWidth={1.8}><path d="m15 5-7 7 7 7" /></svg>;
 export const ClearIcon = () => <svg {...svg} width={20} height={20} strokeWidth={1.8}><path d="M6 6l12 12M18 6 6 18" /></svg>;
 export const CaretIcon = () => <svg {...svg} width={16} height={16} strokeWidth={2}><path d="m6 9 6 6 6-6" /></svg>;

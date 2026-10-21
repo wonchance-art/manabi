@@ -1,8 +1,9 @@
 'use client';
 // HSK 단어 페이지(오너 확정 2026-10-19 KST · 문서 「HSK 단어 페이지 개편 구현 정리」 · 시안 9판) — /chinese/vocab/h1–h7.
-// 화면은 JLPT와 같은 공통 화면(LevelWordScreen)이고, 여기서는 HSK 판만 정한다: 병음(성조 색) · 간체/정체 글자 칸 · HSK 1–7 색인.
+// 화면은 JLPT와 같은 공통 화면(LevelWordScreen)이고, 여기서는 HSK 판만 정한다: 병음(성조 색) · 간체/정체 글자 칸 · HSK 1–9(7–9는 한 밴드) 색인.
 import LevelWordScreen from '@/components/levels/word/LevelWordScreen';
-import { pinyinSyllables } from '@/lib/levelList';
+import { levelPill, pinyinSyllables } from '@/lib/levelList';
+import { zhHskLevelLabel } from '@/lib/zhHskLevel';
 import { pinyinToneNumber } from '@/lib/pinyinTone';
 import { levelCharTiles, loadLevelCharTables } from '@/lib/levelCharTiles';
 
@@ -20,15 +21,16 @@ export const HSK_WORD_LANG = Object.freeze({
   hw: 'zh-CN', zheng: 'zh-TW', piece: 'zh-CN', exReading: undefined,
   levelOf: (key) => Number(String(key).slice(1)),
   levelKeyOf: (level) => `H${level}`,
-  levelPill: (key) => String(key).slice(1),
+  // H7은 7–9 통합 밴드 — 알약 · 이름 모두 정본(levelPill · zhHskLevelLabel)에서 받는다.
+  levelPill,
   levelHref: (key) => `/chinese/vocab/${String(key).toLowerCase()}`,
   levelRank: (level) => level,
-  tag: (level) => `HSK ${level}`,
-  title: (level) => `HSK ${level} 단어`,
-  scope: 'HSK 1–7 전체',
+  tag: (level) => zhHskLevelLabel(level) ?? `HSK ${level}`,
+  title: (level) => `${zhHskLevelLabel(level) ?? `HSK ${level}`} 단어`,
+  scope: 'HSK 1–9 전체',
   indexUrl: '/api/level-index/chinese',
   placeholder: '한자 · 병음 · 뜻',
-  searchHint: '한자 · 병음(jingyan · jing1yan4) · 한국어 뜻으로 HSK 1–7 전체에서 찾아요',
+  searchHint: '한자 · 병음(jingyan · jing1yan4) · 한국어 뜻으로 HSK 1–9 전체에서 찾아요',
   noneHint: '철자를 줄이거나(jing) 한국어 뜻(경험)으로 찾아 보세요.',
   guide: '뜻이나 발음 중 하나라도 막혔다면 다시',
   aidLabel: '성조 색',
