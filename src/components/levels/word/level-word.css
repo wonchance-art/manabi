@@ -193,7 +193,9 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-btn:disabled{opacity:.45;cursor:default}
 .lw-more{display:flex;justify-content:center;padding:16px 0}
 .lw-more button,.lw-btn{min-height:44px;padding:0 18px;border:1px solid var(--rule);border-radius:10px;background:var(--lw-card);cursor:pointer;font-size:14px;font-weight:600}
-.lw-btn--primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+/* 단추는 캔버스(9판 ⑤ · 정답 확인)대로 알약 · 48px · 보조는 보통 굵기, 주 단추만 굵게 */
+.lw-btn{min-height:48px;border-radius:999px;font-weight:400}
+.lw-btn--primary{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:700}
 .lw-empty{color:var(--muted);text-align:center;padding:32px 0;font-size:14px}
 /* 리스트 · 오늘 새 단어 몫을 다 함(시안 ⑧) */
 .lw-capped{display:grid;gap:10px;text-align:center;padding:20px 0 8px}
@@ -231,25 +233,28 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-gradebar__guide{margin:0;min-height:1.5em;text-align:center;font-size:12.5px;line-height:1.5;color:var(--muted)}
 .lw-gradebar__guide b{color:var(--ink);font-size:14px;font-weight:600}
 
-/* 끝 화면 */
-.lw-done{padding:32px 0 24px;display:grid;gap:16px;text-align:center;animation:settleIn .2s var(--ease-settle) both}
-.lw-done h2{margin:0;font-size:22px}
-/* 끝 화면(시안 「단어 페이지 손질」 ②) — 한 줄 요약 + 이름 붙은 칸 + 단추. 단어 자리에 나온다(위에 붙지 않는다). */
-.lw-done__sum{margin:-6px 0 0;font-size:15px}
-.lw-done__sum b{font-variant-numeric:tabular-nums}
+/* 끝 화면(9판 ⑤) — 제목 왼쪽 · 큰 두 칸(학습 · 내일) · 이름 붙은 네 칸 · 단추. 단어 자리에 나온다(위에 붙지 않는다). */
+.lw-done{padding:22px 0 24px;display:grid;gap:12px;animation:settleIn .2s var(--ease-settle) both}
+.lw-done h2{margin:0 0 4px;font-size:22px;line-height:1.3}
+.lw-done__sum{margin:0;font-size:15px}
+.lw-done__big{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.lw-done__big--one{grid-template-columns:minmax(0,1fr)}
 .lw-done__counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 .lw-done__counts--two{grid-template-columns:repeat(2,minmax(0,1fr))}
-.lw-done__n{border-radius:3px;padding:8px 0 6px;border:1px solid var(--rule);display:grid;gap:0}
+.lw-done__n{border-radius:3px;padding:10px 4px;border:1px solid var(--rule);display:grid;justify-items:center;gap:2px;text-align:center}
+.lw-done__big .lw-done__n{background:var(--lw-card);padding:14px 12px}
+.lw-done__big .lw-done__n b{font-size:30px;color:var(--ink)}
 /* 칸이 차례로(⑥-4) — 40ms씩 늦게, 한 칸은 0.18초(마지막 칸 늦춤 0.12초를 더해도 0.3초 안). */
 .lw-done__n{animation:settleIn .18s var(--ease-settle) both}
 .lw-done__n:nth-child(2){animation-delay:.04s}
 .lw-done__n:nth-child(3){animation-delay:.08s}
 .lw-done__n:nth-child(4){animation-delay:.12s}
-.lw-done__n b{font-size:18px;font-variant-numeric:tabular-nums}
+.lw-done__n b{font-size:22px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
 .lw-done__n small{font-size:12px;color:var(--muted)}
+.lw-done__n--again{background:var(--grade-again-bg)}.lw-done__n--know{background:var(--grade-good-bg)}
 .lw-done__counts .lw-grade--again b,.lw-done__n--again b{color:var(--grade-again)}.lw-done__counts .lw-grade--hard b{color:var(--grade-hard)}
 .lw-done__counts .lw-grade--good b,.lw-done__n--know b{color:var(--grade-good)}.lw-done__counts .lw-grade--easy b{color:var(--grade-easy)}
-.lw-done__actions{display:grid;gap:8px}
+.lw-done__actions{display:grid;gap:8px;margin-top:8px}
 .lw-done__row{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px}
 .lw-btn--wide{min-height:52px;display:grid;place-content:center;gap:1px}
 .lw-btn small{font-size:12px;font-weight:400;color:var(--muted)}

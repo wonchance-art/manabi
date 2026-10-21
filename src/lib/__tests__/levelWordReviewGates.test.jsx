@@ -26,12 +26,16 @@ describe('① 하루 새 단어 — 복습 설정과 같은 수 · 더 단추(�
     expect(html).toContain('오늘 새 단어 15개 끝');
     expect(html).toContain('새 단어 15개 더<small>하루 15개를 넘어요 · 내일 복습이 그만큼 늘어요</small>');
     expect(html).toContain('전체 훑어보기');
-    expect(html).not.toContain('이어서');
+    expect(html).not.toContain('계속 진행');
   });
   it('레벨을 다 했으면 지금처럼 · 채점 없이 들어온 날은 네 칸 없음 · 하루 0개면 「오늘 복습 끝」', () => {
     const full = wrap(<OneWordDone graded={3} tomorrow={0} counts={counts} onNext={() => {}} nextLabel="HSK 4" onList={() => {}} />);
     expect(full).toContain('오늘 이 레벨 끝');
-    expect(full).toContain('HSK 4 이어서');
+    // 9판 ⑤ · 오너 2026-10-19 KST — 문구 대신 큰 칸(학습 · 내일), 「매김」은 「학습」, 다음 레벨은 「계속 진행」.
+    expect(full).toContain('<small>학습</small>');
+    expect(full).toContain('<small>내일</small>');
+    expect(full).toContain('>계속 진행</button>');
+    expect(full).not.toMatch(/채점했어요|이어서/);
     expect(full).not.toContain('새 단어');
     const empty = wrap(<OneWordDone graded={0} tomorrow={0} counts={counts} onList={() => {}} more={15} perDay={0} started={0} onMore={() => {}} onBrowse={() => {}} />);
     expect(empty).toContain('오늘 복습 끝');

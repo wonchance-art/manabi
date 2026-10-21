@@ -56,13 +56,11 @@ export function BrowseBar({ at, total, onPrev, onNext }) {
   </div></div>;
 }
 
-const DONE_VERB = { sentence: '읽었어요', meaning: '떠올렸어요', audio: '들었어요' };
-
-/** 연습 끝 화면 — 두 칸(알아요 · 다시 볼래요) + 「놓친 N개 한 번 더」 · 「다음 N개」 · 「단어 탭으로」. */
+/** 연습 끝 화면 — 단어 탭 끝 화면과 같은 꼴: 큰 칸(학습) + 두 칸(알아요 · 다시 볼래요) + 「놓친 N개 한 번 더」 · 「다음 N개」 · 「단어 탭으로」. */
 export function PracticeDone({ area, hits, misses, onAgain, moreCount = 0, onMore, onWordTab }) {
   return <section className="lw-done" aria-labelledby="lw-done-title">
     <h2 id="lw-done-title" tabIndex={-1}>{AREA_LABEL[area]} 연습 끝</h2>
-    <p className="lw-done__sum"><b><CountUp n={hits + misses} /></b>개 {DONE_VERB[area]}</p>
+    <div className="lw-done__big lw-done__big--one"><span className="lw-done__n"><b><CountUp n={hits + misses} /></b><small>학습</small></span></div>
     <div className="lw-done__counts lw-done__counts--two" aria-label="답한 수">
       <span className="lw-done__n lw-done__n--know"><b><CountUp n={hits} /></b><small>알아요</small></span>
       <span className="lw-done__n lw-done__n--again"><b><CountUp n={misses} /></b><small>다시 볼래요</small></span>
