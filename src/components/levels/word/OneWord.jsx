@@ -1,7 +1,8 @@
 'use client';
 // 한 단어 모드(문서 「한 단어 모드」) — 앞면: 단어 52px 고정 자리 + 「정답 확인 · Space」 하나. 뒷면: 단어는 같은 자리,
 // 그 아래 읽기(HSK 병음 성조 색 · JLPT 가나) · 듣기 (레벨 태그 · 상태는 찾기에만 — 오너 2026-10-20 KST), 뜻, 글자 칸, 예문. 네 칸은 화면 아래 고정(앞면에서도 누를 수 있다).
-// 보기 탭은 앞면에 무엇을 보일지만 정한다(단어 · 문장 · 뜻 · 소리). 오래된 단어는 뜻을 앞에(반대 방향).
+// 보기 탭은 앞면에 무엇을 보일지만 정한다(단어 · 문장 · 뜻 · 소리 · 전체). 훈음(글자 칸)은 뒷면에만.
+// 오래된 단어의 반대 방향(뜻 보고 단어 떠올리기)은 뜻 연습 탭이 맡는다(네 영역 체크 — 오너 승인 2026-10-21 KST).
 import { CharTiles, GradeButtons, Listen, Reading } from './WordParts';
 import { Example } from './WordCard';
 import { useWordLang } from './wordLang';
@@ -9,9 +10,7 @@ import { useWordLang } from './wordLang';
 export function OneWordCard({ entry: e, view, info, tiles, speak, tone, revealed, onReveal, onWord, openKey, turnKey }) {
   const L = useWordLang();
   const { hw, sub } = L.head(e);
-  const old = info.old != null;
-  const front = old ? <p className="lw-one__solo"><span className="lw-reverse__label">{info.old}일 만에 · 뜻 보고 단어 떠올리기</span><br />{e.meaning}</p>
-    : view === 'sentence' ? <p className="lw-one__solo" lang={L.hw}>{e.ex?.text || hw}</p>
+  const front = view === 'sentence' ? <p className="lw-one__solo" lang={L.hw}>{e.ex?.text || hw}</p>
       : view === 'meaning' ? <p className="lw-one__solo">{e.meaning}</p>
         : view === 'sound' && speak && !revealed ? <Listen speak={speak} text={e.word} label="단어 듣기" />
           : <span className="lw-one__hw" lang={L.hw} style={{ '--n': [...hw].length }}>{hw}</span>;
@@ -42,23 +41,25 @@ export function GradeBar({ previews, onGrade, disabled, note, guide = true, labe
   </div></div>;
 }
 
-/** 끝 화면 — 「오늘 이 레벨 끝」 + 큰 칸 둘(학습 · 내일) + 네 색 칸(누른 횟수, 숫자만) + [계속 진행] [리스트로]. */
-export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabel }) {
+/**
+ * 단어 탭 끝 화면(시안 「단어 페이지 손질」 ②) — 단어 자리에 나온다. 「다시」 누른 단어는 같은 줄에 돌아와 이미 다시 본 뒤라 「모른 것만 다시」는 없다.
+ * 「N번 채점했어요 · 내일 N개가 돌아와요」 + 이름 붙은 네 칸(누른 횟수) + [소리로 확인할 단어 N개] [HSK n 이어서] [리스트로].
+ */
+export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabel, soundCount = 0, onSound }) {
+  const cells = [[1, 'again', '다시'], [2, 'hard', '어려움'], [3, 'good', '알맞음'], [4, 'easy', '쉬움']];
   return <section className="lw-done" aria-labelledby="lw-done-title">
     <h2 id="lw-done-title" tabIndex={-1}>오늘 이 레벨 끝</h2>
-    <div className="lw-done__big">
-      <div><b>{graded}</b><span>학습</span></div>
-      <div><b>{tomorrow}</b><span>내일</span></div>
-    </div>
+    <p className="lw-done__sum"><b>{graded}</b>번 채점했어요{tomorrow > 0 && <> · 내일 <b>{tomorrow}</b>개가 돌아와요</>}</p>
     <div className="lw-done__counts" aria-label="누른 횟수">
-      <span className="lw-grade--again" aria-label={`다시 ${counts[1]}번`}>{counts[1]}</span>
-      <span className="lw-grade--hard" aria-label={`어려움 ${counts[2]}번`}>{counts[2]}</span>
-      <span className="lw-grade--good" aria-label={`알맞음 ${counts[3]}번`}>{counts[3]}</span>
-      <span className="lw-grade--easy" aria-label={`쉬움 ${counts[4]}번`}>{counts[4]}</span>
+      {cells.map(([n, cls, label]) => <span key={n} className={`lw-done__n lw-grade--${cls}`}><b>{counts[n]}</b><small>{label}</small></span>)}
     </div>
     <div className="lw-done__actions">
-      {onNext && <button type="button" className="lw-btn lw-btn--primary" onClick={onNext} aria-label={nextLabel ? `계속 진행 — ${nextLabel}` : '계속 진행'}>계속 진행</button>}
-      <button type="button" className="lw-btn" onClick={onList}>리스트로</button>
+      {soundCount > 0 && <button type="button" className="lw-btn lw-btn--primary lw-btn--wide" onClick={onSound}>소리로 확인할 단어 {soundCount}개
+        <small>어제까지 본 단어 · 일정에는 반영 안 돼요</small></button>}
+      <div className="lw-done__row">
+        {onNext && <button type="button" className={`lw-btn${soundCount > 0 ? '' : ' lw-btn--primary'}`} onClick={onNext}>{nextLabel} 이어서</button>}
+        <button type="button" className="lw-btn" onClick={onList}>리스트로</button>
+      </div>
     </div>
   </section>;
 }

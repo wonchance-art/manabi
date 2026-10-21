@@ -114,7 +114,7 @@ describe('리스트 한 번에 — 설정 10 · 20 · 50, 기본 20(오너 2026-
   const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
   it('고르는 수와 기본값', () => {
     expect(screen).toMatch(/LEVEL_WORD_PAGE_SIZES = Object\.freeze\(\[10, 20, 50\]\)/);
-    expect(screen).toMatch(/LEVEL_WORD_PREFS = Object\.freeze\(\{[^}]*page: 20 \}\)/);
+    expect(screen).toMatch(/LEVEL_WORD_PREFS = Object\.freeze\(\{[^}]*page: 20\b/);
   });
   it('시간이 된 카드는 page장 위에 더한다 · 첫 리스트 예산은 20장', () => {
     expect(screen).toMatch(/const shown = limit \+ \(listed\?\.due\.size \|\| 0\)/);

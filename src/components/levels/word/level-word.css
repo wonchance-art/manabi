@@ -52,8 +52,18 @@
 .lw-seg button{min-height:40px;border:0;border-radius:10px;background:none;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer}
 .lw-seg button[aria-pressed=true]{background:var(--lw-card);color:var(--ink);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 14%,transparent)}
 .lw-tabs{display:flex;gap:22px;border-bottom:1px solid var(--lw-line);font-size:14px;overflow-x:auto;scrollbar-width:none}
-.lw-tabs button{flex:none;min-height:44px;border:0;background:none;padding:0;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer}
+.lw-tabs button{flex:none;min-height:44px;border:0;background:none;padding:0;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;display:inline-flex;flex-direction:column;align-items:center;justify-content:center}
 .lw-tabs button[aria-pressed=true]{color:var(--ink);font-weight:700;border-bottom-color:var(--ink)}
+/* 탭 아래 그 영역의 맞힘 % — 0%도 적어 글자 줄이 맞는다(오너 2026-10-21 KST). 전체는 「훑기」. */
+.lw-tabs button small{font-size:11px;font-weight:400;line-height:1.2;color:var(--muted);font-variant-numeric:tabular-nums;padding-bottom:4px}
+/* 진행바 아래 「네 영역 다 맞힘 N / 600」 */
+.lw-full{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 6px;font-size:13px;color:var(--muted)}
+.lw-full b{color:var(--ink);font-variant-numeric:tabular-nums}
+/* 연습 탭 안내 · 순서 칩 */
+.lw-practice{display:grid;gap:6px;margin:4px 0 0}
+.lw-practice__note{margin:0;font-size:12.5px;color:var(--grade-hard);background:var(--lw-warnbg);border-radius:8px;padding:6px 10px}
+.lw-practice__order{margin:0;display:flex;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.lw-practice__order span{background:var(--lw-chip);border-radius:999px;padding:2px 8px}
 
 /* ④ 진행바 — 범위 ▾ · 막대 · %. 상단바 아래에 붙고, 붙으면 그림자. */
 .lw-prog{position:sticky;top:calc(var(--lw-top-h) + env(safe-area-inset-top,0px));z-index:25;background:var(--paper);display:flex;align-items:center;gap:12px;min-height:48px;margin:0 -16px;padding:0 16px;transition:box-shadow .2s var(--ease-settle)}
@@ -146,9 +156,27 @@
 .lw-card__head>.lw-time{align-self:center}
 .lw-later{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;min-height:48px;margin-top:16px;border:1px dashed var(--rule);border-radius:12px;background:none;color:var(--muted);font-size:14px;font-weight:600;cursor:pointer}
 .lw-later[aria-expanded=true] svg{transform:rotate(180deg)}
-.lw-reverse{display:grid;gap:8px}
-.lw-reverse__label{font-size:12.5px;font-weight:700;color:var(--lw-rose)}
-.lw-reverse__show{min-height:52px;border:1px dashed var(--rule);border-radius:10px;background:none;color:var(--muted);cursor:pointer;font-size:14px}
+/* 네 영역 줄 — 펼친 부분 맨 아래 · 전체 탭 · 찾기 카드. 단어 칸은 테두리(일정에 반영되는 칸). */
+.lw-areas-wrap{display:grid;gap:4px}
+.lw-areas{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.lw-area{display:flex;align-items:center;justify-content:center;gap:5px;min-height:30px;border-radius:8px;font-size:13px;background:var(--lw-chip);color:var(--muted)}
+.lw-area i{font-style:normal;font-weight:700}
+.lw-area--hit{background:var(--grade-good-bg);color:var(--grade-good)}
+.lw-area--miss{background:var(--grade-again-bg);color:var(--grade-again)}
+.lw-area[data-main]{box-shadow:inset 0 0 0 1px var(--rule)}
+.lw-area--hit[data-main]{box-shadow:inset 0 0 0 1px var(--grade-good)}
+.lw-area--miss[data-main]{box-shadow:inset 0 0 0 1px var(--grade-again)}
+.lw-areas__next{margin:0;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+/* 연습 두 칸 · 전체 탭 넘기기 — 네 칸 자리 */
+.lw-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.lw-two__btn{min-height:56px;border:1px solid var(--rule);border-radius:3px;font-size:15px;font-weight:700;cursor:pointer;transition:transform .12s var(--ease-settle)}
+.lw-two__btn:active:not(:disabled){transform:scale(.985)}
+.lw-two__btn:disabled{cursor:default;opacity:.55}
+.lw-two__btn--again{background:var(--grade-again-bg);color:var(--grade-again)}
+.lw-two__btn--know{background:var(--grade-good-bg);color:var(--grade-good)}
+.lw-browse{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px}
+.lw-browse__at{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.lw-btn:disabled{opacity:.45;cursor:default}
 .lw-more{display:flex;justify-content:center;padding:16px 0}
 .lw-more button,.lw-btn{min-height:44px;padding:0 18px;border:1px solid var(--rule);border-radius:10px;background:var(--lw-card);cursor:pointer;font-size:14px;font-weight:600}
 .lw-btn--primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
@@ -185,14 +213,21 @@
 /* 끝 화면 */
 .lw-done{padding:32px 0 24px;display:grid;gap:16px;text-align:center;animation:settleIn .2s var(--ease-settle) both}
 .lw-done h2{margin:0;font-size:22px}
-.lw-done__big{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.lw-done__big div{background:var(--lw-card);border:1px solid var(--lw-line);border-radius:12px;padding:14px 8px;display:grid;gap:2px}
-.lw-done__big b{font-size:30px;font-variant-numeric:tabular-nums}
-.lw-done__big span{font-size:13px;color:var(--muted)}
+/* 끝 화면(시안 「단어 페이지 손질」 ②) — 한 줄 요약 + 이름 붙은 칸 + 단추. 단어 자리에 나온다(위에 붙지 않는다). */
+.lw-done__sum{margin:-6px 0 0;font-size:15px}
+.lw-done__sum b{font-variant-numeric:tabular-nums}
 .lw-done__counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-.lw-done__counts span{border-radius:3px;padding:10px 0;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid var(--rule)}
-.lw-done__counts .lw-grade--again{color:var(--grade-again)}.lw-done__counts .lw-grade--hard{color:var(--grade-hard)}.lw-done__counts .lw-grade--good{color:var(--grade-good)}.lw-done__counts .lw-grade--easy{color:var(--grade-easy)}
-.lw-done__actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.lw-done__counts--two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.lw-done__n{border-radius:3px;padding:8px 0 6px;border:1px solid var(--rule);display:grid;gap:0}
+.lw-done__n b{font-size:18px;font-variant-numeric:tabular-nums}
+.lw-done__n small{font-size:12px;color:var(--muted)}
+.lw-done__counts .lw-grade--again b,.lw-done__n--again b{color:var(--grade-again)}.lw-done__counts .lw-grade--hard b{color:var(--grade-hard)}
+.lw-done__counts .lw-grade--good b,.lw-done__n--know b{color:var(--grade-good)}.lw-done__counts .lw-grade--easy b{color:var(--grade-easy)}
+.lw-done__actions{display:grid;gap:8px}
+.lw-done__row{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px}
+.lw-btn--wide{min-height:52px;display:grid;place-content:center;gap:1px}
+.lw-btn small{font-size:12px;font-weight:400;color:var(--muted)}
+.lw-btn--primary small{color:var(--lw-chip)}
 
 /* 되돌리기 안내 — 네 칸 위(한 단어) 또는 화면 아래(리스트). 올라왔다 .15s에 사라짐, 손가락을 올리면 멈춤. */
 .lw-undo{position:fixed;left:0;right:0;margin-inline:auto;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:12px;background:var(--ink);color:var(--paper);border-radius:12px;padding:4px 6px 4px 16px;font-size:14px;max-width:calc(100vw - 32px);width:max-content;box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 25%,transparent);animation:toast-in .2s var(--ease-settle) both;transition:opacity .15s var(--ease-settle),transform .15s var(--ease-settle)}
@@ -239,9 +274,9 @@
 .lw-sheet .lw-card{border:0;padding:0;background:none}
 @keyframes lwFade{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){
-  .lw-top--search .lw-searchbox,.lw-settings,.lw-rows.is-height-settling,.lw-bar i,.lw-status.is-popping,.lw-grade,.lw-card,.lw-card__more,.lw-one__card.is-turning,
+  .lw-top--search .lw-searchbox,.lw-settings,.lw-rows.is-height-settling,.lw-bar i,.lw-status.is-popping,.lw-grade,.lw-two__btn,.lw-card,.lw-card__more,.lw-one__card.is-turning,
   .lw-one__back,.lw-done,.lw-undo,.lw-pop,.lw-scrim,.lw-sheet,.lw-prog,.lw-card.is-arrived,.lw-card.is-arrived .lw-time{animation:none;transition:none}
-  .lw-grade:active:not(:disabled),.lw-card:active:not(:has(button:active)),.lw-one__reveal:active{transform:none}
+  .lw-grade:active:not(:disabled),.lw-two__btn:active:not(:disabled),.lw-card:active:not(:has(button:active)),.lw-one__reveal:active{transform:none}
 }
 /* 모드 전환(한 단어 ↔ 리스트) — View Transitions API(없는 브라우저는 바로 바뀜). 0.2초 겹침. */
 ::view-transition-old(root),::view-transition-new(root){animation-duration:.2s;animation-timing-function:var(--ease-settle)}
