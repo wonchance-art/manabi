@@ -691,13 +691,8 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
           {[['one', '한 단어'], ['list', '리스트']].map(([id, label]) => <button key={id} type="button" aria-pressed={prefs.mode === id} onClick={() => switchMode(id)}>{label}</button>)}
         </div>
         <div className="lw-tabs" role="group" aria-label="보기">
-          {LEVEL_WORD_VIEWS.map((v) => {
-            // 탭 아래 작은 줄 — 그 영역의 맞힘 비율(0%도 적는다 · 글자 줄 맞춤), 전체는 「훑기」. 로그인 전에는 없다.
-            const a = areaOfView(v.id);
-            const sub = !userId ? null : v.id === 'all' ? '훑기' : areaPct ? `${areaPct[a]}%` : '\u00a0';
-            return <button key={v.id} type="button" aria-pressed={prefs.view === v.id} onClick={() => setPrefs({ view: v.id })}
-              aria-label={sub && v.id !== 'all' && areaPct ? `${v.label} · 맞힘 ${areaPct[a]}%` : undefined}>{v.label}{sub && <small aria-hidden="true">{sub}</small>}</button>;
-          })}
+          {/* 탭은 이름만 — 영역 %는 단어마다 영역 줄에 있다(오너 2026-10-21 KST 「상단 퍼센트는 없애도 된다」). */}
+          {LEVEL_WORD_VIEWS.map((v) => <button key={v.id} type="button" aria-pressed={prefs.view === v.id} onClick={() => setPrefs({ view: v.id })}>{v.label}</button>)}
         </div>
       </div>
       {userId && <div className="lw-prog" ref={progRef} data-stuck={stuck || undefined}>

@@ -138,7 +138,7 @@ export function levelWordAreas({ firsts, projection, known, todayFirst, at = Dat
   return out;
 }
 
-/** 탭 % — 범위 단어 중 그 영역이 맞힘(흐려지지 않은)인 비율 · 0–100 정수. 0%도 그대로 적는다(글자 줄 맞춤). */
+/** 레벨 요약 — 범위 단어 중 그 영역이 맞힘(흐려지지 않은)인 비율 0–100 정수 + 네 영역 다 맞힘 수(all). 화면은 진행바 아래 「네 영역 다 맞힘」만 쓴다(탭 % 없앰 2026-10-21 KST). */
 export function areaPercents(keys, areasOf) {
   const list = keys || [];
   const out = { word: 0, sentence: 0, meaning: 0, audio: 0, all: 0 };
