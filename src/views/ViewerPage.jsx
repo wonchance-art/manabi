@@ -436,17 +436,23 @@ export default function ViewerPage() {
     ? [user?.id || 'guest', id, materialLang, effectiveExplanationLocale, material?.raw_text, material?.processed_json]
     : [user?.id || 'guest', id, materialLang, material?.raw_text, material?.processed_json],
     [user?.id, id, materialLang, effectiveExplanationLocale, languageInfo, material?.raw_text, material?.processed_json]);
+  // 자료 · 계정 · 언어가 바뀌면 고른 단어와 창을 닫는다. 단, 같은 자료에서 손님(null) → 계정은 바뀐 게 아니라 로그인 복원이다 —
+  // 조기 조회 자료(startEarlyMaterial)가 복원(whenDocumentParsed, 최대 3초)보다 먼저 그려지므로, 그 사이 누른 단어를 닫으면
+  // 탭이 사라진다(뷰어 e2e 흔들림의 원인 · 2026-10-21 KST 실측). 손님 때 받은 단어 풀이에는 계정 데이터가 없다.
+  const resetScope = useRef(null);
+  useEffect(() => { const detail = detailGate.current, selection = selectionGate.current; return () => { detail.cancel(); selection.cancel(); }; }, []);
   useEffect(() => {
-    const detail = detailGate.current, selection = selectionGate.current;
-    detail.cancel();
-    selection.cancel();
+    const prev = resetScope.current, next = { id, materialLang, user: user?.id ?? null };
+    resetScope.current = next;
+    if (!prev || (prev.id === next.id && prev.materialLang === next.materialLang && prev.user === null)) return;
+    detailGate.current.cancel();
+    selectionGate.current.cancel();
     setSelectedToken(null);
     setIsSheetOpen(false);
     setLeftPanelLoading(false);
     setDragAnalyzing(false);
     setLeftPanelResult('');
     setWordDetail(null);
-    return () => { detail.cancel(); selection.cancel(); };
   }, [id, user?.id, materialLang]);
   useEffect(() => {
     detailGate.current.cancel(); selectionGate.current.cancel();
