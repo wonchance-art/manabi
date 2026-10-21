@@ -13,13 +13,21 @@ export const CATALOG_PROVIDERS = Object.freeze(['aozora', 'standardebooks', 'wik
 export const CATALOG_STATUSES = Object.freeze(['수록', 'loadable', 'blocked']);
 export const CATALOG_LANGUAGES = Object.freeze(['Japanese', 'English', 'Chinese', 'French', 'Korean']);
 const KEY_PREFIX = Object.freeze({ aozora: 'aozora-', standardebooks: 'se-', wikisource: 'ws-', pdsite: 'pd-' });
+/**
+ * 카테고리(오너 「문학 책 리스트 카테고리화해서 정리」 2026-10-21 KST) — 작품의 형식으로 고른다(주제 · 시대가 아니라). 모든 줄에 하나(수록 줄도 —
+ * 분류는 카탈로그가 매기는 것이라 entry.json의 사실과 겹치지 않는다). 순서가 목록의 차례다. 경계: 중편 · 단편집은 short, 아동 · 청소년 독자를 위해
+ * 쓰인 소설 · 동화 · 우화는 children, 서사시 · 산문시는 poetry, 자서전 · 일기 · 기행 · 르포는 essay, 철학 · 경제 · 평론 · 강연 · 선언서는 thought.
+ */
+export const CATALOG_CATEGORIES = Object.freeze({
+  novel: '장편소설', short: '중단편 소설', children: '동화 · 아동 · 청소년', poetry: '시', drama: '희곡', essay: '수필 · 기록', thought: '사상 · 사회',
+});
 
 /** 수록 줄의 key 머리 → 출처(작품 폴더가 사실의 정본 — 수록 줄은 가리키기만 한다). */
 export const providerOfKey = (key) => Object.keys(KEY_PREFIX).find((provider) => String(key ?? '').startsWith(KEY_PREFIX[provider])) ?? null;
 
 /**
  * 카탈로그 한 줄 검사 — 문제 목록(빈 배열이면 통과).
- * 수록 줄 = {id, key, status, country}만(제목 · 연도 · 권리는 작품 폴더 entry.json이 정본 — 두 곳에 적으면 어긋난다).
+ * 수록 줄 = {id, key, status, country, category}만(제목 · 연도 · 권리는 작품 폴더 entry.json이 정본 — 두 곳에 적으면 어긋난다).
  * 불러올(loadable) 줄은 출처 위치 · 권리 사실 · 한국어 표기 · 레벨, 막힌(blocked) 줄은 막힌 이유가 있어야 한다.
  */
 export function catalogEntryProblems(entry) {
@@ -27,9 +35,10 @@ export function catalogEntryProblems(entry) {
   const need = (field, ok) => { if (!ok) problems.push(field); };
   need('id', typeof entry?.id === 'string' && /^[a-z]{2}-[a-z0-9-]+$/u.test(entry.id));
   need('country', typeof entry?.country === 'string' && /^[A-Z]{2}$/u.test(entry.country));
+  need(`category(${Object.keys(CATALOG_CATEGORIES).join('·')})`, Object.hasOwn(CATALOG_CATEGORIES, entry?.category ?? ''));
   if (entry?.status === '수록') {
     need('key(정본 책 key)', providerOfKey(entry.key) !== null);
-    const extra = Object.keys(entry).filter((field) => !['id', 'key', 'status', 'country', 'note'].includes(field));
+    const extra = Object.keys(entry).filter((field) => !['id', 'key', 'status', 'country', 'category', 'note'].includes(field));
     if (extra.length) problems.push(`수록 줄에 사실 칸(${extra.join('·')}) — 작품 폴더 entry.json이 정본`);
     return problems;
   }

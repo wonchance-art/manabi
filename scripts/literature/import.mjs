@@ -5,6 +5,7 @@
  * 손으로 쓰던 entry.json 칸(제목 · 작가 · 연도 · 원산국 · 번역자 · 권리 · 한국어 표기 · 표지 · parse)을 하나로 묶는다.
  *
  *   node scripts/literature/import.mjs --list [--country GB] [--status loadable]   카탈로그 보기(나라 · 상태별)
+ *   node scripts/literature/import.mjs --list --by category [--category poetry]  카테고리별로 묶어 보기(장편 · 중단편 · 아동 · 시 · 희곡 · 수필 · 사상)
  *   node scripts/literature/import.mjs <카탈로그 id>                               한 편 가져오기
  *   node scripts/literature/import.mjs --next 3 [--country FR]                    아직 안 넣은 인기작 앞에서부터 N편
  *   … --dry-run  권리 · 표지 · 위치 검사만(받지도 쓰지도 않는다) · --accept-parse  추정 parse의 버리는 머리글을 사람이 확인했다
@@ -19,7 +20,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { catalogEntryProblems, catalogRightsVerdict, checkedCover } from '../lib/literature-catalog.mjs';
+import { CATALOG_CATEGORIES, catalogEntryProblems, catalogRightsVerdict, checkedCover } from '../lib/literature-catalog.mjs';
 import { translatorRecords } from '../../src/lib/rightsKorea.js';
 import { createPdSiteDraft, inferPdSiteParse, pdSiteParseReport } from '../../src/lib/pdSite.js';
 import { inspectChapters, printInspection, workDir } from './inspect.mjs';
@@ -171,11 +172,14 @@ function shelved(entry) {
 
 function list() {
   const catalog = readCatalog();
-  const rows = catalog.works.map(shelved).filter((entry) => (!flag('country') || entry.country === flag('country')) && (!flag('status') || entry.status === flag('status')));
-  const countries = [...new Set(rows.map((entry) => entry.country))];
-  for (const country of countries) {
-    const mine = rows.filter((entry) => entry.country === country);
-    console.log(`── ${country} (${mine.length}) ──`);
+  const rows = catalog.works.map(shelved).filter((entry) => (!flag('country') || entry.country === flag('country')) && (!flag('status') || entry.status === flag('status')) && (!flag('category') || entry.category === flag('category')));
+  // --by category — 카테고리 차례(CATALOG_CATEGORIES)로 묶는다. 기본은 나라별(같은 나라 안은 인기 순).
+  const byCategory = flag('by') === 'category';
+  const groups = byCategory ? Object.keys(CATALOG_CATEGORIES) : [...new Set(rows.map((entry) => entry.country))];
+  for (const group of groups) {
+    const mine = rows.filter((entry) => (byCategory ? entry.category : entry.country) === group);
+    if (!mine.length) continue;
+    console.log(`── ${byCategory ? CATALOG_CATEGORIES[group] : group} (${mine.length}) ──`);
     for (const entry of mine) console.log(`  ${entry.status === '수록' ? '●' : entry.status === 'loadable' ? '○' : '×'} ${entry.id.padEnd(38)} ${entry.titleKo} — ${entry.authorKo}${entry.status === 'blocked' ? `  [${entry.blocker}]` : ''}`);
   }
 }
@@ -184,11 +188,11 @@ function main() {
   if (has('list')) return list();
   const catalog = readCatalog();
   const nextCount = Number(flag('next') || 0);
-  const id = args.find((arg) => !arg.startsWith('--') && !Object.values({ c: flag('country'), s: flag('status'), n: flag('next') }).includes(arg));
+  const id = args.find((arg) => !arg.startsWith('--') && !Object.values({ c: flag('country'), s: flag('status'), n: flag('next'), g: flag('category'), b: flag('by') }).includes(arg));
   const queue = nextCount
-    ? catalog.works.filter((entry) => entry.status === 'loadable' && (!flag('country') || entry.country === flag('country'))).slice(0, nextCount)
+    ? catalog.works.filter((entry) => entry.status === 'loadable' && (!flag('country') || entry.country === flag('country')) && (!flag('category') || entry.category === flag('category'))).slice(0, nextCount)
     : catalog.works.filter((entry) => entry.id === id);
-  if (!queue.length) { console.error('사용: import.mjs --list | <카탈로그 id> | --next N [--country XX] [--dry-run] [--accept-parse]'); process.exit(1); }
+  if (!queue.length) { console.error('사용: import.mjs --list [--by category] | <카탈로그 id> | --next N [--country XX] [--category novel·short·children·poetry·drama·essay·thought] [--dry-run] [--accept-parse]'); process.exit(1); }
   const results = [];
   for (const entry of queue) {
     try {
@@ -197,7 +201,7 @@ function main() {
       if (!has('dry-run') && !result.pending) {
         // 수록되면 사실은 작품 폴더(entry.json)가 정본 — 줄은 가리키기만 남긴다(두 곳에 적어 어긋나지 않게).
         const at = catalog.works.findIndex((item) => item.id === entry.id);
-        catalog.works[at] = { id: entry.id, key: entry.key, status: '수록', country: entry.country };
+        catalog.works[at] = { id: entry.id, key: entry.key, status: '수록', country: entry.country, category: entry.category };
         writeCatalog(catalog);
       }
     } catch (error) {

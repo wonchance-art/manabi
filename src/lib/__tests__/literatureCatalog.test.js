@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { breakTitle, catalogCoverDisplay, catalogEntryProblems, catalogRightsVerdict, checkedCover, providerOfKey } from '../../../scripts/lib/literature-catalog.mjs';
+import { breakTitle, CATALOG_CATEGORIES, catalogCoverDisplay, catalogEntryProblems, catalogRightsVerdict, checkedCover, providerOfKey } from '../../../scripts/lib/literature-catalog.mjs';
 import { TEMPLATE_BINDINGS, TEMPLATE_PALETTES, validateFirstEditionDisplay } from '../firstEditionCover.js';
 import { createPdSiteDraft, inferPdSiteParse, pdSiteParseReport } from '../pdSite.js';
 
@@ -32,9 +32,19 @@ describe('카탈로그 한 파일 — 줄 검사 · 작품 폴더와 맞물림',
     for (const entry of catalog.works.filter((item) => item.status === 'loadable')) expect([entry.id, existsSync(folderOf(entry.key))]).toEqual([entry.id, false]);
   });
   it('수록 줄은 가리키기만 — 사실 칸이 있으면 entry.json과 갈릴 수 있어 막는다', () => {
-    expect(catalogEntryProblems({ id: 'gb-x', key: 'se-a_b', status: '수록', country: 'GB' })).toEqual([]);
-    expect(catalogEntryProblems({ id: 'gb-x', key: 'se-a_b', status: '수록', country: 'GB', title: 'X' })).toEqual([expect.stringContaining('title')]);
-    expect(catalogEntryProblems({ id: 'gb-x', key: 'xx-a', status: '수록', country: 'GB' })).toEqual([expect.stringContaining('key')]);
+    expect(catalogEntryProblems({ id: 'gb-x', key: 'se-a_b', status: '수록', country: 'GB', category: 'novel' })).toEqual([]);
+    expect(catalogEntryProblems({ id: 'gb-x', key: 'se-a_b', status: '수록', country: 'GB', category: 'novel', title: 'X' })).toEqual([expect.stringContaining('title')]);
+    expect(catalogEntryProblems({ id: 'gb-x', key: 'xx-a', status: '수록', country: 'GB', category: 'novel' })).toEqual([expect.stringContaining('key')]);
+  });
+  it('카테고리 — 모든 줄에 하나(수록 줄도) · 정해진 일곱 가지 · 빠지거나 모르는 값은 막는다 · 카테고리마다 수록작이 있다(시 · 희곡 · 수필은 넣을 후보도)', () => {
+    expect(Object.keys(CATALOG_CATEGORIES)).toEqual(['novel', 'short', 'children', 'poetry', 'drama', 'essay', 'thought']);
+    for (const entry of catalog.works) expect([entry.id, Object.hasOwn(CATALOG_CATEGORIES, entry.category)]).toEqual([entry.id, true]);
+    expect(catalogEntryProblems({ id: 'gb-x', key: 'se-a_b', status: '수록', country: 'GB' })).toEqual([expect.stringContaining('category')]);
+    expect(catalogEntryProblems({ id: 'gb-x', key: 'se-a_b', status: '수록', country: 'GB', category: 'manga' })).toEqual([expect.stringContaining('category')]);
+    const shelvedBy = (category) => catalog.works.filter((entry) => entry.status === '수록' && entry.category === category).length;
+    for (const category of ['novel', 'short', 'children', 'poetry', 'essay', 'thought']) expect([category, shelvedBy(category) > 0]).toEqual([category, true]);
+    const loadableBy = (category) => catalog.works.filter((entry) => entry.status === 'loadable' && entry.category === category).length;
+    for (const category of ['poetry', 'drama', 'essay']) expect([category, loadableBy(category) > 0]).toEqual([category, true]);
   });
   it('불러올 줄은 오늘 한국 공개 가능 · 표지 표기가 장정 규칙을 통과한다(아오조라는 시리즈 A 문양 — 사람이 고른다)', () => {
     for (const entry of catalog.works.filter((item) => item.status === 'loadable')) {
@@ -44,7 +54,7 @@ describe('카탈로그 한 파일 — 줄 검사 · 작품 폴더와 맞물림',
     }
   });
   it('막힌 줄은 이유를 적는다 · 나라마다 줄이 있다', () => {
-    expect(catalogEntryProblems({ id: 'ru-x', country: 'RU', language: 'English', title: 'X', author: 'Y', titleKo: 'X', authorKo: 'Y', status: 'blocked', source: { provider: 'standardebooks' } })).toEqual(['blocker(막힌 이유)']);
+    expect(catalogEntryProblems({ id: 'ru-x', country: 'RU', category: 'novel', language: 'English', title: 'X', author: 'Y', titleKo: 'X', authorKo: 'Y', status: 'blocked', source: { provider: 'standardebooks' } })).toEqual(['blocker(막힌 이유)']);
     expect(new Set(catalog.works.map((entry) => entry.country)).size).toBeGreaterThanOrEqual(8);
   });
 });
