@@ -1,17 +1,21 @@
 'use client';
 // 네 영역 체크 화면 조각(오너 승인 2026-10-21 KST · 시안 「단어 네 영역 체크」) — 판정은 lib/levelWordAreas.
 // 영역 줄(펼친 카드 맨 아래 · 찾기 카드) · 연습 탭 두 칸(다시 볼래요 · 알아요) · 연습 안내 · 연습 끝 화면 · 전체 탭 넘기기.
-import { AREA_LABEL, AREA_STATES, LEVEL_AREAS, shownState } from '@/lib/levelWordAreas';
+import { AREA_LABEL, AREA_STATES, LEVEL_AREAS, areaPercent, shownState } from '@/lib/levelWordAreas';
 
-/** 영역 줄 — 단어 · 문장 · 뜻 · 소리, 칸마다 맞힘 ✓ · 놓침 ✕ · 처음 ·. 단어 칸은 테두리로 「일정에 반영되는 칸」. next = 「2일 뒤 복습」. */
+/**
+ * 영역 줄 — 단어 · 문장 · 뜻 · 소리, 칸마다 기억 확률 %(오너 선택 2026-10-21 KST 「영역별 기억 확률」). 색은 맞힘 · 놓침 · 처음,
+ * 흐려진 맞힘은 처음 색에 남은 %. 0%도 그대로 적는다. 단어 칸은 테두리로 「일정에 반영되는 칸」. next = 「2일 뒤 복습」.
+ */
 export function AreaRow({ areas, next = null }) {
   if (!areas) return null;
   return <div className="lw-areas-wrap">
-    <div className="lw-areas" role="list" aria-label="네 영역">
+    <div className="lw-areas" role="list" aria-label="네 영역 기억 확률">
       {LEVEL_AREAS.map((area) => {
         const s = shownState(areas[area]?.state || 'new');
+        const pct = areaPercent(areas[area]);
         return <span key={area} role="listitem" className={`lw-area lw-area--${s}`} data-main={area === 'word' || undefined}
-          aria-label={`${AREA_LABEL[area]} ${AREA_STATES[s].ko}`}>{AREA_LABEL[area]} <i aria-hidden="true">{AREA_STATES[s].mark}</i></span>;
+          aria-label={`${AREA_LABEL[area]} ${AREA_STATES[s].ko} ${pct}%`}>{AREA_LABEL[area]}<small aria-hidden="true">{pct}%</small></span>;
       })}
     </div>
     {next && <p className="lw-areas__next">{next}</p>}

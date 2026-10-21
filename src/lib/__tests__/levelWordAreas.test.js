@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
-  AREA_STATES, PRACTICE_AREAS, areaOfView, areaPercents, levelWordAreas, noteOpened, noteWordGrade, practiceAreaState, practiceCounts,
+  AREA_STATES, PRACTICE_AREAS, areaOfView, areaPercent, areaPercents, levelWordAreas, noteOpened, noteWordGrade, practiceAreaState, practiceCounts,
   practiceFirstAnswers, practiceOrder, readAreaDay, seenTodayElsewhere, shownState, soundCheckKeys, wordAreaState, wordGradedOn,
 } from '../levelWordAreas';
 import { learningDay } from '../fsrsScheduler';
@@ -92,6 +92,43 @@ describe('단어 영역 — 단어장 카드의 마지막 결과', () => {
   it('오늘 채점했는가(같은 날 규칙)', () => {
     expect(wordGradedOn(card({ last: at(0, -1) }), now)).toBe(true);
     expect(wordGradedOn(card({ last: at(-1) }), now)).toBe(false);
+  });
+});
+
+describe('영역 줄 % — 칸마다 기억 확률(오너 선택 2026-10-21 KST)', () => {
+  // 단어장 상세 카드와 같은 계산(vocabularyRetrievability) — FSRS 카드는 학습일 단위, 옛 카드는 경과일(소수).
+  const card = ({ last = at(-2), next = at(3), stability = 5, source = 'fsrs-v1', evaluatedAt = at(-3) } = {}) => ({ kind: 'vocabulary-learning', version: 1, source,
+    memory: { state: 'Review', lastReview: last, stability, timeZone: 'Asia/Seoul', rolloverHour: 4 },
+    review: { nextQuestionAt: next, known: false, excluded: false, available: true, evaluatedAt } });
+  const first = (days, correct) => ({ day: learningDay(Date.parse(at(days))), at: Date.parse(at(days)), correct });
+  const cell = (args) => levelWordAreas({ firsts: new Map(), todayFirst: null, ...args });
+  const pct = (args) => Object.fromEntries(Object.entries(cell(args)).map(([k, v]) => [k, areaPercent(v)]));
+  it('처음 · 놓침은 0% — 답한 직후 100%로 재는 FSRS 성질이 놓친 칸을 높게 보이지 않게', () => {
+    expect(pct({ projection: null, at: NOON })).toEqual({ word: 0, sentence: 0, meaning: 0, audio: 0 });
+    expect(pct({ projection: card(), todayFirst: 1, at: NOON }).word).toBe(0);
+    const firsts = new Map([['audio', [first(-3, true), first(0, false)]]]);
+    expect(areaPercent(cell({ firsts, projection: null, at: NOON }).audio)).toBe(0);
+  });
+  it('맞힘 칸은 100% 아래로 천천히, 복습일이 지나면 흐려짐(90% 언저리)', () => {
+    const a = cell({ projection: card(), at: NOON }).word;
+    expect(a.state).toBe('hit');
+    expect(areaPercent(a)).toBeGreaterThan(90);
+    expect(areaPercent(a)).toBeLessThan(100);
+    const due = cell({ projection: card(), at: Date.parse(at(4)) }).word;
+    expect(due.state).toBe('faded');
+    expect(areaPercent(due)).toBeLessThan(90);
+    expect(areaPercent(due)).toBeGreaterThan(70);
+  });
+  it('아는 단어 표시는 100% · 잴 수 없는 카드는 0%', () => {
+    expect(pct({ projection: null, known: true, at: NOON }).word).toBe(100);
+    expect(pct({ projection: card({ evaluatedAt: at(1) }), at: NOON }).word).toBe(0); // 시계 역행은 던지지 않고 0
+  });
+  it('연습 칸 — 방금 맞힘 100%, 날이 갈수록 내려간다', () => {
+    const firsts = new Map([['sentence', [first(0, true)]]]);
+    expect(areaPercent(cell({ firsts, projection: null, at: NOON }).sentence)).toBe(100);
+    const later = areaPercent(cell({ firsts, projection: null, at: Date.parse(at(10)) }).sentence);
+    expect(later).toBeLessThan(90);
+    expect(later).toBeGreaterThan(0);
   });
 });
 

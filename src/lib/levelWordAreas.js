@@ -6,6 +6,7 @@
 // 연습 영역의 맞힘은 첫 답들을 같은 FSRS 엔진으로 다시 돌려 기억률이 목표(90%) 아래로 내려가면 흐려진다. 단어 영역은 복습일에 흐려진다.
 import { FSRS_POLICY, learningDay, practiceRecall, replayPracticeMemory, schedulerTime } from './fsrsScheduler.js';
 import { normalizeKnownWord } from './knownWordControl.js';
+import { vocabularyRetrievability } from './vocabularyLearningRead.js';
 
 /** 저장 이름(review_events detail.view · user_word_facets.facet와 같다). 화면 탭 「소리」는 'sound'라 audio로 옮긴다. */
 export const LEVEL_AREAS = Object.freeze(['word', 'sentence', 'meaning', 'audio']);
@@ -115,10 +116,24 @@ export function seenTodayElsewhere({ area, wordGradedToday = false, answeredToda
   return openedIn !== null && openedIn !== area;
 }
 
+/**
+ * 단어 영역 기억률 — 맞힘 · 흐려짐만 단어장 상세 카드와 같은 계산(vocabularyRetrievability)으로 재고, 놓침 · 처음은 0
+ * (오너 선택 2026-10-21 KST — FSRS는 답한 직후를 늘 100%로 재므로 방금 놓친 칸이 높게 보이지 않게 한다).
+ * 옛 「아는 단어」 · 복습 제외는 본인이 안다고 표시한 단어라 100%. 잴 수 없는 카드(기억 강도 없음 · 시계 역행)는 0.
+ */
+export function wordAreaRecall({ state, projection, known = false, at = Date.now() }) {
+  if (state !== 'hit' && state !== 'faded') return 0;
+  if (known || projection?.review?.known || projection?.review?.excluded) return 1;
+  try { return vocabularyRetrievability(projection, at) ?? 0; } catch { return 0; }
+}
+
+/** 칸 % — 0–100 정수(내림: 맞힘 칸이 반올림으로 100%가 되어 보이지 않게). */
+export const areaPercent = (cell) => Math.max(0, Math.min(100, Math.floor((Number(cell?.recall) || 0) * 100 + 1e-9)));
+
 /** 한 단어의 네 영역 — { word, sentence, meaning, audio } 각각 { state, recall }. */
 export function levelWordAreas({ firsts, projection, known, todayFirst, at = Date.now() }) {
   const word = wordAreaState({ projection, known, todayFirst, at });
-  const out = { word: { state: word, recall: word === 'hit' ? 1 : 0 } };
+  const out = { word: { state: word, recall: wordAreaRecall({ state: word, projection, known, at }) } };
   for (const area of PRACTICE_AREAS) out[area] = practiceAreaState(firsts?.get(area), at);
   return out;
 }
