@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { breakTitle, CATALOG_CATEGORIES, catalogCoverDisplay, catalogEntryProblems, catalogRightsVerdict, checkedCover, providerOfKey } from '../../../scripts/lib/literature-catalog.mjs';
+import { breakTitle, CATALOG_CATEGORIES, CATALOG_GROUPS, catalogCoverDisplay, categoryPath, catalogEntryProblems, catalogRightsVerdict, checkedCover, providerOfKey } from '../../../scripts/lib/literature-catalog.mjs';
 import { TEMPLATE_BINDINGS, TEMPLATE_PALETTES, validateFirstEditionDisplay } from '../firstEditionCover.js';
 import { createPdSiteDraft, inferPdSiteParse, pdSiteParseReport } from '../pdSite.js';
 
@@ -36,15 +36,18 @@ describe('카탈로그 한 파일 — 줄 검사 · 작품 폴더와 맞물림',
     expect(catalogEntryProblems({ id: 'gb-x', key: 'se-a_b', status: '수록', country: 'GB', category: 'novel', title: 'X' })).toEqual([expect.stringContaining('title')]);
     expect(catalogEntryProblems({ id: 'gb-x', key: 'xx-a', status: '수록', country: 'GB', category: 'novel' })).toEqual([expect.stringContaining('key')]);
   });
-  it('카테고리 — 모든 줄에 하나(수록 줄도) · 정해진 일곱 가지 · 빠지거나 모르는 값은 막는다 · 카테고리마다 수록작이 있다(시 · 희곡 · 수필은 넣을 후보도)', () => {
-    expect(Object.keys(CATALOG_CATEGORIES)).toEqual(['novel', 'short', 'children', 'poetry', 'drama', 'essay', 'thought']);
+  it('카테고리 — 큰 갈래 셋 › 작은 갈래 열 · 모든 줄에 작은 갈래 하나(수록 줄도) · 빠지거나 모르는 값은 막는다 · 갈래마다 책이 있다', () => {
+    expect(Object.keys(CATALOG_GROUPS)).toEqual(['literature', 'young', 'nonfiction']);
+    expect(Object.keys(CATALOG_CATEGORIES)).toEqual(['novel', 'short', 'poetry', 'drama', 'tale', 'youth', 'essay', 'life', 'thought', 'society']);
+    for (const [key, { group, label }] of Object.entries(CATALOG_CATEGORIES)) expect([key, Object.hasOwn(CATALOG_GROUPS, group), label.length > 0]).toEqual([key, true, true]);
+    expect(categoryPath('novel')).toBe('문학 › 장편소설');
+    expect(categoryPath('children')).toBe(null); // 옛 한 단계 값은 모르는 값
     for (const entry of catalog.works) expect([entry.id, Object.hasOwn(CATALOG_CATEGORIES, entry.category)]).toEqual([entry.id, true]);
     expect(catalogEntryProblems({ id: 'gb-x', key: 'se-a_b', status: '수록', country: 'GB' })).toEqual([expect.stringContaining('category')]);
-    expect(catalogEntryProblems({ id: 'gb-x', key: 'se-a_b', status: '수록', country: 'GB', category: 'manga' })).toEqual([expect.stringContaining('category')]);
-    const shelvedBy = (category) => catalog.works.filter((entry) => entry.status === '수록' && entry.category === category).length;
-    for (const category of ['novel', 'short', 'children', 'poetry', 'essay', 'thought']) expect([category, shelvedBy(category) > 0]).toEqual([category, true]);
-    const loadableBy = (category) => catalog.works.filter((entry) => entry.status === 'loadable' && entry.category === category).length;
-    for (const category of ['poetry', 'drama', 'essay']) expect([category, loadableBy(category) > 0]).toEqual([category, true]);
+    expect(catalogEntryProblems({ id: 'gb-x', key: 'se-a_b', status: '수록', country: 'GB', category: 'literature' })).toEqual([expect.stringContaining('category')]); // 큰 갈래 key는 줄 값이 아니다
+    for (const key of Object.keys(CATALOG_CATEGORIES)) expect([key, catalog.works.some((entry) => entry.category === key)]).toEqual([key, true]);
+    const shelvedIn = (group) => catalog.works.filter((entry) => entry.status === '수록' && CATALOG_CATEGORIES[entry.category].group === group).length;
+    for (const group of Object.keys(CATALOG_GROUPS)) expect([group, shelvedIn(group) > 0]).toEqual([group, true]);
   });
   it('불러올 줄은 오늘 한국 공개 가능 · 표지 표기가 장정 규칙을 통과한다(아오조라는 시리즈 A 문양 — 사람이 고른다)', () => {
     for (const entry of catalog.works.filter((item) => item.status === 'loadable')) {

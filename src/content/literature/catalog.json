@@ -1,5 +1,5 @@
 {
-  "about": "정본 책 카탈로그(LIT-IMPORT-1) — 나라별 인기 작가 · 작품. 수록 = key · 나라 · 카테고리만(사실은 작품 폴더 entry.json) · loadable = 가져오기 입력 전부 · blocked = 막힌 이유. 같은 나라 안에서는 인기 순(위가 먼저 — import.mjs --next가 이 순서로 고른다). 규칙: scripts/lib/literature-catalog.mjs, 계약: src/lib/__tests__/literatureCatalog.test.js. 카테고리(category)는 모든 줄에 하나 — 장편소설 novel · 중단편 소설 short · 동화·아동·청소년 children · 시 poetry · 희곡 drama · 수필·기록 essay · 사상·사회 thought(형식으로 고른다).",
+  "about": "정본 책 카탈로그(LIT-IMPORT-1) — 나라별 인기 작가 · 작품. 수록 = key · 나라 · 카테고리만(사실은 작품 폴더 entry.json) · loadable = 가져오기 입력 전부 · blocked = 막힌 이유. 같은 나라 안에서는 인기 순(위가 먼저 — import.mjs --next가 이 순서로 고른다). 규칙: scripts/lib/literature-catalog.mjs, 계약: src/lib/__tests__/literatureCatalog.test.js. 카테고리(category)는 모든 줄에 하나 — 큰 갈래 셋 아래 작은 갈래 열(문학: 장편소설 novel · 중단편 소설 short · 시 poetry · 희곡 drama / 아동·청소년: 동화·우화 tale · 아동·청소년 소설 youth / 비문학: 수필·기행 essay · 자서전·일기·르포 life · 철학·사상 thought · 사회·정치·경제 society). 형식으로 고른다.",
   "works": [
     {
       "id": "jp-aozora-275",
@@ -55,49 +55,49 @@
       "key": "aozora-000081-000456",
       "status": "수록",
       "country": "JP",
-      "category": "children"
+      "category": "tale"
     },
     {
       "id": "jp-aozora-462",
       "key": "aozora-000081-000462",
       "status": "수록",
       "country": "JP",
-      "category": "children"
+      "category": "tale"
     },
     {
       "id": "jp-aozora-466",
       "key": "aozora-000081-000466",
       "status": "수록",
       "country": "JP",
-      "category": "children"
+      "category": "tale"
     },
     {
       "id": "jp-aozora-470",
       "key": "aozora-000081-000470",
       "status": "수록",
       "country": "JP",
-      "category": "children"
+      "category": "tale"
     },
     {
       "id": "jp-aozora-473",
       "key": "aozora-000081-000473",
       "status": "수록",
       "country": "JP",
-      "category": "children"
+      "category": "tale"
     },
     {
       "id": "jp-aozora-43754",
       "key": "aozora-000081-043754",
       "status": "수록",
       "country": "JP",
-      "category": "children"
+      "category": "tale"
     },
     {
       "id": "jp-aozora-46605",
       "key": "aozora-000081-046605",
       "status": "수록",
       "country": "JP",
-      "category": "children"
+      "category": "tale"
     },
     {
       "id": "jp-aozora-2093",
@@ -118,14 +118,14 @@
       "key": "aozora-000121-000628",
       "status": "수록",
       "country": "JP",
-      "category": "children"
+      "category": "tale"
     },
     {
       "id": "jp-aozora-637",
       "key": "aozora-000121-000637",
       "status": "수록",
       "country": "JP",
-      "category": "children"
+      "category": "tale"
     },
     {
       "id": "jp-aozora-45245",
@@ -174,7 +174,7 @@
       "key": "aozora-000296-047061",
       "status": "수록",
       "country": "JP",
-      "category": "thought"
+      "category": "society"
     },
     {
       "id": "jp-aozora-42",
@@ -188,7 +188,7 @@
       "key": "aozora-000879-000092",
       "status": "수록",
       "country": "JP",
-      "category": "children"
+      "category": "tale"
     },
     {
       "id": "jp-aozora-127",
@@ -202,7 +202,7 @@
       "key": "aozora-000879-043015",
       "status": "수록",
       "country": "JP",
-      "category": "children"
+      "category": "tale"
     },
     {
       "id": "jp-aozora-43016",
@@ -267,7 +267,7 @@
       "key": "aozora-000231-043873",
       "status": "loadable",
       "country": "JP",
-      "category": "thought",
+      "category": "society",
       "language": "Japanese",
       "title": "戦争責任者の問題",
       "author": "伊丹万作",
@@ -543,7 +543,7 @@
       "key": "aozora-001475-054372",
       "status": "loadable",
       "country": "JP",
-      "category": "children",
+      "category": "tale",
       "language": "Japanese",
       "title": "赤い蝋燭と人魚",
       "author": "小川未明",
@@ -589,7 +589,7 @@
       "key": "aozora-000081-001924",
       "status": "loadable",
       "country": "JP",
-      "category": "children",
+      "category": "tale",
       "language": "Japanese",
       "title": "グスコーブドリの伝記",
       "author": "宮沢賢治",
@@ -681,7 +681,7 @@
       "key": "aozora-001779-057228",
       "status": "loadable",
       "country": "JP",
-      "category": "children",
+      "category": "youth",
       "language": "Japanese",
       "title": "怪人二十面相",
       "author": "江戸川乱歩",
@@ -704,7 +704,7 @@
       "key": "aozora-000329-018376",
       "status": "blocked",
       "country": "JP",
-      "category": "children",
+      "category": "tale",
       "language": "Japanese",
       "title": "桃太郎",
       "author": "楠山正雄",
@@ -913,7 +913,7 @@
       "key": "se-adam-smith_the-wealth-of-nations",
       "status": "수록",
       "country": "GB",
-      "category": "thought"
+      "category": "society"
     },
     {
       "id": "gb-arthur-conan-doyle-the-adventures-of-sherlock-holmes",
@@ -948,14 +948,14 @@
       "key": "se-lewis-carroll_alices-adventures-in-wonderland",
       "status": "수록",
       "country": "GB",
-      "category": "children"
+      "category": "youth"
     },
     {
       "id": "gb-virginia-woolf-a-room-of-ones-own",
       "key": "pd-fp-virginia-woolf_a-room-of-ones-own",
       "status": "수록",
       "country": "GB",
-      "category": "thought"
+      "category": "society"
     },
     {
       "id": "gb-george-orwell-animal-farm",
@@ -1125,7 +1125,7 @@
       "key": "se-robert-louis-stevenson_treasure-island",
       "status": "loadable",
       "country": "GB",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "Treasure Island",
       "author": "Robert Louis Stevenson",
@@ -1294,7 +1294,7 @@
       "key": "se-lewis-carroll_through-the-looking-glass_john-tenniel",
       "status": "loadable",
       "country": "GB",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "Through the Looking-Glass",
       "author": "Lewis Carroll",
@@ -1316,7 +1316,7 @@
       "key": "se-j-m-barrie_peter-and-wendy",
       "status": "loadable",
       "country": "GB",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "Peter and Wendy",
       "author": "J. M. Barrie",
@@ -1338,7 +1338,7 @@
       "key": "se-kenneth-grahame_the-wind-in-the-willows",
       "status": "loadable",
       "country": "GB",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "The Wind in the Willows",
       "author": "Kenneth Grahame",
@@ -1359,7 +1359,7 @@
       "key": "se-rudyard-kipling_the-jungle-book",
       "status": "loadable",
       "country": "GB",
-      "category": "children",
+      "category": "tale",
       "language": "English",
       "title": "The Jungle Book",
       "author": "Rudyard Kipling",
@@ -1380,7 +1380,7 @@
       "key": "se-a-a-milne_winnie-the-pooh",
       "status": "loadable",
       "country": "GB",
-      "category": "children",
+      "category": "tale",
       "language": "English",
       "title": "Winnie-the-Pooh",
       "author": "A. A. Milne",
@@ -1402,7 +1402,7 @@
       "key": "se-a-a-milne_the-house-at-pooh-corner",
       "status": "loadable",
       "country": "GB",
-      "category": "children",
+      "category": "tale",
       "language": "English",
       "title": "The House at Pooh Corner",
       "author": "A. A. Milne",
@@ -1638,14 +1638,14 @@
       "key": "pd-gau-george-orwell_homage-to-catalonia",
       "status": "수록",
       "country": "GB",
-      "category": "essay"
+      "category": "life"
     },
     {
       "id": "gb-george-orwell-politics-and-the-english-language",
       "key": "pd-gau-george-orwell_politics-and-the-english-language",
       "status": "loadable",
       "country": "GB",
-      "category": "thought",
+      "category": "society",
       "language": "English",
       "title": "Politics and the English Language",
       "author": "George Orwell",
@@ -1847,7 +1847,7 @@
       "id": "gb-c-s-lewis-the-lion-the-witch-and-the-wardrobe",
       "status": "blocked",
       "country": "GB",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "The Lion, the Witch and the Wardrobe",
       "author": "C. S. Lewis",
@@ -1867,7 +1867,7 @@
       "id": "gb-j-r-r-tolkien-the-hobbit",
       "status": "blocked",
       "country": "GB",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "The Hobbit",
       "author": "J. R. R. Tolkien",
@@ -1916,7 +1916,7 @@
       "key": "se-oscar-wilde_childrens-stories",
       "status": "loadable",
       "country": "IE",
-      "category": "children",
+      "category": "tale",
       "language": "English",
       "title": "The Happy Prince and Other Tales (Children’s Stories)",
       "author": "Oscar Wilde",
@@ -2111,7 +2111,7 @@
       "key": "se-benjamin-franklin_the-autobiography-of-benjamin-franklin",
       "status": "수록",
       "country": "US",
-      "category": "essay"
+      "category": "life"
     },
     {
       "id": "us-f-scott-fitzgerald-the-great-gatsby",
@@ -2146,14 +2146,14 @@
       "key": "pd-fp-ruth-benedict_the-chrysanthemum-and-the-sword",
       "status": "수록",
       "country": "US",
-      "category": "thought"
+      "category": "society"
     },
     {
       "id": "us-louisa-may-alcott-little-women",
       "key": "se-louisa-may-alcott_little-women",
       "status": "loadable",
       "country": "US",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "Little Women",
       "author": "Louisa May Alcott",
@@ -2174,7 +2174,7 @@
       "key": "se-mark-twain_the-adventures-of-tom-sawyer",
       "status": "loadable",
       "country": "US",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "The Adventures of Tom Sawyer",
       "author": "Mark Twain",
@@ -2195,7 +2195,7 @@
       "key": "se-mark-twain_the-adventures-of-huckleberry-finn",
       "status": "loadable",
       "country": "US",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "Adventures of Huckleberry Finn",
       "author": "Mark Twain",
@@ -2217,7 +2217,7 @@
       "key": "se-l-frank-baum_the-wonderful-wizard-of-oz",
       "status": "수록",
       "country": "US",
-      "category": "children"
+      "category": "youth"
     },
     {
       "id": "us-edgar-allan-poe-short-fiction",
@@ -2531,7 +2531,7 @@
       "key": "se-frances-hodgson-burnett_the-secret-garden",
       "status": "loadable",
       "country": "US",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "The Secret Garden",
       "author": "Frances Hodgson Burnett",
@@ -2553,7 +2553,7 @@
       "key": "se-frances-hodgson-burnett_a-little-princess",
       "status": "loadable",
       "country": "US",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "A Little Princess",
       "author": "Frances Hodgson Burnett",
@@ -2574,7 +2574,7 @@
       "key": "se-helen-keller_the-story-of-my-life",
       "status": "loadable",
       "country": "US",
-      "category": "essay",
+      "category": "life",
       "language": "English",
       "title": "The Story of My Life",
       "author": "Helen Keller",
@@ -2596,7 +2596,7 @@
       "key": "se-frederick-douglass_narrative-of-the-life-of-frederick-douglass",
       "status": "loadable",
       "country": "US",
-      "category": "essay",
+      "category": "life",
       "language": "English",
       "title": "Narrative of the Life of Frederick Douglass",
       "author": "Frederick Douglass",
@@ -2617,7 +2617,7 @@
       "key": "ws-en-jean-webster_daddy-long-legs",
       "status": "loadable",
       "country": "US",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "Daddy-Long-Legs",
       "author": "Jean Webster",
@@ -2640,7 +2640,7 @@
       "key": "ws-en-eleanor-h-porter_pollyanna",
       "status": "loadable",
       "country": "US",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "Pollyanna",
       "author": "Eleanor H. Porter",
@@ -2724,7 +2724,7 @@
       "id": "us-dale-carnegie-how-to-win-friends-and-influence-people",
       "status": "blocked",
       "country": "US",
-      "category": "thought",
+      "category": "society",
       "language": "English",
       "title": "How to Win Friends and Influence People",
       "author": "Dale Carnegie",
@@ -2822,7 +2822,7 @@
       "key": "pd-gau-antoine-de-saint-exupery_le-petit-prince",
       "status": "수록",
       "country": "FR",
-      "category": "children"
+      "category": "tale"
     },
     {
       "id": "fr-alexandre-dumas-le-comte-de-monte-cristo",
@@ -3474,7 +3474,7 @@
       "key": "se-maurice-maeterlinck_georgette-leblanc_the-blue-bird_alexander-teixeira-de-mattos",
       "status": "loadable",
       "country": "BE",
-      "category": "children",
+      "category": "tale",
       "language": "English",
       "title": "The Children’s Blue Bird",
       "author": "Maurice Maeterlinck & Georgette Leblanc",
@@ -3919,7 +3919,7 @@
       "key": "ws-zh-liang-qichao_shao-nian-zhong-guo-shuo",
       "status": "loadable",
       "country": "CN",
-      "category": "thought",
+      "category": "society",
       "language": "Chinese",
       "title": "少年中国说",
       "author": "梁启超",
@@ -4176,7 +4176,7 @@
       "key": "ws-ko-choe-nam-seon_gimi-dongnip-seoneonseo",
       "status": "수록",
       "country": "KR",
-      "category": "thought"
+      "category": "society"
     },
     {
       "id": "kr-hyeon-jin-geon-unsu-joeun-nal",
@@ -4211,7 +4211,7 @@
       "key": "ws-ko-samil-centennial_swipgo-bareuge-ingneun-dongnip-seoneonseo",
       "status": "수록",
       "country": "KR",
-      "category": "thought"
+      "category": "society"
     },
     {
       "id": "kr-yi-hyo-seok-memilkkot-pil-muryeop",
@@ -4338,7 +4338,7 @@
       "key": "ws-ko-kim-yu-jeong_honggildongjeon",
       "status": "loadable",
       "country": "KR",
-      "category": "children",
+      "category": "tale",
       "language": "Korean",
       "title": "홍길동전 (김유정)",
       "author": "김유정",
@@ -5565,7 +5565,7 @@
       "key": "ws-en-karl-marx_capital",
       "status": "수록",
       "country": "DE",
-      "category": "thought"
+      "category": "society"
     },
     {
       "id": "de-thomas-mann-short-fiction",
@@ -5579,7 +5579,7 @@
       "key": "se-jacob-grimm_wilhelm-grimm_household-tales_margaret-hunt",
       "status": "loadable",
       "country": "DE",
-      "category": "children",
+      "category": "tale",
       "language": "English",
       "title": "Household Tales",
       "author": "Jacob & Wilhelm Grimm",
@@ -5885,7 +5885,7 @@
       "key": "se-johanna-spyri_heidi_elisabeth-p-stork",
       "status": "blocked",
       "country": "CH",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "Heidi",
       "author": "Johanna Spyri",
@@ -6044,7 +6044,7 @@
       "key": "se-niccolo-machiavelli_the-prince_w-k-marriott",
       "status": "loadable",
       "country": "IT",
-      "category": "thought",
+      "category": "society",
       "language": "English",
       "title": "The Prince",
       "author": "Niccolò Machiavelli",
@@ -6072,7 +6072,7 @@
       "key": "ws-en-edmondo-de-amicis_heart-cuore",
       "status": "loadable",
       "country": "IT",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "Heart (Cuore)",
       "author": "Edmondo De Amicis",
@@ -6101,7 +6101,7 @@
       "key": "se-carlo-collodi_the-adventures-of-pinocchio",
       "status": "blocked",
       "country": "IT",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "The Adventures of Pinocchio",
       "author": "Carlo Collodi",
@@ -6259,7 +6259,7 @@
       "key": "se-aesop_fables_v-s-vernon-jones",
       "status": "blocked",
       "country": "GR",
-      "category": "children",
+      "category": "tale",
       "language": "English",
       "title": "Fables",
       "author": "Aesop",
@@ -6287,7 +6287,7 @@
       "key": "ws-en-hans-christian-andersen_hans-andersen-s-fairy-tales",
       "status": "loadable",
       "country": "DK",
-      "category": "children",
+      "category": "tale",
       "language": "English",
       "title": "Hans Andersen's Fairy Tales",
       "author": "Hans Christian Andersen",
@@ -6426,7 +6426,7 @@
       "key": "se-selma-lagerlof_the-wonderful-adventures-of-nils_velma-swanston-howard",
       "status": "loadable",
       "country": "SE",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "The Wonderful Adventures of Nils",
       "author": "Selma Lagerlöf",
@@ -6553,7 +6553,7 @@
       "key": "se-l-m-montgomery_anne-of-green-gables",
       "status": "loadable",
       "country": "CA",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "Anne of Green Gables",
       "author": "L. M. Montgomery",
@@ -6575,7 +6575,7 @@
       "key": "se-l-m-montgomery_anne-of-avonlea",
       "status": "loadable",
       "country": "CA",
-      "category": "children",
+      "category": "youth",
       "language": "English",
       "title": "Anne of Avonlea",
       "author": "L. M. Montgomery",
@@ -6595,7 +6595,7 @@
       "id": "nl-anne-frank-the-diary-of-a-young-girl",
       "status": "blocked",
       "country": "NL",
-      "category": "essay",
+      "category": "life",
       "language": "English",
       "title": "The Diary of a Young Girl",
       "author": "Anne Frank",

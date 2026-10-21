@@ -5,7 +5,7 @@
  * 손으로 쓰던 entry.json 칸(제목 · 작가 · 연도 · 원산국 · 번역자 · 권리 · 한국어 표기 · 표지 · parse)을 하나로 묶는다.
  *
  *   node scripts/literature/import.mjs --list [--country GB] [--status loadable]   카탈로그 보기(나라 · 상태별)
- *   node scripts/literature/import.mjs --list --by category [--category poetry]  카테고리별로 묶어 보기(장편 · 중단편 · 아동 · 시 · 희곡 · 수필 · 사상)
+ *   node scripts/literature/import.mjs --list --by category [--category young]   카테고리별로 묶어 보기(큰 갈래 literature · young · nonfiction 또는 작은 갈래 key)
  *   node scripts/literature/import.mjs <카탈로그 id>                               한 편 가져오기
  *   node scripts/literature/import.mjs --next 3 [--country FR]                    아직 안 넣은 인기작 앞에서부터 N편
  *   … --dry-run  권리 · 표지 · 위치 검사만(받지도 쓰지도 않는다) · --accept-parse  추정 parse의 버리는 머리글을 사람이 확인했다
@@ -20,7 +20,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CATALOG_CATEGORIES, catalogEntryProblems, catalogRightsVerdict, checkedCover } from '../lib/literature-catalog.mjs';
+import { CATALOG_CATEGORIES, CATALOG_GROUPS, categoryPath, catalogEntryProblems, catalogRightsVerdict, checkedCover } from '../lib/literature-catalog.mjs';
 import { translatorRecords } from '../../src/lib/rightsKorea.js';
 import { createPdSiteDraft, inferPdSiteParse, pdSiteParseReport } from '../../src/lib/pdSite.js';
 import { inspectChapters, printInspection, workDir } from './inspect.mjs';
@@ -170,16 +170,19 @@ function shelved(entry) {
   return { ...entry, titleKo: facts.display?.titleKo ?? facts.title ?? entry.key, authorKo: facts.display?.authorKo ?? facts.author ?? '' };
 }
 
+/** --category 값 — 작은 갈래 key(novel …) 또는 큰 갈래 key(literature · young · nonfiction). */
+const inCategory = (entry, wanted) => entry.category === wanted || CATALOG_CATEGORIES[entry.category]?.group === wanted;
+
 function list() {
   const catalog = readCatalog();
-  const rows = catalog.works.map(shelved).filter((entry) => (!flag('country') || entry.country === flag('country')) && (!flag('status') || entry.status === flag('status')) && (!flag('category') || entry.category === flag('category')));
-  // --by category — 카테고리 차례(CATALOG_CATEGORIES)로 묶는다. 기본은 나라별(같은 나라 안은 인기 순).
+  const rows = catalog.works.map(shelved).filter((entry) => (!flag('country') || entry.country === flag('country')) && (!flag('status') || entry.status === flag('status')) && (!flag('category') || inCategory(entry, flag('category'))));
+  // --by category — 카테고리 차례(큰 갈래 › 작은 갈래, CATALOG_CATEGORIES 순서)로 묶는다. 기본은 나라별(같은 나라 안은 인기 순).
   const byCategory = flag('by') === 'category';
   const groups = byCategory ? Object.keys(CATALOG_CATEGORIES) : [...new Set(rows.map((entry) => entry.country))];
   for (const group of groups) {
     const mine = rows.filter((entry) => (byCategory ? entry.category : entry.country) === group);
     if (!mine.length) continue;
-    console.log(`── ${byCategory ? CATALOG_CATEGORIES[group] : group} (${mine.length}) ──`);
+    console.log(`── ${byCategory ? categoryPath(group) : group} (${mine.length}) ──`);
     for (const entry of mine) console.log(`  ${entry.status === '수록' ? '●' : entry.status === 'loadable' ? '○' : '×'} ${entry.id.padEnd(38)} ${entry.titleKo} — ${entry.authorKo}${entry.status === 'blocked' ? `  [${entry.blocker}]` : ''}`);
   }
 }
@@ -190,9 +193,9 @@ function main() {
   const nextCount = Number(flag('next') || 0);
   const id = args.find((arg) => !arg.startsWith('--') && !Object.values({ c: flag('country'), s: flag('status'), n: flag('next'), g: flag('category'), b: flag('by') }).includes(arg));
   const queue = nextCount
-    ? catalog.works.filter((entry) => entry.status === 'loadable' && (!flag('country') || entry.country === flag('country')) && (!flag('category') || entry.category === flag('category'))).slice(0, nextCount)
+    ? catalog.works.filter((entry) => entry.status === 'loadable' && (!flag('country') || entry.country === flag('country')) && (!flag('category') || inCategory(entry, flag('category')))).slice(0, nextCount)
     : catalog.works.filter((entry) => entry.id === id);
-  if (!queue.length) { console.error('사용: import.mjs --list [--by category] | <카탈로그 id> | --next N [--country XX] [--category novel·short·children·poetry·drama·essay·thought] [--dry-run] [--accept-parse]'); process.exit(1); }
+  if (!queue.length) { console.error(`사용: import.mjs --list [--by category] | <카탈로그 id> | --next N [--country XX] [--category ${[...Object.keys(CATALOG_GROUPS), ...Object.keys(CATALOG_CATEGORIES)].join('·')}] [--dry-run] [--accept-parse]`); process.exit(1); }
   const results = [];
   for (const entry of queue) {
     try {

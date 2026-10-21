@@ -14,13 +14,27 @@ export const CATALOG_STATUSES = Object.freeze(['수록', 'loadable', 'blocked'])
 export const CATALOG_LANGUAGES = Object.freeze(['Japanese', 'English', 'Chinese', 'French', 'Korean']);
 const KEY_PREFIX = Object.freeze({ aozora: 'aozora-', standardebooks: 'se-', wikisource: 'ws-', pdsite: 'pd-' });
 /**
- * 카테고리(오너 「문학 책 리스트 카테고리화해서 정리」 2026-10-21 KST) — 작품의 형식으로 고른다(주제 · 시대가 아니라). 모든 줄에 하나(수록 줄도 —
- * 분류는 카탈로그가 매기는 것이라 entry.json의 사실과 겹치지 않는다). 순서가 목록의 차례다. 경계: 중편 · 단편집은 short, 아동 · 청소년 독자를 위해
- * 쓰인 소설 · 동화 · 우화는 children, 서사시 · 산문시는 poetry, 자서전 · 일기 · 기행 · 르포는 essay, 철학 · 경제 · 평론 · 강연 · 선언서는 thought.
+ * 카테고리(오너 「문학 책 리스트 카테고리화해서 정리」 → 「큰 카테고리에서 작은 카테고리로 들어가게」 2026-10-21 KST) — 작품의 형식으로 고른다
+ * (주제 · 시대가 아니라). 큰 갈래(CATALOG_GROUPS) 셋 아래 작은 갈래(CATALOG_CATEGORIES) 열, 줄에는 작은 갈래 key 하나(큰 갈래는 거기서 나온다).
+ * 모든 줄에 하나(수록 줄도 — 분류는 카탈로그가 매기는 것이라 entry.json의 사실과 겹치지 않는다). 순서가 목록의 차례다.
+ * 경계: 중편 · 단편집은 short · 서사시 · 산문시는 poetry · 옛이야기 · 동화 · 우화(짧은 이야기 모음 포함)는 tale · 어린 독자를 위한 긴 소설은 youth ·
+ * 수필 · 기행 · 회고 수필은 essay · 자서전 · 일기 · 르포는 life · 철학 · 윤리 · 고전 사상은 thought · 정치 · 경제 · 사회 평론 · 선언서는 society.
  */
+export const CATALOG_GROUPS = Object.freeze({ literature: '문학', young: '아동 · 청소년', nonfiction: '비문학' });
 export const CATALOG_CATEGORIES = Object.freeze({
-  novel: '장편소설', short: '중단편 소설', children: '동화 · 아동 · 청소년', poetry: '시', drama: '희곡', essay: '수필 · 기록', thought: '사상 · 사회',
+  novel: Object.freeze({ group: 'literature', label: '장편소설' }),
+  short: Object.freeze({ group: 'literature', label: '중단편 소설' }),
+  poetry: Object.freeze({ group: 'literature', label: '시' }),
+  drama: Object.freeze({ group: 'literature', label: '희곡' }),
+  tale: Object.freeze({ group: 'young', label: '동화 · 우화' }),
+  youth: Object.freeze({ group: 'young', label: '아동 · 청소년 소설' }),
+  essay: Object.freeze({ group: 'nonfiction', label: '수필 · 기행' }),
+  life: Object.freeze({ group: 'nonfiction', label: '자서전 · 일기 · 르포' }),
+  thought: Object.freeze({ group: 'nonfiction', label: '철학 · 사상' }),
+  society: Object.freeze({ group: 'nonfiction', label: '사회 · 정치 · 경제' }),
 });
+/** 「문학 › 장편소설」 — 목록 머리 · 보기 줄에 쓴다. */
+export const categoryPath = (key) => (Object.hasOwn(CATALOG_CATEGORIES, key ?? '') ? `${CATALOG_GROUPS[CATALOG_CATEGORIES[key].group]} › ${CATALOG_CATEGORIES[key].label}` : null);
 
 /** 수록 줄의 key 머리 → 출처(작품 폴더가 사실의 정본 — 수록 줄은 가리키기만 한다). */
 export const providerOfKey = (key) => Object.keys(KEY_PREFIX).find((provider) => String(key ?? '').startsWith(KEY_PREFIX[provider])) ?? null;
