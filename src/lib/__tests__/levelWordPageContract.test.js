@@ -90,6 +90,11 @@ describe('움직임 — 0.3초 이하 · --ease-settle · 동작 줄이기면 �
     expect(calls.length).toBeGreaterThan(0);
     for (const line of calls) expect(line).toMatch(/!reducedMotion\(\)/);
   });
+  it('하단 바가 끝에서 튕김에 끌려가지 않는다 — 문서 튕김 끄기 · 채점 바 합성 레이어(.mobile-nav 선례)', () => {
+    expect(css).toMatch(/html:has\(\.lw-page\)\{overscroll-behavior-y:none\}/);
+    expect(css).toMatch(/\.lw-gradebar\{[^}]*transform:translateZ\(0\)/);
+    expect(read('src/components/levels/level-list.css')).toMatch(/html:has\(\.lv-page\)\{overscroll-behavior-y:none\}/);
+  });
   it('진동은 쓰지 않는다(오너 결정 — 진동만 제외)', () => {
     expect(PAGE_FILES.filter((f) => /\bvibrate\b/.test(read(f)))).toEqual([]);
   });

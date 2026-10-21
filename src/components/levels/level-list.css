@@ -19,6 +19,8 @@
 /* 목록 화면 */
 /* 넓은 화면 균형(오너 2026-10-16 「1440에서 균형」) — 묶음은 가운데. 단어 목록은 목차 없이 680px 한 줄(폰과 같은 구조). */
 .lv-page>*{max-width:904px;margin-inline:auto}
+/* 하단 메뉴가 끝에서 당길 때 튕김에 끌려감(오너 지적 2026-10-21 KST) — 레벨 한자 · 문형 · 단어 목록이 열린 동안 문서 튕김을 끈다. 새 단어 페이지는 level-word.css. */
+html:has(.lv-page){overscroll-behavior-y:none}
 .lv-page--vocab>*{max-width:680px}
 .lv-crumb{margin:0;font-size:13px}
 .lv-crumb a{color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;min-height:44px}
