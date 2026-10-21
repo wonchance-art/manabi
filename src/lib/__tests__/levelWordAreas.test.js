@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
-  AREA_STATES, PRACTICE_AREAS, areaOfView, areaPercent, areaPercents, levelWordAreas, noteOpened, noteWordGrade, practiceAreaState, practiceCounts,
+  AREA_STATES, PRACTICE_AREAS, areaOfView, areaPercent, levelWordAreas, noteOpened, noteWordGrade, practiceAreaState, practiceCounts,
   practiceFirstAnswers, practiceOrder, readAreaDay, seenTodayElsewhere, shownState, soundCheckKeys, wordAreaState, wordGradedOn,
 } from '../levelWordAreas';
 import { learningDay } from '../fsrsScheduler';
@@ -151,13 +151,7 @@ describe('같은 날 규칙 — 오늘 다른 곳에서 먼저 본 단어', () =
   });
 });
 
-describe('탭 % · 네 영역 다 맞힘 · 연습 순서', () => {
-  const A = (w, s, m, a, recall = 0.95) => ({ word: { state: w }, sentence: { state: s, recall }, meaning: { state: m, recall }, audio: { state: a, recall } });
-  const table = new Map([['a', A('hit', 'hit', 'hit', 'hit')], ['b', A('hit', 'faded', 'new', 'miss', 0.8)], ['c', A('new', 'new', 'new', 'new')], ['d', A('miss', 'hit', 'new', 'hit', 0.91)]]);
-  it('흐려진 맞힘은 %에서 빠지고, 0%도 숫자다', () => {
-    expect(areaPercents(['a', 'b', 'c', 'd'], (k) => table.get(k))).toEqual({ word: 50, sentence: 50, meaning: 25, audio: 50, all: 1 });
-    expect(areaPercents(['c'], (k) => table.get(k)).meaning).toBe(0);
-  });
+describe('연습 순서', () => {
   it('놓침 → 흐려진 맞힘 → 처음 → 맞힘(기억률 낮은 것부터), 오늘 본 단어는 맨 뒤', () => {
     const entries = ['a', 'b', 'c', 'd', 'e'].map((key) => ({ key }));
     const state = new Map([['a', { state: 'hit', recall: 0.99 }], ['b', { state: 'faded', recall: 0.7 }], ['c', { state: 'new' }],

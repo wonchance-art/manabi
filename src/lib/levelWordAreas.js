@@ -138,25 +138,6 @@ export function levelWordAreas({ firsts, projection, known, todayFirst, at = Dat
   return out;
 }
 
-/** 레벨 요약 — 범위 단어 중 그 영역이 맞힘(흐려지지 않은)인 비율 0–100 정수 + 네 영역 다 맞힘 수(all). 화면은 진행바 아래 「네 영역 다 맞힘」만 쓴다(탭 % 없앰 2026-10-21 KST). */
-export function areaPercents(keys, areasOf) {
-  const list = keys || [];
-  const out = { word: 0, sentence: 0, meaning: 0, audio: 0, all: 0 };
-  if (!list.length) return out;
-  const hits = { word: 0, sentence: 0, meaning: 0, audio: 0 };
-  let all = 0;
-  for (const k of list) {
-    const a = areasOf(k);
-    if (!a) continue;
-    let every = true;
-    for (const area of LEVEL_AREAS) { if (a[area]?.state === 'hit') hits[area] += 1; else every = false; }
-    if (every) all += 1;
-  }
-  for (const area of LEVEL_AREAS) out[area] = Math.floor((hits[area] / list.length) * 100);
-  out.all = all;
-  return out;
-}
-
 const RANK = { miss: 0, faded: 1, new: 2, hit: 3 };
 /**
  * 연습 탭 순서 — 놓침 → 흐려진 맞힘(기억률 낮은 것부터) → 처음 → 맞힘(기억률 낮은 것부터), 오늘 이미 본 단어는 맨 뒤(같은 순서로).

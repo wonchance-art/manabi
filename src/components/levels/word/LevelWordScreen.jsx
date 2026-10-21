@@ -27,7 +27,7 @@ import {
   levelProgressPercent, levelRowProjection, levelWordGraded, levelWordStatus, nextDueMs, todayAgainAt,
 } from '@/lib/levelWordStatus';
 import {
-  AREA_LABEL, areaOfView, areaPercents, levelWordAreas, practiceCounts, practiceOrder, seenTodayElsewhere, soundCheckKeys, wordGradedOn,
+  AREA_LABEL, areaOfView, levelWordAreas, practiceCounts, practiceOrder, seenTodayElsewhere, soundCheckKeys, wordGradedOn,
 } from '@/lib/levelWordAreas';
 import { useLevelWordAreas } from '@/lib/useLevelWordAreas';
 import { schedulerTime } from '@/lib/fsrsScheduler';
@@ -210,7 +210,6 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
     }));
   }, [ready, userId, allEntries, table, areaRec.firsts, areaRec.dayRec.first, clock]);
   const areasOf = useCallback((key) => areaTable?.get(key) || null, [areaTable]);
-  const areaPct = useMemo(() => (areaTable ? areaPercents(allEntries.map((e) => e.key), areasOf) : null), [areaTable, allEntries, areasOf]);
   /** 오늘 이 단어를 area 말고 다른 곳에서 먼저 봤는가 — 같은 날 규칙(알아요를 진도에 넣지 않는다). */
   const seenElsewhere = useCallback((key, area) => {
     const k = normalizeKnownWord(key);
@@ -687,7 +686,6 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
           <span className="lw-pct">{percent}%</span>
         </> : <span className="lw-bar lw-bar--off" aria-hidden="true" style={{ visibility: 'hidden' }} />}
       </div>}
-      {userId && <p className="lw-full"><span>네 영역 다 맞힘</span><b>{areaPct ? areaPct.all.toLocaleString('en-US') : '–'} / {allEntries.length.toLocaleString('en-US')}</b></p>}
       {practice && <PracticeIntro counts={userId ? practiceChips : null} />}
     </>}
 
