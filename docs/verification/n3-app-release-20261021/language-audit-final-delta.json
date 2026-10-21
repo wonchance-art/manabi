@@ -1,0 +1,755 @@
+{
+  "schema": "n3-language-holdout-final-delta-v1",
+  "observedAtUtc": "2026-10-21T11:51:12.687041+00:00",
+  "oracleSha256": "d171e48682a2a0b1178d2db6179f5b6f337720f0cbe3c88c13de79d4f1bd7d38",
+  "method": "기존 14개 과의 immutable snapshot 대비 바뀐 필드와 그 해석에 필요한 인접 문장만 대조. 이전 보고서 원본 보존. 새 문법 규칙, 새 홀드아웃, 전수 감수 추가 없음.",
+  "semanticHashAlgorithm": {
+    "name": "sha256-canonical-json-with-choice-order-normalization-v1",
+    "normalization": "Only root listen_choices and each checks[i].options sorted by Unicode code-point order. All other fields/array order retained. Object keys sorted recursively via json.dumps(sort_keys=True).",
+    "encoding": "UTF-8; ensure_ascii=False; separators=(comma,colon); no terminal newline",
+    "warning": "이 해시는 선택지 순서만 무시하는 보수적 내용 해시이며, 언어 의미 동등성을 자동 증명하는 해시가 아니다."
+  },
+  "summary": {
+    "reviewedUnits": 14,
+    "observationOnlyUnits": 1,
+    "oracleCompatible": 12,
+    "oracleCompatibleScoped": 3,
+    "oracleNotExercised": 1,
+    "newBlockingFindings": 0,
+    "unresolvedBlockingFindings": 0,
+    "claimLimit": "기존 16상황·14과의 언어 감사 한정 판정 유지. 전체 48과 언어 품질 인증 아님."
+  },
+  "units": [
+    {
+      "unit": "u20",
+      "sourcePath": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u20.json",
+      "initialSnapshotSha256": "972afdf7dcad44caa783ae965aca5ab6ea4662a249d8d20061c1a37c343b194f",
+      "previousReviewedSourceSha256": "46f784581905f4e468417ac90050c53a3952bc60fac3e088ec6bf1df28a06b3e",
+      "reviewedSourceSha256": "a0e5594ebd3ca0d36683e062cb831a358c6d4a977c429d4978b7e7d625cc9353",
+      "semanticHash": "a723a67a724883cd077b1775a1ef85e021027ff3398e63e46e5dc1f6577c1b82",
+      "status": "compatible_with_prior_oracle_scope",
+      "deltaBaseline": "initial immutable snapshot; previously reviewed word-status deltas included for completeness",
+      "changedFields": [
+        {
+          "field": "/dialog/0/ko",
+          "before": "어제는 파일이 열리지 않은 탓에 일이 늦게 끝났어요.",
+          "after": "어제는 파일이 열리지 않은 탓에 작업이 늦어졌어요."
+        },
+        {
+          "field": "/words/3/ko",
+          "before": "일어나다; 깨어 있다",
+          "after": "일어나다 · 문맥의 ている형은 깨어 있다"
+        }
+      ],
+      "nonOrderChangedFieldCount": 2,
+      "judgment": "起きる 뜻은 ている 문맥을 분리해 명료화했고, 仕事が遅くなりました를 작업이 늦어졌어요로 옮겨 완료를 덧붙이지 않는다. H01의 원인 추정/긍정 결과 허용 설명은 불변.",
+      "optionsAnswerMembershipValid": true
+    },
+    {
+      "unit": "u26",
+      "sourcePath": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u26.json",
+      "initialSnapshotSha256": "5a2efd1678752a9c144b8801e9cf2004d477714de6ebf0624ad42518283ed556",
+      "previousReviewedSourceSha256": "5a2efd1678752a9c144b8801e9cf2004d477714de6ebf0624ad42518283ed556",
+      "reviewedSourceSha256": "b8c17f1efb55269a7155c0470c7a8fa5652d8a1748f282542f4c14b1637ddfab",
+      "semanticHash": "046a896cc0f26eda06d676b05c19d9d37f8563ecfa30efc5727e2b1fa494ad3c",
+      "status": "compatible_with_prior_oracle_scope",
+      "deltaBaseline": "initial immutable snapshot; previously reviewed word-status deltas included for completeness",
+      "changedFields": [
+        {
+          "field": "/checks/2/prompt",
+          "before": "위 글에서 두 사람이 비교하려는 것은 무엇인가요?",
+          "after": "위 글에서 두 사람이 비교한 것은 무엇인가요?"
+        }
+      ],
+      "nonOrderChangedFieldCount": 1,
+      "judgment": "비교하려는→비교한으로 比べました의 완료 시점에 맞춤. H02/H03의 전형성·전언/추정 구분은 불변.",
+      "optionsAnswerMembershipValid": true
+    },
+    {
+      "unit": "u29",
+      "sourcePath": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u29.json",
+      "initialSnapshotSha256": "d08dfe23165a73bc630b477612083f04f7b6c15248c4248f379cd6e66b032b95",
+      "previousReviewedSourceSha256": "d08dfe23165a73bc630b477612083f04f7b6c15248c4248f379cd6e66b032b95",
+      "reviewedSourceSha256": "d08dfe23165a73bc630b477612083f04f7b6c15248c4248f379cd6e66b032b95",
+      "semanticHash": "063c599bc16a60f0cadc84a1127f109e0c7af8392ff6b7c43a205a2fcc536a89",
+      "status": "compatible_with_prior_oracle_scope",
+      "deltaBaseline": "initial immutable snapshot; previously reviewed word-status deltas included for completeness",
+      "changedFields": [],
+      "nonOrderChangedFieldCount": 0,
+      "judgment": "원고 내용 불변. 기존 한정 판정 유지.",
+      "optionsAnswerMembershipValid": true
+    },
+    {
+      "unit": "u30",
+      "sourcePath": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u30.json",
+      "initialSnapshotSha256": "9be7220dc4f3b6dab589e9a9d9ca1750c79b99f6a8f3440397056051f8106827",
+      "previousReviewedSourceSha256": "9be7220dc4f3b6dab589e9a9d9ca1750c79b99f6a8f3440397056051f8106827",
+      "reviewedSourceSha256": "9be7220dc4f3b6dab589e9a9d9ca1750c79b99f6a8f3440397056051f8106827",
+      "semanticHash": "b437afebec2022f8d9d730e886052a373a9978a9fb32a89b5e64619a2092b6a6",
+      "status": "compatible_with_prior_oracle_scope",
+      "deltaBaseline": "initial immutable snapshot; previously reviewed word-status deltas included for completeness",
+      "changedFields": [],
+      "nonOrderChangedFieldCount": 0,
+      "judgment": "원고 내용 불변. 기존 한정 판정 유지.",
+      "optionsAnswerMembershipValid": true
+    },
+    {
+      "unit": "u31",
+      "sourcePath": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u31.json",
+      "initialSnapshotSha256": "d79239221b965bb4553486a93b0cde8c78da46f984e1d4807e296fd3851fabe9",
+      "previousReviewedSourceSha256": "d79239221b965bb4553486a93b0cde8c78da46f984e1d4807e296fd3851fabe9",
+      "reviewedSourceSha256": "d79239221b965bb4553486a93b0cde8c78da46f984e1d4807e296fd3851fabe9",
+      "semanticHash": "7d275f4b27c7fab8942c85830abcb9825f3034850117ceceb3eceac6d12f1346",
+      "status": "compatible_with_prior_oracle_scope",
+      "deltaBaseline": "initial immutable snapshot; previously reviewed word-status deltas included for completeness",
+      "changedFields": [],
+      "nonOrderChangedFieldCount": 0,
+      "judgment": "원고 내용 불변. 기존 한정 판정 유지.",
+      "optionsAnswerMembershipValid": true
+    },
+    {
+      "unit": "u35",
+      "sourcePath": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u35.json",
+      "initialSnapshotSha256": "2bc9ac3326f06e1bc35aa9d3a9fd10014d28140ecfde841ae5183f7d6dd88678",
+      "previousReviewedSourceSha256": "2bc9ac3326f06e1bc35aa9d3a9fd10014d28140ecfde841ae5183f7d6dd88678",
+      "reviewedSourceSha256": "663eaf7d575a226e7c77c2829a2ee83485977153ececd32cd3efb1c6d6122816",
+      "semanticHash": "25091aeb551d64b4faaca3078db466aa0a062e9c4548549ac6636e47be0f36fa",
+      "status": "compatible_with_prior_oracle_scope",
+      "deltaBaseline": "initial immutable snapshot; previously reviewed word-status deltas included for completeness",
+      "changedFields": [
+        {
+          "field": "/checks/0/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/checks/0/why",
+          "before": "連絡先さえ書けば와 이름·비용·등록이 필요 없다는 문장이 최소 조건을 완성해요.",
+          "after": "連絡先さえ書けば는 신청할 수 있는 충분 조건이에요. 連絡先のない申込書は受け付けません이 필수 조건도 명시해요. 이름·비용·회원 등록을 필수 조건으로 덧붙이지 않아요."
+        },
+        {
+          "field": "/checks/1/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/checks/1/why",
+          "before": "앞 메모의 住所を調べず와 道に迷って가 실제 사실이에요. 뒤 문장은 실현되지 않은 다른 조건을 아쉬워해요.",
+          "after": "앞 메모의 住所を調べないで와 道に迷って가 실제 사실이에요. 뒤 문장은 실현되지 않은 다른 조건을 아쉬워해요."
+        },
+        {
+          "field": "/checks/2/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/kanji/受け付けません",
+          "before": null,
+          "after": "うけつけません"
+        },
+        {
+          "field": "/kanji/歩いた",
+          "before": null,
+          "after": "あるいた"
+        },
+        {
+          "field": "/kanji/歩き始めた",
+          "before": "あるきはじめた",
+          "after": null
+        },
+        {
+          "field": "/listen_choices",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/reading",
+          "before": "【活動の申込書】この活動は、連絡先さえ書けば申し込めます。名前は書かなくてもかまいません。参加費も会員登録も必要ありません。申込書は受付の箱に入れてください。【ジュンのメモ】昨日は会場の住所を調べないで、駅から歩き始めた。道に迷って、約束の時間に遅れた。住所が分かれば、あんなに迷わなかったのに。もっと早く地図を見るべきだった。今日は申込書に連絡先を書いたあと、次の会場の地図を確認した。まだ次の活動には参加していない。道に迷ったら電話してくださいとミオさんが言ってくれたので、連絡先を手帳に残した。申し込みの条件と、困った時の連絡方法が分かって安心した。",
+          "after": "【活動の申込書】この活動は、連絡先さえ書けば申し込めます。連絡先のない申込書は受け付けません。名前は書かなくてもかまいません。参加費も会員登録も必要ありません。申込書は受付の箱に入れてください。【ジュンのメモ】昨日は会場の住所を調べないで、駅から歩いた。道に迷って、約束の時間に遅れた。住所が分かれば、あんなに迷わなかったのに。もっと早く地図を見るべきだった。今日は申込書に連絡先を書いたあと、次の会場の地図を確認した。まだ次の活動には参加していない。道に迷ったら電話してくださいとミオさんが言ってくれたので、連絡先を手帳に残した。申し込みの条件と、困った時の連絡方法が分かって安心した。"
+        }
+      ],
+      "nonOrderChangedFieldCount": 6,
+      "judgment": "reading에 連絡先のない申込書は受け付けません을 추가해 필수 조건의 직접 근거를 제공하고 checks[0].why가 충분/필수 조건을 구분한다. 이는 다른 감수의 수정 사항을 재감수 범위 확장 없이 영향만 확인한 것이다. H10 인용 住所を調べず→住所を調べないで는 실제 reading과 일치한다. 歩き始めた→歩いた는 실제로 길을 헤매고 늦었다는 과거 사실을 유지한다. H10/H11 결론 유지.",
+      "optionsAnswerMembershipValid": true
+    },
+    {
+      "unit": "u38",
+      "sourcePath": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u38.json",
+      "initialSnapshotSha256": "e169ccd7b7e1df888e4f486b98a784147a11a3f11bafcf3e1dd80ad2c520d863",
+      "previousReviewedSourceSha256": "10664e30067fee55f1986da402b40814dbcb8500f29ffb40c63650789cafa5a6",
+      "reviewedSourceSha256": "f352dac9e5a112a0a475ac60593b73f9a2d652b617908a98ab24282319502934",
+      "semanticHash": "d2a136b454a5759548b1466cd8118a7307072cbacd83c66ea63c68ada44fb60e",
+      "status": "compatible_with_prior_oracle_scope",
+      "deltaBaseline": "initial immutable snapshot; previously reviewed word-status deltas included for completeness",
+      "changedFields": [
+        {
+          "field": "/checks/0/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/checks/2/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/kanji/全部読めない",
+          "before": null,
+          "after": "ぜんぶよめない"
+        },
+        {
+          "field": "/listen_choices",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/reading",
+          "before": "【展示の案内】展示といっても、専用の大きな部屋はありません。通路の壁にある小さな掲示板に、写真と短い文章を貼ります。通路を使う人のために、前に長く立たないようにしてください。【リナの記録】今日の準備は三十分しかかからなかった。準備時間が短いわりに、見られる資料は多い。ただし、作品を集めたのは先週からだ。今日三十分で作品を全部作ったわけではない。先に集めた作品を選び、並べ方を決めてあったので、今日は貼るだけで十分だった。ジュンは「今日こそ見に来てよかった」と言い、写真の横にある感想も読んだ。大きな会場を想像していた人には、入口で実際の規模を説明した。",
+          "after": "【展示の案内】展示といっても、専用の大きな部屋はありません。通路の壁にある小さな掲示板に、写真と短い文章を貼ります。通路を使う人のために、前に長く立たないようにしてください。【リナの記録】今日の準備は三十分しかかからなかった。準備時間が短いわりに、見られる資料は、すぐには全部読めないほど多い。ただし、作品を集めたのは先週からだ。今日三十分で作品を全部作ったわけではない。先に集めた作品を選び、並べ方を決めてあったので、今日は貼るだけで十分だった。ジュンは「今日こそ見に来てよかった」と言い、写真の横にある感想も読んだ。大きな会場を想像していた人には、入口で実際の規模を説明した。"
+        },
+        {
+          "field": "/recall/evidence",
+          "before": [
+            {
+              "unit": 37,
+              "fieldPath": "dialog[0].ja",
+              "quote": "今日こそ展示を見よう"
+            }
+          ],
+          "after": [
+            {
+              "unit": 37,
+              "fieldPath": "dialog[0].ja",
+              "quote": "今日こそ展示を見よう"
+            },
+            {
+              "unit": 34,
+              "fieldPath": "reading",
+              "quote": "すぐには全部読めないほど多い"
+            }
+          ]
+        },
+        {
+          "field": "/recall/n3Units",
+          "before": [
+            37
+          ],
+          "after": [
+            34,
+            37
+          ]
+        },
+        {
+          "field": "/words/9/introduced",
+          "before": true,
+          "after": false
+        },
+        {
+          "field": "/words/9/status",
+          "before": "new",
+          "after": "review"
+        }
+      ],
+      "nonOrderChangedFieldCount": 6,
+      "judgment": "すぐには全部読めないほど多い는 즉시 전부 읽지 못할 정도로 많다는 정도를 더할 뿐 짧은 준비 시간 대비 풍부함의 비교 기준/결과를 뒤집지 않는다. 회수 표기/독음 추가 및 壁 복습 표시는 H09와 무관.",
+      "optionsAnswerMembershipValid": true
+    },
+    {
+      "unit": "u39",
+      "sourcePath": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u39.json",
+      "initialSnapshotSha256": "c132d2b0200e33d50071009967d56948d3cae336179fca2382827db4dfe5ea3c",
+      "previousReviewedSourceSha256": "e05ef9e696cea113f28afb60c596f5693ed66f9f6301e6415daeb452d115cb46",
+      "reviewedSourceSha256": "c3d599ea7d3bc5200e11d1800a942cc6cad6bfc1151d64df61abc36b696d7b86",
+      "semanticHash": "f40cc03b6deca6df908afed27661d5180e1916689e7d42c3a0e349026eea6d91",
+      "status": "compatible_with_prior_oracle_scope",
+      "deltaBaseline": "initial immutable snapshot; previously reviewed word-status deltas included for completeness",
+      "changedFields": [
+        {
+          "field": "/checks/0/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/checks/1/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/checks/2/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/dialog/0/ja",
+          "before": "初参加にしては、みなさん準備がよかったですね。",
+          "after": "初参加にしては、自分でもよく準備できたと思います。"
+        },
+        {
+          "field": "/dialog/0/ko",
+          "before": "첫 참가치고는 모두 준비가 좋았네요.",
+          "after": "첫 참가치고는 저 스스로도 준비를 잘했다고 생각해요."
+        },
+        {
+          "field": "/dialog/1/ja",
+          "before": "そうですね。ただ、その言い方より、準備してきたことを具体的に伝えるといいですね。",
+          "after": "はい。資料をよく準備してきましたね。記録には、できたことを具体的に書きましょう。"
+        },
+        {
+          "field": "/dialog/1/ko",
+          "before": "그렇네요. 다만 그 말투보다는 준비해 온 점을 구체적으로 전하면 좋겠어요.",
+          "after": "네. 자료를 잘 준비해 왔네요. 기록에는 할 수 있었던 일을 구체적으로 적읍시다."
+        },
+        {
+          "field": "/kanji/自分",
+          "before": null,
+          "after": "じぶん"
+        },
+        {
+          "field": "/patterns/1/body",
+          "before": "앞뒤의 대상을 대조해 서로 다른 점을 보여 줘요. 午前は質問が多かったのに対して、午後は感想が多かったでは 오전과 오후가 비교 대상이에요.",
+          "after": "앞뒤의 대상을 대조해 서로 다른 점을 보여 줘요. 「午前は質問が多かったのに対して、午後は感想が多かった」라는 문장에서는 오전과 오후가 비교 대상이에요."
+        },
+        {
+          "field": "/words/2/introduced",
+          "before": true,
+          "after": false
+        },
+        {
+          "field": "/words/2/status",
+          "before": "new",
+          "after": "review"
+        },
+        {
+          "field": "/words/3/introduced",
+          "before": true,
+          "after": false
+        },
+        {
+          "field": "/words/3/status",
+          "before": "new",
+          "after": "review"
+        }
+      ],
+      "nonOrderChangedFieldCount": 10,
+      "judgment": "初参加にしては의 평가 주체를 준 자신의 준비로 구체화해 뒤 본문과 일치한다. 리나의 응답도 그 준비에 대한 관찰이다. 패턴 본문의 인용 표시 명료화, 독음/복습 표시 변경은 H09의 わりに/にしては 허용 중첩을 바꾸지 않는다.",
+      "optionsAnswerMembershipValid": true
+    },
+    {
+      "unit": "u40",
+      "sourcePath": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u40.json",
+      "initialSnapshotSha256": "61595a964643fb03e4de98f89f829649babe4f17c8da77bc3630f67f94c4f6cc",
+      "previousReviewedSourceSha256": "61595a964643fb03e4de98f89f829649babe4f17c8da77bc3630f67f94c4f6cc",
+      "reviewedSourceSha256": "fa4b3eb219e4070a381d4f8f2906b1443283916fd76c319c3628774039409ca0",
+      "semanticHash": "111bcaa6b6a3a121277c630f087e801ff3fbd1704d303617d225fad6889366af",
+      "status": "compatible_with_prior_oracle_scope",
+      "deltaBaseline": "initial immutable snapshot; previously reviewed word-status deltas included for completeness",
+      "changedFields": [
+        {
+          "field": "/checks/0/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/checks/1/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        }
+      ],
+      "nonOrderChangedFieldCount": 0,
+      "judgment": "현재 관측 변경은 선택지 순서뿐이며 H12의 자료 맥락 한정 판단은 유지.",
+      "optionsAnswerMembershipValid": true
+    },
+    {
+      "unit": "u43",
+      "sourcePath": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u43.json",
+      "initialSnapshotSha256": "25c15134993e46e22e53ce538fd2ee558938354968cb89519dfa1fe07e5198b5",
+      "previousReviewedSourceSha256": "25c15134993e46e22e53ce538fd2ee558938354968cb89519dfa1fe07e5198b5",
+      "reviewedSourceSha256": "0c277c54efdc36e254c7a3bb2b1faddcc603a97684f11eddfb082d5b3d12c71b",
+      "semanticHash": "8ae6e33f5d2b06f20349fe77daa273ec101e0f03b80ee379e7440ee0aef8f5d6",
+      "status": "compatible_with_prior_oracle_scope",
+      "deltaBaseline": "initial immutable snapshot; previously reviewed word-status deltas included for completeness",
+      "changedFields": [
+        {
+          "field": "/checks/1/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/checks/2/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/dialog/2/ko",
+          "before": "이번에는 직접 골랐으니 미오 씨에게 초안을 읽어 주었으면 해요.",
+          "after": "이번에는 직접 골랐으니 미오 씨가 초안을 읽어 주었으면 해요."
+        },
+        {
+          "field": "/listen_choices",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/patterns/1/examples/0/ko",
+          "before": "미오 씨에게 초안을 읽어 주었으면 해요.",
+          "after": "미오 씨가 초안을 읽어 주었으면 해요."
+        }
+      ],
+      "nonOrderChangedFieldCount": 2,
+      "judgment": "미오 씨에게→미오 씨가로 번역하여 読んでもらいたい의 행동 주체를 분명히 한다. H13의 축약형 적용 제외는 그대로다.",
+      "optionsAnswerMembershipValid": true
+    },
+    {
+      "unit": "u44",
+      "sourcePath": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u44.json",
+      "initialSnapshotSha256": "dc4d1b549891a16e2002e7be978d04c0a390a6281d39ef52f401d1bc8288bde2",
+      "previousReviewedSourceSha256": "dc4d1b549891a16e2002e7be978d04c0a390a6281d39ef52f401d1bc8288bde2",
+      "reviewedSourceSha256": "d4f11e7d855aa8f76cd05e9dfb4de7652e2528e57561c75e45c336fdeea0cddc",
+      "semanticHash": "573fcc05fbbcc77986b00dd3c189bdeb8f1c3323f1bf1e4410161d97994f2573",
+      "status": "compatible_with_prior_oracle_scope",
+      "deltaBaseline": "initial immutable snapshot; previously reviewed word-status deltas included for completeness",
+      "changedFields": [
+        {
+          "field": "/checks/1/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/checks/2/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/dialog/5/ko",
+          "before": "네. 저는 안내를 준비할게요. 리나 씨에게 표현을 확인해 주었으면 해요.",
+          "after": "네. 저는 안내를 준비할게요. 리나 씨가 표현을 확인해 주었으면 해요."
+        }
+      ],
+      "nonOrderChangedFieldCount": 1,
+      "judgment": "리나 씨에게→리나 씨가로 번역하여 確認してもらいたい의 행동 주체를 명료화한다. 존경어의 행동 주체에는 영향 없다.",
+      "optionsAnswerMembershipValid": true
+    },
+    {
+      "unit": "u45",
+      "sourcePath": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u45.json",
+      "initialSnapshotSha256": "e6520dfa453fe774715423d3ec5967b0fb96eb0433dd9a0bacd541daf206c3a5",
+      "previousReviewedSourceSha256": "e6520dfa453fe774715423d3ec5967b0fb96eb0433dd9a0bacd541daf206c3a5",
+      "reviewedSourceSha256": "d188375ffc7e25221eae145e14dff138c6fa42cbbd5648bacc5348f1d2aed164",
+      "semanticHash": "5c5638303d1785ebb34819eec299d1bcf3636dfb1ca40c4d1331c7088abbc424",
+      "status": "compatible_with_prior_oracle_scope",
+      "deltaBaseline": "initial immutable snapshot; previously reviewed word-status deltas included for completeness",
+      "changedFields": [
+        {
+          "field": "/checks/0/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/checks/1/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/checks/2/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/listen_choices",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/oral/1/prompt",
+          "before": "선생님이 직접 三時に来ます라고 말했어요. おっしゃいました로 내용 그대로 전해요.",
+          "after": "선생님이 밖에서 담당자에게 직접 三時に行きます라고 말했어요. おっしゃいました로 내용 그대로 전해요."
+        },
+        {
+          "field": "/oral/1/why",
+          "before": "말한 내용과 말한 사람을 그대로 유지해요. 실제 도착했다는 내용을 덧붙이지 않아요. 先生は三時に来るとおっしゃいました도 내용이 같은 간접 인용으로 허용해요.",
+          "after": "말한 내용과 말한 사람을 그대로 유지해요. 실제 도착했다는 내용을 덧붙이지 않아요. 「三時に行きます」と先生はおっしゃいました도 내용과 화자가 같아 허용해요."
+        },
+        {
+          "field": "/reading_why",
+          "before": "三時に来ます/先に資料を読みたい가 발언 내용이에요. 置いてあります/席の準備は終わっています와 到着の連絡はありません/受付はまだ를 대조해요.",
+          "after": "三時に行きます/先に資料を読みたい가 발언 내용이에요. 置いてあります/席の準備は終わっています와 到着の連絡はありません/受付はまだ를 대조해요."
+        }
+      ],
+      "nonOrderChangedFieldCount": 3,
+      "judgment": "밖에 있는 선생님의 직접 발화를 三時に行きます로 일치시키고 허용 대안은 인용절의 위치 이동으로 제시한다. 담당자 관점의 いらっしゃる와 직접 인용의 行きます가 양립한다. 발언 예정과 도착 사실의 구분은 유지.",
+      "optionsAnswerMembershipValid": true
+    },
+    {
+      "unit": "u46",
+      "sourcePath": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u46.json",
+      "initialSnapshotSha256": "e2982aea6670f0ac8bd265cac0f7d0628f6b55a784f33393abc79e97baa12fd0",
+      "previousReviewedSourceSha256": "e2982aea6670f0ac8bd265cac0f7d0628f6b55a784f33393abc79e97baa12fd0",
+      "reviewedSourceSha256": "491004e38d44a5f1159f371d8bb71be37795daac989f1dbce2481ad26a79cbde",
+      "semanticHash": "9e94c53276776b69f48954398d26733713167e32dd8f6ea1a78d16071be459f7",
+      "status": "compatible_with_prior_oracle_scope",
+      "deltaBaseline": "initial immutable snapshot; previously reviewed word-status deltas included for completeness",
+      "changedFields": [
+        {
+          "field": "/checks/1/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/checks/2/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/scene",
+          "before": "리나는 초대 손님에게 확인한 내용을 미오에게 전해요. 준은 손님이 있는 방을 방문해 질문하려고 해요. 방문과 질문은 아직 계획이에요.",
+          "after": "리나는 초대 손님에게 확인한 내용을 준에게 전해요. 준은 손님이 있는 방을 방문해 질문하려고 해요. 방문과 질문은 아직 계획이에요."
+        },
+        {
+          "field": "/writing_check",
+          "before": "伺う의 두 뜻을 대상·장소로 구별했나요? 완료한 문의와 방문 계획을 다른 시제로 썼나요? 얻지 못한 답을 얻었다고 쓰지 않았나요?",
+          "after": "별도 연습 상황에서 내가 완료한 문의와 앞으로 할 방문을 나누었나요? 伺う의 두 뜻을 대상·장소로 구별했나요? 아직 얻지 못한 답을 얻었다고 쓰지 않았나요?"
+        },
+        {
+          "field": "/writing_prompt",
+          "before": "담당자에게 확인한 시간과 앞으로의 방문을 두세 문장으로 보고해요.",
+          "after": "별도 역할 연습이에요. 본인은 이미 질문 시간을 여쭈었고, 설명 뒤에 선생님 방으로 찾아뵐 예정이에요. 아직 자기 질문의 답은 듣지 못했어요. 이 상황을 담당자에게 두세 문장으로 보고해요."
+        }
+      ],
+      "nonOrderChangedFieldCount": 3,
+      "judgment": "scene의 전달 상대를 대화 상대 준으로 맞추고 writing을 별도 역할 상황이라고 명시해 리나의 완료 문의와 준의 계획을 같은 화자에게 옮긴다는 오독을 방지한다. H14의 겸양어 행위자 방향은 불변.",
+      "optionsAnswerMembershipValid": true
+    },
+    {
+      "unit": "u47",
+      "sourcePath": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u47.json",
+      "initialSnapshotSha256": "3916d383347843a0003bd154eb6be0f3a6c28908ef2549a593d87106c70923b7",
+      "previousReviewedSourceSha256": "3916d383347843a0003bd154eb6be0f3a6c28908ef2549a593d87106c70923b7",
+      "reviewedSourceSha256": "fd7c8f04217dfb8281ab84f6cdd28306151453ed232813d5f0c4478bc0020c3d",
+      "semanticHash": "c29d28ab427dcdd0e05490ce5967e1d4ec3c46e0d2c9f98bcef35075b2730831",
+      "status": "compatible_with_prior_oracle_scope",
+      "deltaBaseline": "initial immutable snapshot; previously reviewed word-status deltas included for completeness",
+      "changedFields": [
+        {
+          "field": "/checks/0/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/checks/1/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/checks/2/options",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        },
+        {
+          "field": "/listen_choices",
+          "changeType": "options_order_only",
+          "sameMultiset": true
+        }
+      ],
+      "nonOrderChangedFieldCount": 0,
+      "judgment": "현재 관측 변경은 선택지 순서뿐이며 H15/H16의 허락·수혜·행위자·시제 문자열은 불변.",
+      "optionsAnswerMembershipValid": true
+    }
+  ],
+  "observationOnly": [
+    {
+      "unit": "u48",
+      "sourcePath": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u48.json",
+      "observedSourceSha256": "316cdb405123a4f0d51c7df1127b49b116df17ce8095de78724b6de499773ca9",
+      "semanticHash": "0180f946205af392d3a15666216708095a2d3275e7188de9c9ce3254e210c3cf",
+      "status": "observation_only_no_prior_holdout_snapshot",
+      "reason": "u48은 최초 14개 대상 과 또는 고정 oracle의 독립 평가 대상에 포함되지 않았다. 이번 지시의 새 전수리뷰 금지에 따라 내용 수락이나 delta 검증을 주장하지 않는다."
+    }
+  ],
+  "oracleEvidence": [
+    {
+      "caseId": "H01",
+      "priorStatus": "compatible",
+      "finalStatus": "compatible",
+      "unit": "u20",
+      "field": "patterns[0].note",
+      "currentQuote": "뒤에 좋은 결과가 오는 문맥에서도 쓸 수 있으므로 항상 나쁜 결과만 온다고 하지 않아요.",
+      "reviewedSourceSha256": "a0e5594ebd3ca0d36683e062cb831a358c6d4a977c429d4978b7e7d625cc9353",
+      "semanticHash": "a723a67a724883cd077b1775a1ef85e021027ff3398e63e46e5dc1f6577c1b82",
+      "judgment": "변경 필드가 고정 oracle의 허용 의미/대안 또는 금지 추론과 충돌하지 않음."
+    },
+    {
+      "caseId": "H02",
+      "priorStatus": "compatible",
+      "finalStatus": "compatible",
+      "unit": "u26",
+      "field": "patterns[0].body",
+      "currentQuote": "春らしい日처럼 계절의 전형적 느낌에도 쓸 수 있지만",
+      "reviewedSourceSha256": "b8c17f1efb55269a7155c0470c7a8fa5652d8a1748f282542f4c14b1637ddfab",
+      "semanticHash": "046a896cc0f26eda06d676b05c19d9d37f8563ecfa30efc5727e2b1fa494ad3c",
+      "judgment": "변경 필드가 고정 oracle의 허용 의미/대안 또는 금지 추론과 충돌하지 않음."
+    },
+    {
+      "caseId": "H03",
+      "priorStatus": "compatible_scoped",
+      "finalStatus": "compatible_scoped",
+      "unit": "u26",
+      "field": "preparation",
+      "currentQuote": "N4의 전문·추량 らしい와 똑같은 형태가 나올 수 있어요.",
+      "reviewedSourceSha256": "b8c17f1efb55269a7155c0470c7a8fa5652d8a1748f282542f4c14b1637ddfab",
+      "semanticHash": "046a896cc0f26eda06d676b05c19d9d37f8563ecfa30efc5727e2b1fa494ad3c",
+      "judgment": "변경 필드가 고정 oracle의 허용 의미/대안 또는 금지 추론과 충돌하지 않음."
+    },
+    {
+      "caseId": "H04",
+      "priorStatus": "compatible",
+      "finalStatus": "compatible",
+      "unit": "u29",
+      "field": "patterns[1].body",
+      "currentQuote": "이번에는 강좌는 필요하지만 자유 공간은 필요 없다는 뒷문장으로 부정 범위를 확인해요.",
+      "reviewedSourceSha256": "d08dfe23165a73bc630b477612083f04f7b6c15248c4248f379cd6e66b032b95",
+      "semanticHash": "063c599bc16a60f0cadc84a1127f109e0c7af8392ff6b7c43a205a2fcc536a89",
+      "judgment": "변경 필드가 고정 oracle의 허용 의미/대안 또는 금지 추론과 충돌하지 않음."
+    },
+    {
+      "caseId": "H05",
+      "priorStatus": "compatible",
+      "finalStatus": "compatible",
+      "unit": "u29",
+      "field": "patterns[1].note",
+      "currentQuote": "이 표현이 언제나 양을 나누는 부분부정만 되는 것은 아니에요.",
+      "reviewedSourceSha256": "d08dfe23165a73bc630b477612083f04f7b6c15248c4248f379cd6e66b032b95",
+      "semanticHash": "063c599bc16a60f0cadc84a1127f109e0c7af8392ff6b7c43a205a2fcc536a89",
+      "judgment": "변경 필드가 고정 oracle의 허용 의미/대안 또는 금지 추론과 충돌하지 않음."
+    },
+    {
+      "caseId": "H06",
+      "priorStatus": "compatible",
+      "finalStatus": "compatible",
+      "unit": "u30",
+      "field": "patterns[1].body",
+      "currentQuote": "이중 부정이지만 적극적인 승낙과 같지 않아요.",
+      "reviewedSourceSha256": "9be7220dc4f3b6dab589e9a9d9ca1750c79b99f6a8f3440397056051f8106827",
+      "semanticHash": "b437afebec2022f8d9d730e886052a373a9978a9fb32a89b5e64619a2092b6a6",
+      "judgment": "변경 필드가 고정 oracle의 허용 의미/대안 또는 금지 추론과 충돌하지 않음."
+    },
+    {
+      "caseId": "H07",
+      "priorStatus": "compatible",
+      "finalStatus": "compatible",
+      "unit": "u31",
+      "field": "patterns[0].note",
+      "currentQuote": "사회적·심리적 사정의 제약이에요.",
+      "reviewedSourceSha256": "d79239221b965bb4553486a93b0cde8c78da46f984e1d4807e296fd3851fabe9",
+      "semanticHash": "7d275f4b27c7fab8942c85830abcb9825f3034850117ceceb3eceac6d12f1346",
+      "judgment": "변경 필드가 고정 oracle의 허용 의미/대안 또는 금지 추론과 충돌하지 않음."
+    },
+    {
+      "caseId": "H08",
+      "priorStatus": "compatible",
+      "finalStatus": "compatible",
+      "unit": "u31",
+      "field": "patterns[1].note",
+      "currentQuote": "返すわけにはいかない는 돌려줄 수 없다는 반대 방향이에요.",
+      "reviewedSourceSha256": "d79239221b965bb4553486a93b0cde8c78da46f984e1d4807e296fd3851fabe9",
+      "semanticHash": "7d275f4b27c7fab8942c85830abcb9825f3034850117ceceb3eceac6d12f1346",
+      "judgment": "변경 필드가 고정 oracle의 허용 의미/대안 또는 금지 추론과 충돌하지 않음."
+    },
+    {
+      "caseId": "H09",
+      "priorStatus": "compatible",
+      "finalStatus": "compatible",
+      "unit": "u39",
+      "field": "oral[0].why",
+      "currentQuote": "初参加のわりに도 문맥상 자연스러울 수 있어요.",
+      "reviewedSourceSha256": "c3d599ea7d3bc5200e11d1800a942cc6cad6bfc1151d64df61abc36b696d7b86",
+      "semanticHash": "f40cc03b6deca6df908afed27661d5180e1916689e7d42c3a0e349026eea6d91",
+      "judgment": "변경 필드가 고정 oracle의 허용 의미/대안 또는 금지 추론과 충돌하지 않음."
+    },
+    {
+      "caseId": "H10",
+      "priorStatus": "compatible",
+      "finalStatus": "compatible",
+      "unit": "u35",
+      "field": "checks[1].why",
+      "currentQuote": "앞 메모의 住所を調べないで와 道に迷って가 실제 사실이에요.",
+      "reviewedSourceSha256": "663eaf7d575a226e7c77c2829a2ee83485977153ececd32cd3efb1c6d6122816",
+      "semanticHash": "25091aeb551d64b4faaca3078db466aa0a062e9c4548549ac6636e47be0f36fa",
+      "judgment": "변경 필드가 고정 oracle의 허용 의미/대안 또는 금지 추론과 충돌하지 않음."
+    },
+    {
+      "caseId": "H11",
+      "priorStatus": "compatible",
+      "finalStatus": "compatible",
+      "unit": "u35",
+      "field": "patterns[1].note",
+      "currentQuote": "현재·미래에 대한 바람으로도 쓰일 수 있으므로 모양만 보고 언제나 과거라고 단정하지 말고",
+      "reviewedSourceSha256": "663eaf7d575a226e7c77c2829a2ee83485977153ececd32cd3efb1c6d6122816",
+      "semanticHash": "25091aeb551d64b4faaca3078db466aa0a062e9c4548549ac6636e47be0f36fa",
+      "judgment": "변경 필드가 고정 oracle의 허용 의미/대안 또는 금지 추론과 충돌하지 않음."
+    },
+    {
+      "caseId": "H12",
+      "priorStatus": "compatible_scoped",
+      "finalStatus": "compatible_scoped",
+      "unit": "u40",
+      "field": "checks[0].prompt",
+      "currentQuote": "くせに가 자료의 문장에 더하는 어조를 골라요.",
+      "reviewedSourceSha256": "fa4b3eb219e4070a381d4f8f2906b1443283916fd76c319c3628774039409ca0",
+      "semanticHash": "111bcaa6b6a3a121277c630f087e801ff3fbd1704d303617d225fad6889366af",
+      "judgment": "변경 필드가 고정 oracle의 허용 의미/대안 또는 금지 추론과 충돌하지 않음."
+    },
+    {
+      "caseId": "H13",
+      "priorStatus": "not_exercised",
+      "finalStatus": "not_exercised",
+      "unit": "u43",
+      "field": "patterns[0].note",
+      "currentQuote": "짧은 구어형의 추가 암기는 이 과의 평가 범위가 아니에요.",
+      "reviewedSourceSha256": "0c277c54efdc36e254c7a3bb2b1faddcc603a97684f11eddfb082d5b3d12c71b",
+      "semanticHash": "8ae6e33f5d2b06f20349fe77daa273ec101e0f03b80ee379e7440ee0aef8f5d6",
+      "judgment": "기존 한정 판정 유지; H13은 여전히 not_exercised"
+    },
+    {
+      "caseId": "H14",
+      "priorStatus": "compatible",
+      "finalStatus": "compatible",
+      "unit": "u46",
+      "field": "patterns[0].body",
+      "currentQuote": "私が先生をご案内します에서는 안내하는 사람은 나, 안내받는 상대는 선생님이에요.",
+      "reviewedSourceSha256": "491004e38d44a5f1159f371d8bb71be37795daac989f1dbce2481ad26a79cbde",
+      "semanticHash": "9e94c53276776b69f48954398d26733713167e32dd8f6ea1a78d16071be459f7",
+      "judgment": "변경 필드가 고정 oracle의 허용 의미/대안 또는 금지 추론과 충돌하지 않음."
+    },
+    {
+      "caseId": "H15",
+      "priorStatus": "compatible_scoped",
+      "finalStatus": "compatible_scoped",
+      "unit": "u47",
+      "field": "patterns[1].body",
+      "currentQuote": "이 장면은 자료 작성자가 사용을 허락했고, 화자가 준비에 쓸 도움을 받는다는 조건이 있어요.",
+      "reviewedSourceSha256": "fd7c8f04217dfb8281ab84f6cdd28306151453ed232813d5f0c4478bc0020c3d",
+      "semanticHash": "c29d28ab427dcdd0e05490ce5967e1d4ec3c46e0d2c9f98bcef35075b2730831",
+      "judgment": "변경 필드가 고정 oracle의 허용 의미/대안 또는 금지 추론과 충돌하지 않음."
+    },
+    {
+      "caseId": "H16",
+      "priorStatus": "compatible",
+      "finalStatus": "compatible",
+      "unit": "u47",
+      "field": "oral[0].why",
+      "currentQuote": "설명한 사람은 미오, 도움을 받은 쪽은 화자예요.",
+      "reviewedSourceSha256": "fd7c8f04217dfb8281ab84f6cdd28306151453ed232813d5f0c4478bc0020c3d",
+      "semanticHash": "c29d28ab427dcdd0e05490ce5967e1d4ec3c46e0d2c9f98bcef35075b2730831",
+      "judgment": "변경 필드가 고정 oracle의 허용 의미/대안 또는 금지 추론과 충돌하지 않음."
+    }
+  ],
+  "preservedOriginalArtifacts": {
+    "holdout-oracle.json": "d171e48682a2a0b1178d2db6179f5b6f337720f0cbe3c88c13de79d4f1bd7d38",
+    "holdout-oracle.sha256": "e77d81e2843534d20bee18d5a48769c045a6f3180b0466d8db1c00cdbcfdc3fc",
+    "language-audit-report.json": "3dbcecba45110aaa8586fa30df349e9fd911f5d2edc38112300225b534392119",
+    "language-audit-report.md": "7b6c3f272fc7baf54bea17962ecbd4fb3274010c159c3bdf4cf39b45efe4ca56",
+    "snapshot-manifest.json": "760218baee6607772455f598e6db8e4d98fc0f892e205defbbb1df755b816e43",
+    "final-reviewed-manifest.json": "660ecd4acd286a6713e18a6e0a73c1a918a231b5ca61e2a7edeb955e105a76c8"
+  },
+  "pendingConcurrency": "작성 시점 선택지 순서 변경 가능. root는 최종 source의 semanticHash 동일성과 보기 문자열·정답 불변을 비교할 수 있음. 의미 해시가 바뀌면 이 관측 수락을 새 내용에 자동 적용하지 않음."
+}

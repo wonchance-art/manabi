@@ -1,0 +1,4518 @@
+{
+  "scope": "Synthetic HTTP memory state only; not PostgreSQL/RLS or operating-account persistence",
+  "passed": true,
+  "editionId": "4978c146953f14140bcb49d2",
+  "lateUnits": [
+    {
+      "unit": "u43",
+      "pageId": "u43-patterns",
+      "vocabularyId": "00000000-0000-4000-8000-000000000002",
+      "quote": "私は先生に長い文章を読ませられました。",
+      "exactSingleLessonScope": true
+    },
+    {
+      "unit": "u44",
+      "pageId": "u44-patterns",
+      "vocabularyId": "00000000-0000-4000-8000-000000000003",
+      "quote": "先生は、この資料をお読みになります。",
+      "exactSingleLessonScope": true
+    },
+    {
+      "unit": "u45",
+      "pageId": "u45-patterns",
+      "vocabularyId": "00000000-0000-4000-8000-000000000004",
+      "quote": "先生は午後三時にいらっしゃいます。",
+      "exactSingleLessonScope": true
+    },
+    {
+      "unit": "u46",
+      "pageId": "u46-patterns",
+      "vocabularyId": "00000000-0000-4000-8000-000000000005",
+      "quote": "私が先生を別の部屋へご案内します。",
+      "exactSingleLessonScope": true
+    },
+    {
+      "unit": "u47",
+      "pageId": "u47-patterns",
+      "vocabularyId": "00000000-0000-4000-8000-000000000006",
+      "quote": "ミオさんに準備の流れを説明していただきました。",
+      "exactSingleLessonScope": true
+    },
+    {
+      "unit": "u48",
+      "pageId": "u48-patterns",
+      "vocabularyId": "00000000-0000-4000-8000-000000000007",
+      "quote": "雨が降っても降らなくても、室内です。",
+      "exactSingleLessonScope": true
+    }
+  ],
+  "foreignContextHidden": true,
+  "state": {
+    "words": [
+      {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "user_id": "00000000-0000-4000-8000-000000000042",
+        "word_text": "「まちの読書週間」という行事を開きます。",
+        "meaning": "독립 브라우저 검수용 뜻",
+        "language": "Japanese",
+        "furigana": "",
+        "pos": "",
+        "base_form": "「まちの読書週間」という行事を開きます。",
+        "source_material_id": null,
+        "interval": 2.3065,
+        "ease_factor": 2.11810397,
+        "repetitions": 0,
+        "last_reviewed_at": "2026-10-21T12:15:04.876Z",
+        "next_review_at": "2026-10-23T12:15:04.876Z",
+        "created_at": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000002",
+        "user_id": "00000000-0000-4000-8000-000000000042",
+        "word_text": "私は先生に長い文章を読ませられました。",
+        "meaning": "N3 후반 실제 원문 경계 합성 검수",
+        "language": "Japanese",
+        "furigana": "",
+        "pos": "",
+        "base_form": "私は先生に長い文章を読ませられました。",
+        "source_material_id": null,
+        "interval": 0,
+        "ease_factor": 5,
+        "repetitions": 0,
+        "last_reviewed_at": null,
+        "next_review_at": "2026-01-01T00:00:00Z",
+        "created_at": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000003",
+        "user_id": "00000000-0000-4000-8000-000000000042",
+        "word_text": "先生は、この資料をお読みになります。",
+        "meaning": "N3 후반 실제 원문 경계 합성 검수",
+        "language": "Japanese",
+        "furigana": "",
+        "pos": "",
+        "base_form": "先生は、この資料をお読みになります。",
+        "source_material_id": null,
+        "interval": 0,
+        "ease_factor": 5,
+        "repetitions": 0,
+        "last_reviewed_at": null,
+        "next_review_at": "2026-01-01T00:00:00Z",
+        "created_at": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000004",
+        "user_id": "00000000-0000-4000-8000-000000000042",
+        "word_text": "先生は午後三時にいらっしゃいます。",
+        "meaning": "N3 후반 실제 원문 경계 합성 검수",
+        "language": "Japanese",
+        "furigana": "",
+        "pos": "",
+        "base_form": "先生は午後三時にいらっしゃいます。",
+        "source_material_id": null,
+        "interval": 0,
+        "ease_factor": 5,
+        "repetitions": 0,
+        "last_reviewed_at": null,
+        "next_review_at": "2026-01-01T00:00:00Z",
+        "created_at": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000005",
+        "user_id": "00000000-0000-4000-8000-000000000042",
+        "word_text": "私が先生を別の部屋へご案内します。",
+        "meaning": "N3 후반 실제 원문 경계 합성 검수",
+        "language": "Japanese",
+        "furigana": "",
+        "pos": "",
+        "base_form": "私が先生を別の部屋へご案内します。",
+        "source_material_id": null,
+        "interval": 0,
+        "ease_factor": 5,
+        "repetitions": 0,
+        "last_reviewed_at": null,
+        "next_review_at": "2026-01-01T00:00:00Z",
+        "created_at": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000006",
+        "user_id": "00000000-0000-4000-8000-000000000042",
+        "word_text": "ミオさんに準備の流れを説明していただきました。",
+        "meaning": "N3 후반 실제 원문 경계 합성 검수",
+        "language": "Japanese",
+        "furigana": "",
+        "pos": "",
+        "base_form": "ミオさんに準備の流れを説明していただきました。",
+        "source_material_id": null,
+        "interval": 0,
+        "ease_factor": 5,
+        "repetitions": 0,
+        "last_reviewed_at": null,
+        "next_review_at": "2026-01-01T00:00:00Z",
+        "created_at": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000007",
+        "user_id": "00000000-0000-4000-8000-000000000042",
+        "word_text": "雨が降っても降らなくても、室内です。",
+        "meaning": "N3 후반 실제 원문 경계 합성 검수",
+        "language": "Japanese",
+        "furigana": "",
+        "pos": "",
+        "base_form": "雨が降っても降らなくても、室内です。",
+        "source_material_id": null,
+        "interval": 0,
+        "ease_factor": 5,
+        "repetitions": 0,
+        "last_reviewed_at": null,
+        "next_review_at": "2026-01-01T00:00:00Z",
+        "created_at": "2026-01-01T00:00:00Z"
+      }
+    ],
+    "contexts": [
+      {
+        "id": "00000000-0000-4000-8000-000000000100",
+        "vocabulary_id": "00000000-0000-4000-8000-000000000001",
+        "user_id": "00000000-0000-4000-8000-000000000042",
+        "kind": "textbook",
+        "lang": "Japanese",
+        "chapter_slug": "n3-book-u01",
+        "locator": {
+          "bookId": "japanese-n3",
+          "editionId": "4978c146953f14140bcb49d2",
+          "revision": "4978c146953f14140bcb49d2",
+          "pageId": "u01-patterns",
+          "blockId": "tb-book-u01-patterns"
+        },
+        "quote": "「まちの読書週間」という行事を開きます。",
+        "translation": "독립 브라우저 검수용 뜻",
+        "created_at": "2026-10-21T12:14:50.357Z"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000101",
+        "vocabulary_id": "00000000-0000-4000-8000-000000000002",
+        "user_id": "00000000-0000-4000-8000-000000000042",
+        "kind": "textbook",
+        "lang": "Japanese",
+        "chapter_slug": "n3-book-u43",
+        "locator": {
+          "bookId": "japanese-n3",
+          "editionId": "4978c146953f14140bcb49d2",
+          "revision": "4978c146953f14140bcb49d2",
+          "pageId": "u43-patterns",
+          "blockId": "tb-book-u43-patterns"
+        },
+        "quote": "私は先生に長い文章を読ませられました。",
+        "translation": "N3 후반 실제 원문 경계 합성 검수",
+        "created_at": "2026-10-21T12:15:21.322Z"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000102",
+        "vocabulary_id": "00000000-0000-4000-8000-000000000003",
+        "user_id": "00000000-0000-4000-8000-000000000042",
+        "kind": "textbook",
+        "lang": "Japanese",
+        "chapter_slug": "n3-book-u44",
+        "locator": {
+          "bookId": "japanese-n3",
+          "editionId": "4978c146953f14140bcb49d2",
+          "revision": "4978c146953f14140bcb49d2",
+          "pageId": "u44-patterns",
+          "blockId": "tb-book-u44-patterns"
+        },
+        "quote": "先生は、この資料をお読みになります。",
+        "translation": "N3 후반 실제 원문 경계 합성 검수",
+        "created_at": "2026-10-21T12:15:21.475Z"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000103",
+        "vocabulary_id": "00000000-0000-4000-8000-000000000004",
+        "user_id": "00000000-0000-4000-8000-000000000042",
+        "kind": "textbook",
+        "lang": "Japanese",
+        "chapter_slug": "n3-book-u45",
+        "locator": {
+          "bookId": "japanese-n3",
+          "editionId": "4978c146953f14140bcb49d2",
+          "revision": "4978c146953f14140bcb49d2",
+          "pageId": "u45-patterns",
+          "blockId": "tb-book-u45-patterns"
+        },
+        "quote": "先生は午後三時にいらっしゃいます。",
+        "translation": "N3 후반 실제 원문 경계 합성 검수",
+        "created_at": "2026-10-21T12:15:21.612Z"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000104",
+        "vocabulary_id": "00000000-0000-4000-8000-000000000005",
+        "user_id": "00000000-0000-4000-8000-000000000042",
+        "kind": "textbook",
+        "lang": "Japanese",
+        "chapter_slug": "n3-book-u46",
+        "locator": {
+          "bookId": "japanese-n3",
+          "editionId": "4978c146953f14140bcb49d2",
+          "revision": "4978c146953f14140bcb49d2",
+          "pageId": "u46-patterns",
+          "blockId": "tb-book-u46-patterns"
+        },
+        "quote": "私が先生を別の部屋へご案内します。",
+        "translation": "N3 후반 실제 원문 경계 합성 검수",
+        "created_at": "2026-10-21T12:15:21.767Z"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000105",
+        "vocabulary_id": "00000000-0000-4000-8000-000000000006",
+        "user_id": "00000000-0000-4000-8000-000000000042",
+        "kind": "textbook",
+        "lang": "Japanese",
+        "chapter_slug": "n3-book-u47",
+        "locator": {
+          "bookId": "japanese-n3",
+          "editionId": "4978c146953f14140bcb49d2",
+          "revision": "4978c146953f14140bcb49d2",
+          "pageId": "u47-patterns",
+          "blockId": "tb-book-u47-patterns"
+        },
+        "quote": "ミオさんに準備の流れを説明していただきました。",
+        "translation": "N3 후반 실제 원문 경계 합성 검수",
+        "created_at": "2026-10-21T12:15:21.924Z"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000106",
+        "vocabulary_id": "00000000-0000-4000-8000-000000000007",
+        "user_id": "00000000-0000-4000-8000-000000000042",
+        "kind": "textbook",
+        "lang": "Japanese",
+        "chapter_slug": "n3-book-u48",
+        "locator": {
+          "bookId": "japanese-n3",
+          "editionId": "4978c146953f14140bcb49d2",
+          "revision": "4978c146953f14140bcb49d2",
+          "pageId": "u48-patterns",
+          "blockId": "tb-book-u48-patterns"
+        },
+        "quote": "雨が降っても降らなくても、室内です。",
+        "translation": "N3 후반 실제 원문 경계 합성 검수",
+        "created_at": "2026-10-21T12:15:22.066Z"
+      }
+    ],
+    "writes": [
+      {
+        "table": "library_canonical_target",
+        "method": "POST",
+        "body": {
+          "p_kind": "edition",
+          "p_id": "4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "library_reading_activity",
+        "method": "POST",
+        "body": {
+          "owner_id": "00000000-0000-4000-8000-000000000042",
+          "target_kind": "edition",
+          "target_id": "4978c146953f14140bcb49d2",
+          "context": {
+            "bookId": "japanese-n3",
+            "page": "u01-start"
+          }
+        }
+      },
+      {
+        "table": "library_reading_activity",
+        "method": "POST",
+        "body": {
+          "owner_id": "00000000-0000-4000-8000-000000000042",
+          "target_kind": "edition",
+          "target_id": "4978c146953f14140bcb49d2",
+          "context": {
+            "bookId": "japanese-n3",
+            "page": "u01-start"
+          }
+        }
+      },
+      {
+        "table": "save_vocabulary_context",
+        "method": "POST",
+        "body": {
+          "p_word": {
+            "word_text": "「まちの読書週間」という行事を開きます。",
+            "meaning": "독립 브라우저 검수용 뜻",
+            "language": "Japanese",
+            "furigana": "",
+            "pos": ""
+          },
+          "p_source": {
+            "kind": "textbook",
+            "chapterSlug": "n3-book-u01",
+            "quote": "「まちの読書週間」という行事を開きます。",
+            "translation": "독립 브라우저 검수용 뜻",
+            "locator": {
+              "bookId": "japanese-n3",
+              "editionId": "4978c146953f14140bcb49d2",
+              "revision": "4978c146953f14140bcb49d2",
+              "pageId": "u01-patterns",
+              "blockId": "tb-book-u01-patterns"
+            }
+          },
+          "p_confirm_id": null,
+          "p_confirm_meaning": null
+        }
+      },
+      {
+        "table": "save_vocabulary_context",
+        "method": "POST",
+        "body": {
+          "p_word": {
+            "word_text": "「まちの読書週間」という行事を開きます。",
+            "meaning": "독립 브라우저 검수용 뜻",
+            "language": "Japanese",
+            "furigana": "",
+            "pos": ""
+          },
+          "p_source": {
+            "kind": "textbook",
+            "chapterSlug": "n3-book-u01",
+            "quote": "「まちの読書週間」という行事を開きます。",
+            "translation": "독립 브라우저 검수용 뜻",
+            "locator": {
+              "bookId": "japanese-n3",
+              "editionId": "4978c146953f14140bcb49d2",
+              "revision": "4978c146953f14140bcb49d2",
+              "pageId": "u01-patterns",
+              "blockId": "tb-book-u01-patterns"
+            }
+          },
+          "p_confirm_id": null,
+          "p_confirm_meaning": null
+        }
+      },
+      {
+        "table": "library_reading_activity",
+        "method": "POST",
+        "body": {
+          "owner_id": "00000000-0000-4000-8000-000000000042",
+          "target_kind": "edition",
+          "target_id": "4978c146953f14140bcb49d2",
+          "context": {
+            "bookId": "japanese-n3",
+            "page": "u01-start"
+          }
+        }
+      },
+      {
+        "table": "library_canonical_target",
+        "method": "POST",
+        "body": {
+          "p_kind": "edition",
+          "p_id": "4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "library_reading_activity",
+        "method": "POST",
+        "body": {
+          "owner_id": "00000000-0000-4000-8000-000000000042",
+          "target_kind": "edition",
+          "target_id": "4978c146953f14140bcb49d2",
+          "context": {
+            "bookId": "japanese-n3",
+            "page": "u01-start"
+          }
+        }
+      },
+      {
+        "table": "fsrs_capabilities",
+        "method": "POST",
+        "body": {}
+      },
+      {
+        "table": "learning_admission_status",
+        "method": "POST",
+        "body": {
+          "p_actor": "00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "fsrs_vocabulary_snapshot",
+        "method": "POST",
+        "body": {
+          "p_actor": "00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "learning_language_capabilities",
+        "method": "POST",
+        "body": {}
+      },
+      {
+        "table": "fsrs_capabilities",
+        "method": "POST",
+        "body": {}
+      },
+      {
+        "table": "fsrs_list_states",
+        "method": "POST",
+        "body": {
+          "p_actor": "00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "learning_admission_status",
+        "method": "POST",
+        "body": {
+          "p_actor": "00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "fsrs_capabilities",
+        "method": "POST",
+        "body": {}
+      },
+      {
+        "table": "fsrs_list_states",
+        "method": "POST",
+        "body": {
+          "p_actor": "00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "learning_admission_status",
+        "method": "POST",
+        "body": {
+          "p_actor": "00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "fsrs_capabilities",
+        "method": "POST",
+        "body": {}
+      },
+      {
+        "table": "fsrs_list_states",
+        "method": "POST",
+        "body": {
+          "p_actor": "00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "learning_admission_status",
+        "method": "POST",
+        "body": {
+          "p_actor": "00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "fsrs_capabilities",
+        "method": "POST",
+        "body": {}
+      },
+      {
+        "table": "learning_admission_status",
+        "method": "POST",
+        "body": {
+          "p_actor": "00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "fsrs_capabilities",
+        "method": "POST",
+        "body": {}
+      },
+      {
+        "table": "learning_admission_status",
+        "method": "POST",
+        "body": {
+          "p_actor": "00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "learning_admit_legacy",
+        "method": "POST",
+        "body": {
+          "p_actor": "00000000-0000-4000-8000-000000000042",
+          "p_request": {
+            "action": "admit",
+            "accountId": "00000000-0000-4000-8000-000000000042",
+            "operationId": "7e5ee5d4-8d62-4859-9709-8df94186d584",
+            "expectedPolicyRevision": 1,
+            "cardId": "00000000-0000-4000-8000-000000000001"
+          }
+        }
+      },
+      {
+        "table": "fsrs_capabilities",
+        "method": "POST",
+        "body": {}
+      },
+      {
+        "table": "fsrs_list_states",
+        "method": "POST",
+        "body": {
+          "p_actor": "00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "learning_admission_status",
+        "method": "POST",
+        "body": {
+          "p_actor": "00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "fsrs_capabilities",
+        "method": "POST",
+        "body": {}
+      },
+      {
+        "table": "learning_admission_status",
+        "method": "POST",
+        "body": {
+          "p_actor": "00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "learning_admit_legacy",
+        "method": "POST",
+        "body": {
+          "p_actor": "00000000-0000-4000-8000-000000000042",
+          "p_request": {
+            "action": "admit",
+            "accountId": "00000000-0000-4000-8000-000000000042",
+            "operationId": "84200b36-5f9e-430b-9af6-0e741f7780c7",
+            "expectedPolicyRevision": 1,
+            "cardId": "00000000-0000-4000-8000-000000000001"
+          }
+        }
+      },
+      {
+        "table": "fsrs_legacy_boundary",
+        "method": "POST",
+        "body": {
+          "p_card_id": "00000000-0000-4000-8000-000000000001",
+          "p_item_key": "「まちの読書週間」という行事を開きます。",
+          "p_language": "Japanese"
+        }
+      },
+      {
+        "table": "fsrs_legacy_boundary",
+        "method": "POST",
+        "body": {
+          "p_card_id": "00000000-0000-4000-8000-000000000001",
+          "p_item_key": "「まちの読書週間」という行事を開きます。",
+          "p_language": "Japanese"
+        }
+      },
+      {
+        "table": "review_events",
+        "method": "POST",
+        "body": [
+          {
+            "user_id": "00000000-0000-4000-8000-000000000042",
+            "lang": "Japanese",
+            "source": "vocab",
+            "item_key": "「まちの読書週間」という行事を開きます。",
+            "correct": true,
+            "detail": {
+              "word_id": "00000000-0000-4000-8000-000000000001",
+              "meaning": "독립 브라우저 검수용 뜻",
+              "rating": 3,
+              "mode": "flash",
+              "qtype": "flash"
+            },
+            "created_at": "2026-10-21T12:15:04.876Z"
+          }
+        ]
+      },
+      {
+        "table": "fsrs_vocabulary_snapshot",
+        "method": "POST",
+        "body": {
+          "p_actor": "00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "fsrs_legacy_boundary",
+        "method": "POST",
+        "body": {
+          "p_card_id": "00000000-0000-4000-8000-000000000001",
+          "p_item_key": null,
+          "p_language": null
+        }
+      },
+      {
+        "table": "user_vocabulary",
+        "method": "PATCH",
+        "body": {
+          "interval": 2.3065,
+          "ease_factor": 2.11810397,
+          "repetitions": 0,
+          "next_review_at": "2026-10-23T12:15:04.876Z",
+          "last_reviewed_at": "2026-10-21T12:15:04.876Z"
+        },
+        "target": "00000000-0000-4000-8000-000000000001"
+      },
+      {
+        "table": "update_streak",
+        "method": "POST",
+        "body": {
+          "uid": "00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "fsrs_vocabulary_snapshot",
+        "method": "POST",
+        "body": {
+          "p_actor": "00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "library_reading_activity",
+        "method": "POST",
+        "body": {
+          "owner_id": "00000000-0000-4000-8000-000000000042",
+          "target_kind": "edition",
+          "target_id": "4978c146953f14140bcb49d2",
+          "context": {
+            "bookId": "japanese-n3",
+            "page": "u01-start"
+          }
+        }
+      },
+      {
+        "table": "library_reading_activity",
+        "method": "POST",
+        "body": {
+          "owner_id": "00000000-0000-4000-8000-000000000042",
+          "target_kind": "edition",
+          "target_id": "7f572327dc67893e9453246c",
+          "context": {
+            "bookId": "japanese-n5",
+            "page": "u03-study1"
+          }
+        }
+      },
+      {
+        "table": "library_reading_activity",
+        "method": "POST",
+        "body": {
+          "owner_id": "00000000-0000-4000-8000-000000000042",
+          "target_kind": "edition",
+          "target_id": "f4a6411c0945bbd3f8767af7",
+          "context": {
+            "bookId": "japanese-n4",
+            "page": "u03-start"
+          }
+        }
+      },
+      {
+        "table": "save_vocabulary_context",
+        "method": "POST",
+        "body": {
+          "p_word": {
+            "word_text": "私は先生に長い文章を読ませられました。",
+            "meaning": "N3 후반 실제 원문 경계 합성 검수",
+            "language": "Japanese",
+            "furigana": "",
+            "pos": ""
+          },
+          "p_source": {
+            "kind": "textbook",
+            "chapterSlug": "n3-book-u43",
+            "quote": "私は先生に長い文章を読ませられました。",
+            "translation": "N3 후반 실제 원문 경계 합성 검수",
+            "locator": {
+              "bookId": "japanese-n3",
+              "editionId": "4978c146953f14140bcb49d2",
+              "revision": "4978c146953f14140bcb49d2",
+              "pageId": "u43-patterns",
+              "blockId": "tb-book-u43-patterns"
+            }
+          },
+          "p_confirm_id": null,
+          "p_confirm_meaning": null
+        }
+      },
+      {
+        "table": "save_vocabulary_context",
+        "method": "POST",
+        "body": {
+          "p_word": {
+            "word_text": "先生は、この資料をお読みになります。",
+            "meaning": "N3 후반 실제 원문 경계 합성 검수",
+            "language": "Japanese",
+            "furigana": "",
+            "pos": ""
+          },
+          "p_source": {
+            "kind": "textbook",
+            "chapterSlug": "n3-book-u44",
+            "quote": "先生は、この資料をお読みになります。",
+            "translation": "N3 후반 실제 원문 경계 합성 검수",
+            "locator": {
+              "bookId": "japanese-n3",
+              "editionId": "4978c146953f14140bcb49d2",
+              "revision": "4978c146953f14140bcb49d2",
+              "pageId": "u44-patterns",
+              "blockId": "tb-book-u44-patterns"
+            }
+          },
+          "p_confirm_id": null,
+          "p_confirm_meaning": null
+        }
+      },
+      {
+        "table": "save_vocabulary_context",
+        "method": "POST",
+        "body": {
+          "p_word": {
+            "word_text": "先生は午後三時にいらっしゃいます。",
+            "meaning": "N3 후반 실제 원문 경계 합성 검수",
+            "language": "Japanese",
+            "furigana": "",
+            "pos": ""
+          },
+          "p_source": {
+            "kind": "textbook",
+            "chapterSlug": "n3-book-u45",
+            "quote": "先生は午後三時にいらっしゃいます。",
+            "translation": "N3 후반 실제 원문 경계 합성 검수",
+            "locator": {
+              "bookId": "japanese-n3",
+              "editionId": "4978c146953f14140bcb49d2",
+              "revision": "4978c146953f14140bcb49d2",
+              "pageId": "u45-patterns",
+              "blockId": "tb-book-u45-patterns"
+            }
+          },
+          "p_confirm_id": null,
+          "p_confirm_meaning": null
+        }
+      },
+      {
+        "table": "save_vocabulary_context",
+        "method": "POST",
+        "body": {
+          "p_word": {
+            "word_text": "私が先生を別の部屋へご案内します。",
+            "meaning": "N3 후반 실제 원문 경계 합성 검수",
+            "language": "Japanese",
+            "furigana": "",
+            "pos": ""
+          },
+          "p_source": {
+            "kind": "textbook",
+            "chapterSlug": "n3-book-u46",
+            "quote": "私が先生を別の部屋へご案内します。",
+            "translation": "N3 후반 실제 원문 경계 합성 검수",
+            "locator": {
+              "bookId": "japanese-n3",
+              "editionId": "4978c146953f14140bcb49d2",
+              "revision": "4978c146953f14140bcb49d2",
+              "pageId": "u46-patterns",
+              "blockId": "tb-book-u46-patterns"
+            }
+          },
+          "p_confirm_id": null,
+          "p_confirm_meaning": null
+        }
+      },
+      {
+        "table": "save_vocabulary_context",
+        "method": "POST",
+        "body": {
+          "p_word": {
+            "word_text": "ミオさんに準備の流れを説明していただきました。",
+            "meaning": "N3 후반 실제 원문 경계 합성 검수",
+            "language": "Japanese",
+            "furigana": "",
+            "pos": ""
+          },
+          "p_source": {
+            "kind": "textbook",
+            "chapterSlug": "n3-book-u47",
+            "quote": "ミオさんに準備の流れを説明していただきました。",
+            "translation": "N3 후반 실제 원문 경계 합성 검수",
+            "locator": {
+              "bookId": "japanese-n3",
+              "editionId": "4978c146953f14140bcb49d2",
+              "revision": "4978c146953f14140bcb49d2",
+              "pageId": "u47-patterns",
+              "blockId": "tb-book-u47-patterns"
+            }
+          },
+          "p_confirm_id": null,
+          "p_confirm_meaning": null
+        }
+      },
+      {
+        "table": "save_vocabulary_context",
+        "method": "POST",
+        "body": {
+          "p_word": {
+            "word_text": "雨が降っても降らなくても、室内です。",
+            "meaning": "N3 후반 실제 원문 경계 합성 검수",
+            "language": "Japanese",
+            "furigana": "",
+            "pos": ""
+          },
+          "p_source": {
+            "kind": "textbook",
+            "chapterSlug": "n3-book-u48",
+            "quote": "雨が降っても降らなくても、室内です。",
+            "translation": "N3 후반 실제 원문 경계 합성 검수",
+            "locator": {
+              "bookId": "japanese-n3",
+              "editionId": "4978c146953f14140bcb49d2",
+              "revision": "4978c146953f14140bcb49d2",
+              "pageId": "u48-patterns",
+              "blockId": "tb-book-u48-patterns"
+            }
+          },
+          "p_confirm_id": null,
+          "p_confirm_meaning": null
+        }
+      }
+    ],
+    "reads": [
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n4"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n4",
+          "edition_id": "eq.f4a6411c0945bbd3f8767af7"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n5"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n5",
+          "edition_id": "eq.7f572327dc67893e9453246c"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.f4a6411c0945bbd3f8767af7"
+        }
+      },
+      {
+        "table": "profiles",
+        "method": "GET",
+        "params": {
+          "select": "role",
+          "id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.7f572327dc67893e9453246c"
+        }
+      },
+      {
+        "table": "profiles",
+        "method": "GET",
+        "params": {
+          "select": "role",
+          "id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n5"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n4"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n4",
+          "edition_id": "eq.f4a6411c0945bbd3f8767af7"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n5",
+          "edition_id": "eq.7f572327dc67893e9453246c"
+        }
+      },
+      {
+        "table": "profiles",
+        "method": "GET",
+        "params": {
+          "select": "*",
+          "id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "user_ref_progress",
+        "method": "GET",
+        "params": {
+          "select": "lang,slug,read,check_right,check_total,passed,updated_at",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "library_canonical_target",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "library_item_state",
+        "method": "GET",
+        "params": {
+          "select": "state,revision",
+          "target_kind": "eq.undefined",
+          "target_id": "eq.undefined"
+        }
+      },
+      {
+        "table": "library_collection_items",
+        "method": "GET",
+        "params": {
+          "select": "collection_id",
+          "owner_id": "eq.00000000-0000-4000-8000-000000000042",
+          "target_kind": "eq.edition",
+          "target_id": "eq.4978c146953f14140bcb49d2",
+          "limit": "1"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "library_reading_activity",
+        "method": "POST",
+        "params": {
+          "on_conflict": "owner_id,target_kind,target_id"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "profiles",
+        "method": "GET",
+        "params": {
+          "select": "*",
+          "id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "user_ref_progress",
+        "method": "GET",
+        "params": {
+          "select": "lang,slug,read,check_right,check_total,passed,updated_at",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "library_reading_activity",
+        "method": "POST",
+        "params": {
+          "on_conflict": "owner_id,target_kind,target_id"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "save_vocabulary_context",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "save_vocabulary_context",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "profiles",
+        "method": "GET",
+        "params": {
+          "select": "*",
+          "id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "user_ref_progress",
+        "method": "GET",
+        "params": {
+          "select": "lang,slug,read,check_right,check_total,passed,updated_at",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "vocabulary_contexts",
+        "method": "GET",
+        "params": {
+          "select": "id,kind,lang,chapter_slug,locator,quote,translation,created_at,user_vocabulary!inner(id,user_id,word_text,meaning,furigana)",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "user_vocabulary.user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "kind": "eq.textbook",
+          "locator->>bookId": "eq.japanese-n3",
+          "order": "created_at.desc,id.desc",
+          "offset": "0",
+          "limit": "41"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "profiles",
+        "method": "GET",
+        "params": {
+          "select": "*",
+          "id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "profiles",
+        "method": "GET",
+        "params": {
+          "select": "*",
+          "id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "user_ref_progress",
+        "method": "GET",
+        "params": {
+          "select": "lang,slug,read,check_right,check_total,passed,updated_at",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "profiles",
+        "method": "GET",
+        "params": {
+          "select": "*",
+          "id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "profiles",
+        "method": "GET",
+        "params": {
+          "select": "*",
+          "id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "user_ref_progress",
+        "method": "GET",
+        "params": {
+          "select": "lang,slug,read,check_right,check_total,passed,updated_at",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "profiles",
+        "method": "GET",
+        "params": {
+          "select": "*",
+          "id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "user_ref_progress",
+        "method": "GET",
+        "params": {
+          "select": "lang,slug,read,check_right,check_total,passed,updated_at",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "library_reading_activity",
+        "method": "POST",
+        "params": {
+          "on_conflict": "owner_id,target_kind,target_id"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "library_canonical_target",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "library_reading_activity",
+        "method": "POST",
+        "params": {
+          "on_conflict": "owner_id,target_kind,target_id"
+        }
+      },
+      {
+        "table": "library_item_state",
+        "method": "GET",
+        "params": {
+          "select": "state,revision",
+          "target_kind": "eq.undefined",
+          "target_id": "eq.undefined"
+        }
+      },
+      {
+        "table": "library_collection_items",
+        "method": "GET",
+        "params": {
+          "select": "collection_id",
+          "owner_id": "eq.00000000-0000-4000-8000-000000000042",
+          "target_kind": "eq.edition",
+          "target_id": "eq.4978c146953f14140bcb49d2",
+          "limit": "1"
+        }
+      },
+      {
+        "table": "review_events",
+        "method": "GET",
+        "params": {
+          "select": "source,item_key,created_at,detail",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "source": "eq.ui",
+          "detail->>qtype": "eq.undo",
+          "order": "created_at.desc",
+          "limit": "200",
+          "created_at": "gte.2026-10-07T12:15:01.783Z"
+        }
+      },
+      {
+        "table": "review_events",
+        "method": "GET",
+        "params": {
+          "select": "source,item_key,correct,created_at,detail",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "source": "in.(vocab,practice)",
+          "created_at": "gte.2026-10-07T12:15:01.783Z",
+          "order": "created_at.desc",
+          "limit": "400"
+        }
+      },
+      {
+        "table": "fsrs_capabilities",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "learning_admission_status",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "fsrs_vocabulary_snapshot",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "learning_language_capabilities",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "fsrs_capabilities",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "fsrs_list_states",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "learning_admission_status",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "fsrs_capabilities",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "fsrs_list_states",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "learning_admission_status",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "vocabulary_contexts",
+        "method": "GET",
+        "params": {
+          "select": "id,chapter_slug,user_vocabulary!inner(id,user_id)",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "user_vocabulary.user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "kind": "eq.textbook",
+          "locator->>bookId": "eq.japanese-n3",
+          "order": "created_at.desc,id.desc",
+          "offset": "0",
+          "limit": "201"
+        }
+      },
+      {
+        "table": "user_known_words",
+        "method": "GET",
+        "params": {
+          "select": "word_text,lang",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "order": "lang.asc,word_text.asc",
+          "offset": "0",
+          "limit": "1000"
+        }
+      },
+      {
+        "table": "fsrs_capabilities",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "fsrs_list_states",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "learning_admission_status",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "vocabulary_exclusions",
+        "method": "GET",
+        "params": {
+          "select": "id,language,word_text,vocabulary_id,retired_vocabulary_ids,known_word_keys,created_at",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "order": "id.asc",
+          "offset": "0",
+          "limit": "200"
+        }
+      },
+      {
+        "table": "vocabulary_exclusions",
+        "method": "GET",
+        "params": {
+          "select": "id,language,word_text,vocabulary_id,retired_vocabulary_ids,known_word_keys,created_at",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "order": "id.asc",
+          "offset": "0",
+          "limit": "200"
+        }
+      },
+      {
+        "table": "fsrs_capabilities",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "learning_admission_status",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "fsrs_capabilities",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "learning_admission_status",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "learning_admit_legacy",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "vocabulary_contexts",
+        "method": "GET",
+        "params": {
+          "select": "id,kind,lang,chapter_slug,material_id,pdf_id,locator,quote,translation,created_at",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "vocabulary_id": "eq.00000000-0000-4000-8000-000000000001",
+          "order": "created_at.asc",
+          "limit": "50"
+        }
+      },
+      {
+        "table": "fsrs_capabilities",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "fsrs_list_states",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "learning_admission_status",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "fsrs_capabilities",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "learning_admission_status",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "learning_admit_legacy",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "fsrs_legacy_boundary",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "fsrs_legacy_boundary",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "review_events",
+        "method": "POST",
+        "params": {
+          "columns": "\"user_id\",\"lang\",\"source\",\"item_key\",\"correct\",\"detail\",\"created_at\""
+        }
+      },
+      {
+        "table": "fsrs_vocabulary_snapshot",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "fsrs_legacy_boundary",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "user_vocabulary",
+        "method": "PATCH",
+        "params": {
+          "id": "eq.00000000-0000-4000-8000-000000000001"
+        }
+      },
+      {
+        "table": "update_streak",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "review_events",
+        "method": "GET",
+        "params": {
+          "select": "source,item_key,created_at,detail",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "source": "eq.ui",
+          "detail->>qtype": "eq.undo",
+          "order": "created_at.desc",
+          "limit": "200",
+          "created_at": "gte.2026-10-07T12:15:05.012Z"
+        }
+      },
+      {
+        "table": "review_events",
+        "method": "GET",
+        "params": {
+          "select": "source,item_key,correct,created_at,detail",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "source": "in.(vocab,practice)",
+          "created_at": "gte.2026-10-07T12:15:05.012Z",
+          "order": "created_at.desc",
+          "limit": "400"
+        }
+      },
+      {
+        "table": "profiles",
+        "method": "GET",
+        "params": {
+          "select": "*",
+          "id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "fsrs_vocabulary_snapshot",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "vocabulary_contexts",
+        "method": "GET",
+        "params": {
+          "select": "id,chapter_slug,user_vocabulary!inner(id,user_id)",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "user_vocabulary.user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "kind": "eq.textbook",
+          "locator->>bookId": "eq.japanese-n3",
+          "order": "created_at.desc,id.desc",
+          "offset": "0",
+          "limit": "201"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "library_reading_activity",
+        "method": "POST",
+        "params": {
+          "on_conflict": "owner_id,target_kind,target_id"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "profiles",
+        "method": "GET",
+        "params": {
+          "select": "*",
+          "id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "user_ref_progress",
+        "method": "GET",
+        "params": {
+          "select": "lang,slug,read,check_right,check_total,passed,updated_at",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "vocabulary_contexts",
+        "method": "GET",
+        "params": {
+          "select": "id,kind,lang,chapter_slug,locator,quote,translation,created_at,user_vocabulary!inner(id,user_id,word_text,meaning,furigana)",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "user_vocabulary.user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "kind": "eq.textbook",
+          "locator->>bookId": "eq.japanese-n3",
+          "order": "created_at.desc,id.desc",
+          "offset": "0",
+          "limit": "41"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n5"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n5",
+          "edition_id": "eq.7f572327dc67893e9453246c"
+        }
+      },
+      {
+        "table": "profiles",
+        "method": "GET",
+        "params": {
+          "select": "*",
+          "id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "user_ref_progress",
+        "method": "GET",
+        "params": {
+          "select": "lang,slug,read,check_right,check_total,passed,updated_at",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n5"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n5",
+          "edition_id": "eq.7f572327dc67893e9453246c"
+        }
+      },
+      {
+        "table": "library_reading_activity",
+        "method": "POST",
+        "params": {
+          "on_conflict": "owner_id,target_kind,target_id"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n5",
+          "edition_id": "eq.7f572327dc67893e9453246c"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n5",
+          "edition_id": "eq.7f572327dc67893e9453246c"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n5",
+          "edition_id": "eq.7f572327dc67893e9453246c"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n5",
+          "edition_id": "eq.7f572327dc67893e9453246c"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n5"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n5",
+          "edition_id": "eq.7f572327dc67893e9453246c"
+        }
+      },
+      {
+        "table": "profiles",
+        "method": "GET",
+        "params": {
+          "select": "*",
+          "id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "user_ref_progress",
+        "method": "GET",
+        "params": {
+          "select": "lang,slug,read,check_right,check_total,passed,updated_at",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "vocabulary_contexts",
+        "method": "GET",
+        "params": {
+          "select": "id,kind,lang,chapter_slug,locator,quote,translation,created_at,user_vocabulary!inner(id,user_id,word_text,meaning,furigana)",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "user_vocabulary.user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "kind": "eq.textbook",
+          "locator->>bookId": "eq.japanese-n5",
+          "order": "created_at.desc,id.desc",
+          "offset": "0",
+          "limit": "41"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n4"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n4",
+          "edition_id": "eq.f4a6411c0945bbd3f8767af7"
+        }
+      },
+      {
+        "table": "profiles",
+        "method": "GET",
+        "params": {
+          "select": "*",
+          "id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "user_ref_progress",
+        "method": "GET",
+        "params": {
+          "select": "lang,slug,read,check_right,check_total,passed,updated_at",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n4"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n4",
+          "edition_id": "eq.f4a6411c0945bbd3f8767af7"
+        }
+      },
+      {
+        "table": "library_reading_activity",
+        "method": "POST",
+        "params": {
+          "on_conflict": "owner_id,target_kind,target_id"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n4"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n4",
+          "edition_id": "eq.f4a6411c0945bbd3f8767af7"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n4",
+          "edition_id": "eq.f4a6411c0945bbd3f8767af7"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n4",
+          "edition_id": "eq.f4a6411c0945bbd3f8767af7"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n4",
+          "edition_id": "eq.f4a6411c0945bbd3f8767af7"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n4",
+          "edition_id": "eq.f4a6411c0945bbd3f8767af7"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n4",
+          "edition_id": "eq.f4a6411c0945bbd3f8767af7"
+        }
+      },
+      {
+        "table": "profiles",
+        "method": "GET",
+        "params": {
+          "select": "*",
+          "id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "user_ref_progress",
+        "method": "GET",
+        "params": {
+          "select": "lang,slug,read,check_right,check_total,passed,updated_at",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "vocabulary_contexts",
+        "method": "GET",
+        "params": {
+          "select": "id,kind,lang,chapter_slug,locator,quote,translation,created_at,user_vocabulary!inner(id,user_id,word_text,meaning,furigana)",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "user_vocabulary.user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "kind": "eq.textbook",
+          "locator->>bookId": "eq.japanese-n4",
+          "order": "created_at.desc,id.desc",
+          "offset": "0",
+          "limit": "41"
+        }
+      },
+      {
+        "table": "textbook_book_releases",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,version",
+          "book_id": "eq.japanese-n3"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "profiles",
+        "method": "GET",
+        "params": {
+          "select": "*",
+          "id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "user_ref_progress",
+        "method": "GET",
+        "params": {
+          "select": "lang,slug,read,check_right,check_total,passed,updated_at",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042"
+        }
+      },
+      {
+        "table": "vocabulary_contexts",
+        "method": "GET",
+        "params": {
+          "select": "id,kind,lang,chapter_slug,locator,quote,translation,created_at,user_vocabulary!inner(id,user_id,word_text,meaning,furigana)",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "user_vocabulary.user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "kind": "eq.textbook",
+          "locator->>bookId": "eq.japanese-n3",
+          "order": "created_at.desc,id.desc",
+          "offset": "0",
+          "limit": "41"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.7f572327dc67893e9453246c"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.f4a6411c0945bbd3f8767af7"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "vocabulary_contexts",
+        "method": "GET",
+        "params": {
+          "select": "id,kind,lang,chapter_slug,material_id,pdf_id,locator,quote,translation,created_at",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "vocabulary_id": "eq.00000000-0000-4000-8000-000000009001",
+          "order": "created_at.asc",
+          "limit": "50"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "save_vocabulary_context",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "vocabulary_contexts",
+        "method": "GET",
+        "params": {
+          "select": "id,chapter_slug,user_vocabulary!inner(id,user_id)",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "user_vocabulary.user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "kind": "eq.textbook",
+          "locator->>bookId": "eq.japanese-n3",
+          "chapter_slug": "in.(n3-book-u43)",
+          "order": "created_at.desc,id.desc",
+          "offset": "0",
+          "limit": "201"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "save_vocabulary_context",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "vocabulary_contexts",
+        "method": "GET",
+        "params": {
+          "select": "id,chapter_slug,user_vocabulary!inner(id,user_id)",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "user_vocabulary.user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "kind": "eq.textbook",
+          "locator->>bookId": "eq.japanese-n3",
+          "chapter_slug": "in.(n3-book-u44)",
+          "order": "created_at.desc,id.desc",
+          "offset": "0",
+          "limit": "201"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "save_vocabulary_context",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "vocabulary_contexts",
+        "method": "GET",
+        "params": {
+          "select": "id,chapter_slug,user_vocabulary!inner(id,user_id)",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "user_vocabulary.user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "kind": "eq.textbook",
+          "locator->>bookId": "eq.japanese-n3",
+          "chapter_slug": "in.(n3-book-u45)",
+          "order": "created_at.desc,id.desc",
+          "offset": "0",
+          "limit": "201"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "save_vocabulary_context",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "vocabulary_contexts",
+        "method": "GET",
+        "params": {
+          "select": "id,chapter_slug,user_vocabulary!inner(id,user_id)",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "user_vocabulary.user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "kind": "eq.textbook",
+          "locator->>bookId": "eq.japanese-n3",
+          "chapter_slug": "in.(n3-book-u46)",
+          "order": "created_at.desc,id.desc",
+          "offset": "0",
+          "limit": "201"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "save_vocabulary_context",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "vocabulary_contexts",
+        "method": "GET",
+        "params": {
+          "select": "id,chapter_slug,user_vocabulary!inner(id,user_id)",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "user_vocabulary.user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "kind": "eq.textbook",
+          "locator->>bookId": "eq.japanese-n3",
+          "chapter_slug": "in.(n3-book-u47)",
+          "order": "created_at.desc,id.desc",
+          "offset": "0",
+          "limit": "201"
+        }
+      },
+      {
+        "table": "textbook_book_editions",
+        "method": "GET",
+        "params": {
+          "select": "book_id,edition_id,content_hash,artifact_manifest,published_at",
+          "book_id": "eq.japanese-n3",
+          "edition_id": "eq.4978c146953f14140bcb49d2"
+        }
+      },
+      {
+        "table": "save_vocabulary_context",
+        "method": "POST",
+        "params": {}
+      },
+      {
+        "table": "vocabulary_contexts",
+        "method": "GET",
+        "params": {
+          "select": "id,chapter_slug,user_vocabulary!inner(id,user_id)",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "user_vocabulary.user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "kind": "eq.textbook",
+          "locator->>bookId": "eq.japanese-n3",
+          "chapter_slug": "in.(n3-book-u48)",
+          "order": "created_at.desc,id.desc",
+          "offset": "0",
+          "limit": "201"
+        }
+      },
+      {
+        "table": "vocabulary_contexts",
+        "method": "GET",
+        "params": {
+          "select": "id,chapter_slug,user_vocabulary!inner(id,user_id)",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "user_vocabulary.user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "kind": "eq.textbook",
+          "locator->>bookId": "eq.japanese-n3",
+          "chapter_slug": "in.(n3-book-u43,n3-book-u44,n3-book-u45,n3-book-u46,n3-book-u47,n3-book-u48)",
+          "order": "created_at.desc,id.desc",
+          "offset": "0",
+          "limit": "201"
+        }
+      },
+      {
+        "table": "vocabulary_contexts",
+        "method": "GET",
+        "params": {
+          "select": "id,chapter_slug,user_vocabulary!inner(id,user_id)",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "user_vocabulary.user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "kind": "eq.textbook",
+          "locator->>bookId": "eq.japanese-n4",
+          "order": "created_at.desc,id.desc",
+          "offset": "0",
+          "limit": "201"
+        }
+      },
+      {
+        "table": "vocabulary_contexts",
+        "method": "GET",
+        "params": {
+          "select": "id,chapter_slug,user_vocabulary!inner(id,user_id)",
+          "user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "user_vocabulary.user_id": "eq.00000000-0000-4000-8000-000000000042",
+          "kind": "eq.textbook",
+          "locator->>bookId": "eq.japanese-n5",
+          "order": "created_at.desc,id.desc",
+          "offset": "0",
+          "limit": "201"
+        }
+      }
+    ],
+    "admitted": [
+      "00000000-0000-4000-8000-000000000001"
+    ],
+    "scopeFail": false,
+    "scopeEmpty": false,
+    "readingFail": false,
+    "foreignFixtures": {
+      "word": {
+        "id": "00000000-0000-4000-8000-000000009001",
+        "user_id": "00000000-0000-4000-8000-000000009999",
+        "word_text": "合成別所有者",
+        "meaning": "다른 합성 소유자 전용",
+        "language": "Japanese"
+      },
+      "context": {
+        "id": "00000000-0000-4000-8000-000000009002",
+        "vocabulary_id": "00000000-0000-4000-8000-000000009001",
+        "user_id": "00000000-0000-4000-8000-000000009999",
+        "kind": "textbook",
+        "lang": "Japanese",
+        "chapter_slug": "n3-book-u48",
+        "locator": {
+          "bookId": "japanese-n3",
+          "editionId": "4978c146953f14140bcb49d2",
+          "pageId": "u48-start"
+        },
+        "quote": "合成別所有者",
+        "created_at": "2026-01-01T00:00:00Z"
+      }
+    }
+  }
+}

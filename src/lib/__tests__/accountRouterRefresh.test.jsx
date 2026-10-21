@@ -154,6 +154,7 @@ const ACCOUNT_SERVER_ROUTES = Object.freeze({
   'src/app/(app)/admin/textbooks/page.jsx': '관리자 교재 편집 — 관문이 B 권한으로 다시 그린다',
   'src/app/(app)/admin/books/japanese-n5/page.jsx': '관리자 원고 편집 — 관문이 B 권한으로 다시 그린다',
   'src/app/(app)/admin/books/japanese-n4/page.jsx': '관리자 원고 편집 — 관문이 B 권한으로 다시 그린다',
+  'src/app/(app)/admin/books/japanese-n3/page.jsx': 'N3 관리자 원고 편집 — 기존 계정 전환 관문이 새 계정의 관리자 권한으로 다시 그린다',
   'src/app/(app)/admin/legacy-textbooks/[[...path]]/page.jsx': '관리자 기존 교재 보관함 — 관문이 B 권한으로 다시 그린다',
 });
 

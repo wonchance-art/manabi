@@ -1,0 +1,49 @@
+{
+  "status": "fixed-targeted-pass-source-frozen",
+  "checkedAt": "2026-10-21T11:59:31.621366+00:00",
+  "trigger": "Independent actual Next browser found no N3 link on Japanese bookshelf although all48 APIs/assets passed.",
+  "preservedFirstBrowserEvidence": "/workspace/scratch/n3-integration/team/browser/attempt-001-first-failure",
+  "cause": "Server bookshelf publication requests were hardcoded to N5/N4, so N3 never reached Bookshelf props.",
+  "change": "Server Page enumerates BOOKS registry and starts all publication reads alongside Japanese/Chinese tiles; allSettled failure isolation and stable registry order remain.",
+  "sourceFiles": [
+    "src/app/(app)/lessons/page.jsx",
+    "src/lib/__tests__/n3BookshelfRoute.test.jsx"
+  ],
+  "sourceSha256": {
+    "src/app/(app)/lessons/page.jsx": "45688190c65118679db89f4063bb3280cbf0b17009d2b7c90479521e4962e389",
+    "src/lib/__tests__/n3BookshelfRoute.test.jsx": "c3f52084b03985b9e11d7d104bc06f78f79f42f002c640692c6ed1c6fa9fc630"
+  },
+  "regression": {
+    "actualPageCalled": true,
+    "stringImplementationMirroring": false,
+    "cases": [
+      "N5/N4/N3 and both tile requests start while deferred replies remain pending; N3 props reach actual Bookshelf boundary despite out-of-order completion",
+      "Failed N5 publication leaves N4/N3 and both language tile groups",
+      "Tile failure leaves all published shelf books"
+    ],
+    "before": {
+      "files": 1,
+      "testsFailed": 3,
+      "reason": "N3 publication request/Bookshelf props missing",
+      "log": "bookshelf-route-before.log"
+    },
+    "after": {
+      "files": 5,
+      "testsPassed": 26,
+      "log": "bookshelf-route-after.log",
+      "includesExistingParallelAndN5N4PresentationPublication": true
+    },
+    "lint": {
+      "passed": true,
+      "log": "bookshelf-route-lint.log"
+    },
+    "diffCheck": true
+  },
+  "existingTestsEdited": false,
+  "existingParallelPerformanceTestPassedUnchanged": true,
+  "manuscriptProducerEditionChanges": false,
+  "serversStartedByFixAgent": false,
+  "browserRetestByFixAgent": false,
+  "productionWrites": false,
+  "nextOwner": "M00 full tests/CI and C independent actual browser rerun"
+}

@@ -9,7 +9,7 @@ export default function BookMaterials({ book, preview = false }) {
   const bookId = book.bookId || BOOK_ID;
   const level = book.level || 'N5';
   const bookHref = (edition, page = 'cover') => textbookHref(edition, page, bookId);
-  const { progress } = useReadingProgress(book.edition);
+  const { progress } = useReadingProgress(book.edition, bookId);
   const [selected, setSelected] = useState(null);
   const unit = selected || progress.page.slice(0, 3);
   return <div className="manabi-page"><p className="manabi-breadcrumb"><Link href="/lessons" prefetch={false}>교재</Link><span>/</span><Link href={bookHref(book.edition)}>일본어 {level}</Link><span>/</span>함께 읽기</p>

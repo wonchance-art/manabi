@@ -1,7 +1,7 @@
 // 복습 범위 주소 문법(REV-SCOPE-R1A §6-1 ①) — 서버 페이지(/vocab)도 읽으므로 화면 훅 · 학습 계산을 끌어오지 않는 순수 모듈.
 // 개수 · 범위 거르기는 reviewScope.js(이 모듈을 다시 내보낸다).
 import { LEARNING_LANGUAGES } from './learningLanguages.js';
-import { isBookId, bookHref } from './textbook/contract.js';
+import { BOOKS, isBookId, isBookPage, bookHref } from './textbook/contract.js';
 import { EXPRESSION_KINDS, EXPRESSION_KIND_LABELS } from './reviewCard.js';
 
 export const REVIEW_SCOPE_LANGS = Object.freeze([...LEARNING_LANGUAGES]);
@@ -17,7 +17,6 @@ export const FRAGILE_RETRIEVABILITY = 0.7;
 export const MAX_SCOPE_MATERIALS = 20;
 export const SCOPE_LANG_LABELS = Object.freeze({ Japanese: '일본어', Chinese: '중국어', English: '영어', French: '프랑스어', Korean: '한국어' });
 
-const PAGE = /^(?:cover|u(?:0[1-9]|[1-3][0-9]|4[0-2])(?:-[a-z0-9_-]+)?)$/;
 const SCOPE_KEYS = ['lang', 'level', 'src', 'state', 'type', 'book'];
 const MATERIAL_ID = /^[1-9]\d{0,17}$/;
 const LESSON = /^[1-9]\d?$/;
@@ -31,7 +30,7 @@ export function safeBookReturn(value,bookId=null) {
     if (!isBookId(selectedBook)||(bookId!==null&&selectedBook!==bookId)||!/^[a-f0-9]{24}$/.test(url.searchParams.get('edition') || '')) return null;
     if ([...url.searchParams.keys()].some(key => key !== 'edition') || url.searchParams.getAll('edition').length !== 1) return null;
     const page = decodeURIComponent(url.hash.slice(1)) || 'cover';
-    return PAGE.test(page) ? bookHref(url.searchParams.get('edition'), page,selectedBook) : null;
+    return isBookPage(selectedBook,page) ? bookHref(url.searchParams.get('edition'), page,selectedBook) : null;
   } catch { return null; }
 }
 
@@ -44,7 +43,7 @@ export function parseScopeSource(raw) {
     const [, bookId, a, b] = match;
     if (!isBookId(bookId) || !LESSON.test(a) || !LESSON.test(b)) return null;
     const from = Number(a), to = Number(b);
-    return from <= to && to <= BOOK_LESSONS ? { kind: 'book', bookId, from, to } : null;
+    return from <= to && to <= BOOKS[bookId].lessons ? { kind: 'book', bookId, from, to } : null;
   }
   match = /^deck:(.+)$/.exec(raw);
   if (match) {
@@ -99,7 +98,7 @@ export function parseReviewScope(params = {}) {
   // 호환: 옛 ?book=japanese-n5&returnTo= 는 src=book:japanese-n5:1-42 와 같다.
   if (values.book !== undefined) {
     if (!isBookId(values.book) || values.src !== undefined) return invalid('book');
-    source = { kind: 'book', bookId: values.book, from: 1, to: BOOK_LESSONS };
+    source = { kind: 'book', bookId: values.book, from: 1, to: BOOKS[values.book].lessons };
   }
   if (values.src !== undefined) {
     source = parseScopeSource(values.src);
@@ -144,7 +143,10 @@ export function serializeReviewScope(scope, { returnTo } = {}) {
 export function scopeSourceLabel(source, { materialTitles } = {}) {
   switch (source?.kind) {
     case 'book':
-      if(source.bookId==='japanese-n4')return source.from===1&&source.to===BOOK_LESSONS?'N4 교재 전체':source.from===source.to?`N4 교재 ${source.from}과`:`N4 교재 ${source.from}–${source.to}과`;
+      if(isBookId(source.bookId)&&source.bookId!=='japanese-n5'){
+        const label=BOOKS[source.bookId].level;
+        return source.from===1&&source.to===BOOKS[source.bookId].lessons?`${label} 교재 전체`:source.from===source.to?`${label} 교재 ${source.from}과`:`${label} 교재 ${source.from}–${source.to}과`;
+      }
       if (source.from === 1 && source.to === BOOK_LESSONS) return '교재 전체';
       return source.from === source.to ? `교재 ${source.from}과` : `교재 ${source.from}–${source.to}과`;
     case 'deck': return source.ref;

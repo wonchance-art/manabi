@@ -1,0 +1,70 @@
+{
+  "passed": true,
+  "scope": "Actual production Next file-trace manifests: N3 metadata/HTML/fonts are present, ordinary routes exclude textbook media.",
+  "checks": [
+    {
+      "route": "server/app/api/books/japanese-n3/[edition]/asset/route.js.nft.json",
+      "kind": "asset",
+      "tracedFiles": 255,
+      "textbookFiles": 199,
+      "n3Files": [
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/app.js",
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/bundle.json",
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/font-audit.json",
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/font-licenses/NotoCJK-system-copyright.txt",
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/fonts/JP.woff",
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/fonts/JPS.woff",
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/fonts/KR.woff",
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/fonts/KRB.woff",
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/fonts/KRS.woff",
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/index.html",
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/style.css"
+      ],
+      "unexpectedMedia": false
+    },
+    {
+      "route": "server/app/api/books/japanese-n3/[edition]/reading/route.js.nft.json",
+      "kind": "reading",
+      "tracedFiles": 69,
+      "textbookFiles": 13,
+      "n3Files": [
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/bundle.json",
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/index.html"
+      ],
+      "unexpectedMedia": false
+    },
+    {
+      "route": "server/app/(app)/books/japanese-n3/page.js.nft.json",
+      "kind": "reader",
+      "tracedFiles": 128,
+      "textbookFiles": 13,
+      "n3Files": [
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/bundle.json",
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/index.html"
+      ],
+      "unexpectedMedia": false
+    },
+    {
+      "route": "server/app/(app)/lessons/page.js.nft.json",
+      "kind": "shelf",
+      "tracedFiles": 158,
+      "textbookFiles": 13,
+      "n3Files": [
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/bundle.json",
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/index.html"
+      ],
+      "unexpectedMedia": false
+    },
+    {
+      "route": "server/app/api/learning/vocabulary/route.js.nft.json",
+      "kind": "learning",
+      "tracedFiles": 137,
+      "textbookFiles": 13,
+      "n3Files": [
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/bundle.json",
+        "src/content/textbookEditions/4978c146953f14140bcb49d2/index.html"
+      ],
+      "unexpectedMedia": false
+    }
+  ]
+}

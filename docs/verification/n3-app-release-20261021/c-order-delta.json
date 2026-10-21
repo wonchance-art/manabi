@@ -1,0 +1,222 @@
+{
+  "status": "PASS",
+  "reviewer": "n3_author_b",
+  "scope": "Independent saved exact semantic-accepted snapshot vs latest final16 bytes; only checks[].options and listen_choices ordering can differ",
+  "semanticReceipt": {
+    "path": "/workspace/scratch/n3-integration/team/author-b/review-c/INDEPENDENT-LANGUAGE-REVIEW.json",
+    "sha256": "6b1dce76ab0e75d9d5cb1226330b589d7dacf59f07b9358857b958d431a94913"
+  },
+  "MCQAnswerPositions": [
+    16,
+    16,
+    16
+  ],
+  "textDialogueAnswerPositions": [
+    8,
+    8
+  ],
+  "unitMCQPositionCombinations": 13,
+  "maxSameMCQPositionRun": 2,
+  "questionsAnswersOptionStringsAndAllOtherFieldsExactEqual": true,
+  "whyOrdinalReferences": [],
+  "errors": [],
+  "sourceFinalIndependentAccepted": true,
+  "units": [
+    {
+      "unit": "u33",
+      "semanticAcceptedSha256": "42d53df9c79cf0249b4c032bc2814e297e0d9b9dbe6899e3610f27b3c2f48833",
+      "sha256": "ae458cf1c95a7e77625479eb273265372065d0101a06580e7f566eca364f98fb",
+      "MCQCorrectPositions": [
+        3,
+        1,
+        3
+      ],
+      "dialogueCorrectPosition": 2,
+      "onlyTwoChoiceOrdersChanged": true
+    },
+    {
+      "unit": "u34",
+      "semanticAcceptedSha256": "a3b84a640f39b403a5b61c371866c64ee5313effaeac5a132005e3e992b5f5ae",
+      "sha256": "8a900b4c43ef11464c4c6be628a4ecd4a033288a1d8d2597f89994078843bcce",
+      "MCQCorrectPositions": [
+        1,
+        2,
+        2
+      ],
+      "dialogueCorrectPosition": 1,
+      "onlyTwoChoiceOrdersChanged": true
+    },
+    {
+      "unit": "u35",
+      "semanticAcceptedSha256": "e69de3daa37133be60101c5c5c3e1056baf57bcdcfe29352d7dd36d5a3c4aeb0",
+      "sha256": "663eaf7d575a226e7c77c2829a2ee83485977153ececd32cd3efb1c6d6122816",
+      "MCQCorrectPositions": [
+        3,
+        2,
+        2
+      ],
+      "dialogueCorrectPosition": 2,
+      "onlyTwoChoiceOrdersChanged": true
+    },
+    {
+      "unit": "u36",
+      "semanticAcceptedSha256": "b62b0d32cc592b6d36606a363a9121dc9e169f42ab93e81cd332b3fc0e2f2236",
+      "sha256": "10f96bac58198f54354c2c08a9dce0e837dacb74c769116f94f9d0ccf2713093",
+      "MCQCorrectPositions": [
+        3,
+        1,
+        3
+      ],
+      "dialogueCorrectPosition": 2,
+      "onlyTwoChoiceOrdersChanged": true
+    },
+    {
+      "unit": "u37",
+      "semanticAcceptedSha256": "9da65ad445891e1f9b6352c45fb4ee34b59cd9876ea08c807591746ad8378130",
+      "sha256": "cd097704d9c4799cb0a4d46f8503a4ff907acabb019df2b7ea67e9c3b6279e38",
+      "MCQCorrectPositions": [
+        2,
+        1,
+        3
+      ],
+      "dialogueCorrectPosition": 1,
+      "onlyTwoChoiceOrdersChanged": true
+    },
+    {
+      "unit": "u38",
+      "semanticAcceptedSha256": "0a554c856eda6345a43f2af6401e822f3e623c3d395966a6bedb77c34d6fe0fd",
+      "sha256": "f352dac9e5a112a0a475ac60593b73f9a2d652b617908a98ab24282319502934",
+      "MCQCorrectPositions": [
+        1,
+        1,
+        2
+      ],
+      "dialogueCorrectPosition": 2,
+      "onlyTwoChoiceOrdersChanged": true
+    },
+    {
+      "unit": "u39",
+      "semanticAcceptedSha256": "01ddec2e6aa7ac2bb5e38eadcfc2c58d50b2d93942f03f96105736bd935f5bb5",
+      "sha256": "c3d599ea7d3bc5200e11d1800a942cc6cad6bfc1151d64df61abc36b696d7b86",
+      "MCQCorrectPositions": [
+        3,
+        2,
+        2
+      ],
+      "dialogueCorrectPosition": 1,
+      "onlyTwoChoiceOrdersChanged": true
+    },
+    {
+      "unit": "u40",
+      "semanticAcceptedSha256": "61595a964643fb03e4de98f89f829649babe4f17c8da77bc3630f67f94c4f6cc",
+      "sha256": "fa4b3eb219e4070a381d4f8f2906b1443283916fd76c319c3628774039409ca0",
+      "MCQCorrectPositions": [
+        3,
+        1,
+        1
+      ],
+      "dialogueCorrectPosition": 1,
+      "onlyTwoChoiceOrdersChanged": true
+    },
+    {
+      "unit": "u41",
+      "semanticAcceptedSha256": "07b01acfa7e5b4b395041c5fa8504878b93a4722d72ce8bfa243ca6928667215",
+      "sha256": "601e8ed3439dc9fe1c354e0b135e26537deaed1518e530859b33e5f661c7bd7d",
+      "MCQCorrectPositions": [
+        2,
+        3,
+        2
+      ],
+      "dialogueCorrectPosition": 2,
+      "onlyTwoChoiceOrdersChanged": true
+    },
+    {
+      "unit": "u42",
+      "semanticAcceptedSha256": "14ea29a473534fd8273cb28a0633d24a40ab3bdca3e0da4a9c08d758e4d993ba",
+      "sha256": "7b24ce90485b721dd22afc20312fa43b40ccc7abd34e9e098eb1ed7d273aabcd",
+      "MCQCorrectPositions": [
+        2,
+        1,
+        3
+      ],
+      "dialogueCorrectPosition": 1,
+      "onlyTwoChoiceOrdersChanged": true
+    },
+    {
+      "unit": "u43",
+      "semanticAcceptedSha256": "4c34af889702566b007dbd74cf172147b1bc1efd59faaa8deb5d5de40e8c5245",
+      "sha256": "0c277c54efdc36e254c7a3bb2b1faddcc603a97684f11eddfb082d5b3d12c71b",
+      "MCQCorrectPositions": [
+        1,
+        3,
+        3
+      ],
+      "dialogueCorrectPosition": 2,
+      "onlyTwoChoiceOrdersChanged": true
+    },
+    {
+      "unit": "u44",
+      "semanticAcceptedSha256": "2e32b2e975808cf957f1ce1f8c09ba99348f7bf1cb72b9c9b089d121a6fd2e2c",
+      "sha256": "d4f11e7d855aa8f76cd05e9dfb4de7652e2528e57561c75e45c336fdeea0cddc",
+      "MCQCorrectPositions": [
+        1,
+        3,
+        1
+      ],
+      "dialogueCorrectPosition": 1,
+      "onlyTwoChoiceOrdersChanged": true
+    },
+    {
+      "unit": "u45",
+      "semanticAcceptedSha256": "9c86a5ef105df1d4eded001242f466d6ea4325b62db88300fec9aade22b05c65",
+      "sha256": "d188375ffc7e25221eae145e14dff138c6fa42cbbd5648bacc5348f1d2aed164",
+      "MCQCorrectPositions": [
+        2,
+        2,
+        3
+      ],
+      "dialogueCorrectPosition": 2,
+      "onlyTwoChoiceOrdersChanged": true
+    },
+    {
+      "unit": "u46",
+      "semanticAcceptedSha256": "adcb5c0a574bce3ed9b729e522263fbd4deea5e914eb90b4d7fcc19b3bb11a98",
+      "sha256": "491004e38d44a5f1159f371d8bb71be37795daac989f1dbce2481ad26a79cbde",
+      "MCQCorrectPositions": [
+        1,
+        2,
+        1
+      ],
+      "dialogueCorrectPosition": 1,
+      "onlyTwoChoiceOrdersChanged": true
+    },
+    {
+      "unit": "u47",
+      "semanticAcceptedSha256": "3916d383347843a0003bd154eb6be0f3a6c28908ef2549a593d87106c70923b7",
+      "sha256": "fd7c8f04217dfb8281ab84f6cdd28306151453ed232813d5f0c4478bc0020c3d",
+      "MCQCorrectPositions": [
+        3,
+        1,
+        2
+      ],
+      "dialogueCorrectPosition": 2,
+      "onlyTwoChoiceOrdersChanged": true
+    },
+    {
+      "unit": "u48",
+      "semanticAcceptedSha256": "a16a0a503ecffb4cc9456dcf76b1aa282f3241d110fb34d349d32b7d04cd2254",
+      "sha256": "316cdb405123a4f0d51c7df1127b49b116df17ce8095de78724b6de499773ca9",
+      "MCQCorrectPositions": [
+        3,
+        2,
+        1
+      ],
+      "dialogueCorrectPosition": 1,
+      "onlyTwoChoiceOrdersChanged": true
+    }
+  ],
+  "limitations": [
+    "Source language/reading/answer acceptance only. Actual browser/render, account login, build 384-page QA and publication are separate root gates.",
+    "The listen fields are text dialogue comprehension, not produced audio listening."
+  ]
+}

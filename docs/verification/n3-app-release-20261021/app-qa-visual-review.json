@@ -1,0 +1,129 @@
+{
+  "passed": true,
+  "scope": "Direct inspection of these 15 exact PNGs from actual local Next, separately from the 192 automatic geometry observations",
+  "reviewer": "n3_author_c",
+  "independence": "Reviewer did not author the app/route/CSS implementation. Reviewer authored u33–48 text; independent language acceptance is reviewer B evidence.",
+  "editionId": "4978c146953f14140bcb49d2",
+  "images": [
+    {
+      "path": "/workspace/scratch/n3-integration/team/browser/attempt-005/desktop-n3-toc.png",
+      "sha256": "8fd7306ef5c75b753bb58baeacf5aae4da427dbc55012cd2b6fe127c6c0b68be",
+      "observation": "1440px 표지·전체48과 목차·학습도구의 위계와 N3 식별이 분명하고 주요 버튼·제목이 잘리지 않음.",
+      "visualBlocker": false,
+      "auxiliaryCapture": false
+    },
+    {
+      "path": "/workspace/scratch/n3-integration/team/browser/attempt-005/n3-reading-320.png",
+      "sha256": "8f11ca29ec96dc5a3058316d5c9e7ba88dc4bc26a7657b5a05e44ffda55371f5",
+      "observation": "320px 제목·장면·역할 카드가 폭 안에서 자연스럽게 줄바꿈. 모바일 목차·도구가 겹치지 않음.",
+      "visualBlocker": false,
+      "auxiliaryCapture": false
+    },
+    {
+      "path": "/workspace/scratch/n3-integration/team/browser/attempt-005/n3-reading-390.png",
+      "sha256": "dc304823b7c3fdb9182a59dafbb706bf35560ca03d6f718a8d9252d1448c33cd",
+      "observation": "390px 장면·역할 카드와 과제 소개가 충분히 구분되고 본문 가독성 유지.",
+      "visualBlocker": false,
+      "auxiliaryCapture": false
+    },
+    {
+      "path": "/workspace/scratch/n3-integration/team/browser/attempt-005/n3-reading-768.png",
+      "sha256": "18f2d1a01da72a39a1b3040f93c1fe9344d39ad0feb276e9044ad5a8c653b40a",
+      "observation": "768px 과 목차와 본문 2열의 위계·공간이 유지되고 어휘 읽기 보조가 분리되어 보임.",
+      "visualBlocker": false,
+      "auxiliaryCapture": false
+    },
+    {
+      "path": "/workspace/scratch/n3-integration/team/browser/attempt-005/mobile-n3-same-edition-original.png",
+      "sha256": "508c6d3ddf88039789a2a377f31a718615885b1ca799789afd7bb12e49c5dda0",
+      "observation": "실제 원문 복귀 화면의 일본어·한국어 설명·후리가나가 읽히고 문형 비교가 끊기지 않음. 정확 판본/쪽은 별도 functional assertion으로 확인.",
+      "visualBlocker": false,
+      "auxiliaryCapture": false
+    },
+    {
+      "path": "/workspace/scratch/n3-integration/team/browser/attempt-005/n3-u01-options-320.png",
+      "sha256": "bd06267f62e4014d32be953de14bdaf0d7b2451994c619039941f9f8e0c403ba",
+      "observation": "대표 이름/내용 구별 문항의 첫 선택지 세 개와 후리가나가 모두 보이고 해설을 별도 펼침으로 제공.",
+      "visualBlocker": false,
+      "auxiliaryCapture": false
+    },
+    {
+      "path": "/workspace/scratch/n3-integration/team/browser/attempt-005/n3-u43-options-320.png",
+      "sha256": "cbee378cfc70afefc56f3982f16bce750cea5a84a8dfb9861dd59d3d5c8d002c",
+      "observation": "320px 후반 첫 객관식 문항의 일본어·후리가나·세 선택지가 온전히 보이며 선택 원과 문장이 겹치지 않음. 둘째 문항 시작은 이어지는 스크롤 내용으로 구분. 모든 문항을 한 화면에서 전부 읽었다고 주장하지 않음.",
+      "visualBlocker": false,
+      "auxiliaryCapture": false
+    },
+    {
+      "path": "/workspace/scratch/n3-integration/team/browser/attempt-005/n3-u44-options-320.png",
+      "sha256": "f10f91146bf0efe7be5d66f7e5831a7c2ed4e2a7463ae5c0dd6ab04e4ac023fb",
+      "observation": "320px 후반 첫 객관식 문항의 일본어·후리가나·세 선택지가 온전히 보이며 선택 원과 문장이 겹치지 않음. 둘째 문항 시작은 이어지는 스크롤 내용으로 구분. 모든 문항을 한 화면에서 전부 읽었다고 주장하지 않음.",
+      "visualBlocker": false,
+      "auxiliaryCapture": false
+    },
+    {
+      "path": "/workspace/scratch/n3-integration/team/browser/attempt-005/n3-u45-options-320.png",
+      "sha256": "c2b2c90daff819d0f454966fafb12f834f117fac8e277a6d1e2a6f997be349f6",
+      "observation": "320px 후반 첫 객관식 문항의 일본어·후리가나·세 선택지가 온전히 보이며 선택 원과 문장이 겹치지 않음. 둘째 문항 시작은 이어지는 스크롤 내용으로 구분. 모든 문항을 한 화면에서 전부 읽었다고 주장하지 않음.",
+      "visualBlocker": false,
+      "auxiliaryCapture": false
+    },
+    {
+      "path": "/workspace/scratch/n3-integration/team/browser/attempt-005/n3-u46-options-320.png",
+      "sha256": "40f07dbc2bc75ca9d4b4a7a52db0462311e163bdf255cda4a1363a5ba85ec424",
+      "observation": "320px 후반 첫 객관식 문항의 일본어·후리가나·세 선택지가 온전히 보이며 선택 원과 문장이 겹치지 않음. 둘째 문항 시작은 이어지는 스크롤 내용으로 구분. 모든 문항을 한 화면에서 전부 읽었다고 주장하지 않음.",
+      "visualBlocker": false,
+      "auxiliaryCapture": false
+    },
+    {
+      "path": "/workspace/scratch/n3-integration/team/browser/attempt-005/n3-u47-options-320.png",
+      "sha256": "72460ab4321de5f5551a9a5e109189344e2d3c37d1323d3a28003d031fb7cca8",
+      "observation": "320px 후반 첫 객관식 문항의 일본어·후리가나·세 선택지가 온전히 보이며 선택 원과 문장이 겹치지 않음. 둘째 문항 시작은 이어지는 스크롤 내용으로 구분. 모든 문항을 한 화면에서 전부 읽었다고 주장하지 않음.",
+      "visualBlocker": false,
+      "auxiliaryCapture": false
+    },
+    {
+      "path": "/workspace/scratch/n3-integration/team/browser/attempt-005/n3-u48-options-320.png",
+      "sha256": "5a801aabd72c35d4529dd97eb26ce79543d5df16551be32fb4fafda931fc5a22",
+      "observation": "320px 후반 첫 객관식 문항의 일본어·후리가나·세 선택지가 온전히 보이며 선택 원과 문장이 겹치지 않음. 둘째 문항 시작은 이어지는 스크롤 내용으로 구분. 모든 문항을 한 화면에서 전부 읽었다고 주장하지 않음.",
+      "visualBlocker": false,
+      "auxiliaryCapture": false
+    },
+    {
+      "path": "/workspace/scratch/n3-integration/team/browser/attempt-005/mobile-u45-source-save-dialog-390.png",
+      "sha256": "cc0282be2f09ee931a7df30807f477fc38d417769cd4612f6e9bbdaae7b053ee",
+      "observation": "390px 원문 선택 대화상자의 인용·입력 레이블·닫기와 빈 뜻 검증 안내가 잘 보임. 뜻을 입력하거나 추가 저장하지 않은 화면.",
+      "visualBlocker": false,
+      "auxiliaryCapture": true
+    },
+    {
+      "path": "/workspace/scratch/n3-integration/team/browser/attempt-005/mobile-n3-saved-review-390.png",
+      "sha256": "eb1afb1fdc8460304beb71a3b24864b4fc0eef2b10b86a043961d2091999c4d7",
+      "observation": "390px N3 담은 표현의 과 식별·표현·뜻 펼침·정확 판본 원문 링크와 복습 시작이 읽힘.",
+      "visualBlocker": false,
+      "auxiliaryCapture": true
+    },
+    {
+      "path": "/workspace/scratch/n3-integration/team/browser/attempt-005/desktop-n3-saved-review-1440.png",
+      "sha256": "d8654e52bcb7fb29a804e3e592ddacc53387e9fb0793b4e9486754494ff5510c",
+      "observation": "1440px 담은 표현 카드와 출처·복습/원문 복귀 링크가 명확하고 카드 폭을 넘지 않음.",
+      "visualBlocker": false,
+      "auxiliaryCapture": true
+    }
+  ],
+  "automaticGeometry": {
+    "observations": 192,
+    "failures": 0,
+    "receipt": "/workspace/scratch/n3-integration/team/browser/attempt-005/APP-MATRIX.json"
+  },
+  "limitations": [
+    "Only these 15 PNGs were opened for direct visual review; geometry of all48×4 widths is automatic evidence.",
+    "Saved-expression Japanese is displayed as the learner saved it; these synthetic whole-sentence saves have no separate authored furigana. Exact reading support in manuscript/source is a separate gate.",
+    "The extra image capture helper failed its all-HTTP-writes assertion and is not counted as an acceptance gate; its actual PNG outputs remain inspectable."
+  ],
+  "helperFailure": "/workspace/scratch/n3-integration/team/author-c/EXTRA-VISUAL-HELPER-FAILURE.json",
+  "actualOperatingLogin": false,
+  "hostedPublication": false,
+  "ttsVerified": false,
+  "fullStateFsrsEnrollment": false
+}

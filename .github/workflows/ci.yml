@@ -53,6 +53,7 @@ jobs:
       - run: node supabase/tests/fsrs-anki-v2-policy.mjs
       - run: node supabase/tests/anon-book-catalog.mjs
       - run: node scripts/verification/n4-book-support.mjs
+      - run: node scripts/verification/n3-book-support.mjs
       - run: node supabase/tests/korean-capability-repin.mjs
       - run: node supabase/tests/vocabulary-snapshot-set-flags.mjs
       # 관측 fixture 위에 관측일 뒤 마이그레이션을 차례로 적용해 FSRS 핀 넷 · 모든 언어 ready를 실제 지문으로 확인한다
@@ -135,3 +136,34 @@ jobs:
           trap 'kill "$chapter_server_pid" "$n4_server_pid" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 60); do if curl -fsS http://127.0.0.1:8879/manifest.webmanifest > /dev/null; then break; fi; sleep 1; done
           E2E_PUBLISHED_BOOKS=japanese-n4 COMPOSER_BASE_URL=http://127.0.0.1:8879 node --test --test-concurrency=1 e2e/book-reading-reload.e2e.mjs
+
+      # 같은 프로덕션 빌드를 재사용해 N3 발행 상태의 책장 배선과 실제 찾아보기 검색을 검사한다.
+      # 익명 브라우저만 쓰며 N3가 없으면 skip하지 않고 실패한다.
+      - name: N3 발행 책장·찾아보기 (프로덕션 앱 · 익명)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://e2e.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: e2e-anon-key
+          NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3100
+          E2E_PUBLISHED_EDITION: 8a8c1c1fd452773810abaf8c
+          E2E_PUBLISHED_BOOKS: japanese-n3
+          COMPOSER_BASE_URL: http://127.0.0.1:8880
+        run: |
+          export NODE_OPTIONS="--import=$PWD/e2e/server-fetch-mock.mjs"
+          node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 8880 > /tmp/book-n3-server.log 2>&1 &
+          n3_server_pid=$!
+          cleanup_n3() {
+            n3_step_status=$?
+            kill "$n3_server_pid" 2>/dev/null || true
+            wait "$n3_server_pid" 2>/dev/null || true
+            if [ "$n3_step_status" -ne 0 ]; then tail -n 100 /tmp/book-n3-server.log >&2; fi
+            exit "$n3_step_status"
+          }
+          trap cleanup_n3 EXIT
+          trap 'exit 130' INT
+          trap 'exit 143' TERM
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8880/manifest.webmanifest > /dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8880/manifest.webmanifest > /dev/null
+          node --test --test-concurrency=1 e2e/n3-published-smoke.e2e.mjs

@@ -1,6 +1,7 @@
 import Bookshelf from '@/components/books/Bookshelf';
 import { publishedReading, readingCatalog } from '@/lib/server/bookReading';
 import { levelTileCounts } from '@/lib/levelListData';
+import { BOOKS } from '@/lib/textbook/contract';
 
 export const dynamic = 'force-dynamic';
 export const metadata = {
@@ -12,10 +13,10 @@ export const metadata = {
 // Do not add ineffective revalidate here; archived ?lang links still select the series notice.
 export default async function Page({ searchParams }) {
   const sp = await searchParams;
-  // 교재 두 권 · 레벨 타일(일본어 · 중국어)을 한꺼번에 시작한다 — 전에는 교재를 다 받은 뒤 타일을 언어마다 차례로 셌다(LEARN-PAGES 2026-10-17 KST).
+  // 등록 교재 · 레벨 타일(일본어 · 중국어)을 한꺼번에 시작한다 — 전에는 교재를 다 받은 뒤 타일을 언어마다 차례로 셌다(LEARN-PAGES 2026-10-17 KST).
   // 타일 수는 서버 프로세스마다 한 번 세고 기억하므로(levelTileCounts) 차이는 첫 요청(콜드)에서 난다.
   const [results, tiles] = await Promise.all([
-    Promise.allSettled(['japanese-n5', 'japanese-n4'].map(async bookId => readingCatalog((await publishedReading(undefined, false, bookId)).book))),
+    Promise.allSettled(Object.keys(BOOKS).map(async bookId => readingCatalog((await publishedReading(undefined, false, bookId)).book))),
     // 레벨별 단어 · 문형 타일(LEVEL-LIST-AJ-001) — 숫자는 목록과 같은 조립에서 센다. 실패하면 타일 없이 책장은 그대로 연다.
     Promise.all([levelTileCounts('japanese'), levelTileCounts('chinese')]).then(([Japanese, Chinese]) => ({ Japanese, Chinese }), () => ({})),
   ]);

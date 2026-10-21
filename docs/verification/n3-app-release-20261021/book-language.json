@@ -1,0 +1,25 @@
+{
+  "reviewer": "M00 /root",
+  "author": "n3_curriculum",
+  "reviewedAt": "2026-10-21T11:12:04.049198+00:00",
+  "passed": true,
+  "file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/book.json",
+  "sha256": "1adbc238a8b38d9d6681522170419b69614838f01fb0a2b4c1ded11a23eb9c32",
+  "scope": "All four front guides and all 18 cumulative items in six sets, including explanations, acceptable alternatives and contextual reading maps. Not whole-book lesson approval and not native human certification.",
+  "checks": [
+    "Guides state text-only comprehension and browser/edition-local answers separately from account vocabulary review.",
+    "N4 bridge diagnostic now includes model relationships, agent/recipient roles, future condition versus completed fact and plain past attachment.",
+    "All 18 prompts/answers/explanations checked for actual story evidence, unique specified MCQ meaning, admissible alternatives and prior target references.",
+    "Day-off interval after July 1 gives July 3 explicitly; no every-day ambiguity.",
+    "Partial negation, obligation double negation and expectation versus actual arrival retain their distinct meanings.",
+    "Final させていただく task specifies Mio permission and Jun benefit; actor/beneficiary direction preserved.",
+    "No real event, produced audio, official exhaustive curriculum or native certification claim."
+  ],
+  "resolvedDefects": [
+    "Added model answers to four bridge diagnostics.",
+    "せいか explanation now distinguishes uncertain causal attribution and task-specific gratitude without universally banning positive results.",
+    "Author removed unnecessary unintroduced 連用中止 form in final exercise."
+  ],
+  "independentLessonCoverage": false,
+  "actualAccountLoginVerified": false
+}

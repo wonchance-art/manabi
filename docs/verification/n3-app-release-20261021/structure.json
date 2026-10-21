@@ -1,0 +1,39 @@
+{
+  "passed": true,
+  "scope": "Structural/hash/asset/anchor checks only; no independent language or browser certification",
+  "editionId": "4978c146953f14140bcb49d2",
+  "lessons": 48,
+  "pages": 198,
+  "assets": 10,
+  "answerKeys": 354,
+  "validatedBundleSha256": "eda5ecd218c8c84685b90f32f7a2006c35113fdcc6c575f22d754e4abca53d1a",
+  "actualFontCheck": {
+    "passed": true,
+    "scope": "Read-only actual cmap, product text including attributes/runtime, source hashes and OFL license",
+    "requestedCodepoints": 1308,
+    "fonts": {
+      "JP": {
+        "missingCodepoints": [],
+        "actualCmapChecked": true
+      },
+      "JPS": {
+        "missingCodepoints": [],
+        "actualCmapChecked": true
+      },
+      "KR": {
+        "missingCodepoints": [],
+        "actualCmapChecked": true
+      },
+      "KRS": {
+        "missingCodepoints": [],
+        "actualCmapChecked": true
+      },
+      "KRB": {
+        "missingCodepoints": [],
+        "actualCmapChecked": true
+      }
+    },
+    "errors": []
+  },
+  "errors": []
+}

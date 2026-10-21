@@ -4,8 +4,8 @@
 //    표지를 끄고 함께 보내 둔 본문 골격(.book-entry-skeleton, 평소에는 꺼짐 — reading-shell.css)을 켠다.
 // ② 붙은 뒤: BookReader가 그리기 전(layout effect)에 첫 쪽을 정하고 그 그림에서 style을 뗀다.
 // 서버 · 하이드레이션 첫 그림은 늘 같은 마크업(표지 + 그 한 줄 + 꺼진 본문 골격)이라 불일치가 없다.
-import { READING_PAGE, readingProgressKey } from '@/lib/bookNavigation';
-import { EDITION_ID } from '@/lib/textbook/contract';
+import { READING_PAGE, readingPagePattern, readingProgressKey } from '@/lib/bookNavigation';
+import { BOOK_ID, EDITION_ID } from '@/lib/textbook/contract';
 
 export const HASH_GATE_ID = 'book-hash-gate';
 export const HASH_GATE_CSS = ':root .book-reader>.manabi-book-home,:root .manabi-book-home[aria-busy]{display:none}:root .book-entry-skeleton{display:block}';
@@ -125,9 +125,10 @@ export const resumeHintCss = (edition) => `.book-resume-hold>.book-resume-ghost[
 export function clearResumeHint(edition) {
   if (typeof document !== 'undefined') document.getElementById(`${RESUME_HINT_ID}-${edition}`)?.remove();
 }
-export function resumeHintScript(edition, session = false) {
+export function resumeHintScript(edition, session = false, bookId = BOOK_ID) {
   if (!EDITION_ID.test(edition || '')) return '';
   const key = readingProgressKey(edition), prefix = key.slice(0, key.lastIndexOf(':') + 1);
+  const pagePattern = bookId === BOOK_ID ? READING_PAGE : readingPagePattern(bookId);
   const pick = session ? `n!==${JSON.stringify(key)}` : `n===${JSON.stringify(key)}`;
-  return `(function(){try{var id='${RESUME_HINT_ID}-${edition}';if(document.getElementById(id))return;var k=[],i,n,r;for(i=0;i<localStorage.length;i++){n=localStorage.key(i);if(n&&n.indexOf(${JSON.stringify(prefix)})===0&&${pick})k.push(n)}if(k.length!==1)return;r=JSON.parse(localStorage.getItem(k[0]));if(!r||typeof r.page!=='string'||!/${READING_PAGE.source}/.test(r.page)||/^u\\d{2}-start$/.test(r.page))return;var g=document.createElement('style');g.id=id;g.textContent='${resumeHintCss(edition)}';document.head.appendChild(g)}catch(e){}})()`;
+  return `(function(){try{var id='${RESUME_HINT_ID}-${edition}';if(document.getElementById(id))return;var k=[],i,n,r;for(i=0;i<localStorage.length;i++){n=localStorage.key(i);if(n&&n.indexOf(${JSON.stringify(prefix)})===0&&${pick})k.push(n)}if(k.length!==1)return;r=JSON.parse(localStorage.getItem(k[0]));if(!r||typeof r.page!=='string'||!/${pagePattern.source}/.test(r.page)||/^u\\d{2}-start$/.test(r.page))return;var g=document.createElement('style');g.id=id;g.textContent='${resumeHintCss(edition)}';document.head.appendChild(g)}catch(e){}})()`;
 }

@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "checkedAt": "2026-10-21T11:51:20.843420+00:00",
+  "scope": "Real N3 final-language frozen full48 snapshot generation twice; raw unpublished QA false",
+  "editionId": "4978c146953f14140bcb49d2",
+  "contentHash": "4978c146953f14140bcb49d21bc58d236195ad73d1568dc0d516c2546547aaf5",
+  "bundleHash": "1dfbabcd4369412ca5d80f5a3ba5c01070f9f233dc2dcd787f8235eef8dbad62",
+  "files": {
+    "app.js": "cb4903faed46245933cc6c1bbf6267d994b295ad5a1e859c032fee25fc120e57",
+    "bundle.json": "eda5ecd218c8c84685b90f32f7a2006c35113fdcc6c575f22d754e4abca53d1a",
+    "font-audit.json": "f9de31f7cdae556a9afebd056eb89a861173d6d5f8954d91d60a403090e4c546",
+    "font-licenses/NotoCJK-system-copyright.txt": "849f4ea9c214fa4ac3593b770c699f387534b11ce671264c1b10d85bdcb5997b",
+    "fonts/JP.woff": "639fccc15b825074659a44375a520652f55d356eb0a8fb2edea1df5eba4adfcc",
+    "fonts/JPS.woff": "bebd1007573edbd066650f54fc2b58b46888cc9df2f4f77e3017d4d6ac95a0ba",
+    "fonts/KR.woff": "f0cf45400c156c5be72bc92d2f24fdd85a989858933afc93b0698b6c449ab3c6",
+    "fonts/KRB.woff": "f25234ac6ae0efedb18d593197236b74d3e0144bfcb6107414906da61185780f",
+    "fonts/KRS.woff": "f3131da101cf0d5ccef5f53aaff6aaab78dfbc02113a9fbcb43821dec48bed3d",
+    "index.html": "ef6827cbb30138b7cde33d8ce6a1e188e49b9e13e150f10b8bdb399c8f5c5080",
+    "style.css": "6a781901d3d06cf33287edca85736d12c14a3398238c6674cd1a077593c5ab1a"
+  },
+  "allBytesIdentical": true,
+  "lessons": 48,
+  "webSections": 198,
+  "qaStillFalse": true,
+  "liveSourceDelta": [],
+  "pendingFinalLanguageSnapshot": false,
+  "browserMatrixStarted": false
+}
