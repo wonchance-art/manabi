@@ -24,7 +24,11 @@ describe('① 하루 새 단어 — 복습 설정과 같은 수 · 더 단추(�
     const html = wrap(<OneWordDone graded={15} tomorrow={12} counts={counts} onNext={() => {}} nextLabel="HSK 4" onList={() => {}}
       more={15} perDay={15} started={15} onMore={() => {}} onBrowse={() => {}} />);
     expect(html).toContain('오늘 새 단어 15개 끝');
-    expect(html).toContain('새 단어 15개 더<small>하루 15개를 넘어요 · 내일 복습이 그만큼 늘어요</small>');
+    // 시안 ⑪(오너 2026-10-22 KST 검토) — 단추는 한 줄, 대가는 단추 밖 회색 한 줄 · 몫을 채운 날 「리스트로」는 뺀다(모드 칸과 같은 일).
+    expect(html).toContain('>새 단어 15개 더</button>');
+    expect(html).toContain('<p class="lw-done__note">하루 15개를 넘기면 내일 복습이 그만큼 늘어요</p>');
+    expect(html).not.toContain('리스트로');
+    expect(html).not.toContain('<small>하루');
     expect(html).toContain('전체 훑어보기');
     expect(html).not.toContain('계속 진행');
   });
@@ -41,7 +45,7 @@ describe('① 하루 새 단어 — 복습 설정과 같은 수 · 더 단추(�
     expect(empty).toContain('오늘 복습 끝');
     expect(empty).toContain('복습할 단어도 오늘은 다 했어요');
     expect(empty).not.toContain('누른 횟수');
-    expect(empty).toContain('새 단어 15개 더<small>내일 복습이 그만큼 늘어요</small>');
+    expect(empty).toContain('새 단어를 더 하면 내일 복습이 그만큼 늘어요');
   });
   it('리스트도 다 끝나면 한 단어와 같은 끝 화면 · 기다리는 카드만 남았으면 더 단추(시안 「단어 페이지 손질」 정리)', () => {
     expect(screen).toContain('{done && allEntries.length > 0 && doneScreen()}');

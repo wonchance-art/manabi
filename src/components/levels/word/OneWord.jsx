@@ -47,14 +47,18 @@ export function GradeBar({ previews, onGrade, disabled, note, guide = true, labe
  * 큰 두 칸(학습 · 내일) + 이름 붙은 네 칸(누른 횟수) + [소리로 확인할 단어 N개](손질 ②) [계속 진행](다음 레벨) [리스트로].
  * 「다시」 누른 단어는 같은 줄에 돌아와 이미 다시 본 뒤라 「모른 것만 다시」는 없다.
  * 하루 새 단어(시안 ⑧ · 오너 2026-10-21 KST 「같은 수, 더 단추」) — more가 있으면 오늘 몫에서 멈춘 것: 제목 「오늘 새 단어 N개 끝」 +
- * [새 단어 N개 더] · 「계속 진행」 자리에 [전체 훑어보기](다음 레벨도 같은 하루 몫이라). 채점 없이 들어온 날은 칸을 그리지 않는다.
+ * [새 단어 N개 더] [전체 훑어보기](다음 레벨도 같은 하루 몫이라 「계속 진행」 대신 · 「리스트로」는 바로 위 모드 칸과 같은 일이라 뺀다) +
+ * 회색 한 줄 대가(시안 ⑪ · 오너 2026-10-22 KST 검토 — 단추는 모두 한 줄 48px, 설명은 단추 밖). 채점 없이 들어온 날은 칸을 그리지 않는다.
  */
 export function NewDayTitle({ started }) {
   return started > 0 ? `오늘 새 단어 ${started}개 끝` : '오늘 복습 끝';
 }
-export function MoreNewButton({ more, perDay, onMore, primary = false }) {
-  return <button type="button" className={`lw-btn${primary ? ' lw-btn--primary' : ''} lw-btn--wide`} onClick={onMore}>새 단어 {more}개 더
-    <small>{perDay > 0 ? `하루 ${perDay}개를 넘어요 · 내일 복습이 그만큼 늘어요` : '내일 복습이 그만큼 늘어요'}</small></button>;
+export function MoreNewButton({ more, onMore, primary = false }) {
+  return <button type="button" className={`lw-btn${primary ? ' lw-btn--primary' : ''}`} onClick={onMore}>새 단어 {more}개 더</button>;
+}
+/** 「더」의 대가 — 단추 안이 아니라 아래 회색 한 줄(시안 ⑪ · 단추는 모두 한 줄 48px). */
+export function MoreNewNote({ perDay }) {
+  return <p className="lw-done__note">{perDay > 0 ? `하루 ${perDay}개를 넘기면 내일 복습이 그만큼 늘어요` : '새 단어를 더 하면 내일 복습이 그만큼 늘어요'}</p>;
 }
 export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabel, soundCount = 0, onSound, more = 0, perDay = 0, started = 0, onMore, onBrowse }) {
   const cells = [[1, 'again', '다시'], [2, 'hard', '어려움'], [3, 'good', '알맞음'], [4, 'easy', '쉬움']];
@@ -71,15 +75,18 @@ export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabe
       </div>
     </> : <p className="lw-done__sum">복습할 단어도 오늘은 다 했어요</p>}
     <div className="lw-done__actions">
-      {soundCount > 0 && <button type="button" className="lw-btn lw-btn--primary lw-btn--wide" onClick={onSound}>소리로 확인할 단어 {soundCount}개
-        <small>어제까지 본 단어 · 일정에는 반영 안 돼요</small></button>}
-      {capped && <MoreNewButton more={more} perDay={perDay} onMore={onMore} primary={soundCount === 0} />}
+      {soundCount > 0 && <button type="button" className="lw-btn lw-btn--primary" onClick={onSound}>소리로 확인할 단어 {soundCount}개</button>}
       <div className="lw-done__row">
-        {capped ? <button type="button" className="lw-btn" onClick={onBrowse}>전체 훑어보기</button>
-          : onNext && <button type="button" className={`lw-btn${soundCount > 0 ? '' : ' lw-btn--primary'}`} onClick={onNext}
+        {capped ? <>
+          <MoreNewButton more={more} onMore={onMore} primary={soundCount === 0} />
+          <button type="button" className="lw-btn" onClick={onBrowse}>전체 훑어보기</button>
+        </> : <>
+          {onNext && <button type="button" className={`lw-btn${soundCount > 0 ? '' : ' lw-btn--primary'}`} onClick={onNext}
             aria-label={nextLabel ? `계속 진행 · ${nextLabel}` : undefined}>계속 진행</button>}
-        {onList && <button type="button" className="lw-btn" onClick={onList}>리스트로</button>}
+          {onList && <button type="button" className="lw-btn" onClick={onList}>리스트로</button>}
+        </>}
       </div>
+      {capped && <MoreNewNote perDay={perDay} />}
     </div>
   </section>;
 }

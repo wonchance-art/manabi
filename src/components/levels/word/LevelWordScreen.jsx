@@ -42,7 +42,7 @@ import { recordActivity } from '@/lib/streak';
 import { useHeightSettle } from '@/lib/useHeightSettle';
 import { BackIcon, CaretIcon, CharTiles, ClearIcon, SearchIcon, WaitChip, WordRow } from '@/components/levels/word/WordParts';
 import { WordCard } from '@/components/levels/word/WordCard';
-import { GradeBar, MoreNewButton, NewDayTitle, OneWordCard, OneWordDone } from '@/components/levels/word/OneWord';
+import { GradeBar, MoreNewButton, MoreNewNote, NewDayTitle, OneWordCard, OneWordDone } from '@/components/levels/word/OneWord';
 import { BrowseBar, PracticeBar, PracticeDone, PracticeIntro } from '@/components/levels/word/WordAreas';
 import { Sheet, TitleSheet, WordPopup } from '@/components/levels/word/WordSheets';
 import { WordSearchResults } from '@/components/levels/word/WordSearch';
@@ -798,8 +798,11 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
             {!listed.active.length && listed.waiting.length > 0 && moreBatch > 0 && <div className="lw-capped" role="status">
               <p className="lw-capped__t"><NewDayTitle started={startedToday} /></p>
               <p className="lw-capped__s">기다리는 카드는 시간이 되면 위로 올라와요</p>
-              <MoreNewButton more={moreBatch} perDay={newPerDay || 0} onMore={moreNew} />
-              <button type="button" className="lw-btn lw-btn--wide" onClick={() => switchView('all')}>전체 훑어보기</button>
+              <div className="lw-done__row">
+                <MoreNewButton more={moreBatch} onMore={moreNew} />
+                <button type="button" className="lw-btn" onClick={() => switchView('all')}>전체 훑어보기</button>
+              </div>
+              <MoreNewNote perDay={newPerDay || 0} />
             </div>}
             {listed.later.length > 0 && <>
               <button type="button" className="lw-later" aria-expanded={laterOpen} onClick={() => setLaterOpen((v) => !v)}>

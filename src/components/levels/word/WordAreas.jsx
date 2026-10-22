@@ -66,12 +66,12 @@ export function PracticeDone({ area, hits, misses, onAgain, moreCount = 0, onMor
       <span className="lw-done__n lw-done__n--again"><b><CountUp n={misses} /></b><small>다시 볼래요</small></span>
     </div>
     <div className="lw-done__actions">
-      {misses > 0 && <button type="button" className="lw-btn lw-btn--primary lw-btn--wide" onClick={onAgain}>놓친 {misses}개 한 번 더
-        <small>오늘 두 번째부터는 진행률에 들어가지 않아요</small></button>}
+      {misses > 0 && <button type="button" className="lw-btn lw-btn--primary" onClick={onAgain}>놓친 {misses}개 한 번 더</button>}
       <div className="lw-done__row">
         {moreCount > 0 && <button type="button" className={`lw-btn${misses > 0 ? '' : ' lw-btn--primary'}`} onClick={onMore}>다음 {moreCount}개</button>}
         <button type="button" className="lw-btn" onClick={onWordTab}>단어 탭으로</button>
       </div>
+      {misses > 0 && <p className="lw-done__note">오늘 두 번째부터는 진행률에 들어가지 않아요</p>}
     </div>
   </section>;
 }

@@ -256,9 +256,8 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-done__counts .lw-grade--good b,.lw-done__n--know b{color:var(--grade-good)}.lw-done__counts .lw-grade--easy b{color:var(--grade-easy)}
 .lw-done__actions{display:grid;gap:8px;margin-top:8px}
 .lw-done__row{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px}
-.lw-btn--wide{min-height:52px;display:grid;place-content:center;gap:1px}
-.lw-btn small{font-size:12px;font-weight:400;color:var(--muted)}
-.lw-btn--primary small{color:var(--lw-chip)}
+/* 단추 밖 회색 한 줄(시안 ⑪) — 단추 안에 두 줄을 넣지 않는다 */
+.lw-done__note{margin:0;font-size:12.5px;color:var(--muted);text-align:center}
 
 /* 되돌리기 안내 — 네 칸 위(한 단어) 또는 화면 아래(리스트). 올라왔다 .15s에 사라짐, 손가락을 올리면 멈춤. */
 /* 캔버스 값(㉒) — 밝은 종이 카드 · 좌우 16px 꽉 · 「되돌리기」 장미색 */
