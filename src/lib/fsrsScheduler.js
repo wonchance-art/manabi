@@ -140,8 +140,10 @@ function stepPlan(card, rating, policy) {
 /**
  * 같은 카드와 한 번 캡처한 시각으로 네 버튼의 실제 전이를 계산한다. 미리 복습하지 않는다.
  * policyVersion = 채점 뒤 카드의 정책(서버가 알린 지금 정책). 생략하면 카드의 정책을 그대로 쓴다.
+ * easyFloor = 학습 · 재학습의 쉬움을 알맞음 간격보다 하루 이상 길게(Anki 대조, 오너 승인 2026-10-23 KST).
+ * false는 그 전에 저장된 채점을 되돌릴 때 원래 계산을 다시 짓는 데만 쓴다(planFsrsUndo).
  */
-export function previewFsrsRatings(input, at, { policyVersion = input?.policyVersion } = {}) {
+export function previewFsrsRatings(input, at, { policyVersion = input?.policyVersion, easyFloor = true } = {}) {
   const card = validateFsrsCard(input), now = schedulerTime(at), policy = fsrsPolicySteps(policyVersion);
   if (now < schedulerTime(card.due)) throw new Error('fsrs_card_not_due');
   const elapsed = card.lastReview === null ? 0 : learningDay(now, card.timeZone, card.rolloverHour)
@@ -152,6 +154,9 @@ export function previewFsrsRatings(input, at, { policyVersion = input?.policyVer
   if (card.state === 'Review') {
     days[1] = Math.min(days[1], days[2]);
     days[2] = Math.min(FSRS_POLICY.maximumInterval, Math.max(days[2], days[1] + 1));
+    days[3] = Math.min(FSRS_POLICY.maximumInterval, Math.max(days[3], days[2] + 1));
+  } else if (easyFloor) {
+    // Anki(rslib learning · relearning answer_easy)는 알맞음이 아직 단계여도 그 FSRS 간격 + 1일을 쉬움의 하한으로 둔다.
     days[3] = Math.min(FSRS_POLICY.maximumInterval, Math.max(days[3], days[2] + 1));
   }
   return Object.fromEntries([1, 2, 3, 4].map(rating => {
