@@ -125,6 +125,16 @@ function Notice({ notice, onDone }) {
   useEffect(() => { setLeaving(false); arm(); return () => clearTimeout(timer.current); }, [arm]);
   const pause = () => { hold.current = true; clearTimeout(timer.current); };
   const resume = () => { hold.current = false; arm(); };
+  // quiet = 평소 채점 — 창 없이 네 칸 바로 위 가운데에 「爸爸 알맞음 · 되돌리기」 한 줄(간격은 단추에 이미 있다 · 오너 10-22 「단어 처리 될 때마다 창 떠야겠나?」 →
+  // 「되돌리기만 남기고」 → 「중앙 배치, 한자 굵기 빼고」 · 화살표 없음). 떠 있는 동안 안내 줄(리스트의 지금 카드 단어)은 숨긴다. 긴 글(10분 뒤 다시)은 화면 읽기에만.
+  if (notice.quiet) {
+    const { word, what, lang } = notice.quiet;
+    return <div className={`lw-undo lw-undo--quiet${leaving ? ' is-leaving' : ''}`} role="status" onPointerEnter={pause} onPointerLeave={resume} onFocus={pause} onBlur={resume}>
+      <span className="sr-only">{word} {notice.text}</span>
+      {notice.onAction && <button type="button" aria-label={`${word} ${what} 되돌리기`} onClick={() => { clearTimeout(timer.current); onDone(); notice.onAction(); }}>
+        <span lang={lang}>{word}</span>{what} · <u>되돌리기</u></button>}
+    </div>;
+  }
   return <div className={`lw-undo${leaving ? ' is-leaving' : ''}`} role="status" onPointerEnter={pause} onPointerLeave={resume} onFocus={pause} onBlur={resume}>
     <span>{notice.text}</span>
     {notice.href && <Link href={notice.href}>{notice.action}</Link>}
@@ -481,7 +491,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
       setClock(Date.now());
       noteAreaGrade(entry.key, rating);
       if (info.status === 'new') popKey(entry.key);
-      setNotice({ id: Date.now(), text: gradeToastText(rating, info.previews?.[rating]), action: grader.undoable(res.undo) ? '되돌리기' : null,
+      setNotice({ id: Date.now(), quiet: { word: cfg.head(entry).hw, lang: cfg.hw, what: gradeToastText(rating, null) }, text: gradeToastText(rating, info.previews?.[rating]), action: grader.undoable(res.undo) ? '되돌리기' : null,
         onAction: grader.undoable(res.undo) ? () => undoRef.current?.({ undo: res.undo, sessionBefore: advance ? before : null, headBefore: advance ? head : null, key: entry.key }) : null });
       lastRef.current = { undo: res.undo, sessionBefore: advance ? before : null, headBefore: advance ? head : null, key: entry.key };
     } catch (error) {
@@ -489,7 +499,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
       toast(failureMessage('채점하지 못했어요.', error), 'error');
     } finally { inFlight.current.delete(entry.key); }
     return undefined;
-  }, [userId, ready, askLogin, cardInfo, session, prefs.mode, currentKey, head, followFocus, known.mutation, known.rows, queryClient, grader, toast, cfg.code, noteAreaGrade]);
+  }, [userId, ready, askLogin, cardInfo, session, prefs.mode, currentKey, head, followFocus, known.mutation, known.rows, queryClient, grader, toast, cfg, noteAreaGrade]);
 
   const lastRef = useRef(null);
   const undoRef = useRef(null);
@@ -537,9 +547,10 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
     });
     const text = !correct ? '다시 볼래요 · 다음 연습에 먼저 나와요' : sameDay ? '알아요 · 오늘 먼저 본 단어라 진도에는 안 들어가요' : '알아요';
     lastRef.current = { practice: [entry.key, which, row] };
-    setNotice({ id: Date.now(), text, action: '되돌리기', onAction: () => undoRef.current?.({ practice: [entry.key, which, row] }) });
+    // 같은 날 규칙에 걸린 알아요만 창으로 알린다(진도에 안 들어가는 까닭) — 나머지는 조용한 되돌리기.
+    setNotice({ id: Date.now(), quiet: correct && sameDay ? null : { word: cfg.head(entry).hw, what: correct ? '알아요' : '다시 볼래요' }, text, action: '되돌리기', onAction: () => undoRef.current?.({ practice: [entry.key, which, row] }) });
     return undefined;
-  }, [userId, askLogin, roundOn, round, seenElsewhere, prefs.mode, answerArea, fetchProfile]);
+  }, [userId, askLogin, roundOn, round, seenElsewhere, prefs.mode, answerArea, fetchProfile, cfg]);
   undoPracticeRef.current = (key, which, row) => {
     areaRec.cancel(key, which, row);
     setRound((r) => {
@@ -563,10 +574,10 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
     setClock(Date.now());
     popKey(entry.key);
     lastRef.current = res.undo ? { undo: res.undo, sessionBefore: null, key: entry.key } : null;
-    setNotice({ id: Date.now(), text: '담았어요 · 오늘 복습', action: res.undo ? '되돌리기' : null,
+    setNotice({ id: Date.now(), quiet: { word: cfg.head(entry).hw, lang: cfg.hw, what: '담음' }, text: '담았어요 · 오늘 복습', action: res.undo ? '되돌리기' : null,
       onAction: res.undo ? () => undoRef.current?.({ undo: res.undo, sessionBefore: null, key: entry.key }) : null });
     return undefined;
-  }, [userId, askLogin, saving, grader]);
+  }, [userId, askLogin, saving, grader, cfg]);
 
   // ── 찾기 ──
   const [searchOpen, setSearchOpen] = useState(false);
@@ -666,7 +677,8 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
   const keyState = useRef({});
   keyState.current = { current, revealed, mode: prefs.mode, blocked: searchOpen || sheetOpen || !!card, onGrade, undo, focus: focusEntry,
     practice: roundOn ? (prefs.mode === 'one' ? practiceEntry : practiceFocus) : null, onPractice, browse,
-    reveal: () => { const k = roundOn ? practiceEntry?.key : current?.key; if (k) areaRec.noteOpen(k, practice || 'word'); setRevealed(true); },
+    // 다음 카드를 펼치면 직전 채점의 조용한 되돌리기는 거둔다(뒷면 안내 줄과 겹치지 않게 — Ctrl/⌘+Z는 창 안이면 그대로).
+    reveal: () => { const k = roundOn ? practiceEntry?.key : current?.key; if (k) areaRec.noteOpen(k, practice || 'word'); setRevealed(true); setNotice((n) => (n?.quiet ? null : n)); },
     step: (d) => setBrowseAt((i) => Math.max(0, Math.min(allEntries.length - 1, i + d))) };
   useEffect(() => {
     const onKey = (event) => {

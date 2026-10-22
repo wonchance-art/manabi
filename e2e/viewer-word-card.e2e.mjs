@@ -849,11 +849,10 @@ const popGeometry=page=>page.evaluate(()=>{
  const lines=el=>{const range=document.createRange();range.selectNodeContents(el);let n=0,bottom=-Infinity;for(const r of [...range.getClientRects()].filter(r=>r.width>0).sort((a,b)=>a.top-b.top)){if(r.top>=bottom-1){n++;bottom=r.bottom;}else bottom=Math.max(bottom,r.bottom);}return n;}; // 줄 상자 수 — 세로로 겹치지 않는 사각형 무리
  const multi=[...pop.querySelectorAll('.hanja-pop__hun,.hanja-pop__pl,.hanja-pop__tile > span,.hanja-pop__note,.hanja-pop__fc > *,.hanja-pop__unknown')].filter(el=>el.getClientRects().length&&el.textContent.trim()&&lines(el)>1).map(el=>el.className+':'+el.textContent);
  const over=rows.filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.className+':'+el.textContent);
- const content=[...pop.children].filter(el=>el.getClientRects().length&&!el.classList.contains('hanja-pop__arrow')&&!el.classList.contains('hanja-pop__close')).map(b);
+ const content=[...pop.children].filter(el=>el.getClientRects().length&&!el.classList.contains('hanja-pop__close')).map(b);
  const anchor=card.querySelector('.word-fit__char--active');
- const arrow=pop.querySelector('.hanja-pop__arrow');
  return {pop:p,body,card:cardBox,vh:innerHeight,vw:innerWidth,gradeTop:grade?b(grade).top:null,multi,over,contentBottom:Math.max(...content.map(c=>c.bottom)),
-  anchor:anchor?b(anchor):null,arrowX:arrow&&getComputedStyle(arrow).display!=='none'?b(arrow).left+b(arrow).width/2:null,view:pop.dataset.view,compact:pop.dataset.compact||null,shifted:pop.dataset.shifted||null,
+  anchor:anchor?b(anchor):null,view:pop.dataset.view,compact:pop.dataset.compact||null,shifted:pop.dataset.shifted||null,
   focus:document.activeElement===pop?'pop':document.activeElement?.closest?.('.hanja-pop')?document.activeElement.className:document.activeElement?.dataset?.inspectKey!=null?`char:${document.activeElement.textContent}`:document.activeElement?.tagName,
   text:pop.innerText,dialog:{role:pop.getAttribute('role'),modal:pop.getAttribute('aria-modal'),label:document.getElementById(pop.getAttribute('aria-labelledby'))?.textContent||null},
   oldCard:card.querySelectorAll('.char-inspect').length};
@@ -872,7 +871,7 @@ function assertPopGeometry(g,{label,width}) {
  assert.equal(g.oldCard,0,`${label}: no character card in Chinese general mode`);
  assert.ok(!/\bAI\b/.test(g.text),`${label}: no 「AI」 label`);
 }
-// 색 대비 — 머리 훈(뜻 색)·음(소리 색)·뜻 조각 글자·표지가 그 바탕 위에서 4.5:1 이상(종이·밝게·어둡게).
+// 색 대비 — 머리 훈음 · 正 · 조각 훈음 · 표지(뜻 · 소리) · 누른 글자가 그 바탕(창 · 글자 칸) 위에서 4.5:1 이상(종이·밝게·어둡게).
 const popContrast=page=>page.evaluate(()=>{
  const card=[...document.querySelectorAll('#inspector-word')].find(el=>el.getClientRects().length);
  const pop=card.querySelector('.hanja-pop');
@@ -883,9 +882,8 @@ const popContrast=page=>page.evaluate(()=>{
  const bgOf=el=>{for(let e=el;e;e=e.parentElement){const c=parse(getComputedStyle(e).backgroundColor);if(c&&c.a>=.99)return c.rgb;}return [255,255,255];};
  const pair=sel=>{const el=pop.querySelector(sel);if(!el)return null;const c=parse(getComputedStyle(el).color);return {sel,color:getComputedStyle(el).color,ratio:Math.round(ratio(c.rgb,bgOf(el))*100)/100};};
  const same=(a,b)=>getComputedStyle(pop.querySelector(a)).color===getComputedStyle(pop.querySelector(b)).color;
- return {pairs:['.hanja-pop__hun .is-meaning','.hanja-pop__hun .is-sound','.hanja-pop__piece.is-meaning','.hanja-pop__piece.is-meaning i','.hanja-pop__piece.is-sound strong','.hanja-pop__piece.is-sound i','.hanja-pop__ch--zheng','.hanja-pop__tile em'].map(pair),
-  meaningLinked:same('.hanja-pop__hun .is-meaning','.hanja-pop__piece.is-meaning b'),soundLinked:same('.hanja-pop__hun .is-sound','.hanja-pop__piece.is-sound strong'),
-  meaningVsSound:getComputedStyle(pop.querySelector('.hanja-pop__hun .is-meaning')).color!==getComputedStyle(pop.querySelector('.hanja-pop__hun .is-sound')).color};
+ return {pairs:['.hanja-pop__hun','.hanja-pop__ch--zheng','.hanja-pop__piece .hanja-pop__pl','.hanja-pop__piece.is-meaning i','.hanja-pop__piece.is-sound i','.hanja-pop__tile em','.hanja-pop__tko'].map(pair),
+  meaningVsSound:!same('.hanja-pop__piece.is-meaning i','.hanja-pop__piece.is-sound i')};
 });
 
 test('AE-R4 390 · 1440: 壮观의 观 → 한자 창(머리 · 구성 · 같은 한자어) — 한 줄 · 크기 고정 · 이동 0 · 등급 가림 0 · 키보드로 열기·드릴다운·닫기 · Esc·바깥·같은 글자로 닫힘 · 색 대비',{timeout:240000},async()=>{
@@ -914,22 +912,22 @@ test('AE-R4 390 · 1440: 壮观의 观 → 한자 창(머리 · 구성 · 같은
    let g=await popGeometry(f.page);
    assertPopGeometry(g,{label,width:popWidth});
    assert.equal(g.focus,'pop',`${label}: focus moves into the popover`);
-   assert.ok(g.arrowX!==null&&Math.abs(g.arrowX-(g.anchor.left+g.anchor.width/2))<=1.5,`${label}: arrow points at the tapped glyph`);
+   assert.ok(g.pop.left<=g.anchor.left+g.anchor.width/2&&g.anchor.left+g.anchor.width/2<=g.pop.right,`${label}: the popover sits under the tapped glyph`);
    const size=[g.pop.width,g.pop.height].join('x'),place=[g.pop.left,g.pop.top].join(',');
    assert.deepEqual(await cardBoxes(f.page),before,`${label}: opening moves no card element`);
-   assert.equal(await pop.locator('.hanja-pop__head').innerText().then(t=>t.replace(/\s+/g,' ').trim()),'观 guān → 觀 볼 관');
+   assert.equal(await pop.locator('.hanja-pop__head').innerText().then(t=>t.replace(/\s+/g,' ').trim()),'观 guān 볼 관 正 觀');
    assert.equal(await pop.locator('.hanja-pop__piece.is-meaning').getAttribute('aria-label'),'見 볼 견, 뜻 조각');
    assert.equal(await pop.locator('.hanja-pop__piece.is-sound').getAttribute('aria-label'),'雚 황새 관, 소리 조각');
    const tiles=await pop.locator('.hanja-pop__tile .hanja-pop__tzh').allInnerTexts();
    assert.ok(tiles.length===3&&tiles[0]==='参观'&&!tiles.includes('壮观'),`${label}: 3 tiles, my word first, current word excluded: ${tiles}`);
-   assert.equal(await pop.locator('.hanja-pop__tile').first().locator('.hanja-pop__mine').innerText(),'내 단어');
-   assert.equal(await pop.locator('.hanja-pop__tile').first().locator('em').allInnerTexts().then(x=>x.join('|')),'guān|观|관');
+   assert.equal(await pop.locator('.hanja-pop__mine, .hanja-pop__arrow').count(),0,'no 「내 단어」 badge, no arrow (owner 2026-10-22 KST)');
+   assert.equal(await pop.locator('.hanja-pop__tile').first().locator('em').allInnerTexts().then(x=>x.join('|')),'观|guān|관');
    assert.equal(await pop.locator('.hanja-pop__parts .hanja-pop__py').count(),0,'no pinyin on the pieces');
    // 색 연결 · 대비(종이 · 밝게 · 어둡게)
    for(const theme of ['sepia','light','dark']){
     await f.page.evaluate(t=>document.querySelector('.viewer-layout').setAttribute('data-reader-theme',t),theme);
     const c=await popContrast(f.page);
-    assert.ok(c.meaningLinked&&c.soundLinked&&c.meaningVsSound,`${label} ${theme}: head hun/eum colors = piece colors ${JSON.stringify(c)}`);
+    assert.ok(c.meaningVsSound,`${label} ${theme}: 뜻 · 소리 표지 색이 다르다 ${JSON.stringify(c)}`);
     for(const p of c.pairs)assert.ok(p&&p.ratio>=4.5,`${label} ${theme}: contrast ${JSON.stringify(p)}`);
    }
    await f.page.evaluate(()=>document.querySelector('.viewer-layout').setAttribute('data-reader-theme','sepia'));
@@ -978,7 +976,7 @@ test('AE-R4 390 · 1440: 壮观의 观 → 한자 창(머리 · 구성 · 같은
    g=await popGeometry(f.page);
    assertPopGeometry(g,{label:`${label} 壮`,width:popWidth});
    assert.equal([g.pop.width,g.pop.height].join('x'),size,'another glyph keeps the size');
-   assert.ok(Math.abs(g.arrowX-(g.anchor.left+g.anchor.width/2))<=1.5,'arrow follows the new glyph');
+   assert.ok(g.pop.left<=g.anchor.left+g.anchor.width/2&&g.anchor.left+g.anchor.width/2<=g.pop.right,'the popover stays under the new glyph');
    assert.deepEqual(await cardBoxes(f.page),before,`${label}: switching glyphs moves no card element`);
    await zhuang.click();
    await pop.waitFor({state:'detached'});
@@ -1029,8 +1027,8 @@ test('AE-R4 390 첫 화면 우선: 3줄 문장 속 体育场의 场 · 技术의
   await pop.locator('.hanja-pop__parts.is-unknown').waitFor();
   const g=await popGeometry(h.page);
   assertPopGeometry(g,{label:'术 1440',width:318});
-  assert.equal((await pop.locator('.hanja-pop__head').innerText()).replace(/\s+/g,' ').trim(),'术 shù → 術 재주 술');
-  assert.equal(await pop.locator('.hanja-pop__head .is-meaning, .hanja-pop__head .is-sound, .hanja-pop__parts .is-meaning, .hanja-pop__parts .is-sound').count(),0,'unknown role: no role colors');
+  assert.equal((await pop.locator('.hanja-pop__head').innerText()).replace(/\s+/g,' ').trim(),'术 shù 재주 술 正 術');
+  assert.equal(await pop.locator('.hanja-pop__parts .is-meaning, .hanja-pop__parts .is-sound').count(),0,'unknown role: no role marks');
   assert.ok((await pop.locator('.hanja-pop__parts').innerText()).includes('역할 미상'));
   assert.equal(await pop.locator('.hanja-pop__parts [title="삽주뿌리 출"]').count(),1,'original hun of 术 stays in the title');
   if(process.env.COMPOSER_SCREENSHOTS)await h.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/hanja-pop-shu-1440.png`});
