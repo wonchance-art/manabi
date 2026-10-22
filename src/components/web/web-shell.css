@@ -158,28 +158,56 @@
 .discover-topics strong{font-size:18px;font-weight:600}
 .discover-topics small{font-size:12px;color:var(--muted)}
 .discover-topics .discover-all{min-height:44px;padding:15px 0;font-size:13px}
-.discover-cultures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px}
-.discover-cultures>a{position:relative;border-top:1px solid var(--rule);padding-top:18px}
-.discover-cultures>a>span{display:block;color:var(--ja);font-size:45px;font-weight:400;letter-spacing:-2px;margin-bottom:20px}
-.discover-cultures small{font-size:11px;color:var(--muted)}
-.discover-cultures h3{font-size:20px;line-height:1.6;letter-spacing:-.7px;margin:10px 0}
-.discover-cultures p{font-size:13px;line-height:1.9;color:var(--muted)}
-.discover-cultures b{position:absolute;top:20px;right:0;font-size:23px;font-weight:400}
-/* 발견 서가(SHELF-001) — 칸마다 왼쪽 이름표 + 오른쪽 글 목록. 개인 서재의 .shelf-*와 이름을 나눈다. */
-.discover-shelf{margin-bottom:56px}
-.discover-shelf__row{display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px;border-top:1px solid var(--rule);padding:20px 0}
-.discover-shelf__label{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
-.discover-shelf__label h3{font-size:17px;letter-spacing:-.5px;margin:0}
-.discover-shelf__label small{font-size:12px;color:var(--muted)}
-.discover-shelf__label .manabi-link{margin-top:8px;font-size:13px;min-height:44px;display:inline-flex;align-items:center}
-.discover-shelf__items{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
-.discover-shelf__items a{display:flex;flex-direction:column;gap:6px;min-height:44px;color:var(--ink);text-decoration:none}
-.discover-shelf__items a:hover strong,.discover-shelf__items a:focus-visible strong{text-decoration:underline}
-.discover-shelf__items small{font-size:11px;color:var(--ja)}
-.discover-shelf__items strong{font-size:15px;line-height:1.6;font-weight:600;overflow-wrap:anywhere}
-.discover-shelf__items span{font-size:12px;color:var(--muted)}
-@container manabi-shell (max-width:900px){.discover-shelf__row{grid-template-columns:minmax(0,1fr);gap:12px}.discover-shelf__items{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@container manabi-shell (max-width:640px){.discover-shelf__items{grid-template-columns:minmax(0,1fr)}}
+/* 산책 큰 칸 셋(DISCOVER-CLASSICS-001) — 배움 이어 읽기 칸(.learn-resume)과 같은 몸: 색 머리 · 본문 · 아래 단추. 넓으면 가로 셋(정사각), 좁으면 세로(높이 236 — 배움 휴대폰 선례). */
+.discover-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:28px}
+.discover-tile{--tc:var(--ink);aspect-ratio:1;max-width:100%;display:flex;flex-direction:column;min-width:0;border-radius:20px;overflow:hidden;background:var(--sheet);border:1px solid var(--rule);box-shadow:0 1px 3px color-mix(in srgb,var(--ink) 6%,transparent);color:var(--ink);text-decoration:none;transition:background .15s ease}
+.discover-tile--news{--tc:var(--fr)}.discover-tile--classics{--tc:var(--ja)}.discover-tile--magazine{--tc:var(--zh)}
+a.discover-tile:hover{background:color-mix(in srgb,var(--ink) 4%,var(--sheet))}
+a.discover-tile:focus-visible{outline:3px solid var(--tc);outline-offset:3px}
+.discover-tile__head{display:flex;flex-direction:column;justify-content:space-between;height:124px;padding:20px 24px;background:var(--tc);color:#fff;flex:none}
+.discover-tile__kicker{font:700 12px/1.4 var(--font-noto-kr),sans-serif;letter-spacing:.02em;color:color-mix(in srgb,#fff 90%,transparent)}
+.discover-tile__big{font:700 32px/1 var(--font-serif-kr),serif;letter-spacing:-1px}
+.discover-tile__body{display:flex;flex-direction:column;gap:4px;padding:18px 24px 0;min-width:0}
+.discover-tile__title{display:-webkit-box;font:700 19px/1.5 var(--font-serif-kr),serif;overflow-wrap:anywhere;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.discover-tile__sub{font-size:13px;line-height:1.5;color:var(--muted);overflow-wrap:anywhere}
+.discover-tile__covers{display:flex;gap:12px;align-items:flex-end}
+.discover-tile__cover{display:block;zoom:1.4;flex:none}
+.discover-tile__cover--blank{width:60px;height:84px;border-radius:1px 2px 2px 1px;background:color-mix(in srgb,var(--ink) 8%,var(--sheet))}
+.discover-tile__bottom{margin-top:auto;display:flex;align-items:center;gap:12px;padding:0 24px 22px}
+.discover-tile__spacer{flex:1}
+.discover-tile__pill{display:inline-flex;align-items:center;gap:12px;height:44px;padding:0 6px 0 18px;border-radius:999px;font-weight:700;font-size:14px;white-space:nowrap;background:var(--tc);color:#fff;flex:none}
+.discover-tile__pill i{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-style:normal;background:#fff;color:var(--tc)}
+div.discover-tile .discover-tile__title{color:var(--muted)}
+.discover-more{margin:0 0 40px}
+.discover-more .manabi-link{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:14px}
+@container manabi-shell (max-width:900px){.discover-tile__head{height:104px;padding:18px 20px}.discover-tile__body{padding:16px 20px 0}.discover-tile__bottom{padding:0 20px 18px}.discover-tile__cover{zoom:1}}
+@container manabi-shell (max-width:640px){.discover-tiles{grid-template-columns:minmax(0,1fr)}.discover-tile{aspect-ratio:auto;height:236px}.discover-tile__head{height:92px;padding:16px 22px}.discover-tile__big{font-size:28px}.discover-tile__body{padding:14px 22px 0}.discover-tile__title{font-size:18px}.discover-tile__bottom{padding:0 22px 18px}.discover-tile__cover{zoom:.8}div.discover-tile{height:auto;padding-bottom:18px}}
+@media (prefers-reduced-motion:reduce){.discover-tile{transition:none}}
+
+/* 고전 명작(DISCOVER-CLASSICS-001) — 칩 두 줄까지(언어 · 갈래) · 작가 줄 · 표지 격자. 표지는 60×84 그림을 zoom으로 키운다(글자 획까지 다시 그린다). */
+.classics-chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.classics-chip{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);font-size:14px;text-decoration:none}
+.classics-chip:hover{background:color-mix(in srgb,var(--ink) 4%,var(--sheet))}
+.classics-chip[aria-current=true]{background:var(--ink);border-color:var(--ink);color:var(--sheet);font-weight:600}
+.classics-chip:focus-visible,.classics-card a:focus-visible,.classics-author__clear:focus-visible{outline:3px solid var(--ja);outline-offset:2px}
+.classics-author{display:flex;align-items:center;gap:4px;margin:4px 0 16px;font-size:15px;font-weight:600}
+.classics-author__clear{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;color:var(--muted);text-decoration:none}
+.classics-author__clear:hover{background:color-mix(in srgb,var(--ink) 4%,var(--sheet));color:var(--ink)}
+.classics-state{margin:24px 0;font-size:15px;color:var(--muted)}
+.classics-grid{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:32px 20px}
+.classics-card{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.classics-card__open{display:flex;flex-direction:column;gap:2px;color:var(--ink);text-decoration:none;min-width:0;max-width:100%}
+.classics-card__cover{display:block;zoom:1.6;margin-bottom:6px;flex:none;transition:transform .15s ease}
+.classics-card__open:hover .classics-card__cover{transform:translateY(-2px)}
+.classics-card__open>strong{font-size:15px;line-height:1.45;font-weight:700;overflow-wrap:anywhere}
+.classics-card__open:hover>strong{text-decoration:underline}
+.classics-card__open>span:not(.classics-card__cover){font-size:13px;line-height:1.45;color:var(--muted);overflow-wrap:anywhere}
+.classics-card__author{display:inline-flex;align-items:center;min-height:44px;font-size:13px;color:var(--ink);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
+.classics-card__author:hover,.classics-card__author[aria-current=true]{text-decoration-color:currentColor}
+.classics-card>small{font-size:12px;color:var(--muted)}
+@container manabi-shell (max-width:640px){.classics-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 12px}.classics-card__cover{zoom:1.35}.classics-chip{padding:0 14px}}
+@container manabi-shell (max-width:360px){.classics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (prefers-reduced-motion:reduce){.classics-card__cover{transition:none}.classics-card__open:hover .classics-card__cover{transform:none}}
 @container manabi-shell (min-width:901px){.manabi-app .mobile-nav{display:none}}
 @container manabi-shell (max-width:1050px){.manabi-app .gnb__nav{margin-left:15px;gap:24px}.manabi-app .gnb{gap:17px}.manabi-app .manabi-series-shelf{gap:22px}.manabi-app .manabi-series-book .manabi-cover{padding:20px}.manabi-app .manabi-series-book .manabi-cover>strong{font-size:15px;margin-top:18px}.manabi-app .manabi-series-book .manabi-cover__glyph{font-size:90px}.today-opening{gap:22px}.today-open-page{padding:22px 19px}.today-bottom{gap:35px}}
 @container manabi-shell (max-width:900px){.manabi-app .app-layout{--gnb-height:66px;padding-top:66px}.manabi-app .gnb{height:66px;--gnb-height:66px;padding-inline:24px}.manabi-app .gnb__nav{display:none}.manabi-app .gnb__actions{margin-left:0}.manabi-search-link{margin-left:auto}.manabi-app .gnb__logo{font-size:32px}.manabi-app .mobile-nav{display:flex;height:calc(60px + env(safe-area-inset-bottom));padding-inline:10px}.manabi-app .app-layout{padding-bottom:calc(80px + env(safe-area-inset-bottom))}.manabi-app .manabi-page{padding-top:35px}.today-opening{min-height:470px}.today-copy h1{font-size:48px}.today-book-scene{padding-left:0}.manabi-app .today-open-book .manabi-cover>strong{font-size:12px}.manabi-app .today-open-book .manabi-cover__top{font-size:7px}.manabi-app .today-open-book .manabi-cover__bottom{font-size:9px}.today-open-page{padding:18px 15px}.today-page-quote small{font-size:10px}.today-page-quote p{font-size:23px}.today-page-top,.today-page-bottom{font-size:7px}.today-page-top i{top:-18px;height:38px;width:13px}.manabi-app .manabi-series-shelf{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px}.manabi-app .manabi-series-book .manabi-cover{padding:25px;max-width:none}.manabi-app .manabi-series-book .manabi-cover>strong{font-size:20px}.manabi-app .manabi-series-book .manabi-cover__glyph{font-size:125px}.manabi-app .manabi-book-hero{gap:35px;grid-template-columns:210px 1fr}.manabi-app .manabi-book-hero h1{font-size:35px}.discover-opening{grid-template-columns:1.4fr 1fr;gap:25px}.discover-feature{padding:25px;min-height:500px}.discover-glyph{font-size:90px}.discover-topics h2{font-size:29px}.discover-cultures{gap:20px}}

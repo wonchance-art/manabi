@@ -1,46 +1,20 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { createElement } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { sliceBetween } from '../../../lib/__tests__/helpers/sliceBetween.js';
-import DiscoverShelf, { SHELF_NEWS_LIMIT, interleaveByLanguage, shelfDateLabel } from '../DiscoverShelf';
 
-// 발견 서가(SHELF-001 — 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」 2026-10-16 KST).
+// 산책 화면 배선(SHELF-001 — 오너 「발견에 공개」·「지역학 치워버려 지우진 말고」 2026-10-16 KST → 큰 칸 셋 DISCOVER-CLASSICS-001 2026-10-22 KST).
+// 칸 그림 자체는 src/lib/__tests__/classicsShelf.test.jsx(DiscoverTiles · ClassicsShelf)가 본다.
 const ROOT = path.resolve(__dirname, '../../../..');
 const read = (file) => fs.readFileSync(path.join(ROOT, file), 'utf8');
-const row = (id, language, over = {}) => ({ id: `00000000-0000-4000-8000-00000000000${id}`, language, level: 'N3 중급', title: `제목 ${id}`,
-  channel_name: '출처', transcript: '본문', material_id: null, source: 'nhk_easy', ...over });
-
-describe('오늘의 소식 칸', () => {
-  it('언어를 번갈아 최대 넷을 고른다(같은 언어 안의 순서는 그대로)', () => {
-    const rows = [row(1, 'English'), row(2, 'English'), row(3, 'English'), row(4, 'Japanese'), row(5, 'Japanese')];
-    expect(interleaveByLanguage(rows).map((r) => r.id.slice(-1))).toEqual(['1', '4', '2', '5']);
-    expect(interleaveByLanguage(rows)).toHaveLength(SHELF_NEWS_LIMIT);
-    expect(interleaveByLanguage([row(1, 'English')])).toHaveLength(1);
-  });
-  it('날짜는 「10월 16일」, 읽을 수 없는 카드는 빼고 센다', () => {
-    expect(shelfDateLabel('2026-10-16')).toBe('10월 16일');
-    const html = renderToStaticMarkup(createElement(DiscoverShelf, {
-      suggestions: [row(1, 'Japanese'), row(2, 'English', { transcript: null })], publicCount: 0, date: '2026-10-16' }));
-    expect(html).toContain('오늘의 소식');
-    expect(html).toContain('>전체 보기</a>');
-    expect(html).not.toMatch(/전체 보기 \(\d+\)/);
-    expect(html).toContain('제목 1');
-    expect(html).not.toContain('제목 2');
-    expect(html).toContain('lang="ja"');
-    expect(html).toContain('?from=discover');
-  });
-  it('소식도 공개 글도 없으면 서가를 그리지 않는다 — 빈 칸 안내를 만들지 않는다', () => {
-    expect(renderToStaticMarkup(createElement(DiscoverShelf, { suggestions: [], publicCount: 0 }))).toBe('');
-    expect(renderToStaticMarkup(createElement(DiscoverShelf, { suggestions: [], publicCount: 123 }))).toContain('공개 글 123편');
-  });
-});
-
-describe('발견 화면 배선', () => {
+describe('산책 화면 배선', () => {
   const page = () => read('src/app/(app)/discover/page.jsx');
-  it('서가를 그리고, 오늘의 추천은 /api/suggestions/today와 같은 todaySuggestions를 쓴다', () => {
-    expect(page()).toContain('<DiscoverShelf');
+  it('큰 칸 셋을 그리고, 오늘 화제는 /api/suggestions/today와 같은 todaySuggestions를, 고전 명작은 발행 기록 서가를 쓴다', () => {
+    expect(page()).toContain('<DiscoverTiles suggestions={suggestions} classics={classics} date={kstDateString()} />');
+    expect(page()).toContain('releasedClassicsOf(client).then(({ items }) => items)');
+    expect(page()).toContain('<h1>산책</h1>');
+    expect(page()).not.toMatch(/publishedReading|discover-cultures|문화 읽기<\/h2>/); // N5 문화 읽기는 산책에서 내렸다(교재 화면에 있다)
+    expect(fs.existsSync(path.join(ROOT, 'src/components/web/DiscoverShelf.jsx'))).toBe(false);
     expect(page()).toContain('todaySuggestions(client)');
     expect(read('src/app/api/suggestions/today/route.js')).toContain('todaySuggestions(');
   });
@@ -54,6 +28,7 @@ describe('발견 화면 배선', () => {
     expect(page()).toContain("client.rpc('public_book_catalog', {}, { count: 'exact', head: true }).not('title', 'ilike', SERIES_TITLE_ILIKE)");
     expect(page()).not.toMatch(/rpc\('public_book_catalog'\)\.then/);
     expect(page()).toContain('const publicCount = looseCount + bookChapterCount;');
+    expect(page()).toContain('{publicCount > 0 && <p className="discover-more">'); // 공개 글이 없으면 줄을 두지 않는다
   });
   it('자료 목록 화면은 그 화면에서만 받는다 — 산책 · 서재 기본 화면 JS에 싣지 않는다(운영 약 119KB, 2026-10-17 KST)', () => {
     for (const file of ['src/app/(app)/discover/page.jsx', 'src/components/web/LibraryPage.jsx']) {
@@ -85,29 +60,13 @@ describe('발견 화면 배선', () => {
     // 서재 도구: 확인 뒤 PDF 조회 줄이 골격 위에 끼지 않게 확인 중에도 같은 줄을 미리 둔다.
     expect(src).toContain('{showPdfs && (pdfsLoading || signInPending) && <p aria-busy="true">PDF 목록 확인 중…</p>}');
   });
-  it('비로그인 서재는 서가로 안내한다', () => {
-    expect(read('src/components/web/LibraryPage.jsx')).toContain('href="/discover">서가에서 읽어 보기</Link>');
+  it('비로그인 서재는 산책으로 안내한다', () => {
+    expect(read('src/components/web/LibraryPage.jsx')).toContain('href="/discover">산책에서 읽어 보기</Link>');
   });
 });
 
-// B2 A안(오너 「권장대로」 2026-10-17 KST): 부제는 제목 아래 · 오른쪽 끝은 비운다 · 소식 「전체 보기」는 「함께 읽는 글」 아래 「오늘의 소식」 칸으로.
-describe('서가 머리 · 소식 전체 보기(B2 A안)', () => {
-  const html = renderToStaticMarkup(createElement(DiscoverShelf, { suggestions: [row(1, 'Japanese')], publicCount: 3, date: '2026-10-16' }));
-
-  it('「서가」 아래 부제 「누구나 읽는 책장」 — 줄 머리와 같은 쌓기(h + small), 머리 오른쪽에는 아무것도 없다', () => {
-    expect(html).toContain('<div class="manabi-section-heading"><div class="discover-shelf__label"><h2 id="discover-shelf-title">서가</h2><small>누구나 읽는 책장</small></div></div>');
-    expect(html).not.toContain('<span>누구나 읽는 책장</span>');
-  });
-
-  it('소식 「전체 보기」는 #today-news로, 「함께 읽는 글」 「전체 보기」는 목록 맨 위로', () => {
-    expect(html).toContain('href="/discover?view=reading#today-news">전체 보기</a>');
-    expect(html.match(/href="\/discover\?view=reading">전체 보기<\/a>/g)).toHaveLength(1);
-  });
-
-  it('발견 대기 화면 머리도 같은 모양이다', () => {
-    expect(read('src/app/(app)/discover/loading.jsx')).toContain('<div className="manabi-section-heading"><div className="discover-shelf__label"><h2>서가</h2><small>누구나 읽는 책장</small></div></div>');
-  });
-
+// 소식 「전체 보기」는 「함께 읽는 글」 아래 「오늘의 소식」 칸(#today-news) — 산책 「오늘 화제」 칸이 그리로 간다(B2 A안 · DISCOVER-CLASSICS-001).
+describe('오늘 화제 → 오늘의 소식 칸', () => {
   it('「함께 읽는 글」 화면의 칸 — id · 제목 「오늘의 소식」 · 목록과 소식이 둘 다 온 뒤 한 번 내려가 초점(#library-search와 같은 해시 처리)', () => {
     const page = read('src/views/MaterialsPage.jsx');
     expect(read('src/lib/suggestionReading.js')).toContain("export const TODAY_NEWS_ID = 'today-news';");

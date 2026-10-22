@@ -462,7 +462,7 @@ group by 1 order by 1;
   고르는 사람에게 길이는 갈래가 아니라 책 정보(분량 · 장 수)로 이미 보인다 — 갈래는 형식만 남긴다. 옛 값 novel · short는 모르는 값으로 막는다.
   보기: `import.mjs --list --by category [--category young]`(큰 갈래 key 또는 작은 갈래 key) · 고르기: `--next N --category drama`.
   계약: 모든 줄에 알려진 작은 갈래 하나 · 큰 갈래 key나 옛 값(children · novel · short)은 막는다 · 갈래마다 책이 있다
-  (`literatureCatalog.test.js`). 모르는 `--category` 값은 멈춘다(오타가 빈 목록으로 지나가지 않게).
+  (`literatureCatalog.test.js`). 갈래 정의의 정본은 `src/lib/literatureCategories.js`(산책 「고전 명작」도 같이 쓴다 — 카탈로그 규칙 모듈은 다시 내보내기만). 모르는 `--category` 값은 멈춘다(오타가 빈 목록으로 지나가지 않게).
   목록 페이지(큰 갈래 지도 › 작은 갈래 태그 · 나라 · 상태 · 검색): https://claude.ai/artifact/MD6iMn7K5w8idmMuqxRoyA
 - **loadable** 줄 = 가져오기 입력 전부: 출처 위치 · 출판 연도 · 작가 몰년 · 원산국 · (번역자 기록) · 한국어 표기 · 레벨(그 언어 목록 — 한국어는 초급·중급·고급).
   계약: 오늘 한국 공개 가능(아오조라는 D5 — 일본 만료, 그 밖은 rightsKorea) · 표지 표기가 장정 규칙 통과 · key 폴더가 아직 없다.
