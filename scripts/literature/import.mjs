@@ -188,6 +188,11 @@ function list() {
 }
 
 function main() {
+  // 모르는 갈래 값이면 멈춘다 — 오타(--category childern)가 빈 목록 · 빈 --next로 조용히 지나가지 않게
+  if (flag('category') && !Object.hasOwn(CATALOG_GROUPS, flag('category')) && !Object.hasOwn(CATALOG_CATEGORIES, flag('category'))) {
+    console.error(`모르는 갈래 「${flag('category')}」 — 큰 갈래 ${Object.keys(CATALOG_GROUPS).join(' · ')} · 작은 갈래 ${Object.keys(CATALOG_CATEGORIES).join(' · ')}`);
+    process.exit(1);
+  }
   if (has('list')) return list();
   const catalog = readCatalog();
   const nextCount = Number(flag('next') || 0);

@@ -20,14 +20,14 @@
       "key": "aozora-000035-000301",
       "status": "수록",
       "country": "JP",
-      "category": "novel"
+      "category": "short"
     },
     {
       "id": "jp-aozora-1565",
       "key": "aozora-000035-001565",
       "status": "수록",
       "country": "JP",
-      "category": "novel"
+      "category": "short"
     },
     {
       "id": "jp-aozora-1567",
@@ -139,7 +139,7 @@
       "key": "aozora-000148-000752",
       "status": "수록",
       "country": "JP",
-      "category": "novel"
+      "category": "short"
     },
     {
       "id": "jp-aozora-753",
@@ -962,7 +962,7 @@
       "key": "pd-gau-george-orwell_animal-farm",
       "status": "수록",
       "country": "GB",
-      "category": "novel"
+      "category": "short"
     },
     {
       "id": "gb-george-orwell-nineteen-eighty-four",
@@ -1252,7 +1252,7 @@
       "key": "se-h-g-wells_the-time-machine",
       "status": "loadable",
       "country": "GB",
-      "category": "novel",
+      "category": "short",
       "language": "English",
       "title": "The Time Machine",
       "author": "H. G. Wells",
@@ -2267,7 +2267,7 @@
       "key": "se-jack-london_the-call-of-the-wild",
       "status": "loadable",
       "country": "US",
-      "category": "novel",
+      "category": "short",
       "language": "English",
       "title": "The Call of the Wild",
       "author": "Jack London",
@@ -2808,7 +2808,7 @@
       "key": "pd-fp-albert-camus_l-etranger",
       "status": "수록",
       "country": "FR",
-      "category": "novel"
+      "category": "short"
     },
     {
       "id": "fr-albert-camus-le-mythe-de-sisyphe",
@@ -3353,7 +3353,7 @@
       "key": "pd-fp-antoine-de-saint-exupery_vol-de-nuit",
       "status": "수록",
       "country": "FR",
-      "category": "novel"
+      "category": "short"
     },
     {
       "id": "fr-albert-camus-les-justes",
@@ -4090,7 +4090,7 @@
       "key": "ws-zh-shen-congwen_bian-cheng",
       "status": "blocked",
       "country": "CN",
-      "category": "novel",
+      "category": "short",
       "language": "Chinese",
       "title": "边城",
       "author": "沈从文",
