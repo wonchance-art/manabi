@@ -878,6 +878,11 @@
 
 ## Claude (claude/*)
 ### doing
+- **CANON-RELEASE-001 정본 발행 기록 → DISCOVER-CLASSICS-001 산책 세 칸 · 고전 명작 (2026-10-22 KST, 오너 「권장대로 ㄱㄱ」 — 보드의 「발행 기록 C안, 오너 결정 대기」 → A안 결정)** `claude/funny-hopper-0zed5t`:
+  ① 발행 기록 `canonical_book_releases`(key · 발행한 관리자 · 발행 때, 외래 키 없음 · 누구나 읽기 · 관리자 본인 쓰기) + `canonical_book_shelf()`(기록의 소유자 · 공개 장만) +
+  관리자 「공개」가 장 공개 전에 기록(다른 관리자 key면 409) · 채우기(관리자 소유 · 전부 공개만, 소유자 둘이면 멈춤). PGlite `canonical-book-releases.mjs`(CI) · `canonicalRelease.test.js`.
+  ② 산책 큰 칸 셋(오늘 화제 · 고전 명작 · 여행 매거진 「첫 호 준비 중」 — 매거진 세션이 첫 호 때 링크) · 제목 「산책」 · 고전 명작 「책」 구간(언어 · 갈래 칩 · 작가 거르기 · 표지 격자).
+  운영 읽기 실측: 정본 공개 0장(아오조라 6권 · 그림 1권 준비만) → 고전 명작에 책이 보이려면 관리자 화면 게시 · 분석 · 검수 · 공개(수록 85권 2,326장).
 - **HSK 단어 페이지 개편 (2026-10-19 KST, 오너 「좋아 작업 진행해」 · 진동만 제외)** `claude/project-thread-qiz34v`: 정본 = 문서 「HSK 단어 페이지」 rev 17.
   /chinese/vocab/hN을 새 화면(LevelWordPage)으로 — 상단바 한 줄 · 한 단어 모드(기본) · 리스트 · 찾기(HSK 1–9 전체) · 글자 칸 · 상태 칸(☆ · 오늘 · 복습 · 졸업 90일) ·
   네 칸 색 토큰(복습실 공유) · 되돌리기 한 길(`inlineGradeUndo.js`) · 예문 단어 나눔(빌드 때, 분석기와 같은 분할) · 0.3초 이하 움직임 + 동작 줄이기.
@@ -972,7 +977,7 @@
   · 같은 PR(AUTH-RETURN-001, /ux-review 3번): 화면의 맨 `/auth` 18곳(17파일)을 정본 `authEntryHref`로 — 로그인 뒤 누른 화면으로 복귀
     (뷰어 게스트 배너 → 단어 저장 이음새 포함). 계약 `authReturnLinks.test.js`(맨 /auth href 금지). 실계정 복귀는 Preview 확인 대상.
   · 같은 PR(BOOK-GROUP-OWNER-001, 정본 판정 설계 §1.6 허점): 공개 목록 책 묶음을 (소유자 + key)로 — 남의 공개 행이 정본 책 카드에 끼지 않음.
-    공개 목록에서는 정본 표지 · 제목을 닫음(fail closed — 발행 기록 C안 canonical_book_releases, 오너 결정 대기 뒤 재개). 계약 `bookMeta.test.js`.
+    공개 목록에서는 정본 표지 · 제목을 닫음(fail closed — 발행 기록 C안 canonical_book_releases → 2026-10-22 KST A안 결정 · CANON-RELEASE-001). 계약 `bookMeta.test.js`.
   · 같은 PR(UX-AUDIT-AUTH-001): `scripts/ux-audit-auth.mjs` — e2e 합성 로그인으로 복습 진행 · 끝, 서재 목록, 뷰어를 캡처 · 판정.
     실행 결과 PASS 40 · FAIL 0 — 복습 카드 넘김(실측 235ms) · 앞면 클릭 펼치기 실브라우저 확인(예전 일정 엔진). FSRS 활성 화면 · /study · 대화는 미검증.
   · 같은 PR(COPY-FIX-001, /ux-review 문구 점검): 화면 문구 67곳(38파일) — 옛 이름(자료실 → 서재 · 지난 이야기) · 대상 없는 「불러오는 중…」 ·
