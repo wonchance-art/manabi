@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { levelListData } from '../levelListData.js';
+import { jaPlainMeaning, levelListData } from '../levelListData.js';
 import { LEVEL_LIST_LANGS, compactLevelEntry, levelEntry, levelGroupsOf, levelWordKey, shortMeaning } from '../levelList.js';
 
 // 계약: 레벨 단어 항목 중복 필드 생략 — 서버는 표제어와 같은 key · 짧은 뜻과 같은 fullMeaning을 빼고 보내고,
@@ -20,7 +20,8 @@ describe('왕복 동치', () => {
         expect(levelEntry(compactLevelEntry(full))).toEqual(full);
         expect(full.key).toBe(levelWordKey(full.word));
         expect(typeof full.fullMeaning).toBe('string');
-        expect(full.meaning).toBe(shortMeaning(full.fullMeaning));
+        // JLPT는 표제어를 되풀이한 한자 괄호를 뗀 짧은 뜻(jaPlainMeaning — 시안 ⑳).
+        expect(full.meaning).toBe(lang === 'japanese' ? jaPlainMeaning(shortMeaning(full.fullMeaning), full.word) : shortMeaning(full.fullMeaning));
       }
     }
   });

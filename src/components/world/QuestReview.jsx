@@ -5,7 +5,7 @@
 //
 // 데이터·채점 규약은 앱 본편과 동일해야 한다(신규 규약 금지):
 //   · due 조회 : 완전 snapshot에서 평가 이력이 있는 legacy만 선택(FSRS·첫 질문은 본편에서)
-//   · SRS 갱신 : fsrs.js의 calculateFSRS (srs.js는 죽은 코드 — 절대 사용 금지)
+//   · SRS 갱신 : fsrs.js의 calculateVocabFSRS(단어 학습 단계 anki-v2 — srs.js는 죽은 코드, 절대 사용 금지)
 //                → user_vocabulary UPDATE { ...nextStats, last_reviewed_at }  (useVocabData.scoreMutation과 동일 페이로드)
 //   · 척도     : 복습 화면 정본과 같은 4등급(SAVE_GRADES — 1 다시·2 어려움·3 알맞음·4 쉬움, W R3㉯ 동결 예외
 //                #1077 5504406191: 월드 기능이 아니라 SRS 데이터 정합. 옛 틀/맞=1/3은 Easy가 없었다)
@@ -157,19 +157,21 @@ export default function QuestReview({ userId, onClose }) {
     };
 
     // 1) FSRS 계산 — 기존 호출부와 동일(fsrs.js). due 항목이므로 정당한 예정 인출.
-    let calculateFSRS;
+    let calculateVocabFSRS;
     try {
-      ({ calculateFSRS } = await import('../../lib/fsrs'));
+      ({ calculateVocabFSRS } = await import('../../lib/fsrs'));
     } catch {
       if (isCurrentScope(scope)) gradingRef.current = false;
       return;
     }
     if (!isCurrentScope(scope)) return;
-    const nextStats = calculateFSRS(rating, {
+    const nextStats = calculateVocabFSRS(rating, {
       interval: current.interval ?? 0,
       ease_factor: current.ease_factor ?? 0,
       repetitions: current.repetitions ?? 0,
       next_review_at: current.next_review_at,
+      last_reviewed_at: current.last_reviewed_at,
+      created_at: current.created_at,
     });
     // 2) 저장 — 복습 화면과 같은 한 길(recordReviewCompleted: 이벤트 + FSRS(fsrs 정본) + 보상 + 오프라인 큐,
     //    W 후속 ③). 이벤트는 qtype:'flash'(자가채점 = 비대칭 신뢰, rung 규약 준수). 저장(또는 큐 적재)

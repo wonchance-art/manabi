@@ -8,6 +8,7 @@ import { shuffleHanzi } from './hanziSession';
 import { normalizeKnownWord } from './knownWordControl';
 
 export const LEVEL_SOURCE = 'level';
+const EPOCH_ISO = '1970-01-01T00:00:00.000Z';
 
 export const levelAnswerKey = (word, view) => `${normalizeKnownWord(word)}|${view}`;
 const keyOf = levelAnswerKey;
@@ -52,12 +53,13 @@ export const levelAnswerOf = (answers, word, view) => answers?.get(keyOf(word, v
  * 이 레벨의 바퀴 답 전부(최신 순) — 1,000행 페이지로 끝까지(REVIEW-ROWS-CAP-001: PostgREST는 1000행에서 말없이 자른다).
  * untilIso로 상한을 고정해 읽는 사이 새 기록이 페이지를 밀지 않게 한다. 오류면 reject.
  */
-export async function fetchLevelAnswers(client, userId, { lang, level, page = 1000, untilIso = new Date().toISOString() }) {
+export async function fetchLevelAnswers(client, userId, { lang, level, page = 1000, untilIso = new Date().toISOString(), sinceIso = null }) {
   const rows = [];
   for (let from = 0; ; from += page) {
+    // sinceIso = 이 기기에 이미 받아 둔 줄의 끝(네 영역 체크의 이어 읽기) — 그 시각부터(같은 시각 줄은 부르는 쪽이 id로 거른다). 없으면 처음부터.
     const { data, error } = await client.from('review_events').select('id, item_key, correct, detail, created_at')
       .eq('user_id', userId).eq('source', LEVEL_SOURCE).eq('lang', lang).eq('detail->>level', level)
-      .lte('created_at', untilIso)
+      .gte('created_at', sinceIso || EPOCH_ISO).lte('created_at', untilIso)
       .order('created_at', { ascending: false }).order('id', { ascending: false })
       .range(from, from + page - 1);
     if (error) throw error;

@@ -117,6 +117,24 @@ describe('full-state FSRS with explicit Anki seconds policy', () => {
   });
 });
 
+// 간격 상한 365일(HSK 단어 페이지 개편, 오너 확정 2026-10-19 KST) — 쉬움만 눌러도 1년 안에 다시 묻는다.
+// 저장 상한(DB 검사 36500일)은 그대로라 상한을 낮추기 전에 생긴 긴 간격 카드도 읽고 채점할 수 있다.
+describe('365-day maximum interval', () => {
+  it('never schedules a Review beyond 365 days, even after a run of Easy', () => {
+    let card = introduced();
+    for (let i = 0; i < 20; i++) card = grade(card, 4);
+    expect(FSRS_POLICY.maximumInterval).toBe(365);
+    expect(card.scheduledDays).toBe(365);
+  });
+  it('still reads and reschedules a card stored with a longer interval', () => {
+    let card = introduced();
+    for (let i = 0; i < 20; i++) card = grade(card, 4);
+    const old = { ...card, scheduledDays: 2000, due: plus(card.lastReview, 2000 * 86400) };
+    expect(validateFsrsCard(old)).toBe(old);
+    expect(scheduleFsrsReview(old, 4, old.due).card.scheduledDays).toBe(365);
+  });
+});
+
 // REV-SCOPE R1-B-2: 학습 단계 Anki 기본값(1분 · 10분, 재학습 10분). 정책은 서버가 알린 값을 따르고,
 // 기존 anki-seconds-v1 카드는 계속 읽히고 채점되며, 학습 중 카드는 다음 채점 때 같은 단계 순번으로 넘어간다.
 describe('learning-step policy anki-v2 alongside anki-seconds-v1', () => {

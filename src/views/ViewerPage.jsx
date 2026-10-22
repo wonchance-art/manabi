@@ -67,11 +67,11 @@ import { useReanalyzeUI } from '../lib/useReanalyzeUI';
 import { useReadingCompletion } from '../lib/useReadingCompletion';
 import { useGrammarNoteSave } from '../lib/useGrammarNoteSave';
 import { useInlineReview, patchVocabWordsCache } from '../lib/useInlineReview';
-import { assertLegacyFsrsAllowed } from '../lib/fsrsLegacyBoundary';
 import { insertConfirmedVocabulary, preservePendingVocabularyReviews } from '../lib/viewerVocabularyCache';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage, failureMessage } from '../lib/errorMessage';
 import { SAVE_GRADES, VOCAB_UPSERT, buildVocabRow, cardSaveReading } from '../lib/vocabIO';
+import { intervalAmount, legacyGradePreviews } from '../lib/levelWordStatus';
 import { useVocabularyExclusions } from '../lib/useVocabularyExclusions';
 import { exclusionWord, findVocabularyExclusion } from '../lib/vocabularyExclusion';
 import { callGemini } from '../lib/gemini';
@@ -209,7 +209,7 @@ import { scriptVariantSurfaces, variantPieces } from '../lib/scriptVariant';
 import { isArtBookMaterial } from '../lib/artBookProvider';
 import { useArtBookChapter } from '../lib/useArtBookChapter';
 import ViewerArtCard from '../components/viewer/ViewerArtCard';
-import { logReviewEvents } from '../lib/reviewEvents';
+import { revertInlineGrade } from '../lib/inlineGradeUndo';
 import { reducedMotion } from '../lib/reducedMotion';
 
 // 공부 모드 지원 언어 키 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
@@ -436,17 +436,23 @@ export default function ViewerPage() {
     ? [user?.id || 'guest', id, materialLang, effectiveExplanationLocale, material?.raw_text, material?.processed_json]
     : [user?.id || 'guest', id, materialLang, material?.raw_text, material?.processed_json],
     [user?.id, id, materialLang, effectiveExplanationLocale, languageInfo, material?.raw_text, material?.processed_json]);
+  // 자료 · 계정 · 언어가 바뀌면 고른 단어와 창을 닫는다. 단, 같은 자료에서 손님(null) → 계정은 바뀐 게 아니라 로그인 복원이다 —
+  // 조기 조회 자료(startEarlyMaterial)가 복원(whenDocumentParsed, 최대 3초)보다 먼저 그려지므로, 그 사이 누른 단어를 닫으면
+  // 탭이 사라진다(뷰어 e2e 흔들림의 원인 · 2026-10-21 KST 실측). 손님 때 받은 단어 풀이에는 계정 데이터가 없다.
+  const resetScope = useRef(null);
+  useEffect(() => { const detail = detailGate.current, selection = selectionGate.current; return () => { detail.cancel(); selection.cancel(); }; }, []);
   useEffect(() => {
-    const detail = detailGate.current, selection = selectionGate.current;
-    detail.cancel();
-    selection.cancel();
+    const prev = resetScope.current, next = { id, materialLang, user: user?.id ?? null };
+    resetScope.current = next;
+    if (!prev || (prev.id === next.id && prev.materialLang === next.materialLang && prev.user === null)) return;
+    detailGate.current.cancel();
+    selectionGate.current.cancel();
     setSelectedToken(null);
     setIsSheetOpen(false);
     setLeftPanelLoading(false);
     setDragAnalyzing(false);
     setLeftPanelResult('');
     setWordDetail(null);
-    return () => { detail.cancel(); selection.cancel(); };
   }, [id, user?.id, materialLang]);
   useEffect(() => {
     detailGate.current.cancel(); selectionGate.current.cancel();
@@ -2387,6 +2393,16 @@ export default function ViewerPage() {
     setSenseReviewDismissed(senseReviewKey);
     try { localStorage.setItem(senseReviewKey, '1'); } catch { /* 개인 편의 — 실패해도 이번 화면에서는 닫힌다 */ }
   };
+  // 위쪽 배지 줄(복습 가능 · 아는/새 단어 · 수집) ✕(오너 2026-10-20 KST 「x표시 만들어서 끌 수 있게」) — 이 자료만, 이 브라우저의 이 계정에.
+  // 닫을 때의 복습 가능 수를 적어 두고, 그보다 늘면 다시 보인다(복습으로 가는 길을 영영 끊지 않는다).
+  // 계정마다 따로 — 같은 브라우저의 다른 계정이 남의 닫은 수에 가려지지 않게(재검수 2026-10-22 KST).
+  const badgesKey = `viewer-badges-dismissed:${user?.id ?? 'guest'}:${id}`;
+  const [badgesDismissedAt, setBadgesDismissedAt] = useState(null); // null = 닫은 적 없음 · 숫자 = 닫을 때 복습 가능 수
+  useEffect(() => {
+    let stored = null;
+    try { const raw = localStorage.getItem(badgesKey); stored = raw === null ? null : Number(raw) || 0; } catch { stored = null; }
+    setBadgesDismissedAt(stored);
+  }, [badgesKey]);
   const [senseReviewIds, setSenseReviewIds] = useState(null); // null = 목록 닫힘
   const senseReviewOpen = senseReviewIds !== null;
   useEffect(() => { setSenseReviewIds(null); }, [id]);
@@ -2642,24 +2658,8 @@ export default function ViewerPage() {
     if (!last || inlineReviewMutation.isPending || undoBusy.current || Date.now() > last.expiresAt) return;
     undoBusy.current = true;
     try {
-      await assertLegacyFsrsAllowed(supabase, { userId: user.id, cardId: last.wordId,
-        itemKey: last.itemKey, language: last.lang });
-      if (last.queued) {
-        // 기존 outbox는 전송과 삭제 사이의 잠금을 제공하지 않는다. 성공을 가장해
-        // 화면만 되돌리거나 전송 중인 기록을 지우지 않고, 후속 outbox 개편까지 보존한다.
-        throw new Error('오프라인에 저장한 채점은 동기화 중일 수 있어 여기서 취소할 수 없어요.');
-      } else {
-        const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev || {};
-        const { data, error } = await supabase.from('user_vocabulary')
-          .update({ ...prevStats, last_reviewed_at: prevReviewedAt }).eq('id', last.wordId)
-          .eq('user_id', user.id).eq('last_reviewed_at', last.reviewedAt).select('id');
-        if (error) throw error;
-        if (!data?.length) throw new Error('이후 복습 기록이 있어 되돌리지 않았어요.');
-        logReviewEvents(user.id, [{
-          lang: last.lang, source: 'ui', item_key: last.itemKey, correct: true,
-          detail: { qtype: 'undo', undo_of: { item_key: last.itemKey, rating: last.rating, reviewed_at: last.reviewedAt } },
-        }]);
-      }
+      // 서버 되돌리기(경계 확인 · 큐 보존 · 마지막 채점일 때만 · undo 이벤트)는 단어 페이지와 같은 한 길.
+      await revertInlineGrade(supabase, { userId: user.id, last });
       // 낙관 반영을 prev로 되돌린 뒤 무효화 — 오프라인이면 refetch가 실패해도 카드가 「복습 시점이에요」로 돌아온다
       patchVocabWordsCache(queryClient, user?.id, last.wordId, last.prev || {});
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
@@ -2891,6 +2891,12 @@ export default function ViewerPage() {
 
   // 이 자료에서 복습 가능한 단어 수 (현재 로드된 토큰 기준)
   const dueInMaterial = countVocabularyDueInMaterial(savedWords, material);
+  const badgesDismissed = badgesDismissedAt !== null && (user ? dueInMaterial : 0) <= badgesDismissedAt;
+  const dismissBadges = () => {
+    const at = user ? dueInMaterial : 0;
+    setBadgesDismissedAt(at);
+    try { localStorage.setItem(badgesKey, String(at)); } catch { /* 개인 편의 — 실패해도 이번 화면에서는 닫힌다 */ }
+  };
 
   // 리스트(문장 분석 결과)와 단어 카드는 독립 조각 — 리스트 단어를 탭하면 카드가
   // 리스트 위에 붙는다(② 오너 승인, 팝업 대체). 합성은 아래 rightPanelContent에서.
@@ -3563,9 +3569,16 @@ export default function ViewerPage() {
       })()}
       {user && (exclusionState.isError || knownState.isError) && <button type="button" className="btn btn--ghost btn--sm" onClick={() => { exclusionState.refetch(); knownState.refetch(); }}>{vt("다시 시도")}</button>}
 
-      {user && learningCapabilities.review && !koreanPieceSelected && findSavedVocab(savedWords, selectedToken, materialLang) && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending && (
+      {user && learningCapabilities.review && !koreanPieceSelected && findSavedVocab(savedWords, selectedToken, materialLang) && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending && (() => {
         // W R3㉮ — 척도를 정본에 맞춘다: 모름/애매/알아=1/2/3(Easy 없음)이 아니라 복습 화면과 같은 4등급.
         // 라벨·순서·클래스 = SAVE_GRADES(복습 화면 ScoreSection과 동일 계약). 키 1~4·⌘Z는 카드 리스너.
+        // 보조 글 = 이 단어의 다음 간격(학습 단계 anki-v2 — 단어 페이지 네 칸과 같은 계산 legacyGradePreviews, 2026-10-19 KST).
+        const gaps = legacyGradePreviews(findSavedVocab(savedWords, selectedToken, materialLang));
+        const gapText = (ms) => {
+          const a = intervalAmount(ms);
+          return !a ? vt('오늘') : a.unit === '분' ? vt('{n}분 뒤', a) : a.unit === '시간' ? vt('{n}시간 뒤', a) : vt('{n}일 뒤', a);
+        };
+        return (
         <div style={{ padding: '10px 12px', background: 'color-mix(in srgb, var(--warning) 10%, transparent)', borderRadius: 'var(--radius-md)', marginBottom: 12, border: '1px solid var(--warning)' }}>
 
           <div className="review-score-grid save-grade save-grade--inline">
@@ -3580,11 +3593,13 @@ export default function ViewerPage() {
               >
                 <span className="save-grade__key" aria-hidden="true">{g.key}</span>
                 {vt(g.label)}
+                {gaps?.[g.grade] && <span className="save-grade__sub">{' '}{gapText(gaps[g.grade].ms)}</span>}
               </button>
             ))}
           </div>
         </div>
-      )}
+        );
+      })()}
       {!user && material?.__local && !koreanPieceSelected && (
         // 팀 사본(v2-AB R2 S2) — 담기 CTA. 「로그인이 필요합니다」 토스트 대신 돌아올 길이 있는 시트.
         <div className="save-grade__guest">
@@ -3627,7 +3642,7 @@ export default function ViewerPage() {
                 >
                   <span className="save-grade__key" aria-hidden="true">{g.key}</span>
                   {vt(g.label)}
-                  {/* 보조 글 첫 글자 띄어쓰기 = 화면 읽기 이름 「다시 오늘 또」(GRADE-NAME-001). 줄 첫머리 공백이라 화면에는 그려지지 않는다. */}
+                  {/* 보조 글 첫 글자 띄어쓰기 = 화면 읽기 이름 「다시 1분 뒤」(GRADE-NAME-001). 줄 첫머리 공백이라 화면에는 그려지지 않는다. */}
                   <span className="save-grade__sub">{' '}{vt(g.sub)}</span>
                 </button>
               ))}
@@ -3948,7 +3963,7 @@ export default function ViewerPage() {
             (inline-block 하나 vs 전체 폭 둘) 세로도 3줄을 먹었다. 한 줄로 모은다.
             인라인 style 3벌은 공용 클래스로 — v2-K R1 토큰화가 남긴 나머지다. */}
         {savedWordsError && <p role="alert">{vt("저장한 단어를 불러오지 못했어요.")} <button type="button" onClick={() => refetchSavedWords()}>{vt("다시 시도")}</button></p>}
-        {((user && dueInMaterial > 0) || coverage || collectedInMaterial > 0) && (
+        {!badgesDismissed && ((user && dueInMaterial > 0) || coverage || collectedInMaterial > 0) && (
           <div className="viewer-badges">
             {user && dueInMaterial > 0 && (
               <span className="viewer-badge viewer-badge--due" title={vt("복습할 것")}>
@@ -3964,6 +3979,7 @@ export default function ViewerPage() {
                   <span key={collectPopKey} className={`viewer-stats__count${collectPopKey ? ' viewer-badge--pop' : ''}`}>{collectedInMaterial}</span>)}</Link>}
               </span>
             )}
+            <button type="button" className="viewer-badges__close" aria-label={vt('단어 현황 닫기')} title={vt('단어 현황 닫기')} onClick={dismissBadges} data-icon-action><ActionIcon name="close"/></button>
           </div>
         )}
         {/* AD-R4 PR③ 「뜻 확인 필요 N개 [보기]」(설계서 §6.1·§6.4) — 통계 줄 아래 한 줄. 소유자만 · N>0만 · ✕는 이 viewerRevision 동안. 「AI」 표시 없음. */}

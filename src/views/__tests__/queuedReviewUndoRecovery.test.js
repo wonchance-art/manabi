@@ -29,7 +29,7 @@ function fixture(extra = {}) {
     fsrsReview: { controller: { canLegacy: () => true } },
     admission: { current: { compatibility: false }, controller: { leave: vi.fn(), getSnapshot: () => ({ current: { questionKey: 'session:0', cardId: 'card-a' } }) } },
     loadModule: vi.fn(async path => path.endsWith('reviewOutbox') ? { undoQueuedReview }
-      : { persistVocabGrade, calculateFSRS: () => ({ interval: 10, ease_factor: 4, repetitions: 1, next_review_at: '2026-10-06T00:00:00Z' }) }),
+      : { persistVocabGrade, calculateVocabFSRS: () => ({ interval: 10, ease_factor: 4, repetitions: 1, next_review_at: '2026-10-06T00:00:00Z' }) }),
     logReviewEvents: vi.fn(async () => {}), withLegacyReviewLock,
     setReviewQueue: vi.fn(), setIntroIds: vi.fn(), saveIntroIds: vi.fn(),
     setReviewSessionId: vi.fn(), setReviewIdx: vi.fn(), setShowAnswer: vi.fn(), setContextSelected: vi.fn(),
@@ -164,7 +164,7 @@ describe('queued review undo recovery in the actual VocabPage handlers', () => {
     const next = f.handleScore(4); expect(f.c.scoringRef.current).toBe(true);
     old.reject(new Error('old module failed')); await previous;
     expect(f.c.scoringRef.current).toBe(true); expect(f.c.toast).not.toHaveBeenCalled();
-    current.resolve({ calculateFSRS: () => ({ interval: 10, ease_factor: 4, repetitions: 1, next_review_at: '2026-10-06T00:00:00Z' }) });
+    current.resolve({ calculateVocabFSRS: () => ({ interval: 10, ease_factor: 4, repetitions: 1, next_review_at: '2026-10-06T00:00:00Z' }) });
     await next; await tick(); expect(f.c.scoringRef.current).toBe(false); expect(f.c.lastGradeRef.current.rating).toBe(4);
   });
 

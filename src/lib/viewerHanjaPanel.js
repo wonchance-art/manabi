@@ -395,7 +395,10 @@ export function hanjaPanelModel({ ch, index, reading = null, word = '', tables =
     if (zf?.diff[i]) zheng = [...zf.form][i];
     const t = chars(toTraditional(word, tradTable));
     const tw = chars(toTraditionalTW(word, tradTable));
-    const cands = [t.length === ws.length ? t[i] : null, tw.length === ws.length ? tw[i] : null, ch];
+    // 정체가 따로 보이지 않는 글자(대만 꼴도 같은 글자 — 吃: s2t 喫 · 대만 吃)는 보이는 글자 자신의 구성을 먼저 —
+    // 吃 칸에 喫의 조각(口 + 契)이 붙지 않게(HSK 단어 페이지 검수 2026-10-19 KST). 훈음은 그대로 단어 조회(喫 먹을 끽)를 따른다.
+    const cands = zheng ? [t.length === ws.length ? t[i] : null, tw.length === ws.length ? tw[i] : null, ch]
+      : [ch, t.length === ws.length ? t[i] : null, tw.length === ws.length ? tw[i] : null];
     lookup = cands.find((c) => c && (panel?.roles?.[c] || panel?.comps?.[c])) || cands.find(Boolean);
     const r = hanjaReadingsOf(word, { koTable, hunTable, tradTable })[i];
     read = r?.label ? splitLabel(r.label) : { hun: null, eum: r?.eum || null, label: r?.eum || null };

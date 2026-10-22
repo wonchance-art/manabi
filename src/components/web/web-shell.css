@@ -1,7 +1,7 @@
 /* manabi v2: publication-like discovery, quiet reading. Language colors are shared with BOOK_SERIES.
    셸은 늘 밝은 화면이라, html의 data-theme(기본 dark)에서 물려받으면 안 되는 글자 토큰은 여기서 라이트 값으로 고정한다
    (--accent-text·--warning-text·--border-hover — COLOR-V2-UNIFY-001). */
-.manabi-app{--paper:#f6f4ee;--sheet:#fffefb;--ink:#252721;--muted:#65675f;--rule:#d7d5cd;--ja:#994a5a;--zh:#2a7657;--en:#906021;--fr:#3a68a2;--bg-primary:var(--paper);--bg-secondary:#eeece5;--bg-card:var(--sheet);--bg-elevated:#eeeae4;--text-primary:var(--ink);--text-secondary:var(--muted);--text-muted:var(--muted);--border:var(--rule);--gnb-bg:var(--paper);--border-hover:rgba(153,74,90,.4);--accent-text:#3a6d49;--warning-text:#7a4e0e;background:var(--paper);color:var(--ink)}
+.manabi-app{--paper:#f6f4ee;--sheet:#fffefb;--ink:#252721;--muted:#65675f;--rule:#d7d5cd;--ja:#994a5a;--zh:#2a7657;--en:#906021;--fr:#3a68a2;--bg-primary:var(--paper);--bg-secondary:#eeece5;--bg-card:var(--sheet);--bg-elevated:#eeeae4;--text-primary:var(--ink);--text-secondary:var(--muted);--text-muted:var(--muted);--border:var(--rule);--gnb-bg:var(--paper);--border-hover:rgba(153,74,90,.4);--accent-text:#3a6d49;--warning-text:#7a4e0e;--grade-again:#a3352b;--grade-again-bg:#f8e5e3;--grade-hard:#8a5a12;--grade-hard-bg:#f8f0e0;--grade-good:#2f6b4f;--grade-good-bg:#e6f0e9;--grade-easy:#2d5f8a;--grade-easy-bg:#e4ecf5;background:var(--paper);color:var(--ink)}
 /* 골격 칸(LOADING-SKELETON-001) — 셸 종이 위에서 보이는 회색. 셸이 --bg-secondary를 거의 종이색으로 다시 정의해서
    (reading-shell.css) 그대로 쓰면 칸이 사라진다. 글자 토큰에서 옅게 파생한다(색 리터럴 0). */
 .manabi-app .skeleton,.manabi-app .skeleton-line{background:color-mix(in srgb,var(--text-muted) 14%,transparent)}

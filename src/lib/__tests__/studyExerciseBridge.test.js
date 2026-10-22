@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { calculateFSRS } from '../fsrs';
+import { calculateVocabFSRS } from '../fsrs';
 import { recordReviewCompleted } from '../learn/progressStore';
 import {
   buildStudyReviewRef,
@@ -8,7 +8,7 @@ import {
 } from '../studyExerciseBridge';
 
 vi.mock('../fsrs', () => ({
-  calculateFSRS: vi.fn(() => ({
+  calculateVocabFSRS: vi.fn(() => ({
     interval: 4,
     ease_factor: 5.5,
     repetitions: 1,
@@ -78,12 +78,12 @@ describe('studyExerciseBridge', () => {
       rtMs: 1200,
     });
 
-    expect(calculateFSRS).toHaveBeenCalledWith(1, {
+    expect(calculateVocabFSRS).toHaveBeenCalledWith(1, expect.objectContaining({
       interval: 2,
       ease_factor: 4.8,
       repetitions: 0,
       next_review_at: '2026-07-24T00:00:00.000Z',
-    });
+    }));
     expect(recordReviewCompleted).toHaveBeenCalledWith(
       'user-1',
       {
@@ -127,7 +127,7 @@ describe('studyExerciseBridge', () => {
       rtMs: 500,
     })).resolves.toBeUndefined();
 
-    expect(calculateFSRS).not.toHaveBeenCalled();
+    expect(calculateVocabFSRS).not.toHaveBeenCalled();
     expect(recordReviewCompleted).toHaveBeenCalledWith(undefined, {
       type: 'vocab',
       itemKey: 'bonjour',
@@ -191,8 +191,8 @@ describe('studyExerciseBridge', () => {
       result,
     });
 
-    expect(calculateFSRS).toHaveBeenCalledTimes(4);
-    expect(calculateFSRS.mock.calls.map(([rating]) => rating)).toEqual([3, 1, 3, 3]);
+    expect(calculateVocabFSRS).toHaveBeenCalledTimes(4);
+    expect(calculateVocabFSRS.mock.calls.map(([rating]) => rating)).toEqual([3, 1, 3, 3]);
     expect(recordReviewCompleted).toHaveBeenCalledTimes(4);
     expect(recordReviewCompleted.mock.calls.map(([, reviewRef]) => [
       reviewRef.itemKey,
@@ -225,7 +225,7 @@ describe('studyExerciseBridge', () => {
       rtMs: 400,
     });
 
-    expect(calculateFSRS).not.toHaveBeenCalled();
+    expect(calculateVocabFSRS).not.toHaveBeenCalled();
     expect(recordReviewCompleted).toHaveBeenCalledTimes(4);
     expect(recordReviewCompleted.mock.calls.every(([userId, ref, nextStats]) => (
       userId === undefined && ref.detail.qtype === 'match' && nextStats === undefined

@@ -16,6 +16,8 @@ const manifest = () => JSON.parse(read('public/manifest.webmanifest'));
 const ROSE = '#994A5A';
 const DOT = '#FFD04D';
 const PAPER = '#FFFDF9';
+// 휴대폰 상태 표시줄 · 주소창 색 = 화면 바탕(web-shell --paper). 로즈 표시줄은 페이지 머리와 따로 놀았다(오너 지시 2026-10-19 KST).
+const BAR = '#F6F4EE';
 
 /** PNG IHDR(시그니처 8 + 길이 4 + 'IHDR' 4 다음)에서 크기·비트 깊이·색 형식을 읽는다. */
 function ihdr(file) {
@@ -43,14 +45,21 @@ describe('BRAND-APPLY-001 ① manifest', () => {
     expect(read('public/manifest.webmanifest')).not.toMatch(/anatomy/i);
   });
 
-  it('theme_color = layout theme-color meta = 화면 대표색 로즈, background_color = 종이색', () => {
+  it('theme_color = layout theme-color meta = 화면 바탕색, 대표색은 로즈, background_color = 종이색', () => {
     const m = manifest();
     const meta = read('src/app/layout.jsx').match(/<meta name="theme-color" content="(#[0-9a-fA-F]{6})"/);
     expect(meta).not.toBeNull();
     expect(m.theme_color.toUpperCase()).toBe(meta[1].toUpperCase());
-    expect(m.theme_color.toUpperCase()).toBe(ROSE);
+    expect(m.theme_color.toUpperCase()).toBe(BAR);
+    expect(read('src/components/web/web-shell.css')).toMatch(new RegExp(`\\.manabi-app\\{--paper:${BAR}`, 'i'));
     expect(shellPrimary()).toBe(ROSE);
     expect(m.background_color.toUpperCase()).toBe(PAPER);
+  });
+
+  it('iOS 상태 표시줄은 제 칸을 갖는다 — 투명(black-translucent)이면 시각 · 배터리가 페이지 머리 위에 겹친다', () => {
+    const layout = read('src/app/layout.jsx');
+    expect(layout).toContain('<meta name="apple-mobile-web-app-status-bar-style" content="default" />');
+    expect(layout).not.toContain('black-translucent');
   });
 
   it('maskable PNG 하나와 any PNG 192·512가 있고 "any maskable" 겸용이 없다', () => {

@@ -18,7 +18,7 @@ vi.mock('@tanstack/react-query', () => ({
   useMutation: (config) => config,
 }));
 vi.mock('../fsrs', () => ({
-  calculateFSRS: vi.fn(() => ({ interval: 3, ease_factor: 2.6, repetitions: 1, next_review_at: '2026-09-10T00:00:00.000Z' })),
+  calculateVocabFSRS: vi.fn(() => ({ interval: 3, ease_factor: 2.6, repetitions: 1, next_review_at: '2026-09-10T00:00:00.000Z' })),
 }));
 
 const { useInlineReview, patchVocabWordsCache } = await import('../useInlineReview');
@@ -138,11 +138,13 @@ describe('배선 계약 — 세 지점이 한 길을 타고, 큐 undo는 항목 
     expect(viewer).toContain("import { useInlineReview, patchVocabWordsCache } from '../lib/useInlineReview';");
     expect(viewer).toContain('queued: !!res.queued,');
     const u = sliceBetween(viewer, 'const undoInlineGrade = async () => {', '\n  };');
-    expect(u).toContain('if (last.queued) {');
-    expect(u).not.toContain('await removeOutboxEntry(');
-    expect(u).toContain("throw new Error('오프라인에 저장한 채점은 동기화 중일 수 있어 여기서 취소할 수 없어요.');");
-    expect(u).toContain('.update({ ...prevStats, last_reviewed_at: prevReviewedAt })');
-    expect(u).toContain(".eq('user_id', user.id).eq('last_reviewed_at', last.reviewedAt).select('id')");
+    expect(u).toContain('await revertInlineGrade(supabase, { userId: user.id, last });');
+    const r = read('src/lib/inlineGradeUndo.js');
+    expect(r).toContain('if (last.queued) {');
+    expect(r).not.toContain('await removeOutboxEntry(');
+    expect(r).toContain("throw new Error('오프라인에 저장한 채점은 동기화 중일 수 있어 여기서 취소할 수 없어요.');");
+    expect(r).toContain('.update({ ...prevStats, last_reviewed_at: prevReviewedAt })');
+    expect(r).toContain(".eq('user_id', userId).eq('last_reviewed_at', last.reviewedAt).select('id')");
     expect(u).toContain('patchVocabWordsCache(queryClient, user?.id, last.wordId, last.prev || {});');
     expect(u).toContain("queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });");
   });
