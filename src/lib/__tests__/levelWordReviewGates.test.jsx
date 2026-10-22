@@ -158,14 +158,13 @@ describe('재검수 손질(2026-10-22 KST) — 키보드 · 되돌리기', () =>
 describe('평소 채점은 창 없이 되돌리기만(오너 2026-10-22 KST 「단어 처리 될 때마다 창 떠야겠나?」)', () => {
   const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
   const css = fs.readFileSync('src/components/levels/word/level-word.css', 'utf8');
-  it('네 칸 채점 · ☆ 담기 · 연습 답은 네 칸 위 왼쪽 한 줄 — 같은 날 규칙 안내만 창 · 다음 카드를 펼치면 거둔다', () => {
+  it('네 칸 채점 · ☆ 담기 · 연습 답은 네 칸 위 가운데 한 줄 — 같은 날 규칙 안내만 창 · 다음 카드를 펼치면 거둔다', () => {
     expect(screen).toContain('quiet: { word: cfg.head(entry).hw, lang: cfg.hw, what: gradeToastText(rating, null) }');
     expect(screen).toContain("quiet: { word: cfg.head(entry).hw, lang: cfg.hw, what: '담음' }");
     expect(screen).toContain("quiet: correct && sameDay ? null : { word: cfg.head(entry).hw, what: correct ? '알아요' : '다시 볼래요' }");
-    expect(screen).toContain('<b lang={lang}>{word}</b>{what} · <u>되돌리기</u>');
-    expect(screen).toContain('<path d="M13 8H3" /><path d="M7 4 3 8l4 4" />'); // 왼쪽 화살표
+    expect(screen).toContain('<span lang={lang}>{word}</span>{what} · <u>되돌리기</u>');
     expect(screen).toContain('setNotice((n) => (n?.quiet ? null : n))');
-    expect(css).toContain('.lw-undo--quiet,.lw-page[data-mode] .lw-undo--quiet{bottom:calc(66px + env(safe-area-inset-bottom,0px));background:none;border:0;box-shadow:none;padding:0;justify-content:flex-start;');
+    expect(css).toContain('.lw-undo--quiet,.lw-page[data-mode] .lw-undo--quiet{bottom:calc(66px + env(safe-area-inset-bottom,0px));background:none;border:0;box-shadow:none;padding:0;justify-content:center;');
     expect(css).toContain('.lw-page:has(.lw-undo--quiet) .lw-gradebar__guide{visibility:hidden}');
   });
 });

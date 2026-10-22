@@ -125,15 +125,14 @@ function Notice({ notice, onDone }) {
   useEffect(() => { setLeaving(false); arm(); return () => clearTimeout(timer.current); }, [arm]);
   const pause = () => { hold.current = true; clearTimeout(timer.current); };
   const resume = () => { hold.current = false; arm(); };
-  // quiet = 평소 채점 — 창 없이 네 칸 바로 위 왼쪽에 「← 爸爸 알맞음 · 되돌리기」 한 줄(간격은 단추에 이미 있다 · 오너 10-22 「단어 처리 될 때마다 창 떠야겠나?」 →
-  // 「되돌리기만 남기고」 → 왼쪽 화살표 · 왼쪽 정렬 안 C). 떠 있는 동안 안내 줄(리스트의 지금 카드 단어)은 숨긴다. 긴 글(10분 뒤 다시)은 화면 읽기에만.
+  // quiet = 평소 채점 — 창 없이 네 칸 바로 위 가운데에 「爸爸 알맞음 · 되돌리기」 한 줄(간격은 단추에 이미 있다 · 오너 10-22 「단어 처리 될 때마다 창 떠야겠나?」 →
+  // 「되돌리기만 남기고」 → 「중앙 배치, 한자 굵기 빼고」 · 화살표 없음). 떠 있는 동안 안내 줄(리스트의 지금 카드 단어)은 숨긴다. 긴 글(10분 뒤 다시)은 화면 읽기에만.
   if (notice.quiet) {
     const { word, what, lang } = notice.quiet;
     return <div className={`lw-undo lw-undo--quiet${leaving ? ' is-leaving' : ''}`} role="status" onPointerEnter={pause} onPointerLeave={resume} onFocus={pause} onBlur={resume}>
       <span className="sr-only">{word} {notice.text}</span>
       {notice.onAction && <button type="button" aria-label={`${word} ${what} 되돌리기`} onClick={() => { clearTimeout(timer.current); onDone(); notice.onAction(); }}>
-        <svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M13 8H3" /><path d="M7 4 3 8l4 4" /></svg>
-        <b lang={lang}>{word}</b>{what} · <u>되돌리기</u></button>}
+        <span lang={lang}>{word}</span>{what} · <u>되돌리기</u></button>}
     </div>;
   }
   return <div className={`lw-undo${leaving ? ' is-leaving' : ''}`} role="status" onPointerEnter={pause} onPointerLeave={resume} onFocus={pause} onBlur={resume}>
