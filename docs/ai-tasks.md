@@ -879,9 +879,11 @@
 ## Claude (claude/*)
 ### doing
 - **CANON-RELEASE-001 정본 발행 기록 → DISCOVER-CLASSICS-001 산책 세 칸 · 고전 명작 (2026-10-22 KST, 오너 「권장대로 ㄱㄱ」 — 보드의 「발행 기록 C안, 오너 결정 대기」 → A안 결정)** `claude/funny-hopper-0zed5t`:
-  ① 발행 기록 `canonical_book_releases`(key · 발행한 관리자 · 발행 때, 외래 키 없음 · 누구나 읽기 · 관리자 본인 쓰기) + `canonical_book_shelf()`(기록의 소유자 · 공개 장만) +
+  ① **완료 [#1532](https://github.com/wonchance-art/manabi/pull/1532) squash `e5008222`(2026-10-22 17:37 KST) · 운영 자동 적용 · 사후 검증(RLS · 권한 셋 · 정책 둘 · 기록 0줄 · FSRS 핀 넷 그대로)** —
+    발행 기록 `canonical_book_releases`(key · 발행한 관리자 · 발행 때, 외래 키 없음 · 누구나 읽기 · 관리자 본인 쓰기) + `canonical_book_shelf()`(기록의 소유자 · 공개 장만) +
   관리자 「공개」가 장 공개 전에 기록(다른 관리자 key면 409) · 채우기(관리자 소유 · 전부 공개만, 소유자 둘이면 멈춤). PGlite `canonical-book-releases.mjs`(CI) · `canonicalRelease.test.js`.
-  ② 산책 큰 칸 셋(오늘 화제 · 고전 명작 · 여행 매거진 「첫 호 준비 중」 — 매거진 세션이 첫 호 때 링크) · 제목 「산책」 · 고전 명작 「책」 구간(언어 · 갈래 칩 · 작가 거르기 · 표지 격자).
+  ② 산책 큰 칸 셋(오늘 화제 · 고전 명작 · 여행 매거진 「첫 호 준비 중」 — **매거진 세션은 첫 호 때 `DiscoverTiles.jsx` `MAGAZINE_HREF`에 링크**) · 제목 「산책」 · 「N5 문화 읽기」 내림 ·
+    고전 명작 `/discover/classics` 「책」 구간(언어 · 갈래 칩 = 주소 링크 · 작가 거르기 · 표지 격자 · 서버 화면) · 뷰어 「← 고전 명작」 복귀. 계약 `classicsShelf.test.jsx`.
   운영 읽기 실측: 정본 공개 0장(아오조라 6권 · 그림 1권 준비만) → 고전 명작에 책이 보이려면 관리자 화면 게시 · 분석 · 검수 · 공개(수록 85권 2,326장).
 - **HSK 단어 페이지 개편 (2026-10-19 KST, 오너 「좋아 작업 진행해」 · 진동만 제외)** `claude/project-thread-qiz34v`: 정본 = 문서 「HSK 단어 페이지」 rev 17.
   /chinese/vocab/hN을 새 화면(LevelWordPage)으로 — 상단바 한 줄 · 한 단어 모드(기본) · 리스트 · 찾기(HSK 1–9 전체) · 글자 칸 · 상태 칸(☆ · 오늘 · 복습 · 졸업 90일) ·
