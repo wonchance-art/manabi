@@ -17,7 +17,8 @@
  *  POST { action:'reviewMany', key, orders }
  *                     → 묶음 검수 — 장마다 같은 판정을 다시 하되 쪼개진 낱말이 하나라도 있으면 넘긴다. {reviewed, skipped}.
  *  POST { action:'release', key }
- *                     → 모든 장이 있고 모두 분석·검수 완료일 때만 비공개 장을 공개로 바꾼다. 아니면 409.
+ *                     → 모든 장이 있고 모두 분석·검수 완료일 때만 발행 기록(canonical_book_releases)을 남기고 비공개 장을 공개로 바꾼다.
+ *                       아니면 409. 다른 관리자가 먼저 발행한 key도 409(공개하지 않는다).
  *
  * 원문은 요청이 아니라 리포 정본(getBooks)에서만 온다 — 클라이언트가 장 내용을 보낼 수 없다.
  * 인증: requireAdmin()(쿠키 세션 + profiles.role='admin'). 쓰기는 사용자 세션 클라이언트로 해 RLS(소유자 쓰기)가
@@ -42,6 +43,21 @@ async function publishedRows(supabase, ownerId, keys, columns = ROW_COLUMNS) {
   const { data, error } = await supabase.from('reading_materials').select(columns).eq('owner_id', ownerId).in(KEY_PATH, keys);
   if (error) throw error;
   return data || [];
+}
+
+/**
+ * 정본 발행 기록 남기기(CANON-RELEASE-001, supabase/migrations/20261022081000_canonical_book_releases.sql) — 관리자 본인 이름으로만
+ * 쓸 수 있다(RLS). 이미 있으면 그대로 두고(on conflict do nothing), 기록의 소유자가 이 관리자인지 다시 읽어 확인한다.
+ * @returns {Promise<{error?: string, status?: number}>}
+ */
+async function recordCanonicalRelease(supabase, ownerId, bookKey) {
+  const releases = supabase.from('canonical_book_releases');
+  const { error } = await releases.upsert({ book_key: bookKey, owner_id: ownerId }, { onConflict: 'book_key', ignoreDuplicates: true });
+  if (error) return { error: '발행 기록을 남기지 못해 공개하지 않았어요. 잠시 후 다시 시도해 주세요.', status: 503 };
+  const { data, error: readError } = await supabase.from('canonical_book_releases').select('owner_id').eq('book_key', bookKey).maybeSingle();
+  if (readError || !data) return { error: '발행 기록을 확인하지 못해 공개하지 않았어요. 잠시 후 다시 시도해 주세요.', status: 503 };
+  if (data.owner_id !== ownerId) return { error: '다른 관리자 계정이 이미 정본으로 발행한 책이에요. 그 계정에서 관리해 주세요.', status: 409 };
+  return {};
 }
 
 const DEFAULT_NOT_PUBLISHABLE = '권리 기록이 공개 기준을 통과하지 못한 책이에요.';
@@ -115,6 +131,10 @@ export function createBookPublishHandlers(getBooks, { notPublishableError = DEFA
             : '정본과 다른 장이 있어 공개하지 않았어요. 자료 관리에서 확인해 주세요.';
         return respond({ error, release }, 409);
       }
+      // 발행 기록(CANON-RELEASE-001)을 장 공개보다 먼저 — 기록이 있어야 산책 「고전 명작」 · 정본 표지가 이 책을 정본으로 본다.
+      // 이미 모두 공개한 책(ids 0)도 기록이 없으면 여기서 채운다(멱등). 다른 관리자가 먼저 발행한 key면 공개하지 않는다.
+      const recorded = await recordCanonicalRelease(supabase, user.id, book.book.key);
+      if (recorded.error) return respond({ error: recorded.error }, recorded.status);
       if (release.ids.length === 0) return respond({ ok: true, released: [] });
       const { data, error } = await supabase.from('reading_materials').update({ visibility: 'public' })
         .in('id', release.ids).eq('owner_id', user.id).eq('visibility', 'private').select('id');
