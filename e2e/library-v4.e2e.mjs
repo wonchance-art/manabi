@@ -86,9 +86,9 @@ test('shelf edit action keeps source and returns under the same filter; study ch
  }finally{await f.close();}
 });
 
-// READER-RETURN-001 — 「함께 읽는 글 → 뷰어 → ← 발견」은 /materials를 한 번도 거치지 않고(화면 세 번 바뀜 · 위치 잃음 선례)
+// READER-RETURN-001 — 「함께 읽는 글 → 뷰어 → ← 함께 읽는 글」은 /materials를 한 번도 거치지 않고(화면 세 번 바뀜 · 위치 잃음 선례)
 // 곧장 /discover?view=reading으로 돌아가 떠난 자리(restoreY)를 되찾는다. 공개 글은 합성 PGlite 서재 행(visibility public).
-test('public reading list → viewer → 「← 발견」 returns directly to the same list position',async()=>{
+test('public reading list → viewer → 「← 함께 읽는 글」 returns directly to the same list position',async()=>{
  const f=await fixture({width:1280});try{
  for(let i=1;i<=40;i++)f.rows.push({id:200+i,owner_id:'00000000-0000-4000-8000-000000000999',visibility:'public',title:`${String(i).padStart(2,'0')} · 함께 읽는 짧은 글`,raw_text:'One page at a time.',processed_json:{status:'completed',metadata:{language:'English'},sequence:['id_0_0'],dictionary:{id_0_0:{text:'One',base_form:'one',meaning:'하나'}}},created_at:new Date(Date.UTC(2026,0,i)).toISOString()});
  const visited=[];f.page.on('framenavigated',frame=>{if(frame===f.page.mainFrame())visited.push(new URL(frame.url()).pathname);});
@@ -98,7 +98,7 @@ test('public reading list → viewer → 「← 발견」 returns directly to th
  await card.click();await f.page.waitForURL(url=>url.pathname.startsWith('/viewer/'));
  const stored=new URL(f.page.url()).searchParams.get('returnTo');assert.match(stored,/^\/materials\?tab=public/);
  visited.length=0;
- await f.page.getByRole('link',{name:'← 발견',exact:true}).first().click();
+ await f.page.getByRole('link',{name:'← 함께 읽는 글',exact:true}).first().click();
  await f.page.waitForURL(url=>url.pathname==='/discover'&&url.searchParams.get('view')==='reading');
  await f.page.waitForFunction(()=>!new URL(location.href).searchParams.has('restoreY'),null,{timeout:15000});
  assert.deepEqual(visited.filter(path=>path==='/materials'),[],`no /materials hop: ${visited.join(' → ')}`);

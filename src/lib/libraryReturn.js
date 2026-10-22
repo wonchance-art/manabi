@@ -71,7 +71,7 @@ export function readerReturnLabel(value) {
     return url.searchParams.get('view') === 'history' ? '← 수업 기록' : '← 수업으로';
   }
   if (url.pathname === '/discover/classics') return '← 고전 명작';
-  return url.searchParams.get('tab') === 'public' ? '← 발견' : '← 내 서재';
+  return url.searchParams.get('tab') === 'public' ? '← 함께 읽는 글' : '← 내 서재';
 }
 
 // 손님은 서재가 없다 — 맥락 없이 연 뷰어의 「←」는 산책(/discover)으로(뷰어 기능 감사 2026-10-17 KST). 뷰어의 아이콘 버튼이라

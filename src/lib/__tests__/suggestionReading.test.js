@@ -15,11 +15,11 @@ describe('finished recommendation reading', () => {
     // 발견 서가에서 열면 발견으로 돌아간다(2026-10-17 Preview 검수 — 「← 내 서재로」로 나오던 것). 목록 밖 값은 서재.
     expect(suggestionHref(s, 'discover')).toBe(`/suggestions/${s.id}?from=discover`);
     expect(suggestionHref(s, 'https://evil.example')).toBe(`/suggestions/${s.id}?from=materials`);
-    expect(SUGGESTION_BACK[suggestionBackKey('discover')]).toEqual({ href: '/discover', label: '← 발견으로' });
+    expect(SUGGESTION_BACK[suggestionBackKey('discover')]).toEqual({ href: '/discover', label: '← 산책으로' });
     expect(SUGGESTION_BACK[suggestionBackKey('constructor')].href).toBe('/materials');
     // 함께 읽는 글 목록에서 연 추천은 그 목록으로(READER-RETURN-001).
     expect(suggestionHref(s, 'reading')).toBe(`/suggestions/${s.id}?from=reading`);
-    expect(SUGGESTION_BACK[suggestionBackKey('reading')]).toEqual({ href: '/discover?view=reading', label: '← 발견' });
+    expect(SUGGESTION_BACK[suggestionBackKey('reading')]).toEqual({ href: '/discover?view=reading', label: '← 함께 읽는 글' });
     expect(suggestionHref({ ...s, material_id: 51 })).toBe('/viewer/51');
     expect(isFocusedReadingRoute(`/suggestions/${s.id}`)).toBe(true);
     expect(navigationOwner(`/suggestions/${s.id}`)).toBe('/discover');

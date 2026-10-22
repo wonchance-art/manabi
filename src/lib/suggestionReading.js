@@ -8,7 +8,7 @@ export const SUGGESTION_FIELDS = 'id, date, language, source, video_id, title, c
 // 오늘의 추천(/api/suggestions/today) — 홈과 자료실이 같은 캐시 한 칸을 읽는다. 키·조회를 화면마다
 // 따로 두면 같은 응답을 두 번 받는다(브라우저 조회 감사). 실패는 던져서 빈 목록을 캐시하지 않는다.
 export const TODAY_SUGGESTIONS_KEY = ['today-suggestions'];
-// 「함께 읽는 글」 화면의 「오늘의 소식」 칸 앵커 — 발견 서가 「오늘의 소식 · 전체 보기」가 이리로 내려온다(B2 A안, 2026-10-17 KST).
+// 「함께 읽는 글」 화면의 「오늘의 소식」 칸 앵커 — 산책 「오늘 화제」 칸(옛 발견 서가 「오늘의 소식 · 전체 보기」)가 이리로 내려온다(B2 A안, 2026-10-17 KST).
 export const TODAY_NEWS_ID = 'today-news';
 export async function fetchTodaySuggestions() {
   const response = await fetch('/api/suggestions/today');
@@ -25,9 +25,9 @@ export function canReadSuggestion(s) {
 // 추천 본문의 돌아갈 곳(?from=) — 들어온 화면으로. 목록 밖 값은 서재로.
 export const SUGGESTION_BACK = Object.freeze({
   home: { href: '/home', label: '← 오늘로' },
-  discover: { href: '/discover', label: '← 발견으로' },
+  discover: { href: '/discover', label: '← 산책으로' },
   // 「함께 읽는 글」 목록에서 연 추천은 그 목록으로(READER-RETURN-001).
-  reading: { href: '/discover?view=reading', label: '← 발견' },
+  reading: { href: '/discover?view=reading', label: '← 함께 읽는 글' },
   materials: { href: '/materials', label: '← 내 서재로' },
 });
 export const suggestionBackKey = (from) => (Object.hasOwn(SUGGESTION_BACK, from) ? from : 'materials');
