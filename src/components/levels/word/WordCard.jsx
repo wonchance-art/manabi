@@ -8,13 +8,14 @@
 // 네 영역 줄(단어 · 문장 · 뜻 · 소리)과 「2일 뒤 복습」은 펼친 부분 맨 아래 · 전체 탭 카드 · 찾기 카드에만.
 import { useState } from 'react';
 import { reducedMotion } from '@/lib/reducedMotion';
+import { decodeExampleSeg, decodeFuri } from '@/lib/levelExampleCode';
 import { CharTiles, GradeButtons, LevelTag, Listen, Reading, StatusPill, WaitChip } from './WordParts';
 import { AreaRow } from './WordAreas';
 import { useWordLang } from './wordLang';
 
 const HAN = /\p{Script=Han}/u;
 
-/** 한 조각의 글자 — 후리가나(furi = [시작, 글자 수, 읽기])가 이 조각 안에 있으면 그 자리만 루비. */
+/** 한 조각의 글자 — 후리가나(furi = [시작, 글자 수, 읽기], decodeFuri로 되살린 값)가 이 조각 안에 있으면 그 자리만 루비. */
 function Furigana({ text, from, furi }) {
   if (!furi?.length) return text;
   const chars = [...text];
@@ -36,16 +37,17 @@ function ExampleWords({ ex, word, onWord, openKey, tone = true }) {
   const L = useWordLang();
   const chars = [...ex.text];
   const parts = [];
-  if (Array.isArray(ex.seg) && ex.seg.reduce((a, b) => a + b, 0) === chars.length) {
+  const { seg, lem } = decodeExampleSeg(ex);
+  if (seg && seg.reduce((a, b) => a + b, 0) === chars.length) {
     let at = 0;
-    for (const n of ex.seg) { parts.push({ text: chars.slice(at, at + n).join(''), from: at }); at += n; }
+    for (const n of seg) { parts.push({ text: chars.slice(at, at + n).join(''), from: at }); at += n; }
   } else parts.push({ text: ex.text, from: 0 });
   const lookupOf = (p, i) => {
     if (parts.length < 2 || !onWord) return null;
-    if (Array.isArray(ex.lem)) return ex.lem[i] === 1 ? p.text : ex.lem[i] || null;
+    if (lem) return lem[i] === 1 ? p.text : lem[i] || null;
     return HAN.test(p.text) ? p.text : null;
   };
-  const furi = tone ? ex.furi : null;
+  const furi = tone ? decodeFuri(ex.furi) : null;
   return <span className="lw-ex__text" lang={L.hw}>{parts.map((p, i) => {
     const look = lookupOf(p, i);
     const body = <Furigana text={p.text} from={p.from} furi={furi} />;

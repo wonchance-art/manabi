@@ -33,7 +33,7 @@ import {
 import { useLevelWordAreas } from '@/lib/useLevelWordAreas';
 import { schedulerTime } from '@/lib/fsrsScheduler';
 import {
-  gradeLevelSession, moreLevelSession, nextLevelKey, pullLevelSession, sessionCurrent, sessionDone, sessionDue, sessionHas, sessionNextAt, sessionOrder,
+  gradeLevelSession, moreLevelSession, nextLevelKey, pullLevelSession, sessionCurrent, sessionDone, sessionDue, sessionNextAt, sessionOrder,
   revertLevelGrade, sessionWaiting, startLevelSession,
 } from '@/lib/levelWordSession';
 import { indexEntry, searchLevelIndex } from '@/lib/levelWordIndex';
@@ -353,8 +353,10 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
     const pick = (keys) => keys.map((k) => byKey.get(k)).filter(Boolean);
     const order = sessionOrder(session, clock);
     const active = pick(order.includes(head) ? [head, ...order.filter((k) => k !== head)] : order);
+    // 줄에 있는 열쇠는 한 번 모아 둔다 — 단어마다 sessionHas(줄 전체 훑기)를 부르면 손님 줄(레벨 전체)에서 N²(H7 5,562장 = 약 3천만 번).
+    const inLine = new Set([...session.queue, ...session.waiting.map((w) => w.key)]);
     return { active, due: new Set(due), waiting: waiting.map((w) => ({ entry: byKey.get(w.key), at: w.at })).filter((w) => w.entry),
-      later: allEntries.filter((e) => !sessionHas(session, e.key)) };
+      later: allEntries.filter((e) => !inLine.has(e.key)) };
   }, [session, clock, head, byKey, allEntries]);
   const shown = limit + (listed?.due.size || 0); // 시간이 된 카드는 page장 위에 더한다(지금 카드를 밀어내지 않게)
   const cardEl = (key) => document.querySelector(`.lw-list[data-main] .lw-card[data-key="${CSS.escape(key)}"]`);

@@ -9,6 +9,7 @@ import { JAPANESE_VOCAB_REF } from './japaneseVocabRegistry';
 import { getBunkei as getJaBunkei, countBunkei as countJaBunkei } from '../content/japanese';
 import { getVocab as getZhVocab, getBunkei as getZhBunkei, countBunkei as countZhBunkei, ZH_LEVEL_META, ZH_HSK79_VOCAB } from '../content/chinese';
 import { loadZhHskLevels, zhHskLevelOf } from './zhHskLevel';
+import { encodeExampleSeg, encodeFuri } from './levelExampleCode';
 import { LEVEL_HUN_PX, LEVEL_LIST_LANGS, compactLevelEntry, hunShapeOf, levelKinds, levelWordKey, shortMeaning } from './levelList';
 import { hunRubyCells } from './viewerHunRuby';
 import { loadHanziTable } from './zhHanzi';
@@ -130,7 +131,7 @@ async function withExampleSegments(groups) {
   return groups.map((g) => ({ ...g, entries: g.entries.map((e) => {
     if (!e.ex?.text) return e;
     const seg = exampleSegments(e.ex.text, e.word, tokenizeZhLine(e.ex.text).map((t) => t.text));
-    return seg ? { ...e, ex: { ...e.ex, seg } } : e;
+    return seg ? { ...e, ex: { ...e.ex, ...encodeExampleSeg(seg) } } : e;
   }) }));
 }
 
@@ -220,7 +221,7 @@ function withJapaneseWordExtras(levelKey, groups) {
           const pieces = decodeJaPieces(pieceTable[jaExampleKey(ex.text)], ex.text);
           const furi = splitFuriByPieces(ex.text, jaExampleFurigana(ex.text, ex.reading), pieces, table, e);
           const split = jaExampleWords(ex.text, e.word, pieces, furi);
-          ex = { ...ex, ...(furi ? { furi } : {}), ...(split || {}) };
+          ex = { ...ex, ...(furi ? { furi: encodeFuri(furi) } : {}), ...(split ? encodeExampleSeg(split.seg, split.lem) : {}) };
         }
         // 짧은 뜻만 다듬고 원문은 fullMeaning에 남긴다(줄인 꼴 계약 — 다르면 싣는다).
         const meaning = jaPlainMeaning(e.meaning, e.word);

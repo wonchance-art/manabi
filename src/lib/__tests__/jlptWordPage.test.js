@@ -6,6 +6,7 @@ import { splitKanjiReadings } from '../jaKanjiReading.js';
 import { jaCharTiles, loadJaCharTables } from '../levelCharTiles.js';
 import { indexEntry, kanaKey, queryKind, searchLevelIndex } from '../levelWordIndex.js';
 import { japaneseLevelIndex } from '../levelListData.js';
+import { decodeExampleSeg } from '../levelExampleCode.js';
 import { JAPANESE_VOCAB_REF } from '../japaneseVocabRegistry';
 
 // 계약: JLPT 단어 페이지(오너 확정 2026-10-19 KST · 문서 「일본어 판에서 달라지는 점」 · 시안 ⑰–㉑).
@@ -132,7 +133,7 @@ describe('예문 후리가나가 단어 경계를 넘으면 단어마다 나눈�
       const e = await find(lv, word);
       const chars = [...e.ex.text];
       let at = 0;
-      const parts = e.ex.seg.map((n) => { const t = chars.slice(at, at + n).join(''); at += n; return t; });
+      const parts = decodeExampleSeg(e.ex).seg.map((n) => { const t = chars.slice(at, at + n).join(''); at += n; return t; });
       expect(parts).toContain(word);
     }
   }, 60000);

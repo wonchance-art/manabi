@@ -79,9 +79,17 @@ export function practiceFirstAnswers(rows, facets = []) {
   return out;
 }
 
+// 답 목록(practiceFirstAnswers가 만든 뒤 고치지 않는다)마다 FSRS 다시 돌리기는 한 번 — 화면은 시계가 갈 때마다 레벨 전체(H7 5,562개)를 다시 잰다.
+const replayMemo = new WeakMap();
+function replayOnce(firsts) {
+  if (!Array.isArray(firsts)) return replayPracticeMemory(firsts);
+  if (!replayMemo.has(firsts)) replayMemo.set(firsts, replayPracticeMemory(firsts));
+  return replayMemo.get(firsts);
+}
+
 /** 연습 영역 하나의 상태 — { state: 'hit' | 'faded' | 'miss' | 'new', recall }. */
 export function practiceAreaState(firsts, at = Date.now()) {
-  const memory = replayPracticeMemory(firsts);
+  const memory = replayOnce(firsts);
   if (!memory) return { state: 'new', recall: 0 };
   if (!memory.last) return { state: 'miss', recall: 0 };
   const recall = practiceRecall(memory, dayOf(schedulerTime(at)));
