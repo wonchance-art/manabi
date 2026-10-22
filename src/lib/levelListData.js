@@ -317,6 +317,17 @@ export async function levelListData(lang, kind, levelParam) {
   return { lang, kind, levelKey, groups };
 }
 
+/** 레벨 글자 칸 묶음(/api/level-tiles) — 그 레벨 단어 화면과 같은 목록 · 같은 칸 계산(levelCharTiles · jaCharTiles). 없는 레벨이면 null. */
+export async function levelCharTilePack(lang, levelParam) {
+  const data = await levelListData(lang, 'vocab', levelParam);
+  if (!data) return null;
+  const { jaCharTiles, levelCharTiles, levelTilePack, loadJaCharTables, loadLevelCharTables } = await import('./levelCharTiles.js');
+  const ja = lang === 'japanese';
+  const tables = await (ja ? loadJaCharTables() : loadLevelCharTables());
+  const words = data.groups.flatMap((g) => g.entries.map((e) => e.word));
+  return levelTilePack(words, (word) => (ja ? jaCharTiles(word, null, tables) : levelCharTiles(word, tables)));
+}
+
 /** 책장 타일 숫자 — 언어별 [{ levelKey, vocab, bunkei }]. 목록과 같은 조립을 세므로 타일 = 목록 개수. */
 const tileMemo = new Map();
 export function levelTileCounts(lang) {

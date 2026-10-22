@@ -63,3 +63,39 @@ export function loadLevelCharTables() {
     .catch((error) => { tablesPromise = null; throw error; });
   return tablesPromise;
 }
+
+/**
+ * 레벨 글자 칸 묶음(서버 · 빌드 때) — 그 레벨 단어의 칸만 미리 계산해 { t: 칸들(같은 칸은 하나), w: { 표제어: [칸 번호] } }로.
+ * 화면은 이것만 먼저 받는다(H1 8KB · N3 38KB · H7 113KB gz — 표 네 벌은 약 200KB). 묶음에 없는 단어(찾기 · 예문 단어 창)만 표 네 벌을 받아 계산한다.
+ * 일본어 칸의 읽기(kana)는 단어마다 다르므로 빼고 싣는다 — 화면이 kr로 다시 붙인다(levelPackTiles).
+ */
+export function levelTilePack(words, tilesOfWord) {
+  const ids = new Map(), t = [], w = {};
+  for (const word of words) {
+    if (!word || word in w) continue;
+    const tiles = tilesOfWord(word);
+    if (!Array.isArray(tiles)) continue; // 칸이 없는 단어(가나만)도 빈 칸으로 싣는다 — 빠지면 화면이 표 네 벌을 받는다.
+    w[word] = tiles.map(({ kana: _kana, ...tile }) => {
+      const k = JSON.stringify(tile);
+      if (!ids.has(k)) { ids.set(k, t.length); t.push(tile); }
+      return ids.get(k);
+    });
+  }
+  return { t, w };
+}
+
+/** 묶음에서 한 단어의 칸 — 없으면 undefined(표로 계산할 단어). kr(「けい,けん」)이 글자 수와 맞으면 칸마다 그 글자 읽기를 붙인다. */
+export function levelPackTiles(pack, word, kr = null) {
+  const ids = pack?.w?.[word];
+  if (!ids) return undefined;
+  const chars = [...String(word)];
+  const readings = kr ? String(kr).split(',') : null;
+  if (readings?.length !== chars.length) return ids.map((i) => pack.t[i]);
+  let at = 0;
+  return ids.map((i) => {
+    const tile = pack.t[i];
+    while (at < chars.length && chars[at] !== tile.ch) at++;
+    const kana = readings[at++];
+    return kana ? { ...tile, kana } : tile;
+  });
+}

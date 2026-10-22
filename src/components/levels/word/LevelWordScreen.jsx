@@ -31,6 +31,7 @@ import {
   areaOfView, levelWordAreas, practiceCounts, practiceOrder, seenTodayElsewhere, soundCheckKeys, wordGradedOn,
 } from '@/lib/levelWordAreas';
 import { useLevelWordAreas } from '@/lib/useLevelWordAreas';
+import { levelPackTiles } from '@/lib/levelCharTiles';
 import { schedulerTime } from '@/lib/fsrsScheduler';
 import {
   gradeLevelSession, moreLevelSession, nextLevelKey, pullLevelSession, sessionCurrent, sessionDone, sessionDue, sessionNextAt, sessionOrder,
@@ -225,17 +226,38 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
     return a ? `${a.n}${a.unit} 뒤 복습` : null;
   }, [table, clock]);
 
-  // 글자 칸 표(판의 loadTiles — 훈 · 음 · 정체/정자 · 한자 창) — 붙은 뒤 한 번 받는다. 받기 전에는 칸을 그리지 않는다.
-  // kr = 글자별 읽기(JLPT — 빌드 때 실은 「けい,けん」).
-  const [charTables, setCharTables] = useState(null);
-  useEffect(() => { if (mounted) cfg.loadTiles().then(setCharTables, () => setCharTables(false)); }, [mounted, cfg]);
+  // 글자 칸 — 붙은 뒤 이 레벨 단어의 칸 묶음(/api/level-tiles, 빌드 때 계산)을 먼저 받는다. 받기 전에는 칸을 그리지 않는다.
+  // 묶음에 없는 단어(찾기 · 예문 단어 창의 다른 레벨 단어)가 그려질 때만 표 네 벌(판의 loadTiles — 훈 · 음 · 정체/정자 · 한자 창)을 받아 계산한다.
+  // 묶음을 못 받으면 표로 전부 계산한다(예전 길). kr = 글자별 읽기(JLPT — 빌드 때 실은 「けい,けん」).
+  const [tilePack, setTilePack] = useState(null); // null 받는 중 · false 못 받음
+  const [charTables, setCharTables] = useState(null); // null 아직 · 'loading' · false 실패
+  useEffect(() => {
+    if (!mounted) return undefined;
+    let live = true;
+    setTilePack(null);
+    fetch(`/api/level-tiles/${cfg.lang}/${String(levelKey || '').toLowerCase()}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((pack) => { if (live) setTilePack(pack?.w ? pack : false); }, () => { if (live) setTilePack(false); });
+    return () => { live = false; };
+  }, [mounted, cfg, levelKey]);
+  const tablesAsked = useRef(false);
+  const askTables = useCallback(() => {
+    if (tablesAsked.current) return;
+    tablesAsked.current = true;
+    setCharTables('loading');
+    cfg.loadTiles().then(setCharTables, () => setCharTables(false));
+  }, [cfg]);
   const tileCache = useRef(new Map());
   const tilesOf = useCallback((word, kr) => {
-    if (!charTables) return null;
+    if (tilePack === null) return null;
+    const packed = tilePack ? levelPackTiles(tilePack, word, kr) : undefined;
+    if (packed !== undefined) return packed;
+    // 묶음에 없는 단어 — 표를 그때 받는다(그리는 중에는 상태를 바꾸지 않게 다음 틈에).
+    if (!charTables || charTables === 'loading') { if (charTables === null) queueMicrotask(askTables); return null; }
     const k = `${word}\u0000${kr || ''}`;
     if (!tileCache.current.has(k)) tileCache.current.set(k, cfg.tilesOf(word, kr, charTables));
     return tileCache.current.get(k);
-  }, [charTables, cfg]);
+  }, [tilePack, charTables, cfg, askTables]);
 
   // 알림(되돌리기 · 로그인 안내) — 화면에 하나.
   const [notice, setNotice] = useState(null);
