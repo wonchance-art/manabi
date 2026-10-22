@@ -28,13 +28,13 @@ import {
 } from '@/lib/levelWordStatus';
 import { DEFAULT_NEW_PER_DAY, loadNewPerDay } from '@/lib/vocabStudy';
 import {
-  AREA_LABEL, areaOfView, levelWordAreas, practiceCounts, practiceOrder, seenTodayElsewhere, soundCheckKeys, wordGradedOn,
+  areaOfView, levelWordAreas, practiceCounts, practiceOrder, seenTodayElsewhere, soundCheckKeys, wordGradedOn,
 } from '@/lib/levelWordAreas';
 import { useLevelWordAreas } from '@/lib/useLevelWordAreas';
 import { schedulerTime } from '@/lib/fsrsScheduler';
 import {
   gradeLevelSession, moreLevelSession, nextLevelKey, pullLevelSession, sessionCurrent, sessionDone, sessionDue, sessionHas, sessionNextAt, sessionOrder,
-  sessionWaiting, startLevelSession,
+  revertLevelGrade, sessionWaiting, startLevelSession,
 } from '@/lib/levelWordSession';
 import { indexEntry, searchLevelIndex } from '@/lib/levelWordIndex';
 import { useLevelWordGrade } from '@/lib/useLevelWordGrade';
@@ -109,7 +109,7 @@ export function normalizeLevelWordPrefs(raw) {
 const readJson = (store, key) => { try { return JSON.parse(store.getItem(key) || 'null'); } catch { return null; } };
 const writeJson = (store, key, value) => { try { store.setItem(key, JSON.stringify(value)); } catch { /* 저장소 없음 — 이번 화면만 */ } };
 
-/** 되돌리기 · 로그인 안내 — 네 칸 위에 잠깐. 올라왔다 .15s에 사라지고, 손가락을 올리면 멈춘다. */
+/** 되돌리기 · 로그인 안내 — 네 칸 위에 잠깐. 올라왔다 .15s에 사라지고, 손가락을 올리면 멈춘다. 단추는 먼저 닫고 실행한다(실행이 띄운 「되돌렸어요」를 지우지 않게). */
 function Notice({ notice, onDone }) {
   const [leaving, setLeaving] = useState(false);
   const hold = useRef(false);
@@ -127,7 +127,7 @@ function Notice({ notice, onDone }) {
   return <div className={`lw-undo${leaving ? ' is-leaving' : ''}`} role="status" onPointerEnter={pause} onPointerLeave={resume} onFocus={pause} onBlur={resume}>
     <span>{notice.text}</span>
     {notice.href && <Link href={notice.href}>{notice.action}</Link>}
-    {notice.onAction && <button type="button" onClick={() => { clearTimeout(timer.current); notice.onAction(); onDone(); }}>{notice.action}</button>}
+    {notice.onAction && <button type="button" onClick={() => { clearTimeout(timer.current); onDone(); notice.onAction(); }}>{notice.action}</button>}
   </div>;
 }
 
@@ -450,7 +450,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
       }
       const res = await grader.grade(entry, rating);
       if (!res.ok) {
-        if (advance) { setSession(before); setHeadKey(head); }
+        if (advance) { setSession((cur) => revertLevelGrade(cur, before, moved, entry.key, rating)); setHeadKey(head); }
         if (res.reason === 'not-due') setNotice({ id: Date.now(), text: '복습실 카드라 복습 차례에만 채점할 수 있어요', href: '/review', action: '복습실', ms: 5000 });
         return undefined;
       }
@@ -461,7 +461,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
         onAction: grader.undoable(res.undo) ? () => undoRef.current?.({ undo: res.undo, sessionBefore: advance ? before : null, headBefore: advance ? head : null, key: entry.key }) : null });
       lastRef.current = { undo: res.undo, sessionBefore: advance ? before : null, headBefore: advance ? head : null, key: entry.key };
     } catch (error) {
-      if (advance) { setSession(before); setHeadKey(head); }
+      if (advance) { setSession((cur) => revertLevelGrade(cur, before, moved, entry.key, rating)); setHeadKey(head); }
       toast(failureMessage('채점하지 못했어요.', error), 'error');
     } finally { inFlight.current.delete(entry.key); }
     return undefined;
@@ -469,9 +469,14 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
 
   const lastRef = useRef(null);
   const undoRef = useRef(null);
+  const undoPracticeRef = useRef(null);
   const undo = useCallback(async (last = lastRef.current) => {
-    if (!last || !grader.undoable(last.undo)) return;
+    if (!last) return;
     lastRef.current = null;
+    // 연습 답(문장 · 뜻 · 소리)도 같은 키로 되돌린다 — 복습실과 같은 Ctrl/⌘+Z.
+    if (last.practice) { undoPracticeRef.current?.(...last.practice); return; }
+    // 알림에 손을 올려 둔 사이 되돌리기 창(8초)이 지났으면 말없이 넘기지 않는다.
+    if (!grader.undoable(last.undo)) { setNotice({ id: Date.now(), text: '되돌릴 수 있는 시간이 지났어요', ms: 3000 }); return; }
     setNotice(null);
     try {
       await grader.undo(last.undo);
@@ -507,10 +512,10 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
       if (one) { setRevealed(false); setTurn((n) => n + 1); }
     });
     const text = !correct ? '다시 볼래요 · 다음 연습에 먼저 나와요' : sameDay ? '알아요 · 오늘 먼저 본 단어라 진도에는 안 들어가요' : '알아요';
-    setNotice({ id: Date.now(), text, action: '되돌리기', onAction: () => undoPracticeRef.current?.(entry.key, which, row) });
+    lastRef.current = { practice: [entry.key, which, row] };
+    setNotice({ id: Date.now(), text, action: '되돌리기', onAction: () => undoRef.current?.({ practice: [entry.key, which, row] }) });
     return undefined;
   }, [userId, askLogin, roundOn, round, seenElsewhere, prefs.mode, answerArea, fetchProfile]);
-  const undoPracticeRef = useRef(null);
   undoPracticeRef.current = (key, which, row) => {
     areaRec.cancel(key, which, row);
     setRound((r) => {
@@ -819,9 +824,9 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
 
     {pop && popRow && <WordPopup key={pop.id} anchor={pop.anchor} row={popRow} tiles={tilesOf(popRow.word, popRow.kr)} tone={tone} status={statusOfWord(pop.text)}
       onSave={() => onStar(entryOfRow(popRow))} onClose={() => setPop(null)}
-      onOpen={() => { setCard({ word: pop.text, row: popRow }); setPop(null); }} />}
+      onOpen={() => { setCard({ word: pop.text, row: popRow, from: pop.anchor }); setPop(null); }} />}
 
-    {card && <Sheet label={`${card.word} 단어 카드`} onClose={() => setCard(null)}>
+    {card && <Sheet label={`${card.word} 단어 카드`} onClose={() => setCard(null)} returnTo={card.from}>
       {cardEntry
         ? <ul className="lw-list"><WordCard entry={cardEntry} level={level} view="all" info={cardInfo(cardEntry.key)} tiles={tilesOf(cardEntry.word, cardEntry.kr)}
           speak={speak} tone={tone} onGrade={(r) => onGrade(cardEntry, r)} onSave={() => onStar(cardEntry)} saving={saving === cardEntry.key}

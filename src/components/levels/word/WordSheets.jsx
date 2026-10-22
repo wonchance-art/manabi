@@ -28,18 +28,26 @@ function useClosing(onClose, ms) {
 }
 
 /** 아래 시트 — Esc · 뒷배경 · 손잡이 끌기로 닫힌다. 열리면 첫 조작 요소에 초점, 닫히면 연 자리로 돌려준다. */
-export function Sheet({ label, onClose, children }) {
+export function Sheet({ label, onClose, children, returnTo = null }) {
   const ref = useRef(null);
   const drag = useRef(null);
   const [dy, setDy] = useState(0);
   const [closing, close] = useClosing(onClose, 200);
   useLayoutEffect(() => {
-    const opener = document.activeElement;
+    const opener = returnTo || document.activeElement; // 예문 단어 창에서 열면 창은 이미 사라졌다 — 누른 예문 단어로 돌려준다
     ref.current?.querySelector('a, button:not(.lw-sheet__handle), input, select')?.focus({ preventScroll: true });
     return () => { if (opener && document.contains(opener)) opener.focus({ preventScroll: true }); };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- 열릴 때 한 번(돌려줄 자리는 그때 정해진다)
   useEffect(() => {
-    const onKey = (event) => { if (event.key === 'Escape') { event.stopPropagation(); close(); } };
+    const onKey = (event) => {
+      if (event.key === 'Escape') { event.stopPropagation(); close(); return; }
+      // aria-modal — Tab이 뒤의 네 칸(화면 아래 고정)으로 새지 않게 시트 안에서 돈다(ClassCopyNotice와 같은 방식).
+      if (event.key !== 'Tab' || !ref.current) return;
+      const nodes = [...ref.current.querySelectorAll('button:not(:disabled), [href], input, select')];
+      const first = nodes[0], last = nodes.at(-1), inside = ref.current.contains(document.activeElement);
+      if (event.shiftKey && (!inside || document.activeElement === first)) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && (!inside || document.activeElement === last)) { event.preventDefault(); first?.focus(); }
+    };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
   }, [close]);
@@ -107,6 +115,15 @@ export function WordPopup({ anchor, row, tiles, tone, status, onSave, onOpen, on
     const top = r.bottom + 8 + h > vh - 16 ? Math.max(16, r.top - h - 8) : r.bottom + 8;
     setPos({ left, top });
   }, [anchor, row]);
+  // 창은 문서 끝에 그려진다 — 열리면 창 안 첫 단추로, 닫히면 누른 예문 단어로 초점을 옮겨 키보드로도 ☆ · 카드 열기에 닿는다.
+  useEffect(() => {
+    const el = ref.current;
+    el?.querySelector('button')?.focus({ preventScroll: true });
+    return () => {
+      const at = document.activeElement;
+      if (anchor && document.contains(anchor) && (!at || at === document.body || el?.contains(at))) anchor.focus({ preventScroll: true });
+    };
+  }, [anchor]);
   useEffect(() => {
     const onKey = (event) => { if (event.key === 'Escape') close(); };
     const onDown = (event) => { if (!ref.current?.contains(event.target) && event.target !== anchor) close(); };

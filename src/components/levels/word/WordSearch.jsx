@@ -24,7 +24,7 @@ function Section({ title, rows, statusOf, onSave, savingKey, popKey, onOpen, ton
 export function WordSearchResults({ query, result, level, loading, fallback, statusOf, onSave, savingKey, popKey, onOpen, tone, currentWord = null }) {
   const L = useWordLang();
   if (!query.trim()) return <div className="lw-results"><p className="lw-results__status">{L.searchHint}</p></div>;
-  if (loading && !result) return <div className="lw-results"><p className="lw-results__status" aria-busy="true">사전을 받는 중…</p></div>;
+  if (loading && !result) return <div className="lw-results"><p className="lw-results__status" aria-busy="true">사전을 불러오는 중…</p></div>;
   if (!result?.total) {
     return <div className="lw-results" role="status"><div className="lw-results__none"><b>맞는 단어가 없어요</b>
       <span>{L.noneHint}</span></div></div>;

@@ -193,9 +193,9 @@ export function gradeToastText(grade, preview) {
 
 /** 끝 화면 「내일」 — 다음 복습이 내일 학습일(04시 경계)인 단어 수. */
 /**
- * 오늘 새로 시작한 단어 수 — 그 언어의 단어장 행 중 오늘 학습일(04시 경계)에 생겼고 일정이 잡힌(채점한) 것.
+ * 오늘 새로 시작한 단어 수 — 그 언어의 단어장 행 중 오늘 학습일(04시 경계)에 생겼고 채점한 것.
  * 레벨 단어 페이지의 하루 새 단어 한도(복습 설정의 하루 새 단어 수)에서 뺀다 — 레벨을 옮기거나 다시 열어도 같은 하루 몫.
- * 뷰어에서 등급과 함께 담은 단어도 센다(같은 하루 몫). ☆로만 담은 단어는 일정이 없어 세지 않는다.
+ * 뷰어에서 등급과 함께 담은 단어도 센다(같은 하루 몫). ☆로만 담은 단어는 채점 흔적이 없어 세지 않는다.
  */
 export function newStartedToday(index, language, at = Date.now()) {
   if (!index?.byKey) return 0;
@@ -207,8 +207,10 @@ export function newStartedToday(index, language, at = Date.now()) {
     seen.add(row.id);
     const born = row.language === language ? Date.parse(row.created_at) : NaN; // DB 시각은 마이크로초까지라 schedulerTime 대신
     if (!Number.isFinite(born)) continue;
-    const scheduled = row.next_review_at || index.projectionsById?.get(row.id)?.review?.nextQuestionAt;
-    if (scheduled && learningDay(born) === today) n += 1;
+    // ☆ · 원탭 담기도 next_review_at = 담은 시각을 싣는다(buildVocabRow) — 일정 칸이 아니라 채점 흔적(안정도 · 마지막 채점)으로 센다.
+    const p = index.projectionsById?.get(row.id);
+    const graded = Number(row.interval) > 0 || !!row.last_reviewed_at || (p?.source === 'fsrs-v1' && !!p.review?.nextQuestionAt);
+    if (graded && learningDay(born) === today) n += 1;
   }
   return n;
 }

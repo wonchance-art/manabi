@@ -43,7 +43,7 @@ describe('① 하루 새 단어 — 복습 설정과 같은 수 · 더 단추(�
     expect(full).not.toContain('새 단어');
     const empty = wrap(<OneWordDone graded={0} tomorrow={0} counts={counts} onList={() => {}} more={15} perDay={0} started={0} onMore={() => {}} onBrowse={() => {}} />);
     expect(empty).toContain('오늘 복습 끝');
-    expect(empty).toContain('복습할 단어도 오늘은 다 했어요');
+    expect(empty).toContain('지금 복습할 단어가 없어요');
     expect(empty).not.toContain('누른 횟수');
     expect(empty).toContain('새 단어를 더 하면 내일 복습이 그만큼 늘어요');
   });
@@ -126,5 +126,31 @@ describe('캔버스 시각 값(오너 2026-10-21 KST 「시안대로」 · 보�
     expect(card).toContain('{chips}{head}');
     expect(card).toContain('{chips}{solo}');
     expect(fs.readFileSync('src/components/levels/word/OneWord.jsx', 'utf8')).toContain('정답 확인 <span className="lw-one__key">· Space</span>');
+  });
+});
+
+describe('재검수 손질(2026-10-22 KST) — 키보드 · 되돌리기', () => {
+  const parts = fs.readFileSync('src/components/levels/word/WordParts.jsx', 'utf8');
+  const areas = fs.readFileSync('src/components/levels/word/WordAreas.jsx', 'utf8');
+  const sheets = fs.readFileSync('src/components/levels/word/WordSheets.jsx', 'utf8');
+  const one = fs.readFileSync('src/components/levels/word/OneWord.jsx', 'utf8');
+  it('눌러 채점한 단추는 초점을 놓는다 — 남으면 다음 카드에서 Space가 그 단추를 눌러 보지 않은 카드를 채점한다', () => {
+    expect(parts).toContain('releasePointerFocus(e); onGrade(g.grade);');
+    expect(areas.match(/releasePointerFocus\(e\); onAnswer/g)).toHaveLength(2);
+  });
+  it('정답 확인 단추가 사라지면 초점은 카드로 · 시트는 Tab이 안에서 돈다 · 예문 단어 창은 열리면 창 안, 닫히면 누른 단어로', () => {
+    expect(one).toMatch(/onReveal\(\); card\?\.focus/);
+    expect(sheets).toContain("event.key !== 'Tab'");
+    expect(sheets).toContain("el?.querySelector('button')?.focus");
+    expect(screen).toContain('returnTo={card.from}');
+  });
+  it('Ctrl/⌘+Z는 연습 답도 되돌린다 · 되돌리기 창이 지났으면 말없이 넘기지 않는다 · 알림 단추는 닫고 실행', () => {
+    expect(screen).toContain('lastRef.current = { practice: [entry.key, which, row] }');
+    expect(screen).toContain('되돌릴 수 있는 시간이 지났어요');
+    expect(screen).toContain('onDone(); notice.onAction();');
+  });
+  it('저장 실패는 그 카드만 되돌린다(revertLevelGrade)', () => {
+    expect(screen.match(/revertLevelGrade\(cur, before, moved, entry\.key, rating\)/g)).toHaveLength(2);
+    expect(screen).not.toContain('setSession(before)');
   });
 });

@@ -67,13 +67,19 @@ export function StatusPill({ status, onSave, busy = false, pop = false }) {
  * 네 칸 — 등급 이름 + 다음 간격(굵은 색 글자). 칸 안 숫자는 표시하지 않고 키 1–4는 화면이 받는다.
  * previews = gradePreviews 결과(null이면 지금은 채점할 수 없음 — note가 그 이유).
  */
+/**
+ * 마우스 · 손가락으로 누른 채점 단추는 초점을 놓는다 — 남아 있으면 다음 카드에서 Space(정답 확인)가 그 단추를 다시 눌러
+ * 보지도 않은 카드를 채점한다. 키보드로 누른 것(detail 0)은 초점을 그대로 둔다(Tab으로 고른 자리).
+ */
+export const releasePointerFocus = (event) => { if (event.detail > 0) event.currentTarget.blur(); };
+
 export function GradeButtons({ previews, onGrade, disabled = false, note = null, className = '' }) {
   return <div className={`lw-grades ${className}`} role="group" aria-label="얼마나 기억났나요">
     {SAVE_GRADES.map((g) => {
       const p = previews?.[g.grade];
       return <button key={g.grade} type="button" className={`lw-grade lw-grade--${g.cls}`} disabled={disabled || !previews}
         aria-keyshortcuts={g.key} aria-label={p?.label ? `${g.label}, ${p.label === '오늘' ? '오늘 다시' : `${p.label} 뒤`}` : g.label}
-        onClick={(e) => { e.stopPropagation(); onGrade(g.grade); }}>
+        onClick={(e) => { e.stopPropagation(); releasePointerFocus(e); onGrade(g.grade); }}>
         <span className="lw-grade__name">{g.label}</span>
         <b className="lw-grade__gap">{p?.label || ' '}</b>
       </button>;

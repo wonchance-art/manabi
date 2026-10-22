@@ -89,6 +89,13 @@ describe('단어 영역 — 단어장 카드의 마지막 결과', () => {
     expect(wordAreaState({ projection: card(), todayFirst: 2, at: now })).toBe('miss');
     expect(wordAreaState({ projection: card(), todayFirst: 3, at: now })).toBe('hit');
   });
+  it('하루 간격 복습 카드는 몇 ms 모자라도 맞힘 · 등급과 함께 담은 행(마지막 채점 칸 없음)은 담은 시각으로 잰다', () => {
+    expect(wordAreaState({ projection: card({ last: new Date(Date.parse(at(-1)) + 3).toISOString(), next: at(0, 0.5) }), at: now })).toBe('hit');
+    const saved = (next) => ({ source: 'legacy', memory: { lastReview: null, stability: 0.2 }, vocabulary: { created_at: at(0, -0.1) },
+      review: { nextQuestionAt: next, known: false, excluded: false, available: true } });
+    expect(wordAreaState({ projection: saved(at(0, -0.08)), at: now })).toBe('miss'); // 다시로 담음 — 1분 뒤
+    expect(wordAreaState({ projection: saved(at(8)), at: now })).toBe('hit'); // 쉬움으로 담음 — 8일 뒤
+  });
   it('오늘 채점했는가(같은 날 규칙)', () => {
     expect(wordGradedOn(card({ last: at(0, -1) }), now)).toBe(true);
     expect(wordGradedOn(card({ last: at(-1) }), now)).toBe(false);

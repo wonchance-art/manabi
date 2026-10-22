@@ -13,7 +13,7 @@ async function controllerFor(accountId) {
     return controller;
   });
   holder = { accountId, ready, dispose: () => ready.then((c) => c.dispose()).catch(() => {}) };
-  try { return await ready; } catch (error) { holder = null; throw error; }
+  try { return await ready; } catch (error) { if (holder?.ready === ready) holder = null; throw error; } // 그사이 다른 계정으로 바뀌었으면 그쪽은 둔다
 }
 
 /** row = 단어장 행(id = 카드 id). 결과 { ok, error }. */

@@ -16,6 +16,7 @@ import { AREA_DAY_KEY, noteOpened, noteWordGrade, practiceFirstAnswers, readArea
 const ROWS_KEY = 'manabi:level-areas-rows';
 const FACETS_KEY = 'manabi:level-areas-facets';
 const CACHE_LIMIT = 1_500_000; // 글자 수 — 넘으면 이 기기에 두지 않는다(매번 전부 받는다)
+const SINCE_OVERLAP_MS = 24 * 3600 * 1000; // 이어 읽기 겹침 — 아래 「이어 읽기」 참고
 
 const readJson = (key) => { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; } };
 const writeJson = (key, value) => {
@@ -64,7 +65,10 @@ export function useLevelWordAreas(userId, { lang, level, enabled = true }) {
     typed.current = [];
     const cached = readJson(rowsKey);
     const have = Array.isArray(cached?.rows) ? cached.rows : [];
-    const since = typeof cached?.until === 'string' ? cached.until : null;
+    // 이어 읽기는 받아 둔 끝보다 하루 앞에서 — 다른 기기의 시계 차이 · 모아 두었다 늦게 보낸 답(created_at이 더 이르다)을
+    // 놓치지 않게. 겹치는 줄은 아래에서 id로 거른다.
+    const cachedUntil = typeof cached?.until === 'string' ? Date.parse(cached.until) : NaN;
+    const since = Number.isFinite(cachedUntil) ? new Date(cachedUntil - SINCE_OVERLAP_MS).toISOString() : null;
     if (have.length) { setRows(have); setLoaded(true); }
     const untilIso = new Date().toISOString();
     fetchLevelAnswers(supabase, userId, { lang, level, untilIso, sinceIso: since })

@@ -105,7 +105,11 @@ export function wordAreaState({ projection, known = false, todayFirst = null, at
   const nextAt = projection.review.nextQuestionAt;
   if (nextAt === null) return 'miss';
   const next = schedulerTime(nextAt), now = schedulerTime(at);
-  if (last !== null && next - last < DAY) return 'miss';
+  // 다음 차례가 하루 안쪽(학습 · 재학습 단계) = 놓침. 등급과 함께 담은 행은 마지막 채점 칸이 비어 담은 시각으로 잰다.
+  // 반나절로 가르는 까닭은 fsrs.js REVIEW_GAP_MS와 같다(하루 간격도 몇 ms 모자라게 찍힌다).
+  const born = Date.parse(projection.vocabulary?.created_at ?? '');
+  const from = last ?? (Number.isFinite(born) ? born : null);
+  if (from !== null && next - from < DAY / 2) return 'miss';
   return next <= now ? 'faded' : 'hit';
 }
 

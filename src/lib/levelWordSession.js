@@ -72,6 +72,21 @@ export function gradeLevelSession(session, key, rating, againAt = null) {
     graded: session.graded + 1, counts: { ...session.counts, [rating]: session.counts[rating] + 1 }, history: [...history.slice(-19), prev] };
 }
 
+/**
+ * 저장에 실패한 채점을 줄에서 되돌린다. 그사이 다른 카드를 채점했으면(current ≠ moved) 그 결과는 두고
+ * 이 카드만 채점 전 자리(줄 맨 앞 · 기다리는 카드)로 돌린다 — 통째로 before로 돌리면 뒤 카드의 채점이 사라진다.
+ */
+export function revertLevelGrade(current, before, moved, key, rating) {
+  if (!current || current === moved) return before;
+  const rest = without(current, key);
+  const waited = before.waiting.find((w) => w.key === key);
+  return { ...current, ...rest,
+    queue: before.queue.includes(key) ? [key, ...rest.queue] : rest.queue,
+    waiting: waited ? [...rest.waiting, waited].sort(byAt) : rest.waiting,
+    held: (before.held || []).includes(key) ? [...rest.held, key] : rest.held,
+    graded: Math.max(0, current.graded - 1), counts: { ...current.counts, [rating]: Math.max(0, current.counts[rating] - 1) } };
+}
+
 /** 카드를 채점 없이 줄에서 뺀다(지금은 채점할 수 없는 카드 — 다른 곳에서 막 채점됨 등). */
 export function skipLevelSession(session, key) {
   if (!sessionHas(session, key)) return session;

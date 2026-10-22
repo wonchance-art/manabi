@@ -38,6 +38,13 @@ describe('단어 학습 단계 — anki-v2', () => {
     expect(vocabStepPhase({ ...row, last_reviewed_at: iso(at - 3 * DAY) })).toEqual({ state: 'Review', step: 0 });
   });
 
+  it('하루 간격 카드는 몇 ms 모자라게 찍혀도 복습 단계 — next_review_at은 계산 시각, last_reviewed_at은 기록 시각(조금 뒤)', () => {
+    const row = { interval: 1.2, ease_factor: 2.1, repetitions: 1, next_review_at: iso(at), last_reviewed_at: iso(at - DAY + 3) };
+    expect(vocabStepPhase(row)).toEqual({ state: 'Review', step: 0 });
+    expect(gap(calculateVocabFSRS(1, row, at), at)).toBe(10 * MIN); // 다시 = 재학습 10분(1분이 아니다)
+    expect(gap(calculateVocabFSRS(2, row, at), at)).toBeGreaterThan(DAY); // 어려움 = 일 단위(10분이 아니다)
+  });
+
   afterEach(() => vi.useRealTimers());
 
   it('복습 단계 단어: 다시 = 10분 재학습(기억 상태는 예전 계산 그대로), 그 밖은 예전 일 단위 계산 그대로', () => {

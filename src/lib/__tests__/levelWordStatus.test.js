@@ -7,7 +7,7 @@ import {
 } from '../levelWordStatus.js';
 import {
   gradeLevelSession, moreLevelSession, nextLevelKey, pullLevelSession, sessionCurrent, sessionDone, sessionDue, sessionNextAt, sessionOrder,
-  sessionWaiting, skipLevelSession, startLevelSession, undoLevelSession,
+  revertLevelGrade, sessionWaiting, skipLevelSession, startLevelSession, undoLevelSession,
 } from '../levelWordSession.js';
 
 const actorId = 'learner';
@@ -121,16 +121,19 @@ describe('네 칸 채점 미리보기', () => {
 });
 
 describe('오늘 새로 시작한 단어 수(하루 새 단어 몫 — 시안 ⑧)', () => {
-  it('그 언어 · 오늘 학습일(04시 경계)에 생기고 일정이 잡힌 행만 센다 — DB 마이크로초 시각도 읽는다', () => {
+  it('그 언어 · 오늘 학습일(04시 경계)에 생기고 채점한 행만 센다 — DB 마이크로초 시각도 읽는다', () => {
     const rows = [
-      { id: 1, language: 'Chinese', created_at: '2026-10-19T01:00:00.123456+00:00', next_review_at: '2026-10-20T01:00:00Z' }, // 10:00 KST 오늘
-      { id: 2, language: 'Chinese', created_at: '2026-10-18T18:30:00+00:00', next_review_at: '2026-10-20T01:00:00Z' }, // 03:30 KST — 어제 학습일
-      { id: 3, language: 'Chinese', created_at: '2026-10-19T02:00:00Z', next_review_at: null }, // ☆로만 담음
-      { id: 4, language: 'Japanese', created_at: '2026-10-19T02:00:00Z', next_review_at: '2026-10-20T01:00:00Z' },
+      { id: 1, language: 'Chinese', created_at: '2026-10-19T01:00:00.123456+00:00', next_review_at: '2026-10-20T01:00:00Z', interval: 2.3 }, // 10:00 KST 오늘
+      { id: 2, language: 'Chinese', created_at: '2026-10-18T18:30:00+00:00', next_review_at: '2026-10-20T01:00:00Z', interval: 2.3 }, // 03:30 KST — 어제 학습일
+      // ☆ · 원탭 담기 — 운영 행은 next_review_at = 담은 시각(buildVocabRow)이 실리고 채점 흔적은 없다.
+      { id: 3, language: 'Chinese', created_at: '2026-10-19T02:00:00Z', next_review_at: '2026-10-19T02:00:00Z', interval: 0, last_reviewed_at: null },
+      { id: 4, language: 'Japanese', created_at: '2026-10-19T02:00:00Z', next_review_at: '2026-10-20T01:00:00Z', interval: 2.3 },
       { id: 5, language: 'Chinese', created_at: '2026-10-19T02:00:00Z', next_review_at: null }, // FSRS 카드 — 일정은 투영에
+      { id: 6, language: 'Chinese', created_at: '2026-10-19T02:00:00Z', next_review_at: '2026-10-19T02:00:00Z' }, // 옛 행 투영(일정 = 담은 시각)도 세지 않는다
     ];
     const byKey = new Map(rows.flatMap((r) => [[`s:${r.id}`, r], [`b:${r.id}`, r]]));
-    const projectionsById = new Map([[5, { review: { nextQuestionAt: '2026-10-19T02:10:00Z' } }]]);
+    const projectionsById = new Map([[5, { source: 'fsrs-v1', review: { nextQuestionAt: '2026-10-19T02:10:00Z' } }],
+      [6, { source: 'legacy', review: { nextQuestionAt: '2026-10-19T02:00:00Z' } }]]);
     expect(newStartedToday({ byKey, projectionsById }, 'Chinese', at)).toBe(2);
     expect(newStartedToday({ byKey, projectionsById }, 'Japanese', at)).toBe(1);
     expect(newStartedToday(null, 'Chinese', at)).toBe(0);
@@ -232,5 +235,25 @@ describe('오늘 할 줄 — 한 단어 · 리스트 모드가 같이 쓴다(오
   it('계속 진행 = 다음 레벨 · 마지막이면 없음(품사 범위는 없앴다)', () => {
     expect(nextLevelKey(['h1', 'h2'], 'h1')).toBe('h2');
     expect(nextLevelKey(['h1', 'h2'], 'h2')).toBeNull();
+  });
+});
+
+describe('저장 실패 되돌림 — 그사이 채점한 다른 카드는 두고 이 카드만(리스트는 두 카드를 잇달아 누를 수 있다)', () => {
+  const T = 1_000_000;
+  const start = () => startLevelSession(['a', 'b', 'c'].map((key) => ({ key })), () => 'new', () => 0, T);
+  it('뒤에 아무것도 없으면 채점 전 그대로', () => {
+    const before = start(), moved = gradeLevelSession(before, 'a', 3);
+    expect(revertLevelGrade(moved, before, moved, 'a', 3)).toBe(before);
+  });
+  it('b를 채점한 뒤 a 저장이 실패하면 a만 줄 앞으로, b는 채점된 채', () => {
+    const before = start(), moved = gradeLevelSession(before, 'a', 3), later = gradeLevelSession(moved, 'b', 4);
+    const back = revertLevelGrade(later, before, moved, 'a', 3);
+    expect(back.queue).toEqual(['a', 'c']);
+    expect(back.graded).toBe(1);
+    expect(back.counts).toEqual({ 1: 0, 2: 0, 3: 0, 4: 1 });
+  });
+  it('기다리던 카드는 기다리는 자리로', () => {
+    const before = gradeLevelSession(start(), 'a', 1, T + 60_000), moved = gradeLevelSession(before, 'a', 3), later = gradeLevelSession(moved, 'b', 3);
+    expect(revertLevelGrade(later, before, moved, 'a', 3).waiting).toEqual([{ key: 'a', at: T + 60_000 }]);
   });
 });

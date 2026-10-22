@@ -111,6 +111,9 @@ export function calculateFSRS(rating, prevStats) {
 export const VOCAB_STEP_POLICY = 'anki-v2';
 const STEPS = fsrsPolicySteps(VOCAB_STEP_POLICY);
 const DAY_MS = 24 * 3600 * 1000;
+// 복습 단계(하루 이상)와 학습 단계(10분 이하)를 가르는 간격 — 하루 간격 카드도 next_review_at(채점 계산 시각 기준)이
+// last_reviewed_at(기록 시각, 몇 ms 뒤)보다 하루에 조금 못 미치게 찍히므로 정확히 하루로 가르면 복습 카드가 학습 단계로 읽힌다.
+const REVIEW_GAP_MS = DAY_MS / 2;
 const INITIAL_S = (() => {
   const first = previewFsrsRatings(introduceFsrsCard(0, { policyVersion: VOCAB_STEP_POLICY }), STEPS.learning[0] * 1000);
   return { good: first[3].card.stability, easy: first[4].card.stability };
@@ -123,7 +126,7 @@ export function vocabStepPhase(prev) {
   if (S <= 0) return { state: 'New', step: 0 };
   const due = timeOf(prev.next_review_at), last = timeOf(prev.last_reviewed_at);
   if (Number.isFinite(last)) {
-    if (!Number.isFinite(due) || due - last >= DAY_MS) return { state: 'Review', step: 0 };
+    if (!Number.isFinite(due) || due - last >= REVIEW_GAP_MS) return { state: 'Review', step: 0 };
     if ((prev.repetitions ?? 0) > 0) return { state: 'Relearning', step: 0 };
     return { state: 'Learning', step: due - last >= STEPS.learning[1] * 1000 - 1000 ? 1 : 0 };
   }

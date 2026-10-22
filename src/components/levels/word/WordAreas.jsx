@@ -2,7 +2,7 @@
 // 네 영역 체크 화면 조각(오너 승인 2026-10-21 KST · 시안 「단어 네 영역 체크」) — 판정은 lib/levelWordAreas.
 // 영역 줄(펼친 카드 맨 아래 · 찾기 카드) · 연습 탭 두 칸(다시 볼래요 · 알아요) · 연습 안내 · 연습 끝 화면 · 전체 탭 넘기기.
 import { AREA_LABEL, AREA_STATES, LEVEL_AREAS, areaPercent, shownState } from '@/lib/levelWordAreas';
-import { CountUp } from './WordParts';
+import { CountUp, releasePointerFocus } from './WordParts';
 
 /**
  * 영역 줄 — 단어 · 문장 · 뜻 · 소리, 칸마다 기억 확률 %(오너 선택 2026-10-21 KST 「영역별 기억 확률」). 색은 맞힘 · 놓침 · 처음,
@@ -38,9 +38,9 @@ export function PracticeBar({ onAnswer, disabled = false, label = null }) {
     <p className="lw-gradebar__guide" aria-hidden={!label || undefined}>{label}</p>
     <div className="lw-two" role="group" aria-label="떠올랐나요">
       <button type="button" className="lw-two__btn lw-two__btn--again" aria-keyshortcuts="1" disabled={disabled}
-        onClick={(e) => { e.stopPropagation(); onAnswer(false); }}>다시 볼래요</button>
+        onClick={(e) => { e.stopPropagation(); releasePointerFocus(e); onAnswer(false); }}>다시 볼래요</button>
       <button type="button" className="lw-two__btn lw-two__btn--know" aria-keyshortcuts="2" disabled={disabled}
-        onClick={(e) => { e.stopPropagation(); onAnswer(true); }}>알아요</button>
+        onClick={(e) => { e.stopPropagation(); releasePointerFocus(e); onAnswer(true); }}>알아요</button>
     </div>
   </div></div>;
 }
@@ -71,7 +71,7 @@ export function PracticeDone({ area, hits, misses, onAgain, moreCount = 0, onMor
         {moreCount > 0 && <button type="button" className={`lw-btn${misses > 0 ? '' : ' lw-btn--primary'}`} onClick={onMore}>다음 {moreCount}개</button>}
         <button type="button" className="lw-btn" onClick={onWordTab}>단어 탭으로</button>
       </div>
-      {misses > 0 && <p className="lw-done__note">오늘 두 번째부터는 진행률에 들어가지 않아요</p>}
+      {misses > 0 && <p className="lw-done__note">오늘 두 번째부터는 진도에 들어가지 않아요</p>}
     </div>
   </section>;
 }

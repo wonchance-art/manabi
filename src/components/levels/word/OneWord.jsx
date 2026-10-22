@@ -16,9 +16,10 @@ export function OneWordCard({ entry: e, view, info, tiles, speak, tone, revealed
           : <span className="lw-one__hw" lang={L.hw} style={{ '--n': [...hw].length }}>{hw}</span>;
   // 뒷면에서는 표제어가 늘 같은 자리(앞면이 단어였으면 그대로, 다른 보기였으면 단어로 바뀐다).
   const top = revealed ? <span className="lw-one__hw" lang={L.hw} style={{ '--n': [...hw].length }}>{hw}</span> : front;
-  return <section className={`lw-one__card${turnKey ? ' is-turning' : ''}`} key={turnKey || e.key} aria-label={`${e.word} 카드`}>
+  return <section className={`lw-one__card${turnKey ? ' is-turning' : ''}`} key={turnKey || e.key} aria-label={`${e.word} 카드`} tabIndex={-1}>
     <div className="lw-one__front">{top}</div>
-    {!revealed && <button type="button" className="lw-one__reveal" onClick={onReveal} aria-keyshortcuts="Space">정답 확인 <span className="lw-one__key">· Space</span></button>}
+    {!revealed && <button type="button" className="lw-one__reveal" aria-keyshortcuts="Space"
+      onClick={(ev) => { const card = ev.currentTarget.closest('section'); onReveal(); card?.focus({ preventScroll: true }); }}>정답 확인 <span className="lw-one__key">· Space</span></button>}
     {revealed && <div className="lw-one__back">
       <div className="lw-one__meta"><Reading text={sub} word={hw} tone={tone} /><Listen speak={speak} text={e.word} /></div>
       {info.hard ? <div className="lw-one__chips"><span className="lw-chip">자주 틀린 단어 · {info.hard}번</span></div> : null}
@@ -73,7 +74,7 @@ export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabe
       <div className="lw-done__counts" aria-label="누른 횟수">
         {cells.map(([n, cls, label]) => <span key={n} className={`lw-done__n lw-grade--${cls}`}><b><CountUp n={counts[n]} /></b><small>{label}</small></span>)}
       </div>
-    </> : <p className="lw-done__sum">복습할 단어도 오늘은 다 했어요</p>}
+    </> : <p className="lw-done__sum">지금 복습할 단어가 없어요</p>}
     <div className="lw-done__actions">
       {soundCount > 0 && <button type="button" className="lw-btn lw-btn--primary" onClick={onSound}>소리로 확인할 단어 {soundCount}개</button>}
       <div className="lw-done__row">

@@ -27,7 +27,6 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-title__caret{margin-right:auto;color:var(--muted)}
 .lw-icon{flex:none;width:44px;height:44px;border:0;background:none;border-radius:10px;display:grid;place-items:center;color:var(--ink);cursor:pointer}
 .lw-icon:hover{background:var(--lw-chip)}
-.lw-icon[aria-expanded=true]{background:var(--lw-chip)}
 .lw-top--search{gap:6px}
 .lw-top--search[data-stuck]{box-shadow:0 6px 14px rgba(37,39,33,.07)} /* 내려 본 찾기 결과 위 — 진행바와 같은 그림자 */
 .lw-top--search .lw-searchbox{animation:lwFade .15s var(--ease-settle) both}
@@ -81,8 +80,7 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-py{font-size:15px;color:var(--muted);letter-spacing:.2px}
 .lw-tone--1{color:var(--lw-tone-1)}.lw-tone--2{color:var(--lw-tone-2)}.lw-tone--3{color:var(--lw-tone-3)}.lw-tone--4{color:var(--lw-tone-4)}.lw-tone--0{color:var(--lw-tone-0)}
 .lw-tag{flex:none;width:52px;text-align:center;font-size:11.5px;font-weight:700;color:var(--muted);white-space:nowrap;background:var(--lw-chip);border-radius:6px;padding:2px 0}
-.lw-tag--empty{background:none}
-.lw-tag--empty{display:inline-block;align-self:stretch}
+.lw-tag--empty{background:none;display:inline-block;align-self:stretch}
 .lw-status{flex:none;width:44px;min-height:44px;display:inline-grid;place-items:center;font-size:11.5px;font-weight:700;border:0;background:none;padding:0;position:relative}
 .lw-status::before{content:'';position:absolute;width:38px;height:22px;border-radius:6px;border:1px solid transparent;box-sizing:border-box;z-index:-1}
 .lw-status{isolation:isolate}
@@ -300,8 +298,7 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;max-width:680px;margin:0 auto;background:var(--paper);border-radius:18px 18px 0 0;padding:0 16px calc(16px + env(safe-area-inset-bottom,0px));max-height:88dvh;overflow:auto;animation:viewerSheetUp .24s var(--ease-settle) both;touch-action:pan-y}
 .lw-sheet__handle{display:grid;place-items:center;height:28px;cursor:grab;touch-action:none}
 .lw-sheet__handle::before{content:'';width:40px;height:4px;border-radius:999px;background:var(--rule)}
-.lw-sheet__rows{display:grid;gap:14px;padding-bottom:6px}
-.lw-sheet__rows{gap:10px}
+.lw-sheet__rows{display:grid;gap:10px;padding-bottom:6px}
 .lw-sheet__row{display:grid;grid-template-columns:40px minmax(0,1fr);align-items:center;gap:8px}
 .lw-sheet__row>span{font-size:13px;color:var(--muted)}
 .lw-sheet .lw-seg{grid-template-columns:repeat(var(--n,2),minmax(0,1fr))}

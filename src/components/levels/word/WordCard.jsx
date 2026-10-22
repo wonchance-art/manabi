@@ -83,7 +83,7 @@ export function Example({ ex, word, speak, onWord, openKey, showText = true, ton
  * view = 'all' | 'word' | 'sentence' | 'meaning' | 'sound'. areas = 네 영역(levelWordAreas) · next = 「2일 뒤 복습」.
  * onOpen = 펼침(같은 날 규칙 — 이 기기에서 이 단어를 펼쳐 봤다).
  */
-export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, tone, onGrade, onSave, saving, pop, onWord, openKey, note, id,
+export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, tone, onGrade, onSave, saving, pop, onWord, openKey, note,
   grades: inline = false, search = false, focused = false, onPick, onOpen, due = false, wait = null, areas = null, next = null }) {
   const L = useWordLang();
   const [open, setOpen] = useState(false); // false | true | 'closing'(접히는 0.2초 — 오너 2026-10-21 KST ⑥-2)
@@ -103,7 +103,7 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
   const ex = <Example ex={e.ex} word={e.word} speak={speak} onWord={onWord} openKey={openKey} tone={tone} />;
   const grades = inline ? <GradeButtons previews={info.previews} onGrade={onGrade} note={note} /> : null;
   const pick = (event) => { if (!event.target.closest('button, a')) onPick?.(); };
-  const attrs = { id, 'data-key': e.key, 'data-focus': focused || undefined };
+  const attrs = { 'data-key': e.key, 'data-focus': focused || undefined };
   const areaRow = <AreaRow areas={areas} next={next} />;
   if (view === 'all') {
     const last = e.ex?.text ? <Example ex={e.ex} word={e.word} speak={speak} onWord={onWord} openKey={openKey} tone={tone} tail={time} /> : null;
@@ -133,7 +133,7 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
   const toggle = (event) => { if (!event.target.closest('button, a')) { flip(); onPick?.(); } };
   return <li className="lw-card" {...attrs} data-view={view} onClick={toggle}>
     {chips}{solo}
-    <button type="button" className="sr-only" aria-expanded={open === true} onClick={flip}>{open === true ? '접기' : '펼쳐 보기'}</button>
+    <button type="button" className="sr-only" aria-expanded={open === true} onClick={flip}>{`${e.word} ${open === true ? '접기' : '펼쳐 보기'}`}</button>
     {grades}
     {open && <div className="lw-card__more" data-closing={open === 'closing' || undefined} onAnimationEnd={closed}><div className="lw-card__in">{rest}{areaRow}</div></div>}
   </li>;
