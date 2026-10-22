@@ -2393,9 +2393,10 @@ export default function ViewerPage() {
     setSenseReviewDismissed(senseReviewKey);
     try { localStorage.setItem(senseReviewKey, '1'); } catch { /* 개인 편의 — 실패해도 이번 화면에서는 닫힌다 */ }
   };
-  // 위쪽 배지 줄(복습 가능 · 아는/새 단어 · 수집) ✕(오너 2026-10-20 KST 「x표시 만들어서 끌 수 있게」) — 이 자료만, 이 브라우저에.
+  // 위쪽 배지 줄(복습 가능 · 아는/새 단어 · 수집) ✕(오너 2026-10-20 KST 「x표시 만들어서 끌 수 있게」) — 이 자료만, 이 브라우저의 이 계정에.
   // 닫을 때의 복습 가능 수를 적어 두고, 그보다 늘면 다시 보인다(복습으로 가는 길을 영영 끊지 않는다).
-  const badgesKey = `viewer-badges-dismissed:${id}`;
+  // 계정마다 따로 — 같은 브라우저의 다른 계정이 남의 닫은 수에 가려지지 않게(재검수 2026-10-22 KST).
+  const badgesKey = `viewer-badges-dismissed:${user?.id ?? 'guest'}:${id}`;
   const [badgesDismissedAt, setBadgesDismissedAt] = useState(null); // null = 닫은 적 없음 · 숫자 = 닫을 때 복습 가능 수
   useEffect(() => {
     let stored = null;

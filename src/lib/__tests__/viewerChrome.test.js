@@ -74,7 +74,7 @@ describe('① 자료 범위 배지가 한 컨테이너 안 — 폭 어긋남의 
     expect(wrap).toContain(`<button type="button" className="viewer-badges__close" aria-label={vt('단어 현황 닫기')}`);
     expect(wrap).toContain('onClick={dismissBadges}');
     const src = read(VIEWER);
-    expect(src).toContain('const badgesKey = `viewer-badges-dismissed:${id}`;');
+    expect(src).toContain("const badgesKey = `viewer-badges-dismissed:${user?.id ?? 'guest'}:${id}`;"); // 계정마다 따로(같은 브라우저의 다른 계정)
     expect(src).toContain('const badgesDismissed = badgesDismissedAt !== null && (user ? dueInMaterial : 0) <= badgesDismissedAt;');
   });
 });

@@ -158,6 +158,34 @@ export function jaExampleFurigana(text, reading) {
   return at === [...String(text)].length && out.length ? out : null;
 }
 
+/**
+ * 후리가나 한 칸이 예문 단어 경계를 넘으면(一切語 → 一切|語らなかった · 昨夜大 → 昨夜|大きな) 글자별 읽기로 나눠 단어마다 한 칸씩 —
+ * 그대로 두면 jaExampleWords가 두 단어를 한 조각으로 합쳐 카드 단어가 따로 서지 못한다. 못 나누면 그 칸은 그대로(합친다).
+ */
+export function splitFuriByPieces(text, furi, pieces, table, card = null) {
+  if (!furi || !pieces?.length) return furi;
+  const chars = [...String(text || '')];
+  const cuts = new Set();
+  let at = 0;
+  for (const p of pieces) { at += [...p.text].length; cuts.add(at); }
+  return furi.flatMap(([from, n, rt]) => {
+    const bounds = [from];
+    for (let k = from + 1; k < from + n; k++) if (cuts.has(k)) bounds.push(k);
+    if (bounds.length < 2) return [[from, n, rt]];
+    bounds.push(from + n);
+    const span = chars.slice(from, from + n).join('');
+    const each = splitKanjiReadings(span, rt, table);
+    if (each && !each.some((r) => !r)) return bounds.slice(0, -1).map((b, i) => [b, bounds[i + 1] - b, each.slice(b - from, bounds[i + 1] - from).join('')]);
+    // 숙자훈(去年 · 今朝 · 昨日)은 글자별로 못 나눈다 — 카드 단어가 칸 앞이나 뒤에 있으면 그 단어 읽기로 자른다(去年|日本 · 昨日交通|事故).
+    const w = [...String(card?.word || '')].length, yomi = String(card?.reading || '').split(/[;；]/)[0].trim();
+    if (w && yomi && w < n) {
+      if (span.startsWith(card.word) && cuts.has(from + w) && rt.startsWith(yomi) && rt.length > yomi.length) return [[from, w, yomi], [from + w, n - w, rt.slice(yomi.length)]];
+      if (span.endsWith(card.word) && cuts.has(from + n - w) && rt.endsWith(yomi) && rt.length > yomi.length) return [[from, n - w, rt.slice(0, -yomi.length)], [from + n - w, w, yomi]];
+    }
+    return [[from, n, rt]];
+  });
+}
+
 let jaReadingTable = null;
 async function loadJaReadingTable() {
   jaReadingTable ||= import('./data/jaKanjiReadings.json').then((m) => (m.default || m).r)
@@ -189,8 +217,9 @@ function withJapaneseWordExtras(levelKey, groups) {
         const kr = jaKanjiReadingField(e.word, e.reading, table);
         let ex = e.ex;
         if (ex?.text) {
-          const furi = jaExampleFurigana(ex.text, ex.reading);
-          const split = jaExampleWords(ex.text, e.word, decodeJaPieces(pieceTable[jaExampleKey(ex.text)], ex.text), furi);
+          const pieces = decodeJaPieces(pieceTable[jaExampleKey(ex.text)], ex.text);
+          const furi = splitFuriByPieces(ex.text, jaExampleFurigana(ex.text, ex.reading), pieces, table, e);
+          const split = jaExampleWords(ex.text, e.word, pieces, furi);
           ex = { ...ex, ...(furi ? { furi } : {}), ...(split || {}) };
         }
         // 짧은 뜻만 다듬고 원문은 fullMeaning에 남긴다(줄인 꼴 계약 — 다르면 싣는다).

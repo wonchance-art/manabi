@@ -110,3 +110,30 @@ describe('짧은 뜻 — 표제어를 되풀이한 한자 괄호 · 끝 마침�
     expect(jaPlainMeaning('사전(辭典)', '辞書')).toBe('사전(辭典)');
   });
 });
+
+describe('예문 후리가나가 단어 경계를 넘으면 단어마다 나눈다(재검수 2026-10-22 KST — 一切語らなかった · 去年日本)', async () => {
+  const { levelListData, splitFuriByPieces } = await import('../levelListData.js');
+  const P = (...t) => t.map((text) => ({ text, lemma: text }));
+  it('글자별 읽기로 나뉘면 칸을 둘로(KANJIDIC 표)', async () => {
+    const table = (await import('../data/jaKanjiReadings.json')).default.r;
+    expect(splitFuriByPieces('一切語らなかった', [[0, 3, 'いっさいかた']], P('一切', '語らなかった'), table)).toEqual([[0, 2, 'いっさい'], [2, 1, 'かた']]);
+    expect(splitFuriByPieces('一切語らなかった', [[0, 2, 'いっさい'], [2, 1, 'かた']], P('一切', '語らなかった'), table)).toEqual([[0, 2, 'いっさい'], [2, 1, 'かた']]);
+  });
+  it('숙자훈은 카드 단어 읽기로 자른다 · 못 자르면 그대로', () => {
+    expect(splitFuriByPieces('去年日本へ', [[0, 4, 'きょねんにほん']], P('去年', '日本', 'へ'), null, { word: '去年', reading: 'きょねん' }))
+      .toEqual([[0, 2, 'きょねん'], [2, 2, 'にほん']]);
+    expect(splitFuriByPieces('昨日事故が', [[0, 4, 'きのうじこ']], P('昨日', '事故', 'が'), null, { word: '事故', reading: 'じこ' }))
+      .toEqual([[0, 2, 'きのう'], [2, 2, 'じこ']]);
+    expect(splitFuriByPieces('去年日本へ', [[0, 4, 'きょねんにほん']], P('去年', '日本', 'へ'), null, null)).toEqual([[0, 4, 'きょねんにほん']]);
+  });
+  it('실제 레벨 데이터 — 카드 단어가 예문에서 홀로 선다(一切 · 地震 · 去年)', async () => {
+    const find = async (lv, word) => (await levelListData('japanese', 'vocab', lv)).groups.flatMap((g) => g.entries).find((e) => e.word === word);
+    for (const [lv, word] of [['N1', '一切'], ['N4', '地震'], ['N5', '去年']]) {
+      const e = await find(lv, word);
+      const chars = [...e.ex.text];
+      let at = 0;
+      const parts = e.ex.seg.map((n) => { const t = chars.slice(at, at + n).join(''); at += n; return t; });
+      expect(parts).toContain(word);
+    }
+  }, 60000);
+});

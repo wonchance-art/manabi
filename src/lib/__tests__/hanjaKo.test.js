@@ -522,6 +522,8 @@ describe('R0+ 화면 악화 0 — 같은 음 글자는 지금 훈음 유지', ()
 
   it('음이 바로잡히는 정체 글자의 훈은 어문회 대표훈(HUN_MANUAL)', () => {
     expect(hun['臺']).toBe('대');
+    // JLPT 카드 글자 칸(정자 꼴 조회) — 予定 · 会社 · 駅 · 図書館 · 準備(재검수 2026-10-22 KST)
+    expect([hun['豫'], hun['社'], hun['驛'], hun['館'], hun['準']]).toEqual(['미리', '모일', '역', '집', '준할']);
     expect(next('舞台')[1].label).toBe('대 대'); // libhangul '능 대'
     expect(next('船只')[1].label).toBe('외짝 척'); // '새 한 마리 척'
     expect(next('几乎')[0].label).toBe('몇 기'); // '기미 기'
