@@ -6,6 +6,7 @@ vi.mock('@/lib/supabaseServer', () => ({ requireAdmin: authenticate }));
 import { GET, POST } from '../route';
 import { createBookPublishHandlers } from '../../../../../lib/server/bookPublishRoute.js';
 import { artBooks } from '../../../../../lib/artBook.js';
+import { releaseState, releasesTable } from '../../../../../lib/__tests__/helpers/canonicalReleasesMock.js';
 
 // 관리자 큐레이션 책 게시 API(ART-P0-3) — 정본 문학책과 같은 처리(bookPublishRoute)로 준비(비공개) → 분석 → 검수 → 공개.
 // 원문은 카탈로그에서만 오고, 출처 기록이 카탈로그와 어긋난 책은 게시하지 않는다(422).
@@ -23,8 +24,9 @@ const field = (item, key) => (PATHS[key] ? PATHS[key](item) : item[key]);
 const matches = (item, filters) => filters.every(([kind, key, value]) => (kind === 'eq' ? field(item, key) === value : value.includes(field(item, key))));
 
 function database() {
-  const state = { rows: [], inserts: [], updates: [], nextId: 700 };
-  const supabase = { from: vi.fn(() => {
+  const state = { rows: [], inserts: [], updates: [], nextId: 700, ...releaseState() };
+  const supabase = { from: vi.fn((table) => {
+    if (table === 'canonical_book_releases') return releasesTable(state);
     let operation = 'read', payload, columns = '';
     const filters = [];
     const query = {
@@ -130,6 +132,35 @@ describe('관리자 큐레이션 책 게시 API', () => {
     expect(db.state.rows.map((item) => item.visibility)).toEqual(ORDERS.map(() => 'public'));
     const { books } = await (await GET(new Request(URL_BASE))).json();
     expect(books[0].stage).toBe('released');
+    // 발행 기록(CANON-RELEASE-001) — 409로 막힌 두 번은 기록하지 않고, 공개 때 관리자 본인 이름으로 한 번(on conflict do nothing)
+    expect(db.state.releaseWrites).toEqual([{ value: { book_key: KEY, owner_id: 'admin-id' }, options: { onConflict: 'book_key', ignoreDuplicates: true } }]);
+    expect(db.state.releases).toEqual([{ book_key: KEY, owner_id: 'admin-id' }]);
+    // 이미 모두 공개한 책을 다시 「공개」 — 장은 그대로, 기록은 멱등
+    expect(await (await post({ action: 'release', key: KEY })).json()).toEqual({ ok: true, released: [] });
+    expect(db.state.releases).toHaveLength(1);
+  });
+
+  async function readyToRelease() {
+    await post({ action: 'prepare', key: KEY });
+    db.state.rows.forEach((item, index) => analyze(item, `r${index}`));
+    for (const order of ORDERS) await post({ action: 'review', key: KEY, order });
+  }
+
+  it('공개: 다른 관리자가 먼저 발행한 key면 409로 장을 공개하지 않는다', async () => {
+    await readyToRelease();
+    db.state.releases.push({ book_key: KEY, owner_id: 'other-admin' });
+    const response = await post({ action: 'release', key: KEY });
+    expect(response.status).toBe(409);
+    expect((await response.json()).error).toBe('다른 관리자 계정이 이미 정본으로 발행한 책이에요. 그 계정에서 관리해 주세요.');
+    expect(db.state.rows.every((item) => item.visibility === 'private')).toBe(true);
+  });
+
+  it('공개: 발행 기록을 남기지 못하면 503으로 장을 공개하지 않는다', async () => {
+    await readyToRelease();
+    db.state.releaseError = { message: 'permission denied' };
+    const response = await post({ action: 'release', key: KEY });
+    expect(response.status).toBe(503);
+    expect(db.state.rows.every((item) => item.visibility === 'private')).toBe(true);
   });
 
   it('검수 보조: 저자 루비가 없는 해설문도 장별 줄을 낸다(루비 0)', async () => {

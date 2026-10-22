@@ -148,6 +148,19 @@ group by 1 order by 1;
   않는다**(오너 「팀 화면 접근은 가능해도 정본 책 접근은 못하도록」 2026-10-16 KST): 팀 목차 · 장 열기 · 출처 · 사본 만들기가 같은
   판정 `isProtectedBookMetadata`(`src/lib/server/classIndex.js`)를 쓴다. 사용자가 만든 책으로 여는 수업은 무변경.
 
+### 4.2d 발행 기록 — 「진짜 정본」 판정 (오너 「권장대로 ㄱㄱ」 2026-10-22 KST, CANON-RELEASE-001)
+
+- 공개 자료의 metadata는 누구나 꾸밀 수 있다 — 로그인 사용자가 정본과 같은 book key를 단 공개 글을 만들 수 있고 DB는 막지 않는다.
+  그래서 공개 목록은 정본 표지 · 제목을 닫아 두었다(BOOK-GROUP-OWNER-001). 판정 = **발행 기록** `canonical_book_releases`
+  (book key · 발행한 관리자 = 장의 소유자 · 발행 때, `supabase/migrations/20261022081000_canonical_book_releases.sql`).
+- 쓰는 곳은 하나 — 관리자 「공개」(`bookPublishRoute` release)가 장을 공개로 바꾸기 **전에** 남긴다(멱등). 다른 관리자가 먼저 발행한
+  key면 409로 공개하지 않는다. 표는 누구나 읽고, 쓰기는 관리자 본인 이름으로만(RLS), 고치기 · 지우기는 화면에 없다(한 권 내리기는 SQL).
+- 읽는 곳 — `canonical_book_shelf()`: 기록이 있고 **그 관리자의** 공개 장이 있는 책만(key · 첫 장 id · 장 수). 같은 key를 단 남의 공개 글은
+  소유자가 달라 빠진다. 산책 「고전 명작」이 표시는 저장소 대조표에서, 「어느 자료를 열까」만 여기서 받는다.
+- 검증: 실제 PostgreSQL `supabase/tests/canonical-book-releases.mjs`(CI) · 문장 계약 `canonicalRelease.test.js` · 학습 지문 `post-observation-migrations.mjs`.
+- 운영 실측(2026-10-22 KST, 읽기만): 정본 key 행은 아오조라 6권(40장) · 그림 1권(8장) — 모두 관리자 소유 · **공개 0장**. 저장소 수록 85권(2,326장)은
+  아직 게시 · 분석 · 검수 · 공개 전이다 — 고전 명작에 책이 보이려면 관리자 화면에서 공개해야 한다(§9.6 4).
+
 ### 4.3 서버 백그라운드 분석 (인프라 — 별도 승인 필요)
 
 - 작업 표(`literature_jobs`: book key · 장 · 상태 · 시도 수) + 예약 실행(Vercel Cron 1분 간격)이 분석을 이어서 한다.

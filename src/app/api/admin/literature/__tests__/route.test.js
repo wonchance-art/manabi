@@ -8,6 +8,7 @@ import { LITERATURE_BOOKS } from '../../../../../content/literature/aozora/index
 import { STANDARD_EBOOKS_BOOKS } from '../../../../../content/literature/standardebooks/index.generated.js';
 import { WIKISOURCE_BOOKS } from '../../../../../content/literature/wikisource/index.generated.js';
 import { PDSITE_BOOKS } from '../../../../../content/literature/pdsite/index.generated.js';
+import { releaseState, releasesTable } from '../../../../../lib/__tests__/helpers/canonicalReleasesMock.js';
 
 // 관리자 정본 문학책 게시 API(AOZORA-P0-2 · P0-3 · P0-4) — 권한·준비(비공개) 멱등·충돌 시 무게시·장 검수·분석과 검수를 마친 뒤에만 공개·원문은 리포 산출물에서만.
 
@@ -24,8 +25,9 @@ const field = (item, key) => (PATHS[key] ? PATHS[key](item) : item[key]);
 const matches = (item, filters) => filters.every(([kind, key, value]) => (kind === 'eq' ? field(item, key) === value : value.includes(field(item, key))));
 
 function database() {
-  const state = { rows: [], failRead: false, failInsert: false, inserts: [], updates: [], nextId: 500 };
-  const supabase = { from: vi.fn(() => {
+  const state = { rows: [], failRead: false, failInsert: false, inserts: [], updates: [], nextId: 500, ...releaseState() };
+  const supabase = { from: vi.fn((table) => {
+    if (table === 'canonical_book_releases') return releasesTable(state);
     let operation = 'read', payload, columns = '';
     const filters = [];
     const query = {
@@ -257,6 +259,7 @@ describe('관리자 정본 문학책 게시 API', () => {
     expect(await (await post({ action: 'release', key: KEY })).json()).toEqual({ ok: true, released: [] });
     const { books } = await (await GET(new Request('http://localhost/api/admin/literature'))).json();
     expect(books.find((item) => item.key === KEY).stage).toBe('released');
+    expect(db.state.releases).toEqual([{ book_key: KEY, owner_id: 'admin-id' }]); // 발행 기록(CANON-RELEASE-001) — 공개 성공 때만 · 한 줄
   });
 
   it('재분석하면(revision 변경) 검수가 낡아 다시 검수해야 공개된다', async () => {
