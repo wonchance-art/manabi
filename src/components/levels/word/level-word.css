@@ -262,6 +262,13 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-undo{position:fixed;left:16px;right:16px;margin-inline:auto;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--sheet);color:var(--ink);border:1px solid var(--rule);border-radius:3px;padding:4px 6px 4px 14px;font-size:13px;max-width:648px;box-shadow:0 6px 18px rgba(37,39,33,.10);animation:toast-in .2s var(--ease-settle) both;transition:opacity .15s var(--ease-settle),transform .15s var(--ease-settle)}
 .lw-page[data-mode=one] .lw-undo,.lw-page[data-mode=list] .lw-undo{bottom:calc(132px + env(safe-area-inset-bottom,0px))}
 .lw-undo.is-leaving{opacity:0;transform:translateY(4px)}
+/* 평소 채점 — 창 없이 네 칸 바로 위 안내 줄 왼쪽에 한 줄(「다시」 칸 위에서 시작). 떠 있는 동안 안내 줄 글(리스트의 지금 카드 단어)은 숨긴다. */
+.lw-undo--quiet,.lw-page[data-mode] .lw-undo--quiet{bottom:calc(66px + env(safe-area-inset-bottom,0px));background:none;border:0;box-shadow:none;padding:0;justify-content:flex-start;pointer-events:none;animation:none}
+.lw-undo--quiet button{pointer-events:auto;min-height:30px;gap:5px;color:var(--muted);font-size:13px;font-weight:400;line-height:1;padding:0 8px 0 2px}
+.lw-undo--quiet b{color:var(--ink);font-weight:600}
+.lw-undo--quiet u{text-decoration:none;color:var(--lw-rose);font-weight:600}
+.lw-undo--quiet svg{width:15px;height:15px;flex:none;color:var(--lw-rose)}
+.lw-page:has(.lw-undo--quiet) .lw-gradebar__guide{visibility:hidden}
 .lw-undo button,.lw-undo a{min-height:44px;border:0;background:none;color:var(--lw-rose);font-size:13px;font-weight:700;padding:0 12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
 
 /* 찾기 결과 · 줄 형식 */
