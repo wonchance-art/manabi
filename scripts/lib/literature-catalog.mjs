@@ -15,15 +15,15 @@ export const CATALOG_LANGUAGES = Object.freeze(['Japanese', 'English', 'Chinese'
 const KEY_PREFIX = Object.freeze({ aozora: 'aozora-', standardebooks: 'se-', wikisource: 'ws-', pdsite: 'pd-' });
 /**
  * 카테고리(오너 「문학 책 리스트 카테고리화해서 정리」 → 「큰 카테고리에서 작은 카테고리로 들어가게」 2026-10-21 KST) — 작품의 형식으로 고른다
- * (주제 · 시대가 아니라). 큰 갈래(CATALOG_GROUPS) 셋 아래 작은 갈래(CATALOG_CATEGORIES) 열, 줄에는 작은 갈래 key 하나(큰 갈래는 거기서 나온다).
+ * (주제 · 시대가 아니라). 큰 갈래(CATALOG_GROUPS) 셋 아래 작은 갈래(CATALOG_CATEGORIES) 아홉, 줄에는 작은 갈래 key 하나(큰 갈래는 거기서 나온다).
  * 모든 줄에 하나(수록 줄도 — 분류는 카탈로그가 매기는 것이라 entry.json의 사실과 겹치지 않는다). 순서가 목록의 차례다.
- * 경계: 중편 · 단편집은 short(분량 기준은 NOVEL_MIN) · 서사시 · 산문시는 poetry · 옛이야기 · 동화 · 우화(짧은 이야기 모음 포함)는 tale · 어린 독자를 위한 긴 소설은 youth ·
+ * 경계: 장편 · 중편 · 단편 · 단편집은 모두 fiction(길이로 가르지 않는다 — 오너 「장편, 중단편은 그냥 소설로 통합」 2026-10-22 KST) · 서사시 · 산문시는 poetry ·
+ * 옛이야기 · 동화 · 우화(짧은 이야기 모음 포함)는 tale · 어린 독자를 위한 긴 소설은 youth ·
  * 수필 · 기행 · 회고 수필은 essay · 자서전 · 일기 · 르포는 life · 철학 · 윤리 · 고전 사상은 thought · 정치 · 경제 · 사회 평론 · 선언서는 society.
  */
 export const CATALOG_GROUPS = Object.freeze({ literature: '문학', young: '아동 · 청소년', nonfiction: '비문학' });
 export const CATALOG_CATEGORIES = Object.freeze({
-  novel: Object.freeze({ group: 'literature', label: '장편소설' }),
-  short: Object.freeze({ group: 'literature', label: '중단편 소설' }),
+  fiction: Object.freeze({ group: 'literature', label: '소설' }),
   poetry: Object.freeze({ group: 'literature', label: '시' }),
   drama: Object.freeze({ group: 'literature', label: '희곡' }),
   tale: Object.freeze({ group: 'young', label: '동화 · 우화' }),
@@ -33,13 +33,7 @@ export const CATALOG_CATEGORIES = Object.freeze({
   thought: Object.freeze({ group: 'nonfiction', label: '철학 · 사상' }),
   society: Object.freeze({ group: 'nonfiction', label: '사회 · 정치 · 경제' }),
 });
-/**
- * 장편과 중단편의 경계 — 분량으로 가른다(인상으로 가르면 「노인과 바다」 2.7만 단어는 중편, 「동물농장」 3만 단어는 장편처럼 어긋났다 — 2026-10-22 KST 검토).
- * 장편 = 영어 · 프랑스어 4만 단어 이상(영미 출판 관례의 novel 하한), 한국어 · 일본어 · 중국어 10만 자 이상(공백 뺀 글자 — 중국 「长篇」 10만 자 ·
- * 일본 원고지 250매). 그보다 짧으면 short(중편 · 단편). 단편집은 합친 길이가 길어도 short. 수록 줄은 계약 테스트가 실제 본문 분량으로 검사한다.
- */
-export const NOVEL_MIN = Object.freeze({ words: 40000, chars: 100000 });
-/** 「문학 › 장편소설」 — 목록 머리 · 보기 줄에 쓴다. */
+/** 「문학 › 소설」 — 목록 머리 · 보기 줄에 쓴다. */
 export const categoryPath = (key) => (Object.hasOwn(CATALOG_CATEGORIES, key ?? '') ? `${CATALOG_GROUPS[CATALOG_CATEGORIES[key].group]} › ${CATALOG_CATEGORIES[key].label}` : null);
 
 /** 수록 줄의 key 머리 → 출처(작품 폴더가 사실의 정본 — 수록 줄은 가리키기만 한다). */

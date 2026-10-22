@@ -170,7 +170,7 @@ function shelved(entry) {
   return { ...entry, titleKo: facts.display?.titleKo ?? facts.title ?? entry.key, authorKo: facts.display?.authorKo ?? facts.author ?? '' };
 }
 
-/** --category 값 — 작은 갈래 key(novel …) 또는 큰 갈래 key(literature · young · nonfiction). */
+/** --category 값 — 작은 갈래 key(fiction …) 또는 큰 갈래 key(literature · young · nonfiction). */
 const inCategory = (entry, wanted) => entry.category === wanted || CATALOG_CATEGORIES[entry.category]?.group === wanted;
 
 function list() {
