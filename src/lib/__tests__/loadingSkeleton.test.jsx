@@ -47,20 +47,20 @@ const announced = (html, what) => {
   expect(html.indexOf('role="status"')).toBeLessThan(html.indexOf('aria-busy="true"'));
 };
 
-describe('① 발견 대기 화면 — src/app/(app)/discover/loading.jsx', () => {
+describe('① 산책 대기 화면 — src/app/(app)/discover/loading.jsx', () => {
   const html = render(createElement(DiscoverLoading));
   it('파일이 있고, 전역 스피너가 아니라 골격이다', () => {
     expect(fs.existsSync(path.join(ROOT, 'src/app/(app)/discover/loading.jsx'))).toBe(true);
     expect(read('src/app/(app)/discover/loading.jsx')).not.toContain('Spinner');
-    announced(html, '발견 화면');
+    announced(html, '산책 화면');
   });
-  it('실제 화면의 칸: h1 「발견」 · 서가 머리 · 소식 4칸 · 문화 3칸(같은 클래스)', () => {
+  it('실제 화면의 칸: h1 「산책」 · 큰 칸 셋(같은 클래스 · 칸 이름 그대로) · 매거진 「첫 호 준비 중」', () => {
     // 제목은 대기 중 화면 읽기에 숨긴다 — 실제 화면이 들어오며 다시 그리므로 두 번 읽히지 않게(배움 · 서재 대기와 같다).
-    expect(html).toContain('<header class="manabi-page-heading" aria-hidden="true"><h1>발견</h1></header>');
-    expect(html).toContain('<h2>서가</h2>');
-    expect(sliceBetween(html, '<ul class="discover-shelf__items">', '</ul>').match(/<li>/g)).toHaveLength(4);
-    expect(sliceBetween(html, '<div class="discover-cultures">', '</section>').match(/<a>/g)).toHaveLength(3);
-    expect(html).not.toMatch(/<a [^>]*href=/); // 자리표 칸은 이동 · 초점이 없다
+    expect(html).toContain('<header class="manabi-page-heading" aria-hidden="true"><h1>산책</h1></header>');
+    expect(html.match(/<div class="discover-tile discover-tile--(news|classics|magazine)">/g)).toHaveLength(3);
+    for (const kicker of ['오늘 화제', '고전 명작', '여행 매거진']) expect(html).toContain(`<span class="discover-tile__kicker">${kicker}</span>`);
+    expect(html).toContain('첫 호 준비 중');
+    expect(html).not.toMatch(/<a[ >]/); // 자리표 칸은 이동 · 초점이 없다
   });
 });
 
@@ -221,7 +221,7 @@ describe('⑤ 대기 화면 회귀 — 스타일 · 두 번 바뀜 · 비로그�
     expect(read('src/components/books/BookReaderSkeleton.jsx')).toContain("import './reading-content.css';");
     expect(render(createElement(BookReaderSkeleton, { announce: true }))).toContain('class="manabi-reference-menu"');
     expect(read('src/components/books/reading-content.css')).toContain('.book-reader .manabi-reference-menu>summary::after{content:\'⌄\'');
-    // 같은 실수가 다른 대기 화면에 없다: 발견 골격 클래스는 전역(web-shell.css · Layout)에 있다.
+    // 같은 실수가 다른 대기 화면에 없다: 산책 골격 클래스는 전역(web-shell.css · Layout)에 있다.
     const shell = read('src/components/web/web-shell.css');
     for (const c of classes(render(createElement(DiscoverLoading)), 'discover-')) expect(shell, c).toContain(`.${c}`);
   });
@@ -243,8 +243,8 @@ describe('⑤ 대기 화면 회귀 — 스타일 · 두 번 바뀜 · 비로그�
     expect(empty).toContain('<Link href="/lessons" className="empty-state__link">로그인 없이 교재부터 보기 →</Link>');
     expect(page).toContain("? '아직 함께 읽는 글이 없어요.\\n오늘의 소식부터 읽어 보세요.'"); // 안내 문구 — 칸 이름만 「오늘의 소식」(B2 A안)
   });
-  it('A4 발견 골격은 데이터에 달린 「함께 읽는 글」 줄을 그리지 않는다(실제 화면은 publicCount > 0일 때만)', () => {
+  it('A4 산책 골격은 데이터에 달린 「함께 읽는 글」 줄을 그리지 않는다(실제 화면은 publicCount > 0일 때만)', () => {
     expect(render(createElement(DiscoverLoading))).not.toContain('함께 읽는 글');
-    expect(read('src/components/web/DiscoverShelf.jsx')).toContain('{publicCount > 0 && <div className="discover-shelf__row">');
+    expect(read('src/app/(app)/discover/page.jsx')).toContain('{publicCount > 0 && <p className="discover-more">');
   });
 });

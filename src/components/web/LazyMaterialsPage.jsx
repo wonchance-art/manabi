@@ -12,7 +12,7 @@ const MaterialsPage = dynamic(() => import('@/views/MaterialsPage'), {
 
 export default function LazyMaterialsPage(props) {
   const params = useSearchParams();
-  // 함께 읽는 글은 뷰어 「← 발견」(readerReturnHref)이 남긴 restoreY로 목록 위치를 되찾는다. 서재 도구 화면은 LibraryPage가 한다.
+  // 함께 읽는 글은 뷰어 「← 함께 읽는 글」(readerReturnHref)이 남긴 restoreY로 목록 위치를 되찾는다. 서재 도구 화면은 LibraryPage가 한다.
   useRestoreScroll(props.libraryView === 'public' ? params.get('restoreY') : null);
   return <MaterialsPage {...props} />;
 }
