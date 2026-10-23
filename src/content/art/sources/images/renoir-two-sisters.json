@@ -1,0 +1,20 @@
+{
+  "bytes": 178606,
+  "file": "renoir-two-sisters.jpg",
+  "height": 800,
+  "note": "DISCOVER-ART-001 — 시카고 미술관 디지털화본(퍼블릭 도메인)을 위키미디어 공용 파일 페이지에서 받았다(Wikidata 작품 항목 P18). 공용 API 요청 제한(429) 때문에 record는 파일 페이지 · 시카고 미술관 기록에서 손으로 옮겼다. 원 파일은 upload.wikimedia.org 960px 썸네일을 긴 변 800px로 줄인 것이다(README 「이미지」).",
+  "record": {
+    "accession": "1933.455",
+    "artist": "Pierre-Auguste Renoir",
+    "date": "1881",
+    "holder": "Art Institute of Chicago",
+    "license": "public-domain",
+    "title": "Two Sisters (On the Terrace)"
+  },
+  "sha256": "9959a0d29598ad4af2cf53955668629dbb9f3fa703798ac747fe2d44d03c574e",
+  "source": "commons",
+  "sourceId": "File:Pierre-Auguste_Renoir_-_Two_Sisters_(On_the_Terrace)_-_1933.455_-_Art_Institute_of_Chicago.jpg",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pierre-Auguste_Renoir_-_Two_Sisters_(On_the_Terrace)_-_1933.455_-_Art_Institute_of_Chicago.jpg",
+  "width": 645,
+  "workId": "renoir-two-sisters"
+}

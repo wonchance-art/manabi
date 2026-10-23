@@ -1,0 +1,19 @@
+{
+  "note": "고전 명작 「그림」 구간 차례(DISCOVER-ART-001, 오너 「그림도 대중적으로 인기 많을 법한 것 위주로 먼저」 → 「권장대로 ㄱㄱ」 2026-10-23 KST). 한국에서 익숙한 순서 — 국내 대형 전시(고흐 · 모네 · 쇠라) · 교과서 · 굿즈에서 자주 만나는 그림부터, 고흐가 따라 그린 히로시게 두 점을 그 뒤에. 여기 없는 작품은 게시 책 차례대로 뒤에 온다(src/lib/artShelf.js).",
+  "first": [
+    "hokusai-kanagawa-oki-nami-ura",
+    "van-gogh-bedroom",
+    "monet-water-lilies",
+    "seurat-grande-jatte",
+    "monet-water-lily-pond",
+    "renoir-two-sisters",
+    "hokusai-gaifu-kaisei",
+    "monet-stacks-of-wheat",
+    "caillebotte-paris-street-rainy-day",
+    "toulouse-lautrec-at-the-moulin-rouge",
+    "hiroshige-ohashi-atake-no-yudachi",
+    "hiroshige-kameido-umeyashiki",
+    "hiroshige-fukagawa-susaki-jumantsubo",
+    "hiroshige-ryogoku-hanabi"
+  ]
+}

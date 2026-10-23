@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { createArtBook } from '../artBook.js';
+import { artTitleLang } from '../artCatalog.js';
 import { CANONICAL_LITERATURE_EDIT_BLOCKED } from '../literatureCanonical.js';
 import { runPreservedReanalysis } from '../reanalysisPreservation.js';
 import { VIEWER_MESSAGES, VIEWER_MESSAGE_LOCALES } from '../viewerMessages.js';
@@ -65,8 +66,11 @@ describe('뷰어 배선 — 카드는 대조를 통과한 장에서만', () => {
 describe('카드 마크업 계약', () => {
   const card = read(CARD);
 
-  it('원어(일본어) 제목에 lang="ja", 날짜는 화면용 표기(date.display)를 쓰고 가나·한자일 때만 lang="ja"', () => {
-    expect(card).toContain('<span lang="ja">{card.title?.native}</span>');
+  it('원어 제목에 그 언어의 lang(없으면 ja — 영어 미술관 제목은 en), 날짜는 화면용 표기(date.display)를 쓰고 가나·한자일 때만 lang="ja"', () => {
+    expect(card).toContain('<span lang={artTitleLang(card.title)}>{card.title?.native}</span>');
+    expect(artTitleLang({ native: '冨嶽三十六景' })).toBe('ja');
+    expect(artTitleLang({ native: 'The Bedroom', lang: 'en' })).toBe('en');
+    expect(artTitleLang({ native: 'x', lang: 'de' }), '모르는 언어는 기본값').toBe('ja');
     expect(card).toContain("lang={JAPANESE.test(card.date.display) ? 'ja' : undefined}>{card.date.display}</span>");
     expect(card, '출처의 영어 약식 날짜(c. 1830/33)를 그대로 그리지 않는다').not.toContain('{card.date.text}');
   });

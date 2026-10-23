@@ -1,0 +1,52 @@
+{
+  "id": "renoir-two-sisters",
+  "wikidata": "Q630121",
+  "genre": "painting",
+  "artist": "pierre-auguste-renoir",
+  "title": {
+    "native": "Two Sisters (On the Terrace)",
+    "ko": "두 자매(테라스에서)",
+    "lang": "en"
+  },
+  "hook": "제목은 「두 자매」, 사실은 남남인 두 모델",
+  "date": {
+    "text": "1881",
+    "source": "aic",
+    "startYear": 1881,
+    "endYear": 1881,
+    "certainty": "exact"
+  },
+  "medium": {
+    "native": "Oil on canvas",
+    "ko": "캔버스에 유채"
+  },
+  "places": [
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/14655"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "14655"
+    }
+  ],
+  "terms": [
+    "brushwork",
+    "porcelain-like",
+    "terrace"
+  ],
+  "lookFor": [
+    "언니의 빨간 모자와 동생의 꽃 장식 모자를 비교해 봐요.",
+    "바구니 속 털실의 색이 그림 어디에서 다시 보이나요?",
+    "얼굴과 뒤쪽 풍경의 붓질은 어떻게 다를까요?"
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:Pierre-Auguste_Renoir_-_Two_Sisters_(On_the_Terrace)_-_1933.455_-_Art_Institute_of_Chicago.jpg",
+    "alt": "강가 테라스 난간 앞에 빨간 모자를 쓰고 짙은 파란 옷을 입은 젊은 여인이 앉아 있고, 그 앞에 꽃 장식 모자를 쓴 어린 소녀가 털실 바구니에 손을 얹고 있다. 뒤로 꽃 핀 나무와 강이 흐릿하게 보인다."
+  }
+}
