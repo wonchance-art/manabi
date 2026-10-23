@@ -68,19 +68,42 @@ describe('고전 명작 — 저장소 정본에서 만든 책 목록', () => {
 });
 
 describe('고전 명작 화면', () => {
-  it('카드: 표지 · 원제(lang) · 한국어 제목 · 작가 링크 · 레벨 · 장 수 — 링크 안에 링크가 없다', () => {
+  it('카드: 표지 · 태그(레벨 · 장 수) · 원제(lang) · 한국어 제목 · 작가 링크 — 링크 안에 링크가 없다', () => {
     const html = render({ items: ALL, filters: classicsFilters({}) });
     expect(html.match(/<li class="classics-card">/g)).toHaveLength(ALL.length);
     expect(html).toContain('<strong lang="ja">人間失格</strong><span>인간 실격</span>');
     expect(html).toContain('lang="zh-Hans"');
     expect(html).toContain('lang="ko"');
     // 표지는 장식(aria-hidden), 글자가 읽어 준다
-    expect(html).toMatch(/<span class="classics-card__cover"><span class="lit-cover[^"]*"[^>]*aria-hidden="true"/);
+    expect(html).toMatch(/<span class="classics-card__coverwrap"><span class="classics-card__cover"><span class="lit-cover[^"]*"[^>]*aria-hidden="true"/);
+    const ningen = ALL.find((item) => item.title === '人間失格');
+    expect(html).toContain(`<span class="classics-card__tags"><span class="tag">${ningen.level}</span><span class="tag">${ningen.chapters}장</span></span><strong lang="ja">人間失格</strong>`);
     for (const card of html.split('<li class="classics-card">').slice(1)) {
       // 첫 링크(열기)가 닫히기 전에 다른 링크가 열리지 않는다
       expect(sliceBetween(card, '<a class="classics-card__open"', '</a>').match(/<a /g)).toHaveLength(1);
     }
-    expect(html).not.toMatch(/담기|class="[^"]*tag/);
+    expect(html).not.toMatch(/담기|tag--group/);
+    // 읽은 자리가 없으면(손님 · 연 적 없음) 리본 · ✓도 없다
+    expect(html).not.toMatch(/card-ribbon|card-check/);
+  });
+  it('읽은 자리: 위 오른쪽 리본에 퍼센트 · 다 읽으면 아래 오른쪽 ✓만 · 열기는 가장 최근에 손댄 장', () => {
+    const [reading, finished, other] = ALL;
+    const html = render({ items: ALL, filters: classicsFilters({}), resume: { [reading.key]: { materialId: 777, percent: 42 }, [finished.key]: { materialId: 888, done: true } } });
+    const cardOf = (item) => html.split('<li class="classics-card">').slice(1).find((card) => card.includes(`>${item.title}</strong>`));
+    expect(cardOf(reading)).toContain('href="/viewer/777?returnTo=%2Fdiscover%2Fclassics"');
+    expect(cardOf(reading)).toContain('<span class="card-ribbon" role="img" aria-label="42% 읽음"><span>42<small>%</small></span></span>');
+    expect(cardOf(reading)).not.toContain('card-check');
+    expect(cardOf(finished)).toContain('href="/viewer/888?');
+    expect(cardOf(finished)).toContain('<span class="card-check" role="img" aria-label="다 읽음">');
+    expect(cardOf(finished)).not.toContain('card-ribbon');
+    expect(cardOf(other)).toContain(`href="/viewer/${other.firstMaterialId}?`);
+    expect(cardOf(other)).not.toMatch(/card-ribbon|card-check/);
+    // 표지 위 표시는 표지 칸 안 — 표지 키움(목업 8차 ②) · 리본 · ✓ 크기는 CSS가 잡는다
+    const css = read('src/components/web/web-shell.css');
+    expect(css).toMatch(/\.classics-card__cover\{display:block;zoom:2\.4/);
+    expect(css).toMatch(/max-width:640px\)\{[^\n]*\.classics-card__cover\{zoom:1\.75\}/);
+    expect(css).toMatch(/\.classics-card__coverwrap\{position:relative/);
+    expect(css).toMatch(/\.card-ribbon>span\{[^}]*font-size:11px/);
   });
   it('열기 = 그 책 첫 장, 「←」는 지금 거르기 그대로 고전 명작으로', () => {
     const filters = classicsFilters({ lang: 'Korean' });

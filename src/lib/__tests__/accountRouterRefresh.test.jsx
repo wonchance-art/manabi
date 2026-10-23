@@ -148,6 +148,7 @@ const ACCOUNT_SERVER_ROUTES = Object.freeze({
   'src/app/(app)/writing/page.jsx': '최근 장(recentChapters) — 자체 대조 없음. 관문이 버린다',
   'src/app/(app)/review/grammar/page.jsx': '문법 복습 항목 — 자체 대조 없음. 관문이 버린다',
   'src/app/(app)/japanese/reading/page.jsx': '읽기 트랙 통과 문항(viewerScope) — 어긋나면 스스로 router.refresh/replace(손님 → 계정도 덮음). 관문과 별개',
+  'src/app/(app)/discover/classics/page.jsx': '고전 명작 카드의 읽은 자리(리본 퍼센트 · ✓ — 자기 reading_progress) — 자체 대조 없음. 관문이 버리고 B로 다시 그린다',
   'src/app/(app)/viewer/[id]/page.jsx': '자료 제목(generateMetadata — 비공개 제목이 <title>에) — 관문이 버린다',
   'src/app/(app)/admin/metrics/page.jsx': '관리자 지표 — 관리자 확인 뒤 서버 렌더. 관문이 B 권한으로 다시 그린다',
   'src/app/(app)/admin/llm-bench/page.jsx': '관리자 LLM 벤치 — 관문이 B 권한으로 다시 그린다',

@@ -208,17 +208,25 @@ div.discover-tile .discover-tile__title{color:var(--muted)}
 .classics-grid{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:32px 20px}
 .classics-card{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
 .classics-card__open{display:flex;flex-direction:column;gap:2px;color:var(--ink);text-decoration:none;min-width:0;max-width:100%}
-.classics-card__cover{display:block;zoom:1.6;margin-bottom:6px;flex:none;transition:transform .15s ease}
-@media (hover:hover){.classics-card__open:hover .classics-card__cover{transform:translateY(-2px)}}
-.classics-card__open>strong{font-size:15px;line-height:1.45;font-weight:700;overflow-wrap:anywhere}
+/* 표지는 칸 폭을 거의 채운다(목업 8차 ② 「키우니까 훨씬 좋다」 2026-10-23 KST — 데스크톱 60×2.4=144px · 모바일 60×1.75=105px). */
+.classics-card__coverwrap{position:relative;display:block;align-self:flex-start;width:fit-content;margin-bottom:6px;line-height:0;transition:transform .15s ease}
+.classics-card__cover{display:block;zoom:2.4;flex:none}
+@media (hover:hover){.classics-card__open:hover .classics-card__coverwrap{transform:translateY(-2px)}}
+/* 읽은 자리(로그인 · 그 책을 연 적 있을 때만) — 위 오른쪽 가름끈 리본에 퍼센트, 다 읽으면 아래 오른쪽 둥근 ✓(둘은 함께 서지 않는다).
+   둘 다 종이색 테두리 — 빨간 천 장정 위에서도 읽힌다. 크기는 표지 폭의 약 20%(Kindle 서재 선례 ~18%, 퍼센트가 읽히는 10px 하한). */
+.card-ribbon{position:absolute;z-index:2;top:-2px;right:7px;padding:0 1px 1.5px;background:var(--sheet);clip-path:polygon(0 0,100% 0,100% 100%,50% calc(100% - 4px),0 100%);filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+.card-ribbon>span{display:block;min-width:26px;padding:6px 3px 8px;font-size:11px;line-height:11px;letter-spacing:-.2px;font-weight:700;text-align:center;color:#fff;background:linear-gradient(var(--primary-dark) 0 2px,var(--primary) 2px);clip-path:polygon(0 0,100% 0,100% 100%,50% calc(100% - 4px),0 100%)}
+.card-ribbon small{font-size:.7em;margin-left:.5px}
+.card-check{position:absolute;z-index:2;right:7px;bottom:7px;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 2px var(--sheet),0 1px 3px rgba(0,0,0,.3)}
+.card-check svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.classics-card__open>strong,.art-card__open>strong{display:-webkit-box;font-size:15px;line-height:1.45;font-weight:700;overflow-wrap:anywhere;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .classics-card__open:hover>strong{text-decoration:underline}
-.classics-card__open>span:not(.classics-card__cover){font-size:13px;line-height:1.45;color:var(--muted);overflow-wrap:anywhere}
-.classics-card__author{display:inline-flex;align-items:center;min-height:44px;font-size:13px;color:var(--ink);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
+.classics-card__open>span:not(.classics-card__coverwrap):not(.classics-card__tags){display:block;max-width:100%;font-size:13px;line-height:1.45;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.classics-card__author{display:block;min-height:44px;max-width:100%;line-height:44px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px;color:var(--ink);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
 .classics-card__author:hover,.classics-card__author[aria-current=true]{text-decoration-color:currentColor}
-.classics-card>small{font-size:12px;color:var(--muted)}
-@container manabi-shell (max-width:640px){.classics-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 12px}.classics-card__cover{zoom:1.35}.classics-chip{padding:0 14px}}
+@container manabi-shell (max-width:640px){.classics-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 12px}.classics-card__cover{zoom:1.75}.classics-chip{padding:0 14px}.card-ribbon{right:5px}.card-ribbon>span{min-width:19px;padding:5px 2px 7px;font-size:10px;line-height:10px}.card-check{right:5px;bottom:5px;width:20px;height:20px}.card-check svg{width:12px;height:12px}}
 @container manabi-shell (max-width:360px){.classics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (prefers-reduced-motion:reduce){.classics-card__cover{transition:none}.classics-card__open:hover .classics-card__cover{transform:none}}
+@media (prefers-reduced-motion:reduce){.classics-card__coverwrap{transition:none}.classics-card__open:hover .classics-card__coverwrap{transform:none}}
 /* 고전 명작 구간 탭(책 · 그림) + 그림 구간(DISCOVER-ART-001) — 작품 한 점 = 정사각 그림 카드. */
 .classics-tabs{display:flex;gap:4px;margin:0 0 16px;border-bottom:1px solid var(--rule)}
 .classics-tabs a{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;margin-bottom:-1px;border-bottom:3px solid transparent;color:var(--muted);font-size:16px;font-weight:600;text-decoration:none}
@@ -228,13 +236,15 @@ div.discover-tile .discover-tile__title{color:var(--muted)}
 .art-grid{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:32px 20px}
 .art-card{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
 .art-card__open{display:flex;flex-direction:column;gap:8px;width:100%;min-width:0;color:var(--ink);text-decoration:none}
-.art-card__frame{display:block;width:100%;max-width:100%;aspect-ratio:1;border-radius:12px;overflow:hidden;background:color-mix(in srgb,var(--ink) 6%,var(--sheet))}
+.art-card__frame{position:relative;display:block;width:100%;max-width:100%;aspect-ratio:1;border-radius:12px;overflow:hidden;background:color-mix(in srgb,var(--ink) 6%,var(--sheet))}
 .art-card__frame img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .2s ease}
 @media (hover:hover){.art-card__open:hover img{transform:scale(1.03)}}
-.art-card__open>strong{font-size:15px;line-height:1.45;font-weight:700;overflow-wrap:anywhere}
+.art-card__frame .card-check{right:8px;bottom:8px;width:28px;height:28px}.art-card__frame .card-check svg{width:16px;height:16px}
 .art-card__open:hover>strong{text-decoration:underline}
-.art-card__hook{margin:0;font-size:13px;line-height:1.5;color:var(--muted);overflow-wrap:anywhere}
-.art-card>small{margin-top:4px;font-size:12px;color:var(--muted)}
+/* 원어 제목 밑 한국어 부제 · 태그 한 줄(못 든 태그는 둘째 줄로 넘어가 가려진다 — 반쯤 잘린 태그를 보이지 않게). */
+.art-card__ko{display:block;max-width:100%;margin-top:-6px;font-size:13px;line-height:1.45;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.classics-card__tags{display:flex;flex-wrap:wrap;gap:4px;max-width:100%;height:22px;overflow:hidden;margin:2px 0}
+.classics-card__tags .tag{line-height:16px;white-space:nowrap}
 @container manabi-shell (max-width:640px){.art-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px}.classics-tabs a{padding:0 14px}}
 @media (prefers-reduced-motion:reduce){.art-card__frame img{transition:none}.art-card__open:hover img{transform:none}}
 @container manabi-shell (min-width:901px){.manabi-app .mobile-nav{display:none}}
