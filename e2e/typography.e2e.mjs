@@ -819,10 +819,15 @@ test('R0 버그 6 — 요미가나는 테두리에 닿을 때만 올라간다(�
     await page.setContent(R0_PAGE(r0Area({ fs, lang: 'ja' }, r0Line(R0_JA, { ja: true, selected: true }))));
     const g = await r0Geometry();
     const fromTop = await page.evaluate(() => [...document.querySelectorAll('.rt-an')].map((rt) => rt.getBoundingClientRect().bottom - rt.closest('.surface').getBoundingClientRect().top));
+    // 요미 실제 크기 — 본문을 가장 작게 해도 10px 아래로 내려가지 않는다(뷰어 점검 F4, 오너 승인 2026-10-23 KST).
+    // 12.8px 본문에서는 0.5em(6.4px)이 아니라 10px이라, 잉크 추정 · 옛 자리 비교 모두 실제 크기로 잰다.
+    const yomiPx = await page.evaluate(() => [...document.querySelectorAll('.rt-an')].map((rt) => parseFloat(getComputedStyle(rt).fontSize)));
     g.forEach((t, i) => {
-      const inkBottom = t.rt.bottom - 0.55 * (fs / 2);
+      const inkBottom = t.rt.bottom - 0.55 * yomiPx[i];
+      assert.ok(yomiPx[i] >= 10 - 0.01, `${fs}px ${t.name}: 요미 ${yomiPx[i]}px < 10px 하한`);
       assert.ok(inkBottom <= t.frame.outerTop - 2.5 + 0.01, `${fs}px ${t.name}: 요미 잉크 추정 아래 끝 ${inkBottom.toFixed(2)} > 테두리 ${t.frame.outerTop.toFixed(2)} − 2.5`);
-      assert.ok(fromTop[i] <= 0.65 * fs + 0.01, `${fs}px ${t.name}: 요미가 옛 자리보다 내려갔다 ${fromTop[i]}`);
+      // 옛 자리(잉크 기준) — 요미가 커진 만큼 상자 아래 끝은 내려가도 잉크는 옛 자리보다 내려가지 않는다.
+      assert.ok(fromTop[i] - 0.55 * yomiPx[i] <= 0.65 * fs - 0.55 * (fs / 2) + 0.01, `${fs}px ${t.name}: 요미가 옛 자리보다 내려갔다 ${fromTop[i]}`);
       if (fs >= 25.6) assert.ok(Math.abs(fromTop[i] - 0.65 * fs) < 0.6, `${fs}px ${t.name}: 큰 글자에서 요미가 옛 기준점(0.65em)에서 움직였다: ${fromTop[i]}`);
     });
   }
