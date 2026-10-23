@@ -1,0 +1,52 @@
+{
+  "id": "seurat-grande-jatte",
+  "wikidata": "Q1044742",
+  "genre": "painting",
+  "artist": "georges-seurat",
+  "title": {
+    "native": "A Sunday on La Grande Jatte — 1884",
+    "ko": "그랑드자트섬의 일요일 오후",
+    "lang": "en"
+  },
+  "hook": "가까이 가면 사람들이 색 점으로 흩어지는 그림",
+  "date": {
+    "text": "1884–86, border added 1888–89",
+    "source": "aic",
+    "startYear": 1884,
+    "endYear": 1886,
+    "certainty": "range"
+  },
+  "medium": {
+    "native": "Oil on canvas",
+    "ko": "캔버스에 유채"
+  },
+  "places": [
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/27992"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "27992"
+    }
+  ],
+  "terms": [
+    "pointillist",
+    "complementary colors",
+    "frieze"
+  ],
+  "lookFor": [
+    "줄에 묶인 원숭이를 찾아봐요.",
+    "양산을 든 사람은 모두 몇 명일까요?",
+    "물가에 떠 있는 배와 돛을 찾아봐요."
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:Georges_Seurat_-_A_Sunday_on_La_Grande_Jatte_--_1884_-_Google_Art_Project.jpg",
+    "alt": "센강 가 잔디밭에서 양산을 든 여인들, 모자를 쓴 신사들, 아이와 개가 쉬고 있다. 오른쪽 앞에는 원숭이를 줄에 맨 여인과 남자가 옆모습으로 서 있고, 강에는 배들이 떠 있다. 화면 전체가 작은 색 점으로 이루어져 있다."
+  }
+}

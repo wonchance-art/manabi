@@ -1,5 +1,28 @@
 [
   {
+    "id": "aic-famous-paintings",
+    "kind": "theme",
+    "language": "en",
+    "title": {
+      "ko": "시카고 미술관의 명화",
+      "native": "Famous Paintings at the Art Institute of Chicago"
+    },
+    "level": "B2 상급",
+    "summary": {
+      "ko": "고흐의 침실, 모네의 수련, 쇠라의 점으로 그린 일요일. 시카고 미술관이 소장한 19세기 프랑스 명화 여덟 점을 미술관의 영어 해설로 읽는다."
+    },
+    "works": [
+      "van-gogh-bedroom",
+      "monet-water-lilies",
+      "seurat-grande-jatte",
+      "monet-water-lily-pond",
+      "monet-stacks-of-wheat",
+      "renoir-two-sisters",
+      "caillebotte-paris-street-rainy-day",
+      "toulouse-lautrec-at-the-moulin-rouge"
+    ]
+  },
+  {
     "id": "ukiyoe-landscape-hokusai-hiroshige",
     "kind": "theme",
     "title": {

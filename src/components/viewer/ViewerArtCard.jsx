@@ -16,6 +16,7 @@
 // 화면 문구는 vt(뷰어 화면 언어, viewerMessages.js)로, 작품·장소 이름과 해설 크레딧은 학습 내용이라 그대로 둔다.
 import { Fragment, useState } from 'react';
 import Link from 'next/link';
+import { artTitleLang } from '@/lib/artCatalog';
 import './art-card.css';
 
 const CIRCLED = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'];
@@ -75,7 +76,7 @@ export default function ViewerArtCard({ chapter, vt }) {
           </figure>
         )}
         <h2 className="viewer-art-card__title">
-          <span lang="ja">{card.title?.native}</span>
+          <span lang={artTitleLang(card.title)}>{card.title?.native}</span>
           {card.title?.ko && <span className="viewer-art-card__title-ko"> · {card.title.ko}</span>}
         </h2>
         {meta.length > 0 && (

@@ -1,0 +1,52 @@
+{
+  "id": "van-gogh-bedroom",
+  "wikidata": "Q18713076",
+  "genre": "painting",
+  "artist": "vincent-van-gogh",
+  "title": {
+    "native": "The Bedroom",
+    "ko": "아를의 침실",
+    "lang": "en"
+  },
+  "hook": "고흐가 세 번이나 그린 「노란 집」의 자기 방",
+  "date": {
+    "text": "1889",
+    "source": "aic",
+    "startYear": 1889,
+    "endYear": 1889,
+    "certainty": "exact"
+  },
+  "medium": {
+    "native": "Oil on canvas",
+    "ko": "캔버스에 유채"
+  },
+  "places": [
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/28560"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "28560"
+    }
+  ],
+  "terms": [
+    "brushwork",
+    "chrome yellow",
+    "versions"
+  ],
+  "lookFor": [
+    "고흐가 편지에 적은 색 — 연보라 벽, 노란 침대, 붉은 이불을 그림에서 찾아봐요.",
+    "의자는 몇 개이고, 벽에 걸린 그림은 몇 점일까요?",
+    "방 안쪽으로 갈수록 좁아지는 바닥 선을 따라가 봐요."
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:Vincent_van_Gogh_-_The_Bedroom_-_Google_Art_Project.jpg",
+    "alt": "푸른 벽의 좁은 방. 오른쪽에 노란 나무 침대와 붉은 이불, 왼쪽에 의자 두 개와 작은 탁자가 있고, 안쪽에 초록 창문이 반쯤 열려 있으며 벽에 액자 여러 점이 걸려 있다."
+  }
+}

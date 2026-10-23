@@ -1,0 +1,20 @@
+{
+  "bytes": 126219,
+  "file": "seurat-grande-jatte.jpg",
+  "height": 533,
+  "note": "DISCOVER-ART-001 — 시카고 미술관 디지털화본(퍼블릭 도메인)을 위키미디어 공용 파일 페이지에서 받았다(Wikidata 작품 항목 P18). 공용 API 요청 제한(429) 때문에 record는 파일 페이지 · 시카고 미술관 기록에서 손으로 옮겼다. 원 파일은 upload.wikimedia.org 960px 썸네일을 긴 변 800px로 줄인 것이다(README 「이미지」).",
+  "record": {
+    "accession": "1926.224",
+    "artist": "Georges Seurat",
+    "date": "1884–86",
+    "holder": "Art Institute of Chicago",
+    "license": "public-domain",
+    "title": "A Sunday on La Grande Jatte — 1884"
+  },
+  "sha256": "b63ee41b1439f4284820ab5bcedd429190a8a270cea673b3d5ba143bb0a96c56",
+  "source": "commons",
+  "sourceId": "File:Georges_Seurat_-_A_Sunday_on_La_Grande_Jatte_--_1884_-_Google_Art_Project.jpg",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Georges_Seurat_-_A_Sunday_on_La_Grande_Jatte_--_1884_-_Google_Art_Project.jpg",
+  "width": 800,
+  "workId": "seurat-grande-jatte"
+}

@@ -10,10 +10,13 @@ const materialOf = (chapter, patch = {}) => ({ raw_text: chapter.rawText, proces
 
 describe('큐레이션 책 — 카탈로그 → 정본 책 장', () => {
   const books = artBooks();
-  const [book, second] = books;
+  const byKey = (key) => books.find((item) => item.book.key === key);
+  const famous = byKey(artBookKey('aic-famous-paintings'));
+  const book = byKey(artBookKey('ukiyoe-landscape-hokusai-hiroshige'));
+  const second = byKey(artBookKey('ukiyoe-landscape-hokusai-hiroshige-2'));
 
-  it('게시 책은 풍경 우키요에 두 권(첫 권 그대로 + 속편), 작품 한 점 = 일본어 해설 한 장', () => {
-    expect(ART_PUBLISHED_CURATIONS).toEqual(['ukiyoe-landscape-hokusai-hiroshige', 'ukiyoe-landscape-hokusai-hiroshige-2']);
+  it('게시 책은 명화(영어) 한 권 + 풍경 우키요에 두 권(첫 권 그대로 + 속편), 작품 한 점 = 책 언어 해설 한 장', () => {
+    expect(ART_PUBLISHED_CURATIONS).toEqual(['aic-famous-paintings', 'ukiyoe-landscape-hokusai-hiroshige', 'ukiyoe-landscape-hokusai-hiroshige-2']);
     expect(books.map((item) => item.book.key)).toEqual(ART_PUBLISHED_CURATIONS.map(artBookKey));
     expect(book.book).toEqual({
       key: artBookKey('ukiyoe-landscape-hokusai-hiroshige'), title: '北斎と広重の風景版画', author: '葛飾北斎・歌川広重', level: 'N2 상급', total: 8,
@@ -46,6 +49,25 @@ describe('큐레이션 책 — 카탈로그 → 정본 책 장', () => {
     }
   });
 
+  it('명화 책(DISCOVER-ART-001): 시카고 미술관 영어 해설 여덟 장 — 자료 언어 English, 작가는 쉼표로', () => {
+    expect(famous.book).toEqual({
+      key: 'art-aic-famous-paintings', title: 'Famous Paintings at the Art Institute of Chicago',
+      author: 'Vincent van Gogh, Claude Monet, Georges Seurat, Pierre-Auguste Renoir, Gustave Caillebotte, Henri de Toulouse-Lautrec',
+      level: 'B2 상급', total: 8,
+    });
+    expect(famous.chapters[0].title).toBe('The Bedroom');
+    for (const chapter of famous.chapters) {
+      expect(chapter.metadata.language).toBe('English');
+      expect(chapter.metadata.literature).toMatchObject({ provider: 'art', curation: 'aic-famous-paintings', source: 'aic', license: 'cc-by-4.0' });
+    }
+  });
+
+  it('책 언어 해설이 없는 작품이 들면 책을 만들지 않는다(fail-closed)', () => {
+    const catalog = clone(ART_CATALOG);
+    catalog.curations.find((item) => item.id === 'aic-famous-paintings').language = 'ja';
+    expect(() => createArtBook('aic-famous-paintings', catalog)).toThrow(/van-gogh-bedroom: ja 해설이 없다/);
+  });
+
   it('게시 책끼리 작품이 겹치지 않는다 — 같은 해설이 두 행이 되지 않게', () => {
     const ids = books.flatMap((item) => item.chapters.map((chapter) => chapter.metadata.literature.work));
     expect(new Set(ids).size).toBe(ids.length);
@@ -71,15 +93,16 @@ describe('큐레이션 책 — 카탈로그 → 정본 책 장', () => {
   it('없는 큐레이션·제목에 장 구분자 「 — 」·레벨 없음은 실패(fail-closed)', () => {
     expect(() => createArtBook('nope')).toThrow(/없는 큐레이션/);
     const catalog = clone(ART_CATALOG);
-    catalog.curations[0].title.native = '北斎 — 広重';
-    expect(() => createArtBook(catalog.curations[0].id, catalog)).toThrow(/장 제목 구분자/);
-    delete catalog.curations[0].level;
-    expect(() => createArtBook(catalog.curations[0].id, catalog)).toThrow(/level/);
+    const curation = catalog.curations.find((item) => item.id === 'ukiyoe-landscape-hokusai-hiroshige');
+    curation.title.native = '北斎 — 広重';
+    expect(() => createArtBook(curation.id, catalog)).toThrow(/장 제목 구분자/);
+    delete curation.level;
+    expect(() => createArtBook(curation.id, catalog)).toThrow(/level/);
   });
 });
 
 describe('뷰어 정보 카드 — 원문이 정본과 같을 때만', () => {
-  const [book] = artBooks();
+  const book = artBooks().find((item) => item.book.key === artBookKey('ukiyoe-landscape-hokusai-hiroshige'));
   const chapter = book.chapters[5];
 
   it('정본 장이면 카드·출처·책 위치', async () => {

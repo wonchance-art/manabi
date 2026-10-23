@@ -1,0 +1,52 @@
+{
+  "id": "monet-stacks-of-wheat",
+  "wikidata": "Q47774422",
+  "genre": "painting",
+  "artist": "claude-monet",
+  "title": {
+    "native": "Stacks of Wheat (End of Summer)",
+    "ko": "건초더미 — 여름의 끝",
+    "lang": "en"
+  },
+  "hook": "한 방에 열다섯 점을 걸어 모네를 일으킨 연작",
+  "date": {
+    "text": "1890–91",
+    "source": "aic",
+    "startYear": 1890,
+    "endYear": 1891,
+    "certainty": "range"
+  },
+  "medium": {
+    "native": "Oil on canvas",
+    "ko": "캔버스에 유채"
+  },
+  "places": [
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/64818"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "64818"
+    }
+  ],
+  "terms": [
+    "series",
+    "horizon",
+    "harmonies"
+  ],
+  "lookFor": [
+    "낟가리 꼭대기가 지평선 위로 솟아 있나요?",
+    "그림자는 어느 쪽으로 드리워져 있을까요?",
+    "멀리 언덕과 집들을 찾아봐요."
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:Claude_Monet_-_Stacks_of_Wheat_(End_of_Summer)_-_1985.1103_-_Art_Institute_of_Chicago.jpg",
+    "alt": "늦여름 들판에 둥근 지붕 모양의 큰 밀 낟가리 하나와 작은 낟가리 하나가 서 있다. 뒤로 낮은 언덕과 나무, 집들이 보이고, 하늘과 땅이 분홍·보라·노란빛으로 물들어 있다."
+  }
+}

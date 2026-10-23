@@ -151,7 +151,7 @@ describe('관리자 화면 요약·루비 적용률', () => {
 });
 
 describe('큐레이션 책(ART-P0-3) — 같은 게시 계획, 출처별 판정·근거 칸', () => {
-  const [art] = artBooks();
+  const art = artBooks().find((item) => item.book.key === 'art-ukiyoe-landscape-hokusai-hiroshige');
   const withProvider = (target, provider) => ({ ...target, chapters: target.chapters.map((chapter) => ({ ...chapter,
     metadata: { ...chapter.metadata, literature: { ...chapter.metadata.literature, provider } } })) });
 

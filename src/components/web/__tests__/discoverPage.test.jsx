@@ -10,8 +10,9 @@ const read = (file) => fs.readFileSync(path.join(ROOT, file), 'utf8');
 describe('산책 화면 배선', () => {
   const page = () => read('src/app/(app)/discover/page.jsx');
   it('큰 칸 셋을 그리고, 오늘 화제는 /api/suggestions/today와 같은 todaySuggestions를, 고전 명작은 발행 기록 서가를 쓴다', () => {
-    expect(page()).toContain('<DiscoverTiles suggestions={suggestions} classics={classics} date={kstDateString()} />');
+    expect(page()).toContain('<DiscoverTiles suggestions={suggestions} classics={classics} art={art} date={kstDateString()} />');
     expect(page()).toContain('releasedClassicsOf(client).then(({ items }) => items)');
+    expect(page(), '고전 명작 칸은 그림 구간(DISCOVER-ART-001)도 센다').toContain('releasedArtOf(client).then(({ items }) => items)');
     expect(page()).toContain('<h1>산책</h1>');
     expect(page()).not.toMatch(/publishedReading|discover-cultures|문화 읽기<\/h2>/); // N5 문화 읽기는 산책에서 내렸다(교재 화면에 있다)
     expect(fs.existsSync(path.join(ROOT, 'src/components/web/DiscoverShelf.jsx'))).toBe(false);
