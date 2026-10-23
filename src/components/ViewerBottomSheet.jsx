@@ -40,8 +40,10 @@ export default function ViewerBottomSheet({leftContent,rightContent,leftActive,r
   // AE-R1 PR③: menu = 단어 탭 머리줄 ⋯(분석 고치기) {label, items}. 기본 null — PDF 뷰어·문장 탭에는 없다.
   // 보일 내용이 없으면 패널도 없다 — 문장 지정만 있을 때는 ViewerPage의 문장 이동 막대가 대신한다(VIEWER-R0 버그 4).
   if(!leftActive&&!rightActive)return null;
-  const tabs=<div className="viewer-inspector__tabs" role="tablist" aria-label="읽기 보조 패널" {...localizedAria('읽기 보조 패널')} onKeyDown={e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=e.key==='Home'?'right':e.key==='End'?'left':tab==='right'?'left':'right';chooseTab(next);e.currentTarget.querySelector(next==='right'?'#inspector-word-tab':'#inspector-sentence-tab')?.focus();}}>
-    <button role="tab" id="inspector-word-tab" aria-controls="inspector-word" aria-selected={tab==='right'} tabIndex={tab==='right'?0:-1} onClick={()=>chooseTab('right')} aria-label="단어" {...localizedAria('단어')}><span>{t(uiLocale,'단어')}</span></button>
+  // 보일 단어가 없으면 「단어」 탭을 빼 둔다 — ✕로 닫은 뒤 접힌 줄에 남은 「단어」가 빈 시트(「단어 클릭 → 상세」)를 열었다(뷰어 점검 E6, 오너 승인 2026-10-23 KST).
+  // 「문장」 탭은 내용이 없어도 남는다: 누르면 그 문장의 번역을 연다.
+  const tabs=<div className="viewer-inspector__tabs" role="tablist" aria-label="읽기 보조 패널" {...localizedAria('읽기 보조 패널')} onKeyDown={e=>{if(!rightActive||!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=e.key==='Home'?'right':e.key==='End'?'left':tab==='right'?'left':'right';chooseTab(next);e.currentTarget.querySelector(next==='right'?'#inspector-word-tab':'#inspector-sentence-tab')?.focus();}}>
+    {rightActive&&<button role="tab" id="inspector-word-tab" aria-controls="inspector-word" aria-selected={tab==='right'} tabIndex={tab==='right'?0:-1} onClick={()=>chooseTab('right')} aria-label="단어" {...localizedAria('단어')}><span>{t(uiLocale,'단어')}</span></button>}
     <button role="tab" id="inspector-sentence-tab" aria-controls="inspector-sentence" aria-selected={tab==='left'} tabIndex={tab==='left'?0:-1} onClick={()=>chooseTab('left')} aria-label="문장 번역" {...localizedAria('문장 번역')}><span>{t(uiLocale,'문장')}</span></button>
   </div>;
   return <aside ref={root} className={`viewer-inspector ${className}${expanded?' is-expanded':''}${!open?' is-collapsed':''}`} hidden={suppressed} lang={uiLocale} aria-label="읽기 보조 패널" {...localizedAria('읽기 보조 패널')} onMouseUp={e=>e.stopPropagation()} onKeyDown={e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close();}}}>

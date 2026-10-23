@@ -3095,11 +3095,13 @@ a.viewer-badge:hover {
    붙었지만, inline-block 승격 후 surface 테두리는 2.2em 상자 밑(글자에서 먼 곳)이라
    ::before(밴드 하단 = 글자 바로 밑 1.62em)로 옮기는 것이 위치·레이아웃 양쪽에서 정답.
    ※ 밑줄은 띠 **밖**에 그린다(VIEWER-R0 버그 6b) — 아래 「밑줄 자리」 규칙. */
+/* 「단어 상태」를 꺼도 저장 단어를 흐리지 않는다(뷰어 점검 C3 — 오너 승인 2026-10-23 KST). 예전 0.6 흐림은 병음 대비를
+   2.5:1로 떨어뜨렸다. 표시는 얇은 밑줄만 남긴다. */
 .word-token--saved .surface {
-  opacity: 0.6;
+  opacity: 1;
 }
 .word-token--saved .surface::before {
-  border-bottom: 2px solid var(--primary-light);
+  border-bottom: 1.5px solid var(--primary-light);
 }
 /* 담는 순간(앱 손맛 ①) — 방금 담은 그 토큰 하나만 형광펜이 왼쪽에서 오른쪽으로 그어진다.
    띠(::before)의 좌표(top·height·left·right·밑줄 칸)는 위 규칙들 그대로이고 scaleX만 움직인다 —
@@ -3124,7 +3126,7 @@ a.viewer-badge:hover {
   opacity: 1;
 }
 .word-token--due .surface::before {
-  border-bottom: 2px solid var(--warning);
+  border-bottom: 1.5px solid var(--warning);
   animation: due-pulse 2.5s ease-in-out infinite;
 }
 .word-token--due:hover .surface::before {
@@ -3142,14 +3144,18 @@ a.viewer-badge:hover {
    수정): 처음 여는 자료는 대부분 새 단어라 파란 칠이 화면을 덮었다.
    .reader-area--hl가 붙을 때만 발동(툴바 🖍 토글 — 옵트인 기본 꺼짐). 색은 테마별
    변수(--picked-bg 선례). :not(--picked) 가드 — 문장/단어 지정 배경이 항상 이긴다. */
+/* 학습 중 = 옅은 노랑, 복습 = 진한 주황 + 오른쪽 위 점(뷰어 점검 C2 — 오너 승인 2026-10-23 KST). 예전 두 띠는
+   서로 대비 1.08:1로 같은 베이지였다. 색만으로 가르지 않게(WCAG 1.4.1) 복습에는 점을 더한다 — 아래 「복습 점」. */
 .reader-area--light,
 .reader-area--sepia {
-  --ws-learn: rgba(212, 160, 8, 0.18);
-  --ws-due: rgba(212, 150, 42, 0.26);
+  --ws-learn: rgba(212, 160, 8, 0.16);
+  --ws-due: rgba(234, 120, 20, 0.40);
+  --ws-due-dot: #c2410c;
 }
 .reader-area--dark {
-  --ws-learn: rgba(227, 185, 60, 0.20);
-  --ws-due: rgba(232, 169, 79, 0.30);
+  --ws-learn: rgba(227, 185, 60, 0.18);
+  --ws-due: rgba(240, 140, 50, 0.42);
+  --ws-due-dot: #f59e5b;
 }
 /* 「만난 말」은 새 단어와 같은 표시다(VIEWER-R0 버그 11 — 오너 확정 2026-10-07). 따로 둔
    옅은 파랑(알파 0.07)은 바탕 대비 1.10:1(종이)·1.18:1(어둡게)로 사실상 안 보였다.
@@ -3165,6 +3171,20 @@ a.viewer-badge:hover {
 .reader-area--hl .word-token--due:not(.word-token--picked) .surface::before {
   background: var(--ws-due);
   border-bottom-color: transparent;
+}
+/* 복습 점 — 띠 오른쪽 위. 비지정 토큰의 .surface::after는 비어 있다(이음매는 지정 토큰만 쓴다). 범례 견본도 같은 규칙을 탄다. */
+.reader-area--hl .word-token--due:not(.word-token--picked) .surface::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  right: -3px;
+  top: calc(var(--hl-band-top, 0.3em) - 2px);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ws-due-dot);
+  box-shadow: 0 0 0 1.5px var(--reader-paper, var(--bg-primary));
+  pointer-events: none;
 }
 /* 상태 알약(오너 확정 2026-08-30, 3본 비교 렌더 검증)은 이제 기반 ::before의 공통
    문법이다(안 A 2026-09-02) — 여기 있던 --hl 전용 기하 오버라이드(left/right 0·5px)는

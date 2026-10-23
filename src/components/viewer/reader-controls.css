@@ -14,6 +14,9 @@
   font-family:var(--font-noto-kr),sans-serif;
 }
 .viewer-layout[data-reader-theme="light"] { --reader-paper:#fff; --reader-surface:#f4f6f5; }
+/* 「종이」는 설정 견본과 같은 크림색(뷰어 점검 C1 — 오너 승인 2026-10-23 KST). 예전엔 셸 --sheet(#fffefb)라 「밝게」와 구별되지 않았다.
+   본문 글자 대비 12.9:1. 카드 · 시트 바탕(--bg-card)도 같은 종이를 따른다. */
+.viewer-layout[data-reader-theme="sepia"] { --reader-paper:#f7f4eb; }
 .viewer-layout:lang(zh-CN), .reader-modal:lang(zh-CN) {font-family:var(--font-noto-sc, 'Noto Sans SC'), 'Noto Sans SC', var(--font-noto-kr), sans-serif;}
 .viewer-layout:lang(zh-TW), .reader-modal:lang(zh-TW) {font-family:var(--font-noto-tc, 'Noto Sans TC'), var(--font-noto-kr, 'Noto Sans KR'), sans-serif;}
 .viewer-layout :is(.reader-area,.reader-card-source,.reader-settings__preview):lang(ko),
@@ -87,6 +90,8 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .viewer-layout .reader-area--hl .word-token--saved {--word-selection-line:var(--ws-learn-ln);}
 .viewer-layout .reader-area--hl .word-token--due {--word-selection-line:var(--warning);}
 .viewer-layout :is(button,input,textarea,summary):focus-visible {outline:2px solid var(--reader-accent);outline-offset:3px;}
+/* 어두운 배경의 본문 낱말 · 카드 글자(role=button) 고리는 전역 --primary(로즈, 대비 2.55:1)였다 — 버튼과 같은 밝은 교재색으로(뷰어 점검 F6). */
+.viewer-layout[data-reader-theme="dark"] [role="button"]:focus-visible {outline-color:var(--reader-accent);}
 /* 문장 지정 막대 — 데스크톱은 평소 투명(호버 표시)이라 키보드 초점에서도 드러내고, 고리는
    히트 영역(왼쪽 여백까지 뻗음) 대신 보이는 막대에 둘러 화면 가장자리에 잘리지 않게 한다(#1323). */
 .viewer-layout .line-pick:focus-visible {outline:none;opacity:1;}
@@ -326,7 +331,8 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .reader-setting-toggle input {accent-color:var(--reader-accent);width:22px;height:22px;flex:none;}
 .reader-settings__warning {font-size:.82rem;color:var(--warning);}
 .reader-activity-menu {display:flex;flex-direction:column;padding-top:12px;}
-.reader-activity-menu>button {display:flex;flex-direction:column;gap:6px;text-align:left;padding:18px 0;border:0;border-bottom:1px solid var(--reader-line);background:transparent;color:var(--reader-ink);}
+/* 학습 노트(같은 앱 안 이동)도 다른 항목과 같은 이름 + 설명 줄이다 — 혼자 회색 알약 · ↗였다(뷰어 점검 F5). */
+.reader-activity-menu>:is(button,.reader-activity-menu__item) {display:flex;flex-direction:column;gap:6px;text-align:left;padding:18px 0;border:0;border-bottom:1px solid var(--reader-line);background:transparent;color:var(--reader-ink);text-decoration:none;font:inherit;}
 .reader-activity-menu span {font-size:.85rem;line-height:1.6;color:var(--reader-muted);}
 .reader-modal :is(input,textarea) {background:var(--reader-surface);color:var(--reader-ink);border-color:var(--reader-line);}
 @container reader (max-width:600px) {
@@ -366,6 +372,8 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .viewer-layout .reader-card-actions .review-score-btn--good {background:var(--reader-selected);}
 .viewer-layout .reader-card-actions .review-score-btn--easy {background:color-mix(in srgb,var(--reader-accent) 15%,var(--reader-paper));}
 .viewer-layout .save-grade__sub,.viewer-layout .save-grade__key {opacity:1;color:var(--reader-muted);}
+/* 키 숫자는 이름 위 작은 회색 줄 — 왼쪽 위 절대 배치는 320 · 글자 150%에서 이름 글자에 겹쳤다(뷰어 점검 F2). */
+.viewer-layout .reader-card-actions .save-grade__key {position:static;display:block;margin:0 0 2px;font-size:.75em;font-weight:600;line-height:1.2;}
 .reader-settings__tabs button {min-width:0;white-space:normal;overflow-wrap:anywhere;}
 @media (max-height:500px) { .reader-settings__preview {max-height:100px;} }
 
@@ -948,3 +956,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .viewer-badges__close:focus-visible {outline:2px solid var(--reader-accent);outline-offset:-2px;}
 /* 문맥 뜻 실패는 뜻 자리(20px 굵게)를 빌리되 오류 문구라 보통 굵기 · 본문 크기 */
 .manabi-app .viewer-layout .word-detail-card__meaning .word-detail-card__meaning-error{display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:1rem;font-weight:400;color:var(--text-secondary)}
+/* 카드 표제어 요미는 한자 머리에 붙어 있었다 — 본문 루비처럼 4px 띄우고 그만큼 위 여백을 둔다(뷰어 점검 E4, 오너 승인 2026-10-23 KST).
+   translate는 가운데 맞춤 transform과 따로 논다. */
+.manabi-app .viewer-layout .reader-card-headword ruby[data-yomi] > .rt-an {translate:0 -4px;}
+.manabi-app .viewer-layout .reader-card-headword .word-fit-wrap:has(ruby[data-yomi]) {padding-top:4px;}

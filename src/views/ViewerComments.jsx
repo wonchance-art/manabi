@@ -50,20 +50,22 @@ export default function ViewerComments({
         </div>
       ) : (
         <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginBottom: '20px' }}>
-          첫 번째 댓글을 남겨보세요.
+          첫 번째 댓글을 남겨 보세요.
         </p>
       )}
 
       {user ? (
-        <div style={{ display: 'flex', gap: '8px' }}>
+        // 폰(320)에서 「등록」이 상자 밖으로 나갔다 — 자리가 모자라면 다음 줄로, 안내는 잘리지 않게 짧게(뷰어 점검 F7).
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           <input
             type="text"
             value={commentInput}
             onChange={e => setCommentInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && commentInput.trim() && addCommentMutation.mutate(commentInput.trim())}
-            placeholder="이 자료에 대해 이야기해보세요…"
+            placeholder="이 자료 이야기 남기기"
+            aria-label="댓글"
             className="search-input"
-            style={{ flex: 1 }}
+            style={{ flex: '1 1 180px', minWidth: 0 }}
             maxLength={500}
           />
           <Button
