@@ -186,9 +186,16 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .word-fit__col {display:inline-flex;flex-direction:column;align-items:center;vertical-align:top;margin-bottom:.25rem;}
 /* 칩 줄 끝 듣기(§2.1): 누름 영역 44px는 그대로 두고 줄 높이에는 넣지 않는다 — 390 첫 화면 예산(설계서 §5.1). */
 .viewer-layout .word-detail-card__actions > .word-detail-card__speak {margin-block:-9px;}
+/* 훈음 켬: 병음 · 글자 · 훈음을 한 열의 같은 가운데 축에 둔다(훈음이 글자보다 넓어 칸이 벌어져도 글자가 칸 왼쪽에 남지 않게). */
+.manabi-app .viewer-layout .reader-card-lexeme .word-fit.word-fit--hun ruby[data-pinyin] {justify-items:center;justify-content:center;}
+.manabi-app .viewer-layout .reader-card-lexeme .word-fit.word-fit--hun ruby[data-pinyin] > .rt-an {justify-self:center;text-align:center;}
+.manabi-app .viewer-layout .word-fit--hun .reader-card-ruby-glyphs {justify-content:center;}
 .word-fit__hunrow {display:inline-flex;justify-content:center;gap:.25rem;margin-top:.13em;}
 .word-fit__hun {display:inline-flex;flex-direction:column;align-items:center;min-width:min(calc(var(--hun-n, 0) * 1em), 100cqi);padding:0 .125rem;font-family:var(--font-noto-kr, 'Noto Sans KR'), sans-serif;font-size:.8125rem;font-weight:400;line-height:1.35;letter-spacing:0;color:var(--reader-muted);white-space:nowrap;text-align:center;}
-.word-fit__hun[data-wrap] {max-width:min(calc(var(--hun-n, 0) * 1em), 100cqi);white-space:normal;overflow-wrap:anywhere;}
+/* 긴 훈 안전망(오너 2026-10-23 KST 가이드라인): 상한을 넘는 훈은 훈 한 줄 + 음 한 줄까지만, 넘친 훈은 말줄임(…).
+   전체 훈은 그 글자를 눌러 한자 창에서 본다. 자료 쪽 규칙(괄호 0 · HSK 1~6급 5em 이하)은 hanjaHunGuideline.test.js. */
+.word-fit__hun[data-wrap] {max-width:min(calc(var(--hun-n, 0) * 1em), 100cqi);}
+.word-fit__hun[data-wrap] > .word-fit__hun-line {display:block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .word-fit--hun-reserved .surface {padding-bottom:calc(.8125rem * 1.35 + .13em);}
 /* AE-R1 문장 줄(§2.1): 15px 회색 한 문장, 누른 자리만 배경 + 굵게. 버튼 0. 3줄 안전망. */
 .reader-card-sentence {margin:0 0 4px;font-size:.9375rem;line-height:1.6;color:var(--reader-muted);overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden;}

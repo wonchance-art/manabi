@@ -3,8 +3,9 @@ import ScFontCookieHint from '@/components/fonts/ScFontCookieHint';
 import ArtShelf from '@/components/web/ArtShelf';
 import ClassicsShelf from '@/components/web/ClassicsShelf';
 import { classicsFilters, classicsHref, classicsSection } from '@/lib/classicsShelf';
-import { releasedArtOf, releasedClassicsOf } from '@/lib/server/classicsReading';
+import { classicsProgressOf, releasedArtOf, releasedClassicsOf } from '@/lib/server/classicsReading';
 import { suggestionClient } from '@/lib/server/suggestionReading';
+import { requireUserClaims } from '@/lib/supabaseServer';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: '고전 명작', description: '원문 그대로 읽는 고전 — 명작 책과 그림을 일본어 · 영어 · 프랑스어 · 중국어 · 한국어로.' };
 
@@ -14,9 +15,11 @@ export const metadata = { title: '고전 명작', description: '원문 그대로
 export default async function Page({ searchParams }) {
   const filters = classicsFilters(await searchParams);
   const client = suggestionClient();
-  const [books, art] = await Promise.all([releasedClassicsOf(client), releasedArtOf(client)]);
+  // 서가(누구에게나 같은 anon 조회)와 로그인 확인(토큰 갱신 없음 — requireUserClaims)을 함께. 읽은 자리는 로그인했을 때만.
+  const [books, art, session] = await Promise.all([releasedClassicsOf(client), releasedArtOf(client), requireUserClaims().catch(() => null)]);
   const { shelf, tabs } = classicsSection(filters.shelf, { books: books.items.length > 0 || books.failed, art: art.items.length > 0 || art.failed });
   const current = { ...filters, shelf };
+  const { resume, read } = await classicsProgressOf(session, { books: shelf === 'art' ? [] : books.items, art: shelf === 'art' ? art.items : [] });
   // 간체 힌트는 이 화면이 직접 단다 — 산책 세그먼트 layout을 걷어 냈다(산책 본 화면을 ISR로 굽기 위해, GUEST-STATIC-001 2단계).
   return <><ScFontCookieHint /><div className="manabi-page classics-page">
     <header className="manabi-page-heading"><div><Link className="manabi-link" href="/discover">← 산책</Link><h1>고전 명작</h1></div></header>
@@ -25,7 +28,7 @@ export default async function Page({ searchParams }) {
       <Link href={classicsHref({}, { shelf: 'art' })} aria-current={shelf === 'art' ? 'page' : undefined} prefetch={false}>그림</Link>
     </nav>}
     {shelf === 'art'
-      ? <ArtShelf items={art.items} filters={current} failed={art.failed} />
-      : <ClassicsShelf items={books.items} filters={current} failed={books.failed} />}
+      ? <ArtShelf items={art.items} filters={current} failed={art.failed} read={read} />
+      : <ClassicsShelf items={books.items} filters={current} failed={books.failed} resume={resume} />}
   </div></>;
 }

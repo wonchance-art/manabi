@@ -187,9 +187,13 @@ describe('⑤ 훈음 — 표제어 글자 아래 루비 셀(칸 벌림·두 줄,
     expect(cell).toContain('data-label={cell.label}');
   });
 
-  it('루비 셀은 잘라내거나 절대배치하지 않는다 — 넘침은 칸 벌림(--hun-n) 또는 두 줄', () => {
+  // 개정(오너 2026-10-23 KST 긴 훈 가이드라인): 상한을 넘는 셀(data-wrap)의 줄만 말줄임 — 훈 한 줄 + 음 한 줄, 전체는 한자 창.
+  // 셀 상자 자체는 여전히 잘라내지 않는다(겹침 0은 e2e viewer-hun-layout).
+  it('루비 셀은 잘라내거나 절대배치하지 않는다 — 넘침은 칸 벌림(--hun-n) · 두 줄 · 상한 넘는 줄만 말줄임', () => {
     const rules = cssRules('src/components/viewer/reader-controls.css') + cssRules(CSS);
-    const blocks = [...rules.matchAll(/[^{}]*\.word-fit__(?:hun|col)[^{}]*\{([^}]+)\}/g)].map((m) => m[1]);
+    const ellipsis = '.word-fit__hun[data-wrap] > .word-fit__hun-line';
+    expect(rules).toMatch(/\.word-fit__hun\[data-wrap\] > \.word-fit__hun-line\s*\{[^}]*text-overflow:\s*ellipsis[^}]*white-space:\s*nowrap/);
+    const blocks = [...rules.matchAll(/([^{}]*\.word-fit__(?:hun|col)[^{}]*)\{([^}]+)\}/g)].filter((m) => m[1].trim() !== ellipsis).map((m) => m[2]);
     expect(blocks.length).toBeGreaterThan(1);
     for (const body of blocks) expect(body).not.toMatch(/position:\s*absolute|text-overflow|overflow:\s*hidden|(?:^|;)\s*height:/);
     expect(rules).toMatch(/\.word-fit__hun[^{}]*\{[^}]*min-width:\s*min\(calc\(var\(--hun-n/);
