@@ -20,14 +20,32 @@ function sessionStore() {
   try { return typeof window !== 'undefined' ? window.sessionStorage : null; } catch { return null; }
 }
 
-/** 조각 오류면 한 번 새로 고친다. 새로 고쳤으면 true(오류 화면은 곧 사라진다). */
+function browserOnline() {
+  return typeof navigator === 'undefined' || navigator.onLine !== false;
+}
+function afterReconnect(run) {
+  if (typeof window !== 'undefined') window.addEventListener('online', run, { once: true });
+}
+
+/**
+ * 조각 오류면 한 번 새로 고친다. 새로 고쳤으면 true(오류 화면은 곧 사라진다).
+ * 끊긴 동안(navigator.onLine false)의 조각 오류는 배포 어긋남이 아니라 연결 문제다 — 지금 새로 고치면 같은 실패를 한 번 더 겪고
+ * (워커가 없으면 브라우저 「인터넷 없음」 화면) 30초 한 번 기회만 써 버린다. 그래서 연결이 돌아온 순간에 새로 고친다(OFFLINE-SWEEP-001:
+ * 390 실측 — 끊긴 채 연 화면이 오류 화면에 남고, 다시 연결돼도 · 「다시 시도」를 눌러도 그대로였다).
+ */
 export function reloadOnceForChunkError(error, {
   storage = sessionStore(),
   now = Date.now(),
   reload = () => window.location.reload(),
   windowMs = CHUNK_RELOAD_WINDOW_MS,
+  online = browserOnline(),
+  onReconnect = afterReconnect,
 } = {}) {
   if (!isChunkLoadError(error) || !storage) return false;
+  if (!online) {
+    onReconnect(() => reloadOnceForChunkError(error, { storage, reload, windowMs, online: true }));
+    return false;
+  }
   try {
     const last = Number(storage.getItem(CHUNK_RELOAD_KEY));
     if (last > 0 && now - last >= 0 && now - last < windowMs) return false;
@@ -37,4 +55,13 @@ export function reloadOnceForChunkError(error, {
   }
   reload();
   return true;
+}
+
+/**
+ * 오류 화면의 「다시 시도」. 조각을 못 받은 오류는 다시 그리기(reset)로는 풀리지 않는다 — 실패한 조각 약속이 그대로 남아
+ * 같은 오류를 다시 던진다(390 실측: 다시 연결한 뒤 눌러도 같은 오류 화면). 문서를 새로 받아야 한다. 그 밖의 오류는 reset 그대로.
+ */
+export function retryRouteError(error, reset, { reload = () => window.location.reload() } = {}) {
+  if (isChunkLoadError(error)) reload();
+  else reset?.();
 }

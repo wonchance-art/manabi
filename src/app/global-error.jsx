@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { reloadOnceForChunkError } from '@/lib/chunkReload';
+import { retryRouteError } from '@/lib/chunkReload'; // 조각 오류의 「다시 시도」 = 문서 새로 받기
 
 // 루트 레이아웃 자체가 실패할 때만 호출됨. 반드시 <html><body>를 직접 렌더링해야 함.
 // 스타일시트가 없을 수 있어 색은 값으로 둔다 — v2 셸과 같은 값(종이 F6F4EE·글자 252721·로즈 994A5A, COLOR-V2-UNIFY-001).
@@ -25,7 +26,7 @@ export default function GlobalError({ error, reset }) {
           </p>
           <div style={{ display: 'flex', gap: 10 }}>
             <button
-              onClick={reset}
+              onClick={() => retryRouteError(error, reset)}
               style={{
                 padding: '10px 20px', borderRadius: 8, border: 'none',
                 background: '#994a5a', color: '#fff', fontWeight: 600, cursor: 'pointer',

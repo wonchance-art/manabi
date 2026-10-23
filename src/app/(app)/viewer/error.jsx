@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { reloadOnceForChunkError } from '@/lib/chunkReload';
+import { retryRouteError } from '@/lib/chunkReload'; // 조각 오류의 「다시 시도」 = 문서 새로 받기
 
 export default function ViewerError({ error, reset }) {
   useEffect(() => { console.error('ViewerError:', error); reloadOnceForChunkError(error); }, [error]);
@@ -27,7 +28,7 @@ export default function ViewerError({ error, reset }) {
         {config.desc}
       </p>
       <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-        <button className="btn btn--primary btn--md" onClick={reset}>다시 시도</button>
+        <button className="btn btn--primary btn--md" onClick={() => retryRouteError(error, reset)}>다시 시도</button>
         <button className="btn btn--ghost btn--md" onClick={() => window.location.href = '/materials'}>
           자료 목록으로
         </button>
