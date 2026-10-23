@@ -106,12 +106,19 @@ test('390px: first tap shows only the move bar; touch and keyboard move; second 
   const geometry=await f.page.locator('.viewer-inspector').evaluate(sheet=>{
    const r=el=>{const b=el.getBoundingClientRect();return {top:b.top,bottom:b.bottom};};
    const body=sheet.querySelector('.reader-card-body');
-   return {sheet:r(sheet),body:r(body),scrollTop:body.scrollTop,vh:innerHeight,
+   const tok=document.querySelector('.reader-area [data-source-token][data-selected]');
+   return {sheet:r(sheet),body:r(body),scrollTop:body.scrollTop,vh:innerHeight,compact:sheet.dataset.compact==='true',token:tok&&r(tok),
     headword:r(sheet.querySelector('.reader-card-headword')),meaning:r(sheet.querySelector('.word-detail-card__meaning')),
     grades:[...sheet.querySelectorAll('.reader-card-actions .save-grade button, .reader-card-actions .review-score-btn')].filter(b=>b.getClientRects().length).map(r)};
   });
-  assert.equal(geometry.scrollTop,0);
-  for(const [name,box] of [['headword',geometry.headword],['meaning',geometry.meaning]])assert.ok(box.top>=geometry.body.top-.5&&box.bottom<=geometry.body.bottom+.5,`${name} visible without scrolling`);
+  // 핵심 높이로는 고른 단어를 덮는 자리면 시트를 단어 밖까지 낮추고 카드 안에서 스크롤해 표제어를 맨 위에 둔다(뷰어 점검 A1,
+  // 오너 승인 2026-10-23 KST) — 그때 첫 화면 약속은 「단어를 안 덮는다 · 표제어 · 등급」이다.
+  const lowered=geometry.scrollTop>0;
+  if(lowered){
+   assert.ok(geometry.compact,`only a lowered sheet scrolls its card (${geometry.scrollTop}px)`);
+   assert.ok(geometry.token&&(geometry.sheet.top>=geometry.token.bottom-.5||geometry.sheet.bottom<=geometry.token.top+.5),`the lowered sheet leaves the word uncovered ${JSON.stringify(geometry.token)} / ${JSON.stringify(geometry.sheet)}`);
+  }
+  for(const [name,box] of lowered?[['headword',geometry.headword]]:[['headword',geometry.headword],['meaning',geometry.meaning]])assert.ok(box.top>=geometry.body.top-.5&&box.bottom<=geometry.body.bottom+.5,`${name} visible without scrolling`);
   assert.ok(geometry.grades.length>=4,'four grade buttons rendered');
   for(const g of geometry.grades)assert.ok(g.top>=geometry.sheet.top&&g.bottom<=Math.min(geometry.sheet.bottom,geometry.vh)+.5,'grade button visible without scrolling');
   for(const grade of ['다시','어려움','알맞음','쉬움'])assert.ok(await f.page.locator('.reader-card-actions').filter({visible:true}).first().getByRole('button',{name:new RegExp(`^${grade}`)}).isVisible());
@@ -236,7 +243,8 @@ for(const [width,height] of [[390,844],[1280,900],[320,640]])test(`${width}px: A
   assert.equal(new Set(legend.map(l=>l.look)).size,3,`three distinct state marks: ${JSON.stringify(legend)}`);
   for(const l of legend)assert.notEqual(l.look,'rgba(0, 0, 0, 0)|none',`${l.text} is visibly marked`);
   const tones=await pane.locator('.reader-settings__tones .rt-an').evaluateAll(es=>es.map(e=>getComputedStyle(e).color));
-  assert.equal(tones.length,4);assert.equal(new Set(tones).size,4,`four tone colours: ${tones}`);
+  // 경성 견본까지 다섯(뷰어 점검 D, 오너 승인 2026-10-23 KST).
+  assert.equal(tones.length,5);assert.equal(new Set(tones).size,5,`five tone colours: ${tones}`);
   // 같은 CSS — 「단어 상태」를 켜면 본문 새 단어가 범례의 「새 단어」와 같은 모양이다.
   await pane.getByRole('checkbox',{name:'단어 상태',exact:true}).check();
   const bodyNew=await f.page.locator('.reader-area .word-token--new:not(.word-token--picked) .surface').first().evaluate(e=>{const s=getComputedStyle(e,'::before'),line=s.borderBottomWidth==='0px'||s.borderBottomColor==='rgba(0, 0, 0, 0)'?'none':`${s.borderBottomWidth} ${s.borderBottomStyle} ${s.borderBottomColor}`;return `${s.backgroundColor}|${line}`;});
@@ -323,8 +331,17 @@ for(const [width,height] of [[390,844],[1280,900]])test(`${width}px paged: the m
   const pages=f.page.locator('[data-reader-pages="paged"]');
   const box=await pages.boundingBox(),top=(await bar(f).boundingBox()).y;
   assert.ok(box.y+box.height<=top+1,`page box bottom ${box.y+box.height} <= bar top ${top}`);
-  assert.equal(await f.page.locator('.reader-pagebar').evaluate(el=>getComputedStyle(el).visibility),'hidden','the page bar yields its slot to the move bar');
-  const visible=()=>f.page.evaluate(()=>{const b=document.querySelector('[data-reader-pages="paged"]').getBoundingClientRect();return [...document.querySelectorAll('.word-token--picked')].every(el=>{const r=el.getBoundingClientRect();return r.left>=b.left-1&&r.right<=b.right+1&&r.top>=b.top-1&&r.bottom<=b.bottom+1;});});
+  // 쪽 막대는 사라지지 않고 문장 막대 위로 비킨다(뷰어 점검 A3, 오너 승인 2026-10-23 KST — 예전엔 자리를 내주고 숨었다).
+  assert.equal(await f.page.locator('.reader-pagebar').evaluate(el=>getComputedStyle(el).visibility),'visible','the page bar stays while the move bar shows');
+  const pageBar=await f.page.locator('.reader-pagebar').boundingBox();
+  assert.ok(pageBar.y+pageBar.height<=top+1,`page bar bottom ${pageBar.y+pageBar.height} <= move bar top ${top}`);
+  assert.ok(box.y+box.height<=pageBar.y+1,`page box bottom ${box.y+box.height} <= page bar top ${pageBar.y}`);
+  // 지정 문장의 첫 글자는 늘 보이는 쪽에 있다. 쪽 끝을 넘는 문장(A3로 쪽 상자가 막대 자리만큼 짧아져 생긴다)은 바로 다음 쪽(오른쪽)으로
+  // 이어질 뿐 앞 쪽에 남지 않는다.
+  const visible=()=>f.page.evaluate(()=>{const b=document.querySelector('[data-reader-pages="paged"]').getBoundingClientRect(),w=b.right-b.left;
+   const on=r=>r.left>=b.left-1&&r.right<=b.right+1&&r.top>=b.top-1&&r.bottom<=b.bottom+1;
+   const rs=[...document.querySelectorAll('.word-token--picked')].map(el=>el.getBoundingClientRect());
+   return rs.length>0&&on(rs[0])&&rs.every(r=>on(r)||(r.left>=b.right-1&&r.right<=b.right+w+64&&r.top>=b.top-1&&r.bottom<=b.bottom+1));});
   const page=()=>f.page.locator('.reader-pagebar__pos').textContent().then(t=>+t.match(/^(\d+)/)[1]);
   const down=bar(f).getByRole('button',{name:'아래 문장',exact:true});
   let turned=false;

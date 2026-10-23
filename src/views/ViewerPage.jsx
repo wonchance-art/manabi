@@ -103,7 +103,7 @@ import { usePagedReader, pagerFor, overlayOrigin } from '../lib/usePagedReader';
 import { flushSync } from 'react-dom';
 import { listenSentenceRanges, listenSentenceTokens } from '../lib/listenFollow';
 import { analysisTokenLine } from '../lib/analysisCoverage';
-import { captureReadingAnchor } from '../lib/readingViewport';
+import { captureReadingAnchor, anchorCardHead, headScrolled } from '../lib/readingViewport';
 import PageBar, { PageStrips } from '../components/viewer/PageBar';
 import { pinyinCellWidth } from '../lib/pinyinLayout';
 import { hasKinsoku, zhKinsokuMarks, zhKinsokuStyle } from '../lib/zhGrid';
@@ -1127,7 +1127,7 @@ export default function ViewerPage() {
   // (데스크톱 우측 패널 + 모바일 시트 섹션, 둘 다 렌더 사본이라 전부 복귀).
   useEffect(() => {
     if (!selectedTokenRef.current || !isSheetOpen) return;
-    for (const el of document.querySelectorAll('.viewer-inspector .reader-card-body')) el.scrollTop = 0;
+    for (const el of document.querySelectorAll('.viewer-inspector .reader-card-body')) { el.scrollTop = 0; delete el.dataset.headScroll; }
     resetWordPanelScroll();
     const frame = requestAnimationFrame(() => {
       for (const card of document.querySelectorAll('.word-detail-card')) {
@@ -2732,6 +2732,10 @@ export default function ViewerPage() {
     longHeadObserver.current = { disconnect: () => { cancelAnimationFrame(frame); ro.disconnect(); } };
   }, []);
   useLayoutEffect(() => { fitLongHeadword(longHeadRef.current); });
+  // 낮춘 시트(뷰어 점검 A1)가 내려 둔 카드 본문은 첫 화면 단계(AE-R3)가 오르면 다시 맞춘다 — 위 내용(문장 줄 · 자형 표)이 줄었다.
+  useLayoutEffect(() => {
+    for (const el of document.querySelectorAll('.viewer-inspector .reader-card-body')) if (headScrolled(el)) anchorCardHead(el);
+  }, [glyphStep]);
 
   // W R3㉮ 인라인 복습 — 4등급 정본. 스냅샷은 훅이 돌려준 prev·reviewedAt으로 호출부가 만든다.
   const gradeInline = (rating) => {

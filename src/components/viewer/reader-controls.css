@@ -16,7 +16,8 @@
 .viewer-layout[data-reader-theme="light"] { --reader-paper:#fff; --reader-surface:#f4f6f5; }
 /* 「종이」는 설정 견본과 같은 크림색(뷰어 점검 C1 — 오너 승인 2026-10-23 KST). 예전엔 셸 --sheet(#fffefb)라 「밝게」와 구별되지 않았다.
    본문 글자 대비 12.9:1. 카드 · 시트 바탕(--bg-card)도 같은 종이를 따른다. */
-.viewer-layout[data-reader-theme="sepia"] { --reader-paper:#f7f4eb; }
+.viewer-layout[data-reader-theme="sepia"] { --reader-paper:#f7f4eb; --reader-sound:color-mix(in srgb,var(--book-amber-main) 88%,#000); }
+/* 크림 종이는 흰 종이보다 어두워 소리 색(호박)이 한자 창 조각 칸 위에서 4.46:1로 AA(4.5) 아래였다 — 종이 테마만 12% 어둡게. */
 .viewer-layout:lang(zh-CN), .reader-modal:lang(zh-CN) {font-family:var(--font-noto-sc, 'Noto Sans SC'), 'Noto Sans SC', var(--font-noto-kr), sans-serif;}
 .viewer-layout:lang(zh-TW), .reader-modal:lang(zh-TW) {font-family:var(--font-noto-tc, 'Noto Sans TC'), var(--font-noto-kr, 'Noto Sans KR'), sans-serif;}
 .viewer-layout :is(.reader-area,.reader-card-source,.reader-settings__preview):lang(ko),
@@ -387,6 +388,8 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .viewer-layout .save-grade__sub,.viewer-layout .save-grade__key {opacity:1;color:var(--reader-muted);}
 /* 키 숫자는 이름 위 작은 회색 줄 — 왼쪽 위 절대 배치는 320 · 글자 150%에서 이름 글자에 겹쳤다(뷰어 점검 F2). */
 .viewer-layout .reader-card-actions .save-grade__key {position:static;display:block;margin:0 0 2px;font-size:.75em;font-weight:600;line-height:1.2;}
+/* 키 줄이 생긴 만큼 위아래 여백을 줄여 버튼 높이를 44px 그대로 둔다 — 390 첫 화면 예산(뜻 줄 · 4등급이 스크롤 없이)을 지킨다. */
+.viewer-layout .reader-card-actions .save-grade .review-score-btn {padding-block:2px;}
 .reader-settings__tabs button {min-width:0;white-space:normal;overflow-wrap:anywhere;}
 @media (max-height:500px) { .reader-settings__preview {max-height:100px;} }
 

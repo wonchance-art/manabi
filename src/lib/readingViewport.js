@@ -53,6 +53,24 @@ export function selectedTokenScrollDelta(rect, bounds) {
 // 390px 실측(359px)에 여유를 둔 368px. 아주 아래 줄은 그래도 덮일 수 있다(그때도 카드가 먼저다).
 // floor(뷰어 점검 A1, 오너 승인 2026-10-23 KST): 핵심이 다 안 들어가도 머리줄 · 등급 줄 · 표제어 한 줄(floor)까지는 낮추고 카드 안에서
 // 스크롤한다 — 예전엔 핵심(min) 아래로 못 줄여 아래쪽 단어를 덮었다. floor를 안 주면 min 그대로(예전 동작).
+// 낮춘 시트(뷰어 점검 A1, 오너 승인 2026-10-23 KST)의 카드 본문을 뜻 줄 끝이 보일 만큼만 내린다 — 표제어가 맨 위를 넘지는
+// 않는다(그래도 모자라면 표제어부터 보이고 뜻은 아래로 스크롤). 문장 줄 · 칩이 먼저 위로 밀린다. 내린 값은 data-head-scroll에
+// 적어 사람의 스크롤과 가른다 — AE-R3 첫 화면 단계(ViewerGlyphColumn)는 이 자동 스크롤을 0으로 보고, 단계가 올라 내용이 줄면 다시 맞춘다.
+export function anchorCardHead(body) {
+  const head = body?.querySelector('.reader-card-headword'), meaning = body?.querySelector('.word-detail-card__meaning');
+  if (!head || !meaning || !body.clientHeight) return;
+  const origin = body.getBoundingClientRect().top - body.scrollTop;
+  const headAt = head.getBoundingClientRect().top - origin - 4;
+  const need = Math.ceil(meaning.getBoundingClientRect().bottom - origin - body.clientHeight - 0.5);
+  body.scrollTop = need > 0 ? Math.max(0, Math.min(Math.floor(headAt), need)) : 0;
+  if (body.scrollTop > 0) body.dataset.headScroll = String(body.scrollTop);
+  else delete body.dataset.headScroll;
+}
+/** 지금 카드 본문 스크롤이 anchorCardHead가 내린 그대로인가(사람이 움직이지 않았다). */
+export function headScrolled(body) {
+  return !!body?.dataset?.headScroll && Math.abs(body.scrollTop - Number(body.dataset.headScroll)) < 1;
+}
+
 export function compactSheetHeight({ tokenBottom, sheetTop, sheetBottom, min = 368, floor = min, margin = 12 }) {
   if (![tokenBottom, sheetTop, sheetBottom].every(Number.isFinite) || tokenBottom <= sheetTop - 8) return null;
   const room = Math.floor(sheetBottom - tokenBottom - margin);
