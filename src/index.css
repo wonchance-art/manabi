@@ -587,6 +587,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: #fff;
   text-align: center;
   padding: 8px 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
   font-size: 0.85rem;
   font-weight: 600;
   animation: slideDown 0.3s ease-out;
@@ -917,6 +919,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   align-items: center;
   justify-content: center;
   padding: 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 .scrim--bottom { align-items: flex-end; padding: 0; }
 
@@ -1278,6 +1282,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   align-items: center;
   justify-content: center;
   padding: 20px;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
   animation: celebOverlayIn 0.2s ease;
 }
 .vocab-detail-card {
@@ -3236,6 +3242,8 @@ a.viewer-badge:hover {
   justify-content: center;
   align-items: center;
   z-index: 1100;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
 }
 
 .modal {
@@ -3307,6 +3315,8 @@ a.viewer-badge:hover {
   justify-content: center;
   z-index: 1000;
   padding: 20px;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
   animation: fadeIn 0.2s;
 }
 
@@ -4829,6 +4839,7 @@ a.viewer-badge:hover {
     border-top: 1px solid var(--border);
     box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
     padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    padding-left: max(10px, env(safe-area-inset-left, 0px)); padding-right: max(10px, env(safe-area-inset-right, 0px));
   }
   .viewer-sheet-bar__btn {
     flex: 1;
@@ -4886,7 +4897,7 @@ a.viewer-badge:hover {
     display: flex;
     flex-direction: column;
     position: fixed;
-    bottom: 0; left: 0; right: 0;
+    bottom: 0; left: env(safe-area-inset-left, 0px); right: env(safe-area-inset-right, 0px); /* 노치 가로: 시트가 좌우 안전 영역만큼 비킨다 */
     max-height: 70vh;
     max-height: 60svh;
     /* 지정 단어 글자 = 4rem(64px) 고정 — 데스크톱과 동일 크기, 시트 폭에선 5자까지 무축소.
@@ -4970,6 +4981,8 @@ a.viewer-badge:hover {
   align-items: center;
   justify-content: center;
   padding: 20px;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
 }
 .reading-test {
   background: var(--bg-card);
@@ -5681,8 +5694,8 @@ a.viewer-badge:hover {
 /* ========= Toast Notifications ========= */
 .toast-container {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: max(24px, env(safe-area-inset-bottom, 0px));
+  right: max(24px, env(safe-area-inset-right, 0px));
   z-index: 9999;
   display: flex;
   flex-direction: column;
@@ -5752,9 +5765,10 @@ a.viewer-badge:hover {
 
 @media (max-width: 768px) {
   .toast-container {
-    bottom: calc(var(--mobile-nav-height, 64px) + 12px);
-    right: 12px;
-    left: 12px;
+    /* 하단 메뉴는 홈 막대 자리(env)만큼 키가 커진다 — 토스트도 그만큼 올라야 메뉴에 걸치지 않는다(PWA-SHELL-001). */
+    bottom: calc(var(--mobile-nav-height, 64px) + 12px + env(safe-area-inset-bottom, 0px));
+    right: max(12px, env(safe-area-inset-right, 0px));
+    left: max(12px, env(safe-area-inset-left, 0px));
   }
   .toast { max-width: 100%; }
 }
@@ -5939,6 +5953,8 @@ a.viewer-badge:hover {
   justify-content: center;
   animation: fadeIn 0.15s;
   padding: 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 .confirm-modal {
   background: var(--bg-elevated);
@@ -7713,6 +7729,8 @@ a.viewer-badge:hover {
   background: var(--scrim);
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
 }
 .tile-modal { width: 100%; max-width: 340px; padding: 20px; }
 .tile-modal__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }

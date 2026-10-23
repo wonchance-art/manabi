@@ -150,7 +150,7 @@
 .review-reveal-btn { margin-top:32px; border-radius:999px; }
 /* 채점 막대 = 화면 최하단 고정(설계 §5-3 「하단 고정」 — 카드 길이와 무관하게 엄지 · 손 위치가 같다, M09 6158372690).
    카드 폭(680px)에 맞춰 가운데 두고, 세션은 막대 높이만큼 아래를 비워 마지막 줄이 가려지지 않게 한다. */
-.review-grade-bar { position:fixed; left:0; right:0; bottom:0; z-index:5; box-sizing:border-box; max-width:712px; margin:0 auto; padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px)); background:var(--paper); border-top:1px solid var(--rule); }
+.review-grade-bar { position:fixed; left:env(safe-area-inset-left,0px); right:env(safe-area-inset-right,0px); bottom:0; z-index:5; box-sizing:border-box; max-width:712px; margin:0 auto; padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px)); background:var(--paper); border-top:1px solid var(--rule); }
 .review-room-session:has(.review-grade-bar) { padding-bottom:calc(150px + env(safe-area-inset-bottom,0px)); }
 .review-grade-bar.is-locked .review-score-btn { opacity:.55; }
 .review-grade-guide { font-size:12px; color:var(--muted); text-align:center; margin:0 0 8px; line-height:1.6; overflow-wrap:anywhere; }

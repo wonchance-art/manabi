@@ -531,7 +531,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 }
 
 /* Reuse the same word card inside the classroom, without covering the board. */
-.manabi-app .viewer-layout .viewer-inspector--board {position:fixed;inset:auto 16px calc(12px + var(--reader-keyboard-inset,0px)) auto;width:min(400px,max(300px,calc(100% - var(--board-ratio) - 32px)));max-width:calc(100% - 24px);height:min(58dvh,480px);max-height:calc(var(--reader-visual-height,100dvh) - 130px);margin:0;z-index:95;box-shadow:0 12px 32px color-mix(in srgb,var(--reader-ink) 12%,transparent);}
+.manabi-app .viewer-layout .viewer-inspector--board {position:fixed;inset:auto max(16px,env(safe-area-inset-right,0px)) calc(max(12px,env(safe-area-inset-bottom,0px)) + var(--reader-keyboard-inset,0px)) auto;width:min(400px,max(300px,calc(100% - var(--board-ratio) - 32px)));max-width:calc(100% - 24px);height:min(58dvh,480px);max-height:calc(var(--reader-visual-height,100dvh) - 130px);margin:0;z-index:95;box-shadow:0 12px 32px color-mix(in srgb,var(--reader-ink) 12%,transparent);}
 .manabi-app .viewer-layout .viewer-inspector--board.is-expanded {height:calc(var(--reader-visual-height,100dvh) - 140px);}
 .manabi-app .viewer-layout .viewer-inspector--board.is-collapsed {display:none;}
 .manabi-app .viewer-layout .viewer-inspector--board .viewer-inspector__expand {display:block;}

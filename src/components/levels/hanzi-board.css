@@ -137,7 +137,7 @@
   .hz-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
   .hz-start .hz-pri{flex:1}
   .hz-flowwrap{display:none}
-  .hz-overlay{display:flex;flex-direction:column;position:absolute;inset:0;background:var(--paper);pointer-events:auto}
+  .hz-overlay{display:flex;flex-direction:column;position:absolute;inset:0;background:var(--paper);pointer-events:auto;padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
   .hz-overlay .hz-flow{flex:1;min-height:0;max-height:none;border:0;border-radius:0;background:var(--paper);padding-bottom:env(safe-area-inset-bottom)}
   .hz-overlay .hz-nextbar{background:linear-gradient(color-mix(in srgb,var(--paper) 0%,transparent),var(--paper) 28%)}
   .hz-keys{display:none}

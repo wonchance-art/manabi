@@ -184,3 +184,79 @@ describe('PWA-SHELL-001 ⑥ 셸 바깥 바탕 = 셸 종이', () => {
     expect(read('src/components/viewer/reader-controls.css')).toMatch(/body:has\(\.viewer-layout\[data-reader-theme="dark"\]\),\s*\n\.manabi-app:has\(\.viewer-layout\[data-reader-theme="dark"\]\) \{background:var\(--reader-paper\)/);
   });
 });
+
+describe('PWA-SHELL-001 ⑦ 고정 막대는 안전 영역을 진다(viewport-fit=cover의 대가)', () => {
+  // 생성물(build-reading-styles.mjs)은 손대지 않는다 — 그 음성 막대는 reading-shell.css가 덮는다(아래 마지막 검사).
+  const GENERATED = new Set(['src/components/books/reading-manuscript.css']);
+  /** 좌우 끝에 붙어도 안전 영역을 직접 지지 않는 이유가 있는 것만. 새 막대는 여기 넣지 말고 안전 영역을 진다. */
+  const EDGE_EXEMPT = {
+    '.gnb': 'web-shell.css의 .manabi-app .gnb 규칙이 좌우 자리를 비킨다(②)',
+    '.mobile-nav': '같은 규칙(②)',
+    '.lw-scrim': '바탕만 칠하는 어둠막 — 글자가 없다',
+    '.pdf-detail-overlay': '투명 클릭 받이 — 그리는 것이 없다',
+    '.manabi-app.hz-portal': '투명 그릇(pointer-events:none) — 안쪽 .hz-overlay가 진다',
+    '.viewer-progress-bar': '2px 진행선 — 글자가 없다',
+    '.viewer-workspace-boundary[data-active="true"]': '판서 HUD(teaching-board.css)가 안전 영역을 직접 진다 — 그릇까지 지면 두 번 들어간다',
+    '.personal-note': '같은 판서 HUD를 품는다',
+    '.shelf-dialog': '폭 상한 가운데 대화 상자(margin:auto · width:min(520px,…)) — 가장자리에 닿지 않는다',
+    '.note-recognition': '폭 상한 가운데 대화 상자(width:min(620px,…))',
+  };
+  const BOTTOM_EXEMPT = {
+    '.lw-pop': '누른 단어 자리에 띄우는 말풍선 — 좌표를 스크립트가 정한다',
+    '.pdf-detail-popup': '같은 말풍선',
+  };
+
+  const sides = (body) => {
+    const v = (k) => (body.match(new RegExp(`(?:^|;)\\s*${k}\\s*:\\s*([^;]+)`)) || [])[1]?.trim();
+    const inset = v('inset');
+    let [top, right, bottom, left] = [v('top'), v('right'), v('bottom'), v('left')];
+    if (inset) {
+      const p = inset.split(/\s+(?![^(]*\))/);
+      const [t, r = t, b = t, l = r] = p;
+      top ??= t; right ??= r; bottom ??= b; left ??= l;
+    }
+    return { top, right, bottom, left };
+  };
+  const zero = (x) => x !== undefined && /^0(px)?$/.test(x);
+  const set = (x) => x !== undefined && x !== 'auto';
+
+  const fixedRules = () => cssFiles().filter((f) => !GENERATED.has(f)).flatMap((file) =>
+    rulesOf(read(file)).filter((r) => /position\s*:\s*fixed/.test(r.body)).map((r) => ({ file, ...r, s: sides(r.body) })));
+
+  it('훑개가 inset 줄임말을 읽는다', () => {
+    expect(sides('inset:0')).toEqual({ top: '0', right: '0', bottom: '0', left: '0' });
+    expect(sides('inset:auto 12px max(8px,env(safe-area-inset-bottom))')).toEqual({ top: 'auto', right: '12px', bottom: 'max(8px,env(safe-area-inset-bottom))', left: '12px' });
+  });
+
+  it('좌우 끝(left:0 · right:0 · inset:0)에 붙은 고정 요소는 좌우 안전 영역을 진다(안쪽 여백이든 자리든)', () => {
+    const missing = fixedRules()
+      .filter((r) => zero(r.s.left) && zero(r.s.right))
+      .filter((r) => !(r.body.includes('safe-area-inset-left') && r.body.includes('safe-area-inset-right')))
+      .filter((r) => !(r.selector in EDGE_EXEMPT))
+      .map((r) => `${r.file} ${r.selector}`);
+    expect(missing).toEqual([]);
+  });
+
+  it('아래에 붙은 고정 요소(위는 비움)는 홈 막대 자리(safe-area-inset-bottom)를 진다', () => {
+    const missing = fixedRules()
+      .filter((r) => set(r.s.bottom) && !set(r.s.top))
+      .filter((r) => !r.body.includes('safe-area-inset-bottom'))
+      .filter((r) => !(r.selector in BOTTOM_EXEMPT))
+      .map((r) => `${r.file} ${r.selector}`);
+    expect(missing).toEqual([]);
+  });
+
+  it('예외 목록은 실제로 있는 규칙만 가리킨다(죽은 예외 금지)', () => {
+    const selectors = new Set(fixedRules().map((r) => r.selector));
+    for (const sel of [...Object.keys(EDGE_EXEMPT), ...Object.keys(BOTTOM_EXEMPT)]) expect(selectors, sel).toContain(sel);
+  });
+
+  it('하단 메뉴 위 토스트는 메뉴가 홈 막대만큼 커진 몫도 올라간다', () => {
+    expect(read('src/index.css')).toContain('bottom: calc(var(--mobile-nav-height, 64px) + 12px + env(safe-area-inset-bottom, 0px));');
+  });
+
+  it('생성 파일의 교재 음성 막대는 reading-shell.css가 좌우 · 아래 안전 영역으로 덮는다', () => {
+    expect(read('src/components/books/reading-manuscript.css')).toContain('.book-reading-content .player{position:fixed;bottom:0;left:0;right:0;');
+    expect(read('src/components/books/reading-shell.css')).toContain('.manabi-app .book-reading-content .player{left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px);border-bottom:env(safe-area-inset-bottom,0px) solid white}');
+  });
+});
