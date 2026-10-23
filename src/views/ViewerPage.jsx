@@ -164,7 +164,7 @@ import { readIndexCache } from '../lib/classClient';
 import { useRefVocabEntry, useRefVocabIndex } from '../lib/refVocabIndex';
 import { zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
 import { useZhHskLevels } from '../lib/useZhHskLevels';
-import { loadHanjaPanelTable, onIdle, prefetchHanjaPanel } from '../lib/viewerHanjaPanel';
+import { loadHanjaPanelTable, onIdle, prefetchHanjaPanel, splitPinyinSyllables } from '../lib/viewerHanjaPanel';
 import { useTokenDictPrefetch } from '../lib/useTokenDictPrefetch';
 import { tokenDictPrefetchEnabled, tokenDictQueryKey, tokenDictKeyOf, prefetchTokenDict } from '../lib/tokenDictPrefetch';
 import { knownWordsLang } from '../lib/knownWords';
@@ -3202,7 +3202,10 @@ export default function ViewerPage() {
         // ① 폭맞춤 확대(오너 승인): CJK는 1em 격자라 크기 = 100cqi ÷ fitDivisor가 CSS
         // 수식으로 성립(.word-fit — 측정 JS 없음). 라틴 자료는 기존 크기 유지.
         // ④ 글자 탐색: 한자만 탭 대상 — zh는 seg가 글자 단위라 병음도 그 글자 것이다.
-        const rubySegs = headReading ? splitRuby(headText, headReading, headIsBase ? undefined : selectedToken?.base_form) : null;
+        // 훈음 켬: 붙여 쓴 병음(túshūguǎn)도 글자마다 한 음절로 나눠 글자 칸 하나 = 병음 · 글자 · 훈음 한 열로 맞춘다(splitPinyinSyllables 재사용).
+        const hunCells = hanjaHunOf(headText);
+        const hunPy = hunCells && headReading ? splitPinyinSyllables(headReading, [...headText].length, { erhua: headText.endsWith('儿') }) : null;
+        const rubySegs = hunPy ? splitRuby(headText, hunPy.join(' ')) : headReading ? splitRuby(headText, headReading, headIsBase ? undefined : selectedToken?.base_form) : null;
         let at = 0; // 표제어 안 코드포인트 위치 — 탭한 구간(headPicked) 강조용
         if (!isFitLang(materialLang)) {
           return (
@@ -3217,7 +3220,6 @@ export default function ViewerPage() {
         }
         // 훈음 루비(정본 §2.1 표제어 덩어리, AE-R1): 한자 아래 셀 — 표제어(기본형) 글자 기준, R0+ 정체 조회(hunRubyCells →
         // hanjaReadingsOf). 셀이 글자 칸보다 넓으면 그 칸만 벌리고(--hun-n), 그래도 넘치면 훈/음 두 줄. 별도 훈음 목록은 없다.
-        const hunCells = hanjaHunOf(headText);
         const hunAt = (i) => hunCells?.[i] || null;
         const column = (key, glyph, cells) => <span key={key} className="word-fit__col">{glyph}<span className="word-fit__hunrow">{cells}</span></span>;
         const isPickedAt = (i) => !!headPicked && i >= headPicked[0] && i < headPicked[1];
@@ -3502,7 +3504,7 @@ export default function ViewerPage() {
         </>;
       })()}
 
-      {/* 한자 정보(우리 사전 노트, 가짜 동족어 경고 포함) — 한자 대조가 꺼져 있을 때, 사전 뜻 다음. 일반 모드 접힘 0, 수업 모드 접힘 그대로. */}
+      {/* 한자 정보(우리 사전 노트, 가짜 동족어 경고 포함) — 훈음이 꺼져 있을 때, 사전 뜻 다음. 일반 모드 접힘 0, 수업 모드 접힘 그대로. */}
       {refVocab?.word?.hanja && !showHanjaKo && (
         classStudyActive?<details key={`hanja:${selectedToken.id||selectedToken.text}`}><ViewerLabelSlot locale={uiLocale} text={vt('한자 정보')}><summary>한자 정보</summary></ViewerLabelSlot><p>{refVocab.word.hanja}</p></details>:<section className="reader-card-visible reader-card-hanja" key={`hanja:${selectedToken.id||selectedToken.text}`}><h3>{vt('한자 정보')}</h3><p>{refVocab.word.hanja}</p></section>
       )}

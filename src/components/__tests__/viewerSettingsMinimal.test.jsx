@@ -101,7 +101,7 @@ describe('flat display tab',()=>{
       expect(details.every(tag=>tag==='<details class="reader-settings__help">'),`${language}: ${details}`).toBe(true);
     }
     const zh=panel(render({tab:'display'}));
-    for(const label of ['읽기 모드','발음 표기','단어 상태','성조 색상','한자 대조','문법 표시','문법 표시 범위'])expect(zh).toContain(`aria-label="${label}"`);
+    for(const label of ['읽기 모드','발음 표기','단어 상태','성조 색상','훈음','문법 표시','문법 표시 범위'])expect(zh).toContain(`aria-label="${label}"`);
     expect(sliceBetween(source,"{tab==='display'","{tab==='pace'")).not.toContain('<More');
     expect(source).not.toContain('displayDetailKeys');
   });
@@ -185,9 +185,10 @@ describe('stored preferences are untouched by the Aa layout',()=>{
     });
     // readerView(READER-PAGED-001 — 오너 승인 「기본 쪽 넘김, Aa에서 스크롤」)만 더했다: 기기의 읽는 방식이라 공통 값.
     expect(COMMON_KEYS).toEqual(['theme','ttsRate','readerView']);
-    // 기본값 개정은 오너 결정으로만: 일본어·중국어 글자 간격 0(ZH-GRID-001, 2026-10-12 「띄어쓰기 없으니 간격도 없는 걸로 디폴트」).
+    // 기본값 개정은 오너 결정으로만: 일본어·중국어 글자 간격 0(ZH-GRID-001, 2026-10-12 「띄어쓰기 없으니 간격도 없는 걸로 디폴트」),
+    // 중국어 훈음 켬(2026-10-23 KST — 단어장 「훈음」과 같은 이름 · 기본 켬).
     for(const language of ['Chinese','Japanese','Korean','English'])expect(viewerDefaults(language)).toEqual({fontSize:1.6,pinyinSize:0.75,lineGap:15,charGap:['Chinese','Japanese'].includes(language)?0:0.25,theme:'sepia',fontFamily:'sans',zhScript:'hans',
-      pronDisplay:'all',autoSpeakOnClick:false,ttsRate:'normal',showHanjaKo:false,
+      pronDisplay:'all',autoSpeakOnClick:false,ttsRate:'normal',showHanjaKo:language==='Chinese',
       showToneColors:false,focusMode:false,wordStateHl:false,showPatterns:false,patternFilter:'all',
       autoPace:false,paceCpm:null,paceStep:0,readerView:'paged'});
   });

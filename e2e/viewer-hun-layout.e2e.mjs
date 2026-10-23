@@ -73,7 +73,7 @@ for(const width of [1440,390,320])test(`viewer Korean labels/${width}px: long, a
   await f.page.evaluate(()=>document.documentElement.style.fontSize='');
   await f.page.getByRole('button',{name:'Aa 읽기 설정',exact:true}).click();
   await f.page.getByRole('tab',{name:'학습 표시',exact:true}).click();
-  const toggle=f.page.getByRole('checkbox',{name:'한자 대조'});
+  const toggle=f.page.getByRole('checkbox',{name:'훈음',exact:true});
   await toggle.click();await f.page.locator('#inspector-word .word-fit__hun').waitFor({state:'detached'});
   await f.page.keyboard.press('Escape');
   assert.equal(await f.page.locator('#inspector-word .word-fit__hun').count(),0);

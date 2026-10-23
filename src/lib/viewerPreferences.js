@@ -16,9 +16,12 @@ export function fontChoices(language) {
 // (writeViewerPreferences는 만지지 않은 값까지 저장한다) 한 번만 0으로 읽는다 — 표식(cjkGap0)은 새 판이 그 언어를
 // 저장할 때 붙어, 그 뒤에 사용자가 고른 0.25는 그대로 둔다. 다른 값·다른 언어는 손대지 않는다.
 const GAPLESS = ['Japanese', 'Chinese'], OLD_GAP = 0.25, GAP_MARK = 'cjkGap0';
+// 훈음(showHanjaKo)도 같은 방식(오너 2026-10-23 — 단어장 「훈음」과 같은 이름 · 기본 켬): 옛 기본 false가 저장값으로 남아 있으면
+// 한 번만 켬으로 읽는다. 표식(hunOn)은 새 판이 중국어를 저장할 때 붙고, 그 뒤에 끈 값은 그대로 둔다.
+const HUN_LANGS = ['Chinese'], HUN_MARK = 'hunOn';
 export function viewerDefaults(language) {
   return {fontSize:1.6, pinyinSize:0.75, lineGap:15, charGap:GAPLESS.includes(language) ? 0 : OLD_GAP, theme:'sepia', fontFamily:'sans', zhScript:'hans',
-    pronDisplay:'all', autoSpeakOnClick:false, ttsRate:'normal', showHanjaKo:false,
+    pronDisplay:'all', autoSpeakOnClick:false, ttsRate:'normal', showHanjaKo:HUN_LANGS.includes(language),
     showToneColors:false, focusMode:false, wordStateHl:false, showPatterns:false, patternFilter:'all',
     autoPace:false, paceCpm:null, paceStep:0, readerView:'paged'};
 }
@@ -42,7 +45,12 @@ export function validateViewerPreferences(input, language) {
 export function readViewerPreferences(storage, language) {
   const read = key => { try { return JSON.parse(storage?.getItem(key) ?? 'null'); } catch { return null; } };
   const stored = read(VIEWER_PREF_KEY);
-  const oldGap = values => GAPLESS.includes(language) && values.charGap === OLD_GAP && !(Array.isArray(stored?.[GAP_MARK]) && stored[GAP_MARK].includes(language)) ? {...values, charGap:0} : values;
+  const marked = mark => Array.isArray(stored?.[mark]) && stored[mark].includes(language);
+  const oldGap = values => {
+    let next = GAPLESS.includes(language) && values.charGap === OLD_GAP && !marked(GAP_MARK) ? {...values, charGap:0} : values;
+    if (HUN_LANGS.includes(language) && next.showHanjaKo === false && !marked(HUN_MARK)) next = {...next, showHanjaKo:true};
+    return next;
+  };
   if (stored?.version === 2 && stored.languages?.[language]) return validateViewerPreferences(oldGap({...stored.languages[language], ...stored.common}), language);
   const legacy = Object.fromEntries(Object.keys(viewerDefaults(language)).map(key => [key, read('viewer_'+key)]));
   if (!enums.pronDisplay.includes(legacy.pronDisplay)) legacy.pronDisplay = read('viewer_showFurigana') === false ? 'none' : 'all';
@@ -54,8 +62,9 @@ export function writeViewerPreferences(storage, language, values) {
   const valid = validateViewerPreferences(values, language);
   const common = Object.fromEntries(COMMON_KEYS.map(k => [k,valid[k]]));
   const specific = Object.fromEntries(Object.entries(valid).filter(([k]) => !COMMON_KEYS.includes(k)));
-  const marked = [...new Set([...(Array.isArray(previous?.[GAP_MARK]) ? previous[GAP_MARK] : []), ...(GAPLESS.includes(language) ? [language] : [])])];
-  storage.setItem(VIEWER_PREF_KEY, JSON.stringify({version:2,common,languages:{...(previous?.version === 2 ? previous.languages : {}),[language]:specific},...(marked.length ? {[GAP_MARK]:marked} : null)}));
+  const markOf = (mark, langs) => [...new Set([...(Array.isArray(previous?.[mark]) ? previous[mark] : []), ...(langs.includes(language) ? [language] : [])])];
+  const marked = markOf(GAP_MARK, GAPLESS), hunMarked = markOf(HUN_MARK, HUN_LANGS);
+  storage.setItem(VIEWER_PREF_KEY, JSON.stringify({version:2,common,languages:{...(previous?.version === 2 ? previous.languages : {}),[language]:specific},...(marked.length ? {[GAP_MARK]:marked} : null),...(hunMarked.length ? {[HUN_MARK]:hunMarked} : null)}));
 }
 /** 원본 리더처럼 언어가 정해지지 않은 화면이 읽는 공통 보기 값. 저장값이 없거나 깨졌으면 기본(쪽 넘김). */
 export function readReaderView(storage) {

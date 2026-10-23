@@ -202,14 +202,15 @@ describe('hanjaJa.json 생성 데이터', () => {
   });
 });
 
-// 배선 계약: 옵트인 전제 — 기본 꺼짐, 중국어 뷰어에서만 토글 노출.
-describe('한자 대조 배선 계약', () => {
-  it('설정 기본값이 꺼짐(false)이다', () => {
-    expect(viewerDefaults('Chinese').showHanjaKo).toBe(false);
+// 배선 계약: 중국어 뷰어에서만 토글 노출. 기본값은 오너 개정(2026-10-23 KST)으로 켬 — 이름도 단어장과 같은 「훈음」.
+describe('훈음 배선 계약', () => {
+  it('설정 기본값이 중국어에서만 켬(true)이다', () => {
+    expect(viewerDefaults('Chinese').showHanjaKo).toBe(true);
+    for (const language of ['Japanese', 'Korean', 'English']) expect(viewerDefaults(language).showHanjaKo).toBe(false);
   });
 
   it('뷰어가 중국어에서만 토글을 노출하고 시트에 훈음을 표시한다', () => {
-    const options=fs.readFileSync(path.join(process.cwd(),'src/components/viewer/ViewerSettings.jsx'),'utf8'); expect(options).toContain("language==='Chinese'&&");expect(options).toContain('label="한자 대조"');expect(options).toContain("set('showHanjaKo',v)");const src=fs.readFileSync(path.join(process.cwd(),'src/views/ViewerPage.jsx'),'utf8');expect(src).toContain("import('../lib/data/hanjaKo.json')");
+    const options=fs.readFileSync(path.join(process.cwd(),'src/components/viewer/ViewerSettings.jsx'),'utf8'); expect(options).toContain("language==='Chinese'&&");expect(options).toContain('label="훈음"');expect(options).toContain("set('showHanjaKo',v)");const src=fs.readFileSync(path.join(process.cwd(),'src/views/ViewerPage.jsx'),'utf8');expect(src).toContain("import('../lib/data/hanjaKo.json')");
   });
 
   it('훈음(①)도 같은 토글 아래 지연 로드되어 단어 카드에 병기된다(팝업은 ②로 카드 단일화)', () => {

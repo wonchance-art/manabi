@@ -185,10 +185,10 @@ test('saved pronReveal is ignored: a hidden-reading word opens its card on the f
   assert.deepEqual(modes,['몰입 읽기','학습 모드'],'recall preset removed');
   assert.equal(await f.page.getByRole('checkbox',{name:'성조 색상'}).isChecked(),true,'tone colours preserved');
   assert.equal(await f.page.getByRole('group',{name:'발음 표기',exact:true}).getByRole('button',{name:'숨김',exact:true}).getAttribute('aria-pressed'),'true','pronunciation display preserved');
-  await f.page.getByRole('checkbox',{name:'한자 대조'}).click();
+  await f.page.getByRole('checkbox',{name:'훈음',exact:true}).click();
   const stored=await f.page.evaluate(()=>JSON.parse(localStorage.getItem('viewer_preferences_v2')).languages.Chinese);
   assert.equal('pronReveal' in stored,false,'the next write drops the removed key');
-  assert.equal(stored.showToneColors,true);assert.equal(stored.pronDisplay,'none');assert.equal(stored.showHanjaKo,true);
+  assert.equal(stored.showToneColors,true);assert.equal(stored.pronDisplay,'none');assert.equal(stored.showHanjaKo,false);
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });
@@ -217,7 +217,7 @@ for(const [width,height] of [[390,844],[1280,900],[320,640]])test(`${width}px: A
   // 「표시」 탭: 접힌 묶음 없이 모든 옵션이 바로 보인다 — 맨 아래는 언어 선택 상자 둘.
   const pane=dialog.getByRole('tabpanel');
   assert.equal(await dialog.locator('details.reader-settings__more').count(),0,'the display tab has no collapsed group');
-  for(const [role,name] of [['group','읽기 모드'],['group','발음 표기'],['checkbox','단어 상태'],['checkbox','성조 색상'],['checkbox','한자 대조'],['checkbox','문법 표시'],['group','문법 표시 범위'],['combobox','화면 언어'],['combobox','설명 언어']]){
+  for(const [role,name] of [['group','읽기 모드'],['group','발음 표기'],['checkbox','단어 상태'],['checkbox','성조 색상'],['checkbox','훈음'],['checkbox','문법 표시'],['group','문법 표시 범위'],['combobox','화면 언어'],['combobox','설명 언어']]){
    const el=pane.getByRole(role,{name,exact:true});await el.scrollIntoViewIfNeeded();
    assert.ok(await el.isVisible(),`${name} is visible without opening anything`);
   }
