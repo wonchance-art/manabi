@@ -58,6 +58,20 @@ describe('viewer preferences migration and isolation',()=>{
   for(const language of ['Japanese','Chinese'])expect(viewerDefaults(language).charGap).toBe(0);
   for(const language of ['English','French','Korean'])expect(viewerDefaults(language).charGap).toBe(0.25);
  });
+ // 훈음(오너 2026-10-23 KST 「이름 훈음 + 기본 켬」): 중국어 기본 켬, 옛 기본 false 저장값은 표식(hunOn) 전까지 한 번만 켬으로.
+ it('reads a stored old default showHanjaKo false as on for Chinese until the new version saves it; a later off stays off',()=>{
+  const v2=(languages,extra={})=>storage({[VIEWER_PREF_KEY]:JSON.stringify({version:2,common:{},languages,...extra})});
+  expect(readViewerPreferences(storage(),'Chinese').showHanjaKo).toBe(true);
+  const store=v2({Chinese:{showHanjaKo:false,fontSize:2},Japanese:{showHanjaKo:false}});
+  expect(readViewerPreferences(store,'Chinese')).toMatchObject({showHanjaKo:true,fontSize:2});
+  expect(readViewerPreferences(store,'Japanese').showHanjaKo).toBe(false);
+  writeViewerPreferences(store,'Chinese',{...readViewerPreferences(store,'Chinese'),showHanjaKo:false});
+  const saved=JSON.parse(store.getItem(VIEWER_PREF_KEY));
+  expect(saved.hunOn).toEqual(['Chinese']);expect(saved.languages.Chinese.showHanjaKo).toBe(false);
+  expect(readViewerPreferences(store,'Chinese').showHanjaKo).toBe(false);
+  const ja=storage();writeViewerPreferences(ja,'Japanese',viewerDefaults('Japanese'));
+  expect(JSON.parse(ja.getItem(VIEWER_PREF_KEY)).hunOn).toBeUndefined();
+ });
  it('reads a stored old default 0.25 as 0 for ja/zh until the new version saves that language; keeps chosen values and English',()=>{
   const v2=(languages,extra={})=>storage({[VIEWER_PREF_KEY]:JSON.stringify({version:2,common:{theme:'dark'},languages,...extra})});
   const store=v2({Chinese:{charGap:.25,fontSize:2},Japanese:{charGap:.25},English:{charGap:.25}});
