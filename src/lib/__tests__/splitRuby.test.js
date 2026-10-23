@@ -91,7 +91,7 @@ describe('본문 · 카드 · 미리보기 · 빠른 읽기가 기본형을 넘�
   const read = (file) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
   it('토큰 독음 분해 자리마다 base_form을 함께 준다', () => {
     // 본문 낱말은 ReaderToken(memo, VIEWER-TAP-PERF-001)이 나누고, 바로 뒤 토큰 표기는 뷰어가 자료마다 한 번 만든 표(kuruNext)에서 원시값으로 준다.
-    expect(read('src/components/viewer/ReaderToken.jsx')).toContain('splitRuby(token.text, token.furigana, token.base_form, nextText)');
+    expect(read('src/components/viewer/ReaderToken.jsx')).toContain('splitRuby(token.text, pinyinPerChar(token.text, token.furigana) ?? token.furigana, token.base_form, nextText)');
     expect(read('src/views/ViewerPage.jsx')).toContain("nextText={token.furigana ? kuruNext.get(tokenId) : ''}");
     expect(read('src/views/ViewerPage.jsx')).toContain('splitRuby(headText, headReading, headIsBase ? undefined : selectedToken?.base_form)');
     expect(read('src/views/QuickPage.jsx')).toContain('splitRuby(token.text, token.furigana, token.base_form, line?.[i + 1]?.text)');

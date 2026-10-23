@@ -126,6 +126,34 @@ export function splitPinyinSyllables(py, n, { erhua = false } = {}) {
   return null;
 }
 
+// 본문 · 카드 병음 루비용 — 붙여 쓴 병음(túshūguǎn)을 글자마다 한 음절로 나눠 「tú shū guǎn」으로 돌려준다(원문 대소문자 유지).
+// 이미 글자 수만큼 나뉘었거나 나눌 수 없으면(한자 아닌 글자 · 가나 · 분할 모호) null — 부르는 쪽은 원래 독음을 그대로 쓴다.
+// 음절이 글자에 붙어야 글자 격자 · 성조색이 켜진다(splitRuby의 pinyin 경로). 결과는 자료마다 같은 쌍이 반복돼 Map에 둔다.
+const perCharCache = new Map();
+const HAN_ONLY = /^\p{Script=Han}+$/u;
+const KANA = /[\u3040-\u30ff]/u;
+export function pinyinPerChar(text, py) {
+  const word = String(text || '');
+  const src = String(py || '').normalize('NFC').trim();
+  const n = [...word].length;
+  if (n < 2 || !src || !HAN_ONLY.test(word) || KANA.test(src) || !/\p{Script=Latin}/u.test(src)) return null;
+  if (src.split(/\s+/).length === n) return null;
+  const key = `${word}\u0000${src}`;
+  if (perCharCache.has(key)) return perCharCache.get(key);
+  const sylls = splitPinyinSyllables(src, n, { erhua: word.endsWith('儿') });
+  let out = null;
+  if (sylls) {
+    // splitPinyinSyllables는 소문자로 돌려준다 — 같은 길이만큼 원문 글자를 다시 떼어 대소문자(Běijīng)를 살린다.
+    const letters = [...src].filter((c) => !BREAK.test(c));
+    let at = 0;
+    out = sylls.map((s) => { const len = [...s].length; const raw = letters.slice(at, at + len).join(''); at += len; return raw; }).join(' ');
+    if (at !== letters.length) out = sylls.join(' ');
+  }
+  if (perCharCache.size > 2000) perCharCache.clear();
+  perCharCache.set(key, out);
+  return out;
+}
+
 function splitExact(src, want) {
   // 조각(공백·격음 부호로 나뉜 덩어리) → 바탕 글자열
   const pieces = [];

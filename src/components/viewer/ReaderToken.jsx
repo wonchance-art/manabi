@@ -1,6 +1,7 @@
 'use client';
 import { memo } from 'react';
 import { splitRuby } from '../../lib/splitRuby';
+import { pinyinPerChar } from '../../lib/viewerHanjaPanel';
 import { pinyinToneClass } from '../../lib/pinyinTone';
 import { pronHiddenFor } from '../../lib/readingSheet';
 import { variantPieces } from '../../lib/scriptVariant';
@@ -26,7 +27,8 @@ function ReaderToken({
   const shownText = variantText ?? token.text;
   // ruby는 토글과 무관하게 항상 만든다 — 폭 예약(ruby[data-pinyin])이 병음을 꺼도 유지돼야 켤 때 글자가 밀리지 않는다.
   // 활용형은 기본형 읽기에서 한자 읽기만(違[ちが]い) · 来 | ない는 바로 뒤 토큰 표기(nextText, 같은 줄)로 こ를 고른다.
-  const rubySegments = token.furigana ? splitRuby(token.text, token.furigana, token.base_form, nextText) : null;
+  // 붙여 쓴 병음(túshūguǎn)은 글자마다 나눠 준다 — 글자 칸마다 음절 · 성조색이 붙는다(뷰어 점검 E1). 나눌 수 없으면 원래 독음 그대로.
+  const rubySegments = token.furigana ? splitRuby(token.text, pinyinPerChar(token.text, token.furigana) ?? token.furigana, token.base_form, nextText) : null;
   // 「가려져 있다」는 읽기가 실제로 붙는 토큰에서만 참이다(한자 없는 plain 한 조각이면 벗길 rt가 없다).
   const hasReading = !!rubySegments?.some((seg) => seg.kanji);
   const furiOff = hasReading && pronHiddenFor(pronDisplay, { isKnown, isSaved });

@@ -163,7 +163,7 @@ import { readIndexCache } from '../lib/classClient';
 import { useRefVocabEntry, useRefVocabIndex } from '../lib/refVocabIndex';
 import { zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
 import { useZhHskLevels } from '../lib/useZhHskLevels';
-import { loadHanjaPanelTable, onIdle, prefetchHanjaPanel, splitPinyinSyllables } from '../lib/viewerHanjaPanel';
+import { loadHanjaPanelTable, onIdle, prefetchHanjaPanel, pinyinPerChar } from '../lib/viewerHanjaPanel';
 import { useTokenDictPrefetch } from '../lib/useTokenDictPrefetch';
 import { tokenDictPrefetchEnabled, tokenDictQueryKey, tokenDictKeyOf, prefetchTokenDict } from '../lib/tokenDictPrefetch';
 import { knownWordsLang } from '../lib/knownWords';
@@ -3305,10 +3305,10 @@ export default function ViewerPage() {
         // ① 폭맞춤 확대(오너 승인): CJK는 1em 격자라 크기 = 100cqi ÷ fitDivisor가 CSS
         // 수식으로 성립(.word-fit — 측정 JS 없음). 라틴 자료는 기존 크기 유지.
         // ④ 글자 탐색: 한자만 탭 대상 — zh는 seg가 글자 단위라 병음도 그 글자 것이다.
-        // 훈음 켬: 붙여 쓴 병음(túshūguǎn)도 글자마다 한 음절로 나눠 글자 칸 하나 = 병음 · 글자 · 훈음 한 열로 맞춘다(splitPinyinSyllables 재사용).
+        // 붙여 쓴 병음(túshūguǎn)도 글자마다 한 음절로 나눠 글자 칸 하나 = 병음 · 글자(· 훈음) 한 열로 맞춘다 — 훈음과 무관하게 늘(뷰어 점검 E1, 오너 승인 2026-10-23 KST).
         const hunCells = hanjaHunOf(headText);
-        const hunPy = hunCells && headReading ? splitPinyinSyllables(headReading, [...headText].length, { erhua: headText.endsWith('儿') }) : null;
-        const rubySegs = hunPy ? splitRuby(headText, hunPy.join(' ')) : headReading ? splitRuby(headText, headReading, headIsBase ? undefined : selectedToken?.base_form) : null;
+        const perCharPy = headReading ? pinyinPerChar(headText, headReading) : null;
+        const rubySegs = perCharPy ? splitRuby(headText, perCharPy) : headReading ? splitRuby(headText, headReading, headIsBase ? undefined : selectedToken?.base_form) : null;
         let at = 0; // 표제어 안 코드포인트 위치 — 탭한 구간(headPicked) 강조용
         if (!isFitLang(materialLang)) {
           return (
