@@ -64,8 +64,9 @@ describe('병음 조판 계약', () => {
     const yomi = readerCss.match(/ruby\[data-yomi\] > \.rt-an \{bottom:max\(calc\(100% - \(0\.65 \/ 2\.2\) \* 100%\),calc\(100% - \(([\d.]+) \/ ([\d.]+)\) \* 100% \+ var\(--hl-frame-top\) \+ var\(--hl-pinyin-gap\) - [\d.]+em\)\);\}/);
     expect(yomi, 'yomi baseline rule').not.toBeNull();
     expect([yomi[1], yomi[2]]).toEqual([band, lineHeight]);
-    const frame = readerCss.match(/\.viewer-layout \.word-token\[data-selected="true"\]::before \{[^}]*\}/)?.[0] || '';
-    expect(frame).toContain('top:calc(var(--hl-band-top) - var(--hl-frame-top))');
+    // 테두리 상자는 .surface 안 .word-frame(VIEWER-TAP-INP-002) — 윗변 = 줄 상자 위 + (띠 위 − --hl-frame-top), 기준점 같은 두 값.
+    const frame = readerCss.match(/\.viewer-layout \.word-frame \{[^}]*\}/)?.[0] || '';
+    expect(frame).toContain('margin-top:calc(var(--hl-band-top) - var(--hl-frame-top))');
     expect(frame).toContain('height:calc(var(--hl-frame-top) + var(--hl-band-h) + var(--hl-frame-bottom))');
     // 테두리는 띠(면 칠)에 그리지 않는다 — 옛 inset 그림자 부활 금지
     expect(readerCss).not.toMatch(/\[data-selected="true"\] \.surface::before \{[^}]*box-shadow:inset/);

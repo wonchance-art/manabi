@@ -3230,6 +3230,17 @@ a.viewer-badge:hover {
 .reader-area--hl .word-token--pattern:is(.word-token--new, .word-token--met):not([data-selected="true"]) .surface::before {
   padding-bottom: calc(var(--hl-mark-gap) * 2 + 1.5px);
 }
+/* 선택 중에도 밑줄 자리(여백 · 1.5px 두께)는 그대로 두고 선만 투명하게 지운다(VIEWER-TAP-INP-002). 띠는 absolute라
+   고를 때 그 크기가 바뀌면 쪽 넘김(다단) 본문 전체가 다시 배치됐다 — 칠 범위(content-box)는 두 경우 같다. */
+.reader-area--hl .word-token:is(.word-token--new, .word-token--met)[data-selected="true"] .surface::before {
+  box-sizing: content-box;
+  padding-bottom: var(--hl-mark-gap);
+  background-clip: content-box;
+  border-bottom: 1.5px solid transparent;
+}
+.reader-area--hl .word-token--pattern:is(.word-token--new, .word-token--met)[data-selected="true"] .surface::before {
+  padding-bottom: calc(var(--hl-mark-gap) * 2 + 1.5px);
+}
 
 /* failed 토큰 전용 빈 furigana 영역 */
 .furigana {

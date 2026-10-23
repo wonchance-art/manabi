@@ -30,6 +30,10 @@ function ReaderToken({
   const hasReading = !!rubySegments?.some((seg) => seg.kanji);
   const furiOff = hasReading && pronHiddenFor(pronDisplay, { isKnown, isSaved });
   const mark = patternMark ? <span className="pattern-mark" aria-hidden="true" /> : null;
+  // 선택 테두리 자리(VIEWER-TAP-INP-002) — 모든 낱말이 처음부터 갖고, 고르면 선만 켠다(reader-controls.css .word-frame).
+  // .surface의 마지막 자식이다: 글자 · 문형 밑줄보다 뒤에 그려져 예전 테두리(z 1)처럼 글자 획 위에 선이 온다.
+  // 예전에는 고를 때마다 낱말에 position:relative + ::before 상자를 새로 만들어, 쪽 넘김(다단) 본문 전체가 다시 배치됐다.
+  const frame = <span className="word-frame" aria-hidden="true" />;
   const linePick = lineHeadText != null ? (
     <button
       className="line-pick"
@@ -68,10 +72,10 @@ function ReaderToken({
                   {zhGrid && !seg.pinyin ? <ZhText text={seg.kanji} /> : seg.kanji}<span className={['rt-an', showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : ''].filter(Boolean).join(' ')}>{seg.reading}</span>
                 </ruby>
               : zhGrid ? <ZhText key={i} text={seg.plain} /> : <span key={i}>{seg.plain}</span>
-          )}{mark}
+          )}{mark}{frame}
         </span>
       ) : (
-        <span className="surface" {...wordAction}>{zhGrid ? <ZhText text={shownText} /> : shownText}{mark}</span>
+        <span className="surface" {...wordAction}>{zhGrid ? <ZhText text={shownText} /> : shownText}{mark}{frame}</span>
       )}
     </div>
   );

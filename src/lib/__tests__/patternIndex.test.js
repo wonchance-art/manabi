@@ -234,9 +234,9 @@ describe('배선 — 기본 꺼짐, 켜야 로드', () => {
     expect(card).toContain('patternMark={!!visibleScan?.byToken.has(tokenId)}');
     const token = codeOf(read('src/components/viewer/ReaderToken.jsx'));
     expect(token).toContain('const mark = patternMark ? <span className="pattern-mark" aria-hidden="true" /> : null;');
-    // 단어 조작은 .surface(#1323). 중국어 격자(ZH-GRID-001)는 글자를 칸으로 나눌 뿐 밑줄 요소의 자리(.surface 안 마지막)는 그대로다.
-    expect(token).toContain('<span className="surface" {...wordAction}>{zhGrid ? <ZhText text={shownText} /> : shownText}{mark}</span>'); // 번체로 읽기는 화면 글자만(LIT-SRC-WS-1)
-    expect(token).toMatch(/: zhGrid \? <ZhText key=\{i\} text=\{seg\.plain\} \/> : <span key=\{i\}>\{seg\.plain\}<\/span>\s*\)\}\{mark\}\s*<\/span>/);
+    // 단어 조작은 .surface(#1323). 중국어 격자(ZH-GRID-001)는 글자를 칸으로 나눌 뿐 밑줄 요소의 자리(.surface 안 글자 뒤 — 그 뒤는 선택 테두리 칸 .word-frame, VIEWER-TAP-INP-002)는 그대로다.
+    expect(token).toContain('<span className="surface" {...wordAction}>{zhGrid ? <ZhText text={shownText} /> : shownText}{mark}{frame}</span>'); // 번체로 읽기는 화면 글자만(LIT-SRC-WS-1)
+    expect(token).toMatch(/: zhGrid \? <ZhText key=\{i\} text=\{seg\.plain\} \/> : <span key=\{i\}>\{seg\.plain\}<\/span>\s*\)\}\{mark\}\{frame\}\s*<\/span>/);
   });
 
   it('카드는 단어 카드 안에 얹는다 — 새 상호작용을 만들면 단어 탭과 경합한다', () => {

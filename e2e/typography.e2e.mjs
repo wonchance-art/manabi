@@ -27,7 +27,8 @@ const PAGE = (body) => `<style>${CSS}\n${READER_CSS}</style><style>body{margin:0
 // 소스 쪽을, 이 파일이 결과 쪽을 지킨다)
 const zhSeg = (ch, py) => `<ruby data-pinyin="1">${ch}<span class="rt-an">${py}</span></ruby>`;
 const jaSeg = (k, r) => `<ruby data-yomi="1">${k}<span class="rt-an">${r}</span></ruby>`;
-const tok = (inner, off) => `<div class="word-token"><span class="surface${off ? ' surface--furi-off' : ''}">${inner}</span></div>`;
+// 본문 낱말과 같은 마크업 — .surface 마지막 칸은 선택 테두리 자리(.word-frame, ReaderToken · VIEWER-TAP-INP-002)
+const tok = (inner, off) => `<div class="word-token"><span class="surface${off ? ' surface--furi-off' : ''}">${inner}<span class="word-frame" aria-hidden="true"></span></span></div>`;
 
 // 최장 병음(chuāng·shuāng)을 인접시킨 최악 배치 포함
 const ZH = [['我', 'wǒ'], ['去', 'qù'], ['窗', 'chuāng'], ['双', 'shuāng'], ['前', 'qián'], ['广', 'guǎng'], ['州', 'zhōu']];
@@ -673,7 +674,7 @@ const r0Area = ({ fs = 25.6, hl = false, theme = 'sepia', lang = 'zh-Hans', fami
 const r0Tok = (segs, { cls = '', selected = false, pattern = false, linePick = false, ja = false } = {}) =>
   `<div class="word-token${cls ? ` ${cls}` : ''}${pattern ? ' word-token--pattern' : ''}"${selected ? ' data-selected="true"' : ''}>${linePick ? '<button class="line-pick"></button>' : ''}<span class="surface">${
     segs.map(([c, r]) => (r ? `<ruby ${ja ? 'data-yomi' : 'data-pinyin'}="1">${c}<span class="rt-an">${r}</span></ruby>` : `<span>${c}</span>`)).join('')
-  }${pattern ? '<span class="pattern-mark" aria-hidden="true"></span>' : ''}</span></div>`;
+  }${pattern ? '<span class="pattern-mark" aria-hidden="true"></span>' : ''}<span class="word-frame" aria-hidden="true"></span></span></div>`;
 
 // 상태별 토큰 — 저장·복습·미저장 × 문형 유무, 줄 첫 토큰(막대), 새 단어·만난 말
 const R0_ZH = [
@@ -702,12 +703,14 @@ const r0Geometry = (p = page) => p.evaluate(() => [...document.querySelectorAll(
   const b = getComputedStyle(s, '::before');
   const bandTop = sr.top + px(b.top), bandBottom = bandTop + px(b.height), bb = px(b.borderBottomWidth);
   const boxBottom = b.boxSizing === 'content-box' ? bandBottom + px(b.paddingBottom) + bb : bandBottom;
-  const f = getComputedStyle(t, '::before');
+  // 선택 테두리 = .surface 안 .word-frame의 outline(VIEWER-TAP-INP-002). 선 바깥 = 상자 + (offset + 두께), 안쪽 = 상자 + offset.
+  const fe = s.querySelector(':scope > .word-frame'), f = fe && getComputedStyle(fe);
   let frame = null;
-  if (f.content && f.content !== 'none' && f.content !== 'normal' && f.position === 'absolute') {
-    const top = tr.top + px(f.top);
-    frame = { outerTop: top, innerTop: top + px(f.borderTopWidth), innerBottom: top + px(f.height) - px(f.borderBottomWidth),
-      outerBottom: top + px(f.height), left: tr.left + px(f.left), right: tr.right - px(f.right) };
+  if (f && f.outlineStyle !== 'none' && px(f.outlineWidth) > 0) {
+    // 세로는 계산값(줄 상자 위 = 글자 상자 위 + margin-top, height)으로 — 예전 ::before(top · height 계산값)와 같은 정밀도.
+    // getBoundingClientRect는 1/64px로 맞춰져 0.5px 여유 검사(밑줄 ↔ 테두리)에서 0.012px 차로 갈린다.
+    const r = fe.getBoundingClientRect(), o = px(f.outlineOffset), w = px(f.outlineWidth), top = sr.top + px(f.marginTop), bottom = top + px(f.height);
+    frame = { outerTop: top - (o + w), innerTop: top - o, innerBottom: bottom + o, outerBottom: bottom + o + w, left: r.left - (o + w), right: r.right + o + w };
   } else if (/inset/.test(b.boxShadow)) { // 옛 문법: 띠 안쪽 1.5px 그림자
     const padBottom = boxBottom - bb;
     frame = { outerTop: bandTop, innerTop: bandTop + 1.5, innerBottom: padBottom - 1.5, outerBottom: padBottom, left: sr.left, right: sr.right };
@@ -718,7 +721,8 @@ const r0Geometry = (p = page) => p.evaluate(() => [...document.querySelectorAll(
     name: t.dataset.name, fs: px(getComputedStyle(s).fontSize), ja: !!s.querySelector('ruby[data-yomi]'),
     token: { l: tr.left, r: tr.right }, surface: { l: sr.left, r: sr.right, top: sr.top },
     band: { top: bandTop, bottom: bandBottom, h: px(b.height), clip: b.backgroundClip },
-    underline: bb > 0 ? { top: boxBottom - bb, bottom: boxBottom } : null,
+    // 투명한 밑줄 자리는 밑줄이 아니다 — 고른 새 단어는 선만 지우고 자리(여백 · 두께)는 남긴다(VIEWER-TAP-INP-002, 고를 때 배치 0)
+    underline: bb > 0 && !/rgba\(\d+, \d+, \d+, 0\)/.test(b.borderBottomColor) ? { top: boxBottom - bb, bottom: boxBottom } : null,
     frame, rt: rt ? { top: rt.top, bottom: rt.bottom, l: rt.left, r: rt.right } : null,
     mark: mark && mark.height > 0 ? { top: mark.top, bottom: mark.bottom } : null,
   };
@@ -786,10 +790,10 @@ test('R0 버그 6 — 다음 줄 병음이 앞줄의 테두리·밑줄·문형�
     const rows = await page.evaluate(() => {
       const m = new Map();
       for (const t of document.querySelectorAll('.word-token')) {
-        const s = t.querySelector('.surface').getBoundingClientRect(), f = getComputedStyle(t, '::before'), tr = t.getBoundingClientRect();
+        const s = t.querySelector('.surface').getBoundingClientRect(), fr = t.querySelector('.surface > .word-frame').getBoundingClientRect();
         const k = Math.round(s.top), e = m.get(k) || { rtTop: Infinity, markBottom: -Infinity };
         for (const rt of t.querySelectorAll('.rt-an')) e.rtTop = Math.min(e.rtTop, rt.getBoundingClientRect().top);
-        e.markBottom = Math.max(e.markBottom, tr.top + parseFloat(f.top) + parseFloat(f.height));
+        e.markBottom = Math.max(e.markBottom, fr.bottom); // 테두리 바깥 아랫변(outline-offset −두께라 상자 아랫변)
         m.set(k, e);
       }
       return [...m.entries()].sort((a, b) => a[0] - b[0]).map((x) => x[1]);
@@ -826,8 +830,8 @@ test('R0 버그 6 — 터치 화면 줄 첫 토큰: 테두리가 문장 막대�
     const p = await context.newPage();
     await p.setContent(R0_PAGE(r0Area({ fs: 25.6 }, r0Line(R0_ZH.slice(0, 2), { selected: true }))));
     const out = await p.evaluate(() => {
-      const t = document.querySelector('.word-token'), f = getComputedStyle(t, '::before');
-      return { hoverNone: matchMedia('(hover: none)').matches, frameLeft: t.getBoundingClientRect().left + parseFloat(f.left), surfaceLeft: t.querySelector('.surface').getBoundingClientRect().left };
+      const t = document.querySelector('.word-token');
+      return { hoverNone: matchMedia('(hover: none)').matches, frameLeft: t.querySelector('.word-frame').getBoundingClientRect().left, surfaceLeft: t.querySelector('.surface').getBoundingClientRect().left };
     });
     assert.ok(out.hoverNone, '터치 컨텍스트가 (hover: none)이 아니다 — 전제가 무너졌다');
     assert.ok(Math.abs(out.frameLeft - out.surfaceLeft) < 0.5, `테두리 왼변 ${out.frameLeft} ≠ 글자 상자 왼변 ${out.surfaceLeft}`);
@@ -841,14 +845,14 @@ for (const gap of ['0rem', '.5rem']) test(`중국어 격자 — 터치 화면 �
   try {
     const p = await context.newPage();
     const cell = (c) => `<span class="zh-cell">${c}</span>`;
-    const word = (segs, { linePick = false, selected = false } = {}) => `<div class="word-token"${selected ? ' data-selected="true"' : ''}>${linePick ? '<button class="line-pick"></button>' : ''}<span class="surface">${segs.map(([c, r]) => (r ? `<ruby data-pinyin="1">${c}<span class="rt-an">${r}</span></ruby>` : cell(c))).join('')}</span></div>`;
+    const word = (segs, { linePick = false, selected = false } = {}) => `<div class="word-token"${selected ? ' data-selected="true"' : ''}>${linePick ? '<button class="line-pick"></button>' : ''}<span class="surface">${segs.map(([c, r]) => (r ? `<ruby data-pinyin="1">${c}<span class="rt-an">${r}</span></ruby>` : cell(c))).join('')}<span class="word-frame" aria-hidden="true"></span></span></div>`;
     const words = [word([['眼', 'yǎn'], ['前', 'qián']], { linePick: true, selected: true }), word([['的', 'de']]), word([['体', 'tǐ'], ['育', 'yù'], ['场', 'chǎng']]), word([['，']]),
       ...Array.from({ length: 12 }, () => word([['我', 'wǒ'], ['们', 'men']]))].join('');
     await p.setContent(R0_PAGE(r0Area({ fs: 25.6 }, words).replace('gap:15px .25rem;--char-gap:.25rem', `gap:15px 0;--char-gap:${gap};width:340px`)).replace('class="viewer-layout"', 'class="viewer-layout" data-language="Chinese"'));
     const out = await p.evaluate(() => {
       const cells = [...document.querySelectorAll('.surface > :is(ruby,.zh-cell)')].map((e) => { const b = e.getBoundingClientRect(); return { l: b.left, w: b.width, top: Math.round(e.closest('.surface').getBoundingClientRect().top) }; });
-      const t = document.querySelector('.word-token'), f = getComputedStyle(t, '::before');
-      return { hoverNone: matchMedia('(hover: none)').matches, cells, frameLeft: t.getBoundingClientRect().left + parseFloat(f.left), surfaceLeft: t.querySelector('.surface').getBoundingClientRect().left, areaLeft: document.querySelector('.reader-area').getBoundingClientRect().left + 16 };
+      const t = document.querySelector('.word-token');
+      return { hoverNone: matchMedia('(hover: none)').matches, cells, frameLeft: t.querySelector('.word-frame').getBoundingClientRect().left, surfaceLeft: t.querySelector('.surface').getBoundingClientRect().left, areaLeft: document.querySelector('.reader-area').getBoundingClientRect().left + 16 };
     });
     assert.ok(out.hoverNone, '터치 컨텍스트가 (hover: none)이 아니다 — 전제가 무너졌다');
     const pitch = out.cells[1].l - out.cells[0].l, tops = [...new Set(out.cells.map((c) => c.top))];
@@ -899,8 +903,8 @@ for (const theme of ['light', 'sepia', 'dark']) {
   test(`R0 버그 11 — 「만난 말」은 새 단어와 같은 표시다(${theme}: 칠·지정 혼색·선택 테두리)`, async () => {
     await page.setContent(R0_PAGE(r0Area({ fs: 25.6, hl: true, theme }, r0Line([R0_ZH[5], R0_ZH[6]]))));
     const read = () => page.evaluate(() => [...document.querySelectorAll('.word-token')].map((t) => {
-      const b = getComputedStyle(t.querySelector('.surface'), '::before'), f = getComputedStyle(t, '::before');
-      return { band: b.backgroundColor, line: `${b.borderBottomWidth} ${b.borderBottomColor}`, frame: f.content !== 'none' ? f.borderTopColor : b.boxShadow };
+      const b = getComputedStyle(t.querySelector('.surface'), '::before'), f = getComputedStyle(t.querySelector('.word-frame'));
+      return { band: b.backgroundColor, line: `${b.borderBottomWidth} ${b.borderBottomColor}`, frame: f.outlineStyle !== 'none' ? f.outlineColor : 'none' };
     }));
     const plain = await read();
     assert.deepEqual(plain[1], plain[0], `만난 말 칠 ${plain[1].band} ≠ 새 단어 칠 ${plain[0].band}`);
