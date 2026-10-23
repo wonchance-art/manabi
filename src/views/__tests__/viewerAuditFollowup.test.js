@@ -68,4 +68,10 @@ describe('뷰어 점검 후속 — 기능 버그 배선', () => {
     expect(sliceBetween(listen, 'function play() {', 'if (paused')).toContain('holdFocus();');
     expect(sliceBetween(listen, 'function stop() {', 'interruptedRef.current = false;')).toContain('holdFocus();');
   });
+
+  it('「연결한 교재 단원」은 뷰어 · PDF 뷰어에서 뺐다(오너 지시 2026-10-23 KST) — 교재 쪽 「자료와 함께 복습하기」는 그대로', () => {
+    for (const f of ['src/views/ViewerPage.jsx', 'src/views/PdfViewerPage.jsx']) expect(read(f), f).not.toContain('MaterialChapterLinks');
+    for (const f of ['src/views/ReferenceChapterPage.jsx', 'src/components/books/BookMaterials.jsx', 'src/components/books/BookReader.jsx'])
+      expect(read(f), f).toContain('<MaterialChapterLinks ');
+  });
 });

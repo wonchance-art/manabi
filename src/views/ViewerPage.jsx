@@ -26,7 +26,6 @@ import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
 import { buildVocabularyWordIndex, countVocabularyDueInMaterial, findIndexedVocabulary, isIndexedVocabularyDue } from '../lib/vocabularyDueIndex';
 import { writeStudySource } from '../lib/studySourceHandoff';
 import SaveContextButton, { saveContext } from '../components/learning/SaveContextButton';
-import MaterialChapterLinks from '../components/learning/MaterialChapterLinks';
 import ReadingSourceFocus from '../components/learning/ReadingSourceFocus';
 import { classSentenceEnd, classAnchorAt } from '../lib/classSource';
 import { textbookStream } from '../lib/textbookAnnotations';
@@ -4604,8 +4603,6 @@ export default function ViewerPage() {
         </div>
       )}
 
-
-      {STUDY_LANGS.has(materialLang) && <MaterialChapterLinks lang={materialLang} kind="reading" materialId={id} />}
 
       {/* 다음 — 한 자리에 하나(뷰어 정돈 A안): 시리즈 다음 편 → 책 다음 과 → 마지막 과면 「다음 과 적기」(내 책만,
           이어 적기 #1077 5520128974) → PDF 다음 범위(예전엔 본문 위 카드의 버튼) → 시리즈·레벨 완주. */}
