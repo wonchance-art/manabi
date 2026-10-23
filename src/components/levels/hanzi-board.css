@@ -127,7 +127,8 @@
 .hz-word__acts{justify-content:flex-end}
 
 .hz-board :focus-visible,.hz-overlay :focus-visible{outline:2px solid var(--ja);outline-offset:2px}
-@media (prefers-reduced-motion:no-preference){.hz-cell,.hz-wc{transition:transform .12s}.hz-cell:hover,.hz-wc:hover{transform:translateY(-1px)}}
+@media (prefers-reduced-motion:no-preference){.hz-cell,.hz-wc{transition:transform .12s}}
+@media (prefers-reduced-motion:no-preference) and (hover:hover){.hz-cell:hover,.hz-wc:hover{transform:translateY(-1px)}}
 
 @container manabi-shell (max-width:900px){
   .hz-layout{grid-template-columns:minmax(0,1fr);margin-top:18px}

@@ -117,3 +117,54 @@ describe('PWA-SHELL-001 ③ 터치 정책 — 글자 부풀리기 · 두 번 탭
     expect(m[1]).not.toMatch(/\.lw-card\b|\.lv-entry--solo\b|\.suggestion-card\b/);
   });
 });
+
+/** CSS를 규칙 단위로 훑는다 — 각 규칙의 선택자 · 본문 · 감싼 @규칙 조건들(바깥부터). 주석은 지운다. */
+function rulesOf(source) {
+  const css = source.replace(/\/\*[\s\S]*?\*\//g, '');
+  const rules = [];
+  const stack = [];
+  let buf = '';
+  for (let i = 0; i < css.length; i += 1) {
+    const ch = css[i];
+    if (ch === '{') {
+      const head = buf.trim(); buf = '';
+      if (head.startsWith('@')) { stack.push(head); continue; }
+      const end = css.indexOf('}', i);
+      rules.push({ selector: head, body: css.slice(i + 1, end), at: [...stack] });
+      i = end;
+    } else if (ch === '}') {
+      stack.pop(); buf = '';
+    } else if (ch === ';' && buf.trim().startsWith('@')) {
+      buf = ''; // @import · @charset 같은 한 줄 @규칙
+    } else {
+      buf += ch;
+    }
+  }
+  return rules;
+}
+
+describe('PWA-SHELL-001 ④ 호버 들림은 마우스 기기만', () => {
+  it('규칙 훑개 자체 확인 — 감싼 @media 조건을 읽는다', () => {
+    const rules = rulesOf('.a:hover{transform:scale(2)}@media (hover:hover){.b:hover{transform:translateY(-1px)}}');
+    expect(rules).toEqual([
+      { selector: '.a:hover', body: 'transform:scale(2)', at: [] },
+      { selector: '.b:hover', body: 'transform:translateY(-1px)', at: ['@media (hover:hover)'] },
+    ]);
+  });
+
+  it(':hover로 transform을 바꾸는 규칙은 모두 @media (hover: hover) 안에 있다 — 터치는 누른 뒤 :hover가 남아 들린 채 굳는다', () => {
+    const leaks = [];
+    for (const file of cssFiles()) {
+      for (const rule of rulesOf(read(file))) {
+        if (!/:hover/.test(rule.selector)) continue;
+        const t = rule.body.match(/(?:^|;)\s*transform\s*:\s*([^;]+)/);
+        if (!t || /^none\b/.test(t[1].trim())) continue;
+        if (rule.at.some((a) => /hover\s*:\s*hover/.test(a))) continue;
+        // 월드 지도(개발 동결 · 게임 팔레트 — ui-conventions §1 예외)는 핀 이름표를 터치에서도 :hover로 띄운다. 손대지 않는다.
+        if (/^\.world-map-viewer__/.test(rule.selector)) continue;
+        leaks.push(`${file} ${rule.selector}`);
+      }
+    }
+    expect(leaks).toEqual([]);
+  });
+});

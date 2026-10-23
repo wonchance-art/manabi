@@ -176,7 +176,7 @@ html:has(.lv-page){overscroll-behavior-y:none}
 .lv-acts{display:flex;align-items:center;gap:10px;flex:none}
 .lv-fab{width:44px;height:44px;border-radius:50%;border:0;display:inline-grid;place-items:center;flex:none;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease,background .12s ease}
 .lv-fab--save{background:var(--ja);color:#fff;box-shadow:0 2px 6px color-mix(in srgb,var(--ja) 28%,transparent)}
-.lv-fab--save:hover{transform:translateY(-1px);box-shadow:0 4px 12px color-mix(in srgb,var(--ja) 34%,transparent)}
+@media (hover:hover){.lv-fab--save:hover{transform:translateY(-1px);box-shadow:0 4px 12px color-mix(in srgb,var(--ja) 34%,transparent)}}
 .lv-fab--save:active,.lv-fab--ex:active{transform:scale(.96)}
 .lv-fab--busy{background:var(--lv-busy);color:#fff;cursor:progress}
 .lv-fab--busy svg{animation:lv-spin 1s linear infinite}

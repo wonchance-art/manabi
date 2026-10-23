@@ -118,7 +118,7 @@
 .manabi-app .manabi-series-book{display:block;text-align:left;background:transparent;border:0;padding:0;min-width:0;color:var(--ink);border-radius:0}
 .shelf-series-number{font-size:10px;letter-spacing:1px;display:block;margin:0 0 13px;color:var(--muted)}
 .manabi-app .manabi-series-book .manabi-cover{max-width:none;transition:transform .22s ease}
-.manabi-app a.manabi-series-book:hover .manabi-cover{transform:translateY(-7px) rotate(-1deg)}
+@media (hover:hover){.manabi-app a.manabi-series-book:hover .manabi-cover{transform:translateY(-7px) rotate(-1deg)}}
 .manabi-app .manabi-series-caption{display:flex;align-items:center;position:relative;padding:21px 0 0;gap:8px;flex-wrap:wrap}
 .manabi-app .manabi-series-caption strong{font-size:18px}
 .manabi-app .manabi-series-caption small{font-size:11px;color:var(--muted)}
@@ -203,7 +203,7 @@ div.discover-tile .discover-tile__title{color:var(--muted)}
 .classics-card{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
 .classics-card__open{display:flex;flex-direction:column;gap:2px;color:var(--ink);text-decoration:none;min-width:0;max-width:100%}
 .classics-card__cover{display:block;zoom:1.6;margin-bottom:6px;flex:none;transition:transform .15s ease}
-.classics-card__open:hover .classics-card__cover{transform:translateY(-2px)}
+@media (hover:hover){.classics-card__open:hover .classics-card__cover{transform:translateY(-2px)}}
 .classics-card__open>strong{font-size:15px;line-height:1.45;font-weight:700;overflow-wrap:anywhere}
 .classics-card__open:hover>strong{text-decoration:underline}
 .classics-card__open>span:not(.classics-card__cover){font-size:13px;line-height:1.45;color:var(--muted);overflow-wrap:anywhere}

@@ -518,8 +518,10 @@ button {
   transition: transform var(--transition-fast);
 }
 
-.gnb__profile-btn:hover {
-  transform: scale(1.1);
+@media (hover: hover) {
+  .gnb__profile-btn:hover {
+    transform: scale(1.1);
+  }
 }
 
 /* ========= Focus / Accessibility ========= */
@@ -692,26 +694,35 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: #fff;
   box-shadow: 0 4px 15px var(--primary-glow);
 }
-.btn--primary:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 20px var(--primary-glow); }
+/* 호버 들림은 마우스 기기만(PWA-SHELL-001 ④) — 터치는 누른 뒤에도 :hover가 남아 단추가 들린 채 있었다(390 탭 실측 translateY(-1px) · brightness 1.1 잔류). */
+@media (hover: hover) {
+  .btn--primary:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 20px var(--primary-glow); }
+}
 
 .btn--secondary {
   background: var(--bg-elevated);
   color: var(--text-primary);
   border: 1px solid var(--border);
 }
-.btn--secondary:hover:not(:disabled) { border-color: var(--border-hover); transform: translateY(-1px); }
+@media (hover: hover) {
+  .btn--secondary:hover:not(:disabled) { border-color: var(--border-hover); transform: translateY(-1px); }
+}
 
 .btn--danger {
   background: var(--danger);
   color: #fff;
 }
-.btn--danger:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+@media (hover: hover) {
+  .btn--danger:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+}
 
 .btn--ghost {
   background: transparent;
   color: var(--text-secondary);
 }
-.btn--ghost:hover:not(:disabled) { color: var(--text-primary); background: var(--bg-elevated); transform: translateY(-1px); }
+@media (hover: hover) {
+  .btn--ghost:hover:not(:disabled) { color: var(--text-primary); background: var(--bg-elevated); transform: translateY(-1px); }
+}
 
 /* ========= Page Header ========= */
 .page-header {
@@ -1633,10 +1644,12 @@ body.is-review-chrome .page-container { padding-top: 8px; }
   transform: scale(0.95);
 }
 
-.review-score-btn:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+@media (hover: hover) {
+  .review-score-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
 }
 
 /* ========= Forecast Chart ========= */
@@ -3533,10 +3546,12 @@ a.viewer-badge:hover {
   transition: border-color var(--transition-smooth), transform var(--transition-smooth), box-shadow var(--transition-smooth);
 }
 
-.step:hover {
-  border-color: var(--border-hover);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+@media (hover: hover) {
+  .step:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  }
 }
 
 .step__num {
@@ -3788,9 +3803,11 @@ a.viewer-badge:hover {
   flex-shrink: 0;
 }
 
-.theme-toggle:hover {
-  border-color: var(--border-hover);
-  transform: scale(1.1);
+@media (hover: hover) {
+  .theme-toggle:hover {
+    border-color: var(--border-hover);
+    transform: scale(1.1);
+  }
 }
 
 /* ========= Light theme page-header gradient ========= */
@@ -5525,9 +5542,11 @@ a.viewer-badge:hover {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
-.auth-google-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+@media (hover: hover) {
+  .auth-google-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
 }
 .auth-google-btn:active {
   transform: scale(0.98);
@@ -5634,10 +5653,12 @@ a.viewer-badge:hover {
   box-shadow: 0 4px 15px var(--primary-glow);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast);
 }
-.auth-submit:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px var(--primary-glow);
-  filter: brightness(1.1);
+@media (hover: hover) {
+  .auth-submit:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px var(--primary-glow);
+    filter: brightness(1.1);
+  }
 }
 .auth-submit:active:not(:disabled) {
   transform: scale(0.98);
@@ -5768,14 +5789,18 @@ a.viewer-badge:hover {
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.suggestion-card:hover {
-  border-color: var(--border-hover);
-  box-shadow: var(--card-shadow-hover);
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .suggestion-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--card-shadow-hover);
+    transform: translateY(-2px);
+  }
 }
 
-.suggestion-card:hover .suggestion-card__thumb {
-  transform: scale(1.05);
+@media (hover: hover) {
+  .suggestion-card:hover .suggestion-card__thumb {
+    transform: scale(1.05);
+  }
 }
 
 .suggestion-card__thumb-wrap {
@@ -6246,9 +6271,11 @@ a.viewer-badge:hover {
   border-radius: var(--radius-md);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
-.guide-cta__btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px color-mix(in srgb, var(--primary) 40%, transparent);
+@media (hover: hover) {
+  .guide-cta__btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--primary) 40%, transparent);
+  }
 }
 
 @keyframes celebOverlayIn {
@@ -6337,10 +6364,12 @@ a.viewer-badge:hover {
   text-align: left;
   color: inherit;
 }
-.review-done__card:hover {
-  border-color: var(--primary-light);
-  background: var(--bg-elevated);
-  transform: translateX(4px);
+@media (hover: hover) {
+  .review-done__card:hover {
+    border-color: var(--primary-light);
+    background: var(--bg-elevated);
+    transform: translateX(4px);
+  }
 }
 
 .review-done__card-text {
@@ -6366,11 +6395,13 @@ a.viewer-badge:hover {
   transition: all var(--transition-fast);
   position: relative;
 }
-.completion-next-card:hover {
-  background: var(--bg-elevated);
-  border-style: solid;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(124,92,252,0.15);
+@media (hover: hover) {
+  .completion-next-card:hover {
+    background: var(--bg-elevated);
+    border-style: solid;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(124,92,252,0.15);
+  }
 }
 .completion-next-card__badge {
   position: absolute; top: -8px; left: 14px;
@@ -6392,8 +6423,10 @@ a.viewer-badge:hover {
   font-size: 1rem; color: var(--primary-light); flex-shrink: 0;
   transition: transform var(--transition-fast);
 }
-.completion-next-card:hover .completion-next-card__arrow {
-  transform: translateX(4px);
+@media (hover: hover) {
+  .completion-next-card:hover .completion-next-card__arrow {
+    transform: translateX(4px);
+  }
 }
 
 /* ═══════════════════════════════════════════════
@@ -6950,7 +6983,7 @@ a.viewer-badge:hover {
   min-width: 44px; min-height: 44px;
   opacity: 0.75; transition: opacity 0.15s ease, transform 0.15s ease;
 }
-.fr-vrow__save:hover:not(:disabled) { opacity: 1; transform: scale(1.15); }
+@media (hover: hover) { .fr-vrow__save:hover:not(:disabled) { opacity: 1; transform: scale(1.15); } } /* 터치에서 별이 커진 채 남지 않게(PWA-SHELL-001 ④) */
 .fr-vrow__save.is-saved { opacity: 0.55; cursor: default; color: var(--accent-text); }
 
 /* 가리기 자가 채점 — 공개 직후 "기억났어/몰랐어" (.fr-check__grade* 버튼 스타일 재사용) */
@@ -8234,7 +8267,8 @@ a.viewer-badge:hover {
   transform-box: fill-box;
   transform-origin: center;
 }
-.jpmap-pin:hover, .jpmap-pin:focus-visible { transform: scale(1.35); }
+.jpmap-pin:focus-visible { transform: scale(1.35); }
+@media (hover: hover) { .jpmap-pin:hover { transform: scale(1.35); } } /* 터치에서 핀이 커진 채 남지 않게(PWA-SHELL-001 ④) */
 /* 마우스 클릭의 기본 사각 아웃라인 제거 — 키보드 포커스는 활성 링과 확대가 이미 표시한다 */
 .jpmap-pin:focus { outline: none; }
 .jpmap-pin:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
