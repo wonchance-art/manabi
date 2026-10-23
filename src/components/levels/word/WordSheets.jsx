@@ -1,9 +1,11 @@
 'use client';
 // 제목 ▾ 시트 · 단어 카드 창 · 예문 단어 창 — 뷰어 시트와 같은 움직임(viewerSheetUp · 손잡이를 아래로 끌면 닫힘).
 import Link from 'next/link';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { reducedMotion } from '@/lib/reducedMotion';
-import { CharTiles, WordRow } from './WordParts';
+import { pinyinToneNumber } from '@/lib/pinyinTone';
+import { formatDrillSummary, hanjaPanelModel, normalizePinyin, panelSearchChar, selectSameHanjaTiles, soundPieceDrill } from '@/lib/viewerHanjaPanel';
+import { CharTiles, PIECE_ROLE_WORD, WordRow } from './WordParts';
 import { useWordLang } from './wordLang';
 
 const CLOSE_DRAG_PX = 80;
@@ -40,6 +42,7 @@ export function Sheet({ label, onClose, children, returnTo = null }) {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps -- 열릴 때 한 번(돌려줄 자리는 그때 정해진다)
   useEffect(() => {
     const onKey = (event) => {
+      if (document.querySelector('.lw-dp')) return; // 시트 안 조각 창이 열려 있으면 Esc · Tab은 그 창 몫(창이 먼저 닫힌다)
       if (event.key === 'Escape') { event.stopPropagation(); close(); return; }
       // aria-modal — Tab이 뒤의 네 칸(화면 아래 고정)으로 새지 않게 시트 안에서 돈다(ClassCopyNotice와 같은 방식).
       if (event.key !== 'Tab' || !ref.current) return;
@@ -137,5 +140,124 @@ export function WordPopup({ anchor, row, tiles, tone, status, onSave, onOpen, on
     <WordRow word={row.word} reading={row.reading} meaning={row.meaning || '사전에 없는 단어예요'} level={row.level} status={status} onSave={onSave} tone={tone} />
     <CharTiles tiles={tiles} small />
     {onOpen && <button type="button" className="lw-pop__open" onClick={onOpen}>단어 카드 열기 ›</button>}
+  </div>;
+}
+
+const toneCls = (on, syl) => (on && syl ? `lw-tone--${pinyinToneNumber(syl) ?? 0}` : undefined);
+const CloseIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18" /></svg>;
+
+/**
+ * 조각 창(오너 10-23 「안1로」 — 글자 칸 조각을 한 번 더 파고들기, HSK 판). 뷰어 한자 창(ViewerHanjaPopover)의 조각 화면과 같은 자료 ·
+ * 같은 규격(높이 170 · 너비 min(346, 화면 − 32))이고, 놓는 일은 예문 단어 창(WordPopup)을 따른다 — 누른 칸 바로 아래(넘치면 위).
+ * Esc · 바깥 누르기 · 칸이 화면 밖으로 나가면 닫히고, 열리면 창으로 · 닫히면 누른 조각으로 초점. 표시만 한다(저장 · 복습 기록 0).
+ *   sound — 음 조각 → 같은 소리 글자 5개 + 요약 한 줄(「雚이 들면 대개 관·권·환」). 이 칸의 글자(of — 觀)를 칠한다.
+ *   char  — 뜻 조각 → 그 글자의 머리 · 구성 · 같은 한자 단어 3칸(내 단어 먼저 · HSK 1–9 색인, 못 받으면 이 레벨 목록).
+ * tables = 글자 칸 표 네 벌(받는 중이면 빈 창 — aria-busy).
+ */
+export function PiecePopup({ req, tables, refIndex, savedRows, tone, onClose }) {
+  const L = useWordLang();
+  const ref = useRef(null);
+  const [closing, close] = useClosing(onClose, 120);
+  const [pos, setPos] = useState(null);
+  const { anchor } = req;
+  const ready = !!tables && typeof tables === 'object';
+  // 자리 — 누른 칸 아래 8px(넘치면 위, 아래 끝은 채점 바 위), 좌우는 글자 칸 줄 가운데. 스크롤하면 칸을 따라가고, 칸이 화면 밖으로 나가면 닫는다
+  // (예문 단어 창처럼 스크롤 한 번에 닫으면 누르는 순간의 관성 스크롤에도 닫혔다 — 실화면 캡처 2026-10-23 KST).
+  const place = useCallback(() => {
+    const tile = anchor?.closest?.('.lw-tile') || anchor;
+    const r = tile?.getBoundingClientRect?.();
+    const list = (anchor?.closest?.('.lw-tiles') || tile)?.getBoundingClientRect?.();
+    const el = ref.current;
+    if (!r || !el) return false;
+    const w = el.offsetWidth, h = el.offsetHeight, vw = window.innerWidth;
+    const bar = [...document.querySelectorAll('.lw-gradebar')].find((b) => b.getClientRects().length)?.getBoundingClientRect().top;
+    const floor = Math.min(window.innerHeight, bar ?? Infinity) - 8;
+    if (r.bottom < 0 || r.top > floor) return false;
+    const left = Math.min(Math.max(16, list.left + list.width / 2 - w / 2), vw - w - 16);
+    const top = r.bottom + 8 + h > floor ? Math.max(16, r.top - h - 8) : r.bottom + 8;
+    setPos((cur) => (cur && Math.abs(cur.left - left) < 0.5 && Math.abs(cur.top - top) < 0.5 ? cur : { left, top }));
+    return true;
+  }, [anchor]);
+  useLayoutEffect(() => { place(); }, [place]);
+  useEffect(() => {
+    anchor?.setAttribute('aria-expanded', 'true');
+    ref.current?.focus({ preventScroll: true });
+    const el = ref.current;
+    return () => {
+      anchor?.removeAttribute('aria-expanded');
+      const at = document.activeElement;
+      if (anchor && document.contains(anchor) && (!at || at === document.body || el?.contains(at))) anchor.focus({ preventScroll: true });
+    };
+  }, [anchor]);
+  useEffect(() => {
+    const onKey = (event) => { if (event.key === 'Escape') { event.stopPropagation(); close(); } };
+    const onDown = (event) => { if (!ref.current?.contains(event.target) && !anchor?.contains(event.target)) close(); };
+    let frame = 0;
+    const onMove = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(() => { if (!place()) close(); }); };
+    window.addEventListener('keydown', onKey, true);
+    window.addEventListener('pointerdown', onDown, true);
+    window.addEventListener('scroll', onMove, { passive: true, capture: true });
+    window.addEventListener('resize', onMove);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('keydown', onKey, true); window.removeEventListener('pointerdown', onDown, true);
+      window.removeEventListener('scroll', onMove, { capture: true }); window.removeEventListener('resize', onMove);
+    };
+  }, [anchor, close, place]);
+
+  const panel = ready ? tables.panel : null;
+  const drill = useMemo(() => (ready && req.kind === 'sound' ? soundPieceDrill(req.ch, tables) : null), [ready, req.kind, req.ch, tables]);
+  const model = useMemo(() => (ready && req.kind === 'char' ? hanjaPanelModel({ ch: req.ch, tables }) : null), [ready, req.kind, req.ch, tables]);
+  const words = useMemo(() => (model?.head.reading
+    ? selectSameHanjaTiles({ ch: panelSearchChar(req.ch, panel), reading: model.head.reading, headText: '', savedRows, refIndex, tables }) : []),
+  [model, req.ch, panel, savedRows, refIndex, tables]);
+
+  const roleName = PIECE_ROLE_WORD[req.kind === 'sound' ? 'sound' : 'meaning'];
+  const py = (text, className) => (text ? <span className={['lw-dp__py', className, toneCls(tone, text)].filter(Boolean).join(' ')}>{normalizePinyin(text)}</span> : null);
+  const head = (h) => <div className="lw-dp__head">
+    <b className="lw-dp__ch" lang={L.zheng}>{req.ch}</b>
+    {py(h?.reading)}
+    {h?.label && <span className="lw-dp__hun">{h.label}</span>}
+    <span className={`lw-dp__role is-${req.kind === 'sound' ? 'sound' : 'meaning'}`}>{roleName} 조각</span>
+  </div>;
+
+  let body = null;
+  if (drill) {
+    body = <>
+      {head(drill)}
+      <div className="lw-dp__fam">
+        {drill.items.map((x) => <span key={x.ch} className={`lw-dp__fc${x.ch === req.of ? ' is-hit' : ''}`}>
+          {x.py ? py(x.py, 'lw-dp__fpy') : <span className="lw-dp__fpy" aria-hidden="true">&nbsp;</span>}
+          <b lang={L.zheng}>{x.ch}</b>
+          <span>{x.eum || ''}</span>
+        </span>)}
+      </div>
+      <p className="lw-dp__note">{formatDrillSummary(drill)}</p>
+    </>;
+  } else if (model) {
+    const ps = model.parts;
+    body = <>
+      {head(model.head)}
+      {ps ? <div className={`lw-dp__parts${ps.known ? '' : ' is-unknown'}`} style={{ '--n': ps.pieces.length }}>
+        {ps.pieces.map((p, i) => <span key={`${p.ch}${i}`} className={`lw-dp__piece${p.role ? ` is-${p.role}` : ''}`}>
+          <b lang={L.zheng}>{p.ch}</b><span className="lw-dp__pl">{p.label || ''}</span>{p.role && <i>{PIECE_ROLE_WORD[p.role]}</i>}
+        </span>)}
+        {!ps.known && <span className="lw-dp__unknown">역할 미상</span>}
+      </div> : <div className="lw-dp__parts is-empty" aria-hidden="true" />}
+      {words.length ? <div className="lw-dp__words">{words.map((t) => <div key={t.word} className={`lw-dp__tile${t.dim ? ' is-dim' : ''}`}>
+        <span className="lw-dp__tzh" lang={L.hw}>{[...t.word].map((c, i) => (i === t.at ? <em key={i}>{c}</em> : <span key={i}>{c}</span>))}</span>
+        <span className="lw-dp__tpy">{t.syllables.map((y, i) => <span key={i} className={toneCls(tone, y)}>{y}</span>)}</span>
+        {t.ko ? <span className="lw-dp__tko">{t.koSylls.map((y, i) => (i === t.at ? <em key={i}>{y}</em> : <span key={i}>{y}</span>))}</span>
+          : <span className="lw-dp__tko is-short">{t.short}</span>}
+      </div>)}</div> : <div className="lw-dp__words is-empty" aria-hidden="true" />}
+    </>;
+  } else if (tables === false) {
+    body = <p className="lw-dp__note">글자 자료를 불러오지 못했어요</p>;
+  }
+  return <div className={`lw-dp${closing ? ' is-closing' : ''}`} role="dialog" aria-modal="false" aria-label={`${req.ch} ${roleName} 조각`} tabIndex={-1} ref={ref}
+    aria-busy={tables === 'loading' || tables === null || undefined} data-kind={req.kind}
+    style={pos ? { left: pos.left, top: pos.top } : { visibility: 'hidden', left: 0, top: 0 }}>
+    {body}
+    <button type="button" className="lw-dp__close" aria-label="닫기" title="닫기" onClick={close}><CloseIcon /></button>
   </div>;
 }
