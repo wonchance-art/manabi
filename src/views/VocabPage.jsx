@@ -41,7 +41,7 @@ import { ReviewIntroCard, ReviewSoundToggle, useScoreArmed } from '../components
 import { useKnownWords } from '../lib/useKnownWords';
 import { knownWordsLang } from '../lib/knownWords';
 import ReviewScopeBar, { ReviewScopeNotice } from '../components/vocab/ReviewScopeBar';
-import { useVocabData, invalidateVocabularyLearning } from '../lib/useVocabData';
+import { useVocabData, invalidateVocabularyLearning, patchVocabularyLearningRow } from '../lib/useVocabData';
 import { isVocabularyReviewAvailable, isVocabularyUnreviewed, vocabularyRetrievability } from '../lib/vocabularyLearningRead';
 import { wordStage } from '../lib/growthStats';
 import { confusedVocabWords, CONFUSED_MIN, CONFUSED_SINCE_DAYS } from '../lib/confusedQueue';
@@ -150,6 +150,8 @@ function VocabWorkspace({ reviewScope }) {
   const [reviewIdx, setReviewIdx] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [reviewFinished, setReviewFinished] = useState(false);
+  const reviewFinishedRef = useRef(reviewFinished);
+  reviewFinishedRef.current = reviewFinished;
   // 끝 공지(화면 읽기) — 끝 제목이 초점을 받지 못했을 때만 채운다(초점이 간 제목과 같은 말을 두 번 읽지 않게, a3ba 리뷰 ②).
   const [finishNotice, setFinishNotice] = useState(false);
   const scoringRef = useRef(false);
@@ -828,7 +830,13 @@ function VocabWorkspace({ reviewScope }) {
     }).then((r) => {
       if (!currentActor()) return;
       if (r?.ok === false) { toast('복습을 저장하지 못했어요. 연결을 확인해 주세요 — 이 단어는 다음에 다시 나와요.', 'error', 5000); return; }
-      invalidateVocabularyLearning(queryClient, actorId);
+      // 저장한 값을 목록에 바로 반영하고, 복습 중에는 전체 목록을 다시 읽지 않는다(「다시」로 돌아온 단어도 이 값으로 채점된다).
+      // 끝난 뒤 마지막 채점이면 서버 정본으로 한 번 다시 읽는다 — finishRun의 읽기가 이 저장보다 먼저 나갔을 수 있다.
+      const patched = patchVocabularyLearningRow(queryClient, actorId, snapshot.wordId,
+        { ...nextStats, interval: nextStats.interval ?? 0, ease_factor: nextStats.ease_factor ?? 0,
+          repetitions: nextStats.repetitions ?? 0, last_reviewed_at: r?.reviewedAt || new Date().toISOString() });
+      invalidateVocabularyLearning(queryClient, actorId,
+        { refetchLearning: !patched || (reviewFinishedRef.current && pendingGradeRef.current <= 1) });
       if (!r?.queued) refreshProfileReadOnly(actorId)?.catch(() => {});
       if (gradeSessionRef.current !== gradeSession) return;
       if ((lastGradeRef.current?.sequence ?? 0) <= sequence) {
