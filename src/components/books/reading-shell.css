@@ -1,5 +1,5 @@
 .manabi-app{container-type:inline-size;container-name:manabi-shell;--gnb-height:78px;--primary:#994a5a;--primary-light:#994a5a;--primary-dark:#793b48;--accent:#994a5a;--bg-primary:#fffdf9;--bg-secondary:#fcfaf7;--bg-card:#fffdf9;--bg-elevated:#f6efef;--text-primary:#322e30;--text-secondary:#796d70;--text-muted:#796d70;--border:#e8dade;--gnb-bg:#fffdf9;--admin-accent:#994a5a;--font-serif:var(--font-noto-kr),sans-serif;background:#fffdf9;color:#322e30;min-height:100vh;font-family:var(--font-manrope),var(--font-noto-kr),sans-serif}
-.manabi-app .app-layout{max-width:none;padding:var(--gnb-height) 0 80px;margin:0;min-height:100vh}
+.manabi-app .app-layout{max-width:none;padding:var(--gnb-height) 0 80px;margin:0;min-height:100vh;min-height:100dvh}
 .manabi-app .gnb{padding:0 max(28px,calc((100vw - 1192px)/2));height:78px;background:#fffdf9;border-color:#eee6e4;backdrop-filter:none;gap:28px;--gnb-height:78px}
 .manabi-app .gnb__logo{font-family:var(--font-manrope),sans-serif;font-size:32px;font-weight:800;letter-spacing:-1.8px;color:#322e30;background:none;-webkit-text-fill-color:currentColor;flex:none}
 .manabi-brand-dot{display:inline-block;width:6px;height:6px;background:var(--primary);border-radius:50%;margin:0 0 0 2px}

@@ -30,6 +30,11 @@
 .manabi-app .mobile-nav__link{font-size:12px;min-width:0;min-height:54px;flex:1}
 .manabi-app .mobile-nav__link.active{background:transparent;color:var(--ja)}
 .manabi-app .mobile-nav__link.active::before{background:var(--ja);width:18px;height:2px}
+/* 노치 가로 화면의 좌우 안전 영역(PWA-SHELL-001) — viewport-fit=cover(layout.jsx)로 화면 끝까지 그리게 되면서 가로로 눕힌 노치 폰에서
+   글자가 노치 · 둥근 모서리 밑으로 들어간다. 본문은 안쪽 여백으로, 위 · 아래 고정 막대는 좌우 자리로 비켜 선다(막대 바탕 = 셸 종이라 띠가 보이지 않는다).
+   노치 없는 기기 · 세로 화면 · 데스크톱은 env()가 0이라 지금과 같다. */
+.manabi-app .app-layout{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+.manabi-app .gnb,.manabi-app .mobile-nav{left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px)}
 /* Today: one primary action, one open book, two distinct editorial areas. */
 .today-opening{display:grid;grid-template-columns:1fr 1.08fr;gap:34px;align-items:center;padding:17px 0 48px;min-height:530px}
 .today-copy{min-width:0;position:relative;z-index:1}

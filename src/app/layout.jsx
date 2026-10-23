@@ -80,6 +80,15 @@ export const metadata = {
   },
 };
 
+// 화면 가장자리까지 그린다(PWA-SHELL-001). iOS는 viewport-fit=cover가 없으면 env(safe-area-inset-*)를 0으로 돌려줘서(설치 앱 세로 화면 포함)
+// 하단 메뉴 · 채점 막대 · 시트에 이미 적어 둔 홈 막대 여백 49곳이 모두 0이었다. 노치 가로 화면의 좌우는 web-shell.css가 받는다.
+// 확대 상한 · 확대 금지 값은 두지 않는다 — 손가락 확대는 접근성 몫이다(두 번 탭 확대만 touch-action이 막는다).
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
+
 // 미리 열 Supabase 출처 — 값이 없거나 주소가 아니면 힌트를 빼고 넘어간다(힌트 하나 때문에 모든 화면이 깨지지 않게).
 const SUPABASE_ORIGIN = (() => {
   try {
@@ -94,6 +103,8 @@ export default function RootLayout({ children }) {
     <html lang="ko" suppressHydrationWarning>
       <head>
         <meta name="theme-color" content="#F6F4EE" />
+        {/* 표준 이름(Chrome은 apple- 접두 이름만 있으면 콘솔에 지원 종료 경고를 낸다) + iOS 옛 이름을 함께 둔다. */}
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         {/* 휴대폰 맨 위 상태 표시줄(시각 · 배터리) — 투명 표시줄(검은 반투명 값)은 표시줄을 비워 두고 페이지를 그 밑으로 밀어 넣어
             흰 글자가 화면 머리 위에 겹쳤다. default = 표시줄이 제 칸을 갖고 페이지는 그 아래에서 시작한다(오너 지시 2026-10-19 KST). */}
