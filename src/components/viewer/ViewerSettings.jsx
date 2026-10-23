@@ -1,9 +1,9 @@
 'use client';
 import {useId,useRef,useState,useTransition} from 'react';
 import ViewerModal from './ViewerModal';
-import {fontChoices} from '../../lib/viewerPreferences';
+import {fontChoices,charGapMin,charGapLabel,TAB_KEYS} from '../../lib/viewerPreferences';
 import ViewerPreview from './ViewerPreview';
-import {READING_PRESETS,PRESET_META,presetActive,TTS_RATES} from '../../lib/readingSheet';
+import {PRESET_META,presetActive,presetFor,TTS_RATES} from '../../lib/readingSheet';
 import {supportsPatterns} from '../../lib/patternIndex';
 import {stepCpm} from '../../lib/readingPacer';
 import {t,translateViewerText,VIEWER_LOCALE_OPTIONS} from '../../lib/viewerMessages';
@@ -70,6 +70,8 @@ function StateLegend({theme,uiLocale}) {
 function ToneLegend({uiLocale}) {
   return <p className="reader-settings__tones">{['ā','á','ǎ','à'].map((mark,i)=><span key={mark}><span className={`rt-an pinyin-tone--${i+1}`}>{mark}</span>{t(uiLocale,'{tone}성',{tone:i+1})}</span>)}</p>;
 }
+// rem 값 → px 표시. 한 칸이 0.8px라 정수로 반올림하면 눌러도 숫자가 그대로인 칸이 생겼다(26 → 26px) — 소수 한 자리까지(뷰어 점검 2026-10-23).
+const pxText=v=>`${Math.round(v*160)/10}px`;
 // A text slot keeps the Korean JSX default while other locales use one whole message.
 function LocaleText({uiLocale='ko',message,values,children}) {
   return uiLocale==='ko'?children:t(uiLocale,message,values);
@@ -83,7 +85,10 @@ export default function ViewerSettings({settings:s,language,languageSettings,onC
   const tr=(key,values)=>t(uiLocale,key,values);
   const choices=items=>items.map(([value,label])=>[value,translateViewerText(uiLocale,label)]);
   const set=(key,value)=>keepPosition(()=>s['set'+key[0].toUpperCase()+key.slice(1)](value));
-  const undo=()=>keepPosition(()=>{s.restore(snapshot.current);if(localeSnapshot.current){languageSettings.setUiLocale(localeSnapshot.current.uiLocale);languageSettings.setExplanationLocale(localeSnapshot.current.explanationLocale);}});
+  // 보기(readerView)가 바뀌는 되돌리기 · 기본값도 보기 버튼과 같은 길(onReaderView)로 바꾼다 — 읽던 글자를 기억하는 길을
+  // 건너뛰면 1쪽으로 갔다(뷰어 점검 2026-10-23).
+  const viewTo=view=>{if(onReaderView&&view&&view!==(s.readerView||'paged'))onReaderView(view);};
+  const undo=()=>keepPosition(()=>{viewTo(snapshot.current.readerView);s.restore(snapshot.current);if(localeSnapshot.current){languageSettings.setUiLocale(localeSnapshot.current.uiLocale);languageSettings.setExplanationLocale(localeSnapshot.current.explanationLocale);}});
   const tabs=[['type',tr('글자·배경')],['display',tr('학습 표시')],['pace',tr('읽기 진행')]];
   const tabNames={type:tr('글자'),display:tr('표시'),pace:tr('읽기')};
   const defaults=viewerDefaults(language);
@@ -95,7 +100,7 @@ export default function ViewerSettings({settings:s,language,languageSettings,onC
   const singleExplanation=explanationLocales.length<2;
   const shownExplanation=explanationLocales.includes(languageSettings?.explanationLocale)?languageSettings.explanationLocale:'ko';
   const paceBasis=s.paceCpm?tr('직접 정한 목표'):myCpm?(uiLocale==='ko'?`읽기 기록 ${myCpm}자/분 기준 제안`:tr('읽기 기록 {cpm}자/분 기준 제안',{cpm:myCpm})):tr('이 언어의 기본 목표');
-  return <ViewerModal uiLocale={uiLocale} title={tr('읽기 설정')} onClose={onClose} className="reader-settings" footer={<><button type="button" onClick={()=>keepPosition(()=>s.resetTab(tab))}>{tr('이 탭 기본값')}</button><button type="button" onClick={undo}>{tr('이번 변경 되돌리기')}</button></>}>
+  return <ViewerModal uiLocale={uiLocale} title={tr('읽기 설정')} onClose={onClose} className="reader-settings" footer={<><button type="button" onClick={()=>keepPosition(()=>{if(TAB_KEYS[tab]?.includes('readerView'))viewTo(defaults.readerView);s.resetTab(tab);})}>{tr('이 탭 기본값')}</button><button type="button" onClick={undo}>{tr('이번 변경 되돌리기')}</button></>}>
     <div role="tablist" aria-label={tr('설정 분류')} className="reader-settings__tabs" onKeyDown={e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const i=tabs.findIndex(([id])=>id===tab);const next=e.key==='Home'?0:e.key==='End'?2:(i+(e.key==='ArrowRight'?1:2))%3;setTab(tabs[next][0]);e.currentTarget.children[next].focus();}}>
       {tabs.map(([id,name])=><button key={id} role="tab" aria-label={name} title={name} id={`reading-tab-${id}`} aria-controls={`reading-pane-${id}`} aria-selected={tab===id} tabIndex={tab===id?0:-1} onClick={()=>setTab(id)}><Icon name={id}/><span>{tabNames[id]}</span></button>)}
     </div>
@@ -104,7 +109,7 @@ export default function ViewerSettings({settings:s,language,languageSettings,onC
     {(s.storageError||languageSettings?.storageError)&&<p role="status" className="reader-settings__warning">{tr('이 브라우저에 저장하지 못했어요. 현재 화면에는 적용되어 있어요.')}</p>}
     <section role="tabpanel" id={`reading-pane-${tab}`} aria-labelledby={`reading-tab-${tab}`}>
       {tab==='type'&&<>
-        <Slider uiLocale={uiLocale} label="본문 크기" value={s.fontSize} min={0.8} max={3} step={0.05} format={v=>`${Math.round(v*16)}px`} onChange={v=>set('fontSize',v)} defer/>
+        <Slider uiLocale={uiLocale} label="본문 크기" value={s.fontSize} min={0.8} max={3} step={0.05} format={pxText} onChange={v=>set('fontSize',v)} defer/>
         <Choices label="배경" className="reader-settings__themes" symbols={Object.fromEntries(['light','sepia','dark'].map(name=>[name,<Icon key={name} name={name}/>]))} uiLocale={uiLocale} value={s.theme} items={choices([['light','밝게'],['sepia','종이'],['dark','어둡게']])} onChange={v=>set('theme',v)}/>
         {/* 보기(READER-PAGED-001 목업 E) — 기본은 쪽 넘김, 스크롤은 지금 그대로의 대안. 위치는 보기 쪽이 기준 글자로 지킨다
             (keepPosition의 화면 좌표 기준점은 다단 쪽에서 맞지 않는다). */}
@@ -116,14 +121,14 @@ export default function ViewerSettings({settings:s,language,languageSettings,onC
         <More uiLocale={uiLocale} count={changed(['pinyinSize','lineGap','charGap','fontFamily'])}>
         {language==='Chinese'&&<Slider uiLocale={uiLocale} label="병음 크기" value={s.pinyinSize} min={0.75} max={1} step={0.0625} display={`${Math.round(s.pinyinSize*16)}px`} onChange={v=>set('pinyinSize',v)}/>}
         <Slider uiLocale={uiLocale} label="줄 사이" value={s.lineGap} min={10} max={60} display={`${s.lineGap}px`} onChange={v=>set('lineGap',v)}/>
-        <Slider uiLocale={uiLocale} label="글자 사이" value={s.charGap} min={0} max={1} step={0.05} display={`${Math.round(s.charGap*16)}px`} onChange={v=>set('charGap',v)}/>
+        <Slider uiLocale={uiLocale} label={charGapLabel(language)} value={s.charGap} min={charGapMin(language)} max={1} step={0.05} display={pxText(s.charGap)} onChange={v=>set('charGap',v)}/>
         <Choices label="서체" uiLocale={uiLocale} value={s.fontFamily} items={choices(fontChoices(language))} onChange={v=>set('fontFamily',v)}/>
         </More>
       </>}
       {/* 「표시」 탭은 평평하다 — 접힌 묶음 없이 모든 옵션과 범례를 펼쳐 두고, 맨 아래에 언어 선택 상자 둘(AD-R2 Aa). */}
       {tab==='display'&&<>
-        <Choices label="읽기 모드" uiLocale={uiLocale} value={PRESET_META.find(m=>presetActive(m.key,s))?.key||'custom'} items={choices(PRESET_META.map(m=>[m.key,m.name]))} onChange={name=>keepPosition(()=>{s.restore({...READING_PRESETS[name],showToneColors:language==='Chinese'&&READING_PRESETS[name].showToneColors});})}
-          help={<Help uiLocale={uiLocale}><p className="reader-setting-note">{tr('{preset} · 문장 집중도 함께 바뀌어요. 소리와 자동 진행은 시작하지 않아요.',{preset:tr(PRESET_META.find(m=>presetActive(m.key,s))?'프리셋':'사용자 설정')})}</p></Help>}/>
+        <Choices label="읽기 모드" uiLocale={uiLocale} value={PRESET_META.find(m=>presetActive(m.key,s,language))?.key||'custom'} items={choices(PRESET_META.map(m=>[m.key,m.name]))} onChange={name=>keepPosition(()=>{s.restore(presetFor(name,language));})}
+          help={<Help uiLocale={uiLocale}><p className="reader-setting-note">{tr('{preset} · 문장 집중도 함께 바뀌어요. 소리와 자동 진행은 시작하지 않아요.',{preset:tr(PRESET_META.find(m=>presetActive(m.key,s,language))?'프리셋':'사용자 설정')})}</p></Help>}/>
         {phonetic&&<Choices label="발음 표기" uiLocale={uiLocale} value={s.pronDisplay} items={choices([['all','전체'],['unknown','새 단어만'],['none','숨김']])} onChange={v=>set('pronDisplay',v)}
           help={<Help uiLocale={uiLocale}><p className="reader-setting-note">{tr('새 단어만: 저장한 단어와 이미 앎 기록의 발음을 가려요.')}</p></Help>}/>}
         <Toggle label="단어 상태" uiLocale={uiLocale} note="새 단어는 파란 밑줄, 저장한 단어 · 복습할 단어는 색 띠로 구분해요" checked={s.wordStateHl} onChange={v=>set('wordStateHl',v)}><StateLegend theme={s.theme} uiLocale={uiLocale}/></Toggle>

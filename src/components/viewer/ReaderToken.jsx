@@ -5,6 +5,7 @@ import { pinyinToneClass } from '../../lib/pinyinTone';
 import { pronHiddenFor } from '../../lib/readingSheet';
 import { variantPieces } from '../../lib/scriptVariant';
 import { ZhText } from './ZhText';
+import { opensWordCard } from '../../lib/wordState';
 
 /**
  * 본문 낱말 하나(분석 완료 토큰) — 뷰어 본문이 낱말 수(수백 개)만큼 그린다(VIEWER-TAP-PERF-001).
@@ -40,7 +41,8 @@ function ReaderToken({
     />
   ) : null;
   // 단어 조작은 .surface가 맡아 문장 지정 막대(.line-pick)와 형제로 둔다(#1323). 마우스 탭은 루비 여백까지 받도록 바깥에 둔다.
-  const wordAction = {
+  // 문장부호는 누를 거리가 아니다 — Tab 정거장 · 버튼 역할 없이 글자로만 둔다(opensWordCard, 뷰어 점검 2026-10-23).
+  const wordAction = !opensWordCard(token) ? {} : {
     role: 'button', tabIndex: 0,
     onKeyDown: e => {
       if (e.key !== 'Enter' && e.key !== ' ') return;

@@ -27,7 +27,7 @@ describe('읽기 설정 반영 미루기(TAP-INP-SETTINGS-001)', () => {
   it('미루는 것은 보기 전환 · 본문 크기 둘뿐 — 배경(테마) · 다른 조작은 그대로', () => {
     const deferred = src.split('\n').filter((line) => /<(Choices|Slider)\b/.test(line) && /\sdefer\/>/.test(line)).map((line) => line.match(/label="([^"]+)"/)[1]);
     expect(deferred.sort()).toEqual(['보기', '본문 크기']);
-    expect(src).toMatch(/<Slider uiLocale=\{uiLocale\} label="본문 크기"[^>]*format=\{v=>`\$\{Math\.round\(v\*16\)\}px`\}/);
+    expect(src).toMatch(/<Slider uiLocale=\{uiLocale\} label="본문 크기"[^>]*format=\{pxText\}/);
     expect(src.split('\n').find((line) => line.includes('<Choices label="배경"'))).not.toMatch(/\sdefer\b/);
   });
 });
