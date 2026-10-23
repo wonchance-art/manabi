@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect } from 'react';
+import { reloadOnceForChunkError } from '@/lib/chunkReload';
 
 // 루트 레이아웃 자체가 실패할 때만 호출됨. 반드시 <html><body>를 직접 렌더링해야 함.
 // 스타일시트가 없을 수 있어 색은 값으로 둔다 — v2 셸과 같은 값(종이 F6F4EE·글자 252721·로즈 994A5A, COLOR-V2-UNIFY-001).
 export default function GlobalError({ error, reset }) {
   useEffect(() => {
     console.error('[global-error]', error);
+    reloadOnceForChunkError(error); // 새 배포 뒤 옛 조각 404 → 한 번 새로 고침(PWA-SHELL-001 ⑧)
   }, [error]);
 
   return (

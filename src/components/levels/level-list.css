@@ -176,7 +176,7 @@ html:has(.lv-page){overscroll-behavior-y:none}
 .lv-acts{display:flex;align-items:center;gap:10px;flex:none}
 .lv-fab{width:44px;height:44px;border-radius:50%;border:0;display:inline-grid;place-items:center;flex:none;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease,background .12s ease}
 .lv-fab--save{background:var(--ja);color:#fff;box-shadow:0 2px 6px color-mix(in srgb,var(--ja) 28%,transparent)}
-.lv-fab--save:hover{transform:translateY(-1px);box-shadow:0 4px 12px color-mix(in srgb,var(--ja) 34%,transparent)}
+@media (hover:hover){.lv-fab--save:hover{transform:translateY(-1px);box-shadow:0 4px 12px color-mix(in srgb,var(--ja) 34%,transparent)}}
 .lv-fab--save:active,.lv-fab--ex:active{transform:scale(.96)}
 .lv-fab--busy{background:var(--lv-busy);color:#fff;cursor:progress}
 .lv-fab--busy svg{animation:lv-spin 1s linear infinite}
@@ -216,7 +216,7 @@ html:has(.lv-page){overscroll-behavior-y:none}
 .lv-more{margin:18px 0 0;display:flex;justify-content:center}
 .lv-more button{min-height:44px;padding:0 22px;border-radius:12px;border:1px solid var(--lv-line);background:var(--lv-card);font-weight:600;font-size:13px;color:var(--ink);cursor:pointer}
 .lv-src{margin:30px 0 0;font-size:11.5px;color:var(--lv-faint)}
-.lv-toast{position:fixed;left:50%;bottom:calc(var(--mobile-nav-height,0px) + 24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;gap:18px;align-items:center;background:var(--ink);color:var(--paper);border-radius:12px;padding:8px 10px 8px 18px;font-size:13.5px;box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 25%,transparent);max-width:calc(100vw - 32px);width:max-content}
+.lv-toast{position:fixed;left:50%;bottom:calc(var(--mobile-nav-height,0px) + 24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;gap:18px;align-items:center;background:var(--ink);color:var(--paper);border-radius:12px;padding:8px 10px 8px 18px;font-size:13.5px;box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 25%,transparent);max-width:calc(100vw - 32px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px));width:max-content}
 .lv-toast:empty{display:none}
 .lv-toast button,.lv-toast a{border:0;background:none;color:var(--lv-have);font:inherit;font-weight:700;min-height:44px;padding:0 8px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
 .lv-page :focus-visible,.lv-shelf :focus-visible{outline:2px solid var(--ja);outline-offset:2px}

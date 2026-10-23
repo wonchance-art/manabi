@@ -12,7 +12,7 @@ html:has(.viewer-layout .sentence-move-bar) {scroll-padding-bottom:calc(54px + m
 html:has(.viewer-layout .viewer-pace-float) {scroll-padding-bottom:calc(54px + max(8px, env(safe-area-inset-bottom)) + 12px);}
 /* 테두리는 바탕 대비 3:1 이상(종이·어둡게 모두) — 칠 선(--reader-line)은 어둡게에서 2:1이라 쓰지 않는다. */
 .viewer-layout :is(.sentence-move-bar,.viewer-pace-float) {--sentence-move-bar-edge:color-mix(in srgb,var(--reader-ink) 55%,var(--reader-paper));}
-.viewer-layout .sentence-move-bar {position:fixed;z-index:95;left:50%;transform:translateX(-50%);bottom:max(8px,env(safe-area-inset-bottom));display:flex;align-items:center;gap:4px;max-width:calc(100% - 16px);padding:4px 8px;border:1px solid var(--sentence-move-bar-edge);border-radius:8px;background:var(--reader-paper);color:var(--reader-ink);box-shadow:0 8px 28px color-mix(in srgb,var(--reader-ink) 12%,transparent);}
+.viewer-layout .sentence-move-bar {position:fixed;z-index:95;left:50%;transform:translateX(-50%);bottom:max(8px,env(safe-area-inset-bottom));display:flex;align-items:center;gap:4px;max-width:calc(100% - 16px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px));padding:4px 8px;border:1px solid var(--sentence-move-bar-edge);border-radius:8px;background:var(--reader-paper);color:var(--reader-ink);box-shadow:0 8px 28px color-mix(in srgb,var(--reader-ink) 12%,transparent);}
 .viewer-layout.viewer-3col--dragging :is(.sentence-move-bar,.viewer-pace-float) {pointer-events:none;}
 .viewer-layout .sentence-move-bar button {display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:44px;min-height:44px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--reader-ink);cursor:pointer;}
 .viewer-layout .sentence-move-bar button:disabled {opacity:.35;cursor:default;}
@@ -38,7 +38,7 @@ html:has(.viewer-layout .viewer-pace-float) {scroll-padding-bottom:calc(54px + m
 }
 .viewer-layout .viewer-inspector.is-collapsed .viewer-inspector__pace[aria-pressed="true"] {color:var(--reader-accent);}
 @container reader (max-width:600px) {
-  .viewer-layout .sentence-move-bar {left:8px;right:8px;transform:none;max-width:none;}
+  .viewer-layout .sentence-move-bar {left:calc(8px + env(safe-area-inset-left,0px));right:calc(8px + env(safe-area-inset-right,0px));transform:none;max-width:none;}
   .viewer-layout .sentence-move-bar .sentence-move-bar__translate {margin-left:auto;}
   .viewer-layout .sentence-move-bar__close {margin-left:0;}
 }

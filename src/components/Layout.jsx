@@ -16,6 +16,7 @@ import VersionBadge from './VersionBadge';
 import NavPendingMark from './NavPendingMark';
 import { focusPageIfLost, watchPageHeading } from '@/lib/routeFocus';
 import { intentPrefetchProps } from '@/lib/intentPrefetch';
+import { useNavMotion } from '@/lib/useNavMotion';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
 import ActionIcon from './ActionIcon';
@@ -65,6 +66,8 @@ export default function Layout({ children }) {
   // 화면이 바뀐 뒤 포커스가 body로 떨어졌으면(누른 카드 · 탭이 사라졌다) 새 화면의 첫 제목(h1, 없으면 본문)으로 옮긴다(APP-FEEL-003, 2026-10-17 KST).
   // 운영 실측: 배움 → 교재 카드 · 단어 목록 → 문형 탭 · 뷰어 「다음 편」 뒤 activeElement = body — 키보드 · 화면 읽기가 처음부터 다시 찾았다.
   // 다른 곳에 포커스가 살아 있으면(GNB 탭을 눌렀다 등) 빼앗지 않는다. 첫 마운트 · 해시만 바뀐 이동(pathname 같음)은 건너뛴다.
+  // 새 화면이 도착한 순간 그 화면만 들어온다(NAV-MOTION-001 — 메뉴 옅게 · 목록 → 상세 오른쪽에서 · 뒤로 왼쪽에서). 누른 순간에는 아무것도 하지 않는다.
+  useNavMotion(pathname);
   const lastPathname = useRef(null);
   useEffect(() => {
     if (lastPathname.current === null || lastPathname.current === pathname) { lastPathname.current = pathname; return undefined; }

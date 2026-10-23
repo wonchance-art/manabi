@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { reloadOnceForChunkError } from '@/lib/chunkReload';
 import Link from 'next/link';
 // (app) 레이아웃 밖이라 셸 CSS가 따라오지 않는다 — Layout과 같은 순서로 직접 불러온다.
 import '@/components/books/reading-shell.css';
@@ -9,6 +10,7 @@ import '@/components/web/web-shell.css';
 export default function RouteError({ error, reset }) {
   useEffect(() => {
     console.error('[route-error]', error);
+    reloadOnceForChunkError(error); // 새 배포 뒤 옛 조각 404 → 한 번 새로 고침(PWA-SHELL-001 ⑧)
   }, [error]);
 
   // 원문(error.message)은 화면에 내지 않는다 — 운영 서버 컴포넌트 오류는 늘 영어 안내문이고(WALL-001), 내부 사정을 드러낸다.

@@ -30,6 +30,16 @@
 .manabi-app .mobile-nav__link{font-size:12px;min-width:0;min-height:54px;flex:1}
 .manabi-app .mobile-nav__link.active{background:transparent;color:var(--ja)}
 .manabi-app .mobile-nav__link.active::before{background:var(--ja);width:18px;height:2px}
+/* 노치 가로 화면의 좌우 안전 영역(PWA-SHELL-001) — viewport-fit=cover(layout.jsx)로 화면 끝까지 그리게 되면서 가로로 눕힌 노치 폰에서
+   글자가 노치 · 둥근 모서리 밑으로 들어간다. 본문은 안쪽 여백으로, 위 · 아래 고정 막대는 좌우 자리로 비켜 선다(막대 바탕 = 셸 종이라 띠가 보이지 않는다).
+   노치 없는 기기 · 세로 화면 · 데스크톱은 env()가 0이라 지금과 같다. */
+.manabi-app .app-layout{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+.manabi-app .gnb,.manabi-app .mobile-nav{left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px)}
+/* 셸 바깥 바탕(PWA-SHELL-001 ⑥) — body는 data-theme(저장값 없으면 OS 설정)의 --bg-primary라 OS가 어두우면 #1A1410이었다. 셸은 늘 밝아서
+   iOS 위 · 아래 당김(고무줄) · 셸 높이가 모자란 자리에 진한 갈색 띠가 비쳤다(390 OS 어둡게 실측: body rgb(26,20,16) · 셸 rgb(246,244,238)).
+   값 = .manabi-app --paper(셸 변수는 body까지 오지 않아 같은 값을 적는다 — brandAssets 계약의 화면 바탕). 어두운 읽기 테마의 body 규칙
+   (reader-controls.css, :has 안 선택자가 더 구체적)이 이 규칙을 이긴다. */
+body:has(.manabi-app){background-color:#f6f4ee}
 /* Today: one primary action, one open book, two distinct editorial areas. */
 .today-opening{display:grid;grid-template-columns:1fr 1.08fr;gap:34px;align-items:center;padding:17px 0 48px;min-height:530px}
 .today-copy{min-width:0;position:relative;z-index:1}
@@ -113,7 +123,7 @@
 .manabi-app .manabi-series-book{display:block;text-align:left;background:transparent;border:0;padding:0;min-width:0;color:var(--ink);border-radius:0}
 .shelf-series-number{font-size:10px;letter-spacing:1px;display:block;margin:0 0 13px;color:var(--muted)}
 .manabi-app .manabi-series-book .manabi-cover{max-width:none;transition:transform .22s ease}
-.manabi-app a.manabi-series-book:hover .manabi-cover{transform:translateY(-7px) rotate(-1deg)}
+@media (hover:hover){.manabi-app a.manabi-series-book:hover .manabi-cover{transform:translateY(-7px) rotate(-1deg)}}
 .manabi-app .manabi-series-caption{display:flex;align-items:center;position:relative;padding:21px 0 0;gap:8px;flex-wrap:wrap}
 .manabi-app .manabi-series-caption strong{font-size:18px}
 .manabi-app .manabi-series-caption small{font-size:11px;color:var(--muted)}
@@ -199,7 +209,7 @@ div.discover-tile .discover-tile__title{color:var(--muted)}
 .classics-card{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
 .classics-card__open{display:flex;flex-direction:column;gap:2px;color:var(--ink);text-decoration:none;min-width:0;max-width:100%}
 .classics-card__cover{display:block;zoom:1.6;margin-bottom:6px;flex:none;transition:transform .15s ease}
-.classics-card__open:hover .classics-card__cover{transform:translateY(-2px)}
+@media (hover:hover){.classics-card__open:hover .classics-card__cover{transform:translateY(-2px)}}
 .classics-card__open>strong{font-size:15px;line-height:1.45;font-weight:700;overflow-wrap:anywhere}
 .classics-card__open:hover>strong{text-decoration:underline}
 .classics-card__open>span:not(.classics-card__cover){font-size:13px;line-height:1.45;color:var(--muted);overflow-wrap:anywhere}
@@ -220,7 +230,7 @@ div.discover-tile .discover-tile__title{color:var(--muted)}
 .art-card__open{display:flex;flex-direction:column;gap:8px;width:100%;min-width:0;color:var(--ink);text-decoration:none}
 .art-card__frame{display:block;width:100%;max-width:100%;aspect-ratio:1;border-radius:12px;overflow:hidden;background:color-mix(in srgb,var(--ink) 6%,var(--sheet))}
 .art-card__frame img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .2s ease}
-.art-card__open:hover img{transform:scale(1.03)}
+@media (hover:hover){.art-card__open:hover img{transform:scale(1.03)}}
 .art-card__open>strong{font-size:15px;line-height:1.45;font-weight:700;overflow-wrap:anywhere}
 .art-card__open:hover>strong{text-decoration:underline}
 .art-card__hook{margin:0;font-size:13px;line-height:1.5;color:var(--muted);overflow-wrap:anywhere}
@@ -309,3 +319,42 @@ a:has(> .nav-pending--reader){position:relative}
 /* 같은 이유로 동작 뒤 초점 이어받기(FOCUS-AFTER-ACTION-001)가 초점을 두는 묶음(tabindex -1)도 — 복습 채점 막대 · 읽기 저장 줄.
    누르는 자리가 아니라 다음 Tab의 출발점이다. 안의 버튼은 각자의 :focus-visible 고리를 그대로 그린다. */
 .review-grade-bar[tabindex="-1"]:focus,.save-grade__saved[tabindex="-1"]:focus{outline:none}
+/* ========= 화면 이동 손맛(NAV-MOTION-001) — 새 화면이 도착한 순간 본문만 들어온다 =========
+   실행 = src/lib/useNavMotion.js(경로가 바뀐 커밋에서 html[data-nav-motion] — 옅어짐 navFadeIn이 끝나면 뗀다), 판정 = src/lib/navMotion.js.
+   메뉴 = 제자리 옅게 · 목록 → 상세 = 오른쪽에서 · 뒤로 = 왼쪽에서. 머리말 · 아래 메뉴는 #main-content 밖이라 그대로.
+   View Transitions를 쓰지 않는다(전환 중 탭 유실 · 사진 비용 — 목업 문서 §6). 옛 .page-container pageEnter는 JS가 끝 상태로 보낸다.
+   옅어짐과 밀림은 따로 건다: 본문에 transform이 걸리면 그 안의 position:fixed 요소가 화면 대신 본문 상자 기준이 되어(긴 화면을 스크롤한 채면
+   아래 고정 막대가 0.22초 동안 화면 밖으로 — 실측 top 788 → 823) 본문에 고정 요소가 있으면(:has — 커밋 뒤 늦게 붙어도) 밀림만 뗀다.
+   :has 목록 = src CSS의 position:fixed 선택자 중 본문 안에 올 수 있는 것 전부(계약이 일치를 본다).
+   0.3초 이하 · var(--ease-settle) · transform/opacity만 · 동작 줄이기면 시작하지 않고(JS) 여기서도 none. 계약 navMotion.test.js. */
+html[data-nav-motion="tab"] #main-content {
+  animation: navFadeIn 0.16s var(--ease-settle) both;
+}
+html[data-nav-motion="push"] #main-content {
+  animation: navFadeIn 0.22s var(--ease-settle) both, navFromRight 0.22s var(--ease-settle) both;
+}
+html[data-nav-motion="pop"] #main-content {
+  animation: navFadeIn 0.22s var(--ease-settle) both, navFromLeft 0.22s var(--ease-settle) both;
+}
+html:is([data-nav-motion="push"], [data-nav-motion="pop"]) #main-content:has(
+    .scrim, .vocab-detail-overlay, .sentence-nav, .modal-overlay, .pdf-detail-overlay, .pdf-detail-popup, .viewer-sheet-bar,
+    .viewer-sheet, .reading-test-overlay, .confirm-overlay, .viewer-progress-bar, .tile-modal__overlay, .lv-toast, .lw-gradebar,
+    .lw-undo, .lw-pop, .lw-scrim, .lw-sheet, .original-position-notice.is-floating, .review-grade-bar, .review-known-undo,
+    .shelf-dialog, .personal-note, .note-recognition, .viewer-inspector, .viewer-inspector--board, .sentence-move-bar,
+    .viewer-pace-float, .class-reader-dock, .class-copy-overlay, .teaching-presentation-host,
+    .viewer-workspace-boundary[data-active="true"], .player, .manabi-selection-bar
+) {
+  animation: navFadeIn 0.22s var(--ease-settle) both;
+}
+@keyframes navFadeIn {
+  from { opacity: 0; }
+}
+@keyframes navFromRight {
+  from { transform: translateX(16px); }
+}
+@keyframes navFromLeft {
+  from { transform: translateX(-16px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-nav-motion] #main-content { animation: none !important; }
+}

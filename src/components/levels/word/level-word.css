@@ -226,7 +226,7 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-one__meta .lw-py+.lw-listen{margin-left:0}
 .lw-one__mean{margin:-6px 0 0;font-size:18px;font-weight:700;line-height:1.55}
 .lw-one__chips{display:flex;gap:6px}
-.lw-gradebar{position:fixed;left:0;right:0;bottom:0;z-index:28;transform:translateZ(0);-webkit-backface-visibility:hidden;backface-visibility:hidden;background:color-mix(in srgb,var(--paper) 94%,transparent);backdrop-filter:blur(6px);border-top:1px solid var(--lw-line);padding:8px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+.lw-gradebar{position:fixed;left:0;right:0;bottom:0;z-index:28;transform:translateZ(0);-webkit-backface-visibility:hidden;backface-visibility:hidden;background:color-mix(in srgb,var(--paper) 94%,transparent);backdrop-filter:blur(6px);border-top:1px solid var(--lw-line);padding:8px 16px calc(10px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .lw-gradebar__in{max-width:648px;margin:0 auto;display:grid;gap:6px}
 .lw-gradebar__guide{margin:0;min-height:1.5em;text-align:center;font-size:12.5px;line-height:1.5;color:var(--muted)}
 .lw-gradebar__guide b{color:var(--ink);font-size:14px;font-weight:600}
@@ -260,6 +260,8 @@ html:has(.lw-page){overscroll-behavior-y:none}
 /* 되돌리기 안내 — 네 칸 위(한 단어) 또는 화면 아래(리스트). 올라왔다 .15s에 사라짐, 손가락을 올리면 멈춤. */
 /* 캔버스 값(㉒) — 밝은 종이 카드 · 좌우 16px 꽉 · 「되돌리기」 장미색 */
 .lw-undo{position:fixed;left:16px;right:16px;margin-inline:auto;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--sheet);color:var(--ink);border:1px solid var(--rule);border-radius:3px;padding:4px 6px 4px 14px;font-size:13px;max-width:648px;box-shadow:0 6px 18px rgba(37,39,33,.10);animation:toast-in .2s var(--ease-settle) both;transition:opacity .15s var(--ease-settle),transform .15s var(--ease-settle)}
+/* 노치 가로: 좌우 16px에 안전 영역을 더한다(PWA-SHELL-001 ⑦ — 세로 · 데스크톱은 env()=0이라 16px 그대로) */
+.lw-undo{left:calc(16px + env(safe-area-inset-left,0px));right:calc(16px + env(safe-area-inset-right,0px))}
 .lw-page[data-mode=one] .lw-undo,.lw-page[data-mode=list] .lw-undo{bottom:calc(132px + env(safe-area-inset-bottom,0px))}
 .lw-undo.is-leaving{opacity:0;transform:translateY(4px)}
 /* 평소 채점 — 창 없이 네 칸 바로 위 안내 줄 가운데에 한 줄(단어는 먹색 보통 굵기 · 되돌리기만 장미색). 떠 있는 동안 안내 줄 글(리스트의 지금 카드 단어)은 숨긴다. */
@@ -301,7 +303,7 @@ html:has(.lw-page){overscroll-behavior-y:none}
 @keyframes lwSheetDown{from{transform:translateY(var(--dy,0px))}to{transform:translateY(100%)}}
 @keyframes lwFadeOut{to{opacity:0}}
 .lw-scrim{position:fixed;inset:0;z-index:50;background:color-mix(in srgb,var(--ink) 34%,transparent);animation:lwFade .2s var(--ease-settle) both}
-.lw-sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;max-width:680px;margin:0 auto;background:var(--paper);border-radius:18px 18px 0 0;padding:0 16px calc(16px + env(safe-area-inset-bottom,0px));max-height:88dvh;overflow:auto;animation:viewerSheetUp .24s var(--ease-settle) both;touch-action:pan-y}
+.lw-sheet{position:fixed;left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px);bottom:0;z-index:51;max-width:680px;margin:0 auto;background:var(--paper);border-radius:18px 18px 0 0;padding:0 16px calc(16px + env(safe-area-inset-bottom,0px));max-height:88dvh;overflow:auto;animation:viewerSheetUp .24s var(--ease-settle) both;touch-action:pan-y}
 .lw-sheet__handle{display:grid;place-items:center;height:28px;cursor:grab;touch-action:none}
 .lw-sheet__handle::before{content:'';width:40px;height:4px;border-radius:999px;background:var(--rule)}
 .lw-sheet__rows{display:grid;gap:10px;padding-bottom:6px}

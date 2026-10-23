@@ -36,7 +36,10 @@ describe('지정 이펙트 불투명 등가색 (index.css)', () => {
   });
 
   it('자간 이음매는 연속 지정에서만, 밴드 밑(z:-2)에서 자간 폭으로만 잇는다', () => {
-    const adj = css.match(/\.word-token--picked:has\(\+ \.word-token--picked\) \.surface::after \{[^}]*\}/)?.[0] || '';
+    // 「연속 지정에서만」 = 이음 신호(--picked-seam)가 있을 때만 content가 생긴다(TAP-INP-HAS-002 — :has는 토큰 자신에).
+    const adj = css.match(/\.word-token--picked \.surface::after \{[^}]*\}/)?.[0] || '';
+    expect(adj).toContain('content: var(--picked-seam, none);');
+    expect(css.match(/\.word-token--picked:has\(\+ \.word-token--picked\) \{[^}]*\}/)?.[0] || '').toContain("--picked-seam: '';");
     expect(adj).toContain('z-index: -2'); // 밴드(z:-1)보다 아래 — 이웃 글리프·밴드를 덮을 수 없다
     // 상자 [W-1px, W+gap+1px]: 칠의 확장이 0(안 A)이라 조각이 스스로 양끝 1px씩 밴드 밑으로
     // 물린다 — 실금 0. 노출부(기본 자간 4px)는 중립 이음매
