@@ -1,0 +1,52 @@
+{
+  "id": "gauguin-arlesiennes-mistral",
+  "wikidata": "Q20272517",
+  "genre": "painting",
+  "artist": "paul-gauguin",
+  "title": {
+    "native": "Arlésiennes (Mistral)",
+    "ko": "아를의 여인들(미스트랄)",
+    "lang": "en"
+  },
+  "hook": "고흐와 함께 살던 집 앞 공원, 덤불 속의 얼굴",
+  "date": {
+    "text": "1888",
+    "source": "aic",
+    "startYear": 1888,
+    "endYear": 1888,
+    "certainty": "exact"
+  },
+  "medium": {
+    "native": "Oil on jute canvas",
+    "ko": "황마 캔버스에 유채"
+  },
+  "places": [
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/19339"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "19339"
+    }
+  ],
+  "terms": [
+    "enigmatic",
+    "shawls",
+    "uncanny"
+  ],
+  "lookFor": [
+    "초록 덤불 속에 숨은 얼굴을 찾아봐요.",
+    "오른쪽의 주황빛 원뿔 둘은 무엇처럼 보이나요?",
+    "입을 가린 두 여인을 찾아봐요."
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:Paul_Gauguin_-_Arlésiennes_(Mistral)_-_1934.391_-_Art_Institute_of_Chicago.jpg",
+    "alt": "공원 길을 검은 숄을 두른 여인 넷이 걸어가고, 앞의 두 여인은 입을 가렸다. 오른쪽에 주황빛 원뿔 모양 덮개 둘이 서 있고 앞에는 붉은 울타리와 초록 덤불이 있다."
+  }
+}

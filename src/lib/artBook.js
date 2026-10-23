@@ -18,8 +18,8 @@ const MATERIAL_LANGUAGE = Object.freeze({ ja: 'Japanese', en: 'English', fr: 'Fr
 export const artCurationLanguage = (curation) => (Object.hasOwn(MATERIAL_LANGUAGE, curation?.language ?? '') ? curation.language : 'ja');
 
 /** 책으로 게시하는 큐레이션 — 작가별 큐레이션은 이 책들의 부분집합이라 따로 게시하지 않는다(같은 해설이 두 행이 되지 않게 — 게시 책끼리도 작품이 겹치지 않는다).
- *  차례는 관리자 게시 목록 차례다 — 「시카고 미술관의 명화」(DISCOVER-ART-001, 영어 해설)를 먼저. */
-export const ART_PUBLISHED_CURATIONS = Object.freeze(['aic-famous-paintings', 'ukiyoe-landscape-hokusai-hiroshige', 'ukiyoe-landscape-hokusai-hiroshige-2']);
+ *  차례는 관리자 게시 목록 차례다 — 「시카고 미술관의 명화」 1 · 2(DISCOVER-ART-001, 영어 해설)를 먼저. 2권은 1권과 작품이 겹치지 않는다. */
+export const ART_PUBLISHED_CURATIONS = Object.freeze(['aic-famous-paintings', 'aic-famous-paintings-2', 'ukiyoe-landscape-hokusai-hiroshige', 'ukiyoe-landscape-hokusai-hiroshige-2']);
 
 export const artBookKey = (curationId) => `art-${curationId}`;
 

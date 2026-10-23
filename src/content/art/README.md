@@ -195,4 +195,29 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
 | toulouse-lautrec-at-the-moulin-rouge | At the Moulin Rouge(툴루즈로트레크) | 1892–95 | en AIC 1,295자 | 물랭루주의 밤 — 화가 자신도 뒤편에 서 있다 |
 
 큐레이션 `aic-famous-paintings`(「Famous Paintings at the Art Institute of Chicago」 · 시카고 미술관의 명화 · 영어 B2 상급) — 게시 책 맨 앞.
-다음 묶음(3단계) 후보는 프랑스어 쉬운 백과 비키디아(Vikidia) — 단 실측 라이선스가 **CC BY-SA 3.0**이라(허용 목록은 4.0만) 오너 결정 대기. 1,500자 안에 드는 작품 문서는 「별이 빛나는 밤」(1,014자) · 「절규」(1,355자)뿐이고, 「진주 귀걸이를 한 소녀」(1,508자) · 「인상, 해돋이」(1,658자)는 상한 초과, 「키스」는 작품 문서가 없다(2026-10-23 KST 실측).
+**3단계 비키디아(프랑스어) — 보류(2026-10-23 KST, 오너 「권장대로 ㄱㄱ」 뒤 실측으로 멈춤).** 실측 라이선스 CC BY-SA 3.0(허용 목록 밖)에 더해,
+상한 안의 두 문서가 학습 원문 기준에 못 미친다 — 「절규」(1,349자)는 문법 오류(「ces pieds」)와 근거 없는 주장(「신발이 작아서」),
+「별이 빛나는 밤」(1,014자)은 문법 오류 셋(「qui」 빠짐 · 「cela créé」 · 「rassemble à」). 원문을 고치지 않는 규칙이라 싣지 않는다(라이선스 목록도 그대로).
+노르웨이 국립미술관 「절규」 영어 해설은 질이 좋지만 글 이용 라이선스 표기가 없어 싣지 않는다. 「키스」는 비키디아에 작품 문서가 없다.
+
+## 다섯째 묶음 — 시카고 미술관의 명화 2 (DISCOVER-ART-001, 2026-10-23 KST)
+
+오너 「시카고 미술관 추가분 권장대로 ㄱㄱ」. 미술관 API의 대표작 표시(`is_boosted`) · 퍼블릭 도메인 회화 120점에서 상한 안 · 작가 1955년까지 사망 ·
+한국에서 익숙한 순으로 골랐다. 그림은 넷째 묶음과 같은 길(Wikidata P18 → 위키미디어 공용 미술관 파일).
+
+| 작품 id | 작품 | 날짜 표기(AIC) | 해설 | 한 줄 이야기 |
+|---|---|---|---|---|
+| munch-girl-by-the-window | The Girl by the Window(뭉크) | 1893 | en AIC 1,208자 | 「절규」와 같은 해, 한밤 창가에 선 소녀 |
+| cezanne-basket-of-apples | The Basket of Apples(세잔) | c. 1893 | en AIC 1,231자 | 떨어질 듯 말 듯, 일부러 어긋나게 그린 식탁 |
+| mondrian-lozenge-composition | Lozenge Composition with Yellow, Black, Blue, Red, and Gray(몬드리안) | 1921 | en AIC 792자 | 네모난 그림을 45도 돌려 건 몬드리안 |
+| rembrandt-old-man-with-a-gold-chain | Old Man with a Gold Chain(렘브란트) | 1631 | en AIC 1,323자 | 초상화가 아니라 옷을 입혀 그린 인물 연습, 트로니 |
+| manet-woman-reading | Woman Reading(마네) | 1880–82 | en AIC 1,223자 | 카페처럼 보이지만 화실에 꾸민 장면 |
+| degas-millinery-shop | The Millinery Shop(드가) | 1879-86 | en AIC 1,152자 | 손님일까 점원일까, 모자를 쓴 듯 보이는 여인 |
+| gauguin-arlesiennes-mistral | Arlésiennes (Mistral)(고갱) | 1888 | en AIC 1,278자 | 고흐와 함께 살던 집 앞 공원, 덤불 속의 얼굴 |
+| cassatt-childs-bath | The Child's Bath(커샛) | 1893 | en AIC 774자 | 일본 판화에서 배운, 위에서 내려다본 목욕 시간 |
+
+큐레이션 `aic-famous-paintings-2`(「Famous Paintings at the Art Institute of Chicago II」 · 시카고 미술관의 명화 2 · 영어 B2 상급) — 첫 책과 작품이 겹치지 않는다.
+
+**넣지 못한 작품(다섯째 묶음 기록):** 모네 「Arrival of the Normandy Train, Gare Saint-Lazare」(1,450자) — AIC 해설 원문에 합자가 깨진 낱말(「artiﬁ cial」 · 「speciﬁc」)이 있어 제외,
+이 실측으로 **합자 글자(U+FB00–FB06)가 섞인 해설은 싣지 않는다**는 계약을 더했다. 마티스 「Woman before an Aquarium」 — 공용 P18 파일이 미술관 디지털화본인지 확인되지 않아 제외
+(공용 API 요청 제한으로 대체 파일 검색 불가). 고흐 「Self-Portrait」(1,692자) · 르누아르 「Acrobats」(1,723자) · 모네 「The Beach at Sainte-Adresse」(1,853자)는 상한 초과.

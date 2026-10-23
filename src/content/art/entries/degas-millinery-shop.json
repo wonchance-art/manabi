@@ -1,0 +1,52 @@
+{
+  "id": "degas-millinery-shop",
+  "wikidata": "Q3874376",
+  "genre": "painting",
+  "artist": "edgar-degas",
+  "title": {
+    "native": "The Millinery Shop",
+    "ko": "모자 가게",
+    "lang": "en"
+  },
+  "hook": "손님일까 점원일까, 모자를 쓴 듯 보이는 여인",
+  "date": {
+    "text": "1879-86",
+    "source": "aic",
+    "startYear": 1879,
+    "endYear": 1886,
+    "certainty": "range"
+  },
+  "medium": {
+    "native": "Oil on canvas",
+    "ko": "캔버스에 유채"
+  },
+  "places": [
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/14572"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "14572"
+    }
+  ],
+  "terms": [
+    "milliners",
+    "composition",
+    "class"
+  ],
+  "lookFor": [
+    "여인의 머리 위에 얹힌 듯 보이는 모자를 찾아봐요.",
+    "탁자 위 모자는 모두 몇 개일까요?",
+    "여인이 낀 긴 장갑을 찾아봐요."
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:Edgar_Degas_-_The_Millinery_Shop_-_Google_Art_Project.jpg",
+    "alt": "모자 가게 탁자에 꽃과 리본으로 꾸민 모자들이 받침대에 놓여 있고, 초록 드레스에 긴 장갑을 낀 여인이 챙 넓은 모자를 손에 들고 살펴본다."
+  }
+}

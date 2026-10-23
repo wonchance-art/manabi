@@ -23,6 +23,29 @@
     ]
   },
   {
+    "id": "aic-famous-paintings-2",
+    "kind": "theme",
+    "language": "en",
+    "title": {
+      "ko": "시카고 미술관의 명화 2",
+      "native": "Famous Paintings at the Art Institute of Chicago II"
+    },
+    "level": "B2 상급",
+    "summary": {
+      "ko": "뭉크의 한밤 창가, 세잔의 사과, 몬드리안의 마름모. 렘브란트부터 몬드리안까지 시카고 미술관이 소장한 명화 여덟 점을 미술관의 영어 해설로 읽는다. 첫 책과 작품이 겹치지 않는다."
+    },
+    "works": [
+      "munch-girl-by-the-window",
+      "cezanne-basket-of-apples",
+      "mondrian-lozenge-composition",
+      "rembrandt-old-man-with-a-gold-chain",
+      "manet-woman-reading",
+      "degas-millinery-shop",
+      "gauguin-arlesiennes-mistral",
+      "cassatt-childs-bath"
+    ]
+  },
+  {
     "id": "ukiyoe-landscape-hokusai-hiroshige",
     "kind": "theme",
     "title": {

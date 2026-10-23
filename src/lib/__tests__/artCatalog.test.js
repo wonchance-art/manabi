@@ -352,6 +352,12 @@ describe('artCatalog 계약 — fail-closed', () => {
     expect(errors).not.toMatch(/「構図」/);
   });
 
+  it('합자 글자(ﬁ · ﬂ — 원문 추출 깨짐)가 섞인 해설은 싣지 않는다(AIC 「artiﬁ cial」 실측)', () => {
+    const catalog = fixture();
+    catalog.works[0].descriptions[0].text = 'combination of artiﬁ cial and natural effects';
+    expect(validateArtCatalog(catalog).join('\n')).toMatch(/works\[0\]\.descriptions\[0\]\.text: 합자 글자/);
+  });
+
   it('그림이 없는 작품에는 찾아볼 것을 두지 않는다', () => {
     const catalog = fixture();
     catalog.works[1].lookFor = ['배는 몇 척?'];

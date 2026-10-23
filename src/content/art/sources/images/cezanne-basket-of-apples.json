@@ -1,0 +1,20 @@
+{
+  "bytes": 142917,
+  "file": "cezanne-basket-of-apples.jpg",
+  "height": 640,
+  "note": "DISCOVER-ART-001 — 시카고 미술관 디지털화본(퍼블릭 도메인)을 위키미디어 공용 파일 페이지에서 받았다(Wikidata 작품 항목 P18). 공용 API 요청 제한(429) 때문에 record는 파일 페이지 · 시카고 미술관 기록에서 손으로 옮겼다. 원 파일은 upload.wikimedia.org 960px 썸네일을 긴 변 800px로 줄인 것이다(README 「이미지」).",
+  "record": {
+    "accession": "1926.252",
+    "artist": "Paul Cezanne",
+    "date": "c. 1893",
+    "holder": "Art Institute of Chicago",
+    "license": "public-domain",
+    "title": "The Basket of Apples"
+  },
+  "sha256": "ec7f3000005ae667cec485d2404d364de8e1fa735cf8579d2095b441c05cf7cd",
+  "source": "commons",
+  "sourceId": "File:Paul_Cézanne_-_The_Basket_of_Apples_-_1926.252_-_Art_Institute_of_Chicago.jpg",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Paul_C%C3%A9zanne_-_The_Basket_of_Apples_-_1926.252_-_Art_Institute_of_Chicago.jpg",
+  "width": 800,
+  "workId": "cezanne-basket-of-apples"
+}

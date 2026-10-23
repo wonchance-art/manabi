@@ -15,8 +15,8 @@ describe('큐레이션 책 — 카탈로그 → 정본 책 장', () => {
   const book = byKey(artBookKey('ukiyoe-landscape-hokusai-hiroshige'));
   const second = byKey(artBookKey('ukiyoe-landscape-hokusai-hiroshige-2'));
 
-  it('게시 책은 명화(영어) 한 권 + 풍경 우키요에 두 권(첫 권 그대로 + 속편), 작품 한 점 = 책 언어 해설 한 장', () => {
-    expect(ART_PUBLISHED_CURATIONS).toEqual(['aic-famous-paintings', 'ukiyoe-landscape-hokusai-hiroshige', 'ukiyoe-landscape-hokusai-hiroshige-2']);
+  it('게시 책은 명화(영어) 두 권 + 풍경 우키요에 두 권(첫 권 그대로 + 속편), 작품 한 점 = 책 언어 해설 한 장', () => {
+    expect(ART_PUBLISHED_CURATIONS).toEqual(['aic-famous-paintings', 'aic-famous-paintings-2', 'ukiyoe-landscape-hokusai-hiroshige', 'ukiyoe-landscape-hokusai-hiroshige-2']);
     expect(books.map((item) => item.book.key)).toEqual(ART_PUBLISHED_CURATIONS.map(artBookKey));
     expect(book.book).toEqual({
       key: artBookKey('ukiyoe-landscape-hokusai-hiroshige'), title: '北斎と広重の風景版画', author: '葛飾北斎・歌川広重', level: 'N2 상급', total: 8,
@@ -60,6 +60,16 @@ describe('큐레이션 책 — 카탈로그 → 정본 책 장', () => {
       expect(chapter.metadata.language).toBe('English');
       expect(chapter.metadata.literature).toMatchObject({ provider: 'art', curation: 'aic-famous-paintings', source: 'aic', license: 'cc-by-4.0' });
     }
+  });
+
+  it('명화 2: 렘브란트부터 몬드리안까지 여덟 장 — 첫 책과 작품이 겹치지 않고, 자료 언어 English', () => {
+    const famous2 = byKey(artBookKey('aic-famous-paintings-2'));
+    expect(famous2.book).toMatchObject({ title: 'Famous Paintings at the Art Institute of Chicago II', level: 'B2 상급', total: 8 });
+    expect(famous2.chapters.map((chapter) => chapter.metadata.literature.work)).toEqual([
+      'munch-girl-by-the-window', 'cezanne-basket-of-apples', 'mondrian-lozenge-composition', 'rembrandt-old-man-with-a-gold-chain',
+      'manet-woman-reading', 'degas-millinery-shop', 'gauguin-arlesiennes-mistral', 'cassatt-childs-bath',
+    ]);
+    for (const chapter of famous2.chapters) expect(chapter.metadata.language).toBe('English');
   });
 
   it('책 언어 해설이 없는 작품이 들면 책을 만들지 않는다(fail-closed)', () => {

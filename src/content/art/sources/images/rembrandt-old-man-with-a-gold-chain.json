@@ -1,0 +1,20 @@
+{
+  "bytes": 77182,
+  "file": "rembrandt-old-man-with-a-gold-chain.jpg",
+  "height": 800,
+  "note": "DISCOVER-ART-001 — 시카고 미술관 디지털화본(퍼블릭 도메인)을 위키미디어 공용 파일 페이지에서 받았다(Wikidata 작품 항목 P18). 공용 API 요청 제한(429) 때문에 record는 파일 페이지 · 시카고 미술관 기록에서 손으로 옮겼다. 원 파일은 upload.wikimedia.org 960px 썸네일을 긴 변 800px로 줄인 것이다(README 「이미지」).",
+  "record": {
+    "accession": "1922.4467",
+    "artist": "Rembrandt Harmensz. van Rijn",
+    "date": "1631",
+    "holder": "Art Institute of Chicago",
+    "license": "public-domain",
+    "title": "Old Man with a Gold Chain"
+  },
+  "sha256": "d4f7551361da451f442f1a586f5ac7599095d1fa7883c9692bfb826e9f16bc64",
+  "source": "commons",
+  "sourceId": "File:Rembrandt_Harmensz._van_Rijn_-_Old_Man_with_a_Gold_Chain_-_Google_Art_Project.jpg",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rembrandt_Harmensz._van_Rijn_-_Old_Man_with_a_Gold_Chain_-_Google_Art_Project.jpg",
+  "width": 724,
+  "workId": "rembrandt-old-man-with-a-gold-chain"
+}

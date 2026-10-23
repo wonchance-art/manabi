@@ -44,7 +44,7 @@ describe('build-art — 리포 상태', () => {
   it('리포의 entries·sources가 --check를 통과한다 — 커밋한 works.json이 생성물과 바이트 단위로 같다', async () => {
     const result = await build(ART_ROOT, true);
     expect(result.errors).toEqual([]);
-    expect(result).toMatchObject({ status: 'checked', works: 32, descriptions: 37, images: 32 });
+    expect(result).toMatchObject({ status: 'checked', works: 40, descriptions: 45, images: 40 });
   });
 
   it('works.json을 지우고 다시 만들면 커밋본과 같은 바이트 — 다시 돌리면 unchanged', async () => {
@@ -64,7 +64,7 @@ describe('build-art — 리포 상태', () => {
   it('스냅샷은 결정적 직렬화(키 정렬·2칸·끝 개행)로 커밋돼 있다', () => {
     const dir = path.join(ART_ROOT, ART_FILES.sources);
     const files = readdirSync(dir, { recursive: true }).filter((name) => String(name).endsWith('.json'));
-    expect(files.length).toBe(68);
+    expect(files.length).toBe(84);
     for (const name of files) {
       const text = readFileSync(path.join(dir, String(name)), 'utf8');
       expect(serializeSnapshot(JSON.parse(text)), String(name)).toBe(text);

@@ -14,6 +14,7 @@ import { releaseState, releasesTable } from '../../../../../lib/__tests__/helper
 const ALL_BOOKS = artBooks();
 const byKey = (key) => ALL_BOOKS.find((item) => item.book.key === key);
 const famous = byKey('art-aic-famous-paintings'); // 시카고 미술관의 명화(영어 8장, DISCOVER-ART-001)
+const famous2 = byKey('art-aic-famous-paintings-2'); // 시카고 미술관의 명화 2(영어 8장)
 const book = byKey('art-ukiyoe-landscape-hokusai-hiroshige');
 const second = byKey('art-ukiyoe-landscape-hokusai-hiroshige-2');
 const KEY = book.book.key; // art-ukiyoe-landscape-hokusai-hiroshige(8장)
@@ -89,12 +90,12 @@ describe('관리자 큐레이션 책 게시 API', () => {
     expect(db.supabase.from).not.toHaveBeenCalled();
   });
 
-  it('목록: 큐레이션 책 세 권(명화 먼저) — 권리 근거 대신 장별 출처·라이선스·원문 링크·크레딧, 원문은 싣지 않는다', async () => {
+  it('목록: 큐레이션 책 네 권(명화 1 · 2 먼저) — 권리 근거 대신 장별 출처·라이선스·원문 링크·크레딧, 원문은 싣지 않는다', async () => {
     const response = await GET(new Request(URL_BASE));
     expect(response.headers.get('Cache-Control')).toBe('private, no-store');
     const { books } = await response.json();
     expect(books.map((item) => [item.key, item.total, item.publishable, item.stage]))
-      .toEqual([[famous.book.key, 8, true, 'unpublished'], [KEY, 8, true, 'unpublished'], [second.book.key, 7, true, 'unpublished']]);
+      .toEqual([[famous.book.key, 8, true, 'unpublished'], [famous2.book.key, 8, true, 'unpublished'], [KEY, 8, true, 'unpublished'], [second.book.key, 7, true, 'unpublished']]);
     const summary = books.find((item) => item.key === KEY);
     expect(summary).not.toHaveProperty('rights');
     expect(summary.provenance.provider).toBe('art');
