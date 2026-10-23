@@ -3676,7 +3676,8 @@ export default function ViewerPage() {
   );
 
   };
-  const rightPanelContent=renderRightPanelContent();
+  // 오른쪽 패널 내용은 쓰는 자리(시트의 rightContent)에서만 만든다(VIEWER-TAP-INP-001). 렌더마다 미리 만들어 두면
+  // 카드가 열린 동안(그 값을 쓰지 않는 갈래) 단어 카드 전체를 한 번 더 지어 버렸다 — 낱말 탭마다 카드를 두 번 짓던 것.
 
   // ── [문장] 탭(뷰어 v2 AE-R2 PR ③ · 설계서 docs/manabi-viewer-v2-ae-r2.md §3·§11 목업, 정본 §4) ──
   // 순서: 원문 줄(누른 단어만 칠) → 번역 → [더 쉽게][자세히] → 문형 → 단어별 뜻. 번역만 늦게 오고(T3) 나머지는 T0라
@@ -4634,7 +4635,7 @@ export default function ViewerPage() {
         onPresentChange={setSheetPresent}
         collapsedActions={autoPaceOn&&sentences.length>0&&!modalBlocked?paceToggle('viewer-inspector__pace'):null}
         leftContent={senseReviewContent || boundaryPendingContent || leftPanelContent}
-        rightContent={selectedToken&&isSheetOpen?renderRightPanelContent(annotationContent&&<section className="reader-card-notes" aria-label={vt("교재 설명")}><h3 className="reader-card-section__label">{vt("교재 설명")}</h3>{annotationContent}</section>):<>{annotationContent}{rightPanelContent}</>}
+        rightContent={selectedToken&&isSheetOpen?renderRightPanelContent(annotationContent&&<section className="reader-card-notes" aria-label={vt("교재 설명")}><h3 className="reader-card-section__label">{vt("교재 설명")}</h3>{annotationContent}</section>):<>{annotationContent}{renderRightPanelContent()}</>}
         leftActive={leftPanelLoading || !!leftPanelResult || !!senseReviewContent || !!boundaryPendingContent}
         rightActive={annotationOpen || dragTokens !== null || (selectedToken && isSheetOpen)}
         leftSignal={leftSheetSignal}
