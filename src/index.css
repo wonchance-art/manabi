@@ -577,12 +577,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.82rem;
 }
 
+/* 본문(main) 맨 위 흐름 안 — 덮지 않고 민다(Layout 주석 · OFFLINE-SWEEP-001). */
 .offline-banner {
-  position: fixed;
-  top: var(--gnb-height);
-  left: 0;
-  right: 0;
-  z-index: 999;
+  position: relative;
   background: var(--warning);
   color: #fff;
   text-align: center;

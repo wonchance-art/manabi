@@ -157,8 +157,9 @@ function animationsOf(css, selector) {
   });
 }
 const GUARD = 'html:is([data-nav-motion="push"], [data-nav-motion="pop"]) #main-content:has(';
-// 본문 밖이라 본문 transform과 무관한 고정 요소(머리말 · 아래 메뉴 · 오프라인 띠 · 알림 · 포털 · 온보딩 — Layout · Provider에서 main 바깥).
-const FIXED_OUTSIDE_MAIN = ['.gnb', '.mobile-nav', '.offline-banner', '.toast-container', '.onboarding-overlay', '.hz-portal'];
+// 본문 밖이라 본문 transform과 무관한 고정 요소(머리말 · 아래 메뉴 · 알림 · 포털 · 온보딩 — Layout · Provider에서 main 바깥).
+// 오프라인 띠는 본문 맨 위 흐름 안으로 옮겨 고정 요소가 아니다(OFFLINE-SWEEP-001).
+const FIXED_OUTSIDE_MAIN = ['.gnb', '.mobile-nav', '.toast-container', '.onboarding-overlay', '.hz-portal'];
 
 describe('움직임 값 — 0.3초 이하 · 감속 토큰 · transform/opacity만 · 동작 줄이기 none', () => {
   const css = read(SHELL);
