@@ -2232,6 +2232,9 @@ export default function ViewerPage() {
     if (!hanjaPopoverMode) return undefined;
     return onIdle(() => { ViewerHanjaPopover.preload().catch(() => {}); });
   }, [hanjaPopoverMode]);
+  // 읽기 설정 부품(≈6KB gzip)도 유휴 시간에 받아 둔다 — 끊긴 채 처음 「Aa」를 누르면 조각을 못 받아 뷰어 전체가 오류 화면
+  // 「자료를 불러오지 못했어요」로 바뀌었다(OFFLINE-SWEEP-001 390 실측). 받아 두면 워커의 정적 조각 캐시에도 남는다. 첫 그림 무게는 그대로(유휴 뒤).
+  useEffect(() => onIdle(() => { ViewerSettings.preload().catch(() => {}); }), []);
   // 미리 받기 전에 창이 열리면 바로 받는다.
   useEffect(() => {
     if (!hanjaPopoverMode || !inspectChar || hanjaPanelTable) return undefined;
