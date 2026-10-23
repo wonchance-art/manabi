@@ -8,10 +8,11 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('next/font/google', () => new Proxy({}, { get: (_, name) => (name === 'then' ? undefined : () => ({ variable: `f-${String(name).toLowerCase()}` })), has: () => true }));
 
 import catalog from '../../content/literature/catalog.json';
+import publishOrder from '../../content/literature/publish-order.json';
 import ClassicsShelf from '../../components/web/ClassicsShelf';
 import DiscoverTiles, { CLASSICS_TILE_COVERS, MAGAZINE_HREF, dailyCovers, shelfDateLabel } from '../../components/web/DiscoverTiles';
 import {
-  CLASSICS_LANGUAGES, classicsChips, classicsFilters, classicsHref, classicsWorks, filterClassics, releasedClassics,
+  CLASSICS_LANGUAGES, classicsChips, classicsFilters, classicsHref, classicsPublishRank, classicsWorks, filterClassics, releasedClassics, sortByPublishRank,
 } from '../classicsShelf';
 import { readerReturnLabel, readerReturnTarget, safeReaderReturn } from '../libraryReturn';
 
@@ -161,5 +162,28 @@ describe('산책 큰 칸 셋', () => {
     expect(css).toContain('.discover-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))');
     expect(css).toMatch(/\.discover-tile\{[^}]*aspect-ratio:1/);
     expect(css).toContain('@container manabi-shell (max-width:640px){.discover-tiles{grid-template-columns:minmax(0,1fr)}.discover-tile{aspect-ratio:auto;height:236px}');
+  });
+});
+
+describe('공개 차례(오너 「수록된 것과 인기작부터 권장대로 공개」 2026-10-23 KST)', () => {
+  const rank = classicsPublishRank(works);
+  const byKey = new Map(works.map((item) => [item.key, item]));
+  it('앞줄은 그 언어의 수록 책만 · 겹침 없이 — 틀린 key는 차례에서 조용히 빠지지 않고 여기서 잡힌다', () => {
+    const all = Object.entries(publishOrder.first).flatMap(([language, keys]) => keys.map((key) => [language, key]));
+    expect(new Set(all.map(([, key]) => key)).size).toBe(all.length);
+    for (const [language, key] of all) expect([key, byKey.get(key)?.language]).toEqual([key, language]);
+    expect(Object.keys(publishOrder.first)).toEqual(CLASSICS_LANGUAGES);
+  });
+  it('수록 85권 모두 한 번씩 · 언어를 번갈아(일 · 영 · 프 · 중 · 한) 앞줄부터', () => {
+    expect(rank.size).toBe(works.length);
+    const order = [...rank.keys()];
+    expect(order.slice(0, 5).map((key) => byKey.get(key).language)).toEqual(CLASSICS_LANGUAGES);
+    expect(order.slice(0, 5)).toEqual(CLASSICS_LANGUAGES.map((language) => publishOrder.first[language][0]));
+    // 앞줄이 다한 언어는 빠지고 나머지 언어가 이어진다(중국어 4권 뒤로는 일 · 영 · 프 · 한만)
+    expect(order.slice(20, 24).map((key) => byKey.get(key).language)).toEqual(['Japanese', 'English', 'French', 'Korean']);
+  });
+  it('책 배열 정렬 — 차례에 없는 책은 원래 순서대로 맨 뒤', () => {
+    const books = [{ book: { key: 'zz-unknown' } }, { book: { key: publishOrder.first.Korean[0] } }, { book: { key: publishOrder.first.Japanese[0] } }];
+    expect(sortByPublishRank(books, rank).map((item) => item.book.key)).toEqual([publishOrder.first.Japanese[0], publishOrder.first.Korean[0], 'zz-unknown']);
   });
 });

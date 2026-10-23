@@ -8,12 +8,14 @@ import { LITERATURE_BOOKS } from '@/content/literature/aozora/index.generated.js
 import { STANDARD_EBOOKS_BOOKS } from '@/content/literature/standardebooks/index.generated.js';
 import { WIKISOURCE_BOOKS } from '@/content/literature/wikisource/index.generated.js';
 import { PDSITE_BOOKS } from '@/content/literature/pdsite/index.generated.js';
+import { sortByPublishRank } from '@/lib/classicsShelf';
 import { createBookPublishHandlers } from '@/lib/server/bookPublishRoute';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const BOOKS = Object.freeze([...LITERATURE_BOOKS, ...STANDARD_EBOOKS_BOOKS, ...WIKISOURCE_BOOKS, ...PDSITE_BOOKS]);
+// 목록 · 「모두 게시 · 분석」 대기열 차례 = 공개 차례(언어를 번갈아 대표작 먼저 — classicsPublishRank, 2026-10-23 KST).
+const BOOKS = Object.freeze(sortByPublishRank([...LITERATURE_BOOKS, ...STANDARD_EBOOKS_BOOKS, ...WIKISOURCE_BOOKS, ...PDSITE_BOOKS]));
 const handlers = createBookPublishHandlers(() => BOOKS);
 
 export const GET = (request) => handlers.GET(request);

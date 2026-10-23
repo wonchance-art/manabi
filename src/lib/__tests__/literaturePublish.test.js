@@ -202,7 +202,11 @@ describe('일괄 게시·분석 대상(설계 §4.1 — 오너 「권장대로�
       summary({ key: 'f', stage: 'ready' }),
       summary({ key: 'g', stage: 'released' }),
     ];
-    expect(literatureBatchTargets(books).map((book) => book.key)).toEqual(['a', 'b']);
+    expect(literatureBatchTargets(books).map((book) => book.key)).toEqual(['b', 'a']); // 준비를 시작한 작품이 먼저
+  });
+  it('대기열 차례 — 준비를 시작한 작품 먼저, 그 안과 나머지는 받은 차례 그대로', () => {
+    const books = [summary({ key: 'a' }), summary({ key: 'p1', stage: 'preparing' }), summary({ key: 'c' }), summary({ key: 'p2', stage: 'preparing' })];
+    expect(literatureBatchTargets(books).map((book) => book.key)).toEqual(['p1', 'p2', 'a', 'c']);
   });
 });
 
