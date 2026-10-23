@@ -70,3 +70,20 @@ describe('산책 판 — 쿠키를 읽지 않는 두 판(ISR 300)과 쿠키를 �
     expect(read(`${base}/page.jsx`)).toContain("if ((classicsShelf.failed || artShelf.failed) && process.env.NEXT_PHASE !== 'phase-production-build') throw new Error('discover_shelf_unavailable');");
   });
 });
+
+// 3단계 — 책장(/lessons)도 같은 방식이다: ?lang=<언어>는 언어 판(/lessons/lang/<언어>, ISR 3600)으로, 나머지는 기본 판.
+describe('책장 갈래(middleware)', () => {
+  it('알려진 언어만 언어 판으로 — 모르는 언어 · 쿼리 없음은 기본 판(옛 동작처럼 「전체 시리즈」)', async () => {
+    expect(rewrite(await run('/lessons?lang=Japanese'))).toBe('/lessons/lang/Japanese?lang=Japanese');
+    expect(rewrite(await run('/lessons?lang=French', { cookie: 'sb-e2e-auth-token=x' }))).toBe('/lessons/lang/French?lang=French');
+    for (const url of ['/lessons', '/lessons?lang=Korean', '/lessons?lang=']) {
+      const res = await run(url);
+      expect(rewrite(res), url).toBeNull();
+      expect(res.headers.get('x-middleware-next'), url).toBe('1');
+    }
+  });
+  it('matcher에는 /lessons만 — 언어 판 경로는 밖(rewrite된 요청이 다시 지나도 되돌리지 않게)', () => {
+    expect(config.matcher).toContain('/lessons');
+    expect(config.matcher.filter(p => p.startsWith('/lessons/'))).toEqual([]);
+  });
+});

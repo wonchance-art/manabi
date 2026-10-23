@@ -123,7 +123,7 @@ describe('이어 읽기 — 기존 목적지 선택 정본 보존', () => {
     expect(code).toContain('`/viewer/${m.id}`');
   });
   it('원어 제목이 비면 한국어 제목이 주 제목(대체 동작) — 원어 제목은 판 원고의 title_ja가 있을 때만', () => {
-    expect(read('src/lib/server/bookReading.js')).toContain('title_ja: titleJa');
+    expect(read('src/lib/server/publishedBook.js')).toContain('title_ja: titleJa'); // readingCatalog 정본(GUEST-STATIC-001 3단계에서 옮김)
     expect(code).toContain("title: titleJa || lesson.title, titleLang: titleJa ? 'ja' : 'ko', sub: titleJa ? lesson.title : lesson.subtitle,");
   });
   it('[진도 숫자][막대][버튼] — DOM 순서도 이대로', () => {

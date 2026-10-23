@@ -20,6 +20,9 @@ export const STATIC_ROUTES = Object.freeze([
   // 2단계: 산책(쿼리 없음) ISR 5분 — 기본 판과 간체 힌트 판(middleware가 고른다, 「함께 읽는 글」 /discover/reading은 동적)
   { route: '/discover', revalidate: 300 },
   { route: '/discover/sc', revalidate: 300 },
+  // 3단계: 책장 ISR 1시간 + 발행 시 즉시 무효화(revalidatePath) — 기본 판과 언어 판(?lang=… → middleware)
+  { route: '/lessons', revalidate: 3600 },
+  { route: '/lessons/lang/[lang]', revalidate: 3600 },
 ]);
 
 /**
@@ -36,4 +39,10 @@ export function staticRouteErrors(manifest, table = STATIC_ROUTES) {
     if (wrong.length) errors.push(`${route}: ISR 주기 ${JSON.stringify(wrong[0].initialRevalidateSeconds)} ≠ 표 ${JSON.stringify(revalidate)}`);
   }
   return errors;
+}
+
+/** 빌드 산출에서 ISR(숫자 주기) 경로만, prefix 아래로 — e2e 서버가 발행 상태를 바꿔 띄울 때 새로 만들 판(scripts/e2e-refresh-isr.mjs). */
+export function isrPaths(manifest, prefix = '/') {
+  const under = (path) => path === prefix || path.startsWith(prefix.endsWith('/') ? prefix : `${prefix}/`);
+  return Object.entries(manifest?.routes || {}).filter(([path, r]) => typeof r?.initialRevalidateSeconds === 'number' && under(path)).map(([path]) => path).sort();
 }

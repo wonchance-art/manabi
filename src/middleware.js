@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
-import { legacyTextbookTarget } from './lib/bookNavigation';
+import { BOOK_SERIES, legacyTextbookTarget } from './lib/bookNavigation';
 import { hasLegacyArchivePath } from './lib/legacyArchiveRoutes';
 import { authEntryHref } from './lib/authRedirect';
 import { withoutServerSignOut } from './lib/authCookieGuard';
@@ -8,7 +8,7 @@ import { SC_HINT_COOKIE } from './lib/scFontHint';
 
 // 공유 캐시 갈래(GUEST-STATIC-001) — 쿼리 · 힌트 쿠키로 갈리던 화면을 갈래마다 한 판씩 정적(ISR)으로 굽고, 여기서 판을 고른다(주소창은 그대로).
 // 계정으로는 가르지 않는다: 판에는 계정 데이터가 없다. 이 갈래는 쿠키를 읽기만 하고(값 '1'인 힌트 하나) Supabase 클라이언트를 만들지 않는다.
-// 내부 판 경로(/discover/reading · /discover/sc)는 matcher에 넣지 않는다 — rewrite된 요청이 middleware를 다시 지나므로, 거기서 정본 주소로 돌려보내면
+// 내부 판 경로(/discover/reading · /discover/sc · /lessons/lang/*)는 matcher에 넣지 않는다 — rewrite된 요청이 middleware를 다시 지나므로, 거기서 정본 주소로 돌려보내면
 // 판을 고른 요청까지 되돌아간다(e2e 빌드 실측: 307 루프). 바로 열어도 같은 판이고, 정본 주소는 canonical(/discover)이 알린다.
 const rewriteTo = (request, pathname) => { const url = request.nextUrl.clone(); url.pathname = pathname; return NextResponse.rewrite(url); };
 function guestStaticVariant(request) {
@@ -18,6 +18,12 @@ function guestStaticVariant(request) {
     if (searchParams.get('view') === 'reading') return rewriteTo(request, '/discover/reading');
     if (request.cookies.get(SC_HINT_COOKIE)?.value === '1') return rewriteTo(request, '/discover/sc');
     return NextResponse.next();
+  }
+  // 책장(3단계): ?lang=<언어>(옛 링크 · 단어 목록 「← 교재」 · /japanese 등 리다이렉트)는 그 언어 판, 나머지는 기본 판(둘 다 ISR 3600).
+  // 모르는 언어는 기본 판(예전처럼 「전체 시리즈」). 판 경로 /lessons/lang/*는 matcher 밖이다(위 산책과 같은 이유).
+  if (pathname === '/lessons') {
+    const lang = searchParams.get('lang');
+    return BOOK_SERIES.some(series => series.language === lang) ? rewriteTo(request, `/lessons/lang/${lang}`) : NextResponse.next();
   }
   return null;
 }
@@ -96,5 +102,5 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/', '/admin/:path*', '/japanese/:path*', '/chinese/:path*', '/english/:path*', '/french/:path*', '/learn/course', '/discover'],
+  matcher: ['/', '/admin/:path*', '/japanese/:path*', '/chinese/:path*', '/english/:path*', '/french/:path*', '/learn/course', '/discover', '/lessons'],
 };

@@ -32,9 +32,10 @@ describe('노트 — 캔버스 묶음을 노트 조회와 나란히', () => {
 });
 
 describe('책장 — 교재와 레벨 타일을 한꺼번에', () => {
-  const src = read('src/app/(app)/lessons/page.jsx');
+  // 책장 서버 판은 LessonsShelf(기본 · 언어 판이 함께 쓴다, GUEST-STATIC-001 3단계)다.
+  const src = read('src/components/books/LessonsShelf.jsx');
   it('교재 · 타일을 Promise.all 하나로 시작하고, 타일 실패는 빈 타일(책장은 그대로)', () => {
-    const page = sliceBetween(src, 'export default async function Page', '\n}');
+    const page = sliceBetween(src, 'export default async function LessonsShelf', '\n}');
     expect(page).toContain('await Promise.all([');
     expect(page).toContain("Promise.all([levelTileCounts('japanese'), levelTileCounts('chinese')]).then(([Japanese, Chinese]) => ({ Japanese, Chinese }), () => ({})),");
     expect(page).not.toMatch(/await levelTileCounts\(/);

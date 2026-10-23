@@ -7,7 +7,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { STATIC_ROUTES, staticRouteErrors } from '../staticRoutes';
+import { STATIC_ROUTES, isrPaths, staticRouteErrors } from '../staticRoutes';
 
 const ROOT = process.cwd();
 const APP = path.join(ROOT, 'src/app');
@@ -119,5 +119,14 @@ describe('빌드 산출 대조기(scripts/check-static-routes.mjs)', () => {
   });
   it('CI e2e 빌드 뒤에 돈다', () => {
     expect(fs.readFileSync(path.join(ROOT, '.github/workflows/ci.yml'), 'utf8')).toContain('run: node scripts/check-static-routes.mjs');
+  });
+  it('ISR 판 고르기(e2e 재생성 대상)는 숫자 주기 · 접두 아래만', () => {
+    const manifest = { routes: { '/auth': entry('/auth'), '/lessons': entry('/lessons', 3600), '/lessons/lang/Japanese': entry('/lessons/lang/[lang]', 3600), '/lessonsx': entry('/lessonsx', 60), '/discover': entry('/discover', 300) } };
+    expect(isrPaths(manifest, '/lessons')).toEqual(['/lessons', '/lessons/lang/Japanese']);
+    expect(isrPaths(manifest)).toEqual(['/discover', '/lessons', '/lessons/lang/Japanese', '/lessonsx']);
+  });
+  it('발행 상태를 바꿔 띄우는 e2e 서버(N3 8880 · N4 8879)는 시험 전에 책장 판을 새로 만든다', () => {
+    const ci = fs.readFileSync(path.join(ROOT, '.github/workflows/ci.yml'), 'utf8');
+    for (const port of [8879, 8880]) expect(ci).toContain(`node scripts/e2e-refresh-isr.mjs http://127.0.0.1:${port} /lessons`);
   });
 });
