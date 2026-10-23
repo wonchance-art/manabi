@@ -25,7 +25,24 @@ const STATES = ['New', 'Learning', 'Review', 'Relearning'];
 const algorithm = new FSRSAlgorithm({ request_retention: FSRS_POLICY.retention,
   maximum_interval: FSRS_POLICY.maximumInterval, enable_fuzz: false, enable_short_term: true });
 
+// 같은 시각 문자열은 한 번만 푼다(TAP-INP-SCHED-001). 복습 줄 · 오늘 개수는 표현마다 이 함수를 세 번 부르고(묻는 시각 ·
+// 평가 시각 · 다음 질문 시각), 범위 · 언어별 개수마다 다시 계산한다 — 채점 한 번에 표현 412개 기준 수천 번 같은 문자열을
+// 정규식으로 풀어 탭 처리에 CPU×4 50ms 이상을 썼다(390 실측). 결과는 문자열만의 함수라 저장해 둔 값이 늘 같다. 잘못된
+// 문자열은 저장하지 않고 예전처럼 매번 던진다. 크기는 묶어 둔다(가득 차면 비우고 다시 쌓는다).
+const PARSED_TIMES = new Map();
+const PARSED_TIMES_MAX = 4096;
 export function schedulerTime(value) {
+  if (typeof value === 'string') {
+    const hit = PARSED_TIMES.get(value);
+    if (hit !== undefined) return hit;
+    const ms = parseSchedulerTime(value);
+    if (PARSED_TIMES.size >= PARSED_TIMES_MAX) PARSED_TIMES.clear();
+    PARSED_TIMES.set(value, ms);
+    return ms;
+  }
+  return parseSchedulerTime(value);
+}
+function parseSchedulerTime(value) {
   // 밀리초보다 작은 정밀도나 잘못된 달력을 Date의 자동 보정으로 숨기지 않는다.
   let ms;
   if (value instanceof Date) ms = value.getTime();

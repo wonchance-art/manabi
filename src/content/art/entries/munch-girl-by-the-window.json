@@ -1,0 +1,52 @@
+{
+  "id": "munch-girl-by-the-window",
+  "wikidata": "Q18891063",
+  "genre": "painting",
+  "artist": "edvard-munch",
+  "title": {
+    "native": "The Girl by the Window",
+    "ko": "창가의 소녀",
+    "lang": "en"
+  },
+  "hook": "「절규」와 같은 해, 한밤 창가에 선 소녀",
+  "date": {
+    "text": "1893",
+    "source": "aic",
+    "startYear": 1893,
+    "endYear": 1893,
+    "certainty": "exact"
+  },
+  "medium": {
+    "native": "Oil on canvas",
+    "ko": "캔버스에 유채"
+  },
+  "places": [
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/154235"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "154235"
+    }
+  ],
+  "terms": [
+    "melancholy",
+    "isolation",
+    "nocturnal"
+  ],
+  "lookFor": [
+    "바닥에 비친 네모난 달빛을 찾아봐요.",
+    "소녀의 얼굴 표정이 보이나요?",
+    "방 안 오른쪽 아래의 둥근 가구를 찾아봐요."
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:Edvard_Munch_-_The_Girl_by_the_Window_-_2000.50_-_Art_Institute_of_Chicago.jpg",
+    "alt": "어두운 푸른 방에서 흰 잠옷 차림의 소녀가 커튼을 걷고 창밖을 내다보고, 창으로 들어온 달빛이 바닥에 네모나게 비친다."
+  }
+}

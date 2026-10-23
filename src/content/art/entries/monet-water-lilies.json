@@ -1,0 +1,52 @@
+{
+  "id": "monet-water-lilies",
+  "wikidata": "Q20267671",
+  "genre": "painting",
+  "artist": "claude-monet",
+  "title": {
+    "native": "Water Lilies",
+    "ko": "수련",
+    "lang": "en"
+  },
+  "hook": "모네 스스로 「집착」이라 부른 연못 수면",
+  "date": {
+    "text": "1906",
+    "source": "aic",
+    "startYear": 1906,
+    "endYear": 1906,
+    "certainty": "exact"
+  },
+  "medium": {
+    "native": "Oil on canvas",
+    "ko": "캔버스에 유채"
+  },
+  "places": [
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/16568"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "16568"
+    }
+  ],
+  "terms": [
+    "water lilies",
+    "surface",
+    "obsession"
+  ],
+  "lookFor": [
+    "수련이 모여 있는 두 무리를 찾아봐요.",
+    "물에 비친 나무와 구름은 어디에 있을까요?",
+    "하늘이나 물가의 땅이 그림에 보이나요?"
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:Claude_Monet_-_Water_Lilies_-_1933.1157_-_Art_Institute_of_Chicago.jpg",
+    "alt": "거의 정사각형 화면 가득 푸른 연못 수면이 펼쳐지고, 왼쪽 아래와 오른쪽 위에 초록 수련 잎과 분홍 꽃 무리가 떠 있으며, 그 사이 물 위에 하늘빛과 흰 구름이 비친다."
+  }
+}

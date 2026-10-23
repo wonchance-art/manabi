@@ -87,6 +87,8 @@ export function classicsFilters(params = {}) {
   const lang = pick('lang'), group = pick('group'), cat = pick('cat'), author = pick('author').trim().slice(0, 80);
   const validCat = Object.hasOwn(CATALOG_CATEGORIES, cat) ? cat : '';
   return {
+    // 구간 — 빈 값 = 책(기본), 'art' = 그림(DISCOVER-ART-001). 그림 구간은 언어 · 작가만 거른다.
+    shelf: pick('shelf') === 'art' ? 'art' : '',
     lang: CLASSICS_LANGUAGES.includes(lang) ? lang : '',
     // 작은 갈래를 고르면 큰 갈래는 그 갈래의 것이다(주소에 엇갈린 둘이 와도 한 길).
     group: validCat ? CATALOG_CATEGORIES[validCat].group : Object.hasOwn(CATALOG_GROUPS, group) ? group : '',
@@ -114,12 +116,22 @@ export function classicsChips(items, filters) {
   return { languages, groups, categories: categories.length > 1 ? categories : [] };
 }
 
-/** 같은 화면 안 이동 주소 — 바꾸는 칸만 덮어쓰고 빈 값은 지운다. 순서 고정(lang · group · cat · author). */
+/** 같은 화면 안 이동 주소 — 바꾸는 칸만 덮어쓰고 빈 값은 지운다. 순서 고정(shelf · lang · group · cat · author). */
 export function classicsHref(filters, patch = {}) {
   const next = { ...filters, ...patch };
   const query = new URLSearchParams();
-  for (const key of ['lang', 'group', 'cat', 'author']) if (next[key]) query.set(key, next[key]);
+  for (const key of ['shelf', 'lang', 'group', 'cat', 'author']) if (next[key]) query.set(key, next[key]);
   return `/discover/classics${query.size ? `?${query}` : ''}`;
+}
+
+/**
+ * 보일 구간(DISCOVER-ART-001) — 고른 구간이 비었으면 다른 구간으로, 탭은 두 구간 모두 열 것이 있을 때만(누르면 빈 화면인 탭을 두지 않는다).
+ * 불러오기 실패도 「열 것이 있다」로 센다 — 실패 안내가 그 구간에 보여야 한다(조용히 다른 구간으로 넘기지 않는다).
+ * @returns {{shelf: ''|'art', tabs: boolean}}
+ */
+export function classicsSection(requested, { books, art }) {
+  const shelf = requested === 'art' ? (art || !books ? 'art' : '') : (books || !art ? '' : 'art');
+  return { shelf, tabs: Boolean(books && art) };
 }
 
 export const classicsGroupLabel = (group) => CATALOG_GROUPS[group];

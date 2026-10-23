@@ -42,8 +42,10 @@ describe('고전 명작 — 저장소 정본에서 만든 책 목록', () => {
     expect(releasedClassics(works, null)).toEqual([]);
   });
   it('주소 질의 → 거르기: 모르는 값은 버리고, 작은 갈래가 큰 갈래를 정한다', () => {
-    expect(classicsFilters({ lang: 'Klingon', group: 'x', cat: 'novel', author: '  김유정 ' })).toEqual({ lang: '', group: '', cat: '', author: '김유정' });
-    expect(classicsFilters({ group: 'nonfiction', cat: 'poetry' })).toEqual({ lang: '', group: 'literature', cat: 'poetry', author: '' });
+    expect(classicsFilters({ lang: 'Klingon', group: 'x', cat: 'novel', author: '  김유정 ' })).toEqual({ shelf: '', lang: '', group: '', cat: '', author: '김유정' });
+    expect(classicsFilters({ group: 'nonfiction', cat: 'poetry' })).toEqual({ shelf: '', lang: '', group: 'literature', cat: 'poetry', author: '' });
+    expect(classicsFilters({ shelf: 'art' }).shelf).toBe('art');
+    expect(classicsFilters({ shelf: 'building' }).shelf, '모르는 구간은 책').toBe('');
     expect(classicsFilters({ lang: ['Korean', 'English'] }).lang).toBe('Korean');
   });
   it('칩은 책이 있는 것만 — 고른 언어에 없는 갈래는 없고, 작은 갈래는 둘 이상일 때만', () => {
@@ -119,11 +121,16 @@ describe('고전 명작 화면', () => {
     expect(failed).toContain('role="alert">고전 명작을 불러오지 못했어요. <a class="manabi-link" href="/discover/classics">다시 시도</a>');
   });
   it('서버 화면이다 — 대조표 · 카탈로그 · 표지를 브라우저 번들에 싣지 않는다', () => {
-    for (const file of ['src/components/web/ClassicsShelf.jsx', 'src/components/web/DiscoverTiles.jsx', 'src/components/books/ClassicCover.jsx', 'src/lib/classicsShelf.js', 'src/app/(app)/discover/classics/page.jsx']) {
+    for (const file of ['src/components/web/ClassicsShelf.jsx', 'src/components/web/ArtShelf.jsx', 'src/components/web/DiscoverTiles.jsx', 'src/components/books/ClassicCover.jsx',
+      'src/lib/classicsShelf.js', 'src/lib/artShelf.js', 'src/app/(app)/discover/classics/page.jsx']) {
       expect(read(file)).not.toMatch(/^['"]use client['"]/m);
     }
-    expect(read('src/app/(app)/discover/classics/page.jsx')).toContain('releasedClassicsOf(suggestionClient())');
-    expect(read('src/lib/server/classicsReading.js')).toContain("client.rpc('canonical_book_shelf')");
+    const page = read('src/app/(app)/discover/classics/page.jsx');
+    expect(page).toContain('releasedClassicsOf(client)');
+    expect(page).toContain('releasedArtOf(client)');
+    const reading = read('src/lib/server/classicsReading.js');
+    expect(reading).toContain("rpcRows(client, 'canonical_book_shelf')");
+    expect(reading).toContain("rpcRows(client, 'canonical_art_shelf')");
   });
 });
 

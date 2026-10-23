@@ -1,6 +1,6 @@
 // 「그림 한 장 읽기」 큐레이션 책 — 카탈로그(src/content/art) → 정본 책 장(ART-P0-3, 2026-10-14 KST 오너 「ㄱㄱ」).
 //
-// 작품 한 점 = 일본어 해설 한 장. 장 원문(rawText)은 카탈로그에 실린 해설 text 그대로이고, 그 SHA-256은 카탈로그의
+// 작품 한 점 = 해설 한 장(책 언어 = 큐레이션 language, 없으면 일본어 — DISCOVER-ART-001에서 영어 책이 더해졌다). 장 원문(rawText)은 카탈로그에 실린 해설 text 그대로이고, 그 SHA-256은 카탈로그의
 // description.textSha256과 같다 — 따로 대조표를 만들지 않고 카탈로그가 곧 정본 대조표다(아오조라 manifest.generated.json 역할).
 // 책·장 모양은 정본 문학책(literaturePublish.js)과 같아서 게시(준비 → 분석 → 검수 → 공개)·서재 묶음·뷰어 장 이동을 그대로 쓴다.
 // 출처는 metadata.literature에 provider 'art'로 싣는다 — rubyLocks·reviewHints 키는 두지 않는다(저자 루비가 없는 현대 해설문).
@@ -12,18 +12,21 @@ import { ART_BOOK_PROVIDER } from './artBookProvider.js';
 // 판별 상수·함수는 의존성 없는 artBookProvider.js가 정본이다(클라이언트 번들에 카탈로그를 싣지 않게) — 여기서는 다시 내보내기만.
 export { ART_BOOK_PROVIDER, isArtBookMaterial } from './artBookProvider.js';
 export const ART_BOOK_VERSION = 1;
-const BOOK_LANGUAGE = 'ja';
-const MATERIAL_LANGUAGE = 'Japanese';
+/** 해설 언어(카탈로그) → 자료 언어(reading_materials metadata.language). */
+const MATERIAL_LANGUAGE = Object.freeze({ ja: 'Japanese', en: 'English', fr: 'French', zh: 'Chinese' });
+/** 큐레이션의 책 언어 — 없으면 일본어(첫 두 권 우키요에 책). */
+export const artCurationLanguage = (curation) => (Object.hasOwn(MATERIAL_LANGUAGE, curation?.language ?? '') ? curation.language : 'ja');
 
-/** 책으로 게시하는 큐레이션 — 작가별 큐레이션은 이 책들의 부분집합이라 따로 게시하지 않는다(같은 해설이 두 행이 되지 않게 — 게시 책끼리도 작품이 겹치지 않는다). */
-export const ART_PUBLISHED_CURATIONS = Object.freeze(['ukiyoe-landscape-hokusai-hiroshige', 'ukiyoe-landscape-hokusai-hiroshige-2']);
+/** 책으로 게시하는 큐레이션 — 작가별 큐레이션은 이 책들의 부분집합이라 따로 게시하지 않는다(같은 해설이 두 행이 되지 않게 — 게시 책끼리도 작품이 겹치지 않는다).
+ *  차례는 관리자 게시 목록 차례다 — 「시카고 미술관의 명화」 1 · 2(DISCOVER-ART-001, 영어 해설)를 먼저. 2권은 1권과 작품이 겹치지 않는다. */
+export const ART_PUBLISHED_CURATIONS = Object.freeze(['aic-famous-paintings', 'aic-famous-paintings-2', 'ukiyoe-landscape-hokusai-hiroshige', 'ukiyoe-landscape-hokusai-hiroshige-2']);
 
 export const artBookKey = (curationId) => `art-${curationId}`;
 
 const unique = (values) => [...new Set(values)];
 
 /**
- * 큐레이션 → 정본 책(literaturePublish.js가 받는 모양). 없는 큐레이션·일본어 해설 없는 작품이면 throw(fail-closed).
+ * 큐레이션 → 정본 책(literaturePublish.js가 받는 모양). 없는 큐레이션·책 언어 해설이 없는 작품이면 throw(fail-closed).
  * @returns {{schemaVersion, book: {key, title, author, level, total}, chapters: Array<{order, title, materialTitle, rawText, metadata}>}}
  */
 export function createArtBook(curationId, catalog = ART_CATALOG) {
@@ -39,13 +42,14 @@ export function createArtBook(curationId, catalog = ART_CATALOG) {
     if (!work) throw new TypeError(`${curationId}: 없는 작품 ${id}`);
     return work;
   });
-  const author = unique(works.map((work) => artistById.get(work.artist)?.name?.native).filter(Boolean)).join('・');
+  const language = artCurationLanguage(curation);
+  const author = unique(works.map((work) => artistById.get(work.artist)?.name?.native).filter(Boolean)).join(language === 'ja' ? '・' : ', ');
   const key = artBookKey(curationId);
   const total = works.length;
   const book = { key, title, author, level: curation.level, total };
   const chapters = works.map((work, index) => {
-    const description = work.descriptions.find((item) => item.language === BOOK_LANGUAGE);
-    if (!description) throw new TypeError(`${work.id}: 일본어 해설이 없다 — 책 장이 될 수 없다`);
+    const description = work.descriptions.find((item) => item.language === language);
+    if (!description) throw new TypeError(`${work.id}: ${language} 해설이 없다 — 책 장이 될 수 없다`);
     const order = index + 1;
     return {
       order,
@@ -53,7 +57,7 @@ export function createArtBook(curationId, catalog = ART_CATALOG) {
       materialTitle: `${title} — ${work.title.native}`,
       rawText: description.text,
       metadata: {
-        language: MATERIAL_LANGUAGE,
+        language: MATERIAL_LANGUAGE[language],
         level: curation.level,
         book: { key, title, author, order, total },
         literature: {
@@ -91,7 +95,10 @@ export function artBookPublishable(book, catalog = ART_CATALOG) {
   return book.chapters.every((chapter) => {
     const literature = chapter?.metadata?.literature;
     if (literature?.provider !== ART_BOOK_PROVIDER) return false;
-    const description = works.get(literature.work)?.descriptions.find((item) => item.sourceId === literature.sourceId && item.language === BOOK_LANGUAGE);
+    const curation = catalog.curations.find((item) => item.id === literature.curation);
+    if (!curation) return false;
+    const language = artCurationLanguage(curation);
+    const description = works.get(literature.work)?.descriptions.find((item) => item.sourceId === literature.sourceId && item.language === language);
     return Boolean(description)
       && description.text === chapter.rawText
       && description.textSha256 === literature.textSha256

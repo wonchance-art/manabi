@@ -1,0 +1,52 @@
+{
+  "id": "toulouse-lautrec-at-the-moulin-rouge",
+  "wikidata": "Q3607521",
+  "genre": "painting",
+  "artist": "henri-de-toulouse-lautrec",
+  "title": {
+    "native": "At the Moulin Rouge",
+    "ko": "물랭루주에서",
+    "lang": "en"
+  },
+  "hook": "물랭루주의 밤 — 화가 자신도 뒤편에 서 있다",
+  "date": {
+    "text": "1892–95",
+    "source": "aic",
+    "startYear": 1892,
+    "endYear": 1895,
+    "certainty": "range"
+  },
+  "medium": {
+    "native": "Oil on canvas",
+    "ko": "캔버스에 유채"
+  },
+  "places": [
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/61128"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "61128"
+    }
+  ],
+  "terms": [
+    "café-concerts",
+    "habitué",
+    "artificial glare"
+  ],
+  "lookFor": [
+    "오른쪽 끝, 초록빛으로 비친 얼굴을 찾아봐요.",
+    "뒤편에 나란히 선 키 작은 화가와 키 큰 사촌을 찾아봐요.",
+    "거울 앞에서 머리를 매만지는 무용수를 찾아봐요."
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:Henri_de_Toulouse-Lautrec_-_At_the_Moulin_Rouge_-_1928.610_-_Art_Institute_of_Chicago.jpg",
+    "alt": "밤의 카바레 안, 탁자에 둘러앉은 신사와 숙녀들 뒤로 사람들이 서 있다. 오른쪽 끝에는 조명을 받아 초록빛으로 보이는 여인의 얼굴이 화면 밖으로 반쯤 잘려 있고, 붉은 머리 여인들이 등을 보이고 있다."
+  }
+}

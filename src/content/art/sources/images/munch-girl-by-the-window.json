@@ -1,0 +1,20 @@
+{
+  "bytes": 101168,
+  "file": "munch-girl-by-the-window.jpg",
+  "height": 800,
+  "note": "DISCOVER-ART-001 — 시카고 미술관 디지털화본(퍼블릭 도메인)을 위키미디어 공용 파일 페이지에서 받았다(Wikidata 작품 항목 P18). 공용 API 요청 제한(429) 때문에 record는 파일 페이지 · 시카고 미술관 기록에서 손으로 옮겼다. 원 파일은 upload.wikimedia.org 960px 썸네일을 긴 변 800px로 줄인 것이다(README 「이미지」).",
+  "record": {
+    "accession": "2000.50",
+    "artist": "Edvard Munch",
+    "date": "1893",
+    "holder": "Art Institute of Chicago",
+    "license": "public-domain",
+    "title": "The Girl by the Window"
+  },
+  "sha256": "08d5d2ddbade3fe9331d4c789a4cd5905e882c06192d6ef709a688159f6fabcb",
+  "source": "commons",
+  "sourceId": "File:Edvard_Munch_-_The_Girl_by_the_Window_-_2000.50_-_Art_Institute_of_Chicago.jpg",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Edvard_Munch_-_The_Girl_by_the_Window_-_2000.50_-_Art_Institute_of_Chicago.jpg",
+  "width": 541,
+  "workId": "munch-girl-by-the-window"
+}

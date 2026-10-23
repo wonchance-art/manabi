@@ -1,0 +1,20 @@
+{
+  "bytes": 37856,
+  "file": "mondrian-lozenge-composition.jpg",
+  "height": 800,
+  "note": "DISCOVER-ART-001 — 시카고 미술관 디지털화본(퍼블릭 도메인)을 위키미디어 공용 파일 페이지에서 받았다(Wikidata 작품 항목 P18). 공용 API 요청 제한(429) 때문에 record는 파일 페이지 · 시카고 미술관 기록에서 손으로 옮겼다. 원 파일은 upload.wikimedia.org 960px 썸네일을 긴 변 800px로 줄인 것이다(README 「이미지」).",
+  "record": {
+    "accession": "1957.307",
+    "artist": "Piet Mondrian",
+    "date": "1921",
+    "holder": "Art Institute of Chicago",
+    "license": "public-domain",
+    "title": "Lozenge Composition with Yellow, Black, Blue, Red, and Gray"
+  },
+  "sha256": "5aee992718b927f2515edd7ff11e6713c2562332ea13096973d635a75df52a49",
+  "source": "commons",
+  "sourceId": "File:Piet_Mondrian_-_Lozenge_Composition_with_Yellow,_Black,_Blue,_Red,_and_Gray_-_1957.307_-_Art_Institute_of_Chicago.jpg",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Piet_Mondrian_-_Lozenge_Composition_with_Yellow,_Black,_Blue,_Red,_and_Gray_-_1957.307_-_Art_Institute_of_Chicago.jpg",
+  "width": 800,
+  "workId": "mondrian-lozenge-composition"
+}

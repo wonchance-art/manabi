@@ -11,7 +11,12 @@ import { releaseState, releasesTable } from '../../../../../lib/__tests__/helper
 // 관리자 큐레이션 책 게시 API(ART-P0-3) — 정본 문학책과 같은 처리(bookPublishRoute)로 준비(비공개) → 분석 → 검수 → 공개.
 // 원문은 카탈로그에서만 오고, 출처 기록이 카탈로그와 어긋난 책은 게시하지 않는다(422).
 
-const [book, second] = artBooks();
+const ALL_BOOKS = artBooks();
+const byKey = (key) => ALL_BOOKS.find((item) => item.book.key === key);
+const famous = byKey('art-aic-famous-paintings'); // 시카고 미술관의 명화(영어 8장, DISCOVER-ART-001)
+const famous2 = byKey('art-aic-famous-paintings-2'); // 시카고 미술관의 명화 2(영어 8장)
+const book = byKey('art-ukiyoe-landscape-hokusai-hiroshige');
+const second = byKey('art-ukiyoe-landscape-hokusai-hiroshige-2');
 const KEY = book.book.key; // art-ukiyoe-landscape-hokusai-hiroshige(8장)
 const URL_BASE = 'http://localhost/api/admin/art-books';
 
@@ -85,13 +90,13 @@ describe('관리자 큐레이션 책 게시 API', () => {
     expect(db.supabase.from).not.toHaveBeenCalled();
   });
 
-  it('목록: 큐레이션 책 두 권 — 권리 근거 대신 장별 출처·라이선스·원문 링크·크레딧, 원문은 싣지 않는다', async () => {
+  it('목록: 큐레이션 책 네 권(명화 1 · 2 먼저) — 권리 근거 대신 장별 출처·라이선스·원문 링크·크레딧, 원문은 싣지 않는다', async () => {
     const response = await GET(new Request(URL_BASE));
     expect(response.headers.get('Cache-Control')).toBe('private, no-store');
     const { books } = await response.json();
     expect(books.map((item) => [item.key, item.total, item.publishable, item.stage]))
-      .toEqual([[KEY, 8, true, 'unpublished'], [second.book.key, 7, true, 'unpublished']]);
-    const [summary] = books;
+      .toEqual([[famous.book.key, 8, true, 'unpublished'], [famous2.book.key, 8, true, 'unpublished'], [KEY, 8, true, 'unpublished'], [second.book.key, 7, true, 'unpublished']]);
+    const summary = books.find((item) => item.key === KEY);
     expect(summary).not.toHaveProperty('rights');
     expect(summary.provenance.provider).toBe('art');
     expect(summary.provenance.chapters.map((item) => item.order)).toEqual(ORDERS);
@@ -131,7 +136,7 @@ describe('관리자 큐레이션 책 게시 API', () => {
     expect((await response.json()).released).toHaveLength(8);
     expect(db.state.rows.map((item) => item.visibility)).toEqual(ORDERS.map(() => 'public'));
     const { books } = await (await GET(new Request(URL_BASE))).json();
-    expect(books[0].stage).toBe('released');
+    expect(books.find((item) => item.key === KEY).stage).toBe('released');
     // 발행 기록(CANON-RELEASE-001) — 409로 막힌 두 번은 기록하지 않고, 공개 때 관리자 본인 이름으로 한 번(on conflict do nothing)
     expect(db.state.releaseWrites).toEqual([{ value: { book_key: KEY, owner_id: 'admin-id' }, options: { onConflict: 'book_key', ignoreDuplicates: true } }]);
     expect(db.state.releases).toEqual([{ book_key: KEY, owner_id: 'admin-id' }]);

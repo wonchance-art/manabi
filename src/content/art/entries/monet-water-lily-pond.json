@@ -1,0 +1,51 @@
+{
+  "id": "monet-water-lily-pond",
+  "wikidata": "Q20269443",
+  "genre": "painting",
+  "artist": "claude-monet",
+  "title": {
+    "native": "Water Lily Pond",
+    "ko": "수련 연못",
+    "lang": "en"
+  },
+  "hook": "모네가 늪을 파서 만든 연못과 일본식 나무다리",
+  "date": {
+    "text": "1900",
+    "source": "aic",
+    "startYear": 1900,
+    "endYear": 1900,
+    "certainty": "exact"
+  },
+  "medium": {
+    "native": "Oil on canvas",
+    "ko": "캔버스에 유채"
+  },
+  "places": [
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/87088"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "87088"
+    }
+  ],
+  "terms": [
+    "marshy",
+    "Japanese-style",
+    "reflections"
+  ],
+  "lookFor": [
+    "다리 아래 물에서 수련과 풀 그림자가 섞이는 곳을 찾아봐요.",
+    "다리는 어떤 모양으로 휘어 있을까요?"
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:Claude_Monet_-_Water_Lily_Pond_-_1933.441_-_Art_Institute_of_Chicago.jpg",
+    "alt": "버드나무와 풀이 우거진 연못 위로 초록 아치형 나무다리가 가로지르고, 아래 수면에는 수련 잎과 붉고 흰 꽃이 가득 떠 있다."
+  }
+}

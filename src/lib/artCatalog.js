@@ -49,7 +49,7 @@ export const ART_CURATION_KINDS = Object.freeze(['artist', 'period', 'theme']);
 export const ART_FORBIDDEN_KEYS = Object.freeze(['onView', 'onDisplay', 'exhibited', 'gallery', 'room']);
 
 /** 한도 — DailyArt 「설명이 길다」 선례(설계 §16-7). 해설은 200–600자 목표, 1,500자 상한. */
-export const ART_LIMITS = Object.freeze({ descriptionMax: 1500, lifeMax: 400, terms: 3, lookFor: 3 });
+export const ART_LIMITS = Object.freeze({ descriptionMax: 1500, lifeMax: 400, terms: 3, lookFor: 3, hookMax: 40 });
 
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const QID = /^Q[1-9]\d*$/;
@@ -68,6 +68,9 @@ const INTERNAL_MEMO = /\d{8}_h\d+/;
 const READING_MARKS = /[＠@][\u3040-\u30ff]{1,12}[＠@]|\+[\u3040-\u30ff]{1,12}\+|【[\u3040-\u30ff]{1,12}】/;
 /** 일본어 해설에 섞인 영어 문장(낱말 여섯 개 이상이 띄어쓰기로 이어짐, 숫자 낱말 포함) — 湖畔(cobas-159785)처럼 일본어·영어 해설이 한 칸에 이어 붙은 원문은 일본어 장이 될 수 없다. */
 const ENGLISH_SENTENCE = /[A-Za-z]+(?:[ ,'’-]+(?:[A-Za-z]+|\d+)){5,}/;
+/** 라틴 합자 글자(ﬁ · ﬂ 등 U+FB00–FB06) — 인쇄본에서 글을 뽑을 때 깨진 흔적이다(AIC 「Arrival of the Normandy Train」 「artiﬁ cial」 실측 2026-10-23 KST).
+ *  학습자에게 깨진 낱말이 보이고 단어 찾기도 어긋난다 — 고치지 않고 싣지 않는다. */
+const LIGATURES = /[\ufb00-\ufb06]/;
 
 const isObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 const isText = (value) => typeof value === 'string' && value.trim().length > 0;
@@ -91,6 +94,9 @@ function checkName(name, path, errors) {
   if (!isObject(name) || !isText(name.native)) errors.push(`${path}.native 이름이 필요하다`);
   if (!isObject(name) || !isText(name.ko)) errors.push(`${path}.ko 이름이 필요하다`);
 }
+
+/** 원어 제목의 언어(화면 lang) — 없으면 일본어(우키요에 · 근대 일본 작품). 「The Bedroom」 같은 미술관 영어 제목은 en. */
+export const artTitleLang = (title) => (typeof title?.lang === 'string' && LANGUAGE.test(title.lang) ? title.lang : 'ja');
 
 function checkIds(list, kind, errors) {
   const ids = new Set();
@@ -153,6 +159,7 @@ function checkDescription(description, at, errors) {
     errors.push(`${at}.text: 해설 1–${ART_LIMITS.descriptionMax}자`);
   } else if (INTERNAL_MEMO.test(description.text)) errors.push(`${at}.text: 박물관 내부 메모가 섞인 해설은 싣지 않는다`);
   else if (READING_MARKS.test(description.text)) errors.push(`${at}.text: 읽기 표시(＠よみ＠·+よみ+·【よみ】)가 섞인 해설은 싣지 않는다`);
+  else if (LIGATURES.test(description.text)) errors.push(`${at}.text: 합자 글자(ﬁ · ﬂ 등 — 원문 추출 깨짐)가 섞인 해설은 싣지 않는다`);
   else if (description.language === 'ja' && ENGLISH_SENTENCE.test(description.text)) errors.push(`${at}.text: 일본어 해설에 영어 문장이 섞여 있다(싣지 않는다)`);
   if (!SHA256.test(description.textSha256 ?? '')) errors.push(`${at}.textSha256: 원문 해시가 필요하다`);
 }
@@ -161,6 +168,11 @@ function checkWork(work, at, refs, errors) {
   if (!refs.artistIds.has(work.artist)) errors.push(`${at}.artist: 없는 작가 ${work.artist}`);
   if (!ART_GENRES.includes(work.genre)) errors.push(`${at}.genre: ${ART_GENRES.join('|')}`);
   checkName(work.title, `${at}.title`, errors);
+  if (isObject(work.title) && work.title.lang !== undefined && !LANGUAGE.test(work.title.lang)) errors.push(`${at}.title.lang: ja|zh|en|fr`);
+  // 한 줄 이야기(DISCOVER-ART-001) — 고전 명작 「그림」 카드에 그림과 함께 보이는 우리가 쓴 한국어 화면 문구(작가 생애 요약과 같은 지위, 학습 원문 아님).
+  if (work.hook !== undefined && (!isText(work.hook) || work.hook.length > ART_LIMITS.hookMax)) {
+    errors.push(`${at}.hook: 한 줄 이야기는 1–${ART_LIMITS.hookMax}자(우리가 쓴 한국어)`);
+  }
   const date = work.date;
   if (!isObject(date) || !isText(date.text)) errors.push(`${at}.date.text: 원문 표기가 필요하다`);
   else if (!isYear(date.startYear) || !isYear(date.endYear) || date.startYear > date.endYear) errors.push(`${at}.date: startYear ≤ endYear`);
@@ -194,10 +206,10 @@ function checkWork(work, at, refs, errors) {
   if (work.lookFor !== undefined && (!Array.isArray(work.lookFor) || work.lookFor.length > ART_LIMITS.lookFor || !work.lookFor.every(isText))) {
     errors.push(`${at}.lookFor: 찾아볼 것 0–${ART_LIMITS.lookFor}개`);
   }
-  // 핵심 용어는 읽기 자료(일본어 해설)에 실제로 나오는 말이어야 한다 — 본문에서 만나야 단어 저장으로 이어진다.
-  const japanese = descriptions.filter((description) => description?.language === 'ja').map((description) => description.text ?? '');
+  // 핵심 용어는 읽기 자료(첫 해설 — 책 장이 되는 해설)에 실제로 나오는 말이어야 한다 — 본문에서 만나야 단어 저장으로 이어진다.
+  const reading = descriptions[0]?.text ?? '';
   for (const term of Array.isArray(work.terms) ? work.terms : []) {
-    if (isText(term) && !japanese.some((text) => text.includes(term))) errors.push(`${at}.terms: 「${term}」가 일본어 해설에 없다`);
+    if (isText(term) && !reading.includes(term)) errors.push(`${at}.terms: 「${term}」가 읽기 해설(${descriptions[0]?.language ?? '없음'})에 없다`);
   }
   // 찾아볼 것은 그림을 보며 하는 질문 — 그림이 없으면 두지 않는다.
   if (Array.isArray(work.lookFor) && work.lookFor.length > 0 && !work.image) errors.push(`${at}.lookFor: 그림이 없으면 찾아볼 것을 두지 않는다`);
@@ -223,6 +235,8 @@ function checkWork(work, at, refs, errors) {
 
 function checkCuration(curation, at, workIds, errors) {
   if (!ART_CURATION_KINDS.includes(curation.kind)) errors.push(`${at}.kind: ${ART_CURATION_KINDS.join('|')}`);
+  // 책 언어 — 없으면 일본어. 책 장은 작품마다 이 언어의 해설이다(artBook.js).
+  if (curation.language !== undefined && !LANGUAGE.test(curation.language)) errors.push(`${at}.language: ja|zh|en|fr`);
   if (!isObject(curation.title) || !isText(curation.title.ko)) errors.push(`${at}.title.ko가 필요하다`);
   const works = Array.isArray(curation.works) ? curation.works : [];
   if (works.length < 2) errors.push(`${at}.works: 두 점 이상`);

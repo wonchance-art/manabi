@@ -1,0 +1,20 @@
+{
+  "bytes": 123952,
+  "file": "monet-stacks-of-wheat.jpg",
+  "height": 474,
+  "note": "DISCOVER-ART-001 — 시카고 미술관 디지털화본(퍼블릭 도메인)을 위키미디어 공용 파일 페이지에서 받았다(Wikidata 작품 항목 P18). 공용 API 요청 제한(429) 때문에 record는 파일 페이지 · 시카고 미술관 기록에서 손으로 옮겼다. 원 파일은 upload.wikimedia.org 960px 썸네일을 긴 변 800px로 줄인 것이다(README 「이미지」).",
+  "record": {
+    "accession": "1985.1103",
+    "artist": "Claude Monet",
+    "date": "1890–91",
+    "holder": "Art Institute of Chicago",
+    "license": "public-domain",
+    "title": "Stacks of Wheat (End of Summer)"
+  },
+  "sha256": "ccc708109c6bef4b5244c2210a1d98a0fb8f09de24ccd7b720e598e1c5c5704c",
+  "source": "commons",
+  "sourceId": "File:Claude_Monet_-_Stacks_of_Wheat_(End_of_Summer)_-_1985.1103_-_Art_Institute_of_Chicago.jpg",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Claude_Monet_-_Stacks_of_Wheat_(End_of_Summer)_-_1985.1103_-_Art_Institute_of_Chicago.jpg",
+  "width": 800,
+  "workId": "monet-stacks-of-wheat"
+}

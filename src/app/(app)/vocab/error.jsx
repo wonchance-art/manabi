@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect } from 'react';
+import { reloadOnceForChunkError } from '@/lib/chunkReload';
 
 export default function VocabError({ error, reset }) {
-  useEffect(() => { console.error('VocabError:', error); }, [error]);
+  useEffect(() => { console.error('VocabError:', error); reloadOnceForChunkError(error); }, [error]);
 
   return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>

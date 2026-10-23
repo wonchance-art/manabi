@@ -1,0 +1,20 @@
+{
+  "bytes": 91862,
+  "file": "cassatt-childs-bath.jpg",
+  "height": 800,
+  "note": "DISCOVER-ART-001 — 시카고 미술관 디지털화본(퍼블릭 도메인)을 위키미디어 공용 파일 페이지에서 받았다(Wikidata 작품 항목 P18). 공용 API 요청 제한(429) 때문에 record는 파일 페이지 · 시카고 미술관 기록에서 손으로 옮겼다. 원 파일은 upload.wikimedia.org 960px 썸네일을 긴 변 800px로 줄인 것이다(README 「이미지」).",
+  "record": {
+    "accession": "1910.2",
+    "artist": "Mary Cassatt",
+    "date": "1893",
+    "holder": "Art Institute of Chicago",
+    "license": "public-domain",
+    "title": "The Child's Bath"
+  },
+  "sha256": "4be393ead06bd038a1b1fa624447d1de47162415d1082fdc153888a9f0b5db8c",
+  "source": "commons",
+  "sourceId": "File:Mary_Cassatt_-_The_Child's_Bath_-_Google_Art_Project.jpg",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mary_Cassatt_-_The_Child's_Bath_-_Google_Art_Project.jpg",
+  "width": 524,
+  "workId": "cassatt-childs-bath"
+}

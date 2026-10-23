@@ -272,7 +272,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .viewer-layout .word-detail-card__actrow {flex-wrap:wrap;}
 .viewer-layout .viewer-inspector .btn--ghost {color:var(--reader-ink);}
 /* One inspector, two retained scroll panes; no duplicate desktop/mobile cards. */
-.viewer-inspector {position:fixed;inset:auto 12px max(8px,env(safe-area-inset-bottom));z-index:95;max-width:760px;margin-inline:auto;display:flex;flex-direction:column;height:min(55dvh,440px);max-height:calc(100dvh - 90px);border:1px solid var(--reader-line);border-radius:16px;background:var(--reader-paper);color:var(--reader-ink);box-shadow:0 8px 28px color-mix(in srgb,var(--reader-ink) 12%,transparent);overflow:hidden;}
+.viewer-inspector {position:fixed;inset:auto calc(12px + env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left,0px));z-index:95;max-width:760px;margin-inline:auto;display:flex;flex-direction:column;height:min(55dvh,440px);max-height:calc(100dvh - 90px);border:1px solid var(--reader-line);border-radius:16px;background:var(--reader-paper);color:var(--reader-ink);box-shadow:0 8px 28px color-mix(in srgb,var(--reader-ink) 12%,transparent);overflow:hidden;}
 .viewer-inspector.is-expanded {height:85dvh;}
 .viewer-inspector.is-collapsed {height:auto;}
 .viewer-inspector__header {display:flex;gap:6px;align-items:center;flex:none;padding:4px 12px;border-bottom:1px solid var(--reader-line);}
@@ -538,7 +538,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 }
 
 /* Reuse the same word card inside the classroom, without covering the board. */
-.manabi-app .viewer-layout .viewer-inspector--board {position:fixed;inset:auto 16px calc(12px + var(--reader-keyboard-inset,0px)) auto;width:min(400px,max(300px,calc(100% - var(--board-ratio) - 32px)));max-width:calc(100% - 24px);height:min(58dvh,480px);max-height:calc(var(--reader-visual-height,100dvh) - 130px);margin:0;z-index:95;box-shadow:0 12px 32px color-mix(in srgb,var(--reader-ink) 12%,transparent);}
+.manabi-app .viewer-layout .viewer-inspector--board {position:fixed;inset:auto max(16px,env(safe-area-inset-right,0px)) calc(max(12px,env(safe-area-inset-bottom,0px)) + var(--reader-keyboard-inset,0px)) auto;width:min(400px,max(300px,calc(100% - var(--board-ratio) - 32px)));max-width:calc(100% - 24px);height:min(58dvh,480px);max-height:calc(var(--reader-visual-height,100dvh) - 130px);margin:0;z-index:95;box-shadow:0 12px 32px color-mix(in srgb,var(--reader-ink) 12%,transparent);}
 .manabi-app .viewer-layout .viewer-inspector--board.is-expanded {height:calc(var(--reader-visual-height,100dvh) - 140px);}
 .manabi-app .viewer-layout .viewer-inspector--board.is-collapsed {display:none;}
 .manabi-app .viewer-layout .viewer-inspector--board .viewer-inspector__expand {display:block;}
@@ -590,7 +590,10 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .reader-settings .reader-setting-select>span {flex:none;}
 .reader-settings .reader-setting-select select {flex:1;min-width:0;min-height:44px;padding:0 8px;border:1px solid var(--reader-line);border-radius:3px;background:var(--reader-paper);color:var(--reader-ink);font:inherit;font-size:.85rem;font-weight:400;cursor:pointer;}
 .reader-settings .reader-setting-select select:disabled {opacity:.55;cursor:default;}
-.reader-settings .reader-setting-select:has(select:disabled)>span {color:var(--reader-muted);}
+/* :has()는 칠할 요소 자신에 건다(TAP-INP-HAS-001) — 「부모:has(…) > span」처럼 :has 뒤에 태그만 남으면 Blink가 그 태그를 모든
+   :has 무효화에 합쳐, 앱 어디서든 요소가 하나 붙을 때마다 문서의 모든 span을 다시 계산했다(뷰어 390 실측: 요소 하나 붙이는 데 1,176 → 782개).
+   특이도·대상은 같다 — 이름(span)이 꺼진 select 앞 형제다. */
+.reader-settings .reader-setting-select>span:has(~select:disabled) {color:var(--reader-muted);}
 /* 선택 묶음의 「?」는 이름 줄 오른쪽 — 44px 타깃은 그대로, 위아래 음수 여백으로 줄 높이를 늘리지 않는다. 펼치면 아래로 한 줄. */
 .reader-settings .reader-setting-choices__head {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 8px;}
 .reader-settings .reader-setting-choices__head>.reader-settings__help {margin:-12px 0;}
@@ -598,7 +601,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .reader-settings .reader-setting-choices__head>.reader-settings__help[open]>summary {margin-left:auto;}
 /* 쓸 수 없는 옵션: 꺼진 채 흐리게 + 이유 한 줄. */
 .reader-settings .reader-setting-reason {flex:0 0 100%;display:block;margin:0 0 6px;font-size:.78rem;line-height:1.5;color:var(--reader-muted);overflow-wrap:anywhere;}
-.reader-settings .reader-setting-toggle:has(input:disabled)>label {cursor:default;color:var(--reader-muted);}
+.reader-settings .reader-setting-toggle>label:has(input:disabled) {cursor:default;color:var(--reader-muted);} /* 같은 이유 — 꺼진 input은 label 안에 있다 */
 .reader-settings .reader-setting-choices--off>b {color:var(--reader-muted);}
 .reader-settings .reader-setting-choices--off button {opacity:.5;cursor:default;}
 /* 범례 — 상태 견본은 본문과 같은 클래스(.word-token--*)를 --hl 범위에서 그린다. 바탕은 테마 클래스의 면 칠 대신 창 종이. */

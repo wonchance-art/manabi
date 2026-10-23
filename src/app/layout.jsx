@@ -1,6 +1,7 @@
 import { Inter, Noto_Sans, Noto_Sans_KR, Noto_Sans_JP } from 'next/font/google';
 import '../index.css';
 import Providers from './providers';
+import { INSTALL_CAPTURE_SCRIPT } from '@/lib/installPrompt';
 
 // Inter는 미리 받지 않는다(FONT-PRELOAD-001): 앱 화면(.manabi-app)은 Noto Sans KR · Manrope가 먼저라 Inter 라틴 조각(47kB)이
 // 모든 페이지에서 미리 받아지고 쓰이지 않았다(Preview b8fc2b62 실측 2026-10-17 KST — 배움 · 산책 · 교재 · 뷰어 · 로그인 · 단어 목록 ·
@@ -80,6 +81,15 @@ export const metadata = {
   },
 };
 
+// 화면 가장자리까지 그린다(PWA-SHELL-001). iOS는 viewport-fit=cover가 없으면 env(safe-area-inset-*)를 0으로 돌려줘서(설치 앱 세로 화면 포함)
+// 하단 메뉴 · 채점 막대 · 시트에 이미 적어 둔 홈 막대 여백 49곳이 모두 0이었다. 노치 가로 화면의 좌우는 web-shell.css가 받는다.
+// 확대 상한 · 확대 금지 값은 두지 않는다 — 손가락 확대는 접근성 몫이다(두 번 탭 확대만 touch-action이 막는다).
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
+
 // 미리 열 Supabase 출처 — 값이 없거나 주소가 아니면 힌트를 빼고 넘어간다(힌트 하나 때문에 모든 화면이 깨지지 않게).
 const SUPABASE_ORIGIN = (() => {
   try {
@@ -94,6 +104,8 @@ export default function RootLayout({ children }) {
     <html lang="ko" suppressHydrationWarning>
       <head>
         <meta name="theme-color" content="#F6F4EE" />
+        {/* 표준 이름(Chrome은 apple- 접두 이름만 있으면 콘솔에 지원 종료 경고를 낸다) + iOS 옛 이름을 함께 둔다. */}
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         {/* 휴대폰 맨 위 상태 표시줄(시각 · 배터리) — 투명 표시줄(검은 반투명 값)은 표시줄을 비워 두고 페이지를 그 밑으로 밀어 넣어
             흰 글자가 화면 머리 위에 겹쳤다. default = 표시줄이 제 칸을 갖고 페이지는 그 아래에서 시작한다(오너 지시 2026-10-19 KST). */}
@@ -106,12 +118,12 @@ export default function RootLayout({ children }) {
             새로 맺느라 389ms를 썼다(운영 /viewer/45 실측, 2026-10-17 KST). supabase-js는 자격 증명 없이 보내므로 crossOrigin="anonymous"여야
             그 연결을 다시 쓴다. */}
         {SUPABASE_ORIGIN && <link rel="preconnect" href={SUPABASE_ORIGIN} crossOrigin="anonymous" />}
-        {/* 테마 깜빡임 방지 + SW 등록 */}
+        {/* 설치 이벤트 보관(맨 앞 — 아래 localStorage가 막혀도 받는다, src/lib/installPrompt.js) + 테마 깜빡임 방지 + SW 등록 */}
         <script
           dangerouslySetInnerHTML={{
             /* SW는 프로덕션에서만 등록 — dev에서는 옛 번들 캐시 서빙으로 Fast Refresh·검수를 깨뜨려
                기존 등록까지 적극 해제한다(스테일 번들 사고 2회 재발 방지, 2026-07-22). */
-            __html: `(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);${
+            __html: `(function(){${INSTALL_CAPTURE_SCRIPT}var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);${
               process.env.NODE_ENV === 'production'
                 ? "if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js')})}"
                 : "if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister()})});if(window.caches){caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})})}}"

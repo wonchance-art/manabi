@@ -1,0 +1,20 @@
+{
+  "bytes": 113821,
+  "file": "caillebotte-paris-street-rainy-day.jpg",
+  "height": 621,
+  "note": "DISCOVER-ART-001 — 시카고 미술관 디지털화본(퍼블릭 도메인)을 위키미디어 공용 파일 페이지에서 받았다(Wikidata 작품 항목 P18). 공용 API 요청 제한(429) 때문에 record는 파일 페이지 · 시카고 미술관 기록에서 손으로 옮겼다. 원 파일은 upload.wikimedia.org 960px 썸네일을 긴 변 800px로 줄인 것이다(README 「이미지」).",
+  "record": {
+    "accession": "1964.336",
+    "artist": "Gustave Caillebotte",
+    "date": "1877",
+    "holder": "Art Institute of Chicago",
+    "license": "public-domain",
+    "title": "Paris Street; Rainy Day"
+  },
+  "sha256": "5bd78080ee616691d6c74a79c4594bc78d03c7a7690fc79aeaaf08af440f764a",
+  "source": "commons",
+  "sourceId": "File:Gustave_Caillebotte_-_Paris_Street,_Rainy_Day_-_1964.336_-_Art_Institute_of_Chicago.jpg",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Gustave_Caillebotte_-_Paris_Street,_Rainy_Day_-_1964.336_-_Art_Institute_of_Chicago.jpg",
+  "width": 800,
+  "workId": "caillebotte-paris-street-rainy-day"
+}
