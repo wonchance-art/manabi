@@ -248,6 +248,24 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
 /* 이미지 드래그 고스트 차단(webkit) — 앱 UI에서 이미지가 끌려나오지 않게 */
 img { -webkit-user-drag: none; }
 
+/* ── 휴대폰 손맛(PWA-SHELL-001 ③ — 화면 배치는 바꾸지 않는다) ──
+   ① 글자 크기 부풀리기 끔: iOS는 가로로 눕히면 본문 글자를 제멋대로 키운다. 100%라 사용자 글자 크기 설정 · 확대는 그대로.
+   ② 두 번 탭 확대 끔(누르는 것만): O · X · 채점을 빨리 두 번 누르면 화면이 확대됐다. 두 손가락 확대 · 스크롤은 그대로(manipulation).
+      제스처를 직접 받는 곳(그립 · 시트 손잡이 · 쪽 넘김)은 클래스 규칙이 이 요소 규칙을 이긴다.
+   ③ 탭 하이라이트(누르면 덮이는 회색/파란 상자)는 자기 눌림(:active)이 있는 것만 끈다 — 눌림이 없는 단추는 이 상자가 유일한 반응이라 둔다.
+      하단 메뉴는 대기 밑줄(NavPendingMark)과 지금 탭 색이 반응이다. 목록은 계약(pwaShell.test.js)이 :active 짝과 함께 지킨다.
+      하이라이트 색은 상속되므로 안에 단추를 품은 카드(.lw-card · .lv-entry--solo)는 넣지 않는다. */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+a, button, input, select, textarea, label, summary, [role="button"] { touch-action: manipulation; }
+.btn, .review-score-btn, .auth-google-btn, .auth-submit, .sentence-nav__btn, .viewer-sheet-bar__btn--nav,
+.lv-fab--save, .lv-fab--ex, .lv-fab--o, .lv-fab--x, .lw-grade, .lw-two__btn, .lw-one__reveal, .mobile-nav__link,
+.manabi-app a.learn-tile, .manabi-app .lv-view button, .manabi-app .lv-chips a, .manabi-app .manabi-toc-group li > a {
+  -webkit-tap-highlight-color: transparent;
+}
+
 a {
   text-decoration: none;
   color: inherit;

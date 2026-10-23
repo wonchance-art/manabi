@@ -77,3 +77,43 @@ describe('PWA-SHELL-001 ② 화면 가장자리 — viewport-fit=cover와 안전
     expect(read('src/components/books/reading-shell.css')).toMatch(/\.manabi-app \.app-layout\{[^}]*min-height:100vh;min-height:100dvh\}/);
   });
 });
+
+describe('PWA-SHELL-001 ③ 터치 정책 — 글자 부풀리기 · 두 번 탭 확대 · 탭 하이라이트', () => {
+  const css = () => read('src/index.css');
+  const allCss = () => cssFiles().map(read).join('\n');
+
+  it('글자 크기 부풀리기는 100%로 끈다(none 금지 — 사용자 글자 크기 · 확대를 막는다)', () => {
+    expect(css()).toMatch(/\nhtml \{\s*-webkit-text-size-adjust: 100%;\s*text-size-adjust: 100%;\s*\}/);
+    expect(css()).not.toMatch(/(^|\n)html[^{]*\{[^}]*text-size-adjust:\s*none/);
+  });
+
+  it('누르는 요소는 touch-action: manipulation — 두 번 탭 확대만 끄고 두 손가락 확대 · 스크롤은 남긴다', () => {
+    expect(css()).toContain('a, button, input, select, textarea, label, summary, [role="button"] { touch-action: manipulation; }');
+  });
+
+  it('탭 하이라이트를 끄는 요소는 모두 자기 눌림(:active)이 있다 — 하단 메뉴만 예외(대기 밑줄이 반응)', () => {
+    const m = css().match(/\n([^{}]*?)\{\s*-webkit-tap-highlight-color: transparent;\s*\}/);
+    expect(m, '탭 하이라이트 목록 규칙을 찾지 못했다').not.toBeNull();
+    const selectors = m[1].split(',').map((s) => s.trim()).filter(Boolean);
+    expect(selectors.length).toBeGreaterThan(10);
+    const sheets = allCss();
+    // 웹 셸의 눌림은 :is(…):active 묶음으로 적혀 있다(web-shell.css).
+    const shellPressed = sheets.match(/\.manabi-app :is\(([^)]*)\):active/);
+    expect(shellPressed).not.toBeNull();
+    const shellGroup = shellPressed[1].split(',').map((s) => s.trim());
+    for (const sel of selectors) {
+      if (sel === '.mobile-nav__link') continue;
+      if (sel.startsWith('.manabi-app ')) {
+        expect(shellGroup, `${sel}의 눌림이 web-shell 묶음에 없다`).toContain(sel.slice('.manabi-app '.length));
+        continue;
+      }
+      const escaped = sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      expect(sheets, `${sel}에 :active 규칙이 없다`).toMatch(new RegExp(`${escaped}(:not\\([^)]*\\))?:active`));
+    }
+  });
+
+  it('안에 단추를 품은 카드에는 하이라이트 끄기를 걸지 않는다(상속돼 안쪽 단추의 유일한 반응까지 사라진다)', () => {
+    const m = css().match(/\n([^{}]*?)\{\s*-webkit-tap-highlight-color: transparent;\s*\}/);
+    expect(m[1]).not.toMatch(/\.lw-card\b|\.lv-entry--solo\b|\.suggestion-card\b/);
+  });
+});
