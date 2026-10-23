@@ -269,6 +269,20 @@ describe('PWA-SHELL-001 ⑦ 고정 막대는 안전 영역을 진다(viewport-fi
     expect(missing).toEqual([]);
   });
 
+  it('화면 맨 아래에 붙는 sticky 막대(bottom:0)도 홈 막대 자리를 진다', () => {
+    // 칸 안 스크롤에 붙는 것(화면 아래가 아님)만 사유와 함께 뺀다.
+    const STICKY_EXEMPT = {
+      '.board-entry-actions': '판서 팝오버 안 스크롤 칸의 아래 — 화면 아래가 아니다',
+      '.hz-nextbar': '한자 겹화면 흐름 칸(.hz-flow) 안 — 칸이 아래 안전 영역 여백을 진다',
+    };
+    const missing = cssFiles().flatMap((file) => rulesOf(read(file))
+      .filter((r) => /position\s*:\s*sticky/.test(r.body) && /(?:^|;)\s*bottom\s*:\s*0(px)?\s*(;|$)/.test(r.body))
+      .filter((r) => !(r.selector in STICKY_EXEMPT))
+      .filter((r) => !rulesOf(read(file)).some((o) => o.selector === r.selector && o.body.includes('safe-area-inset-bottom')))
+      .map((r) => `${file} ${r.selector}`));
+    expect(missing).toEqual([]);
+  });
+
   it('예외 목록은 실제로 있는 규칙만 가리킨다(죽은 예외 금지)', () => {
     const selectors = new Set(fixedRules().map((r) => r.selector));
     for (const sel of [...Object.keys(EDGE_EXEMPT), ...Object.keys(BOTTOM_EXEMPT)]) expect(selectors, sel).toContain(sel);
