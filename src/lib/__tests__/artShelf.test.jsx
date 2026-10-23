@@ -84,7 +84,7 @@ describe('그림 구간 화면', () => {
     expect(html).toContain('href="/discover/classics?shelf=art&amp;lang=Japanese"');
     expect(html).not.toContain('lang=French');
     const english = render({ items: ALL, filters: classicsFilters({ shelf: 'art', lang: 'English' }) });
-    expect(english.match(/<li class="art-card">/g)).toHaveLength(8);
+    expect(english.match(/<li class="art-card">/g)).toHaveLength(16);
     const monet = render({ items: ALL, filters: classicsFilters({ shelf: 'art', author: '클로드 모네' }) });
     expect(monet.match(/<li class="art-card">/g)).toHaveLength(3);
     expect(monet).toContain('<span>클로드 모네 · 3점</span>');
