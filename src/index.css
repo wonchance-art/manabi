@@ -2880,7 +2880,7 @@ a.viewer-badge:hover {
    기존 --mobile-nav-height 선례를 따른다. */
 .sentence-nav {
   position: fixed;
-  right: 14px;
+  right: calc(14px + env(safe-area-inset-right, 0px));
   bottom: calc(var(--mobile-nav-height, 0px) + 24px + env(safe-area-inset-bottom, 0px));
   z-index: 40;
   display: flex;

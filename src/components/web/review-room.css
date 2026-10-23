@@ -175,7 +175,7 @@
 .review-room-practice-note { font-size:12px; }
 .review-practice-banner { margin:0 0 10px; padding:10px 14px; border-radius:3px; background:color-mix(in srgb,var(--en) 12%,var(--sheet)); color:var(--ink); font-size:13px; font-weight:600; }
 .review-practice-modes { display:flex; flex-wrap:wrap; gap:8px; max-width:680px; margin:0 auto 12px; }
-.review-known-undo { position:fixed; left:16px; right:16px; bottom:calc(16px + env(safe-area-inset-bottom,0px)); z-index:6; max-width:680px; margin:10px auto 0; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; padding:8px 14px; border:1px solid var(--rule); border-radius:3px; background:var(--sheet); font-size:13px; }
+.review-known-undo { position:fixed; left:calc(16px + env(safe-area-inset-left,0px)); right:calc(16px + env(safe-area-inset-right,0px)); bottom:calc(16px + env(safe-area-inset-bottom,0px)); z-index:6; max-width:680px; margin:10px auto 0; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; padding:8px 14px; border:1px solid var(--rule); border-radius:3px; background:var(--sheet); font-size:13px; }
 .review-known-undo .btn { min-height:44px; }
 body:has(.review-grade-bar) .review-known-undo { bottom:calc(140px + env(safe-area-inset-bottom,0px)); }
 .review-scope-notice__practice,.review-scope-notice__meaning .btn { min-height:44px; }

@@ -246,6 +246,29 @@ describe('PWA-SHELL-001 ⑦ 고정 막대는 안전 영역을 진다(viewport-fi
     expect(missing).toEqual([]);
   });
 
+  it('가장자리에서 24px 이하로 떠 있는 고정 막대는 그 쪽 안전 영역을 더한다(노치 가로만 비키고 세로 · 데스크톱은 그대로)', () => {
+    const missing = [];
+    for (const r of fixedRules()) {
+      if (r.selector in BOTTOM_EXEMPT) continue;
+      // 같은 파일에서 같은 선택자를 다시 적은 규칙(기존 선언을 지키고 덮는 경우)까지 본다.
+      const sameSelector = rulesOf(read(r.file)).filter((o) => o.selector === r.selector).map((o) => o.body).join(';');
+      for (const side of ['left', 'right']) {
+        const px = r.s[side]?.match(/^(\d+(?:\.\d+)?)px$/);
+        if (px && Number(px[1]) > 0 && Number(px[1]) <= 24 && !sameSelector.includes(`safe-area-inset-${side}`)) missing.push(`${r.file} ${r.selector} ${side}:${r.s[side]}`);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it('가운데(left:50%) 고정 막대의 폭 상한이 화면 폭에서 빼는 값은 좌우 안전 영역도 뺀다', () => {
+    const missing = fixedRules()
+      .filter((r) => r.s.left === '50%')
+      .filter((r) => /(?:max-)?width\s*:\s*[^;]*calc\(100(?:vw|%) -/.test(r.body))
+      .filter((r) => !(r.body.includes('safe-area-inset-left') && r.body.includes('safe-area-inset-right')))
+      .map((r) => `${r.file} ${r.selector}`);
+    expect(missing).toEqual([]);
+  });
+
   it('예외 목록은 실제로 있는 규칙만 가리킨다(죽은 예외 금지)', () => {
     const selectors = new Set(fixedRules().map((r) => r.selector));
     for (const sel of [...Object.keys(EDGE_EXEMPT), ...Object.keys(BOTTOM_EXEMPT)]) expect(selectors, sel).toContain(sel);

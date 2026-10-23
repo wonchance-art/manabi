@@ -260,6 +260,8 @@ html:has(.lw-page){overscroll-behavior-y:none}
 /* 되돌리기 안내 — 네 칸 위(한 단어) 또는 화면 아래(리스트). 올라왔다 .15s에 사라짐, 손가락을 올리면 멈춤. */
 /* 캔버스 값(㉒) — 밝은 종이 카드 · 좌우 16px 꽉 · 「되돌리기」 장미색 */
 .lw-undo{position:fixed;left:16px;right:16px;margin-inline:auto;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--sheet);color:var(--ink);border:1px solid var(--rule);border-radius:3px;padding:4px 6px 4px 14px;font-size:13px;max-width:648px;box-shadow:0 6px 18px rgba(37,39,33,.10);animation:toast-in .2s var(--ease-settle) both;transition:opacity .15s var(--ease-settle),transform .15s var(--ease-settle)}
+/* 노치 가로: 좌우 16px에 안전 영역을 더한다(PWA-SHELL-001 ⑦ — 세로 · 데스크톱은 env()=0이라 16px 그대로) */
+.lw-undo{left:calc(16px + env(safe-area-inset-left,0px));right:calc(16px + env(safe-area-inset-right,0px))}
 .lw-page[data-mode=one] .lw-undo,.lw-page[data-mode=list] .lw-undo{bottom:calc(132px + env(safe-area-inset-bottom,0px))}
 .lw-undo.is-leaving{opacity:0;transform:translateY(4px)}
 /* 평소 채점 — 창 없이 네 칸 바로 위 안내 줄 가운데에 한 줄(단어는 먹색 보통 굵기 · 되돌리기만 장미색). 떠 있는 동안 안내 줄 글(리스트의 지금 카드 단어)은 숨긴다. */
