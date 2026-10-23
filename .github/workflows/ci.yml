@@ -96,6 +96,10 @@ jobs:
       # 간체 중국어 독립 스타일시트 산출 대조(SC-LINK-001) — public CSS · 글꼴 · next/font 'Noto Sans SC'와 같은 덮는 범위. 빌드 추가 없음.
       - name: 간체 독립 스타일시트 산출 대조
         run: NEXT_FONT_GOOGLE_MOCKED_RESPONSES="$PWD/e2e/fixtures/google-fonts-mock.cjs" node scripts/fonts/check-sc-stylesheet.mjs
+      # 정적 · ISR 경로 산출 대조(GUEST-STATIC-001) — 공유 캐시에 맡기는 화면이 실제로 정적(○ · ●)으로 구워졌고 ISR 주기가 표와 같다.
+      # 쿠키 · 헤더 · searchParams가 끼어 동적(ƒ)으로 바뀌면 여기서 깨진다(src/lib/staticRoutes.js). 빌드 추가 없음.
+      - name: 정적 경로 산출 대조
+        run: node scripts/check-static-routes.mjs
 
       # 브라우저는 러너에 미리 깔린 Google Chrome을 쓴다(playwright.config.mjs 기본 channel).
       - name: Chrome 확인
