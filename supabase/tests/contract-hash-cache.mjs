@@ -1,5 +1,5 @@
 /** Local, disposable PGlite only — never connects to Supabase (DB-LOAD C).
- * 20261023100000_contract_hash_cache: 학습 계약 지문 넷을 구조가 바뀔 때만 계산한다(캐시 + 이벤트 트리거 무효화 + 커밋 직전 재계산).
+ * 20261023170000_contract_hash_cache: 학습 계약 지문 넷을 구조가 바뀔 때만 계산한다(캐시 + 이벤트 트리거 무효화 + 커밋 직전 재계산).
  * 증명: 적용 뒤 네 계약 동치 · 캐시 = 실제 지문 · snapshot 출력 동일 · 한국어 ready / 캐시가 실제로 쓰인다 / 계약 범위 DDL은
  * 커밋 전에도 뒤에도 그대로 막힌다(fail-closed 보존) / 임시 객체 DDL은 캐시를 건드리지 않고 읽기 전용 트랜잭션에서도 쓰인다 / DDL이 아닌
  * 역할 변경은 플랫폼 지문이 잡는다 / 재계산 실패는 DDL을 막지 않고 캐시를 무효로 둔다 / 재실행 no-op / 복원 뒤 원문 · 게시값 정확 복귀.
@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import { readdir } from 'node:fs/promises';
 import { read, setup, seedEdgeActor, A, B, C } from './perf-snapshot-fixture.mjs';
 
-const FILE = '20261023100000_contract_hash_cache.sql';
+const FILE = '20261023170000_contract_hash_cache.sql';
 const migration = await read(`../migrations/${FILE}`), restore = await read('../../docs/sql/contract-hash-cache-rollback.sql');
 const NAMES = ['contract_hash', 'manual_contract_hash', 'admission_contract_hash', 'activity_profile_hash'];
 const ORIGINAL = { contract_hash: 'b43887acc3619ca718b0912b15f833af', manual_contract_hash: '9c59598d3a669aa34da38344f514fae6',

@@ -1,4 +1,4 @@
--- DB-LOAD C 복원 — 20261023100000_contract_hash_cache.sql을 되돌린다: 지문 함수 넷을 운영 원문(_live 본문)으로 원래 이름에 되돌리고,
+-- DB-LOAD C 복원 — 20261023170000_contract_hash_cache.sql을 되돌린다: 지문 함수 넷을 운영 원문(_live 본문)으로 원래 이름에 되돌리고,
 -- 캐시 표 · 이벤트 트리거 · 보조 함수를 지운 뒤 manual → core → admission 재게시. 세 게시값은 적용 전 값으로 정확히 돌아온다(PGlite 검사).
 -- 이 파일은 마이그레이션이 아니다(docs/sql) — db push가 적용하지 않는다. 운영 적용은 SQL 편집기에서 본문 그대로(한 트랜잭션).
 -- 실행 형태: BEGIN/COMMIT 없음, SET LOCAL 실효를 첫 DO가 확인. 어느 검사든 RAISE하면 전체가 롤백된다. 실행 주체 postgres.
@@ -51,7 +51,7 @@ BEGIN
 END
 $q$;
 
--- 받는 상태: 20261023100000을 적용한 상태만(_live 넷 = 운영 원문 · 캐시 표 있음 · 네 계약 동치).
+-- 받는 상태: 20261023170000을 적용한 상태만(_live 넷 = 운영 원문 · 캐시 표 있음 · 네 계약 동치).
 DO $pre$
 DECLARE c jsonb := pg_temp.ccr_contracts(); n text;
 BEGIN
