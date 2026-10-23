@@ -40,7 +40,7 @@ import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { toTraditional, hanjaHunEum } from '../src/lib/hanjaKo.js';
 import { ROLE_OVERRIDES, PIECE_LABELS } from './hanja-curated.mjs';
-import { readZhHeadwords, readZhHeadwordLevels } from './zh-headwords.mjs';
+import { readJaHeadwords, readZhHeadwords, readZhHeadwordLevels } from './zh-headwords.mjs';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const args = process.argv.slice(2);
@@ -149,6 +149,22 @@ for (const w of heads) {
   });
 }
 const universe = [...freq.keys()].sort(cpOrder);
+// 보탬 우주 — 중국어 표제어의 간체 꼴과, JLPT 단어장 글자 칸이 한국 정자 꼴(jaJeongja.json)로 이 표를 찾으므로 일본어 표제어 글자의 정자 꼴도 역할 · 성분을 싣는다
+// (구성 빠짐 검사 2026-10-23 KST — 驛 · 曜 · 働이 hanjaEtym에 분해가 있는데도 칸이 비었다). 빈도 · 드릴다운에는 넣지 않는다.
+const jeongja = readData('jaJeongja.json').j;
+const extra = new Set();
+const jaExtra = new Set();
+// 중국어 표제어의 보이는 꼴(간체)도 — 창은 정체 꼴에 구성이 없으면 보이는 글자로 찾는다(學 → 学 · 别 · 灶, viewerHanjaPanel cands).
+// 정체 짝이 모두 구성을 가진 간체 글자는 아래(§3 끝)에서 다시 뺀다 — 찾지 않을 글자로 표를 키우지 않게.
+const simpExtra = new Set();
+for (const w of heads) for (const c of w) if (HAN.test(c) && !freq.has(c)) { extra.add(c); simpExtra.add(c); }
+for (const w of await readJaHeadwords(root)) {
+  for (const c of w) {
+    const k = jeongja[c] || c;
+    if (HAN.test(k) && !freq.has(k)) { extra.add(k); jaExtra.add(k); }
+  }
+}
+const extraUniverse = [...extra].sort(cpOrder);
 const rankCmp = (a, b) => (freq.get(b) || 0) - (freq.get(a) || 0)
   || (minLevel.get(a) ?? 9) - (minLevel.get(b) ?? 9)
   || cpOrder(a, b);
@@ -157,7 +173,7 @@ const rankCmp = (a, b) => (freq.get(b) || 0) - (freq.get(a) || 0)
 const roles = {};
 const roleOf = new Map();
 let estimated = 0;
-for (const c of universe) {
+for (const c of [...universe, ...extraUniverse]) {
   let r = null;
   if (Object.hasOwn(ROLE_OVERRIDES, c)) {
     const v = ROLE_OVERRIDES[c];
@@ -186,7 +202,7 @@ for (const c of Object.keys(ROLE_OVERRIDES)) if (!freq.has(c)) fail(`ROLE_OVERRI
 const STROKE_PIECES = new Set([...'一丨丶丿乀乙乚乛亅丷丆丅丄']);
 const comps = {};
 let strokeDropped = 0;
-for (const c of universe) {
+for (const c of [...universe, ...extraUniverse]) {
   if (roleOf.has(c)) continue;
   const cs = [...(etym[c]?.[2] || '')];
   if (cs.length < 2 || cs.length > 3) continue;
@@ -194,9 +210,20 @@ for (const c of universe) {
   comps[c] = cs.join('');
 }
 
+const tradsOf = new Map();
+for (const [t, m] of simpCount) for (const sc of m.keys()) { if (!tradsOf.has(sc)) tradsOf.set(sc, []); tradsOf.get(sc).push(t); }
+for (const c of simpExtra) {
+  const ts = tradsOf.get(c) || [];
+  if (jaExtra.has(c) || !ts.length || !ts.every((t) => roles[t] || comps[t])) continue;
+  delete roles[c];
+  delete comps[c];
+  roleOf.delete(c);
+}
+
 // ── 4. 소리 조각 드릴다운 ────────────────────────────────────────────
 const byPhonetic = new Map();
 for (const [c, r] of roleOf) {
+  if (extra.has(c)) continue; // 보탬 우주 글자는 드릴다운 목록에 넣지 않는다(중국어 같은 소리 묶음 · 순위 불변)
   if (!byPhonetic.has(r.ph)) byPhonetic.set(r.ph, []);
   byPhonetic.get(r.ph).push(c);
 }
@@ -254,6 +281,7 @@ fs.writeFileSync(path.join(root, 'src/lib/data/hanjaPanel.json'), json);
 const tot = universe.reduce((n, c) => n + freq.get(c), 0);
 const weight = (cs) => (100 * cs.reduce((n, c) => n + (freq.get(c) || 0), 0) / tot).toFixed(1);
 const gz = (s) => zlib.gzipSync(Buffer.from(s), { level: 9 }).length;
+console.log(`보탬 우주(간체 · 일본어 정자 꼴) ${extraUniverse.length}자 · 역할 ${extraUniverse.filter((c) => roleOf.has(c)).length}자 · 성분 ${extraUniverse.filter((c) => comps[c]).length}자`);
 console.log(`글자 우주 ${universe.length}자 · 역할 ${roleOf.size}자(가중 ${weight([...roleOf.keys()])}%, Unihan 추정 ${estimated} · 수기 ${Object.values(ROLE_OVERRIDES).filter(Boolean).length} · 수기 미상 ${Object.values(ROLE_OVERRIDES).filter((v) => !v).length})`);
 console.log(`역할 미상 성분 ${Object.keys(comps).length}자(획 조각 분해 ${strokeDropped}자 제외) · 드릴다운 ${Object.keys(drill).length}조각 · 병음 ${Object.keys(py).length}자 · 간체 ${Object.keys(simp).length}자 · 라벨 ${Object.keys(lab).length}자`);
 console.log(`hanjaPanel.json raw ${Buffer.byteLength(json)}B · gzip ${gz(json)}B`);
