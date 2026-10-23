@@ -1,13 +1,21 @@
-const CACHE_NAME = 'anatomy-studio-v195ed3d741ea7a33';
+const CACHE_NAME = 'anatomy-studio-v66d00609f1e7703d';
 
-const PRECACHE_URLS = [
-  '/',
-  '/home',
-  '/vocab',
-  '/materials',
-  '/auth',
-  '/offline',
-];
+// 설치 때 받는 것은 오프라인 대체 화면 하나와 그 화면이 쓰는 정적 파일뿐이다(SW-PRECACHE-001, 2026-10-23 KST 현장 감사 F7).
+// 예전에는 '/' · /home · /vocab · /materials · /auth까지 받아 새 방문자(그리고 배포마다 워커를 새로 까는 재방문자) 한 명이
+// 서버 렌더를 5번 더 불렀다('/'는 리디렉트, 나머지 대부분은 no-store 동적 화면). 받아 둔 문서는 network-first라 오프라인일
+// 때만 쓰였고, 그때도 새 빌드의 CSS · JS가 캐시에 없어 모양 없는 화면이었다. 들른 화면은 아래 navigate 규칙이 그대로 남긴다.
+const OFFLINE_URL = '/offline';
+// /offline은 정적 화면(○)이라 서버 렌더가 없다. 그 HTML이 부르는 /_next/static 파일은 이름이 내용 해시(immutable)라 방금 받은
+// 첫 화면과 겹치는 것은 브라우저 캐시에서 온다.
+const OFFLINE_ASSET = /\/_next\/static\/[^"'\s<>]+\.(?:css|js)/g;
+
+async function precacheOffline(cache) {
+  await cache.add(OFFLINE_URL);
+  const response = await cache.match(OFFLINE_URL);
+  const html = response ? await response.text() : '';
+  const assets = [...new Set(html.match(OFFLINE_ASSET) || [])];
+  await Promise.all(assets.map((asset) => cache.add(asset).catch(() => {})));
+}
 
 const STATIC_EXTENSIONS = /\.(js|css|woff2?|ttf|otf|svg|png|jpg|ico|webp)$/;
 
@@ -28,10 +36,8 @@ function isCacheableNavigationResponse(response) {
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) =>
-      // 개별 요청으로 실패해도 설치 자체는 성공시킴
-      Promise.all(PRECACHE_URLS.map(url =>
-        cache.add(url).catch(err => console.warn('[sw] precache failed:', url, err?.message))
-      ))
+      // 실패해도 설치 자체는 성공시킴
+      precacheOffline(cache).catch(err => console.warn('[sw] precache failed:', OFFLINE_URL, err?.message))
     )
   );
   self.skipWaiting();
@@ -95,7 +101,7 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match('/offline')))
+        .catch(() => caches.match(request).then((cached) => cached || caches.match(OFFLINE_URL)))
     );
     return;
   }
