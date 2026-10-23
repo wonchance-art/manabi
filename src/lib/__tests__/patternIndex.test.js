@@ -224,11 +224,12 @@ describe('배선 — 기본 꺼짐, 켜야 로드', () => {
     expect(rule).toContain('height: 1.5px;');
     expect(rule).toContain('background: var(--pattern-line);');
     // VIEWER-R0 버그 1: 밑줄은 전용 요소(.pattern-mark, .surface 안)다. .surface::after는 지정
-    // 이음매(.word-token--picked:has(+ .word-token--picked) .surface::after) 자리라, 같은 의사
+    // 이음매(.word-token--picked .surface::after — 연속 지정 신호일 때만) 자리라, 같은 의사
     // 요소를 쓰면 그 문장을 고르는 순간 이음매가 특이도로 이겨 밑줄이 사라진다.
     expect(css).not.toMatch(/\.word-token--pattern[^{,]*::after/);
     expect(css.match(/background: var\(--pattern-line\)/g)).toHaveLength(1); // 그리는 곳은 .pattern-mark 하나
-    expect(css).toContain('.word-token--picked:has(+ .word-token--picked) .surface::after {');
+    expect(css).toContain('.word-token--picked .surface::after {'); // 이음매 자리(연속 지정 신호 --picked-seam일 때만 그려진다)
+    expect(css).toContain("content: var(--picked-seam, none);");
     // 낱말 마크업은 ReaderToken(memo, VIEWER-TAP-PERF-001) — 뷰어는 스캔이 잡았는지(불리언)만 넘긴다.
     expect(card).toContain('patternMark={!!visibleScan?.byToken.has(tokenId)}');
     const token = codeOf(read('src/components/viewer/ReaderToken.jsx'));

@@ -2983,16 +2983,26 @@ a.viewer-badge:hover {
 }
 /* 연속 지정 구간 — 안쪽 모서리만 죽인다(버튼 그룹 관용구, 안 A 2026-09-02). 양 끝
    바깥 모서리는 둥근 채라 구간이 「하나의 긴 알약」으로 읽힌다 — 낱개(상태)와 구간(지정)의
-   뜻 차이는 형태가 아니라 이음으로만 남는다. 뒤 규칙의 :has(.surface)는 항상 참 —
-   목적은 :has 미지원 엔진에서 두 규칙과 이음매가 함께 빠지는 것(토큰마다 온전한 알약 +
-   자간 틈으로 남아 글자·밴드는 온전, 이음매만 생략). */
-.word-token--picked:has(+ .word-token--picked) .surface::before {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+   뜻 차이는 형태가 아니라 이음으로만 남는다.
+   이음 신호(TAP-INP-HAS-002): :has는 칠할 ::before의 조상 칸이 아니라 토큰 자신(맨 오른쪽 칸)에 걸고, 토큰은 변수만
+   얻는다. 「토큰:has(…) .surface」처럼 :has 뒤에 .surface가 남으면 Blink가 그 클래스를 모든 :has 무효화에 합쳐, 앱
+   바깥 틀(.manabi-app · .viewer-layout) 안에 요소가 하나 붙을 때마다 본문의 .surface 전부(낱말 수만큼)를 다시
+   계산했다(뷰어 390 실측: 요소 하나 붙이는 데 782 → 14개). 뒤 규칙의 :has(.surface)는 항상 참 — 목적은 :has 미지원
+   엔진에서 신호와 이음매가 함께 빠지는 것(변수가 없으면 모서리는 비지정과 같은 5px, 이음매 content는 none —
+   토큰마다 온전한 알약 + 자간 틈으로 남아 글자·밴드는 온전, 이음매만 생략). */
+.word-token--picked:has(+ .word-token--picked) {
+  --picked-join-end: 0;
+  --picked-seam: '';
 }
-.word-token--picked + .word-token--picked:has(.surface) .surface::before {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
+.word-token--picked + .word-token--picked:has(.surface) {
+  --picked-join-start: 0;
+}
+/* 모서리 — 신호가 없으면 기반 ::before와 같은 5px(낱개 지정은 색만 바뀐다). 신호가 있는 쪽만 0. */
+.word-token--picked .surface::before {
+  border-top-left-radius: var(--picked-join-start, 5px);
+  border-bottom-left-radius: var(--picked-join-start, 5px);
+  border-top-right-radius: var(--picked-join-end, 5px);
+  border-bottom-right-radius: var(--picked-join-end, 5px);
 }
 /* 자간 이음매 — 항상 '지정색' 전용 조각(T1 정정판, 오너 확정 2026-08-29).
    단어의 칠(::before)은 비지정과 같은 확장 0 그대로 두고 자간만 이 조각이 채운다:
@@ -3002,10 +3012,10 @@ a.viewer-badge:hover {
    밑에 깔리고, 뒤 토큰은 문맥째 나중에 그려져 그 위를 덮는다. 칠의 확장이 0이라
    조각이 스스로 양쪽 1px씩 밴드 밑으로 물려(안 A) 실금이 없고, 노출부(기본 자간
    4px)는 색 경계마다 중립 이음매가 되어 이웃 글리프를 침범할 수 없다(#1013 원칙
-   승계). :has 미지원 엔진은 이음매만 생략 — 그 자리는 지면색 틈으로 남을 뿐
-   글자·밴드는 온전하다. */
-.word-token--picked:has(+ .word-token--picked) .surface::after {
-  content: '';
+   승계). 조각은 다음 토큰도 지정일 때(이음 신호 --picked-seam)만 생긴다 — :has 미지원
+   엔진은 이음매만 생략, 그 자리는 지면색 틈으로 남을 뿐 글자·밴드는 온전하다. */
+.word-token--picked .surface::after {
+  content: var(--picked-seam, none);
   position: absolute;
   z-index: -2;
   right: calc(-1 * var(--char-gap, 0.25rem) - 1px);
