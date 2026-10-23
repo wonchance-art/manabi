@@ -38,3 +38,18 @@ export async function readZhHeadwordLevels(root) {
   }
   return levels;
 }
+
+/**
+ * 일본어 표제어(src/content/japanese/vocab의 ja) — 한자 창 표(generate-hanja-panel.mjs)가 JLPT 단어장 글자 칸에도 쓰이므로
+ * 일본어 전용 글자(驛 · 曜 · 働)의 구성을 싣기 위한 보탬 우주. 빈도 · 드릴다운에는 넣지 않는다(중국어 순위 불변).
+ * @returns {Promise<Set<string>>}
+ */
+export async function readJaHeadwords(root) {
+  const heads = new Set();
+  const vocabDir = path.join(root, 'src/content/japanese/vocab');
+  for (const f of fs.readdirSync(vocabDir).filter((x) => x.endsWith('.js')).sort()) {
+    const mod = await import(pathToFileURL(path.join(vocabDir, f)).href);
+    for (const theme of mod.default?.themes || []) for (const w of theme.words || []) if (w?.ja) heads.add(w.ja);
+  }
+  return heads;
+}

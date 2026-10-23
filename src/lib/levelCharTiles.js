@@ -2,7 +2,9 @@
 // 자료는 앱 한자 창(hanjaPanelModel)을 그대로 쓴다: 훈음 = 단어 조회(정체 꼴 · 한국 다음자 예외 포함),
 // 구성 조각 = 형성자 역할(뜻 + 소리) 또는 1단 성분. 새 표 · 새 판정을 만들지 않는다.
 //
-// 칸 하나 = { ch, zheng(정체가 다를 때만), label(훈음), pieces:[{ ch, label }], kana(일본어 — 이 단어 속 그 글자 읽기) }.
+// 칸 하나 = { ch, zheng(정체가 다를 때만), label(훈음), pieces:[{ ch, label, role?, open? }], kana(일본어 — 이 단어 속 그 글자 읽기) }.
+// 조각 role = 'meaning'(뜻) · 'sound'(음) — 형성자 역할이 확인된 조각만. open = 누르면 여는 글자(오너 10-23 「안1로」 — 한 번 더 파고들기):
+// 뜻 조각은 구성이 있는 본자(見), 음 조각은 같은 소리 묶음이 있는 조각(雚). 더 쪼갤 것이 없으면(宀) 싣지 않는다.
 // 일본어(JLPT 단어 페이지)는 lookup = 한국 정자 꼴 단어(経験 → 經驗)로 찾고 그 꼴을 아래 회색 글자로 보인다. 간체 변환을 거치지 않게
 // 빈 정체 표(JA_TRAD)를 넘긴다(일본 글자 叶를 간체로 보고 葉로 바꾸지 않게).
 // 표가 아직 없으면 null — 화면은 칸 자리만 잡지 않고 그리지 않는다(훈음 없는 칸이 먼저 보였다 바뀌지 않게).
@@ -28,11 +30,25 @@ export function levelCharTiles(word, tables, { lookup = null, readings = null } 
       ch,
       zheng: (form ? (f !== ch ? f : null) : model.head.zheng) || null,
       label: model.head.label || model.head.eum || '',
-      pieces: (model.parts?.pieces || []).map((p) => ({ ch: p.ch, label: p.label || '' })),
+      pieces: (model.parts?.pieces || []).map((p) => pieceOf(p, tables.panel)),
       ...(readings?.[index] ? { kana: readings[index] } : {}),
     });
   });
   return tiles;
+}
+
+/** 조각 하나 — 역할이 없으면 글자 · 훈음만(묶음 크기). */
+function pieceOf(p, panel) {
+  const piece = { ch: p.ch, label: p.label || '' };
+  if (p.role === 'meaning') {
+    piece.role = 'meaning';
+    const target = p.target || p.ch;
+    if (panel?.roles?.[target] || panel?.comps?.[target]) piece.open = target;
+  } else if (p.role === 'sound') {
+    piece.role = 'sound';
+    if (p.drill) piece.open = p.ch;
+  }
+  return piece;
 }
 
 /** 일본어 글자 칸 — 표제어를 한국 정자 꼴로 바꿔 찾고(jeongja = jaJeongja.json의 j), kr(「けい,けん」)을 글자마다 붙인다. */

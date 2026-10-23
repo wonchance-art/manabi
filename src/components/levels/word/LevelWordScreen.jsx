@@ -41,11 +41,11 @@ import { indexEntry, searchLevelIndex } from '@/lib/levelWordIndex';
 import { useLevelWordGrade } from '@/lib/useLevelWordGrade';
 import { recordActivity } from '@/lib/streak';
 import { useHeightSettle } from '@/lib/useHeightSettle';
-import { BackIcon, CaretIcon, CharTiles, ClearIcon, SearchIcon, WaitChip, WordRow } from '@/components/levels/word/WordParts';
+import { BackIcon, CaretIcon, CharTiles, ClearIcon, PieceDrillContext, SearchIcon, WaitChip, WordRow } from '@/components/levels/word/WordParts';
 import { WordCard } from '@/components/levels/word/WordCard';
 import { GradeBar, MoreNewButton, MoreNewNote, NewDayTitle, OneWordCard, OneWordDone } from '@/components/levels/word/OneWord';
 import { BrowseBar, PracticeBar, PracticeDone, PracticeIntro } from '@/components/levels/word/WordAreas';
-import { Sheet, TitleSheet, WordPopup } from '@/components/levels/word/WordSheets';
+import { PiecePopup, Sheet, TitleSheet, WordPopup } from '@/components/levels/word/WordSheets';
 import { WordSearchResults } from '@/components/levels/word/WordSearch';
 import { WordLangContext } from '@/components/levels/word/wordLang';
 import '@/components/levels/word/level-word.css';
@@ -621,6 +621,23 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
   }, [byKey, dict.entries, level]);
   const onExampleWord = useCallback((text, anchor, id) => { loadDict(); setPop({ text, anchor, id }); }, [loadDict]);
 
+  // ── 조각 창(오너 10-23 「안1로」 — HSK 판의 글자 칸 「뜻 ›」 · 「음 ›」) — 표 네 벌(askTables)과 HSK 1–9 색인(loadDict)을 그때 받는다.
+  // 같은 한자 단어는 내 단어 → 색인(급 낮은 순), 색인을 못 받으면 이 레벨 목록에서. 같은 조각을 다시 누르면 닫는다.
+  const [piece, setPiece] = useState(null); // { kind, ch, of, anchor, id }
+  const onPiece = useCallback((req, anchor) => {
+    loadDict();
+    if (charTables === null) askTables();
+    setPiece((cur) => (cur?.anchor === anchor ? null : { ...req, anchor, id: Date.now() }));
+  }, [loadDict, charTables, askTables]);
+  const drillCtx = useMemo(() => (cfg.pieceDrill ? { onPiece } : null), [cfg.pieceDrill, onPiece]);
+  const pieceOpen = !!piece;
+  const pieceRefIndex = useMemo(() => {
+    if (!pieceOpen) return null;
+    const rows = dict.state === 'ready' ? dict.entries : allEntries.map((e) => ({ ...e, level }));
+    return new Map(rows.map((e) => [e.word, { level: `H${e.level}`, word: { zh: e.word, pinyin: e.reading, ko: e.meaning } }]));
+  }, [pieceOpen, dict, allEntries, level]);
+  const pieceSaved = useMemo(() => (pieceOpen && index ? [...new Set(index.byKey.values())].filter((r) => r.language === language) : []), [pieceOpen, index, language]);
+
   // ── 상단 · 제목 시트(레벨 · 목록 · 보기 — 해 모양 설정 창은 여기로 합쳤다, 오너 2026-10-21 KST) ──
   const [sheetOpen, setSheetOpen] = useState(false);
   const progRef = useRef(null);
@@ -739,7 +756,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
   const popRow = pop ? rowOfWord(pop.text) : null;
   useEffect(() => { if (cardEntry) areaRec.noteOpen(cardEntry.key, 'all'); }, [cardEntry]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return <WordLangContext.Provider value={cfg}><div className="lw-page" data-mode={searchOpen ? 'search' : prefs.mode} data-language={cfg.code}>
+  return <WordLangContext.Provider value={cfg}><PieceDrillContext.Provider value={drillCtx}><div className="lw-page" data-mode={searchOpen ? 'search' : prefs.mode} data-language={cfg.code}>
     {searchOpen
       ? <header className="lw-top lw-top--search" data-stuck={scrolled || undefined}>
         <button type="button" className="lw-icon" aria-label="찾기 닫기" onClick={closeSearch}><BackIcon /></button>
@@ -858,6 +875,8 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
             disabled={!ready} label={<b lang={cfg.hw}>{cfg.head(focusEntry).hw}</b>} />}
         </>}
 
+    {piece && <PiecePopup key={piece.id} req={piece} tables={charTables} refIndex={pieceRefIndex} savedRows={pieceSaved} tone={tone} onClose={() => setPiece(null)} />}
+
     {pop && popRow && <WordPopup key={pop.id} anchor={pop.anchor} row={popRow} tiles={tilesOf(popRow.word, popRow.kr)} tone={tone} status={statusOfWord(pop.text)}
       onSave={() => onStar(entryOfRow(popRow))} onClose={() => setPop(null)}
       onOpen={() => { setCard({ word: pop.text, row: popRow, from: pop.anchor }); setPop(null); }} />}
@@ -879,5 +898,5 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
       page={prefs.page} pageSizes={LEVEL_WORD_PAGE_SIZES} onAid={(v) => setPrefs({ tone: v })} onPage={(n) => setPrefs({ page: n })} onClose={() => setSheetOpen(false)} />}
 
     {notice && <Notice key={notice.id} notice={notice} onDone={dropNotice} />}
-  </div></WordLangContext.Provider>;
+  </div></PieceDrillContext.Provider></WordLangContext.Provider>;
 }

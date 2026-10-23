@@ -119,6 +119,16 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-tile__kana{margin-left:4px;color:var(--muted)}
 .lw-tile__piece{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--lw-review)}
 .lw-tile__pch{display:inline-block;width:16px;color:var(--ink);font-weight:500}
+/* 조각 파고들기(오너 10-23 「안1로」 · HSK) — 역할 말 「뜻」(초록) · 「음」(황토), 누를 수 있는 조각만 › 와 단추. 누르는 자리는 줄 높이를 넘겨 24px(겹치지 않게 위아래 반씩). */
+.lw-tile__piece.is-meaning,.lw-tile__piece.is-sound{display:flex;align-items:baseline;min-width:0}
+.lw-tile__pl{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.lw-tile__role{flex:none;margin-left:auto;padding-left:6px;font-style:normal;font-weight:700;font-size:11.5px}
+.lw-tile__piece.is-meaning .lw-tile__role{color:var(--book-sage-main)}
+.lw-tile__piece.is-sound .lw-tile__role{color:var(--book-amber-main)}
+button.lw-tile__piece{position:relative;width:100%;border:0;background:none;padding:0;margin:0;font:inherit;line-height:inherit;text-align:start;cursor:pointer;border-radius:4px}
+button.lw-tile__piece::before{content:"";position:absolute;inset:-2.5px -4px}
+button.lw-tile__piece:hover{background:color-mix(in srgb,var(--lw-ex-hit) 60%,transparent)}
+button.lw-tile__piece[aria-expanded=true]{background:var(--lw-ex-hit);box-shadow:0 0 0 2px var(--lw-ex-hit)}
 
 /* 예문 — 왼쪽 줄. 단어마다 점선 밑줄, 카드 단어는 장미색 밑줄. */
 /* 캔버스 값 — 왼쪽 줄 2px · 들여 14px · 본문 20px(한 단어 뒷면 18px · 12px) · 단어 사이 5px */
@@ -296,6 +306,52 @@ html:has(.lw-page){overscroll-behavior-y:none}
 /* 예문 단어 창 안에서는 시안 ⑱처럼 아래 칸 — 위 구분선 · 왼쪽 정렬 */
 .lw-pop .lw-pop__open{justify-self:stretch;min-height:40px;border-top:1px solid var(--lw-line);margin:0 -12px -10px;padding:0 14px;font-weight:600;font-size:13px;display:flex;align-items:center}
 
+/* 조각 창 — 뷰어 한자 창과 같은 규격(높이 170 · 너비 min(346, 화면 − 32)) · 놓기는 예문 단어 창(누른 칸 아래, 넘치면 위). 시트 위에도 뜬다. */
+.lw-dp{position:fixed;z-index:60;box-sizing:border-box;width:min(346px,calc(100vw - 32px));height:170px;display:flex;flex-direction:column;gap:6px;padding:8px 10px 8px 12px;
+  background:var(--lw-card);color:var(--ink);border:1px solid var(--lw-line);border-radius:12px;box-shadow:0 12px 32px color-mix(in srgb,var(--ink) 16%,transparent);
+  font-size:14px;line-height:1.3;animation:settleIn .16s var(--ease-settle) both}
+.lw-dp:focus{outline:none}
+.lw-dp.is-closing{pointer-events:none;animation:lwFadeOut .12s var(--ease-settle) both}
+.lw-dp__close{position:absolute;top:0;right:0;width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:10px;background:none;color:var(--muted);cursor:pointer}
+.lw-dp__close:hover{color:var(--ink);background:var(--lw-chip)}
+.lw-dp__head{display:flex;align-items:baseline;gap:8px;min-height:32px;padding-right:36px;white-space:nowrap;overflow:hidden}
+.lw-dp__ch{flex:none;font-size:26px;line-height:32px;font-weight:500}
+.lw-dp__py{flex:none;font-size:15px;color:var(--muted)}
+.lw-dp__hun{min-width:0;margin-left:4px;overflow:hidden;text-overflow:ellipsis;font-size:15px;font-weight:700}
+.lw-dp__role{flex:none;font-size:11.5px;font-weight:700}
+.lw-dp__role.is-sound{color:var(--book-amber-main)}
+.lw-dp__role.is-meaning{color:var(--book-sage-main)}
+.lw-dp__fam{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;white-space:nowrap}
+.lw-dp__fc{display:flex;flex-direction:column;align-items:center;min-width:0;padding:5px 2px 6px;border-radius:10px;background:var(--lw-tile)}
+.lw-dp__fc.is-hit{background:var(--lw-ex-hit);box-shadow:inset 0 0 0 1px var(--lw-today-line)}
+.lw-dp__fpy{font-size:11px;line-height:14px}
+.lw-dp__fc b{font-size:21px;font-weight:500;line-height:26px}
+.lw-dp__fc>span:last-child{font-size:12px;line-height:15px}
+.lw-dp__note{margin:auto 0 0;font-size:12.5px;line-height:1.3;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lw-dp__parts{display:grid;grid-template-columns:repeat(var(--n,2),minmax(0,1fr));gap:6px;min-height:36px;white-space:nowrap}
+.lw-dp__parts.is-unknown{display:flex;align-items:center;overflow:hidden}
+.lw-dp__piece{display:flex;align-items:center;gap:8px;min-width:0;min-height:36px;padding:0 10px;border-radius:10px;background:var(--lw-tile)}
+.lw-dp__parts.is-unknown .lw-dp__piece{flex:0 1 auto;gap:5px;padding:0 7px}
+.lw-dp__piece b{flex:none;font-size:22px;font-weight:500;line-height:1}
+.lw-dp__parts.is-unknown .lw-dp__piece b{font-size:19px}
+.lw-dp__pl{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:12.5px;font-weight:700}
+.lw-dp__parts.is-unknown .lw-dp__pl{font-size:12px;font-weight:500}
+.lw-dp__piece i{flex:none;margin-left:auto;font-style:normal;font-size:11.5px;font-weight:700}
+.lw-dp__piece.is-meaning i{color:var(--book-sage-main)}
+.lw-dp__piece.is-sound i{color:var(--book-amber-main)}
+.lw-dp__unknown{flex:none;margin-left:auto;font-size:10.5px;color:var(--muted)}
+.lw-dp__words{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:auto -10px 0 -12px;padding-top:7px;border-top:1px solid var(--lw-line)}
+.lw-dp__words.is-empty{border-top-color:transparent}
+.lw-dp__tile{display:flex;flex-direction:column;gap:1px;min-width:0;padding:0 10px 0 12px}
+.lw-dp__tile+.lw-dp__tile{border-left:1px solid var(--lw-line)}
+.lw-dp__tile>span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lw-dp__tile em{font-style:normal;color:var(--lw-rose);font-weight:700}
+.lw-dp__tzh{font-size:17px;line-height:20px;font-weight:500}
+.lw-dp__tzh em{font-weight:500}
+.lw-dp__tpy{font-size:11.5px;line-height:14px;color:var(--muted)}
+.lw-dp__tko{font-size:12px;line-height:16px}
+.lw-dp__tko.is-short{color:var(--muted)}
+
 /* 제목 ▾ 시트 · 단어 카드 창 — 아래에서 올라오고 뒷배경이 어두워짐, 손잡이를 아래로 끌면 닫힘. */
 .lw-scrim.is-closing,.lw-pop.is-closing{pointer-events:none;animation:lwFadeOut .2s var(--ease-settle) both}
 .lw-pop.is-closing{animation-duration:.12s}
@@ -333,7 +389,7 @@ html:has(.lw-page){overscroll-behavior-y:none}
 @keyframes lwFade{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){
   .lw-top--search .lw-searchbox,.lw-rows.is-height-settling,.lw-bar i,.lw-status.is-popping,.lw-grade,.lw-two__btn,.lw-card,.lw-card__more,.lw-one__card.is-turning,
-  .lw-switch i,.lw-switch i::after,.lw-seg[data-thumb]::before,.lw-mini[data-thumb]::before,.lw-tabs__bar,.lw-card__more[data-closing],.lw-done__n,.lw-scrim.is-closing,.lw-pop.is-closing,.lw-sheet.is-closing,.lw-one__back,.lw-done,.lw-undo,.lw-pop,.lw-scrim,.lw-sheet,.lw-prog,.lw-card.is-arrived,.lw-card.is-arrived .lw-time{animation:none;transition:none}
+  .lw-switch i,.lw-switch i::after,.lw-seg[data-thumb]::before,.lw-mini[data-thumb]::before,.lw-tabs__bar,.lw-card__more[data-closing],.lw-done__n,.lw-scrim.is-closing,.lw-pop.is-closing,.lw-sheet.is-closing,.lw-one__back,.lw-done,.lw-undo,.lw-pop,.lw-dp,.lw-dp.is-closing,.lw-scrim,.lw-sheet,.lw-prog,.lw-card.is-arrived,.lw-card.is-arrived .lw-time{animation:none;transition:none}
   .lw-grade:active:not(:disabled),.lw-two__btn:active:not(:disabled),.lw-card:active:not(:has(button:active)),.lw-one__reveal:active{transform:none}
 }
 /* 모드 전환(한 단어 ↔ 리스트) — View Transitions API(없는 브라우저는 바로 바뀜). 0.2초 겹침. */
