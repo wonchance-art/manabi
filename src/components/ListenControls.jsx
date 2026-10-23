@@ -16,7 +16,7 @@ export function listenRateText(playbackRate, rateLabel) {
 
 // onSentence(i) — 지금 읽기 시작한 문장 번호(splitListenSentences 순서), 멈추면 null. 뷰어가 쪽 따라가기에 쓴다(listenFollow.js).
 // followActive — 뷰어가 쪽 넘김 따라가기 중(본문이 읽는 줄을 강조) — 좁은 폭에서는 「지금 문장」 줄을 숨긴다(CSS, reader-controls.css).
-export default function ListenControls({ text, language = 'Japanese', stopSignal, playbackRate, rateLabel, onSentence, followActive = false, compact = false, uiLocale = 'ko' }) {
+export default function ListenControls({ text, language = 'Japanese', stopSignal, playbackRate, rateLabel, onRateCycle, onSentence, followActive = false, compact = false, uiLocale = 'ko' }) {
   const [supported, setSupported] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -176,7 +176,10 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
           )}
           <button className="listen-controls__btn" onClick={stop} aria-label={label('정지')} title={label('정지')} data-icon-action={compact||undefined}>{compact?<ActionIcon name="stop"/>:'⏹'}</button>
           <span className="listen-controls__progress">{progress.current}/{progress.total}</span>
-          {playbackRate != null ? (
+          {/* 속도 칸은 누르면 도는 진짜 버튼(뷰어 점검 B) — 예전엔 버튼처럼 보이는 글자였다. 바뀐 값은 다음 문장부터 들린다(듣기는 끊지 않는다). */}
+          {playbackRate != null && onRateCycle ? (
+            <button type="button" className="listen-controls__rate" onClick={onRateCycle} aria-label={`${label('재생 속도')} ${listenRateText(playbackRate, rateLabel)}`} title={label('누를 때마다 0.75× · 1× · 1.25×')}>{listenRateText(playbackRate, rateLabel)}</button>
+          ) : playbackRate != null ? (
             <span className="listen-controls__rate" title={compact?label('재생 속도'):'Aa 읽기 설정에서 재생 속도를 바꿀 수 있어요'}>{listenRateText(playbackRate, rateLabel)}</span>
           ) : <select
             className="listen-controls__rate"

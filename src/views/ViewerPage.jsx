@@ -176,7 +176,7 @@ import { syncVocabEncounters } from '../components/world/vocabEncounterSync';
 import { encounterLookupLang, loadMetWordKeys, loadRefVocabLookup } from '../lib/refVocabLookup';
 import { normalizeRefWordKey } from '../lib/refWordNormalize';
 import { isWordToken, opensWordCard, wordStateOf, wordStateExtraClass } from '../lib/wordState';
-import { TTS_RATES, ttsOptsFor, pronHiddenFor } from '../lib/readingSheet';
+import { TTS_RATES, ttsOptsFor, pronHiddenFor, nextTtsRate } from '../lib/readingSheet';
 import { getBook } from '../lib/bookMeta';
 import ViewerGlyphColumn from '../components/viewer/ViewerGlyphColumn';
 import ViewerJapaneseMore from '../components/viewer/ViewerJapaneseMore';
@@ -3983,7 +3983,7 @@ export default function ViewerPage() {
             {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
               <button onClick={stopReanalysis} disabled={reanalyze.committing} className="grammar-btn grammar-btn--danger">{vt("분석 중단")}</button>
             )}
-            {ttsSupported && <ListenControls text={material?.raw_text} language={materialLang} stopSignal={speechStopKind} playbackRate={TTS_RATES[ttsRate].web} rateLabel={TTS_RATES[ttsRate].label} onSentence={handleListenSentence} followActive={listenFollowable} compact uiLocale={uiLocale} />}
+            {ttsSupported && <ListenControls text={material?.raw_text} language={materialLang} stopSignal={speechStopKind} playbackRate={TTS_RATES[ttsRate].web} rateLabel={TTS_RATES[ttsRate].label} onRateCycle={()=>settings.setTtsRate(nextTtsRate(ttsRate))} onSentence={handleListenSentence} followActive={listenFollowable} compact uiLocale={uiLocale} />}
             <button ref={settingsTrigger} className="viewer-tool viewer-tool--aa" aria-label={`Aa ${vt("읽기 설정")}`} title={vt("읽기 설정")} aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
               <span aria-hidden="true">Aa</span>
             </button>
@@ -4263,7 +4263,7 @@ export default function ViewerPage() {
       {/* Reader Area — 인앱 토큰 범위 지정(드래그) 이벤트는 여기서 위임 수신 */}
       <div
         ref={readerRef}
-        className={`reader-area reader-area--${theme}${focusMode && (pickedLineIdx !== null || tokenRange.range) ? ' reader-area--focus' : ''}${wordStateHl ? ' reader-area--hl' : ''}${paceDwell ? ' reader-area--pacing' : ''}${paceDwell && paceHeld ? ' reader-area--pacing-hold' : ''}`}
+        className={`reader-area reader-area--${theme}${focusMode && (pickedLineIdx !== null || tokenRange.range || listenTokens?.size) ? ' reader-area--focus' : ''}${focusMode && listenTokens?.size ? ' reader-area--focus-listen' : ''}${wordStateHl ? ' reader-area--hl' : ''}${paceDwell ? ' reader-area--pacing' : ''}${paceDwell && paceHeld ? ' reader-area--pacing-hold' : ''}`}
         style={{
           fontSize: `${fontSize*(classStudyActive&&classBoardLayout==='split'?.8:1)}rem`,
           fontFamily: readerFontFamily(materialLang,fontFamily),
