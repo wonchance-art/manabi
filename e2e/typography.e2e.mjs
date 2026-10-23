@@ -463,7 +463,9 @@ const HUN_CARD = () => `<div class="word-fit-wrap"><div class="word-fit" lang="z
 // 옛 별도 목록(.reader-hun) 대신 실제 셀 계산(hunRubyCells)으로 만든 루비 셀 마크업을 index.css·reader-controls.css
 // 실물로 그려, 긴 풀이 훈(弩)도 잘리지 않고 자기 칸 안에서 줄바꿈하며 이웃 칸·글자·뜻과 겹치지 않는지 잰다.
 const readData=f=>JSON.parse(fs.readFileSync(new URL(`../src/lib/data/${f}`,import.meta.url),'utf8'));
-const hunTables={koTable:readData('hanjaKo.json'),hunTable:readData('hanjaHun.json'),tradTable:readData('hanjaTrad.json')};
+// 긴 훈 가이드라인(2026-10-23 KST)으로 표의 弩는 「쇠뇌」로 짧아졌다 — 안전망(상한 칸 · 훈 한 줄 말줄임 + 음 한 줄)은
+// 표 밖의 긴 풀이에서도 지켜야 하므로 옛 libhangul 풀이를 그대로 넣어 잰다.
+const hunTables={koTable:readData('hanjaKo.json'),hunTable:{...readData('hanjaHun.json'),弩:'쇠뇌(여러 개의 화살이나 돌을 잇따라 쏘게 된 큰 활)'},tradTable:readData('hanjaTrad.json')};
 const longHun=hunTables.hunTable.弩+' 노';
 const hunCols=(word,readings)=>hunRubyCells(word,hunTables).map((cell,i)=>`<span class="word-fit__col"><ruby data-pinyin="1"><span class="reader-card-ruby-glyphs"><span class="word-fit__char">${cell.ch}</span></span><span class="rt-an">${readings[i]}</span></ruby><span class="word-fit__hunrow">${cell.label?`<span class="word-fit__hun" lang="ko" data-label="${cell.label}"${cell.wrap?' data-wrap="1"':''} style="--hun-n:${cell.hunN}">${cell.lines.map(l=>`<span class="word-fit__hun-line">${l}</span>`).join('')}</span>`:''}</span></span>`).join('');
 const longHunCard=`<div class="reader-card-headword"><div class="word-fit-wrap"><div class="word-fit word-fit--hun" lang="zh-Hans" style="--fit-n:2"><span class="surface">${hunCols('连弩',['lián','nǔ'])}</span></div></div></div><div class="word-detail-card__meaning">연발 쇠뇌</div>`;
@@ -476,6 +478,7 @@ for(const width of [170,300,680])for(const scale of [1,2]) {
    return {row:r(document.querySelector('#row')),meaning:r(document.querySelector('.word-detail-card__meaning')),
     cols:[...document.querySelectorAll('.word-fit__col')].map(col=>({col:r(col),glyph:ink(col.querySelector('.word-fit__char')),hun:r(col.querySelector('.word-fit__hun')),
      style:(s=>({position:s.position,overflow:s.overflow,textOverflow:s.textOverflow}))(getComputedStyle(col.querySelector('.word-fit__hun')))})),
+    lines:[...document.querySelectorAll('.word-fit__hun')].map(e=>[...e.querySelectorAll('.word-fit__hun-line')].map(l=>({h:l.getBoundingClientRect().height,cut:l.scrollWidth>l.clientWidth+.5}))),
     labels:[...document.querySelectorAll('.word-fit__hun')].map(e=>e.dataset.label),text:[...document.querySelectorAll('.word-fit__hun')].map(e=>e.textContent)};
   });
   assert.equal(g.cols.length,2);
@@ -493,7 +496,12 @@ for(const width of [170,300,680])for(const scale of [1,2]) {
   assert.ok(!overlap(a.hun,b.glyph)&&!overlap(b.hun,a.glyph),'a label never covers the neighbouring glyph');
   assert.deepEqual(g.labels,['연할 련(연)',longHun],'complete labels — nothing truncated');
   assert.ok(g.text[1].replace(/\s/g,'').includes(longHun.replace(/\s/g,'')),'the long gloss is fully rendered');
-  assert.ok(b.hun.height>a.hun.height,'the long gloss wraps inside its capped cell instead of widening without bound');
+  // 긴 훈 가이드라인(2026-10-23 KST): 상한 칸을 넘는 풀이는 훈 한 줄(말줄임) + 음 한 줄 — 칸이 끝없이 넓어지지도, 줄이 늘지도 않는다.
+  const [hunLine,eumLine]=g.lines[1];
+  assert.equal(g.lines[1].length,2,'long gloss = hun line + eum line');
+  assert.ok(hunLine.cut,'the long hun line is cut with an ellipsis inside its capped cell instead of widening without bound');
+  assert.ok(!eumLine.cut,'the eum line stays whole');
+  assert.ok(hunLine.h<1.6*eumLine.h,'the hun line stays one line');
  });
 }
 

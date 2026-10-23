@@ -1,0 +1,52 @@
+{
+  "id": "mondrian-lozenge-composition",
+  "wikidata": "Q18710675",
+  "genre": "painting",
+  "artist": "piet-mondrian",
+  "title": {
+    "native": "Lozenge Composition with Yellow, Black, Blue, Red, and Gray",
+    "ko": "노랑·검정·파랑·빨강·회색의 마름모 구성",
+    "lang": "en"
+  },
+  "hook": "네모난 그림을 45도 돌려 건 몬드리안",
+  "date": {
+    "text": "1921",
+    "source": "aic",
+    "startYear": 1921,
+    "endYear": 1921,
+    "certainty": "exact"
+  },
+  "medium": {
+    "native": "Oil on canvas",
+    "ko": "캔버스에 유채"
+  },
+  "places": [
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/109819"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "109819"
+    }
+  ],
+  "terms": [
+    "straight line",
+    "diagonals",
+    "enclosure"
+  ],
+  "lookFor": [
+    "비스듬한 가장자리까지 뻗어 나간 검은 선을 찾아봐요.",
+    "빨강은 어디에 얼마나 있나요?",
+    "노랑·파랑·빨강 말고 쓰인 색을 찾아봐요."
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:Piet_Mondrian_-_Lozenge_Composition_with_Yellow,_Black,_Blue,_Red,_and_Gray_-_1957.307_-_Art_Institute_of_Chicago.jpg",
+    "alt": "마름모꼴로 세운 흰 화면을 굵은 검은 선이 가로세로로 나누고, 왼쪽 위에 노랑, 오른쪽에 파랑, 가운데에 검정, 아래 끝에 작은 빨강 칸이 있다."
+  }
+}

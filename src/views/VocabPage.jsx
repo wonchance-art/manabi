@@ -351,6 +351,9 @@ function VocabWorkspace({ reviewScope }) {
   const scopeMatcher = useMemo(() => createScopeMatcher(scope, { levels: scopeLevels, sourceIds: scopeSourceIds }), [scope, scopeLevels, scopeSourceIds]);
   // 범위 안 표현 — 목록 · 문맥 보기 · 재대결이 모두 이 범위를 본다. 범위를 아직 판정할 수 없으면 비어 있다(전체로 새지 않는다).
   const vocab = useMemo(() => scopeMatcher.ready ? allVocab.filter(scopeMatcher.matches) : EMPTY_IDS, [allVocab, scopeMatcher]);
+  // 복습 화면(VocabReview)에 넘기는 범위 안 표현의 학습 상태 — 순서는 projections 그대로. 채점 · 정답 확인마다 화면이 다시 그려져
+  // 예전 projections × vocab 겹 순회(412×412 = 17만 번)가 탭 처리에 들었다(TAP-INP-SCHED-001, 390 CPU×4 실측 약 25ms). id 묶음으로 한 번에 거른다.
+  const scopedProjections = useMemo(() => { const ids = new Set(vocab.map(word => word.id)); return projections.filter(row => ids.has(row.vocabulary.id)); }, [projections, vocab]);
   const scopeArgs = { snapshot: { projections, enabled: learningAvailable }, scope, now: effectiveNow, levels: scopeLevels,
     sourceIds: scopeSourceIds, reviewSupported };
   const hasAnyWords = isBookScope ? vocab.length > 0 : allVocab.length > 0;
@@ -1719,7 +1722,7 @@ function VocabWorkspace({ reviewScope }) {
           <VocabReview
             bookReview={isBookScope ? { returnTo: reviewScope.returnTo } : null}
             vocab={vocab}
-            projections={projections.filter(row => vocab.some(word => word.id === row.vocabulary.id))}
+            projections={scopedProjections}
             learningAvailable={learningAvailable}
             now={effectiveNow}
             reviewWords={reviewSessionWords}

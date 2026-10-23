@@ -1,0 +1,52 @@
+{
+  "id": "manet-woman-reading",
+  "wikidata": "Q20268621",
+  "genre": "painting",
+  "artist": "edouard-manet",
+  "title": {
+    "native": "Woman Reading",
+    "ko": "책 읽는 여인",
+    "lang": "en"
+  },
+  "hook": "카페처럼 보이지만 화실에 꾸민 장면",
+  "date": {
+    "text": "1880–82",
+    "source": "aic",
+    "startYear": 1880,
+    "endYear": 1882,
+    "certainty": "range"
+  },
+  "medium": {
+    "native": "Oil on canvas",
+    "ko": "캔버스에 유채"
+  },
+  "places": [
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/14591"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "14591"
+    }
+  ],
+  "terms": [
+    "brushstrokes",
+    "marble",
+    "fleeting moment"
+  ],
+  "lookFor": [
+    "탁자 위 맥주잔을 찾아봐요.",
+    "여인이 읽는 잡지는 무엇에 끼워져 있나요?",
+    "뒤쪽 꽃은 정원일까요, 그림일까요?"
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:Édouard_Manet_-_Woman_Reading_-_1933.435_-_Art_Institute_of_Chicago.jpg",
+    "alt": "두툼한 겉옷과 모자 차림의 젊은 여인이 대리석 탁자 앞에서 나무 막대에 끼운 잡지를 읽고, 탁자에 맥주잔이 있으며 뒤로 꽃이 가득한 배경이 보인다."
+  }
+}

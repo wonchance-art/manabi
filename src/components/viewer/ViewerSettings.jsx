@@ -1,5 +1,5 @@
 'use client';
-import {useId,useRef,useState} from 'react';
+import {useId,useRef,useState,useTransition} from 'react';
 import ViewerModal from './ViewerModal';
 import {fontChoices} from '../../lib/viewerPreferences';
 import ViewerPreview from './ViewerPreview';
@@ -33,13 +33,26 @@ function Toggle({label,note,checked,onChange,disabled=false,reason,uiLocale='ko'
   return <div className="reader-setting-toggle"><label><b>{label}</b><input aria-label={label} type="checkbox" checked={disabled?false:checked} disabled={disabled} aria-describedby={reason?reasonId:undefined} onChange={e=>onChange(e.target.checked)}/></label>{note&&<Help uiLocale={uiLocale}><small>{note}</small></Help>}{reason&&<Reason id={reasonId}>{reason}</Reason>}{children}</div>;
 }
 // help(「?」 도움말)는 이름 줄 오른쪽에 둔다 — 따로 한 줄(44px)을 차지하지 않게.
-function Choices({label,value,items,onChange,uiLocale='ko',shortLabel,symbols,className='',disabled=false,reason,help}) {
+// 본문을 다시 나누는 설정(보기 전환 · 본문 크기)은 누른 조작의 선택 · 값 표시를 이 프레임에 먼저 그리고, 실제 반영(본문 다시 그리기 ·
+// 쪽 다시 나누기)은 transition으로 그 뒤에 한다(TAP-INP-SETTINGS-001 — 390 CPU×4 실측 쪽 넘김 ↔ 스크롤 324~368ms · 크기 + 216~260ms가
+// 누른 표시까지 그대로 막았다). 본문은 반영 커밋 전까지 옛 상태 그대로다 — 글자 크기와 쪽 나눔은 같은 커밋(+ 그 프레임의 rAF 다시 재기)에서
+// 함께 바뀌어 어긋난 프레임이 없다. 반영이 끝나면(isPending false) 표시는 다시 설정값을 따른다.
+function useDeferredApply(value,onChange,enabled) {
+  const [isPending,startTransition]=useTransition();
+  const [pending,setPending]=useState(null);
+  if(!enabled)return [value,onChange];
+  return [isPending&&pending?pending.value:value,next=>{setPending({value:next});startTransition(()=>onChange(next));}];
+}
+function Choices({label,value:applied,items,onChange:apply,uiLocale='ko',shortLabel,symbols,className='',disabled=false,reason,help,defer=false}) {
+  const [value,onChange]=useDeferredApply(applied,apply,defer);
   const reasonId=`${useId()}reason`;
   const fullLabel=uiLocale==='ko'?label:t(uiLocale,label);
   const name=<b>{shortLabel?t(uiLocale,shortLabel):fullLabel}</b>;
   return <div className={`reader-setting-choices ${className}${disabled?' reader-setting-choices--off':''}`}>{help?<div className="reader-setting-choices__head">{name}{help}</div>:name}<div role="group" aria-label={fullLabel} aria-describedby={reason?reasonId:undefined}>{items.map(([v,name])=><button type="button" key={v} aria-label={name} title={name} aria-pressed={value===v} disabled={disabled} onClick={()=>onChange(v)}>{symbols?.[v]??name}</button>)}</div>{reason&&<Reason id={reasonId}>{reason}</Reason>}</div>;
 }
-function Slider({label,value,min,max,step=1,onChange,display,uiLocale='ko'}) {
+function Slider({label,value:applied,min,max,step=1,onChange:apply,display:shownText,format,uiLocale='ko',defer=false}) {
+  const [value,onChange]=useDeferredApply(applied,apply,defer);
+  const display=format?format(value):shownText;
   label=uiLocale==='ko'?label:t(uiLocale,label);
   const set=v=>onChange(Math.max(min,Math.min(max,Math.round(v*10000)/10000)));
   return <div className="reader-setting-range"><label>{label}<output>{display??value}</output><span><button type="button" aria-label={t(uiLocale,'{label} 줄이기',{label})} disabled={value<=min} onClick={()=>set(value-step)}>−</button><input aria-label={label} type="range" value={value} min={min} max={max} step={step} onChange={e=>set(Number(e.target.value))}/><button type="button" aria-label={t(uiLocale,'{label} 늘리기',{label})} disabled={value>=max} onClick={()=>set(value+step)}>+</button></span></label></div>;
@@ -91,11 +104,11 @@ export default function ViewerSettings({settings:s,language,languageSettings,onC
     {(s.storageError||languageSettings?.storageError)&&<p role="status" className="reader-settings__warning">{tr('이 브라우저에 저장하지 못했어요. 현재 화면에는 적용되어 있어요.')}</p>}
     <section role="tabpanel" id={`reading-pane-${tab}`} aria-labelledby={`reading-tab-${tab}`}>
       {tab==='type'&&<>
-        <Slider uiLocale={uiLocale} label="본문 크기" value={s.fontSize} min={0.8} max={3} step={0.05} display={`${Math.round(s.fontSize*16)}px`} onChange={v=>set('fontSize',v)}/>
+        <Slider uiLocale={uiLocale} label="본문 크기" value={s.fontSize} min={0.8} max={3} step={0.05} format={v=>`${Math.round(v*16)}px`} onChange={v=>set('fontSize',v)} defer/>
         <Choices label="배경" className="reader-settings__themes" symbols={Object.fromEntries(['light','sepia','dark'].map(name=>[name,<Icon key={name} name={name}/>]))} uiLocale={uiLocale} value={s.theme} items={choices([['light','밝게'],['sepia','종이'],['dark','어둡게']])} onChange={v=>set('theme',v)}/>
         {/* 보기(READER-PAGED-001 목업 E) — 기본은 쪽 넘김, 스크롤은 지금 그대로의 대안. 위치는 보기 쪽이 기준 글자로 지킨다
             (keepPosition의 화면 좌표 기준점은 다단 쪽에서 맞지 않는다). */}
-        <Choices label="보기" uiLocale={uiLocale} value={s.readerView||'paged'} items={choices([['paged','쪽 넘김'],['scroll','스크롤']])} onChange={v=>onReaderView?onReaderView(v):s.setReaderView?.(v)}/>
+        <Choices label="보기" uiLocale={uiLocale} value={s.readerView||'paged'} items={choices([['paged','쪽 넘김'],['scroll','스크롤']])} onChange={v=>onReaderView?onReaderView(v):s.setReaderView?.(v)} defer/>
         {/* 글자 모양(LIT-SRC-WS-1, 시안 B) — 번체 사본이 정본과 맞는 중국어 정본 책에서만. 바뀌는 것은 화면 글자뿐이다. */}
         {language==='Chinese'&&zhScriptAvailable&&<Choices label="글자 모양" uiLocale={uiLocale} value={s.zhScript||'hans'} items={choices([['hans','간체'],['hant','번체']])} onChange={v=>set('zhScript',v)}
           help={<Help uiLocale={uiLocale}><p className="reader-setting-note">{tr('단어 카드·단어장·복습은 간체로 이어져요.')}</p></Help>}/>}
@@ -115,7 +128,7 @@ export default function ViewerSettings({settings:s,language,languageSettings,onC
           help={<Help uiLocale={uiLocale}><p className="reader-setting-note">{tr('새 단어만: 저장한 단어와 이미 앎 기록의 발음을 가려요.')}</p></Help>}/>}
         <Toggle label="단어 상태" uiLocale={uiLocale} note="새 단어는 파란 밑줄, 저장한 단어 · 복습할 단어는 색 띠로 구분해요" checked={s.wordStateHl} onChange={v=>set('wordStateHl',v)}><StateLegend theme={s.theme} uiLocale={uiLocale}/></Toggle>
         {/* 성조 색상은 발음을 숨겨도 단어창 표제어·글자 탐색 병음을 칠하므로 쓸 수 있는 옵션이다. */}
-        {language==='Chinese'&&<><Toggle label="성조 색상" uiLocale={uiLocale} note="병음의 성조 부호는 유지하고 색을 더해요" checked={s.showToneColors} onChange={v=>set('showToneColors',v)}><ToneLegend uiLocale={uiLocale}/></Toggle><Toggle label="한자 대조" uiLocale={uiLocale} note="단어 카드에 한국 한자 훈음을 더해요" checked={s.showHanjaKo} onChange={v=>set('showHanjaKo',v)}/></>}
+        {language==='Chinese'&&<><Toggle label="성조 색상" uiLocale={uiLocale} note="병음의 성조 부호는 유지하고 색을 더해요" checked={s.showToneColors} onChange={v=>set('showToneColors',v)}><ToneLegend uiLocale={uiLocale}/></Toggle><Toggle label="훈음" uiLocale={uiLocale} note="한자마다 뜻과 소리" checked={s.showHanjaKo} onChange={v=>set('showHanjaKo',v)}/></>}
         {supportsPatterns(language)
           ?<><Toggle label="문법 표시" uiLocale={uiLocale} note="회색 밑줄은 관련 문형 후보예요. 탭해서 확인해 주세요." checked={s.showPatterns} onChange={v=>set('showPatterns',v)}/><Choices label="문법 표시 범위" uiLocale={uiLocale} value={s.patternFilter} items={choices([['all','전체'],['due','복습할 것'],['weak','약한 것']])} onChange={v=>set('patternFilter',v)} disabled={!s.showPatterns} reason={s.showPatterns?null:tr('문법 표시를 켜면 고를 수 있어요')}/><p className="reader-setting-note">{translateViewerText(uiLocale,patternNote)}</p></>
           :<Toggle label="문법 표시" uiLocale={uiLocale} checked={false} disabled reason={tr('이 언어는 아직 문형 자료가 없어요')} onChange={()=>{}}/>}

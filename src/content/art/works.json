@@ -2401,5 +2401,493 @@
       "height": 699,
       "alt": "밤의 카바레 안, 탁자에 둘러앉은 신사와 숙녀들 뒤로 사람들이 서 있다. 오른쪽 끝에는 조명을 받아 초록빛으로 보이는 여인의 얼굴이 화면 밖으로 반쯤 잘려 있고, 붉은 머리 여인들이 등을 보이고 있다."
     }
+  },
+  {
+    "id": "munch-girl-by-the-window",
+    "wikidata": "Q18891063",
+    "genre": "painting",
+    "artist": "edvard-munch",
+    "title": {
+      "native": "The Girl by the Window",
+      "ko": "창가의 소녀",
+      "lang": "en"
+    },
+    "hook": "「절규」와 같은 해, 한밤 창가에 선 소녀",
+    "date": {
+      "text": "1893",
+      "source": "aic",
+      "startYear": 1893,
+      "endYear": 1893,
+      "certainty": "exact"
+    },
+    "medium": {
+      "native": "Oil on canvas",
+      "ko": "캔버스에 유채"
+    },
+    "places": [
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/154235"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "154235",
+        "sourceUrl": "https://www.artic.edu/artworks/154235",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "Standing before a window in the dead of night, a young girl draws back a curtain to gaze at the street from her darkened room. Deep shadows envelop the interior, obscuring all but the suggestion of a rounded piece of furniture at the lower right. The darkness, combined with the sharply tilted floor, gives a sense of precariousness and isolation to the figure. Loosely applied brown, blue, and violet tones enhance the melancholy atmosphere. The window serves as a symbolic barrier, separating the interior from the outside world, but also as a membrane, through which moonlight casts glowing rectangles upon the floor. Although the girl’s actions suggest a narrative, the painting only provides mystery—we cannot see her facial expression, nor what she observes.\n\nGirl by the Window belongs to a group of nocturnal scenes painted by Edvard Munch in the early 1890s, all characterized by moody blue tonalities. Around that time he penned a manifesto in which he declared that artists should depict “living people who breathe and feel, suffer and love.” This focus on the psychological realities of human existence found its ultimate expression in Munch’s iconic work The Scream (1893; Nasjonalmuseet, Oslo).",
+        "textSha256": "09957a473963010cd247be00bce27e8a221dac6cd340f5bd582c8feb2e61c6b6"
+      }
+    ],
+    "terms": [
+      "melancholy",
+      "isolation",
+      "nocturnal"
+    ],
+    "lookFor": [
+      "바닥에 비친 네모난 달빛을 찾아봐요.",
+      "소녀의 얼굴 표정이 보이나요?",
+      "방 안 오른쪽 아래의 둥근 가구를 찾아봐요."
+    ],
+    "image": {
+      "url": "/art/munch-girl-by-the-window.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Edvard_Munch_-_The_Girl_by_the_Window_-_2000.50_-_Art_Institute_of_Chicago.jpg",
+      "license": "public-domain",
+      "credit": "Edvard Munch. The Girl by the Window, 1893. Art Institute of Chicago, 2000.50. Public domain (via Wikimedia Commons)",
+      "width": 541,
+      "height": 800,
+      "alt": "어두운 푸른 방에서 흰 잠옷 차림의 소녀가 커튼을 걷고 창밖을 내다보고, 창으로 들어온 달빛이 바닥에 네모나게 비친다."
+    }
+  },
+  {
+    "id": "cezanne-basket-of-apples",
+    "wikidata": "Q3956440",
+    "genre": "painting",
+    "artist": "paul-cezanne",
+    "title": {
+      "native": "The Basket of Apples",
+      "ko": "사과 바구니",
+      "lang": "en"
+    },
+    "hook": "떨어질 듯 말 듯, 일부러 어긋나게 그린 식탁",
+    "date": {
+      "text": "c. 1893",
+      "source": "aic",
+      "startYear": 1893,
+      "endYear": 1893,
+      "certainty": "circa"
+    },
+    "medium": {
+      "native": "Oil on canvas",
+      "ko": "캔버스에 유채"
+    },
+    "places": [
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/111436"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "111436",
+        "sourceUrl": "https://www.artic.edu/artworks/111436",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "In many ways Paul Cezanne was the odd man out among the artists branded as “Impressionists”—those who showed their works outside of France’s state-sponsored Salon exhibitions. Early on, he painted landscapes, the typical Impressionist subject, but his arresting and complex still lifes changed the traditional nature morte (dead nature) genre and continue to puzzle and tantalize today.\n\nAt first glance, The Basket of Apples, the first of Cezanne’s works to enter the museum’s collection, appears to be a fruit-laden table setting anchored by a wine bottle. Closer looking reveals shifts in reality conveyed by the misaligned tabletop, tilted bottle, cascading apples, and the precarious tower of cookies known as langues de chat (cat tongues), which magically stop just short of falling out of the picture. Furthering the sense of what has been called the artist’s “controlled chaos” are the shifts in brushwork from the thick strokes used to model fruits within the cloth’s thick sculptural forms to the sketch-like marks used around the edges of both the table and the cloth. Cezanne rarely signed his paintings, so his signature at the bottom left suggests the importance he ascribed to this painting or to its original owner.",
+        "textSha256": "4d5d50b5d47e8c5091da1fc445b014dba8e1d1ff81a67118f5ea4775fdfea159"
+      }
+    ],
+    "terms": [
+      "still lifes",
+      "misaligned",
+      "brushwork"
+    ],
+    "lookFor": [
+      "식탁 앞쪽 가장자리 선이 천의 왼쪽과 오른쪽에서 이어지나요?",
+      "기울어진 술병을 찾아봐요.",
+      "쌓아 올린 과자는 몇 층일까요?"
+    ],
+    "image": {
+      "url": "/art/cezanne-basket-of-apples.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Paul_C%C3%A9zanne_-_The_Basket_of_Apples_-_1926.252_-_Art_Institute_of_Chicago.jpg",
+      "license": "public-domain",
+      "credit": "Paul Cezanne. The Basket of Apples, c. 1893. Art Institute of Chicago, 1926.252. Public domain (via Wikimedia Commons)",
+      "width": 800,
+      "height": 640,
+      "alt": "기울어진 바구니에서 사과가 쏟아져 흰 천 위로 흩어지고, 그 옆에 초록 술병과 쟁반에 쌓은 길쭉한 과자가 놓여 있다."
+    }
+  },
+  {
+    "id": "mondrian-lozenge-composition",
+    "wikidata": "Q18710675",
+    "genre": "painting",
+    "artist": "piet-mondrian",
+    "title": {
+      "native": "Lozenge Composition with Yellow, Black, Blue, Red, and Gray",
+      "ko": "노랑·검정·파랑·빨강·회색의 마름모 구성",
+      "lang": "en"
+    },
+    "hook": "네모난 그림을 45도 돌려 건 몬드리안",
+    "date": {
+      "text": "1921",
+      "source": "aic",
+      "startYear": 1921,
+      "endYear": 1921,
+      "certainty": "exact"
+    },
+    "medium": {
+      "native": "Oil on canvas",
+      "ko": "캔버스에 유채"
+    },
+    "places": [
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/109819"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "109819",
+        "sourceUrl": "https://www.artic.edu/artworks/109819",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "Piet Mondrian, a painter of the revolutionary international movement De Stijl (the Style), argued that \"the straight line tells the truth.\" Why, then, we might wonder, would he choose to hang a painting off axis, where its edges imply dynamic diagonals? Among other motivations, rotating the canvas allowed Mondrian to reconsider a question he spent his career exploring, namely, the relationship between the contents of a painting and what contains them. In Lozenge Composition, the squared-off black lines imply enclosure, while a single line (above the blue area) extends to the slanted edge, suggesting extension beyond the canvas. This implication of what might lie beyond also prompted Mondrian to invoke the full expanse of the wall by hanging diagonal paintings well above eye level.",
+        "textSha256": "616eb944a257ebd258d011fa031042bfd7c39facfdcb6074b7917df715674e4c"
+      }
+    ],
+    "terms": [
+      "straight line",
+      "diagonals",
+      "enclosure"
+    ],
+    "lookFor": [
+      "비스듬한 가장자리까지 뻗어 나간 검은 선을 찾아봐요.",
+      "빨강은 어디에 얼마나 있나요?",
+      "노랑·파랑·빨강 말고 쓰인 색을 찾아봐요."
+    ],
+    "image": {
+      "url": "/art/mondrian-lozenge-composition.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Piet_Mondrian_-_Lozenge_Composition_with_Yellow,_Black,_Blue,_Red,_and_Gray_-_1957.307_-_Art_Institute_of_Chicago.jpg",
+      "license": "public-domain",
+      "credit": "Piet Mondrian. Lozenge Composition with Yellow, Black, Blue, Red, and Gray, 1921. Art Institute of Chicago, 1957.307. Public domain (via Wikimedia Commons)",
+      "width": 800,
+      "height": 800,
+      "alt": "마름모꼴로 세운 흰 화면을 굵은 검은 선이 가로세로로 나누고, 왼쪽 위에 노랑, 오른쪽에 파랑, 가운데에 검정, 아래 끝에 작은 빨강 칸이 있다."
+    }
+  },
+  {
+    "id": "rembrandt-old-man-with-a-gold-chain",
+    "wikidata": "Q14911808",
+    "genre": "painting",
+    "artist": "rembrandt-van-rijn",
+    "title": {
+      "native": "Old Man with a Gold Chain",
+      "ko": "금목걸이를 한 노인",
+      "lang": "en"
+    },
+    "hook": "초상화가 아니라 옷을 입혀 그린 인물 연습, 트로니",
+    "date": {
+      "text": "1631",
+      "source": "aic",
+      "startYear": 1631,
+      "endYear": 1631,
+      "certainty": "exact"
+    },
+    "medium": {
+      "native": "Oil on panel",
+      "ko": "나무판에 유채"
+    },
+    "places": [
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/95998"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "95998",
+        "sourceUrl": "https://www.artic.edu/artworks/95998",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "This compelling figure—fancifully adorned with a steel gorget (armor protecting the throat and upper chest), golden chain, and plumed beret—represents a new commodity on the Northern European art market: a tronie, or character study. While artists had created such studies since the 1500s, Rembrandt and his colleague Jan Lievens made these images into more affordable alternatives to portraits, heightening their appeal by introducing bold visual elements like dramatic lighting, whimsical costumes, and dynamic poses. Rembrandt and his colleagues painted this model frequently; although he has been called “Rembrandt’s father,” recent research suggests that the “Old Man” may have been the keeper of an almshouse in Leiden, the Netherlands.\n\nAlthough tronies were less expensive than commissioned portraits, Rembrandt invested just as much skill in them. The attention given to the folds of flesh beneath the eyes, the prickly, tightly trimmed beard, and the highlights in the gorget and gold chain reveal a talented painter engaged in the joys of painting. The prominent gold chain appears in several works from Rembrandt’s Leiden and Amsterdam periods: He must have had one in his studio. But unlike his acclaimed peers Peter Paul Rubens and Anthony van Dyck, Rembrandt never received one as a gift from a royal patron.",
+        "textSha256": "ab9448792c7f10871ec14c5eae970f3967ec7c7e3f31a153f9676fb867890388"
+      }
+    ],
+    "terms": [
+      "gorget",
+      "tronie",
+      "dramatic lighting"
+    ],
+    "lookFor": [
+      "목과 가슴을 감싼 쇠 갑옷을 찾아봐요.",
+      "빛이 가장 밝게 닿은 곳은 어디일까요?",
+      "눈 밑 주름과 짧게 다듬은 수염을 찾아봐요."
+    ],
+    "image": {
+      "url": "/art/rembrandt-old-man-with-a-gold-chain.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rembrandt_Harmensz._van_Rijn_-_Old_Man_with_a_Gold_Chain_-_Google_Art_Project.jpg",
+      "license": "public-domain",
+      "credit": "Rembrandt Harmensz. van Rijn. Old Man with a Gold Chain, 1631. Art Institute of Chicago, 1922.4467. Public domain (via Wikimedia Commons)",
+      "width": 724,
+      "height": 800,
+      "alt": "깃털 장식 검은 베레모를 쓰고 목에 쇠 갑옷과 금목걸이를 두른 노인이 어둠 속에서 빛을 받으며 비스듬히 서 있다."
+    }
+  },
+  {
+    "id": "manet-woman-reading",
+    "wikidata": "Q20268621",
+    "genre": "painting",
+    "artist": "edouard-manet",
+    "title": {
+      "native": "Woman Reading",
+      "ko": "책 읽는 여인",
+      "lang": "en"
+    },
+    "hook": "카페처럼 보이지만 화실에 꾸민 장면",
+    "date": {
+      "text": "1880–82",
+      "source": "aic",
+      "startYear": 1880,
+      "endYear": 1882,
+      "certainty": "range"
+    },
+    "medium": {
+      "native": "Oil on canvas",
+      "ko": "캔버스에 유채"
+    },
+    "places": [
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/14591"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "14591",
+        "sourceUrl": "https://www.artic.edu/artworks/14591",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "During the late nineteenth century, Parisian cafés were the gathering places of artists and writers and were ideal locations for observing the urban scene. Many Impressionist paintings depict the Café Nouvelle-Athènes on the rue Pigalle, where two tables were reserved for Édouard Manet and his circle—a group that included the painters Edgar Degas, Claude Monet, Camille Pissarro, and Pierre-Auguste Renoir, and the writers Charles Baudelaire and Émile Zola.\n\nAt first glance, this fashionably dressed young woman appears to have been captured sitting at a favorite café: the marble tabletop, beer mug, and magazine attached to a wooden bar suggest such a setting, and her heavy clothing and kid gloves indicate that she is at an outdoor table and that the weather is cool. However, the floral background is actually one of Manet's paintings and the café a re-creation in his studio.\n\nWoman Reading is one of the most Impressionist of Manet’s images; the quick, free brushstrokes and light colors are characteristic of his technique late in his career. Painted only a few years before his death, this work admirably captures a fleeting moment, the sense of modern life that Manet and his contemporaries sought to represent.",
+        "textSha256": "9fac4b54a17777916bd012c5b74c9547060a42e106b42c5cd7c5cbc7896d4227"
+      }
+    ],
+    "terms": [
+      "brushstrokes",
+      "marble",
+      "fleeting moment"
+    ],
+    "lookFor": [
+      "탁자 위 맥주잔을 찾아봐요.",
+      "여인이 읽는 잡지는 무엇에 끼워져 있나요?",
+      "뒤쪽 꽃은 정원일까요, 그림일까요?"
+    ],
+    "image": {
+      "url": "/art/manet-woman-reading.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:%C3%89douard_Manet_-_Woman_Reading_-_1933.435_-_Art_Institute_of_Chicago.jpg",
+      "license": "public-domain",
+      "credit": "Édouard Manet. Woman Reading, 1880–82. Art Institute of Chicago, 1933.435. Public domain (via Wikimedia Commons)",
+      "width": 648,
+      "height": 800,
+      "alt": "두툼한 겉옷과 모자 차림의 젊은 여인이 대리석 탁자 앞에서 나무 막대에 끼운 잡지를 읽고, 탁자에 맥주잔이 있으며 뒤로 꽃이 가득한 배경이 보인다."
+    }
+  },
+  {
+    "id": "degas-millinery-shop",
+    "wikidata": "Q3874376",
+    "genre": "painting",
+    "artist": "edgar-degas",
+    "title": {
+      "native": "The Millinery Shop",
+      "ko": "모자 가게",
+      "lang": "en"
+    },
+    "hook": "손님일까 점원일까, 모자를 쓴 듯 보이는 여인",
+    "date": {
+      "text": "1879-86",
+      "source": "aic",
+      "startYear": 1879,
+      "endYear": 1886,
+      "certainty": "range"
+    },
+    "medium": {
+      "native": "Oil on canvas",
+      "ko": "캔버스에 유채"
+    },
+    "places": [
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/14572"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "14572",
+        "sourceUrl": "https://www.artic.edu/artworks/14572",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "The Millinery Shop is the largest of Edgar Degas’s paintings focused on milliners, or hatmakers. He arranged the composition carefully, making multiple drawings and pastels of the lone figure, perfecting the woman’s pose and experimenting with her outfit. The final composition highlights the visual ambiguities of class identity that arose in France in the late nineteenth century. The woman sits in a hat shop examining a wide-brimmed hat. She wears a fashionable green wool dress with long, elegant gloves that were just as likely to be worn by wealthy clients as by the employees of the shop. At the time, millinery work was considered a prestigious trade that required skill and taste, incrementally elevating the young women who succeeded in the business. Degas addressed this subtle shift in the class hierarchy through the subject’s fashion: While her dress is nice enough to be worn by an affluent woman, she does not wear a hat of her own, which would have been expected of a high-class young lady. The artist portrayed this newfound uncertainty playfully by positioning the hat with green trimmings so it seems to sit atop the woman’s head.",
+        "textSha256": "45c892c8011124852e42a86e24e6f4f09ce8466bf8a53c87f4920ea64212332f"
+      }
+    ],
+    "terms": [
+      "milliners",
+      "composition",
+      "class"
+    ],
+    "lookFor": [
+      "여인의 머리 위에 얹힌 듯 보이는 모자를 찾아봐요.",
+      "탁자 위 모자는 모두 몇 개일까요?",
+      "여인이 낀 긴 장갑을 찾아봐요."
+    ],
+    "image": {
+      "url": "/art/degas-millinery-shop.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Edgar_Degas_-_The_Millinery_Shop_-_Google_Art_Project.jpg",
+      "license": "public-domain",
+      "credit": "Edgar Degas. The Millinery Shop, 1879-86. Art Institute of Chicago, 1933.428. Public domain (via Wikimedia Commons)",
+      "width": 800,
+      "height": 719,
+      "alt": "모자 가게 탁자에 꽃과 리본으로 꾸민 모자들이 받침대에 놓여 있고, 초록 드레스에 긴 장갑을 낀 여인이 챙 넓은 모자를 손에 들고 살펴본다."
+    }
+  },
+  {
+    "id": "gauguin-arlesiennes-mistral",
+    "wikidata": "Q20272517",
+    "genre": "painting",
+    "artist": "paul-gauguin",
+    "title": {
+      "native": "Arlésiennes (Mistral)",
+      "ko": "아를의 여인들(미스트랄)",
+      "lang": "en"
+    },
+    "hook": "고흐와 함께 살던 집 앞 공원, 덤불 속의 얼굴",
+    "date": {
+      "text": "1888",
+      "source": "aic",
+      "startYear": 1888,
+      "endYear": 1888,
+      "certainty": "exact"
+    },
+    "medium": {
+      "native": "Oil on jute canvas",
+      "ko": "황마 캔버스에 유채"
+    },
+    "places": [
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/19339"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "19339",
+        "sourceUrl": "https://www.artic.edu/artworks/19339",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "During the winter of 1888, Paul Gauguin spent a troubled two months with Vincent van Gogh in the southern French city of Arles. He painted the enigmatic Arlésiennes (Mistral) during this stay. The painters’ time together was intended to be the beginning of an artist’s colony, but their relationship grew increasingly tense, and Van Gogh’s mental health deteriorated.\n\nSet directly across the street from the house they shared, the painting depicts four women somberly processing through a public garden. The space is tilted radically upward, and complex, three-dimensional forms are reduced to simple, flat shapes. For example, twin orange-yellow cones—probably protective hay coverings to shield plants from the frost—tower at the right like abstracted human figures. Wrapped in dark shawls, the two closest women cover their mouths against the frigid air. Their gestures are withdrawn and introspective, and their passage is seemingly blocked by a bright red fence and large green bush. Perhaps the composition’s oddest element is the appearance of a face within the bush. This face—an intentional inclusion by the artist—adds an uncanny, watchful presence to the scene. It exemplifies Gauguin’s exploration of what he believed to be the mysteries that suffuse everyday life.",
+        "textSha256": "77b39906992dbcd6a8437d31703e87e30503c35b046eb661d89b3e0171746588"
+      }
+    ],
+    "terms": [
+      "enigmatic",
+      "shawls",
+      "uncanny"
+    ],
+    "lookFor": [
+      "초록 덤불 속에 숨은 얼굴을 찾아봐요.",
+      "오른쪽의 주황빛 원뿔 둘은 무엇처럼 보이나요?",
+      "입을 가린 두 여인을 찾아봐요."
+    ],
+    "image": {
+      "url": "/art/gauguin-arlesiennes-mistral.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Paul_Gauguin_-_Arl%C3%A9siennes_(Mistral)_-_1934.391_-_Art_Institute_of_Chicago.jpg",
+      "license": "public-domain",
+      "credit": "Paul Gauguin. Arlésiennes (Mistral), 1888. Art Institute of Chicago, 1934.391. Public domain (via Wikimedia Commons)",
+      "width": 800,
+      "height": 633,
+      "alt": "공원 길을 검은 숄을 두른 여인 넷이 걸어가고, 앞의 두 여인은 입을 가렸다. 오른쪽에 주황빛 원뿔 모양 덮개 둘이 서 있고 앞에는 붉은 울타리와 초록 덤불이 있다."
+    }
+  },
+  {
+    "id": "cassatt-childs-bath",
+    "wikidata": "Q3172226",
+    "genre": "painting",
+    "artist": "mary-cassatt",
+    "title": {
+      "native": "The Child's Bath",
+      "ko": "아이의 목욕",
+      "lang": "en"
+    },
+    "hook": "일본 판화에서 배운, 위에서 내려다본 목욕 시간",
+    "date": {
+      "text": "1893",
+      "source": "aic",
+      "startYear": 1893,
+      "endYear": 1893,
+      "certainty": "exact"
+    },
+    "medium": {
+      "native": "Oil on canvas",
+      "ko": "캔버스에 유채"
+    },
+    "places": [
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/111442"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "111442",
+        "sourceUrl": "https://www.artic.edu/artworks/111442",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "In The Child’s Bath, Cassatt centered two figures in a moment of physical closeness: a woman steadies a young charge on her lap as she holds the child’s foot in the washbasin below. The steep angle from above creates a shallow picture plane, pulling viewers into the space. The carpeted floor seems to sit upright on the surface of the canvas. Adding to this sense of flatness, pattern is everywhere within the frame. These formal elements reflect Cassatt’s intense engagement with Japanese aesthetics in the 1890s.\n\nAn extraordinary composition featuring the artist’s signature subject, The Child’s Bath was widely exhibited beginning in 1893. The Art Institute of Chicago purchased the painting in 1910—making it the first work by Cassatt to enter the museum’s collection.",
+        "textSha256": "5cdfb123ea7af1c5653512587d38d795e1d9d387ce86dbb7a15a3f7a7c9f9621"
+      }
+    ],
+    "terms": [
+      "washbasin",
+      "pattern",
+      "Japanese aesthetics"
+    ],
+    "lookFor": [
+      "그림 속 무늬는 어디어디에 있을까요?",
+      "대야 속 아이의 발을 찾아봐요.",
+      "카펫 바닥은 평평하게 누워 보이나요, 세워져 보이나요?"
+    ],
+    "image": {
+      "url": "/art/cassatt-childs-bath.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mary_Cassatt_-_The_Child's_Bath_-_Google_Art_Project.jpg",
+      "license": "public-domain",
+      "credit": "Mary Cassatt. The Child's Bath, 1893. Art Institute of Chicago, 1910.2. Public domain (via Wikimedia Commons)",
+      "width": 524,
+      "height": 800,
+      "alt": "줄무늬 옷을 입은 여인이 무릎에 앉힌 아이의 발을 바닥의 흰 대야에 담가 씻기고, 옆에 꽃무늬 물주전자가 있으며 바닥에는 무늬 카펫이 깔려 있다."
+    }
   }
 ]

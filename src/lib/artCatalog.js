@@ -68,6 +68,9 @@ const INTERNAL_MEMO = /\d{8}_h\d+/;
 const READING_MARKS = /[＠@][\u3040-\u30ff]{1,12}[＠@]|\+[\u3040-\u30ff]{1,12}\+|【[\u3040-\u30ff]{1,12}】/;
 /** 일본어 해설에 섞인 영어 문장(낱말 여섯 개 이상이 띄어쓰기로 이어짐, 숫자 낱말 포함) — 湖畔(cobas-159785)처럼 일본어·영어 해설이 한 칸에 이어 붙은 원문은 일본어 장이 될 수 없다. */
 const ENGLISH_SENTENCE = /[A-Za-z]+(?:[ ,'’-]+(?:[A-Za-z]+|\d+)){5,}/;
+/** 라틴 합자 글자(ﬁ · ﬂ 등 U+FB00–FB06) — 인쇄본에서 글을 뽑을 때 깨진 흔적이다(AIC 「Arrival of the Normandy Train」 「artiﬁ cial」 실측 2026-10-23 KST).
+ *  학습자에게 깨진 낱말이 보이고 단어 찾기도 어긋난다 — 고치지 않고 싣지 않는다. */
+const LIGATURES = /[\ufb00-\ufb06]/;
 
 const isObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 const isText = (value) => typeof value === 'string' && value.trim().length > 0;
@@ -156,6 +159,7 @@ function checkDescription(description, at, errors) {
     errors.push(`${at}.text: 해설 1–${ART_LIMITS.descriptionMax}자`);
   } else if (INTERNAL_MEMO.test(description.text)) errors.push(`${at}.text: 박물관 내부 메모가 섞인 해설은 싣지 않는다`);
   else if (READING_MARKS.test(description.text)) errors.push(`${at}.text: 읽기 표시(＠よみ＠·+よみ+·【よみ】)가 섞인 해설은 싣지 않는다`);
+  else if (LIGATURES.test(description.text)) errors.push(`${at}.text: 합자 글자(ﬁ · ﬂ 등 — 원문 추출 깨짐)가 섞인 해설은 싣지 않는다`);
   else if (description.language === 'ja' && ENGLISH_SENTENCE.test(description.text)) errors.push(`${at}.text: 일본어 해설에 영어 문장이 섞여 있다(싣지 않는다)`);
   if (!SHA256.test(description.textSha256 ?? '')) errors.push(`${at}.textSha256: 원문 해시가 필요하다`);
 }

@@ -68,14 +68,18 @@ describe('그림 구간 — 게시 책의 작품 한 점 = 카드 한 장', () =
 });
 
 describe('그림 구간 화면', () => {
-  it('카드: 그림(꾸밈) · 제목 링크 → 그 장 · 작가 링크(그 작가만) · 한 줄 이야기 · 언어 · 레벨', () => {
+  it('카드: 그림(꾸밈) · 태그(언어 · 레벨) · 원어 제목 + 한국어 부제 링크 → 그 장 · 작가 링크(그 작가만) — 한 줄 이야기는 싣지 않는다', () => {
     const html = render({ items: ALL, filters: classicsFilters({ shelf: 'art' }) });
     expect(html.match(/<li class="art-card">/g)).toHaveLength(ALL.length);
     const bedroom = ALL.find((item) => item.workId === 'van-gogh-bedroom');
     expect(html).toContain(`<a class="art-card__open" href="/viewer/${bedroom.materialId}?returnTo=%2Fdiscover%2Fclassics%3Fshelf%3Dart">`);
     expect(html).toContain('<img src="/art/van-gogh-bedroom.jpg" alt="" width="800" height="624" loading="lazy" decoding="async"/>');
-    expect(html).toContain('<strong>아를의 침실</strong></a><a class="classics-card__author" href="/discover/classics?shelf=art&amp;author=%EB%B9%88%EC%84%BC%ED%8A%B8+%EB%B0%98+%EA%B3%A0%ED%9D%90">빈센트 반 고흐</a>');
-    expect(html).toContain('<p class="art-card__hook">고흐가 세 번이나 그린 「노란 집」의 자기 방</p><small>영어 · B2 상급</small>');
+    expect(html).toContain('<span class="classics-card__tags"><span class="tag">영어</span><span class="tag">B2 상급</span></span><strong lang="en">The Bedroom</strong><span class="art-card__ko">아를의 침실</span></a><a class="classics-card__author" href="/discover/classics?shelf=art&amp;author=%EB%B9%88%EC%84%BC%ED%8A%B8+%EB%B0%98+%EA%B3%A0%ED%9D%90">빈센트 반 고흐</a></li>');
+    expect(html).not.toContain('고흐가 세 번이나 그린');
+    expect(html).not.toContain('card-check');
+    const seen = render({ items: ALL, filters: classicsFilters({ shelf: 'art' }), read: new Set([bedroom.key]) });
+    expect(seen.match(/class="card-check"/g)).toHaveLength(1);
+    expect(seen).toContain('decoding="async"/><span class="card-check" role="img" aria-label="읽음">');
   });
   it('언어 칩은 작품이 있는 언어만(둘 이상일 때), 작가로 거르면 「N점」과 해제', () => {
     const html = render({ items: ALL, filters: classicsFilters({ shelf: 'art' }) });
@@ -84,7 +88,7 @@ describe('그림 구간 화면', () => {
     expect(html).toContain('href="/discover/classics?shelf=art&amp;lang=Japanese"');
     expect(html).not.toContain('lang=French');
     const english = render({ items: ALL, filters: classicsFilters({ shelf: 'art', lang: 'English' }) });
-    expect(english.match(/<li class="art-card">/g)).toHaveLength(8);
+    expect(english.match(/<li class="art-card">/g)).toHaveLength(16);
     const monet = render({ items: ALL, filters: classicsFilters({ shelf: 'art', author: '클로드 모네' }) });
     expect(monet.match(/<li class="art-card">/g)).toHaveLength(3);
     expect(monet).toContain('<span>클로드 모네 · 3점</span>');

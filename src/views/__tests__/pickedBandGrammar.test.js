@@ -20,17 +20,23 @@ const decls = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '');
 describe('지정 칠 문법 — 안 A (index.css)', () => {
   const base = decls(block(/\.word-token \.surface::before \{[^}]*\}/s));
   const picked = decls(block(/\.word-token--picked \.surface::before \{[^}]*\}/s));
-  const rightCut = decls(block(/\.word-token--picked:has\(\+ \.word-token--picked\) \.surface::before \{[^}]*\}/s));
-  const leftCut = decls(block(/\.word-token--picked \+ \.word-token--picked:has\(\.surface\) \.surface::before \{[^}]*\}/s));
-  const seam = decls(block(/\.word-token--picked:has\(\+ \.word-token--picked\) \.surface::after \{[^}]*\}/s));
+  // 이음 신호(TAP-INP-HAS-002): :has는 토큰 자신에 걸고 변수만 준다 — 칠하는 규칙은 :has 없이 변수를 읽는다.
+  const rightCut = decls(block(/\.word-token--picked:has\(\+ \.word-token--picked\) \{[^}]*\}/s));
+  const leftCut = decls(block(/\.word-token--picked \+ \.word-token--picked:has\(\.surface\) \{[^}]*\}/s));
+  const corners = [...css.matchAll(/\.word-token--picked \.surface::before \{([^}]*)\}/g)].map((m) => decls(m[1])).find((d) => d.includes('radius')) || '';
+  const seam = decls(block(/\.word-token--picked \.surface::after \{[^}]*\}/s));
 
   it('단어 하나만 지정 — ::before의 left·right·border-radius가 비지정과 동일(색만 바뀐다)', () => {
     expect(base).toContain('left: 0;');
     expect(base).toContain('right: 0;');
     expect(base).toContain('border-radius: 5px;');
-    // 지정 규칙은 background만 — 기하(left/right/radius/top/height)를 다시 쓰지 않는다
+    // 지정 칠 규칙은 background만 — 기하(left/right/radius/top/height)를 다시 쓰지 않는다
     expect(picked).toContain('background: var(--picked-bg');
     expect(picked).not.toMatch(/left:|right:|border-radius|top:|height:/);
+    // 모서리 규칙은 이음 신호가 없으면 기반과 같은 값(5px) — 낱개 지정의 기하는 그대로다(TAP-INP-HAS-002)
+    for (const side of ['top-left', 'bottom-left']) expect(corners).toContain(`border-${side}-radius: var(--picked-join-start, 5px);`);
+    for (const side of ['top-right', 'bottom-right']) expect(corners).toContain(`border-${side}-radius: var(--picked-join-end, 5px);`);
+    expect(corners).not.toMatch(/left:|right:|top:|height:|border-radius:|background/);
     // 혼색(--hl picked×상태) 규칙도 기하 무접촉
     for (const m of css.matchAll(/\.reader-area--hl \.word-token--picked\.word-token--\w+ \.surface::before \{([^}]*)\}/g)) {
       expect(m[1]).not.toMatch(/left:|right:|border-radius/);
@@ -38,19 +44,26 @@ describe('지정 칠 문법 — 안 A (index.css)', () => {
   });
 
   it('연속 지정 구간 — 안쪽 모서리만 죽인다(앞 토큰 오른쪽·뒤 토큰 왼쪽), 바깥 모서리는 둥근 채', () => {
-    expect(rightCut).toContain('border-top-right-radius: 0;');
-    expect(rightCut).toContain('border-bottom-right-radius: 0;');
-    expect(rightCut).not.toMatch(/border-(top|bottom)-left-radius|border-radius:/);
-    expect(leftCut).toContain('border-top-left-radius: 0;');
-    expect(leftCut).toContain('border-bottom-left-radius: 0;');
-    expect(leftCut).not.toMatch(/border-(top|bottom)-right-radius|border-radius:/);
-    // 두 규칙 모두 :has에 걸려 있다 — 미지원 엔진에서 이음매와 함께 빠져 온전한 알약으로 남는다
-    expect(css).toMatch(/\.word-token--picked:has\(\+ \.word-token--picked\) \.surface::before \{/);
-    expect(css).toMatch(/\.word-token--picked \+ \.word-token--picked:has\(\.surface\) \.surface::before \{/);
+    // 앞 토큰(다음도 지정) = 오른쪽 신호만, 뒤 토큰(앞도 지정) = 왼쪽 신호만 — 신호는 0(안쪽 모서리만 죽인다)
+    expect(rightCut).toContain('--picked-join-end: 0;');
+    expect(rightCut).not.toContain('--picked-join-start');
+    expect(leftCut).toContain('--picked-join-start: 0;');
+    expect(leftCut).not.toContain('--picked-join-end');
+    // 신호 규칙은 변수만 — 토큰 자신의 칠 · 기하는 건드리지 않는다
+    expect(`${rightCut}${leftCut}`).not.toMatch(/(^|[\s;{])(border|background|left|right|top|height|content):/);
+    // 두 신호 모두 :has에 걸려 있다 — 미지원 엔진에서 이음매와 함께 빠져 온전한 알약으로 남는다
+    expect(css).toMatch(/\.word-token--picked:has\(\+ \.word-token--picked\) \{/);
+    expect(css).toMatch(/\.word-token--picked \+ \.word-token--picked:has\(\.surface\) \{/);
     expect(css).not.toMatch(/\.word-token--picked \+ \.word-token--picked \.surface::before \{/);
+    // :has 뒤에 .surface를 두는 옛 형태 부활 금지 — 요소 하나 붙을 때마다 본문 .surface 전부를 다시 계산했다
+    expect(css).not.toMatch(/\.word-token--picked[^{,]*:has\([^{,]*\)[^{,]*\.surface/);
   });
 
   it('연속 지정 구간 안에 지면색 틈 0 — 이음매가 자간 + 양끝 1px(칠 확장 0의 보상)를 덮는다', () => {
+    // 이음매는 다음 토큰도 지정일 때(신호 --picked-seam)만 생긴다 — 신호가 없으면 content none
+    expect(seam).toContain('content: var(--picked-seam, none);');
+    expect(rightCut).toContain("--picked-seam: '';");
+    expect(leftCut).not.toContain('--picked-seam');
     expect(seam).toContain('right: calc(-1 * var(--char-gap, 0.25rem) - 1px);');
     expect(seam).toContain('width: calc(var(--char-gap, 0.25rem) + 2px);');
     expect(seam).toContain('z-index: -2;'); // 밴드 밑 — 글리프 불가침 승계

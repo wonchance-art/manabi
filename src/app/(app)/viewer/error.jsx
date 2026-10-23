@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect } from 'react';
+import { reloadOnceForChunkError } from '@/lib/chunkReload';
 
 export default function ViewerError({ error, reset }) {
-  useEffect(() => { console.error('ViewerError:', error); }, [error]);
+  useEffect(() => { console.error('ViewerError:', error); reloadOnceForChunkError(error); }, [error]);
 
   const isNotFound = error?.message?.includes('not found') || error?.message?.includes('찾을 수 없');
   const isNetwork = error?.message?.includes('fetch') || error?.message?.includes('network') || error?.message?.includes('Failed to fetch');
