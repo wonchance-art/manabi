@@ -1,0 +1,52 @@
+{
+  "id": "rembrandt-old-man-with-a-gold-chain",
+  "wikidata": "Q14911808",
+  "genre": "painting",
+  "artist": "rembrandt-van-rijn",
+  "title": {
+    "native": "Old Man with a Gold Chain",
+    "ko": "금목걸이를 한 노인",
+    "lang": "en"
+  },
+  "hook": "초상화가 아니라 옷을 입혀 그린 인물 연습, 트로니",
+  "date": {
+    "text": "1631",
+    "source": "aic",
+    "startYear": 1631,
+    "endYear": 1631,
+    "certainty": "exact"
+  },
+  "medium": {
+    "native": "Oil on panel",
+    "ko": "나무판에 유채"
+  },
+  "places": [
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/95998"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "95998"
+    }
+  ],
+  "terms": [
+    "gorget",
+    "tronie",
+    "dramatic lighting"
+  ],
+  "lookFor": [
+    "목과 가슴을 감싼 쇠 갑옷을 찾아봐요.",
+    "빛이 가장 밝게 닿은 곳은 어디일까요?",
+    "눈 밑 주름과 짧게 다듬은 수염을 찾아봐요."
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:Rembrandt_Harmensz._van_Rijn_-_Old_Man_with_a_Gold_Chain_-_Google_Art_Project.jpg",
+    "alt": "깃털 장식 검은 베레모를 쓰고 목에 쇠 갑옷과 금목걸이를 두른 노인이 어둠 속에서 빛을 받으며 비스듬히 서 있다."
+  }
+}

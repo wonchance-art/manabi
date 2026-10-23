@@ -1,0 +1,16 @@
+{
+  "workId": "manet-woman-reading",
+  "source": "commons",
+  "sourceId": "File:Édouard_Manet_-_Woman_Reading_-_1933.435_-_Art_Institute_of_Chicago.jpg",
+  "file": "manet-woman-reading.jpg",
+  "note": "DISCOVER-ART-001 — 시카고 미술관 디지털화본(퍼블릭 도메인)을 위키미디어 공용 파일 페이지에서 받았다(Wikidata 작품 항목 P18). 공용 API 요청 제한(429) 때문에 record는 파일 페이지 · 시카고 미술관 기록에서 손으로 옮겼다. 원 파일은 upload.wikimedia.org 960px 썸네일을 긴 변 800px로 줄인 것이다(README 「이미지」).",
+  "record": {
+    "artist": "Édouard Manet",
+    "title": "Woman Reading",
+    "date": "1880–82",
+    "holder": "Art Institute of Chicago",
+    "accession": "1933.435",
+    "license": "public-domain"
+  },
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:%C3%89douard_Manet_-_Woman_Reading_-_1933.435_-_Art_Institute_of_Chicago.jpg"
+}

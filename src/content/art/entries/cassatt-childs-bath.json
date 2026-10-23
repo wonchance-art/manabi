@@ -1,0 +1,52 @@
+{
+  "id": "cassatt-childs-bath",
+  "wikidata": "Q3172226",
+  "genre": "painting",
+  "artist": "mary-cassatt",
+  "title": {
+    "native": "The Child's Bath",
+    "ko": "아이의 목욕",
+    "lang": "en"
+  },
+  "hook": "일본 판화에서 배운, 위에서 내려다본 목욕 시간",
+  "date": {
+    "text": "1893",
+    "source": "aic",
+    "startYear": 1893,
+    "endYear": 1893,
+    "certainty": "exact"
+  },
+  "medium": {
+    "native": "Oil on canvas",
+    "ko": "캔버스에 유채"
+  },
+  "places": [
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/111442"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "111442"
+    }
+  ],
+  "terms": [
+    "washbasin",
+    "pattern",
+    "Japanese aesthetics"
+  ],
+  "lookFor": [
+    "그림 속 무늬는 어디어디에 있을까요?",
+    "대야 속 아이의 발을 찾아봐요.",
+    "카펫 바닥은 평평하게 누워 보이나요, 세워져 보이나요?"
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:Mary_Cassatt_-_The_Child's_Bath_-_Google_Art_Project.jpg",
+    "alt": "줄무늬 옷을 입은 여인이 무릎에 앉힌 아이의 발을 바닥의 흰 대야에 담가 씻기고, 옆에 꽃무늬 물주전자가 있으며 바닥에는 무늬 카펫이 깔려 있다."
+  }
+}

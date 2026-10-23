@@ -1,0 +1,52 @@
+{
+  "id": "cezanne-basket-of-apples",
+  "wikidata": "Q3956440",
+  "genre": "painting",
+  "artist": "paul-cezanne",
+  "title": {
+    "native": "The Basket of Apples",
+    "ko": "사과 바구니",
+    "lang": "en"
+  },
+  "hook": "떨어질 듯 말 듯, 일부러 어긋나게 그린 식탁",
+  "date": {
+    "text": "c. 1893",
+    "source": "aic",
+    "startYear": 1893,
+    "endYear": 1893,
+    "certainty": "circa"
+  },
+  "medium": {
+    "native": "Oil on canvas",
+    "ko": "캔버스에 유채"
+  },
+  "places": [
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/111436"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "111436"
+    }
+  ],
+  "terms": [
+    "still lifes",
+    "misaligned",
+    "brushwork"
+  ],
+  "lookFor": [
+    "식탁 앞쪽 가장자리 선이 천의 왼쪽과 오른쪽에서 이어지나요?",
+    "기울어진 술병을 찾아봐요.",
+    "쌓아 올린 과자는 몇 층일까요?"
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:Paul_Cézanne_-_The_Basket_of_Apples_-_1926.252_-_Art_Institute_of_Chicago.jpg",
+    "alt": "기울어진 바구니에서 사과가 쏟아져 흰 천 위로 흩어지고, 그 옆에 초록 술병과 쟁반에 쌓은 길쭉한 과자가 놓여 있다."
+  }
+}
