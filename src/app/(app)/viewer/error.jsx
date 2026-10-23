@@ -2,13 +2,14 @@
 
 import { useEffect } from 'react';
 import { reloadOnceForChunkError } from '@/lib/chunkReload';
-import { retryRouteError } from '@/lib/chunkReload'; // 조각 오류의 「다시 시도」 = 문서 새로 받기
+import { retryRouteError, isChunkLoadError } from '@/lib/chunkReload'; // 조각 오류의 「다시 시도」 = 문서 새로 받기
 
 export default function ViewerError({ error, reset }) {
   useEffect(() => { console.error('ViewerError:', error); reloadOnceForChunkError(error); }, [error]);
 
   const isNotFound = error?.message?.includes('not found') || error?.message?.includes('찾을 수 없');
-  const isNetwork = error?.message?.includes('fetch') || error?.message?.includes('network') || error?.message?.includes('Failed to fetch');
+  // 조각(ChunkLoadError)을 못 받은 것도 연결 문제다 — 끊긴 채 지연 부품을 열면 「자료를 불러오지 못했어요」로 떠 자료가 망가진 듯 보였다(OFFLINE-SWEEP-001 P9).
+  const isNetwork = isChunkLoadError(error) || error?.message?.includes('fetch') || error?.message?.includes('network') || error?.message?.includes('Failed to fetch');
   const isAnalyzing = error?.message?.includes('analyzing') || error?.message?.includes('분석');
 
   const config = isNotFound

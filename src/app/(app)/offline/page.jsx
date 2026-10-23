@@ -14,7 +14,8 @@ export default function OfflinePage() {
   }, []);
   return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
-      <h1 style={{ fontSize: '1.5rem', marginBottom: '8px' }}>인터넷 연결을 확인해 주세요</h1>
+      {/* 연결 안내는 위 오프라인 띠(Layout)가 이미 한다 — 같은 「인터넷 연결을 확인해 주세요」를 두 번 쓰지 않고, 여기는 이 화면의 사정을 말한다(P8). */}
+      <h1 style={{ fontSize: '1.5rem', marginBottom: '8px' }}>이 화면은 아직 받아 두지 않았어요</h1>
       <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
         {OFFLINE_RETRY_LINE}
       </p>
