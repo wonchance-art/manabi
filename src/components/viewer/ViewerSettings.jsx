@@ -9,6 +9,7 @@ import {stepCpm} from '../../lib/readingPacer';
 import {t,translateViewerText,VIEWER_LOCALE_OPTIONS} from '../../lib/viewerMessages';
 import {viewerDefaults} from '../../lib/viewerPreferences';
 import {viewerLanguageInfo} from '../../lib/viewerLanguage';
+import {reducedMotion} from '../../lib/reducedMotion';
 
 function Icon({name}) {
   const paths={type:'M4 19 10 5l6 14M6 14h8M17 19l3-8 3 8M18 16h4',display:'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12ZM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6',pace:'M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5M8 12h8',detail:'M4 6h16M4 12h16M4 18h16M8 3v6M16 9v6M10 15v6',help:'M12 16v.01M9.5 9a2.5 2.5 0 1 1 3.8 2.1c-.9.5-1.3 1-1.3 2M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20',light:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5',sepia:'M6 3h12v18H6ZM9 8h6M9 12h6M9 16h3',dark:'M20 14a8 8 0 0 1-10-10 8 8 0 1 0 10 10'};
@@ -20,8 +21,7 @@ function Help({children,uiLocale='ko'}) {
 // 펼치면 그 묶음 머리를 시트 위로 데려온다 — 새 항목이 시트 아래 밖에 생겨 눌러도 바뀐 게 없어 보였다(뷰어 점검 D1, 오너 승인 2026-10-23 KST).
 function revealOpened(e) {
   const el=e.currentTarget;if(!el.open)return;
-  const still=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-  el.scrollIntoView({block:'start',behavior:still?'auto':'smooth'});
+  el.scrollIntoView({block:'start',behavior:reducedMotion()?'auto':'smooth'});
 }
 function More({children,uiLocale='ko',count=0}) {
   return <details className="reader-settings__more" onToggle={revealOpened}><summary><Icon name="detail"/><span>{t(uiLocale,'세부 설정')}</span>{count>0&&<span className="reader-settings__changed" aria-label={t(uiLocale,'{count}개 설정 변경됨',{count})}>{count}</span>}</summary>{children}</details>;
