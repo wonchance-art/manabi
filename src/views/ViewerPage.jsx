@@ -223,7 +223,9 @@ if (typeof window !== 'undefined') startEarlyMaterial(window.location.pathname);
 
 // 단어창 훈음 루비 셀의 기준 칸 — 카드 병음 칸 폭(reader-controls.css `.word-fit ruby[data-pinyin] {width:max(1em,3.1rem)}`
 // = 3.1rem ≈ 49.6px). 이 폭 안에 드는 훈음은 한 줄 그대로, 넘으면 그 칸만 벌리고(--hun-n) ×1.6을 넘으면 훈/음 두 줄.
-const HUN_RUBY_CELL = Object.freeze({ glyphPx: 49.6 });
+// 훈 칸은 표제어 글자(32px)의 2배(64px)까지만 벌린다 — 넘친 훈은 말줄임, 글자를 누르면 한자 창에 전체(뷰어 점검 E3, 오너 승인 2026-10-23 KST).
+// 기본 3배(글자 칸 49.6px 기준 149px)는 潺潺처럼 이웃 글자 사이를 132px까지 벌렸다. 급수 목록(LEVEL_HUN_PX)은 그대로.
+const HUN_RUBY_CELL = Object.freeze({ glyphPx: 49.6, maxSpreadRatio: 64 / 49.6 });
 // 자형 열(正 · 日)이 없는 카드 — 비중국어 · 시트 닫힘(AE-R3 PR②).
 const NO_GLYPH = Object.freeze({ zheng: null, ja: null });
 

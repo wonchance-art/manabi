@@ -55,7 +55,7 @@ describe('넘침 — 칸 벌림(--hun-n)과 두 줄', () => {
   it('폭 어림은 설계서 실측과 맞는다(13px: 「몸 체」 30 · 「기를 육」 43)', () => {
     expect(hunLabelEm('몸 체') * 13).toBeCloseTo(29.9, 1);
     expect(hunLabelEm('기를 육') * 13).toBeCloseTo(42.9, 1);
-    expect(HUN_RUBY_DEFAULTS).toMatchObject({ glyphPx: 32, hunPx: 13, twoLineRatio: 1.6, maxSpreadRatio: 2 });
+    expect(HUN_RUBY_DEFAULTS).toMatchObject({ glyphPx: 32, hunPx: 13, twoLineRatio: 1.6 });
   });
   const t = { koTable: { 体: '체', 育: '육', 场: '장', 壮: '장', 老: '로' }, hunTable: { 体: '몸', 育: '기를', 场: '마당', 壮: '씩씩할', 老: '늙을' } };
   it('글자 칸 안이면 벌리지 않는다 — 몸 체', () => {
@@ -76,12 +76,12 @@ describe('넘침 — 칸 벌림(--hun-n)과 두 줄', () => {
     const [b] = hunRubyCells('老', t);
     expect(b.lines).toEqual(['늙을', '로(노)']);
   });
-  it('아주 긴 훈(풀이)은 칸을 상한(글자 폭 2배 — 뷰어 점검 E3)까지만 벌리고 넘친 훈은 말줄임', () => {
+  it('아주 긴 훈(풀이)은 칸을 상한(글자 폭 3배)까지만 벌리고 칸 안에서 줄바꿈 — 잘라내지 않는다', () => {
     const long = '쇠뇌(여러 개의 화살이나 돌을 잇따라 쏘게 된 큰 활)';
     const [cell] = hunRubyCells('弩', { koTable: { 弩: '노' }, hunTable: { 弩: long } });
     expect(cell.lines).toEqual([long, '노']);
     expect(cell.wrap).toBe(true);
-    expect(cell.hunN).toBeCloseTo((32 * 2) / 13, 2);
+    expect(cell.hunN).toBeCloseTo((32 * 3) / 13, 2);
     expect(cell.label).toBe(`${long} 노`);
   });
   it('음만 있는 라벨은 나누지 않는다', () => {

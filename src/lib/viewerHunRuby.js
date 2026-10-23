@@ -12,7 +12,7 @@ export const HUN_RUBY_DEFAULTS = Object.freeze({
   glyphPx: 32, // word-fit 표제어 글자 칸(설계서 §5.1)
   hunPx: 13, // 훈음 라벨 글자 크기
   twoLineRatio: 1.6, // 칸 폭 × 1.6 초과면 훈/음 두 줄(설계서 §10.2)
-  maxSpreadRatio: 2, // 칸은 글자 폭의 2배까지만 벌린다 — 그보다 긴 훈은 말줄임(글자를 누르면 한자 창에 전체). 3배는 潺潺처럼 글자 사이가 132px까지 벌어졌다(뷰어 점검 E3, 오너 승인 2026-10-23 KST)
+  maxSpreadRatio: 3, // 칸은 글자 폭의 3배까지만 벌린다 — 그보다 긴 훈(긴 풀이)은 칸 안 줄바꿈
 });
 
 const WIDE = /[ᄀ-ᅟ⺀-〾ぁ-㏿㐀-䶿一-鿿가-힣豈-﫿＀-｠]|[\u{20000}-\u{3fffd}]/u;
