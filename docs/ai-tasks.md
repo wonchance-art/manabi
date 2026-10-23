@@ -989,6 +989,16 @@
   TAP-INP: 복습 채점 p75 82~98 → 50~70ms(시각 문자열 1회 풀기 · 겹 순회 메모) · 지정 띠 :has → CSS 변수(뷰어 재계산 782 → 14, 픽셀 14/14 동일) ·
   읽기 설정 보기 전환 · 크기 INP 218~314 → 28~50ms(누른 표시 먼저 · 본문 반영 transition, 어긋난 프레임 0). 남김: 배경 테마 전환 150~180ms · 단어 탭 150~220ms.
   미확인(오너 실기): iOS 설치 앱 하단 메뉴 · 노치 가로 · 전환 체감 · 키보드 · 안드로이드 설치 단추.
+- **#1540 병합 · 현장 실측 묶음 (2026-10-23 KST, 오너 「다음 작업」 · 상시 「권장대로」)**: #1540 squash `b56c1fcd`(18:29) · 사후 점검 15/15 · 런타임 오류 0.
+  운영 실측(손님 390 · Fast 4G · CPU×4, 13경로 cold/warm): CLS · INP 양호, 병목 = /lessons 콜드 2.4~6.1s · /home 글꼴 1.08MB · '/' 함수 리디렉트 +1s.
+  /lessons 타일 개수 예문 분석 없이(3.3s → 0.5s) · 배움 일본어 칸 Noto Sans JP · 중국어 칸 SC(명조 KR 한자 조각 0 — /home 1640 → 1225KB, LCP 2.2 → 1.05s; 명조 유지 원하면 FAMILY 한 곳) ·
+  Serif KR 600/700 중복 선언 제거 · JP/세리프 latin 미리 받기 세그먼트 한정. '/' → /home middleware(콜백 질의 통과) · SW 설치 사전 캐시 = /offline + 그 CSS/JS.
+  GUEST-STATIC-001: 추천 글 API 공유 캐시 5분 · 문서 bfcache 복원 때 계정 재확인(쿠키만 지워진 뒤 뒤로 가기에 A 이름 · 메일 노출 재현 → 수리, e2e ⑨) ·
+  /discover ISR 300(간체 · 함께 읽는 글은 middleware 판) · /lessons ISR 3600 + 발행 시 revalidatePath · 정적 경로 고정 계약 + 빌드 산출 대조. 보류: /home · /books 쿠키 변형.
+  OFFLINE-SWEEP-001: 쓰기 networkMode always(뷰어 복습 · 아는 단어 끊긴 채 유실 → 기기 보관함) · 조각 오류 연결 시 새로 고침 · /offline 실제로 그려짐 · 띠가 도구 줄을 덮지 않음 ·
+  끊긴 /vocab 안내 · 실패 토스트 두 문장. 보류: 끊긴 동안 담기 · 아는 단어 기기 보관(P3 · P4), 다음: 끊긴 서재 「받아 둔 자료」(P1).
+  VIEWER-TAP-INP: 탭마다 뷰어 재렌더 · 범위 직렬화 · 카드 두 번 짓기 제거 · 선택 테두리 그리기 전용(.word-frame) — 300줄 쪽 넘김 바꿔 누르기 750 → 456ms, 48줄 210 → 128ms.
+  남김: 300줄 입력 지연(다단 2만 객체 hit test) → 쪽 단위 그리기는 구조 과제. Next 16: 보류(공유 요소 여전히 탭 유실 · webpack 판 JS +13~26KB) — 2주 지난 패치 + Turbopack 글꼴 준비 때 재검토.
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로
   /api/suggestions/today와 공용화. 지역학은 발견에서만 내림(/studies · 콘텐츠 보존). 비로그인 서재 → 「서가에서 읽어 보기」.
