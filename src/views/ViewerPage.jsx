@@ -4,7 +4,7 @@ import TextbookAnnotations from '../components/classroom/TextbookAnnotations';
 import {createClassSaveIntent} from '../lib/classSaveIntent';
 import {classStudyContext,classStudyNeighborHref,studySelection} from '../lib/classStudy';
 
-import { useState, useRef, useEffect, useMemo, useCallback, useId, cloneElement, isValidElement } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback, useId, cloneElement, isValidElement } from 'react';
 import { useParams, useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { authEntryHref } from '../lib/authRedirect';
 import { focusIfFree } from '../lib/focusAfterAction';
@@ -80,7 +80,7 @@ import { pinyinToneClass } from '../lib/pinyinTone';
 import { splitRuby, KANA_RE, kuruNextTexts, baseFormReading } from '../lib/splitRuby';
 import { pickedRangeOf } from '../lib/headwordPick';
 import { pickableSentences, adjacentSentence } from '../lib/sentenceNav';
-import { fitDivisor, isFitLang } from '../lib/fitWord';
+import { fitDivisor, isFitLang, fitLongHeadword, longHeadSplitAt } from '../lib/fitWord';
 import { charDetail, charEtym, isInspectableChar, materialWordsWithChar, wordsWithChar } from '../lib/charInspect';
 import { fetchSynAnt, peekSynAnt, synAntEligible } from '../lib/synAnt';
 import ReportMaterialButton from '../components/ReportMaterialButton';
@@ -2714,6 +2714,22 @@ export default function ViewerPage() {
     savedRowFocus.current = null;
     focusIfFree(target, pending.from);
   });
+  // 긴 표제어 맞춤(E2) — 그릴 때마다 같은 폭 · 같은 내용이면 건너뛰고, 카드 폭 · 칸 크기가 바뀌면(훈음 도착 · 회전) 다음 프레임에 다시 맞춘다.
+  const longHeadRef = useRef(null);
+  const longHeadObserver = useRef(null);
+  const setLongHead = useCallback((el) => {
+    longHeadObserver.current?.disconnect();
+    longHeadObserver.current = null;
+    longHeadRef.current = el;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    let frame = 0;
+    const ro = new ResizeObserver(() => { cancelAnimationFrame(frame); frame = requestAnimationFrame(() => fitLongHeadword(el, { force: true })); });
+    ro.observe(el.parentElement);
+    const surface = el.querySelector(':scope > .surface');
+    if (surface) ro.observe(surface);
+    longHeadObserver.current = { disconnect: () => { cancelAnimationFrame(frame); ro.disconnect(); } };
+  }, []);
+  useLayoutEffect(() => { fitLongHeadword(longHeadRef.current); });
 
   // W R3㉮ 인라인 복습 — 4등급 정본. 스냅샷은 훅이 돌려준 prev·reviewedAt으로 호출부가 만든다.
   const gradeInline = (rating) => {
@@ -3342,16 +3358,27 @@ export default function ViewerPage() {
             onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), toggleInspectChar(ch, key, reading))}
           >{ch}</span>
         ) : <span key={key} data-glyph-i={i} className={isPickedAt(i) ? 'word-fit__char--picked' : undefined}>{ch}</span>;
+        // 긴 표제어(E2): 반 자리 칸 앞에 숨은 나눔표를 둔다 — 줄여도 넘칠 때만 fitLongHeadword가 켠다(data-split).
+        const splitAt = longHeadSplitAt([...headText].length);
+        const starts = [];
+        const withHeadBreak = (items) => {
+          // 글자 칸 시작 자리 — 루비 조각이면 조각마다 모은 starts, 읽기 없는 표제어면 글자 하나가 한 칸.
+          const k = splitAt > 0 ? (starts.length ? starts : items.map((_, j) => j)).findIndex((s) => s >= splitAt) : -1;
+          return k > 0 ? [...items.slice(0, k), <span key="head-break" className="word-fit__break" aria-hidden="true" />, ...items.slice(k)] : items;
+        };
         return (
           <div className="word-fit-wrap">
             <div
               className={`word-fit${rubySegs || headReadingPending ? '' : ' word-fit--noruby'}${hunCells ? ' word-fit--hun' : hunPending ? ' word-fit--hun-reserved' : ''}`}
               lang={contentLangTag}
               style={{ '--fit-n': fitDivisor(headText, headReading, materialLang) }}
+              data-long={splitAt > 0 ? '' : undefined}
+              ref={splitAt > 0 ? setLongHead : undefined}
             >
               <span className="surface">
-                {rubySegs
+                {withHeadBreak(rubySegs
                   ? rubySegs.map((seg, i) => {
+                      starts.push(at);
                       if (!seg.kanji) return <span key={i}>{[...seg.plain].map((ch, j) => { const n = at++; const glyph = charSpan(ch, `${i}:${j}`, null, n); return hunCells ? column(`${i}:${j}`, glyph, <HunCell cell={hunAt(n)} />) : glyph; })}</span>;
                       const chars = [...seg.kanji];
                       // 分散配置(JLReq) — 요미가 본체보다 길면 CSS가 **본체 글자를 벌린다**.
@@ -3374,7 +3401,7 @@ export default function ViewerPage() {
                       const cells = chars.map((_, j) => hunAt(first + j));
                       return hunCells ? column(i, ruby, cells.map((cell, j) => <HunCell key={j} cell={cell} />)) : ruby;
                     })
-                  : [...headText].map((ch, j) => charSpan(ch, `p:${j}`, null, j)).map((glyph, j) => hunCells ? column(`p:${j}`, glyph, <HunCell cell={hunAt(j)} />) : glyph)}
+                  : [...headText].map((ch, j) => charSpan(ch, `p:${j}`, null, j)).map((glyph, j) => hunCells ? column(`p:${j}`, glyph, <HunCell cell={hunAt(j)} />) : glyph))}
               </span>
             </div>
             {/* 자형 열(正 · 日) — 표제어 오른쪽(안 1) 또는 글자 칸에 맞춘 표(안 2). 수업 모드 판서에는 없다(설계서 Q3). */}

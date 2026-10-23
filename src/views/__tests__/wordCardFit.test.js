@@ -33,7 +33,7 @@ describe('① 폭맞춤 확대 계약', () => {
   });
 
   it('뷰어 배선 — CJK만 폭맞춤(fitWord.js), 분모는 fitDivisor, 라틴 자료는 기존 크기 유지', () => {
-    expect(viewer).toContain("import { fitDivisor, isFitLang } from '../lib/fitWord'");
+    expect(viewer).toContain("import { fitDivisor, isFitLang, fitLongHeadword, longHeadSplitAt } from '../lib/fitWord'");
     expect(viewer).toContain('if (!isFitLang(materialLang))');
     // R R2: 분모는 표제어(기본형일 수 있다)와 그 읽기 기준
     expect(viewer).toContain("'--fit-n': fitDivisor(headText, headReading, materialLang)");
