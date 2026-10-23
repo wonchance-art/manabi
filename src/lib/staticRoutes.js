@@ -17,6 +17,9 @@ export const STATIC_ROUTES = Object.freeze([
   // 계정 데이터를 브라우저에서만 그리는 셸 — 문서 bfcache 복원 가드(AuthContext recheckAccountOnRestore · account-boundary e2e ⑨) 대상
   { route: '/profile', revalidate: false },
   { route: '/progress', revalidate: false },
+  // 2단계: 산책(쿼리 없음) ISR 5분 — 기본 판과 간체 힌트 판(middleware가 고른다, 「함께 읽는 글」 /discover/reading은 동적)
+  { route: '/discover', revalidate: 300 },
+  { route: '/discover/sc', revalidate: 300 },
 ]);
 
 /**

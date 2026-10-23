@@ -9,10 +9,14 @@ const ROOT = path.resolve(__dirname, '../../../..');
 const read = (file) => fs.readFileSync(path.join(ROOT, file), 'utf8');
 describe('산책 화면 배선', () => {
   const page = () => read('src/app/(app)/discover/page.jsx');
+  // 「함께 읽는 글」(?view=reading)은 middleware가 넘기는 하위 화면이다(GUEST-STATIC-001 2단계 — 산책 본 화면을 ISR로 굽기 위해 쿼리 갈래를 떼었다).
+  const reading = () => read('src/app/(app)/discover/reading/page.jsx');
   it('큰 칸 셋을 그리고, 오늘 화제는 /api/suggestions/today와 같은 todaySuggestions를, 고전 명작은 발행 기록 서가를 쓴다', () => {
     expect(page()).toContain('<DiscoverTiles suggestions={suggestions} classics={classics} art={art} date={kstDateString()} />');
-    expect(page()).toContain('releasedClassicsOf(client).then(({ items }) => items)');
-    expect(page(), '고전 명작 칸은 그림 구간(DISCOVER-ART-001)도 센다').toContain('releasedArtOf(client).then(({ items }) => items)');
+    // ISR 판은 서가 조회 실패를 굳히지 않으려 failed를 함께 받는다(GUEST-STATIC-001 2단계) — 칸에는 items만 넘긴다.
+    expect(page()).toContain('releasedClassicsOf(client),');
+    expect(page(), '고전 명작 칸은 그림 구간(DISCOVER-ART-001)도 센다').toContain('releasedArtOf(client),');
+    expect(page()).toContain('const classics = classicsShelf.items, art = artShelf.items;');
     expect(page()).toContain('<h1>산책</h1>');
     expect(page()).not.toMatch(/publishedReading|discover-cultures|문화 읽기<\/h2>/); // N5 문화 읽기는 산책에서 내렸다(교재 화면에 있다)
     expect(fs.existsSync(path.join(ROOT, 'src/components/web/DiscoverShelf.jsx'))).toBe(false);
@@ -32,7 +36,7 @@ describe('산책 화면 배선', () => {
     expect(page()).toContain('{publicCount > 0 && <p className="discover-more">'); // 공개 글이 없으면 줄을 두지 않는다
   });
   it('자료 목록 화면은 그 화면에서만 받는다 — 산책 · 서재 기본 화면 JS에 싣지 않는다(운영 약 119KB, 2026-10-17 KST)', () => {
-    for (const file of ['src/app/(app)/discover/page.jsx', 'src/components/web/LibraryPage.jsx']) {
+    for (const file of ['src/app/(app)/discover/reading/page.jsx', 'src/components/web/LibraryPage.jsx']) {
       expect(read(file)).not.toMatch(/import\s+\w+\s+from\s+'@\/views\/MaterialsPage'/);
       expect(read(file)).toContain('<LazyMaterialsPage libraryView=');
     }
@@ -44,8 +48,9 @@ describe('산책 화면 배선', () => {
   });
   it('「함께 읽는 글」은 세션 쿠키(이름만)를 넘겨 로그인 고르기 줄을 서버부터 그린다(DISCOVER-CHIP-CLS-001)', () => {
     // 서버 그림은 늘 로그인 확인 전 — 힌트가 없으면 확인 뒤 「안 읽은 것만」 칩이 끼며 390폭에서 줄이 접혀 목록을 밀었다.
-    expect(page()).toContain("import { hasSupabaseSessionInJar } from '@/lib/authCookie';");
-    expect(page()).toContain('<LazyMaterialsPage libraryView="public" sessionHint={hasSupabaseSessionInJar(await cookies())}/>');
+    expect(reading()).toContain("import { hasSupabaseSessionInJar } from '@/lib/authCookie';");
+    expect(reading()).toContain('<LazyMaterialsPage libraryView="public" sessionHint={hasSupabaseSessionInJar(await cookies())}/>');
+    expect(read('src/middleware.js')).toContain("if (searchParams.get('view') === 'reading') return rewriteTo(request, '/discover/reading');");
     expect(read('src/views/MaterialsPage.jsx')).toContain("export default function MaterialsPage({ libraryView = null, sessionHint = false })");
   });
   it('서재 도구(?tools=1 · ?sort=fit)도 같은 세션 쿠키 힌트를 넘긴다 — 손님(쿠키 없음)은 false 그대로', () => {
