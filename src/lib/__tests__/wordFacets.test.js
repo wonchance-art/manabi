@@ -36,7 +36,7 @@ describe('탭별 O · X 기록', () => {
     expect(updateFacetRows(rows, { wordText: 'a', facet: 'word', mark: null })).toEqual([]);
   });
 
-  it('마이그레이션: 추가형 표 하나 · 본인 행만(RLS 4) · anon 차단 · 다른 표에 트리거 없음', () => {
+  it('마이그레이션: 추가형 표 하나 · 본인 행만(RLS 4) · CRUD만 · anon 차단 · 다른 표에 트리거 없음', () => {
     const sql = read('supabase/migrations/20261015090000_user_word_facets.sql');
     expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.user_word_facets');
     expect(sql).toContain("CHECK (facet IN ('word', 'sentence', 'meaning', 'audio'))");
@@ -44,7 +44,10 @@ describe('탭별 O · X 기록', () => {
     expect(sql).toContain('PRIMARY KEY (user_id, lang, word_text, facet)');
     expect(sql.match(/CREATE POLICY/g)).toHaveLength(4);
     expect(sql.match(/auth\.uid\(\)/g).length).toBeGreaterThanOrEqual(5);
-    expect(sql).toContain('REVOKE ALL ON public.user_word_facets FROM anon;');
+    // 운영 기본 ACL은 authenticated에 TRUNCATE 등도 준다 — 셋 다 걷고 CRUD만 다시 준다(M09 #1337 6192814347).
+    expect(sql).toContain('REVOKE ALL ON public.user_word_facets FROM PUBLIC, anon, authenticated;');
+    expect(sql).toContain('GRANT SELECT, INSERT, UPDATE, DELETE ON public.user_word_facets TO authenticated;');
+    expect(sql).not.toMatch(/GRANT (ALL|[^;]*TRUNCATE)/);
     const code = sql.replace(/^--.*$/gm, ''); // 롤백 안내 주석(DROP TABLE)은 실행문이 아니다
     expect(code).not.toMatch(/CREATE (OR REPLACE )?(TRIGGER|FUNCTION)|DROP TABLE|ALTER TABLE public\.(?!user_word_facets)|DELETE FROM|UPDATE public\./);
   });

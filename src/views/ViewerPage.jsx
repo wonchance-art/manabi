@@ -283,6 +283,8 @@ function ViewerLabelSlot({locale, text, children}) {
 // 분석 실패 토큰은 단어 조작이 없으므로 줄 머리 막대로 물러난다.
 const tokenFocusTarget = el => el?.querySelector('.surface[role="button"]') ?? el?.querySelector('.line-pick') ?? null;
 
+const VIEWER_FALLBACK_TITLE = '자료 뷰어 · manabi';
+
 export default function ViewerPage() {
   const languageSettings = useViewerLanguage();
   const { uiLocale, explanationLocale } = languageSettings;
@@ -558,6 +560,11 @@ export default function ViewerPage() {
   const literatureBook = canonicalLiterature ? literatureWork(bookMeta?.key) : null;
   const literatureTitleOf = (order) => (literatureBook ? literatureChapterTitle(literatureBook, order) : null);
   const viewerTitle = literatureTitleOf(bookMeta?.order) || material?.title;
+  // 서버 제목 조회가 2.5초 제한에 걸리거나 세션 없이 돌면 탭 제목이 기본값으로 남는다(NAV-CONVERSATION-001-PROD,
+  // M09 #1337 6184301047 — 서재에서 처음 열 때만, 새로고침하면 정상). 자료를 읽은 뒤 기본값일 때만 본문 제목으로 바꾼다.
+  useEffect(() => {
+    if (viewerTitle && document.title === VIEWER_FALLBACK_TITLE) document.title = `${viewerTitle} · manabi`;
+  }, [viewerTitle]);
   const { data: bookChapters } = useQuery({
     queryKey: ['book-chapters', bookMeta?.key, material?.owner_id],
     queryFn: async () => {
