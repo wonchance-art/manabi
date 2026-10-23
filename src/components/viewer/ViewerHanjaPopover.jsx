@@ -17,7 +17,8 @@
 //     하단의 「얼마나 알겠어요?」 줄 위로는 겹쳐도(시안 그대로) 등급 버튼은 가리지 않는다(아래 끝 ≤ 등급 버튼 위 − 3px).
 //     본문을 스크롤하면 글자를 따라간다. 표제어 글자 아래 8px, 좌우는 글자 가운데를 기준으로 본문 안에 고정한다.
 //     크기는 CSS 고정(높이 170px · 너비 min(346px, 본문 − 16px))이라 드릴다운·다른 글자 사이에 바뀌지 않는다. 열 때 들지 않으면
-//     한 단계 작은 규격(data-compact — 머리 글자·여백 축소)으로, 그래도 넘치면 모자란 만큼 위로 올려(data-shifted) 연다.
+//     한 단계 작은 규격(data-compact — 머리 글자·여백 축소)으로, 그래도 넘치면 글자 위로 뒤집어(data-above) 연다. 위도 모자라면
+//     모자란 만큼 위로 올려(data-shifted) 연다.
 //     단계는 그 글자가 열린 동안 고정이다(크기 불변).
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { pinyinToneClass } from '../../lib/pinyinTone';
@@ -135,7 +136,7 @@ export default function ViewerHanjaPopover({ inspect, word, tables = {}, savedRo
   // 저장 줄) 위 끝 − 3px 안에 들면 기본, 아니면 한 단계 작게, 그래도 넘치면 그만큼 위로 올린다.
   // 화면(창) 크기가 바뀌면 다시 정한다 — 연 채 390×844 → 320×640이면 옛 규격이 등급 버튼을 덮고 화면 밖으로 넘쳤다(M09 V7 2026-10-09).
   // 스크롤만으로는 다시 정하지 않는다(창 크기 고정).
-  const fitRef = useRef({ key: null, level: 0, shift: 0 });
+  const fitRef = useRef({ key: null, level: 0, shift: 0, above: false });
   const place = useCallback(() => {
     const pop = ref.current;
     const card = pop?.closest('.word-detail-card');
@@ -154,10 +155,14 @@ export default function ViewerHanjaPopover({ inspect, word, tables = {}, savedRo
       const limit = (floor ? floor.getBoundingClientRect().top : Math.min(cr.bottom, br.bottom)) - FOOT_GAP;
       const room = limit - (ar.bottom + GAP);
       const level = room >= HEIGHTS[0] ? 0 : 1;
-      fitRef.current = { key: inspect.key, level, shift: Math.min(0, Math.floor(room - HEIGHTS[level])) };
+      // 아래가 모자라면 위로 올리기 전에 글자 위로 뒤집는다 — 올리면 누른 글자를 덮었다(뷰어 점검 A2, 오너 승인 2026-10-23 KST).
+      // 위도 모자랄 때만 예전처럼 모자란 만큼 올린다(카드 요소는 움직이지 않는다 — 「이동 0」 계약).
+      const above = room < HEIGHTS[level] && ar.top - GAP - br.top >= HEIGHTS[level];
+      fitRef.current = { key: inspect.key, level, above, shift: above ? 0 : Math.min(0, Math.floor(room - HEIGHTS[level])) };
     }
-    const { level, shift } = fitRef.current;
-    const next = { top: ar.bottom - cr.top + GAP + shift, left, width, index: Number(anchor.dataset.glyphI), compact: level, shifted: shift < 0 ? 1 : 0 };
+    const { level, shift, above } = fitRef.current;
+    const top = above ? ar.top - cr.top - GAP - HEIGHTS[level] : ar.bottom - cr.top + GAP + shift;
+    const next = { top, left, width, index: Number(anchor.dataset.glyphI), compact: level, shifted: shift < 0 ? 1 : 0, above: above ? 1 : 0 };
     setPos((cur) => (cur && Object.keys(next).every((k) => Math.abs((cur[k] ?? -1) - (next[k] ?? -1)) < 0.5) ? cur : next));
   }, [anchorOf, inspect.key]);
   useLayoutEffect(() => {
@@ -171,7 +176,7 @@ export default function ViewerHanjaPopover({ inspect, word, tables = {}, savedRo
     let frame = 0;
     const refit = () => {
       cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => { fitRef.current = { key: null, level: 0, shift: 0 }; place(); });
+      frame = requestAnimationFrame(() => { fitRef.current = { key: null, level: 0, shift: 0, above: false }; place(); });
     };
     window.addEventListener('resize', refit);
     const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(refit) : null;
@@ -352,6 +357,7 @@ export default function ViewerHanjaPopover({ inspect, word, tables = {}, savedRo
       data-view={v.kind}
       data-compact={pos?.compact ? '1' : undefined}
       data-shifted={pos?.shifted ? '1' : undefined}
+      data-above={pos?.above ? '1' : undefined}
       style={style}
       onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(true); } }}
       onBlur={onBlur}

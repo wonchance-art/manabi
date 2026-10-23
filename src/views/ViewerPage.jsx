@@ -885,6 +885,12 @@ export default function ViewerPage() {
   // 수업 모드는 교재 열이 스스로 스크롤하는 화면(칠판·도크)이라 스크롤 보기 그대로 둔다.
   const [pagesEl,setPagesEl] = useState(null);
   const pageBarRef = useRef(null), pagedGuard = useRef({}), pagedInitialAnchor = useRef(null);
+  // 문장을 지정한 동안(접힌 문장 막대 · 문장 이동 막대가 바닥에 뜬다)은 쪽 상자 아래에 그 막대 자리를 비워 쪽 막대를 막대 위로 올린다
+  // (뷰어 점검 A3, 오너 승인 2026-10-23 KST) — 예전엔 접힌 막대가 쪽 넘김 버튼을 덮었다. 지정이 이어지는 동안은 단어창을 열고 닫아도
+  // 자리를 그대로 둬 쪽이 다시 흐르지 않는다(지정을 시작 · 해제할 때 한 번씩만 흐른다). 막대 높이는 뜬 막대에서 잰다.
+  const [sentenceReserve, setSentenceReserve] = useState(false);
+  const sentenceReserveRef = useRef(false), sentenceBarSpace = useRef(64);
+  sentenceReserveRef.current = sentenceReserve;
   const readerView = settings.readerView === 'scroll' ? 'scroll' : 'paged';
   const pagedActive = readerView === 'paged' && !classStudyActive;
   // 자동 진행은 세로 흐름(휠·터치 감지·문장 스크롤)에 맞춘 기능이라 쪽 넘김 보기에서는 끈다(설계 §4 P0) — 스크롤 보기는 그대로.
@@ -898,7 +904,7 @@ export default function ViewerPage() {
   const listenActive = useRef(false), listenFollowOff = useRef(false), listenIndex = useRef(null);
   const pager = usePagedReader({
     enabled: pagedActive, pages: pagesEl, barRef: pageBarRef, resetKey: id,
-    layoutKey: `${fontSize}|${lineGap}|${charGap}|${fontFamily}|${pronDisplay}|${pinyinSize}|${pinyinCell}|${fontStatus}|${uiLocale}|${wordStateHl}|${showPatterns}`,
+    layoutKey: `${fontSize}|${lineGap}|${charGap}|${fontFamily}|${pronDisplay}|${pinyinSize}|${pinyinCell}|${fontStatus}|${uiLocale}|${wordStateHl}|${showPatterns}|${sentenceReserve}`,
     initialAnchor: () => { const el = pagedInitialAnchor.current; pagedInitialAnchor.current = null; return el?.isConnected ? { kind: 'element', el } : null; },
     onUserPage: anchor => {
       // 듣는 중에 손으로 넘겼다 — 이번 듣기 동안 따라가기 · 강조를 멈춘다(듣기 자체는 계속).
@@ -911,7 +917,14 @@ export default function ViewerPage() {
     canKey: () => !pagedGuard.current.blocked,
     // 자동 이동(듣기 따라가기)은 시트 · 드래그 범위 지정 · 키 차단 중에 진다 — 누르는 중은 pager가 직접 본다(reveal auto).
     canAutoReveal: () => { const g = pagedGuard.current; return !(g.sheetOpen || g.dragging || g.blocked); },
-    bottomGap: () => parseFloat(pagesEl && getComputedStyle(pagesEl.closest('.viewer-layout') || pagesEl).paddingBottom) || 12,
+    bottomGap: () => {
+      const layout = pagesEl?.closest('.viewer-layout'), base = parseFloat(getComputedStyle(layout || pagesEl).paddingBottom) || 12;
+      if (!sentenceReserveRef.current || !layout) return base;
+      // 바닥 막대가 없고 넓은 화면(옆 패널)이면 비울 자리가 없다. 좁은 화면에서 시트가 펼쳐져 막대를 대신하는 동안은 잰 값을 그대로 둔다.
+      const bar = layout.querySelector('.viewer-inspector.is-collapsed, .sentence-move-bar');
+      if (!bar && layout.getBoundingClientRect().width >= 1120) return base;
+      return Math.max(base, sentenceBarSpace.current);
+    },
   });
   // 진행률 소비처(진행 막대·그룹 같이 읽기 push)는 같은 값을 받는다 — 쪽 넘김이면 쪽 기준(설계 §4).
   // 쪽 넘김의 진도는 readProgress — 듣기 따라가기의 자동 이동은 진도를 올리지 않는다(따라가기 전 듣기는 쪽을 안 옮겨 진도 불변).
@@ -1720,6 +1733,16 @@ export default function ViewerPage() {
     if (pickedLineIdx === null && !tokenRange.range) return;
     releasePickedSentence();
   };
+  useEffect(() => { setSentenceReserve(pagedActive && pickedLineIdx !== null); }, [pagedActive, pickedLineIdx]);
+  // 바닥 막대(접힌 시트 · 문장 이동 막대)가 뜨거나 키가 바뀌면 그 위 끝까지를 비운다 — 처음 값(64)과 다르면 쪽 높이를 다시 맞춘다.
+  useEffect(() => {
+    if (!sentenceReserve || !pagesEl) return;
+    const bar = pagesEl.closest('.viewer-layout')?.querySelector('.viewer-inspector.is-collapsed, .sentence-move-bar');
+    if (!bar || getComputedStyle(bar).position !== 'fixed') return;
+    const view = window.visualViewport, bottom = (view?.height || window.innerHeight) + (view?.offsetTop || 0);
+    const space = Math.ceil(bottom - bar.getBoundingClientRect().top) + 4;
+    if (space > 0 && Math.abs(space - sentenceBarSpace.current) >= 1) { sentenceBarSpace.current = space; pager.controller()?.schedule(); }
+  });
   // 지정 해제 한 벌 — 빈 공간 탭과 문장 이동 막대의 ×가 같은 해제를 쓴다.
   const releasePickedSentence = () => {
     tokenRange.clearRange();
@@ -3939,7 +3962,7 @@ export default function ViewerPage() {
       lang={uiLocale} data-ui-locale={uiLocale} data-explanation-locale={effectiveExplanationLocale} data-reader-theme={theme} data-language={materialLang} data-class-study={classStudyActive} data-teaching-board={classStudyActive?classBoardLayout:''} data-inspector-open={inspectorOpen&&!modalBlocked}
       data-pron-spacing={materialLang==='Chinese'&&pronDisplay!=='none'?'reserved':'natural'}
       data-left-active={!!(leftPanelLoading || leftPanelResult)}
-      data-reader-view={pagedActive?'paged':'scroll'}
+      data-reader-view={pagedActive?'paged':'scroll'} data-sentence-reserve={sentenceReserve||undefined}
       data-right-active={!!(dragTokens !== null || (selectedToken && isSheetOpen))}>
 
       {/* 중앙 — 뷰어 본문 */}
@@ -4714,7 +4737,9 @@ export default function ViewerPage() {
         preserveWordTab={preserveOpenWord}
         onOpenChange={setInspectorOpen}
         onPresentChange={setSheetPresent}
-        collapsedActions={autoPaceOn&&sentences.length>0&&!modalBlocked?paceToggle('viewer-inspector__pace'):null}
+        collapsedActions={<>{autoPaceOn&&sentences.length>0&&!modalBlocked&&paceToggle('viewer-inspector__pace')}
+          {/* 접힌 막대의 ✕ = 문장 지정 해제(뷰어 점검 A3) — 막대 · 문장 강조가 함께 사라진다. 예전엔 지울 방법이 없었다. */}
+          {pickedLineIdx !== null && <button type="button" className="viewer-inspector__clear" aria-label={vt('문장 지정 해제')} title={vt('문장 지정 해제')} onClick={closeMoveBar} data-icon-action><ActionIcon name="close"/></button>}</>}
         leftContent={senseReviewContent || boundaryPendingContent || leftPanelContent}
         rightContent={selectedToken&&isSheetOpen?renderRightPanelContent(annotationContent&&<section className="reader-card-notes" aria-label={vt("교재 설명")}><h3 className="reader-card-section__label">{vt("교재 설명")}</h3>{annotationContent}</section>):<>{annotationContent}{rightPanelContent}</>}
         leftActive={leftPanelLoading || !!leftPanelResult || !!senseReviewContent || !!boundaryPendingContent}

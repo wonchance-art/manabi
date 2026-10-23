@@ -100,15 +100,18 @@ function judgePagedSheet(panel, token, layout) {
   const word = panel.querySelector('#inspector-word:not([hidden])'), meaning = word?.querySelector('.word-detail-card__meaning'), actions = word?.querySelector('.reader-card-actions');
   const scrolled = word?.querySelector('.reader-card-body')?.scrollTop || 0;
   const core = meaning && actions ? Math.ceil(meaning.getBoundingClientRect().bottom + scrolled - natural.top + (natural.bottom - actions.getBoundingClientRect().top) + 12) : undefined;
+  // 핵심이 안 들어가면 머리줄 · 등급 줄 · 표제어 한 줄(64px)까지만 남기고 카드 안에서 스크롤한다(뷰어 점검 A1) — 단어를 덮지 않는 쪽이 먼저다.
+  const header = panel.querySelector('.viewer-inspector__header');
+  const floor = core && header ? Math.ceil(header.getBoundingClientRect().height + (natural.bottom - actions.getBoundingClientRect().top) + 64) : undefined;
   const tokenRect = token.getBoundingClientRect();
   // A안: 아래 절반의 단어는 시트를 머리줄 아래에 세운다(data-dock="top" — paged-reader.css). 위 절반은 지금처럼 바닥(목업 C 낮추기).
   const dock = pagedSheetDock({ tokenTop: tokenRect.top, tokenBottom: tokenRect.bottom, viewportTop: viewTop, viewportHeight: viewHeight,
-    topLimit: sheetTopLimit(layout, viewTop), naturalHeight: natural.height, ...(core ? { min: core } : null) });
+    topLimit: sheetTopLimit(layout, viewTop), naturalHeight: natural.height, sheetBottom: natural.bottom, ...(core ? { min: core } : null), ...(floor ? { floor } : null) });
   if (dock.dock === 'top') {
     panel.dataset.dock = 'top'; panel.style.setProperty('--reader-sheet-top', `${dock.top}px`);
     if (dock.height !== null) { panel.style.setProperty('--reader-sheet-compact', `${dock.height}px`); panel.dataset.compact = 'true'; }
   } else {
-    const height = compactSheetHeight({ tokenBottom: tokenRect.bottom, sheetTop: natural.top, sheetBottom: natural.bottom, ...(core ? { min: core } : null) });
+    const height = compactSheetHeight({ tokenBottom: tokenRect.bottom, sheetTop: natural.top, sheetBottom: natural.bottom, ...(core ? { min: core } : null), ...(floor ? { floor } : null) });
     if (height !== null && height < natural.height) { panel.style.setProperty('--reader-sheet-compact', `${height}px`); panel.dataset.compact = 'true'; }
   }
   // 카드 핵심이 아직 안 그려졌으면(처음 열 때 머리줄만 있는 시트 — 390 실측 57px) 잠그지 않는다: 다 차서 커질 때 다시 정한다.

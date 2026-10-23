@@ -1,5 +1,5 @@
 'use client';
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useRef,useState,useLayoutEffect} from 'react';
 import {t} from '../lib/viewerMessages';
 import ActionIcon from './ActionIcon';
 import ViewerSheetMenu from './viewer/ViewerSheetMenu';
@@ -17,6 +17,14 @@ export default function ViewerBottomSheet({leftContent,rightContent,leftActive,r
     if(transition){setTab(transition.tab);setOpen(true);}
     if(!leftActive&&!rightActive)setOpen(false);
   },[leftActive,rightActive,leftSignal,rightSignal,sentenceTabSignal,preserveWordTab,open,tab]);
+  // 펼친 시트는 머리줄 아래 8px부터 바닥까지(뷰어 점검 A4, 오너 승인 2026-10-23 KST) — 85dvh 고정이 키 작은 폰(667 · 740)에서
+  // 머리줄 아래 16px를 잘랐다. 펼칠 때 머리줄 바닥을 한 번 잰다(옆 패널 · 보드는 CSS가 이 값을 쓰지 않는다).
+  useLayoutEffect(()=>{
+    const el=root.current;if(!el)return;
+    if(!expanded){el.style.removeProperty('--sheet-expanded-top');return;}
+    const bar=el.closest('.viewer-layout')?.querySelector('.viewer-topbar')?.getBoundingClientRect().bottom;
+    if(Number.isFinite(bar))el.style.setProperty('--sheet-expanded-top',`${Math.max(8,Math.ceil(bar)+8)}px`);
+  },[expanded]);
   useEffect(()=>{onOpenChange?.(open);},[open,onOpenChange]);
   useEffect(()=>()=>onOpenChange?.(false),[onOpenChange]);
   // 패널이 바닥에 놓여 있는지(펼침·접힘 무관) — 접힌 머리줄과 다른 바닥 요소가 겹치지 않게 부모가 자리를 나눈다(AD-R2).
