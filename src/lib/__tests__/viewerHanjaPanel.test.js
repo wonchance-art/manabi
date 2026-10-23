@@ -5,7 +5,7 @@ import zlib from 'node:zlib';
 import { applyDueum } from '../hanjaKo.js';
 import { loadRefVocabIndex } from '../refVocabIndex.js';
 import {
-  splitPinyinSyllables, samePinyin, koEumOf, sameHanjaWord, shortMeaning, selectSameHanjaTiles,
+  splitPinyinSyllables, pinyinPerChar, samePinyin, koEumOf, sameHanjaWord, shortMeaning, selectSameHanjaTiles,
   hanjaPanelModel, panelSearchChar, soundPieceDrill, formatDrillSummary, loadHanjaPanelTable,
 } from '../viewerHanjaPanel.js';
 
@@ -420,5 +420,21 @@ describe('지연 로드 경로(T1 준비) — 소스 계약', () => {
     const b = await loadHanjaPanelTable();
     expect(a).toBe(b);
     expect(a.drill['雚']).toBe('觀權歡勸灌');
+  });
+});
+
+describe('pinyinPerChar — 본문 · 카드 병음 글자별 분배(뷰어 점검 E1)', () => {
+  it('붙여 쓴 병음을 글자마다 나누고 원문 대소문자를 살린다', () => {
+    expect(pinyinPerChar('图书馆', 'túshūguǎn')).toBe('tú shū guǎn');
+    expect(pinyinPerChar('北京', 'Běijīng')).toBe('Běi jīng');
+    expect(pinyinPerChar('西安', "Xī'ān")).toBe('Xī ān');
+    expect(pinyinPerChar('一会儿', 'yīhuìr')).toBe('yī huì r');
+  });
+  it('이미 나뉘었거나 나눌 수 없거나 중국어가 아니면 null — 원래 독음을 그대로 쓴다', () => {
+    expect(pinyinPerChar('图书馆', 'tú shū guǎn')).toBeNull();
+    expect(pinyinPerChar('我', 'wǒ')).toBeNull();
+    expect(pinyinPerChar('勉強', 'べんきょう')).toBeNull();
+    expect(pinyinPerChar('图书', 'xyzq')).toBeNull();
+    expect(pinyinPerChar('A股', 'Agǔ')).toBeNull();
   });
 });

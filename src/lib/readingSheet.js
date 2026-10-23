@@ -12,6 +12,14 @@ export const TTS_RATES = {
   fast:   { label: '1.25×', server: 1.25, web: 1.05 },
 };
 
+// 듣기 머리줄의 속도 버튼이 0.75× → 1× → 1.25× → 0.75× 순으로 돈다(뷰어 점검 B, 오너 승인 2026-10-23 KST). Aa 「재생 속도」와
+// 같은 저장값이라 두 곳이 늘 같은 값을 보인다. 모르는 값은 1×로 수렴.
+export function nextTtsRate(rateKey) {
+  const keys = Object.keys(TTS_RATES);
+  const i = keys.indexOf(rateKey);
+  return i < 0 ? 'normal' : keys[(i + 1) % keys.length];
+}
+
 // speak(text, lang, opts) 서명에 맞춘 옵션 변환 — 모르는 키는 normal로 수렴(실패 무해).
 export function ttsOptsFor(rateKey) {
   const r = TTS_RATES[rateKey] || TTS_RATES.normal;

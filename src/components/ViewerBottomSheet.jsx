@@ -1,5 +1,5 @@
 'use client';
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useRef,useState,useLayoutEffect} from 'react';
 import {t} from '../lib/viewerMessages';
 import ActionIcon from './ActionIcon';
 import ViewerSheetMenu from './viewer/ViewerSheetMenu';
@@ -17,6 +17,14 @@ export default function ViewerBottomSheet({leftContent,rightContent,leftActive,r
     if(transition){setTab(transition.tab);setOpen(true);}
     if(!leftActive&&!rightActive)setOpen(false);
   },[leftActive,rightActive,leftSignal,rightSignal,sentenceTabSignal,preserveWordTab,open,tab]);
+  // 펼친 시트는 머리줄 아래 8px부터 바닥까지(뷰어 점검 A4, 오너 승인 2026-10-23 KST) — 85dvh 고정이 키 작은 폰(667 · 740)에서
+  // 머리줄 아래 16px를 잘랐다. 펼칠 때 머리줄 바닥을 한 번 잰다(옆 패널 · 보드는 CSS가 이 값을 쓰지 않는다).
+  useLayoutEffect(()=>{
+    const el=root.current;if(!el)return;
+    if(!expanded){el.style.removeProperty('--sheet-expanded-top');return;}
+    const bar=el.closest('.viewer-layout')?.querySelector('.viewer-topbar')?.getBoundingClientRect().bottom;
+    if(Number.isFinite(bar))el.style.setProperty('--sheet-expanded-top',`${Math.max(8,Math.ceil(bar)+8)}px`);
+  },[expanded]);
   useEffect(()=>{onOpenChange?.(open);},[open,onOpenChange]);
   useEffect(()=>()=>onOpenChange?.(false),[onOpenChange]);
   // 패널이 바닥에 놓여 있는지(펼침·접힘 무관) — 접힌 머리줄과 다른 바닥 요소가 겹치지 않게 부모가 자리를 나눈다(AD-R2).
@@ -40,8 +48,10 @@ export default function ViewerBottomSheet({leftContent,rightContent,leftActive,r
   // AE-R1 PR③: menu = 단어 탭 머리줄 ⋯(분석 고치기) {label, items}. 기본 null — PDF 뷰어·문장 탭에는 없다.
   // 보일 내용이 없으면 패널도 없다 — 문장 지정만 있을 때는 ViewerPage의 문장 이동 막대가 대신한다(VIEWER-R0 버그 4).
   if(!leftActive&&!rightActive)return null;
-  const tabs=<div className="viewer-inspector__tabs" role="tablist" aria-label="읽기 보조 패널" {...localizedAria('읽기 보조 패널')} onKeyDown={e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=e.key==='Home'?'right':e.key==='End'?'left':tab==='right'?'left':'right';chooseTab(next);e.currentTarget.querySelector(next==='right'?'#inspector-word-tab':'#inspector-sentence-tab')?.focus();}}>
-    <button role="tab" id="inspector-word-tab" aria-controls="inspector-word" aria-selected={tab==='right'} tabIndex={tab==='right'?0:-1} onClick={()=>chooseTab('right')} aria-label="단어" {...localizedAria('단어')}><span>{t(uiLocale,'단어')}</span></button>
+  // 보일 단어가 없으면 「단어」 탭을 빼 둔다 — ✕로 닫은 뒤 접힌 줄에 남은 「단어」가 빈 시트(「단어 클릭 → 상세」)를 열었다(뷰어 점검 E6, 오너 승인 2026-10-23 KST).
+  // 「문장」 탭은 내용이 없어도 남는다: 누르면 그 문장의 번역을 연다.
+  const tabs=<div className="viewer-inspector__tabs" role="tablist" aria-label="읽기 보조 패널" {...localizedAria('읽기 보조 패널')} onKeyDown={e=>{if(!rightActive||!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=e.key==='Home'?'right':e.key==='End'?'left':tab==='right'?'left':'right';chooseTab(next);e.currentTarget.querySelector(next==='right'?'#inspector-word-tab':'#inspector-sentence-tab')?.focus();}}>
+    {rightActive&&<button role="tab" id="inspector-word-tab" aria-controls="inspector-word" aria-selected={tab==='right'} tabIndex={tab==='right'?0:-1} onClick={()=>chooseTab('right')} aria-label="단어" {...localizedAria('단어')}><span>{t(uiLocale,'단어')}</span></button>}
     <button role="tab" id="inspector-sentence-tab" aria-controls="inspector-sentence" aria-selected={tab==='left'} tabIndex={tab==='left'?0:-1} onClick={()=>chooseTab('left')} aria-label="문장 번역" {...localizedAria('문장 번역')}><span>{t(uiLocale,'문장')}</span></button>
   </div>;
   return <aside ref={root} className={`viewer-inspector ${className}${expanded?' is-expanded':''}${!open?' is-collapsed':''}`} hidden={suppressed} lang={uiLocale} aria-label="읽기 보조 패널" {...localizedAria('읽기 보조 패널')} onMouseUp={e=>e.stopPropagation()} onKeyDown={e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close();}}}>

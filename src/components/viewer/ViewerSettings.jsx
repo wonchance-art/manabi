@@ -9,6 +9,7 @@ import {stepCpm} from '../../lib/readingPacer';
 import {t,translateViewerText,VIEWER_LOCALE_OPTIONS} from '../../lib/viewerMessages';
 import {viewerDefaults} from '../../lib/viewerPreferences';
 import {viewerLanguageInfo} from '../../lib/viewerLanguage';
+import {reducedMotion} from '../../lib/reducedMotion';
 
 function Icon({name}) {
   const paths={type:'M4 19 10 5l6 14M6 14h8M17 19l3-8 3 8M18 16h4',display:'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12ZM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6',pace:'M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5M8 12h8',detail:'M4 6h16M4 12h16M4 18h16M8 3v6M16 9v6M10 15v6',help:'M12 16v.01M9.5 9a2.5 2.5 0 1 1 3.8 2.1c-.9.5-1.3 1-1.3 2M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20',light:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5',sepia:'M6 3h12v18H6ZM9 8h6M9 12h6M9 16h3',dark:'M20 14a8 8 0 0 1-10-10 8 8 0 1 0 10 10'};
@@ -17,8 +18,13 @@ function Icon({name}) {
 function Help({children,uiLocale='ko'}) {
   return <details className="reader-settings__help"><summary aria-label={t(uiLocale,'설정 도움말')} title={t(uiLocale,'설정 도움말')}><Icon name="help"/></summary><div>{children}</div></details>;
 }
+// 펼치면 그 묶음 머리를 시트 위로 데려온다 — 새 항목이 시트 아래 밖에 생겨 눌러도 바뀐 게 없어 보였다(뷰어 점검 D1, 오너 승인 2026-10-23 KST).
+function revealOpened(e) {
+  const el=e.currentTarget;if(!el.open)return;
+  el.scrollIntoView({block:'start',behavior:reducedMotion()?'auto':'smooth'});
+}
 function More({children,uiLocale='ko',count=0}) {
-  return <details className="reader-settings__more"><summary><Icon name="detail"/><span>{t(uiLocale,'세부 설정')}</span>{count>0&&<span className="reader-settings__changed" aria-label={t(uiLocale,'{count}개 설정 변경됨',{count})}>{count}</span>}</summary>{children}</details>;
+  return <details className="reader-settings__more" onToggle={revealOpened}><summary><Icon name="detail"/><span>{t(uiLocale,'세부 설정')}</span>{count>0&&<span className="reader-settings__changed" aria-label={t(uiLocale,'{count}개 설정 변경됨',{count})}>{count}</span>}</summary>{children}</details>;
 }
 // 쓸 수 없는 옵션의 이유 한 줄(AD-R2 Aa) — 컨트롤이 aria-describedby로 가리킨다.
 function Reason({id,children}) {
@@ -68,7 +74,8 @@ function StateLegend({theme,uiLocale}) {
   return <p className={`reader-settings__legend reader-area--${theme} reader-area--hl`}>{[['new','새 단어'],['saved','학습 중'],['due','복습']].map(([state,label])=><span key={state} className={`word-token word-token--${state}`}><span className="surface">{t(uiLocale,label)}</span></span>)}</p>;
 }
 function ToneLegend({uiLocale}) {
-  return <p className="reader-settings__tones">{['ā','á','ǎ','à'].map((mark,i)=><span key={mark}><span className={`rt-an pinyin-tone--${i+1}`}>{mark}</span>{t(uiLocale,'{tone}성',{tone:i+1})}</span>)}</p>;
+  // 경성(a)도 색이 따로 있다 — 범례에서 빠져 있었다(뷰어 점검 D3).
+  return <p className="reader-settings__tones">{['ā','á','ǎ','à'].map((mark,i)=><span key={mark}><span className={`rt-an pinyin-tone--${i+1}`}>{mark}</span>{t(uiLocale,'{tone}성',{tone:i+1})}</span>)}<span><span className="rt-an pinyin-tone--0">a</span>{t(uiLocale,'경성')}</span></p>;
 }
 // rem 값 → px 표시. 한 칸이 0.8px라 정수로 반올림하면 눌러도 숫자가 그대로인 칸이 생겼다(26 → 26px) — 소수 한 자리까지(뷰어 점검 2026-10-23).
 const pxText=v=>`${Math.round(v*160)/10}px`;
@@ -122,7 +129,8 @@ export default function ViewerSettings({settings:s,language,languageSettings,onC
         {language==='Chinese'&&<Slider uiLocale={uiLocale} label="병음 크기" value={s.pinyinSize} min={0.75} max={1} step={0.0625} display={`${Math.round(s.pinyinSize*16)}px`} onChange={v=>set('pinyinSize',v)}/>}
         <Slider uiLocale={uiLocale} label="줄 사이" value={s.lineGap} min={10} max={60} display={`${s.lineGap}px`} onChange={v=>set('lineGap',v)}/>
         <Slider uiLocale={uiLocale} label={charGapLabel(language)} value={s.charGap} min={charGapMin(language)} max={1} step={0.05} display={pxText(s.charGap)} onChange={v=>set('charGap',v)}/>
-        <Choices label="서체" uiLocale={uiLocale} value={s.fontFamily} items={choices(fontChoices(language))} onChange={v=>set('fontFamily',v)}/>
+        {/* 고를 것이 하나뿐인 언어(일본어 고딕)는 서체 묶음을 숨긴다(뷰어 점검 D2). */}
+        {fontChoices(language).length>1&&<Choices label="서체" uiLocale={uiLocale} value={s.fontFamily} items={choices(fontChoices(language))} onChange={v=>set('fontFamily',v)}/>}
         </More>
       </>}
       {/* 「표시」 탭은 평평하다 — 접힌 묶음 없이 모든 옵션과 범례를 펼쳐 두고, 맨 아래에 언어 선택 상자 둘(AD-R2 Aa). */}
@@ -133,7 +141,7 @@ export default function ViewerSettings({settings:s,language,languageSettings,onC
           help={<Help uiLocale={uiLocale}><p className="reader-setting-note">{tr('새 단어만: 저장한 단어와 이미 앎 기록의 발음을 가려요.')}</p></Help>}/>}
         <Toggle label="단어 상태" uiLocale={uiLocale} note="새 단어는 파란 밑줄, 저장한 단어 · 복습할 단어는 색 띠로 구분해요" checked={s.wordStateHl} onChange={v=>set('wordStateHl',v)}><StateLegend theme={s.theme} uiLocale={uiLocale}/></Toggle>
         {/* 성조 색상은 발음을 숨겨도 단어창 표제어·글자 탐색 병음을 칠하므로 쓸 수 있는 옵션이다. */}
-        {language==='Chinese'&&<><Toggle label="성조 색상" uiLocale={uiLocale} note="병음의 성조 부호는 유지하고 색을 더해요" checked={s.showToneColors} onChange={v=>set('showToneColors',v)}><ToneLegend uiLocale={uiLocale}/></Toggle><Toggle label="훈음" uiLocale={uiLocale} note="한자마다 뜻과 소리" checked={s.showHanjaKo} onChange={v=>set('showHanjaKo',v)}/></>}
+        {language==='Chinese'&&<><Toggle label="성조 색상" uiLocale={uiLocale} note="병음의 성조 부호는 유지하고 색을 더해요" checked={s.showToneColors} onChange={v=>set('showToneColors',v)}><ToneLegend uiLocale={uiLocale}/></Toggle><Toggle label="훈음" uiLocale={uiLocale} note="단어 카드에서 한자 아래 뜻과 소리를 보여요 (예: 图 그림 도)" checked={s.showHanjaKo} onChange={v=>set('showHanjaKo',v)}/></>}
         {supportsPatterns(language)
           ?<><Toggle label="문법 표시" uiLocale={uiLocale} note="회색 밑줄은 관련 문형 후보예요. 탭해서 확인해 주세요." checked={s.showPatterns} onChange={v=>set('showPatterns',v)}/><Choices label="문법 표시 범위" uiLocale={uiLocale} value={s.patternFilter} items={choices([['all','전체'],['due','복습할 것'],['weak','약한 것']])} onChange={v=>set('patternFilter',v)} disabled={!s.showPatterns} reason={s.showPatterns?null:tr('문법 표시를 켜면 고를 수 있어요')}/><p className="reader-setting-note">{translateViewerText(uiLocale,patternNote)}</p></>
           :<Toggle label="문법 표시" uiLocale={uiLocale} checked={false} disabled reason={tr('이 언어는 아직 문형 자료가 없어요')} onChange={()=>{}}/>}

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { TTS_RATES, ttsOptsFor, pronHiddenFor, READING_PRESETS, PRESET_META, presetActive, presetFor } from '../readingSheet.js';
+import { TTS_RATES, ttsOptsFor, pronHiddenFor, READING_PRESETS, PRESET_META, presetActive, presetFor, nextTtsRate } from '../readingSheet.js';
 
 // 계약: 읽기 설정 시트 캐논(오너 확정 2026-08-27) — 값 체계가 흔들리면 시트 UI가 아니라
 // 여기가 먼저 빨간불이 들어와야 한다.
@@ -122,5 +122,14 @@ describe('발음 공개 단계·암기 확인 제거', () => {
     expect(fs.readFileSync(path.join(process.cwd(), 'src/components/viewer/ReaderToken.jsx'), 'utf8')).toContain('const furiOff = hasReading && pronHiddenFor(pronDisplay, { isKnown, isSaved });');
     expect(viewer).toContain("data-pron-spacing={materialLang==='Chinese'&&pronDisplay!=='none'?'reserved':'natural'}");
     expect(PRESET_META.map(m => m.key)).toEqual(['immerse', 'study']);
+  });
+});
+
+describe('듣기 머리줄 속도 버튼(뷰어 점검 B)', () => {
+  it('0.75× → 1× → 1.25× → 0.75× 순으로 돌고, 모르는 값은 1×', () => {
+    expect(nextTtsRate('slow')).toBe('normal');
+    expect(nextTtsRate('normal')).toBe('fast');
+    expect(nextTtsRate('fast')).toBe('slow');
+    expect(nextTtsRate('turbo')).toBe('normal');
   });
 });

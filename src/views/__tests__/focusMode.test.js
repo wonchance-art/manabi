@@ -20,7 +20,8 @@ describe('집중 모드 배선', () => {
   });
 
   it('지정이 있을 때만 발동한다 — 지정 없이 켜면 화면이 통째로 어두워지면 안 된다', () => {
-    expect(viewer).toContain("focusMode && (pickedLineIdx !== null || tokenRange.range) ? ' reader-area--focus' : ''");
+    // 듣기 중 지금 문장도 지정으로 본다(뷰어 점검 B — 집중 + 듣기, 오너 승인 2026-10-23 KST).
+    expect(viewer).toContain("focusMode && (pickedLineIdx !== null || tokenRange.range || listenTokens?.size) ? ' reader-area--focus' : ''");
   });
 
   it('주변은 흐리게 하고 지정 문장·열린 단어는 선명하게 유지한다', () => {

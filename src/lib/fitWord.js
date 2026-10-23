@@ -24,3 +24,41 @@ export function fitDivisor(text, furigana, language) {
   }
   return n;
 }
+
+// ── 긴 표제어(뷰어 점검 E2, 오너 승인 2026-10-23 KST) ─────────────────────────────
+// 6자 이상(中华人民共和国)은 글자 칸이 카드 폭을 넘어 끝 한 글자(国)만 다음 줄로 떨어졌다.
+// 넘칠 때만 글자를 2px씩 최소 22px까지 줄여 한 줄에 맞추고, 그래도 넘치면(훈음 칸이 넓을 때) 원래 크기로
+// 반씩 나눈다(中华人民 / 共和国 — 뷰어가 가운데 자리에 둔 .word-fit__break를 켠다). 넘치지 않으면 손대지 않는다.
+export const LONG_HEAD_CHARS = 6;
+export const LONG_HEAD_MIN_PX = 22;
+/** 반으로 나눌 자리(앞쪽 글자 수) — 앞줄이 한 글자 더 길다(4 / 3). 짧은 표제어는 -1. */
+export function longHeadSplitAt(n) {
+  return n >= LONG_HEAD_CHARS ? Math.ceil(n / 2) : -1;
+}
+const fitSigs = new WeakMap();
+/**
+ * .word-fit[data-long] 하나를 맞춘다. 같은 폭 · 같은 내용이면 다시 재지 않는다(force는 크기 변화 감시에서).
+ * 줄 넘김 판정 = 첫 칸과 끝 칸이 다른 줄(끝 칸 위가 첫 칸 아래 이상).
+ */
+export function fitLongHeadword(el, { force = false } = {}) {
+  if (!el?.isConnected || !el.hasAttribute('data-long')) return;
+  const surface = el.querySelector(':scope > .surface');
+  const wrap = el.parentElement;
+  if (!surface || !wrap) return;
+  const sig = `${wrap.clientWidth}|${surface.textContent}`;
+  if (!force && fitSigs.get(el) === sig) return;
+  fitSigs.set(el, sig);
+  el.style.removeProperty('font-size');
+  el.removeAttribute('data-split');
+  const items = [...surface.children].filter((c) => !c.classList.contains('word-fit__break') && c.getClientRects().length);
+  if (items.length < 2) return;
+  const wrapped = () => items[items.length - 1].getBoundingClientRect().top >= items[0].getBoundingClientRect().bottom - 1;
+  if (!wrapped()) return;
+  const base = Math.floor(parseFloat(getComputedStyle(el).fontSize) || 32);
+  for (let px = base - 2; px >= LONG_HEAD_MIN_PX; px -= 2) {
+    el.style.fontSize = `${px}px`;
+    if (!wrapped()) return;
+  }
+  el.style.removeProperty('font-size');
+  el.setAttribute('data-split', '');
+}

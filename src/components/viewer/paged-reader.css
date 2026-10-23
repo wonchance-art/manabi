@@ -35,7 +35,7 @@
 .reader-pagebar__btn {
   display: inline-flex; align-items: center; justify-content: center; flex: none;
   min-width: 44px; min-height: 44px; padding: 0;
-  border: 0; border-radius: 6px; background: transparent; color: inherit; cursor: pointer;
+  border: 0; border-radius: 8px; background: transparent; color: inherit; cursor: pointer;
 }
 .reader-pagebar__btn:disabled { opacity: .35; cursor: default; }
 .reader-pagebar__btn:not(:disabled):hover { background: var(--reader-selected, var(--sheet)); color: var(--reader-accent, var(--ink)); }
@@ -46,8 +46,8 @@
 .reader-page-strip {
   display: none; position: absolute; top: 0; bottom: 0; width: 48px; min-height: 44px; padding: 0;
   align-items: center; justify-content: center;
-  border: 0; border-radius: 6px; background: transparent; color: var(--reader-muted, var(--muted));
-  font-size: 28px; line-height: 1; cursor: pointer; opacity: .45;
+  border: 0; border-radius: 8px; background: transparent; color: var(--reader-muted, var(--muted));
+  font-size: 1.75rem; line-height: 1; cursor: pointer; opacity: .45;
 }
 .reader-page-strip--prev { right: 100%; margin-right: 36px; }
 .reader-page-strip--next { left: 100%; margin-left: 36px; }
@@ -63,8 +63,12 @@ html .viewer-layout[data-reader-view="paged"] > .viewer-center { padding-bottom:
 /* 바닥 자리는 하나 — 문장 이동 막대나(모든 폭) 바닥 보조 패널(1120 미만)이 뜨면 쪽 막대는 그 밑에 숨는다.
    본문 높이는 그대로라 다시 흐르지 않는다(목업 C). 밀기·키보드·여백 띠로는 계속 넘긴다. */
 .viewer-layout[data-reader-view="paged"]:has(.sentence-move-bar) .reader-pagebar { visibility: hidden; }
+/* 문장 지정 중에는 쪽 상자가 바닥 막대 자리를 비우므로(ViewerPage sentenceReserve — 뷰어 점검 A3) 쪽 막대가 막대 위에 보인다.
+   펼친 시트가 덮는 동안만 숨는다. */
+.viewer-layout[data-reader-view="paged"][data-sentence-reserve="true"]:has(.sentence-move-bar) .reader-pagebar { visibility: visible; }
 @container reader (max-width: 1119px) {
   .viewer-layout[data-reader-view="paged"]:has(.viewer-inspector:not([hidden])) .reader-pagebar { visibility: hidden; }
+  .viewer-layout[data-reader-view="paged"][data-sentence-reserve="true"]:has(.viewer-inspector.is-collapsed:not([hidden])) .reader-pagebar { visibility: visible; }
   /* 고른 단어가 시트 밑에 깔리면 시트를 낮게 연다(본문은 그대로) — 높이는 useSelectedTokenVisibility가 잰다. */
     .viewer-layout[data-reader-view="paged"] .viewer-inspector[data-compact="true"]:not(.is-expanded):not(.is-collapsed) { height: var(--reader-sheet-compact, 40dvh); }
   /* A안(VIEWER-AUDIT 2): 고른 단어가 화면 아래 절반이면 시트를 머리줄 아래에 세운다 — 자리는 useSelectedTokenVisibility가 잰다(--reader-sheet-top). */

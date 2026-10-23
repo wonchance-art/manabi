@@ -115,7 +115,7 @@ describe('viewer preferences migration and isolation',()=>{
 });
 describe('pinyin width',()=>{
  it('uses a finite vetted syllable set; body or longest reading wins with a safety gap',()=>{
-  const seen=[];expect(pinyinCellWidth(s=>{seen.push(s);return s.length*7;},24)).toBe(44);
+  const seen=[];expect(pinyinCellWidth(s=>{seen.push(s);return s.length*7;},24)).toBe(46); // 병음이 칸을 정하면 여유 4px(병음끼리 2px 이상)
   expect(seen).toEqual(PINYIN_MEASURE_SYLLABLES);expect(pinyinCellWidth(()=>10,48)).toBe(50);
  });
  it('invalid measurements cannot poison CSS width',()=>{expect(pinyinCellWidth(()=>NaN,26)).toBe(28);});

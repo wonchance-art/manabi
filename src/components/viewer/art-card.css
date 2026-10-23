@@ -5,7 +5,7 @@
   margin: 0 0 6px; padding: 14px 16px;
   border: 1px solid var(--reader-line); border-radius: 8px;
   background: var(--reader-surface); color: var(--reader-ink);
-  font-size: 14px; line-height: 1.65;
+  font-size: .9375rem; line-height: 1.65;
 }
 /* 쪽 넘김(다단) 읽기에서 그림·캡션이 단 사이로 쪼개지지 않게. */
 .viewer-layout .viewer-art-card__figure {margin: 0 0 12px; break-inside: avoid;}
@@ -17,13 +17,13 @@
 }
 /* 크기 정보가 없는 그림만 — 높이를 미리 정한 상자 안에 담는다(가로·세로 판형 모두 contain). */
 .viewer-layout .viewer-art-card__img--box {width: 100%; height: clamp(200px, 62cqi, 440px); max-height: none; object-fit: contain;}
-.viewer-layout .viewer-art-card__caption {margin-top: 6px; font-size: 12px; line-height: 1.5; color: var(--reader-muted); overflow-wrap: anywhere;}
+.viewer-layout .viewer-art-card__caption {margin-top: 6px; font-size: .75rem; line-height: 1.5; color: var(--reader-muted); overflow-wrap: anywhere;}
 .viewer-layout .viewer-art-card__title {margin: 0 0 2px; font-size: 1.05rem; font-weight: 700; line-height: 1.5; color: var(--reader-ink); overflow-wrap: anywhere;}
 .viewer-layout .viewer-art-card__title-ko {font-weight: 500;}
-.viewer-layout .viewer-art-card__meta {margin: 0 0 10px; font-size: 13px; color: var(--reader-muted); overflow-wrap: anywhere;}
+.viewer-layout .viewer-art-card__meta {margin: 0 0 10px; font-size: .8125rem; color: var(--reader-muted); overflow-wrap: anywhere;}
 .viewer-layout .viewer-art-card__facts {display: grid; gap: 4px; margin: 0;}
 .viewer-layout .viewer-art-card__fact {display: grid; grid-template-columns: 6.5em minmax(0, 1fr); gap: 8px; align-items: baseline;}
-.viewer-layout .viewer-art-card__fact dt {font-size: 12px; font-weight: 600; color: var(--reader-muted);}
+.viewer-layout .viewer-art-card__fact dt {font-size: .75rem; font-weight: 600; color: var(--reader-muted);}
 .viewer-layout .viewer-art-card__fact dd {margin: 0; min-width: 0; overflow-wrap: anywhere;}
 .viewer-layout .viewer-art-card :is(a, a:visited) {color: var(--reader-accent); text-decoration: underline; text-underline-offset: 3px;}
 .viewer-layout .viewer-art-card a:hover {color: var(--reader-ink);}
@@ -34,10 +34,10 @@
 .viewer-layout .viewer-art-card__look {margin: 0; padding: 0; list-style: none;}
 .viewer-layout .viewer-art-card__num {color: var(--reader-muted);}
 .viewer-layout .viewer-art-card__about {margin-top: 4px;}
-.viewer-layout .viewer-art-card__about > summary {display: list-item; min-height: 44px; padding-block: 10px; line-height: 24px; cursor: pointer; font-size: 13px; color: var(--reader-muted);}
-.viewer-layout .viewer-art-card__about > p {margin: 0 0 4px; font-size: 13px; line-height: 1.7;}
+.viewer-layout .viewer-art-card__about > summary {display: list-item; min-height: 44px; padding-block: 10px; line-height: 24px; cursor: pointer; font-size: .8125rem; color: var(--reader-muted);}
+.viewer-layout .viewer-art-card__about > p {margin: 0 0 4px; font-size: .8125rem; line-height: 1.7;}
 .viewer-layout .viewer-art-card :is(a, summary):focus-visible,
-.viewer-layout .viewer-art-credit a:focus-visible {outline: 2px solid var(--reader-accent); outline-offset: 2px; border-radius: 2px;}
+.viewer-layout .viewer-art-credit a:focus-visible {outline: 2px solid var(--reader-accent); outline-offset: 2px; border-radius: 4px;}
 .viewer-layout .viewer-art-credit {margin-top: 0;}
 /* 폰 폭 — 라벨을 값 위로 올려 한 줄 폭을 값에 다 준다. */
 @container art-card (max-width: 420px) {

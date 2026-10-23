@@ -14,7 +14,7 @@ html:has(.viewer-layout .viewer-pace-float) {scroll-padding-bottom:calc(54px + m
 .viewer-layout :is(.sentence-move-bar,.viewer-pace-float) {--sentence-move-bar-edge:color-mix(in srgb,var(--reader-ink) 55%,var(--reader-paper));}
 .viewer-layout .sentence-move-bar {position:fixed;z-index:95;left:50%;transform:translateX(-50%);bottom:max(8px,env(safe-area-inset-bottom));display:flex;align-items:center;gap:4px;max-width:calc(100% - 16px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px));padding:4px 8px;border:1px solid var(--sentence-move-bar-edge);border-radius:8px;background:var(--reader-paper);color:var(--reader-ink);box-shadow:0 8px 28px color-mix(in srgb,var(--reader-ink) 12%,transparent);}
 .viewer-layout.viewer-3col--dragging :is(.sentence-move-bar,.viewer-pace-float) {pointer-events:none;}
-.viewer-layout .sentence-move-bar button {display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:44px;min-height:44px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--reader-ink);cursor:pointer;}
+.viewer-layout .sentence-move-bar button {display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:44px;min-height:44px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--reader-ink);cursor:pointer;}
 .viewer-layout .sentence-move-bar button:disabled {opacity:.35;cursor:default;}
 .viewer-layout .sentence-move-bar button:not(:disabled):hover {background:var(--reader-selected);color:var(--reader-accent);}
 .viewer-layout .sentence-move-bar button:focus-visible {outline:2px solid var(--reader-accent);outline-offset:1px;}
@@ -25,7 +25,7 @@ html:has(.viewer-layout .viewer-pace-float) {scroll-padding-bottom:calc(54px + m
    뜬 단독 「▶ 자동 진행」. 둘은 동시에 뜨지 않고, 시트·창이 열리면 둘 다 없다(정본 §5). 진행 중 ■는 강조색으로 상태를 보인다. */
 .viewer-layout .sentence-move-bar .sentence-move-bar__pace[aria-pressed="true"] {color:var(--reader-accent);}
 .viewer-layout .viewer-pace-float {position:fixed;z-index:95;left:50%;transform:translateX(-50%);bottom:max(8px,env(safe-area-inset-bottom));display:flex;padding:4px;border:1px solid var(--sentence-move-bar-edge);border-radius:8px;background:var(--reader-paper);color:var(--reader-ink);box-shadow:0 8px 28px color-mix(in srgb,var(--reader-ink) 12%,transparent);}
-.viewer-layout .viewer-pace-float__btn {display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;padding:0 14px;border:0;border-radius:6px;background:transparent;color:var(--reader-ink);font-size:.875rem;font-weight:600;line-height:1.2;white-space:nowrap;cursor:pointer;}
+.viewer-layout .viewer-pace-float__btn {display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;padding:0 14px;border:0;border-radius:8px;background:transparent;color:var(--reader-ink);font-size:.875rem;font-weight:600;line-height:1.2;white-space:nowrap;cursor:pointer;}
 .viewer-layout .viewer-pace-float__btn .action-icon {flex:none;}
 .viewer-layout .viewer-pace-float__btn[aria-pressed="true"] .action-icon {color:var(--reader-accent);}
 .viewer-layout .viewer-pace-float__btn:hover {background:var(--reader-selected);color:var(--reader-accent);}

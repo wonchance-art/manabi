@@ -152,7 +152,7 @@ describe('카드 CSS — 토큰·접힘·초점', () => {
     expect(sliceBetween(css, '.viewer-layout .viewer-art-card__img--box {', '}')).toContain('object-fit: contain');
     expect(read(CARD)).toContain("viewer-art-card__img${size ? '' : ' viewer-art-card__img--box'}");
     expect(sliceBetween(css, '.viewer-layout .viewer-art-card__figure {', '}')).toContain('break-inside: avoid');
-    expect(sliceBetween(css, '.viewer-layout .viewer-art-card__caption {', '}')).toContain('font-size: 12px');
+    expect(sliceBetween(css, '.viewer-layout .viewer-art-card__caption {', '}')).toContain('font-size: .75rem'); // 12px — 뷰어 글자는 rem(뷰어 점검 F1)
   });
 
   it('줄 안 링크(카드 값·출처 줄)는 누르는 자리 44px 이상 — 안쪽 여백을 음수 바깥 여백으로 상쇄', () => {
