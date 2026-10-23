@@ -54,6 +54,9 @@ a.learn-tile:hover{background:var(--learn-soft)}
 @media (prefers-reduced-motion:reduce){.learn-paragraph__cycle{transition:none}}
 .learn-paragraph__sentence{font:700 19px/1.65 var(--font-serif-kr),serif;max-width:15em;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
 .learn-paragraph__words{font:700 20px/1.4 var(--font-serif-kr),serif;overflow-wrap:anywhere}
+/* 일본어 문장 · 표현 · 복습 단어는 일본어 글꼴로 그린다(FIELD-AUDIT 2026-10-23 KST — 운영 /home 실측). Noto Serif KR로 그리면 한자가 한국 자형이고,
+   한자가 흩어진 unicode-range 조각을 17개(743KB) 받아 LCP가 2.7~4.0초였다. 이미 받는 Noto Sans JP(:lang(ja) 전역 규칙과 같은 순서)로 그린다. */
+.learn-paragraph__sentence:lang(ja),.learn-paragraph__words:lang(ja),.learn-review__word:lang(ja){font-family:var(--font-noto-jp,'Noto Sans JP'),var(--font-noto-kr,'Noto Sans KR'),sans-serif}
 .learn-paragraph__cap{font-size:12.5px;color:var(--muted)}
 
 /* 이어 읽기 — 시안 C(위아래 나눔). 머리 = 언어 색, 옅은 색은 언어 색 9% + 종이(새 값 없음). */
