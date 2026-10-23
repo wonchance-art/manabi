@@ -230,7 +230,7 @@ div.discover-tile .discover-tile__title{color:var(--muted)}
 .art-card__open{display:flex;flex-direction:column;gap:8px;width:100%;min-width:0;color:var(--ink);text-decoration:none}
 .art-card__frame{display:block;width:100%;max-width:100%;aspect-ratio:1;border-radius:12px;overflow:hidden;background:color-mix(in srgb,var(--ink) 6%,var(--sheet))}
 .art-card__frame img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .2s ease}
-.art-card__open:hover img{transform:scale(1.03)}
+@media (hover:hover){.art-card__open:hover img{transform:scale(1.03)}}
 .art-card__open>strong{font-size:15px;line-height:1.45;font-weight:700;overflow-wrap:anywhere}
 .art-card__open:hover>strong{text-decoration:underline}
 .art-card__hook{margin:0;font-size:13px;line-height:1.5;color:var(--muted);overflow-wrap:anywhere}
