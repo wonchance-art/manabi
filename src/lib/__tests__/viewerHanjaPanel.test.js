@@ -190,8 +190,9 @@ describe('한자 창 머리 · 구성 — hanjaPanelModel', () => {
     expect(m.parts.pieces.map((p) => p.ch)).toEqual(['彳', '术', '亍']);
     expect(m.parts.pieces.every((p) => p.role === null)).toBe(true);
   });
-  it('구성 자료 없음(育)·4성분 이상(樂)·획 조각 분해(工 = 丅+一) → 구성 null', () => {
-    expect(model('育', '体育', 'yù', 1).parts).toBeNull();
+  it('4성분 이상(樂)·획 조각 분해(工 = 丅+一) → 구성 null · 育은 구성 표 보강 뒤 1단 성분(亠 · 厶 · 月, 역할 미상)', () => {
+    // 育은 첫 IDS(⿳亠厶⺝)의 ⺝(月 변형 꼴)가 우주 밖이라 비어 있었다 — 부수 변형 꼴을 본자로 읽게 된 뒤(2026-10-23 KST 구성 빠짐 검사) 3성분.
+    expect(model('育', '体育', 'yù', 1).parts).toMatchObject({ known: false, pieces: [{ ch: '亠' }, { ch: '厶' }, { ch: '月' }] });
     expect(model('乐', '音乐', 'yuè', 1).parts).toBeNull();
     expect(model('乐', '音乐', 'yuè', 1).head).toMatchObject({ zheng: '樂', label: '풍류 악' });
     expect(model('工', '工人', 'gōng', 0).parts).toBeNull();

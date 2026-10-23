@@ -94,7 +94,8 @@ describe('시안 · 설계 문서 대조 후속(2026-10-21 KST)', () => {
     expect(Math.max(...delays) + dur).toBeLessThanOrEqual(0.3);
   });
   it('글자 칸 조각이 둘을 넘으면 …', () => {
-    expect(parts).toContain("{j === 1 && t.pieces.length > 2 ? ' …' : ''}");
+    expect(parts).toContain('more={j === 1 && t.pieces.length > 2}');
+    expect(parts).toContain("{p.label}{more ? ' …' : ''}");
   });
   it('찾기 줄 — 범위를 읽어 주고(시안 ⑨) · 내려 보면 그림자(시안 ⑪)', () => {
     expect(screen).toContain('<span className="sr-only">{cfg.scope}에서 찾기</span>');
