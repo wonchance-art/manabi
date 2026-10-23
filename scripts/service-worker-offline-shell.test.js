@@ -39,7 +39,7 @@ async function install({ offlineHtml = OFFLINE_HTML, failAdd = () => false } = {
 }
 
 describe('설치 — /offline 대체 화면의 조각까지 받아 둔다', () => {
-  it('문서가 부르는 /_next/static 조각 · 스타일 · 글꼴을 한 번씩 받는다(바깥 주소 · 매니페스트 제외)', async () => {
+  it('문서가 부르는 /_next/static 조각 · 스타일을 한 번씩 받는다(글꼴 · 바깥 주소 · 매니페스트 제외 — SW-PRECACHE-001과 같은 범위)', async () => {
     const { added } = await install();
     expect(added).toEqual(expect.arrayContaining([
       '/offline',
@@ -47,7 +47,6 @@ describe('설치 — /offline 대체 화면의 조각까지 받아 둔다', () =
       '/_next/static/chunks/app/(app)/layout-91e826ae73eb532d.js',
       '/_next/static/chunks/webpack-38be21ce365a2c51.js',
       '/_next/static/css/0d39cdf0982fbeb8.css',
-      '/_next/static/media/3b7f680d40bad81e-s.p.woff2',
     ]));
     expect(added.filter((u) => u.includes('webpack-'))).toHaveLength(1);
     expect(added.some((u) => u.includes('plausible') || u.includes('manifest'))).toBe(false);
@@ -62,7 +61,8 @@ describe('설치 — /offline 대체 화면의 조각까지 받아 둔다', () =
   it('/offline 문서를 못 받았으면 조각도 받지 않고 설치는 끝난다', async () => {
     const { added } = await install({ failAdd: (url) => url === '/offline' });
     expect(added.some((u) => u.startsWith('/_next/'))).toBe(false);
-    expect(added).toContain('/home');
+    // 설치 때 받는 문서는 /offline 하나뿐이다(SW-PRECACHE-001) — 그것을 못 받으면 아무것도 남지 않는다.
+    expect(added).toEqual([]);
   });
 });
 
