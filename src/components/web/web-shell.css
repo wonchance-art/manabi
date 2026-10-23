@@ -349,7 +349,7 @@ html[data-nav-motion="pop"] #main-content {
 html:is([data-nav-motion="push"], [data-nav-motion="pop"]) #main-content:has(
     .scrim, .vocab-detail-overlay, .sentence-nav, .modal-overlay, .pdf-detail-overlay, .pdf-detail-popup, .viewer-sheet-bar,
     .viewer-sheet, .reading-test-overlay, .confirm-overlay, .viewer-progress-bar, .tile-modal__overlay, .lv-toast, .lw-gradebar,
-    .lw-undo, .lw-pop, .lw-scrim, .lw-sheet, .original-position-notice.is-floating, .review-grade-bar, .review-known-undo,
+    .lw-undo, .lw-pop, .lw-dp, .lw-scrim, .lw-sheet, .original-position-notice.is-floating, .review-grade-bar, .review-known-undo,
     .shelf-dialog, .personal-note, .note-recognition, .viewer-inspector, .viewer-inspector--board, .sentence-move-bar,
     .viewer-pace-float, .class-reader-dock, .class-copy-overlay, .teaching-presentation-host,
     .viewer-workspace-boundary[data-active="true"], .player, .manabi-selection-bar
