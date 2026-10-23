@@ -19,6 +19,11 @@ const GAPLESS = ['Japanese', 'Chinese'], OLD_GAP = 0.25, GAP_MARK = 'cjkGap0';
 // 훈음(showHanjaKo)도 같은 방식(오너 2026-10-23 — 단어장 「훈음」과 같은 이름 · 기본 켬): 옛 기본 false가 저장값으로 남아 있으면
 // 한 번만 켬으로 읽는다. 표식(hunOn)은 새 판이 중국어를 저장할 때 붙고, 그 뒤에 끈 값은 그대로 둔다.
 const HUN_LANGS = ['Chinese'], HUN_MARK = 'hunOn';
+// 띄어 쓰는 언어(영어·한국어 등)는 원문 공백을 따로 그리지 않고 낱말 상자 사이 간격(flex column-gap = charGap)으로만
+// 띄어 쓴다. 그래서 그 언어의 간격은 옛 기본(4px) 아래로 내려가지 않는다 — 0이면 띄어쓰기가 사라졌다(뷰어 점검 2026-10-23).
+// 화면 이름도 그 언어에서는 「낱말 사이」다.
+export function charGapMin(language) { return GAPLESS.includes(language) ? 0 : OLD_GAP; }
+export function charGapLabel(language) { return GAPLESS.includes(language) ? '글자 사이' : '낱말 사이'; }
 export function viewerDefaults(language) {
   return {fontSize:1.6, pinyinSize:0.75, lineGap:15, charGap:GAPLESS.includes(language) ? 0 : OLD_GAP, theme:'sepia', fontFamily:'sans', zhScript:'hans',
     pronDisplay:'all', autoSpeakOnClick:false, ttsRate:'normal', showHanjaKo:HUN_LANGS.includes(language),
@@ -36,7 +41,7 @@ export function validateViewerPreferences(input, language) {
       const normalized = value === "'Inter'" ? 'inter' : value;
       if (fontChoices(language).some(([v]) => v === normalized)) values[key] = normalized;
     } else if (ranges[key]) {
-      const [min,max] = ranges[key];
+      const [min,max] = key === 'charGap' ? [charGapMin(language), ranges.charGap[1]] : ranges[key];
       if (typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max && (key !== 'paceStep' || Number.isInteger(value))) values[key] = value;
     } else if (enums[key]?.includes(value) || (typeof values[key] === 'boolean' && typeof value === 'boolean')) values[key] = value;
   }

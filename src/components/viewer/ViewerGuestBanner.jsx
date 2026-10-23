@@ -4,7 +4,7 @@ import Link from 'next/link';
 // 「단어를 클릭해 뜻을 확인할 수 있어요」가 거짓이 된다 — 원문만 읽는 상태를 그대로 말한다.
 // 로그인 링크는 뷰어가 만든 signInHref(authEntryHref — 로그인 뒤 이 자료로 돌아온다)를 그대로 받는다.
 export const GUEST_BANNER_TEXT = Object.freeze({
-  analyzed: '단어를 클릭해 뜻을 확인할 수 있어요.',
+  analyzed: '단어를 눌러 뜻을 확인할 수 있어요.', // 폰에서도 맞는 말 — 「클릭」은 마우스 말투(뷰어 점검 2026-10-23)
   pending: '원문을 읽을 수 있어요. 분석이 끝나면 단어를 눌러 뜻을 볼 수 있어요.',
   signIn: '로그인하면 단어장에 저장하고 복습할 수 있어요 →',
 });

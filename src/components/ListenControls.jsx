@@ -26,6 +26,12 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
   const sentencesRef = useRef([]);
   const indexRef = useRef(0);
   const sessionRef = useRef(0);
+  const interruptedRef = useRef(false);
+  // 듣기 버튼과 재생 막대는 서로 갈아 끼워진다 — 누른 손의 초점을 바뀐 쪽으로 넘긴다(시작 → 일시정지, 정지 → 듣기).
+  // 넘기지 않으면 초점이 페이지 맨 앞으로 떨어졌다(뷰어 점검 2026-10-23).
+  const rootRef = useRef(null);
+  const focusAfter = useRef(false);
+  const holdFocus = () => { focusAfter.current = !!rootRef.current?.contains(document.activeElement); };
   const rateRef = useRef(rate);
   const languageRef = useRef(language);
   const onSentenceRef = useRef(onSentence);
@@ -58,7 +64,7 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
     onSentenceRef.current?.(null);
   }, []);
 
-  useEffect(()=>{sessionRef.current+=1;window.speechSynthesis?.cancel();setPlaying(false);setPaused(false);setCurrentSentence('');onSentenceRef.current?.(null);},[stopSignal]);
+  useEffect(()=>{sessionRef.current+=1;interruptedRef.current=false;window.speechSynthesis?.cancel();setPlaying(false);setPaused(false);setCurrentSentence('');onSentenceRef.current?.(null);},[stopSignal]);
 
   function speakNext(sessionId) {
     if (sessionRef.current !== sessionId) return;
@@ -77,7 +83,9 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
     // 음성 오류(엔진 · 목소리 없음 등) — 이 세션이면 재생 상태와 뷰어 강조를 정리한다(stop → onSentence(null)).
     // 취소 · 끊김(단어 발음이 이어받음 등)은 정리만, 그 밖의 실패는 단어 발음과 같은 'failed' 안내(TTS-GAP-001).
     // 취소(cancel)로 끝난 옛 세션의 오류는 세션 번호가 달라 무시된다.
-    utter.onerror = (event) => { if (sessionRef.current === sessionId) { if (speechCanceled(event)) stop(); else fail('failed'); } };
+    // 끊김(단어 발음이 이어받음)은 정지가 아니라 그 문장에서 멈춤이다 — ▶를 누르면 그 문장부터 다시 읽는다.
+    // 정지로 처리하면 단어 하나 듣는 데 듣던 자리를 잃고 처음부터였다(뷰어 점검 2026-10-23).
+    utter.onerror = (event) => { if (sessionRef.current === sessionId) { if (speechCanceled(event)) interrupt(); else fail('failed'); } };
     utter.onend = () => {
       if (sessionRef.current !== sessionId) return;
       indexRef.current += 1;
@@ -88,6 +96,14 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
   }
 
   function play() {
+    holdFocus();
+    if (paused && interruptedRef.current) {
+      interruptedRef.current = false;
+      const sessionId = ++sessionRef.current;
+      setPaused(false);
+      speakNext(sessionId);
+      return;
+    }
     if (paused) {
       window.speechSynthesis.resume();
       setPaused(false);
@@ -109,7 +125,15 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
     setPaused(true);
   }
 
+  function interrupt() {
+    sessionRef.current += 1;
+    interruptedRef.current = true;
+    setPaused(true);
+  }
+
   function stop() {
+    holdFocus();
+    interruptedRef.current = false;
     sessionRef.current += 1;
     window.speechSynthesis.cancel();
     onSentenceRef.current?.(null);
@@ -125,11 +149,18 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
     notifySpeechUnavailable(reason);
   }
 
+  useEffect(() => {
+    if (!focusAfter.current) return;
+    focusAfter.current = false;
+    if (rootRef.current?.contains(document.activeElement)) return;
+    rootRef.current?.querySelector('button')?.focus({ preventScroll: true });
+  }, [playing]);
+
   if (!supported || !text) return null;
   const label=key=>compact?t(uiLocale,key):key;
 
   return (
-    <div className={followActive ? 'listen-controls listen-controls--follow' : 'listen-controls'}>
+    <div ref={rootRef} className={followActive ? 'listen-controls listen-controls--follow' : 'listen-controls'}>
       {!playing ? (
         // 뷰어 툴바(compact)도 보이는 라벨을 단다(AD-R2 §5) — 접근 이름 「본문 전체 듣기」 안에 보이는 「듣기」가 든다.
         // 재생 중 컨트롤(▶/⏸/⏹)은 지금처럼 아이콘만이다(설계 §9.2 — 라벨은 정지 상태 버튼에만).

@@ -566,7 +566,7 @@ describe('end boxes stay whole across page boundaries', () => {
     expect(links).toContain('<section className="learning-links learning-links--browse">');
     expect(links).toContain('<details className="learning-links" onToggle=');
     expect(read('src/views/ViewerComments.jsx')).toContain('<div className="card viewer-comments" style=');
-    expect(viewer).toContain('<MaterialChapterLinks lang={materialLang} kind="reading" materialId={id} />');
+    // 뷰어의 연결한 교재 단원 상자는 2026-10-23 KST 오너 지시로 뺐다(viewerAuditFollowup.test.js) — 규칙은 교재 쪽 상자에 남는다.
   });
 });
 
