@@ -1,4 +1,4 @@
-import { Black_Han_Sans, Dela_Gothic_One, GFS_Didot, Gochi_Hand, Goudy_Bookletter_1911, IM_Fell_English, Josefin_Sans, Jost, Kaushan_Script, Libre_Caslon_Display, Nanum_Myeongjo, Noto_Serif_KR, Shippori_Mincho_B1, Song_Myung, Yellowtail, Yuji_Syuku } from 'next/font/google';
+import { Black_Han_Sans, Dela_Gothic_One, GFS_Didot, Gochi_Hand, Goudy_Bookletter_1911, IM_Fell_English, Josefin_Sans, Jost, Kaushan_Script, Libre_Caslon_Display, Nanum_Myeongjo, Shippori_Mincho_B1, Song_Myung, Yellowtail, Yuji_Syuku } from 'next/font/google';
 
 // 「초판 장정」 2차 묶음(오너 「원본 책 재구성하는 방식으로 표지 만들기까지 완성」 2026-10-17 KST) — 한국어 7 · 영어 9 · 프랑스어 3.
 // 근거(실물 사진·서지 기록)는 docs/literature-pipeline.md §8.7, 키는 lib/firstEditionCover.js. 사람 몸 · 출판사 문장·모노그램 · 캐릭터 그림 ·
@@ -23,9 +23,10 @@ const caslon = Libre_Caslon_Display({ display: 'swap', preload: false, weight: '
 const shippori = Shippori_Mincho_B1({ display: 'swap', preload: false, weight: ['500', '800'], subsets: ['latin'], variable: '--font-fe-shippori' }); // 800 — 1925 『진달내ᄭᅩᆺ』 굵은 활자
 const yuji = Yuji_Syuku({ display: 'swap', preload: false, weight: '400', subsets: ['latin'], variable: '--font-fe-yuji' });
 const blackHan = Black_Han_Sans({ display: 'swap', preload: false, weight: '400', subsets: ['latin'], variable: '--font-fe-blackhan' });
-const krSerifBold = Noto_Serif_KR({ display: 'swap', preload: false, weight: ['600', '700'], subsets: ['latin'], variable: '--font-fe-kr-bold' }); // 1948 정음사 제첨 굵은 명조(저장소 사본의 600 · 700을 다시 쓴다)
+// 1948 정음사 제첨 굵은 명조는 (app) 레이아웃의 Noto Serif KR 600 · 700(--font-serif-kr)을 그대로 쓴다 — 같은 굵기를 여기서 다시 선언하면
+// @font-face 248개 · 렌더 차단 CSS 한 벌이 두 번 실렸다(파일 주소는 같아 글꼴은 한 번만 받았다 — FIELD-AUDIT 2026-10-23 KST 운영 실측).
 const dela = Dela_Gothic_One({ display: 'swap', preload: false, weight: '400', subsets: ['latin'], variable: '--font-fe-dela' }); // 굵은 고딕 한자(Black Han Sans에는 한자가 없다)
-export const SECOND_FONT_CLASS = [songMyung, myeongjo, josefin, jost, kaushan, yellowtail, gochi, goudy, fell, didot, caslon, shippori, yuji, blackHan, dela, krSerifBold].map((font) => font.variable).filter(Boolean).join(' ');
+export const SECOND_FONT_CLASS = [songMyung, myeongjo, josefin, jost, kaushan, yellowtail, gochi, goudy, fell, didot, caslon, shippori, yuji, blackHan, dela].map((font) => font.variable).filter(Boolean).join(' ');
 
 const stack = (variable, family, ...rest) => [`var(${variable}, "${family}")`, `"${family}"`, ...rest].join(', ');
 /** 한자 — 한글 글꼴 뒤에 둔다(한글 글꼴에 한자가 없으면 글자마다 이 글꼴로 내려온다). */
@@ -35,7 +36,7 @@ const BRUSH_HANJA = stack('--font-fe-yuji', 'Yuji Syuku', HANJA);
 export const KO_PRINT = `"Chosun Centennial", ${HANJA}`;
 const SONGMYUNG = stack('--font-fe-songmyung', 'Song Myung', HANJA);
 const MYEONGJO = stack('--font-fe-myeongjo', 'Nanum Myeongjo', HANJA);
-const KR_BOLD = stack('--font-fe-kr-bold', 'Noto Serif KR', HANJA);
+const KR_BOLD = stack('--font-serif-kr', 'Noto Serif KR', HANJA);
 const HEAVY = stack('--font-fe-blackhan', 'Black Han Sans', stack('--font-fe-dela', 'Dela Gothic One', HANJA)); // 한자(詩)는 같은 굵은 고딕으로
 /** 옛한글 조합(ᄭᅩᆺ)이 되는 굵은 명조 — Noto Serif KR wght 700 제목 사본(first-edition-cover.css · public/fonts/manabi-old-hangul). Google Fonts 조각 파일은
  * 자모가 갈려 조합이 깨지고, 조선100년체 · 재민체는 옛한글 자모를 조합하지 못한다(실측). 굵기는 오너 대조 사진의 1925 활자에 맞췄다. */
