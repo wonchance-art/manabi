@@ -28,6 +28,9 @@ const notoJp = Noto_Sans_JP({
   weight: ['400', '500', '700'],
   variable: '--font-noto-jp',
   display: 'swap',
+  // 라틴 조각은 루트에서 미리 받지 않는다 — 일본어를 첫 화면에 그리는 세그먼트(배움 · 책장)만 힌트를 건다(fontHints.js).
+  // 루트 preload는 일본어가 없는 화면(산책 읽기 · 지역학 · 계정 · 뷰어 · 단어장 …)에서도 24kB를 받았다(FIELD-AUDIT 2026-10-23 KST).
+  preload: false,
 });
 
 // 중국어 본문(간체 Noto Sans SC — 오너 확정 2026-08-19)은 중국어를 그릴 수 있는 세그먼트만 싣는다 —
