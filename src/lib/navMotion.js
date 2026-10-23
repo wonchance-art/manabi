@@ -4,14 +4,17 @@ import { reducedMotion } from './reducedMotion';
 // 새 화면이 **도착한 순간**(경로가 바뀐 커밋) 그 화면만 들어온다 — 메뉴 = 제자리 옅게(0.16s), 목록 → 상세 = 오른쪽에서(0.22s),
 // 뒤로 = 왼쪽에서(0.22s). 머리말 · 아래 메뉴는 움직이지 않는다.
 //
-// 누른 순간에 시작하지 않는 이유(측정 근거는 목업 문서): document.startViewTransition은 콜백이 끝날 때까지 화면 그리기를 멈춘다.
-// 누를 때 시작하면 서버 응답(prefetch:false 탭 0.3~1.5초) 동안 화면이 얼고, 대기 밑줄(NavPendingMark)도 안 보이며, INP에 그 시간이 더해진다.
-// 그래서 이전 화면과 섞는 진짜 crossfade · 공유 요소는 하지 않는다(React 19.3 <ViewTransition> + Next 16 전환 뒤 재검토).
+// 방식: 경로가 바뀐 커밋에서 html[data-nav-motion]만 달고 본문(#main-content)에 CSS 등장 애니메이션(useNavMotion.js).
+// View Transitions는 쓰지 않는다 — 전환 중 모든 포인터가 <html>로 가 연속 탭이 사라지고(실측 4/4), 사진 두 장 · 그리기 정지 비용이 붙는다.
+// 누른 순간에는 아무것도 하지 않는다(INP · 대기 밑줄 불변). 공유 요소 · 이전 화면과의 crossfade는 Next 16 + React 19.3 <ViewTransition> 뒤 재검토.
 //
 // 이 모듈은 판정만 한다(창 · 문서는 인자로 받는다). 실행은 useNavMotion.js, 움직임 값은 web-shell.css(NAV-MOTION 블록)가 정본.
 
 /** 기능 스위치 — false면 전환을 아예 시작하지 않는다(코드 한 줄로 끄는 자리). 창에서 끄기: window.__MANABI_NAV_MOTION__ = 'off'. */
 export const NAV_MOTION_ENABLED = true;
+
+/** 종류별 길이(ms) — web-shell.css 키프레임 길이와 같다(계약). 표식을 떼는 여유 시간 계산에 쓴다. */
+export const NAV_MOTION_MS = Object.freeze({ tab: 160, push: 220, pop: 220 });
 
 /** 누른 곳 · 뒤로가기 기록을 이 시간 안에 온 경로 변경에만 쓴다 — 늦게 온 이동(느린 응답)도 그 원인으로 읽되, 남은 기록이 엉뚱한 이동에 붙지 않게. */
 export const NAV_CAUSE_TTL_MS = 4000;
@@ -47,14 +50,13 @@ export function navMotionKind({ from, to, cause = null, now, fromIndex = null, t
 }
 
 /**
- * 지금 전환을 시작해도 되나 — 지원 · 기능 스위치 · 동작 줄이기 · 보이는 문서.
+ * 지금 등장 효과를 걸어도 되나 — 기능 스위치 · 동작 줄이기 · 보이는 문서(숨은 탭에서는 animationend가 오지 않는다).
  * @param {Document} doc
  * @param {Window} win
  */
 export function canAnimateNav(doc, win) {
   if (!NAV_MOTION_ENABLED || !doc || !win) return false;
   if (win.__MANABI_NAV_MOTION__ === 'off') return false;
-  if (typeof doc.startViewTransition !== 'function') return false;
   if (doc.visibilityState && doc.visibilityState !== 'visible') return false;
   return !reducedMotion(); // 동작 줄이기 판정 정본(MOTION-R2) — 두 번째 matchMedia를 두지 않는다
 }

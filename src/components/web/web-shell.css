@@ -300,66 +300,42 @@ a:has(> .nav-pending--reader){position:relative}
 /* 같은 이유로 동작 뒤 초점 이어받기(FOCUS-AFTER-ACTION-001)가 초점을 두는 묶음(tabindex -1)도 — 복습 채점 막대 · 읽기 저장 줄.
    누르는 자리가 아니라 다음 Tab의 출발점이다. 안의 버튼은 각자의 :focus-visible 고리를 그대로 그린다. */
 .review-grade-bar[tabindex="-1"]:focus,.save-grade__saved[tabindex="-1"]:focus{outline:none}
-/* ========= 화면 이동 손맛(NAV-MOTION-001) — 새 화면이 도착한 순간 그 화면만 들어온다 =========
-   실행 = src/lib/useNavMotion.js(경로가 바뀐 커밋에서 document.startViewTransition), 판정 = src/lib/navMotion.js.
-   「이전」 사진 = 본문을 비운 종이 + 머리말 · 아래 메뉴(data-nav-motion-capture) — 그 위로 새 화면이 옅게(메뉴) · 오른쪽에서(목록 → 상세) · 왼쪽에서(뒤로).
-   머리말 · 아래 메뉴는 따로 찍어 제자리에 둔다(이름은 전환 중에만 — 평소 쌓임 순서 불변). 전환 중 탭은 브라우저가 <html>로 보내므로
-   useNavMotion.forwardSwallowedTaps가 전환을 끝내고 손가락 아래 조작 요소로 넘긴다(pointer-events:none은 Chromium에서 효과 없음 — 실측).
+/* ========= 화면 이동 손맛(NAV-MOTION-001) — 새 화면이 도착한 순간 본문만 들어온다 =========
+   실행 = src/lib/useNavMotion.js(경로가 바뀐 커밋에서 html[data-nav-motion] — 옅어짐 navFadeIn이 끝나면 뗀다), 판정 = src/lib/navMotion.js.
+   메뉴 = 제자리 옅게 · 목록 → 상세 = 오른쪽에서 · 뒤로 = 왼쪽에서. 머리말 · 아래 메뉴는 #main-content 밖이라 그대로.
+   View Transitions를 쓰지 않는다(전환 중 탭 유실 · 사진 비용 — 목업 문서 §6). 옛 .page-container pageEnter는 JS가 끝 상태로 보낸다.
+   옅어짐과 밀림은 따로 건다: 본문에 transform이 걸리면 그 안의 position:fixed 요소가 화면 대신 본문 상자 기준이 되어(긴 화면을 스크롤한 채면
+   아래 고정 막대가 0.22초 동안 화면 밖으로 — 실측 top 788 → 823) 본문에 고정 요소가 있으면(:has — 커밋 뒤 늦게 붙어도) 밀림만 뗀다.
+   :has 목록 = src CSS의 position:fixed 선택자 중 본문 안에 올 수 있는 것 전부(계약이 일치를 본다).
    0.3초 이하 · var(--ease-settle) · transform/opacity만 · 동작 줄이기면 시작하지 않고(JS) 여기서도 none. 계약 navMotion.test.js. */
-html[data-nav-motion-capture] #main-content {
-  opacity: 0;
+html[data-nav-motion="tab"] #main-content {
+  animation: navFadeIn 0.16s var(--ease-settle) both;
 }
-html[data-nav-motion] .gnb {
-  view-transition-name: manabi-gnb;
+html[data-nav-motion="push"] #main-content {
+  animation: navFadeIn 0.22s var(--ease-settle) both, navFromRight 0.22s var(--ease-settle) both;
 }
-html[data-nav-motion] .mobile-nav {
-  view-transition-name: manabi-tabbar;
+html[data-nav-motion="pop"] #main-content {
+  animation: navFadeIn 0.22s var(--ease-settle) both, navFromLeft 0.22s var(--ease-settle) both;
 }
-/* 화면 안 전환이 쓰는 이름(단어 목록 모드 바꾸기 lw-rows)은 화면 이동 중에는 떼어 낸다 — 남으면 그 칸만 제자리에 서고 나머지만 들어온다. */
-html[data-nav-motion] .lw-rows {
-  view-transition-name: none;
+html:is([data-nav-motion="push"], [data-nav-motion="pop"]) #main-content:has(
+    .scrim, .vocab-detail-overlay, .sentence-nav, .modal-overlay, .pdf-detail-overlay, .pdf-detail-popup, .viewer-sheet-bar,
+    .viewer-sheet, .reading-test-overlay, .confirm-overlay, .viewer-progress-bar, .tile-modal__overlay, .lv-toast, .lw-gradebar,
+    .lw-undo, .lw-pop, .lw-scrim, .lw-sheet, .original-position-notice.is-floating, .review-grade-bar, .review-known-undo,
+    .shelf-dialog, .personal-note, .note-recognition, .viewer-inspector, .viewer-inspector--board, .sentence-move-bar,
+    .viewer-pace-float, .class-reader-dock, .class-copy-overlay, .teaching-presentation-host,
+    .viewer-workspace-boundary[data-active="true"], .player, .manabi-selection-bar
+) {
+  animation: navFadeIn 0.22s var(--ease-settle) both;
 }
-html[data-nav-motion]::view-transition-group(root) {
-  animation: none;
-}
-html[data-nav-motion]::view-transition-old(root) {
-  animation: none;
-}
-html[data-nav-motion]::view-transition-new(root) {
-  mix-blend-mode: normal;
-  animation: navTabIn 0.16s var(--ease-settle) both;
-}
-html[data-nav-motion="push"]::view-transition-new(root) {
-  mix-blend-mode: normal;
-  animation: navPushIn 0.22s var(--ease-settle) both;
-}
-html[data-nav-motion="pop"]::view-transition-new(root) {
-  mix-blend-mode: normal;
-  animation: navPopIn 0.22s var(--ease-settle) both;
-}
-html[data-nav-motion]::view-transition-group(manabi-gnb),
-html[data-nav-motion]::view-transition-group(manabi-tabbar),
-html[data-nav-motion]::view-transition-new(manabi-gnb),
-html[data-nav-motion]::view-transition-new(manabi-tabbar) {
-  animation: none;
-}
-html[data-nav-motion]::view-transition-old(manabi-gnb),
-html[data-nav-motion]::view-transition-old(manabi-tabbar) {
-  animation: none;
-  opacity: 0;
-}
-@keyframes navTabIn {
+@keyframes navFadeIn {
   from { opacity: 0; }
 }
-@keyframes navPushIn {
-  from { opacity: 0; transform: translateX(16px); }
+@keyframes navFromRight {
+  from { transform: translateX(16px); }
 }
-@keyframes navPopIn {
-  from { opacity: 0; transform: translateX(-16px); }
+@keyframes navFromLeft {
+  from { transform: translateX(-16px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  html[data-nav-motion]::view-transition-new(root) { animation: none; }
-  html[data-nav-motion="push"]::view-transition-new(root) { animation: none; }
-  html[data-nav-motion="pop"]::view-transition-new(root) { animation: none; }
-  html[data-nav-motion-capture] #main-content { opacity: 1; }
+  html[data-nav-motion] #main-content { animation: none !important; }
 }

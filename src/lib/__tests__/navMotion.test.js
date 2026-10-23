@@ -2,10 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { sliceBetween } from './helpers/sliceBetween';
-import { NAV_CAUSE_TTL_MS, canAnimateNav, navMotionKind } from '../navMotion';
-import { NAV_TAP_FORWARD_SELECTOR, forwardSwallowedTaps, startNavMotion, watchNavCause } from '../useNavMotion';
+import { NAV_CAUSE_TTL_MS, NAV_MOTION_MS, canAnimateNav, navMotionKind } from '../navMotion';
+import { startNavMotion, watchNavCause } from '../useNavMotion';
 
-// 화면 이동 손맛(NAV-MOTION-001). 새 화면이 도착한 커밋에서만 전환한다 — 메뉴 = 옅게 0.16s, 목록 → 상세 = 오른쪽에서 0.22s, 뒤로 = 왼쪽에서 0.22s.
+// 화면 이동 손맛(NAV-MOTION-001). 새 화면이 도착한 커밋에서만 본문 등장 효과(CSS)를 건다 — 메뉴 = 옅게 0.16s, 목록 → 상세 = 오른쪽에서 0.22s, 뒤로 = 왼쪽에서 0.22s.
 // 지키는 것: ① 누른 순간에는 아무것도 하지 않는다(INP · 대기 밑줄 불변) ② 브라우저가 이미 넘김을 보여 준 뒤로가기는 움직이지 않는다
 // ③ 동작 줄이기 · 미지원 · 숨은 문서면 시작하지 않는다 ④ 0.3초 이하 · var(--ease-settle) · transform/opacity만 · 축소 블록.
 // 계약 = 배선 보증(ui-conventions §5). 실제 재생 · INP · CLS는 목업 문서의 Chromium 실측이 본다.
@@ -60,51 +60,52 @@ describe('canAnimateNav — 시작해도 되나', () => {
     vi.stubGlobal('window', win(true));
     expect(canAnimateNav(doc(), win(true))).toBe(false);
   });
-  it('미지원(startViewTransition 없음) · 숨은 문서 · 창 스위치 off면 false', () => {
+  it('숨은 문서(animationend가 안 온다) · 창 스위치 off면 false · View Transitions 지원 여부와 무관', () => {
     vi.stubGlobal('window', win(false));
-    expect(canAnimateNav(doc({ startViewTransition: undefined }), win(false))).toBe(false);
+    expect(canAnimateNav(doc({ startViewTransition: undefined }), win(false))).toBe(true);
     expect(canAnimateNav(doc({ visibilityState: 'hidden' }), win(false))).toBe(false);
     expect(canAnimateNav(doc(), win(false, { __MANABI_NAV_MOTION__: 'off' }))).toBe(false);
   });
 });
 
-describe('startNavMotion — 전환 한 번', () => {
-  function fakeDoc({ throws = false } = {}) {
-    const finished = [];
+describe('startNavMotion — 등장 한 번', () => {
+  function fakeDoc({ main = true } = {}) {
     const page = { animationName: 'pageEnter', done: false, finish() { this.done = true; } };
     const other = { animationName: 'hlStroke', done: false, finish() { this.done = true; } };
-    const doc = {
-      documentElement: { dataset: {} },
-      getAnimations: () => [page, other],
-      addEventListener() {}, removeEventListener() {},
-      calls: [],
-      startViewTransition(cb) {
-        if (throws) throw new Error('InvalidStateError');
-        doc.calls.push({ capture: 'navMotionCapture' in doc.documentElement.dataset, kind: doc.documentElement.dataset.navMotion });
-        cb();
-        let resolve;
-        const p = new Promise((r) => { resolve = r; });
-        finished.push(resolve);
-        return { ready: Promise.resolve(), updateCallbackDone: Promise.resolve(), finished: p };
-      },
-    };
-    return { doc, page, other, finish: () => finished.forEach((r) => r()) };
+    const listeners = {};
+    const mainEl = { addEventListener: (t, fn) => { listeners[t] = fn; }, removeEventListener: (t) => { delete listeners[t]; } };
+    const doc = { documentElement: { dataset: {} }, getAnimations: () => [page, other], getElementById: (id) => (main && id === 'main-content' ? mainEl : null) };
+    return { doc, page, other, mainEl, listeners };
   }
-  it('시작 전에 「이전」 사진용 비움 표식 + 종류를 달고, 콜백에서 비움을 지우고 옛 등장(pageEnter)만 끝낸다', async () => {
-    const { doc, page, other, finish } = fakeDoc();
-    expect(startNavMotion(doc, 'push')).toBe(true);
-    expect(doc.calls).toEqual([{ capture: true, kind: 'push' }]);
-    expect('navMotionCapture' in doc.documentElement.dataset).toBe(false);
-    expect(page.done).toBe(true);
-    expect(other.done).toBe(false); // 담기 순간 등 다른 효과는 건드리지 않는다
+  it('표식을 달고 옛 등장(pageEnter)만 끝 상태로 — 다른 효과는 그대로', () => {
+    const { doc, page, other } = fakeDoc();
+    expect(startNavMotion(doc, 'push', { schedule: () => 1, cancel: () => {} })).toBeTypeOf('function');
     expect(doc.documentElement.dataset.navMotion).toBe('push');
-    finish();
-    await new Promise((r) => setTimeout(r, 0));
+    expect(page.done).toBe(true);
+    expect(other.done).toBe(false);
+  });
+  it('본문의 옅어짐(navFadeIn)이 끝나야 표식을 뗀다 — 자식 · 밀림 취소(고정 요소 생김)는 무시(옅어짐이 끊기지 않게)', () => {
+    const { doc, mainEl, listeners } = fakeDoc();
+    startNavMotion(doc, 'push', { schedule: () => 1, cancel: () => {} });
+    listeners.animationend({ target: {}, animationName: 'navFadeIn' });
+    listeners.animationend({ target: mainEl, animationName: 'pageEnter' });
+    listeners.animationcancel({ target: mainEl, animationName: 'navFromRight' });
+    expect(doc.documentElement.dataset.navMotion).toBe('push');
+    listeners.animationend({ target: mainEl, animationName: 'navFadeIn' });
+    expect('navMotion' in doc.documentElement.dataset).toBe(false);
+    expect(listeners).toEqual({});
+  });
+  it('animationend가 오지 않아도(취소 · 숨은 탭) 길이 + 여유 뒤 표식을 뗀다', () => {
+    const { doc } = fakeDoc();
+    let fire, wait;
+    startNavMotion(doc, 'pop', { schedule: (fn, ms) => { fire = fn; wait = ms; return 1; }, cancel: () => {} });
+    expect(wait).toBe(NAV_MOTION_MS.pop + 200);
+    fire();
     expect('navMotion' in doc.documentElement.dataset).toBe(false);
   });
-  it('시작이 실패하면 표식을 남기지 않는다(본문이 투명한 채 남지 않게)', () => {
-    const { doc } = fakeDoc({ throws: true });
-    expect(startNavMotion(doc, 'tab')).toBe(false);
+  it('본문이 없으면 아무것도 하지 않는다', () => {
+    const { doc } = fakeDoc({ main: false });
+    expect(startNavMotion(doc, 'tab')).toBeNull();
     expect(doc.documentElement.dataset).toEqual({});
   });
 });
@@ -144,35 +145,68 @@ describe('watchNavCause — 누른 곳 · 뒤로가기 기록', () => {
   });
 });
 
-/** 규칙 본문에서 `animation: <이름> <길이> <곡선> both;`. */
-function animationOf(css, selector) {
+/** 규칙 본문의 `animation:` 목록 → [{ name, duration, easing }] (각 항목 `<이름> <길이>s <곡선> both`). */
+function animationsOf(css, selector) {
   const body = sliceBetween(css, `${selector} {`, '}');
-  const m = body.match(/animation:\s*(\w+)\s+([\d.]+)s\s+([^;]+?)\s+both\s*;/);
+  const m = body.match(/animation:\s*([^;]+);/);
   expect(m, `${selector}에 애니메이션이 없다`).not.toBeNull();
-  return { name: m[1], duration: Number(m[2]), easing: m[3].trim() };
+  return m[1].split(/,\s*(?=nav)/).map((item) => {
+    const a = item.trim().match(/^(\w+)\s+([\d.]+)s\s+(.+?)\s+both$/);
+    expect(a, `${selector}: ${item}`).not.toBeNull();
+    return { name: a[1], duration: Number(a[2]), easing: a[3] };
+  });
 }
-const reducedBlock = (css) => sliceBetween(css, '@media (prefers-reduced-motion: reduce) {\n  html[data-nav-motion]', '\n}');
+const GUARD = 'html:is([data-nav-motion="push"], [data-nav-motion="pop"]) #main-content:has(';
+// 본문 밖이라 본문 transform과 무관한 고정 요소(머리말 · 아래 메뉴 · 오프라인 띠 · 알림 · 포털 · 온보딩 — Layout · Provider에서 main 바깥).
+const FIXED_OUTSIDE_MAIN = ['.gnb', '.mobile-nav', '.offline-banner', '.toast-container', '.onboarding-overlay', '.hz-portal'];
 
 describe('움직임 값 — 0.3초 이하 · 감속 토큰 · transform/opacity만 · 동작 줄이기 none', () => {
   const css = read(SHELL);
   const block = sliceBetween(css, '/* ========= 화면 이동 손맛(NAV-MOTION-001)');
-  const rules = [
-    { selector: 'html[data-nav-motion]::view-transition-new(root)', name: 'navTabIn', max: 0.16 },
-    { selector: 'html[data-nav-motion="push"]::view-transition-new(root)', name: 'navPushIn', max: 0.22 },
-    { selector: 'html[data-nav-motion="pop"]::view-transition-new(root)', name: 'navPopIn', max: 0.22 },
+  const kinds = [
+    { kind: 'tab', expected: [['navFadeIn', 0.16]] },
+    { kind: 'push', expected: [['navFadeIn', 0.22], ['navFromRight', 0.22]] },
+    { kind: 'pop', expected: [['navFadeIn', 0.22], ['navFromLeft', 0.22]] },
   ];
-  for (const { selector, name, max } of rules) {
-    it(`${selector} — ${name} ${max}s 이하 · var(--ease-settle) · 축소 시 none`, () => {
-      const a = animationOf(block, selector);
-      expect(a.name).toBe(name);
-      expect(a.duration).toBeLessThanOrEqual(max);
-      expect(a.duration).toBeLessThanOrEqual(0.3);
-      expect(a.easing).toBe('var(--ease-settle)');
-      expect(reducedBlock(block)).toContain(`${selector} { animation: none; }`);
+  for (const { kind, expected } of kinds) {
+    const selector = `html[data-nav-motion="${kind}"] #main-content`;
+    it(`${selector} — ${expected.map(([n, d]) => `${n} ${d}s`).join(' + ')} · 0.3s 이하 · var(--ease-settle) · JS 길이와 같음`, () => {
+      const list = animationsOf(block, selector);
+      expect(list.map((a) => [a.name, a.duration])).toEqual(expected);
+      for (const a of list) {
+        expect(a.duration).toBeLessThanOrEqual(0.3);
+        expect(a.duration * 1000).toBe(NAV_MOTION_MS[kind]);
+        expect(a.easing).toBe('var(--ease-settle)');
+      }
     });
   }
+  it('본문에 고정 요소가 있으면(push · pop) 밀림만 떼고 같은 이름의 옅어짐은 이어 간다', () => {
+    const guard = sliceBetween(block, GUARD, '\n}');
+    expect(guard).toMatch(/\) \{\n {2}animation: navFadeIn 0\.22s var\(--ease-settle\) both;$/);
+  });
+  it(':has 목록 = src CSS의 position:fixed 규칙(마지막 단위) 전부 − 본문 밖 목록 — 새 고정 규칙이 생기면 여기서 잡힌다', () => {
+    const walk = (dir, out = []) => {
+      for (const name of fs.readdirSync(dir)) {
+        const p = path.join(dir, name);
+        if (fs.statSync(p).isDirectory()) walk(p, out); else if (name.endsWith('.css')) out.push(p);
+      }
+      return out;
+    };
+    const fixed = new Set();
+    for (const file of walk(path.join(ROOT, 'src'))) {
+      const src = fs.readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+      for (const m of src.matchAll(/([^{};]+)\{([^{}]*)\}/g)) {
+        if (!/position\s*:\s*fixed/.test(m[2])) continue;
+        for (const sel of m[1].split(',')) fixed.add(sel.trim().split(/\s+/).at(-1).replace(/^\.manabi-app(?=\.)/, ''));
+      }
+    }
+    const has = sliceBetween(block, GUARD, '\n) {').slice(GUARD.length).split(',').map((x) => x.trim()).filter(Boolean);
+    const expected = [...fixed].filter((sel) => !FIXED_OUTSIDE_MAIN.includes(sel)).sort();
+    expect([...has].sort()).toEqual(expected);
+    expect(FIXED_OUTSIDE_MAIN.filter((sel) => !fixed.has(sel))).toEqual([]); // 낡은 예외가 남지 않게
+  });
   it('키프레임은 transform · opacity만 — 밀림은 16px 이하', () => {
-    for (const name of ['navTabIn', 'navPushIn', 'navPopIn']) {
+    for (const name of ['navFadeIn', 'navFromRight', 'navFromLeft']) {
       const frames = sliceBetween(block, `@keyframes ${name} {`, '\n}');
       const props = [...frames.matchAll(/([a-z-]+)\s*:/g)].map((m) => m[1]);
       expect(props.length).toBeGreaterThan(0);
@@ -180,74 +214,12 @@ describe('움직임 값 — 0.3초 이하 · 감속 토큰 · transform/opacity�
       for (const m of frames.matchAll(/translateX\((-?\d+)px\)/g)) expect(Math.abs(Number(m[1]))).toBeLessThanOrEqual(16);
     }
   });
-  it('「이전」 사진 비움은 표식이 있을 때만 · 동작 줄이기에서는 되돌린다(본문이 사라진 채 남지 않게)', () => {
-    expect(block).toContain('html[data-nav-motion-capture] #main-content {\n  opacity: 0;\n}');
-    expect(reducedBlock(block)).toContain('html[data-nav-motion-capture] #main-content { opacity: 1; }');
+  it('동작 줄이기 — 고정 요소 규칙까지 포함해 모두 none', () => {
+    const reduced = sliceBetween(block, '@media (prefers-reduced-motion: reduce) {', '\n}');
+    expect(reduced).toContain('html[data-nav-motion] #main-content { animation: none !important; }');
   });
-  it('머리말 · 아래 메뉴는 전환 중에만 이름을 받고 제자리(움직임 없음 · 이전 사진 숨김)', () => {
-    expect(css).not.toMatch(/(?<!html\[data-nav-motion\] )\.(gnb|mobile-nav) \{\s*view-transition-name/);
-    expect(block).toMatch(/html\[data-nav-motion\]::view-transition-old\(manabi-gnb\),\nhtml\[data-nav-motion\]::view-transition-old\(manabi-tabbar\) \{\n {2}animation: none;\n {2}opacity: 0;/);
-  });
-  it('새 화면은 섞지 않고 위에 그린다(plus-lighter 밝아짐 방지)', () => {
-    for (const { selector } of rules) expect(sliceBetween(block, `${selector} {`, '}')).toContain('mix-blend-mode: normal;');
-  });
-  it('효과 없는 pointer-events:none을 다시 두지 않는다 — 전환 중 탭은 forwardSwallowedTaps가 넘긴다(Chromium 실측 elementFromPoint = HTML)', () => {
-    expect(block).not.toMatch(/::view-transition\s*\{[^}]*pointer-events/);
-  });
-});
-
-describe('forwardSwallowedTaps — 전환 중 삼켜진 탭(실측 4/4 유실)을 손가락 아래 조작 요소로', () => {
-  function setup() {
-    const listeners = {};
-    const root = { tag: 'html' };
-    const link = { clicked: 0, click() { this.clicked += 1; } };
-    const span = { closest: (sel) => (sel === NAV_TAP_FORWARD_SELECTOR ? link : null) };
-    const doc = {
-      documentElement: root,
-      addEventListener: (type, fn) => { listeners[type] = fn; },
-      removeEventListener: (type) => { delete listeners[type]; },
-      elementFromPoint: (x, y) => (x === 10 && y === 20 ? span : null),
-    };
-    let finish;
-    const transition = { skipped: 0, skipTransition() { this.skipped += 1; }, finished: new Promise((r) => { finish = r; }) };
-    let stopLater;
-    const stop = forwardSwallowedTaps(doc, transition, { schedule: (fn) => { stopLater = fn; } });
-    return { listeners, root, link, transition, finish: () => finish(), stop, stopLater: () => stopLater?.() };
-  }
-  const tick = () => new Promise((r) => setTimeout(r, 0));
-  it('<html>이 받은 누름 → 전환을 끝내고, 그 click은 끝난 뒤 손가락 아래 링크로 다시 보낸다', async () => {
-    const t = setup();
-    t.listeners.pointerdown({ target: t.root });
-    expect(t.transition.skipped).toBe(1);
-    t.listeners.click({ target: t.root, isTrusted: true, clientX: 10, clientY: 20 });
-    expect(t.link.clicked).toBe(0); // 전환이 끝나기 전에는 보내지 않는다(아직 <html>이 받는다)
-    t.finish();
-    await tick();
-    expect(t.link.clicked).toBe(1);
-  });
-  it('실제 요소가 받은 click · 합성 click(넘겨준 click 자신)은 건드리지 않는다', async () => {
-    const t = setup();
-    t.listeners.click({ target: { tag: 'a' }, isTrusted: true, clientX: 10, clientY: 20 });
-    t.listeners.click({ target: t.root, isTrusted: false, clientX: 10, clientY: 20 });
-    t.finish();
-    await tick();
-    expect(t.link.clicked).toBe(0);
-    expect(t.transition.skipped).toBe(0);
-  });
-  it('손가락 아래가 조작 요소가 아니면 아무것도 누르지 않는다', async () => {
-    const t = setup();
-    t.listeners.click({ target: t.root, isTrusted: true, clientX: 1, clientY: 1 });
-    t.finish();
-    await tick();
-    expect(t.link.clicked).toBe(0);
-  });
-  it('전환이 끝나고 유예 뒤에는 리스너를 뗀다(평소 <html> click에 끼어들지 않음)', async () => {
-    const t = setup();
-    t.finish();
-    await tick();
-    expect(Object.keys(t.listeners).sort()).toEqual(['click', 'pointerdown']);
-    t.stopLater();
-    expect(Object.keys(t.listeners)).toEqual([]);
+  it('움직이는 것은 본문뿐 — 머리말 · 아래 메뉴 · View Transitions 의사 요소를 건드리지 않는다', () => {
+    expect(block.replace(sliceBetween(block, GUARD, '\n) {'), '')).not.toMatch(/\.gnb|\.mobile-nav|::view-transition|view-transition-name/);
   });
 });
 
@@ -261,10 +233,11 @@ describe('배선 — 도착한 커밋에서 한 곳만', () => {
     const hook = read('src/lib/useNavMotion.js');
     const effect = sliceBetween(hook, 'useLayoutEffect(() => {', '}, [pathname]);');
     expect(effect).toContain('if (startNavMotion(document, kind))');
+    expect(hook).not.toMatch(/startViewTransition/); // 화면 이동은 View Transitions를 쓰지 않는다(전환 중 탭 유실 — 목업 §6)
     const watch = sliceBetween(hook, 'export function watchNavCause', '\n}\n');
-    expect(watch).not.toMatch(/startViewTransition|startNavMotion/);
+    expect(watch).not.toMatch(/startNavMotion|dataset/);
   });
-  it('화면 이동 전환은 이 한 곳 — 그 밖은 같은 화면 안 전환(단어 목록 모드 바꾸기)뿐', () => {
+  it('startViewTransition은 같은 화면 안 전환(단어 목록 모드 바꾸기)만 — 화면 이동에는 없다', () => {
     const walk = (dir, out = []) => {
       for (const name of fs.readdirSync(dir)) {
         if (name === 'node_modules' || name === '__tests__') continue;
@@ -276,18 +249,11 @@ describe('배선 — 도착한 커밋에서 한 곳만', () => {
     };
     const callers = walk(path.join(ROOT, 'src')).filter((f) => /\.startViewTransition\(/.test(fs.readFileSync(f, 'utf8')))
       .map((f) => path.relative(ROOT, f).replaceAll('\\', '/'));
-    expect(callers).toEqual(['src/components/levels/word/LevelWordScreen.jsx', 'src/lib/useNavMotion.js']);
+    expect(callers).toEqual(['src/components/levels/word/LevelWordScreen.jsx']);
     // 화면 안 전환이다 — 모드 · 보기 상태(setPrefs)만 감싼다(경로를 바꾸지 않는다).
     const word = read('src/components/levels/word/LevelWordScreen.jsx');
     expect(word.match(/document\.startViewTransition\(go\)/g)).toHaveLength(2);
     expect(word.match(/const go = \(\) => flushSync\(\(\) => setPrefs\(\{ (mode|view) \}\)\);/g)).toHaveLength(2);
-  });
-  it('늘 붙어 있는 전환 이름은 화면 이동 중에 none — 이름이 새로 생기면 여기 목록이 신호다', () => {
-    const files = ['src/index.css', SHELL, 'src/components/levels/word/level-word.css'];
-    const names = files.flatMap((f) => [...read(f).matchAll(/([^{}]+)\{[^}]*view-transition-name:\s*([\w-]+)/g)])
-      .filter((m) => !m[1].includes('html[data-nav-motion]')).map((m) => m[2]);
-    expect(names).toEqual(['lw-rows']);
-    expect(read(SHELL)).toContain('html[data-nav-motion] .lw-rows {\n  view-transition-name: none;\n}');
   });
   it('배제 기록 — 실험판 React를 끌어오는 experimental.viewTransition · 문서 간 @view-transition은 켜지 않는다', () => {
     expect(read('next.config.mjs')).not.toMatch(/viewTransition/);
