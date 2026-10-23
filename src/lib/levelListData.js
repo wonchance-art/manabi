@@ -336,12 +336,24 @@ export function levelTileCounts(lang) {
   if (!tileMemo.has(lang)) tileMemo.set(lang, countTiles(lang, conf).catch((error) => { tileMemo.delete(lang); throw error; }));
   return tileMemo.get(lang);
 }
+// 타일은 개수만 쓴다 — 예문 단어 나눔(jieba) · 후리가나 덧붙임(withExampleSegments · withJapaneseWordExtras)은 항목을 map만 하고
+// 늘리거나 빼지 않으므로 덧붙이기 전 묶음으로 센다. 중국어는 사전 표제어 하나가 그 레벨 항목 하나라(chineseVocabGroups) 훈 · 정렬 없이 센다.
+// 전에는 책장(/lessons) 한 번에 모든 레벨의 예문을 분석해 새 서버 인스턴스의 첫 응답이 2.4~6.1초 늦었다
+// (운영 실측 2026-10-23 KST — 브라우저 13회 중 5회). 개수 = 목록은 levelList.test가 지킨다.
+async function vocabCount(lang, levelKey) {
+  if (!levelKinds(lang, levelKey).includes('vocab')) return 0;
+  if (lang === 'japanese') return (japaneseVocabGroups(levelKey) || []).reduce((n, g) => n + g.entries.length, 0);
+  const level = Number(String(levelKey).slice(1));
+  const table = await loadZhHskLevels();
+  let n = 0;
+  for (const key of chineseDictionary().keys()) if (zhHskLevelOf(key, table) === level) n++;
+  return n;
+}
 function countTiles(lang, conf) {
   return Promise.all(conf.levels.map(async (levelKey) => {
-    const vocab = await levelListData(lang, 'vocab', levelKey);
     return {
       levelKey,
-      vocab: vocab ? vocab.groups.reduce((n, g) => n + g.entries.length, 0) : 0,
+      vocab: await vocabCount(lang, levelKey),
       ...(levelKinds(lang, levelKey).includes('bunkei') ? { bunkei: bunkeiCountOf[lang](levelKey) } : {}),
       ...(levelKinds(lang, levelKey).includes('hanzi')
         ? { hanzi: (await levelListData(lang, 'hanzi', levelKey))?.groups.reduce((n, g) => n + g.entries.length, 0) || 0 } : {}),
