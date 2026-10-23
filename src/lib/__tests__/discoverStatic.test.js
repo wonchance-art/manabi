@@ -59,8 +59,8 @@ describe('산책 판 — 쿠키를 읽지 않는 두 판(ISR 300)과 쿠키를 �
     }
     expect(read(`${base}/sc/page.jsx`)).toContain('return <><ScFontLink /><DiscoverPage /></>;');
   });
-  it('세그먼트 layout은 없다(있으면 쿠키를 읽어 두 판을 동적으로 만들 수 있다) — 간체 힌트는 동적 화면이 직접 단다', () => {
-    expect(fs.existsSync(`${base}/layout.jsx`)).toBe(false);
+  it('세그먼트 layout은 쿠키를 읽지 않는다(읽으면 두 판이 동적이 된다 — 글꼴 미리 받기(빌드 값)만 둔다) — 간체 힌트는 동적 화면이 직접 단다', () => {
+    expect(read(`${base}/layout.jsx`)).not.toMatch(/ScFontCookieHint|ScFontScope|next\/headers|cookies\(|headers\(/);
     for (const f of [`${base}/reading/page.jsx`, `${base}/classics/page.jsx`]) {
       expect(read(f), f).toContain("export const dynamic = 'force-dynamic';");
       expect(read(f), f).toContain('<ScFontCookieHint />');
