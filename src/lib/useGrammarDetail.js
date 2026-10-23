@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { callGemini, GEMINI_TIER } from './gemini';
 import { createViewerRequestGate, viewerCacheKey } from './viewerReliability';
+import { stableJson } from './stableJson';
 import { canonicalViewerLocale, viewerLanguageInfo } from './viewerLanguage';
 import { learnerHref } from './bookNavigation';
 import { buildViewerGrammarPrompt, parseViewerExplanation, formatViewerExplanation } from './viewerExplanation';
@@ -49,7 +50,7 @@ export function useGrammarDetail({ materialLang, toast, explanationLocale = 'ko'
   const deadline = useRef(null);
   const locale = canonicalViewerLocale(explanationLocale);
   const language = viewerLanguageInfo(materialLang);
-  const requestScope = JSON.stringify([materialLang, locale, scope, 'grammar-prompt-v2']);
+  const requestScope = stableJson(useRef(null), [materialLang, locale, scope, 'grammar-prompt-v2']); // scope = 원문 · 분석 전체 — 바뀔 때만 직렬화
   const currentScope = useRef(requestScope); currentScope.current = requestScope;
   const cancel = useCallback(() => {
     gate.current.cancel(); clearTimeout(deadline.current); deadline.current = null;

@@ -9,6 +9,7 @@ import { buildEasierPrompt, easierCacheKey } from './grammarDetail';
 import { langNameKo } from './constants';
 import { canonicalViewerLocale, viewerLanguageInfo } from './viewerLanguage';
 import { createViewerRequestGate, viewerCacheKey } from './viewerReliability';
+import { stableJson } from './stableJson';
 import { failureMessage } from './errorMessage';
 
 export function useEasierText({ materialLang, toast, explanationLocale = 'ko', scope = '' }) {
@@ -20,7 +21,7 @@ export function useEasierText({ materialLang, toast, explanationLocale = 'ko', s
   const deadline = useRef(null);
   const locale = canonicalViewerLocale(explanationLocale);
   const language = viewerLanguageInfo(materialLang);
-  const requestScope = JSON.stringify([materialLang, locale, scope, 'easier-prompt-v2']);
+  const requestScope = stableJson(useRef(null), [materialLang, locale, scope, 'easier-prompt-v2']); // scope = 원문 · 분석 전체 — 바뀔 때만 직렬화
   const currentScope = useRef(requestScope); currentScope.current = requestScope;
   const cancel = useCallback(() => {
     gate.current.cancel(); clearTimeout(deadline.current); deadline.current = null;
