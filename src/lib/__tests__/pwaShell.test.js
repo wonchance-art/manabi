@@ -168,3 +168,19 @@ describe('PWA-SHELL-001 ④ 호버 들림은 마우스 기기만', () => {
     expect(leaks).toEqual([]);
   });
 });
+
+describe('PWA-SHELL-001 ⑥ 셸 바깥 바탕 = 셸 종이', () => {
+  it('셸이 있는 화면의 body 바탕은 셸 --paper와 같은 값이다(OS 어둡게에서 당김 자리에 진한 띠가 비치지 않게)', () => {
+    const shell = read('src/components/web/web-shell.css');
+    const paper = shell.match(/\.manabi-app\{--paper:(#[0-9a-fA-F]{6})/);
+    expect(paper).not.toBeNull();
+    const body = shell.match(/\nbody:has\(\.manabi-app\)\{background-color:(#[0-9a-fA-F]{6})\}/);
+    expect(body, 'body:has(.manabi-app) 바탕 규칙이 없다').not.toBeNull();
+    expect(body[1].toLowerCase()).toBe(paper[1].toLowerCase());
+  });
+
+  it('어두운 읽기 테마의 body 규칙이 더 구체적이라 그대로 이긴다', () => {
+    // body:has(.manabi-app) = (0,1,1) < body:has(.viewer-layout[data-reader-theme="dark"]) = (0,2,1)
+    expect(read('src/components/viewer/reader-controls.css')).toMatch(/body:has\(\.viewer-layout\[data-reader-theme="dark"\]\),\s*\n\.manabi-app:has\(\.viewer-layout\[data-reader-theme="dark"\]\) \{background:var\(--reader-paper\)/);
+  });
+});

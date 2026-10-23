@@ -35,6 +35,11 @@
    노치 없는 기기 · 세로 화면 · 데스크톱은 env()가 0이라 지금과 같다. */
 .manabi-app .app-layout{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
 .manabi-app .gnb,.manabi-app .mobile-nav{left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px)}
+/* 셸 바깥 바탕(PWA-SHELL-001 ⑥) — body는 data-theme(저장값 없으면 OS 설정)의 --bg-primary라 OS가 어두우면 #1A1410이었다. 셸은 늘 밝아서
+   iOS 위 · 아래 당김(고무줄) · 셸 높이가 모자란 자리에 진한 갈색 띠가 비쳤다(390 OS 어둡게 실측: body rgb(26,20,16) · 셸 rgb(246,244,238)).
+   값 = .manabi-app --paper(셸 변수는 body까지 오지 않아 같은 값을 적는다 — brandAssets 계약의 화면 바탕). 어두운 읽기 테마의 body 규칙
+   (reader-controls.css, :has 안 선택자가 더 구체적)이 이 규칙을 이긴다. */
+body:has(.manabi-app){background-color:#f6f4ee}
 /* Today: one primary action, one open book, two distinct editorial areas. */
 .today-opening{display:grid;grid-template-columns:1fr 1.08fr;gap:34px;align-items:center;padding:17px 0 48px;min-height:530px}
 .today-copy{min-width:0;position:relative;z-index:1}
