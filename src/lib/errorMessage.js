@@ -42,8 +42,9 @@ const PATTERNS = [
   // 서비스 설정(결제 · 크레딧) — 용량 패턴보다 먼저 본다: 같은 문구가 429 · RESOURCE_EXHAUSTED로 와도 「붐빔」이 아니다.
   { match: SERVICE_CONFIG_PATTERN, user: SERVICE_CONFIG_MESSAGE },
 
-  // 네트워크
-  { match: /failed to fetch|network|ERR_NETWORK|connection/i,
+  // 네트워크 — 「offline」은 대화 턴(conversationClient)이 연결 실패를 status 0으로 감싼 표지(OFFLINE-SWEEP-001: 새 대화 시작이
+  // 끊긴 채 「문제가 발생했어요」로 떴다).
+  { match: /failed to fetch|network|ERR_NETWORK|connection|\boffline\b/i,
     user: '인터넷 연결을 확인해 주세요. 잠시 후 다시 시도하면 대개 해결돼요.',
     retry: true },
 
