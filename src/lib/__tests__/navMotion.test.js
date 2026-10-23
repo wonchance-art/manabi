@@ -3,7 +3,7 @@ import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { sliceBetween } from './helpers/sliceBetween';
 import { NAV_CAUSE_TTL_MS, canAnimateNav, navMotionKind } from '../navMotion';
-import { startNavMotion, watchNavCause } from '../useNavMotion';
+import { NAV_TAP_FORWARD_SELECTOR, forwardSwallowedTaps, startNavMotion, watchNavCause } from '../useNavMotion';
 
 // 화면 이동 손맛(NAV-MOTION-001). 새 화면이 도착한 커밋에서만 전환한다 — 메뉴 = 옅게 0.16s, 목록 → 상세 = 오른쪽에서 0.22s, 뒤로 = 왼쪽에서 0.22s.
 // 지키는 것: ① 누른 순간에는 아무것도 하지 않는다(INP · 대기 밑줄 불변) ② 브라우저가 이미 넘김을 보여 준 뒤로가기는 움직이지 않는다
@@ -76,6 +76,7 @@ describe('startNavMotion — 전환 한 번', () => {
     const doc = {
       documentElement: { dataset: {} },
       getAnimations: () => [page, other],
+      addEventListener() {}, removeEventListener() {},
       calls: [],
       startViewTransition(cb) {
         if (throws) throw new Error('InvalidStateError');
@@ -187,9 +188,66 @@ describe('움직임 값 — 0.3초 이하 · 감속 토큰 · transform/opacity�
     expect(css).not.toMatch(/(?<!html\[data-nav-motion\] )\.(gnb|mobile-nav) \{\s*view-transition-name/);
     expect(block).toMatch(/html\[data-nav-motion\]::view-transition-old\(manabi-gnb\),\nhtml\[data-nav-motion\]::view-transition-old\(manabi-tabbar\) \{\n {2}animation: none;\n {2}opacity: 0;/);
   });
-  it('화면 사진 위 터치는 실제 화면으로 간다 · 새 화면은 섞지 않고 위에 그린다(plus-lighter 밝아짐 방지)', () => {
-    expect(block).toContain('html[data-nav-motion]::view-transition {\n  pointer-events: none;\n}');
+  it('새 화면은 섞지 않고 위에 그린다(plus-lighter 밝아짐 방지)', () => {
     for (const { selector } of rules) expect(sliceBetween(block, `${selector} {`, '}')).toContain('mix-blend-mode: normal;');
+  });
+  it('효과 없는 pointer-events:none을 다시 두지 않는다 — 전환 중 탭은 forwardSwallowedTaps가 넘긴다(Chromium 실측 elementFromPoint = HTML)', () => {
+    expect(block).not.toMatch(/::view-transition\s*\{[^}]*pointer-events/);
+  });
+});
+
+describe('forwardSwallowedTaps — 전환 중 삼켜진 탭(실측 4/4 유실)을 손가락 아래 조작 요소로', () => {
+  function setup() {
+    const listeners = {};
+    const root = { tag: 'html' };
+    const link = { clicked: 0, click() { this.clicked += 1; } };
+    const span = { closest: (sel) => (sel === NAV_TAP_FORWARD_SELECTOR ? link : null) };
+    const doc = {
+      documentElement: root,
+      addEventListener: (type, fn) => { listeners[type] = fn; },
+      removeEventListener: (type) => { delete listeners[type]; },
+      elementFromPoint: (x, y) => (x === 10 && y === 20 ? span : null),
+    };
+    let finish;
+    const transition = { skipped: 0, skipTransition() { this.skipped += 1; }, finished: new Promise((r) => { finish = r; }) };
+    let stopLater;
+    const stop = forwardSwallowedTaps(doc, transition, { schedule: (fn) => { stopLater = fn; } });
+    return { listeners, root, link, transition, finish: () => finish(), stop, stopLater: () => stopLater?.() };
+  }
+  const tick = () => new Promise((r) => setTimeout(r, 0));
+  it('<html>이 받은 누름 → 전환을 끝내고, 그 click은 끝난 뒤 손가락 아래 링크로 다시 보낸다', async () => {
+    const t = setup();
+    t.listeners.pointerdown({ target: t.root });
+    expect(t.transition.skipped).toBe(1);
+    t.listeners.click({ target: t.root, isTrusted: true, clientX: 10, clientY: 20 });
+    expect(t.link.clicked).toBe(0); // 전환이 끝나기 전에는 보내지 않는다(아직 <html>이 받는다)
+    t.finish();
+    await tick();
+    expect(t.link.clicked).toBe(1);
+  });
+  it('실제 요소가 받은 click · 합성 click(넘겨준 click 자신)은 건드리지 않는다', async () => {
+    const t = setup();
+    t.listeners.click({ target: { tag: 'a' }, isTrusted: true, clientX: 10, clientY: 20 });
+    t.listeners.click({ target: t.root, isTrusted: false, clientX: 10, clientY: 20 });
+    t.finish();
+    await tick();
+    expect(t.link.clicked).toBe(0);
+    expect(t.transition.skipped).toBe(0);
+  });
+  it('손가락 아래가 조작 요소가 아니면 아무것도 누르지 않는다', async () => {
+    const t = setup();
+    t.listeners.click({ target: t.root, isTrusted: true, clientX: 1, clientY: 1 });
+    t.finish();
+    await tick();
+    expect(t.link.clicked).toBe(0);
+  });
+  it('전환이 끝나고 유예 뒤에는 리스너를 뗀다(평소 <html> click에 끼어들지 않음)', async () => {
+    const t = setup();
+    t.finish();
+    await tick();
+    expect(Object.keys(t.listeners).sort()).toEqual(['click', 'pointerdown']);
+    t.stopLater();
+    expect(Object.keys(t.listeners)).toEqual([]);
   });
 });
 

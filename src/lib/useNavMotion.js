@@ -38,6 +38,41 @@ export function watchNavCause(win, causeRef) {
 /** 지금 기록 위치(Navigation API — 없으면 null). 앞 · 뒤 판정에만 쓴다. */
 const historyIndex = (win) => (Number.isInteger(win.navigation?.currentEntry?.index) ? win.navigation.currentEntry.index : null);
 
+/** 전환 중 삼켜진 탭을 넘겨줄 조작 요소. */
+export const NAV_TAP_FORWARD_SELECTOR = 'a[href], button:not(:disabled), summary, [role="button"], [role="tab"]';
+/** 전환이 끝난 뒤에도 이 시간 안에 온 click(실제 손가락은 누름 → 뗌 100ms 안팎)은 넘겨준다. */
+export const NAV_TAP_FORWARD_GRACE_MS = 600;
+
+/**
+ * 전환 중 탭 넘겨주기. 전환이 도는 동안 브라우저는 모든 포인터를 <html>로 보낸다(Chromium 실측 — ::view-transition에
+ * pointer-events:none을 줘도 같다). 그대로 두면 0.2~0.3초 안에 다시 누른 탭(메뉴 연속 바꾸기)이 사라진다(실측 4/4 유실).
+ * 누름이 <html>에 오면 전환을 바로 끝내고(skipTransition), 그 click을 손가락 아래 조작 요소로 다시 보낸다.
+ * <html>에 온 click만 다룬다 — 실제 요소가 받은 click은 건드리지 않는다. 정리 함수를 돌려준다.
+ */
+export function forwardSwallowedTaps(doc, transition, { grace = NAV_TAP_FORWARD_GRACE_MS, schedule = setTimeout } = {}) {
+  const root = html(doc);
+  const onDown = (event) => { if (event.target === root) transition.skipTransition?.(); };
+  const onClick = (event) => {
+    if (event.target !== root || !event.isTrusted) return;
+    const { clientX: x, clientY: y } = event;
+    const forward = () => doc.elementFromPoint?.(x, y)?.closest?.(NAV_TAP_FORWARD_SELECTOR)?.click();
+    transition.skipTransition?.();
+    (transition.finished || Promise.resolve()).then(forward, forward);
+  };
+  doc.addEventListener('pointerdown', onDown, true);
+  doc.addEventListener('click', onClick, true);
+  let stopped = false;
+  const stop = () => {
+    if (stopped) return;
+    stopped = true;
+    doc.removeEventListener('pointerdown', onDown, true);
+    doc.removeEventListener('click', onClick, true);
+  };
+  const later = () => schedule(stop, grace);
+  (transition.finished || Promise.resolve()).then(later, later);
+  return stop;
+}
+
 /**
  * 한 번의 전환을 시작한다. 시작했으면 true.
  * 실패 · 건너뜀(같은 이름 둘 · 숨은 탭 등)이어도 콜백은 불리므로 ①은 반드시 지워진다 — 그래도 못 부르는 경우를 위해 finished에서 한 번 더.
@@ -60,6 +95,7 @@ export function startNavMotion(doc, kind) {
   }
   transition.ready?.catch(() => {});
   transition.updateCallbackDone?.catch(() => {});
+  forwardSwallowedTaps(doc, transition);
   const done = () => { reveal(); if (root.dataset.navMotion === kind) delete root.dataset.navMotion; };
   (transition.finished || Promise.resolve()).then(done, done);
   return true;

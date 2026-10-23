@@ -303,7 +303,8 @@ a:has(> .nav-pending--reader){position:relative}
 /* ========= 화면 이동 손맛(NAV-MOTION-001) — 새 화면이 도착한 순간 그 화면만 들어온다 =========
    실행 = src/lib/useNavMotion.js(경로가 바뀐 커밋에서 document.startViewTransition), 판정 = src/lib/navMotion.js.
    「이전」 사진 = 본문을 비운 종이 + 머리말 · 아래 메뉴(data-nav-motion-capture) — 그 위로 새 화면이 옅게(메뉴) · 오른쪽에서(목록 → 상세) · 왼쪽에서(뒤로).
-   머리말 · 아래 메뉴는 따로 찍어 제자리에 둔다(이름은 전환 중에만 — 평소 쌓임 순서 불변). 화면 사진 위를 눌러도 실제 화면이 받는다(pointer-events).
+   머리말 · 아래 메뉴는 따로 찍어 제자리에 둔다(이름은 전환 중에만 — 평소 쌓임 순서 불변). 전환 중 탭은 브라우저가 <html>로 보내므로
+   useNavMotion.forwardSwallowedTaps가 전환을 끝내고 손가락 아래 조작 요소로 넘긴다(pointer-events:none은 Chromium에서 효과 없음 — 실측).
    0.3초 이하 · var(--ease-settle) · transform/opacity만 · 동작 줄이기면 시작하지 않고(JS) 여기서도 none. 계약 navMotion.test.js. */
 html[data-nav-motion-capture] #main-content {
   opacity: 0;
@@ -317,9 +318,6 @@ html[data-nav-motion] .mobile-nav {
 /* 화면 안 전환이 쓰는 이름(단어 목록 모드 바꾸기 lw-rows)은 화면 이동 중에는 떼어 낸다 — 남으면 그 칸만 제자리에 서고 나머지만 들어온다. */
 html[data-nav-motion] .lw-rows {
   view-transition-name: none;
-}
-html[data-nav-motion]::view-transition {
-  pointer-events: none;
 }
 html[data-nav-motion]::view-transition-group(root) {
   animation: none;
