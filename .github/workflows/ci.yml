@@ -57,6 +57,7 @@ jobs:
       - run: node scripts/verification/n3-book-support.mjs
       - run: node supabase/tests/korean-capability-repin.mjs
       - run: node supabase/tests/vocabulary-snapshot-set-flags.mjs
+      - run: node supabase/tests/contract-hash-cache.mjs
       # 관측 fixture 위에 관측일 뒤 마이그레이션을 차례로 적용해 FSRS 핀 넷 · 모든 언어 ready를 실제 지문으로 확인한다
       # (FINGERPRINT-REPIN-002). 이미 나간 위반은 스크립트의 EXPECTED_BREAKS(정확한 상태)로만 통과한다.
       - run: node supabase/tests/post-observation-migrations.mjs
