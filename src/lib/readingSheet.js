@@ -43,8 +43,15 @@ export const PRESET_META = [
   { key: 'study',   icon: '🎓', name: '학습 모드', desc: '발음·상태·성조 전부 표시' },
 ];
 
-// 현재 설정이 프리셋과 정확히 일치할 때만 활성 — 하나라도 손대면 카드 불이 꺼진다.
-export function presetActive(name, settings) {
+// 언어에 맞춘 프리셋 값 — 성조 색상은 중국어에만 있어 다른 언어는 끈 값으로 적용한다.
+// 적용과 활성 판정이 같은 값을 써야 한다: 일·한·영에서 「학습 모드」를 눌러도 불이 안 켜졌다(뷰어 점검 2026-10-23).
+export function presetFor(name, language) {
   const p = READING_PRESETS[name];
+  if (!p) return null;
+  return language && language !== 'Chinese' ? { ...p, showToneColors: false } : p;
+}
+// 현재 설정이 프리셋과 정확히 일치할 때만 활성 — 하나라도 손대면 카드 불이 꺼진다.
+export function presetActive(name, settings, language) {
+  const p = presetFor(name, language);
   return !!p && Object.entries(p).every(([k, v]) => settings?.[k] === v);
 }

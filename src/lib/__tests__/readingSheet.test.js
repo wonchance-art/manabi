@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { TTS_RATES, ttsOptsFor, pronHiddenFor, READING_PRESETS, PRESET_META, presetActive } from '../readingSheet.js';
+import { TTS_RATES, ttsOptsFor, pronHiddenFor, READING_PRESETS, PRESET_META, presetActive, presetFor } from '../readingSheet.js';
 
 // 계약: 읽기 설정 시트 캐논(오너 확정 2026-08-27) — 값 체계가 흔들리면 시트 UI가 아니라
 // 여기가 먼저 빨간불이 들어와야 한다.
@@ -81,6 +81,17 @@ describe('읽기 모드 프리셋', () => {
   // 손으로 적은 설정 사본을 쓰면 프리셋에 키가 하나 늘 때마다 이 단언이 같이 깨진다
   // (v1-4에서 실제로 깨졌다). 프리셋 자신을 기준으로 삼고, 대신 **전 키를
   // 하나씩 틀어** 원래 요구("한 키만 틀어져도 꺼진다")를 더 넓게 확인한다.
+  // 뷰어 점검 2026-10-23: 일·한·영에서 「학습 모드」를 눌러도 선택 표시가 켜지지 않았다(적용은 성조 색 끔, 판정은 켬을 요구).
+  it('presetFor/presetActive — 성조 색상이 없는 언어는 끈 값으로 적용하고 그 값으로 활성 판정', () => {
+    for (const lang of ['Japanese', 'Korean', 'English']) {
+      for (const name of ['immerse', 'study']) {
+        expect(presetFor(name, lang).showToneColors).toBe(false);
+        expect(presetActive(name, presetFor(name, lang), lang), `${lang} ${name}`).toBe(true);
+      }
+    }
+    expect(presetFor('study', 'Chinese')).toEqual(READING_PRESETS.study);
+    expect(presetActive('study', presetFor('study', 'Japanese'), 'Chinese')).toBe(false);
+  });
   it('presetActive — 정확 일치만 활성, 한 키만 틀어져도 꺼진다', () => {
     const exact = { ...READING_PRESETS.immerse };
     expect(presetActive('immerse', exact)).toBe(true);

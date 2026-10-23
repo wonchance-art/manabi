@@ -52,11 +52,12 @@ describe('움직임 ⑥ — 닫힘 · 미끄러짐 · 끝 화면', () => {
   const read = (f) => fs.readFileSync(f, 'utf8');
   const sheets = read('src/components/levels/word/WordSheets.jsx');
   const css = read('src/components/levels/word/level-word.css');
-  it('시트 · 예문 단어 창은 닫히는 중을 거쳐 닫힌다 — 동작 줄이기면 바로', () => {
+  it('시트 · 예문 단어 창 · 조각 창은 닫히는 중을 거쳐 닫힌다 — 동작 줄이기면 바로', () => {
     expect(sheets).toMatch(/if \(reducedMotion\(\)\) \{ latest\.current\(\); return; \}/);
-    expect(sheets.match(/useClosing\(onClose, \d+\)/g)).toHaveLength(2);
+    expect(sheets.match(/useClosing\(onClose, \d+\)/g)).toHaveLength(3);
     expect(sheets).not.toMatch(/onClick=\{onClose\}|\) onClose\(\);/);
     expect(css).toMatch(/\.lw-sheet\.is-closing\{[^}]*animation:lwSheetDown/);
+    expect(css).toMatch(/\.lw-dp\.is-closing\{[^}]*animation:lwFadeOut/);
   });
   it('리스트 카드 접힘도 움직인다 — 동작 줄이기면 바로 접힘', () => {
     expect(read('src/components/levels/word/WordCard.jsx')).toMatch(/setOpen\(reducedMotion\(\) \? false : 'closing'\)/);

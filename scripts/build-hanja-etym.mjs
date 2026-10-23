@@ -108,11 +108,27 @@ if (radicalErrors.length) {
   process.exit(1);
 }
 
-// BabelStone IDS: "U+60F3<TAB>想<TAB>^⿱相心$(GHTJKPV)[<TAB>대안...]" — 첫 IDS만.
+// BabelStone IDS: "U+60F3<TAB>想<TAB>^⿱相心$(GHTJKPV)[<TAB>대안...]" — 첫 IDS부터 차례로, 성분 규칙을 지키는 첫 분해.
 // 성분 필터는 범위가 아니라 '우주 소속'(hanjaKo 키) — U+9FA6 이후 URO 확장 글자(龰·龶
 // 등)는 음 정본 밖이라 라벨이 성립 안 한다(실측: 범위 필터는 닫힘성 테스트에서 깨짐).
+// 구성 빠짐 검사(오너 2026-10-23 KST — 단어장 글자 칸, /mnt/project-files/word-page-hanja-drill/missing-pieces.md):
+// 첫 분해만 보고 · 부수 변형 꼴 하나 때문에 분해를 통째 버려 筆 · 理 · 路 같은 글자가 구성 없이 보였다.
+// ① 대안 분해도 본다(電 ⿱雨电 — 첫 분해 ⿱⻗电의 ⻗는 우주 밖). ② 본자가 하나로 정해지는 부수 변형 꼴만 본자로 읽는다
+// (𥫗 → 竹 · 𤣩 → 玉). ⺈ · 𠂉 · 䒑 · 𠂇처럼 본자가 갈리거나 없는 꼴은 넣지 않는다 — 그 분해는 지금처럼 생략.
+const COMPONENT_BASE = {
+  '𥫗': '竹', '⺮': '竹', '𧾷': '足', '⻊': '足', '⺝': '月', '𤣩': '玉', '𠆢': '人', '𦍌': '羊', '⺶': '羊', '⺷': '羊',
+  '㔾': '卩', '⺋': '卩', '⺊': '卜', '龰': '止', '⻗': '雨', '⺗': '心', '⺙': '攴', '⻖': '阜', '⻏': '邑', '⺩': '玉',
+  '龵': '手', '𫜹': '彐', '𤴓': '疋', '龶': '生', '⺼': '月', // ⺼ = 고기 육 변형 — URO 분해가 쓰는 月 꼴로(패널이 부수 肉로 가린다)
+};
+for (const [form, base] of Object.entries(COMPONENT_BASE)) {
+  if (!koTable[base]) { console.error(`COMPONENT_BASE ${form} → ${base}: 본자가 우주 밖`); process.exit(1); }
+}
+// ③ 새로 얻는 분해(대안 · 본자 읽기)는 획 조각(一 丨 丿 丶 乁 …)이 끼면 버린다 — 木 = 十人 · 八 = 丿乁 · 今 = 人丶乛처럼
+// 글자를 획으로 쪼갠 분해는 구성 설명이 아니다. 첫 분해 그대로인 기존 항목(丁 = 一亅 · 下 = 一卜)은 바꾸지 않는다.
+const STROKES = new Set([...'一丨丿丶乀乁乙乚乛亅𠃊𠃋𠃌𠃍𠄌']);
 const isIdc = (cp) => (cp >= 0x2ff0 && cp <= 0x2fff) || cp === 0x31ef || cp === 0x303e;
 const decomp = new Map();
+const decompStats = { first: 0, alt: 0, mapped: 0, stroke: 0 };
 {
   const text = fs.readFileSync(IDS_FILE, 'utf8');
   for (const line of text.split('\n')) {
@@ -120,13 +136,20 @@ const decomp = new Map();
     const fields = line.split('\t');
     if (fields.length < 3) continue;
     const ch = fields[1];
-    const m = /^\^(.*)\$/.exec(fields[2] || '');
-    if (!m) continue;
-    const body = [...m[1]];
-    const comps = body.filter((c) => !isIdc(c.codePointAt(0)));
-    if (comps.length < 2) continue; // 원자(자기 자신) 또는 단일 성분 — 저장 없음
-    if (!comps.every((c) => koTable[c])) continue; // 부분 분해 금지 — 전 성분 우주 소속일 때만
-    decomp.set(ch, comps.join(''));
+    for (let f = 2; f < fields.length; f += 1) {
+      const m = /^\^(.*)\$/.exec(fields[f] || '');
+      if (!m) continue;
+      const raw = [...m[1]].filter((c) => !isIdc(c.codePointAt(0)));
+      if (raw.length < 2) break; // 원자(자기 자신) 또는 단일 성분 — 저장 없음(대안도 보지 않는다)
+      const comps = raw.map((c) => COMPONENT_BASE[c] || c);
+      if (!comps.every((c) => koTable[c])) continue; // 부분 분해 금지 — 전 성분 우주 소속일 때만
+      const mapped = comps.some((c, i) => c !== raw[i]);
+      if ((f > 2 || mapped) && comps.some((c) => STROKES.has(c))) { decompStats.stroke += 1; continue; }
+      decomp.set(ch, comps.join(''));
+      if (f > 2) decompStats.alt += 1; else decompStats.first += 1;
+      if (mapped) decompStats.mapped += 1;
+      break;
+    }
   }
 }
 
@@ -181,6 +204,7 @@ for (const ch of universe) {
 fs.writeFileSync(OUT, JSON.stringify(out));
 const kb = (fs.statSync(OUT).size / 1024).toFixed(1);
 console.log(`hanjaEtym.json ${kb}KB · 항목 ${Object.keys(out).length}/${universe.length} (생략 ${stats.skipped})`);
+console.log(`분해 원천: 첫 분해 ${decompStats.first} · 대안 분해 ${decompStats.alt} · 부수 변형 본자 읽기 ${decompStats.mapped} · 획 조각이라 버림 ${decompStats.stroke}`);
 console.log(`획수 ${stats.strokes} · 부수 ${stats.radical} · 분해 ${stats.comps} · 번체 ${stats.trad} · 간체 ${stats.simp} · 구자체 ${stats.kyu}`);
 for (const probe of ['想', '语', '爱', '相', '心', '干', '楽', '駅', '円', '学', '弁']) {
   console.log(`${probe} → ${JSON.stringify(out[probe])}`);

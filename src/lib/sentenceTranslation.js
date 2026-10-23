@@ -22,6 +22,8 @@ export const SENTENCE_PREFETCH_PER_MINUTE = 20;
  * 로그인 안내를 그린다. 결과 문자열 자리에 두어 「패널에 내용이 있다」 판정(leftActive 등)이 그대로 성립한다.
  */
 export const SENTENCE_TX_LOGIN_REQUIRED = '\u0000viewer-sentence:login-required';
+// 번역 실패 표식 — 번역 칸이 「번역을 가져오지 못했어요」와 [다시 시도]를 그린다(문자열 결과와 섞이지 않는 값).
+export const SENTENCE_TX_FAILED = '\u0000viewer-sentence:failed';
 
 /** 카드 문장 = 막대와 같은 정리(앞뒤 공백·`# ` 제목 표지)를 한 원문 줄. 여러 줄(드래그 문맥)은 그대로. */
 export function canonicalSentence(text) {

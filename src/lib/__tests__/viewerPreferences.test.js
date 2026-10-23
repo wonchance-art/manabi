@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {TAB_KEYS,VIEWER_PREF_KEY,readViewerPreferences,writeViewerPreferences,validateViewerPreferences,viewerDefaults,fontChoices} from '../viewerPreferences';
+import {TAB_KEYS,VIEWER_PREF_KEY,readViewerPreferences,writeViewerPreferences,validateViewerPreferences,viewerDefaults,fontChoices,charGapMin,charGapLabel} from '../viewerPreferences';
 import {pinyinCellWidth,PINYIN_MEASURE_SYLLABLES} from '../pinyinLayout';
 import {READING_PRESETS,presetActive} from '../readingSheet';
 const storage=(entries={})=>{const data=new Map(Object.entries(entries));return {getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)};};
@@ -96,6 +96,18 @@ describe('viewer preferences migration and isolation',()=>{
   // Legacy per-key storage predates the change: its 0.25 is the old default too.
   expect(readViewerPreferences(storage({viewer_charGap:'0.25'}),'Chinese').charGap).toBe(0);
   expect(readViewerPreferences(storage({viewer_charGap:'0.25'}),'English').charGap).toBe(.25);
+ });
+ // 띄어 쓰는 언어는 낱말 간격이 곧 띄어쓰기라 4px 아래로 내려가지 않는다(뷰어 점검 2026-10-23 — 0이면 「Theweatherwaslovely」).
+ it('keeps word spaces in spaced languages: charGap never drops below the old 4px',()=>{
+  for(const lang of ['English','Korean','French']){
+   expect(charGapMin(lang)).toBe(.25);expect(charGapLabel(lang)).toBe('낱말 사이');
+   expect(validateViewerPreferences({charGap:0},lang).charGap).toBe(.25);
+   expect(validateViewerPreferences({charGap:.05},lang).charGap).toBe(.25);
+   expect(validateViewerPreferences({charGap:.5},lang).charGap).toBe(.5);
+  }
+  for(const lang of ['Chinese','Japanese']){expect(charGapMin(lang)).toBe(0);expect(charGapLabel(lang)).toBe('글자 사이');expect(validateViewerPreferences({charGap:0},lang).charGap).toBe(0);}
+  // 이미 0이 저장된 영어는 다시 읽으면 4px로 돌아온다.
+  expect(readViewerPreferences(storage({[VIEWER_PREF_KEY]:JSON.stringify({version:2,common:{},languages:{English:{charGap:0}}})}),'English').charGap).toBe(.25);
  });
  it('does not advertise unloaded KR fonts as Chinese choices',()=>{
   expect(fontChoices('Chinese')).toEqual([['sans','고딕'],['serif','명조']]);expect(fontChoices('Japanese')).toHaveLength(1);

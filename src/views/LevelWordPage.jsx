@@ -38,6 +38,8 @@ export const HSK_WORD_LANG = Object.freeze({
   head: (e) => ({ hw: e.word, sub: e.reading }),
   loadTiles: loadLevelCharTables,
   tilesOf: (word, _kr, tables) => levelCharTiles(word, tables),
+  // 글자 칸 조각 파고들기(오너 10-23 「안1로」) — 창이 병음 기준이라 HSK 판만. JLPT는 일본어 읽기로 바꿀지 따로 정한다.
+  pieceDrill: true,
 });
 
 export default function LevelWordPage(props) {

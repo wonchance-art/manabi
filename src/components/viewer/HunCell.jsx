@@ -4,7 +4,8 @@
 export default function HunCell({ cell }) {
   if (!cell?.label || !cell.lines?.length) return null;
   return (
-    <span className="word-fit__hun" lang="ko" data-label={cell.label} data-wrap={cell.wrap ? '1' : undefined}
+    // 말줄임된 긴 훈은 title로 전체를 보인다(뷰어 점검 2026-10-23 — 카드에서 전체를 볼 길이 없었다). 화면 낭독은 표제어 글자가 맡는다.
+    <span className="word-fit__hun" lang="ko" data-label={cell.label} data-wrap={cell.wrap ? '1' : undefined} title={cell.wrap ? cell.label : undefined}
       style={{ '--hun-n': cell.hunN }}>
       {cell.lines.map((line, i) => <span key={i} className="word-fit__hun-line">{line}</span>)}
     </span>

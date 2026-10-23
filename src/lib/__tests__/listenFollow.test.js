@@ -73,8 +73,9 @@ describe('뷰어 배선', () => {
     expect(listen).toContain('const sentences = splitListenSentences(text);');
     expect(sliceBetween(listen, 'function speakNext(sessionId) {', 'const utter =')).toContain('onSentenceRef.current?.(i);');
     expect(sliceBetween(listen, 'function stop() {', 'setPlaying(false);')).toContain('onSentenceRef.current?.(null);');
-    // 음성 오류 — 이 세션만 정리(취소 · 끊김은 stop, 실패는 fail = stop + 단어 발음과 같은 안내). 동작 검사는 listenControlsSpeechNotice.test.jsx.
-    expect(listen).toContain("utter.onerror = (event) => { if (sessionRef.current === sessionId) { if (speechCanceled(event)) stop(); else fail('failed'); } };");
+    // 음성 오류 — 이 세션만 정리(취소 · 끊김은 그 문장에서 멈춤 interrupt — 뷰어 점검 2026-10-23, 실패는 fail = stop + 단어 발음과 같은 안내).
+    // 동작 검사는 listenControlsSpeechNotice.test.jsx.
+    expect(listen).toContain("utter.onerror = (event) => { if (sessionRef.current === sessionId) { if (speechCanceled(event)) interrupt(); else fail('failed'); } };");
     expect(sliceBetween(listen, 'function fail(reason) {', '}')).toContain('stop();');
     expect(viewer()).toContain('onSentence={handleListenSentence}');
   });
@@ -95,7 +96,7 @@ describe('좁은 폭 듣기 막대 한 줄(390)', () => {
     const rule = '.manabi-app .viewer-layout .viewer-topbar .listen-controls--follow .listen-controls__current{display:none}';
     expect(block()).not.toContain(rule);
     expect(css().split('\n')).toContain(rule);
-    expect(read('src/components/ListenControls.jsx')).toContain("<div className={followActive ? 'listen-controls listen-controls--follow' : 'listen-controls'}>");
+    expect(read('src/components/ListenControls.jsx')).toContain("<div ref={rootRef} className={followActive ? 'listen-controls listen-controls--follow' : 'listen-controls'}>");
     expect(viewer()).toContain('followActive={listenFollowable}');
   });
   it('아이콘 버튼은 접근 이름을 그대로 가진다(재생 · 일시정지 · 정지)', () => {
