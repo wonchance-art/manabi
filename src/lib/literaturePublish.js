@@ -249,8 +249,11 @@ export function literatureStage(book, rows = []) {
  * 아직 준비·분석이 남았고(unpublished·preparing), 정본과 다른 장(충돌)이 없는 작품. 검수·공개 단계는 넣지 않는다(사람 확인 지점).
  */
 export function literatureBatchTargets(summaries = []) {
-  return summaries.filter((book) => book.publishable && book.plan.conflicts.length === 0
+  // 이미 준비를 시작한 작품(preparing)이 먼저 — 남은 분석부터 끝내 공개까지 빨리 간다(오너 「수록된 것과 인기작부터」 2026-10-23 KST).
+  // 그 안에서는 받은 차례 그대로(목록이 공개 차례 — classicsPublishRank).
+  const targets = summaries.filter((book) => book.publishable && book.plan.conflicts.length === 0
     && (book.stage === 'unpublished' || book.stage === 'preparing'));
+  return [...targets.filter((book) => book.stage === 'preparing'), ...targets.filter((book) => book.stage !== 'preparing')];
 }
 
 /**

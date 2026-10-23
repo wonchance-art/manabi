@@ -6,6 +6,7 @@
 // (공개 metadata는 누구나 꾸밀 수 있어 key만 보고 정본으로 열지 않는다 — fail closed).
 // 대조표 · 카탈로그(수백 KB)를 브라우저 번들에 싣지 않도록 서버 화면(app/(app)/discover/classics/page.jsx)만 import한다.
 import catalog from '../content/literature/catalog.json';
+import publishOrder from '../content/literature/publish-order.json';
 import aozora from '../content/literature/aozora/manifest.display.generated.json';
 import standardEbooks from '../content/literature/standardebooks/manifest.display.generated.json';
 import wikisource from '../content/literature/wikisource/manifest.display.generated.json';
@@ -45,6 +46,29 @@ export function classicsWorks(works = catalog.works) {
       level: work.level || null, total: work.total, category: entry.category, group: CATALOG_CATEGORIES[entry.category].group, work,
     };
   });
+}
+
+/**
+ * 공개 차례(오너 「수록된 것과 인기작부터 권장대로 공개」 2026-10-23 KST) — 언어를 번갈아(일 · 영 · 프 · 중 · 한) 하나씩.
+ * 각 언어 안의 차례는 publish-order.json의 앞줄(대표작 · 짧은 장 먼저) 다음 나머지 카탈로그 차례. 카탈로그의 수록 줄은 가져온 차례로 쌓여
+ * 인기 순이 아니다(영어 1 · 2번이 도덕감정론 · 국부론이었다). 한 언어만 수십 권 먼저 공개되면 고전 명작의 다른 언어 칩이 오래 빈다.
+ * 관리자 게시 화면(/api/admin/literature) 목록 · 「모두 게시 · 분석」 대기열이 이 차례를 쓴다. key → 0부터의 순위.
+ */
+export function classicsPublishRank(works = classicsWorks(), first = publishOrder.first) {
+  const lanes = CLASSICS_LANGUAGES.map((language) => {
+    const own = works.filter((item) => item.language === language);
+    const head = (first[language] || []).filter((key) => own.some((item) => item.key === key));
+    return [...head, ...own.map((item) => item.key).filter((key) => !head.includes(key))];
+  });
+  const order = [];
+  for (let i = 0; lanes.some((lane) => i < lane.length); i++) for (const lane of lanes) if (lane[i]) order.push(lane[i]);
+  return new Map(order.map((key, rank) => [key, rank]));
+}
+
+/** 책 배열(book.book.key) → 공개 차례로. 차례에 없는 책(정본 대조표에만 있는 책)은 원래 순서대로 뒤에. */
+export function sortByPublishRank(books, rank = classicsPublishRank()) {
+  const at = (book) => (rank.has(book?.book?.key) ? rank.get(book.book.key) : Number.MAX_SAFE_INTEGER);
+  return books.map((book, index) => ({ book, index })).sort((a, b) => at(a.book) - at(b.book) || a.index - b.index).map(({ book }) => book);
 }
 
 /** 발행 기록(canonical_book_shelf 행)이 있는 책만 — 첫 장 id · 공개 장 수를 붙인다. 순서는 카탈로그 그대로. */

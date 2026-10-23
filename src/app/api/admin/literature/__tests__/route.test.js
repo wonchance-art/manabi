@@ -9,6 +9,7 @@ import { STANDARD_EBOOKS_BOOKS } from '../../../../../content/literature/standar
 import { WIKISOURCE_BOOKS } from '../../../../../content/literature/wikisource/index.generated.js';
 import { PDSITE_BOOKS } from '../../../../../content/literature/pdsite/index.generated.js';
 import { releaseState, releasesTable } from '../../../../../lib/__tests__/helpers/canonicalReleasesMock.js';
+import { sortByPublishRank } from '../../../../../lib/classicsShelf.js';
 
 // 관리자 정본 문학책 게시 API(AOZORA-P0-2 · P0-3 · P0-4) — 권한·준비(비공개) 멱등·충돌 시 무게시·장 검수·분석과 검수를 마친 뒤에만 공개·원문은 리포 산출물에서만.
 
@@ -106,12 +107,16 @@ describe('관리자 정본 문학책 게시 API', () => {
     const response = await GET(new Request('http://localhost/api/admin/literature'));
     expect(response.headers.get('Cache-Control')).toBe('private, no-store');
     const { books } = await response.json();
-    // 青空文庫 + Standard Ebooks(LIT-SRC-EN-1) + Wikisource(LIT-SRC-WS-1) — 한 표에 출처 순서대로
-    expect(books.map((item) => [item.key, item.plan.state])).toEqual([...LITERATURE_BOOKS, ...STANDARD_EBOOKS_BOOKS, ...WIKISOURCE_BOOKS, ...PDSITE_BOOKS].map((item) => [item.book.key, 'unpublished']));
+    // 青空文庫 + Standard Ebooks(LIT-SRC-EN-1) + Wikisource(LIT-SRC-WS-1) + 전자책 사이트 — 한 표에 공개 차례로(언어를 번갈아 대표작 먼저, 2026-10-23 KST)
+    const all = [...LITERATURE_BOOKS, ...STANDARD_EBOOKS_BOOKS, ...WIKISOURCE_BOOKS, ...PDSITE_BOOKS];
+    expect(books.map((item) => [item.key, item.plan.state])).toEqual(sortByPublishRank(all).map((item) => [item.book.key, 'unpublished']));
+    expect(books.slice(0, 5).map((item) => item.key)).toEqual(['aozora-000879-000127', 'se-lewis-carroll_alices-adventures-in-wonderland',
+      'pd-gau-antoine-de-saint-exupery_le-petit-prince', 'ws-zh-lu-xun_kong-yi-ji', 'ws-ko-kim-so-wol_jindallaekkot']); // 라쇼몬 · 앨리스 · 어린 왕자 · 쿵이지 · 진달래꽃
+    expect(new Set(books.map((item) => item.key)).size).toBe(all.length);
     expect(books.filter((item) => item.key.startsWith('se-')).map((item) => [item.title, item.publishable, item.rights.evidenceLabel]))
-      .toEqual(STANDARD_EBOOKS_BOOKS.map((item) => [item.book.title, true, 'Standard Ebooks 판']));
+      .toEqual(sortByPublishRank(STANDARD_EBOOKS_BOOKS).map((item) => [item.book.title, true, 'Standard Ebooks 판']));
     expect(books.filter((item) => item.key.startsWith('ws-')).map((item) => [item.title, item.publishable, item.rights.evidenceLabel]))
-      .toEqual(WIKISOURCE_BOOKS.map((item) => [item.book.title, true, '위키문헌 원문']));
+      .toEqual(sortByPublishRank(WIKISOURCE_BOOKS).map((item) => [item.book.title, true, '위키문헌 원문']));
     expect(JSON.stringify(books)).not.toContain(book.chapters[0].rawText.slice(0, 20));
   });
 
