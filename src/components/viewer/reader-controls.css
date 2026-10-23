@@ -56,7 +56,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .viewer-layout .viewer-topbar {flex-wrap:wrap;position:sticky;top:var(--gnb-height);z-index:35;margin-bottom:0;padding-block:8px 12px;background:var(--reader-paper);gap:12px;}
 .viewer-layout .viewer-topbar::before {content:"";position:absolute;inset:0 calc(-1 * var(--reader-gutter)) -1px;z-index:-1;background:var(--reader-paper);pointer-events:none;}
 .viewer-layout .viewer-topbar__tools {display:flex;flex-wrap:wrap;gap:8px;margin-left:auto;}
-.viewer-layout .viewer-tool {min-height:44px;min-width:44px;border:1px solid var(--reader-line);border-radius:10px;background:var(--reader-paper);color:var(--reader-ink);padding:8px 12px;cursor:pointer;font-size:.9rem;}
+.viewer-layout .viewer-tool {min-height:44px;min-width:44px;border:1px solid var(--reader-line);border-radius:8px;background:var(--reader-paper);color:var(--reader-ink);padding:8px 12px;cursor:pointer;font-size:.9rem;}
 .viewer-layout .viewer-tool:hover {background:var(--reader-selected);}
 .viewer-layout .reader-area .word-token .surface {text-shadow:none;color:inherit;}
 /* Selection adds a quiet neutral wash; learning states keep their own hues. */
@@ -82,7 +82,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
    담기 긋기(index.css .word-token--just-saved)까지 끄므로 긋기만 되살린다. 기점 · 좌표는 index.css 규칙 그대로. */
 .viewer-layout .word-token--just-saved[data-selected="true"] .surface::before {animation:hlStroke .22s var(--ease-settle) both;}
 @media (prefers-reduced-motion:reduce) { .viewer-layout .word-token--just-saved[data-selected="true"] .surface::before {animation:none;transform:none;} }
-.viewer-layout .word-token[data-selected="true"]::before {content:"";position:absolute;z-index:1;left:0;right:0;top:calc(var(--hl-band-top) - var(--hl-frame-top));height:calc(var(--hl-frame-top) + var(--hl-band-h) + var(--hl-frame-bottom));border:1.5px solid var(--word-selection-line,color-mix(in srgb,var(--reader-ink) 55%,transparent));border-radius:6px;pointer-events:none;}
+.viewer-layout .word-token[data-selected="true"]::before {content:"";position:absolute;z-index:1;left:0;right:0;top:calc(var(--hl-band-top) - var(--hl-frame-top));height:calc(var(--hl-frame-top) + var(--hl-band-h) + var(--hl-frame-bottom));border:1.5px solid var(--word-selection-line,color-mix(in srgb,var(--reader-ink) 55%,transparent));border-radius:8px;pointer-events:none;}
 .viewer-layout .word-token--pattern:is(.word-token--saved,.word-token--due) {--hl-frame-bottom:calc(var(--hl-mark-gap) * 2 + 5.5px);}
 .viewer-layout .viewer-h1 .word-token[data-selected="true"]::before {font-size:1.5em;}
 .viewer-layout .viewer-h2 .word-token[data-selected="true"]::before {font-size:1.25em;}
@@ -207,13 +207,13 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 /* AE-R1 문장 줄(§2.1): 15px 회색 한 문장, 누른 자리만 배경 + 굵게. 버튼 0. 3줄 안전망. */
 .reader-card-sentence {margin:0 0 4px;font-size:.9375rem;line-height:1.6;color:var(--reader-muted);overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden;}
 .reader-card-sentence[data-tight] {-webkit-line-clamp:2;line-clamp:2;}
-.reader-card-sentence__term {background:var(--reader-selected);color:var(--reader-ink);font-weight:700;border-radius:3px;padding:0 1px;}
+.reader-card-sentence__term {background:var(--reader-selected);color:var(--reader-ink);font-weight:700;border-radius:4px;padding:0 1px;}
 /* 구획은 라벨 + 가는 선(접힘 0). */
 .reader-card-senses,.reader-card-learn,.reader-card-notes,.reader-card-hanja,.reader-card-pattern {border-top:1px solid var(--reader-line);padding-top:8px;margin:0 0 12px;}
 .reader-card-section__label {margin:0 0 6px;font-size:.75rem;font-weight:500;line-height:1.5;color:var(--reader-muted);}
 .reader-card-pattern__line {display:flex;align-items:center;gap:0;width:100%;min-height:44px;padding:4px 0;border:0;background:transparent;color:var(--reader-ink);font-size:.875rem;text-align:start;cursor:pointer;overflow-wrap:anywhere;}
 .reader-card-pattern__label {color:var(--reader-muted);font-size:.75rem;}
-.reader-card-pattern__pop {margin:4px 0 0;padding:8px 10px;border:1px solid var(--reader-line);border-radius:6px;background:var(--reader-paper);}
+.reader-card-pattern__pop {margin:4px 0 0;padding:8px 10px;border:1px solid var(--reader-line);border-radius:8px;background:var(--reader-paper);}
 /* AE-R2 PR ③ [문장] 탭(설계서 docs/manabi-viewer-v2-ae-r2.md §3·§11): 원문 줄(누른 단어 칠) → 번역 → [더 쉽게][자세히]
    → 문형 → 단어별 뜻. 구획은 가는 선(접힘 0). 진행 표시는 번역 칸에만 한 줄 — 그 위(원문·번역 머리)는 움직이지 않는다. */
 .reader-sentence__source {display:flex;align-items:flex-start;gap:4px;}
@@ -253,7 +253,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .viewer-sheet-menu {position:relative;display:flex;flex:none;}
 .viewer-inspector__header .viewer-sheet-menu__button {width:44px;min-width:44px;height:44px;padding:0;}
 .viewer-sheet-menu__list {position:absolute;top:calc(100% + 2px);right:0;z-index:5;display:flex;flex-direction:column;min-width:10rem;padding:4px;border:1px solid var(--reader-line);border-radius:8px;background:var(--reader-paper);box-shadow:0 8px 24px color-mix(in srgb,var(--reader-ink) 16%,transparent);}
-.viewer-inspector__header .viewer-sheet-menu__item {display:block;width:100%;min-height:44px;padding:8px 12px;border-radius:6px;color:var(--reader-ink);font-size:.875rem;text-align:start;white-space:nowrap;}
+.viewer-inspector__header .viewer-sheet-menu__item {display:block;width:100%;min-height:44px;padding:8px 12px;border-radius:8px;color:var(--reader-ink);font-size:.875rem;text-align:start;white-space:nowrap;}
 .viewer-inspector__header .viewer-sheet-menu__item:is(:hover,:focus-visible) {background:var(--reader-selected);outline:none;}
 .viewer-inspector__header .viewer-sheet-menu__item:focus-visible {box-shadow:inset 0 0 0 2px var(--reader-accent);}
 .reader-card-learn {display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px;}
@@ -269,7 +269,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .viewer-layout .reader-card-actions .save-grade__in:disabled {padding:0;border:0;background:transparent;color:var(--reader-ink);font-weight:600;opacity:1;min-height:44px;}
 .save-grade__next::before {content:'· ';}
 .word-detail-card__known {display:inline-flex;align-items:center;gap:6px;}
-.word-detail-card__known[aria-pressed="false"]::before {content:'';flex:none;width:14px;height:14px;border:1.5px solid currentColor;border-radius:3px;}
+.word-detail-card__known[aria-pressed="false"]::before {content:'';flex:none;width:14px;height:14px;border:1.5px solid currentColor;border-radius:4px;}
 .viewer-layout .word-detail-card {padding:0;border:0;box-shadow:none;color:var(--reader-ink);font-size:1rem;}
 .viewer-layout .word-detail-card__meaning {font-size:1.125rem;line-height:1.6;}
 .viewer-layout .word-detail-card__actions {margin-bottom:0;min-height:20px;}
@@ -283,11 +283,11 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .viewer-layout summary {cursor:pointer;min-height:44px;padding:10px 0;font-size:.94rem;color:var(--reader-ink);}
 .reader-card-source h3 {font-size:.78rem;font-weight:500;color:var(--reader-muted);margin:0 0 6px;}
 .reader-card-source blockquote {font-size:1.05rem;line-height:1.65;margin:0 0 8px;overflow-wrap:anywhere;}
-.reader-card-source mark {color:var(--reader-accent);background:var(--reader-selected);border-radius:3px;}
+.reader-card-source mark {color:var(--reader-accent);background:var(--reader-selected);border-radius:4px;}
 .viewer-layout .word-detail-card__actrow {flex-wrap:wrap;}
 .viewer-layout .viewer-inspector .btn--ghost {color:var(--reader-ink);}
 /* One inspector, two retained scroll panes; no duplicate desktop/mobile cards. */
-.viewer-inspector {position:fixed;inset:auto calc(12px + env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left,0px));z-index:95;max-width:760px;margin-inline:auto;display:flex;flex-direction:column;height:min(55dvh,440px);max-height:calc(100dvh - 90px);border:1px solid var(--reader-line);border-radius:16px;background:var(--reader-paper);color:var(--reader-ink);box-shadow:0 8px 28px color-mix(in srgb,var(--reader-ink) 12%,transparent);overflow:hidden;}
+.viewer-inspector {position:fixed;inset:auto calc(12px + env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left,0px));z-index:95;max-width:760px;margin-inline:auto;display:flex;flex-direction:column;height:min(55dvh,440px);max-height:calc(100dvh - 90px);border:1px solid var(--reader-line);border-radius:12px;background:var(--reader-paper);color:var(--reader-ink);box-shadow:0 8px 28px color-mix(in srgb,var(--reader-ink) 12%,transparent);overflow:hidden;}
 .viewer-inspector.is-expanded {height:85dvh;}
 @container reader (max-width:1119px) {
   .viewer-inspector.is-expanded:not(.viewer-inspector--board) {top:var(--sheet-expanded-top,15dvh);height:auto;max-height:none;}
@@ -311,7 +311,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
   .viewer-inspector.is-collapsed {display:none;}
   .viewer-inspector__expand {display:none;}
 }
-.reader-modal {margin:auto;width:min(520px,calc(100vw - 24px));max-width:none;max-height:85dvh;padding:0;border:1px solid var(--reader-line);border-radius:18px;background:var(--reader-paper);color:var(--reader-ink);box-shadow:0 20px 80px color-mix(in srgb,var(--reader-ink) 20%,transparent);overflow:hidden;font-family:var(--font-noto-kr),sans-serif;}
+.reader-modal {margin:auto;width:min(520px,calc(100vw - 24px));max-width:none;max-height:85dvh;padding:0;border:1px solid var(--reader-line);border-radius:12px;background:var(--reader-paper);color:var(--reader-ink);box-shadow:0 20px 80px color-mix(in srgb,var(--reader-ink) 20%,transparent);overflow:hidden;font-family:var(--font-noto-kr),sans-serif;}
 .reader-modal[open] {display:flex;flex-direction:column;}
 .reader-modal::backdrop {background:var(--scrim);}
 .reader-modal__header {display:flex;align-items:center;gap:12px;padding:16px 20px;flex:none;border-bottom:1px solid var(--reader-line);}
@@ -352,7 +352,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
   .viewer-center {padding-inline:0;}
   .viewer-layout .reader-area {padding:12px;}
   .viewer-layout .viewer-header {padding-inline:0;}
-  .reader-modal {margin:auto auto 0;width:100%;border-radius:18px 18px 0 0;}
+  .reader-modal {margin:auto auto 0;width:100%;border-radius:12px 12px 0 0;}
   .reader-modal__body {padding-inline:16px;}
   .viewer-inspector__contents>[role="tabpanel"] {padding:14px 16px;}
 }
@@ -420,9 +420,9 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 /* A single rail replaces repeated title / tabs / selected-word labels. */
 .viewer-inspector__header {gap:4px;padding:2px 8px;}
 .viewer-inspector__header .viewer-inspector__tabs {min-width:88px;}
-.viewer-inspector__header .viewer-inspector__tabs button {padding:6px 8px;min-width:44px;border-radius:6px;font-size:.8rem;}
+.viewer-inspector__header .viewer-inspector__tabs button {padding:6px 8px;min-width:44px;border-radius:8px;font-size:.8rem;}
 .viewer-inspector__header :is(.viewer-inspector__expand,.viewer-inspector__close) {width:44px;min-width:44px;padding:0;font-size:1.2rem;}
-.viewer-inspector__header .viewer-inspector__nav button {width:44px;min-width:44px;padding:0;border:0;background:transparent;border-radius:6px;font-size:.8rem;}
+.viewer-inspector__header .viewer-inspector__nav button {width:44px;min-width:44px;padding:0;border:0;background:transparent;border-radius:8px;font-size:.8rem;}
 .viewer-inspector__header .viewer-inspector__tabs button[aria-selected="true"] {background:transparent;color:var(--reader-ink);box-shadow:inset 0 -2px var(--reader-accent);}
 .viewer-layout .word-detail-card__meaning {font-size:1.25rem;font-weight:700;line-height:1.45;}
 .viewer-layout .word-detail-card__meaningrow {margin-bottom:8px;}
@@ -478,7 +478,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .reader-card-credit {margin:-8px 0 8px;font-size:.75rem;line-height:1.5;}
 .reader-card-credit a {display:inline-flex;align-items:center;min-height:44px;color:var(--reader-muted);text-decoration:none;}
 .reader-card-credit a:hover {text-decoration:underline;}
-.reader-card-credit a:focus-visible {outline:2px solid var(--reader-accent);outline-offset:2px;border-radius:3px;}
+.reader-card-credit a:focus-visible {outline:2px solid var(--reader-accent);outline-offset:2px;border-radius:4px;}
 
 /* Reading-room chrome follows the home page's paper, ink and editorial rules.
    Body typography, annotation settings and learning-state colors remain reader owned. */
@@ -487,29 +487,29 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .manabi-app .viewer-layout {background:var(--reader-paper);gap:28px;min-height:calc(100dvh - var(--gnb-height));}
 .manabi-app .viewer-layout .viewer-topbar {background:var(--reader-surface);border-bottom:1px solid var(--reader-line);gap:8px;padding:6px 0;min-height:58px;}
 .manabi-app .viewer-layout .viewer-topbar::before {background:var(--reader-surface);}
-.manabi-app .viewer-layout .viewer-back-link {font-size:13px;color:var(--reader-muted);min-height:44px;display:inline-flex;align-items:center;}
+.manabi-app .viewer-layout .viewer-back-link {font-size:.8125rem;color:var(--reader-muted);min-height:44px;display:inline-flex;align-items:center;}
 .manabi-app .viewer-layout .viewer-topbar__tools {gap:4px;align-items:center;}
-.manabi-app .viewer-layout :is(.viewer-tool,.viewer-series-nav__btn) {border-color:transparent;border-radius:3px;background:transparent;box-shadow:none;min-width:44px;min-height:44px;color:var(--reader-ink);}
+.manabi-app .viewer-layout :is(.viewer-tool,.viewer-series-nav__btn) {border-color:transparent;border-radius:4px;background:transparent;box-shadow:none;min-width:44px;min-height:44px;color:var(--reader-ink);}
 /* 경로 줄 도구 = 아이콘 20 + 간격 4 + 보이는 라벨 13px 500, 좌우 10px(AD-R2 설계 §9.2). Aa는 글자 자체가 라벨. */
-.manabi-app .viewer-layout .viewer-topbar__tools .viewer-tool {display:inline-flex;align-items:center;justify-content:center;gap:4px;flex:none;padding:0 10px;font-size:13px;font-weight:500;line-height:1.2;white-space:nowrap;}
+.manabi-app .viewer-layout .viewer-topbar__tools .viewer-tool {display:inline-flex;align-items:center;justify-content:center;gap:4px;flex:none;padding:0 10px;font-size:.8125rem;font-weight:500;line-height:1.2;white-space:nowrap;}
 .manabi-app .viewer-layout .viewer-topbar__tools .viewer-tool .action-icon {flex:none;}
-.manabi-app .viewer-layout .viewer-topbar__tools .viewer-tool--aa {font-family:var(--font-manrope),sans-serif;font-size:17px;font-weight:600;letter-spacing:-.5px;}
+.manabi-app .viewer-layout .viewer-topbar__tools .viewer-tool--aa {font-family:var(--font-manrope),sans-serif;font-size:1.0625rem;font-weight:600;letter-spacing:-.5px;}
 .manabi-app .viewer-layout .viewer-topbar__tools .viewer-tool:focus-visible {outline:2px solid var(--reader-accent);outline-offset:1px;}
 .manabi-app .viewer-layout :is(.viewer-tool,.viewer-series-nav__btn):hover {background:var(--reader-selected);color:var(--reader-accent);}
 .manabi-app .viewer-layout .viewer-series-nav {gap:0;}
-.manabi-app .viewer-layout .viewer-series-nav__btn {font-size:27px;font-weight:400;padding:0;}
-.manabi-app .viewer-layout .viewer-series-nav__position {font-size:12px;min-width:35px;text-align:center;font-variant-numeric:tabular-nums;color:var(--reader-muted);}
+.manabi-app .viewer-layout .viewer-series-nav__btn {font-size:1.6875rem;font-weight:400;padding:0;}
+.manabi-app .viewer-layout .viewer-series-nav__position {font-size:.75rem;min-width:35px;text-align:center;font-variant-numeric:tabular-nums;color:var(--reader-muted);}
 .manabi-app .viewer-layout .viewer-series-nav__btn--disabled {opacity:.28;}
-.manabi-app .viewer-layout .listen-controls>.btn {border:0;border-radius:3px;padding:8px 10px;font-size:13px;font-weight:500;color:var(--reader-ink);background:transparent;min-height:44px;}
+.manabi-app .viewer-layout .listen-controls>.btn {border:0;border-radius:4px;padding:8px 10px;font-size:.8125rem;font-weight:500;color:var(--reader-ink);background:transparent;min-height:44px;}
 .manabi-app .viewer-layout .viewer-header {display:block;padding:32px 0 24px;margin:0;border:0;}
-.manabi-app .viewer-layout .reader-edition {font-size:11px;letter-spacing:.7px;color:var(--reader-accent);margin:0 0 14px;}
+.manabi-app .viewer-layout .reader-edition {font-size:.6875rem;letter-spacing:.7px;color:var(--reader-accent);margin:0 0 14px;}
 .manabi-app .viewer-layout .viewer-titlerow {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:baseline;margin-bottom:14px;}
 .manabi-app .viewer-layout .viewer-titlerow .page-header__title {font-size:clamp(27px,3cqi,40px);line-height:1.35;letter-spacing:-1.1px;font-weight:700;color:var(--reader-ink);}
-.manabi-app .viewer-layout .viewer-title-edit {border:0;background:transparent;border-radius:3px;font-size:12px;color:var(--reader-muted);padding:8px;min-height:44px;flex:none;}
+.manabi-app .viewer-layout .viewer-title-edit {border:0;background:transparent;border-radius:4px;font-size:.75rem;color:var(--reader-muted);padding:8px;min-height:44px;flex:none;}
 .manabi-app .viewer-layout .library-save-control {margin:0;gap:12px;}
-.manabi-app .viewer-layout .library-save-control>button {border:0;background:transparent;border-radius:0;padding:0;font-size:12px;color:var(--reader-muted);min-height:44px;text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--reader-line);}
+.manabi-app .viewer-layout .library-save-control>button {border:0;background:transparent;border-radius:0;padding:0;font-size:.75rem;color:var(--reader-muted);min-height:44px;text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--reader-line);}
 .manabi-app .viewer-layout .viewer-badges {gap:8px 18px;margin:8px 0 0;}
-.manabi-app .viewer-layout .viewer-badge {border:0;border-radius:0;padding:0;background:none;color:var(--reader-muted);box-shadow:none;font-size:11px;animation:none;}
+.manabi-app .viewer-layout .viewer-badge {border:0;border-radius:0;padding:0;background:none;color:var(--reader-muted);box-shadow:none;font-size:.6875rem;animation:none;}
 .manabi-app .viewer-layout .viewer-badge--due {color:var(--reader-accent);}
 /* 통계 줄 한 덩어리(AD-R2) — 「아는 단어 · 새 단어 · N개 수집 → 단어장」. 블록이라 가운뎃점 앞뒤 공백이 살고,
    좁은 화면에서는 덩어리 안에서 줄을 바꾼다. 수집 링크는 무채색 밑줄(크롬 강조색은 복습 하나). 세로 여백은 누름 영역만
@@ -518,26 +518,26 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .manabi-app .viewer-layout .viewer-stats__vocab {color:inherit;padding-block:10px;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--reader-line);}
 .manabi-app .viewer-layout .viewer-stats__vocab:hover {color:var(--reader-ink);text-decoration-color:currentColor;}
 .manabi-app .viewer-layout .reader-area {padding-block:clamp(18px,3cqi,32px);padding-inline:0;border:0;border-radius:0;background:var(--reader-paper);}
-.manabi-app .viewer-layout .reader-hint {font-size:12px;color:var(--reader-muted);line-height:1.7;}
-.manabi-app .viewer-layout .viewer-attribution {font-size:12px;color:var(--reader-muted);line-height:1.8;}
-.manabi-app .viewer-layout .viewer-inspector {border-radius:5px;border-top:3px solid var(--reader-accent);box-shadow:0 12px 32px color-mix(in srgb,var(--reader-ink) 8%,transparent);}
+.manabi-app .viewer-layout .reader-hint {font-size:.75rem;color:var(--reader-muted);line-height:1.7;}
+.manabi-app .viewer-layout .viewer-attribution {font-size:.75rem;color:var(--reader-muted);line-height:1.8;}
+.manabi-app .viewer-layout .viewer-inspector {border-radius:4px;border-top:3px solid var(--reader-accent);box-shadow:0 12px 32px color-mix(in srgb,var(--reader-ink) 8%,transparent);}
 .manabi-app .viewer-layout .viewer-inspector__header {padding:3px 10px;background:var(--reader-surface);}
 .manabi-app .viewer-layout .viewer-inspector__contents {background:var(--reader-paper);}
-.manabi-app .viewer-layout .viewer-inspector__tabs button {flex:0 1 auto;min-width:64px;font-size:12px;}
+.manabi-app .viewer-layout .viewer-inspector__tabs button {flex:0 1 auto;min-width:64px;font-size:.75rem;}
 .manabi-app .viewer-layout .reader-card-body {padding:16px 20px;}
-.manabi-app .viewer-layout .word-detail-card__meaning {font-size:20px;font-weight:700;letter-spacing:-.4px;}
-.manabi-app .viewer-layout .word-detail-card__meta {font-size:11px;letter-spacing:.3px;}
+.manabi-app .viewer-layout .word-detail-card__meaning {font-size:1.25rem;font-weight:700;letter-spacing:-.4px;}
+.manabi-app .viewer-layout .word-detail-card__meta {font-size:.6875rem;letter-spacing:.3px;}
 .manabi-app .viewer-layout .reader-card-actions {padding:10px 14px;background:var(--reader-surface);}
-.manabi-app .viewer-layout .reader-card-actions .review-score-btn {border-radius:3px;}
-.manabi-app .viewer-layout .save-grade__guide {font-size:11px;text-align:left;color:var(--reader-muted);}
+.manabi-app .viewer-layout .reader-card-actions .review-score-btn {border-radius:4px;}
+.manabi-app .viewer-layout .save-grade__guide {font-size:.6875rem;text-align:left;color:var(--reader-muted);}
 .manabi-app .viewer-layout .reader-card-context .reader-card-source {padding:12px 14px;border-left:2px solid var(--reader-accent);background:var(--reader-surface);}
-.manabi-app .viewer-layout .reader-card-source blockquote {font-size:16px;line-height:1.8;}
-.manabi-app .viewer-layout .reader-modal {border-radius:6px;}
+.manabi-app .viewer-layout .reader-card-source blockquote {font-size:1rem;line-height:1.8;}
+.manabi-app .viewer-layout .reader-modal {border-radius:8px;}
 .manabi-app .viewer-layout .reader-modal__header {background:var(--reader-surface);padding:12px 20px;}
-.manabi-app .viewer-layout .reader-modal__header h2 {font-size:20px;letter-spacing:-.6px;}
-.manabi-app .viewer-layout :is(.reader-settings__preview,.reader-setting-choices button,.reader-setting-range button) {border-radius:3px;}
+.manabi-app .viewer-layout .reader-modal__header h2 {font-size:1.25rem;letter-spacing:-.6px;}
+.manabi-app .viewer-layout :is(.reader-settings__preview,.reader-setting-choices button,.reader-setting-range button) {border-radius:4px;}
 .viewer-inspector__actions {display:flex;gap:8px;flex:none;padding:8px 14px;background:var(--reader-paper);border-top:1px solid var(--reader-line);}
-.viewer-inspector__actions>button {min-height:44px;padding:8px 18px;border:1px solid var(--reader-line);border-radius:3px;background:transparent;color:var(--reader-ink);font-size:13px;cursor:pointer;}
+.viewer-inspector__actions>button {min-height:44px;padding:8px 18px;border:1px solid var(--reader-line);border-radius:4px;background:transparent;color:var(--reader-ink);font-size:.8125rem;cursor:pointer;}
 .viewer-inspector__actions>button:first-child {flex:1;background:var(--reader-accent);border-color:var(--reader-accent);color:var(--reader-paper);font-weight:600;}
 .viewer-inspector__actions>button:disabled {opacity:.45;cursor:default;}
 @container reader (min-width:1120px) {
@@ -554,7 +554,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
   .manabi-app .viewer-layout .reader-area {padding-block:20px;}
   .manabi-app .viewer-layout .viewer-topbar {column-gap:0;}
   .manabi-app .viewer-layout .viewer-series-nav__btn {min-width:40px;}
-  .manabi-app .viewer-layout .viewer-inspector {inset-inline:8px;border-radius:6px;}
+  .manabi-app .viewer-layout .viewer-inspector {inset-inline:8px;border-radius:8px;}
   .manabi-app .viewer-layout .reader-modal {border-radius:8px 8px 0 0;}
 }
 
@@ -566,7 +566,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .manabi-app .viewer-layout:where([data-teaching-board]:not([data-teaching-board=""]))>.viewer-center {margin:0;width:100%;background:var(--reader-surface);padding:8px 16px 40px;}
 .manabi-app .viewer-layout[data-teaching-board]:not([data-teaching-board=""]) .viewer-header {padding:16px 0;}
 .manabi-app .viewer-layout[data-teaching-board]:not([data-teaching-board=""]) .viewer-titlerow {margin:0;}
-.manabi-app .viewer-layout[data-teaching-board]:not([data-teaching-board=""]) .viewer-titlerow .page-header__title {font-size:21px;letter-spacing:-.4px;}
+.manabi-app .viewer-layout[data-teaching-board]:not([data-teaching-board=""]) .viewer-titlerow .page-header__title {font-size:1.25rem;letter-spacing:-.4px;}
 .manabi-app .viewer-layout[data-teaching-board]:not([data-teaching-board=""]) .reader-area {padding:20px 12px;}
 .manabi-app .viewer-layout:where([data-teaching-board]:not([data-teaching-board=""])) .viewer-topbar {top:0;}
 @container teaching-workspace (max-width:768px) {
@@ -589,7 +589,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .reader-settings .reader-settings__icon {width:20px;height:20px;flex:none;}
 .reader-settings .reader-modal__header {padding:10px 16px;}
 .reader-settings .reader-modal__header>button {font-size:0;min-width:44px;width:44px;padding:0;}
-.reader-settings .reader-modal__header>button>span {font-size:24px;}
+.reader-settings .reader-modal__header>button>span {font-size:1.5rem;}
 .reader-settings .reader-modal__body {padding:0 16px 12px;}
 .reader-settings .reader-modal__footer {padding:4px 12px max(4px,env(safe-area-inset-bottom));}
 .reader-settings .reader-modal__footer button {display:flex;align-items:center;justify-content:center;min-width:44px;padding:0 8px;}
@@ -609,7 +609,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .reader-settings .reader-settings__language-row {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
 .reader-settings .reader-setting-select {display:flex;align-items:center;gap:8px;min-width:0;font-size:.82rem;font-weight:500;}
 .reader-settings .reader-setting-select>span {flex:none;}
-.reader-settings .reader-setting-select select {flex:1;min-width:0;min-height:44px;padding:0 8px;border:1px solid var(--reader-line);border-radius:3px;background:var(--reader-paper);color:var(--reader-ink);font:inherit;font-size:.85rem;font-weight:400;cursor:pointer;}
+.reader-settings .reader-setting-select select {flex:1;min-width:0;min-height:44px;padding:0 8px;border:1px solid var(--reader-line);border-radius:4px;background:var(--reader-paper);color:var(--reader-ink);font:inherit;font-size:.85rem;font-weight:400;cursor:pointer;}
 .reader-settings .reader-setting-select select:disabled {opacity:.55;cursor:default;}
 /* :has()는 칠할 요소 자신에 건다(TAP-INP-HAS-001) — 「부모:has(…) > span」처럼 :has 뒤에 태그만 남으면 Blink가 그 태그를 모든
    :has 무효화에 합쳐, 앱 어디서든 요소가 하나 붙을 때마다 문서의 모든 span을 다시 계산했다(뷰어 390 실측: 요소 하나 붙이는 데 1,176 → 782개).
@@ -645,7 +645,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
    row's pinyin, so no row is ever shown in part. The fade also takes the last 0.3em of the last row
    (blank under its glyph band and underline): at 0.8rem text with 1rem pinyin the next row's pinyin
    reaches above its row by more than the line gap. */
-.reader-settings .reader-settings__preview {--preview-pad:6px;margin:0 0 4px;padding:var(--preview-pad) 10px;max-height:calc(var(--preview-rows,2) * 2.3em + (var(--preview-rows,2) - 1) * var(--preview-row-gap,15px) + 2 * var(--preview-pad));border-radius:3px;-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - var(--preview-pad) - .3em),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - var(--preview-pad) - .3em),transparent);}
+.reader-settings .reader-settings__preview {--preview-pad:6px;margin:0 0 4px;padding:var(--preview-pad) 10px;max-height:calc(var(--preview-rows,2) * 2.3em + (var(--preview-rows,2) - 1) * var(--preview-row-gap,15px) + 2 * var(--preview-pad));border-radius:4px;-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - var(--preview-pad) - .3em),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - var(--preview-pad) - .3em),transparent);}
 .reader-settings .reader-settings__preview:lang(zh) {--preview-pad:max(6px,calc(var(--pinyin-size) * 1.4 + var(--hl-frame-top) + var(--hl-pinyin-gap) + 2px - 0.63em));}
 .reader-settings .reader-settings__preview:lang(ja) {--preview-pad:max(6px,.25em);}
 .reader-settings .reader-setting-range {padding:10px 0;}
@@ -661,7 +661,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .reader-settings .reader-settings__themes button[aria-pressed="true"] {outline:2px solid var(--reader-accent);outline-offset:2px;}
 .reader-settings .reader-setting-toggle {padding:4px 0;gap:4px;align-items:flex-start;flex-wrap:wrap;}
 .reader-settings .reader-setting-toggle>label {min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex:1;cursor:pointer;}
-.reader-settings .reader-setting-toggle input {appearance:none;width:38px;height:24px;border-radius:20px;background:var(--reader-line);position:relative;margin:10px 0;cursor:pointer;}
+.reader-settings .reader-setting-toggle input {appearance:none;width:38px;height:24px;border-radius:999px;background:var(--reader-line);position:relative;margin:10px 0;cursor:pointer;}
 .reader-settings .reader-setting-toggle input::before {content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--reader-paper);}
 .reader-settings .reader-setting-toggle input:checked {background:var(--reader-accent);}
 .reader-settings .reader-setting-toggle input:checked::before {left:17px;}
@@ -671,7 +671,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .reader-settings .reader-settings__more>summary::-webkit-details-marker,.reader-settings .reader-settings__help>summary::-webkit-details-marker {display:none;}
 .reader-settings .reader-settings__more>summary::after {content:'+';margin-left:auto;font-size:1rem;}
 .reader-settings .reader-settings__more[open]>summary::after {content:'−';}
-.reader-settings .reader-settings__changed {font-size:.75rem;min-width:20px;text-align:center;border-radius:10px;background:var(--reader-selected);color:var(--reader-accent);}
+.reader-settings .reader-settings__changed {font-size:.75rem;min-width:20px;text-align:center;border-radius:999px;background:var(--reader-selected);color:var(--reader-accent);}
 .reader-settings .reader-settings__help {margin:0;color:var(--reader-muted);}
 .reader-settings .reader-settings__help>summary {display:flex;align-items:center;justify-content:center;width:44px;min-height:44px;cursor:pointer;list-style:none;}
 .reader-settings .reader-settings__help>div {font-size:.78rem;line-height:1.6;padding:4px 8px 10px;overflow-wrap:anywhere;}
@@ -686,18 +686,18 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 }
 
 /* Presentation only; grading controls retain their own shapes and colors. */
-.manabi-app .viewer-layout [data-icon-action]{align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0;flex-shrink:0;line-height:1;border-radius:6px}
+.manabi-app .viewer-layout [data-icon-action]{align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0;flex-shrink:0;line-height:1;border-radius:8px}
 .manabi-app .viewer-layout .viewer-topbar__tools{column-gap:4px;row-gap:4px}
 .manabi-app .viewer-layout .viewer-topbar [data-icon-action]{width:44px;height:44px;border:0;box-shadow:none;background:transparent;color:var(--reader-ink)}
 .manabi-app .viewer-layout [data-icon-action]:hover{background:var(--reader-selected);color:var(--reader-accent)}
 .manabi-app .viewer-layout .viewer-topbar [data-icon-action][aria-pressed="true"]{background:var(--reader-selected);color:var(--reader-accent)}
 .manabi-app .viewer-layout .viewer-title-edit[data-icon-action]{margin:0;color:var(--reader-muted);border:0;background:transparent;align-self:center}
 .manabi-app .viewer-layout .viewer-series-nav__btn{display:inline-flex;align-items:center;justify-content:center}
-.manabi-app .viewer-layout .viewer-inspector__tabs button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;line-height:1.5;font-size:13px}
+.manabi-app .viewer-layout .viewer-inspector__tabs button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;line-height:1.5;font-size:.8125rem}
 .manabi-app .viewer-layout .viewer-inspector__tabs button .action-icon{width:20px;height:20px}
 .manabi-app .viewer-layout .listen-controls{display:flex;align-items:center;flex-wrap:wrap;gap:4px;min-width:0;max-width:100%}
 .manabi-app .viewer-layout .listen-controls__panel{gap:4px;align-items:center;flex-wrap:wrap;min-width:0;max-width:100%}
-.manabi-app .viewer-layout .listen-controls__progress,.manabi-app .viewer-layout .listen-controls__rate{font-size:12px;line-height:1.5}
+.manabi-app .viewer-layout .listen-controls__progress,.manabi-app .viewer-layout .listen-controls__rate{font-size:.75rem;line-height:1.5}
 .manabi-app .viewer-layout [data-icon-action]:not(.viewer-inspector__expand){display:inline-flex}
 .manabi-app .viewer-layout .viewer-inspector__expand .action-icon{margin:auto}
 .manabi-app .viewer-layout .grammar-detail__toggle{display:inline-flex;align-items:center;gap:6px;min-height:44px;line-height:1.5}
@@ -764,7 +764,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .manabi-app .viewer-layout .reader-card-body .reader-card-disclosure>summary::after{content:none}
 .manabi-app .viewer-layout .reader-card-body .reader-card-disclosure>summary>.action-icon{margin-left:auto;flex:none}
 .manabi-app .viewer-layout .reader-card-body .reader-card-disclosure[open]>summary>.action-icon{transform:rotate(180deg)}
-.manabi-app .viewer-layout .reader-card-body .reader-card-disclosure>summary:focus-visible{outline:2px solid var(--reader-accent);outline-offset:2px;border-radius:3px}
+.manabi-app .viewer-layout .reader-card-body .reader-card-disclosure>summary:focus-visible{outline:2px solid var(--reader-accent);outline-offset:2px;border-radius:4px}
 .manabi-app .viewer-layout .reader-card-body .reader-card-example{margin:0 0 12px}
 .manabi-app .viewer-layout .reader-card-body .reader-card-example h3{margin:0 0 8px;font-size:.75rem;font-weight:500;line-height:1.5;color:var(--reader-muted)}
 .manabi-app .viewer-layout .reader-card-body .reader-card-example__text{font-size:.875rem;line-height:1.6;overflow-wrap:anywhere;margin-bottom:12px}
@@ -782,12 +782,12 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .manabi-app .viewer-layout .reader-card-body>.reader-card-more>details:not(.reader-card-disclosure)>summary::-webkit-details-marker,.manabi-app .viewer-layout .reader-card-body>details:not(.reader-card-disclosure)>summary::-webkit-details-marker{display:none}
 .manabi-app .viewer-layout .reader-card-body>.reader-card-more>details:not(.reader-card-disclosure)>summary::after,.manabi-app .viewer-layout .reader-card-body>details:not(.reader-card-disclosure)>summary::after{content:'';flex:none;width:20px;height:20px;margin-left:auto;background:currentColor;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m5 9 7 7 7-7' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
 .manabi-app .viewer-layout .reader-card-body>.reader-card-more>details:not(.reader-card-disclosure)[open]>summary::after,.manabi-app .viewer-layout .reader-card-body>details:not(.reader-card-disclosure)[open]>summary::after{transform:rotate(180deg)}
-.manabi-app .viewer-layout .reader-card-body>.reader-card-more>details:not(.reader-card-disclosure)>summary:focus-visible,.manabi-app .viewer-layout .reader-card-body>details:not(.reader-card-disclosure)>summary:focus-visible{outline:2px solid var(--reader-accent);outline-offset:2px;border-radius:3px}
+.manabi-app .viewer-layout .reader-card-body>.reader-card-more>details:not(.reader-card-disclosure)>summary:focus-visible,.manabi-app .viewer-layout .reader-card-body>details:not(.reader-card-disclosure)>summary:focus-visible{outline:2px solid var(--reader-accent);outline-offset:2px;border-radius:4px}
 
 /* Shared inspector rhythm: short modes, passive tags, and one action column. */
 .manabi-app .viewer-layout .viewer-inspector{border-top:1px solid var(--reader-line);border-radius:8px}
 .manabi-app .viewer-layout .viewer-inspector__header .viewer-inspector__tabs{flex:0 1 auto;width:auto;gap:2px;padding:3px;border-radius:8px;background:color-mix(in srgb,var(--reader-line) 35%,transparent)}
-.manabi-app .viewer-layout .viewer-inspector__header .viewer-inspector__tabs button{flex:0 1 auto;min-width:44px;padding:6px 12px;font-size:.8125rem;border-radius:6px}
+.manabi-app .viewer-layout .viewer-inspector__header .viewer-inspector__tabs button{flex:0 1 auto;min-width:44px;padding:6px 12px;font-size:.8125rem;border-radius:8px}
 .manabi-app .viewer-layout .viewer-inspector__header .viewer-inspector__tabs button[aria-selected="true"]{background:var(--reader-selected);color:var(--reader-ink);font-weight:650;box-shadow:0 0 0 1px color-mix(in srgb,var(--reader-accent) 55%,var(--reader-line))}
 .manabi-app .viewer-layout .viewer-inspector__nav,.manabi-app .viewer-layout .viewer-inspector__expand{margin-left:auto}
 .manabi-app .viewer-layout .viewer-inspector__nav+.viewer-inspector__expand{margin-left:0}
@@ -799,7 +799,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
   .manabi-app .viewer-layout .viewer-inspector__header:has(.viewer-sheet-menu) .viewer-inspector__expand{display:none}
 }
 .manabi-app .viewer-layout .reader-card-body .word-detail-card__meta{align-items:center;gap:8px;margin-bottom:16px}
-.manabi-app .viewer-layout .reader-card-body .word-detail-card__meta>span:not(:empty){display:inline-flex;align-items:center;min-height:1.5rem;max-width:100%;padding:2px 8px;border:1px solid var(--reader-line);border-radius:5px;background:color-mix(in srgb,var(--reader-line) 20%,transparent);font-size:.75rem;line-height:1.4;font-weight:400;color:var(--reader-muted);overflow-wrap:anywhere}
+.manabi-app .viewer-layout .reader-card-body .word-detail-card__meta>span:not(:empty){display:inline-flex;align-items:center;min-height:1.5rem;max-width:100%;padding:2px 8px;border:1px solid var(--reader-line);border-radius:4px;background:color-mix(in srgb,var(--reader-line) 20%,transparent);font-size:.75rem;line-height:1.4;font-weight:400;color:var(--reader-muted);overflow-wrap:anywhere}
 .manabi-app .viewer-layout .reader-card-body .reader-card-tag:empty{display:none}
 .manabi-app .viewer-layout .reader-card-body .reader-card-headword,.manabi-app .viewer-layout .reader-card-body .word-detail-card__meaningrow{display:grid;grid-template-columns:minmax(0,1fr) 44px;column-gap:12px;text-align:start}
 .manabi-app .viewer-layout .reader-card-body .reader-card-headword:not(:has(.word-detail-card__speak)),.manabi-app .viewer-layout .reader-card-body .word-detail-card__meaningrow:not(:has(.word-detail-card__edit)){grid-template-columns:minmax(0,1fr)}
@@ -837,7 +837,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .viewer-layout[data-reader-theme="dark"] .hanja-pop {--hanja-pop-hit:var(--book-mauve-dark-text);}
 .hanja-pop:focus {outline:none;}
 .hanja-pop[data-compact] {--hanja-pop-h:152px;gap:4px;padding:6px 8px 6px 10px;}
-.hanja-pop :is(.hanja-pop__close,.hanja-pop__back) {display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;min-width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:10px;background:transparent;color:var(--reader-muted);cursor:pointer;}
+.hanja-pop :is(.hanja-pop__close,.hanja-pop__back) {display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;min-width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--reader-muted);cursor:pointer;}
 .hanja-pop .hanja-pop__close {position:absolute;top:0;right:0;}
 .hanja-pop .hanja-pop__back {width:36px;min-width:36px;margin:0 -6px 0 -10px;}
 .hanja-pop :is(.hanja-pop__close,.hanja-pop__back):hover {color:var(--reader-ink);background:var(--reader-surface);}
@@ -859,7 +859,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .hanja-pop__parts {display:grid;grid-template-columns:repeat(var(--n,2),minmax(0,1fr));gap:6px;min-height:36px;white-space:nowrap;}
 .hanja-pop__parts.is-unknown {display:flex;align-items:center;overflow:hidden;}
 .hanja-pop__parts.is-unknown .hanja-pop__piece {flex:0 1 auto;}
-.hanja-pop__piece {display:flex;align-items:center;gap:8px;min-width:0;min-height:36px;padding:0 10px;border:0;border-radius:10px;background:var(--hanja-pop-tile);color:var(--reader-ink);font:inherit;line-height:1.2;text-align:start;white-space:nowrap;}
+.hanja-pop__piece {display:flex;align-items:center;gap:8px;min-width:0;min-height:36px;padding:0 10px;border:0;border-radius:8px;background:var(--hanja-pop-tile);color:var(--reader-ink);font:inherit;line-height:1.2;text-align:start;white-space:nowrap;}
 .hanja-pop[data-compact] .hanja-pop__piece {min-height:32px;}
 .hanja-pop button.hanja-pop__piece {cursor:pointer;}
 .hanja-pop__piece b {flex:none;font-size:22px;font-weight:500;line-height:1;}
@@ -887,7 +887,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .hanja-pop__tko.is-short {color:var(--reader-muted);}
 /* 같은 소리 글자(드릴다운) — 글자 칸 다섯: 병음 · 정체 · 한국 음, 지금 글자는 누른 글자 색 바탕. 마지막 줄은 대표 읽기 요약 한 줄. */
 .hanja-pop__fam {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;white-space:nowrap;}
-.hanja-pop__fc {display:flex;flex-direction:column;align-items:center;min-width:0;padding:5px 2px 6px;border-radius:10px;background:var(--hanja-pop-tile);}
+.hanja-pop__fc {display:flex;flex-direction:column;align-items:center;min-width:0;padding:5px 2px 6px;border-radius:8px;background:var(--hanja-pop-tile);}
 .hanja-pop__fc.is-first {background:color-mix(in srgb,var(--hanja-pop-hit) 12%,var(--reader-paper));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--hanja-pop-hit) 30%,var(--reader-paper));}
 .hanja-pop__fpy {font-size:11px;line-height:14px;color:var(--reader-muted);}
 .hanja-pop__fc b {font-size:21px;font-weight:500;line-height:26px;}
@@ -910,7 +910,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .viewer-sense-review__list {list-style:none;margin:0;padding:0;}
 .viewer-sense-review__row {padding:8px 0;border-top:1px solid var(--reader-line);}
 .viewer-sense-review__sentence {margin:0 0 2px;font-size:1rem;line-height:1.6;color:var(--reader-ink);overflow-wrap:anywhere;}
-.viewer-sense-review__sentence mark {background:var(--reader-selected);color:inherit;font-weight:700;border-radius:2px;}
+.viewer-sense-review__sentence mark {background:var(--reader-selected);color:inherit;font-weight:700;border-radius:4px;}
 .viewer-sense-review__now {margin:0;font-size:.875rem;line-height:1.5;color:var(--reader-muted);overflow-wrap:anywhere;}
 .viewer-sense-review__note {margin:0;font-size:.8125rem;line-height:1.5;color:var(--reader-muted);overflow-wrap:anywhere;}
 .viewer-sense-review__suggested {font-size:.75rem;color:var(--reader-muted);border:1px solid currentColor;border-radius:4px;padding:0 4px;}
@@ -983,4 +983,9 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
    translate는 가운데 맞춤 transform과 따로 논다. */
 .manabi-app .viewer-layout .reader-card-headword ruby[data-yomi] > .rt-an {translate:0 -4px;}
 .manabi-app .viewer-layout .reader-card-headword .word-fit-wrap:has(ruby[data-yomi]) {padding-top:4px;}
-.manabi-app .viewer-layout .viewer-inspector__header .viewer-inspector__clear {display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;min-width:44px;height:44px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--reader-ink);cursor:pointer;}
+.manabi-app .viewer-layout .viewer-inspector__header .viewer-inspector__clear {display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;min-width:44px;height:44px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--reader-ink);cursor:pointer;}
+/* 최소 글자 크기(뷰어 점검 F4, 오너 승인 2026-10-23 KST): 본문을 가장 작게(0.8rem) 해도 후리가나는 10px 아래로 내려가지 않고,
+   병음은 본문의 0.6배를 넘지 않는다(작은 본문 위에 병음이 본문만큼 커져 격자를 덮던 것). 병음 칸 폭(--pinyin-cell)은 설정값으로
+   재므로 줄어든 병음이 칸을 넘을 일은 없다. */
+.viewer-layout :is(.reader-area,.reader-settings__preview) ruby[data-yomi] > .rt-an {font-size:max(.5em,.625rem);}
+.viewer-layout :is(.reader-area,.reader-settings__preview) ruby[data-pinyin] > .rt-an {font-size:min(var(--pinyin-size),.6em);}

@@ -35,7 +35,7 @@
 .reader-pagebar__btn {
   display: inline-flex; align-items: center; justify-content: center; flex: none;
   min-width: 44px; min-height: 44px; padding: 0;
-  border: 0; border-radius: 6px; background: transparent; color: inherit; cursor: pointer;
+  border: 0; border-radius: 8px; background: transparent; color: inherit; cursor: pointer;
 }
 .reader-pagebar__btn:disabled { opacity: .35; cursor: default; }
 .reader-pagebar__btn:not(:disabled):hover { background: var(--reader-selected, var(--sheet)); color: var(--reader-accent, var(--ink)); }
@@ -46,8 +46,8 @@
 .reader-page-strip {
   display: none; position: absolute; top: 0; bottom: 0; width: 48px; min-height: 44px; padding: 0;
   align-items: center; justify-content: center;
-  border: 0; border-radius: 6px; background: transparent; color: var(--reader-muted, var(--muted));
-  font-size: 28px; line-height: 1; cursor: pointer; opacity: .45;
+  border: 0; border-radius: 8px; background: transparent; color: var(--reader-muted, var(--muted));
+  font-size: 1.75rem; line-height: 1; cursor: pointer; opacity: .45;
 }
 .reader-page-strip--prev { right: 100%; margin-right: 36px; }
 .reader-page-strip--next { left: 100%; margin-left: 36px; }

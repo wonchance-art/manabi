@@ -3414,6 +3414,22 @@ export default function ViewerPage() {
       {enPronunciation && <div className="reader-card-pronunciation">{enPronunciation}</div>}
       </div>
       </div>}
+      {classMeaning?.editor||(!classStudyActive&&<div className={`word-detail-card__meaningrow${enPronunciation ? ' word-detail-card__meaningrow--tight' : ''}`}>
+        <div className="word-detail-card__meaning" lang={materialLang === 'Korean' ? effectiveExplanationLocale : undefined} aria-busy={(materialLang === 'Korean' && !koreanPieceSelected && localizedWord.loading) || undefined}>
+          {materialLang === 'Korean' ? (koreanPieceSelected ? koreanPieceMeaning(selectedToken) : localizedWord.loading ? vt('문맥 뜻을 불러오는 중…') : localizedWord.error ? <span className="word-detail-card__meaning-error">{vt('뜻을 불러오지 못했어요.')} <button type="button" className="btn btn--ghost btn--sm" onClick={localizedWord.retry}>{vt('다시 시도')}</button></span> : localizedWord.meaning) : refMeaning || selectedToken.meaning || vt('(뜻 없음)')}
+        </div>
+        {/* 리스트 단어는 자료 토큰이 아니라(id 없음) 이 자료의 교정 대상이 될 수 없다 */}
+        {canEditToken && selectedToken.id && (
+          legacyTokenEditingAllowed && learningStorageSupported &&
+          <button
+            onClick={toggleTokenEditing}
+            aria-label={vt("뜻·발음 수정")}
+            title={vt("뜻·발음 수정")}
+            className={`word-detail-card__edit${isEditingToken ? ' is-on' : ''}`} data-icon-action
+          ><svg className="action-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="m4 16 12-12 4 4L8 20H4v-4ZM13 7l4 4"/></svg></button>
+        )}
+      </div>)}
+      {/* 글자 카드(일본어 · 수업 모드)는 뜻 줄 아래 — 표제어와 뜻 사이에 끼어 뜻이 밀렸다(뷰어 점검 E5, 오너 승인 2026-10-23 KST). */}
       {inspectChar && !hanjaPopoverMode && (() => {
         // ④ 글자 카드(증강 R1~R3 — 오너 승인 2026-08-28): 헤더는 자기 완결(훈음·병음·자형 칩),
         // 주인공은 구성(1단 분해 — 성분 탭 = 재귀 탐색)과 다시 만나기(이 자료·내 단어).
@@ -3520,21 +3536,6 @@ export default function ViewerPage() {
           </div>
         );
       })()}
-      {classMeaning?.editor||(!classStudyActive&&<div className={`word-detail-card__meaningrow${enPronunciation ? ' word-detail-card__meaningrow--tight' : ''}`}>
-        <div className="word-detail-card__meaning" lang={materialLang === 'Korean' ? effectiveExplanationLocale : undefined} aria-busy={(materialLang === 'Korean' && !koreanPieceSelected && localizedWord.loading) || undefined}>
-          {materialLang === 'Korean' ? (koreanPieceSelected ? koreanPieceMeaning(selectedToken) : localizedWord.loading ? vt('문맥 뜻을 불러오는 중…') : localizedWord.error ? <span className="word-detail-card__meaning-error">{vt('뜻을 불러오지 못했어요.')} <button type="button" className="btn btn--ghost btn--sm" onClick={localizedWord.retry}>{vt('다시 시도')}</button></span> : localizedWord.meaning) : refMeaning || selectedToken.meaning || vt('(뜻 없음)')}
-        </div>
-        {/* 리스트 단어는 자료 토큰이 아니라(id 없음) 이 자료의 교정 대상이 될 수 없다 */}
-        {canEditToken && selectedToken.id && (
-          legacyTokenEditingAllowed && learningStorageSupported &&
-          <button
-            onClick={toggleTokenEditing}
-            aria-label={vt("뜻·발음 수정")}
-            title={vt("뜻·발음 수정")}
-            className={`word-detail-card__edit${isEditingToken ? ' is-on' : ''}`} data-icon-action
-          ><svg className="action-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="m4 16 12-12 4 4L8 20H4v-4ZM13 7l4 4"/></svg></button>
-        )}
-      </div>)}
       {/* AD-R4 PR③ 카드 ⓘ(설계서 §6.3) — 뜻 확인 필요 표식이 있을 때만, 뜻 줄 아래. 사전 뜻 줄에서 다른 뜻을 고르면 교정이 표식을 지워 사라진다. 「AI」 표시 없음. */}
       {!classStudyActive && materialLang === 'Chinese' && needsMeaningCheck(selectedToken) && <p className="reader-card-meaning-check"><span aria-hidden="true">ⓘ </span>{vt('문맥과 다를 수 있어요')}</p>}
       {/* AD-R3 PR③ 직접 묶은 단어 · 되돌리기 · ⋯ 패널(설계서 §6.3 목업 — 뜻 줄 바로 아래). 이 자료 소유자 · 중·일·영만. 「AI」 표시 없음. */}
