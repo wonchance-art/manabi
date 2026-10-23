@@ -12,6 +12,8 @@ const OFFLINE_HTML = [
   '<script src="/_next/static/chunks/webpack-c3.js" async=""></script>',
   '<script src="/_next/static/chunks/app/(app)/offline/page-d4.js" async=""></script>',
   '<script src="/_next/static/chunks/webpack-c3.js" async=""></script>',
+  '<script src="/_next/static/chunks/main-app-e5.js?dpl=dpl_fixture&amp;v=2" async=""></script>',
+  '<script>self.__next_f.push([1,"static/chunks/inline-only.js"])</script>',
   '</head><body><h1>인터넷 연결을 확인해 주세요</h1></body></html>',
 ].join('');
 
@@ -49,10 +51,11 @@ describe('설치 사전 캐시 — 오프라인 대체 화면 하나', () => {
     for (const dynamic of ['/', '/home', '/vocab', '/materials', '/auth']) expect(urls).not.toContain(dynamic);
   });
 
-  it('/offline이 부르는 CSS · JS(중복 없이)만 함께 받는다 — 글꼴 · 그 밖의 파일은 받지 않는다', async () => {
+  it('/offline이 부르는 CSS · JS(중복 없이, 질의 그대로)만 함께 받는다 — 글꼴 · 그 밖의 파일은 받지 않는다', async () => {
     const { add } = await install();
     expect(add.mock.calls.map(([url]) => url).slice(1).sort()).toEqual([
       '/_next/static/chunks/app/(app)/offline/page-d4.js',
+      '/_next/static/chunks/main-app-e5.js?dpl=dpl_fixture&v=2',
       '/_next/static/chunks/webpack-c3.js',
       '/_next/static/css/app-a1.css',
       '/_next/static/css/font-b2.css',
