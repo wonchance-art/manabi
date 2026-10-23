@@ -211,6 +211,7 @@ import { useArtBookChapter } from '../lib/useArtBookChapter';
 import ViewerArtCard from '../components/viewer/ViewerArtCard';
 import { revertInlineGrade } from '../lib/inlineGradeUndo';
 import { reducedMotion } from '../lib/reducedMotion';
+import { applyThemeColor, readerThemeColor } from '../lib/themeColor';
 
 // 공부 모드 지원 언어 키 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
 // 실사용은 '이 자료 언어로 세션 생성 가능한가' 멤버십 체크 1곳뿐이라 정적 키 집합으로 대체한다.
@@ -394,6 +395,8 @@ export default function ViewerPage() {
   const { fontSize,lineGap,charGap,showHanjaKo,showToneColors,wordStateHl,showPatterns,patternFilter,
     focusMode,setFocusMode,autoPace,paceCpm,paceStep,setPaceStep,theme,fontFamily,pronDisplay,
     autoSpeakOnClick,ttsRate,pinyinSize } = settings;
+  // 어두운 읽기 테마는 머리까지 어둡다 — 휴대폰 표시줄 · 주소창도 같은 색으로, 떠나면 셸 종이로 되돌린다(PWA-SHELL-001 ⑩).
+  useEffect(() => applyThemeColor(document, readerThemeColor(theme)), [theme]);
 
   const settingsTrigger = useRef(null);
   const quiz = useViewerQuiz();
