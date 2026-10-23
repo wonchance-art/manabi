@@ -37,11 +37,14 @@ function Tile({ href, tone, kicker, big, children, bottom }) {
 
 const Pill = ({ children }) => <span className="discover-tile__pill">{children}<i aria-hidden="true">→</i></span>;
 
-export default function DiscoverTiles({ suggestions = [], classics = [], date }) {
+export default function DiscoverTiles({ suggestions = [], classics = [], art = [], date }) {
   const news = suggestions.filter(canReadSuggestion);
   const headline = news[0];
   const headlineLang = headline ? encounterLookupLang(headline.language) || undefined : undefined;
+  // 고전 명작 칸 = 책 + 그림(DISCOVER-ART-001). 큰 글자는 「N권 · M점」(있는 것만), 그림은 책이 아직 없을 때만 표지 자리에.
   const covers = dailyCovers(classics, date);
+  const paintings = covers.length ? [] : dailyCovers(art, date);
+  const classicsCount = [classics.length && `${classics.length}권`, art.length && `${art.length}점`].filter(Boolean).join(' · ');
   return <section className="discover-tiles" aria-label="산책">
     {/* 소식 수는 달지 않는다 — 열린 목록은 로그인하면 학습 언어 · 레벨로 걸러져 개수가 달라진다(서가 리뷰 2026-10-17 KST 선례). */}
     <Tile href={news.length ? `/discover?view=reading#${TODAY_NEWS_ID}` : null} tone="news" kicker="오늘 화제" big={shelfDateLabel(date)}
@@ -50,11 +53,14 @@ export default function DiscoverTiles({ suggestions = [], classics = [], date })
         ? <><ZhSlot lang={headlineLang}><strong className="discover-tile__title" lang={headlineLang}>{headline.title}</strong></ZhSlot><span className="discover-tile__sub">{headline.channel_name}</span></>
         : <strong className="discover-tile__title">오늘 소식 준비 중</strong>}
     </Tile>
-    <Tile href={classics.length ? '/discover/classics' : null} tone="classics" kicker="고전 명작" big={classics.length ? `${classics.length}권` : null}
-      bottom={classics.length ? <><span className="discover-tile__spacer" /><Pill>둘러보기</Pill></> : null}>
+    <Tile href={classicsCount ? '/discover/classics' : null} tone="classics" kicker="고전 명작" big={classicsCount || null}
+      bottom={classicsCount ? <><span className="discover-tile__spacer" /><Pill>둘러보기</Pill></> : null}>
       {covers.length
         ? <span className="discover-tile__covers" aria-hidden="true">{covers.map((item) => <span key={item.key} className="discover-tile__cover"><ClassicCover provider={item.provider} work={item.work} /></span>)}</span>
-        : <strong className="discover-tile__title">첫 책 준비 중</strong>}
+        : paintings.length
+          // eslint-disable-next-line @next/next/no-img-element
+          ? <span className="discover-tile__covers" aria-hidden="true">{paintings.map((item) => <span key={item.key} className="discover-tile__cover discover-tile__cover--art">{item.image && <img src={item.image.url} alt="" loading="lazy" decoding="async" />}</span>)}</span>
+          : <strong className="discover-tile__title">첫 책 준비 중</strong>}
     </Tile>
     <Tile href={MAGAZINE_HREF} tone="magazine" kicker="여행 매거진">
       <strong className="discover-tile__title">첫 호 준비 중</strong>

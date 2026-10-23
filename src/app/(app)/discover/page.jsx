@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 import { hasSupabaseSessionInJar } from '@/lib/authCookie';
 import { SERIES_TITLE_ILIKE } from '@/lib/constants';
 import { kstDateString } from '@/lib/growthStats';
-import { releasedClassicsOf } from '@/lib/server/classicsReading';
+import { releasedArtOf, releasedClassicsOf } from '@/lib/server/classicsReading';
 import { suggestionClient, todaySuggestions } from '@/lib/server/suggestionReading';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: '산책', description: '오늘 화제 · 고전 명작 · 여행 매거진 — 누구나 읽는 읽을거리.' };
@@ -17,9 +17,10 @@ export default async function Page({searchParams}) {
   // 큰 칸 셋(DISCOVER-CLASSICS-001, 오너 「권장대로 ㄱㄱ」 2026-10-22 KST): 오늘 화제 · 고전 명작 · 여행 매거진. 「일본어 N5 · 문화 읽기」는
   // 산책에서 내렸다(교재 화면 /books/japanese-n5/materials에 그대로 있다).
   const client = suggestionClient();
-  const [suggestions, classics, looseCount, bookChapterCount] = await Promise.all([
+  const [suggestions, classics, art, looseCount, bookChapterCount] = await Promise.all([
     todaySuggestions(client),
     releasedClassicsOf(client).then(({ items }) => items),
+    releasedArtOf(client).then(({ items }) => items),
     client.from('reading_materials').select('id', { count: 'exact', head: true }).eq('visibility', 'public')
       .not('title', 'ilike', SERIES_TITLE_ILIKE) // 목록(/discover?view=reading)과 같은 조건으로 센다
       .then(({ count, error }) => (error ? 0 : count || 0)),
@@ -31,7 +32,7 @@ export default async function Page({searchParams}) {
   ]);
   const publicCount = looseCount + bookChapterCount;
   return <div className="manabi-page manabi-discover"><header className="manabi-page-heading"><h1>산책</h1></header>
-    <DiscoverTiles suggestions={suggestions} classics={classics} date={kstDateString()} />
+    <DiscoverTiles suggestions={suggestions} classics={classics} art={art} date={kstDateString()} />
     {publicCount > 0 && <p className="discover-more"><Link className="manabi-link" href="/discover?view=reading">함께 읽는 글 {publicCount.toLocaleString()}편 <span aria-hidden="true">→</span></Link></p>}
   </div>;
 }

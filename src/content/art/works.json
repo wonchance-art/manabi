@@ -9,6 +9,7 @@
       "ko": "후가쿠 36경 — 가나가와 앞바다 파도 아래",
       "reading": "ふがくさんじゅうろっけい かながわおきなみうら"
     },
+    "hook": "세계에서 가장 유명한 파도, 그 골 사이의 작은 후지산",
     "series": {
       "native": "冨嶽三十六景",
       "ko": "후가쿠 36경"
@@ -104,6 +105,7 @@
       "ko": "후가쿠 36경 — 맑은 날의 남풍",
       "reading": "ふがくさんじゅうろっけい がいふうかいせい"
     },
+    "hook": "붉게 물든 후지산 — 찍을 때마다 색이 달라지는 판화",
     "series": {
       "native": "冨嶽三十六景",
       "ko": "후가쿠 36경"
@@ -195,6 +197,7 @@
       "ko": "후가쿠 36경 — 무사시국 다마강",
       "reading": "ふがくさんじゅうろっけい ぶしゅうたまがわ"
     },
+    "hook": "흰빛에서 짙은 파랑까지, 강물 한 폭에 담은 색",
     "series": {
       "native": "冨嶽三十六景",
       "ko": "후가쿠 36경"
@@ -280,6 +283,7 @@
       "ko": "도카이도 53역참 — 쇼노의 소나기",
       "reading": "とうかいどうごじゅうさんつぎのうち しょうの はくう"
     },
+    "hook": "갑자기 쏟아진 소나기에 길을 서두르는 사람들",
     "series": {
       "native": "東海道五拾三次之内",
       "ko": "도카이도 53역참"
@@ -361,6 +365,7 @@
       "ko": "도카이도 53역참 — 구와나, 시치리 나루터",
       "reading": "とうかいどうごじゅうさんつぎのうち くわな しちりのわたしぐち"
     },
+    "hook": "손님을 가득 태운 배가 성 앞 나루터에 닿는 순간",
     "series": {
       "native": "東海道五拾三次之内",
       "ko": "도카이도 53역참"
@@ -437,6 +442,7 @@
       "ko": "명소 에도 100경 — 오하시 다리와 아타케의 소나기",
       "reading": "めいしょえどひゃっけい おおはしあたけのゆうだち"
     },
+    "hook": "훗날 고흐가 따라 그린 다리 위의 소나기",
     "series": {
       "native": "名所江戸百景",
       "ko": "명소 에도 100경"
@@ -532,6 +538,7 @@
       "ko": "명소 에도 100경 — 가메이도 매화 정원",
       "reading": "めいしょえどひゃっけい かめいどうめやしき"
     },
+    "hook": "고흐가 따라 그린 매화나무, 잠든 용을 닮았다는 에도 명물",
     "series": {
       "native": "名所江戸百景",
       "ko": "명소 에도 100경"
@@ -623,6 +630,7 @@
       "ko": "명소 에도 100경 — 후카가와 스사키 십만 평",
       "reading": "めいしょえどひゃっけい ふかがわすさきじゅうまんつぼ"
     },
+    "hook": "눈 내리는 바다 위, 먹이를 덮치려는 독수리의 한순간",
     "series": {
       "native": "名所江戸百景",
       "ko": "명소 에도 100경"
@@ -722,6 +730,7 @@
       "ko": "후가쿠 36경 — 고햐쿠라칸지의 사자이도",
       "reading": "ふがくさんじゅうろっけい ごひゃくらかんじさざいどう"
     },
+    "hook": "소라처럼 도는 통로를 올라 다 함께 바라보는 후지산",
     "series": {
       "native": "冨嶽三十六景",
       "ko": "후가쿠 36경"
@@ -807,6 +816,7 @@
       "ko": "후가쿠 36경 — 온마야 강기슭에서 본 료고쿠 다리의 석양",
       "reading": "ふがくさんじゅうろっけい おんまやがしよりりょうごくばしゆうひみ"
     },
+    "hook": "해가 진 뒤 파랗게 가라앉는 강과 다리",
     "series": {
       "native": "冨嶽三十六景",
       "ko": "후가쿠 36경"
@@ -900,6 +910,7 @@
       "ko": "명소 에도 100경 — 아사쿠사 긴류잔",
       "reading": "めいしょえどひゃっけい あさくさきんりゅうざん"
     },
+    "hook": "화면을 가득 채운 아사쿠사 가미나리몬의 큰 등롱",
     "series": {
       "native": "名所江戸百景",
       "ko": "명소 에도 100경"
@@ -985,6 +996,7 @@
       "ko": "명소 에도 100경 — 고마가타도와 아즈마 다리",
       "reading": "めいしょえどひゃっけい こまがたどうあづまばし"
     },
+    "hook": "장마 하늘을 가로지르는 두견새 한 마리",
     "series": {
       "native": "名所江戸百景",
       "ko": "명소 에도 100경"
@@ -1074,6 +1086,7 @@
       "ko": "명소 에도 100경 — 달의 곶",
       "reading": "めいしょえどひゃっけい つきのみさき"
     },
+    "hook": "달맞이 잔치가 막 끝난 방, 장지문에 비친 그림자",
     "series": {
       "native": "名所江戸百景",
       "ko": "명소 에도 100경"
@@ -1159,6 +1172,7 @@
       "ko": "명소 에도 100경 — 아사쿠사 논과 도리노마치 참배",
       "reading": "めいしょえどひゃっけい あさくさたんぼ とりのまちもうで"
     },
+    "hook": "창가의 고양이가 내려다보는 축제 행렬",
     "series": {
       "native": "名所江戸百景",
       "ko": "명소 에도 100경"
@@ -1244,6 +1258,7 @@
       "ko": "명소 에도 100경 — 료고쿠 불꽃놀이",
       "reading": "めいしょえどひゃっけい りょうごくはなび"
     },
+    "hook": "에도의 밤하늘, 료고쿠 다리 위로 오르는 불꽃",
     "series": {
       "native": "名所江戸百景",
       "ko": "명소 에도 100경"
@@ -1898,6 +1913,493 @@
       "width": 960,
       "height": 369,
       "alt": "1914년 무렵의 도쿄역. 넓은 광장 너머로 가로로 아주 긴 벽돌 건물이 서 있고, 양 끝에 둥근 돔 지붕이 하나씩 솟아 있다. 흑백 사진."
+    }
+  },
+  {
+    "id": "van-gogh-bedroom",
+    "wikidata": "Q18713076",
+    "genre": "painting",
+    "artist": "vincent-van-gogh",
+    "title": {
+      "native": "The Bedroom",
+      "ko": "아를의 침실",
+      "lang": "en"
+    },
+    "hook": "고흐가 세 번이나 그린 「노란 집」의 자기 방",
+    "date": {
+      "text": "1889",
+      "source": "aic",
+      "startYear": 1889,
+      "endYear": 1889,
+      "certainty": "exact"
+    },
+    "medium": {
+      "native": "Oil on canvas",
+      "ko": "캔버스에 유채"
+    },
+    "places": [
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/28560"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "28560",
+        "sourceUrl": "https://www.artic.edu/artworks/28560",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "Perhaps the most famous depiction of a bedroom in Western art history, this vibrant painting documents Vincent van Gogh’s sleeping quarters in his beloved “Yellow House” in Arles, France. The composition exists in three versions, the first of which Van Gogh conceived in October 1888, a month after he moved into the home. In a letter to his brother Theo, he described having painted “the walls pale lilac, the floor in a broken and faded red, the chairs and the bed chrome yellow, the pillows and the sheet very pale lemon green, the bedspread blood-red, the dressing table orange, the washbasin blue, the window green.” With its bold colors, thick and broken brushwork, and sharply receding lines, the picture might suggest a nervous energy. But the artist understood it as a calming and restful image.\n\nThe painting in the Art Institute’s collection is Van Gogh’s second version of the scene, made nearly a year after the first, in September 1889. He produced a third, smaller version at the same time as a gift for his mother and sister.",
+        "textSha256": "feaa11cbdd5e75135ea4d4758c0113eaad23635d4d36ccb86940a54fac17b729"
+      }
+    ],
+    "terms": [
+      "brushwork",
+      "chrome yellow",
+      "versions"
+    ],
+    "lookFor": [
+      "고흐가 편지에 적은 색 — 연보라 벽, 노란 침대, 붉은 이불을 그림에서 찾아봐요.",
+      "의자는 몇 개이고, 벽에 걸린 그림은 몇 점일까요?",
+      "방 안쪽으로 갈수록 좁아지는 바닥 선을 따라가 봐요."
+    ],
+    "image": {
+      "url": "/art/van-gogh-bedroom.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Vincent_van_Gogh_-_The_Bedroom_-_Google_Art_Project.jpg",
+      "license": "public-domain",
+      "credit": "Vincent van Gogh. The Bedroom, 1889. Art Institute of Chicago, 1926.417. Public domain (via Wikimedia Commons)",
+      "width": 800,
+      "height": 624,
+      "alt": "푸른 벽의 좁은 방. 오른쪽에 노란 나무 침대와 붉은 이불, 왼쪽에 의자 두 개와 작은 탁자가 있고, 안쪽에 초록 창문이 반쯤 열려 있으며 벽에 액자 여러 점이 걸려 있다."
+    }
+  },
+  {
+    "id": "monet-water-lilies",
+    "wikidata": "Q20267671",
+    "genre": "painting",
+    "artist": "claude-monet",
+    "title": {
+      "native": "Water Lilies",
+      "ko": "수련",
+      "lang": "en"
+    },
+    "hook": "모네 스스로 「집착」이라 부른 연못 수면",
+    "date": {
+      "text": "1906",
+      "source": "aic",
+      "startYear": 1906,
+      "endYear": 1906,
+      "certainty": "exact"
+    },
+    "medium": {
+      "native": "Oil on canvas",
+      "ko": "캔버스에 유채"
+    },
+    "places": [
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/16568"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "16568",
+        "sourceUrl": "https://www.artic.edu/artworks/16568",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "Little did Claude Monet know that the water garden he created three years after buying his Giverny, France, property in 1890 would become his primary inspiration over the next two and a half decades. These paintings, numbering around 250, mark Monet’s artistic journey from more straightforward depictions of the pond spanned by the wooden Japanese bridge to the monumental and near-abstract series on the water lily theme he made in preparation for his murals at the Musée de l’Orangerie in Paris between 1914 and 1926.\n\nWater Lilies, one of a group of paintings on the subject made between 1903 and 1908, comes at the midpoint of Monet’s developing style and spatial experimentations. The nearly square format underscores his move away from painting the conventional zones of land, sky, and water to focus solely on the water’s surface. Clusters of water lilies at bottom left and top right frame a watery path, while the water’s surface reflects trees and clouds. Although the dreamlike quality of floating forms might seem to be a natural development for the artist, he considered these works “an obsession,” a sentiment borne out by technical examinations on the Art Institute’s canvas, revealing many significant changes made to the painting in progress.",
+        "textSha256": "c8faeaf4a6380655c5362cc048e4fc1bb5c07b96807b2627cf4bbf2e6eb71b92"
+      }
+    ],
+    "terms": [
+      "water lilies",
+      "surface",
+      "obsession"
+    ],
+    "lookFor": [
+      "수련이 모여 있는 두 무리를 찾아봐요.",
+      "물에 비친 나무와 구름은 어디에 있을까요?",
+      "하늘이나 물가의 땅이 그림에 보이나요?"
+    ],
+    "image": {
+      "url": "/art/monet-water-lilies.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Claude_Monet_-_Water_Lilies_-_1933.1157_-_Art_Institute_of_Chicago.jpg",
+      "license": "public-domain",
+      "credit": "Claude Monet. Water Lilies, 1906. Art Institute of Chicago, 1933.1157. Public domain (via Wikimedia Commons)",
+      "width": 800,
+      "height": 770,
+      "alt": "거의 정사각형 화면 가득 푸른 연못 수면이 펼쳐지고, 왼쪽 아래와 오른쪽 위에 초록 수련 잎과 분홍 꽃 무리가 떠 있으며, 그 사이 물 위에 하늘빛과 흰 구름이 비친다."
+    }
+  },
+  {
+    "id": "seurat-grande-jatte",
+    "wikidata": "Q1044742",
+    "genre": "painting",
+    "artist": "georges-seurat",
+    "title": {
+      "native": "A Sunday on La Grande Jatte — 1884",
+      "ko": "그랑드자트섬의 일요일 오후",
+      "lang": "en"
+    },
+    "hook": "가까이 가면 사람들이 색 점으로 흩어지는 그림",
+    "date": {
+      "text": "1884–86, border added 1888–89",
+      "source": "aic",
+      "startYear": 1884,
+      "endYear": 1886,
+      "certainty": "range"
+    },
+    "medium": {
+      "native": "Oil on canvas",
+      "ko": "캔버스에 유채"
+    },
+    "places": [
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/27992"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "27992",
+        "sourceUrl": "https://www.artic.edu/artworks/27992",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "In Ferris Bueller’s Day Off, Ferris’s best friend Cameron Frye intensely studies this nearly ten-foot-wide painting during a scene set at the Art Institute. Featuring people of every age and social class on the banks of the River Seine, A Sunday on La Grande Jatte—1884 has captivated visitors ever since its arrival at the museum in 1924.\n\nIf we, like Cameron, come closer to the painting, figures and forms dissolve into dots and dashes of complementary colors laid side by side, characteristic of Seurat’s pointillist technique. Many smaller painted and drawn sketches and several larger canvases, in which Seurat laid out the parameters for the landscape and figures, led up to this majestically composed scene. Seurat returned to the work two years after its start date, amplifying the silhouettes of some figures and adding others. Some of these, like the monkey on the leash, seem so integral to the final composition that it is hard to imagine them as add-ons, but others, like the man carrying a rolled newspaper in the furthest distance, are barely noticeable. To the artist, however, every decision was essential to his aim of making a painting of modern life equivalent to a classical Greek frieze.",
+        "textSha256": "bd28fa1ec8b5338c23e0a443aa6b32fafcc4f2b1c4eaf4f631ee57789367b8f0"
+      }
+    ],
+    "terms": [
+      "pointillist",
+      "complementary colors",
+      "frieze"
+    ],
+    "lookFor": [
+      "줄에 묶인 원숭이를 찾아봐요.",
+      "양산을 든 사람은 모두 몇 명일까요?",
+      "물가에 떠 있는 배와 돛을 찾아봐요."
+    ],
+    "image": {
+      "url": "/art/seurat-grande-jatte.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Georges_Seurat_-_A_Sunday_on_La_Grande_Jatte_--_1884_-_Google_Art_Project.jpg",
+      "license": "public-domain",
+      "credit": "Georges Seurat. A Sunday on La Grande Jatte — 1884, 1884–86. Art Institute of Chicago, 1926.224. Public domain (via Wikimedia Commons)",
+      "width": 800,
+      "height": 533,
+      "alt": "센강 가 잔디밭에서 양산을 든 여인들, 모자를 쓴 신사들, 아이와 개가 쉬고 있다. 오른쪽 앞에는 원숭이를 줄에 맨 여인과 남자가 옆모습으로 서 있고, 강에는 배들이 떠 있다. 화면 전체가 작은 색 점으로 이루어져 있다."
+    }
+  },
+  {
+    "id": "monet-water-lily-pond",
+    "wikidata": "Q20269443",
+    "genre": "painting",
+    "artist": "claude-monet",
+    "title": {
+      "native": "Water Lily Pond",
+      "ko": "수련 연못",
+      "lang": "en"
+    },
+    "hook": "모네가 늪을 파서 만든 연못과 일본식 나무다리",
+    "date": {
+      "text": "1900",
+      "source": "aic",
+      "startYear": 1900,
+      "endYear": 1900,
+      "certainty": "exact"
+    },
+    "medium": {
+      "native": "Oil on canvas",
+      "ko": "캔버스에 유채"
+    },
+    "places": [
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/87088"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "87088",
+        "sourceUrl": "https://www.artic.edu/artworks/87088",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "In 1893, three years after buying property at Giverny, Claude Monet began transforming the marshy ground behind his home into a pond, on the narrow end of which he built a Japanese-style wood bridge. Adding both exotic and domestic plantings, including his famous water lilies, the artist created the garden that would be one of his principal subjects for the rest of his life. Water Lily Pond was among the 18 similar versions of the motif that he made in 1899–1900; their common theme was the mingling of the lilies with reflections of other vegetation on the pool’s surface.",
+        "textSha256": "d7f615ee94cb37292d637bad0db03055b1721763dd749e7a657ba722342865f7"
+      }
+    ],
+    "terms": [
+      "marshy",
+      "Japanese-style",
+      "reflections"
+    ],
+    "lookFor": [
+      "다리 아래 물에서 수련과 풀 그림자가 섞이는 곳을 찾아봐요.",
+      "다리는 어떤 모양으로 휘어 있을까요?"
+    ],
+    "image": {
+      "url": "/art/monet-water-lily-pond.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Claude_Monet_-_Water_Lily_Pond_-_1933.441_-_Art_Institute_of_Chicago.jpg",
+      "license": "public-domain",
+      "credit": "Claude Monet. Water Lily Pond, 1900. Art Institute of Chicago, 1933.441. Public domain (via Wikimedia Commons)",
+      "width": 800,
+      "height": 708,
+      "alt": "버드나무와 풀이 우거진 연못 위로 초록 아치형 나무다리가 가로지르고, 아래 수면에는 수련 잎과 붉고 흰 꽃이 가득 떠 있다."
+    }
+  },
+  {
+    "id": "monet-stacks-of-wheat",
+    "wikidata": "Q47774422",
+    "genre": "painting",
+    "artist": "claude-monet",
+    "title": {
+      "native": "Stacks of Wheat (End of Summer)",
+      "ko": "건초더미 — 여름의 끝",
+      "lang": "en"
+    },
+    "hook": "한 방에 열다섯 점을 걸어 모네를 일으킨 연작",
+    "date": {
+      "text": "1890–91",
+      "source": "aic",
+      "startYear": 1890,
+      "endYear": 1891,
+      "certainty": "range"
+    },
+    "medium": {
+      "native": "Oil on canvas",
+      "ko": "캔버스에 유채"
+    },
+    "places": [
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/64818"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "64818",
+        "sourceUrl": "https://www.artic.edu/artworks/64818",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "The monumental stacks that Claude Monet depicted in his series Stacks of Wheat rose fifteen to twenty feet and stood just outside the artist’s farmhouse at Giverny. Through 1890 and 1891, he worked on this series both in the field, painting simultaneously at several easels, and in the studio, refining pictorial harmonies. In May 1891, Monet hung fifteen of these canvases next to each other in one small room in the Galerie Durand-Ruel in Paris. An unprecedented critical and financial success, the exhibition marked a breakthrough in Monet’s career, as well as in the history of French art. In this view, and in nearly all of the autumn views in the series, the conical tops of the stacks break the horizon and push into the sky. But in most of the winter views, which constitute the core of the series, the stacks seem wrapped by bands of hill and field, as if bedded down for the season. For Monet, the stack was a resonant symbol of sustenance and survival. He followed this group with further series depicting poplars, the facade of Rouen Cathedral, and, later, his own garden at Giverny. The Art Institute has the largest group of Monet’s Stacks of Wheat in the world.",
+        "textSha256": "a58d41ba0f68e21e234909434fce8193b338da270d93590335d23b9d0f93d9f8"
+      }
+    ],
+    "terms": [
+      "series",
+      "horizon",
+      "harmonies"
+    ],
+    "lookFor": [
+      "낟가리 꼭대기가 지평선 위로 솟아 있나요?",
+      "그림자는 어느 쪽으로 드리워져 있을까요?",
+      "멀리 언덕과 집들을 찾아봐요."
+    ],
+    "image": {
+      "url": "/art/monet-stacks-of-wheat.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Claude_Monet_-_Stacks_of_Wheat_(End_of_Summer)_-_1985.1103_-_Art_Institute_of_Chicago.jpg",
+      "license": "public-domain",
+      "credit": "Claude Monet. Stacks of Wheat (End of Summer), 1890–91. Art Institute of Chicago, 1985.1103. Public domain (via Wikimedia Commons)",
+      "width": 800,
+      "height": 474,
+      "alt": "늦여름 들판에 둥근 지붕 모양의 큰 밀 낟가리 하나와 작은 낟가리 하나가 서 있다. 뒤로 낮은 언덕과 나무, 집들이 보이고, 하늘과 땅이 분홍·보라·노란빛으로 물들어 있다."
+    }
+  },
+  {
+    "id": "renoir-two-sisters",
+    "wikidata": "Q630121",
+    "genre": "painting",
+    "artist": "pierre-auguste-renoir",
+    "title": {
+      "native": "Two Sisters (On the Terrace)",
+      "ko": "두 자매(테라스에서)",
+      "lang": "en"
+    },
+    "hook": "제목은 「두 자매」, 사실은 남남인 두 모델",
+    "date": {
+      "text": "1881",
+      "source": "aic",
+      "startYear": 1881,
+      "endYear": 1881,
+      "certainty": "exact"
+    },
+    "medium": {
+      "native": "Oil on canvas",
+      "ko": "캔버스에 유채"
+    },
+    "places": [
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/14655"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "14655",
+        "sourceUrl": "https://www.artic.edu/artworks/14655",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "Pierre-Auguste Renoir considered the Restaurant Fournaise in Chatou (a village along the Seine River) the perfect spot to enjoy nature and good company away from the urban distractions of Paris. His painting Two Sisters (On the Terrace), which he exhibited at the Impressionist exhibition of 1882, is among the last of his paintings set there.\n\nSometimes, as in his most famous work on this subject, Luncheon of the Boating Party (1882; Phillips Collection, Washington, DC), Renoir used his close friends as models. For Two Sisters, however, despite the title of the painting, he paid unrelated models to create this intimate and perfectly balanced pairing of youth and nature. The older girl, wearing the blue flannel of a female boater’s outfit, sports a luxurious red hat, but it is her younger companion who captivates. Her oversize headdress composed of a floral bouquet is echoed in the brightly colored skeins of yarn in the basket that she gently touches. As was typical for the artist, Renoir painted the faces of his models with controlled and precise brushwork creating a porcelain-like surface that contrasts brilliantly with the diaphanous, impressionist backdrop of river, boats, and blossoming trees just beyond the railing of the terrace.",
+        "textSha256": "0276851feeaae60c15104380a51d16a2d2a0dfa0196f38f1640a40bc470972d0"
+      }
+    ],
+    "terms": [
+      "brushwork",
+      "porcelain-like",
+      "terrace"
+    ],
+    "lookFor": [
+      "언니의 빨간 모자와 동생의 꽃 장식 모자를 비교해 봐요.",
+      "바구니 속 털실의 색이 그림 어디에서 다시 보이나요?",
+      "얼굴과 뒤쪽 풍경의 붓질은 어떻게 다를까요?"
+    ],
+    "image": {
+      "url": "/art/renoir-two-sisters.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pierre-Auguste_Renoir_-_Two_Sisters_(On_the_Terrace)_-_1933.455_-_Art_Institute_of_Chicago.jpg",
+      "license": "public-domain",
+      "credit": "Pierre-Auguste Renoir. Two Sisters (On the Terrace), 1881. Art Institute of Chicago, 1933.455. Public domain (via Wikimedia Commons)",
+      "width": 645,
+      "height": 800,
+      "alt": "강가 테라스 난간 앞에 빨간 모자를 쓰고 짙은 파란 옷을 입은 젊은 여인이 앉아 있고, 그 앞에 꽃 장식 모자를 쓴 어린 소녀가 털실 바구니에 손을 얹고 있다. 뒤로 꽃 핀 나무와 강이 흐릿하게 보인다."
+    }
+  },
+  {
+    "id": "caillebotte-paris-street-rainy-day",
+    "wikidata": "Q1452762",
+    "genre": "painting",
+    "artist": "gustave-caillebotte",
+    "title": {
+      "native": "Paris Street; Rainy Day",
+      "ko": "파리의 거리, 비 오는 날",
+      "lang": "en"
+    },
+    "hook": "빗방울 없이 우산과 젖은 돌길로만 그린 비",
+    "date": {
+      "text": "1877",
+      "source": "aic",
+      "startYear": 1877,
+      "endYear": 1877,
+      "certainty": "exact"
+    },
+    "medium": {
+      "native": "Oil on canvas",
+      "ko": "캔버스에 유채"
+    },
+    "places": [
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/20684"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "20684",
+        "sourceUrl": "https://www.artic.edu/artworks/20684",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "This monumental painting is Gustave Caillebotte’s largest, most ambitious work and has been a visitor favorite since the Art Institute acquired it in 1964, well before the artist’s contributions to the Impressionist movement were widely recognized. Caillebotte captured a busy intersection of Paris that was only a short walk from his home. In fact, his paintings of Paris rarely depict areas beyond his familiar neighborhoods.\n\nCaillebotte demonstrated his affinity with the Impressionists through his subject of modern urban life but approached these settings with a more Realist technique. The dramatic cropping of the scene may have been inspired by the newly popularized medium of photography; the two central figures seem to be walking straight into the viewer as something captures their attention outside of the frame. At the time, artists rarely attempted to depict people in motion; Caillebotte carefully placed each of the background figures to evoke the feeling of bustling city streets. When he started exhibiting with the Impressionists, Caillebotte also focused on portraying the atmosphere of his scenes; here, instead of explicitly painting raindrops to indicate the weather, he suggests it through the incorporation of newly available retractable umbrellas and the subtle reflections on the wet cobblestones.",
+        "textSha256": "312140784eec9d690327c33ed0a389d26d56f1e7ab623345cfbc97998397865c"
+      }
+    ],
+    "terms": [
+      "intersection",
+      "cropping",
+      "cobblestones"
+    ],
+    "lookFor": [
+      "그림 속에 빗방울이 그려져 있나요? 비가 온다는 걸 어떻게 알 수 있을까요?",
+      "가운데 두 사람은 어디를 보고 있을까요?",
+      "젖은 돌길에 비친 그림자를 찾아봐요."
+    ],
+    "image": {
+      "url": "/art/caillebotte-paris-street-rainy-day.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Gustave_Caillebotte_-_Paris_Street,_Rainy_Day_-_1964.336_-_Art_Institute_of_Chicago.jpg",
+      "license": "public-domain",
+      "credit": "Gustave Caillebotte. Paris Street; Rainy Day, 1877. Art Institute of Chicago, 1964.336. Public domain (via Wikimedia Commons)",
+      "width": 800,
+      "height": 621,
+      "alt": "비 내리는 파리의 넓은 교차로. 오른쪽 앞에 우산을 함께 쓴 신사와 숙녀가 걸어오고, 가운데 녹색 가로등 뒤로 우산 쓴 사람들과 높은 석조 건물이 보이며, 젖은 돌길이 희미하게 빛난다."
+    }
+  },
+  {
+    "id": "toulouse-lautrec-at-the-moulin-rouge",
+    "wikidata": "Q3607521",
+    "genre": "painting",
+    "artist": "henri-de-toulouse-lautrec",
+    "title": {
+      "native": "At the Moulin Rouge",
+      "ko": "물랭루주에서",
+      "lang": "en"
+    },
+    "hook": "물랭루주의 밤 — 화가 자신도 뒤편에 서 있다",
+    "date": {
+      "text": "1892–95",
+      "source": "aic",
+      "startYear": 1892,
+      "endYear": 1895,
+      "certainty": "range"
+    },
+    "medium": {
+      "native": "Oil on canvas",
+      "ko": "캔버스에 유채"
+    },
+    "places": [
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/61128"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "61128",
+        "sourceUrl": "https://www.artic.edu/artworks/61128",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "Café-concerts were popular venues for drinking and entertainment in late nineteenth-century Paris and attracted the interest of artists such as Henri de Toulouse-Lautrec. The Moulin Rouge, which opened in 1889, was the most famous of the café-concerts, and Toulouse-Lautrec was a habitué of the establishment—he even had a permanently reserved table. His painting Equestrienne (1887–88), now also in the Art Institute’s collection, was acquired by the owner of the nightclub as decoration for the lobby.\n\nAt the Moulin Rouge is a cleverly observed group portrait of the (in some cases) infamous customers and entertainers who formed part of the artist’s circle. Standing in the background, the dancer La Goulue arranges her hair. Seated at the table are dancers La Macarona and Jane Avril, as well as photographer Paul Sescau, poet Édouard Dujardin, and vintner Maurice Guibert. Singer May Milton peers out from the right edge of the painting, her face harshly lit and a shocking acid green—the Moulin Rouge was designed to have electric lighting and Toulouse-Lautrec reveled in the artistic possibilities of artificial glare. The artist himself appears in the center background of the painting, a diminutive figure accompanied by his much taller cousin, the physician Gabriel Tapié de Céleyran.",
+        "textSha256": "853aec5e3f975fca7215e6290d3f4aba700dc15c45cf22e44894649b19a60030"
+      }
+    ],
+    "terms": [
+      "café-concerts",
+      "habitué",
+      "artificial glare"
+    ],
+    "lookFor": [
+      "오른쪽 끝, 초록빛으로 비친 얼굴을 찾아봐요.",
+      "뒤편에 나란히 선 키 작은 화가와 키 큰 사촌을 찾아봐요.",
+      "거울 앞에서 머리를 매만지는 무용수를 찾아봐요."
+    ],
+    "image": {
+      "url": "/art/toulouse-lautrec-at-the-moulin-rouge.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Henri_de_Toulouse-Lautrec_-_At_the_Moulin_Rouge_-_1928.610_-_Art_Institute_of_Chicago.jpg",
+      "license": "public-domain",
+      "credit": "Henri de Toulouse-Lautrec. At the Moulin Rouge, 1892–95. Art Institute of Chicago, 1928.610. Public domain (via Wikimedia Commons)",
+      "width": 800,
+      "height": 699,
+      "alt": "밤의 카바레 안, 탁자에 둘러앉은 신사와 숙녀들 뒤로 사람들이 서 있다. 오른쪽 끝에는 조명을 받아 초록빛으로 보이는 여인의 얼굴이 화면 밖으로 반쯤 잘려 있고, 붉은 머리 여인들이 등을 보이고 있다."
     }
   }
 ]

@@ -33,7 +33,7 @@ export function safeReaderReturn(value) {
       return url.pathname + (validDay ? `?day=${day}` : '');
     }
   }
-  // 산책 「고전 명작」(DISCOVER-CLASSICS-001) — 거르기(언어 · 갈래 · 작가)만 옮긴다. 값은 화면이 다시 검사한다(classicsFilters).
+  // 산책 「고전 명작」(DISCOVER-CLASSICS-001) — 구간(책 · 그림, DISCOVER-ART-001)과 거르기(언어 · 갈래 · 작가)만 옮긴다. 값은 화면이 다시 검사한다(classicsFilters).
   if (typeof value === 'string' && value.length <= 2000 && /^\/discover\/classics(?:\?|$)/.test(value)) {
     const url = new URL(value, 'https://manabi.invalid');
     if (!url.hash && url.pathname === '/discover/classics') {
@@ -44,7 +44,7 @@ export function safeReaderReturn(value) {
   }
   return safeLibraryReturn(value);
 }
-const CLASSICS_RETURN_KEYS = Object.freeze(['lang', 'group', 'cat', 'author']);
+const CLASSICS_RETURN_KEYS = Object.freeze(['shelf', 'lang', 'group', 'cat', 'author']);
 
 // 「함께 읽는 글」 목록 키 — /discover?view=reading이 읽는 것만, 이 순서로 옮긴다. 개인 서재 키(tab · tools · scope ·
 // collection · outline · kind · state)는 옮기지 않는다.

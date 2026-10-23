@@ -10,7 +10,7 @@ import {
 // 카드: 표지 · 원제 · 한국어 제목 · 작가(누르면 다른 거르기를 풀고 그 작가 책만) · 레벨 · 장 수. 담기 단추 · 갈래 꼬리표는 두지 않는다(절제 — 한 번 열면 서재에 남는다).
 // 열기 = 그 책 첫 장(뷰어). 손님은 뷰어가 로그인으로 안내한다(BOOK-GUEST-GATE-1). 「←」는 이 화면으로(readerReturnTarget — /discover/classics).
 
-function Chip({ href, current, children, className = '' }) {
+export function Chip({ href, current, children, className = '' }) {
   return <Link href={href} className={`classics-chip ${className}`.trim()} aria-current={current ? 'true' : undefined} prefetch={false}>{children}</Link>;
 }
 
