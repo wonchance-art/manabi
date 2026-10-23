@@ -57,6 +57,11 @@ a.learn-tile:hover{background:var(--learn-soft)}
 /* 일본어 문장 · 표현 · 복습 단어는 일본어 글꼴로 그린다(FIELD-AUDIT 2026-10-23 KST — 운영 /home 실측). Noto Serif KR로 그리면 한자가 한국 자형이고,
    한자가 흩어진 unicode-range 조각을 17개(743KB) 받아 LCP가 2.7~4.0초였다. 이미 받는 Noto Sans JP(:lang(ja) 전역 규칙과 같은 순서)로 그린다. */
 .learn-paragraph__sentence:lang(ja),.learn-paragraph__words:lang(ja),.learn-review__word:lang(ja){font-family:var(--font-noto-jp,'Noto Sans JP'),var(--font-noto-kr,'Noto Sans KR'),sans-serif}
+/* 중국어도 같다 — 세리프 KR이면 한자가 한국 자형이고 한자 조각 17개(800KB)를 받는다. 이 칸은 이미 ZhSlot이 간체 독립 스타일시트(SC-LINK-001)를
+   걸고 기다리므로 그 Noto Sans SC로 그린다(폴백 이름 — 변수가 없는 배움 세그먼트에서도 웹폰트 이름으로 찾는다). 전역 :lang(zh)와 달리 Noto Sans KR을
+   뒤에 두지 않는다: 스타일시트를 기다리는 동안(visibility: hidden으로 자리만 지킬 때도 배치는 한다) 'Noto Sans SC'가 아직 없어 KR 한자 조각
+   11개(396KB)를 더 받았다. 시스템 글꼴로 자리만 잡고 SC가 오면 그린다(로컬 빌드 실측 2026-10-23 KST — 글꼴 1141 → 841KB). */
+.learn-paragraph__sentence:lang(zh),.learn-paragraph__words:lang(zh),.learn-review__word:lang(zh){font-family:var(--font-noto-sc, 'Noto Sans SC'),sans-serif}
 .learn-paragraph__cap{font-size:12.5px;color:var(--muted)}
 
 /* 이어 읽기 — 시안 C(위아래 나눔). 머리 = 언어 색, 옅은 색은 언어 색 9% + 종이(새 값 없음). */
