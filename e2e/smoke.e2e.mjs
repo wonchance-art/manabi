@@ -400,6 +400,29 @@ test.skip('reading: 관리자에게 글 1 본문·문항 UI를 렌더한다', { 
   });
 });
 
+test("root redirect: '/'는 엣지에서 /home으로, 로그인 결과는 지금처럼 교환 · 실패 화면으로 보낸다", { timeout: config.timeout }, async () => {
+  // ROOT-EDGE-REDIRECT-001 — 옮기기 전 page.jsx가 낸 Location과 같아야 한다(질의는 버린다 · code/error는 page.jsx가 맡는다).
+  const cases = [
+    ['/', '/home', 'middleware'],
+    ['/?utm_source=x&lang=ja', '/home', 'middleware'],
+    ['/?code=fixture-code', '/auth/callback?next=%2Fhome&code=fixture-code', 'page'],
+    ['/?error=access_denied&error_description=denied', '/auth?error=auth_callback_failed&from=%2Fhome', 'page'],
+  ];
+  for (const [input, expected, by] of cases) {
+    const response = await fetch(new URL(input, config.use.baseURL), { redirect: 'manual' });
+    assert.equal(response.status, 307, input);
+    const location = new URL(response.headers.get('location'), config.use.baseURL);
+    assert.equal(location.pathname + location.search, expected, input);
+    // 함수(page.jsx)를 탄 응답만 앱 렌더 머리(Vary: RSC …)를 단다 — middleware 리다이렉트에는 없다.
+    assert.equal(/\brsc\b/i.test(response.headers.get('vary') || ''), by === 'page', `${input}: ${by}`);
+  }
+  await runInFreshPage(async (page) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    assert.equal(new URL(page.url()).pathname, '/home');
+    await assertVisible(page.getByRole('heading', { name: '배움', exact: true }), 'root lands on learn');
+  });
+});
+
 test('world access: 비로그인 사용자는 로그인 안내 화면에서 차단한다', { timeout: config.timeout }, async () => {
   await runInFreshPage(async (page) => {
     await page.goto('/world', { waitUntil: 'domcontentloaded' });
