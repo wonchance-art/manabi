@@ -106,7 +106,7 @@ import { listenSentenceRanges, listenSentenceTokens } from '../lib/listenFollow'
 import { analysisTokenLine } from '../lib/analysisCoverage';
 import { captureReadingAnchor } from '../lib/readingViewport';
 import PageBar, { PageStrips } from '../components/viewer/PageBar';
-import { pinyinCellWidth } from '../lib/pinyinLayout';
+import { watchPinyinCell } from '../lib/pinyinLayout';
 import { hasKinsoku, zhKinsokuMarks, zhKinsokuStyle } from '../lib/zhGrid';
 import { ZhText, useZhGridRuns } from '../components/viewer/ZhText';
 import ReaderToken from '../components/viewer/ReaderToken';
@@ -832,19 +832,10 @@ export default function ViewerPage() {
   const scriptSurfaces = useMemo(() => (zhGrid && zhHant && settings.zhScript === 'hant'
     ? scriptVariantSurfaces(material?.processed_json, material?.raw_text, zhHant) : null),
   [zhGrid, zhHant, settings.zhScript, material?.processed_json, material?.raw_text]);
+  // 병음 칸 폭 — 본문이 늦게 붙어도(비공개 안내가 먼저 그려진 판) 재고, 병음 글꼴 조각이 받아지면 다시 잰다(PINYIN-CELL-RACE-001, pinyinLayout.js).
   useEffect(()=>{
-    let live=true;
-    const measure=()=>{
-      if(!live||materialLang!=='Chinese'||!readerRef.current)return;
-      const rootSize=parseFloat(getComputedStyle(document.documentElement).fontSize)||16;
-      const ctx=document.createElement('canvas').getContext('2d');
-      if(!ctx)return;
-      const family=getComputedStyle(readerRef.current).getPropertyValue('--font-noto-sans').trim()||'sans-serif';
-      ctx.font=`${pinyinSize*rootSize}px ${family}`;
-      setPinyinCell(pinyinCellWidth(text=>ctx.measureText(text).width,fontSize*rootSize));
-    };
-    measure();document.fonts?.ready.then(measure);window.addEventListener('resize',measure);
-    return ()=>{live=false;window.removeEventListener('resize',measure);};
+    if(materialLang!=='Chinese')return undefined;
+    return watchPinyinCell({win:window,doc:document,root:()=>readerRef.current,pinyinRem:pinyinSize,fontRem:fontSize,onCell:setPinyinCell});
   },[materialLang,fontSize,pinyinSize,material?.id,readerRef]);
 
   // 아는 단어 표시와 복습 보호 상태는 같은 DB 트랜잭션으로 바뀐다.
