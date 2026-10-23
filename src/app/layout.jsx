@@ -1,6 +1,7 @@
 import { Inter, Noto_Sans, Noto_Sans_KR, Noto_Sans_JP } from 'next/font/google';
 import '../index.css';
 import Providers from './providers';
+import { INSTALL_CAPTURE_SCRIPT } from '@/lib/installPrompt';
 
 // Inter는 미리 받지 않는다(FONT-PRELOAD-001): 앱 화면(.manabi-app)은 Noto Sans KR · Manrope가 먼저라 Inter 라틴 조각(47kB)이
 // 모든 페이지에서 미리 받아지고 쓰이지 않았다(Preview b8fc2b62 실측 2026-10-17 KST — 배움 · 산책 · 교재 · 뷰어 · 로그인 · 단어 목록 ·
@@ -117,12 +118,12 @@ export default function RootLayout({ children }) {
             새로 맺느라 389ms를 썼다(운영 /viewer/45 실측, 2026-10-17 KST). supabase-js는 자격 증명 없이 보내므로 crossOrigin="anonymous"여야
             그 연결을 다시 쓴다. */}
         {SUPABASE_ORIGIN && <link rel="preconnect" href={SUPABASE_ORIGIN} crossOrigin="anonymous" />}
-        {/* 테마 깜빡임 방지 + SW 등록 */}
+        {/* 설치 이벤트 보관(맨 앞 — 아래 localStorage가 막혀도 받는다, src/lib/installPrompt.js) + 테마 깜빡임 방지 + SW 등록 */}
         <script
           dangerouslySetInnerHTML={{
             /* SW는 프로덕션에서만 등록 — dev에서는 옛 번들 캐시 서빙으로 Fast Refresh·검수를 깨뜨려
                기존 등록까지 적극 해제한다(스테일 번들 사고 2회 재발 방지, 2026-07-22). */
-            __html: `(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);${
+            __html: `(function(){${INSTALL_CAPTURE_SCRIPT}var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);${
               process.env.NODE_ENV === 'production'
                 ? "if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js')})}"
                 : "if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister()})});if(window.caches){caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})})}}"
