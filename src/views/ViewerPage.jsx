@@ -820,8 +820,13 @@ export default function ViewerPage() {
   };
 
   // 읽기 진행률 바 — readerRef는 본문 컨테이너에 부착
-  const { readerRef, readProgress: scrollReadProgress } = useReadProgress(material);
-  const {keepPosition:keepReadingPosition,layoutVersion,cancelPosition:cancelReadingPosition} = useReaderLayout(readerRef, material?.processed_json);
+  // readerEl = 본문 요소(콜백 ref, READER-MOUNT-001). 본문은 자료보다 늦게 붙을 수 있다(계정 확인 중 골격 · 비공개 판정 — PRIVATE-GATE-AUTH-001).
+  // 본문을 붙을 때 한 번 읽는 효과(진행률 스크롤 · 화면 높이 변수 · 시트 첫 자리)는 자료만 보면 본문이 없는 판에 걸리고 다시 걸 계기가 없었다 —
+  // readerEl을 함께 본다.
+  const [readerEl,setReaderEl] = useState(null);
+  const { readerRef, readProgress: scrollReadProgress } = useReadProgress(material, readerEl);
+  const attachReader = useCallback(node => { readerRef.current = node; setReaderEl(node); }, [readerRef]);
+  const {keepPosition:keepReadingPosition,layoutVersion,cancelPosition:cancelReadingPosition} = useReaderLayout(readerRef, material?.processed_json, readerEl);
   const [pinyinCell,setPinyinCell] = useState(44);
   // 중국어 격자(ZH-GRID-001): 낱말 사이 간격 없이 칸마다 같은 자간, 반각 묶음은 칸 수로 올림.
   const zhGrid = materialLang === 'Chinese';
@@ -836,7 +841,7 @@ export default function ViewerPage() {
   useEffect(()=>{
     if(materialLang!=='Chinese')return undefined;
     return watchPinyinCell({win:window,doc:document,root:()=>readerRef.current,pinyinRem:pinyinSize,fontRem:fontSize,onCell:setPinyinCell});
-  },[materialLang,fontSize,pinyinSize,material?.id,readerRef]);
+  },[materialLang,fontSize,pinyinSize,material?.id,readerRef,readerEl]);
 
   // 아는 단어 표시와 복습 보호 상태는 같은 DB 트랜잭션으로 바뀐다.
   const knownLangCode = knownWordsLang(materialLang, learningCapabilities.known);
@@ -1566,7 +1571,7 @@ export default function ViewerPage() {
   const selectionToReveal = tokenRange.range
     ? material?.processed_json?.sequence?.[tokenRange.range.start]
     : isSheetOpen ? selectedToken?.id : undefined;
-  useSelectedTokenVisibility(readerRef, tokenRefs, selectionToReveal, inspectorOpen && (!classStudyActive||!!classBoardLayout) && !modalBlocked && !tokenRange.dragging, material?.processed_json);
+  useSelectedTokenVisibility(readerRef, tokenRefs, selectionToReveal, inspectorOpen && (!classStudyActive||!!classBoardLayout) && !modalBlocked && !tokenRange.dragging, material?.processed_json, readerEl);
   const closeReadingSettings = () => {
     // Once the inspector returns, the selected source owns the visible position.
     // A still-live Aa anchor must not scroll it back underneath the panel.
@@ -2818,7 +2823,11 @@ export default function ViewerPage() {
   }
 
   // 비공개 자료 접근 제어 — 팀 사본(__local)은 암호 뒤 토큰으로 받은 것이라 여기서 막지 않는다.
+  // 계정 확인 중(authLoading — 세션 쿠키가 있으면 문서 파싱 뒤 세션 복원, 없으면 손님 확정까지)에는 판정하지 않고 불러오기 골격을 그대로 둔다
+  // (PRIVATE-GATE-AUTH-001). 자료가 계정보다 먼저 오면 주인이 「비공개 자료예요」를 약 0.3초 보고, 본문은 그 뒤에야 붙었다
+  // (e2e viewer-paged-reader 390 실측 2026-10-24 KST — 병음 칸 폭이 기본값으로 굳은 판의 출발점). 골격에는 제목 · 본문이 없다.
   if (material?.visibility === 'private' && material?.owner_id !== user?.id && !material?.__local) {
+    if (authLoading) return <div className="page-container"><Spinner message="자료 불러오는 중…" /></div>;
     return (
       <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
         <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>{vt("비공개 자료예요")}</h2>
@@ -4175,7 +4184,7 @@ export default function ViewerPage() {
 
       {/* Reader Area — 인앱 토큰 범위 지정(드래그) 이벤트는 여기서 위임 수신 */}
       <div
-        ref={readerRef}
+        ref={attachReader}
         className={`reader-area reader-area--${theme}${focusMode && (pickedLineIdx !== null || tokenRange.range) ? ' reader-area--focus' : ''}${wordStateHl ? ' reader-area--hl' : ''}${paceDwell ? ' reader-area--pacing' : ''}${paceDwell && paceHeld ? ' reader-area--pacing-hold' : ''}`}
         style={{
           fontSize: `${fontSize*(classStudyActive&&classBoardLayout==='split'?.8:1)}rem`,
