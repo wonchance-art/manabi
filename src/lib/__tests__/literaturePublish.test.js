@@ -334,9 +334,11 @@ describe('관리자 화면 배선 — 게시 한 번에 준비·분석, 공개�
   });
 
   it('화면을 열면 멈춘 분석을 한 번만 자동으로 잇는다 — 같은 일괄 경로(멈춤 그대로), 준비(쓰기)는 하지 않는 대상만', () => {
-    const resume = sliceBetween(panel, 'const resumedRef = useRef(false);', '}, [data]);');
-    expect(resume).toContain('if (!data?.books || resumedRef.current) return;');
+    const resume = sliceBetween(panel, 'const resumedRef = useRef(false);', '}, [data, jobsQuery.isFetched]);');
+    expect(resume).toContain('if (!data?.books || !jobsQuery.isFetched || resumedRef.current) return;');
     expect(resume).toContain('resumedRef.current = true;');
+    // 서버 분석(CANON-SERVER-ANALYSIS-001)이 돌고 있으면 브라우저가 같은 장을 겹쳐 잇지 않는다
+    expect(resume).toContain("if (jobsQuery.data?.jobs?.[0]?.status === 'running') return;");
     expect(resume).toContain('const stopped = literatureResumeTargets(data.books);');
     expect(resume).toContain('runBatch(stopped);');
   });
@@ -390,7 +392,9 @@ describe('관리자 게시 화면 표지(오너 「게시 누르는 창에도 �
     expect(row).toContain("kind === 'literature' && <BookCover bookKey={book.key} scale={0.5} />");
     expect(sliceBetween(panel, '<ConfirmModal', '/>')).toContain('message={confirmMessage}');
     const message = sliceBetween(panel, 'const confirmMessage', '\n  );\n');
-    expect(message).toContain("kind !== 'literature' || !['prepare', 'batch', 'release'].includes(confirm.action) ? confirmText");
-    expect(message).toContain("(confirm.action === 'batch' ? confirm.books : [confirm.book]).map((book) => (");
+    expect(message).toContain("kind !== 'literature' || !['prepare', 'batch', 'release', 'server'].includes(confirm.action) ? confirmText");
+    // 일괄 · 서버 분석 확인 창은 대상 작품 표지 줄(여러 권이면 반 크기)
+    expect(panel).toContain("const many = confirm?.action === 'batch' || confirm?.action === 'server';");
+    expect(message).toContain('(many ? confirm.books : [confirm.book]).map((book) => (');
   });
 });

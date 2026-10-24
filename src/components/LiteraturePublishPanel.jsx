@@ -55,6 +55,15 @@
 //                                                        출처: ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · …
 //                                                        원문 1 · 2 · 3 · 4 · 5 · 6 · 7 · 8
 //   검수 줄은 루비 없이: · 冨嶽三十六景 神奈川沖浪裏 ↗ · 확인 끝   [검수 완료]
+// 서버 분석(CANON-SERVER-ANALYSIS-001, 오너 「서버 분석 A안 승인, 권장대로 ㄱㄱ」 2026-10-24 KST) — 화면을 닫아도 서버가 이어서 분석한다:
+//   준비 안 된 8편                                  [8편 모두 게시·분석] [8편 모두 서버에서 분석]
+//   작품 줄(미게시 · 준비 중):                       [게시] / [이어서 분석]   [서버에서 분석]
+//   ── 누른 뒤(확인 창 한 번) ──
+//   서버 분석 중 · 「坊っちゃん」 · 끝난 장 12 · 화면을 닫아도 돼요                              [멈춤]
+//   작품 줄: 서버 분석 중 · 분석 3/11 · 화면을 닫아도 돼요   (도는 동안 브라우저 분석 단추는 잠근다 — 같은 장을 겹쳐 돌리지 않게)
+//   끝나면: 서버 분석 끝 · 끝난 장 40 · 장을 열어 검수해 주세요 / 멈춤: 서버 분석 멈춤 · 끝난 장 12 — 다시 돌리려면 [서버에서 분석]
+//   실패: ⚠ 서버 분석이 멈췄어요 — 연달아 3장을 분석하지 못해 멈췄어요 — …(할당량 · 네트워크 같은 공통 원인)
+//   검수 · 공개는 지금처럼 작품마다(사람 확인 지점).
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -76,8 +85,11 @@ import { wikisourceWork } from '../lib/wikisourceCanonical';
 import { pdSiteWork } from '../lib/pdSiteCanonical';
 
 const LITERATURE_API = '/api/admin/literature';
+const SERVER_JOBS_API = '/api/admin/analysis-jobs';
+const SERVER_POLL_MS = 5000; // 서버 분석이 도는 동안 진행을 다시 받는 간격
+const SERVER_RECENT_MS = 24 * 60 * 60 * 1000; // 끝난 · 멈춘 서버 분석 줄은 하루 동안만 보인다
 const FAILURE_STOP = 3; // 연달아 이만큼 실패하면 공통 원인(할당량·네트워크)으로 보고 멈춘다
-const CONFIRM_LABEL = { release: '공개', batch: '모두 게시·분석', review: '그대로 검수 완료', reviewMany: '모두 검수 완료' };
+const CONFIRM_LABEL = { release: '공개', batch: '모두 게시·분석', review: '그대로 검수 완료', reviewMany: '모두 검수 완료', server: '서버에서 분석' };
 const CONFLICT_LABEL = { 'text-differs': '정본과 원문이 다름', 'duplicate-order': '같은 장이 둘', 'unknown-order': '정본에 없는 장' };
 
 /** 정본 표지 — 서재 카드와 같은 그림을 배율만 줄여서(60×84 기준). 정본 대조표에 없는 책(그림 책)은 그리지 않는다. */
@@ -153,6 +165,7 @@ function EvidenceCell({ book, kind }) {
 function confirmTextOf(confirm, kind) {
   switch (confirm?.action) {
     case 'batch': return `${confirm.books.map((book) => `${book.title}(${book.total}장)`).join(' · ')}. 모두 비공개로 넣고 이 화면에서 한 장씩 분석해요. 근거는 표의 「${KIND[kind].evidence}」 칸과 같아요. 검수와 공개는 작품마다 따로 해요.`;
+    case 'server': return `${confirm.books.map((book) => `${book.title}(${book.total}장)`).join(' · ')}. 서버가 차례로 비공개로 넣고 장마다 분석해요 — 이 화면을 닫아도 이어서 돌아요. 한 장은 세 번까지 다시 시도하고, 연달아 세 장이 실패하면 멈춰요. 검수와 공개는 작품마다 따로 해요.`;
     case 'prepare': return `${confirm.book.total}장을 비공개로 넣고 이 화면에서 한 번씩 분석해요. ${prepareBasis(confirm.book, kind)}. 공개 전에는 다른 사용자에게 보이지 않아요.`;
     case 'release': return '모든 장의 검수를 마쳤어요. 공개하면 모든 사용자가 읽을 수 있어요. 분석 결과는 같이 쓰고, 단어 상태는 사람마다 따로예요.';
     case 'review': return `분석이 원문의 한 낱말 표시(저자 루비 · 고유명사 밑줄) ${confirm.item.boundary}곳을 둘 이상으로 나눴어요(${confirm.item.boundaryWords.join('·')}). 이름이나 한 낱말이면 장을 열어 「한 단어로 묶기」로 고쳐 주세요. 그대로 두어도 되는 자리라면 검수 완료로 표시해요.`;
@@ -181,8 +194,9 @@ function rightsPeopleText(rights) {
 const analyzedCount = (book) => book.chapters.filter((chapter) => chapter.material?.status === 'completed').length;
 
 
-function stageLabel(book, running, kind) {
+function stageLabel(book, running, kind, server = false) {
   if (running) return `준비 중 · 분석 ${running.done}/${running.total} · 이 화면을 닫지 마세요`;
+  if (server) return `서버 분석 중 · 분석 ${analyzedCount(book)}/${book.total} · 화면을 닫아도 돼요`;
   switch (book.stage) {
     case 'unpublished': return `미게시 · ${book.total}장`;
     case 'preparing': return `준비 중 · 분석 ${analyzedCount(book)}/${book.total} · 멈췄어요`;
@@ -192,6 +206,29 @@ function stageLabel(book, running, kind) {
     case 'exposed': return '⚠ 검수 전 공개 · 자료 관리에서 비공개로 돌린 뒤 분석·검수해 주세요';
     default: return '확인 필요';
   }
+}
+
+/** 서버 분석 한 줄 — 가장 최근 작업. 도는 중이면 [멈춤], 끝 · 멈춤 · 실패는 하루 동안만. */
+function ServerJobLine({ job, books, onPause, pausing }) {
+  if (!job) return null;
+  const recent = Date.now() - Date.parse(job.updated_at) < SERVER_RECENT_MS;
+  if (job.status !== 'running' && !recent) return null;
+  const title = books.find((book) => book.key === job.current_key)?.title;
+  const counts = `끝난 장 ${job.chapters_done}${job.chapters_failed ? ` · 건너뛴 장 ${job.chapters_failed}` : ''}`;
+  if (job.status === 'failed') {
+    return <p role="alert" style={{ margin: '0 0 12px', color: 'var(--warning-text)' }}>⚠ 서버 분석이 멈췄어요 — {job.last_error || '이유를 확인하지 못했어요.'} · {counts}</p>;
+  }
+  return (
+    <p className="admin-table__muted" style={{ margin: '0 0 12px' }}>
+      {job.status === 'running'
+        ? <>서버 분석 중{title ? ` · 「${title}」` : ''} · {counts} · 화면을 닫아도 돼요{' '}
+          <Button size="sm" variant="ghost" disabled={pausing} onClick={() => onPause(job)}>멈춤</Button></>
+        : job.status === 'paused'
+          ? `서버 분석 멈춤 · ${counts} — 다시 돌리려면 「서버에서 분석」`
+          : `서버 분석 끝 · ${counts} · 장을 열어 검수해 주세요`}
+      {job.status === 'running' && job.last_error && <span style={{ display: 'block' }}>최근 문제: {job.last_error}</span>}
+    </p>
+  );
 }
 
 // 장별 검수 줄 — 저자 루비 적용(문학책만) · 검수 제안 수 · 남은 「뜻 확인 필요」 · 쪼개진 루비 낱말 · [검수 완료](남은 확인 0일 때만).
@@ -251,18 +288,36 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
   const abortRef = useRef(null);
   const { data, isLoading, isError, refetch } = useQuery({ queryKey: QUERY_KEY, queryFn: () => request(api) });
   useEffect(() => () => abortRef.current?.abort(), []);
+  // 서버 분석(CANON-SERVER-ANALYSIS-001) — 가장 최근 작업. 도는 동안만 SERVER_POLL_MS마다 다시 받는다.
+  const SERVER_JOBS_KEY = [...QUERY_KEY, 'server-jobs'];
+  const jobsQuery = useQuery({
+    queryKey: SERVER_JOBS_KEY,
+    queryFn: () => request(`${SERVER_JOBS_API}?kind=${kind}`),
+    refetchInterval: (query) => (query.state.data?.jobs?.[0]?.status === 'running' ? SERVER_POLL_MS : false),
+  });
+  const serverJob = jobsQuery.data?.jobs?.[0] || null;
+  const serverRunning = serverJob?.status === 'running';
+  // 서버가 장을 마치거나 상태가 바뀔 때마다 표를 새로 받는다(작품 목록만 — exact).
+  const serverProgress = serverJob ? `${serverJob.id}:${serverJob.status}:${serverJob.chapters_done}:${serverJob.chapters_failed}:${serverJob.current_key}` : '';
+  useEffect(() => {
+    if (serverProgress) queryClient.invalidateQueries({ queryKey: QUERY_KEY, exact: true });
+    // QUERY_KEY는 렌더마다 새 배열이지만 값은 같다 — 진행 표식이 바뀔 때만 다시 받는다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverProgress]);
   // 분석 이어하기 — 화면을 열고 처음 목록을 받았을 때 한 번만(멈춤을 누른 뒤 다시 돌지 않게).
   const resumedRef = useRef(false);
   useEffect(() => {
-    if (!data?.books || resumedRef.current) return;
+    if (!data?.books || !jobsQuery.isFetched || resumedRef.current) return;
     resumedRef.current = true;
+    // 서버 분석이 돌고 있으면 이 화면은 잇지 않는다(같은 장을 브라우저와 서버가 겹쳐 분석하지 않게).
+    if (jobsQuery.data?.jobs?.[0]?.status === 'running') return;
     const stopped = literatureResumeTargets(data.books);
     if (stopped.length === 0) return;
     toast(`멈춘 분석 ${stopped.length}${KIND[kind].unit}을 이어요.`, 'info');
     runBatch(stopped);
     // runBatch는 렌더마다 새로 만들어지지만 한 번만 부르므로 의존성에 넣지 않는다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
+  }, [data, jobsQuery.isFetched]);
 
   // 장마다 뷰어와 같은 분석 경로(runPreservedReanalysis — 분석 말미에 저자 루비 잠금)로 한 번씩.
   // 한 장이 실패해도 건너뛰고 다음 장을 잇는다(AOZORA-P1-13 — 621장 일괄에서 한 장 때문에 전체가 멈추지 않게). 실패한 장은
@@ -378,6 +433,20 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
     onSettled: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
   });
 
+  const serverPost = (body) => request(SERVER_JOBS_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const serverStart = useMutation({
+    mutationFn: (targets) => serverPost({ action: 'start', kind, keys: targets.map((book) => book.key) }),
+    onSuccess: (_, targets) => toast(`${targets.length === 1 ? `「${targets[0].title}」` : `${targets.length}${KIND[kind].unit}`}을 서버에서 분석해요. 화면을 닫아도 이어서 돌아요.`, 'success'),
+    onError: (error) => toast(friendlyToastMessage(error, '서버 분석을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.'), 'error'),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: SERVER_JOBS_KEY }),
+  });
+  const serverPause = useMutation({
+    mutationFn: (job) => serverPost({ action: 'pause', id: job.id }),
+    onSuccess: () => toast('지금 분석 중인 장을 마치고 멈춰요.', 'info'),
+    onError: (error) => toast(friendlyToastMessage(error, '서버 분석을 멈추지 못했어요. 잠시 후 다시 시도해 주세요.'), 'error'),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: SERVER_JOBS_KEY }),
+  });
+
   const release = useMutation({
     mutationFn: (book) => post('release', book.key),
     onSuccess: (_, book) => toast(`「${book.title}」 책을 산책에 공개했어요.`, 'success'),
@@ -396,15 +465,18 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
   }
 
   const books = data?.books || [];
-  const busy = !!running || !!batch || prepare.isPending || review.isPending || reviewMany.isPending || release.isPending;
+  // 서버 분석이 도는 동안은 브라우저 분석 · 게시 단추를 잠근다(검수 · 공개는 그대로 — 분석이 끝난 작품은 계속 손볼 수 있다).
+  const analysisBusy = !!running || !!batch || prepare.isPending || serverRunning || serverStart.isPending;
+  const busy = analysisBusy || review.isPending || reviewMany.isPending || release.isPending;
   const pending = literatureBatchTargets(books);
   // 확인 창 본문 — 정본 문학책의 게시·일괄·공개 확인이면 대상 작품 표지(한 권은 실제 크기, 일괄은 반 크기 줄)를 문장 위에.
   const confirmText = confirmTextOf(confirm, kind);
-  const confirmMessage = !confirm || kind !== 'literature' || !['prepare', 'batch', 'release'].includes(confirm.action) ? confirmText : (
+  const many = confirm?.action === 'batch' || confirm?.action === 'server';
+  const confirmMessage = !confirm || kind !== 'literature' || !['prepare', 'batch', 'release', 'server'].includes(confirm.action) ? confirmText : (
     <>
       <span style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' }}>
-        {(confirm.action === 'batch' ? confirm.books : [confirm.book]).map((book) => (
-          <BookCover key={book.key} bookKey={book.key} scale={confirm.action === 'batch' ? 0.5 : 1} />
+        {(many ? confirm.books : [confirm.book]).map((book) => (
+          <BookCover key={book.key} bookKey={book.key} scale={confirm.action === 'batch' || confirm.books?.length > 1 ? 0.5 : 1} />
         ))}
       </span>
       {confirmText}
@@ -442,10 +514,12 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
         ) : pending.length > 1 && (
           <span>
             준비 안 된 {pending.length}{KIND[kind].unit}{' '}
-            <Button size="sm" disabled={busy} onClick={() => setConfirm({ action: 'batch', books: pending })}>{pending.length}{KIND[kind].unit} 모두 게시·분석</Button>
+            <Button size="sm" disabled={busy} onClick={() => setConfirm({ action: 'batch', books: pending })}>{pending.length}{KIND[kind].unit} 모두 게시·분석</Button>{' '}
+            <Button size="sm" variant="ghost" disabled={busy} onClick={() => setConfirm({ action: 'server', books: pending })}>{pending.length}{KIND[kind].unit} 모두 서버에서 분석</Button>
           </span>
         )}
       </div>
+      <ServerJobLine job={serverJob} books={books} onPause={(job) => serverPause.mutate(job)} pausing={serverPause.isPending} />
       <table className="admin-table">
         <thead>
           <tr><th>작품</th><th>레벨</th><th>{KIND[kind].evidence}</th><th>단계</th><th>작업</th></tr>
@@ -453,6 +527,9 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
         <tbody>
           {books.map((book) => {
             const runningHere = running?.key === book.key && !batch ? running : null;
+            const serverHere = serverRunning && serverJob.current_key === book.key;
+            // 서버에서 분석할 수 있는 작품 — 일괄 대상과 같은 기준(게시 가능 · 정본과 다른 장 없음 · 미게시 또는 분석이 남음).
+            const serverable = literatureBatchTargets([book]).length > 0;
             const prepared = book.chapters.some((chapter) => chapter.material);
             return (
               <tr key={book.key}>
@@ -465,7 +542,7 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
                 <td>{book.level}</td>
                 <EvidenceCell book={book} kind={kind} />
                 <td>
-                  <div role={runningHere ? 'status' : undefined}>{stageLabel(book, runningHere, kind)}</div>
+                  <div role={runningHere ? 'status' : undefined}>{stageLabel(book, runningHere, kind, serverHere)}</div>
                   {prepared && !['reviewing', 'ready', 'released'].includes(book.stage) && (
                     <div className="admin-table__muted">
                       {book.chapters.map((chapter) => (
@@ -500,8 +577,11 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
                   {!runningHere && book.stage === 'preparing' && book.plan.insert.length === 0 && (
                     <Button size="sm" disabled={busy} onClick={() => analyzeBook(book)}>이어서 분석</Button>
                   )}
+                  {!runningHere && serverable && (
+                    <Button size="sm" variant="ghost" disabled={busy} onClick={() => setConfirm({ action: 'server', books: [book] })}>서버에서 분석</Button>
+                  )}
                   {book.stage === 'ready' && (
-                    <Button size="sm" disabled={busy} onClick={() => setConfirm({ action: 'release', book })}>공개</Button>
+                    <Button size="sm" disabled={release.isPending || !!running || !!batch} onClick={() => setConfirm({ action: 'release', book })}>공개</Button>
                   )}
                 </td>
               </tr>
@@ -515,6 +595,8 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
           ? `${confirm.chapter.title} — 쪼개진 낱말을 그대로 두고 검수 완료할까요?`
           : confirm.action === 'reviewMany'
             ? `「${confirm.book.title}」 ${confirm.chapters.length}장을 검수 완료로 표시할까요?`
+            : confirm.action === 'server'
+              ? (confirm.books.length === 1 ? `「${confirm.books[0].title}」 책을 서버에서 분석할까요?` : `${confirm.books.length}${KIND[kind].unit}을 서버에서 차례로 준비하고 분석할까요?`)
             : confirm.action === 'batch'
           ? `${confirm.books.length}${KIND[kind].unit}을 차례로 준비하고 분석할까요?`
           : confirm.action === 'prepare'
@@ -523,13 +605,14 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
         message={confirmMessage}
         confirmLabel={CONFIRM_LABEL[confirm?.action] || '게시'}
         variant="primary"
-        confirmDisabled={busy}
+        confirmDisabled={['prepare', 'batch', 'server'].includes(confirm?.action) ? busy : (review.isPending || reviewMany.isPending || release.isPending || !!running || !!batch)}
         onConfirm={() => {
           const { action, book, books: targets, chapter, chapters } = confirm;
           setConfirm(null);
           if (action === 'review') review.mutate({ book, chapter, acceptBoundaries: true });
           else if (action === 'reviewMany') reviewMany.mutate({ book, chapters });
           else if (action === 'batch') runBatch(targets);
+          else if (action === 'server') serverStart.mutate(targets);
           else if (action === 'prepare') prepare.mutate(book);
           else release.mutate(book);
         }}

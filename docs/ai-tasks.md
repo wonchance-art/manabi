@@ -902,6 +902,12 @@
     책 표지를 칸 폭 가득(데스크톱 144px · 모바일 105px). 읽은 자리 = Kindle 서재 모방 창조(오너 제시): 위 오른쪽 가름끈 리본에 퍼센트(장 단위 — 다 읽은 장 + 읽는 중인 장 반, 1–99%) ·
     다 읽으면 아래 오른쪽 ✓만 · 그림은 ✓만 · 열기는 가장 최근에 손댄 장. 로그인 사용자의 reading_progress만 읽는다(새 표 · 마이그레이션 없음, 토큰 갱신 없는 `requireUserClaims`,
     발행 관리자 소유 공개 장만 셈 — fail closed). 계약 `classicsProgress.test.js` · `classicsShelf.test.jsx` · `artShelf.test.jsx` · `accountRouterRefresh.test.jsx`(계정 라우트 목록).
+  ⑧ **CANON-SERVER-ANALYSIS-001 서버 분석(A안 — 스스로 이어 달리기) (2026-10-24 KST, 오너 「서버 분석 A안 승인, 권장대로 ㄱㄱ」)**:
+    관리자 게시 화면 「서버에서 분석」(작품 줄) · 「N편 모두 서버에서 분석」(일괄 줄) → 작업 한 줄(`canonical_analysis_jobs`) → tick(`/api/cron/analysis-jobs`,
+    기존 CRON_SECRET · 응답 뒤 after · 300초)이 책 차례대로 「게시」(같은 처리 `prepareCanonicalBook`) · 장마다 브라우저와 같은 분석 경로(분석 라우트를 같은 프로세스 안
+    표식 요청으로 — `internalAnalysisRequest`, 로그인 · 사용자 한도만 건너뜀)로 분석 → 작업 확인 저장(`canonical_analysis_save` — 뷰어 저장과 같은 비교 저장, 비공개 장만,
+    service role만) → 다음 tick을 스스로 부른다. 화면을 닫아도 진행 · 멈춤은 장 사이 · 한 장 3번 · 연달아 3장 실패면 멈춤 · 끊긴 사슬은 화면 열기 · 하루 한 번 예약 실행(02:45 KST)이 깨움.
+    도는 동안 브라우저 분석 잠금(검수 · 공개는 그대로). 새 환경 변수 없음. 마이그레이션 `20261024120000`(PGlite `canonical-analysis-jobs.mjs`) · 계약 `analysisJobs.test.js`.
 - **HSK 단어 페이지 개편 (2026-10-19 KST, 오너 「좋아 작업 진행해」 · 진동만 제외)** `claude/project-thread-qiz34v`: 정본 = 문서 「HSK 단어 페이지」 rev 17.
   /chinese/vocab/hN을 새 화면(LevelWordPage)으로 — 상단바 한 줄 · 한 단어 모드(기본) · 리스트 · 찾기(HSK 1–9 전체) · 글자 칸 · 상태 칸(☆ · 오늘 · 복습 · 졸업 90일) ·
   네 칸 색 토큰(복습실 공유) · 되돌리기 한 길(`inlineGradeUndo.js`) · 예문 단어 나눔(빌드 때, 분석기와 같은 분할) · 0.3초 이하 움직임 + 동작 줄이기.
