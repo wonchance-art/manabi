@@ -10,6 +10,7 @@ import { getBunkei as getJaBunkei, countBunkei as countJaBunkei } from '../conte
 import { getVocab as getZhVocab, getBunkei as getZhBunkei, countBunkei as countZhBunkei, ZH_LEVEL_META, ZH_HSK79_VOCAB } from '../content/chinese';
 import { loadZhHskLevels, zhHskLevelOf } from './zhHskLevel';
 import { encodeExampleSeg, encodeFuri } from './levelExampleCode';
+import { patternAnchor } from './sentencePattern.js';
 import { LEVEL_HUN_PX, LEVEL_LIST_LANGS, compactLevelEntry, hunShapeOf, levelKinds, levelWordKey, shortMeaning } from './levelList';
 import { hunRubyCells } from './viewerHunRuby';
 import { loadHanziTable } from './zhHanzi';
@@ -280,7 +281,8 @@ function bunkeiGroups(lang, levelKey) {
   return bunkei.themes.map((theme) => ({
     name: theme.name,
     entries: theme.items.map((item) => ({
-      key: `p${n++}`, pattern: item.pattern, ko: shortMeaning(item.ko), conn: item.conn || '', note: item.note || '',
+      // anchor = 뷰어 [문장] 탭 패턴 카드의 「문형 목록에서 보기」가 여는 항목(sentencePattern.patternListHref).
+      key: `p${n++}`, anchor: patternAnchor(item.pattern), pattern: item.pattern, ko: shortMeaning(item.ko), conn: item.conn || '', note: item.note || '',
       exs: [example(item.ex), example(item.ex2)].filter(Boolean),
     })),
   })).filter((g) => g.entries.length);

@@ -75,12 +75,12 @@ describe('AA R1 — 소스 계약: 모델·엔드포인트는 llm.js 한 곳', (
     expect(proxy).toContain("'Bad Request: Unsupported tier'");
   });
 
-  it('클라(lib/gemini.js)는 GEMINI_TIER만 알고 body.tier로 보낸다 — 호출부 3곳도 티어', () => {
+  it('클라(lib/gemini.js)는 GEMINI_TIER만 알고 body.tier로 보낸다 — 호출부도 티어', () => {
     const client = read('src/lib/gemini.js');
     expect(client).toContain("export const GEMINI_TIER = 'standard'");
     expect(client).toMatch(/contents: \[\{ parts: \[\{ text: prompt \}\] \}\],\n\s+tier,/);
     expect(client).not.toContain('GEMINI_MODEL');
-    for (const hook of ['src/lib/useGrammarDetail.js', 'src/lib/useEasierText.js', 'src/lib/useViewerQuiz.js']) {
+    for (const hook of ['src/lib/useViewerQuiz.js']) {
       const src = read(hook);
       expect(src).toContain('{ tier: GEMINI_TIER }');
       expect(src).not.toContain('GEMINI_MODEL');

@@ -9,6 +9,12 @@
   --reader-gutter:clamp(12px,2vw,24px);
   /* 한자 창 소리 조각 색(AE-R4) — 기존 황토 토큰의 뷰어 별칭. 뜻 조각 색은 --primary-light(교재 색). docs/ui-conventions.md §1. */
   --reader-sound:var(--book-amber-main);
+  /* [문장] 탭 카드(목업 U 4판) — 단어장 부품 색의 뷰어 별칭. 새 값 없이 기존 토큰(종이 · 잉크 · 단어장 로즈 --ja · 등급 색)을 섞는다. */
+  --reader-card:color-mix(in srgb,var(--reader-paper) 60%,var(--sheet)); --reader-chip:color-mix(in srgb,var(--reader-ink) 8%,var(--reader-paper));
+  --reader-formula:color-mix(in srgb,var(--reader-ink) 6%,var(--reader-paper)); --reader-faint:color-mix(in srgb,var(--reader-muted) 65%,var(--reader-paper));
+  --reader-rose:var(--ja); --reader-rose-ink:color-mix(in srgb,var(--ja) 82%,var(--reader-ink));
+  --reader-rose-wash:color-mix(in srgb,var(--reader-rose) 11%,var(--reader-paper)); --reader-rose-line:color-mix(in srgb,var(--reader-rose) 22%,var(--reader-paper));
+  --reader-ex-rule:color-mix(in srgb,var(--reader-rose) 30%,var(--reader-paper)); --reader-warn:var(--grade-hard); --reader-ok:var(--grade-good);
   container: reader / inline-size; display:flex; align-items:flex-start; gap:24px; position:relative;
   height:auto; min-height:100dvh; width:100%; padding:var(--reader-gutter); background:var(--reader-paper); color:var(--reader-ink);
   font-family:var(--font-noto-kr),sans-serif;
@@ -28,6 +34,8 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .manabi-app:has(.viewer-layout[data-reader-theme="dark"]) {
   --reader-paper:#202625; --reader-ink:#f0eee7; --reader-muted:#b7bfba; --reader-line:#4c5752; --reader-surface:#2b3430;
   --reader-selected:#394b41; --reader-accent:var(--book-dark-text); --reader-sound:var(--book-amber-dark-text);
+  --reader-card:var(--reader-surface); --reader-rose:color-mix(in srgb,var(--ja) 45%,var(--reader-ink)); --reader-rose-ink:var(--reader-rose);
+  --reader-warn:var(--book-amber-dark-text); --reader-ok:color-mix(in srgb,var(--grade-good) 45%,var(--reader-ink));
   --tone-1:#a8c9ff; --tone-2:#99d7b2; --tone-3:#ebce84; --tone-4:#ffabb8; --tone-0:#c4cbc6;
 }
 /* The site header lives outside .viewer-layout, so the dark reading theme left it on the light shell
@@ -215,25 +223,72 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .reader-card-pattern__line {display:flex;align-items:center;gap:0;width:100%;min-height:44px;padding:4px 0;border:0;background:transparent;color:var(--reader-ink);font-size:.875rem;text-align:start;cursor:pointer;overflow-wrap:anywhere;}
 .reader-card-pattern__label {color:var(--reader-muted);font-size:.75rem;}
 .reader-card-pattern__pop {margin:4px 0 0;padding:8px 10px;border:1px solid var(--reader-line);border-radius:8px;background:var(--reader-paper);}
-/* AE-R2 PR ③ [문장] 탭(설계서 docs/manabi-viewer-v2-ae-r2.md §3·§11): 원문 줄(누른 단어 칠) → 번역 → [더 쉽게][자세히]
-   → 문형 → 단어별 뜻. 구획은 가는 선(접힘 0). 진행 표시는 번역 칸에만 한 줄 — 그 위(원문·번역 머리)는 움직이지 않는다. */
+/* [문장] 탭(목업 U 4판 · 오너 10-24): 문장 카드 → 「패턴」 → 「단어」. 카드 · 묶음 제목 · 상태 칸 · 예문 줄 · 공식 칸은 단어장
+   부품(level-word.css · level-list.css)의 치수를 따르고, 색은 아래 --reader-* 별칭으로 뷰어 테마(종이 · 밝게 · 어둡게)를 탄다.
+   모서리만 뷰어 단계(4 · 8 · 12px, 목업 F3)로 맞춘다 — 단어장의 14 · 6px는 12 · 4px. */
+.reader-sentence {display:flex;flex-direction:column;gap:16px;}
+.reader-sentence__card,.reader-pattern,.reader-words {background:var(--reader-card);border:1px solid var(--reader-line);border-radius:12px;}
+.reader-sentence__card {padding:14px 8px 14px 16px;}
 .reader-sentence__source {display:flex;align-items:flex-start;gap:4px;}
-/* 원문 줄은 카드 문장 줄과 같은 결(상자 없이, 누른 자리만 칠) — 칠이 상자 배경에 묻히지 않게. 자르지 않는다. */
-.reader-sentence__original {flex:1;min-width:0;margin:0 0 8px;padding:10px 0 0;border:0;border-radius:0;background:none;font-size:.9375rem;line-height:1.6;color:var(--reader-ink);}
-.reader-sentence__icon {flex-shrink:0;min-width:44px;min-height:44px;border:0;background:none;color:inherit;cursor:pointer;}
-.reader-sentence__icon:first-of-type {color:var(--reader-accent);}
+/* 원문 20px — 자리 이름(주어 · 형용사)이 밑줄 아래 작게 붙어 줄 간격을 넉넉히 둔다. 자르지 않는다. */
+.reader-sentence__original {flex:1;min-width:0;margin:0;padding:8px 0 4px;font-size:1.25rem;line-height:1.7;color:var(--reader-ink);overflow-wrap:anywhere;}
+/* 자리 이름표(밑줄 아래 작은 글자)가 있을 때만 줄 사이를 연다. */
+.reader-sentence__original--slots {line-height:2.3;}
+.reader-sentence__mark {position:relative;display:inline-block;line-height:1.5;text-decoration:underline;text-underline-offset:6px;text-decoration-thickness:2px;}
+.reader-sentence__mark--slot {text-decoration-color:var(--reader-ex-rule);}
+.reader-sentence__mark--fixed {font-weight:700;text-decoration-color:var(--reader-ink);}
+.reader-sentence__glue {white-space:nowrap;}
+.reader-sentence__slot {position:absolute;left:0;right:0;top:100%;margin-top:4px;font-size:.6875rem;font-weight:500;line-height:1;text-align:center;white-space:nowrap;color:var(--reader-muted);text-decoration:none;}
+.reader-sentence__translation {margin:10px 8px 0 0;padding-top:10px;border-top:1px dashed var(--reader-line);}
+.reader-sentence__tx {margin:0;font-size:1rem;line-height:1.6;color:var(--reader-ink);overflow-wrap:anywhere;}
+.reader-sentence__note {margin:4px 0 0;font-size:.8125rem;line-height:1.55;color:var(--reader-muted);overflow-wrap:anywhere;}
 .reader-sentence__pending {margin:0;font-size:.9rem;line-height:1.75;color:var(--reader-muted);}
 .reader-sentence__login,.reader-card-learn__login,.reading-test__login {display:inline-flex;align-items:center;min-height:44px;font-size:.9rem;line-height:1.5;color:var(--reader-accent);text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere;}
-.reader-sentence__actions {display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
-.reader-sentence__actions:empty {display:none;}
-.reader-sentence__actions .grammar-detail__toggle {width:auto;margin-top:0;flex:0 1 auto;}
-.reader-sentence__patterns,.reader-sentence__glosses {border-top:1px solid var(--reader-line);padding-top:8px;margin:12px 0 0;}
-/* 한 항목(낱말 · 읽기 · 뜻) 안에서는 어절 단위로만 꺾고, 구분점은 앞 항목 끝에 붙여 줄머리에 오지 않게 한다. */
-.reader-sentence__glosses ul {list-style:none;margin:0;padding:0;font-size:.9375rem;line-height:1.7;word-break:keep-all;overflow-wrap:anywhere;}
-.reader-sentence__glosses li {display:inline;}
-.reader-sentence__glosses li:not(:last-child)::after {content:"\00a0· ";color:var(--reader-muted);}
-.reader-sentence__patterns .reader-card-pattern__line {gap:.3em;}
-.reader-sentence__reading {font-size:.875em;color:var(--reader-muted);}
+/* 묶음 제목 = 문형 목록 h2(12.5px 굵게 회색 + 옅은 개수). */
+.reader-sentence__group {display:flex;flex-direction:column;gap:8px;}
+.reader-sentence__heading {margin:0;font-size:.78125rem;font-weight:700;letter-spacing:.04em;line-height:1.4;color:var(--reader-muted);}
+.reader-sentence__heading span {margin-left:6px;font-weight:500;color:var(--reader-faint);}
+/* 패턴 카드 — 머리(공식 칸 · 급수 · 상태 칸) · 뜻 · 주의 · 예문 줄 · 목록 링크. */
+.reader-pattern {padding:12px 8px 0 16px;overflow:hidden;}
+.reader-pattern--pending {min-height:180px;padding:0;}
+.reader-pattern[data-picked] {border-color:var(--reader-rose);}
+.reader-pattern__head {display:flex;align-items:center;gap:8px;min-height:44px;}
+.reader-pattern__formula {display:inline-flex;flex-wrap:wrap;align-items:center;gap:2px 4px;min-width:0;margin:0 auto 0 0;padding:4px 6px;border:0;border-radius:8px;background:var(--reader-formula);font:inherit;color:var(--reader-ink);text-align:start;}
+button.reader-pattern__formula {cursor:pointer;min-height:44px;}
+.reader-pattern__cell {font-size:.875rem;line-height:1.4;}
+.reader-pattern__cell--slot {padding:2px 2px;color:var(--reader-muted);}
+.reader-pattern__cell--fixed {padding:2px 8px;border-radius:4px;background:var(--reader-card);font-size:1rem;font-weight:700;}
+.reader-pattern__plus {font-size:.75rem;color:var(--reader-faint);}
+.reader-pattern__tag {flex:none;padding:2px 6px;border-radius:4px;background:var(--reader-chip);font-size:.71875rem;font-weight:700;line-height:1.4;color:var(--reader-muted);}
+.reader-pattern__ko {margin:4px 8px 0 0;font-size:.9375rem;line-height:1.55;color:var(--reader-ink);}
+.reader-pattern__warn {position:relative;margin:6px 8px 0 0;padding-left:12px;font-size:.8125rem;line-height:1.55;color:var(--reader-warn);}
+.reader-pattern__warn::before {content:"";position:absolute;left:0;top:.55em;width:5px;height:5px;border-radius:50%;background:currentColor;}
+/* 예문 줄 = 문형 목록 lv-ex(왼쪽 2px 분홍 회색 줄 · 17px · 병음/뜻 13px 회색 · 🔊). */
+.reader-pattern__ex {display:flex;align-items:center;gap:4px;margin:10px 0 12px;padding-left:14px;border-left:2px solid var(--reader-ex-rule);}
+.reader-pattern__ex-body {flex:1;min-width:0;}
+.reader-pattern__ex-text {margin:0;font-size:1.0625rem;line-height:1.5;color:var(--reader-ink);overflow-wrap:anywhere;}
+.reader-pattern__ex-sub {margin:2px 0 0;font-size:.8125rem;line-height:1.5;color:var(--reader-muted);overflow-wrap:anywhere;}
+.reader-pattern__more {display:flex;align-items:center;justify-content:space-between;min-height:44px;margin:0 0 0 -16px;padding:0 16px;border-top:1px solid var(--reader-line);font-size:.8125rem;color:var(--reader-ink);text-decoration:none;}
+.reader-pattern__more span {color:var(--reader-muted);}
+/* 단어 줄 — 낱말 · 읽기 · 뜻 · 상태 칸(단어장 lw-status 치수). */
+.reader-words {list-style:none;margin:0;padding:0 0 0 16px;}
+.reader-words__row {display:grid;grid-template-columns:minmax(3.5em,auto) minmax(4.5em,auto) minmax(0,1fr) 44px;align-items:center;column-gap:10px;min-height:48px;padding-right:4px;border-bottom:1px solid var(--reader-line);overflow-wrap:anywhere;}
+.reader-words__row:last-child {border-bottom:0;}
+.reader-words__row:not(:has(.lw-status)) {grid-template-columns:minmax(3.5em,auto) minmax(4.5em,auto) minmax(0,1fr);padding-right:12px;}
+.reader-words__text {font-size:1.0625rem;line-height:1.4;color:var(--reader-ink);}
+.reader-words__reading {font-size:.8125rem;color:var(--reader-muted);}
+.reader-words__meaning {font-size:.9375rem;line-height:1.45;color:var(--reader-ink);}
+/* 상태 칸(StatusPill) — 단어장 .lw-status와 같은 치수, 색만 뷰어 별칭. */
+.reader-sentence .lw-status {flex:none;width:44px;min-height:44px;display:inline-grid;place-items:center;font-size:.71875rem;font-weight:700;border:0;background:none;padding:0;position:relative;isolation:isolate;color:var(--reader-ink);}
+.reader-sentence .lw-status::before {content:"";position:absolute;width:38px;height:22px;border-radius:4px;border:1px solid transparent;box-sizing:border-box;z-index:-1;}
+.reader-sentence .lw-status--new {color:var(--reader-rose);font-size:1.25rem;cursor:pointer;}
+.reader-sentence .lw-status--new[aria-busy] {opacity:.5;}
+.reader-sentence .lw-status--today {color:var(--reader-rose-ink);}
+.reader-sentence .lw-status--today::before {background:var(--reader-rose-wash);border-color:var(--reader-rose-line);}
+.reader-sentence .lw-status--review::before {border-color:var(--reader-line);}
+.reader-sentence .lw-status--grad {color:var(--reader-ok);}
+.reader-sentence .lw-status--grad::before {border-color:color-mix(in srgb,var(--reader-ok) 35%,var(--reader-paper));}
+.reader-sentence .word-detail-card__speak {flex:none;width:44px;height:44px;}
 .reader-card-sense-list {list-style:none;margin:0;padding:0;}
 .reader-card-sense {display:grid;grid-template-columns:4.25em 1.25em minmax(0,1fr) auto;column-gap:4px;align-items:baseline;padding:4px 6px;margin:0 -6px;border-radius:4px;font-size:.9375rem;line-height:1.55;}
 .reader-card-sense.is-current {background:var(--reader-selected);}

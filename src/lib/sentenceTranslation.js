@@ -12,6 +12,7 @@ import { buildContextPrompt } from './grammarDetail.js';
 import { buildViewerSentencePrompt, parseViewerExplanation, formatViewerExplanation } from './viewerExplanation.js';
 import { callGemini, SENTENCE_TX_TIER } from './gemini.js';
 import { cleanLineText } from './sentenceNav.js';
+import { buildPatternPromptBlock } from './sentencePattern.js';
 
 export const SENTENCE_TX_QUERY = 'viewer-sentence-tx';
 export const SENTENCE_TX_GC_MS = 30 * 60 * 1000;
@@ -65,7 +66,7 @@ export function peekSentenceTranslationKey(scope, sentence) {
  */
 export async function fetchSentenceTranslation({
   sentence, locale, language, langName, cacheKey, storage, callAi = callGemini,
-  purpose = 'viewer-sentence', attempts, beforeAi, onAi,
+  purpose = 'viewer-sentence', attempts, beforeAi, onAi, patternCandidates,
 }) {
   if (cacheKey && storage) {
     let cached = null;
@@ -73,8 +74,10 @@ export async function fetchSentenceTranslation({
     if (cached) return { text: cached, source: 'cache' };
   }
   if (beforeAi && beforeAi() === false) throw new Error('SENTENCE_TX_SKIPPED');
+  // 문형 칸(목업 U 4판): 한국어 설명일 때 문형 사전 후보를 같은 요청에 싣는다. 후보를 못 모아도 번역은 그대로 간다.
+  const candidates = locale === 'ko' && patternCandidates ? await Promise.resolve().then(patternCandidates).catch(() => null) : null;
   const prompt = locale === 'ko'
-    ? buildContextPrompt(sentence, langName)
+    ? buildContextPrompt(sentence, langName, candidates ? buildPatternPromptBlock(language, candidates) : null)
     : buildViewerSentencePrompt({ text: sentence, language, locale });
   const started = Date.now();
   const raw = await callAi(prompt, undefined, { tier: SENTENCE_TX_TIER, purpose, ...(attempts ? { attempts } : {}) });
