@@ -7,6 +7,7 @@
 import { tokenDictKeyOf } from './tokenDictPrefetch.js';
 import { composeRangeText } from './useTokenRangeSelect.js';
 import { cleanLineText } from './sentenceNav.js';
+import { VIEWER_MESSAGES, VIEWER_MESSAGE_LOCALES } from './viewerMessages.js';
 
 // 드래그 단어 목록과 같은 기호 판정(ViewerPage runSelectedSentence) — 글자 없는 토큰은 뜻 목록에 넣지 않는다.
 const PUNCT_ONLY = /^[\s。、！？!?,.:;""''（）()「」『』【】…·\-/]+$/u;
@@ -74,21 +75,25 @@ export function sentencePanelTokenIds({ text, rawLines = [], lineTokens, sequenc
 }
 
 /**
- * 번역 결과 → 번역 줄과 회색 줄(목업 U 4판: 번역 16px, 맥락 · 말투 · 교재 표시는 그 아래 13px 회색 한 덩이).
+ * 번역 결과 → 번역 줄과 회색 줄(목업 U 4판: 번역 16px, 말투 · 교재 표시는 그 아래 13px 회색 한 덩이. 맥락은 그리지 않는다).
  * 제목 줄(**번역** · **맥락** …)은 그리지 않는다 — 위치와 크기가 이미 구분한다. 굵게 표시는 걷어 낸다.
  * @returns {{translation:string[], notes:string[]}}
  */
+// 설명 언어별 「맥락」 제목(중국어 설명은 formatViewerExplanation이 语境 · 語境으로 단다).
+const CONTEXT_HEADINGS = new Set(VIEWER_MESSAGE_LOCALES.map((locale) => VIEWER_MESSAGES[locale]['맥락']));
+
 export function sentenceTranslationParts(text) {
   const sections = [];
   let current = null;
   for (const raw of String(text || '').split('\n')) {
     const heading = /^\s*\*\*(.+?)\*\*\s*$/u.exec(raw);
-    if (heading) { current = { lines: [] }; sections.push(current); continue; }
+    if (heading) { current = { name: heading[1].trim(), lines: [] }; sections.push(current); continue; }
     if (!current) { current = { lines: [] }; sections.push(current); }
     const line = raw.replace(/\*\*/gu, '').trim();
     if (line && line !== '-') current.lines.push(line);
   }
-  const filled = sections.filter((section) => section.lines.length);
+  // 맥락(배경 설명) 줄은 그리지 않는다(오너 10-24 「… 장면이에요 문구 제거」) — 캐시에 남은 옛 결과도 같다.
+  const filled = sections.filter((section) => section.lines.length && !CONTEXT_HEADINGS.has(section.name));
   const first = filled[0]?.lines || [];
   const book = first.filter((line) => line.startsWith('📘'));
   return {

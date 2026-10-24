@@ -328,7 +328,8 @@ test('selected sentence refreshes explanation locale without reanalyzing source 
     await page.locator('#inspector-sentence-tab[aria-selected="true"]').waitFor();
     assert.equal(await page.locator('#inspector-sentence-tab').getAttribute('aria-selected'), 'true', 'direct translation opens the sentence tab');
     await panel.locator('.reader-sentence__translation').filter({ hasText: '來到了學校。' }).waitFor();
-    assert((await panel.locator('.reader-sentence__translation').textContent()).includes('這是選取的第二句。'));
+    // 맥락 줄은 [문장] 탭에 그리지 않는다(오너 10-24).
+    assert.equal((await panel.locator('.reader-sentence__translation').textContent()).includes('這是選取的第二句。'), false);
     const originals = await page.locator('.reader-sentence__original').allTextContents();
     assert(originals.some(text => text.includes('학교에 왔어요.')), 'translation preserves the selected second sentence');
     const words = await page.locator('.pdf-word-item__text').allTextContents();
@@ -339,7 +340,7 @@ test('selected sentence refreshes explanation locale without reanalyzing source 
       await chooseLocale(page, ui, 'explanation', locale);
       await page.getByRole('button', { name: labels[ui].close, exact: true }).click();
       await panel.locator('.reader-sentence__translation').filter({ hasText: { ko: '학교에 왔어요.', 'zh-CN': '来到了学校。', 'zh-TW': '來到了學校。' }[locale] }).waitFor();
-      assert((await panel.locator('.reader-sentence__translation').textContent()).includes({ ko: '선택한 두 번째 문장입니다.', 'zh-CN': '这是选中的第二句。', 'zh-TW': '這是選取的第二句。' }[locale]));
+      assert.equal((await panel.locator('.reader-sentence__translation').textContent()).includes({ ko: '선택한 두 번째 문장입니다.', 'zh-CN': '这是选中的第二句。', 'zh-TW': '這是選取的第二句。' }[locale]), false);
       assert.equal(audit.analysis.length, 0, 'explanation change must not reanalyze selected source words');
       assert.deepEqual(await page.locator('.reader-sentence__original').allTextContents(), originals);
       assert.deepEqual(await page.locator('.pdf-word-item__text').allTextContents(), words);

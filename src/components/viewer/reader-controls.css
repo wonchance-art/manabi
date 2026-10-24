@@ -248,19 +248,21 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .reader-sentence__group {display:flex;flex-direction:column;gap:8px;}
 .reader-sentence__heading {margin:0;font-size:.78125rem;font-weight:700;letter-spacing:.04em;line-height:1.4;color:var(--reader-muted);}
 .reader-sentence__heading span {margin-left:6px;font-weight:500;color:var(--reader-faint);}
-/* 패턴 카드 — 머리(공식 칸 · 급수 · 상태 칸) · 뜻 · 주의 · 예문 줄 · 목록 링크. */
+/* 패턴 카드 — 머리(공식 칸 | 상태 칸 / 뜻 | 급수) · 주의 · 예문 줄 · 목록 링크. */
 .reader-pattern {padding:12px 8px 0 16px;overflow:hidden;}
 .reader-pattern--pending {min-height:180px;padding:0;}
 .reader-pattern[data-picked] {border-color:var(--reader-rose);}
-.reader-pattern__head {display:flex;align-items:center;gap:8px;min-height:44px;}
-.reader-pattern__formula {display:inline-flex;flex-wrap:wrap;align-items:center;gap:2px 4px;min-width:0;margin:0 auto 0 0;padding:4px 6px;border:0;border-radius:8px;background:var(--reader-formula);font:inherit;color:var(--reader-ink);text-align:start;}
+.reader-pattern__head {display:grid;grid-template-columns:minmax(0,1fr) minmax(44px,max-content);align-items:center;justify-items:center;column-gap:8px;}
+.reader-pattern__head > :not(.lw-status):not(.reader-pattern__tag) {grid-column:1;justify-self:stretch;}
+.reader-pattern__head > .lw-status,.reader-pattern__head > .reader-pattern__tag {grid-column:2;}
+.reader-pattern__formula {display:inline-flex;flex-wrap:wrap;align-items:center;gap:2px 4px;min-width:0;min-height:44px;width:fit-content;max-width:100%;margin:0;padding:4px 6px;border:0;border-radius:8px;background:var(--reader-formula);font:inherit;color:var(--reader-ink);text-align:start;}
 button.reader-pattern__formula {cursor:pointer;min-height:44px;}
 .reader-pattern__cell {font-size:.875rem;line-height:1.4;}
 .reader-pattern__cell--slot {padding:2px 2px;color:var(--reader-muted);}
 .reader-pattern__cell--fixed {padding:2px 8px;border-radius:4px;background:var(--reader-card);font-size:1rem;font-weight:700;}
 .reader-pattern__plus {font-size:.75rem;color:var(--reader-faint);}
-.reader-pattern__tag {flex:none;padding:2px 6px;border-radius:4px;background:var(--reader-chip);font-size:.71875rem;font-weight:700;line-height:1.4;color:var(--reader-muted);}
-.reader-pattern__ko {margin:4px 8px 0 0;font-size:.9375rem;line-height:1.55;color:var(--reader-ink);}
+.reader-pattern__tag {margin-top:4px;padding:2px 6px;border-radius:4px;background:var(--reader-chip);font-size:.71875rem;font-weight:700;line-height:1.4;color:var(--reader-muted);}
+.reader-pattern__ko {margin:4px 0 0;font-size:.9375rem;line-height:1.55;color:var(--reader-ink);}
 .reader-pattern__warn {position:relative;margin:6px 8px 0 0;padding-left:12px;font-size:.8125rem;line-height:1.55;color:var(--reader-warn);}
 .reader-pattern__warn::before {content:"";position:absolute;left:0;top:.55em;width:5px;height:5px;border-radius:50%;background:currentColor;}
 /* 예문 줄 = 문형 목록 lv-ex(왼쪽 2px 분홍 회색 줄 · 17px · 병음/뜻 13px 회색 · 🔊). */
