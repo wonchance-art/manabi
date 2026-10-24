@@ -1,6 +1,9 @@
 import {beforeEach,describe,it,expect,vi} from 'vitest';
 const auth=vi.hoisted(()=>({admin:vi.fn(),client:vi.fn(),publicClient:vi.fn()}));
 vi.mock('@/lib/supabaseServer',()=>({requireAdmin:auth.admin,createSupabaseServerClient:auth.client,createSupabasePublicClient:auth.publicClient}));
+// 책장 ISR 무효화(GUEST-STATIC-001 3단계) — 라우트 밖에서는 Next 저장소가 없어 실제 revalidatePath가 던진다. 부른 경로만 기록한다.
+const cache=vi.hoisted(()=>({revalidatePath:vi.fn()}));
+vi.mock('next/cache',()=>({revalidatePath:cache.revalidatePath}));
 import * as editor from '../route';
 import * as asset from '@/app/api/books/japanese-n5/[edition]/asset/route';
 import {currentCandidate,contentHash} from '@/lib/textbook/server';
@@ -26,6 +29,14 @@ describe('private drafts and immutable publication routes',()=>{
  });
  it('reports stale saves without leaking database errors',async()=>{db.rpc.mockResolvedValue({error:{code:'40001',message:'private SQL'}});expect((await editor.POST(request({action:'save',manuscript:b.manuscript,expectedDraftVersion:1}))).status).toBe(409);db.rpc.mockResolvedValue({error:{code:'other',message:'private SQL'}});const res=await editor.POST(request({action:'save',manuscript:b.manuscript,expectedDraftVersion:1}));expect(res.status).toBe(503);expect(await res.text()).not.toContain('private SQL')});
  it('publishes only a matching checked candidate, rejects newer draft and missing versions',async()=>{const body={action:'publish',editionId:b.editionId,expectedDraftVersion:null,expectedReleaseVersion:null};expect((await editor.POST(request(body))).status).toBe(200);expect(db.rpc).toHaveBeenCalledWith('publish_textbook_book',expect.objectContaining({p_content_hash:b.contentHash,p_restore:false,p_artifact_manifest:b.artifactManifest}));state.draft={version:1,content_hash:'f'.repeat(64)};expect((await editor.POST(request({...body,expectedDraftVersion:1}))).status).toBe(409);expect((await editor.POST(request({...body,expectedDraftVersion:undefined}))).status).toBe(428)});
+ it('발행이 성공하면 책장 판(기본 · 언어)을 바로 버리고, 실패하면 건드리지 않는다(GUEST-STATIC-001 3단계)',async()=>{
+  cache.revalidatePath.mockClear();
+  const body={action:'publish',editionId:b.editionId,expectedDraftVersion:null,expectedReleaseVersion:null};
+  expect((await editor.POST(request({...body,expectedReleaseVersion:undefined}))).status).toBe(428);
+  expect(cache.revalidatePath).not.toHaveBeenCalled();
+  expect((await editor.POST(request(body))).status).toBe(200);
+  expect(cache.revalidatePath.mock.calls).toEqual([['/lessons'],['/lessons/lang/[lang]','page']]);
+ });
  it('restoration requires published history and advances only the pointer',async()=>{const body={action:'restore',editionId:b.editionId,expectedReleaseVersion:2};expect((await editor.POST(request(body))).status).toBe(404);state.edition={content_hash:b.contentHash,artifact_manifest:b.artifactManifest};expect((await editor.POST(request(body))).status).toBe(200);expect(db.rpc.mock.calls.at(-1)[1]).toMatchObject({p_restore:true,p_expected_release_version:2,p_expected_draft_version:null})});
  it('draft assets are unavailable to anonymous readers; published assets validate manifest hashes',async()=>{const req=new Request(`https://fixture.test/api/books/japanese-n5/${b.editionId}/asset?file=index.html`),params={params:Promise.resolve({edition:b.editionId})};auth.admin.mockResolvedValue({error:'denied',status:401});expect((await asset.GET(req,params)).status).toBe(401);state.edition={content_hash:b.contentHash,artifact_manifest:b.artifactManifest};const res=await asset.GET(req,params);expect(res.status).toBe(200);expect(await res.text()).toContain('data-book-source');expect(res.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');state.edition.content_hash='f'.repeat(64);const stale=await asset.GET(req,params);expect(stale.status).toBe(503);expect(stale.headers.get('cache-control')).toBe('private, no-store');
   // 관리자 미리보기(발행 기록 없음)는 공개 전이라 보관하지 않는다.

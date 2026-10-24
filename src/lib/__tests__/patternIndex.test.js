@@ -224,18 +224,19 @@ describe('배선 — 기본 꺼짐, 켜야 로드', () => {
     expect(rule).toContain('height: 1.5px;');
     expect(rule).toContain('background: var(--pattern-line);');
     // VIEWER-R0 버그 1: 밑줄은 전용 요소(.pattern-mark, .surface 안)다. .surface::after는 지정
-    // 이음매(.word-token--picked:has(+ .word-token--picked) .surface::after) 자리라, 같은 의사
+    // 이음매(.word-token--picked .surface::after — 연속 지정 신호일 때만) 자리라, 같은 의사
     // 요소를 쓰면 그 문장을 고르는 순간 이음매가 특이도로 이겨 밑줄이 사라진다.
     expect(css).not.toMatch(/\.word-token--pattern[^{,]*::after/);
     expect(css.match(/background: var\(--pattern-line\)/g)).toHaveLength(1); // 그리는 곳은 .pattern-mark 하나
-    expect(css).toContain('.word-token--picked:has(+ .word-token--picked) .surface::after {');
+    expect(css).toContain('.word-token--picked .surface::after {'); // 이음매 자리(연속 지정 신호 --picked-seam일 때만 그려진다)
+    expect(css).toContain("content: var(--picked-seam, none);");
     // 낱말 마크업은 ReaderToken(memo, VIEWER-TAP-PERF-001) — 뷰어는 스캔이 잡았는지(불리언)만 넘긴다.
     expect(card).toContain('patternMark={!!visibleScan?.byToken.has(tokenId)}');
     const token = codeOf(read('src/components/viewer/ReaderToken.jsx'));
     expect(token).toContain('const mark = patternMark ? <span className="pattern-mark" aria-hidden="true" /> : null;');
-    // 단어 조작은 .surface(#1323). 중국어 격자(ZH-GRID-001)는 글자를 칸으로 나눌 뿐 밑줄 요소의 자리(.surface 안 마지막)는 그대로다.
-    expect(token).toContain('<span className="surface" {...wordAction}>{zhGrid ? <ZhText text={shownText} /> : shownText}{mark}</span>'); // 번체로 읽기는 화면 글자만(LIT-SRC-WS-1)
-    expect(token).toMatch(/: zhGrid \? <ZhText key=\{i\} text=\{seg\.plain\} \/> : <span key=\{i\}>\{seg\.plain\}<\/span>\s*\)\}\{mark\}\s*<\/span>/);
+    // 단어 조작은 .surface(#1323). 중국어 격자(ZH-GRID-001)는 글자를 칸으로 나눌 뿐 밑줄 요소의 자리(.surface 안 글자 뒤 — 그 뒤는 선택 테두리 칸 .word-frame, VIEWER-TAP-INP-002)는 그대로다.
+    expect(token).toContain('<span className="surface" {...wordAction}>{zhGrid ? <ZhText text={shownText} /> : shownText}{mark}{frame}</span>'); // 번체로 읽기는 화면 글자만(LIT-SRC-WS-1)
+    expect(token).toMatch(/: zhGrid \? <ZhText key=\{i\} text=\{seg\.plain\} \/> : <span key=\{i\}>\{seg\.plain\}<\/span>\s*\)\}\{mark\}\{frame\}\s*<\/span>/);
   });
 
   it('카드는 단어 카드 안에 얹는다 — 새 상호작용을 만들면 단어 탭과 경합한다', () => {

@@ -1,0 +1,310 @@
+{
+  "passed": true,
+  "scope": "Exact-byte preservation of accepted N3 book.json, syllabus.json and 48 lessons after all actual app QA attempts",
+  "baseline": "/workspace/scratch/n3-integration/team/curriculum/CURRICULUM-FREEZE-SNAPSHOT.json",
+  "baselineSha256": "43ea1353305fffd8935710920f0153caf288700c412dc271c5bfb6d06ec0d925",
+  "filesMatched": 50,
+  "mismatches": [],
+  "rows": [
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/book.json",
+      "sha256": "1adbc238a8b38d9d6681522170419b69614838f01fb0a2b4c1ded11a23eb9c32",
+      "actualSha256": "1adbc238a8b38d9d6681522170419b69614838f01fb0a2b4c1ded11a23eb9c32",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/syllabus.json",
+      "sha256": "06bb57c2ab4239f43c91c433cde16436b65b6cba43871a0852920adee0972fb8",
+      "actualSha256": "06bb57c2ab4239f43c91c433cde16436b65b6cba43871a0852920adee0972fb8",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u01.json",
+      "sha256": "183a1bc2fe2b4a8f5727fc276ce0c6410b97d5ad66c72e2a28e8fb432753e037",
+      "actualSha256": "183a1bc2fe2b4a8f5727fc276ce0c6410b97d5ad66c72e2a28e8fb432753e037",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u02.json",
+      "sha256": "918c9211736b799bd6e5f9179d1a2f3012ce37d2d0334828df66bcd1fd27d121",
+      "actualSha256": "918c9211736b799bd6e5f9179d1a2f3012ce37d2d0334828df66bcd1fd27d121",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u03.json",
+      "sha256": "88636b5e16e4f4c11d831fb30d93aa00cb7547120ac5a0799a02e60967fb7015",
+      "actualSha256": "88636b5e16e4f4c11d831fb30d93aa00cb7547120ac5a0799a02e60967fb7015",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u04.json",
+      "sha256": "7d88c629d3d1506e2b7178749bcbb1fefb4a838cecb4ce025e28166ebf3ed43f",
+      "actualSha256": "7d88c629d3d1506e2b7178749bcbb1fefb4a838cecb4ce025e28166ebf3ed43f",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u05.json",
+      "sha256": "abce057a931da5589d51bac5120fea98e397df914ad67812d36ca6800dc9596e",
+      "actualSha256": "abce057a931da5589d51bac5120fea98e397df914ad67812d36ca6800dc9596e",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u06.json",
+      "sha256": "4b1925a767c1a5bbab6be1749ab10d63177fea3f7bc988b3c334b0ea10fde291",
+      "actualSha256": "4b1925a767c1a5bbab6be1749ab10d63177fea3f7bc988b3c334b0ea10fde291",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u07.json",
+      "sha256": "f192e767d2fb3f7c3204f1e520d889c0ff6dceae323cdcfda361af98f238874f",
+      "actualSha256": "f192e767d2fb3f7c3204f1e520d889c0ff6dceae323cdcfda361af98f238874f",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u08.json",
+      "sha256": "899fc0786d7b5ca0ddda01df5da8f10c5e119ffaef3e59563f5de1ec3c847236",
+      "actualSha256": "899fc0786d7b5ca0ddda01df5da8f10c5e119ffaef3e59563f5de1ec3c847236",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u09.json",
+      "sha256": "03e0015d3e2e2f5cd4b140188559c41393ea01c57b5eb2d2a1f9331d6c5a382a",
+      "actualSha256": "03e0015d3e2e2f5cd4b140188559c41393ea01c57b5eb2d2a1f9331d6c5a382a",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u10.json",
+      "sha256": "91ce278dc7e9bfc2ed0e39711f987e7ae2f5c215e9ddde18131dbb885b05fb33",
+      "actualSha256": "91ce278dc7e9bfc2ed0e39711f987e7ae2f5c215e9ddde18131dbb885b05fb33",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u11.json",
+      "sha256": "18ed668acfa7f3164e7a4cd82db23037ce3904c77c9eb3572dedd60c26a95607",
+      "actualSha256": "18ed668acfa7f3164e7a4cd82db23037ce3904c77c9eb3572dedd60c26a95607",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u12.json",
+      "sha256": "0a379f33f34d64fed289f5fb0b652e789ec31ea0350dcf61534aae315ed80a7d",
+      "actualSha256": "0a379f33f34d64fed289f5fb0b652e789ec31ea0350dcf61534aae315ed80a7d",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u13.json",
+      "sha256": "3e2f023689929e17907a94e3128fa892c7a642113ba4ebcedbae6daab776b555",
+      "actualSha256": "3e2f023689929e17907a94e3128fa892c7a642113ba4ebcedbae6daab776b555",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u14.json",
+      "sha256": "20ff36a1860e188d9793fc6fd05e952d506923d2014da393915c7403f5b22e1b",
+      "actualSha256": "20ff36a1860e188d9793fc6fd05e952d506923d2014da393915c7403f5b22e1b",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u15.json",
+      "sha256": "5c0e225c1132a6af5fcac72187d53e46013c53ae751ea5650357e070932ad676",
+      "actualSha256": "5c0e225c1132a6af5fcac72187d53e46013c53ae751ea5650357e070932ad676",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u16.json",
+      "sha256": "3297e6983c5337772dd64f6dc377bf49aa837f2f3c78ebeefe1c923c5fc1e962",
+      "actualSha256": "3297e6983c5337772dd64f6dc377bf49aa837f2f3c78ebeefe1c923c5fc1e962",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u17.json",
+      "sha256": "b83333b7ff4d5d55648ce7cf91f4516a288108f485a57656f268b2cf76eac895",
+      "actualSha256": "b83333b7ff4d5d55648ce7cf91f4516a288108f485a57656f268b2cf76eac895",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u18.json",
+      "sha256": "5a17d8caa8a813b3ecdb19c1a314fa1ed88b10b4847dcd13487919c9222c36b1",
+      "actualSha256": "5a17d8caa8a813b3ecdb19c1a314fa1ed88b10b4847dcd13487919c9222c36b1",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u19.json",
+      "sha256": "062d2d9dc349422035154fc35568078c5f4b36942639f0943fc0188efb7d5ad4",
+      "actualSha256": "062d2d9dc349422035154fc35568078c5f4b36942639f0943fc0188efb7d5ad4",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u20.json",
+      "sha256": "a0e5594ebd3ca0d36683e062cb831a358c6d4a977c429d4978b7e7d625cc9353",
+      "actualSha256": "a0e5594ebd3ca0d36683e062cb831a358c6d4a977c429d4978b7e7d625cc9353",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u21.json",
+      "sha256": "1267d1115d6000aaef3eb06f8df4c0678c85f2bf1ba02706651bd0ac93215447",
+      "actualSha256": "1267d1115d6000aaef3eb06f8df4c0678c85f2bf1ba02706651bd0ac93215447",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u22.json",
+      "sha256": "0b02ad7fa9f9e0a152a9960ffe2901c79d4959420265ee54528d5856035cb0cd",
+      "actualSha256": "0b02ad7fa9f9e0a152a9960ffe2901c79d4959420265ee54528d5856035cb0cd",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u23.json",
+      "sha256": "1c3c16dc5007dd2b88cadbae6c7ae8fdf48895997e77df31c0196a0aae92abb0",
+      "actualSha256": "1c3c16dc5007dd2b88cadbae6c7ae8fdf48895997e77df31c0196a0aae92abb0",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u24.json",
+      "sha256": "5dc6d284419c5bc6f7b6fdea3b9045cfd445a77b655dd493f336264f6f61c16a",
+      "actualSha256": "5dc6d284419c5bc6f7b6fdea3b9045cfd445a77b655dd493f336264f6f61c16a",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u25.json",
+      "sha256": "d62312e77bf3a744a7d5e8c648291a70ff6cf728b8d4f518a51aeb3470a35797",
+      "actualSha256": "d62312e77bf3a744a7d5e8c648291a70ff6cf728b8d4f518a51aeb3470a35797",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u26.json",
+      "sha256": "b8c17f1efb55269a7155c0470c7a8fa5652d8a1748f282542f4c14b1637ddfab",
+      "actualSha256": "b8c17f1efb55269a7155c0470c7a8fa5652d8a1748f282542f4c14b1637ddfab",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u27.json",
+      "sha256": "204844ba7bea9647442ac40320e6484d3efa594df7e99f3c914998f6c1dfd447",
+      "actualSha256": "204844ba7bea9647442ac40320e6484d3efa594df7e99f3c914998f6c1dfd447",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u28.json",
+      "sha256": "c5183c54c33dab0b327a8af3c25eaa95b7261627a5ea77957dcfb403dfe67033",
+      "actualSha256": "c5183c54c33dab0b327a8af3c25eaa95b7261627a5ea77957dcfb403dfe67033",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u29.json",
+      "sha256": "d08dfe23165a73bc630b477612083f04f7b6c15248c4248f379cd6e66b032b95",
+      "actualSha256": "d08dfe23165a73bc630b477612083f04f7b6c15248c4248f379cd6e66b032b95",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u30.json",
+      "sha256": "9be7220dc4f3b6dab589e9a9d9ca1750c79b99f6a8f3440397056051f8106827",
+      "actualSha256": "9be7220dc4f3b6dab589e9a9d9ca1750c79b99f6a8f3440397056051f8106827",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u31.json",
+      "sha256": "d79239221b965bb4553486a93b0cde8c78da46f984e1d4807e296fd3851fabe9",
+      "actualSha256": "d79239221b965bb4553486a93b0cde8c78da46f984e1d4807e296fd3851fabe9",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u32.json",
+      "sha256": "7fb38ae12c9c15c9e6d0d1cbf307f1ef54f4c4d9f63641586151ee5feba495b5",
+      "actualSha256": "7fb38ae12c9c15c9e6d0d1cbf307f1ef54f4c4d9f63641586151ee5feba495b5",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u33.json",
+      "sha256": "ae458cf1c95a7e77625479eb273265372065d0101a06580e7f566eca364f98fb",
+      "actualSha256": "ae458cf1c95a7e77625479eb273265372065d0101a06580e7f566eca364f98fb",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u34.json",
+      "sha256": "8a900b4c43ef11464c4c6be628a4ecd4a033288a1d8d2597f89994078843bcce",
+      "actualSha256": "8a900b4c43ef11464c4c6be628a4ecd4a033288a1d8d2597f89994078843bcce",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u35.json",
+      "sha256": "663eaf7d575a226e7c77c2829a2ee83485977153ececd32cd3efb1c6d6122816",
+      "actualSha256": "663eaf7d575a226e7c77c2829a2ee83485977153ececd32cd3efb1c6d6122816",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u36.json",
+      "sha256": "10f96bac58198f54354c2c08a9dce0e837dacb74c769116f94f9d0ccf2713093",
+      "actualSha256": "10f96bac58198f54354c2c08a9dce0e837dacb74c769116f94f9d0ccf2713093",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u37.json",
+      "sha256": "cd097704d9c4799cb0a4d46f8503a4ff907acabb019df2b7ea67e9c3b6279e38",
+      "actualSha256": "cd097704d9c4799cb0a4d46f8503a4ff907acabb019df2b7ea67e9c3b6279e38",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u38.json",
+      "sha256": "f352dac9e5a112a0a475ac60593b73f9a2d652b617908a98ab24282319502934",
+      "actualSha256": "f352dac9e5a112a0a475ac60593b73f9a2d652b617908a98ab24282319502934",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u39.json",
+      "sha256": "c3d599ea7d3bc5200e11d1800a942cc6cad6bfc1151d64df61abc36b696d7b86",
+      "actualSha256": "c3d599ea7d3bc5200e11d1800a942cc6cad6bfc1151d64df61abc36b696d7b86",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u40.json",
+      "sha256": "fa4b3eb219e4070a381d4f8f2906b1443283916fd76c319c3628774039409ca0",
+      "actualSha256": "fa4b3eb219e4070a381d4f8f2906b1443283916fd76c319c3628774039409ca0",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u41.json",
+      "sha256": "601e8ed3439dc9fe1c354e0b135e26537deaed1518e530859b33e5f661c7bd7d",
+      "actualSha256": "601e8ed3439dc9fe1c354e0b135e26537deaed1518e530859b33e5f661c7bd7d",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u42.json",
+      "sha256": "7b24ce90485b721dd22afc20312fa43b40ccc7abd34e9e098eb1ed7d273aabcd",
+      "actualSha256": "7b24ce90485b721dd22afc20312fa43b40ccc7abd34e9e098eb1ed7d273aabcd",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u43.json",
+      "sha256": "0c277c54efdc36e254c7a3bb2b1faddcc603a97684f11eddfb082d5b3d12c71b",
+      "actualSha256": "0c277c54efdc36e254c7a3bb2b1faddcc603a97684f11eddfb082d5b3d12c71b",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u44.json",
+      "sha256": "d4f11e7d855aa8f76cd05e9dfb4de7652e2528e57561c75e45c336fdeea0cddc",
+      "actualSha256": "d4f11e7d855aa8f76cd05e9dfb4de7652e2528e57561c75e45c336fdeea0cddc",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u45.json",
+      "sha256": "d188375ffc7e25221eae145e14dff138c6fa42cbbd5648bacc5348f1d2aed164",
+      "actualSha256": "d188375ffc7e25221eae145e14dff138c6fa42cbbd5648bacc5348f1d2aed164",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u46.json",
+      "sha256": "491004e38d44a5f1159f371d8bb71be37795daac989f1dbce2481ad26a79cbde",
+      "actualSha256": "491004e38d44a5f1159f371d8bb71be37795daac989f1dbce2481ad26a79cbde",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u47.json",
+      "sha256": "fd7c8f04217dfb8281ab84f6cdd28306151453ed232813d5f0c4478bc0020c3d",
+      "actualSha256": "fd7c8f04217dfb8281ab84f6cdd28306151453ed232813d5f0c4478bc0020c3d",
+      "unchanged": true
+    },
+    {
+      "path": "src/content/textbookManuscripts/japanese-n3/lessons/u48.json",
+      "sha256": "316cdb405123a4f0d51c7df1127b49b116df17ce8095de78724b6de499773ca9",
+      "actualSha256": "316cdb405123a4f0d51c7df1127b49b116df17ce8095de78724b6de499773ca9",
+      "unchanged": true
+    }
+  ]
+}

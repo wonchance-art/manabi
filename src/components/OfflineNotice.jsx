@@ -41,3 +41,14 @@ export function PendingReviewsNotice({ count = 0 }) {
     </p>
   );
 }
+
+/**
+ * 기기 사본으로 뜬 단어장의 복습 자리(OFFLINE-SWEEP-001 P2). 사본은 원문 읽기만 복원하고 FSRS 정본 없이 출제하지 않는다
+ * (useVocabData — 정본 확인 실패를 빈 registry로 추측하지 않는다). 그 사정을 한 장으로 말한다 — 전에는 사본 안내 ·
+ * 「복습을 준비하지 못했어요」 · 「표현을 불러오지 못했어요」 세 겹이 서로 어긋났다.
+ */
+export const VOCAB_OFFLINE_TITLE = '복습은 연결되면 시작할 수 있어요';
+/** 사본에 표현이 있으면 아래 목록을 가리키고, 없으면 보존만 말한다(목록은 vocab.length > 0일 때만 그려진다). */
+export function vocabOfflineLine(count = 0) {
+  return count > 0 ? '담은 표현은 아래에서 볼 수 있어요. 복습 기록은 그대로 남아 있어요.' : '복습 기록은 그대로 남아 있어요.';
+}

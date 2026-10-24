@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { failureMessage } from './errorMessage';
 import { detectLang } from './constants';
 import { recordReviewCompleted } from './learn/progressStore';
-import { calculateFSRS } from './fsrs';
+import { calculateVocabFSRS } from './fsrs';
 import { beginVocabularyReview, settleVocabularyReview } from './viewerVocabularyCache';
 import { assertCachedLegacyFsrsAllowed } from './fsrsLegacyBoundary';
 
@@ -47,16 +47,18 @@ export function useInlineReview({ user: account, fetchProfile, toast }) {
     onMutate: async ({ vocab, rating, userId = account?.id }) => {
       assertCachedLegacyFsrsAllowed(userId, vocab.id);
       await queryClient.cancelQueries({ queryKey: ['vocab-words', userId] });
-      const nextStats = calculateFSRS(rating, vocab);
+      const nextStats = calculateVocabFSRS(rating, vocab);
       return beginVocabularyReview(queryClient, userId, vocab, nextStats);
     },
     mutationFn: async ({ vocab, rating, userId = account?.id }) => {
       const user = { id: userId }; // 응답을 기다리다 계정이 바뀌어도 클릭 시점의 계정에만 기록한다.
-      const nextStats = calculateFSRS(rating, {
+      const nextStats = calculateVocabFSRS(rating, {
         interval: vocab.interval ?? 0,
         ease_factor: vocab.ease_factor ?? 0,
         repetitions: vocab.repetitions ?? 0,
         next_review_at: vocab.next_review_at,
+        last_reviewed_at: vocab.last_reviewed_at,
+        created_at: vocab.created_at,
       });
       const prev = Object.fromEntries(INLINE_SRS_FIELDS.filter((k) => vocab[k] !== undefined).map((k) => [k, vocab[k]]));
       // 채점 시각은 정본 안에서 한 번 찍힌다 — 반환 reviewedAt이 이벤트 created_at·SRS·큐 항목의 열쇠.
@@ -68,7 +70,7 @@ export function useInlineReview({ user: account, fetchProfile, toast }) {
         correct: rating > 1,
         detail: { word_id: vocab.id, meaning: vocab.meaning, rating, qtype: 'flash' },
       }, {
-        // calculateFSRS 반환 키 그대로 — DB 컬럼과 동일(snake_case, VocabPage 페이로드 계약과 같다)
+        // calculateVocabFSRS 반환 키 그대로 — DB 컬럼과 동일(snake_case, VocabPage 페이로드 계약과 같다)
         interval: nextStats.interval ?? 0,
         ease_factor: nextStats.ease_factor ?? 0,
         repetitions: nextStats.repetitions ?? 0,
@@ -79,11 +81,13 @@ export function useInlineReview({ user: account, fetchProfile, toast }) {
       return { vocab, rating, nextStats, prev, reviewedAt: r.reviewedAt, queued: !!r.queued };
     },
     onSuccess: async ({ vocab, nextStats, reviewedAt, queued }, variables, context) => {
-      // 낙관 반영 → 무효화. 온라인이면 refetch가 정본으로 덮고, 오프라인이면 낙관값이 남아 카드가 전진한다.
+      // 낙관 반영 → 낡음 표시. 저장한 값 그대로 카드가 전진하고, 정본은 다음 읽기가 덮는다.
       const userId = context?.userId || account?.id;
       if (context) settleVocabularyReview(queryClient, context, { ...nextStats, last_reviewed_at: reviewedAt });
       else patchVocabWordsCache(queryClient, userId, vocab.id, { ...nextStats, last_reviewed_at: reviewedAt });
-      queryClient.invalidateQueries({ queryKey: ['vocab-words', userId] });
+      // 캐시를 방금 고쳤으면 낡음으로만 표시한다 — 채점마다 단어 목록 전체(fsrs_vocabulary_snapshot)를 다시 읽으면
+      // 작은 DB가 시간 초과로 넘어간다(운영 실측 2026-10-23 KST). 다음 진입 · 창 복귀 때 정본으로 다시 읽는다.
+      queryClient.invalidateQueries({ queryKey: ['vocab-words', userId], ...(context ? { refetchType: 'none' } : {}) });
       // 보상(streak)은 정본 안에서 기록됐다 — 여기서는 표시만 새로 고친다(큐 경로는 아직 기록 전)
       if (account?.id === userId) {
         if (!queued) fetchProfile?.(userId);

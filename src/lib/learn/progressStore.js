@@ -201,7 +201,10 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
     });
   } catch (err) {
     // 제외는 연결 장애가 아니다. 실패한 평가를 성공/오프라인 재시도로 위장하지 않는다.
-    if (isVocabularyExcludedError(err) || isLearningStorageUnavailableError(err) || isFsrsLegacyWriteError(err)) return { ok: false, error: err };
+    // 경계 확인 호출 자체의 실패(DB 시간 초과 · 연결 끊김)는 차단이 아니다 — 큐에 담고 flush가 경계를 다시 묻는다.
+    // 운영 실측 2026-10-23 KST: fsrs_legacy_boundary 57014로 채점이 큐에도 안 남고 버려졌다.
+    const transientBoundary = err?.code === 'fsrs_boundary_unavailable';
+    if (isVocabularyExcludedError(err) || isLearningStorageUnavailableError(err) || (isFsrsLegacyWriteError(err) && !transientBoundary)) return { ok: false, error: err };
     // 온라인인데 실패했다 — 서버가 죽었거나 연결이 방금 끊겼다. 큐에 넣어 살린다.
     // 이벤트가 이미 착지했을 수도 있는데, 온라인 경로도 같은 reviewedAt을 실어 보내므로
     // flush의 완전 일치 대조가 그 중복을 걸러낸다.

@@ -13,6 +13,9 @@ import { authCallbackUrl } from '@/lib/authRedirect';
 // 단, Supabase는 redirectTo가 허용 목록에 없으면 로그인 결과(?code=…)를 Site URL(`/`)로 보낸다.
 // 그대로 /home으로 넘기면 code가 버려져 로그인이 끝나지 않는다(manabi.co.kr 전환 실측 2026-10-11) —
 // code·오류는 서버 교환 라우트로 넘긴다. 교환·검증은 /auth/callback이 그대로 맡는다.
+//
+// 로그인 결과가 없는 '/'는 이 함수까지 오지 않는다 — middleware가 엣지에서 /home으로 보낸다(ROOT-EDGE-REDIRECT-001,
+// 함수 호출 · 왕복 제거). 아래 마지막 redirect('/home')는 matcher 밖 경로(예: 질의 없는 직접 호출)를 위한 같은 목적지의 안전판이다.
 export default async function Page({ searchParams }) {
   const params = await searchParams;
   const code = typeof params?.code === 'string' ? params.code : '';

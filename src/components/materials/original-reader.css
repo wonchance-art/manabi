@@ -46,5 +46,5 @@
 .original-position-notice > div { display: flex; flex-wrap: wrap; gap: 8px; }
 .original-position-notice button { font-size: 12px !important; }
 .original-position-notice button:first-child { color: var(--ja) !important; }
-.original-position-notice.is-floating { position: fixed; bottom: max(20px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 80; width: min(680px, calc(100% - 32px)); min-height: 0; max-height: 70dvh; overflow-y: auto; container-type: normal; margin: 0; padding: 18px 20px; background: var(--sheet); border: 1px solid var(--rule); box-shadow: 0 8px 36px rgb(30 25 26 / 12%); color: var(--ink); }
+.original-position-notice.is-floating { position: fixed; bottom: max(20px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 80; width: min(680px, calc(100% - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px))); min-height: 0; max-height: 70dvh; overflow-y: auto; container-type: normal; margin: 0; padding: 18px 20px; background: var(--sheet); border: 1px solid var(--rule); box-shadow: 0 8px 36px rgb(30 25 26 / 12%); color: var(--ink); }
 .original-position-notice.is-floating button { min-height: 44px; padding: 8px 14px; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); font: inherit; }

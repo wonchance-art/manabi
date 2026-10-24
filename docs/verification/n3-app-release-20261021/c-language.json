@@ -1,0 +1,691 @@
+{
+  "status": "PASS-independent-language-and-context-readings-exact-pre-order-sources",
+  "reviewer": "n3_author_b",
+  "owner": "n3_author_c",
+  "range": [
+    33,
+    48
+  ],
+  "acceptanceScope": "Independent language, answer semantics, contextual readings and actual recall. Source-specific; not native certification, official JLPT complete coverage, rendered browser, account authentication or publication.",
+  "sourcePinnedN4": "f4a6411c0945bbd3f8767af7",
+  "sourcePinnedN5": "8a8c1c1fd452773810abaf8c",
+  "wordStatusExceptionReviewed": "非難/避難 same reading but distinct lexemes; eight same-sense kana/kanji retrieval classifications reviewed. This does not certify all real-world learner vocabulary as new.",
+  "allRecallQuotesFound": true,
+  "issues": [],
+  "counts": {
+    "lessons": 16,
+    "dialogueTurns": 96,
+    "oral": 32,
+    "mcq": 48,
+    "reading": 16,
+    "writing": 16,
+    "wordOccurrences": 192
+  },
+  "mcqAnswerPositions": [
+    45,
+    3,
+    0
+  ],
+  "units": [
+    {
+      "unit": "u33",
+      "sha256": "42d53df9c79cf0249b4c032bc2814e297e0d9b9dbe6899e3610f27b3c2f48833",
+      "ownerFrozenShaMatches": true,
+      "semanticFocus": "불필요와 금지·무경험을 구별; 반납 기한은 비와 무관하게 유지",
+      "countercaseAndAllowedAlternatives": "買うことはありません은 금지가 아니며 ものだ는 전원이 이미 행동했다는 완료가 아님",
+      "reviewedFields": [
+        "scene/roles",
+        "preparation/patterns or reviewPatterns/formula/body/examples/note",
+        "all ja/ko dialogue turns",
+        "oral prompt/cue/answer/why",
+        "reading + question/answer/why",
+        "three MCQ prompt/options/answer/why",
+        "writing prompt/hint/sample/check",
+        "all12 word readings/ko/status",
+        "all kanji key-reading entries with contextual numeric/polyphonic checks",
+        "actual recall field/quote and prior taught family"
+      ],
+      "actualRecall": [
+        {
+          "family": "evidence",
+          "unit": 32,
+          "fieldPath": "dialog[0].ja",
+          "quote": "全部買うべきですか",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "n4Evidence",
+          "unit": 26,
+          "fieldPath": "reading",
+          "quote": "雨が降っても",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[25]",
+          "actualQuoteFound": true
+        }
+      ],
+      "readingCharacters": 251
+    },
+    {
+      "unit": "u34",
+      "sha256": "a3b84a640f39b403a5b61c371866c64ee5313effaeac5a132005e3e992b5f5ae",
+      "ownerFrozenShaMatches": true,
+      "semanticFocus": "정도와 의외 포함; 변경 공지 확인 전 이동하지 않음",
+      "countercaseAndAllowedAlternatives": "担当者さえ 몰랐다는 사실로 공지를 거짓으로 확정하지 않음; ほど는 측정값이나 모든 사람의 반응이 아님",
+      "reviewedFields": [
+        "scene/roles",
+        "preparation/patterns or reviewPatterns/formula/body/examples/note",
+        "all ja/ko dialogue turns",
+        "oral prompt/cue/answer/why",
+        "reading + question/answer/why",
+        "three MCQ prompt/options/answer/why",
+        "writing prompt/hint/sample/check",
+        "all12 word readings/ko/status",
+        "all kanji key-reading entries with contextual numeric/polyphonic checks",
+        "actual recall field/quote and prior taught family"
+      ],
+      "actualRecall": [
+        {
+          "family": "evidence",
+          "unit": 33,
+          "fieldPath": "dialog[5].ja",
+          "quote": "移動することはありません",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "n4Evidence",
+          "unit": 19,
+          "fieldPath": "reading",
+          "quote": "変わったかもしれません",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[18]",
+          "actualQuoteFound": true
+        }
+      ],
+      "readingCharacters": 269
+    },
+    {
+      "unit": "u35",
+      "sha256": "e69de3daa37133be60101c5c5c3e1056baf57bcdcfe29352d7dd36d5a3c4aeb0",
+      "ownerFrozenShaMatches": true,
+      "semanticFocus": "충분조건과 필수조건을 명시 출처로 분리; 어제 헤맴과 다음 활동 미참여",
+      "countercaseAndAllowedAlternatives": "連絡先さえ는 충분조건이며 필수성은 連絡先のない申込書は受け付けません에서 확보; ば〜のに는 문맥의 반사실 아쉬움",
+      "reviewedFields": [
+        "scene/roles",
+        "preparation/patterns or reviewPatterns/formula/body/examples/note",
+        "all ja/ko dialogue turns",
+        "oral prompt/cue/answer/why",
+        "reading + question/answer/why",
+        "three MCQ prompt/options/answer/why",
+        "writing prompt/hint/sample/check",
+        "all12 word readings/ko/status",
+        "all kanji key-reading entries with contextual numeric/polyphonic checks",
+        "actual recall field/quote and prior taught family"
+      ],
+      "actualRecall": [
+        {
+          "family": "evidence",
+          "unit": 32,
+          "fieldPath": "dialog[4].ja",
+          "quote": "調べるべきでした",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "n4Evidence",
+          "unit": 24,
+          "fieldPath": "dialog[5].ja",
+          "quote": "道に迷ったら",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[23]",
+          "actualQuoteFound": true
+        }
+      ],
+      "readingCharacters": 294
+    },
+    {
+      "unit": "u36",
+      "sha256": "b62b0d32cc592b6d36606a363a9121dc9e169f42ab93e81cd332b3fc0e2f2236",
+      "ownerFrozenShaMatches": true,
+      "semanticFocus": "작품 종류의 추가와 동행자 청취자격; 제출자 절차를 청취자에게 확대하지 않음",
+      "countercaseAndAllowedAlternatives": "だけでなく〜も/はもちろん〜も 둘 다 추가에 가능; 표현 동의성을 오답으로 쓰지 않음",
+      "reviewedFields": [
+        "scene/roles",
+        "preparation/patterns or reviewPatterns/formula/body/examples/note",
+        "all ja/ko dialogue turns",
+        "oral prompt/cue/answer/why",
+        "reading + question/answer/why",
+        "three MCQ prompt/options/answer/why",
+        "writing prompt/hint/sample/check",
+        "all12 word readings/ko/status",
+        "all kanji key-reading entries with contextual numeric/polyphonic checks",
+        "actual recall field/quote and prior taught family"
+      ],
+      "actualRecall": [
+        {
+          "family": "evidence",
+          "unit": 35,
+          "fieldPath": "dialog[4].ja",
+          "quote": "連絡先さえ書けば",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "n4Evidence",
+          "unit": 27,
+          "fieldPath": "dialog[5].ja",
+          "quote": "席もあるし、資料もあります",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[26]",
+          "actualQuoteFound": true
+        }
+      ],
+      "readingCharacters": 267
+    },
+    {
+      "unit": "u37",
+      "sha256": "9da65ad445891e1f9b6352c45fb4ee34b59cd9876ea08c807591746ad8378130",
+      "ownerFrozenShaMatches": true,
+      "semanticFocus": "こそ 초점·까지의 의외 포함·までに 기한을 분리; 질문과 참석은 예정",
+      "countercaseAndAllowedAlternatives": "책임자 예정에 포함돼도 전원 참석 확정은 아님; 今日こそ는 아직 질문 완료가 아님",
+      "reviewedFields": [
+        "scene/roles",
+        "preparation/patterns or reviewPatterns/formula/body/examples/note",
+        "all ja/ko dialogue turns",
+        "oral prompt/cue/answer/why",
+        "reading + question/answer/why",
+        "three MCQ prompt/options/answer/why",
+        "writing prompt/hint/sample/check",
+        "all12 word readings/ko/status",
+        "all kanji key-reading entries with contextual numeric/polyphonic checks",
+        "actual recall field/quote and prior taught family"
+      ],
+      "actualRecall": [
+        {
+          "family": "evidence",
+          "unit": 36,
+          "fieldPath": "dialog[1].ja",
+          "quote": "参加者だけでなく、別の担当者も",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "n4Evidence",
+          "unit": 29,
+          "fieldPath": "dialog[5].ja",
+          "quote": "午後二時までに",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[28]",
+          "actualQuoteFound": true
+        }
+      ],
+      "readingCharacters": 285
+    },
+    {
+      "unit": "u38",
+      "sha256": "0a554c856eda6345a43f2af6401e822f3e623c3d395966a6bedb77c34d6fe0fd",
+      "ownerFrozenShaMatches": true,
+      "semanticFocus": "といっても 앞말 범위 조정과 わりに 기대 대비; 30분 마무리와 전주 수집 구별",
+      "countercaseAndAllowedAlternatives": "전시 전체 부정 아님; 짧은 준비에 비해 자료가 많으며 작품 전체를 당일 30분에 제작한 것이 아님; ほど는 자료량의 정도",
+      "reviewedFields": [
+        "scene/roles",
+        "preparation/patterns or reviewPatterns/formula/body/examples/note",
+        "all ja/ko dialogue turns",
+        "oral prompt/cue/answer/why",
+        "reading + question/answer/why",
+        "three MCQ prompt/options/answer/why",
+        "writing prompt/hint/sample/check",
+        "all12 word readings/ko/status",
+        "all kanji key-reading entries with contextual numeric/polyphonic checks",
+        "actual recall field/quote and prior taught family"
+      ],
+      "actualRecall": [
+        {
+          "family": "evidence",
+          "unit": 37,
+          "fieldPath": "dialog[0].ja",
+          "quote": "今日こそ展示を見よう",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "evidence",
+          "unit": 34,
+          "fieldPath": "reading",
+          "quote": "すぐには全部読めないほど多い",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "n4Evidence",
+          "unit": 31,
+          "fieldPath": "dialog[4].ja",
+          "quote": "三十分しか準備しなかった",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[30]",
+          "actualQuoteFound": true
+        }
+      ],
+      "readingCharacters": 290
+    },
+    {
+      "unit": "u39",
+      "sha256": "01ddec2e6aa7ac2bb5e38eadcfc2c58d50b2d93942f03f96105736bd935f5bb5",
+      "ownerFrozenShaMatches": true,
+      "semanticFocus": "にしては 기대 준거와 のに対して 비교대상; 준만 첫 참가; 질문수와 인원수 분리",
+      "countercaseAndAllowedAlternatives": "わりに 자연 대안 인정; 오전/오후 각10명이고 질문수 차이로 참석자 차이를 추론하지 않음",
+      "reviewedFields": [
+        "scene/roles",
+        "preparation/patterns or reviewPatterns/formula/body/examples/note",
+        "all ja/ko dialogue turns",
+        "oral prompt/cue/answer/why",
+        "reading + question/answer/why",
+        "three MCQ prompt/options/answer/why",
+        "writing prompt/hint/sample/check",
+        "all12 word readings/ko/status",
+        "all kanji key-reading entries with contextual numeric/polyphonic checks",
+        "actual recall field/quote and prior taught family"
+      ],
+      "actualRecall": [
+        {
+          "family": "evidence",
+          "unit": 38,
+          "fieldPath": "dialog[4].ja",
+          "quote": "準備時間が短いわりに",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "n4Evidence",
+          "unit": 19,
+          "fieldPath": "dialog[5].ja",
+          "quote": "質問が多いはずだ",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[18]",
+          "actualQuoteFound": true
+        }
+      ],
+      "readingCharacters": 264
+    },
+    {
+      "unit": "u40",
+      "sha256": "61595a964643fb03e4de98f89f829649babe4f17c8da77bc3630f67f94c4f6cc",
+      "ownerFrozenShaMatches": true,
+      "semanticFocus": "가상 비난 인용과 실제 감사 발화 구별; 양보 ながらも와 시간대 대비",
+      "countercaseAndAllowedAlternatives": "실제 상대의 의도를 창작하지 않음; 忙しいながらも는 동시행동이 아니라 양보; 제시 실제협력은 도덕 서열을 만들지 않음",
+      "reviewedFields": [
+        "scene/roles",
+        "preparation/patterns or reviewPatterns/formula/body/examples/note",
+        "all ja/ko dialogue turns",
+        "oral prompt/cue/answer/why",
+        "reading + question/answer/why",
+        "three MCQ prompt/options/answer/why",
+        "writing prompt/hint/sample/check",
+        "all12 word readings/ko/status",
+        "all kanji key-reading entries with contextual numeric/polyphonic checks",
+        "actual recall field/quote and prior taught family"
+      ],
+      "actualRecall": [
+        {
+          "family": "evidence",
+          "unit": 39,
+          "fieldPath": "dialog[5].ja",
+          "quote": "午後に来たのに対して",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "n4Evidence",
+          "unit": 27,
+          "fieldPath": "dialog[4].ja",
+          "quote": "忙しかったのに",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[26]",
+          "actualQuoteFound": true
+        }
+      ],
+      "readingCharacters": 286
+    },
+    {
+      "unit": "u41",
+      "sha256": "07b01acfa7e5b4b395041c5fa8504878b93a4722d72ce8bfa243ca6928667215",
+      "ownerFrozenShaMatches": true,
+      "semanticFocus": "교환 かわりに와 대리 に代わって 구별; ずに 앞 행동만 부정; 오후 정리 미완료",
+      "countercaseAndAllowedAlternatives": "読まないで 자연 대안 인정; する→せず/来る→来ずこず, 읽지 않고 온 사람은 실제로 옴",
+      "reviewedFields": [
+        "scene/roles",
+        "preparation/patterns or reviewPatterns/formula/body/examples/note",
+        "all ja/ko dialogue turns",
+        "oral prompt/cue/answer/why",
+        "reading + question/answer/why",
+        "three MCQ prompt/options/answer/why",
+        "writing prompt/hint/sample/check",
+        "all12 word readings/ko/status",
+        "all kanji key-reading entries with contextual numeric/polyphonic checks",
+        "actual recall field/quote and prior taught family"
+      ],
+      "actualRecall": [
+        {
+          "family": "evidence",
+          "unit": 40,
+          "fieldPath": "reading",
+          "quote": "忙しいながらも",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "n4Evidence",
+          "unit": 25,
+          "fieldPath": "dialog[4].ja",
+          "quote": "担当を交代するなら",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[24]",
+          "actualQuoteFound": true
+        }
+      ],
+      "readingCharacters": 261
+    },
+    {
+      "unit": "u42",
+      "sha256": "14ea29a473534fd8273cb28a0633d24a40ab3bdca3e0da4a9c08d758e4d993ba",
+      "ownerFrozenShaMatches": true,
+      "semanticFocus": "양쪽 날씨와 작품제출 여부의 동일 결과; 지각자 전화 조건 별도",
+      "countercaseAndAllowedAlternatives": "遅れたら/遅れるなら 자연 대안; 날씨によって 바꾸지 않음은 기준별 차이 부정이며 수동 행위자/수단 아님",
+      "reviewedFields": [
+        "scene/roles",
+        "preparation/patterns or reviewPatterns/formula/body/examples/note",
+        "all ja/ko dialogue turns",
+        "oral prompt/cue/answer/why",
+        "reading + question/answer/why",
+        "three MCQ prompt/options/answer/why",
+        "writing prompt/hint/sample/check",
+        "all12 word readings/ko/status",
+        "all kanji key-reading entries with contextual numeric/polyphonic checks",
+        "actual recall field/quote and prior taught family"
+      ],
+      "actualRecall": [
+        {
+          "family": "evidence",
+          "unit": 41,
+          "fieldPath": "dialog[4].ja",
+          "quote": "連絡せずに来る",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "evidence",
+          "unit": 8,
+          "fieldPath": "reading",
+          "quote": "天気によって場所を変える予定はありません。",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "n4Evidence",
+          "unit": 24,
+          "fieldPath": "dialog[3].ja",
+          "quote": "遅れると分かったら",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[23]",
+          "actualQuoteFound": true
+        }
+      ],
+      "readingCharacters": 290
+    },
+    {
+      "unit": "u43",
+      "sha256": "4c34af889702566b007dbd74cf172147b1bc1efd59faaa8deb5d5de40e8c5245",
+      "ownerFrozenShaMatches": true,
+      "semanticFocus": "사역수동 실제 읽는 사람과 시킨 사람 분리; 수혜 희망·상대수락·실행을 구별",
+      "countercaseAndAllowedAlternatives": "読んでほしい 자연 대안; 선생님이 읽은 일반 수동 아님; 과거 강요와 현재 자발요청을 같은 동기로 만들지 않음",
+      "reviewedFields": [
+        "scene/roles",
+        "preparation/patterns or reviewPatterns/formula/body/examples/note",
+        "all ja/ko dialogue turns",
+        "oral prompt/cue/answer/why",
+        "reading + question/answer/why",
+        "three MCQ prompt/options/answer/why",
+        "writing prompt/hint/sample/check",
+        "all12 word readings/ko/status",
+        "all kanji key-reading entries with contextual numeric/polyphonic checks",
+        "actual recall field/quote and prior taught family"
+      ],
+      "actualRecall": [
+        {
+          "family": "evidence",
+          "unit": 42,
+          "fieldPath": "dialog[3].ja",
+          "quote": "一人で直せない場合は",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "n4Evidence",
+          "unit": 34,
+          "fieldPath": "dialog[4].ja",
+          "quote": "読み方を教えてもらいました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[33]",
+          "actualQuoteFound": true
+        }
+      ],
+      "readingCharacters": 289
+    },
+    {
+      "unit": "u44",
+      "sha256": "2e32b2e975808cf957f1ce1f8c09ba99348f7bf1cb72b9c9b089d121a6fd2e2c",
+      "ownerFrozenShaMatches": true,
+      "semanticFocus": "존경 행동의 주체는 선생님; 요청 수행자는 손님; 내부메모/손님용 안내 분리",
+      "countercaseAndAllowedAlternatives": "ご記入ください 자연 대안; 화자의 행동에 お読みになる를 기계 적용하지 않음; 용지 준비만으로 접수완료 아님",
+      "reviewedFields": [
+        "scene/roles",
+        "preparation/patterns or reviewPatterns/formula/body/examples/note",
+        "all ja/ko dialogue turns",
+        "oral prompt/cue/answer/why",
+        "reading + question/answer/why",
+        "three MCQ prompt/options/answer/why",
+        "writing prompt/hint/sample/check",
+        "all12 word readings/ko/status",
+        "all kanji key-reading entries with contextual numeric/polyphonic checks",
+        "actual recall field/quote and prior taught family"
+      ],
+      "actualRecall": [
+        {
+          "family": "evidence",
+          "unit": 43,
+          "fieldPath": "dialog[5].ja",
+          "quote": "表現を確認してもらいたい",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "n4Evidence",
+          "unit": 37,
+          "fieldPath": "dialog[0].ja",
+          "quote": "招待された先生",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[36]",
+          "actualQuoteFound": true
+        }
+      ],
+      "readingCharacters": 291
+    },
+    {
+      "unit": "u45",
+      "sha256": "9c86a5ef105df1d4eded001242f466d6ea4325b62db88300fec9aade22b05c65",
+      "ownerFrozenShaMatches": true,
+      "semanticFocus": "いらっしゃる 의미 문맥과 특수ます형; 인용 내용·화자 보존; 발언 예정과 도착미확인",
+      "countercaseAndAllowedAlternatives": "いらっしゃいます/おっしゃいます/おっしゃいました; 밖에서 말한 行きます 직접인용을 보존하며 도착 연락 없음은 미도착 확정 아님",
+      "reviewedFields": [
+        "scene/roles",
+        "preparation/patterns or reviewPatterns/formula/body/examples/note",
+        "all ja/ko dialogue turns",
+        "oral prompt/cue/answer/why",
+        "reading + question/answer/why",
+        "three MCQ prompt/options/answer/why",
+        "writing prompt/hint/sample/check",
+        "all12 word readings/ko/status",
+        "all kanji key-reading entries with contextual numeric/polyphonic checks",
+        "actual recall field/quote and prior taught family"
+      ],
+      "actualRecall": [
+        {
+          "family": "evidence",
+          "unit": 44,
+          "fieldPath": "dialog[4].ja",
+          "quote": "こちらの入口をご利用ください",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "n4Evidence",
+          "unit": 2,
+          "fieldPath": "dialog[1].ja",
+          "quote": "「三時に行きます」とおっしゃいました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[1]",
+          "actualQuoteFound": true
+        }
+      ],
+      "readingCharacters": 294
+    },
+    {
+      "unit": "u46",
+      "sha256": "adcb5c0a574bce3ed9b729e522263fbd4deea5e914eb90b4d7fcc19b3bb11a98",
+      "ownerFrozenShaMatches": true,
+      "semanticFocus": "겸양 화자 행동방향; 伺う 문의완료와 방문계획; 리나/준 주체 유지",
+      "countercaseAndAllowedAlternatives": "聞きました/訪ねます는 기본형 의미대안; 리나가 물은 시간과 준의 예정 방문을 자기 1인칭 완료로 합치지 않음",
+      "reviewedFields": [
+        "scene/roles",
+        "preparation/patterns or reviewPatterns/formula/body/examples/note",
+        "all ja/ko dialogue turns",
+        "oral prompt/cue/answer/why",
+        "reading + question/answer/why",
+        "three MCQ prompt/options/answer/why",
+        "writing prompt/hint/sample/check",
+        "all12 word readings/ko/status",
+        "all kanji key-reading entries with contextual numeric/polyphonic checks",
+        "actual recall field/quote and prior taught family"
+      ],
+      "actualRecall": [
+        {
+          "family": "evidence",
+          "unit": 45,
+          "fieldPath": "dialog[1].ja",
+          "quote": "何時がいいとおっしゃいましたか",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "n4Evidence",
+          "unit": 34,
+          "fieldPath": "dialog[5].ja",
+          "quote": "順番を教えてもらいました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[33]",
+          "actualQuoteFound": true
+        }
+      ],
+      "readingCharacters": 276
+    },
+    {
+      "unit": "u47",
+      "sha256": "3916d383347843a0003bd154eb6be0f3a6c28908ef2549a593d87106c70923b7",
+      "ownerFrozenShaMatches": true,
+      "semanticFocus": "ていただく 상대 행동/내 수혜와 させていただく 내 행동/허락·이익 구별",
+      "countercaseAndAllowedAlternatives": "설명한 미오·사용할 준 보존; 실제 許可 발화 제시; 공손형 자체가 허락을 생성하지 않으며 사용은 미완료",
+      "reviewedFields": [
+        "scene/roles",
+        "preparation/patterns or reviewPatterns/formula/body/examples/note",
+        "all ja/ko dialogue turns",
+        "oral prompt/cue/answer/why",
+        "reading + question/answer/why",
+        "three MCQ prompt/options/answer/why",
+        "writing prompt/hint/sample/check",
+        "all12 word readings/ko/status",
+        "all kanji key-reading entries with contextual numeric/polyphonic checks",
+        "actual recall field/quote and prior taught family"
+      ],
+      "actualRecall": [
+        {
+          "family": "evidence",
+          "unit": 46,
+          "fieldPath": "reading",
+          "quote": "先にミオに伺うと",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "n4Evidence",
+          "unit": 34,
+          "fieldPath": "reading",
+          "quote": "説明してもらった",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[33]",
+          "actualQuoteFound": true
+        }
+      ],
+      "readingCharacters": 294
+    },
+    {
+      "unit": "u48",
+      "sha256": "a16a0a503ecffb4cc9456dcf76b1aa282f3241d110fb34d349d32b7d04cd2254",
+      "ownerFrozenShaMatches": true,
+      "semanticFocus": "새 문형0; 공지/개인메모/기록/전언의 근거 대조; 준2시와 손님3시 분리",
+      "countercaseAndAllowedAlternatives": "어제 설명·허락과 오늘 사용계획; 자리 준비 완료는 실제 도착 증명 아님; ということだ 전언과 ということですね 확인을 구별",
+      "reviewedFields": [
+        "scene/roles",
+        "preparation/patterns or reviewPatterns/formula/body/examples/note",
+        "all ja/ko dialogue turns",
+        "oral prompt/cue/answer/why",
+        "reading + question/answer/why",
+        "three MCQ prompt/options/answer/why",
+        "writing prompt/hint/sample/check",
+        "all12 word readings/ko/status",
+        "all kanji key-reading entries with contextual numeric/polyphonic checks",
+        "actual recall field/quote and prior taught family"
+      ],
+      "actualRecall": [
+        {
+          "family": "evidence",
+          "unit": 2,
+          "fieldPath": "reading",
+          "quote": "三時にいらっしゃるということです",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "evidence",
+          "unit": 42,
+          "fieldPath": "reading",
+          "quote": "雨が降っても降らなくても",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "evidence",
+          "unit": 45,
+          "fieldPath": "dialog[3].ja",
+          "quote": "そうおっしゃいました",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "evidence",
+          "unit": 47,
+          "fieldPath": "dialog[4].ja",
+          "quote": "今日も使わせていただきます",
+          "actualQuoteFound": true
+        },
+        {
+          "family": "n4Evidence",
+          "unit": 29,
+          "fieldPath": "dialog[1].ja",
+          "quote": "午後二時までに",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[28]",
+          "actualQuoteFound": true
+        }
+      ],
+      "readingCharacters": 289
+    }
+  ],
+  "blockers": 0,
+  "correctionsLedger": "/workspace/scratch/n3-integration/team/author-c/LANGUAGE-REVIEW-CORRECTIONS.json",
+  "closedCorrections": 13,
+  "correctionDeltaReviewedUnits": [
+    "u35",
+    "u37",
+    "u38",
+    "u39",
+    "u42",
+    "u43",
+    "u44",
+    "u45",
+    "u46",
+    "u48"
+  ],
+  "finalDeltaNotes": {
+    "u35": "必要+十分 source explicitly separated; matching 調べないで quote; 歩いた removes future compound without changing facts",
+    "u38": "degree ほど actual reading recall; short posting vs prior collected work and all3 unique MCQ answers preserved",
+    "u42": "same passage weather-dependent-location negation genuinely retrieves earlier differing-by-basis によって, not agent or means",
+    "u43/u44": "Korean now explicitly marks Mio/Rina as actual hoped-for actor",
+    "u45": "original outside speaker quote 行きます accurately preserved and only same-quote alternatives taught",
+    "u46": "scene listener Jun; separate role-play explicitly gives learner own completed inquiry + future visit, preserving sample actor",
+    "u48": "arrival unknown rather than not arrived; report and confirmation meanings separately translated"
+  },
+  "numericAndPolyphonicContextsRead": [
+    "三十分=さんじゅっぷん vs 十分=じゅうぶん",
+    "午後二時/午後三時/午後一時/十人",
+    "来るくる/来てきて/来たきた/来ないこない/来ずこず/来ませんきません",
+    "会は室内で開きます=ひらきます",
+    "手続きてつづき/一緒にいっしょに/人数にんずう/少人数しょうにんずう",
+    "読ませられよませられ/書かせられかかせられ/伺ううかがう/いらっしゃいます/おっしゃいました"
+  ],
+  "notYetAccepted": "MCQ order-only position distribution upcoming, to receive separately; browser/build root gates remain"
+}

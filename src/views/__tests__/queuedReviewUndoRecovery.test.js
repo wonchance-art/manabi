@@ -26,10 +26,11 @@ function fixture(extra = {}) {
     lastGradeRef: { current: snapshot() }, scoringRef: { current: false }, pendingGradeRef: { current: 0 },
     gradeSequenceRef: { current: 0 }, gradeSessionRef: { current: 0 }, gradeLifetimeRef: { current: 0 },
     supabase: {}, queryClient: {}, toast: vi.fn(), invalidateVocabularyLearning: vi.fn(),
+    patchVocabularyLearningRow: vi.fn(() => true), reviewFinishedRef: { current: false },
     fsrsReview: { controller: { canLegacy: () => true } },
     admission: { current: { compatibility: false }, controller: { leave: vi.fn(), getSnapshot: () => ({ current: { questionKey: 'session:0', cardId: 'card-a' } }) } },
     loadModule: vi.fn(async path => path.endsWith('reviewOutbox') ? { undoQueuedReview }
-      : { persistVocabGrade, calculateFSRS: () => ({ interval: 10, ease_factor: 4, repetitions: 1, next_review_at: '2026-10-06T00:00:00Z' }) }),
+      : { persistVocabGrade, calculateVocabFSRS: () => ({ interval: 10, ease_factor: 4, repetitions: 1, next_review_at: '2026-10-06T00:00:00Z' }) }),
     logReviewEvents: vi.fn(async () => {}), withLegacyReviewLock,
     setReviewQueue: vi.fn(), setIntroIds: vi.fn(), saveIntroIds: vi.fn(),
     setReviewSessionId: vi.fn(), setReviewIdx: vi.fn(), setShowAnswer: vi.fn(), setContextSelected: vi.fn(),
@@ -130,6 +131,22 @@ describe('queued review undo recovery in the actual VocabPage handlers', () => {
     expect(f.c.lastGradeRef.current).toBe(last); expect(last.rating).toBe(4); expect(f.c.pendingGradeRef.current).toBe(0);
   });
 
+  it('patches the saved grade into the list and refetches the whole list only after the run ends', async () => {
+    // 운영 실측 2026-10-23 KST: 채점마다 전체 목록을 다시 읽어 작은 DB가 시간 초과로 넘어갔다.
+    const f = fixture();
+    await f.handleScore(3); await tick();
+    expect(f.c.patchVocabularyLearningRow).toHaveBeenCalledWith(f.c.queryClient, 'actor-a', 'card-a',
+      expect.objectContaining({ interval: 10, ease_factor: 4, repetitions: 1, next_review_at: '2026-10-06T00:00:00Z',
+        last_reviewed_at: '2026-10-04T15:00:00.000Z' }));
+    expect(f.c.invalidateVocabularyLearning).toHaveBeenLastCalledWith(f.c.queryClient, 'actor-a', { refetchLearning: false });
+    f.c.reviewFinishedRef.current = true;
+    await f.handleScore(3); await tick();
+    expect(f.c.invalidateVocabularyLearning).toHaveBeenLastCalledWith(f.c.queryClient, 'actor-a', { refetchLearning: true });
+    f.c.reviewFinishedRef.current = false; f.c.patchVocabularyLearningRow.mockReturnValueOnce(false);
+    await f.handleScore(3); await tick();
+    expect(f.c.invalidateVocabularyLearning).toHaveBeenLastCalledWith(f.c.queryClient, 'actor-a', { refetchLearning: true });
+  });
+
   it('discards a late grade ref after a new session or unmount without blocking optimistic advance', async () => {
     const f = fixture(), reply = deferred(); f.recordReviewCompleted.mockReturnValue(reply.promise);
     await f.handleScore(3); expect(f.c.goNextReview).toHaveBeenCalled();
@@ -164,7 +181,7 @@ describe('queued review undo recovery in the actual VocabPage handlers', () => {
     const next = f.handleScore(4); expect(f.c.scoringRef.current).toBe(true);
     old.reject(new Error('old module failed')); await previous;
     expect(f.c.scoringRef.current).toBe(true); expect(f.c.toast).not.toHaveBeenCalled();
-    current.resolve({ calculateFSRS: () => ({ interval: 10, ease_factor: 4, repetitions: 1, next_review_at: '2026-10-06T00:00:00Z' }) });
+    current.resolve({ calculateVocabFSRS: () => ({ interval: 10, ease_factor: 4, repetitions: 1, next_review_at: '2026-10-06T00:00:00Z' }) });
     await next; await tick(); expect(f.c.scoringRef.current).toBe(false); expect(f.c.lastGradeRef.current.rating).toBe(4);
   });
 

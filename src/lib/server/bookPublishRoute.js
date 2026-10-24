@@ -17,7 +17,8 @@
  *  POST { action:'reviewMany', key, orders }
  *                     → 묶음 검수 — 장마다 같은 판정을 다시 하되 쪼개진 낱말이 하나라도 있으면 넘긴다. {reviewed, skipped}.
  *  POST { action:'release', key }
- *                     → 모든 장이 있고 모두 분석·검수 완료일 때만 비공개 장을 공개로 바꾼다. 아니면 409.
+ *                     → 모든 장이 있고 모두 분석·검수 완료일 때만 발행 기록(canonical_book_releases)을 남기고 비공개 장을 공개로 바꾼다.
+ *                       아니면 409. 다른 관리자가 먼저 발행한 key도 409(공개하지 않는다).
  *
  * 원문은 요청이 아니라 리포 정본(getBooks)에서만 온다 — 클라이언트가 장 내용을 보낼 수 없다.
  * 인증: requireAdmin()(쿠키 세션 + profiles.role='admin'). 쓰기는 사용자 세션 클라이언트로 해 RLS(소유자 쓰기)가
@@ -42,6 +43,21 @@ async function publishedRows(supabase, ownerId, keys, columns = ROW_COLUMNS) {
   const { data, error } = await supabase.from('reading_materials').select(columns).eq('owner_id', ownerId).in(KEY_PATH, keys);
   if (error) throw error;
   return data || [];
+}
+
+/**
+ * 정본 발행 기록 남기기(CANON-RELEASE-001, supabase/migrations/20261022081000_canonical_book_releases.sql) — 관리자 본인 이름으로만
+ * 쓸 수 있다(RLS). 이미 있으면 그대로 두고(on conflict do nothing), 기록의 소유자가 이 관리자인지 다시 읽어 확인한다.
+ * @returns {Promise<{error?: string, status?: number}>}
+ */
+async function recordCanonicalRelease(supabase, ownerId, bookKey) {
+  const releases = supabase.from('canonical_book_releases');
+  const { error } = await releases.upsert({ book_key: bookKey, owner_id: ownerId }, { onConflict: 'book_key', ignoreDuplicates: true });
+  if (error) return { error: '발행 기록을 남기지 못해 공개하지 않았어요. 잠시 후 다시 시도해 주세요.', status: 503 };
+  const { data, error: readError } = await supabase.from('canonical_book_releases').select('owner_id').eq('book_key', bookKey).maybeSingle();
+  if (readError || !data) return { error: '발행 기록을 확인하지 못해 공개하지 않았어요. 잠시 후 다시 시도해 주세요.', status: 503 };
+  if (data.owner_id !== ownerId) return { error: '다른 관리자 계정이 이미 정본으로 발행한 책이에요. 그 계정에서 관리해 주세요.', status: 409 };
+  return {};
 }
 
 const DEFAULT_NOT_PUBLISHABLE = '권리 기록이 공개 기준을 통과하지 못한 책이에요.';
@@ -99,6 +115,10 @@ export function createBookPublishHandlers(getBooks, { notPublishableError = DEFA
     const { supabase, user } = auth;
     if (body.action === 'review') return reviewChapter(supabase, user, book, body.order, body.acceptBoundaries);
     if (body.action === 'reviewMany') return reviewChapters(supabase, user, book, body.orders);
+    if (body.action === 'prepare') {
+      const { status, body: result } = await prepareCanonicalBook(supabase, user.id, book);
+      return respond(result, status);
+    }
     let rows;
     try {
       rows = await publishedRows(supabase, user.id, [book.book.key]);
@@ -115,6 +135,10 @@ export function createBookPublishHandlers(getBooks, { notPublishableError = DEFA
             : '정본과 다른 장이 있어 공개하지 않았어요. 자료 관리에서 확인해 주세요.';
         return respond({ error, release }, 409);
       }
+      // 발행 기록(CANON-RELEASE-001)을 장 공개보다 먼저 — 기록이 있어야 산책 「고전 명작」 · 정본 표지가 이 책을 정본으로 본다.
+      // 이미 모두 공개한 책(ids 0)도 기록이 없으면 여기서 채운다(멱등). 다른 관리자가 먼저 발행한 key면 공개하지 않는다.
+      const recorded = await recordCanonicalRelease(supabase, user.id, book.book.key);
+      if (recorded.error) return respond({ error: recorded.error }, recorded.status);
       if (release.ids.length === 0) return respond({ ok: true, released: [] });
       const { data, error } = await supabase.from('reading_materials').update({ visibility: 'public' })
         .in('id', release.ids).eq('owner_id', user.id).eq('visibility', 'private').select('id');
@@ -122,22 +146,36 @@ export function createBookPublishHandlers(getBooks, { notPublishableError = DEFA
       return respond({ ok: true, released: data || [] });
     }
 
-    const plan = planLiteraturePublish(book, rows);
-    if (plan.conflicts.length) {
-      return respond({ error: '이미 준비된 장 중 정본과 다른 장이 있어 넣지 않았어요. 자료 관리에서 확인해 주세요.', plan }, 409);
-    }
-    const synced = await syncPendingMetadata(supabase, user, book, rows);
-    if (synced.error) return respond({ error: '준비한 장을 정본에 맞추지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503);
-    if (plan.insert.length === 0) return respond({ ok: true, inserted: [], synced: synced.ids, plan });
-
-    const { data, error } = await supabase.from('reading_materials')
-      .insert(literaturePublishRows(book, plan.insert, user.id))
-      .select('id, order:processed_json->metadata->book->>order');
-    if (error) return respond({ error: '책을 준비하지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503);
-    return respond({ ok: true, inserted: data || [], synced: synced.ids, plan });
+    return respond({ error: '작업할 책을 선택해 주세요.' }, 400);
   }
 
   return { GET, POST };
+}
+
+/**
+ * 「게시」(준비) 한 권 → {status, body}. 관리자 화면(사용자 세션 · RLS 소유자 쓰기)과 서버 분석 작업(CANON-SERVER-ANALYSIS-001 —
+ * service role · 작업을 시작한 관리자 ownerId)이 같이 쓴다. 정본 장 중 없는 장만 비공개로 넣고, 분석 전 장은 정본 metadata에 맞춘다(멱등).
+ */
+export async function prepareCanonicalBook(supabase, ownerId, book) {
+  let rows;
+  try {
+    rows = await publishedRows(supabase, ownerId, [book.book.key]);
+  } catch {
+    return { status: 503, body: { error: '게시 상태를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.' } };
+  }
+  const plan = planLiteraturePublish(book, rows);
+  if (plan.conflicts.length) {
+    return { status: 409, body: { error: '이미 준비된 장 중 정본과 다른 장이 있어 넣지 않았어요. 자료 관리에서 확인해 주세요.', plan } };
+  }
+  const synced = await syncPendingMetadata(supabase, { id: ownerId }, book, rows);
+  if (synced.error) return { status: 503, body: { error: '준비한 장을 정본에 맞추지 못했어요. 잠시 후 다시 시도해 주세요.' } };
+  if (plan.insert.length === 0) return { status: 200, body: { ok: true, inserted: [], synced: synced.ids, plan } };
+
+  const { data, error } = await supabase.from('reading_materials')
+    .insert(literaturePublishRows(book, plan.insert, ownerId))
+    .select('id, order:processed_json->metadata->book->>order');
+  if (error) return { status: 503, body: { error: '책을 준비하지 못했어요. 잠시 후 다시 시도해 주세요.' } };
+  return { status: 200, body: { ok: true, inserted: data || [], synced: synced.ids, plan } };
 }
 
 /**

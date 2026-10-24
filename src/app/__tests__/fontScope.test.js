@@ -220,12 +220,24 @@ describe('간체 글꼴 범위 — Noto Sans SC', () => {
   });
 
   it('링크 세그먼트는 ScFontScope 없이 힌트 쿠키 부품만 두고, 이미 동적 라우트다(쿠키로 정적을 동적으로 바꾸지 않음)', () => {
-    for (const seg of SC_LINK_SEGMENTS) {
-      const layout = read(`${seg}/layout.jsx`);
-      expect(layout, seg).not.toMatch(/import ScFontScope|<ScFontScope>/);
-      expect(layout, seg).toContain("import ScFontCookieHint from '@/components/fonts/ScFontCookieHint'");
-      expect(layout, seg).toContain('<><ScFontCookieHint />{children}</>');
-      expect(read(`${seg}/page.jsx`), seg).toContain("export const dynamic = 'force-dynamic';");
+    // 배움(/home): 세그먼트 layout의 힌트 쿠키 부품 + 동적 화면 그대로.
+    const home = 'src/app/(app)/home';
+    expect(read(`${home}/layout.jsx`)).not.toMatch(/import ScFontScope|<ScFontScope>/);
+    expect(read(`${home}/layout.jsx`)).toContain("import ScFontCookieHint from '@/components/fonts/ScFontCookieHint'");
+    expect(read(`${home}/layout.jsx`)).toContain('<><ScFontCookieHint />{children}</>');
+    expect(read(`${home}/page.jsx`)).toContain("export const dynamic = 'force-dynamic';");
+    // 산책(/discover, GUEST-STATIC-001 2단계): 같은 뜻(「쿠키로 정적을 동적으로 바꾸지 않음」)을 판 나누기로 지킨다 — 본 화면은 ISR이라 쿠키를 읽지 않고,
+    // 힌트 쿠키 판정은 middleware가 해서 늘 링크를 싣는 간체 판(/discover/sc, 역시 ISR)으로 넘긴다. 쿠키를 읽는 부품은 이미 동적인 잎 화면에만 둔다.
+    const discover = 'src/app/(app)/discover';
+    // 세그먼트 layout은 글꼴 미리 받기(빌드 값)만 둔다 — 쿠키를 읽는 부품이 들어오면 ISR 판이 동적이 된다.
+    expect(read(`${discover}/layout.jsx`), '산책 세그먼트 layout이 쿠키를 읽으면 ISR 판이 동적이 된다').not.toMatch(/ScFontCookieHint|ScFontScope|next\/headers|cookies\(/);
+    expect(read(`${discover}/page.jsx`)).toContain('export const revalidate = 300;');
+    expect(read(`${discover}/page.jsx`)).not.toMatch(/ScFontScope|ScFontCookieHint/);
+    expect(read(`${discover}/sc/page.jsx`)).toContain('return <><ScFontLink /><DiscoverPage /></>;');
+    expect(read('src/middleware.js')).toContain("if (request.cookies.get(SC_HINT_COOKIE)?.value === '1') return rewriteTo(request, '/discover/sc');");
+    for (const leaf of ['reading', 'classics']) {
+      expect(read(`${discover}/${leaf}/page.jsx`), leaf).toContain("export const dynamic = 'force-dynamic';");
+      expect(read(`${discover}/${leaf}/page.jsx`), leaf).toContain('<ScFontCookieHint />');
     }
     const hint = read('src/components/fonts/ScFontCookieHint.jsx');
     expect(hint).toContain('return scHintFromJar(await cookies()) ? <ScFontLink /> : null;');
@@ -237,7 +249,8 @@ describe('간체 글꼴 범위 — Noto Sans SC', () => {
 
   it('링크 세그먼트에서 열리는 부품의 lang을 데이터로 정하는 요소는 ZhSlot 안에 있다(SC로 그리지 않는 잎은 근거와 함께 밖)', () => {
     const { reach } = scGraph();
-    const reached = new Set(SC_LINK_SEGMENTS.flatMap(seg => ['page.jsx', 'layout.jsx', 'loading.jsx']
+    // 산책의 판 나누기(GUEST-STATIC-001 2단계) 뒤에도 같은 화면을 본다 — 「함께 읽는 글」 · 간체 판은 하위 경로의 page다.
+    const reached = new Set(SC_LINK_SEGMENTS.flatMap(seg => ['page.jsx', 'layout.jsx', 'loading.jsx', 'reading/page.jsx', 'sc/page.jsx']
       .map(f => `${seg}/${f}`).filter(f => fs.existsSync(path.join(ROOT, f))).flatMap(f => [...reach(f)])));
     const leaves = [], bare = [], notSc = [];
     for (const f of reached) {

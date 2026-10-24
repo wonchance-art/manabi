@@ -11,3 +11,15 @@ export function preloadNotoSansLatin() {
   const href = process.env.MANABI_FONT_HINT_NOTO_SANS;
   if (href) ReactDOM.preload(href, { as: 'font', type: 'font/woff2' });
 }
+
+// 일본어(Noto Sans JP · 루트) · 세리프 KR(Noto Serif KR 600 · 700 · (app)) 라틴 조각도 같은 길이다(FIELD-AUDIT 2026-10-23 KST).
+// 선언은 preload: false로 두고, 첫 화면에서 그 라틴 조각을 그리는 세그먼트만 건다 — 어느 세그먼트인지는 fontHints.test.js가 지킨다.
+export function preloadNotoSansJpLatin() {
+  const href = process.env.MANABI_FONT_HINT_NOTO_SANS_JP;
+  if (href) ReactDOM.preload(href, { as: 'font', type: 'font/woff2' });
+}
+
+export function preloadNotoSerifKrLatin() {
+  const href = process.env.MANABI_FONT_HINT_NOTO_SERIF_KR;
+  if (href) ReactDOM.preload(href, { as: 'font', type: 'font/woff2' });
+}

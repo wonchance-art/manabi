@@ -1,0 +1,263 @@
+'use client';
+// 제목 ▾ 시트 · 단어 카드 창 · 예문 단어 창 — 뷰어 시트와 같은 움직임(viewerSheetUp · 손잡이를 아래로 끌면 닫힘).
+import Link from 'next/link';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { reducedMotion } from '@/lib/reducedMotion';
+import { pinyinToneNumber } from '@/lib/pinyinTone';
+import { formatDrillSummary, hanjaPanelModel, normalizePinyin, panelSearchChar, selectSameHanjaTiles, soundPieceDrill } from '@/lib/viewerHanjaPanel';
+import { CharTiles, PIECE_ROLE_WORD, WordRow } from './WordParts';
+import { useWordLang } from './wordLang';
+
+const CLOSE_DRAG_PX = 80;
+
+/**
+ * 닫힘 움직임 — 닫기를 부르면 ms 동안 「닫히는 중」으로 두었다가 onClose(열릴 때만 움직이고 닫힐 때 뚝 사라지던 것, 오너 2026-10-21 KST ⑥-1).
+ * 동작 줄이기면 바로 닫는다. 타이머라 animationend가 안 와도(숨은 탭) 닫히고, 먼저 지워지면 정리된다.
+ */
+function useClosing(onClose, ms) {
+  const [closing, setClosing] = useState(false);
+  const latest = useRef(onClose);
+  latest.current = onClose;
+  const timer = useRef(null);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const close = useCallback(() => {
+    if (timer.current) return;
+    if (reducedMotion()) { latest.current(); return; }
+    setClosing(true);
+    timer.current = setTimeout(() => latest.current(), ms);
+  }, [ms]);
+  return [closing, close];
+}
+
+/** 아래 시트 — Esc · 뒷배경 · 손잡이 끌기로 닫힌다. 열리면 첫 조작 요소에 초점, 닫히면 연 자리로 돌려준다. */
+export function Sheet({ label, onClose, children, returnTo = null }) {
+  const ref = useRef(null);
+  const drag = useRef(null);
+  const [dy, setDy] = useState(0);
+  const [closing, close] = useClosing(onClose, 200);
+  useLayoutEffect(() => {
+    const opener = returnTo || document.activeElement; // 예문 단어 창에서 열면 창은 이미 사라졌다 — 누른 예문 단어로 돌려준다
+    ref.current?.querySelector('a, button:not(.lw-sheet__handle), input, select')?.focus({ preventScroll: true });
+    return () => { if (opener && document.contains(opener)) opener.focus({ preventScroll: true }); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- 열릴 때 한 번(돌려줄 자리는 그때 정해진다)
+  useEffect(() => {
+    const onKey = (event) => {
+      if (document.querySelector('.lw-dp')) return; // 시트 안 조각 창이 열려 있으면 Esc · Tab은 그 창 몫(창이 먼저 닫힌다)
+      if (event.key === 'Escape') { event.stopPropagation(); close(); return; }
+      // aria-modal — Tab이 뒤의 네 칸(화면 아래 고정)으로 새지 않게 시트 안에서 돈다(ClassCopyNotice와 같은 방식).
+      if (event.key !== 'Tab' || !ref.current) return;
+      const nodes = [...ref.current.querySelectorAll('button:not(:disabled), [href], input, select')];
+      const first = nodes[0], last = nodes.at(-1), inside = ref.current.contains(document.activeElement);
+      if (event.shiftKey && (!inside || document.activeElement === first)) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && (!inside || document.activeElement === last)) { event.preventDefault(); first?.focus(); }
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [close]);
+  const down = (event) => { drag.current = { y: event.clientY, id: event.pointerId }; event.currentTarget.setPointerCapture?.(event.pointerId); };
+  const move = (event) => { if (drag.current?.id === event.pointerId) setDy(Math.max(0, event.clientY - drag.current.y)); };
+  const up = (event) => {
+    if (drag.current?.id !== event.pointerId) return;
+    drag.current = null;
+    if (dy > CLOSE_DRAG_PX) close(); else setDy(0);
+  };
+  return <>
+    <div className={`lw-scrim${closing ? ' is-closing' : ''}`} onClick={close} aria-hidden="true" />
+    {/* 닫히는 중에는 끌던 자리(--dy)에서 아래로 내려간다. */}
+    <div className={`lw-sheet${closing ? ' is-closing' : ''}`} role="dialog" aria-modal="true" aria-label={label} ref={ref}
+      style={closing ? { '--dy': `${dy}px` } : dy ? { transform: `translateY(${dy}px)`, transition: 'none' } : reducedMotion() ? undefined : { transition: 'transform .2s var(--ease-settle)' }}>
+      <button type="button" className="lw-sheet__handle" aria-label="닫기" onClick={close}
+        onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} />
+      {children}
+    </div>
+  </>;
+}
+
+function Seg({ label, items, value, onPick }) {
+  return <div className="lw-sheet__row"><span id={`lw-seg-${label}`}>{label}</span>
+    <div className="lw-seg" role="group" aria-labelledby={`lw-seg-${label}`} style={{ '--n': items.length }}>
+      {items.map((it) => (it.href
+        ? <Link key={it.id} href={it.href} aria-current={it.id === value ? 'page' : undefined} aria-label={it.aria || it.label}>{it.label}</Link>
+        : <button key={it.id} type="button" aria-pressed={it.id === value} onClick={() => onPick(it.id)}>{it.label}</button>))}
+    </div></div>;
+}
+
+/**
+ * 제목 ▾ 시트 — 레벨 · 목록 · 보기(오너 2026-10-21 KST 「두 곳」 안: 페이지 줄 = 지금 공부하는 방식, 제목 = 나머지 전부).
+ * 모드 · 보기 탭은 페이지 줄에만 둔다(시트에 또 두면 겹친다). 목록은 그 레벨에 있는 것만(한자 1 · 2급, 7–9급은 단어뿐이라 줄 없음).
+ */
+export function TitleSheet({ levels, levelKey, kinds, aidLabel, aid, page, pageSizes, onAid, onPage, onClose }) {
+  const L = useWordLang();
+  return <Sheet label="레벨 · 목록 · 보기" onClose={onClose}>
+    <div className="lw-sheet__rows">
+      <Seg label="레벨" value={levelKey} items={levels.map((k) => ({ id: k, label: L.levelPill(k), aria: L.tag(L.levelOf(k)), href: L.levelHref(k) }))} />
+      {kinds.length > 1 && <Seg label="목록" value="vocab" items={kinds} />}
+      <div className="lw-sheet__row lw-sheet__row--top"><span>보기</span>
+        <div className="lw-sheet__view">
+          <button type="button" role="switch" className="lw-switch" aria-checked={aid} onClick={() => onAid(!aid)}>{aidLabel}<i aria-hidden="true" /></button>
+          <div className="lw-sheet__page"><span id="lw-page-size">리스트 한 번에</span>
+            <span className="lw-mini" role="group" aria-labelledby="lw-page-size" data-thumb="" style={{ '--i': Math.max(0, pageSizes.indexOf(page)) }}>
+              {pageSizes.map((n) => <button key={n} type="button" aria-pressed={page === n} onClick={() => onPage(n)}>{n}</button>)}
+            </span></div>
+        </div></div>
+    </div>
+  </Sheet>;
+}
+
+/** 예문 단어 창 — 누른 단어 바로 아래(넘치면 위)에 줄 형식 + 글자 칸 + 「단어 카드 열기 ›」. */
+export function WordPopup({ anchor, row, tiles, tone, status, onSave, onOpen, onClose }) {
+  const ref = useRef(null);
+  const [closing, close] = useClosing(onClose, 120);
+  const [pos, setPos] = useState(null);
+  useLayoutEffect(() => {
+    const r = anchor?.getBoundingClientRect?.();
+    const el = ref.current;
+    if (!r || !el) return;
+    const w = el.offsetWidth, h = el.offsetHeight, vw = window.innerWidth, vh = window.innerHeight;
+    const left = Math.min(Math.max(16, r.left + r.width / 2 - w / 2), vw - w - 16);
+    const top = r.bottom + 8 + h > vh - 16 ? Math.max(16, r.top - h - 8) : r.bottom + 8;
+    setPos({ left, top });
+  }, [anchor, row]);
+  // 창은 문서 끝에 그려진다 — 열리면 창 안 첫 단추로, 닫히면 누른 예문 단어로 초점을 옮겨 키보드로도 ☆ · 카드 열기에 닿는다.
+  useEffect(() => {
+    const el = ref.current;
+    el?.querySelector('button')?.focus({ preventScroll: true });
+    return () => {
+      const at = document.activeElement;
+      if (anchor && document.contains(anchor) && (!at || at === document.body || el?.contains(at))) anchor.focus({ preventScroll: true });
+    };
+  }, [anchor]);
+  useEffect(() => {
+    const onKey = (event) => { if (event.key === 'Escape') close(); };
+    const onDown = (event) => { if (!ref.current?.contains(event.target) && event.target !== anchor) close(); };
+    const onScroll = () => close();
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('pointerdown', onDown, true);
+    window.addEventListener('scroll', onScroll, { passive: true, once: true });
+    return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('pointerdown', onDown, true); window.removeEventListener('scroll', onScroll); };
+  }, [anchor, close]);
+  return <div className={`lw-pop${closing ? ' is-closing' : ''}`} role="dialog" aria-label={`${row.word} 단어`} ref={ref} style={pos ? { left: pos.left, top: pos.top } : { visibility: 'hidden', left: 0, top: 0 }}>
+    <WordRow word={row.word} reading={row.reading} meaning={row.meaning || '사전에 없는 단어예요'} level={row.level} status={status} onSave={onSave} tone={tone} />
+    <CharTiles tiles={tiles} small />
+    {onOpen && <button type="button" className="lw-pop__open" onClick={onOpen}>단어 카드 열기 ›</button>}
+  </div>;
+}
+
+const toneCls = (on, syl) => (on && syl ? `lw-tone--${pinyinToneNumber(syl) ?? 0}` : undefined);
+const CloseIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18" /></svg>;
+
+/**
+ * 조각 창(오너 10-23 「안1로」 — 글자 칸 조각을 한 번 더 파고들기, HSK 판). 뷰어 한자 창(ViewerHanjaPopover)의 조각 화면과 같은 자료 ·
+ * 같은 규격(높이 170 · 너비 min(346, 화면 − 32))이고, 놓는 일은 예문 단어 창(WordPopup)을 따른다 — 누른 칸 바로 아래(넘치면 위).
+ * Esc · 바깥 누르기 · 칸이 화면 밖으로 나가면 닫히고, 열리면 창으로 · 닫히면 누른 조각으로 초점. 표시만 한다(저장 · 복습 기록 0).
+ *   sound — 음 조각 → 같은 소리 글자 5개 + 요약 한 줄(「雚이 들면 대개 관·권·환」). 이 칸의 글자(of — 觀)를 칠한다.
+ *   char  — 뜻 조각 → 그 글자의 머리 · 구성 · 같은 한자 단어 3칸(내 단어 먼저 · HSK 1–9 색인, 못 받으면 이 레벨 목록).
+ * tables = 글자 칸 표 네 벌(받는 중이면 빈 창 — aria-busy).
+ */
+export function PiecePopup({ req, tables, refIndex, savedRows, tone, onClose }) {
+  const L = useWordLang();
+  const ref = useRef(null);
+  const [closing, close] = useClosing(onClose, 120);
+  const [pos, setPos] = useState(null);
+  const { anchor } = req;
+  const ready = !!tables && typeof tables === 'object';
+  // 자리 — 누른 칸 아래 8px(넘치면 위, 아래 끝은 채점 바 위), 좌우는 글자 칸 줄 가운데. 스크롤하면 칸을 따라가고, 칸이 화면 밖으로 나가면 닫는다
+  // (예문 단어 창처럼 스크롤 한 번에 닫으면 누르는 순간의 관성 스크롤에도 닫혔다 — 실화면 캡처 2026-10-23 KST).
+  const place = useCallback(() => {
+    const tile = anchor?.closest?.('.lw-tile') || anchor;
+    const r = tile?.getBoundingClientRect?.();
+    const list = (anchor?.closest?.('.lw-tiles') || tile)?.getBoundingClientRect?.();
+    const el = ref.current;
+    if (!r || !el) return false;
+    const w = el.offsetWidth, h = el.offsetHeight, vw = window.innerWidth;
+    const bar = [...document.querySelectorAll('.lw-gradebar')].find((b) => b.getClientRects().length)?.getBoundingClientRect().top;
+    const floor = Math.min(window.innerHeight, bar ?? Infinity) - 8;
+    if (r.bottom < 0 || r.top > floor) return false;
+    const left = Math.min(Math.max(16, list.left + list.width / 2 - w / 2), vw - w - 16);
+    const top = r.bottom + 8 + h > floor ? Math.max(16, r.top - h - 8) : r.bottom + 8;
+    setPos((cur) => (cur && Math.abs(cur.left - left) < 0.5 && Math.abs(cur.top - top) < 0.5 ? cur : { left, top }));
+    return true;
+  }, [anchor]);
+  useLayoutEffect(() => { place(); }, [place]);
+  useEffect(() => {
+    anchor?.setAttribute('aria-expanded', 'true');
+    ref.current?.focus({ preventScroll: true });
+    const el = ref.current;
+    return () => {
+      anchor?.removeAttribute('aria-expanded');
+      const at = document.activeElement;
+      if (anchor && document.contains(anchor) && (!at || at === document.body || el?.contains(at))) anchor.focus({ preventScroll: true });
+    };
+  }, [anchor]);
+  useEffect(() => {
+    const onKey = (event) => { if (event.key === 'Escape') { event.stopPropagation(); close(); } };
+    const onDown = (event) => { if (!ref.current?.contains(event.target) && !anchor?.contains(event.target)) close(); };
+    let frame = 0;
+    const onMove = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(() => { if (!place()) close(); }); };
+    window.addEventListener('keydown', onKey, true);
+    window.addEventListener('pointerdown', onDown, true);
+    window.addEventListener('scroll', onMove, { passive: true, capture: true });
+    window.addEventListener('resize', onMove);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('keydown', onKey, true); window.removeEventListener('pointerdown', onDown, true);
+      window.removeEventListener('scroll', onMove, { capture: true }); window.removeEventListener('resize', onMove);
+    };
+  }, [anchor, close, place]);
+
+  const panel = ready ? tables.panel : null;
+  const drill = useMemo(() => (ready && req.kind === 'sound' ? soundPieceDrill(req.ch, tables) : null), [ready, req.kind, req.ch, tables]);
+  const model = useMemo(() => (ready && req.kind === 'char' ? hanjaPanelModel({ ch: req.ch, tables }) : null), [ready, req.kind, req.ch, tables]);
+  const words = useMemo(() => (model?.head.reading
+    ? selectSameHanjaTiles({ ch: panelSearchChar(req.ch, panel), reading: model.head.reading, headText: '', savedRows, refIndex, tables }) : []),
+  [model, req.ch, panel, savedRows, refIndex, tables]);
+
+  const roleName = PIECE_ROLE_WORD[req.kind === 'sound' ? 'sound' : 'meaning'];
+  const py = (text, className) => (text ? <span className={['lw-dp__py', className, toneCls(tone, text)].filter(Boolean).join(' ')}>{normalizePinyin(text)}</span> : null);
+  const head = (h) => <div className="lw-dp__head">
+    <b className="lw-dp__ch" lang={L.zheng}>{req.ch}</b>
+    {py(h?.reading)}
+    {h?.label && <span className="lw-dp__hun">{h.label}</span>}
+    <span className={`lw-dp__role is-${req.kind === 'sound' ? 'sound' : 'meaning'}`}>{roleName} 조각</span>
+  </div>;
+
+  let body = null;
+  if (drill) {
+    body = <>
+      {head(drill)}
+      <div className="lw-dp__fam">
+        {drill.items.map((x) => <span key={x.ch} className={`lw-dp__fc${x.ch === req.of ? ' is-hit' : ''}`}>
+          {x.py ? py(x.py, 'lw-dp__fpy') : <span className="lw-dp__fpy" aria-hidden="true">&nbsp;</span>}
+          <b lang={L.zheng}>{x.ch}</b>
+          <span>{x.eum || ''}</span>
+        </span>)}
+      </div>
+      <p className="lw-dp__note">{formatDrillSummary(drill)}</p>
+    </>;
+  } else if (model) {
+    const ps = model.parts;
+    body = <>
+      {head(model.head)}
+      {ps ? <div className={`lw-dp__parts${ps.known ? '' : ' is-unknown'}`} style={{ '--n': ps.pieces.length }}>
+        {ps.pieces.map((p, i) => <span key={`${p.ch}${i}`} className={`lw-dp__piece${p.role ? ` is-${p.role}` : ''}`}>
+          <b lang={L.zheng}>{p.ch}</b><span className="lw-dp__pl">{p.label || ''}</span>{p.role && <i>{PIECE_ROLE_WORD[p.role]}</i>}
+        </span>)}
+        {!ps.known && <span className="lw-dp__unknown">역할 미상</span>}
+      </div> : <div className="lw-dp__parts is-empty" aria-hidden="true" />}
+      {words.length ? <div className="lw-dp__words">{words.map((t) => <div key={t.word} className={`lw-dp__tile${t.dim ? ' is-dim' : ''}`}>
+        <span className="lw-dp__tzh" lang={L.hw}>{[...t.word].map((c, i) => (i === t.at ? <em key={i}>{c}</em> : <span key={i}>{c}</span>))}</span>
+        <span className="lw-dp__tpy">{t.syllables.map((y, i) => <span key={i} className={toneCls(tone, y)}>{y}</span>)}</span>
+        {t.ko ? <span className="lw-dp__tko">{t.koSylls.map((y, i) => (i === t.at ? <em key={i}>{y}</em> : <span key={i}>{y}</span>))}</span>
+          : <span className="lw-dp__tko is-short">{t.short}</span>}
+      </div>)}</div> : <div className="lw-dp__words is-empty" aria-hidden="true" />}
+    </>;
+  } else if (tables === false) {
+    body = <p className="lw-dp__note">글자 자료를 불러오지 못했어요</p>;
+  }
+  return <div className={`lw-dp${closing ? ' is-closing' : ''}`} role="dialog" aria-modal="false" aria-label={`${req.ch} ${roleName} 조각`} tabIndex={-1} ref={ref}
+    aria-busy={tables === 'loading' || tables === null || undefined} data-kind={req.kind}
+    style={pos ? { left: pos.left, top: pos.top } : { visibility: 'hidden', left: 0, top: 0 }}>
+    {body}
+    <button type="button" className="lw-dp__close" aria-label="닫기" title="닫기" onClick={close}><CloseIcon /></button>
+  </div>;
+}

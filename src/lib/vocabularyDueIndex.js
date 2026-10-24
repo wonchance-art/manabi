@@ -42,7 +42,7 @@ export function findIndexedVocabulary(index, token, language) {
 }
 
 // 카드 한 장의 현재 projection — legacy의 성공/undo/오프라인 캐시 패치만 반영한다. FSRS cohort와 registry는 고정한다.
-function currentIndexedProjection(index, row, now) {
+export function currentIndexedProjection(index, row, now = Date.now()) {
   if (!row || index?.complete !== true || index.registryAvailable !== true) return null;
   let projection = index.projectionsById?.get(row.id);
   if (!projection || row.user_id !== index.actorId || row.__pendingReview) return null;

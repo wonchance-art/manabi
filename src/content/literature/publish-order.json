@@ -1,0 +1,27 @@
+{
+  "about": "정본 책 공개 차례(오너 「수록된 것과 인기작부터 권장대로 공개」 2026-10-23 KST) — 언어마다 앞에 둘 책. 대표작 · 학습자가 바로 읽을 만한 분량(짧은 장)을 먼저, 그다음 긴 대표작. 여기 없는 수록 책은 그 언어의 카탈로그 차례로 뒤에 붙는다. 관리자 게시 화면은 이미 준비한 책을 맨 앞에 두고, 나머지를 언어를 번갈아(일 · 영 · 프 · 중 · 한) 이 차례로 연다(classicsPublishRank). 규칙 · 계약: src/lib/classicsShelf.js · classicsShelf.test.jsx.",
+  "first": {
+    "Japanese": [
+      "aozora-000879-000127", "aozora-000035-001567", "aozora-000081-043754", "aozora-000879-000092", "aozora-000035-000301",
+      "aozora-000081-000456", "aozora-000879-000042", "aozora-000119-000624", "aozora-000121-000628", "aozora-000121-000637",
+      "aozora-000148-000752", "aozora-000879-043015", "aozora-000879-043016", "aozora-000148-000799", "aozora-000081-000473",
+      "aozora-000081-000470", "aozora-000129-045245", "aozora-000148-000773"
+    ],
+    "English": [
+      "se-lewis-carroll_alices-adventures-in-wonderland", "se-charles-dickens_a-christmas-carol", "pd-gau-george-orwell_animal-farm",
+      "pd-fp-ernest-hemingway_the-old-man-and-the-sea", "se-l-frank-baum_the-wonderful-wizard-of-oz", "se-arthur-conan-doyle_the-adventures-of-sherlock-holmes",
+      "se-f-scott-fitzgerald_the-great-gatsby", "se-jane-austen_pride-and-prejudice", "pd-gau-george-orwell_nineteen-eighty-four"
+    ],
+    "French": [
+      "pd-gau-antoine-de-saint-exupery_le-petit-prince", "ws-fr-alphonse-daudet_la-derniere-classe", "ws-fr-guy-de-maupassant_la-parure",
+      "pd-fp-albert-camus_l-etranger", "ws-fr-jules-verne_le-tour-du-monde-en-quatre-vingts-jours", "ws-fr-alphonse-daudet_lettres-de-mon-moulin",
+      "pd-fp-antoine-de-saint-exupery_vol-de-nuit", "ws-fr-victor-hugo_les-miserables-1"
+    ],
+    "Chinese": ["ws-zh-lu-xun_kong-yi-ji", "ws-zh-lu-xun_gu-xiang", "ws-zh-zhu-ziqing_bei-ying", "ws-zh-lu-xun_zhu-fu"],
+    "Korean": [
+      "ws-ko-kim-so-wol_jindallaekkot", "ws-ko-yun-dong-ju_haneulgwa-baramgwa-byeolgwa-si", "ws-ko-hyeon-jin-geon_unsu-joeun-nal",
+      "ws-ko-kim-yu-jeong_dongbaekkkot", "ws-ko-yi-hyo-seok_memilkkot-pil-muryeop", "ws-ko-kim-yu-jeong_bombom", "ws-ko-kim-dong-in_gamja",
+      "ws-ko-yi-sang_nalgae"
+    ]
+  }
+}

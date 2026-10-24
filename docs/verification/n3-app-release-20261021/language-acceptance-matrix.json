@@ -1,0 +1,742 @@
+{
+  "status": "passed-current-exact-source-language-receipt-chain",
+  "checkedAt": "2026-10-21T11:51:15.988443+00:00",
+  "scope": "Aggregation of three independent lesson-language review receipts plus exact-source order-only deltas; does not replace those reviewers judgments. Book frontmatter and cumulative reviews were independently reviewed by M00. Syllabus structure/coverage have a separate read-only audit.",
+  "acceptedLessonCount": 48,
+  "notYetAcceptedLessons": [],
+  "bookFrontmatterAndCumulativeReview": {
+    "status": "accepted-current-exact-source-by-independent-agent",
+    "sourceSha256": "1adbc238a8b38d9d6681522170419b69614838f01fb0a2b4c1ded11a23eb9c32",
+    "receipt": {
+      "path": "/workspace/scratch/n3-integration/BOOK-COMMON-INDEPENDENT-REVIEW.json",
+      "sha256": "462b61dace7f7b2ade04f412ae51bf61368308bbde4381681fe03f89a04b96c9"
+    },
+    "author": "n3_curriculum",
+    "reviewer": "M00 /root"
+  },
+  "lessons": [
+    {
+      "unit": "u01",
+      "sourceSha256": "183a1bc2fe2b4a8f5727fc276ce0c6410b97d5ad66c72e2a28e8fb432753e037",
+      "author": "/root/n3_author_a",
+      "independentReviewer": "/root/n3_curriculum",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-INDEPENDENT-REVIEW.json",
+        "sha256": "ebf422ba21fa98456cf81d50857f260e7f6ef6204ce1c26350fa4c14f0115fb7"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-OPTIONS-ORDER-DELTA-REVIEW.json",
+        "sha256": "c578a8893fafe2b385328115f99ddc7e8c0e7a7e80a83a184d4a4bf2727ded9c"
+      },
+      "baseFullLanguageSourceSha256": "6de044387febf5b81ac9106373e0ff3782845c8c738420724ea7d65b1ab189b1",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u02",
+      "sourceSha256": "918c9211736b799bd6e5f9179d1a2f3012ce37d2d0334828df66bcd1fd27d121",
+      "author": "/root/n3_author_a",
+      "independentReviewer": "/root/n3_curriculum",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-INDEPENDENT-REVIEW.json",
+        "sha256": "ebf422ba21fa98456cf81d50857f260e7f6ef6204ce1c26350fa4c14f0115fb7"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-OPTIONS-ORDER-DELTA-REVIEW.json",
+        "sha256": "c578a8893fafe2b385328115f99ddc7e8c0e7a7e80a83a184d4a4bf2727ded9c"
+      },
+      "baseFullLanguageSourceSha256": "2bdb06738013046df419da4f1c2abfc3fa422359a396019f447ea3c60a5c983c",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u03",
+      "sourceSha256": "88636b5e16e4f4c11d831fb30d93aa00cb7547120ac5a0799a02e60967fb7015",
+      "author": "/root/n3_author_a",
+      "independentReviewer": "/root/n3_curriculum",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-INDEPENDENT-REVIEW.json",
+        "sha256": "ebf422ba21fa98456cf81d50857f260e7f6ef6204ce1c26350fa4c14f0115fb7"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-OPTIONS-ORDER-DELTA-REVIEW.json",
+        "sha256": "c578a8893fafe2b385328115f99ddc7e8c0e7a7e80a83a184d4a4bf2727ded9c"
+      },
+      "baseFullLanguageSourceSha256": "0c47ffc83d0b604739c2474c56aeb5d34301bc02a7befb25a75aa326a4078815",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u04",
+      "sourceSha256": "7d88c629d3d1506e2b7178749bcbb1fefb4a838cecb4ce025e28166ebf3ed43f",
+      "author": "/root/n3_author_a",
+      "independentReviewer": "/root/n3_curriculum",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-INDEPENDENT-REVIEW.json",
+        "sha256": "ebf422ba21fa98456cf81d50857f260e7f6ef6204ce1c26350fa4c14f0115fb7"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-OPTIONS-ORDER-DELTA-REVIEW.json",
+        "sha256": "c578a8893fafe2b385328115f99ddc7e8c0e7a7e80a83a184d4a4bf2727ded9c"
+      },
+      "baseFullLanguageSourceSha256": "cee796554acbd1f4378c4e021ab5d4a30a5aea8acdb4177f5627669c02c66479",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u05",
+      "sourceSha256": "abce057a931da5589d51bac5120fea98e397df914ad67812d36ca6800dc9596e",
+      "author": "/root/n3_author_a",
+      "independentReviewer": "/root/n3_curriculum",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-INDEPENDENT-REVIEW.json",
+        "sha256": "ebf422ba21fa98456cf81d50857f260e7f6ef6204ce1c26350fa4c14f0115fb7"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-OPTIONS-ORDER-DELTA-REVIEW.json",
+        "sha256": "c578a8893fafe2b385328115f99ddc7e8c0e7a7e80a83a184d4a4bf2727ded9c"
+      },
+      "baseFullLanguageSourceSha256": "4e2f58d63938014b540fb33ed4db179a0cf6869bc9ab33f09d8c8040ea1832b4",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u06",
+      "sourceSha256": "4b1925a767c1a5bbab6be1749ab10d63177fea3f7bc988b3c334b0ea10fde291",
+      "author": "/root/n3_author_a",
+      "independentReviewer": "/root/n3_curriculum",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-INDEPENDENT-REVIEW.json",
+        "sha256": "ebf422ba21fa98456cf81d50857f260e7f6ef6204ce1c26350fa4c14f0115fb7"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-OPTIONS-ORDER-DELTA-REVIEW.json",
+        "sha256": "c578a8893fafe2b385328115f99ddc7e8c0e7a7e80a83a184d4a4bf2727ded9c"
+      },
+      "baseFullLanguageSourceSha256": "b5a0cd1e4fb90a73790ff50b7d3b9eeefca4f132531371a80188c5b56817e3d7",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u07",
+      "sourceSha256": "f192e767d2fb3f7c3204f1e520d889c0ff6dceae323cdcfda361af98f238874f",
+      "author": "/root/n3_author_a",
+      "independentReviewer": "/root/n3_curriculum",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-INDEPENDENT-REVIEW.json",
+        "sha256": "ebf422ba21fa98456cf81d50857f260e7f6ef6204ce1c26350fa4c14f0115fb7"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-OPTIONS-ORDER-DELTA-REVIEW.json",
+        "sha256": "c578a8893fafe2b385328115f99ddc7e8c0e7a7e80a83a184d4a4bf2727ded9c"
+      },
+      "baseFullLanguageSourceSha256": "7bd237ebcb0bfa9c1ed43f2f2ddbcd4c76c2fbd66a73eadc2eadfc0534d8200b",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u08",
+      "sourceSha256": "899fc0786d7b5ca0ddda01df5da8f10c5e119ffaef3e59563f5de1ec3c847236",
+      "author": "/root/n3_author_a",
+      "independentReviewer": "/root/n3_curriculum",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-INDEPENDENT-REVIEW.json",
+        "sha256": "ebf422ba21fa98456cf81d50857f260e7f6ef6204ce1c26350fa4c14f0115fb7"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-OPTIONS-ORDER-DELTA-REVIEW.json",
+        "sha256": "c578a8893fafe2b385328115f99ddc7e8c0e7a7e80a83a184d4a4bf2727ded9c"
+      },
+      "baseFullLanguageSourceSha256": "d1719b2e3ca21d242471b1adf77e9c0d9f848ef5b5eeee44dc8adfaadc2bc645",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u09",
+      "sourceSha256": "03e0015d3e2e2f5cd4b140188559c41393ea01c57b5eb2d2a1f9331d6c5a382a",
+      "author": "/root/n3_author_a",
+      "independentReviewer": "/root/n3_curriculum",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-INDEPENDENT-REVIEW.json",
+        "sha256": "ebf422ba21fa98456cf81d50857f260e7f6ef6204ce1c26350fa4c14f0115fb7"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-OPTIONS-ORDER-DELTA-REVIEW.json",
+        "sha256": "c578a8893fafe2b385328115f99ddc7e8c0e7a7e80a83a184d4a4bf2727ded9c"
+      },
+      "baseFullLanguageSourceSha256": "18f4460ac8e499396487c4a928266f6d3550a6608fd8ffb17abef58c253510ad",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u10",
+      "sourceSha256": "91ce278dc7e9bfc2ed0e39711f987e7ae2f5c215e9ddde18131dbb885b05fb33",
+      "author": "/root/n3_author_a",
+      "independentReviewer": "/root/n3_curriculum",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-INDEPENDENT-REVIEW.json",
+        "sha256": "ebf422ba21fa98456cf81d50857f260e7f6ef6204ce1c26350fa4c14f0115fb7"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-OPTIONS-ORDER-DELTA-REVIEW.json",
+        "sha256": "c578a8893fafe2b385328115f99ddc7e8c0e7a7e80a83a184d4a4bf2727ded9c"
+      },
+      "baseFullLanguageSourceSha256": "ef6a271742f76223486d64d1b64ff5bdc4b342720786a2ba9eb9f6d258f63a55",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u11",
+      "sourceSha256": "18ed668acfa7f3164e7a4cd82db23037ce3904c77c9eb3572dedd60c26a95607",
+      "author": "/root/n3_author_a",
+      "independentReviewer": "/root/n3_curriculum",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-INDEPENDENT-REVIEW.json",
+        "sha256": "ebf422ba21fa98456cf81d50857f260e7f6ef6204ce1c26350fa4c14f0115fb7"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-OPTIONS-ORDER-DELTA-REVIEW.json",
+        "sha256": "c578a8893fafe2b385328115f99ddc7e8c0e7a7e80a83a184d4a4bf2727ded9c"
+      },
+      "baseFullLanguageSourceSha256": "001f6eb4a34fcf340457d7d326f57aa9b3ffc106610703d26ebec2b2380ae66c",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u12",
+      "sourceSha256": "0a379f33f34d64fed289f5fb0b652e789ec31ea0350dcf61534aae315ed80a7d",
+      "author": "/root/n3_author_a",
+      "independentReviewer": "/root/n3_curriculum",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-INDEPENDENT-REVIEW.json",
+        "sha256": "ebf422ba21fa98456cf81d50857f260e7f6ef6204ce1c26350fa4c14f0115fb7"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-OPTIONS-ORDER-DELTA-REVIEW.json",
+        "sha256": "c578a8893fafe2b385328115f99ddc7e8c0e7a7e80a83a184d4a4bf2727ded9c"
+      },
+      "baseFullLanguageSourceSha256": "35e95c0fdac4f7162ce091a2b959b7635a3c6256ceaf291389cd7b9ca434a773",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u13",
+      "sourceSha256": "3e2f023689929e17907a94e3128fa892c7a642113ba4ebcedbae6daab776b555",
+      "author": "/root/n3_author_a",
+      "independentReviewer": "/root/n3_curriculum",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-INDEPENDENT-REVIEW.json",
+        "sha256": "ebf422ba21fa98456cf81d50857f260e7f6ef6204ce1c26350fa4c14f0115fb7"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-OPTIONS-ORDER-DELTA-REVIEW.json",
+        "sha256": "c578a8893fafe2b385328115f99ddc7e8c0e7a7e80a83a184d4a4bf2727ded9c"
+      },
+      "baseFullLanguageSourceSha256": "d659ad1646b48488a43942baed8e1f0970b8c0cfd082b3a2e29452038b693e8d",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u14",
+      "sourceSha256": "20ff36a1860e188d9793fc6fd05e952d506923d2014da393915c7403f5b22e1b",
+      "author": "/root/n3_author_a",
+      "independentReviewer": "/root/n3_curriculum",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-INDEPENDENT-REVIEW.json",
+        "sha256": "ebf422ba21fa98456cf81d50857f260e7f6ef6204ce1c26350fa4c14f0115fb7"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-OPTIONS-ORDER-DELTA-REVIEW.json",
+        "sha256": "c578a8893fafe2b385328115f99ddc7e8c0e7a7e80a83a184d4a4bf2727ded9c"
+      },
+      "baseFullLanguageSourceSha256": "478b832367919540c58973f45a4af0513a81a8467fba1fe49f3e9ae215072091",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u15",
+      "sourceSha256": "5c0e225c1132a6af5fcac72187d53e46013c53ae751ea5650357e070932ad676",
+      "author": "/root/n3_author_a",
+      "independentReviewer": "/root/n3_curriculum",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-INDEPENDENT-REVIEW.json",
+        "sha256": "ebf422ba21fa98456cf81d50857f260e7f6ef6204ce1c26350fa4c14f0115fb7"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-OPTIONS-ORDER-DELTA-REVIEW.json",
+        "sha256": "c578a8893fafe2b385328115f99ddc7e8c0e7a7e80a83a184d4a4bf2727ded9c"
+      },
+      "baseFullLanguageSourceSha256": "0adbfaccfa94b918c0d40b0a6ea9b63db0ef742cf51a2259f8f6d92591bcfa12",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u16",
+      "sourceSha256": "3297e6983c5337772dd64f6dc377bf49aa837f2f3c78ebeefe1c923c5fc1e962",
+      "author": "/root/n3_author_a",
+      "independentReviewer": "/root/n3_curriculum",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-INDEPENDENT-REVIEW.json",
+        "sha256": "ebf422ba21fa98456cf81d50857f260e7f6ef6204ce1c26350fa4c14f0115fb7"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-OPTIONS-ORDER-DELTA-REVIEW.json",
+        "sha256": "c578a8893fafe2b385328115f99ddc7e8c0e7a7e80a83a184d4a4bf2727ded9c"
+      },
+      "baseFullLanguageSourceSha256": "0b53941a8e5cbb19e0fba6b408ac099f6f779e45197c431771bfcfaa729e3f73",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u17",
+      "sourceSha256": "b83333b7ff4d5d55648ce7cf91f4516a288108f485a57656f268b2cf76eac895",
+      "author": "/root/n3_author_b",
+      "independentReviewer": "/root/n3_author_a",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-a/U17-U32-INDEPENDENT-REVIEW.json",
+        "sha256": "11dd32a906757e669d267a06377ef6515210a5c876fb37b9a49d5d1d027afdd4"
+      },
+      "optionsOrderDeltaReceipt": null,
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u18",
+      "sourceSha256": "5a17d8caa8a813b3ecdb19c1a314fa1ed88b10b4847dcd13487919c9222c36b1",
+      "author": "/root/n3_author_b",
+      "independentReviewer": "/root/n3_author_a",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-a/U17-U32-INDEPENDENT-REVIEW.json",
+        "sha256": "11dd32a906757e669d267a06377ef6515210a5c876fb37b9a49d5d1d027afdd4"
+      },
+      "optionsOrderDeltaReceipt": null,
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u19",
+      "sourceSha256": "062d2d9dc349422035154fc35568078c5f4b36942639f0943fc0188efb7d5ad4",
+      "author": "/root/n3_author_b",
+      "independentReviewer": "/root/n3_author_a",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-a/U17-U32-INDEPENDENT-REVIEW.json",
+        "sha256": "11dd32a906757e669d267a06377ef6515210a5c876fb37b9a49d5d1d027afdd4"
+      },
+      "optionsOrderDeltaReceipt": null,
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u20",
+      "sourceSha256": "a0e5594ebd3ca0d36683e062cb831a358c6d4a977c429d4978b7e7d625cc9353",
+      "author": "/root/n3_author_b",
+      "independentReviewer": "/root/n3_author_a",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-a/U17-U32-INDEPENDENT-REVIEW.json",
+        "sha256": "11dd32a906757e669d267a06377ef6515210a5c876fb37b9a49d5d1d027afdd4"
+      },
+      "optionsOrderDeltaReceipt": null,
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u21",
+      "sourceSha256": "1267d1115d6000aaef3eb06f8df4c0678c85f2bf1ba02706651bd0ac93215447",
+      "author": "/root/n3_author_b",
+      "independentReviewer": "/root/n3_author_a",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-a/U17-U32-INDEPENDENT-REVIEW.json",
+        "sha256": "11dd32a906757e669d267a06377ef6515210a5c876fb37b9a49d5d1d027afdd4"
+      },
+      "optionsOrderDeltaReceipt": null,
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u22",
+      "sourceSha256": "0b02ad7fa9f9e0a152a9960ffe2901c79d4959420265ee54528d5856035cb0cd",
+      "author": "/root/n3_author_b",
+      "independentReviewer": "/root/n3_author_a",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-a/U17-U32-INDEPENDENT-REVIEW.json",
+        "sha256": "11dd32a906757e669d267a06377ef6515210a5c876fb37b9a49d5d1d027afdd4"
+      },
+      "optionsOrderDeltaReceipt": null,
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u23",
+      "sourceSha256": "1c3c16dc5007dd2b88cadbae6c7ae8fdf48895997e77df31c0196a0aae92abb0",
+      "author": "/root/n3_author_b",
+      "independentReviewer": "/root/n3_author_a",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-a/U17-U32-INDEPENDENT-REVIEW.json",
+        "sha256": "11dd32a906757e669d267a06377ef6515210a5c876fb37b9a49d5d1d027afdd4"
+      },
+      "optionsOrderDeltaReceipt": null,
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u24",
+      "sourceSha256": "5dc6d284419c5bc6f7b6fdea3b9045cfd445a77b655dd493f336264f6f61c16a",
+      "author": "/root/n3_author_b",
+      "independentReviewer": "/root/n3_author_a",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-a/U17-U32-INDEPENDENT-REVIEW.json",
+        "sha256": "11dd32a906757e669d267a06377ef6515210a5c876fb37b9a49d5d1d027afdd4"
+      },
+      "optionsOrderDeltaReceipt": null,
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u25",
+      "sourceSha256": "d62312e77bf3a744a7d5e8c648291a70ff6cf728b8d4f518a51aeb3470a35797",
+      "author": "/root/n3_author_b",
+      "independentReviewer": "/root/n3_author_a",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-a/U17-U32-INDEPENDENT-REVIEW.json",
+        "sha256": "11dd32a906757e669d267a06377ef6515210a5c876fb37b9a49d5d1d027afdd4"
+      },
+      "optionsOrderDeltaReceipt": null,
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u26",
+      "sourceSha256": "b8c17f1efb55269a7155c0470c7a8fa5652d8a1748f282542f4c14b1637ddfab",
+      "author": "/root/n3_author_b",
+      "independentReviewer": "/root/n3_author_a",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-a/U17-U32-INDEPENDENT-REVIEW.json",
+        "sha256": "11dd32a906757e669d267a06377ef6515210a5c876fb37b9a49d5d1d027afdd4"
+      },
+      "optionsOrderDeltaReceipt": null,
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u27",
+      "sourceSha256": "204844ba7bea9647442ac40320e6484d3efa594df7e99f3c914998f6c1dfd447",
+      "author": "/root/n3_author_b",
+      "independentReviewer": "/root/n3_author_a",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-a/U17-U32-INDEPENDENT-REVIEW.json",
+        "sha256": "11dd32a906757e669d267a06377ef6515210a5c876fb37b9a49d5d1d027afdd4"
+      },
+      "optionsOrderDeltaReceipt": null,
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u28",
+      "sourceSha256": "c5183c54c33dab0b327a8af3c25eaa95b7261627a5ea77957dcfb403dfe67033",
+      "author": "/root/n3_author_b",
+      "independentReviewer": "/root/n3_author_a",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-a/U17-U32-INDEPENDENT-REVIEW.json",
+        "sha256": "11dd32a906757e669d267a06377ef6515210a5c876fb37b9a49d5d1d027afdd4"
+      },
+      "optionsOrderDeltaReceipt": null,
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u29",
+      "sourceSha256": "d08dfe23165a73bc630b477612083f04f7b6c15248c4248f379cd6e66b032b95",
+      "author": "/root/n3_author_b",
+      "independentReviewer": "/root/n3_author_a",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-a/U17-U32-INDEPENDENT-REVIEW.json",
+        "sha256": "11dd32a906757e669d267a06377ef6515210a5c876fb37b9a49d5d1d027afdd4"
+      },
+      "optionsOrderDeltaReceipt": null,
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u30",
+      "sourceSha256": "9be7220dc4f3b6dab589e9a9d9ca1750c79b99f6a8f3440397056051f8106827",
+      "author": "/root/n3_author_b",
+      "independentReviewer": "/root/n3_author_a",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-a/U17-U32-INDEPENDENT-REVIEW.json",
+        "sha256": "11dd32a906757e669d267a06377ef6515210a5c876fb37b9a49d5d1d027afdd4"
+      },
+      "optionsOrderDeltaReceipt": null,
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u31",
+      "sourceSha256": "d79239221b965bb4553486a93b0cde8c78da46f984e1d4807e296fd3851fabe9",
+      "author": "/root/n3_author_b",
+      "independentReviewer": "/root/n3_author_a",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-a/U17-U32-INDEPENDENT-REVIEW.json",
+        "sha256": "11dd32a906757e669d267a06377ef6515210a5c876fb37b9a49d5d1d027afdd4"
+      },
+      "optionsOrderDeltaReceipt": null,
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u32",
+      "sourceSha256": "7fb38ae12c9c15c9e6d0d1cbf307f1ef54f4c4d9f63641586151ee5feba495b5",
+      "author": "/root/n3_author_b",
+      "independentReviewer": "/root/n3_author_a",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-a/U17-U32-INDEPENDENT-REVIEW.json",
+        "sha256": "11dd32a906757e669d267a06377ef6515210a5c876fb37b9a49d5d1d027afdd4"
+      },
+      "optionsOrderDeltaReceipt": null,
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u33",
+      "sourceSha256": "ae458cf1c95a7e77625479eb273265372065d0101a06580e7f566eca364f98fb",
+      "author": "n3_author_c",
+      "independentReviewer": "n3_author_b",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/INDEPENDENT-LANGUAGE-REVIEW.json",
+        "sha256": "6b1dce76ab0e75d9d5cb1226330b589d7dacf59f07b9358857b958d431a94913"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/FINAL-CHOICE-ORDER-INDEPENDENT-REVIEW.json",
+        "sha256": "d66f2eb8047df708fa2928977074e86260ad1ef9e36a9693cca1d86708ef9206"
+      },
+      "baseFullLanguageSourceSha256": "42d53df9c79cf0249b4c032bc2814e297e0d9b9dbe6899e3610f27b3c2f48833",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u34",
+      "sourceSha256": "8a900b4c43ef11464c4c6be628a4ecd4a033288a1d8d2597f89994078843bcce",
+      "author": "n3_author_c",
+      "independentReviewer": "n3_author_b",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/INDEPENDENT-LANGUAGE-REVIEW.json",
+        "sha256": "6b1dce76ab0e75d9d5cb1226330b589d7dacf59f07b9358857b958d431a94913"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/FINAL-CHOICE-ORDER-INDEPENDENT-REVIEW.json",
+        "sha256": "d66f2eb8047df708fa2928977074e86260ad1ef9e36a9693cca1d86708ef9206"
+      },
+      "baseFullLanguageSourceSha256": "a3b84a640f39b403a5b61c371866c64ee5313effaeac5a132005e3e992b5f5ae",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u35",
+      "sourceSha256": "663eaf7d575a226e7c77c2829a2ee83485977153ececd32cd3efb1c6d6122816",
+      "author": "n3_author_c",
+      "independentReviewer": "n3_author_b",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/INDEPENDENT-LANGUAGE-REVIEW.json",
+        "sha256": "6b1dce76ab0e75d9d5cb1226330b589d7dacf59f07b9358857b958d431a94913"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/FINAL-CHOICE-ORDER-INDEPENDENT-REVIEW.json",
+        "sha256": "d66f2eb8047df708fa2928977074e86260ad1ef9e36a9693cca1d86708ef9206"
+      },
+      "baseFullLanguageSourceSha256": "e69de3daa37133be60101c5c5c3e1056baf57bcdcfe29352d7dd36d5a3c4aeb0",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u36",
+      "sourceSha256": "10f96bac58198f54354c2c08a9dce0e837dacb74c769116f94f9d0ccf2713093",
+      "author": "n3_author_c",
+      "independentReviewer": "n3_author_b",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/INDEPENDENT-LANGUAGE-REVIEW.json",
+        "sha256": "6b1dce76ab0e75d9d5cb1226330b589d7dacf59f07b9358857b958d431a94913"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/FINAL-CHOICE-ORDER-INDEPENDENT-REVIEW.json",
+        "sha256": "d66f2eb8047df708fa2928977074e86260ad1ef9e36a9693cca1d86708ef9206"
+      },
+      "baseFullLanguageSourceSha256": "b62b0d32cc592b6d36606a363a9121dc9e169f42ab93e81cd332b3fc0e2f2236",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u37",
+      "sourceSha256": "cd097704d9c4799cb0a4d46f8503a4ff907acabb019df2b7ea67e9c3b6279e38",
+      "author": "n3_author_c",
+      "independentReviewer": "n3_author_b",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/INDEPENDENT-LANGUAGE-REVIEW.json",
+        "sha256": "6b1dce76ab0e75d9d5cb1226330b589d7dacf59f07b9358857b958d431a94913"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/FINAL-CHOICE-ORDER-INDEPENDENT-REVIEW.json",
+        "sha256": "d66f2eb8047df708fa2928977074e86260ad1ef9e36a9693cca1d86708ef9206"
+      },
+      "baseFullLanguageSourceSha256": "9da65ad445891e1f9b6352c45fb4ee34b59cd9876ea08c807591746ad8378130",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u38",
+      "sourceSha256": "f352dac9e5a112a0a475ac60593b73f9a2d652b617908a98ab24282319502934",
+      "author": "n3_author_c",
+      "independentReviewer": "n3_author_b",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/INDEPENDENT-LANGUAGE-REVIEW.json",
+        "sha256": "6b1dce76ab0e75d9d5cb1226330b589d7dacf59f07b9358857b958d431a94913"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/FINAL-CHOICE-ORDER-INDEPENDENT-REVIEW.json",
+        "sha256": "d66f2eb8047df708fa2928977074e86260ad1ef9e36a9693cca1d86708ef9206"
+      },
+      "baseFullLanguageSourceSha256": "0a554c856eda6345a43f2af6401e822f3e623c3d395966a6bedb77c34d6fe0fd",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u39",
+      "sourceSha256": "c3d599ea7d3bc5200e11d1800a942cc6cad6bfc1151d64df61abc36b696d7b86",
+      "author": "n3_author_c",
+      "independentReviewer": "n3_author_b",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/INDEPENDENT-LANGUAGE-REVIEW.json",
+        "sha256": "6b1dce76ab0e75d9d5cb1226330b589d7dacf59f07b9358857b958d431a94913"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/FINAL-CHOICE-ORDER-INDEPENDENT-REVIEW.json",
+        "sha256": "d66f2eb8047df708fa2928977074e86260ad1ef9e36a9693cca1d86708ef9206"
+      },
+      "baseFullLanguageSourceSha256": "01ddec2e6aa7ac2bb5e38eadcfc2c58d50b2d93942f03f96105736bd935f5bb5",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u40",
+      "sourceSha256": "fa4b3eb219e4070a381d4f8f2906b1443283916fd76c319c3628774039409ca0",
+      "author": "n3_author_c",
+      "independentReviewer": "n3_author_b",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/INDEPENDENT-LANGUAGE-REVIEW.json",
+        "sha256": "6b1dce76ab0e75d9d5cb1226330b589d7dacf59f07b9358857b958d431a94913"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/FINAL-CHOICE-ORDER-INDEPENDENT-REVIEW.json",
+        "sha256": "d66f2eb8047df708fa2928977074e86260ad1ef9e36a9693cca1d86708ef9206"
+      },
+      "baseFullLanguageSourceSha256": "61595a964643fb03e4de98f89f829649babe4f17c8da77bc3630f67f94c4f6cc",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u41",
+      "sourceSha256": "601e8ed3439dc9fe1c354e0b135e26537deaed1518e530859b33e5f661c7bd7d",
+      "author": "n3_author_c",
+      "independentReviewer": "n3_author_b",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/INDEPENDENT-LANGUAGE-REVIEW.json",
+        "sha256": "6b1dce76ab0e75d9d5cb1226330b589d7dacf59f07b9358857b958d431a94913"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/FINAL-CHOICE-ORDER-INDEPENDENT-REVIEW.json",
+        "sha256": "d66f2eb8047df708fa2928977074e86260ad1ef9e36a9693cca1d86708ef9206"
+      },
+      "baseFullLanguageSourceSha256": "07b01acfa7e5b4b395041c5fa8504878b93a4722d72ce8bfa243ca6928667215",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u42",
+      "sourceSha256": "7b24ce90485b721dd22afc20312fa43b40ccc7abd34e9e098eb1ed7d273aabcd",
+      "author": "n3_author_c",
+      "independentReviewer": "n3_author_b",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/INDEPENDENT-LANGUAGE-REVIEW.json",
+        "sha256": "6b1dce76ab0e75d9d5cb1226330b589d7dacf59f07b9358857b958d431a94913"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/FINAL-CHOICE-ORDER-INDEPENDENT-REVIEW.json",
+        "sha256": "d66f2eb8047df708fa2928977074e86260ad1ef9e36a9693cca1d86708ef9206"
+      },
+      "baseFullLanguageSourceSha256": "14ea29a473534fd8273cb28a0633d24a40ab3bdca3e0da4a9c08d758e4d993ba",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u43",
+      "sourceSha256": "0c277c54efdc36e254c7a3bb2b1faddcc603a97684f11eddfb082d5b3d12c71b",
+      "author": "n3_author_c",
+      "independentReviewer": "n3_author_b",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/INDEPENDENT-LANGUAGE-REVIEW.json",
+        "sha256": "6b1dce76ab0e75d9d5cb1226330b589d7dacf59f07b9358857b958d431a94913"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/FINAL-CHOICE-ORDER-INDEPENDENT-REVIEW.json",
+        "sha256": "d66f2eb8047df708fa2928977074e86260ad1ef9e36a9693cca1d86708ef9206"
+      },
+      "baseFullLanguageSourceSha256": "4c34af889702566b007dbd74cf172147b1bc1efd59faaa8deb5d5de40e8c5245",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u44",
+      "sourceSha256": "d4f11e7d855aa8f76cd05e9dfb4de7652e2528e57561c75e45c336fdeea0cddc",
+      "author": "n3_author_c",
+      "independentReviewer": "n3_author_b",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/INDEPENDENT-LANGUAGE-REVIEW.json",
+        "sha256": "6b1dce76ab0e75d9d5cb1226330b589d7dacf59f07b9358857b958d431a94913"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/FINAL-CHOICE-ORDER-INDEPENDENT-REVIEW.json",
+        "sha256": "d66f2eb8047df708fa2928977074e86260ad1ef9e36a9693cca1d86708ef9206"
+      },
+      "baseFullLanguageSourceSha256": "2e32b2e975808cf957f1ce1f8c09ba99348f7bf1cb72b9c9b089d121a6fd2e2c",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u45",
+      "sourceSha256": "d188375ffc7e25221eae145e14dff138c6fa42cbbd5648bacc5348f1d2aed164",
+      "author": "n3_author_c",
+      "independentReviewer": "n3_author_b",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/INDEPENDENT-LANGUAGE-REVIEW.json",
+        "sha256": "6b1dce76ab0e75d9d5cb1226330b589d7dacf59f07b9358857b958d431a94913"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/FINAL-CHOICE-ORDER-INDEPENDENT-REVIEW.json",
+        "sha256": "d66f2eb8047df708fa2928977074e86260ad1ef9e36a9693cca1d86708ef9206"
+      },
+      "baseFullLanguageSourceSha256": "9c86a5ef105df1d4eded001242f466d6ea4325b62db88300fec9aade22b05c65",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u46",
+      "sourceSha256": "491004e38d44a5f1159f371d8bb71be37795daac989f1dbce2481ad26a79cbde",
+      "author": "n3_author_c",
+      "independentReviewer": "n3_author_b",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/INDEPENDENT-LANGUAGE-REVIEW.json",
+        "sha256": "6b1dce76ab0e75d9d5cb1226330b589d7dacf59f07b9358857b958d431a94913"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/FINAL-CHOICE-ORDER-INDEPENDENT-REVIEW.json",
+        "sha256": "d66f2eb8047df708fa2928977074e86260ad1ef9e36a9693cca1d86708ef9206"
+      },
+      "baseFullLanguageSourceSha256": "adcb5c0a574bce3ed9b729e522263fbd4deea5e914eb90b4d7fcc19b3bb11a98",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u47",
+      "sourceSha256": "fd7c8f04217dfb8281ab84f6cdd28306151453ed232813d5f0c4478bc0020c3d",
+      "author": "n3_author_c",
+      "independentReviewer": "n3_author_b",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/INDEPENDENT-LANGUAGE-REVIEW.json",
+        "sha256": "6b1dce76ab0e75d9d5cb1226330b589d7dacf59f07b9358857b958d431a94913"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/FINAL-CHOICE-ORDER-INDEPENDENT-REVIEW.json",
+        "sha256": "d66f2eb8047df708fa2928977074e86260ad1ef9e36a9693cca1d86708ef9206"
+      },
+      "baseFullLanguageSourceSha256": "3916d383347843a0003bd154eb6be0f3a6c28908ef2549a593d87106c70923b7",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    },
+    {
+      "unit": "u48",
+      "sourceSha256": "316cdb405123a4f0d51c7df1127b49b116df17ce8095de78724b6de499773ca9",
+      "author": "n3_author_c",
+      "independentReviewer": "n3_author_b",
+      "baseFullLanguageReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/INDEPENDENT-LANGUAGE-REVIEW.json",
+        "sha256": "6b1dce76ab0e75d9d5cb1226330b589d7dacf59f07b9358857b958d431a94913"
+      },
+      "optionsOrderDeltaReceipt": {
+        "path": "/workspace/scratch/n3-integration/team/author-b/review-c/FINAL-CHOICE-ORDER-INDEPENDENT-REVIEW.json",
+        "sha256": "d66f2eb8047df708fa2928977074e86260ad1ef9e36a9693cca1d86708ef9206"
+      },
+      "baseFullLanguageSourceSha256": "a16a0a503ecffb4cc9456dcf76b1aa282f3241d110fb34d349d32b7d04cd2254",
+      "status": "accepted-current-exact-source-by-independent-agent"
+    }
+  ],
+  "actualAnswerPositions": {
+    "lessonMCQ": [
+      46,
+      47,
+      51
+    ],
+    "textDialogue": [
+      25,
+      23
+    ]
+  },
+  "claimsNotMade": [
+    "native-human certification",
+    "official whole-JLPT coverage",
+    "spaced-repetition schedule fully executed",
+    "real learner outcome",
+    "rendered browser pass",
+    "normal-account or deployment pass"
+  ]
+}

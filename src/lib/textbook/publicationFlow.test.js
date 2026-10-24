@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import {PGlite} from '@electric-sql/pglite';
 const auth=vi.hoisted(()=>({admin:vi.fn(),user:vi.fn(),client:vi.fn()}));
 vi.mock('@/lib/supabaseServer',()=>({requireAdmin:auth.admin,requireUser:auth.user,createSupabaseServerClient:auth.client}));
+// 발행 성공 뒤 책장 ISR 무효화(GUEST-STATIC-001 3단계) — 라우트 밖에서는 Next 저장소가 없어 실제 revalidatePath가 던진다.
+vi.mock('next/cache', () => ({ revalidatePath: () => {} }));
 import * as editor from '@/app/api/admin/books/japanese-n5/route';
 import * as vocabulary from '@/app/api/learning/vocabulary/route';
 import * as review from '@/app/api/learning/book-review/route';

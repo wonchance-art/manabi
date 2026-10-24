@@ -16,7 +16,7 @@ const require = createRequire(import.meta.url);
 const { FONT_HINTS, fontHintEnv } = require('./next-font-file-url.cjs');
 
 /** 힌트 글꼴의 next/font family 이름 — 빌드 CSS의 @font-face에서 찾는다. */
-const FAMILY = Object.freeze({ notoSans: 'Noto Sans' });
+const FAMILY = Object.freeze({ notoSans: 'Noto Sans', notoSansJp: 'Noto Sans JP', notoSerifKr: 'Noto Serif KR' });
 
 function walk(dir, pick, out = []) {
   if (!fs.existsSync(dir)) return out;

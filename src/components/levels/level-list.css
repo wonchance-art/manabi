@@ -19,6 +19,8 @@
 /* 목록 화면 */
 /* 넓은 화면 균형(오너 2026-10-16 「1440에서 균형」) — 묶음은 가운데. 단어 목록은 목차 없이 680px 한 줄(폰과 같은 구조). */
 .lv-page>*{max-width:904px;margin-inline:auto}
+/* 하단 메뉴가 끝에서 당길 때 튕김에 끌려감(오너 지적 2026-10-21 KST) — 레벨 한자 · 문형 · 단어 목록이 열린 동안 문서 튕김을 끈다. 새 단어 페이지는 level-word.css. */
+html:has(.lv-page){overscroll-behavior-y:none}
 .lv-page--vocab>*{max-width:680px}
 .lv-crumb{margin:0;font-size:13px}
 .lv-crumb a{color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;min-height:44px}
@@ -174,7 +176,7 @@
 .lv-acts{display:flex;align-items:center;gap:10px;flex:none}
 .lv-fab{width:44px;height:44px;border-radius:50%;border:0;display:inline-grid;place-items:center;flex:none;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease,background .12s ease}
 .lv-fab--save{background:var(--ja);color:#fff;box-shadow:0 2px 6px color-mix(in srgb,var(--ja) 28%,transparent)}
-.lv-fab--save:hover{transform:translateY(-1px);box-shadow:0 4px 12px color-mix(in srgb,var(--ja) 34%,transparent)}
+@media (hover:hover){.lv-fab--save:hover{transform:translateY(-1px);box-shadow:0 4px 12px color-mix(in srgb,var(--ja) 34%,transparent)}}
 .lv-fab--save:active,.lv-fab--ex:active{transform:scale(.96)}
 .lv-fab--busy{background:var(--lv-busy);color:#fff;cursor:progress}
 .lv-fab--busy svg{animation:lv-spin 1s linear infinite}
@@ -203,6 +205,8 @@
 .lv-glyph small{font-size:13px;color:var(--muted)}
 @keyframes lv-spin{to{transform:rotate(360deg)}}
 .lv-pat{padding:28px 0 30px;border-top:1px solid var(--lv-line)}
+.lv-pat:target{scroll-margin-top:calc(var(--gnb-height,78px) + 64px)}
+.lv-pat:target .lv-pat__head .lv-hw{box-shadow:inset 0 -.45em 0 var(--lv-have)}
 .lv-pat:first-child{border-top:0}
 .lv-pat__head{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
 .lv-pat__ko{font-size:15px;color:var(--muted)}
@@ -214,7 +218,7 @@
 .lv-more{margin:18px 0 0;display:flex;justify-content:center}
 .lv-more button{min-height:44px;padding:0 22px;border-radius:12px;border:1px solid var(--lv-line);background:var(--lv-card);font-weight:600;font-size:13px;color:var(--ink);cursor:pointer}
 .lv-src{margin:30px 0 0;font-size:11.5px;color:var(--lv-faint)}
-.lv-toast{position:fixed;left:50%;bottom:calc(var(--mobile-nav-height,0px) + 24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;gap:18px;align-items:center;background:var(--ink);color:var(--paper);border-radius:12px;padding:8px 10px 8px 18px;font-size:13.5px;box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 25%,transparent);max-width:calc(100vw - 32px);width:max-content}
+.lv-toast{position:fixed;left:50%;bottom:calc(var(--mobile-nav-height,0px) + 24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;gap:18px;align-items:center;background:var(--ink);color:var(--paper);border-radius:12px;padding:8px 10px 8px 18px;font-size:13.5px;box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 25%,transparent);max-width:calc(100vw - 32px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px));width:max-content}
 .lv-toast:empty{display:none}
 .lv-toast button,.lv-toast a{border:0;background:none;color:var(--lv-have);font:inherit;font-weight:700;min-height:44px;padding:0 8px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
 .lv-page :focus-visible,.lv-shelf :focus-visible{outline:2px solid var(--ja);outline-offset:2px}

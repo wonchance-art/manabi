@@ -1,0 +1,111 @@
+{
+  "status": "passed-candidate-adjudication-current-snapshot",
+  "checkedAt": "2026-10-21T11:51:53.411019+00:00",
+  "snapshotDigest": "bc7568965e0d2e57f12f2b96cd9ee09d302cd96b3cc8d7273632743ce77b9230",
+  "sourceAudit": "WORD-STATUS-PREFLIGHT.json",
+  "baselines": [
+    {
+      "level": "N5",
+      "editionId": "8a8c1c1fd452773810abaf8c",
+      "bundleSha256": "f88682f0a78c11155ecdb98f20f1793ddee9298234bdf7e86350112b7128c914",
+      "wordOccurrences": 253
+    },
+    {
+      "level": "N4",
+      "editionId": "f4a6411c0945bbd3f8767af7",
+      "bundleSha256": "8ee3950acc96cadfe87ffb8b24c9b15c96f23a14d57a6907523370475ce70744",
+      "wordOccurrences": 504
+    }
+  ],
+  "sourceSha256ByUnit": {
+    "u01": "183a1bc2fe2b4a8f5727fc276ce0c6410b97d5ad66c72e2a28e8fb432753e037",
+    "u02": "918c9211736b799bd6e5f9179d1a2f3012ce37d2d0334828df66bcd1fd27d121",
+    "u03": "88636b5e16e4f4c11d831fb30d93aa00cb7547120ac5a0799a02e60967fb7015",
+    "u04": "7d88c629d3d1506e2b7178749bcbb1fefb4a838cecb4ce025e28166ebf3ed43f",
+    "u05": "abce057a931da5589d51bac5120fea98e397df914ad67812d36ca6800dc9596e",
+    "u06": "4b1925a767c1a5bbab6be1749ab10d63177fea3f7bc988b3c334b0ea10fde291",
+    "u07": "f192e767d2fb3f7c3204f1e520d889c0ff6dceae323cdcfda361af98f238874f",
+    "u08": "899fc0786d7b5ca0ddda01df5da8f10c5e119ffaef3e59563f5de1ec3c847236",
+    "u09": "03e0015d3e2e2f5cd4b140188559c41393ea01c57b5eb2d2a1f9331d6c5a382a",
+    "u10": "91ce278dc7e9bfc2ed0e39711f987e7ae2f5c215e9ddde18131dbb885b05fb33",
+    "u11": "18ed668acfa7f3164e7a4cd82db23037ce3904c77c9eb3572dedd60c26a95607",
+    "u12": "0a379f33f34d64fed289f5fb0b652e789ec31ea0350dcf61534aae315ed80a7d",
+    "u13": "3e2f023689929e17907a94e3128fa892c7a642113ba4ebcedbae6daab776b555",
+    "u14": "20ff36a1860e188d9793fc6fd05e952d506923d2014da393915c7403f5b22e1b",
+    "u15": "5c0e225c1132a6af5fcac72187d53e46013c53ae751ea5650357e070932ad676",
+    "u16": "3297e6983c5337772dd64f6dc377bf49aa837f2f3c78ebeefe1c923c5fc1e962",
+    "u17": "b83333b7ff4d5d55648ce7cf91f4516a288108f485a57656f268b2cf76eac895",
+    "u18": "5a17d8caa8a813b3ecdb19c1a314fa1ed88b10b4847dcd13487919c9222c36b1",
+    "u19": "062d2d9dc349422035154fc35568078c5f4b36942639f0943fc0188efb7d5ad4",
+    "u20": "a0e5594ebd3ca0d36683e062cb831a358c6d4a977c429d4978b7e7d625cc9353",
+    "u21": "1267d1115d6000aaef3eb06f8df4c0678c85f2bf1ba02706651bd0ac93215447",
+    "u22": "0b02ad7fa9f9e0a152a9960ffe2901c79d4959420265ee54528d5856035cb0cd",
+    "u23": "1c3c16dc5007dd2b88cadbae6c7ae8fdf48895997e77df31c0196a0aae92abb0",
+    "u24": "5dc6d284419c5bc6f7b6fdea3b9045cfd445a77b655dd493f336264f6f61c16a",
+    "u25": "d62312e77bf3a744a7d5e8c648291a70ff6cf728b8d4f518a51aeb3470a35797",
+    "u26": "b8c17f1efb55269a7155c0470c7a8fa5652d8a1748f282542f4c14b1637ddfab",
+    "u27": "204844ba7bea9647442ac40320e6484d3efa594df7e99f3c914998f6c1dfd447",
+    "u28": "c5183c54c33dab0b327a8af3c25eaa95b7261627a5ea77957dcfb403dfe67033",
+    "u29": "d08dfe23165a73bc630b477612083f04f7b6c15248c4248f379cd6e66b032b95",
+    "u30": "9be7220dc4f3b6dab589e9a9d9ca1750c79b99f6a8f3440397056051f8106827",
+    "u31": "d79239221b965bb4553486a93b0cde8c78da46f984e1d4807e296fd3851fabe9",
+    "u32": "7fb38ae12c9c15c9e6d0d1cbf307f1ef54f4c4d9f63641586151ee5feba495b5",
+    "u33": "ae458cf1c95a7e77625479eb273265372065d0101a06580e7f566eca364f98fb",
+    "u34": "8a900b4c43ef11464c4c6be628a4ecd4a033288a1d8d2597f89994078843bcce",
+    "u35": "663eaf7d575a226e7c77c2829a2ee83485977153ececd32cd3efb1c6d6122816",
+    "u36": "10f96bac58198f54354c2c08a9dce0e837dacb74c769116f94f9d0ccf2713093",
+    "u37": "cd097704d9c4799cb0a4d46f8503a4ff907acabb019df2b7ea67e9c3b6279e38",
+    "u38": "f352dac9e5a112a0a475ac60593b73f9a2d652b617908a98ab24282319502934",
+    "u39": "c3d599ea7d3bc5200e11d1800a942cc6cad6bfc1151d64df61abc36b696d7b86",
+    "u40": "fa4b3eb219e4070a381d4f8f2906b1443283916fd76c319c3628774039409ca0",
+    "u41": "601e8ed3439dc9fe1c354e0b135e26537deaed1518e530859b33e5f661c7bd7d",
+    "u42": "7b24ce90485b721dd22afc20312fa43b40ccc7abd34e9e098eb1ed7d273aabcd",
+    "u43": "0c277c54efdc36e254c7a3bb2b1faddcc603a97684f11eddfb082d5b3d12c71b",
+    "u44": "d4f11e7d855aa8f76cd05e9dfb4de7652e2528e57561c75e45c336fdeea0cddc",
+    "u45": "d188375ffc7e25221eae145e14dff138c6fa42cbbd5648bacc5348f1d2aed164",
+    "u46": "491004e38d44a5f1159f371d8bb71be37795daac989f1dbce2481ad26a79cbde",
+    "u47": "fd7c8f04217dfb8281ab84f6cdd28306151453ed232813d5f0c4478bc0020c3d",
+    "u48": "316cdb405123a4f0d51c7df1127b49b116df17ce8095de78724b6de499773ca9"
+  },
+  "wordOccurrences": 576,
+  "labelOccurrenceCounts": {
+    "new": 227,
+    "review": 349
+  },
+  "remainingAutomatedCandidates": 3,
+  "unresolvedCandidateCount": 0,
+  "independentlyAdjudicated": [
+    {
+      "unit": "u10",
+      "index": 10,
+      "ja": "機会",
+      "priorJa": "機械",
+      "reason": "기회와 기계는 별개 동음이의어; 신규표지 유지."
+    },
+    {
+      "unit": "u14",
+      "index": 1,
+      "ja": "習慣",
+      "priorJa": "週間",
+      "reason": "습관과 일주일 기간은 별개 동음이의어; 신규표지 유지."
+    },
+    {
+      "unit": "u40",
+      "index": 0,
+      "ja": "非難",
+      "priorJa": "避難",
+      "reason": "비난과 대피는 별개 동음이의어; 신규표지 유지."
+    }
+  ],
+  "authorSenseDecisionFiles": [
+    "/workspace/scratch/n3-integration/team/author-a/WORD-STATUS-DECISIONS.json",
+    "/workspace/scratch/n3-integration/team/author-b/WORD-STATUS-REVIEW.json",
+    "/workspace/scratch/n3-integration/team/author-c/WORD-STATUS-JUDGMENTS.json"
+  ],
+  "allEntries": "WORD-STATUS-PREFLIGHT.json entries[]",
+  "limitations": [
+    "Candidate-based matching of fixed N5/N4 explicit word tables and preceding N3 table entries; not an exhaustive dictionary/lemma audit.",
+    "Labels mean first presentation or review in this book; do not report them as certified JLPT new-word inventory.",
+    "Same reading alone does not identify the same word; kana/kanji notation alone does not make a known word new."
+  ]
+}

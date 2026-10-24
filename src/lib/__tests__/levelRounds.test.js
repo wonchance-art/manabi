@@ -85,7 +85,7 @@ describe('읽기 — 이 레벨 줄만, 1,000행 페이지 끝까지', () => {
     const pages = [Array.from({ length: 2 }, (_, i) => ({ id: i })), [{ id: 9 }]];
     const client = { from(t) {
       const q = { t, eqs: [] };
-      const chain = { select: () => chain, eq: (k, v) => { q.eqs.push([k, v]); return chain; }, lte: (k, v) => { q.lte = [k, v]; return chain; },
+      const chain = { select: () => chain, eq: (k, v) => { q.eqs.push([k, v]); return chain; }, gte: (k, v) => { q.gte = [k, v]; return chain; }, lte: (k, v) => { q.lte = [k, v]; return chain; },
         order: () => chain, range: (a, b) => { q.range = [a, b]; calls.push(q); return Promise.resolve({ data: pages[calls.length - 1], error: null }); } };
       return chain;
     } };
@@ -94,9 +94,10 @@ describe('읽기 — 이 레벨 줄만, 1,000행 페이지 끝까지', () => {
     expect(calls.map((c) => c.range)).toEqual([[0, 1], [2, 3]]);
     expect(calls[0].eqs).toEqual([['user_id', 'u1'], ['source', 'level'], ['lang', 'zh'], ['detail->>level', 'h1']]);
     expect(calls[0].lte).toEqual(['created_at', 'T']);
+    expect(calls[0].gte).toEqual(['created_at', '1970-01-01T00:00:00.000Z']);
   });
   it('오류면 reject — 빈 답으로 그리지 않는다', async () => {
-    const chain = { select: () => chain, eq: () => chain, lte: () => chain, order: () => chain, range: () => Promise.resolve({ data: null, error: new Error('x') }) };
+    const chain = { select: () => chain, eq: () => chain, gte: () => chain, lte: () => chain, order: () => chain, range: () => Promise.resolve({ data: null, error: new Error('x') }) };
     await expect(fetchLevelAnswers({ from: () => chain }, 'u1', { lang: 'zh', level: 'h1' })).rejects.toThrow('x');
   });
 });

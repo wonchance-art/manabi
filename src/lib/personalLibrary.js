@@ -53,7 +53,7 @@ export async function removeFromCollection(client,ownerId,id,target){
 }
 export function libraryEditionBookId(row){
  const explicit=row.book_id||row.context?.bookId;
- return explicit?isBookId(explicit)?explicit:null:row.level==='N4'?'japanese-n4':BOOK_ID;
+ return explicit?isBookId(explicit)?explicit:null:row.level==='N3'?'japanese-n3':row.level==='N4'?'japanese-n4':BOOK_ID;
 }
 export function libraryItemHref(row){
  if(row.target_kind==='pdf')return `/pdf/${encodeURIComponent(row.target_id)}?pdfjs=1`;

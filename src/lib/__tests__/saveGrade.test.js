@@ -27,8 +27,8 @@ describe('저장 등급 — 정본(vocabIO)', () => {
     expect(SAVE_GRADES.map((g) => g.key)).toEqual(['1', '2', '3', '4']);
   });
 
-  it('등급 → 초기 상태는 calculateFSRS 재사용 — 손계산 금지, last_reviewed_at 불세팅', () => {
-    expect(vocabIO).toContain("import { calculateFSRS } from './fsrs';");
+  it('등급 → 초기 상태는 calculateVocabFSRS 재사용 — 손계산 금지, last_reviewed_at 불세팅', () => {
+    expect(vocabIO).toContain("import { calculateVocabFSRS } from './fsrs';");
     expect(vocabIO).not.toMatch(/24 \* 3600|setDate\(/);
     for (const g of [1, 2, 3, 4]) {
       const st = gradeToInitialStats(g, () => 'NOW');
@@ -38,15 +38,26 @@ describe('저장 등급 — 정본(vocabIO)', () => {
     }
   });
 
-  it('「다시」는 오늘 due(특례), 「쉬움」은 오늘 due가 아니다(≥ 7일 뒤) · 첫 등급이 D를 가른다', () => {
-    const again = gradeToInitialStats(1, () => 'NOW');
-    expect(again.next_review_at).toBe('NOW');
-    const easy = gradeToInitialStats(4);
-    expect(new Date(easy.next_review_at).getTime() - Date.now()).toBeGreaterThan(7 * DAY);
-    const good = gradeToInitialStats(3);
-    expect(new Date(good.next_review_at).getTime() - Date.now()).toBeGreaterThan(1 * DAY);
+  // 2026-10-19 KST 오너 지시 — 「이번에 적용한 anki 값대로 분, 날짜 수」: 학습 단계 anki-v2(1분 · 10분)로 새 단어 첫 간격을 정한다.
+  it('새 단어 첫 간격 = Anki 학습 단계 — 다시 1분 · 어려움 5.5분 · 알맞음 10분 · 쉬움 8일 · 첫 등급이 D를 가른다', () => {
+    const at = Date.parse('2026-10-19T03:00:00.000Z');
+    const iso = () => new Date(at).toISOString();
+    const gap = (g) => Date.parse(gradeToInitialStats(g, iso).next_review_at) - at;
+    expect([1, 2, 3].map((g) => gap(g) / 60000)).toEqual([1, 5.5, 10]);
+    expect(Math.round(gap(4) / DAY)).toBe(8);
+    const [again, good, easy] = [1, 3, 4].map((g) => gradeToInitialStats(g, iso));
     expect(easy.ease_factor).toBeLessThan(good.ease_factor);
     expect(good.ease_factor).toBeLessThan(again.ease_factor);
+  });
+
+  it('저장 단추 보조 글은 실제 첫 간격과 같다(1분 · 6분 · 10분 · 8일 뒤)', () => {
+    expect(SAVE_GRADES.map((g) => g.sub)).toEqual(['1분 뒤', '6분 뒤', '10분 뒤', '8일 뒤']);
+    const at = Date.parse('2026-10-19T03:00:00.000Z');
+    for (const g of SAVE_GRADES) {
+      const ms = Date.parse(gradeToInitialStats(g.grade, () => new Date(at).toISOString()).next_review_at) - at;
+      const shown = ms < 3600_000 ? `${Math.round(ms / 60000)}분 뒤` : `${Math.round(ms / DAY)}일 뒤`;
+      expect(g.sub).toBe(shown);
+    }
   });
 
   it('등급 없이 저장하면 현행과 한 바이트도 다르지 않다 — 11개 저장 경로 무회귀', () => {
@@ -61,7 +72,8 @@ describe('저장 등급 — 정본(vocabIO)', () => {
     for (const k of ['interval', 'ease_factor', 'repetitions', 'next_review_at']) expect(row).toHaveProperty(k);
     expect(row).not.toHaveProperty('last_reviewed_at');
     expect(row.next_review_at).not.toBe('T');
-    expect(buildVocabRow({ userId: 'u', surface: '咖啡', language: 'Chinese', grade: 1, now: () => 'T' }).next_review_at).toBe('T');
+    const at = '2026-10-19T03:00:00.000Z';
+    expect(buildVocabRow({ userId: 'u', surface: '咖啡', language: 'Chinese', grade: 1, now: () => at }).next_review_at).toBe('2026-10-19T03:01:00.000Z');
   });
 });
 

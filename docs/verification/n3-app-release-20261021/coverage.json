@@ -1,0 +1,4717 @@
+{
+  "status": "current-source-structural-coverage-record-not-global-language-certification",
+  "checkedAt": "2026-10-21T11:51:53.411019+00:00",
+  "snapshotDigest": "bc7568965e0d2e57f12f2b96cd9ee09d302cd96b3cc8d7273632743ce77b9230",
+  "sourceIdentityFile": "CURRICULUM-FREEZE-SNAPSHOT.json",
+  "lessonCount": 48,
+  "sourceInventory": {
+    "actual": 165,
+    "descriptionClaims": 195,
+    "themes": 19,
+    "source": "src/content/japanese/bunkei/n3.js"
+  },
+  "actualNewPrimaryGroups": 93,
+  "actualExplanationBlocks": 94,
+  "actualUniqueDeclaredSourceRefs": 94,
+  "counts": {
+    "documented-n4-prerequisite": 13,
+    "not-a-core-target-in-this-edition": 58,
+    "actual-primary-source-declared": 93,
+    "actual-explicit-family-variant": 1
+  },
+  "reviewAfterLessons": [
+    8,
+    16,
+    24,
+    32,
+    40,
+    48
+  ],
+  "actualCumulativeItems": 18,
+  "frontMatterBlocks": 4,
+  "lastLesson": {
+    "unit": "u48",
+    "newPrimaryGroups": [],
+    "patterns": [],
+    "reviewPatterns": [
+      {
+        "title": "날씨와 무관한 조건 · 42과 회수",
+        "formula": "雨が降っても降らなくても",
+        "body": "양쪽 날씨 모두 같은 장소라는 안내를 다시 읽어요.",
+        "examples": [
+          {
+            "ja": "雨が降っても降らなくても、室内です。",
+            "ko": "비가 오든 오지 않든 실내예요."
+          },
+          {
+            "ja": "作品を出しても出さなくても、説明は聞けます。",
+            "ko": "작품을 내든 내지 않든 설명은 들을 수 있어요."
+          }
+        ],
+        "note": "새 조건을 더하지 않고 공지에 명시한 두 경우를 남겨요."
+      },
+      {
+        "title": "전해 받은 일정 · 2과 회수",
+        "formula": "보통형＋ということだ",
+        "body": "담당자에게 전해 받은 내용을 다시 전달해요.",
+        "examples": [
+          {
+            "ja": "先生は三時にいらっしゃるということです。",
+            "ko": "선생님은 세 시에 오신다고 해요."
+          },
+          {
+            "ja": "今日は室内だということです。",
+            "ko": "오늘은 실내라고 해요."
+          }
+        ],
+        "note": "전언을 실제 도착 완료로 바꾸지 않아요."
+      },
+      {
+        "title": "손님의 말씀과 계획 · 45과 회수",
+        "formula": "いらっしゃる／おっしゃる",
+        "body": "이동 예정과 말한 내용을 존경 표현으로 확인해요.",
+        "examples": [
+          {
+            "ja": "先生は午後三時にいらっしゃる予定です。",
+            "ko": "선생님은 오후 세 시에 오실 예정이에요."
+          },
+          {
+            "ja": "先生は「三時に行きます」とおっしゃいました。",
+            "ko": "선생님은 “세 시에 가겠습니다”라고 말씀하셨어요."
+          }
+        ],
+        "note": "누구의 행동과 발언인지 보존해요."
+      },
+      {
+        "title": "받은 도움과 허락 · 47과 회수",
+        "formula": "ていただく／させていただく",
+        "body": "상대가 해 준 설명과 허락받아 내가 할 자료 사용을 나누어요.",
+        "examples": [
+          {
+            "ja": "ミオさんに説明していただきました。",
+            "ko": "미오 씨가 설명해 주시는 도움을 받았어요."
+          },
+          {
+            "ja": "許可をいただいたので、資料を使わせていただきます。",
+            "ko": "허락을 받았으므로 자료를 사용하겠습니다."
+          }
+        ],
+        "note": "설명한 사람과 사용할 사람, 완료와 계획을 각각 확인해요."
+      }
+    ],
+    "firstPresentationWordOccurrences": 0
+  },
+  "entries": [
+    {
+      "id": "n3-bunkei-t01-01",
+      "theme": "목적·의도·결정",
+      "pattern": "〜ために",
+      "ch": "n3-09-purpose",
+      "classification": "documented-n4-prerequisite",
+      "n4Units": [
+        28
+      ],
+      "pinnedN4Evidence": [
+        {
+          "editionId": "f4a6411c0945bbd3f8767af7",
+          "unit": 28,
+          "fieldPath": "patterns[0].formula",
+          "quote": "동사 사전형＋ために／명사の＋ために"
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t01-02",
+      "theme": "목적·의도·결정",
+      "pattern": "Nのために",
+      "ch": "n3-09-purpose",
+      "classification": "documented-n4-prerequisite",
+      "n4Units": [
+        28
+      ],
+      "pinnedN4Evidence": [
+        {
+          "editionId": "f4a6411c0945bbd3f8767af7",
+          "unit": 28,
+          "fieldPath": "patterns[0].examples[1].ja",
+          "quote": "発表のために、資料を 作ります。"
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t01-03",
+      "theme": "목적·의도·결정",
+      "pattern": "〜ためのN",
+      "ch": "n3-09-purpose",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t01-04",
+      "theme": "목적·의도·결정",
+      "pattern": "〜ようになっている",
+      "ch": "n3-09-purpose",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        24
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 24,
+          "sourceSha256": "5dc6d284419c5bc6f7b6fdea3b9045cfd445a77b655dd493f336264f6f61c16a",
+          "primaryGroups": [
+            "〜ようになっている",
+            "〜には"
+          ],
+          "formulas": [
+            "동사 사전형＋ようになっている",
+            "동사 사전형＋には、방법・필요조건"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t01-05",
+      "theme": "목적·의도·결정",
+      "pattern": "〜には",
+      "ch": "n3-09-purpose",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        24
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 24,
+          "sourceSha256": "5dc6d284419c5bc6f7b6fdea3b9045cfd445a77b655dd493f336264f6f61c16a",
+          "primaryGroups": [
+            "〜ようになっている",
+            "〜には"
+          ],
+          "formulas": [
+            "동사 사전형＋ようになっている",
+            "동사 사전형＋には、방법・필요조건"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t01-06",
+      "theme": "목적·의도·결정",
+      "pattern": "〜(よ)うとする",
+      "ch": "n4-09-intention",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        15
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 15,
+          "sourceSha256": "5c0e225c1132a6af5fcac72187d53e46013c53ae751ea5650357e070932ad676",
+          "primaryGroups": [
+            "〜(よ)うとする",
+            "〜ところだった"
+          ],
+          "formulas": [
+            "동사 의향형＋とする",
+            "もう少しで＋동사사전형＋ところだった"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t01-07",
+      "theme": "목적·의도·결정",
+      "pattern": "〜ことがある",
+      "ch": "n4-02-ta-form-experience",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t02-01",
+      "theme": "전문·추량",
+      "pattern": "よさそうだ・なさそうだ",
+      "ch": "n3-02-souda-youda",
+      "classification": "documented-n4-prerequisite",
+      "n4Units": [
+        18
+      ],
+      "pinnedN4Evidence": [
+        {
+          "editionId": "f4a6411c0945bbd3f8767af7",
+          "unit": 18,
+          "fieldPath": "patterns[0].body",
+          "quote": "いい는 よさそう, ない는 なさそう"
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t02-02",
+      "theme": "전문·추량",
+      "pattern": "〜そうにない・〜そうもない",
+      "ch": "n3-02-souda-youda",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        27
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 27,
+          "sourceSha256": "204844ba7bea9647442ac40320e6484d3efa594df7e99f3c914998f6c1dfd447",
+          "primaryGroups": [
+            "〜そうにない・〜そうもない",
+            "〜ふりをする"
+          ],
+          "formulas": [
+            "동사 ます형 어간＋そうにない／そうもない",
+            "동사・い형용사 보통형／명사の・な형용사な＋ふりをする"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t02-03",
+      "theme": "전문·추량",
+      "pattern": "まるで〜のようだ",
+      "ch": "n3-02b-youda-rashii",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t02-04",
+      "theme": "전문·추량",
+      "pattern": "〜ようなN・〜ように",
+      "ch": "n3-02b-youda-rashii",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t02-05",
+      "theme": "전문·추량",
+      "pattern": "〜みたいなN・〜みたいに",
+      "ch": "n3-02b-youda-rashii",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t02-06",
+      "theme": "전문·추량",
+      "pattern": "Nらしい",
+      "ch": "n3-02b-youda-rashii",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        26
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 26,
+          "sourceSha256": "b8c17f1efb55269a7155c0470c7a8fa5652d8a1748f282542f4c14b1637ddfab",
+          "primaryGroups": [
+            "Nらしい",
+            "〜っぽい"
+          ],
+          "formulas": [
+            "명사＋らしい",
+            "정해진 명사・동사 ます형 어간＋っぽい"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t02-07",
+      "theme": "전문·추량",
+      "pattern": "〜に違いない",
+      "ch": "n2-03-nuance-pairs",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        25
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 25,
+          "sourceSha256": "d62312e77bf3a744a7d5e8c648291a70ff6cf728b8d4f518a51aeb3470a35797",
+          "primaryGroups": [
+            "〜に違いない",
+            "〜気がする"
+          ],
+          "formulas": [
+            "동사・い형용사 보통형／명사・な형용사 어간＋に違いない",
+            "동사・い형용사 보통형／명사の・な형용사な＋気がする"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t02-08",
+      "theme": "전문·추량",
+      "pattern": "〜っぽい",
+      "ch": "n2-07-tendency-state",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        26
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 26,
+          "sourceSha256": "b8c17f1efb55269a7155c0470c7a8fa5652d8a1748f282542f4c14b1637ddfab",
+          "primaryGroups": [
+            "Nらしい",
+            "〜っぽい"
+          ],
+          "formulas": [
+            "명사＋らしい",
+            "정해진 명사・동사 ます형 어간＋っぽい"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t02-09",
+      "theme": "전문·추량",
+      "pattern": "〜気がする",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        25
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 25,
+          "sourceSha256": "d62312e77bf3a744a7d5e8c648291a70ff6cf728b8d4f518a51aeb3470a35797",
+          "primaryGroups": [
+            "〜に違いない",
+            "〜気がする"
+          ],
+          "formulas": [
+            "동사・い형용사 보통형／명사・な형용사 어간＋に違いない",
+            "동사・い형용사 보통형／명사の・な형용사な＋気がする"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t02-10",
+      "theme": "전문·추량",
+      "pattern": "〜ように見える",
+      "ch": "n3-02b-youda-rashii",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t02-11",
+      "theme": "전문·추량",
+      "pattern": "〜ふりをする",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        27
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 27,
+          "sourceSha256": "204844ba7bea9647442ac40320e6484d3efa594df7e99f3c914998f6c1dfd447",
+          "primaryGroups": [
+            "〜そうにない・〜そうもない",
+            "〜ふりをする"
+          ],
+          "formulas": [
+            "동사 ます형 어간＋そうにない／そうもない",
+            "동사・い형용사 보통형／명사の・な형용사な＋ふりをする"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t02-12",
+      "theme": "전문·추량",
+      "pattern": "〜ないかな(あ)",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t02-13",
+      "theme": "전문·추량",
+      "pattern": "〜んじゃない?",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t03-01",
+      "theme": "인용·의문절",
+      "pattern": "〜というN",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        1
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 1,
+          "sourceSha256": "183a1bc2fe2b4a8f5727fc276ce0c6410b97d5ad66c72e2a28e8fb432753e037",
+          "primaryGroups": [
+            "〜というN",
+            "〜ということ"
+          ],
+          "formulas": [
+            "이름·말＋という＋명사",
+            "문장 보통형＋ということ＋を・が・は 등"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t03-02",
+      "theme": "인용·의문절",
+      "pattern": "〜ということ",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        1
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 1,
+          "sourceSha256": "183a1bc2fe2b4a8f5727fc276ce0c6410b97d5ad66c72e2a28e8fb432753e037",
+          "primaryGroups": [
+            "〜というN",
+            "〜ということ"
+          ],
+          "formulas": [
+            "이름·말＋という＋명사",
+            "문장 보통형＋ということ＋を・が・は 등"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t03-03",
+      "theme": "인용·의문절",
+      "pattern": "〜というのは",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        2
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 2,
+          "sourceSha256": "918c9211736b799bd6e5f9179d1a2f3012ce37d2d0334828df66bcd1fd27d121",
+          "primaryGroups": [
+            "〜というのは",
+            "〜ということだ"
+          ],
+          "formulas": [
+            "말·표현＋というのは、설명＋ことです 등",
+            "문장 보통형＋ということだ → ということです"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t03-04",
+      "theme": "인용·의문절",
+      "pattern": "〜ということだ",
+      "ch": "n3-02-souda-youda",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        2
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 2,
+          "sourceSha256": "918c9211736b799bd6e5f9179d1a2f3012ce37d2d0334828df66bcd1fd27d121",
+          "primaryGroups": [
+            "〜というのは",
+            "〜ということだ"
+          ],
+          "formulas": [
+            "말·표현＋というのは、설명＋ことです 등",
+            "문장 보통형＋ということだ → ということです"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t03-05",
+      "theme": "인용·의문절",
+      "pattern": "〜と言われている",
+      "ch": "n3-02-souda-youda",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        3
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 3,
+          "sourceSha256": "88636b5e16e4f4c11d831fb30d93aa00cb7547120ac5a0799a02e60967fb7015",
+          "primaryGroups": [
+            "〜と言われている",
+            "〜によると"
+          ],
+          "formulas": [
+            "문장 보통형＋と言われている → と言われています",
+            "자료·사람＋によると、전언·추량"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t03-06",
+      "theme": "인용·의문절",
+      "pattern": "〜とか",
+      "ch": "n3-02-souda-youda",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t03-07",
+      "theme": "인용·의문절",
+      "pattern": "의문사+〜か",
+      "ch": "n5-08-questions",
+      "classification": "documented-n4-prerequisite",
+      "n4Units": [
+        4
+      ],
+      "pinnedN4Evidence": [
+        {
+          "editionId": "f4a6411c0945bbd3f8767af7",
+          "unit": 4,
+          "fieldPath": "patterns[0].formula",
+          "quote": "의문사가 든 보통형 문장＋か"
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t04-01",
+      "theme": "원인·이유",
+      "pattern": "〜おかげで",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        19
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 19,
+          "sourceSha256": "062d2d9dc349422035154fc35568078c5f4b36942639f0943fc0188efb7d5ad4",
+          "primaryGroups": [
+            "〜おかげで",
+            "〜せいで"
+          ],
+          "formulas": [
+            "동사 보통형・い형용사・な형용사な・명사の＋おかげで",
+            "동사 보통형・い형용사・な형용사な・명사の＋せいで"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t04-02",
+      "theme": "원인·이유",
+      "pattern": "〜おかげだ",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t04-03",
+      "theme": "원인·이유",
+      "pattern": "おかげさまで",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t04-04",
+      "theme": "원인·이유",
+      "pattern": "〜せいで",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        19
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 19,
+          "sourceSha256": "062d2d9dc349422035154fc35568078c5f4b36942639f0943fc0188efb7d5ad4",
+          "primaryGroups": [
+            "〜おかげで",
+            "〜せいで"
+          ],
+          "formulas": [
+            "동사 보통형・い형용사・な형용사な・명사の＋おかげで",
+            "동사 보통형・い형용사・な형용사な・명사の＋せいで"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t04-05",
+      "theme": "원인·이유",
+      "pattern": "〜せいだ",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t04-06",
+      "theme": "원인·이유",
+      "pattern": "〜せいか",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        20
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 20,
+          "sourceSha256": "a0e5594ebd3ca0d36683e062cb831a358c6d4a977c429d4978b7e7d625cc9353",
+          "primaryGroups": [
+            "〜せいか",
+            "〜ものだから"
+          ],
+          "formulas": [
+            "동사 보통형・い형용사・な형용사な・명사の＋せいか",
+            "동사・い형용사 보통형＋ものだから／명사・な형용사な＋ものだから"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t04-07",
+      "theme": "원인·이유",
+      "pattern": "〜によって",
+      "ch": "n3-07b-nitotte-niyotte",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        8
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 8,
+          "sourceSha256": "899fc0786d7b5ca0ddda01df5da8f10c5e119ffaef3e59563f5de1ec3c847236",
+          "primaryGroups": [
+            "〜によって",
+            "〜に比べて"
+          ],
+          "formulas": [
+            "명사＋によって＋차이·변화",
+            "명사＋に比べて＋비교한 성질"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t04-08",
+      "theme": "원인·이유",
+      "pattern": "NによるN",
+      "ch": "n3-07b-nitotte-niyotte",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t04-09",
+      "theme": "원인·이유",
+      "pattern": "〜ものだから",
+      "ch": "n2-10-reason-basis",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        20
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 20,
+          "sourceSha256": "a0e5594ebd3ca0d36683e062cb831a358c6d4a977c429d4978b7e7d625cc9353",
+          "primaryGroups": [
+            "〜せいか",
+            "〜ものだから"
+          ],
+          "formulas": [
+            "동사 보통형・い형용사・な형용사な・명사の＋せいか",
+            "동사・い형용사 보통형＋ものだから／명사・な형용사な＋ものだから"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t04-10",
+      "theme": "원인·이유",
+      "pattern": "〜もん",
+      "ch": "n2-10-reason-basis",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t04-11",
+      "theme": "원인·이유",
+      "pattern": "〜のは〜からだ",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        21
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 21,
+          "sourceSha256": "1267d1115d6000aaef3eb06f8df4c0678c85f2bf1ba02706651bd0ac93215447",
+          "primaryGroups": [
+            "〜のは〜からだ",
+            "〜ことから"
+          ],
+          "formulas": [
+            "동사 보통형＋のは、이유＋からだ／からです",
+            "보통형＋ことから／な형용사な・명사である＋ことから"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t04-12",
+      "theme": "원인·이유",
+      "pattern": "そこで",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t04-13",
+      "theme": "원인·이유",
+      "pattern": "すると",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t05-01",
+      "theme": "비례·변화",
+      "pattern": "〜につれて",
+      "ch": "n2-02-formal-connectors",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        22
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 22,
+          "sourceSha256": "0b02ad7fa9f9e0a152a9960ffe2901c79d4959420265ee54528d5856035cb0cd",
+          "primaryGroups": [
+            "〜につれて",
+            "〜にしたがって"
+          ],
+          "formulas": [
+            "변화 동사 사전형・변화 명사＋につれて",
+            "변화 동사 사전형・변화 명사＋にしたがって"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t05-02",
+      "theme": "비례·변화",
+      "pattern": "〜にしたがって",
+      "ch": "n2-02-formal-connectors",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        22
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 22,
+          "sourceSha256": "0b02ad7fa9f9e0a152a9960ffe2901c79d4959420265ee54528d5856035cb0cd",
+          "primaryGroups": [
+            "〜につれて",
+            "〜にしたがって"
+          ],
+          "formulas": [
+            "변화 동사 사전형・변화 명사＋につれて",
+            "변화 동사 사전형・변화 명사＋にしたがって"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t05-03",
+      "theme": "비례·변화",
+      "pattern": "〜とともに",
+      "ch": "n2-02-formal-connectors",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        23
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 23,
+          "sourceSha256": "1c3c16dc5007dd2b88cadbae6c7ae8fdf48895997e77df31c0196a0aae92abb0",
+          "primaryGroups": [
+            "〜ば〜ほど",
+            "〜とともに"
+          ],
+          "formulas": [
+            "동사 ば형＋같은 동사 사전형＋ほど",
+            "변화 동사 사전형・변화 명사＋とともに"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t05-04",
+      "theme": "비례·변화",
+      "pattern": "〜ば〜ほど",
+      "ch": "n2-06-conditional-advanced",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        23
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 23,
+          "sourceSha256": "1c3c16dc5007dd2b88cadbae6c7ae8fdf48895997e77df31c0196a0aae92abb0",
+          "primaryGroups": [
+            "〜ば〜ほど",
+            "〜とともに"
+          ],
+          "formulas": [
+            "동사 ば형＋같은 동사 사전형＋ほど",
+            "변화 동사 사전형・변화 명사＋とともに"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t06-01",
+      "theme": "시간·장면",
+      "pattern": "〜たびに",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        11
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 11,
+          "sourceSha256": "18ed668acfa7f3164e7a4cd82db23037ce3904c77c9eb3572dedd60c26a95607",
+          "primaryGroups": [
+            "〜たびに",
+            "〜ごとに"
+          ],
+          "formulas": [
+            "동사사전형／명사の＋たびに",
+            "시간·수량·명사＋ごとに"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t06-02",
+      "theme": "시간·장면",
+      "pattern": "〜うちに",
+      "ch": "n3-04-aida-uchi",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        10
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 10,
+          "sourceSha256": "91ce278dc7e9bfc2ed0e39711f987e7ae2f5c215e9ddde18131dbb885b05fb33",
+          "primaryGroups": [
+            "〜うちに",
+            "〜ないうちに"
+          ],
+          "formulas": [
+            "동사사전형・ている／い형용사보통형／な형용사な／명사の＋うちに",
+            "동사ない형＋うちに"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t06-03",
+      "theme": "시간·장면",
+      "pattern": "〜ないうちに",
+      "ch": "n3-04-aida-uchi",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        10
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 10,
+          "sourceSha256": "91ce278dc7e9bfc2ed0e39711f987e7ae2f5c215e9ddde18131dbb885b05fb33",
+          "primaryGroups": [
+            "〜うちに",
+            "〜ないうちに"
+          ],
+          "formulas": [
+            "동사사전형・ている／い형용사보통형／な형용사な／명사の＋うちに",
+            "동사ない형＋うちに"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t06-04",
+      "theme": "시간·장면",
+      "pattern": "〜間",
+      "ch": "n3-04-aida-uchi",
+      "classification": "documented-n4-prerequisite",
+      "n4Units": [
+        29
+      ],
+      "pinnedN4Evidence": [
+        {
+          "editionId": "f4a6411c0945bbd3f8767af7",
+          "unit": 29,
+          "fieldPath": "reading",
+          "quote": "受付の担当は昼休みのあいだ、席にいません。"
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t06-05",
+      "theme": "시간·장면",
+      "pattern": "〜間に",
+      "ch": "n3-04-aida-uchi",
+      "classification": "documented-n4-prerequisite",
+      "n4Units": [
+        29
+      ],
+      "pinnedN4Evidence": [
+        {
+          "editionId": "f4a6411c0945bbd3f8767af7",
+          "unit": 29,
+          "fieldPath": "patterns[1].formula",
+          "quote": "동사 보통형・명사の＋あいだに"
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t06-06",
+      "theme": "시간·장면",
+      "pattern": "〜るところだ",
+      "ch": "n3-04b-tokoro-bakari",
+      "classification": "documented-n4-prerequisite",
+      "n4Units": [
+        30
+      ],
+      "pinnedN4Evidence": [
+        {
+          "editionId": "f4a6411c0945bbd3f8767af7",
+          "unit": 30,
+          "fieldPath": "patterns[0].formula",
+          "quote": "사전형／ている／た＋ところです"
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t06-07",
+      "theme": "시간·장면",
+      "pattern": "〜ところだった",
+      "ch": "n3-04b-tokoro-bakari",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        15
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 15,
+          "sourceSha256": "5c0e225c1132a6af5fcac72187d53e46013c53ae751ea5650357e070932ad676",
+          "primaryGroups": [
+            "〜(よ)うとする",
+            "〜ところだった"
+          ],
+          "formulas": [
+            "동사 의향형＋とする",
+            "もう少しで＋동사사전형＋ところだった"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t06-08",
+      "theme": "시간·장면",
+      "pattern": "〜ところに・〜ところへ",
+      "ch": "n3-04b-tokoro-bakari",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        9
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 9,
+          "sourceSha256": "03e0015d3e2e2f5cd4b140188559c41393ea01c57b5eb2d2a1f9331d6c5a382a",
+          "primaryGroups": [
+            "〜最中に",
+            "〜ところに・〜ところへ"
+          ],
+          "formulas": [
+            "명사の／동사ている＋最中に＋사건",
+            "동사ている＋ところに・ところへ＋사건"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t06-09",
+      "theme": "시간·장면",
+      "pattern": "〜最中に",
+      "ch": "n3-04-aida-uchi",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        9
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 9,
+          "sourceSha256": "03e0015d3e2e2f5cd4b140188559c41393ea01c57b5eb2d2a1f9331d6c5a382a",
+          "primaryGroups": [
+            "〜最中に",
+            "〜ところに・〜ところへ"
+          ],
+          "formulas": [
+            "명사の／동사ている＋最中に＋사건",
+            "동사ている＋ところに・ところへ＋사건"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t06-10",
+      "theme": "시간·장면",
+      "pattern": "〜ついでに",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        14
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 14,
+          "sourceSha256": "20ff36a1860e188d9793fc6fd05e952d506923d2014da393915c7403f5b22e1b",
+          "primaryGroups": [
+            "〜て以来",
+            "〜ついでに"
+          ],
+          "formulas": [
+            "동사て형＋以来",
+            "동사사전형・た형／명사の＋ついでに"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t06-11",
+      "theme": "시간·장면",
+      "pattern": "〜たとたん(に)",
+      "ch": "n3-04-aida-uchi",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        13
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 13,
+          "sourceSha256": "3e2f023689929e17907a94e3128fa892c7a642113ba4ebcedbae6daab776b555",
+          "primaryGroups": [
+            "〜たとたん(に)",
+            "〜てはじめて"
+          ],
+          "formulas": [
+            "동사た형＋とたん（に）＋사건",
+            "동사て형＋はじめて＋인식·가능 등의 결과"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t06-12",
+      "theme": "시간·장면",
+      "pattern": "〜てはじめて",
+      "ch": "n1-07-uniqueness-extremity",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        13
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 13,
+          "sourceSha256": "3e2f023689929e17907a94e3128fa892c7a642113ba4ebcedbae6daab776b555",
+          "primaryGroups": [
+            "〜たとたん(に)",
+            "〜てはじめて"
+          ],
+          "formulas": [
+            "동사た형＋とたん（に）＋사건",
+            "동사て형＋はじめて＋인식·가능 등의 결과"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t06-13",
+      "theme": "시간·장면",
+      "pattern": "〜から〜にかけて",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        12
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 12,
+          "sourceSha256": "0a379f33f34d64fed289f5fb0b652e789ec31ea0350dcf61534aae315ed80a7d",
+          "primaryGroups": [
+            "〜おきに",
+            "〜から〜にかけて"
+          ],
+          "formulas": [
+            "기간＋おきに",
+            "시작점＋から＋끝쪽 범위＋にかけて"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t06-14",
+      "theme": "시간·장면",
+      "pattern": "〜ごとに",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        11
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 11,
+          "sourceSha256": "18ed668acfa7f3164e7a4cd82db23037ce3904c77c9eb3572dedd60c26a95607",
+          "primaryGroups": [
+            "〜たびに",
+            "〜ごとに"
+          ],
+          "formulas": [
+            "동사사전형／명사の＋たびに",
+            "시간·수량·명사＋ごとに"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t06-15",
+      "theme": "시간·장면",
+      "pattern": "〜おきに",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        12
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 12,
+          "sourceSha256": "0a379f33f34d64fed289f5fb0b652e789ec31ea0350dcf61534aae315ed80a7d",
+          "primaryGroups": [
+            "〜おきに",
+            "〜から〜にかけて"
+          ],
+          "formulas": [
+            "기간＋おきに",
+            "시작점＋から＋끝쪽 범위＋にかけて"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t06-16",
+      "theme": "시간·장면",
+      "pattern": "〜て以来",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        14
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 14,
+          "sourceSha256": "20ff36a1860e188d9793fc6fd05e952d506923d2014da393915c7403f5b22e1b",
+          "primaryGroups": [
+            "〜て以来",
+            "〜ついでに"
+          ],
+          "formulas": [
+            "동사て형＋以来",
+            "동사사전형・た형／명사の＋ついでに"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t07-01",
+      "theme": "정도·극단·빈도",
+      "pattern": "〜ほど",
+      "ch": "n4-08-comparison",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        34
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 34,
+          "sourceSha256": "8a900b4c43ef11464c4c6be628a4ecd4a033288a1d8d2597f89994078843bcce",
+          "primaryGroups": [
+            "〜ほど",
+            "〜さえ"
+          ],
+          "formulas": [
+            "동사 보통형＋ほど／정도를 나타내는 말＋ほど",
+            "명사＋さえ／일부 조사＋さえ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t07-02",
+      "theme": "정도·극단·빈도",
+      "pattern": "〜ほど〜はない",
+      "ch": "n4-08-comparison",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t07-03",
+      "theme": "정도·극단·빈도",
+      "pattern": "〜くらい(ぐらい)",
+      "ch": "n4-08-comparison",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t07-04",
+      "theme": "정도·극단·빈도",
+      "pattern": "〜さえ",
+      "ch": "n2-04-emphasis-limitation",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        34
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 34,
+          "sourceSha256": "8a900b4c43ef11464c4c6be628a4ecd4a033288a1d8d2597f89994078843bcce",
+          "primaryGroups": [
+            "〜ほど",
+            "〜さえ"
+          ],
+          "formulas": [
+            "동사 보통형＋ほど／정도를 나타내는 말＋ほど",
+            "명사＋さえ／일부 조사＋さえ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t07-05",
+      "theme": "정도·극단·빈도",
+      "pattern": "〜さえ〜ば",
+      "ch": "n2-04-emphasis-limitation",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        35
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 35,
+          "sourceSha256": "663eaf7d575a226e7c77c2829a2ee83485977153ececd32cd3efb1c6d6122816",
+          "primaryGroups": [
+            "〜さえ〜ば",
+            "〜ば〜のに"
+          ],
+          "formulas": [
+            "명사＋さえ＋조건형／ます를 뺀 모양＋さえすれば",
+            "조건형＋のに／조건형＋결과＋のに"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t07-06",
+      "theme": "정도·극단·빈도",
+      "pattern": "〜なんか・〜なんて",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t07-07",
+      "theme": "정도·극단·빈도",
+      "pattern": "なかなか〜ない",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t07-08",
+      "theme": "정도·극단·빈도",
+      "pattern": "めったに〜ない",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t07-09",
+      "theme": "정도·극단·빈도",
+      "pattern": "ちっとも〜ない",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t08-01",
+      "theme": "한정·강조·추가",
+      "pattern": "〜だけでなく〜も",
+      "ch": "n3-03-bakari-dake",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        36
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 36,
+          "sourceSha256": "10f96bac58198f54354c2c08a9dce0e837dacb74c769116f94f9d0ccf2713093",
+          "primaryGroups": [
+            "〜だけでなく〜も",
+            "〜はもちろん"
+          ],
+          "formulas": [
+            "명사＋だけでなく、명사＋も",
+            "명사＋はもちろん、명사＋も"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t08-02",
+      "theme": "한정·강조·추가",
+      "pattern": "〜ばかりでなく〜も",
+      "ch": "n3-03-bakari-dake",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t08-03",
+      "theme": "한정·강조·추가",
+      "pattern": "〜ばかりか",
+      "ch": "n3-03-bakari-dake",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t08-04",
+      "theme": "한정·강조·추가",
+      "pattern": "〜のみ",
+      "ch": "n2-05-written-style",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t08-05",
+      "theme": "한정·강조·추가",
+      "pattern": "〜こそ",
+      "ch": "n3-03-bakari-dake",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        37
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 37,
+          "sourceSha256": "cd097704d9c4799cb0a4d46f8503a4ff907acabb019df2b7ea67e9c3b6279e38",
+          "primaryGroups": [
+            "〜こそ",
+            "〜まで"
+          ],
+          "formulas": [
+            "명사＋こそ",
+            "명사＋まで"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t08-06",
+      "theme": "한정·강조·추가",
+      "pattern": "〜はもちろん",
+      "ch": "n2-04-emphasis-limitation",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        36
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 36,
+          "sourceSha256": "10f96bac58198f54354c2c08a9dce0e837dacb74c769116f94f9d0ccf2713093",
+          "primaryGroups": [
+            "〜だけでなく〜も",
+            "〜はもちろん"
+          ],
+          "formulas": [
+            "명사＋だけでなく、명사＋も",
+            "명사＋はもちろん、명사＋も"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t08-07",
+      "theme": "한정·강조·추가",
+      "pattern": "できるだけ",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t08-08",
+      "theme": "한정·강조·추가",
+      "pattern": "〜まで",
+      "ch": "n2-04-emphasis-limitation",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        37
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 37,
+          "sourceSha256": "cd097704d9c4799cb0a4d46f8503a4ff907acabb019df2b7ea67e9c3b6279e38",
+          "primaryGroups": [
+            "〜こそ",
+            "〜まで"
+          ],
+          "formulas": [
+            "명사＋こそ",
+            "명사＋まで"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t08-09",
+      "theme": "한정·강조·추가",
+      "pattern": "そのうえ",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t09-01",
+      "theme": "입장·화제·대상",
+      "pattern": "〜として",
+      "ch": "n3-07-compound-particles",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        6
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 6,
+          "sourceSha256": "4b1925a767c1a5bbab6be1749ab10d63177fea3f7bc988b3c334b0ea10fde291",
+          "primaryGroups": [
+            "〜として",
+            "〜に代わって"
+          ],
+          "formulas": [
+            "명사＋として",
+            "사람＋に代わって、다른 주어＋행동"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t09-02",
+      "theme": "입장·화제·대상",
+      "pattern": "〜にとって",
+      "ch": "n3-07b-nitotte-niyotte",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        5
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 5,
+          "sourceSha256": "abce057a931da5589d51bac5120fea98e397df914ad67812d36ca6800dc9596e",
+          "primaryGroups": [
+            "〜に対して",
+            "〜にとって"
+          ],
+          "formulas": [
+            "명사＋に対して＋행동·태도",
+            "사람·집단＋にとって＋평가"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t09-03",
+      "theme": "입장·화제·대상",
+      "pattern": "〜について",
+      "ch": "n3-07-compound-particles",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        4
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 4,
+          "sourceSha256": "7d88c629d3d1506e2b7178749bcbb1fefb4a838cecb4ce025e28166ebf3ed43f",
+          "primaryGroups": [
+            "〜について",
+            "〜に関して"
+          ],
+          "formulas": [
+            "명사＋について／명사＋についての＋명사",
+            "명사＋に関して／명사＋に関する＋명사"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t09-04",
+      "theme": "입장·화제·대상",
+      "pattern": "〜に関して",
+      "ch": "n3-07-compound-particles",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        4
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 4,
+          "sourceSha256": "7d88c629d3d1506e2b7178749bcbb1fefb4a838cecb4ce025e28166ebf3ed43f",
+          "primaryGroups": [
+            "〜について",
+            "〜に関して"
+          ],
+          "formulas": [
+            "명사＋について／명사＋についての＋명사",
+            "명사＋に関して／명사＋に関する＋명사"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t09-05",
+      "theme": "입장·화제·대상",
+      "pattern": "Nに関するN",
+      "ch": "n3-07-compound-particles",
+      "classification": "actual-explicit-family-variant",
+      "n3Units": [
+        4
+      ],
+      "interpretation": "Adnominal form of the same に関して/に関する core family is explicitly explained and practiced; counted separately from the 93 primary pattern groups.",
+      "evidence": {
+        "unit": 4,
+        "fieldPath": "patterns[1].formula",
+        "quote": "명사＋に関して／명사＋に関する＋명사",
+        "sourceSha256": "7d88c629d3d1506e2b7178749bcbb1fefb4a838cecb4ce025e28166ebf3ed43f"
+      }
+    },
+    {
+      "id": "n3-bunkei-t09-06",
+      "theme": "입장·화제·대상",
+      "pattern": "〜に対して",
+      "ch": "n3-07-compound-particles",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        5
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 5,
+          "sourceSha256": "abce057a931da5589d51bac5120fea98e397df914ad67812d36ca6800dc9596e",
+          "primaryGroups": [
+            "〜に対して",
+            "〜にとって"
+          ],
+          "formulas": [
+            "명사＋に対して＋행동·태도",
+            "사람·집단＋にとって＋평가"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t09-07",
+      "theme": "입장·화제·대상",
+      "pattern": "Nに対するN",
+      "ch": "n3-07-compound-particles",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t09-08",
+      "theme": "입장·화제·대상",
+      "pattern": "〜に代わって",
+      "ch": "n2-02-formal-connectors",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        6
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 6,
+          "sourceSha256": "4b1925a767c1a5bbab6be1749ab10d63177fea3f7bc988b3c334b0ea10fde291",
+          "primaryGroups": [
+            "〜として",
+            "〜に代わって"
+          ],
+          "formulas": [
+            "명사＋として",
+            "사람＋に代わって、다른 주어＋행동"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t09-09",
+      "theme": "입장·화제·대상",
+      "pattern": "〜をはじめ(として)",
+      "ch": "n2-02-formal-connectors",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t09-10",
+      "theme": "입장·화제·대상",
+      "pattern": "N向け",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        7
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 7,
+          "sourceSha256": "f192e767d2fb3f7c3204f1e520d889c0ff6dceae323cdcfda361af98f238874f",
+          "primaryGroups": [
+            "N向け",
+            "N向き"
+          ],
+          "formulas": [
+            "명사＋向け／명사＋向けに／명사＋向けの＋명사",
+            "명사＋向きだ／명사＋向きの＋명사"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t09-11",
+      "theme": "입장·화제·대상",
+      "pattern": "N向き",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        7
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 7,
+          "sourceSha256": "f192e767d2fb3f7c3204f1e520d889c0ff6dceae323cdcfda361af98f238874f",
+          "primaryGroups": [
+            "N向け",
+            "N向き"
+          ],
+          "formulas": [
+            "명사＋向け／명사＋向けに／명사＋向けの＋명사",
+            "명사＋向きだ／명사＋向きの＋명사"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t09-12",
+      "theme": "입장·화제·대상",
+      "pattern": "〜によると",
+      "ch": "n3-02-souda-youda",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        3
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 3,
+          "sourceSha256": "88636b5e16e4f4c11d831fb30d93aa00cb7547120ac5a0799a02e60967fb7015",
+          "primaryGroups": [
+            "〜と言われている",
+            "〜によると"
+          ],
+          "formulas": [
+            "문장 보통형＋と言われている → と言われています",
+            "자료·사람＋によると、전언·추량"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t09-13",
+      "theme": "입장·화제·대상",
+      "pattern": "〜において",
+      "ch": "n3-07-compound-particles",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t09-14",
+      "theme": "입장·화제·대상",
+      "pattern": "〜にしては",
+      "ch": "n3-07-compound-particles",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        39
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 39,
+          "sourceSha256": "c3d599ea7d3bc5200e11d1800a942cc6cad6bfc1151d64df61abc36b696d7b86",
+          "primaryGroups": [
+            "〜にしては",
+            "〜のに対して"
+          ],
+          "formulas": [
+            "동사 보통형／명사＋にしては",
+            "문장 보통형＋のに対して／명사なのに対して"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t09-15",
+      "theme": "입장·화제·대상",
+      "pattern": "〜に比べて",
+      "ch": "n4-08-comparison",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        8
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 8,
+          "sourceSha256": "899fc0786d7b5ca0ddda01df5da8f10c5e119ffaef3e59563f5de1ec3c847236",
+          "primaryGroups": [
+            "〜によって",
+            "〜に比べて"
+          ],
+          "formulas": [
+            "명사＋によって＋차이·변화",
+            "명사＋に比べて＋비교한 성질"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t09-16",
+      "theme": "입장·화제·대상",
+      "pattern": "ところで",
+      "ch": "n3-08b-mono-tokoroga",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t10-01",
+      "theme": "양보·역접",
+      "pattern": "〜くせに",
+      "ch": "n3-08-noni-kuseni",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        40
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 40,
+          "sourceSha256": "fa4b3eb219e4070a381d4f8f2906b1443283916fd76c319c3628774039409ca0",
+          "primaryGroups": [
+            "〜くせに",
+            "〜ながら(も)"
+          ],
+          "formulas": [
+            "동사 보통형／い형용사／な형용사な／명사의＋くせに",
+            "동사 ます를 뺀 모양／い형용사／な형용사 어간／명사＋ながらも"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t10-02",
+      "theme": "양보·역접",
+      "pattern": "たとえ〜ても",
+      "ch": "n2-06-conditional-advanced",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t10-03",
+      "theme": "양보·역접",
+      "pattern": "〜ながら(も)",
+      "ch": "n3-08-noni-kuseni",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        40
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 40,
+          "sourceSha256": "fa4b3eb219e4070a381d4f8f2906b1443283916fd76c319c3628774039409ca0",
+          "primaryGroups": [
+            "〜くせに",
+            "〜ながら(も)"
+          ],
+          "formulas": [
+            "동사 보통형／い형용사／な형용사な／명사의＋くせに",
+            "동사 ます를 뺀 모양／い형용사／な형용사 어간／명사＋ながらも"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t10-04",
+      "theme": "양보·역접",
+      "pattern": "〜のに対して",
+      "ch": "n3-07-compound-particles",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        39
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 39,
+          "sourceSha256": "c3d599ea7d3bc5200e11d1800a942cc6cad6bfc1151d64df61abc36b696d7b86",
+          "primaryGroups": [
+            "〜にしては",
+            "〜のに対して"
+          ],
+          "formulas": [
+            "동사 보통형／명사＋にしては",
+            "문장 보통형＋のに対して／명사なのに対して"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t10-05",
+      "theme": "양보·역접",
+      "pattern": "〜といっても",
+      "ch": "n3-08-noni-kuseni",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        38
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 38,
+          "sourceSha256": "f352dac9e5a112a0a475ac60593b73f9a2d652b617908a98ab24282319502934",
+          "primaryGroups": [
+            "〜といっても",
+            "〜わりに(は)"
+          ],
+          "formulas": [
+            "보통형＋といっても／명사＋といっても",
+            "동사 보통형／い형용사／な형용사な／명사의＋わりに"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t10-06",
+      "theme": "양보·역접",
+      "pattern": "〜わりに(は)",
+      "ch": "n3-08-noni-kuseni",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        38
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 38,
+          "sourceSha256": "f352dac9e5a112a0a475ac60593b73f9a2d652b617908a98ab24282319502934",
+          "primaryGroups": [
+            "〜といっても",
+            "〜わりに(は)"
+          ],
+          "formulas": [
+            "보통형＋といっても／명사＋といっても",
+            "동사 보통형／い형용사／な형용사な／명사의＋わりに"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t10-07",
+      "theme": "양보·역접",
+      "pattern": "ところが",
+      "ch": "n3-08b-mono-tokoroga",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t10-08",
+      "theme": "양보·역접",
+      "pattern": "それなのに",
+      "ch": "n3-08-noni-kuseni",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t11-01",
+      "theme": "당위·확신 (べき·わけ)",
+      "pattern": "〜はずだった",
+      "ch": "n3-06-hazu-beki",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        28
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 28,
+          "sourceSha256": "c5183c54c33dab0b327a8af3c25eaa95b7261627a5ea77957dcfb403dfe67033",
+          "primaryGroups": [
+            "〜はずだった",
+            "〜つもりだった"
+          ],
+          "formulas": [
+            "보통형／명사の・な형용사な＋はずだった",
+            "동사 사전형・ない형＋つもりだった"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t11-02",
+      "theme": "당위·확신 (べき·わけ)",
+      "pattern": "〜べきだ・〜べきではない",
+      "ch": "n3-06-hazu-beki",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        32
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 32,
+          "sourceSha256": "7fb38ae12c9c15c9e6d0d1cbf307f1ef54f4c4d9f63641586151ee5feba495b5",
+          "primaryGroups": [
+            "〜べきだ・〜べきではない",
+            "〜べきだった"
+          ],
+          "formulas": [
+            "동사 사전형＋べきだ／べきではない",
+            "동사 사전형＋べきだった"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t11-03",
+      "theme": "당위·확신 (べき·わけ)",
+      "pattern": "〜べきだった",
+      "ch": "n3-06-hazu-beki",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        32
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 32,
+          "sourceSha256": "7fb38ae12c9c15c9e6d0d1cbf307f1ef54f4c4d9f63641586151ee5feba495b5",
+          "primaryGroups": [
+            "〜べきだ・〜べきではない",
+            "〜べきだった"
+          ],
+          "formulas": [
+            "동사 사전형＋べきだ／べきではない",
+            "동사 사전형＋べきだった"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t11-04",
+      "theme": "당위·확신 (べき·わけ)",
+      "pattern": "〜わけだ",
+      "ch": "n3-06b-wake",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        29
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 29,
+          "sourceSha256": "d08dfe23165a73bc630b477612083f04f7b6c15248c4248f379cd6e66b032b95",
+          "primaryGroups": [
+            "〜わけだ",
+            "〜わけではない"
+          ],
+          "formulas": [
+            "동사・い형용사 보통형／な형용사な＋わけだ",
+            "보통형／な형용사な＋わけではない"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t11-05",
+      "theme": "당위·확신 (べき·わけ)",
+      "pattern": "〜わけではない",
+      "ch": "n3-06b-wake",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        29
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 29,
+          "sourceSha256": "d08dfe23165a73bc630b477612083f04f7b6c15248c4248f379cd6e66b032b95",
+          "primaryGroups": [
+            "〜わけだ",
+            "〜わけではない"
+          ],
+          "formulas": [
+            "동사・い형용사 보통형／な형용사な＋わけだ",
+            "보통형／な형용사な＋わけではない"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t11-06",
+      "theme": "당위·확신 (べき·わけ)",
+      "pattern": "〜わけがない",
+      "ch": "n3-06b-wake",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        30
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 30,
+          "sourceSha256": "9be7220dc4f3b6dab589e9a9d9ca1750c79b99f6a8f3440397056051f8106827",
+          "primaryGroups": [
+            "〜わけがない",
+            "〜ないことはない"
+          ],
+          "formulas": [
+            "동사・い형용사 보통형／な형용사な＋わけがない",
+            "동사 ない형・가능형의 부정＋ことはない"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t11-07",
+      "theme": "당위·확신 (べき·わけ)",
+      "pattern": "〜わけにはいかない・〜ないわけにはいかない",
+      "ch": "n3-06b-wake",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        31
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 31,
+          "sourceSha256": "d79239221b965bb4553486a93b0cde8c78da46f984e1d4807e296fd3851fabe9",
+          "primaryGroups": [
+            "〜わけにはいかない・〜ないわけにはいかない"
+          ],
+          "formulas": [
+            "동사 사전형＋わけにはいかない",
+            "동사 ない형＋わけにはいかない"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t12-01",
+      "theme": "こと·もの 계열",
+      "pattern": "〜ものだ",
+      "ch": "n2-03-nuance-pairs",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        33
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 33,
+          "sourceSha256": "ae458cf1c95a7e77625479eb273265372065d0101a06580e7f566eca364f98fb",
+          "primaryGroups": [
+            "〜ことはない",
+            "〜ものだ"
+          ],
+          "formulas": [
+            "동사 사전형＋ことはない",
+            "동사 사전형＋ものだ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t12-02",
+      "theme": "こと·もの 계열",
+      "pattern": "〜たものだ",
+      "ch": "n2-03-nuance-pairs",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t12-03",
+      "theme": "こと·もの 계열",
+      "pattern": "〜というものだ",
+      "ch": "n2-03-nuance-pairs",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t12-04",
+      "theme": "こと·もの 계열",
+      "pattern": "〜ことはない",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        33
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 33,
+          "sourceSha256": "ae458cf1c95a7e77625479eb273265372065d0101a06580e7f566eca364f98fb",
+          "primaryGroups": [
+            "〜ことはない",
+            "〜ものだ"
+          ],
+          "formulas": [
+            "동사 사전형＋ことはない",
+            "동사 사전형＋ものだ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t12-05",
+      "theme": "こと·もの 계열",
+      "pattern": "〜ないことはない",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        30
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 30,
+          "sourceSha256": "9be7220dc4f3b6dab589e9a9d9ca1750c79b99f6a8f3440397056051f8106827",
+          "primaryGroups": [
+            "〜わけがない",
+            "〜ないことはない"
+          ],
+          "formulas": [
+            "동사・い형용사 보통형／な형용사な＋わけがない",
+            "동사 ない형・가능형의 부정＋ことはない"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t12-06",
+      "theme": "こと·もの 계열",
+      "pattern": "〜ことか",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t12-07",
+      "theme": "こと·もの 계열",
+      "pattern": "〜ことから",
+      "ch": "n2-10-reason-basis",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        21
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 21,
+          "sourceSha256": "1267d1115d6000aaef3eb06f8df4c0678c85f2bf1ba02706651bd0ac93215447",
+          "primaryGroups": [
+            "〜のは〜からだ",
+            "〜ことから"
+          ],
+          "formulas": [
+            "동사 보통형＋のは、이유＋からだ／からです",
+            "보통형＋ことから／な형용사な・명사である＋ことから"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t12-08",
+      "theme": "こと·もの 계열",
+      "pattern": "〜こと",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t13-01",
+      "theme": "조건·후회",
+      "pattern": "〜ば〜のに",
+      "ch": "n3-08-noni-kuseni",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        35
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 35,
+          "sourceSha256": "663eaf7d575a226e7c77c2829a2ee83485977153ececd32cd3efb1c6d6122816",
+          "primaryGroups": [
+            "〜さえ〜ば",
+            "〜ば〜のに"
+          ],
+          "formulas": [
+            "명사＋さえ＋조건형／ます를 뺀 모양＋さえすれば",
+            "조건형＋のに／조건형＋결과＋のに"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t13-02",
+      "theme": "조건·후회",
+      "pattern": "〜ても〜なくても",
+      "ch": "n2-06-conditional-advanced",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        42
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 42,
+          "sourceSha256": "7b24ce90485b721dd22afc20312fa43b40ccc7abd34e9e098eb1ed7d273aabcd",
+          "primaryGroups": [
+            "〜ても〜なくても",
+            "〜場合(は)"
+          ],
+          "formulas": [
+            "동사 ても＋같은 동사의 なくても、같은 결과",
+            "동사 보통형／い형용사／な형용사な／명사의＋場合(は)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t13-03",
+      "theme": "조건·후회",
+      "pattern": "〜場合(は)",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        42
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 42,
+          "sourceSha256": "7b24ce90485b721dd22afc20312fa43b40ccc7abd34e9e098eb1ed7d273aabcd",
+          "primaryGroups": [
+            "〜ても〜なくても",
+            "〜場合(は)"
+          ],
+          "formulas": [
+            "동사 ても＋같은 동사의 なくても、같은 결과",
+            "동사 보통형／い형용사／な형용사な／명사의＋場合(は)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t13-04",
+      "theme": "조건·후회",
+      "pattern": "〜つもりだった",
+      "ch": "n4-09-intention",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        28
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 28,
+          "sourceSha256": "c5183c54c33dab0b327a8af3c25eaa95b7261627a5ea77957dcfb403dfe67033",
+          "primaryGroups": [
+            "〜はずだった",
+            "〜つもりだった"
+          ],
+          "formulas": [
+            "보통형／명사の・な형용사な＋はずだった",
+            "동사 사전형・ない형＋つもりだった"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t14-01",
+      "theme": "방법·기준·대체",
+      "pattern": "〜とおり(に)",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t14-02",
+      "theme": "방법·기준·대체",
+      "pattern": "Nどおり(に)",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t14-03",
+      "theme": "방법·기준·대체",
+      "pattern": "〜かわりに",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        41
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 41,
+          "sourceSha256": "601e8ed3439dc9fe1c354e0b135e26537deaed1518e530859b33e5f661c7bd7d",
+          "primaryGroups": [
+            "〜かわりに",
+            "〜ずに"
+          ],
+          "formulas": [
+            "동사 보통형＋かわりに",
+            "ない형에서 ない를 뺀 모양＋ずに／する→せずに"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t14-04",
+      "theme": "방법·기준·대체",
+      "pattern": "Nの代わりに",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t14-05",
+      "theme": "방법·기준·대체",
+      "pattern": "〜ずに",
+      "ch": "n1-02-classical-remnants",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        41
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 41,
+          "sourceSha256": "601e8ed3439dc9fe1c354e0b135e26537deaed1518e530859b33e5f661c7bd7d",
+          "primaryGroups": [
+            "〜かわりに",
+            "〜ずに"
+          ],
+          "formulas": [
+            "동사 보통형＋かわりに",
+            "ない형에서 ない를 뺀 모양＋ずに／する→せずに"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t14-06",
+      "theme": "방법·기준·대체",
+      "pattern": "Nのまま",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t15-01",
+      "theme": "희망·의뢰",
+      "pattern": "〜てほしい・〜ないでほしい",
+      "ch": "n5-11-desire-invitation",
+      "classification": "documented-n4-prerequisite",
+      "n4Units": [
+        36
+      ],
+      "pinnedN4Evidence": [
+        {
+          "editionId": "f4a6411c0945bbd3f8767af7",
+          "unit": 36,
+          "fieldPath": "patterns[1].formula",
+          "quote": "사람に＋て형＋ほしい／ない형＋でほしい"
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t15-02",
+      "theme": "희망·의뢰",
+      "pattern": "〜てもらいたい",
+      "ch": "n4-04-giving-receiving",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        43
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 43,
+          "sourceSha256": "0c277c54efdc36e254c7a3bb2b1faddcc603a97684f11eddfb082d5b3d12c71b",
+          "primaryGroups": [
+            "〜(さ)せられる",
+            "〜てもらいたい"
+          ],
+          "formulas": [
+            "1그룹 あ단＋せられる／2그룹 る→させられる／する→させられる",
+            "도움을 줄 사람に＋동사 て형＋もらいたい"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t16-01",
+      "theme": "수동·사역 응용",
+      "pattern": "〜(ら)れる",
+      "ch": "n3-05-causative-passive",
+      "classification": "documented-n4-prerequisite",
+      "n4Units": [
+        37,
+        38
+      ],
+      "pinnedN4Evidence": [
+        {
+          "editionId": "f4a6411c0945bbd3f8767af7",
+          "unit": 37,
+          "fieldPath": "patterns[0].formula",
+          "quote": "1그룹 あ단＋れる／2그룹 る→られる／する→される"
+        },
+        {
+          "editionId": "f4a6411c0945bbd3f8767af7",
+          "unit": 38,
+          "fieldPath": "patterns[0].formula",
+          "quote": "영향받은 사람は＋사람／사건의 주체に＋수동형"
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t16-02",
+      "theme": "수동·사역 응용",
+      "pattern": "〜(さ)せる",
+      "ch": "n3-05-causative-passive",
+      "classification": "documented-n4-prerequisite",
+      "n4Units": [
+        39
+      ],
+      "pinnedN4Evidence": [
+        {
+          "editionId": "f4a6411c0945bbd3f8767af7",
+          "unit": 39,
+          "fieldPath": "patterns[0].formula",
+          "quote": "1그룹 あ단＋せる／2그룹 る→させる／する→させる"
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t16-03",
+      "theme": "수동·사역 응용",
+      "pattern": "〜(さ)せられる",
+      "ch": "n3-05-causative-passive",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        43
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 43,
+          "sourceSha256": "0c277c54efdc36e254c7a3bb2b1faddcc603a97684f11eddfb082d5b3d12c71b",
+          "primaryGroups": [
+            "〜(さ)せられる",
+            "〜てもらいたい"
+          ],
+          "formulas": [
+            "1그룹 あ단＋せられる／2그룹 る→させられる／する→させられる",
+            "도움을 줄 사람に＋동사 て형＋もらいたい"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t16-04",
+      "theme": "수동·사역 응용",
+      "pattern": "〜(さ)せてください",
+      "ch": "n3-05-causative-passive",
+      "classification": "documented-n4-prerequisite",
+      "n4Units": [
+        40
+      ],
+      "pinnedN4Evidence": [
+        {
+          "editionId": "f4a6411c0945bbd3f8767af7",
+          "unit": 40,
+          "fieldPath": "patterns[0].formula",
+          "quote": "사역형의 て형＋ください"
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t17-01",
+      "theme": "존경어",
+      "pattern": "お/ご〜になる",
+      "ch": "n3-01-keigo-intro",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        44
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 44,
+          "sourceSha256": "d4f11e7d855aa8f76cd05e9dfb4de7652e2528e57561c75e45c336fdeea0cddc",
+          "primaryGroups": [
+            "お/ご〜になる",
+            "お/ご〜ください"
+          ],
+          "formulas": [
+            "お＋동사 ます를 뺀 모양＋になる／일부 한자어 ご＋명사＋になる",
+            "お＋동사 ます를 뺀 모양＋ください／일부 한자어 ご＋명사＋ください"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t17-02",
+      "theme": "존경어",
+      "pattern": "お/ご〜です",
+      "ch": "n3-01-keigo-intro",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t17-03",
+      "theme": "존경어",
+      "pattern": "お/ご〜ください",
+      "ch": "n3-01-keigo-intro",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        44
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 44,
+          "sourceSha256": "d4f11e7d855aa8f76cd05e9dfb4de7652e2528e57561c75e45c336fdeea0cddc",
+          "primaryGroups": [
+            "お/ご〜になる",
+            "お/ご〜ください"
+          ],
+          "formulas": [
+            "お＋동사 ます를 뺀 모양＋になる／일부 한자어 ご＋명사＋になる",
+            "お＋동사 ます를 뺀 모양＋ください／일부 한자어 ご＋명사＋ください"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t17-04",
+      "theme": "존경어",
+      "pattern": "いらっしゃる",
+      "ch": "n3-01-keigo-intro",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        45
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 45,
+          "sourceSha256": "d188375ffc7e25221eae145e14dff138c6fa42cbbd5648bacc5348f1d2aed164",
+          "primaryGroups": [
+            "いらっしゃる",
+            "おっしゃる"
+          ],
+          "formulas": [
+            "行く・来る・いる → いらっしゃる",
+            "言う → おっしゃる／인용 내용＋とおっしゃる"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t17-05",
+      "theme": "존경어",
+      "pattern": "おっしゃる",
+      "ch": "n3-01-keigo-intro",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        45
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 45,
+          "sourceSha256": "d188375ffc7e25221eae145e14dff138c6fa42cbbd5648bacc5348f1d2aed164",
+          "primaryGroups": [
+            "いらっしゃる",
+            "おっしゃる"
+          ],
+          "formulas": [
+            "行く・来る・いる → いらっしゃる",
+            "言う → おっしゃる／인용 내용＋とおっしゃる"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t17-06",
+      "theme": "존경어",
+      "pattern": "召し上がる",
+      "ch": "n3-01-keigo-intro",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t17-07",
+      "theme": "존경어",
+      "pattern": "ご覧になる",
+      "ch": "n3-01-keigo-intro",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t17-08",
+      "theme": "존경어",
+      "pattern": "なさる",
+      "ch": "n3-01-keigo-intro",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t17-09",
+      "theme": "존경어",
+      "pattern": "くださる",
+      "ch": "n3-01-keigo-intro",
+      "classification": "documented-n4-prerequisite",
+      "n4Units": [
+        41
+      ],
+      "pinnedN4Evidence": [
+        {
+          "editionId": "f4a6411c0945bbd3f8767af7",
+          "unit": 41,
+          "fieldPath": "patterns[0].formula",
+          "quote": "높이는 주는 사람が＋私に＋물건を＋くださる"
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t17-10",
+      "theme": "존경어",
+      "pattern": "〜てくださる",
+      "ch": "n3-01-keigo-intro",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t18-01",
+      "theme": "겸양어·정중어",
+      "pattern": "お/ご〜する",
+      "ch": "n3-01b-kenjougo-uchisoto",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        46
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 46,
+          "sourceSha256": "491004e38d44a5f1159f371d8bb71be37795daac989f1dbce2481ad26a79cbde",
+          "primaryGroups": [
+            "お/ご〜する",
+            "伺う"
+          ],
+          "formulas": [
+            "お＋동사 ます를 뺀 모양＋する／일부 한자어 ご＋명사＋する",
+            "聞く・尋ねる／訪ねる → 伺う"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t18-02",
+      "theme": "겸양어·정중어",
+      "pattern": "お/ご〜いたす",
+      "ch": "n3-01b-kenjougo-uchisoto",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t18-03",
+      "theme": "겸양어·정중어",
+      "pattern": "伺う",
+      "ch": "n3-01b-kenjougo-uchisoto",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        46
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 46,
+          "sourceSha256": "491004e38d44a5f1159f371d8bb71be37795daac989f1dbce2481ad26a79cbde",
+          "primaryGroups": [
+            "お/ご〜する",
+            "伺う"
+          ],
+          "formulas": [
+            "お＋동사 ます를 뺀 모양＋する／일부 한자어 ご＋명사＋する",
+            "聞く・尋ねる／訪ねる → 伺う"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t18-04",
+      "theme": "겸양어·정중어",
+      "pattern": "申す・申し上げる",
+      "ch": "n3-01b-kenjougo-uchisoto",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t18-05",
+      "theme": "겸양어·정중어",
+      "pattern": "いたす",
+      "ch": "n3-01b-kenjougo-uchisoto",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t18-06",
+      "theme": "겸양어·정중어",
+      "pattern": "拝見する",
+      "ch": "n3-01b-kenjougo-uchisoto",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t18-07",
+      "theme": "겸양어·정중어",
+      "pattern": "おる",
+      "ch": "n3-01b-kenjougo-uchisoto",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t18-08",
+      "theme": "겸양어·정중어",
+      "pattern": "参る",
+      "ch": "n3-01b-kenjougo-uchisoto",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t18-09",
+      "theme": "겸양어·정중어",
+      "pattern": "いただく",
+      "ch": "n3-01b-kenjougo-uchisoto",
+      "classification": "documented-n4-prerequisite",
+      "n4Units": [
+        41
+      ],
+      "pinnedN4Evidence": [
+        {
+          "editionId": "f4a6411c0945bbd3f8767af7",
+          "unit": 41,
+          "fieldPath": "patterns[1].formula",
+          "quote": "私は＋높이는 주는 사람に／から＋물건を＋いただく"
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t18-10",
+      "theme": "겸양어·정중어",
+      "pattern": "〜ていただく",
+      "ch": "n3-01b-kenjougo-uchisoto",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        47
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 47,
+          "sourceSha256": "fd7c8f04217dfb8281ab84f6cdd28306151453ed232813d5f0c4478bc0020c3d",
+          "primaryGroups": [
+            "〜ていただく",
+            "〜させていただく"
+          ],
+          "formulas": [
+            "도와준 사람に＋동사 て형＋いただく",
+            "동사 사역형의 て형＋いただく"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t18-11",
+      "theme": "겸양어·정중어",
+      "pattern": "差し上げる",
+      "ch": "n3-01b-kenjougo-uchisoto",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t18-12",
+      "theme": "겸양어·정중어",
+      "pattern": "お目にかかる",
+      "ch": "n3-01b-kenjougo-uchisoto",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t18-13",
+      "theme": "겸양어·정중어",
+      "pattern": "存じる",
+      "ch": "n3-01b-kenjougo-uchisoto",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t18-14",
+      "theme": "겸양어·정중어",
+      "pattern": "〜させていただく",
+      "ch": "n3-01b-kenjougo-uchisoto",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        47
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 47,
+          "sourceSha256": "fd7c8f04217dfb8281ab84f6cdd28306151453ed232813d5f0c4478bc0020c3d",
+          "primaryGroups": [
+            "〜ていただく",
+            "〜させていただく"
+          ],
+          "formulas": [
+            "도와준 사람に＋동사 て형＋いただく",
+            "동사 사역형의 て형＋いただく"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t18-15",
+      "theme": "겸양어·정중어",
+      "pattern": "ございます・〜でございます",
+      "ch": "n3-01b-kenjougo-uchisoto",
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t19-01",
+      "theme": "복합동사",
+      "pattern": "〜だす",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        16
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 16,
+          "sourceSha256": "3297e6983c5337772dd64f6dc377bf49aa837f2f3c78ebeefe1c923c5fc1e962",
+          "primaryGroups": [
+            "〜だす",
+            "〜かける"
+          ],
+          "formulas": [
+            "동사ます형 줄기＋だす",
+            "동사ます형 줄기＋かける／かけの＋명사"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t19-02",
+      "theme": "복합동사",
+      "pattern": "〜かける",
+      "ch": "n2-08-completion-verbs",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        16
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 16,
+          "sourceSha256": "3297e6983c5337772dd64f6dc377bf49aa837f2f3c78ebeefe1c923c5fc1e962",
+          "primaryGroups": [
+            "〜だす",
+            "〜かける"
+          ],
+          "formulas": [
+            "동사ます형 줄기＋だす",
+            "동사ます형 줄기＋かける／かけの＋명사"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t19-03",
+      "theme": "복합동사",
+      "pattern": "〜きる",
+      "ch": "n2-08-completion-verbs",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        17
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 17,
+          "sourceSha256": "b83333b7ff4d5d55648ce7cf91f4516a288108f485a57656f268b2cf76eac895",
+          "primaryGroups": [
+            "〜きる",
+            "〜きれない"
+          ],
+          "formulas": [
+            "동사 ます형 어간＋きる",
+            "동사 ます형 어간＋きれない"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t19-04",
+      "theme": "복합동사",
+      "pattern": "〜きれない",
+      "ch": "n2-08-completion-verbs",
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        17
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 17,
+          "sourceSha256": "b83333b7ff4d5d55648ce7cf91f4516a288108f485a57656f268b2cf76eac895",
+          "primaryGroups": [
+            "〜きる",
+            "〜きれない"
+          ],
+          "formulas": [
+            "동사 ます형 어간＋きる",
+            "동사 ます형 어간＋きれない"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t19-05",
+      "theme": "복합동사",
+      "pattern": "〜なおす",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        18
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 18,
+          "sourceSha256": "5a17d8caa8a813b3ecdb19c1a314fa1ed88b10b4847dcd13487919c9222c36b1",
+          "primaryGroups": [
+            "〜なおす",
+            "〜あう"
+          ],
+          "formulas": [
+            "동사 ます형 어간＋なおす",
+            "동사 ます형 어간＋あう"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n3-bunkei-t19-06",
+      "theme": "복합동사",
+      "pattern": "〜つづける",
+      "ch": null,
+      "classification": "not-a-core-target-in-this-edition",
+      "interpretation": "This item is not counted as taught merely because its topic or a related form appears. Inspect actual lessons before making any narrower coverage claim."
+    },
+    {
+      "id": "n3-bunkei-t19-07",
+      "theme": "복합동사",
+      "pattern": "〜あう",
+      "ch": null,
+      "classification": "actual-primary-source-declared",
+      "n3Units": [
+        18
+      ],
+      "actualTeachingBlocks": [
+        {
+          "unit": 18,
+          "sourceSha256": "5a17d8caa8a813b3ecdb19c1a314fa1ed88b10b4847dcd13487919c9222c36b1",
+          "primaryGroups": [
+            "〜なおす",
+            "〜あう"
+          ],
+          "formulas": [
+            "동사 ます형 어간＋なおす",
+            "동사 ます형 어간＋あう"
+          ]
+        }
+      ]
+    }
+  ],
+  "actualRecall": [
+    {
+      "unit": "u01",
+      "scheduledPriorN3Units": [],
+      "observedPriorN3Units": [],
+      "scheduledNotClaimedAsObserved": [],
+      "actualN3Evidence": [],
+      "actualN4Evidence": [
+        {
+          "unit": 2,
+          "fieldPath": "reading",
+          "quote": "「本がなくても大丈夫です」と言ってから",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[1]",
+          "retrievedUse": "인용한 말을 と言う로 받아 친구에게 전달하는 행위를 표현해요."
+        },
+        {
+          "unit": 3,
+          "fieldPath": "dialog[7].ja",
+          "quote": "本を読むことが好きです",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[2]",
+          "retrievedUse": "책을 읽는 행동을 こと로 명사화해 好き의 대상으로 써요."
+        }
+      ]
+    },
+    {
+      "unit": "u02",
+      "scheduledPriorN3Units": [
+        1
+      ],
+      "observedPriorN3Units": [
+        1
+      ],
+      "scheduledNotClaimedAsObserved": [],
+      "actualN3Evidence": [
+        {
+          "unit": 1,
+          "fieldPath": "dialog[0].ja",
+          "quote": "「交流会」という言葉"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 2,
+          "fieldPath": "patterns[1].examples[1].ja",
+          "quote": "担当者は、参加は無料だと言っていました。",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[1]"
+        }
+      ]
+    },
+    {
+      "unit": "u03",
+      "scheduledPriorN3Units": [
+        2
+      ],
+      "observedPriorN3Units": [
+        2
+      ],
+      "scheduledNotClaimedAsObserved": [],
+      "actualN3Evidence": [
+        {
+          "unit": 2,
+          "fieldPath": "patterns[1].examples[1].ja",
+          "quote": "ということです"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 18,
+          "fieldPath": "dialog[2].ja",
+          "quote": "二十人だったそうです",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[17]"
+        }
+      ]
+    },
+    {
+      "unit": "u04",
+      "scheduledPriorN3Units": [
+        1,
+        3
+      ],
+      "observedPriorN3Units": [
+        1
+      ],
+      "scheduledNotClaimedAsObserved": [
+        3
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 1,
+          "fieldPath": "dialog[0].ja",
+          "quote": "「まちの読書週間」という行事"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 4,
+          "fieldPath": "dialog[2].ja",
+          "quote": "申込書をどこに出すか知りたいです",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[3]"
+        }
+      ]
+    },
+    {
+      "unit": "u05",
+      "scheduledPriorN3Units": [
+        2,
+        4
+      ],
+      "observedPriorN3Units": [
+        4
+      ],
+      "scheduledNotClaimedAsObserved": [
+        2
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 4,
+          "fieldPath": "dialog[0].ja",
+          "quote": "参加方法について"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 34,
+          "fieldPath": "dialog[4].ja",
+          "quote": "読んでもらいます",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[33]"
+        }
+      ]
+    },
+    {
+      "unit": "u06",
+      "scheduledPriorN3Units": [
+        3,
+        5
+      ],
+      "observedPriorN3Units": [
+        5
+      ],
+      "scheduledNotClaimedAsObserved": [
+        3
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 5,
+          "fieldPath": "dialog[1].ja",
+          "quote": "参加者に対して"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 11,
+          "fieldPath": "reading",
+          "quote": "することになっています",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[10]"
+        }
+      ]
+    },
+    {
+      "unit": "u07",
+      "scheduledPriorN3Units": [
+        4,
+        6
+      ],
+      "observedPriorN3Units": [
+        6
+      ],
+      "scheduledNotClaimedAsObserved": [
+        4
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 6,
+          "fieldPath": "dialog[4].ja",
+          "quote": "初心者向きの本として"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 7,
+          "fieldPath": "dialog[1].ja",
+          "quote": "読みやすい",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[6]"
+        },
+        {
+          "unit": 14,
+          "fieldPath": "reading",
+          "quote": "書いておきます",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[13]"
+        }
+      ]
+    },
+    {
+      "unit": "u08",
+      "scheduledPriorN3Units": [
+        1,
+        5,
+        7
+      ],
+      "observedPriorN3Units": [
+        3,
+        7
+      ],
+      "scheduledNotClaimedAsObserved": [
+        1,
+        5
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 3,
+          "fieldPath": "reading",
+          "quote": "記録によると"
+        },
+        {
+          "unit": 7,
+          "fieldPath": "dialog[0].ja",
+          "quote": "参加者向け"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 9,
+          "fieldPath": "dialog[3].ja",
+          "quote": "用意する予定です",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[8]"
+        }
+      ]
+    },
+    {
+      "unit": "u09",
+      "scheduledPriorN3Units": [
+        2,
+        6,
+        8
+      ],
+      "observedPriorN3Units": [
+        2
+      ],
+      "scheduledNotClaimedAsObserved": [
+        6,
+        8
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 2,
+          "fieldPath": "reading",
+          "quote": "置くということです"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 29,
+          "fieldPath": "reading",
+          "quote": "待っているあいだに",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[28]"
+        },
+        {
+          "unit": 16,
+          "fieldPath": "patterns[0].examples[0].ja",
+          "quote": "かかってきました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[15]"
+        }
+      ]
+    },
+    {
+      "unit": "u10",
+      "scheduledPriorN3Units": [
+        3,
+        7,
+        9
+      ],
+      "observedPriorN3Units": [
+        9
+      ],
+      "scheduledNotClaimedAsObserved": [
+        3,
+        7
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 9,
+          "fieldPath": "reading",
+          "quote": "メモを書いている最中に"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 14,
+          "fieldPath": "dialog[0].ja",
+          "quote": "書いておきます",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[13]"
+        },
+        {
+          "unit": 16,
+          "fieldPath": "dialog[2].ja",
+          "quote": "分かってきました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[15]"
+        }
+      ]
+    },
+    {
+      "unit": "u11",
+      "scheduledPriorN3Units": [
+        4,
+        8,
+        10
+      ],
+      "observedPriorN3Units": [
+        7,
+        10
+      ],
+      "scheduledNotClaimedAsObserved": [
+        4,
+        8
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 10,
+          "fieldPath": "reading",
+          "quote": "忘れないうちに"
+        },
+        {
+          "unit": 7,
+          "fieldPath": "reading",
+          "quote": "人向けに"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 11,
+          "fieldPath": "dialog[5].ja",
+          "quote": "休むことにしています",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[10]"
+        }
+      ]
+    },
+    {
+      "unit": "u12",
+      "scheduledPriorN3Units": [
+        5,
+        9,
+        11
+      ],
+      "observedPriorN3Units": [
+        3,
+        11
+      ],
+      "scheduledNotClaimedAsObserved": [
+        5,
+        9
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 11,
+          "fieldPath": "dialog[2].ja",
+          "quote": "配るたびに"
+        },
+        {
+          "unit": 3,
+          "fieldPath": "dialog[3].ja",
+          "quote": "記録によると"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 4,
+          "fieldPath": "reading",
+          "quote": "かどうかは、まだ分かりません",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[3]"
+        }
+      ]
+    },
+    {
+      "unit": "u13",
+      "scheduledPriorN3Units": [
+        6,
+        10,
+        12
+      ],
+      "observedPriorN3Units": [
+        10
+      ],
+      "scheduledNotClaimedAsObserved": [
+        6,
+        12
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 10,
+          "fieldPath": "dialog[0].ja",
+          "quote": "人が少ないうちに"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 7,
+          "fieldPath": "dialog[5].ja",
+          "quote": "読みにくい",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[6]"
+        },
+        {
+          "unit": 8,
+          "fieldPath": "reading",
+          "quote": "読んでみようと言いました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[7]"
+        }
+      ]
+    },
+    {
+      "unit": "u14",
+      "scheduledPriorN3Units": [
+        7,
+        11,
+        13
+      ],
+      "observedPriorN3Units": [
+        10,
+        13
+      ],
+      "scheduledNotClaimedAsObserved": [
+        7,
+        11
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 13,
+          "fieldPath": "dialog[2].ja",
+          "quote": "書いてはじめて"
+        },
+        {
+          "unit": 10,
+          "fieldPath": "reading",
+          "quote": "忘れないうちに"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 14,
+          "fieldPath": "dialog[4].ja",
+          "quote": "確認してあります",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[13]"
+        }
+      ]
+    },
+    {
+      "unit": "u15",
+      "scheduledPriorN3Units": [
+        8,
+        12,
+        14
+      ],
+      "observedPriorN3Units": [
+        14
+      ],
+      "scheduledNotClaimedAsObserved": [
+        8,
+        12
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 14,
+          "fieldPath": "reading",
+          "quote": "参加して以来"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 8,
+          "fieldPath": "reading",
+          "quote": "確認しようと思います",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[7]"
+        },
+        {
+          "unit": 10,
+          "fieldPath": "dialog[5].ja",
+          "quote": "使うことにします",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[9]"
+        }
+      ]
+    },
+    {
+      "unit": "u16",
+      "scheduledPriorN3Units": [
+        9,
+        13,
+        15
+      ],
+      "observedPriorN3Units": [
+        15
+      ],
+      "scheduledNotClaimedAsObserved": [
+        9,
+        13
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 15,
+          "fieldPath": "reading",
+          "quote": "ポスターを貼ろうとしたとき"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 17,
+          "fieldPath": "dialog[3].ja",
+          "quote": "案内を持ったまま",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[16]"
+        },
+        {
+          "unit": 4,
+          "fieldPath": "reading",
+          "quote": "やんだかどうか",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[3]"
+        }
+      ]
+    },
+    {
+      "unit": "u17",
+      "scheduledPriorN3Units": [
+        10,
+        14,
+        16
+      ],
+      "observedPriorN3Units": [
+        16
+      ],
+      "scheduledNotClaimedAsObserved": [
+        10,
+        14
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 16,
+          "fieldPath": "dialog[3].ja",
+          "quote": "読みかけの所",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요."
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 5,
+          "fieldPath": "dialog[4].ja",
+          "quote": "一緒に読めます",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[4]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요."
+        }
+      ]
+    },
+    {
+      "unit": "u18",
+      "scheduledPriorN3Units": [
+        11,
+        15,
+        17
+      ],
+      "observedPriorN3Units": [
+        17
+      ],
+      "scheduledNotClaimedAsObserved": [
+        11,
+        15
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 17,
+          "fieldPath": "dialog[4].ja",
+          "quote": "全部読みきりました",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요."
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 14,
+          "fieldPath": "dialog[5].ja",
+          "quote": "確かめておきましょう",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[13]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요."
+        }
+      ]
+    },
+    {
+      "unit": "u19",
+      "scheduledPriorN3Units": [
+        12,
+        16,
+        18
+      ],
+      "observedPriorN3Units": [
+        18
+      ],
+      "scheduledNotClaimedAsObserved": [
+        12,
+        16
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 18,
+          "fieldPath": "dialog[4].ja",
+          "quote": "原稿を書きなおしましょう",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요."
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 15,
+          "fieldPath": "dialog[3].ja",
+          "quote": "時間がかかってしまいました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[14]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요."
+        }
+      ]
+    },
+    {
+      "unit": "u20",
+      "scheduledPriorN3Units": [
+        13,
+        17,
+        19
+      ],
+      "observedPriorN3Units": [
+        19
+      ],
+      "scheduledNotClaimedAsObserved": [
+        13,
+        17
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 19,
+          "fieldPath": "dialog[0].ja",
+          "quote": "ファイルが開かなかったせいで",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요."
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 19,
+          "fieldPath": "dialog[2].ja",
+          "quote": "ほかの理由もあるかもしれません",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[18]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요."
+        }
+      ]
+    },
+    {
+      "unit": "u21",
+      "scheduledPriorN3Units": [
+        14,
+        18,
+        20
+      ],
+      "observedPriorN3Units": [
+        3
+      ],
+      "scheduledNotClaimedAsObserved": [
+        14,
+        18,
+        20
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 3,
+          "fieldPath": "dialog[5].ja",
+          "quote": "担当者によると",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요."
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 15,
+          "fieldPath": "dialog[4].ja",
+          "quote": "担当者に聞いてみます",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[14]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요."
+        }
+      ]
+    },
+    {
+      "unit": "u22",
+      "scheduledPriorN3Units": [
+        15,
+        19,
+        21
+      ],
+      "observedPriorN3Units": [
+        21
+      ],
+      "scheduledNotClaimedAsObserved": [
+        15,
+        19
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 21,
+          "fieldPath": "dialog[4].ja",
+          "quote": "準備を変えたのは",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요."
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 16,
+          "fieldPath": "dialog[5].ja",
+          "quote": "相談していきましょう",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[15]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요."
+        }
+      ]
+    },
+    {
+      "unit": "u23",
+      "scheduledPriorN3Units": [
+        16,
+        20,
+        22
+      ],
+      "observedPriorN3Units": [
+        22
+      ],
+      "scheduledNotClaimedAsObserved": [
+        16,
+        20
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 22,
+          "fieldPath": "dialog[4].ja",
+          "quote": "質問が増えるにつれて",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요."
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 12,
+          "fieldPath": "dialog[2].ja",
+          "quote": "気づくようになりました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[11]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요."
+        }
+      ]
+    },
+    {
+      "unit": "u24",
+      "scheduledPriorN3Units": [
+        17,
+        21,
+        23
+      ],
+      "observedPriorN3Units": [
+        22
+      ],
+      "scheduledNotClaimedAsObserved": [
+        17,
+        21,
+        23
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 22,
+          "fieldPath": "dialog[5].ja",
+          "quote": "参加者が増えるにつれて",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요."
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 22,
+          "fieldPath": "dialog[1].ja",
+          "quote": "人が近づくと",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[21]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요."
+        }
+      ]
+    },
+    {
+      "unit": "u25",
+      "scheduledPriorN3Units": [
+        18,
+        22,
+        24
+      ],
+      "observedPriorN3Units": [
+        23,
+        24
+      ],
+      "scheduledNotClaimedAsObserved": [
+        18,
+        22
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 24,
+          "fieldPath": "dialog[4].ja",
+          "quote": "確認するには",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요."
+        },
+        {
+          "unit": 23,
+          "fieldPath": "reading",
+          "quote": "案内を読めば読むほど、確かめたい所が増えました。",
+          "retrievedUse": "읽을수록 확인할 점이 늘어나는 동반 변화"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 12,
+          "fieldPath": "dialog[5].ja",
+          "quote": "決めないようにしましょう",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[11]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요."
+        }
+      ]
+    },
+    {
+      "unit": "u26",
+      "scheduledPriorN3Units": [
+        19,
+        23,
+        25
+      ],
+      "observedPriorN3Units": [
+        25
+      ],
+      "scheduledNotClaimedAsObserved": [
+        19,
+        23
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 25,
+          "fieldPath": "dialog[1].ja",
+          "quote": "子どもっぽい気がします",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요."
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 18,
+          "fieldPath": "dialog[5].ja",
+          "quote": "使えそうです",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[17]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요."
+        }
+      ]
+    },
+    {
+      "unit": "u27",
+      "scheduledPriorN3Units": [
+        20,
+        24,
+        26
+      ],
+      "observedPriorN3Units": [
+        18,
+        26
+      ],
+      "scheduledNotClaimedAsObserved": [
+        20,
+        24
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 18,
+          "fieldPath": "dialog[4].ja",
+          "quote": "聞きなおしましょう",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요."
+        },
+        {
+          "unit": 26,
+          "fieldPath": "reading",
+          "quote": "ジュンは、相手と一緒に確かめるのはリナさんらしいと思いました。",
+          "retrievedUse": "실제 협력 행동에 대한 준의 리나다움 평가; 전언이 아님"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 15,
+          "fieldPath": "dialog[3].ja",
+          "quote": "知っているふりをしてしまいました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[14]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요."
+        }
+      ]
+    },
+    {
+      "unit": "u28",
+      "scheduledPriorN3Units": [
+        21,
+        25,
+        27
+      ],
+      "observedPriorN3Units": [
+        27
+      ],
+      "scheduledNotClaimedAsObserved": [
+        21,
+        25
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 27,
+          "fieldPath": "dialog[4].ja",
+          "quote": "やみそうにありません",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요."
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 24,
+          "fieldPath": "dialog[5].ja",
+          "quote": "着いたら知らせてください",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[23]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요."
+        }
+      ]
+    },
+    {
+      "unit": "u29",
+      "scheduledPriorN3Units": [
+        22,
+        26,
+        28
+      ],
+      "observedPriorN3Units": [
+        28
+      ],
+      "scheduledNotClaimedAsObserved": [
+        22,
+        26
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 28,
+          "fieldPath": "dialog[4].ja",
+          "quote": "読むだけのつもりでした",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요."
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 1,
+          "fieldPath": "dialog[1].ja",
+          "quote": "写真がたくさんあるんです",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[0]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요."
+        }
+      ]
+    },
+    {
+      "unit": "u30",
+      "scheduledPriorN3Units": [
+        23,
+        27,
+        29
+      ],
+      "observedPriorN3Units": [
+        29
+      ],
+      "scheduledNotClaimedAsObserved": [
+        23,
+        27
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 29,
+          "fieldPath": "dialog[4].ja",
+          "quote": "約束したわけではありません",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요."
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 5,
+          "fieldPath": "dialog[2].ja",
+          "quote": "今日中に読めるか",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[4]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요."
+        }
+      ]
+    },
+    {
+      "unit": "u31",
+      "scheduledPriorN3Units": [
+        24,
+        28,
+        30
+      ],
+      "observedPriorN3Units": [
+        30
+      ],
+      "scheduledNotClaimedAsObserved": [
+        24,
+        28
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 30,
+          "fieldPath": "dialog[5].ja",
+          "quote": "読めないことはありません",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요."
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 5,
+          "fieldPath": "dialog[1].ja",
+          "quote": "動けないんですか",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[4]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요."
+        }
+      ]
+    },
+    {
+      "unit": "u32",
+      "scheduledPriorN3Units": [
+        25,
+        29,
+        31
+      ],
+      "observedPriorN3Units": [
+        31
+      ],
+      "scheduledNotClaimedAsObserved": [
+        25,
+        29
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 31,
+          "fieldPath": "dialog[4].ja",
+          "quote": "同じ間違いをするわけにはいきません",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요."
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 15,
+          "fieldPath": "dialog[0].ja",
+          "quote": "後にしてしまいました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[14]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요."
+        }
+      ]
+    },
+    {
+      "unit": "u33",
+      "scheduledPriorN3Units": [
+        26,
+        30,
+        32
+      ],
+      "observedPriorN3Units": [
+        32
+      ],
+      "scheduledNotClaimedAsObserved": [
+        26,
+        30
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 32,
+          "fieldPath": "dialog[0].ja",
+          "quote": "全部買うべきですか"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 26,
+          "fieldPath": "reading",
+          "quote": "雨が降っても",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[25]"
+        }
+      ]
+    },
+    {
+      "unit": "u34",
+      "scheduledPriorN3Units": [
+        27,
+        31,
+        33
+      ],
+      "observedPriorN3Units": [
+        33
+      ],
+      "scheduledNotClaimedAsObserved": [
+        27,
+        31
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 33,
+          "fieldPath": "dialog[5].ja",
+          "quote": "移動することはありません"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 19,
+          "fieldPath": "reading",
+          "quote": "変わったかもしれません",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[18]"
+        }
+      ]
+    },
+    {
+      "unit": "u35",
+      "scheduledPriorN3Units": [
+        28,
+        32,
+        34
+      ],
+      "observedPriorN3Units": [
+        32
+      ],
+      "scheduledNotClaimedAsObserved": [
+        28,
+        34
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 32,
+          "fieldPath": "dialog[4].ja",
+          "quote": "調べるべきでした"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 24,
+          "fieldPath": "dialog[5].ja",
+          "quote": "道に迷ったら",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[23]"
+        }
+      ]
+    },
+    {
+      "unit": "u36",
+      "scheduledPriorN3Units": [
+        29,
+        33,
+        35
+      ],
+      "observedPriorN3Units": [
+        35
+      ],
+      "scheduledNotClaimedAsObserved": [
+        29,
+        33
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 35,
+          "fieldPath": "dialog[4].ja",
+          "quote": "連絡先さえ書けば"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 27,
+          "fieldPath": "dialog[5].ja",
+          "quote": "席もあるし、資料もあります",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[26]"
+        }
+      ]
+    },
+    {
+      "unit": "u37",
+      "scheduledPriorN3Units": [
+        30,
+        34,
+        36
+      ],
+      "observedPriorN3Units": [
+        36
+      ],
+      "scheduledNotClaimedAsObserved": [
+        30,
+        34
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 36,
+          "fieldPath": "dialog[1].ja",
+          "quote": "参加者だけでなく、別の担当者も"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 29,
+          "fieldPath": "dialog[5].ja",
+          "quote": "午後二時までに",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[28]"
+        }
+      ]
+    },
+    {
+      "unit": "u38",
+      "scheduledPriorN3Units": [
+        31,
+        35,
+        37
+      ],
+      "observedPriorN3Units": [
+        34,
+        37
+      ],
+      "scheduledNotClaimedAsObserved": [
+        31,
+        35
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 37,
+          "fieldPath": "dialog[0].ja",
+          "quote": "今日こそ展示を見よう"
+        },
+        {
+          "unit": 34,
+          "fieldPath": "reading",
+          "quote": "すぐには全部読めないほど多い"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 31,
+          "fieldPath": "dialog[4].ja",
+          "quote": "三十分しか準備しなかった",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[30]"
+        }
+      ]
+    },
+    {
+      "unit": "u39",
+      "scheduledPriorN3Units": [
+        32,
+        36,
+        38
+      ],
+      "observedPriorN3Units": [
+        38
+      ],
+      "scheduledNotClaimedAsObserved": [
+        32,
+        36
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 38,
+          "fieldPath": "dialog[4].ja",
+          "quote": "準備時間が短いわりに"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 19,
+          "fieldPath": "dialog[5].ja",
+          "quote": "質問が多いはずだ",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[18]"
+        }
+      ]
+    },
+    {
+      "unit": "u40",
+      "scheduledPriorN3Units": [
+        33,
+        37,
+        39
+      ],
+      "observedPriorN3Units": [
+        39
+      ],
+      "scheduledNotClaimedAsObserved": [
+        33,
+        37
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 39,
+          "fieldPath": "dialog[5].ja",
+          "quote": "午後に来たのに対して"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 27,
+          "fieldPath": "dialog[4].ja",
+          "quote": "忙しかったのに",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[26]"
+        }
+      ]
+    },
+    {
+      "unit": "u41",
+      "scheduledPriorN3Units": [
+        34,
+        38,
+        40
+      ],
+      "observedPriorN3Units": [
+        40
+      ],
+      "scheduledNotClaimedAsObserved": [
+        34,
+        38
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 40,
+          "fieldPath": "reading",
+          "quote": "忙しいながらも"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 25,
+          "fieldPath": "dialog[4].ja",
+          "quote": "担当を交代するなら",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[24]"
+        }
+      ]
+    },
+    {
+      "unit": "u42",
+      "scheduledPriorN3Units": [
+        35,
+        39,
+        41
+      ],
+      "observedPriorN3Units": [
+        8,
+        41
+      ],
+      "scheduledNotClaimedAsObserved": [
+        35,
+        39
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 41,
+          "fieldPath": "dialog[4].ja",
+          "quote": "連絡せずに来る"
+        },
+        {
+          "unit": 8,
+          "fieldPath": "reading",
+          "quote": "天気によって場所を変える予定はありません。"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 24,
+          "fieldPath": "dialog[3].ja",
+          "quote": "遅れると分かったら",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[23]"
+        }
+      ]
+    },
+    {
+      "unit": "u43",
+      "scheduledPriorN3Units": [
+        36,
+        40,
+        42
+      ],
+      "observedPriorN3Units": [
+        42
+      ],
+      "scheduledNotClaimedAsObserved": [
+        36,
+        40
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 42,
+          "fieldPath": "dialog[3].ja",
+          "quote": "一人で直せない場合は"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 34,
+          "fieldPath": "dialog[4].ja",
+          "quote": "読み方を教えてもらいました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[33]"
+        }
+      ]
+    },
+    {
+      "unit": "u44",
+      "scheduledPriorN3Units": [
+        37,
+        41,
+        43
+      ],
+      "observedPriorN3Units": [
+        43
+      ],
+      "scheduledNotClaimedAsObserved": [
+        37,
+        41
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 43,
+          "fieldPath": "dialog[5].ja",
+          "quote": "表現を確認してもらいたい"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 37,
+          "fieldPath": "dialog[0].ja",
+          "quote": "招待された先生",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[36]"
+        }
+      ]
+    },
+    {
+      "unit": "u45",
+      "scheduledPriorN3Units": [
+        38,
+        42,
+        44
+      ],
+      "observedPriorN3Units": [
+        44
+      ],
+      "scheduledNotClaimedAsObserved": [
+        38,
+        42
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 44,
+          "fieldPath": "dialog[4].ja",
+          "quote": "こちらの入口をご利用ください"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 2,
+          "fieldPath": "dialog[1].ja",
+          "quote": "「三時に行きます」とおっしゃいました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[1]"
+        }
+      ]
+    },
+    {
+      "unit": "u46",
+      "scheduledPriorN3Units": [
+        39,
+        43,
+        45
+      ],
+      "observedPriorN3Units": [
+        45
+      ],
+      "scheduledNotClaimedAsObserved": [
+        39,
+        43
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 45,
+          "fieldPath": "dialog[1].ja",
+          "quote": "何時がいいとおっしゃいましたか"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 34,
+          "fieldPath": "dialog[5].ja",
+          "quote": "順番を教えてもらいました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[33]"
+        }
+      ]
+    },
+    {
+      "unit": "u47",
+      "scheduledPriorN3Units": [
+        40,
+        44,
+        46
+      ],
+      "observedPriorN3Units": [
+        46
+      ],
+      "scheduledNotClaimedAsObserved": [
+        40,
+        44
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 46,
+          "fieldPath": "reading",
+          "quote": "先にミオに伺うと"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 34,
+          "fieldPath": "reading",
+          "quote": "説明してもらった",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[33]"
+        }
+      ]
+    },
+    {
+      "unit": "u48",
+      "scheduledPriorN3Units": [
+        41,
+        45,
+        47
+      ],
+      "observedPriorN3Units": [
+        2,
+        42,
+        45,
+        47
+      ],
+      "scheduledNotClaimedAsObserved": [
+        41
+      ],
+      "actualN3Evidence": [
+        {
+          "unit": 2,
+          "fieldPath": "reading",
+          "quote": "三時にいらっしゃるということです"
+        },
+        {
+          "unit": 42,
+          "fieldPath": "reading",
+          "quote": "雨が降っても降らなくても"
+        },
+        {
+          "unit": 45,
+          "fieldPath": "dialog[3].ja",
+          "quote": "そうおっしゃいました"
+        },
+        {
+          "unit": 47,
+          "fieldPath": "dialog[4].ja",
+          "quote": "今日も使わせていただきます"
+        }
+      ],
+      "actualN4Evidence": [
+        {
+          "unit": 29,
+          "fieldPath": "dialog[1].ja",
+          "quote": "午後二時までに",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[28]"
+        }
+      ]
+    }
+  ],
+  "recallLimits": {
+    "plannedPriorUnitPairs": 133,
+    "plannedPairsWithActualEvidence": 46,
+    "actualDistinctEarlierUnitsRecalled": 45,
+    "noObservedLaterUnitRecall": [
+      "u12",
+      "u20"
+    ],
+    "noObservedLaterUnitOrCumulativeRecall": [],
+    "cumulativeSourceUnitDeclarations": [
+      1,
+      2,
+      3,
+      7,
+      10,
+      12,
+      13,
+      16,
+      18,
+      19,
+      20,
+      21,
+      22,
+      28,
+      29,
+      31,
+      36,
+      38,
+      39,
+      40,
+      42,
+      47
+    ],
+    "interpretation": "The +1/+3/+7 schedule is a plan. Only exact quotations are actual recall evidence. One quoted function in a unit does not establish retrieval of both primary families, and no spaced-repetition effectiveness is claimed."
+  },
+  "independentLanguageReviewByThisReviewer": {
+    "accepted": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "receipt": "U01-U16-INDEPENDENT-REVIEW.json",
+    "outsideScope": [
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48
+    ],
+    "currentSourceReceiptChain": "LANGUAGE-REVIEW-STATUS.json"
+  },
+  "limitations": [
+    "Actual primary source-reference/formula alignment is structural evidence; semantic approval of u17-u48 belongs to their separate independent reviewers.",
+    "The 58 not-core items are not claimed taught; incidental mentions do not change their classification.",
+    "The 13 N4 entries are documented prior support, not 13 new N3 core groups.",
+    "No exhaustive official JLPT coverage, native-human certification, learner-effect trial, audio/PDF or deployment claim."
+  ],
+  "allAgentsCurrentLanguageReceiptMatrix": {
+    "path": "LANGUAGE-ACCEPTANCE-MATRIX.json",
+    "sha256": "5e84f51d77408ec16275499e3f0e219024da88aee8d52b13cf52eed093d331af",
+    "acceptedLessons": 48,
+    "unacceptedLessons": [],
+    "bookFrontmatterAndCumulativeAcceptedByRoot": true
+  }
+}

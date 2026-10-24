@@ -1,0 +1,52 @@
+{
+  "id": "caillebotte-paris-street-rainy-day",
+  "wikidata": "Q1452762",
+  "genre": "painting",
+  "artist": "gustave-caillebotte",
+  "title": {
+    "native": "Paris Street; Rainy Day",
+    "ko": "파리의 거리, 비 오는 날",
+    "lang": "en"
+  },
+  "hook": "빗방울 없이 우산과 젖은 돌길로만 그린 비",
+  "date": {
+    "text": "1877",
+    "source": "aic",
+    "startYear": 1877,
+    "endYear": 1877,
+    "certainty": "exact"
+  },
+  "medium": {
+    "native": "Oil on canvas",
+    "ko": "캔버스에 유채"
+  },
+  "places": [
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/20684"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "20684"
+    }
+  ],
+  "terms": [
+    "intersection",
+    "cropping",
+    "cobblestones"
+  ],
+  "lookFor": [
+    "그림 속에 빗방울이 그려져 있나요? 비가 온다는 걸 어떻게 알 수 있을까요?",
+    "가운데 두 사람은 어디를 보고 있을까요?",
+    "젖은 돌길에 비친 그림자를 찾아봐요."
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:Gustave_Caillebotte_-_Paris_Street,_Rainy_Day_-_1964.336_-_Art_Institute_of_Chicago.jpg",
+    "alt": "비 내리는 파리의 넓은 교차로. 오른쪽 앞에 우산을 함께 쓴 신사와 숙녀가 걸어오고, 가운데 녹색 가로등 뒤로 우산 쓴 사람들과 높은 석조 건물이 보이며, 젖은 돌길이 희미하게 빛난다."
+  }
+}

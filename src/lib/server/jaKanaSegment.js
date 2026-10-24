@@ -28,6 +28,8 @@ const SURU = ['しましょう', 'しました', 'しません', 'します', '�
 const SUFFIX = { じん: '人', ご: '語', さん: 'さん', たち: 'たち', ちゃん: 'ちゃん', くん: 'くん' };
 const POS_OF = { n: '名詞', v: '動詞', a: '形容詞', na: '形容動詞', d: '副詞', x: '名詞' };
 
+/** 보조 동사 · する — 띄어 쓴 활용(して いた · なって きた)이 가나 문절로 홀로 선다. 見る는 뺀다(みず = 見る+ず 오독을 고쳐야 한다). */
+const AUX_VERBS = new Set(['する', 'いる', 'くる', 'ある', 'いく', 'おく', 'しまう']);
 const isKana = (s) => /^[ぁ-ゖァ-ヶー]+$/.test(s || '');
 const k2h = (s) => String(s || '').replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
 const candidates = (kana) => JA_YOMI_INDEX[k2h(kana)] || null;
@@ -76,14 +78,26 @@ function headToken(head, cands) {
 /** kuromoji가 이 문절에서 실제로 부서졌나 — 조각(첫 토큰 ≠ 머리) 또는 명사·형용사를 동사로. */
 export function kuromojiBroke(run, dec) {
   const k0 = run[0];
+  // JLPT 예문 실측(2026-10-22 KST) — 아래 셋은 조각이 아니다. 같은 읽기의 정본 단어로 덮으면 틀린 카드에 잇는다.
+  const rest = run.slice(1);
+  const functional = (t) => t.pos === '助動詞' || t.pos === '助詞' || (t.pos === '名詞' && (t.surface_form === 'の' || t.surface_form === 'ん'));
+  // ① する · 보조 동사 활용(した · したい · して いた · なって きた · ねて いない)을 같은 읽기의 명사(下 · 死体 · 板 · 北 · 以内)로.
+  //    형용사 정본(いたい = 痛い)은 덮는다 — 활용형 「いたい(있고 싶다)」보다 훨씬 흔하다.
+  if (k0.pos === '動詞' && AUX_VERBS.has(k0.basic_form) && rest.every(functional) && dec.cands[0][2] !== 'a') return false;
+  // ② 조사만(かな · よね) — 仮名가 아니다.
+  if (run.every((t) => t.pos === '助詞')) return false;
+  // ③ kuromoji 첫 토큰이 정본 머리보다 길다(わたし|て = 渡す) — 조각이 아니라 kuromoji가 더 긴 단어를 냈다(綿로 자르지 않는다).
+  if ([...k0.surface_form].length > [...dec.head].length) return false;
+  // ④ kuromoji 첫 토큰이 이미 정본 단어이고 나머지가 기능어(いえ|で) — 더 긴 정본(家出)으로 바꾸지 않는다.
+  if (k0.surface_form !== dec.head && candidates(k0.surface_form) && rest.length && rest.every(functional)) return false;
   if (k0.surface_form !== dec.head) return true;
   const cls = dec.cands[0][2];
   return k0.pos === '動詞' && ['n', 'a', 'na', 'd'].includes(cls);
 }
 
 /**
- * kuromoji 토큰 배열 → 가나 문절이 부서진 자리만 정본 분절로 바꾼 배열. 문절 = 기호(공백·구두점)나
- * 비가나 토큰 사이의 연속 가나 토큰 런. 등재 밖·정렬된 문절·띄어쓰기 없는 텍스트는 그대로.
+ * kuromoji 토큰 배열 → 가나 문절이 부서진 자리만 정본 분절로 바꾼 배열. 문절 = 양끝이 줄 끝이나 기호(공백·구두점)인
+ * 연속 가나 토큰 런(한자 단어에 붙은 가나 꼬리는 문절이 아니다). 등재 밖·정렬된 문절·띄어쓰기 없는 텍스트는 그대로.
  */
 export function segmentKanaTokens(tokens) {
   const out = [];
@@ -94,7 +108,10 @@ export function segmentKanaTokens(tokens) {
     while (j < tokens.length && tokens[j].pos !== '記号' && isKana(tokens[j].surface_form)) j++;
     const run = tokens.slice(i, j);
     const chunk = run.map((t) => t.surface_form).join('');
-    const dec = chunk.length >= 2 ? decomposeKanaChunk(chunk) : null;
+    // 문절은 양끝이 줄 끝 · 기호(띄어쓰기 · 구두점)일 때만 — 한자 단어에 붙은 가나(承知|しました · 確保|したい · 彼|はこの)는
+    // 앞 단어의 꼬리라 문절이 아니다. 그대로 두면 しま → 島 · したい → 死体 · はこ → 箱으로 덮어쓴다(JLPT 예문 실측 2026-10-22 KST).
+    const bounded = (i === 0 || tokens[i - 1].pos === '記号') && (j === tokens.length || tokens[j].pos === '記号');
+    const dec = bounded && chunk.length >= 2 ? decomposeKanaChunk(chunk) : null;
     if (dec && kuromojiBroke(run, dec)) out.push(headToken(dec.head, dec.cands), ...dec.tails);
     else out.push(...run);
     i = j;

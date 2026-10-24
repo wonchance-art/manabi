@@ -8,18 +8,21 @@ import { koreaPublicDomainVerdict, translatorRecords } from '../../src/lib/right
 import { aozoraJurisdictionVerdict } from '../../src/lib/aozoraRights.js';
 import { EN_LEVELS, FR_LEVELS, JP_LEVELS, ZH_LEVELS } from '../../src/lib/constants.js';
 import { FIRST_EDITION_BINDINGS, TEMPLATE_BINDINGS, TEMPLATE_PALETTES, validateFirstEditionDisplay } from '../../src/lib/firstEditionCover.js';
+import { CATALOG_CATEGORIES } from '../../src/lib/literatureCategories.js';
+
+// 갈래(큰 갈래 셋 › 작은 갈래 아홉)의 정본은 src/lib/literatureCategories.js — 산책 「고전 명작」도 같이 쓴다. 여기서는 다시 내보내기만.
+export { CATALOG_CATEGORIES, CATALOG_GROUPS, categoryPath } from '../../src/lib/literatureCategories.js';
 
 export const CATALOG_PROVIDERS = Object.freeze(['aozora', 'standardebooks', 'wikisource', 'pdsite']);
 export const CATALOG_STATUSES = Object.freeze(['수록', 'loadable', 'blocked']);
 export const CATALOG_LANGUAGES = Object.freeze(['Japanese', 'English', 'Chinese', 'French', 'Korean']);
 const KEY_PREFIX = Object.freeze({ aozora: 'aozora-', standardebooks: 'se-', wikisource: 'ws-', pdsite: 'pd-' });
-
 /** 수록 줄의 key 머리 → 출처(작품 폴더가 사실의 정본 — 수록 줄은 가리키기만 한다). */
 export const providerOfKey = (key) => Object.keys(KEY_PREFIX).find((provider) => String(key ?? '').startsWith(KEY_PREFIX[provider])) ?? null;
 
 /**
  * 카탈로그 한 줄 검사 — 문제 목록(빈 배열이면 통과).
- * 수록 줄 = {id, key, status, country}만(제목 · 연도 · 권리는 작품 폴더 entry.json이 정본 — 두 곳에 적으면 어긋난다).
+ * 수록 줄 = {id, key, status, country, category}만(제목 · 연도 · 권리는 작품 폴더 entry.json이 정본 — 두 곳에 적으면 어긋난다).
  * 불러올(loadable) 줄은 출처 위치 · 권리 사실 · 한국어 표기 · 레벨, 막힌(blocked) 줄은 막힌 이유가 있어야 한다.
  */
 export function catalogEntryProblems(entry) {
@@ -27,9 +30,10 @@ export function catalogEntryProblems(entry) {
   const need = (field, ok) => { if (!ok) problems.push(field); };
   need('id', typeof entry?.id === 'string' && /^[a-z]{2}-[a-z0-9-]+$/u.test(entry.id));
   need('country', typeof entry?.country === 'string' && /^[A-Z]{2}$/u.test(entry.country));
+  need(`category(${Object.keys(CATALOG_CATEGORIES).join('·')})`, Object.hasOwn(CATALOG_CATEGORIES, entry?.category ?? ''));
   if (entry?.status === '수록') {
     need('key(정본 책 key)', providerOfKey(entry.key) !== null);
-    const extra = Object.keys(entry).filter((field) => !['id', 'key', 'status', 'country', 'note'].includes(field));
+    const extra = Object.keys(entry).filter((field) => !['id', 'key', 'status', 'country', 'category', 'note'].includes(field));
     if (extra.length) problems.push(`수록 줄에 사실 칸(${extra.join('·')}) — 작품 폴더 entry.json이 정본`);
     return problems;
   }

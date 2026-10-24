@@ -15,7 +15,7 @@ import './reading-content.css';
  */
 export default function BookReaderSkeleton({ gated = false, announce = false, lesson = true, level = null }) {
   const pathname = usePathname();
-  const bookLevel = level || (pathname?.startsWith('/books/japanese-n4') ? 'N4' : 'N5');
+  const bookLevel = level || (pathname?.startsWith('/books/japanese-n3') ? 'N3' : pathname?.startsWith('/books/japanese-n4') ? 'N4' : 'N5');
   const part = (node) => (gated ? <span className="book-entry-lesson">{node}</span> : lesson ? node : null);
   const block = (Tag, className, node) => (gated ? <Tag className={`${className} book-entry-lesson`}>{node}</Tag> : lesson ? <Tag className={className}>{node}</Tag> : null);
   return (

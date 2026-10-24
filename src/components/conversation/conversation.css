@@ -34,6 +34,9 @@
 .conv-chip:disabled { opacity: 0.5; cursor: default; }
 .conv__notice { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--text-secondary); }
 .conv__input { position: sticky; bottom: 0; display: flex; gap: 6px; align-items: flex-end; padding: 8px 0; background: var(--bg-primary); }
+/* 홈 막대 자리(PWA-SHELL-001): 대화는 집중 읽기라 하단 메뉴가 없고, 입력칸이 화면 맨 아래(sticky 0)에 붙는다 — 노치 폰에서 입력란 아래 26px가
+   홈 막대 밑이었다(390 · 안전 영역 34 흉내: 입력란 아래끝 836 → 802). 바탕은 끝까지 두고 안쪽 아래만 띄운다. 노치 없는 기기 · 데스크톱은 8px 그대로. */
+.conv__input { padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
 .conv__textarea { flex: 1; min-height: 44px; resize: none; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); color: var(--text-primary); font: inherit; }
 .conv__textarea:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
 .conv__icon { min-width: 44px; min-height: 44px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); color: var(--text-primary); cursor: pointer; }

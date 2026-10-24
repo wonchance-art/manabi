@@ -16,7 +16,8 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
 | `works.json` | **생성물**(`node scripts/build-art.mjs`, 손으로 고치지 않는다) — 작품: 제목, 날짜(원문 표기 + 연도 범위), 재료·기법, 장소(역할별), 해설, 핵심 용어 ≤3, 찾아볼 것 ≤3, 이미지 | Wikidata QID |
 | `entries/<작품 id>.json` | 작품의 사람이 쓰는 필드 + 고른 출처 id(해설 `{language, source, sourceId}`, 그림 `{source, sourceId, alt}`). 순서는 `entries/order.json` | 작품 id |
 | `sources/<출처>/<id>.json` | 출처 원 응답 스냅샷 — `colbase/cobas-<번호>`·`aic/<id>`(해설 원문 HTML은 받은 그대로) · `images/<작품 id>`(그림 출처 기록 + `public/art` 파일 sha256·바이트·픽셀) | 출처 id |
-| `curations.json` | 큐레이션 — 작가·시대·주제 묶음(두 점 이상, 순서 있음) | 우리 id |
+| `curations.json` | 큐레이션 — 작가·시대·주제 묶음(두 점 이상, 순서 있음). `language`(없으면 `ja`)가 책 언어 | 우리 id |
+| `shelf-order.json` | 산책 「고전 명작」 그림 구간의 앞줄 차례(한국에서 익숙한 그림 먼저, DISCOVER-ART-001) — 나머지는 게시 책 차례 | 작품 id |
 
 ## 규칙 (계약 테스트가 강제)
 
@@ -47,13 +48,19 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
   파일은 항목 `contentsUrl`(`…/image/slideshow_s/…`, 긴 변 330px)과 같은 경로의 `slideshow_l`(긴 변 686px)을 **받은 바이트 그대로** 둔다(원본 `original`은 3000px·1MB라 쓰지 않는다).
   캡션은 「<제목> · <작가 표기> · <소장관> 소장 · ColBase(국립문화재기구) · CC BY 4.0」. 근대 건축 옛 사진은 국립국회도서관 디지털화본(퍼블릭 도메인)을 위키미디어 공용에서 받는다 —
   캡션 라이선스 이름은 「Public domain」.
-- **핵심 용어(`terms`)는 일본어 해설에 실제로 나오는 말**만 — 본문에서 만나야 단어 저장으로 이어진다.
+- **핵심 용어(`terms`)는 읽기 해설(첫 해설 — 책 장이 되는 해설)에 실제로 나오는 말**만 — 본문에서 만나야 단어 저장으로 이어진다.
+  우키요에 · 근대 일본 작품은 일본어 해설, 「시카고 미술관의 명화」는 영어 해설이 첫 해설이다.
+- **원어 제목의 언어(`title.lang`)** — 없으면 `ja`. 미술관 영어 제목(「The Bedroom」)은 `en`(뷰어 정보 카드의 `lang`).
+- **한 줄 이야기(`hook`, DISCOVER-ART-001)** — 그림 구간 카드에 그림과 함께 보이는 **우리가 쓴 한국어 화면 문구**(1–40자). 작가 생애 요약과 같은 지위로,
+  학습 원문이 아니다(해설은 여전히 받은 그대로). 사실은 그 작품의 해설 원문에서만 가져온다(「고흐가 세 번이나 그린」 = AIC 해설 「three versions」).
+  게시 책의 작품은 모두 둔다(`artShelf.test.jsx`).
 - **찾아볼 것(`lookFor`)은 그림이 있을 때만** — 그림을 보며 하는 질문이다. 화면 문구라 해요체(「…일까요?」·「…찾아봐요.」).
 - 민감 소장처(반환 논쟁·중화권)는 이름·도시 같은 **사실만** 적는다.
 
 ## 큐레이션 책 (ART-P0-3)
 
-`src/lib/artBook.js`가 큐레이션을 **정본 문학책과 같은 모양의 책**으로 만든다 — 작품 한 점 = 일본어 해설 한 장.
+`src/lib/artBook.js`가 큐레이션을 **정본 문학책과 같은 모양의 책**으로 만든다 — 작품 한 점 = 책 언어(큐레이션 `language`, 없으면 일본어) 해설 한 장.
+작품에 그 언어 해설이 없으면 책을 만들지 않는다(fail-closed). 자료 언어는 해설 언어에서(`ja` Japanese · `en` English · `fr` French · `zh` Chinese).
 
 - 장 원문(`raw_text`)은 카탈로그 해설 `text` 그대로, 해시는 `textSha256` 그대로다. 따로 대조표를 만들지 않는다 — **카탈로그가 곧 정본 대조표**다.
 - 자료 metadata: `book {key: 'art-<큐레이션 id>', title, author, order, total}` + `literature {provider: 'art', curation, work, source, sourceId, sourceUrl, license, credit, textSha256}`.
@@ -102,6 +109,8 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
 6. `npm run check:art`(= prebuild의 `node scripts/build-art.mjs --check`)와 `npm test`. `--check`는 쓰지 않고, `works.json`이 entries·sources와 다르거나
    그림 파일 sha256이 스냅샷과 다르거나 스냅샷이 없으면 실패한다. 출처 쪽 해설이 바뀌었는지는 스냅샷을 다시 받아(4) `works.json` diff로 본다
    (`node scripts/fetch-art-description.mjs --verify`도 그대로 쓸 수 있다).
+
+**시카고 미술관 API**는 `AIC-User-Agent` 머리(이용자 연락처)를 요청한다 — 없으면 봇 차단(Cloudflare 403)에 걸린다. 받기 스크립트가 붙인다(2026-10-23 KST 실측).
 
 **네트워크:** `colbase.nich.go.jp`·`jpsearch.go.jp`·`www.wikidata.org`·`query.wikidata.org`·`api.artic.edu`·`collectionapi.metmuseum.org`는 2026-10-14 클라우드 환경에서 열려 있다
 (Node `fetch`는 `NODE_USE_ENV_PROXY=1`). `www.artic.edu`(IIIF 이미지 호스트)는 닫혀 있어 이미지 URL의 200 응답은 Preview 브라우저 검수에서 확인한다.
@@ -165,3 +174,50 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
 冨嶽三十六景 山下白雨 — AIC 해설 1,547자로 상한(1,500자) 초과, 자르지 않으므로 제외. ColBase 영어 해설 `cobas-51489`(庄野)는
 내부 메모가 섞여 있어 쓰지 않았다(일본어 해설만).
 東海道五拾三次之内 宮 熱田神事(`cobas-55584`) — 해설 머리에 ColBase 읽기 표시 「宮＠みや＠は」가 섞여 있어 제외(원문을 고치지 않는다 — 계약이 읽기 표시를 거부한다).
+
+## 넷째 묶음 — 시카고 미술관의 명화 (DISCOVER-ART-001, 2026-10-23 KST)
+
+오너 「그림도 대중적으로 사람들에게 인기가 많을 법한 것들 위주로 먼저 — 한국인에게 박물관 작품은 어렵거나 관심 밖일 수 있다」 → 「권장대로 ㄱㄱ」.
+고르는 기준은 한국에서의 익숙함(국내 대형 전시 · 교과서 · 굿즈)이고, 그림은 작가 1955년까지 사망 규칙 그대로다(호퍼 1967 · 피카소 1973 · 마그리트 1967 제외).
+해설은 시카고 미술관 영어 해설(CC BY 4.0) — 기존 받기 경로 그대로, 1,500자 상한 안의 것만(고흐 「자화상」 1,692자는 제외).
+그림은 시카고 미술관 디지털화본(퍼블릭 도메인)을 위키미디어 공용에서 받았다 — Wikidata 작품 항목의 P18이 가리키는 파일, 6점은 미술관이 직접 올린
+「… - <소장 번호> - Art Institute of Chicago.jpg」, 2점(침실 · 그랑드자트)은 미술관이 제공한 Google Art Project 파일. 960px 썸네일을 긴 변 800px로 줄였다.
+
+| 작품 id | 작품 | 날짜 표기(AIC) | 해설 | 한 줄 이야기 |
+|---|---|---|---|---|
+| van-gogh-bedroom | The Bedroom(고흐) | 1889 | en AIC 1,041자 | 고흐가 세 번이나 그린 「노란 집」의 자기 방 |
+| monet-water-lilies | Water Lilies(모네) | 1906 | en AIC 1,261자 | 모네 스스로 「집착」이라 부른 연못 수면 |
+| seurat-grande-jatte | A Sunday on La Grande Jatte — 1884(쇠라) | 1884–86, border added 1888–89 | en AIC 1,210자 | 가까이 가면 사람들이 색 점으로 흩어지는 그림 |
+| monet-water-lily-pond | Water Lily Pond(모네) | 1900 | en AIC 578자 | 모네가 늪을 파서 만든 연못과 일본식 나무다리 |
+| monet-stacks-of-wheat | Stacks of Wheat (End of Summer)(모네) | 1890–91 | en AIC 1,177자 | 한 방에 열다섯 점을 걸어 모네를 일으킨 연작 |
+| renoir-two-sisters | Two Sisters (On the Terrace)(르누아르) | 1881 | en AIC 1,254자 | 제목은 「두 자매」, 사실은 남남인 두 모델 |
+| caillebotte-paris-street-rainy-day | Paris Street; Rainy Day(카유보트) | 1877 | en AIC 1,326자 | 빗방울 없이 우산과 젖은 돌길로만 그린 비 |
+| toulouse-lautrec-at-the-moulin-rouge | At the Moulin Rouge(툴루즈로트레크) | 1892–95 | en AIC 1,295자 | 물랭루주의 밤 — 화가 자신도 뒤편에 서 있다 |
+
+큐레이션 `aic-famous-paintings`(「Famous Paintings at the Art Institute of Chicago」 · 시카고 미술관의 명화 · 영어 B2 상급) — 게시 책 맨 앞.
+**3단계 비키디아(프랑스어) — 보류(2026-10-23 KST, 오너 「권장대로 ㄱㄱ」 뒤 실측으로 멈춤).** 실측 라이선스 CC BY-SA 3.0(허용 목록 밖)에 더해,
+상한 안의 두 문서가 학습 원문 기준에 못 미친다 — 「절규」(1,349자)는 문법 오류(「ces pieds」)와 근거 없는 주장(「신발이 작아서」),
+「별이 빛나는 밤」(1,014자)은 문법 오류 셋(「qui」 빠짐 · 「cela créé」 · 「rassemble à」). 원문을 고치지 않는 규칙이라 싣지 않는다(라이선스 목록도 그대로).
+노르웨이 국립미술관 「절규」 영어 해설은 질이 좋지만 글 이용 라이선스 표기가 없어 싣지 않는다. 「키스」는 비키디아에 작품 문서가 없다.
+
+## 다섯째 묶음 — 시카고 미술관의 명화 2 (DISCOVER-ART-001, 2026-10-23 KST)
+
+오너 「시카고 미술관 추가분 권장대로 ㄱㄱ」. 미술관 API의 대표작 표시(`is_boosted`) · 퍼블릭 도메인 회화 120점에서 상한 안 · 작가 1955년까지 사망 ·
+한국에서 익숙한 순으로 골랐다. 그림은 넷째 묶음과 같은 길(Wikidata P18 → 위키미디어 공용 미술관 파일).
+
+| 작품 id | 작품 | 날짜 표기(AIC) | 해설 | 한 줄 이야기 |
+|---|---|---|---|---|
+| munch-girl-by-the-window | The Girl by the Window(뭉크) | 1893 | en AIC 1,208자 | 「절규」와 같은 해, 한밤 창가에 선 소녀 |
+| cezanne-basket-of-apples | The Basket of Apples(세잔) | c. 1893 | en AIC 1,231자 | 떨어질 듯 말 듯, 일부러 어긋나게 그린 식탁 |
+| mondrian-lozenge-composition | Lozenge Composition with Yellow, Black, Blue, Red, and Gray(몬드리안) | 1921 | en AIC 792자 | 네모난 그림을 45도 돌려 건 몬드리안 |
+| rembrandt-old-man-with-a-gold-chain | Old Man with a Gold Chain(렘브란트) | 1631 | en AIC 1,323자 | 초상화가 아니라 옷을 입혀 그린 인물 연습, 트로니 |
+| manet-woman-reading | Woman Reading(마네) | 1880–82 | en AIC 1,223자 | 카페처럼 보이지만 화실에 꾸민 장면 |
+| degas-millinery-shop | The Millinery Shop(드가) | 1879-86 | en AIC 1,152자 | 손님일까 점원일까, 모자를 쓴 듯 보이는 여인 |
+| gauguin-arlesiennes-mistral | Arlésiennes (Mistral)(고갱) | 1888 | en AIC 1,278자 | 고흐와 함께 살던 집 앞 공원, 덤불 속의 얼굴 |
+| cassatt-childs-bath | The Child's Bath(커샛) | 1893 | en AIC 774자 | 일본 판화에서 배운, 위에서 내려다본 목욕 시간 |
+
+큐레이션 `aic-famous-paintings-2`(「Famous Paintings at the Art Institute of Chicago II」 · 시카고 미술관의 명화 2 · 영어 B2 상급) — 첫 책과 작품이 겹치지 않는다.
+
+**넣지 못한 작품(다섯째 묶음 기록):** 모네 「Arrival of the Normandy Train, Gare Saint-Lazare」(1,450자) — AIC 해설 원문에 합자가 깨진 낱말(「artiﬁ cial」 · 「speciﬁc」)이 있어 제외,
+이 실측으로 **합자 글자(U+FB00–FB06)가 섞인 해설은 싣지 않는다**는 계약을 더했다. 마티스 「Woman before an Aquarium」 — 공용 P18 파일이 미술관 디지털화본인지 확인되지 않아 제외
+(공용 API 요청 제한으로 대체 파일 검색 불가). 고흐 「Self-Portrait」(1,692자) · 르누아르 「Acrobats」(1,723자) · 모네 「The Beach at Sainte-Adresse」(1,853자)는 상한 초과.

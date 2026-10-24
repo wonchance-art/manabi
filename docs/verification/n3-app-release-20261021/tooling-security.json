@@ -1,0 +1,248 @@
+{
+  "status": "passed-independent-tooling-review",
+  "checkedAt": "2026-10-21T11:23:08.274803+00:00",
+  "scope": "Frozen R4 N3 build/validate/package/runtime/style/font tools; synthetic structural/security/reproducibility verification and source inspection. Not whole-book language acceptance, actual app browser acceptance, real-account verification or publication.",
+  "reviewer": "n3_app_contracts independent of n3_builder",
+  "frozenToolsSha256": {
+    "build-n3-web.mjs": "ed0f2f793d71b3bc1763b42c5ce0f6a64bb9fee4516ea3b975d2126c012a9dde",
+    "validate-n3-web.mjs": "b84be9384c179803a1e06d77ed4dc7bb218be69d32b8eee8edf60fa390490b54",
+    "package-n3-release.mjs": "edb8264167ea6242c68f7766199a231faab02bce5110e90cc2e389a8ac324d6e",
+    "n3-runtime.js": "cb4903faed46245933cc6c1bbf6267d994b295ad5a1e859c032fee25fc120e57",
+    "n3-web.css": "29e5256e13b0a99814578f6316b9114507ddb4f0ca323634727d1a1eb5727c13",
+    "prepare-n3-fonts.py": "f49808c764babaea4b2c984e683509ab1117d961ad1162c1ddca4b285e93fdcf"
+  },
+  "releaseContractSha256": "4136cee9607fbade340ba6ca280946132d2d50bf1d371f3772aba3764e5a180a",
+  "initialFindings": [
+    {
+      "id": "full-course-self-declaration",
+      "finding": "A self-declared one-lesson syllabus was accepted for full N3 registration.",
+      "initialEvidence": "tooling-probes/PROBE-RESULTS.json",
+      "fixed": "Default validator and packager bind full releases to registered 48 lessons and six cumulative boundaries. Explicit partial previews cannot be packaged.",
+      "retest": "self-declared-one-unit-refuses-full-registration"
+    },
+    {
+      "id": "derived-metadata-receipt-reuse",
+      "finding": "Edited revision/page title/CSS provenance retained an acceptable prior exact QA receipt.",
+      "initialEvidence": "tooling-probes/PROBE-RESULTS.json",
+      "fixed": "Exact manifest, pages, sourceIndex and HTML are derived again from the current manuscript and trusted producer inputs.",
+      "retest": [
+        "wrong-web-content-revision",
+        "wrong-page-title",
+        "wrong-source-index",
+        "wrong-inherited-css-provenance"
+      ]
+    },
+    {
+      "id": "manuscript-html-source-disagreement",
+      "finding": "Changing manuscript reading and recomputing edition/content hash while retaining prior HTML/sourceIndex passed.",
+      "initialEvidence": "tooling-probes/PROBE-RESULTS.json",
+      "fixed": "Validator compares the exact freshly rendered HTML and sourceIndex.",
+      "retest": "manuscript-reading-with-old-html"
+    },
+    {
+      "id": "font-visible-attribute-glyphs",
+      "finding": "Authored placeholder had four codepoints missing from all five WOFF cmap tables while font-audit claimed success.",
+      "initialEvidence": "tooling-probes/PLACEHOLDER-GLYPH-INITIAL.json",
+      "fixed": "Subset extracts authored visible attributes/runtime text and read-only check parses actual five WOFF cmaps and source/license hashes.",
+      "retest": "tooling-probes/PLACEHOLDER-GLYPH-FIXED.json"
+    },
+    {
+      "id": "numeric-ruby-compound",
+      "finding": "Observed japaneseMarkup(13時, map3時) annotating the trailing 3時 within 13時.",
+      "initialEvidence": "Observed console result in this review; original tool SHA was not snapshotted before this reproduction.",
+      "fixed": "Han and numeric compound boundaries prevent partial ruby matches; exact 13時 remains eligible.",
+      "retest": "numeric-compound-ruby-boundary"
+    },
+    {
+      "id": "symlink-preparse-disclosure",
+      "finding": "Validator parsed a symlinked bundle before rejecting tree symlinks, exposing a harmless synthetic canary fragment.",
+      "initialEvidence": "tooling-probes/SYMLINK-PREFLIGHT.json",
+      "fixed": "Regular tree preflight precedes any bundle parsing; safe reads use NOFOLLOW/NONBLOCK and descriptor regular-file checks; parse errors redact bytes.",
+      "retest": [
+        "symlink-rejected-before-canary-parse",
+        "special-file-preflight-rejects-without-blocking"
+      ]
+    }
+  ],
+  "performed": {
+    "syntheticBaseline": {
+      "editionId": "ee7c1d452e1ef396b145bec3",
+      "contentHash": "ee7c1d452e1ef396b145bec329cd49186695777cc4b85c23eb4ea901d734f13f",
+      "lessons": 48,
+      "pages": 198,
+      "outDir": "/workspace/scratch/n3-integration/team/app/tooling-probes/fixed-retest/valid-full"
+    },
+    "independentBoundaryCases": 20,
+    "boundaryResults": [
+      {
+        "case": "valid-48-unit-structural-baseline",
+        "passed": true,
+        "lessons": 48,
+        "pages": 198
+      },
+      {
+        "case": "valid-package-idempotent-check",
+        "passed": true
+      },
+      {
+        "case": "wrong-web-content-revision",
+        "passed": true,
+        "rejected": true,
+        "errors": [
+          "Derived artifact manifest/provenance mismatch"
+        ]
+      },
+      {
+        "case": "wrong-page-title",
+        "passed": true,
+        "rejected": true,
+        "errors": [
+          "Derived page metadata mismatch"
+        ]
+      },
+      {
+        "case": "wrong-source-index",
+        "passed": true,
+        "rejected": true,
+        "errors": [
+          "Derived source index mismatch",
+          "Source text mismatch: u01-start"
+        ]
+      },
+      {
+        "case": "wrong-inherited-css-provenance",
+        "passed": true,
+        "rejected": true,
+        "errors": [
+          "Derived artifact manifest/provenance mismatch"
+        ]
+      },
+      {
+        "case": "manuscript-reading-with-old-html",
+        "passed": true,
+        "rejected": true,
+        "errors": [
+          "Rendered HTML differs from the exact manuscript/template/revision",
+          "Derived source index mismatch"
+        ]
+      },
+      {
+        "case": "self-declared-one-unit-refuses-full-registration",
+        "passed": true,
+        "rejected": true,
+        "errors": [
+          "Expected lesson count must be within the declared syllabus",
+          "Expected 48 lessons",
+          "Actual font cmap audit failed",
+          "Unexpected article count"
+        ]
+      },
+      {
+        "case": "wrong-book-receipt",
+        "passed": true,
+        "rejected": true,
+        "error": "verification: bookId does not match the artifact"
+      },
+      {
+        "case": "different-edition-receipt",
+        "passed": true,
+        "rejected": true,
+        "error": "browser: editionId does not match the artifact"
+      },
+      {
+        "case": "unpassed-language-receipt",
+        "passed": true,
+        "rejected": true,
+        "error": "Passed language review and evidence required"
+      },
+      {
+        "case": "parent-evidence-path",
+        "passed": true,
+        "rejected": true,
+        "error": "Unsafe evidence path: ../receipt/proof.json"
+      },
+      {
+        "case": "changed-evidence-hash",
+        "passed": true,
+        "rejected": true,
+        "error": "structure evidence hash mismatch: proof.json"
+      },
+      {
+        "case": "symlink-rejected-before-canary-parse",
+        "passed": true,
+        "error": "Symlink rejected: bundle.json"
+      },
+      {
+        "case": "numeric-compound-ruby-boundary",
+        "passed": true
+      },
+      {
+        "case": "immutable-existing-edition-refused-and-preserved",
+        "passed": true
+      },
+      {
+        "case": "symlink-evidence-refused",
+        "passed": true
+      },
+      {
+        "case": "special-file-preflight-rejects-without-blocking",
+        "passed": true,
+        "error": "Regular file required: bundle.json"
+      },
+      {
+        "case": "asset-modified-after-validation-refused-before-copy",
+        "passed": true,
+        "triggered": true
+      },
+      {
+        "case": "path-traversal-and-inherited-object-key-refused",
+        "passed": true
+      }
+    ],
+    "sameEnvironmentReproducibility": {
+      "passed": true,
+      "files": 11,
+      "evidence": "tooling-probes/REPRODUCIBILITY.json"
+    },
+    "actualFiveWoffAttributeCmaps": {
+      "passed": true,
+      "missing": 0,
+      "evidence": "tooling-probes/PLACEHOLDER-GLYPH-FIXED.json"
+    },
+    "sourceFontFamiliesAndOfl": {
+      "evidence": "tooling-probes/FONT-SOURCE-REVIEW.json",
+      "scope": "Actual local TTC family/index/source SHA and copied OFL text inspection; not independent legal certification."
+    },
+    "staticReview": [
+      "N3 exact bookId/level and draft state checked; edition is canonical full-manuscript SHA prefix and includes provenance.",
+      "Asset paths reject absolute/parent/empty/prototype-property segments; evidence paths verify regular file and exact hash.",
+      "Three QA scopes require passed status plus exact bookId/edition/content/assets bundle identity and hashed evidence.",
+      "Packager uses validated bundle SHA and declared asset SHA before copy, checks temporary tree, preserves immutable edition and prior candidate IDs.",
+      "Ruby annotations and reading-note text are removed from sourceIndex; original manuscript text is separately compared to exact re-rendered HTML.",
+      "Runtime storage namespace is manabi-japanese-n3:<revision>:answers-v1 and saves local authored field IDs; no account or publication API.",
+      "No accidental 42-lesson/seven-step/N4 storage key remainder found in N3 producer files. Remaining N4 text describes prerequisite learning.",
+      "No tracked changes found in the six N4 producer files when compared with the shared repository base."
+    ]
+  },
+  "evidence": [
+    "tooling-probes/FIXED-RETEST.json",
+    "tooling-probes/FINAL-BOUNDARIES.json",
+    "tooling-probes/REPRODUCIBILITY.json",
+    "tooling-probes/PLACEHOLDER-GLYPH-FIXED.json",
+    "tooling-probes/FONT-SOURCE-REVIEW.json"
+  ],
+  "unresolvedToolingBlockers": [],
+  "limitations": [
+    "Synthetic full48 fixture repeats lesson1 and is not valid production manuscript or independent language acceptance.",
+    "Scratch QA receipts deliberately simulate flags to exercise integrity checks; receipts do not prove that real language/browser review happened.",
+    "Provenance and byte determinism were checked in this current local font/tool environment only; cross-platform generation was not tested.",
+    "The initial hash snapshot was captured after initial vulnerability probes and is not claimed as their exact source revision.",
+    "First extra-probe harness expected wording Regular entry instead of actual Regular file; corrected the scratch expectation and reran all five cases. No producer source change was made for this mismatch.",
+    "Whole actual N3 manuscript, actual standalone/app browser, normal operating login, TTS, publication and learning efficacy were not certified by this tooling review."
+  ],
+  "producerSourceEditedByReviewer": false,
+  "productSourceEditedDuringReview": false,
+  "externalWrites": false,
+  "productionWrites": false,
+  "realAccountLoginVerified": false
+}

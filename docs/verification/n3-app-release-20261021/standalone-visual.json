@@ -1,0 +1,29 @@
+{
+  "bookId": "japanese-n3",
+  "editionId": "4978c146953f14140bcb49d2",
+  "contentHash": "4978c146953f14140bcb49d21bc58d236195ad73d1568dc0d516c2546547aaf5",
+  "bundleHash": "1dfbabcd4369412ca5d80f5a3ba5c01070f9f233dc2dcd787f8235eef8dbad62",
+  "passed": true,
+  "reviewer": "M00 /root",
+  "scope": "Direct visual inspection of 3 actual final-R2 standalone screenshots only; 384 geometry/DOM observations are in the separate browser report. Not manual inspection of every screen.",
+  "screenshots": [
+    {
+      "file": "n3-u01-1440-patterns.png",
+      "sha256": "9632b5c953e3ef671477be2bf5a84a46b20889cee7424943e6c752c2756cc4d7"
+    },
+    {
+      "file": "n3-u48-320.png",
+      "sha256": "913a4a9a704e6ed0d0fee791ae868517243bcf773e92509cb2ae17b659ebb20d"
+    },
+    {
+      "file": "n3-u01-390-start.png",
+      "sha256": "25cbf2894710d63353c764c2b295b0a600654656bf321dda6115b006099a32c7"
+    }
+  ],
+  "observations": [
+    "1440px u01 explanations: hierarchy, formula, examples, ruby and Korean text are legible and aligned.",
+    "320px u48 answers-open: Japanese/Korean content and radio rows wrap inside the page; ruby remains visible.",
+    "390px u01 scene: roles, goal, whitespace and word/reading/meaning columns remain legible."
+  ],
+  "actualAccountLoginVerified": false
+}

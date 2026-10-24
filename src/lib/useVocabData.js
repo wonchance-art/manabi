@@ -6,7 +6,7 @@ import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { failureMessage } from './errorMessage';
 import { csvToVocabRows } from './vocabIO';
-import { fetchVocabularyLearningRows } from './vocabularyLearningRows';
+import { fetchVocabularyLearningRows, projectVocabularyLearningRows } from './vocabularyLearningRows';
 import { useMemo, useRef } from 'react';
 import { persistVocabGrade } from './fsrs';
 import { cacheVocabSnapshot, getCachedVocabSnapshot } from './offlineCache';
@@ -29,12 +29,45 @@ export async function fetchVocabLearningData(actorId, options = {}) {
   }
 }
 
-/** 정착한 변경만 호출한다. 다른 계정의 화면/캐시를 무효화하지 않는다. */
-export function invalidateVocabularyLearning(queryClient, actorId) {
+/**
+ * 정착한 변경만 호출한다. 다른 계정의 화면/캐시를 무효화하지 않는다.
+ * refetchLearning:false는 단어장 학습 목록(['vocab', …])을 낡음으로만 표시하고 지금 다시 읽지 않는다 —
+ * 복습 중 채점마다 전체 목록(fsrs_vocabulary_snapshot)을 다시 읽으면 작은 DB가 시간 초과로 넘어간다
+ * (운영 실측 2026-10-23 KST: 채점 101번에 목록 읽기 107번 · 평균 2초). 채점은 patchVocabularyLearningRow가 화면에 반영한다.
+ */
+export function invalidateVocabularyLearning(queryClient, actorId, { refetchLearning = true } = {}) {
   if (typeof actorId !== 'string' || !actorId) return Promise.resolve([]);
   return Promise.all(['vocab', 'vocab-words', 'vocab-titles', 'home-v2', 'profile-stats', 'output-words',
     'book-review', 'due-vocab-index', 'weekly-report', 'goal-progress', 'goal-known', 'weak-spot', 'confused-events']
-    .map(prefix => queryClient.invalidateQueries({ queryKey: [prefix, actorId] })));
+    .map(prefix => queryClient.invalidateQueries({ queryKey: [prefix, actorId],
+      ...(prefix === 'vocab' && !refetchLearning ? { refetchType: 'none' } : {}) })));
+}
+
+/**
+ * 저장한 예전 방식 채점을 단어장 학습 목록 캐시에 바로 반영한다(서버가 돌려줄 값과 같은 SRS 필드).
+ * 투영(projections: 오늘 복습 수 · 달력)도 정본 투영기로 다시 계산한다. 반영하지 못하면 false — 호출부가 다시 읽는다.
+ */
+export function patchVocabularyLearningRow(queryClient, actorId, wordId, patch) {
+  if (typeof actorId !== 'string' || !actorId || !wordId) return false;
+  let patched = false;
+  queryClient.setQueryData(['vocab', actorId, 'learning'], cur => {
+    if (cur?.actorId !== actorId || !Array.isArray(cur.rows)) return cur;
+    let hit = false;
+    const rows = cur.rows.map(row => {
+      if (row?.id !== wordId) return row;
+      hit = true;
+      return { ...row, ...patch };
+    });
+    if (!hit) return cur;
+    if (cur.offline) { patched = true; return { ...cur, rows }; }
+    try {
+      const at = new Date(Math.max(Date.now(), Date.parse(cur.now) || 0)).toISOString();
+      const next = projectVocabularyLearningRows({ ...cur, rows }, { actorId, at });
+      patched = true;
+      return next;
+    } catch { return cur; }
+  });
+  return patched;
 }
 
 export function useVocabData() {

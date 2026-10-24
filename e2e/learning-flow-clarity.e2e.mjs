@@ -24,11 +24,11 @@ test('direct book entry has no invented library return; real context survives co
   await f.page.getByRole('link',{name:'첫 과부터 시작하기 →',exact:true}).waitFor();assert.equal(await f.page.getByRole('link',{name:'← 내 서재',exact:true}).count(),0);
   const back='/materials?tab=public&q=school&shown=40&restoreY=520';
   await f.page.goto(`/books/japanese-n5?edition=${edition}&returnTo=${encodeURIComponent(back)}`,{waitUntil:'domcontentloaded',timeout:120000});
-  // READER-RETURN-001: 저장 주소(returnTo)는 /materials?tab=public…, 「← 발견」은 옛 주소를 거치지 않고 곧장 함께 읽는 글로.
+  // READER-RETURN-001: 저장 주소(returnTo)는 /materials?tab=public…, 「← 함께 읽는 글」은 옛 주소를 거치지 않고 곧장 함께 읽는 글로.
   const reading='/discover?view=reading&q=school&shown=40&restoreY=520';
-  const discover=f.page.getByRole('link',{name:'← 발견',exact:true});await discover.waitFor();assert.equal(await discover.getAttribute('href'),reading);
+  const discover=f.page.getByRole('link',{name:'← 함께 읽는 글',exact:true});await discover.waitFor();assert.equal(await discover.getAttribute('href'),reading);
   await f.page.getByRole('link',{name:'첫 과부터 시작하기 →',exact:true}).click();await f.page.locator('#u01-start').waitFor();
-  assert.equal(await f.page.getByRole('link',{name:'← 발견',exact:true}).getAttribute('href'),reading);
+  assert.equal(await f.page.getByRole('link',{name:'← 함께 읽는 글',exact:true}).getAttribute('href'),reading);
   const cover=f.page.getByRole('link',{name:'← 책 목차',exact:true});assert.equal(new URL(await cover.getAttribute('href'),f.page.url()).searchParams.get('returnTo'),back);
   await check(f,'book-context-320');await cover.click();await f.page.getByRole('link',{name:/과 이어 읽기/}).waitFor();assert.equal(await discover.getAttribute('href'),reading);
  }finally{await f.context.close();}

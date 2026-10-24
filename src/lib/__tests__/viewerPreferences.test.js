@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {TAB_KEYS,VIEWER_PREF_KEY,readViewerPreferences,writeViewerPreferences,validateViewerPreferences,viewerDefaults,fontChoices} from '../viewerPreferences';
+import {TAB_KEYS,VIEWER_PREF_KEY,readViewerPreferences,writeViewerPreferences,validateViewerPreferences,viewerDefaults,fontChoices,charGapMin,charGapLabel} from '../viewerPreferences';
 import {pinyinCellWidth,PINYIN_MEASURE_SYLLABLES} from '../pinyinLayout';
 import {READING_PRESETS,presetActive} from '../readingSheet';
 const storage=(entries={})=>{const data=new Map(Object.entries(entries));return {getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)};};
@@ -58,6 +58,20 @@ describe('viewer preferences migration and isolation',()=>{
   for(const language of ['Japanese','Chinese'])expect(viewerDefaults(language).charGap).toBe(0);
   for(const language of ['English','French','Korean'])expect(viewerDefaults(language).charGap).toBe(0.25);
  });
+ // 훈음(오너 2026-10-23 KST 「이름 훈음 + 기본 켬」): 중국어 기본 켬, 옛 기본 false 저장값은 표식(hunOn) 전까지 한 번만 켬으로.
+ it('reads a stored old default showHanjaKo false as on for Chinese until the new version saves it; a later off stays off',()=>{
+  const v2=(languages,extra={})=>storage({[VIEWER_PREF_KEY]:JSON.stringify({version:2,common:{},languages,...extra})});
+  expect(readViewerPreferences(storage(),'Chinese').showHanjaKo).toBe(true);
+  const store=v2({Chinese:{showHanjaKo:false,fontSize:2},Japanese:{showHanjaKo:false}});
+  expect(readViewerPreferences(store,'Chinese')).toMatchObject({showHanjaKo:true,fontSize:2});
+  expect(readViewerPreferences(store,'Japanese').showHanjaKo).toBe(false);
+  writeViewerPreferences(store,'Chinese',{...readViewerPreferences(store,'Chinese'),showHanjaKo:false});
+  const saved=JSON.parse(store.getItem(VIEWER_PREF_KEY));
+  expect(saved.hunOn).toEqual(['Chinese']);expect(saved.languages.Chinese.showHanjaKo).toBe(false);
+  expect(readViewerPreferences(store,'Chinese').showHanjaKo).toBe(false);
+  const ja=storage();writeViewerPreferences(ja,'Japanese',viewerDefaults('Japanese'));
+  expect(JSON.parse(ja.getItem(VIEWER_PREF_KEY)).hunOn).toBeUndefined();
+ });
  it('reads a stored old default 0.25 as 0 for ja/zh until the new version saves that language; keeps chosen values and English',()=>{
   const v2=(languages,extra={})=>storage({[VIEWER_PREF_KEY]:JSON.stringify({version:2,common:{theme:'dark'},languages,...extra})});
   const store=v2({Chinese:{charGap:.25,fontSize:2},Japanese:{charGap:.25},English:{charGap:.25}});
@@ -83,13 +97,25 @@ describe('viewer preferences migration and isolation',()=>{
   expect(readViewerPreferences(storage({viewer_charGap:'0.25'}),'Chinese').charGap).toBe(0);
   expect(readViewerPreferences(storage({viewer_charGap:'0.25'}),'English').charGap).toBe(.25);
  });
+ // 띄어 쓰는 언어는 낱말 간격이 곧 띄어쓰기라 4px 아래로 내려가지 않는다(뷰어 점검 2026-10-23 — 0이면 「Theweatherwaslovely」).
+ it('keeps word spaces in spaced languages: charGap never drops below the old 4px',()=>{
+  for(const lang of ['English','Korean','French']){
+   expect(charGapMin(lang)).toBe(.25);expect(charGapLabel(lang)).toBe('낱말 사이');
+   expect(validateViewerPreferences({charGap:0},lang).charGap).toBe(.25);
+   expect(validateViewerPreferences({charGap:.05},lang).charGap).toBe(.25);
+   expect(validateViewerPreferences({charGap:.5},lang).charGap).toBe(.5);
+  }
+  for(const lang of ['Chinese','Japanese']){expect(charGapMin(lang)).toBe(0);expect(charGapLabel(lang)).toBe('글자 사이');expect(validateViewerPreferences({charGap:0},lang).charGap).toBe(0);}
+  // 이미 0이 저장된 영어는 다시 읽으면 4px로 돌아온다.
+  expect(readViewerPreferences(storage({[VIEWER_PREF_KEY]:JSON.stringify({version:2,common:{},languages:{English:{charGap:0}}})}),'English').charGap).toBe(.25);
+ });
  it('does not advertise unloaded KR fonts as Chinese choices',()=>{
   expect(fontChoices('Chinese')).toEqual([['sans','고딕'],['serif','명조']]);expect(fontChoices('Japanese')).toHaveLength(1);
  });
 });
 describe('pinyin width',()=>{
  it('uses a finite vetted syllable set; body or longest reading wins with a safety gap',()=>{
-  const seen=[];expect(pinyinCellWidth(s=>{seen.push(s);return s.length*7;},24)).toBe(44);
+  const seen=[];expect(pinyinCellWidth(s=>{seen.push(s);return s.length*7;},24)).toBe(46); // 병음이 칸을 정하면 여유 4px(병음끼리 2px 이상)
   expect(seen).toEqual(PINYIN_MEASURE_SYLLABLES);expect(pinyinCellWidth(()=>10,48)).toBe(50);
  });
  it('invalid measurements cannot poison CSS width',()=>{expect(pinyinCellWidth(()=>NaN,26)).toBe(28);});

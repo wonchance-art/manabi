@@ -17,8 +17,10 @@ describe('루트 글꼴 미리 받기', () => {
     expect(inter).toContain("variable: '--font-inter',");
     expect(inter).toContain("display: 'swap',");
   });
-  it('첫 화면에 쓰이는 글꼴(KR · JP · SC)의 미리 받기는 건드리지 않는다(SC는 범위 부품 — FONT-SC-SCOPE-001)', () => {
-    for (const name of ['notoKr', 'notoJp']) expect(block(name)).not.toContain('preload');
+  it('첫 화면에 쓰이는 글꼴(KR · SC)의 미리 받기는 건드리지 않는다(SC는 범위 부품 — FONT-SC-SCOPE-001)', () => {
+    // JP는 일본어를 그리는 세그먼트만 힌트를 건다(FIELD-AUDIT 2026-10-23 KST 실측 — 라틴 면을 쓰는 화면이 일부뿐) — 계약은 src/app/__tests__/fontHints.test.js.
+    expect(block('notoKr')).not.toContain('preload');
+    expect(block('notoJp')).toContain('preload: false,');
     const sc = fs.readFileSync(path.join(process.cwd(), 'src/components/fonts/ScFontScope.jsx'), 'utf8');
     expect(sliceBetween(sc, 'const notoSc = ', '});')).not.toContain('preload');
   });

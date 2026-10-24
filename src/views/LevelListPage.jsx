@@ -651,6 +651,25 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
     return { visible: out, total: shown.reduce((n, g) => n + g.entries.length, 0) };
   }, [shown, limit]);
   const rest = Math.max(0, total - limit);
+  // 항목 앵커(#bk-…) — 뷰어 [문장] 탭 패턴 카드의 「문형 목록에서 보기」. 그 항목이 아직 안 그려진 뒤쪽이면 거기까지 그린 뒤 옮긴다
+  // (첫 150개 안이면 브라우저가 서버 렌더에서 바로 옮긴다). 뒤로 가기 자리 복원이 있으면 그쪽이 이긴다.
+  const [anchorAt, setAnchorAt] = useState(null);
+  useLayoutEffect(() => {
+    if (vocab || hanzi || levelPlaceOf(window.history.state, window.location.pathname)) return;
+    const anchor = decodeURIComponent(window.location.hash.slice(1));
+    if (!anchor.startsWith('bk-')) return;
+    let at = 0;
+    for (const g of shown) {
+      const i = g.entries.findIndex((e) => e.anchor === anchor);
+      if (i >= 0) { at += i; setLimit((n) => Math.max(n, at + LEVEL_LIST_PAGE)); setAnchorAt(anchor); return; }
+      at += g.entries.length;
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- 처음 붙을 때 한 번(주소의 앵커)
+  useEffect(() => {
+    if (!anchorAt) return;
+    document.getElementById(anchorAt)?.scrollIntoView({ block: 'start' });
+    setAnchorAt(null);
+  }, [anchorAt, visible]);
 
   // 키보드 — 단어 탭만(LEVEL-KEYS-001, 오너 목업 승인 2026-10-17 KST). 지금 카드 하나만 Tab 정지(roving)이고,
   // ↑↓ 이동 · O 안다 · X 모른다(누른 뒤 다음 카드로) · Space 펼치기 · Esc 접기. O · X는 클릭과 같은 onO · onX 경로다.
@@ -968,7 +987,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
               studying={recorded || facetView ? markOf(e.key) === 'x' : saved.has(e.key)} keepReview={!facetView && keptSet.has(e.key)} saving={saving.has(e.key)}
               pendingKnown={mounted && !!userId && known.isPendingWord(conf.langCode, e.key)}
               onO={() => (facetView ? markFacetO(e) : markO(e))} onX={() => (facetView ? markFacetX(e) : markX(e))} onPrepareX={mounted && userId ? prepareSave : undefined}
-              current={e.key === currentKey} onCardFocus={() => setCursorKey(e.key)} /> : <li key={e.key} className="lv-pat" data-lv-pat={e.key}>
+              current={e.key === currentKey} onCardFocus={() => setCursorKey(e.key)} /> : <li key={e.key} className="lv-pat" data-lv-pat={e.key} id={e.anchor}>
               <div className="lv-pat__head"><span className="lv-hw" lang={lang === 'chinese' ? 'zh-CN' : 'ja'}>{e.pattern}</span>{e.ko && <span className="lv-pat__ko">{e.ko}</span>}</div>
               {e.conn && <p className="lv-formula">{e.conn}</p>}
               {e.note && <p className="lv-note">{e.note}</p>}

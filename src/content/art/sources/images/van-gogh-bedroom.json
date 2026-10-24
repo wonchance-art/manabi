@@ -1,0 +1,20 @@
+{
+  "bytes": 162235,
+  "file": "van-gogh-bedroom.jpg",
+  "height": 624,
+  "note": "DISCOVER-ART-001 — 시카고 미술관 디지털화본(퍼블릭 도메인)을 위키미디어 공용 파일 페이지에서 받았다(Wikidata 작품 항목 P18). 공용 API 요청 제한(429) 때문에 record는 파일 페이지 · 시카고 미술관 기록에서 손으로 옮겼다. 원 파일은 upload.wikimedia.org 960px 썸네일을 긴 변 800px로 줄인 것이다(README 「이미지」).",
+  "record": {
+    "accession": "1926.417",
+    "artist": "Vincent van Gogh",
+    "date": "1889",
+    "holder": "Art Institute of Chicago",
+    "license": "public-domain",
+    "title": "The Bedroom"
+  },
+  "sha256": "07dffd75cfa88837446e11d04ca611cd8ad7a22408a472083b378610ba6acf8f",
+  "source": "commons",
+  "sourceId": "File:Vincent_van_Gogh_-_The_Bedroom_-_Google_Art_Project.jpg",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Vincent_van_Gogh_-_The_Bedroom_-_Google_Art_Project.jpg",
+  "width": 800,
+  "workId": "van-gogh-bedroom"
+}

@@ -2,7 +2,8 @@
 
 클라이언트(뷰어 글자 카드·한자 대조·수업 판서)가 읽는 정적 데이터다. 생성기 주석이
 1차 근거이며, 이 표는 그 요약이다(감사 2026-10-07 KST). 고지문 원문은 `LICENSES/`에 둔다.
-이 디렉터리의 JSON은 로컬 Node 22에서만 재생성한다(AGENTS.md — 결정성).
+이 디렉터리의 JSON은 로컬 Node 22에서만 재생성한다(AGENTS.md — 결정성). 예외: `jaKanjiReadings.json`·`jaJeongja.json`·`jaExampleWords.json`은
+정렬한 문자열 JSON만 써서 Node 22·24가 같은 바이트를 낸다(PNG·zlib 경로 없음 — 2026-10-19 KST 확인, 생성은 Node 24).
 
 | 파일 | 원천 | 라이선스 | 생성기 |
 |---|---|---|---|
@@ -12,6 +13,9 @@
 | `hanjaKo.json` | npm `hanja` 1.1.5 `hanjaeum.json` + libhangul `hanja.txt` + OpenCC `STCharacters` | MIT · BSD 3-Clause · Apache-2.0 | `scripts/generate-hanja-ko.mjs` |
 | `hanjaTrad.json` | OpenCC `STPhrases`·`STPhrases_GeneratedFromRegionalPhrases`·`STCharacters`(s2t, npm `opencc-data@1.4.1`) 중 HSK·우리 사전 표제어·수량 구절의 변환 결과 + 대만 이체 `TWVariants`·`TWVariantsPhrases`(s2tw 둘째 단계 — 正 줄)·모호 글자·검증 표제어 + 한국 다음자 예외·정자 이체(`scripts/hanja-curated.mjs`) | Apache-2.0 (`LICENSES/Apache-2.0-OpenCC.txt`) | `scripts/generate-hanja-trad.mjs` |
 | `jaWords.json` | **JMdict/EDICT**(EDRDG, EDICT `Created: 2025-11-06`) 중 중국어 표제어(HSK·우리 사전)와 같은 표기의 일본어 단어의 표기·요미(日 줄). 열쇠 = Unihan kJapaneseNewVariant · OpenCC s2t · `hanjaJa.json`, 뜻 관문 = CC-CEDICT 영문 뜻 겹침(표에는 싣지 않음), 거부 목록 = `scripts/hanja-curated.mjs` `JA_FALSE_FRIENDS` | **CC BY-SA 4.0 — 이 파일만** (`LICENSES/CC-BY-SA-4.0.txt`) | `scripts/generate-ja-words.mjs` |
+| `jaKanjiReadings.json` | **KANJIDIC2**(EDRDG, database_version 2026-292 · `kanjidic2.xml.gz` sha256 `e03dfd07…` — 생성기 `_source`에 전체 해시) 글자별 음독(ja_on)·훈독(ja_kun, 오쿠리가나 앞까지). 글자 우주 = 상용·인명용(grade 있는 글자) ∪ 우리 일본어 단어 콘텐츠의 한자(3,051자). JLPT 단어 페이지 글자 칸 첫 줄(経 날 경 **けい**)을 빌드 때 나누는 데만 쓰고 표는 화면으로 보내지 않는다 | **CC BY-SA 4.0 — 이 파일만** (`LICENSES/CC-BY-SA-4.0.txt`) | `scripts/generate-ja-kanji.mjs`(`--check`) |
+| `jaJeongja.json` | OpenCC `JPShinjitaiCharacters`(npm `opencc-data@1.4.1`) 중 후보가 하나이고 꼴이 다른 신자체 → 정자(経 → 經, 393자). JLPT 글자 칸 아래 회색 글자 · 훈음 찾기 꼴 | Apache-2.0 (`LICENSES/Apache-2.0-OpenCC.txt`) | `scripts/generate-ja-kanji.mjs`(`--check`) |
+| `jaExampleWords.json` | 저장소 JLPT 단어 예문(`src/content/japanese/vocab`)을 앱 분석기 `tokenizeJaLine`(kuromoji + IPADIC)으로 나눈 단어 조각 길이 · 원형(して → する). 예문 글은 싣지 않고 해시 열쇠만 | 콘텐츠 원천 · kuromoji/IPADIC 라이선스를 따른다 | `jaExampleWordsBuild.test.js`(`UPDATE_JA_EXAMPLE_WORDS=1`) |
 | `hanjaHun.json` | libhangul `hanja.txt` 훈음 필드 + OpenCC `STCharacters` + 수기 감수(`scripts/hanja-curated.mjs`) | BSD 3-Clause · Apache-2.0 | `scripts/generate-hanja-hun.mjs` |
 | `zhHskLevel.json` | ivankra/hsk30 (`hsk30.csv`) — HSK 2021 등급표. **분절 방벽 전용**(`server/zhTokenFix.js` isZhRealWord), 화면 급수에는 쓰지 않는다 | MIT | `scripts/build-zh-hsk.mjs` |
 | `zhHsk2026Level.json` | 《中文水平考试 HSK 考试大纲》(中外语言交流合作中心, 2025-11 발표 · 2026-07 시행) 词汇大纲 — 설계 정본 `docs/design/hsk2026/words.json`에서 생성(동형어 번호 뗌 · 같은 표기는 가장 낮은 급수 · 괄호 급수는 앞 급수, 10,896단어). **화면 급수 표시 정본**(`src/lib/zhHskLevel.js`) | 공식 시험 대강의 단어·급수 목록만 발췌(PDF 원문은 싣지 않는다) | `scripts/build-zh-hsk2026.mjs`(`--check`, Node 22·24 같은 바이트) |
@@ -32,6 +36,11 @@
 - **Unicode Unihan** — Unicode License v3. 위 고지문이 데이터와 함께 있어야 하므로
   `LICENSES/Unicode-3.0.txt`에 원문을 둔다.
 - **BabelStone IDS** — Andrew West. 출처 표기 의무는 없으나 자료 출처 화면에 함께 적는다.
+- **KANJIDIC2** — © Electronic Dictionary Research and Development Group(EDRDG).
+  CC BY-SA 4.0, EDRDG 라이선스(https://www.edrdg.org/edrdg/licence.html)에 따라 사용한다.
+  `jaKanjiReadings.json`은 이 사전의 음독·훈독 필드에서 고른 **파생 데이터베이스이며 이 파일만 같은
+  CC BY-SA 4.0으로 제공**한다. 변경: 상용·인명용·우리 단어 콘텐츠 글자의 읽기만 남기고 오쿠리가나를
+  뗐다. 사용자 화면 고지는 `/credits#kanjidic2`(`src/lib/dataCredits.js`).
 - **JMdict/EDICT** — © Electronic Dictionary Research and Development Group(EDRDG).
   CC BY-SA 4.0, EDRDG 라이선스(https://www.edrdg.org/edrdg/licence.html)에 따라 사용한다.
   `jaWords.json`은 이 사전에서 고른 표기·요미를 가공한 **파생 데이터베이스이며 이 파일만 같은

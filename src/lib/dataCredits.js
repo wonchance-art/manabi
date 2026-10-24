@@ -13,7 +13,7 @@
 // src/lib/data/jaWords.json(CC BY-SA 4.0, 이 파일만)이 중국어 단어의 일본어 표기·읽기로 화면에 닿는다
 // (오너 승인 범위 결정 #1337 2026-10-07).
 
-export const DATA_CREDITS_UPDATED = '2026년 10월 14일';
+export const DATA_CREDITS_UPDATED = '2026년 10월 19일';
 
 export const DATA_CREDIT_SECTIONS = [
   {
@@ -109,6 +109,16 @@ export const DATA_CREDIT_SECTIONS = [
         license: '자유 이용',
         licenseUrl: 'https://www.babelstone.co.uk/CJK/IDS.HTML',
         sourceUrl: 'https://www.babelstone.co.uk/CJK/IDS.HTML',
+      },
+      {
+        id: 'kanjidic2',
+        name: 'KANJIDIC2 (EDRDG)',
+        holder: '© Electronic Dictionary Research and Development Group',
+        use: 'JLPT 단어 글자 칸의 단어 속 한자 읽기',
+        license: 'CC BY-SA 4.0',
+        licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+        sourceUrl: 'https://www.edrdg.org/wiki/index.php/KANJIDIC_Project',
+        changes: '글자별 음독·훈독만 골라 단어 읽기를 글자마다 나누는 데 썼습니다. 가공한 표도 같은 라이선스로 제공합니다.',
       },
       {
         id: 'opencc',

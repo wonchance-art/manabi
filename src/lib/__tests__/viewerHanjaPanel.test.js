@@ -5,7 +5,7 @@ import zlib from 'node:zlib';
 import { applyDueum } from '../hanjaKo.js';
 import { loadRefVocabIndex } from '../refVocabIndex.js';
 import {
-  splitPinyinSyllables, samePinyin, koEumOf, sameHanjaWord, shortMeaning, selectSameHanjaTiles,
+  splitPinyinSyllables, pinyinPerChar, samePinyin, koEumOf, sameHanjaWord, shortMeaning, selectSameHanjaTiles,
   hanjaPanelModel, panelSearchChar, soundPieceDrill, formatDrillSummary, loadHanjaPanelTable,
 } from '../viewerHanjaPanel.js';
 
@@ -190,8 +190,9 @@ describe('한자 창 머리 · 구성 — hanjaPanelModel', () => {
     expect(m.parts.pieces.map((p) => p.ch)).toEqual(['彳', '术', '亍']);
     expect(m.parts.pieces.every((p) => p.role === null)).toBe(true);
   });
-  it('구성 자료 없음(育)·4성분 이상(樂)·획 조각 분해(工 = 丅+一) → 구성 null', () => {
-    expect(model('育', '体育', 'yù', 1).parts).toBeNull();
+  it('4성분 이상(樂)·획 조각 분해(工 = 丅+一) → 구성 null · 育은 구성 표 보강 뒤 1단 성분(亠 · 厶 · 月, 역할 미상)', () => {
+    // 育은 첫 IDS(⿳亠厶⺝)의 ⺝(月 변형 꼴)가 우주 밖이라 비어 있었다 — 부수 변형 꼴을 본자로 읽게 된 뒤(2026-10-23 KST 구성 빠짐 검사) 3성분.
+    expect(model('育', '体育', 'yù', 1).parts).toMatchObject({ known: false, pieces: [{ ch: '亠' }, { ch: '厶' }, { ch: '月' }] });
     expect(model('乐', '音乐', 'yuè', 1).parts).toBeNull();
     expect(model('乐', '音乐', 'yuè', 1).head).toMatchObject({ zheng: '樂', label: '풍류 악' });
     expect(model('工', '工人', 'gōng', 0).parts).toBeNull();
@@ -419,5 +420,21 @@ describe('지연 로드 경로(T1 준비) — 소스 계약', () => {
     const b = await loadHanjaPanelTable();
     expect(a).toBe(b);
     expect(a.drill['雚']).toBe('觀權歡勸灌');
+  });
+});
+
+describe('pinyinPerChar — 본문 · 카드 병음 글자별 분배(뷰어 점검 E1)', () => {
+  it('붙여 쓴 병음을 글자마다 나누고 원문 대소문자를 살린다', () => {
+    expect(pinyinPerChar('图书馆', 'túshūguǎn')).toBe('tú shū guǎn');
+    expect(pinyinPerChar('北京', 'Běijīng')).toBe('Běi jīng');
+    expect(pinyinPerChar('西安', "Xī'ān")).toBe('Xī ān');
+    expect(pinyinPerChar('一会儿', 'yīhuìr')).toBe('yī huì r');
+  });
+  it('이미 나뉘었거나 나눌 수 없거나 중국어가 아니면 null — 원래 독음을 그대로 쓴다', () => {
+    expect(pinyinPerChar('图书馆', 'tú shū guǎn')).toBeNull();
+    expect(pinyinPerChar('我', 'wǒ')).toBeNull();
+    expect(pinyinPerChar('勉強', 'べんきょう')).toBeNull();
+    expect(pinyinPerChar('图书', 'xyzq')).toBeNull();
+    expect(pinyinPerChar('A股', 'Agǔ')).toBeNull();
   });
 });

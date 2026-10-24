@@ -1,0 +1,357 @@
+{
+  "created_at_utc": "2026-10-21T11:32:33.968410+00:00",
+  "oracle_sha256": "d171e48682a2a0b1178d2db6179f5b6f337720f0cbe3c88c13de79d4f1bd7d38",
+  "method": "원고 열람 전 16개 새 상황 고정 후 14개 과 snapshot의 관련 설명·문항·말하기·쓰기와 의미/허용대안/금지추론을 수동 언어 대조. 학습자 실험 또는 자동 채점 시스템 실행 아님.",
+  "summary": {
+    "new_confirmed_blocking_findings": 0,
+    "new_confirmed_nonblocking_findings": 0,
+    "compatible": 12,
+    "compatible_with_scope_limit": 3,
+    "not_exercised": 1
+  },
+  "limitations": [
+    "지정된 14개 과와 16개 용법 반례 범위만 다룸. 48과 전수 언어 승인 아님.",
+    "감사 전에 대상 문형 후보는 발주자로부터 제공됨. 새 상황은 원고 미열람 상태에서 작성했으나 문형 선정 자체가 완전 맹검인 것은 아님.",
+    "공식 JLPT 문형 목록 인증, 사람 원어민 감수, 실제 학습효과 인증 아님.",
+    "문형 수업의 목표에 맞춘 지정 표현 과제는 자연 대안을 부정하는 것으로 간주하지 않았음.",
+    "각 문항별 새 출력 생성 실험이 아니라 고정 oracle에 대한 원고 규칙/문항의 모순 가능성을 점검한 감사."
+  ],
+  "checks": [
+    {
+      "case_id": "H01",
+      "status": "compatible",
+      "source_file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u20.json",
+      "source_sha256": "972afdf7dcad44caa783ae965aca5ab6ea4662a249d8d20061c1a37c343b194f",
+      "field": "patterns[0].note",
+      "quote": "뒤에 좋은 결과가 오는 문맥에서도 쓸 수 있으므로 항상 나쁜 결과만 온다고 하지 않아요.",
+      "judgment": "좋은 수면 결과도 배제하지 않고 원인 추정은 확정과 분리한다.",
+      "basis": "S5"
+    },
+    {
+      "case_id": "H02",
+      "status": "compatible",
+      "source_file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u26.json",
+      "source_sha256": "5a2efd1678752a9c144b8801e9cf2004d477714de6ebf0624ad42518283ed556",
+      "field": "patterns[0].body",
+      "quote": "春らしい日처럼 계절의 전형적 느낌에도 쓸 수 있지만",
+      "judgment": "고정 예문의 春らしい暖かさ를 전언으로 오판할 규칙을 가르치지 않는다.",
+      "basis": "independent contextual judgment"
+    },
+    {
+      "case_id": "H03",
+      "status": "compatible_scoped",
+      "source_file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u26.json",
+      "source_sha256": "5a2efd1678752a9c144b8801e9cf2004d477714de6ebf0624ad42518283ed556",
+      "field": "preparation",
+      "quote": "N4의 전문·추량 らしい와 똑같은 형태가 나올 수 있어요.",
+      "judgment": "전언만이라는 규칙이 없다. 다만 N3 해당 과는 전형성 수업이므로 새 가게 문장의 전언/추정 구별 능력을 직접 평가한 것은 아니다.",
+      "basis": "S3; S6 limited"
+    },
+    {
+      "case_id": "H04",
+      "status": "compatible",
+      "source_file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u29.json",
+      "source_sha256": "d08dfe23165a73bc630b477612083f04f7b6c15248c4248f379cd6e66b032b95",
+      "field": "patterns[1].body",
+      "quote": "이번에는 강좌는 필요하지만 자유 공간은 필요 없다는 뒷문장으로 부정 범위를 확인해요.",
+      "judgment": "전부 필요하지 않다는 반대 명제를 도출하지 않고 명시된 두 범위를 나눈다.",
+      "basis": "independent scope-negation judgment"
+    },
+    {
+      "case_id": "H05",
+      "status": "compatible",
+      "source_file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u29.json",
+      "source_sha256": "d08dfe23165a73bc630b477612083f04f7b6c15248c4248f379cd6e66b032b95",
+      "field": "patterns[1].note",
+      "quote": "이 표현이 언제나 양을 나누는 부분부정만 되는 것은 아니에요.",
+      "judgment": "수량 일부만 부정한다는 과잉 일반화를 막고 책을 싫어하는 것은 아니라는 예문도 있다.",
+      "basis": "independent scope-negation judgment"
+    },
+    {
+      "case_id": "H06",
+      "status": "compatible",
+      "source_file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u30.json",
+      "source_sha256": "9be7220dc4f3b6dab589e9a9d9ca1750c79b99f6a8f3440397056051f8106827",
+      "field": "patterns[1].body",
+      "quote": "이중 부정이지만 적극적인 승낙과 같지 않아요.",
+      "judgment": "제한적 가능성을 참석/완료 약속으로 바꾸지 않는다.",
+      "basis": "independent pragmatic judgment"
+    },
+    {
+      "case_id": "H07",
+      "status": "compatible",
+      "source_file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u31.json",
+      "source_sha256": "d79239221b965bb4553486a93b0cde8c78da46f984e1d4807e296fd3851fabe9",
+      "field": "patterns[0].note",
+      "quote": "사회적·심리적 사정의 제약이에요.",
+      "judgment": "물리적 능력이나 법적 금지에만 한정하지 않고 역할/약속을 원인으로 명시한다.",
+      "basis": "independent modal judgment"
+    },
+    {
+      "case_id": "H08",
+      "status": "compatible",
+      "source_file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u31.json",
+      "source_sha256": "d79239221b965bb4553486a93b0cde8c78da46f984e1d4807e296fd3851fabe9",
+      "field": "patterns[1].note",
+      "quote": "返すわけにはいかない는 돌려줄 수 없다는 반대 방향이에요.",
+      "judgment": "부정 동사 삽입으로 생기는 의무 방향을 정확히 분리한다.",
+      "basis": "independent polarity judgment"
+    },
+    {
+      "case_id": "H09",
+      "status": "compatible",
+      "source_file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u39.json",
+      "source_sha256": "c132d2b0200e33d50071009967d56948d3cae336179fca2382827db4dfe5ea3c",
+      "field": "oral[0].why",
+      "quote": "初参加のわりに도 문맥상 자연스러울 수 있어요.",
+      "judgment": "u38과 u39 모두 교환 가능한 문맥을 인정하고 지정 표현 연습과 비문 판정을 분리한다.",
+      "basis": "independent overlap judgment"
+    },
+    {
+      "case_id": "H10",
+      "status": "compatible",
+      "source_file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u35.json",
+      "source_sha256": "2bc9ac3326f06e1bc35aa9d3a9fd10014d28140ecfde841ae5183f7d6dd88678",
+      "field": "checks[1].why",
+      "quote": "앞 메모의 住所を調べず와 道に迷って가 실제 사실이에요.",
+      "judgment": "과거 사실을 문맥에 고정해 반사실 결과를 실제 도착으로 뒤집지 않는다.",
+      "basis": "independent temporal judgment"
+    },
+    {
+      "case_id": "H11",
+      "status": "compatible",
+      "source_file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u35.json",
+      "source_sha256": "2bc9ac3326f06e1bc35aa9d3a9fd10014d28140ecfde841ae5183f7d6dd88678",
+      "field": "patterns[1].note",
+      "quote": "현재·미래에 대한 바람으로도 쓰일 수 있으므로 모양만 보고 언제나 과거라고 단정하지 말고",
+      "judgment": "미래 날씨를 이미 확정된 비로 추론하지 않도록 일반화 범위를 제한한다.",
+      "basis": "independent temporal judgment"
+    },
+    {
+      "case_id": "H12",
+      "status": "compatible_scoped",
+      "source_file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u40.json",
+      "source_sha256": "61595a964643fb03e4de98f89f829649babe4f17c8da77bc3630f67f94c4f6cc",
+      "field": "checks[0].prompt",
+      "quote": "くせに가 자료의 문장에 더하는 어조를 골라요.",
+      "judgment": "자료 내 인용은 불만 맥락이므로 정답은 성립한다. 친근한 장난의 허용성을 명시하지 않지만 항상 적대/모욕이라고도 가르치지 않는다. 억양과 인간 관계의 실제 수용도는 미검증.",
+      "basis": "independent pragmatic judgment"
+    },
+    {
+      "case_id": "H13",
+      "status": "not_exercised",
+      "source_file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u43.json",
+      "source_sha256": "25c15134993e46e22e53ce538fd2ee558938354968cb89519dfa1fe07e5198b5",
+      "field": "patterns[0].note",
+      "quote": "짧은 구어형의 추가 암기는 이 과의 평가 범위가 아니에요.",
+      "judgment": "장형만 가르치므로 축약 す 예외를 잘못 일반화한 규칙도 문항도 없다. 그러나 단축 생성 능력이 검증됐다고 계산할 수 없다.",
+      "basis": "S4"
+    },
+    {
+      "case_id": "H14",
+      "status": "compatible",
+      "source_file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u46.json",
+      "source_sha256": "e2982aea6670f0ac8bd265cac0f7d0628f6b55a784f33393abc79e97baa12fd0",
+      "field": "patterns[0].body",
+      "quote": "私が先生をご案内します에서는 안내하는 사람은 나, 안내받는 상대는 선생님이에요.",
+      "judgment": "겸양 동사의 주체와 높이는 상대가 반전되지 않는다.",
+      "basis": "S2"
+    },
+    {
+      "case_id": "H15",
+      "status": "compatible_scoped",
+      "source_file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u47.json",
+      "source_sha256": "3916d383347843a0003bd154eb6be0f3a6c28908ef2549a593d87106c70923b7",
+      "field": "patterns[1].body",
+      "quote": "이 장면은 자료 작성자가 사용을 허락했고, 화자가 준비에 쓸 도움을 받는다는 조건이 있어요.",
+      "judgment": "제시 장면의 실제 허락+수혜는 성립한다. 모든 행동에 무조건 붙이지 않는다는 설명은 적절하다. 묵시적 허락/수혜의 느낌 및 사용역 확장까지 학습했음을 주장하지 않는다.",
+      "basis": "S1"
+    },
+    {
+      "case_id": "H16",
+      "status": "compatible",
+      "source_file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u47.json",
+      "source_sha256": "3916d383347843a0003bd154eb6be0f3a6c28908ef2549a593d87106c70923b7",
+      "field": "oral[0].why",
+      "quote": "설명한 사람은 미오, 도움을 받은 쪽은 화자예요.",
+      "judgment": "과거 いただきました의 행위자와 수혜자, 앞으로 사용할 使わせていただきます와의 시제 차이가 보존된다.",
+      "basis": "S2"
+    }
+  ],
+  "findings": [],
+  "sources": [
+    {
+      "id": "S1",
+      "url": "https://www.bunka.go.jp/seisaku/kokugo_nihongo/kokugo_shisaku/keigo/chapter3/detail.html",
+      "publisher": "문화청",
+      "title": "第三話 敬語のTPO 이해도 해설",
+      "access": "full page opened",
+      "supports": "させていただく의 기본 조건은 상대/제3자의 허락과 수혜 사실·마음. 실제 충족 외 그렇게 보는 상황의 허용도도 논의한다.",
+      "limits": "명시적 사전 발화만을 필수 조건으로 단정하지 않는다."
+    },
+    {
+      "id": "S2",
+      "url": "https://www.bunka.go.jp/seisaku/kokugo_nihongo/kokugo_shisaku/keigo/chapter2/detail.html",
+      "publisher": "문화청",
+      "title": "第二話 敬語の基本 이해도 해설",
+      "access": "full page opened",
+      "supports": "존경어는 행위자를, 겸양어I는 행위가 향하는 상대를 높인다. ご案内する와 指導していただく의 역할 구분을 명시한다.",
+      "limits": "교재 전체 경어의 자연스러움 인증이 아닌 역할 방향 대조."
+    },
+    {
+      "id": "S3",
+      "url": "https://www.jpf.go.jp/j/project/japanese/teach/tsushin/grammar/201012.html",
+      "publisher": "국제교류기금",
+      "title": "日本語教育通信 文法を楽しく そうだ／ようだ／らしい（１）",
+      "access": "full page opened",
+      "supports": "らしい를 정보에서 판단하는 표현으로 다루고 정보의 간접성 및 전언 관련성을 설명한다.",
+      "limits": "H03의 모든 개별 문장을 출처가 직접 예문으로 제시하는 것은 아니다."
+    },
+    {
+      "id": "S4",
+      "url": "https://www.kyozai.jpf.go.jp/kyozai/material/BMA00076/ja/render.do",
+      "publisher": "국제교류기금",
+      "title": "BMA00076 使役受身形",
+      "access": "full page opened",
+      "supports": "장형과 단형 병기, す 종결의 단축 예외, くる→こさせられる를 명시한다.",
+      "limits": "페이지의 옛 시험 등급은 현재 JLPT N3 목록 근거로 사용하지 않는다."
+    },
+    {
+      "id": "S5",
+      "url": "https://kotobank.jp/word/%E6%89%80%E7%82%BA-530273",
+      "publisher": "디지털대사천/소학관 사전 항목, 코토뱅크 제공",
+      "title": "所為",
+      "access": "full dictionary entry opened",
+      "supports": "나쁜 결과에 많이 사용한다는 경향성 서술이다. 따라서 절대 금지로 가르치면 안 된다는 판단을 보조한다.",
+      "limits": "긍정 결과의 H01 예문 자체는 독립 언어 판정이며 이 항목에 실린 예문이 아니다. 출판사 원사이트 전체 원문을 별도 열람하지 않았다."
+    },
+    {
+      "id": "S6",
+      "url": "https://coelang.tufs.ac.jp/mt/ja/gmod/contents/explanation/076.html",
+      "publisher": "도쿄외국어대",
+      "title": "日本語 文法 ～かもしれません・～にちがいありません",
+      "access": "search excerpt only; full open failed with 502",
+      "supports": "검색 초록은 らしい의 상황 판단과 전언 양쪽을 명시한다.",
+      "limits": "직접 열람 성공 자료로 계산하지 않으며 S3으로 관련 원출처 대조를 보완했다."
+    }
+  ],
+  "impact_check": [
+    {
+      "file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u20.json",
+      "sha256": "972afdf7dcad44caa783ae965aca5ab6ea4662a249d8d20061c1a37c343b194f",
+      "current_sha256": "46f784581905f4e468417ac90050c53a3952bc60fac3e088ec6bf1df28a06b3e",
+      "changed_since_snapshot": true,
+      "final_sha256": "46f784581905f4e468417ac90050c53a3952bc60fac3e088ec6bf1df28a06b3e",
+      "delta_review": "words의 起きる 한국어 뜻을 일어나다 · 문맥의 ている형은 깨어 있다로 명료화. せいか 판정 필드 변경 없음.",
+      "delta_review_status": "no_effect_on_holdout_judgments"
+    },
+    {
+      "file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u26.json",
+      "sha256": "5a2efd1678752a9c144b8801e9cf2004d477714de6ebf0624ad42518283ed556",
+      "current_sha256": "5a2efd1678752a9c144b8801e9cf2004d477714de6ebf0624ad42518283ed556",
+      "changed_since_snapshot": false,
+      "final_sha256": "5a2efd1678752a9c144b8801e9cf2004d477714de6ebf0624ad42518283ed556",
+      "delta_review_status": "unchanged"
+    },
+    {
+      "file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u29.json",
+      "sha256": "d08dfe23165a73bc630b477612083f04f7b6c15248c4248f379cd6e66b032b95",
+      "current_sha256": "d08dfe23165a73bc630b477612083f04f7b6c15248c4248f379cd6e66b032b95",
+      "changed_since_snapshot": false,
+      "final_sha256": "d08dfe23165a73bc630b477612083f04f7b6c15248c4248f379cd6e66b032b95",
+      "delta_review_status": "unchanged"
+    },
+    {
+      "file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u30.json",
+      "sha256": "9be7220dc4f3b6dab589e9a9d9ca1750c79b99f6a8f3440397056051f8106827",
+      "current_sha256": "9be7220dc4f3b6dab589e9a9d9ca1750c79b99f6a8f3440397056051f8106827",
+      "changed_since_snapshot": false,
+      "final_sha256": "9be7220dc4f3b6dab589e9a9d9ca1750c79b99f6a8f3440397056051f8106827",
+      "delta_review_status": "unchanged"
+    },
+    {
+      "file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u31.json",
+      "sha256": "d79239221b965bb4553486a93b0cde8c78da46f984e1d4807e296fd3851fabe9",
+      "current_sha256": "d79239221b965bb4553486a93b0cde8c78da46f984e1d4807e296fd3851fabe9",
+      "changed_since_snapshot": false,
+      "final_sha256": "d79239221b965bb4553486a93b0cde8c78da46f984e1d4807e296fd3851fabe9",
+      "delta_review_status": "unchanged"
+    },
+    {
+      "file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u35.json",
+      "sha256": "2bc9ac3326f06e1bc35aa9d3a9fd10014d28140ecfde841ae5183f7d6dd88678",
+      "current_sha256": "2bc9ac3326f06e1bc35aa9d3a9fd10014d28140ecfde841ae5183f7d6dd88678",
+      "changed_since_snapshot": false,
+      "final_sha256": "2bc9ac3326f06e1bc35aa9d3a9fd10014d28140ecfde841ae5183f7d6dd88678",
+      "delta_review_status": "unchanged"
+    },
+    {
+      "file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u38.json",
+      "sha256": "e169ccd7b7e1df888e4f486b98a784147a11a3f11bafcf3e1dd80ad2c520d863",
+      "current_sha256": "10664e30067fee55f1986da402b40814dbcb8500f29ffb40c63650789cafa5a6",
+      "changed_since_snapshot": true,
+      "final_sha256": "10664e30067fee55f1986da402b40814dbcb8500f29ffb40c63650789cafa5a6",
+      "delta_review": "words의 壁를 new→review 표시. 용법 필드 변경 없음.",
+      "delta_review_status": "no_effect_on_holdout_judgments"
+    },
+    {
+      "file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u39.json",
+      "sha256": "c132d2b0200e33d50071009967d56948d3cae336179fca2382827db4dfe5ea3c",
+      "current_sha256": "e05ef9e696cea113f28afb60c596f5693ed66f9f6301e6415daeb452d115cb46",
+      "changed_since_snapshot": true,
+      "final_sha256": "e05ef9e696cea113f28afb60c596f5693ed66f9f6301e6415daeb452d115cb46",
+      "delta_review": "words의 午前/午後를 new→review 표시. 용법 필드 변경 없음.",
+      "delta_review_status": "no_effect_on_holdout_judgments"
+    },
+    {
+      "file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u40.json",
+      "sha256": "61595a964643fb03e4de98f89f829649babe4f17c8da77bc3630f67f94c4f6cc",
+      "current_sha256": "61595a964643fb03e4de98f89f829649babe4f17c8da77bc3630f67f94c4f6cc",
+      "changed_since_snapshot": false,
+      "final_sha256": "61595a964643fb03e4de98f89f829649babe4f17c8da77bc3630f67f94c4f6cc",
+      "delta_review_status": "unchanged"
+    },
+    {
+      "file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u43.json",
+      "sha256": "25c15134993e46e22e53ce538fd2ee558938354968cb89519dfa1fe07e5198b5",
+      "current_sha256": "25c15134993e46e22e53ce538fd2ee558938354968cb89519dfa1fe07e5198b5",
+      "changed_since_snapshot": false,
+      "final_sha256": "25c15134993e46e22e53ce538fd2ee558938354968cb89519dfa1fe07e5198b5",
+      "delta_review_status": "unchanged"
+    },
+    {
+      "file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u44.json",
+      "sha256": "dc4d1b549891a16e2002e7be978d04c0a390a6281d39ef52f401d1bc8288bde2",
+      "current_sha256": "dc4d1b549891a16e2002e7be978d04c0a390a6281d39ef52f401d1bc8288bde2",
+      "changed_since_snapshot": false,
+      "final_sha256": "dc4d1b549891a16e2002e7be978d04c0a390a6281d39ef52f401d1bc8288bde2",
+      "delta_review_status": "unchanged"
+    },
+    {
+      "file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u45.json",
+      "sha256": "e6520dfa453fe774715423d3ec5967b0fb96eb0433dd9a0bacd541daf206c3a5",
+      "current_sha256": "e6520dfa453fe774715423d3ec5967b0fb96eb0433dd9a0bacd541daf206c3a5",
+      "changed_since_snapshot": false,
+      "final_sha256": "e6520dfa453fe774715423d3ec5967b0fb96eb0433dd9a0bacd541daf206c3a5",
+      "delta_review_status": "unchanged"
+    },
+    {
+      "file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u46.json",
+      "sha256": "e2982aea6670f0ac8bd265cac0f7d0628f6b55a784f33393abc79e97baa12fd0",
+      "current_sha256": "e2982aea6670f0ac8bd265cac0f7d0628f6b55a784f33393abc79e97baa12fd0",
+      "changed_since_snapshot": false,
+      "final_sha256": "e2982aea6670f0ac8bd265cac0f7d0628f6b55a784f33393abc79e97baa12fd0",
+      "delta_review_status": "unchanged"
+    },
+    {
+      "file": "/workspace/scratch/n3-production/repo/src/content/textbookManuscripts/japanese-n3/lessons/u47.json",
+      "sha256": "3916d383347843a0003bd154eb6be0f3a6c28908ef2549a593d87106c70923b7",
+      "current_sha256": "3916d383347843a0003bd154eb6be0f3a6c28908ef2549a593d87106c70923b7",
+      "changed_since_snapshot": false,
+      "final_sha256": "3916d383347843a0003bd154eb6be0f3a6c28908ef2549a593d87106c70923b7",
+      "delta_review_status": "unchanged"
+    }
+  ],
+  "final_delta_checked_at_utc": "2026-10-21T11:33:04.044004+00:00",
+  "open_blocking_findings": []
+}

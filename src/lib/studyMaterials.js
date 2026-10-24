@@ -350,11 +350,12 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
     supabase.from('grammar_review')
       .select('*')
       .eq('user_id', userId).eq('lang', lang)
-      // 독해·단일 드릴 행(rt:/drill: 접두)은 챕터 복습이 아니다.
+      // 독해·단일 드릴·담은 패턴 행(rt:/drill:/bk: 접두)은 챕터 복습이 아니다.
       // 제외하지 않으면 특수 행이 limit(2) 슬롯을 잠식해 정작 due 인 챕터 복습을 굶기고,
       // 아래 ref.getChapter(row.slug) 도 실패해 그 슬롯이 통째로 버려진다.
       .not('slug', 'like', 'rt:%')
       .not('slug', 'like', 'drill:%')
+      .not('slug', 'like', 'bk:%')
       .lte('next_review_at', dueIso)
       .order('next_review_at', { ascending: true }).limit(2),
     supabase.from('user_ref_progress')

@@ -1,0 +1,300 @@
+{
+  "schema": "independent-language-holdout-v1",
+  "created_at_utc": "2026-10-21T11:29:18.679140+00:00",
+  "manuscript_read_before_freeze": false,
+  "scope": "N3 신규 교재의 설명/문항이 새 맥락에서 유발하는 과잉일반화와 거짓 오답 위험",
+  "authority_limit": "독립 모델의 언어 판정 기준. 공식 JLPT 목록, 인간 원어민 검수, 실제 학습효과 인증 아님. 출처 대조는 별도 수행.",
+  "cases": [
+    {
+      "id": "H01",
+      "family": "せいか",
+      "sentence": "薬を飲んだせいか、よく眠れた。",
+      "context_ko": "새 약을 먹었으며 평소보다 잘 자서 원인을 추측한다.",
+      "acceptable_interpretations": [
+        "좋은 결과에도 원인 추정의 せいか는 가능",
+        "약 덕분인지는 확정하지 않는다"
+      ],
+      "acceptable_alternatives": [
+        "薬のおかげか、よく眠れた。"
+      ],
+      "forbidden_overclaims": [
+        "せいか는 결과가 나쁜 경우에만 문법적으로 가능하다",
+        "약 때문에 잤음이 확정되었다"
+      ],
+      "basis": "원인 추측의 か와 부정 평가 경향을 문법적 금지로 혼동하지 않는다."
+    },
+    {
+      "id": "H02",
+      "family": "らしい 전형",
+      "sentence": "今日は春らしい暖かさだ。",
+      "context_ko": "봄철에 계절다운 따뜻한 날씨를 묘사한다.",
+      "acceptable_interpretations": [
+        "봄다운 전형성"
+      ],
+      "acceptable_alternatives": [
+        "春らしい陽気だ。"
+      ],
+      "forbidden_overclaims": [
+        "남에게 봄이라고 전해 들었다는 전언만 가능"
+      ],
+      "basis": "명사+らしい의 전형성 용법을 별도로 인정한다."
+    },
+    {
+      "id": "H03",
+      "family": "らしい 추정/전언",
+      "sentence": "駅前に新しい店ができたらしい。",
+      "context_ko": "다른 사람에게 소식을 들었거나 간판 등 간접 증거로 판단한다.",
+      "acceptable_interpretations": [
+        "새 가게가 생겼다는 전언 또는 간접적 추정",
+        "문장만으로 정보 출처를 단일 확정할 수 없다"
+      ],
+      "acceptable_alternatives": [
+        "駅前に新しい店ができたそうだ。 (전해 들은 경우)"
+      ],
+      "forbidden_overclaims": [
+        "らしい이면 반드시 남의 말을 그대로 전달한 것이다",
+        "새 가게가 생긴 사실을 화자가 직접 목격해 확인했다"
+      ],
+      "basis": "정보 출처 경향과 유일성 구분."
+    },
+    {
+      "id": "H04",
+      "family": "わけではない 부분/범위부정",
+      "sentence": "甘い物が全部嫌いなわけではない。",
+      "context_ko": "어떤 단 음식은 좋아하지만 다른 종류는 싫어한다.",
+      "acceptable_interpretations": [
+        "모든 단 것을 싫어하는 것은 아니다",
+        "일부를 좋아하는 상황과 양립"
+      ],
+      "acceptable_alternatives": [
+        "甘い物がすべて嫌いというわけではない。"
+      ],
+      "forbidden_overclaims": [
+        "단 것을 전부 좋아한다",
+        "단 것을 전부 싫어한다"
+      ],
+      "basis": "전체명제의 부정과 반대명제의 확정을 구분."
+    },
+    {
+      "id": "H05",
+      "family": "わけではない 명제부정",
+      "sentence": "行きたくないわけではないが、今日は休みたい。",
+      "context_ko": "가고 싶은 마음이 있으나 오늘은 쉰다.",
+      "acceptable_interpretations": [
+        "가기 싫다는 뜻은 아니다",
+        "실제 참석은 확약하지 않는다"
+      ],
+      "acceptable_alternatives": [
+        "行くのが嫌なわけではない。"
+      ],
+      "forbidden_overclaims": [
+        "반드시 가겠다",
+        "わけではない는 언제나 수량 일부만 부정한다"
+      ],
+      "basis": "부정의 범위는 선행 명제 전체 또는 일부를 포함한다."
+    },
+    {
+      "id": "H06",
+      "family": "ないことはない",
+      "sentence": "手伝えないことはないけど、少しだけなら。",
+      "context_ko": "시간이 부족하여 제한적으로 도움을 줄 수 있다.",
+      "acceptable_interpretations": [
+        "도울 수 없지는 않다",
+        "제한적 가능성을 인정"
+      ],
+      "acceptable_alternatives": [
+        "少しなら手伝える。"
+      ],
+      "forbidden_overclaims": [
+        "적극적으로 끝까지 돕겠다는 확약",
+        "절대로 도울 수 없다"
+      ],
+      "basis": "이중부정은 약한 긍정이지 강한 의지/확약이 아니다."
+    },
+    {
+      "id": "H07",
+      "family": "わけにはいかない",
+      "sentence": "明日は大事な試験なので、今夜は遊んでいるわけにはいかない。",
+      "context_ko": "물리적으로 놀 수 있으나 책임과 사정 때문에 자제한다.",
+      "acceptable_interpretations": [
+        "사정상 놀고 있을 수 없다",
+        "사회적 의무 외 개인의 책임/상황도 가능"
+      ],
+      "acceptable_alternatives": [
+        "今夜は遊んでいられない。"
+      ],
+      "forbidden_overclaims": [
+        "물리적 능력이 없어 놀 수 없다",
+        "법률로 금지된 경우에만 쓴다"
+      ],
+      "basis": "행위 제약의 이유를 능력 불가능과 구별하되 법/대인관계로 한정하지 않는다."
+    },
+    {
+      "id": "H08",
+      "family": "ないわけにはいかない",
+      "sentence": "約束したので、行かないわけにはいかない。",
+      "context_ko": "약속을 지켜야 하므로 가야 한다.",
+      "acceptable_interpretations": [
+        "안 갈 수는 없다",
+        "가야 한다는 사정상 의무"
+      ],
+      "acceptable_alternatives": [
+        "約束したので、行かなければならない。"
+      ],
+      "forbidden_overclaims": [
+        "가면 안 된다",
+        "갈 수 없다"
+      ],
+      "basis": "부정형 삽입에 따른 의무 극성 유지."
+    },
+    {
+      "id": "H09",
+      "family": "わりに/にしては 겹침",
+      "sentence": "この店は値段のわりにおいしい／この店は安いにしてはおいしい。",
+      "context_ko": "저렴한 가격에서 기대한 수준보다 맛이 좋다.",
+      "acceptable_interpretations": [
+        "두 표현 모두 기대 대비 평가 가능",
+        "기준 명시/접속에 따라 형태 차이"
+      ],
+      "acceptable_alternatives": [
+        "この値段にしてはおいしい。",
+        "この値段のわりにおいしい。"
+      ],
+      "forbidden_overclaims": [
+        "わりに와にしては는 어떤 맥락에서도 서로 바꿀 수 없다",
+        "후건이 평가이면 둘 중 하나는 항상 비문"
+      ],
+      "basis": "형식 차이와 의미/화용 중첩을 분리한다."
+    },
+    {
+      "id": "H10",
+      "family": "ば〜のに 과거 반사실",
+      "sentence": "もっと早く出れば、間に合ったのに。",
+      "context_ko": "늦게 출발하여 실제로는 제시간에 도착하지 못했다.",
+      "acceptable_interpretations": [
+        "더 일찍 출발했더라면 시간에 맞췄을 텐데",
+        "실제 미실현과 아쉬움"
+      ],
+      "acceptable_alternatives": [
+        "もっと早く出ていれば、間に合ったのに。"
+      ],
+      "forbidden_overclaims": [
+        "실제로 일찍 출발했고 제시간에 도착했다"
+      ],
+      "basis": "과거 결과와 조건 비실현의 관계."
+    },
+    {
+      "id": "H11",
+      "family": "ば〜のに 미실현/제안",
+      "sentence": "明日も晴れればいいのに。",
+      "context_ko": "내일 날씨를 모르는 현재의 바람이다.",
+      "acceptable_interpretations": [
+        "내일도 맑으면 좋을 텐데라는 바람",
+        "실제 날씨는 아직 확정되지 않음"
+      ],
+      "acceptable_alternatives": [
+        "明日も晴れるといいのに。"
+      ],
+      "forbidden_overclaims": [
+        "のに가 있으므로 내일은 반드시 비가 온다",
+        "ば〜のに는 과거 반사실에만 쓴다"
+      ],
+      "basis": "바람/불만의 のに와 이미 알려진 과거 사실을 구별."
+    },
+    {
+      "id": "H12",
+      "family": "くせに 화용",
+      "sentence": "よく知っているくせに、教えてくれないんだね。",
+      "context_ko": "친한 사이에서 비난 또는 장난 섞인 투정을 한다.",
+      "acceptable_interpretations": [
+        "상대에 대한 비난/불만이 기본",
+        "관계와 억양에 따라 장난이나 친근한 투정 가능"
+      ],
+      "acceptable_alternatives": [
+        "知っているのに、教えてくれないんだね。 (비난성은 약해질 수 있음)"
+      ],
+      "forbidden_overclaims": [
+        "항상 공손하고 중립적이다",
+        "친한 사이에서조차 반드시 모욕이나 적대 발화다"
+      ],
+      "basis": "부정적인 평가 경향과 실제 수용 말투의 맥락성을 함께 유지."
+    },
+    {
+      "id": "H13",
+      "family": "使役受身 축약",
+      "sentence": "飲ませられた→飲まされた／話させられた→*話さされた",
+      "context_ko": "원치 않는 음주/발표를 시키는 상황에서 형태를 만든다.",
+      "acceptable_interpretations": [
+        "5단 일부는 -される로 단축 가능",
+        "す로 끝나는 5단은 같은 단축을 일반화하지 않는다",
+        "話させられた가 표준형"
+      ],
+      "acceptable_alternatives": [
+        "飲ませられた",
+        "飲まされた",
+        "話させられた"
+      ],
+      "forbidden_overclaims": [
+        "5단동사는 예외 없이 단축한다",
+        "話さされた가 표준 축약형이다"
+      ],
+      "basis": "5단 중 す 종결 예외; 1단/불규칙 일반화 금지."
+    },
+    {
+      "id": "H14",
+      "family": "お/ご〜する 행위자",
+      "sentence": "私が先生をご案内します。",
+      "context_ko": "내가 선생님을 안내한다고 정중히 말한다.",
+      "acceptable_interpretations": [
+        "행위자는 私",
+        "높임 대상은 행위가 향하는 先生"
+      ],
+      "acceptable_alternatives": [
+        "私が先生をお連れします。"
+      ],
+      "forbidden_overclaims": [
+        "先生가 안내하는 행위이다",
+        "ご案内します 자체가 선생님의 행동을 높이는 존경어다"
+      ],
+      "basis": "겸양어I의 행위자와 행위가 향하는 상대를 구분."
+    },
+    {
+      "id": "H15",
+      "family": "させていただく",
+      "sentence": "資料を使わせていただきます。",
+      "context_ko": "상대에게 자료 사용 허락을 받았으며 그 사용이 자신에게 도움이 된다.",
+      "acceptable_interpretations": [
+        "허락과 수혜의 조건이 있을 때 자연스러운 겸양 표현",
+        "허락은 명시적 발언 외 상황상 허락을 포함할 수 있다"
+      ],
+      "acceptable_alternatives": [
+        "資料を使わせていただいてもよろしいでしょうか。 (허락을 구하는 경우)"
+      ],
+      "forbidden_overclaims": [
+        "아무 행동에 붙이면 언제나 더 정확하고 적절하다",
+        "반드시 직접 서면 허가가 있어야만 가능하다"
+      ],
+      "basis": "문화청 敬語の指針의 허락+은혜 조건 및 상황적 허용."
+    },
+    {
+      "id": "H16",
+      "family": "いただく 주체/시제",
+      "sentence": "先生に作文を見ていただきました。",
+      "context_ko": "선생님이 내 작문을 봐 주었으며 나는 그 도움을 받았다.",
+      "acceptable_interpretations": [
+        "작문을 보는 행위자는 선생님",
+        "いただく의 수혜 주체는 생략된 私",
+        "이미 도움을 받았다는 과거"
+      ],
+      "acceptable_alternatives": [
+        "先生が作文を見てくださいました。 (관점/주어가 바뀜)"
+      ],
+      "forbidden_overclaims": [
+        "내가 선생님의 작문을 봤다",
+        "선생님이 내게서 도움을 받았다",
+        "이 문장은 미래의 요청이다"
+      ],
+      "basis": "내포 행동 주체와 수혜동사 주체, 완료/요청 구별."
+    }
+  ]
+}

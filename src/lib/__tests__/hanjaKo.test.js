@@ -202,14 +202,15 @@ describe('hanjaJa.json 생성 데이터', () => {
   });
 });
 
-// 배선 계약: 옵트인 전제 — 기본 꺼짐, 중국어 뷰어에서만 토글 노출.
-describe('한자 대조 배선 계약', () => {
-  it('설정 기본값이 꺼짐(false)이다', () => {
-    expect(viewerDefaults('Chinese').showHanjaKo).toBe(false);
+// 배선 계약: 중국어 뷰어에서만 토글 노출. 기본값은 오너 개정(2026-10-23 KST)으로 켬 — 이름도 단어장과 같은 「훈음」.
+describe('훈음 배선 계약', () => {
+  it('설정 기본값이 중국어에서만 켬(true)이다', () => {
+    expect(viewerDefaults('Chinese').showHanjaKo).toBe(true);
+    for (const language of ['Japanese', 'Korean', 'English']) expect(viewerDefaults(language).showHanjaKo).toBe(false);
   });
 
   it('뷰어가 중국어에서만 토글을 노출하고 시트에 훈음을 표시한다', () => {
-    const options=fs.readFileSync(path.join(process.cwd(),'src/components/viewer/ViewerSettings.jsx'),'utf8'); expect(options).toContain("language==='Chinese'&&");expect(options).toContain('label="한자 대조"');expect(options).toContain("set('showHanjaKo',v)");const src=fs.readFileSync(path.join(process.cwd(),'src/views/ViewerPage.jsx'),'utf8');expect(src).toContain("import('../lib/data/hanjaKo.json')");
+    const options=fs.readFileSync(path.join(process.cwd(),'src/components/viewer/ViewerSettings.jsx'),'utf8'); expect(options).toContain("language==='Chinese'&&");expect(options).toContain('label="훈음"');expect(options).toContain("set('showHanjaKo',v)");const src=fs.readFileSync(path.join(process.cwd(),'src/views/ViewerPage.jsx'),'utf8');expect(src).toContain("import('../lib/data/hanjaKo.json')");
   });
 
   it('훈음(①)도 같은 토글 아래 지연 로드되어 단어 카드에 병기된다(팝업은 ②로 카드 단일화)', () => {
@@ -522,6 +523,8 @@ describe('R0+ 화면 악화 0 — 같은 음 글자는 지금 훈음 유지', ()
 
   it('음이 바로잡히는 정체 글자의 훈은 어문회 대표훈(HUN_MANUAL)', () => {
     expect(hun['臺']).toBe('대');
+    // JLPT 카드 글자 칸(정자 꼴 조회) — 予定 · 会社 · 駅 · 図書館 · 準備(재검수 2026-10-22 KST)
+    expect([hun['豫'], hun['社'], hun['驛'], hun['館'], hun['準']]).toEqual(['미리', '모일', '역', '집', '준할']);
     expect(next('舞台')[1].label).toBe('대 대'); // libhangul '능 대'
     expect(next('船只')[1].label).toBe('외짝 척'); // '새 한 마리 척'
     expect(next('几乎')[0].label).toBe('몇 기'); // '기미 기'

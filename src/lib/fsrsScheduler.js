@@ -4,7 +4,9 @@ import { FSRSAlgorithm, FSRSVersion, S_MIN, S_MAX, date_scheduler } from 'ts-fsr
 export const FSRS_POLICY = Object.freeze({
   version: 'anki-seconds-v1', engine: 'v5.3.2 using FSRS-6.0',
   learning: Object.freeze([30, 600]), relearning: Object.freeze([600]),
-  retention: 0.9, maximumInterval: 36500, timeZone: 'Asia/Seoul', rolloverHour: 4,
+  // 간격 상한 365일(HSK 단어 페이지 개편, 오너 확정 2026-10-19 KST) — 「졸업」한 단어도 1년 안에 한 번은 다시 만난다.
+  // 저장 상한(storedIntervalLimit)은 DB 검사(fsrs 카드 scheduledDays 1–36500)와 같다 — 상한을 낮추기 전에 생긴 긴 간격 카드도 그대로 읽힌다.
+  retention: 0.9, maximumInterval: 365, storedIntervalLimit: 36500, timeZone: 'Asia/Seoul', rolloverHour: 4,
 });
 // 학습 단계 정책(REV-SCOPE R1-B-2). 어느 정책으로 새 카드를 만들고 채점할지는 서버(fsrs_capabilities)가 정한다.
 // 두 정책 모두 학습 2단계 · 재학습 1단계라 단계 순번은 그대로 옮겨진다 — 학습 · 재학습 중인 카드는 다음 채점 때 새 정책으로 넘어간다.
@@ -23,7 +25,24 @@ const STATES = ['New', 'Learning', 'Review', 'Relearning'];
 const algorithm = new FSRSAlgorithm({ request_retention: FSRS_POLICY.retention,
   maximum_interval: FSRS_POLICY.maximumInterval, enable_fuzz: false, enable_short_term: true });
 
+// 같은 시각 문자열은 한 번만 푼다(TAP-INP-SCHED-001). 복습 줄 · 오늘 개수는 표현마다 이 함수를 세 번 부르고(묻는 시각 ·
+// 평가 시각 · 다음 질문 시각), 범위 · 언어별 개수마다 다시 계산한다 — 채점 한 번에 표현 412개 기준 수천 번 같은 문자열을
+// 정규식으로 풀어 탭 처리에 CPU×4 50ms 이상을 썼다(390 실측). 결과는 문자열만의 함수라 저장해 둔 값이 늘 같다. 잘못된
+// 문자열은 저장하지 않고 예전처럼 매번 던진다. 크기는 묶어 둔다(가득 차면 비우고 다시 쌓는다).
+const PARSED_TIMES = new Map();
+const PARSED_TIMES_MAX = 4096;
 export function schedulerTime(value) {
+  if (typeof value === 'string') {
+    const hit = PARSED_TIMES.get(value);
+    if (hit !== undefined) return hit;
+    const ms = parseSchedulerTime(value);
+    if (PARSED_TIMES.size >= PARSED_TIMES_MAX) PARSED_TIMES.clear();
+    PARSED_TIMES.set(value, ms);
+    return ms;
+  }
+  return parseSchedulerTime(value);
+}
+function parseSchedulerTime(value) {
   // 밀리초보다 작은 정밀도나 잘못된 달력을 Date의 자동 보정으로 숨기지 않는다.
   let ms;
   if (value instanceof Date) ms = value.getTime();
@@ -109,7 +128,7 @@ export function validateFsrsCard(card) {
   const steps = card.state === 'Learning' ? policy.learning : card.state === 'Relearning' ? policy.relearning : null;
   if ((steps && card.step >= steps.length) || (!steps && card.step !== 0) ||
       (card.state !== 'Review' && card.scheduledDays !== 0) ||
-      (card.state === 'Review' && (card.scheduledDays < 1 || card.scheduledDays > FSRS_POLICY.maximumInterval))) throw new Error('invalid_fsrs_step');
+      (card.state === 'Review' && (card.scheduledDays < 1 || card.scheduledDays > FSRS_POLICY.storedIntervalLimit))) throw new Error('invalid_fsrs_step');
   return card;
 }
 
@@ -138,8 +157,10 @@ function stepPlan(card, rating, policy) {
 /**
  * 같은 카드와 한 번 캡처한 시각으로 네 버튼의 실제 전이를 계산한다. 미리 복습하지 않는다.
  * policyVersion = 채점 뒤 카드의 정책(서버가 알린 지금 정책). 생략하면 카드의 정책을 그대로 쓴다.
+ * easyFloor = 학습 · 재학습의 쉬움을 알맞음 간격보다 하루 이상 길게(Anki 대조, 오너 승인 2026-10-23 KST).
+ * false는 그 전에 저장된 채점을 되돌릴 때 원래 계산을 다시 짓는 데만 쓴다(planFsrsUndo).
  */
-export function previewFsrsRatings(input, at, { policyVersion = input?.policyVersion } = {}) {
+export function previewFsrsRatings(input, at, { policyVersion = input?.policyVersion, easyFloor = true } = {}) {
   const card = validateFsrsCard(input), now = schedulerTime(at), policy = fsrsPolicySteps(policyVersion);
   if (now < schedulerTime(card.due)) throw new Error('fsrs_card_not_due');
   const elapsed = card.lastReview === null ? 0 : learningDay(now, card.timeZone, card.rolloverHour)
@@ -150,6 +171,9 @@ export function previewFsrsRatings(input, at, { policyVersion = input?.policyVer
   if (card.state === 'Review') {
     days[1] = Math.min(days[1], days[2]);
     days[2] = Math.min(FSRS_POLICY.maximumInterval, Math.max(days[2], days[1] + 1));
+    days[3] = Math.min(FSRS_POLICY.maximumInterval, Math.max(days[3], days[2] + 1));
+  } else if (easyFloor) {
+    // Anki(rslib learning · relearning answer_easy)는 알맞음이 아직 단계여도 그 FSRS 간격 + 1일을 쉬움의 하한으로 둔다.
     days[3] = Math.min(FSRS_POLICY.maximumInterval, Math.max(days[3], days[2] + 1));
   }
   return Object.fromEntries([1, 2, 3, 4].map(rating => {
@@ -170,4 +194,27 @@ export function previewFsrsRatings(input, at, { policyVersion = input?.policyVer
 export function scheduleFsrsReview(card, rating, at, options) {
   if (![1, 2, 3, 4].includes(rating)) throw new Error('invalid_fsrs_rating');
   return previewFsrsRatings(card, at, options)[rating];
+}
+
+/**
+ * 연습 기억(단어 페이지 네 영역 — 오너 승인 2026-10-21 KST) — 일정 카드 없이 「그날의 첫 답」만으로 같은 FSRS 엔진 · 같은 목표 기억률을 다시 돌린다.
+ * answers = 오래된 순 [{ day: learningDay, correct }]. 맞힘 = 알맞음(3), 놓침 = 다시(1). 하루 한 답이라 학습 단계(분 단위)는 없다.
+ * 반환: { stability, difficulty, lastDay, last } 또는 null(답 없음). 기억률은 practiceRecall로 잰다.
+ */
+export function replayPracticeMemory(answers) {
+  let memory = null, lastDay = null, last = null;
+  for (const a of answers || []) {
+    if (!Number.isInteger(a?.day) || typeof a.correct !== 'boolean') continue;
+    const elapsed = lastDay === null ? 0 : Math.max(0, a.day - lastDay);
+    memory = algorithm.next_state(memory, elapsed, a.correct ? 3 : 1);
+    lastDay = a.day;
+    last = a.correct;
+  }
+  return memory ? { stability: memory.stability, difficulty: memory.difficulty, lastDay, last } : null;
+}
+
+/** 지금 기억률(0–1) — 마지막 답 뒤 지난 학습일 수로 엔진의 망각 곡선을 읽는다. 목표(FSRS_POLICY.retention) 아래면 맞힘이 흐려진 것이다. */
+export function practiceRecall(memory, today) {
+  if (!memory || !Number.isFinite(memory.stability)) return 0;
+  return algorithm.forgetting_curve(Math.max(0, today - memory.lastDay), memory.stability);
 }

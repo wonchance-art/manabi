@@ -10,7 +10,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MutationObserver, QueryClient } from '@tanstack/query-core';
 import { sliceBetween } from './helpers/sliceBetween';
 
-const h = vi.hoisted(() => ({ slots: [], index: 0, effects: [], cleanups: [], listener: null, session: null }));
+const h = vi.hoisted(() => ({ slots: [], index: 0, effects: [], cleanups: [], listener: null, session: null, sessionReads: 0 }));
 vi.mock('react', async importOriginal => {
   const actual = await importOriginal();
   return { ...actual,
@@ -23,7 +23,7 @@ vi.mock('../supabase', () => {
   const client = {
     from() { const q = { select: () => q, eq: () => q, single: async () => ({ data: null, error: { code: 'PGRST116' } }), update: () => q, upsert: async () => ({ error: null }), then: (resolve, reject) => Promise.resolve({ error: null }).then(resolve, reject) }; return q; },
     auth: {
-      getSession: vi.fn(async () => ({ data: { session: h.session } })),
+      getSession: vi.fn(async () => { h.sessionReads += 1; return { data: { session: h.session } }; }),
       onAuthStateChange: vi.fn(fn => { h.listener = fn; return { data: { subscription: { unsubscribe: vi.fn() } } }; }),
       signOut: vi.fn(async () => { h.session = null; h.listener?.('SIGNED_OUT', null); return {}; }),
     },
@@ -48,14 +48,20 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 const user = id => ({ id, user_metadata: { name: id } });
 
 /** 순서표 — 각 장면의 마지막 전환에서 일어나는 일. 값: 'yes' · 'no' · 'keep' · 'clear' · 손님/계정 표기.
- *  refresh = 서버 렌더 버리기(계정이 떠날 때만 — A → 손님 · A → B). scHint = 간체 글꼴 힌트 쿠키(화면 캐시와 같은 판정에서 지움). */
+ *  refresh = 서버 렌더 버리기(계정이 떠날 때만 — A → 손님 · A → B). scHint = 간체 글꼴 힌트 쿠키(화면 캐시와 같은 판정에서 지움).
+ *  read = 마지막 전환이 세션을 저장소(쿠키)에서 다시 읽었나 — 마운트 복원 · bfcache 복원 재확인은 읽고, SDK 알림 · signOut은 알림 값을 쓴다.
+ *  「bfcache 복원」 장면(GUEST-STATIC-001 1단계, 2026-10-23 KST): 얼어 있던 화면이 pageshow(persisted)로 돌아왔을 때 쿠키가 바뀌어 있으면
+ *  같은 관문(adoptUser → accountCacheReset · refresh)으로 정리한다. 쿠키가 없으면 SDK를 부르지 않고 손님으로 확정한다(read no). */
 export const ACCOUNT_BOUNDARY_MATRIX = [
-  { scene: '첫 복원(손님 → A, 이 기기 처음)', cache: 'keep', purge: 'no', claim: 'yes', source: 'keep', mutation: '해당 없음', shown: 'A', refresh: 'no', scHint: 'keep' },
-  { scene: '같은 계정 갱신(A → A, TOKEN_REFRESHED)', cache: 'keep', purge: 'no', claim: 'no', source: 'keep', mutation: 'keep', shown: 'A', refresh: 'no', scHint: 'keep' },
-  { scene: 'A → 손님(로그아웃)', cache: 'clear', purge: '손님', claim: 'no', source: 'clear', mutation: 'clear', shown: '손님', refresh: 'yes', scHint: 'clear' },
-  { scene: 'A → B(다른 탭 SIGNED_IN B)', cache: 'clear', purge: 'B', claim: 'no', source: 'clear', mutation: 'clear', shown: 'B', refresh: 'yes', scHint: 'clear' },
-  { scene: '손님 → B(앞서 A)', cache: 'clear', purge: 'B', claim: 'no', source: 'clear', mutation: 'clear', shown: 'B', refresh: 'no', scHint: 'clear' },
-  { scene: 'A → 손님 → A', cache: 'keep', purge: 'no', claim: 'yes', source: 'keep', mutation: 'keep', shown: 'A', refresh: 'no', scHint: 'keep' },
+  { scene: '첫 복원(손님 → A, 이 기기 처음)', cache: 'keep', purge: 'no', claim: 'yes', source: 'keep', mutation: '해당 없음', shown: 'A', refresh: 'no', scHint: 'keep', read: 'yes' },
+  { scene: '같은 계정 갱신(A → A, TOKEN_REFRESHED)', cache: 'keep', purge: 'no', claim: 'no', source: 'keep', mutation: 'keep', shown: 'A', refresh: 'no', scHint: 'keep', read: 'no' },
+  { scene: 'A → 손님(로그아웃)', cache: 'clear', purge: '손님', claim: 'no', source: 'clear', mutation: 'clear', shown: '손님', refresh: 'yes', scHint: 'clear', read: 'no' },
+  { scene: 'A → B(다른 탭 SIGNED_IN B)', cache: 'clear', purge: 'B', claim: 'no', source: 'clear', mutation: 'clear', shown: 'B', refresh: 'yes', scHint: 'clear', read: 'no' },
+  { scene: '손님 → B(앞서 A)', cache: 'clear', purge: 'B', claim: 'no', source: 'clear', mutation: 'clear', shown: 'B', refresh: 'no', scHint: 'clear', read: 'no' },
+  { scene: 'A → 손님 → A', cache: 'keep', purge: 'no', claim: 'yes', source: 'keep', mutation: 'keep', shown: 'A', refresh: 'no', scHint: 'keep', read: 'no' },
+  { scene: 'bfcache 복원 A → 손님(얼어 있는 동안 쿠키만 지워짐)', cache: 'clear', purge: '손님', claim: 'no', source: 'clear', mutation: 'clear', shown: '손님', refresh: 'yes', scHint: 'clear', read: 'no' },
+  { scene: 'bfcache 복원 A → B(얼어 있는 동안 쿠키만 B)', cache: 'clear', purge: 'B', claim: 'no', source: 'clear', mutation: 'clear', shown: 'B', refresh: 'yes', scHint: 'clear', read: 'yes' },
+  { scene: 'bfcache 복원 A → A(쿠키 그대로)', cache: 'keep', purge: 'no', claim: 'no', source: 'keep', mutation: 'keep', shown: 'A', refresh: 'no', scHint: 'keep', read: 'yes' },
 ];
 
 let qc, data, refreshes;
@@ -64,9 +70,11 @@ const render = () => { h.index = 0; return AuthProvider({ children: null, queryC
 async function effects() { for (const fn of h.effects.splice(0)) { const cleanup = fn(); if (cleanup) h.cleanups.push(cleanup); } await tick(); }
 async function mount() { render(); await effects(); return render(); }
 async function rerender() { render(); await effects(); }
+/** effect가 window에 건 pageshow 처리기를 부른다(대역 window.addEventListener의 기록에서 찾는다). */
+const pageshow = event => { for (const [type, fn] of window.addEventListener.mock.calls) if (type === 'pageshow') fn(event); };
 
 beforeEach(() => {
-  h.slots = []; h.index = 0; h.effects = []; h.cleanups = []; h.listener = null; h.session = { user: user('A') };
+  h.slots = []; h.index = 0; h.effects = []; h.cleanups = []; h.listener = null; h.session = { user: user('A') }; h.sessionReads = 0;
   purge.calls = []; hint.calls = []; refreshes = 0;
   qc = new QueryClient({ defaultOptions: { queries: { staleTime: 120000, retry: false }, mutations: { retry: false } } });
   data = new Map();
@@ -90,7 +98,7 @@ function seed() {
   qc.setQueryData(['material', 'X'], { id: 'X' });
   data.set('ja_read_chapters', JSON.stringify(['n5-01'])); // 손님 몫(옛 키)
   data.set('study_source_Japanese', JSON.stringify({ owner: null, at: Date.now(), text: '넘겨줄 글' }));
-  purge.calls = []; hint.calls = []; refreshes = 0;
+  purge.calls = []; hint.calls = []; refreshes = 0; h.sessionReads = 0;
 }
 function observe(target) {
   return {
@@ -101,6 +109,7 @@ function observe(target) {
     shown: knownAccount() === null ? '손님' : knownAccount(),
     refresh: refreshes > 0 ? 'yes' : 'no',
     scHint: hint.calls.includes(false) ? 'clear' : 'keep',
+    read: h.sessionReads > 0 ? 'yes' : 'no',
   };
 }
 
@@ -158,17 +167,47 @@ const SCENES = {
     await finish();
     return { ...cells, mutation: qc.getQueryData(['material', 'M']) ? 'keep' : 'clear' };
   },
+  // bfcache 복원 — 얼어 있던 동안 쿠키만 바뀌었다(SDK 알림 없음). 실제 effect가 건 pageshow 처리기를 persisted로 부른다.
+  'bfcache 복원 A → 손님(얼어 있는 동안 쿠키만 지워짐)': async () => {
+    await mount();
+    const finish = startLateWrite();
+    seed();
+    h.session = null; document.cookie = '';
+    pageshow({ persisted: true }); await tick(); await rerender();
+    const cells = observe(null);
+    await finish();
+    return { ...cells, mutation: qc.getQueryData(['material', 'M']) ? 'keep' : 'clear' };
+  },
+  'bfcache 복원 A → B(얼어 있는 동안 쿠키만 B)': async () => {
+    await mount();
+    const finish = startLateWrite();
+    seed();
+    h.session = { user: user('B') };
+    pageshow({ persisted: true }); await tick(); await rerender();
+    const cells = observe('B');
+    await finish();
+    return { ...cells, mutation: qc.getQueryData(['material', 'M']) ? 'keep' : 'clear' };
+  },
+  'bfcache 복원 A → A(쿠키 그대로)': async () => {
+    await mount();
+    const finish = startLateWrite();
+    seed();
+    pageshow({ persisted: true }); await tick(); await rerender();
+    const cells = observe('A');
+    await finish();
+    return { ...cells, mutation: qc.getQueryData(['material', 'M']) ? 'keep' : 'clear' };
+  },
 };
 
 describe('계정 경계 순서표 — 장면마다 실제로 돌려 표와 맞춘다', () => {
   for (const row of ACCOUNT_BOUNDARY_MATRIX) {
     it(row.scene, async () => {
       const got = await SCENES[row.scene]();
-      const want = { cache: row.cache, purge: row.purge, claim: row.claim, source: row.source, mutation: row.mutation, shown: row.shown, refresh: row.refresh, scHint: row.scHint };
+      const want = { cache: row.cache, purge: row.purge, claim: row.claim, source: row.source, mutation: row.mutation, shown: row.shown, refresh: row.refresh, scHint: row.scHint, read: row.read };
       expect(got).toEqual(want);
     });
   }
-  it('표의 장면은 여섯 · 장면마다 실행기가 있다', () => {
+  it('표의 장면은 아홉(bfcache 복원 셋 포함) · 장면마다 실행기가 있다', () => {
     expect(ACCOUNT_BOUNDARY_MATRIX.map(r => r.scene)).toEqual(Object.keys(SCENES));
   });
 });

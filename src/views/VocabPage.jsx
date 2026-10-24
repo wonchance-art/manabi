@@ -16,7 +16,7 @@ import { isSettledFsrsActivity } from '../lib/learningActivity';
 import FsrsReviewSession from '../components/vocab/FsrsReviewSession';
 import { callGemini } from '../lib/gemini';
 import Button from '../components/Button';
-import OfflineNotice, { PendingReviewsNotice } from '../components/OfflineNotice';
+import OfflineNotice, { PendingReviewsNotice, VOCAB_OFFLINE_TITLE, vocabOfflineLine } from '../components/OfflineNotice';
 import ConfirmModal from '../components/ConfirmModal';
 import VocabularyExclusionList from '../components/VocabularyExclusionList';
 import VocabReview, { REVIEW_PREP_FAILED } from './VocabReview';
@@ -41,7 +41,7 @@ import { ReviewIntroCard, ReviewSoundToggle, useScoreArmed } from '../components
 import { useKnownWords } from '../lib/useKnownWords';
 import { knownWordsLang } from '../lib/knownWords';
 import ReviewScopeBar, { ReviewScopeNotice } from '../components/vocab/ReviewScopeBar';
-import { useVocabData, invalidateVocabularyLearning } from '../lib/useVocabData';
+import { useVocabData, invalidateVocabularyLearning, patchVocabularyLearningRow } from '../lib/useVocabData';
 import { isVocabularyReviewAvailable, isVocabularyUnreviewed, vocabularyRetrievability } from '../lib/vocabularyLearningRead';
 import { wordStage } from '../lib/growthStats';
 import { confusedVocabWords, CONFUSED_MIN, CONFUSED_SINCE_DAYS } from '../lib/confusedQueue';
@@ -150,6 +150,8 @@ function VocabWorkspace({ reviewScope }) {
   const [reviewIdx, setReviewIdx] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [reviewFinished, setReviewFinished] = useState(false);
+  const reviewFinishedRef = useRef(reviewFinished);
+  reviewFinishedRef.current = reviewFinished;
   // 끝 공지(화면 읽기) — 끝 제목이 초점을 받지 못했을 때만 채운다(초점이 간 제목과 같은 말을 두 번 읽지 않게, a3ba 리뷰 ②).
   const [finishNotice, setFinishNotice] = useState(false);
   const scoringRef = useRef(false);
@@ -286,6 +288,14 @@ function VocabWorkspace({ reviewScope }) {
     scoreMutation, deleteMutation, csvImportMutation,
     updateVocabMutation, bulkDeleteMutation,
   } = useVocabData();
+  // 기기 사본으로 뜬 화면은 연결이 돌아오면 바로 정본을 다시 읽는다 — 사본도 「신선한」 조회 결과라 2분 안에는 재연결 재조회가
+  // 돌지 않아 「다시 시도」를 눌러야 했다(OFFLINE-SWEEP-001 P2).
+  useEffect(() => {
+    if (!isOffline) return undefined;
+    const reread = () => { refetchVocab(); };
+    window.addEventListener('online', reread);
+    return () => window.removeEventListener('online', reread);
+  }, [isOffline, refetchVocab]);
   const effectiveNow = Math.max(Date.now(), Date.parse(learningNow) || 0);
   const learningById = useMemo(() => new Map(projections.map(row => [row.vocabulary.id, row])), [projections]);
   const deckFor = useCallback(word => deckOf({ ...word, reading_materials: { title: materialTitles.get(word.source_material_id) } }), [materialTitles]);
@@ -349,6 +359,9 @@ function VocabWorkspace({ reviewScope }) {
   const scopeMatcher = useMemo(() => createScopeMatcher(scope, { levels: scopeLevels, sourceIds: scopeSourceIds }), [scope, scopeLevels, scopeSourceIds]);
   // 범위 안 표현 — 목록 · 문맥 보기 · 재대결이 모두 이 범위를 본다. 범위를 아직 판정할 수 없으면 비어 있다(전체로 새지 않는다).
   const vocab = useMemo(() => scopeMatcher.ready ? allVocab.filter(scopeMatcher.matches) : EMPTY_IDS, [allVocab, scopeMatcher]);
+  // 복습 화면(VocabReview)에 넘기는 범위 안 표현의 학습 상태 — 순서는 projections 그대로. 채점 · 정답 확인마다 화면이 다시 그려져
+  // 예전 projections × vocab 겹 순회(412×412 = 17만 번)가 탭 처리에 들었다(TAP-INP-SCHED-001, 390 CPU×4 실측 약 25ms). id 묶음으로 한 번에 거른다.
+  const scopedProjections = useMemo(() => { const ids = new Set(vocab.map(word => word.id)); return projections.filter(row => ids.has(row.vocabulary.id)); }, [projections, vocab]);
   const scopeArgs = { snapshot: { projections, enabled: learningAvailable }, scope, now: effectiveNow, levels: scopeLevels,
     sourceIds: scopeSourceIds, reviewSupported };
   const hasAnyWords = isBookScope ? vocab.length > 0 : allVocab.length > 0;
@@ -774,9 +787,9 @@ function VocabWorkspace({ reviewScope }) {
       && admission.controller.getSnapshot().current?.cardId === currentWord?.id;
     if (!currentActor() || !currentQuestion() || !currentWord || !fsrsReview.controller.canLegacy(currentWord.id) || !reviewSupported(currentWord) || currentWord.is_excluded || scoringRef.current) return;
     scoringRef.current = true;
-    let calculateFSRS;
+    let calculateVocabFSRS;
     try {
-      ({ calculateFSRS } = await import('../lib/fsrs'));
+      ({ calculateVocabFSRS } = await import('../lib/fsrs'));
     } catch {
       if (!currentActor()) return;
       scoringRef.current = false;
@@ -798,11 +811,13 @@ function VocabWorkspace({ reviewScope }) {
       legacyBudgetCompatibility: admission.current?.compatibility === true,
     };
     const prevInterval = currentWord.interval ?? 0;
-    const nextStats = calculateFSRS(rating, {
+    const nextStats = calculateVocabFSRS(rating, {
       interval: prevInterval,
       ease_factor: currentWord.ease_factor ?? 0,
       repetitions: currentWord.repetitions ?? 0,
       next_review_at: currentWord.next_review_at,
+      last_reviewed_at: currentWord.last_reviewed_at,
+      created_at: currentWord.created_at,
     });
     // progressStore로 통합: 복습 기록 + SRS + 보상 일괄 처리
     const qtype = ({ flash: 'flash', context: 'choice', typing: 'typing', listening: 'listening' })[effectiveMode] || 'choice';
@@ -816,7 +831,7 @@ function VocabWorkspace({ reviewScope }) {
       correct: rating > 1,
       detail: { word_id: currentWord.id, meaning: currentWord.meaning, rating, mode: effectiveMode, qtype },
     }, {
-      // calculateFSRS 반환 키를 그대로 쓴다 — DB 컬럼과 동일(snake_case).
+      // calculateVocabFSRS 반환 키를 그대로 쓴다 — DB 컬럼과 동일(snake_case).
       // 이전엔 easeFactor(비존재 컬럼)를 보내고 repetitions를 빠뜨려, PostgREST가 UPDATE 전체를
       // 거부 → 채점해도 SRS가 전진하지 않는 조용한 실패였다(PATCH 페이로드 실측으로 확인).
       interval: nextStats.interval ?? 0,
@@ -826,7 +841,13 @@ function VocabWorkspace({ reviewScope }) {
     }).then((r) => {
       if (!currentActor()) return;
       if (r?.ok === false) { toast('복습을 저장하지 못했어요. 연결을 확인해 주세요 — 이 단어는 다음에 다시 나와요.', 'error', 5000); return; }
-      invalidateVocabularyLearning(queryClient, actorId);
+      // 저장한 값을 목록에 바로 반영하고, 복습 중에는 전체 목록을 다시 읽지 않는다(「다시」로 돌아온 단어도 이 값으로 채점된다).
+      // 끝난 뒤 마지막 채점이면 서버 정본으로 한 번 다시 읽는다 — finishRun의 읽기가 이 저장보다 먼저 나갔을 수 있다.
+      const patched = patchVocabularyLearningRow(queryClient, actorId, snapshot.wordId,
+        { ...nextStats, interval: nextStats.interval ?? 0, ease_factor: nextStats.ease_factor ?? 0,
+          repetitions: nextStats.repetitions ?? 0, last_reviewed_at: r?.reviewedAt || new Date().toISOString() });
+      invalidateVocabularyLearning(queryClient, actorId,
+        { refetchLearning: !patched || (reviewFinishedRef.current && pendingGradeRef.current <= 1) });
       if (!r?.queued) refreshProfileReadOnly(actorId)?.catch(() => {});
       if (gradeSessionRef.current !== gradeSession) return;
       if ((lastGradeRef.current?.sequence ?? 0) <= sequence) {
@@ -1418,7 +1439,8 @@ function VocabWorkspace({ reviewScope }) {
 
       {/* 네트워크가 죽어 캐시 스냅샷으로 살아난 화면임을 알린다(v2-N R1) */}
       {isOffline && <OfflineNotice what="단어장" />}
-      {admission.error && tab !== 'review' && <div role="alert" className="card">
+      {/* 기기 사본(끊김)일 때는 아래 상태 한 장이 복습 사정을 말한다 — 같은 끊김을 「준비하지 못했어요」로 또 쓰지 않는다(P2). */}
+      {admission.error && tab !== 'review' && !isOffline && <div role="alert" className="card">
         <p>{REVIEW_PREP_FAILED}</p>
         <Button variant="ghost" onClick={() => admission.controller.retryConfiguration().catch(() => {})}>다시 시도</Button>
       </div>}
@@ -1484,7 +1506,10 @@ function VocabWorkspace({ reviewScope }) {
             <button type="button" className="btn btn--ghost btn--md" onClick={() => selectLanguage(scope.lang)}>범위 풀기</button></div></section>
       ) : vocabError || !learningAvailable ? (
         <>
-        <section className="review-room-state" role="alert"><h2>표현을 불러오지 못했어요.</h2><p>연결을 확인한 뒤 다시 시도해 주세요. 복습 기록은 그대로 남아 있어요.</p><button type="button" className="btn btn--primary" onClick={() => refetchVocab()}>다시 시도</button></section>
+        {isOffline
+          // 기기 사본: 위 사본 안내(OfflineNotice)와 어긋나지 않게 「못 불러왔다」 대신 복습을 막는 이유와 기록 보존만(P2 — 세 겹 → 두 줄).
+          ? <section className="review-room-state" role="alert"><h2>{VOCAB_OFFLINE_TITLE}</h2><p>{vocabOfflineLine(vocab.length)}</p><button type="button" className="btn btn--primary" onClick={() => refetchVocab()}>다시 시도</button></section>
+          : <section className="review-room-state" role="alert"><h2>표현을 불러오지 못했어요.</h2><p>연결을 확인한 뒤 다시 시도해 주세요. 복습 기록은 그대로 남아 있어요.</p><button type="button" className="btn btn--primary" onClick={() => refetchVocab()}>다시 시도</button></section>}
         {vocab.length > 0 && vocabList}
         </>
       ) : tab === 'list' ? (
@@ -1709,7 +1734,7 @@ function VocabWorkspace({ reviewScope }) {
           <VocabReview
             bookReview={isBookScope ? { returnTo: reviewScope.returnTo } : null}
             vocab={vocab}
-            projections={projections.filter(row => vocab.some(word => word.id === row.vocabulary.id))}
+            projections={scopedProjections}
             learningAvailable={learningAvailable}
             now={effectiveNow}
             reviewWords={reviewSessionWords}

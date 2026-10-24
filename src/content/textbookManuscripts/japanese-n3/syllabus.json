@@ -1,0 +1,2101 @@
+{
+  "status": "M00_AUTHORING_BASELINE_NOT_PUBLICATION_ACCEPTANCE",
+  "basis": "실제 내부 N3 문형165항목·문법15챕터와 고정 N4 판본의 학습 선수 관계. 공식 JLPT 전수 목록 아님.",
+  "bookId": "japanese-n3",
+  "lessonCount": 48,
+  "reviewAfterLessons": [
+    8,
+    16,
+    24,
+    32,
+    40,
+    48
+  ],
+  "n4EditionInspected": "f4a6411c0945bbd3f8767af7",
+  "preBookBridge": "무번호 N4 회수 진단: 인용/의문절, 보통형·조건, 수동·사역/수수 방향. 어려운 조각만 N4 해당 과로 돌아간다.",
+  "internalInventory": {
+    "path": "src/content/japanese/bunkei/n3.js",
+    "actualItems": 165,
+    "descriptionClaims": 195,
+    "themes": 19,
+    "interpretation": "배열실측만목록범위로사용. 표기195를그대로성과/커버리지로사용하지않는다."
+  },
+  "cast": [
+    {
+      "name": "ジュン",
+      "role": "N4를 마치고 독서 주간 준비에 참여하는 성인 참가자"
+    },
+    {
+      "name": "ミオ",
+      "role": "가상 동네 독서 주간 담당자"
+    },
+    {
+      "name": "リナ",
+      "role": "안내 글과 기록을 다듬는 성인 자원 담당자"
+    }
+  ],
+  "setting": "실제 기관·일정·요금과 무관한 가상의 まちの読書週間. 세 사람은 정보를 모으고 안내·준비·운영·회고를 함께한다. 상대관계는 과별로 명시한다.",
+  "lessons": [
+    {
+      "number": 1,
+      "id": "u01",
+      "title": "이름 말고, 어떤 모임인지도",
+      "part": "정보의 출처와 입장을 나누어요",
+      "parts": "〜というN / 〜ということ",
+      "goal": "이름을 붙이는 말과 전달할 내용을 명사 덩어리로 구별해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜というN",
+        "〜ということ"
+      ],
+      "syllabusId": "n3-u01",
+      "prerequisite": "N4:2,3",
+      "n4PrerequisiteUnits": [
+        2,
+        3
+      ],
+      "n3PrerequisiteUnits": [],
+      "scheduledRecallN3Units": [],
+      "scheduledRecallN4Units": [
+        2,
+        3
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t03-01",
+        "n3-bunkei-t03-02"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "미오가 준에게 새 독서 주간의 이름과 진행 내용을 소개해요.",
+      "readingGenre": "모집 안내와 짧은 메시지",
+      "firstUseConstraints": "NというN의 이름과 문장ということ의 내용을 구별한다. 명사화를 이유로 아직 배우지 않은전문ということだ를 요구하지 않는다."
+    },
+    {
+      "number": 2,
+      "id": "u02",
+      "title": "그 말은 이런 뜻이었구나",
+      "part": "정보의 출처와 입장을 나누어요",
+      "parts": "〜というのは / 〜ということだ",
+      "goal": "용어 정의와 다른 곳에서 들은 안내를 분리해 설명해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜というのは",
+        "〜ということだ"
+      ],
+      "syllabusId": "n3-u02",
+      "prerequisite": "N4:2,3,18 / N3:1",
+      "n4PrerequisiteUnits": [
+        2,
+        3,
+        18
+      ],
+      "n3PrerequisiteUnits": [
+        1
+      ],
+      "scheduledRecallN3Units": [
+        1
+      ],
+      "scheduledRecallN4Units": [
+        2,
+        3
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t03-03",
+        "n3-bunkei-t03-04"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "리나가 공지의 용어를 풀고, 미오가 담당자에게 들은 소식을 전해요.",
+      "readingGenre": "용어 안내와 전달 메시지",
+      "firstUseConstraints": "というのは 정의와 ということだ 전문을 구별한다. ということだ의 결론/논리용법은 아직 평가하지 않는다."
+    },
+    {
+      "number": 3,
+      "id": "u03",
+      "title": "어디서 들은 이야기야?",
+      "part": "정보의 출처와 입장을 나누어요",
+      "parts": "〜と言われている / 〜によると",
+      "goal": "널리 알려진 말과 특정 출처에서 얻은 정보를 구별해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜と言われている",
+        "〜によると"
+      ],
+      "syllabusId": "n3-u03",
+      "prerequisite": "N4:18,21,37 / N3:1,2",
+      "n4PrerequisiteUnits": [
+        18,
+        21,
+        37
+      ],
+      "n3PrerequisiteUnits": [
+        1,
+        2
+      ],
+      "scheduledRecallN3Units": [
+        2
+      ],
+      "scheduledRecallN4Units": [
+        18,
+        21
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t03-05",
+        "n3-bunkei-t09-12"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준이 동네 소식을 조사하고, 확인한 안내문과 전해 들은 평을 나누어요.",
+      "readingGenre": "동네 소개 글과 출처 메모",
+      "firstUseConstraints": "と言われている는 사실 보증이 아니다. Nによると 뒤에는 전언·추량을 붙여 출처와 필자의 판단을 구별한다."
+    },
+    {
+      "number": 4,
+      "id": "u04",
+      "title": "같은 주제를 두 가지 말투로",
+      "part": "정보의 출처와 입장을 나누어요",
+      "parts": "〜について / 〜に関して",
+      "goal": "대화와 조금 격식 있는 안내에서 다루는 주제를 밝혀요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜について",
+        "〜に関して"
+      ],
+      "syllabusId": "n3-u04",
+      "prerequisite": "N4:3,4 / N3:1,2",
+      "n4PrerequisiteUnits": [
+        3,
+        4
+      ],
+      "n3PrerequisiteUnits": [
+        1,
+        2
+      ],
+      "scheduledRecallN3Units": [
+        3,
+        1
+      ],
+      "scheduledRecallN4Units": [
+        3,
+        4
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t09-03",
+        "n3-bunkei-t09-04",
+        "n3-bunkei-t09-05"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준이 독서 주간의 참가 방법에 대해 묻고 리나가 안내문을 다듬어요.",
+      "readingGenre": "질문 게시판과 안내문",
+      "firstUseConstraints": "について/に関して는 의미가 겹친다. 유일정답을 강요하는 의미없는양자택일금지. 지정한형태로바꾸거나맥락/격식을확인한다.",
+      "explicitFamilyVariants": [
+        "〜についてのN",
+        "Nに関するN"
+      ]
+    },
+    {
+      "number": 5,
+      "id": "u05",
+      "title": "누구의 입장에서 보는 걸까",
+      "part": "정보의 출처와 입장을 나누어요",
+      "parts": "〜に対して / 〜にとって",
+      "goal": "행동의 대상과 평가하는 사람의 입장을 나누어요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜に対して",
+        "〜にとって"
+      ],
+      "syllabusId": "n3-u05",
+      "prerequisite": "N4:3,33,34 / N3:4",
+      "n4PrerequisiteUnits": [
+        3,
+        33,
+        34
+      ],
+      "n3PrerequisiteUnits": [
+        4
+      ],
+      "scheduledRecallN3Units": [
+        4,
+        2
+      ],
+      "scheduledRecallN4Units": [
+        3,
+        33
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t09-06",
+        "n3-bunkei-t09-02"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "미오가 참가자에게 보낼 답변과 처음 오는 사람에게 중요한 점을 정리해요.",
+      "readingGenre": "참가자 질문과 운영 메모",
+      "firstUseConstraints": "に対して의 대상과 にとって의 평가기준을 구별하며 이 단원은 Aのに対して 대조용법을 새로 평가하지 않는다."
+    },
+    {
+      "number": 6,
+      "id": "u06",
+      "title": "담당자가 달라도 역할은 남아",
+      "part": "정보의 출처와 입장을 나누어요",
+      "parts": "〜として / 〜に代わって",
+      "goal": "어떤 역할로 참여하는지, 누구 대신 맡는지를 설명해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜として",
+        "〜に代わって"
+      ],
+      "syllabusId": "n3-u06",
+      "prerequisite": "N4:3,34 / N3:4,5",
+      "n4PrerequisiteUnits": [
+        3,
+        34
+      ],
+      "n3PrerequisiteUnits": [
+        4,
+        5
+      ],
+      "scheduledRecallN3Units": [
+        5,
+        3
+      ],
+      "scheduledRecallN4Units": [
+        3,
+        34
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t09-01",
+        "n3-bunkei-t09-08"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준은 참가자 대표로 의견을 모으고, 미오가 없는 날 리나가 대신 접수해요.",
+      "readingGenre": "역할표와 담당자 메시지",
+      "firstUseConstraints": "として는 자격/역할, に代わって는 대신 행동하는 관계이다. かわりに 교환조건은 아직 새평가에쓰지않는다."
+    },
+    {
+      "number": 7,
+      "id": "u07",
+      "title": "누구를 위해 만든 책일까",
+      "part": "정보의 출처와 입장을 나누어요",
+      "parts": "N向け / N向き",
+      "goal": "제작 대상과 실제 적합성을 나누어 안내를 골라요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "N向け",
+        "N向き"
+      ],
+      "syllabusId": "n3-u07",
+      "prerequisite": "N4:7,28 / N3:4,5,6",
+      "n4PrerequisiteUnits": [
+        7,
+        28
+      ],
+      "n3PrerequisiteUnits": [
+        4,
+        5,
+        6
+      ],
+      "scheduledRecallN3Units": [
+        6,
+        4
+      ],
+      "scheduledRecallN4Units": [
+        7,
+        28
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t09-10",
+        "n3-bunkei-t09-11"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "리나가 초보자용 안내를 만들고 준은 아이와 어른에게 맞는 책을 골라요.",
+      "readingGenre": "두 가지 책 소개",
+      "firstUseConstraints": "向け는 의도된대상, 向き는 적합성. 실제양쪽가능문장을억지오답으로만들지않는다."
+    },
+    {
+      "number": 8,
+      "id": "u08",
+      "title": "사람마다 답이 다른 이유",
+      "part": "정보의 출처와 입장을 나누어요",
+      "parts": "〜によって / 〜に比べて",
+      "goal": "사람·조건에 따른 차이와 비교 기준을 밝혀요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜によって",
+        "〜に比べて"
+      ],
+      "syllabusId": "n3-u08",
+      "prerequisite": "N4:19,31 / N3:3,4,5,7",
+      "n4PrerequisiteUnits": [
+        19,
+        31
+      ],
+      "n3PrerequisiteUnits": [
+        3,
+        4,
+        5,
+        7
+      ],
+      "scheduledRecallN3Units": [
+        7,
+        5,
+        1
+      ],
+      "scheduledRecallN4Units": [
+        19,
+        31
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t04-07",
+        "n3-bunkei-t09-15"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준이 참가 희망 설문을 읽고 작년 가상 모임과 올해 계획을 비교해요.",
+      "readingGenre": "설문 요약과 비교 메모",
+      "firstUseConstraints": "によって는 이번단원에서 차이용법만 핵심평가한다. 원인·수단·수동행위자는 참조로한꺼번에추가하지않는다."
+    },
+    {
+      "number": 9,
+      "id": "u09",
+      "title": "딱 그때 연락이 왔어",
+      "part": "시간 속의 사건을 연결해요",
+      "parts": "〜最中に / 〜ところに・〜ところへ",
+      "goal": "진행 중인 일과 그 장면에 들어온 사건을 연결해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜最中に",
+        "〜ところに・〜ところへ"
+      ],
+      "syllabusId": "n3-u09",
+      "prerequisite": "N4:13,29,30 / N3:2,8",
+      "n4PrerequisiteUnits": [
+        13,
+        29,
+        30
+      ],
+      "n3PrerequisiteUnits": [
+        2,
+        8
+      ],
+      "scheduledRecallN3Units": [
+        8,
+        6,
+        2
+      ],
+      "scheduledRecallN4Units": [
+        13,
+        29
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t06-09",
+        "n3-bunkei-t06-08"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "자료를 정리하던 준에게 미오의 전화가 와요.",
+      "readingGenre": "준의 작업 기록",
+      "firstUseConstraints": "最中는진행한가운데. ところに/へ는그장면에새사건이들어옴. に와へ가모두자연스러우면둘중하나만정답으로제한하지않는다."
+    },
+    {
+      "number": 10,
+      "id": "u10",
+      "title": "마음이 바뀌기 전에",
+      "part": "시간 속의 사건을 연결해요",
+      "parts": "〜うちに / 〜ないうちに",
+      "goal": "상태가 유지되는 동안과 변화가 일어나기 전의 기회를 말해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜うちに",
+        "〜ないうちに"
+      ],
+      "syllabusId": "n3-u10",
+      "prerequisite": "N4:17,29 / N3:9",
+      "n4PrerequisiteUnits": [
+        17,
+        29
+      ],
+      "n3PrerequisiteUnits": [
+        9
+      ],
+      "scheduledRecallN3Units": [
+        9,
+        7,
+        3
+      ],
+      "scheduledRecallN4Units": [
+        17,
+        29
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t06-02",
+        "n3-bunkei-t06-03"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "책을 빌린 리나가 반납 전 메모를 하고 미오는 사람이 적을 때 준비해요.",
+      "readingGenre": "대여 메모와 준비 메시지",
+      "firstUseConstraints": "うちに의 기회/자연변화 의미를 구별하고 단순한 전체기간 間과 무조건교체가능하다고하지않는다."
+    },
+    {
+      "number": 11,
+      "id": "u11",
+      "title": "한 번 할 때마다 남는 것",
+      "part": "시간 속의 사건을 연결해요",
+      "parts": "〜たびに / 〜ごとに",
+      "goal": "사건마다 생기는 일과 일정 단위마다 하는 일을 구별해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜たびに",
+        "〜ごとに"
+      ],
+      "syllabusId": "n3-u11",
+      "prerequisite": "N4:11,29 / N3:8,9,10",
+      "n4PrerequisiteUnits": [
+        11,
+        29
+      ],
+      "n3PrerequisiteUnits": [
+        8,
+        9,
+        10
+      ],
+      "scheduledRecallN3Units": [
+        10,
+        8,
+        4
+      ],
+      "scheduledRecallN4Units": [
+        11,
+        29
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t06-01",
+        "n3-bunkei-t06-14"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준이 모임 뒤 의견을 남기고 미오는 탁자마다 안내를 놓아요.",
+      "readingGenre": "참가 기록과 배치 안내",
+      "firstUseConstraints": "たびには 사건 반복, ごとには 시간/수량/각단위도가능하다. 겹치는영역에서자연스러운대안을오답화하지않는다."
+    },
+    {
+      "number": 12,
+      "id": "u12",
+      "title": "달력의 빈칸도 세어야 해",
+      "part": "시간 속의 사건을 연결해요",
+      "parts": "〜おきに / 〜から〜にかけて",
+      "goal": "반복 간격과 폭을 가진 시간 범위를 읽어요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜おきに",
+        "〜から〜にかけて"
+      ],
+      "syllabusId": "n3-u12",
+      "prerequisite": "N4:29,30 / N3:9,10,11",
+      "n4PrerequisiteUnits": [
+        29,
+        30
+      ],
+      "n3PrerequisiteUnits": [
+        9,
+        10,
+        11
+      ],
+      "scheduledRecallN3Units": [
+        11,
+        9,
+        5
+      ],
+      "scheduledRecallN4Units": [
+        29,
+        30
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t06-15",
+        "n3-bunkei-t06-13"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "리나가 안내 배포 간격을 정하고 미오는 행사가 붐빌 예상 시간을 적어요.",
+      "readingGenre": "일정표와 시간대 안내",
+      "firstUseConstraints": "おきに는 시작일과 다음실행일을구체적으로제시. 一日おき=하루간격으로하루씩건너뜀. から〜にかけて는대략적인범위이며정확한시작/끝기한보장으로읽지않는다."
+    },
+    {
+      "number": 13,
+      "id": "u13",
+      "title": "문이 열리자마자, 알게 됐어",
+      "part": "시간 속의 사건을 연결해요",
+      "parts": "〜たとたん(に) / 〜てはじめて",
+      "goal": "직후에 생긴 뜻밖의 일과 경험 뒤에 비로소 알게 된 일을 말해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜たとたん(に)",
+        "〜てはじめて"
+      ],
+      "syllabusId": "n3-u13",
+      "prerequisite": "N4:24,30 / N3:9,10,12",
+      "n4PrerequisiteUnits": [
+        24,
+        30
+      ],
+      "n3PrerequisiteUnits": [
+        9,
+        10,
+        12
+      ],
+      "scheduledRecallN3Units": [
+        12,
+        10,
+        6
+      ],
+      "scheduledRecallN4Units": [
+        24,
+        30
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t06-11",
+        "n3-bunkei-t06-12"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준이 행사장을 열자 빛이 들어오고, 실제로 앉아 본 뒤 안내 글씨 문제를 알아요.",
+      "readingGenre": "첫 점검 일기",
+      "firstUseConstraints": "たとたん 뒤는통제적의지/명령으로평가하지않는다. てはじめて는 처음동작만뜻하지않고그때비로소가능/인식된결과를본다."
+    },
+    {
+      "number": 14,
+      "id": "u14",
+      "title": "그날부터 계속, 가는 김에 한 번",
+      "part": "시간 속의 사건을 연결해요",
+      "parts": "〜て以来 / 〜ついでに",
+      "goal": "시작점 이후 계속된 상태와 주된 일에 곁들인 일을 구별해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜て以来",
+        "〜ついでに"
+      ],
+      "syllabusId": "n3-u14",
+      "prerequisite": "N4:14,16,29 / N3:10,11,13",
+      "n4PrerequisiteUnits": [
+        14,
+        16,
+        29
+      ],
+      "n3PrerequisiteUnits": [
+        10,
+        11,
+        13
+      ],
+      "scheduledRecallN3Units": [
+        13,
+        11,
+        7
+      ],
+      "scheduledRecallN4Units": [
+        14,
+        16
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t06-16",
+        "n3-bunkei-t06-10"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "리나는 독서회에 온 뒤 계속 기록하고, 준은 도서관에 가는 김에 포스터를 전달해요.",
+      "readingGenre": "참가 후 기록과 심부름 메시지",
+      "firstUseConstraints": "て以来는기준시점이후현재와연결되는지속, ついでには주된행동에부수행동. 순서만연속되는모든일을ついで로하지않는다."
+    },
+    {
+      "number": 15,
+      "id": "u15",
+      "title": "하려던 순간에 멈췄어",
+      "part": "시간 속의 사건을 연결해요",
+      "parts": "〜(よ)うとする / 〜ところだった",
+      "goal": "시도·직전과 거의 일어날 뻔한 일을 구별해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜(よ)うとする",
+        "〜ところだった"
+      ],
+      "syllabusId": "n3-u15",
+      "prerequisite": "N4:8,30 / N3:9,13,14",
+      "n4PrerequisiteUnits": [
+        8,
+        30
+      ],
+      "n3PrerequisiteUnits": [
+        9,
+        13,
+        14
+      ],
+      "scheduledRecallN3Units": [
+        14,
+        12,
+        8
+      ],
+      "scheduledRecallN4Units": [
+        8,
+        30
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t01-06",
+        "n3-bunkei-t06-07"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준이 포스터를 붙이려는데 날짜 오류를 보고, 리나는 잘못된 파일을 보낼 뻔해요.",
+      "readingGenre": "작업 중 사건 메모",
+      "firstUseConstraints": "意向형とする는시도/직전이며완료보장아님. ところだった는앞문맥/もう少しで등으로미실현위기를명확히한다."
+    },
+    {
+      "number": 16,
+      "id": "u16",
+      "title": "시작한 일과 남겨 둔 일",
+      "part": "시간 속의 사건을 연결해요",
+      "parts": "〜だす / 〜かける",
+      "goal": "갑작스러운 시작과 아직 마치지 않은 상태를 설명해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜だす",
+        "〜かける"
+      ],
+      "syllabusId": "n3-u16",
+      "prerequisite": "N4:13,17,30 / N3:13,14,15",
+      "n4PrerequisiteUnits": [
+        13,
+        17,
+        30
+      ],
+      "n3PrerequisiteUnits": [
+        13,
+        14,
+        15
+      ],
+      "scheduledRecallN3Units": [
+        15,
+        13,
+        9
+      ],
+      "scheduledRecallN4Units": [
+        13,
+        17
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t19-01",
+        "n3-bunkei-t19-02"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "행사장 밖에 비가 쏟아지고, 준은 읽다 만 안내문을 들고 안으로 돌아와요.",
+      "readingGenre": "현장 기록과 미완료 메모",
+      "firstUseConstraints": "ます줄기+だす의급작시작과かける의시작도중/미완료를구별. 본동사出す/掛ける단순어휘와구별한다."
+    },
+    {
+      "number": 17,
+      "id": "u17",
+      "title": "끝낼 수 있는 양을 말해줘",
+      "part": "진행과 까닭을 설명해요",
+      "parts": "〜きる / 〜きれない",
+      "goal": "끝까지 해냄과 양·능력 때문에 끝내지 못함을 말해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜きる",
+        "〜きれない"
+      ],
+      "syllabusId": "n3-u17",
+      "prerequisite": "N4:5,15 / N3:11,15,16",
+      "n4PrerequisiteUnits": [
+        5,
+        15
+      ],
+      "n3PrerequisiteUnits": [
+        11,
+        15,
+        16
+      ],
+      "scheduledRecallN3Units": [
+        16,
+        14,
+        10
+      ],
+      "scheduledRecallN4Units": [
+        5,
+        15
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t19-03",
+        "n3-bunkei-t19-04"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준은 짧은 안내를 끝까지 읽었지만 리나는 하루에 모든 원고를 다 읽지 못해요.",
+      "readingGenre": "교정 진행표",
+      "firstUseConstraints": "きる는완수, きれない는끝까지다할능력/여건부족. 의도적으로중단한かけ와자동동일시금지."
+    },
+    {
+      "number": 18,
+      "id": "u18",
+      "title": "고치고, 서로 도와서",
+      "part": "진행과 까닭을 설명해요",
+      "parts": "〜なおす / 〜あう",
+      "goal": "다시 고치는 일과 여러 사람이 서로 하는 일을 구별해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜なおす",
+        "〜あう"
+      ],
+      "syllabusId": "n3-u18",
+      "prerequisite": "N4:14,34,35 / N3:8,16,17",
+      "n4PrerequisiteUnits": [
+        14,
+        34,
+        35
+      ],
+      "n3PrerequisiteUnits": [
+        8,
+        16,
+        17
+      ],
+      "scheduledRecallN3Units": [
+        17,
+        15,
+        11
+      ],
+      "scheduledRecallN4Units": [
+        14,
+        34
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t19-05",
+        "n3-bunkei-t19-07"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "리나는 잘못된 날짜를 고쳐 쓰고 세 사람은 서로 의견을 나누어요.",
+      "readingGenre": "교정 요청과 협력 기록",
+      "firstUseConstraints": "なおす는더나은결과를위한재행위, あう는상호행위. 모든동사와아무렇게나결합시키지않는다."
+    },
+    {
+      "number": 19,
+      "id": "u19",
+      "title": "덕분인지, 탓인지도 내 관점",
+      "part": "진행과 까닭을 설명해요",
+      "parts": "〜おかげで / 〜せいで",
+      "goal": "같은 원인을 고마움·부정적 평가와 함께 전해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜おかげで",
+        "〜せいで"
+      ],
+      "syllabusId": "n3-u19",
+      "prerequisite": "N4:1,15,27 / N3:8,17,18",
+      "n4PrerequisiteUnits": [
+        1,
+        15,
+        27
+      ],
+      "n3PrerequisiteUnits": [
+        8,
+        17,
+        18
+      ],
+      "scheduledRecallN3Units": [
+        18,
+        16,
+        12
+      ],
+      "scheduledRecallN4Units": [
+        1,
+        15
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t04-01",
+        "n3-bunkei-t04-04"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "미오는 준의 도움으로 준비를 끝내고, 준은 파일 오류 때문에 시간을 더 써요.",
+      "readingGenre": "준비 결과 보고",
+      "firstUseConstraints": "おかげ/せい는사실의객관적책임확정이아닌화자의평가가담길수있다. 부정결과원인만으로사람에게책임단정시키지않는다."
+    },
+    {
+      "number": 20,
+      "id": "u20",
+      "title": "확실하지 않은 까닭도 있어",
+      "part": "진행과 까닭을 설명해요",
+      "parts": "〜せいか / 〜ものだから",
+      "goal": "원인을 조심스럽게 추정하거나 개인 사정을 설명해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜せいか",
+        "〜ものだから"
+      ],
+      "syllabusId": "n3-u20",
+      "prerequisite": "N4:1,19,27 / N3:16,18,19",
+      "n4PrerequisiteUnits": [
+        1,
+        19,
+        27
+      ],
+      "n3PrerequisiteUnits": [
+        16,
+        18,
+        19
+      ],
+      "scheduledRecallN3Units": [
+        19,
+        17,
+        13
+      ],
+      "scheduledRecallN4Units": [
+        1,
+        19
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t04-06",
+        "n3-bunkei-t04-09"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준은 밤에 늦게 잔 탓인지 피곤하고, 리나는 갑자기 온 연락 때문에 답이 늦었다고 설명해요.",
+      "readingGenre": "컨디션 메모와 답장",
+      "firstUseConstraints": "せいか는인과단정아님. ものだから는설명/변명이될수있으며자신상황에상대가반드시양해해야함을강요하지않는다."
+    },
+    {
+      "number": 21,
+      "id": "u21",
+      "title": "이유를 한 군데로 모아 보면",
+      "part": "진행과 까닭을 설명해요",
+      "parts": "〜のは〜からだ / 〜ことから",
+      "goal": "설명할 사실의 이유와 판단의 단서를 밝혀요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜のは〜からだ",
+        "〜ことから"
+      ],
+      "syllabusId": "n3-u21",
+      "prerequisite": "N4:1,2,19,27 / N3:2,8,19,20",
+      "n4PrerequisiteUnits": [
+        1,
+        2,
+        19,
+        27
+      ],
+      "n3PrerequisiteUnits": [
+        2,
+        8,
+        19,
+        20
+      ],
+      "scheduledRecallN3Units": [
+        20,
+        18,
+        14
+      ],
+      "scheduledRecallN4Units": [
+        1,
+        2
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t04-11",
+        "n3-bunkei-t12-07"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "미오는 장소를 바꾼 이유를 정리하고, 준은 표지판과 소지품을 근거로 사용 중인 자리를 판단해요.",
+      "readingGenre": "결정 이유와 관찰 메모",
+      "firstUseConstraints": "のは〜からだ는초점화된이유. ことから는판단/명칭등근거. 안내되지않은사실을관찰만으로과도하게단정하지않는다."
+    },
+    {
+      "number": 22,
+      "id": "u22",
+      "title": "하나가 바뀌면 다른 것도",
+      "part": "진행과 까닭을 설명해요",
+      "parts": "〜につれて / 〜にしたがって",
+      "goal": "진행하는 변화에 따라 달라지는 상태를 설명해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜につれて",
+        "〜にしたがって"
+      ],
+      "syllabusId": "n3-u22",
+      "prerequisite": "N4:12,16 / N3:8,11,19,21",
+      "n4PrerequisiteUnits": [
+        12,
+        16
+      ],
+      "n3PrerequisiteUnits": [
+        8,
+        11,
+        19,
+        21
+      ],
+      "scheduledRecallN3Units": [
+        21,
+        19,
+        15
+      ],
+      "scheduledRecallN4Units": [
+        12,
+        16
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t05-01",
+        "n3-bunkei-t05-02"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준이 설문을 모으자 희망이 다양해지고, 리나는 참가 인원이 늘며 준비량이 바뀌는 모습을 써요.",
+      "readingGenre": "설문 변화와 준비량 보고",
+      "firstUseConstraints": "にしたがって는이번단원에서변화동반만평가. 지시준수뜻은새로묻지않는다. につれて/にしたがって겹치면둘다허용한다."
+    },
+    {
+      "number": 23,
+      "id": "u23",
+      "title": "더 할수록, 함께 달라져",
+      "part": "진행과 까닭을 설명해요",
+      "parts": "〜ば〜ほど / 〜とともに",
+      "goal": "정도의 상관관계와 함께 진행되는 변화를 말해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜ば〜ほど",
+        "〜とともに"
+      ],
+      "syllabusId": "n3-u23",
+      "prerequisite": "N4:23,31 / N3:11,17,22",
+      "n4PrerequisiteUnits": [
+        23,
+        31
+      ],
+      "n3PrerequisiteUnits": [
+        11,
+        17,
+        22
+      ],
+      "scheduledRecallN3Units": [
+        22,
+        20,
+        16
+      ],
+      "scheduledRecallN4Units": [
+        23,
+        31
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t05-04",
+        "n3-bunkei-t05-03"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준은 읽을수록 질문이 늘고, 행사가 가까워짐과 함께 리나의 준비도 바빠져요.",
+      "readingGenre": "회고와 준비 변화",
+      "firstUseConstraints": "ばほど는앞뒤동일동사/형용사의호응을확인. とともに는변화동반만핵심,동반행동과동시성전체를한꺼번에평가하지않는다."
+    },
+    {
+      "number": 24,
+      "id": "u24",
+      "title": "시설의 구조도 설명할 수 있어",
+      "part": "진행과 까닭을 설명해요",
+      "parts": "〜ようになっている / 〜には",
+      "goal": "장치가 그렇게 작동하는 구조와 목적 달성에 필요한 조건을 말해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜ようになっている",
+        "〜には"
+      ],
+      "syllabusId": "n3-u24",
+      "prerequisite": "N4:12,22,28 / N3:10,17,22,23",
+      "n4PrerequisiteUnits": [
+        12,
+        22,
+        28
+      ],
+      "n3PrerequisiteUnits": [
+        10,
+        17,
+        22,
+        23
+      ],
+      "scheduledRecallN3Units": [
+        23,
+        21,
+        17
+      ],
+      "scheduledRecallN4Units": [
+        12,
+        22
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t01-04",
+        "n3-bunkei-t01-05"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "미오가 자동으로 열리는 문을 안내하고 준은 참가 신청에 필요한 것을 확인해요.",
+      "readingGenre": "시설 안내와 신청 방법",
+      "firstUseConstraints": "ようになっている는장치/설계로고정하며개인의능력변화ようになる와대조. には뒤는필요/방법/적합조건이이어지게한다."
+    },
+    {
+      "number": 25,
+      "id": "u25",
+      "title": "확신과 느낌은 같은 말이 아니야",
+      "part": "판단의 강도와 제약을 조정해요",
+      "parts": "〜に違いない / 〜気がする",
+      "goal": "근거를 갖춘 강한 판단과 자신의 약한 인상을 구별해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜に違いない",
+        "〜気がする"
+      ],
+      "syllabusId": "n3-u25",
+      "prerequisite": "N4:19,20,21 / N3:3,8,21,24",
+      "n4PrerequisiteUnits": [
+        19,
+        20,
+        21
+      ],
+      "n3PrerequisiteUnits": [
+        3,
+        8,
+        21,
+        24
+      ],
+      "scheduledRecallN3Units": [
+        24,
+        22,
+        18
+      ],
+      "scheduledRecallN4Units": [
+        19,
+        20
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t02-07",
+        "n3-bunkei-t02-09"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준은 이름표를 근거로 담당자를 짐작하고 리나는 글씨가 작아진 듯한 인상을 말해요.",
+      "readingGenre": "관찰과 인상 메모",
+      "firstUseConstraints": "に違いない도화자의추론이라사실보증아님. 気がする의신체감각일반용법까지무제한확대하지않는다."
+    },
+    {
+      "number": 26,
+      "id": "u26",
+      "title": "그 사람답다, 그런 느낌이 난다",
+      "part": "판단의 강도와 제약을 조정해요",
+      "parts": "Nらしい / 〜っぽい",
+      "goal": "전형적인 성질과 닮은 인상·경향을 구별해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "Nらしい",
+        "〜っぽい"
+      ],
+      "syllabusId": "n3-u26",
+      "prerequisite": "N4:20,21 / N3:7,18,25",
+      "n4PrerequisiteUnits": [
+        20,
+        21
+      ],
+      "n3PrerequisiteUnits": [
+        7,
+        18,
+        25
+      ],
+      "scheduledRecallN3Units": [
+        25,
+        23,
+        19
+      ],
+      "scheduledRecallN4Units": [
+        20,
+        21
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t02-06",
+        "n3-bunkei-t02-08"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준은 아이디어에서 리나다움을 보고 리나는 어린아이 같은 포스터 느낌을 다듬어요.",
+      "readingGenre": "디자인 의견과 인물 묘사",
+      "firstUseConstraints": "Nらしい는전형성으로 N4전문らしい와구별. っぽい는연결가능한어휘/부정평가가능성을보이고보호특성고정관념을쓰지않는다."
+    },
+    {
+      "number": 27,
+      "id": "u27",
+      "title": "기대가 안 보여도, 척할 수는 있네",
+      "part": "판단의 강도와 제약을 조정해요",
+      "parts": "〜そうにない・〜そうもない / 〜ふりをする",
+      "goal": "일어날 가능성이 낮아 보임과 실제와 다른 태도를 구별해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜そうにない・〜そうもない",
+        "〜ふりをする"
+      ],
+      "syllabusId": "n3-u27",
+      "prerequisite": "N4:18,20 / N3:13,19,25,26",
+      "n4PrerequisiteUnits": [
+        18,
+        20
+      ],
+      "n3PrerequisiteUnits": [
+        13,
+        19,
+        25,
+        26
+      ],
+      "scheduledRecallN3Units": [
+        26,
+        24,
+        20
+      ],
+      "scheduledRecallN4Units": [
+        18,
+        20
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t02-02",
+        "n3-bunkei-t02-11"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "비가 그칠 것 같지 않아 미오가 장소를 바꾸고, 준은 아는 척하지 않고 모르는 부분을 물어요.",
+      "readingGenre": "날씨 판단과 대화 회고",
+      "firstUseConstraints": "양태そう부정은전문そうではない와구별. ふり의실제상태/보이는태도를둘다명시한다."
+    },
+    {
+      "number": 28,
+      "id": "u28",
+      "title": "그럴 예정이었는데 달라졌어",
+      "part": "판단의 강도와 제약을 조정해요",
+      "parts": "〜はずだった / 〜つもりだった",
+      "goal": "객관적 예상과 자신의 의도가 실현되지 않은 경위를 말해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜はずだった",
+        "〜つもりだった"
+      ],
+      "syllabusId": "n3-u28",
+      "prerequisite": "N4:9,19,24 / N3:15,19,25,27",
+      "n4PrerequisiteUnits": [
+        9,
+        19,
+        24
+      ],
+      "n3PrerequisiteUnits": [
+        15,
+        19,
+        25,
+        27
+      ],
+      "scheduledRecallN3Units": [
+        27,
+        25,
+        21
+      ],
+      "scheduledRecallN4Units": [
+        9,
+        19
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t11-01",
+        "n3-bunkei-t13-04"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "버스가 올 예상이 빗나가고 준이 읽으려던 책도 준비 지연으로 바뀌어요.",
+      "readingGenre": "지연 안내와 개인 계획 메모",
+      "firstUseConstraints": "はずだった는과거시점예상이며항상미실현인것은아니라이번문맥에서실제결과를명시. つもり는개인의의도이지공식일정동의어아님."
+    },
+    {
+      "number": 29,
+      "id": "u29",
+      "title": "이제 알겠지만, 전부 그런 건 아니야",
+      "part": "판단의 강도와 제약을 조정해요",
+      "parts": "〜わけだ / 〜わけではない",
+      "goal": "알게 된 근거로 납득하고 상대의 과도한 일반화를 줄여요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜わけだ",
+        "〜わけではない"
+      ],
+      "syllabusId": "n3-u29",
+      "prerequisite": "N4:1,19,27 / N3:2,21,25,28",
+      "n4PrerequisiteUnits": [
+        1,
+        19,
+        27
+      ],
+      "n3PrerequisiteUnits": [
+        2,
+        21,
+        25,
+        28
+      ],
+      "scheduledRecallN3Units": [
+        28,
+        26,
+        22
+      ],
+      "scheduledRecallN4Units": [
+        1,
+        19
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t11-04",
+        "n3-bunkei-t11-05"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준은 인기 있는 책의 이유를 납득하고 미오는 모든 활동이 예약제인 것은 아니라고 설명해요.",
+      "readingGenre": "이유 설명과 이용 범위 안내",
+      "firstUseConstraints": "わけだ의 납득/논리와 わけではない가 이 과의 맥락에서 과도한 일반화·범위를 부정하는 기능을 구별한다. わけではない가 모든 맥락에서 항상 부분부정만이라고 일반화하지 않는다. 부정 범위가 불분명하면 보충 문맥을 준다."
+    },
+    {
+      "number": 30,
+      "id": "u30",
+      "title": "절대 아님과 가능은 남음을 나눠",
+      "part": "판단의 강도와 제약을 조정해요",
+      "parts": "〜わけがない / 〜ないことはない",
+      "goal": "강한 부정과 여지를 남긴 소극적 긍정을 구별해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜わけがない",
+        "〜ないことはない"
+      ],
+      "syllabusId": "n3-u30",
+      "prerequisite": "N4:5,19,26 / N3:25,28,29",
+      "n4PrerequisiteUnits": [
+        5,
+        19,
+        26
+      ],
+      "n3PrerequisiteUnits": [
+        25,
+        28,
+        29
+      ],
+      "scheduledRecallN3Units": [
+        29,
+        27,
+        23
+      ],
+      "scheduledRecallN4Units": [
+        5,
+        19
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t11-06",
+        "n3-bunkei-t12-05"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준은 닫힌 방에 사람이 있을 리 없다고 추론하고 리나는 가능하지만 부담되는 작업을 말해요.",
+      "readingGenre": "가능성에 대한 대화",
+      "firstUseConstraints": "ないことはない는가능을마지못해인정하되실제로수락/실행함을보장하지않는다. 전혀불가능과 혼동금지."
+    },
+    {
+      "number": 31,
+      "id": "u31",
+      "title": "못 하는 데는 사정이 있어",
+      "part": "판단의 강도와 제약을 조정해요",
+      "parts": "〜わけにはいかない・〜ないわけにはいかない",
+      "goal": "능력과 별개인 사회적 제약, 피할 수 없는 책임을 설명해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜わけにはいかない・〜ないわけにはいかない"
+      ],
+      "syllabusId": "n3-u31",
+      "prerequisite": "N4:5,25,26 / N3:19,28,29,30",
+      "n4PrerequisiteUnits": [
+        5,
+        25,
+        26
+      ],
+      "n3PrerequisiteUnits": [
+        19,
+        28,
+        29,
+        30
+      ],
+      "scheduledRecallN3Units": [
+        30,
+        28,
+        24
+      ],
+      "scheduledRecallN4Units": [
+        5,
+        25
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t11-07"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "미오는 약속 때문에 자리를 비울 수 없고 준은 빌린 책을 돌려주지 않을 수 없다고 말해요.",
+      "readingGenre": "담당자 일정과 약속 메모",
+      "firstUseConstraints": "한부류내긍정/부정두틀의방향을구별. 능력불가できない와사회/상황제약을구별하고도덕강요평가금지."
+    },
+    {
+      "number": 32,
+      "id": "u32",
+      "title": "해야 한다는 의견과 뒤늦은 후회",
+      "part": "판단의 강도와 제약을 조정해요",
+      "parts": "〜べきだ・〜べきではない / 〜べきだった",
+      "goal": "의견으로 제시하는 당위와 과거 행동에 대한 후회를 구별해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜べきだ・〜べきではない",
+        "〜べきだった"
+      ],
+      "syllabusId": "n3-u32",
+      "prerequisite": "N4:23,25,26 / N3:20,28,29,31",
+      "n4PrerequisiteUnits": [
+        23,
+        25,
+        26
+      ],
+      "n3PrerequisiteUnits": [
+        20,
+        28,
+        29,
+        31
+      ],
+      "scheduledRecallN3Units": [
+        31,
+        29,
+        25
+      ],
+      "scheduledRecallN4Units": [
+        23,
+        25
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t11-02",
+        "n3-bunkei-t11-03"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "리나는 공지를 확인해야 한다고 제안하고 준은 미리 연락했어야 했다고 돌아봐요.",
+      "readingGenre": "개선 의견과 회고",
+      "firstUseConstraints": "べき는화자의판단/당위이며항상법적의무아님. 상대개인사에강압적으로쓰기보다가상공동업무에한정한다. する→すべき/するべき둘다허용."
+    },
+    {
+      "number": 33,
+      "id": "u33",
+      "title": "안 해도 돼, 원래 그렇게 하잖아",
+      "part": "비교와 반대 의견을 읽어요",
+      "parts": "〜ことはない / 〜ものだ",
+      "goal": "불필요한 걱정을 덜어 주는 말과 일반적인 경향·규범을 구별해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜ことはない",
+        "〜ものだ"
+      ],
+      "syllabusId": "n3-u33",
+      "prerequisite": "N4:23,26 / N3:25,29,31,32",
+      "n4PrerequisiteUnits": [
+        23,
+        26
+      ],
+      "n3PrerequisiteUnits": [
+        25,
+        29,
+        31,
+        32
+      ],
+      "scheduledRecallN3Units": [
+        32,
+        30,
+        26
+      ],
+      "scheduledRecallN4Units": [
+        23,
+        26
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t12-04",
+        "n3-bunkei-t12-01"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "미오는 모든 책을 살 필요가 없다고 말하고 준은 빌린 것은 돌려주는 것이라고 확인해요.",
+      "readingGenre": "참가자 답장과 약속 안내",
+      "firstUseConstraints": "ことはない의불필요와빈도0を混同しない. ものだ는일반론/규범으로수업대상한정하고감탄/회상은미수록."
+    },
+    {
+      "number": 34,
+      "id": "u34",
+      "title": "놀랄 정도와 뜻밖의 한 사람",
+      "part": "비교와 반대 의견을 읽어요",
+      "parts": "〜ほど / 〜さえ",
+      "goal": "정도를 나타내는 비유와 극단적인 사례까지 포함함을 읽어요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜ほど",
+        "〜さえ"
+      ],
+      "syllabusId": "n3-u34",
+      "prerequisite": "N4:19,31,32 / N3:25,26,29,33",
+      "n4PrerequisiteUnits": [
+        19,
+        31,
+        32
+      ],
+      "n3PrerequisiteUnits": [
+        25,
+        26,
+        29,
+        33
+      ],
+      "scheduledRecallN3Units": [
+        33,
+        31,
+        27
+      ],
+      "scheduledRecallN4Units": [
+        19,
+        31
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t07-01",
+        "n3-bunkei-t07-04"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준은 놀랄 정도로 조용한 방을 묘사하고 미오는 담당자조차 모르는 변경을 확인해요.",
+      "readingGenre": "현장 묘사와 변경 소식",
+      "firstUseConstraints": "ほど는이번엔정도, N4ほど〜ない비교와구별. さえ는화자의의외성/극단예이며すら/조차모든격조사대치로암기금지."
+    },
+    {
+      "number": 35,
+      "id": "u35",
+      "title": "이것만 되면, 그랬더라면",
+      "part": "비교와 반대 의견을 읽어요",
+      "parts": "〜さえ〜ば / 〜ば〜のに",
+      "goal": "최소 조건을 세우고 실현되지 않은 조건을 아쉬워해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜さえ〜ば",
+        "〜ば〜のに"
+      ],
+      "syllabusId": "n3-u35",
+      "prerequisite": "N4:23,24,27 / N3:24,28,32,34",
+      "n4PrerequisiteUnits": [
+        23,
+        24,
+        27
+      ],
+      "n3PrerequisiteUnits": [
+        24,
+        28,
+        32,
+        34
+      ],
+      "scheduledRecallN3Units": [
+        34,
+        32,
+        28
+      ],
+      "scheduledRecallN4Units": [
+        23,
+        24
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t07-05",
+        "n3-bunkei-t13-01"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "미오는 연락처만 있으면 신청 가능하다고 말하고 준은 주소를 알았으면 덜 헤맸을 거라고 돌아봐요.",
+      "readingGenre": "신청 조건과 길 찾기 회고",
+      "firstUseConstraints": "さえば의최소조건은문맥의조건을완성해서보여주고ばのに가정은실제사실/미실현관계를명시한다."
+    },
+    {
+      "number": 36,
+      "id": "u36",
+      "title": "하나만이 아니라 이것도",
+      "part": "비교와 반대 의견을 읽어요",
+      "parts": "〜だけでなく〜も / 〜はもちろん",
+      "goal": "범위를 넓혀 두 대상이 포함됨을 안내해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜だけでなく〜も",
+        "〜はもちろん"
+      ],
+      "syllabusId": "n3-u36",
+      "prerequisite": "N4:27,31,32 / N3:7,29,34,35",
+      "n4PrerequisiteUnits": [
+        27,
+        31,
+        32
+      ],
+      "n3PrerequisiteUnits": [
+        7,
+        29,
+        34,
+        35
+      ],
+      "scheduledRecallN3Units": [
+        35,
+        33,
+        29
+      ],
+      "scheduledRecallN4Units": [
+        27,
+        31
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t08-01",
+        "n3-bunkei-t08-06"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "리나는 글뿐 아니라 그림도 받는다고 쓰고 미오는 참가자뿐 아니라 동행자도 안내해요.",
+      "readingGenre": "행사 모집 글",
+      "firstUseConstraints": "두표현모두추가가능한문맥에서하나만정답강요금지. はもちろん앞항목의당연시되는정보차이를설명하되사실관계는안바꾼다."
+    },
+    {
+      "number": 37,
+      "id": "u37",
+      "title": "바로 이 사람, 심지어 그 사람도",
+      "part": "비교와 반대 의견을 읽어요",
+      "parts": "〜こそ / 〜まで",
+      "goal": "화제가 중요한 대상을 강조하고 뜻밖의 범위까지 넓혀요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜こそ",
+        "〜まで"
+      ],
+      "syllabusId": "n3-u37",
+      "prerequisite": "N4:29,31,32 / N3:28,34,35,36",
+      "n4PrerequisiteUnits": [
+        29,
+        31,
+        32
+      ],
+      "n3PrerequisiteUnits": [
+        28,
+        34,
+        35,
+        36
+      ],
+      "scheduledRecallN3Units": [
+        36,
+        34,
+        30
+      ],
+      "scheduledRecallN4Units": [
+        29,
+        31
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t08-05",
+        "n3-bunkei-t08-08"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준은 오늘이야말로 질문하겠다고 말하고 미오는 평소 바쁜 담당자까지 참석한다고 전해요.",
+      "readingGenre": "참가 후기와 참석 공지",
+      "firstUseConstraints": "まで는이번단원에서극단포함용법. N4시간끝점/까지와구별. こそ로배타적only뜻을발명하지않는다."
+    },
+    {
+      "number": 38,
+      "id": "u38",
+      "title": "그렇다 해도, 생각보다는 달라",
+      "part": "비교와 반대 의견을 읽어요",
+      "parts": "〜といっても / 〜わりに(は)",
+      "goal": "앞말의 범위를 제한하고 예상 정도와 결과를 비교해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜といっても",
+        "〜わりに(は)"
+      ],
+      "syllabusId": "n3-u38",
+      "prerequisite": "N4:19,27,31 / N3:2,8,29,37",
+      "n4PrerequisiteUnits": [
+        19,
+        27,
+        31
+      ],
+      "n3PrerequisiteUnits": [
+        2,
+        8,
+        29,
+        37
+      ],
+      "scheduledRecallN3Units": [
+        37,
+        35,
+        31
+      ],
+      "scheduledRecallN4Units": [
+        19,
+        27
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t10-05",
+        "n3-bunkei-t10-06"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "리나는 전시라고 해도 작은 게시판이라고 설명하고 준은 준비 시간에 비해 자료가 많다고 평가해요.",
+      "readingGenre": "전시 소개와 감상",
+      "firstUseConstraints": "といっても는앞진술전면부정아님. わりに와にしては구별은다음과, 이번엔가치판단의근거를읽는다."
+    },
+    {
+      "number": 39,
+      "id": "u39",
+      "title": "기준이 다르면 놀라는 지점도 달라",
+      "part": "비교와 반대 의견을 읽어요",
+      "parts": "〜にしては / 〜のに対して",
+      "goal": "명확한 기준에서 벗어난 예상과 두 대상의 차이를 말해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜にしては",
+        "〜のに対して"
+      ],
+      "syllabusId": "n3-u39",
+      "prerequisite": "N4:19,27,31 / N3:5,8,22,38",
+      "n4PrerequisiteUnits": [
+        19,
+        27,
+        31
+      ],
+      "n3PrerequisiteUnits": [
+        5,
+        8,
+        22,
+        38
+      ],
+      "scheduledRecallN3Units": [
+        38,
+        36,
+        32
+      ],
+      "scheduledRecallN4Units": [
+        19,
+        27
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t09-14",
+        "n3-bunkei-t10-04"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준은 첫 행사치고 준비가 잘됐다고 말하고 리나는 오전과 오후 참가 양상을 비교해요.",
+      "readingGenre": "시간대별 참가 보고",
+      "firstUseConstraints": "にしては/わりに둘다가능한문장은둘중단일정답금지. のに対して는비교대조이며u05대상に対して와구별한다."
+    },
+    {
+      "number": 40,
+      "id": "u40",
+      "title": "못마땅한 말은 조심해서 읽어",
+      "part": "비교와 반대 의견을 읽어요",
+      "parts": "〜くせに / 〜ながら(も)",
+      "goal": "상대를 탓하는 말투를 알아보고 양보를 중립적으로 정리해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜くせに",
+        "〜ながら(も)"
+      ],
+      "syllabusId": "n3-u40",
+      "prerequisite": "N4:26,27 / N3:22,29,38,39",
+      "n4PrerequisiteUnits": [
+        26,
+        27
+      ],
+      "n3PrerequisiteUnits": [
+        22,
+        29,
+        38,
+        39
+      ],
+      "scheduledRecallN3Units": [
+        39,
+        37,
+        33
+      ],
+      "scheduledRecallN4Units": [
+        26,
+        27
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t10-01",
+        "n3-bunkei-t10-03"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준은 거친 가상 인용문을 읽고, 리나는 바쁘지만 도움을 준 상황을 중립적으로 써요.",
+      "readingGenre": "말투 비교와 후기",
+      "firstUseConstraints": "くせに는비난이강해수용·완곡재서술중심. 학습자에게직접비난실행강요금지. ながら(も)는양보이며N4동시행동ながら와주체/의미를구별."
+    },
+    {
+      "number": 41,
+      "id": "u41",
+      "title": "대신 해 줄게, 하지 않고 갈게",
+      "part": "행동의 관계와 말투를 조정해요",
+      "parts": "〜かわりに / 〜ずに",
+      "goal": "교환 조건과 한 행동을 하지 않은 채 하는 일을 말해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜かわりに",
+        "〜ずに"
+      ],
+      "syllabusId": "n3-u41",
+      "prerequisite": "N4:17,25,26 / N3:6,31,35,40",
+      "n4PrerequisiteUnits": [
+        17,
+        25,
+        26
+      ],
+      "n3PrerequisiteUnits": [
+        6,
+        31,
+        35,
+        40
+      ],
+      "scheduledRecallN3Units": [
+        40,
+        38,
+        34
+      ],
+      "scheduledRecallN4Units": [
+        17,
+        25
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t14-03",
+        "n3-bunkei-t14-05"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준은 접수를 맡는 대신 정리를 부탁하고 리나는 안내를 보지 않고 온 참가자에게 설명해요.",
+      "readingGenre": "역할 교환과 안내 대화",
+      "firstUseConstraints": "かわりには교환조건을핵심으로u06대리행위に代わって와구별. ずにはない형변환/する→せず/来る→来ずを확인."
+    },
+    {
+      "number": 42,
+      "id": "u42",
+      "title": "어느 쪽이어도, 그런 경우라면",
+      "part": "행동의 관계와 말투를 조정해요",
+      "parts": "〜ても〜なくても / 〜場合(は)",
+      "goal": "선택과 무관한 결과와 특정 상황의 대응을 나누어요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜ても〜なくても",
+        "〜場合(は)"
+      ],
+      "syllabusId": "n3-u42",
+      "prerequisite": "N4:24,25,26 / N3:24,31,35,41",
+      "n4PrerequisiteUnits": [
+        24,
+        25,
+        26
+      ],
+      "n3PrerequisiteUnits": [
+        24,
+        31,
+        35,
+        41
+      ],
+      "scheduledRecallN3Units": [
+        41,
+        39,
+        35
+      ],
+      "scheduledRecallN4Units": [
+        24,
+        25
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t13-02",
+        "n3-bunkei-t13-03"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "미오는 비가 오든 오지 않든 실내를 쓰기로 하고 리나는 지각하는 경우 연락법을 안내해요.",
+      "readingGenre": "비상 대응 안내",
+      "firstUseConstraints": "両方조건을양자대립으로고정. 場合는구체적상황분기, たら/なら와모두가능한문장에가짜유일정답금지."
+    },
+    {
+      "number": 43,
+      "id": "u43",
+      "title": "시키는 쪽과 하게 된 내 마음",
+      "part": "행동의 관계와 말투를 조정해요",
+      "parts": "〜(さ)せられる / 〜てもらいたい",
+      "goal": "남의 요구로 하게 된 행동과 도움을 바라는 내 관점을 구별해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜(さ)せられる",
+        "〜てもらいたい"
+      ],
+      "syllabusId": "n3-u43",
+      "prerequisite": "N4:34,36,37,38,39,40 / N3:18,31,41,42",
+      "n4PrerequisiteUnits": [
+        34,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "n3PrerequisiteUnits": [
+        18,
+        31,
+        41,
+        42
+      ],
+      "scheduledRecallN3Units": [
+        42,
+        40,
+        36
+      ],
+      "scheduledRecallN4Units": [
+        34,
+        36
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t16-03",
+        "n3-bunkei-t15-02"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준은 예전 가상 과제에서 원치 않게 글을 읽게 된 일을 말하고 미오는 자원한 담당자에게 검토를 부탁하고 싶어해요.",
+      "readingGenre": "준의 경험과 검토 요청",
+      "firstUseConstraints": "사역수동은표준긴형으로제작. 타동사원래목적어와시키는행위자に보존. てもらいたい는이익받는주체/행동주체를분리. 苦情を実在人物に結び付けない."
+    },
+    {
+      "number": 44,
+      "id": "u44",
+      "title": "상대의 행동을 공손히 말해",
+      "part": "행동의 관계와 말투를 조정해요",
+      "parts": "お/ご〜になる / お/ご〜ください",
+      "goal": "높이는 사람의 행동을 설명하고 정중하게 요청해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "お/ご〜になる",
+        "お/ご〜ください"
+      ],
+      "syllabusId": "n3-u44",
+      "prerequisite": "N4:37,39,40,41 / N3:4,6,32,43",
+      "n4PrerequisiteUnits": [
+        37,
+        39,
+        40,
+        41
+      ],
+      "n3PrerequisiteUnits": [
+        4,
+        6,
+        32,
+        43
+      ],
+      "scheduledRecallN3Units": [
+        43,
+        41,
+        37
+      ],
+      "scheduledRecallN4Units": [
+        37,
+        39
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t17-01",
+        "n3-bunkei-t17-03"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "미오가 초대 손님의 행동을 안내하고 리나가 접수 방법을 공손히 적어요.",
+      "readingGenre": "손님 안내와 접수문",
+      "firstUseConstraints": "お/ご생산가능범위및불규칙별도형태한번에늘리지않는다. 자신행동에존경어를붙이지않는다. ご利用ください와お書きください같이실제안내형우선."
+    },
+    {
+      "number": 45,
+      "id": "u45",
+      "title": "오시는 분과 말씀하시는 분",
+      "part": "행동의 관계와 말투를 조정해요",
+      "parts": "いらっしゃる / おっしゃる",
+      "goal": "특수 존경 동사의 행동 주체와 정중 활용을 확인해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "いらっしゃる",
+        "おっしゃる"
+      ],
+      "syllabusId": "n3-u45",
+      "prerequisite": "N4:2,41 / N3:2,3,43,44",
+      "n4PrerequisiteUnits": [
+        2,
+        41
+      ],
+      "n3PrerequisiteUnits": [
+        2,
+        3,
+        43,
+        44
+      ],
+      "scheduledRecallN3Units": [
+        44,
+        42,
+        38
+      ],
+      "scheduledRecallN4Units": [
+        2,
+        41
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t17-04",
+        "n3-bunkei-t17-05"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "미오는 손님의 도착을 확인하고 리나는 손님이 한 말을 정확히 전해요.",
+      "readingGenre": "초대 손님 일정과 전달 메모",
+      "firstUseConstraints": "いらっしゃる=行く/来る/いる를문맥으로구별하며いらっしゃいます、おっしゃいます형태확인. 複数の特別敬語を追加しない."
+    },
+    {
+      "number": 46,
+      "id": "u46",
+      "title": "제가 하는 일을 낮춰 말할게요",
+      "part": "행동의 관계와 말투를 조정해요",
+      "parts": "お/ご〜する / 伺う",
+      "goal": "상대에게 향하는 자신의 행동을 겸양해서 말해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "お/ご〜する",
+        "伺う"
+      ],
+      "syllabusId": "n3-u46",
+      "prerequisite": "N4:33,34,41 / N3:4,5,43,44,45",
+      "n4PrerequisiteUnits": [
+        33,
+        34,
+        41
+      ],
+      "n3PrerequisiteUnits": [
+        4,
+        5,
+        43,
+        44,
+        45
+      ],
+      "scheduledRecallN3Units": [
+        45,
+        43,
+        39
+      ],
+      "scheduledRecallN4Units": [
+        33,
+        34
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t18-01",
+        "n3-bunkei-t18-03"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "리나가 확인한 내용을 보고하고 준은 담당자에게 직접 물으러 가겠다고 말해요.",
+      "readingGenre": "문의 메일과 담당자 대화",
+      "firstUseConstraints": "겸양주체화자쪽, 향하는상대높임. 伺う의묻다/방문하다를장면으로특정. 자신의모든행동에기계적으로お〜する붙이지않는다."
+    },
+    {
+      "number": 47,
+      "id": "u47",
+      "title": "도움받는 사람은 누구였지",
+      "part": "행동의 관계와 말투를 조정해요",
+      "parts": "〜ていただく / 〜させていただく",
+      "goal": "상대가 해 준 도움과 허락·이익을 받아 자신이 하는 일을 구별해요.",
+      "newPartsMaximum": 2,
+      "primaryPatterns": [
+        "〜ていただく",
+        "〜させていただく"
+      ],
+      "syllabusId": "n3-u47",
+      "prerequisite": "N4:34,39,40,41 / N3:31,43,44,45,46",
+      "n4PrerequisiteUnits": [
+        34,
+        39,
+        40,
+        41
+      ],
+      "n3PrerequisiteUnits": [
+        31,
+        43,
+        44,
+        45,
+        46
+      ],
+      "scheduledRecallN3Units": [
+        46,
+        44,
+        40
+      ],
+      "scheduledRecallN4Units": [
+        34,
+        39
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [
+        "n3-bunkei-t18-10",
+        "n3-bunkei-t18-14"
+      ],
+      "textOnlyComprehension": true,
+      "storyBeat": "준은 미오에게 설명을 부탁하고, 허락을 받은 뒤 자료를 확인하겠다고 말해요.",
+      "readingGenre": "자료 확인 허락과 감사 메모",
+      "firstUseConstraints": "ていただく는상대행동/내수혜, させていただく는자기행동/상대허락과이익. 허락관계없는단순행동을과잉겸양으로정답화하지않는다."
+    },
+    {
+      "number": 48,
+      "id": "u48",
+      "title": "읽고 고르고, 내 말로 전해 봐",
+      "part": "행동의 관계와 말투를 조정해요",
+      "parts": "새 문형 없음: 누적 수행",
+      "goal": "여러 문서의 사실·판단·조건을 대조하고 근거 있는 답장과 회고를 써요.",
+      "newPartsMaximum": 0,
+      "primaryPatterns": [],
+      "syllabusId": "n3-u48",
+      "prerequisite": "N4:2,4,24,26,29,34,39,41 / N3:2,10,19,29,31,35,42,44,47",
+      "n4PrerequisiteUnits": [
+        2,
+        4,
+        24,
+        26,
+        29,
+        34,
+        39,
+        41
+      ],
+      "n3PrerequisiteUnits": [
+        2,
+        10,
+        19,
+        29,
+        31,
+        35,
+        42,
+        44,
+        47
+      ],
+      "scheduledRecallN3Units": [
+        47,
+        45,
+        41
+      ],
+      "scheduledRecallN4Units": [
+        2,
+        4
+      ],
+      "revisitRule": "+1/+3/+7은 회수 계획이다. 실제 원고의 문장 위치와 인용으로 확인한 회수만 recall.evidence에 기록한다. 최소 한 앞 N3 목표와 한 N4 기능을 의미 있게 다시 쓴다. u01은 N3 회수 대상 없음.",
+      "sourceRefs": [],
+      "textOnlyComprehension": true,
+      "storyBeat": "독서 주간 마지막 날, 세 사람이 변경 안내·참가자 메모·진행 보고를 대조해 마무리해요.",
+      "readingGenre": "변경 공지·개인 메모·담당자 답장",
+      "firstUseConstraints": "새문형0. 필자의사실/전문/판단과실제완료/계획을분리하며여러문서에명시된근거만연결한다."
+    }
+  ]
+}

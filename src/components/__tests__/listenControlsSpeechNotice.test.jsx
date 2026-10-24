@@ -155,12 +155,21 @@ describe('본문 듣기 — 읽는 중 실패', () => {
     expect(onSentence).toHaveBeenLastCalledWith(null);
   });
 
-  it('취소 · 끊김(단어 발음이 이어받음)은 정리만 하고 안내하지 않는다 · 정지한 옛 세션의 오류는 무시', async () => {
+  // 뷰어 점검 2026-10-23: 단어 발음이 끼어들면 듣기가 정지돼 처음부터였다 — 이제 그 문장에서 멈추고 ▶로 그 문장부터 잇는다.
+  it('취소 · 끊김(단어 발음이 이어받음)은 안내 없이 그 문장에서 멈추고 ▶로 그 문장부터 잇는다 · 정지한 옛 세션의 오류는 무시', async () => {
     let tree = await mount({ language: 'Japanese', text: JA_TEXT });
     tree = tap(tree, '본문 전체 듣기');
-    tree = fire(utterances[0], 'onerror', { error: 'interrupted' });
-    expect(button(tree, '본문 전체 듣기')).toBeTruthy();
-    expect(onSentence).toHaveBeenLastCalledWith(null);
+    tree = fire(utterances[0], 'onend');
+    const second = utterances[1].text;
+    tree = fire(utterances[1], 'onerror', { error: 'interrupted' });
+    expect(button(tree, '재생')).toBeTruthy();
+    expect(button(tree, '본문 전체 듣기')).toBeFalsy();
+    expect(synth.resume).not.toHaveBeenCalled();
+    tree = tap(tree, '재생');
+    expect(synth.resume).not.toHaveBeenCalled();
+    expect(utterances.at(-1).text).toBe(second);
+    expect(onSentence).toHaveBeenLastCalledWith(1);
+    tree = tap(tree, '정지');
     tree = tap(tree, '본문 전체 듣기');
     tree = tap(tree, '정지');
     tree = fire(utterances.at(-1), 'onerror', { error: 'synthesis-failed' });

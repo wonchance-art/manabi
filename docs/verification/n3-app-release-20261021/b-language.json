@@ -1,0 +1,758 @@
+{
+  "status": "passed-independent-source-language-review",
+  "reviewer": "/root/n3_author_a",
+  "author": "/root/n3_author_b",
+  "checkedAt": "2026-10-21T11:46:17.964042+00:00",
+  "scope": "All source fields of B-authored u17–u32: forms, explanations, examples, vocabulary labels/readings, 96 dialogue turns and text-only questions, 48 MCQ with actual options and why, 32 oral tasks, 16 readings and writing tasks, actual N3/N4 retrieval citations, time/actor/responsibility and allowed alternatives. Reviewer did not modify B source. This is independent AI-agent judgment, not human/native-speaker certification. Rendered/browser/account/build/deployment gates are separate.",
+  "pinnedN5Edition": "8a8c1c1fd452773810abaf8c",
+  "pinnedN4Edition": "f4a6411c0945bbd3f8767af7",
+  "unresolvedBlockers": [],
+  "findings": [
+    {
+      "id": "B18-STALE-OPTION-EXPLANATION",
+      "unit": "u18",
+      "fieldPath": "checks[0].why",
+      "problem": "Positional last-option explanation contradicted shuffled actual choices.",
+      "resolution": "Replaced position with exact option strings; then updated again for first-use fix.",
+      "status": "resolved-and-rechecked-in-current-source"
+    },
+    {
+      "id": "B24-STALE-OPTION-EXPLANATION",
+      "unit": "u24",
+      "fieldPath": "checks[0].why",
+      "problem": "Same-cause owner scan found first/second/third explanations out of order.",
+      "resolution": "Quoted actual sentences instead of positions; design vs ability vs plan checked.",
+      "status": "resolved-and-rechecked-in-current-source"
+    },
+    {
+      "id": "B20-TRANSLATION-COMPLETION",
+      "unit": "u20",
+      "fieldPath": "dialog[0].ko",
+      "problem": "Japanese delay was translated as work finishing late, adding explicit completion.",
+      "resolution": "Changed Korean to 작업이 늦어졌어요; Japanese meaning retained.",
+      "status": "resolved-and-rechecked-in-current-source"
+    },
+    {
+      "id": "B24-NATURAL-ALTERNATIVE",
+      "unit": "u24",
+      "fieldPath": "checks[1]",
+      "problem": "Purpose のに also naturally fits 参加する…必要があります; not uniquely wrong or necessarily adversative.",
+      "resolution": "Replaced distractor with を, explained attachment and simultaneous ながら difference; now unique には.",
+      "status": "resolved-and-rechecked-in-current-source"
+    },
+    {
+      "id": "B25-UNSUPPORTED-PLAN",
+      "unit": "u25",
+      "fieldPath": "checks[2]",
+      "problem": "Reading said person not yet asked, but answer invented a decided future asking plan.",
+      "resolution": "Correct answer narrowed to explicit decision to compare prior sheet and letter size.",
+      "status": "resolved-and-rechecked-in-current-source"
+    },
+    {
+      "id": "B26-COMPARISON-TENSE",
+      "unit": "u26",
+      "fieldPath": "checks[2].prompt",
+      "problem": "Question future intent conflicted with reading completed comparison.",
+      "resolution": "Changed 비교하려는 to 비교한; answer now matches completed event.",
+      "status": "resolved-and-rechecked-in-current-source"
+    },
+    {
+      "id": "B18-UNINTRODUCED-COMPOUND",
+      "unit": "u18",
+      "fieldPath": "checks[0].options[1]",
+      "problem": "書きはじめません made interpreting an untaught Vます+始める necessary to reject a distractor. Curriculum independently confirmed removal criterion.",
+      "resolution": "Replaced with 書きません; explanation uses known ordinary negative, with core target なおす vs prior かけ preserved.",
+      "status": "resolved-and-rechecked-in-current-source"
+    }
+  ],
+  "additionalOwnerEditRechecked": {
+    "unit": "u25",
+    "fieldPath": "checks[0].why",
+    "change": "この형태에서는 → 이 형태에서는",
+    "requester": "/root",
+    "status": "verified-current-source"
+  },
+  "evidenceFiles": {
+    "literalAndFunctionRecall": "author-a/review-b/RECALL-EVIDENCE.json",
+    "coverage": "author-a/review-b/HAN-COVERAGE.json",
+    "novelAgentInterpretationCases": "author-a/review-b/NOVEL-INTERPRETATION-CASES.json",
+    "ownerWordStatus": "author-b/WORD-STATUS-REVIEW.json",
+    "ownerDelta1": "author-b/DELTA-OPTION-EXPLANATIONS.json",
+    "ownerDelta2": "author-b/DELTA-INDEPENDENT-REVIEW-002.json",
+    "ownerFrozenManifest": "author-b/RESULT-FROZEN.json",
+    "ownerMinimumRecallDelta": "author-b/DELTA-MINIMUM-RETRIEVAL.json"
+  },
+  "units": {
+    "u17": {
+      "status": "passed-independent-agent-language-review",
+      "sourceSha256": "b83333b7ff4d5d55648ce7cf91f4516a288108f485a57656f268b2cf76eac895",
+      "meaningAndTime": "Quantity and capacity: Jun completed an eight-page guide; Rina still has forty of sixty pages and only thirty minutes today. Tomorrow continuation is a plan, not completed work.",
+      "formsAndAllowedAlternatives": "きる completion vs きれない insufficient capacity/time; no refusal inferred.",
+      "contextualReadingReview": "八ページはちページ, 六十ページろくじゅっページ, 四十ページよんじゅっページ, 三十分さんじゅっぷん; compound/single-character readings checked in actual fields.",
+      "actualRecall": [
+        {
+          "kind": "evidence",
+          "unit": 16,
+          "fieldPath": "dialog[3].ja",
+          "quote": "読みかけの所",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요.",
+          "quotePresent": true,
+          "earlierTargetPatterns": [
+            "〜だす",
+            "〜かける"
+          ]
+        },
+        {
+          "kind": "n4Evidence",
+          "unit": 5,
+          "fieldPath": "dialog[4].ja",
+          "quote": "一緒に読めます",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[4]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요.",
+          "quotePresent": true,
+          "pinnedTargetTitle": "이제 혼자서도 할 수 있어",
+          "pinnedTargetFormulas": [
+            "1그룹 う단→え단＋る / 2그룹 る→られる / する→できる・くる→こられる",
+            "대상 が＋가능형 / 문맥에 따라 대상 を＋가능형"
+          ]
+        }
+      ],
+      "checks": 3,
+      "oral": 2,
+      "wordOccurrences": 12,
+      "independentWordStatus": "Compared explicit N5/N4 and preceding N3 labels; B corrected 15 same-word occurrences to review, no unresolved B candidate from current preflight. This is not official vocabulary coverage."
+    },
+    "u18": {
+      "status": "passed-independent-agent-language-review",
+      "sourceSha256": "5a17d8caa8a813b3ecdb19c1a314fa1ed88b10b4847dcd13487919c9222c36b1",
+      "meaningAndTime": "Tuesday error corrected to Thursday before publication; reciprocal exchange of opinions is distinct from silent co-presence. Whole manuscript reading completed; revision/publication sequence remains explicit.",
+      "formsAndAllowedAlternatives": "なおす targets revision, あう reciprocal participation. Already-natural もう一度読む is acknowledged rather than falsely rejected.",
+      "contextualReadingReview": "出しあうだしあう, 話しはなし/話すはなす context, 修正しゅうせい and supported standalone word readings.",
+      "actualRecall": [
+        {
+          "kind": "evidence",
+          "unit": 17,
+          "fieldPath": "dialog[4].ja",
+          "quote": "全部読みきりました",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요.",
+          "quotePresent": true,
+          "earlierTargetPatterns": [
+            "〜きる",
+            "〜きれない"
+          ]
+        },
+        {
+          "kind": "n4Evidence",
+          "unit": 14,
+          "fieldPath": "dialog[5].ja",
+          "quote": "確かめておきましょう",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[13]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요.",
+          "quotePresent": true,
+          "pinnedTargetTitle": "미리 해뒀어요",
+          "pinnedTargetFormulas": [
+            "동사 て형＋おきます",
+            "대상 が＋타동사 て형＋あります"
+          ]
+        }
+      ],
+      "checks": 3,
+      "oral": 2,
+      "wordOccurrences": 12,
+      "independentWordStatus": "Compared explicit N5/N4 and preceding N3 labels; B corrected 15 same-word occurrences to review, no unresolved B candidate from current preflight. This is not official vocabulary coverage."
+    },
+    "u19": {
+      "status": "passed-independent-agent-language-review",
+      "sourceSha256": "062d2d9dc349422035154fc35568078c5f4b36942639f0943fc0188efb7d5ad4",
+      "meaningAndTime": "Good outcome attributed gratefully to Jun; file failed to open and work took thirty additional minutes. Culprit and intention remain unknown; finding another copy does not identify who damaged the file.",
+      "formsAndAllowedAlternatives": "おかげで gratitude vs せいで negative evaluation; no rule that praise/irony is impossible in every other context.",
+      "contextualReadingReview": "開きひらき/開かなひらかな are file-open readings; 壊したこわした; 三十分さんじゅっぷん and word 壊すこわす checked.",
+      "actualRecall": [
+        {
+          "kind": "evidence",
+          "unit": 18,
+          "fieldPath": "dialog[4].ja",
+          "quote": "原稿を書きなおしましょう",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요.",
+          "quotePresent": true,
+          "earlierTargetPatterns": [
+            "〜なおす",
+            "〜あう"
+          ]
+        },
+        {
+          "kind": "n4Evidence",
+          "unit": 15,
+          "fieldPath": "dialog[3].ja",
+          "quote": "時間がかかってしまいました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[14]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요.",
+          "quotePresent": true,
+          "pinnedTargetTitle": "한 번 해봤는데, 다 해버렸네",
+          "pinnedTargetFormulas": [
+            "동사 て형＋みる",
+            "동사 て형＋しまう"
+          ]
+        }
+      ],
+      "checks": 3,
+      "oral": 2,
+      "wordOccurrences": 12,
+      "independentWordStatus": "Compared explicit N5/N4 and preceding N3 labels; B corrected 15 same-word occurrences to review, no unresolved B candidate from current preflight. This is not official vocabulary coverage."
+    },
+    "u20": {
+      "status": "passed-independent-agent-language-review",
+      "sourceSha256": "a0e5594ebd3ca0d36683e062cb831a358c6d4a977c429d4978b7e7d625cc9353",
+      "meaningAndTime": "Sleepiness cause is uncertain; family phone call explains Rina reply delay without disclosing private details or proving dislike. Delay translation no longer invents completion.",
+      "formsAndAllowedAlternatives": "せいか uncertainty vs ものだから explanation; explanation does not automatically excuse or win permission.",
+      "contextualReadingReview": "起きておきて, 昨夜さくや, 詳しいくわしい, 遅さおそさ; standalone 起きるおきる reading supported.",
+      "actualRecall": [
+        {
+          "kind": "evidence",
+          "unit": 19,
+          "fieldPath": "dialog[0].ja",
+          "quote": "ファイルが開かなかったせいで",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요.",
+          "quotePresent": true,
+          "earlierTargetPatterns": [
+            "〜おかげで",
+            "〜せいで"
+          ]
+        },
+        {
+          "kind": "n4Evidence",
+          "unit": 19,
+          "fieldPath": "dialog[2].ja",
+          "quote": "ほかの理由もあるかもしれません",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[18]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요.",
+          "quotePresent": true,
+          "pinnedTargetTitle": "그럴 수도, 그럴 리가",
+          "pinnedTargetFormulas": [
+            "보통형＋かもしれません · 명사·な형용사 현재 긍정은 だ 제외",
+            "동사·い형용사 보통형／명사の／な형용사な＋はずです"
+          ]
+        }
+      ],
+      "checks": 3,
+      "oral": 2,
+      "wordOccurrences": 12,
+      "independentWordStatus": "Compared explicit N5/N4 and preceding N3 labels; B corrected 15 same-word occurrences to review, no unresolved B candidate from current preflight. This is not official vocabulary coverage."
+    },
+    "u21": {
+      "status": "passed-independent-agent-language-review",
+      "sourceSha256": "1267d1115d6000aaef3eb06f8df4c0678c85f2bf1ba02706651bd0ac93215447",
+      "meaningAndTime": "Room changed because entrance proximity aids guidance; neither room requires stairs. Bag and in-use tag motivate choosing another chair but do not reveal owner or return time.",
+      "formsAndAllowedAlternatives": "のは〜からだ focus on stated reason vs ことから evidence supporting judgment; not exclusive cause or proof of identity.",
+      "contextualReadingReview": "空いてあいて vs dictionary 空そら, 一階いっかい, 使用中しようちゅう, 持ち主もちぬし checked in actual context.",
+      "actualRecall": [
+        {
+          "kind": "evidence",
+          "unit": 3,
+          "fieldPath": "dialog[5].ja",
+          "quote": "担当者によると",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요.",
+          "quotePresent": true,
+          "earlierTargetPatterns": [
+            "〜と言われている",
+            "〜によると"
+          ]
+        },
+        {
+          "kind": "n4Evidence",
+          "unit": 15,
+          "fieldPath": "dialog[4].ja",
+          "quote": "担当者に聞いてみます",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[14]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요.",
+          "quotePresent": true,
+          "pinnedTargetTitle": "한 번 해봤는데, 다 해버렸네",
+          "pinnedTargetFormulas": [
+            "동사 て형＋みる",
+            "동사 て형＋しまう"
+          ]
+        }
+      ],
+      "checks": 3,
+      "oral": 2,
+      "wordOccurrences": 12,
+      "independentWordStatus": "Compared explicit N5/N4 and preceding N3 labels; B corrected 15 same-word occurrences to review, no unresolved B candidate from current preflight. This is not official vocabulary coverage."
+    },
+    "u22": {
+      "status": "passed-independent-agent-language-review",
+      "sourceSha256": "0b02ad7fa9f9e0a152a9960ffe2901c79d4959420265ee54528d5856035cb0cd",
+      "meaningAndTime": "Hopeful participants rose twenty to forty and desired book types/guide preparation increased. No claim guides exactly doubled; per-person required sheets must first be checked.",
+      "formsAndAllowedAlternatives": "につれて and にしたがって overlap in accompanying-change contexts; both are accepted when natural.",
+      "contextualReadingReview": "二十人にじゅうにん, 四十人よんじゅうにん, 何枚なんまい; full word readings 変化へんか/準備量じゅんびりょう explicitly supported.",
+      "actualRecall": [
+        {
+          "kind": "evidence",
+          "unit": 21,
+          "fieldPath": "dialog[4].ja",
+          "quote": "準備を変えたのは",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요.",
+          "quotePresent": true,
+          "earlierTargetPatterns": [
+            "〜のは〜からだ",
+            "〜ことから"
+          ]
+        },
+        {
+          "kind": "n4Evidence",
+          "unit": 16,
+          "fieldPath": "dialog[5].ja",
+          "quote": "相談していきましょう",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[15]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요.",
+          "quotePresent": true,
+          "pinnedTargetTitle": "점점 가까워지고 있어",
+          "pinnedTargetFormulas": [
+            "동사 て형＋くる／いく",
+            "변화를 나타내는 동사 て형＋くる／いく"
+          ]
+        }
+      ],
+      "checks": 3,
+      "oral": 2,
+      "wordOccurrences": 12,
+      "independentWordStatus": "Compared explicit N5/N4 and preceding N3 labels; B corrected 15 same-word occurrences to review, no unresolved B candidate from current preflight. This is not official vocabulary coverage."
+    },
+    "u23": {
+      "status": "passed-independent-agent-language-review",
+      "sourceSha256": "1c3c16dc5007dd2b88cadbae6c7ae8fdf48895997e77df31c0196a0aae92abb0",
+      "meaningAndTime": "Rereading reveals previously missed relations and questions; not proof of universal learning improvement or failure. Consultation time lengthens but length is not the goal; questions and text evidence are prepared.",
+      "formsAndAllowedAlternatives": "ば〜ほど repeated form and とともに concurrent change; につれて/にしたがって acknowledged as contextual alternatives.",
+      "contextualReadingReview": "登場人物とうじょうじんぶつ, 物語ものがたり, 気づくきづく, 自体じたい, 長ければながければ checked.",
+      "actualRecall": [
+        {
+          "kind": "evidence",
+          "unit": 22,
+          "fieldPath": "dialog[4].ja",
+          "quote": "質問が増えるにつれて",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요.",
+          "quotePresent": true,
+          "earlierTargetPatterns": [
+            "〜につれて",
+            "〜にしたがって"
+          ]
+        },
+        {
+          "kind": "n4Evidence",
+          "unit": 12,
+          "fieldPath": "dialog[2].ja",
+          "quote": "気づくようになりました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[11]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요.",
+          "quotePresent": true,
+          "pinnedTargetTitle": "조금씩 할 수 있게 됐어",
+          "pinnedTargetFormulas": [
+            "가능형・동사 사전형＋ように なります",
+            "사전형・ない형＋ように します"
+          ]
+        }
+      ],
+      "checks": 3,
+      "oral": 2,
+      "wordOccurrences": 12,
+      "independentWordStatus": "Compared explicit N5/N4 and preceding N3 labels; B corrected 15 same-word occurrences to review, no unresolved B candidate from current preflight. This is not official vocabulary coverage."
+    },
+    "u24": {
+      "status": "passed-independent-agent-language-review",
+      "sourceSha256": "5dc6d284419c5bc6f7b6fdea3b9045cfd445a77b655dd493f336264f6f61c16a",
+      "meaningAndTime": "Automatic door design differs from Jun acquiring ability. Reception name and activity confirmation are required; buying every book is unnecessary. Convenient seat is not made a mandatory condition.",
+      "formsAndAllowedAlternatives": "ようになっている design vs ようになった ability change; purpose には. Natural purpose のに removed from distractors to restore unique answer.",
+      "contextualReadingReview": "Door 開くあく vs 開けるあける, 仕組みしくみ, 明かりあかり, 全部買ぜんぶか long context key checked.",
+      "actualRecall": [
+        {
+          "kind": "evidence",
+          "unit": 22,
+          "fieldPath": "dialog[5].ja",
+          "quote": "参加者が増えるにつれて",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요.",
+          "quotePresent": true,
+          "earlierTargetPatterns": [
+            "〜につれて",
+            "〜にしたがって"
+          ]
+        },
+        {
+          "kind": "n4Evidence",
+          "unit": 22,
+          "fieldPath": "dialog[1].ja",
+          "quote": "人が近づくと",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[21]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요.",
+          "quotePresent": true,
+          "pinnedTargetTitle": "누르면 열려요",
+          "pinnedTargetFormulas": [
+            "동사 사전형·ない형＋と、결과",
+            "Aを 押すと、Bが 開きます"
+          ]
+        }
+      ],
+      "checks": 3,
+      "oral": 2,
+      "wordOccurrences": 12,
+      "independentWordStatus": "Compared explicit N5/N4 and preceding N3 labels; B corrected 15 same-word occurrences to review, no unresolved B candidate from current preflight. This is not official vocabulary coverage."
+    },
+    "u25": {
+      "status": "passed-independent-agent-language-review",
+      "sourceSha256": "d62312e77bf3a744a7d5e8c648291a70ff6cf728b8d4f518a51aeb3470a35797",
+      "meaningAndTime": "Name tag and guide sheet support Jun strong belief, not verified identity. Rina impression of smaller text is unmeasured. Reading MCQ now asks only explicit plan to compare sheets, not an invented plan to ask the person.",
+      "formsAndAllowedAlternatives": "に違いない strong belief vs 気がする impression; belief strength is separate from verification.",
+      "contextualReadingReview": "名札なふだ, 大きさおおきさ, 空白くうはく, 欄らん, 二枚にまい checked.",
+      "actualRecall": [
+        {
+          "kind": "evidence",
+          "unit": 24,
+          "fieldPath": "dialog[4].ja",
+          "quote": "確認するには",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요.",
+          "quotePresent": true,
+          "earlierTargetPatterns": [
+            "〜ようになっている",
+            "〜には"
+          ]
+        },
+        {
+          "kind": "evidence",
+          "unit": 23,
+          "fieldPath": "reading",
+          "quote": "案内を読めば読むほど、確かめたい所が増えました。",
+          "retrievedUse": "읽을수록 확인할 점이 늘어나는 동반 변화",
+          "quotePresent": true,
+          "earlierTargetPatterns": [
+            "〜ば〜ほど",
+            "〜とともに"
+          ]
+        },
+        {
+          "kind": "n4Evidence",
+          "unit": 12,
+          "fieldPath": "dialog[5].ja",
+          "quote": "決めないようにしましょう",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[11]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요.",
+          "quotePresent": true,
+          "pinnedTargetTitle": "조금씩 할 수 있게 됐어",
+          "pinnedTargetFormulas": [
+            "가능형・동사 사전형＋ように なります",
+            "사전형・ない형＋ように します"
+          ]
+        }
+      ],
+      "checks": 3,
+      "oral": 2,
+      "wordOccurrences": 12,
+      "independentWordStatus": "Compared explicit N5/N4 and preceding N3 labels; B corrected 15 same-word occurrences to review, no unresolved B candidate from current preflight. This is not official vocabulary coverage."
+    },
+    "u26": {
+      "status": "passed-independent-agent-language-review",
+      "sourceSha256": "b8c17f1efb55269a7155c0470c7a8fa5652d8a1748f282542f4c14b1637ddfab",
+      "meaningAndTime": "Rina-like design respects choice; not hearsay or stereotypes. Childlike poster is evaluated against this audience/purpose, not child activities as bad. Reading comparison is completed, now matched by question tense.",
+      "formsAndAllowedAlternatives": "Nらしい characteristic vs N4 hearsay/inference ambiguity; っぽい resemblance/tendency is not always a negative absolute.",
+      "contextualReadingReview": "工夫くふう, 普段ふだん, 考え方かんがえかた, 出しあいだしあい, 文字もじ, 日付ひづけ checked.",
+      "actualRecall": [
+        {
+          "kind": "evidence",
+          "unit": 25,
+          "fieldPath": "dialog[1].ja",
+          "quote": "子どもっぽい気がします",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요.",
+          "quotePresent": true,
+          "earlierTargetPatterns": [
+            "〜に違いない",
+            "〜気がする"
+          ]
+        },
+        {
+          "kind": "n4Evidence",
+          "unit": 18,
+          "fieldPath": "dialog[5].ja",
+          "quote": "使えそうです",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[17]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요.",
+          "quotePresent": true,
+          "pinnedTargetTitle": "맛있어 보인대? 보인다고?",
+          "pinnedTargetFormulas": [
+            "い형용사 끝 い 제외／な형용사 어간／ます를 뺀 모양＋そうです",
+            "보통형＋そうです · 명사·な형용사 현재 긍정은 だそうです"
+          ]
+        }
+      ],
+      "checks": 3,
+      "oral": 2,
+      "wordOccurrences": 12,
+      "independentWordStatus": "Compared explicit N5/N4 and preceding N3 labels; B corrected 15 same-word occurrences to review, no unresolved B candidate from current preflight. This is not official vocabulary coverage."
+    },
+    "u27": {
+      "status": "passed-independent-agent-language-review",
+      "sourceSha256": "204844ba7bea9647442ac40320e6484d3efa594df7e99f3c914998f6c1dfd447",
+      "meaningAndTime": "Present sky motivates unlikely rain cessation, not a guaranteed end time. Jun does not know method, pretends knowing, then asks Rina and checks actual unclear fields.",
+      "formsAndAllowedAlternatives": "そうにない/そうもない low prospect both permitted; ふり external attitude does not establish actual knowledge or sleep.",
+      "contextualReadingReview": "今日中きょうじゅう, 知ってしって, 聞きなおききなお, 寝ね/眠ねむ contextual stems and explicit 見込みみこみ checked.",
+      "actualRecall": [
+        {
+          "kind": "evidence",
+          "unit": 18,
+          "fieldPath": "dialog[4].ja",
+          "quote": "聞きなおしましょう",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요.",
+          "quotePresent": true,
+          "earlierTargetPatterns": [
+            "〜なおす",
+            "〜あう"
+          ]
+        },
+        {
+          "kind": "evidence",
+          "unit": 26,
+          "fieldPath": "reading",
+          "quote": "ジュンは、相手と一緒に確かめるのはリナさんらしいと思いました。",
+          "retrievedUse": "실제 협력 행동에 대한 준의 리나다움 평가; 전언이 아님",
+          "quotePresent": true,
+          "earlierTargetPatterns": [
+            "Nらしい",
+            "〜っぽい"
+          ]
+        },
+        {
+          "kind": "n4Evidence",
+          "unit": 15,
+          "fieldPath": "dialog[3].ja",
+          "quote": "知っているふりをしてしまいました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[14]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요.",
+          "quotePresent": true,
+          "pinnedTargetTitle": "한 번 해봤는데, 다 해버렸네",
+          "pinnedTargetFormulas": [
+            "동사 て형＋みる",
+            "동사 て형＋しまう"
+          ]
+        }
+      ],
+      "checks": 3,
+      "oral": 2,
+      "wordOccurrences": 12,
+      "independentWordStatus": "Compared explicit N5/N4 and preceding N3 labels; B corrected 15 same-word occurrences to review, no unresolved B candidate from current preflight. This is not official vocabulary coverage."
+    },
+    "u28": {
+      "status": "passed-independent-agent-language-review",
+      "sourceSha256": "c5183c54c33dab0b327a8af3c25eaa95b7261627a5ea77957dcfb403dfe67033",
+      "meaningAndTime": "Timetable expectation one oclock versus actual twenty-minute delay; meeting remains two oclock. Jun intended new book but it was not ready; short guide first is a changed plan, not completed new-book reading.",
+      "formsAndAllowedAlternatives": "はずだった expectation vs つもりだった personal intention; past form alone never proves nonrealization.",
+      "contextualReadingReview": "一時いちじ, 二時にじ, 二十分にじゅっぷん, 時刻表じこくひょう, 間に合まにあ and word 意図いと checked.",
+      "actualRecall": [
+        {
+          "kind": "evidence",
+          "unit": 27,
+          "fieldPath": "dialog[4].ja",
+          "quote": "やみそうにありません",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요.",
+          "quotePresent": true,
+          "earlierTargetPatterns": [
+            "〜そうにない・〜そうもない",
+            "〜ふりをする"
+          ]
+        },
+        {
+          "kind": "n4Evidence",
+          "unit": 24,
+          "fieldPath": "dialog[5].ja",
+          "quote": "着いたら知らせてください",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[23]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요.",
+          "quotePresent": true,
+          "pinnedTargetTitle": "도착하면 연락해",
+          "pinnedTargetFormulas": [
+            "동사 た형＋ら · い형용사かったら／명사·な형용사だったら",
+            "동사 た형＋ら どうですか"
+          ]
+        }
+      ],
+      "checks": 3,
+      "oral": 2,
+      "wordOccurrences": 12,
+      "independentWordStatus": "Compared explicit N5/N4 and preceding N3 labels; B corrected 15 same-word occurrences to review, no unresolved B candidate from current preflight. This is not official vocabulary coverage."
+    },
+    "u29": {
+      "status": "passed-independent-agent-language-review",
+      "sourceSha256": "d08dfe23165a73bc630b477612083f04f7b6c15248c4248f379cd6e66b032b95",
+      "meaningAndTime": "Old local photographs explain popularity. Only small-group lectures require reservation; free reading area does not. Actual vacancy for requested lecture still requires checking.",
+      "formsAndAllowedAlternatives": "わけだ realization from learned reason vs わけではない qualified rejection; partial negation is not negation of every activity.",
+      "contextualReadingReview": "人気にんき, 少人数しょうにんずう, 一冊いっさつ, 一枚いちまい, 嫌いきらい checked.",
+      "actualRecall": [
+        {
+          "kind": "evidence",
+          "unit": 28,
+          "fieldPath": "dialog[4].ja",
+          "quote": "読むだけのつもりでした",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요.",
+          "quotePresent": true,
+          "earlierTargetPatterns": [
+            "〜はずだった",
+            "〜つもりだった"
+          ]
+        },
+        {
+          "kind": "n4Evidence",
+          "unit": 1,
+          "fieldPath": "dialog[1].ja",
+          "quote": "写真がたくさんあるんです",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[0]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요.",
+          "quotePresent": true,
+          "pinnedTargetTitle": "무슨 일인지 한마디 덧붙여요",
+          "pinnedTargetFormulas": [
+            "동사 보통형＋んです。",
+            "동사 보통형＋んですか。"
+          ]
+        }
+      ],
+      "checks": 3,
+      "oral": 2,
+      "wordOccurrences": 12,
+      "independentWordStatus": "Compared explicit N5/N4 and preceding N3 labels; B corrected 15 same-word occurrences to review, no unresolved B candidate from current preflight. This is not official vocabulary coverage."
+    },
+    "u30": {
+      "status": "passed-independent-agent-language-review",
+      "sourceSha256": "9be7220dc4f3b6dab589e9a9d9ca1750c79b99f6a8f3440397056051f8106827",
+      "meaningAndTime": "Unused sign/darkness cause Jun strong absence judgment, not inspection. Rina leaves possibility of reading extra draft but needs time and agreed scope; no completion promise.",
+      "formsAndAllowedAlternatives": "わけがない strong negation vs ないことはない weak possibility; not a direct acceptance or blanket refusal.",
+      "contextualReadingReview": "本日ほんじつ, 今日中きょうじゅう, 全部分かるぜんぶわかる long context mapping, 不可能ふかのう checked.",
+      "actualRecall": [
+        {
+          "kind": "evidence",
+          "unit": 29,
+          "fieldPath": "dialog[4].ja",
+          "quote": "約束したわけではありません",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요.",
+          "quotePresent": true,
+          "earlierTargetPatterns": [
+            "〜わけだ",
+            "〜わけではない"
+          ]
+        },
+        {
+          "kind": "n4Evidence",
+          "unit": 5,
+          "fieldPath": "dialog[2].ja",
+          "quote": "今日中に読めるか",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[4]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요.",
+          "quotePresent": true,
+          "pinnedTargetTitle": "이제 혼자서도 할 수 있어",
+          "pinnedTargetFormulas": [
+            "1그룹 う단→え단＋る / 2그룹 る→られる / する→できる・くる→こられる",
+            "대상 が＋가능형 / 문맥에 따라 대상 を＋가능형"
+          ]
+        }
+      ],
+      "checks": 3,
+      "oral": 2,
+      "wordOccurrences": 12,
+      "independentWordStatus": "Compared explicit N5/N4 and preceding N3 labels; B corrected 15 same-word occurrences to review, no unresolved B candidate from current preflight. This is not official vocabulary coverage."
+    },
+    "u31": {
+      "status": "passed-independent-agent-language-review",
+      "sourceSha256": "d79239221b965bb4553486a93b0cde8c78da46f984e1d4807e296fd3851fabe9",
+      "meaningAndTime": "Mio cannot leave desk because of promised coverage/no replacement, while physically able. Jun must return book today under his promise; negative placement does not reverse actor/action.",
+      "formsAndAllowedAlternatives": "Vるわけにはいかない disallowed action vs Vないわけにはいかない unavoidable performance; ability-only explanation explicitly rejected.",
+      "contextualReadingReview": "五時ごじ, 引き受けるひきうける, 今日返きょうかえ, 体からだ/能力のうりょく, 返さかえさ checked.",
+      "actualRecall": [
+        {
+          "kind": "evidence",
+          "unit": 30,
+          "fieldPath": "dialog[5].ja",
+          "quote": "読めないことはありません",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요.",
+          "quotePresent": true,
+          "earlierTargetPatterns": [
+            "〜わけがない",
+            "〜ないことはない"
+          ]
+        },
+        {
+          "kind": "n4Evidence",
+          "unit": 5,
+          "fieldPath": "dialog[1].ja",
+          "quote": "動けないんですか",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[4]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요.",
+          "quotePresent": true,
+          "pinnedTargetTitle": "이제 혼자서도 할 수 있어",
+          "pinnedTargetFormulas": [
+            "1그룹 う단→え단＋る / 2그룹 る→られる / する→できる・くる→こられる",
+            "대상 が＋가능형 / 문맥에 따라 대상 を＋가능형"
+          ]
+        }
+      ],
+      "checks": 3,
+      "oral": 2,
+      "wordOccurrences": 12,
+      "independentWordStatus": "Compared explicit N5/N4 and preceding N3 labels; B corrected 15 same-word occurrences to review, no unresolved B candidate from current preflight. This is not official vocabulary coverage."
+    },
+    "u32": {
+      "status": "passed-independent-agent-language-review",
+      "sourceSha256": "7fb38ae12c9c15c9e6d0d1cbf307f1ef54f4c4d9f63641586151ee5feba495b5",
+      "meaningAndTime": "Delayed notification led friend to outdated notice; regret is not earlier successful notification. Future proposal checks dates in pairs and assigns check/contact roles; not already completed or universal legal obligation.",
+      "formsAndAllowedAlternatives": "べき/べきではない opinion and べきだった regret; both するべき and すべき permitted.",
+      "contextualReadingReview": "来たきた/来てきて, 後悔こうかい, 振り返ふりかえ, 一度確認いちどかくにん, 日付ひづけ checked.",
+      "actualRecall": [
+        {
+          "kind": "evidence",
+          "unit": 31,
+          "fieldPath": "dialog[4].ja",
+          "quote": "同じ間違いをするわけにはいきません",
+          "retrievedUse": "앞 과의 목표 표현을 이 과의 실제 장면에서 다시 써요.",
+          "quotePresent": true,
+          "earlierTargetPatterns": [
+            "〜わけにはいかない・〜ないわけにはいかない"
+          ]
+        },
+        {
+          "kind": "n4Evidence",
+          "unit": 15,
+          "fieldPath": "dialog[0].ja",
+          "quote": "後にしてしまいました",
+          "n4Source": "f4a6411c0945bbd3f8767af7/manuscript.lessons[14]",
+          "retrievedUse": "N4에서 배운 형태를 실제 발화·문장 연결에 다시 써요.",
+          "quotePresent": true,
+          "pinnedTargetTitle": "한 번 해봤는데, 다 해버렸네",
+          "pinnedTargetFormulas": [
+            "동사 て형＋みる",
+            "동사 て형＋しまう"
+          ]
+        }
+      ],
+      "checks": 3,
+      "oral": 2,
+      "wordOccurrences": 12,
+      "independentWordStatus": "Compared explicit N5/N4 and preceding N3 labels; B corrected 15 same-word occurrences to review, no unresolved B candidate from current preflight. This is not official vocabulary coverage."
+    }
+  },
+  "limitations": [
+    "No official JLPT whole-level coverage claim.",
+    "Source Han support scan is coverage, not proof of pronunciation accuracy, rendered font quality or audio.",
+    "No real learner outcome, native speaker, browser, normal-account or deployment certification inferred from source review."
+  ],
+  "actualRecallCounts": {
+    "earlierN3Entries": 18,
+    "pinnedN4Entries": 16,
+    "plannedRecallIsNotExecutedClaim": true
+  },
+  "additionalOwnerDeltasRechecked": [
+    {
+      "unit": "u25",
+      "sourceSha256": "d62312e77bf3a744a7d5e8c648291a70ff6cf728b8d4f518a51aeb3470a35797",
+      "change": "Added earlier u23 ば〜ほど retrieval in reading; reading 262 Japanese characters.",
+      "observedResult": "Reading more increases things to verify; no confirmed measurement or decided personal asking plan invented. Readings 案内を読めば読むほど/確かめたい所/増えました correct and literal recall evidence present."
+    },
+    {
+      "unit": "u27",
+      "sourceSha256": "204844ba7bea9647442ac40320e6484d3efa594df7e99f3c914998f6c1dfd447",
+      "change": "Added earlier u26 Nらしい retrieval after actual collaborative checking; 分からず replaced by earlier 分からなくて; reading 271 Japanese characters.",
+      "observedResult": "Jun evaluates Rina characteristic behavior after observed cooperation; no hearsay claim or change to actual knowledge, forecast uncertainty or answer evidence. 相手あいて/思いましたおもいました correct; literal recall present."
+    }
+  ]
+}

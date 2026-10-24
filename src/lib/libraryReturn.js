@@ -33,8 +33,18 @@ export function safeReaderReturn(value) {
       return url.pathname + (validDay ? `?day=${day}` : '');
     }
   }
+  // 산책 「고전 명작」(DISCOVER-CLASSICS-001) — 구간(책 · 그림, DISCOVER-ART-001)과 거르기(언어 · 갈래 · 작가)만 옮긴다. 값은 화면이 다시 검사한다(classicsFilters).
+  if (typeof value === 'string' && value.length <= 2000 && /^\/discover\/classics(?:\?|$)/.test(value)) {
+    const url = new URL(value, 'https://manabi.invalid');
+    if (!url.hash && url.pathname === '/discover/classics') {
+      const clean = new URLSearchParams();
+      for (const key of CLASSICS_RETURN_KEYS) { const v = url.searchParams.get(key); if (v && v.length <= 80) clean.set(key, v); }
+      return url.pathname + (clean.size ? `?${clean}` : '');
+    }
+  }
   return safeLibraryReturn(value);
 }
+const CLASSICS_RETURN_KEYS = Object.freeze(['shelf', 'lang', 'group', 'cat', 'author']);
 
 // 「함께 읽는 글」 목록 키 — /discover?view=reading이 읽는 것만, 이 순서로 옮긴다. 개인 서재 키(tab · tools · scope ·
 // collection · outline · kind · state)는 옮기지 않는다.
@@ -60,7 +70,8 @@ export function readerReturnLabel(value) {
     if (url.pathname.endsWith('/live')) return '← 수업 진행';
     return url.searchParams.get('view') === 'history' ? '← 수업 기록' : '← 수업으로';
   }
-  return url.searchParams.get('tab') === 'public' ? '← 발견' : '← 내 서재';
+  if (url.pathname === '/discover/classics') return '← 고전 명작';
+  return url.searchParams.get('tab') === 'public' ? '← 함께 읽는 글' : '← 내 서재';
 }
 
 // 손님은 서재가 없다 — 맥락 없이 연 뷰어의 「←」는 산책(/discover)으로(뷰어 기능 감사 2026-10-17 KST). 뷰어의 아이콘 버튼이라

@@ -72,7 +72,8 @@ describe('되돌린 채점 제외 계약 (W 후속 ②)', () => {
 
   it('세 undo 지점의 마커 모양이 같다 — 필터가 읽는 필드(item_key·reviewed_at)', () => {
     const shape = "detail: { qtype: 'undo', undo_of: { item_key: last.itemKey, rating: last.rating, reviewed_at: last.reviewedAt } }";
-    for (const f of ['src/views/VocabPage.jsx', 'src/views/ViewerPage.jsx', 'src/components/world/QuestReview.jsx']) {
+    // 뷰어 인라인 되돌리기는 HSK 단어 페이지와 같은 한 길(lib/inlineGradeUndo.js — 2026-10-19 KST 옮김).
+    for (const f of ['src/views/VocabPage.jsx', 'src/lib/inlineGradeUndo.js', 'src/components/world/QuestReview.jsx']) {
       expect(read(f), f).toContain(shape);
     }
   });

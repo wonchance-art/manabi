@@ -1,0 +1,37 @@
+{
+  "status": "fixed-targeted-pass-source-frozen-awaiting-actual-browser",
+  "checkedAt": "2026-10-21T12:05:10.418108+00:00",
+  "trigger": "Actual independent C browser passed shelf/48 APIs/assets but reference search for という hid all N3 articles and timed out.",
+  "preservedActualFailure": "/workspace/scratch/n3-integration/team/browser/attempt-002",
+  "cause": "Search-card collection and article visibility used N4 reference-card selectors without the N3 equivalent.",
+  "change": "Added .n3-reference > [data-search] alongside every existing N5/N4 search-card selector in both filtering and visible-article checks.",
+  "ownedSourceFile": "src/components/books/BookReader.jsx",
+  "sourceSha256": "7e3d6d063c62e18854f38e204e25f1d43121bda0708c71b91d74089529502b0b",
+  "changedLinesInThisDelta": 2,
+  "sameFileReview": {
+    "wholeFileRead": true,
+    "n4SpecificMatchesBefore": 3,
+    "findings": [
+      "Two N4 reference-card selector occurrences required N3 support and were updated.",
+      "The N4 guide-title condition already has a distinct N3 title and remains intentional."
+    ],
+    "additionalMissingN4OnlyConditionFound": false
+  },
+  "validation": {
+    "targetedFiles": 8,
+    "testsPassed": 169,
+    "testLog": "reference-search-targeted.log",
+    "lintPassed": true,
+    "lintLog": "reference-search-lint.log",
+    "diffCheck": true
+  },
+  "actualRegressionOracle": "Existing actual N3 e2e search hit/empty/clear/return cases; C must rerun against this source freeze.",
+  "newMirrorTestAdded": false,
+  "effectRefactoredForTests": false,
+  "existingTestsOrTimeoutsEdited": false,
+  "manuscriptProducerOrEditionEdited": false,
+  "serversOrBrowserStartedByFixAgent": false,
+  "actualBrowserRetestPerformed": false,
+  "productionWrites": false,
+  "nextOwner": "M00 final full test input and C actual app browser rerun"
+}

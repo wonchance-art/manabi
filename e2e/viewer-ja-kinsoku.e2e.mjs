@@ -114,7 +114,7 @@ test('JA-KINSOKU — Aa preview carries the same marks; selection frame stays on
   const t=f.page.locator(`.reader-area [data-source-token="${tid(0,3)}"]`);// ます before 。
   await t.locator('.surface[role="button"]').focus();await f.page.keyboard.press('Enter');
   await f.page.waitForFunction(id=>document.querySelector(`.reader-area [data-source-token="${id}"]`)?.getAttribute('data-selected')==='true',tid(0,3));
-  const frame=await t.evaluate(e=>{const s=e.querySelector('.surface').getBoundingClientRect(),b=getComputedStyle(e,'::before');return {surface:s.width,frame:parseFloat(b.width),hold:e.style.getPropertyValue('--zh-hold')};});
+  const frame=await t.evaluate(e=>{const s=e.querySelector('.surface').getBoundingClientRect(),b=e.querySelector('.surface > .word-frame');return {surface:s.width,frame:b&&getComputedStyle(b).outlineStyle==='solid'?b.getBoundingClientRect().width:NaN,hold:e.style.getPropertyValue('--zh-hold')};});
   assert.equal(frame.hold,'1','fixture premise: ます is held with its 。');
   if(Number.isFinite(frame.frame))assert.ok(Math.abs(frame.frame-frame.surface)<=1,`selection frame ${frame.frame}px vs word ${frame.surface}px`);
   assert.deepEqual(f.errors,[]);
