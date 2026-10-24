@@ -39,5 +39,7 @@ export async function POST(request,{bookId=BOOK_ID}={}){const auth=await require
  revalidatePath('/lessons');revalidatePath('/lessons/lang/[lang]', 'page');
  // 교재 첫 화면 판(쿼리 없음 — /books/<책>/cover/*) · 배움 판(/home 아래 넷, 이어 읽기 칸이 N5 카탈로그를 싣는다)도 ISR 1시간이다(4단계).
  revalidatePath(`/books/${bookId}/cover/[hint]`,'page');if(bookId===BOOK_ID)revalidatePath('/home','layout');
+ // 판본별 판(?edition=<저장소 판본 id> 하나뿐 — /books/<책>/edition/*, 5단계)도 — 도장 없이 구운 판(안내)이 발행 즉시 그 판본을 그리게.
+ revalidatePath(`/books/${bookId}/edition/[edition]/[hint]`,'page');
  return respond({ok:true,release:Array.isArray(data)?data[0]:data});
  }catch(e){return respondError(e)}}

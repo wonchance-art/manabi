@@ -7,7 +7,7 @@ import { authEntryHref } from '@/lib/authRedirect';
 import { useAuth } from '@/lib/AuthContext';
 import SaveContextButton from '@/components/learning/SaveContextButton';
 import MaterialChapterLinks from '@/components/learning/MaterialChapterLinks';
-import { BOOK_ID, bookHref as textbookHref } from '@/lib/textbook/contract';
+import { BOOK_ID, bookHref as textbookHref, previewBookHref } from '@/lib/textbook/contract';
 import { bookReferenceHref, bookReviewHref } from '@/lib/bookReviewNavigation';
 import { readingDraftKey, readingUnit } from '@/lib/bookNavigation';
 import useReadingProgress from './useReadingProgress';
@@ -405,6 +405,8 @@ export function BookReaderView({ book, sectionIndex, preview = false, reference 
     const destination=new URL(bookHref(book.edition,id),window.location.origin);
     if(back)destination.searchParams.set('returnTo',safeLibraryReturn(back));
     if(reference)destination.searchParams.set('reference','1');
+    // 미리보기는 책 안 이동 뒤 새로고침도 동적 화면에 남는다(표식 — previewBookHref, GUEST-STATIC-001 5단계). 학습자 주소는 그대로.
+    if(preview)destination.searchParams.set('preview','1');
     // Return from a reading link to the exact card, including after a search.
     if (originAnchor && unit === 'reference') {
       const origin = new URL(window.location.href); origin.hash = originAnchor;
@@ -419,7 +421,7 @@ export function BookReaderView({ book, sectionIndex, preview = false, reference 
     focusAfterMove.current = true;
     setAnchorRequest(request => request + 1);
     if (!reference && /^u\d{2}/.test(id)) update({ page: id });
-  }, [book.edition, bookHref, unit, update, reference, rememberPosition]);
+  }, [book.edition, bookHref, unit, update, reference, preview, rememberPosition]);
 
   function interact(event) {
     const anchor = event.target.closest('a[href]');
@@ -455,7 +457,8 @@ export function BookReaderView({ book, sectionIndex, preview = false, reference 
   function openPanel(next, origin) { dialogOrigin.current = origin || null; setPanel(next); dialog.current?.showModal(); }
   const readerHref = id => {
     const href = reference ? bookReferenceHref(bookHref(book.edition, id)) : bookHref(book.edition, id);
-    return returnTo ? libraryReaderHref(href, returnTo) : href;
+    const linked = returnTo ? libraryReaderHref(href, returnTo) : href;
+    return preview ? previewBookHref(linked) : linked;
   };
   const next = lesson && book.lessons.find(item => item.number === lesson.number + 1);
   // 다음 과 미리 받기(BOOKS-FLOW-002) — 과 끝 줄(「NN과로 →」)이 화면 가까이 오면 다음 과 본문을 받아 기억해 둔다. 「다음 과」를 누르면

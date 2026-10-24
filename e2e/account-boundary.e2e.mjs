@@ -504,7 +504,8 @@ test('⑨ 얼어 있는 동안 쿠키만 바뀐 뒤 문서 뒤로 가기(bfcache
   const results = [];
   try {
     // 배움(/home)은 4단계부터 ISR 판(세션 쿠키 유무로 middleware가 고른다) — 얼어 있던 로그인 판이 손님 · B에게 되살아나도 같은 관문이 정리한다.
-    for (const path of ['/profile', '/japanese/vocab/n5', '/home']) {
+    // 판본 하나뿐인 교재 주소(?edition=<저장소 판본>)는 5단계부터 판본별 ISR 판(로그인 판) — 같은 관문.
+    for (const path of ['/profile', '/japanese/vocab/n5', '/home', '/books/japanese-n5?edition=8a8c1c1fd452773810abaf8c']) {
       for (const via of ['cookie', 'clear']) {
         const { context, page, errors } = await boundaryContext({ actor: 'A', engine: bfBrowser });
         try {
@@ -516,7 +517,7 @@ test('⑨ 얼어 있는 동안 쿠키만 바뀐 뒤 문서 뒤로 가기(bfcache
             const display = sub === BOUNDARY_ACTORS.A ? `${BOUNDARY_MARKER} 프로필` : '표식 B 프로필';
             return route.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify(sub ? { id: sub, display_name: display, role: 'learner', onboarded: true, last_login_at: new Date().toISOString(), streak_count: 1 } : null) });
           });
-          await context.addInitScript(() => { addEventListener('pageshow', e => { try { const log = JSON.parse(sessionStorage.getItem('__bfShows') || '[]'); log.push({ path: location.pathname, persisted: e.persisted }); sessionStorage.setItem('__bfShows', JSON.stringify(log)); } catch { /* 저장소 차단 */ } }); });
+          await context.addInitScript(() => { addEventListener('pageshow', e => { try { const log = JSON.parse(sessionStorage.getItem('__bfShows') || '[]'); log.push({ path: location.pathname + location.search, persisted: e.persisted }); sessionStorage.setItem('__bfShows', JSON.stringify(log)); } catch { /* 저장소 차단 */ } }); });
           await page.goto(path);
           await page.waitForFunction(([marker, email]) => document.documentElement.outerHTML.includes(marker) || document.documentElement.outerHTML.includes(email), [BOUNDARY_MARKER, EMAIL.A], { timeout: 20000 });
           await settle(page);

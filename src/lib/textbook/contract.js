@@ -53,3 +53,7 @@ export function withField(manuscript,path,value) {
 export const canonical = value => Array.isArray(value)?value.map(canonical):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(k=>[k,canonical(value[k])])):value;
 export function manuscriptContent(book){return Object.fromEntries(Object.entries(book).filter(([k])=>!['revision','source','editorialChanges'].includes(k)))}
 export const bookHref=(edition,page='cover',bookId=BOOK_ID)=>isBookId(bookId)?`/books/${bookId}?edition=${edition}#${page}`:null;
+// 관리자 미리보기 표식(GUEST-STATIC-001 5단계 d2-i) — 미리보기(발행 도장 없는 판본) 안에서 교재 화면(/books/<책>)으로 가는 주소에만 붙인다.
+// `?edition=<id>` 하나뿐인 요청은 middleware가 판본별 정적 판(공유 캐시 — 미리보기 없음)으로 넘기므로, 쿼리를 둘로 만들어 동적 화면(관리자 확인)에 남긴다.
+// 서버는 이 값을 읽지 않는다(미리보기 여부는 발행 도장 · 관리자 확인이 정한다). 저장 · 돌아가기용 주소(safeBookReturn)에는 붙이지 않는다 — 거기는 판본 하나만 받는다.
+export const previewBookHref=href=>{if(typeof href!=='string')return href;const url=new URL(href,'https://manabi.invalid');url.searchParams.set('preview','1');return url.pathname+url.search+url.hash;};
