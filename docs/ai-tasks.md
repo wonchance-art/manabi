@@ -1011,6 +1011,10 @@
   끊긴 /vocab 안내 · 실패 토스트 두 문장. 보류: 끊긴 동안 담기 · 아는 단어 기기 보관(P3 · P4), 다음: 끊긴 서재 「받아 둔 자료」(P1).
   VIEWER-TAP-INP: 탭마다 뷰어 재렌더 · 범위 직렬화 · 카드 두 번 짓기 제거 · 선택 테두리 그리기 전용(.word-frame) — 300줄 쪽 넘김 바꿔 누르기 750 → 456ms, 48줄 210 → 128ms.
   남김: 300줄 입력 지연(다단 2만 객체 hit test) → 쪽 단위 그리기는 구조 과제. Next 16: 보류(공유 요소 여전히 탭 유실 · webpack 판 JS +13~26KB) — 2주 지난 패치 + Turbopack 글꼴 준비 때 재검토.
+- **#1547 병합 · 끊긴 서재 (2026-10-24 KST, 오너 「ㄱㄱ」)**: #1547 squash `d8c001a6`(19:20). PINYIN-CELL-RACE-001(비공개 자료 계정 확인 전 본문 늦게 붙으면 병음 칸 44px로 굳어 쪽 나눔 어긋남 — main에도 있던 경쟁, 16/16) ·
+  비공개 자료 주인에게 「비공개 자료예요」 0.3초 깜빡임 제거(authLoading 동안 스피너) · readerEl 의존 effect 견고화.
+  OFFLINE-SWEEP P1: 끊긴 서재 = 지금 계정의 「이 기기에 받아 둔 자료」(다른 계정 · 손님 사본 0, account-boundary ⑩) · 다시 연결 시 새로 고침 없이 복귀 ·
+  SW /viewer/:id 끊김 때 질의 무시 · Safari 「Load failed」 연결 판정.
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로
   /api/suggestions/today와 공용화. 지역학은 발견에서만 내림(/studies · 콘텐츠 보존). 비로그인 서재 → 「서가에서 읽어 보기」.
