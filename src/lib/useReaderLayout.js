@@ -124,7 +124,7 @@ function judgePagedSheet(panel, token, layout) {
   return core ? sizeKey : '';
 }
 
-export function useSelectedTokenVisibility(readerRef, tokenRefs, tokenId, enabled, revision) {
+export function useSelectedTokenVisibility(readerRef, tokenRefs, tokenId, enabled, revision, mounted) {
   useEffect(() => {
     const root = readerRef.current, token = tokenRefs.current[tokenId];
     if (!enabled || !root || !token) return;
@@ -244,10 +244,10 @@ export function useSelectedTokenVisibility(readerRef, tokenRefs, tokenId, enable
     const observer = new MutationObserver(placeOnShow);
     observer.observe(layout, { subtree: true, childList: true, attributes: true, attributeFilter: ['hidden', 'class', 'data-selected'] });
     return () => observer.disconnect();
-  }, [readerRef, revision]); // 본문(readerRef)은 자료가 온 뒤에 붙는다 — 자료가 바뀌면 다시 건다
+  }, [readerRef, revision, mounted]); // 본문(readerRef)은 자료가 온 뒤에 붙는다 — 자료가 바뀌거나 본문이 늦게 붙으면(mounted, READER-MOUNT-001) 다시 건다
 }
 
-export function useReaderLayout(readerRef,revision) {
+export function useReaderLayout(readerRef,revision,mounted) {
   const operation=useRef(null),[layoutVersion,setLayoutVersion]=useState(0);
   const cancel=useCallback(()=>{operation.current?.();operation.current=null;},[]);
   useEffect(()=>{
@@ -269,7 +269,7 @@ export function useReaderLayout(readerRef,revision) {
     };
     update();viewport.addEventListener('resize',update);viewport.addEventListener('scroll',update);
     return ()=>{viewport.removeEventListener('resize',update);viewport.removeEventListener('scroll',update);root.style.removeProperty('--reader-visual-height');root.style.removeProperty('--reader-keyboard-inset');delete root.dataset.keyboardOpen;};
-  },[readerRef,revision]);
+  },[readerRef,revision,mounted]); // mounted = 본문 요소 — 자료보다 늦게 붙으면 그때 건다(READER-MOUNT-001)
   const keepPosition=change=>{
     cancel();const root=readerRef.current, bounds=readerVisibleBounds(root);
     const anchor=captureReadingAnchor(root,bounds.top,bounds.bottom);

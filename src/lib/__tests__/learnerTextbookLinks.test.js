@@ -146,6 +146,9 @@ describe('비관리자가 학습자 링크를 따라가도 홈(/)으로 튕기�
   async function follow(href) {
     let url = new URL(href, 'https://manabi.test');
     for (let hop = 0; hop < 4; hop += 1) {
+      // '/'는 튕김 표지다 — 여기서 멈춘다. middleware가 '/'를 다시 /home으로 보내므로(ROOT-EDGE-REDIRECT-001) 더 따라가면
+      // 튕긴 링크가 /home에 닿아 「'/'가 아니다」를 거짓으로 통과한다.
+      if (url.pathname === '/') return url;
       const response = await middleware(new NextRequest(url));
       const location = response.headers.get('location');
       if (!location) return url;

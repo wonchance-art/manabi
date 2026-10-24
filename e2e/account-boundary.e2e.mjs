@@ -71,8 +71,8 @@ let browser;
 before(async () => { browser = await chromium.launch(config.use.launchOptions); });
 after(async () => { await browser?.close(); });
 
-async function boundaryContext({ actor = 'A', width = 390, height = 844, expiresIn } = {}) {
-  const context = await browser.newContext({ baseURL: base, viewport: { width, height }, serviceWorkers: 'block', reducedMotion: 'reduce' });
+async function boundaryContext({ actor = 'A', width = 390, height = 844, expiresIn, engine = browser } = {}) {
+  const context = await engine.newContext({ baseURL: base, viewport: { width, height }, serviceWorkers: 'block', reducedMotion: 'reduce' });
   // dataOffline: Supabase(REST · Auth)만 끊는다 — 뷰어의 오프라인 폴백(기기 캐시)을 타는 조건. 앱 서버(RSC)는 그대로라 화면 이동은 된다.
   const stats = { refreshGrants: 0, deletes: 0, rsc: [], bodiesAfterWatch: [], reviewInserts: [], dataOffline: false };
   const json = (route, value, status = 200, headers = {}) => route.fulfill({ status, contentType: 'application/json', headers: { ...cors, ...headers }, body: JSON.stringify(value) });
@@ -486,4 +486,59 @@ test('⑧ A의 안 보낸 채점은 B 세션 요청에 실리지 않고, A 재�
     assert.equal((await idbKeys(page, 'anatomy-offline-cache', 'outbox')).filter(r => r.owner === BOUNDARY_ACTORS.A).length, 0, '보낸 뒤 대기에서 빠진다');
     assert.deepEqual(errors, []);
   } finally { await context.close(); }
+});
+
+// ── ⑨ 문서 bfcache 복원(GUEST-STATIC-001 1단계, 2026-10-23 KST) ─────────────────────────────────────────────
+// ②③⑤의 뒤로 가기는 앱 안 이동(RSC 라우터 캐시)이다. 문서 단위 뒤로 가기는 브라우저가 얼려 둔 페이지(bfcache)를 그대로 되살린다.
+// Chrome은 no-store 문서만 「쿠키가 바뀌면 퇴출」한다 — 이미 정적인 화면(/profile · /japanese/vocab/n5, `public` 문서)은 그 안전장치가 없다.
+// 실측(가드 전 빌드): 다른 탭 로그인 · 앱 화면 이동은 SDK 탭 사이 알림이 얼어 있는 페이지를 퇴출시켰다(notRestoredReasons
+// broadcastchannel-message). 알림 없이 쿠키만 바뀌면(서버가 세션 쿠키를 지움 · 만료 등) 복원됐고, 쿠키가 지워진 갈래는 A 화면이 손님에게
+// 그대로 남았다(/profile · /japanese/vocab/n5 둘 다). 그래서 이 장면은 알림이 없는 길을 일부러 만든다: 앱이 아닌 문서(/favicon.svg)로 떠나고,
+// 쿠키만 바꾼 뒤(cookie = B 세션, clear = 지움) 뒤로 간다. 양성 대조 둘: 떠나기 전 A 표식이 보인다 · 매 갈래가 실제로 bfcache에서 복원됐다.
+// Playwright 기본 인자 --disable-back-forward-cache를 빼고 띄운 브라우저로 본다.
+const BF_ARGS = ['--disable-back-forward-cache'];
+const aFingerprint = page => page.evaluate(([marker, email]) => document.documentElement.outerHTML.includes(marker) || document.documentElement.outerHTML.includes(email), [BOUNDARY_MARKER, EMAIL.A]);
+
+test('⑨ 얼어 있는 동안 쿠키만 바뀐 뒤 문서 뒤로 가기(bfcache 복원) — 정적 화면에서 A 표식 0', { timeout: 240000 }, async () => {
+  const bfBrowser = await chromium.launch({ ...config.use.launchOptions, ignoreDefaultArgs: BF_ARGS });
+  const results = [];
+  try {
+    for (const path of ['/profile', '/japanese/vocab/n5']) {
+      for (const via of ['cookie', 'clear']) {
+        const { context, page, errors } = await boundaryContext({ actor: 'A', engine: bfBrowser });
+        try {
+          // 프로필 이름에 A 표식 — 내 정보(제목) · 모든 화면 머리말(내 계정 단추 title)에 그려진다. B는 표식 없는 이름.
+          await context.route('**/rest/v1/profiles**', route => {
+            const request = route.request();
+            if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
+            const sub = bearerSub(request);
+            const display = sub === BOUNDARY_ACTORS.A ? `${BOUNDARY_MARKER} 프로필` : '표식 B 프로필';
+            return route.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify(sub ? { id: sub, display_name: display, role: 'learner', onboarded: true, last_login_at: new Date().toISOString(), streak_count: 1 } : null) });
+          });
+          await context.addInitScript(() => { addEventListener('pageshow', e => { try { const log = JSON.parse(sessionStorage.getItem('__bfShows') || '[]'); log.push({ path: location.pathname, persisted: e.persisted }); sessionStorage.setItem('__bfShows', JSON.stringify(log)); } catch { /* 저장소 차단 */ } }); });
+          await page.goto(path);
+          await page.waitForFunction(([marker, email]) => document.documentElement.outerHTML.includes(marker) || document.documentElement.outerHTML.includes(email), [BOUNDARY_MARKER, EMAIL.A], { timeout: 20000 });
+          await settle(page);
+          await page.goto('/favicon.svg'); // 앱이 아닌 문서 — SDK 알림이 없다. 지금 화면은 bfcache로 들어간다.
+          if (via === 'clear') await context.clearCookies();
+          else await context.addCookies([{ name: 'sb-e2e-auth-token', value: `base64-${enc(sessionFor('B'))}`, url: base, sameSite: 'Lax' }]);
+          // bfcache 복원은 load를 다시 내지 않는다 — commit까지만 기다리고 pageshow 기록으로 복원 여부를 본다.
+          await page.goBack({ waitUntil: 'commit' });
+          await page.waitForFunction(p => JSON.parse(sessionStorage.getItem('__bfShows') || '[]').at(-1)?.path === p && document.readyState !== 'loading', path, { timeout: 20000 });
+          const restored = await page.evaluate(() => JSON.parse(sessionStorage.getItem('__bfShows') || '[]').at(-1)?.persisted === true);
+          const reasons = restored ? null : await page.evaluate(() => JSON.stringify(performance.getEntriesByType('navigation')[0]?.notRestoredReasons || null));
+          // 복원 뒤 계정 재확인 → 같은 관문(adoptUser)으로 정리 — 5초 안에 A가 사라지고, 다시 나타나지 않는다.
+          let gone = false;
+          for (let i = 0; i < 50 && !gone; i++) { gone = !(await aFingerprint(page)); if (!gone) await page.waitForTimeout(100); }
+          await settle(page);
+          const after = await aFingerprint(page);
+          results.push({ path, via, restored, gone, after, reasons });
+          assert.equal(restored, true, `양성 대조: ${path} · ${via}가 bfcache에서 복원돼야 장면이 의미가 있다 — ${reasons}`);
+          assert.equal(gone && !after, true, `${path} · ${via}: bfcache 복원 뒤 A 표식이 남았다`);
+          assert.deepEqual(errors, []);
+        } finally { await context.close(); }
+      }
+    }
+    console.log(JSON.stringify({ bfcacheScene: results }));
+  } finally { await bfBrowser.close(); }
 });

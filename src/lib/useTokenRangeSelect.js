@@ -108,7 +108,16 @@ export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSe
   // 드래그 진행 중 표식 — 뷰어가 이 동안 바텀시트를 pointer-events:none으로 눕힌다.
   // 드래그 도중 비동기 데이터 도착으로 시트가 위로 자라 경로를 덮으면 elementFromPoint가
   // 시트를 반환해 범위가 목표 토큰에 못 미친다(CI 3연속·로컬 계측 실측 — 실사용 결함).
-  const [dragging, setDragging] = useState(false);
+  const [dragging, setDraggingState] = useState(false);
+  // 표식은 실제로 바뀔 때만 상태를 건드린다(VIEWER-TAP-INP-001). 낱말을 톡 누르면 pointerup → onCancel('tap') →
+  // 정리(cleanupTransient)에서 setDragging(false)가 이미 false여도 불려, 낱말 탭마다 뷰어 전체(이 훅을 쓰는 ViewerPage)가
+  // 한 번 더 그려졌다 — 같은 값이라 결과는 버려지는 렌더(실측 e2e 빌드 · 390 · CPU×4: 탭의 pointerup 18~30ms → 2ms).
+  const draggingRef = useRef(false);
+  const setDragging = useCallback((on) => {
+    if (draggingRef.current === on) return;
+    draggingRef.current = on;
+    setDraggingState(on);
+  }, []);
   const anchorRef = useRef(null);
   const focusRef = useRef(null);
   const didSelectRef = useRef(false); // 제스처 직후 합성 click 억제 플래그
@@ -185,7 +194,7 @@ export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSe
       docListenersRef.current = null;
     }
     lastPointRef.current = null;
-  }, []);
+  }, [setDragging]);
 
   const gestureRef = useRef(null);
   if (!gestureRef.current) {
@@ -316,7 +325,7 @@ export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSe
     document.addEventListener('pointerup', up);
     document.addEventListener('pointercancel', cancel);
     docListenersRef.current = { move, up, cancel, pointer };
-  }, [range, enabled]);
+  }, [range, enabled, setDragging]);
 
   // 제스처 직후 합성 click이 단어 시트를 열지 않게 캡처 단계에서 차단
   const handleClickCapture = useCallback((e) => {

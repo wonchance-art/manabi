@@ -3,9 +3,10 @@ import { useEffect, useRef, useState } from 'react';
 
 /**
  * 본문 스크롤 기반 읽기 진행률.
+ * @param mounted 본문 요소(뷰어의 readerEl) — 본문이 자료보다 늦게 붙으면 그때 다시 건다(READER-MOUNT-001).
  * @returns {{ readerRef, readProgress }} readerRef는 본문 컨테이너에 부착
  */
-export function useReadProgress(material) {
+export function useReadProgress(material, mounted) {
   const readerRef = useRef(null);
   const [readProgress, setReadProgress] = useState(0);
 
@@ -22,7 +23,7 @@ export function useReadProgress(material) {
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [material]);
+  }, [material, mounted]);
 
   return { readerRef, readProgress };
 }

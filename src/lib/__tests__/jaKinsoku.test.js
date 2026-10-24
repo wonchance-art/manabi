@@ -96,7 +96,9 @@ describe('제목 줄 예약 = 제목 글자 배율(JA-KINSOKU-HEAD)', () => {
       const surface = index.match(new RegExp(`\\.viewer-h${level} \\.surface \\{ font-size: ([\\d.]+)em;`))?.[1];
       expect(surface, 'index.css 제목 크기').toBeTruthy();
       expect(css).toContain(`.viewer-layout[data-language="Japanese"] :is(.reader-area,.reader-settings__preview) .viewer-h${level} .word-token {--ja-pitch:calc(${surface}em + var(--char-gap,0px));}`);
-      expect(css).toContain(`.viewer-layout .viewer-h${level} .word-token[data-selected="true"]::before {font-size:${surface}em;}`);
+      // 선택 틀은 .surface 안(.word-frame, VIEWER-TAP-INP-002)이라 제목 배율을 저절로 따른다 — 토큰 ::before에 배율을 따로 적던 규칙은 없다.
+      expect(css).not.toContain(`.viewer-h${level} .word-token[data-selected="true"]::before`);
+      expect(css).toMatch(/\.viewer-layout \.word-frame \{[^}]*margin-top:calc\(var\(--hl-band-top\) - var\(--hl-frame-top\)\)/);
     });
   }
   it('제목 규칙은 --ja-pitch만 바꾼다 — 여백 식은 본문 규칙 하나(앞 · 부호 같은 제목 안이라 그대로 상쇄)', () => {

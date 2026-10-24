@@ -27,8 +27,10 @@ describe('판본 발행 확인 — 원고 없이 해시만', () => {
     expect(db.calls[0].columns.split(',')).toContain('manuscript');
   });
   it('화면용 publishedReading과 교재 표현 저장은 readEditionStamp를 쓴다', () => {
-    expect(read('src/lib/server/bookReading.js')).toMatch(/await readEditionStamp\(db, id\)/);
-    expect(read('src/lib/server/bookReading.js')).not.toMatch(/await readEdition\(/);
+    // 판본 확인 정본은 쿠키를 모르는 publishedBook.js다(GUEST-STATIC-001 3단계) — 교재 화면(bookReading)은 쿠키 세션 클라이언트로 그것을 부른다.
+    expect(read('src/lib/server/publishedBook.js')).toMatch(/await readEditionStamp\(db, id\)/);
+    expect(read('src/lib/server/publishedBook.js')).not.toMatch(/await readEdition\(/);
+    expect(read('src/lib/server/bookReading.js')).toContain('return publishedReadingWith(await createSupabaseServerClient(), editionId, allowPreview, bookId, requireAdmin);');
     expect(read('src/lib/server/learningContext.js')).toMatch(/await readEditionStamp\(supabase,source\.editionId\)/);
   });
 });
@@ -52,7 +54,7 @@ describe('공개 읽기 경로의 판본 재사용(cachedCandidate)', () => {
   it('원고를 다루는 관리자 경로는 매번 새로 검증한다(candidate)', () => {
     const admin = read('src/app/api/admin/books/japanese-n5/route.js');
     expect(admin).not.toContain('cachedCandidate');
-    expect(read('src/lib/server/bookReading.js')).toMatch(/await cachedCandidate\(id\)/);
+    expect(read('src/lib/server/publishedBook.js')).toMatch(/await cachedCandidate\(id\)/);
   });
 });
 

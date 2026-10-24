@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import ScFontCookieHint from '@/components/fonts/ScFontCookieHint';
 import ArtShelf from '@/components/web/ArtShelf';
 import ClassicsShelf from '@/components/web/ClassicsShelf';
 import { classicsFilters, classicsHref, classicsSection } from '@/lib/classicsShelf';
@@ -19,7 +20,8 @@ export default async function Page({ searchParams }) {
   const { shelf, tabs } = classicsSection(filters.shelf, { books: books.items.length > 0 || books.failed, art: art.items.length > 0 || art.failed });
   const current = { ...filters, shelf };
   const { resume, read } = await classicsProgressOf(session, { books: shelf === 'art' ? [] : books.items, art: shelf === 'art' ? art.items : [] });
-  return <div className="manabi-page classics-page">
+  // 간체 힌트는 이 화면이 직접 단다 — 산책 세그먼트 layout을 걷어 냈다(산책 본 화면을 ISR로 굽기 위해, GUEST-STATIC-001 2단계).
+  return <><ScFontCookieHint /><div className="manabi-page classics-page">
     <header className="manabi-page-heading"><div><Link className="manabi-link" href="/discover">← 산책</Link><h1>고전 명작</h1></div></header>
     {tabs && <nav className="classics-tabs" aria-label="구간">
       <Link href={classicsHref({}, { shelf: '' })} aria-current={shelf === '' ? 'page' : undefined} prefetch={false}>책</Link>
@@ -28,5 +30,5 @@ export default async function Page({ searchParams }) {
     {shelf === 'art'
       ? <ArtShelf items={art.items} filters={current} failed={art.failed} read={read} />
       : <ClassicsShelf items={books.items} filters={current} failed={books.failed} resume={resume} />}
-  </div>;
+  </div></>;
 }

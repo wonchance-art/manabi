@@ -6,16 +6,14 @@ import { ToastProvider } from '@/lib/ToastContext';
 import { useRouter } from 'next/navigation';
 import SpeechUnavailableNotice from '@/components/SpeechUnavailableNotice';
 import { useState } from 'react';
+import { QUERY_CLIENT_DEFAULTS } from '@/lib/queryClientDefaults';
 
 export default function Providers({ children }) {
   const router = useRouter();
   const [queryClient] = useState(
     () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: { staleTime: 1000 * 60 * 2, retry: 1 },
-        },
-      })
+      // 쓰기는 끊겨도 바로 시도한다 — 기기 보관함 · 실패 알림이 그 자리에서 돈다(queryClientDefaults.js).
+      new QueryClient({ defaultOptions: QUERY_CLIENT_DEFAULTS })
   );
 
   return (

@@ -268,13 +268,6 @@ export default function Layout({ children }) {
         </div>
       </header>
 
-      {/* 오프라인 배너 */}
-      {isOffline && (
-        <div className="offline-banner" role="alert" aria-live="assertive">
-          인터넷 연결을 확인해 주세요. 저장해 둔 자료·단어장은 그대로 볼 수 있어요.
-        </div>
-      )}
-
       {/* 이메일 미검증 안내 */}
       {needsEmailConfirm && (
         <div
@@ -324,6 +317,13 @@ export default function Layout({ children }) {
       </nav>
 
       <main className="app-layout" role="main" id="main-content" tabIndex={-1}>
+        {/* 오프라인 띠 — 본문 맨 위(흐름 안)에 둔다. 머리말 아래 고정으로 덮으면 390에서 두 줄이 뷰어 도구 줄(듣기 · Aa · 학습) ·
+            화면 제목을 가려 끊긴 동안 읽기 설정을 열 수 없었다(OFFLINE-SWEEP-001 실측). 내용을 아래로 밀고, 스크롤하면 함께 올라간다. */}
+        {isOffline && (
+          <div className="offline-banner" role="alert" aria-live="assertive">
+            인터넷 연결을 확인해 주세요. 저장해 둔 자료·단어장은 그대로 볼 수 있어요.
+          </div>
+        )}
         {children}
       </main>
 

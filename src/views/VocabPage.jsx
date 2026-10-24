@@ -16,7 +16,7 @@ import { isSettledFsrsActivity } from '../lib/learningActivity';
 import FsrsReviewSession from '../components/vocab/FsrsReviewSession';
 import { callGemini } from '../lib/gemini';
 import Button from '../components/Button';
-import OfflineNotice, { PendingReviewsNotice } from '../components/OfflineNotice';
+import OfflineNotice, { PendingReviewsNotice, VOCAB_OFFLINE_TITLE, vocabOfflineLine } from '../components/OfflineNotice';
 import ConfirmModal from '../components/ConfirmModal';
 import VocabularyExclusionList from '../components/VocabularyExclusionList';
 import VocabReview, { REVIEW_PREP_FAILED } from './VocabReview';
@@ -288,6 +288,14 @@ function VocabWorkspace({ reviewScope }) {
     scoreMutation, deleteMutation, csvImportMutation,
     updateVocabMutation, bulkDeleteMutation,
   } = useVocabData();
+  // 기기 사본으로 뜬 화면은 연결이 돌아오면 바로 정본을 다시 읽는다 — 사본도 「신선한」 조회 결과라 2분 안에는 재연결 재조회가
+  // 돌지 않아 「다시 시도」를 눌러야 했다(OFFLINE-SWEEP-001 P2).
+  useEffect(() => {
+    if (!isOffline) return undefined;
+    const reread = () => { refetchVocab(); };
+    window.addEventListener('online', reread);
+    return () => window.removeEventListener('online', reread);
+  }, [isOffline, refetchVocab]);
   const effectiveNow = Math.max(Date.now(), Date.parse(learningNow) || 0);
   const learningById = useMemo(() => new Map(projections.map(row => [row.vocabulary.id, row])), [projections]);
   const deckFor = useCallback(word => deckOf({ ...word, reading_materials: { title: materialTitles.get(word.source_material_id) } }), [materialTitles]);
@@ -1431,7 +1439,8 @@ function VocabWorkspace({ reviewScope }) {
 
       {/* 네트워크가 죽어 캐시 스냅샷으로 살아난 화면임을 알린다(v2-N R1) */}
       {isOffline && <OfflineNotice what="단어장" />}
-      {admission.error && tab !== 'review' && <div role="alert" className="card">
+      {/* 기기 사본(끊김)일 때는 아래 상태 한 장이 복습 사정을 말한다 — 같은 끊김을 「준비하지 못했어요」로 또 쓰지 않는다(P2). */}
+      {admission.error && tab !== 'review' && !isOffline && <div role="alert" className="card">
         <p>{REVIEW_PREP_FAILED}</p>
         <Button variant="ghost" onClick={() => admission.controller.retryConfiguration().catch(() => {})}>다시 시도</Button>
       </div>}
@@ -1497,7 +1506,10 @@ function VocabWorkspace({ reviewScope }) {
             <button type="button" className="btn btn--ghost btn--md" onClick={() => selectLanguage(scope.lang)}>범위 풀기</button></div></section>
       ) : vocabError || !learningAvailable ? (
         <>
-        <section className="review-room-state" role="alert"><h2>표현을 불러오지 못했어요.</h2><p>연결을 확인한 뒤 다시 시도해 주세요. 복습 기록은 그대로 남아 있어요.</p><button type="button" className="btn btn--primary" onClick={() => refetchVocab()}>다시 시도</button></section>
+        {isOffline
+          // 기기 사본: 위 사본 안내(OfflineNotice)와 어긋나지 않게 「못 불러왔다」 대신 복습을 막는 이유와 기록 보존만(P2 — 세 겹 → 두 줄).
+          ? <section className="review-room-state" role="alert"><h2>{VOCAB_OFFLINE_TITLE}</h2><p>{vocabOfflineLine(vocab.length)}</p><button type="button" className="btn btn--primary" onClick={() => refetchVocab()}>다시 시도</button></section>
+          : <section className="review-room-state" role="alert"><h2>표현을 불러오지 못했어요.</h2><p>연결을 확인한 뒤 다시 시도해 주세요. 복습 기록은 그대로 남아 있어요.</p><button type="button" className="btn btn--primary" onClick={() => refetchVocab()}>다시 시도</button></section>}
         {vocab.length > 0 && vocabList}
         </>
       ) : tab === 'list' ? (

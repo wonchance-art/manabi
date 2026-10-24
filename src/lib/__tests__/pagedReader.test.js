@@ -701,7 +701,7 @@ describe('paged sheet dock (A안 — 고른 단어의 반대편)', () => {
     expect(sliceBetween(hook, 'function resetPagedSheet(panel) {', 'export function useSelectedTokenVisibility')).toContain('delete panel.dataset.compact; delete panel.dataset.dock; delete panel.dataset.placing;'); // 닫힘 · 스크롤 보기 전환
     expect(hook.split('pagedSheetDock(').length - 1).toBe(1); // 스크롤 보기 경로에는 없다
     // 처음 열 때 자리(시트를 보이게 한 DOM 변경)는 본문이 붙은 뒤에도 걸려야 한다 — 자료가 오기 전 마운트에는 본문이 없다.
-    expect(hook).toContain('  }, [readerRef, revision]); // 본문(readerRef)은 자료가 온 뒤에 붙는다');
+    expect(hook).toContain('  }, [readerRef, revision, mounted]); // 본문(readerRef)은 자료가 온 뒤에 붙는다');
   });
   it('CSS: 1119 이하 쪽 넘김에서만 위에 세운다 — 펼침 · 접힘 상태는 지금 그대로', () => {
     const css = fs.readFileSync(path.resolve(__dirname, '../../components/viewer/paged-reader.css'), 'utf8');

@@ -1,13 +1,30 @@
-const CACHE_NAME = 'anatomy-studio-v195ed3d741ea7a33';
+const CACHE_NAME = 'anatomy-studio-v623016202b673b6a';
 
-const PRECACHE_URLS = [
-  '/',
-  '/home',
-  '/vocab',
-  '/materials',
-  '/auth',
-  '/offline',
-];
+// 설치 때 받는 것은 오프라인 대체 화면 하나와 그 화면이 쓰는 정적 파일뿐이다(SW-PRECACHE-001, 2026-10-23 KST 현장 감사 F7).
+// 예전에는 '/' · /home · /vocab · /materials · /auth까지 받아 새 방문자(그리고 배포마다 워커를 새로 까는 재방문자) 한 명이
+// 서버 렌더를 5번 더 불렀다('/'는 리디렉트, 나머지 대부분은 no-store 동적 화면). 받아 둔 문서는 network-first라 오프라인일
+// 때만 쓰였고, 그때도 새 빌드의 CSS · JS가 캐시에 없어 모양 없는 화면이었다. 들른 화면은 아래 navigate 규칙이 그대로 남긴다.
+const OFFLINE_URL = '/offline';
+// /offline은 정적 화면(○)이라 서버 렌더가 없다. 그 HTML이 부르는 /_next/static CSS · JS도 함께 받는다 — 없으면 끊긴 채 그린 대체
+// 화면이 자기 조각을 못 받아 모양 없이(또는 ChunkLoadError로) 떨어진다. 이름이 내용 해시(immutable)라 방금 받은 첫 화면과 겹치는
+// 것은 브라우저 캐시에서 온다. 주소는 속성값 그대로(배포 식별 ?dpl= 같은 질의 포함) 쓴다 — 캐시 대조가 질의까지 본다.
+const OFFLINE_ASSET = /(?:src|href)="(\/_next\/static\/[^"]+)"/g;
+
+function offlineAssets(html) {
+  const urls = new Set();
+  for (const m of String(html).matchAll(OFFLINE_ASSET)) {
+    const url = m[1].replace(/&amp;/g, '&');
+    if (/\.(?:css|js)(?:\?|$)/.test(url)) urls.add(url);
+  }
+  return [...urls];
+}
+
+async function precacheOffline(cache) {
+  await cache.add(OFFLINE_URL);
+  const response = await cache.match(OFFLINE_URL);
+  const html = response ? await response.text() : '';
+  await Promise.all(offlineAssets(html).map((asset) => cache.add(asset).catch(() => {})));
+}
 
 const STATIC_EXTENSIONS = /\.(js|css|woff2?|ttf|otf|svg|png|jpg|ico|webp)$/;
 
@@ -28,10 +45,8 @@ function isCacheableNavigationResponse(response) {
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) =>
-      // 개별 요청으로 실패해도 설치 자체는 성공시킴
-      Promise.all(PRECACHE_URLS.map(url =>
-        cache.add(url).catch(err => console.warn('[sw] precache failed:', url, err?.message))
-      ))
+      // 실패해도 설치 자체는 성공시킴
+      precacheOffline(cache).catch(err => console.warn('[sw] precache failed:', OFFLINE_URL, err?.message))
     )
   );
   self.skipWaiting();
@@ -95,7 +110,7 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match('/offline')))
+        .catch(() => caches.match(request).then((cached) => cached || caches.match(OFFLINE_URL)))
     );
     return;
   }

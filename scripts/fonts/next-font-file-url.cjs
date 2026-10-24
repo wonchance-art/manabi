@@ -24,6 +24,20 @@ const FONT_HINTS = Object.freeze({
     subset: 'latin',
     env: 'MANABI_FONT_HINT_NOTO_SANS',
   }),
+  // 일본어 · 세리프 라틴 조각도 같은 방식이다(FIELD-AUDIT 2026-10-23 KST — 운영 · 로컬 빌드 실측). 루트 · (app) preload는 일본어나
+  // 세리프 KR을 그리지 않는 화면(산책 읽기 · 지역학 · 계정 · 뷰어 · 단어장 …)에서도 각 24 · 34kB를 높은 우선순위로 받았다.
+  notoSansJp: Object.freeze({
+    // src/app/layout.jsx Noto_Sans_JP({ subsets: ['latin'], weight: ['400', '500', '700'], display: 'swap' })
+    cssUrl: 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap',
+    subset: 'latin',
+    env: 'MANABI_FONT_HINT_NOTO_SANS_JP',
+  }),
+  notoSerifKr: Object.freeze({
+    // src/app/(app)/layout.jsx Noto_Serif_KR({ subsets: ['latin'], weight: ['600', '700'], display: 'swap' })
+    cssUrl: 'https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;700&display=swap',
+    subset: 'latin',
+    env: 'MANABI_FONT_HINT_NOTO_SERIF_KR',
+  }),
 });
 
 /** Google CSS에서 `/* <subset> *\/` 블록의 글꼴 주소(중복 제거). weight가 달라도 가변 글꼴이면 1개다. */
@@ -46,7 +60,7 @@ function nextFontEmittedName(content, { ext = 'woff2', sizeAdjust = true, preloa
   return interpolateName({ resourcePath: '/next-font-file-url.cjs', rootContext: '/' }, `static/media/[hash]${sizeAdjust ? '-s' : ''}${preload ? '.p' : ''}.${ext}`, { context: '/', content });
 }
 
-/** FONT-HINT-001 힌트용 — preload: false 선언(루트 Noto Sans)의 이름(`static/media/<hash>-s.woff2`). */
+/** FONT-HINT-001 힌트용 — preload: false 선언(루트 Noto Sans · Noto Sans JP, (app) Noto Serif KR)의 이름(`static/media/<hash>-s.woff2`). */
 function nextFontMediaName(content) {
   return nextFontEmittedName(content, { sizeAdjust: true, preload: false });
 }

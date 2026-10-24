@@ -97,6 +97,10 @@ jobs:
       # 간체 중국어 독립 스타일시트 산출 대조(SC-LINK-001) — public CSS · 글꼴 · next/font 'Noto Sans SC'와 같은 덮는 범위. 빌드 추가 없음.
       - name: 간체 독립 스타일시트 산출 대조
         run: NEXT_FONT_GOOGLE_MOCKED_RESPONSES="$PWD/e2e/fixtures/google-fonts-mock.cjs" node scripts/fonts/check-sc-stylesheet.mjs
+      # 정적 · ISR 경로 산출 대조(GUEST-STATIC-001) — 공유 캐시에 맡기는 화면이 실제로 정적(○ · ●)으로 구워졌고 ISR 주기가 표와 같다.
+      # 쿠키 · 헤더 · searchParams가 끼어 동적(ƒ)으로 바뀌면 여기서 깨진다(src/lib/staticRoutes.js). 빌드 추가 없음.
+      - name: 정적 경로 산출 대조
+        run: node scripts/check-static-routes.mjs
 
       # 브라우저는 러너에 미리 깔린 Google Chrome을 쓴다(playwright.config.mjs 기본 channel).
       - name: Chrome 확인
@@ -132,13 +136,15 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:8878/manifest.webmanifest > /dev/null
-          QA_BASE=http://127.0.0.1:8878 node --test --test-concurrency=1 e2e/library-book-chapters.e2e.mjs e2e/library-management.e2e.mjs e2e/learning-flow-clarity.e2e.mjs e2e/textbook-reading-clarity.e2e.mjs e2e/book-reading-reload.e2e.mjs e2e/viewer-response.e2e.mjs e2e/viewer-hun-layout.e2e.mjs e2e/viewer-exclusion.e2e.mjs e2e/viewer-language-settings.e2e.mjs e2e/viewer-focus-move.e2e.mjs e2e/viewer-r0-display.e2e.mjs e2e/viewer-zh-grid.e2e.mjs e2e/viewer-ja-kinsoku.e2e.mjs e2e/korean-learning.e2e.mjs e2e/learner-archive-links.e2e.mjs e2e/viewer-word-card.e2e.mjs e2e/viewer-en-card.e2e.mjs e2e/viewer-boundary-edit.e2e.mjs e2e/viewer-paged-reader.e2e.mjs e2e/auth-account-guidance.e2e.mjs e2e/viewer-dialog-guards.e2e.mjs e2e/account-boundary.e2e.mjs
+          QA_BASE=http://127.0.0.1:8878 node --test --test-concurrency=1 e2e/library-book-chapters.e2e.mjs e2e/library-management.e2e.mjs e2e/learning-flow-clarity.e2e.mjs e2e/textbook-reading-clarity.e2e.mjs e2e/book-reading-reload.e2e.mjs e2e/viewer-response.e2e.mjs e2e/viewer-hun-layout.e2e.mjs e2e/viewer-exclusion.e2e.mjs e2e/viewer-language-settings.e2e.mjs e2e/viewer-focus-move.e2e.mjs e2e/viewer-r0-display.e2e.mjs e2e/viewer-zh-grid.e2e.mjs e2e/viewer-ja-kinsoku.e2e.mjs e2e/korean-learning.e2e.mjs e2e/learner-archive-links.e2e.mjs e2e/viewer-word-card.e2e.mjs e2e/viewer-en-card.e2e.mjs e2e/viewer-boundary-edit.e2e.mjs e2e/viewer-paged-reader.e2e.mjs e2e/auth-account-guidance.e2e.mjs e2e/viewer-dialog-guards.e2e.mjs e2e/account-boundary.e2e.mjs e2e/viewer-select-paint.e2e.mjs
           # N4 표지(BOOK-HOME-RESTORE-001)는 N4를 발행한 서버에서만 돈다. 발행 여부는 서버 프로세스의 server-fetch-mock이 읽는 값이라
           # 같은 빌드로 서버를 하나 더 띄워 이 파일만 다시 돌린다 — 위 서버의 다른 e2e는 N5만 발행된 그대로(기본 실행의 N4는 건너뜀).
           E2E_PUBLISHED_BOOKS=japanese-n4 E2E_PUBLISHED_EDITION=8a8c1c1fd452773810abaf8c node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 8879 > /tmp/book-n4-server.log 2>&1 &
           n4_server_pid=$!
           trap 'kill "$chapter_server_pid" "$n4_server_pid" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 60); do if curl -fsS http://127.0.0.1:8879/manifest.webmanifest > /dev/null; then break; fi; sleep 1; done
+          # 책장은 ISR(빌드 때 N5만 발행된 판) — 이 서버의 발행 상태(N4)로 판을 새로 만든다(운영의 발행 즉시 무효화와 같은 일, GUEST-STATIC-001).
+          node scripts/e2e-refresh-isr.mjs http://127.0.0.1:8879 /lessons
           E2E_PUBLISHED_BOOKS=japanese-n4 COMPOSER_BASE_URL=http://127.0.0.1:8879 node --test --test-concurrency=1 e2e/book-reading-reload.e2e.mjs
 
       # 같은 프로덕션 빌드를 재사용해 N3 발행 상태의 책장 배선과 실제 찾아보기 검색을 검사한다.
@@ -170,4 +176,6 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:8880/manifest.webmanifest > /dev/null
+          # 책장은 ISR(빌드 때 N5만 발행된 판) — 이 서버의 발행 상태(N3)로 판을 새로 만든다(GUEST-STATIC-001). 없으면 N3가 책장에 없다(실측).
+          node scripts/e2e-refresh-isr.mjs http://127.0.0.1:8880 /lessons
           node --test --test-concurrency=1 e2e/n3-published-smoke.e2e.mjs

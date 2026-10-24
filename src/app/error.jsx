@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { reloadOnceForChunkError } from '@/lib/chunkReload';
+import { retryRouteError } from '@/lib/chunkReload'; // 조각 오류의 「다시 시도」 = 문서 새로 받기
 import Link from 'next/link';
 // (app) 레이아웃 밖이라 셸 CSS가 따라오지 않는다 — Layout과 같은 순서로 직접 불러온다.
 import '@/components/books/reading-shell.css';
@@ -33,7 +34,7 @@ export default function RouteError({ error, reset }) {
           : '잠시 후 다시 시도해 주세요. 문제가 계속되면 아래 오류 ID를 알려 주세요.'}
       </p>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
-        <button className="btn btn--primary btn--md" onClick={reset}>
+        <button className="btn btn--primary btn--md" onClick={() => retryRouteError(error, reset)}>
           다시 시도
         </button>
         <Link href="/" className="btn btn--ghost btn--md">

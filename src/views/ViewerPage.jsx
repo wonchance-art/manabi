@@ -104,7 +104,7 @@ import { listenSentenceRanges, listenSentenceTokens } from '../lib/listenFollow'
 import { analysisTokenLine } from '../lib/analysisCoverage';
 import { captureReadingAnchor, anchorCardHead, headScrolled } from '../lib/readingViewport';
 import PageBar, { PageStrips } from '../components/viewer/PageBar';
-import { pinyinCellWidth } from '../lib/pinyinLayout';
+import { watchPinyinCell } from '../lib/pinyinLayout';
 import { hasKinsoku, zhKinsokuMarks, zhKinsokuStyle } from '../lib/zhGrid';
 import { ZhText, useZhGridRuns } from '../components/viewer/ZhText';
 import ReaderToken from '../components/viewer/ReaderToken';
@@ -832,8 +832,13 @@ export default function ViewerPage() {
   };
 
   // 읽기 진행률 바 — readerRef는 본문 컨테이너에 부착
-  const { readerRef, readProgress: scrollReadProgress } = useReadProgress(material);
-  const {keepPosition:keepReadingPosition,layoutVersion,cancelPosition:cancelReadingPosition} = useReaderLayout(readerRef, material?.processed_json);
+  // readerEl = 본문 요소(콜백 ref, READER-MOUNT-001). 본문은 자료보다 늦게 붙을 수 있다(계정 확인 중 골격 · 비공개 판정 — PRIVATE-GATE-AUTH-001).
+  // 본문을 붙을 때 한 번 읽는 효과(진행률 스크롤 · 화면 높이 변수 · 시트 첫 자리)는 자료만 보면 본문이 없는 판에 걸리고 다시 걸 계기가 없었다 —
+  // readerEl을 함께 본다.
+  const [readerEl,setReaderEl] = useState(null);
+  const { readerRef, readProgress: scrollReadProgress } = useReadProgress(material, readerEl);
+  const attachReader = useCallback(node => { readerRef.current = node; setReaderEl(node); }, [readerRef]);
+  const {keepPosition:keepReadingPosition,layoutVersion,cancelPosition:cancelReadingPosition} = useReaderLayout(readerRef, material?.processed_json, readerEl);
   const [pinyinCell,setPinyinCell] = useState(44);
   // 중국어 격자(ZH-GRID-001): 낱말 사이 간격 없이 칸마다 같은 자간, 반각 묶음은 칸 수로 올림.
   const zhGrid = materialLang === 'Chinese';
@@ -844,20 +849,11 @@ export default function ViewerPage() {
   const scriptSurfaces = useMemo(() => (zhGrid && zhHant && settings.zhScript === 'hant'
     ? scriptVariantSurfaces(material?.processed_json, material?.raw_text, zhHant) : null),
   [zhGrid, zhHant, settings.zhScript, material?.processed_json, material?.raw_text]);
+  // 병음 칸 폭 — 본문이 늦게 붙어도(비공개 안내가 먼저 그려진 판) 재고, 병음 글꼴 조각이 받아지면 다시 잰다(PINYIN-CELL-RACE-001, pinyinLayout.js).
   useEffect(()=>{
-    let live=true;
-    const measure=()=>{
-      if(!live||materialLang!=='Chinese'||!readerRef.current)return;
-      const rootSize=parseFloat(getComputedStyle(document.documentElement).fontSize)||16;
-      const ctx=document.createElement('canvas').getContext('2d');
-      if(!ctx)return;
-      const family=getComputedStyle(readerRef.current).getPropertyValue('--font-noto-sans').trim()||'sans-serif';
-      ctx.font=`${pinyinSize*rootSize}px ${family}`;
-      setPinyinCell(pinyinCellWidth(text=>ctx.measureText(text).width,fontSize*rootSize));
-    };
-    measure();document.fonts?.ready.then(measure);window.addEventListener('resize',measure);
-    return ()=>{live=false;window.removeEventListener('resize',measure);};
-  },[materialLang,fontSize,pinyinSize,material?.id,readerRef]);
+    if(materialLang!=='Chinese')return undefined;
+    return watchPinyinCell({win:window,doc:document,root:()=>readerRef.current,pinyinRem:pinyinSize,fontRem:fontSize,onCell:setPinyinCell});
+  },[materialLang,fontSize,pinyinSize,material?.id,readerRef,readerEl]);
 
   // 아는 단어 표시와 복습 보호 상태는 같은 DB 트랜잭션으로 바뀐다.
   const knownLangCode = knownWordsLang(materialLang, learningCapabilities.known);
@@ -1627,7 +1623,7 @@ export default function ViewerPage() {
   const selectionToReveal = tokenRange.range
     ? material?.processed_json?.sequence?.[tokenRange.range.start]
     : isSheetOpen ? selectedToken?.id : undefined;
-  useSelectedTokenVisibility(readerRef, tokenRefs, selectionToReveal, inspectorOpen && (!classStudyActive||!!classBoardLayout) && !modalBlocked && !tokenRange.dragging, material?.processed_json);
+  useSelectedTokenVisibility(readerRef, tokenRefs, selectionToReveal, inspectorOpen && (!classStudyActive||!!classBoardLayout) && !modalBlocked && !tokenRange.dragging, material?.processed_json, readerEl);
   const closeReadingSettings = () => {
     // Once the inspector returns, the selected source owns the visible position.
     // A still-live Aa anchor must not scroll it back underneath the panel.
@@ -2377,6 +2373,9 @@ export default function ViewerPage() {
     if (!hanjaPopoverMode) return undefined;
     return onIdle(() => { ViewerHanjaPopover.preload().catch(() => {}); });
   }, [hanjaPopoverMode]);
+  // 읽기 설정 부품(≈6KB gzip)도 유휴 시간에 받아 둔다 — 끊긴 채 처음 「Aa」를 누르면 조각을 못 받아 뷰어 전체가 오류 화면
+  // 「자료를 불러오지 못했어요」로 바뀌었다(OFFLINE-SWEEP-001 390 실측). 받아 두면 워커의 정적 조각 캐시에도 남는다. 첫 그림 무게는 그대로(유휴 뒤).
+  useEffect(() => onIdle(() => { ViewerSettings.preload().catch(() => {}); }), []);
   // 미리 받기 전에 창이 열리면 바로 받는다.
   useEffect(() => {
     if (!hanjaPopoverMode || !inspectChar || hanjaPanelTable) return undefined;
@@ -2989,7 +2988,11 @@ export default function ViewerPage() {
   }
 
   // 비공개 자료 접근 제어 — 팀 사본(__local)은 암호 뒤 토큰으로 받은 것이라 여기서 막지 않는다.
+  // 계정 확인 중(authLoading — 세션 쿠키가 있으면 문서 파싱 뒤 세션 복원, 없으면 손님 확정까지)에는 판정하지 않고 불러오기 골격을 그대로 둔다
+  // (PRIVATE-GATE-AUTH-001). 자료가 계정보다 먼저 오면 주인이 「비공개 자료예요」를 약 0.3초 보고, 본문은 그 뒤에야 붙었다
+  // (e2e viewer-paged-reader 390 실측 2026-10-24 KST — 병음 칸 폭이 기본값으로 굳은 판의 출발점). 골격에는 제목 · 본문이 없다.
   if (material?.visibility === 'private' && material?.owner_id !== user?.id && !material?.__local) {
+    if (authLoading) return <div className="page-container"><Spinner message="자료 불러오는 중…" /></div>;
     return (
       <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
         <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>{vt("비공개 자료예요")}</h2>
@@ -3862,7 +3865,8 @@ export default function ViewerPage() {
   );
 
   };
-  const rightPanelContent=renderRightPanelContent();
+  // 오른쪽 패널 내용은 쓰는 자리(시트의 rightContent)에서만 만든다(VIEWER-TAP-INP-001). 렌더마다 미리 만들어 두면
+  // 카드가 열린 동안(그 값을 쓰지 않는 갈래) 단어 카드 전체를 한 번 더 지어 버렸다 — 낱말 탭마다 카드를 두 번 짓던 것.
 
   // ── [문장] 탭(목업 U 4판 · 오너 10-24 — 정본 설계서 docs/manabi-viewer-v2-ae-r2.md §3을 대체) ──
   // 순서: 문장 카드(원문 + 패턴 자리 표시 · 🔊 · 번역 · 회색 말투 · 교재 표시 — 맥락 줄은 없음, 오너 10-24) → 「패턴」 카드 → 「단어」 카드. 단추 줄(더 쉽게 · 문법)
@@ -4339,7 +4343,7 @@ export default function ViewerPage() {
 
       {/* Reader Area — 인앱 토큰 범위 지정(드래그) 이벤트는 여기서 위임 수신 */}
       <div
-        ref={readerRef}
+        ref={attachReader}
         className={`reader-area reader-area--${theme}${focusMode && (pickedKey !== null || tokenRange.range || listenTokens?.size) ? ' reader-area--focus' : ''}${focusMode && listenTokens?.size ? ' reader-area--focus-listen' : ''}${wordStateHl ? ' reader-area--hl' : ''}${paceDwell ? ' reader-area--pacing' : ''}${paceDwell && paceHeld ? ' reader-area--pacing-hold' : ''}`}
         style={{
           fontSize: `${fontSize*(classStudyActive&&classBoardLayout==='split'?.8:1)}rem`,
@@ -4803,7 +4807,7 @@ export default function ViewerPage() {
           {/* 접힌 막대의 ✕ = 문장 지정 해제(뷰어 점검 A3) — 막대 · 문장 강조가 함께 사라진다. 예전엔 지울 방법이 없었다. */}
           {pickedKey !== null && <button type="button" className="viewer-inspector__clear" aria-label={vt('문장 지정 해제')} title={vt('문장 지정 해제')} onClick={closeMoveBar} data-icon-action><ActionIcon name="close"/></button>}</>}
         leftContent={senseReviewContent || boundaryPendingContent || leftPanelContent}
-        rightContent={selectedToken&&isSheetOpen?renderRightPanelContent(annotationContent&&<section className="reader-card-notes" aria-label={vt("교재 설명")}><h3 className="reader-card-section__label">{vt("교재 설명")}</h3>{annotationContent}</section>):<>{annotationContent}{rightPanelContent}</>}
+        rightContent={selectedToken&&isSheetOpen?renderRightPanelContent(annotationContent&&<section className="reader-card-notes" aria-label={vt("교재 설명")}><h3 className="reader-card-section__label">{vt("교재 설명")}</h3>{annotationContent}</section>):<>{annotationContent}{renderRightPanelContent()}</>}
         leftActive={leftPanelLoading || !!leftPanelResult || !!senseReviewContent || !!boundaryPendingContent}
         rightActive={annotationOpen || dragTokens !== null || (selectedToken && isSheetOpen)}
         leftSignal={leftSheetSignal}

@@ -47,7 +47,12 @@ describe('계정 경계 e2e 전제', () => {
     expect(materials).toMatch(/role="menuitemcheckbox"[\s\S]{0,200}className=\{`mat-pin/);
     expect(materials).toContain('<span className="tag" title="받아둠 — 연결이 없어도 열려요">받아둠</span>');
     expect(materials).toContain("'아직 보관된 개인 자료가 없어요.'");
-    expect(read('e2e/account-boundary.e2e.mjs').match(/^test\('/gm)).toHaveLength(8);
+    expect(read('e2e/account-boundary.e2e.mjs').match(/^test\('/gm)).toHaveLength(9);
+    // ⑨ 문서 bfcache 복원(GUEST-STATIC-001 1단계) — 정적 화면에서 A의 흔적은 머리말 내 계정 단추(title = 프로필 이름)와 내 정보의 메일이다.
+    expect(read('src/components/Layout.jsx')).toContain('title={profile?.display_name || user.email}');
+    expect(read('src/views/MyPage.jsx')).toContain('{user.email}');
+    // Playwright가 기본으로 bfcache를 끄는 인자 — 이 이름이 바뀌면 ⑨는 복원을 못 보고 양성 대조에서 멈춘다.
+    expect(read('e2e/account-boundary.e2e.mjs')).toContain("const BF_ARGS = ['--disable-back-forward-cache'];");
   });
   it('③ 설치된 Next가 운영 빌드에도 window.next.router를 건다', () => {
     const instance = read('node_modules/next/dist/client/components/app-router-instance.js');

@@ -83,21 +83,30 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .viewer-layout .word-token[data-selected="true"] {background:transparent;}
 /* Selection frame (VIEWER-R0 bug 6, owner-confirmed "A + frame margin" 2026-10-07): the band is a
    fill whose edges touch the glyph ink, so the frame is not drawn on it. It sits --hl-frame-top above
-   and --hl-frame-bottom below the band, token width (never over a neighbour), above the band (z 1).
-   Its own em must be the surface's: headings enlarge only .surface, so the frame follows them. */
-.viewer-layout .word-token[data-selected="true"] {position:relative;}
+   and --hl-frame-bottom below the band, glyph-box width (never over a neighbour), above the band.
+   VIEWER-TAP-INP-002: every token already holds the frame box (.word-frame, first child of .surface —
+   ReaderToken) and selecting only turns its outline on. Selecting used to give the token position:relative
+   and a new ::before box; inside the paged reader (multicol) that relaid out the whole text — 250ms+ per
+   tap on a 300-line material at 390 · CPU×4. An outline is paint-only and the frame box adds no layer.
+   The box is in-flow but takes no room: width = the glyph box (.surface, 100%) pulled back by margin-left
+   (last child, so it paints over the glyph strokes like the old z 1 frame),
+   and its margin box is 0 tall (vertical-align:top + negative margin-bottom). Being inside .surface, its em
+   is the surface's (headings enlarge only .surface) and its left edge is the glyph box's — after the
+   touch sentence bar (18px · Chinese one cell), which the old ::before had to offset by hand. Inside the
+   surface's stacking context it paints over the band (z -1), as the old z 1 frame did. Unselected frames are
+   visibility:hidden (skipped when painting); visibility and outline are both paint-only. */
+.viewer-layout .word-frame {display:inline-block;width:100%;margin-left:-100%;vertical-align:top;height:calc(var(--hl-frame-top) + var(--hl-band-h) + var(--hl-frame-bottom));margin-top:calc(var(--hl-band-top) - var(--hl-frame-top));margin-bottom:calc(-1 * (var(--hl-band-top) + var(--hl-band-h) + var(--hl-frame-bottom)));border-radius:8px;outline:none;outline-offset:-1.5px;pointer-events:none;visibility:hidden;}
+.viewer-layout .word-token[data-selected="true"] .word-frame {visibility:visible;outline:1.5px solid var(--word-selection-line,color-mix(in srgb,var(--reader-ink) 55%,transparent));}
+/* The frame now sits inside .surface, so a saved word's faded glyphs (index.css .word-token--saved .surface
+   opacity .6 — lifted for due words, the --hl palette and focus-mode picks) would fade it too. Where that
+   fade applies the line is drawn at 0.55 / 0.6 of ink, which composites to the old 55% line. */
+.viewer-layout .reader-area:not(.reader-area--hl):not(.reader-area--focus) .word-token--saved:not(.word-token--due)[data-selected="true"] .word-frame {outline-color:color-mix(in srgb,var(--reader-ink) 91.667%,transparent);}
 .viewer-layout .word-token[data-selected="true"] .surface::before {animation:none;}
 /* 앱 손맛 ①: 방금 담은 토큰은 대개 카드가 열린(선택된) 그 토큰이다 — 위 animation:none(선택 중 복습 펄스 끄기)이 특이도로
    담기 긋기(index.css .word-token--just-saved)까지 끄므로 긋기만 되살린다. 기점 · 좌표는 index.css 규칙 그대로. */
 .viewer-layout .word-token--just-saved[data-selected="true"] .surface::before {animation:hlStroke .22s var(--ease-settle) both;}
 @media (prefers-reduced-motion:reduce) { .viewer-layout .word-token--just-saved[data-selected="true"] .surface::before {animation:none;transform:none;} }
-.viewer-layout .word-token[data-selected="true"]::before {content:"";position:absolute;z-index:1;left:0;right:0;top:calc(var(--hl-band-top) - var(--hl-frame-top));height:calc(var(--hl-frame-top) + var(--hl-band-h) + var(--hl-frame-bottom));border:1.5px solid var(--word-selection-line,color-mix(in srgb,var(--reader-ink) 55%,transparent));border-radius:8px;pointer-events:none;}
 .viewer-layout .word-token--pattern:is(.word-token--saved,.word-token--due) {--hl-frame-bottom:calc(var(--hl-mark-gap) * 2 + 5.5px);}
-.viewer-layout .viewer-h1 .word-token[data-selected="true"]::before {font-size:1.5em;}
-.viewer-layout .viewer-h2 .word-token[data-selected="true"]::before {font-size:1.25em;}
-.viewer-layout .viewer-h3 .word-token[data-selected="true"]::before {font-size:1.1em;}
-/* Touch layouts keep 18px of the sentence bar inside the line's first token (24px hit - 9px gutter + 3px, index.css). */
-@media (hover:none) {.viewer-layout .word-token[data-selected="true"]:has(> .line-pick)::before {left:18px;}}
 /* "Met" words share the new-word display (VIEWER-R0 bug 11). */
 .viewer-layout .reader-area--hl :is(.word-token--new,.word-token--met) {--word-selection-line:var(--ws-new-ln);}
 .viewer-layout .reader-area--hl .word-token--saved {--word-selection-line:var(--ws-learn-ln);}
@@ -178,7 +187,6 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
    stays on the grid. */
 @media (hover:none) {
   .viewer-layout[data-language="Chinese"] .reader-area .line-pick {width:calc(var(--zh-pitch) + 6px);}
-  .viewer-layout[data-language="Chinese"] .reader-area .word-token[data-selected="true"]:has(> .line-pick)::before {left:var(--zh-pitch);}
 }
 .viewer-layout :is(.reader-area,.reader-settings__preview) :is(.rt-an,rt).pinyin-tone--1 {color:var(--tone-1);}
 .viewer-layout :is(.reader-area,.reader-settings__preview) :is(.rt-an,rt).pinyin-tone--2 {color:var(--tone-2);}
