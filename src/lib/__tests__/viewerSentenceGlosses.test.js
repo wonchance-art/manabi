@@ -91,10 +91,13 @@ describe('sentencePanelTokenIds — 탭 문장의 토큰 범위', () => {
   });
 });
 
-describe('sentenceTranslationParts — 번역 줄과 회색 줄(제목 줄 없이)', () => {
-  it('번역은 위, 맥락 · 말투는 아래 회색 줄, 굵게는 걷는다', () => {
+describe('sentenceTranslationParts — 번역 줄과 회색 줄(제목 줄 없이, 맥락 없이)', () => {
+  it('번역은 위, 말투는 아래 회색 줄, 맥락은 그리지 않는다(오너 10-24), 굵게는 걷는다', () => {
     expect(sentenceTranslationParts('**번역**\n오늘은 **날씨**가 좋다.\n\n**맥락**\n일상 서술문이에요.\n\n**말투**\n반말이에요.'))
-      .toEqual({ translation: ['오늘은 날씨가 좋다.'], notes: ['일상 서술문이에요.', '반말이에요.'] });
+      .toEqual({ translation: ['오늘은 날씨가 좋다.'], notes: ['반말이에요.'] });
+    // 중국어 설명의 맥락 제목(语境 · 語境)도 같다.
+    expect(sentenceTranslationParts('**翻译**\n今天天气很好。\n\n**语境**\n日常叙述。')).toEqual({ translation: ['今天天气很好。'], notes: [] });
+    expect(sentenceTranslationParts('**翻譯**\n今天天氣很好。\n\n**語境**\n日常敘述。')).toEqual({ translation: ['今天天氣很好。'], notes: [] });
   });
   it('교재 뜻(📘 표시)은 번역 아래 회색 줄로, 제목 없는 결과는 그대로 번역', () => {
     expect(sentenceTranslationParts('**번역**\n좋은 아침.\n\n📘 교재에 실린 뜻이에요.')).toEqual({ translation: ['좋은 아침.'], notes: ['📘 교재에 실린 뜻이에요.'] });

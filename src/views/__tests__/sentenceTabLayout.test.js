@@ -5,7 +5,7 @@ import { VIEWER_MESSAGES, VIEWER_MESSAGE_LOCALES } from '../../lib/viewerMessage
 
 /**
  * 계약: [문장] 탭 — 목업 U 4판(오너 10-24, /mnt/project-files/viewer-audit/mockups/U-문장탭-문법-v4.png). AE-R2 PR ③ 배치를 대체한다.
- * - 순서: 문장 카드(원문 + 패턴 자리 표시 · 🔊 · 번역 · 회색 맥락) → 「패턴」 카드 → 「단어」 카드. 단추 줄 · 🎧 · 질문 · 노트 저장 없음.
+ * - 순서: 문장 카드(원문 + 패턴 자리 표시 · 🔊 · 번역 · 회색 말투 · 교재 표시 — 맥락 줄은 없음, 오너 10-24) → 「패턴」 카드 → 「단어」 카드. 단추 줄 · 🎧 · 질문 · 노트 저장 없음.
  * - 진행 표시는 번역 칸에만 — 로딩이 탭 전체를 덮지 않는다(「번역 + 맥락 생성 중...」 한 줄 화면 폐지).
  * - 단어별 뜻·문형은 자료 토큰에서(재분석·드래그 목록·만남 기록 0).
  * - 게스트는 캐시·교재 맵이 없으면 AI를 부르지 않고 로그인 안내(Q4). 「AI」 표시 0(오너 결정 10-07 23:45).
@@ -67,6 +67,15 @@ describe('[문장] 탭 — 목업 순서', () => {
     expect(p).toContain("const slug = card.entry ? patternSlug(card.entry) : null;");
     expect(p).toContain("const tag = card.entry ? patternLevelTag(card.entry.level) : '';");
     for (const gone of ['문형 사전에 없음', 'AI가 나눈 패턴']) expect(p).not.toContain(gone);
+  });
+
+  it('패턴 머리 = 2열(공식 | ☆ / 뜻 | 급수 딱지) — 딱지는 ☆ 아래 가운데, 뜻 줄 오른쪽 끝(오너 10-24)', () => {
+    const head = sliceBetween(panel(), '<div className="reader-pattern__head">', '{card.note &&');
+    const at = ['reader-pattern__formula', '<StatusPill', 'reader-pattern__ko', 'reader-pattern__tag'].map((m) => head.indexOf(m));
+    expect(at.every((i) => i > -1)).toBe(true);
+    expect([...at].sort((a, b) => a - b)).toEqual(at);
+    const css = read('src/components/viewer/reader-controls.css');
+    expect(css).toMatch(/\.reader-pattern__head \{display:grid;grid-template-columns:minmax\(0,1fr\) minmax\(44px,max-content\);[^}]*justify-items:center/);
   });
 
   it('「AI」 표시가 없다 — 탭 안 문구·라벨 어디에도', () => {

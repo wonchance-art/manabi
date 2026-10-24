@@ -3865,7 +3865,7 @@ export default function ViewerPage() {
   const rightPanelContent=renderRightPanelContent();
 
   // ── [문장] 탭(목업 U 4판 · 오너 10-24 — 정본 설계서 docs/manabi-viewer-v2-ae-r2.md §3을 대체) ──
-  // 순서: 문장 카드(원문 + 패턴 자리 표시 · 🔊 · 번역 · 회색 맥락) → 「패턴」 카드 → 「단어」 카드. 단추 줄(더 쉽게 · 문법)
+  // 순서: 문장 카드(원문 + 패턴 자리 표시 · 🔊 · 번역 · 회색 말투 · 교재 표시 — 맥락 줄은 없음, 오너 10-24) → 「패턴」 카드 → 「단어」 카드. 단추 줄(더 쉽게 · 문법)
   // · 받아쓰기 🎧 · 질문 · 노트 저장은 없다(오너 지시). 부품은 단어장 것(상태 칸 StatusPill · 예문 줄 · 공식 칸)을 쓴다.
   // 내용의 원천은 지금처럼 패널 상태(leftPanelText·Result) 하나다(카드 [문장] 탭·막대·이동·드래그·수업이 같은 경로).
   // 단어 · 패턴 후보는 자료 토큰에서 만든다(재분석 · 만남 기록 0). 패턴 고르기는 번역 요청 하나에 실린다(요청 수 그대로).
@@ -3951,14 +3951,15 @@ export default function ViewerPage() {
               ));
               return (
                 <article key={card.key} className="reader-pattern" data-picked={cards.length > 1 && card === picked ? '' : undefined}>
+                  {/* 2열: 공식 | ☆ / 뜻 | 급수 딱지 — 딱지는 ☆ 바로 아래 가운데(오너 10-24 「뜻 오른쪽 끝, 별 중앙에 나란하게」). */}
                   <div className="reader-pattern__head">
                     {cards.length > 1
                       ? <button type="button" className="reader-pattern__formula" aria-pressed={card === picked} aria-label={`${card.pattern} — ${vt('문장에 표시')}`} onClick={() => setSentencePatternPick(i)}>{formula}</button>
                       : <p className="reader-pattern__formula" aria-label={card.pattern}>{formula}</p>}
-                    {tag && <span className="reader-pattern__tag">{tag}</span>}
                     {slug && canSave && <StatusPill status={patternStatus(savedPatterns ?? null, slug)} onSave={() => savePattern(card.entry)} busy={patternSaving === slug} saveLabel={`${card.pattern} — ${vt('패턴 담기')}`} />}
+                    {card.ko && <p className="reader-pattern__ko">{card.ko}</p>}
+                    {tag && <span className="reader-pattern__tag">{tag}</span>}
                   </div>
-                  {card.ko && <p className="reader-pattern__ko">{card.ko}</p>}
                   {card.note && <p className="reader-pattern__warn">{card.note}</p>}
                   {card.ex && (
                     <div className="reader-pattern__ex">

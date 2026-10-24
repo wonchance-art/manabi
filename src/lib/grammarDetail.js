@@ -5,7 +5,8 @@
 /**
  * 좌측 번역·맥락 프롬프트 — 말투(뉘앙스)는 학습에 유의미할 때만 붙는 조건부 줄.
  * patternBlock(sentencePattern.buildPatternPromptBlock)이 오면 같은 요청에 **문형** 칸을 붙인다(목업 U 4판 — 요청 수 그대로).
- * 맥락은 [문장] 탭에서 번역 아래 회색 한 줄이라 한 문장으로 받는다(오너 10-24 「간결하게」).
+ * 맥락은 한 문장으로 받는다. 뷰어 [문장] 탭은 맥락을 그리지 않고(오너 10-24, sentenceTranslationParts) PDF 뷰어만 쓴다 —
+ * 프롬프트는 두 화면 공용 정본이라 그대로 둔다.
  */
 export function buildContextPrompt(text, langKo, patternBlock = null) {
   return `다음 ${langKo} 텍스트를 한국어로 처리해주세요.
