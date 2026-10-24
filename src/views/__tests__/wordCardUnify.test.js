@@ -20,11 +20,11 @@ describe('단어 카드 단일화 계약', () => {
     expect(viewer).not.toContain('className="pdf-detail-popup"');
   });
 
-  it('리스트 클릭은 문장 컨텍스트를 유지한다 — dragTokens·pickedLineIdx를 건드리면 리스트·집중 어둡기가 사라진다', () => {
+  it('리스트 클릭은 문장 컨텍스트를 유지한다 — dragTokens·pickedKey를 건드리면 리스트·집중 어둡기가 사라진다', () => {
     const fn = viewer.match(/const handleListWordClick = \(t\) => \{[\s\S]*?\n  \};/)?.[0];
     expect(fn).toBeTruthy();
     expect(fn).not.toContain('setDragTokens');
-    expect(fn).not.toContain('setPickedLineIdx');
+    expect(fn).not.toContain('setPickedKey');
     expect(fn).toContain('setSelectedToken({ ...t })');
     expect(fn).toContain('setIsSheetOpen(true)');
   });

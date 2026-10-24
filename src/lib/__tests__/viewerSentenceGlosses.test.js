@@ -75,6 +75,16 @@ describe('sentencePanelTokenIds — 탭 문장의 토큰 범위', () => {
     expect(sentencePanelTokenIds({ text: '我们去。', rawLines, lineTokens, sequence, dictionary, range })).toEqual(['id_2_0', 'id_2_1']);
   });
 
+  it('문장 단위(마침표까지 한 문장)가 맞으면 줄 전체가 아니라 그 문장 토큰만 — 오너 선택 2026-10-24', () => {
+    const sentences = [
+      { key: '1:0', rawIdx: 1, text: '眼前', tokenIds: ['id_1_0'] },
+      { key: '1:1', rawIdx: 1, text: '很好。', tokenIds: ['id_1_1'] },
+    ];
+    expect(sentencePanelTokenIds({ text: '很好。', rawLines, lineTokens, sentences })).toEqual(['id_1_1']);
+    // 줄 전체 텍스트면 예전처럼 줄 토큰(막대가 줄 첫 문장만 가진 옛 저장 문장 호환)
+    expect(sentencePanelTokenIds({ text: '眼前很好。', rawLines, lineTokens, sentences })).toEqual(['id_1_0', 'id_1_1']);
+  });
+
   it('원문 줄과 맞지 않는 부분 문자열·빈 문장은 빈 범위', () => {
     expect(sentencePanelTokenIds({ text: '很好', rawLines, lineTokens })).toEqual([]);
     expect(sentencePanelTokenIds({ text: '', rawLines, lineTokens })).toEqual([]);

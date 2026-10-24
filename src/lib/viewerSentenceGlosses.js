@@ -49,17 +49,21 @@ export function sentenceWordGlosses(dictionary, tokenIds, { language } = {}) {
  * ① 드래그 범위가 있고 그 합성 텍스트가 탭 문장과 같으면 그 범위 ② 아니면 탭 문장의 각 줄과 (막대·카드와 같은 정리로)
  * 같은 원문 줄의 토큰. 못 찾은 줄(부분 문자열 등)은 건너뛴다 — 칸이 비면 그리지 않는다.
  * @param {{text:string, rawLines?:string[], lineTokens?:Map<number, Array<{id:string}>>, sequence?:string[],
- *   dictionary?:object, range?:{start:number,end:number}|null}} input
+ *   dictionary?:object, range?:{start:number,end:number}|null, sentences?:Array<{key:string,text:string,tokenIds:string[]}>|null}} input
  * @returns {string[]}
  */
-export function sentencePanelTokenIds({ text, rawLines = [], lineTokens, sequence, dictionary, range = null } = {}) {
+export function sentencePanelTokenIds({ text, rawLines = [], lineTokens, sequence, dictionary, range = null, sentences = null } = {}) {
   if (!text) return [];
   if (range && Array.isArray(sequence) && composeRangeText(sequence, dictionary, range.start, range.end).trim() === text) {
     return sequence.slice(range.start, range.end + 1);
   }
   const ids = [];
   const used = new Set();
+  const usedSentences = new Set();
   for (const segment of String(text).split('\n').map((s) => s.trim()).filter(Boolean)) {
+    // 마침표까지 한 문장(지정 · 카드 [문장] 탭)은 그 문장 토큰만 — 줄 전체가 아니다.
+    const sentence = (sentences || []).find((s) => !usedSentences.has(s.key) && s.text === segment);
+    if (sentence) { usedSentences.add(sentence.key); ids.push(...sentence.tokenIds); continue; }
     const line = rawLines.findIndex((raw, i) => !used.has(i) && cleanLineText(raw) === segment);
     if (line < 0) continue;
     used.add(line);

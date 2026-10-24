@@ -63,7 +63,7 @@ describe('뷰어 배선', () => {
   });
   it('강조는 고른 문장 띠와 다른 밑줄(.word-token--listening) — 문장 지정(isPicked)에 섞지 않는다', () => {
     expect(viewer()).toContain("${listenTokens?.has(tokenId) ? ' word-token--listening' : ''}");
-    expect(viewer()).toContain('const isPicked = pickedLineIdx === rawIdx;');
+    expect(viewer()).toContain('const isPicked = pickedSentence?.rawIdx === rawIdx;');
     const css = read('src/index.css');
     expect(sliceBetween(css, '.word-token--listening::after {', '}')).toContain('background: var(--pace-line);');
     expect(css).not.toMatch(/word-token--listening[^{]*\.line-pick/);
