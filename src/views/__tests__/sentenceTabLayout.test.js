@@ -69,9 +69,9 @@ describe('[문장] 탭 — 목업 순서', () => {
     for (const gone of ['문형 사전에 없음', 'AI가 나눈 패턴']) expect(p).not.toContain(gone);
   });
 
-  it('패턴 머리 = 2열(공식 | ☆ / 뜻 | 급수 딱지) — 딱지는 ☆ 아래 가운데, 뜻 줄 오른쪽 끝(오너 10-24)', () => {
+  it('패턴 머리 = 2열(공식 | 급수 딱지 / 뜻 | ☆) — 딱지와 ☆는 같은 세로축 가운데(오너 10-24 「서로 자리를 바꿔」)', () => {
     const head = sliceBetween(panel(), '<div className="reader-pattern__head">', '{card.note &&');
-    const at = ['reader-pattern__formula', '<StatusPill', 'reader-pattern__ko', 'reader-pattern__tag'].map((m) => head.indexOf(m));
+    const at = ['reader-pattern__formula', 'reader-pattern__tag', 'reader-pattern__ko', '<StatusPill'].map((m) => head.indexOf(m));
     expect(at.every((i) => i > -1)).toBe(true);
     expect([...at].sort((a, b) => a - b)).toEqual(at);
     const css = read('src/components/viewer/reader-controls.css');
