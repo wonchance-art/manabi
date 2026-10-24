@@ -41,7 +41,10 @@ const SERVICE_CONFIG_MESSAGE = '서비스 설정에 문제가 있어요. 관리�
 const SERVICE_CONFIG_CAUSE = '서비스 설정 문제라 관리자에게 문의해 주세요.';
 
 // 연결 끊김 표지 — 아래 안내 표와 isNetworkError가 같은 판정을 쓴다(끊긴 서재가 기기 사본 목록으로 바꿀지 볼 때, OFFLINE-SWEEP-001 P1).
-const NETWORK_PATTERN = /failed to fetch|network|ERR_NETWORK|connection|\boffline\b/i;
+// 브라우저마다 fetch 연결 실패 문구가 다르다: Chromium 「Failed to fetch」 · Firefox 「NetworkError when attempting to fetch resource.」 ·
+// Safari 「Load failed」(Supabase는 「TypeError: Load failed」로 감싼다). Safari 문구는 문장 전체일 때만 — 「chunk load failed」 ·
+// 「sdk load failed」 같은 다른 실패를 연결 끊김으로 잡지 않게.
+const NETWORK_PATTERN = /failed to fetch|network|ERR_NETWORK|connection|\boffline\b|^(?:TypeError:\s*)?load failed\.?$/i;
 /** 연결이 끊겨 실패했나(응답을 못 받음) — 서버가 돌려준 오류(권한 · 없음 · 서버 오류)는 아니다. */
 export function isNetworkError(err) {
   const technical = typeof err === 'string' ? err : (err?.message || '');
