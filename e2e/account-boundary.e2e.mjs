@@ -542,3 +542,55 @@ test('⑨ 얼어 있는 동안 쿠키만 바뀐 뒤 문서 뒤로 가기(bfcache
     console.log(JSON.stringify({ bfcacheScene: results }));
   } finally { await bfBrowser.close(); }
 });
+
+test('⑩ 끊긴 서재(Supabase 끊김) — 「이 기기에 받아 둔 자료」는 지금 계정 것만: A는 자기 사본을 보고 열며, B는 A 제목 없이 빈 안내', { timeout: 150000 }, async () => {
+  // OFFLINE-SWEEP-001 P1. 서재 목록이 연결 실패로 끝나면 세 칸 실패 대신 기기 사본 목록(listDeviceMaterials)을 보인다. ⑥과 같은 이유로
+  // Supabase만 끊는다(앱 서버 RSC는 그대로 — 서비스 워커 없이도 서재 · 뷰어 화면이 선다). 브라우저 끊김(navigator.onLine)은 단위 계약이 본다.
+  const { context, page, stats, errors } = await boundaryContext({ actor: 'A' });
+  const shelfHeading = p => p.getByRole('heading', { name: '이 기기에 받아 둔 자료' });
+  const threeFailures = p => p.getByText(/^(읽던 곳|폴더|자료 목록) · 불러오지 못했어요/);
+  try {
+    // A: 자료실 도구 화면에서 X를 받아 둔다(⑥과 같은 길) — 계정이 바뀌어도 지우지 않고 숨기는 기록이라 B 장면이 공허하지 않다.
+    const keyA = `acct:${BOUNDARY_ACTORS.A}:${X}`;
+    await page.goto('/materials?tools=1');
+    await page.getByText(privateRow.title).first().waitFor();
+    await page.getByLabel('자료 메뉴').first().click();
+    await page.getByRole('menuitemcheckbox', { name: /받아두기/ }).first().click();
+    await page.locator('.tag', { hasText: '받아둠' }).first().waitFor();
+    assert.ok((await idbKeys(page, 'anatomy-offline-cache', 'materials')).some(r => r.key === keyA && r.pinned), 'A의 계정 키로 받아 둠');
+    // A · 끊김: 서재 → 기기 사본 목록에 X(양성 대조 — A는 자기 제목을 본다) · 세 칸 실패 안내 0
+    stats.dataOffline = true;
+    await nav(page, '/materials');
+    await shelfHeading(page).waitFor({ timeout: 20000 });
+    const row = page.locator('.shelf-device a[href^="/viewer/"]', { hasText: privateRow.title });
+    await row.waitFor();
+    assert.ok(await row.getByText('일본어 · 받아둠').isVisible(), 'A: 받아 둔 표시');
+    assert.equal(await threeFailures(page).count(), 0, 'A 끊김: 세 칸 실패 안내 대신 기기 사본');
+    assert.ok(await page.getByText('서재 목록을 불러오지 못했어요. 연결되면 다시 불러와요.').isVisible());
+    // 누르면 같은 여는 길(서재 링크 → 뷰어의 기기 사본 폴백)로 본문이 선다.
+    await row.click();
+    await page.waitForURL(url => new URL(url).pathname === `/viewer/${X}`);
+    await page.locator('[data-source-token="id_0_0"]').waitFor({ timeout: 15000 });
+    await nav(page, '/materials');
+    await shelfHeading(page).waitFor({ timeout: 20000 });
+    // 연결되면 다시 읽기 — 새로 고침 없이 보통 서재(목록의 X 행)로 바뀐다.
+    stats.dataOffline = false;
+    await page.evaluate(() => dispatchEvent(new Event('online')));
+    await page.locator('.shelf-list-section').getByText(privateRow.title).first().waitFor({ timeout: 15000 });
+    assert.equal(await shelfHeading(page).count(), 0, '연결 뒤: 기기 사본 칸이 보통 서재로 바뀐다');
+    // A → 손님 → B · 끊김: B의 기기 사본 목록은 비어 있고 A 표식이 한 번도 그려지지 않는다.
+    await logoutFromProfile(page);
+    await loginThroughForm(page, 'B', '/home', { inApp: true });
+    await startWatch(page);
+    assert.ok((await idbKeys(page, 'anatomy-offline-cache', 'materials')).some(r => r.key === keyA && r.pinned), 'A의 받아 둔 기록은 지우지 않고 숨긴다(양성 조건)');
+    stats.dataOffline = true;
+    await nav(page, '/materials');
+    await shelfHeading(page).waitFor({ timeout: 20000 });
+    await page.getByText('아직 이 기기에 받아 둔 자료가 없어요.', { exact: false }).waitFor();
+    assert.equal(await page.locator('.shelf-device a[href^="/viewer/"]').count(), 0, 'B 끊김: 기기 사본 0');
+    await assertNoMarker(page, 'B 끊김 /materials');
+    stats.dataOffline = false;
+    assert.equal(await leak(page), null, 'B에게 A 표식');
+    assert.deepEqual(errors, []);
+  } finally { await context.close(); }
+});
