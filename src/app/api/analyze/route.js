@@ -8,6 +8,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 import { readRequestBoundaries } from '@/lib/server/analyzeBoundaries';
+import { isInternalAnalysisRequest } from '@/lib/server/internalAnalysisRequest';
 // 분석 핵심은 analyzeCore로 꺼냈다(v2-Z Z-R1 ① — 대화 턴 경로와 함께 쓴다). 이 라우트는 인증·한도·입력 검증만 맡는다.
 import { analyzeLines } from '@/lib/server/analyzeCore';
 
@@ -18,8 +19,8 @@ export const maxDuration = 60; // Vercel Node.js 함수: 최대 60초
 const MAX_LINES = 100;      // 요청당 줄 수
 const MAX_LINE_LEN = 200;   // 줄당 문자 수
 
-export async function POST(request) {
-  const startedAt = Date.now();
+// 로그인 · 사용자별 한도 — 막으면 그 응답, 통과면 null. 서버 분석 작업이 같은 프로세스 안에서 만든 요청(internalAnalysisRequest)은 건너뛴다.
+async function gate(request) {
   // 인증 확인 — 로그인 사용자만 분석 가능 (Gemini 쿼터 남용 방지)
   const authHeader = request.headers.get('authorization');
   if (!authHeader) {
@@ -44,6 +45,15 @@ export async function POST(request) {
       { error: '요청이 너무 많아요. 잠시 후 다시 시도해 주세요.' },
       { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) } }
     );
+  }
+  return null;
+}
+
+export async function POST(request) {
+  const startedAt = Date.now();
+  if (!isInternalAnalysisRequest(request)) {
+    const denied = await gate(request);
+    if (denied) return denied;
   }
 
   let body;

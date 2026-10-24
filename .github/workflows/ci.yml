@@ -54,6 +54,7 @@ jobs:
       - run: node supabase/tests/anon-book-catalog.mjs
       - run: node supabase/tests/canonical-book-releases.mjs
       - run: node supabase/tests/canonical-art-shelf.mjs
+      - run: node supabase/tests/canonical-analysis-jobs.mjs
       - run: node scripts/verification/n4-book-support.mjs
       - run: node scripts/verification/n3-book-support.mjs
       - run: node supabase/tests/korean-capability-repin.mjs

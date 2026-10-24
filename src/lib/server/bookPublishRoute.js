@@ -115,6 +115,10 @@ export function createBookPublishHandlers(getBooks, { notPublishableError = DEFA
     const { supabase, user } = auth;
     if (body.action === 'review') return reviewChapter(supabase, user, book, body.order, body.acceptBoundaries);
     if (body.action === 'reviewMany') return reviewChapters(supabase, user, book, body.orders);
+    if (body.action === 'prepare') {
+      const { status, body: result } = await prepareCanonicalBook(supabase, user.id, book);
+      return respond(result, status);
+    }
     let rows;
     try {
       rows = await publishedRows(supabase, user.id, [book.book.key]);
@@ -142,22 +146,36 @@ export function createBookPublishHandlers(getBooks, { notPublishableError = DEFA
       return respond({ ok: true, released: data || [] });
     }
 
-    const plan = planLiteraturePublish(book, rows);
-    if (plan.conflicts.length) {
-      return respond({ error: '이미 준비된 장 중 정본과 다른 장이 있어 넣지 않았어요. 자료 관리에서 확인해 주세요.', plan }, 409);
-    }
-    const synced = await syncPendingMetadata(supabase, user, book, rows);
-    if (synced.error) return respond({ error: '준비한 장을 정본에 맞추지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503);
-    if (plan.insert.length === 0) return respond({ ok: true, inserted: [], synced: synced.ids, plan });
-
-    const { data, error } = await supabase.from('reading_materials')
-      .insert(literaturePublishRows(book, plan.insert, user.id))
-      .select('id, order:processed_json->metadata->book->>order');
-    if (error) return respond({ error: '책을 준비하지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503);
-    return respond({ ok: true, inserted: data || [], synced: synced.ids, plan });
+    return respond({ error: '작업할 책을 선택해 주세요.' }, 400);
   }
 
   return { GET, POST };
+}
+
+/**
+ * 「게시」(준비) 한 권 → {status, body}. 관리자 화면(사용자 세션 · RLS 소유자 쓰기)과 서버 분석 작업(CANON-SERVER-ANALYSIS-001 —
+ * service role · 작업을 시작한 관리자 ownerId)이 같이 쓴다. 정본 장 중 없는 장만 비공개로 넣고, 분석 전 장은 정본 metadata에 맞춘다(멱등).
+ */
+export async function prepareCanonicalBook(supabase, ownerId, book) {
+  let rows;
+  try {
+    rows = await publishedRows(supabase, ownerId, [book.book.key]);
+  } catch {
+    return { status: 503, body: { error: '게시 상태를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.' } };
+  }
+  const plan = planLiteraturePublish(book, rows);
+  if (plan.conflicts.length) {
+    return { status: 409, body: { error: '이미 준비된 장 중 정본과 다른 장이 있어 넣지 않았어요. 자료 관리에서 확인해 주세요.', plan } };
+  }
+  const synced = await syncPendingMetadata(supabase, { id: ownerId }, book, rows);
+  if (synced.error) return { status: 503, body: { error: '준비한 장을 정본에 맞추지 못했어요. 잠시 후 다시 시도해 주세요.' } };
+  if (plan.insert.length === 0) return { status: 200, body: { ok: true, inserted: [], synced: synced.ids, plan } };
+
+  const { data, error } = await supabase.from('reading_materials')
+    .insert(literaturePublishRows(book, plan.insert, ownerId))
+    .select('id, order:processed_json->metadata->book->>order');
+  if (error) return { status: 503, body: { error: '책을 준비하지 못했어요. 잠시 후 다시 시도해 주세요.' } };
+  return { status: 200, body: { ok: true, inserted: data || [], synced: synced.ids, plan } };
 }
 
 /**
