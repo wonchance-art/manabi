@@ -64,7 +64,7 @@ describe('고름 표시 CSS — 그리기 속성만 바뀐다', () => {
   it('테두리 상자: 글자 상자 폭 · 줄 높이 0 · 그리기는 outline(배치에 영향 없음)', () => {
     const frame = all.find(r => r.selector === '.viewer-layout .word-frame');
     const d = Object.fromEntries(frame.decls);
-    expect(d).toMatchObject({ display: 'inline-block', width: '100%', 'margin-left': '-100%', 'vertical-align': 'top', 'border-radius': '6px', 'outline-offset': '-1.5px', 'pointer-events': 'none', visibility: 'hidden', outline: 'none' });
+    expect(d).toMatchObject({ display: 'inline-block', width: '100%', 'margin-left': '-100%', 'vertical-align': 'top', 'border-radius': '8px', 'outline-offset': '-1.5px', 'pointer-events': 'none', visibility: 'hidden', outline: 'none' });
     expect(d['margin-bottom']).toBe('calc(-1 * (var(--hl-band-top) + var(--hl-band-h) + var(--hl-frame-bottom)))'); // 여백 상자 높이 0
     expect(d.height).toBe('calc(var(--hl-frame-top) + var(--hl-band-h) + var(--hl-frame-bottom))');
     expect(Object.keys(d)).not.toContain('border'); // 테두리 두께는 글자 상자 폭 계산에 들어간다 — 선은 outline으로

@@ -36,18 +36,18 @@ describe('병음 칸 폭 재기(PINYIN-CELL-RACE-001)', () => {
     watchPinyinCell({ win, doc, root: () => null, pinyinRem: 0.75, fontRem: 1.6, onCell: cell => cells.push(cell) });
     await flush(); finishLoad(); await flush();
     expect(cells.length).toBeGreaterThan(0);
-    // 'chuàng' 6자 × 5.5 = 33 → ceil(max(25.6, 33) + 2) = 35
-    expect(cells.at(-1)).toBe(35);
+    // 'chuàng' 6자 × 5.5 = 33 → ceil(max(25.6 + 2, 33 + 4)) = 37 (병음이 넓으면 여유 +4 — #1546 뷰어 점검 결정 1)
+    expect(cells.at(-1)).toBe(37);
   });
   it('fonts.ready가 이미 끝났어도 잴 글자의 조각을 직접 받고 받은 뒤 다시 잰다', async () => {
     const { doc, win, state, finishLoad } = fakeDom({ loaded: false });
     const cells = [];
     const stop = watchPinyinCell({ win, doc, root: () => null, pinyinRem: 0.75, fontRem: 1.6, onCell: cell => cells.push(cell) });
     await flush();
-    expect(cells.at(-1)).toBe(44); // 대체 글꼴 폭(6 × 7 = 42)
+    expect(cells.at(-1)).toBe(46); // 대체 글꼴 폭(6 × 7 = 42) + 병음 여유 4
     expect(state.loads).toEqual([{ font: "12px 'Noto Sans', 'Noto Sans Fallback'", text: PINYIN_MEASURE_SYLLABLES.join(' ') }]);
     finishLoad(); await flush();
-    expect(cells.at(-1)).toBe(35);
+    expect(cells.at(-1)).toBe(37); // 받은 뒤 실제 글꼴 폭(33) + 병음 여유 4
     stop();
     expect(state.listeners.size).toBe(0);
   });
