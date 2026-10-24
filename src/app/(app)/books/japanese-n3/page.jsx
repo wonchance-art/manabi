@@ -1,11 +1,13 @@
-import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { hasSupabaseSessionInJar } from '@/lib/authCookie';
 import { publishedReading, readingCatalog, readingSections } from '@/lib/server/bookReading';
 import BookReader from '@/components/books/BookReader';
+import { BOOK_METADATA, BookUnavailable } from '@/components/books/BookCoverStatic';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: '일본어 N3 · 근거를 읽고, 내 생각을 전하는 일본어', alternates: { canonical: '/books/japanese-n3' } };
+// 쿼리가 붙은 요청(관리자 미리보기 ?edition=<미발행> · ?reference · ?returnTo · 책 안 이동 뒤 새로고침의 ?edition=<발행>)만 이 동적 화면에 온다.
+// 쿼리 없는 첫 화면은 middleware가 표지 판(cover/[hint], ISR — GUEST-STATIC-001 4단계)으로 넘긴다. 미리보기 응답은 계정별이라 여기는 동적이다.
+export const metadata = BOOK_METADATA['japanese-n3'];
 
 export default async function Page({ searchParams }) {
   try {
@@ -16,6 +18,6 @@ export default async function Page({ searchParams }) {
     const sections = await readingSections(book.editionId, 'japanese-n3');
     return <BookReader key={`${book.editionId}:${params?.reference === '1'}`} reference={params?.reference === '1'} book={readingCatalog(book)} preview={preview} sessionHint={sessionHint} sectionIndex={sections.map(({ id, unit, title, anchors }) => ({ id, unit, title, anchors }))} />;
   } catch {
-    return <div className="manabi-page"><h1>교재를 불러오지 못했어요</h1><p>잠시 후 다시 열어 주세요.</p><Link href="/lessons">책장으로 돌아가기</Link></div>;
+    return <BookUnavailable />;
   }
 }

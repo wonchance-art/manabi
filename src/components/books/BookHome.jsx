@@ -2,7 +2,6 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
-import { useSearchParams } from 'next/navigation';
 import { libraryReaderHref } from '@/lib/libraryReturn';
 import { lessonGroups } from '@/lib/bookNavigation';
 import { bookResume } from '@/lib/webNavigation';
@@ -10,22 +9,21 @@ import { BOOK_ID, bookHref as textbookHref } from '@/lib/textbook/contract';
 import { clearResumeHint, resumeHintScript } from './bookEntryGate';
 import BookCover from './BookCover';
 import LibrarySaveButton from '@/components/library/LibrarySaveButton';
-import {LibraryReturnLink} from '@/components/web/LibraryReturnLink';
+import {LibraryReturnLinkTo} from '@/components/web/LibraryReturnLink';
 
 // 전체 목차 펼침(showAll)은 BookReader가 든다 — 표지 자리(BOOK-HOME-RESTORE-001)와 함께 이 기록에 남아, 다른 화면에서 뒤로 와
 // 표지가 다시 붙어도 같은 높이로 펼쳐진다. 따로 쓰면(props 없음) 지금처럼 이 부품이 든다.
 // openParts = 돌아온 기록에서 열려 있던 파트(없으면 기본: 지금 파트만 열림).
 // sessionHint = 서버가 본 세션 쿠키(이름만). 로그인 확인 중에는 담기 버튼 자리(44px)를 미리 잡아 확인이 끝날 때 책 몸통이 밀리지 않게 하고,
 // 손님으로 확정되면(쿠키는 있었지만 세션이 없을 때) 접는다. 쿠키가 없는 손님은 지금처럼 자리 자체가 없다(BOOKS-FLOW-002).
-export default function BookHome({ book, preview=false, progress, hasProgress = false, ready = true, showAll: heldAll, onShowAll, openParts = null, sessionHint = false }) {
+// returnTo = 「돌아가기」 맥락 — BookReader가 주소에서 읽어 넘긴다(표지 ISR 판은 늘 없음 — 정적 화면에서 useSearchParams를 부르지 않게).
+export default function BookHome({ book, preview=false, progress, hasProgress = false, ready = true, showAll: heldAll, onShowAll, openParts = null, sessionHint = false, returnTo = null }) {
   const { loading: authLoading } = useAuth();
   const bookId = book.bookId || BOOK_ID;
   const level = book.level || 'N5';
   const bookHref = (edition, page = 'cover') => textbookHref(edition, page, bookId);
   const [ownAll, setOwnAll] = useState(false);
   const showAll = onShowAll ? !!heldAll : ownAll, setShowAll = onShowAll || setOwnAll;
-  const params = useSearchParams();
-  const returnTo = params.get('returnTo');
   const readerHref = page => returnTo ? libraryReaderHref(bookHref(book.edition, page), returnTo) : bookHref(book.edition, page);
   const resume = bookResume(book, progress, hasProgress);
   const current = resume.lesson;
@@ -37,7 +35,7 @@ export default function BookHome({ book, preview=false, progress, hasProgress = 
   const resumeRow = <div className="book-resume-hold">{resumeHint && <script dangerouslySetInnerHTML={{ __html: resumeHint }} />}
     <div className="manabi-row"><a className="manabi-button" href={readerHref(resume.page)}>{!ready ? '읽기 열기' : resume.started ? `${String(current.number).padStart(2, '0')}과 이어 읽기` : '첫 과부터 시작하기'} →</a>{resume.started && resume.page !== `${current.id}-start` && <a className="manabi-link" href={readerHref(`${current.id}-start`)}>{String(current.number).padStart(2, '0')}과 처음부터</a>}</div>
     {resumeHint && <div className="manabi-row book-resume-ghost" data-edition={book.edition} aria-hidden="true"><span className="manabi-button">00과 이어 읽기 →</span><span className="manabi-link">00과 처음부터</span></div>}</div>;
-  return <div className="manabi-page manabi-book-home"><p className="manabi-breadcrumb"><LibraryReturnLink onlyWithContext/><Link href="/lessons" prefetch={false}>교재</Link><span>/</span>일본어 · {level}</p>
+  return <div className="manabi-page manabi-book-home"><p className="manabi-breadcrumb"><LibraryReturnLinkTo returnTo={returnTo} onlyWithContext/><Link href="/lessons" prefetch={false}>교재</Link><span>/</span>일본어 · {level}</p>
     {level === 'N4' || level === 'N3' ? <>
     <section className="manabi-book-hero"><BookCover level={level} title={book.title} /><div><p className="manabi-eyebrow">일본어 · {level}{preview && ' · 검수 중'}</p><h1>{book.title}</h1>{resumeRow}</div></section>
     </> : <>

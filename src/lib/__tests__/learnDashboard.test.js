@@ -209,7 +209,7 @@ describe('목표 과정 목록 — 같은 정본의 투영이라 계획이 갈�
     expect(slim.levels.map(lv => lv.label)).toEqual(full.levels.map(lv => lv.label));
   });
   it('홈 페이지는 정본 투영을 싣지 않는다 — 목표가 있을 때만 정적 응답을 받는다(P4)', () => {
-    expect(read('src/app/(app)/home/page.jsx')).not.toContain('buildContinueManifest');
+    expect(read('src/components/learn/HomeVariant.jsx')).not.toContain('buildContinueManifest'); // 배움 판 넷이 같은 서버 부품(GUEST-STATIC-001 4단계)
     expect(read('src/app/api/goal-catalog/route.js')).toContain("export const dynamic = 'force-static';");
     expect(read('src/components/learn/GoalTrackTile.jsx')).toContain('const catalog = useGoalCatalog(hasGoal);');
   });

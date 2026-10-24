@@ -57,11 +57,11 @@ describe('P1–P5 초기 전송 성능 수리 회귀', () => {
   });
 
   it('P4: 홈은 발행 교재의 작은 카탈로그만 전달하고 예전 30과 통계를 섞지 않는다', () => {
-    const page = read('src/app/(app)/home/page.jsx');
+    // 배움 판 넷(ISR — GUEST-STATIC-001 4단계)이 같은 서버 부품을 쓴다. 판이 아는 배치(B1)만 더한다 — 같은 작은 카탈로그(readingCatalog)다.
+    const page = read('src/components/learn/HomeVariant.jsx');
     const home = read('src/views/HomePage.jsx');
     expect(page).toContain('readingCatalog(published.book)');
-    // 세션 쿠키 이름 유무(B1)만 더한다. 판본은 약속으로 넘긴다(LCP-UNSUSPEND) — 같은 작은 카탈로그(readingCatalog)다.
-    expect(page).toContain('<HomePage bookPromise={bookPromise} sessionHint={sessionHint} />');
+    expect(page).toContain('<HomePage book={book} sessionHint={member} />');
     expect(page).not.toContain('buildContinueManifest');
     expect(home).not.toContain('ProfileStats');
     expect(home).not.toContain('pullProgress');

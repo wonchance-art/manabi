@@ -220,12 +220,17 @@ describe('간체 글꼴 범위 — Noto Sans SC', () => {
   });
 
   it('링크 세그먼트는 ScFontScope 없이 힌트 쿠키 부품만 두고, 이미 동적 라우트다(쿠키로 정적을 동적으로 바꾸지 않음)', () => {
-    // 배움(/home): 세그먼트 layout의 힌트 쿠키 부품 + 동적 화면 그대로.
+    // 배움(/home, GUEST-STATIC-001 4단계): 산책과 같은 판 나누기 — 판(ISR) · 세그먼트 layout은 쿠키를 읽지 않고, 힌트 쿠키 판정은 middleware가 해서
+    // 늘 링크를 싣는 간체 판(/home/sc · /home/member/sc)으로 넘긴다.
     const home = 'src/app/(app)/home';
-    expect(read(`${home}/layout.jsx`)).not.toMatch(/import ScFontScope|<ScFontScope>/);
-    expect(read(`${home}/layout.jsx`)).toContain("import ScFontCookieHint from '@/components/fonts/ScFontCookieHint'");
-    expect(read(`${home}/layout.jsx`)).toContain('<><ScFontCookieHint />{children}</>');
-    expect(read(`${home}/page.jsx`)).toContain("export const dynamic = 'force-dynamic';");
+    const homeLayout = read(`${home}/layout.jsx`).replace(/(^|[^:'"`])\/\/[^\n]*/g, '$1');
+    expect(homeLayout).not.toMatch(/import ScFontScope|<ScFontScope>/);
+    expect(homeLayout, '배움 세그먼트 layout이 쿠키를 읽으면 ISR 판이 동적이 된다').not.toMatch(/ScFontCookieHint|next\/headers|cookies\(/);
+    for (const f of ['(guest)/page.jsx', '(guest)/sc/page.jsx', 'member/page.jsx', 'member/sc/page.jsx']) expect(read(`${home}/${f}`), f).toContain('export const revalidate = 3600;');
+    expect(read(`${home}/(guest)/sc/page.jsx`)).toContain('<HomeVariant member={false} sc />');
+    expect(read(`${home}/member/sc/page.jsx`)).toContain('<HomeVariant member sc />');
+    expect(read('src/components/learn/HomeVariant.jsx')).toContain('return <>{sc && <ScFontLink />}<HomePage book={book} sessionHint={member} /></>;');
+    expect(read('src/middleware.js')).toContain("const variant = `/home${member ? '/member' : ''}${sc ? '/sc' : ''}`;");
     // 산책(/discover, GUEST-STATIC-001 2단계): 같은 뜻(「쿠키로 정적을 동적으로 바꾸지 않음」)을 판 나누기로 지킨다 — 본 화면은 ISR이라 쿠키를 읽지 않고,
     // 힌트 쿠키 판정은 middleware가 해서 늘 링크를 싣는 간체 판(/discover/sc, 역시 ISR)으로 넘긴다. 쿠키를 읽는 부품은 이미 동적인 잎 화면에만 둔다.
     const discover = 'src/app/(app)/discover';
@@ -250,7 +255,9 @@ describe('간체 글꼴 범위 — Noto Sans SC', () => {
   it('링크 세그먼트에서 열리는 부품의 lang을 데이터로 정하는 요소는 ZhSlot 안에 있다(SC로 그리지 않는 잎은 근거와 함께 밖)', () => {
     const { reach } = scGraph();
     // 산책의 판 나누기(GUEST-STATIC-001 2단계) 뒤에도 같은 화면을 본다 — 「함께 읽는 글」 · 간체 판은 하위 경로의 page다.
-    const reached = new Set(SC_LINK_SEGMENTS.flatMap(seg => ['page.jsx', 'layout.jsx', 'loading.jsx', 'reading/page.jsx', 'sc/page.jsx']
+    // 배움 판(4단계)은 (guest) · member 아래 page · loading이다.
+    const reached = new Set(SC_LINK_SEGMENTS.flatMap(seg => ['page.jsx', 'layout.jsx', 'loading.jsx', 'reading/page.jsx', 'sc/page.jsx',
+      '(guest)/page.jsx', '(guest)/loading.jsx', '(guest)/sc/page.jsx', 'member/page.jsx', 'member/loading.jsx', 'member/sc/page.jsx']
       .map(f => `${seg}/${f}`).filter(f => fs.existsSync(path.join(ROOT, f))).flatMap(f => [...reach(f)])));
     const leaves = [], bare = [], notSc = [];
     for (const f of reached) {

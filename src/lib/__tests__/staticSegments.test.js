@@ -97,8 +97,8 @@ describe('정적 · ISR 세그먼트는 요청자를 읽지 않는다', () => {
     });
   }
 
-  it('검사기가 실제로 잡는다 — 쿠키를 읽는 동적 화면(/home · /materials)은 걸린다', () => {
-    expect(violations(PAGE_BY_ROUTE.get('/home')).out.join('\n')).toMatch(/next\/headers/);
+  it('검사기가 실제로 잡는다 — 쿠키를 읽는 동적 화면(쿼리가 붙은 교재 · /materials)은 걸린다', () => {
+    expect(violations(PAGE_BY_ROUTE.get('/books/japanese-n5')).out.join('\n')).toMatch(/next\/headers/);
     expect(violations(PAGE_BY_ROUTE.get('/materials')).out.join('\n')).toMatch(/next\/headers|searchParams|force-dynamic/);
   });
 });

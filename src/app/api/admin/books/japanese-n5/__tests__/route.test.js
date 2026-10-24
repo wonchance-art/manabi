@@ -35,7 +35,8 @@ describe('private drafts and immutable publication routes',()=>{
   expect((await editor.POST(request({...body,expectedReleaseVersion:undefined}))).status).toBe(428);
   expect(cache.revalidatePath).not.toHaveBeenCalled();
   expect((await editor.POST(request(body))).status).toBe(200);
-  expect(cache.revalidatePath.mock.calls).toEqual([['/lessons'],['/lessons/lang/[lang]','page']]);
+  // 4단계: 교재 첫 화면 판(쿼리 없음) · 배움 판(N5 카탈로그를 싣는다)도 함께 버린다.
+  expect(cache.revalidatePath.mock.calls).toEqual([['/lessons'],['/lessons/lang/[lang]','page'],['/books/japanese-n5/cover/[hint]','page'],['/home','layout']]);
  });
  it('restoration requires published history and advances only the pointer',async()=>{const body={action:'restore',editionId:b.editionId,expectedReleaseVersion:2};expect((await editor.POST(request(body))).status).toBe(404);state.edition={content_hash:b.contentHash,artifact_manifest:b.artifactManifest};expect((await editor.POST(request(body))).status).toBe(200);expect(db.rpc.mock.calls.at(-1)[1]).toMatchObject({p_restore:true,p_expected_release_version:2,p_expected_draft_version:null})});
  it('draft assets are unavailable to anonymous readers; published assets validate manifest hashes',async()=>{const req=new Request(`https://fixture.test/api/books/japanese-n5/${b.editionId}/asset?file=index.html`),params={params:Promise.resolve({edition:b.editionId})};auth.admin.mockResolvedValue({error:'denied',status:401});expect((await asset.GET(req,params)).status).toBe(401);state.edition={content_hash:b.contentHash,artifact_manifest:b.artifactManifest};const res=await asset.GET(req,params);expect(res.status).toBe(200);expect(await res.text()).toContain('data-book-source');expect(res.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');state.edition.content_hash='f'.repeat(64);const stale=await asset.GET(req,params);expect(stale.status).toBe(503);expect(stale.headers.get('cache-control')).toBe('private, no-store');

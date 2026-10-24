@@ -18,7 +18,8 @@ vi.mock('../../lib/AuthContext', () => ({ useAuth: () => ({ user: null, profile:
 vi.mock('../../lib/supabase', () => ({ supabase: {} }));
 
 import HomePage from '../HomePage';
-import HomeLoading from '../../app/(app)/home/loading';
+import GuestLoading from '../../app/(app)/home/(guest)/loading';
+import MemberLoading from '../../app/(app)/home/member/loading';
 import ResumeTile from '../../components/learn/ResumeTile';
 import { GUEST_RESUME_GLYPH, RESUME_GLYPH, learnLanguages } from '../../lib/learnDashboard';
 
@@ -57,12 +58,9 @@ describe('이어 읽기 장식 글자 — 손님은 첫 그림부터', () => {
     expect(glyphs(renderToStaticMarkup(createElement(ResumeTile, { pending: true })))).toEqual([]);
   });
 
-  it('배움 대기 화면(loading.jsx)도 같다 — 손님 골격만 글자', async () => {
-    h.cookies = [];
-    expect(glyphs(renderToStaticMarkup(await HomeLoading()))).toEqual([GUEST_GLYPH_HTML]);
-    h.cookies = [{ name: 'sb-e2e-auth-token', value: 'x' }];
-    expect(glyphs(renderToStaticMarkup(await HomeLoading()))).toEqual([]);
-    h.cookies = [];
+  it('배움 대기 화면(loading.jsx)도 같다 — 손님 판 골격만 글자(판은 middleware가 세션 쿠키 유무로 고른다)', () => {
+    expect(glyphs(renderToStaticMarkup(createElement(GuestLoading)))).toEqual([GUEST_GLYPH_HTML]);
+    expect(glyphs(renderToStaticMarkup(createElement(MemberLoading)))).toEqual([]);
   });
 
   it('배선: 손님 판정 하나로 골격 글자를 고르고, 손님 실제 칸의 글자 경로는 모두 일본어 글자', () => {

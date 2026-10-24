@@ -18,7 +18,8 @@ vi.mock('@tanstack/react-query', () => ({
 import DiscoverLoading from '../../app/(app)/discover/loading';
 import AppLoading from '../../app/(app)/loading';
 import BookReaderSkeleton from '../../components/books/BookReaderSkeleton';
-import HomeLoading from '../../app/(app)/home/loading';
+// 로그인 판의 대기 화면(GUEST-STATIC-001 4단계 — middleware가 세션 쿠키 유무로 판을 고르고, 판마다 자기 대기 화면). 손님 판은 guestLearnSkeleton.test.
+import HomeLoading from '../../app/(app)/home/member/loading';
 import ResumeTile from '../../components/learn/ResumeTile';
 import ParagraphTile from '../../components/learn/ParagraphTile';
 import { ReviewTile } from '../../components/learn/LearnTiles';
@@ -66,7 +67,7 @@ describe('① 산책 대기 화면 — src/app/(app)/discover/loading.jsx', () =
 
 describe('② 배움 — home/loading.jsx와 화면 안 골격이 같은 칸', () => {
   it('home/loading.jsx: 배움 칸 배치 그대로(이어 읽기 · 목표 · 오늘 목표 · 연속 · 단어 복습 · 오늘 문단)', async () => {
-    expect(fs.existsSync(path.join(ROOT, 'src/app/(app)/home/loading.jsx'))).toBe(true);
+    expect(fs.existsSync(path.join(ROOT, 'src/app/(app)/home/member/loading.jsx'))).toBe(true);
     const html = render(await HomeLoading());
     announced(html, '배움 화면');
     expect(html).toContain('<div class="learn-top" aria-hidden="true"><div class="learn-top__title"><h1>배움</h1>');
@@ -210,7 +211,7 @@ describe('⑤ 대기 화면 회귀 — 스타일 · 두 번 바뀜 · 비로그�
   /** 렌더된 골격에서 접두어가 같은 클래스를 모은다. */
   const classes = (html, prefix) => [...new Set([...html.matchAll(/class="([^"]+)"/g)].flatMap(m => m[1].split(/\s+/)).filter(c => c.startsWith(prefix)))];
   it('A1 배움 대기 화면이 칸 CSS를 직접 부른다 — 첫 방문에 페이지 코드보다 먼저 그려져도 스타일이 있다', async () => {
-    expect(read('src/app/(app)/home/loading.jsx')).toContain("import '@/components/learn/learn.css';");
+    expect(read('src/components/learn/HomeSkeleton.jsx')).toContain("import '@/components/learn/learn.css';"); // 두 판의 대기 화면이 이 골격 모듈을 쓴다
     const css = read('src/components/learn/learn.css');
     // learn-order-*는 휴대폰 순서 표식(필요한 것만 규칙이 있다) — 모양 클래스만 본다.
     const used = classes(render(await HomeLoading()), 'learn-').filter(c => !c.startsWith('learn-order-'));
