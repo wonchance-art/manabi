@@ -44,8 +44,9 @@ export function knownWordsMutationOptions({ client, toast, isActiveOwner, track 
     onSuccess: (_, body) => {
       client.setQueryData(['known-words', body.accountId, body.lang], rows => updateKnownWords(rows, body));
       client.setQueryData(['known-words-all', body.accountId], rows => updateKnownWords(rows, body));
-      // known과 복습 보호는 한 DB 트랜잭션이다. 성공 후 모든 실제 출제 소비자도 다시 읽는다.
-      return refreshKnownConsumers(client, body.accountId);
+      // known과 복습 보호는 한 DB 트랜잭션이다. 성공 후 모든 실제 출제 소비자도 다시 읽는다 — 기다리지는 않는다:
+      // 재조회(아는 단어 · 단어장 전체 페이지)를 기다리면 그동안 그 단어가 「진행 중」으로 잠겨 O · X가 안 눌린다(단어 목록 실측).
+      refreshKnownConsumers(client, body.accountId).catch(() => {});
     },
     // 되돌리기는 이 요청이 바꾼 줄만 — 함께 진행 중인 다른 단어의 낙관 반영은 남긴다.
     onError: (error, body, context) => {
