@@ -1019,6 +1019,12 @@
   (middleware rewrite, 주소창 /home) · /books/japanese-n5·n4·n3 쿼리 없는 진입만 손님/로그인 2판 ISR 3600(쿼리 붙으면 동적 — 관리자 미리보기 공유 캐시 차단) ·
   발행 API revalidatePath · 재생성 실패 시 앞 판 유지 · 9갈래 본문 HTML 전후 동일 · account-boundary ⑨에 /home. 남김: 앱 안 교재 링크 대부분이 `?edition=`이라
   교재 정적 이득은 쿼리 없는 진입에 한정 — 발행 판본 링크에서 edition 생략은 이어 읽기 판본 고정 의미 검토 뒤 5단계 후보.
+  → **#1555 squash `71423e35`(21:11, 운영 4갈래 · 교재 2갈래 두 번째 요청 HIT 0.15~0.37s, ?edition= private 유지, 오류 0)**.
+- **GUEST-STATIC-001 5단계 (2026-10-24 KST, 권장대로)**: edition 생략안(a)은 배제 — 발행 · 복원 뒤 새로고침 · 북마크가 다른 판본을 열고 진도 · 답안(판본 키)이
+  비어 보이며 safeBookReturn 계약이 깨짐. 채택 (d): `?edition=<저장소 판본 id>` 하나뿐인 요청을 판본별 판(/books/<책>/edition/<id>/<guest|member>, ISR 3600)으로 —
+  주소의 판본 그대로(학습자 43경우 서버 DOM 동일). 관리자 미리보기는 `&preview=1` 표식으로 동적 유지(표식 없는 옛 미발행 미리보기 주소는 안내로 — 관리자만).
+  VIEWER-PAGED-RENDER-001: 원인 = 다단 안 직속 flex 항목 ~2,700개의 PrePaint. A안(줄 상자) 300줄 INP −23~31% · 쪽 경계 뒤 문단 9~15px 내려감 · 쪽 수 +1 →
+  **오너 목업 승인 대기**(실험 커밋 로컬 `claude/wip/paged-render`). B안(쪽 ±1만 그리기) 찾기 · 화면 읽기 손실로 새 범위, C안(content-visibility) 배제.
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로
   /api/suggestions/today와 공용화. 지역학은 발견에서만 내림(/studies · 콘텐츠 보존). 비로그인 서재 → 「서가에서 읽어 보기」.
