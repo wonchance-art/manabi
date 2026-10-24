@@ -3951,14 +3951,14 @@ export default function ViewerPage() {
               ));
               return (
                 <article key={card.key} className="reader-pattern" data-picked={cards.length > 1 && card === picked ? '' : undefined}>
-                  {/* 2열: 공식 | ☆ / 뜻 | 급수 딱지 — 딱지는 ☆ 바로 아래 가운데(오너 10-24 「뜻 오른쪽 끝, 별 중앙에 나란하게」). */}
+                  {/* 2열: 공식 | 급수 딱지 / 뜻 | ☆ — 두 칸은 같은 세로축 가운데(오너 10-24 「별 중앙에 나란하게」 → 「서로 자리를 바꿔」). */}
                   <div className="reader-pattern__head">
                     {cards.length > 1
                       ? <button type="button" className="reader-pattern__formula" aria-pressed={card === picked} aria-label={`${card.pattern} — ${vt('문장에 표시')}`} onClick={() => setSentencePatternPick(i)}>{formula}</button>
                       : <p className="reader-pattern__formula" aria-label={card.pattern}>{formula}</p>}
-                    {slug && canSave && <StatusPill status={patternStatus(savedPatterns ?? null, slug)} onSave={() => savePattern(card.entry)} busy={patternSaving === slug} saveLabel={`${card.pattern} — ${vt('패턴 담기')}`} />}
-                    {card.ko && <p className="reader-pattern__ko">{card.ko}</p>}
                     {tag && <span className="reader-pattern__tag">{tag}</span>}
+                    {card.ko && <p className="reader-pattern__ko">{card.ko}</p>}
+                    {slug && canSave && <StatusPill status={patternStatus(savedPatterns ?? null, slug)} onSave={() => savePattern(card.entry)} busy={patternSaving === slug} saveLabel={`${card.pattern} — ${vt('패턴 담기')}`} />}
                   </div>
                   {card.note && <p className="reader-pattern__warn">{card.note}</p>}
                   {card.ex && (

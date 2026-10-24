@@ -248,7 +248,7 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 .reader-sentence__group {display:flex;flex-direction:column;gap:8px;}
 .reader-sentence__heading {margin:0;font-size:.78125rem;font-weight:700;letter-spacing:.04em;line-height:1.4;color:var(--reader-muted);}
 .reader-sentence__heading span {margin-left:6px;font-weight:500;color:var(--reader-faint);}
-/* 패턴 카드 — 머리(공식 칸 | 상태 칸 / 뜻 | 급수) · 주의 · 예문 줄 · 목록 링크. */
+/* 패턴 카드 — 머리(공식 칸 | 급수 / 뜻 | 상태 칸) · 주의 · 예문 줄 · 목록 링크. */
 .reader-pattern {padding:12px 8px 0 16px;overflow:hidden;}
 .reader-pattern--pending {min-height:180px;padding:0;}
 .reader-pattern[data-picked] {border-color:var(--reader-rose);}
@@ -261,7 +261,7 @@ button.reader-pattern__formula {cursor:pointer;min-height:44px;}
 .reader-pattern__cell--slot {padding:2px 2px;color:var(--reader-muted);}
 .reader-pattern__cell--fixed {padding:2px 8px;border-radius:4px;background:var(--reader-card);font-size:1rem;font-weight:700;}
 .reader-pattern__plus {font-size:.75rem;color:var(--reader-faint);}
-.reader-pattern__tag {margin-top:4px;padding:2px 6px;border-radius:4px;background:var(--reader-chip);font-size:.71875rem;font-weight:700;line-height:1.4;color:var(--reader-muted);}
+.reader-pattern__tag {padding:2px 6px;border-radius:4px;background:var(--reader-chip);font-size:.71875rem;font-weight:700;line-height:1.4;color:var(--reader-muted);}
 .reader-pattern__ko {margin:4px 0 0;font-size:.9375rem;line-height:1.55;color:var(--reader-ink);}
 .reader-pattern__warn {position:relative;margin:6px 8px 0 0;padding-left:12px;font-size:.8125rem;line-height:1.55;color:var(--reader-warn);}
 .reader-pattern__warn::before {content:"";position:absolute;left:0;top:.55em;width:5px;height:5px;border-radius:50%;background:currentColor;}
