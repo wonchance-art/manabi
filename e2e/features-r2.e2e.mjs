@@ -155,9 +155,9 @@ async function pickSentence(page) {
   }, SENTENCE);
   await page.evaluate(() => document.fonts.ready);
   await page.locator('.line-pick').first().click();
-  // 좌측 패널은 넓은 화면의 aside와 좁은 화면의 시트 양쪽에 같은 내용을 렌더한다 —
-  // 레이아웃에 의존하지 않도록 첫 번째만 집는다.
-  await visible(page.getByRole('button', { name: '이 문장 받아쓰기' }).first(), 'dictation entry');
+  // [문장] 탭의 🎧는 없앴다(오너 10-24) — 지정 문장 받아쓰기는 「학습」 창의 「선택 문장 받아쓰기」 한 곳이다.
+  await page.getByRole('button', { name: '학습', exact: true }).click();
+  await visible(page.getByRole('button', { name: /^선택 문장 받아쓰기/ }).first(), 'dictation entry');
 }
 
 before(async () => {
@@ -182,7 +182,7 @@ test('받아쓰기: 지정 문장을 가린 채 입력·채점하고 diff와 원
     await context.route('**/api/analyze', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [{ sequence: ['a', 'b'], dictionary: { a: { text: 'Hello', base_form: 'hello', meaning: '안녕하세요' }, b: { text: 'world', base_form: 'world', meaning: '세계' } } }] }) }));
     await page.goto('/viewer/92001', { waitUntil: 'domcontentloaded' });
     await pickSentence(page);
-    await page.getByRole('button', { name: '이 문장 받아쓰기' }).first().click();
+    await page.getByRole('button', { name: /^선택 문장 받아쓰기/ }).first().click();
     const dialog = page.getByRole('dialog', { name: '받아쓰기' });
     await visible(dialog.getByPlaceholder('들리는 대로 입력해 보세요'), 'dictation input');
     assert.equal(await dialog.getByText(SENTENCE, { exact: false }).count(), 0, 'original stays hidden before reveal');

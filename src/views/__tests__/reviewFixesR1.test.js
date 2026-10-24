@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { sliceBetween } from '../../lib/__tests__/helpers/sliceBetween.js';
 
 const read = (p) => fs.readFileSync(path.join(process.cwd(), p), 'utf8');
 
@@ -43,9 +44,11 @@ describe('코드 리뷰 R1 수리 회귀', () => {
     expect(fmt).toContain('function escapeHtml');
     expect(fmt).toMatch(/return escapeHtml\(cleaned\)/);
     const viewer = read('src/views/ViewerPage.jsx');
-    // 문법 해설 결과도 formatDetail을 통과해야 한다(원문 직접 삽입 금지)
-    expect(viewer).toMatch(/__html: formatDetail\(grammar\.result\)/);
-    expect(viewer).not.toContain('__html: grammar.result');
+    // [문장] 탭(목업 U 4판)은 번역 · 패턴(AI 응답)을 React 글자로만 그린다 — dangerouslySetInnerHTML 자체가 없다.
+    const panel = sliceBetween(viewer, 'const renderSentencePanel = () => {', 'const leftPanelContent =');
+    expect(panel).not.toContain('dangerouslySetInnerHTML');
+    // 다른 AI 출력(단어 설명)은 여전히 formatDetail을 통과한다(원문 직접 삽입 금지)
+    expect(viewer).toMatch(/__html: formatDetail\(wordDetail\.detail\)/);
   });
 
   it('V-04 LessonsPage: level은 key/label 모두 받고 미지 값은 전체로 폴백한다', () => {

@@ -11,6 +11,8 @@ import GuestGrammarReview from '@/views/GuestGrammarReview';
 // 옛 교재 챕터 주소는 관리자 보관함으로만 열린다 — 학습자 링크는 null(VIEWER-R0-BUGS-001 버그 3).
 import { learnerHref } from '@/lib/bookNavigation';
 import { LANG_NAME_KO } from '@/lib/constants';
+import { isPatternSlug } from '@/lib/sentencePattern';
+import { buildPatternReviewItem, loadBunkeiEntries, patternUpcomingRow } from '@/lib/patternReview';
 
 export const metadata = { title: '문법 복습' };
 export const dynamic = 'force-dynamic';
@@ -85,7 +87,8 @@ function toDrillItem(row, registries) {
 }
 
 /** 큐 행 → 세션 아이템 (챕터·퀴즈 조립, 퀴즈 불가 챕터는 null) */
-function toItem(row, registries) {
+function toItem(row, registries, bunkei) {
+  if (isPatternSlug(row.slug)) return buildPatternReviewItem(row, bunkei.get(row.lang)); // 뷰어 [문장] 탭에서 담은 패턴(bk:)
   if (drillIdFromQueueSlug(row.slug)) return toDrillItem(row, registries);
   if (typeof row.slug === 'string' && row.slug.startsWith('rt:')) return toReadingItem(row); // 독해 분기
   const ref = registries.get(row.lang);
@@ -200,6 +203,10 @@ export default async function Page() {
   ]);
   if (dueError || upcomingError) return <div className="page-container"><section className="manabi-inline-state" role="alert"><h1>문법 복습을 불러오지 못했어요.</h1><p>연결을 확인하고 다시 시도해 주세요. 복습 기록은 그대로 남아 있어요.</p><a href="/review/grammar">다시 시도 →</a></section></div>;
   await prepare([...(dueRows || []), ...(upcomingRows || [])]);
+  // 담은 패턴(bk:)은 문형 사전에서 문항을 만든다 — 그런 행이 있는 언어만 사전을 연다.
+  const bunkei = new Map();
+  await Promise.all([...new Set([...(dueRows || []), ...(upcomingRows || [])].filter((row) => isPatternSlug(row.slug)).map((row) => row.lang))]
+    .map(async (lang) => { bunkei.set(lang, await loadBunkeiEntries(lang)); }));
 
   // ── 잔존 인트로 레벨(OT/A0) 큐 방어 — 표시하지 않고 본인 행을 삭제(fire-and-forget) ──
   const isIntroRow = (row) => {
@@ -214,10 +221,11 @@ export default async function Page() {
       .then(() => {}, () => {});   // 실패해도 복습 진행을 막지 않음
   }
 
-  const items = (dueRows || []).map(row => toItem(row, registries)).filter(Boolean);
+  const items = (dueRows || []).map(row => toItem(row, registries, bunkei)).filter(Boolean);
 
   // 예정 큐 — 제목만 필요 (퀴즈 조립 없이 가볍게)
   const upcoming = (upcomingRows || []).map(row => {
+    if (isPatternSlug(row.slug)) return patternUpcomingRow(row, bunkei.get(row.lang));
     const drillId = drillIdFromQueueSlug(row.slug);
     if (drillId) {
       const ref = registries.get(row.lang);

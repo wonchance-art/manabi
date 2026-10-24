@@ -84,7 +84,7 @@ describe('배선 — LevelListPage', () => {
     expect(save).toContain('timer = setTimeout(remember, 200);');
   });
   it('문형도 기준 칸으로 — 주제 칩으로 건너뛴 뒤 돌아와도 세로 위치가 아니라 같은 문형에', () => {
-    expect(page).toContain('<li key={e.key} className="lv-pat" data-lv-pat={e.key}>');
+    expect(page).toContain('<li key={e.key} className="lv-pat" data-lv-pat={e.key} id={e.anchor}>');
     expect(sliceBetween(page, 'const anchor = () => {', 'const remember = () => {')).toContain("listRef.current?.querySelectorAll('[data-lv-card], [data-lv-pat]')");
     expect(sliceBetween(page, 'const anchor = () => {', 'const remember = () => {')).toContain('key: cards[low].dataset.lvCard ?? cards[low].dataset.lvPat');
     expect(page).toContain('listRef.current.querySelector(`[data-lv-card="${CSS.escape(place.key)}"], [data-lv-pat="${CSS.escape(place.key)}"]`)');

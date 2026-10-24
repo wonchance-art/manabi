@@ -37,13 +37,13 @@ describe('뷰어 점검 후속 — 기능 버그 배선', () => {
     expect(v).toContain('useEffect(()=>{if(!paceRunning&&pacerFocusRef.current){pacerFocusRef.current=false;setFocusMode(false);}},[paceRunning,setFocusMode]);');
   });
 
-  it('손님 문장 고르기는 재분석 요청 없이 자료 토큰으로 단어 목록을 만들고, [더 쉽게] · [자세히]는 로그인 사용자에게만', () => {
+  it('손님 문장 고르기는 재분석 요청 없이 자료 토큰으로 단어 목록을 만든다([더 쉽게] · [자세히]는 [문장] 탭 개편으로 없다)', () => {
     const v = viewer();
     const run = sliceBetween(v, 'const runSelectedSentence = async', 'explainSelectedSentenceRef.current = runSelectedSentence;');
     const guest = sliceBetween(run, 'if (!user) {', 'return;');
     expect(guest).toContain('collectDragTokens(');
     expect(run.indexOf('if (!user) {')).toBeLessThan(run.indexOf("await fetch(materialLang === 'Korean'"));
-    expect(v).toContain('{user && <div className="reader-sentence__actions">');
+    expect(v).not.toContain('reader-sentence__actions');
     // 실패는 각 칸에서: 번역 = 「번역을 가져오지 못했어요」 + 다시 시도, 단어 목록 = 빈 목록 문구(오류 토스트 둘 겹침 0)
     expect(run).toContain('SENTENCE_TX_FAILED');
     expect(run).not.toContain("toast('단어 분석을 가져오지 못했어요.");

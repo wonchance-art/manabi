@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { gradeDictation, normalizeDictation } from '../dictation.js';
+import { sliceBetween } from './helpers/sliceBetween.js';
 
 // 계약: 받아쓰기 채점(#1077-6) — 정규화 규칙은 결정적, diff는 diffChars 위임.
 
@@ -76,12 +77,16 @@ describe('받아쓰기 배선 계약', () => {
     expect(panel).toMatch(/!revealed && \(\s*<button[^>]*onClick=\{\(\) => setRevealed\(true\)\}[^>]*>원문 보기<\/button>/u);
   });
 
-  it('뷰어의 두 진입 경로가 같은 대상 상태(dictationSentence)로 모인다', async () => {
+  it('뷰어의 진입 경로(학습 메뉴 · 추천 고르기)가 같은 대상 상태(dictationSentence)로 모인다', async () => {
     const viewer = await read('src/views/ViewerPage.jsx');
     expect(viewer).toContain('DictationPanel');
     expect(viewer).toContain('sentence={dictationSentence}');
-    expect(viewer).toContain('setDictationSentence(leftPanelText)'); // 지정 문장 🎧
+    expect(viewer).toContain('setDictationSentence(pickedSentence.text)'); // 학습 메뉴 「선택 문장 받아쓰기」
     expect(viewer).toContain('setDictationSentence(text)');          // 추천 고르기
+    // [문장] 탭 원문 옆 🎧는 없앴다(오너 10-24 「단어 탭, 문장 탭 양쪽에서 헤드폰 모양이랑 받아쓰기는 제거」).
+    expect(viewer).not.toContain('setDictationSentence(leftPanelText)');
+    const panel = sliceBetween(viewer, 'const renderSentencePanel = () => {', 'const leftPanelContent =');
+    expect(panel).not.toContain('name="headphones"');
   });
 
   it('추천 고르기는 dictationPick 엔진에 위임하고 목록에 원문을 뿌리지 않는다', async () => {
