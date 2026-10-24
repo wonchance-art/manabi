@@ -2585,6 +2585,26 @@ a.viewer-badge:hover {
 .viewer-h3 + .line-break {
   margin-bottom: 4px;
 }
+/* 원문 한 줄의 상자(VIEWER-PAGED-RENDER-001 A안, 오너 승인 2026-10-25 KST, ViewerPage) — 상자는 혼자 한 flex 줄(100%)을
+   차지하고, 안에서 본문과 같은 간격(gap: inherit — 본문 상자의 gap) · 기준선 정렬로 감는다. 줄 사이 간격도 같다(예전: 낱말 줄 ·
+   간격 · 줄바꿈 칸(0) · 간격 → 지금: 상자 안 낱말 줄 · 간격 · 줄바꿈 칸 / 상자 사이 간격). min-width 0 — 긴 낱말이 상자를 넓혀
+   다른 줄의 감김을 바꾸지 않게(예전에도 넘친 낱말만 넘쳤다).
+   왜: 쪽 넘김(다단)은 그리기 준비(PrePaint)가 단마다 본문 상자의 직속 항목을 모두 훑는다 — 낱말 수천 개 → 줄 수백 개
+   (300줄 390 · CPU 4배: PrePaint 127 → 12ms).
+   보이는 변화(승인됨): 스크롤 보기 · 쪽 안에 들어가는 문단 · 768은 화소까지 같다. 쪽 넘김에서 쪽 경계에 걸쳐 나뉜 문단 바로 다음
+   문단만 (줄 간격 − 그 단 끝 남은 자리)만큼, 최대 줄 간격 하나(≈9~15px) 내려간다 — Chromium의 중첩 flex 조각나기가 끊긴 자리의
+   줄 간격을 다음 단 상자에 이월한다. 그래서 쪽 수가 조금 늘 수 있다(중국어 긴 문단 390: 37 → 38쪽).
+   쪽에 걸친 문단은 그대로 쪽을 넘어 나뉜다 — 이 상자에 break-inside: avoid를 걸지 말 것(문단이 통째로 다음 쪽으로 밀린다).
+   헤딩 클래스(.viewer-h1~3 — display:contents)를 함께 달기 때문에 상자 규칙은 더 구체적인 선택자로 둔다. */
+.reader-area > .reader-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  align-items: baseline;
+  flex: 0 1 100%;
+  min-width: 0;
+  gap: inherit;
+}
 
 .word-token {
   display: inline;

@@ -4617,13 +4617,19 @@ export default function ViewerPage() {
               return m;
             })() : null;
 
+            // 원문 한 줄 = 줄 상자 하나(.reader-line — 안쪽 flex 줄바꿈, VIEWER-PAGED-RENDER-001). 예전에는 display:contents라
+            // 낱말 수천 개가 본문 상자의 직속 flex 항목이었고, 쪽 넘김(다단)에서는 낱말을 누를 때마다 그리기 준비(PrePaint)가
+            // 「단 수 × 직속 항목 수」만큼 돌았다(300줄 390 · CPU 4배 실측: 탭 한 번 약 110ms, 스크롤 보기 7ms). 줄 상자는 혼자 한
+            // flex 줄(100%)을 차지하고 안에서 같은 간격 · 기준선 정렬로 감는다(index.css .reader-line). 스크롤 보기 · 짧은 문단은
+            // 화소까지 같고, 쪽 넘김에서 쪽 경계에 걸친 문단 다음 문단만 최대 줄 간격 하나 내려간다(오너 승인 2026-10-25 KST).
+            // 낱말은 이제 본문 상자의 손자다 — 본문을 훑는 코드는 직속 자식(.children · :scope >)이 아니라 [data-source-token]으로 찾는다.
             return (
-              <span key={gi} className={hClass || undefined} style={{ display: 'contents' }}>
+              <div key={gi} className={`reader-line${hClass ? ` ${hClass}` : ''}`}>
                 {lineTokenIds.slice(startIdx).map((id, ti) =>
                   renderToken(id, headOf(id, ti), !!pickedIds?.has(id), paceSlices?.get(id) || null)
                 )}
                 {gi < lineGroups.length - 1 && <div className="line-break" />}
-              </span>
+              </div>
             );
           });
         })()}
