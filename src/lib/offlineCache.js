@@ -288,6 +288,42 @@ export async function pinnedMaterialIds(account = null) {
 }
 
 /**
+ * 끊긴 서재의 「이 기기에 받아 둔 자료」(OFFLINE-SWEEP-001 P1, 2026-10-24 KST) — 지금 계정(account)이 이 기기에 남긴 자료 중
+ * 뷰어 폴백(getCachedMaterial)이 실제로 여는 것만 고른다. 계정 경계(OFFLINE-ACCOUNT-SCOPE-001)는 읽기 판정보다 좁힌다:
+ *  · 계정 키 기록은 그 계정 것만 — 다른 계정의 기록은 숨김(materialEntryVisible)이고, 손님 기록(owner null · 공개 자료)은 열 수는 있어도
+ *    이 계정이 받아 둔 것이 아니라 목록에 올리지 않는다.
+ *  · 이 판 이전 기록(계정 없음)은 자료가 스스로 말해 주는 이 계정의 자료(owner_id)만.
+ *  · 같은 자료에 계정 키 기록이 있으면 그것이 먼저다(visibleRaw 순서) — 자동 기록은 7일(TTL) 안, 받아 둔 자료는 TTL 밖(핀 계약 그대로).
+ * 손님(account 없음)은 빈 목록. 받아 둔 자료가 먼저, 그다음 최근에 남긴 순. 본문은 싣지 않는다(목록 한 줄에 필요한 것만).
+ * @returns {Promise<Array<{id, title: string, language: string|null, pinned: boolean, savedAt: number}>>}
+ */
+export async function listDeviceMaterials(account, { now = Date.now() } = {}) {
+  const who = accountOf(account);
+  if (who === null) return [];
+  try {
+    const all = await getAllEntries(STORE_MATERIALS);
+    const byKey = new Map(all.map((e) => [e.id, e]));
+    const rows = [];
+    for (const entry of all) {
+      if (!materialEntryVisible(entry, who)) continue;
+      const mine = own(entry) ? entry.owner === who : entry.material.owner_id === who;
+      if (!mine) continue;
+      const id = materialIdOf(entry), accountKey = materialKey(id, who);
+      if (entry.id !== accountKey && materialEntryVisible(byKey.get(accountKey), who)) continue; // 계정 키 기록이 먼저 열린다
+      if (!entry.pinned && !(now - entry.savedAt <= TTL_MS)) continue; // 지난 자동 기록은 폴백도 열지 않는다
+      const { material } = entry;
+      rows.push({
+        id, title: material.title || '', pinned: !!entry.pinned, savedAt: entry.savedAt || 0,
+        language: material.document_json?.language || material.processed_json?.metadata?.language || null,
+      });
+    }
+    return rows.sort((a, b) => (b.pinned - a.pinned) || (b.savedAt - a.savedAt));
+  } catch {
+    return [];
+  }
+}
+
+/**
  * 계정이 바뀌면(AuthContext — accountQueryCache와 같은 판정) 다시 받으면 되는 「뷰어 자동 캐시」 중 새 계정(next: id · null=손님)이
  * 열 수 없는 기록만 지운다. 사용자가 직접 받아 둔 자료(핀)와 단어장 스냅샷은 지우지 않고 숨긴다 — 읽기 판정(materialEntryVisible ·
  * 계정 키 스냅샷)이 B · 손님에게 막고, A가 다시 로그인하면 그대로 보인다(데이터 보존 — 오너 결정 2026-10-17 KST).

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anatomy-studio-v623016202b673b6a';
+const CACHE_NAME = 'anatomy-studio-vbdd053027c5755a9';
 
 // 설치 때 받는 것은 오프라인 대체 화면 하나와 그 화면이 쓰는 정적 파일뿐이다(SW-PRECACHE-001, 2026-10-23 KST 현장 감사 F7).
 // 예전에는 '/' · /home · /vocab · /materials · /auth까지 받아 새 방문자(그리고 배포마다 워커를 새로 까는 재방문자) 한 명이
@@ -24,6 +24,15 @@ async function precacheOffline(cache) {
   const response = await cache.match(OFFLINE_URL);
   const html = response ? await response.text() : '';
   await Promise.all(offlineAssets(html).map((asset) => cache.add(asset).catch(() => {})));
+}
+
+// 끊긴 채 연 뷰어 문서(OFFLINE-SWEEP-001 P1, 2026-10-24 KST): 서재에서 연 주소는 돌아갈 곳(?returnTo=/materials?restoreY=…)이 붙어
+// 들를 때마다 달라 같은 자료의 받아 둔 문서와 질의가 어긋났다 — 끊긴 서재의 「이 기기에 받아 둔 자료」를 눌러도 /offline이 떴다.
+// 뷰어 문서는 경로의 자료 id만 서버가 쓰고(제목) 본문은 브라우저가 기기 사본으로 그리므로, 같은 경로의 받아 둔 문서를 질의 없이 찾는다.
+// 다른 화면은 질의가 서버 그림을 바꿀 수 있어(서재 목록 조건 등) 그대로 정확히 맞춘다.
+function viewerDocument(request, url) {
+  if (url.origin !== self.location.origin || !/^\/viewer\/[^/]+\/?$/.test(url.pathname)) return null;
+  return caches.match(request, { ignoreSearch: true });
 }
 
 const STATIC_EXTENSIONS = /\.(js|css|woff2?|ttf|otf|svg|png|jpg|ico|webp)$/;
@@ -110,7 +119,9 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match(OFFLINE_URL)))
+        .catch(() => caches.match(request)
+          .then((cached) => cached || viewerDocument(request, url))
+          .then((cached) => cached || caches.match(OFFLINE_URL)))
     );
     return;
   }

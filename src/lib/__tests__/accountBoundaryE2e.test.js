@@ -47,7 +47,15 @@ describe('계정 경계 e2e 전제', () => {
     expect(materials).toMatch(/role="menuitemcheckbox"[\s\S]{0,200}className=\{`mat-pin/);
     expect(materials).toContain('<span className="tag" title="받아둠 — 연결이 없어도 열려요">받아둠</span>');
     expect(materials).toContain("'아직 보관된 개인 자료가 없어요.'");
-    expect(read('e2e/account-boundary.e2e.mjs').match(/^test\('/gm)).toHaveLength(9);
+    expect(read('e2e/account-boundary.e2e.mjs').match(/^test\('/gm)).toHaveLength(10);
+    // ⑩ 끊긴 서재(OFFLINE-SWEEP-001 P1) — 기기 사본 칸의 제목 · 행 · 빈 안내 · 실패 줄, 보통 서재의 목록 칸으로 돌아옴.
+    const device = read('src/components/library/DeviceShelf.jsx');
+    expect(device).toContain('<h2 id="shelf-device-title">이 기기에 받아 둔 자료</h2>');
+    expect(device).toContain('<section className="shelf-device"');
+    expect(device).toContain("{row.pinned?'받아둠':'최근 연 자료'}");
+    expect(device).toContain('아직 이 기기에 받아 둔 자료가 없어요.');
+    expect(device).toContain('<p>서재 목록을 불러오지 못했어요. 연결되면 다시 불러와요.</p>');
+    expect(read('src/components/library/LibraryShelf.jsx')).toContain('<section className="shelf-list-section"');
     // ⑨ 문서 bfcache 복원(GUEST-STATIC-001 1단계) — 정적 화면에서 A의 흔적은 머리말 내 계정 단추(title = 프로필 이름)와 내 정보의 메일이다.
     expect(read('src/components/Layout.jsx')).toContain('title={profile?.display_name || user.email}');
     expect(read('src/views/MyPage.jsx')).toContain('{user.email}');

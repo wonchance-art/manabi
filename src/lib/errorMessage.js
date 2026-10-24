@@ -40,13 +40,21 @@ const SERVICE_CONFIG_MESSAGE = '서비스 설정에 문제가 있어요. 관리�
 // 실패 문장 뒤에 붙는 한 문장판(failureMessage — 표준 §3 「두 문장까지」, OFFLINE-SWEEP-001 P5).
 const SERVICE_CONFIG_CAUSE = '서비스 설정 문제라 관리자에게 문의해 주세요.';
 
+// 연결 끊김 표지 — 아래 안내 표와 isNetworkError가 같은 판정을 쓴다(끊긴 서재가 기기 사본 목록으로 바꿀지 볼 때, OFFLINE-SWEEP-001 P1).
+const NETWORK_PATTERN = /failed to fetch|network|ERR_NETWORK|connection|\boffline\b/i;
+/** 연결이 끊겨 실패했나(응답을 못 받음) — 서버가 돌려준 오류(권한 · 없음 · 서버 오류)는 아니다. */
+export function isNetworkError(err) {
+  const technical = typeof err === 'string' ? err : (err?.message || '');
+  return NETWORK_PATTERN.test(technical);
+}
+
 const PATTERNS = [
   // 서비스 설정(결제 · 크레딧) — 용량 패턴보다 먼저 본다: 같은 문구가 429 · RESOURCE_EXHAUSTED로 와도 「붐빔」이 아니다.
   { match: SERVICE_CONFIG_PATTERN, user: SERVICE_CONFIG_MESSAGE, cause: SERVICE_CONFIG_CAUSE },
 
   // 네트워크 — 「offline」은 대화 턴(conversationClient)이 연결 실패를 status 0으로 감싼 표지(OFFLINE-SWEEP-001: 새 대화 시작이
   // 끊긴 채 「문제가 발생했어요」로 떴다).
-  { match: /failed to fetch|network|ERR_NETWORK|connection|\boffline\b/i,
+  { match: NETWORK_PATTERN,
     user: '인터넷 연결을 확인해 주세요. 잠시 후 다시 시도하면 대개 해결돼요.',
     cause: '인터넷 연결을 확인해 주세요.',
     retry: true },
