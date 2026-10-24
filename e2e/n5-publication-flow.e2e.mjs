@@ -9,7 +9,8 @@ assert(['localhost','127.0.0.1'].includes(new URL(base).hostname),'synthetic aut
 const out=process.env.QA_OUT||'.qa/runs/n5-publication-flow/browser';fs.mkdirSync(out,{recursive:true});
 const oldId='7f572327dc67893e9453246c',id='8a8c1c1fd452773810abaf8c';
 const bundles=Object.fromEntries([oldId,id].map(key=>[key,JSON.parse(fs.readFileSync(`src/content/textbookEditions/${key}/bundle.json`))]));
-const path=(anchor='cover')=>`/books/japanese-n5?edition=${id}#${anchor}`;
+// 관리자 미리보기 주소는 표식(&preview=1)을 붙인다 — 판본 하나뿐인 주소는 판본별 정적 판(미리보기 없음, GUEST-STATIC-001 5단계)이다.
+const path=(anchor='cover')=>`/books/japanese-n5?edition=${id}&preview=1#${anchor}`;
 const report={scope:'Synthetic UI only; PostgreSQL/API semantics are covered by publicationFlow.test.js',engines:[]};
 const backendPort=48996,backend=revisionBackend({port:backendPort,app:base});
 await backend.start();

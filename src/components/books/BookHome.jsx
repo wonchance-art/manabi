@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { libraryReaderHref } from '@/lib/libraryReturn';
 import { lessonGroups } from '@/lib/bookNavigation';
 import { bookResume } from '@/lib/webNavigation';
-import { BOOK_ID, bookHref as textbookHref } from '@/lib/textbook/contract';
+import { BOOK_ID, bookHref as textbookHref, previewBookHref } from '@/lib/textbook/contract';
 import { clearResumeHint, resumeHintScript } from './bookEntryGate';
 import BookCover from './BookCover';
 import LibrarySaveButton from '@/components/library/LibrarySaveButton';
@@ -24,7 +24,8 @@ export default function BookHome({ book, preview=false, progress, hasProgress = 
   const bookHref = (edition, page = 'cover') => textbookHref(edition, page, bookId);
   const [ownAll, setOwnAll] = useState(false);
   const showAll = onShowAll ? !!heldAll : ownAll, setShowAll = onShowAll || setOwnAll;
-  const readerHref = page => returnTo ? libraryReaderHref(bookHref(book.edition, page), returnTo) : bookHref(book.edition, page);
+  // 미리보기(관리자 · 발행 전)에서 여는 교재 주소는 표식을 붙여 동적 화면에 남긴다(previewBookHref — 판본별 정적 판에는 미리보기가 없다). 학습자 주소는 그대로.
+  const readerHref = page => { const href = returnTo ? libraryReaderHref(bookHref(book.edition, page), returnTo) : bookHref(book.edition, page); return preview ? previewBookHref(href) : href; };
   const resume = bookResume(book, progress, hasProgress);
   const current = resume.lesson;
   const groups = lessonGroups(book.lessons);

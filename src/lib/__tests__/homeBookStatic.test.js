@@ -1,7 +1,7 @@
 // GUEST-STATIC-001 4단계 — 배움(/home)과 교재 첫 화면(/books/<책>, 쿼리 없음)은 쿠키 유무 판(ISR 3600). 갈래는 middleware가 나눈다:
 //  · /home        → 세션 쿠키 이름 유무(손님 /home · 로그인 /home/member) × 간체 힌트(/sc) — 계정 데이터 없음, 로그인한 모두가 같은 판
-//  · /books/<책>  → 쿼리가 하나라도 있으면 동적 화면 그대로(관리자 미리보기 ?edition=<미발행>은 계정별 응답 — 공유 캐시에 넣으면 미발행 원고가 손님에게 나간다),
-//                   쿼리 없음만 표지 판(/books/<책>/cover/guest · member)
+//  · /books/<책>  → 쿼리 없음은 표지 판(/books/<책>/cover/guest · member). `?edition=<저장소 판본>` 하나뿐이면 판본별 판(5단계 — bookEditionStatic.test.js).
+//                   그 밖의 쿼리는 동적 화면 그대로(관리자 미리보기 ?edition=<미발행>&preview=1은 계정별 응답 — 공유 캐시에 넣으면 미발행 원고가 손님에게 나간다)
 //  · 판 경로는 matcher 밖(2단계 실측: rewrite된 요청이 middleware를 다시 지나 되돌리면 307 루프). 판은 쿠키 · 헤더 · searchParams를 읽지 않는다(staticSegments.test.js).
 import { describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
@@ -29,8 +29,8 @@ describe('교재 첫 화면 갈래(middleware)', () => {
       expect(rewrite(await run(`/books/${book}`, 'sb-e2e-auth-token-code-verifier=x'))).toBe(`/books/${book}/cover/guest`);
     }
   });
-  it('쿼리가 하나라도 있으면 동적 화면 그대로 — 미리보기 · 참고 자료 · 돌아가기 · 그 밖(utm 등), 손님 · 로그인 모두', async () => {
-    for (const query of ['?edition=8a8c1c1fd452773810abaf8c', '?edition=000000000000000000000000', '?reference=1', '?returnTo=%2Fmaterials', '?utm_source=x', '?edition=']) {
+  it('판본 하나뿐(5단계 판본별 판) 말고 쿼리가 있으면 동적 화면 그대로 — 미리보기 · 참고 자료 · 돌아가기 · 모르는 판본 · 그 밖(utm 등), 손님 · 로그인 모두', async () => {
+    for (const query of ['?edition=8a8c1c1fd452773810abaf8c&preview=1', '?edition=000000000000000000000000', '?reference=1', '?returnTo=%2Fmaterials', '?utm_source=x', '?edition=']) {
       for (const cookie of [undefined, SESSION]) {
         const res = await run(`/books/japanese-n5${query}`, cookie);
         expect(rewrite(res), query).toBeNull();
@@ -45,9 +45,9 @@ describe('교재 첫 화면 갈래(middleware)', () => {
 });
 
 describe('판 경로는 matcher 밖 · middleware는 쿠키를 쓰지 않는다', () => {
-  it('판 경로(/home/* · /books/*/cover/*)는 matcher에 없다 — 다시 지나며 되돌리지 않게', () => {
+  it('판 경로(/home/* · /books/*/cover/* · /books/*/edition/*)는 matcher에 없다 — 다시 지나며 되돌리지 않게', () => {
     expect(config.matcher).toContain('/home');
-    expect(config.matcher.filter(m => m.startsWith('/home/') || m.includes('/cover'))).toEqual([]);
+    expect(config.matcher.filter(m => m.startsWith('/home/') || m.includes('/cover') || m.includes('/edition'))).toEqual([]);
   });
   it('미리 구운 판 HTML(판 경로로 그림)과 첫 그림(주소 /home · /books/…)이 같은 메뉴를 가리킨다 — aria-current 하이드레이션 불일치 방지', () => {
     for (const p of ['/home', '/home/member', '/home/sc', '/home/member/sc', '/books/japanese-n5', '/books/japanese-n5/cover/member']) expect(navigationOwner(p), p).toBe('/home');
@@ -74,7 +74,9 @@ describe('판 — 쿠키 · searchParams를 읽지 않는 ISR 3600, 미리보기
       expect(page).not.toMatch(/searchParams|next\/headers|force-dynamic/);
     }
     const cover = code('src/components/books/BookCoverStatic.jsx');
-    expect(cover).toContain('publishedReadingWith(db, undefined, false, bookId)');
+    // 표지 판은 edition 없이(= 발행 포인터의 판본), 판본별 판(5단계)은 주소의 판본 — 둘 다 미리보기 없음(allowPreview false).
+    expect(cover).toContain('publishedReadingWith(db, edition, false, bookId)');
+    for (const book of BOOKS) expect(code(`src/app/(app)/books/${book}/cover/[hint]/page.jsx`)).not.toContain('edition=');
     expect(cover).not.toMatch(/requireAdmin|createSupabaseServerClient|bookReading'|preview=\{|edition\s*[:=]\s*params/);
     expect(read('src/components/books/BookCoverStatic.jsx')).toContain("export const COVER_HINTS = Object.freeze(['guest', 'member']);");
   });
