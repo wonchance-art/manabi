@@ -37,5 +37,7 @@ export async function POST(request,{bookId=BOOK_ID}={}){const auth=await require
  if(error){if(error.code==='40001')throw textbookError(409,'초안 또는 발행 정보가 바뀌었어요. 최신 상태를 확인해 주세요.');throw textbookError(503,'판본을 발행하지 못했어요.');}
  // 책장(/lessons · 언어 판)은 ISR 1시간이다(GUEST-STATIC-001 3단계) — 발행 · 복원이 그 수명을 기다리지 않게 바로 버린다(N3 · N4도 이 POST를 쓴다).
  revalidatePath('/lessons');revalidatePath('/lessons/lang/[lang]', 'page');
+ // 교재 첫 화면 판(쿼리 없음 — /books/<책>/cover/*) · 배움 판(/home 아래 넷, 이어 읽기 칸이 N5 카탈로그를 싣는다)도 ISR 1시간이다(4단계).
+ revalidatePath(`/books/${bookId}/cover/[hint]`,'page');if(bookId===BOOK_ID)revalidatePath('/home','layout');
  return respond({ok:true,release:Array.isArray(data)?data[0]:data});
  }catch(e){return respondError(e)}}

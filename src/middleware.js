@@ -5,11 +5,13 @@ import { hasLegacyArchivePath } from './lib/legacyArchiveRoutes';
 import { authEntryHref } from './lib/authRedirect';
 import { withoutServerSignOut } from './lib/authCookieGuard';
 import { SC_HINT_COOKIE } from './lib/scFontHint';
+import { hasSupabaseSessionInJar } from './lib/authCookie';
 
 // 공유 캐시 갈래(GUEST-STATIC-001) — 쿼리 · 힌트 쿠키로 갈리던 화면을 갈래마다 한 판씩 정적(ISR)으로 굽고, 여기서 판을 고른다(주소창은 그대로).
 // 계정으로는 가르지 않는다: 판에는 계정 데이터가 없다. 이 갈래는 쿠키를 읽기만 하고(값 '1'인 힌트 하나) Supabase 클라이언트를 만들지 않는다.
 // 내부 판 경로(/discover/reading · /discover/sc · /lessons/lang/*)는 matcher에 넣지 않는다 — rewrite된 요청이 middleware를 다시 지나므로, 거기서 정본 주소로 돌려보내면
 // 판을 고른 요청까지 되돌아간다(e2e 빌드 실측: 307 루프). 바로 열어도 같은 판이고, 정본 주소는 canonical(/discover)이 알린다.
+const COVER_PATHS = new Set(['/books/japanese-n5', '/books/japanese-n4', '/books/japanese-n3']);
 const rewriteTo = (request, pathname) => { const url = request.nextUrl.clone(); url.pathname = pathname; return NextResponse.rewrite(url); };
 function guestStaticVariant(request) {
   const { pathname, searchParams } = request.nextUrl;
@@ -24,6 +26,20 @@ function guestStaticVariant(request) {
   if (pathname === '/lessons') {
     const lang = searchParams.get('lang');
     return BOOK_SERIES.some(series => series.language === lang) ? rewriteTo(request, `/lessons/lang/${lang}`) : NextResponse.next();
+  }
+  // 배움 · 교재 첫 화면(4단계): 세션 쿠키 **이름**(hasSupabaseSessionInJar — 값 · 계정은 읽지 않는다) 유무로 배치 판을 고른다(B1 · BOOKS-FLOW-002 —
+  // 첫 그림부터 로그인 배치). 판에는 계정 데이터가 없어 로그인한 모두가 같은 판을 받는다. 판 경로(/home/member · /home/sc · /home/member/sc ·
+  // /books/<책>/cover/*)는 matcher 밖이다(위 산책과 같은 이유).
+  if (pathname === '/home') {
+    const member = hasSupabaseSessionInJar(request.cookies), sc = request.cookies.get(SC_HINT_COOKIE)?.value === '1';
+    const variant = `/home${member ? '/member' : ''}${sc ? '/sc' : ''}`;
+    return variant === '/home' ? NextResponse.next() : rewriteTo(request, variant);
+  }
+  // 교재: 쿼리가 하나라도 있으면(관리자 미리보기 ?edition=<미발행> · ?reference · ?returnTo · 그 밖) 지금 동적 화면 그대로 — 미리보기 응답이
+  // 공유 캐시에 들어가면 미발행 원고가 손님에게 나간다. 쿼리 없는 첫 화면만 표지 판(ISR)으로. (_rsc는 Next가 middleware 앞에서 뗀다.)
+  if (COVER_PATHS.has(pathname)) {
+    if (searchParams.size) return NextResponse.next();
+    return rewriteTo(request, `${pathname}/cover/${hasSupabaseSessionInJar(request.cookies) ? 'member' : 'guest'}`);
   }
   return null;
 }
@@ -102,5 +118,6 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/', '/admin/:path*', '/japanese/:path*', '/chinese/:path*', '/english/:path*', '/french/:path*', '/learn/course', '/discover', '/lessons'],
+  matcher: ['/', '/admin/:path*', '/japanese/:path*', '/chinese/:path*', '/english/:path*', '/french/:path*', '/learn/course', '/discover', '/lessons',
+    '/home', '/books/japanese-n5', '/books/japanese-n4', '/books/japanese-n3'],
 };

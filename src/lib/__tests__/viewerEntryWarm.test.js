@@ -99,7 +99,8 @@ describe('서재 번들에 뷰어 JS가 끌려오지 않는다', () => {
     expect(ret).toContain('export function LibraryReturnLink(');
     expect(ret).not.toMatch(/\bimport\s*\(|from ['"][^'"]*LibraryReaderLink['"]/);
     expect(read('src/components/web/LibraryReaderLink.jsx')).toContain("export { LibraryReturnLink } from './LibraryReturnLink';");
-    for (const f of ['src/components/books/BookHome.jsx', 'src/components/books/BookReader.jsx']) expect(read(f), f).toContain("import {LibraryReturnLink} from '@/components/web/LibraryReturnLink';");
+    // 교재는 주소를 읽지 않는 몸통(LibraryReturnLinkTo)을 쓴다 — 표지 ISR 판에서 useSearchParams를 부르지 않게(GUEST-STATIC-001 4단계). 같은 파일이다.
+    for (const f of ['src/components/books/BookHome.jsx', 'src/components/books/BookReader.jsx']) expect(read(f), f).toContain("import {LibraryReturnLinkTo} from '@/components/web/LibraryReturnLink';");
   });
 });
 

@@ -1,8 +1,6 @@
-import { cookies } from 'next/headers';
 import { SkeletonRegion } from '@/components/Skeleton';
-import { hasSupabaseSessionInJar } from '@/lib/authCookie';
 import { GUEST_RESUME_GLYPH } from '@/lib/learnDashboard';
-// 칸 모양 CSS는 이 대기 화면이 직접 부른다 — 화면(HomePage)만 부르면 첫 방문 때 페이지 코드보다 대기 화면이 먼저 그려져
+// 칸 모양 CSS는 대기 화면이 직접 부른다 — 화면(HomePage)만 부르면 첫 방문 때 페이지 코드보다 대기 화면이 먼저 그려져
 // 골격이 스타일 없이(목록처럼) 0.3초 보였다(/ux-review Preview b5d2fc7 · 2026-10-17 KST).
 import '@/components/learn/learn.css';
 import ResumeTile from '@/components/learn/ResumeTile';
@@ -15,24 +13,27 @@ import { GuestLoginTile, ReviewTile, StatTile } from '@/components/learn/LearnTi
  * 배움 칸 배치 그대로 — 화면이 받는 중에 그리는 골격(ResumeTile · ReviewTile · ParagraphTile pending, GoalTrackSkeleton)을
  * 같은 부품으로 쓴다. 그래서 대기 화면 → 화면 첫 렌더 → 데이터 순서로 칸이 바뀌어도 자리가 같다.
  * 연속 · 오늘 목표는 값이 없으면 원래 「–」다(거짓 0 없음 — 0 무표기 선례).
+ *
+ * 손님 / 로그인 두 골격(B1 — 오너 승인 목업 ①, 2026-10-17 KST). 예전엔 대기 화면이 세션 쿠키를 읽어 골랐다. 이제(GUEST-STATIC-001 4단계)
+ * middleware가 세션 쿠키 유무로 배움 판을 고르고(/home = 손님 · /home/member = 로그인), 판마다 자기 대기 화면이 이 둘 중 하나를 그린다 —
+ * 판정은 같은 함수(hasSupabaseSessionInJar)이고 대기 화면은 쿠키를 읽지 않는다.
  */
-export default async function Loading() {
-  // 손님(세션 쿠키 없음)이면 손님 배움 배치 — 이어 읽기 · 오늘 문단(맛보기) 한 줄, 아래 로그인 칸(B1 — 오너 승인 목업 ①,
-  // 2026-10-17 KST). 로그인 배치 골격이 0.7초 보였다가 손님 화면으로 바뀌던 것. 판정은 화면(page.jsx)과 같은 함수다.
-  // 로그인 · 로그아웃 뒤 router.refresh()가 미리 받아 둔 다른 쪽 골격을 버린다(AuthPage · Layout · MyPage).
-  if (!hasSupabaseSessionInJar(await cookies())) {
-    return (
-      <SkeletonRegion className="manabi-page learn-page" label="배움 화면" announce>
-        <div className="learn-top" aria-hidden="true"><div className="learn-top__title"><h1>배움</h1></div></div>
-        <div className="learn-grid" aria-hidden="true">
-          {/* 손님 장식 글자는 화면 골격과 같다(HOME-GLYPH-LCP-001) — 대기 화면 → 화면으로 바뀌어도 글자가 깜빡이지 않는다. */}
-          <ResumeTile pending glyph={GUEST_RESUME_GLYPH} />
-          <ParagraphTile state={{ kind: 'empty' }} href="/study" kicker="오늘 문단 · 맛보기" pending />
-          <GuestLoginTile />
-        </div>
-      </SkeletonRegion>
-    );
-  }
+export function GuestHomeSkeleton() {
+  // 손님 배움 배치 — 이어 읽기 · 오늘 문단(맛보기) 한 줄, 아래 로그인 칸. 로그인 배치 골격이 0.7초 보였다가 손님 화면으로 바뀌던 것.
+  return (
+    <SkeletonRegion className="manabi-page learn-page" label="배움 화면" announce>
+      <div className="learn-top" aria-hidden="true"><div className="learn-top__title"><h1>배움</h1></div></div>
+      <div className="learn-grid" aria-hidden="true">
+        {/* 손님 장식 글자는 화면 골격과 같다(HOME-GLYPH-LCP-001) — 대기 화면 → 화면으로 바뀌어도 글자가 깜빡이지 않는다. */}
+        <ResumeTile pending glyph={GUEST_RESUME_GLYPH} />
+        <ParagraphTile state={{ kind: 'empty' }} href="/study" kicker="오늘 문단 · 맛보기" pending />
+        <GuestLoginTile />
+      </div>
+    </SkeletonRegion>
+  );
+}
+
+export function MemberHomeSkeleton() {
   return (
     <SkeletonRegion className="manabi-page learn-page" label="배움 화면" announce>
       <div className="learn-top" aria-hidden="true">

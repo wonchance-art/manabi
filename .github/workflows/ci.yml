@@ -143,8 +143,8 @@ jobs:
           n4_server_pid=$!
           trap 'kill "$chapter_server_pid" "$n4_server_pid" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 60); do if curl -fsS http://127.0.0.1:8879/manifest.webmanifest > /dev/null; then break; fi; sleep 1; done
-          # 책장은 ISR(빌드 때 N5만 발행된 판) — 이 서버의 발행 상태(N4)로 판을 새로 만든다(운영의 발행 즉시 무효화와 같은 일, GUEST-STATIC-001).
-          node scripts/e2e-refresh-isr.mjs http://127.0.0.1:8879 /lessons
+          # 책장 · 교재 첫 화면은 ISR(빌드 때 N5만 발행된 판) — 이 서버의 발행 상태(N4)로 판을 새로 만든다(운영의 발행 즉시 무효화와 같은 일, GUEST-STATIC-001).
+          node scripts/e2e-refresh-isr.mjs http://127.0.0.1:8879 /lessons /books
           E2E_PUBLISHED_BOOKS=japanese-n4 COMPOSER_BASE_URL=http://127.0.0.1:8879 node --test --test-concurrency=1 e2e/book-reading-reload.e2e.mjs
 
       # 같은 프로덕션 빌드를 재사용해 N3 발행 상태의 책장 배선과 실제 찾아보기 검색을 검사한다.
@@ -176,6 +176,6 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:8880/manifest.webmanifest > /dev/null
-          # 책장은 ISR(빌드 때 N5만 발행된 판) — 이 서버의 발행 상태(N3)로 판을 새로 만든다(GUEST-STATIC-001). 없으면 N3가 책장에 없다(실측).
-          node scripts/e2e-refresh-isr.mjs http://127.0.0.1:8880 /lessons
+          # 책장 · 교재 첫 화면은 ISR(빌드 때 N5만 발행된 판) — 이 서버의 발행 상태(N3)로 판을 새로 만든다(GUEST-STATIC-001). 없으면 N3가 책장에 없다(실측).
+          node scripts/e2e-refresh-isr.mjs http://127.0.0.1:8880 /lessons /books
           node --test --test-concurrency=1 e2e/n3-published-smoke.e2e.mjs

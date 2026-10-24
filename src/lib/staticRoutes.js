@@ -6,7 +6,7 @@
 //   ② 빌드 산출 대조(scripts/check-static-routes.mjs, CI e2e 빌드 뒤) — next build가 실제로 정적(○ · ●)으로 구웠고, ISR 주기가 표와 같다.
 //      빌드 판정이 소스 계약보다 넓다(라이브러리 깊은 곳의 동적 API · 새 import도 잡는다).
 // revalidate: false = 배포 동안 고정(정적), 숫자 = ISR 초.
-// 계정 데이터를 서버에서 그리는 화면(/viewer/[id] · /materials · /study* · /books/*?edition=)은 여기에 넣지 않는다.
+// 계정 데이터를 서버에서 그리는 화면(/viewer/[id] · /materials · /study* · 쿼리가 붙은 /books/*)은 여기에 넣지 않는다.
 export const STATIC_ROUTES = Object.freeze([
   { route: '/auth', revalidate: false },
   { route: '/studies', revalidate: false },
@@ -23,6 +23,15 @@ export const STATIC_ROUTES = Object.freeze([
   // 3단계: 책장 ISR 1시간 + 발행 시 즉시 무효화(revalidatePath) — 기본 판과 언어 판(?lang=… → middleware)
   { route: '/lessons', revalidate: 3600 },
   { route: '/lessons/lang/[lang]', revalidate: 3600 },
+  // 4단계: 배움 ISR 1시간 + 발행 시 즉시 무효화 — 세션 쿠키(이름) 유무 × 간체 힌트 네 판(middleware가 고른다, 계정 데이터 없음)
+  { route: '/home', revalidate: 3600 },
+  { route: '/home/sc', revalidate: 3600 },
+  { route: '/home/member', revalidate: 3600 },
+  { route: '/home/member/sc', revalidate: 3600 },
+  // 4단계: 교재 첫 화면(쿼리 없음)만 — 세션 쿠키 유무 두 판. 쿼리가 붙은 교재 화면(관리자 미리보기 ?edition · ?reference · ?returnTo)은 동적 그대로
+  { route: '/books/japanese-n5/cover/[hint]', revalidate: 3600 },
+  { route: '/books/japanese-n4/cover/[hint]', revalidate: 3600 },
+  { route: '/books/japanese-n3/cover/[hint]', revalidate: 3600 },
 ]);
 
 /**

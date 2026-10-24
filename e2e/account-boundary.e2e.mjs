@@ -503,7 +503,8 @@ test('⑨ 얼어 있는 동안 쿠키만 바뀐 뒤 문서 뒤로 가기(bfcache
   const bfBrowser = await chromium.launch({ ...config.use.launchOptions, ignoreDefaultArgs: BF_ARGS });
   const results = [];
   try {
-    for (const path of ['/profile', '/japanese/vocab/n5']) {
+    // 배움(/home)은 4단계부터 ISR 판(세션 쿠키 유무로 middleware가 고른다) — 얼어 있던 로그인 판이 손님 · B에게 되살아나도 같은 관문이 정리한다.
+    for (const path of ['/profile', '/japanese/vocab/n5', '/home']) {
       for (const via of ['cookie', 'clear']) {
         const { context, page, errors } = await boundaryContext({ actor: 'A', engine: bfBrowser });
         try {
