@@ -152,7 +152,7 @@ describe('⑷ 표기 규칙', () => {
     for (const lang of ['japanese', 'chinese']) {
       const data = await levelListData(lang, 'bunkei', LEVEL_LIST_LANGS[lang].levels[0]);
       for (const e of data.groups.flatMap((g) => g.entries)) {
-        expect(Object.keys(e).sort()).toEqual(['conn', 'exs', 'key', 'ko', 'note', 'pattern']);
+        expect(Object.keys(e).sort()).toEqual(['anchor', 'conn', 'exs', 'key', 'ko', 'note', 'pattern']);
       }
     }
   });

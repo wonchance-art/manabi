@@ -17,6 +17,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { glyphColumnLayout } from '../../lib/glyphColumn';
+import { anchorCardHead, headScrolled } from '../../lib/readingViewport';
 
 const HUN_FONT_PX = 13; // .word-fit__hun 글꼴(.8125rem) — hunRubyCells의 hunN(em) → px
 const HUN_PAD_PX = 4; // .word-fit__hun 좌우 padding .125rem × 2
@@ -61,9 +62,13 @@ export default function ViewerGlyphColumn({ word, zheng, ja, hunCells = null, ca
     const checkBudget = () => {
       const body = el.closest('.reader-card-body');
       const meaning = body?.querySelector('.word-detail-card__meaning');
-      if (!onBudget || !body || !meaning || body.scrollTop > 0 || budgetStep >= 2 || !body.clientHeight) return;
+      // 낮춘 시트가 스스로 내린 본문(뷰어 점검 A1 — anchorCardHead)은 스크롤 0으로 본다: 단계가 올라 내용이 줄었으면 다시 맞추고 잰다.
+      const auto = headScrolled(body);
+      if (!onBudget || !body || !meaning || (body.scrollTop > 0 && !auto) || budgetStep >= 2 || !body.clientHeight) return;
+      if (auto) anchorCardHead(body);
+      const lift = body.dataset.headScroll ? body.scrollTop : 0;
       const limit = body.getBoundingClientRect().top + body.clientHeight;
-      if (meaning.getBoundingClientRect().bottom > limit + 0.5) onBudget(budgetStep + 1);
+      if (meaning.getBoundingClientRect().bottom + lift > limit + 0.5) onBudget(budgetStep + 1);
     };
     const measure = () => {
       // 아직 그려지지 않은 상자(시트가 열리는 중 — 크기 0)는 재지 않는다. 그려지면 ResizeObserver가 다시 부른다.

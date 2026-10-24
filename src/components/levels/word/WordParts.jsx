@@ -53,11 +53,11 @@ export function Listen({ speak, text, label = '듣기', className = 'lw-listen' 
  * 상태 칸(44px) — ☆(누르면 바로 담기) · 오늘 · 복습 · 졸업. 글자는 두 글자 이내, 화면 읽기에는 온전한 말.
  * pop = 막 담김(☆ → 오늘) — 한 번 튀어오름(vocabCounterPop).
  */
-export function StatusPill({ status, onSave, busy = false, pop = false }) {
+export function StatusPill({ status, onSave, busy = false, pop = false, saveLabel = '단어장에 담기' }) {
   if (!status) return <i className="lw-status" aria-hidden="true" />; // 단어장을 받기 전 — 자리만(☆가 먼저 보였다 바뀌지 않게)
   const s = LEVEL_WORD_STATUS[status] || LEVEL_WORD_STATUS.new;
   if (s.id === 'new') {
-    return <button type="button" className="lw-status lw-status--new" aria-label={busy ? '담는 중' : '단어장에 담기'} title="담기"
+    return <button type="button" className="lw-status lw-status--new" aria-label={busy ? '담는 중' : saveLabel} title="담기"
       aria-busy={busy || undefined} onClick={(e) => { e.stopPropagation(); if (!busy) onSave?.(); }}>{s.short}</button>;
   }
   return <span className={`lw-status lw-status--${s.id}${pop ? ' is-popping' : ''}`} role="img" aria-label={s.label}>{s.short}</span>;

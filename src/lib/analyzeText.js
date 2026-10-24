@@ -140,10 +140,13 @@ function waitAbortable(ms, signal) {
   });
 }
 
-/** fetch — 429면 Retry-After만큼 기다렸다가 RATE_LIMIT_RETRIES번까지 다시 보낸다. 그래도 429면 그 응답을 돌려준다(호출부가 실패 처리). */
-export async function fetchWithRateLimitRetry(url, init, signal) {
+/**
+ * fetch — 429면 Retry-After만큼 기다렸다가 RATE_LIMIT_RETRIES번까지 다시 보낸다. 그래도 429면 그 응답을 돌려준다(호출부가 실패 처리).
+ * transport — fetch 대신 쓸 (url, init) => Response(서버 분석 작업의 같은 프로세스 안 라우트 호출 — CANON-SERVER-ANALYSIS-001). 없으면 fetch.
+ */
+export async function fetchWithRateLimitRetry(url, init, signal, transport = null) {
   for (let attempt = 0; ; attempt += 1) {
-    const res = await fetch(url, init);
+    const res = await (transport ? transport(url, init) : fetch(url, init));
     if (res?.status !== 429 || attempt >= RATE_LIMIT_RETRIES) return res;
     await waitAbortable(retryAfterMs(res), signal);
   }
@@ -203,23 +206,23 @@ export function resolveAnalysisStatus(dictionary, failedCount, totalLines) {
   return failedCount > 0 ? 'partial' : 'completed';
 }
 
-export async function analyzeText(rawText, signal, { metadata = {}, onBatch, existingJson = null, concurrency = 6 } = {}) {
+export async function analyzeText(rawText, signal, { metadata = {}, onBatch, existingJson = null, concurrency = 6, transport = null } = {}) {
   const lang = metadata?.language || existingJson?.metadata?.language;
   // 일본어·영어 모두 공유 캐시 경로 사용 (Phase 2)
   if (lang === 'Japanese' || lang === 'English' || lang === 'Chinese') {
-    return analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson, language: lang });
+    return analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson, language: lang, transport });
   }
   if (lang === 'Korean') {
-    return analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson, language: lang });
+    return analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson, language: lang, transport });
   }
   // 기타 언어는 기존 Gemini per-line (fallback)
-  return analyzeLineByLineGemini(rawText, signal, { metadata, onBatch, existingJson, concurrency });
+  return analyzeLineByLineGemini(rawText, signal, { metadata, onBatch, existingJson, concurrency, transport });
 }
 
 /* ─────────────────────────────────────────────────────────────
  * 일본어/영어: /api/analyze 엔드포인트 사용 (kuromoji or 공백 분할 + 공유 캐시)
  * ─────────────────────────────────────────────────────────────*/
-async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson, language }) {
+async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson, language, transport = null }) {
   const lines = rawText.split('\n');
   const total = lines.length;
   const timestamp = Date.now();
@@ -277,9 +280,9 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
   }
   if (currentPara.lineIndices.length > 0) paragraphs.push(currentPara);
 
-  // 2. auth 토큰 미리 가져오기
+  // 2. auth 토큰 미리 가져오기 — 서버 분석 작업(transport)은 브라우저 세션이 없다(라우트가 같은 프로세스 안 표식으로 통과시킨다).
   let authHeader = {};
-  try {
+  if (!transport) try {
     const { supabase } = await import('./supabase');
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.access_token) {
@@ -497,7 +500,7 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
         signal,
         body: JSON.stringify({ lines: units.map(unit => unit.text), language, ...(isKorean ? { explanationLocale } : {}),
           ...(boundariesBody.length ? { boundaries: boundariesBody } : {}) }),
-      }, signal);
+      }, signal, transport);
       const data = await res.json();
       if (!res.ok) {
         serviceStop.note({ code: data?.code });
@@ -546,7 +549,7 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
 /* ─────────────────────────────────────────────────────────────
  * 영어: 기존 Gemini per-line 경로 (Phase 2에선 그대로 유지)
  * ─────────────────────────────────────────────────────────────*/
-async function analyzeLineByLineGemini(rawText, signal, { metadata, onBatch, existingJson, concurrency }) {
+async function analyzeLineByLineGemini(rawText, signal, { metadata, onBatch, existingJson, concurrency, transport = null }) {
   const lines = rawText.split('\n');
   const total = lines.length;
   const lang = metadata?.language || existingJson?.metadata?.language || 'Japanese';
@@ -602,7 +605,7 @@ async function analyzeLineByLineGemini(rawText, signal, { metadata, onBatch, exi
         for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
           if (serviceStop.stopped) break; // 같은 묶음의 다른 줄이 먼저 서비스 설정으로 멈췄다
           try {
-            const raw = await callGemini(buildTokenizationPrompt(piece, lang), signal);
+            const raw = await callGemini(buildTokenizationPrompt(piece, lang), signal, transport ? { transport } : {});
             return parseGeminiJSON(raw);
           } catch (e) {
             lastError = e;

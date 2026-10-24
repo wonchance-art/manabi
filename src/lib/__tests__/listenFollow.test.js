@@ -63,7 +63,7 @@ describe('뷰어 배선', () => {
   });
   it('강조는 고른 문장 띠와 다른 밑줄(.word-token--listening) — 문장 지정(isPicked)에 섞지 않는다', () => {
     expect(viewer()).toContain("${listenTokens?.has(tokenId) ? ' word-token--listening' : ''}");
-    expect(viewer()).toContain('const isPicked = pickedLineIdx === rawIdx;');
+    expect(viewer()).toContain('const isPicked = pickedSentence?.rawIdx === rawIdx;');
     const css = read('src/index.css');
     expect(sliceBetween(css, '.word-token--listening::after {', '}')).toContain('background: var(--pace-line);');
     expect(css).not.toMatch(/word-token--listening[^{]*\.line-pick/);
@@ -84,11 +84,19 @@ describe('뷰어 배선', () => {
 describe('좁은 폭 듣기 막대 한 줄(390)', () => {
   const css = () => read('src/components/viewer/reader-controls.css');
   const block = () => sliceBetween(css(), '/* 좁은 폭 듣기 막대 한 줄', '\n}\n');
-  it('좁은 폭(container reader ≤460px)에서만 — 진행 수 · 속도 칩을 숨기고 막대는 한 줄', () => {
+  it('좁은 폭(container reader ≤460px)에서 막대는 한 줄 — 속도는 누르는 버튼이라 남고, 진행 수는 360 이하에서만 뺀다(뷰어 점검 B)', () => {
     const b = block();
     expect(b).toContain('@container reader (max-width:460px){');
     expect(b).toContain('.manabi-app .viewer-layout .viewer-topbar .listen-controls__panel{flex-wrap:nowrap;gap:0;padding:0 2px}');
-    expect(b).toMatch(/\.listen-controls__progress,\s*\.manabi-app \.viewer-layout \.viewer-topbar \.listen-controls__rate\{display:none\}/);
+    expect(css()).not.toMatch(/\.listen-controls__rate\{display:none\}/);
+    expect(css()).toContain('@container reader (max-width:360px){\n  .manabi-app .viewer-layout .viewer-topbar .listen-controls__progress{display:none}\n}');
+    // 듣기를 시작해도 막대 높이 그대로(1440 +13px) — 묶음 테두리 · 위아래 여백 없음
+    expect(css()).toContain('.manabi-app .viewer-layout .viewer-topbar .listen-controls__panel{padding-block:0;border:0;min-height:44px;flex-wrap:nowrap}');
+  });
+  it('속도 칸은 누르면 0.75× → 1× → 1.25×로 도는 버튼이고 Aa 「재생 속도」와 같은 저장값을 바꾼다', () => {
+    const tag = sliceBetween(viewer(), '<ListenControls', '/>');
+    expect(tag).toContain('onRateCycle={()=>settings.setTtsRate(nextTtsRate(ttsRate))}');
+    expect(read('src/components/ListenControls.jsx')).toContain('<button type="button" className="listen-controls__rate" onClick={onRateCycle}');
   });
   it('지금 문장 줄은 따라가기 화면(쪽 넘김 · 본문 강조)에서 폭과 상관없이 숨긴다(B1) — 스크롤 보기 · 분석 어긋남은 그대로', () => {
     // 넓은 폭에서도 줄 높이가 문장 길이를 따라 머리줄을 71↔222px로 바꿔 문장마다 쪽이 다시 흘렀다(768 · 1024 · 1440 실측 7↔10쪽).

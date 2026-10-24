@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useRef,useState,useCallback} from 'react';
-import {captureReadingAnchor,restoreReadingAnchor,selectedTokenScrollDelta,compactSheetHeight,pagedSheetDock} from './readingViewport';
+import {captureReadingAnchor,restoreReadingAnchor,selectedTokenScrollDelta,compactSheetHeight,pagedSheetDock,anchorCardHead,headScrolled} from './readingViewport';
 import {pagerFor} from './usePagedReader';
 
 // A split classroom scrolls its textbook column; ordinary reading scrolls the page.
@@ -98,18 +98,27 @@ function judgePagedSheet(panel, token, layout) {
   const natural = panel.getBoundingClientRect();
   // 낮춰도 카드의 첫 화면(표제어·뜻 + 바닥 등급 줄 — AE-R2 계약)은 스크롤 없이 남아야 한다: 그 높이를 실제 배치에서 잰다.
   const word = panel.querySelector('#inspector-word:not([hidden])'), meaning = word?.querySelector('.word-detail-card__meaning'), actions = word?.querySelector('.reader-card-actions');
-  const scrolled = word?.querySelector('.reader-card-body')?.scrollTop || 0;
+  const cardBody = word?.querySelector('.reader-card-body');
+  // 앞 단어에서 낮춘 시트가 내려 둔 본문(사람이 안 움직였으면)은 맨 위로 되돌리고 다시 정한다.
+  if (cardBody?.dataset?.headScroll) { if (headScrolled(cardBody)) cardBody.scrollTop = 0; delete cardBody.dataset.headScroll; }
+  const scrolled = cardBody?.scrollTop || 0;
   const core = meaning && actions ? Math.ceil(meaning.getBoundingClientRect().bottom + scrolled - natural.top + (natural.bottom - actions.getBoundingClientRect().top) + 12) : undefined;
+  // 핵심이 안 들어가면 머리줄 · 등급 줄 · 표제어 덩어리까지만 남기고 카드 안에서 스크롤한다(뷰어 점검 A1) — 단어를 덮지 않는 쪽이 먼저다.
+  // 그렇게 낮춘 카드는 본문을 뜻 줄이 보일 만큼(많아야 표제어까지) 내려 둔다(anchorCardHead) — 낮춰도 무슨 단어인지는 첫 화면에 보인다.
+  const header = panel.querySelector('.viewer-inspector__header'), head = word?.querySelector('.reader-card-headword');
+  const headHeight = head ? head.getBoundingClientRect().height : 64;
+  const floor = core && header ? Math.ceil(header.getBoundingClientRect().height + (natural.bottom - actions.getBoundingClientRect().top) + headHeight + 8) : undefined;
+  const showHead = height => { if (core && height < core) anchorCardHead(cardBody); };
   const tokenRect = token.getBoundingClientRect();
   // A안: 아래 절반의 단어는 시트를 머리줄 아래에 세운다(data-dock="top" — paged-reader.css). 위 절반은 지금처럼 바닥(목업 C 낮추기).
   const dock = pagedSheetDock({ tokenTop: tokenRect.top, tokenBottom: tokenRect.bottom, viewportTop: viewTop, viewportHeight: viewHeight,
-    topLimit: sheetTopLimit(layout, viewTop), naturalHeight: natural.height, ...(core ? { min: core } : null) });
+    topLimit: sheetTopLimit(layout, viewTop), naturalHeight: natural.height, sheetBottom: natural.bottom, ...(core ? { min: core } : null), ...(floor ? { floor } : null) });
   if (dock.dock === 'top') {
     panel.dataset.dock = 'top'; panel.style.setProperty('--reader-sheet-top', `${dock.top}px`);
-    if (dock.height !== null) { panel.style.setProperty('--reader-sheet-compact', `${dock.height}px`); panel.dataset.compact = 'true'; }
+    if (dock.height !== null) { panel.style.setProperty('--reader-sheet-compact', `${dock.height}px`); panel.dataset.compact = 'true'; showHead(dock.height); }
   } else {
-    const height = compactSheetHeight({ tokenBottom: tokenRect.bottom, sheetTop: natural.top, sheetBottom: natural.bottom, ...(core ? { min: core } : null) });
-    if (height !== null && height < natural.height) { panel.style.setProperty('--reader-sheet-compact', `${height}px`); panel.dataset.compact = 'true'; }
+    const height = compactSheetHeight({ tokenBottom: tokenRect.bottom, sheetTop: natural.top, sheetBottom: natural.bottom, ...(core ? { min: core } : null), ...(floor ? { floor } : null) });
+    if (height !== null && height < natural.height) { panel.style.setProperty('--reader-sheet-compact', `${height}px`); panel.dataset.compact = 'true'; showHead(height); }
   }
   // 카드 핵심이 아직 안 그려졌으면(처음 열 때 머리줄만 있는 시트 — 390 실측 57px) 잠그지 않는다: 다 차서 커질 때 다시 정한다.
   return core ? sizeKey : '';

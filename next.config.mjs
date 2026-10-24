@@ -60,6 +60,11 @@ const nextConfig = {
       './node_modules/jieba-wasm/pkg/nodejs/**/*',
     ],
     '/api/admin/backfill-base-form': ['./node_modules/kuromoji/dict/**/*'],
+    // 서버 분석 작업(CANON-SERVER-ANALYSIS-001) — 분석 라우트를 같은 프로세스 안에서 부르므로 /api/analyze와 같은 사전 · wasm이 필요하다.
+    '/api/cron/analysis-jobs': [
+      './node_modules/kuromoji/dict/**/*',
+      './node_modules/jieba-wasm/pkg/nodejs/**/*',
+    ],
   },
 
   // Node.js 런타임 전용 — kuromoji(사전 fs 접근)·jieba-wasm(.wasm을 fs로 로드).

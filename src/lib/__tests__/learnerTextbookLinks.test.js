@@ -16,7 +16,6 @@ import * as bookNavigation from '../bookNavigation';
 import { buildKernelIndex, loadPatternIndex } from '../patternIndex';
 import { reviewSourceContexts, sourceHref } from '../learningSources';
 import * as learningSources from '../learningSources';
-import * as grammarDetail from '../useGrammarDetail';
 import { attachTagLinks, findChapterForTag } from '../writingTagLink';
 
 const EDITION = '8a8c1c1fd452773810abaf8c';
@@ -78,18 +77,6 @@ describe('학습자 링크 생성 함수는 보관된 옛 교재 주소를 내�
     for (const [source, href] of OPENABLE_SOURCES) expect(sourceHref(source)).toBe(href);
   });
 
-  it('[자세히] 정본 해설 후보: 네 언어 챕터 후보에 옛 주소가 없고 캐시된 옛 주소도 지운다', async () => {
-    expect(typeof grammarDetail.loadChapterCandidates).toBe('function');
-    for (const lang of ['Japanese', 'Chinese', 'English', 'French']) {
-      const chapters = await grammarDetail.loadChapterCandidates(lang);
-      expect(chapters.length, lang).toBeGreaterThan(10);
-      expect(chapters.filter(chapter => reachesArchive(chapter.href)), lang).toEqual([]);
-    }
-    expect(grammarDetail.cachedChapter({ slug: 'n5-04-desu-da', title: 't', level: 'N5', href: '/japanese/grammar/n5-04-desu-da' }))
-      .toEqual({ slug: 'n5-04-desu-da', title: 't', level: 'N5', href: null });
-    expect(grammarDetail.cachedChapter(null)).toBeNull();
-  });
-
   it('작문 첨삭 태그 링크: 챕터를 찾아도 옛 주소를 붙이지 않는다', () => {
     const ref = { base: '/japanese', ALL_CHAPTERS: [{ slug: 'n5-04-desu-da', title: 'です・だ', topic: 'です', level: 'N5', sections: [{ pattern: '〜です' }] }] };
     expect(findChapterForTag(ref, 'です')).toMatchObject({ slug: 'n5-04-desu-da' });
@@ -100,7 +87,7 @@ describe('학습자 링크 생성 함수는 보관된 옛 교재 주소를 내�
   it('학습자 경로 소스에는 learnerHref를 거치지 않은 옛 교재 주소 조립이 없다', () => {
     // 페이지 내부 함수(서버 컴포넌트)는 import로 부를 수 없어 소스로 잠근다.
     const files = [
-      'src/lib/patternIndex.js', 'src/lib/learningSources.js', 'src/lib/studyMaterials.js', 'src/lib/useGrammarDetail.js',
+      'src/lib/patternIndex.js', 'src/lib/learningSources.js', 'src/lib/studyMaterials.js', 'src/lib/sentencePattern.js', 'src/lib/patternReview.js',
       'src/lib/writingTagLink.js', 'src/app/(app)/study/page.jsx', 'src/app/(app)/writing/page.jsx',
       'src/app/(app)/review/grammar/page.jsx', 'src/app/api/review/drills/route.js', 'src/app/nihongo/[day]/page.jsx',
     ];

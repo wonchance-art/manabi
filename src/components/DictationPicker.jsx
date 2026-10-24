@@ -2,7 +2,7 @@
 
 /**
  * 받아쓰기 추천 문장 고르기 (#1077-6 후속 — dictationPick 엔진 합류).
- * 문장 후보는 뷰어 정본 문장 단위(sentenceNav.pickableSentences)를 그대로 받고,
+ * 문장 후보는 뷰어 정본 문장 단위(sentenceNav.pickableSentenceUnits — 마침표까지 한 문장)를 그대로 받고,
  * 고르기는 pickDictationSentences 엔진에 위임한다(길이 경계·담은 단어 우선·안정 정렬).
  *
  * 목록에 원문을 보이지 않는 것이 이 화면의 핵심 계약이다 — 받아쓰기는 원문 가림이

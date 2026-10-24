@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks -- 훅을 아래 작은 런타임에서 평범한 함수로 직접 부르는 시험이다. */
 // 해설 훅의 요청 범위 직렬화(VIEWER-TAP-INP-001). 뷰어의 scope에는 자료 원문 · 분석 전체(processed_json)가 들어 있어,
-// 낱말을 누를 때마다 뷰어가 다시 그려지며 훅 셋(문형 · 쉬운 말 · 낱말 설명)이 그 전체를 JSON으로 만들었다(390 · CPU×4 ·
+// 낱말을 누를 때마다 뷰어가 다시 그려지며 해설 훅(낱말 설명 — 문형 · 쉬운 말 훅은 #1551에서 사라짐)이 그 전체를 JSON으로 만들었다(390 · CPU×4 ·
 // 48줄 자료에서 탭마다 약 9ms, 자료 길이에 비례). 같은 scope면 한 번만 직렬화하고, 열쇠 문자열은 예전과 글자 하나까지 같다.
 import fs from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -21,8 +21,6 @@ vi.mock('../gemini', () => ({ GEMINI_TIER: 'standard', callGemini: vi.fn(() => n
 vi.mock('../../content/refGrammarManifest', () => ({ REF_GRAMMAR_MANIFEST: { languages: {} } }));
 
 const { stableJson } = await import('../stableJson');
-const { useGrammarDetail } = await import('../useGrammarDetail');
-const { useEasierText } = await import('../useEasierText');
 const { useViewerExplanation, viewerExplanationKey } = await import('../useViewerExplanation');
 
 // 직렬화 횟수를 세는 큰 scope 대역 — processed_json 자리에 둔다.
@@ -70,14 +68,7 @@ describe('낱말 설명 열쇠 — 예전 JSON.stringify([scope, id, text, base_
   });
 });
 
-describe('해설 훅 셋 — 낱말을 바꿔 눌러 다시 그려도 큰 scope는 한 번만 직렬화한다', () => {
-  it.each([['문형', useGrammarDetail], ['쉬운 말', useEasierText]])('%s(useGrammarDetail · useEasierText)', (_, useHook) => {
-    const { counter, scope } = countedScope();
-    for (let i = 0; i < 4; i++) oneRender(useHook, { materialLang: 'Japanese', toast: () => {}, explanationLocale: 'ko', scope });
-    expect(counter.n).toBe(1);
-    oneRender(useHook, { materialLang: 'Japanese', toast: () => {}, explanationLocale: 'ko', scope: [...scope] });
-    expect(counter.n).toBe(2); // 자료가 바뀌면(새 scope) 다시 만든다
-  });
+describe('해설 훅 — 낱말을 바꿔 눌러 다시 그려도 큰 scope는 한 번만 직렬화한다', () => {
   it('낱말 설명(useViewerExplanation) — 낱말이 바뀌어도 scope는 다시 만들지 않는다', () => {
     const { counter, scope } = countedScope();
     for (const [id, text] of [['id_0_0', '私'], ['id_0_2', '毎朝'], ['id_0_5', '歩いて']]) {
@@ -86,7 +77,7 @@ describe('해설 훅 셋 — 낱말을 바꿔 눌러 다시 그려도 큰 scope�
     expect(counter.n).toBe(1);
   });
   it('훅 안에 scope 전체를 렌더마다 직렬화하는 식이 되살아나지 않는다', () => {
-    for (const file of ['useGrammarDetail', 'useEasierText', 'useViewerExplanation']) {
+    for (const file of ['useViewerExplanation']) {
       const src = fs.readFileSync(`src/lib/${file}.js`, 'utf8').replace(/\/\/.*$/gm, ''); // 주석 제외
       expect(src).not.toMatch(/JSON\.stringify\(\[(materialLang, locale, )?scope\b/);
       expect(src).toContain('stableJson(useRef(null), [');

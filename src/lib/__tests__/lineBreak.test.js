@@ -44,7 +44,7 @@ describe('줄바꿈 정본 — 한국어 어절 · 일본어/중국어 일반', 
   // lang="ja"를 단 제목에도 keep-all이 걸린다(M09 #1337 6164424314 — .manabi-page h3 · .learn-paragraph__sentence 선례).
   // src/content/textbookEditions/** 는 게시 판본 스냅숏이라 이 검사 밖이다.
   const KOREAN_ONLY = [
-    '.tb-line__ko', '.course-day__ko', '.course-cal__tag', '.composer-save-actions button', '.reader-sentence__glosses ul',
+    '.tb-line__ko', '.course-day__ko', '.course-cal__tag', '.composer-save-actions button',
     // index.css — 문법 레퍼런스의 한국어 해설 · 한자 다리 노트 · 버전 배지(한국어 UI)
     '.version-badge__panel', '.fr-section__heading', '.fr-section__para', '.fr-callout__body', '.fr-parallel__note', '.hanja-bridge__note',
   ];

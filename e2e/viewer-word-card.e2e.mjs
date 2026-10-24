@@ -235,18 +235,24 @@ const measure=page=>page.evaluate(()=>{
  return {sheet:r(panel),compact:panel.dataset.compact==='true',body:r(body),scrollTop:body?.scrollTop??-1,vh:innerHeight,vw:innerWidth,overflow:document.documentElement.scrollWidth-innerWidth,
   sentence:r(q('.reader-card-sentence')),chips:r(q('.word-detail-card__actions')),head:r(q('.reader-card-headword')),meaning:r(q('.word-detail-card__meaning')),
   grades:[...panel.querySelectorAll('#inspector-word .reader-card-actions .review-score-btn')].filter(b=>b.getClientRects().length).map(r),
-  savedRow:r(q('.save-grade__saved'))};
+  savedRow:r(q('.save-grade__saved')),token:r(document.querySelector('.reader-area [data-source-token][data-selected]'))};
 });
 function assertFirstScreen(g,{label,side=false,bottom='grades'}) {
  assert.ok(g,`${label}: a visible panel`);
- assert.equal(g.scrollTop,0,`${label}: no scroll`);
+ // 반대쪽 붙이기(뷰어 점검 A1, 오너 승인 2026-10-23 KST): 핵심 높이로는 고른 단어를 덮는 자리면 시트를 단어 밖까지 낮추고
+ // 카드 안에서 스크롤해 표제어를 맨 위에 둔다 — 그때는 「단어를 안 덮는다 · 표제어 · 등급」이 첫 화면 약속이다(문장 줄 · 칩은 위로 스크롤).
+ const lowered=g.scrollTop>0;
+ if(lowered){
+  assert.ok(!side&&g.compact,`${label}: only a lowered paged sheet scrolls its card (${g.scrollTop}px)`);
+  assert.ok(g.token&&(g.sheet.top>=g.token.bottom-.5||g.sheet.bottom<=g.token.top+.5),`${label}: the lowered sheet leaves the word uncovered ${JSON.stringify(g.token)} / ${JSON.stringify(g.sheet)}`);
+ }
  assert.equal(g.overflow,0,`${label}: no horizontal page overflow`);
  // 쪽 넘김 보기(READER-PAGED-001 목업 C)는 본문을 끌어올리지 않는다 — 고른 단어가 440px 시트 밑에 깔리면 시트를 낮춘다.
  // 낮춰도 아래 첫 화면 약속(문장·칩·표제어·뜻 + 등급)은 그대로 지킨다.
  if(!side&&g.compact)assert.ok(g.sheet.height<440&&g.sheet.height>=240,`${label}: compact sheet ${g.sheet.height}px (paged view)`);
  else if(!side)assert.ok(Math.abs(g.sheet.height-440)<=1,`${label}: sheet is 440px (${g.sheet.height})`);
  const view={top:g.body.top,bottom:side?Math.min(g.vh,g.body.bottom):g.body.bottom};
- for(const k of UPPER){
+ for(const k of lowered?['head']:UPPER){
   assert.ok(g[k],`${label}: ${k} rendered`);
   assert.ok(g[k].top>=view.top-.5&&g[k].bottom<=view.bottom+.5,`${label}: ${k} inside the visible body ${JSON.stringify(g[k])} / ${JSON.stringify(view)}`);
  }

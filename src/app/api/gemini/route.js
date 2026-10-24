@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { requireAdmin } from '@/lib/server/auth';
 import { callLLM, resolveTier, LLMError } from '@/lib/server/llm';
 import { hasPrimaryLLMKey } from '@/lib/server/llmKeys';
+import { isInternalAnalysisRequest } from '@/lib/server/internalAnalysisRequest';
 
 // ── 프록시 잠금(비용 남용 방지) ──
 // 클라는 모델이 아니라 **티어**(light/standard)를 고른다 — 모델·폴백·Groq는 llm.js의 TIERS가 정한다(AA R1).
@@ -63,10 +64,8 @@ function isRateLimited(ip) {
   return entry.count > RATE_LIMIT;
 }
 
-export async function POST(request) {
-  const started = Date.now();
-  recordStat('total');
-
+// 로그인 · 사용자별 한도 — 막으면 그 응답, 통과면 null. 서버 분석 작업이 같은 프로세스 안에서 만든 요청(internalAnalysisRequest)은 건너뛴다.
+async function gate(request) {
   // 인증 확인 — Gemini 쿼터 남용 방지
   const authHeader = request.headers.get('authorization');
   if (!authHeader) {
@@ -96,6 +95,17 @@ export async function POST(request) {
       { error: { message: '요청이 너무 많아요. 잠시 후 다시 시도해 주세요.' } },
       { status: 429 }
     );
+  }
+  return null;
+}
+
+export async function POST(request) {
+  const started = Date.now();
+  recordStat('total');
+
+  if (!isInternalAnalysisRequest(request)) {
+    const denied = await gate(request);
+    if (denied) return denied;
   }
 
   // 본선 키(Gemini 또는 Claude) — Claude 단독 운영에서도 프록시가 열린다(LLM-CLAUDE-001). Claude 키가 없으면 현행 그대로.
