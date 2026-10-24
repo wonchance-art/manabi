@@ -11,7 +11,7 @@ import ReaderToken, { readerTokenPropsEqual, sameStyle } from '../../components/
 const read = (f) => fs.readFileSync(f, 'utf8');
 const base = () => ({
   tokenId: 'id_0_2', token: { text: '駅', furigana: 'えき', base_form: '駅', meaning: '역', pos: '명사' }, className: 'word-token  ', selected: false,
-  paceStyle: undefined, tokenRefs: { current: {} }, lineHeadText: null, lineHeadRawIdx: null, linePickLabel: '문장 전체 분석',
+  paceStyle: undefined, tokenRefs: { current: {} }, lineHeadText: null, lineHeadKey: null, linePickLabel: '문장 전체 분석',
   onLinePick: () => {}, onTokenClick: () => {}, pronDisplay: 'all', isKnown: false, isSaved: false, patternMark: false, zhGrid: false, showToneColors: false,
 });
 
@@ -43,7 +43,7 @@ describe('마크업 — 뷰어가 직접 그리던 것과 같다', () => {
       + '<span class="surface" role="button" tabindex="0"><ruby data-yomi="1">駅<span class="rt-an">えき</span></ruby></span></div>');
   });
   it('줄 머리 막대 · 발음 가림 · 문형 밑줄', () => {
-    const html = renderToStaticMarkup(createElement(ReaderToken, { ...base(), lineHeadText: '駅で待つ', lineHeadRawIdx: 0, pronDisplay: 'unknown', isKnown: true, patternMark: true }));
+    const html = renderToStaticMarkup(createElement(ReaderToken, { ...base(), lineHeadText: "駅で待つ", lineHeadKey: "0:0", pronDisplay: 'unknown', isKnown: true, patternMark: true }));
     expect(html).toContain('<button class="line-pick" aria-label="문장 전체 분석" title="문장 전체 분석"></button><span class="surface surface--furi-off" role="button" tabindex="0">');
     expect(html).toContain('<span class="pattern-mark" aria-hidden="true"></span></span></div>');
   });

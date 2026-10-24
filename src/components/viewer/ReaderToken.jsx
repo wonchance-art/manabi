@@ -20,7 +20,7 @@ import { opensWordCard } from '../../lib/wordState';
  */
 function ReaderToken({
   tokenId, token, className, selected, paceStyle, tokenRefs,
-  lineHeadText, lineHeadRawIdx, linePickLabel, onLinePick, onTokenClick,
+  lineHeadText, lineHeadKey, linePickLabel, onLinePick, onTokenClick,
   pronDisplay, isKnown, isSaved, patternMark, zhGrid, showToneColors, nextText = '', variantText,
 }) {
   // 번체로 읽기(LIT-SRC-WS-1) — 화면 글자만 같은 자리의 번체로(분석 · 데이터 속성은 간체 그대로). 없으면 원문 그대로.
@@ -39,7 +39,7 @@ function ReaderToken({
       aria-label={linePickLabel}
       title={linePickLabel}
       onMouseUp={e => e.stopPropagation()}
-      onClick={e => { e.stopPropagation(); onLinePick({ text: lineHeadText, rawIdx: lineHeadRawIdx }); }}
+      onClick={e => { e.stopPropagation(); onLinePick({ text: lineHeadText, key: lineHeadKey }); }}
     />
   ) : null;
   // 단어 조작은 .surface가 맡아 문장 지정 막대(.line-pick)와 형제로 둔다(#1323). 마우스 탭은 루비 여백까지 받도록 바깥에 둔다.

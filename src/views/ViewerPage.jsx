@@ -79,7 +79,7 @@ import { announcedProgress } from '../lib/announceProgress';
 import { pinyinToneClass } from '../lib/pinyinTone';
 import { splitRuby, KANA_RE, kuruNextTexts, baseFormReading } from '../lib/splitRuby';
 import { pickedRangeOf } from '../lib/headwordPick';
-import { pickableSentences, adjacentSentence } from '../lib/sentenceNav';
+import { pickableSentenceUnits, adjacentSentence } from '../lib/sentenceNav';
 import { fitDivisor, isFitLang, fitLongHeadword, longHeadSplitAt } from '../lib/fitWord';
 import { charDetail, charEtym, isInspectableChar, materialWordsWithChar, wordsWithChar } from '../lib/charInspect';
 import { fetchSynAnt, peekSynAnt, synAntEligible } from '../lib/synAnt';
@@ -1018,12 +1018,11 @@ export default function ViewerPage() {
     // 밖 = 첫 탭이 문장 지정). 문장 단위가 아닌 줄(막대 없는 2자 미만)은 무시 — 카드
     // 폴백을 두면 첫 탭이 곧장 카드를 띄우는 뒷문이 된다.
     if (focusMode) {
-      const m = tokenId.match(/^(?:id|failed)_(\d+)_/);
-      const line = m ? sentences.find((s) => s.rawIdx === parseInt(m[1])) : null;
+      const line = sentenceOfToken.get(tokenId) || null;
       if (!line) return;
-      if (line.rawIdx !== pickedLineIdx) {
+      if (line.key !== pickedKey) {
         tokenRange.clearRange();
-        setPickedLineIdx(line.rawIdx);
+        setPickedKey(line.key);
         setSelectedRangeText(line.text);
         clearAnalysisPanels(); // 이전 문장 분석이 낡은 채 남지 않게 — 순수 이동과 동일 원칙
         return;
@@ -1053,7 +1052,7 @@ export default function ViewerPage() {
     setInspectChar(null);
     // 집중 모드에서는 단어 열람이 지정을 풀지 않는다 — 풀리면 다음 탭이 다시 '문장
     // 지정'으로 바뀌는 플립플롭이 생긴다(오너 확정 스펙의 동반 수정).
-    if (!focusMode) setPickedLineIdx(null);
+    if (!focusMode) setPickedKey(null);
     setIsEditingToken(false); // 다른 단어로 넘어가면 편집 패널 접기
     tokenRange.clearRange(); // 범위 지정 이펙트와 상호 배타
     setRightSheetSignal(s => s + 1);
@@ -1070,7 +1069,7 @@ export default function ViewerPage() {
   tokenClickRef.current = handleTokenClick;
 
   // ② 리스트 단어 탭 → 팝업 대신 단어 카드가 리스트 위에(오너 승인). 문장 컨텍스트
-  // (리스트·막대 지정·집중 어둡기)를 유지해야 하므로 dragTokens·pickedLineIdx는 건드리지 않는다.
+  // (리스트·막대 지정·집중 어둡기)를 유지해야 하므로 dragTokens·pickedKey는 건드리지 않는다.
   const resetWordPanelScroll = () => {
     for (const panel of document.querySelectorAll('.viewer-inspector [data-panel="right"]')) panel.scrollTop = 0;
   };
@@ -1180,11 +1179,56 @@ export default function ViewerPage() {
     if (easier.forText && easier.forText !== leftPanelText) resetEasier();
   }, [leftPanelText, grammar.forText, easier.forText, resetGrammar, resetEasier]);
   const explainSelectedSentenceRef = useRef(null);
-  const ctxSentenceOf = (tok) => {
-    // 본문은 원문 줄, 무id 리스트·칩은 카드가 열린 당시의 문맥을 유지한다.
+  // 문장 이동(▲/▼) — 지정 가능한 문장 목록. 렌더의 lineGroups와 같은 규칙으로
+  // sequence에서 파생한다(문장 막대와 단위 동조 — sentenceNav 계약 참조).
+  const sentences = useMemo(() => {
+    const seq = material?.processed_json?.sequence;
+    const dict = material?.processed_json?.dictionary;
+    if (!seq?.length || !dict) return [];
+    const rawLines = material?.raw_text?.split('\n') ?? [];
+    const lineGroups = [];
+    let curGroup = { rawIdx: 0, tokenIds: [] };
+    for (const tokenId of seq) {
+      const token = dict[tokenId];
+      if (!token) continue;
+      if (token.pos === '개행') {
+        lineGroups.push(curGroup);
+        const m = tokenId.match(/^(?:id|br|failed)_(\d+)_/);
+        curGroup = { rawIdx: m ? parseInt(m[1]) + 1 : curGroup.rawIdx + 1, tokenIds: [] };
+      } else {
+        const m = tokenId.match(/^(?:id|failed)_(\d+)_/);
+        if (m && curGroup.tokenIds.length === 0) curGroup.rawIdx = parseInt(m[1]);
+        curGroup.tokenIds.push(tokenId);
+      }
+    }
+    if (curGroup.tokenIds.length) lineGroups.push(curGroup);
+    return pickableSentenceUnits(lineGroups, rawLines, { dictionary: dict, language: materialLang });
+  }, [material?.processed_json, material?.raw_text, materialLang]);
+  // 토큰 → 그 토큰이 든 문장(지정 · 단어 카드 문맥 · 저장 출처 문장이 같은 문장을 쓴다).
+  const sentenceOfToken = useMemo(() => {
+    const map = new Map();
+    for (const sentence of sentences) for (const tokenId of sentence.tokenIds) map.set(tokenId, sentence);
+    return map;
+  }, [sentences]);
+  const sentencesByLine = useMemo(() => {
+    const map = new Map();
+    for (const sentence of sentences) {
+      if (!map.has(sentence.rawIdx)) map.set(sentence.rawIdx, []);
+      map.get(sentence.rawIdx).push(sentence);
+    }
+    return map;
+  }, [sentences]);
+
+  // 본문 토큰의 원문 줄(문단) — 카드 문장 줄이 그 안에서 누른 자리를 찾는다(cardSentenceOf).
+  const lineTextOf = (tok) => {
     const m = typeof tok?.id === 'string' ? tok.id.match(/^(?:id|failed)_(\d+)_/) : null;
-    return m ? material?.raw_text?.split('\n')[Number(m[1])] || null
-      : tok?.__viewerMaterialId === String(id) ? tok.__viewerSentence ?? null : null;
+    return m ? material?.raw_text?.split('\n')[Number(m[1])] || null : null;
+  };
+  const ctxSentenceOf = (tok) => {
+    // 본문은 그 토큰이 든 한 문장(마침표까지 — 오너 선택 2026-10-24 KST, 지정 · [문장] 탭 · 저장 출처가 같은 문장),
+    // 문장 단위가 없는 줄(2자 미만)은 원문 줄, 무id 리스트·칩은 카드가 열린 당시의 문맥을 유지한다.
+    if (typeof tok?.id === 'string' && /^(?:id|failed)_\d+_/.test(tok.id)) return sentenceOfToken.get(tok.id)?.text || lineTextOf(tok);
+    return tok?.__viewerMaterialId === String(id) ? tok.__viewerSentence ?? null : null;
   };
   // AE-R1 문장 줄(VIEWER-V2-ROUNDS-001 §2.1): 줄 번호 → 그 줄 토큰(json.sequence 순서). 누른 자리를 문자열 검색이 아니라
   // 토큰 순서로 찾아 같은 단어가 여러 번 나와도 누른 곳 하나만 칠한다(sentenceAroundToken).
@@ -1203,7 +1247,7 @@ export default function ViewerPage() {
     return lines;
   }, [material?.processed_json]);
   const cardSentenceOf = (tok, tight = false) => {
-    const line = ctxSentenceOf(tok);
+    const line = lineTextOf(tok) ?? ctxSentenceOf(tok);
     if (!tok || !line) return null;
     const m = typeof tok.id === 'string' ? /^(?:id|failed)_(\d+)_/.exec(tok.id) : null;
     const tokens = m ? lineTokensByIndex.get(Number(m[1])) || [] : [];
@@ -1417,8 +1461,9 @@ export default function ViewerPage() {
   const [rightSheetSignal, setRightSheetSignal] = useState(0);
   const [sentenceTabSignal, setSentenceTabSignal] = useState(0);
 
-  // 문장 막대로 지정한 줄 — 해당 줄 전체에 지정 이펙트(#1002). 단어 클릭·드래그 시 해제.
-  const [pickedLineIdx, setPickedLineIdx] = useState(null);
+  // 문장 막대로 지정한 문장(열쇠 「줄:순번」 — 마침표까지 한 문장, 오너 선택 2026-10-24 KST) — 그 문장 토큰에 지정 이펙트(#1002).
+  // 단어 클릭·드래그 시 해제.
+  const [pickedKey, setPickedKey] = useState(null);
   // 받아쓰기 패널(목업 ① — #1077-6): 지정 문장 대상, 열림 동안 원문 가림은 패널 몫
   // 받아쓰기 — 대상 문장 하나를 상태로 든다(지정 문장 🎧 · 추천 고르기 두 경로가 같은 패널로 모임).
 
@@ -1438,7 +1483,7 @@ export default function ViewerPage() {
     enabled: true,
     onSelect: (text) => {
       setRestoredClassSource(null);
-      setPickedLineIdx(null); // 막대 지정 이펙트와 상호 배타
+      setPickedKey(null); // 막대 지정 이펙트와 상호 배타
       setSelectedRangeText(text);
       grammar.reset(); // 다른 문장의 해설이 남지 않게
       easier.reset();  // 다른 문장의 쉬운 말도 함께
@@ -1448,31 +1493,6 @@ export default function ViewerPage() {
   });
 
   // 드래그 선택·문장 버튼 공용 — 왼쪽 번역+맥락, 오른쪽 단어 리스트 분석
-  // 문장 이동(▲/▼) — 지정 가능한 문장 목록. 렌더의 lineGroups와 같은 규칙으로
-  // sequence에서 파생한다(문장 막대와 단위 동조 — sentenceNav 계약 참조).
-  const sentences = useMemo(() => {
-    const seq = material?.processed_json?.sequence;
-    const dict = material?.processed_json?.dictionary;
-    if (!seq?.length || !dict) return [];
-    const rawLines = material?.raw_text?.split('\n') ?? [];
-    const lineGroups = [];
-    let curGroup = { rawIdx: 0, tokenIds: [] };
-    for (const tokenId of seq) {
-      const token = dict[tokenId];
-      if (!token) continue;
-      if (token.pos === '개행') {
-        lineGroups.push(curGroup);
-        const m = tokenId.match(/^(?:id|br|failed)_(\d+)_/);
-        curGroup = { rawIdx: m ? parseInt(m[1]) + 1 : curGroup.rawIdx + 1, tokenIds: [] };
-      } else {
-        const m = tokenId.match(/^(?:id|failed)_(\d+)_/);
-        if (m && curGroup.tokenIds.length === 0) curGroup.rawIdx = parseInt(m[1]);
-        curGroup.tokenIds.push(tokenId);
-      }
-    }
-    if (curGroup.tokenIds.length) lineGroups.push(curGroup);
-    return pickableSentences(lineGroups, rawLines);
-  }, [material?.processed_json, material?.raw_text]);
 
   // 듣기 따라가기 — 쪽 넘김 보기이고 원문과 분석 본문이 맞을 때만(분석 안 된 줄 0 · 낡은 분석 아님). 원문이 바뀐 자료(N5 #1–5처럼
   // 원문과 분석 본문이 다른 글)는 문장을 엉뚱한 줄에 잇게 되므로 따라가지 않는다. 이동은 기준만 옮기고(user 아님) 위치는 저장하지 않는다.
@@ -1577,11 +1597,11 @@ export default function ViewerPage() {
   // 분석이 필요하면 막대(¦)를 누른다 —
   // 그 경로는 본래처럼 전체 분석이다.
   const moveSentence = (dir) => {
-    if (pickedLineIdx === null) return;
-    const target = adjacentSentence(sentences, pickedLineIdx, dir);
+    if (pickedKey === null) return;
+    const target = adjacentSentence(sentences, pickedKey, dir);
     if (!target) return;
     tokenRange.clearRange();
-    setPickedLineIdx(target.rawIdx);
+    setPickedKey(target.key);
     setSelectedRangeText(target.text);
     if (focusMode) clearAnalysisPanels();
     else runSelectionAnalysis(target.text);
@@ -1613,7 +1633,7 @@ export default function ViewerPage() {
   const myCpm = recentCpm(paceHistoryRows || []);
   const suggestedCpm = suggestTargetCpm(paceHistoryRows || []);
 
-  const pickedSentence = sentences.find((s2) => s2.rawIdx === pickedLineIdx) || null;
+  const pickedSentence = sentences.find((s2) => s2.key === pickedKey) || null;
   const paceAvgChars = useMemo(() => (
     sentences.length
       ? sentences.reduce((n, s2) => n + countReadableChars(s2.text), 0) / sentences.length
@@ -1638,7 +1658,7 @@ export default function ViewerPage() {
     if (selectionToReveal && inspectorOpen) cancelReadingPosition();
     setSettingsOpen(false);
   };
-  useEffect(()=>{if(!autoPaceOn||!focusMode||pickedLineIdx===null)setPaceRunning(false);},[autoPaceOn,focusMode,pickedLineIdx]);
+  useEffect(()=>{if(!autoPaceOn||!focusMode||pickedKey===null)setPaceRunning(false);},[autoPaceOn,focusMode,pickedKey]);
   useEffect(()=>{
     const stopOnScroll=e=>{if(tokenRange.dragging||e.target?.closest?.('.reader-modal,.viewer-inspector'))return;setPaceRunning(false);};
     window.addEventListener('wheel',stopOnScroll,{passive:true});window.addEventListener('touchmove',stopOnScroll,{passive:true});
@@ -1650,7 +1670,7 @@ export default function ViewerPage() {
     const target=pickedSentence||visible||sentences[0];if(!target)return;
     // 자동 진행이 켠 문장 집중은 자동 진행이 끝나면 끈다 — 저장된 채 남아 단어를 눌러도 카드가 안 열렸다(뷰어 점검 2026-10-23).
     if(!focusMode)pacerFocusRef.current=true;
-    setFocusMode(true);setPickedLineIdx(target.rawIdx);setPaceRunning(true);
+    setFocusMode(true);setPickedKey(target.key);setPaceRunning(true);
   };
   const pacerFocusRef=useRef(false);
   useEffect(()=>{if(!paceRunning&&pacerFocusRef.current){pacerFocusRef.current=false;setFocusMode(false);}},[paceRunning,setFocusMode]);
@@ -1687,10 +1707,10 @@ export default function ViewerPage() {
     enabled: paceArmed,
     dwell: paceDwell,
     paused: paceHeld,
-    cursor: pickedLineIdx,
+    cursor: pickedKey,
     onAdvance: () => {
       // 마지막 문장이면 자동 종료 — 넘길 곳이 없으면 paced 표식도 남기지 않는다.
-      if (!adjacentSentence(sentences, pickedLineIdx, 1)) { setPaceRunning(false); return; }
+      if (!adjacentSentence(sentences, pickedKey, 1)) { setPaceRunning(false); return; }
       pacedRef.current = true;
       moveSentence(1);
     },
@@ -1717,7 +1737,7 @@ export default function ViewerPage() {
       aria-label={dir < 0 ? vt('위 문장') : vt('아래 문장')}
       title={dir < 0 ? vt('위 문장 · Alt+↑') : vt('아래 문장 · Alt+↓')}
       aria-keyshortcuts={dir < 0 ? 'Alt+ArrowUp' : 'Alt+ArrowDown'}
-      disabled={!adjacentSentence(sentences, pickedLineIdx, dir)}
+      disabled={!adjacentSentence(sentences, pickedKey, dir)}
       onClick={() => moveSentence(dir)}
       data-icon-action
     ><ActionIcon name={dir<0?'up':'down'}/></button>
@@ -1732,10 +1752,10 @@ export default function ViewerPage() {
   const handleReaderBlankClick = (e) => {
     if (!focusMode) return;
     if (e.target.closest('.word-token, .line-pick, .sentence-nav, .range-grip, button, a')) return;
-    if (pickedLineIdx === null && !tokenRange.range) return;
+    if (pickedKey === null && !tokenRange.range) return;
     releasePickedSentence();
   };
-  useEffect(() => { setSentenceReserve(pagedActive && pickedLineIdx !== null); }, [pagedActive, pickedLineIdx]);
+  useEffect(() => { setSentenceReserve(pagedActive && pickedKey !== null); }, [pagedActive, pickedKey]);
   // 바닥 막대(접힌 시트 · 문장 이동 막대)가 뜨거나 키가 바뀌면 그 위 끝까지를 비운다 — 처음 값(64)과 다르면 쪽 높이를 다시 맞춘다.
   useEffect(() => {
     if (!sentenceReserve || !pagesEl) return;
@@ -1748,7 +1768,7 @@ export default function ViewerPage() {
   // 지정 해제 한 벌 — 빈 공간 탭과 문장 이동 막대의 ×가 같은 해제를 쓴다.
   const releasePickedSentence = () => {
     tokenRange.clearRange();
-    setPickedLineIdx(null);
+    setPickedKey(null);
     setSelectedRangeText('');
     clearAnalysisPanels();
   };
@@ -1877,15 +1897,21 @@ export default function ViewerPage() {
     sentence, locale: effectiveExplanationLocale, language: materialLang,
     langName: languageInfo?.labelKo || langNameKo(materialLang), storage: (() => { try { return isClient ? window.localStorage : null; } catch { return null; } })(),
   });
-  const sentenceBookMeaningOf = (sentence) => sentenceBookMeaning({
-    translations: material?.processed_json?.metadata?.translations, locale: effectiveExplanationLocale, sentence });
+  // 교재 뜻은 원문 줄(문단) 단위로 실려 있다 — 문장이 그 줄의 일부면 줄 뜻으로 물러선다(문장 단위로 바꿔도 교재 뜻을 잃지 않게).
+  const sentenceBookMeaningOf = (sentence) => {
+    const translations = material?.processed_json?.metadata?.translations;
+    const exact = sentenceBookMeaning({ translations, locale: effectiveExplanationLocale, sentence });
+    if (exact || !translations) return exact;
+    const line = sentences.find((unit) => unit.text === sentence && unit.lineText !== sentence)?.lineText;
+    return line ? sentenceBookMeaning({ translations, locale: effectiveExplanationLocale, sentence: line }) : null;
+  };
   const cardSentenceOpen = useRef(null); // 측정 — 카드에서 [문장] 탭을 연 순간(적중·합류·없음, 준비까지 걸린 시간)
   const lineIndexOfToken = (tok) => {
     const m = typeof tok?.id === 'string' ? /^(?:id|failed)_(\d+)_/.exec(tok.id) : null;
     return m ? Number(m[1]) : null;
   };
   const prefetchLineKey = !classStudyActive && user && isSheetOpen && lineIndexOfToken(selectedToken) !== null
-    ? `${id}:${lineIndexOfToken(selectedToken)}:${effectiveExplanationLocale}` : null;
+    ? `${id}:${sentenceOfToken.get(selectedToken.id)?.key ?? lineIndexOfToken(selectedToken)}:${effectiveExplanationLocale}` : null;
   const prefetchCardSentence = async () => {
     const sentence = canonicalSentence(ctxSentenceOf(selectedToken));
     if (!sentence || sentenceBookMeaningOf(sentence)) return;
@@ -1928,19 +1954,19 @@ export default function ViewerPage() {
     const active = document.activeElement;
     if (active && active !== last && active !== document.body) return;
     bar.querySelector('button:not(:disabled)')?.focus();
-  }, [pickedLineIdx]);
+  }, [pickedKey]);
   // 단독 「▶ 자동 진행」으로 시작하면 그 버튼은 사라지고 막대가 뜬다 — 키보드 위치를 막대 안 ■에 이어 둔다.
   useEffect(() => {
     if (!paceFocusRef.current || !paceRunning) return;
     paceFocusRef.current = false;
     moveBarRef.current?.querySelector('.sentence-move-bar__pace')?.focus({ preventScroll: true });
-  }, [paceRunning, pickedLineIdx]);
+  }, [paceRunning, pickedKey]);
   // Alt+↑ / Alt+↓ — 문장이 지정된 동안의 키보드 이동(입력란·모달·조합 중에는 무시).
   // 막대 버튼과 같은 moveSentence라 집중 모드에서는 순수 이동이다.
   const sentenceKeyRef = useRef({});
   sentenceKeyRef.current = {
     // 수업 모드는 자기 도크·판 경로가 있다 — 이 단축키·막대는 기본 뷰어에서만(V2 §0.2 수업 경로 보존).
-    active: pickedLineIdx !== null && sentences.length > 0 && !classStudyActive,
+    active: pickedKey !== null && sentences.length > 0 && !classStudyActive,
     blocked: modalBlocked || tokenRange.dragging, // 설정·받아쓰기·읽기 확인 등은 모두 activeModal — modalBlocked에 든다
     move: moveSentence,
   };
@@ -1963,7 +1989,7 @@ export default function ViewerPage() {
     blocked: modalBlocked || tokenRange.dragging,
     char: !!inspectChar, closeChar: () => setInspectChar(null),
     card: !!(selectedToken && isSheetOpen), closeCard: closeWordCard,
-    bar: pickedLineIdx !== null && !classStudyActive, closeBar: closeMoveBar,
+    bar: pickedKey !== null && !classStudyActive, closeBar: closeMoveBar,
   };
   useEffect(() => {
     function onKeyDown(e) {
@@ -1995,6 +2021,11 @@ export default function ViewerPage() {
   ) : null;
 
 
+
+  // 저장 출처 문장 = 그 토큰이 든 한 문장(마침표까지). 문장 단위가 없는 줄이면 예전처럼 앞뒤 15토큰.
+  function sourceSentenceOf(token) {
+    return sentenceOfToken.get(token?.id)?.text || extractSourceSentence(token?.id) || (ctxSentenceOf(token) ?? leftPanelText);
+  }
 
   function extractSourceSentence(tokenId) {
     const sequence = json.sequence;
@@ -2797,7 +2828,7 @@ export default function ViewerPage() {
       grade: Number.isInteger(grade)&&grade>=1&&grade<=4?grade:undefined,
       word: { text: token.text, base: token.sep_link || token.base_form,
         meaning: token.meaning, pos: token.pos, reading: token.furigana || token.reading,
-        language: materialLang, sourceSentence: extractSourceSentence(token.id) || (ctxSentenceOf(token) ?? leftPanelText) },
+        language: materialLang, sourceSentence: sourceSentenceOf(token) },
     });
   };
   const loginForGuestSave = async (event) => {
@@ -2825,7 +2856,7 @@ export default function ViewerPage() {
     const action = ++gradeAction.current;
     const g = Number.isInteger(grade) && grade >= 1 && grade <= 4 ? grade : undefined;
 
-    const sourceSentence = extractSourceSentence(selectedToken.id) || (ctxSentenceOf(selectedToken) ?? leftPanelText);
+    const sourceSentence = sourceSentenceOf(selectedToken);
     const saveScope = saveScopeRef.current;
     const savedToken = selectedToken;
     const savedSource = readingContextSource(savedToken);
@@ -2968,12 +2999,12 @@ export default function ViewerPage() {
   }
   const previewTokens = settingsOpen ? (() => {
     const rangeStart = tokenRange.range ? json.sequence[tokenRange.range.start] : null;
-    const line = pickedLineIdx ?? Number((rangeStart || selectedToken?.id || json.sequence[0])?.split('_')[1] || 0);
+    const line = pickedSentence?.rawIdx ?? Number((rangeStart || selectedToken?.id || json.sequence[0])?.split('_')[1] || 0);
     return json.sequence.filter(key => key.startsWith(`id_${line}_`)).flatMap(key => {
       const token = json.dictionary[key];
       if (!token || token.pos === '개행') return [];
       const state = tokenDisplayState(token);
-      return [{...token, previewSaved:state.isSaved, previewDue:state.isDue, previewKnown:state.isKnown, previewHighlight:state.highlight, previewPicked:pickedLineIdx === line || !!tokenRange.rangeTokenIds?.has(key)}];
+      return [{...token, previewSaved:state.isSaved, previewDue:state.isDue, previewKnown:state.isKnown, previewHighlight:state.highlight, previewPicked:!!pickedSentence?.tokenIds.includes(key) || !!tokenRange.rangeTokenIds?.has(key)}];
     });
   })() : [];
   const status = material?.processed_json?.status || material?.status;
@@ -3824,8 +3855,12 @@ export default function ViewerPage() {
     const fromCard = cardLine !== null && canonicalSentence(ctxSentenceOf(selectedToken)) === leftPanelText;
     const json = material?.processed_json;
     const tokenIds = sentencePanelTokenIds({ text: leftPanelText, rawLines: material?.raw_text?.split('\n') || [], lineTokens: lineTokensByIndex,
-      sequence: json?.sequence, dictionary: json?.dictionary, range: tokenRange.range });
-    const original = sentencePanelOriginal({ text: leftPanelText, tokens: fromCard ? lineTokensByIndex.get(cardLine) || [] : [], tokenId: fromCard ? selectedToken.id : null });
+      sequence: json?.sequence, dictionary: json?.dictionary, range: tokenRange.range, sentences });
+    // 누른 자리는 그 문장 토큰 순서로 찾는다 — 줄 전체 토큰이면 앞 문장의 같은 단어(我们 …)가 먼저 잡힌다.
+    const cardSentence = fromCard ? sentenceOfToken.get(selectedToken.id) : null;
+    const cardTokens = cardSentence ? cardSentence.tokenIds.map((tokenId) => ({ id: tokenId, text: json?.dictionary?.[tokenId]?.text ?? '' }))
+      : fromCard ? lineTokensByIndex.get(cardLine) || [] : [];
+    const original = sentencePanelOriginal({ text: leftPanelText, tokens: cardTokens, tokenId: fromCard ? selectedToken.id : null });
     const glosses = sentenceWordGlosses(json?.dictionary, tokenIds, { language: materialLang });
     const patterns = sentencePatternHits(visibleScan, tokenIds);
     // 번역 칸 머리는 결과와 같은 마크업(formatDetail의 **번역** 제목, 설명 언어)으로 먼저 그린다 — 결과가 와도 제자리.
@@ -4054,7 +4089,7 @@ export default function ViewerPage() {
       <div className="reader-pages-frame">
       <div ref={setPagesEl} className="reader-pages" data-reader-pages={pagedActive?'paged':'scroll'}>
       {(originalParams.has('sourceEntry')||originalParams.has('sourceQuote'))&&<ClassSourceFocus material={material} user={user} params={originalParams} tokenRefs={tokenRefs} onResolve={(target,source)=>{
-        closeWordCard();clearAnalysisPanels();tokenRange.clearRange();setPickedLineIdx(null);setSelectedRangeText(source.quote);
+        closeWordCard();clearAnalysisPanels();tokenRange.clearRange();setPickedKey(null);setSelectedRangeText(source.quote);
         if(target.first===target.last&&json.dictionary[target.first]?.text===source.quote){setSelectedToken({...json.dictionary[target.first],id:target.first});setIsSheetOpen(true);setRightSheetSignal(v=>v+1);}
         else {tokenRange.restoreRange(target.first,target.last);setRestoredClassSource({materialId:String(material.id),quote:source.quote,anchor:classAnchorAt(textbookStream(json).text,target.start,target.end,source.quote)});setLeftPanelText(source.quote);const from=json.sequence.indexOf(target.first),to=json.sequence.indexOf(target.last);setDragTokens(json.sequence.slice(from,to+1).filter(tid=>json.dictionary[tid]?.pos!=='개행').map(tid=>({...json.dictionary[tid],id:tid})));setRightSheetSignal(v=>v+1);}
       }}/>}
@@ -4320,7 +4355,7 @@ export default function ViewerPage() {
       {/* Reader Area — 인앱 토큰 범위 지정(드래그) 이벤트는 여기서 위임 수신 */}
       <div
         ref={readerRef}
-        className={`reader-area reader-area--${theme}${focusMode && (pickedLineIdx !== null || tokenRange.range || listenTokens?.size) ? ' reader-area--focus' : ''}${focusMode && listenTokens?.size ? ' reader-area--focus-listen' : ''}${wordStateHl ? ' reader-area--hl' : ''}${paceDwell ? ' reader-area--pacing' : ''}${paceDwell && paceHeld ? ' reader-area--pacing-hold' : ''}`}
+        className={`reader-area reader-area--${theme}${focusMode && (pickedKey !== null || tokenRange.range || listenTokens?.size) ? ' reader-area--focus' : ''}${focusMode && listenTokens?.size ? ' reader-area--focus-listen' : ''}${wordStateHl ? ' reader-area--hl' : ''}${paceDwell ? ' reader-area--pacing' : ''}${paceDwell && paceHeld ? ' reader-area--pacing-hold' : ''}`}
         style={{
           fontSize: `${fontSize*(classStudyActive&&classBoardLayout==='split'?.8:1)}rem`,
           fontFamily: readerFontFamily(materialLang,fontFamily),
@@ -4419,11 +4454,11 @@ export default function ViewerPage() {
           // 문장 전체 지정 막대(.line-pick) — 낱말 칸(ReaderToken)과 분석 실패 칸이 같은 동작을 쓴다.
           linePickRef.current = (lineHead) => {
             tokenRange.clearRange(); // 범위 지정 이펙트와 상호 배타
-            setPickedLineIdx(lineHead.rawIdx); // 문장 전체 지정 이펙트
+            setPickedKey(lineHead.key); // 문장 전체 지정 이펙트
             setSelectedRangeText(lineHead.text); // 문법 버튼 활성 경로
             // 집중 모드 단일 규칙: 지정 '밖' 막대 = 순수 이동(지정 먼저), 지정된
             // 문장의 막대 재탭 = 본래처럼 전체 분석. 집중 꺼짐 = 항상 분석.
-            if (focusMode && pickedLineIdx !== lineHead.rawIdx) clearAnalysisPanels();
+            if (focusMode && pickedKey !== lineHead.key) clearAnalysisPanels();
             else runSelectionAnalysis(lineHead.text);
           };
           const linePickLabel = vt("문장 전체 분석");
@@ -4472,7 +4507,7 @@ export default function ViewerPage() {
                 className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${listenTokens?.has(tokenId) ? ' word-token--listening' : ''}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}${isSaved && justSaved === tokenId ? ' word-token--just-saved' : ''}`}
                 selected={selectedToken?.id === tokenId && isSheetOpen}
                 paceStyle={paceStyle}
-                lineHeadText={lineHead ? lineHead.text : null} lineHeadRawIdx={lineHead ? lineHead.rawIdx : null}
+                lineHeadText={lineHead ? lineHead.text : null} lineHeadKey={lineHead ? lineHead.key : null}
                 linePickLabel={linePickLabel} onLinePick={onReaderLinePick} onTokenClick={onReaderTokenClick}
                 nextText={token.furigana ? kuruNext.get(tokenId) : ''}
                 pronDisplay={pronDisplay} isKnown={tokKnown} isSaved={isSaved}
@@ -4565,13 +4600,21 @@ export default function ViewerPage() {
             const lineText = (rawLines[rawIdx] ?? '').trim().replace(/^#{1,3}\s/, '')
               || lineTokenIds.slice(startIdx).map(id => json.dictionary[id]?.text || '').join('').trim();
 
-            const isPicked = pickedLineIdx === rawIdx;
+            // 막대(¦)는 문장마다 그 문장 첫 낱말 앞에 — 줄의 첫 문장은 줄 첫 낱말(# 표지를 건넌 자리)에 앉는다.
+            const lineSentences = sentencesByLine.get(rawIdx) || [];
+            const headOf = (id, ti) => {
+              if (ti === 0) return lineSentences[0] || (lineText.length >= 2 ? { key: `${rawIdx}:0`, text: lineText, rawIdx } : null);
+              const sentence = sentenceOfToken.get(id);
+              return sentence && sentence !== lineSentences[0] && sentence.firstTokenId === id ? sentence : null;
+            };
+            const isPicked = pickedSentence?.rawIdx === rawIdx;
+            const pickedIds = isPicked ? new Set(pickedSentence.tokenIds) : null;
 
             // 자동 진행 체류 선 — 지정 문장 안에서 각 토큰이 '언제 지워질지'를 글자수
             // 비례로 나눈다. 선은 오른쪽 끝에서 물러나므로 토큰 i의 구간은 [1-e, 1-s].
             // 나눗셈은 여기서 한 번이고, 실제 시간은 CSS가 잰다(JS 프레임 루프 0).
             const paceSlices = isPicked && paceDwell ? (() => {
-              const ids = lineTokenIds.slice(startIdx);
+              const ids = lineTokenIds.slice(startIdx).filter(id => pickedIds.has(id));
               const lens = ids.map((id) => countReadableChars(json.dictionary[id]?.text || ''));
               const total = lens.reduce((a, b) => a + b, 0);
               if (!total) return null;
@@ -4588,7 +4631,7 @@ export default function ViewerPage() {
             return (
               <span key={gi} className={hClass || undefined} style={{ display: 'contents' }}>
                 {lineTokenIds.slice(startIdx).map((id, ti) =>
-                  renderToken(id, ti === 0 && lineText.length >= 2 ? { text: lineText, rawIdx } : null, isPicked, paceSlices?.get(id) || null)
+                  renderToken(id, headOf(id, ti), !!pickedIds?.has(id), paceSlices?.get(id) || null)
                 )}
                 {gi < lineGroups.length - 1 && <div className="line-break" />}
               </span>
@@ -4598,7 +4641,7 @@ export default function ViewerPage() {
 
         {/* 문장 이동(▲ 위 / ▼ 아래) — 문장이 지정된 동안에만 나타나는 플로팅 필(데스크톱
             전용 — 모바일은 하단 바 안의 ▲▼가 대신한다, 시트 겹침 재배치). */}
-        {pickedLineIdx !== null && sentences.length > 0 && (
+        {pickedKey !== null && sentences.length > 0 && (
           <div className="sentence-nav" role="group" aria-label={vt("문장 이동")}>
             {sentenceNavBtn(-1, 'sentence-nav__btn')}
             {sentenceNavBtn(1, 'sentence-nav__btn')}
@@ -4773,7 +4816,7 @@ export default function ViewerPage() {
         onPresentChange={setSheetPresent}
         collapsedActions={<>{autoPaceOn&&sentences.length>0&&!modalBlocked&&paceToggle('viewer-inspector__pace')}
           {/* 접힌 막대의 ✕ = 문장 지정 해제(뷰어 점검 A3) — 막대 · 문장 강조가 함께 사라진다. 예전엔 지울 방법이 없었다. */}
-          {pickedLineIdx !== null && <button type="button" className="viewer-inspector__clear" aria-label={vt('문장 지정 해제')} title={vt('문장 지정 해제')} onClick={closeMoveBar} data-icon-action><ActionIcon name="close"/></button>}</>}
+          {pickedKey !== null && <button type="button" className="viewer-inspector__clear" aria-label={vt('문장 지정 해제')} title={vt('문장 지정 해제')} onClick={closeMoveBar} data-icon-action><ActionIcon name="close"/></button>}</>}
         leftContent={senseReviewContent || boundaryPendingContent || leftPanelContent}
         rightContent={selectedToken&&isSheetOpen?renderRightPanelContent(annotationContent&&<section className="reader-card-notes" aria-label={vt("교재 설명")}><h3 className="reader-card-section__label">{vt("교재 설명")}</h3>{annotationContent}</section>):<>{annotationContent}{rightPanelContent}</>}
         leftActive={leftPanelLoading || !!leftPanelResult || !!senseReviewContent || !!boundaryPendingContent}
@@ -4783,7 +4826,7 @@ export default function ViewerPage() {
         sentenceTabSignal={sentenceTabSignal}
         onSentenceTab={openSentenceTranslation}
         menu={sheetMenu}
-        barNav={pickedLineIdx !== null && sentences.length > 0 ? (
+        barNav={pickedKey !== null && sentences.length > 0 ? (
           <>
             {sentenceNavBtn(-1, 'viewer-sheet-bar__btn viewer-sheet-bar__btn--nav')}
             {sentenceNavBtn(1, 'viewer-sheet-bar__btn viewer-sheet-bar__btn--nav')}

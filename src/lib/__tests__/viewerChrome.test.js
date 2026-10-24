@@ -430,7 +430,7 @@ describe('⑨ AD-R2 읽기 크롬 — 영문 0 · 라벨 툴바 · 통계 한 �
     expect(src).toContain('const sheetStripShown = sheetPresent && !inspectorOpen && !classStudyActive;');
     expect(src).toContain("collapsedActions={<>{autoPaceOn&&sentences.length>0&&!modalBlocked&&paceToggle('viewer-inspector__pace')}");
     // 접힌 막대 ✕ = 문장 지정 해제(뷰어 점검 A3) — 지정이 있을 때만.
-    expect(src).toContain("{pickedLineIdx !== null && <button type=\"button\" className=\"viewer-inspector__clear\"");
+    expect(src).toContain("{pickedKey !== null && <button type=\"button\" className=\"viewer-inspector__clear\"");
     expect(src).toContain('onPresentChange={setSheetPresent}');
     const sheet = read('src/components/ViewerBottomSheet.jsx');
     expect(sheet).toContain('{!open&&collapsedActions}');

@@ -96,7 +96,7 @@ describe('⑤⑥ 진행은 moveSentence(1) 하나 — 새 상태·새 버튼 0',
   });
 
   it('⑦ 마지막 문장이면 자동 종료 — 넘길 곳이 없으면 paced 표식도 남기지 않는다', () => {
-    expect(block).toContain('if (!adjacentSentence(sentences, pickedLineIdx, 1)) { setPaceRunning(false); return; }'); expect(block.indexOf('adjacentSentence')).toBeLessThan(block.indexOf('pacedRef.current = true'));
+    expect(block).toContain('if (!adjacentSentence(sentences, pickedKey, 1)) { setPaceRunning(false); return; }'); expect(block.indexOf('adjacentSentence')).toBeLessThan(block.indexOf('pacedRef.current = true'));
   });
 
   it("진행 허용과 실제 시작을 분리하고 명시적 시작 버튼을 제공한다", () => {
