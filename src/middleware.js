@@ -91,6 +91,13 @@ export async function middleware(request) {
     destination.pathname = archive;
     return NextResponse.redirect(destination);
   }
+  // 로그인(/auth)은 정적 판에 폼을 싣는다(ROUTE-AUDIT-2 P1). 메일 재설정 링크(?mode=reset) · 로그인 실패(?error=)만 첫 그림을 미루는 판으로 —
+  // 정적 로그인 폼이 잠깐 보였다가 재설정 · 오류 화면으로 바뀌지 않게. 질의는 그대로 둔다(화면이 마운트 뒤 주소에서 읽는다).
+  if (pathname === '/auth') {
+    const params = request.nextUrl.searchParams;
+    if (params.get('mode') === 'reset' || params.has('error')) return rewriteTo(request, '/auth/from-link');
+    return NextResponse.next();
+  }
   const variant = guestStaticVariant(request);
   if (variant) return variant;
   // 옛 학습 대시보드 주소 둘(/learn · /learn/course)은 책장으로 — 엣지에서 보낸다(ROUTE-AUDIT-2 F1, 2026-10-25 KST).
@@ -144,6 +151,6 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/', '/admin/:path*', '/japanese/:path*', '/chinese/:path*', '/english/:path*', '/french/:path*', '/learn', '/learn/course', '/discover', '/lessons',
+  matcher: ['/', '/auth', '/admin/:path*', '/japanese/:path*', '/chinese/:path*', '/english/:path*', '/french/:path*', '/learn', '/learn/course', '/discover', '/lessons',
     '/home', '/books/japanese-n5', '/books/japanese-n4', '/books/japanese-n3', '/suggestions/:id'],
 };
