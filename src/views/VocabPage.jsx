@@ -46,7 +46,7 @@ import { ReviewIntroCard, ReviewSoundToggle, useScoreArmed } from '../components
 import { useKnownWords } from '../lib/useKnownWords';
 import { knownWordsLang } from '../lib/knownWords';
 import ReviewScopeBar, { ReviewScopeNotice } from '../components/vocab/ReviewScopeBar';
-import { useVocabData, invalidateVocabularyLearning, patchVocabularyLearningRow, REVIEW_ROOM_DEFERRED } from '../lib/useVocabData';
+import { useVocabData, usePrefetchVocabLearning, invalidateVocabularyLearning, patchVocabularyLearningRow, REVIEW_ROOM_DEFERRED } from '../lib/useVocabData';
 import { isVocabularyReviewAvailable, isVocabularyUnreviewed } from '../lib/vocabularyLearningRead';
 import { wordStage } from '../lib/growthStats';
 import { confusedVocabWords, CONFUSED_MIN, CONFUSED_SINCE_DAYS } from '../lib/confusedQueue';
@@ -102,8 +102,10 @@ function useRoomMemo(frozen, factory, deps) {
 /** 질문 입장을 서버가 거절한 「이 카드는 지금 묻지 않는다」 사유(learningAdmission databaseError) — 실패가 아니라 건너뛸 카드다. */
 const ADMISSION_GONE_CODES = new Set(['fsrs_card_not_due', 'fsrs_card_excluded', 'fsrs_already_enrolled', 'fsrs_card_not_found']);
 
-export default function VocabPage({ reviewScope = NOT_EXPLICIT, firstScreen = null }) {
+export default function VocabPage({ reviewScope = NOT_EXPLICIT, firstScreen = null, serverUserId = null }) {
   const { user, loading } = useAuth();
+  // 로그인 복원을 기다리는 동안 서버가 확인한 계정의 목록을 먼저 받기 시작한다(VOCAB-FIRST-NUMBERS-001 — 같은 키 · 같은 함수).
+  usePrefetchVocabLearning(serverUserId, loading);
   if (loading) return <div className="page-container manabi-review-room" role="status">계정을 확인하고 있어요…</div>;
   // 명시 범위 주소가 무효면 닫힌다 — 「전체」로 새지 않고 저장된 설정도 건드리지 않는다(REV-SCOPE-R1A 원칙 5).
   if (reviewScope?.invalid) return (

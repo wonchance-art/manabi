@@ -30,16 +30,27 @@ async function readProfileLang(client, userId) {
   return profileReviewLang(data);
 }
 
+/** 이 요청의 로그인 계정(쿠키 접근 토큰의 서명 확인 — 갱신 없음). 손님 · 만료 임박 · 실패 · 시간 초과는 null. 던지지 않는다. */
+export async function reviewRoomSession({ auth = requireUserClaims, budgetMs = REVIEW_ROOM_PREFETCH_BUDGET_MS } = {}) {
+  try {
+    const session = await Promise.race([auth(), timeout(budgetMs)]);
+    return session === 'timeout' || session?.error || !session?.user?.id ? null : session;
+  } catch {
+    return null;
+  }
+}
+
 /**
+ * session = reviewRoomSession() 결과(page.jsx가 한 번 확인해 넘긴다). 없으면 여기서 확인한다.
  * @returns {Promise<null | object>} buildReviewRoomFirstScreen 결과(계정 id · 유효 시각 포함) 또는 null. 던지지 않는다.
  */
 export async function prefetchReviewRoomFirstScreen(reviewScope, { budgetMs = REVIEW_ROOM_PREFETCH_BUDGET_MS, auth = requireUserClaims,
-  serviceClient = fsrsServiceClient, now = Date.now } = {}) {
+  session: given, serviceClient = fsrsServiceClient, now = Date.now } = {}) {
   const deadline = Date.now() + budgetMs;
   try {
     if (firstScreenSkipped(reviewScope)) return null;
-    const session = await Promise.race([auth(), timeout(deadline - Date.now())]);
-    if (session === 'timeout' || session?.error || !session?.user?.id) return null;
+    const session = given || await reviewRoomSession({ auth, budgetMs });
+    if (!session?.user?.id) return null;
     const userId = session.user.id, service = serviceClient();
     const reads = (async () => {
       const [snapshot, fsrs, profileLang] = await Promise.all([

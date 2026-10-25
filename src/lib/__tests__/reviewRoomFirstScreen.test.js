@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('next/headers', () => ({ cookies: async () => ({ getAll: () => [], get: () => undefined, set: () => {} }) }));
 
-import { prefetchReviewRoomFirstScreen, firstScreenSkipped, REVIEW_ROOM_PREFETCH_BUDGET_MS } from '../server/reviewRoomPrefetch';
+import { prefetchReviewRoomFirstScreen, firstScreenSkipped, reviewRoomSession, REVIEW_ROOM_PREFETCH_BUDGET_MS } from '../server/reviewRoomPrefetch';
 import { buildReviewRoomFirstScreen, firstScreenSession, ownFirstScreen, plainReviewScope, FIRST_SCREEN_TTL_MS } from '../reviewRoomFirstScreen';
 import { readVocabularyLearningSnapshot } from '../server/fsrsVocabulary';
 import { readFsrsStatus } from '../server/fsrsLearning';
@@ -314,6 +314,31 @@ describe('⑶ 손님 · 실패 · 시간 초과 · 호환 모드 → null(지금
 });
 
 describe('⑷ 로그인 확인 · 캐시 경계 · 화면 배선', () => {
+  it('로그인 확인은 한 번 — 넘겨받은 세션이면 다시 확인하지 않고, 손님 · 실패 · 시간 초과는 null', async () => {
+    const world = account();
+    const { auth, service } = clients(world);
+    const check = vi.fn();
+    const first = await prefetchReviewRoomFirstScreen({ explicit: false }, { session: { supabase: auth, user: { id: ACTOR } }, auth: check,
+      serviceClient: () => service, now: () => AT });
+    expect(first?.actorId).toBe(ACTOR);
+    expect(check).not.toHaveBeenCalled();
+    expect(await reviewRoomSession({ auth: async () => ({ error: '로그인이 필요해요.', status: 401 }) })).toBeNull();
+    expect(await reviewRoomSession({ auth: async () => { throw new Error('jwks'); } })).toBeNull();
+    expect(await reviewRoomSession({ auth: () => new Promise(r => setTimeout(() => r({ user: { id: ACTOR } }), 200)), budgetMs: 20 })).toBeNull();
+    expect((await reviewRoomSession({ auth: async () => ({ supabase: auth, user: { id: ACTOR } }) })).user.id).toBe(ACTOR);
+  });
+  it('로그인 복원 전 목록 받기 — 서버가 확인한 계정만, useVocabData와 같은 키 · 같은 함수', () => {
+    const page = read('src/views/VocabPage.jsx');
+    const head = sliceBetween(page, 'export default function VocabPage(', 'if (loading) return');
+    expect(head).toContain('usePrefetchVocabLearning(serverUserId, loading);');
+    const data = read('src/lib/useVocabData.js');
+    const prefetch = sliceBetween(data, 'export function usePrefetchVocabLearning(serverUserId, enabled) {', '\n}');
+    expect(prefetch).toContain("queryKey: ['vocab', serverUserId, 'learning'], queryFn: ({ signal }) => fetchVocabLearningData(serverUserId, { signal })");
+    expect(prefetch).toContain('if (!enabled ||');
+    expect(data).toContain("queryKey: ['vocab', user?.id, 'learning'],");
+    expect(data).toContain('queryFn: ({ signal }) => fetchVocabLearningData(user.id, { signal, getActorId: () => actorRef.current }),');
+    expect(read('src/app/(app)/vocab/page.jsx')).toContain('serverUserId={session?.user.id ?? null}');
+  });
   it('서버 읽기는 갱신을 일으키지 않는 requireUserClaims, API 라우트와 같은 읽기 함수만 쓴다', () => {
     const server = read('src/lib/server/reviewRoomPrefetch.js');
     expect(server).toContain("import { requireUserClaims } from '@/lib/supabaseServer';");
@@ -328,7 +353,8 @@ describe('⑷ 로그인 확인 · 캐시 경계 · 화면 배선', () => {
   it('페이지는 동적(요청마다) · 숫자 약속을 기다리지 않고 넘긴다(본문 · 골격이 먼저 나간다)', () => {
     const page = read('src/app/(app)/vocab/page.jsx');
     expect(page).toContain("export const dynamic = 'force-dynamic';");
-    expect(page).toContain('firstScreen={prefetchReviewRoomFirstScreen(reviewScope)}');
+    expect(page).toContain('const session = await reviewRoomSession();');
+    expect(page).toContain('firstScreen={session ? prefetchReviewRoomFirstScreen(reviewScope, { session }) : null}');
     expect(page).not.toMatch(/await prefetchReviewRoomFirstScreen/);
     expect(page).not.toMatch(/revalidate|unstable_cache|'use cache'/);
   });
