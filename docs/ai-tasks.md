@@ -1040,6 +1040,12 @@
   F6 읽기 라우트 getClaims · F9 오프라인 복습 허용(오너 결정) / F5 채점 왕복 · F8 /study 부분 snapshot RPC(후속).
   → 수정 1 **#1560 squash `293b0e75`(16:41, 운영 15/15 · 오류 0)**. F7(바뀐 행 투영만 · 세션 중 복습방 계산 멈춤): 모바일 채점 INP 112 → 48 ms ·
   「정답 보기」 뒤 long task 239 → 0. F4(줄 memo): 「더 보기」 탭당 스크립트 평탄(10–22 ms) — 남은 INP는 새 30줄 레이아웃(가상화 · content-visibility는 목업 사안).
+  → F7 · F4 **#1562 squash `16460bad`(17:40, 운영 15/15 · 오류 0)**.
+- **오너 「권장대로」(2026-10-25 KST)**: 내 정보 시안 A + D2–D6 · 쪽 넘김 A안(쪽 경계 뒤 문단 ≤ 줄 간격 하나 · 쪽 수 소폭 증가 수용) ·
+  ㉠ /vocab 첫 숫자 서버(병합 전 전후 캡처) · ㉡ 오프라인 복습 허용(admitted 카드) · ㉢ 읽기 전용 라우트 getClaims(쓰기는 getUser 유지) · ㉣ 훈음표 지연 로드.
+- **JS-CRIT-001 (2026-10-25 KST)**: 단어 레벨 라우트 첫 JS에서 LevelListPage 제외 · drillSrs 로그인 뒤 동적 import · 레벨 찾기 색인 지연.
+  단어 라우트 JS 266 → 240 KB gz, 루트 155 → 148 KB gz, long task −15~−44%. LCP는 −1~−8%(임계 경로 = 글꼴 @font-face CSS 약 270 KB gz) —
+  글꼴 CSS 범위 축소 · 손님 첫 카드 SSR은 후속 결정. fsrs INITIAL_S 지연은 #1561이 같은 문제를 먼저 고쳐 제외.
 - VOCAB-LEVEL-DOC(F9 현장): 목록을 문서 밖 JSON으로 → 문서 −95%지만 LCP +4%(JS가 임계 경로) → 배제 · 패치 보관. 후속 G(카드 앞 JS 청크) 조사 중.
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로
