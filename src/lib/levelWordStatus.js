@@ -134,6 +134,12 @@ export function dueAmount(due, at = Date.now()) {
   const days = learningDaySpan(next, now);
   return days ? { n: days, unit: '일' } : intervalAmount(next - now);
 }
+/** 접힌 「복습 예정」 카드 오른쪽 — 「1일 뒤」(펼친 카드 「2일 뒤 복습」 · 채점 칸 「8일」과 같은 계산), 날짜 없는 알아요 단어는 「졸업」. */
+export function laterDueText(next, at = Date.now()) {
+  if (next == null) return '졸업';
+  const a = dueAmount(next, at);
+  return a && schedulerTime(next) > schedulerTime(at) ? `${a.n}${a.unit} 뒤` : '오늘';
+}
 const previewOf = (due, now) => {
   const amount = dueAmount(due, now);
   return { label: amountLabel(amount), ms: schedulerTime(due) - now, amount };

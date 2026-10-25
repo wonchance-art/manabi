@@ -114,7 +114,7 @@ export const DATA_CREDIT_SECTIONS = [
         id: 'kanjidic2',
         name: 'KANJIDIC2 (EDRDG)',
         holder: '© Electronic Dictionary Research and Development Group',
-        use: 'JLPT 단어 글자 칸의 단어 속 한자 읽기',
+        use: 'JLPT 단어 글자 칸의 단어 속 한자 읽기 · 상용한자 밖 글자의 음 · 훈',
         license: 'CC BY-SA 4.0',
         licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
         sourceUrl: 'https://www.edrdg.org/wiki/index.php/KANJIDIC_Project',

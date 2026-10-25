@@ -14,6 +14,8 @@
 | `hanjaTrad.json` | OpenCC `STPhrases`·`STPhrases_GeneratedFromRegionalPhrases`·`STCharacters`(s2t, npm `opencc-data@1.4.1`) 중 HSK·우리 사전 표제어·수량 구절의 변환 결과 + 대만 이체 `TWVariants`·`TWVariantsPhrases`(s2tw 둘째 단계 — 正 줄)·모호 글자·검증 표제어 + 한국 다음자 예외·정자 이체(`scripts/hanja-curated.mjs`) | Apache-2.0 (`LICENSES/Apache-2.0-OpenCC.txt`) | `scripts/generate-hanja-trad.mjs` |
 | `jaWords.json` | **JMdict/EDICT**(EDRDG, EDICT `Created: 2025-11-06`) 중 중국어 표제어(HSK·우리 사전)와 같은 표기의 일본어 단어의 표기·요미(日 줄). 열쇠 = Unihan kJapaneseNewVariant · OpenCC s2t · `hanjaJa.json`, 뜻 관문 = CC-CEDICT 영문 뜻 겹침(표에는 싣지 않음), 거부 목록 = `scripts/hanja-curated.mjs` `JA_FALSE_FRIENDS` | **CC BY-SA 4.0 — 이 파일만** (`LICENSES/CC-BY-SA-4.0.txt`) | `scripts/generate-ja-words.mjs` |
 | `jaKanjiReadings.json` | **KANJIDIC2**(EDRDG, database_version 2026-292 · `kanjidic2.xml.gz` sha256 `e03dfd07…` — 생성기 `_source`에 전체 해시) 글자별 음독(ja_on)·훈독(ja_kun, 오쿠리가나 앞까지). 글자 우주 = 상용·인명용(grade 있는 글자) ∪ 우리 일본어 단어 콘텐츠의 한자(3,051자). JLPT 단어 페이지 글자 칸 첫 줄(経 날 경 **けい**)을 빌드 때 나누는 데만 쓰고 표는 화면으로 보내지 않는다 | **CC BY-SA 4.0 — 이 파일만** (`LICENSES/CC-BY-SA-4.0.txt`) | `scripts/generate-ja-kanji.mjs`(`--check`) |
+| `jaJoyo.json` | **常用漢字表**(2010-11-30 내각 고시 제2호, 문화청 `joyokanjihyo_20101130.pdf`) 본표의 음훈 — 2,136자 · 4,388음훈, 표 순서 그대로(음 가타카나 · 훈 히라가나, 오쿠리가나는 `.` 뒤), 한 자 내린 읽기 178개는 `*`. 표의 꼴 𠮟 · 塡 · 剝 · 頰은 흔한 꼴로도 싣는다. 오쿠리가나(원문 가는 글씨 — 글자로 뽑히지 않음)는 같은 줄 예에서 되살린다. JLPT 단어 페이지 글자 창의 음 · 훈 표. 화면은 동적 import만 | 고시(일본 저작권법 제13조 — 권리의 목적이 되지 않는 저작물) | `scripts/generate-ja-joyo.mjs`(`--check`) |
+| `jaKanjiOnKun.json` | **KANJIDIC2**(EDRDG) 중 상용 밖 콘텐츠 한자(醤 등)의 음독 · 훈독(오쿠리가나는 `.` 뒤). `jaJoyo.json`과 같은 모양으로 글자 창의 음 · 훈 표에 쓴다 | **CC BY-SA 4.0 — 이 파일만** (`LICENSES/CC-BY-SA-4.0.txt`) | `scripts/generate-ja-joyo.mjs`(`--check`) |
 | `jaJeongja.json` | OpenCC `JPShinjitaiCharacters`(npm `opencc-data@1.4.1`) 중 후보가 하나이고 꼴이 다른 신자체 → 정자(経 → 經, 393자). JLPT 글자 칸 아래 회색 글자 · 훈음 찾기 꼴 | Apache-2.0 (`LICENSES/Apache-2.0-OpenCC.txt`) | `scripts/generate-ja-kanji.mjs`(`--check`) |
 | `jaExampleWords.json` | 저장소 JLPT 단어 예문(`src/content/japanese/vocab`)을 앱 분석기 `tokenizeJaLine`(kuromoji + IPADIC)으로 나눈 단어 조각 길이 · 원형(して → する). 예문 글은 싣지 않고 해시 열쇠만 | 콘텐츠 원천 · kuromoji/IPADIC 라이선스를 따른다 | `jaExampleWordsBuild.test.js`(`UPDATE_JA_EXAMPLE_WORDS=1`) |
 | `hanjaHun.json` | libhangul `hanja.txt` 훈음 필드 + OpenCC `STCharacters` + 수기 감수(`scripts/hanja-curated.mjs`) | BSD 3-Clause · Apache-2.0 | `scripts/generate-hanja-hun.mjs` |
@@ -40,7 +42,9 @@
   CC BY-SA 4.0, EDRDG 라이선스(https://www.edrdg.org/edrdg/licence.html)에 따라 사용한다.
   `jaKanjiReadings.json`은 이 사전의 음독·훈독 필드에서 고른 **파생 데이터베이스이며 이 파일만 같은
   CC BY-SA 4.0으로 제공**한다. 변경: 상용·인명용·우리 단어 콘텐츠 글자의 읽기만 남기고 오쿠리가나를
-  뗐다. 사용자 화면 고지는 `/credits#kanjidic2`(`src/lib/dataCredits.js`).
+  뗐다. `jaKanjiOnKun.json`도 같은 사전의 파생 데이터베이스이며 **이 파일만 같은 CC BY-SA 4.0으로 제공**한다.
+  변경: 상용한자표 밖 콘텐츠 한자의 음독 · 훈독만 남기고 접두 · 접미 표지(-)가 붙은 읽기를 뺐다.
+  사용자 화면 고지는 `/credits#kanjidic2`(`src/lib/dataCredits.js`).
 - **JMdict/EDICT** — © Electronic Dictionary Research and Development Group(EDRDG).
   CC BY-SA 4.0, EDRDG 라이선스(https://www.edrdg.org/edrdg/licence.html)에 따라 사용한다.
   `jaWords.json`은 이 사전에서 고른 표기·요미를 가공한 **파생 데이터베이스이며 이 파일만 같은

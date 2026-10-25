@@ -113,3 +113,23 @@ export function nextLevelKey(levels, levelKey) {
   const li = levels.indexOf(levelKey);
   return li >= 0 && li < levels.length - 1 ? levels[li + 1] : null;
 }
+
+/**
+ * 줄 밖 단어(리스트 맨 아래 접힌 두 줄, 오너 2026-10-26 KST · 시안 ⑨) — 「복습 예정」 = 한 번 본 단어(다음 복습이 가까운 순,
+ * 날짜 없는 알아요 · 뺀 단어는 끝), 「새 단어」 = 아직 안 본 단어(목록 순). 한 줄에 섞여 있으면 진도가 어디까지인지 안 보였다.
+ * gradedOf(key) = 한 번이라도 채점(알아요 포함)했는가, nextOf(key) = 다음 복습 시각(ISO · ms, 없으면 null).
+ * @returns {{ review: Array<{ entry, next: string|number|null }>, fresh: Array<object> }}
+ */
+export function splitLaterEntries(entries, inLine, gradedOf, nextOf) {
+  const review = [], fresh = [];
+  for (const entry of entries || []) {
+    if (inLine.has(entry.key)) continue;
+    if (!gradedOf(entry.key)) { fresh.push(entry); continue; }
+    const next = nextOf(entry.key) ?? null;
+    const t = next == null ? NaN : typeof next === 'number' ? next : Date.parse(next);
+    review.push({ entry, next: Number.isFinite(t) ? next : null, t: Number.isFinite(t) ? t : Infinity });
+  }
+  review.sort((a, b) => a.t - b.t); // 같은 시각은 목록 순(안정 정렬)
+  return { review: review.map(({ entry, next }) => ({ entry, next })), fresh };
+}
+

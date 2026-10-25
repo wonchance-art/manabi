@@ -127,11 +127,8 @@ button.lw-tile__glyph{align-self:stretch;justify-content:flex-start;align-items:
   background:transparent;color:var(--ink);font:inherit;font-size:calc(var(--lh) * 1.25);line-height:calc(var(--lh) * 1.5);font-weight:500;cursor:pointer}
 button.lw-tile__glyph:hover{background:color-mix(in srgb,var(--lw-review) 5%,var(--lw-tile))}
 button.lw-tile__glyph[aria-expanded=true]{background:color-mix(in srgb,var(--lw-review) 9%,var(--lw-tile));border-color:var(--lw-review)}
-.lw-tile__piece.is-row{display:grid;grid-template-columns:16px minmax(0,1fr) 22px;align-items:baseline;min-width:0}
+.lw-tile__piece.is-row{display:grid;grid-template-columns:16px minmax(0,1fr);align-items:baseline;min-width:0}
 .lw-tile__pl{min-width:0;overflow:hidden;text-overflow:ellipsis}
-.lw-tile__role{font-style:normal;font-weight:700;font-size:11.5px;text-align:right}
-.lw-tile__piece.is-meaning .lw-tile__role{color:var(--book-sage-main)}
-.lw-tile__piece.is-sound .lw-tile__role{color:var(--book-amber-main)}
 
 /* 예문 — 왼쪽 줄. 단어마다 점선 밑줄, 카드 단어는 장미색 밑줄. */
 /* 캔버스 값 — 왼쪽 줄 2px · 들여 14px · 본문 20px(한 단어 뒷면 18px · 12px) · 단어 사이 5px */
@@ -321,8 +318,6 @@ button.lw-tile__glyph[aria-expanded=true]{background:color-mix(in srgb,var(--lw-
 .lw-dp__ch{flex:none;font-size:26px;line-height:32px;font-weight:500}
 .lw-dp__py{flex:none;font-size:15px;color:var(--muted)}
 .lw-dp__hun{min-width:0;margin-left:4px;overflow:hidden;text-overflow:ellipsis;font-size:15px;font-weight:700}
-.lw-dp__zheng{flex:none;font-size:12px;color:var(--muted)}
-.lw-dp__zheng b{font-size:15px;font-weight:500;color:var(--ink)}
 .lw-dp__note{margin:auto 0 0;font-size:12.5px;line-height:1.3;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lw-dp__parts{display:grid;grid-template-columns:repeat(var(--n,2),minmax(0,1fr));gap:6px;min-height:36px;white-space:nowrap}
 .lw-dp__parts.is-unknown{display:flex;align-items:center;overflow:hidden}
@@ -332,10 +327,6 @@ button.lw-tile__glyph[aria-expanded=true]{background:color-mix(in srgb,var(--lw-
 .lw-dp__parts.is-unknown .lw-dp__piece b{font-size:19px}
 .lw-dp__pl{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:12.5px;font-weight:700}
 .lw-dp__parts.is-unknown .lw-dp__pl{font-size:12px;font-weight:500}
-.lw-dp__piece i{flex:none;margin-left:auto;font-style:normal;font-size:11.5px;font-weight:700}
-.lw-dp__piece.is-meaning i{color:var(--book-sage-main)}
-.lw-dp__piece.is-sound i{color:var(--book-amber-main)}
-.lw-dp__unknown{flex:none;margin-left:auto;font-size:10.5px;color:var(--muted)}
 .lw-dp__words{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:auto -10px 0 -12px;padding-top:7px;border-top:1px solid var(--lw-line)}
 .lw-dp__words.is-empty{border-top-color:transparent}
 .lw-dp__tile{display:flex;flex-direction:column;gap:1px;min-width:0;padding:0 10px 0 12px}
@@ -347,6 +338,28 @@ button.lw-tile__glyph[aria-expanded=true]{background:color-mix(in srgb,var(--lw-
 .lw-dp__tpy{font-size:11.5px;line-height:14px;color:var(--muted)}
 .lw-dp__tko{font-size:12px;line-height:16px}
 .lw-dp__tko.is-short{color:var(--muted)}
+/* JLPT 글자 창 — 같은 창 · 같은 머리, 아래는 음 · 훈 읽기 표(오너 2026-10-25 KST 시안 ⑧). 높이는 내용만큼(채점 바 위까지 · place가 max-height) · 넘치면 표만 넘긴다. */
+.lw-dp--ja{height:auto;padding-bottom:0}
+.lw-rd{display:grid;grid-template-columns:30px max-content max-content max-content minmax(0,1fr);grid-auto-rows:max-content;align-content:start;
+  min-height:0;margin:0 -10px 0 -12px;border-top:1px solid var(--lw-line);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.lw-rd.is-empty{min-height:120px}
+.lw-rd__row{display:grid;grid-column:1/-1;grid-template-columns:subgrid;border-top:1px solid color-mix(in srgb,var(--lw-line) 55%,var(--lw-card))}
+.lw-rd__row:first-child{border-top:0}
+.lw-rd__row.is-kun{border-top-color:color-mix(in srgb,var(--lw-line) 70%,var(--ink))}
+.lw-rd__row.is-current{background:color-mix(in srgb,var(--lw-rose) 9%,var(--lw-card))}
+.lw-rd__lab{display:flex;align-items:center;padding-left:12px;font-size:11.5px;font-weight:700;color:var(--muted)}
+.lw-rd__r{display:flex;align-items:center;padding:0 12px 0 4px;border-right:1px solid var(--lw-line);font-size:14px;font-weight:500;white-space:nowrap}
+.lw-rd__r i{font-style:normal;font-weight:400;color:var(--muted)}
+.lw-rd__row.is-current .lw-rd__r{color:var(--lw-rose);font-weight:700}
+.lw-rd__row.is-empty .lw-rd__r,.lw-rd__row.is-rare .lw-rd__r{color:var(--muted);font-weight:400}
+.lw-rd__row.is-empty .lw-rd__r{min-height:28px}
+.lw-rd__w{display:flex;flex-direction:column;align-items:flex-start;min-width:0;padding:3px 4px 5px 14px}
+.lw-rd__row.is-empty .lw-rd__w{padding-block:0}
+.lw-rd__b{padding-top:11px;font-size:17px;line-height:20px;font-weight:500;white-space:nowrap}
+.lw-rd__b em{font-style:normal;color:var(--lw-rose)}
+.lw-rd__k{position:relative;display:inline-block}
+.lw-rd__f{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);margin-bottom:-1px;font-size:10px;line-height:12px;font-weight:400;color:var(--muted);white-space:nowrap}
+.lw-rd__m{font-size:12px;line-height:16px;color:var(--muted);white-space:nowrap}
 
 /* 제목 ▾ 시트 · 단어 카드 창 — 아래에서 올라오고 뒷배경이 어두워짐, 손잡이를 아래로 끌면 닫힘. */
 .lw-scrim.is-closing,.lw-pop.is-closing{pointer-events:none;animation:lwFadeOut .2s var(--ease-settle) both}
