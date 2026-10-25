@@ -61,7 +61,9 @@ export default function Layout({ children }) {
   const pathname = usePathname();
   const focusedReading = isFocusedReadingRoute(pathname);
   const isNavActive = href => navigationOwner(pathname) === href;
-  const { theme, toggleTheme } = useTheme();
+  // 셸은 늘 밝은 화면이다 — 예전 테마 토글은 셸 CSS가 숨겨 누를 수 없는 죽은 단추라 지웠다(PROFILE-REDESIGN-001 D5).
+  // 테마 속성 부착(저장값 · OS 설정)은 그대로 둔다 — 셸 밖 규칙이 html[data-theme]을 읽는다.
+  useTheme();
 
   // 화면이 바뀐 뒤 포커스가 body로 떨어졌으면(누른 카드 · 탭이 사라졌다) 새 화면의 첫 제목(h1, 없으면 본문)으로 옮긴다(APP-FEEL-003, 2026-10-17 KST).
   // 운영 실측: 배움 → 교재 카드 · 단어 목록 → 문형 탭 · 뷰어 「다음 편」 뒤 activeElement = body — 키보드 · 화면 읽기가 처음부터 다시 찾았다.
@@ -167,7 +169,7 @@ export default function Layout({ children }) {
     return () => clearInterval(timer);
   }, [user]);
 
-  // 머리말의 이 단추는 손님에게만 그린다(로그인 상태는 「내 계정」) — 로그인 진입만 한다. 예전 로그아웃 갈래(user일 때 signOut →
+  // 머리말의 이 단추는 손님에게만 그린다(로그인 상태는 「내 정보」 링크) — 로그인 진입만 한다. 예전 로그아웃 갈래(user일 때 signOut →
   // push('/auth') → refresh)는 화면에서 누를 수 없는 죽은 경로라 지웠다(AUTH-ROUTER-REFRESH-001, 2026-10-18 KST). 로그아웃 진입점은
   // 내 정보 · 계정 삭제 · 임베드뿐이고 모두 AuthContext 관문(onAccountLeft → router.refresh)을 지난다(accountRouterRefresh.test).
   function handleAuthClick() {
@@ -229,31 +231,23 @@ export default function Layout({ children }) {
         {/* 배포 버전 배지(v2-J) — 관리자·?v=1일 때만 DOM에 나타난다(그 밖엔 null) */}
         <VersionBadge />
 
-        <button
-          className="theme-toggle"
-          onClick={toggleTheme}
-          title={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
-          aria-label={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
-          aria-pressed={theme === 'dark'}
-          data-icon-action
-        >
-          <ActionIcon name={theme==='dark'?'sun':'moon'}/>
-        </button>
-
         {focusedReading && <ReaderSiteMenu isAdmin={isAdmin} />}
         <Link href={librarySearchHref(user)} prefetch={false} className="manabi-search-link" aria-label="자료 검색" title="자료 검색" data-icon-action><ActionIcon name="search"/></Link>
         <div className="gnb__actions">
           {user ? (
             <div className="gnb__user-area">
-              <button
+              {/* 내 정보 — 진짜 링크(새 탭 · 주소 미리보기)이고 /profile에서는 현재 위치를 알린다(PROFILE-REDESIGN-001). 자리 · 모양은 그대로. */}
+              <Link
+                href="/profile"
+                prefetch={false}
                 className="gnb__profile-btn"
-                onClick={() => router.push('/profile')}
                 title={profile?.display_name || user.email}
-                aria-label="내 계정"
+                aria-label="내 정보"
+                aria-current={pathname === '/profile' ? 'page' : undefined}
                 data-icon-action
               >
                 <ActionIcon name="user"/>
-              </button>
+              </Link>
             </div>
           ) : (
             <button

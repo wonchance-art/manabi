@@ -114,7 +114,7 @@ else {await context.addCookies([{name:'sb-e2e-auth-token',value:'base64-'+enc(se
 try {
 await page.goto(base+'/class/fixture-class');await page.locator('button.classroom-featured-note').waitFor();
 // 계정 버튼은 머리글자 대신 아이콘이다 — 학생 프로필을 받은 뒤라는 확인은 title(표시 이름)로 한다.
-await page.getByRole('button',{name:'내 계정',exact:true}).and(page.locator('[title="수업 검수"]')).waitFor();
+await page.getByRole('link',{name:'내 정보',exact:true}).and(page.locator('[title="수업 검수"]')).waitFor();
 assert.equal(await page.getByRole('banner').getByRole('link',{name:'관리',exact:true}).count(),0);
 assert.equal(await page.getByRole('banner').getByRole('link',{name:'수업',exact:true}).count(),0);check('student profile has no owner-only navigation');
 await page.locator('button.classroom-featured-note').click();await page.waitForURL(/\/viewer\/\d+/);await page.locator('[data-tid="id_0_word"]').waitFor();

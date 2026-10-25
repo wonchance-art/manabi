@@ -3659,30 +3659,6 @@ a.viewer-badge:hover {
 .role-badge--public  { background: var(--accent-glow);    color: var(--accent-text); }
 .role-badge--private { background: var(--primary-glow);   color: var(--primary-light); }
 
-/* ========= Theme Toggle Button ========= */
-.theme-toggle {
-  /* 고정 바 안의 단독 아이콘 버튼 — 키워도 정보 밀도에 영향이 없어 44로 맞춘다 */
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-full);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  flex-shrink: 0;
-}
-
-@media (hover: hover) {
-  .theme-toggle:hover {
-    border-color: var(--border-hover);
-    transform: scale(1.1);
-  }
-}
-
 /* ========= Light theme page-header gradient ========= */
 [data-theme="light"] .page-header__title {
   background: linear-gradient(135deg, var(--primary-dark), var(--primary));
