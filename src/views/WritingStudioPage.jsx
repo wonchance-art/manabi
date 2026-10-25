@@ -127,6 +127,13 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
   // 최근 작문 히스토리 — 신규 컬럼 미적용 환경은 기본 컬럼으로 폴백
   async function loadHistory() {
     if (!user?.id) return;
+    // 수확 재료(60행) · 대화 고친 말을 목록(10행) 조회와 함께 시작한다(ROUTE-AUDIT-2 F3, 2026-10-25 KST) — 전에는 목록 → 수확 → 대화가
+    // 차례로라 첫 화면 뒤 왕복 셋이 줄을 섰다. 받은 값 · 넣는 순서는 그대로다. 목록이 기본 컬럼 폴백으로 가면(errors 컬럼 미적용 환경)
+    // 먼저 시작한 수확(errors 포함)은 쓰지 않고 예전처럼 기본 컬럼으로 다시 받는다.
+    const early = {
+      gaps: Promise.resolve(gapRowsQuery(true)).catch(error => ({ error })),
+      conv: fetchConversationTurns(supabase, user.id).then(conversationGapRows, () => []),
+    };
     try {
       const full = await supabase
         .from('writing_practice')
@@ -134,27 +141,30 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);
-      if (!full.error && full.data) { setHistory(full.data); await loadGapRows(true); return; }
+      if (!full.error && full.data) { setHistory(full.data); await loadGapRows(true, early); return; }
       const base = await supabase
         .from('writing_practice')
         .select('id, created_at, language, score, sentence, corrected, feedback')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);
-      if (!base.error && base.data) { setHistory(base.data); await loadGapRows(false); }
+      if (!base.error && base.data) { setHistory(base.data); await loadGapRows(false, { conv: early.conv }); }
     } catch {}
   }
   // U R2 — 수확 재료는 목록(10)보다 넓게 60행. errors 컬럼 미적용 환경은 sentence↔corrected만으로 수확된다(두 재료 독립)
-  async function loadGapRows(withErrors) {
+  function gapRowsQuery(withErrors) {
+    const cols = withErrors
+      ? 'id, created_at, language, sentence, corrected, errors'
+      : 'id, created_at, language, sentence, corrected';
+    return supabase.from('writing_practice').select(cols)
+      .eq('user_id', user.id).order('created_at', { ascending: false }).limit(60);
+  }
+  async function loadGapRows(withErrors, early = {}) {
     try {
-      const cols = withErrors
-        ? 'id, created_at, language, sentence, corrected, errors'
-        : 'id, created_at, language, sentence, corrected';
-      const r = await supabase.from('writing_practice').select(cols)
-        .eq('user_id', user.id).order('created_at', { ascending: false }).limit(60);
+      const r = await (early.gaps || gapRowsQuery(withErrors));
       if (!r.error && r.data) {
         // 대화에서 고친 말(v2-Z Z-R3)도 같은 수확기에 넣는다 — {sentence, corrected} 모양으로 파생만(새 표 0). 실패하면 작문만.
-        const conv = await fetchConversationTurns(supabase, user.id).then(conversationGapRows, () => []);
+        const conv = await (early.conv || fetchConversationTurns(supabase, user.id).then(conversationGapRows, () => []));
         setGapRows([...r.data, ...conv]);
       }
     } catch {}
