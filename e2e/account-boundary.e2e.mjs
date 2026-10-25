@@ -18,6 +18,7 @@ import { chromium } from 'playwright-core';
 import config from '../playwright.config.mjs';
 import { legacyLearningSnapshot, inactiveFsrsStatus, inactiveLearningAdmission } from './fixtures/learning-snapshot.mjs';
 import { BOUNDARY_ACTORS, BOUNDARY_MARKER, BOUNDARY_MATERIAL_ID } from './fixtures/account-boundary-actors.mjs';
+import { SUGGESTION_FIXTURE } from './fixtures/suggestion-fixture.mjs';
 
 const base = process.env.QA_BASE;
 assert.ok(base, 'QA_BASE must identify the integration owner\'s isolated app server');
@@ -505,7 +506,8 @@ test('⑨ 얼어 있는 동안 쿠키만 바뀐 뒤 문서 뒤로 가기(bfcache
   try {
     // 배움(/home)은 4단계부터 ISR 판(세션 쿠키 유무로 middleware가 고른다) — 얼어 있던 로그인 판이 손님 · B에게 되살아나도 같은 관문이 정리한다.
     // 판본 하나뿐인 교재 주소(?edition=<저장소 판본>)는 5단계부터 판본별 ISR 판(로그인 판) — 같은 관문.
-    for (const path of ['/profile', '/japanese/vocab/n5', '/home', '/books/japanese-n5?edition=8a8c1c1fd452773810abaf8c']) {
+    // 추천 읽을거리 한 편은 6단계부터 본문을 실은 ISR 판(손님 · 로그인 같은 판, 돌아갈 곳 판은 middleware) — 서재 담기 칸 · 머리말은 브라우저가 그린다.
+    for (const path of ['/profile', '/japanese/vocab/n5', '/home', '/books/japanese-n5?edition=8a8c1c1fd452773810abaf8c', `/suggestions/${SUGGESTION_FIXTURE.id}?from=reading`]) {
       for (const via of ['cookie', 'clear']) {
         const { context, page, errors } = await boundaryContext({ actor: 'A', engine: bfBrowser });
         try {

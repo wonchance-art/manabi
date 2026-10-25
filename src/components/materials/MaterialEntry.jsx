@@ -12,7 +12,7 @@ const LegacyImport = dynamic(() => import('@/views/MaterialAddPage'), { loading:
 export default function MaterialEntry() {
   const params = useSearchParams();
   // Previously saved recommendation URLs open a reading; new writing still offers a private note.
-  if (params.has('suggestion')) return <SuggestionReader key={params.get('suggestion')} id={params.get('suggestion')} />;
+  if (params.has('suggestion')) return <SuggestionReader key={params.get('suggestion')} id={params.get('suggestion')} from={params.get('from')} />;
   const textReadingLanguages = Object.values(VIEWER_LANGUAGES).filter(info => !LEVELS[info.language]
     && textReadingSupported(info));
   const requested = viewerLanguageInfo(params.get('language'));

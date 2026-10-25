@@ -7,11 +7,13 @@ import { withoutServerSignOut } from './lib/authCookieGuard';
 import { SC_HINT_COOKIE } from './lib/scFontHint';
 import { hasSupabaseSessionInJar } from './lib/authCookie';
 import { isBundledEdition } from './lib/textbook/bundledEditions';
+import { suggestionBackKey } from './lib/suggestionBack';
 
 // 공유 캐시 갈래(GUEST-STATIC-001) — 쿼리 · 힌트 쿠키로 갈리던 화면을 갈래마다 한 판씩 정적(ISR)으로 굽고, 여기서 판을 고른다(주소창은 그대로).
 // 계정으로는 가르지 않는다: 판에는 계정 데이터가 없다. 이 갈래는 쿠키를 읽기만 하고(값 '1'인 힌트 하나) Supabase 클라이언트를 만들지 않는다.
 // 내부 판 경로(/discover/reading · /discover/sc · /lessons/lang/*)는 matcher에 넣지 않는다 — rewrite된 요청이 middleware를 다시 지나므로, 거기서 정본 주소로 돌려보내면
 // 판을 고른 요청까지 되돌아간다(e2e 빌드 실측: 307 루프). 바로 열어도 같은 판이고, 정본 주소는 canonical(/discover)이 알린다.
+const SUGGESTION_PATH = /^\/suggestions\/[^/]+$/;
 const COVER_PATHS = new Set(['/books/japanese-n5', '/books/japanese-n4', '/books/japanese-n3']);
 const rewriteTo = (request, pathname, dropQuery = false) => { const url = request.nextUrl.clone(); url.pathname = pathname; if (dropQuery) url.search = ''; return NextResponse.rewrite(url); };
 function guestStaticVariant(request) {
@@ -48,6 +50,13 @@ function guestStaticVariant(request) {
     const edition = searchParams.get('edition');
     if (searchParams.size === 1 && isBundledEdition(pathname.slice('/books/'.length), edition)) return rewriteTo(request, `${pathname}/edition/${edition}/${hint}`, true);
     return NextResponse.next();
+  }
+  // 추천 읽을거리 한 편(6단계 · FIELD-AUDIT F5): 본문을 실은 판(ISR 300)이 돌아갈 곳(?from=)마다 하나다. home · discover · reading은
+  // /suggestions/<id>/from/<from> 판으로, 나머지(없음 · materials · 목록 밖 값 — 리더가 예전에도 서재로 돌렸다)는 기본 판 그대로.
+  // 판은 쿼리를 읽지 않으므로 비운다. 판 경로는 matcher 밖이다(위 산책과 같은 이유). 쿠키 · 계정으로 가르지 않는다.
+  if (SUGGESTION_PATH.test(pathname)) {
+    const from = suggestionBackKey(searchParams.get('from'));
+    return from === 'materials' ? NextResponse.next() : rewriteTo(request, `${pathname}/from/${from}`, true);
   }
   return null;
 }
@@ -127,5 +136,5 @@ export async function middleware(request) {
 
 export const config = {
   matcher: ['/', '/admin/:path*', '/japanese/:path*', '/chinese/:path*', '/english/:path*', '/french/:path*', '/learn/course', '/discover', '/lessons',
-    '/home', '/books/japanese-n5', '/books/japanese-n4', '/books/japanese-n3'],
+    '/home', '/books/japanese-n5', '/books/japanese-n4', '/books/japanese-n3', '/suggestions/:id'],
 };

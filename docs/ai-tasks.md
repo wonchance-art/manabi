@@ -1030,6 +1030,9 @@
   비켜 섬 · --gnb-height에 포함(아이폰 Chrome 「홈 화면에 추가」 앱에서 시각 · 배터리와 겹치던 것). 배움 머리 줄 셸 폭 480 이하 언어 칩 둘째 줄(320–390 겹침 0).
   배움 「다시 읽기」 · 「말해 보기」 칸 제거(오너 지시 — 대화 탭 · 새 대화 화면은 유지, useRereadCandidate · rereadSchedule 삭제).
   **PROFILE-REDESIGN-001 내 정보 개편**: 시안 A(한 화면 · 줄=지금 값 · 시트 편집)/B(허브) 이미지 목업 오너 결정 대기(D1–D6).
+  → **#1558 squash `ece3cf0a`(2026-10-25 15:34 KST)**. 오너 아이폰 재설치 확인 대기.
+- **GUEST-STATIC-001 6단계 · F5 추천 읽을거리 (2026-10-25 KST, 권장대로)**: /suggestions/[id] ISR 300(첫 방문 굽기, 쿠키 없는 공개 조회 → 리더 initialData) ·
+  ?from=home|discover|reading은 middleware 고정 판. 로컬 LCP 중앙 1.09 → 0.45s, API 요청 0, 손님 · 세션 쿠키 응답 바이트 동일. 임의 id 판 기록은 운영 ISR 쓰기량 보고 판단.
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로
   /api/suggestions/today와 공용화. 지역학은 발견에서만 내림(/studies · 콘텐츠 보존). 비로그인 서재 → 「서가에서 읽어 보기」.
