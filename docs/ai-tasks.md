@@ -1103,6 +1103,11 @@
 - **SNAPSHOT-LIGHT-001 후속 (2026-10-26 KST)**: 요약 단어 목록 GET(fields=summary — 홈 · 현황 · 서재 맞춤도 · 프로필 · 읽기 완료)도
   가벼운 읽기(language=null · summary=true)로. 서버 DB 2.6 MB · 86 ms → 0.69 MB · 30 ms(PGlite 3,000단어), 응답 칸 그대로 ·
   함수 없을 때(PGRST202)만 전체로. 남은 전체 snapshot 읽기 = /vocab 브라우저 전체 목록(fields 없음).
+  → **#1574 squash `7a93293f`(04:56 KST)**. CI 첫 실행의 viewer-boundary-edit 390 실패 = main에서도 나는 간헐(재실행 green) — 원인 조사 별도.
+- **LEVEL-LIST-RSC-001 (2026-10-26 KST)**: 레벨 단어 화면 항목을 화면 조각 밖 정적 묶음(/api/level-words/{lang}/{level}?v=빌드)으로 —
+  조각 N3 207 → 3.5 KB · 책장 일본어 판 미리 받기 612 → 65 KB, 탭 → 카드 모바일 손님 641 → 591 ms(누르는 순간 받기 · 문서로 열 때만 preload).
+  VOCAB-LEVEL-DOC 실패(붙은 뒤 받기 → 카드 +272 ms)를 피함. 오프라인: 워커가 이 주소만 network-first · 레벨마다 한 칸. 남은 나빠짐: 데스크톱 손님
+  N3 직접 열기 LCP 232 → 316 ms(H6는 −4). 레벨 타일 prefetch={false}(ROUTE-AUDIT-2 F2)는 이제 불필요 — 배제.
 - VOCAB-LEVEL-DOC(F9 현장): 목록을 문서 밖 JSON으로 → 문서 −95%지만 LCP +4%(JS가 임계 경로) → 배제 · 패치 보관. 후속 G(카드 앞 JS 청크) 조사 중.
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로
