@@ -145,7 +145,10 @@ test('채점당 호출 수 — 연결돼 있으면 입장은 서버가 다시 �
         // 연결돼 있으면 다음 질문마다 입장 POST가 서버 재검사(제외 · 아직 때가 아님 · 정책 판)를 한다 — 독립 리뷰 2026-10-25 KST.
         assert.equal(count(row, 'learning_admit_legacy'), 1, `다음 질문의 입장 재검사 1번: ${JSON.stringify(row)}`);
         assert.ok(!row.api.includes('GET /api/learning/fsrs') && count(row, 'fsrs_list_states') === 0, `입장 응답 뒤 FSRS 목록을 다시 읽지 않는다: ${JSON.stringify(row)}`);
+        // 입장 POST 앞의 한도 GET도 없다 — 같은 학습일 안의 한도를 쓴다(판이 어긋나면 서버 409 → 다시 읽고 한 번 다시 묻기).
+        assert.ok(!row.api.includes('GET /api/learning/admission'), `질문 앞 한도 GET이 없다: ${JSON.stringify(row)}`);
       }
+      assert.ok(report.summary.medianCalls <= 8, `채점당 호출 ≤ 8: ${JSON.stringify(report.summary)}`);
       assert.ok(report.summary.boundaryPerGrade.every(n => n === 1), `경계 확인은 채점당 1번: ${report.summary.boundaryPerGrade}`);
     }
   } finally { await context.close(); }

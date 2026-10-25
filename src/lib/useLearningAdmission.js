@@ -170,6 +170,16 @@ export function createLearningAdmissionController({ accountId, client, onQuota =
   const publish = patch => { if (!disposed) { state = { ...state, ...patch }; listeners.forEach(listener => listener()); } };
   // 막 받은 한도 — 오류 · 한도 없음 · 진행 중 읽기(포커스 · 날 바뀜)가 있으면 아니다(그 읽기를 기다린다).
   const quotaFresh = () => state.status === 'ready' && !!state.quota && !loading && quotaAt !== null && now() - quotaAt >= 0 && now() - quotaAt <= QUESTION_QUOTA_FRESH_MS;
+  // 입장 모드 한도는 받은 학습일 안이면 다시 읽지 않고 쓴다(F5① — 질문마다 입장 POST 앞에 붙던 한도 GET, 서버 호출 3번). 질문이 한도에서
+  // 쓰는 것은 정책 판뿐이고, 입장 POST가 서버에서 정책 판 · 새 표현 한도 · 활성 · 제외 · 때를 모두 다시 검사한다. 판이 그 사이 바뀌었으면
+  // 409(fsrs_admission_policy_conflict) → 다시 읽고 한 번만 다시 묻는다(아래). 날이 바뀌면(서버 KST 04시 기준) 다시 읽는다.
+  // 호환(사전 활성) 모드는 입장 POST가 없어 활성 전환을 놓치지 않게 지금처럼 창(QUESTION_QUOTA_FRESH_MS) 밖이면 읽는다.
+  const quotaUsable = () => {
+    if (quotaFresh()) return true;
+    if (state.status !== 'ready' || !state.quota || loading || quotaAt === null || now() < quotaAt) return false;
+    if (canUseLegacyAdmissionCompatibility(state.quota)) return false;
+    try { return Date.parse(state.quota.now) + (now() - quotaAt) < Date.parse(nextAdmissionDayAt(state.quota)); } catch { return false; }
+  };
   const applyQuota = (quota, source = 'load') => {
     const validated = normalizeAdmissionStatus(quota, { actorId: accountId });
     quotaAt = now();
@@ -225,8 +235,8 @@ export function createLearningAdmissionController({ accountId, client, onQuota =
     publish({ current: null, busy: true, error: null });
     const promise = (async () => {
       try {
-        // 막 받은 한도면 다시 읽지 않는다(VOCAB-START-3 — 복습 시작 직후 첫 카드의 중복 GET). 아니면 지금처럼 먼저 읽는다.
-        const quotaReady = quotaFresh() || await refresh();
+        // 쓸 수 있는 한도면 다시 읽지 않는다(VOCAB-START-3 · F5① — 위 quotaUsable). 아니면 지금처럼 먼저 읽는다.
+        const quotaReady = quotaUsable() || await refresh();
         if (disposed || token !== generation || questionToken !== requestGeneration) return false;
         if (!quotaReady) {
           // 읽는 사이 끊겼다 — 받은 한도는 남겨 두었으니(위 refresh) 「준비 중」에 멈추지 않게 끊김을 알린다.
@@ -236,7 +246,16 @@ export function createLearningAdmissionController({ accountId, client, onQuota =
         if (canUseLegacyAdmissionCompatibility(state.quota)) {
           publish({ current: { accountId, cardId, questionKey, compatibility: true } }); return true;
         }
-        const response = await client.admit({ cardId, expectedPolicyRevision: state.quota.policyRevision });
+        let response;
+        try { response = await client.admit({ cardId, expectedPolicyRevision: state.quota.policyRevision }); }
+        catch (error) {
+          // 다른 기기에서 하루 새 표현 수를 바꿨다 — 다시 읽은 판으로 한 번만 다시 묻는다(그래도 어긋나면 지금처럼 오류).
+          if (error?.status !== 409 || error.code !== 'fsrs_admission_policy_conflict') throw error;
+          readGeneration++; loading = null;
+          if (!(await refresh()) || disposed || token !== generation || questionToken !== requestGeneration) throw error;
+          if (canUseLegacyAdmissionCompatibility(state.quota)) { publish({ current: { accountId, cardId, questionKey, compatibility: true } }); return true; }
+          response = await client.admit({ cardId, expectedPolicyRevision: state.quota.policyRevision });
+        }
         if (disposed || token !== generation || questionToken !== requestGeneration) return false;
         readGeneration++; loading = null;
         admitted.add(response.cardId);
