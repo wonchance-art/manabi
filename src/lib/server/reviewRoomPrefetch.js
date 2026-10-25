@@ -1,5 +1,7 @@
 // 복습방 첫 화면 숫자를 서버에서 미리 센다(VOCAB-FIRST-NUMBERS-001 — 로그인 감사 F2 · 서재 LIBRARY-PREFETCH-001 선례).
-// 읽기는 브라우저 API 라우트(GET vocabulary?view=learning · fsrs · capabilities)와 **같은 서버 함수**다 — 새 조회 · 새 RPC 없음.
+// 읽기는 브라우저 API 라우트(GET fsrs · capabilities)와 같은 서버 함수다. 학습 목록만 가벼운 읽기(SNAPSHOT-LIGHT-001 —
+// fsrs_vocabulary_snapshot_light 요약 모양: 같은 판정 · 같은 행 순서, 칸은 첫 숫자가 읽는 요약 칸만, 기본값 registry 생략)로 받는다 —
+// 3,000단어 계정 전체 snapshot 2.2 MB 대신(로그인 감사 F2). 되돌린 모양은 브라우저가 받는 요약 조회(fields=summary)와 같다.
 // 로그인 확인은 requireUserClaims(쿠키 접근 토큰의 서명만 확인 — AUTH-READ-CLAIMS-001 requireUserForRead의 빠른 길)다.
 // requireUserForRead의 물러서는 길(getUser)은 서버 컴포넌트에서 쓰지 않는다: 만료 임박 토큰을 갱신하면 새 쿠키를 심을 수 없어
 // 브라우저의 refresh token이 버려진다(LIBRARY-PREFETCH-002). 그때는 null — 지금처럼 브라우저가 받는다.
@@ -7,7 +9,7 @@
 // 손님 · 세션 없음 · 실패 · 예산 초과 · 호환 모드 → null. 계정 데이터는 이 요청의 응답에만 실린다(공유 캐시 없음 — 페이지는 동적 · private no-store).
 import { requireUserClaims } from '@/lib/supabaseServer';
 import { fsrsServiceClient, readFsrsStatus } from '@/lib/server/fsrsLearning';
-import { readVocabularyLearningSnapshot } from '@/lib/server/fsrsVocabulary';
+import { readVocabularyLearningSnapshotLight } from '@/lib/server/fsrsVocabulary';
 import { readLearningCapabilities } from '@/lib/server/learningCapabilities';
 import { projectVocabularyLearningRows } from '@/lib/vocabularyLearningRows';
 import { buildReviewRoomFirstScreen } from '@/lib/reviewRoomFirstScreen';
@@ -54,7 +56,7 @@ export async function prefetchReviewRoomFirstScreen(reviewScope, { budgetMs = RE
     const userId = session.user.id, service = serviceClient();
     const reads = (async () => {
       const [snapshot, fsrs, profileLang] = await Promise.all([
-        readVocabularyLearningSnapshot({ serviceClient: service, userId }),
+        readVocabularyLearningSnapshotLight({ serviceClient: service, userId, language: null, summary: true }),
         readFsrsStatus({ authClient: session.supabase, serviceClient: service, userId }),
         readProfileLang(session.supabase, userId),
       ]);

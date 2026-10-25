@@ -7,6 +7,7 @@ vi.mock('next/headers', () => ({ cookies: async () => ({ getAll: () => [], get: 
 import { prefetchReviewRoomFirstScreen, firstScreenSkipped, reviewRoomSession, REVIEW_ROOM_PREFETCH_BUDGET_MS } from '../server/reviewRoomPrefetch';
 import { buildReviewRoomFirstScreen, firstScreenSession, ownFirstScreen, plainReviewScope, FIRST_SCREEN_TTL_MS } from '../reviewRoomFirstScreen';
 import { readVocabularyLearningSnapshot } from '../server/fsrsVocabulary';
+import { compactVocabularySnapshot } from '../vocabularySnapshotLight';
 import { readFsrsStatus } from '../server/fsrsLearning';
 import { readLearningAdmissionStatus } from '../server/learningAdmission';
 import { readLearningCapabilities } from '../server/learningCapabilities';
@@ -41,9 +42,13 @@ function account({ korean = true, remaining = 2, fsrsEnabled = true, active = tr
   const legacy = (extra = {}, reg = {}) => {
     const row = { id: id(++n), user_id: ACTOR, word_text: `語${n}`, base_form: `語${n}`, meaning: `뜻 ${n}`, language: 'Japanese',
       created_at: iso(AT - (100 - n) * DAY), interval: 3, ease_factor: 2.5, repetitions: 2, last_reviewed_at: iso(AT - 5 * DAY),
-      next_review_at: iso(AT - 2 * DAY), source_material_id: null, source_ref: null, ...extra };
+      next_review_at: iso(AT - 2 * DAY), source_material_id: null, source_ref: null,
+      // 요약 밖 칸(운영 user_vocabulary) — 서버 첫 숫자는 요약 모양(SNAPSHOT-LIGHT-001)을 읽고 브라우저는 전체 칸을 읽는다. 둘이 같아야 한다.
+      furigana: `ご${n}`, pos: '명사', status: 'Review', last_review: iso(AT - 5 * DAY), material_id: null, etym: null, hanja: null,
+      source_sentence: n % 4 === 0 ? `語${n}` : `語${n}を使った文です。`, ...extra };
     rows.push(row);
-    registry.push({ cardId: row.id, userId: ACTOR, enrolled: false, eligible: true, known: false, excluded: false, card: null, attempt: null,
+    // registry 칸 = 운영 snapshot이 내는 아홉 칸(attempt 없음 — 20261016191600).
+    registry.push({ cardId: row.id, userId: ACTOR, enrolled: false, eligible: true, known: false, excluded: false, card: null,
       nextQuestionAt: null, firstQuestionAt: null, ...reg });
     return row;
   };
@@ -92,11 +97,14 @@ function clients(world, { koreanContract = true, profile = { learning_language: 
       return q;
     },
   };
+  const snapshot = () => JSON.parse(JSON.stringify({ version: 1, actorId: ACTOR, enabled: world.fsrsEnabled,
+    registryAvailable: true, complete: true, rows: world.rows, registry: world.registry, now: iso(AT) }));
   const service = {
-    rpc: async (name) => {
+    rpc: async (name, args) => {
       await wait();
-      if (name === 'fsrs_vocabulary_snapshot') return { data: JSON.parse(JSON.stringify({ version: 1, actorId: ACTOR, enabled: world.fsrsEnabled,
-        registryAvailable: true, complete: true, rows: world.rows, registry: world.registry, now: iso(AT) })), error: null };
+      if (name === 'fsrs_vocabulary_snapshot') return { data: snapshot(), error: null };
+      // 가벼운 읽기 = 같은 snapshot의 부분 집합(JS 기준 구현 — SQL 함수와 같음은 supabase/tests/vocabulary-snapshot-light.mjs가 증명).
+      if (name === 'fsrs_vocabulary_snapshot_light') return { data: compactVocabularySnapshot(snapshot(), { language: args.p_language, summary: args.p_summary }), error: null };
       if (name === 'fsrs_list_states') return { data: JSON.parse(JSON.stringify(world.states)), error: null };
       if (name === 'learning_admission_status') return { data: { ...world.status }, error: null };
       return { data: null, error: { message: `unexpected ${name}` } };
@@ -282,7 +290,7 @@ describe('⑶ 손님 · 실패 · 시간 초과 · 호환 모드 → null(지금
   it('읽기 실패 · 서비스 키 없음은 던지지 않고 null', async () => {
     const world = account();
     const { auth, service } = clients(world);
-    const broken = { rpc: async name => (name === 'fsrs_vocabulary_snapshot' ? { data: null, error: { message: 'timeout', code: '57014' } } : service.rpc(name)) };
+    const broken = { rpc: async (name, args) => (name.startsWith('fsrs_vocabulary_snapshot') ? { data: null, error: { message: 'timeout', code: '57014' } } : service.rpc(name, args)) };
     const session = async () => ({ supabase: auth, user: { id: ACTOR } });
     expect(await prefetchReviewRoomFirstScreen({ explicit: false }, { auth: session, serviceClient: () => broken, now: () => AT })).toBeNull();
     expect(await prefetchReviewRoomFirstScreen({ explicit: false }, { auth: session, serviceClient: () => { throw new Error('fsrs_storage_unavailable'); } })).toBeNull();
@@ -344,8 +352,10 @@ describe('⑷ 로그인 확인 · 캐시 경계 · 화면 배선', () => {
     expect(server).toContain("import { requireUserClaims } from '@/lib/supabaseServer';");
     expect(server).toMatch(/auth = requireUserClaims/);
     expect(server).not.toMatch(/requireUser\(|requireUserForRead\(|getUser\(|getSession\(/);
-    for (const fn of ['readVocabularyLearningSnapshot', 'readFsrsStatus', 'readLearningCapabilities']) expect(server).toContain(fn);
-    // 같은 읽기 함수를 API 라우트가 쓴다(새 조회 없음).
+    for (const fn of ['readFsrsStatus', 'readLearningCapabilities']) expect(server).toContain(fn);
+    // 학습 목록은 가벼운 읽기(요약 · 전 언어 — SNAPSHOT-LIGHT-001). 전체 snapshot은 읽지 않는다(API 라우트 · 브라우저는 그대로 전체를 받는다).
+    expect(server).toContain('readVocabularyLearningSnapshotLight({ serviceClient: service, userId, language: null, summary: true })');
+    expect(server).not.toMatch(/readVocabularyLearningSnapshot\(/);
     expect(read('src/app/api/learning/vocabulary/route.js')).toContain('readVocabularyLearningSnapshot({');
     expect(read('src/app/api/learning/fsrs/route.js')).toContain('readFsrsStatus({');
     expect(read('src/app/api/learning/capabilities/route.js')).toContain('readLearningCapabilities(auth.supabase)');

@@ -4,6 +4,7 @@ import { hasCjkText } from '../constants.js';
 import { FSRS_POLICIES, introduceFsrsCard, schedulerTime, validateFsrsCard } from '../fsrsScheduler.js';
 import { requireLearningCapability } from './learningCapabilities.js';
 import { VOCABULARY_LEARNING_REQUIRED_FIELDS } from '../vocabularyLearningRead.js';
+import { compactVocabularySnapshot, expandLightSnapshot } from '../vocabularySnapshotLight.js';
 
 const reject = (code, status = 503) => { throw Object.assign(new Error(code), { code, status }); };
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -93,6 +94,27 @@ export async function readVocabularyLearningSnapshot({ serviceClient, userId }) 
   if (!id(userId)) reject('fsrs_auth_required', 401);
   const snapshot = await rpc(serviceClient, 'fsrs_vocabulary_snapshot', { p_actor: userId });
   return validateVocabularyLearningSnapshot(snapshot, userId);
+}
+
+/**
+ * 가벼운 읽기(SNAPSHOT-LIGHT-001) — 서버 첫 화면(language=null · summary=true)과 /study 조립(language=그 언어 · summary=false).
+ * fsrs_vocabulary_snapshot_light의 응답을 snapshot 모양으로 되돌려(expandLightSnapshot) 위와 같은 검사를 지난다 — 이 뒤는 지금 그대로.
+ * 운영에 아직 함수가 없을 때만(배포가 마이그레이션보다 먼저 닿은 몇 분 · 복원 뒤) 전체 snapshot으로 물러선다: PostgREST의 정확한
+ * 「함수 없음」(PGRST202 + 그 이름)일 때뿐이다. 시간 초과 · 계정 검사 등 다른 오류는 그대로 던진다 — 과부하 때 읽기를 두 배로 하지 않는다.
+ */
+export async function readVocabularyLearningSnapshotLight({ serviceClient, userId, language = null, summary = false }) {
+  if (!id(userId)) reject('fsrs_auth_required', 401);
+  if ((language !== null && !LEARNING_LANGUAGES.includes(language)) || typeof summary !== 'boolean') reject('fsrs_invalid_request', 400);
+  let response;
+  try { response = await serviceClient.rpc('fsrs_vocabulary_snapshot_light', { p_actor: userId, p_language: language, p_summary: summary }); }
+  catch { reject('fsrs_storage_unavailable'); }
+  const error = response?.error;
+  if (error?.code === 'PGRST202' && String(error.message || '').startsWith('Could not find the function public.fsrs_vocabulary_snapshot_light(')) {
+    const full = validateVocabularyLearningSnapshot(await rpc(serviceClient, 'fsrs_vocabulary_snapshot', { p_actor: userId }), userId);
+    return validateVocabularyLearningSnapshot(expandLightSnapshot(compactVocabularySnapshot(full, { language, summary }), userId, { language, summary }), userId);
+  }
+  databaseError(error);
+  return validateVocabularyLearningSnapshot(expandLightSnapshot(response?.data, userId, { language, summary }), userId);
 }
 
 export function normalizeManualVocabularyRequest(body, userId) {
