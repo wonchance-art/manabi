@@ -6,6 +6,7 @@
 import http from 'node:http';
 import https from 'node:https';
 import { readFileSync, readdirSync } from 'node:fs';
+import { compactVocabularySnapshot } from '../../src/lib/vocabularySnapshotLight.js';
 
 export const HEAVY_UID = '00000000-0000-4000-8000-000000000301';
 export const HEAVY_SERVICE_KEY = 'e2e-heavy-service-role';
@@ -259,8 +260,9 @@ export function createHeavyBackend({ latencyMs = 0, browserLatencyMs = 0, snapsh
     // 운영 RPC는 to_jsonb(user_vocabulary 행) 전체를 싣는다(20261016191600 · 250행) — 칸을 줄이지 않는다.
     const rows = account.tables.user_vocabulary.map(({ is_excluded: _x, ...row }) => row);
     return { version: 1, actorId: HEAVY_UID, enabled: true, complete: true, registryAvailable: true, rows,
+      // registry 칸 = 운영 snapshot이 내는 그 아홉 칸(attempt는 싣지 않는다 — 20261016191600 본문).
       registry: rows.map(row => ({ cardId: row.id, userId: HEAVY_UID, enrolled: false, eligible: true, known: false, excluded: false,
-        card: null, attempt: null, nextQuestionAt: null, firstQuestionAt: null })), now: new Date().toISOString() };
+        card: null, nextQuestionAt: null, firstQuestionAt: null })), now: new Date().toISOString() };
   }
   function quota() {
     const now = new Date().toISOString(), used = state.consumed.size;
@@ -290,9 +292,16 @@ export function createHeavyBackend({ latencyMs = 0, browserLatencyMs = 0, snapsh
 
   // DB 실행 시간 모형(합성 값 — 밝혀 둔 가정). snapshot은 마이그레이션 20261016191600의 운영 기대치
   // 「1,232단어 0.15~0.3초」에서 단어당 약 0.15ms로 잡는다(3,000단어 ≈ 450ms). 그 밖의 쿼리는 왕복 지연(latencyMs)만 준다.
-  const rpcCost = { fsrs_vocabulary_snapshot: () => Math.round(account.tables.user_vocabulary.length * snapshotMsPerRow) };
+  // 가벼운 읽기(20261025150000 — fsrs_vocabulary_snapshot_light)는 같은 모형에 PGlite 실측 비율을 곱한다(supabase/tests/vocabulary-snapshot-light.mjs,
+  // 3,000단어 중앙값: 전체 86 ms · 요약 전 언어 30 ms → 행당 0.35배 · 한 언어 전체 칸 2,400행 51 ms → 행당 0.74배). 응답은 JS 기준 구현
+  // compactVocabularySnapshot(운영 SQL과 같음을 그 PGlite 검사가 증명)으로 같은 snapshot에서 만든다.
+  const lightRows = body => account.tables.user_vocabulary.filter(row => !body?.p_language || row.language === body.p_language).length;
+  const rpcCost = { fsrs_vocabulary_snapshot: () => Math.round(account.tables.user_vocabulary.length * snapshotMsPerRow),
+    fsrs_vocabulary_snapshot_light: body => Math.round(lightRows(body) * snapshotMsPerRow * (body?.p_summary === true ? 0.35 : 0.74)) };
   const rpcs = {
     fsrs_vocabulary_snapshot: () => fsrsSnapshot(),
+    fsrs_vocabulary_snapshot_light: body => (typeof body?.p_summary !== 'boolean' ? { __rpcError: { code: '22023', message: 'invalid_fsrs_request' } }
+      : compactVocabularySnapshot(fsrsSnapshot(), { language: body.p_language ?? null, summary: body.p_summary })),
     fsrs_capabilities: () => ({ version: 1, enabled: true, policyVersion: 'anki-v2' }),
     fsrs_list_states: () => [],
     fsrs_legacy_boundary: () => ({ version: 1, actorId: HEAVY_UID, enrolled: false }),
@@ -326,7 +335,7 @@ export function createHeavyBackend({ latencyMs = 0, browserLatencyMs = 0, snapsh
       if (!fn) return { status: 200, body: null, note: 'rpc-unmocked' };
       const out = fn(body || Object.fromEntries(url.searchParams));
       if (out?.__rpcError) return { status: 400, body: { ...out.__rpcError, details: null, hint: null } };
-      return { status: 200, body: out, dbMs: rpcCost[table]?.() || 0 };
+      return { status: 200, body: out, dbMs: rpcCost[table]?.(body || Object.fromEntries(url.searchParams)) || 0 };
     }
     const rowsAll = account.tables[table];
     if (!rowsAll) { account.tables[table] = []; }

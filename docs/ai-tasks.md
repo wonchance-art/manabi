@@ -1075,6 +1075,14 @@
   (expectedLastReviewedAt · count=exact 0행 → 「다른 기기에서 먼저 복습한 표현이에요」, 기록 유지 · 일정 보존, ↶ 끔). 경계 확인 채점당 3 → 1(증거 공유 ·
   쓰기 직전 로컬 세션 대조), 같은 학습일 한도 GET 생략. 연결 상태 채점당 호출 13 → 8. /study 닫힘 keepalive(만료 토큰이면 보통 전송).
   남김: useInlineReview · 퀘스트 · 미루기는 무조건 쓰기 그대로(보낼함 재생만 CAS), 보낼함 안내 숫자 한 장 늦음(기존).
+- **VOCAB-FIRST-NUMBERS-001 ㉠ + SNAPSHOT-LIGHT-001 (2026-10-26 KST, 오너 「권장대로」 ×2 — 안 A: 가벼운 DB 읽기 먼저)**: /vocab 「오늘」 카드 · 언어 칩을
+  서버가 세어 첫 HTML에(브라우저와 같은 계산 · 같은 숫자 계약), 시작 · 집중 연습은 목록을 다 받을 때까지 잠금. 모바일 첫 숫자 2.3 s → 약 1.2 s.
+  서버 읽기는 새 RPC `fsrs_vocabulary_snapshot_light(actor, language, summary)` — snapshot 판정 조각 바이트 그대로(원문 md5 계약) · 언어 필터 ·
+  요약 칸 배열 · 기본값 registry 생략. 서버 snapshot 바이트: /vocab 4.2 → 2.7 MB(남은 2.1 MB = 브라우저 목록, F2 ② 후보) · /study 2.1 → 1.2 MB,
+  PGlite 3,000단어 전체 86 ms → 요약 30 ms. 마이그레이션 = 함수 1개 추가 + core 지문 재게시(1행), 사후 검사 = 모든 사용자 × 언어 × 모양
+  light ⊂ snapshot(다르면 전체 롤백). 운영 읽기 전용 사전 검사(02:19 KST): snapshot 본문 md5 90cb5fb5 일치 · 지문 넷 게시 = 계산 · 함수 없음 ·
+  사용자 2 · 최대 1,621행(사후 검사 즉시). 복원 `docs/sql/vocabulary-snapshot-light-rollback.sql`(앱은 함수 없으면 PGRST202에서만 전체 snapshot).
+  같은 PR: 사전 검사 스크립트 core 본문 비교를 `contract_hash_live()`로(지문 캐시 뒤 늘 거짓이던 것).
 - VOCAB-LEVEL-DOC(F9 현장): 목록을 문서 밖 JSON으로 → 문서 −95%지만 LCP +4%(JS가 임계 경로) → 배제 · 패치 보관. 후속 G(카드 앞 JS 청크) 조사 중.
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로

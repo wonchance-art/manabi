@@ -1,13 +1,13 @@
 // 단어장 데이터 레이어 — vocab 쿼리 + 데이터 뮤테이션(채점/삭제/일괄삭제/편집/CSV가져오기).
 // 수동 추가는 모달 UI 상태와 묶여 있어 VocabPage에 남겨둔다.
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { QueryClientContext, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { failureMessage } from './errorMessage';
 import { csvToVocabRows } from './vocabIO';
 import { fetchVocabularyLearningRows, reprojectVocabularyLearningRow } from './vocabularyLearningRows';
-import { useMemo, useRef } from 'react';
+import { useContext, useEffect, useMemo, useRef } from 'react';
 import { persistVocabGrade } from './fsrs';
 import { cacheVocabSnapshot, getCachedVocabSnapshot } from './offlineCache';
 
@@ -93,6 +93,20 @@ export function patchVocabularyLearningRow(queryClient, actorId, wordId, patch) 
     } catch { return cur; }
   });
   return patched;
+}
+
+/**
+ * 로그인 복원 전에 전체 학습 목록을 받기 시작한다(VOCAB-FIRST-NUMBERS-001). 서버가 이 요청의 쿠키 세션으로 확인한 계정(serverUserId)만,
+ * useVocabData와 같은 키 · 같은 가져오기 함수다 — 로그인이 복원되면 useVocabData가 진행 중인 요청이나 받은 결과(2분 신선)를 그대로 쓴다.
+ * 응답 계정이 다르면 fetchVocabularyLearningRows가 거절한다(남의 목록을 이 키에 담지 않는다). 복원된 계정이 다르면 쓰이지 않는다.
+ */
+export function usePrefetchVocabLearning(serverUserId, enabled) {
+  // 조회 공급자 밖(닫힘 화면만 그리는 시험 등)에서는 아무것도 하지 않는다 — 미리 받기는 덤이다.
+  const queryClient = useContext(QueryClientContext);
+  useEffect(() => {
+    if (!queryClient || !enabled || typeof serverUserId !== 'string' || !serverUserId) return;
+    queryClient.prefetchQuery({ queryKey: ['vocab', serverUserId, 'learning'], queryFn: ({ signal }) => fetchVocabLearningData(serverUserId, { signal }) });
+  }, [queryClient, serverUserId, enabled]);
 }
 
 export function useVocabData() {

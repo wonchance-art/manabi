@@ -116,7 +116,7 @@ ${q.live}
 ${rows.map(([name, expr]) => ` select ${lit(name)}, ${expr}`).join('\n union all\n')}
 ), checks as (
  select (select pg_catalog.md5(substring(prosrc from '(WITH RECURSIVE .*FROM objects) INTO live_hash;')) from pg_catalog.pg_proc where oid=${capOid}) = ${lit(q.liveMd5)} as capability_fingerprint_matches_embedded,
-  (select pg_catalog.md5(prosrc) from pg_catalog.pg_proc where oid=pg_catalog.to_regprocedure('fsrs_private.contract_hash()')) = ${lit(q.coreBodyMd5)} as core_fingerprint_matches_embedded
+  (select pg_catalog.md5(prosrc) from pg_catalog.pg_proc where oid=coalesce(pg_catalog.to_regprocedure('fsrs_private.contract_hash_live()'), pg_catalog.to_regprocedure('fsrs_private.contract_hash()'))) = ${lit(q.coreBodyMd5)} as core_fingerprint_matches_embedded
 ), lits(file, line, value, offline, context) as (values
   ${values}
 )

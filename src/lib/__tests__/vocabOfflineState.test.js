@@ -15,7 +15,7 @@ describe('/vocab 기기 사본 — 복습 상태 한 장', () => {
     expect(vocabOfflineLine(0)).toBe('복습 기록은 그대로 남아 있어요.');
   });
   it('사본일 때 실패 장 대신 이 장을 그리고, 실패 장(정본 조회 실패)은 그대로 남는다', () => {
-    const branch = sliceBetween(page, ') : vocabError || !learningAvailable ? (', ') : tab === \'list\' ? (');
+    const branch = sliceBetween(page, ') : vocabError || !(learningAvailable || firstView) ? (', ') : tab === \'list\' ? (');
     expect(branch).toMatch(/\{isOffline\s*\n?[^]*?\? <section className="review-room-state" role="alert"><h2>\{VOCAB_OFFLINE_TITLE\}<\/h2><p>\{vocabOfflineLine\(vocab\.length\)\}<\/p>/);
     expect(branch).toContain('<h2>표현을 불러오지 못했어요.</h2>');
   });
