@@ -112,6 +112,61 @@ export function takeEarlyMaterial(id, now = Date.now(), { owner = knownAccount()
   return early.promise;
 }
 
+// 서버가 실어 보낸 본문(VIEWER-SEED-001, server/viewerSeed.js) — 문서 하나에 한 번, 하이드레이션 때 등록부에 넣는다.
+// 받아 쓰는 길은 띄워 둔 조회와 같다(loadMaterial — 캐시가 빈 첫 조회만 · 10초 · 계정 대조). 그 위에 몇 겹을 더 본다:
+//   · 문서 하나에 한 번 — 뒤로 가기 등으로 라우터가 첫 문서의 조각을 다시 그려도(그때 실린 옛 행) 다시 넣지 않는다.
+//   · 서버가 그린 시각이 이 문서를 연 시각(performance.timeOrigin)과 VIEWER_SEED_MAX_SKEW_MS 안 — 기기에 남은 옛 문서(끊긴 채 워커가
+//     돌려준 것)는 쓰지 않는다. 끊김(navigator.onLine false)도 쓰지 않는다 — 지금처럼 기기 사본(「오프라인」 안내 포함)으로 연다.
+//   · 지금 세션 계정 = 서버가 읽은 계정일 때만 그 행. 다르면(다른 계정 · 로그아웃 뒤 다시 연 문서) 버리고 지금처럼 새로 받는다.
+// 쓴 행은 지금 조회 성공과 같이 기기 사본으로 남긴다(계정별 — OFFLINE-ACCOUNT-SCOPE-001).
+// 받아들였으면 뷰어 모듈 평가 때의 조기 조회(마이크로태스크 하나 뒤 — viewerSeedAdopted)는 띄우지 않는다. 이 항목은 띄워 둔 조회를 대신한다 —
+// 이미 떠 있던 같은 id의 조회는 결과를 쓰지 않는다(그 조회의 기기 사본 남기기는 그대로).
+export const VIEWER_SEED_MAX_SKEW_MS = 30000;
+let documentSeedTaken = false, adoptedSeedId = null;
+const sessionAccount = () => supabase.auth.getSession().then(({ data: auth }) => auth?.session?.user?.id ?? null);
+
+export function adoptViewerSeed(seed, id, { now = Date.now(), origin = globalThis.performance?.timeOrigin, online = globalThis.navigator?.onLine,
+  session = sessionAccount, fetch = fetchMaterial } = {}) {
+  // 공개 자료만(서버도 공개만 싣는다 — server/viewerSeed seedableRow). 비공개가 실려 와도 쓰지 않고 지금처럼 받는다.
+  if (documentSeedTaken || seed?.row?.visibility !== 'public' || seed.id !== String(id) || isLocalId(String(id))) return null;
+  documentSeedTaken = true;
+  if (online === false || !Number.isFinite(origin) || !Number.isFinite(seed.servedAt) || Math.abs(seed.servedAt - origin) > VIEWER_SEED_MAX_SKEW_MS) return null;
+  const account = seed.account ?? null;
+  adoptedSeedId = String(id);
+  const promise = session().then((current) => {
+    if (current !== account) return fetch(id);
+    Promise.resolve().then(() => cacheMaterial(seed.row, { owner: account })).catch(() => {});
+    return seed.row;
+  }, () => fetch(id));
+  promise.catch(() => {});
+  earlyMaterial = { id: String(id), promise, at: now, owner: account };
+  return earlyMaterial;
+}
+
+/**
+ * 이 문서가 그 주소 자료의 본문을 실어 왔나 — 뷰어 모듈 평가 때의 조기 조회를 건너뛸지(같은 행을 두 번 받지 않게).
+ * 이미 받아들였거나(adoptViewerSeed), 받은 화면 조각(RSC 흐름 — Next가 문서에 self.__next_f로 싣는다)에 그 자료의 seed 속성이 있으면 참.
+ * 뷰어 모듈은 그 조각(모듈 참조 줄 바로 뒤가 seed를 실은 요소 줄)을 받은 뒤에야 평가되므로, 평가 때 이미 들어와 있다 — 첫 렌더는 그보다
+ * 늦을 수 있어(React 19.2의 Suspense 공개 묶음 · 경계 클라이언트 렌더 실측) 받아들임만 보면 놓친다. 형식을 못 알아보면 거짓 — 지금처럼 받는다.
+ * 찾는 글은 서버가 만드는 seed 객체의 첫 키(server/viewerSeed.js — id가 첫 키)다.
+ */
+export function viewerSeedAdopted(pathname, chunks = globalThis.self?.__next_f) {
+  const id = viewerMaterialId(pathname);
+  if (!id) return false;
+  if (adoptedSeedId === id) return true;
+  if (!/^\d+$/.test(id) || !Array.isArray(chunks)) return false;
+  const needle = `"seed":{"id":"${id}",`;
+  try { return chunks.some((chunk) => typeof chunk?.[1] === 'string' && chunk[1].includes(needle)); } catch { return false; }
+}
+
+/** 시험용 — 문서 하나에 한 번을 되돌린다. */
+export function resetViewerSeedForTest() { documentSeedTaken = false; adoptedSeedId = null; }
+
+/** 로그인한 계정이 그 자료에서 NOT_FOUND를 받았을 때 한 번 다시 받을 열쇠(자료 · 계정) — 같은 열쇠로는 다시 받지 않는다. 아니면 null. */
+export function notFoundRetryKey(id, userId, code) {
+  return userId && code === 'NOT_FOUND' ? `${id}:${userId}` : null;
+}
+
 /** 그 id의 띄워 둔 조회를 버린다(뷰어 마운트 때 캐시가 이미 있으면 — 고아로 남기지 않는다). */
 export function discardEarlyMaterial(id) {
   if (earlyMaterial?.id === String(id)) earlyMaterial = null;

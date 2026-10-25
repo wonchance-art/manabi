@@ -19,5 +19,8 @@ export function LibraryReturnLinkTo({ children, onlyWithContext = false, guest =
   // 라벨 · 맥락 판정은 back(저장 주소) 기준, 이동은 readerReturnTarget(→ readerReturnHref) — 공개 목록은 /materials를 거치지 않고
   // /discover?view=reading으로. 손님 기본 「← 산책」도 children(아이콘)을 그대로 그린다 — 보이는 그림은 바뀌지 않는다.
   const target = readerReturnTarget(returnTo, { guest });
-  return <Link {...props} href={target.href}>{target.guestDefault || label === '← 내 서재' ? children || target.label : label}</Link>;
+  // 서재(/materials)로 돌아가는 「←」는 화면에 들어올 때 미리 받지 않는다 — 서재는 자체 대기 화면이 없어 auto prefetch가 라우터 상태만
+  // 받는다(메뉴 「서재」 prefetch:false와 같은 이유 · webNavigation.js). 누르면 지금처럼 서재가 열린다. 다른 행선지는 지금 그대로.
+  const toLibrary = /^\/materials(?:[?#]|$)/.test(target.href);
+  return <Link prefetch={toLibrary ? false : undefined} {...props} href={target.href}>{target.guestDefault || label === '← 내 서재' ? children || target.label : label}</Link>;
 }
