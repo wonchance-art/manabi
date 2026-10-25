@@ -2411,29 +2411,32 @@ export default function ViewerPage({ seed } = {}) {
   }, [hanjaPopoverMode, inspectChar, hanjaPanelTable]);
   useEffect(() => {
     // ④ 글자 탐색이 열리면 토글·언어와 무관하게 로드(음 테이블은 신자체도 수록 — 실측 확인)
+    // 두 표가 다 들어올 때까지 다시 묻는다 — 음 표가 먼저 오면 이 효과가 다시 돌며 앞선 실행의 alive가 꺼져, 「음 표만 보고 멈추는」
+    // 조건이면 늦게 온 훈 표가 버려져 훈음 칸이 끝내 비었다(CI viewer-hun-layout 390 간헐 실패, 2026-10-26 KST). 같은 표는 정본이
+    // 약속 하나로 돌려주므로 다시 불러도 요청은 늘지 않는다.
     const needed = (showHanjaKo && materialLang === 'Chinese') || inspectChar !== null;
-    if (!needed || hanjaKoTable) return undefined;
+    if (!needed || (hanjaKoTable && hanjaHunTable)) return undefined;
     let alive = true;
     loadHanjaTable('ko')
-      .then((t) => { if (alive) setHanjaKoTable(t); })
+      .then((t) => { if (alive) setHanjaKoTable((cur) => cur || t); })
       .catch(() => {});
     loadHanjaTable('hun')
-      .then((t) => { if (alive) setHanjaHunTable(t); })
+      .then((t) => { if (alive) setHanjaHunTable((cur) => cur || t); })
       .catch(() => {});
 
     return () => { alive = false; };
-  }, [showHanjaKo, materialLang, hanjaKoTable, inspectChar]);
+  }, [showHanjaKo, materialLang, hanjaKoTable, hanjaHunTable, inspectChar]);
   // AE-R4 PR②(설계서 §8 · §11.2): 한자 창 머리·조각·타일이 훈음 표를 쓰므로 중국어 단어창을 처음 열 때 유휴 시간에 받아 둔다
   // (첫 탭 T1 0.3초). 한자 대조 토글·글자 탭 조건의 즉시 로드(위)는 그대로다.
   useEffect(() => {
-    if (materialLang !== 'Chinese' || !isSheetOpen || hanjaKoTable) return undefined;
+    if (materialLang !== 'Chinese' || !isSheetOpen || (hanjaKoTable && hanjaHunTable)) return undefined;
     let alive = true;
     const cancel = onIdle(() => {
       loadHanjaTable('ko').then((t) => { if (alive) setHanjaKoTable((cur) => cur || t); }).catch(() => {});
       loadHanjaTable('hun').then((t) => { if (alive) setHanjaHunTable((cur) => cur || t); }).catch(() => {});
     });
     return () => { alive = false; cancel(); };
-  }, [materialLang, isSheetOpen, hanjaKoTable]);
+  }, [materialLang, isSheetOpen, hanjaKoTable, hanjaHunTable]);
   // R0+: 중국어 훈음은 정체 꼴로 찾는다(技术 → 재주 술) — 같은 조건에서 정체 표도 지연 로드.
   // AE-R3 PR②(설계서 §8): 정체 표는 자형 열 正 줄도 쓴다 — 단어창을 열면(isSheetOpen) 바로, 그 전에는 아래 유휴 미리 받기.
   const [hanjaTradTable, setHanjaTradTable] = useState(null);

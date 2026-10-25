@@ -1,4 +1,4 @@
-import ClassHubPage from '@/views/ClassHubPage';
+import ClassHub from '@/views/ClassHub';
 
 export const metadata = {
   title: '수업 팀',
@@ -6,5 +6,5 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <ClassHubPage />;
+  return <ClassHub />;
 }

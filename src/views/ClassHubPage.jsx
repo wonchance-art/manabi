@@ -7,6 +7,7 @@
  * 암호는 **브라우저에서 해시**해 저장한다(평문은 어디에도 남지 않는다). 그래서 오너도 나중에 못 본다 —
  * 생성·변경 모달에서 **그때 한 번만** 보여 주고 복사하게 한다(「암호는 지금만 보여요」).
  * 학생·익명은 여기서 팀 목록을 볼 수 없다 — 팀 링크로 들어온다.
+ * 경로(/class)는 ClassHub가 받는다 — 이 화면 묶음은 관리자에게만 내려간다(PERF P7). 여기의 학생 분기는 권한이 바뀐 경우의 방어.
  */
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -24,7 +25,7 @@ import {
   listTeams, listDayNotes, buildTeamRootRow, patchTeamRoot, TEAM_KEY_RE, TEAM_PW_MIN, dayLabel,
 } from '../lib/classBoard';
 import { ClassroomShell,ClassroomState,ClassCover } from '../components/classroom/ClassroomUI';
-import ClassroomJoin from '../components/classroom/ClassroomJoin';
+import ClassHubLearner from '../components/classroom/ClassHubLearner';
 import { saveClassroomMetadata } from '../lib/classroomModel';
 import { hashPassword, makeSalt, validatePassword } from '../lib/classPassword';
 import { failureMessage } from '../lib/errorMessage';
@@ -144,7 +145,7 @@ export default function ClassHubPage() {
   }
 
   if (loading) return <ClassroomState title="수업을 불러오고 있어요."/>;
-  if (!isAdmin) return <ClassroomShell><header className="classroom-header"><div><span className="classroom-eyebrow">MANABI / CLASS</span><h1>함께 배우고,<br/>나의 언어로.</h1><p>수업에서 만난 표현을 다시 읽고, 오래 기억하세요.</p></div></header><ClassroomJoin/></ClassroomShell>;
+  if (!isAdmin) return <ClassHubLearner/>;
   return (
     <ClassroomShell>
       <header className="classroom-header"><div><span className="classroom-eyebrow">MANABI / CLASS</span><h1>오늘, 함께 배울 것들.</h1><p>한 표현에서 시작해 한 편의 수업 노트로.</p></div>
