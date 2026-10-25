@@ -18,7 +18,10 @@ describe('복습실 첫 그림(REVIEW-SHELF-CLS-001)', () => {
     expect(src).toContain('const roomWaiting = !roomRevealed && roomLoading;');
   });
   it('기존 목록 골격(CardGridSkeleton)을 그대로 쓰고, 그 위 범위 막대도 같이 기다린다(골격을 밀지 않게)', () => {
-    expect(src).toContain("|| (tab === 'list' && roomWaiting) ? (\n        <CardGridSkeleton height={120} />");
-    expect(src).toContain("{!inSession && tab === 'list' && user && learningAvailable && !roomWaiting && <ReviewScopeBar");
+    // 서버가 센 첫 화면 숫자가 있으면(VOCAB-FIRST-NUMBERS-001) 골격 대신 그 숫자로 「오늘」 카드와 범위 막대를 함께 그린다 — 막대와 카드가
+    // 같은 판정(firstView)이라 막대가 나중에 끼어들어 카드를 밀지 않는다. 숫자가 없으면 지금처럼 둘 다 기다린다.
+    expect(src).toContain("|| (tab === 'list' && roomWaiting)) ? (\n        <CardGridSkeleton height={120} />");
+    expect(src).toContain("{!firstView && (isLoading || ");
+    expect(src).toContain("{!inSession && tab === 'list' && user && (firstView || learningAvailable && !roomWaiting) && <ReviewScopeBar pending={!!firstView}");
   });
 });
