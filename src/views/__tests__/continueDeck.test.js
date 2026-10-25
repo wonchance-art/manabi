@@ -78,13 +78,24 @@ describe('홈 알림 덱 계약', () => {
     expect(read('src/components/learn/ParagraphTile.jsx')).toContain("onClick={state.kind === 'forecast' ? onForecastTap : undefined}");
     expect(home).toContain('chooseResume(bookForLang, local.updatedAt, material)');
     expect(home).not.toContain("key: 'lesson'");
-    expect(home).toContain('useRereadCandidate()');
     expect(home).toContain('useGroupEntryItem({ invite: false })');
     // 옛 개별 카드는 부활 금지 — 같은 알림이 두 자리에 나오면 겹치기가 무의미해진다.
     expect(home).not.toContain('<ForecastCard');
     expect(home).not.toContain('<GroupEntryCard');
     expect(fs.existsSync(path.join(process.cwd(), 'src/components/ForecastCard.jsx'))).toBe(false);
     expect(fs.existsSync(path.join(process.cwd(), 'src/components/GroupEntryCard.jsx'))).toBe(false);
+  });
+
+  it('「다시 읽기」 · 「말해 보기」 칸은 배움에서 뺐다(오너 지시 2026-10-25 KST) — 그 칸만 쓰던 조회 훅 · 재독 엔진도 없다', () => {
+    const home = read('src/views/HomePage.jsx');
+    expect(home).not.toMatch(/useRereadCandidate|newConversationHref|key: 'reread'|key: 'conversation'/);
+    expect(home).not.toMatch(/'말해 보기'|다시 읽기 ·/);
+    expect(home).toContain('const continueDeckItems = [groupItem].filter(Boolean);');
+    for (const gone of ['src/lib/useRereadCandidate.js', 'src/lib/rereadSchedule.js', 'src/components/RereadCard.jsx']) {
+      expect(fs.existsSync(path.join(process.cwd(), gone)), gone).toBe(false);
+    }
+    // 새 대화 입구는 배움 밖에 그대로 있다 — 칸만 뺐지 기능을 지운 것이 아니다.
+    expect(read('src/components/materials/MaterialEntry.jsx')).toContain('<Link href="/conversation/new">');
   });
 
   it('HSK 단어 임시 입구는 덱과 같은 카드 양식으로 배움 맨 아래에 있다(오너 지시 2026-10-15 KST)', () => {

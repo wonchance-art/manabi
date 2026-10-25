@@ -65,8 +65,7 @@ describe('입구와 머리 ⋯(정적 계약)', () => {
     expect(page).toContain('startTopicConversation({ topic: chosenTopic, language, level');
     expect(page).toContain('대화는 내 서재에 비공개로 남아요. 언제든 지울 수 있어요.');
   });
-  it('홈·자료 추가·서재에 「새 대화」 입구', () => {
-    expect(read('views/HomePage.jsx')).toContain("key: 'conversation', href: newConversationHref({ language: lang })");
+  it('자료 추가·서재에 「새 대화」 입구(배움 「말해 보기」 칸은 오너 지시로 뺐다 2026-10-25 KST — 하단 「대화」 탭이 남는다)', () => {
     expect(read('components/materials/MaterialEntry.jsx')).toContain('<Link href="/conversation/new">자료 없이 대화하기 ↗</Link>');
     expect(read('components/library/ConversationShelf.jsx')).toContain('/conversation/new?returnTo=%2Fmaterials');
   });

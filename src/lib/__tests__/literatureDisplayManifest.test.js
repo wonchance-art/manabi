@@ -91,7 +91,7 @@ describe('표시 함수 — 표시용 대조표로 전과 같은 판정', () => 
 
 // 계약 ②: 클라이언트 화면 파일은 전체 대조표(manifest.generated.json)를 직접 · 간접 import하지 않는다.
 // 정적 import · re-export를 따라간다(동적 import()는 따로 쪼갠 청크라 그 화면 번들에 붙지 않는다 — 따라가지 않는다).
-const CLIENT_SCREENS = ['src/views/HomePage.jsx', 'src/lib/useRereadCandidate.js', 'src/views/MaterialsPage.jsx'];
+const CLIENT_SCREENS = ['src/views/HomePage.jsx', 'src/views/MaterialsPage.jsx'];
 const FULL_MANIFEST = /\/content\/literature\/[^/]+\/manifest\.generated\.json$/u;
 const STATIC_IMPORT = /(?:^|[\n;])\s*(?:import|export)\s+(?:[^'"]*?\sfrom\s*)?['"]([^'"]+)['"]/gu;
 
@@ -138,7 +138,6 @@ describe('화면 번들 — 전체 대조표를 싣지 않는다', () => {
 
   it('화면 파일은 표시 함수를 가벼운 모듈에서 직접 import한다', () => {
     expect(read('src/views/HomePage.jsx')).toContain("import { literatureDisplayTitle } from '@/lib/literatureWorks';");
-    expect(read('src/lib/useRereadCandidate.js')).toContain("import { literatureDisplayTitle } from './literatureWorks';");
     const materials = read('src/views/MaterialsPage.jsx');
     // 「다음 과 적기」 판정은 대조표 없는 isCanonicalBookKey(접두사 — canonicalBookKey.test.js) 몫이라 표지 함수만 가져온다
     expect(materials).toContain("import { literatureWorkOfBook } from '../lib/literatureWorks';");

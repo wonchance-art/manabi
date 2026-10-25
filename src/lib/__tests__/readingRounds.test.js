@@ -129,28 +129,3 @@ describe('§3 완독 한 줄 — 느려진 회차를 나무라지 않는다', ()
   });
 });
 
-describe('재독 카드 — "두 번째는 훨씬 빨라요"에 실물 근거를 붙인다', () => {
-  const hook = read('src/lib/useRereadCandidate.js');
-
-  it('지난 회차 속도를 kicker에 얹고, 없으면 예전 문구 그대로', () => {
-    const kicker = sliceBetween(hook, 'kicker: lastCpm', '\n');
-    expect(kicker).toContain('지난번 ${lastCpm}자/분');
-    expect(kicker).toContain("'다시 읽기 · 두 번째는 훨씬 빨라요'");
-  });
-
-  it('meta는 짧게 유지한다 — nowrap·flex-shrink:0이라 길어지면 제목이 잘린다(렌더 실측)', () => {
-    const meta = sliceBetween(hook, 'meta: `', '`,');
-    expect(meta).toBe('meta: `${candidate.daysSince}일 만에 →');
-    expect(read('src/index.css')).toContain('color: var(--text-secondary); white-space: nowrap;');
-  });
-
-  it('후보가 없으면 조회하지 않는다 — 홈에 매번 쿼리를 얹지 않는다', () => {
-    const q = sliceBetween(hook, "queryKey: ['reread-cpm'", '});');
-    expect(q).toContain('enabled: !!user && !!candidate?.material_id,');
-  });
-
-  it('조회는 조건부 반환보다 앞에 있다 — 훅 순서가 렌더마다 흔들리면 React가 깨진다', () => {
-    const code = codeOf(hook);
-    expect(code.indexOf("queryKey: ['reread-cpm'")).toBeLessThan(code.indexOf('return null;'));
-  });
-});

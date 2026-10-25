@@ -24,9 +24,7 @@ import { bookHref } from '@/lib/textbook/contract';
 import { bookResume, chooseResume, recentMaterial } from '@/lib/webNavigation';
 import useReadingProgress from '@/components/books/useReadingProgress';
 import ContinueDeck from '@/components/ContinueDeck';
-import { useRereadCandidate } from '@/lib/useRereadCandidate';
 import { useGroupEntryItem } from '@/lib/useGroupEntryItem';
-import { newConversationHref } from '@/lib/conversation/newConversation';
 import { buildForecastTapEvent } from '@/lib/forecastTapEvent';
 import { logReviewEvents } from '@/lib/reviewEvents';
 import { getIdealLevel } from '@/lib/levels';
@@ -193,12 +191,10 @@ export default function HomePage({ book = null, bookPromise, sessionHint }) {
   const onForecastTap = () => {
     if (user?.id && forecast) { try { logReviewEvents(user.id, [buildForecastTapEvent(lang, forecast)]); } catch { /* Existing optional telemetry. */ } }
   };
-  const rereadItem = useRereadCandidate();
+  // 「다시 읽기」 · 「말해 보기」 칸은 배움에서 뺐다(오너 지시 2026-10-25 KST) — 새 대화는 하단 「대화」 · 서재 · 자료 추가 입구가 그대로 연다.
+  // 덱에는 학습 그룹(있을 때만)이 남는다.
   const groupItem = useGroupEntryItem({ invite: false });
-  // 대화 모드 v2-Z Z-R2 — 읽은 말을 꺼내 쓰는 입구(자료 없이 시작). 고른 학습 언어로 새 대화 화면을 연다.
-  const conversationItem = { key: 'conversation', href: newConversationHref({ language: lang }), tone: 'progress',
-    kicker: '말해 보기', title: 'AI 튜터와 목표어로 대화', meta: '새 대화 ↗' };
-  const continueDeckItems = [rereadItem, conversationItem, groupItem].filter(Boolean);
+  const continueDeckItems = [groupItem].filter(Boolean);
   // HSK 단어 — 이 기기에 남은 진도가 있으면 마지막 레벨로 이어 하기(붙은 뒤에 읽는다 — 서버 렌더와 첫 렌더는 「1급부터」로 같다).
   const [hskResume, setHskResume] = useState(null);
   useEffect(() => { try { setHskResume(levelResumeCard(readLevelSnapshot(localStorage, 'chinese'))); } catch { /* 저장소 차단 — 1급부터 */ } }, []);
