@@ -300,6 +300,10 @@ export function createHeavyBackend({ latencyMs = 0, browserLatencyMs = 0, snapsh
     learning_admit_legacy: body => {
       const request = body.p_request, first = !state.admitted.has(request.cardId);
       const row = account.tables.user_vocabulary.find(v => v.id === request.cardId);
+      // 운영 RPC처럼 질문마다(새 operationId) 다시 검사한다 — 제외 · 다른 기기가 먼저 복습해 아직 때가 아님(독립 리뷰 2026-10-25 KST).
+      if (!row) return { __rpcError: { code: '42501', message: 'learning_word_not_available' } };
+      if (row.is_excluded) return { __rpcError: { code: '55000', message: 'vocabulary_excluded' } };
+      if (row.last_reviewed_at && Date.parse(row.next_review_at) > Date.now()) return { __rpcError: { code: '55000', message: 'learning_card_not_due' } };
       state.admitted.add(request.cardId);
       if (first && !row?.last_reviewed_at) state.consumed.add(request.cardId);
       const q = quota(), consumed = state.consumed.has(request.cardId);
@@ -320,7 +324,9 @@ export function createHeavyBackend({ latencyMs = 0, browserLatencyMs = 0, snapsh
     if (url.pathname.includes('/rpc/')) {
       const fn = rpcs[table];
       if (!fn) return { status: 200, body: null, note: 'rpc-unmocked' };
-      return { status: 200, body: fn(body || Object.fromEntries(url.searchParams)), dbMs: rpcCost[table]?.() || 0 };
+      const out = fn(body || Object.fromEntries(url.searchParams));
+      if (out?.__rpcError) return { status: 400, body: { ...out.__rpcError, details: null, hint: null } };
+      return { status: 200, body: out, dbMs: rpcCost[table]?.() || 0 };
     }
     const rowsAll = account.tables[table];
     if (!rowsAll) { account.tables[table] = []; }

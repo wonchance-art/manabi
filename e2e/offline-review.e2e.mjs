@@ -108,7 +108,7 @@ async function answer(page, { rating = 'good', revealed = false } = {}) {
 const tally = (log, origin) => log.filter(row => row.origin === origin && !row.path.startsWith('auth/v1/.well-known'));
 const named = rows => rows.map(row => `${row.method} ${row.path.replace(/^rpc\//, 'rpc:')}`);
 
-test('채점당 호출 수 — 이미 입장한 카드는 입장 왕복이 없다(F5)', { skip, timeout: 600000 }, async () => {
+test('채점당 호출 수 — 연결돼 있으면 입장은 서버가 다시 검사하고, 뒤따르던 FSRS 목록 GET · 중복 경계 확인은 없다(F5)', { skip, timeout: 600000 }, async () => {
   await heavy('/__heavy/reset?admitted=reviewed');
   const { context, page, net } = await openReview();
   try {
@@ -130,21 +130,23 @@ test('채점당 호출 수 — 이미 입장한 카드는 입장 왕복이 없�
         calls: [...named(browserCalls).map(c => `B ${c}`), ...named(serverCalls).map(c => `S ${c}`)] });
       if (next === 'finished') break;
     }
-    const admittedRows = report.online.filter(row => row.nextAdmittedOnServer);
-    const total = row => row.browser + row.server;
-    const median = rows => { const v = rows.map(total).sort((a, b) => a - b); return v.length ? v[Math.floor(v.length / 2)] : null; };
-    const boundary = rows => rows.map(row => row.calls.filter(c => c.includes('fsrs_legacy_boundary')).length);
-    report.summary = { grades: report.online.length, admittedNext: admittedRows.length, medianCallsAdmittedNext: median(admittedRows),
-      medianCallsAll: median(report.online), boundaryPerGrade: boundary(report.online),
-      apiPerGrade: report.online.map(row => row.api.length) };
+    const median = values => { const v = [...values].sort((a, b) => a - b); return v.length ? v[Math.floor(v.length / 2)] : null; };
+    const count = (row, needle) => row.calls.filter(c => c.includes(needle)).length;
+    report.summary = { grades: report.online.length,
+      medianCalls: median(report.online.map(row => row.browser + row.server)),
+      medianBrowser: median(report.online.map(row => row.browser)), medianServer: median(report.online.map(row => row.server)),
+      boundaryPerGrade: report.online.map(row => count(row, 'fsrs_legacy_boundary')),
+      admitPerGrade: report.online.map(row => count(row, 'learning_admit_legacy')),
+      fsrsListPerGrade: report.online.map(row => count(row, 'fsrs_list_states')),
+      apiPerGrade: report.online.map(row => row.api.filter(call => call !== 'GET /api/tts')) };
     if (!BASELINE) {
-      assert.ok(admittedRows.length >= 3, `이미 입장한 다음 카드가 몇 장은 있어야 한다: ${JSON.stringify(report.summary)}`);
-      for (const row of admittedRows) {
-        assert.ok(!row.api.some(call => call.includes('/api/learning/admission')), `이미 입장한 카드는 입장 API가 없다: ${JSON.stringify(row)}`);
-        assert.ok(!row.api.some(call => call === 'GET /api/learning/fsrs'), `채점 뒤 FSRS 목록을 다시 읽지 않는다: ${JSON.stringify(row)}`);
+      assert.ok(report.online.length >= 5, `채점이 몇 장은 있어야 한다: ${JSON.stringify(report.summary)}`);
+      for (const row of report.online.filter(row => row.next === 'question')) {
+        // 연결돼 있으면 다음 질문마다 입장 POST가 서버 재검사(제외 · 아직 때가 아님 · 정책 판)를 한다 — 독립 리뷰 2026-10-25 KST.
+        assert.equal(count(row, 'learning_admit_legacy'), 1, `다음 질문의 입장 재검사 1번: ${JSON.stringify(row)}`);
+        assert.ok(!row.api.includes('GET /api/learning/fsrs') && count(row, 'fsrs_list_states') === 0, `입장 응답 뒤 FSRS 목록을 다시 읽지 않는다: ${JSON.stringify(row)}`);
       }
       assert.ok(report.summary.boundaryPerGrade.every(n => n === 1), `경계 확인은 채점당 1번: ${report.summary.boundaryPerGrade}`);
-      assert.ok(report.summary.medianCallsAdmittedNext <= 8, `채점당 호출 ≤ 8: ${JSON.stringify(report.summary)}`);
     }
   } finally { await context.close(); }
 });
@@ -168,9 +170,22 @@ test('끊긴 채 이어 복습 — 이미 입장한 카드는 열리고 채점�
       state = await screen(page);
       if (state === 'intro' || state !== 'question') { off.reached = state; break; }
       const word = await headword(page);
-      await (await answer(page)).click();
+      const button = await answer(page);
+      const gradedAt = Date.now();
+      await button.click();
       off.graded.push(word);
       await page.waitForTimeout(500);
+      // 첫 끊긴 카드는 끊긴 사이 「폰에서」 먼저 채점됐다고 둔다(노트북 채점보다 조금 앞 · 노트북이 계산한 바탕보다 뒤).
+      // 다시 이을 때 노트북 채점은 기록(이벤트)만 남고 폰의 일정을 덮지 않아야 한다(비교 후 쓰기 — 독립 리뷰 2026-10-25 KST).
+      if (off.graded.length === 1) {
+        const [row] = await serviceRows('user_vocabulary', `user_id=eq.${HEAVY_UID}&word_text=eq.${encodeURIComponent(word)}&select=id,last_reviewed_at`);
+        if (row) {
+          off.phone = { id: row.id, word, base: row.last_reviewed_at, last_reviewed_at: new Date(gradedAt - 400).toISOString(), interval: 77,
+            next_review_at: new Date(gradedAt + 77 * 86400000).toISOString() };
+          await heavy(`/rest/v1/user_vocabulary?id=eq.${row.id}`, { method: 'PATCH', headers: { apikey: HEAVY_SERVICE_KEY, authorization: `Bearer ${HEAVY_SERVICE_KEY}`,
+            'content-type': 'application/json' }, body: JSON.stringify({ last_reviewed_at: off.phone.last_reviewed_at, interval: 77, next_review_at: off.phone.next_review_at }) });
+        }
+      }
       // 두 번째 끊긴 채점은 되돌렸다가(↶) 다시 채점한다 — 되돌린 채점은 보내지 않는다.
       if (off.graded.length === 2 && !off.undone) {
         const undo = page.locator('button.review-topbar__undo');
@@ -216,7 +231,13 @@ test('끊긴 채 이어 복습 — 이미 입장한 카드는 열리고 채점�
     off.sentEvents = events.map(e => [e.item_key, e.created_at, e.detail?.rating]);
     off.undoMarkers = (await serviceRows('review_events', `user_id=eq.${HEAVY_UID}&source=eq.ui&created_at=gte.${encodeURIComponent(startedAt)}`)).length;
     const log = await backendLog();
-    off.patchesAfterReconnect = tally(log, 'browser').filter(row => row.method === 'PATCH' && row.path === 'user_vocabulary').length;
+    const patches = tally(log, 'browser').filter(row => row.method === 'PATCH' && row.path === 'user_vocabulary');
+    off.patchesAfterReconnect = patches.length;
+    if (off.phone) {
+      const [after] = await serviceRows('user_vocabulary', `id=eq.${off.phone.id}&select=interval,last_reviewed_at,next_review_at`);
+      off.phoneAfter = after;
+      off.phonePatchedRows = patches.filter(row => row.query.includes(off.phone.id)).length; // 비교 후 쓰기 시도(0행)는 요청으로는 나간다
+    }
     off.afterReconnect = await screen(page, 20000);
     if (!BASELINE) {
       assert.equal(events.length, 1 + queued, `온라인 1 + 끊긴 채점 ${queued}개가 한 번씩: ${JSON.stringify(off.sentEvents)}`);
@@ -224,8 +245,56 @@ test('끊긴 채 이어 복습 — 이미 입장한 카드는 열리고 채점�
       assert.deepEqual(times, [...times].sort((a, b) => a - b), '채점 시각 순서');
       assert.equal(new Set(events.map(e => `${e.item_key}|${e.created_at}`)).size, events.length, '중복 없음');
       assert.equal(off.undoMarkers, 0, '보내기 전에 되돌린 채점은 보낸 적이 없어 되돌리기 표식도 없다');
-      assert.equal(off.patchesAfterReconnect, queued, '일정 쓰기도 끊긴 채점마다 한 번');
+      // 일정 쓰기 요청은 끊긴 채점마다 한 번 — 폰이 먼저 채점한 카드는 재생이 미리 알아채 요청조차 하지 않는다(바탕 불일치).
+      assert.equal(off.patchesAfterReconnect, queued - (off.phone ? 1 : 0), `일정 쓰기: ${JSON.stringify(off)}`);
+      if (off.phone) {
+        assert.equal(off.phonePatchedRows, 0, '폰이 먼저 채점한 카드에는 쓰기 요청이 없다');
+        assert.ok(Date.parse(off.phoneAfter.last_reviewed_at) === Date.parse(off.phone.last_reviewed_at) && off.phoneAfter.interval === 77,
+          `폰의 일정이 그대로다: ${JSON.stringify(off.phoneAfter)}`);
+        assert.ok(events.some(e => e.item_key === off.phone.word), '노트북의 채점 기록(이벤트)은 남는다');
+      }
       if (off.reached === 'offline-card') assert.equal(off.afterReconnect, 'question', '연결되면 기다리던 카드가 저절로 열린다');
+    }
+  } finally { await context.close(); }
+});
+
+test('다른 기기가 방금 복습한 카드 — 연결된 채로는 입장했어도 다시 열리지 않고, 멈추지 않고 건너뛴다(독립 리뷰)', { skip, timeout: 600000 }, async () => {
+  await heavy('/__heavy/reset?admitted=reviewed');
+  const { context, page } = await openReview();
+  const gone = report.gone = { shown: [], target: null };
+  try {
+    let state = await screen(page);
+    while (state === 'intro') { await page.locator('.review-intro__next').first().click(); state = await screen(page); }
+    assert.equal(state, 'question');
+    // 세션 줄(이어 하기 기록)에서 두 장 뒤 카드를 골라 「폰에서」 먼저 채점한다(+3일).
+    const resume = await page.evaluate(() => { const key = Object.keys(sessionStorage).find(k => k.startsWith('vocab_review_resume:')); return key ? JSON.parse(sessionStorage.getItem(key)) : null; });
+    assert.ok(resume?.cardIds?.length > resume.index + 3, `세션 줄을 읽을 수 있어야 한다: ${JSON.stringify(resume)?.slice(0, 200)}`);
+    const targetId = resume.cardIds[resume.index + 2];
+    const phoneAt = new Date().toISOString(), due = new Date(Date.now() + 3 * 86400000).toISOString();
+    await heavy(`/rest/v1/user_vocabulary?id=eq.${targetId}`, { method: 'PATCH', headers: { apikey: HEAVY_SERVICE_KEY, authorization: `Bearer ${HEAVY_SERVICE_KEY}`,
+      'content-type': 'application/json' }, body: JSON.stringify({ last_reviewed_at: phoneAt, next_review_at: due, interval: 3 }) });
+    gone.target = targetId;
+    await clearLog();
+    for (let i = 0; i < 5; i++) {
+      state = await screen(page);
+      if (state === 'intro') { await page.locator('.review-intro__next').first().click(); continue; }
+      assert.notEqual(state, 'prep-failed', '「준비하지 못했어요」로 멈추지 않는다');
+      if (state !== 'question') break;
+      gone.shown.push(await headword(page));
+      await (await answer(page)).click();
+      await page.waitForTimeout(700);
+    }
+    const log = await backendLog();
+    gone.targetWrites = tally(log, 'browser').filter(row => row.method === 'PATCH' && row.path === 'user_vocabulary' && row.query.includes(targetId)).length;
+    gone.rejected = tally(log, 'server').filter(row => row.path === 'rpc/learning_admit_legacy' && row.status >= 400).length;
+    const [row] = await serviceRows('user_vocabulary', `id=eq.${targetId}&select=word_text,last_reviewed_at,next_review_at,interval`);
+    gone.after = row;
+    if (!BASELINE) {
+      assert.ok(gone.rejected >= 1, `서버가 그 카드의 질문을 거절했다(not_due): ${JSON.stringify(gone)}`);
+      assert.equal(gone.targetWrites, 0, '그 카드를 다시 채점해 쓰지 않는다');
+      assert.ok(Date.parse(row.last_reviewed_at) === Date.parse(phoneAt) && row.interval === 3, `폰의 일정이 그대로다: ${JSON.stringify(row)}`);
+      assert.ok(!gone.shown.includes(row.word_text), `그 카드는 열리지 않았다: ${JSON.stringify(gone.shown)}`);
+      assert.ok(gone.shown.length >= 3, `건너뛰고 이어 간다: ${JSON.stringify(gone.shown)}`);
     }
   } finally { await context.close(); }
 });
