@@ -181,14 +181,15 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
     const reviewKey = type === 'vocab' && detail?.word_id
       ? JSON.stringify(['vocab', detail.word_id]) : JSON.stringify([type, lang, itemKey]);
     return await withLegacyReviewOnlineLock(userId, reviewKey, async () => {
-      if (type === 'vocab') await assertLegacyFsrsAllowed(supabase, { userId, cardId: detail?.word_id, itemKey, language: lang });
+      // 이 채점의 경계 확인은 여기 한 번이다 — 같은 lock 안의 두 쓰기(이벤트 · 일정)가 이 답(boundary 증거)을 나눠 쓴다(F5②).
+      const boundary = type === 'vocab' ? await assertLegacyFsrsAllowed(supabase, { userId, cardId: detail?.word_id, itemKey, language: lang }) : undefined;
       // flush/undo의 조회→쓰기와 온라인 기록 전체가 같은 actor 경계를 공유한다.
       // 1. 진도 이벤트: review_events 적재
-      await recordReviewEventRemote(userId, { lang, source: type, item_key: itemKey, correct, detail, created_at: reviewedAt });
+      await recordReviewEventRemote(userId, { lang, source: type, item_key: itemKey, correct, detail, created_at: reviewedAt }, boundary);
 
       // 2. SRS: 어휘·문법·문형 다음 복습 스케줄
       if (type === 'vocab' && detail?.word_id && nextStats.next_review_at) {
-        await updateVocabNextReviewRemote(userId, detail.word_id, nextStats, reviewedAt);
+        await updateVocabNextReviewRemote(userId, detail.word_id, nextStats, reviewedAt, boundary);
       } else if (type === 'grammar' || type === 'pattern') {
         // 문법/문형은 기존 grammarSrs에서 처리 (이 함수는 진도만)
       }
@@ -513,7 +514,7 @@ async function enqueueReviewRemote(userId, lang, slug) {
 /**
  * review_events 적재 (약점 진단 데이터)
  */
-async function recordReviewEventRemote(userId, event) {
+async function recordReviewEventRemote(userId, event, boundary) {
   if (!userId || !event) return;
 
   // 한국어 저장소 guard는 연결 장애가 아니다. 이벤트 실패도 호출부에 전달한다.
@@ -524,20 +525,20 @@ async function recordReviewEventRemote(userId, event) {
   }
 
   const { logReviewEvents } = await import('../reviewEvents');
-  return logReviewEvents(userId, [event], { strict: true });
+  return logReviewEvents(userId, [event], { strict: true, boundary });
 }
 
 /**
  * user_vocabulary next_review_at 갱신
  * 기존 VocabPage.scoreMutation 통합
  */
-async function updateVocabNextReviewRemote(userId, wordId, nextStats, reviewedAt) {
+async function updateVocabNextReviewRemote(userId, wordId, nextStats, reviewedAt, boundary) {
   if (!userId || !wordId) return;
   // 채점 저장 정본(fsrs.persistVocabGrade)으로 수렴 — 4중복 페이로드의 단일화.
   // reviewedAt을 그대로 실어 SRS last_reviewed_at = 이벤트 created_at = 큐 항목 시각(한 시계).
   // 안 실으면 persistVocabGrade가 제 시계를 찍어 undo 대조·큐 중복 제거의 열쇠가 ms만큼 어긋난다(W 후속 ③).
   const { persistVocabGrade } = await import('../fsrs');
-  return persistVocabGrade(supabase, wordId, nextStats, reviewedAt);
+  return persistVocabGrade(supabase, wordId, nextStats, reviewedAt, { boundary });
 }
 
 /**

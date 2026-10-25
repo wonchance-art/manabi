@@ -470,7 +470,7 @@ describe('online progress independent-card response regression', () => {
       expect(remote.grade).not.toHaveBeenCalled();
       releases[1].resolve();
       expect(await second).toMatchObject({ ok: true });
-      expect(remote.grade).toHaveBeenCalledExactlyOnceWith({}, 'word-b', stats, expect.any(String));
+      expect(remote.grade).toHaveBeenCalledExactlyOnceWith({}, 'word-b', stats, expect.any(String), { boundary: undefined }); // 이 목 client엔 경계 RPC가 없어 증거도 없다
       releases[0].resolve();
       expect(await first).toMatchObject({ ok: true });
       expect(remote.events).toHaveBeenCalledTimes(2);

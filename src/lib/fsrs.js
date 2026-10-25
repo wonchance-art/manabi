@@ -14,7 +14,7 @@
  */
 
 import { fsrs, Rating, State, createEmptyCard, S_MIN, S_MAX } from 'ts-fsrs';
-import { assertLegacyFsrsAllowed } from './fsrsLegacyBoundary.js';
+import { assertLegacyFsrsAllowedOnce } from './fsrsLegacyBoundary.js';
 import { FSRS_POLICY, fsrsPolicySteps, introduceFsrsCard, learningDay, learningDaySpan, learningDayStart, previewFsrsRatings, schedulerTime } from './fsrsScheduler.js';
 
 // 기본 파라미터로 스케줄러 생성 (한번만)
@@ -199,8 +199,9 @@ export function calculateVocabFSRS(rating, prev, at = Date.now()) {
  * 컬럼은 snake_case여야 한다 — 미지 컬럼이 섞이면 PostgREST가 UPDATE 전체를
  * 거부해 채점이 조용히 유실된다(과거 사고). client는 주입식(순수 lib 유지·테스트 용이).
  */
-export async function persistVocabGrade(client, wordId, nextStats, reviewedAt = new Date().toISOString()) {
-  await assertLegacyFsrsAllowed(client, { cardId: wordId });
+export async function persistVocabGrade(client, wordId, nextStats, reviewedAt = new Date().toISOString(), { boundary } = {}) {
+  // 같은 채점이 방금 이 카드의 경계를 확인했으면(증거) 그 답을 나눠 쓴다(F5②). 증거가 없으면 지금처럼 묻는다.
+  await assertLegacyFsrsAllowedOnce(client, { cardId: wordId }, boundary);
   const { error } = await client
     .from('user_vocabulary')
     .update({ ...nextStats, last_reviewed_at: reviewedAt })

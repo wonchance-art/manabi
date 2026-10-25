@@ -458,11 +458,14 @@ async function flushReviewsLocked(client, userId, {
     ));
     const blockedSeq = new Set(blocked.map(entry => entry.seq));
     entries.filter(entry => undoHeldIds.has(entry.detail?.word_id)).forEach(entry => blockedSeq.add(entry.seq));
+    // 항목마다 경계를 묻고, 그 답(증거)을 같은 항목의 일정 쓰기(persist)가 나눠 쓴다(F5② — 항목당 경계 RPC 2 → 1).
+    const boundaries = new Map();
     for (const entry of entries) {
       if (entry.source !== 'vocab' || blockedSeq.has(entry.seq)) continue;
       try {
-        await assertLegacyFsrsAllowed(client, { userId, cardId: entry.detail?.word_id,
+        const proof = await assertLegacyFsrsAllowed(client, { userId, cardId: entry.detail?.word_id,
           itemKey: entry.itemKey, language: entry.lang });
+        if (proof) boundaries.set(entry.seq, proof);
         actor();
       } catch { blockedSeq.add(entry.seq); }
     }
@@ -543,7 +546,7 @@ async function flushReviewsLocked(client, userId, {
         if (!shouldApplyGrade(e, byId.get(id))) continue;
         try {
           actor();
-          await persist(client, id, e.nextStats, e.reviewedAt);
+          await persist(client, id, e.nextStats, e.reviewedAt, { boundary: boundaries.get(e.seq) });
           actor();
           applied += 1;
           byId.set(id, { ...byId.get(id), last_reviewed_at: e.reviewedAt });

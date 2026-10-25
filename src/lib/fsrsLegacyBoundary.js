@@ -42,17 +42,41 @@ export function assertCachedLegacyFsrsAllowed(actorId, cardId) {
   if (identity(actorId) && cardId && rememberedIds(actorId).has(cardId)) throw boundaryError('fsrs_legacy_write_blocked');
 }
 
+/**
+ * 경계 확인 증거(F5② — 같은 카드 · 같은 채점 1회화). 채점 하나는 쓰기 둘(review_events INSERT · user_vocabulary UPDATE)을 같은
+ * lock 안에서 잇달아 하는데, 전에는 progressStore · logReviewEvents · persistVocabGrade가 같은 카드로 fsrs_legacy_boundary를 한 번씩
+ * (채점당 3번) 물어 세 답이 서로 다른 시점을 볼 수 있었다(반쪽 저장 냄새). 이제 첫 확인이 돌려준 증거를 같은 채점의 쓰기 묶음에 넘겨
+ * 나눠 쓴다 — 쓰기마다 확인이 있다는 것은 그대로다(그 묶음 바로 앞의 한 번). 증거는 이 모듈만 만들 수 있고(WeakSet · 동결),
+ * 같은 카드 · 같은 계정 · 같은 표기 · 같은 언어만 덮으며 짧게만 산다. 기기 차단 캐시(assertCachedLegacyFsrsAllowed)는 늘 다시 본다.
+ * DB 트리거(fsrs_guard_legacy_event · fsrs_guard_legacy_vocabulary)가 최종 권한이라는 전제는 그대로다.
+ */
+export const LEGACY_BOUNDARY_PROOF_MS = 15000;
+const proofs = new WeakSet();
+const issueProof = ({ userId = null, cardId = null, itemKey = null, language = null }) => {
+  if (!cardId) return undefined;
+  const proof = Object.freeze({ userId: userId || null, cardId, itemKey: itemKey ?? null, language: language ?? null, at: Date.now() });
+  proofs.add(proof); return proof;
+};
+/** 이 증거가 이 확인을 덮는가 — 같은 카드이고, 호출이 준 계정 · 표기 · 언어가 증거와 같고, 아직 짧은 수명 안이다. */
+export function legacyBoundaryCovers(proof, { userId = null, cardId = null, itemKey = null, language = null } = {}) {
+  if (!proof || !proofs.has(proof) || !cardId || proof.cardId !== cardId) return false;
+  const age = Date.now() - proof.at;
+  if (!(age >= 0 && age <= LEGACY_BOUNDARY_PROOF_MS)) return false;
+  return (!userId || proof.userId === userId) && (itemKey == null || proof.itemKey === itemKey)
+    && (language == null || proof.language === language);
+}
+
 export async function assertLegacyFsrsAllowed(client, { userId, cardId = null, itemKey = null, language = null } = {}) {
   assertCachedLegacyFsrsAllowed(userId, cardId);
   // 기존 주입식 비-RPC 저장 adapter와 호환. 실제 Supabase client에는 rpc가 항상 존재한다.
-  if (typeof client?.rpc !== 'function') return;
+  if (typeof client?.rpc !== 'function') return undefined;
   let response;
   try {
     response = await client.rpc('fsrs_legacy_boundary', { p_card_id: cardId, p_item_key: itemKey, p_language: language });
   } catch { throw boundaryError('fsrs_boundary_unavailable'); }
   if (response?.error) {
     // 정확한 미설치 함수만 기존 경로로 보낸다. 인증/연결 실패를 미등록으로 해석하지 않는다.
-    if (response.error.code === 'PGRST202' && /(?:public\.)?fsrs_legacy_boundary\b/.test(response.error.message || '')) return;
+    if (response.error.code === 'PGRST202' && /(?:public\.)?fsrs_legacy_boundary\b/.test(response.error.message || '')) return undefined;
     throw boundaryError('fsrs_boundary_unavailable');
   }
   const data = response?.data;
@@ -62,4 +86,14 @@ export async function assertLegacyFsrsAllowed(client, { userId, cardId = null, i
     rememberFsrsEnrollments(data.actorId, cardId ? [cardId] : []);
     throw boundaryError('fsrs_legacy_write_blocked');
   }
+  return issueProof({ userId: userId || data.actorId, cardId, itemKey, language });
+}
+
+/**
+ * 같은 채점의 쓰기가 부른다 — 앞선 확인의 증거가 이 확인을 덮으면 서버에 다시 묻지 않고(기기 차단 캐시는 본다) 그 증거를 돌려준다.
+ * 덮지 못하면(증거 없음 · 다른 카드 · 다른 표기 · 수명 지남) 지금처럼 묻는다.
+ */
+export async function assertLegacyFsrsAllowedOnce(client, args = {}, proof) {
+  if (legacyBoundaryCovers(proof, args)) { assertCachedLegacyFsrsAllowed(args.userId || proof.userId, args.cardId); return proof; }
+  return assertLegacyFsrsAllowed(client, args);
 }
