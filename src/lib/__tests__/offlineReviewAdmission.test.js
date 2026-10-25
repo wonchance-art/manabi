@@ -1,5 +1,6 @@
 // 오프라인 복습 허용(F9) · 이미 입장한 카드의 입장 왕복 생략(F5①) — 오너 승인 2026-10-25 KST 「권장대로」(로그인 감사 ㉡).
-// 계약: ① 서버가 이미 입장시킨 카드(admittedLegacyCardIds · 입장 응답)는 한도 읽기(GET)도 입장(POST)도 없이 연다 — 연결이 끊겨도 같다.
+// 계약: ① 서버가 이미 입장시킨 카드(admittedLegacyCardIds · 입장 응답)는 끊겼을 때만 왕복 없이 연다. 연결돼 있으면 지금처럼 입장 POST가
+//    매번 다시 검사한다(제외 · 다른 기기가 먼저 복습해 아직 때가 아님 · 정책 판 — 독립 리뷰 2026-10-25 KST).
 // ② 아직 입장하지 않은 카드는 서버만 연다 — 끊겼으면 묻지 않고 끊김 오류(learning_admission_offline)로 기다리다 연결되면 같은 열쇠로 다시 묻는다.
 // ③ 끊긴 동안의 배경 읽기 실패는 받은 한도 · 열린 카드를 거두지 않는다(연결된 채 실패는 지금처럼 닫는다). ④ 호환(사전 활성) 모드는 지름길을 쓰지 않는다.
 // ⑤ 입장 응답의 한도는 FSRS 줄이 GET 없이 받는다(같은 날 · 같은 정책 판일 때만). ⑥ 계정마다 따로다.
@@ -30,7 +31,7 @@ afterEach(() => disposers.splice(0).forEach(dispose => dispose()));
 function setup({ load, admit, accountId = actor, clock = { t: 0 } } = {}) {
   const net = { offline: false };
   const client = { load: vi.fn(load || (async () => status())),
-    admit: vi.fn(admit || (async req => receipt(req, status({ used: 1, remaining: 14, legacyUsed: 1, admittedLegacyCardIds: [reviewed, req.cardId] })))),
+    admit: vi.fn(admit || (async req => receipt(req, status({ used: 1, remaining: 14, legacyUsed: 1, admittedLegacyCardIds: [...new Set([reviewed, req.cardId])] })))),
     pending: async () => [], cancel: vi.fn() };
   const target = new Target(), onQuota = vi.fn();
   const value = createLearningAdmissionController({ accountId, client, onQuota, eventTarget: target, visibilityTarget: null,
@@ -40,24 +41,37 @@ function setup({ load, admit, accountId = actor, clock = { t: 0 } } = {}) {
 }
 const calls = client => client.load.mock.calls.length + client.admit.mock.calls.length;
 
-describe('F5① — 이미 입장한 카드는 입장 왕복 없이 연다', () => {
-  it('한도가 낡았어도(창 밖) 이미 입장한 카드는 GET · POST 0번으로 열린다', async () => {
-    const f = setup(); await f.value.refresh(); f.clock.t += 60_000;
-    const before = calls(f.client);
+describe('연결돼 있으면 이미 입장한 카드도 서버가 다시 검사한다', () => {
+  it('이미 입장한 카드라도 연결돼 있으면 입장 POST를 한다(지름길 없음 — 서버 재검사 유지)', async () => {
+    const f = setup(); await f.value.refresh();
     expect(await f.value.question(reviewed, 's:0')).toBe(true);
-    expect(calls(f.client)).toBe(before);
-    expect(f.value.getSnapshot().current).toMatchObject({ accountId: actor, cardId: reviewed, questionKey: 's:0', compatibility: false, admitted: true });
-    expect(f.value.getSnapshot().busy).toBe(false);
+    expect(f.client.admit).toHaveBeenCalledWith({ cardId: reviewed, expectedPolicyRevision: 1 });
+    expect(f.value.getSnapshot().current.receipt.cardId).toBe(reviewed);
+    expect(f.value.getSnapshot().current.admitted).toBeUndefined();
   });
 
-  it('입장 응답이 알려 준 카드는 다음 질문(다른 문항 열쇠 — 「다시」 뒤 재질문 · 다음 세션)에서 다시 묻지 않는다', async () => {
+  it('다른 기기가 방금 복습한 카드는 입장했어도 연결된 채로는 열리지 않는다 — 서버 거절(not_due)을 그대로 알린다', async () => {
+    const notDue = Object.assign(new Error('fsrs_card_not_due'), { code: 'fsrs_card_not_due', status: 409 });
+    const f = setup({ admit: async () => { throw notDue; } }); await f.value.refresh();
+    expect(f.value.isAdmitted(reviewed)).toBe(true);
+    expect(await f.value.question(reviewed, 's:3')).toBe(false);
+    expect(f.client.admit).toHaveBeenCalledTimes(1);
+    expect(f.value.getSnapshot()).toMatchObject({ current: null });
+    expect(f.value.getSnapshot().error?.code).toBe('fsrs_card_not_due');
+    f.value.dismissError(); expect(f.value.getSnapshot().error).toBeNull();
+  });
+
+  it('입장 응답이 알려 준 카드도 다음 질문(연결됨)에서는 다시 묻고, 끊긴 뒤에는 왕복 없이 연다', async () => {
     const f = setup(); await f.value.refresh();
     expect(await f.value.question(fresh, 's:0')).toBe(true);
-    expect(f.client.admit).toHaveBeenCalledTimes(1);
-    f.value.leave(); f.clock.t += 60_000;
-    const before = calls(f.client);
+    f.value.leave();
     expect(await f.value.question(fresh, 's:4')).toBe(true);
+    expect(f.client.admit).toHaveBeenCalledTimes(2);
+    f.value.leave(); f.net.offline = true;
+    const before = calls(f.client);
+    expect(await f.value.question(fresh, 's:9')).toBe(true);
     expect(calls(f.client)).toBe(before);
+    expect(f.value.getSnapshot().current).toMatchObject({ cardId: fresh, questionKey: 's:9', admitted: true });
   });
 
   it('입장하지 않은 카드는 지금처럼 서버가 연다(POST 1번 · 응답 한도는 source admit으로 알린다)', async () => {
@@ -69,20 +83,19 @@ describe('F5① — 이미 입장한 카드는 입장 왕복 없이 연다', () 
     expect(f.value.getSnapshot().current.receipt.cardId).toBe(fresh);
   });
 
-  it('호환(사전 활성) 한도에서는 지름길을 쓰지 않는다 — 입장권이 없는 모드다', async () => {
+  it('호환(사전 활성) 한도에서는 끊겨도 지름길을 쓰지 않는다 — 입장권이 없는 모드다', async () => {
     const compat = status({ enabled: false, active: false, fsrsEnabled: false, startsAt: null, admittedLegacyCardIds: [reviewed] });
-    const f = setup({ load: async () => compat }); await f.value.refresh(); f.clock.t += 60_000;
-    expect(await f.value.question(reviewed, 's:0')).toBe(true);
-    expect(f.client.load).toHaveBeenCalledTimes(2); // 창 밖이라 지금처럼 다시 읽는다
-    expect(f.value.getSnapshot().current).toMatchObject({ compatibility: true });
-    expect(f.value.getSnapshot().current.admitted).toBeUndefined();
+    const f = setup({ load: async () => compat }); await f.value.refresh();
+    expect(f.value.isAdmitted(reviewed)).toBe(false);
+    f.net.offline = true;
+    expect(await f.value.question(reviewed, 's:0')).toBe(false);
+    expect(f.value.getSnapshot().error?.code).toBe(LEARNING_ADMISSION_OFFLINE);
   });
 
-  it('한도를 한 번도 못 받았으면 지름길이 없다 — 서버에 묻는다', async () => {
-    const f = setup();
-    expect(await f.value.question(reviewed, 's:0')).toBe(true);
-    expect(f.client.load).toHaveBeenCalledTimes(1);
-    expect(f.client.admit).not.toHaveBeenCalled(); // 읽은 한도가 이미 입장했다고 말한다 → POST 없음
+  it('한도를 한 번도 못 받았으면 끊긴 채 지름길이 없다', async () => {
+    const f = setup(); f.net.offline = true;
+    expect(await f.value.question(reviewed, 's:0')).toBe(false);
+    expect(calls(f.client)).toBe(0);
   });
 });
 
@@ -130,8 +143,10 @@ describe('F9 — 끊긴 동안의 복습', () => {
     f.client.load.mockRejectedValue(Object.assign(new Error('fsrs_admission_unavailable'), { status: 503 }));
     expect(await f.value.refresh()).toBe(false);
     expect(f.value.getSnapshot()).toMatchObject({ status: 'error', quota: null, current: null });
-    // 단조 사실(이미 입장)은 계정 controller가 기억한다 — 한도를 다시 받으면 그대로 쓴다. 오류 중에도 이미 입장한 카드는 열린다.
-    expect(await f.value.question(reviewed, 's:1')).toBe(true);
+    // 단조 사실(이미 입장)은 계정 controller가 기억한다 — 그 뒤 끊기면 이미 입장한 카드는 열린다(연결된 채로는 서버에 묻는다).
+    expect(await f.value.question(reviewed, 's:1')).toBe(false);
+    f.net.offline = true;
+    expect(await f.value.question(reviewed, 's:2')).toBe(true);
   });
 
   it('다음 카드로 넘기면(leave) 끊김 오류를 지운다 — 목록으로 돌아가도 「준비하지 못했어요」가 남지 않는다', async () => {
@@ -157,11 +172,16 @@ describe('계정 경계', () => {
     expect(a.value.getSnapshot().current.accountId).toBe(actor);
   });
 
-  it('dispose(계정 전환 · 화면 떠남)는 기억한 입장을 버린다', async () => {
+  it('dispose(계정 전환 · 화면 떠남)는 기억한 입장을 버린다 — 다시 시작해 새 한도(그 카드 없음)를 받아도 되살아나지 않는다', async () => {
     const f = setup(); await f.value.refresh();
     expect(f.value.isAdmitted(reviewed)).toBe(true);
     f.value.dispose();
     expect(f.value.isAdmitted(reviewed)).toBe(false);
+    f.client.load.mockResolvedValue(status({ admittedLegacyCardIds: [] }));
+    f.value.start(); await f.value.refresh();
+    expect(f.value.isAdmitted(reviewed)).toBe(false); // admitted.clear()가 없으면 옛 합집합이 남는다
+    f.net.offline = true;
+    expect(await f.value.question(reviewed, 's:0')).toBe(false);
   });
 });
 

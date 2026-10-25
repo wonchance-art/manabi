@@ -157,10 +157,12 @@ export function createLearningAdmissionController({ accountId, client, onQuota =
   let disposed = false, started = false, generation = 0, requestGeneration = 0, readGeneration = 0, loading = null, working = null;
   let timer = null, quotaAt = null; // quotaAt = 이 기기 시계로 한도를 받은 때(읽기 · 입장 · 설정 응답 모두)
   let offlineQuestion = null; // 끊겨서 못 연 카드 — 연결되면 같은 카드 · 같은 문항 열쇠로 다시 묻는다
-  // 서버가 이미 입장시킨 카드(F5① · F9). learning_admit_legacy가 fsrs_private.legacy_admissions에 카드마다 한 번 남기고 지우지 않는 사실이라
+  // 서버가 이미 입장시킨 카드(F9). learning_admit_legacy가 fsrs_private.legacy_admissions에 카드마다 한 번 남기고 지우지 않는 사실이라
   // (계정 삭제 cascade 외 DELETE · UPDATE 없음) 한 번 본 id는 이 계정 controller가 사는 동안 거짓이 되지 않는다 — 단조 합집합으로 모은다.
-  // 두 번째 입장은 같은 카드의 같은 영수증(consumed 재계산 없음 · 한도 무변화)을 돌려줄 뿐이라 질문 때 다시 묻지 않는다.
   // 기기가 만든 영수증이 아니다: 서버 응답(한도 읽기 · 입장 응답)의 admittedLegacyCardIds만 넣는다.
+  // 끊겼을 때만 쓴다(독립 리뷰 2026-10-25 KST). 연결돼 있으면 입장 POST가 매번 새 operationId로 다시 검사한다 — 제외(vocabulary_excluded) ·
+  // 다른 기기가 먼저 복습해 아직 때가 아님(learning_card_not_due) · 정책 판. 이 검사를 건너뛰면 노트북 줄에 남은 카드가 폰에서 채점된 뒤에도
+  // 왕복 없이 열려 다시 채점된다. 끊긴 동안의 그런 겹침은 보낼함 재생의 비교 후 쓰기(prev last_reviewed_at)가 막는다.
   const admitted = new Set();
   let admittedMode = null; // 마지막으로 검증한 한도가 호환(사전 활성) 모드인가 — 호환이면 입장권이 없어 이 지름길을 쓰지 않는다
   const listeners = new Set();
@@ -206,16 +208,15 @@ export function createLearningAdmissionController({ accountId, client, onQuota =
     if (state.current?.cardId === cardId && state.current.questionKey === questionKey) return true;
     if (working?.key === questionKey) return working.promise;
     const token = generation, questionToken = ++requestGeneration;
-    // 이미 입장한 카드(F5①) — 한도 읽기(GET)도 입장(POST)도 없이 연다. 서버 영수증이 멱등이라 다시 물어도 결과가 같다
-    // (learning_admit_legacy: 기존 legacy_admissions 행이면 consumed · 한도 무변화). 연결이 끊겨도 같다(F9).
-    // 이 지름길은 질문 노출만 연다 — 채점 쓰기는 지금처럼 경계 확인(fsrs_legacy_boundary) · DB 트리거가 지킨다.
-    if (alreadyAdmitted(cardId)) {
-      working = null; offlineQuestion = null;
-      publish({ current: { accountId, cardId, questionKey, compatibility: false, admitted: true }, busy: false, error: null });
-      return true;
-    }
-    // 아직 입장하지 않은 카드는 서버만 열 수 있다(새 표현 한도 · 첫 노출 영수증). 끊겼으면 묻지 않고 끊김을 알린다.
     if (isOffline()) {
+      // 끊긴 동안(F9) — 이미 입장한 카드는 서버 왕복 없이 연다(새 표현 한도를 쓰지 않는 카드다). 채점은 보낼함에 쌓이고, 보낼 때
+      // 경계 확인 · 비교 후 쓰기(그 사이 다른 기기가 먼저 복습했으면 일정은 건드리지 않는다)를 거친다.
+      if (alreadyAdmitted(cardId)) {
+        working = null; offlineQuestion = null;
+        publish({ current: { accountId, cardId, questionKey, compatibility: false, admitted: true }, busy: false, error: null });
+        return true;
+      }
+      // 아직 입장하지 않은 카드는 서버만 열 수 있다(새 표현 한도 · 첫 노출 영수증) — 묻지 않고 끊김을 알린다.
       working = null; offlineQuestion = { cardId, questionKey };
       publish({ current: null, busy: false, error: problem(LEARNING_ADMISSION_OFFLINE) });
       return false;
@@ -231,10 +232,6 @@ export function createLearningAdmissionController({ accountId, client, onQuota =
           // 읽는 사이 끊겼다 — 받은 한도는 남겨 두었으니(위 refresh) 「준비 중」에 멈추지 않게 끊김을 알린다.
           if (isOffline()) { offlineQuestion = { cardId, questionKey }; publish({ error: problem(LEARNING_ADMISSION_OFFLINE) }); }
           return false;
-        }
-        // 읽은 한도가 이 카드를 이미 입장시켰다고 말하면 POST 없이 연다(위 지름길과 같은 사실).
-        if (alreadyAdmitted(cardId)) {
-          publish({ current: { accountId, cardId, questionKey, compatibility: false, admitted: true } }); return true;
         }
         if (canUseLegacyAdmissionCompatibility(state.quota)) {
           publish({ current: { accountId, cardId, questionKey, compatibility: true } }); return true;
@@ -297,13 +294,15 @@ export function createLearningAdmissionController({ accountId, client, onQuota =
     },
     leave() { requestGeneration++; working = null; offlineQuestion = null;
       publish({ current: null, busy: false, ...(isAdmissionOfflineError(state.error) ? { error: null } : {}) }); },
+    /** 서버가 질문을 거절한 카드를 화면이 건너뛴 뒤 그 오류를 지운다(목록으로 돌아가도 「준비하지 못했어요」가 남지 않게). */
+    dismissError() { publish({ error: null }); },
     /** 서버가 이미 입장시킨 카드인가 — 화면 · 계약 확인용(네트워크 없음). */
     isAdmitted: cardId => alreadyAdmitted(cardId),
     start() { if (started) return; disposed = false; started = true;
       eventTarget?.addEventListener('focus', onFocus); eventTarget?.addEventListener('online', onOnline);
       visibilityTarget?.addEventListener('visibilitychange', onVisible); },
     dispose() { client.cancel?.(); if (timer !== null) clearTimer(timer); timer = null; disposed = true; started = false; generation++; requestGeneration++; working = null; loading = null; listeners.clear();
-      admitted.clear(); admittedMode = null; offlineQuestion = null;
+      admitted.clear(); offlineQuestion = null; // admittedMode는 다음 applyQuota가 늘 다시 정한다(입장 id가 들어오는 유일한 길)
       eventTarget?.removeEventListener('focus', onFocus); eventTarget?.removeEventListener('online', onOnline); visibilityTarget?.removeEventListener('visibilitychange', onVisible); },
   };
 }
