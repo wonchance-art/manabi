@@ -334,7 +334,7 @@ describe('⑷ 로그인 확인 · 캐시 경계 · 화면 배선', () => {
     const data = read('src/lib/useVocabData.js');
     const prefetch = sliceBetween(data, 'export function usePrefetchVocabLearning(serverUserId, enabled) {', '\n}');
     expect(prefetch).toContain("queryKey: ['vocab', serverUserId, 'learning'], queryFn: ({ signal }) => fetchVocabLearningData(serverUserId, { signal })");
-    expect(prefetch).toContain('if (!enabled ||');
+    expect(prefetch).toContain('if (!queryClient || !enabled ||');
     expect(data).toContain("queryKey: ['vocab', user?.id, 'learning'],");
     expect(data).toContain('queryFn: ({ signal }) => fetchVocabLearningData(user.id, { signal, getActorId: () => actorRef.current }),');
     expect(read('src/app/(app)/vocab/page.jsx')).toContain('serverUserId={session?.user.id ?? null}');
