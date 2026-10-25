@@ -12,7 +12,10 @@
 -- 이 파일이 더하는 것:
 --   · user_word_facets — PK(user_id, lang, word_text, facet). lang 소문자 2자(user_known_words와 같은 계약),
 --     facet ∈ word · sentence · meaning · audio, mark ∈ o · x.
---   · own-only RLS 4종(select/insert/update/delete) + REVOKE anon.
+--   · own-only RLS 4종(select/insert/update/delete).
+--   · 권한: 운영 기본 ACL이 새 표에 anon·authenticated 전부(TRUNCATE·REFERENCES·TRIGGER·MAINTAIN 포함)를
+--     주므로, PUBLIC·anon·authenticated를 먼저 모두 걷고 authenticated에 CRUD 4개만 다시 준다.
+--     TRUNCATE는 RLS가 막지 못한다(M09 사전검수 #1337 6192814347).
 --
 -- ── 적용 · 롤백 ──
 --   · 적용: main 병합 시 supabase-migrations.yml 이 자동 적용. 재실행 안전(전면 멱등).
@@ -22,6 +25,7 @@
 -- ── 검증(적용 후) ──
 --   1) select to_regclass('public.user_word_facets');
 --   2) select count(*) from pg_policies where tablename='user_word_facets';  → 4
+--   2b) authenticated: SELECT·INSERT·UPDATE·DELETE만 true, TRUNCATE·REFERENCES·TRIGGER false. anon 전부 false.
 --   3) 왕복: upsert → select 본인 행만, mark 바꾸기, delete, 타 계정 행 비노출.
 
 CREATE TABLE IF NOT EXISTS public.user_word_facets (
@@ -52,5 +56,5 @@ DROP POLICY IF EXISTS "user_word_facets_delete_own" ON public.user_word_facets;
 CREATE POLICY "user_word_facets_delete_own" ON public.user_word_facets
   FOR DELETE TO authenticated USING (user_id = auth.uid());
 
-REVOKE ALL ON public.user_word_facets FROM anon;
+REVOKE ALL ON public.user_word_facets FROM PUBLIC, anon, authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.user_word_facets TO authenticated;
