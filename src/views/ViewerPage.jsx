@@ -423,7 +423,16 @@ export default function ViewerPage({ seed } = {}) {
   const dictationSentence=modal('dictation')?activeModal.value:null, setDictationSentence=value=>changeModal('dictation',value);
   const showReadingTest=modal('reading'), setShowReadingTest=value=>changeModal('reading',value);
   const dictationDrafts=useRef(new Map());
-  useEffect(()=>{setActiveModal(null);setPaceRunning(false);dictationDrafts.current.clear();},[id,user?.id]);
+  // 자료 · 계정이 바뀌면 창을 닫는다. 단, 같은 자료에서 손님(null) → 계정은 로그인 복원이다(아래 resetScope와 같은 규칙) —
+  // 조기 조회 자료가 복원(whenDocumentParsed, 최대 3초)보다 먼저 그려져, 그 사이 연 「학습」 창이 복원 순간 저절로 닫혔다
+  // (소유자에게 「자료 관리」가 끝내 안 보임 · 뷰어 e2e 흔들림의 원인 · 2026-10-26 KST 실측). 실제 계정 교체(A → 손님 · A → B)는 그대로 닫는다.
+  const modalScope=useRef(null);
+  useEffect(()=>{
+    const prev=modalScope.current,next={id,user:user?.id??null};
+    modalScope.current=next;
+    if(prev&&prev.id===next.id&&prev.user===null)return;
+    setActiveModal(null);setPaceRunning(false);dictationDrafts.current.clear();
+  },[id,user?.id]);
   useEffect(()=>{setActiveModal(prev=>prev?.kind==='source'?prev:null);setPaceRunning(false);dictationDrafts.current.clear();},[material?.raw_text,material?.processed_json]);
   // Custom hooks
   const settings = useViewerSettings(materialLang);

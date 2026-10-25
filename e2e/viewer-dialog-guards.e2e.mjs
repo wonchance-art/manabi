@@ -11,12 +11,13 @@ const t = (text, furigana, meaning, pos = '명사') => ({ text, base_form: text,
 const LINE = [t('他', 'tā', '그', '대명사'), t('是', 'shì', '~이다', '동사'), t('我', 'wǒ', '나', '대명사'), t('的', 'de', '~의', '조사'), t('朋友', 'péng you', '친구'), t('。', '', '', '기호')];
 const RAW = LINE.map(x => x.text).join('');
 
-async function open() {
-  const f = await fixture({ width: 1280 });
+async function open({ width = 1280, prepare } = {}) {
+  const f = await fixture({ width });
   const json = { status: 'completed', metadata: { language: 'Chinese' }, sequence: LINE.map((_, i) => `id_0_${i}`), dictionary: Object.fromEntries(LINE.map((x, i) => [`id_0_${i}`, x])) };
   f.rows.push({ id: ID, user_id: owner, owner_id: owner, title: '닫기 확인 검수', raw_text: RAW, source_type: 'text', created_at: new Date().toISOString(), processed_json: json });
   f.writes = [];
   f.page.on('request', req => { if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method()) && /reading_materials|viewer_replace_analysis|\/api\/analyze/.test(req.url())) f.writes.push(req.url()); });
+  await prepare?.(f);
   await f.page.goto(`/viewer/${ID}`, { waitUntil: 'domcontentloaded', timeout: 120000 });
   await f.page.locator('[data-source-token="id_0_0"]').waitFor();
   return f;
@@ -82,6 +83,40 @@ test('자료 관리 > 전체 분석: 한 번 누르면 확인 화면만 — 취�
     await f.page.waitForTimeout(300);
     assert.deepEqual(f.writes, [], 'no analysis request before confirming');
     assert.equal(f.analysisCalls, 0);
+    assert.deepEqual(f.errors, []);
+  } finally { await f.context.close(); }
+});
+
+// 로그인 복원은 스트리밍 경계가 다 붙은 뒤에 한다(whenDocumentParsed) — 기다리는 경계가 끝내 안 붙으면 문서 파싱 뒤 3초까지 늦다.
+// 본문(조기 조회)은 그보다 먼저 그려져 소유자가 그 사이 「학습」을 연다. 예전에는 복원(손님 null → 계정)이 「계정이 바뀜」으로 읽혀
+// 열린 창이 저절로 닫혔고, 소유자는 「자료 관리」를 끝내 못 봤다(viewer-boundary-edit 새로고침 뒤 간헐 실패의 원인 · 2026-10-26 KST).
+// 여기서는 끝내 안 붙는 경계 하나(「$?」 표시)를 문서에 남겨 복원을 최악 폭(3초)으로 늦추고, 그 사이 연 창이 복원 뒤에도 남아
+// 「자료 관리」가 나타나는지 본다.
+test('로그인 복원이 늦어도 그 사이 연 「학습」 창은 닫히지 않고, 복원되면 소유자의 「자료 관리」가 같은 창에 나타난다', { timeout: 240000 }, async () => {
+  const f = await open({ width: 390, prepare: f => f.context.addInitScript(() => {
+    document.addEventListener('DOMContentLoaded', () => { document.body.appendChild(document.createComment('$?')); }, { once: true });
+  }) });
+  try {
+    await f.page.getByRole('button', { name: '학습', exact: true }).click();
+    const menu = f.page.getByRole('dialog', { name: '학습' });
+    await menu.waitFor();
+    // 전제: 아직 복원 전(계정 항목 「학습 노트」 · 소유자 항목 「자료 관리」가 없다) — 이게 아니면 이 검사는 아무것도 보지 않는다.
+    assert.equal(await menu.getByRole('link', { name: /^학습 노트/ }).count(), 0, 'opened before the session restore');
+    assert.equal(await menu.getByRole('button', { name: /^자료 관리/ }).count(), 0, 'owner item waits for the account');
+    // 창이 닫히는 순간을 놓치지 않게 문서에서 직접 센다.
+    await f.page.evaluate(() => {
+      window.__menuClosed = false;
+      const d = [...document.querySelectorAll('dialog.reader-modal')].find(e => e.getAttribute('aria-label') === '학습');
+      new MutationObserver(() => { if (!d.isConnected || !d.open) window.__menuClosed = true; }).observe(document.body, { subtree: true, childList: true, attributes: true });
+    });
+    // 복원(계정 항목이 그려짐) 뒤 효과까지 돈 다음에도 창은 그대로 — 그 뒤 「자료 관리」로 들어간다.
+    await menu.getByRole('link', { name: /^학습 노트/ }).waitFor({ timeout: 10000 });
+    await menu.getByRole('button', { name: /^자료 관리/ }).waitFor({ timeout: 10000 });
+    await f.page.waitForTimeout(300);
+    assert.equal(await f.page.evaluate(() => window.__menuClosed), false, 'the session restore does not close the open menu');
+    await menu.getByRole('button', { name: /^자료 관리/ }).click();
+    await f.page.getByRole('dialog', { name: '자료 관리' }).getByRole('button', { name: /^전체 분석/ }).waitFor();
+    assert.deepEqual(f.writes, []);
     assert.deepEqual(f.errors, []);
   } finally { await f.context.close(); }
 });
