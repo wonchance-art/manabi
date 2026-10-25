@@ -4,7 +4,7 @@ import { UUID, sourceArchived, sourceHref } from '@/lib/learningSources';
 import { requireLearningCapability } from '@/lib/server/learningCapabilities';
 import { gradeToInitialStats } from '@/lib/vocabIO';
 import { fsrsServiceClient, fsrsError } from '@/lib/server/fsrsLearning';
-import { readVocabularyLearningSnapshot, saveManualVocabulary } from '@/lib/server/fsrsVocabulary';
+import { readVocabularyLearningSnapshot, readVocabularyLearningSnapshotLight, saveManualVocabulary } from '@/lib/server/fsrsVocabulary';
 import { VOCABULARY_LEARNING_SUMMARY_FIELDS } from '@/lib/vocabularyLearningRead';
 
 const vocabularyErrorReply = error => {
@@ -97,9 +97,14 @@ export async function GET(request) {
     if (params.has('view')) {
       if (params.get('view') !== 'learning' || (params.has('fields') && params.get('fields') !== 'summary')
           || params.size !== (params.has('fields') ? 2 : 1)) return reply({ ok: false, code: 'fsrs_invalid_request' }, 400);
+      // 요약(fields=summary — 홈 · 현황 · 서재 맞춤도 · 프로필 · 읽기 완료)은 가벼운 읽기의 요약 모양으로 받는다(SNAPSHOT-LIGHT-001 —
+      // 같은 판정 · 같은 행 순서, DB가 요약 칸만 만든다: 3,000단어 2.6 MB · 86 ms → 0.69 MB · 30 ms, PGlite). 되돌린 행에서 요약 칸만 보낸다(전에 전체 snapshot을 거르던 것과 같은 칸).
+      if (params.get('fields') === 'summary') {
+        const light = await readVocabularyLearningSnapshotLight({ serviceClient: fsrsServiceClient(), userId: auth.user.id, language: null, summary: true });
+        return reply({ ...light, rows: light.rows.map(row =>
+          Object.fromEntries(VOCABULARY_LEARNING_SUMMARY_FIELDS.filter(key => Object.hasOwn(row, key)).map(key => [key, row[key]]))) });
+      }
       const snapshot = await readVocabularyLearningSnapshot({ authClient: auth.supabase, serviceClient: fsrsServiceClient(), userId: auth.user.id });
-      if (params.get('fields') === 'summary') return reply({ ...snapshot, rows: snapshot.rows.map(row =>
-        Object.fromEntries(VOCABULARY_LEARNING_SUMMARY_FIELDS.filter(key => Object.hasOwn(row, key)).map(key => [key, row[key]]))) });
       return reply(snapshot);
     }
     const contextId = params.get('contextId');
