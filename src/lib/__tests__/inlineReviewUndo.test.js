@@ -82,7 +82,7 @@ describe('useInlineReview — 훅 단위: prev·reviewedAt 반환', () => {
     const res = await config.mutationFn({ vocab, rating: 4 });
     expect(res.prev).toEqual({ interval: 2, ease_factor: 3, repetitions: 1, next_review_at: 'A', last_reviewed_at: null });
     expect(typeof res.reviewedAt).toBe('string');
-    expect(persist).toHaveBeenCalledWith({}, 'v', expect.objectContaining({ next_review_at: 'N' }), res.reviewedAt);
+    expect(persist).toHaveBeenCalledWith({}, 'v', expect.objectContaining({ next_review_at: 'N' }), res.reviewedAt, { boundary: undefined });
     vi.doUnmock('../supabase'); vi.doUnmock('@tanstack/react-query'); vi.doUnmock('../streak'); vi.doUnmock('../reviewEvents'); vi.doUnmock('../fsrs');
   });
 });

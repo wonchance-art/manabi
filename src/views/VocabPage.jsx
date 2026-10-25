@@ -12,6 +12,8 @@ import { useTTS } from '../lib/useTTS';
 import { useLearningCapabilities } from '../lib/useLearningCapabilities';
 import { useFsrsReview, fsrsIntervalLabel, FSRS_LOADING_CAP_MS } from '../lib/useFsrsReview';
 import { useLearningAdmission } from '../lib/useLearningAdmission';
+import { isAdmissionOfflineError } from '../lib/learningAdmission';
+import { LEGACY_REVIEW_SUPERSEDED_NOTICE } from '../lib/legacyReviewSupersede';
 import { isSettledFsrsActivity } from '../lib/learningActivity';
 import FsrsReviewSession from '../components/vocab/FsrsReviewSession';
 import { callGemini } from '../lib/gemini';
@@ -93,6 +95,9 @@ function useRoomMemo(frozen, factory, deps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(factory, effective);
 }
+
+/** 질문 입장을 서버가 거절한 「이 카드는 지금 묻지 않는다」 사유(learningAdmission databaseError) — 실패가 아니라 건너뛸 카드다. */
+const ADMISSION_GONE_CODES = new Set(['fsrs_card_not_due', 'fsrs_card_excluded', 'fsrs_already_enrolled', 'fsrs_card_not_found']);
 
 export default function VocabPage({ reviewScope = NOT_EXPLICIT }) {
   const { user, loading } = useAuth();
@@ -289,6 +294,15 @@ function VocabWorkspace({ reviewScope }) {
     window.addEventListener('manabi:outbox-flushed', recount);
     return () => { alive = false; window.removeEventListener('manabi:outbox-flushed', recount); };
   }, [user?.id, reviewIdx]);
+  // 보낼함이 서버에 닿았다(Layout 동기화 — 끊긴 채 이어 한 복습 등, F9) — 학습 목록을 서버 정본으로 한 번 다시 읽는다. 연결이 돌아온 순간의
+  // 다시 읽기는 보내기보다 먼저 끝날 수 있어, 그대로 두면 보낸 채점이 목록에 늦게 비친다. 세션 중이면 복습방 전용 조회는 세션 끝으로 미룬다.
+  useEffect(() => {
+    if (!user?.id) return undefined;
+    const actorId = user.id;
+    const reread = () => { invalidateVocabularyLearning(queryClient, actorId, { deferReviewRoom: inSessionRef.current }); };
+    window.addEventListener('manabi:outbox-flushed', reread);
+    return () => window.removeEventListener('manabi:outbox-flushed', reread);
+  }, [user?.id, queryClient]);
   const [typingAnswer, setTypingAnswer] = useState('');
   const [contextSelected, setContextSelected] = useState(null);
   const exampleCacheRef = useRef(new Map());
@@ -391,7 +405,10 @@ function VocabWorkspace({ reviewScope }) {
   // 한 번씩 더 나갔다(응답 순서에 따라 — 능력 RPC 중복 조사 2026-10-17 KST). 다만 FSRS 첫 읽기가 실패해 있으면 예전처럼
   // 그 김에 다시 읽는다(진행 중이면 refresh가 같은 약속을 돌려준다). 계정이 바뀌면 처음부터 센다.
   const quotaOwner = useRef(null);
-  const admission = useLearningAdmission({ accountId: user?.id, onQuota: quota => {
+  // 이 기기의 입장 응답(source 'admit')이 바꾼 한도는 그 응답이 실어 온 한도를 FSRS 줄에 바로 넣는다(F5① — 새 표현 입장마다
+  // 뒤따르던 GET /api/learning/fsrs 생략). 예전 일정 카드 입장은 FSRS 카드를 바꾸지 않는다. 날 · 정책 판 · 활성이 바뀌었으면
+  // (adoptAdmission이 false) 지금처럼 다시 읽는다. 읽기 · 설정 응답이 바꾼 한도도 지금처럼 다시 읽는다(다른 기기 활동일 수 있다).
+  const admission = useLearningAdmission({ accountId: user?.id, onQuota: (quota, meta) => {
     const signature = JSON.stringify([quota.learningDay, quota.policyRevision, quota.used, quota.active, quota.fsrsEnabled]);
     if (quotaOwner.current !== quota.actorId) {
       quotaOwner.current = quota.actorId; quotaSignature.current = signature;
@@ -400,6 +417,7 @@ function VocabWorkspace({ reviewScope }) {
     }
     if (signature !== quotaSignature.current) {
       quotaSignature.current = signature;
+      if (meta?.source === 'admit' && fsrsControllerRef.current?.adoptAdmission?.(quota)) return;
       fsrsControllerRef.current?.refresh();
     }
   } });
@@ -766,6 +784,17 @@ function VocabWorkspace({ reviewScope }) {
   useEffect(() => {
     if (tab === 'review' && !reviewFinished && candidateId !== undefined) admission.controller.question(candidateId, questionKey);
   }, [tab, reviewFinished, candidateId, questionKey, admission.controller]);
+  // 서버가 이 카드의 질문을 거절했다 — 다른 기기에서 먼저 복습해 아직 때가 아님 · 제외 · 새 일정 등록 · 삭제(독립 리뷰 2026-10-25 KST:
+  // 세션 줄에 남은 카드가 폰에서 채점된 뒤 노트북에서 다시 채점되던 길). 「준비하지 못했어요」로 멈추지 않고 채점 없이 다음으로 넘기며,
+  // 목록을 정본으로 다시 읽는다(다른 탭에서 제외된 카드를 건너뛰는 아래 효과와 같은 결).
+  const admissionGone = !!candidateWord && !currentWord && ADMISSION_GONE_CODES.has(admission.error?.code);
+  useEffect(() => {
+    if (!admissionGone || tab !== 'review' || reviewFinished) return;
+    admission.controller.dismissError();
+    invalidateVocabularyLearning(queryClient, user?.id, { deferReviewRoom: true });
+    skipCard(candidateId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [admissionGone, candidateId, questionKey]);
 
   // 집중 연습 — 일정 · 한도 밖이라 입장권을 받지 않는다. 지금 카드 = 연습 줄의 카드.
   const practiceWord = tab === 'practice' && practice && !practice.finished ? allVocab.find(v => v.id === practice.ids[practice.idx]) : undefined;
@@ -855,9 +884,21 @@ function VocabWorkspace({ reviewScope }) {
       ease_factor: nextStats.ease_factor ?? 0,
       repetitions: nextStats.repetitions ?? 0,
       next_review_at: nextStats.next_review_at,
-    }).then((r) => {
+      // 비교 후 쓰기의 바탕 — 이 일정을 계산한 행의 last_reviewed_at. 그 사이 다른 기기가 먼저 복습했으면 일정은 덮지 않는다(독립 리뷰 2026-10-25 KST).
+    }, { expectedLastReviewedAt: currentWord.last_reviewed_at ?? null }).then((r) => {
       if (!currentActor()) return;
       if (r?.ok === false) { toast('복습을 저장하지 못했어요. 연결을 확인해 주세요 — 이 단어는 다음에 다시 나와요.', 'error', 5000); return; }
+      // 다른 기기에서 먼저 복습한 표현 — 기록은 남았고 일정은 그쪽 복습대로다. 낙관 반영 · 되돌리기 대상으로 삼지 않고(되돌리면 그쪽
+      // 일정을 덮는다) 목록을 정본으로 다시 읽는다.
+      if (r?.superseded) {
+        // 이 채점은 기록만 남고 일정은 다른 기기 것이라 되돌릴 대상이 없다. 남겨 두면 ↶가 켜진 채 직전 카드를 되돌린다(2차 리뷰) —
+        // 이보다 새 채점이 아직 자리를 잡지 않았을 때만(같은 세션 · 더 옛 스냅샷) 비운다. 저장 실패(ok:false)는 기록이 없어
+        // 「마지막 성공 스냅샷을 남긴다」(W R2 — 위 snapshot 주석 · preserves previous undo 계약)를 그대로 둔다.
+        if (gradeSessionRef.current === gradeSession && (lastGradeRef.current?.sequence ?? 0) < sequence) lastGradeRef.current = null;
+        toast(LEGACY_REVIEW_SUPERSEDED_NOTICE, 'info', 5000);
+        invalidateVocabularyLearning(queryClient, actorId, { deferReviewRoom: inSessionRef.current });
+        return;
+      }
       // 저장한 값을 목록에 바로 반영하고, 복습 중에는 전체 목록을 다시 읽지 않는다(「다시」로 돌아온 단어도 이 값으로 채점된다).
       // 끝난 뒤 마지막 채점이면 서버 정본으로 한 번 다시 읽는다 — finishRun의 읽기가 이 저장보다 먼저 나갔을 수 있다.
       const patched = patchVocabularyLearningRow(queryClient, actorId, snapshot.wordId,
@@ -932,7 +973,10 @@ function VocabWorkspace({ reviewScope }) {
         await withLegacyReviewLock(actorId, async () => {
           if (!currentActor()) throw new Error('fsrs_stale_account');
           const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev;
-          await persistVocabGrade(supabase, last.wordId, prevStats, prevReviewedAt);
+          // 되돌리기도 비교 후 쓰기 — 서버 행이 아직 이 채점(last.reviewedAt)일 때만 되돌린다. 그 사이 다른 기기가 먼저 복습했으면
+          // 그 일정을 덮지 않고 「되돌리지 못했어요」(미루기는 채점 시각이 없어 지금처럼).
+          await persistVocabGrade(supabase, last.wordId, prevStats, prevReviewedAt,
+            !last.skip && last.reviewedAt ? { expectedLastReviewedAt: last.reviewedAt } : undefined);
           if (!currentActor()) throw new Error('fsrs_stale_account');
           if (!last.skip && last.reviewedAt) {
             await logReviewEvents(user.id, [{
@@ -963,6 +1007,9 @@ function VocabWorkspace({ reviewScope }) {
     setContextSelected(null);
     setTypingAnswer('');
     setReviewFinished(false);
+    // 되돌린 일정을 목록 캐시에도 바로 되돌린다(F9) — 끊긴 동안엔 다시 읽기가 연결될 때까지 멈춰, 다시 채점이 채점 뒤 값(낙관 반영)을
+    // 바탕으로 계산됐다. 연결돼 있으면 아래 다시 읽기가 서버 정본으로 확인한다.
+    patchVocabularyLearningRow(queryClient, actorId, last.wordId, { ...last.prev, last_reviewed_at: last.prev.last_reviewed_at ?? null });
     invalidateVocabularyLearning(queryClient, user?.id);
     toast(`되돌렸어요 — 「${last.word}」 다시 채점`, 'info');
   };
@@ -1466,7 +1513,7 @@ function VocabWorkspace({ reviewScope }) {
       {/* 네트워크가 죽어 캐시 스냅샷으로 살아난 화면임을 알린다(v2-N R1) */}
       {isOffline && <OfflineNotice what="단어장" />}
       {/* 기기 사본(끊김)일 때는 아래 상태 한 장이 복습 사정을 말한다 — 같은 끊김을 「준비하지 못했어요」로 또 쓰지 않는다(P2). */}
-      {admission.error && tab !== 'review' && !isOffline && <div role="alert" className="card">
+      {admission.error && !isAdmissionOfflineError(admission.error) && tab !== 'review' && !isOffline && <div role="alert" className="card">
         <p>{REVIEW_PREP_FAILED}</p>
         <Button variant="ghost" onClick={() => admission.controller.retryConfiguration().catch(() => {})}>다시 시도</Button>
       </div>}

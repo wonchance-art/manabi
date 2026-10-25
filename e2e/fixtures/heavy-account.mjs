@@ -246,8 +246,14 @@ function visible(table, row, claims, service) {
 
 export function createHeavyBackend({ latencyMs = 0, browserLatencyMs = 0, snapshotMsPerRow = 0.15, log = [] } = {}) {
   let account = buildHeavyAccount();
-  const state = { account, log, admitted: new Set(), seq: 1e6 };
-  const reset = () => { account = buildHeavyAccount(); state.account = account; state.admitted = new Set(); };
+  // admitted = fsrs_private.legacy_admissions(카드마다 한 번, 지우지 않음) · consumed = 그중 오늘 새 표현 한도를 쓴 카드(처음 보는 카드의 첫 입장만).
+  // 운영 learning_admit_legacy와 같게: 이미 입장한 카드 · 복습한 적 있는 카드의 입장은 한도를 쓰지 않는다(consumed=false · used 무변화).
+  const state = { account, log, admitted: new Set(), consumed: new Set(), seq: 1e6 };
+  // admitted='reviewed' — 입장 기록이 쌓인 계정(오프라인 복습 e2e · F5 측정): 복습한 적 있는 카드 대부분이 이미 입장했고,
+  // 7장에 1장은 입장 기록 시작(2026-10-05) 뒤로 한 번도 묻지 않은 카드로 남긴다(끊긴 동안 「연결되면 볼 수 있어요」 카드가 나올 자리).
+  const seedAdmitted = mode => new Set(mode === 'reviewed'
+    ? account.tables.user_vocabulary.filter((row, i) => row.last_reviewed_at && i % 7 !== 3).map(row => row.id) : []);
+  const reset = ({ admitted = 'none' } = {}) => { account = buildHeavyAccount(); state.account = account; state.admitted = seedAdmitted(admitted); state.consumed = new Set(); };
 
   function fsrsSnapshot() {
     // 운영 RPC는 to_jsonb(user_vocabulary 행) 전체를 싣는다(20261016191600 · 250행) — 칸을 줄이지 않는다.
@@ -257,7 +263,7 @@ export function createHeavyBackend({ latencyMs = 0, browserLatencyMs = 0, snapsh
         card: null, attempt: null, nextQuestionAt: null, firstQuestionAt: null })), now: new Date().toISOString() };
   }
   function quota() {
-    const now = new Date().toISOString(), used = state.admitted.size;
+    const now = new Date().toISOString(), used = state.consumed.size;
     const day = new Date(Date.now() + 9 * 3600000 - 4 * 3600000).toISOString().slice(0, 10);
     return { version: 1, actorId: HEAVY_UID, installed: true, enabled: true, active: true, fsrsEnabled: true, startsAt: '2026-01-01T19:00:00.000Z',
       now, learningDay: day, timeZone: 'Asia/Seoul', rolloverHour: 4, limit: 15, policyRevision: 1, used, remaining: Math.max(0, 15 - used),
@@ -292,11 +298,17 @@ export function createHeavyBackend({ latencyMs = 0, browserLatencyMs = 0, snapsh
     fsrs_legacy_boundary: () => ({ version: 1, actorId: HEAVY_UID, enrolled: false }),
     learning_admission_status: () => quota(),
     learning_admit_legacy: body => {
-      const request = body.p_request, duplicate = state.admitted.has(request.cardId);
+      const request = body.p_request, first = !state.admitted.has(request.cardId);
+      const row = account.tables.user_vocabulary.find(v => v.id === request.cardId);
+      // 운영 RPC처럼 질문마다(새 operationId) 다시 검사한다 — 제외 · 다른 기기가 먼저 복습해 아직 때가 아님(독립 리뷰 2026-10-25 KST).
+      if (!row) return { __rpcError: { code: '42501', message: 'learning_word_not_available' } };
+      if (row.is_excluded) return { __rpcError: { code: '55000', message: 'vocabulary_excluded' } };
+      if (row.last_reviewed_at && Date.parse(row.next_review_at) > Date.now()) return { __rpcError: { code: '55000', message: 'learning_card_not_due' } };
       state.admitted.add(request.cardId);
-      const q = quota();
-      return { version: 1, actorId: HEAVY_UID, operationId: request.operationId, cardId: request.cardId, admitted: true, consumed: !duplicate, duplicate,
-        firstQuestionAt: q.now, admittedAt: q.now, startsAt: q.startsAt, learningDay: q.learningDay, quota: q };
+      if (first && !row?.last_reviewed_at) state.consumed.add(request.cardId);
+      const q = quota(), consumed = state.consumed.has(request.cardId);
+      return { version: 1, actorId: HEAVY_UID, operationId: request.operationId, cardId: request.cardId, admitted: true, consumed, duplicate: false,
+        firstQuestionAt: consumed ? q.now : null, admittedAt: q.now, startsAt: q.startsAt, learningDay: q.learningDay, quota: q };
     },
     learning_language_capabilities: () => ({ version: 1, languages: {} }),
     is_admin: () => false,
@@ -312,7 +324,9 @@ export function createHeavyBackend({ latencyMs = 0, browserLatencyMs = 0, snapsh
     if (url.pathname.includes('/rpc/')) {
       const fn = rpcs[table];
       if (!fn) return { status: 200, body: null, note: 'rpc-unmocked' };
-      return { status: 200, body: fn(body || Object.fromEntries(url.searchParams)), dbMs: rpcCost[table]?.() || 0 };
+      const out = fn(body || Object.fromEntries(url.searchParams));
+      if (out?.__rpcError) return { status: 400, body: { ...out.__rpcError, details: null, hint: null } };
+      return { status: 200, body: out, dbMs: rpcCost[table]?.() || 0 };
     }
     const rowsAll = account.tables[table];
     if (!rowsAll) { account.tables[table] = []; }
@@ -338,7 +352,9 @@ export function createHeavyBackend({ latencyMs = 0, browserLatencyMs = 0, snapsh
     if (method === 'PATCH') {
       const hit = all.filter(row => visible(table, row, claims, service) && pred(row));
       for (const row of hit) Object.assign(row, body);
-      return { status: /return=representation/.test(prefer) ? 200 : 204, body: /return=representation/.test(prefer) ? project(hit, url.searchParams.get('select')) : null };
+      // count=exact면 PostgREST처럼 바뀐 행 수를 Content-Range로 알린다(예전 일정 비교 후 쓰기의 0행 판정).
+      const counted = /count=exact/.test(prefer) ? { 'content-range': hit.length ? `0-${hit.length - 1}/${hit.length}` : '*/0' } : {};
+      return { status: /return=representation/.test(prefer) ? 200 : 204, body: /return=representation/.test(prefer) ? project(hit, url.searchParams.get('select')) : null, headers: counted };
     }
     if (method === 'DELETE') {
       const keep = all.filter(row => !(visible(table, row, claims, service) && pred(row)));
@@ -404,7 +420,7 @@ export async function startHeavyBackend({ httpPort, httpsPort, cert, key, latenc
   const listener = origin => async (req, res) => {
     const url = new URL(req.url, 'http://e2e.supabase.co');
     if (url.pathname === '/__heavy/log') { res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify(backend.log)); return; }
-    if (url.pathname === '/__heavy/reset') { backend.reset(); backend.log.length = 0; res.writeHead(200); res.end('{}'); return; }
+    if (url.pathname === '/__heavy/reset') { backend.reset({ admitted: url.searchParams.get('admitted') || 'none' }); backend.log.length = 0; res.writeHead(200); res.end('{}'); return; }
     if (url.pathname === '/__heavy/clear-log') { backend.log.length = 0; res.writeHead(200); res.end('{}'); return; }
     // 실제 Supabase처럼 요청 머리를 되돌려 준다 — Authorization은 와일드카드(*)로 허용되지 않는다.
     const cors = { ...CORS, 'access-control-allow-headers': req.headers['access-control-request-headers'] || CORS['access-control-allow-headers'] };

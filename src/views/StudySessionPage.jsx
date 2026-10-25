@@ -17,8 +17,8 @@ import { addRefRead, setRefCheck } from '../lib/refReadStore';
 import { clearStudySource, readStudySource } from '../lib/studySourceHandoff';
 import { useToast } from '../lib/ToastContext';
 import { createGrammarRetry, gradeGrammarReview, ratingFromScore, sendGrammarGradeKeepalive } from '../lib/grammarSrs';
-import { sessionTokenFor } from '../lib/keepalive';
-import { createReviewEventBatcher, logReviewEvents } from '../lib/reviewEvents';
+import { sessionTokenFor, keepaliveTokenUsable } from '../lib/keepalive';
+import { createReviewEventBatcher, logReviewEvents, sendReviewEventsOnHide } from '../lib/reviewEvents';
 import { hasVapidKey, isPushSupported, isIosNeedsInstall, getSubscriptionState, subscribePush } from '../lib/push';
 import { sentenceIncludesWord } from '../lib/skillRung';
 import { recordActivity } from '../lib/streak';
@@ -430,7 +430,7 @@ export default function StudySessionPage({
       // 화면에는 「로그인이 필요해요」 배너가 떠 있다. 문구를 바꾸려면 오너 목업이 먼저라 지금은 동작만 이대로 둔다.
       const recorder = recorderRef.current;
       if (!recorder) return;
-      batcherRef.current?.flush();
+      beaconPendingEvents(recorder);
       beaconPendingGrammar(recorder);
       // 1문항 이상 답변했고 아직 fireEffects 전이면 활동 기록 시도(스트릭 RPC는 멱등).
       if (!streakSentRef.current && recordedRef.current.size > 0) {
@@ -536,6 +536,8 @@ export default function StudySessionPage({
     // 로그인이 풀렸거나 계정이 바뀌었다 — 보내지 않고 멈춰 둔다(같은 세션 계정이 돌아오면 복귀 효과가 보낸다).
     if (!recorder) return sessionUserRef.current ? heldEventsBox : null;
     if (!batcherRef.current) batcherRef.current = createReviewEventBatcher(recorder, { size: 4 });
+    // 탭이 닫힐 때 남은 묶음을 keepalive로 보내려면 토큰을 미리 받아 둬야 한다(pagehide에서는 기다릴 수 없다) — 문법 보류분과 같은 토큰.
+    rememberGrammarToken(recorder);
     return batcherRef.current;
   }
   const heldEventsBox = { add: event => { if (event) heldEventsRef.current.push(event); } };
@@ -918,10 +920,19 @@ export default function StudySessionPage({
     }, () => {});
   }
 
+  /** 페이지가 닫힐 때 남은 이벤트 묶음을 keepalive로(경계 확인이 필요한 어휘 행 · 토큰 없음은 보통 전송). 세션 계정 몫만. */
+  function beaconPendingEvents(owner) {
+    const events = batcherRef.current?.drain() || [];
+    if (!events.length) return;
+    const held = grammarTokenRef.current;
+    // 만료됐거나 곧 만료될 토큰이면 keepalive가 401로 조용히 사라진다 — 보통 전송으로 돌린다.
+    sendReviewEventsOnHide(owner, events, { accessToken: held?.userId === owner && keepaliveTokenUsable(held.token) ? held.token : null });
+  }
+
   /** 페이지가 닫힐 때 문법 보류분을 keepalive로 — 토큰이 없으면 보통 재시도로. 둘 다 세션 계정 몫만. */
   function beaconPendingGrammar(owner) {
     const held = grammarTokenRef.current;
-    if (held?.userId !== owner) { retryPendingGrammar(); return; }
+    if (held?.userId !== owner || !keepaliveTokenUsable(held.token)) { retryPendingGrammar(); return; }
     pendingGrammarRef.current.beacon(row => row.user_id === owner,
       (row, rating, { reviewedAt }) => sendGrammarGradeKeepalive(row, rating, { reviewedAt, accessToken: held.token }))
       .catch(() => {});

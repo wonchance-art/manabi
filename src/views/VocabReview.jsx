@@ -8,6 +8,8 @@ import { ReviewCardMeta, ReviewHeadword, ReviewReadingRow, langTag, useGradeBarF
 import { gradeGuide, isCardRevealClick, revealTrigger } from '../lib/reviewCard';
 import { wordStage } from '../lib/growthStats';
 import { vocabularyReviewCalendar } from '../lib/vocabularyLearningRows';
+import { isAdmissionOfflineError } from '../lib/learningAdmission';
+import { REVIEW_CARD_OFFLINE_TITLE, vocabOfflineLine } from '../components/OfflineNotice';
 
 /**
  * 채점 막대(REV-SCOPE-R1B-1 §5-3) — 하단 고정, 뒷면 전엔 잠금, 펼친 뒤 0.3초 입력 무시(armed). 버튼은 넷뿐이다.
@@ -209,6 +211,13 @@ export default function VocabReview({
         practice ? <PracticeFinished practice={practice} setTab={setTab} />
           : <ReviewFinished finish={finish || { total: new Set(reviewWords.filter(Boolean).map(word => word.id)).size }} bookReview={bookReview} vocab={vocab}
             projections={projections} learningAvailable={learningAvailable} now={now} setTab={setTab} />
+      ) : isAdmissionOfflineError(admissionError) ? (
+        // 끊긴 동안 아직 입장하지 않은 카드에 닿았다(F9) — 실패가 아니라 기다림이라 status로 조용히 말한다. 연결되면 저절로 다시 묻는다.
+        <div className="card review-card review-card--center" role="status">
+          <p><strong>{REVIEW_CARD_OFFLINE_TITLE}</strong></p>
+          <p>{vocabOfflineLine(0)}</p>
+          <Button variant="ghost" onClick={onAdmissionRetry}>다시 시도</Button>
+        </div>
       ) : admissionPending || admissionError ? (
         <div className="card review-card review-card--center" role={admissionError ? 'alert' : 'status'} aria-busy={!admissionError || undefined}>
           <p>{admissionError ? REVIEW_PREP_FAILED : '복습 준비 중…'}</p>

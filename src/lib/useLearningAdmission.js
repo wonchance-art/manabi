@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { canUseLegacyAdmissionCompatibility, normalizeAdmissionRequest, normalizeAdmissionStatus,
-  validateAdmissionReceipt, nextAdmissionDayAt } from './learningAdmission';
+  validateAdmissionReceipt, nextAdmissionDayAt, LEARNING_ADMISSION_OFFLINE, isAdmissionOfflineError } from './learningAdmission';
 
 const clone = value => JSON.parse(JSON.stringify(value));
 const problem = (code, extra = {}) => Object.assign(new Error(code), { code, ...extra });
@@ -148,24 +148,50 @@ export function logLearningFailure(where, error) {
  */
 export const QUESTION_QUOTA_FRESH_MS = 2000;
 
+export { LEARNING_ADMISSION_OFFLINE, isAdmissionOfflineError };
+const browserOffline = () => globalThis.navigator?.onLine === false;
+
 export function createLearningAdmissionController({ accountId, client, onQuota = () => {},
   eventTarget = globalThis.window, visibilityTarget = globalThis.document,
-  setTimer = setTimeout, clearTimer = clearTimeout, now = () => Date.now() } = {}) {
+  setTimer = setTimeout, clearTimer = clearTimeout, now = () => Date.now(), isOffline = browserOffline } = {}) {
   let disposed = false, started = false, generation = 0, requestGeneration = 0, readGeneration = 0, loading = null, working = null;
   let timer = null, quotaAt = null; // quotaAt = 이 기기 시계로 한도를 받은 때(읽기 · 입장 · 설정 응답 모두)
+  let offlineQuestion = null; // 끊겨서 못 연 카드 — 연결되면 같은 카드 · 같은 문항 열쇠로 다시 묻는다
+  // 서버가 이미 입장시킨 카드(F9). learning_admit_legacy가 fsrs_private.legacy_admissions에 카드마다 한 번 남기고 지우지 않는 사실이라
+  // (계정 삭제 cascade 외 DELETE · UPDATE 없음) 한 번 본 id는 이 계정 controller가 사는 동안 거짓이 되지 않는다 — 단조 합집합으로 모은다.
+  // 기기가 만든 영수증이 아니다: 서버 응답(한도 읽기 · 입장 응답)의 admittedLegacyCardIds만 넣는다.
+  // 끊겼을 때만 쓴다(독립 리뷰 2026-10-25 KST). 연결돼 있으면 입장 POST가 매번 새 operationId로 다시 검사한다 — 제외(vocabulary_excluded) ·
+  // 다른 기기가 먼저 복습해 아직 때가 아님(learning_card_not_due) · 정책 판. 이 검사를 건너뛰면 노트북 줄에 남은 카드가 폰에서 채점된 뒤에도
+  // 왕복 없이 열려 다시 채점된다. 끊긴 동안의 그런 겹침은 보낼함 재생의 비교 후 쓰기(prev last_reviewed_at)가 막는다.
+  const admitted = new Set();
+  let admittedMode = null; // 마지막으로 검증한 한도가 호환(사전 활성) 모드인가 — 호환이면 입장권이 없어 이 지름길을 쓰지 않는다
   const listeners = new Set();
   let state = { status: 'loading', quota: null, current: null, busy: false, error: null };
   const publish = patch => { if (!disposed) { state = { ...state, ...patch }; listeners.forEach(listener => listener()); } };
   // 막 받은 한도 — 오류 · 한도 없음 · 진행 중 읽기(포커스 · 날 바뀜)가 있으면 아니다(그 읽기를 기다린다).
   const quotaFresh = () => state.status === 'ready' && !!state.quota && !loading && quotaAt !== null && now() - quotaAt >= 0 && now() - quotaAt <= QUESTION_QUOTA_FRESH_MS;
-  const applyQuota = quota => {
+  // 입장 모드 한도는 받은 학습일 안이면 다시 읽지 않고 쓴다(F5① — 질문마다 입장 POST 앞에 붙던 한도 GET, 서버 호출 3번). 질문이 한도에서
+  // 쓰는 것은 정책 판뿐이고, 입장 POST가 서버에서 정책 판 · 새 표현 한도 · 활성 · 제외 · 때를 모두 다시 검사한다. 판이 그 사이 바뀌었으면
+  // 409(fsrs_admission_policy_conflict) → 다시 읽고 한 번만 다시 묻는다(아래). 날이 바뀌면(서버 KST 04시 기준) 다시 읽는다.
+  // 호환(사전 활성) 모드는 입장 POST가 없어 활성 전환을 놓치지 않게 지금처럼 창(QUESTION_QUOTA_FRESH_MS) 밖이면 읽는다.
+  const quotaUsable = () => {
+    if (quotaFresh()) return true;
+    if (state.status !== 'ready' || !state.quota || loading || quotaAt === null || now() < quotaAt) return false;
+    if (canUseLegacyAdmissionCompatibility(state.quota)) return false;
+    try { return Date.parse(state.quota.now) + (now() - quotaAt) < Date.parse(nextAdmissionDayAt(state.quota)); } catch { return false; }
+  };
+  const applyQuota = (quota, source = 'load') => {
     const validated = normalizeAdmissionStatus(quota, { actorId: accountId });
     quotaAt = now();
+    (validated.admittedLegacyCardIds || []).forEach(id => admitted.add(id));
+    admittedMode = canUseLegacyAdmissionCompatibility(validated) ? 'compatibility' : 'admission';
     publish({ quota: validated, status: 'ready' });
     if (timer !== null) clearTimer(timer);
     timer = setTimer(() => { timer = null; refresh(); }, Math.min(2147483647, Math.max(1, Date.parse(nextAdmissionDayAt(validated)) - Date.parse(validated.now))));
-    onQuota(validated); return validated;
+    onQuota(validated, { source }); return validated;
   };
+  /** 서버가 이미 입장시킨 카드인가(입장 모드에서만). 네트워크 없이 답한다. */
+  const alreadyAdmitted = cardId => admittedMode === 'admission' && admitted.has(cardId);
   async function refresh() {
     if (disposed || !accountId) return false;
     if (loading) return loading;
@@ -178,7 +204,9 @@ export function createLearningAdmissionController({ accountId, client, onQuota =
       } catch (error) {
         if (!disposed && token === generation && readToken === readGeneration) {
           logLearningFailure('admission load', error);
-          publish({ status: 'error', quota: null, current: null, error });
+          // 끊긴 동안의 배경 읽기(포커스 · 날 바뀜 · 다시 묻기) 실패는 서버가 이미 준 한도 · 열린 카드를 거두지 않는다(F9) —
+          // 거두면 이미 받은 카드도 다음 장에서 멈춘다. 연결되면(online) 다시 읽는다. 받은 한도가 없거나 연결된 채 실패하면 지금처럼 닫는다.
+          if (!(isOffline() && state.status === 'ready' && state.quota)) publish({ status: 'error', quota: null, current: null, error });
         }
         return false;
       } finally { if (token === generation && readToken === readGeneration) loading = null; }
@@ -190,25 +218,57 @@ export function createLearningAdmissionController({ accountId, client, onQuota =
     if (state.current?.cardId === cardId && state.current.questionKey === questionKey) return true;
     if (working?.key === questionKey) return working.promise;
     const token = generation, questionToken = ++requestGeneration;
+    if (isOffline()) {
+      // 끊긴 동안(F9) — 이미 입장한 카드는 서버 왕복 없이 연다(새 표현 한도를 쓰지 않는 카드다). 채점은 보낼함에 쌓이고, 보낼 때
+      // 경계 확인 · 비교 후 쓰기(그 사이 다른 기기가 먼저 복습했으면 일정은 건드리지 않는다)를 거친다.
+      if (alreadyAdmitted(cardId)) {
+        working = null; offlineQuestion = null;
+        publish({ current: { accountId, cardId, questionKey, compatibility: false, admitted: true }, busy: false, error: null });
+        return true;
+      }
+      // 아직 입장하지 않은 카드는 서버만 열 수 있다(새 표현 한도 · 첫 노출 영수증) — 묻지 않고 끊김을 알린다.
+      working = null; offlineQuestion = { cardId, questionKey };
+      publish({ current: null, busy: false, error: problem(LEARNING_ADMISSION_OFFLINE) });
+      return false;
+    }
+    offlineQuestion = null;
     publish({ current: null, busy: true, error: null });
     const promise = (async () => {
       try {
-        // 막 받은 한도면 다시 읽지 않는다(VOCAB-START-3 — 복습 시작 직후 첫 카드의 중복 GET). 아니면 지금처럼 먼저 읽는다.
-        if (!(quotaFresh() || await refresh()) || disposed || token !== generation || questionToken !== requestGeneration) return false;
+        // 쓸 수 있는 한도면 다시 읽지 않는다(VOCAB-START-3 · F5① — 위 quotaUsable). 아니면 지금처럼 먼저 읽는다.
+        const quotaReady = quotaUsable() || await refresh();
+        if (disposed || token !== generation || questionToken !== requestGeneration) return false;
+        if (!quotaReady) {
+          // 읽는 사이 끊겼다 — 받은 한도는 남겨 두었으니(위 refresh) 「준비 중」에 멈추지 않게 끊김을 알린다.
+          if (isOffline()) { offlineQuestion = { cardId, questionKey }; publish({ error: problem(LEARNING_ADMISSION_OFFLINE) }); }
+          return false;
+        }
         if (canUseLegacyAdmissionCompatibility(state.quota)) {
           publish({ current: { accountId, cardId, questionKey, compatibility: true } }); return true;
         }
-        const response = await client.admit({ cardId, expectedPolicyRevision: state.quota.policyRevision });
+        let response;
+        try { response = await client.admit({ cardId, expectedPolicyRevision: state.quota.policyRevision }); }
+        catch (error) {
+          // 다른 기기에서 하루 새 표현 수를 바꿨다 — 다시 읽은 판으로 한 번만 다시 묻는다(그래도 어긋나면 지금처럼 오류).
+          if (error?.status !== 409 || error.code !== 'fsrs_admission_policy_conflict') throw error;
+          readGeneration++; loading = null;
+          if (!(await refresh()) || disposed || token !== generation || questionToken !== requestGeneration) throw error;
+          if (canUseLegacyAdmissionCompatibility(state.quota)) { publish({ current: { accountId, cardId, questionKey, compatibility: true } }); return true; }
+          response = await client.admit({ cardId, expectedPolicyRevision: state.quota.policyRevision });
+        }
         if (disposed || token !== generation || questionToken !== requestGeneration) return false;
         readGeneration++; loading = null;
-        applyQuota(response.quota);
+        admitted.add(response.cardId);
+        applyQuota(response.quota, 'admit');
         publish({ current: { accountId, cardId, questionKey, receipt: response, compatibility: false } });
         return true;
       } catch (error) {
         if (!disposed && token === generation && questionToken === requestGeneration) {
           logLearningFailure('admission question', error);
           if (error.status === 409) { readGeneration++; loading = null; await refresh(); }
-          publish({ current: null, error });
+          // 묻는 사이 끊겼으면(요청 실패 + 끊김) 끊김 안내로 — 연결되면 다시 묻는다.
+          if (isOffline() && !error.status) { offlineQuestion = { cardId, questionKey }; publish({ current: null, error: problem(LEARNING_ADMISSION_OFFLINE) }); }
+          else publish({ current: null, error });
         }
         return false;
       } finally {
@@ -224,7 +284,7 @@ export function createLearningAdmissionController({ accountId, client, onQuota =
       const response = await client.configure({ dailyNewLimit, expectedPolicyRevision: state.quota.policyRevision });
       if (disposed || token !== generation) return false;
       readGeneration++; loading = null;
-      applyQuota(response.quota); return true;
+      applyQuota(response.quota, 'configure'); return true;
     } catch (error) {
       if (!disposed && token === generation) { logLearningFailure('admission configure', error); if (error.status === 409) { readGeneration++; loading = null; await refresh(); } publish({ error }); }
       return false;
@@ -232,6 +292,13 @@ export function createLearningAdmissionController({ accountId, client, onQuota =
   }
   const onFocus = () => { if (!disposed) refresh(); };
   const onVisible = () => { if (visibilityTarget?.visibilityState !== 'hidden') onFocus(); };
+  // 연결이 돌아오면 끊겨서 못 연 카드를 같은 열쇠로 다시 묻는다(그 안에서 한도도 읽는다). 없으면 한도만 다시 읽는다.
+  const onOnline = () => {
+    if (disposed) return;
+    const pending = offlineQuestion;
+    if (pending && isAdmissionOfflineError(state.error)) { publish({ error: null }); question(pending.cardId, pending.questionKey); }
+    else refresh();
+  };
   return {
     getSnapshot: () => state,
     subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); },
@@ -244,11 +311,18 @@ export function createLearningAdmissionController({ accountId, client, onQuota =
       if (result) publish({ error: null });
       return result;
     },
-    leave() { requestGeneration++; working = null; publish({ current: null, busy: false }); },
+    leave() { requestGeneration++; working = null; offlineQuestion = null;
+      publish({ current: null, busy: false, ...(isAdmissionOfflineError(state.error) ? { error: null } : {}) }); },
+    /** 서버가 질문을 거절한 카드를 화면이 건너뛴 뒤 그 오류를 지운다(목록으로 돌아가도 「준비하지 못했어요」가 남지 않게). */
+    dismissError() { publish({ error: null }); },
+    /** 서버가 이미 입장시킨 카드인가 — 화면 · 계약 확인용(네트워크 없음). */
+    isAdmitted: cardId => alreadyAdmitted(cardId),
     start() { if (started) return; disposed = false; started = true;
-      eventTarget?.addEventListener('focus', onFocus); visibilityTarget?.addEventListener('visibilitychange', onVisible); },
+      eventTarget?.addEventListener('focus', onFocus); eventTarget?.addEventListener('online', onOnline);
+      visibilityTarget?.addEventListener('visibilitychange', onVisible); },
     dispose() { client.cancel?.(); if (timer !== null) clearTimer(timer); timer = null; disposed = true; started = false; generation++; requestGeneration++; working = null; loading = null; listeners.clear();
-      eventTarget?.removeEventListener('focus', onFocus); visibilityTarget?.removeEventListener('visibilitychange', onVisible); },
+      admitted.clear(); offlineQuestion = null; // admittedMode는 다음 applyQuota가 늘 다시 정한다(입장 id가 들어오는 유일한 길)
+      eventTarget?.removeEventListener('focus', onFocus); eventTarget?.removeEventListener('online', onOnline); visibilityTarget?.removeEventListener('visibilitychange', onVisible); },
   };
 }
 
@@ -257,7 +331,7 @@ export function useLearningAdmission({ accountId, onQuota } = {}) {
   actor.current = accountId; notify.current = onQuota;
   const controller = useMemo(() => createLearningAdmissionController({ accountId,
     client: createLearningAdmissionClient({ accountId, getAccountId: () => actor.current }),
-    onQuota: quota => { if (actor.current === accountId) notify.current?.(quota); },
+    onQuota: (quota, meta) => { if (actor.current === accountId) notify.current?.(quota, meta); },
   }), [accountId]);
   const state = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
   useEffect(() => { controller.start(); controller.refresh(); return () => controller.dispose(); }, [controller]);

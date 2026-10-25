@@ -43,7 +43,8 @@ export const FSRS_LOADING_CAP_MS = 20000;
 /** DB 상태만 문제의 기준으로 삼는다. 대기 중인 연산은 재출제나 옛 채점 경로로 보내지 않는다. */
 export function createFsrsReviewController({ accountId, client, now = Date.now, makeId = uuid,
   setTimer = setTimeout, clearTimer = clearTimeout, eventTarget = globalThis.window,
-  visibilityTarget = globalThis.document, onApplied = () => {}, onAdmission = () => {} }) {
+  visibilityTarget = globalThis.document, onApplied = () => {}, onAdmission = () => {},
+  isOffline = () => globalThis.navigator?.onLine === false }) {
   let disposed = false, started = false, timer = null, offset = 0, words = [], allowedIds = null;
   let generation = 0, readGeneration = 0, locked = false, refreshPromise = null;
   const listeners = new Set(), enrollments = new Map(), saves = new Map(), appliedOperations = new Set();
@@ -165,6 +166,13 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
         }
         if (!disposed && token === generation && readToken === readGeneration) {
           logLearningFailure('fsrs load', error);
+          // 끊긴 동안의 배경 다시 읽기(포커스 · 만기 깨움 · 연결 신호) 실패는 이미 받은 목록을 「없음」으로 내리지 않는다(F9) — 내리면
+          // canLegacy가 모두 거짓이 되어 예전 일정 복습도 한 장 뒤에 멈춘다. 끊긴 동안의 채점은 보낼함에 쌓이고, 보낼 때 카드마다
+          // 경계(fsrs_legacy_boundary)를 다시 묻는다(reviewOutbox.flushReviews). 연결되면 다시 읽는다(online). 첫 읽기 실패는 지금처럼 오류다.
+          if (isOffline() && state.status === 'ready' && state.registryAvailable) {
+            if (pending) publish(pendingPatch(pending));
+            return false;
+          }
           publish({ registryAvailable: false, status: 'error', error,
             ...(pending ? { ...pendingPatch(pending), enrolledIds: [...new Set([...state.enrolledIds, ...pendingEnrolledIds(pending)])] } : {}) });
           queue();
@@ -376,6 +384,8 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
   }
   const onFocus = () => { if (!disposed) refresh().catch(() => {}); };
   const onVisible = () => { if (visibilityTarget?.visibilityState !== 'hidden') onFocus(); };
+  // 끊긴 동안 붙잡아 둔 목록은 연결되면 서버 정본으로 다시 읽는다.
+  const onOnline = onFocus;
   let unsubscribe;
   const onClientChange = event => {
     if (disposed || event.type !== 'change' || (event.accountId && event.accountId !== accountId) ||
@@ -396,6 +406,7 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
       client.start?.();
       unsubscribe = client.subscribe?.(onClientChange);
       eventTarget?.addEventListener('focus', onFocus);
+      eventTarget?.addEventListener('online', onOnline);
       visibilityTarget?.addEventListener('visibilitychange', onVisible);
     },
     setWords(nextWords, scopeIds = null) {
@@ -405,6 +416,24 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
     },
     // 활성 한도는 서버 admission 정책만 따른다. 로컬 설정 변경으로 슬롯을 늘리지 않는다.
     setDailyNewLimit() { queue(); },
+    /**
+     * 이 기기의 입장 응답(POST /api/learning/admission)이 실어 온 한도를 줄에 바로 반영한다(F5① — 같은 서버 상태를 GET으로 다시 읽지 않는다).
+     * 예전 일정 카드의 입장은 FSRS 카드 · 등록을 바꾸지 않고 새 표현 한도(used · remaining)만 바꾼다. 같은 학습일 · 정책 판 · 활성 여부일 때만
+     * 받는다 — 그 밖의 변화(날 바뀜 · 한도 설정 · 활성 전환)는 false를 돌려 호출부가 지금처럼 다시 읽게 한다. 더 옛 한도는 무시한다(true).
+     */
+    adoptAdmission(quota) {
+      if (disposed || state.status !== 'ready' || !state.registryAvailable || !state.admission) return false;
+      let next;
+      try { next = normalizeAdmissionStatus(quota, { actorId: accountId }); } catch { return false; }
+      const prev = state.admission;
+      if (next.learningDay !== prev.learningDay || next.policyRevision !== prev.policyRevision || next.limit !== prev.limit
+        || next.active !== prev.active || next.enabled !== prev.enabled || next.fsrsEnabled !== prev.fsrsEnabled
+        || next.installed !== prev.installed || next.startsAt !== prev.startsAt) return false;
+      if (Date.parse(next.now) < Date.parse(prev.now)) return true;
+      publish({ admission: next, firstQuestionsToday: next.active ? next.used : state.firstQuestionsToday });
+      queue();
+      return true;
+    },
     canLegacy(cardId) { return state.registryAvailable && !state.enrolledIds.includes(cardId) && !state.pending.some(entry => entry.cardId === cardId); },
     refresh, question, reveal, grade, undo, enrollInserted, saveVocabulary, retrySave,
     async retrySync() { try { await client.flush(); } catch (error) { publish({ error }); } return refresh(); },
@@ -414,6 +443,7 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
       if (timer !== null) clearTimer(timer);
       unsubscribe?.(); client.dispose?.(); listeners.clear();
       eventTarget?.removeEventListener('focus', onFocus);
+      eventTarget?.removeEventListener('online', onOnline);
       visibilityTarget?.removeEventListener('visibilitychange', onVisible);
     },
   };

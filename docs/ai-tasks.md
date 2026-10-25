@@ -1069,6 +1069,12 @@
 - **HANJA-LAZY-001 ㉣ (2026-10-25 KST, 오너 「권장대로」)**: 훈음 표 세 벌(ko · hun · trad 171 KB gz)을 로더 하나(src/lib/hanjaTables.js)로 지연 ·
   자료 언어 확인 뒤 유휴 미리 받기 · 판서 카드는 훈음 줄 높이 예약(CLS 0). 뷰어 첫 JS 779 → 613 kB, 직접 열기 ja −190 ms · zh −318 ms,
   /class/[team]/live 464 → 298 kB · /notes/[id] 444 → 278 kB. 캔버스(판서 · 노트)는 eager 모듈로 동작 동일.
+  → **#1568 squash `5edda3d3`(21:06 KST)**.
+- **OFFLINE-REVIEW ㉡ (2026-10-25 KST, 오너 「권장대로」 · 독립 리뷰 2회)**: 이미 입장한 카드는 **끊겼을 때만** 입장 왕복 없이 열고 채점은 보낼함 →
+  재연결 시 순서대로. 연결 중엔 입장 POST가 not_due · excluded · 정책 판을 서버 재검사(1차 리뷰 [중간] 반영). 예전 일정 쓰기 = 비교 후 쓰기
+  (expectedLastReviewedAt · count=exact 0행 → 「다른 기기에서 먼저 복습한 표현이에요」, 기록 유지 · 일정 보존, ↶ 끔). 경계 확인 채점당 3 → 1(증거 공유 ·
+  쓰기 직전 로컬 세션 대조), 같은 학습일 한도 GET 생략. 연결 상태 채점당 호출 13 → 8. /study 닫힘 keepalive(만료 토큰이면 보통 전송).
+  남김: useInlineReview · 퀘스트 · 미루기는 무조건 쓰기 그대로(보낼함 재생만 CAS), 보낼함 안내 숫자 한 장 늦음(기존).
 - VOCAB-LEVEL-DOC(F9 현장): 목록을 문서 밖 JSON으로 → 문서 −95%지만 LCP +4%(JS가 임계 경로) → 배제 · 패치 보관. 후속 G(카드 앞 JS 청크) 조사 중.
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로

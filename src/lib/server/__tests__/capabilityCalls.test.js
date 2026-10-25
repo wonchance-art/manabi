@@ -75,9 +75,10 @@ const users = (pattern) => files.filter(([, src]) => pattern.test(src)).map(([re
 describe('② 화면 배선 — 한 화면 이동에 같은 읽기는 하나', () => {
   it('단어장(/vocab): 첫 입장 한도에는 FSRS 목록을 다시 읽지 않는다(마운트 읽기가 이미 같은 상태) — 바뀐 한도 · 첫 읽기 실패만', () => {
     const page = read('src/views/VocabPage.jsx');
-    const onQuota = sliceBetween(page, 'const admission = useLearningAdmission({ accountId: user?.id, onQuota: quota => {', '} });');
+    const onQuota = sliceBetween(page, 'const admission = useLearningAdmission({ accountId: user?.id, onQuota: (quota, meta) => {', '} });');
     expect(onQuota).toMatch(/if \(quotaOwner\.current !== quota\.actorId\) \{\s*quotaOwner\.current = quota\.actorId; quotaSignature\.current = signature;\s*if \(fsrsControllerRef\.current\?\.getSnapshot\?\.\(\)\.status === 'error'\) fsrsControllerRef\.current\.refresh\(\);\s*return;\s*\}/u);
-    expect(onQuota).toMatch(/if \(signature !== quotaSignature\.current\) \{\s*quotaSignature\.current = signature;\s*fsrsControllerRef\.current\?\.refresh\(\);/u);
+    // 이 기기 입장 응답(source admit)의 한도는 FSRS 줄이 GET 없이 받고(F5①), 받지 못하면(날 · 판 · 활성 변화) 지금처럼 다시 읽는다.
+    expect(onQuota).toMatch(/if \(signature !== quotaSignature\.current\) \{\s*quotaSignature\.current = signature;\s*if \(meta\?\.source === 'admit' && fsrsControllerRef\.current\?\.adoptAdmission\?\.\(quota\)\) return;\s*fsrsControllerRef\.current\?\.refresh\(\);/u);
   });
   it('입장 한도 · FSRS 목록 훅은 화면마다 한 번만 만든다(배움 1 · 단어장 1 / 단어장 1)', () => {
     expect(users(/(?<!function )\buseLearningAdmission\(\{/u)).toEqual(['src/views/HomePage.jsx', 'src/views/VocabPage.jsx']);
