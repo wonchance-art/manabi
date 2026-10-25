@@ -295,7 +295,8 @@ function VocabWorkspace({ reviewScope }) {
   const exampleCacheRef = useRef(new Map());
   const [exampleLoading, setExampleLoading] = useState(false);
   const [exampleSentences, setExampleSentences] = useState(null);
-  const [visibleCount, setVisibleCount] = useState(30);
+  // 담은 표현 목록의 「더 보기」 펼침 수 — 상태는 목록(VocabList) 안에 두고, 탭을 오가도 기억하도록 여기 ref에 맡긴다(F4).
+  const listPageStore = useRef({ token: null, count: 30 });
   const [confirmAction, setConfirmAction] = useState(null);
   const [detailWord, setDetailWord] = useState(null);
 
@@ -599,7 +600,9 @@ function VocabWorkspace({ reviewScope }) {
     return list;
   }, [vocabSearchIndex, search, sortBy, reviewDueAt, missingMeaningOnly]);
 
-  useEffect(() => { setVisibleCount(30); }, [search, sortBy, scopeKey]);
+  // 검색어 · 정렬 · 범위가 바뀌면 목록 펼침 수를 30으로 되돌린다 — 새 값(토큰)을 받은 목록이 스스로 되돌린다.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const listPageToken = useMemo(() => ({}), [search, sortBy, scopeKey]);
 
   // 범위 안 복습 대상 단어(아는 단어 · 제외 빼고) — 구성 집계와 임박 목록이 공유한다.
   const deckScope = useRoomMemo(inSession, () => vocab.filter(v => {
@@ -1434,8 +1437,8 @@ function VocabWorkspace({ reviewScope }) {
           learningById={learningAvailable ? learningById : undefined}
           now={effectiveNow}
           filteredVocab={filteredVocab}
-          visibleCount={visibleCount}
-          setVisibleCount={setVisibleCount}
+          pageStore={listPageStore.current}
+          pageToken={listPageToken}
           search={search}
           setSearch={setSearch}
           sortBy={sortBy}

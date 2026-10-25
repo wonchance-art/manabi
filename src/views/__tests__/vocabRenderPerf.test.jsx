@@ -1,6 +1,11 @@
 import fs from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { describe, expect, it, vi } from 'vitest';
 import { sliceBetween } from '../../lib/__tests__/helpers/sliceBetween.js';
+import VocabList from '../VocabList.jsx';
+
+vi.mock('next/link', () => ({ default: ({ children, ...props }) => createElement('a', props, children) }));
 
 const page = fs.readFileSync('src/views/VocabPage.jsx', 'utf8');
 
@@ -24,5 +29,33 @@ describe('세션 중 복습방 계산 멈춤(useRoomMemo)', () => {
     const hook = sliceBetween(page, 'function useRoomMemo(frozen, factory, deps) {', '\n}');
     expect(hook).toContain('const effective = frozen && lastDeps.current ? lastDeps.current : deps;');
     expect(hook).toContain('return useMemo(factory, effective);');
+  });
+});
+
+// LOGGED-IN-PERF F4: 「더 보기」 INP가 줄 수에 비례해 커졌다(모바일 184 → 392 ms) — 줄이 인라인 JSX였고 펼침 수가 작업 공간 상태였다.
+describe('담은 표현 목록 — memo 줄 · 목록 안 펼침 수', () => {
+  const list = fs.readFileSync('src/views/VocabList.jsx', 'utf8');
+  const words = Array.from({ length: 100 }, (_, i) => ({ id: `w${i}`, user_id: 'actor', word_text: `語${i}`, meaning: `뜻 ${i}`, language: 'Japanese', pos: '' }));
+  const props = extra => ({ vocab: words, filteredVocab: words, search: '', sortBy: 'due', langFilter: 'Japanese', setLangFilter: () => {},
+    setSearch: () => {}, setSortBy: () => {}, setConfirmAction: () => {}, deleteMutation: { mutate: () => {} }, updateVocabMutation: { mutate: () => {} },
+    ttsSupported: true, speak: () => {}, now: Date.parse('2026-10-25T00:00:00.000Z'), ...extra });
+  const rows = html => (html.match(/class="card vocab-row/g) || []).length;
+
+  it('줄은 memo 컴포넌트이고 처리기는 목록이 한 번 만든 안정 함수다(줄마다 새 함수 0)', () => {
+    expect(list).toContain('const VocabRow = memo(function VocabRow(');
+    const loop = sliceBetween(list, 'filteredVocab.slice(0, visibleCount).map(v => {', '}) : (');
+    expect(loop).toContain('onActivate={activateRow} onSpeak={speakRow} onEdit={openEdit} onDelete={confirmDelete}');
+    expect(loop).not.toMatch(/=\{\s*\(?[a-z, ]*\)?\s*=>/); // 화살표 함수 속성 없음
+    for (const name of ['activateRow', 'speakRow', 'confirmDelete', 'openEdit', 'showMore']) expect(list).toMatch(new RegExp(`const ${name} = useCallback\\(`));
+  });
+  it('「더 보기」 수는 목록 상태 — 부모 ref(pageStore)로 탭을 오가도 기억하고, 토큰이 바뀌면 30으로 돌아간다', () => {
+    const token = {};
+    expect(rows(renderToStaticMarkup(createElement(VocabList, props({}))))).toBe(30);
+    expect(rows(renderToStaticMarkup(createElement(VocabList, props({ pageStore: { token, count: 60 }, pageToken: token }))))).toBe(60);
+    expect(rows(renderToStaticMarkup(createElement(VocabList, props({ pageStore: { token, count: 60 }, pageToken: {} }))))).toBe(30);
+    expect(renderToStaticMarkup(createElement(VocabList, props({ pageStore: { token, count: 60 }, pageToken: token })))).toContain('더 보기 (40개 남음)');
+    expect(page).not.toContain('setVisibleCount');
+    expect(page).toContain('const listPageToken = useMemo(() => ({}), [search, sortBy, scopeKey]);');
+    expect(page).toContain('pageStore={listPageStore.current}');
   });
 });
