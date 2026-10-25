@@ -65,7 +65,7 @@ import { useReanalyze } from '../lib/useReanalyze';
 import { useReanalyzeUI } from '../lib/useReanalyzeUI';
 import { useReadingCompletion } from '../lib/useReadingCompletion';
 import { useInlineReview, patchVocabWordsCache } from '../lib/useInlineReview';
-import { insertConfirmedVocabulary, preservePendingVocabularyReviews } from '../lib/viewerVocabularyCache';
+import { insertConfirmedVocabulary, preservePendingVocabularyReviews, VOCAB_WORDS_STALE_MS, vocabWordsFromLearningCache } from '../lib/viewerVocabularyCache';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage, failureMessage } from '../lib/errorMessage';
 import { SAVE_GRADES, VOCAB_UPSERT, buildVocabRow, cardSaveReading } from '../lib/vocabIO';
@@ -531,12 +531,16 @@ export default function ViewerPage({ seed } = {}) {
   // 쓴다(AE-R2 §5.2). 지정 경로의 기록 자체는 focusMode 계약이 고정하고 있어 그대로 둔다.
   const [, setSelectedRangeText] = useState('');
 
+  // 저장 · 만기 색인 — 단어장 글자 칸과 같은 키 · 같은 신선도(VOCAB_WORDS_STALE_MS, 앱 기본 2분). 단어장이 막 받은 같은 snapshot이 있으면
+  // 그것으로 시작한다(vocabWordsFromLearningCache — 신선할 때만, 받은 시각 그대로). 서재에서 자료를 하나씩 열 때 다시 받지 않는다(F3③).
   const { data: savedWordsData, error: savedWordsError, refetch: refetchSavedWords } = useQuery({
     queryKey: ['vocab-words', user?.id],
     queryFn: async ({ signal }) => preservePendingVocabularyReviews(await fetchUserVocabWords(user.id, signal),
       queryClient.getQueryData(['vocab-words', user.id])),
     enabled: !!user,
-    staleTime: 1000 * 30,
+    staleTime: VOCAB_WORDS_STALE_MS,
+    initialData: () => vocabWordsFromLearningCache(queryClient, user?.id),
+    initialDataUpdatedAt: () => queryClient.getQueryState(['vocab', user?.id, 'learning'])?.dataUpdatedAt, // 위 색인을 만든 snapshot의 받은 시각
   });
 
   const savedWords = useMemo(() => savedWordsError

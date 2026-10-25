@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { seededShuffle } from '../lib/seededShuffle';
 import Button from '../components/Button';
@@ -76,6 +77,12 @@ export default function StudySessionPage({
   const authLost = !!sessionUserRef.current && !authLoading && user?.id !== sessionUserRef.current;
   const recorderRef = useRef(null);
   recorderRef.current = authLost ? null : sessionUserRef.current;
+  // 이 화면의 채점 · 새 단어 저장은 뷰어의 저장 · 만기 색인(['vocab-words'], 신선도 2분 — VOCAB_WORDS_STALE_MS)을 무효화하지 않는다.
+  // 떠날 때 세션 계정의 것을 낡음으로만 표시한다 — 다시 읽지 않는다(요청 0). 다음에 뷰어를 열면 그때 새로 받는다(로그인 감사 F3③).
+  const queryClient = useQueryClient();
+  useEffect(() => () => {
+    if (sessionUserRef.current) queryClient.invalidateQueries({ queryKey: ['vocab-words', sessionUserRef.current], refetchType: 'none' });
+  }, [queryClient]);
   const [lostRecordUid, setLostRecordUid] = useState(null); // 큐에도 못 담은 문항(첫 시도 uid — 재출제 -r에는 다시 띄우지 않는다) — 인라인 한 줄
   const [grammarGaveUp, setGrammarGaveUp] = useState(false); // 문법 일정 재시도 상한을 넘겨 버렸다 — 한 줄 알림
   const toast = useToast();
