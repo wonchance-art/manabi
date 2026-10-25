@@ -214,18 +214,22 @@ test('review session: one line, card faces, first-seen card, resume after reload
   await barAtBottom();
   await f.page.setViewportSize({width:1440,height:1000});await barAtBottom();await check(f,'r1b-card-back-1440');await f.page.setViewportSize({width:390,height:1000});
   await f.page.locator('.review-score-btn--good').click();
+  // 새 표현은 복습 사이에 고르게 섞인다(Anki 간격, 복습 2 · 새 1 = 복습 · 새 · 복습). 첫 등장 = 채점 없는 「처음 보는 표현」,
+  // 넘기면 같은 세션에서 다시 묻는다(예전 일정 = 세션 내 재질문).
+  await f.page.getByText('처음 보는 표현',{exact:true}).waitFor();await f.page.getByText('전철',{exact:true}).waitFor();assert.equal((await count.textContent()).trim(),'1 / 3');
+  await until(()=>patches.length===1,'first grade persisted');await check(f,'r1b-first-seen-390');
+  await f.page.getByRole('button',{name:'다음 →',exact:true}).click();
   await f.page.getByRole('heading',{name:'学校',exact:true}).waitFor();assert.equal((await count.textContent()).trim(),'1 / 3');
-  await until(()=>patches.length===1,'first grade persisted');
-  // 새로고침 → 「멈춘 복습 이어 하기 (1 / 3)」(세션 저장소). 이미 끝낸 카드는 다시 나오지 않는다.
+  // 새로고침 → 「멈춘 복습 이어 하기 (1 / 3)」(세션 저장소). 이미 끝낸 카드는 다시 나오지 않고 남은 카드는 처음 줄 순서(電車 → 学校)다.
+  // 채점 전이던 새 표현은 처음 보는 표현부터 다시, 넘기면 재질문은 그 뒤 복습 다음.
   await f.page.reload({waitUntil:'domcontentloaded'});
   const resume=f.page.getByRole('button',{name:'멈춘 복습 이어 하기 (1 / 3) →',exact:true});await resume.waitFor();await resume.click();
+  await f.page.getByText('처음 보는 표현',{exact:true}).waitFor();await f.page.getByText('전철',{exact:true}).waitFor();assert.equal((await count.textContent()).trim(),'1 / 3');
+  await f.page.getByRole('button',{name:'다음 →',exact:true}).click();
   await f.page.getByRole('heading',{name:'学校',exact:true}).waitFor();assert.equal((await count.textContent()).trim(),'1 / 3');
   await f.page.keyboard.press('Space');await f.page.getByText('학교',{exact:true}).waitFor();await f.page.locator('.review-score-btn--good').click();
-  // 새 표현의 첫 등장 = 채점 없는 「처음 보는 표현」, 넘기면 같은 세션에서 다시 묻는다(예전 일정 = 세션 내 재질문).
-  await f.page.getByText('처음 보는 표현',{exact:true}).waitFor();await f.page.getByText('전철',{exact:true}).waitFor();
-  await until(()=>patches.length===2,'second grade persisted');await check(f,'r1b-first-seen-390');
-  await f.page.getByRole('button',{name:'다음 →',exact:true}).click();
-  await f.page.getByRole('heading',{name:'電車',exact:true}).waitFor();assert.equal(await f.page.getByText('전철',{exact:true}).count(),0);
+  await until(()=>patches.length===2,'second grade persisted');
+  await f.page.getByRole('heading',{name:'電車',exact:true}).waitFor();assert.equal(await f.page.getByText('전철',{exact:true}).count(),0);assert.equal((await count.textContent()).trim(),'2 / 3');
   await f.page.keyboard.press('Space');await f.page.getByText('전철',{exact:true}).waitFor();await f.page.locator('.review-score-btn--hard').click();
   await f.page.getByRole('heading',{name:'오늘 몫 끝',exact:true}).waitFor();await f.page.getByText('3개',{exact:true}).waitFor();
   await until(()=>patches.length===3,'re-asked new card graded once');await check(f,'r1b-end-390');
