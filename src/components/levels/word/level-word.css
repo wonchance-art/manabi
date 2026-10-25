@@ -347,12 +347,16 @@ button.lw-tile__glyph[aria-expanded=true]{background:color-mix(in srgb,var(--lw-
 .lw-rd__row:first-child{border-top:0}
 .lw-rd__row.is-kun{border-top-color:color-mix(in srgb,var(--lw-line) 70%,var(--ink))}
 .lw-rd__row.is-current{background:color-mix(in srgb,var(--lw-rose) 9%,var(--lw-card))}
-.lw-rd__lab{display:flex;align-items:center;padding-left:12px;font-size:11.5px;font-weight:700;color:var(--muted)}
-.lw-rd__r{display:flex;align-items:center;padding:0 12px 0 4px;border-right:1px solid var(--lw-line);font-size:14px;font-weight:500;white-space:nowrap}
+.lw-rd__lab{display:flex;align-items:flex-start;padding:14px 0 0 12px;font-size:12px;line-height:20px;font-weight:500;color:var(--muted)}
+.lw-rd__r{display:flex;align-items:flex-start;padding:14px 12px 0 4px;line-height:20px;border-right:1px solid var(--lw-line);font-size:14px;font-weight:500;white-space:nowrap}
 .lw-rd__r i{font-style:normal;font-weight:400;color:var(--muted)}
 .lw-rd__row.is-current .lw-rd__r{color:var(--lw-rose);font-weight:700}
 .lw-rd__row.is-empty .lw-rd__r,.lw-rd__row.is-rare .lw-rd__r{color:var(--muted);font-weight:400}
 .lw-rd__row.is-empty .lw-rd__r{min-height:28px}
+/* 단어가 있는 줄은 음 · 훈 · 읽기를 단어 한자 줄(위 후리가나 자리 3 + 11px 뒤 20px 줄)과 같은 높이에, 빈 줄은 가운데(오너 2026-10-26 KST 「중앙값」). */
+.lw-rd__row.is-empty .lw-rd__lab,.lw-rd__row.is-empty .lw-rd__r{align-items:center;padding-top:0}
+/* 한국어(음 · 훈 · 뜻)는 앱 글꼴 차례(Manrope → Noto Sans KR) — 표가 lang=ja라 일본어 글꼴 줄 높이를 물려받아 HSK 창과 엇나갔다. */
+.lw-rd [lang=ko]{font-family:var(--font-manrope),var(--font-noto-kr),sans-serif}
 .lw-rd__w{display:flex;flex-direction:column;align-items:flex-start;min-width:0;padding:3px 4px 5px 14px}
 .lw-rd__row.is-empty .lw-rd__w{padding-block:0}
 .lw-rd__b{padding-top:11px;font-size:17px;line-height:20px;font-weight:500;white-space:nowrap}
