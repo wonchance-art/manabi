@@ -94,6 +94,16 @@ export async function assertLegacyFsrsAllowed(client, { userId, cardId = null, i
  * 덮지 못하면(증거 없음 · 다른 카드 · 다른 표기 · 수명 지남) 지금처럼 묻는다.
  */
 export async function assertLegacyFsrsAllowedOnce(client, args = {}, proof) {
-  if (legacyBoundaryCovers(proof, args)) { assertCachedLegacyFsrsAllowed(args.userId || proof.userId, args.cardId); return proof; }
-  return assertLegacyFsrsAllowed(client, args);
+  if (!legacyBoundaryCovers(proof, args)) return assertLegacyFsrsAllowed(client, args);
+  const actorId = args.userId || proof.userId;
+  assertCachedLegacyFsrsAllowed(actorId, args.cardId);
+  // 서버 확인(RPC)이 하던 계정 대조는 쓰기 직전 로컬 세션으로 한다(독립 리뷰 2026-10-25 KST) — 채점 도중 계정이 바뀌었으면 지금처럼
+  // fsrs_account_changed(차단 · 큐에 안 담음)로, 세션을 읽지 못하면 fsrs_boundary_unavailable(일시 — 큐에 담는다)로 같은 분류를 낸다.
+  if (typeof client?.auth?.getSession === 'function') {
+    let session;
+    try { ({ data: { session } = {} } = await client.auth.getSession()); } catch { throw boundaryError('fsrs_boundary_unavailable'); }
+    if (!session?.user?.id) throw boundaryError('fsrs_boundary_unavailable');
+    if (session.user.id !== actorId) throw boundaryError('fsrs_account_changed');
+  }
+  return proof;
 }
