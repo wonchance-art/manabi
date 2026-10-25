@@ -162,6 +162,11 @@ export function viewerSeedAdopted(pathname, chunks = globalThis.self?.__next_f) 
 /** 시험용 — 문서 하나에 한 번을 되돌린다. */
 export function resetViewerSeedForTest() { documentSeedTaken = false; adoptedSeedId = null; }
 
+/** 로그인한 계정이 그 자료에서 NOT_FOUND를 받았을 때 한 번 다시 받을 열쇠(자료 · 계정) — 같은 열쇠로는 다시 받지 않는다. 아니면 null. */
+export function notFoundRetryKey(id, userId, code) {
+  return userId && code === 'NOT_FOUND' ? `${id}:${userId}` : null;
+}
+
 /** 그 id의 띄워 둔 조회를 버린다(뷰어 마운트 때 캐시가 이미 있으면 — 고아로 남기지 않는다). */
 export function discardEarlyMaterial(id) {
   if (earlyMaterial?.id === String(id)) earlyMaterial = null;

@@ -160,7 +160,7 @@ import { StatusPill } from '../components/levels/word/WordParts';
 import { locateLineTokens } from '../lib/viewerSentenceLine';
 import { useSentencePrefetch } from '../lib/useSentencePrefetch';
 import { isLocalId, parseLocalId, chaptersForLocalNav, isTeamRoot, viewerRouteId } from '../lib/classBoard';
-import { adoptViewerSeed, discardEarlyMaterial, loadMaterial, startEarlyMaterial, viewerSeedAdopted } from '../lib/viewerMaterial';
+import { adoptViewerSeed, discardEarlyMaterial, loadMaterial, notFoundRetryKey, startEarlyMaterial, viewerSeedAdopted } from '../lib/viewerMaterial';
 import { readIndexCache } from '../lib/classClient';
 import { useRefVocabEntry, useRefVocabIndex } from '../lib/refVocabIndex';
 import { zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
@@ -359,7 +359,16 @@ export default function ViewerPage({ seed } = {}) {
       return catalogError ? null : data?.[0] || null;
     },
   });
-  useEffect(() => { if (user?.id && error?.code === 'NOT_FOUND') refetch(); }, [user?.id, error?.code, refetch]);
+  // 로그인한 계정이 NOT_FOUND를 받으면 그 자료 · 그 계정으로 **한 번만** 다시 받는다(손님 때 숨겨진 책 장 → 로그인 · 세션 복원 직후 RLS 대비).
+  // 예전에는 다시 받는 동안 오류가 비워졌다가 다시 NOT_FOUND가 되어 이 효과가 또 돌았다 — 볼 수 없는 · 없는 자료를 열면 「자료 불러오는 중…」에서
+  // 끝나지 않고 약 2초마다 다시 받았다(로그인 감사 2026-10-25 KST 실측). 그 뒤에는 아래 「자료를 찾을 수 없어요」 안내.
+  const notFoundRetried = useRef(null);
+  useEffect(() => {
+    const key = notFoundRetryKey(id, user?.id, error?.code);
+    if (!key || notFoundRetried.current === key) return;
+    notFoundRetried.current = key;
+    refetch();
+  }, [id, user?.id, error?.code, refetch]);
 
   const materialLang = material?.processed_json?.metadata?.language || 'Japanese';
   // The legacy editor writes one unlocalized meaning into the document/dictionary.
