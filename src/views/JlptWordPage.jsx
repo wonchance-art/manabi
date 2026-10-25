@@ -39,6 +39,8 @@ export function jlptWordLang(levelKey) {
     Reading: Kana,
     // N5 · N4는 가나 표제어 + 한자는 읽기 줄(jaHeadMode — 옛 목록과 같은 규칙). 한자가 없는 단어는 표제어만.
     head: (e) => (kana && HAN.test(e.word) && e.reading ? { hw: e.reading, sub: e.word } : { hw: e.word, sub: e.reading }),
+    // 큰 한자를 누르면 글자 창 — 상용한자표 음 · 훈 읽기 표(오너 2026-10-25 KST 시안 ⑧).
+    pieceDrill: true,
     loadTiles: loadJaCharTables,
     tilesOf: (word, kr, tables) => jaCharTiles(word, kr, tables),
   };

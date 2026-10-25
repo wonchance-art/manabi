@@ -5,10 +5,12 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { reducedMotion } from '@/lib/reducedMotion';
 import { pinyinToneNumber } from '@/lib/pinyinTone';
 import { hanjaPanelModel, normalizePinyin, selectSameHanjaTiles, splitPinyinSyllables } from '@/lib/viewerHanjaPanel';
-import { CharTiles, PIECE_ROLE_WORD, WordRow } from './WordParts';
+import { jaKanjiReadingRows, kanaPerChar, loadJaReadingTables } from '@/lib/jaKanjiReadingRows';
+import { CharTiles, WordRow } from './WordParts';
 import { useWordLang } from './wordLang';
 
 const CLOSE_DRAG_PX = 80;
+const JA_MIN_BELOW = 200; // 읽기 표 창을 아래에 둘 최소 높이(머리 + 읽기 약 3줄)
 
 /**
  * 닫힘 움직임 — 닫기를 부르면 ms 동안 「닫히는 중」으로 두었다가 onClose(열릴 때만 움직이고 닫힐 때 뚝 사라지던 것, 오너 2026-10-21 KST ⑥-1).
@@ -147,12 +149,44 @@ const toneCls = (on, syl) => (on && syl ? `lw-tone--${pinyinToneNumber(syl) ?? 0
 const CloseIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18" /></svg>;
 
 /**
+ * JLPT 글자 창의 읽기 표 — [음 · 훈 | 읽기 | 단어 두 칸]. 읽기와 단어 사이 세로선, 음과 훈 사이 진한 가로선, 지금 단어의 읽기 줄은 장미색.
+ * 단어 칸 너비는 그 칸에서 가장 긴 단어에 맞추고(창 전체가 한 격자 · subgrid), 후리가나는 한자 덩어리 위 가운데,
+ * 모든 단어가 후리가나 자리를 비워 두어 단어 줄과 뜻 줄이 칸마다 같은 높이에 선다. JLPT 단어가 없는 읽기는 낮은 흐린 줄.
+ */
+export function JaReadingTable({ ch, model, failed }) {
+  const L = useWordLang();
+  if (failed) return <p className="lw-dp__note">읽기 자료를 불러오지 못했어요</p>;
+  if (!model) return <div className="lw-rd is-empty" aria-hidden="true" />;
+  const firstKun = model.rows.findIndex((r) => r.type === 'kun');
+  const mark = (text) => [...text].map((c, i) => (c === ch ? <em key={i}>{c}</em> : c));
+  return <div className="lw-rd" lang={L.hw}>
+    {model.rows.map((r, i) => <div key={`${r.type}${r.stem}${r.okuri}`}
+      className={['lw-rd__row', r.current && 'is-current', i > 0 && i === firstKun && 'is-kun', !r.words.length && 'is-empty', r.rare && 'is-rare'].filter(Boolean).join(' ')}>
+      <span className="lw-rd__lab" lang="ko">{i === 0 || i === firstKun ? (r.type === 'on' ? '음' : '훈') : ''}</span>
+      <span className="lw-rd__r">{r.stem}{r.okuri && <i>({r.okuri})</i>}</span>
+      {[0, 1].map((j) => {
+        const w = r.words[j];
+        if (!w) return <span key={j} className="lw-rd__w" />;
+        return <span key={j} className="lw-rd__w">
+          <span className="lw-rd__b">{w.runs.map((u, k) => (u.r
+            ? <span key={k} className="lw-rd__k">{mark(u.t)}<span className="lw-rd__f">{u.r}</span></span> : <span key={k}>{mark(u.t)}</span>))}</span>
+          {w.meaning && <span className="lw-rd__m" lang="ko">{w.meaning}</span>}
+        </span>;
+      })}
+    </div>)}
+  </div>;
+}
+
+/**
  * 글자 창(오너 2026-10-25 KST — 글자 칸의 큰 한자를 누름, HSK 판). 뷰어 한자 창(ViewerHanjaPopover)의 글자 화면과 같은 자료 ·
  * 같은 규격(높이 170 · 너비 min(346, 화면 − 32))이고, 놓는 일은 예문 단어 창(WordPopup)을 따른다 — 누른 칸 바로 아래(넘치면 위).
  * Esc · 바깥 누르기 · 칸이 화면 밖으로 나가면 닫히고, 열리면 창으로 · 닫히면 누른 글자로 초점. 표시만 한다(저장 · 복습 기록 0).
- * 머리(글자 · 이 단어 속 병음 · 훈음 · 正) · 구성(누르지 않는다) · 같은 한자 단어 3칸(내 단어 먼저 · HSK 1–9 색인, 못 받으면 이 레벨 목록 —
+ * 머리(글자 · 이 단어 속 병음 · 훈음) · 구성(누르지 않는다) · 같은 한자 단어 3칸(내 단어 먼저 · HSK 1–9 색인, 못 받으면 이 레벨 목록 —
  * 지금 단어는 뺀다). req = { ch, word, index } — 병음은 색인의 그 단어 병음에서 그 자리 음절, 없으면 표의 대표 병음.
  * tables = 글자 칸 표 네 벌(받는 중이면 빈 창 — aria-busy).
+ * 머리에 正 꼴은 없다 — 글자 칸에 이미 나와 있다(오너 2026-10-26 KST 「본 단어에 들어가는 한자만」).
+ * JLPT 판(mode 'ja')은 같은 창 · 같은 머리에 구성 · 같은 한자 단어 대신 음 · 훈 읽기 표(JaReadingTable, 오너 2026-10-25 KST 시안 ⑧).
+ * 읽기 표는 높이가 내용만큼 자라고(채점 바 위까지), 넘치면 창 안에서 넘긴다.
  */
 export function PiecePopup({ req, tables, refIndex, savedRows, tone, onClose }) {
   const L = useWordLang();
@@ -169,12 +203,23 @@ export function PiecePopup({ req, tables, refIndex, savedRows, tone, onClose }) 
     const list = (anchor?.closest?.('.lw-tiles') || tile)?.getBoundingClientRect?.();
     const el = ref.current;
     if (!r || !el) return false;
-    const w = el.offsetWidth, h = el.offsetHeight, vw = window.innerWidth;
     const bar = [...document.querySelectorAll('.lw-gradebar')].find((b) => b.getClientRects().length)?.getBoundingClientRect().top;
     const floor = Math.min(window.innerHeight, bar ?? Infinity) - 8;
     if (r.bottom < 0 || r.top > floor) return false;
+    // 읽기 표(JLPT)는 높이가 내용만큼 — 아래에 다 들어가거나 아래 자리가 JA_MIN_BELOW 이상이면 아래(넘치면 그 높이까지 · 표 안에서 넘김),
+    // 아니면 위에 다 들어가면 위, 둘 다 모자라면 넓은 쪽. 지금 단어(카드 머리)를 덮지 않으려고 아래를 먼저 쓴다.
+    let below = null;
+    if (el.classList.contains('lw-dp--ja')) {
+      el.style.maxHeight = '';
+      const natural = el.offsetHeight, room = floor - (r.bottom + 8), above = r.top - 8 - 16;
+      if (natural <= room || room >= JA_MIN_BELOW) { below = true; if (natural > room) el.style.maxHeight = `${room}px`; }
+      else if (natural <= above) below = false;
+      else { below = room >= above; el.style.maxHeight = `${Math.max(room, above)}px`; }
+    }
+    const w = el.offsetWidth, h = el.offsetHeight, vw = window.innerWidth;
     const left = Math.min(Math.max(16, list.left + list.width / 2 - w / 2), vw - w - 16);
-    const top = r.bottom + 8 + h > floor ? Math.max(16, r.top - h - 8) : r.bottom + 8;
+    const top = below === true ? r.bottom + 8 : below === false ? Math.max(16, r.top - h - 8)
+      : r.bottom + 8 + h > floor ? Math.max(16, r.top - h - 8) : r.bottom + 8;
     setPos((cur) => (cur && Math.abs(cur.left - left) < 0.5 && Math.abs(cur.top - top) < 0.5 ? cur : { left, top }));
     return true;
   }, [anchor]);
@@ -205,20 +250,37 @@ export function PiecePopup({ req, tables, refIndex, savedRows, tone, onClose }) 
     };
   }, [anchor, close, place]);
 
+  const ja = L.mode === 'ja';
   const reading = useMemo(() => {
     const chars = [...String(req.word || '')];
     if (!Number.isInteger(req.index) || chars[req.index] !== req.ch) return null;
+    if (ja) return kanaPerChar(req.word, refIndex?.get?.(req.word)?.kr)?.[req.index] || null;
     const sylls = splitPinyinSyllables(refIndex?.get?.(req.word)?.word?.pinyin, chars.length, { erhua: chars[chars.length - 1] === '儿' });
     return sylls?.[req.index] || null;
-  }, [req.word, req.index, req.ch, refIndex]);
-  const model = useMemo(() => (ready ? hanjaPanelModel({ ch: req.ch, index: req.index, word: req.word || '', reading, tables }) : null),
-    [ready, req.ch, req.index, req.word, reading, tables]);
-  const headReading = model ? model.head.reading || tables.panel?.py?.[req.ch] || null : null;
-  const words = useMemo(() => (headReading
+  }, [req.word, req.index, req.ch, refIndex, ja]);
+  // JLPT는 훈음만 — 한국 정자 꼴로 찾는다(経 → 經 날 경). 읽기 표는 창을 처음 열 때 받는다.
+  const model = useMemo(() => {
+    if (!ready) return null;
+    if (ja) return hanjaPanelModel({ ch: tables.jeongja?.[req.ch] || req.ch, index: null, word: '', reading: null, tables });
+    return hanjaPanelModel({ ch: req.ch, index: req.index, word: req.word || '', reading, tables });
+  }, [ready, ja, req.ch, req.index, req.word, reading, tables]);
+  const [jaTables, setJaTables] = useState(null);
+  useEffect(() => {
+    if (!ja) return undefined;
+    let live = true;
+    loadJaReadingTables().then((t) => { if (live) setJaTables(t); }, () => { if (live) setJaTables(false); });
+    return () => { live = false; };
+  }, [ja]);
+  const jaRows = useMemo(() => (ja && jaTables ? jaKanjiReadingRows({ ch: req.ch, word: req.word || '', index: req.index,
+    kr: refIndex?.get?.(req.word)?.kr, savedRows, refIndex, tables: jaTables }) : null), [ja, jaTables, req.ch, req.word, req.index, refIndex, savedRows]);
+  useLayoutEffect(() => { if (ja) place(); }, [ja, jaRows, place]);
+  const headReading = model ? (ja ? reading : model.head.reading || tables.panel?.py?.[req.ch] || null) : null;
+  const words = useMemo(() => (headReading && !ja
     ? selectSameHanjaTiles({ ch: req.ch, reading: headReading, headText: req.word || '', index: req.index, savedRows, refIndex, tables }) : []),
-  [headReading, req.ch, req.word, req.index, savedRows, refIndex, tables]);
+  [headReading, ja, req.ch, req.word, req.index, savedRows, refIndex, tables]);
 
-  const py = (text) => (text ? <span className={['lw-dp__py', toneCls(tone, text)].filter(Boolean).join(' ')}>{normalizePinyin(text)}</span> : null);
+  const py = (text) => (!text ? null : ja ? <span className="lw-dp__py" lang={L.hw}>{text}</span>
+    : <span className={['lw-dp__py', toneCls(tone, text)].filter(Boolean).join(' ')}>{normalizePinyin(text)}</span>);
 
   let body = null;
   if (model) {
@@ -228,26 +290,25 @@ export function PiecePopup({ req, tables, refIndex, savedRows, tone, onClose }) 
         <b className="lw-dp__ch" lang={L.hw}>{req.ch}</b>
         {py(headReading)}
         {model.head.label && <span className="lw-dp__hun">{model.head.label}</span>}
-        {model.head.zheng && <span className="lw-dp__zheng">正 <b lang={L.zheng}>{model.head.zheng}</b></span>}
       </div>
-      {ps ? <div className={`lw-dp__parts${ps.known ? '' : ' is-unknown'}`} style={{ '--n': ps.pieces.length }}>
-        {ps.pieces.map((p, i) => <span key={`${p.ch}${i}`} className={`lw-dp__piece${p.role ? ` is-${p.role}` : ''}`}>
-          <b lang={L.zheng}>{p.ch}</b><span className="lw-dp__pl">{p.label || ''}</span>{p.role && <i>{PIECE_ROLE_WORD[p.role]}</i>}
+      {ja ? <JaReadingTable ch={req.ch} model={jaRows} failed={jaTables === false} />
+        : <>{ps ? <div className={`lw-dp__parts${ps.known ? '' : ' is-unknown'}`} style={{ '--n': ps.pieces.length }}>
+        {ps.pieces.map((p, i) => <span key={`${p.ch}${i}`} className="lw-dp__piece">
+          <b lang={L.zheng}>{p.ch}</b><span className="lw-dp__pl">{p.label || ''}</span>
         </span>)}
-        {!ps.known && <span className="lw-dp__unknown">역할 미상</span>}
       </div> : <div className="lw-dp__parts is-empty" aria-hidden="true" />}
       {words.length ? <div className="lw-dp__words">{words.map((t) => <div key={t.word} className={`lw-dp__tile${t.dim ? ' is-dim' : ''}`}>
         <span className="lw-dp__tzh" lang={L.hw}>{[...t.word].map((c, i) => (i === t.at ? <em key={i}>{c}</em> : <span key={i}>{c}</span>))}</span>
         <span className="lw-dp__tpy">{t.syllables.map((y, i) => <span key={i} className={toneCls(tone, y)}>{y}</span>)}</span>
         {t.ko ? <span className="lw-dp__tko">{t.koSylls.map((y, i) => (i === t.at ? <em key={i}>{y}</em> : <span key={i}>{y}</span>))}</span>
           : <span className="lw-dp__tko is-short">{t.short}</span>}
-      </div>)}</div> : <div className="lw-dp__words is-empty" aria-hidden="true" />}
+      </div>)}</div> : <div className="lw-dp__words is-empty" aria-hidden="true" />}</>}
     </>;
   } else if (tables === false) {
     body = <p className="lw-dp__note">글자 자료를 불러오지 못했어요</p>;
   }
-  return <div className={`lw-dp${closing ? ' is-closing' : ''}`} role="dialog" aria-modal="false" aria-label={`${req.ch} 글자`} tabIndex={-1} ref={ref}
-    aria-busy={tables === 'loading' || tables === null || undefined}
+  return <div className={`lw-dp${ja ? ' lw-dp--ja' : ''}${closing ? ' is-closing' : ''}`} role="dialog" aria-modal="false" aria-label={`${req.ch} 글자`} tabIndex={-1} ref={ref}
+    aria-busy={tables === 'loading' || tables === null || (ja && jaTables === null) || undefined}
     style={pos ? { left: pos.left, top: pos.top } : { visibility: 'hidden', left: 0, top: 0 }}>
     {body}
     <button type="button" className="lw-dp__close" aria-label="닫기" title="닫기" onClick={close}><CloseIcon /></button>

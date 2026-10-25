@@ -2,14 +2,15 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { CharTiles, PieceDrillContext, tileIndexes } from '@/components/levels/word/WordParts';
-import { PiecePopup } from '@/components/levels/word/WordSheets';
+import { JaReadingTable, PiecePopup } from '@/components/levels/word/WordSheets';
 import { WordLangContext } from '@/components/levels/word/wordLang';
 import { HSK_WORD_LANG } from '@/views/LevelWordPage';
 import { jlptWordLang } from '@/views/JlptWordPage';
 import { levelCharTiles, loadLevelCharTables } from '../levelCharTiles.js';
 
-// 단어장 글자 칸 파고들기 — 조각에 역할 말 「뜻」 · 「음」(오너 2026-10-23 KST 「안1로」), 조각은 더 파고들지 않고
-// 왼쪽 큰 한자를 누르면 그 글자의 창(구성 · 같은 한자 단어, 지금 단어 제외)(오너 2026-10-25 KST · 시안 C 「선만」).
+// 단어장 글자 칸 파고들기 — 조각은 더 파고들지 않고 왼쪽 큰 한자를 누르면 그 글자의 창(구성 · 같은 한자 단어, 지금 단어 제외)
+// (오너 2026-10-25 KST · 시안 C 「선만」). 조각의 역할 말(뜻 · 음)과 창 머리의 正 꼴은 뺐다 — 긴 훈음이 … 로 잘리고,
+// 정체는 글자 칸에 이미 나와 있어서(오너 2026-10-26 KST). 역할 자료(role)는 남아 있다.
 const L = HSK_WORD_LANG;
 const JLPT_WORD_LANG = jlptWordLang('N5');
 const wrap = (node, drill = null, lang = L) => renderToStaticMarkup(
@@ -31,18 +32,19 @@ describe('글자 칸 조각 — 역할', () => {
   }, 60000);
 });
 
-describe('CharTiles — 파고들기 판은 큰 한자가 단추, 조각 줄은 역할 칸까지 맞춘다', () => {
+describe('CharTiles — 파고들기 판은 큰 한자가 단추, 조각 줄은 글자 · 훈음 두 칸', () => {
   const tiles = [{ ch: '汉', zheng: '漢', label: '한수 한', pieces: [
     { ch: '氵', label: '물 수', role: 'meaning' }, { ch: '又', label: '또 우', role: 'sound' }] },
   { ch: '字', zheng: null, label: '글자 자', pieces: [{ ch: '宀', label: '집 면' }, { ch: '子', label: '아들 자' }] }];
 
-  it('HSK — 글자마다 단추 하나(조각은 단추 아님) · 역할을 모르는 조각도 빈 역할 칸', () => {
+  it('HSK — 글자마다 단추 하나(조각은 단추 아님) · 조각에 역할 말(뜻 · 음)이 없다', () => {
     const html = wrap(<CharTiles tiles={tiles} word="汉字" />, { onPiece: () => {} });
     expect(html.match(/<button/g)).toHaveLength(2);
     expect(html).toContain('aria-label="汉 한수 한, 이 글자가 든 단어"');
     expect(html).toContain('aria-label="字 글자 자, 이 글자가 든 단어"');
-    expect(html).toContain('<span class="lw-tile__piece is-row is-meaning"><span class="lw-tile__pch" lang="zh-CN">氵</span><span class="lw-tile__pl">물 수</span><i class="lw-tile__role">뜻</i></span>');
-    expect(html).toContain('<span class="lw-tile__piece is-row"><span class="lw-tile__pch" lang="zh-CN">宀</span><span class="lw-tile__pl">집 면</span><i class="lw-tile__role"></i></span>');
+    expect(html).toContain('<span class="lw-tile__piece is-row"><span class="lw-tile__pch" lang="zh-CN">氵</span><span class="lw-tile__pl">물 수</span></span>');
+    expect(html).toContain('<span class="lw-tile__piece is-row"><span class="lw-tile__pch" lang="zh-CN">宀</span><span class="lw-tile__pl">집 면</span></span>');
+    expect(html).not.toMatch(/>뜻<|>음<|lw-tile__role/);
     expect(html).not.toContain('›');
   });
 
@@ -53,13 +55,18 @@ describe('CharTiles — 파고들기 판은 큰 한자가 단추, 조각 줄은 
     expect(tileIndexes(undefined, [{ ch: '汉' }])).toEqual([null]);
   });
 
-  it('파고들기 없음(JLPT 판 · 예문 단어 창의 작은 칸) — 지금 모양 그대로', () => {
+  it('JLPT 판도 큰 한자가 단추(창 = 음 · 훈 읽기 표, 오너 2026-10-25 KST 시안 ⑧)', () => {
+    const html = wrap(<CharTiles tiles={tiles} word="汉字" />, { onPiece: () => {} }, JLPT_WORD_LANG);
+    expect(html.match(/<button/g)).toHaveLength(2);
+    expect(JLPT_WORD_LANG.pieceDrill).toBe(true);
+    expect(HSK_WORD_LANG.pieceDrill).toBe(true);
+  });
+
+  it('파고들기 없음(파고들기 맥락 없음 · 예문 단어 창의 작은 칸) — 단추 없이', () => {
     for (const html of [wrap(<CharTiles tiles={tiles} word="汉字" />, null, JLPT_WORD_LANG), wrap(<CharTiles tiles={tiles} word="汉字" small />, { onPiece: () => {} })]) {
       expect(html).not.toContain('<button');
       expect(html).not.toContain('lw-tile__role');
     }
-    expect(JLPT_WORD_LANG.pieceDrill).toBeUndefined();
-    expect(HSK_WORD_LANG.pieceDrill).toBe(true);
   });
 });
 
@@ -68,16 +75,17 @@ describe('글자 창', () => {
     refIndex={extra.refIndex || null} savedRows={extra.savedRows || []} tone onClose={() => {}} />);
   const wordsOf = (html) => [...html.matchAll(/<span class="lw-dp__tzh"[^>]*>(.*?)<\/span><span class="lw-dp__tpy/g)].map((m) => m[1].replace(/<[^>]+>/g, ''));
 
-  it('汉语의 汉 — 머리(이 단어 속 병음 hàn · 훈음 · 正 漢) · 구성(氵 뜻 · 又 음, 누르지 않음) · 같은 한자 단어(지금 단어 汉语는 뺀다)', async () => {
+  it('汉语의 汉 — 머리(이 단어 속 병음 hàn · 훈음, 正 꼴 없음) · 구성(氵 · 又, 역할 말 없이 · 누르지 않음) · 같은 한자 단어(지금 단어 汉语는 뺀다)', async () => {
     const refIndex = new Map([['汉语', { level: 'H1', word: { zh: '汉语', pinyin: 'hànyǔ', ko: '중국어' } }],
       ['汉字', { level: 'H1', word: { zh: '汉字', pinyin: 'hànzì', ko: '한자' } }]]);
     const html = await popup({ ch: '汉', of: '漢', word: '汉语', index: 0 }, { refIndex });
     expect(html).toContain('aria-label="汉 글자"');
     expect(html).toContain('hàn');
     expect(html).toContain('한수 한');
-    expect(html).toMatch(/正 <b[^>]*>漢<\/b>/);
-    expect(html).toContain('<i>뜻</i>');
-    expect(html).toContain('<i>음</i>');
+    expect(html).not.toContain('正');
+    expect(html).not.toContain('漢');
+    expect(html).toContain('물 수');
+    expect(html).not.toMatch(/<i>(뜻|음)<\/i>|역할 미상/);
     expect(html).not.toContain('<button type="button" class="lw-dp__piece');
     expect(wordsOf(html)).toEqual(['汉字']);
   }, 60000);
@@ -108,5 +116,32 @@ describe('글자 창', () => {
       for (const m of src.matchAll(/<CharTiles [^>]*\/>/g)) expect(m[0]).toMatch(/ word=\{/);
     }
     expect(parts).toContain("drill.onPiece({ kind: 'char', ch: t.ch, of: t.zheng || t.ch, word, index: at[i] }, e.currentTarget)");
+  });
+});
+
+describe('JLPT 글자 창 — 음 · 훈 읽기 표', () => {
+  const model = { reading: 'せい', rows: [
+    { type: 'on', stem: 'セイ', okuri: '', rare: false, current: true, words: [{ word: '先生', at: 1, runs: [{ t: '先生', r: 'せんせい' }], meaning: '선생님' }] },
+    { type: 'on', stem: 'ショウ', okuri: '', rare: false, current: false, words: [] },
+    { type: 'kun', stem: 'い', okuri: 'きる', rare: false, current: false, words: [{ word: '生きる', at: 0, runs: [{ t: '生', r: 'い' }, { t: 'きる', r: null }], meaning: '살다' }] },
+    { type: 'kun', stem: 'こ', okuri: '', rare: true, current: false, words: [] }] };
+  const html = wrap(<JaReadingTable ch="生" model={model} />, null, JLPT_WORD_LANG);
+  const rows = [...html.matchAll(/<div class="(lw-rd__row[^"]*)"/g)].map((m) => m[1]);
+
+  it('줄 = 표 순서 · 지금 읽기 장미색 · 음/훈 경계 · 단어 없는 줄 · 내린 읽기', () => {
+    expect(rows).toEqual(['lw-rd__row is-current', 'lw-rd__row is-empty', 'lw-rd__row is-kun', 'lw-rd__row is-empty is-rare']);
+    expect([...html.matchAll(/<span class="lw-rd__lab" lang="ko">([^<]*)<\/span>/g)].map((m) => m[1])).toEqual(['음', '', '훈', '']);
+  });
+
+  it('훈 오쿠리가나는 괄호 · 단어는 후리가나 덩어리 · 누른 글자 강조 · 뜻은 한국어', () => {
+    expect(html).toContain('<span class="lw-rd__r">い<i>(きる)</i></span>');
+    expect(html).toContain('<span class="lw-rd__k">先<em>生</em><span class="lw-rd__f">せんせい</span></span>');
+    expect(html).toContain('<span class="lw-rd__m" lang="ko">살다</span>');
+    expect(html).not.toMatch(/상용 외|이 단어뿐|●/);
+  });
+
+  it('받는 중이면 빈 표 · 못 받으면 한 줄', () => {
+    expect(wrap(<JaReadingTable ch="生" model={null} />, null, JLPT_WORD_LANG)).toContain('lw-rd is-empty');
+    expect(wrap(<JaReadingTable ch="生" model={null} failed />, null, JLPT_WORD_LANG)).toContain('읽기 자료를 불러오지 못했어요');
   });
 });

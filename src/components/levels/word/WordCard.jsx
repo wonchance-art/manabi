@@ -82,11 +82,11 @@ export function Example({ ex, word, speak, onWord, openKey, showText = true, ton
 
 /**
  * info = { status, previews, hard(번) } — 화면이 상태 · 채점 미리보기를 계산해 넘긴다.
- * view = 'all' | 'word' | 'sentence' | 'meaning' | 'sound'. areas = 네 영역(levelWordAreas) · next = 「2일 뒤 복습」.
+ * view = 'all' | 'word' | 'sentence' | 'meaning' | 'sound'. areas = 네 영역(levelWordAreas) · next = 「2일 뒤 복습」 · later = 접힌 복습 예정 카드의 「1일 뒤」 · 「졸업」.
  * onOpen = 펼침(같은 날 규칙 — 이 기기에서 이 단어를 펼쳐 봤다).
  */
 export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, tone, onGrade, onSave, saving, pop, onWord, openKey, note,
-  grades: inline = false, search = false, focused = false, onPick, onOpen, due = false, wait = null, areas = null, next = null }) {
+  grades: inline = false, search = false, focused = false, onPick, onOpen, due = false, wait = null, later = null, areas = null, next = null }) {
   const L = useWordLang();
   const [open, setOpen] = useState(false); // false | true | 'closing'(접히는 0.2초 — 오너 2026-10-21 KST ⑥-2)
   const { hw, sub } = L.head(e);
@@ -98,7 +98,8 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
     {listen}{marks}
   </div>;
   // 오늘 할 줄 표시 — 기다리는 카드는 남은 시간, 기다리다 차례가 온 카드는 「아까 본 단어」(오너 2026-10-20 KST). 맨 아래 줄 끝에 붙인다.
-  const time = wait ? <WaitChip at={wait} /> : due ? <span className="lw-time">아까 본 단어</span> : null;
+  // 접힌 「복습 예정」 카드는 다음 복습까지(「1일 뒤」 · 「졸업」 — 시안 ⑨).
+  const time = wait ? <WaitChip at={wait} /> : due ? <span className="lw-time">아까 본 단어</span> : later ? <span className="lw-time">{later}</span> : null;
   const chips = info.hard ? <span className="lw-card__chips"><span className="lw-chip">자주 틀린 단어 · {info.hard}번</span></span> : null;
   const meanLine = (tail) => (tail ? <p className="lw-card__mean lw-tailrow"><span>{e.meaning}</span>{tail}</p> : <p className="lw-card__mean">{e.meaning}</p>);
   const mean = meanLine(null);
