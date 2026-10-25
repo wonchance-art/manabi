@@ -381,9 +381,12 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
     staleTime: 1000 * 60,
   });
 
-  // 🎯 자료 맞춤도(rfc-material-fit R2) — 담김 **전체** 인덱스(위 due 인덱스와 별개: 커버리지는
-  // 복습 대기 여부와 무관하게 "담아 본 말"인지가 기준). 게스트 무조회 — 줄·정렬 자체가 없다.
-  const { data: savedVocabIndex } = useQuery({
+  // 🎯 자료 맞춤도(rfc-material-fit R2) — 담김 **전체** 인덱스(커버리지는 복습 대기 여부와 무관하게 "담아 본 말"인지가 기준).
+  // 게스트 무조회 — 줄·정렬 자체가 없다. 위 due 인덱스가 같은 집합을 이미 들고 있다(ROUTE-AUDIT-2 F4, 2026-10-25 KST): 완전 snapshot은
+  // 내 user_vocabulary 행 전부이고(fsrs_vocabulary_snapshot WHERE v.user_id=p_actor — 제외 · 이미 앎 행 포함) buildVocabularyWordIndex가
+  // 모든 행의 word_text · base_form으로 surfaces · bases를 만든다. 같은 표를 1000행씩 차례로 다시 읽던 조회(3,000단어 = 3왕복 265 kB)는
+  // snapshot을 못 받았을 때만 돈다 — 그때도 맞춤도는 예전처럼 따로 뜬다.
+  const { data: savedVocabFallback } = useQuery({
     queryKey: ['saved-vocab-index', user?.id],
     queryFn: async () => {
       // PostgREST 기본 상한(1000행)에 잘리지 않게 정본 완전 조회(id 순 page · exact count)로 읽는다.
@@ -399,9 +402,10 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
       }
       return { surfaces, bases };
     },
-    enabled: !!user,
+    enabled: !!user && !!dueVocabError,
     staleTime: 1000 * 60,
   });
+  const savedVocabIndex = dueVocabIndex || savedVocabFallback;
 
   // '이미 앎' 표기(목업 ⑤ — #1077-14): 커버리지 정밀화용 합집합 재료. 실패는 빈 배열(무해성).
   const { data: knownRows } = useQuery({
