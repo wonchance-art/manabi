@@ -21,6 +21,8 @@ import {supabase} from '../../lib/supabase';
 import {boardScope, boardExpression, expressionOf, boardInsertion, replaceBoardPage, BOARD_PAGE_LIMIT, validateBoard} from '../../lib/teachingBoard';
 import {useTeachingBoard} from '../../lib/useTeachingBoard';
 import {cardSkeleton, cardFields, readCard, rotateCardPart, wordCardSkeleton, expressionElements, arrangeExpressionGroups} from '../../lib/teachingBoardCard';
+// 판서 카드는 훈음 글자를 캔버스 요소로 저장한다 — 표를 이 (지연) 청크와 함께 동기로 채워 둔다(HANJA-LAZY-001).
+import '../../lib/hanjaTablesEager';
 import {isClassComposing} from '../../lib/classReaderDraft';
 import {boardCameraForBounds} from '../../lib/teachingBoardViewport';
 import {recognitionElements,recognitionFingerprint,RECOGNITION_IMAGE_LIMIT} from '../../lib/noteRecognition';

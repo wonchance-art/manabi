@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {teachingWordLayout,annotatedLanguage,normalizeWordAppearance,readWordAppearance,writeWordAppearance} from '../../lib/teachingWordLayout';
+import {useHanjaTables} from '../../lib/useHanjaTables';
 import './teaching-word.css';
 
 export function WordDisplayControls({language,value,onChange,appearance=false}) {
@@ -21,9 +22,11 @@ export function useWordAppearance(owner,language) {
 export default function TeachingWord({entry,language,display={},presentation=false,onChar}) {
   const root=useRef(null),[width,setWidth]=useState(320);
   useEffect(()=>{const node=root.current;if(!node)return;const observer=new ResizeObserver(([entry])=>setWidth(Math.max(200,entry.contentRect.width)));observer.observe(node);return()=>observer.disconnect();},[]);
-  const layout=useMemo(()=>teachingWordLayout({...entry,language,...display},{fontSize:presentation?Math.max(42,Math.min(120,width/10)):Math.max(30,Math.min(42,width/8)),maxWidth:width}),[entry,language,display,width,presentation]);
+  // 훈음 표는 지연 로드(HANJA-LAZY-001) — 받기 전에는 훈음 줄 자리만 비워 두고(hunPending) 들어오면 같은 자리에 그린다.
+  const {tables}=useHanjaTables(language);
+  const layout=useMemo(()=>teachingWordLayout({...entry,language,...display},{fontSize:presentation?Math.max(42,Math.min(120,width/10)):Math.max(30,Math.min(42,width/8)),maxWidth:width,tables}),[entry,language,display,width,presentation,tables]);
   const lang=language==='Japanese'?'ja':language==='Chinese'?'zh':language==='French'?'fr':'en';
-  return <div ref={root} className={`teaching-word${presentation?' teaching-word--presentation':''}`}>
+  return <div ref={root} className={`teaching-word${presentation?' teaching-word--presentation':''}`} data-hun-pending={layout.hunPending||undefined} aria-busy={layout.hunPending||undefined}>
     <svg viewBox={`0 0 ${layout.width} ${layout.height}`} width={layout.width} height={layout.height} style={{maxWidth:'100%',height:'auto'}} className="teaching-word-graphic" lang={lang} role="group" aria-label={`${entry.text}${layout.showReading&&entry.reading?`, ${entry.reading}`:''}${layout.showMeaning&&entry.meaning?`, ${entry.meaning}`:''}`}>
       {layout.parts.map((part,i)=><text key={i} x={part.x+(part.align==='center'?part.width/2:0)} y={part.y+part.fontSize} textAnchor={part.align==='center'?'middle':'start'} fontSize={part.fontSize} className={`teaching-word-part teaching-word-part--${part.role}`} visibility={part.visible===false?'hidden':undefined} aria-hidden={part.visible===false||undefined} lang={['hun','meaning'].includes(part.role)?'ko':lang} {...(onChar&&part.role==='text'&&/\p{Script=Han}/u.test(part.text)?{role:'button',tabIndex:0,'aria-label':`${part.text} 글자 정보`,onClick:()=>onChar(part.text,part.index),onKeyDown:e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();onChar(part.text,part.index);}}}:{})}>{part.text}</text>)}
     </svg>

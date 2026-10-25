@@ -14,6 +14,7 @@ import { fetchLastHanziMarks, hanziRunMisses, hanziRunProgress, shuffleHanzi, st
 import { loadRefVocabIndex } from '@/lib/refVocabIndex';
 import { loadHanjaPanelTable, onIdle } from '@/lib/viewerHanjaPanel';
 import { loadZhengTable } from '@/lib/glyphTables';
+import { loadHanjaTable } from '@/lib/hanjaTables';
 import { loadPatternIndex } from '@/lib/patternIndex';
 import { levelWordKey, shortMeaning } from '@/lib/levelList';
 import './hanzi-board.css';
@@ -32,8 +33,8 @@ const markLabel = (m) => (m === false ? '모름' : m === true ? '확인함' : '�
 let tablesPromise = null;
 function loadCardTables() {
   tablesPromise ||= Promise.all([
-    import('@/lib/data/hanjaKo.json').then((m) => m.default || m),
-    import('@/lib/data/hanjaHun.json').then((m) => m.default || m),
+    loadHanjaTable('ko'),
+    loadHanjaTable('hun'),
     loadZhengTable(),
     loadHanjaPanelTable(),
   ]).then(([koTable, hunTable, tradTable, panel]) => ({ koTable, hunTable, tradTable, panel }))

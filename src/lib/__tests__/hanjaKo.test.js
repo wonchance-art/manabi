@@ -210,12 +210,12 @@ describe('훈음 배선 계약', () => {
   });
 
   it('뷰어가 중국어에서만 토글을 노출하고 시트에 훈음을 표시한다', () => {
-    const options=fs.readFileSync(path.join(process.cwd(),'src/components/viewer/ViewerSettings.jsx'),'utf8'); expect(options).toContain("language==='Chinese'&&");expect(options).toContain('label="훈음"');expect(options).toContain("set('showHanjaKo',v)");const src=fs.readFileSync(path.join(process.cwd(),'src/views/ViewerPage.jsx'),'utf8');expect(src).toContain("import('../lib/data/hanjaKo.json')");
+    const options=fs.readFileSync(path.join(process.cwd(),'src/components/viewer/ViewerSettings.jsx'),'utf8'); expect(options).toContain("language==='Chinese'&&");expect(options).toContain('label="훈음"');expect(options).toContain("set('showHanjaKo',v)");const src=fs.readFileSync(path.join(process.cwd(),'src/views/ViewerPage.jsx'),'utf8');expect(src).toContain("loadHanjaTable('ko')"); // 지연 로드 정본(HANJA-LAZY-001 — hanjaTables.js)
   });
 
   it('훈음(①)도 같은 토글 아래 지연 로드되어 단어 카드에 병기된다(팝업은 ②로 카드 단일화)', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
-    expect(src).toContain("import('../lib/data/hanjaHun.json')");
+    expect(src).toContain("loadHanjaTable('hun')");
     // AE-R1 개정(VIEWER-V2-ROUNDS-001 §2.1 훈음 루비, 설계서 §7.2): 단어창 훈음은 별도 목록(listHanjaHunEum) 대신
     // 루비 셀(hunRubyCells → hanjaReadingsOf, R0+ 단일 조회)
     expect(src).toContain('hunRubyCells');
@@ -547,13 +547,13 @@ describe('R0+ 세 경로 단일 조회', () => {
     expect(detail).not.toMatch(/hanjaHunEum\(ch/); // 글자 단독 조회로 돌아가지 않는다
     const layout = read('src/lib/teachingWordLayout.js');
     expect(layout).toContain('hanjaReadingsOf(text');
-    expect(layout).toMatch(/tradTable:language==='Chinese'\?trad:null/); // 일본어는 정체 변환 대상 아님
+    expect(layout).toMatch(/tradTable:language==='Chinese'\?tables\.tradTable:null/); // 일본어는 정체 변환 대상 아님
     expect(layout).not.toContain('listHanjaHunEum(text,ko,hun)');
   });
 
   it('뷰어는 중국어 단어창 훈음과 글자 카드에 같은 정체 표를 넘긴다', () => {
     const src = read('src/views/ViewerPage.jsx');
-    expect(src).toContain("import('../lib/data/hanjaTrad.json')");
+    expect(src).toContain("loadHanjaTable('trad')");
     // AE-R1 개정(설계서 §7.2): 단어창 훈음은 별도 목록(listHanjaHunEum) 대신 루비 셀 — 같은 정체 표·같은 조회 함수.
     expect(src).toContain('hunRubyCells(text, { koTable: hanjaKoTable, hunTable: hanjaHunTable, tradTable: hanjaTradTable }, HUN_RUBY_CELL)');
     expect(sliceBetween(read('src/lib/viewerHunRuby.js'), 'export function hunRubyCells', '\n}')).toContain('hanjaReadingsOf(');

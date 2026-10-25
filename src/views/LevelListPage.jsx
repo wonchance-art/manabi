@@ -31,6 +31,7 @@ import { authEntryHref } from '@/lib/authRedirect';
 import { hunRubyCells } from '@/lib/viewerHunRuby';
 import { glyphRows } from '@/lib/glyphColumn';
 import { loadJaWordsTable, loadZhengTable } from '@/lib/glyphTables';
+import { loadHanjaTable } from '@/lib/hanjaTables';
 import HunCell from '@/components/viewer/HunCell';
 import { alignFurigana } from '@/views/refShared';
 import {
@@ -301,8 +302,8 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
     let alive = true;
     const safe = (p) => p.catch(() => ({}));
     const jobs = [safe(loadZhengTable().then((trad) => ({ trad })))];
-    if (prefs.hun) jobs.push(safe(Promise.all([import('@/lib/data/hanjaKo.json'), import('@/lib/data/hanjaHun.json')])
-      .then(([ko, hun]) => ({ ko: ko.default || ko, hun: hun.default || hun }))));
+    if (prefs.hun) jobs.push(safe(Promise.all([loadHanjaTable('ko'), loadHanjaTable('hun')])
+      .then(([ko, hun]) => ({ ko, hun }))));
     if (prefs.glyph) jobs.push(safe(loadJaWordsTable().then((ja) => ({ ja }))));
     Promise.all(jobs).then((parts) => { if (alive) { setTables((cur) => Object.assign({}, cur, ...parts)); setHunDone(true); } });
     return () => { alive = false; };

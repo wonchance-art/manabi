@@ -10,6 +10,7 @@
 // 표가 아직 없으면 null — 화면은 칸 자리만 잡지 않고 그리지 않는다(훈음 없는 칸이 먼저 보였다 바뀌지 않게).
 import { hanjaPanelModel, loadHanjaPanelTable } from './viewerHanjaPanel.js';
 import { loadZhengTable } from './glyphTables.js';
+import { loadHanjaTable } from './hanjaTables.js';
 
 const HAN = /\p{Script=Han}/u;
 
@@ -56,8 +57,8 @@ let jaPromise = null;
 /** 일본어 글자 칸 표 — 훈 · 음 · 한자 창 + 신자체 → 한국 정자(jaJeongja.json). 정체 표(간체용)는 받지 않는다. */
 export function loadJaCharTables() {
   jaPromise ||= Promise.all([
-    import('./data/hanjaKo.json'), import('./data/hanjaHun.json'), import('./data/jaJeongja.json'), loadHanjaPanelTable(),
-  ]).then(([ko, hun, jz, panel]) => ({ koTable: ko.default || ko, hunTable: hun.default || hun, jeongja: (jz.default || jz).j, tradTable: JA_TRAD, panel }))
+    loadHanjaTable('ko'), loadHanjaTable('hun'), import('./data/jaJeongja.json'), loadHanjaPanelTable(),
+  ]).then(([koTable, hunTable, jz, panel]) => ({ koTable, hunTable, jeongja: (jz.default || jz).j, tradTable: JA_TRAD, panel }))
     .catch((error) => { jaPromise = null; throw error; });
   return jaPromise;
 }
@@ -65,8 +66,8 @@ export function loadJaCharTables() {
 /** 글자 칸 표 네 벌(훈 · 음 · 정체 · 한자 창) — 한 번만 받고, 실패하면 다음에 다시 받는다. */
 export function loadLevelCharTables() {
   tablesPromise ||= Promise.all([
-    import('./data/hanjaKo.json'), import('./data/hanjaHun.json'), loadZhengTable(), loadHanjaPanelTable(),
-  ]).then(([ko, hun, trad, panel]) => ({ koTable: ko.default || ko, hunTable: hun.default || hun, tradTable: trad?.default || trad, panel }))
+    loadHanjaTable('ko'), loadHanjaTable('hun'), loadZhengTable(), loadHanjaPanelTable(),
+  ]).then(([koTable, hunTable, tradTable, panel]) => ({ koTable, hunTable, tradTable, panel }))
     .catch((error) => { tablesPromise = null; throw error; });
   return tablesPromise;
 }

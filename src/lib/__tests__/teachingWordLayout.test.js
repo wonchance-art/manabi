@@ -1,4 +1,6 @@
 import {describe,it,expect} from 'vitest';
+// 판서 캔버스와 같은 조건 — 훈음 표를 정적으로 채운 상태에서 레이아웃을 잰다(HANJA-LAZY-001).
+import '../hanjaTablesEager';
 import {teachingWordLayout,wordSegments,normalizeWordAppearance} from '../teachingWordLayout';
 import {boardExpression,validateBoard,emptyBoard} from '../teachingBoard';
 import {wordCardSkeleton,readCard,arrangeExpressionGroups} from '../teachingBoardCard';
