@@ -85,10 +85,19 @@ describe('queued review undo recovery in the actual VocabPage handlers', () => {
     await f.handleScore(3); await tick();
     expect(f.recordReviewCompleted.mock.calls[0][3]).toEqual({ expectedLastReviewedAt: '2026-10-01T00:00:00.000Z' });
     expect(f.c.patchVocabularyLearningRow).not.toHaveBeenCalled();
-    expect(f.c.lastGradeRef.current).toBe(before);
+    // superseded 뒤 canUndo 거짓(2차 리뷰) — ↶가 직전 카드(before)를 되돌리지 않는다.
+    expect(before).toBeTruthy(); expect(f.c.lastGradeRef.current).toBeNull();
+    await f.undoLastGrade(); expect(f.undoQueuedReview).not.toHaveBeenCalled(); expect(f.persistVocabGrade).not.toHaveBeenCalled();
     expect(f.c.toast).toHaveBeenCalledWith('다른 기기에서 먼저 복습한 표현이에요. 일정은 그 복습대로 둘게요.', 'info', 5000);
     expect(f.c.invalidateVocabularyLearning).toHaveBeenCalledWith(f.c.queryClient, 'actor-a', { deferReviewRoom: true });
     expect(f.c.pendingGradeRef.current).toBe(0);
+    // 그보다 새 채점이 먼저 자리를 잡았으면(더 큰 sequence) 그 스냅샷은 지우지 않는다.
+    const late = fixture({ currentWord: word }), reply = deferred();
+    late.recordReviewCompleted.mockReturnValueOnce(reply.promise);
+    await late.handleScore(3);
+    const newer = { ...snapshot(), sequence: 99 }; late.c.lastGradeRef.current = newer;
+    reply.resolve({ ok: true, reviewedAt: '2026-10-04T15:00:00.000Z', superseded: true }); await tick();
+    expect(late.c.lastGradeRef.current).toBe(newer);
     const fresh = fixture({ currentWord: { ...word, last_reviewed_at: undefined } });
     await fresh.handleScore(3);
     expect(fresh.recordReviewCompleted.mock.calls[0][3]).toEqual({ expectedLastReviewedAt: null });

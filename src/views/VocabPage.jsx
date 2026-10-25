@@ -891,6 +891,10 @@ function VocabWorkspace({ reviewScope }) {
       // 다른 기기에서 먼저 복습한 표현 — 기록은 남았고 일정은 그쪽 복습대로다. 낙관 반영 · 되돌리기 대상으로 삼지 않고(되돌리면 그쪽
       // 일정을 덮는다) 목록을 정본으로 다시 읽는다.
       if (r?.superseded) {
+        // 이 채점은 기록만 남고 일정은 다른 기기 것이라 되돌릴 대상이 없다. 남겨 두면 ↶가 켜진 채 직전 카드를 되돌린다(2차 리뷰) —
+        // 이보다 새 채점이 아직 자리를 잡지 않았을 때만(같은 세션 · 더 옛 스냅샷) 비운다. 저장 실패(ok:false)는 기록이 없어
+        // 「마지막 성공 스냅샷을 남긴다」(W R2 — 위 snapshot 주석 · preserves previous undo 계약)를 그대로 둔다.
+        if (gradeSessionRef.current === gradeSession && (lastGradeRef.current?.sequence ?? 0) < sequence) lastGradeRef.current = null;
         toast(LEGACY_REVIEW_SUPERSEDED_NOTICE, 'info', 5000);
         invalidateVocabularyLearning(queryClient, actorId, { deferReviewRoom: inSessionRef.current });
         return;

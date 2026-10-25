@@ -4,12 +4,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const remote = vi.hoisted(() => ({ rpc: vi.fn(), rows: [], inserts: [], updates: [], session: { user: { id: 'alice' } }, enqueue: vi.fn() }));
+// PostgREST의 timestamptz 비교처럼 µs까지 본다(Date.parse는 ms에서 잘라 '…123456'과 '…123'을 같다고 본다).
+function micros(value) {
+  const m = /^(.*T\d{2}:\d{2}:\d{2})(?:\.(\d{1,6}))?(Z|[+-]\d{2}:\d{2})$/.exec(String(value));
+  if (!m) return null;
+  return BigInt(Date.parse(`${m[1]}${m[3]}`)) * 1000000n / 1000n + BigInt((m[2] || '').padEnd(6, '0'));
+}
+const sameMicros = (a, b) => a != null && b != null && micros(a) !== null && micros(a) === micros(b);
 function table(name) {
   const filters = []; let patch = null, counted = false;
   const query = {
     insert: async rows => { remote.inserts.push({ name, rows }); return { error: null }; },
     update(value, options) { patch = value; counted = options?.count === 'exact'; return query; },
-    eq(key, value) { filters.push(row => (key === 'last_reviewed_at' ? Date.parse(row[key]) === Date.parse(value) : row[key] === value)); return query; },
+    eq(key, value) { filters.push(row => (key === 'last_reviewed_at' ? sameMicros(row[key], value) : row[key] === value)); return query; },
     is(key, value) { filters.push(row => (value === null ? row[key] == null : row[key] === value)); return query; },
     then: (resolve, reject) => run().then(resolve, reject),
   };
@@ -66,6 +73,20 @@ describe('persistVocabGrade 비교 후 쓰기', () => {
     const error = await persistVocabGrade(supabase, 'word-1', stats, '2026-10-25T10:00:00.000Z', { expectedLastReviewedAt: LAPTOP_BASE }).catch(e => e);
     expect(isLegacyReviewSuperseded(error)).toBe(true);
     expect(remote.rows[0]).toMatchObject({ interval: 30, last_reviewed_at: PHONE });
+  });
+
+  it('µs까지 같은 바탕만 같다 — 서버의 \'…123456+00:00\'은 같은 문자열 · 같은 순간 표기(Z)로는 맞고, ms로 잘린 값으로는 물러난다', async () => {
+    const stored = '2026-10-20T01:00:00.123456+00:00';
+    remote.rows = [{ id: 'word-1', last_reviewed_at: stored }];
+    await persistVocabGrade(supabase, 'word-1', stats, '2026-10-25T10:00:00.000Z', { expectedLastReviewedAt: stored });
+    expect(remote.updates.at(-1)).toMatchObject({ matched: 1 });
+    remote.rows = [{ id: 'word-1', last_reviewed_at: stored }];
+    await persistVocabGrade(supabase, 'word-1', stats, '2026-10-25T10:00:00.000Z', { expectedLastReviewedAt: '2026-10-20T01:00:00.123456Z' });
+    expect(remote.updates.at(-1)).toMatchObject({ matched: 1 });
+    remote.rows = [{ id: 'word-1', last_reviewed_at: stored }];
+    const error = await persistVocabGrade(supabase, 'word-1', stats, '2026-10-25T10:00:00.000Z', { expectedLastReviewedAt: '2026-10-20T01:00:00.123Z' }).catch(e => e);
+    expect(isLegacyReviewSuperseded(error)).toBe(true);
+    expect(remote.rows[0].last_reviewed_at).toBe(stored);
   });
 
   it('행 수를 알려 주지 않는 응답(구 응답 · 합성 대역)은 물러남으로 판단하지 않는다 — 조건은 서버가 이미 걸었다', async () => {
