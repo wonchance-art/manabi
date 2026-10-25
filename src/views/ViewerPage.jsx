@@ -160,7 +160,7 @@ import { StatusPill } from '../components/levels/word/WordParts';
 import { locateLineTokens } from '../lib/viewerSentenceLine';
 import { useSentencePrefetch } from '../lib/useSentencePrefetch';
 import { isLocalId, parseLocalId, chaptersForLocalNav, isTeamRoot, viewerRouteId } from '../lib/classBoard';
-import { discardEarlyMaterial, loadMaterial, startEarlyMaterial } from '../lib/viewerMaterial';
+import { adoptViewerSeed, discardEarlyMaterial, loadMaterial, startEarlyMaterial, viewerSeedAdopted } from '../lib/viewerMaterial';
 import { readIndexCache } from '../lib/classClient';
 import { useRefVocabEntry, useRefVocabIndex } from '../lib/refVocabIndex';
 import { zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
@@ -221,7 +221,9 @@ const STUDY_LANGS = new Set(['Japanese', 'English', 'French', 'Chinese']);
 
 // 자료 조회 · 조기 조회 등록부는 lib/viewerMaterial(서재 카드도 같은 것을 띄운다 — VIEWER-ENTRY R1). 직접 진입은 이 모듈이 평가될 때
 // (하이드레이션 전) 주소의 자료를 띄운다(VIEWER-FIRST-TOKEN-001). 서재에서 이미 같은 자료를 띄웠으면 등록부가 그것을 그대로 둔다.
-if (typeof window !== 'undefined') startEarlyMaterial(window.location.pathname);
+// 서버가 본문을 실어 온 문서(VIEWER-SEED-001)면 띄우지 않는다 — 첫 렌더가 그 행을 등록부에 넣는다(adoptViewerSeed). 그 행을 쓰지 못하는 경우
+// (옛 문서 · 끊김 · 다른 계정)는 등록부가 그 자리에서 새로 받는다. 실어 오지 않았으면 지금처럼 띄운다.
+if (typeof window !== 'undefined' && !viewerSeedAdopted(window.location.pathname)) startEarlyMaterial(window.location.pathname);
 
 // 단어창 훈음 루비 셀의 기준 칸 — 카드 병음 칸 폭(reader-controls.css `.word-fit ruby[data-pinyin] {width:max(1em,3.1rem)}`
 // = 3.1rem ≈ 49.6px). 이 폭 안에 드는 훈음은 한 줄 그대로, 넘으면 그 칸만 벌리고(--hun-n) ×1.6을 넘으면 훈/음 두 줄.
@@ -301,7 +303,8 @@ function collectDragTokens(list) {
   return tokens;
 }
 
-export default function ViewerPage() {
+// seed = 서버가 첫 HTML에 실은 본문(VIEWER-SEED-001, viewer/[id]/page.jsx) — 하이드레이션 때 한 번 등록부에 넣는다(adoptViewerSeed).
+export default function ViewerPage({ seed } = {}) {
   const languageSettings = useViewerLanguage();
   const { uiLocale, explanationLocale } = languageSettings;
   const vt = useCallback((text, values) => translateViewerText(uiLocale, text, values), [uiLocale]);
@@ -332,6 +335,8 @@ export default function ViewerPage() {
 
   // 띄워 둔 조회(서재 누름 · 직접 진입)는 캐시가 빈 첫 조회에서만 받아 쓴다 — 캐시가 있으면(교정 뒤 invalidate · 분석 폴링 · 다시 받기)
   // 늘 새로. 마운트 때 캐시가 이미 있으면(신선해서 조회 안 함) 그 id의 것을 버린다 — 누른 순간(교정 전) 응답이 고아로 남지 않게.
+  // 서버가 실은 본문은 첫 렌더(하이드레이션)에서 등록부에 넣는다 — 아래 조회가 효과에서 시작하기 전에. 문서 하나에 한 번 · 계정 대조는 등록부가 본다.
+  useState(() => { if (typeof window !== 'undefined') adoptViewerSeed(seed, id); });
   useEffect(() => { if (queryClient.getQueryData(['material', id]) !== undefined) discardEarlyMaterial(id); }, [id, queryClient]);
   const { data: material, isLoading, error, refetch } = useQuery({
     queryKey: ['material', id],
