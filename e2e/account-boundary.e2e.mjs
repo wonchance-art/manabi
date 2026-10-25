@@ -520,7 +520,11 @@ test('⑨ 얼어 있는 동안 쿠키만 바뀐 뒤 문서 뒤로 가기(bfcache
             return route.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify(sub ? { id: sub, display_name: display, role: 'learner', onboarded: true, last_login_at: new Date().toISOString(), streak_count: 1 } : null) });
           });
           await context.addInitScript(() => { addEventListener('pageshow', e => { try { const log = JSON.parse(sessionStorage.getItem('__bfShows') || '[]'); log.push({ path: location.pathname + location.search, persisted: e.persisted }); sessionStorage.setItem('__bfShows', JSON.stringify(log)); } catch { /* 저장소 차단 */ } }); });
-          await page.goto(path);
+          // 전제: 이 장면의 화면은 공유 캐시 판(정적 · ISR)이다. no-store 문서는 Chrome이 쿠키가 바뀌면 bfcache에서 퇴출해
+          // 아래 양성 대조가 「복원 안 됨(response-cache-control-no-store)」으로 깨진다 — 장면 결함이 아니라 서버 빌드(.next)가 이 파일보다
+          // 낡은 경우다(실측 2026-10-25 KST: #1559 앞 빌드의 /suggestions/[id]는 동적 ƒ라 no-store). 원인을 바로 말하도록 먼저 본다.
+          const documentCache = (await page.goto(path))?.headers()['cache-control'] || '';
+          assert.doesNotMatch(documentCache, /no-store/, `전제: ${path} 문서는 공유 캐시 판이어야 한다(받은 Cache-Control: ${documentCache}) — 서버 빌드가 이 테스트보다 낡지 않았는지(npm run e2e:build 다시) 확인`);
           await page.waitForFunction(([marker, email]) => document.documentElement.outerHTML.includes(marker) || document.documentElement.outerHTML.includes(email), [BOUNDARY_MARKER, EMAIL.A], { timeout: 20000 });
           await settle(page);
           await page.goto('/favicon.svg'); // 앱이 아닌 문서 — SDK 알림이 없다. 지금 화면은 bfcache로 들어간다.
