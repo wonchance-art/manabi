@@ -15,6 +15,7 @@
 
 import { fsrs, Rating, State, createEmptyCard, S_MIN, S_MAX } from 'ts-fsrs';
 import { assertLegacyFsrsAllowedOnce } from './fsrsLegacyBoundary.js';
+import { legacyReviewSupersededError } from './legacyReviewSupersede.js';
 import { FSRS_POLICY, fsrsPolicySteps, introduceFsrsCard, learningDay, learningDaySpan, learningDayStart, previewFsrsRatings, schedulerTime } from './fsrsScheduler.js';
 
 // 기본 파라미터로 스케줄러 생성 (한번만)
@@ -199,12 +200,25 @@ export function calculateVocabFSRS(rating, prev, at = Date.now()) {
  * 컬럼은 snake_case여야 한다 — 미지 컬럼이 섞이면 PostgREST가 UPDATE 전체를
  * 거부해 채점이 조용히 유실된다(과거 사고). client는 주입식(순수 lib 유지·테스트 용이).
  */
-export async function persistVocabGrade(client, wordId, nextStats, reviewedAt = new Date().toISOString(), { boundary } = {}) {
+/**
+ * expectedLastReviewedAt(선택) — 비교 후 쓰기(독립 리뷰 2026-10-25 KST). 이 채점을 계산한 바탕 일정의 last_reviewed_at(없던 카드면 null)을
+ * 주면 서버 행이 아직 그 값일 때만 바꾼다(PostgREST .eq/.is — 마이그레이션 없음). 0행이면 legacy_review_superseded(legacyReviewSupersede)를 던진다 — 노트북 줄에
+ * 남은 카드를 폰에서 먼저 채점했는데 노트북이 옛 값으로 계산한 일정을 덮어쓰던 길을 막는다. 주지 않으면(undefined) 지금처럼 무조건 쓴다.
+ */
+export async function persistVocabGrade(client, wordId, nextStats, reviewedAt = new Date().toISOString(), { boundary, expectedLastReviewedAt } = {}) {
   // 같은 채점이 방금 이 카드의 경계를 확인했으면(증거) 그 답을 나눠 쓴다(F5②). 증거가 없으면 지금처럼 묻는다.
   await assertLegacyFsrsAllowedOnce(client, { cardId: wordId }, boundary);
-  const { error } = await client
+  let query = client
     .from('user_vocabulary')
     .update({ ...nextStats, last_reviewed_at: reviewedAt })
     .eq('id', wordId);
+  if (expectedLastReviewedAt === undefined) {
+    const { error } = await query;
+    if (error) throw error;
+    return;
+  }
+  query = expectedLastReviewedAt === null ? query.is('last_reviewed_at', null) : query.eq('last_reviewed_at', expectedLastReviewedAt);
+  const { data, error } = await query.select('id');
   if (error) throw error;
+  if (!Array.isArray(data) || data.length === 0) throw legacyReviewSupersededError();
 }

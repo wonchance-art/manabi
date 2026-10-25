@@ -41,7 +41,7 @@ function fixture(extra = {}) {
     reviewIdx: 0, effectiveMode: 'flash', reviewMode: 'flash', recordReviewCompleted,
     refreshProfileReadOnly: vi.fn(async () => {}), registerNewIntro: vi.fn(), goNextReview: vi.fn(),
     useEffect: fn => { mountEffect = fn; cleanup = fn(); },
-    againWord: undefined, ...extra,
+    againWord: undefined, LEGACY_REVIEW_SUPERSEDED_NOTICE: '다른 기기에서 먼저 복습한 표현이에요. 일정은 그 복습대로 둘게요.', ...extra,
   };
   const actions = new Function(...Object.keys(c), `${lifecycleSource}\n${scoreSource}\n${undoSource}\nreturn { handleScore, undoLastGrade };`)(...Object.values(c));
   return { ...actions, c, undoQueuedReview, persistVocabGrade, recordReviewCompleted,
@@ -78,6 +78,22 @@ describe('queued review undo recovery in the actual VocabPage handlers', () => {
     expect(f.c.admission.controller.leave).toHaveBeenCalled(); // 같은 카드를 새 문항 열쇠로 다시 묻는다(이미 입장 — 끊겨도 열린다)
   });
 
+  it('채점의 바탕(last_reviewed_at)을 실어 보내고, 다른 기기가 먼저 복습해 물러나면 낙관 반영 · 되돌리기 대상 없이 알리고 다시 읽는다', async () => {
+    const word = { id: 'card-a', word_text: '猫', language: 'Japanese', meaning: '고양이', last_reviewed_at: '2026-10-01T00:00:00.000Z' };
+    const f = fixture({ currentWord: word }), before = f.c.lastGradeRef.current;
+    f.recordReviewCompleted.mockResolvedValueOnce({ ok: true, reviewedAt: '2026-10-04T15:00:00.000Z', superseded: true });
+    await f.handleScore(3); await tick();
+    expect(f.recordReviewCompleted.mock.calls[0][3]).toEqual({ expectedLastReviewedAt: '2026-10-01T00:00:00.000Z' });
+    expect(f.c.patchVocabularyLearningRow).not.toHaveBeenCalled();
+    expect(f.c.lastGradeRef.current).toBe(before);
+    expect(f.c.toast).toHaveBeenCalledWith('다른 기기에서 먼저 복습한 표현이에요. 일정은 그 복습대로 둘게요.', 'info', 5000);
+    expect(f.c.invalidateVocabularyLearning).toHaveBeenCalledWith(f.c.queryClient, 'actor-a', { deferReviewRoom: true });
+    expect(f.c.pendingGradeRef.current).toBe(0);
+    const fresh = fixture({ currentWord: { ...word, last_reviewed_at: undefined } });
+    await fresh.handleScore(3);
+    expect(fresh.recordReviewCompleted.mock.calls[0][3]).toEqual({ expectedLastReviewedAt: null });
+  });
+
   it.each(['throw', 'negative receipt', 'missing receipt', 'pending receipt'])('keeps the same undo snapshot after %s and allows exact retry', async failure => {
     const f = fixture(), last = f.c.lastGradeRef.current;
     if (failure === 'throw') f.undoQueuedReview.mockRejectedValueOnce(new Error('lost reply'));
@@ -104,8 +120,9 @@ describe('queued review undo recovery in the actual VocabPage handlers', () => {
     const receipt = deferred(); f.c.logReviewEvents.mockReturnValueOnce(receipt.promise);
     const pending = f.undoLastGrade(); await tick(); expect(f.c.lastGradeRef.current).toBe(last);
     receipt.resolve(); await pending; expect(f.c.lastGradeRef.current).toBeNull();
+    // 되돌리기도 비교 후 쓰기 — 서버 행이 아직 이 채점일 때만(독립 리뷰 2026-10-25 KST).
     expect(f.persistVocabGrade.mock.calls[2]).toEqual([f.c.supabase, last.wordId,
-      { interval: 5, ease_factor: 3, repetitions: 1, next_review_at: '2026-10-03T00:00:00Z' }, null]);
+      { interval: 5, ease_factor: 3, repetitions: 1, next_review_at: '2026-10-03T00:00:00Z' }, null, { expectedLastReviewedAt: last.reviewedAt }]);
   });
 
   it.each(['actor switch', 'unmount'])('does not announce or rewind a late undo after %s', async change => {

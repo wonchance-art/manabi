@@ -55,6 +55,13 @@ describe('VocabPage 배선', () => {
     expect(quota).toContain("if (meta?.source === 'admit' && fsrsControllerRef.current?.adoptAdmission?.(quota)) return;");
     expect(quota.indexOf('adoptAdmission')).toBeLessThan(quota.lastIndexOf('fsrsControllerRef.current?.refresh();'));
   });
+  it('서버가 질문을 거절한 카드(다른 기기가 먼저 복습 · 제외 · 등록 · 삭제)는 「준비하지 못했어요」로 멈추지 않고 건너뛴다', () => {
+    expect(page).toContain("const ADMISSION_GONE_CODES = new Set(['fsrs_card_not_due', 'fsrs_card_excluded', 'fsrs_already_enrolled', 'fsrs_card_not_found']);");
+    const effect = sliceBetween(page, 'const admissionGone =', '}, [admissionGone, candidateId, questionKey]);');
+    expect(effect).toContain('ADMISSION_GONE_CODES.has(admission.error?.code)');
+    expect(effect).toContain('admission.controller.dismissError();');
+    expect(effect).toContain('skipCard(candidateId);');
+  });
   it('보낼함이 서버에 닿으면 학습 목록을 한 번 다시 읽는다(세션 중엔 복습방 전용 조회는 미룬다)', () => {
     const effect = sliceBetween(page, '// 보낼함이 서버에 닿았다', '}, [user?.id, queryClient]);');
     expect(effect).toContain("window.addEventListener('manabi:outbox-flushed', reread);");

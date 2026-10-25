@@ -114,8 +114,8 @@ describe('배선 계약 — 세 지점이 한 길을 타고, 큐 undo는 항목 
   it('정본은 한 시계 — reviewedAt이 SRS 쓰기까지 닿는다', () => {
     const store = read('src/lib/learn/progressStore.js');
     // 끝 인자 boundary = 같은 채점의 경계 확인 증거(F5② — 확인 1회화). 시계(reviewedAt)는 그대로 닿는다.
-    expect(store).toContain('await updateVocabNextReviewRemote(userId, detail.word_id, nextStats, reviewedAt, boundary);');
-    expect(store).toContain('return persistVocabGrade(supabase, wordId, nextStats, reviewedAt, { boundary });');
+    expect(store).toContain('await updateVocabNextReviewRemote(userId, detail.word_id, nextStats, reviewedAt, boundary, expectedLastReviewedAt);');
+    expect(store).toContain('return persistVocabGrade(supabase, wordId, nextStats, reviewedAt,\n    expectedLastReviewedAt === undefined ? { boundary } : { boundary, expectedLastReviewedAt });');
   });
 
   it('퀘스트 채점은 정본을 타고(이벤트 직접 적재 없음), undo는 큐 항목 제거 / 서버 복원 두 갈래', () => {

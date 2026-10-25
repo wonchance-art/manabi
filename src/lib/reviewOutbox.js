@@ -37,6 +37,7 @@ import { loadVocabularyExclusions, findVocabularyExclusion, exclusionKey } from 
 import { isLearningStorageUnavailableError, learningLanguageCapabilities } from './learningCapabilities';
 import { assertLegacyFsrsAllowed } from './fsrsLegacyBoundary';
 import { withLegacyReviewLock, readCompleteLegacyRows } from './legacyReviewSync';
+import { isLegacyReviewSuperseded } from './legacyReviewSupersede';
 
 /** 구버전 크기 산정 계약. 미전송 원본의 삭제 기준으로 사용하지 않는다. */
 export const MAX_OUTBOX = 500;
@@ -45,6 +46,8 @@ const isUndoIntent = entry => entry?.kind === LEGACY_REVIEW_UNDO_KIND;
 const problem = code => Object.assign(new Error(code), { code });
 const copy = value => JSON.parse(JSON.stringify(value));
 const sameTime = (a, b) => Number.isFinite(Date.parse(a)) && Date.parse(a) === Date.parse(b);
+/** 같은 순간인가 — 둘 다 없음(한 번도 채점 안 됨)도 같다. */
+const sameMoment = (a, b) => (a == null && b == null) || sameTime(a, b);
 const undoMatchesGrade = (undo, grade) => isUndoIntent(undo) && undo.userId === grade.userId
   && grade.kind !== 'fsrs-operation-v1' && !isUndoIntent(grade)
   && grade.source === 'vocab' && undo.itemKey === grade.itemKey && undo.lang === grade.lang
@@ -544,13 +547,20 @@ async function flushReviewsLocked(client, userId, {
         if (failedIds.has(id)) { blockedSeq.add(e.seq); continue; }
         if (!id || !byId.has(id) || !e.nextStats) continue;
         if (!shouldApplyGrade(e, byId.get(id))) continue;
+        // 비교 후 쓰기(독립 리뷰 2026-10-25 KST) — 이 채점을 계산한 바탕(expectedLastReviewedAt)이 지금 서버 행과 다르면 그 사이 다른
+        // 기기가 먼저 복습한 것이다: 이벤트(기록)는 위에서 이미 실었고 일정은 그 복습대로 둔다(완료 — 다시 보낼 일이 아니다).
+        // 바탕이 같으면 방금 읽은 서버 값으로 비교 후 쓰기를 한다 — 읽기와 쓰기 사이에 끼어든 다른 기기의 채점도 덮지 않는다.
+        const server = byId.get(id).last_reviewed_at ?? null;
+        if (Object.hasOwn(e, 'expectedLastReviewedAt') && !sameMoment(e.expectedLastReviewedAt, server)) continue;
         try {
           actor();
-          await persist(client, id, e.nextStats, e.reviewedAt, { boundary: boundaries.get(e.seq) });
+          await persist(client, id, e.nextStats, e.reviewedAt, { boundary: boundaries.get(e.seq), expectedLastReviewedAt: server });
           actor();
           applied += 1;
           byId.set(id, { ...byId.get(id), last_reviewed_at: e.reviewedAt });
         } catch (error) {
+          if (isLegacyReviewSuperseded(error)) continue; // 쓰는 사이 다른 기기가 먼저 바꿨다 — 위와 같은 처리
+
           blockedSeq.add(e.seq);
           failedIds.add(id);
           if (e.lang === 'Korean' && isLearningStorageUnavailableError(error)) holdKorean();

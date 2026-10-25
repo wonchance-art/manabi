@@ -6,6 +6,8 @@ vi.mock('../vocabularyExclusion', () => ({
   loadVocabularyExclusions: async () => [], findVocabularyExclusion: () => null,
   exclusionKey: (language, word) => `${language}:${word}`,
 }));
+import { persistVocabGrade } from '../fsrs';
+import { legacyReviewSupersededError } from '../legacyReviewSupersede';
 import { enqueueReview, pendingReviews, flushReviews, undoQueuedReview,
   removeOutboxEntry, LEGACY_REVIEW_UNDO_KIND, dedupeEntries } from '../reviewOutbox';
 
@@ -95,7 +97,7 @@ function remote({ events = [], word = { id: 'card', user_id: 'A', ...PREV }, cap
           state.updates.push({ payload: structuredClone(payload), matched: matches.length });
           matches.forEach(row => Object.assign(row, structuredClone(payload)));
           if (state.lostUpdate) { state.lostUpdate = false; return { error: new Error('lost update response') }; }
-          return { error: null };
+          return { data: matches.map(row => ({ id: row.id })), error: null };
         }
         if (table === 'review_events' && state.historyError) return { error: new Error('history offline') };
         const rows = (table === 'review_events' ? state.events : state.words)
@@ -116,6 +118,7 @@ function remote({ events = [], word = { id: 'card', user_id: 'A', ...PREV }, cap
         gte(key, value) { filters.push(row => Date.parse(row[key]) >= Date.parse(value)); return query; },
         lte(key, value) { filters.push(row => Date.parse(row[key]) <= Date.parse(value)); return query; },
         in(key, values) { filters.push(row => values.includes(row[key])); return query; },
+        is(key, value) { filters.push(row => (value === null ? row[key] == null : row[key] === value)); return query; },
         order(key) { order.push(key); return query; }, range(from, to) { bounds = [from, to]; return query; },
         insert(rows) { mode = 'insert'; payload = rows; return query; },
         update(value) { mode = 'update'; payload = value; return query; },
@@ -407,5 +410,63 @@ describe('offline review session replay (F9)', () => {
     await expect(flushReviews(f.client, 'A', { persist: f.persist, getAccountId: () => account })).rejects.toThrow('account_changed');
     expect(f.state.inserts).toHaveLength(0);
     expect(db.rows.filter(row => row.userId === 'A')).toHaveLength(2);
+  });
+});
+
+// 독립 리뷰 2026-10-25 KST — 보낼함 재생도 비교 후 쓰기(prev last_reviewed_at). 그 사이 다른 기기가 먼저 복습한 카드는 이벤트(기록)만
+// 남기고 일정은 덮지 않는다(다시 보낼 일이 아니라 완료). 경계 증거는 항목마다 따로 — 다른 항목의 증거는 덮지 못한다.
+describe('replay compare-and-set and per-entry boundary proof', () => {
+  const at = minutes => new Date(Date.parse(T) + minutes * 60000).toISOString();
+  const queued = (card, minutes, expected, interval = 4) => ({ userId: 'A', source: 'vocab', itemKey: card, lang: 'Chinese', correct: true,
+    detail: { word_id: card, rating: 3 }, reviewedAt: at(minutes), remoteAttempted: false, expectedLastReviewedAt: expected,
+    nextStats: { interval, ease_factor: 2, repetitions: 3, next_review_at: at(minutes + 60 * 24 * interval) } });
+  const phone = { id: 'card', user_id: 'A', ...PREV, interval: 30, last_reviewed_at: at(-5) }; // 다른 기기가 먼저(끊긴 동안) 채점했다
+
+  it('a device that reviewed the card first keeps its schedule; the offline grade still lands as an event and leaves the queue', async () => {
+    const db = memoryDb([]), f = remote({ word: phone });
+    await enqueueReview(queued('card', 0, PREV.last_reviewed_at));
+    await enqueueReview(queued('card', 1, at(0), 9)); // 같은 카드의 다음 채점 — 바탕이 앞 채점이라 함께 물러난다
+    const persist = vi.fn(f.persist);
+    expect(await flushReviews(f.client, 'A', { persist })).toEqual({ sent: 2, kept: 0, applied: 0 });
+    expect(persist).not.toHaveBeenCalled();
+    expect(f.state.words[0]).toMatchObject({ interval: 30, last_reviewed_at: at(-5) });
+    expect(f.state.events.map(e => e.created_at)).toEqual([at(0), at(1)]);
+    expect(db.rows).toEqual([]);
+  });
+
+  it('applies with a compare-and-set on the server value it just read; a concurrent write between read and update is not overwritten', async () => {
+    const db = memoryDb([]), f = remote();
+    await enqueueReview(queued('card', 0, PREV.last_reviewed_at));
+    f.state.beforeUpdate = async () => { f.state.words[0].last_reviewed_at = at(0.5); f.state.words[0].interval = 40; };
+    const r = await flushReviews(f.client, 'A', { persist: persistVocabGrade });
+    expect(r).toEqual({ sent: 1, kept: 0, applied: 0 }); // 0행 → 물러남(완료), 재시도 큐에 남기지 않는다
+    expect(f.state.updates).toEqual([expect.objectContaining({ matched: 0 })]);
+    expect(f.state.words[0]).toMatchObject({ interval: 40 });
+    expect(db.rows).toEqual([]);
+  });
+
+  it('a persist that reports superseded completes the entry instead of holding it for retry', async () => {
+    const db = memoryDb([]), f = remote();
+    await enqueueReview(queued('card', 0, PREV.last_reviewed_at));
+    const persist = vi.fn(async () => { throw legacyReviewSupersededError(); });
+    expect(await flushReviews(f.client, 'A', { persist })).toEqual({ sent: 1, kept: 0, applied: 0 });
+    expect(persist.mock.calls[0][4]).toMatchObject({ expectedLastReviewedAt: PREV.last_reviewed_at });
+    expect(db.rows).toEqual([]);
+  });
+
+  it('each entry\'s schedule write reuses only its own boundary proof — one boundary RPC per entry across many entries', async () => {
+    const db = memoryDb([]), f = remote({ word: null });
+    const cards = ['card-1', 'card-2', 'card-3'];
+    cards.forEach(id => f.state.words.push({ id, user_id: 'A', ...PREV }));
+    const rpc = vi.fn(async () => ({ data: { version: 1, actorId: 'A', enrolled: false }, error: null }));
+    f.client.rpc = rpc;
+    for (const [i, id] of cards.entries()) await enqueueReview(queued(id, i, PREV.last_reviewed_at));
+    const seen = [];
+    const persist = async (client, id, stats, reviewedAt, options) => { seen.push([id, options?.boundary?.cardId]); return persistVocabGrade(client, id, stats, reviewedAt, options); };
+    expect(await flushReviews(f.client, 'A', { persist })).toEqual({ sent: 3, kept: 0, applied: 3 });
+    expect(seen).toEqual(cards.map(id => [id, id]));
+    // 남의 증거를 넘겼다면 persistVocabGrade가 다시 물어 3번이 아니게 된다.
+    expect(rpc.mock.calls.filter(([name]) => name === 'fsrs_legacy_boundary')).toHaveLength(3);
+    expect(f.state.words.map(w => w.interval)).toEqual([4, 4, 4]);
   });
 });

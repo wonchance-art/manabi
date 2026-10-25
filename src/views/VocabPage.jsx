@@ -13,6 +13,7 @@ import { useLearningCapabilities } from '../lib/useLearningCapabilities';
 import { useFsrsReview, fsrsIntervalLabel, FSRS_LOADING_CAP_MS } from '../lib/useFsrsReview';
 import { useLearningAdmission } from '../lib/useLearningAdmission';
 import { isAdmissionOfflineError } from '../lib/learningAdmission';
+import { LEGACY_REVIEW_SUPERSEDED_NOTICE } from '../lib/legacyReviewSupersede';
 import { isSettledFsrsActivity } from '../lib/learningActivity';
 import FsrsReviewSession from '../components/vocab/FsrsReviewSession';
 import { callGemini } from '../lib/gemini';
@@ -94,6 +95,9 @@ function useRoomMemo(frozen, factory, deps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(factory, effective);
 }
+
+/** 질문 입장을 서버가 거절한 「이 카드는 지금 묻지 않는다」 사유(learningAdmission databaseError) — 실패가 아니라 건너뛸 카드다. */
+const ADMISSION_GONE_CODES = new Set(['fsrs_card_not_due', 'fsrs_card_excluded', 'fsrs_already_enrolled', 'fsrs_card_not_found']);
 
 export default function VocabPage({ reviewScope = NOT_EXPLICIT }) {
   const { user, loading } = useAuth();
@@ -780,6 +784,17 @@ function VocabWorkspace({ reviewScope }) {
   useEffect(() => {
     if (tab === 'review' && !reviewFinished && candidateId !== undefined) admission.controller.question(candidateId, questionKey);
   }, [tab, reviewFinished, candidateId, questionKey, admission.controller]);
+  // 서버가 이 카드의 질문을 거절했다 — 다른 기기에서 먼저 복습해 아직 때가 아님 · 제외 · 새 일정 등록 · 삭제(독립 리뷰 2026-10-25 KST:
+  // 세션 줄에 남은 카드가 폰에서 채점된 뒤 노트북에서 다시 채점되던 길). 「준비하지 못했어요」로 멈추지 않고 채점 없이 다음으로 넘기며,
+  // 목록을 정본으로 다시 읽는다(다른 탭에서 제외된 카드를 건너뛰는 아래 효과와 같은 결).
+  const admissionGone = !!candidateWord && !currentWord && ADMISSION_GONE_CODES.has(admission.error?.code);
+  useEffect(() => {
+    if (!admissionGone || tab !== 'review' || reviewFinished) return;
+    admission.controller.dismissError();
+    invalidateVocabularyLearning(queryClient, user?.id, { deferReviewRoom: true });
+    skipCard(candidateId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [admissionGone, candidateId, questionKey]);
 
   // 집중 연습 — 일정 · 한도 밖이라 입장권을 받지 않는다. 지금 카드 = 연습 줄의 카드.
   const practiceWord = tab === 'practice' && practice && !practice.finished ? allVocab.find(v => v.id === practice.ids[practice.idx]) : undefined;
@@ -869,9 +884,17 @@ function VocabWorkspace({ reviewScope }) {
       ease_factor: nextStats.ease_factor ?? 0,
       repetitions: nextStats.repetitions ?? 0,
       next_review_at: nextStats.next_review_at,
-    }).then((r) => {
+      // 비교 후 쓰기의 바탕 — 이 일정을 계산한 행의 last_reviewed_at. 그 사이 다른 기기가 먼저 복습했으면 일정은 덮지 않는다(독립 리뷰 2026-10-25 KST).
+    }, { expectedLastReviewedAt: currentWord.last_reviewed_at ?? null }).then((r) => {
       if (!currentActor()) return;
       if (r?.ok === false) { toast('복습을 저장하지 못했어요. 연결을 확인해 주세요 — 이 단어는 다음에 다시 나와요.', 'error', 5000); return; }
+      // 다른 기기에서 먼저 복습한 표현 — 기록은 남았고 일정은 그쪽 복습대로다. 낙관 반영 · 되돌리기 대상으로 삼지 않고(되돌리면 그쪽
+      // 일정을 덮는다) 목록을 정본으로 다시 읽는다.
+      if (r?.superseded) {
+        toast(LEGACY_REVIEW_SUPERSEDED_NOTICE, 'info', 5000);
+        invalidateVocabularyLearning(queryClient, actorId, { deferReviewRoom: inSessionRef.current });
+        return;
+      }
       // 저장한 값을 목록에 바로 반영하고, 복습 중에는 전체 목록을 다시 읽지 않는다(「다시」로 돌아온 단어도 이 값으로 채점된다).
       // 끝난 뒤 마지막 채점이면 서버 정본으로 한 번 다시 읽는다 — finishRun의 읽기가 이 저장보다 먼저 나갔을 수 있다.
       const patched = patchVocabularyLearningRow(queryClient, actorId, snapshot.wordId,
@@ -946,7 +969,10 @@ function VocabWorkspace({ reviewScope }) {
         await withLegacyReviewLock(actorId, async () => {
           if (!currentActor()) throw new Error('fsrs_stale_account');
           const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev;
-          await persistVocabGrade(supabase, last.wordId, prevStats, prevReviewedAt);
+          // 되돌리기도 비교 후 쓰기 — 서버 행이 아직 이 채점(last.reviewedAt)일 때만 되돌린다. 그 사이 다른 기기가 먼저 복습했으면
+          // 그 일정을 덮지 않고 「되돌리지 못했어요」(미루기는 채점 시각이 없어 지금처럼).
+          await persistVocabGrade(supabase, last.wordId, prevStats, prevReviewedAt,
+            !last.skip && last.reviewedAt ? { expectedLastReviewedAt: last.reviewedAt } : undefined);
           if (!currentActor()) throw new Error('fsrs_stale_account');
           if (!last.skip && last.reviewedAt) {
             await logReviewEvents(user.id, [{
