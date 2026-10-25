@@ -1,10 +1,10 @@
 import {splitRuby} from './splitRuby';
 import {hanjaReadingsOf} from './hanjaKo';
-import ko from './data/hanjaKo.json';
-import hun from './data/hanjaHun.json';
-// 중국어 훈음은 정체 꼴로 찾는다(R0+ — 技术 → 재주 술). 판서 카드는 훈음 글자를 캔버스에
-// 저장하므로 표가 동기로 있어야 한다(지연 로드 중 간체 동형 훈음이 저장되면 남는다).
-import trad from './data/hanjaTrad.json';
+// 훈음 표(음 · 훈 · 정체)는 지연 로드 정본(hanjaTables.js)에서 받는다 — 이 모듈은 표를 정적으로 싣지 않는다
+// (HANJA-LAZY-001: 뷰어 첫 JS에서 세 표를 뺐다). 표가 아직 없으면 훈음 줄 자리만 비워 두고(hunPending)
+// 들어오면 같은 자리에 그린다 — 둘레 잉크가 움직이지 않게. 중국어 훈음은 정체 꼴로 찾는다(R0+ — 技术 → 재주 술).
+// 판서 카드는 훈음 글자를 캔버스에 저장하므로 캔버스가 hanjaTablesEager.js로 표를 먼저 채운다.
+import {hanjaTablesNow,hanjaTableNamesFor,hasHanjaTables} from './hanjaTables';
 
 export const annotatedLanguage = language => ['Chinese','Japanese'].includes(language);
 const han = /\p{Script=Han}/u;
@@ -47,17 +47,20 @@ function wrapMeaning(text, width, size, measure) {
 
 // One layout model for native editable canvas elements and DOM word previews.
 // All annotations exist even when hidden; visibility never moves surrounding ink.
-export function teachingWordLayout(value, {fontSize=42,maxWidth=620,measure=measureWordText,compact=false}={}) {
+export function teachingWordLayout(value, {fontSize=42,maxWidth=620,measure=measureWordText,compact=false,tables=hanjaTablesNow()}={}) {
   const {text='',reading='',meaning='',language}=value, cjk=annotatedLanguage(language);
   const size=fontSize, readSize=language==='Japanese'?size*.5:Math.max(12,size*.34), hunSize=Math.max(12,size*.28), meaningSize=Math.max(18,size*.55);
+  // 표가 아직 없으면 훈음은 「기다리는 중」 — 글자 줄 · 뜻 칸은 그대로 그리고 훈음 줄 높이만 잡아 둔다.
+  const hunPending=cjk&&!hasHanjaTables(hanjaTableNamesFor(language),tables);
   // Labels by character position: one word can read the same glyph differently only through its traditional form.
-  const labels=cjk?hanjaReadingsOf(text,{koTable:ko,hunTable:hun,tradTable:language==='Chinese'?trad:null}).map(v=>v.label):[];
+  const labels=cjk&&!hunPending?hanjaReadingsOf(text,{koTable:tables.koTable,hunTable:tables.hunTable,tradTable:language==='Chinese'?tables.tradTable:null}).map(v=>v.label):[];
   const textChars=[...text],byChar=new Map();labels.forEach((label,i)=>{if(label&&!byChar.has(textChars[i]))byChar.set(textChars[i],label);});
   // If ruby segments ever drift from the text, fall back to the first label of that glyph.
   const labelAt=(i,ch)=>(textChars[i]===ch?labels[i]:byChar.get(ch))||null;
   const showReading=cjk&&value.showReading!==false, showHun=cjk&&value.showHun!==false, showMeaning=value.showMeaning!==false;
   let readBand=cjk&&reading&&(!compact||showReading)?readSize*1.35+3:0;
-  const hunBand=labels.some(Boolean)&&(!compact||showHun)?hunSize*2.5:0;
+  // 기다리는 동안은 한자가 하나라도 있으면 훈음 줄(2줄 높이)을 미리 비워 둔다 — 표가 들어와도 높이가 그대로다.
+  const hunBand=(hunPending?han.test(text):labels.some(Boolean))&&(!compact||showHun)?hunSize*2.5:0;
   let rowHeight=readBand+size*1.25+hunBand;
   const gap=size*.4;
   let maxLeft=Math.max(size*1.8,(maxWidth-gap)*.51);
@@ -125,7 +128,7 @@ export function teachingWordLayout(value, {fontSize=42,maxWidth=620,measure=meas
   const meaningTop=readBand+(size*1.25-meaningSize*1.25)/2;
   meaningLines.forEach((line,index)=>add('meaning',line,leftWidth+gap,meaningTop+index*meaningSize*1.4,meaningWidth,meaningSize,{index,visible:showMeaning,align:'left'}));
   const width=leftWidth+(meaning||!compact?gap+meaningWidth:0), height=Math.max(y+rowHeight,meaningTop+meaningLines.length*meaningSize*1.4);
-  return {width:Math.max(size,width),height:Math.max(size,height),parts,showReading,showHun,showMeaning};
+  return {width:Math.max(size,width),height:Math.max(size,height),parts,showReading,showHun,showMeaning,hunPending};
 }
 
 export function normalizeWordAppearance(input={}) {

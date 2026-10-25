@@ -1065,6 +1065,10 @@
   자료마다 단어 목록 재수신 제거(/vocab snapshot 재사용 · 2분 신선도) · 출처 제목 묶음 병렬 · 진입 직후 안 보일 링크 prefetch 끔 · 볼 수 없는/없는 자료
   무한 재조회 → 1회 재시도 후 「자료를 찾을 수 없어요」. 서재 → 뷰어 1.73 → 1.47s, 두 번째 열기 1.14 → 0.84s, /study 요청 63 → 44 · JS 393 → 307 KB.
   account-boundary ⑨ 로컬 실패 = 낡은 .next(#1559 이전 빌드) — ⑨에 no-store 전제 단언 추가. 참고: manabi-web-v2-preview.vercel.app 별칭은 #1559 이전 판(운영 아님).
+  → **#1567 squash `ff5d62da`(20:21 KST, 운영: 공개 자료 seed · no-store 유지 · 오류 0)**.
+- **HANJA-LAZY-001 ㉣ (2026-10-25 KST, 오너 「권장대로」)**: 훈음 표 세 벌(ko · hun · trad 171 KB gz)을 로더 하나(src/lib/hanjaTables.js)로 지연 ·
+  자료 언어 확인 뒤 유휴 미리 받기 · 판서 카드는 훈음 줄 높이 예약(CLS 0). 뷰어 첫 JS 779 → 613 kB, 직접 열기 ja −190 ms · zh −318 ms,
+  /class/[team]/live 464 → 298 kB · /notes/[id] 444 → 278 kB. 캔버스(판서 · 노트)는 eager 모듈로 동작 동일.
 - VOCAB-LEVEL-DOC(F9 현장): 목록을 문서 밖 JSON으로 → 문서 −95%지만 LCP +4%(JS가 임계 경로) → 배제 · 패치 보관. 후속 G(카드 앞 JS 청크) 조사 중.
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로

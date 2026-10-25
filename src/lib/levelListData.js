@@ -13,6 +13,7 @@ import { encodeExampleSeg, encodeFuri } from './levelExampleCode';
 import { patternAnchor } from './sentencePattern.js';
 import { LEVEL_HUN_PX, LEVEL_LIST_LANGS, compactLevelEntry, hunShapeOf, levelKinds, levelWordKey, shortMeaning } from './levelList';
 import { hunRubyCells } from './viewerHunRuby';
+import { HANJA_TABLE_NAMES, loadHanjaTables } from './hanjaTables';
 import { loadHanziTable } from './zhHanzi';
 import { alignFurigana } from './jaFurigana';
 import { splitKanjiReadings } from './jaKanjiReading';
@@ -76,12 +77,9 @@ function chineseDictionary() {
 }
 
 // 훈음 자리 모양(LEVEL-HUN-HOLD-001) — 화면과 같은 표 · 같은 함수(hunRubyCells, 정체 꼴로 찾기)로 서버에서 줄 수 · 칸 폭만 센다.
-let hunTablesPromise = null;
+// 표는 지연 로드 정본(hanjaTables.js)에서 — 표마다 요청 한 번 · 실패하면 다음에 다시 받는다.
 function loadHunTables() {
-  if (!hunTablesPromise) hunTablesPromise = Promise.all([import('./data/hanjaKo.json'), import('./data/hanjaHun.json'), import('./data/hanjaTrad.json')])
-    .then(([ko, hun, trad]) => ({ koTable: ko.default || ko, hunTable: hun.default || hun, tradTable: trad.default || trad }))
-    .catch((error) => { hunTablesPromise = null; throw error; });
-  return hunTablesPromise;
+  return loadHanjaTables(HANJA_TABLE_NAMES).then(({ koTable, hunTable, tradTable }) => ({ koTable, hunTable, tradTable }));
 }
 function hunShapeField(word, tables) {
   const hun = hunShapeOf(hunRubyCells(word, tables, LEVEL_HUN_PX));

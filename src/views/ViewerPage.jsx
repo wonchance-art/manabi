@@ -166,6 +166,7 @@ import { useRefVocabEntry, useRefVocabIndex } from '../lib/refVocabIndex';
 import { zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
 import { useZhHskLevels } from '../lib/useZhHskLevels';
 import { loadHanjaPanelTable, onIdle, prefetchHanjaPanel, pinyinPerChar } from '../lib/viewerHanjaPanel';
+import { hanjaTableNamesFor, loadHanjaTable, preloadHanjaTables } from '../lib/hanjaTables';
 import { useTokenDictPrefetch } from '../lib/useTokenDictPrefetch';
 import { tokenDictPrefetchEnabled, tokenDictQueryKey, tokenDictKeyOf, prefetchTokenDict } from '../lib/tokenDictPrefetch';
 import { knownWordsLang } from '../lib/knownWords';
@@ -2372,6 +2373,13 @@ export default function ViewerPage({ seed } = {}) {
   // 훈 테이블(①, 143KB)도 같은 조건으로 병행 로드. 표기는 글자별 훈음 나열이 정본
   // ('늙을 로(노) 스승 사' — 옥편 표제 관례, 음 단독 줄은 2026-08-23 오너 확정으로 폐지).
   const [teachingDisplay,setTeachingDisplay]=useWordAppearance(user?.id,materialLang);
+  // HANJA-LAZY-001(로그인 점검 F3① ㉣): 훈음 표 세 벌(음 · 훈 · 정체)은 첫 JS에 싣지 않는다 — 중국어 · 일본어 자료를 열면
+  // 첫 그림 뒤 유휴 시간에 받아 둔다(글자 카드 · 수업 판서 카드의 훈음이 늦지 않게). 표가 필요한 상호작용(토글 · 글자 탭 ·
+  // 단어창 · 판서 카드)은 아래 조건에서 바로 받는다. 요청은 정본(hanjaTables.js)이 표마다 한 번만 보낸다.
+  // 자료가 오기 전 materialLang은 기본값('Japanese')이라 그 값으로 예약하지 않는다 — 본문이 그려진 뒤(자료가 온 커밋의 effect) ·
+  // 한국어 · 영어 자료는 받지 않는다. 받기 전 본문 요청과 대역폭을 다투지 않게(실측: 자료보다 0.4초 먼저 133KB를 받았다).
+  const hanjaPreloadLang = material ? materialLang : null;
+  useEffect(() => preloadHanjaTables(hanjaTableNamesFor(hanjaPreloadLang)), [hanjaPreloadLang]);
   const [hanjaKoTable, setHanjaKoTable] = useState(null);
   const [hanjaHunTable, setHanjaHunTable] = useState(null);
   const [hanjaJaTable, setHanjaJaTable] = useState(null);
@@ -2406,11 +2414,11 @@ export default function ViewerPage({ seed } = {}) {
     const needed = (showHanjaKo && materialLang === 'Chinese') || inspectChar !== null;
     if (!needed || hanjaKoTable) return undefined;
     let alive = true;
-    import('../lib/data/hanjaKo.json')
-      .then((m) => { if (alive) setHanjaKoTable(m.default || m); })
+    loadHanjaTable('ko')
+      .then((t) => { if (alive) setHanjaKoTable(t); })
       .catch(() => {});
-    import('../lib/data/hanjaHun.json')
-      .then((m) => { if (alive) setHanjaHunTable(m.default || m); })
+    loadHanjaTable('hun')
+      .then((t) => { if (alive) setHanjaHunTable(t); })
       .catch(() => {});
 
     return () => { alive = false; };
@@ -2421,8 +2429,8 @@ export default function ViewerPage({ seed } = {}) {
     if (materialLang !== 'Chinese' || !isSheetOpen || hanjaKoTable) return undefined;
     let alive = true;
     const cancel = onIdle(() => {
-      import('../lib/data/hanjaKo.json').then((m) => { if (alive) setHanjaKoTable((cur) => cur || m.default || m); }).catch(() => {});
-      import('../lib/data/hanjaHun.json').then((m) => { if (alive) setHanjaHunTable((cur) => cur || m.default || m); }).catch(() => {});
+      loadHanjaTable('ko').then((t) => { if (alive) setHanjaKoTable((cur) => cur || t); }).catch(() => {});
+      loadHanjaTable('hun').then((t) => { if (alive) setHanjaHunTable((cur) => cur || t); }).catch(() => {});
     });
     return () => { alive = false; cancel(); };
   }, [materialLang, isSheetOpen, hanjaKoTable]);
@@ -2432,8 +2440,8 @@ export default function ViewerPage({ seed } = {}) {
   useEffect(() => {
     if (materialLang !== 'Chinese' || hanjaTradTable || !(showHanjaKo || inspectChar !== null || isSheetOpen)) return undefined;
     let alive = true;
-    import('../lib/data/hanjaTrad.json')
-      .then((m) => { if (alive) setHanjaTradTable(m.default || m); })
+    loadHanjaTable('trad')
+      .then((t) => { if (alive) setHanjaTradTable(t); })
       .catch(() => {});
     return () => { alive = false; };
   }, [showHanjaKo, materialLang, hanjaTradTable, inspectChar, isSheetOpen]);
