@@ -6,7 +6,7 @@ import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { failureMessage } from './errorMessage';
 import { csvToVocabRows } from './vocabIO';
-import { fetchVocabularyLearningRows, projectVocabularyLearningRows } from './vocabularyLearningRows';
+import { fetchVocabularyLearningRows, reprojectVocabularyLearningRow } from './vocabularyLearningRows';
 import { useMemo, useRef } from 'react';
 import { persistVocabGrade } from './fsrs';
 import { cacheVocabSnapshot, getCachedVocabSnapshot } from './offlineCache';
@@ -53,26 +53,24 @@ export const REVIEW_ROOM_DEFERRED = Object.freeze(['vocab-titles', 'confused-eve
 
 /**
  * 저장한 예전 방식 채점을 단어장 학습 목록 캐시에 바로 반영한다(서버가 돌려줄 값과 같은 SRS 필드).
- * 투영(projections: 오늘 복습 수 · 달력)도 정본 투영기로 다시 계산한다. 반영하지 못하면 false — 호출부가 다시 읽는다.
+ * 투영(projections: 오늘 복습 수 · 달력)은 바뀐 행 하나만 정본 투영기로 다시 계산하고 다른 행의 투영은 그대로 둔다
+ * (LOGGED-IN-PERF F7 — 3,000단어 계정에서 채점마다 전체 재투영이 CPU ×4 약 65 ms였다. 화면 값이 전체 재투영과 같다는 계약은
+ * vocabLearningPatch). 반영하지 못하면 false — 호출부가 다시 읽는다.
  */
 export function patchVocabularyLearningRow(queryClient, actorId, wordId, patch) {
   if (typeof actorId !== 'string' || !actorId || !wordId) return false;
   let patched = false;
   queryClient.setQueryData(['vocab', actorId, 'learning'], cur => {
     if (cur?.actorId !== actorId || !Array.isArray(cur.rows)) return cur;
-    let hit = false;
-    const rows = cur.rows.map(row => {
-      if (row?.id !== wordId) return row;
-      hit = true;
-      return { ...row, ...patch };
-    });
-    if (!hit) return cur;
-    if (cur.offline) { patched = true; return { ...cur, rows }; }
+    const current = cur.rows.find(row => row?.id === wordId);
+    if (!current) return cur;
+    const next = { ...current, ...patch };
+    if (cur.offline) { patched = true; return { ...cur, rows: cur.rows.map(row => (row?.id === wordId ? { ...row, ...patch } : row)) }; }
     try {
       const at = new Date(Math.max(Date.now(), Date.parse(cur.now) || 0)).toISOString();
-      const next = projectVocabularyLearningRows({ ...cur, rows }, { actorId, at });
+      const result = reprojectVocabularyLearningRow(cur, wordId, next, { actorId, at });
       patched = true;
-      return next;
+      return result;
     } catch { return cur; }
   });
   return patched;
