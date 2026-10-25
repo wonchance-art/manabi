@@ -4,6 +4,7 @@
 // 기록 규칙은 한자 탭(hanziSession)과 같다: 답은 곧바로 쓰지 않고 「대기」로 들고 있다가 다른 카드의 답 · 화면을 떠날 때 확정한다.
 // 그래서 방금 누른 O · X를 다시 눌러 취소하면 기록이 늘지 않는다. 확정 뒤의 취소만 취소 줄(detail.cancel)을 남긴다(표는 append-only).
 import { kstDateString, kstDayStartMs } from './growthStats';
+import { learningDay } from './fsrsScheduler';
 import { shuffleHanzi } from './hanziSession';
 import { normalizeKnownWord } from './knownWordControl';
 
@@ -14,16 +15,17 @@ export const levelAnswerKey = (word, view) => `${normalizeKnownWord(word)}|${vie
 const keyOf = levelAnswerKey;
 
 /**
- * 같은 날 규칙 — 같은 KST 날 다른 보기에서 이미 답한 단어의 답은 sameDay(설계 B · 「같은 날 다른 탭의 O」).
+ * 같은 날 규칙 — 같은 학습일(04:00 KST 경계 — 복습 기한 · 새 단어 몫과 같은 날, 2026-10-25 KST. 그 전은 KST 자정)
+ * 다른 보기에서 이미 답한 단어의 답은 sameDay(설계 B · 「같은 날 다른 탭의 O」).
  * 단기 기억으로 누른 O일 수 있어 「잊은 수 · 졸업 · 탭 완료 · 아는 단어로?」에서 세지 않는다. 막지는 않는다.
  * @param {Map<string, {correct: boolean, at: number}>} answers lastLevelAnswers 결과(+ 이 화면에서 누른 답)
  */
 export function isSameDayAnswer(answers, word, view, nowMs = Date.now()) {
-  const day = kstDayStartMs(nowMs);
+  const day = learningDay(nowMs);
   const head = `${normalizeKnownWord(word)}|`;
   for (const [key, answer] of answers || []) {
     if (!key.startsWith(head) || key === head + view) continue;
-    if (Number.isFinite(answer?.at) && kstDayStartMs(answer.at) === day) return true;
+    if (Number.isFinite(answer?.at) && learningDay(answer.at) === day) return true;
   }
   return false;
 }

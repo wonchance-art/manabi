@@ -45,13 +45,14 @@ export function revealFsrsAttempt(attempt, at, { hint = false } = {}) {
 }
 
 /** policyVersion = 채점 뒤 카드의 학습 단계 정책(서버가 알린 지금 정책). 생략하면 카드 정책 그대로. */
-export function finishFsrsAttempt(attempt, rating, { operationId, at, policyVersion, easyFloor }) {
+export function finishFsrsAttempt(attempt, rating, { operationId, at, policyVersion, easyFloor, dayDue }) {
   if (attempt?.phase !== 'revealed') throw new Error('answer_not_revealed');
   validateAttempt(attempt);
   if (attempt.eligible !== true || attempt.hintedAt !== null) throw new Error('recall_not_eligible');
   if (!identity(operationId)) throw new Error('invalid_operation_id');
   if (schedulerTime(at) < schedulerTime(attempt.revealedAt)) throw new Error('attempt_clock_reversed');
-  const result = scheduleFsrsReview(attempt.card, rating, at, { ...(policyVersion ? { policyVersion } : {}), ...(easyFloor === false ? { easyFloor } : {}) });
+  const result = scheduleFsrsReview(attempt.card, rating, at, { ...(policyVersion ? { policyVersion } : {}), ...(easyFloor === false ? { easyFloor } : {}),
+    ...(dayDue === false ? { dayDue } : {}) });
   return { version: 1, id: operationId, kind: 'grade', userId: attempt.userId, cardId: attempt.cardId,
     attemptId: attempt.id, expectedRevision: attempt.card.revision,
     previousCard: copy(attempt.card), nextCard: result.card,
@@ -75,14 +76,16 @@ export function planFsrsUndo(operation, currentCard, { operationId, userId, card
   // 다시 계산해 확인하고, 손상된 previousCard를 임의의 복원 대상으로 삼지 않는다.
   const log = operation.log;
   if (!log || log.reviewedAt !== operation.nextCard.lastReview) throw new Error('invalid_grade_snapshot');
-  const replayed = easyFloor => finishFsrsAttempt({ id: operation.attemptId, userId, cardId,
+  const replayed = (easyFloor, dayDue) => finishFsrsAttempt({ id: operation.attemptId, userId, cardId,
     card: operation.previousCard, phase: 'revealed', eligible: true, hintedAt: null,
     questionAt: log.questionAt, revealedAt: log.revealedAt,
-  }, log.rating, { operationId: operation.id, at: log.reviewedAt, policyVersion: operation.nextCard?.policyVersion, easyFloor });
+  }, log.rating, { operationId: operation.id, at: log.reviewedAt, policyVersion: operation.nextCard?.policyVersion, easyFloor, dayDue });
   const matches = replay => stateKey(replay.nextCard) === stateKey(operation.nextCard) &&
     Object.keys(replay.log).every(key => stateKey(replay.log[key]) === stateKey(log[key]));
-  // 쉬움 하한(2026-10-23 KST) 전에 저장된 학습 단계 쉬움 채점은 그때 계산으로 맞춰 본다.
-  if (!matches(replayed(true)) && !(log.rating === 4 && matches(replayed(false)))) throw new Error('invalid_grade_snapshot');
+  // 그 전에 저장된 채점은 그때 계산으로 맞춰 본다 — 날 경계 기한(2026-10-25 KST) 전은 「채점 시각 + N×24시간」,
+  // 쉬움 하한(2026-10-23 KST) 전의 학습 단계 쉬움은 하한 없이.
+  if (!matches(replayed(true, true)) && !matches(replayed(true, false)) &&
+      !(log.rating === 4 && matches(replayed(false, false)))) throw new Error('invalid_grade_snapshot');
   if (schedulerTime(at) < schedulerTime(operation.log.reviewedAt)) throw new Error('attempt_clock_reversed');
   const nextCard = validateFsrsCard({ ...copy(operation.previousCard), revision: currentCard.revision + 1 });
   return { version: 1, id: operationId, kind: 'undo', userId, cardId, undoneOperationId: operation.id,

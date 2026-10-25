@@ -84,7 +84,8 @@ describe('FSRS matches Anki (memory state for both card paths)', () => {
     for (let i = 0; i < 3; i++) card = previewFsrsRatings(card, card.due)[1].card;
     const question = card.due, revealed = new Date(Date.parse(question) + 3000).toISOString();
     const attempt = revealFsrsAttempt(beginFsrsAttempt(card, { id: 'attempt', userId: 'alice', cardId: 'word', at: question }), revealed);
-    const old = finishFsrsAttempt(attempt, 4, { operationId: 'grade', at: revealed, easyFloor: false });
+    // 쉬움 하한 전 채점은 날 경계 기한(2026-10-25 KST) 전이기도 하다 — 둘 다 그때 계산으로 짓는다.
+    const old = finishFsrsAttempt(attempt, 4, { operationId: 'grade', at: revealed, easyFloor: false, dayDue: false });
     const now = finishFsrsAttempt(attempt, 4, { operationId: 'grade', at: revealed });
     expect([old.nextCard.scheduledDays, now.nextCard.scheduledDays]).toEqual([1, 2]);
     for (const op of [old, now]) {

@@ -146,12 +146,13 @@ describe('오늘 할 줄 — 한 단어 · 리스트 모드가 같이 쓴다(오
   const T = 1_000_000;
   const MIN = 60_000;
 
-  it('오늘 복습 먼저 · 그다음 새 단어 · 복습 중 · 졸업은 빠진다 · 오늘 뒤에 올 카드는 기다린다', () => {
+  it('오늘 복습과 새 단어를 섞는다 · 복습 중 · 졸업은 빠진다 · 오늘 뒤에 올 카드는 기다린다', () => {
     const s = startLevelSession(entries, (k) => status[k], (k) => (k === 'e' ? T + 5 * MIN : 0), T);
-    expect(s.queue).toEqual(['b', 'a', 'f']);
+    // 복습 1(b) · 새 2(a · f)를 Anki 비율로 — N R N(intersperseNew, 2026-10-25 KST). 둘 다 목록 순서는 그대로.
+    expect(s.queue).toEqual(['a', 'b', 'f']);
     expect(s.waiting).toEqual([{ key: 'e', at: T + 5 * MIN }]);
     expect(s.total).toBe(4);
-    expect(sessionCurrent(s, T)).toBe('b');
+    expect(sessionCurrent(s, T)).toBe('a');
     expect(sessionNextAt(s, T)).toBe(T + 5 * MIN);
   });
 
@@ -169,8 +170,9 @@ describe('오늘 할 줄 — 한 단어 · 리스트 모드가 같이 쓴다(오
 
   it('리스트는 줄 어디의 카드든 채점한다 · 줄 밖 카드는 오늘 안으로 돌아올 때만 들어온다', () => {
     let s = startLevelSession(entries, (k) => status[k], () => 0, T);
+    expect(s.queue).toEqual(['b', 'a', 'e', 'f']); // 복습 2 · 새 2 → R N R N
     s = gradeLevelSession(s, 'f', 3, null);
-    expect(s.queue).toEqual(['b', 'e', 'a']);
+    expect(s.queue).toEqual(['b', 'a', 'e']);
     expect(gradeLevelSession(s, 'c', 3, null)).toBe(s); // 다음에 볼 단어 · 내일 이후 → 그대로
     s = gradeLevelSession(s, 'c', 1, T + MIN);
     expect(sessionWaiting(s, T).map((w) => w.key)).toEqual(['c']);
@@ -180,7 +182,7 @@ describe('오늘 할 줄 — 한 단어 · 리스트 모드가 같이 쓴다(오
     const many = [...entries, { key: 'g' }, { key: 'h' }];
     const st = { ...status, g: 'new', h: 'new' };
     let s = startLevelSession(many, (k) => st[k], (k) => (k === 'e' ? T + 5 * MIN : 0), T, { newCap: 2 });
-    expect(s.queue).toEqual(['b', 'a', 'f']);
+    expect(s.queue).toEqual(['a', 'b', 'f']);
     expect(s.held).toEqual(['g', 'h']);
     expect(s.waiting.map((w) => w.key)).toEqual(['e']);
     expect(startLevelSession(many, (k) => st[k], () => 0, T, { newCap: -3 }).queue).toEqual(['b', 'e']); // 이미 넘게 시작한 날
@@ -211,6 +213,21 @@ describe('오늘 할 줄 — 한 단어 · 리스트 모드가 같이 쓴다(오
     expect(s.graded).toBe(2);
   });
 
+  it('새 단어는 복습 사이에 고르게(Anki 비율) · 시작할 때 이미 차례가 된 학습 단계 카드는 섞지 않고 맨 앞, 먼저 된 것부터', () => {
+    const keys = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'n1', 'n2', 'n3', 'n4', 'n5', 'l1', 'l2'];
+    const st = (k) => (k[0] === 'n' ? 'new' : 'today');
+    const due = { l1: T - 2 * MIN, l2: T - 5 * MIN };
+    const s = startLevelSession(keys.map((key) => ({ key })), st, (k) => due[k] || 0, T, { learningOf: (k) => k[0] === 'l' });
+    expect(s.queue.slice(0, 2)).toEqual(['l2', 'l1']);
+    expect(s.queue.slice(2).map((k) => (k[0] === 'n' ? 'N' : 'R')).join(' ')).toBe('R N R R N R R N R R N R R N R');
+    expect(s.queue.filter((k) => k[0] === 'n')).toEqual(['n1', 'n2', 'n3', 'n4', 'n5']);
+    expect(s.total).toBe(17);
+    // 아직 차례가 안 된 학습 단계 카드는 지금처럼 기다린다.
+    const later = startLevelSession([{ key: 'l1' }], () => 'today', () => T + MIN, T, { learningOf: () => true });
+    expect(later.queue).toEqual([]);
+    expect(later.waiting).toEqual([{ key: 'l1', at: T + MIN }]);
+  });
+
   it('다음 차례가 오늘 안이면 기다리는 시각, 내일 이후면 null', () => {
     const noon = Date.parse('2026-10-19T03:00:00Z'); // KST 정오
     expect(todayAgainAt({ ms: 10 * MIN }, noon)).toBe(noon + 10 * MIN);
@@ -221,14 +238,15 @@ describe('오늘 할 줄 — 한 단어 · 리스트 모드가 같이 쓴다(오
 
   it('되돌리기 = 그 카드가 채점 전 자리로 · 넘기기는 세지 않는다', () => {
     let s = startLevelSession(entries, (k) => status[k], () => 0, T);
+    const start = s.queue;
     s = gradeLevelSession(s, 'b', 1, T + MIN);
     s = undoLevelSession(s);
-    expect(s.queue[0]).toBe('b');
+    expect(s.queue).toEqual(start);
     expect(s.waiting).toEqual([]);
     expect(s.graded).toBe(0);
     expect(undoLevelSession(s)).toBe(s);
     s = skipLevelSession(s, 'b');
-    expect(s.queue).toEqual(['e', 'a', 'f']);
+    expect(s.queue).toEqual(['a', 'e', 'f']);
     expect(s.graded).toBe(0);
   });
 

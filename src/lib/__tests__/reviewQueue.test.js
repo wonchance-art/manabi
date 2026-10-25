@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BACKLOG_DEFAULT_BASELINE, BACKLOG_MIN_BASELINE, INTERLEAVE_EVERY, REASK_AFTER, SOURCE_SPACING, backlogBaseline, initialSteps, insertAfterIntro,
-  insertLearningStep, isBacklogged, orderReviewQueue, readResume, restoreResume, sessionLengthOptions, sliceSession, stepProgress, writeResume,
+  BACKLOG_DEFAULT_BASELINE, BACKLOG_MIN_BASELINE, REASK_AFTER, SOURCE_SPACING, backlogBaseline, initialSteps, insertAfterIntro,
+  insertLearningStep, intersperseNew, isBacklogged, orderReviewQueue, readResume, restoreResume, sessionLengthOptions, sliceSession, stepProgress, writeResume,
 } from '../reviewQueue';
 
 // REV-SCOPE-R1B-1 계약(설계 §6-1 ③ · §8): 두 엔진 한 줄 · 순서 · 끼우기 · 띄우기 · 처음 보는 표현 · 세션 길이 · 이어 하기 · 밀린 복습.
@@ -19,11 +19,24 @@ describe('orderReviewQueue — 두 엔진을 한 줄로', () => {
     const items = orderReviewQueue({ reviews: [review('a', 'legacy', 0.2), review('l', 'fsrs', 0.99, { learning: true })] });
     expect(items.map(item => item.id)).toEqual(['l', 'a']);
   });
-  it(`새 표현은 복습 ${INTERLEAVE_EVERY}장마다 1장 끼운다`, () => {
+  it('새 표현은 복습 사이에 고르게 편다 — Anki 「복습과 섞기」 비율 (복습 + 1) / (새 + 1) (오너 「Anki와 동일하게」 2026-10-25 KST)', () => {
+    // Anki intersperser.rs 실측과 같은 예: 복습 10 · 새 5.
+    const R = Array.from({ length: 10 }, (_, i) => `R${i}`), N = Array.from({ length: 5 }, (_, i) => `N${i}`);
+    expect(intersperseNew(R, N).map(id => id[0]).join(' ')).toBe('R N R R N R R N R R N R R N R');
+    expect(intersperseNew(R, N).filter(id => id[0] === 'N')).toEqual(N); // 순서는 그대로
+    expect(intersperseNew([], N)).toEqual(N);
+    expect(intersperseNew(R, [])).toEqual(R);
+    // 새가 더 많으면 새 사이에 복습이 퍼진다(끝에 몰리지 않는다).
+    expect(intersperseNew(['R0', 'R1'], ['N0', 'N1', 'N2', 'N3', 'N4']).map(id => id[0]).join(' ')).toBe('N R N N R N N');
     const reviews = Array.from({ length: 7 }, (_, i) => review(`r${i}`, i % 2 ? 'fsrs' : 'legacy', i / 10));
     const items = orderReviewQueue({ reviews, fresh: [fresh('n1', 'legacy'), fresh('n2', 'fsrs')] });
-    expect(items.map(item => item.id)).toEqual(['r0', 'r1', 'r2', 'n1', 'r3', 'r4', 'r5', 'n2', 'r6']);
+    expect(items.map(item => item.id)).toEqual(['r0', 'r1', 'n1', 'r2', 'r3', 'r4', 'n2', 'r5', 'r6']);
     expect(items.filter(item => item.isNew).map(item => item.id)).toEqual(['n1', 'n2']);
+  });
+  it('학습 단계 카드는 섞지 않고 맨 앞 — 새 표현은 그 뒤 복습 사이에 편다', () => {
+    const items = orderReviewQueue({ reviews: [review('l', 'fsrs', 0.9, { learning: true }), review('a', 'legacy', 0.1), review('b', 'legacy', 0.2)],
+      fresh: [fresh('n1', 'legacy')] });
+    expect(items.map(item => item.id)).toEqual(['l', 'a', 'n1', 'b']);
   });
   it(`같은 출처 단위(과 · 자료 · 덱)의 새 표현끼리는 ${SOURCE_SPACING}장 이상 띄운다 — 다른 출처가 먼저 끼어든다`, () => {
     const items = orderReviewQueue({ reviews: [], fresh: [fresh('a1', 'legacy', 'chapter:u05'), fresh('a2', 'legacy', 'chapter:u05'), fresh('b1', 'fsrs', 'material:9'),
@@ -32,10 +45,11 @@ describe('orderReviewQueue — 두 엔진을 한 줄로', () => {
     expect(ids).toEqual(['a1', 'b1', 'c1', 'd1', 'a2', 'e1']);
     expect(ids.indexOf('a2') - ids.indexOf('a1')).toBe(SOURCE_SPACING);
   });
-  it('끼우기 간격(복습 3장)만으로도 같은 출처 새 표현은 4장 떨어진다 · 남은 것이 같은 출처뿐이면 순서대로 낸다', () => {
+  it('고르게 편 자리가 가까우면 복습을 한 장 더 내서 같은 출처 새 표현을 4장 띄운다 · 남은 것이 같은 출처뿐이면 순서대로 낸다', () => {
     const reviews = Array.from({ length: 6 }, (_, i) => review(`r${i}`, 'legacy', i / 10));
     const ids = orderReviewQueue({ reviews, fresh: [fresh('a1', 'legacy', 'm'), fresh('a2', 'legacy', 'm')] }).map(item => item.id);
-    expect(ids).toEqual(['r0', 'r1', 'r2', 'a1', 'r3', 'r4', 'r5', 'a2']);
+    // 비율대로면 r0 r1 a1 r2 r3 a2 … — a2를 한 장 미뤄 4장 띄운다.
+    expect(ids).toEqual(['r0', 'r1', 'a1', 'r2', 'r3', 'r4', 'a2', 'r5']);
     expect(ids.indexOf('a2') - ids.indexOf('a1')).toBeGreaterThanOrEqual(SOURCE_SPACING);
     expect(orderReviewQueue({ fresh: [fresh('a1', 'legacy', 'm'), fresh('a2', 'legacy', 'm')] }).map(item => item.id)).toEqual(['a1', 'a2']);
   });

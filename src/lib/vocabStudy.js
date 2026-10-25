@@ -1,6 +1,7 @@
 // 단어장 학습 관련 순수 헬퍼 — 덱 그룹핑 · 신규 판정 · 하루 새 단어 한도 · 셔플
 import { parseTitle } from './seriesMeta';
 import { splitSentenceAroundWord } from './constants';
+import { learningDay } from './fsrsScheduler';
 
 // 저장한 문장 전체를 가리거나 정답만 제시하면 회상할 단서가 없다.
 // 선호 모드를 덮지 않고 이 카드만 기존 플래시 방식으로 출제한다.
@@ -21,7 +22,9 @@ export const NEW_PER_DAY_OPTIONS = [0, 5, 10, 15, 20, 30, 40];
 export const DEFAULT_NEW_PER_DAY = 15;
 
 const INTRO_KEY = 'vocab_new_intro';
-const todayStr = () => new Date().toISOString().slice(0, 10);
+// 오늘 = 학습일(04:00 KST 경계) — 서버의 새 단어 하루 몫과 같은 날(2026-10-25 KST, 그 전은 UTC 날짜 = 09:00 KST에 넘어갔다).
+// 저장 모양(YYYY-MM-DD)은 그대로라 같은 학습일이면 이전 기록을 이어 읽는다.
+const todayStr = () => new Date(learningDay(Date.now()) * 86400000).toISOString().slice(0, 10);
 
 // 신규(미학습) 판정 — 한 번이라도 복습하면 last_reviewed_at이 채워진다.
 // (repetitions는 이 스키마에서 lapses라 신규 판정에 쓰면 안 됨)

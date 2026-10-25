@@ -104,6 +104,37 @@ export function learningDay(value, timeZone = FSRS_POLICY.timeZone, rolloverHour
   return Math.floor(day.getTime() / DAY) - (Number(fields.hour) < rolloverHour ? 1 : 0);
 }
 
+/**
+ * 학습일 day가 시작하는 시각(ms) — learningDay(t) >= day인 가장 이른 t(서울 · 04시면 그날 04:00 KST).
+ * 날 단위 기한의 기준이다(Anki: 복습 기한은 날 번호로 두고 다음 날이 시작하면 연다 — rslib scheduler/timing.rs).
+ * 지역 시계에 그 시각이 없으면(일광 절약으로 건너뛴 시각) 그 뒤 첫 시각이다. 서울 고정 구간은 더해서 센다.
+ */
+export function learningDayStart(day, timeZone = FSRS_POLICY.timeZone, rolloverHour = FSRS_POLICY.rolloverHour) {
+  if (!Number.isInteger(rolloverHour) || rolloverHour < 0 || rolloverHour > 23) throw new Error('invalid_rollover');
+  if (!Number.isSafeInteger(day)) throw new Error('invalid_scheduler_time');
+  const wall = day * DAY + rolloverHour * 3600000;
+  if (timeZone === 'Asia/Seoul' && wall - SEOUL_OFFSET >= SEOUL_FIXED_FROM) return wall - SEOUL_OFFSET;
+  // 그 밖은 지역 달력으로 경계를 찾는다(시간대 차는 ±14시간 안이다).
+  let lo = wall - 36 * 3600000, hi = wall + 36 * 3600000;
+  if (!(learningDay(lo, timeZone, rolloverHour) < day && learningDay(hi, timeZone, rolloverHour) >= day)) throw new Error('invalid_scheduler_time');
+  while (hi - lo > 1) {
+    const mid = Math.floor((lo + hi) / 2);
+    if (learningDay(mid, timeZone, rolloverHour) >= day) hi = mid; else lo = mid;
+  }
+  return hi;
+}
+
+/**
+ * 날 단위 기한이면 from의 학습일부터 센 날 수, 아니면 null — 기한이 학습일 시작 시각일 때만 날 단위다
+ * (분 단위 학습 단계 · 날 경계 기한 전에 저장된 「채점 시각 + N×24시간」 기한은 null). 화면의 「N일」 글자가 쓴다.
+ */
+export function learningDaySpan(due, from, timeZone = FSRS_POLICY.timeZone, rolloverHour = FSRS_POLICY.rolloverHour) {
+  const at = schedulerTime(due), day = learningDay(at, timeZone, rolloverHour);
+  if (learningDayStart(day, timeZone, rolloverHour) !== at) return null;
+  const days = day - learningDay(from, timeZone, rolloverHour);
+  return days > 0 ? days : null;
+}
+
 export function validateFsrsCard(card) {
   if (!card || card.version !== 1 || card.engine !== FSRS_POLICY.engine ||
       !Object.hasOwn(FSRS_POLICIES, card.policyVersion) || !STATES.includes(card.state)) throw new Error('unsupported_fsrs_card');
@@ -158,13 +189,15 @@ function stepPlan(card, rating, policy) {
  * 같은 카드와 한 번 캡처한 시각으로 네 버튼의 실제 전이를 계산한다. 미리 복습하지 않는다.
  * policyVersion = 채점 뒤 카드의 정책(서버가 알린 지금 정책). 생략하면 카드의 정책을 그대로 쓴다.
  * easyFloor = 학습 · 재학습의 쉬움을 알맞음 간격보다 하루 이상 길게(Anki 대조, 오너 승인 2026-10-23 KST).
+ * dayDue = 복습 단계 기한을 「채점한 학습일 + N일」이 시작하는 시각으로(Anki 날 경계, 오너 「Anki와 동일하게」 2026-10-25 KST —
+ * 23:00에 1일로 답하면 다음 날 04:00에 연다). false = 그 전의 「채점 시각 + N×24시간」.
  * false는 그 전에 저장된 채점을 되돌릴 때 원래 계산을 다시 짓는 데만 쓴다(planFsrsUndo).
  */
-export function previewFsrsRatings(input, at, { policyVersion = input?.policyVersion, easyFloor = true } = {}) {
+export function previewFsrsRatings(input, at, { policyVersion = input?.policyVersion, easyFloor = true, dayDue = true } = {}) {
   const card = validateFsrsCard(input), now = schedulerTime(at), policy = fsrsPolicySteps(policyVersion);
   if (now < schedulerTime(card.due)) throw new Error('fsrs_card_not_due');
-  const elapsed = card.lastReview === null ? 0 : learningDay(now, card.timeZone, card.rolloverHour)
-    - learningDay(card.lastReview, card.timeZone, card.rolloverHour);
+  const today = learningDay(now, card.timeZone, card.rolloverHour);
+  const elapsed = card.lastReview === null ? 0 : today - learningDay(card.lastReview, card.timeZone, card.rolloverHour);
   if (elapsed < 0) throw new Error('scheduler_clock_reversed');
   const memory = [1, 2, 3, 4].map(rating => algorithm.next_state({ stability: card.stability, difficulty: card.difficulty }, elapsed, rating));
   const days = memory.map(m => algorithm.next_interval(m.stability, elapsed));
@@ -182,7 +215,9 @@ export function previewFsrsRatings(input, at, { policyVersion = input?.policyVer
       state: step?.state || 'Review', step: step?.step || 0, scheduledDays, elapsedDays: elapsed,
       reps: card.reps + 1, lapses: card.lapses + (card.state === 'Review' && rating === 1 ? 1 : 0),
       lastReview: new Date(now).toISOString(),
-      due: step ? new Date(now + step.seconds * 1000).toISOString() : date_scheduler(new Date(now), scheduledDays, true).toISOString() };
+      due: step ? new Date(now + step.seconds * 1000).toISOString()
+        : dayDue ? new Date(learningDayStart(today + scheduledDays, card.timeZone, card.rolloverHour)).toISOString()
+        : date_scheduler(new Date(now), scheduledDays, true).toISOString() };
     validateFsrsCard(next);
     return [rating, { card: next, log: { rating, reviewedAt: next.lastReview, policyVersion: card.policyVersion,
       previousRevision: card.revision, elapsedDays: elapsed, previousState: card.state,

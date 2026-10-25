@@ -23,7 +23,7 @@ import { buildVocabularyWordIndex } from '@/lib/vocabularyDueIndex';
 import { preservePendingVocabularyReviews } from '@/lib/viewerVocabularyCache';
 import { LEVEL_LIST_LANGS, levelGroupsOf, levelKinds, LEVEL_KIND_LABEL } from '@/lib/levelList';
 import {
-  HARD_LAPSES, dueTomorrowCount, gradePreviews, gradeToastText, intervalAmount, lapsesOf,
+  HARD_LAPSES, dueTomorrowCount, gradePreviews, gradeToastText, dueAmount, inLearningStep, lapsesOf,
   levelProgressPercent, levelRowProjection, levelWordGraded, levelWordStatus, newStartedToday, nextDueMs, todayAgainAt,
 } from '@/lib/levelWordStatus';
 import { DEFAULT_NEW_PER_DAY, loadNewPerDay } from '@/lib/vocabStudy';
@@ -32,7 +32,6 @@ import {
 } from '@/lib/levelWordAreas';
 import { useLevelWordAreas } from '@/lib/useLevelWordAreas';
 import { levelPackTiles } from '@/lib/levelCharTiles';
-import { schedulerTime } from '@/lib/fsrsScheduler';
 import {
   gradeLevelSession, moreLevelSession, nextLevelKey, pullLevelSession, sessionCurrent, sessionDone, sessionDue, sessionNextAt, sessionOrder,
   revertLevelGrade, sessionWaiting, startLevelSession,
@@ -232,7 +231,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
   const nextLine = useCallback((key) => {
     const next = table.get(key)?.projection?.review?.nextQuestionAt;
     if (!next) return null;
-    const a = intervalAmount(schedulerTime(next) - clock);
+    const a = dueAmount(next, clock);
     return a ? `${a.n}${a.unit} 뒤 복습` : null;
   }, [table, clock]);
 
@@ -299,7 +298,8 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
     // 하루 새 단어(시안 ⑦-1 추천) — 복습실과 같은 숫자(복습 설정 · vocab_new_per_day)에서 오늘 이미 시작한 수를 뺀 만큼만 줄에 세운다.
     const perDay = userId ? loadNewPerDay() : null;
     const newCap = perDay === null ? Infinity : perDay - newStartedToday(index, language, Date.now());
-    let next = startLevelSession(allEntries, (k) => table.get(k)?.status, (k) => nextDueMs(table.get(k)?.projection), Date.now(), { newCap });
+    let next = startLevelSession(allEntries, (k) => table.get(k)?.status, (k) => nextDueMs(table.get(k)?.projection), Date.now(),
+      { newCap, learningOf: (k) => inLearningStep(table.get(k) || {}) });
     setNewPerDay(perDay);
     // 로그인 · 다른 레벨 단어 카드에서 돌아오면 보던 카드부터(한도 뒤에 남긴 새 단어여도).
     const back = readJson(sessionStorage, RETURN_KEY);

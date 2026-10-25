@@ -15,7 +15,7 @@
 
 import { fsrs, Rating, State, createEmptyCard, S_MIN, S_MAX } from 'ts-fsrs';
 import { assertLegacyFsrsAllowed } from './fsrsLegacyBoundary.js';
-import { FSRS_POLICY, fsrsPolicySteps, introduceFsrsCard, previewFsrsRatings, schedulerTime } from './fsrsScheduler.js';
+import { FSRS_POLICY, fsrsPolicySteps, introduceFsrsCard, learningDay, learningDaySpan, learningDayStart, previewFsrsRatings, schedulerTime } from './fsrsScheduler.js';
 
 // 기본 파라미터로 스케줄러 생성 (한번만)
 const scheduler = fsrs();
@@ -86,9 +86,9 @@ export function calculateFSRS(rating, prevStats) {
 
   // next_review_at: 우리는 "일 단위 반올림" 사용 (VocabReview가 하루 단위로 복습 큐잉)
   // 간격 상한은 FSRS 카드와 같은 365일(fsrsScheduler FSRS_POLICY.maximumInterval) — 옛 경로 카드도 1년 안에 돌아온다.
+  // 기한은 FSRS 카드와 같은 날 경계(학습일 + N일이 시작하는 04:00 KST, 2026-10-25 KST) — 채점 시각 + N일이 아니다.
   const intervalDays = Math.min(LEGACY_MAX_INTERVAL_DAYS, Math.max(1, Math.round(S)));
-  const nextReview = new Date();
-  nextReview.setDate(nextReview.getDate() + intervalDays);
+  const nextReview = new Date(learningDayStart(learningDay(now) + intervalDays));
 
   return {
     interval: S,
@@ -113,9 +113,13 @@ const STEPS = fsrsPolicySteps(VOCAB_STEP_POLICY);
 const DAY_MS = 24 * 3600 * 1000;
 // 복습 단계(하루 이상)와 학습 단계(10분 이하)를 가르는 간격 — 하루 간격 카드도 next_review_at(채점 계산 시각 기준)이
 // last_reviewed_at(기록 시각, 몇 ms 뒤)보다 하루에 조금 못 미치게 찍히므로 정확히 하루로 가르면 복습 카드가 학습 단계로 읽힌다.
+// 날 경계 기한(2026-10-25 KST)부터는 03:55에 1일로 답하면 기한이 5분 뒤 04:00이다 — 기한이 학습일 시작 시각이면 간격과 상관없이 복습 단계다.
 const REVIEW_GAP_MS = DAY_MS / 2;
+const isDayDue = (due) => learningDayStart(learningDay(due)) === due;
+// 첫 안정도는 시각과 무관하다 — 서울 고정 구간 시각으로 계산해 모듈을 읽을 때 지역 달력 서식기를 만들지 않는다.
+const STEP_ANCHOR = Date.UTC(2026, 0, 1);
 const INITIAL_S = (() => {
-  const first = previewFsrsRatings(introduceFsrsCard(0, { policyVersion: VOCAB_STEP_POLICY }), STEPS.learning[0] * 1000);
+  const first = previewFsrsRatings(introduceFsrsCard(STEP_ANCHOR, { policyVersion: VOCAB_STEP_POLICY }), STEP_ANCHOR + STEPS.learning[0] * 1000);
   return { good: first[3].card.stability, easy: first[4].card.stability };
 })();
 const timeOf = (value) => { try { return value == null ? NaN : schedulerTime(value); } catch { return NaN; } };
@@ -126,7 +130,7 @@ export function vocabStepPhase(prev) {
   if (S <= 0) return { state: 'New', step: 0 };
   const due = timeOf(prev.next_review_at), last = timeOf(prev.last_reviewed_at);
   if (Number.isFinite(last)) {
-    if (!Number.isFinite(due) || due - last >= REVIEW_GAP_MS) return { state: 'Review', step: 0 };
+    if (!Number.isFinite(due) || due - last >= REVIEW_GAP_MS || isDayDue(due)) return { state: 'Review', step: 0 };
     if ((prev.repetitions ?? 0) > 0) return { state: 'Relearning', step: 0 };
     return { state: 'Learning', step: due - last >= STEPS.learning[1] * 1000 - 1000 ? 1 : 0 };
   }
@@ -143,7 +147,7 @@ function vocabReviewCard(prev, now) {
     rolloverHour: FSRS_POLICY.rolloverHour, introducedAt: new Date(last).toISOString(), revision: 0, state: 'Review', step: 0,
     stability: Math.min(S_MAX, Math.max(S_MIN, Number(prev.interval))), difficulty: Math.min(10, Math.max(1, Number(prev.ease_factor) || 5)),
     reps: lapses + 1, lapses, due: new Date(Math.max(last, Math.min(due, now))).toISOString(), lastReview: new Date(last).toISOString(),
-    scheduledDays: Math.min(FSRS_POLICY.storedIntervalLimit, Math.max(1, Math.round((due - last) / DAY_MS))), elapsedDays: 0 };
+    scheduledDays: Math.min(FSRS_POLICY.storedIntervalLimit, Math.max(1, learningDaySpan(due, last) ?? Math.round((due - last) / DAY_MS))), elapsedDays: 0 };
 }
 
 /**

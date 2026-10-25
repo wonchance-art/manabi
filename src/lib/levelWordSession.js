@@ -1,32 +1,40 @@
 // 단어 페이지(HSK · JLPT)의 오늘 할 줄 — 한 단어 모드와 리스트 모드가 같은 줄을 쓴다(오너 확정 2026-10-19 KST · 문서 「한 단어 모드」 · 「리스트 모드」).
 // 순수 상태 — 화면은 이 함수들의 결과만 그린다. 기록은 채점 길(뷰어 · 복습실 정본)이 하고, 여기는 순서만 정한다.
 //
-// 줄 순서: ① 시간이 된 카드(기다리다 차례가 온 카드, 먼저 된 것부터) ② 오늘 복습 · 담지 않은 새 단어(목록 순) ③ 기다리는 카드(남은 시간 짧은 순).
+// 줄 순서: ① 시간이 된 카드(기다리다 차례가 온 카드 · 시작할 때 이미 차례가 된 학습 단계 카드, 먼저 된 것부터)
+// ② 오늘 복습과 담지 않은 새 단어를 섞은 줄(둘 다 목록 순, 새 단어는 복습 사이에 고르게 — 복습실과 같은 intersperseNew,
+// Anki 「복습과 섞기」, 오너 「Anki와 동일하게」 2026-10-25 KST) ③ 기다리는 카드(남은 시간 짧은 순).
 // 채점해서 다음 차례가 오늘 안(다시 1분 · 어려움 6분 …)이면 그 시각까지 ③에서 기다리고, 내일 이후면 줄에서 빠진다.
 // 줄에 기다리는 카드만 남으면 한 단어 모드는 가장 먼저 될 카드를 앞당겨 이어간다. 둘 다 비면 끝(「오늘 이 레벨 끝」).
 // 되돌리기는 직전 상태로 — 화면이 기록 되돌리기와 같이 부른다.
 // 하루 새 단어(시안 ⑦-1 추천 · 2026-10-21 KST): ② 중 담지 않은 새 단어는 newCap개까지만 줄에 서고 나머지는 held에 남는다.
 // 줄이 비면 끝 화면이 「새 단어 N개 더」로 held에서 꺼낸다(막지 않는다). 복습할 때가 된 카드는 한도와 상관없이 다 선다.
 
+import { intersperseNew } from './reviewQueue.js';
+
 const byAt = (a, b) => a.at - b.at;
 
 /**
  * 세션 시작 — entries = 범위 단어(목록 순), statusOf(key) = 'new' | 'today' | 'review' | 'grad',
  * dueAtOf(key) = 다음 차례 시각(ms, 없으면 0). 오늘 복습인데 아직 시각이 안 된 카드(오늘 앞서 채점한 카드)는 기다리는 카드로.
+ * learningOf(key) = 분 단위 학습 · 재학습 단계 카드인가 — 이미 차례가 됐으면 섞지 않고 맨 앞(먼저 된 것부터).
  */
-export function startLevelSession(entries, statusOf, dueAtOf = () => 0, at = Date.now(), { newCap = Infinity } = {}) {
-  const today = [], fresh = [], waiting = [];
+export function startLevelSession(entries, statusOf, dueAtOf = () => 0, at = Date.now(), { newCap = Infinity, learningOf = () => false } = {}) {
+  const today = [], learning = [], fresh = [], waiting = [];
   for (const e of entries || []) {
     const s = statusOf(e.key);
     if (s === 'today') {
       const due = Number(dueAtOf(e.key)) || 0;
-      if (due > at) waiting.push({ key: e.key, at: due }); else today.push(e.key);
+      if (due > at) waiting.push({ key: e.key, at: due });
+      else if (learningOf(e.key)) learning.push({ key: e.key, at: due });
+      else today.push(e.key);
     } else if (s === 'new') fresh.push(e.key);
   }
   waiting.sort(byAt);
+  learning.sort(byAt);
   const cap = Math.max(0, Math.min(fresh.length, newCap));
-  return { queue: [...today, ...fresh.slice(0, cap)], held: fresh.slice(cap), waiting, graded: 0, counts: { 1: 0, 2: 0, 3: 0, 4: 0 }, history: [],
-    total: today.length + cap + waiting.length };
+  return { queue: [...learning.map((l) => l.key), ...intersperseNew(today, fresh.slice(0, cap))], held: fresh.slice(cap), waiting,
+    graded: 0, counts: { 1: 0, 2: 0, 3: 0, 4: 0 }, history: [], total: today.length + learning.length + cap + waiting.length };
 }
 
 /** 「새 단어 N개 더」 — 하루 한도 뒤에 남긴 새 단어를 n개 줄 끝에 세운다. stillNew = 그사이 다른 곳(다음에 볼 단어 · 뷰어)에서 채점한 단어는 건너뛴다. */
