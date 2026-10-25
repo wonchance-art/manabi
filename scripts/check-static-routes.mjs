@@ -8,5 +8,5 @@ try {
   const manifest = JSON.parse(readFileSync(new URL('../.next/prerender-manifest.json', import.meta.url), 'utf8'));
   const errors = staticRouteErrors(manifest);
   if (errors.length) { console.error(errors.join('\n')); process.exitCode = 1; }
-  else console.log(JSON.stringify({ verified: STATIC_ROUTES.map(({ route, revalidate }) => `${route}${revalidate === false ? '' : ` (ISR ${revalidate}s)`}`) }, null, 2));
+  else console.log(JSON.stringify({ verified: STATIC_ROUTES.map(({ route, revalidate, onDemand }) => `${route}${revalidate === false ? '' : ` (ISR ${revalidate}s${onDemand ? ', 첫 방문' : ''})`}`) }, null, 2));
 } catch (error) { console.error(error.message); process.exitCode = 1; }

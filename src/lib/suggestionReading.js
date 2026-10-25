@@ -1,6 +1,7 @@
 import { isOnDemandSuggestion } from './suggestionSources';
 import { createComposerSave, newComposerDraft } from './materialComposer';
 import { licenseForSource } from './videoAttribution';
+import { SUGGESTION_BACK, suggestionBackKey } from './suggestionBack';
 
 export const SUGGESTION_ID = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 export const SUGGESTION_FIELDS = 'id, date, language, source, video_id, title, channel_name, thumbnail_url, level, transcript, material_id';
@@ -22,15 +23,8 @@ export function canReadSuggestion(s) {
     (!!s.transcript?.trim() || !!s.material_id);
 }
 
-// 추천 본문의 돌아갈 곳(?from=) — 들어온 화면으로. 목록 밖 값은 서재로.
-export const SUGGESTION_BACK = Object.freeze({
-  home: { href: '/home', label: '← 오늘로' },
-  discover: { href: '/discover', label: '← 산책으로' },
-  // 「함께 읽는 글」 목록에서 연 추천은 그 목록으로(READER-RETURN-001).
-  reading: { href: '/discover?view=reading', label: '← 함께 읽는 글' },
-  materials: { href: '/materials', label: '← 내 서재로' },
-});
-export const suggestionBackKey = (from) => (Object.hasOwn(SUGGESTION_BACK, from) ? from : 'materials');
+// 돌아갈 곳(?from=) 표는 middleware도 쓰는 가벼운 모듈에 있다(suggestionBack.js) — 여기서는 같은 이름으로 다시 내보낸다.
+export { SUGGESTION_BACK, suggestionBackKey };
 
 export function suggestionHref(s, from = 'materials') {
   if (/^[1-9]\d*$/.test(String(s.material_id || ''))) return `/viewer/${s.material_id}`;

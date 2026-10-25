@@ -117,6 +117,12 @@ describe('빌드 산출 대조기(scripts/check-static-routes.mjs)', () => {
     expect(errors[0]).toMatch(/^\/auth: 정적으로 굽지 않았다/);
     expect(errors[1]).toMatch(/^\/lessons: ISR 주기 60 ≠ 표 3600/);
   });
+  it('첫 방문 ISR(onDemand)은 dynamicRoutes의 차단 생성 항목으로 본다 — 없음(동적 ƒ) · fallback 어긋남을 잡는다', () => {
+    const onDemand = [{ route: '/suggestions/[id]', revalidate: 300, onDemand: true }];
+    expect(staticRouteErrors({ routes: {}, dynamicRoutes: { '/suggestions/[id]': { fallback: null } } }, onDemand)).toEqual([]);
+    expect(staticRouteErrors({ routes: {}, dynamicRoutes: {} }, onDemand)[0]).toMatch(/^\/suggestions\/\[id\]: 첫 방문 ISR로 등록되지 않았다/);
+    expect(staticRouteErrors({ routes: {}, dynamicRoutes: { '/suggestions/[id]': { fallback: false } } }, onDemand)[0]).toMatch(/fallback false ≠ null/);
+  });
   it('CI e2e 빌드 뒤에 돈다', () => {
     expect(fs.readFileSync(path.join(ROOT, '.github/workflows/ci.yml'), 'utf8')).toContain('run: node scripts/check-static-routes.mjs');
   });

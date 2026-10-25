@@ -5,7 +5,7 @@
 //      쿠키 · 요청 헤더 · 쿠키 세션 클라이언트 · searchParams를 읽지 않는다.
 //   ② 빌드 산출 대조(scripts/check-static-routes.mjs, CI e2e 빌드 뒤) — next build가 실제로 정적(○ · ●)으로 구웠고, ISR 주기가 표와 같다.
 //      빌드 판정이 소스 계약보다 넓다(라이브러리 깊은 곳의 동적 API · 새 import도 잡는다).
-// revalidate: false = 배포 동안 고정(정적), 숫자 = ISR 초.
+// revalidate: false = 배포 동안 고정(정적), 숫자 = ISR 초. onDemand: true = 빌드 때 굽는 주소가 없고 첫 방문에 구워 담는 ISR(동적 세그먼트 값을 빌드가 모른다).
 // 계정 데이터를 서버에서 그리는 화면(/viewer/[id] · /materials · /study* · 판본 하나 말고도 쿼리가 붙은 /books/*)은 여기에 넣지 않는다.
 export const STATIC_ROUTES = Object.freeze([
   { route: '/auth', revalidate: false },
@@ -37,6 +37,12 @@ export const STATIC_ROUTES = Object.freeze([
   { route: '/books/japanese-n5/edition/[edition]/[hint]', revalidate: 3600 },
   { route: '/books/japanese-n4/edition/[edition]/[hint]', revalidate: 3600 },
   { route: '/books/japanese-n3/edition/[edition]/[hint]', revalidate: 3600 },
+  // 6단계(FIELD-AUDIT F5): 추천 읽을거리 한 편 ISR 5분(/api/suggestions/[id] 공유 캐시와 같은 주기) — 기본 판(서재로)과 돌아갈 곳 판(?from= → middleware).
+  // id를 빌드 때 모르므로 굽지 않고(generateStaticParams 빈 목록) 첫 방문에 굽는다(onDemand) — 빌드 산출에는 dynamicRoutes 항목으로만 남는다.
+  { route: '/suggestions/[id]', revalidate: 300, onDemand: true },
+  { route: '/suggestions/[id]/from/home', revalidate: 300, onDemand: true },
+  { route: '/suggestions/[id]/from/discover', revalidate: 300, onDemand: true },
+  { route: '/suggestions/[id]/from/reading', revalidate: 300, onDemand: true },
 ]);
 
 /**
@@ -46,7 +52,15 @@ export const STATIC_ROUTES = Object.freeze([
 export function staticRouteErrors(manifest, table = STATIC_ROUTES) {
   const routes = Object.values(manifest?.routes || {});
   const errors = [];
-  for (const { route, revalidate } of table) {
+  for (const { route, revalidate, onDemand } of table) {
+    if (onDemand) {
+      // 첫 방문에 굽는 ISR은 dynamicRoutes에 fallback: null(차단 생성 — dynamicParams true)로 남는다. 동적(ƒ)이면 dynamicRoutes에 없다.
+      // 주기(revalidate)는 이 항목에 실리지 않는다(PPR 아닌 판) — 소스 계약(suggestionPageStatic.test.jsx)과 응답 Cache-Control(s-maxage)이 본다.
+      const entry = manifest?.dynamicRoutes?.[route];
+      if (!entry) errors.push(`${route}: 첫 방문 ISR로 등록되지 않았다(동적 ƒ로 바뀜 — 쿠키 · 헤더 · searchParams · force-dynamic · generateStaticParams를 확인)`);
+      else if (entry.fallback !== null) errors.push(`${route}: fallback ${JSON.stringify(entry.fallback)} ≠ null(dynamicParams true · 차단 생성이어야 한다)`);
+      continue;
+    }
     const built = routes.filter((r) => r?.srcRoute === route);
     if (!built.length) { errors.push(`${route}: 정적으로 굽지 않았다(동적 ƒ로 바뀜 — 쿠키 · 헤더 · searchParams · force-dynamic을 확인)`); continue; }
     const wrong = built.filter((r) => r.initialRevalidateSeconds !== revalidate);
