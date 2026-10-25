@@ -69,6 +69,8 @@ describe('출력 SQL — 읽기 전용', () => {
     expect(sql).toContain('capability_fingerprint_matches_embedded');
     expect(sql).toContain("= '2e57290ce85b8f034f7f304dfdea3ad9' as capability_fingerprint_matches_embedded");
     expect(sql).toMatch(/= '[0-9a-f]{32}' as core_fingerprint_matches_embedded/);
+    // 지문 캐시(20261023170000) 뒤 원래 본문은 contract_hash_live()로 옮겨졌다 — 있으면 그쪽을 본다(운영 실측 2026-10-26 KST).
+    expect(sql).toContain("coalesce(pg_catalog.to_regprocedure('fsrs_private.contract_hash_live()'), pg_catalog.to_regprocedure('fsrs_private.contract_hash()'))");
   });
 });
 

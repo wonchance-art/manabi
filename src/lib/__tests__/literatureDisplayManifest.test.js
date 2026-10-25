@@ -91,7 +91,10 @@ describe('표시 함수 — 표시용 대조표로 전과 같은 판정', () => 
 
 // 계약 ②: 클라이언트 화면 파일은 전체 대조표(manifest.generated.json)를 직접 · 간접 import하지 않는다.
 // 정적 import · re-export를 따라간다(동적 import()는 따로 쪼갠 청크라 그 화면 번들에 붙지 않는다 — 따라가지 않는다).
-const CLIENT_SCREENS = ['src/views/HomePage.jsx', 'src/views/MaterialsPage.jsx'];
+// 수업 · 노트(ROUTE-AUDIT-2 F5, 2026-10-25 KST): 원문 수정 차단 판정만 쓰는 재분석 보존 → 수업 모델 사슬로 /class · /class/* · /notes/[id] 첫 JS에
+// 전체 대조표(gz 67 kB)가 실렸다 — 판정은 대조표 없는 literatureCanonicalProvider에서 읽는다.
+const CLIENT_SCREENS = ['src/views/HomePage.jsx', 'src/views/MaterialsPage.jsx', 'src/views/ClassHubPage.jsx', 'src/components/notes/StudyNotePage.jsx',
+  'src/lib/classroomModel.js', 'src/lib/reanalysisPreservation.js'];
 const FULL_MANIFEST = /\/content\/literature\/[^/]+\/manifest\.generated\.json$/u;
 const STATIC_IMPORT = /(?:^|[\n;])\s*(?:import|export)\s+(?:[^'"]*?\sfrom\s*)?['"]([^'"]+)['"]/gu;
 

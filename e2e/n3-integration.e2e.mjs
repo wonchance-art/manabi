@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
 import { fixtureSession } from './fixtures/n5-revision-backend.mjs';
 import { learningDay } from '../src/lib/fsrsScheduler.js';
+import { compactVocabularySnapshot } from '../src/lib/vocabularySnapshotLight.js';
 
 const repo = fileURLToPath(new URL('..', import.meta.url));
 const base = process.env.QA_BASE || 'http://localhost:49121';
@@ -99,9 +100,14 @@ export function createN3Fixture() {
     state.reads.push({ table, method: req.method, params: Object.fromEntries(url.searchParams) });
     if (table === 'is_admin') return send(claims?.e2e_role === 'admin');
     if (table === 'fsrs_capabilities') return send({ version: 1, enabled: true, policyVersion: 'anki-v2' });
-    if (table === 'fsrs_vocabulary_snapshot') return send({ version: 1, actorId: uid, enabled: true, complete: true, registryAvailable: true,
+    // 가벼운 읽기(SNAPSHOT-LIGHT-001 — 요약 조회 · 복습방 첫 숫자 · /study)는 같은 snapshot을 기준 구현으로 줄여 돌려준다.
+    if (table === 'fsrs_vocabulary_snapshot' || table === 'fsrs_vocabulary_snapshot_light') {
+      const snapshot = { version: 1, actorId: uid, enabled: true, complete: true, registryAvailable: true,
       rows: state.words, registry: state.words.map(word => ({ cardId: word.id, userId: uid, enrolled: false, eligible: true,
-        known: false, excluded: false, card: null, attempt: null, nextQuestionAt: null, firstQuestionAt: null })), now: new Date().toISOString() });
+        known: false, excluded: false, card: null, attempt: null, nextQuestionAt: null, firstQuestionAt: null })), now: new Date().toISOString() };
+      return send(table === 'fsrs_vocabulary_snapshot' ? snapshot
+        : compactVocabularySnapshot(snapshot, { language: body?.p_language ?? null, summary: body?.p_summary === true }));
+    }
     if (table === 'fsrs_list_states') return send([]);
     if (table === 'learning_admission_status') return send(quota());
     if (table === 'learning_admit_legacy') {

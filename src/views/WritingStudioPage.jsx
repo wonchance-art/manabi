@@ -124,37 +124,58 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topicChoices]);
 
+  // 최근 작문 · 수확 재료는 이 화면 상태라 계정 캐시 비우기 밖이다 — 화면 계정이 바뀐 뒤 도착한 옛 계정 응답은 버린다(useVocabData의
+  // actorRef와 같은 모양, PERF 감사 2026-10-26 KST). 계정이 바뀌면 아래 효과가 비우고 새 계정으로 다시 읽는다.
+  const accountRef = useRef(user?.id);
+  accountRef.current = user?.id;
+
   // 최근 작문 히스토리 — 신규 컬럼 미적용 환경은 기본 컬럼으로 폴백
   async function loadHistory() {
-    if (!user?.id) return;
+    const account = user?.id;
+    if (!account) return;
+    const current = () => accountRef.current === account;
+    // 수확 재료(60행) · 대화 고친 말을 목록(10행) 조회와 함께 시작한다(ROUTE-AUDIT-2 F3, 2026-10-25 KST) — 전에는 목록 → 수확 → 대화가
+    // 차례로라 첫 화면 뒤 왕복 셋이 줄을 섰다. 받은 값 · 넣는 순서는 그대로다. 목록이 기본 컬럼 폴백으로 가면(errors 컬럼 미적용 환경)
+    // 먼저 시작한 수확(errors 포함)은 쓰지 않고 예전처럼 기본 컬럼으로 다시 받는다. 대화 조회의 계정도 이 렌더의 계정(= account)이다.
+    const early = {
+      gaps: Promise.resolve(gapRowsQuery(true, account)).catch(error => ({ error })),
+      conv: fetchConversationTurns(supabase, user.id).then(conversationGapRows, () => []),
+    };
     try {
       const full = await supabase
         .from('writing_practice')
         .select('id, created_at, language, level, score, prompt_type, prompt, sentence, corrected, feedback, errors, revision_of')
-        .eq('user_id', user.id)
+        .eq('user_id', account)
         .order('created_at', { ascending: false })
         .limit(10);
-      if (!full.error && full.data) { setHistory(full.data); await loadGapRows(true); return; }
+      if (!current()) return;
+      if (!full.error && full.data) { setHistory(full.data); await loadGapRows(true, account, early); return; }
       const base = await supabase
         .from('writing_practice')
         .select('id, created_at, language, score, sentence, corrected, feedback')
-        .eq('user_id', user.id)
+        .eq('user_id', account)
         .order('created_at', { ascending: false })
         .limit(10);
-      if (!base.error && base.data) { setHistory(base.data); await loadGapRows(false); }
+      if (!current()) return;
+      if (!base.error && base.data) { setHistory(base.data); await loadGapRows(false, account, { conv: early.conv }); }
     } catch {}
   }
   // U R2 — 수확 재료는 목록(10)보다 넓게 60행. errors 컬럼 미적용 환경은 sentence↔corrected만으로 수확된다(두 재료 독립)
-  async function loadGapRows(withErrors) {
+  function gapRowsQuery(withErrors, account) {
+    const cols = withErrors
+      ? 'id, created_at, language, sentence, corrected, errors'
+      : 'id, created_at, language, sentence, corrected';
+    return supabase.from('writing_practice').select(cols)
+      .eq('user_id', account).order('created_at', { ascending: false }).limit(60);
+  }
+  async function loadGapRows(withErrors, account, early = {}) {
     try {
-      const cols = withErrors
-        ? 'id, created_at, language, sentence, corrected, errors'
-        : 'id, created_at, language, sentence, corrected';
-      const r = await supabase.from('writing_practice').select(cols)
-        .eq('user_id', user.id).order('created_at', { ascending: false }).limit(60);
+      const r = await (early.gaps || gapRowsQuery(withErrors, account));
       if (!r.error && r.data) {
         // 대화에서 고친 말(v2-Z Z-R3)도 같은 수확기에 넣는다 — {sentence, corrected} 모양으로 파생만(새 표 0). 실패하면 작문만.
-        const conv = await fetchConversationTurns(supabase, user.id).then(conversationGapRows, () => []);
+        // user.id = 이 호출을 만든 렌더의 계정(= account). 늦게 왔으면 아래에서 버린다.
+        const conv = await (early.conv || fetchConversationTurns(supabase, user.id).then(conversationGapRows, () => []));
+        if (accountRef.current !== account) return;
         setGapRows([...r.data, ...conv]);
       }
     } catch {}
@@ -181,6 +202,8 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
     }
   }
   useEffect(() => {
+    // 옛 계정의 목록 · 담은 표시를 새 계정 화면에 남기지 않는다(첫 마운트는 이미 빈 값이라 화면 그대로)
+    setHistory([]); setGapRows([]); setGapAdded({});
     loadHistory();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);

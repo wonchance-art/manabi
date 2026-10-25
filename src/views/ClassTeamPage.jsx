@@ -11,6 +11,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
@@ -18,8 +19,6 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { ClassroomShell,ClassroomState,ClassCover } from '../components/classroom/ClassroomUI';
 import {canTeachClass,startingChapter,classWorkspaceHref} from '../lib/classWorkspace';
-import ClassTeamSettings from '../components/classroom/ClassTeamSettings';
-import ClassTextbookNotes from '../components/classroom/ClassTextbookNotes';
 import { classroomPlainText } from '../lib/classroomModel';
 import Button from '../components/Button';
 import MaterialGroupCard from '../components/MaterialGroupCard';
@@ -40,6 +39,16 @@ import ClassSaveResume from '../components/classroom/ClassSaveResume';
 import {classEntryHref,cacheClassSource} from '../lib/classHistoryNavigation';
 import { CourseTab } from '../components/classroom/ClassCourseSchedule';
 import { friendlyToastMessage } from '../lib/errorMessage';
+
+// 오너(교사) 뷰에만 있는 부분 — 수업 설정(이름 · 교재 연결 · 코스 · 입장 암호)과 교재 설명 관리. 학생 · 잠김 화면은 받지 않게
+// 따로 묶는다(PERF P7 2026-10-26 KST — 수업 기록 목록 ClassStudyHistory는 학생 화면 ClassRemoteHistory도 써서 그대로 둔다).
+// 오너 뷰가 마운트되면 곧바로 미리 받고(노트 캔버스 선례 loadCanvas), ?settings=1(허브에서 새 수업 직후)이면 계정 · 루트 확인과
+// 나란히 받아, 설정이 열린 채 시작하는 화면도 기다림이 겹치지 않는다.
+const loadTeamSettings=()=>import('../components/classroom/ClassTeamSettings');
+const loadTextbookNotes=()=>import('../components/classroom/ClassTextbookNotes');
+const ClassTeamSettings=dynamic(loadTeamSettings,{loading:()=>null});
+const ClassTextbookNotes=dynamic(loadTextbookNotes,{loading:()=>null});
+const preloadOwnerParts=()=>{for(const load of [loadTeamSettings,loadTextbookNotes])void load().catch(()=>{});};
 
 const RELOCK_MSG = '암호를 다시 입력해 주세요 — 선생님이 바꿨거나 30일이 지났어요.';
 const errMsg = (err) => (err?.status === 429 ? '잠시 후 다시 시도해 주세요.' : friendlyToastMessage(err));
@@ -90,6 +99,7 @@ function LockedView({ pw, setPw, busy, message, onSubmit }) {
 
 /** S5 — 오너: 암호·토큰 없이 RLS 직접. 같은 카드·같은 목록에 내 뷰어 링크. */
 function OwnerView({ root, user, teamKey, toast }) {
+  useEffect(()=>{preloadOwnerParts();},[]);
   const router = useRouter();
   const routeSearch=useSearchParams();
   const team = getTeam(root.processed_json?.metadata);
@@ -391,6 +401,8 @@ function StudentView({ teamKey, user, toast }) {
 
 export default function ClassTeamPage() {
   const { team: teamKey } = useParams();
+  const settingsEntry = useSearchParams().get('settings') === '1';
+  useEffect(() => { if (settingsEntry) preloadOwnerParts(); }, [settingsEntry]);
   const { user, loading } = useAuth();
   const toast = useToast();
   const { data: root, isLoading: rootLoading } = useQuery({

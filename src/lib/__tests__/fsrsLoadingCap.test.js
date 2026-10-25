@@ -129,7 +129,9 @@ describe('FSRS-LOADING-CAP — /vocab 배선', () => {
     expect(alert).toContain('fsrsReview.controller.refresh({ retry: true })');
   });
   it('loading은 기존 대기 표시(「복습 준비 중…」)로 이어진다 — 새 문구 없음', () => {
-    expect(src).toMatch(/const heroPending = [^\n]*fsrsReview\.status === 'loading'/);
+    expect(src).toMatch(/const roomHeroPending = [^\n]*fsrsReview\.status === 'loading'/);
+    // 서버 첫 화면 숫자(VOCAB-FIRST-NUMBERS-001)를 그리는 동안만 제외 — 그 밖의 대기 표시는 같은 판정이다.
+    expect(src).toContain('const heroPending = !firstView && roomHeroPending;');
     expect(src).toMatch(/heroPending \? <p aria-busy="true" className="review-room-note">복습 준비 중…<\/p>/);
   });
 });

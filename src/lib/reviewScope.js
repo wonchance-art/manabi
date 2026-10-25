@@ -241,3 +241,46 @@ export function countReviewScope({ snapshot, fsrsEntries, quota, scope, now = Da
   }
   return { ...plan, grammarDue: scope?.lang ? grammarDueCount(grammar, scope.lang, time(now)) : 0, byLang };
 }
+
+/**
+ * 담은 표현의 언어별 수(언어 칩 · 범위 언어 기본값) — 순서는 표현이 처음 나온 순서. 복습방과 서버 첫 화면 숫자(reviewRoomFirstScreen)가
+ * 같은 함수를 쓴다(VOCAB-FIRST-NUMBERS-001 — 언어 칩 순서 · 기본 언어가 목록이 온 뒤에도 그대로여야 숫자가 튀지 않는다).
+ */
+export function reviewLanguageCounts(words) {
+  const counts = new Map();
+  for (const word of words || []) {
+    const lang = wordScopeLanguage(word);
+    if (REVIEW_SCOPE_LANGS.includes(lang)) counts.set(lang, (counts.get(lang) || 0) + 1);
+  }
+  return counts;
+}
+
+/** 프로필의 학습 언어(배움 언어 칩이 고른 첫 언어). */
+export function profileReviewLang(profile) {
+  return Array.isArray(profile?.learning_language) ? profile.learning_language[0] : profile?.learning_language;
+}
+
+/** 범위 언어 기본값 — 주소 · 저장값이 없으면 학습 언어, 그 언어에 담은 표현이 없으면 가장 많은 언어. */
+export function defaultReviewLang(profileLang, languageCounts) {
+  return languageCounts.has(profileLang) ? profileLang
+    : [...languageCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || (REVIEW_SCOPE_LANGS.includes(profileLang) ? profileLang : 'Japanese');
+}
+
+/**
+ * 집중 연습 대상(§6-1 ④) — 범위 안 표현 전체(기한과 무관). 새 표현만 · 흐릿 · 위험 범위는 그 상태만. 잊기 쉬운 순서.
+ * vocab = 범위 안 표현, learningById = 투영(id → projection), fragileIds = 지난 14일 집중 연습 「몰랐어요」 · 오답 표현.
+ */
+export function scopePracticeWords(vocab, learningById, { reviewSupported = () => true, state = 'due', fragileIds = [], now = Date.now() } = {}) {
+  const fragile = new Set(fragileIds);
+  const rows = [];
+  for (const word of vocab || []) {
+    const p = learningById.get(word.id);
+    if (!p || p.review.known || p.review.excluded || !reviewSupported(word) || !hasMeaning(word)) continue;
+    const r = vocabularyRetrievability(p, Math.max(now, Date.parse(p.review.evaluatedAt) || 0));
+    const isNew = isVocabularyUnreviewed(p);
+    if (state === 'new' && !isNew) continue;
+    if (state === 'fragile' && (isNew || !(fragile.has(String(word.id)) || (r ?? 1) < FRAGILE_RETRIEVABILITY))) continue;
+    rows.push({ word, r: r ?? 2 });
+  }
+  return rows.sort((a, b) => a.r - b.r).map(row => row.word);
+}

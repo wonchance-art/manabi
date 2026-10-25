@@ -88,8 +88,9 @@ export function ReviewScopeNotice({ empty = false, scope, count, countFor, remai
   </>;
 }
 
-/** 범위 막대(§5-1) — 언어 칩(byLang) · 범위 칩(✕ = 그 축 풀기) · ＋ 범위(시트). */
-export default function ReviewScopeBar({ scope, languages, byLang = {}, countFor, allVocab, learningById, materialTitles, levels, onChange, onSelectLanguage }) {
+/** 범위 막대(§5-1) — 언어 칩(byLang) · 범위 칩(✕ = 그 축 풀기) · ＋ 범위(시트).
+ *  pending = 서버가 센 첫 화면 숫자만 있고 목록을 받는 중(VOCAB-FIRST-NUMBERS-001) — 시트는 목록이 있어야 세므로 「＋ 범위」를 잠근다. */
+export default function ReviewScopeBar({ scope, languages, byLang = {}, countFor, allVocab, learningById, materialTitles, levels, onChange, onSelectLanguage, pending = false }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef(null);
   const chips = scopeChips(scope, materialTitles);
@@ -113,9 +114,9 @@ export default function ReviewScopeBar({ scope, languages, byLang = {}, countFor
             <button type="button" className="review-scope__chip-clear" aria-label={`${chip.label} 범위 풀기`} onClick={() => onChange(clearScopeAxis(scope, chip.axis))}>✕</button>
           </span>
         ))}
-        <button type="button" className="review-scope__add" aria-haspopup="dialog" onClick={event => { triggerRef.current = event.currentTarget; setOpen(true); }}>＋ 범위</button>
+        <button type="button" className="review-scope__add" aria-haspopup="dialog" disabled={pending} onClick={event => { triggerRef.current = event.currentTarget; setOpen(true); }}>＋ 범위</button>
       </div>
-      {open && <ReviewScopeSheet scope={scope} countFor={countFor} allVocab={allVocab} learningById={learningById} materialTitles={materialTitles}
+      {open && !pending && <ReviewScopeSheet scope={scope} countFor={countFor} allVocab={allVocab} learningById={learningById} materialTitles={materialTitles}
         levels={levels} onApply={next => { setOpen(false); onChange(next); }} onClose={() => { setOpen(false); triggerRef.current?.focus?.(); }} />}
     </section>
   );

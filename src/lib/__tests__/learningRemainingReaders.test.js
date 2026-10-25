@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { introduceFsrsCard } from '../fsrsScheduler';
+import { compactVocabularySnapshot } from '../vocabularySnapshotLight';
 const env = vi.hoisted(() => ({ snapshot: null, client: { rpc: vi.fn() }, ref: null, captured: {} }));
 vi.mock('../server/fsrsLearning', () => ({ fsrsServiceClient: () => env.client }));
 vi.mock('../supabase', () => ({ supabase: {} }));
@@ -47,8 +48,10 @@ function database(events = []) {
 beforeEach(() => {
   vi.useFakeTimers(); vi.setSystemTime(NOW);
   env.snapshot = fixture(); env.captured = {};
-  env.client.rpc.mockReset().mockImplementation(async name => {
-    expect(name).toBe('fsrs_vocabulary_snapshot'); return { data: env.snapshot };
+  // /study 조립은 가벼운 읽기(이 언어 · 전체 칸 — SNAPSHOT-LIGHT-001). 응답은 같은 snapshot의 부분 집합(JS 기준 구현 = SQL, supabase/tests/vocabulary-snapshot-light.mjs).
+  env.client.rpc.mockReset().mockImplementation(async (name, args) => {
+    expect(name).toBe('fsrs_vocabulary_snapshot_light');
+    return { data: compactVocabularySnapshot(env.snapshot, { language: args.p_language, summary: args.p_summary }) };
   });
   env.ref = { ALL_CHAPTERS: [], LEVEL_META: [{ key: 'N5' }], langCode: 'ja', base: '/japanese',
     getChapter: () => null, isIntroLevel: () => false,
@@ -69,7 +72,7 @@ describe('study assembly authoritative candidate boundary', () => {
     expect(env.captured.warmupFallback).toEqual([]); // Saved enrolled/new terms cannot re-enter as content fallback.
     expect(JSON.stringify(env.snapshot.rows)).toBe(before);
     expect(env.client.rpc).toHaveBeenCalledOnce();
-    expect(env.client.rpc).toHaveBeenCalledWith('fsrs_vocabulary_snapshot', { p_actor: ACTOR });
+    expect(env.client.rpc).toHaveBeenCalledWith('fsrs_vocabulary_snapshot_light', { p_actor: ACTOR, p_language: 'Japanese', p_summary: false });
   });
   it('preserves future legacy for weakness without scheduling it as currently due', async () => {
     env.snapshot.rows[25].next_review_at = iso(NOW + 2 * 86400000);

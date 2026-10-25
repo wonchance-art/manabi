@@ -1075,6 +1075,39 @@
   (expectedLastReviewedAt · count=exact 0행 → 「다른 기기에서 먼저 복습한 표현이에요」, 기록 유지 · 일정 보존, ↶ 끔). 경계 확인 채점당 3 → 1(증거 공유 ·
   쓰기 직전 로컬 세션 대조), 같은 학습일 한도 GET 생략. 연결 상태 채점당 호출 13 → 8. /study 닫힘 keepalive(만료 토큰이면 보통 전송).
   남김: useInlineReview · 퀘스트 · 미루기는 무조건 쓰기 그대로(보낼함 재생만 CAS), 보낼함 안내 숫자 한 장 늦음(기존).
+- **VOCAB-FIRST-NUMBERS-001 ㉠ + SNAPSHOT-LIGHT-001 (2026-10-26 KST, 오너 「권장대로」 ×2 — 안 A: 가벼운 DB 읽기 먼저)**: /vocab 「오늘」 카드 · 언어 칩을
+  서버가 세어 첫 HTML에(브라우저와 같은 계산 · 같은 숫자 계약), 시작 · 집중 연습은 목록을 다 받을 때까지 잠금. 모바일 첫 숫자 2.3 s → 약 1.2 s.
+  서버 읽기는 새 RPC `fsrs_vocabulary_snapshot_light(actor, language, summary)` — snapshot 판정 조각 바이트 그대로(원문 md5 계약) · 언어 필터 ·
+  요약 칸 배열 · 기본값 registry 생략. 서버 snapshot 바이트: /vocab 4.2 → 2.7 MB(남은 2.1 MB = 브라우저 목록, F2 ② 후보) · /study 2.1 → 1.2 MB,
+  PGlite 3,000단어 전체 86 ms → 요약 30 ms. 마이그레이션 = 함수 1개 추가 + core 지문 재게시(1행), 사후 검사 = 모든 사용자 × 언어 × 모양
+  light ⊂ snapshot(다르면 전체 롤백). 운영 읽기 전용 사전 검사(02:19 KST): snapshot 본문 md5 90cb5fb5 일치 · 지문 넷 게시 = 계산 · 함수 없음 ·
+  사용자 2 · 최대 1,621행(사후 검사 즉시). 복원 `docs/sql/vocabulary-snapshot-light-rollback.sql`(앱은 함수 없으면 PGRST202에서만 전체 snapshot).
+  같은 PR: 사전 검사 스크립트 core 본문 비교를 `contract_hash_live()`로(지문 캐시 뒤 늘 거짓이던 것).
+  → **#1571 squash `0fdbcba9`(02:44 KST, 마이그레이션 자동 적용 — 본문 md5 3093ad73 · 지문 넷 정상 · anon/authenticated 실행 불가, 운영 16/16 · 오류 0)**.
+- **ROUTE-AUDIT-2 미감사 경로 31곳 (2026-10-26 KST)**: 합성 무거운 계정 + 손님 × 모바일/데스크톱. 가로 넘침 0 · CLS ≤ 0.021 · 탭 INP ≤ 120 ms.
+  적용(화면 무변화): F1 /learn 엣지 307(모바일 1,308 → 535 ms · JS 568 → 329 KB) · F3 /writing 조회 셋 동시 시작(사슬 −165 ms) ·
+  F4 맞춤도 인덱스 = due 인덱스(「함께 읽는 글」 요청 72 → 65 · 단어장 표 재조회 3왕복 제거) · F5 수업 · 노트 첫 JS에서 아오조라 대조표 제거
+  (/class 260 → 191 kB · /notes/[id] 275 → 206 kB).
+  보류: F2 레벨 타일 prefetch 끄기(첫 화면 RSC 613 KB 절약 vs 모바일 탭 → 목록 +330 ms — 앱 손맛 우선이라 P3 목록 RSC 축소와 함께 다시) ·
+  P1 /auth 첫 그림에 폼(목업) · P2 옛 /japanese 등 손님 → 관리자 보관함 로그인(#1287 규칙 — 오너 결정) · P3 레벨 목록 RSC 203 KB ·
+  P4 /progress 집계 전용 읽기 · P5 노트 편집기 단어 색인 · P6 /notes/new 정적 셸 · P7 /class 관리 영역 분리 · P8 문법 복습 서버 병렬.
+  냄새: /writing 작문 기록 state가 계정 캐시 비우기 밖(늦은 응답 계정 대조 없음).
+  → F1 · F3 · F4 · F5 **#1572 squash `8a6d03ac`(03:10 KST, 운영 16/16 · 오류 0 · /learn 307)**.
+- **PERF-TRIMS P7 · P8 · /writing 계정 확인 (2026-10-26 KST)**: P7 /class 학생 · 손님은 오너 전용 묶음(수업 만들기 · 암호 · 교재 연결)을
+  받지 않음(next/dynamic, 경로 고유 JS 115 → 103 kB · /class/[team] 144 → 136 kB, 로딩 화면은 기존 「수업을 불러오고 있어요.」 그대로) ·
+  P8 /review/grammar due · 예정 읽기를 백필 읽기와 나란히(쓰기가 있었을 때만 둘 다 다시 — 같은 기준 시각) · /writing 옛 계정 응답 버림
+  (accountRef — useVocabData 선례, 계정 바뀌면 비우고 다시 읽기). P5(노트 편집기 단어 색인 → snapshot 재사용)는 배제 — 요청 수는 줄지만
+  찬 진입에서 전체 snapshot(무거운 RPC, 10-23 DB 과부하 축)을 읽어 바이트 · DB 부하가 는다. 칸 줄인 조회는 오프라인 사본과 얽혀 별도.
+  같은 PR: 뷰어 훈음 표 경합(음 표가 먼저 오면 훈 표 응답을 버리고 다시 묻지 않음 → 훈음 칸 빈 채, CI viewer-hun-layout 390 간헐) —
+  두 표가 다 들어올 때까지 다시 묻기. → **#1573 squash `803f5238`(04:03 KST, 운영 16/16 · 오류 0)**.
+- **SNAPSHOT-LIGHT-001 후속 (2026-10-26 KST)**: 요약 단어 목록 GET(fields=summary — 홈 · 현황 · 서재 맞춤도 · 프로필 · 읽기 완료)도
+  가벼운 읽기(language=null · summary=true)로. 서버 DB 2.6 MB · 86 ms → 0.69 MB · 30 ms(PGlite 3,000단어), 응답 칸 그대로 ·
+  함수 없을 때(PGRST202)만 전체로. 남은 전체 snapshot 읽기 = /vocab 브라우저 전체 목록(fields 없음).
+  → **#1574 squash `7a93293f`(04:56 KST)**. CI 첫 실행의 viewer-boundary-edit 390 실패 = main에서도 나는 간헐(재실행 green) — 원인 조사 별도.
+- **LEVEL-LIST-RSC-001 (2026-10-26 KST)**: 레벨 단어 화면 항목을 화면 조각 밖 정적 묶음(/api/level-words/{lang}/{level}?v=빌드)으로 —
+  조각 N3 207 → 3.5 KB · 책장 일본어 판 미리 받기 612 → 65 KB, 탭 → 카드 모바일 손님 641 → 591 ms(누르는 순간 받기 · 문서로 열 때만 preload).
+  VOCAB-LEVEL-DOC 실패(붙은 뒤 받기 → 카드 +272 ms)를 피함. 오프라인: 워커가 이 주소만 network-first · 레벨마다 한 칸. 남은 나빠짐: 데스크톱 손님
+  N3 직접 열기 LCP 232 → 316 ms(H6는 −4). 레벨 타일 prefetch={false}(ROUTE-AUDIT-2 F2)는 이제 불필요 — 배제.
 - **JLPT-KANJI-WINDOW-001 · 단어장 손질 (2026-10-26 KST, 오너 「중국어 판과 엄격하게 대조하면서 동일하게」 · 시안 ⑧ · ⑨)**: JLPT 단어 페이지 글자 칸의 큰 한자도 단추 →
   HSK와 같은 창 · 같은 머리에 상용한자표 순서의 음 · 훈 표(읽기마다 JLPT 단어 둘 · 후리가나 · 한국어 뜻, 단어 없는 읽기도 빈 줄, 지금 읽기 장미색, 내린 읽기 흐리게).
   자료 = 常用漢字表 원문(2,136자 · 4,388음훈 · 내린 읽기 178, `scripts/generate-ja-joyo.mjs --check` · joyodb 대조 불일치 0) + 상용 밖 콘텐츠 한자 KANJIDIC2(CC BY-SA, 파일 분리 · 쓰이는 줄만).
