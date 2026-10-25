@@ -1033,6 +1033,12 @@
   → **#1558 squash `ece3cf0a`(2026-10-25 15:34 KST)**. 오너 아이폰 재설치 확인 대기.
 - **GUEST-STATIC-001 6단계 · F5 추천 읽을거리 (2026-10-25 KST, 권장대로)**: /suggestions/[id] ISR 300(첫 방문 굽기, 쿠키 없는 공개 조회 → 리더 initialData) ·
   ?from=home|discover|reading은 middleware 고정 판. 로컬 LCP 중앙 1.09 → 0.45s, API 요청 0, 손님 · 세션 쿠키 응답 바이트 동일. 임의 id 판 기록은 운영 ISR 쓰기량 보고 판단.
+  → **#1559 squash `47b093e7`(15:55, 운영: 본문 첫 HTML · 손님/세션 응답 동일 · HIT 0.16–0.18s · 오류 0)**.
+- **LOGGED-IN-PERF 로그인 핵심 화면 첫 감사 (2026-10-25 KST)**: 합성 무거운 계정(단어 3,000 · 자료 200 · review_events 4,784, `E2E_HEAVY_BACKEND`).
+  수정 1: 복습 세션 중 복습방 전용 조회(출처 제목 · 헷갈린 표현) 재조회를 세션 끝으로 — 50채점 호출 501 → 301 · GC 뒤 힙 53.3 → 13.9 MB · long task 303 → 117 ms.
+  남은 발견: F7 채점 투영 재계산 · F4 「더 보기」 INP · F3 뷰어 본문 서버 · 단어 목록 재수신 · F10 잔손(진행) / F2 /vocab 첫 숫자 서버 · F3 훈음표 지연 ·
+  F6 읽기 라우트 getClaims · F9 오프라인 복습 허용(오너 결정) / F5 채점 왕복 · F8 /study 부분 snapshot RPC(후속).
+- VOCAB-LEVEL-DOC(F9 현장): 목록을 문서 밖 JSON으로 → 문서 −95%지만 LCP +4%(JS가 임계 경로) → 배제 · 패치 보관. 후속 G(카드 앞 JS 청크) 조사 중.
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로
   /api/suggestions/today와 공용화. 지역학은 발견에서만 내림(/studies · 콘텐츠 보존). 비로그인 서재 → 「서가에서 읽어 보기」.
