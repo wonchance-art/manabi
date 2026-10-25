@@ -29,7 +29,7 @@ const SCOPE = 'src/components/fonts/TcFontScope.jsx';
 // TC를 거는 세그먼트 — 번체를 그리는 보이는 화면.
 const TC_SEGMENTS = ['src/app/(app)/viewer', 'src/app/(app)/pdf', 'src/app/(app)/suggestions', 'src/app/(app)/chinese'];
 // 번체를 그리는 화면 부품 — 이것을 여는 라우트는 TC 세그먼트 안에 있어야 한다.
-const TC_SCREENS = ['@/views/ViewerPage', '@/views/PdfViewerPage', '@/components/materials/SuggestionReader', '@/views/levelListRoute'];
+const TC_SCREENS = ['@/views/ViewerPage', '@/views/PdfViewerPage', '@/components/materials/SuggestionReader', '@/views/levelListRoute', '@/views/LevelListPage'];
 // 범위 밖으로 둔 라우트 — 이유와 함께. 여기서는 CSS 폴백(③)으로 시스템 TC · KR 글꼴에 떨어진다.
 const OUTSIDE = Object.freeze({
   'src/app/(app)/japanese': '일본어 레벨 목록 — LevelListPage의 正(zh-TW) 줄은 중국어 자료에만 나온다',

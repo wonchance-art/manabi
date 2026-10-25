@@ -91,6 +91,14 @@ describe('화면 — HSK와 같은 공통 화면에 JLPT 판', () => {
     expect(read('src/app/(app)/japanese/vocab/[level]/page.jsx')).toMatch(/levelListRoute\('japanese', 'vocab', JlptWordPage\)/);
     expect(page).toMatch(/<LevelWordScreen cfg=/);
   });
+  it('단어 라우트 첫 JS에 문형 · 한자 목록 화면이 실리지 않는다 — 공용 조립은 LevelListPage를 기본값으로 부르지 않는다(JS-CRIT-001)', () => {
+    const route = read('src/views/levelListRoute.jsx');
+    expect(route).not.toMatch(/from '@\/views\/LevelListPage'/);
+    expect(route).toContain('export function levelListRoute(lang, kind, View) {');
+    for (const p of ['src/app/(app)/japanese/bunkei/[level]/page.jsx', 'src/app/(app)/chinese/bunkei/[level]/page.jsx', 'src/app/(app)/chinese/hanzi/[level]/page.jsx']) {
+      expect(read(p), p).toMatch(/levelListRoute\('(japanese|chinese)', '(bunkei|hanzi)', LevelListPage\)/);
+    }
+  });
   it('시안 문구 — 태그 N3 · 다시 안내 · 전체 찾기 범위', () => {
     expect(page).toContain("tag: (level) => `N${level}`");
     expect(page).toContain("guide: '뜻이나 읽기 중 하나라도 막혔다면 다시'");
