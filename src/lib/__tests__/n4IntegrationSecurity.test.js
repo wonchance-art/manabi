@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { client, publicClient, admin, user } = vi.hoisted(() => ({ client: vi.fn(), publicClient: vi.fn(), admin: vi.fn(), user: vi.fn() }));
-vi.mock('@/lib/supabaseServer', () => ({ createSupabaseServerClient: client, createSupabasePublicClient: publicClient, requireAdmin: admin, requireUser: user }));
+vi.mock('@/lib/supabaseServer', () => ({ createSupabaseServerClient: client, createSupabasePublicClient: publicClient, requireAdmin: admin, requireUser: user, requireUserForRead: user }));
 // 발행 성공 뒤 책장 ISR 무효화(GUEST-STATIC-001 3단계) — 라우트 밖에서는 Next 저장소가 없어 실제 revalidatePath가 던진다.
 vi.mock('next/cache', () => ({ revalidatePath: () => {} }));
 vi.mock('node:fs/promises', async importOriginal => {

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({ authenticate: vi.fn(), service: vi.fn() }));
-vi.mock('@/lib/supabaseServer', () => ({ requireUser: mocks.authenticate }));
+vi.mock('@/lib/supabaseServer', () => ({ requireUser: mocks.authenticate, requireUserForRead: mocks.authenticate }));
 vi.mock('@/lib/server/fsrsLearning', async original => ({ ...(await original()), fsrsServiceClient: mocks.service }));
 import { normalizeManualVocabularyRequest, readVocabularyLearningSnapshot, saveManualVocabulary, validateVocabularyLearningSnapshot } from '../server/fsrsVocabulary.js';
 import { introduceFsrsCard, scheduleFsrsReview } from '../fsrsScheduler.js';

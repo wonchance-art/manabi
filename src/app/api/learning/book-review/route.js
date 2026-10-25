@@ -1,4 +1,4 @@
-import { requireUser } from '@/lib/supabaseServer';
+import { requireUserForRead } from '@/lib/supabaseServer';
 import { reply, errorReply, checkDb, fail } from '@/lib/server/learningContext';
 import { sourceHref } from '@/lib/learningSources';
 import { BOOK_ID,BOOKS,isBookId,bookUnitSlug } from '@/lib/textbook/contract';
@@ -18,7 +18,7 @@ function lessonRange(params,bookId) {
 
 export const dynamic = 'force-dynamic';
 export async function GET(request) {
-  const auth = await requireUser();
+  const auth = await requireUserForRead();
   if (auth.error) return reply({ error: auth.error }, auth.status);
   try {
     const params = new URL(request.url).searchParams;

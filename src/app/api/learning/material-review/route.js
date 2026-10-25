@@ -1,4 +1,4 @@
-import { requireUser } from '@/lib/supabaseServer';
+import { requireUserForRead } from '@/lib/supabaseServer';
 import { reply, errorReply, checkDb, fail } from '@/lib/server/learningContext';
 
 // 자료 범위 조회(REV-SCOPE-R1A) — 읽기 전용, 본인 행만. 이 자료(노트 포함)에서 담은 내 단어 id =
@@ -16,7 +16,7 @@ function materialIds(raw) {
 
 export const dynamic = 'force-dynamic';
 export async function GET(request) {
-  const auth = await requireUser();
+  const auth = await requireUserForRead();
   if (auth.error) return reply({ error: auth.error }, auth.status);
   try {
     const params = new URL(request.url).searchParams;

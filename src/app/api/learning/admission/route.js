@@ -1,4 +1,4 @@
-import { requireUser } from '@/lib/supabaseServer';
+import { requireUser, requireUserForRead } from '@/lib/supabaseServer';
 import { fsrsServiceClient, fsrsError } from '@/lib/server/fsrsLearning';
 import { readLearningAdmissionStatus, applyLearningAdmissionRequest } from '@/lib/server/learningAdmission';
 
@@ -30,7 +30,7 @@ async function readCommand(request) {
 
 export async function GET(request) {
   try {
-    const auth = await requireUser();
+    const auth = await requireUserForRead();
     if (auth.error || !auth.user) return reply({ ok: false, code: 'fsrs_auth_required' }, auth.status || 401);
     if (request && [...new URL(request.url).searchParams].length) throw invalid();
     return reply(await readLearningAdmissionStatus({ authClient: auth.supabase, serviceClient: fsrsServiceClient(), userId: auth.user.id }));
