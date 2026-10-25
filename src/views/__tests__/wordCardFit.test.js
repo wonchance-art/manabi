@@ -51,7 +51,10 @@ describe('④ 글자 탐색 계약', () => {
 
   it('테이블은 탐색이 열리면 토글·언어와 무관하게 지연 로드된다(음 테이블은 신자체 수록 — 실측)', () => {
     expect(viewer).toMatch(/\(showHanjaKo && materialLang === 'Chinese'\) \|\| inspectChar !== null/);
-    expect(viewer).toMatch(/\[showHanjaKo, materialLang, hanjaKoTable, inspectChar\]/);
+    expect(viewer).toMatch(/\[showHanjaKo, materialLang, hanjaKoTable, hanjaHunTable, inspectChar\]/);
+    // 음 표만 먼저 와도 훈 표를 기다린다 — 음 표 하나로 멈추면 늦게 온 훈 표가 버려져 훈음 칸이 비었다(2026-10-26 KST CI 간헐 실패)
+    expect(viewer).toContain('if (!needed || (hanjaKoTable && hanjaHunTable)) return undefined;');
+    expect(viewer).toContain("loadHanjaTable('hun')\n      .then((t) => { if (alive) setHanjaHunTable((cur) => cur || t); })");
   });
 
   it('글자 패널 — 훈음·병음·日 자형 + 이 글자가 든 내 단어(칩 탭 = 그 단어 카드로)', () => {

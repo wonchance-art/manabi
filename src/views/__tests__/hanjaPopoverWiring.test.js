@@ -60,7 +60,7 @@ describe('⑶ 미리 받기 · 받지 않기(설계서 §8)', () => {
     expect(read('src/lib/viewerHanjaPanel.js')).toContain("import('./data/hanjaPanel.json')");
   });
   it('훈음 표 — 중국어 단어창을 처음 열 때 유휴 시간에(토글·글자 탭 즉시 로드 조건은 그대로)', () => {
-    expect(viewer).toMatch(/if \(materialLang !== 'Chinese' \|\| !isSheetOpen \|\| hanjaKoTable\) return undefined;[\s\S]{0,120}onIdle\(\(\) => \{\s*loadHanjaTable\('ko'\)[\s\S]{0,200}loadHanjaTable\('hun'\)/);
+    expect(viewer).toMatch(/if \(materialLang !== 'Chinese' \|\| !isSheetOpen \|\| \(hanjaKoTable && hanjaHunTable\)\) return undefined;[\s\S]{0,120}onIdle\(\(\) => \{\s*loadHanjaTable\('ko'\)[\s\S]{0,200}loadHanjaTable\('hun'\)/);
     expect(viewer).toMatch(/\(showHanjaKo && materialLang === 'Chinese'\) \|\| inspectChar !== null/);
   });
   it('중국어 일반 모드는 자원·스토리(hanjaEtym·hanjaStory)·日 꼴(hanjaJa) 표를 받지 않는다', () => {
