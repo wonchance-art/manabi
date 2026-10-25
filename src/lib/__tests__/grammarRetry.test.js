@@ -291,7 +291,8 @@ describe('세션 화면 배선', () => {
     expect(online).toContain("if (box.size() > 0 || grammarGiveUpsRef.current > giveUpsBefore) toast(GRAMMAR_NOT_SAVED, 'warning', 6000);");
     expect(online).not.toContain('navigator.onLine');
     const hide = sliceBetween(page, 'function onPageHide() {', "window.addEventListener('pagehide', onPageHide);");
-    expect(hide).toMatch(/if \(!recorder\) return;\s*batcherRef\.current\?\.flush\(\);\s*beaconPendingGrammar\(recorder\);/);
+    // 남은 이벤트 묶음도 keepalive로(beaconPendingEvents — 로그인 감사 §5-2), 그다음 문법 보류분.
+    expect(hide).toMatch(/if \(!recorder\) return;\s*beaconPendingEvents\(recorder\);\s*beaconPendingGrammar\(recorder\);/);
     // 로그인이 풀린 채 닫히면 보류분이 사라지는 한계는 주석으로 남긴다(문구 변경은 오너 목업 뒤 — 리뷰 N3)
     expect(hide).toContain('알려진 한계(리뷰 N3');
     const beacon = sliceBetween(page, 'function beaconPendingGrammar(owner) {', '\n  }\n');

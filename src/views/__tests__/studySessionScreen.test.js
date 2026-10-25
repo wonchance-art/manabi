@@ -64,7 +64,7 @@ describe('로그아웃 · 계정 바뀜 감지', () => {
     expect(session).toMatch(/function getBatcher\(\) \{\s*const recorder = recorderRef\.current;[^\n]*\n[^\n]*\n\s*if \(!recorder\) return sessionUserRef\.current \? heldEventsBox : null;/);
     // 기록 경로(담기 · 산출 · 문법 재시도 · keepalive · 스트릭)에 user.id가 남지 않는다 — 읽기 전용 효과(예고 · 주간 회고 · 푸시)만 남는다.
     for (const head of ['async function saveEncounterWord', 'async function saveUserNext', 'function retryPendingGrammar',
-      'function rememberGrammarToken', 'function beaconPendingGrammar', 'function onPageHide']) {
+      'function rememberGrammarToken', 'function beaconPendingEvents', 'function beaconPendingGrammar', 'function onPageHide']) {
       expect(sliceBetween(session, head, '\n  }'), head).not.toMatch(/user\?\.id|user\.id/);
     }
   });
@@ -93,7 +93,13 @@ describe('로그아웃 · 계정 바뀜 감지', () => {
 
   it('pagehide는 세션 계정일 때만 flush한다 — 계정이 바뀐 뒤 A의 이벤트를 B의 토큰으로 보내지 않는다', () => {
     const hide = sliceBetween(session, 'function onPageHide() {', "window.addEventListener('pagehide', onPageHide);");
-    expect(hide).toMatch(/const recorder = recorderRef\.current;\s*if \(!recorder\) return;\s*batcherRef\.current\?\.flush\(\);/);
+    expect(hide).toMatch(/const recorder = recorderRef\.current;\s*if \(!recorder\) return;\s*beaconPendingEvents\(recorder\);/);
+    // 남은 묶음은 keepalive(세션 계정 토큰일 때만) — 토큰이 다른 계정 것이면 보통 전송(그것도 세션 계정 몫만, 로그인 감사 §5-2).
+    const beacon = sliceBetween(session, 'function beaconPendingEvents(owner) {', '\n  }\n');
+    expect(beacon).toContain('const events = batcherRef.current?.drain() || [];');
+    expect(beacon).toContain('sendReviewEventsOnHide(owner, events, { accessToken: held?.userId === owner ? held.token : null });');
+    // 토큰은 묶음을 만들 때 미리 받는다(pagehide에서는 기다릴 수 없다).
+    expect(sliceBetween(session, 'function getBatcher() {', '\n  }\n')).toContain('rememberGrammarToken(recorder);');
   });
 
   it('SDK를 못 받아 user가 빈 것은 로그아웃으로 굳히지 않는다 — 연결이 돌아오거나 잠시 뒤 세션을 다시 복원한다', () => {
