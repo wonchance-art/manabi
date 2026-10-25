@@ -15,15 +15,9 @@ import { canonicalChapterOf } from './literatureDisplay';
 
 export { literatureDisplayTitle, literatureWork, literatureWorkOfBook } from './literatureWorks';
 
-export const CANONICAL_LITERATURE_EDIT_BLOCKED = '정본 책의 원문은 고칠 수 없어요. 단어 뜻·발음 교정과 다시 분석은 그대로 쓸 수 있어요.';
-
-/** 원문 수정을 막는 정본 문학책 출처 — 青空文庫 · Standard Ebooks(LIT-SRC-EN-1) · Wikisource(LIT-SRC-WS-1) · 전자책 사이트(LIT-SRC-PD-1). 큐레이션 책('art')은 artBookProvider가 따로 막는다. */
-export const CANONICAL_LITERATURE_PROVIDERS = Object.freeze(['aozora', 'standardebooks', 'wikisource', 'pdsite']);
-
-/** 정본 문학책 자료인가(원문 수정 차단 판정) — metadata만 본다(동기). */
-export function isCanonicalLiteratureMaterial(material) {
-  return CANONICAL_LITERATURE_PROVIDERS.includes(material?.processed_json?.metadata?.literature?.provider);
-}
+// 원문 수정 차단 판정 · 문구는 대조표가 필요 없어 literatureCanonicalProvider로 옮겼다(ROUTE-AUDIT-2 F5 — 수업 · 노트 첫 JS에 이 파일의 대조표가 실리지 않게).
+// 여기서는 다시 내보내기만 한다.
+export { CANONICAL_LITERATURE_EDIT_BLOCKED, CANONICAL_LITERATURE_PROVIDERS, isCanonicalLiteratureMaterial } from './literatureCanonicalProvider';
 
 /** 자료 metadata.book → 정본 대조표(전체 — 장 원문 해시 · 크레딧)의 {work, chapter}. 표에 없는 작품·장이면 null. */
 export function canonicalLiteratureChapter(metadata, works = manifest.works) {

@@ -5,7 +5,7 @@ import { exactSourceQuote } from './viewerLocalizedContext';
 import { compactBoundaryText, readBoundaryEdits } from './boundaryEdits';
 import { reapplyKoreanBoundaries } from './koreanBoundarySplit';
 import { clearRubyLockOnCorrection } from './aozoraRuby';
-import { CANONICAL_LITERATURE_EDIT_BLOCKED, isCanonicalLiteratureMaterial } from './literatureCanonical';
+import { CANONICAL_LITERATURE_EDIT_BLOCKED, isCanonicalLiteratureMaterial } from './literatureCanonicalProvider'; // 대조표 없는 판정(ROUTE-AUDIT-2 F5)
 import { isArtBookMaterial } from './artBookProvider';
 
 const tokenLine = id => analysisTokenLine(id) ?? NaN;
