@@ -1092,6 +1092,12 @@
   P1 /auth 첫 그림에 폼(목업) · P2 옛 /japanese 등 손님 → 관리자 보관함 로그인(#1287 규칙 — 오너 결정) · P3 레벨 목록 RSC 203 KB ·
   P4 /progress 집계 전용 읽기 · P5 노트 편집기 단어 색인 · P6 /notes/new 정적 셸 · P7 /class 관리 영역 분리 · P8 문법 복습 서버 병렬.
   냄새: /writing 작문 기록 state가 계정 캐시 비우기 밖(늦은 응답 계정 대조 없음).
+  → F1 · F3 · F4 · F5 **#1572 squash `8a6d03ac`(03:10 KST, 운영 16/16 · 오류 0 · /learn 307)**.
+- **PERF-TRIMS P7 · P8 · /writing 계정 확인 (2026-10-26 KST)**: P7 /class 학생 · 손님은 오너 전용 묶음(수업 만들기 · 암호 · 교재 연결)을
+  받지 않음(next/dynamic, 경로 고유 JS 115 → 103 kB · /class/[team] 144 → 136 kB, 로딩 화면은 기존 「수업을 불러오고 있어요.」 그대로) ·
+  P8 /review/grammar due · 예정 읽기를 백필 읽기와 나란히(쓰기가 있었을 때만 둘 다 다시 — 같은 기준 시각) · /writing 옛 계정 응답 버림
+  (accountRef — useVocabData 선례, 계정 바뀌면 비우고 다시 읽기). P5(노트 편집기 단어 색인 → snapshot 재사용)는 배제 — 요청 수는 줄지만
+  찬 진입에서 전체 snapshot(무거운 RPC, 10-23 DB 과부하 축)을 읽어 바이트 · DB 부하가 는다. 칸 줄인 조회는 오프라인 사본과 얽혀 별도.
 - VOCAB-LEVEL-DOC(F9 현장): 목록을 문서 밖 JSON으로 → 문서 −95%지만 LCP +4%(JS가 임계 경로) → 배제 · 패치 보관. 후속 G(카드 앞 JS 청크) 조사 중.
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로
