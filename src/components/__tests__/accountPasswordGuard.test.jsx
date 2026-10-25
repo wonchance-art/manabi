@@ -23,9 +23,10 @@ describe('비밀번호 로그인 여부', () => {
 
   it('계정 종류에 따라 버튼 이름이 다르다', () => {
     const render = user => renderToStaticMarkup(<AccountSettings user={user} toast={() => {}} signOut={() => {}} />);
-    expect(render(emailUser)).toContain('비밀번호 변경');
-    expect(render(googleUser)).toContain('비밀번호 만들기');
-    expect(render(googleUser)).not.toContain('비밀번호 변경');
+    // 내 정보 계정 묶음의 줄(PROFILE-REDESIGN-001) — 접근 가능한 이름이 동작을 말한다.
+    expect(render(emailUser)).toContain('aria-label="비밀번호 바꾸기"');
+    expect(render(googleUser)).toContain('aria-label="비밀번호 만들기"');
+    expect(render(googleUser)).not.toContain('비밀번호 바꾸기');
   });
 
   it('이메일 계정은 현재 비밀번호 없이는 변경하지 않는다(선택 입력 부활 금지)', () => {
@@ -39,6 +40,6 @@ describe('비밀번호 로그인 여부', () => {
 describe('임베드 위젯 안내', () => {
   it('Google 가입자에게 앱에서 비밀번호를 먼저 만들라고 알린다', () => {
     expect(readFileSync('src/app/embed/review/EmbedReviewClient.jsx', 'utf8'))
-      .toContain('Google로 가입했다면 manabi 「내 계정」에서 「비밀번호 만들기」를 먼저 해 주세요.');
+      .toContain('Google로 가입했다면 manabi 「내 정보」에서 「비밀번호 만들기」를 먼저 해 주세요.');
   });
 });

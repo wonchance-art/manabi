@@ -2,6 +2,7 @@
 import { parseTitle } from './seriesMeta';
 import { splitSentenceAroundWord } from './constants';
 import { learningDay } from './fsrsScheduler';
+import { DEFAULT_SESSION_LENGTH, SESSION_LENGTHS } from './reviewQueue';
 
 // 저장한 문장 전체를 가리거나 정답만 제시하면 회상할 단서가 없다.
 // 선호 모드를 덮지 않고 이 카드만 기존 플래시 방식으로 출제한다.
@@ -35,6 +36,18 @@ export function loadNewPerDay() {
   if (typeof window === 'undefined') return DEFAULT_NEW_PER_DAY;
   try { const stored = parseInt(localStorage.getItem('vocab_new_per_day'), 10); if (NEW_PER_DAY_OPTIONS.includes(stored)) return stored; } catch { /* 저장소 차단 */ }
   return DEFAULT_NEW_PER_DAY;
+}
+
+// 이 기기의 복습 세션 길이(서로 다른 카드 수) — 단어장 복습 설정이 저장하고 단어장 · 내 정보가 같은 값을 읽는다.
+// 'all'은 전부(null), 없거나 깨졌으면 기본값.
+export function loadSessionLength() {
+  if (typeof window === 'undefined') return DEFAULT_SESSION_LENGTH;
+  try {
+    const stored = localStorage.getItem('vocab_session_length');
+    if (stored === 'all') return null;
+    if (SESSION_LENGTHS.includes(Number(stored))) return Number(stored);
+  } catch { /* 저장소 차단 */ }
+  return DEFAULT_SESSION_LENGTH;
 }
 
 // 오늘 새로 시작한 단어 ID 집합 (날짜 바뀌면 리셋)

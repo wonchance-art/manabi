@@ -1046,6 +1046,11 @@
 - **JS-CRIT-001 (2026-10-25 KST)**: 단어 레벨 라우트 첫 JS에서 LevelListPage 제외 · drillSrs 로그인 뒤 동적 import · 레벨 찾기 색인 지연.
   단어 라우트 JS 266 → 240 KB gz, 루트 155 → 148 KB gz, long task −15~−44%. LCP는 −1~−8%(임계 경로 = 글꼴 @font-face CSS 약 270 KB gz) —
   글꼴 CSS 범위 축소 · 손님 첫 카드 SSR은 후속 결정. fsrs INITIAL_S 지연은 #1561이 같은 문제를 먼저 고쳐 제외.
+  → **#1563 squash `963b94e4`(18:51 KST)**.
+- **PROFILE-REDESIGN-001 내 정보 개편 구현 (2026-10-25 KST, 오너 「권장대로」 D1–D6)**: 시안 A 한 화면 · 줄=지금 값 · 시트/가운데 창 편집 · 1280 왼쪽 신원+기록 고정.
+  하루 목표는 현황 「목표 수정」 창 하나로(내 정보 · 배움 「오늘 목표」 → /progress?goal=edit) · 알림 한 줄(테스트 발송 · 내부 상태 문구 제거) · 기록 3칸 ·
+  숨은 테마 토글 제거 · 이름 「내 정보」 통일(머리 아이콘은 진짜 링크 + aria-current). 목업 차이 5건(목표 문구 · 복습 줄 · 로그인 수단 · iOS 설치 줄 · 목표 창 재열림 버그 수리).
+  남김: states-inventory.json 옛 MyPage 행 갱신, /api/push/test 라우트(학습자 화면 호출 0) 정리.
 - VOCAB-LEVEL-DOC(F9 현장): 목록을 문서 밖 JSON으로 → 문서 −95%지만 LCP +4%(JS가 임계 경로) → 배제 · 패치 보관. 후속 G(카드 앞 JS 청크) 조사 중.
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로

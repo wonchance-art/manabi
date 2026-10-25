@@ -123,7 +123,8 @@ describe('배선 — 관문은 하나', () => {
     const walk = dir => { for (const e of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) { const rel = `${dir}/${e.name}`; if (e.isDirectory()) { if (e.name !== '__tests__') walk(rel); } else if (/\.(jsx?|mjs)$/.test(e.name)) files.push(rel); } };
     walk('src');
     const callers = files.filter(f => f !== 'src/lib/AuthContext.jsx' && /\bsignOut\(\)/.test(read(f))).sort();
-    expect(callers).toEqual(['src/app/embed/review/EmbedReviewClient.jsx', 'src/components/AccountSettings.jsx', 'src/views/MyPage.jsx']);
+    // 내 정보의 로그아웃 줄은 계정 묶음(AccountSettings)에 산다(PROFILE-REDESIGN-001) — 내 정보 화면 파일은 signOut을 넘기기만 한다.
+    expect(callers).toEqual(['src/app/embed/review/EmbedReviewClient.jsx', 'src/components/AccountSettings.jsx']);
     for (const file of callers) expect(read(file), file).not.toMatch(/router\.refresh\(/);
     // 로그인 상태 머리말에는 로그아웃 단추가 없다 — 머리말 단추(handleAuthClick)는 손님 갈래에만 있고 로그인 진입만 한다.
     const layout = read('src/components/Layout.jsx');

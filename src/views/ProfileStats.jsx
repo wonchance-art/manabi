@@ -15,12 +15,13 @@
  * 휴대폰은 한 격자를 펴고 클래스 order로 순서를 정한다(진행바 → 오늘 목표 · 연속 → 이번 주 · 아는 단어 → 히트맵 → 레벨 어휘 → 기억 건강).
  */
 import { usePathname } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
+import { failureMessage } from '../lib/errorMessage';
 import { buildWeeklyReport, weekRangeLabel } from '../lib/weeklyReport';
 import { fetchWeeklyReportRows } from '../lib/weeklyReportRows';
 import { topLabeledWeakness, weaknessLine, weaknessProfile } from '../lib/weaknessProfile';
@@ -41,6 +42,7 @@ import '../components/learn/learn.css';
 import { authEntryHref } from '../lib/authRedirect';
 import { useDialogReturn } from '../lib/useDialogReturn';
 import { EXAM_KINDS, EXAM_SCHEDULES, examCheckedLine, examDateLine, examDatesFor, examGoalOf } from '../lib/examSchedules';
+import { dailyGoals } from '../lib/profileSummary';
 
 /** 히트맵 — 최근 24주(168일), 가장 오른쪽 아래가 오늘. */
 export const HEATMAP_DAYS = 168;
@@ -98,9 +100,12 @@ export default function ProfileStats() {
     staleTime: 1000 * 60 * 5,
   });
 
-  // 배움의 「목표 정하기」(/progress?goal=edit)로 들어오면 프로필을 받은 뒤 목표 편집을 연다.
+  // 배움의 「목표 정하기」 · 내 정보의 목표 줄(/progress?goal=edit)로 들어오면 프로필을 받은 뒤 목표 편집을 연다 — 들어올 때 한 번만.
+  // 저장하면 프로필을 다시 받아 profile이 바뀌는데, 그때마다 주소를 다시 읽으면 방금 닫은 창이 또 열렸다(PROFILE-REDESIGN-001 실화면 확인).
+  const goalParamRead = useRef(false);
   useEffect(() => {
-    if (!profile) return;
+    if (!profile || goalParamRead.current) return;
+    goalParamRead.current = true;
     try { if (new URLSearchParams(window.location.search).get('goal') === 'edit') setGoalSignal(n => n + 1); } catch { /* 주소를 못 읽으면 닫힌 채로 */ }
   }, [profile]);
 
@@ -130,7 +135,7 @@ export default function ProfileStats() {
       )}
       <div className="learn-grid learn-stats">
         <GoalTrackTile className="learn-order-1" onOpen={() => setGoalSignal(n => n + 1)} />
-        <TodayGoalTile vocab={vocab} projections={projections} profile={profile} empty={!data} className="learn-order-2" />
+        <TodayGoalTile vocab={vocab} projections={projections} profile={profile} empty={!data} className="learn-order-2" onOpen={() => setGoalSignal(n => n + 1)} />
         <StreakTile profile={profile} className="learn-order-3" />
         <HeatmapCard dayCounts={data?.heatmapDayCounts || {}} className="learn-order-6" />
         {/* 빈 주에도 칸은 자리를 지킨다(오너 확정 2026-08-30 "상시 표시") — 게이트는 로드 대기만, 로드 전은 같은 칸의 「–」. */}
@@ -247,6 +252,8 @@ function WeakSpotLine({ weekStartMs }) {
 /* ── 목표 편집(목표 · D-Day 모달) — 목표일 설정 (서버 동기화, 비로그인·오프라인은 localStorage 폴백).
      v2-D R2에서 '무엇을 향해 가는가'(언어·도달 레벨)가 여기 붙었다. 날짜 편집기와 과정을 한 모달에 모은다 —
      목표가 두 곳으로 갈리지 않게, 목표를 고치는 자리는 현황의 「목표 수정」(배움의 「목표 정하기」도 여기로 온다) 하나다.
+     하루 목표(복습 · 담기 — goal_review · goal_words)도 내 정보에서 여기로 합쳤다(PROFILE-REDESIGN-001 D2). 내 정보 · 오늘 목표 칸은
+     요약과 이 창으로 오는 링크(/progress?goal=edit)만 둔다. 날짜 없이 하루 목표만 저장해도 된다(날짜 목표는 건드리지 않는다).
      예전 D-Day 타일은 진행바 반쪽(D-58)으로 흡수됐다(LEARN-HOME-AK-001). ── */
 
 function GoalEditor({ catalog, openSignal = 0 }) {
@@ -260,6 +267,10 @@ function GoalEditor({ catalog, openSignal = 0 }) {
   const [goalLang, setGoalLang] = useState('');
   const [goalLevel, setGoalLevel] = useState('');
   const [busy, setBusy] = useState(false);
+  const [goalReview, setGoalReview] = useState(5);
+  const [goalWords, setGoalWords] = useState(5);
+  const reviewId = useId();
+  const wordsId = useId();
   // 시험 일정에서 고르기(K) — exam = 'HSK' | 'JLPT' | ''(직접 입력). 대조한 일정이 하나도 없으면 단추 자체가 없다.
   const [exam, setExam] = useState('');
   const [examLevel, setExamLevel] = useState('');
@@ -299,6 +310,8 @@ function GoalEditor({ catalog, openSignal = 0 }) {
     setGoalLang(profile?.goal_lang || '');
     setGoalLevel(profile?.goal_level || '');
     setExam(''); setExamLevel(''); setExamPick(null);
+    const daily = dailyGoals(profile);
+    setGoalReview(daily.review); setGoalWords(daily.words);
     setOpen(true);
   }
   // 「목표 수정」 버튼 · ?goal=edit 진입이 신호를 올리면 연다(열 때마다 지금 값으로 채운다).
@@ -307,6 +320,21 @@ function GoalEditor({ catalog, openSignal = 0 }) {
     // openModal은 매 렌더 새 함수 — 신호가 바뀔 때만 연다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openSignal]);
+
+  // 하루 목표 — 1 이상(배움 오늘 목표 산식이 나눗셈에 쓴다). 날짜 목표 저장과 같은 갱신에 싣는다.
+  const daily = { goal_review: Math.max(1, goalReview), goal_words: Math.max(1, goalWords) };
+  const savedDaily = dailyGoals(profile);
+  const dailyChanged = daily.goal_review !== savedDaily.review || daily.goal_words !== savedDaily.words;
+
+  async function persistDaily() {
+    if (busy || !user?.id) return;
+    setBusy(true);
+    const { error } = await supabase.from('profiles').update(daily).eq('id', user.id);
+    if (error) toast(failureMessage('하루 목표를 저장하지 못했어요.', error), 'error');
+    else fetchProfile(user.id, user.user_metadata);
+    setBusy(false);
+    if (!error) setOpen(false);
+  }
 
   async function persist(nextDate, nextLabel, nextLang, nextLevel) {
     if (busy) return;
@@ -318,7 +346,7 @@ function GoalEditor({ catalog, openSignal = 0 }) {
     } catch {}
     setLocal(nextDate ? { date: nextDate, label: nextLabel } : null);
     if (user?.id) {
-      const base = { dday_date: nextDate || null, dday_label: nextLabel || null };
+      const base = { dday_date: nextDate || null, dday_label: nextLabel || null, ...daily };
       // 목표 2컬럼은 마이그레이션(20260831010000_profile_goal.sql) 적용 후 생긴다.
       // 미적용 환경에서 미지 컬럼이 payload에 있으면 PostgREST가 요청 전체를 거부하므로,
       // 컬럼 오류일 때만 목표를 빼고 재시도한다(profile_levels_fr_zh 폴백과 같은 패턴).
@@ -342,6 +370,19 @@ function GoalEditor({ catalog, openSignal = 0 }) {
     <>
       {open && (
         <TileModal title="목표 · D-Day" onClose={() => setOpen(false)}>
+          {user?.id && <fieldset className="dday-daily">
+            <legend>하루 목표</legend>
+            {[
+              { id: reviewId, label: '복습', value: goalReview, set: setGoalReview, max: 50 },
+              { id: wordsId, label: '단어 담기', value: goalWords, set: setGoalWords, max: 30 },
+            ].map(({ id, label: name, value, set, max }) => (
+              <div key={id} className="dday-daily__item">
+                <div className="dday-daily__head"><label htmlFor={id}>{name}</label><output htmlFor={id}>{value}개</output></div>
+                <input id={id} type="range" min={1} max={max} value={value} disabled={busy} onChange={e => set(Number(e.target.value))} />
+              </div>
+            ))}
+          </fieldset>}
+          <p className="dday-daily__legend">날짜 목표</p>
           {examKinds.length > 0 && <div className="dday-exam__tabs" role="group" aria-label="목표 고르기">
             {examKinds.map(k => <button key={k} type="button" aria-pressed={exam === k}
               onClick={() => { setExam(k); setExamLevel(''); setExamPick(null); }}>{k}</button>)}
@@ -383,8 +424,9 @@ function GoalEditor({ catalog, openSignal = 0 }) {
             </span>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <Button size="sm" onClick={() => persist(date, label.trim(), goalLang, goalLang ? goalLevel : '')}
-              disabled={!date || busy} style={{ flex: 1 }}>
+            {/* 날짜가 없으면 하루 목표만 저장한다(날짜 목표는 그대로) — 하루 목표만 고치러 온 사람이 날짜를 강요받지 않게. */}
+            <Button size="sm" onClick={() => (date ? persist(date, label.trim(), goalLang, goalLang ? goalLevel : '') : persistDaily())}
+              disabled={(!date && !dailyChanged) || busy} style={{ flex: 1 }}>
               {busy ? '저장 중…' : '저장'}
             </Button>
             {dday && <Button size="sm" variant="secondary" onClick={() => persist('', '', '', '')} disabled={busy} style={{ flex: 1 }}>삭제</Button>}

@@ -272,6 +272,8 @@ div.discover-tile .discover-tile__title{color:var(--muted)}
 .manabi-app .gnb .gnb__link[aria-current="page"],.manabi-app .gnb>.gnb__link.active{background:color-mix(in srgb,var(--ink) 6%,transparent);box-shadow:inset 0 -2px var(--ink)}
 .manabi-app .gnb [data-icon-action]:hover{background:color-mix(in srgb,var(--ink) 6%,transparent);transform:none}
 .manabi-app .gnb .gnb__profile-btn{display:flex;align-items:center;justify-content:center;background:transparent!important;border:0;border-radius:6px;font-size:13px;line-height:1.5}
+/* 내 정보 링크 — /profile에 있으면 둥근 테두리로 현재 위치(PROFILE-REDESIGN-001). 자리 · 크기는 그대로. */
+.manabi-app .gnb .gnb__profile-btn[aria-current="page"]{border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--ink);background:var(--sheet)!important}
 .manabi-app .gnb .gnb__actions{flex:none}
 .manabi-app .gnb .reader-site-menu summary{width:44px}
 .manabi-app [data-icon-action]{position:relative}

@@ -30,19 +30,25 @@ export function GuestLoginTile({ href }) {
   return href ? <Link href={href} prefetch={false} className={className}>{body}</Link> : <a className={className}>{body}</a>;
 }
 
-export function StatTile({ value, label, href, title, ariaLabel, className = '' }) {
+export function StatTile({ value, label, href, onClick, title, ariaLabel, className = '' }) {
   const body = <><span className="learn-stat__value">{value}</span><span className="learn-stat__label">{label}</span></>;
   const cls = `learn-tile learn-stat ${className}`.trim();
-  return href
-    ? <Link href={href} prefetch={false} className={cls} title={title} aria-label={ariaLabel}>{body}</Link>
-    : <div className={cls} title={title} aria-label={ariaLabel} role={ariaLabel ? 'group' : undefined}>{body}</div>;
+  if (href) return <Link href={href} prefetch={false} className={cls} title={title} aria-label={ariaLabel}>{body}</Link>;
+  if (onClick) return <button type="button" className={`${cls} learn-stat--btn`} onClick={onClick} title={title} aria-label={ariaLabel} aria-haspopup="dialog">{body}</button>;
+  return <div className={cls} title={title} aria-label={ariaLabel} role={ariaLabel ? 'group' : undefined}>{body}</div>;
 }
 
-/** 오늘 목표 — 달성률 표시 전용. 누르면 계정 화면에서 목표 편집(정본 슬라이더). */
-export function TodayGoalTile({ vocab, projections, profile, className, empty = false }) {
+/**
+ * 오늘 목표 — 달성률 표시 전용. 누르면 현황의 목표 창(하루 목표 · 날짜 목표를 고치는 한 자리 — PROFILE-REDESIGN-001 D2).
+ * 현황 안에서는 같은 화면이라 주소 대신 창을 바로 연다(onOpen).
+ */
+export function TodayGoalTile({ vocab, projections, profile, className, empty = false, onOpen }) {
   const pct = empty ? null : todayGoalPct({ vocab, projections, profile });
   // 0은 크게 쓰지 않는다(0 무표기 — 연속 · 이번 주 칸의 「–」 선례, 목업 신규 사용자 「– / 오늘 목표」).
-  return <StatTile className={className} value={pct ? `${pct}%` : '–'} label="오늘 목표" href="/profile" />;
+  const value = pct ? `${pct}%` : '–';
+  return onOpen
+    ? <StatTile className={className} value={value} label="오늘 목표" onClick={onOpen} />
+    : <StatTile className={className} value={value} label="오늘 목표" href="/progress?goal=edit" />;
 }
 
 /** 연속 — 「12일 / 연속 · 쉼 2」. 칸 설명은 title과 aria-label에 같은 문구(쉼 규칙). */

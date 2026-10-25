@@ -8,7 +8,6 @@
 .manabi-app .gnb__link.active{color:#322e30;background:none;box-shadow:inset 0 -2px #322e30;font-weight:700}
 .manabi-app .gnb__link:hover{color:#994a5a;background:none}
 .manabi-app .gnb__profile-btn{border:1px solid #e4dadd;background:#f7f2f2!important;color:#51474b;border-radius:50%;width:42px;height:42px}
-.manabi-app .theme-toggle{display:none}
 .manabi-app .mobile-nav{background:#fffdf9;border-color:#e8dade;box-shadow:none;color:#796d70}
 .manabi-app .mobile-nav__link.active{color:#994a5a;background:#f8f1f2}
 .manabi-app .mobile-nav__link.active::before{background:#994a5a}

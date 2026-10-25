@@ -128,7 +128,7 @@ describe('화면 배선 — 서버 HTML · 첫 그림이 손님 배치', () => {
     // 로그아웃 쪽은 AuthContext 관문 하나(AUTH-ROUTER-REFRESH-001 — accountQueryCache.test 「서버 렌더 관문」): 이동이 먼저, 새로고침은 그린 뒤 effect.
     // 머리말에는 로그아웃 갈래가 없다(죽은 경로 삭제) — 로그아웃 쪽 refresh는 AuthContext 관문 하나(accountRouterRefresh.test).
     expect(read('src/components/Layout.jsx').replace(/(^|[^:'"`])\/\/[^\n]*/gm, '$1')).not.toMatch(/signOut|router\.refresh\(/);
-    expect(read('src/views/MyPage.jsx')).toContain('onClick={() => signOut() /* 서버 렌더 버리기는 AuthContext 관문(AUTH-ROUTER-REFRESH-001) */}');
+    expect(read('src/components/AccountSettings.jsx')).toContain('onClick={() => signOut() /* 서버 렌더 버리기는 AuthContext 관문(AUTH-ROUTER-REFRESH-001) */}');
     expect(read('src/app/providers.jsx')).toContain('onAccountLeft={() => router.refresh()}');
   });
 });

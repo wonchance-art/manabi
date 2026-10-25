@@ -31,7 +31,7 @@ for(const [engine,type]of [['chromium',chromium],['webkit',webkit]]){
   await page.goto(base+path());await page.waitForLoadState('networkidle');await page.getByText('JAPANESE · N5 / 검수 중인 교재',{exact:true}).filter({visible:true}).waitFor();
   // The resume label changes only after the reader's first client effect.
   await page.getByRole('link',{name:'첫 과부터 시작하기 →',exact:true}).waitFor();
-  await page.getByRole('button',{name:'내 계정',exact:true}).waitFor();
+  await page.getByRole('link',{name:'내 정보',exact:true}).waitFor();
   await page.getByRole('link',{name:'담은 표현 복습하기 ↗',exact:true}).click();await page.getByRole('heading',{name:'발행 후 표현을 담을 수 있어요.'}).waitFor();await page.waitForLoadState('networkidle');
   assert.equal(reviewRequests,0);await page.getByRole('link',{name:'검수 중인 교재로 돌아가기 →'}).click();await page.locator('#u01-start').waitFor();
   assert(page.url().includes(id));await page.getByRole('link',{name:'← 책으로',exact:true}).click();await page.getByRole('link',{name:'함께 읽기 · 내 자료 ↗',exact:true}).click();

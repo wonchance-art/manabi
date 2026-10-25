@@ -1,70 +1,91 @@
 'use client';
 
+/**
+ * 내 정보(`/profile`) — 시안 A: 한 화면 · 묶음 카드 · 줄마다 지금 값 (PROFILE-REDESIGN-001, 오너 승인 2026-10-25 KST 「권장대로」).
+ *
+ *   내 정보
+ *   [(채) 채연 · learner@… · 3월 2일부터 함께하고 있어요 · [닉네임 바꾸기]]
+ *   [12일 연속 · 쉼 1][248 담은 단어][7편 완독한 자료]        현황 전체 →
+ *   학습        학습 언어 › · 목표 ›(현황 「목표 수정」 창) · 알림 ›
+ *   이 기기에서  앱으로 설치 ›(설치 전에만) · 단어 복습 ›(단어장 복습 설정)
+ *   계정        로그인 방법 · 비밀번호 › · 내 데이터 › · 로그아웃
+ *   도움        학습 가이드 › · 도움말 ›     약관 3종 · 계정 삭제(맨 아래, 입력 확인)
+ *
+ * 넓은 화면(이 화면 폭 860 이상)은 왼쪽에 나 + 기록(고정), 오른쪽에 목록이다(profile.css @container).
+ * 목표를 고치는 자리는 현황 하나다(D2) — 여기는 요약 줄과 그 창으로 가는 링크뿐이다. 통계도 요약 3칸과 「현황 전체 →」뿐이다.
+ * 새 테이블 · 컬럼은 없다: 숫자 2개는 기존 표의 개수 조회(HEAD + count exact), 나머지는 이미 받은 프로필 행 · 이 기기 저장값이다.
+ * 계정마다 다른 화면이다 — 조회 키에 계정 id를 넣고, 시트 입력은 열 때마다 지금 계정 값으로 채운다(계정 경계 e2e).
+ */
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Fragment, useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
-import { LEVELS } from '../lib/constants';
 import { syncAuthDisplayName } from '../lib/authDisplayName';
 import { hasVapidKey, getSubscriptionState, subscribePush, unsubscribePush } from '../lib/push';
-import Button from '../components/Button';
-import AccountSettings from '../components/AccountSettings';
-import InstallPrompt from '../components/InstallPrompt';
 import { friendlyToastMessage } from '../lib/errorMessage';
 import { authEntryHref } from '../lib/authRedirect';
+import { streakView } from '../lib/learnDashboard';
+import { LANG_NAME_KO, PROFILE_LEVEL_COLUMN, profileLevel } from '../lib/constants';
+import { loadSessionLength } from '../lib/vocabStudy';
+import {
+  DEFAULT_LEVEL, countValue, goalSummary, joinedLine, languageAria, languageEntries, levelOptions,
+  makePrimary, reminderSummary, sessionLengthLabel, sheetLanguageOrder, toggleLanguage,
+} from '../lib/profileSummary';
+import { StatTile } from '../components/learn/LearnTiles';
+import { SkeletonLine, SkeletonRegion } from '../components/Skeleton';
+import { ProfileGroup, ProfileRow, ProfileSheet } from '../components/profile/ProfileParts';
+import AccountSettings, { AccountDelete } from '../components/AccountSettings';
+import InstallPrompt from '../components/InstallPrompt';
+import '../components/learn/learn.css';
+import '../components/profile/profile.css';
+
+const REMINDER_HOURS = ['7', '9', '12', '18', '21'];
+
+/** 기록 2칸의 개수 — 담은 단어(user_vocabulary) · 완독한 자료(reading_progress.is_completed, 주간 거울과 같은 열). 실패한 칸은 「–」. */
+export async function fetchProfileCounts(userId) {
+  const [words, reads] = await Promise.all([
+    supabase.from('user_vocabulary').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+    supabase.from('reading_progress').select('material_id', { count: 'exact', head: true }).eq('user_id', userId).eq('is_completed', true),
+  ]);
+  return { words: words.error ? null : words.count, reads: reads.error ? null : reads.count };
+}
 
 export default function MyPage() {
   // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
   const signInHref = authEntryHref(usePathname());
-  const { user, profile, fetchProfile, signOut } = useAuth();
+  const { user, profile, loading: authLoading, fetchProfile, signOut } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
+  const [sheet, setSheet] = useState(null); // 'name' | 'lang' | 'alarm'
 
-  const [editName, setEditName]           = useState('');
-  const [editLanguages, setEditLanguages] = useState(['Japanese']);
-  const [editLevelJp, setEditLevelJp]     = useState('N3 중급');
-  const [editLevelEn, setEditLevelEn]     = useState('B1 중급');
-  const [editLevelFr, setEditLevelFr]     = useState('B1 중급');
-  const [editLevelZh, setEditLevelZh]     = useState('H3 중급');
-
-  const [isEditingGoals, setIsEditingGoals] = useState(false);
-  const [goalReview, setGoalReview]       = useState(5);
-  const [goalWords, setGoalWords]         = useState(5);
-
-  const [openPanel, setOpenPanel] = useState(null);
-  const togglePanel = (key) => setOpenPanel(prev => prev === key ? null : key);
-
-  const [reminderHour, setReminderHour]   = useState('');
-  const [notifPerm, setNotifPerm]         = useState('default');
-
-  // 웹 푸시 구독 (기획 v4 §4). env 키 부재 시 섹션 전체 숨김.
-  const pushEnabled = hasVapidKey();
+  // 알림 — 푸시(서버가 보냄) 먼저, 이 브라우저를 열어 둔 동안의 시각 알림은 보조(D3). 둘 다 기기 상태라 마운트 뒤 읽는다.
+  const pushEnabled = hasVapidKey(); // 공개 키가 없으면 푸시 칸 전체를 숨긴다
   const [pushState, setPushState] = useState(null); // { supported, permission, subscribed }
-  const [pushBusy, setPushBusy]   = useState(false);
+  const [pushBusy, setPushBusy] = useState(false);
+  const [reminderHour, setReminderHour] = useState('');
+  const [notifPerm, setNotifPerm] = useState('default');
+  const [sessionLength, setSessionLength] = useState(undefined); // 단어장 복습 설정(이 기기) — 마운트 뒤 읽는다
 
   useEffect(() => {
-    if (!profile) return;
-    setEditName(profile.display_name || '');
-    setEditLanguages(profile.learning_language?.length ? profile.learning_language : ['Japanese']);
-    setEditLevelJp(profile.learning_level_japanese || 'N3 중급');
-    setEditLevelEn(profile.learning_level_english  || 'B1 중급');
-    setEditLevelFr(profile.learning_level_french   || 'B1 중급');
-    setEditLevelZh(profile.learning_level_chinese  || 'H3 중급');
-  }, [profile]);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('as_reminder_hour');
-    if (saved !== null) setReminderHour(saved);
+    try { const saved = localStorage.getItem('as_reminder_hour'); if (saved !== null) setReminderHour(saved); } catch { /* 저장소 차단 */ }
     if (typeof Notification !== 'undefined') setNotifPerm(Notification.permission);
+    setSessionLength(loadSessionLength());
   }, []);
 
   useEffect(() => {
     if (!pushEnabled) return;
     getSubscriptionState().then(setPushState).catch(() => {});
   }, [pushEnabled]);
+
+  const { data: counts } = useQuery({
+    queryKey: ['profile-counts', user?.id],
+    queryFn: () => fetchProfileCounts(user.id),
+    enabled: !!user?.id,
+    staleTime: 1000 * 60,
+  });
 
   async function togglePush() {
     if (pushBusy || !user?.id) return;
@@ -74,30 +95,13 @@ export default function MyPage() {
         await unsubscribePush();
         toast('알림을 껐어요.', 'success');
       } else {
-        const ok = await subscribePush(user.id, editLanguages[0]);
-        if (ok) toast('알림을 켰어요. 내일 만나요!', 'success');
+        const ok = await subscribePush(user.id, languageEntries(profile)[0]?.lang);
+        if (ok) toast('알림을 켰어요.', 'success');
         else toast('알림 권한을 허용해야 켤 수 있어요.', 'error');
       }
       setPushState(await getSubscriptionState());
     } catch {
-      // 조용히
-    } finally {
-      setPushBusy(false);
-    }
-  }
-
-  async function sendTestPush() {
-    if (pushBusy) return;
-    setPushBusy(true);
-    try {
-      const res = await fetch('/api/push/test', { method: 'POST' });
-      if (res.status === 503) { toast('서버에 푸시 키가 아직 등록되지 않았어요.', 'error'); return; }
-      if (!res.ok) { toast('테스트 알림을 보내지 못했어요.', 'error'); return; }
-      const data = await res.json().catch(() => ({}));
-      const n = data?.sent ?? 0;
-      toast(n > 0 ? `테스트 알림을 보냈어요 (${n}건).` : '보낼 구독이 없어요.', n > 0 ? 'success' : 'info');
-    } catch {
-      toast('테스트 알림을 보내지 못했어요.', 'error');
+      // 구독 실패는 학습을 막지 않는다(push.js 원칙) — 상태 줄이 그대로 남는다
     } finally {
       setPushBusy(false);
     }
@@ -105,8 +109,7 @@ export default function MyPage() {
 
   async function handleReminderChange(hour) {
     if (hour === '') {
-      localStorage.removeItem('as_reminder_hour');
-      localStorage.removeItem('as_reminder_last_sent');
+      try { localStorage.removeItem('as_reminder_hour'); localStorage.removeItem('as_reminder_last_sent'); } catch { /* 저장소 차단 */ }
       setReminderHour('');
       toast('복습 알림을 껐어요.', 'success');
       return;
@@ -120,267 +123,255 @@ export default function MyPage() {
       toast('브라우저 설정에서 알림이 차단돼 있어요.', 'error');
       return;
     }
-    localStorage.setItem('as_reminder_hour', hour);
+    try { localStorage.setItem('as_reminder_hour', hour); } catch { /* 저장소 차단 */ }
     setReminderHour(hour);
-    toast(`매일 ${hour}시에 복습 알림을 보낼게요!`, 'success');
+    toast(`매일 ${hour}시에 복습 알림을 보낼게요.`, 'success');
   }
 
-  function startEditGoals() {
-    setGoalReview(profile?.goal_review ?? 5);
-    setGoalWords(profile?.goal_words  ?? 5);
-    setIsEditingGoals(true);
-  }
+  const afterProfileSave = (message) => {
+    fetchProfile(user.id, user.user_metadata);
+    queryClient.invalidateQueries({ queryKey: ['home', user.id] });
+    toast(message, 'success');
+    setSheet(null);
+  };
 
-  const saveGoalsMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.from('profiles').update({
-        goal_review: Math.max(1, goalReview),
-        goal_words:  Math.max(1, goalWords),
-      }).eq('id', user.id);
+  const saveNameMutation = useMutation({
+    mutationFn: async (name) => {
+      if (!name.trim()) throw new Error('닉네임을 입력해 주세요.');
+      const base = { display_name: name.trim() };
+      const { error } = await supabase.from('profiles').update(base).eq('id', user.id);
       if (error) throw error;
+      await syncAuthDisplayName(supabase, user, base.display_name);
     },
-    onSuccess: () => { fetchProfile(user.id, user.user_metadata); setIsEditingGoals(false); toast('목표를 저장했어요.', 'success'); },
+    onSuccess: () => afterProfileSave('닉네임을 저장했어요.'),
     onError: (err) => toast(friendlyToastMessage(err), 'error'),
   });
 
-  const saveProfileMutation = useMutation({
-    mutationFn: async () => {
-      if (!editName.trim()) throw new Error('닉네임을 입력해 주세요.');
+  const saveLanguagesMutation = useMutation({
+    mutationFn: async ({ languages, levels }) => {
+      const level = lang => levels[lang] || DEFAULT_LEVEL[lang];
       const base = {
-        display_name: editName.trim(),
-        learning_language: editLanguages,
-        learning_level_japanese: editLevelJp,
-        learning_level_english: editLevelEn,
+        learning_language: languages,
+        [PROFILE_LEVEL_COLUMN.Japanese]: level('Japanese'),
+        [PROFILE_LEVEL_COLUMN.English]: level('English'),
       };
-      // fr/zh 컬럼 미적용 환경 폴백 — 컬럼 오류일 때만 해당 필드 없이 재시도(온보딩과 동일 패턴)
+      // fr/zh 컬럼 미적용 환경 폴백 — 컬럼 오류일 때만 해당 필드 없이 재시도(온보딩과 같은 방식)
       let { error } = await supabase.from('profiles')
-        .update({ ...base, learning_level_french: editLevelFr, learning_level_chinese: editLevelZh })
+        .update({ ...base, [PROFILE_LEVEL_COLUMN.French]: level('French'), [PROFILE_LEVEL_COLUMN.Chinese]: level('Chinese') })
         .eq('id', user.id);
       if (error && /column|schema/i.test(error.message || '')) {
         ({ error } = await supabase.from('profiles').update(base).eq('id', user.id));
       }
       if (error) throw error;
-      await syncAuthDisplayName(supabase, user, base.display_name);
     },
-    onSuccess: () => { fetchProfile(user.id, user.user_metadata); queryClient.invalidateQueries({ queryKey: ['home', user.id] }); toast('프로필을 저장했어요.', 'success'); },
+    onSuccess: () => afterProfileSave('학습 언어를 저장했어요.'),
     onError: (err) => toast(friendlyToastMessage(err), 'error'),
   });
 
   if (!user) {
+    if (authLoading) {
+      return (
+        <div className="manabi-page pf">
+          <h1>내 정보</h1>
+          <SkeletonRegion className="pf-id" label="내 정보" announce>
+            <span className="pf-avatar" aria-hidden="true" />
+            <span className="pf-id__text"><SkeletonLine width="6em" /><SkeletonLine width="12em" /></span>
+          </SkeletonRegion>
+        </div>
+      );
+    }
     return (
-      <div className="page-container mypage-noauth">
-        <h2 className="mypage-noauth__title">로그인이 필요해요</h2>
-        <Link href={signInHref} className="btn btn--primary btn--md">로그인하러 가기</Link>
+      <div className="manabi-page pf">
+        <h1>내 정보</h1>
+        <div className="manabi-inline-state pf-login" role="status">
+          <span>로그인이 필요해요.</span>
+          <Link href={signInHref} prefetch={false} className="pf-pill">로그인</Link>
+        </div>
       </div>
     );
   }
 
-  const streak = profile?.streak_count ?? 0;
+  const name = profile?.display_name || '학습자';
+  const streak = streakView(profile);
+  const langs = languageEntries(profile);
+  const goal = goalSummary(profile);
+  const alarm = reminderSummary({ pushOn: !!pushState?.subscribed, hour: reminderHour });
+  const joined = joinedLine(user.created_at);
+  const pending = <SkeletonLine width="7em" />;
 
   return (
-    <div className="page-container" style={{ maxWidth: 560 }}>
+    <div className="manabi-page pf">
+      <h1>내 정보</h1>
+      <div className="pf-cols">
+        <section className="pf-side" aria-label="나">
+          <div className="pf-id">
+            <div className="pf-avatar" aria-hidden="true">{profile ? name[0] : ''}</div>
+            <div className="pf-id__text">
+              <span className="pf-id__name">{profile ? name : <SkeletonLine width="5em" />}</span>
+              <span className="pf-id__meta">{user.email}{joined && <><br />{joined}</>}</span>
+            </div>
+            <button type="button" className="pf-pill" aria-haspopup="dialog" disabled={!profile} onClick={() => setSheet('name')}>닉네임 바꾸기</button>
+          </div>
+          <div className="pf-stats" role="group" aria-label="내 기록">
+            <StatTile value={streak.value} label={streak.label} title={streak.title} ariaLabel={streak.aria} />
+            <StatTile value={countValue(counts?.words)} label="담은 단어" />
+            <StatTile value={countValue(counts?.reads, '편')} label="완독한 자료" />
+          </div>
+          <div className="pf-more"><Link href="/progress" prefetch={false}>현황 전체 →</Link></div>
+        </section>
 
-      {/* 헤더 */}
-      <div className="mypage-profile-header">
-        <div className="mypage-avatar">{profile?.display_name?.[0] || '?'}</div>
-        <div className="mypage-profile-info">
-          <h1 className="mypage-profile-info__name">{profile?.display_name || '학습자'}</h1>
-          <p className="mypage-profile-info__email">
-            {user.email}
-            {streak > 0 && <> · {streak}일 연속</>}
-          </p>
+        <div className="pf-main">
+          <ProfileGroup title="학습">
+            <ProfileRow label="학습 언어" dialog onClick={() => setSheet('lang')} disabled={!profile}
+              ariaLabel={profile ? languageAria(langs) : undefined}
+              value={profile ? langs.map((e, i) => (
+                <Fragment key={e.lang}>
+                  {i > 0 && ' · '}
+                  {e.primary ? <strong>{[e.name, e.short].filter(Boolean).join(' ')}</strong> : [e.name, e.short].filter(Boolean).join(' ')}
+                  {e.primary && langs.length > 1 && <span className="pf-tag">기본</span>}
+                </Fragment>
+              )) : pending} />
+            {/* 목표를 고치는 자리는 현황 「목표 수정」 하나다(D2) — 같은 창을 연다. */}
+            <ProfileRow label="목표" href="/progress?goal=edit"
+              ariaLabel={profile ? ['목표', goal.head, goal.daily].filter(Boolean).join(', ') : undefined}
+              value={profile ? (goal.head ? <strong>{goal.head}</strong> : goal.daily) : pending}
+              sub={profile && goal.head ? goal.daily : null} />
+            <ProfileRow label="알림" dialog onClick={() => setSheet('alarm')} value={alarm} ariaLabel={`알림, ${alarm}`} />
+          </ProfileGroup>
+
+          <ProfileGroup title="이 기기에서" note="읽기 화면(글꼴 · 요미 · 테마)은 자료를 연 뒤 Aa에서 바꿔요.">
+            <InstallPrompt />
+            <ProfileRow label="단어 복습" href="/vocab"
+              value={sessionLength === undefined ? '' : sessionLengthLabel(sessionLength)}
+              ariaLabel={sessionLength === undefined ? '단어 복습 설정' : `단어 복습 설정, ${sessionLengthLabel(sessionLength)}`} />
+          </ProfileGroup>
+
+          <AccountSettings user={user} toast={toast} signOut={signOut} />
+
+          <ProfileGroup title="도움">
+            <ProfileRow label="학습 가이드" href="/guide" />
+            <ProfileRow label="도움말" href="/help" />
+          </ProfileGroup>
+          <nav className="pf-foot" aria-label="약관과 출처">
+            <Link href="/terms" prefetch={false}>이용약관</Link>
+            <Link href="/privacy" prefetch={false}>개인정보 처리방침</Link>
+            <Link href="/credits" prefetch={false}>자료 출처</Link>
+          </nav>
+          <AccountDelete toast={toast} signOut={signOut} />
         </div>
-        <Button variant="ghost" size="sm" onClick={() => signOut() /* 서버 렌더 버리기는 AuthContext 관문(AUTH-ROUTER-REFRESH-001) */}>로그아웃</Button>
       </div>
 
-
-      {/* 학습 설정 */}
-      <div className="card mypage-section">
-        <h2 className="mypage-section__title">학습 설정</h2>
-
-        <details className="mypage-collapse" open={openPanel === 'profile'}
-          onToggle={e => { if (e.currentTarget.open) setOpenPanel('profile'); else if (openPanel === 'profile') setOpenPanel(null); }}>
-          <summary className="mypage-collapse__summary" onClick={e => { e.preventDefault(); togglePanel('profile'); }}>
-            <span>프로필 — 닉네임 · 학습 언어 · 수준</span>
-            <span className="mypage-collapse__chevron">▾</span>
-          </summary>
-          <div className="mypage-collapse__body">
-            <div className="form-field">
-              <label className="form-label">닉네임</label>
-              <input className="form-input" value={editName} onChange={e => setEditName(e.target.value)} maxLength={20} />
-            </div>
-            <div className="form-field">
-              <label className="form-label">학습 언어 <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(복수 선택 가능)</span></label>
-              <div className="toggle-group">
-                {/* 온보딩과 같은 4트랙. 첫 번째 언어가 홈 예보·오늘 학습 기본 언어가 된다. */}
-                {[['Japanese', '일본어'], ['English', '영어'], ['French', '프랑스어'], ['Chinese', '중국어']].map(([lang, label]) => (
-                  <button key={lang} type="button"
-                    aria-pressed={editLanguages.includes(lang)}
-                    className={`toggle-btn ${editLanguages.includes(lang) ? 'toggle-btn--primary' : ''}`}
-                    onClick={() => setEditLanguages(prev =>
-                      prev.includes(lang) ? prev.length > 1 ? prev.filter(l => l !== lang) : prev : [...prev, lang]
-                    )}>
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {/* fr/zh 수준은 마이그레이션 미적용 환경에서 저장만 생략된다(폴백) — UI는 4트랙 대칭 */}
-            {editLanguages.includes('Japanese') && (
-              <div className="form-field">
-                <label className="form-label">일본어 수준</label>
-                <div className="level-group">
-                  {LEVELS.Japanese.map(lvl => (
-                    <button key={lvl} type="button" className={`level-btn ${editLevelJp === lvl ? 'level-btn--active' : ''}`}
-                      onClick={() => setEditLevelJp(lvl)}>{lvl}</button>
-                  ))}
-                </div>
-              </div>
-            )}
-            {editLanguages.includes('English') && (
-              <div className="form-field">
-                <label className="form-label">영어 수준</label>
-                <div className="level-group">
-                  {LEVELS.English.map(lvl => (
-                    <button key={lvl} type="button" className={`level-btn ${editLevelEn === lvl ? 'level-btn--active' : ''}`}
-                      onClick={() => setEditLevelEn(lvl)}>{lvl}</button>
-                  ))}
-                </div>
-              </div>
-            )}
-            {editLanguages.includes('French') && (
-              <div className="form-field">
-                <label className="form-label">프랑스어 수준</label>
-                <div className="level-group">
-                  {LEVELS.French.slice(1).map(lvl => (
-                    <button key={lvl} type="button" className={`level-btn ${editLevelFr === lvl ? 'level-btn--active' : ''}`}
-                      onClick={() => setEditLevelFr(lvl)}>{lvl}</button>
-                  ))}
-                </div>
-              </div>
-            )}
-            {editLanguages.includes('Chinese') && (
-              <div className="form-field">
-                <label className="form-label">중국어 수준</label>
-                <div className="level-group">
-                  {LEVELS.Chinese.slice(1).map(lvl => (
-                    <button key={lvl} type="button" className={`level-btn ${editLevelZh === lvl ? 'level-btn--active' : ''}`}
-                      onClick={() => setEditLevelZh(lvl)}>{lvl}</button>
-                  ))}
-                </div>
-              </div>
-            )}
-            <Button size="sm" onClick={() => saveProfileMutation.mutate()} disabled={saveProfileMutation.isPending}>
-              {saveProfileMutation.isPending ? '저장 중…' : '저장'}
-            </Button>
-          </div>
-        </details>
-
-        <details className="mypage-collapse" open={openPanel === 'goals'}
-          onToggle={e => { if (e.currentTarget.open) setOpenPanel('goals'); else if (openPanel === 'goals') setOpenPanel(null); }}>
-          <summary className="mypage-collapse__summary" onClick={e => { e.preventDefault(); togglePanel('goals'); }}>
-            <span>일일 목표 (복습 {profile?.goal_review ?? 5} · 수집 {profile?.goal_words ?? 5})</span>
-            <span className="mypage-collapse__chevron">▾</span>
-          </summary>
-          <div className="mypage-collapse__body">
-            {isEditingGoals ? (
-              <>
-                {[
-                  { label: '단어 복습', value: goalReview, set: setGoalReview, min: 1, max: 50 },
-                  { label: '단어 수집', value: goalWords,  set: setGoalWords,  min: 1, max: 30 },
-                ].map(({ label, value, set, min, max }) => (
-                  <div key={label} className="mypage-goal-slider">
-                    <div className="mypage-goal-slider__head"><span>{label}</span><span className="mypage-goal-slider__value">{value}개</span></div>
-                    <input type="range" className="mypage-range" min={min} max={max} value={value} onChange={e => set(Number(e.target.value))} />
-                  </div>
-                ))}
-                <div className="mypage-goal-actions">
-                  <Button size="sm" onClick={() => saveGoalsMutation.mutate()} disabled={saveGoalsMutation.isPending} style={{ flex: 1 }}>
-                    {saveGoalsMutation.isPending ? '저장 중…' : '저장'}
-                  </Button>
-                  <Button size="sm" variant="secondary" onClick={() => setIsEditingGoals(false)} style={{ flex: 1 }}>취소</Button>
-                </div>
-              </>
-            ) : (
-              <Button size="sm" variant="secondary" onClick={startEditGoals}>편집</Button>
-            )}
-          </div>
-        </details>
-
-        <details className="mypage-collapse" open={openPanel === 'alarm'}
-          onToggle={e => { if (e.currentTarget.open) setOpenPanel('alarm'); else if (openPanel === 'alarm') setOpenPanel(null); }}>
-          <summary className="mypage-collapse__summary" onClick={e => { e.preventDefault(); togglePanel('alarm'); }}>
-            <span>
-              {pushEnabled
-                ? `알림 (푸시 ${pushState?.subscribed ? '켜짐' : '꺼짐'}${reminderHour ? ` · 매일 ${reminderHour}시` : ''})`
-                : `알림 ${reminderHour ? `(매일 ${reminderHour}시)` : '(꺼짐)'}`}
-            </span>
-            <span className="mypage-collapse__chevron">▾</span>
-          </summary>
-          <div className="mypage-collapse__body">
-            {/* 푸시 — 서버가 보내는 알림. env 키(NEXT_PUBLIC_VAPID_PUBLIC_KEY) 부재 시 블록 숨김 */}
-            {pushEnabled && (
-              pushState && !pushState.supported ? (
-                <div className="mypage-reminder-blocked">이 브라우저에서는 푸시 알림을 지원하지 않아요.</div>
+      {sheet === 'name' && (
+        <NameSheet initial={profile?.display_name || ''} busy={saveNameMutation.isPending}
+          onSave={value => saveNameMutation.mutate(value)} onClose={() => setSheet(null)} />
+      )}
+      {sheet === 'lang' && (
+        <LanguageSheet profile={profile} busy={saveLanguagesMutation.isPending}
+          onSave={value => saveLanguagesMutation.mutate(value)} onClose={() => setSheet(null)} />
+      )}
+      {sheet === 'alarm' && (
+        <ProfileSheet title="알림" onClose={() => setSheet(null)}
+          lead="복습할 때를 알려 드려요. 푸시 알림이 먼저이고, 브라우저 시각 알림은 앱을 열어 둔 동안만 와요.">
+          {pushEnabled && (
+            <div className="pf-sec">
+              <h3>알림 받기</h3>
+              {pushState && !pushState.supported ? (
+                <p className="pf-warn">이 브라우저에서는 푸시 알림을 지원하지 않아요.</p>
               ) : (
-                <div style={{ marginBottom: 16 }}>
-                  {pushState?.permission === 'denied' && (
-                    <div className="mypage-reminder-blocked">브라우저에서 알림이 차단돼 있어요.</div>
-                  )}
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 10px' }}>
-                    내일 이야기가 도착하거나 오늘 복습할 단어가 있으면 알려드려요.
-                  </p>
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    <Button size="sm" onClick={togglePush} disabled={pushBusy || pushState?.permission === 'denied'}>
-                      {pushBusy ? '처리 중…' : pushState?.subscribed ? '알림 끄기' : '알림 켜기'}
-                    </Button>
-                    {pushState?.subscribed && (
-                      <Button size="sm" variant="secondary" onClick={sendTestPush} disabled={pushBusy}>
-                        테스트 발송
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              )
-            )}
-            {/* 시간 리마인더 — 이 브라우저가 열려 있을 때 정해진 시각에 알려 준다(Layout이 발화) */}
+                <>
+                  {pushState?.permission === 'denied' && <p className="pf-warn">브라우저에서 알림이 차단돼 있어요.</p>}
+                  <p className="pf-hint">내일 이야기가 도착하거나 오늘 복습할 단어가 있으면 알려 드려요.</p>
+                  <button type="button" className="pf-switch" aria-pressed={!!pushState?.subscribed} onClick={togglePush}
+                    disabled={pushBusy || pushState?.permission === 'denied'}>
+                    <span>푸시 알림</span>
+                    <span className="pf-switch__state">{pushBusy ? '처리 중…' : pushState?.subscribed ? '켜짐' : '꺼짐'}</span>
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+          <div className="pf-sec">
+            <h3 id="pf-reminder-title">이 브라우저에서 시각 알림</h3>
             {typeof Notification !== 'undefined' && notifPerm === 'denied' && !pushEnabled && (
-              <div className="mypage-reminder-blocked">브라우저에서 알림이 차단돼 있어요.</div>
+              <p className="pf-warn">브라우저에서 알림이 차단돼 있어요.</p>
             )}
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 10px' }}>
-              앱을 열어 둔 브라우저에서 정해진 시각에 복습을 알려드려요.
-            </p>
-            <div className="mypage-reminder-options">
-              {['', '7', '9', '12', '18', '21'].map(h => (
-                <button key={h} className={`mypage-reminder-btn ${reminderHour === h ? 'mypage-reminder-btn--active' : ''}`}
-                  onClick={() => handleReminderChange(h)}>
+            <p className="pf-hint">앱을 열어 둔 브라우저에서 정해진 시각에 복습을 알려 드려요.</p>
+            <div className="pf-chips" role="group" aria-labelledby="pf-reminder-title">
+              {['', ...REMINDER_HOURS].map(h => (
+                <button key={h || 'off'} type="button" aria-pressed={reminderHour === h} onClick={() => handleReminderChange(h)}>
                   {h === '' ? '끄기' : `${h}시`}
                 </button>
               ))}
             </div>
           </div>
-        </details>
-      </div>
-
-      {/* 계정 & 앱 */}
-      <InstallPrompt />
-      <AccountSettings user={user} toast={toast} signOut={signOut} />
-
-      {/* 바로가기 + 정책 */}
-      <div className="card mypage-section" style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-          <Link href="/guide" className="btn btn--ghost btn--sm">학습 가이드</Link>
-          <Link href="/help" className="btn btn--ghost btn--sm">도움말</Link>
-        </div>
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-          <Link href="/terms" style={{ color: 'inherit' }}>이용약관</Link>
-          {' · '}
-          <Link href="/privacy" style={{ color: 'inherit' }}>개인정보 처리방침</Link>
-          {' · '}
-          <Link href="/credits" style={{ color: 'inherit' }}>자료 출처</Link>
-        </div>
-      </div>
-
+        </ProfileSheet>
+      )}
     </div>
+  );
+}
+
+/** 닉네임 바꾸기 — 머리말 이름 · 배움 인사에 쓰인다. 저장은 profiles 뒤 Auth 메타데이터(syncAuthDisplayName). */
+function NameSheet({ initial, busy, onSave, onClose }) {
+  const [value, setValue] = useState(initial);
+  return (
+    <ProfileSheet title="닉네임 바꾸기" onClose={onClose} busy={busy}
+      actions={<>
+        <button type="button" className="pf-pill" onClick={onClose} disabled={busy}>취소</button>
+        <button type="submit" form="pf-name-form" className="pf-pill pf-pill--fill" disabled={busy}>{busy ? '저장 중…' : '저장'}</button>
+      </>}>
+      <form id="pf-name-form" onSubmit={e => { e.preventDefault(); onSave(value); }}>
+        <div className="pf-field">
+          <label htmlFor="pf-name">닉네임</label>
+          <input id="pf-name" className="form-input" value={value} onChange={e => setValue(e.target.value)} maxLength={20} autoComplete="nickname" />
+        </div>
+      </form>
+    </ProfileSheet>
+  );
+}
+
+/**
+ * 학습 언어 · 수준 — 기본 언어(배열 첫 번째)를 화면에 보인다(설계 P5). 「기본으로」는 배열 맨 앞으로 옮길 뿐 새 필드가 없다.
+ * 늘어놓는 순서는 열 때 한 번 정한다(고르는 동안 칸이 움직이지 않게).
+ */
+function LanguageSheet({ profile, busy, onSave, onClose }) {
+  const [selected, setSelected] = useState(() => languageEntries(profile).map(e => e.lang));
+  const [order] = useState(() => sheetLanguageOrder(languageEntries(profile).map(e => e.lang)));
+  const [levels, setLevels] = useState(() => Object.fromEntries(order.map(lang => [lang, profileLevel(profile, lang) || DEFAULT_LEVEL[lang]])));
+  return (
+    <ProfileSheet title="학습 언어" onClose={onClose} busy={busy}
+      lead="배우는 언어와 수준을 골라요. 기본 언어는 배움 · 오늘 학습이 먼저 여는 언어예요."
+      actions={<>
+        <button type="button" className="pf-pill" onClick={onClose} disabled={busy}>취소</button>
+        <button type="button" className="pf-pill pf-pill--fill" disabled={busy} onClick={() => onSave({ languages: selected, levels })}>{busy ? '저장 중…' : '저장'}</button>
+      </>}>
+      {order.map(lang => {
+        const on = selected.includes(lang);
+        const primary = selected[0] === lang;
+        const name = LANG_NAME_KO[lang];
+        return (
+          <div key={lang} className={`pf-lang${on ? ' is-on' : ''}`} role="group" aria-label={name}>
+            <div className="pf-lang__top">
+              <label>
+                <input type="checkbox" checked={on} disabled={busy || (on && selected.length === 1)}
+                  onChange={() => setSelected(prev => toggleLanguage(prev, lang))} />
+                {name}
+              </label>
+              {on && selected.length > 1 && (primary
+                ? <span className="pf-tag">기본</span>
+                : <button type="button" className="pf-lang__base" disabled={busy} aria-label={`${name}를 기본 언어로`}
+                    onClick={() => setSelected(prev => makePrimary(prev, lang))}>기본으로</button>)}
+            </div>
+            {on && (
+              <div className="pf-chips" role="group" aria-label={`${name} 수준`}>
+                {levelOptions(lang).map(level => (
+                  <button key={level} type="button" aria-pressed={levels[lang] === level} disabled={busy}
+                    onClick={() => setLevels(prev => ({ ...prev, [lang]: level }))}>{level}</button>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </ProfileSheet>
   );
 }
