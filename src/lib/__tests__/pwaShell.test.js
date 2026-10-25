@@ -297,3 +297,59 @@ describe('PWA-SHELL-001 ⑦ 고정 막대는 안전 영역을 진다(viewport-fi
     expect(read('src/components/books/reading-shell.css')).toContain('.manabi-app .book-reading-content .player{left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px);border-bottom:env(safe-area-inset-bottom,0px) solid white}');
   });
 });
+
+describe('PWA-SHELL-001 ⑧ 위 머리(.gnb)는 상태 표시줄 자리를 진다(오너 실기 2026-10-25 KST)', () => {
+  // iOS 홈 화면 앱(Chrome · Safari에서 추가)은 상태 표시줄 밑까지 페이지를 그릴 수 있다 — 설치할 때의 표시줄 값(옛 black-translucent)을
+  // 그대로 들고 가거나 iOS가 cover 화면을 표시줄 밑으로 넓힐 때. 그때 env(safe-area-inset-top)이 표시줄 높이(약 59)가 되고, 머리가 그만큼
+  // 안쪽 위 여백을 지고 그 자리까지 머리 바탕으로 칠한다. 보통 브라우저 탭 · 데스크톱은 값이 0이라 지금과 같다.
+  const INSET = 'env(safe-area-inset-top,0px)';
+  const squash = (s) => s.replace(/\s+/g, '');
+  const shellCss = () => cssFiles().map((file) => ({ file, rules: rulesOf(read(file)) }));
+  /** 선택자 목록 중 하나라도 .gnb 자체(자식 아님)를 가리키는 규칙. */
+  const gnbRules = () => shellCss().flatMap(({ file, rules }) => rules
+    .filter((r) => r.selector.split(',').some((s) => /\.gnb$/.test(s.trim())))
+    .map((r) => ({ file, ...r })));
+  const decl = (body, prop) => [...body.matchAll(new RegExp(`(?:^|;)\\s*${prop}\\s*:\\s*([^;]+)`, 'g'))].map((m) => squash(m[1]));
+
+  it('기본 .gnb 규칙(데스크톱 · 768 이하 둘 다)의 위 안쪽 여백 = 상태 표시줄 높이', () => {
+    const base = rulesOf(read('src/index.css')).filter((r) => r.selector === '.gnb' && /padding\s*:/.test(r.body));
+    expect(base.length).toBe(2);
+    for (const r of base) expect(decl(r.body, 'padding')[0].startsWith(INSET), r.body).toBe(true);
+  });
+
+  it('.gnb 위 여백을 0으로 되돌리는 규칙이 없다(padding 줄임말 · padding-top · padding-block 금지 — 좌우는 padding-inline)', () => {
+    const resets = gnbRules()
+      .filter((r) => !(r.file === 'src/index.css' && r.selector === '.gnb'))
+      .filter((r) => /(?:^|;)\s*padding(?:-top|-block)?\s*:/.test(r.body))
+      .map((r) => `${r.file} ${r.selector}`);
+    expect(resets).toEqual([]);
+  });
+
+  it('머리 높이를 적는 곳(--gnb-height · .gnb height)은 모두 표시줄 높이를 더한다 — 본문 위 여백 · sticky 띠가 같은 값을 따라온다', () => {
+    const missing = [];
+    for (const { file, rules } of shellCss()) {
+      for (const r of rules) {
+        for (const v of decl(r.body, '--gnb-height')) {
+          if (v === '0px' || v === '0') continue; // 머리를 숨긴 판서 화면 — 안전 영역은 HUD가 직접 진다
+          if (!v.includes(INSET)) missing.push(`${file} ${r.selector} --gnb-height:${v}`);
+        }
+        if (!r.selector.split(',').some((s) => /\.gnb$/.test(s.trim()))) continue;
+        for (const v of decl(r.body, 'height')) if (v !== 'var(--gnb-height)' && !v.includes(INSET)) missing.push(`${file} ${r.selector} height:${v}`);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it('머리 밑에 붙는 본문 여백 · sticky 띠는 머리 높이 숫자를 따로 적지 않고 --gnb-height를 쓴다', () => {
+    const shell = read('src/components/web/web-shell.css');
+    expect(shell).not.toMatch(/\.manabi-app \.app-layout\{[^}]*padding-top:66px/);
+    const focused = rulesOf(read('src/components/web/focused-reader.css'));
+    const top = (sel) => focused.find((r) => r.selector === sel)?.body.match(/(?:^|;)\s*top\s*:\s*([^;]+)/)?.[1].trim();
+    expect(top('.manabi-app--reading .viewer-topbar')).toBe('var(--gnb-height)');
+    expect(top('.manabi-app--reading .viewer-side')).toBe('calc(var(--gnb-height) + 12px)');
+  });
+
+  it('표시줄 글자색 meta는 default 그대로 — 머리 바탕(셸 종이)이 밝아 검은 글자가 읽힌다', () => {
+    expect(read('src/app/layout.jsx')).toContain('<meta name="apple-mobile-web-app-status-bar-style" content="default" />');
+  });
+});

@@ -69,16 +69,13 @@ describe('literatureDisplayTitle — 저장된 제목 대신 정본 장 제목',
     expect(literatureDisplayTitle(null, undefined)).toBe(undefined);
   });
 
-  it('홈 두 자리가 책 위치와 아오조라 표식만 더 받아 이 함수로 제목을 그린다', () => {
+  it('홈(이어 읽기)이 책 위치와 아오조라 표식만 더 받아 이 함수로 제목을 그린다', () => {
     const read = (rel) => readFileSync(path.join(process.cwd(), rel), 'utf8');
     const metaColumns = 'book:processed_json->metadata->book, provider:processed_json->metadata->literature->>provider)';
     const usage = 'literatureDisplayTitle({ book: m';
     const home = read('src/views/HomePage.jsx');
     expect(home).toContain(metaColumns);
     expect(home).toContain(`${usage}.book, literature: { provider: m.provider } }, m.title)`);
-    const reread = read('src/lib/useRereadCandidate.js');
-    expect(reread).toContain(metaColumns);
-    expect(reread).toContain('literatureDisplayTitle({ book: material?.book, literature: { provider: material?.provider } }, material?.title)');
   });
 });
 

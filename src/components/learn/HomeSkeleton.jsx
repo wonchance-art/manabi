@@ -37,7 +37,8 @@ export function MemberHomeSkeleton() {
   return (
     <SkeletonRegion className="manabi-page learn-page" label="배움 화면" announce>
       <div className="learn-top" aria-hidden="true">
-        <div className="learn-top__title"><h1>배움</h1></div>
+        {/* 칩 자리 — 칩은 계정 학습 언어를 받은 뒤에 그려진다. 좁은 화면(셸 480 이하)은 칩이 둘째 줄이라 빈 자리(44)를 먼저 둔다. */}
+        <div className="learn-top__title"><h1>배움</h1><span className="learn-chips" /></div>
         <span className="learn-toplink">현황 전체 →</span>
       </div>
       <div className="learn-grid" aria-hidden="true">

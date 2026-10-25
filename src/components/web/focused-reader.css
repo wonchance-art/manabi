@@ -1,12 +1,12 @@
 /* Keep the page still when a word is selected: the side columns retain their width. */
-.manabi-app--reading { --gnb-height: 56px; }
-.manabi-app--reading .gnb { height: 56px; gap: 12px; padding-inline: 20px; }
+.manabi-app--reading { --gnb-height: calc(56px + env(safe-area-inset-top,0px)); }
+.manabi-app--reading .gnb { height: var(--gnb-height); gap: 12px; padding-inline: 20px; }
 .manabi-app--reading .gnb__logo { font-size: 24px; letter-spacing: -1.6px; margin-right: auto; }
 .manabi-app--reading .gnb__nav,
 .manabi-app--reading .gnb > .gnb__link,
 .manabi-app--reading .mobile-nav { display: none; }
 .manabi-app--reading .manabi-search-link span { display: none; }
-.manabi-app--reading .app-layout { --gnb-height: 56px; padding-top: var(--gnb-height); padding-bottom: 0; }
+.manabi-app--reading .app-layout { --gnb-height: calc(56px + env(safe-area-inset-top,0px)); padding-top: var(--gnb-height); padding-bottom: 0; }
 .reader-site-menu { position: relative; font-size: 13px; }
 .reader-site-menu summary { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; cursor: pointer; list-style: none; }
 .reader-site-menu summary::-webkit-details-marker { display: none; }
@@ -15,13 +15,13 @@
 .reader-site-menu nav a { min-height: 44px; display: flex; align-items: center; padding-inline: 14px; text-decoration: none; color: var(--ink); }
 .reader-site-menu nav a:hover { background: var(--paper); }
 .reader-site-menu nav a[aria-current="page"] { font-weight: 700; box-shadow: inset 2px 0 0 var(--ink); background: color-mix(in srgb, var(--ink) 6%, transparent); }
-.manabi-app--reading .viewer-3col { height: auto; min-height: calc(100dvh - 56px); overflow: visible; max-width: 1400px; margin-inline: auto; }
+.manabi-app--reading .viewer-3col { height: auto; min-height: calc(100dvh - var(--gnb-height)); overflow: visible; max-width: 1400px; margin-inline: auto; }
 .manabi-app--reading .viewer-center { overflow: visible; padding-bottom: 100px; }
-.manabi-app--reading .viewer-side { position: sticky; top: 68px; max-height: calc(100dvh - 84px); align-self: flex-start; border: 0; }
+.manabi-app--reading .viewer-side { position: sticky; top: calc(var(--gnb-height) + 12px); max-height: calc(100dvh - var(--gnb-height) - 28px); align-self: flex-start; border: 0; }
 .manabi-app--reading .viewer-3col[data-left-active="false"] .viewer-side--left,
 .manabi-app--reading .viewer-3col[data-right-active="false"] .viewer-side--right { visibility: hidden; pointer-events: none; }
 .manabi-app--reading .viewer-header { display: contents; }
-.manabi-app--reading .viewer-topbar { position: sticky; top: 56px; z-index: 45; margin-bottom: 18px; padding-block: 8px; background: var(--paper); border-bottom: 1px solid var(--rule); }
+.manabi-app--reading .viewer-topbar { position: sticky; top: var(--gnb-height); z-index: 45; margin-bottom: 18px; padding-block: 8px; background: var(--paper); border-bottom: 1px solid var(--rule); }
 .manabi-app--reading .viewer-titlerow { margin-bottom: 24px; }
 .manabi-app--reading .viewer-topbar a,
 .manabi-app--reading .viewer-tool,
