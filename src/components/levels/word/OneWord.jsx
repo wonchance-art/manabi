@@ -24,7 +24,7 @@ export function OneWordCard({ entry: e, view, info, tiles, speak, tone, revealed
       <div className="lw-one__meta"><Reading text={sub} word={hw} tone={tone} /><Listen speak={speak} text={e.word} /></div>
       {info.hard ? <div className="lw-one__chips"><span className="lw-chip">자주 틀린 단어 · {info.hard}번</span></div> : null}
       <p className="lw-one__mean">{e.meaning}</p>
-      <CharTiles tiles={tiles} />
+      <CharTiles tiles={tiles} word={e.word} />
       <Example ex={e.ex} word={e.word} speak={speak} onWord={onWord} openKey={openKey} tone={tone} />
     </div>}
   </section>;

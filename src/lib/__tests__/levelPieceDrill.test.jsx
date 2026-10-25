@@ -1,53 +1,60 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { CharTiles, PieceDrillContext } from '@/components/levels/word/WordParts';
+import { CharTiles, PieceDrillContext, tileIndexes } from '@/components/levels/word/WordParts';
 import { PiecePopup } from '@/components/levels/word/WordSheets';
 import { WordLangContext } from '@/components/levels/word/wordLang';
 import { HSK_WORD_LANG } from '@/views/LevelWordPage';
 import { jlptWordLang } from '@/views/JlptWordPage';
 import { levelCharTiles, loadLevelCharTables } from '../levelCharTiles.js';
 
-// 단어장 글자 칸 조각 파고들기(오너 2026-10-23 KST 「안1로. 다만 '뜻'과 '음'으로 한 글자씩」) — 역할이 확인된 조각에 「뜻」 · 「음」,
-// 더 쪼갤 것이 있는 조각만 「뜻 ›」 · 「음 ›」 단추. 누르면 뷰어 한자 창과 같은 자료의 조각 창(같은 소리 글자 · 그 글자의 구성 · 같은 한자 단어).
+// 단어장 글자 칸 파고들기 — 조각에 역할 말 「뜻」 · 「음」(오너 2026-10-23 KST 「안1로」), 조각은 더 파고들지 않고
+// 왼쪽 큰 한자를 누르면 그 글자의 창(구성 · 같은 한자 단어, 지금 단어 제외)(오너 2026-10-25 KST · 시안 C 「선만」).
 const L = HSK_WORD_LANG;
 const JLPT_WORD_LANG = jlptWordLang('N5');
 const wrap = (node, drill = null, lang = L) => renderToStaticMarkup(
   <WordLangContext.Provider value={lang}><PieceDrillContext.Provider value={drill}>{node}</PieceDrillContext.Provider></WordLangContext.Provider>);
 
-describe('글자 칸 조각 — 역할 · 열 글자', () => {
-  it('观察: 見 뜻 › (구성 있음) · 雚 음 › (소리 묶음) · 宀 뜻(더 쪼갤 것 없음 — › 없음) · 祭 음 ›', async () => {
+describe('글자 칸 조각 — 역할', () => {
+  it('观察: 見 뜻 · 雚 음 · 宀 뜻 · 祭 음 — 조각에 여는 글자(open)는 없다', async () => {
     const tiles = levelCharTiles('观察', await loadLevelCharTables());
     expect(tiles[0].pieces).toEqual([
-      { ch: '見', label: '볼 견', role: 'meaning', open: '見' },
-      { ch: '雚', label: '황새 관', role: 'sound', open: '雚' },
+      { ch: '見', label: '볼 견', role: 'meaning' },
+      { ch: '雚', label: '황새 관', role: 'sound' },
     ]);
-    expect(tiles[1].pieces[0]).toEqual({ ch: '宀', label: '집 면', role: 'meaning' });
-    expect(tiles[1].pieces[1]).toMatchObject({ ch: '祭', role: 'sound', open: '祭' });
+    expect(tiles[1].pieces).toEqual([{ ch: '宀', label: '집 면', role: 'meaning' }, { ch: '祭', label: '제사 제', role: 'sound' }]);
   }, 60000);
 
-  it('역할 미상 조각은 글자 · 훈음만(역할 말 · 단추 없음)', async () => {
+  it('역할 미상 조각은 글자 · 훈음만', async () => {
     const [xi] = levelCharTiles('习', await loadLevelCharTables());
-    expect(xi.pieces.every((p) => !p.role && !p.open)).toBe(true);
+    expect(xi.pieces.every((p) => !p.role && !('open' in p))).toBe(true);
   }, 60000);
 });
 
-describe('CharTiles — 파고들기 있을 때만 역할 말 · 단추', () => {
-  const tiles = [{ ch: '观', zheng: '觀', label: '볼 관', pieces: [
-    { ch: '見', label: '볼 견', role: 'meaning', open: '見' }, { ch: '雚', label: '황새 관', role: 'sound', open: '雚' }] },
-  { ch: '察', zheng: null, label: '살필 찰', pieces: [{ ch: '宀', label: '집 면', role: 'meaning' }, { ch: '祭', label: '제사 제', role: 'sound', open: '祭' }] }];
+describe('CharTiles — 파고들기 판은 큰 한자가 단추, 조각 줄은 역할 칸까지 맞춘다', () => {
+  const tiles = [{ ch: '汉', zheng: '漢', label: '한수 한', pieces: [
+    { ch: '氵', label: '물 수', role: 'meaning' }, { ch: '又', label: '또 우', role: 'sound' }] },
+  { ch: '字', zheng: null, label: '글자 자', pieces: [{ ch: '宀', label: '집 면' }, { ch: '子', label: '아들 자' }] }];
 
-  it('HSK — 「뜻 ›」 「음 ›」 단추, 宀은 「뜻」 글자만', () => {
-    const html = wrap(<CharTiles tiles={tiles} />, { onPiece: () => {} });
-    expect(html).toContain('aria-label="見 볼 견, 뜻 조각"');
-    expect(html).toContain('aria-label="雚 황새 관, 음 조각"');
-    expect(html.match(/<button/g)).toHaveLength(3);
-    expect(html).toContain('<span class="lw-tile__piece is-meaning"><span class="lw-tile__pch" lang="zh-CN">宀</span><span class="lw-tile__pl">집 면</span><i class="lw-tile__role">뜻</i></span>');
-    expect(html).not.toContain('소리');
+  it('HSK — 글자마다 단추 하나(조각은 단추 아님) · 역할을 모르는 조각도 빈 역할 칸', () => {
+    const html = wrap(<CharTiles tiles={tiles} word="汉字" />, { onPiece: () => {} });
+    expect(html.match(/<button/g)).toHaveLength(2);
+    expect(html).toContain('aria-label="汉 한수 한, 이 글자가 든 단어"');
+    expect(html).toContain('aria-label="字 글자 자, 이 글자가 든 단어"');
+    expect(html).toContain('<span class="lw-tile__piece is-row is-meaning"><span class="lw-tile__pch" lang="zh-CN">氵</span><span class="lw-tile__pl">물 수</span><i class="lw-tile__role">뜻</i></span>');
+    expect(html).toContain('<span class="lw-tile__piece is-row"><span class="lw-tile__pch" lang="zh-CN">宀</span><span class="lw-tile__pl">집 면</span><i class="lw-tile__role"></i></span>');
+    expect(html).not.toContain('›');
+  });
+
+  it('단어 속 자리 — 칸은 한자만이라 가나 · 기호를 건너뛰고, 같은 글자가 두 번이면 차례로', () => {
+    expect(tileIndexes('字·汉', [{ ch: '字' }, { ch: '汉' }])).toEqual([0, 2]);
+    expect(tileIndexes('人人', [{ ch: '人' }, { ch: '人' }])).toEqual([0, 1]);
+    expect(tileIndexes('勉強する', [{ ch: '勉' }, { ch: '強' }])).toEqual([0, 1]);
+    expect(tileIndexes(undefined, [{ ch: '汉' }])).toEqual([null]);
   });
 
   it('파고들기 없음(JLPT 판 · 예문 단어 창의 작은 칸) — 지금 모양 그대로', () => {
-    for (const html of [wrap(<CharTiles tiles={tiles} />, null, JLPT_WORD_LANG), wrap(<CharTiles tiles={tiles} small />, { onPiece: () => {} })]) {
+    for (const html of [wrap(<CharTiles tiles={tiles} word="汉字" />, null, JLPT_WORD_LANG), wrap(<CharTiles tiles={tiles} word="汉字" small />, { onPiece: () => {} })]) {
       expect(html).not.toContain('<button');
       expect(html).not.toContain('lw-tile__role');
     }
@@ -56,40 +63,50 @@ describe('CharTiles — 파고들기 있을 때만 역할 말 · 단추', () => 
   });
 });
 
-describe('조각 창', () => {
-  const popup = async (req, extra = {}) => wrap(<PiecePopup req={{ ...req, anchor: null, id: 1 }} tables={await loadLevelCharTables()} refIndex={extra.refIndex || null}
-    savedRows={extra.savedRows || []} tone onClose={() => {}} />);
+describe('글자 창', () => {
+  const popup = async (req, extra = {}) => wrap(<PiecePopup req={{ kind: 'char', ...req, anchor: null, id: 1 }} tables={await loadLevelCharTables()}
+    refIndex={extra.refIndex || null} savedRows={extra.savedRows || []} tone onClose={() => {}} />);
+  const wordsOf = (html) => [...html.matchAll(/<span class="lw-dp__tzh"[^>]*>(.*?)<\/span><span class="lw-dp__tpy/g)].map((m) => m[1].replace(/<[^>]+>/g, ''));
 
-  it('음 조각 雚 — 같은 소리 글자 5개 · 이 칸 글자(觀) 칠함 · 요약 한 줄 · 「음 조각」', async () => {
-    const html = await popup({ kind: 'sound', ch: '雚', of: '觀' });
-    expect(html.match(/class="lw-dp__fc/g)).toHaveLength(5);
-    expect(html).toContain('lw-dp__fc is-hit"');
-    expect(html).toMatch(/雚이 들면 대개 관/);
-    expect(html).toContain('음 조각');
-    expect(html).toContain('role="dialog"');
+  it('汉语의 汉 — 머리(이 단어 속 병음 hàn · 훈음 · 正 漢) · 구성(氵 뜻 · 又 음, 누르지 않음) · 같은 한자 단어(지금 단어 汉语는 뺀다)', async () => {
+    const refIndex = new Map([['汉语', { level: 'H1', word: { zh: '汉语', pinyin: 'hànyǔ', ko: '중국어' } }],
+      ['汉字', { level: 'H1', word: { zh: '汉字', pinyin: 'hànzì', ko: '한자' } }]]);
+    const html = await popup({ ch: '汉', of: '漢', word: '汉语', index: 0 }, { refIndex });
+    expect(html).toContain('aria-label="汉 글자"');
+    expect(html).toContain('hàn');
+    expect(html).toContain('한수 한');
+    expect(html).toMatch(/正 <b[^>]*>漢<\/b>/);
+    expect(html).toContain('<i>뜻</i>');
+    expect(html).toContain('<i>음</i>');
+    expect(html).not.toContain('<button type="button" class="lw-dp__piece');
+    expect(wordsOf(html)).toEqual(['汉字']);
   }, 60000);
 
-  it('뜻 조각 見 — 구성(目 · 儿, 역할 미상) · 같은 한자 단어(내 단어 먼저 → 색인, 한자어 판정 통과분 먼저)', async () => {
+  it('같은 한자 단어 — 내 단어 먼저 → 색인, 한자어 판정 통과분 먼저(见)', async () => {
     const refIndex = new Map([['看见', { level: 'H1', word: { zh: '看见', pinyin: 'kànjiàn', ko: '보다' } }],
       ['意见', { level: 'H3', word: { zh: '意见', pinyin: 'yìjiàn', ko: '의견' } }], ['见面', { level: 'H2', word: { zh: '见面', pinyin: 'jiànmiàn', ko: '만나다' } }]]);
-    const html = await popup({ kind: 'char', ch: '見', of: '觀' }, { refIndex, savedRows: [{ word_text: '见面', meaning: '만나다', language: 'Chinese' }] });
-    expect(html).toContain('뜻 조각');
-    expect(html).toContain('역할 미상');
-    const words = [...html.matchAll(/<span class="lw-dp__tzh"[^>]*>(.*?)<\/span><span class="lw-dp__tpy/g)].map((m) => m[1].replace(/<[^>]+>/g, ''));
-    expect(words).toEqual(['意见', '见面', '看见']);
+    const html = await popup({ ch: '见', word: '看见', index: 1 }, { refIndex, savedRows: [{ word_text: '见面', meaning: '만나다', language: 'Chinese' }] });
+    expect(wordsOf(html)).toEqual(['意见', '见面']);
   }, 60000);
 
   it('표를 받는 중이면 빈 창(aria-busy) · 못 받으면 한 줄', () => {
-    expect(wrap(<PiecePopup req={{ kind: 'sound', ch: '雚', anchor: null, id: 1 }} tables="loading" onClose={() => {}} />)).toContain('aria-busy="true"');
-    expect(wrap(<PiecePopup req={{ kind: 'sound', ch: '雚', anchor: null, id: 1 }} tables={false} onClose={() => {}} />)).toContain('글자 자료를 불러오지 못했어요');
+    expect(wrap(<PiecePopup req={{ kind: 'char', ch: '汉', anchor: null, id: 1 }} tables="loading" onClose={() => {}} />)).toContain('aria-busy="true"');
+    expect(wrap(<PiecePopup req={{ kind: 'char', ch: '汉', anchor: null, id: 1 }} tables={false} onClose={() => {}} />)).toContain('글자 자료를 불러오지 못했어요');
   });
 
-  it('배선 — 표 네 벌은 화면의 한 곳(askTables)에서만 받고, 같은 조각을 다시 누르면 닫는다 · 시트는 조각 창의 Esc를 가로채지 않는다', () => {
+  it('배선 — 표 네 벌은 화면의 한 곳(askTables)에서만 받고, 같은 글자를 다시 누르면 닫는다 · 시트는 글자 창의 Esc를 가로채지 않는다', () => {
     const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
     const sheets = fs.readFileSync('src/components/levels/word/WordSheets.jsx', 'utf8');
+    const parts = fs.readFileSync('src/components/levels/word/WordParts.jsx', 'utf8');
     expect(screen.match(/cfg\.loadTiles\(\)/g)).toHaveLength(1);
     expect(screen).toContain('setPiece((cur) => (cur?.anchor === anchor ? null : { ...req, anchor, id: Date.now() }));');
     expect(screen).toContain('<PieceDrillContext.Provider value={drillCtx}>');
     expect(sheets).toContain("if (document.querySelector('.lw-dp')) return;");
+    // 글자 칸을 그리는 곳은 모두 단어를 넘긴다(창이 그 단어의 읽기 · 제외에 쓴다)
+    for (const f of ['LevelWordScreen.jsx', 'WordCard.jsx', 'OneWord.jsx']) {
+      const src = fs.readFileSync(`src/components/levels/word/${f}`, 'utf8');
+      for (const m of src.matchAll(/<CharTiles [^>]*\/>/g)) expect(m[0]).toMatch(/ word=\{/);
+    }
+    expect(parts).toContain("drill.onPiece({ kind: 'char', ch: t.ch, of: t.zheng || t.ch, word, index: at[i] }, e.currentTarget)");
   });
 });

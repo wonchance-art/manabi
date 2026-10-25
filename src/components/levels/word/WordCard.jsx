@@ -110,7 +110,7 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
   if (view === 'all') {
     const last = e.ex?.text ? <Example ex={e.ex} word={e.word} speak={speak} onWord={onWord} openKey={openKey} tone={tone} tail={time} /> : null;
     // 「자주 틀린 단어」 칩은 단어 위(캔버스 ⑧).
-    return <li className="lw-card" {...attrs} onClick={pick}>{chips}{head}{last ? mean : meanLine(time)}<CharTiles tiles={tiles} />{last}{areaRow}{grades}</li>;
+    return <li className="lw-card" {...attrs} onClick={pick}>{chips}{head}{last ? mean : meanLine(time)}<CharTiles tiles={tiles} word={e.word} />{last}{areaRow}{grades}</li>;
   }
   // 접힌 카드는 한 줄뿐 — 남은 시간은 그 줄 끝.
   const soloLine = (cls, body, lang) => (time ? <p className={`${cls} lw-tailrow`}><span lang={lang}>{body}</span>{time}</p> : <p className={cls} lang={lang}>{body}</p>);
@@ -122,10 +122,10 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
         : soloLine('lw-card__solo', e.ex.text, L.hw))
       : view === 'meaning' ? soloLine('lw-card__solo lw-card__mean', e.meaning)
         : <div className="lw-card__head"><Listen speak={speak} text={e.word} /><span className="lw-card__word" />{time}</div>;
-  const rest = view === 'word' ? <>{<span className="lw-card__word">{reading}{listen}</span>}{mean}<CharTiles tiles={tiles} />{ex}</>
-    : view === 'sentence' ? <>{e.ex && <Example ex={e.ex} word={e.word} speak={speak} showText={false} tone={tone} />}{head}{mean}<CharTiles tiles={tiles} /></>
-      : view === 'meaning' ? <>{head}<CharTiles tiles={tiles} />{ex}</>
-        : <>{head}{mean}<CharTiles tiles={tiles} />{ex}</>;
+  const rest = view === 'word' ? <>{<span className="lw-card__word">{reading}{listen}</span>}{mean}<CharTiles tiles={tiles} word={e.word} />{ex}</>
+    : view === 'sentence' ? <>{e.ex && <Example ex={e.ex} word={e.word} speak={speak} showText={false} tone={tone} />}{head}{mean}<CharTiles tiles={tiles} word={e.word} /></>
+      : view === 'meaning' ? <>{head}<CharTiles tiles={tiles} word={e.word} />{ex}</>
+        : <>{head}{mean}<CharTiles tiles={tiles} word={e.word} />{ex}</>;
   const flip = () => {
     if (open === true) { setOpen(reducedMotion() ? false : 'closing'); return; }
     if (!open) onOpen?.();

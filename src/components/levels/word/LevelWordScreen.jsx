@@ -621,9 +621,9 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
   }, [byKey, dict.entries, level]);
   const onExampleWord = useCallback((text, anchor, id) => { loadDict(); setPop({ text, anchor, id }); }, [loadDict]);
 
-  // ── 조각 창(오너 10-23 「안1로」 — HSK 판의 글자 칸 「뜻 ›」 · 「음 ›」) — 표 네 벌(askTables)과 HSK 1–9 색인(loadDict)을 그때 받는다.
-  // 같은 한자 단어는 내 단어 → 색인(급 낮은 순), 색인을 못 받으면 이 레벨 목록에서. 같은 조각을 다시 누르면 닫는다.
-  const [piece, setPiece] = useState(null); // { kind, ch, of, anchor, id }
+  // ── 글자 창(오너 2026-10-25 KST — HSK 판의 글자 칸 큰 한자를 누름) — 표 네 벌(askTables)과 HSK 1–9 색인(loadDict)을 그때 받는다.
+  // 같은 한자 단어는 내 단어 → 색인(급 낮은 순), 색인을 못 받으면 이 레벨 목록에서. 같은 글자를 다시 누르면 닫는다.
+  const [piece, setPiece] = useState(null); // { kind, ch, of, word, index, anchor, id }
   const onPiece = useCallback((req, anchor) => {
     loadDict();
     if (charTables === null) askTables();
@@ -889,7 +889,7 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
         : <div className="lw-card">
           <WordRow word={card.row.word} reading={card.row.reading} meaning={card.row.meaning || '사전에 없는 단어예요'} level={card.row.level}
             status={statusOfWord(card.row.word)} tone={tone} onSave={() => onStar(entryOfRow(card.row))} saving={saving === card.row.word} pop={pops.has(card.row.word)} />
-          <CharTiles tiles={tilesOf(card.row.word, card.row.kr)} />
+          <CharTiles tiles={tilesOf(card.row.word, card.row.kr)} word={card.row.word} />
           {card.row.level && <Link className="lw-pop__open" href={`${cfg.levelHref(cfg.levelKeyOf(card.row.level))}?w=${encodeURIComponent(card.row.word)}`}>{cfg.tag(card.row.level)} 단어에서 보기 ›</Link>}
         </div>}
     </Sheet>}

@@ -119,16 +119,19 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-tile__kana{margin-left:4px;color:var(--muted)}
 .lw-tile__piece{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--lw-review)}
 .lw-tile__pch{display:inline-block;width:16px;color:var(--ink);font-weight:500}
-/* 조각 파고들기(오너 10-23 「안1로」 · HSK) — 역할 말 「뜻」(초록) · 「음」(황토), 누를 수 있는 조각만 › 와 단추. 누르는 자리는 줄 높이를 넘겨 24px(겹치지 않게 위아래 반씩). */
-.lw-tile__piece.is-meaning,.lw-tile__piece.is-sound{display:flex;align-items:baseline;min-width:0}
+/* 글자 파고들기(오너 2026-10-25 KST · 시안 C 「선만」) — HSK 판은 왼쪽 큰 한자가 단추다. 바탕은 칸 그대로 두고 칸 높이만큼 둥근 선을 두르며,
+   글자는 정체가 없어도 위에 둔다. 누르면 진한 베이지(뜻 초록 · 음 황토 · 장미색과 겹치지 않게). 조각 줄은 [글자][훈음][역할 칸] — 역할을 모르면 칸만 비운다. */
+.lw-tiles--drill .lw-tile{padding:6px 10px 6px 6px}
+.lw-tiles--drill .lw-tile__info{flex:1;padding-block:2px}
+button.lw-tile__glyph{align-self:stretch;justify-content:flex-start;align-items:center;min-width:44px;margin:0;padding:2px 7px;border:1px solid color-mix(in srgb,var(--lw-review) 22%,var(--lw-tile));border-radius:8px;
+  background:transparent;color:var(--ink);font:inherit;font-size:calc(var(--lh) * 1.25);line-height:calc(var(--lh) * 1.5);font-weight:500;cursor:pointer}
+button.lw-tile__glyph:hover{background:color-mix(in srgb,var(--lw-review) 5%,var(--lw-tile))}
+button.lw-tile__glyph[aria-expanded=true]{background:color-mix(in srgb,var(--lw-review) 9%,var(--lw-tile));border-color:var(--lw-review)}
+.lw-tile__piece.is-row{display:grid;grid-template-columns:16px minmax(0,1fr) 22px;align-items:baseline;min-width:0}
 .lw-tile__pl{min-width:0;overflow:hidden;text-overflow:ellipsis}
-.lw-tile__role{flex:none;margin-left:auto;padding-left:6px;font-style:normal;font-weight:700;font-size:11.5px}
+.lw-tile__role{font-style:normal;font-weight:700;font-size:11.5px;text-align:right}
 .lw-tile__piece.is-meaning .lw-tile__role{color:var(--book-sage-main)}
 .lw-tile__piece.is-sound .lw-tile__role{color:var(--book-amber-main)}
-button.lw-tile__piece{position:relative;width:100%;border:0;background:none;padding:0;margin:0;font:inherit;line-height:inherit;text-align:start;cursor:pointer;border-radius:4px}
-button.lw-tile__piece::before{content:"";position:absolute;inset:-2.5px -4px}
-button.lw-tile__piece:hover{background:color-mix(in srgb,var(--lw-ex-hit) 60%,transparent)}
-button.lw-tile__piece[aria-expanded=true]{background:var(--lw-ex-hit);box-shadow:0 0 0 2px var(--lw-ex-hit)}
 
 /* 예문 — 왼쪽 줄. 단어마다 점선 밑줄, 카드 단어는 장미색 밑줄. */
 /* 캔버스 값 — 왼쪽 줄 2px · 들여 14px · 본문 20px(한 단어 뒷면 18px · 12px) · 단어 사이 5px */
@@ -306,7 +309,7 @@ button.lw-tile__piece[aria-expanded=true]{background:var(--lw-ex-hit);box-shadow
 /* 예문 단어 창 안에서는 시안 ⑱처럼 아래 칸 — 위 구분선 · 왼쪽 정렬 */
 .lw-pop .lw-pop__open{justify-self:stretch;min-height:40px;border-top:1px solid var(--lw-line);margin:0 -12px -10px;padding:0 14px;font-weight:600;font-size:13px;display:flex;align-items:center}
 
-/* 조각 창 — 뷰어 한자 창과 같은 규격(높이 170 · 너비 min(346, 화면 − 32)) · 놓기는 예문 단어 창(누른 칸 아래, 넘치면 위). 시트 위에도 뜬다. */
+/* 글자 창 — 뷰어 한자 창과 같은 규격(높이 170 · 너비 min(346, 화면 − 32)) · 놓기는 예문 단어 창(누른 칸 아래, 넘치면 위). 시트 위에도 뜬다. */
 .lw-dp{position:fixed;z-index:60;box-sizing:border-box;width:min(346px,calc(100vw - 32px));height:170px;display:flex;flex-direction:column;gap:6px;padding:8px 10px 8px 12px;
   background:var(--lw-card);color:var(--ink);border:1px solid var(--lw-line);border-radius:12px;box-shadow:0 12px 32px color-mix(in srgb,var(--ink) 16%,transparent);
   font-size:14px;line-height:1.3;animation:settleIn .16s var(--ease-settle) both}
@@ -318,15 +321,8 @@ button.lw-tile__piece[aria-expanded=true]{background:var(--lw-ex-hit);box-shadow
 .lw-dp__ch{flex:none;font-size:26px;line-height:32px;font-weight:500}
 .lw-dp__py{flex:none;font-size:15px;color:var(--muted)}
 .lw-dp__hun{min-width:0;margin-left:4px;overflow:hidden;text-overflow:ellipsis;font-size:15px;font-weight:700}
-.lw-dp__role{flex:none;font-size:11.5px;font-weight:700}
-.lw-dp__role.is-sound{color:var(--book-amber-main)}
-.lw-dp__role.is-meaning{color:var(--book-sage-main)}
-.lw-dp__fam{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;white-space:nowrap}
-.lw-dp__fc{display:flex;flex-direction:column;align-items:center;min-width:0;padding:5px 2px 6px;border-radius:10px;background:var(--lw-tile)}
-.lw-dp__fc.is-hit{background:var(--lw-ex-hit);box-shadow:inset 0 0 0 1px var(--lw-today-line)}
-.lw-dp__fpy{font-size:11px;line-height:14px}
-.lw-dp__fc b{font-size:21px;font-weight:500;line-height:26px}
-.lw-dp__fc>span:last-child{font-size:12px;line-height:15px}
+.lw-dp__zheng{flex:none;font-size:12px;color:var(--muted)}
+.lw-dp__zheng b{font-size:15px;font-weight:500;color:var(--ink)}
 .lw-dp__note{margin:auto 0 0;font-size:12.5px;line-height:1.3;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lw-dp__parts{display:grid;grid-template-columns:repeat(var(--n,2),minmax(0,1fr));gap:6px;min-height:36px;white-space:nowrap}
 .lw-dp__parts.is-unknown{display:flex;align-items:center;overflow:hidden}
