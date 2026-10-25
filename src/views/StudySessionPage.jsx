@@ -1017,7 +1017,7 @@ export default function StudySessionPage({
     return (
       <div className="page-container" style={{ maxWidth: 640 }}>
         <div style={{ display: 'flex', alignItems: 'center', margin: '10px 0 20px' }}>
-          <Link href="/home" aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem', padding: '6px 10px', margin: '-6px -10px' }}>✕</Link>
+          <Link href="/home" prefetch={false} aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem', padding: '6px 10px', margin: '-6px -10px' }}>✕</Link>
         </div>
         <div style={{ textAlign: 'center', paddingTop: 60 }}>
           <h1 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 8 }}>문단 마무리 중…</h1>
@@ -1222,7 +1222,7 @@ export default function StudySessionPage({
       {authBanner}
       {/* 헤더 — 나가기 · 진행바 · 언어 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '10px 0 20px' }}>
-        <Link href="/home" aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem', padding: '6px 10px', margin: '-6px -4px -6px -10px' }}>✕</Link>
+        <Link href="/home" prefetch={false} aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem', padding: '6px 10px', margin: '-6px -4px -6px -10px' }}>✕</Link>
         <div className="study-progress" role="progressbar" aria-label="세션 진행" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPct}
           aria-valuetext={`${progressDone}/${progressTotal}`}>
           <div className="study-progress__fill" style={{ width: `${progressPct}%` }} />

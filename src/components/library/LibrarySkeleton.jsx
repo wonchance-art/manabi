@@ -52,7 +52,7 @@ export function RecentReadsSkeleton() {
 export function ConversationShelfSkeleton({ live = true }) {
   // live = 실제 서재 안(입구 링크가 그대로 쓸 수 있다). 로그인 확인 골격(aria-hidden 안)에서는 같은 모양의 글자만.
   const entry = live
-    ? <Link className="shelf-conversations-new" href="/conversation/new?returnTo=%2Fmaterials">새 대화</Link>
+    ? <Link className="shelf-conversations-new" href="/conversation/new?returnTo=%2Fmaterials" prefetch={false}>새 대화</Link>
     : <span className="shelf-conversations-new">새 대화</span>;
   return (
     <section className="shelf-conversations" aria-labelledby={live ? 'shelf-conversations-title' : undefined}>

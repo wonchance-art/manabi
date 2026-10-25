@@ -52,6 +52,25 @@ export function invalidateVocabularyLearning(queryClient, actorId, { refetchLear
 export const REVIEW_ROOM_DEFERRED = Object.freeze(['vocab-titles', 'confused-events']);
 
 /**
+ * 출처 제목 — 100개 id씩 나눠 **함께** 받는다(로그인 감사 F10 2026-10-25 KST: 3,000단어 계정은 묶음 2개를 차례로 받아 왕복이 겹쳤다).
+ * 결과는 차례 받기와 같다: 묶음 순서대로 Map에 넣고, 한 묶음이라도 실패하면 오류(부분 제목 없음), 계정이 바뀌었으면 버린다.
+ */
+export const MATERIAL_TITLE_BATCH = 100;
+export async function fetchMaterialTitles(client, materialIds, { signal, current = () => true } = {}) {
+  const batches = [];
+  for (let i = 0; i < materialIds.length; i += MATERIAL_TITLE_BATCH) batches.push(materialIds.slice(i, i + MATERIAL_TITLE_BATCH));
+  const results = await Promise.all(batches.map(async (ids) => {
+    const { data, error: titleError } = await client.from('reading_materials').select('id, title').in('id', ids).abortSignal(signal);
+    if (titleError) throw titleError;
+    return data || [];
+  }));
+  const titles = new Map();
+  for (const rows of results) for (const row of rows) titles.set(row.id, row.title);
+  if (!current()) throw new Error('fsrs_stale_account');
+  return titles;
+}
+
+/**
  * 저장한 예전 방식 채점을 단어장 학습 목록 캐시에 바로 반영한다(서버가 돌려줄 값과 같은 SRS 필드).
  * 투영(projections: 오늘 복습 수 · 달력)은 바뀐 행 하나만 정본 투영기로 다시 계산하고 다른 행의 투영은 그대로 둔다
  * (LOGGED-IN-PERF F7 — 3,000단어 계정에서 채점마다 전체 재투영이 CPU ×4 약 65 ms였다. 화면 값이 전체 재투영과 같다는 계약은
@@ -99,17 +118,7 @@ export function useVocabData() {
   const { data: materialTitles = EMPTY_TITLES } = useQuery({
     queryKey: ['vocab-titles', user?.id, materialIds],
     enabled: !!user && materialIds.length > 0,
-    queryFn: async ({ signal }) => {
-      const titles = new Map();
-      for (let i = 0; i < materialIds.length; i += 100) {
-        const { data, error: titleError } = await supabase.from('reading_materials').select('id, title')
-          .in('id', materialIds.slice(i, i + 100)).abortSignal(signal);
-        if (titleError) throw titleError;
-        for (const row of data || []) titles.set(row.id, row.title);
-      }
-      if (actorRef.current !== user.id) throw new Error('fsrs_stale_account');
-      return titles;
-    },
+    queryFn: ({ signal }) => fetchMaterialTitles(supabase, materialIds, { signal, current: () => actorRef.current === user.id }),
   });
 
   const scoreMutation = useMutation({
