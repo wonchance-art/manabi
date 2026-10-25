@@ -87,7 +87,10 @@ export async function middleware(request) {
   }
   const variant = guestStaticVariant(request);
   if (variant) return variant;
-  if (pathname === '/learn/course') return NextResponse.redirect(new URL('/lessons', request.url));
+  // 옛 학습 대시보드 주소 둘(/learn · /learn/course)은 책장으로 — 엣지에서 보낸다(ROUTE-AUDIT-2 F1, 2026-10-25 KST).
+  // /learn은 page.jsx의 redirect()만 있던 정적 판이라 307이 아니라 200 HTML(22 kB) + `<meta refresh 1초>`가 나갔고, 브라우저는
+  // 앱 JS를 받아 하이드레이션한 뒤에야 클라이언트에서 /lessons로 옮겼다. 목적지 · 질의 버림은 page.jsx와 같다(계약 learnEdgeRedirect).
+  if (pathname === '/learn' || pathname === '/learn/course') return NextResponse.redirect(new URL('/lessons', request.url));
   if (!pathname.startsWith('/admin')) return NextResponse.next();
 
   const response = NextResponse.next();
@@ -135,6 +138,6 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/', '/admin/:path*', '/japanese/:path*', '/chinese/:path*', '/english/:path*', '/french/:path*', '/learn/course', '/discover', '/lessons',
+  matcher: ['/', '/admin/:path*', '/japanese/:path*', '/chinese/:path*', '/english/:path*', '/french/:path*', '/learn', '/learn/course', '/discover', '/lessons',
     '/home', '/books/japanese-n5', '/books/japanese-n4', '/books/japanese-n3', '/suggestions/:id'],
 };

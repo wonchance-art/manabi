@@ -1083,6 +1083,15 @@
   light ⊂ snapshot(다르면 전체 롤백). 운영 읽기 전용 사전 검사(02:19 KST): snapshot 본문 md5 90cb5fb5 일치 · 지문 넷 게시 = 계산 · 함수 없음 ·
   사용자 2 · 최대 1,621행(사후 검사 즉시). 복원 `docs/sql/vocabulary-snapshot-light-rollback.sql`(앱은 함수 없으면 PGRST202에서만 전체 snapshot).
   같은 PR: 사전 검사 스크립트 core 본문 비교를 `contract_hash_live()`로(지문 캐시 뒤 늘 거짓이던 것).
+  → **#1571 squash `0fdbcba9`(02:44 KST, 마이그레이션 자동 적용 — 본문 md5 3093ad73 · 지문 넷 정상 · anon/authenticated 실행 불가, 운영 16/16 · 오류 0)**.
+- **ROUTE-AUDIT-2 미감사 경로 31곳 (2026-10-26 KST)**: 합성 무거운 계정 + 손님 × 모바일/데스크톱. 가로 넘침 0 · CLS ≤ 0.021 · 탭 INP ≤ 120 ms.
+  적용(화면 무변화): F1 /learn 엣지 307(모바일 1,308 → 535 ms · JS 568 → 329 KB) · F3 /writing 조회 셋 동시 시작(사슬 −165 ms) ·
+  F4 맞춤도 인덱스 = due 인덱스(「함께 읽는 글」 요청 72 → 65 · 단어장 표 재조회 3왕복 제거) · F5 수업 · 노트 첫 JS에서 아오조라 대조표 제거
+  (/class 260 → 191 kB · /notes/[id] 275 → 206 kB).
+  보류: F2 레벨 타일 prefetch 끄기(첫 화면 RSC 613 KB 절약 vs 모바일 탭 → 목록 +330 ms — 앱 손맛 우선이라 P3 목록 RSC 축소와 함께 다시) ·
+  P1 /auth 첫 그림에 폼(목업) · P2 옛 /japanese 등 손님 → 관리자 보관함 로그인(#1287 규칙 — 오너 결정) · P3 레벨 목록 RSC 203 KB ·
+  P4 /progress 집계 전용 읽기 · P5 노트 편집기 단어 색인 · P6 /notes/new 정적 셸 · P7 /class 관리 영역 분리 · P8 문법 복습 서버 병렬.
+  냄새: /writing 작문 기록 state가 계정 캐시 비우기 밖(늦은 응답 계정 대조 없음).
 - VOCAB-LEVEL-DOC(F9 현장): 목록을 문서 밖 JSON으로 → 문서 −95%지만 LCP +4%(JS가 임계 경로) → 배제 · 패치 보관. 후속 G(카드 앞 JS 청크) 조사 중.
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로
