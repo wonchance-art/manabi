@@ -150,6 +150,27 @@ export default async function Page() {
     }));
   }
 
+  // 오늘 복습(due 10) · 예정(30) 읽기는 백필 읽기와 함께 시작한다 — 예전에는 getUser → 백필 읽기 → (백필 쓰기) → due · 예정이 직렬이었다
+  // (PERF P8 2026-10-26 KST). 백필이 실제로 쓰기를 보냈을 때만 쓰기 뒤에 두 읽기를 같은 기준 시각으로 다시 한다 — 첫 묶음은 오늘 due,
+  // 나머지는 다음 날들(staggerBackfillRows)이라 둘 다 바뀔 수 있다. 쓰지 않았으면 미리 받은 결과가 직렬로 읽은 것과 같다(그 사이 쓰기 0).
+  const readQueue = (nowIso) => Promise.all([
+    supabase.from('grammar_review')
+      .select('*')
+      .eq('user_id', user.id)
+      .lte('next_review_at', nowIso)
+      .order('next_review_at', { ascending: true })
+      .limit(10),
+    supabase.from('grammar_review')
+      .select('lang, slug, next_review_at')
+      .eq('user_id', user.id)
+      .gt('next_review_at', nowIso)
+      .order('next_review_at', { ascending: true })
+      .limit(30),
+  ]);
+  const early = readQueue(new Date().toISOString());
+  early.catch(() => {}); // 백필을 기다리는 동안 거절돼도 처리 안 된 거절로 남지 않게 — 아래 await가 그대로 던진다(예전과 같은 오류 경로)
+  let wrote = false;
+
   // ── 백필: 통과했지만 큐에 없는 챕터 등록 (기능 도입 전의 통과 기록 구제) ──
   try {
     const [{ data: passedRows }, { data: queuedRows }] = await Promise.all([
@@ -179,6 +200,7 @@ export default async function Page() {
     });
     const rows = staggerBackfillRows(user.id, candidates, existing);
     if (rows.length > 0) {
+      wrote = true; // 보내는 순간부터 — 실패 · 예외여도 일부가 들어갔을 수 있으니 다시 읽는다
       await supabase.from('grammar_review')
         .upsert(rows, { onConflict: 'user_id,lang,slug', ignoreDuplicates: true });
     }
@@ -186,21 +208,8 @@ export default async function Page() {
     // 백필 실패는 복습 진행을 막지 않는다
   }
 
-  const nowIso = new Date().toISOString();
-  const [{ data: dueRows, error: dueError }, { data: upcomingRows, error: upcomingError }] = await Promise.all([
-    supabase.from('grammar_review')
-      .select('*')
-      .eq('user_id', user.id)
-      .lte('next_review_at', nowIso)
-      .order('next_review_at', { ascending: true })
-      .limit(10),
-    supabase.from('grammar_review')
-      .select('lang, slug, next_review_at')
-      .eq('user_id', user.id)
-      .gt('next_review_at', nowIso)
-      .order('next_review_at', { ascending: true })
-      .limit(30),
-  ]);
+  const [{ data: dueRows, error: dueError }, { data: upcomingRows, error: upcomingError }] =
+    await (wrote ? readQueue(new Date().toISOString()) : early);
   if (dueError || upcomingError) return <div className="page-container"><section className="manabi-inline-state" role="alert"><h1>문법 복습을 불러오지 못했어요.</h1><p>연결을 확인하고 다시 시도해 주세요. 복습 기록은 그대로 남아 있어요.</p><a href="/review/grammar">다시 시도 →</a></section></div>;
   await prepare([...(dueRows || []), ...(upcomingRows || [])]);
   // 담은 패턴(bk:)은 문형 사전에서 문항을 만든다 — 그런 행이 있는 언어만 사전을 연다.
