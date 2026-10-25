@@ -202,23 +202,23 @@ export function calculateVocabFSRS(rating, prev, at = Date.now()) {
  */
 /**
  * expectedLastReviewedAt(선택) — 비교 후 쓰기(독립 리뷰 2026-10-25 KST). 이 채점을 계산한 바탕 일정의 last_reviewed_at(없던 카드면 null)을
- * 주면 서버 행이 아직 그 값일 때만 바꾼다(PostgREST .eq/.is — 마이그레이션 없음). 0행이면 legacy_review_superseded(legacyReviewSupersede)를 던진다 — 노트북 줄에
+ * 주면 서버 행이 아직 그 값일 때만 바꾼다(PostgREST .eq/.is + count=exact — 마이그레이션 없음). 0행이면 legacy_review_superseded(legacyReviewSupersede)를 던진다 — 노트북 줄에
  * 남은 카드를 폰에서 먼저 채점했는데 노트북이 옛 값으로 계산한 일정을 덮어쓰던 길을 막는다. 주지 않으면(undefined) 지금처럼 무조건 쓴다.
  */
 export async function persistVocabGrade(client, wordId, nextStats, reviewedAt = new Date().toISOString(), { boundary, expectedLastReviewedAt } = {}) {
   // 같은 채점이 방금 이 카드의 경계를 확인했으면(증거) 그 답을 나눠 쓴다(F5②). 증거가 없으면 지금처럼 묻는다.
   await assertLegacyFsrsAllowedOnce(client, { cardId: wordId }, boundary);
-  let query = client
-    .from('user_vocabulary')
-    .update({ ...nextStats, last_reviewed_at: reviewedAt })
-    .eq('id', wordId);
+  const patch = { ...nextStats, last_reviewed_at: reviewedAt };
   if (expectedLastReviewedAt === undefined) {
-    const { error } = await query;
+    const { error } = await client.from('user_vocabulary').update(patch).eq('id', wordId);
     if (error) throw error;
     return;
   }
+  // 조건은 서버가 건다(바탕이 다르면 0행 — 덮지 않는다). 몇 행이 바뀌었는지는 Prefer count=exact(Content-Range)로 듣는다.
+  // 수를 모르면(구 응답 · 합성 대역) 판단하지 않는다 — 쓰기 자체는 조건 덕에 이미 안전하다.
+  let query = client.from('user_vocabulary').update(patch, { count: 'exact' }).eq('id', wordId);
   query = expectedLastReviewedAt === null ? query.is('last_reviewed_at', null) : query.eq('last_reviewed_at', expectedLastReviewedAt);
-  const { data, error } = await query.select('id');
+  const { error, count } = await query;
   if (error) throw error;
-  if (!Array.isArray(data) || data.length === 0) throw legacyReviewSupersededError();
+  if (count === 0) throw legacyReviewSupersededError();
 }

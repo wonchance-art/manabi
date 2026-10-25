@@ -5,20 +5,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const remote = vi.hoisted(() => ({ rpc: vi.fn(), rows: [], inserts: [], updates: [], session: { user: { id: 'alice' } }, enqueue: vi.fn() }));
 function table(name) {
-  const filters = []; let patch = null;
+  const filters = []; let patch = null, counted = false;
   const query = {
     insert: async rows => { remote.inserts.push({ name, rows }); return { error: null }; },
-    update(value) { patch = value; return query; },
+    update(value, options) { patch = value; counted = options?.count === 'exact'; return query; },
     eq(key, value) { filters.push(row => (key === 'last_reviewed_at' ? Date.parse(row[key]) === Date.parse(value) : row[key] === value)); return query; },
     is(key, value) { filters.push(row => (value === null ? row[key] == null : row[key] === value)); return query; },
-    select: async () => run(true),
-    then: (resolve, reject) => run(false).then(resolve, reject),
+    then: (resolve, reject) => run().then(resolve, reject),
   };
-  const run = async selected => {
+  const run = async () => {
     const hit = remote.rows.filter(row => filters.every(fn => fn(row)));
     hit.forEach(row => Object.assign(row, patch));
-    remote.updates.push({ name, patch, matched: hit.length, selected });
-    return { data: selected ? hit.map(row => ({ id: row.id })) : null, error: null };
+    remote.updates.push({ name, patch, matched: hit.length, counted });
+    return { data: null, count: counted ? hit.length : null, error: null };
   };
   return query;
 }
@@ -53,13 +52,13 @@ afterEach(() => vi.unstubAllGlobals());
 describe('persistVocabGrade 비교 후 쓰기', () => {
   it('바탕이 같으면 바꾼다(.eq) · 없던 카드는 .is(null) · 주지 않으면 지금처럼 무조건', async () => {
     await persistVocabGrade(supabase, 'word-1', stats, '2026-10-25T10:00:00.000Z', { expectedLastReviewedAt: LAPTOP_BASE });
-    expect(remote.updates.at(-1)).toMatchObject({ matched: 1, selected: true });
+    expect(remote.updates.at(-1)).toMatchObject({ matched: 1, counted: true });
     remote.rows = [{ id: 'word-2', last_reviewed_at: null }];
     await persistVocabGrade(supabase, 'word-2', stats, '2026-10-25T10:00:00.000Z', { expectedLastReviewedAt: null });
     expect(remote.updates.at(-1)).toMatchObject({ matched: 1 });
     remote.rows = [{ id: 'word-3', last_reviewed_at: PHONE }];
     await persistVocabGrade(supabase, 'word-3', stats, '2026-10-25T10:00:00.000Z');
-    expect(remote.updates.at(-1)).toMatchObject({ matched: 1, selected: false });
+    expect(remote.updates.at(-1)).toMatchObject({ matched: 1, counted: false });
   });
 
   it('그 사이 다른 기기가 먼저 복습했으면 0행 → legacy_review_superseded, 일정은 그대로', async () => {
@@ -67,6 +66,12 @@ describe('persistVocabGrade 비교 후 쓰기', () => {
     const error = await persistVocabGrade(supabase, 'word-1', stats, '2026-10-25T10:00:00.000Z', { expectedLastReviewedAt: LAPTOP_BASE }).catch(e => e);
     expect(isLegacyReviewSuperseded(error)).toBe(true);
     expect(remote.rows[0]).toMatchObject({ interval: 30, last_reviewed_at: PHONE });
+  });
+
+  it('행 수를 알려 주지 않는 응답(구 응답 · 합성 대역)은 물러남으로 판단하지 않는다 — 조건은 서버가 이미 걸었다', async () => {
+    const client = { rpc: supabase.rpc, auth: supabase.auth, from: () => {
+      const q = { update: () => q, eq: () => q, is: () => q, then: resolve => resolve({ data: null, error: null }) }; return q; } };
+    await expect(persistVocabGrade(client, 'word-1', stats, '2026-10-25T10:00:00.000Z', { expectedLastReviewedAt: LAPTOP_BASE })).resolves.toBeUndefined();
   });
 });
 

@@ -80,7 +80,7 @@ function remote({ events = [], word = { id: 'card', user_id: 'A', ...PREV }, cap
   let nextId = 9007199254742000n;
   const client = { rpc: async () => ({ data: { version: 1, actorId: 'A', enrolled: false }, error: null }),
     from(table) {
-      const filters = [], order = []; let mode = 'read', payload, bounds;
+      const filters = [], order = []; let mode = 'read', payload, bounds, countExact = false;
       const run = async () => {
         if (mode === 'insert') {
           if (state.beforeInsert) await state.beforeInsert(payload);
@@ -97,7 +97,7 @@ function remote({ events = [], word = { id: 'card', user_id: 'A', ...PREV }, cap
           state.updates.push({ payload: structuredClone(payload), matched: matches.length });
           matches.forEach(row => Object.assign(row, structuredClone(payload)));
           if (state.lostUpdate) { state.lostUpdate = false; return { error: new Error('lost update response') }; }
-          return { data: matches.map(row => ({ id: row.id })), error: null };
+          return { data: null, count: countExact ? matches.length : null, error: null };
         }
         if (table === 'review_events' && state.historyError) return { error: new Error('history offline') };
         const rows = (table === 'review_events' ? state.events : state.words)
@@ -121,7 +121,7 @@ function remote({ events = [], word = { id: 'card', user_id: 'A', ...PREV }, cap
         is(key, value) { filters.push(row => (value === null ? row[key] == null : row[key] === value)); return query; },
         order(key) { order.push(key); return query; }, range(from, to) { bounds = [from, to]; return query; },
         insert(rows) { mode = 'insert'; payload = rows; return query; },
-        update(value) { mode = 'update'; payload = value; return query; },
+        update(value, options) { mode = 'update'; payload = value; countExact = options?.count === 'exact'; return query; },
         then(resolve, reject) { return run().then(resolve, reject); },
       };
       return query;

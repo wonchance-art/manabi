@@ -352,7 +352,9 @@ export function createHeavyBackend({ latencyMs = 0, browserLatencyMs = 0, snapsh
     if (method === 'PATCH') {
       const hit = all.filter(row => visible(table, row, claims, service) && pred(row));
       for (const row of hit) Object.assign(row, body);
-      return { status: /return=representation/.test(prefer) ? 200 : 204, body: /return=representation/.test(prefer) ? project(hit, url.searchParams.get('select')) : null };
+      // count=exact면 PostgREST처럼 바뀐 행 수를 Content-Range로 알린다(예전 일정 비교 후 쓰기의 0행 판정).
+      const counted = /count=exact/.test(prefer) ? { 'content-range': hit.length ? `0-${hit.length - 1}/${hit.length}` : '*/0' } : {};
+      return { status: /return=representation/.test(prefer) ? 200 : 204, body: /return=representation/.test(prefer) ? project(hit, url.searchParams.get('select')) : null, headers: counted };
     }
     if (method === 'DELETE') {
       const keep = all.filter(row => !(visible(table, row, claims, service) && pred(row)));
