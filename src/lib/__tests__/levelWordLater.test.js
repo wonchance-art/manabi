@@ -35,3 +35,15 @@ describe('laterDueText', () => {
     expect(laterDueText(at(-2), now)).toBe('오늘');
   });
 });
+
+describe('배선 — 리스트 맨 아래는 두 줄(복습 예정 · 새 단어), 한 줄 「다음에 볼 단어」는 없다', () => {
+  it('화면이 splitLaterEntries · laterDueText를 쓰고, 찾기로 간 단어는 그 줄만 펼친다', async () => {
+    const fs = await import('node:fs');
+    const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
+    expect(screen).toContain('splitLaterEntries(allEntries, inLine,');
+    expect(screen).toContain("[['review', '복습 예정'], ['fresh', '새 단어']]");
+    expect(screen).toContain('laterDueText(');
+    expect(screen).toContain("for (const part of ['review', 'fresh'])");
+    expect(screen).not.toContain('다음에 볼 단어 {');
+  });
+});
