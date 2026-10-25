@@ -8,6 +8,8 @@
 // 받을 행과 같다(RLS 그대로). 응답은 동적 화면이라 Cache-Control: private, no-store — 공유 캐시에 남지 않는다.
 // 읽은 계정(account)을 함께 실어, 브라우저는 지금 세션 계정과 같을 때만 쓴다(lib/viewerMaterial adoptViewerSeed — 기기에 남은 옛 문서 ·
 // 다른 계정이 다시 연 문서는 쓰지 않고 지금처럼 새로 받는다).
+// **공개 자료(visibility 'public')만 싣는다**(오너 판단 2026-10-25 KST): 서비스 워커는 들른 문서를 기기 캐시(계정 구분 없음)에 남기므로,
+// 비공개 본문을 실으면 그 캐시에 비공개 본문이 새로 남는다. 비공개 · 그 밖의 공개 범위는 지금처럼 브라우저가 받는다(제목은 지금처럼 <title>에).
 // 싣지 않는 경우(null — 지금처럼 브라우저가 받는다): 숫자 id가 아님(팀 사본 local: 등) · 화면 이동(RSC 요청 — 서재 누름은 이미 조기 조회가
 // 떠 있고, 서버 조회만큼 화면 조각이 늦어진다) · 쿠키는 있는데 토큰이 곧 만료/무효 · 조회 오류 · 시간 초과 · 응답이 그 id의 행이 아님.
 import { cache } from 'react';
@@ -71,8 +73,11 @@ export const readViewerSeed = cache(async (id) => {
 
 const timeout = (ms) => new Promise((resolve) => setTimeout(() => resolve(null), Math.max(0, ms)));
 
-/** 쪽이 쓰는 몫 — 예산 안에 끝난, 행이 있는 결과만. */
+/** 본문을 쪽에 실어도 되는 행 — 공개 자료만(비공개 본문을 서비스 워커 문서 캐시에 남기지 않는다). */
+export const seedableRow = (row) => row?.visibility === 'public';
+
+/** 쪽이 쓰는 몫 — 예산 안에 끝난, 실어도 되는(공개) 행이 있는 결과만. 제목(generateMetadata)은 행을 그대로 쓴다. */
 export async function viewerSeedWithin(id, budgetMs = VIEWER_SEED_BUDGET_MS, read = readViewerSeed) {
   const seed = await Promise.race([read(id), timeout(budgetMs)]).catch(() => null);
-  return seed?.row ? seed : null;
+  return seedableRow(seed?.row) ? seed : null;
 }

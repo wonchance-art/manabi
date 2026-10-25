@@ -127,7 +127,8 @@ const sessionAccount = () => supabase.auth.getSession().then(({ data: auth }) =>
 
 export function adoptViewerSeed(seed, id, { now = Date.now(), origin = globalThis.performance?.timeOrigin, online = globalThis.navigator?.onLine,
   session = sessionAccount, fetch = fetchMaterial } = {}) {
-  if (documentSeedTaken || !seed?.row || seed.id !== String(id) || isLocalId(String(id))) return null;
+  // 공개 자료만(서버도 공개만 싣는다 — server/viewerSeed seedableRow). 비공개가 실려 와도 쓰지 않고 지금처럼 받는다.
+  if (documentSeedTaken || seed?.row?.visibility !== 'public' || seed.id !== String(id) || isLocalId(String(id))) return null;
   documentSeedTaken = true;
   if (online === false || !Number.isFinite(origin) || !Number.isFinite(seed.servedAt) || Math.abs(seed.servedAt - origin) > VIEWER_SEED_MAX_SKEW_MS) return null;
   const account = seed.account ?? null;

@@ -30,7 +30,7 @@ function client(result, calls = []) {
   };
   return chain;
 }
-const ROW = { id: 45, owner_id: 'A', visibility: 'private', title: '자료', raw_text: '本', processed_json: { sequence: [], dictionary: {} } };
+const ROW = { id: 45, owner_id: 'A', visibility: 'public', title: '자료', raw_text: '本', processed_json: { sequence: [], dictionary: {} } };
 
 describe('서버 — 누구의 권한으로 무엇을 싣나', () => {
   it('세션 쿠키가 있으면 그 계정 토큰 클라이언트로 읽고 계정을 함께 싣는다', async () => {
@@ -39,6 +39,20 @@ describe('서버 — 누구의 권한으로 무엇을 싣나', () => {
       publicClient: () => { throw new Error('anon not used'); }, now: () => 777 });
     expect(seed).toEqual({ id: '45', row: ROW, account: 'A', servedAt: 777 });
     expect(calls).toEqual([['from', 'reading_materials'], ['select', '*'], ['eq', 'id', '45']]);
+  });
+  it('비공개 행은 쪽에 싣지 않는다(서비스 워커 문서 캐시에 비공개 본문을 남기지 않음) — 제목은 그 행에서 지금처럼', async () => {
+    const priv = { ...ROW, visibility: 'private' };
+    const seed = await server.loadViewerSeed('45', { sessionCookie: true, auth: async () => ({ supabase: client({ data: priv, error: null }), user: { id: 'A' } }) });
+    expect(seed.row.title).toBe('자료'); // generateMetadata가 쓰는 행
+    expect(await server.viewerSeedWithin('45', 800, async () => seed)).toBe(null);
+    for (const visibility of ['private', 'hidden', undefined, null]) expect(server.seedableRow({ ...ROW, visibility })).toBe(false);
+    expect(server.seedableRow({ ...ROW, visibility: 'public' })).toBe(true);
+    expect(await server.viewerSeedWithin('45', 800, async () => ({ ...seed, row: { ...priv, visibility: 'public' } }))).not.toBe(null);
+    // 브라우저도 공개 행만 받아들인다(이중 방어) — 비공개가 실려 와도 지금처럼 새로 받는다
+    lib.resetViewerSeedForTest();
+    expect(lib.adoptViewerSeed({ id: '45', row: priv, account: 'A', servedAt: 10_000 }, '45', { now: 20_000, origin: 9_900, online: true })).toBe(null);
+    expect(lib.viewerSeedAdopted('/viewer/45', undefined)).toBe(false);
+    lib.resetViewerSeedForTest();
   });
   it('세션 쿠키가 없으면 anon(쿠키를 읽지도 쓰지도 않는 클라이언트) — 계정 null', async () => {
     const seed = await server.loadViewerSeed('45', { auth: async () => { throw new Error('auth not used'); }, publicClient: () => client({ data: { ...ROW, visibility: 'public' }, error: null }), now: () => 1 });
