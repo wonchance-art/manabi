@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({ requireUser: vi.fn(), client: vi.fn(), read: vi.fn(), apply: vi.fn() }));
-vi.mock('@/lib/supabaseServer', () => ({ requireUser: mocks.requireUser }));
+vi.mock('@/lib/supabaseServer', () => ({ requireUser: mocks.requireUser, requireUserForRead: mocks.requireUser }));
 vi.mock('@/lib/server/fsrsLearning', async importOriginal => ({ ...(await importOriginal()),
   fsrsServiceClient: mocks.client, readFsrsStatus: mocks.read, applyFsrsRequest: mocks.apply }));
 import { GET, POST } from '../../app/api/learning/fsrs/route.js';

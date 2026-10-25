@@ -1,4 +1,4 @@
-import { requireUser } from '@/lib/supabaseServer';
+import { requireUser, requireUserForRead } from '@/lib/supabaseServer';
 import { fsrsServiceClient, readFsrsStatus, applyFsrsRequest, fsrsError, logFsrsUnavailable } from '@/lib/server/fsrsLearning';
 
 export const dynamic = 'force-dynamic';
@@ -7,7 +7,7 @@ const failure = (route, error) => { logFsrsUnavailable(route, error); const { bo
 
 export async function GET() {
   try {
-    const auth = await requireUser();
+    const auth = await requireUserForRead();
     if (auth.error || !auth.user) return reply({ ok: false, code: 'fsrs_auth_required' }, auth.status || 401);
     return reply(await readFsrsStatus({ authClient: auth.supabase, serviceClient: fsrsServiceClient(), userId: auth.user.id }));
   } catch (error) { return failure('GET', error); }

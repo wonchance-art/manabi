@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
 const { client, auth } = vi.hoisted(() => ({ client: vi.fn(), auth: vi.fn() }));
 vi.mock('@supabase/ssr', () => ({ createServerClient: client }));
-vi.mock('@/lib/supabaseServer', () => ({ requireUser: auth }));
+vi.mock('@/lib/supabaseServer', () => ({ requireUser: auth, requireUserForRead: auth }));
 import { middleware } from '../../middleware';
 import { canReadLegacyTextbook, resolveSave } from '../server/learningContext';
 import * as review from '@/app/api/learning/book-review/route';

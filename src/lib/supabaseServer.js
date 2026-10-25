@@ -150,3 +150,20 @@ export async function requireUserClaims({ now = Date.now() } = {}) {
   if (error || !id) return denied;
   return { supabase, user: { id } };
 }
+
+/**
+ * 읽기 전용 API 라우트(GET)의 로그인 확인 — AUTH-READ-CLAIMS-001(오너 승인 2026-10-25 KST 「권장대로」 · 로그인 감사 F6).
+ * 쿠키 접근 토큰이 넉넉하면(만료 120초 넘게 남음) requireUserClaims로 서명만 서버에서 확인한다(ES256 JWKS — 인증 왕복 0).
+ * 그 밖(쿠키 없음 · 만료 임박 · 만료 · 서명 불일치 · 형식 오류)은 **지금과 같은 requireUser**(getUser)로 물러선다 —
+ * 만료된 토큰의 갱신 · 갱신 쿠키 심기 · 영영 무효인 세션의 쿠키 지우기 · 401이 오늘과 같다.
+ * 받아들인 차이: 다른 기기에서 로그아웃 · 폐기한 세션도 접근 토큰이 끝날 때(최대 약 1시간)까지 **자기 데이터 읽기**는 된다.
+ * 그래서 쓰기 · 할당량 · 입장 영수증 · 권한(관리자) 판정 라우트는 쓰지 않는다 — 어느 라우트가 쓰는지는
+ * src/lib/__tests__/readRouteClaims.test.js의 목록(이유 동봉)이 정본이고, 목록 밖이나 GET이 아닌 처리기가 쓰면 CI가 깨진다.
+ * user는 { id }(검증된 sub)만 — 반환된 supabase는 같은 쿠키 세션 클라이언트라 RLS는 그대로다.
+ * @returns {Promise<{ supabase, user: { id: string } } | { error: string, status: number }>}
+ */
+export async function requireUserForRead() {
+  const fast = await requireUserClaims();
+  if (!fast.error) return fast;
+  return requireUser();
+}

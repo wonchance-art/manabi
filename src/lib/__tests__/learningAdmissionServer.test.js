@@ -4,7 +4,7 @@ import { applyFsrsRequest, readFsrsStatus } from '../server/fsrsLearning.js';
 import { introduceFsrsCard } from '../fsrsScheduler.js';
 
 const mocks = vi.hoisted(() => ({ requireUser: vi.fn(), client: vi.fn() }));
-vi.mock('@/lib/supabaseServer', () => ({ requireUser: mocks.requireUser }));
+vi.mock('@/lib/supabaseServer', () => ({ requireUser: mocks.requireUser, requireUserForRead: mocks.requireUser }));
 vi.mock('@/lib/server/fsrsLearning', async original => ({ ...(await original()), fsrsServiceClient: mocks.client }));
 import { GET, POST } from '../../app/api/learning/admission/route.js';
 

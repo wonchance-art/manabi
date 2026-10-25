@@ -1,6 +1,6 @@
 import {beforeEach,describe,expect,it,vi} from 'vitest';
 const {authenticate}=vi.hoisted(()=>({authenticate:vi.fn()}));
-vi.mock('@/lib/supabaseServer',()=>({requireUser:authenticate}));
+vi.mock('@/lib/supabaseServer',()=>({requireUser:authenticate,requireUserForRead:authenticate}));
 import {GET} from '../vocabulary/route';
 const userId='10000000-0000-4000-8000-000000000001',contextId='20000000-0000-4000-8000-000000000001';
 let db;

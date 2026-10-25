@@ -1051,6 +1051,11 @@
   하루 목표는 현황 「목표 수정」 창 하나로(내 정보 · 배움 「오늘 목표」 → /progress?goal=edit) · 알림 한 줄(테스트 발송 · 내부 상태 문구 제거) · 기록 3칸 ·
   숨은 테마 토글 제거 · 이름 「내 정보」 통일(머리 아이콘은 진짜 링크 + aria-current). 목업 차이 5건(목표 문구 · 복습 줄 · 로그인 수단 · iOS 설치 줄 · 목표 창 재열림 버그 수리).
   남김: states-inventory.json 옛 MyPage 행 갱신, /api/push/test 라우트(학습자 화면 호출 0) 정리.
+  → **#1564 squash `9ed7b65e`(19:14 KST)**.
+- **AUTH-READ-CLAIMS-001 ㉢ (2026-10-25 KST, 오너 「권장대로」)**: 학습 API GET 7개(capabilities · vocabulary · admission · fsrs · exclusions ·
+  book-review · material-review)만 requireUserForRead(접근 토큰 120초 넘게 남으면 ES256 서명 확인, 그 밖은 getUser 그대로). 쓰기 · 관리자 · notes ·
+  material-links는 getUser 유지. /vocab 첫 로드 인증 왕복 5 → 0, 채점당 3 → 1. 계약 readRouteClaims(목록 정본 · STABLE RPC · 쓰기 금지).
+  받아들인 차이: 폐기 세션도 토큰 만료(≤1h)까지 자기 데이터 읽기 가능.
 - VOCAB-LEVEL-DOC(F9 현장): 목록을 문서 밖 JSON으로 → 문서 −95%지만 LCP +4%(JS가 임계 경로) → 배제 · 패치 보관. 후속 G(카드 앞 JS 청크) 조사 중.
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로

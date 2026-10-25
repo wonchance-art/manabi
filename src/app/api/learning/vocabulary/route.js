@@ -1,4 +1,4 @@
-import { requireUser } from '@/lib/supabaseServer';
+import { requireUser, requireUserForRead } from '@/lib/supabaseServer';
 import { resolveSave, reply, errorReply, checkDb, fail, readBody, accessibleMaterial } from '@/lib/server/learningContext';
 import { UUID, sourceArchived, sourceHref } from '@/lib/learningSources';
 import { requireLearningCapability } from '@/lib/server/learningCapabilities';
@@ -90,7 +90,7 @@ export async function POST(request) {
 }
 
 export async function GET(request) {
-  const auth = await requireUser();
+  const auth = await requireUserForRead();
   if (auth.error) return reply({ error: auth.error }, auth.status);
   try {
     const params = new URL(request.url).searchParams;

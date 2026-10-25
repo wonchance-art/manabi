@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { authenticate, base, overrides } = vi.hoisted(()=>({authenticate:vi.fn(),overrides:vi.fn(),base:{slug:'first',level:'A1',title:'원래 제목',sections:[{heading:'읽어요',examples:[{en:'I read a book.',ko:'책을 읽어요.'}]},{type:'vocabPreview',vocabs:[{word:'book',meanings:['책'],exampleSentence:'Read this book.'}]}]}}));
-vi.mock('@/lib/supabaseServer',()=>({requireUser:authenticate}));
+vi.mock('@/lib/supabaseServer',()=>({requireUser:authenticate,requireUserForRead:authenticate}));
 vi.mock('@/content/refGrammarLoaders',()=>({getGrammarManifest:()=>({levels:[{key:'A1',chapters:[base]}]}),loadChapter:async()=>({registry:{base:'/english',getChapter:()=>({chapter:base})},data:{chapter:base}})}));
 vi.mock('@/lib/contentOverrides',async load=>({...await load(),getOverridesForLang:overrides}));
 import * as vocabulary from '../vocabulary/route';

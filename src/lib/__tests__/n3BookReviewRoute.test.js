@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const state=vi.hoisted(()=>({signedIn:true,filters:[],chapters:null}));
 const db=vi.hoisted(()=>({from:vi.fn()}));
-vi.mock('@/lib/supabaseServer',()=>({requireUser:async()=>state.signedIn?{user:{id:'current-owner'},supabase:db}:{error:'login required',status:401}}));
+vi.mock('@/lib/supabaseServer',()=>({requireUserForRead:async()=>state.signedIn?{user:{id:'current-owner'},supabase:db}:{error:'login required',status:401}}));
 vi.mock('@/lib/server/learningContext',()=>({
  reply:(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'private, no-store'}}),
  errorReply:error=>Response.json({error:error.message},{status:error.status||500}),

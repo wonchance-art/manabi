@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { authenticate } = vi.hoisted(() => ({ authenticate: vi.fn() }));
-vi.mock('@/lib/supabaseServer', () => ({ requireUser: authenticate }));
+vi.mock('@/lib/supabaseServer', () => ({ requireUser: authenticate, requireUserForRead: authenticate }));
 import { GET, POST } from '../exclusions/route';
 const owner = '10000000-0000-0000-0000-000000000001';
 const id = '20000000-0000-0000-0000-000000000001';
