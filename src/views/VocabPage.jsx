@@ -31,7 +31,7 @@ import {
   wordScopeLanguage, formatScopeSource, parseReviewScope, REVIEW_SCOPE_LANGS, ZH_SCOPE_LEVELS, SCOPE_LANG_LABELS, scopeSummaryLabel, FRAGILE_RETRIEVABILITY,
 } from '../lib/reviewScope';
 import {
-  DEFAULT_SESSION_LENGTH, SESSION_LENGTHS, initialSteps, insertAfterIntro, insertLearningStep,
+  DEFAULT_SESSION_LENGTH, initialSteps, insertAfterIntro, insertLearningStep,
   readResume, restoreResume, sessionLengthOptions, sliceSession, stepProgress, writeResume,
 } from '../lib/reviewQueue';
 import { hasMeaning, readReviewSound, saveReviewSound, shouldAutoplay } from '../lib/reviewCard';
@@ -58,7 +58,7 @@ import { logReviewEvents } from '../lib/reviewEvents';
 import { withLegacyReviewLock } from '../lib/legacyReviewSync';
 import {
   deckOf, fisherYatesShuffle, isNewWord, usableVocabReviewMode,
-  loadIntroIds, saveIntroIds,
+  loadIntroIds, saveIntroIds, loadSessionLength,
   NEW_PER_DAY_OPTIONS, DEFAULT_NEW_PER_DAY,
 } from '../lib/vocabStudy';
 
@@ -223,8 +223,7 @@ function VocabWorkspace({ reviewScope }) {
       if (!explicitScope) setScopeDraft(readSavedScope());
       const storedMode = localStorage.getItem('as_review_mode');
       setPracticeMode(['typing', 'listening'].includes(storedMode) ? storedMode : 'flash');
-      const storedLength = localStorage.getItem('vocab_session_length');
-      setSessionLength(storedLength === 'all' ? null : SESSION_LENGTHS.includes(Number(storedLength)) ? Number(storedLength) : DEFAULT_SESSION_LENGTH);
+      setSessionLength(loadSessionLength());
       setSoundOn(readReviewSound());
       const storedNewPerDay = parseInt(localStorage.getItem('vocab_new_per_day'), 10);
       setNewPerDay(NEW_PER_DAY_OPTIONS.includes(storedNewPerDay) ? storedNewPerDay : DEFAULT_NEW_PER_DAY);

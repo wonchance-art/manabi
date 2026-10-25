@@ -8,7 +8,7 @@
  */
 import { LANG_NAME_KO, detectLang } from './constants.js';
 import { kstDayStartMs } from './growthStats.js';
-import { perDayLabel } from './goalPace.js';
+import { daysLeftUntil, perDayLabel } from './goalPace.js';
 
 export const LEARN_LANGS = Object.freeze(Object.keys(LANG_NAME_KO));
 export const LEARN_LANG_KEY = 'learn_lang';
@@ -69,6 +69,15 @@ export function shortDateLabel(date, { weekday = true } = {}) {
   return `${+match[2]}/${+match[3]}${weekday ? `(${WEEKDAYS[day]})` : ''}`;
 }
 
+/** 남은 날 → 「D-42」 · 「D-Day」 · 「D+3」. 진행바 칸과 내 정보의 목표 줄이 같은 표기를 쓴다. */
+export const dDayText = daysLeft => (daysLeft > 0 ? `D-${daysLeft}` : daysLeft === 0 ? 'D-Day' : `D+${Math.abs(daysLeft)}`);
+
+/** 목표일('YYYY-MM-DD', KST)의 D 표기 — 날짜가 없거나 깨졌으면 null. */
+export function dDayLabel(targetDate, now = Date.now()) {
+  const days = daysLeftUntil(targetDate, now);
+  return days == null ? null : dDayText(days);
+}
+
 /**
  * 진행바 반쪽 칸의 표시 재료. marked = markProgress 산출, p = pace 산출.
  * 신호: 예상 완주일이 목표일 이전·당일이면 청(여유), 늦으면 적(「N일 늦음」). 예측할 수 없으면 신호 없음.
@@ -78,7 +87,7 @@ export function goalTrackView({ marked, p, goalName, goalDate }) {
   if (!marked || !p) return null;
   const date = shortDateLabel(goalDate);
   const head = [date, goalName].filter(Boolean).join(' ');
-  const dLabel = p.daysLeft > 0 ? `D-${p.daysLeft}` : p.daysLeft === 0 ? 'D-Day' : `D+${Math.abs(p.daysLeft)}`;
+  const dLabel = dDayText(p.daysLeft);
   const count = { done: marked.done, total: marked.total };
   const pct = marked.total > 0 ? Math.min(100, (marked.done / marked.total) * 100) : 0;
   if (p.done) {
