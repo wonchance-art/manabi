@@ -40,7 +40,7 @@ const HINTS = 'src/components/fonts/fontHints.js';
 // 힌트를 거는 세그먼트 — Noto Sans(병음 · 라틴 본문)를 그리는 보이는 화면.
 const HINT_SEGMENTS = ['src/app/(app)/viewer', 'src/app/(app)/pdf', 'src/app/(app)/suggestions', 'src/app/(app)/chinese', 'src/app/(app)/quick'];
 // Noto Sans를 그리는 화면 부품 — readerFontFamily(라틴 본문) · 병음 · lv-py를 쓴다.
-const NOTO_SANS_SCREENS = ['@/views/ViewerPage', '@/views/PdfViewerPage', '@/components/materials/SuggestionReader', '@/views/levelListRoute', '@/views/QuickPage'];
+const NOTO_SANS_SCREENS = ['@/views/ViewerPage', '@/views/PdfViewerPage', '@/components/materials/SuggestionReader', '@/views/levelListRoute', '@/views/LevelListPage', '@/views/QuickPage'];
 // 범위 밖으로 둔 라우트 — 이유와 함께. 여기서는 @font-face대로 그릴 때 받는다(미리 받기만 없다).
 const OUTSIDE = Object.freeze({
   'src/app/(app)/japanese': '일본어 레벨 목록 — lv-py 읽기가 가나라 Noto Sans 라틴 조각을 그리지 않는다(빌드 실측 2026-10-17 KST)',

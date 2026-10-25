@@ -1,12 +1,13 @@
 // 레벨별 단어 · 문형 · 한자 목록 라우트 공용(서버) — /{japanese,chinese}/{vocab,bunkei}/{레벨}과 /chinese/hanzi/{레벨}이 같은 조립을 쓴다.
 import { notFound } from 'next/navigation';
-import LevelListPage from '@/views/LevelListPage';
 import { levelListData } from '@/lib/levelListData';
 import { LEVEL_KIND_LABEL as KIND_LABEL, LEVEL_LIST_LANGS, levelKinds, levelLabel } from '@/lib/levelList';
 
 // View = 그 라우트의 화면. 단어는 새 단어 페이지(오너 확정 2026-10-19 KST)를 각 라우트가 넘긴다 — HSK = LevelWordPage, JLPT = JlptWordPage.
 // 일본어 라우트가 중국어 화면 부품을 불러오지 않게(간체 글꼴 범위 · fontScope 계약).
-export function levelListRoute(lang, kind, View = LevelListPage) {
+// 문형 · 한자 목록(LevelListPage)도 그 라우트가 넘긴다 — 여기서 기본값으로 부르면 서버 모듈의 클라이언트 참조라 쓰지 않는 단어 라우트의
+// 첫 JS(LevelListPage + 딸린 모듈)와 level-list.css까지 실렸다(JS-CRIT-001 2026-10-25 KST 빌드 실측).
+export function levelListRoute(lang, kind, View) {
   const conf = LEVEL_LIST_LANGS[lang];
   return {
     generateStaticParams: () => conf.levels.filter(key => levelKinds(lang, key).includes(kind)).map(key => ({ level: key.toLowerCase() })),

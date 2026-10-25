@@ -592,8 +592,9 @@ export default function LevelWordScreen({ cfg, levelKey, groups: rawGroups }) {
       .then((body) => setDict({ state: 'ready', entries: body.rows.map((row, i) => indexEntry(row, i, cfg.mode)) }))
       .catch(() => setDict({ state: 'failed', entries: null }));
   }, [dict.state, cfg]);
-  // 색인을 받지 못하면 지금 레벨 안에서만 찾는다.
-  const levelOnly = useMemo(() => allEntries.map((e, i) => indexEntry([e.word, e.reading, e.meaning, level, e.kr], i, cfg.mode)), [allEntries, level, cfg.mode]);
+  // 색인을 받지 못하면 지금 레벨 안에서만 찾는다. 그때만 만든다 — 첫 그림마다 레벨 전체(H7 5,562개)를 색인하지 않게(JS-CRIT-001).
+  const levelOnly = useMemo(() => (dict.state === 'failed' ? allEntries.map((e, i) => indexEntry([e.word, e.reading, e.meaning, level, e.kr], i, cfg.mode)) : null),
+    [dict.state, allEntries, level, cfg.mode]);
   const searchEntries = dict.state === 'ready' ? dict.entries : dict.state === 'failed' ? levelOnly : null;
   const result = useMemo(() => (searchEntries ? searchLevelIndex(searchEntries, deferred, level, { mode: cfg.mode, levelRank: cfg.levelRank }) : null),
     [searchEntries, deferred, level, cfg]);

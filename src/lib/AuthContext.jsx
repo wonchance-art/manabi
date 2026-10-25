@@ -6,7 +6,6 @@ import { hasSupabaseSessionCookie } from './authCookie';
 import { whenDocumentParsed } from './documentParsed';
 import { authCallbackUrl } from './authRedirect';
 import { isRepeatedSignup } from './authErrors';
-import { migrateGuestDrillQueue } from './drillSrs';
 import { useToast } from './ToastContext';
 import { watchAccountMutations } from './accountQueryCache';
 import { REF_READ_KEYS, claimGuestRefProgress } from './refReadStore';
@@ -352,7 +351,8 @@ export function AuthProvider({ children, queryClient, onAccountLeft }) {
     pullProgress(user.id, REF_READ_KEYS, { force: true }).catch(() => {});
     // 게스트로 쌓은 드릴 복습 큐를 서버로 옮긴다 — 로그인했다고 기록이 사라지면 안 된다.
     // 서버에 이미 있는 카드는 건드리지 않고(다른 기기가 더 진행했을 수 있다), 없는 것만 넣는다.
-    migrateGuestDrillQueue(user.id).catch(() => {});
+    // 드릴 모듈(FSRS · 문형 큐 · 드릴 표)은 로그인한 뒤에만 쓰므로 그때 받는다 — 루트 레이아웃 첫 JS에서 뺐다(JS-CRIT-001).
+    import('./drillSrs').then((drill) => drill.migrateGuestDrillQueue(user.id)).catch(() => {});
   }, [user?.id]);
 
   // 이메일 회원가입

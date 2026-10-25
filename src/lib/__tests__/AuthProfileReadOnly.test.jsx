@@ -86,3 +86,33 @@ describe('AuthProvider profile reads never manufacture learning activity',()=>{
   }finally{vi.useRealTimers();}
  });
 });
+
+// JS-CRIT-001(2026-10-25 KST) — 드릴 모듈(FSRS · 문형 큐 · 드릴 표)은 루트 첫 JS에서 빼고 로그인 뒤 동적 import로 받는다.
+// 이관이 실제로 계정당 한 번 일어나는지, 손님은 받지도 부르지도 않는지 계약으로 둔다.
+describe('JS-CRIT-001 — 손님 드릴 큐 이관은 로그인 뒤 한 번(동적 import)',()=>{
+ it('세션 계정 확정 뒤 한 번 — 같은 계정 재렌더에는 다시 부르지 않는다',async()=>{
+  const { migrateGuestDrillQueue } = await import('../drillSrs');
+  migrateGuestDrillQueue.mockClear();
+  await mount();await tick();
+  for(let i=0;i<3;i++){render();await effects();}
+  await vi.waitFor(()=>expect(migrateGuestDrillQueue).toHaveBeenCalledTimes(1));
+  expect(migrateGuestDrillQueue).toHaveBeenCalledWith('A');
+  render();await effects();await tick();
+  expect(migrateGuestDrillQueue).toHaveBeenCalledTimes(1);
+ });
+ it('손님(세션 쿠키 없음)은 부르지 않는다',async()=>{
+  const { migrateGuestDrillQueue } = await import('../drillSrs');
+  migrateGuestDrillQueue.mockClear();
+  vi.stubGlobal('document',{cookie:'',readyState:'complete'});
+  await mount();await tick();
+  for(let i=0;i<3;i++){render();await effects();}
+  await tick();
+  expect(migrateGuestDrillQueue).not.toHaveBeenCalled();
+ });
+ it('AuthContext는 drillSrs를 정적으로 부르지 않는다(루트 첫 JS 밖)',async()=>{
+  const fs=await import('node:fs');
+  const src=fs.readFileSync(new URL('../AuthContext.jsx',import.meta.url),'utf8');
+  expect(src).not.toMatch(/^import .*from '\.\/drillSrs'/m);
+  expect(src).toContain("import('./drillSrs').then((drill) => drill.migrateGuestDrillQueue(user.id))");
+ });
+});
