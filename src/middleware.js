@@ -71,6 +71,7 @@ function guestStaticVariant(request) {
 // 지금(page.jsx)은 질의를 버린다 — 그 동작을 그대로 지킨다. 로그인 결과(code · error · error_description)가 붙은 요청은
 // 손대지 않고 page.jsx로 넘긴다(교환 · 실패 분기는 그 파일 한 곳이 맡는다). 세션 쿠키는 읽지 않는다(guestLandingParity).
 const ROOT_AUTH_RESULT_KEYS = ['code', 'error', 'error_description'];
+const LANGUAGE_HOMES = { '/japanese': 'Japanese', '/chinese': 'Chinese', '/english': 'English', '/french': 'French' };
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
@@ -79,6 +80,11 @@ export async function middleware(request) {
     if (ROOT_AUTH_RESULT_KEYS.some((key) => params.has(key))) return NextResponse.next();
     return NextResponse.redirect(new URL('/home', request.url));
   }
+  // 옛 언어 첫 화면(/japanese · /chinese · /english · /french)은 그 언어의 책장으로(ROUTE-AUDIT-2 P2, 오너 「권장대로」 2026-10-26 KST).
+  // 예전엔 보관함 규칙에 걸려 손님은 「관리자 보관함 로그인」, 학습자는 3번 돌아 홈이었다 — 각 page.jsx의 redirect('/lessons?lang=…')는
+  // 닿지 않는 코드였다. 목적지는 그 page.jsx와 같다(질의 버림 · 세션 안 읽음). 장 주소(/japanese/grammar/…)는 아래 보관함 규칙 그대로.
+  const languageHome = LANGUAGE_HOMES[pathname.replace(/\/$/, '')];
+  if (languageHome) return NextResponse.redirect(new URL(`/lessons?lang=${languageHome}`, request.url));
   const archive = legacyTextbookTarget(pathname);
   if (archive) {
     const destination = request.nextUrl.clone();
@@ -122,8 +128,8 @@ export async function middleware(request) {
     .eq('id', user.id)
     .single();
 
-  // 어드민 아님 → 홈으로
-  if (profile?.role !== 'admin') return NextResponse.redirect(new URL('/', request.url));
+  // 어드민 아님 → 홈으로(바로 /home — '/'는 다시 /home으로 한 번 더 돌았다, ROUTE-AUDIT-2 P2)
+  if (profile?.role !== 'admin') return NextResponse.redirect(new URL('/home', request.url));
 
   // Decide before the archive's async page starts streaming; notFound() after the
   // shared loading boundary can otherwise render a 404 screen with HTTP 200.

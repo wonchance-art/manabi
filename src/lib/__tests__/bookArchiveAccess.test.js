@@ -23,7 +23,7 @@ describe('archive and personal review authorization', () => {
     expect(first.headers.get('location')).toBe('https://manabi.test/admin/legacy-textbooks/japanese/grammar/n5-04-desu-da?sourceRevision=one');
     expect(client).not.toHaveBeenCalled();
     const { db } = database(); client.mockReturnValue(db);
-    expect((await middleware(new NextRequest(first.headers.get('location')))).headers.get('location')).toBe('https://manabi.test/');
+    expect((await middleware(new NextRequest(first.headers.get('location')))).headers.get('location')).toBe('https://manabi.test/home');
     client.mockReturnValue(database('admin').db);
     expect((await middleware(new NextRequest(first.headers.get('location')))).headers.get('x-middleware-next')).toBe('1');
   });
