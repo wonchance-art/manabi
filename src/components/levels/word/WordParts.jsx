@@ -94,16 +94,13 @@ export function GradeButtons({ previews, onGrade, disabled = false, note = null,
  * 펼침 표시(aria-expanded)는 창(PiecePopup)이 열린 동안 그 단추에 단다. 없으면(JLPT · 예문 단어 창의 작은 칸) 지금처럼 글자 · 훈음만.
  */
 export const PieceDrillContext = createContext(null);
-export const PIECE_ROLE_WORD = Object.freeze({ meaning: '뜻', sound: '음' });
 
-/** 조각 줄 — 파고들기 판은 [글자][훈음][역할 칸]으로 줄을 맞춘다(역할을 모르면 칸만 비운다). 조각은 누르지 않는다. */
+/** 조각 줄 — 파고들기 판은 [글자][훈음]으로 줄을 맞춘다. 조각은 누르지 않는다. 역할 말(뜻 · 음)은 달지 않는다 — 긴 훈음이 … 로 잘려서(오너 2026-10-26 KST). */
 function TilePiece({ piece: p, more, drill }) {
   const L = useWordLang();
   const glyph = <span className="lw-tile__pch" lang={L.piece}>{p.ch}</span>;
   if (!drill) return <span className="lw-tile__piece">{glyph}{p.label}{more ? ' …' : ''}</span>;
-  return <span className={`lw-tile__piece is-row${p.role ? ` is-${p.role}` : ''}`}>
-    {glyph}<span className="lw-tile__pl">{p.label}{more ? ' …' : ''}</span><i className="lw-tile__role">{PIECE_ROLE_WORD[p.role] || ''}</i>
-  </span>;
+  return <span className="lw-tile__piece is-row">{glyph}<span className="lw-tile__pl">{p.label}{more ? ' …' : ''}</span></span>;
 }
 
 /** 단어 속 몇째 글자인지 — 칸은 한자만 있으므로(가나 · 기호 제외) 앞 칸 다음부터 같은 글자를 찾는다. */
