@@ -30,25 +30,16 @@ export function levelCharTiles(word, tables, { lookup = null, readings = null } 
       ch,
       zheng: (form ? (f !== ch ? f : null) : model.head.zheng) || null,
       label: model.head.label || model.head.eum || '',
-      pieces: (model.parts?.pieces || []).map((p) => pieceOf(p, tables.panel)),
+      pieces: (model.parts?.pieces || []).map(pieceOf),
       ...(readings?.[index] ? { kana: readings[index] } : {}),
     });
   });
   return tiles;
 }
 
-/** 조각 하나 — 역할이 없으면 글자 · 훈음만(묶음 크기). */
-function pieceOf(p, panel) {
-  const piece = { ch: p.ch, label: p.label || '' };
-  if (p.role === 'meaning') {
-    piece.role = 'meaning';
-    const target = p.target || p.ch;
-    if (panel?.roles?.[target] || panel?.comps?.[target]) piece.open = target;
-  } else if (p.role === 'sound') {
-    piece.role = 'sound';
-    if (p.drill) piece.open = p.ch;
-  }
-  return piece;
+/** 조각 하나 — 글자 · 훈음 · 역할(뜻 · 음, 모르면 없음). 조각은 더 파고들지 않는다(오너 2026-10-25 KST — 큰 한자를 누른다). */
+function pieceOf(p) {
+  return { ch: p.ch, label: p.label || '', ...(p.role === 'meaning' || p.role === 'sound' ? { role: p.role } : {}) };
 }
 
 /** 일본어 글자 칸 — 표제어를 한국 정자 꼴로 바꿔 찾고(jeongja = jaJeongja.json의 j), kr(「けい,けん」)을 글자마다 붙인다. */

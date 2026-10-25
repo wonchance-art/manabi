@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { reducedMotion } from '@/lib/reducedMotion';
 import { pinyinToneNumber } from '@/lib/pinyinTone';
-import { formatDrillSummary, hanjaPanelModel, normalizePinyin, panelSearchChar, selectSameHanjaTiles, soundPieceDrill } from '@/lib/viewerHanjaPanel';
+import { hanjaPanelModel, normalizePinyin, selectSameHanjaTiles, splitPinyinSyllables } from '@/lib/viewerHanjaPanel';
 import { CharTiles, PIECE_ROLE_WORD, WordRow } from './WordParts';
 import { useWordLang } from './wordLang';
 
@@ -147,11 +147,11 @@ const toneCls = (on, syl) => (on && syl ? `lw-tone--${pinyinToneNumber(syl) ?? 0
 const CloseIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18" /></svg>;
 
 /**
- * 조각 창(오너 10-23 「안1로」 — 글자 칸 조각을 한 번 더 파고들기, HSK 판). 뷰어 한자 창(ViewerHanjaPopover)의 조각 화면과 같은 자료 ·
+ * 글자 창(오너 2026-10-25 KST — 글자 칸의 큰 한자를 누름, HSK 판). 뷰어 한자 창(ViewerHanjaPopover)의 글자 화면과 같은 자료 ·
  * 같은 규격(높이 170 · 너비 min(346, 화면 − 32))이고, 놓는 일은 예문 단어 창(WordPopup)을 따른다 — 누른 칸 바로 아래(넘치면 위).
- * Esc · 바깥 누르기 · 칸이 화면 밖으로 나가면 닫히고, 열리면 창으로 · 닫히면 누른 조각으로 초점. 표시만 한다(저장 · 복습 기록 0).
- *   sound — 음 조각 → 같은 소리 글자 5개 + 요약 한 줄(「雚이 들면 대개 관·권·환」). 이 칸의 글자(of — 觀)를 칠한다.
- *   char  — 뜻 조각 → 그 글자의 머리 · 구성 · 같은 한자 단어 3칸(내 단어 먼저 · HSK 1–9 색인, 못 받으면 이 레벨 목록).
+ * Esc · 바깥 누르기 · 칸이 화면 밖으로 나가면 닫히고, 열리면 창으로 · 닫히면 누른 글자로 초점. 표시만 한다(저장 · 복습 기록 0).
+ * 머리(글자 · 이 단어 속 병음 · 훈음 · 正) · 구성(누르지 않는다) · 같은 한자 단어 3칸(내 단어 먼저 · HSK 1–9 색인, 못 받으면 이 레벨 목록 —
+ * 지금 단어는 뺀다). req = { ch, word, index } — 병음은 색인의 그 단어 병음에서 그 자리 음절, 없으면 표의 대표 병음.
  * tables = 글자 칸 표 네 벌(받는 중이면 빈 창 — aria-busy).
  */
 export function PiecePopup({ req, tables, refIndex, savedRows, tone, onClose }) {
@@ -205,39 +205,31 @@ export function PiecePopup({ req, tables, refIndex, savedRows, tone, onClose }) 
     };
   }, [anchor, close, place]);
 
-  const panel = ready ? tables.panel : null;
-  const drill = useMemo(() => (ready && req.kind === 'sound' ? soundPieceDrill(req.ch, tables) : null), [ready, req.kind, req.ch, tables]);
-  const model = useMemo(() => (ready && req.kind === 'char' ? hanjaPanelModel({ ch: req.ch, tables }) : null), [ready, req.kind, req.ch, tables]);
-  const words = useMemo(() => (model?.head.reading
-    ? selectSameHanjaTiles({ ch: panelSearchChar(req.ch, panel), reading: model.head.reading, headText: '', savedRows, refIndex, tables }) : []),
-  [model, req.ch, panel, savedRows, refIndex, tables]);
+  const reading = useMemo(() => {
+    const chars = [...String(req.word || '')];
+    if (!Number.isInteger(req.index) || chars[req.index] !== req.ch) return null;
+    const sylls = splitPinyinSyllables(refIndex?.get?.(req.word)?.word?.pinyin, chars.length, { erhua: chars[chars.length - 1] === '儿' });
+    return sylls?.[req.index] || null;
+  }, [req.word, req.index, req.ch, refIndex]);
+  const model = useMemo(() => (ready ? hanjaPanelModel({ ch: req.ch, index: req.index, word: req.word || '', reading, tables }) : null),
+    [ready, req.ch, req.index, req.word, reading, tables]);
+  const headReading = model ? model.head.reading || tables.panel?.py?.[req.ch] || null : null;
+  const words = useMemo(() => (headReading
+    ? selectSameHanjaTiles({ ch: req.ch, reading: headReading, headText: req.word || '', index: req.index, savedRows, refIndex, tables }) : []),
+  [headReading, req.ch, req.word, req.index, savedRows, refIndex, tables]);
 
-  const roleName = PIECE_ROLE_WORD[req.kind === 'sound' ? 'sound' : 'meaning'];
-  const py = (text, className) => (text ? <span className={['lw-dp__py', className, toneCls(tone, text)].filter(Boolean).join(' ')}>{normalizePinyin(text)}</span> : null);
-  const head = (h) => <div className="lw-dp__head">
-    <b className="lw-dp__ch" lang={L.zheng}>{req.ch}</b>
-    {py(h?.reading)}
-    {h?.label && <span className="lw-dp__hun">{h.label}</span>}
-    <span className={`lw-dp__role is-${req.kind === 'sound' ? 'sound' : 'meaning'}`}>{roleName} 조각</span>
-  </div>;
+  const py = (text) => (text ? <span className={['lw-dp__py', toneCls(tone, text)].filter(Boolean).join(' ')}>{normalizePinyin(text)}</span> : null);
 
   let body = null;
-  if (drill) {
-    body = <>
-      {head(drill)}
-      <div className="lw-dp__fam">
-        {drill.items.map((x) => <span key={x.ch} className={`lw-dp__fc${x.ch === req.of ? ' is-hit' : ''}`}>
-          {x.py ? py(x.py, 'lw-dp__fpy') : <span className="lw-dp__fpy" aria-hidden="true">&nbsp;</span>}
-          <b lang={L.zheng}>{x.ch}</b>
-          <span>{x.eum || ''}</span>
-        </span>)}
-      </div>
-      <p className="lw-dp__note">{formatDrillSummary(drill)}</p>
-    </>;
-  } else if (model) {
+  if (model) {
     const ps = model.parts;
     body = <>
-      {head(model.head)}
+      <div className="lw-dp__head">
+        <b className="lw-dp__ch" lang={L.hw}>{req.ch}</b>
+        {py(headReading)}
+        {model.head.label && <span className="lw-dp__hun">{model.head.label}</span>}
+        {model.head.zheng && <span className="lw-dp__zheng">正 <b lang={L.zheng}>{model.head.zheng}</b></span>}
+      </div>
       {ps ? <div className={`lw-dp__parts${ps.known ? '' : ' is-unknown'}`} style={{ '--n': ps.pieces.length }}>
         {ps.pieces.map((p, i) => <span key={`${p.ch}${i}`} className={`lw-dp__piece${p.role ? ` is-${p.role}` : ''}`}>
           <b lang={L.zheng}>{p.ch}</b><span className="lw-dp__pl">{p.label || ''}</span>{p.role && <i>{PIECE_ROLE_WORD[p.role]}</i>}
@@ -254,8 +246,8 @@ export function PiecePopup({ req, tables, refIndex, savedRows, tone, onClose }) 
   } else if (tables === false) {
     body = <p className="lw-dp__note">글자 자료를 불러오지 못했어요</p>;
   }
-  return <div className={`lw-dp${closing ? ' is-closing' : ''}`} role="dialog" aria-modal="false" aria-label={`${req.ch} ${roleName} 조각`} tabIndex={-1} ref={ref}
-    aria-busy={tables === 'loading' || tables === null || undefined} data-kind={req.kind}
+  return <div className={`lw-dp${closing ? ' is-closing' : ''}`} role="dialog" aria-modal="false" aria-label={`${req.ch} 글자`} tabIndex={-1} ref={ref}
+    aria-busy={tables === 'loading' || tables === null || undefined}
     style={pos ? { left: pos.left, top: pos.top } : { visibility: 'hidden', left: 0, top: 0 }}>
     {body}
     <button type="button" className="lw-dp__close" aria-label="닫기" title="닫기" onClick={close}><CloseIcon /></button>

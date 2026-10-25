@@ -89,43 +89,61 @@ export function GradeButtons({ previews, onGrade, disabled = false, note = null,
 }
 
 /**
- * 조각 파고들기(오너 10-23 「안1로」 — HSK 판만) — 화면이 주면 역할이 확인된 조각에 「뜻」 · 「음」을 붙이고,
- * 더 쪼갤 것이 있는 조각(open)은 「뜻 ›」 · 「음 ›」 단추가 된다. onPiece({ kind, ch, of }, 누른 단추) — kind 'char'(뜻 조각 → 그 글자) · 'sound'(음 조각 → 같은 소리 글자).
+ * 글자 파고들기(오너 2026-10-25 KST — 조각 창 대신 큰 한자) — 화면이 주면(HSK 판) 왼쪽 큰 한자가 단추가 되어
+ * 그 글자의 창(구성 · 같은 한자 단어)을 연다. onPiece({ kind: 'char', ch, of, word, index }, 누른 단추).
  * 펼침 표시(aria-expanded)는 창(PiecePopup)이 열린 동안 그 단추에 단다. 없으면(JLPT · 예문 단어 창의 작은 칸) 지금처럼 글자 · 훈음만.
  */
 export const PieceDrillContext = createContext(null);
 export const PIECE_ROLE_WORD = Object.freeze({ meaning: '뜻', sound: '음' });
 
-function TilePiece({ piece: p, tile, more, drill }) {
+/** 조각 줄 — 파고들기 판은 [글자][훈음][역할 칸]으로 줄을 맞춘다(역할을 모르면 칸만 비운다). 조각은 누르지 않는다. */
+function TilePiece({ piece: p, more, drill }) {
   const L = useWordLang();
   const glyph = <span className="lw-tile__pch" lang={L.piece}>{p.ch}</span>;
-  if (!drill || !p.role) return <span className="lw-tile__piece">{glyph}{p.label}{more ? ' …' : ''}</span>;
-  const word = PIECE_ROLE_WORD[p.role];
-  const inner = <>{glyph}<span className="lw-tile__pl">{p.label}</span><i className="lw-tile__role">{word}{p.open && <span aria-hidden="true"> ›</span>}</i></>;
-  const cls = `lw-tile__piece is-${p.role}`;
-  if (!p.open) return <span className={cls}>{inner}</span>;
-  return <button type="button" className={cls} aria-haspopup="dialog" aria-label={`${p.ch} ${p.label}, ${word} 조각`}
-    onClick={(e) => { e.stopPropagation(); drill.onPiece({ kind: p.role === 'sound' ? 'sound' : 'char', ch: p.open, of: tile.zheng || tile.ch }, e.currentTarget); }}>{inner}</button>;
+  if (!drill) return <span className="lw-tile__piece">{glyph}{p.label}{more ? ' …' : ''}</span>;
+  return <span className={`lw-tile__piece is-row${p.role ? ` is-${p.role}` : ''}`}>
+    {glyph}<span className="lw-tile__pl">{p.label}{more ? ' …' : ''}</span><i className="lw-tile__role">{PIECE_ROLE_WORD[p.role] || ''}</i>
+  </span>;
+}
+
+/** 단어 속 몇째 글자인지 — 칸은 한자만 있으므로(가나 · 기호 제외) 앞 칸 다음부터 같은 글자를 찾는다. */
+export function tileIndexes(word, tiles) {
+  const chars = [...String(word || '')];
+  let from = 0;
+  return tiles.map((t) => {
+    const i = chars.indexOf(t.ch, from);
+    if (i < 0) return null;
+    from = i + 1;
+    return i;
+  });
 }
 
 /**
  * 글자 칸 — 왼쪽 글자(HSK 간체 · JLPT 신자체, 정체 · 한국 정자가 다르면 아래 회색 같은 크기), 오른쪽 첫 줄 훈음(굵게)
  * (JLPT는 그 뒤 이 단어 속 읽기 — 経 날 경 けい) · 그 아래 구성 조각 한 줄에 하나.
  * tiles = levelCharTiles 결과. 표가 아직 없으면 null → 그리지 않는다. small(예문 단어 창)은 파고들기 없이.
+ * word = 이 칸들의 단어(파고들기 창이 그 단어의 읽기로 글자를 보이고, 같은 한자 단어에서 그 단어를 뺀다).
  */
-export function CharTiles({ tiles, small = false }) {
+export function CharTiles({ tiles, word, small = false }) {
   const L = useWordLang();
   const ctx = useContext(PieceDrillContext);
   const drill = small ? null : ctx;
   if (!tiles?.length) return null;
-  return <ul className={`lw-tiles${small ? ' lw-tiles--small' : ''}`} aria-label="글자">
-    {tiles.map((t, i) => <li key={`${t.ch}${i}`} className="lw-tile">
-      <span className="lw-tile__glyph" lang={L.hw}>{t.ch}{t.zheng && t.zheng !== t.ch && <span className="lw-tile__zheng" lang={L.zheng}>{t.zheng}</span>}</span>
-      <span className="lw-tile__info">
-        <span className="lw-tile__hun"><b>{t.label || ' '}</b>{t.kana && <span className="lw-tile__kana" lang={L.hw}>{t.kana}</span>}</span>
-        {t.pieces.slice(0, 2).map((p, j) => <TilePiece key={j} piece={p} tile={t} more={j === 1 && t.pieces.length > 2} drill={drill} />)}
-      </span>
-    </li>)}
+  const at = drill ? tileIndexes(word, tiles) : null;
+  return <ul className={`lw-tiles${small ? ' lw-tiles--small' : ''}${drill ? ' lw-tiles--drill' : ''}`} aria-label="글자">
+    {tiles.map((t, i) => {
+      const glyph = <>{t.ch}{t.zheng && t.zheng !== t.ch && <span className="lw-tile__zheng" lang={L.zheng}>{t.zheng}</span>}</>;
+      return <li key={`${t.ch}${i}`} className="lw-tile">
+        {drill
+          ? <button type="button" className="lw-tile__glyph" lang={L.hw} aria-haspopup="dialog" aria-label={`${t.ch} ${t.label}, 이 글자가 든 단어`}
+            onClick={(e) => { e.stopPropagation(); drill.onPiece({ kind: 'char', ch: t.ch, of: t.zheng || t.ch, word, index: at[i] }, e.currentTarget); }}>{glyph}</button>
+          : <span className="lw-tile__glyph" lang={L.hw}>{glyph}</span>}
+        <span className="lw-tile__info">
+          <span className="lw-tile__hun"><b>{t.label || ' '}</b>{t.kana && <span className="lw-tile__kana" lang={L.hw}>{t.kana}</span>}</span>
+          {t.pieces.slice(0, 2).map((p, j) => <TilePiece key={j} piece={p} more={j === 1 && t.pieces.length > 2} drill={drill} />)}
+        </span>
+      </li>;
+    })}
   </ul>;
 }
 
