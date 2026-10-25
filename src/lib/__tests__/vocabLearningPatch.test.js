@@ -3,7 +3,7 @@ import { QueryClient, QueryObserver } from '@tanstack/react-query';
 vi.mock('../supabase', () => ({ supabase: {} }));
 vi.mock('../AuthContext', () => ({ useAuth: () => ({}) }));
 vi.mock('../ToastContext', () => ({ useToast: () => () => {} }));
-import { invalidateVocabularyLearning, patchVocabularyLearningRow } from '../useVocabData.js';
+import { invalidateVocabularyLearning, patchVocabularyLearningRow, REVIEW_ROOM_DEFERRED } from '../useVocabData.js';
 import { projectVocabularyLearningRows } from '../vocabularyLearningRows.js';
 
 // 운영 실측 2026-10-23 KST: 단어장 복습 채점마다 전체 목록(fsrs_vocabulary_snapshot, 평균 2초)을 다시 읽어 작은 DB가
@@ -58,6 +58,28 @@ describe('vocabulary learning list patch after a legacy grade', () => {
     expect(home).toHaveBeenCalledTimes(1);
     await invalidateVocabularyLearning(client, actorId);
     expect(vocab).toHaveBeenCalledTimes(1);
+    stop.forEach(unsubscribe => unsubscribe());
+  });
+
+  // LOGGED-IN-PERF 감사(2026-10-25 KST, 3,000단어 합성 계정): 채점 1번마다 출처 제목 · 헷갈린 표현 조회가 다시 나갔다.
+  // 세션 중에는 복습방 전용 조회를 낡음으로만 표시하고, 다른 학습 화면 무효화와 세션 밖 무효화는 그대로 다시 읽는다.
+  it('defers only the review-room queries while a session is running', async () => {
+    expect(REVIEW_ROOM_DEFERRED).toEqual(['vocab-titles', 'confused-events']);
+    const client = new QueryClient();
+    const fns = Object.fromEntries(['vocab-titles', 'confused-events', 'home-v2'].map(prefix => [prefix, vi.fn(async () => ({}))]));
+    const stop = Object.entries(fns).map(([prefix, queryFn]) =>
+      new QueryObserver(client, { queryKey: [prefix, actorId], queryFn }).subscribe(() => {}));
+    await vi.waitFor(() => expect(client.getQueryData(['home-v2', actorId])).toBeTruthy());
+    await vi.waitFor(() => expect(client.getQueryData(['confused-events', actorId])).toBeTruthy());
+    Object.values(fns).forEach(fn => fn.mockClear());
+    await invalidateVocabularyLearning(client, actorId, { refetchLearning: false, deferReviewRoom: true });
+    expect(fns['vocab-titles']).not.toHaveBeenCalled();
+    expect(fns['confused-events']).not.toHaveBeenCalled();
+    expect(client.getQueryState(['confused-events', actorId]).isInvalidated).toBe(true);
+    expect(fns['home-v2']).toHaveBeenCalledTimes(1);
+    await invalidateVocabularyLearning(client, actorId, { refetchLearning: false });
+    expect(fns['vocab-titles']).toHaveBeenCalledTimes(1);
+    expect(fns['confused-events']).toHaveBeenCalledTimes(1);
     stop.forEach(unsubscribe => unsubscribe());
   });
 });

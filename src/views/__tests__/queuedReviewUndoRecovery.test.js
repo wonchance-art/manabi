@@ -26,7 +26,7 @@ function fixture(extra = {}) {
     lastGradeRef: { current: snapshot() }, scoringRef: { current: false }, pendingGradeRef: { current: 0 },
     gradeSequenceRef: { current: 0 }, gradeSessionRef: { current: 0 }, gradeLifetimeRef: { current: 0 },
     supabase: {}, queryClient: {}, toast: vi.fn(), invalidateVocabularyLearning: vi.fn(),
-    patchVocabularyLearningRow: vi.fn(() => true), reviewFinishedRef: { current: false },
+    patchVocabularyLearningRow: vi.fn(() => true), reviewFinishedRef: { current: false }, inSessionRef: { current: true },
     fsrsReview: { controller: { canLegacy: () => true } },
     admission: { current: { compatibility: false }, controller: { leave: vi.fn(), getSnapshot: () => ({ current: { questionKey: 'session:0', cardId: 'card-a' } }) } },
     loadModule: vi.fn(async path => path.endsWith('reviewOutbox') ? { undoQueuedReview }
@@ -138,13 +138,13 @@ describe('queued review undo recovery in the actual VocabPage handlers', () => {
     expect(f.c.patchVocabularyLearningRow).toHaveBeenCalledWith(f.c.queryClient, 'actor-a', 'card-a',
       expect.objectContaining({ interval: 10, ease_factor: 4, repetitions: 1, next_review_at: '2026-10-06T00:00:00Z',
         last_reviewed_at: '2026-10-04T15:00:00.000Z' }));
-    expect(f.c.invalidateVocabularyLearning).toHaveBeenLastCalledWith(f.c.queryClient, 'actor-a', { refetchLearning: false });
-    f.c.reviewFinishedRef.current = true;
+    expect(f.c.invalidateVocabularyLearning).toHaveBeenLastCalledWith(f.c.queryClient, 'actor-a', { refetchLearning: false, deferReviewRoom: true });
+    f.c.reviewFinishedRef.current = true; f.c.inSessionRef.current = false;
     await f.handleScore(3); await tick();
-    expect(f.c.invalidateVocabularyLearning).toHaveBeenLastCalledWith(f.c.queryClient, 'actor-a', { refetchLearning: true });
-    f.c.reviewFinishedRef.current = false; f.c.patchVocabularyLearningRow.mockReturnValueOnce(false);
+    expect(f.c.invalidateVocabularyLearning).toHaveBeenLastCalledWith(f.c.queryClient, 'actor-a', { refetchLearning: true, deferReviewRoom: false });
+    f.c.reviewFinishedRef.current = false; f.c.inSessionRef.current = true; f.c.patchVocabularyLearningRow.mockReturnValueOnce(false);
     await f.handleScore(3); await tick();
-    expect(f.c.invalidateVocabularyLearning).toHaveBeenLastCalledWith(f.c.queryClient, 'actor-a', { refetchLearning: true });
+    expect(f.c.invalidateVocabularyLearning).toHaveBeenLastCalledWith(f.c.queryClient, 'actor-a', { refetchLearning: true, deferReviewRoom: true });
   });
 
   it('discards a late grade ref after a new session or unmount without blocking optimistic advance', async () => {

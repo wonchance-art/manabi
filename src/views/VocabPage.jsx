@@ -41,7 +41,7 @@ import { ReviewIntroCard, ReviewSoundToggle, useScoreArmed } from '../components
 import { useKnownWords } from '../lib/useKnownWords';
 import { knownWordsLang } from '../lib/knownWords';
 import ReviewScopeBar, { ReviewScopeNotice } from '../components/vocab/ReviewScopeBar';
-import { useVocabData, invalidateVocabularyLearning, patchVocabularyLearningRow } from '../lib/useVocabData';
+import { useVocabData, invalidateVocabularyLearning, patchVocabularyLearningRow, REVIEW_ROOM_DEFERRED } from '../lib/useVocabData';
 import { isVocabularyReviewAvailable, isVocabularyUnreviewed, vocabularyRetrievability } from '../lib/vocabularyLearningRead';
 import { wordStage } from '../lib/growthStats';
 import { confusedVocabWords, CONFUSED_MIN, CONFUSED_SINCE_DAYS } from '../lib/confusedQueue';
@@ -152,6 +152,8 @@ function VocabWorkspace({ reviewScope }) {
   const [reviewFinished, setReviewFinished] = useState(false);
   const reviewFinishedRef = useRef(reviewFinished);
   reviewFinishedRef.current = reviewFinished;
+  // 채점 저장이 끝난 시점에 세션이 아직 진행 중인지 — 복습방 전용 조회의 재조회를 세션 끝으로 미룰지 정한다(아래 inSession).
+  const inSessionRef = useRef(false);
   // 끝 공지(화면 읽기) — 끝 제목이 초점을 받지 못했을 때만 채운다(초점이 간 제목과 같은 말을 두 번 읽지 않게, a3ba 리뷰 ②).
   const [finishNotice, setFinishNotice] = useState(false);
   const scoringRef = useRef(false);
@@ -847,7 +849,7 @@ function VocabWorkspace({ reviewScope }) {
         { ...nextStats, interval: nextStats.interval ?? 0, ease_factor: nextStats.ease_factor ?? 0,
           repetitions: nextStats.repetitions ?? 0, last_reviewed_at: r?.reviewedAt || new Date().toISOString() });
       invalidateVocabularyLearning(queryClient, actorId,
-        { refetchLearning: !patched || (reviewFinishedRef.current && pendingGradeRef.current <= 1) });
+        { refetchLearning: !patched || (reviewFinishedRef.current && pendingGradeRef.current <= 1), deferReviewRoom: inSessionRef.current });
       if (!r?.queued) refreshProfileReadOnly(actorId)?.catch(() => {});
       if (gradeSessionRef.current !== gradeSession) return;
       if ((lastGradeRef.current?.sequence ?? 0) <= sequence) {
@@ -1346,6 +1348,7 @@ function VocabWorkspace({ reviewScope }) {
   // 하단 네비는 Layout 소유라 컴포넌트에서 못 지운다 — body 클래스로 CSS에 알린다.
   // 훅은 아래 `if (!user)` 조기 return보다 **위**에 있어야 한다(#838 Hooks 순서 사고와 같은 자리).
   const inSession = tab === 'review' && !reviewFinished || tab === 'practice' && !!practice && !practice.finished;
+  inSessionRef.current = inSession;
   // 끝 화면(복습 · 집중 연습) — 세션 머리줄을 그대로 두고 복습방 머리(「THE REVIEW ROOM 복습」)는 「목록으로」 뒤에만 그린다
   // (VOCAB-FLOW-001 A, 오너 「권장대로」 2026-10-17 KST). 끝으로 넘어가는 순간 머리가 다시 생겨 본문이 390 +107px · 1440 +131px
   // 내려앉았다(layout-shift 0.074 · 0.030, 입력 직후라 CLS 밖이지만 눈에 보인다).
@@ -1384,6 +1387,16 @@ function VocabWorkspace({ reviewScope }) {
     document.body.classList.toggle('is-review-chrome', sessionChrome);
     return () => document.body.classList.remove('is-review-session', 'is-review-chrome');
   }, [inSession, sessionChrome]);
+  // 세션 중 미뤄 둔 복습방 조회(REVIEW_ROOM_DEFERRED)는 세션이 끝나면(끝 화면 · 나가기 모두) 낡은 것만 한 번 다시 읽는다.
+  const wasInSession = useRef(false);
+  useEffect(() => {
+    if (inSession) { wasInSession.current = true; return; }
+    if (!wasInSession.current || !user?.id) return;
+    wasInSession.current = false;
+    for (const prefix of REVIEW_ROOM_DEFERRED) {
+      queryClient.refetchQueries({ queryKey: [prefix, user.id], stale: true, type: 'active' }, { cancelRefetch: false });
+    }
+  }, [inSession, user?.id, queryClient]);
 
   if (!user && explicitScope) return <div className="page-container"><h1>{scopeHeading(explicitScope.scope)}</h1><p>담은 표현은 로그인한 계정에 보관돼요.</p><div className="manabi-row"><Link href={authEntryHref(serializeReviewScope(explicitScope.scope, { returnTo: explicitScope.returnTo }))}>로그인하고 이어가기 →</Link>{explicitScope.returnTo && <Link href={explicitScope.returnTo}>← 교재로</Link>}</div></div>;
   if (!user) {

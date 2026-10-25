@@ -35,13 +35,21 @@ export async function fetchVocabLearningData(actorId, options = {}) {
  * 복습 중 채점마다 전체 목록(fsrs_vocabulary_snapshot)을 다시 읽으면 작은 DB가 시간 초과로 넘어간다
  * (운영 실측 2026-10-23 KST: 채점 101번에 목록 읽기 107번 · 평균 2초). 채점은 patchVocabularyLearningRow가 화면에 반영한다.
  */
-export function invalidateVocabularyLearning(queryClient, actorId, { refetchLearning = true } = {}) {
+export function invalidateVocabularyLearning(queryClient, actorId, { refetchLearning = true, deferReviewRoom = false } = {}) {
   if (typeof actorId !== 'string' || !actorId) return Promise.resolve([]);
   return Promise.all(['vocab', 'vocab-words', 'vocab-titles', 'home-v2', 'profile-stats', 'output-words',
     'book-review', 'due-vocab-index', 'weekly-report', 'goal-progress', 'goal-known', 'weak-spot', 'confused-events']
     .map(prefix => queryClient.invalidateQueries({ queryKey: [prefix, actorId],
-      ...(prefix === 'vocab' && !refetchLearning ? { refetchType: 'none' } : {}) })));
+      ...((prefix === 'vocab' && !refetchLearning) || (deferReviewRoom && REVIEW_ROOM_DEFERRED.includes(prefix))
+        ? { refetchType: 'none' } : {}) })));
 }
+
+/**
+ * 복습방(목록 화면)에만 그려지는 조회 — 복습 세션 중에는 화면에 없다. deferReviewRoom이면 채점마다 다시 읽지 않고 낡음만 표시하고,
+ * 세션이 끝나 목록으로 돌아올 때 VocabPage가 한 번 다시 읽는다(LOGGED-IN-PERF 감사 2026-10-25 KST: 3,000단어 계정에서 채점 1번에
+ * 출처 제목 2번 · 헷갈린 표현 400행 · 되돌리기 표식 = 요청 4번, 50번 채점이면 200번이었다). 출처 제목은 채점이 바꾸지도 않는다.
+ */
+export const REVIEW_ROOM_DEFERRED = Object.freeze(['vocab-titles', 'confused-events']);
 
 /**
  * 저장한 예전 방식 채점을 단어장 학습 목록 캐시에 바로 반영한다(서버가 돌려줄 값과 같은 SRS 필드).
