@@ -84,8 +84,8 @@
   --mobile-nav-bg: rgba(35, 28, 21, 0.97);
   --card-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.5);
 
-  /* Layout */
-  --gnb-height: 64px;
+  /* Layout — 머리 높이는 상태 표시줄 자리(설치 앱에서만 0보다 크다)를 포함한다(PWA-SHELL-001 ⑧) */
+  --gnb-height: calc(64px + env(safe-area-inset-top,0px));
   --sidebar-width: 240px;
   --content-max-width: 1200px;
   --font-serif: var(--font-serif-kr, 'Noto Serif KR'), 'Noto Serif KR', serif;
@@ -336,7 +336,8 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  /* 위 여백 = 상태 표시줄 자리 — 머리 바탕이 표시줄 뒤까지 칠해지고 글자 · 단추는 그 아래에 선다(보통 탭에서는 0) */
+  padding: env(safe-area-inset-top,0px) 24px 0;
 }
 
 .gnb__logo {
@@ -3857,12 +3858,12 @@ a.viewer-badge:hover {
 /* ========= Responsive ========= */
 @media (max-width: 768px) {
   :root {
-    --gnb-height: 56px;
+    --gnb-height: calc(56px + env(safe-area-inset-top,0px));
     --mobile-nav-height: 64px;
   }
 
   .gnb {
-    padding: 0 16px;
+    padding: env(safe-area-inset-top,0px) 16px 0;
     height: var(--gnb-height);
   }
 
