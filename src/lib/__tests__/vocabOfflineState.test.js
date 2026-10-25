@@ -20,7 +20,7 @@ describe('/vocab 기기 사본 — 복습 상태 한 장', () => {
     expect(branch).toContain('<h2>표현을 불러오지 못했어요.</h2>');
   });
   it('사본일 때 「복습을 준비하지 못했어요」 카드를 겹쳐 그리지 않는다 · 사본 안내 한 줄은 그대로', () => {
-    expect(page).toContain("{admission.error && tab !== 'review' && !isOffline && <div role=\"alert\" className=\"card\">");
+    expect(page).toContain("{admission.error && !isAdmissionOfflineError(admission.error) && tab !== 'review' && !isOffline && <div role=\"alert\" className=\"card\">");
     expect(page).toContain('{isOffline && <OfflineNotice what="단어장" />}');
   });
   it('연결이 돌아오면 사본 화면이 정본을 다시 읽는다(online 이벤트 → refetch, 떠날 때 뗀다)', () => {

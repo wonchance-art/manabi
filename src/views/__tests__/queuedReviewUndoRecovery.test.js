@@ -67,6 +67,17 @@ describe('queued review undo recovery in the actual VocabPage handlers', () => {
     expect(f.c.toast).toHaveBeenCalledWith('되돌렸어요 — 「猫」 다시 채점', 'info');
   });
 
+  it('끊긴 채 되돌려도 다시 채점이 채점 전 일정을 바탕으로 한다 — 되돌린 일정을 목록 캐시에 바로 넣고 그다음 다시 읽기를 건다(F9)', async () => {
+    // 끊긴 동안 다시 읽기는 연결까지 멈춘다 — 전에는 낙관 반영(채점 뒤 값)이 남아 같은 카드의 다시 채점이 두 번 전진한 값에서 계산됐다.
+    const f = fixture(), last = f.c.lastGradeRef.current;
+    await f.undoLastGrade();
+    expect(f.c.patchVocabularyLearningRow).toHaveBeenCalledWith(f.c.queryClient, 'actor-a', 'card-a',
+      { interval: 5, ease_factor: 3, repetitions: 1, next_review_at: '2026-10-03T00:00:00Z', last_reviewed_at: null });
+    expect(f.c.patchVocabularyLearningRow.mock.invocationCallOrder[0]).toBeLessThan(f.c.invalidateVocabularyLearning.mock.invocationCallOrder[0]);
+    expect(f.c.setReviewIdx).toHaveBeenCalledWith(last.reviewIdx);
+    expect(f.c.admission.controller.leave).toHaveBeenCalled(); // 같은 카드를 새 문항 열쇠로 다시 묻는다(이미 입장 — 끊겨도 열린다)
+  });
+
   it.each(['throw', 'negative receipt', 'missing receipt', 'pending receipt'])('keeps the same undo snapshot after %s and allows exact retry', async failure => {
     const f = fixture(), last = f.c.lastGradeRef.current;
     if (failure === 'throw') f.undoQueuedReview.mockRejectedValueOnce(new Error('lost reply'));

@@ -237,7 +237,8 @@ describe('⑤ 상태와 맞는 문구', () => {
     expect(REVIEW_PREP_FAILED).not.toContain('저장 실패');
     expect(REVIEW_PREP_FAILED).not.toContain('이 단어');
     const page = read('src/views/VocabPage.jsx');
-    expect(sliceBetween(page, "{admission.error && tab !== 'review'", '</div>}')).toContain('{REVIEW_PREP_FAILED}');
+    // 끊김 기다림(F9 learning_admission_offline)은 실패가 아니라 이 알림에서 뺀다 — 세션 안 끊김 카드가 말한다(offlineReviewScreen).
+    expect(sliceBetween(page, "{admission.error && !isAdmissionOfflineError(admission.error) && tab !== 'review'", '</div>}')).toContain('{REVIEW_PREP_FAILED}');
     expect(read('src/views/VocabReview.jsx')).toContain("{admissionError ? REVIEW_PREP_FAILED : '복습 준비 중…'}");
   });
 

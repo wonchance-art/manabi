@@ -48,6 +48,12 @@ export function PendingReviewsNotice({ count = 0 }) {
  * 「복습을 준비하지 못했어요」 · 「표현을 불러오지 못했어요」 세 겹이 서로 어긋났다.
  */
 export const VOCAB_OFFLINE_TITLE = '복습은 연결되면 시작할 수 있어요';
+/**
+ * 복습 중 끊겼는데 다음 카드가 아직 서버 입장을 받지 않은 카드일 때(F9, 오너 승인 2026-10-25 KST 「권장대로」). 이미 받은 카드는 끊겨도
+ * 열리고 채점은 보낼함에 쌓인다 — 이 카드만 서버가 처음 열어 줘야 해서 기다린다. 아래 줄은 vocabOfflineLine(0)을 그대로 쓴다(보존 한 문장).
+ * 연결되면 같은 카드를 저절로 다시 묻는다(useLearningAdmission online).
+ */
+export const REVIEW_CARD_OFFLINE_TITLE = '이 표현은 연결되면 볼 수 있어요';
 /** 사본에 표현이 있으면 아래 목록을 가리키고, 없으면 보존만 말한다(목록은 vocab.length > 0일 때만 그려진다). */
 export function vocabOfflineLine(count = 0) {
   return count > 0 ? '담은 표현은 아래에서 볼 수 있어요. 복습 기록은 그대로 남아 있어요.' : '복습 기록은 그대로 남아 있어요.';

@@ -353,3 +353,59 @@ describe('legacy replay dedupe and complete pages', () => {
     expect(await pendingReviews('A')).toEqual([]); // public notice fallback remains compatible
   });
 });
+
+// F9 오프라인 복습 허용(오너 승인 2026-10-25 KST) — 끊긴 채 이어 한 세션의 채점 여러 개가 보낼함에 쌓였다가 연결되면 보내진다.
+// 새 큐를 만들지 않았다(이 보낼함 그대로). 여기서 고정하는 것: 채점 시각 순서 · 두 번 연결 신호에도 한 번씩 · 다른 계정으로 안 감.
+describe('offline review session replay (F9)', () => {
+  const at = minutes => new Date(Date.parse(T) + minutes * 60000).toISOString();
+  const offlineGrade = (card, minutes, interval) => ({ userId: 'A', source: 'vocab', itemKey: card, lang: 'Chinese', correct: true,
+    detail: { word_id: card, rating: 3 }, reviewedAt: at(minutes), remoteAttempted: false,
+    nextStats: { interval, ease_factor: 2, repetitions: 3, next_review_at: at(minutes + 60 * 24 * interval) } });
+  const words = f => ['card-1', 'card-2', 'card-3'].forEach(id => f.state.words.push({ id, user_id: 'A', ...PREV }));
+
+  it('sends grades in review-time order, applies each card to its latest grade, and a second reconnect sends nothing again', async () => {
+    const db = memoryDb([]), f = remote({ word: null }); words(f);
+    // 기기에 담긴 차례와 채점 시각이 어긋나도(같은 카드를 다음 세션에서 다시) 보내는 차례는 채점 시각이다.
+    for (const entry of [offlineGrade('card-2', 1, 5), offlineGrade('card-1', 0, 4), offlineGrade('card-3', 2, 6), offlineGrade('card-1', 3, 9)]) {
+      expect(await enqueueReview(entry)).toBe(true);
+    }
+    const persisted = [];
+    const persist = async (client, id, stats, reviewedAt, options) => { persisted.push([id, reviewedAt, options]); return f.persist(client, id, stats, reviewedAt); };
+    const [first, second] = await Promise.all([flushReviews(f.client, 'A', { persist }), flushReviews(f.client, 'A', { persist })]);
+    expect(first.sent + second.sent).toBe(4);
+    expect(f.state.events.map(e => [e.item_key, e.created_at])).toEqual([
+      ['card-1', at(0)], ['card-2', at(1)], ['card-3', at(2)], ['card-1', at(3)]]);
+    expect(persisted.map(([id, reviewedAt]) => [id, reviewedAt])).toEqual([
+      ['card-1', at(0)], ['card-2', at(1)], ['card-3', at(2)], ['card-1', at(3)]]);
+    // 항목마다 받은 경계 증거를 그 항목의 일정 쓰기가 나눠 쓴다(F5②) — 경계 RPC는 항목당 1번.
+    expect(persisted.every(([, , options]) => options?.boundary?.cardId)).toBe(true);
+    expect(f.state.words.find(w => w.id === 'card-1')).toMatchObject({ interval: 9, last_reviewed_at: at(3) });
+    expect(db.rows).toEqual([]);
+    expect(await flushReviews(f.client, 'A', { persist })).toEqual({ sent: 0, kept: 0, applied: 0 });
+    expect(f.state.events).toHaveLength(4); expect(persisted).toHaveLength(4);
+  });
+
+  it('a grade that already landed (lost reply before going offline) is not inserted twice and never rewinds a newer schedule', async () => {
+    const landed = offlineGrade('card-1', 0, 4);
+    const db = memoryDb([]), f = remote({ word: null, events: [{ id: '9007199254741101', user_id: 'A', lang: 'Chinese', source: 'vocab',
+      item_key: 'card-1', correct: true, created_at: landed.reviewedAt, detail: { word_id: 'card-1', rating: 3 } }] });
+    words(f); f.state.words[0].last_reviewed_at = at(5); f.state.words[0].interval = 30; // 다른 기기가 더 나중에 채점했다
+    await enqueueReview({ ...landed, remoteAttempted: true });
+    expect(await flushReviews(f.client, 'A', { persist: f.persist })).toEqual({ sent: 1, kept: 0, applied: 0 });
+    expect(f.state.events).toHaveLength(1);
+    expect(f.state.words[0]).toMatchObject({ interval: 30, last_reviewed_at: at(5) });
+  });
+
+  it("never sends account A's queued grades as account B", async () => {
+    const db = memoryDb([]), f = remote({ word: null }); words(f);
+    await enqueueReview(offlineGrade('card-1', 0, 4)); await enqueueReview(offlineGrade('card-2', 1, 5));
+    // B로 로그인한 채 보낼함을 비우면 B 몫(없음)만 본다.
+    expect(await flushReviews(f.client, 'B', { persist: f.persist })).toEqual({ sent: 0, kept: 0, applied: 0 });
+    // A로 시작했지만 도중에 B로 바뀌면(계정 경계 관문) 아무것도 보내지 않고 A 몫을 남긴다.
+    let account = 'A';
+    f.client.rpc = async () => { account = 'B'; return { data: { version: 1, actorId: 'A', enrolled: false }, error: null }; };
+    await expect(flushReviews(f.client, 'A', { persist: f.persist, getAccountId: () => account })).rejects.toThrow('account_changed');
+    expect(f.state.inserts).toHaveLength(0);
+    expect(db.rows.filter(row => row.userId === 'A')).toHaveLength(2);
+  });
+});

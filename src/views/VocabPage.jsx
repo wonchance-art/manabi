@@ -12,6 +12,7 @@ import { useTTS } from '../lib/useTTS';
 import { useLearningCapabilities } from '../lib/useLearningCapabilities';
 import { useFsrsReview, fsrsIntervalLabel, FSRS_LOADING_CAP_MS } from '../lib/useFsrsReview';
 import { useLearningAdmission } from '../lib/useLearningAdmission';
+import { isAdmissionOfflineError } from '../lib/learningAdmission';
 import { isSettledFsrsActivity } from '../lib/learningActivity';
 import FsrsReviewSession from '../components/vocab/FsrsReviewSession';
 import { callGemini } from '../lib/gemini';
@@ -289,6 +290,15 @@ function VocabWorkspace({ reviewScope }) {
     window.addEventListener('manabi:outbox-flushed', recount);
     return () => { alive = false; window.removeEventListener('manabi:outbox-flushed', recount); };
   }, [user?.id, reviewIdx]);
+  // 보낼함이 서버에 닿았다(Layout 동기화 — 끊긴 채 이어 한 복습 등, F9) — 학습 목록을 서버 정본으로 한 번 다시 읽는다. 연결이 돌아온 순간의
+  // 다시 읽기는 보내기보다 먼저 끝날 수 있어, 그대로 두면 보낸 채점이 목록에 늦게 비친다. 세션 중이면 복습방 전용 조회는 세션 끝으로 미룬다.
+  useEffect(() => {
+    if (!user?.id) return undefined;
+    const actorId = user.id;
+    const reread = () => { invalidateVocabularyLearning(queryClient, actorId, { deferReviewRoom: inSessionRef.current }); };
+    window.addEventListener('manabi:outbox-flushed', reread);
+    return () => window.removeEventListener('manabi:outbox-flushed', reread);
+  }, [user?.id, queryClient]);
   const [typingAnswer, setTypingAnswer] = useState('');
   const [contextSelected, setContextSelected] = useState(null);
   const exampleCacheRef = useRef(new Map());
@@ -391,7 +401,10 @@ function VocabWorkspace({ reviewScope }) {
   // 한 번씩 더 나갔다(응답 순서에 따라 — 능력 RPC 중복 조사 2026-10-17 KST). 다만 FSRS 첫 읽기가 실패해 있으면 예전처럼
   // 그 김에 다시 읽는다(진행 중이면 refresh가 같은 약속을 돌려준다). 계정이 바뀌면 처음부터 센다.
   const quotaOwner = useRef(null);
-  const admission = useLearningAdmission({ accountId: user?.id, onQuota: quota => {
+  // 이 기기의 입장 응답(source 'admit')이 바꾼 한도는 그 응답이 실어 온 한도를 FSRS 줄에 바로 넣는다(F5① — 새 표현 입장마다
+  // 뒤따르던 GET /api/learning/fsrs 생략). 예전 일정 카드 입장은 FSRS 카드를 바꾸지 않는다. 날 · 정책 판 · 활성이 바뀌었으면
+  // (adoptAdmission이 false) 지금처럼 다시 읽는다. 읽기 · 설정 응답이 바꾼 한도도 지금처럼 다시 읽는다(다른 기기 활동일 수 있다).
+  const admission = useLearningAdmission({ accountId: user?.id, onQuota: (quota, meta) => {
     const signature = JSON.stringify([quota.learningDay, quota.policyRevision, quota.used, quota.active, quota.fsrsEnabled]);
     if (quotaOwner.current !== quota.actorId) {
       quotaOwner.current = quota.actorId; quotaSignature.current = signature;
@@ -400,6 +413,7 @@ function VocabWorkspace({ reviewScope }) {
     }
     if (signature !== quotaSignature.current) {
       quotaSignature.current = signature;
+      if (meta?.source === 'admit' && fsrsControllerRef.current?.adoptAdmission?.(quota)) return;
       fsrsControllerRef.current?.refresh();
     }
   } });
@@ -963,6 +977,9 @@ function VocabWorkspace({ reviewScope }) {
     setContextSelected(null);
     setTypingAnswer('');
     setReviewFinished(false);
+    // 되돌린 일정을 목록 캐시에도 바로 되돌린다(F9) — 끊긴 동안엔 다시 읽기가 연결될 때까지 멈춰, 다시 채점이 채점 뒤 값(낙관 반영)을
+    // 바탕으로 계산됐다. 연결돼 있으면 아래 다시 읽기가 서버 정본으로 확인한다.
+    patchVocabularyLearningRow(queryClient, actorId, last.wordId, { ...last.prev, last_reviewed_at: last.prev.last_reviewed_at ?? null });
     invalidateVocabularyLearning(queryClient, user?.id);
     toast(`되돌렸어요 — 「${last.word}」 다시 채점`, 'info');
   };
@@ -1466,7 +1483,7 @@ function VocabWorkspace({ reviewScope }) {
       {/* 네트워크가 죽어 캐시 스냅샷으로 살아난 화면임을 알린다(v2-N R1) */}
       {isOffline && <OfflineNotice what="단어장" />}
       {/* 기기 사본(끊김)일 때는 아래 상태 한 장이 복습 사정을 말한다 — 같은 끊김을 「준비하지 못했어요」로 또 쓰지 않는다(P2). */}
-      {admission.error && tab !== 'review' && !isOffline && <div role="alert" className="card">
+      {admission.error && !isAdmissionOfflineError(admission.error) && tab !== 'review' && !isOffline && <div role="alert" className="card">
         <p>{REVIEW_PREP_FAILED}</p>
         <Button variant="ghost" onClick={() => admission.controller.retryConfiguration().catch(() => {})}>다시 시도</Button>
       </div>}
