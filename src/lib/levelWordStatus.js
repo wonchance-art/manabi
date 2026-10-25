@@ -5,11 +5,11 @@
 // 상태 칸(문서 「단어 설명 형식」): ☆ 담지 않음 · 오늘(오늘 복습) · 복습(복습 중) · 졸업(졸업한 단어).
 //   졸업 = 다음 복습까지 90일 이상 + 기존 「아는 단어」 표시(복습 제외 포함). 졸업한 단어도 365일 안에 돌아온다(간격 상한).
 //   두 글자 이내 · 같은 폭 칸. 화면 읽기에는 온전한 말(aria).
-import { calculateVocabFSRS } from './fsrs.js';
+import { calculateVocabFSRS, vocabStepPhase } from './fsrs.js';
 import { currentIndexedProjection, findIndexedVocabulary } from './vocabularyDueIndex.js';
 import { projectVocabularyLearning } from './vocabularyLearningRead.js';
 import { SAVE_GRADES, gradeToInitialStats } from './vocabIO.js';
-import { learningDay, previewFsrsRatings, schedulerTime } from './fsrsScheduler.js';
+import { learningDay, learningDaySpan, previewFsrsRatings, schedulerTime } from './fsrsScheduler.js';
 
 export const GRAD_DAYS = 90;
 const DAY = 86400000;
@@ -62,6 +62,18 @@ export function levelRowProjection(index, key, language = 'Chinese', at = Date.n
   return { row, projection };
 }
 
+/**
+ * 분 단위 학습 · 재학습 단계에 있는가(다시 1분 · 어려움 6분 · 알맞음 10분 뒤의 카드) — 단어장 세션이 이 카드를
+ * 줄 맨 앞에 세운다(Anki도 지금 차례가 된 학습 단계 카드를 먼저 낸다). 옛 일정 행은 fsrs.js vocabStepPhase로 읽는다.
+ */
+export function inLearningStep({ projection, row } = {}) {
+  if (!projection) return false;
+  if (projection.source === 'fsrs-v1') return projection.memory.state === 'Learning' || projection.memory.state === 'Relearning';
+  if (!row) return false;
+  const state = vocabStepPhase(row).state;
+  return state === 'Learning' || state === 'Relearning';
+}
+
 /** 한 번이라도 채점했는가(진행바 % — 복습 · 졸업 포함). 첫 채점과 함께 담은 단어도 센다(기억 값이 있다). */
 export function levelWordGraded({ projection, known = false } = {}) {
   if (known) return true;
@@ -110,9 +122,22 @@ export function intervalAmount(ms) {
 }
 export function intervalLabel(ms) {
   if (!Number.isFinite(ms)) return '';
-  const a = intervalAmount(ms);
-  return a ? `${a.n}${a.unit}` : '오늘';
+  return amountLabel(intervalAmount(ms));
 }
+const amountLabel = (a) => (a ? `${a.n}${a.unit}` : '오늘');
+/**
+ * 다음 차례까지 — 날 단위 기한(학습일 시작 시각, 2026-10-25 KST)은 남은 시간이 아니라 학습일 수로 센다(Anki 버튼과 같다:
+ * 23:00에 누른 「1일」은 5시간 뒤 04:00에 열려도 1일). 분 단위 단계 · 그 전의 24시간 기한은 남은 시간 그대로.
+ */
+export function dueAmount(due, at = Date.now()) {
+  const next = schedulerTime(due), now = schedulerTime(at);
+  const days = learningDaySpan(next, now);
+  return days ? { n: days, unit: '일' } : intervalAmount(next - now);
+}
+const previewOf = (due, now) => {
+  const amount = dueAmount(due, now);
+  return { label: amountLabel(amount), ms: schedulerTime(due) - now, amount };
+};
 
 /** 옛 일정 단어 행 하나의 네 칸 간격 — 단어 페이지와 뷰어 인라인 복습이 같은 계산(calculateVocabFSRS)을 쓴다. */
 export function legacyGradePreviews(row, at = Date.now()) {
@@ -122,8 +147,7 @@ export function legacyGradePreviews(row, at = Date.now()) {
   for (const g of SAVE_GRADES) {
     const next = calculateVocabFSRS(g.grade, { interval: row.interval ?? 0, ease_factor: row.ease_factor ?? 0,
       repetitions: row.repetitions ?? 0, next_review_at: row.next_review_at, last_reviewed_at: row.last_reviewed_at, created_at: row.created_at }, now);
-    const ms = schedulerTime(next.next_review_at) - now;
-    out[g.grade] = { label: intervalLabel(ms), ms };
+    out[g.grade] = previewOf(next.next_review_at, now);
   }
   return out;
 }
@@ -133,15 +157,14 @@ export function legacyGradePreviews(row, at = Date.now()) {
  *   담지 않은 단어 = 담으면서 첫 채점(gradeToInitialStats — 뷰어 저장 등급과 같다 · 1분 · 6분 · 10분 · 8일)
  *   옛 일정 카드 = calculateVocabFSRS(뷰어 인라인 복습과 같다 · 학습 단계 anki-v2)
  *   FSRS 카드 = previewFsrsRatings(복습실과 같다 · 카드의 학습 단계 정책) — 복습 차례가 아니면 null(채점할 수 없다).
- * 반환: { 1: { label, ms }, … } 또는 null.
+ * 반환: { 1: { label, ms, amount }, … } 또는 null — amount = dueAmount(날 단위 기한은 학습일 수).
  */
 export function gradePreviews({ projection, row, at = Date.now() } = {}) {
   const now = schedulerTime(at);
   const out = {};
   if (!projection || !row) {
     for (const g of SAVE_GRADES) {
-      const ms = schedulerTime(gradeToInitialStats(g.grade, () => new Date(now).toISOString()).next_review_at) - now;
-      out[g.grade] = { label: intervalLabel(ms), ms };
+      out[g.grade] = previewOf(gradeToInitialStats(g.grade, () => new Date(now).toISOString()).next_review_at, now);
     }
     return out;
   }
@@ -150,8 +173,7 @@ export function gradePreviews({ projection, row, at = Date.now() } = {}) {
     try {
       const previews = previewFsrsRatings(fsrsCardOf(projection), new Date(now).toISOString());
       for (const g of SAVE_GRADES) {
-        const ms = schedulerTime(previews[g.grade].card.due) - now;
-        out[g.grade] = { label: intervalLabel(ms), ms };
+        out[g.grade] = previewOf(previews[g.grade].card.due, now);
       }
       return out;
     } catch { return null; }

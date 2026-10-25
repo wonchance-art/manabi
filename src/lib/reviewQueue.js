@@ -4,11 +4,11 @@
 // - 두 엔진(FSRS · 예전 일정)을 한 줄로 만든다. 채점은 카드마다 원래 엔진으로 저장한다(화면의 몫).
 // - 순서: 기한 지난 복습은 지금 기억 확률이 낮은 순(두 엔진 모두 snapshot 기억 모델 — forecast.js와 같은 방식).
 //   새 일정의 학습 · 재학습 단계 카드(분 단위 단계가 끝난 것)는 맨 앞 — 짧은 단계가 밀리지 않게.
-// - 새 표현은 복습 3장마다 1장 끼운다. 같은 출처 단위(교재 과 · 자료 · 덱)의 새 표현끼리는 4장 이상 띄운다.
+// - 새 표현은 복습 사이에 고르게 편다(Anki 「복습과 섞기」 — intersperseNew, 오너 「Anki와 동일하게」 2026-10-25 KST.
+//   그 전은 복습 3장마다 1장). 학습 단계 카드는 섞지 않고 맨 앞. 같은 출처 단위(교재 과 · 자료 · 덱)의 새 표현끼리는 4장 이상 띄운다.
 // - 새 표현의 첫 등장은 채점 없는 「처음 보는 표현」 카드 → 3장 뒤 채점 카드(FSRS = 첫 질문 · 학습 단계,
 //   예전 일정 = 세션 내 재질문 — 줄 메타데이터만, 일정 저장 없음). 세션 길이 · 진행 표시는 서로 다른 카드 수다.
 
-export const INTERLEAVE_EVERY = 3;
 export const SOURCE_SPACING = 4;
 export const REASK_AFTER = 3;
 export const SESSION_LENGTHS = Object.freeze([20, 50]);
@@ -24,6 +24,26 @@ export const RESUME_MAX_AGE_MS = 24 * 3600 * 1000;
 const byNumber = (a, b) => (a === b ? 0 : a < b ? -1 : 1);
 
 /**
+ * 새 항목을 복습 사이에 고르게 편다 — Anki 「복습과 섞기」(rslib scheduler/queue/builder/intersperser.rs)와 같은 비율
+ * (복습 수 + 1) / (새 수 + 1). 복습 10 · 새 5 → R N R R N R R N R R N R R N R. Anki는 소수(f32)로 비교하지만
+ * 여기는 같은 식을 정수로 곱해 비교한다(경계에서 반올림 차이가 없다).
+ * pick(pending, out) = 이번 새 자리에 낼 항목의 pending 안 위치. -1이면 복습을 한 장 더 내고(남은 복습이 없으면 맨 앞), 다음 자리에서 다시 묻는다.
+ */
+export function intersperseNew(reviews = [], fresh = [], pick = () => 0) {
+  const R = reviews.length, N = fresh.length, pending = [...fresh], out = [];
+  let r = 0, n = 0;
+  while (r < R || pending.length) {
+    const reviewsLeft = r < R;
+    if (pending.length && (!reviewsLeft || (n + 1) * (R + 1) < (r + 1) * (N + 1))) {
+      const at = pick(pending, out);
+      if (at >= 0 || !reviewsLeft) { out.push(pending.splice(Math.max(0, at), 1)[0]); n++; continue; }
+    }
+    out.push(reviews[r++]);
+  }
+  return out;
+}
+
+/**
  * 한 줄로 합치기. reviews · fresh 항목 = { id, engine:'fsrs'|'legacy', retrievability?, dueAt?, learning?,
  * sourceKey?, createdAt?, introduced? }. 반환 = [{ id, engine, isNew, introduced }] — 줄 순서 그대로.
  */
@@ -34,28 +54,16 @@ export function orderReviewQueue({ reviews = [], fresh = [] } = {}) {
   // 새 표현: 이미 시작한 것(오늘 입장권 · 첫 질문을 받은 것)이 먼저, 그다음 담은 순서.
   const pending = [...fresh].sort((a, b) => (b.introduced ? 1 : 0) - (a.introduced ? 1 : 0)
     || byNumber(a.createdAt ?? 0, b.createdAt ?? 0) || String(a.id).localeCompare(String(b.id)));
-  const out = [], lastAt = new Map();
-  let reviewIndex = 0, sinceNew = 0;
-  const spaced = item => !item.sourceKey || !lastAt.has(item.sourceKey) || out.length - lastAt.get(item.sourceKey) >= SOURCE_SPACING;
-  const pushNew = item => {
-    if (item.sourceKey) lastAt.set(item.sourceKey, out.length);
-    out.push({ id: item.id, engine: item.engine, isNew: true, introduced: !!item.introduced });
-    sinceNew = 0;
-  };
-  while (reviewIndex < sortedReviews.length || pending.length) {
-    const reviewsLeft = reviewIndex < sortedReviews.length;
-    const wantNew = pending.length && (!reviewsLeft || sinceNew >= INTERLEAVE_EVERY);
-    if (wantNew) {
-      const pick = pending.findIndex(spaced);
-      // 띄우기를 지킬 새 표현이 없으면 복습을 한 장 더 낸다. 복습도 없으면 순서대로 낸다(남은 것이 같은 출처뿐일 때).
-      if (pick >= 0) { pushNew(pending.splice(pick, 1)[0]); continue; }
-      if (!reviewsLeft) { pushNew(pending.shift()); continue; }
-    }
-    const item = sortedReviews[reviewIndex++];
-    out.push({ id: item.id, engine: item.engine, isNew: false, introduced: true });
-    sinceNew++;
-  }
-  return out;
+  // 학습 단계 카드는 맨 앞(Anki도 지금 차례인 학습 단계 카드를 먼저 낸다), 나머지 복습 사이에 새 표현을 편다.
+  const learning = sortedReviews.filter(item => item.learning), rest = sortedReviews.filter(item => !item.learning);
+  const isFresh = new Set(pending);
+  // 띄우기를 지킬 새 표현이 없으면 복습을 한 장 더 낸다. 복습도 없으면 순서대로 낸다(남은 것이 같은 출처뿐일 때).
+  const spaced = out => item => !item.sourceKey ||
+    !out.slice(-(SOURCE_SPACING - 1)).some(prev => isFresh.has(prev) && prev.sourceKey === item.sourceKey);
+  const mixed = intersperseNew(rest, pending, (left, out) => left.findIndex(spaced(out)));
+  return [...learning, ...mixed].map(item => isFresh.has(item)
+    ? { id: item.id, engine: item.engine, isNew: true, introduced: !!item.introduced }
+    : { id: item.id, engine: item.engine, isNew: false, introduced: true });
 }
 
 /** 세션 길이 칩 = 서로 다른 카드 수(새 표현 포함, 학습 단계 · 재질문 제외). limit이 null이면 전부. 줄 앞에서 자른다. */

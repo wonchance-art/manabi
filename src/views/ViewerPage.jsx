@@ -69,7 +69,7 @@ import { insertConfirmedVocabulary, preservePendingVocabularyReviews } from '../
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage, failureMessage } from '../lib/errorMessage';
 import { SAVE_GRADES, VOCAB_UPSERT, buildVocabRow, cardSaveReading } from '../lib/vocabIO';
-import { intervalAmount, legacyGradePreviews, levelRowProjection, levelWordStatus } from '../lib/levelWordStatus';
+import { legacyGradePreviews, levelRowProjection, levelWordStatus } from '../lib/levelWordStatus';
 import { useVocabularyExclusions } from '../lib/useVocabularyExclusions';
 import { exclusionWord, findVocabularyExclusion } from '../lib/vocabularyExclusion';
 import { callGemini } from '../lib/gemini';
@@ -3766,8 +3766,8 @@ export default function ViewerPage() {
         // 라벨·순서·클래스 = SAVE_GRADES(복습 화면 ScoreSection과 동일 계약). 키 1~4·⌘Z는 카드 리스너.
         // 보조 글 = 이 단어의 다음 간격(학습 단계 anki-v2 — 단어 페이지 네 칸과 같은 계산 legacyGradePreviews, 2026-10-19 KST).
         const gaps = legacyGradePreviews(findSavedVocab(savedWords, selectedToken, materialLang));
-        const gapText = (ms) => {
-          const a = intervalAmount(ms);
+        const gapText = (gap) => {
+          const a = gap.amount; // 날 단위 기한은 학습일 수(levelWordStatus dueAmount)
           return !a ? vt('오늘') : a.unit === '분' ? vt('{n}분 뒤', a) : a.unit === '시간' ? vt('{n}시간 뒤', a) : vt('{n}일 뒤', a);
         };
         return (
@@ -3785,7 +3785,7 @@ export default function ViewerPage() {
               >
                 <span className="save-grade__key" aria-hidden="true">{g.key}</span>
                 {vt(g.label)}
-                {gaps?.[g.grade] && <span className="save-grade__sub">{' '}{gapText(gaps[g.grade].ms)}</span>}
+                {gaps?.[g.grade] && <span className="save-grade__sub">{' '}{gapText(gaps[g.grade])}</span>}
               </button>
             ))}
           </div>

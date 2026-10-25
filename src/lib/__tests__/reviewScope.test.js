@@ -261,7 +261,7 @@ describe('R1-B-1 줄 규칙 — countReviewScope가 줄과 개수를 함께 낸�
   const zh = { lang: 'Chinese', level: null, source: null, state: 'due' };
   const reviewedFsrs = (daysAgo, rating = 3) => scheduleFsrsReview(introduceFsrsCard(NOW - daysAgo * DAY), rating, NOW - daysAgo * DAY + 60_000).card;
 
-  it('두 엔진이 한 줄 — 기억 확률이 낮은 순, 새 표현은 복습 3장마다, 엔진마다 원래 저장 경로(engine 표시)', () => {
+  it('두 엔진이 한 줄 — 기억 확률이 낮은 순, 새 표현은 복습 사이에 고르게(Anki 비율), 엔진마다 원래 저장 경로(engine 표시)', () => {
     const rows = [
       legacyRow('L1', { interval: 2, last_reviewed_at: iso(NOW - 40 * DAY) }),   // 아주 흐림
       legacyRow('L2', { interval: 50, last_reviewed_at: iso(NOW - 3 * DAY) }),   // 선명
@@ -274,8 +274,9 @@ describe('R1-B-1 줄 규칙 — countReviewScope가 줄과 개수를 함께 낸�
     const items = count.queue.items;
     expect(count.total).toBe(items.length);
     expect(count).toMatchObject({ due: 4, newAllowed: 2, engine: 'mixed' });
-    expect(items.slice(0, 3).every(item => !item.isNew)).toBe(true);
-    expect(items[3]).toMatchObject({ id: 'N1', engine: 'legacy', isNew: true, introduced: false });
+    // 학습 단계 F1이 맨 앞, 남은 복습 3 · 새 2를 Anki 비율로 → R N R N R.
+    expect(items.map(item => item.isNew)).toEqual([false, false, true, false, true, false]);
+    expect(items[2]).toMatchObject({ id: 'N1', engine: 'legacy', isNew: true, introduced: false });
     // F1은 첫 답 「알맞음」으로 학습 단계(10분)에 남은 카드 — 짧은 단계가 밀리지 않게 맨 앞, 그다음 기억 확률이 낮은 순.
     expect(items[0]).toMatchObject({ id: 'F1', engine: 'fsrs' });
     expect(items[1].id).toBe('L1');

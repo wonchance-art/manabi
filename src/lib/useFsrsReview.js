@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { createFsrsLearningClient } from './fsrsLearningClient';
-import { previewFsrsRatings, validateFsrsCard } from './fsrsScheduler';
+import { learningDaySpan, previewFsrsRatings, validateFsrsCard } from './fsrsScheduler';
 import { fsrsQueueState } from './fsrsReviewSession';
 import { normalizeFsrsSaveRequest } from './fsrsOperationOutbox';
 import { normalizeAdmissionStatus } from './learningAdmission';
@@ -23,7 +23,12 @@ export function isNewFsrsManualInsert(row, accountId) {
     !row.is_excluded && !row.is_known;
 }
 
+/** 다음 차례까지 글자 — 날 단위 기한(학습일 시작 시각)은 학습일 수(23:00에 누른 1일 → 「1d」, Anki 버튼과 같다), 그 밖은 남은 시간. */
 export function fsrsIntervalLabel(due, at) {
+  try {
+    const days = learningDaySpan(due, at);
+    if (days) return `${days}d`;
+  } catch { /* 읽을 수 없는 시각은 아래에서 빈 글자 */ }
   const seconds = Math.max(0, Math.round((Date.parse(due) - Date.parse(at)) / 1000));
   if (!Number.isFinite(seconds)) return '';
   if (seconds < 60) return `${seconds}s`;

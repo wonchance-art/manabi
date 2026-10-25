@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { fsrs, State } from 'ts-fsrs';
-import { FSRS_POLICY, introduceFsrsCard, learningDay, previewFsrsRatings, scheduleFsrsReview, validateFsrsCard } from '../fsrsScheduler.js';
+import { FSRS_POLICY, introduceFsrsCard, learningDay, learningDayStart, previewFsrsRatings, scheduleFsrsReview, validateFsrsCard } from '../fsrsScheduler.js';
 
+const DAY = 86400000;
 const at = '2026-10-03T09:00:00.000Z';
 const plus = (time, seconds) => new Date(Date.parse(time) + seconds * 1000).toISOString();
 const delay = (result, time) => (Date.parse(result.card.due) - Date.parse(time)) / 1000;
@@ -77,17 +78,25 @@ describe('full-state FSRS with explicit Anki seconds policy', () => {
 
   it('has full memory and long-due parity with pinned native engine on matching calendar days', () => {
     const card = grade(grade(introduced(), 3), 3);
+    // 날 경계 기한(2026-10-25 KST)은 마지막 채점보다 하루가 안 남을 수 있다 — 엔진은 24시간 단위 경과일을 쓰므로
+    // 마지막 채점과 같은 시각의 N일 뒤(학습일 차도 N)에 맞춰 대조한다. 기한은 그 학습일이 시작하는 시각이다.
+    const at = new Date(Date.parse(card.lastReview) + card.scheduledDays * DAY).toISOString();
+    expect(Date.parse(at)).toBeGreaterThanOrEqual(Date.parse(card.due));
     const native = fsrs({ enable_fuzz: false, request_retention: 0.9 }).repeat({
       due: new Date(card.due), stability: card.stability, difficulty: card.difficulty,
       elapsed_days: card.elapsedDays, scheduled_days: card.scheduledDays,
       reps: card.reps, lapses: card.lapses, state: State.Review, learning_steps: card.step,
       last_review: new Date(card.lastReview),
-    }, new Date(card.due));
-    const next = previewFsrsRatings(card, card.due);
+    }, new Date(at));
+    const next = previewFsrsRatings(card, at);
     for (const rating of [1, 2, 3, 4]) {
       expect(next[rating].card.stability).toBe(native[rating].card.stability);
       expect(next[rating].card.difficulty).toBe(native[rating].card.difficulty);
-      expect(next[rating].card.due).toBe(native[rating].card.due.toISOString());
+      const due = Date.parse(next[rating].card.due);
+      if (next[rating].card.state === 'Review') {
+        expect(learningDay(due)).toBe(learningDay(native[rating].card.due));
+        expect(due).toBe(learningDayStart(learningDay(due)));
+      } else expect(next[rating].card.due).toBe(native[rating].card.due.toISOString());
       expect(next[rating].card.reps).toBe(native[rating].card.reps);
       expect(next[rating].card.lapses).toBe(native[rating].card.lapses);
     }

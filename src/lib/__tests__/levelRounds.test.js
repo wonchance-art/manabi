@@ -13,11 +13,13 @@ const KST = (s) => Date.parse(`${s}+09:00`);
 
 describe('같은 날 규칙(sameDay)', () => {
   const answers = new Map([['爸爸|word', { correct: false, at: KST('2026-10-19T08:00:00') }], ['妈妈|word', { correct: true, at: KST('2026-10-19T08:00:00') }]]);
-  it('같은 KST 날 다른 보기에서 답한 단어 = sameDay, 같은 보기 · 다른 단어 · 어제는 아니다', () => {
+  it('같은 학습일 다른 보기에서 답한 단어 = sameDay, 같은 보기 · 다른 단어 · 어제는 아니다', () => {
     expect(isSameDayAnswer(answers, '爸爸', 'sentence', KST('2026-10-19T23:59:00'))).toBe(true);
     expect(isSameDayAnswer(answers, '爸爸', 'word', KST('2026-10-19T09:00:00'))).toBe(false);
     expect(isSameDayAnswer(answers, '哥哥', 'sentence', KST('2026-10-19T09:00:00'))).toBe(false);
-    expect(isSameDayAnswer(answers, '爸爸', 'sentence', KST('2026-10-20T00:00:00'))).toBe(false); // 자정(KST)을 넘으면 다른 날
+    // 하루 경계는 복습 기한 · 새 단어 몫과 같은 04:00 KST(2026-10-25 KST, 그 전은 자정) — 자정을 넘어도 04시 전이면 같은 날.
+    expect(isSameDayAnswer(answers, '爸爸', 'sentence', KST('2026-10-20T03:59:00'))).toBe(true);
+    expect(isSameDayAnswer(answers, '爸爸', 'sentence', KST('2026-10-20T04:00:00'))).toBe(false);
   });
   it('날짜 경계는 KST — UTC 자정이 아니다', () => {
     const late = new Map([['爸爸|word', { correct: false, at: KST('2026-10-19T08:30:00') }]]); // UTC 10-18 23:30

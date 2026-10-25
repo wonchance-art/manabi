@@ -7,6 +7,7 @@
  */
 
 import { isVocabularyLearningProjection } from './vocabularyLearningRead.js';
+import { learningDaySpan } from './fsrsScheduler.js';
 
 /** 아는 단어 기준 — 읽기용 안정도가 이 일수 이상이면 '아는 단어'로 본다. */
 export const KNOWN_WORD_MIN_INTERVAL = 7;
@@ -34,11 +35,19 @@ const stamp = value => (value == null ? NaN : typeof value === 'number' ? value 
 export function cardIntervalDays(row) {
   if (isVocabularyLearningProjection(row)) {
     if (row.source === 'fsrs-v1') return row.memory.state === 'Review' ? row.memory.scheduledDays ?? null : 0;
-    const gap = stamp(row.memory.due) - stamp(row.memory.lastReview);
-    return Number.isFinite(gap) ? Math.max(0, Math.floor(gap / DAY_MS)) : null;
+    return legacyGapDays(stamp(row.memory.due), stamp(row.memory.lastReview));
   }
-  const gap = stamp(row?.next_review_at) - stamp(row?.last_reviewed_at);
-  return Number.isFinite(gap) ? Math.max(0, Math.floor(gap / DAY_MS)) : null;
+  return legacyGapDays(stamp(row?.next_review_at), stamp(row?.last_reviewed_at));
+}
+// 날 경계 기한(학습일 시작 시각, 2026-10-25 KST)은 학습일 수로 센다 — 23:00에 1일로 답한 카드는 5시간 뒤가 기한이어도 간격 1일.
+function legacyGapDays(due, last) {
+  const gap = due - last;
+  if (!Number.isFinite(gap)) return null;
+  try {
+    const days = learningDaySpan(due, last);
+    if (days) return days;
+  } catch { /* 범위 밖 시각은 시간 차로 */ }
+  return Math.max(0, Math.floor(gap / DAY_MS));
 }
 
 const STAGE_LABELS = { new: '신규', learning: '학습', young: '익히는 중', mature: '익숙', relearning: '재학습' };

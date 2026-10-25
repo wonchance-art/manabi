@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculateFSRS } from '../fsrs';
+import { learningDay, learningDayStart } from '../fsrsScheduler';
 
 const FRESH = { interval: 0, ease_factor: 0, repetitions: 0, next_review_at: null };
 
@@ -90,10 +91,12 @@ describe('calculateFSRS (ts-fsrs adapter)', () => {
       expect(new Date(r.next_review_at).getTime()).toBeGreaterThan(Date.now());
     });
 
-    it('최소 1일 뒤', () => {
+    it('최소 1일 뒤 — 다음 학습일 이후가 시작하는 04:00 KST(날 경계, 2026-10-25 KST)', () => {
+      const before = Date.now();
       const r = calculateFSRS(1, FRESH);
-      const daysAway = (new Date(r.next_review_at).getTime() - Date.now()) / (24 * 3600 * 1000);
-      expect(daysAway).toBeGreaterThanOrEqual(0.9);
+      const due = Date.parse(r.next_review_at);
+      expect(learningDay(due) - learningDay(before)).toBeGreaterThanOrEqual(1);
+      expect(learningDayStart(learningDay(due))).toBe(due);
     });
   });
 
