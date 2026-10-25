@@ -83,7 +83,7 @@ describe('③ 두 번째 구현 금지 — 닫힘 전송 · 토큰 판정 · bes
     expect(read('src/lib/knownWords.js')).toMatch(/import \{ postgrestKeepalive, sessionTokenFor \} from '\.\/keepalive';/u);
     expect(sliceBetween(read('src/lib/knownWords.js'), 'export function sendKnownWordKeepalive(', '\n}\n')).toContain('postgrestKeepalive({');
     const page = read('src/views/StudySessionPage.jsx');
-    expect(page).toContain("import { sessionTokenFor } from '../lib/keepalive';");
+    expect(page).toContain("import { sessionTokenFor, keepaliveTokenUsable } from '../lib/keepalive';");
     expect(sliceBetween(page, 'function rememberGrammarToken(owner) {', '\n  }\n')).toContain('sessionTokenFor(owner)');
   });
 });

@@ -34,6 +34,17 @@ export function postgrestKeepalive({
   }
 }
 
+/**
+ * 닫힘 전송에 쓸 만한 토큰인가 — JWT exp가 아직 margin보다 넉넉히 남았는가(독립 리뷰 2026-10-25 KST). 미리 받아 둔 토큰이 그새 만료됐으면
+ * keepalive는 401로 조용히 사라진다 — 그때는 호출부가 보통 전송(supabase-js가 토큰을 새로 고친다)으로 돌린다. 읽을 수 없는 토큰도 false.
+ */
+export function keepaliveTokenUsable(token, { now = Date.now(), marginMs = 60000 } = {}) {
+  try {
+    const payload = JSON.parse(atob(String(token).split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return Number.isFinite(payload?.exp) && payload.exp * 1000 - now > marginMs;
+  } catch { return false; }
+}
+
 /** 지금 로그인한 세션이 그 계정일 때만 토큰을 준다 — 다른 계정의 토큰으로 이 계정의 쓰기를 보내지 않는다. */
 export async function sessionTokenFor(accountId) {
   if (!accountId) return null;

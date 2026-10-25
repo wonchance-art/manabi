@@ -97,7 +97,7 @@ describe('로그아웃 · 계정 바뀜 감지', () => {
     // 남은 묶음은 keepalive(세션 계정 토큰일 때만) — 토큰이 다른 계정 것이면 보통 전송(그것도 세션 계정 몫만, 로그인 감사 §5-2).
     const beacon = sliceBetween(session, 'function beaconPendingEvents(owner) {', '\n  }\n');
     expect(beacon).toContain('const events = batcherRef.current?.drain() || [];');
-    expect(beacon).toContain('sendReviewEventsOnHide(owner, events, { accessToken: held?.userId === owner ? held.token : null });');
+    expect(beacon).toContain('sendReviewEventsOnHide(owner, events, { accessToken: held?.userId === owner && keepaliveTokenUsable(held.token) ? held.token : null });');
     // 토큰은 묶음을 만들 때 미리 받는다(pagehide에서는 기다릴 수 없다).
     expect(sliceBetween(session, 'function getBatcher() {', '\n  }\n')).toContain('rememberGrammarToken(recorder);');
   });

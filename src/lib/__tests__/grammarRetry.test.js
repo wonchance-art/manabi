@@ -296,7 +296,7 @@ describe('세션 화면 배선', () => {
     // 로그인이 풀린 채 닫히면 보류분이 사라지는 한계는 주석으로 남긴다(문구 변경은 오너 목업 뒤 — 리뷰 N3)
     expect(hide).toContain('알려진 한계(리뷰 N3');
     const beacon = sliceBetween(page, 'function beaconPendingGrammar(owner) {', '\n  }\n');
-    expect(beacon).toContain('if (held?.userId !== owner) { retryPendingGrammar(); return; }');
+    expect(beacon).toContain('if (held?.userId !== owner || !keepaliveTokenUsable(held.token)) { retryPendingGrammar(); return; }'); // 만료 · 임박 토큰은 보통 재시도로
     expect(beacon).toContain('pendingGrammarRef.current.beacon(row => row.user_id === owner,');
     expect(beacon).toContain('sendGrammarGradeKeepalive(row, rating, { reviewedAt, accessToken: held.token })');
     const token = sliceBetween(page, 'function rememberGrammarToken(owner) {', '\n  }\n');
