@@ -1,7 +1,7 @@
 import MyPage from '@/views/MyPage';
 
 export const metadata = {
-  title: '프로필',
+  title: '내 정보',
 };
 
 export default function Page() {

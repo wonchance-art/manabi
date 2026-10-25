@@ -230,6 +230,17 @@ describe('배선 — 목표를 세운 사람에게만, 세울 곳은 한 군데'
     expect(home).not.toContain('목표 · D-Day');
   });
 
+  it('하루 목표(복습 · 담기)도 같은 창에서 고친다 — 내 정보에는 편집기가 없고 요약 줄 · 링크만(PROFILE-REDESIGN-001 D2)', () => {
+    const editor = sliceBetween(stats, 'function GoalEditor(', '\nfunction ExamPicker(');
+    expect(editor).toContain('<legend>하루 목표</legend>');
+    expect(editor).toMatch(/const base = \{ dday_date: nextDate \|\| null, dday_label: nextLabel \|\| null, \.\.\.daily \};/);
+    const mine = fs.readFileSync(path.join(process.cwd(), 'src/views/MyPage.jsx'), 'utf8');
+    expect(mine).not.toMatch(/goal_review|goal_words|type="range"/);
+    expect(mine).toContain('<ProfileRow label="목표" href="/progress?goal=edit"');
+    // 오늘 목표 칸도 같은 창으로 — 계정 화면이 아니다
+    expect(fs.readFileSync(path.join(process.cwd(), 'src/components/learn/LearnTiles.jsx'), 'utf8')).toContain('label="오늘 목표" href="/progress?goal=edit"');
+  });
+
   it('궤도는 순수 함수가 계산한다 — 화면이 날짜 산수를 다시 하지 않는다', () => {
     const hook = sliceBetween(tile, 'export function useGoalTrack(', '\n}');
     expect(hook).toContain('pace({');
