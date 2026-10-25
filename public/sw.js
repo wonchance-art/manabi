@@ -37,6 +37,13 @@ function viewerDocument(request, url) {
 
 const STATIC_EXTENSIONS = /\.(js|css|woff2?|ttf|otf|svg|png|jpg|ico|webp)$/;
 
+// 레벨 단어 묶음(LEVEL-LIST-RSC-001, 2026-10-26 KST) — 단어 화면 항목이 문서 · 조각 밖 정적 JSON(/api/level-words/{lang}/{level}?v=판)으로 옮겨 가,
+// 받아 둔 문서만으로는 끊긴 채 열면 「다시 시도」였다(전에는 문서에 항목이 들어 있어 그대로 열렸다). 이 주소만 /api/ 건너뛰기의 예외로
+// network-first · 성공한 같은 출처 응답만 남기고, 끊기면 남긴 것을 돌려준다. 열쇠는 질의 없는 경로 — 레벨마다 한 칸(배포 판 ?v=가 쌓이지 않는다).
+// 공개 묶음이다: 쿠키 · 세션으로 달라지지 않는 정적 응답(middleware matcher 밖, Set-Cookie 없음)이라 계정 경계 규칙과 겹치지 않는다.
+const LEVEL_WORDS_PATH = /^\/api\/level-words\/[a-z]+\/[a-z0-9]+$/;
+const levelWordsKey = (url) => `${url.origin}${url.pathname}`;
+
 // Next 앱 라우터의 화면 조각(RSC) 요청 — 화면 이동 · 미리 받기가 ?_rsc= 주소와 RSC: 1 머리로 보낸다.
 function isRscRequest(request, url) {
   return url.searchParams.has('_rsc') || request.headers?.get?.('RSC') === '1';
@@ -81,6 +88,25 @@ self.addEventListener('fetch', (event) => {
   // Admin documents (including archived textbooks and RSC responses) must always
   // reach the current authentication gate, never a previous account's offline cache.
   if (url.origin === self.location.origin && /^\/admin(?:\/|$)/.test(url.pathname)) return;
+  if (url.origin === self.location.origin && LEVEL_WORDS_PATH.test(url.pathname)) {
+    const key = levelWordsKey(url);
+    event.respondWith(
+      fetch(request)
+        .then(async (response) => {
+          if (isCacheableNavigationResponse(response)) {
+            const clone = response.clone();
+            try {
+              await caches.open(CACHE_NAME).then((cache) => cache.put(key, clone));
+            } catch {
+              // 저장 실패가 정상 응답을 가리지 않는다.
+            }
+          }
+          return response;
+        })
+        .catch(() => caches.match(key).then((cached) => cached || Response.error()))
+    );
+    return;
+  }
   if (url.pathname.startsWith('/api/')) return;
   if (url.hostname.includes('supabase')) return;
   if (url.hostname.includes('googleapis')) return;
