@@ -3,10 +3,11 @@ import { notFound } from 'next/navigation';
 import LatinWordPage from '@/views/LatinWordPage';
 import { latinSampleGroups } from '@/lib/latinLevelWords';
 import a1 from '@/content/english/vocab/a1';
+import notes from '@/content/english/wordNotes';
 
 const NAME = '영어';
-// 테마 순번 — 인사 · 가족 · 기초 동사 · 기초 형용사, 테마마다 앞 두 단어.
-const LEVELS = { A1: () => latinSampleGroups(a1, { themes: [0, 2, 4, 5], per: 2 }) };
+// 인사 · 가족 · 기초 동사 · 기초 형용사에서 두 단어씩 — 합성어(welcome) · 불규칙 동사(be · go) · 비교급(good · bad)이 한 번씩 보이게 고른다.
+const LEVELS = { A1: () => latinSampleGroups(a1, { lang: 'en', picks: [[0, ['hello', 'welcome']], [2, 2], [4, ['be', 'go']], [5, 2]], notes }) };
 
 export const dynamicParams = false;
 export function generateStaticParams() {

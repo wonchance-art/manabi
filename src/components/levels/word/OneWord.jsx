@@ -10,12 +10,14 @@ import { useWordLang } from './wordLang';
 export function OneWordCard({ entry: e, view, info, tiles, speak, tone, revealed, onReveal, onWord, openKey, turnKey }) {
   const L = useWordLang();
   const { hw, sub } = L.head(e);
+  // 표제어 — 판이 따로 그리면(영어 · 프랑스어: 폭 기준 크기 · 관사 매달기) 그것으로.
+  const word = L.Headword ? <L.Headword entry={e} size="one" tone={tone} /> : <span className="lw-one__hw" lang={L.hw} style={{ '--n': [...hw].length }}>{hw}</span>;
   const front = view === 'sentence' ? <p className="lw-one__solo" lang={L.hw}>{e.ex?.text || hw}</p>
       : view === 'meaning' ? <p className="lw-one__solo">{e.meaning}</p>
         : view === 'sound' && speak && !revealed ? <Listen speak={speak} text={e.word} label="단어 듣기" />
-          : <span className="lw-one__hw" lang={L.hw} style={{ '--n': [...hw].length }}>{hw}</span>;
+          : word;
   // 뒷면에서는 표제어가 늘 같은 자리(앞면이 단어였으면 그대로, 다른 보기였으면 단어로 바뀐다).
-  const top = revealed ? <span className="lw-one__hw" lang={L.hw} style={{ '--n': [...hw].length }}>{hw}</span> : front;
+  const top = revealed ? word : front;
   return <section className={`lw-one__card${turnKey ? ' is-turning' : ''}`} key={turnKey || e.key} aria-label={`${e.word} 카드`} tabIndex={-1}>
     <div className="lw-one__front">{top}</div>
     {!revealed && <button type="button" className="lw-one__reveal" aria-keyshortcuts="Space"
@@ -23,8 +25,9 @@ export function OneWordCard({ entry: e, view, info, tiles, speak, tone, revealed
     {revealed && <div className="lw-one__back">
       <div className="lw-one__meta"><Reading text={sub} word={hw} tone={tone} /><Listen speak={speak} text={e.word} /></div>
       {info.hard ? <div className="lw-one__chips"><span className="lw-chip">자주 틀린 단어 · {info.hard}번</span></div> : null}
-      <p className="lw-one__mean">{e.meaning}</p>
+      <p className="lw-one__mean">{e.meaning}{L.MeanTag && <L.MeanTag entry={e} tone={tone} />}</p>
       <CharTiles tiles={tiles} word={e.word} />
+      {L.Extras && <L.Extras entry={e} />}
       <Example ex={e.ex} word={e.word} speak={speak} onWord={onWord} openKey={openKey} tone={tone} />
     </div>}
   </section>;

@@ -24,7 +24,7 @@ import { preservePendingVocabularyReviews } from '@/lib/viewerVocabularyCache';
 import { LEVEL_LIST_LANGS, levelGroupsOf, levelKinds, LEVEL_KIND_LABEL } from '@/lib/levelList';
 import {
   HARD_LAPSES, dueTomorrowCount, gradePreviews, gradeToastText, dueAmount, inLearningStep, lapsesOf, laterDueText,
-  levelProgressPercent, levelRowProjection, levelWordGraded, levelWordStatus, newStartedToday, nextDueMs, todayAgainAt,
+  entryKeys, levelProgressPercent, levelRowProjection, levelWordGraded, levelWordStatus, newStartedToday, nextDueMs, todayAgainAt,
 } from '@/lib/levelWordStatus';
 import { DEFAULT_NEW_PER_DAY, loadNewPerDay } from '@/lib/vocabStudy';
 import {
@@ -197,11 +197,11 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
   const infoOf = useCallback((key) => {
     if (!ready) return { status: null, graded: false, projection: null, row: null };
     if (!userId) return { status: 'new', graded: false, projection: null, row: null };
-    const { row, projection } = lookup(key);
+    const { row, projection } = lookup(entryKeys(byKey.get(key)) ?? key);
     const isKnown = knownSet.has(normalizeKnownWord(key));
     const status = levelWordStatus({ projection, known: isKnown, at: clock });
     return { status, graded: levelWordGraded({ projection, known: isKnown }), projection, row, known: isKnown };
-  }, [ready, userId, lookup, knownSet, clock]);
+  }, [ready, userId, lookup, byKey, knownSet, clock]);
 
   const table = useMemo(() => new Map(allEntries.map((e) => [e.key, infoOf(e.key)])), [allEntries, infoOf]);
   const percent = useMemo(() => levelProgressPercent(allEntries.map((e) => e.key), (k) => table.get(k)?.graded), [allEntries, table]);

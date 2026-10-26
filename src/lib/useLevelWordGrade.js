@@ -14,7 +14,7 @@ import { prepareViewerSaveUndo, undoViewerSave } from './viewerSaveUndo';
 import { patchVocabWordsCache, useInlineReview } from './useInlineReview';
 import { revertInlineGrade } from './inlineGradeUndo';
 import { recordActivity } from './streak';
-import { gradeEngine, levelRowProjection } from './levelWordStatus';
+import { entryKeys, gradeEngine, levelRowProjection } from './levelWordStatus';
 import { disposeLevelFsrs, gradeLevelFsrs, undoLevelFsrs } from './levelFsrsGrade';
 
 const UNDO_MS = 8000;
@@ -70,13 +70,13 @@ export function useLevelWordGrade({ user, fetchProfile, language = 'Chinese', on
   const grade = useCallback(async (entry, rating) => {
     if (!userId) return { ok: false, reason: 'guest' };
     try {
-      let { row, projection } = lookup(entry.key);
+      let { row, projection } = lookup(entryKeys(entry));
       let engine = gradeEngine({ projection, row });
       if (engine === 'save') {
         const undo = await save(entry, rating);
         if (undo) return { ok: true, undo: { ...undo, expiresAt: Date.now() + UNDO_MS } };
         await queryClient.refetchQueries({ queryKey: vocabKey(userId), exact: true });
-        ({ row, projection } = lookup(entry.key));
+        ({ row, projection } = lookup(entryKeys(entry)));
         engine = gradeEngine({ projection, row });
         if (engine === 'save') throw new Error('단어장을 다시 읽지 못했어요.');
       }

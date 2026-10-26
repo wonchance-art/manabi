@@ -3,7 +3,8 @@
    움직임은 모두 0.3초 이하 · --ease-settle, 동작 줄이기면 없다(맨 아래 블록). 다크 모드 없음(셸이 늘 밝다). */
 .manabi-app{--lw-card:#fffdf9;--lw-chip:#ece8df;--lw-line:#e2ddd2;--lw-field:#ede9e0;--lw-tile:#efeae0;--lw-ex-rule:#d9c4c9;--lw-rose:#994a5a;
   --lw-today:#7e3b49;--lw-today-bg:#f7e9ec;--lw-today-line:#ebd3d9;--lw-grad-line:#cfe0d5;--lw-grad-bg:#e8f1eb;--lw-review:#3b3d36;--lw-ex-dot:#b9b4a8;--lw-ex-hit:#f3e4e7;--lw-row-cur:#fbf1f3;
-  --lw-tone-1:#c0392b;--lw-tone-2:#2e7d32;--lw-tone-3:#1565c0;--lw-tone-4:#6a3fb5;--lw-tone-0:#7a7a72;--lw-warnbg:#f6eedd}
+  --lw-tone-1:#c0392b;--lw-tone-2:#2e7d32;--lw-tone-3:#1565c0;--lw-tone-4:#6a3fb5;--lw-tone-0:#7a7a72;--lw-warnbg:#f6eedd;
+  --lw-g-f:var(--lw-today);--lw-g-f-bg:var(--lw-today-bg);--lw-g-f-art:#a8606f;--lw-g-m:var(--grade-easy);--lw-g-m-bg:var(--grade-easy-bg);--lw-g-m-art:#4f7aa3}
 /* 이 페이지는 'manabi. · 배움/복습/서재' 줄과 아래 탭 줄을 두지 않는다 — 앱 아이콘이 홈(문서 「상단바 한 줄」). 개인 노트 선례(study-notes.css). */
 .manabi-app:has(.lw-page)>.gnb,.manabi-app:has(.lw-page)>.mobile-nav{display:none}
 .manabi-app:has(.lw-page)>.app-layout{padding-top:0;padding-bottom:0}
@@ -229,6 +230,44 @@ button.lw-tile__glyph[aria-expanded=true]{background:color-mix(in srgb,var(--lw-
 /* 긴 표제어(おはようございます · 9글자)는 카드 폭에 맞춰 줄인다 — --n = 글자 수(fitty 대신 cqi 선례). */
 .lw-one__hw{font-size:min(52px,calc(94cqi / var(--n,1)));line-height:1.25;font-weight:500;white-space:nowrap}
 .lw-one__solo{font-size:20px;line-height:1.7;text-align:center}
+/* 영어 · 프랑스어 판(LatinParts — 목업 v2, 오너 2026-10-26 KST). 관사 붙은 표제어는 [관사 | 명사 | 빈 칸] — 명사가 카드 가운데(la famille 쏠림). */
+.lw-one__hw--art{justify-self:stretch;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:baseline}
+.lw-art{font-weight:400;color:var(--muted)}
+.lw-one__hw--art .lw-art{justify-self:end;padding-right:.24em;font-size:.58em}
+.lw-card__hw .lw-art{font-size:.8em}
+.lw-art[data-g=f]{color:var(--lw-g-f-art)}.lw-art[data-g=m]{color:var(--lw-g-m-art)}
+.lw-gchip,.lw-irr{flex:none;align-self:center;display:inline-block;font-size:12.5px;font-weight:700;line-height:1.4;border-radius:6px;padding:1px 7px;color:var(--muted);background:var(--lw-chip)}
+.lw-gchip[data-g=f]{color:var(--lw-g-f);background:var(--lw-g-f-bg)}.lw-gchip[data-g=m]{color:var(--lw-g-m);background:var(--lw-g-m-bg)}
+.lw-irr{color:var(--grade-hard);background:var(--grade-hard-bg)}
+.lw-one__mean .lw-gchip,.lw-one__mean .lw-irr{margin-left:8px;vertical-align:2px}
+.lw-card[data-view=word] .lw-card__head .lw-gchip{margin-left:auto} /* 단어 탭 접힌 줄 — 성 표는 줄 끝(목업 FrList) */
+.lw-aid-ex{margin:0 auto 0 -8px;font-size:13px;font-weight:700}
+.lw-box__lbl{font-size:12px;font-weight:700;color:var(--muted)}
+.lw-forms{margin:0;padding:10px 12px;list-style:none;display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:8px;background:var(--lw-tile);border-radius:12px;text-align:center}
+.lw-forms li{display:grid;gap:2px;min-width:0}
+.lw-forms b{font-size:18px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.lw-forms span{font-size:12px;color:var(--muted)}
+.lw-conj{background:var(--lw-tile);border-radius:12px;padding:0 12px 10px;display:grid;gap:4px}
+.lw-conj__head{display:flex;align-items:center;min-height:44px;width:100%;padding:0;border:0;background:none;font:inherit;color:var(--ink);cursor:pointer}
+.lw-conj__caret{margin-left:auto;display:flex;transition:transform .2s var(--ease-settle)}
+.lw-conj__head[aria-expanded=true] .lw-conj__caret{transform:rotate(180deg)}
+.lw-conj__grid{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,auto);grid-auto-flow:column;gap:6px 12px}
+.lw-conj__grid li{display:flex;gap:8px;align-items:baseline;min-width:0}
+.lw-conj__grid span{min-width:64px;font-size:13px;color:var(--muted)}
+.lw-conj__grid b{font-size:17px;font-weight:600}
+.lw-ety{background:var(--lw-tile);border-radius:12px;padding:10px 12px;display:grid;gap:8px}
+.lw-ety p{margin:0}
+.lw-ety__parts{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.lw-ety__parts li{display:flex;align-items:center;gap:10px}
+.lw-ety__pw{min-width:52px;box-sizing:border-box;padding:10px 6px;border:1px solid color-mix(in srgb,var(--lw-review) 22%,var(--lw-tile));border-radius:10px;background:var(--lw-card);text-align:center;font-size:20px;font-weight:500}
+.lw-ety__parts b{font-size:15px}
+.lw-ety__root{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.lw-ety__root i{font-size:18px;font-weight:600}
+.lw-ety__root span:last-child{font-size:13px;color:var(--muted)}
+.lw-ety__kin{display:flex;gap:6px;flex-wrap:wrap}
+.lw-ety__chip{display:inline-flex;align-items:baseline;gap:6px;border:1px solid var(--rule);background:var(--lw-card);border-radius:999px;padding:4px 11px;font-size:13.5px}
+.lw-ety__chip i{font-style:normal;font-size:11.5px;font-weight:700;color:var(--muted)}
+.lw-ety__note{font-size:14px;line-height:1.55;color:var(--lw-review)}
 .lw-one__reveal{align-self:center;margin:auto 0;min-height:48px;padding:0 22px;border:1px solid var(--rule);border-radius:999px;background:var(--sheet);cursor:pointer;font-size:14px;font-weight:400}
 .lw-one__key{color:var(--muted)}
 .lw-one__reveal:active{transform:scale(.985)}
@@ -405,7 +444,7 @@ button.lw-tile__glyph[aria-expanded=true]{background:color-mix(in srgb,var(--lw-
 @keyframes lwFade{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){
   .lw-top--search .lw-searchbox,.lw-rows.is-height-settling,.lw-bar i,.lw-status.is-popping,.lw-grade,.lw-two__btn,.lw-card,.lw-card__more,.lw-one__card.is-turning,
-  .lw-switch i,.lw-switch i::after,.lw-seg[data-thumb]::before,.lw-mini[data-thumb]::before,.lw-tabs__bar,.lw-card__more[data-closing],.lw-done__n,.lw-scrim.is-closing,.lw-pop.is-closing,.lw-sheet.is-closing,.lw-one__back,.lw-done,.lw-undo,.lw-pop,.lw-dp,.lw-dp.is-closing,.lw-scrim,.lw-sheet,.lw-prog,.lw-card.is-arrived,.lw-card.is-arrived .lw-time{animation:none;transition:none}
+  .lw-switch i,.lw-switch i::after,.lw-seg[data-thumb]::before,.lw-mini[data-thumb]::before,.lw-tabs__bar,.lw-card__more[data-closing],.lw-done__n,.lw-scrim.is-closing,.lw-pop.is-closing,.lw-sheet.is-closing,.lw-one__back,.lw-done,.lw-undo,.lw-pop,.lw-dp,.lw-dp.is-closing,.lw-scrim,.lw-sheet,.lw-prog,.lw-card.is-arrived,.lw-card.is-arrived .lw-time,.lw-conj__caret{animation:none;transition:none}
   .lw-grade:active:not(:disabled),.lw-two__btn:active:not(:disabled),.lw-card:active:not(:has(button:active)),.lw-one__reveal:active{transform:none}
 }
 /* 모드 전환(한 단어 ↔ 리스트) — View Transitions API(없는 브라우저는 바로 바뀜). 0.2초 겹침. */

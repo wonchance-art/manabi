@@ -3,10 +3,11 @@ import { notFound } from 'next/navigation';
 import LatinWordPage from '@/views/LatinWordPage';
 import { latinSampleGroups } from '@/lib/latinLevelWords';
 import a1 from '@/content/french/vocab/a1';
+import notes from '@/content/french/wordNotes';
 
 const NAME = '프랑스어';
 // 테마 순번 — 가족 · 일상 필수 동사 · 음식 · 기초 형용사, 테마마다 앞 두 단어.
-const LEVELS = { A1: () => latinSampleGroups(a1, { themes: [0, 1, 2, 5], per: 2 }) };
+const LEVELS = { A1: () => latinSampleGroups(a1, { lang: 'fr', picks: [[0, 2], [1, 2], [2, 2], [5, 2]], notes }) };
 
 export const dynamicParams = false;
 export function generateStaticParams() {
