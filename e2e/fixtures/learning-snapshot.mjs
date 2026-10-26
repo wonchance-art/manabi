@@ -33,11 +33,14 @@ export function inactiveFsrsStatus({ actorId, now = new Date().toISOString() }) 
     now, firstQuestionsToday: admission.used, admission, cards: [] };
 }
 
-export function legacyLearningSnapshot({ actorId, rows, known = [], exclusions = [], fields,
+// ids(view=learning&ids=… — 카드 몇 장 읽기, SNAPSHOT-CARDS-001): 그 id 행만(같은 판정 · 같은 순서). 경로의 쉼표 문자열 그대로 받아도 된다.
+export function legacyLearningSnapshot({ actorId, rows, known = [], exclusions = [], fields, ids,
   now = new Date().toISOString() }) {
   assert.ok(Array.isArray(rows));
   assert.ok(fields === null || fields === undefined || fields === 'summary', 'Unknown snapshot field selection');
-  const fullRows = rows.map(row => {
+  const wanted = ids === null || ids === undefined ? null : new Set(Array.isArray(ids) ? ids : String(ids).split(','));
+  assert.ok(!wanted || !fields, 'Card reads are full-field only');
+  const fullRows = rows.filter(row => !wanted || wanted.has(row.id)).map(row => {
     const userId = row.user_id === undefined ? actorId : row.user_id;
     assert.equal(userId, actorId, 'The synthetic snapshot must be actor scoped');
     assert.equal(typeof row.id, 'string');
@@ -82,7 +85,7 @@ export function inactiveLearningReply(request, { actorId, rows = [], snapshotSta
   const url = new URL(request.url()), method = request.method(), path = url.pathname;
   if (path === '/api/learning/vocabulary' && method === 'GET' && url.searchParams.get('view') === 'learning') {
     if (snapshotStatus !== 200) return { status: snapshotStatus, json: { error: 'fixture offline' } };
-    return { status: 200, json: legacyLearningSnapshot({ actorId, rows: typeof rows === 'function' ? rows() : rows, fields: url.searchParams.get('fields') }) };
+    return { status: 200, json: legacyLearningSnapshot({ actorId, rows: typeof rows === 'function' ? rows() : rows, fields: url.searchParams.get('fields'), ids: url.searchParams.get('ids') }) };
   }
   if (path === '/api/learning/fsrs') {
     assert.equal(method, 'GET', 'Inactive FSRS fixture must not receive a mutation');

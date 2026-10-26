@@ -4,7 +4,8 @@ import { UUID, sourceArchived, sourceHref } from '@/lib/learningSources';
 import { requireLearningCapability } from '@/lib/server/learningCapabilities';
 import { gradeToInitialStats } from '@/lib/vocabIO';
 import { fsrsServiceClient, fsrsError } from '@/lib/server/fsrsLearning';
-import { readVocabularyLearningSnapshot, readVocabularyLearningSnapshotLight, saveManualVocabulary } from '@/lib/server/fsrsVocabulary';
+import { readVocabularyLearningSnapshot, readVocabularyLearningSnapshotCards, readVocabularyLearningSnapshotLight, saveManualVocabulary,
+  VOCABULARY_CARDS_MAX } from '@/lib/server/fsrsVocabulary';
 import { VOCABULARY_LEARNING_SUMMARY_FIELDS } from '@/lib/vocabularyLearningRead';
 
 const vocabularyErrorReply = error => {
@@ -95,8 +96,15 @@ export async function GET(request) {
   try {
     const params = new URL(request.url).searchParams;
     if (params.has('view')) {
-      if (params.get('view') !== 'learning' || (params.has('fields') && params.get('fields') !== 'summary')
-          || params.size !== (params.has('fields') ? 2 : 1)) return reply({ ok: false, code: 'fsrs_invalid_request' }, 400);
+      if (params.get('view') !== 'learning' || (params.has('fields') && params.get('fields') !== 'summary') || (params.has('fields') && params.has('ids'))
+          || params.size !== (params.has('fields') || params.has('ids') ? 2 : 1)) return reply({ ok: false, code: 'fsrs_invalid_request' }, 400);
+      // 카드 몇 장(ids=소문자 UUID,… — 1~50개 · 중복 없음, SNAPSHOT-CARDS-001): 저장 · 채점 뒤 그 카드만 전체 snapshot과 같은 모양으로.
+      // 뷰어 · 단어장 글자 칸이 색인(['vocab-words'])을 전체로 다시 받지 않고 그 카드만 바꾼다(운영 2026-10-25 KST — 저장 1회 = 전체 snapshot 1회).
+      if (params.has('ids')) {
+        const ids = params.get('ids').split(',');
+        if (ids.length > VOCABULARY_CARDS_MAX || !ids.every(value => UUID.test(value) && value === value.toLowerCase())) return reply({ ok: false, code: 'fsrs_invalid_request' }, 400);
+        return reply(await readVocabularyLearningSnapshotCards({ serviceClient: fsrsServiceClient(), userId: auth.user.id, ids }));
+      }
       // 요약(fields=summary — 홈 · 현황 · 서재 맞춤도 · 프로필 · 읽기 완료)은 가벼운 읽기의 요약 모양으로 받는다(SNAPSHOT-LIGHT-001 —
       // 같은 판정 · 같은 행 순서, DB가 요약 칸만 만든다: 3,000단어 2.6 MB · 86 ms → 0.69 MB · 30 ms, PGlite). 되돌린 행에서 요약 칸만 보낸다(전에 전체 snapshot을 거르던 것과 같은 칸).
       if (params.get('fields') === 'summary') {

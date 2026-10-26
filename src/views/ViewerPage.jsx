@@ -65,7 +65,7 @@ import { useReanalyze } from '../lib/useReanalyze';
 import { useReanalyzeUI } from '../lib/useReanalyzeUI';
 import { useReadingCompletion } from '../lib/useReadingCompletion';
 import { useInlineReview, patchVocabWordsCache } from '../lib/useInlineReview';
-import { insertConfirmedVocabulary, preservePendingVocabularyReviews, VOCAB_WORDS_STALE_MS, vocabWordsFromLearningCache } from '../lib/viewerVocabularyCache';
+import { insertConfirmedVocabulary, preservePendingVocabularyReviews, refreshVocabWordsCards, VOCAB_WORDS_STALE_MS, vocabWordsFromLearningCache } from '../lib/viewerVocabularyCache';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage, failureMessage } from '../lib/errorMessage';
 import { SAVE_GRADES, VOCAB_UPSERT, buildVocabRow, cardSaveReading } from '../lib/vocabIO';
@@ -2230,7 +2230,8 @@ export default function ViewerPage({ seed } = {}) {
     if (Object.keys(patch).length === 0) return false;
     const { error } = await supabase.from('user_vocabulary').update(patch).eq('id', vocab.id);
     if (error) throw error;
-    queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
+    // 그 카드만 새로 받아 색인에 붙인다(SNAPSHOT-CARDS-001 — 전체 snapshot을 다시 받지 않는다. 실패하면 전처럼 전체).
+    void refreshVocabWordsCards(queryClient, user?.id, [vocab.id]);
     return true;
   };
 
@@ -2703,7 +2704,9 @@ export default function ViewerPage({ seed } = {}) {
       const result = await saveContext({ word: contextWord(token), source: readingContextSource(token),
         ...(Number.isInteger(grade) && grade >= 1 && grade <= 4 ? { initialGrade: grade } : {}) });
       if (result.vocabulary) insertConfirmedVocabulary(queryClient, accountId, result.vocabulary);
-      for (const key of ['vocab-words', 'vocab', 'vocabulary-contexts', 'book-review']) {
+      // 저장 · 만기 색인은 그 카드만(SNAPSHOT-CARDS-001), 나머지 목록은 전처럼 무효화.
+      void refreshVocabWordsCards(queryClient, accountId, [result.vocabulary?.id || result.vocabularyId]);
+      for (const key of ['vocab', 'vocabulary-contexts', 'book-review']) {
         queryClient.invalidateQueries({ queryKey: [key, accountId] });
       }
       if (koreanSaveDisplayScope.current !== scope) return result;
@@ -2742,7 +2745,7 @@ export default function ViewerPage({ seed } = {}) {
     setInlineSaving(prev => ({ ...prev, [key]: true }));
     try {
       if (materialLang === 'Korean') { await saveKoreanVocabulary(token); return; }
-      await upsertViewerVocabulary(buildVocabRow({
+      const inserted = await upsertViewerVocabulary(buildVocabRow({
         userId: user.id,
         surface: token.text,
         base: token.base_form,
@@ -2753,7 +2756,8 @@ export default function ViewerPage({ seed } = {}) {
       }));
       const linked = await attachReadingContext(token);
       if (linked) toast(`"${token.text}" 단어를 저장했어요`, 'success');
-      queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
+      // 새로 넣은 행만 받아 색인에 붙인다(SNAPSHOT-CARDS-001). 이미 있던 단어(inserted = [])면 전처럼 전체를 다시 받는다.
+      void refreshVocabWordsCards(queryClient, user?.id, inserted.map(row => row.id));
     } catch {
       toast('단어를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.', 'error');
     } finally {
@@ -2944,7 +2948,8 @@ export default function ViewerPage({ seed } = {}) {
       inserted = await upsertViewerVocabulary([row], VOCAB_UPSERT);
       // INSERT가 확인된 행을 즉시 반영한다. 문맥 RPC/undo 조회를 기다리거나 refetch를 추가로 기다리지 않는다.
       insertConfirmedVocabulary(queryClient, user.id, inserted[0]);
-      queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
+      // 다음 복습 · 만기 판정은 그 카드만 서버에서 받아 붙인다(SNAPSHOT-CARDS-001 — 전체 snapshot 다시 받기 대신). 없으면 · 실패하면 전처럼 전체.
+      void refreshVocabWordsCards(queryClient, user.id, inserted.map(row => row.id));
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
       if (saveScopeRef.current === saveScope) { saveCountRef.current += 1; markJustSaved(savedToken.id); }
     } catch (err) {

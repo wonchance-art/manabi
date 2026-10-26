@@ -9,7 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { failureMessage } from './errorMessage';
 import { VOCAB_UPSERT, buildVocabRow } from './vocabIO';
-import { insertConfirmedVocabulary } from './viewerVocabularyCache';
+import { insertConfirmedVocabulary, refreshVocabWordsCards } from './viewerVocabularyCache';
 import { prepareViewerSaveUndo, undoViewerSave } from './viewerSaveUndo';
 import { patchVocabWordsCache, useInlineReview } from './useInlineReview';
 import { revertInlineGrade } from './inlineGradeUndo';
@@ -50,7 +50,8 @@ export function useLevelWordGrade({ user, fetchProfile, language = 'Chinese', on
     const inserted = data?.[0];
     if (!inserted) return null; // 이미 있던 행 — 색인이 늦었다. 호출부가 새로 받아 그 행으로 채점한다.
     insertConfirmedVocabulary(queryClient, userId, inserted);
-    queryClient.invalidateQueries({ queryKey: vocabKey(userId) });
+    // 색인은 그 카드만 받아 붙인다(SNAPSHOT-CARDS-001 — 뷰어 저장과 같은 길). 실패하면 전처럼 전체.
+    void refreshVocabWordsCards(queryClient, userId, [inserted.id]);
     queryClient.invalidateQueries({ queryKey: ['vocab', userId] });
     recordActivity(userId, () => fetchProfile?.(userId));
     const snapshot = await prepareViewerSaveUndo(supabase, inserted, null, false).catch(() => null);
@@ -88,7 +89,7 @@ export function useLevelWordGrade({ user, fetchProfile, language = 'Chinese', on
       if (engine === 'fsrs') {
         const result = await gradeLevelFsrs({ accountId: userId, row, rating });
         if (!result.ok) throw result.error;
-        queryClient.invalidateQueries({ queryKey: vocabKey(userId) });
+        void refreshVocabWordsCards(queryClient, userId, [row.id]);
         return { ok: true, undo: { kind: 'fsrs', expiresAt: Date.now() + UNDO_MS } };
       }
       return { ok: false, reason: 'not-due' };

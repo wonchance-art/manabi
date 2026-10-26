@@ -92,7 +92,7 @@ await context.route('**/api/learning/**',r=>{
  const learningUrl=new URL(r.request().url());
  // 뷰어의 단어 상태 색은 /api/learning/vocabulary?view=learning(fetchVocabularyLearningRows) snapshot에서 온다 — REST user_vocabulary 직접 조회가 아니다.
  if(r.request().method()==='GET'&&learningUrl.pathname==='/api/learning/vocabulary'&&learningUrl.searchParams.get('view')==='learning')
-  return r.fulfill({json:legacyLearningSnapshot({actorId:uid,rows:vocab,known,fields:learningUrl.searchParams.get('fields')})});
+  return r.fulfill({json:legacyLearningSnapshot({actorId:uid,rows:vocab,known,fields:learningUrl.searchParams.get('fields'),ids:learningUrl.searchParams.get('ids')})});
  if(r.request().method()==='POST'){
   const payload=r.request().postDataJSON();const word=vocab.find(v=>v.word_text===payload.word?.word_text)||vocab.at(-1);contexts.push({id:'context-1',user_id:uid,vocabulary_id:word?.id,material_id:payload.source?.materialId,quote:payload.source?.quote,locator:{tokenId:payload.source?.tokenId}});return r.fulfill({json:{ok:true,context:{id:'context-1'},vocabulary:{id:word?.id}}});
  }
