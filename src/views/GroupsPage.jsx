@@ -99,13 +99,14 @@ function GroupForms({ groupCount, onDone }) {
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <input
               type="text"
+              className="group-field"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="그룹 이름 (40자까지)"
               maxLength={40}
               style={{ flex: '2 1 180px' }}
             />
-            <select value={lang} onChange={(e) => setLang(e.target.value)} style={{ flex: '1 1 100px' }}>
+            <select className="group-field" value={lang} onChange={(e) => setLang(e.target.value)} style={{ flex: '1 1 100px' }}>
               {Object.entries(LANG_KO).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
             <Button
@@ -117,6 +118,7 @@ function GroupForms({ groupCount, onDone }) {
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <input
               type="text"
+              className="group-field"
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               placeholder="초대 코드 6자"
@@ -161,6 +163,7 @@ function ReadPicker({ group, weekStart, userId, onDone }) {
     <div style={{ marginTop: 8 }}>
       <input
         type="text"
+        className="group-field"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="공개 자료 검색 (제목)"
@@ -286,6 +289,7 @@ function GroupDiscussion({ group, read, myPct, userId }) {
       <div style={{ display: 'flex', gap: 8 }}>
         <input
           type="text"
+          className="group-field"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={`내 진도 ${myPct}% 지점에 남기기`}
@@ -322,16 +326,16 @@ function GroupGoalLine({ group, weekStart, goal, snapshotSum, userId }) {
   if (editing) {
     return (
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 6 }}>
-        <select value={axis} onChange={(e) => setAxis(e.target.value)}>
+        <select className="group-field" value={axis} onChange={(e) => setAxis(e.target.value)}>
           {Object.entries(GOAL_AXES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
         </select>
         <input
           type="number"
+          className="group-field group-goal-target"
           min={1}
           max={100000}
           value={target}
           onChange={(e) => setTarget(e.target.value)}
-          style={{ width: 90 }}
         />
         <Button size="sm" disabled={!(Number(target) > 0) || setMutation.isPending} onClick={() => setMutation.mutate()}>정하기</Button>
         <button type="button" onClick={() => setEditing(false)}

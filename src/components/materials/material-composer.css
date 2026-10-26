@@ -36,7 +36,7 @@
 .study-language__chips > button.study-language__chip[aria-checked="true"] { border-color: var(--ja); background: color-mix(in srgb, var(--ja) 12%, var(--sheet)); font-weight: 600; }
 .study-language__chips > button.study-language__chip[aria-checked="true"]::before { content: '✓ '; content: '✓ ' / ''; color: var(--ja); } /* 표시만 — 칩 이름(접근성 이름)에는 넣지 않는다 */
 .study-language__hint { font-size: 11px; color: var(--muted); }
-.original-reader select { width: 100%; min-height: 44px; font: inherit; color: inherit; background: var(--sheet); border: 1px solid var(--rule); padding: 8px; }
+.original-reader select { width: 100%; min-height: 44px; font: inherit; font-size: max(var(--field-font-min), 1em); color: inherit; background: var(--sheet); border: 1px solid var(--rule); padding: 8px; }
 .composer-notice { font-size: 12px; line-height: 1.8; color: var(--muted); }
 .composer-save { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 20px; padding: 24px 0 0; margin-top: 12px; border-top: 1px solid var(--rule); }
 .composer-save > span { max-width: 70%; font-size: 11px; line-height: 1.7; color: var(--muted); }

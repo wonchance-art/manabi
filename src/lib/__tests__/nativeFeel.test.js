@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { cssFiles, rulesOf } from './helpers/cssRules.js';
+import { sliceBetween } from './helpers/sliceBetween.js';
 
 /**
  * 계약: NATIVE-FEEL-001 — 휴대폰(iOS Safari · Chrome, 홈 화면 설치 앱 포함)에서 「앱 같은 손맛」을 깨던 것들.
@@ -52,7 +53,7 @@ describe('NATIVE-FEEL-001 ① 입력칸 글자 하한 — iOS 초점 확대 방�
   /** 선택자의 마지막 조각이 입력칸 태그(input · textarea · select)를 가리키는가. */
   const FIELD_TAG = /(^|[\s>+~(,])(input|textarea|select)(?![\w-])(?![^(]*\[type=["']?(checkbox|radio|range))/;
   /** 태그가 아닌 클래스로만 그리는 입력칸(JSX에서 입력칸에만 붙는 이름). 새 입력칸 클래스를 작게 쓰면 여기와 규칙 둘 다에 걸린다. */
-  const FIELD_CLASSES = ['.auth-input', '.search-wrap__input', '.token-edit__input', '.source-edit__textarea'];
+  const FIELD_CLASSES = ['.auth-input', '.search-wrap__input', '.token-edit__input', '.source-edit__textarea', '.note-reading'];
 
   const smallFieldRules = () => cssFiles().filter((f) => !OUT_OF_SCOPE.test(f)).flatMap((file) => {
     const rules = rulesOf(read(file));
@@ -98,7 +99,8 @@ describe('NATIVE-FEEL-001 ① 입력칸 글자 하한 — iOS 초점 확대 방�
     const css = cssFiles().map(read).join('\n').replace(/\/\*[\s\S]*?\*\//g, '');
     const uses = [...css.matchAll(/max\(var\(--field-font-min\),\s*([^)]+)\)/g)].map((m) => m[1].trim());
     expect(uses.length).toBeGreaterThanOrEqual(13);
-    for (const v of uses) expect(px(v), v).toBeLessThan(16);
+    // 1em = font: inherit로 물려받던 크기 그대로(NATIVE-FEEL-P1 ⓓ) — 부모마다 달라 px로 적으면 다른 화면의 데스크톱 크기가 바뀐다.
+    for (const v of uses.filter((x) => x !== '1em')) expect(px(v), v).toBeLessThan(16);
   });
 });
 
@@ -131,6 +133,97 @@ function fieldTags() {
   }
   return out;
 }
+
+describe('NATIVE-FEEL-P1 — 미뤄 둔 네 곳(오너 「권장대로 진행」 2026-10-26 KST)', () => {
+  const ruleBody = (file, selector) => {
+    const mine = rulesOf(read(file)).filter((r) => r.selector === selector && r.at.length === 0);
+    expect(mine.length, `${file} ${selector}`).toBeGreaterThan(0);
+    return mine.map((r) => r.body).join(';');
+  };
+
+  it('ⓐ 함께 읽는 글: 정렬은 칩 줄 밖 자기 자리의 글자 단추 꼴 — 칩 모양 선택 상자를 칩 사이에 두지 않는다', () => {
+    const page = read('src/views/MaterialsPage.jsx');
+    const sort = fieldTags().find((t) => t.file === 'src/views/MaterialsPage.jsx' && t.text.includes('aria-label="정렬"'));
+    expect(sort?.tag).toBe('select');
+    expect(sort.text).toContain('className="materials-sort"');
+    expect(sort.text).not.toMatch(/\bchip\b|style=/);
+    // 첫 칩 줄을 연 뒤 정렬 상자까지 열고 닫은 div가 같다 = 칩 줄(언어 · 난이도) 안이 아니다.
+    const before = sliceBetween(page, '<div className="chip-group">', 'className="materials-sort"');
+    expect((before.match(/<div\b/g) || []).length - (before.match(/<\/div>/g) || []).length).toBe(0);
+    expect(sliceBetween(page, 'className="materials-filters"', 'className="materials-sort"')).toContain('className="chip-group"');
+    const css = ruleBody('src/index.css', '.materials-sort');
+    expect(css).toContain('font-size: max(var(--field-font-min), 0.82rem)'); // 데스크톱은 칩 글자 그대로, 터치 16px
+    expect(css).toMatch(/border:\s*0/);
+    expect(css).toMatch(/background-color:\s*transparent/);
+    expect(css).toMatch(/min-height:\s*44px/);
+    expect(cssFiles().map(read).join('\n')).not.toContain('.chip--select');
+  });
+
+  it('ⓑ 서재: 도구 줄에서 정렬 선택 상자를 걷고 「필터」 시트 안 라디오(묶음 제목 「정렬」)로 — 값 · 주소는 그대로', () => {
+    const shelf = read('src/components/library/LibraryShelf.jsx');
+    expect(sliceBetween(shelf, 'className="shelf-list-tools"', '</div>')).not.toMatch(/<select\b/);
+    expect(shelf).not.toContain('id="library-sort"');
+    const dialog = sliceBetween(shelf, 'function FilterDialog(', 'export default function LibraryShelf');
+    expect(dialog).toContain('<fieldset className="shelf-sort-options"><legend>정렬</legend>');
+    expect(dialog).toMatch(/<input type="radio" name="library-sort" value=\{value\} checked=\{draft\.sort===value\}/);
+    // 바꾼 때만 sort를 싣는다 — 언어만 바꿔 적용해도 주소에 sort=newest가 붙지 않게(전과 같은 주소).
+    expect(dialog).toContain("...(draft.sort!==filters.sort?{sort:draft.sort}:{})");
+    expect(dialog).toContain("filters.sort==='level'?[...LIBRARY_SORTS,['level','급수순']]");
+    const values = [...sliceBetween(shelf, 'const LIBRARY_SORTS=', ';').matchAll(/\['(\w+)','([^']+)'\]/g)].map((m) => [m[1], m[2]]);
+    expect(values).toEqual([['newest', '최근 저장순'], ['opened', '최근 열어본 순'], ['title', '제목순']]);
+    expect(read('src/lib/personalLibrary.js')).toContain("sort:['newest','title','opened','level'].includes(sort)?sort:'newest'");
+    const css = read('src/components/library/library.css');
+    expect(squash(ruleBody('src/components/library/library.css', '.shelf-filter-form .shelf-sort-options label'))).toContain('min-height:44px;font-size:16px');
+    expect(css).not.toMatch(/\.shelf-list-tools select/);
+    // 시트의 입력칸 규칙(폭 100% · 46px 상자)이 라디오를 덮지 않게
+    expect(css).toContain('.shelf-dialog input:not([type=checkbox]):not([type=radio]),.shelf-dialog select{');
+  });
+
+  it('ⓒ 노트 단어 카드: 터치에서 표기 24 / 읽기 16 / 뜻 16 — 데스크톱 읽기 12px는 그대로', () => {
+    const file = 'src/components/notes/study-notes.css';
+    expect(ruleBody(file, '.note-word-fields .note-reading')).toContain('font-size:max(var(--field-font-min),12px)');
+    expect(ruleBody(file, '.note-word-fields .note-spelling')).toContain('font-size:24px');
+    expect(ruleBody(file, '.note-word-fields textarea')).toContain('font-size:max(var(--field-font-min),14px)');
+  });
+
+  it('ⓓ 크기를 물려받는(font: inherit) 입력칸은 그 규칙에 max(하한, 1em) — 라벨 12 · 13px를 물려받아 터치에서 확대되던 칸', () => {
+    const INHERITED = [
+      ['src/components/notes/study-notes.css', '.note-create input,.note-create select,.note-information input'], // 새 노트 13px
+      ['src/components/notes/study-notes.css', '.note-candidate-tools input'], // 노트 단어 정리 「기본형」 11px
+      ['src/components/classroom/classroom.css', '.class-study-history input'], // 수업 표현 기록 찾기 12px
+      ['src/components/classroom/textbook-annotations.css', '.textbook-notes textarea'], // 교재 설명 14px
+      ['src/components/books/reading-shell.css', '.manabi-reading-dialog input'], // 교재 「기억할 표현」 12px
+      ['src/components/books/reading-shell.css', '.manabi-book-connect select'], // 이 과에 내 자료 연결 12px
+      ['src/components/materials/material-composer.css', '.original-reader select'], // 원본 파일 · 지문 공부 12 · 13px
+      ['src/components/web/review-room.css', '.review-scope-sheet__range select'], // 복습 범위 12px
+    ];
+    for (const [file, selector] of INHERITED) {
+      const body = squash(ruleBody(file, selector));
+      expect(body, `${file} ${selector}`).toContain('font:inherit;font-size:max(var(--field-font-min),1em)');
+    }
+  });
+
+  it('ⓓ 글자 크기를 적지 않은 입력칸은 터치 블록에서 16px — 그룹 폼은 최소 폭 0으로 줄바꿈을 지킨다', () => {
+    const touch = rulesOf(read('src/index.css')).filter((r) => r.at.length === 1 && r.at[0] === '@media (pointer: coarse)');
+    expect(squash(touch.find((r) => r.selector === '.search-input, .board-class-navigation select')?.body || '')).toBe('font-size:16px;');
+    expect(squash(touch.find((r) => r.selector === '.group-field')?.body || '')).toBe('font-size:16px;min-width:0;');
+    // 주간 목표 줄(축 선택 · 수 · 정하기 · 취소)도 한 줄 — 축 선택 상자가 16px로 14px 커진 만큼 수 칸을 줄인다(데스크톱 90px 그대로).
+    expect(touch.find((r) => r.selector === '.group-goal-target')?.body.trim()).toBe('width: 76px;');
+    expect(rulesOf(read('src/index.css')).find((r) => r.selector === '.group-goal-target' && r.at.length === 0)?.body.trim()).toBe('width: 90px;');
+    const groups = fieldTags().filter((t) => t.file === 'src/views/GroupsPage.jsx');
+    expect(groups.length).toBe(7);
+    for (const g of groups) {
+      expect(g.text, `GroupsPage:${g.line}`).toMatch(/className="group-field( group-goal-target)?"/);
+      expect(g.text).not.toMatch(/fontSize|minWidth/); // 인라인은 미디어 쿼리를 덮는다
+    }
+    for (const [file, anchor] of [['src/views/VocabList.jsx', '표현 목록 검색'], ['src/views/ViewerComments.jsx', 'commentInput']]) {
+      const f = fieldTags().find((t) => t.file === file && t.text.includes(anchor));
+      expect(f?.text, `${file} ${anchor}`).toContain('className="search-input"');
+      expect(f.text).not.toMatch(/fontSize/);
+    }
+    expect(fieldTags().find((t) => t.file === 'src/components/classroom/ClassroomReader.jsx' && t.text.includes('수업 교재 과 선택'))).toBeDefined();
+  });
+});
 
 describe('NATIVE-FEEL-001 ② 모달 · 어둠막이 떠 있는 동안 뒤 화면을 세운다(터치 기기만)', () => {
   const lock = () => {
