@@ -1147,6 +1147,9 @@
   (Chinese 113 · Japanese 1, 29행 즉시 열림) · 지문 넷 게시 = 계산 · 남은 옛 시각 = 제외 단어 1행**. 첫 시도는 제외 단어 1행을 guard_excluded_vocabulary가 막아 전체 롤백.
   바꾸기 전 값 = `maintenance_backup.vocab_due_realign_20261026`(API 미노출 — fsrs_private에 표를 만들면 core 지문이 바뀌어 FSRS RPC가 막힌다).
   적용 SQL 기록 `docs/sql/vocab-due-day-boundary-realign.sql` · 복원 `…-rollback.sql` · PGlite `supabase/tests/vocab-due-day-boundary-realign.mjs`.
+- **LATIN-WORD-PAGE 영어 · 프랑스어 단어장 (2026-10-26 KST, 오너 「단어 몇개만 넣어서 일단 열어봐」)**: HSK · JLPT 공통 단어 화면을 `/english/words/a1` · `/french/words/a1`에
+  먼저 연다(A1 테마 넷 × 앞 두 단어 = 8개씩, 레퍼런스 어휘 그대로 · 대조 키 = 레퍼런스 저장 word_text, 검색 제외). 읽기 = IPA · 글자 칸 없음 · 찾기 = 철자(악센트 무시) · 뜻, 이 레벨 안.
+  기존 `/english/vocab` · `/french/vocab` 레퍼런스 페이지와 책장 타일은 그대로. 다음 = 언어 특성별 기능 차이 · 디자인(텍스트 목업 먼저).
 - VOCAB-LEVEL-DOC(F9 현장): 목록을 문서 밖 JSON으로 → 문서 −95%지만 LCP +4%(JS가 임계 경로) → 배제 · 패치 보관. 후속 G(카드 앞 JS 청크) 조사 중.
 - ~~**SHELF-001 발견 서가 (2026-10-16 KST, 오너 「발견에 공개」·「서가」·「지역학 치워버려 지우진 말고」)**~~ → **완료: [#1505](https://github.com/wonchance-art/manabi/pull/1505) squash `55cbdc54`(2026-10-17 12:14 KST), 운영 DB 4건(170000 · 171800 · 191500 · 191600) 적용 · 사후 검증 통과(한국어 학습 복구 · 네 계약 · snapshot 1246항목 불일치 0)** `claude/beautiful-lamport-po6fv0`:
   발견에 공용 「서가」 — 오늘의 소식(daily_suggestions, 언어 번갈아 4) · 함께 읽는 글(공개 수). 추천 조회는 `todaySuggestions`로

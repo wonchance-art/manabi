@@ -26,10 +26,17 @@ export function pinyinKey(text) {
     .replace(/v/g, 'u').replace(/[0-5\s'’·-]/g, '');
 }
 
+/** 라틴 문자 비교 꼴(영어 · 프랑스어 — mode 'latin') — 악센트 · 대소문자 · 공백 · 따옴표 · 붙임표를 뺀다(café = cafe, l'ami = lami). */
+export function latinKey(text) {
+  return String(text || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+    .replace(/œ/g, 'oe').replace(/æ/g, 'ae').replace(/[\s'’·.-]/g, '');
+}
+
 /** 한 줄의 비교 꼴 — 화면이 색인을 받을 때 한 번만 만든다. */
 export function indexEntry(row, at, mode = 'zh') {
   const [word, reading, meaning, level, kr] = row;
   const base = { word, key: word, reading, meaning, level, at, mean: String(meaning || '').replace(/\s+/g, '') };
+  if (mode === 'latin') return { ...base, latin: latinKey(word) }; // 읽기(IPA)로는 찾지 않는다 — 철자로 찾는다
   return mode === 'ja' ? { ...base, kana: kanaKey(reading || word), ...(kr ? { kr } : {}) } : { ...base, py: pinyinKey(reading) };
 }
 
@@ -40,6 +47,7 @@ export function queryKind(query, mode = 'zh') {
   if (HAN.test(q)) return 'han';
   if (HANGUL.test(q)) return 'ko';
   if (mode === 'ja') return KANA.test(q) && kanaKey(q) ? 'kana' : null;
+  if (mode === 'latin') return latinKey(q) ? 'latin' : null;
   return pinyinKey(q) ? 'py' : null;
 }
 
@@ -68,6 +76,7 @@ export function entryRank(entry, kind, q) {
   if (kind === 'ko') return meaningRank(entry, q);
   if (kind === 'py') return rankIn(entry.py, q);
   if (kind === 'kana') return rankIn(entry.kana, q);
+  if (kind === 'latin') return rankIn(entry.latin, q);
   return -1;
 }
 
@@ -80,7 +89,7 @@ export function searchLevelIndex(entries, query, level, { mode = 'zh', levelRank
   const empty = { kind, current: [], other: [], total: 0 };
   if (!kind || !entries?.length) return empty;
   const raw = String(query).trim();
-  const q = kind === 'py' ? pinyinKey(raw) : kind === 'kana' ? kanaKey(raw) : raw.replace(/\s+/g, '');
+  const q = kind === 'py' ? pinyinKey(raw) : kind === 'kana' ? kanaKey(raw) : kind === 'latin' ? latinKey(raw) : raw.replace(/\s+/g, '');
   const hits = [];
   for (const e of entries) {
     const rank = entryRank(e, kind, q);

@@ -144,7 +144,8 @@ function Notice({ notice, onDone }) {
 }
 
 export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: givenGroups }) {
-  const conf = LEVEL_LIST_LANGS[cfg.lang];
+  // 레벨 줄 — 영어 · 프랑스어 판은 책장 타일(LEVEL_LIST_LANGS) 밖에서 몇 단어로 먼저 연다(오너 2026-10-26 KST) — 판이 레벨을 직접 준다.
+  const levels = cfg.levels || LEVEL_LIST_LANGS[cfg.lang].levels;
   const language = cfg.language;
   const level = cfg.levelOf(levelKey);
   // 항목은 조각 밖 정적 묶음(LEVEL-LIST-RSC-001 — 서버 페이지가 주소를 주고 문서 머리에서 preload). 받기 전(loaded false)에는
@@ -248,6 +249,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
   const [charTables, setCharTables] = useState(null); // null 아직 · 'loading' · false 실패
   useEffect(() => {
     if (!mounted) return undefined;
+    if (!cfg.loadTiles) { setTilePack(false); return undefined; } // 글자 칸이 없는 판(영어 · 프랑스어)
     let live = true;
     setTilePack(null);
     fetch(`/api/level-tiles/${cfg.lang}/${String(levelKey || '').toLowerCase()}`)
@@ -264,7 +266,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
   }, [cfg]);
   const tileCache = useRef(new Map());
   const tilesOf = useCallback((word, kr) => {
-    if (tilePack === null) return null;
+    if (tilePack === null || !cfg.loadTiles) return null;
     const packed = tilePack ? levelPackTiles(tilePack, word, kr) : undefined;
     if (packed !== undefined) return packed;
     // 묶음에 없는 단어 — 표를 그때 받는다(그리는 중에는 상태를 바꾸지 않게 다음 틈에).
@@ -605,6 +607,8 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
   const savedScroll = useRef(0);
   const loadDict = useCallback(() => {
     if (dict.state !== 'idle') return;
+    // 전 레벨 색인이 없는 판은 지금 레벨 안에서만 찾는다(받지 못했을 때와 같은 길).
+    if (!cfg.indexUrl) { setDict({ state: 'failed', entries: null }); return; }
     setDict({ state: 'loading', entries: null });
     fetch(cfg.indexUrl).then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((body) => setDict({ state: 'ready', entries: body.rows.map((row, i) => indexEntry(row, i, cfg.mode)) }))
@@ -705,10 +709,10 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
     if (folded) setUnfoldedAt(foldKey);
     if (window.scrollY > 0) window.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' });
   };
-  const next = nextLevelKey(conf.levels, levelKey);
+  const next = nextLevelKey(levels, levelKey);
   const goNext = () => { if (next) { warmLevelWords(levelWordsUrl(cfg.lang, next)); router.push(cfg.levelHref(next)); } };
   // 목록 칸 — 제목 「HSK 1 단어」의 「단어」 자리를 바꾼다(단어 · 한자 · 문형 순, 그 레벨에 있는 것만).
-  const kindLinks = SHEET_KIND_ORDER.filter((k) => levelKinds(cfg.lang, levelKey).includes(k))
+  const kindLinks = SHEET_KIND_ORDER.filter((k) => (cfg.kinds || levelKinds(cfg.lang, levelKey)).includes(k))
     .map((k) => ({ id: k, label: LEVEL_KIND_LABEL[k], href: k === 'vocab' ? cfg.levelHref(levelKey) : `/${cfg.lang}/${k}/${levelKey.toLowerCase()}` }));
 
   // ── 키보드 — Space 정답 확인 · 1–4 채점(리스트는 아래 네 칸의 대상 카드) · Ctrl/⌘+Z 되돌리기(복습실과 같은 키) ──
@@ -927,7 +931,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
         </div>}
     </Sheet>}
 
-    {sheetOpen && <TitleSheet levels={conf.levels} levelKey={levelKey} kinds={kindLinks} aidLabel={cfg.aidLabel} aid={tone}
+    {sheetOpen && <TitleSheet levels={levels} levelKey={levelKey} kinds={kindLinks} aidLabel={cfg.aidLabel} aid={tone}
       page={prefs.page} pageSizes={LEVEL_WORD_PAGE_SIZES} onAid={(v) => setPrefs({ tone: v })} onPage={(n) => setPrefs({ page: n })} onClose={() => setSheetOpen(false)} />}
 
     {notice && <Notice key={notice.id} notice={notice} onDone={dropNotice} />}

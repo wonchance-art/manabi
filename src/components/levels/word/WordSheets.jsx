@@ -96,7 +96,7 @@ export function TitleSheet({ levels, levelKey, kinds, aidLabel, aid, page, pageS
       {kinds.length > 1 && <Seg label="목록" value="vocab" items={kinds} />}
       <div className="lw-sheet__row lw-sheet__row--top"><span>보기</span>
         <div className="lw-sheet__view">
-          <button type="button" role="switch" className="lw-switch" aria-checked={aid} onClick={() => onAid(!aid)}>{aidLabel}<i aria-hidden="true" /></button>
+          {aidLabel && <button type="button" role="switch" className="lw-switch" aria-checked={aid} onClick={() => onAid(!aid)}>{aidLabel}<i aria-hidden="true" /></button>}
           <div className="lw-sheet__page"><span id="lw-page-size">리스트 한 번에</span>
             <span className="lw-mini" role="group" aria-labelledby="lw-page-size" data-thumb="" style={{ '--i': Math.max(0, pageSizes.indexOf(page)) }}>
               {pageSizes.map((n) => <button key={n} type="button" aria-pressed={page === n} onClick={() => onPage(n)}>{n}</button>)}
