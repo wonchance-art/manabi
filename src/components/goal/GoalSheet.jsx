@@ -95,7 +95,8 @@ function GoalSheetDialog({ dday, catalog, onClose, onLocal }) {
   const close = () => { if (!busy) onClose(); };
   const dialogRef = useDialogReturn(close);
 
-  const langs = goalLanguages(catalog.data);
+  const langs = goalLanguages(catalog.data, profile);
+  const someLangsHidden = langs.length < goalLanguages(catalog.data).length;
   const exam = examKindOf(state.lang);
   const levelChips = exam ? examLevelChips(exam) : courseLevelChips(catalog.data, state.lang);
   const cards = exam ? goalDateCards(exam, state.pick, nowMs) : [];
@@ -194,6 +195,7 @@ function GoalSheetDialog({ dday, catalog, onClose, onLocal }) {
                   onClick={() => chooseLang(lang)}>{LANG_NAME_KO[lang]}</button>
               ))}
             </div>
+            {someLangsHidden && <p className="gs-note">다른 언어는 내 정보 › 학습 언어에서 켜요.</p>}
           </fieldset>
 
           <fieldset className="gs-step">

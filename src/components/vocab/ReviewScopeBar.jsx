@@ -125,7 +125,7 @@ export default function ReviewScopeBar({ scope, languages, byLang = {}, countFor
 function Option({ active, disabled, onClick, children, count }) {
   return (
     <button type="button" className={`review-scope-option${active ? ' is-active' : ''}`} aria-pressed={active} disabled={disabled} onClick={onClick}>
-      {children}{count != null && <span className="review-scope__num">{count}</span>}
+      {children}{count != null && <span className="review-scope__num">{typeof count === 'number' ? count.toLocaleString('ko-KR') : count}</span>}
     </button>
   );
 }
@@ -182,7 +182,7 @@ function ReviewScopeSheet({ scope, countFor, allVocab, learningById, materialTit
           <h2 id="review-scope-sheet-title">범위 고르기 · {langLabel}</h2>
           <button type="button" className="review-scope-sheet__close" aria-label="범위 고르기 닫기" data-dialog-initial-focus onClick={onClose}>✕</button>
         </div>
-        <p className="review-scope-sheet__summary">{langLabel} 담은 표현 {langWords.length}개 · 이 범위 {draftCount.status === 'ready' ? `${draftCount.stored}개` : '확인 전'}(아는 단어 제외)</p>
+        <p className="review-scope-sheet__summary">{langLabel} 담은 표현 {langWords.length.toLocaleString('ko-KR')}개 · 이 범위 {draftCount.status === 'ready' ? `${draftCount.stored.toLocaleString('ko-KR')}개` : '확인 전'}(아는 단어 제외)</p>
 
         <fieldset className="review-scope-sheet__group">
           <legend>급수</legend>

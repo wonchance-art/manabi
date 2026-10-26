@@ -6,9 +6,9 @@
  *   내 정보
  *   [(채) 채연 바꾸기 · learner@… · 이메일 로그인 · 3월 2일부터 함께하고 있어요]
  *   내 기록                                              현황 전체 →
- *   [12일 연속 · 쉼 1][248 담은 단어][7편 완독한 자료]
+ *   [12일 연속 · 쉼 1][248 담은 표현][7편 완독한 자료]
  *   학습        학습 언어 일본어 · N3 › · 목표 JLPT N3 · D-41 / 하루 복습 5 · 담기 5 › · 알림 매일 21시 · 이 브라우저 ›
- *   이 기기에서  앱으로 설치 ›(설치 전에만) · 단어 복습 ›(단어장 복습 설정)
+ *   이 기기에서  앱으로 설치 ›(설치 전에만) · 단어 복습 한 번에 20개 ›(이 자리 시트 — 고르면 바로 저장)
  *   계정        비밀번호 바꾸기 › · 내 데이터 내보내기 JSON 파일 ↓    [로그아웃](따로 한 칸)
  *   도움        학습 가이드 › · 도움말 ›     약관 3종 · 계정 삭제(맨 아래, 입력 확인)
  *
@@ -31,7 +31,8 @@ import { friendlyToastMessage } from '../lib/errorMessage';
 import { authEntryHref } from '../lib/authRedirect';
 import { streakView } from '../lib/learnDashboard';
 import { LANG_NAME_KO, PROFILE_LEVEL_COLUMN, profileLevel } from '../lib/constants';
-import { loadSessionLength } from '../lib/vocabStudy';
+import { loadSessionLength, saveSessionLength } from '../lib/vocabStudy';
+import { DEFAULT_SESSION_LENGTH, SESSION_LENGTHS } from '../lib/reviewQueue';
 import {
   DEFAULT_LEVEL, countValue, goalSummary, joinedLine, languageAria, languageEntries, levelOptions,
   makePrimary, reminderSummary, sessionLengthLabel, sheetLanguageOrder, signInMethods, toggleLanguage,
@@ -63,7 +64,7 @@ export default function MyPage() {
   const { user, profile, loading: authLoading, fetchProfile, signOut } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
-  const [sheet, setSheet] = useState(null); // 'name' | 'lang' | 'alarm'
+  const [sheet, setSheet] = useState(null); // 'name' | 'lang' | 'alarm' | 'review'
   const [goalOpen, setGoalOpen] = useState(false); // 목표 창은 현황과 같은 GoalSheet — 이 자리에서 연다
 
   // 알림 — 푸시(서버가 보냄) 먼저, 이 브라우저를 열어 둔 동안의 시각 알림은 보조(D3). 둘 다 기기 상태라 마운트 뒤 읽는다.
@@ -230,7 +231,10 @@ export default function MyPage() {
         </div>
         <div className="pf-stats" role="group" aria-label="내 기록">
           <StatTile value={streak.value} label={streak.label} title={streak.title} ariaLabel={streak.aria} />
-          <StatTile value={countValue(counts?.words)} label="담은 단어" />
+          {/* 이름은 단어장 · 뷰어와 같은 「담은 표현」(검토 #10). 단어장 숫자는 고른 범위(언어)라, 언어가 둘 이상이면 이 칸이 전부임을 밝힌다. */}
+          {/* 좁은 칸에서는 두 줄로 — 덩어리째 끊는다(「전체 / 언어」로 갈리지 않게, 320 · 390 실측). */}
+          <StatTile value={countValue(counts?.words)}
+            label={multi ? <><span className="pf-nowrap">전체 언어</span> <span className="pf-nowrap">담은 표현</span></> : '담은 표현'} />
           <StatTile value={countValue(counts?.reads, '편')} label="완독한 자료" />
         </div>
       </section>
@@ -258,7 +262,8 @@ export default function MyPage() {
 
       <ProfileGroup title="이 기기에서" note="읽기 화면(서체 · 발음 표기 · 배경)은 자료를 연 뒤 Aa에서 바꿔요.">
         <InstallPrompt />
-        <ProfileRow label="단어 복습" href="/vocab"
+        {/* 단어 복습 — 이 기기 값(세션 길이)을 이 자리 시트에서 고른다. 예전에는 /vocab 맨 위로 가서 긴 화면 맨 아래 접힌 칸을 찾아야 했다(검토 #9). */}
+        <ProfileRow label="단어 복습" dialog onClick={() => setSheet('review')}
           value={sessionLength === undefined ? '' : sessionLengthLabel(sessionLength)}
           ariaLabel={sessionLength === undefined ? '단어 복습 설정' : `단어 복습 설정, ${sessionLengthLabel(sessionLength)}`} />
       </ProfileGroup>
@@ -324,6 +329,29 @@ export default function MyPage() {
               ))}
             </div>
             <p className="pf-hint pf-hint--after">고르면 바로 저장돼요.</p>
+          </div>
+        </ProfileSheet>
+      )}
+      {sheet === 'review' && (
+        // 단어 복습 — 알림 시트처럼 고르면 바로 저장(이 기기). 단어장 복습 칸의 칩과 같은 값 · 같은 키(saveSessionLength)다.
+        // 하루 새 표현 한도는 단어장 「복습 설정」 하나에 둔다(두 곳에서 고치지 않는다) — 펼친 채 그 자리로 가는 링크만.
+        <ProfileSheet title="단어 복습" onClose={() => setSheet(null)}
+          lead="단어장에서 복습을 시작할 때 한 번에 볼 표현 수예요. 이 기기에만 저장돼요."
+          actions={<button type="button" className="pf-pill" onClick={() => setSheet(null)}>닫기</button>}>
+          <div className="pf-sec">
+            <h3 id="pf-review-length-title">한 번에 복습할 수</h3>
+            <div className="pf-chips" role="group" aria-labelledby="pf-review-length-title">
+              {[...SESSION_LENGTHS, null].map(length => (
+                <button key={length ?? 'all'} type="button" aria-pressed={sessionLength === length}
+                  onClick={() => { saveSessionLength(length); setSessionLength(length); }}>
+                  {length === null ? '전부' : length === DEFAULT_SESSION_LENGTH ? `5분 · 약 ${length}개` : `${length}개`}
+                </button>
+              ))}
+            </div>
+            <p className="pf-hint pf-hint--after">고르면 바로 저장돼요. 복습할 표현이 {DEFAULT_SESSION_LENGTH}개 이하면 전부 봐요.</p>
+          </div>
+          <div className="pf-sec">
+            <Link href="/vocab#review-settings" prefetch={false} className="pf-more">하루 새 표현 한도는 단어장 복습 설정에서 →</Link>
           </div>
         </ProfileSheet>
       )}

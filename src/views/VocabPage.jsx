@@ -63,7 +63,7 @@ import { logReviewEvents } from '../lib/reviewEvents';
 import { withLegacyReviewLock } from '../lib/legacyReviewSync';
 import {
   deckOf, fisherYatesShuffle, isNewWord, usableVocabReviewMode,
-  loadIntroIds, saveIntroIds, loadSessionLength,
+  loadIntroIds, saveIntroIds, loadSessionLength, saveSessionLength,
   NEW_PER_DAY_OPTIONS, DEFAULT_NEW_PER_DAY,
 } from '../lib/vocabStudy';
 
@@ -216,7 +216,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
   // 세션 길이(서로 다른 카드 수 — 20 · 50 · 전부) · 소리 자동 재생은 기기별로 기억한다.
   const [sessionLength, setSessionLength] = useState(DEFAULT_SESSION_LENGTH);
   useEffect(() => {
-    if (settingsRestored) { try { localStorage.setItem('vocab_session_length', String(sessionLength ?? 'all')); } catch {} }
+    if (settingsRestored) saveSessionLength(sessionLength);
   }, [sessionLength, settingsRestored]);
   const [soundOn, setSoundOn] = useState(true);
   const toggleSound = on => { setSoundOn(on); saveReviewSound(on); };
@@ -735,6 +735,17 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
     ? firstScreenSession(first, { actorId: user?.id, scope }) : null;
   const session = firstView ? firstView.session : roomSession;
   const heroPending = !firstView && roomHeroPending;
+  // #review-settings(내 정보 「단어 복습」 시트의 링크)로 오면 「복습 설정」을 펼친 채 그 자리로 — 접힌 칸이 긴 화면 맨 아래에 있어 맨 위에
+  // 내려앉으면 찾지 못했다(내 정보 검토 #9). 칸은 첫 화면 골격이 걷힌 뒤에 생기므로 그때 한 번 본다.
+  const settingsRef = useRef(null);
+  const settingsReady = !firstView && tab === 'list';
+  useEffect(() => {
+    const el = settingsRef.current;
+    if (!settingsReady || !el || window.location.hash !== '#review-settings') return;
+    el.open = true;
+    el.scrollIntoView({ block: 'start' });
+    el.querySelector('summary')?.focus({ preventScroll: true });
+  }, [settingsReady]);
   const roomRemainingNew = firstView ? firstView.remainingNew : remainingNew;
   // 세션 길이(§6-1 ③) — 「5분 ≈ 20 · 50 · 전부」는 서로 다른 카드 수(새 표현 포함, 학습 단계 · 재질문 제외). 줄 앞에서 자른다.
   // 버튼 숫자 = 시작하는 줄 길이(sessionCards.length).
@@ -1605,7 +1616,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
               : fsrsReview.status === 'error' ? '오늘 복습'
                 : session.total ? '오늘 다시 볼 표현' : hasAnyWords ? '잠시, 읽기로 돌아가요.' : '첫 표현을 담아 보세요.'}</h2>
             {heroPending ? <p aria-busy="true" className="review-room-note">복습 준비 중…</p> : session.total > 0 ? <>
-              <div className="review-room-number"><strong className="vocab-hero__num">{session.total}</strong><span>개의 표현</span></div>
+              <div className="review-room-number"><strong className="vocab-hero__num">{session.total.toLocaleString('ko-KR')}</strong><span>개의 표현</span></div>
               {/* 0인 갈래는 적지 않는다(learning-flow e2e 「복습 0」 금지) — 「복습 14 · 새 표현 4」(설계 §5-1). */}
               <p className="review-room-note">{[session.due > 0 && `복습 ${session.due}`, session.newAllowed > 0 && `새 표현 ${session.newAllowed}`].filter(Boolean).join(' · ')}</p>
               {/* 세션 길이(§5-1) — 서로 다른 카드 수. 20개보다 많을 때만. */}
@@ -1613,7 +1624,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
                 {lengthOptions.map(length => (
                   <button key={length ?? 'all'} type="button" className={`review-length__chip${activeLength === length ? ' is-active' : ''}`} aria-pressed={activeLength === length}
                     onClick={() => setSessionLength(length)}>
-                    {length === null ? `전부 ${session.total}` : length === DEFAULT_SESSION_LENGTH ? `5분 · 약 ${length}개` : `${length}개`}
+                    {length === null ? `전부 ${session.total.toLocaleString('ko-KR')}` : length === DEFAULT_SESSION_LENGTH ? `5분 · 약 ${length}개` : `${length}개`}
                   </button>
                 ))}
               </div>}
@@ -1621,7 +1632,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
                 <Button onClick={startReview} disabled={startingReview || !!firstView || !fsrsReview.registryAvailable || admission.status !== 'ready'} className="review-room-start">{startingReview || firstView || fsrsReview.status === 'loading' ? '복습 준비 중…' : `표현 ${sessionCards.length}개 복습 →`}</Button>
                 {hasPractice && <Button variant="ghost" disabled={!!firstView} onClick={() => startPractice(practiceWords)} className="review-room-practice">집중 연습</Button>}
               </div>
-              {hasPractice && <p className="review-room-note review-room-practice-note">복습 {session.total}개 먼저 하면 일정에 반영돼요. 집중 연습은 일정을 바꾸지 않아요.</p>}
+              {hasPractice && <p className="review-room-note review-room-practice-note">복습 {session.total.toLocaleString('ko-KR')}개 먼저 하면 일정에 반영돼요. 집중 연습은 일정을 바꾸지 않아요.</p>}
               <ReviewScopeNotice scope={scope} count={session} countFor={countFor} remainingNew={roomRemainingNew} languages={[...languageCounts.keys()]} onChange={changeScope} materialTitles={materialTitles}
                 onPractice={hasPractice ? () => { if (!firstView) startPractice(practiceWords); } : null} onFillMeaning={() => { setMissingMeaningOnly(true); setTab('browse'); }} />
             </> : fsrsReview.status === 'error' ? null : <>
@@ -1671,7 +1682,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
           {firstView ? <div className="review-sec--vocab" aria-busy="true"><CardGridSkeleton count={2} height={120} /></div> : <>
           <section className="card review-sec review-sec--vocab" aria-labelledby="dash-vocab">
             <div className="review-sec__head">
-              <h2 id="dash-vocab" className="review-sec__title">담은 표현 <span className="review-sec__count">{vocab.length}</span></h2>
+              <h2 id="dash-vocab" className="review-sec__title">담은 표현 <span className="review-sec__count">{vocab.length.toLocaleString('ko-KR')}</span></h2>
               {vocab.length > 0 && (
                 <button type="button" className="review-sec__more" onClick={() => setTab('browse')}>
                   전체 보기 →
@@ -1716,7 +1727,8 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
             )}
           </section>
 
-              <details className="review-room-settings">
+              {/* 내 정보 「단어 복습」 시트의 「단어장 복습 설정에서 →」가 #review-settings로 온다 — 펼친 채로 그 자리에 둔다(아래 효과). */}
+              <details className="review-room-settings" id="review-settings" ref={settingsRef}>
                 <summary aria-label="단어장 도구">{isBookScope ? '복습 설정' : '복습 설정과 단어장 관리'} <span>{isBookScope ? '하루 새 표현 한도' : '한도 · 가져오기'}</span></summary>
                 <div className="vocab-tools__menu">
                   {!isBookScope && <>
@@ -1741,7 +1753,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
                       집중 연습의 갈래로 옮겼다(REV-SCOPE-R1B-1) — 본 복습은 플래시(버튼 넷)뿐이다. 여기는 한도만. */}
                   <div className="vocab-tools__limit">
                     <label htmlFor="new-per-day" style={{ display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 5 }}>
-                      하루 새 단어 한도{explicitScope && ' · 전체 복습과 공유'}
+                      하루 새 표현 한도{explicitScope && ' · 전체 복습과 공유'}
                     </label>
                     <select
                       id="new-per-day"

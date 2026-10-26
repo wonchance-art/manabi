@@ -185,7 +185,7 @@ describe('세션 · 끝 화면 · 상태 문구(§5-5 · §5-6)', () => {
   });
   it('세션 길이 칩 「5분 · 약 20개 · 50개 · 전부」 = 서로 다른 카드 수, 이어 하기는 세션 저장소(24시간)', () => {
     expect(page).toContain('`5분 · 약 ${length}개`');
-    expect(page).toContain('`전부 ${session.total}`');
+    expect(page).toContain("`전부 ${session.total.toLocaleString('ko-KR')}`");
     expect(page).toContain('writeResume(storage, user.id, value)');
     expect(page).toContain('window.sessionStorage');
     expect(page).not.toContain('멈춘 복습 이어가기 ·');

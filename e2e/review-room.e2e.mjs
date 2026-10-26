@@ -97,7 +97,7 @@ try {
  grammarFail=true;await page.reload();await page.getByRole('alert').filter({hasText:'문법 일정을 불러오지 못했어요.'}).waitFor();await check('independent grammar failure');
  grammarFail=false;state='due';rows=[{...rows[0],word_text:'長い表現'.repeat(18),meaning:'아주 긴 뜻 '.repeat(25),next_review_at:'2026-01-02'}];await page.reload();
  await page.getByRole('button',{name:'표현 1개 복습 →',exact:true}).waitFor();await page.setViewportSize({width:320,height:844});await check('long expression and meaning at 320px');
- await page.locator('.review-room-settings summary').focus();await page.keyboard.press('Enter');await page.getByLabel('하루 새 단어 한도',{exact:true}).waitFor();await check('keyboard settings controls remain accessible');
+ await page.locator('.review-room-settings summary').focus();await page.keyboard.press('Enter');await page.getByLabel('하루 새 표현 한도',{exact:true}).waitFor();await check('keyboard settings controls remain accessible');
  await page.screenshot({path:out+'/settings-mobile.png',fullPage:true});
  assert.deepEqual(report.errors,[]);
 } finally {fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));await browser.close();}

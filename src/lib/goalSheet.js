@@ -21,10 +21,20 @@ export const CUSTOM_DATE = 'custom';
 /** 이름 칸 길이 — 예전 창 · examGoalOf와 같은 12자. */
 export const GOAL_LABEL_MAX = 12;
 
-/** 언어 칩 — 과정 목록(/api/goal-catalog)의 언어. 목록을 받기 전 · 못 받았을 때는 네 트랙. */
-export function goalLanguages(catalog) {
+/**
+ * 언어 칩 — 과정 목록(/api/goal-catalog)의 언어. 목록을 받기 전 · 못 받았을 때는 네 트랙.
+ * profile을 주면 학습 언어(내 정보 › 학습 언어)만 남긴다 — 학습 언어는 일본어인데 목표는 「HSK 4급」인 어긋남을 막는다(오너 「권장대로」
+ * 2026-10-26 KST). 지금 목표 언어가 학습 언어 밖이면 그 칩도 남긴다(저장된 목표를 숨기지 않는다). 남는 것이 없으면 전부.
+ */
+export function goalLanguages(catalog, profile = null) {
   const keys = (catalog ? Object.keys(catalog) : GOAL_LANG_ORDER).filter(lang => LANG_NAME_KO[lang]);
-  return [...GOAL_LANG_ORDER.filter(lang => keys.includes(lang)), ...keys.filter(lang => !GOAL_LANG_ORDER.includes(lang))];
+  const all = [...GOAL_LANG_ORDER.filter(lang => keys.includes(lang)), ...keys.filter(lang => !GOAL_LANG_ORDER.includes(lang))];
+  if (!profile) return all;
+  // 저장한 학습 언어 그대로(learnLanguages의 「없으면 일본어」 폴백은 쓰지 않는다 — 목표 언어 후보를 지어내지 않는다).
+  const raw = profile.learning_language;
+  const keep = new Set([...(Array.isArray(raw) ? raw : [raw]), profile.goal_lang].filter(Boolean));
+  const mine = all.filter(lang => keep.has(lang));
+  return mine.length ? mine : all;
 }
 
 /** 그 언어의 시험(대조한 일정이 한 줄이라도 있을 때만) — 'JLPT' · 'HSK' · null. */
@@ -68,7 +78,7 @@ export function goalNowView(dday, nowMs = Date.now()) {
  * 목표일이 그 급수의 시험 날이면 그 카드, 아니면 「다른 날짜」. 급수를 모르는 날짜 목표는 「시험 없이」.
  */
 export function initialGoalState({ profile, dday, catalog, nowMs = Date.now() }) {
-  const langs = goalLanguages(catalog);
+  const langs = goalLanguages(catalog, profile);
   const savedLang = profile?.goal_lang || '';
   const savedLevel = profile?.goal_level || '';
   const lang = [savedLang, learnLanguages(profile)[0]].find(l => l && langs.includes(l)) || langs[0];
