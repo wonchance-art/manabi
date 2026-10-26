@@ -117,6 +117,36 @@ export async function readVocabularyLearningSnapshotLight({ serviceClient, userI
   return validateVocabularyLearningSnapshot(expandLightSnapshot(response?.data, userId, { language, summary }), userId);
 }
 
+/** 카드 몇 장 읽기(SNAPSHOT-CARDS-001)가 한 번에 받는 id 수 — SQL fsrs_vocabulary_snapshot_cards의 상한과 같다(그 밖은 둘 다 22023 · 400). */
+export const VOCABULARY_CARDS_MAX = 50;
+
+/**
+ * 카드 몇 장의 학습 snapshot(SNAPSHOT-CARDS-001 — 뷰어 · 단어장 글자 칸 저장 · 채점 뒤 색인 패치). fsrs_vocabulary_snapshot_cards는 snapshot과
+ * 같은 판정 · 같은 모양에서 그 id 행만 낸다(남의 id · 없는 id는 빠진다) → 같은 검사(validateVocabularyLearningSnapshot)에 더해 행이 모두
+ * 요청한 id인지 본다. ids = 소문자 UUID 1~VOCABULARY_CARDS_MAX개 · 중복 없음, 그 밖은 부르기 전에 400.
+ * 함수 없음(PGRST202 + 그 이름 — 배포가 마이그레이션보다 먼저 닿은 몇 분 · 복원 뒤)일 때만 전체 snapshot을 그 id로 걸러 같은 값을 낸다.
+ * 다른 오류는 그대로 던진다(가벼운 읽기와 같은 판단 — 과부하 때 읽기를 두 배로 하지 않는다).
+ */
+export async function readVocabularyLearningSnapshotCards({ serviceClient, userId, ids }) {
+  if (!id(userId)) reject('fsrs_auth_required', 401);
+  if (!Array.isArray(ids) || ids.length < 1 || ids.length > VOCABULARY_CARDS_MAX || !ids.every(id) || new Set(ids).size !== ids.length) reject('fsrs_invalid_request', 400);
+  const wanted = new Set(ids);
+  const only = snapshot => {
+    if (!snapshot.rows.every(row => wanted.has(row.id))) reject('fsrs_snapshot_unavailable');
+    return snapshot;
+  };
+  let response;
+  try { response = await serviceClient.rpc('fsrs_vocabulary_snapshot_cards', { p_actor: userId, p_ids: ids }); }
+  catch { reject('fsrs_storage_unavailable'); }
+  const error = response?.error;
+  if (error?.code === 'PGRST202' && String(error.message || '').startsWith('Could not find the function public.fsrs_vocabulary_snapshot_cards(')) {
+    const full = validateVocabularyLearningSnapshot(await rpc(serviceClient, 'fsrs_vocabulary_snapshot', { p_actor: userId }), userId);
+    return only({ ...full, rows: full.rows.filter(row => wanted.has(row.id)), registry: full.registry.filter(entry => wanted.has(entry.cardId)) });
+  }
+  databaseError(error);
+  return only(validateVocabularyLearningSnapshot(response?.data, userId));
+}
+
 export function normalizeManualVocabularyRequest(body, userId) {
   if (!id(userId)) reject('fsrs_auth_required', 401);
   if (!object(body) || body.action !== 'save' || !ownKeys(body, ['action', 'accountId', 'operationId', 'cardId', 'vocabulary'])
