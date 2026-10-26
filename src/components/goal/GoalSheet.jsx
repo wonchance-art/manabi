@@ -35,7 +35,7 @@ import { LANG_NAME_KO } from '@/lib/constants';
 import { examCheckedLine } from '@/lib/examSchedules';
 import {
   CLEAR_GOAL_ARGS, CUSTOM_DATE, GOAL_LABEL_MAX, NO_EXAM, courseLevelChips, examKindOf, examLevelChips, goalDateCards,
-  goalLanguages, goalNowView, goalSaveArgs, initialGoalState, needsManualDate,
+  goalLanguages, goalNowView, goalSaveArgs, initialGoalState, isExamLabel, needsManualDate,
 } from '@/lib/goalSheet';
 import { useGoalCatalog } from '@/components/learn/GoalTrackTile';
 import ActionIcon from '@/components/ActionIcon';
@@ -105,12 +105,14 @@ function GoalSheetDialog({ dday, catalog, onClose, onLocal }) {
   const source = (picked || cards[0])?.rows[0]?.source;
 
   const edit = patch => setState(s => ({ ...s, ...patch, touched: true }));
-  const chooseLang = lang => { if (lang !== state.lang) edit({ lang, pick: '', card: '' }); };
+  // 언어 · 급수를 바꾸면 시험 고르기가 지은 이름(「HSK 4급」)은 비운다 — 직접 적은 이름은 그대로.
+  const relabel = () => (isExamLabel(state.label) ? { label: '' } : {});
+  const chooseLang = lang => { if (lang !== state.lang) edit({ lang, pick: '', card: '', ...relabel() }); };
   const choosePick = key => {
     if (key === state.pick) { edit({ pick: '', card: '' }); return; }
     // 시험 날이 하나뿐이면 바로 고른다 — 고를 것이 하나면 누를 것도 없다.
     const next = exam && key !== NO_EXAM ? goalDateCards(exam, key, nowMs) : [];
-    edit({ pick: key, card: next.length === 1 ? next[0].key : '' });
+    edit({ pick: key, card: next.length === 1 ? next[0].key : '', ...relabel() });
   };
 
   // 하루 목표 — 1 이상(배움 오늘 목표 산식이 나눗셈에 쓴다). 날짜 목표 저장과 같은 갱신에 싣는다.

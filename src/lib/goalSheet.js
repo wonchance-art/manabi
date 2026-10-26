@@ -49,6 +49,12 @@ export function goalDateCards(exam, level, nowMs = Date.now(), schedules = EXAM_
   return examDateCards(schedules, exam, level, nowMs).map(card => ({ ...card, dLabel: dDayLabel(card.date, nowMs) }));
 }
 
+/** 시험 고르기가 지은 이름인가(「JLPT N3」 · 「HSK 4급 IBT」) — 언어 · 급수를 바꾸면 이런 이름은 비운다(영어 목표에 「HSK 4급」이 남지 않게). */
+export function isExamLabel(label) {
+  const text = (label || '').trim();
+  return !!text && Object.values(EXAM_KINDS).some(kind => kind.levels.some(lv => [lv.name, `${lv.name} IBT`, `${lv.name} PBT`].includes(text)));
+}
+
 /** 지금 목표 칸 — 「JLPT N3 / 12월 6일 일요일 / D-41」. 이름이 없으면 「목표일」. 날짜 목표가 없으면 null. */
 export function goalNowView(dday, nowMs = Date.now()) {
   const day = examDayLabel(dday?.date);

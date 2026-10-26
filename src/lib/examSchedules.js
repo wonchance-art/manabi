@@ -66,7 +66,7 @@ export function examDateCards(list, exam, level, nowMs = Date.now()) {
   return [...cards.values()].map((c) => ({ ...c, formats: c.formats.sort() }));
 }
 
-/** 카드 → 저장 값. 형식이 하나뿐이면 examGoalOf 그대로(「HSK 7–9급 IBT」), IBT · PBT를 합친 카드는 형식이 뜻을 잃어 뺀다(「HSK 4급」). */
+/** 카드 → 저장 값. 형식이 하나뿐이면 examGoalOf 그대로(「… IBT」), IBT · PBT를 합친 카드는 형식이 뜻을 잃어 뺀다(「HSK 4급」). */
 export function examCardGoal(card, level) {
   return examGoalOf({ ...card.rows[0], format: card.formats.length === 1 ? card.formats[0] : null }, level);
 }

@@ -7,7 +7,7 @@ import { failureMessage } from '../errorMessage.js';
 import { EXAM_SCHEDULES, examGoalOf } from '../examSchedules.js';
 import {
   CLEAR_GOAL_ARGS, CUSTOM_DATE, NO_EXAM, courseLevelChips, examKindOf, examLevelChips, goalDateCards, goalLanguages, goalNowView,
-  goalSaveArgs, initialGoalState, needsManualDate, resolveGoal,
+  goalSaveArgs, initialGoalState, isExamLabel, needsManualDate, resolveGoal,
 } from '../goalSheet.js';
 
 const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
@@ -52,6 +52,13 @@ describe('단계 — 언어 → 시험(또는 목표 수준) → 날짜, 그다�
     expect(SHEET).toContain('>시험 없이</button>');
     expect(SHEET).toContain('placeholder="이름 (선택) · 예: 여행 전까지"');
     expect(SHEET).toContain('maxLength={GOAL_LABEL_MAX}');
+  });
+
+  it('언어 · 급수를 바꾸면 시험이 지은 이름만 비운다(영어 목표에 「HSK 4급」이 남던 것 — 실화면 확인)', () => {
+    for (const label of ['JLPT N3', 'HSK 4급', 'HSK 4급 IBT', 'HSK 7–9급 PBT']) expect(isExamLabel(label), label).toBe(true);
+    for (const label of ['', '여행 전까지', 'JLPT N3 합격!', 'HSK 4']) expect(isExamLabel(label), label).toBe(false);
+    expect(SHEET).toContain("const relabel = () => (isExamLabel(state.label) ? { label: '' } : {});");
+    expect(SHEET).toContain("edit({ lang, pick: '', card: '', ...relabel() })");
   });
 
   it('직접 입력칸은 시험 없는 언어 · 「시험 없이」 · 일정 없는 급수 · 「다른 날짜」에서만', () => {
