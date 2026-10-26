@@ -873,7 +873,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
           {session && current && <OneWordCard entry={current} view={prefs.view} info={currentInfo} tiles={tilesOf(current.word, current.kr)}
             speak={speak} tone={tone} revealed={revealed} onReveal={() => keyState.current.reveal()} turnKey={turn ? `${turn}:${current.key}` : null}
             onWord={onExampleWord} openKey={pop?.id} />}
-          {session && current && <GradeBar previews={currentInfo.previews} onGrade={(r) => onGrade(current, r)} disabled={!ready} note={gradeNote(currentInfo)} guide={revealed} />}
+          {session && current && <GradeBar previews={currentInfo.previews} onGrade={(r) => onGrade(current, r)} disabled={!ready} note={gradeNote(currentInfo)} />}
         </div>
         : <>
           {!listed && pending}

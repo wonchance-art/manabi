@@ -27,7 +27,6 @@ function latinWordLang({ lang, code, language, name, levels }) {
     placeholder: '철자 · 뜻',
     searchHint: `철자(악센트 없이도) · 한국어 뜻으로 찾아요`,
     noneHint: '철자를 줄이거나 한국어 뜻으로 찾아 보세요.',
-    guide: '뜻이나 발음 중 하나라도 막혔다면 다시',
     aidLabel: null,
     Reading: Ipa,
     head: (e) => ({ hw: e.word, sub: e.reading }),

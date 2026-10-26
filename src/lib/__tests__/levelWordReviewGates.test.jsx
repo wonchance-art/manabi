@@ -7,7 +7,7 @@ import { WordLangContext } from '@/components/levels/word/wordLang';
 
 // 계약: 시안 ⑦ 추천(오너 2026-10-21 KST) — ① 하루 새 단어는 복습 설정과 같은 수 + 「더」 단추(시안 ⑧), ③ 소리 탭 자동 읽기.
 // ② 「확인 전 채점 막기」는 앞서 정한 「앞면에서도 네 칸」과 어긋나 넣지 않는다(오너 재확인). 기록 · 일정 계산은 그대로다.
-const L = { guide: '떠올린 만큼 골라요' };
+const L = {};
 const wrap = (node) => renderToStaticMarkup(<WordLangContext.Provider value={L}>{node}</WordLangContext.Provider>);
 const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
 const css = fs.readFileSync('src/components/levels/word/level-word.css', 'utf8');

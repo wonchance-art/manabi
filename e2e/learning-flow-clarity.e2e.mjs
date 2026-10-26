@@ -204,10 +204,10 @@ test('review session: one line, card faces, first-seen card, resume after reload
   assert.equal(await f.page.getByText('역',{exact:true}).count(),0);assert.equal(await f.page.locator('.review-card__word rt').count(),0);
   assert.equal(await f.page.locator('.review-score-btn--good').isDisabled(),true);
   await check(f,'r1b-card-front-390');
-  // Space = 뒷면: 뜻 + 한자 위 후리가나 + 발음 판정 문구.
+  // Space = 뒷면: 뜻 + 한자 위 후리가나. 채점 안내 문구는 없다(오너 2026-10-26 KST).
   await f.page.keyboard.press('Space');await f.page.getByText('역',{exact:true}).waitFor();
   assert.equal((await f.page.locator('.review-card__word rt').textContent()).trim(),'えき');
-  await f.page.getByText('뜻이나 발음 중 하나라도 막혔다면 다시',{exact:false}).waitFor();
+  assert.equal(await f.page.getByText('막혔다면',{exact:false}).count(),0);
   await check(f,'r1b-card-back-390');
   // 채점 막대 = 화면 최하단 고정(설계 §5-3, M09 6158372690 — 짧은 카드에서도 카드 바로 아래가 아니라 화면 바닥). 끝까지 내려도 카드를 가리지 않는다.
   const barAtBottom=async()=>{const r=await f.page.evaluate(()=>{scrollTo(0,document.documentElement.scrollHeight);const bar=document.querySelector('.review-grade-bar').getBoundingClientRect(),card=document.querySelector('.review-card').getBoundingClientRect();return{gap:innerHeight-bar.bottom,overlap:card.bottom-bar.top};});assert.ok(Math.abs(r.gap)<=1,`grade bar sits on the viewport bottom (gap ${r.gap})`);assert.ok(r.overlap<=0,`grade bar never covers the card (overlap ${r.overlap})`);};

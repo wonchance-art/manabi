@@ -99,9 +99,9 @@ describe('화면 — HSK와 같은 공통 화면에 JLPT 판', () => {
       expect(read(p), p).toMatch(/levelListRoute\('(japanese|chinese)', '(bunkei|hanzi)', LevelListPage\)/);
     }
   });
-  it('시안 문구 — 태그 N3 · 다시 안내 · 전체 찾기 범위', () => {
+  it('시안 문구 — 태그 N3 · 전체 찾기 범위 · 채점 안내 문구 없음', () => {
     expect(page).toContain("tag: (level) => `N${level}`");
-    expect(page).toContain("guide: '뜻이나 읽기 중 하나라도 막혔다면 다시'");
+    expect(page).not.toMatch(/guide:|막혔다면/);
     expect(page).toContain("scope: 'JLPT N5–N1 전체'");
   });
   it('N5 · N4는 가나 표제어(jaHeadMode) — 옛 목록과 같은 규칙', () => {

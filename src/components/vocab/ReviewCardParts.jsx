@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 import VocabularyContexts from '../learning/VocabularyContexts';
 import { detectLang, displayWord } from '../../lib/constants';
-import { EXPRESSION_KIND_LABELS, expressionKind, gradeGuide, readingLine, revealTrigger } from '../../lib/reviewCard';
+import { EXPRESSION_KIND_LABELS, expressionKind, readingLine, revealTrigger } from '../../lib/reviewCard';
 import { focusIfFree } from '../../lib/focusAfterAction';
 
 const LANG_TAG = { Japanese: 'ja', Chinese: 'zh', English: 'en', French: 'fr', Korean: 'ko' };
@@ -103,11 +103,6 @@ export function ReviewBack({ word, speak, ttsSupported, contexts = true }) {
     <ReviewReadingRow word={word} speak={speak} ttsSupported={ttsSupported} />
     {contexts && <VocabularyContexts key={word.id} vocabularyId={word.id} word={word} readOnly />}
   </div>;
-}
-
-/** 채점 기준 문구(§6-1 ⑥) — 발음 판정 대상에만 발음을 말한다. */
-export function GradeGuide({ word }) {
-  return <p className="review-grade-guide">{gradeGuide(word)}</p>;
 }
 
 /** 처음 보는 표현(§3-4 · §6-1 ⑥) — 채점 없음. 전부 보여 주고 「다음 →」, 잠시 뒤 다시 묻는다. */

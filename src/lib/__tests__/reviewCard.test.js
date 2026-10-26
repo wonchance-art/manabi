@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { GRADE_GUIDE, expressionKind, gradeGuide, hasMeaning, pronunciationJudged, readingLine, readReviewSound, revealTrigger, saveReviewSound,
+import * as reviewCard from '../reviewCard';
+import { expressionKind, hasMeaning, readingLine, readReviewSound, revealTrigger, saveReviewSound,
   shouldAutoplay } from '../reviewCard';
 
 // REV-SCOPE-R1B-1 카드 규격(설계 §3-2 · §3-3 · §6-1 ⑥⑦) — 종류 판별 · 발음 판정 대상 · 문구 · 소리.
@@ -15,17 +16,9 @@ describe('종류 판별(읽을 때만, 저장하지 않음)', () => {
   });
 });
 
-describe('발음 판정 대상 · 채점 문구', () => {
-  it('일본어 한자어 · 중국어만 「뜻이나 발음 중 하나라도 막혔다면 다시」 — 가나만 · 영어 · 프랑스어 · 읽기 없음은 「뜻을 못 떠올렸다면 다시」', () => {
-    expect(gradeGuide({ language: 'Chinese', word_text: '早餐', furigana: 'zǎo cān' })).toBe(GRADE_GUIDE.both);
-    expect(gradeGuide({ language: 'Japanese', word_text: '駅', furigana: 'えき' })).toBe(GRADE_GUIDE.both);
-    expect(gradeGuide({ language: 'Japanese', word_text: 'きっかけ', furigana: 'きっかけ' })).toBe(GRADE_GUIDE.meaning);
-    expect(gradeGuide({ language: 'Japanese', word_text: 'カフェ', furigana: 'かふぇ' })).toBe(GRADE_GUIDE.meaning);
-    expect(gradeGuide({ language: 'Chinese', word_text: '早餐', furigana: '' })).toBe(GRADE_GUIDE.meaning);
-    expect(gradeGuide({ language: 'English', word_text: 'eloquent', furigana: '/ˈɛləkwənt/' })).toBe(GRADE_GUIDE.meaning);
-    expect(gradeGuide({ language: 'French', word_text: 'bonjour', furigana: 'bɔ̃ʒuʁ' })).toBe(GRADE_GUIDE.meaning);
-    expect(pronunciationJudged({ language: 'Japanese', word_text: '駅' })).toBe(false);
-    expect(GRADE_GUIDE).toEqual({ both: '뜻이나 발음 중 하나라도 막혔다면 다시', meaning: '뜻을 못 떠올렸다면 다시' });
+describe('채점 문구 · 읽기 줄', () => {
+  it('채점 기준 안내 문구는 없다(오너 2026-10-26 KST 「일부러 없앤 지 오래」) — 문구 · 판정 함수를 내보내지 않는다', () => {
+    for (const name of ['GRADE_GUIDE', 'gradeGuide', 'pronunciationJudged']) expect(reviewCard).not.toHaveProperty(name);
   });
   it('뒷면 읽기 줄: 일본어 한자어 = 후리가나(ruby) · 중국어 = 병음 · 영어/프랑스어 = 발음 표기 · 가나만 = 없음(소리만)', () => {
     expect(readingLine({ language: 'Japanese', word_text: '食べる', furigana: 'たべる' })).toEqual({ kind: 'ruby', text: 'たべる' });
