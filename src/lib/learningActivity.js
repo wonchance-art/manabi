@@ -9,6 +9,27 @@ export function activityDay(effectiveAt) {
   return new Date(day * 86400000).toISOString().slice(0, 10);
 }
 
+// 기기 시계가 서버와 몇 분 어긋나도 활동일(UTC 자정)을 넘겼을 수 있는 구간 — 이 안에서는 「오늘」을 기기 시계로 판정하지 않는다.
+export const ACTIVITY_ROLLOVER_GUARD_MS = 15 * 60 * 1000;
+export function nearActivityRollover(now) {
+  const t = ((now.getTime() % 86400000) + 86400000) % 86400000;
+  return t < ACTIVITY_ROLLOVER_GUARD_MS || 86400000 - t <= ACTIVITY_ROLLOVER_GUARD_MS;
+}
+
+/**
+ * 학습 활동 뒤 프로필 재읽기를 건너뛰어도 되는가(ACTIVITY-PROFILE-READ-001 — 운영 실측 2026-10-25 KST: 채점마다 profiles select=*
+ * 한 번, 하루 377번). 활동이 바꾸는 프로필 칸은 연속 기록 셋(streak_count · last_streak_date · streak_freeze_count)뿐이고, 정본
+ * fsrs_private.project_activity_days_with_legacy는 영수증 날이 last_streak_date와 같으면 결과를 바꾸지 않는다(같은 날 CONTINUE ·
+ * 집합 DISTINCT — 계약 activityProfileRead.test.js가 PGlite로 확인). 그래서 **영수증 날 = 서버의 오늘**인 legacy 활동(update_streak ·
+ * 예전 채점)에만 쓴다: 지금 가진 같은 계정 프로필이 오늘(UTC)을 이미 셌으면 다시 읽지 않는다. FSRS 채점은 영수증 날이 서버가 정한
+ * 공개 시각이라 어제일 수 있고(늦게 온 어제 영수증은 연속 일수를 바꿀 수 있다) 늘 다시 읽는다. 첫 활동(마일스톤 알림 포함)은 그대로
+ * 읽는다. 기기 시계로 오늘을 정하므로 UTC 자정 ±15분은 늘 다시 읽는다(recordActivity와 같은 가드).
+ */
+export function activityAlreadyCounted(profile, actorId, now = new Date()) {
+  return typeof actorId === 'string' && actorId !== '' && profile?.id === actorId && !nearActivityRollover(now)
+    && profile.last_streak_date === activityDay(now.toISOString());
+}
+
 const dayTime = value => {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new Error('invalid_activity_day');
   const time = Date.parse(`${value}T00:00:00.000Z`);

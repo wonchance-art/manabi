@@ -40,7 +40,7 @@ const scoreColor = s => (s >= 4 ? 'var(--accent)' : s === 3 ? 'var(--warning)' :
 export default function WritingStudioPage({ recentChapters = [], signedOut = false }) {
   // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
   const signInHref = authEntryHref(usePathname());
-  const { user, profile, fetchProfile } = useAuth();
+  const { user, profile, refreshProfileAfterActivity } = useAuth();
 
   const [language, setLanguage] = useState('Japanese');
   const outputWords = useOutputWords(language);
@@ -257,7 +257,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
   async function persist(original, fb) {
     if (!user?.id) return;
     // 첨삭 완료 확정 시점 1회(submit()에서만 호출) — 실패해도 첨삭 표시 흐름은 유지(fire-and-forget)
-    recordActivity(user.id, () => fetchProfile(user.id));
+    recordActivity(user.id, () => refreshProfileAfterActivity(user.id));
     const allErrors = fb.sentences.flatMap(s => s.errors.map(e => ({ ...e, sentence: s.original })));
     const row = {
       user_id: user.id,

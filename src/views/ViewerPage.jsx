@@ -324,7 +324,7 @@ export default function ViewerPage({ seed } = {}) {
   const classBoardTarget=useRef(null),classBoardHeaderTarget=useRef(null);
   const [classBoardRatio,setClassBoardRatio]=useState(60);
   const [classPresenting,setClassPresenting]=useState(false);
-  const { user, profile, fetchProfile, isAdmin, loading: authLoading } = useAuth();
+  const { user, profile, refreshProfileAfterActivity, isAdmin, loading: authLoading } = useAuth();
   // 「←」 복귀 — 확인된 손님이 맥락 없이 열면 산책(/discover). 로그인 확인 중 · 회원 · returnTo가 있으면 지금 그대로(readerReturnTarget).
   const guestReader = !user && !authLoading;
   const backTarget = readerReturnTarget(originalParams.get('returnTo'), { guest: guestReader });
@@ -756,7 +756,7 @@ export default function ViewerPage({ seed } = {}) {
   });
 
   const markCompleteMutation = useReadingCompletion({
-    materialId: id, user, profile, fetchProfile,
+    materialId: id, user, profile, fetchProfile: refreshProfileAfterActivity,
     material, generateQuiz,
     toast,
     // 완독 순간의 순수 읽기 시간·글자수 — 기록 여부 판정은 훅이 한다.
@@ -2063,7 +2063,7 @@ export default function ViewerPage({ seed } = {}) {
   }
 
   // 인라인 복습: 뷰어에서 단어 보며 바로 FSRS 평가
-  const inlineReview = useInlineReview({ user, fetchProfile, toast });
+  const inlineReview = useInlineReview({ user, fetchProfile: refreshProfileAfterActivity, toast });
   const selectedVocab = findSavedVocab(savedWords, selectedToken, materialLang);
   const selectedExclusion = findVocabularyExclusion(exclusionState.rows, {
     vocabularyId: selectedVocab?.id, language: materialLang, word: exclusionWord(selectedToken),
@@ -2960,7 +2960,7 @@ export default function ViewerPage({ seed } = {}) {
     const undo = await prepareViewerSaveUndo(supabase, inserted[0], savedSource, linked).catch(() => null);
     if (saveScopeRef.current !== saveScope) return;
     recordActivity(user.id, () => {
-      if (saveScopeRef.current === saveScope) fetchProfile(user.id);
+      if (saveScopeRef.current === saveScope) refreshProfileAfterActivity(user.id);
     });
     if (gradeAction.current !== action) return;
     const snapshot = undo ? { ...undo, text: savedToken.text } : null;

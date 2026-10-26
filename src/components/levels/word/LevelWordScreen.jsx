@@ -156,7 +156,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
   const byKey = useMemo(() => new Map(allEntries.map((e) => [e.key, e])), [allEntries]);
   const pathname = usePathname();
   const router = useRouter();
-  const { user, loading: authLoading, fetchProfile } = useAuth();
+  const { user, loading: authLoading, refreshProfileAfterActivity } = useAuth();
   const userId = user?.id || null;
   const queryClient = useQueryClient();
   const toast = useToast();
@@ -282,7 +282,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
     setNotice({ id: Date.now(), text, action: '로그인', href: authEntryHref(pathname) });
   }, [pathname]);
 
-  const grader = useLevelWordGrade({ user, fetchProfile, language, onError: (message) => toast(message, 'error') });
+  const grader = useLevelWordGrade({ user, fetchProfile: refreshProfileAfterActivity, language, onError: (message) => toast(message, 'error') });
   const [pops, setPops] = useState(() => new Set()); // 막 ☆ → 오늘이 된 단어(한 번 튀어오름)
   const [saving, setSaving] = useState(null);
   const popKey = (key) => setPops((s) => new Set(s).add(key));
@@ -557,7 +557,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
       requestAnimationFrame(() => { anim.cancel(); el.style.overflow = ''; });
     }
     const row = answerArea(entry.key, which, correct, sameDay);
-    recordActivity(userId, () => fetchProfile?.(userId)); // 연속 기록 — 누른 횟수 전부(학습량은 활동 기록이 센다)
+    recordActivity(userId, () => refreshProfileAfterActivity?.(userId)); // 연속 기록 — 누른 횟수 전부(학습량은 활동 기록이 센다)
     flushSync(() => {
       setRound((r) => (r && r.area === which ? { ...r, answers: new Map(r.answers).set(entry.key, { correct, row }) } : r));
       setFocusKey(null);
@@ -568,7 +568,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
     // 같은 날 규칙에 걸린 알아요만 창으로 알린다(진도에 안 들어가는 까닭) — 나머지는 조용한 되돌리기.
     setNotice({ id: Date.now(), quiet: correct && sameDay ? null : { word: cfg.head(entry).hw, what: correct ? '알아요' : '다시 볼래요' }, text, action: '되돌리기', onAction: () => undoRef.current?.({ practice: [entry.key, which, row] }) });
     return undefined;
-  }, [userId, askLogin, roundOn, round, seenElsewhere, prefs.mode, answerArea, fetchProfile, cfg]);
+  }, [userId, askLogin, roundOn, round, seenElsewhere, prefs.mode, answerArea, refreshProfileAfterActivity, cfg]);
   undoPracticeRef.current = (key, which, row) => {
     areaRec.cancel(key, which, row);
     setRound((r) => {

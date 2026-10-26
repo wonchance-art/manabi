@@ -167,7 +167,7 @@ describe('움직임만 바꾼다 — 저장 · 채점 · 기록 호출은 그대
       'const linked = await attachReadingContext(savedToken);',
       "import { revertInlineGrade } from '../lib/inlineGradeUndo';",
       'await revertInlineGrade(supabase, { userId: user.id, last });',
-      'const inlineReview = useInlineReview({ user, fetchProfile, toast });',
+      'const inlineReview = useInlineReview({ user, fetchProfile: refreshProfileAfterActivity, toast });',
     ]) expect(viewer).toContain(call);
     expect(read('src/lib/inlineGradeUndo.js')).toContain('logReviewEvents(userId, [{');
   });
