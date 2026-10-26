@@ -1116,6 +1116,13 @@
   ② /japanese · /chinese · /english · /french → 엣지 307 /lessons?lang=…(손님에게 「관리자 보관함 로그인」을 보이던 것 · 학습자 3번 돌던 것),
   관리자 거절은 바로 /home. ③ /auth 로그인 폼을 정적 HTML에(질의는 마운트 뒤 · 제출 때 읽기), ?mode=reset · ?error=는 첫 그림을 미루는 판
   /auth/from-link(주소창 그대로)로 — 재설정 · 오류 화면 깜빡임 없음(브라우저 확인).
+  → **#1576 squash `d4e456f4`(09:09 KST, 운영 16/16 · 오류 0 · /japanese 307 → /lessons?lang=Japanese · /auth HTML 폼 · ?mode=reset 미룸)**.
+- **SECDEF-HARDEN-002 · PWNED-PASSWORD-001 (2026-10-26 KST, 오너 「권장대로 진행」)**: Supabase 보안 진단 검토(운영 카탈로그 읽기 전용) —
+  즉시 악용 가능 고위험 없음. 실위험 = profiles 전원 공개(PROFILES-PRIVACY-001 ②, 전용 마이그레이션 진행 중 · 병합 전 오너 보고).
+  ① join_cohort 실행권 service_role만(로그인 사용자가 기수 코드를 읽고 아무 기수에 가입하던 경로) · 정책 헬퍼 셋 anon 회수
+  (is_admin · enforce_role_change_by_admin은 activity 지문 · 손님 공개 자료 읽기 때문에 유지). 함수 본문 · 정책 · 행 무변경, 복원 SQL ·
+  PGlite 7검사. ② 가입 · 재설정 · 내 정보 비밀번호 변경 전에 유출 비밀번호 확인(HIBP range k-익명성, 해시 앞 5자만 우리 라우트가 중계 —
+  처리방침 §4 제3자 목록 유지, 실패 시 열림). Supabase 유출 차단은 Pro 전용이라 앱에서. 남은 오너 할 일: 없음(대시보드 HIBP는 Pro).
 - **JLPT-KANJI-WINDOW-001 · 단어장 손질 (2026-10-26 KST, 오너 「중국어 판과 엄격하게 대조하면서 동일하게」 · 시안 ⑧ · ⑨)**: JLPT 단어 페이지 글자 칸의 큰 한자도 단추 →
   HSK와 같은 창 · 같은 머리에 상용한자표 순서의 음 · 훈 표(읽기마다 JLPT 단어 둘 · 후리가나 · 한국어 뜻, 단어 없는 읽기도 빈 줄, 지금 읽기 장미색, 내린 읽기 흐리게).
   자료 = 常用漢字表 원문(2,136자 · 4,388음훈 · 내린 읽기 178, `scripts/generate-ja-joyo.mjs --check` · joyodb 대조 불일치 0) + 상용 밖 콘텐츠 한자 KANJIDIC2(CC BY-SA, 파일 분리 · 쓰이는 줄만).
