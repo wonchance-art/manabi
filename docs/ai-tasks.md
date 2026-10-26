@@ -1164,6 +1164,13 @@
   다시 쓰던 것 — 끌어올림은 마운트 때 값 한 번). 개수 쉼표 넷(표현 목록 · 더 보기 · 복습 시작 · 범위 풀기). 합성 계정 390 터치: 정렬 16px · 폭 112 · 줄 무변화.
   SNAPSHOT-CARDS-001 운영 효과(Supabase edge 로그, 병합 뒤 약 14시간): 카드 읽기 23번이 전체 snapshot을 대신함 — 전체 snapshot 13번(대신하지 않았으면 약 36번),
   병합 전 9.5시간 전체 14번.
+  → **#1589 squash `e9d0559a`(05:35 KST, 운영 16/16 · 오류 0)**.
+- **HYDRATION-SLOT-001 뷰어 하이드레이션 #418 간헐 (2026-10-27 KST)**: CI korean-learning e2e 1회 실패(#1585)의 근본 원인. Next 15.5 동봉 React
+  (19.2.0-canary-0bdb9206)가 DOM 요소 바로 안의 세그먼트 자리(OuterLayoutRouter — error.jsx 조각을 가리킴)가 조각 도착 전 멈췄다 다시 그릴 때
+  하이드레이션 커서를 되돌리지 않음 → div를 자기 첫 자식에 맞추다 #418(HTML). 대상 = TcFontScope div(뷰어 · pdf · suggestions · chinese).
+  로컬 프로덕션 빌드 반복 약 400회 중 6회 재현, 다시 그리기 3/3이 #418. React 19.3.0 수정(popHydrationStateOnInterruptedWork) 덧댄 빌드 135/135 · 0.
+  임시 수리 = 'use client' 함수 부품 SegmentSlot(children만 반환, DOM 무변화)을 사이에 끼움(TcFontScope · Layout main · 일본어 문법 레이아웃) —
+  수리 빌드 135/135 · 0(같은 경합 1회 흡수). 계약 segmentSlotHydration(main에서 세 곳 FAIL → 통과). 근본 해결 = React ≥ 19.3(Next 16) — 오너 판단.
 - **NATIVE-FEEL-P1 입력칸 하한 미뤄 둔 네 곳 (2026-10-26 KST, 오너 「권장대로 진행」)**: ⓐ 함께 읽는 글 정렬을 칩 줄 밖 한 줄(오른쪽 · 글자 단추 · 44px,
   터치 16px) ⓑ 서재 정렬 선택 상자를 「필터」 시트 안 라디오(묶음 제목 「정렬」 · 16px · 줄 44px)로 — 값 · sort= 주소 · 급수순(옛 주소 전용) 그대로, 바꾼 때만 주소에
   ⓒ 노트 단어 카드 터치에서 표기 24 / 읽기 16 / 뜻 16 ⓓ 크기 없는 칸 화면별 — 그룹 폼 7칸 · 검색 칸 · 수업 과 선택 16px(min-width 0으로 줄바꿈 무변화),
