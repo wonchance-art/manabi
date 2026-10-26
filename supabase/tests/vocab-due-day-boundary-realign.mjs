@@ -21,8 +21,8 @@ const later = at04(now + 3 * DAY) + 10 * HOUR + 42 * 60000; // 3학습일 뒤 14
 const h = await setup();
 await seedEdgeActor(h);
 const { db } = h;
-// 운영 순서대로 관측 뒤 마이그레이션(191500 이후 전부 — 운영 적용 시점의 구조)을 올린다 — fixture 범위 밖(대화방 등)은 건너뛴다.
-for (const f of (await readdir(new URL('../migrations/', import.meta.url))).filter(f => f.slice(0, 14) > '20261016191500' && f.endsWith('.sql')).sort()) {
+// 운영 순서대로 관측 뒤 마이그레이션(191500 이후 · 이 SQL을 짠 10-26 전 — 학습 계약 구조)을 올린다 — fixture 범위 밖(대화방 등)은 건너뛴다.
+for (const f of (await readdir(new URL('../migrations/', import.meta.url))).filter(f => f.slice(0, 14) > '20261016191500' && f.slice(0, 14) < '20261026000000' && f.endsWith('.sql')).sort()) {
   try { await db.exec(h.localize(await read(`../migrations/${f}`))); }
   catch (e) { await db.exec('ROLLBACK').catch(() => {}); assert.ok(OUT_OF_FIXTURE.has(e.code), `${f}: ${e.message}`); }
 }
