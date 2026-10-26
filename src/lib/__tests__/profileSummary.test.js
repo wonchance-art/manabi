@@ -53,8 +53,10 @@ describe('알림 · 함께한 날 · 로그인 방법 · 기록 칸', () => {
   it('알림 — 푸시 먼저, 시각 알림은 덧붙임', () => {
     expect(reminderSummary({ pushOn: true, hour: '21' })).toBe('푸시 · 매일 21시');
     expect(reminderSummary({ pushOn: true })).toBe('푸시 켜짐');
-    expect(reminderSummary({ hour: '9' })).toBe('매일 9시');
+    expect(reminderSummary({ hour: '9' })).toBe('매일 9시 · 이 브라우저');
     expect(reminderSummary({})).toBe('꺼짐');
+    expect(reminderSummary({ hour: '9', blocked: true })).toBe('차단됨');
+    expect(reminderSummary({ pushOn: true, blocked: true })).toBe('푸시 켜짐');
   });
   it('함께한 날은 KST 날짜, 올해가 아니면 연도', () => {
     expect(joinedLine('2026-03-01T16:30:00Z', NOW)).toBe('3월 2일부터 함께하고 있어요');

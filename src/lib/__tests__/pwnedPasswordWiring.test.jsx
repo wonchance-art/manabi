@@ -146,7 +146,7 @@ describe('내 정보 비밀번호 바꾸기 · 만들기', () => {
   let toast;
   const render = user => { h.index = 0; return AccountSettings({ user, toast, signOut: vi.fn() }); };
   async function fillAndSubmit(user) {
-    find(render(user), el => el.props?.label === '비밀번호').props.onClick();
+    find(render(user), el => /^비밀번호 (바꾸기|만들기)$/.test(el.props?.label ?? '')).props.onClick();
     let tree = render(user);
     if (byId(tree, 'pf-current-password')) type(tree, 'pf-current-password', 'old-password-1');
     type(render(user), 'pf-new-password', PASSWORD);
