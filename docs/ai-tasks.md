@@ -1130,6 +1130,12 @@
   ④ 글자 탭 누르는 자리 투명 판(모습 무변화) ⑤ `.manabi-app` · `.auth-wrapper` 100dvh 짝. 계약 nativeFeel 24건.
   오너 결정 대기: 함께 읽는 글 정렬 칩 · 서재 정렬 상자 · 노트 읽기 칸 · 크기 미지정 입력칸(그룹 폼) 16px 방식, 「뜻」 탭 44px, 책장 뒤로가기 스크롤(실기 확인).
   → **#1578 squash `f7fae697`(10:03 KST, 운영 16/16 · 오류 0 · 새 CSS 운영 반영 확인)**. 같은 PR: 마이그레이션 워크플로 CLI 판 고정 2.122.0.
+- **NATIVE-FEEL-P1 입력칸 하한 미뤄 둔 네 곳 (2026-10-26 KST, 오너 「권장대로 진행」)**: ⓐ 함께 읽는 글 정렬을 칩 줄 밖 한 줄(오른쪽 · 글자 단추 · 44px,
+  터치 16px) ⓑ 서재 정렬 선택 상자를 「필터」 시트 안 라디오(묶음 제목 「정렬」 · 16px · 줄 44px)로 — 값 · sort= 주소 · 급수순(옛 주소 전용) 그대로, 바꾼 때만 주소에
+  ⓒ 노트 단어 카드 터치에서 표기 24 / 읽기 16 / 뜻 16 ⓓ 크기 없는 칸 화면별 — 그룹 폼 7칸 · 검색 칸 · 수업 과 선택 16px(min-width 0으로 줄바꿈 무변화),
+  font: inherit로 작아진 칸은 max(--field-font-min, 1em)(데스크톱 무변화). 정적 훑기 16px 미만 53 → 24(나머지 = 관리자 · 숨김 · 오탐 · 아래 남김).
+  ⓐ ⓑ는 데스크톱도 같은 자리. 남김(오너 판단): 단어장 정렬 · 레벨 거르기 12.8 · 재생 속도 12 · 목표 창 선택 13.6 · 임베드 복습 로그인 칸.
+  계약 nativeFeel NATIVE-FEEL-P1(되돌리면 13건 모두 FAIL) · e2e library-book-chapters(시트 라디오로).
 - **ACTIVITY-PROFILE-READ-001 (2026-10-26 KST)**: 운영 Supabase 로그(24시간) — 오류 응답 0, 대신 `profiles select=*`가 채점마다 1번(하루 377번 · 데스크톱
   한 계정, 5분에 최대 29번). 활동이 바꾸는 칸은 연속 기록 셋뿐이고 정본 `project_activity_days_with_legacy`는 영수증 날 = last_streak_date면
   결과가 같다(PGlite 무작위 400건 · 운영 본문 md5 be7f74e7 대조). legacy 활동(예전 채점 · update_streak — 영수증 날 = 서버의 오늘) 뒤에는 지금 프로필이
@@ -1218,6 +1224,9 @@
       사후 검사에 anon · 학습자 · 관리자 행동 검사) · 복원 docs/sql/profiles-privacy-rollback.sql · PGlite supabase/tests/profiles-privacy.mjs(CI 등록).
       앱 변경 0(쓰는 열 = 여는 열 계약 · 자기 행 읽기 계약 profilesPrivacy.test.js). 남의 이름은 public_profiles(정의자 view · 세 열) 그대로.
       병합 전 운영 읽기 전용 대조(11:00 KST): 상수 8개 전부 지금 값과 일치 · 계약 넷 게시 = 계산 · 정책 7(전원 공개 둘 포함) = 사전 검사 기대 모양.
+      → **#1580 squash `e4c1b588`(11:24 KST)** · 운영 적용 11:25(워크플로 1회 성공 · CLI 고정판): 정책 = 본인 읽기 · 본인 수정 · insert 둘 · profiles_select_admin,
+      표 권한 anon · authenticated = r, 열 권한 UPDATE 14 + INSERT(id, display_name), 계약 넷 게시 = 계산(core 그대로 · profile b998f7a2 · admission 588ac1c8),
+      운영 16/16 · 오류 0 · 적용 뒤 30분 Supabase 4xx/5xx 0. 오너 실계정 확인 대기(관리자 목록 · 온보딩 · 닉네임 · 목표 저장 · 로그인).
   · 같은 PR(APP-FEEL-003, 운영 손맛 점검 7건 중 4건): 탭 이동 대기 밑줄(useLinkStatus · 100ms 지연 · prefetch:false 유지) · 이동 뒤 포커스를
     새 화면 첫 제목(없으면 본문 · 살아 있는 포커스는 그대로) · 주요 카드 눌림(:active scale .985 · 모션 축소 제외) · 대기 밑줄 = 지금 탭 밑줄 자리.
     목록 뒤로가기 자리 복원(LEVEL-RESTORE-001 — h1 2500px −437 → 0 · h4 80,063px 0) · 교재 대기 골격(BOOK-SKELETON-001, CLS 0). 뷰어 다음 편 유지(진행).
