@@ -120,7 +120,7 @@ describe('guest reader return (readerReturnTarget)', () => {
   });
   it('배선 — 뷰어의 「←」 넷이 확인된 손님 판정과 같은 목표를 쓰고, 아이콘(children)은 그대로 그린다', () => {
     const viewer = read('src/views/ViewerPage.jsx');
-    expect(viewer).toContain('const { user, profile, fetchProfile, isAdmin, loading: authLoading } = useAuth();');
+    expect(viewer).toContain('const { user, profile, refreshProfileAfterActivity, isAdmin, loading: authLoading } = useAuth();');
     expect(viewer).toContain('const guestReader = !user && !authLoading;');
     expect(viewer).toContain("const backTarget = readerReturnTarget(originalParams.get('returnTo'), { guest: guestReader });");
     expect(viewer.split('guest={guestReader} aria-label={vt(backTarget.label)}').length - 1).toBe(4);

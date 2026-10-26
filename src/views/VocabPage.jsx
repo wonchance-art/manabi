@@ -137,7 +137,7 @@ function readSavedScope() {
 function VocabWorkspace({ reviewScope, firstScreen }) {
   // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
   const signInHref = authEntryHref(usePathname());
-  const { user, profile, refreshProfileReadOnly } = useAuth();
+  const { user, profile, refreshProfileReadOnly, refreshProfileAfterActivity } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
   const { speak: speakSupported, supported: ttsSupported } = useTTS();
@@ -906,7 +906,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
           repetitions: nextStats.repetitions ?? 0, last_reviewed_at: r?.reviewedAt || new Date().toISOString() });
       invalidateVocabularyLearning(queryClient, actorId,
         { refetchLearning: !patched || (reviewFinishedRef.current && pendingGradeRef.current <= 1), deferReviewRoom: inSessionRef.current });
-      if (!r?.queued) refreshProfileReadOnly(actorId)?.catch(() => {});
+      if (!r?.queued) refreshProfileAfterActivity(actorId)?.catch(() => {});
       if (gradeSessionRef.current !== gradeSession) return;
       if ((lastGradeRef.current?.sequence ?? 0) <= sequence) {
         lastGradeRef.current = { ...snapshot, reviewedAt: r?.reviewedAt || null, queued: !!r?.queued };
@@ -1749,7 +1749,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
                       disabled={admission.status !== 'ready' || admission.busy}
                       onChange={e => admission.compatibility ? setNewPerDay(Number(e.target.value)) : admission.controller.configure(Number(e.target.value))}
                       style={{
-                        width: '100%', padding: '6px 8px', fontSize: '0.85rem',
+                        width: '100%', padding: '6px 8px', fontSize: 'max(var(--field-font-min), 0.85rem)',
                         borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)',
                         background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer',
                       }}

@@ -146,13 +146,15 @@ describe('비관리자가 학습자 링크를 따라가도 홈(/)으로 튕기�
   async function follow(href) {
     let url = new URL(href, 'https://manabi.test');
     for (let hop = 0; hop < 4; hop += 1) {
-      // '/'는 튕김 표지다 — 여기서 멈춘다. middleware가 '/'를 다시 /home으로 보내므로(ROOT-EDGE-REDIRECT-001) 더 따라가면
-      // 튕긴 링크가 /home에 닿아 「'/'가 아니다」를 거짓으로 통과한다.
+      // 튕김 표지 = 관리자 화면(/admin/…)에서 거절돼 홈으로 보내진 것(ROUTE-AUDIT-2 P2부터 '/'가 아니라 바로 /home). 그 홈을 '/'로 적어
+      // 멈춘다 — 그냥 /home으로 두면 학습자 링크가 원래 /home에 닿는 것과 구별되지 않아 「'/'가 아니다」를 거짓으로 통과한다.
       if (url.pathname === '/') return url;
       const response = await middleware(new NextRequest(url));
       const location = response.headers.get('location');
       if (!location) return url;
-      url = new URL(location);
+      const next = new URL(location);
+      if (url.pathname.startsWith('/admin/') && next.pathname === '/home') return new URL('/', next);
+      url = next;
     }
     return url;
   }

@@ -119,6 +119,10 @@ body:has(.manabi-app){background-color:#f6f4ee}
 .shelf-language-tabs{display:flex;gap:28px;border-bottom:1px solid var(--rule);margin:0 0 34px;overflow:auto}
 .shelf-language-tabs button{background:transparent;border:0;border-radius:0;white-space:nowrap;min-height:49px;padding:10px 0;color:var(--muted);font-size:13px!important}
 .shelf-language-tabs button[aria-pressed=true]{box-shadow:inset 0 -2px var(--series-color,var(--ink));color:var(--series-color,var(--ink));font-weight:700}
+/* 누르는 자리 넓히기(NATIVE-FEEL-001) — 글자 탭은 그리는 폭이 24~36px(「영어」 24px)라 손가락이 빗나갔다. 탭 사이 간격의 절반씩을 투명 판으로 더한다(모양 · 밑줄 그대로). 끝 탭은 오른쪽으로 넘치지 않게(가로 스크롤 칸). */
+.shelf-language-tabs button{position:relative}.shelf-language-tabs button::before{content:'';position:absolute;inset:0 -11px}.shelf-language-tabs button:last-child::before{right:0}
+/* 머리 글자 로고(홈으로)는 글자 높이 20px뿐이다 — 머리 줄(66~78px) 안에서 위아래로 넓힌다. */
+.manabi-app .gnb__logo{position:relative}.manabi-app .gnb__logo::before{content:'';position:absolute;inset:-12px -6px}
 .manabi-app .manabi-series-shelf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px;margin:0}
 .manabi-app .manabi-series-book{display:block;text-align:left;background:transparent;border:0;padding:0;min-width:0;color:var(--ink);border-radius:0}
 .shelf-series-number{font-size:10px;letter-spacing:1px;display:block;margin:0 0 13px;color:var(--muted)}

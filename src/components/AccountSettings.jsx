@@ -18,6 +18,8 @@ import { supabase } from '../lib/supabase';
 import { readCompleteLegacyRows } from '../lib/legacyReviewSync';
 import { failureMessage } from '../lib/errorMessage';
 import { signInMethods } from '../lib/profileSummary';
+import { isPasswordPwned } from '../lib/pwnedPassword';
+import { PWNED_PASSWORD_MESSAGE } from '../lib/authErrors';
 import { ProfileGroup, ProfileRow, ProfileSheet } from './profile/ProfileParts';
 
 const EXPORT_KEYS = ['profile', 'vocab', 'materials', 'progress', 'notes', 'writings', 'pdfs'];
@@ -72,6 +74,9 @@ export default function AccountSettings({ user, toast, signOut }) {
 
     setSubmitting(true);
     try {
+      // 유출 목록에 있는 새 비밀번호는 현재 비밀번호 확인 · 변경 전에 막는다(PWNED-PASSWORD-001). 입력은 그대로 둔다.
+      // 확인하지 못하면(null) 막지 않는다.
+      if (await isPasswordPwned(newPw) === true) { toast(PWNED_PASSWORD_MESSAGE, 'warning'); return; }
       // Supabase updateUser는 현재 비밀번호를 묻지 않는다 — 같은 계정으로 다시 로그인해 확인한다.
       if (passwordLogin) {
         const { error: reauthErr } = await supabase.auth.signInWithPassword({

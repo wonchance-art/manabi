@@ -133,3 +133,117 @@ describe('profiles 공개 범위 2단계 선행 — 서버 관리자 판별 · �
     expect(sql).not.toMatch(/^\s*(begin|commit|rollback)\s*;/imu);
   });
 });
+
+// 2단계 본 적용(20261026010000_profiles_privacy.sql) — 마이그레이션이 여는 열 = 앱이 사용자 세션으로 쓰는 열(그 이상도 이하도 아님).
+// 실제 권한 · 행동은 supabase/tests/profiles-privacy.mjs(PGlite)가 같은 payload 모양으로 본다. 여기서는 앱 원문과 마이그레이션 원문을 맞댄다.
+describe('profiles 공개 범위 2단계 — 정책 · 열 권한 = 앱 사용', () => {
+  const dir = path.join(ROOT, 'supabase/migrations');
+  const name = readdirSync(dir).find((f) => /^\d{14}_profiles_privacy\.sql$/u.test(f));
+  const sql = name ? readFileSync(path.join(dir, name), 'utf8') : '';
+  const code = sql.replace(/--[^\n]*/gu, '');
+  const grantedUpdate = (code.match(/GRANT UPDATE \(([^)]*)\) ON TABLE public\.profiles TO authenticated;/u)?.[1] || '').split(',').map((c) => c.trim()).filter(Boolean);
+  const grantedInsert = (code.match(/GRANT INSERT \(([^)]*)\) ON TABLE public\.profiles TO authenticated;/u)?.[1] || '').split(',').map((c) => c.trim()).filter(Boolean);
+  const levelColumns = Object.fromEntries([...files.find(([rel]) => rel === 'src/lib/constants.js')[1]
+    .match(/PROFILE_LEVEL_COLUMN = Object\.freeze\(\{([\s\S]*?)\}\)/u)[1].matchAll(/(\w+): '(\w+)'/gu)].map((m) => [m[1], m[2]]));
+
+  // 괄호 균형으로 인자 하나를 자른다(문자열 · 템플릿 안 괄호는 건너뛴다).
+  const balanced = (src, at) => {
+    const open = src[at], close = { '(': ')', '{': '}', '[': ']' }[open];
+    let depth = 0, quote = null;
+    for (let i = at; i < src.length; i++) {
+      const ch = src[i];
+      if (quote) { if (ch === '\\') i++; else if (ch === quote) quote = null; continue; }
+      if (ch === "'" || ch === '"' || ch === '`') quote = ch;
+      else if (ch === open || '({['.includes(ch)) depth++;
+      else if (ch === close || ')}]'.includes(ch)) { depth--; if (depth === 0) return src.slice(at + 1, i); }
+    }
+    throw new Error('unbalanced');
+  };
+  const topLevel = (body) => {
+    const parts = []; let depth = 0, quote = null, start = 0;
+    for (let i = 0; i < body.length; i++) {
+      const ch = body[i];
+      if (quote) { if (ch === '\\') i++; else if (ch === quote) quote = null; continue; }
+      if (ch === "'" || ch === '"' || ch === '`') quote = ch;
+      else if ('({['.includes(ch)) depth++;
+      else if (')}]'.includes(ch)) depth--;
+      else if (ch === ',' && depth === 0) { parts.push(body.slice(start, i)); start = i + 1; }
+    }
+    parts.push(body.slice(start));
+    return parts.map((p) => p.trim()).filter(Boolean);
+  };
+  /** payload 식 → 열 이름 집합. 객체 리터럴 · 배열의 첫 객체 · 같은 파일의 가장 가까운 앞선 const/let 선언 · 펼침 · PROFILE_LEVEL_COLUMN 계산 키. */
+  const keysOf = (src, expr, at) => {
+    const e = expr.trim();
+    if (e.startsWith('[')) return keysOf(src, topLevel(e.slice(1, -1))[0], at);
+    if (e.startsWith('{')) {
+      return topLevel(e.slice(1, -1)).flatMap((item) => {
+        if (item.startsWith('...')) return keysOf(src, item.slice(3), at);
+        const computed = item.match(/^\[PROFILE_LEVEL_COLUMN\.(\w+)\]\s*:/u);
+        if (computed) return [levelColumns[computed[1]]];
+        const key = item.match(/^(\w+)\s*(?::|$)/u);
+        if (!key) throw new Error(`해석하지 못한 payload 항목: ${item}`);
+        return [key[1]];
+      });
+    }
+    const ident = e.match(/^(\w+)$/u)?.[1];
+    if (!ident) throw new Error(`해석하지 못한 payload: ${e}`);
+    const decls = [...src.slice(0, at).matchAll(new RegExp(`(?:const|let)\\s+${ident}\\s*=\\s*(?=\\{)`, 'gu'))];
+    if (!decls.length) throw new Error(`${ident} 선언 없음`);
+    const last = decls.at(-1);
+    const from = last.index + last[0].length;
+    return keysOf(src, `{${balanced(src, from)}}`, last.index);
+  };
+  const writes = files.flatMap(([rel, src]) => [...src.matchAll(/from\('profiles'\)\s*\.(update|upsert)\(/gu)].map((m) => {
+    const argAt = m.index + m[0].length - 1;
+    return { rel, kind: m[1], keys: keysOf(src, topLevel(balanced(src, argAt))[0], m.index) };
+  }));
+
+  it('마이그레이션이 있다 · 전원 공개 SELECT 정책 둘을 내리고 관리자 읽기(is_admin)를 더한다 · anon에는 쓰기 권한이 없다', () => {
+    expect(name, 'profiles_privacy migration').toBeTruthy();
+    expect(name > '20261026000000_cohort_rpc_revoke.sql').toBe(true);
+    expect(code).toMatch(/DROP POLICY "anyone_read_basic_profile" ON public\.profiles;\s*DROP POLICY "profiles_select" ON public\.profiles;/u);
+    expect(code).toContain('CREATE POLICY profiles_select_admin ON public.profiles AS PERMISSIVE FOR SELECT TO authenticated USING ((SELECT public.is_admin()));');
+    expect(code).not.toMatch(/CREATE POLICY[^;]*USING \(true\)/iu);
+    expect(code).toMatch(/REVOKE ALL ON TABLE public\.profiles FROM anon, authenticated;\s*GRANT SELECT ON TABLE public\.profiles TO anon, authenticated;/u);
+    expect(code.replace('GRANT SELECT ON TABLE public.profiles TO anon, authenticated;', '')).not.toMatch(/GRANT[^;]*public\.profiles[^;]*\banon\b/u);
+  });
+
+  it('앱의 profiles 쓰기는 모두 해석되고, 열 권한(UPDATE 14 · INSERT 2)이 그 열들과 정확히 같다', () => {
+    expect(writes.map((w) => w.rel).sort()).toEqual([
+      'src/components/OnboardingModal.jsx', 'src/components/OnboardingModal.jsx',
+      'src/lib/learningActivity.js', 'src/lib/learningActivity.js',
+      'src/views/MyPage.jsx', 'src/views/MyPage.jsx', 'src/views/MyPage.jsx',
+      'src/views/ProfileStats.jsx', 'src/views/ProfileStats.jsx', 'src/views/ProfileStats.jsx', 'src/views/ProfileStats.jsx',
+    ]);
+    const updated = new Set(writes.filter((w) => w.kind === 'update').flatMap((w) => w.keys));
+    const inserted = new Set(writes.filter((w) => w.kind === 'upsert').flatMap((w) => w.keys));
+    expect(grantedUpdate).toHaveLength(14);
+    expect([...updated].sort()).toEqual([...grantedUpdate].sort());
+    expect([...inserted].sort()).toEqual([...grantedInsert].sort());
+    expect(grantedInsert).toEqual(['id', 'display_name']);
+    for (const col of ['xp', 'role', 'streak_count', 'streak_freeze_count', 'last_streak_date', 'avatar_url', 'created_at']) {
+      expect(grantedUpdate, col).not.toContain(col);
+    }
+  });
+
+  it('관리자 화면 밖의 profiles 읽기는 모두 자기 행(.eq(\'id\', …))이다 — 남의 행은 public_profiles 또는 관리자 정책', () => {
+    const offenders = [];
+    for (const [rel, src] of files) {
+      for (const m of src.matchAll(/from\('profiles'\)\s*\.select\(/gu)) {
+        if (rel === 'src/views/AdminPage.jsx') continue;
+        const chain = src.slice(m.index, m.index + 160);
+        if (!/\)\s*\.eq\('id',/u.test(chain)) offenders.push(`${rel}: ${chain.split('\n')[0]}`);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('복원 SQL이 있다 — 두 정책을 같은 모양(public · USING true)으로 되살리고 표 권한 순서까지 되돌린다', () => {
+    const restore = readFileSync(path.join(ROOT, 'docs/sql/profiles-privacy-rollback.sql'), 'utf8');
+    expect(restore).toContain('CREATE POLICY "anyone_read_basic_profile" ON public.profiles AS PERMISSIVE FOR SELECT TO PUBLIC USING (true);');
+    expect(restore).toContain('CREATE POLICY "profiles_select" ON public.profiles AS PERMISSIVE FOR SELECT TO PUBLIC USING (true);');
+    expect(restore).toContain('DROP POLICY profiles_select_admin ON public.profiles;');
+    expect(restore).toMatch(/REVOKE ALL ON TABLE public\.profiles FROM anon, authenticated, service_role;\s*GRANT ALL ON TABLE public\.profiles TO anon, authenticated, service_role;/u);
+  });
+});

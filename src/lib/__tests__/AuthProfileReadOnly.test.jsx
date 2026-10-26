@@ -53,6 +53,15 @@ describe('PROFILE-READ-SHARE-001 — 로그인 상태 페이지 로드당 profil
  it('계정 전환 중: 옛 계정 읽기 진행 중의 새 계정 알림은 합류하지 않고 새로 읽는다',async()=>{let resolve;h.deferred=new Promise(r=>{resolve=r;});await mount();await h.listener('TOKEN_REFRESHED',{user:user('B')});await tick();expect(fullReads()).toBe(2);resolve({data:{...row('A'),streak_count:999},error:null});await tick();expect(render().user.id).toBe('B');expect(render().profile).toEqual(row('B'));});
 });
 
+// ACTIVITY-PROFILE-READ-001 — 활동 뒤 재읽기는 지금 프로필이 오늘(UTC)을 센 뒤면 보내지 않는다(근거 = activityProfileRead.test.js).
+describe('ACTIVITY-PROFILE-READ-001 — 활동 뒤 재읽기',()=>{
+ const today=()=>new Date().toISOString().slice(0,10);
+ beforeEach(()=>{vi.useFakeTimers({toFake:['Date']});vi.setSystemTime(new Date('2026-10-26T03:00:00Z'));});
+ afterEach(()=>{vi.useRealTimers();});
+ it('오늘을 아직 안 셌으면 읽고, 읽은 프로필이 오늘을 셌으면 다음 활동부터 읽지 않는다',async()=>{const auth=await mount();const base=fullReads();h.profile.set('A',{...row('A'),streak_count:7,last_streak_date:today()});await auth.refreshProfileAfterActivity('A');expect(fullReads()).toBe(base+1);expect(render().profile.streak_count).toBe(7);const again=await render().refreshProfileAfterActivity('A');expect(fullReads()).toBe(base+1);expect(again.streak_count).toBe(7);await render().fetchProfile('A');expect(fullReads()).toBe(base+2);expect(h.writes).toEqual([]);});
+ it('다른 계정 · UTC 자정 가드 안이면 건너뛰지 않는다',async()=>{h.profile.set('A',{...row('A'),last_streak_date:today()});const auth=await mount();const base=fullReads();await auth.refreshProfileAfterActivity('B');expect(fullReads()).toBe(base);vi.setSystemTime(new Date('2026-10-26T23:50:00Z'));await render().refreshProfileAfterActivity('A');expect(fullReads()).toBe(base+1);});
+});
+
 describe('AuthProvider profile reads never manufacture learning activity',()=>{
  it('initial session and repeated fetchProfile only SELECT despite old login date',async()=>{let auth=await mount();expect(auth.user.id).toBe('A');expect(auth.profile).toEqual(row('A'));expect(h.writes).toEqual([]);expect(auth.fetchProfile).toBe(auth.refreshProfileReadOnly);await auth.fetchProfile('A');await auth.refreshProfileReadOnly('A');expect(h.writes).toEqual([]);expect(render().profile.streak_count).toBe(6);});
  it('missing profile on refresh is not created and foreign-owner refresh does nothing',async()=>{const auth=await mount();h.profile.delete('A');await auth.refreshProfileReadOnly('A');expect(render().profile).toBeNull();const reads=h.reads.length;await auth.fetchProfile('B');expect(h.reads.length).toBe(reads);expect(h.writes).toEqual([]);});

@@ -29,6 +29,7 @@
 .teaching-board {position:relative;height:100%;min-height:0;container:teaching-board / inline-size;}
 .teaching-board *,.teaching-board-header *,.board-presentation * {box-sizing:border-box;}
 .teaching-board button,.teaching-board-header button,.teaching-board-header select,.teaching-board-loading button,.teaching-board-file,.board-presentation button {font:inherit;font-size:13px;min-height:44px;min-width:44px;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--reader-ink);padding:7px 10px;cursor:pointer;}
+.teaching-board-header select {font-size:max(var(--field-font-min),13px);} /* 선택 상자만 터치 하한(index.css ④ — 단추는 13px 그대로) */
 .teaching-board button:hover,.teaching-board-header button:hover,.board-presentation button:hover {background:var(--reader-surface);}
 .teaching-board button:disabled,.teaching-board-header button:disabled {opacity:.4;cursor:default;}
 .teaching-board button[aria-pressed="true"],.teaching-board button[aria-current="page"],.teaching-board-header button[aria-pressed="true"],.teaching-board-header button[aria-current="page"],.board-icon-button[data-active="true"],.board-presentation button[aria-pressed="true"] {background:var(--reader-surface);color:var(--reader-accent);border-color:var(--reader-line);}

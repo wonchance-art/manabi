@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../lib/AuthContext';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { toKoreanError, INVALID_CREDENTIALS_MESSAGE, EMAIL_NOT_CONFIRMED_MESSAGE, AUTH_FALLBACK_MESSAGE } from '../lib/authErrors';
+import { useRouter } from 'next/navigation';
+import { toKoreanError, INVALID_CREDENTIALS_MESSAGE, EMAIL_NOT_CONFIRMED_MESSAGE, AUTH_FALLBACK_MESSAGE, PWNED_PASSWORD_MESSAGE } from '../lib/authErrors';
+import { isPasswordPwned } from '../lib/pwnedPassword';
 import { supabase } from '../lib/supabase';
 import { authReturnPath } from '../lib/authRedirect';
 
@@ -25,12 +26,20 @@ function AuthForm() {
   const { signIn, signUp, signInWithGoogle, resetPassword, resendConfirmation } = useAuth();
   const [resending, setResending] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
+  // 주소 질의(from · error · mode)는 첫 그림에 쓰지 않는다 — 마운트 뒤 효과와 제출 · Google 로그인 때만 읽는다. 그래서 이 화면은
+  // 질의 훅 없이 정적 HTML에 폼이 그대로 실린다(ROUTE-AUDIT-2 P1, 오너 「권장대로」 2026-10-26 KST — 모바일 폼 0.72 → 0.31 s).
+  // ?mode=reset · ?error=로 오는 링크는 middleware가 첫 그림을 미루는 판(/auth/from-link)으로 보낸다(로그인 폼이 잠깐 보였다 바뀌지 않게).
   // 오픈 리다이렉트 차단: 앱 내부 절대경로만 허용한다(//evil.com·https://evil.com 등은 기본값으로).
-  const rawFrom = searchParams.get('from');
-  const from = rawFrom && /^\/(?!\/)/.test(rawFrom) ? authReturnPath(rawFrom) : '/home';
+  const query = () => new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search);
+  const returnPath = () => {
+    const rawFrom = query().get('from');
+    const from = rawFrom && /^\/(?!\/)/.test(rawFrom) ? authReturnPath(rawFrom) : '/home';
+    return from;
+  };
 
   useEffect(() => {
+    const searchParams = query();
+    const from = returnPath();
     if (searchParams.get('error') === 'auth_callback_failed') {
       // 메일 링크(PKCE)는 요청한 브라우저에서만 교환된다. 다른 기기에서 열면 실패로 돌아오지만
       // 가입 인증 자체는 이미 끝났을 수 있다 — 재설정 링크와 그 밖의 경우를 나눠 다음 행동을 알려 준다.
@@ -60,6 +69,8 @@ function AuthForm() {
       if (isReset) {
         if (newPw.length < 8) { setError('비밀번호는 8자 이상이어야 해요.'); setLoading(false); return; }
         if (newPw !== confirmNewPw) { setError('비밀번호 확인이 일치하지 않아요.'); setLoading(false); return; }
+        // 유출 목록에 있는 비밀번호는 Supabase에 보내기 전에 막는다(PWNED-PASSWORD-001) — 확인하지 못하면(null) 막지 않는다.
+        if (await isPasswordPwned(newPw) === true) { setError(PWNED_PASSWORD_MESSAGE); return; }
         const { error: updErr } = await supabase.auth.updateUser({ password: newPw });
         if (updErr) throw updErr;
         setSuccess('비밀번호가 변경됐어요. 자동으로 로그인할게요…');
@@ -69,11 +80,12 @@ function AuthForm() {
         setSuccess('비밀번호 재설정 링크를 이메일로 보냈어요. 확인해 주세요.');
       } else if (isLogin) {
         await signIn(email, password);
-        router.push(from);
+        router.push(returnPath());
         // 손님일 때 미리 받아 둔 배움 대기 화면(손님 골격)을 버린다 — 이동 뒤 차례로(B1). push 앞이면 이동이 refresh를 버린다.
         router.refresh();
       } else {
         if (password.length < 8) { setError('비밀번호는 8자 이상이어야 해요.'); setLoading(false); return; }
+        if (await isPasswordPwned(password) === true) { setError(PWNED_PASSWORD_MESSAGE); return; }
         await signUp(email, password, displayName);
         setSuccess('인증 이메일을 보냈어요. 이메일을 확인해 주세요.');
       }
@@ -104,7 +116,7 @@ function AuthForm() {
 
   async function handleGoogle() {
     try {
-      await signInWithGoogle(from);
+      await signInWithGoogle(returnPath());
     } catch (err) {
       setError(toKoreanError(err.message));
     }
@@ -333,10 +345,12 @@ function AuthForm() {
   );
 }
 
-export default function AuthPage() {
-  return (
-    <Suspense fallback={null}>
-      <AuthForm />
-    </Suspense>
-  );
+/**
+ * deferred: 첫 그림을 마운트 뒤로 미룬다(/auth/from-link — ?mode=reset · ?error= 링크). 그 판은 지금까지처럼 하이드레이션 뒤에
+ * 해당 폼(재설정 · 오류 안내)을 바로 그린다 — 정적 로그인 폼이 먼저 보였다가 바뀌는 깜빡임이 없다.
+ */
+export default function AuthPage({ deferred = false } = {}) {
+  const [mounted, setMounted] = useState(!deferred);
+  useEffect(() => { if (deferred) setMounted(true); }, [deferred]);
+  return mounted ? <AuthForm /> : null;
 }

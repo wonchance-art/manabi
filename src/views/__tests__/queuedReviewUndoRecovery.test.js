@@ -39,7 +39,7 @@ function fixture(extra = {}) {
     reviewSupported: () => true, isNewWord: () => false, detectLang: () => 'Japanese',
     SRS_FIELDS: ['interval', 'ease_factor', 'repetitions', 'next_review_at', 'last_reviewed_at'],
     reviewIdx: 0, effectiveMode: 'flash', reviewMode: 'flash', recordReviewCompleted,
-    refreshProfileReadOnly: vi.fn(async () => {}), registerNewIntro: vi.fn(), goNextReview: vi.fn(),
+    refreshProfileAfterActivity: vi.fn(async () => {}), registerNewIntro: vi.fn(), goNextReview: vi.fn(),
     useEffect: fn => { mountEffect = fn; cleanup = fn(); },
     againWord: undefined, LEGACY_REVIEW_SUPERSEDED_NOTICE: '다른 기기에서 먼저 복습한 표현이에요. 일정은 그 복습대로 둘게요.', ...extra,
   };

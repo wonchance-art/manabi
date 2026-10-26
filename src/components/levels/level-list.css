@@ -75,7 +75,7 @@ html:has(.lv-page){overscroll-behavior-y:none}
 .lv-tabs a[aria-current=page]{color:var(--ink);font-weight:700;box-shadow:inset 0 -2px 0 var(--ink)}
 .lv-tools{display:flex;gap:10px;align-items:center}
 .lv-search{flex:1 1 auto;min-width:0;display:flex;gap:10px;align-items:center;height:44px;padding:0 16px;border-radius:12px;background:var(--lv-field);color:var(--lv-faint)}
-.lv-search input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:14px;color:var(--ink);height:100%;outline:0}
+.lv-search input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:max(var(--field-font-min),14px);color:var(--ink);height:100%;outline:0}
 .lv-search:focus-within{outline:2px solid var(--ja);outline-offset:2px}
 .lv-search svg{flex:none}
 .lv-gear{flex:none;width:44px;height:44px;border-radius:12px;border:0;background:var(--lv-field);color:var(--muted);display:inline-grid;place-items:center;cursor:pointer}

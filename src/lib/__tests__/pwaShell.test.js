@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { cssFiles, rulesOf } from './helpers/cssRules.js';
 
 /**
  * 계약: PWA-SHELL-001 — 휴대폰(iOS Safari · 안드로이드 Chrome, 브라우저 탭 · 설치 앱) 앱 셸.
@@ -33,15 +34,6 @@ describe('PWA-SHELL-001 ① manifest — 설치 앱 정체성', () => {
     expect(m.dir).toBe('ltr');
   });
 });
-
-/** src 아래 CSS 파일 전부(교재 판본 스냅숏 제외 — 별도 문서라 이 셸 밖이다). */
-function cssFiles(dir = path.join(ROOT, 'src')) {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
-    const p = path.join(dir, e.name);
-    if (e.isDirectory()) return e.name === 'textbookEditions' ? [] : cssFiles(p);
-    return e.name.endsWith('.css') ? [path.relative(ROOT, p)] : [];
-  });
-}
 
 describe('PWA-SHELL-001 ② 화면 가장자리 — viewport-fit=cover와 안전 영역', () => {
   const layout = () => read('src/app/layout.jsx');
@@ -117,31 +109,6 @@ describe('PWA-SHELL-001 ③ 터치 정책 — 글자 부풀리기 · 두 번 탭
     expect(m[1]).not.toMatch(/\.lw-card\b|\.lv-entry--solo\b|\.suggestion-card\b/);
   });
 });
-
-/** CSS를 규칙 단위로 훑는다 — 각 규칙의 선택자 · 본문 · 감싼 @규칙 조건들(바깥부터). 주석은 지운다. */
-function rulesOf(source) {
-  const css = source.replace(/\/\*[\s\S]*?\*\//g, '');
-  const rules = [];
-  const stack = [];
-  let buf = '';
-  for (let i = 0; i < css.length; i += 1) {
-    const ch = css[i];
-    if (ch === '{') {
-      const head = buf.trim(); buf = '';
-      if (head.startsWith('@')) { stack.push(head); continue; }
-      const end = css.indexOf('}', i);
-      rules.push({ selector: head, body: css.slice(i + 1, end), at: [...stack] });
-      i = end;
-    } else if (ch === '}') {
-      stack.pop(); buf = '';
-    } else if (ch === ';' && buf.trim().startsWith('@')) {
-      buf = ''; // @import · @charset 같은 한 줄 @규칙
-    } else {
-      buf += ch;
-    }
-  }
-  return rules;
-}
 
 describe('PWA-SHELL-001 ④ 호버 들림은 마우스 기기만', () => {
   it('규칙 훑개 자체 확인 — 감싼 @media 조건을 읽는다', () => {

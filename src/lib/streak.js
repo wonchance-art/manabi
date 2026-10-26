@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { ACTIVITY_ROLLOVER_GUARD_MS, nearActivityRollover } from './learningActivity';
 
 /**
  * 학습 활동(단어 저장, 복습)이 발생했을 때 호출.
@@ -16,9 +17,8 @@ import { supabase } from './supabase';
 export const ACTIVITY_DEDUPE_MS = 10 * 60 * 1000;
 const lastSuccess = new Map(); // userId → { at, utc, local }
 const inflight = new Map(); // userId → Promise<boolean>
-export const MIDNIGHT_GUARD_MS = 15 * 60 * 1000;
-const DAY_MS = 24 * 60 * 60 * 1000;
-const nearUtcMidnight = now => { const t = ((now.getTime() % DAY_MS) + DAY_MS) % DAY_MS; return t < MIDNIGHT_GUARD_MS || DAY_MS - t <= MIDNIGHT_GUARD_MS; };
+export const MIDNIGHT_GUARD_MS = ACTIVITY_ROLLOVER_GUARD_MS;
+const nearUtcMidnight = nearActivityRollover;
 const dayKeys = now => ({ utc: now.toISOString().slice(0, 10), local: `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}` });
 
 export async function recordActivity(userId, onUpdate, { now = new Date() } = {}) {

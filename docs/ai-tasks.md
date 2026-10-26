@@ -1108,6 +1108,36 @@
   조각 N3 207 → 3.5 KB · 책장 일본어 판 미리 받기 612 → 65 KB, 탭 → 카드 모바일 손님 641 → 591 ms(누르는 순간 받기 · 문서로 열 때만 preload).
   VOCAB-LEVEL-DOC 실패(붙은 뒤 받기 → 카드 +272 ms)를 피함. 오프라인: 워커가 이 주소만 network-first · 레벨마다 한 칸. 남은 나빠짐: 데스크톱 손님
   N3 직접 열기 LCP 232 → 316 ms(H6는 −4). 레벨 타일 prefetch={false}(ROUTE-AUDIT-2 F2)는 이제 불필요 — 배제.
+  → **#1575 squash `f13f12ae`(05:25 KST)**.
+- **VIEWER-AUTH-RESTORE-MODAL · ROUTE-AUDIT-2 P1 · P2 (2026-10-26 KST, P1 · P2 오너 「권장대로」)**:
+  ① 뷰어 — 로그인 복원(whenDocumentParsed, 최대 3초) 전에 연 「학습」 창이 복원(user null → 계정) 순간 닫혀 소유자가 「자료 관리」를 못 보던
+  경합(실사용 버그 · CI viewer-boundary-edit 390 간헐 실패의 원인). 같은 자료의 손님 → 계정은 창을 유지(resetScope와 같은 규칙).
+  고치기 전 빌드 e2e 3/3 실패 → 3/3 통과(viewer-dialog-guards에 복원 3초 지연 장면 추가).
+  ② /japanese · /chinese · /english · /french → 엣지 307 /lessons?lang=…(손님에게 「관리자 보관함 로그인」을 보이던 것 · 학습자 3번 돌던 것),
+  관리자 거절은 바로 /home. ③ /auth 로그인 폼을 정적 HTML에(질의는 마운트 뒤 · 제출 때 읽기), ?mode=reset · ?error=는 첫 그림을 미루는 판
+  /auth/from-link(주소창 그대로)로 — 재설정 · 오류 화면 깜빡임 없음(브라우저 확인).
+  → **#1576 squash `d4e456f4`(09:09 KST, 운영 16/16 · 오류 0 · /japanese 307 → /lessons?lang=Japanese · /auth HTML 폼 · ?mode=reset 미룸)**.
+- **SECDEF-HARDEN-002 · PWNED-PASSWORD-001 (2026-10-26 KST, 오너 「권장대로 진행」)**: Supabase 보안 진단 검토(운영 카탈로그 읽기 전용) —
+  즉시 악용 가능 고위험 없음. 실위험 = profiles 전원 공개(PROFILES-PRIVACY-001 ② — 오너 승인 뒤 병합, 아래 기록).
+  ① join_cohort 실행권 service_role만(로그인 사용자가 기수 코드를 읽고 아무 기수에 가입하던 경로) · 정책 헬퍼 셋 anon 회수
+  (is_admin · enforce_role_change_by_admin은 activity 지문 · 손님 공개 자료 읽기 때문에 유지). 함수 본문 · 정책 · 행 무변경, 복원 SQL ·
+  PGlite 7검사. ② 가입 · 재설정 · 내 정보 비밀번호 변경 전에 유출 비밀번호 확인(HIBP range k-익명성, 해시 앞 5자만 우리 라우트가 중계 —
+  처리방침 §4 제3자 목록 유지, 실패 시 열림). Supabase 유출 차단은 Pro 전용이라 앱에서. 남은 오너 할 일: 없음(대시보드 HIBP는 Pro).
+  → **#1577 squash `81fde05d`(09:38 KST)** · 운영 적용 09:41(첫 실행은 CLI latest 조회 한도로 DB 전 실패 → 재실행): join_cohort =
+  postgres · service_role만, 헬퍼 셋 anon 없음, is_admin 유지, 계약 넷 동치. 후속: CLI 판 고정 2.122.0(migrations · repair 워크플로).
+- **NATIVE-FEEL-001 모바일 손맛 (2026-10-26 KST)**: ① 터치 기기 입력칸 16px 하한(`--field-font-min`, iOS 초점 확대 19곳 — 보이는 변화: 글자 14~15 → 16px)
+  ② 모달 · 시트 뒤 화면 고정(`html:has(dialog:modal · 어둠막 10종)` 터치만, 시트 스크롤 칸 contain — 스와이프 이동 4곳 0) ③ 채점 답칸 자동 고침 끔
+  ④ 글자 탭 누르는 자리 투명 판(모습 무변화) ⑤ `.manabi-app` · `.auth-wrapper` 100dvh 짝. 계약 nativeFeel 24건.
+  오너 결정 대기: 함께 읽는 글 정렬 칩 · 서재 정렬 상자 · 노트 읽기 칸 · 크기 미지정 입력칸(그룹 폼) 16px 방식, 「뜻」 탭 44px, 책장 뒤로가기 스크롤(실기 확인).
+  → **#1578 squash `f7fae697`(10:03 KST, 운영 16/16 · 오류 0 · 새 CSS 운영 반영 확인)**. 같은 PR: 마이그레이션 워크플로 CLI 판 고정 2.122.0.
+- **ACTIVITY-PROFILE-READ-001 (2026-10-26 KST)**: 운영 Supabase 로그(24시간) — 오류 응답 0, 대신 `profiles select=*`가 채점마다 1번(하루 377번 · 데스크톱
+  한 계정, 5분에 최대 29번). 활동이 바꾸는 칸은 연속 기록 셋뿐이고 정본 `project_activity_days_with_legacy`는 영수증 날 = last_streak_date면
+  결과가 같다(PGlite 무작위 400건 · 운영 본문 md5 be7f74e7 대조). legacy 활동(예전 채점 · update_streak — 영수증 날 = 서버의 오늘) 뒤에는 지금 프로필이
+  오늘(UTC)을 이미 셌으면 다시 읽지 않는다(첫 활동 · 마일스톤 알림은 그대로, UTC 자정 ±15분은 늘 읽음). FSRS 채점 · /study 세션 끝 · 설정 쓰기 뒤는
+  그대로 — 늦게 온 어제 FSRS 영수증은 연속 일수를 바꿀 수 있다(반례 계약). 하루 377 → 첫 활동 때만(계정 · 날마다 1번 안팎).
+  배제 둘(근거 기록): ① /vocab 전체 목록을 가벼운 모양으로(F2 ②) — 원문 2.6 → 1.9 MB지만 실제 전송(브로틀리) 120 → 108 KB(−10%), API 모양 변경 값 없음.
+  ② 한 · 일 · 중 고딕 글꼴 @font-face 중복 제거(같은 가변 파일을 400 · 500 · 700로 세 번 선언, 원문 −66%) — 전송 브로틀리 −2%뿐이고 굵기 600 한글이
+  700 → 600으로 보이는 변화(명조는 400 본문이 600 → 400으로 크게 변함). 첫 그림 CSS 바이트는 글꼴이 아닌 압축 후 크기로 판단.
 - **JLPT-KANJI-WINDOW-001 · 단어장 손질 (2026-10-26 KST, 오너 「중국어 판과 엄격하게 대조하면서 동일하게」 · 시안 ⑧ · ⑨)**: JLPT 단어 페이지 글자 칸의 큰 한자도 단추 →
   HSK와 같은 창 · 같은 머리에 상용한자표 순서의 음 · 훈 표(읽기마다 JLPT 단어 둘 · 후리가나 · 한국어 뜻, 단어 없는 읽기도 빈 줄, 지금 읽기 장미색, 내린 읽기 흐리게).
   자료 = 常用漢字表 원문(2,136자 · 4,388음훈 · 내린 읽기 178, `scripts/generate-ja-joyo.mjs --check` · joyodb 대조 불일치 0) + 상용 밖 콘텐츠 한자 KANJIDIC2(CC BY-SA, 파일 분리 · 쓰이는 줄만).
@@ -1188,6 +1218,11 @@
     admin_set_user_role RPC(마지막 관리자 강등 거부 · 'user'→'student') — 마이그레이션 20261016171800은 병합 때 db push로 운영 적용되므로
     **병합 전 오너 명시 승인 필요**(대기). 그 전엔 안내 토스트. backfill-ipa · seed-starters는 서비스 키 없으면 503.
     ② 본 적용(전원 공개 정책 제거 · UPDATE 14열 · activity + admission 지문 재고정)은 배포 · 역할 변경 실계정 검수 뒤.
+    → ② 마이그레이션(2026-10-26 KST, 오너 「권장대로 진행」 ×2 — 준비 · 병합): 20261026010000_profiles_privacy.sql
+      (SELECT = 본인 + 관리자 is_admin · anon 0행 · 열 권한 UPDATE 14 · INSERT(id, display_name) · profile → admission 재게시, 사전 검사 = 운영 실측 모양,
+      사후 검사에 anon · 학습자 · 관리자 행동 검사) · 복원 docs/sql/profiles-privacy-rollback.sql · PGlite supabase/tests/profiles-privacy.mjs(CI 등록).
+      앱 변경 0(쓰는 열 = 여는 열 계약 · 자기 행 읽기 계약 profilesPrivacy.test.js). 남의 이름은 public_profiles(정의자 view · 세 열) 그대로.
+      병합 전 운영 읽기 전용 대조(11:00 KST): 상수 8개 전부 지금 값과 일치 · 계약 넷 게시 = 계산 · 정책 7(전원 공개 둘 포함) = 사전 검사 기대 모양.
   · 같은 PR(APP-FEEL-003, 운영 손맛 점검 7건 중 4건): 탭 이동 대기 밑줄(useLinkStatus · 100ms 지연 · prefetch:false 유지) · 이동 뒤 포커스를
     새 화면 첫 제목(없으면 본문 · 살아 있는 포커스는 그대로) · 주요 카드 눌림(:active scale .985 · 모션 축소 제외) · 대기 밑줄 = 지금 탭 밑줄 자리.
     목록 뒤로가기 자리 복원(LEVEL-RESTORE-001 — h1 2500px −437 → 0 · h4 80,063px 0) · 교재 대기 골격(BOOK-SKELETON-001, CLS 0). 뷰어 다음 편 유지(진행).

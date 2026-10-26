@@ -25,7 +25,7 @@ describe('비공개 판정은 계정 확인 뒤에(PRIVATE-GATE-AUTH-001)', () =
     expect(block).toContain('{vt("비공개 자료예요")}');
     expect(block).toContain('{vt("이 자료는 작성자만 볼 수 있어요.")}');
     // authLoading은 뷰어가 쓰는 정본 그대로(useAuth) — 세션 쿠키가 없으면 AuthContext가 손님으로 확정해 loading을 내린다.
-    expect(viewer).toContain('const { user, profile, fetchProfile, isAdmin, loading: authLoading } = useAuth();');
+    expect(viewer).toContain('const { user, profile, refreshProfileAfterActivity, isAdmin, loading: authLoading } = useAuth();');
   });
 });
 

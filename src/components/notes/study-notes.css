@@ -42,7 +42,7 @@
 .note-word-fields input,.note-word-fields textarea {box-sizing:border-box;font:inherit;display:block;width:100%;min-width:0;background:transparent;border:0;border-bottom:1px solid var(--rule);padding:5px 0;color:var(--ink);resize:vertical;}
 .note-word-fields .note-spelling {font-size:24px;line-height:1.5;min-height:44px;}
 .note-word-fields .note-reading {font-size:12px;color:var(--book-main);min-height:32px;}
-.note-word-fields textarea {font-size:14px;line-height:1.65;min-height:52px;}
+.note-word-fields textarea {font-size:max(var(--field-font-min),14px);line-height:1.65;min-height:52px;}
 .note-candidate-tools {display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;font-size:11px;}
 .note-candidate-tools details {flex:1;min-width:100px;}
 .note-candidate-tools summary {cursor:pointer;min-height:44px;padding:12px 8px;box-sizing:border-box;}

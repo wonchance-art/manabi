@@ -81,7 +81,7 @@ describe('시안 · 설계 문서 대조 후속(2026-10-21 KST)', () => {
   const card = fs.readFileSync('src/components/levels/word/WordCard.jsx', 'utf8');
   const parts = fs.readFileSync('src/components/levels/word/WordParts.jsx', 'utf8');
   it('로그인 확인이 끝나기 전에는 손님 줄을 세우지 않는다 — 돌아온 표시를 손님 줄이 먹지 않게(문서 「보던 카드로 돌아와요」)', () => {
-    expect(screen).toContain('const { user, loading: authLoading, fetchProfile } = useAuth();');
+    expect(screen).toContain('const { user, loading: authLoading, refreshProfileAfterActivity } = useAuth();');
     expect(screen).toContain('const ready = mounted && !authLoading && (!userId || !!index || indexQuery.isError);');
   });
   it('문장 탭 펼친 카드는 예문 단어를 바로 누른다(시안 ⑦) · 접힌 줄은 글자 그대로', () => {

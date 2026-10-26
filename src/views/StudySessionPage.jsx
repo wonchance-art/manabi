@@ -69,7 +69,7 @@ export default function StudySessionPage({
   const kanjiCare = band === 'beginner' && langCode === 'ja';
   // 문단 발음 상시 노출은 입문에 한정 — 비입문은 문장 탭으로 지연 공개(한자 읽기 인출 기회 확보).
   const alwaysShowPron = band === 'beginner';
-  const { user, fetchProfile, loading: authLoading } = useAuth();
+  const { user, fetchProfile, refreshProfileAfterActivity, loading: authLoading } = useAuth();
   // 세션 계정 — 서버가 확인한 사용자로 시작할 때 고정한다. 도중에 로그아웃하거나 다른 계정이 되면 기록을 멈추고
   // 로그인을 안내한다(로그인 없는 기록은 기기 로컬로 새고, 다른 계정이면 남의 기록이 된다). 기록하는 곳은 recorderRef만 본다.
   const sessionUserRef = useRef(sessionUserId || null);
@@ -435,7 +435,7 @@ export default function StudySessionPage({
       // 1문항 이상 답변했고 아직 fireEffects 전이면 활동 기록 시도(스트릭 RPC는 멱등).
       if (!streakSentRef.current && recordedRef.current.size > 0) {
         streakSentRef.current = true;
-        recordActivity(recorder, () => fetchProfile?.(recorder));
+        recordActivity(recorder, () => refreshProfileAfterActivity?.(recorder));
       }
     }
     window.addEventListener('pagehide', onPageHide);
@@ -1451,6 +1451,8 @@ export default function StudySessionPage({
             onChange={e => setTyping(e.target.value)} disabled={phase === 'feedback'}
             placeholder={langName + '로 입력'} aria-describedby={headId}
             enterKeyHint="go"
+            // 채점하는 답칸 — 휴대폰 자동 고침 · 첫 글자 대문자 · 맞춤법 밑줄이 답을 대신 고치거나 틀린 곳을 알려 주지 않게(KanaTest 선례, NATIVE-FEEL-001)
+            autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
             onKeyDown={e => {
               if (e.key !== 'Enter') return;
               // IME 조합 중(일본어·중국어 변환 확정) Enter는 미확정 텍스트로 채점되므로 무시.
