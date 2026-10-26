@@ -35,7 +35,7 @@ export async function fixture({width=1440,height=1000,reducedMotion='reduce',gue
   const request=route.request(),url=new URL(request.url());
   if(request.method()==='GET'&&url.searchParams.get('view')==='learning'){
    // This backend stores reading materials only; its existing vocabulary REST result is [].
-   return guest?json(route,{ok:false,code:'fsrs_auth_required'},401):json(route,legacyLearningSnapshot({actorId:owner,rows:[],fields:url.searchParams.get('fields')}));
+   return guest?json(route,{ok:false,code:'fsrs_auth_required'},401):json(route,legacyLearningSnapshot({actorId:owner,rows:[],fields:url.searchParams.get('fields'),ids:url.searchParams.get('ids')}));
   }
   if(request.method()==='POST')assert.notEqual(request.postDataJSON()?.action,'save','Inactive FSRS fixture must not receive an atomic manual save');
   return route.continue();

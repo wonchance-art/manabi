@@ -94,7 +94,7 @@ async function open(material,{guest=false,dict='ok',prefs={focusMode:false,autoS
  if(saved)await f.context.route('**/api/learning/vocabulary**',route=>{
   const url=new URL(route.request().url());
   if(route.request().method()!=='GET'||url.searchParams.get('view')!=='learning')return route.fallback();
-  return route.fulfill({contentType:'application/json',body:JSON.stringify(legacyLearningSnapshot({actorId:owner,rows:saved,fields:url.searchParams.get('fields')}))});
+  return route.fulfill({contentType:'application/json',body:JSON.stringify(legacyLearningSnapshot({actorId:owner,rows:saved,fields:url.searchParams.get('fields'),ids:url.searchParams.get('ids')}))});
  });
  f.rows.push({id:94171,user_id:owner,...(own?{owner_id:owner}:{}),title:'표제어 일괄 조회 검수',raw_text:material.texts.join('\n'),source_type:'text',created_at:new Date().toISOString(),
   processed_json:{status:'completed',metadata:{language:material.language},sequence:material.sequence,dictionary:material.dictionary}});

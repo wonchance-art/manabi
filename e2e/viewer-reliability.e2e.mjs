@@ -85,7 +85,7 @@ await context.route('**/api/learning/**',r=>{
  // 이 고정 데이터가 그 GET에도 문맥 목록을 돌려줘 「저장한 단어를 불러오지 못했어요」가 떴다 — 공용 합성 snapshot(learning-snapshot.mjs)으로 답한다.
  const learningUrl=new URL(r.request().url());
  if(r.request().method()==='GET'&&learningUrl.pathname==='/api/learning/vocabulary'&&learningUrl.searchParams.get('view')==='learning')
-  return r.fulfill({json:legacyLearningSnapshot({actorId:uid,rows:vocab,fields:learningUrl.searchParams.get('fields')})});
+  return r.fulfill({json:legacyLearningSnapshot({actorId:uid,rows:vocab,fields:learningUrl.searchParams.get('fields'),ids:learningUrl.searchParams.get('ids')})});
  // 제외 상태도 같은 경로 아래다(learning-flow · korean-learning 고정 데이터와 같은 모양) — 문맥 목록을 받으면 items가 없어 채점 막대가 잠겼다.
  if(r.request().method()==='GET'&&learningUrl.pathname==='/api/learning/exclusions')return r.fulfill({json:{items:[]}});
  if(r.request().method()==='POST'){

@@ -176,8 +176,8 @@ async function mockSupabaseSession(context, { role = 'admin', restRequests = nul
   await context.route('**/api/learning/exclusions', route => route.request().method() === 'GET' ? json(route, { items: [] }) : route.continue());
   await context.route('**/api/learning/vocabulary?view=learning*', route => {
     assert.equal(route.request().method(), 'GET', 'The installed inactive snapshot fixture accepts reads only');
-    const fields = new URL(route.request().url()).searchParams.get('fields');
-    return json(route, legacyLearningSnapshot({ actorId: session.user.id, rows: [], fields }));
+    const { searchParams } = new URL(route.request().url());
+    return json(route, legacyLearningSnapshot({ actorId: session.user.id, rows: [], fields: searchParams.get('fields'), ids: searchParams.get('ids') }));
   });
   await context.route('**/api/learning/fsrs', route => {
     assert.equal(route.request().method(), 'GET', 'Inactive FSRS fixture must not receive a mutation');

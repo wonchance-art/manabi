@@ -129,7 +129,7 @@ async function boundaryContext({ actor = 'A', width = 390, height = 844, expires
   });
   await context.route('**/api/learning/vocabulary**', route => {
     const sub = actorSub(route.request());
-    return sub ? json(route, legacyLearningSnapshot({ actorId: sub, rows: [], fields: new URL(route.request().url()).searchParams.get('fields') })) : json(route, { ok: false, code: 'fsrs_auth_required' }, 401);
+    return sub ? json(route, legacyLearningSnapshot({ actorId: sub, rows: [], fields: new URL(route.request().url()).searchParams.get('fields'), ids: new URL(route.request().url()).searchParams.get('ids') })) : json(route, { ok: false, code: 'fsrs_auth_required' }, 401);
   });
   await context.route('**/api/learning/fsrs', route => { const sub = actorSub(route.request()); return sub ? json(route, inactiveFsrsStatus({ actorId: sub })) : json(route, { ok: false, code: 'fsrs_auth_required' }, 401); });
   await context.route('**/api/learning/admission', route => { const sub = actorSub(route.request()); return sub ? json(route, inactiveLearningAdmission({ actorId: sub })) : json(route, { ok: false, code: 'fsrs_auth_required' }, 401); });

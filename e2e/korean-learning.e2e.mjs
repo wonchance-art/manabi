@@ -92,7 +92,7 @@ async function fixture({ ready = true, existing = false, holdCapabilities = fals
   });
   await context.route('**/api/learning/vocabulary**', route => {
     const request=route.request(), url=new URL(request.url());
-    if(request.method()==='GET'&&url.searchParams.get('view')==='learning')return send(route,legacyLearningSnapshot({actorId:owner,rows:cards,known,exclusions,fields:url.searchParams.get('fields')}));
+    if(request.method()==='GET'&&url.searchParams.get('view')==='learning')return send(route,legacyLearningSnapshot({actorId:owner,rows:cards,known,exclusions,fields:url.searchParams.get('fields'),ids:url.searchParams.get('ids')}));
     if(request.method()==='GET') return send(route,url.searchParams.has('contextId')?{context:contexts.find(c=>c.id===url.searchParams.get('contextId'))}:{contexts});
     const body=request.postDataJSON();
     assert.notEqual(body?.action,'save','Inactive FSRS fixture must not receive an atomic manual save');

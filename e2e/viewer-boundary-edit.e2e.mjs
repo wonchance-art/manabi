@@ -124,7 +124,7 @@ async function open(m,{width=390,height=844,own=true,saved=[],pendingAll=false,s
  await f.context.route('**/api/learning/vocabulary**',route=>{
   const url=new URL(route.request().url());
   if(route.request().method()!=='GET'||url.searchParams.get('view')!=='learning')return route.fallback();
-  return route.fulfill({contentType:'application/json',body:JSON.stringify(legacyLearningSnapshot({actorId:owner,rows:saved,fields:url.searchParams.get('fields')}))});
+  return route.fulfill({contentType:'application/json',body:JSON.stringify(legacyLearningSnapshot({actorId:owner,rows:saved,fields:url.searchParams.get('fields'),ids:url.searchParams.get('ids')}))});
  });
  f.rows.push({id:ID,user_id:owner,...(own?{owner_id:owner}:{}),title:'단어 경계 검수',raw_text:m.raw,source_type:'text',created_at:new Date().toISOString(),processed_json:structuredClone(m.json)});
  await f.page.goto(`/viewer/${ID}`,{waitUntil:'domcontentloaded',timeout:120000});

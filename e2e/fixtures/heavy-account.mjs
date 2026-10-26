@@ -296,10 +296,20 @@ export function createHeavyBackend({ latencyMs = 0, browserLatencyMs = 0, snapsh
   // 3,000단어 중앙값: 전체 86 ms · 요약 전 언어 30 ms → 행당 0.35배 · 한 언어 전체 칸 2,400행 51 ms → 행당 0.74배). 응답은 JS 기준 구현
   // compactVocabularySnapshot(운영 SQL과 같음을 그 PGlite 검사가 증명)으로 같은 snapshot에서 만든다.
   const lightRows = body => account.tables.user_vocabulary.filter(row => !body?.p_language || row.language === body.p_language).length;
+  // 카드 몇 장 읽기(20261026020000 — fsrs_vocabulary_snapshot_cards)는 계정 검사 · 판정 준비가 고정 비용이라 행 수에 거의 매이지 않는다
+  // (supabase/tests/vocabulary-snapshot-cards.mjs, 3,000단어 중앙값: 전체 81 ms · 1장 3 ms · 50장 5 ms → 전체의 약 0.04배 + 장당 0.001배).
   const rpcCost = { fsrs_vocabulary_snapshot: () => Math.round(account.tables.user_vocabulary.length * snapshotMsPerRow),
-    fsrs_vocabulary_snapshot_light: body => Math.round(lightRows(body) * snapshotMsPerRow * (body?.p_summary === true ? 0.35 : 0.74)) };
+    fsrs_vocabulary_snapshot_light: body => Math.round(lightRows(body) * snapshotMsPerRow * (body?.p_summary === true ? 0.35 : 0.74)),
+    fsrs_vocabulary_snapshot_cards: body => Math.round(account.tables.user_vocabulary.length * snapshotMsPerRow * (0.04 + 0.001 * (body?.p_ids?.length || 0))) };
+  const snapshotCards = body => {
+    const ids = body?.p_ids;
+    if (!Array.isArray(ids) || ids.length < 1 || ids.length > 50 || ids.some(value => value === null)) return { __rpcError: { code: '22023', message: 'invalid_fsrs_request' } };
+    const wanted = new Set(ids), full = fsrsSnapshot();
+    return { ...full, rows: full.rows.filter(row => wanted.has(row.id)), registry: full.registry.filter(entry => wanted.has(entry.cardId)) };
+  };
   const rpcs = {
     fsrs_vocabulary_snapshot: () => fsrsSnapshot(),
+    fsrs_vocabulary_snapshot_cards: snapshotCards,
     fsrs_vocabulary_snapshot_light: body => (typeof body?.p_summary !== 'boolean' ? { __rpcError: { code: '22023', message: 'invalid_fsrs_request' } }
       : compactVocabularySnapshot(fsrsSnapshot(), { language: body.p_language ?? null, summary: body.p_summary })),
     fsrs_capabilities: () => ({ version: 1, enabled: true, policyVersion: 'anki-v2' }),

@@ -28,7 +28,7 @@ async function setup({ width = 1440, saved = false, due = true } = {}) {
   const url = new URL(r.request().url());
   if (url.searchParams.get('view') !== 'learning') return r.fallback();
   assert.equal(r.request().method(), 'GET', 'The learning snapshot is read only');
-  return json(r, legacyLearningSnapshot({ actorId: owner, rows: words, known, exclusions, fields: url.searchParams.get('fields') }));
+  return json(r, legacyLearningSnapshot({ actorId: owner, rows: words, known, exclusions, fields: url.searchParams.get('fields'), ids: url.searchParams.get('ids') }));
  });
  await f.context.route('**/api/learning/exclusions', async r => {
   if (r.request().method() === 'GET') return json(r, { items: exclusions });

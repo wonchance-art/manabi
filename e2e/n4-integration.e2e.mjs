@@ -80,10 +80,15 @@ export function createN4Fixture() {
     if (table === 'is_admin') return send(claims?.e2e_role === 'admin');
     if (table === 'fsrs_capabilities') return send({ version: 1, enabled: true, policyVersion: 'anki-v2' });
     // 가벼운 읽기(SNAPSHOT-LIGHT-001 — 요약 조회 · 복습방 첫 숫자 · /study)는 같은 snapshot을 기준 구현으로 줄여 돌려준다.
-    if (table === 'fsrs_vocabulary_snapshot' || table === 'fsrs_vocabulary_snapshot_light') {
+    // 카드 몇 장 읽기(SNAPSHOT-CARDS-001 — 저장 · 채점 뒤 색인 패치)는 같은 snapshot을 그 id로 거른다.
+    if (table === 'fsrs_vocabulary_snapshot' || table === 'fsrs_vocabulary_snapshot_light' || table === 'fsrs_vocabulary_snapshot_cards') {
       const snapshot = { version: 1, actorId: uid, enabled: true, complete: true, registryAvailable: true,
       rows: state.words, registry: state.words.map(word => ({ cardId: word.id, userId: uid, enrolled: false, eligible: true,
         known: false, excluded: false, card: null, attempt: null, nextQuestionAt: null, firstQuestionAt: null })), now: new Date().toISOString() };
+      if (table === 'fsrs_vocabulary_snapshot_cards') {
+        const ids = new Set(body?.p_ids || []);
+        return send({ ...snapshot, rows: snapshot.rows.filter(row => ids.has(row.id)), registry: snapshot.registry.filter(entry => ids.has(entry.cardId)) });
+      }
       return send(table === 'fsrs_vocabulary_snapshot' ? snapshot
         : compactVocabularySnapshot(snapshot, { language: body?.p_language ?? null, summary: body?.p_summary === true }));
     }
