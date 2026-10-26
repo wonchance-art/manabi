@@ -237,13 +237,16 @@ describe('배선 — 목표를 세운 사람에게만, 세울 곳은 한 군데'
     expect(home).not.toContain('GoalSheet');
   });
 
-  it('하루 목표(복습 · 담기)도 같은 창에서 고친다 — 내 정보에는 편집기가 없고 요약 줄 · 링크만(PROFILE-REDESIGN-001 D2)', () => {
+  it('하루 목표(복습 · 담기)도 같은 창에서 고친다 — 내 정보는 편집기를 따로 두지 않고 요약 줄에서 같은 GoalSheet를 연다(PROFILE-REDESIGN-001 D2 · GOAL-SHEET-001)', () => {
     const editor = read('src/components/goal/GoalSheet.jsx');
     expect(editor).toContain('<legend className="gs-sec">하루 목표</legend>');
     expect(editor).toMatch(/const base = \{ dday_date: nextDate \|\| null, dday_label: nextLabel \|\| null, \.\.\.daily \};/);
     const mine = fs.readFileSync(path.join(process.cwd(), 'src/views/MyPage.jsx'), 'utf8');
     expect(mine).not.toMatch(/goal_review|goal_words|type="range"/);
-    expect(mine).toContain('<ProfileRow label="목표" href="/progress?goal=edit"');
+    expect(mine).toContain('<ProfileRow label="목표" dialog onClick={() => setGoalOpen(true)}');
+    expect(mine).toContain("import GoalSheet from '../components/goal/GoalSheet';");
+    expect(mine).toContain('<GoalSheet open={goalOpen} onClose={() => setGoalOpen(false)} />');
+    expect(mine).not.toContain('/progress?goal=edit');
     // 오늘 목표 칸도 같은 창으로 — 계정 화면이 아니다
     expect(fs.readFileSync(path.join(process.cwd(), 'src/components/learn/LearnTiles.jsx'), 'utf8')).toContain('label="오늘 목표" href="/progress?goal=edit"');
   });

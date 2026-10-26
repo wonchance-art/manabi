@@ -41,6 +41,7 @@ import { SkeletonLine, SkeletonRegion } from '../components/Skeleton';
 import { ProfileGroup, ProfileRow, ProfileSheet } from '../components/profile/ProfileParts';
 import AccountSettings, { AccountDelete } from '../components/AccountSettings';
 import InstallPrompt from '../components/InstallPrompt';
+import GoalSheet from '../components/goal/GoalSheet';
 import '../components/learn/learn.css';
 import '../components/profile/profile.css';
 
@@ -63,6 +64,7 @@ export default function MyPage() {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [sheet, setSheet] = useState(null); // 'name' | 'lang' | 'alarm'
+  const [goalOpen, setGoalOpen] = useState(false); // 목표 창은 현황과 같은 GoalSheet — 이 자리에서 연다
 
   // 알림 — 푸시(서버가 보냄) 먼저, 이 브라우저를 열어 둔 동안의 시각 알림은 보조(D3). 둘 다 기기 상태라 마운트 뒤 읽는다.
   const pushEnabled = hasVapidKey(); // 공개 키가 없으면 푸시 칸 전체를 숨긴다
@@ -245,9 +247,9 @@ export default function MyPage() {
               {e.primary && multi && <span className="pf-tag">기본</span>}
             </Fragment>
           )) : pending} />
-        {/* 목표를 고치는 자리는 현황 「목표 수정」 하나다(D2) — 같은 창을 연다. 날짜 목표가 없으면 없다고 말한다 —
+        {/* 목표 창은 현황 「목표 수정」과 같은 GoalSheet 하나다(D2) — 현황으로 넘기지 않고 이 자리에서 연다. 날짜 목표가 없으면 없다고 말한다 —
             하루 목표 기본값(5 · 5)만 보이면 정한 목표처럼 읽혔다(배움 · 현황은 「목표를 정하면」이라 말한다, 검토 #4). */}
-        <ProfileRow label="목표" href="/progress?goal=edit"
+        <ProfileRow label="목표" dialog onClick={() => setGoalOpen(true)}
           ariaLabel={profile ? ['목표', goal.head || '시험 · 날짜 목표 없음', goal.daily].join(', ') : undefined}
           value={profile ? (goal.head ? <strong>{goal.head}</strong> : '시험 · 날짜 목표 없음') : pending}
           sub={profile ? goal.daily : null} />
@@ -325,6 +327,8 @@ export default function MyPage() {
           </div>
         </ProfileSheet>
       )}
+      {/* 닫혀 있어도 붙여 둔다 — 이 기기에만 있던 날짜 목표를 서버로 옮기는 일을 GoalSheet가 한다(현황과 같은 동작). */}
+      <GoalSheet open={goalOpen} onClose={() => setGoalOpen(false)} />
     </div>
   );
 }

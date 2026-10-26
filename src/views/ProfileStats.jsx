@@ -97,7 +97,7 @@ export default function ProfileStats() {
     staleTime: 1000 * 60 * 5,
   });
 
-  // 배움의 「목표 정하기」 · 내 정보의 목표 줄(/progress?goal=edit)로 들어오면 프로필을 받은 뒤 목표 편집을 연다 — 들어올 때 한 번만.
+  // 배움의 「목표 정하기」 · 오늘 목표 칸(/progress?goal=edit)으로 들어오면 프로필을 받은 뒤 목표 편집을 연다 — 들어올 때 한 번만.
   // 저장하면 프로필을 다시 받아 profile이 바뀌는데, 그때마다 주소를 다시 읽으면 방금 닫은 창이 또 열렸다(PROFILE-REDESIGN-001 실화면 확인).
   const goalParamRead = useRef(false);
   useEffect(() => {
