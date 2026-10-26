@@ -224,11 +224,11 @@ export default function QuickPage() {
               placeholder="분석할 텍스트를 붙여넣으세요"
               rows={5}
               lang={htmlLang(language)}
-              style={{ width: '100%', resize: 'vertical', fontSize: '0.95rem', lineHeight: 1.7 }}
+              style={{ width: '100%', resize: 'vertical', fontSize: 'max(var(--field-font-min), 0.95rem)', lineHeight: 1.7 }}
             />
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
               <select value={language} onChange={(e) => setLanguage(e.target.value)} aria-label="분석 언어"
-                style={{ fontSize: '0.82rem', padding: '6px 8px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
+                style={{ fontSize: 'max(var(--field-font-min), 0.82rem)', padding: '6px 8px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
                 {QUICK_LANGS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
               </select>
               <span style={{ flex: 1, fontSize: '0.72rem', color: 'var(--text-muted)' }}>

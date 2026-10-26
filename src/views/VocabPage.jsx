@@ -1749,7 +1749,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
                       disabled={admission.status !== 'ready' || admission.busy}
                       onChange={e => admission.compatibility ? setNewPerDay(Number(e.target.value)) : admission.controller.configure(Number(e.target.value))}
                       style={{
-                        width: '100%', padding: '6px 8px', fontSize: '0.85rem',
+                        width: '100%', padding: '6px 8px', fontSize: 'max(var(--field-font-min), 0.85rem)',
                         borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)',
                         background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer',
                       }}

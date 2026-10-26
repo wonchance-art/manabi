@@ -677,7 +677,7 @@ button.reader-pattern__formula {cursor:pointer;min-height:44px;}
 .reader-settings .reader-settings__language-row {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
 .reader-settings .reader-setting-select {display:flex;align-items:center;gap:8px;min-width:0;font-size:.82rem;font-weight:500;}
 .reader-settings .reader-setting-select>span {flex:none;}
-.reader-settings .reader-setting-select select {flex:1;min-width:0;min-height:44px;padding:0 8px;border:1px solid var(--reader-line);border-radius:4px;background:var(--reader-paper);color:var(--reader-ink);font:inherit;font-size:.85rem;font-weight:400;cursor:pointer;}
+.reader-settings .reader-setting-select select {flex:1;min-width:0;min-height:44px;padding:0 8px;border:1px solid var(--reader-line);border-radius:4px;background:var(--reader-paper);color:var(--reader-ink);font:inherit;font-size:max(var(--field-font-min),.85rem);font-weight:400;cursor:pointer;}
 .reader-settings .reader-setting-select select:disabled {opacity:.55;cursor:default;}
 /* :has()는 칠할 요소 자신에 건다(TAP-INP-HAS-001) — 「부모:has(…) > span」처럼 :has 뒤에 태그만 남으면 Blink가 그 태그를 모든
    :has 무효화에 합쳐, 앱 어디서든 요소가 하나 붙을 때마다 문서의 모든 span을 다시 계산했다(뷰어 390 실측: 요소 하나 붙이는 데 1,176 → 782개).
