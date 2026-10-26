@@ -189,7 +189,8 @@ function LoginPanel({ onNewTab }) {
   };
 
   const inputStyle = {
-    fontFamily: GBC.font, fontSize: '0.86rem', color: GBC.ink,
+    // 터치 16px(NATIVE-FEEL-P2 — iOS 초점 확대). 인라인 style이라 미디어 쿼리 대신 --field-font-min(index.css)을 쓴다.
+    fontFamily: GBC.font, fontSize: 'max(var(--field-font-min), 0.86rem)', color: GBC.ink,
     background: GBC.creamHi, border: `2px solid ${GBC.creamShade}`, borderRadius: 2,
     padding: '9px 10px', width: '100%', boxSizing: 'border-box',
   };

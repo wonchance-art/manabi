@@ -1629,7 +1629,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
                 ))}
               </div>}
               <div className="review-room-actions">
-                <Button onClick={startReview} disabled={startingReview || !!firstView || !fsrsReview.registryAvailable || admission.status !== 'ready'} className="review-room-start">{startingReview || firstView || fsrsReview.status === 'loading' ? '복습 준비 중…' : `표현 ${sessionCards.length}개 복습 →`}</Button>
+                <Button onClick={startReview} disabled={startingReview || !!firstView || !fsrsReview.registryAvailable || admission.status !== 'ready'} className="review-room-start">{startingReview || firstView || fsrsReview.status === 'loading' ? '복습 준비 중…' : `표현 ${sessionCards.length.toLocaleString('ko-KR')}개 복습 →`}</Button>
                 {hasPractice && <Button variant="ghost" disabled={!!firstView} onClick={() => startPractice(practiceWords)} className="review-room-practice">집중 연습</Button>}
               </div>
               {hasPractice && <p className="review-room-note review-room-practice-note">복습 {session.total.toLocaleString('ko-KR')}개 먼저 하면 일정에 반영돼요. 집중 연습은 일정을 바꾸지 않아요.</p>}

@@ -6128,6 +6128,8 @@ a.viewer-badge:hover {
   color: var(--text-primary);
   cursor: pointer;
 }
+/* 재생 속도 선택 상자만 터치 16px(NATIVE-FEEL-P2) — 같은 이름의 글자 단추 · 표시(span)는 입력칸이 아니라 그대로. */
+select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 .listen-controls__current {
   margin-top: 8px;
   padding: 8px 12px;
@@ -7762,9 +7764,10 @@ a.viewer-badge:hover {
   font-size: 0.8rem; color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
+/* 터치에서 16px(iOS 초점 확대 — NATIVE-FEEL-P2, 오너 「권장대로」). 데스크톱은 0.8rem 그대로. */
 .vocab-sort {
   min-height: 44px; padding: 0 28px 0 13px;
-  font-size: 0.8rem; font-weight: 600;
+  font-size: max(var(--field-font-min), 0.8rem); font-weight: 600;
   color: var(--text-secondary);
   background: var(--bg-secondary);
   border: 1px solid var(--border);

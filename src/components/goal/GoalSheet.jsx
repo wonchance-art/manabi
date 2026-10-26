@@ -44,13 +44,16 @@ import './goal-sheet.css';
 export default function GoalSheet({ open = false, onClose }) {
   const { user, profile, fetchProfile } = useAuth();
   const [local, setLocal] = useState(null);
+  // 끌어올릴 값 = 마운트 때 이 기기에 있던 날짜 목표 하나뿐. 창에서 막 저장한 값(onLocal)은 이미 서버에 썼으니 다시 올리지 않는다 —
+  // 전에는 저장 직후 프로필을 다시 받기 전에 이 효과가 같은 날짜를 한 번 더 썼다(첫 저장마다 PATCH 2번, 합성 계정 실측 2026-10-26 KST).
+  const [migrate, setMigrate] = useState(null);
   const [mounted, setMounted] = useState(false);
   // 과정 목록은 열었을 때만 받는다(현황은 미리 받아 둔다 — 같은 쿼리 키라 한 번).
   const catalog = useGoalCatalog(!!user?.id && open);
 
   useEffect(() => {
     setMounted(true);
-    try { setLocal(JSON.parse(localStorage.getItem('as_dday') || 'null')); } catch {}
+    try { const saved = JSON.parse(localStorage.getItem('as_dday') || 'null'); setLocal(saved); setMigrate(saved); } catch {}
   }, []);
 
   // 서버 값 우선, 없으면 로컬 폴백. 매 렌더 새 객체면 아래 diff 메모가 매번 다시 계산되므로 메모한다.
@@ -63,18 +66,20 @@ export default function GoalSheet({ open = false, onClose }) {
 
   // 서버가 비어 있고 로컬에 있으면 1회 끌어올림 (기기 마이그레이션)
   useEffect(() => {
-    if (!user?.id || !profile || profile.dday_date || !local?.date) return;
+    if (!user?.id || !profile || profile.dday_date || !migrate?.date) return;
+    const from = migrate;
+    setMigrate(null);
     supabase.from('profiles')
-      .update({ dday_date: local.date, dday_label: local.label || null })
+      .update({ dday_date: from.date, dday_label: from.label || null })
       .eq('id', user.id)
       .then(({ error }) => { if (!error) fetchProfile(user.id, user.user_metadata); }, () => {});
     // 최초 1회
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, profile?.dday_date, local?.date]);
+  }, [user?.id, profile?.dday_date, migrate?.date]);
 
   if (!mounted || !open) return null;
   // 열 때마다 지금 값으로 채운다 — 창 안 상태는 열릴 때 새로 만든다.
-  return <GoalSheetDialog dday={dday} catalog={catalog} onClose={onClose} onLocal={setLocal} />;
+  return <GoalSheetDialog dday={dday} catalog={catalog} onClose={onClose} onLocal={saved => { setLocal(saved); setMigrate(null); }} />;
 }
 
 function GoalSheetDialog({ dday, catalog, onClose, onLocal }) {

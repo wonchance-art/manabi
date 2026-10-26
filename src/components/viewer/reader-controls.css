@@ -766,6 +766,7 @@ button.reader-pattern__formula {cursor:pointer;min-height:44px;}
 .manabi-app .viewer-layout .listen-controls{display:flex;align-items:center;flex-wrap:wrap;gap:4px;min-width:0;max-width:100%}
 .manabi-app .viewer-layout .listen-controls__panel{gap:4px;align-items:center;flex-wrap:wrap;min-width:0;max-width:100%}
 .manabi-app .viewer-layout .listen-controls__progress,.manabi-app .viewer-layout .listen-controls__rate{font-size:.75rem;line-height:1.5}
+.manabi-app .viewer-layout select.listen-controls__rate{font-size:max(var(--field-font-min),.75rem)}
 .manabi-app .viewer-layout [data-icon-action]:not(.viewer-inspector__expand){display:inline-flex}
 .manabi-app .viewer-layout .viewer-inspector__expand .action-icon{margin:auto}
 .manabi-app .viewer-layout .grammar-detail__toggle{display:inline-flex;align-items:center;gap:6px;min-height:44px;line-height:1.5}

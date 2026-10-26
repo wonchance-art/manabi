@@ -292,7 +292,7 @@ export default function VocabList({
             </button>
           ))}
         </div>
-          <span className="vocab-filter-row__count">{filteredVocab.length}개</span>
+          <span className="vocab-filter-row__count">{filteredVocab.length.toLocaleString('ko-KR')}개</span>
           {filteredVocab.length > 0 && (
             <button
               type="button"
@@ -375,7 +375,7 @@ export default function VocabList({
       {filteredVocab.length > visibleCount && (
         <div style={{ textAlign: 'center', marginTop: 16 }}>
           <Button variant="secondary" onClick={showMore}>
-            더 보기 ({filteredVocab.length - visibleCount}개 남음)
+            더 보기 ({(filteredVocab.length - visibleCount).toLocaleString('ko-KR')}개 남음)
           </Button>
         </div>
       )}

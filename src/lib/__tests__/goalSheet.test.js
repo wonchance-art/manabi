@@ -37,6 +37,13 @@ describe('단계 — 언어 → 시험(또는 목표 수준) → 날짜, 그다�
     expect(CLEAR_GOAL_ARGS).toEqual(['', '', '', '']);
   });
 
+  it('기기 목표 끌어올림은 마운트 때 있던 값 한 번뿐 — 창에서 막 저장한 값은 다시 쓰지 않는다(첫 저장 PATCH 2번 → 1번)', () => {
+    expect(SHEET).toContain("const saved = JSON.parse(localStorage.getItem('as_dday') || 'null'); setLocal(saved); setMigrate(saved);");
+    expect(SHEET).toContain('if (!user?.id || !profile || profile.dday_date || !migrate?.date) return;');
+    expect(SHEET).toContain('onLocal={saved => { setLocal(saved); setMigrate(null); }}');
+    expect(SHEET).not.toContain('!local?.date) return;');
+  });
+
   it('언어 칩은 학습 언어만 — 지금 목표 언어가 그 밖이면 그것도 남기고, 남는 게 없거나 프로필이 없으면 전부(오너 「권장대로」 2026-10-26 KST)', () => {
     expect(goalLanguages(CATALOG, { learning_language: ['Japanese'] })).toEqual(['Japanese']);
     expect(goalLanguages(CATALOG, { learning_language: ['French', 'Japanese'] })).toEqual(['Japanese', 'French']);
