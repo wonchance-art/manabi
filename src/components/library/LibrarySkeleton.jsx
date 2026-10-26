@@ -73,7 +73,7 @@ export function LibraryShelfBodySkeleton({ live = true }) {
       <ConversationShelfSkeleton live={live} />
       <section className="shelf-list-section">
         {/* 도구(정렬 · 필터 · 선택)는 44px 단추라 머리줄 높이를 정한다 — 같은 높이 칸을 둬야 목록이 밀리지 않는다(실측 +17px). */}
-        <div className="shelf-section-heading"><h2>전체</h2><div className="shelf-list-tools"><SkeletonLine width="12em" height="44px" /></div></div>
+        <div className="shelf-section-heading"><h2>전체</h2><div className="shelf-list-tools"><SkeletonLine width="7em" height="44px" /></div></div>
         <ShelfRowsSkeleton announce={live} />
       </section>
     </>

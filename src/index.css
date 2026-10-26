@@ -264,12 +264,20 @@ a, button, input, select, textarea, label, summary, [role="button"] { touch-acti
       돌아오지 않는다(로그인 이메일 14.4px · 서재 검색 14px 실측). 터치 기기(pointer: coarse)에서만 하한 16px — 데스크톱 크기는 그대로.
       작게 적은 입력칸은 font-size: max(var(--field-font-min), 원래 값)으로 쓴다(인라인 style도 같은 꼴 — 미디어 쿼리는 인라인을 못 덮는다).
       글자 크기를 적지 않은 입력칸(브라우저 기본 13.33px)은 클래스를 달아 아래 터치 블록에 더한다 — 전역 :where(input …) 한 줄은
-      스타일 없는 폼(함께 읽기 그룹 만들기)의 줄바꿈까지 바꿔(실측) 오너 결정으로 넘겼다.
+      스타일 없는 폼(함께 읽기 그룹 만들기)의 줄바꿈까지 바꿔(실측) 화면마다 따로 고치기로 했다(오너 2026-10-26 KST).
+      font: inherit로 작은 부모 글자(라벨 12px 등)를 물려받는 입력칸은 그 규칙에 font-size: max(var(--field-font-min), 1em)를 단다
+      (1em = 물려받던 크기 그대로 — 데스크톱은 바뀌지 않는다).
       손가락 확대를 막는 viewport 값(maximum-scale)은 쓰지 않는다(접근성 — pwaShell ②). 계약: nativeFeel.test.js */
 :root { --field-font-min: 0px; }
+.group-goal-target { width: 90px; } /* 함께 읽기 주간 목표 수 — 터치에서는 아래 76px(16px 글자로 커진 축 선택 상자와 한 줄을 지킨다) */
 @media (pointer: coarse) {
   :root { --field-font-min: 16px; }
   .drill-answer { font-size: 16px; } /* 교재 챕터 연습 답칸(ChapterDrills) — 스타일 없이 브라우저 기본 크기였다 */
+  /* NATIVE-FEEL-P1 ⓓ(오너 「권장대로 진행」 2026-10-26 KST) — 화면마다 따로: 표현 목록 · 댓글 검색칸, 설명판 수업 과 선택. */
+  .search-input, .board-class-navigation select { font-size: 16px; }
+  /* 함께 읽기 그룹 폼 — 입력칸의 최소 폭(min-width: auto)은 글자 크기를 따라 커져 이름칸이 196 → 312px로 줄을 밀었다(실측) — 0으로 둔다. */
+  .group-field { font-size: 16px; min-width: 0; }
+  .group-goal-target { width: 76px; } /* 「100000」 여섯 자리가 16px로 들어가는 폭 */
 }
 /* ⑤ 모달 · 어둠막이 떠 있는 동안 뒤 화면을 세운다(NATIVE-FEEL-001): 시트 위를 손가락으로 쓸면 어둠막 뒤 페이지가 대신 움직였다
       (단어장 「범위 고르기」 · 「단어 직접 추가」 · 단어 상세 · 내 정보 시트 — 390 터치 실측 scrollY 0 → 1488). 터치 기기만 —
@@ -3607,15 +3615,31 @@ a.viewer-badge:hover {
   border-color: var(--primary);
   color: #fff;
 }
-.chip--select {
+/* 함께 읽는 글 · 서재 도구의 정렬(NATIVE-FEEL-P1 ⓐ — 오너 「권장대로 진행」 2026-10-26 KST): 칩 줄에서 떼어 낸 자기 자리의
+   글자 단추 꼴 선택 상자(테두리 · 바탕 없이 「최신순 ▾」). 데스크톱은 칩 글자 크기(0.82rem) 그대로, 터치 기기는 16px(index.css ④ — iOS 초점 확대). */
+.materials-sort {
+  align-self: flex-end;
   appearance: none;
   -webkit-appearance: none;
-  padding-right: 28px;
+  field-sizing: content; /* 가장 긴 선택지(「내 수준 맞춤」)가 아니라 고른 글자만큼 — 「최신순」과 ▾ 사이가 벌어지지 않게(미지원 브라우저는 오른쪽 맞춤) */
+  text-align-last: right;
+  min-height: 44px;
+  padding: 0 22px 0 10px;
+  font: inherit;
+  font-size: max(var(--field-font-min), 0.82rem);
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
   background-image: linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%), linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
-  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+  background-position: calc(100% - 13px) 50%, calc(100% - 8px) 50%;
   background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
 }
+.materials-sort:hover { color: var(--text-primary); }
+.materials-sort:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ========= Admin ========= */
 .admin-table-wrap {
