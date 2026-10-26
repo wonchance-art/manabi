@@ -274,7 +274,7 @@ export function AccountDelete({ toast, signOut }) {
               <h2 id={deleteTitleId} className="pf-danger-title">계정을 영구 삭제할까요?</h2>
             </div>
             <p id={deleteDescId} className="pf-sheet__lead">
-              담은 단어 · 자료 · 학습 기록이 모두 지워지고 되돌릴 수 없어요. 공개로 공유한 자료는 익명으로 남을 수 있어요.
+              담은 표현 · 자료 · 학습 기록이 모두 지워지고 되돌릴 수 없어요. 공개로 공유한 자료는 익명으로 남을 수 있어요.
             </p>
             <div className="pf-field">
               <label htmlFor={deleteInputId}>확인을 위해 아래에 ‘삭제’를 입력해 주세요.</label>

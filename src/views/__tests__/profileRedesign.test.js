@@ -135,3 +135,33 @@ describe('⑦ 다듬기 — 배움과 같은 폭 · 줄 값 · 시트', () => {
     expect(css).toMatch(/\.pf \.pf-chips button\{min-height:44px;/);
   });
 });
+
+describe('⑧ 남김 넷 정리(오너 「권장대로」 2026-10-26 KST — 검토 #9 · #10 · #23)', () => {
+  const vocab = read('src/views/VocabPage.jsx');
+  const shell = read('src/components/web/web-shell.css');
+  it('단어 복습 — 이 자리 시트에서 세션 길이를 바로 저장(단어장과 같은 키), 하루 새 표현 한도는 펼친 복습 설정으로 가는 링크', () => {
+    expect(page).toContain("<ProfileRow label=\"단어 복습\" dialog onClick={() => setSheet('review')}");
+    expect(page).not.toContain('<ProfileRow label="단어 복습" href="/vocab"');
+    expect(page).toContain('onClick={() => { saveSessionLength(length); setSessionLength(length); }}');
+    expect(page).toContain('{[...SESSION_LENGTHS, null].map(length => (');
+    expect(page).toContain('href="/vocab#review-settings"');
+    expect(vocab).toContain('if (settingsReady) saveSessionLength(sessionLength);'.replace('settingsReady', 'settingsRestored'));
+    expect(vocab).toContain('<details className="review-room-settings" id="review-settings" ref={settingsRef}>');
+    expect(vocab).toContain("window.location.hash !== '#review-settings'");
+    expect(vocab).toContain('el.open = true;');
+    expect(read('src/lib/vocabStudy.js')).toContain("localStorage.setItem('vocab_session_length', String(length ?? 'all'))");
+  });
+  it('이름은 「담은 표현」 하나 — 내 정보 칸은 언어가 둘 이상이면 범위를 밝히고, 개수는 천 단위 쉼표', () => {
+    expect(page).toContain(`label={multi ? <><span className="pf-nowrap">전체 언어</span> <span className="pf-nowrap">담은 표현</span></> : '담은 표현'}`);
+    for (const rel of ['src/views/MyPage.jsx', 'src/components/DictationPicker.jsx', 'src/components/AccountSettings.jsx',
+      'src/components/conversation/ConversationThread.jsx', 'src/views/ViewerPage.jsx', 'src/views/VocabPage.jsx']) {
+      expect(code(read(rel)), rel).not.toContain('담은 단어');
+    }
+    expect(vocab).toContain("{vocab.length.toLocaleString('ko-KR')}");
+    expect(vocab).toContain('하루 새 표현 한도{explicitScope');
+  });
+  it('머리 내 정보 아이콘의 현재 위치는 탭과 같은 2px 먹색 밑줄(굵은 원 테두리 없음)', () => {
+    expect(shell).toContain('.manabi-app .gnb .gnb__profile-btn[aria-current="page"]::after{content:\'\';position:absolute;left:10px;right:10px;bottom:4px;height:2px;background:var(--ink)}');
+    expect(shell).not.toContain('box-shadow:inset 0 0 0 1.5px var(--ink)');
+  });
+});

@@ -4184,7 +4184,7 @@ export default function ViewerPage({ seed } = {}) {
                 지웠고(전체 단어장 수였다), 여기서는 이 자료 기준 수로 같은 줄에 되돌린다(설계 Q4). */}
             {(coverage || collectedInMaterial > 0) && (
               <span className="viewer-badge viewer-stats">
-                {coverage && <span title={vt("담은 단어와 '이미 알아요' 표시를 합쳐 센 값 — 서재 맞춤도와 같은 계산이에요")}>{vt('아는 단어 {percent}% · 새 단어 {count}개', {percent: Math.round(coverage.coverage * 100), count: coverage.unknown})}</span>}
+                {coverage && <span title={vt("담은 표현과 '이미 알아요' 표시를 합쳐 센 값 — 서재 맞춤도와 같은 계산이에요")}>{vt('아는 단어 {percent}% · 새 단어 {count}개', {percent: Math.round(coverage.coverage * 100), count: coverage.unknown})}</span>}
                 {coverage && collectedInMaterial > 0 && ' · '}
                 {collectedInMaterial > 0 && <Link href={materialReviewHref} prefetch={false} className="viewer-stats__vocab">{withCountSlot(vt('{count}개 수집 · 이 자료 표현 복습', {count: COUNT_SLOT}),
                   <span key={collectPopKey} className={`viewer-stats__count${collectPopKey ? ' viewer-badge--pop' : ''}`}>{collectedInMaterial}</span>)}</Link>}

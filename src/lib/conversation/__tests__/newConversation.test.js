@@ -71,7 +71,7 @@ describe('입구와 머리 ⋯(정적 계약)', () => {
   });
   it('머리 ⋯ = 주제·수준 바꾸기 · 새 대화 · 지우기(서재 휴지통, 무엇이 남는지 먼저)', () => {
     const thread = read('components/conversation/ConversationThread.jsx');
-    for (const label of ['주제·수준 바꾸기', '새 대화', '지우기', '이 대화를 휴지통으로 옮길까요?', '담은 단어와 복습 일정은 단어장에 그대로 남아요.']) {
+    for (const label of ['주제·수준 바꾸기', '새 대화', '지우기', '이 대화를 휴지통으로 옮길까요?', '담은 표현과 복습 일정은 단어장에 그대로 남아요.']) {
       expect(thread).toContain(label);
     }
     expect(read('lib/conversation/conversationClient.js')).toContain("runLibraryOperation(supabase, 'trash', [target])");

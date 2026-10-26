@@ -37,6 +37,19 @@ describe('단계 — 언어 → 시험(또는 목표 수준) → 날짜, 그다�
     expect(CLEAR_GOAL_ARGS).toEqual(['', '', '', '']);
   });
 
+  it('언어 칩은 학습 언어만 — 지금 목표 언어가 그 밖이면 그것도 남기고, 남는 게 없거나 프로필이 없으면 전부(오너 「권장대로」 2026-10-26 KST)', () => {
+    expect(goalLanguages(CATALOG, { learning_language: ['Japanese'] })).toEqual(['Japanese']);
+    expect(goalLanguages(CATALOG, { learning_language: ['French', 'Japanese'] })).toEqual(['Japanese', 'French']);
+    expect(goalLanguages(CATALOG, { learning_language: ['Japanese'], goal_lang: 'Chinese' })).toEqual(['Japanese', 'Chinese']);
+    expect(goalLanguages(CATALOG, { learning_language: 'Chinese' })).toEqual(['Chinese']);
+    expect(goalLanguages(CATALOG, { learning_language: ['Korean'] })).toEqual(['Japanese', 'Chinese', 'English', 'French']);
+    expect(goalLanguages(CATALOG, null)).toEqual(['Japanese', 'Chinese', 'English', 'French']);
+    // 창은 프로필로 거르고, 숨긴 언어가 있으면 켜는 곳을 말한다. 처음 고른 언어도 같은 목록에서.
+    expect(SHEET).toContain('const langs = goalLanguages(catalog.data, profile);');
+    expect(SHEET).toContain('{someLangsHidden && <p className="gs-note">다른 언어는 내 정보 › 학습 언어에서 켜요.</p>}');
+    expect(initialGoalState({ profile: { learning_language: ['Chinese'] }, dday: null, catalog: CATALOG }).lang).toBe('Chinese');
+  });
+
   it('언어 칩은 목업 순서(일본어 · 중국어 · 영어 · 프랑스어) · 시험 칩은 EXAM_KINDS 급수 + 「시험 없이」 · 일정 없는 언어는 과정 레벨', () => {
     expect(goalLanguages(CATALOG)).toEqual(['Japanese', 'Chinese', 'English', 'French']);
     expect(goalLanguages(undefined)).toEqual(['Japanese', 'Chinese', 'English', 'French']);

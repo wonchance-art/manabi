@@ -50,6 +50,11 @@ export function loadSessionLength() {
   return DEFAULT_SESSION_LENGTH;
 }
 
+/** 세션 길이 쓰기 — loadSessionLength의 짝(null = 전부 'all'). 단어장 복습 칸 · 내 정보 「단어 복습」 시트가 같은 키에 쓴다. */
+export function saveSessionLength(length) {
+  try { localStorage.setItem('vocab_session_length', String(length ?? 'all')); } catch { /* 저장소 차단 */ }
+}
+
 // 오늘 새로 시작한 단어 ID 집합 (날짜 바뀌면 리셋)
 export function loadIntroIds() {
   if (typeof window === 'undefined') return [];
