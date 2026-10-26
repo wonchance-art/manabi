@@ -5,7 +5,7 @@
  * 계산은 예전 궤도 카드와 같은 정본이다: 계획 = studyPlan.buildPlan(관리자 진도표와 같은 함수),
  * 진도 = markProgress(user_ref_progress), 속도 · 예상 완주 = goalPace.pace · countRecentDone.
  * 과정 목록은 목표가 있을 때만 /api/goal-catalog에서 받는다(홈 페이지에 정본 투영을 싣지 않는다 — P4).
- * 목표가 없으면 「목표를 정하면」 빈 상태 — 목표 편집은 현황의 한 모달(목표 · D-Day)에서만 한다.
+ * 목표가 없으면 「목표를 정하면」 빈 상태 — 목표 편집은 목표 창(components/goal/GoalSheet) 하나에서만 한다.
  */
 import { useId, useMemo } from 'react';
 import Link from 'next/link';

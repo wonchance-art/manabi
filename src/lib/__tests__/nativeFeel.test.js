@@ -267,6 +267,7 @@ describe('NATIVE-FEEL-001 ② 모달 · 어둠막이 떠 있는 동안 뒤 화�
       'src/components/classroom/classroom-reader.css': ['.class-copy-dialog'],
       'src/components/levels/word/level-word.css': ['.lw-sheet'],
       'src/components/profile/profile.css': ['.pf-sheet'],
+      'src/components/goal/goal-sheet.css': ['.gs-sheet'],
       'src/components/materials/source-passage.css': ['.passage-dialog'],
     };
     const missing = [];
