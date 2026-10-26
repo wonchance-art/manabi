@@ -1123,6 +1123,12 @@
   (is_admin · enforce_role_change_by_admin은 activity 지문 · 손님 공개 자료 읽기 때문에 유지). 함수 본문 · 정책 · 행 무변경, 복원 SQL ·
   PGlite 7검사. ② 가입 · 재설정 · 내 정보 비밀번호 변경 전에 유출 비밀번호 확인(HIBP range k-익명성, 해시 앞 5자만 우리 라우트가 중계 —
   처리방침 §4 제3자 목록 유지, 실패 시 열림). Supabase 유출 차단은 Pro 전용이라 앱에서. 남은 오너 할 일: 없음(대시보드 HIBP는 Pro).
+  → **#1577 squash `81fde05d`(09:38 KST)** · 운영 적용 09:41(첫 실행은 CLI latest 조회 한도로 DB 전 실패 → 재실행): join_cohort =
+  postgres · service_role만, 헬퍼 셋 anon 없음, is_admin 유지, 계약 넷 동치. 후속: CLI 판 고정 2.122.0(migrations · repair 워크플로).
+- **NATIVE-FEEL-001 모바일 손맛 (2026-10-26 KST)**: ① 터치 기기 입력칸 16px 하한(`--field-font-min`, iOS 초점 확대 19곳 — 보이는 변화: 글자 14~15 → 16px)
+  ② 모달 · 시트 뒤 화면 고정(`html:has(dialog:modal · 어둠막 10종)` 터치만, 시트 스크롤 칸 contain — 스와이프 이동 4곳 0) ③ 채점 답칸 자동 고침 끔
+  ④ 글자 탭 누르는 자리 투명 판(모습 무변화) ⑤ `.manabi-app` · `.auth-wrapper` 100dvh 짝. 계약 nativeFeel 24건.
+  오너 결정 대기: 함께 읽는 글 정렬 칩 · 서재 정렬 상자 · 노트 읽기 칸 · 크기 미지정 입력칸(그룹 폼) 16px 방식, 「뜻」 탭 44px, 책장 뒤로가기 스크롤(실기 확인).
 - **JLPT-KANJI-WINDOW-001 · 단어장 손질 (2026-10-26 KST, 오너 「중국어 판과 엄격하게 대조하면서 동일하게」 · 시안 ⑧ · ⑨)**: JLPT 단어 페이지 글자 칸의 큰 한자도 단추 →
   HSK와 같은 창 · 같은 머리에 상용한자표 순서의 음 · 훈 표(읽기마다 JLPT 단어 둘 · 후리가나 · 한국어 뜻, 단어 없는 읽기도 빈 줄, 지금 읽기 장미색, 내린 읽기 흐리게).
   자료 = 常用漢字表 원문(2,136자 · 4,388음훈 · 내린 읽기 178, `scripts/generate-ja-joyo.mjs --check` · joyodb 대조 불일치 0) + 상용 밖 콘텐츠 한자 KANJIDIC2(CC BY-SA, 파일 분리 · 쓰이는 줄만).
