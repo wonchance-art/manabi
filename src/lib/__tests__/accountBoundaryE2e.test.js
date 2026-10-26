@@ -32,9 +32,9 @@ describe('계정 경계 e2e 전제', () => {
     expect(mock).toMatch(/function mockResponse\(url, claims\) \{\n  const boundary = boundaryResponse\(url, claims\);\n  if \(boundary\) return boundary;/);
   });
   it('② e2e가 고르는 문구 · 표식이 화면에 있다', () => {
-    // 내 정보 시안 A(PROFILE-REDESIGN-001) — 로그아웃은 계정 묶음의 줄(이름 = 「로그아웃」), 계정 삭제는 맨 아래 글 단추.
+    // 내 정보(PROFILE-REDESIGN-001 → PROFILE-POLISH-001) — 로그아웃은 계정 묶음 아래 따로 한 칸(이름 = 「로그아웃」), 계정 삭제는 맨 아래 글 단추.
     const account = read('src/components/AccountSettings.jsx');
-    expect(account).toMatch(/<ProfileRow label="로그아웃" chevron=\{false\}\s*onClick=\{\(\) => signOut\(\)/);
+    expect(account).toMatch(/<button type="button" className="pf-solo" onClick=\{\(\) => signOut\(\)[^>]*>\s*로그아웃\s*<\/button>/);
     expect(account).toContain('>계정 삭제</button>');
     expect(account).toContain("{deleting ? '삭제 중…' : '영구 삭제'}");
     expect(account).toContain('placeholder="삭제"');

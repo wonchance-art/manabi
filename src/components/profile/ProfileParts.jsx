@@ -30,12 +30,13 @@ export function ProfileGroup({ title, note, children }) {
  * 한 줄. href = 다른 화면으로(링크), onClick = 시트를 열거나 바로 실행(단추), 둘 다 없으면 값만 보이는 글.
  * ariaLabel은 지금 값을 읽어 주는 이름(라벨로 시작 — 보이는 이름이 들어 있어야 음성 조작이 맞는다).
  */
-export function ProfileRow({ label, value, sub, href, onClick, ariaLabel, dialog = false, chevron, busy = false, className = '', disabled = false }) {
+export function ProfileRow({ label, value, sub, href, onClick, ariaLabel, dialog = false, chevron, icon = 'next', busy = false, className = '', disabled = false }) {
   const body = (
     <>
       <span className="pf-row__label">{label}</span>
       <span className="pf-row__value">{value}{sub && <small>{sub}</small>}</span>
-      {(chevron ?? !!(href || onClick)) && <span className="pf-row__chev"><ActionIcon name="next" /></span>}
+      {/* 꺾쇠가 없는 줄도 같은 폭을 비워 둔다 — 값 끝이 줄마다 맞게(디자이너 검토 #5). */}
+      <span className="pf-row__chev" aria-hidden="true">{(chevron ?? !!(href || onClick)) && <ActionIcon name={icon} />}</span>
     </>
   );
   const cls = `pf-row ${className}`.trim();
@@ -55,7 +56,7 @@ export function ProfileRow({ label, value, sub, href, onClick, ariaLabel, dialog
  * 편집 시트 — 휴대폰은 아래에서 올라오는 시트, 넓은 화면은 가운데 창. 바깥을 누르거나 Esc · ✕로 닫는다(busy 동안은 닫지 않는다).
  * 스크림은 공용 .scrim(토큰 --scrim · 화면 이동 효과 예외 목록에 이미 있다)을 쓴다.
  */
-export function ProfileSheet({ title, lead, onClose, busy = false, children, actions }) {
+export function ProfileSheet({ title, lead, onClose, busy = false, children, actions, after }) {
   const titleId = useId();
   const close = () => { if (!busy) onClose(); };
   const ref = useDialogReturn(close);
@@ -71,6 +72,7 @@ export function ProfileSheet({ title, lead, onClose, busy = false, children, act
         {lead && <p className="pf-sheet__lead">{lead}</p>}
         {children}
         {actions && <div className="pf-sheet__actions">{actions}</div>}
+        {after}
       </div>
     </div>
   );

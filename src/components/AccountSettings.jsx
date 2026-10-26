@@ -4,20 +4,19 @@
  * 내 정보의 계정 묶음 · 맨 아래 계정 삭제 (PROFILE-REDESIGN-001 시안 A).
  *
  *   계정
- *   ┌ 로그인 방법                       이메일 ┐
- *   │ 비밀번호                        바꾸기 › │  → 시트(현재 비밀번호 확인 — AUTH-GUIDE-001 H)
- *   │ 내 데이터           JSON 파일로 내보내기 › │  → 바로 내려받기(표 7개 정본 완전 조회)
- *   └ 로그아웃                                ┘  → AuthContext 관문(AUTH-ROUTER-REFRESH-001)
+ *   ┌ 비밀번호 바꾸기                        › ┐  → 시트(현재 비밀번호 확인 — AUTH-GUIDE-001 H)
+ *   └ 내 데이터 내보내기             JSON 파일 ↓ ┘  → 바로 내려받기(표 7개 정본 완전 조회) — 다음 화면이 아니라 파일이라 ↓
+ *   [              로그아웃              ]          → AuthContext 관문(AUTH-ROUTER-REFRESH-001). 값이 빠진 줄처럼 보여 따로 한 칸
  *   …
  *   계정 삭제                                     ← 맨 아래 따로. 확인창 「계정을 영구 삭제할까요?」 + 「삭제」 입력
  *
- * 이메일은 위 「나」 칸에 한 번만 둔다(예전에는 두 번 나왔다). 위험 동작은 일상 동작과 떨어뜨려 맨 아래에 둔다(설계 P10).
+ * 이메일 · 로그인 방법은 위 「나」 칸에 한 번만 둔다. 줄 이름은 동작(바꾸기 · 내보내기), 값 자리는 지금 값만(PROFILE-POLISH-001 —
+ * 상태와 동작 이름이 값 자리에 섞였다). 위험 동작은 일상 동작과 떨어뜨려 맨 아래에 둔다(설계 P10).
  */
 import { useEffect, useId, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { readCompleteLegacyRows } from '../lib/legacyReviewSync';
 import { failureMessage } from '../lib/errorMessage';
-import { signInMethods } from '../lib/profileSummary';
 import { isPasswordPwned } from '../lib/pwnedPassword';
 import { PWNED_PASSWORD_MESSAGE } from '../lib/authErrors';
 import { ProfileGroup, ProfileRow, ProfileSheet } from './profile/ProfileParts';
@@ -140,13 +139,13 @@ export default function AccountSettings({ user, toast, signOut }) {
   return (
     <>
       <ProfileGroup title="계정">
-        <ProfileRow label="로그인 방법" value={signInMethods(user)} ariaLabel={`로그인 방법, ${signInMethods(user)}`} />
-        <ProfileRow label="비밀번호" value={pwAction} dialog onClick={() => setPwMode(true)} ariaLabel={`비밀번호 ${pwAction}`} />
-        <ProfileRow label="내 데이터" value={exportMsg || 'JSON 파일로 내보내기'} onClick={handleExportMyData} busy={!!exportMsg}
-          ariaLabel={exportMsg ? `내 데이터, ${exportMsg}` : '내 데이터 JSON 파일로 내보내기'} />
-        <ProfileRow label="로그아웃" chevron={false}
-          onClick={() => signOut() /* 서버 렌더 버리기는 AuthContext 관문(AUTH-ROUTER-REFRESH-001) */} />
+        <ProfileRow label={`비밀번호 ${pwAction}`} dialog onClick={() => setPwMode(true)} ariaLabel={`비밀번호 ${pwAction}`} />
+        <ProfileRow label="내 데이터 내보내기" value={exportMsg || 'JSON 파일'} onClick={handleExportMyData} busy={!!exportMsg} icon="download"
+          ariaLabel={exportMsg ? `내 데이터 내보내기, ${exportMsg}` : '내 데이터 내보내기, JSON 파일'} />
       </ProfileGroup>
+      <button type="button" className="pf-solo" onClick={() => signOut() /* 서버 렌더 버리기는 AuthContext 관문(AUTH-ROUTER-REFRESH-001) */}>
+        로그아웃
+      </button>
 
       {pwMode && (
         <ProfileSheet title={`비밀번호 ${pwAction}`} onClose={closePassword} busy={submitting}
