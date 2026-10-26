@@ -1118,7 +1118,7 @@
   /auth/from-link(주소창 그대로)로 — 재설정 · 오류 화면 깜빡임 없음(브라우저 확인).
   → **#1576 squash `d4e456f4`(09:09 KST, 운영 16/16 · 오류 0 · /japanese 307 → /lessons?lang=Japanese · /auth HTML 폼 · ?mode=reset 미룸)**.
 - **SECDEF-HARDEN-002 · PWNED-PASSWORD-001 (2026-10-26 KST, 오너 「권장대로 진행」)**: Supabase 보안 진단 검토(운영 카탈로그 읽기 전용) —
-  즉시 악용 가능 고위험 없음. 실위험 = profiles 전원 공개(PROFILES-PRIVACY-001 ②, 전용 마이그레이션 진행 중 · 병합 전 오너 보고).
+  즉시 악용 가능 고위험 없음. 실위험 = profiles 전원 공개(PROFILES-PRIVACY-001 ② — 오너 승인 뒤 병합, 아래 기록).
   ① join_cohort 실행권 service_role만(로그인 사용자가 기수 코드를 읽고 아무 기수에 가입하던 경로) · 정책 헬퍼 셋 anon 회수
   (is_admin · enforce_role_change_by_admin은 activity 지문 · 손님 공개 자료 읽기 때문에 유지). 함수 본문 · 정책 · 행 무변경, 복원 SQL ·
   PGlite 7검사. ② 가입 · 재설정 · 내 정보 비밀번호 변경 전에 유출 비밀번호 확인(HIBP range k-익명성, 해시 앞 5자만 우리 라우트가 중계 —
@@ -1213,6 +1213,11 @@
     admin_set_user_role RPC(마지막 관리자 강등 거부 · 'user'→'student') — 마이그레이션 20261016171800은 병합 때 db push로 운영 적용되므로
     **병합 전 오너 명시 승인 필요**(대기). 그 전엔 안내 토스트. backfill-ipa · seed-starters는 서비스 키 없으면 503.
     ② 본 적용(전원 공개 정책 제거 · UPDATE 14열 · activity + admission 지문 재고정)은 배포 · 역할 변경 실계정 검수 뒤.
+    → ② 마이그레이션(2026-10-26 KST, 오너 「권장대로 진행」 ×2 — 준비 · 병합): 20261026010000_profiles_privacy.sql
+      (SELECT = 본인 + 관리자 is_admin · anon 0행 · 열 권한 UPDATE 14 · INSERT(id, display_name) · profile → admission 재게시, 사전 검사 = 운영 실측 모양,
+      사후 검사에 anon · 학습자 · 관리자 행동 검사) · 복원 docs/sql/profiles-privacy-rollback.sql · PGlite supabase/tests/profiles-privacy.mjs(CI 등록).
+      앱 변경 0(쓰는 열 = 여는 열 계약 · 자기 행 읽기 계약 profilesPrivacy.test.js). 남의 이름은 public_profiles(정의자 view · 세 열) 그대로.
+      병합 전 운영 읽기 전용 대조(11:00 KST): 상수 8개 전부 지금 값과 일치 · 계약 넷 게시 = 계산 · 정책 7(전원 공개 둘 포함) = 사전 검사 기대 모양.
   · 같은 PR(APP-FEEL-003, 운영 손맛 점검 7건 중 4건): 탭 이동 대기 밑줄(useLinkStatus · 100ms 지연 · prefetch:false 유지) · 이동 뒤 포커스를
     새 화면 첫 제목(없으면 본문 · 살아 있는 포커스는 그대로) · 주요 카드 눌림(:active scale .985 · 모션 축소 제외) · 대기 밑줄 = 지금 탭 밑줄 자리.
     목록 뒤로가기 자리 복원(LEVEL-RESTORE-001 — h1 2500px −437 → 0 · h4 80,063px 0) · 교재 대기 골격(BOOK-SKELETON-001, CLS 0). 뷰어 다음 편 유지(진행).
