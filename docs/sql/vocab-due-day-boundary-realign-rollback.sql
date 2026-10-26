@@ -1,4 +1,4 @@
--- 복원: supabase/migrations/20261026113000_vocab_due_day_boundary_realign.sql(옛 기한을 그 학습일 04:00 KST로 맞춤)을 되돌린다.
+-- 복원: docs/sql/vocab-due-day-boundary-realign.sql(옛 기한을 그 학습일 04:00 KST로 맞춤)을 되돌린다.
 -- 맞춘 뒤 다시 채점한 행(next_review_at이 맞춘 값과 다름)은 새 채점이 정본이라 건드리지 않는다.
 -- 백업 표는 지우지 않는다(되돌린 뒤에도 증거로 남김 — 정리는 오너 결정).
 BEGIN;
