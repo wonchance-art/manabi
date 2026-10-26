@@ -1108,6 +1108,14 @@
   조각 N3 207 → 3.5 KB · 책장 일본어 판 미리 받기 612 → 65 KB, 탭 → 카드 모바일 손님 641 → 591 ms(누르는 순간 받기 · 문서로 열 때만 preload).
   VOCAB-LEVEL-DOC 실패(붙은 뒤 받기 → 카드 +272 ms)를 피함. 오프라인: 워커가 이 주소만 network-first · 레벨마다 한 칸. 남은 나빠짐: 데스크톱 손님
   N3 직접 열기 LCP 232 → 316 ms(H6는 −4). 레벨 타일 prefetch={false}(ROUTE-AUDIT-2 F2)는 이제 불필요 — 배제.
+  → **#1575 squash `f13f12ae`(05:25 KST)**.
+- **VIEWER-AUTH-RESTORE-MODAL · ROUTE-AUDIT-2 P1 · P2 (2026-10-26 KST, P1 · P2 오너 「권장대로」)**:
+  ① 뷰어 — 로그인 복원(whenDocumentParsed, 최대 3초) 전에 연 「학습」 창이 복원(user null → 계정) 순간 닫혀 소유자가 「자료 관리」를 못 보던
+  경합(실사용 버그 · CI viewer-boundary-edit 390 간헐 실패의 원인). 같은 자료의 손님 → 계정은 창을 유지(resetScope와 같은 규칙).
+  고치기 전 빌드 e2e 3/3 실패 → 3/3 통과(viewer-dialog-guards에 복원 3초 지연 장면 추가).
+  ② /japanese · /chinese · /english · /french → 엣지 307 /lessons?lang=…(손님에게 「관리자 보관함 로그인」을 보이던 것 · 학습자 3번 돌던 것),
+  관리자 거절은 바로 /home. ③ /auth 로그인 폼을 정적 HTML에(질의는 마운트 뒤 · 제출 때 읽기), ?mode=reset · ?error=는 첫 그림을 미루는 판
+  /auth/from-link(주소창 그대로)로 — 재설정 · 오류 화면 깜빡임 없음(브라우저 확인).
 - **JLPT-KANJI-WINDOW-001 · 단어장 손질 (2026-10-26 KST, 오너 「중국어 판과 엄격하게 대조하면서 동일하게」 · 시안 ⑧ · ⑨)**: JLPT 단어 페이지 글자 칸의 큰 한자도 단추 →
   HSK와 같은 창 · 같은 머리에 상용한자표 순서의 음 · 훈 표(읽기마다 JLPT 단어 둘 · 후리가나 · 한국어 뜻, 단어 없는 읽기도 빈 줄, 지금 읽기 장미색, 내린 읽기 흐리게).
   자료 = 常用漢字表 원문(2,136자 · 4,388음훈 · 내린 읽기 178, `scripts/generate-ja-joyo.mjs --check` · joyodb 대조 불일치 0) + 상용 밖 콘텐츠 한자 KANJIDIC2(CC BY-SA, 파일 분리 · 쓰이는 줄만).
