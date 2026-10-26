@@ -12,7 +12,7 @@ import { REF_READ_KEYS, claimGuestRefProgress } from './refReadStore';
 import { clearAllStudySources } from './studySourceHandoff';
 import { syncScHintCookie } from './scFontHint';
 import { pullProgress } from './refProgress';
-import { createProfileReadOnlyRefresh, recordExplicitProfileLogin } from './learningActivity';
+import { activityAlreadyCounted, createProfileReadOnlyRefresh, recordExplicitProfileLogin } from './learningActivity';
 import { accountCacheReset, accountLeft, clearAccountQueries, noteAccount } from './accountQueryCache';
 
 const AuthContext = createContext(null);
@@ -129,6 +129,13 @@ export function AuthProvider({ children, queryClient, onAccountLeft }) {
     }
   }
   const fetchProfile = refreshProfileReadOnly;
+  // legacy 학습 활동(update_streak · 예전 채점 — 영수증 날 = 서버의 오늘) 뒤 재읽기 — 지금 프로필이 오늘(UTC)을 이미 셌으면 보내지 않고
+  // 그 프로필을 돌려준다(ACTIVITY-PROFILE-READ-001 — 근거 learningActivity.activityAlreadyCounted). FSRS 채점 · 설정 쓰기 뒤는 fetchProfile 그대로.
+  function refreshProfileAfterActivity(userId) {
+    const current = observedProfileRef.current;
+    if (actorRef.current === userId && activityAlreadyCounted(current, userId)) return Promise.resolve(current);
+    return readProfile(userId);
+  }
 
   // 실제 로그인만 접속 시각을 기록한다. streak/freeze는 학습 활동 트랜잭션만 변경한다.
   async function initializeLoginProfile(nextUser) {
@@ -438,7 +445,8 @@ export function AuthProvider({ children, queryClient, onAccountLeft }) {
     resetPassword,
     resendConfirmation,
     fetchProfile,
-    refreshProfileReadOnly
+    refreshProfileReadOnly,
+    refreshProfileAfterActivity
   };
 
   return (

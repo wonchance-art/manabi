@@ -92,7 +92,7 @@ function UpcomingList({ upcoming }) {
 export default function GrammarReviewSession({ items, upcoming = [], signedOut = false }) {
   // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
   const signInHref = authEntryHref(usePathname());
-  const { user, fetchProfile } = useAuth();
+  const { user, refreshProfileAfterActivity } = useAuth();
   const [idx, setIdx] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [answers, setAnswers] = useState({});
@@ -145,7 +145,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
         if (!updated) throw new Error('문법 복습 결과를 저장하지 못했어요.');
 
         // 저장 확인 뒤에만 활동·이벤트와 완료 상태를 확정한다.
-        recordActivity(user.id, () => fetchProfile(user.id));
+        recordActivity(user.id, () => refreshProfileAfterActivity(user.id));
         logReviewEvents(user.id, (questions || []).map(q => {
           const a = answers[q.id];
           if (!a) return null;
