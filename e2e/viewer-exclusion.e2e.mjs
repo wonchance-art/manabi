@@ -70,7 +70,16 @@ async function setup({ width = 1440, saved = false, due = true } = {}) {
  // 아는 단어는 낙관 갱신(42d6ece9)이라 화면이 바뀐 것이 서버가 받았다는 뜻이 아니다 — 서버 상태를 단언하거나 새로 고치기 전에
  // 그 쓰기의 응답을 기다린다(누르기 전에 건다). 화면 변화만 기다리면 응답 전에 단언 · 이동해 간헐 실패했다(390px 등, 2026-10-17 KST).
  const written = method => f.page.waitForResponse(r => r.url().includes('/rest/v1/user_known_words') && r.request().method() === method);
- return { ...f, words, exclusions, known, writes, grades, select, actions, toggle, gradesUI, written,
+ // 새로 연 뷰어의 네 칸은 단어 상태(저장 색인 · 제외 · 아는 단어)를 받기 전까지 꺼져 있다(ViewerPage wordStateReady) — 카드가 먼저 뜰 수 있어,
+ // 카드가 뜨자마자 활성을 단언하면 받기 속도에 따라 간헐 실패했다(CI 2026-10-26 KST). 「풀린 뒤 네 칸이 켜진다」는 켜질 때까지 기다려 본다.
+ const gradesEnabled = async (ms = 10000) => {
+  for (const until = Date.now() + ms; ; await delay(50)) {
+   const all = await gradesUI.all();
+   if (all.length === 4 && (await Promise.all(all.map(b => b.isEnabled()))).every(Boolean)) return true;
+   if (Date.now() > until) return false;
+  }
+ };
+ return { ...f, words, exclusions, known, writes, grades, select, actions, toggle, gradesUI, gradesEnabled, written,
   fail: () => { failNext = true; }, hold: () => { wait = new Promise(resolve => { release = resolve; }); }, release: () => { release?.(); wait = null; } };
 }
 for (const width of [320, 390, 1440]) test(`미저장 아는 단어/재접속/목록 해제와 4칸·발음 보존 ${width}px`, async () => {
@@ -96,7 +105,7 @@ for (const width of [320, 390, 1440]) test(`미저장 아는 단어/재접속/�
   await list.waitFor({ state: 'detached' }); await deleted;
   assert.equal(f.exclusions.length, 0); assert.equal(f.words.length, 0); assert.equal(f.grades.length, 0);
   await f.page.goto('/viewer/94101', { waitUntil: 'domcontentloaded' }); await f.select(0);
-  assert.equal(await f.gradesUI.count(), 4); for (const b of await f.gradesUI.all()) assert.equal(await b.isEnabled(), true);
+  assert.equal(await f.gradesEnabled(), true);
   assert.deepEqual(f.errors, []);
  } finally { await f.context.close(); }
 });
@@ -116,7 +125,7 @@ test('이전 제외는 별도 접힌 목록에서 해제하고 아는 단어 토
   await legacy.getByRole('button',{name:'제외 해제',exact:true}).first().click();await removed;
   await f.page.goto('/viewer/94101',{waitUntil:'domcontentloaded'});await f.select(0);
   assert.equal(f.exclusions.length, 0); assert.equal(f.grades.length, 0);
-  for (const button of await f.gradesUI.all()) assert.equal(await button.isEnabled(), true);
+  assert.equal(await f.gradesEnabled(), true);
   assert.deepEqual(f.errors, []);
  } finally { await f.context.close(); }
 });
