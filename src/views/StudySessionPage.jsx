@@ -1451,6 +1451,8 @@ export default function StudySessionPage({
             onChange={e => setTyping(e.target.value)} disabled={phase === 'feedback'}
             placeholder={langName + '로 입력'} aria-describedby={headId}
             enterKeyHint="go"
+            // 채점하는 답칸 — 휴대폰 자동 고침 · 첫 글자 대문자 · 맞춤법 밑줄이 답을 대신 고치거나 틀린 곳을 알려 주지 않게(KanaTest 선례, NATIVE-FEEL-001)
+            autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
             onKeyDown={e => {
               if (e.key !== 'Enter') return;
               // IME 조합 중(일본어·중국어 변환 확정) Enter는 미확정 텍스트로 채점되므로 무시.

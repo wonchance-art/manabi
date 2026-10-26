@@ -260,6 +260,27 @@ html {
   text-size-adjust: 100%;
 }
 a, button, input, select, textarea, label, summary, [role="button"] { touch-action: manipulation; }
+/* ④ 입력칸 글자 하한(NATIVE-FEEL-001): iOS Safari · Chrome은 글자가 16px보다 작은 입력칸 · 선택 상자에 초점이 가면 화면을 확대하고
+      돌아오지 않는다(로그인 이메일 14.4px · 서재 검색 14px 실측). 터치 기기(pointer: coarse)에서만 하한 16px — 데스크톱 크기는 그대로.
+      작게 적은 입력칸은 font-size: max(var(--field-font-min), 원래 값)으로 쓴다(인라인 style도 같은 꼴 — 미디어 쿼리는 인라인을 못 덮는다).
+      글자 크기를 적지 않은 입력칸(브라우저 기본 13.33px)은 클래스를 달아 아래 터치 블록에 더한다 — 전역 :where(input …) 한 줄은
+      스타일 없는 폼(함께 읽기 그룹 만들기)의 줄바꿈까지 바꿔(실측) 오너 결정으로 넘겼다.
+      손가락 확대를 막는 viewport 값(maximum-scale)은 쓰지 않는다(접근성 — pwaShell ②). 계약: nativeFeel.test.js */
+:root { --field-font-min: 0px; }
+@media (pointer: coarse) {
+  :root { --field-font-min: 16px; }
+  .drill-answer { font-size: 16px; } /* 교재 챕터 연습 답칸(ChapterDrills) — 스타일 없이 브라우저 기본 크기였다 */
+}
+/* ⑤ 모달 · 어둠막이 떠 있는 동안 뒤 화면을 세운다(NATIVE-FEEL-001): 시트 위를 손가락으로 쓸면 어둠막 뒤 페이지가 대신 움직였다
+      (단어장 「범위 고르기」 · 「단어 직접 추가」 · 단어 상세 · 내 정보 시트 — 390 터치 실측 scrollY 0 → 1488). 터치 기기만 —
+      마우스 화면은 html overflow:hidden이 스크롤 막대를 걷어 본문이 옆으로 밀린다. overscroll-behavior: none은 시트 위 당겨서 새로 고침 차단.
+      목록은 계약(nativeFeel.test.js)이 「스크림을 칠하는 전면 고정 막」 전수와 맞춘다 — 새 어둠막은 여기에 더한다. */
+@media (pointer: coarse) {
+  html:has(:is(dialog:modal, .scrim, .modal-overlay, .confirm-overlay, .tile-modal__overlay, .vocab-detail-overlay, .onboarding-overlay, .reading-test-overlay, .class-copy-overlay, .lw-scrim)) {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+}
 .btn, .review-score-btn, .auth-google-btn, .auth-submit, .sentence-nav__btn, .viewer-sheet-bar__btn--nav,
 .lv-fab--save, .lv-fab--ex, .lv-fab--o, .lv-fab--x, .lw-grade, .lw-two__btn, .lw-one__reveal, .mobile-nav__link,
 .manabi-app a.learn-tile, .manabi-app .lv-view button, .manabi-app .lv-chips a, .manabi-app .manabi-toc-group li > a {
@@ -801,7 +822,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border: 1px solid var(--border);
   color: var(--text-primary);
   outline: none;
-  font-size: 0.95rem;
+  font-size: max(var(--field-font-min), 0.95rem);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
@@ -2421,7 +2442,7 @@ a.viewer-badge:hover {
   border-radius: 8px;
   background: var(--bg-card);
   color: var(--text-primary);
-  font-size: 0.88rem;
+  font-size: max(var(--field-font-min), 0.88rem);
   padding: 7px 10px;
   margin-bottom: 4px;
 }
@@ -3330,6 +3351,7 @@ a.viewer-badge:hover {
 .modal__body {
   padding: 25px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   color: var(--text-primary);
   line-height: 1.7;
 }
@@ -4649,7 +4671,7 @@ a.viewer-badge:hover {
   width: 100%;
   min-height: 45vh;
   resize: vertical;
-  font-size: 0.92rem;
+  font-size: max(var(--field-font-min), 0.92rem);
   line-height: 1.7;
   background: var(--bg-secondary);
   color: var(--text-primary);
@@ -5367,6 +5389,7 @@ a.viewer-badge:hover {
   justify-content: center;
   align-items: center;
   min-height: calc(100vh - var(--gnb-height));
+  min-height: calc(100dvh - var(--gnb-height)); /* 주소창이 보이는 휴대폰 탭에서 100vh(큰 높이)만 두면 로그인 화면이 주소창만큼 스크롤된다(NATIVE-FEEL-001 · 셸 선례 PWA-SHELL ②) */
   padding: 24px 16px;
 }
 .auth-card {
@@ -5454,7 +5477,7 @@ a.viewer-badge:hover {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   color: var(--text-primary);
-  font-size: 0.9rem;
+  font-size: max(var(--field-font-min), 0.9rem);
   outline: none;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }

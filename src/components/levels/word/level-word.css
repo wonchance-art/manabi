@@ -55,6 +55,9 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-tabs{display:flex;gap:22px;border-bottom:1px solid var(--lw-line);font-size:14px;overflow-x:auto;scrollbar-width:none}
 .lw-tabs button{flex:none;min-height:44px;border:0;background:none;padding:0;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;display:inline-flex;flex-direction:column;align-items:center;justify-content:center}
 .lw-tabs button[aria-pressed=true]{color:var(--ink);font-weight:700;border-bottom-color:var(--ink)}
+/* 누르는 자리 넓히기(NATIVE-FEEL-001) — 「뜻」은 그리는 폭이 14px · 나머지 28px라 손가락이 옆 탭을 눌렀다. 간격(22px)의 절반씩을 투명 판으로 더한다 —
+   밑줄 막대(.lw-tabs__bar)는 단추 offsetWidth를 재므로 그대로다. 끝 탭은 오른쪽으로 넘치지 않게(가로 스크롤 칸). */
+.lw-tabs button{position:relative}.lw-tabs button::before{content:'';position:absolute;inset:0 -11px}.lw-tabs button:last-child::before{right:0}
 .lw-tabs{position:relative}
 .lw-tabs[data-bar] button[aria-pressed=true]{border-bottom-color:transparent}
 .lw-tabs__bar{position:absolute;left:0;bottom:0;height:2px;width:calc(var(--w) * 1px);background:var(--ink);pointer-events:none;transform:translateX(calc(var(--x) * 1px));transition:transform .2s var(--ease-settle),width .2s var(--ease-settle)}
@@ -372,7 +375,7 @@ button.lw-tile__glyph[aria-expanded=true]{background:color-mix(in srgb,var(--lw-
 @keyframes lwSheetDown{from{transform:translateY(var(--dy,0px))}to{transform:translateY(100%)}}
 @keyframes lwFadeOut{to{opacity:0}}
 .lw-scrim{position:fixed;inset:0;z-index:50;background:color-mix(in srgb,var(--ink) 34%,transparent);animation:lwFade .2s var(--ease-settle) both}
-.lw-sheet{position:fixed;left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px);bottom:0;z-index:51;max-width:680px;margin:0 auto;background:var(--paper);border-radius:18px 18px 0 0;padding:0 16px calc(16px + env(safe-area-inset-bottom,0px));max-height:88dvh;overflow:auto;animation:viewerSheetUp .24s var(--ease-settle) both;touch-action:pan-y}
+.lw-sheet{position:fixed;left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px);bottom:0;z-index:51;max-width:680px;margin:0 auto;background:var(--paper);border-radius:18px 18px 0 0;padding:0 16px calc(16px + env(safe-area-inset-bottom,0px));max-height:88dvh;overflow:auto;overscroll-behavior:contain;animation:viewerSheetUp .24s var(--ease-settle) both;touch-action:pan-y}
 .lw-sheet__handle{display:grid;place-items:center;height:28px;cursor:grab;touch-action:none}
 .lw-sheet__handle::before{content:'';width:40px;height:4px;border-radius:999px;background:var(--rule)}
 .lw-sheet__rows{display:grid;gap:10px;padding-bottom:6px}

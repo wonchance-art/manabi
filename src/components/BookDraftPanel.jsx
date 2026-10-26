@@ -54,7 +54,7 @@ export default function BookDraftPanel({
                 chapters[i] = { ...chapters[i], title: e.target.value };
                 return { ...d, chapters };
               })}
-              style={{ flex: 1, minWidth: 0, fontSize: '0.85rem', background: 'transparent', border: 'none', color: 'var(--text-primary)', outline: 'none' }}
+              style={{ flex: 1, minWidth: 0, fontSize: 'max(var(--field-font-min), 0.85rem)', background: 'transparent', border: 'none', color: 'var(--text-primary)', outline: 'none' }}
             />
             <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
               {isSentences ? chapterRanges[i] : `${ch.text.length.toLocaleString()}자`}

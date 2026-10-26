@@ -62,7 +62,10 @@ jobs:
       - uses: supabase/setup-cli@v1
         if: steps.guard.outputs.skip != 'true'
         with:
-          version: latest
+          # 'latest'는 GitHub API로 최신 판을 찾는데, 러너 공유 한도에 걸리면 DB 단계 전에 실패한다
+          # (2026-10-26 KST #1577 병합 run 40250344364 「Failed to resolve latest Supabase CLI release: rate limit exceeded」).
+          # 판을 고정해 조회를 없앤다 — 2.122.0 = 그 재실행이 운영에 적용한 판(npm supabase 최신 2026-10-23). 올릴 때는 이 줄만 바꾼다.
+          version: 2.122.0
 
       - name: Link & db push
         if: steps.guard.outputs.skip != 'true'

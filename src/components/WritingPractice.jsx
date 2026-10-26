@@ -66,7 +66,7 @@ export default function WritingPractice({ lang, slug, writing }) {
         rows={3}
         lang={htmlLang}
         placeholder="여기에 직접 써 보세요 — 이 기기에만 저장돼요."
-        style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: '0.95rem', lineHeight: 1.6, resize: 'vertical' }}
+        style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 'max(var(--field-font-min), 0.95rem)', lineHeight: 1.6, resize: 'vertical' }}
       />
       <p style={{ margin: '4px 0 0', fontSize: '0.74rem', color: 'var(--text-muted)', textAlign: 'right' }}>단어 수: {wordCount}</p>
       <div style={{ marginTop: 4 }}>

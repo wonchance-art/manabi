@@ -120,6 +120,7 @@ function GroupForms({ groupCount, onDone }) {
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               placeholder="초대 코드 6자"
+              autoComplete="off" autoCorrect="off" autoCapitalize="characters" spellCheck={false}
               maxLength={6}
               style={{ flex: '1 1 140px', textTransform: 'uppercase' }}
             />
