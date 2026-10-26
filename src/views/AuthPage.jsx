@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../lib/AuthContext';
 import { useRouter } from 'next/navigation';
-import { toKoreanError, INVALID_CREDENTIALS_MESSAGE, EMAIL_NOT_CONFIRMED_MESSAGE, AUTH_FALLBACK_MESSAGE } from '../lib/authErrors';
+import { toKoreanError, INVALID_CREDENTIALS_MESSAGE, EMAIL_NOT_CONFIRMED_MESSAGE, AUTH_FALLBACK_MESSAGE, PWNED_PASSWORD_MESSAGE } from '../lib/authErrors';
+import { isPasswordPwned } from '../lib/pwnedPassword';
 import { supabase } from '../lib/supabase';
 import { authReturnPath } from '../lib/authRedirect';
 
@@ -68,6 +69,8 @@ function AuthForm() {
       if (isReset) {
         if (newPw.length < 8) { setError('비밀번호는 8자 이상이어야 해요.'); setLoading(false); return; }
         if (newPw !== confirmNewPw) { setError('비밀번호 확인이 일치하지 않아요.'); setLoading(false); return; }
+        // 유출 목록에 있는 비밀번호는 Supabase에 보내기 전에 막는다(PWNED-PASSWORD-001) — 확인하지 못하면(null) 막지 않는다.
+        if (await isPasswordPwned(newPw) === true) { setError(PWNED_PASSWORD_MESSAGE); return; }
         const { error: updErr } = await supabase.auth.updateUser({ password: newPw });
         if (updErr) throw updErr;
         setSuccess('비밀번호가 변경됐어요. 자동으로 로그인할게요…');
@@ -82,6 +85,7 @@ function AuthForm() {
         router.refresh();
       } else {
         if (password.length < 8) { setError('비밀번호는 8자 이상이어야 해요.'); setLoading(false); return; }
+        if (await isPasswordPwned(password) === true) { setError(PWNED_PASSWORD_MESSAGE); return; }
         await signUp(email, password, displayName);
         setSuccess('인증 이메일을 보냈어요. 이메일을 확인해 주세요.');
       }

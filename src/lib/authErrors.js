@@ -8,6 +8,8 @@ export const INVALID_CREDENTIALS_MESSAGE = '이메일 또는 비밀번호가 올
 export const EMAIL_NOT_CONFIRMED_MESSAGE = '이메일 인증이 필요해요. 받은 편지함을 확인해 주세요.';
 // 번역하지 못한 오류의 고정 문구(WALL-STATES-001) — 화면 문구 표준(docs/design/copy-standard.md)의 실패 형태.
 export const AUTH_FALLBACK_MESSAGE = '요청을 처리하지 못했어요. 다시 시도해 주세요.';
+// 새 비밀번호가 유출 목록(HIBP)에 있을 때(PWNED-PASSWORD-001) — 가입 · 재설정 · 내 정보 비밀번호 변경이 같은 문구를 쓴다.
+export const PWNED_PASSWORD_MESSAGE = '이 비밀번호는 다른 사이트에서 유출된 적이 있어요. 다른 비밀번호를 써 주세요.';
 
 /**
  * 이메일 인증을 켠 Supabase는 이미 있는 이메일로 가입해도 오류 대신 성공처럼 응답한다(가입 여부 노출 방지).
