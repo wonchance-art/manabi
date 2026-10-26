@@ -4,10 +4,11 @@ import LatinWordPage from '@/views/LatinWordPage';
 import { latinSampleGroups } from '@/lib/latinLevelWords';
 import a1 from '@/content/english/vocab/a1';
 import notes from '@/content/english/wordNotes';
+import { ENGLISH_A1_PICKS } from '@/content/english/wordDeckA1';
 
 const NAME = '영어';
-// 인사 · 가족 · 기초 동사 · 기초 형용사에서 두 단어씩 — 합성어(welcome) · 불규칙 동사(be · go) · 비교급(good · bad)이 한 번씩 보이게 고른다.
-const LEVELS = { A1: () => latinSampleGroups(a1, { lang: 'en', picks: [[0, ['hello', 'welcome']], [2, 2], [4, ['be', 'go']], [5, 2]], notes }) };
+// 기존 A1 목록에서 보존할 8개를 포함한 1차 후보. 원본 등급·언어 검수 후 추가한다.
+const LEVELS = { A1: () => latinSampleGroups(a1, { lang: 'en', picks: ENGLISH_A1_PICKS, notes }) };
 
 export const dynamicParams = false;
 export function generateStaticParams() {
