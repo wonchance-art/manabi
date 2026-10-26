@@ -178,7 +178,7 @@ describe('호출 지점 — 개수는 countReviewScope 하나, 시작은 같은 
     expect(page).toContain(`<strong className="vocab-hero__num">{session.total.toLocaleString('ko-KR')}</strong>`);
     // 세션 길이 칩(R1-B-1): 버튼 숫자 = 시작하는 줄 길이 = 같은 계산의 queue를 앞에서 자른 길이.
     expect(page).toContain('const sessionCards = sliceSession(session.queue.items, activeLength);');
-    expect(page).toContain('`표현 ${sessionCards.length}개 복습 →`');
+    expect(page).toContain("`표현 ${sessionCards.length.toLocaleString('ko-KR')}개 복습 →`");
     expect(bar).not.toContain('countReviewScope(');
     expect(bar).not.toMatch(/isVocabularyReviewDue|vocabularyRetrievability/);
   });

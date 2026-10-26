@@ -353,3 +353,18 @@ describe('NATIVE-FEEL-001 ⑤ 글자 탭 · 로고의 누르는 자리(모양은
     expect(rules.find((r) => r.selector === '.manabi-app .gnb__logo::before')?.body).toBe("content:'';position:absolute;inset:-12px -6px");
   });
 });
+
+describe('NATIVE-FEEL-P2 — 남겨 둔 셋(오너 「권장대로」 2026-10-26 KST): 터치 16px, 데스크톱 크기 그대로', () => {
+  const rule = (file, selector) => rulesOf(read(file)).filter((r) => r.selector === selector && r.at.length === 0).map((r) => r.body).join(';');
+  it('단어장 정렬 · 급수 거르기(.vocab-sort)', () => {
+    expect(rule('src/index.css', '.vocab-sort')).toContain('font-size: max(var(--field-font-min), 0.8rem)');
+  });
+  it('재생 속도 선택 상자 — 선택 상자만(같은 이름의 단추 · 표시는 그대로)', () => {
+    expect(rule('src/index.css', 'select.listen-controls__rate')).toContain('font-size: max(var(--field-font-min), 0.78rem)');
+    expect(rule('src/components/viewer/reader-controls.css', '.manabi-app .viewer-layout select.listen-controls__rate'))
+      .toContain('font-size:max(var(--field-font-min),.75rem)');
+  });
+  it('임베드 복습 로그인 칸(인라인 style — 미디어 쿼리 대신 변수)', () => {
+    expect(read('src/app/embed/review/EmbedReviewClient.jsx')).toContain("fontSize: 'max(var(--field-font-min), 0.86rem)'");
+  });
+});

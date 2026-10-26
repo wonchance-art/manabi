@@ -72,7 +72,7 @@ export function ReviewScopeNotice({ empty = false, scope, count, countFor, remai
   const practice = onPractice ? <button type="button" className="btn btn--ghost btn--sm review-scope-notice__practice" onClick={onPractice}>{empty ? '집중 연습' : '지금 집중 연습으로 보기'}</button> : null;
   if (empty) return <>
     {alternative ? <div className="review-scope-notice" role="status">
-      <p className="review-room-note">이 범위에는 지금 복습할 표현이 없어요 · {alternative.label}{objectParticle(alternative.label)} 빼면 {alternative.total}개</p>
+      <p className="review-room-note">이 범위에는 지금 복습할 표현이 없어요 · {alternative.label}{objectParticle(alternative.label)} 빼면 {alternative.total.toLocaleString('ko-KR')}개</p>
       <button type="button" className="btn btn--ghost btn--sm review-scope-notice__release" onClick={() => onChange(alternative.next)}>{RELEASE[alternative.axis]}</button>
       {practice}
     </div> : <><p className="review-room-note">{limit || fallback}</p>{practice && <div className="review-scope-notice">{practice}</div>}</>}
