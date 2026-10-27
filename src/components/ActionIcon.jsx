@@ -26,6 +26,7 @@ const paths={
   close:'m6 6 12 12M6 18 18 6',
   expand:'M9 3H3v6M15 3h6v6M21 15v6h-6M9 21H3v-6',
   collapse:'M3 9h6V3M15 3v6h6M21 15h-6v6M9 21v-6H3',
+  download:'M12 4v11M7 10l5 5 5-5M5 20h14',
   translate:'M3 4h12M9 2v2M5 4c0 7 7 11 7 11M13 4c0 7-7 11-10 12M13 21l4-10 4 10M15 17h4',
 };
 export default function ActionIcon({name}) {

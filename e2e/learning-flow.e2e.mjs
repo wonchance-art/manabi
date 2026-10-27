@@ -212,7 +212,7 @@ async function mockAuthenticatedVocab(context, { readingMaterials = [], role = '
   await context.route('**/api/learning/vocabulary**', route => {
     const request = route.request(), url = new URL(request.url());
     if (request.method() === 'GET' && url.searchParams.get('view') === 'learning') {
-      return json(route, legacyLearningSnapshot({ actorId: session.user.id, rows: storedWords, fields: url.searchParams.get('fields') }));
+      return json(route, legacyLearningSnapshot({ actorId: session.user.id, rows: storedWords, fields: url.searchParams.get('fields'), ids: url.searchParams.get('ids') }));
     }
     if (request.method() === 'POST') assert.notEqual(request.postDataJSON()?.action, 'save', 'Inactive FSRS fixture must not receive an atomic manual save');
     return route.continue();

@@ -212,9 +212,10 @@ describe('profiles 공개 범위 2단계 — 정책 · 열 권한 = 앱 사용',
   it('앱의 profiles 쓰기는 모두 해석되고, 열 권한(UPDATE 14 · INSERT 2)이 그 열들과 정확히 같다', () => {
     expect(writes.map((w) => w.rel).sort()).toEqual([
       'src/components/OnboardingModal.jsx', 'src/components/OnboardingModal.jsx',
+      // 목표 창(GOAL-SHEET-001) — 현황에 있던 네 갱신(끌어올림 · 하루 목표 · 목표 · 열 부재 재시도)을 그대로 옮겼다.
+      'src/components/goal/GoalSheet.jsx', 'src/components/goal/GoalSheet.jsx', 'src/components/goal/GoalSheet.jsx', 'src/components/goal/GoalSheet.jsx',
       'src/lib/learningActivity.js', 'src/lib/learningActivity.js',
       'src/views/MyPage.jsx', 'src/views/MyPage.jsx', 'src/views/MyPage.jsx',
-      'src/views/ProfileStats.jsx', 'src/views/ProfileStats.jsx', 'src/views/ProfileStats.jsx', 'src/views/ProfileStats.jsx',
     ]);
     const updated = new Set(writes.filter((w) => w.kind === 'update').flatMap((w) => w.keys));
     const inserted = new Set(writes.filter((w) => w.kind === 'upsert').flatMap((w) => w.keys));

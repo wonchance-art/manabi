@@ -264,12 +264,20 @@ a, button, input, select, textarea, label, summary, [role="button"] { touch-acti
       돌아오지 않는다(로그인 이메일 14.4px · 서재 검색 14px 실측). 터치 기기(pointer: coarse)에서만 하한 16px — 데스크톱 크기는 그대로.
       작게 적은 입력칸은 font-size: max(var(--field-font-min), 원래 값)으로 쓴다(인라인 style도 같은 꼴 — 미디어 쿼리는 인라인을 못 덮는다).
       글자 크기를 적지 않은 입력칸(브라우저 기본 13.33px)은 클래스를 달아 아래 터치 블록에 더한다 — 전역 :where(input …) 한 줄은
-      스타일 없는 폼(함께 읽기 그룹 만들기)의 줄바꿈까지 바꿔(실측) 오너 결정으로 넘겼다.
+      스타일 없는 폼(함께 읽기 그룹 만들기)의 줄바꿈까지 바꿔(실측) 화면마다 따로 고치기로 했다(오너 2026-10-26 KST).
+      font: inherit로 작은 부모 글자(라벨 12px 등)를 물려받는 입력칸은 그 규칙에 font-size: max(var(--field-font-min), 1em)를 단다
+      (1em = 물려받던 크기 그대로 — 데스크톱은 바뀌지 않는다).
       손가락 확대를 막는 viewport 값(maximum-scale)은 쓰지 않는다(접근성 — pwaShell ②). 계약: nativeFeel.test.js */
 :root { --field-font-min: 0px; }
+.group-goal-target { width: 90px; } /* 함께 읽기 주간 목표 수 — 터치에서는 아래 76px(16px 글자로 커진 축 선택 상자와 한 줄을 지킨다) */
 @media (pointer: coarse) {
   :root { --field-font-min: 16px; }
   .drill-answer { font-size: 16px; } /* 교재 챕터 연습 답칸(ChapterDrills) — 스타일 없이 브라우저 기본 크기였다 */
+  /* NATIVE-FEEL-P1 ⓓ(오너 「권장대로 진행」 2026-10-26 KST) — 화면마다 따로: 표현 목록 · 댓글 검색칸, 설명판 수업 과 선택. */
+  .search-input, .board-class-navigation select { font-size: 16px; }
+  /* 함께 읽기 그룹 폼 — 입력칸의 최소 폭(min-width: auto)은 글자 크기를 따라 커져 이름칸이 196 → 312px로 줄을 밀었다(실측) — 0으로 둔다. */
+  .group-field { font-size: 16px; min-width: 0; }
+  .group-goal-target { width: 76px; } /* 「100000」 여섯 자리가 16px로 들어가는 폭 */
 }
 /* ⑤ 모달 · 어둠막이 떠 있는 동안 뒤 화면을 세운다(NATIVE-FEEL-001): 시트 위를 손가락으로 쓸면 어둠막 뒤 페이지가 대신 움직였다
       (단어장 「범위 고르기」 · 「단어 직접 추가」 · 단어 상세 · 내 정보 시트 — 390 터치 실측 scrollY 0 → 1488). 터치 기기만 —
@@ -3607,15 +3615,31 @@ a.viewer-badge:hover {
   border-color: var(--primary);
   color: #fff;
 }
-.chip--select {
+/* 함께 읽는 글 · 서재 도구의 정렬(NATIVE-FEEL-P1 ⓐ — 오너 「권장대로 진행」 2026-10-26 KST): 칩 줄에서 떼어 낸 자기 자리의
+   글자 단추 꼴 선택 상자(테두리 · 바탕 없이 「최신순 ▾」). 데스크톱은 칩 글자 크기(0.82rem) 그대로, 터치 기기는 16px(index.css ④ — iOS 초점 확대). */
+.materials-sort {
+  align-self: flex-end;
   appearance: none;
   -webkit-appearance: none;
-  padding-right: 28px;
+  field-sizing: content; /* 가장 긴 선택지(「내 수준 맞춤」)가 아니라 고른 글자만큼 — 「최신순」과 ▾ 사이가 벌어지지 않게(미지원 브라우저는 오른쪽 맞춤) */
+  text-align-last: right;
+  min-height: 44px;
+  padding: 0 22px 0 10px;
+  font: inherit;
+  font-size: max(var(--field-font-min), 0.82rem);
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
   background-image: linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%), linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
-  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+  background-position: calc(100% - 13px) 50%, calc(100% - 8px) 50%;
   background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
 }
+.materials-sort:hover { color: var(--text-primary); }
+.materials-sort:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ========= Admin ========= */
 .admin-table-wrap {
@@ -6104,6 +6128,8 @@ a.viewer-badge:hover {
   color: var(--text-primary);
   cursor: pointer;
 }
+/* 재생 속도 선택 상자만 터치 16px(NATIVE-FEEL-P2) — 같은 이름의 글자 단추 · 표시(span)는 입력칸이 아니라 그대로. */
+select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 .listen-controls__current {
   margin-top: 8px;
   padding: 8px 12px;
@@ -7618,33 +7644,7 @@ a.viewer-badge:hover {
 .tile-modal__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .tile-modal__title { font-family: var(--font-serif); font-size: 1.05rem; font-weight: 700; margin: 0; }
 .tile-modal__close { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.9rem; padding: 4px; }
-.tile-modal__row {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; margin-bottom: 12px; font-size: 0.88rem;
-}
-.tile-modal__num { max-width: 90px; text-align: right; }
-
-/* 하루 목표(복습 · 담기) — 내 정보에서 이 창으로 합쳤다(PROFILE-REDESIGN-001 D2). 라벨 · 값은 슬라이더와 연결(label for · output for). */
-.dday-daily { border: 0; margin: 0 0 14px; padding: 0 0 12px; border-bottom: 1px solid var(--border); display: grid; gap: 10px; min-width: 0; }
-.dday-daily legend, .dday-daily__legend { padding: 0; margin: 0 0 8px; font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); }
-.dday-daily__head { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.88rem; margin-bottom: 4px; }
-.dday-daily__head output { font-weight: 700; font-variant-numeric: tabular-nums; }
-.dday-daily input[type="range"] { width: 100%; min-height: 32px; accent-color: var(--primary); cursor: pointer; }
-.dday-daily input[type="range"]:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-/* 목표 과정 — 언어·레벨 두 칸(D-Day 모달). 좁은 화면에서 두 칸이 한 줄에 들어오도록 폭을 나눈다. */
-.dday-goal { display: flex; gap: 6px; min-width: 0; }
-.dday-goal__sel { flex: 1 1 0; min-width: 0; padding: 6px 8px; font-size: 0.85rem; }
-/* 시험 일정에서 고르기(LEVEL-ROUND-001 K) — 시험 · 급수 단추는 눌림(aria-pressed)으로만 칠한다. 접수가 끝난 날짜는 흐리게. */
-.dday-exam__tabs, .dday-exam__levels { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 12px; font-size: 0.88rem; }
-.dday-exam__levels > span { margin-right: 4px; }
-.dday-exam__tabs button, .dday-exam__levels button, .dday-exam__dates button {
-  min-height: 44px; min-width: 44px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font: inherit; font-size: 0.85rem; cursor: pointer;
-}
-.dday-exam__tabs button[aria-pressed="true"], .dday-exam__levels button[aria-pressed="true"], .dday-exam__dates button[aria-pressed="true"] { border-color: var(--text-primary); font-weight: 700; }
-.dday-exam__dates { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 6px; }
-.dday-exam__dates button { width: 100%; text-align: left; border-radius: 10px; }
-.dday-exam__dates button.is-closed { color: var(--text-muted); }
-.dday-exam__note { margin: 0 0 12px; font-size: 0.78rem; color: var(--text-muted); }
+/* 목표 편집(예전 .tile-modal__row · .dday-*)은 목표 창(components/goal/goal-sheet.css)으로 옮겼다 — GOAL-SHEET-001. */
 
 /* ── 궤도 줄 (v2-D R2) — 목표를 세운 사람에게만 뜨는 홈 머리 한 줄 ── */
 /* 카드 전체가 버튼이다(탭하면 상세 모달 — DdayTile·WeeklyTile의 타일→모달 정본 재사용).
@@ -7764,9 +7764,10 @@ a.viewer-badge:hover {
   font-size: 0.8rem; color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
+/* 터치에서 16px(iOS 초점 확대 — NATIVE-FEEL-P2, 오너 「권장대로」). 데스크톱은 0.8rem 그대로. */
 .vocab-sort {
   min-height: 44px; padding: 0 28px 0 13px;
-  font-size: 0.8rem; font-weight: 600;
+  font-size: max(var(--field-font-min), 0.8rem); font-weight: 600;
   color: var(--text-secondary);
   background: var(--bg-secondary);
   border: 1px solid var(--border);

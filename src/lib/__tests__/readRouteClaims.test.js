@@ -33,7 +33,7 @@ const read = (file) => fs.readFileSync(path.join(ROOT, file), 'utf8');
  */
 const READ_ROUTES = {
   'src/app/api/learning/capabilities/route.js': { reason: '언어별 저장 · 복습 가능 여부(쿠키 클라이언트 RLS) — /vocab 첫 로드', rpcs: ['learning_language_capabilities'] },
-  'src/app/api/learning/vocabulary/route.js': { reason: '담은 단어 snapshot(view=learning · 요약은 가벼운 읽기) · 문맥 목록 읽기 — 저장(POST) · 문맥 삭제(DELETE)는 getUser', rpcs: ['fsrs_vocabulary_snapshot', 'fsrs_vocabulary_snapshot_light'] },
+  'src/app/api/learning/vocabulary/route.js': { reason: '담은 단어 snapshot(view=learning · 요약은 가벼운 읽기 · ids=카드 몇 장) · 문맥 목록 읽기 — 저장(POST) · 문맥 삭제(DELETE)는 getUser', rpcs: ['fsrs_vocabulary_snapshot', 'fsrs_vocabulary_snapshot_light', 'fsrs_vocabulary_snapshot_cards'] },
   'src/app/api/learning/admission/route.js': { reason: '오늘 입장 상태 읽기 — 첫 질문 영수증(POST)은 getUser', rpcs: ['fsrs_capabilities', 'learning_admission_status', 'fsrs_learning_admission_marker', 'fsrs_vocabulary_snapshot'] },
   'src/app/api/learning/fsrs/route.js': { reason: 'FSRS 카드 상태 · 입장 상태 읽기 — 채점(POST)은 getUser', rpcs: ['fsrs_capabilities', 'fsrs_list_states', 'learning_admission_status', 'fsrs_learning_admission_marker', 'fsrs_vocabulary_snapshot'] },
   'src/app/api/learning/exclusions/route.js': { reason: '제외 단어 목록 읽기(쿠키 클라이언트 RLS) — 제외 설정(POST)은 getUser', rpcs: [] },

@@ -77,11 +77,15 @@ export function goalSummary(profile, now = Date.now()) {
   return { head: d ? [name, d].filter(Boolean).join(' · ') : null, daily: dailyGoalLine(profile) };
 }
 
-/** 알림 줄 — 푸시가 켜져 있으면 먼저 말하고, 이 브라우저의 시각 알림을 덧붙인다. */
-export function reminderSummary({ pushOn = false, hour = '' } = {}) {
+/**
+ * 알림 줄 — 푸시가 켜져 있으면 먼저 말하고, 이 브라우저의 정한 시간 알림을 덧붙인다. 정한 시간 알림만 있으면 「이 브라우저」라고 밝힌다 —
+ * 앱을 열어 둔 동안만 오는 알림이라(사용자 검토). 브라우저가 알림을 막았으면 「꺼짐」이 아니라 「차단됨」(디자이너 검토 #16).
+ */
+export function reminderSummary({ pushOn = false, hour = '', blocked = false } = {}) {
   const at = hour !== '' && hour != null ? `매일 ${hour}시` : '';
   if (pushOn) return at ? `푸시 · ${at}` : '푸시 켜짐';
-  return at || '꺼짐';
+  if (blocked) return '차단됨';
+  return at ? `${at} · 이 브라우저` : '꺼짐';
 }
 
 /** 함께한 날 — 「3월 2일부터 함께하고 있어요」(KST). 올해가 아니면 연도를 붙인다. 날짜를 모르면 null. */

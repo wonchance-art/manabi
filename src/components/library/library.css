@@ -39,7 +39,6 @@
 .shelf-cover i{height:1px;width:13px;background:currentColor;opacity:.55;position:absolute;bottom:7px;left:10px}
 .shelf-list-section{padding-top:22px}
 .shelf-list-tools{display:flex;align-items:center;gap:13px;flex:none;font-size:12px}
-.shelf-list-tools select{font:inherit;color:var(--muted);background:transparent;border:0;min-height:44px;max-width:145px;padding-inline:3px}
 .shelf-list-tools button{padding:0 6px}
 .shelf-collections{display:flex;align-items:center;flex-wrap:wrap;gap:2px 15px;margin:8px 0 8px;font-size:12px}
 .shelf-collections button{max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px;color:var(--muted)}
@@ -88,7 +87,7 @@
 .shelf-dialog-head h2{font-size:21px;letter-spacing:-.6px;margin:0}
 .shelf-dialog-head button{font-size:28px;min-width:44px}
 .shelf-dialog-intro{font-size:14px;line-height:1.7;overflow-wrap:anywhere;padding-bottom:15px;border-bottom:1px solid var(--rule)}
-.shelf-dialog input:not([type=checkbox]),.shelf-dialog select{width:100%;min-width:0;background:var(--paper);border:1px solid var(--rule);border-radius:2px;min-height:46px;color:var(--ink);padding:10px 12px;font:inherit;font-size:16px}
+.shelf-dialog input:not([type=checkbox]):not([type=radio]),.shelf-dialog select{width:100%;min-width:0;background:var(--paper);border:1px solid var(--rule);border-radius:2px;min-height:46px;color:var(--ink);padding:10px 12px;font:inherit;font-size:16px}
 .shelf-collection-list{margin:10px 0}
 .shelf-collection-item{display:flex;flex-wrap:wrap;gap:5px;align-items:center;border-bottom:1px solid var(--rule)}
 .shelf-collection-item>label{display:flex;align-items:center;gap:12px;flex:1;min-width:0;padding:10px 0;min-height:48px;cursor:pointer;overflow-wrap:anywhere}
@@ -107,6 +106,11 @@
 .shelf-action-list>*{display:flex;align-items:center;min-height:48px;padding:12px 0!important;border-bottom:1px solid var(--rule)!important;text-align:left;text-decoration:none;color:var(--ink);font-size:14px;line-height:1.6}
 .shelf-filter-form{display:grid;gap:18px;margin-top:18px}
 .shelf-filter-form label{display:grid;gap:8px;font-size:12px}
+/* 정렬 라디오(NATIVE-FEEL-P1 ⓑ) — 도구 줄의 선택 상자를 시트 안으로 옮겼다. 묶음 제목은 다른 칸 이름(12px)과 같고, 고르는 글자는 16px · 누르는 줄 44px. */
+.shelf-sort-options{border:0;margin:0;padding:0;min-width:0;display:grid}
+.shelf-sort-options legend{font-size:12px;padding:0;margin-bottom:2px}
+.shelf-filter-form .shelf-sort-options label{display:flex;align-items:center;gap:12px;min-height:44px;font-size:16px;cursor:pointer}
+.shelf-sort-options input{width:20px;height:20px;margin:0;flex:none;accent-color:var(--ink);cursor:pointer}
 .shelf-filter-form .manabi-button{color:var(--sheet);background:var(--ja);justify-content:center}
 .shelf-guest{padding:20px 0 80px}
 .shelf-guest h2{font-size:32px;letter-spacing:-1px;margin-top:60px;line-height:1.5}
@@ -133,7 +137,6 @@
  .shelf-section-heading h2{font-size:16px}
  .shelf-list-section{padding-top:13px}
  .shelf-list-tools{gap:3px;font-size:11px}
- .shelf-list-tools select{max-width:112px}
  .shelf-collections{gap:0 13px;margin:0 0 5px}
  .shelf-collections button{max-width:120px}
  .shelf-collections .shelf-manage{margin-left:0}

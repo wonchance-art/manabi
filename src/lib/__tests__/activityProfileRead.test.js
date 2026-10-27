@@ -113,8 +113,8 @@ describe('배선 — 활동 뒤 재읽기는 refreshProfileAfterActivity, 설정
     expect(read('src/views/VocabPage.jsx')).toContain('if (isSettledFsrsActivity(event, actorId)) refreshProfileReadOnly(actorId)?.catch(() => {});');
     expect(read('src/views/StudySessionPage.jsx')).toContain('    fetchProfile?.(recorder);\n  }');
   });
-  it('설정 화면(온보딩 · 내 정보 · 현황)은 늘 새로 읽는다', () => {
-    for (const p of ['src/components/OnboardingModal.jsx', 'src/views/MyPage.jsx', 'src/views/ProfileStats.jsx']) {
+  it('설정 화면(온보딩 · 내 정보 · 목표 창)은 늘 새로 읽는다', () => {
+    for (const p of ['src/components/OnboardingModal.jsx', 'src/views/MyPage.jsx', 'src/components/goal/GoalSheet.jsx']) {
       expect(read(p)).not.toContain('refreshProfileAfterActivity');
       expect(read(p)).toContain('fetchProfile(user.id, user.user_metadata)');
     }

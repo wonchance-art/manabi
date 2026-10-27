@@ -31,7 +31,7 @@ async function open(width,view){
  // 담은 낱말 둘(복습 시점 · 아직) — 학습 중 · 복습 띠와 밑줄이 있는 낱말도 같은 계약이다.
  const now=Date.now(),vocab=[['駅','역',-1],['歩いて','걸어서',5]].map(([word_text,meaning,days],i)=>({id:`00000000-0000-4000-8000-${String(i+1).padStart(12,'0')}`,user_id:owner,word_text,meaning,language:'Japanese',interval:3,ease_factor:2.5,repetitions:2,next_review_at:new Date(now+days*86400000).toISOString(),last_reviewed_at:new Date(now-4*86400000).toISOString(),created_at:'2026-01-01'}));
  await f.context.route('**/rest/v1/user_vocabulary*',r=>r.request().method()==='OPTIONS'?r.fulfill({status:204,headers:cors}):r.fulfill({status:200,headers:cors,contentType:'application/json',body:JSON.stringify(vocab)}));
- await f.context.route('**/api/learning/vocabulary**',r=>{const url=new URL(r.request().url());if(url.searchParams.get('view')!=='learning')return r.fallback();return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(legacyLearningSnapshot({actorId:owner,rows:vocab,known:[],exclusions:[],fields:url.searchParams.get('fields')}))});});
+ await f.context.route('**/api/learning/vocabulary**',r=>{const url=new URL(r.request().url());if(url.searchParams.get('view')!=='learning')return r.fallback();return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(legacyLearningSnapshot({actorId:owner,rows:vocab,known:[],exclusions:[],fields:url.searchParams.get('fields'),ids:url.searchParams.get('ids')}))});});
  await f.page.goto('/viewer/94301');
  await f.page.locator('[data-source-token="id_0_0"]').waitFor();
  await f.page.locator('.reader-area .word-token--saved').first().waitFor();

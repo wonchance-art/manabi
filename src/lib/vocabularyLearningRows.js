@@ -86,6 +86,37 @@ export async function fetchVocabularyLearningRows(actorId, { fetchImpl = (...arg
     ...(at === undefined ? {} : { at: Math.max(schedulerTime(at), schedulerTime(body?.now)) }) });
 }
 
+/** 카드 몇 장 읽기의 상한 — 서버(VOCABULARY_CARDS_MAX) · SQL(fsrs_vocabulary_snapshot_cards)과 같다. */
+export const VOCABULARY_LEARNING_CARDS_MAX = 50;
+const lowerUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+/**
+ * 카드 몇 장의 학습 snapshot(SNAPSHOT-CARDS-001) — 같은 경로의 view=learning&ids=…, 응답 모양 · 투영은 위 전체 읽기와 같다.
+ * 저장 · 채점 뒤 색인 패치(viewerVocabularyCache.refreshVocabWordsCards)만 쓴다. ids는 소문자 UUID 1~50개 · 중복 없음.
+ * 요청하지 않은 행이 오면 실패(전체 snapshot을 잘못 받은 것과 섞이지 않게). 계정 전환 · 취소 뒤 도착한 응답은 반환하지 않는다.
+ */
+export async function fetchVocabularyLearningCards(actorId, ids, { fetchImpl = (...args) => globalThis.fetch(...args),
+  signal, getActorId = () => actorId } = {}) {
+  if (!Array.isArray(ids) || ids.length < 1 || ids.length > VOCABULARY_LEARNING_CARDS_MAX || !ids.every(id => lowerUuid.test(id))
+      || new Set(ids).size !== ids.length) throw failure('vocabulary_learning_invalid_ids');
+  const check = () => {
+    if (signal?.aborted) throw signal.reason || new DOMException('Aborted', 'AbortError');
+    if (!identity(actorId) || getActorId() !== actorId) throw failure('vocabulary_learning_owner_mismatch');
+  };
+  check();
+  const response = await fetchImpl(`/api/learning/vocabulary?view=learning&ids=${ids.join(',')}`, {
+    method: 'GET', credentials: 'same-origin', cache: 'no-store', signal,
+  });
+  check();
+  let body;
+  try { body = await response.json(); } catch { throw failure('vocabulary_learning_invalid_response', { status: response.status }); }
+  check();
+  if (!response.ok || body?.ok === false) throw failure(body?.code || 'vocabulary_learning_unavailable', { status: response.status });
+  const wanted = new Set(ids);
+  if (!Array.isArray(body?.rows) || !body.rows.every(row => wanted.has(row?.id))) throw failure('vocabulary_learning_invalid_rows');
+  return projectVocabularyLearningRows(body, { actorId });
+}
+
 /** KST 자정 표시 달력이다. 카드의 학습일/시간대/일일 신규 예산을 변경하지 않는다. */
 export function vocabularyReviewCalendar(projections, at, { days = 7, startOffset = 0 } = {}) {
   const now = schedulerTime(at);

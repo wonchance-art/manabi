@@ -273,3 +273,41 @@ describe('새 FSRS 서버 경계', () => {
     expect(() => parseFsrsRequest({ action: 'unknown' }, owner)).toThrow('fsrs_invalid_request');
   });
 });
+
+describe('FSRS-APPLY-PARALLEL-001 — 반영 전 읽기 넷은 서로 기다리지 않고, 오류 판정 순서는 순차일 때 그대로', () => {
+  it('능력 응답 전에 입장 · 연산 · 상태 읽기가 이미 나간다(반영은 판정 뒤에만)', async () => {
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    const original = authClient.rpc;
+    authClient.rpc = vi.fn(async (...args) => { await gate; return original(...args); });
+    const pending = request('question');
+    await new Promise(resolve => setTimeout(resolve, 0));
+    const before = serviceClient.rpc.mock.calls.map(([name]) => name);
+    expect(before).toEqual(expect.arrayContaining(['fsrs_read_operation', 'fsrs_read_state']));
+    expect(before).not.toContain('fsrs_apply_learning_operation');
+    release();
+    const body = await pending;
+    expect(body.ok).toBe(true);
+    expect(serviceClient.rpc.mock.calls.map(([name]) => name)).toContain('fsrs_apply_learning_operation');
+  });
+  it('능력이 꺼져 있으면 다른 읽기가 실패해도 fsrs_storage_unavailable(순차일 때와 같은 첫 판정), 반영 없음', async () => {
+    enabled = false;
+    const original = serviceClient.rpc;
+    serviceClient.rpc = vi.fn(async (name, args) => (name === 'fsrs_read_state' ? { error: { message: 'boom' } } : original(name, args)));
+    await expect(request('question')).rejects.toMatchObject({ code: 'fsrs_storage_unavailable' });
+    expect(serviceClient.rpc.mock.calls.map(([name]) => name)).not.toContain('fsrs_apply_learning_operation');
+  });
+  it('입장 상태 실패가 상태 읽기 실패보다 먼저 판정된다', async () => {
+    const original = serviceClient.rpc;
+    serviceClient.rpc = vi.fn(async (name, args) => {
+      if (name === 'learning_admission_status') return { error: { code: 'XX000', message: 'admission down' } };
+      if (name === 'fsrs_read_state') return { error: { message: 'state down' } };
+      return original(name, args);
+    });
+    const error = await request('question').catch(e => e);
+    // 입장 상태 오류(learningAdmission의 reject — fsrs_admission_unavailable 503, detail에 RPC 이름)가 먼저다. 상태 읽기 오류가 아니다.
+    expect(error).toMatchObject({ code: 'fsrs_admission_unavailable', status: 503 });
+    expect(String(error.detail)).toContain('learning_admission_status');
+    expect(serviceClient.rpc.mock.calls.map(([name]) => name)).not.toContain('fsrs_apply_learning_operation');
+  });
+});

@@ -687,18 +687,6 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
               받아둔 것만
             </button>
           )}
-          <select
-            value={sortBy}
-            onChange={e => setSortBy(e.target.value)}
-            className="chip chip--select"
-            aria-label="정렬"
-            style={{ marginLeft: 'auto' }}
-          >
-            <option value="newest">최신순</option>
-            {signedInFilters && <option value="fit">내 수준 맞춤</option>}
-            <option value="level">쉬운순</option>
-            <option value="title">제목순</option>
-          </select>
         </div>
 
         {langFilter !== 'all' && (
@@ -722,6 +710,20 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
             ))}
           </div>
         )}
+
+        {/* 정렬은 칩 줄 밖 자기 자리(NATIVE-FEEL-P1 ⓐ, 오너 「권장대로 진행」 2026-10-26 KST) — 칩 모양 선택 상자를 16px로 키우면
+            칩 줄이 깨져(13.1px 칩 사이 16px 상자), 칩은 그대로 두고 정렬만 글자 단추 꼴로 떼어 냈다. 터치 기기에서 16px(iOS 초점 확대 방지). */}
+        <select
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value)}
+          className="materials-sort"
+          aria-label="정렬"
+        >
+          <option value="newest">최신순</option>
+          {signedInFilters && <option value="fit">내 수준 맞춤</option>}
+          <option value="level">쉬운순</option>
+          <option value="title">제목순</option>
+        </select>
       </div>
 
       {dueVocabError && <div className="library-query-state" role="alert">표현을 불러오지 못했어요. <button type="button" onClick={() => refetchDueVocab()}>다시 시도</button></div>}

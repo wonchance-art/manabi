@@ -112,7 +112,7 @@ test('language is the first review scope axis: list chips, count and start follo
    const url=new URL(r.request().url());
    if(url.searchParams.get('view')!=='learning')return r.fallback();
    assert.equal(r.request().method(),'GET','The expression list snapshot must be read only');
-   return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(legacyLearningSnapshot({actorId:'00000000-0000-4000-8000-000000000172',rows:words,known:[],exclusions:[],fields:url.searchParams.get('fields')}))});
+   return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(legacyLearningSnapshot({actorId:'00000000-0000-4000-8000-000000000172',rows:words,known:[],exclusions:[],fields:url.searchParams.get('fields'),ids:url.searchParams.get('ids')}))});
   });
   await f.page.goto('/vocab',{waitUntil:'domcontentloaded',timeout:120000});
   // 언어 칩 숫자 = 그 언어만의 오늘 개수 · 시작 버튼 숫자 = 지금 범위(일본어)의 줄 길이 — 다른 언어는 섞이지 않는다.
@@ -154,7 +154,7 @@ test('review room appears at once after the today card and grammar settle; FSRS 
   const f=await fixture({width:390,reducedMotion:'no-preference'});try{
    await f.context.route('**/rest/v1/user_vocabulary*',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(words)}));
    await f.context.route('**/rest/v1/vocabulary_with_exclusions*',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(words.map(word=>({...word,is_excluded:false})))}));
-   await f.context.route('**/api/learning/vocabulary**',r=>{const url=new URL(r.request().url());if(url.searchParams.get('view')!=='learning')return r.fallback();return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(legacyLearningSnapshot({actorId:'00000000-0000-4000-8000-000000000172',rows:words,known:[],exclusions:[],fields:url.searchParams.get('fields')}))});});
+   await f.context.route('**/api/learning/vocabulary**',r=>{const url=new URL(r.request().url());if(url.searchParams.get('view')!=='learning')return r.fallback();return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(legacyLearningSnapshot({actorId:'00000000-0000-4000-8000-000000000172',rows:words,known:[],exclusions:[],fields:url.searchParams.get('fields'),ids:url.searchParams.get('ids')}))});});
    if(failure==='fsrs')await f.context.route('**/api/learning/fsrs',r=>r.fulfill({status:500,contentType:'application/json',body:'{"ok":false}'}));
    if(failure==='admission')await f.context.route('**/api/learning/admission',r=>r.fulfill({status:503,contentType:'application/json',body:'{"ok":false,"code":"learning_admission_unavailable"}'}));
    await f.context.addInitScript(()=>{window.__roomShifts=[];new PerformanceObserver(list=>{for(const e of list.getEntries())for(const s of e.sources||[]){const el=s.node?.nodeType===1?s.node:s.node?.parentElement;if(el?.closest('.manabi-review-room'))window.__roomShifts.push(`${el.tagName}.${el.className} ${e.value.toFixed(4)} ${Math.round(s.previousRect.y)}->${Math.round(s.currentRect.y)}`);}}).observe({type:'layout-shift',buffered:true});});
@@ -189,7 +189,7 @@ test('review session: one line, card faces, first-seen card, resume after reload
   await f.context.route('**/api/learning/vocabulary**',r=>{
    const url=new URL(r.request().url());
    if(url.searchParams.get('view')!=='learning')return r.fallback();
-   return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(legacyLearningSnapshot({actorId:'00000000-0000-4000-8000-000000000172',rows:words,known:[],exclusions:[],fields:url.searchParams.get('fields')}))});
+   return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(legacyLearningSnapshot({actorId:'00000000-0000-4000-8000-000000000172',rows:words,known:[],exclusions:[],fields:url.searchParams.get('fields'),ids:url.searchParams.get('ids')}))});
   });
   await f.page.goto('/vocab?lang=Japanese',{waitUntil:'domcontentloaded',timeout:120000});
   // 뜻 없는 표현은 줄에서 빠진다 — 보이는 개수 = 시작하는 줄 길이 = 3.
