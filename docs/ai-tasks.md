@@ -1171,6 +1171,12 @@
   로컬 프로덕션 빌드 반복 약 400회 중 6회 재현, 다시 그리기 3/3이 #418. React 19.3.0 수정(popHydrationStateOnInterruptedWork) 덧댄 빌드 135/135 · 0.
   임시 수리 = 'use client' 함수 부품 SegmentSlot(children만 반환, DOM 무변화)을 사이에 끼움(TcFontScope · Layout main · 일본어 문법 레이아웃) —
   수리 빌드 135/135 · 0(같은 경합 1회 흡수). 계약 segmentSlotHydration(main에서 세 곳 FAIL → 통과). 근본 해결 = React ≥ 19.3(Next 16) — 오너 판단.
+  → **#1590 squash `18b158e2`(07:27 KST, 운영 16/16 · 오류 0)**.
+- **LIBRARY-EDITION-CONTEXT-001 교재 읽기 기록 400 (2026-10-27 KST)**: 운영 edge 로그 24시간 — POST library_reading_activity 36번 중 34번 400
+  (Postgres 오류 기록 없음 = 트리거 22023 → PostgREST 400). 트리거는 판본 context에 page만 받는데 #1510(10-17)부터 BookReader가 {bookId, page} →
+  교재를 읽어도 서재 최근 읽음 · 이어 읽기에 남지 않았다(열흘). 수리 = context에서 bookId 제거(책은 서재 RPC의 급수로 찾음, DB 변경 없음).
+  계약 libraryActivity(트리거 판본 갈래 ↔ 리더 키, 되돌리면 FAIL). 같은 로그의 다음 후보: /auth/v1/user 192번(평균 522 · p95 2.8 s) ·
+  profiles GET 155번(평균 851 · p95 3.7 s) · learning_admission_status 237번.
 - **NATIVE-FEEL-P1 입력칸 하한 미뤄 둔 네 곳 (2026-10-26 KST, 오너 「권장대로 진행」)**: ⓐ 함께 읽는 글 정렬을 칩 줄 밖 한 줄(오른쪽 · 글자 단추 · 44px,
   터치 16px) ⓑ 서재 정렬 선택 상자를 「필터」 시트 안 라디오(묶음 제목 「정렬」 · 16px · 줄 44px)로 — 값 · sort= 주소 · 급수순(옛 주소 전용) 그대로, 바꾼 때만 주소에
   ⓒ 노트 단어 카드 터치에서 표기 24 / 읽기 16 / 뜻 16 ⓓ 크기 없는 칸 화면별 — 그룹 폼 7칸 · 검색 칸 · 수업 과 선택 16px(min-width 0으로 줄바꿈 무변화),
