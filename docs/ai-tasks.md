@@ -1196,6 +1196,13 @@
   한 단어 모드처럼 페이지가 화면과 거의 같은 높이면 iOS 튕김까지). 수리 = touch-action:none · overscroll-behavior:contain(시트 손잡이와 같은 결).
   합성 계정 390 터치 실측 — 칸 위에서 손가락 60px 끌기: 전 scrollY 400 → 338, 후 400 → 400(N5 · HSK 1). 탭 직후 위로 당겨지는 것은
   다음 카드(앞면)가 짧아 문서가 줄어든 것이라 그대로. 계약 levelWordReviewGates 1건.
+  → **#1594 squash `df8a3977`(15:16 KST, 운영 16/16 · 오류 0 · 운영 CSS에 touch-action:none 확인)**.
+- **FSRS-ADMISSION-REREAD-001 채점 연산의 반영 뒤 입장 재조회 덜기 (2026-10-27 KST, 「다음 ㄱㄱ」)**: 운영 edge 로그 24 h — 4xx/5xx는 #1591 전
+  (10-26 18~19시 KST)뿐, 그 뒤 0. 대신 느린 응답이 묶음으로(10-26 18:10 KST 1분에 26건 · 최대 13.6 s, 가벼운 learning_admission_status ·
+  fsrs_capabilities까지) — 한 질의가 아니라 DB가 잠깐 포화. pg_stat_statements: 함수 자체는 따뜻하면 빠르다(지문 6 ms · 계약 해시 32 ms, 첫 호출만
+  0.7 s — 연결별 catalog 적재). 줄일 것은 호출 수. 연산마다 반영 뒤 learning_admission_status(무결성 해시 넷)를 순차로 한 번 더 읽었는데, 입장
+  상태를 바꾸는 것은 question뿐(fsrs_new_receipts)이고 클라이언트도 question 응답의 입장 상태만 쓴다 → 보이기 · 채점 · 되돌리기는 반영 전 값을
+  그대로. 연산당 왕복 하나(약 0.3~0.5 s) 단축, 입장 조회 하루 약 140회 감소. 계약 fsrsLearning 2건(고치기 전 FAIL).
 - **NATIVE-FEEL-P1 입력칸 하한 미뤄 둔 네 곳 (2026-10-26 KST, 오너 「권장대로 진행」)**: ⓐ 함께 읽는 글 정렬을 칩 줄 밖 한 줄(오른쪽 · 글자 단추 · 44px,
   터치 16px) ⓑ 서재 정렬 선택 상자를 「필터」 시트 안 라디오(묶음 제목 「정렬」 · 16px · 줄 44px)로 — 값 · sort= 주소 · 급수순(옛 주소 전용) 그대로, 바꾼 때만 주소에
   ⓒ 노트 단어 카드 터치에서 표기 24 / 읽기 16 / 뜻 16 ⓓ 크기 없는 칸 화면별 — 그룹 폼 7칸 · 검색 칸 · 수업 과 선택 16px(min-width 0으로 줄바꿈 무변화),

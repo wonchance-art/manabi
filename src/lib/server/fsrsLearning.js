@@ -226,8 +226,11 @@ export async function applyFsrsRequest({ authClient, serviceClient, userId, body
   if (admissionRead.status === 'rejected') throw admissionRead.reason;
   const admission = admissionRead.value;
   if (!admission.installed) reject('fsrs_admission_unavailable');
+  // 반영 뒤 입장 상태는 첫 문제(question)만 바뀐다(fsrs_new_receipts는 question만 쓴다). 보이기 · 채점 · 되돌리기는 위에서 읽은 것을
+  // 그대로 돌려준다 — 연산마다 입장 재조회(learning_admission_status, 운영 평균 약 0.5 s · 무결성 해시 넷)를 하나 덜어 낸다(FSRS-ADMISSION-REREAD-001).
   const currentResult = async (current, duplicate) => ({ ...result(current, userId, at, request.operationId, duplicate, contract.policyVersion),
-    admission: await readLearningAdmissionStatus({ authClient, serviceClient, userId, knownFsrsEnabled: contract.enabled, now }) });
+    admission: request.action === 'question'
+      ? await readLearningAdmissionStatus({ authClient, serviceClient, userId, knownFsrsEnabled: contract.enabled, now }) : admission });
   if (previousRead.status === 'rejected') throw previousRead.reason;
   const previous = previousRead.value;
   if (rawRead.status === 'rejected') throw rawRead.reason;

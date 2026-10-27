@@ -311,3 +311,23 @@ describe('FSRS-APPLY-PARALLEL-001 — 반영 전 읽기 넷은 서로 기다리�
     expect(serviceClient.rpc.mock.calls.map(([name]) => name)).not.toContain('fsrs_apply_learning_operation');
   });
 });
+
+describe('FSRS-ADMISSION-REREAD-001 — 반영 뒤 입장 재조회는 첫 문제(question)만', () => {
+  const admissionReads = () => serviceClient.rpc.mock.calls.filter(([name]) => name === 'learning_admission_status').length;
+  it('question은 반영 뒤 다시 읽어 소모된 새 단어 한도(used 1)를 돌려준다', async () => {
+    const response = await request('question');
+    expect(admissionReads()).toBe(2);
+    expect(response.admission).toMatchObject({ used: 1, remaining: 14 });
+  });
+  it('보이기 · 채점은 반영 전에 읽은 입장 상태를 그대로 돌려준다(입장 읽기 한 번, 값은 재조회와 같다)', async () => {
+    await request('question');
+    serviceClient.rpc.mockClear();
+    const revealed = await request('reveal', { attemptId: 'question' }, instant(40));
+    expect(admissionReads()).toBe(1);
+    expect(revealed.admission).toMatchObject({ used: 1, remaining: 14, installed: true });
+    serviceClient.rpc.mockClear();
+    const graded = await request('grade', { attemptId: 'question', rating: 3 }, instant(50));
+    expect(admissionReads()).toBe(1);
+    expect(graded.admission).toMatchObject({ used: 1, remaining: 14 });
+  });
+});
