@@ -742,7 +742,7 @@ test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복�
     assert.equal(await page.getByText('가족', { exact: true }).count(), 0, 'recall answer stays hidden');
     await page.getByRole('button', { name: /정답 확인하기/ }).click();
     await assertVisible(page.getByText('가족', { exact: true }), 'saved word review answer');
-    await assertVisible(page.getByText('뜻을 못 떠올렸다면 다시', { exact: false }), 'meaning-only grading guide for French');
+    assert.equal(await page.getByText('못 떠올렸다면', { exact: false }).count(), 0, 'no grading guide line (owner 2026-10-26 KST)');
     assert.ok(speechRequests.includes('la famille'), 'revealing by pointer plays the expression once (sound on by default)');
 
     // ── 채점이 SRS 정본에 '올바른 컬럼명으로' 닿는지 ──

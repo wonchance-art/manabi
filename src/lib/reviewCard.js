@@ -31,26 +31,6 @@ export function readingOf(word) {
 }
 
 /**
- * 발음 판정 대상(§3-3) — 읽기가 따로 있는 표현만: 일본어 한자어(후리가나) · 중국어(병음 · 성조).
- * 가나만 있는 일본어 · 영어 · 프랑스어는 뜻으로만 판정한다. 읽기가 비어 있으면(R1) 대상이 아니다.
- */
-export function pronunciationJudged(word) {
-  if (!readingOf(word)) return false;
-  if (word.language === 'Chinese') return true;
-  return word.language === 'Japanese' && KANJI.test(clean(word.word_text));
-}
-
-export const GRADE_GUIDE = Object.freeze({
-  both: '뜻이나 발음 중 하나라도 막혔다면 다시',
-  meaning: '뜻을 못 떠올렸다면 다시',
-});
-
-/** 채점 막대 아래 고정 문구(§6-1 ⑥) — 발음 판정 대상에만 발음을 말한다. */
-export function gradeGuide(word) {
-  return pronunciationJudged(word) ? GRADE_GUIDE.both : GRADE_GUIDE.meaning;
-}
-
-/**
  * 뒷면 읽기 줄(§3-3): 일본어 한자어 = 한자 위 후리가나(ruby), 중국어 = 성조 부호 병음, 영어 · 프랑스어 =
  * 소리 중심(발음 표기가 있으면 작게), 가나만 있는 표현 = 읽기 줄 없이 소리만.
  * @returns {{kind: 'ruby'|'pinyin'|'phonetic'|'none', text: string|null}}

@@ -118,7 +118,7 @@ describe('복습 키 1~4·⌘Z — 화면의 4버튼 줄에 작용 (VocabPage·V
 
   it('힌트 — 숫자 배지(W R1 스타일 재사용)와 데스크톱 전용 안내 문구', () => {
     expect(review.match(/className="save-grade__key" aria-hidden="true"/g)).toHaveLength(4);
-    expect(review).toContain('<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span>');
+    expect(review).toContain('<span className="review-keys-hint">키 1~4 · 되돌리기 Ctrl/⌘+Z</span>');
     expect(css).toContain('@media (pointer: fine) { .review-keys-hint { display: inline; } }');
     expect(css).toContain('.review-keys-hint { display: none; }');
   });

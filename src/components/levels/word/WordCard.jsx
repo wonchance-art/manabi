@@ -90,11 +90,15 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
   const L = useWordLang();
   const [open, setOpen] = useState(false); // false | true | 'closing'(접히는 0.2초 — 오너 2026-10-21 KST ⑥-2)
   const { hw, sub } = L.head(e);
+  // 표제어 — 판이 따로 그리면(영어 · 프랑스어: 관사 · 폭 기준 크기) 그것으로, 뒤에 판의 표(프랑스어 성).
+  const hwEl = L.Headword ? <L.Headword entry={e} size="card" tone={tone} />
+    : <span className="lw-card__hw" lang={L.hw} style={{ '--n': [...String(hw || '')].length }}>{hw}</span>;
+  const tag = L.HeadTag ? <L.HeadTag entry={e} tone={tone} /> : null;
   const listen = <Listen speak={speak} text={e.word} />;
   const reading = <Reading text={sub} word={hw} tone={tone} />;
   const marks = search ? <><LevelTag level={level} /><StatusPill status={info.status} onSave={onSave} busy={saving} pop={pop} /></> : null;
   const head = <div className="lw-card__head">
-    <span className="lw-card__word"><span className="lw-card__hw" lang={L.hw} style={{ '--n': [...String(hw || '')].length }}>{hw}</span>{reading}</span>
+    <span className="lw-card__word">{hwEl}{reading}{tag}</span>
     {listen}{marks}
   </div>;
   // 오늘 할 줄 표시 — 기다리는 카드는 남은 시간, 기다리다 차례가 온 카드는 「아까 본 단어」(오너 2026-10-20 KST). 맨 아래 줄 끝에 붙인다.
@@ -115,7 +119,7 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
   }
   // 접힌 카드는 한 줄뿐 — 남은 시간은 그 줄 끝.
   const soloLine = (cls, body, lang) => (time ? <p className={`${cls} lw-tailrow`}><span lang={lang}>{body}</span>{time}</p> : <p className={cls} lang={lang}>{body}</p>);
-  const solo = view === 'word' ? <div className="lw-card__head"><span className="lw-card__word"><span className="lw-card__hw" lang={L.hw} style={{ '--n': [...String(hw || '')].length }}>{hw}</span></span>
+  const solo = view === 'word' ? <div className="lw-card__head"><span className="lw-card__word">{hwEl}{tag}</span>
     {marks}{time}</div>
     // 문장 탭은 펼친 뒤에만 예문 단어를 바로 누른다(시안 ⑦ 「펼친 뒤 · 예문 단어 바로 누름」) — 접힌 채로 누르면 카드가 펼쳐진다.
     : view === 'sentence' ? (!e.ex?.text ? soloLine('lw-card__solo', '예문 없음')

@@ -5,7 +5,7 @@ import Button from '../components/Button';
 import { detectLang, splitSentenceAroundWord } from '../lib/constants';
 import VocabularyContexts from '../components/learning/VocabularyContexts';
 import { ReviewCardMeta, ReviewHeadword, ReviewReadingRow, langTag, useGradeBarFocus, useRevealFocus } from '../components/vocab/ReviewCardParts';
-import { gradeGuide, isCardRevealClick, revealTrigger } from '../lib/reviewCard';
+import { isCardRevealClick, revealTrigger } from '../lib/reviewCard';
 import { wordStage } from '../lib/growthStats';
 import { vocabularyReviewCalendar } from '../lib/vocabularyLearningRows';
 import { isAdmissionOfflineError } from '../lib/learningAdmission';
@@ -13,15 +13,15 @@ import { REVIEW_CARD_OFFLINE_TITLE, vocabOfflineLine } from '../components/Offli
 
 /**
  * 채점 막대(REV-SCOPE-R1B-1 §5-3) — 하단 고정, 뒷면 전엔 잠금, 펼친 뒤 0.3초 입력 무시(armed). 버튼은 넷뿐이다.
- * 기준 문구는 발음 판정 대상에만 발음을 말한다(gradeGuide). 라벨 · 순서 · 접미사는 저장 4등급(vocabIO.SAVE_GRADES)과 같다.
+ * 채점 기준 안내 문구는 두지 않는다(오너 2026-10-26 KST). 라벨 · 순서 · 접미사는 저장 4등급(vocabIO.SAVE_GRADES)과 같다.
  */
-function ScoreSection({ word, onScore, armed = true, locked = false }) {
+function ScoreSection({ onScore, armed = true, locked = false }) {
   const off = locked || !armed;
   const bar = useGradeBarFocus(locked, armed); // 뒷면이 열리면 막대(버튼 아님)로 초점 — FOCUS-AFTER-ACTION-001 C2
   return (
     <div ref={bar} tabIndex={-1} className={`review-grade-bar${locked ? ' is-locked' : ''}`} role="group" aria-label="기억 채점">
       {/* 안내 줄 자리는 앞면(잠김)에서도 비워 둔다 — 정답 확인 때 막대가 73→100px로 자라던 것(VOCAB-FLOW-001 C). 잠김엔 숨김 · 화면 읽기 제외. */}
-      <p className={`review-score-guide review-grade-guide${locked ? ' review-grade-guide--reserve' : ''}`} aria-hidden={locked || undefined}>{gradeGuide(word)}<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span></p>
+      <p className={`review-score-guide review-grade-guide${locked ? ' review-grade-guide--reserve' : ''}`} aria-hidden={locked || undefined}><span className="review-keys-hint">키 1~4 · 되돌리기 Ctrl/⌘+Z</span></p>
       {/* 숫자 배지 = 키 안내(W R2) — 라벨 텍스트는 버튼 첫 자식 그대로(saveGrade 계약이 이 소스에서 라벨을 뽑는다) */}
       <div className="review-score-grid" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
         <button onClick={() => onScore(1)} className="review-score-btn review-score-btn--again" disabled={off} title="오늘 다시 나와요">다시<span className="save-grade__key" aria-hidden="true">1</span></button>
@@ -203,7 +203,7 @@ export default function VocabReview({
   const headwordId = useId(); // 「정답 확인하기」가 표제어를 함께 읽게(aria-describedby)
   const finishBar = practice
     ? (showAnswer && mode !== 'listening' ? <PracticeButtons onResult={handleScore} armed={armed} /> : null)
-    : currentWord && mode === 'flash' && <ScoreSection word={currentWord} onScore={handleScore} armed={armed} locked={!showAnswer} />;
+    : currentWord && mode === 'flash' && <ScoreSection onScore={handleScore} armed={armed} locked={!showAnswer} />;
 
   return (
     <div className="review-room-session">

@@ -41,10 +41,15 @@ export function levelWordStatus({ projection, known = false, at = Date.now() } =
  * 단어 키 → { row, projection } — 뷰어와 같은 단어장 색인(['vocab-words', userId])에서 찾는다.
  * 막 담은 행(색인 뒤에 들어온 행)과 채점 전송 중인 행은 색인 투영이 없다 — 옛 일정 카드로 그 행의 칸만 읽어 바로 보이게 한다
  * (새로 받기 전까지의 화면 값. 저장 · 채점은 늘 서버 정본으로).
+ * key는 키 배열도 받는다 — 앞에서부터 찾는다(프랑스어 「famille」 다음 레퍼런스 페이지가 저장한 옛 꼴 「la famille」, entryKeys).
  */
+/** 항목이 단어장에서 만나는 키 — 대조 키(key) 다음 옛 저장 꼴(alts — 프랑스어 관사 붙은 표제어). */
+export const entryKeys = (entry) => (entry?.alts?.length ? [entry.key, ...entry.alts] : entry?.key);
+
 export function levelRowProjection(index, key, language = 'Chinese', at = Date.now()) {
   if (!index?.byKey) return { row: null, projection: null };
-  const row = findIndexedVocabulary(index, { text: key, base_form: key }, language);
+  let row = null;
+  for (const k of [].concat(key)) if (!row && k) row = findIndexedVocabulary(index, { text: k, base_form: k }, language);
   if (!row) return { row: null, projection: null };
   let projection = currentIndexedProjection(index, row, at);
   if (!projection && row.user_id === index.actorId) {

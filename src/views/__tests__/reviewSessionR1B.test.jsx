@@ -46,22 +46,22 @@ describe('카드 앞뒤(§3-3) — 앞면 = 글자만, 뒷면 = 뜻 + 읽기 + �
     expect(css).toContain('.review-room-session:has(.review-grade-bar) { padding-bottom:');
     expect(css).toContain('body:has(.review-grade-bar) .review-known-undo { bottom:');
   });
-  it('뒷면: 일본어 한자어는 한자 위 후리가나(ruby), 중국어는 병음, 둘 다 ▷ 듣기 — 발음 판정 문구', () => {
+  it('뒷면: 일본어 한자어는 한자 위 후리가나(ruby), 중국어는 병음, 둘 다 ▷ 듣기 — 채점 안내 문구는 없다', () => {
     const jaBack = card(ja, { showAnswer: true });
     expect(jaBack).toContain('<ruby>駅<rt>えき</rt></ruby>');
     expect(jaBack).toContain('역');
     expect(jaBack).toContain('aria-label="駅 발음 듣기"');
-    expect(jaBack).toContain('뜻이나 발음 중 하나라도 막혔다면 다시');
+    expect(jaBack).not.toContain('막혔다면');
     const zhBack = card(zh, { showAnswer: true });
     expect(zhBack).toContain('zǎo cān');
     expect(zhBack).toContain('아침 식사');
-    expect(zhBack).toContain('뜻이나 발음 중 하나라도 막혔다면 다시');
+    expect(zhBack).not.toContain('막혔다면');
   });
-  it('발음 판정 대상이 아니면(가나만 · 프랑스어 · 읽기 없음) 「뜻을 못 떠올렸다면 다시」 — 소리는 그대로', () => {
+  it('가나만 · 프랑스어 · 읽기 없음도 채점 안내 문구 없이 키 안내만 — 소리는 그대로(오너 2026-10-26 KST)', () => {
     for (const word of [kana, fr, { ...zh, furigana: '' }]) {
       const html = card(word, { showAnswer: true });
-      expect(html).toContain('뜻을 못 떠올렸다면 다시');
-      expect(html).not.toContain('뜻이나 발음');
+      expect(html).not.toMatch(/못 떠올렸다면|막혔다면/);
+      expect(html).toContain('<span class="review-keys-hint">키 1~4 · 되돌리기 Ctrl/⌘+Z</span>');
     }
     expect(card(kana, { showAnswer: true })).not.toContain('<rt>');
   });
@@ -75,7 +75,7 @@ describe('카드 앞뒤(§3-3) — 앞면 = 글자만, 뒷면 = 뜻 + 읽기 + �
     expect(buttons(html)).toHaveLength(4);
     expect(html).not.toMatch(/무엇을 놓쳤|뜻을 놓쳤|발음을 놓쳤/);
   });
-  it('새 일정(FSRS) 카드도 같은 규격 — 앞면 읽기 없음, 뒷면 병음 · 듣기 · 문구(FSRS 화면에도 듣기)', () => {
+  it('새 일정(FSRS) 카드도 같은 규격 — 앞면 읽기 없음, 뒷면 병음 · 듣기(FSRS 화면에도 듣기) · 채점 안내 문구 없음', () => {
     const controller = { question: async () => true, reveal() {}, grade() {}, undo() {}, refresh() {}, leave() {}, getSnapshot: () => ({}) };
     const review = { busy: false, ready: [], registryAvailable: true, enabled: true, completed: 0, controller,
       current: { cardId: 'z1', phase: 'question', attempt: { id: 'a' }, word: zh } };
@@ -87,7 +87,7 @@ describe('카드 앞뒤(§3-3) — 앞면 = 글자만, 뒷면 = 뜻 + 읽기 + �
       embedded: true, cardId: 'z1', stepKey: 's', onExit() {}, speak() {}, ttsSupported: true }));
     expect(back).toContain('zǎo cān');
     expect(back).toContain('aria-label="早餐 발음 듣기"');
-    expect(back).toContain('뜻이나 발음 중 하나라도 막혔다면 다시');
+    expect(back).not.toContain('막혔다면');
   });
 });
 
