@@ -72,6 +72,26 @@ function playLeave(el, one) {
   el.style.overflow = 'hidden';
   return play(el, [{ height: `${el.offsetHeight}px`, opacity: 1, marginBottom: '0px' }, { ...SHUT, marginBottom: `-${LIST_GAP}px` }], 240, 'both');
 }
+// 화면 위(고정 머리 아래 선)로 올라가 있는 카드가 줄에서 빠지면 보이는 카드가 그 높이만큼 올라간다 — 브라우저 스크롤 고정(overflow-anchor)이
+// 없는 iOS Safari에서 「네 칸을 눌렀는데 스크롤이 됨」(오너 2026-10-27 KST · 리스트에서 내려 본 채 맨 위 카드를 채점). 그 카드는 접는 움직임 없이
+// 빼고, 보이는 첫 카드의 자리를 재 두었다가 어긋난 만큼 되돌린다. 브라우저가 이미 맞췄으면(Chrome) 차이가 0이라 겹치지 않는다.
+const LIST_CARDS = '.lw-list[data-main] .lw-card[data-key]';
+function viewTop() {
+  const bar = document.querySelector('.lw-prog') || document.querySelector('.lw-top');
+  return bar ? bar.getBoundingClientRect().bottom : 0;
+}
+function holdViewIfAbove(el) {
+  const top = viewTop();
+  if (!el || el.getBoundingClientRect().bottom > top) return null;
+  const ref = [...document.querySelectorAll(LIST_CARDS)].find((c) => c !== el && c.getBoundingClientRect().top >= top);
+  if (!ref) return null;
+  const key = ref.getAttribute('data-key'), at = ref.getBoundingClientRect().top;
+  return () => {
+    const now = document.querySelector(`.lw-list[data-main] .lw-card[data-key="${CSS.escape(key)}"]`);
+    const moved = now ? now.getBoundingClientRect().top - at : 0;
+    if (Math.abs(moved) >= 1) window.scrollBy({ top: moved, behavior: 'instant' });
+  };
+}
 function playArrive(el) {
   const h = el.offsetHeight;
   el.style.overflow = 'hidden';
@@ -481,7 +501,8 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
     const advance = moved !== session;
     if (advance) {
       const one = prefs.mode === 'one';
-      const el = reducedMotion() ? null : one ? (currentKey === entry.key ? document.querySelector('.lw-one__card') : null) : cardEl(entry.key);
+      const keep = one ? null : holdViewIfAbove(cardEl(entry.key)); // 화면 위 카드 — 움직임 없이 빼고 보이는 자리를 지킨다
+      const el = keep || reducedMotion() ? null : one ? (currentKey === entry.key ? document.querySelector('.lw-one__card') : null) : cardEl(entry.key);
       let anim = null;
       if (el?.animate) {
         leaving.current = true;
@@ -495,6 +516,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
         if (one && currentKey === entry.key) { setRevealed(false); setTurn((n) => n + 1); }
       });
       if (anim) { anim.cancel(); el.style.overflow = ''; } // 같은 카드가 다시 그려져도 접힌 채 남지 않게
+      keep?.();
     }
     try {
       if (info.known) {
@@ -550,7 +572,8 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
     const which = round.area;
     const sameDay = correct && seenElsewhere(entry.key, which);
     const one = prefs.mode === 'one';
-    const el = reducedMotion() ? null : one ? document.querySelector('.lw-one__card') : cardEl(entry.key);
+    const keep = one ? null : holdViewIfAbove(cardEl(entry.key));
+    const el = keep || reducedMotion() ? null : one ? document.querySelector('.lw-one__card') : cardEl(entry.key);
     if (el?.animate) {
       leaving.current = true;
       const anim = playLeave(el, one);
@@ -565,6 +588,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
       setFocusKey(null);
       if (one) { setRevealed(false); setTurn((n) => n + 1); }
     });
+    keep?.();
     const text = !correct ? '다시 볼래요 · 다음 연습에 먼저 나와요' : sameDay ? '알아요 · 오늘 먼저 본 단어라 진도에는 안 들어가요' : '알아요';
     lastRef.current = { practice: [entry.key, which, row] };
     // 같은 날 규칙에 걸린 알아요만 창으로 알린다(진도에 안 들어가는 까닭) — 나머지는 조용한 되돌리기.

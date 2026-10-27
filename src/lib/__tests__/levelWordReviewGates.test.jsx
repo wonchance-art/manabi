@@ -179,3 +179,16 @@ describe('아래 고정 칸은 페이지를 굴리지 않는다(오너 2026-10-2
     expect(bar).toContain('overscroll-behavior:contain');
   });
 });
+
+describe('리스트에서 화면 위 카드를 채점해도 보이는 카드가 움직이지 않는다(오너 2026-10-27 KST 「아직도 똑같은 현상」 — iOS Safari엔 스크롤 고정이 없다)', () => {
+  const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
+  it('화면 위 카드는 접는 움직임 없이 빼고, 보이는 첫 카드가 어긋난 만큼 즉시 되돌린다(채점 · 연습 답 둘 다)', () => {
+    expect(screen).toContain('if (!el || el.getBoundingClientRect().bottom > top) return null;');
+    expect(screen).toContain("if (Math.abs(moved) >= 1) window.scrollBy({ top: moved, behavior: 'instant' });");
+    expect(screen.match(/const keep = one \? null : holdViewIfAbove\(cardEl\(entry\.key\)\);/g)).toHaveLength(2);
+    expect(screen.match(/const el = keep \|\| reducedMotion\(\) \? null/g)).toHaveLength(2);
+    // 줄에서 뺀 다음(flushSync 뒤)에 잰다 — 그전에 재면 차이가 늘 0이다.
+    expect(screen.indexOf('keep?.();')).toBeGreaterThan(screen.indexOf('if (anim) { anim.cancel(); el.style.overflow = \'\'; }'));
+    expect(screen.match(/keep\?\.\(\);/g)).toHaveLength(2);
+  });
+});
