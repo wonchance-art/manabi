@@ -169,3 +169,13 @@ describe('평소 채점은 창 없이 되돌리기만(오너 2026-10-22 KST 「�
     expect(css).toContain('.lw-page:has(.lw-undo--quiet) .lw-gradebar__guide{visibility:hidden}');
   });
 });
+
+describe('아래 고정 칸은 페이지를 굴리지 않는다(오너 2026-10-27 KST 「네 칸을 눌렀는데 스크롤이 돼서 불편」)', () => {
+  const css = fs.readFileSync('src/components/levels/word/level-word.css', 'utf8');
+  it('네 칸 · 연습 두 칸 · 넘기기 줄이 함께 쓰는 .lw-gradebar에서 시작한 손가락 움직임은 팬하지 않는다', () => {
+    const bar = css.match(/^\.lw-gradebar\{[^}]*\}/m)?.[0] || '';
+    expect(bar).toContain('position:fixed');
+    expect(bar).toContain('touch-action:none');
+    expect(bar).toContain('overscroll-behavior:contain');
+  });
+});
