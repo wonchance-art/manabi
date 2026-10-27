@@ -76,7 +76,9 @@ export function BookReaderView({ book, sectionIndex, preview = false, reference 
   const pendingCover = useRef(null), coverHold = useRef(null);
   unitRef.current = unit; tocAllRef.current = tocAll;
   const lesson = book.lessons.find(item => item.id === unit);
-  useLibraryActivity({target_kind:'edition',target_id:book.edition,context:{bookId,page:active.startsWith(`${unit}-`)?active:pageId}},!reference&&!preview&&!loading&&!error&&!!lesson&&!!sections.length&&sections[0].unit===unit);
+  // 판본 읽기 기록의 context는 page 하나 — DB 트리거(validate_library_activity)가 판본에는 page만 받는다. bookId를 함께 보내 10-17(#1510)부터
+  // 교재 읽기 기록이 모두 400(22023 invalid_library_page)이었다(운영 edge 로그 2026-10-26 KST: 36번 중 34번). 책은 서재 RPC가 판본에서 급수로 내려 준다.
+  useLibraryActivity({target_kind:'edition',target_id:book.edition,context:{page:active.startsWith(`${unit}-`)?active:pageId}},!reference&&!preview&&!loading&&!error&&!!lesson&&!!sections.length&&sections[0].unit===unit);
   const unitSections = sectionIndex.filter(section => section.unit === unit);
   const draftKey = readingDraftKey(book.edition, user?.id);
   // Keep this object stable: React must not replace imperative answer fields and portal mounts on progress updates.

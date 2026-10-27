@@ -53,3 +53,21 @@ describe('reading context is separate from progress and grading',()=>{
  });
 
 });
+
+// LIBRARY-EDITION-CONTEXT-001 — 판본 읽기 기록의 context 키는 DB 트리거가 받는 것만(운영: bookId를 실어 10-17부터 교재 기록이 모두 400).
+describe('edition activity context matches the DB trigger',()=>{
+ it('BookReader sends only keys validate_library_activity accepts for editions (page)',async()=>{
+  const fs=await import('node:fs');
+  const migrations=fs.readdirSync('supabase/migrations').filter(f=>f.endsWith('.sql')).sort()
+   .filter(f=>/function public\.validate_library_activity\(\)/i.test(fs.readFileSync(`supabase/migrations/${f}`,'utf8')));
+  const trigger=fs.readFileSync(`supabase/migrations/${migrations.at(-1)}`,'utf8');
+  // 판본 갈래: context에서 page를 뺀 나머지가 비어야 한다 — 받는 키 = page 하나.
+  expect(trigger).toContain("elsif new.target_kind='edition' then");
+  expect(trigger).toMatch(/new\.context - 'page'\s*<>\s*'\{\}'::jsonb/);
+  const reader=fs.readFileSync('src/components/books/BookReader.jsx','utf8');
+  const call=reader.match(/useLibraryActivity\(\{target_kind:'edition',[^\n]*?context:\{([^}]*)\}/);
+  expect(call,'BookReader edition activity call').not.toBeNull();
+  const keys=call[1].split(',').map(part=>part.split(':')[0].trim()).filter(Boolean);
+  expect(keys).toEqual(['page']);
+ });
+});
