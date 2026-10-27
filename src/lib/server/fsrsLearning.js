@@ -212,15 +212,26 @@ function transition(state, request, userId, at, policyVersion) {
 export async function applyFsrsRequest({ authClient, serviceClient, userId, body, now = new Date() }) {
   if (!UUID.test(userId || '')) reject('fsrs_auth_required', 401);
   const request = parseFsrsRequest(body, userId), at = new Date(schedulerTime(now)).toISOString();
-  const contract = await capabilities(authClient);
+  // 능력 · 입장 상태 · 이 연산 · 카드 상태는 모두 읽기라 서로 기다리지 않는다(readFsrsStatus PERF-FSRS-001과 같은 결 — FSRS-APPLY-PARALLEL-001).
+  // 순차일 때 연산 하나 = 왕복 넷 + 반영 + 입장 재조회(운영 평균 합 약 1.3 s, 2026-10-26 KST edge 로그). 오류 판정은 순차일 때의 순서
+  // (능력 → 켜짐 → 입장 → 설치 → 연산 → 상태) 그대로 — 모두 받은 뒤 그 순서로 던진다. 반영(쓰기)은 그 판정을 다 통과한 뒤에만.
+  const contractPromise = capabilities(authClient);
+  const [contractRead, admissionRead, previousRead, rawRead] = await Promise.allSettled([contractPromise,
+    readLearningAdmissionStatus({ authClient, serviceClient, userId, knownFsrsEnabled: contractPromise.then(c => c.enabled), now }),
+    rpc(serviceClient, 'fsrs_read_operation', { p_actor: userId, p_card_id: request.cardId, p_operation_id: request.operationId }),
+    rpc(serviceClient, 'fsrs_read_state', { p_actor: userId, p_card_id: request.cardId })]);
+  if (contractRead.status === 'rejected') throw contractRead.reason;
+  const contract = contractRead.value;
   if (!contract.enabled) reject('fsrs_storage_unavailable');
-  const admission = await readLearningAdmissionStatus({ authClient, serviceClient, userId, knownFsrsEnabled: contract.enabled, now });
+  if (admissionRead.status === 'rejected') throw admissionRead.reason;
+  const admission = admissionRead.value;
   if (!admission.installed) reject('fsrs_admission_unavailable');
   const currentResult = async (current, duplicate) => ({ ...result(current, userId, at, request.operationId, duplicate, contract.policyVersion),
     admission: await readLearningAdmissionStatus({ authClient, serviceClient, userId, knownFsrsEnabled: contract.enabled, now }) });
-  const previous = await rpc(serviceClient, 'fsrs_read_operation', { p_actor: userId, p_card_id: request.cardId, p_operation_id: request.operationId });
-  const raw = await rpc(serviceClient, 'fsrs_read_state', { p_actor: userId, p_card_id: request.cardId });
-  const state = checkedState(raw, userId, request.cardId);
+  if (previousRead.status === 'rejected') throw previousRead.reason;
+  const previous = previousRead.value;
+  if (rawRead.status === 'rejected') throw rawRead.reason;
+  const state = checkedState(rawRead.value, userId, request.cardId);
   if (previous) {
     if (previous.userId !== userId || previous.cardId !== request.cardId || previous.id !== request.operationId
         || !previous.request || !same(previous.request, request)) reject('fsrs_operation_conflict', 409);
