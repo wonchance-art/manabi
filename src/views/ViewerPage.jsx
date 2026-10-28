@@ -204,9 +204,9 @@ import ViewerGuestBanner from '../components/viewer/ViewerGuestBanner';
 import ViewerQuizModal from './ViewerQuizModal';
 import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constants';
 import { attributionParts, literatureAttributionParts, materialSource, pdSiteAttributionParts, standardEbooksAttributionParts, wikisourceAttributionParts } from '../lib/videoAttribution';
-import { isCanonicalLiteratureMaterial, literatureWork } from '../lib/literatureCanonical';
+import { isCanonicalLiteratureMaterial } from '../lib/literatureCanonicalProvider';
 import { literatureChapterLabel, literatureChapterTitle } from '../lib/literatureDisplay';
-import { useCanonicalLiterature, useScriptVariant } from '../lib/useCanonicalLiterature';
+import { useCanonicalLiterature, useLiteratureWork, useScriptVariant } from '../lib/useCanonicalLiterature';
 import { scriptVariantSurfaces, variantPieces } from '../lib/scriptVariant';
 import { isArtBookMaterial } from '../lib/artBookProvider';
 import { useArtBookChapter } from '../lib/useArtBookChapter';
@@ -610,7 +610,7 @@ export default function ViewerPage({ seed } = {}) {
   const bookMeta = getBook(material?.processed_json?.metadata);
   // 정본 문학책(AOZORA-P0-5) — 원문이 정본과 대조된 장만, 제목·형제 이름을 대조표에서 읽는다(「과」 대신 一·二 / 1/2).
   // 저장된 자료 제목이 예전 표기(「鼻 — 1편」)여도 화면은 정본 표기를 따른다.
-  const literatureBook = canonicalLiterature ? literatureWork(bookMeta?.key) : null;
+  const literatureBook = useLiteratureWork(bookMeta?.key, !!canonicalLiterature);
   const literatureTitleOf = (order) => (literatureBook ? literatureChapterTitle(literatureBook, order) : null);
   const viewerTitle = literatureTitleOf(bookMeta?.order) || material?.title;
   const { data: bookChapters } = useQuery({

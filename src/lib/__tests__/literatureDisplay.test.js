@@ -296,7 +296,8 @@ describe('화면 배선', () => {
 
   it('뷰어 — 대조된 정본 장만 제목·형제 이름을 표에서, 「과」 대신 장/부분, 이어 적기·제목 편집 없음', () => {
     const viewer = read('src/views/ViewerPage.jsx');
-    expect(viewer).toContain('const literatureBook = canonicalLiterature ? literatureWork(bookMeta?.key) : null;');
+    // 표시 표는 대조를 통과한 뒤에만 받는다(VIEWER-LIT-LAZY-001).
+    expect(viewer).toContain('const literatureBook = useLiteratureWork(bookMeta?.key, !!canonicalLiterature);');
     expect(viewer).toContain('<h1 className="page-header__title" lang={contentLangTag}>{viewerTitle}</h1>'); // lang = LINE-BREAK-001
     expect(viewer).toContain("literatureBook.division === 'heading' ? ['이전 장', '다음 장'] : ['이전 부분', '다음 부분']");
     expect(viewer).toContain('nextLabel: bookNav.next ? `${nextLabel}: ${literatureTitleOf(bookNav.next.order)}` : nextLabel,'); // 목적지까지 읽어 준다
