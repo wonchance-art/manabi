@@ -1220,6 +1220,13 @@
   preload 배제(cache:'no-store' — 브라우저마다 넘겨받기가 갈림). 후: 단어 레벨 LCP 2.44 → 1.62 s · 홈 2.06 → 1.48 s, 단어장 첫 실내용(복습 수)
   ≥2.0 → 약 1.56 s, 화면마다 읽기 1회 그대로. 남은 후보: 뷰어 JS 851 KB · TBT 464 ms, 단어장 제외 목록 꼬리(staleTime 0이라 미리 받기는 중복 요청 —
   보류). 계약 vocabularyEarly 5건 · installPrompt 배선 갱신.
+  → **#1597 squash `ff99dbed`**.
+- **VIEWER-LIT-LAZY-001 뷰어 첫 JS에서 정본 대조표 빼기 (2026-10-28 KST, 「다음 ㄱㄱ」)**: 뷰어 첫 JS 1,780 KB(원본) 중 공유 조각 74200(관리자 · 뷰어만)이
+  464 KB — 거의 전부 정본 manifest 넷(青空文庫 127 · Standard Ebooks 127 · Wikisource 114 · pdsite 40 KB 최소화)이 문학책 아닌 자료에도 실렸다.
+  대조는 이미 비동기(원문 해시)라 useCanonicalLiterature가 그 출처의 대조 함수를 동적 import, 표시 표(literatureWorks)는 대조 통과 뒤에만
+  (useLiteratureWork), 판정은 대조표 없는 literatureCanonicalProvider. 못 받으면 크레딧 없음(fail-closed). 원본 1,780 → 1,243 KB, 전송(gzip)
+  852 → 668 KB. main 빌드와 번갈아 A/B(390 · CPU×4 · 4G, 3회 × 2): 데이터 끝 2.62~2.68 → 2.44~2.46 s(매번), LCP · TBT는 흔들림 안(뚜렷한 차 없음).
+  계약 literatureDisplayManifest(뷰어를 「싣지 않는 화면」으로 · 음성 대조군을 standardEbooksCanonical로 · 동적 loader 동일성) · literatureDisplay 배선.
 - **NATIVE-FEEL-P1 입력칸 하한 미뤄 둔 네 곳 (2026-10-26 KST, 오너 「권장대로 진행」)**: ⓐ 함께 읽는 글 정렬을 칩 줄 밖 한 줄(오른쪽 · 글자 단추 · 44px,
   터치 16px) ⓑ 서재 정렬 선택 상자를 「필터」 시트 안 라디오(묶음 제목 「정렬」 · 16px · 줄 44px)로 — 값 · sort= 주소 · 급수순(옛 주소 전용) 그대로, 바꾼 때만 주소에
   ⓒ 노트 단어 카드 터치에서 표기 24 / 읽기 16 / 뜻 16 ⓓ 크기 없는 칸 화면별 — 그룹 폼 7칸 · 검색 칸 · 수업 과 선택 16px(min-width 0으로 줄바꿈 무변화),
