@@ -47,7 +47,8 @@ describe('루트 인라인 스크립트(보관)', () => {
 
 describe('배선', () => {
   it('layout.jsx 인라인 스크립트 맨 앞(localStorage가 막혀 던져도 먼저 받는다)', () => {
-    expect(read('src/app/layout.jsx')).toContain("__html: `(function(){${INSTALL_CAPTURE_SCRIPT}var t=localStorage.getItem('theme')");
+    // 앞의 단어장 일찍 읽기(VOCAB-EARLY-001)는 스스로 try/catch로 감싸 던지지 않는다 — 설치 이벤트 보관은 그대로 localStorage보다 앞.
+    expect(read('src/app/layout.jsx')).toContain("__html: `(function(){${VOCAB_EARLY_SCRIPT}${INSTALL_CAPTURE_SCRIPT}var t=localStorage.getItem('theme')");
   });
 
   it('InstallPrompt는 보관된 이벤트를 쓰고 자기 beforeinstallprompt 수신을 두지 않는다(받는 곳은 루트 하나)', () => {
