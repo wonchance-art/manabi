@@ -2,6 +2,7 @@
 import { schedulerTime } from './fsrsScheduler.js';
 import { isVocabularyReviewAvailable, projectVocabularyLearning, VOCABULARY_LEARNING_REQUIRED_FIELDS } from './vocabularyLearningRead.js';
 import { kstDateString, kstDayStartMs } from './growthStats.js';
+import { takeEarlyVocabulary } from './vocabularyEarly.js';
 
 const failure = (code, extra = {}) => Object.assign(new Error(code), { code, ...extra });
 const identity = value => typeof value === 'string' && value.length > 0 && value.length <= 200;
@@ -72,9 +73,10 @@ export async function fetchVocabularyLearningRows(actorId, { fetchImpl = (...arg
   };
   check();
   if (fields !== undefined && fields !== 'summary') throw failure('vocabulary_learning_invalid_fields');
-  const response = await fetchImpl(`/api/learning/vocabulary?view=learning${fields === 'summary' ? '&fields=summary' : ''}`, {
-    method: 'GET', credentials: 'same-origin', cache: 'no-store', signal,
-  });
+  const url = `/api/learning/vocabulary?view=learning${fields === 'summary' ? '&fields=summary' : ''}`;
+  // 문서 머리가 일찍 보낸 같은 읽기(VOCAB-EARLY-001)가 있으면 그 성공 응답을 한 번 넘겨받는다 — 없거나 실패면 지금처럼 보낸다.
+  const early = await takeEarlyVocabulary(url);
+  const response = early || await fetchImpl(url, { method: 'GET', credentials: 'same-origin', cache: 'no-store', signal });
   check();
   let body;
   try { body = await response.json(); } catch { throw failure('vocabulary_learning_invalid_response', { status: response.status }); }
