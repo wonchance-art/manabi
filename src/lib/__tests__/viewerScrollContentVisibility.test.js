@@ -4,7 +4,7 @@ import { revealInReader, withFullReader } from '../usePagedReader.js';
 import { sliceBetween } from './helpers/sliceBetween';
 
 // VIEWER-CV-SCROLL-001 — 스크롤 보기는 화면 밖 줄의 배치 · 그리기를 건너뛴다(낱말 3,600개 글 390 · CPU×4: 배치 약 3 s → 0.55 s 실측).
-// 그 대신 ① 줄 상자 그리기 경계에 후리가나가 잘리지 않게 위아래를 넓히고 같은 만큼 당기며 ② 멀리 뛸 때만 본문 전부를 그린다.
+// 그 대신 ① 줄 상자 그리기 경계에 후리가나 · 문장 막대가 잘리지 않게 위아래 · 왼쪽을 넓히고 같은 만큼 당기며 ② 멀리 뛸 때만 본문 전부를 그린다.
 const css = fs.readFileSync('src/index.css', 'utf8');
 const SCOPE = '.viewer-layout[data-reader-view="scroll"]:not([data-class-study="true"]) .reader-area > .reader-line';
 
@@ -19,8 +19,11 @@ describe('VIEWER-CV-SCROLL-001 — 스크롤 보기 화면 밖 줄 생략', () =
     const rule = sliceBetween(css, `${SCOPE} {`, '}');
     expect(rule).toContain('content-visibility: auto;');
     expect(rule).toContain('contain-intrinsic-size: auto 8em;');
-    expect(rule).toContain('padding-block: 2em .75em;');
-    expect(rule).toContain('margin-block: -2em -.75em;');
+    expect(rule).toContain('padding: 2em 0 .75em 32px;');
+    expect(rule).toContain('margin: -2em 0 -.75em -32px;');
+    // 문장 막대(.line-pick)는 줄 왼쪽 여백 −30px — 왼쪽도 넓혀야 그려지고 눌린다(e2e viewer-r0-display 실측).
+    // 오른쪽은 넓히지 않는다 — 390에서 가로 넘침(e2e viewer-focus-move 실측).
+    expect(rule).toContain('flex-basis: calc(100% + 32px);');
     expect(rule).toContain('pointer-events: none;');
     expect(css).toContain(`${SCOPE} > * { pointer-events: auto; }`);
     // 쪽 넘김(다단)에는 걸지 않는다 — 어림 높이가 쪽 수를 바꾼다(99 → 37쪽 실측).
