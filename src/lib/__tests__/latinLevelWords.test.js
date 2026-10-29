@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { indexEntry, latinKey, queryKind, searchLevelIndex } from '../levelWordIndex.js';
-import { genderOf, latinSampleGroups, splitFrArticle } from '../latinLevelWords.js';
+import { LATIN_WORD_LEVELS, genderOf, latinLevelGroups, latinSampleGroups, splitFrArticle } from '../latinLevelWords.js';
 import { entryKeys } from '../levelWordStatus.js';
 import { levelGroupsOf } from '../levelList.js';
 import enA1 from '../../content/english/vocab/a1.js';
 import frA1 from '../../content/french/vocab/a1.js';
 import enNotes from '../../content/english/wordNotes.js';
 import frNotes from '../../content/french/wordNotes.js';
+import { getVocab as frVocab } from '../../content/french/index.js';
+import { getVocab as enVocab } from '../../content/english/index.js';
 
 // 영어 · 프랑스어 단어 페이지(오너 2026-10-26 KST — 몇 단어로 먼저 연다).
 describe('영어 · 프랑스어 단어 묶음 — 레퍼런스 어휘에서 고른다', () => {
@@ -61,6 +63,44 @@ describe('영어 · 프랑스어 단어 묶음 — 레퍼런스 어휘에서 고
     expect(frBy.petit.ety).toEqual({ kin: null, note: frA1.themes[5].words[1].etym });
     expect(frBy['le riz'].ety).toBeUndefined();
     expect(enBy.mother.ety).toBeUndefined();
+  });
+});
+
+// 준비 검토 ① · ③(오너 2026-10-29 KST 「ㄱㄱ」) — 단어를 다 채우기 전에 원천 · 중복 규칙을 박는다.
+describe('원천 = 레퍼런스 페이지와 같은 정본(getVocab) · 한 말은 한 번', () => {
+  const words = (groups) => levelGroupsOf(groups).flatMap((g) => g.entries);
+  const full = (getVocab, lang, levelKey, levels = [levelKey]) => words(latinLevelGroups(getVocab, { lang, levelKey, levels }));
+
+  it('라우트가 여는 레벨 줄 · 8단어 표본은 정본에서 골라도 그대로', () => {
+    expect(LATIN_WORD_LEVELS).toEqual({ english: ['A1'], french: ['A1'] });
+    const fr8 = words(latinLevelGroups(frVocab, { lang: 'fr', levelKey: 'A1', levels: LATIN_WORD_LEVELS.french, picks: [[0, 2], [1, 2], [2, 2], [5, 2]], notes: frNotes }));
+    expect(fr8.map((e) => e.word)).toEqual(['la famille', 'le père', 'être', 'avoir', 'le pain', 'le riz', 'grand', 'petit']);
+  });
+  it('picks가 없으면 그 레벨 전부 — 프랑스어는 FLELex 보강까지(본편 원본만 읽으면 A1 206어)', () => {
+    const a1 = full(frVocab, 'fr', 'A1');
+    expect(a1.length).toBeGreaterThan(400);
+    expect(new Set(a1.map((e) => e.key)).size).toBe(a1.length);
+    const raw = frA1.themes.reduce((n, t) => n + t.words.length, 0);
+    expect(a1.length).toBeGreaterThan(raw);
+  });
+  it('같은 레벨에서 같은 말이 두 번이면 앞 것만(vouloir · venir · se lever · libre)', () => {
+    expect(full(frVocab, 'fr', 'A1').filter((e) => e.word === 'vouloir')).toHaveLength(1);
+    expect(full(frVocab, 'fr', 'A2').filter((e) => e.word === 'se lever')).toHaveLength(1);
+    expect(full(frVocab, 'fr', 'B1').filter((e) => e.word === 'libre')).toHaveLength(1);
+  });
+  it('키가 같아도 품사가 다르면 다른 말 — le souvenir(정본 키) · se souvenir(재귀 대명사를 남긴 키)', () => {
+    const b1 = Object.fromEntries(full(frVocab, 'fr', 'B1').map((e) => [e.word, e]));
+    expect(b1['le souvenir'].key).toBe('souvenir');
+    expect(b1['se souvenir (de)'].key).toBe('se souvenir');
+    expect(entryKeys(b1['se souvenir (de)'])).toEqual(['se souvenir', 'se souvenir (de)']);
+  });
+  it('앞 레벨에 실은 말은 뒤 레벨에서 뺀다 — 단어 페이지가 연 레벨끼리만(지금은 A1 하나라 빠지는 말 없음)', () => {
+    expect(full(frVocab, 'fr', 'A1', ['A0', 'A1']).some((e) => e.key === 'famille')).toBe(false);
+    expect(full(frVocab, 'fr', 'A1').some((e) => e.key === 'famille')).toBe(true);
+    const en2 = full(enVocab, 'en', 'A2', ['A1', 'A2']);
+    const en1 = new Set(full(enVocab, 'en', 'A1').map((e) => e.key));
+    expect(en2.filter((e) => en1.has(e.key))).toEqual([]);
+    expect(full(enVocab, 'en', 'A2').filter((e) => en1.has(e.key)).length).toBeGreaterThan(0);
   });
 });
 

@@ -4,6 +4,7 @@
 // 글자 칸 자리는 형태 · 현재형 · 어원이(LatinParts — 목업 v2, 오너 2026-10-26 KST 「다음 ㄱㄱ」), 프랑스어는 관사 매달기 · f./m. · 시트 「성 색」.
 import LevelWordScreen from '@/components/levels/word/LevelWordScreen';
 import { LatinExtras, LatinHeadTag, LatinHeadword, LatinMeanTag } from '@/components/levels/word/LatinParts';
+import { LATIN_WORD_LEVELS } from '@/lib/latinLevelWords';
 
 const CEFR = ['A0', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
@@ -41,8 +42,8 @@ function latinWordLang({ lang, code, language, name, levels, aidLabel = null }) 
   });
 }
 
-export const ENGLISH_WORD_LANG = latinWordLang({ lang: 'english', code: 'en', language: 'English', name: '영어', levels: ['A1'] });
-export const FRENCH_WORD_LANG = latinWordLang({ lang: 'french', code: 'fr', language: 'French', name: '프랑스어', levels: ['A1'], aidLabel: GENDER_AID });
+export const ENGLISH_WORD_LANG = latinWordLang({ lang: 'english', code: 'en', language: 'English', name: '영어', levels: LATIN_WORD_LEVELS.english });
+export const FRENCH_WORD_LANG = latinWordLang({ lang: 'french', code: 'fr', language: 'French', name: '프랑스어', levels: LATIN_WORD_LEVELS.french, aidLabel: GENDER_AID });
 
 export default function LatinWordPage({ lang, ...props }) {
   return <LevelWordScreen cfg={lang === 'french' ? FRENCH_WORD_LANG : ENGLISH_WORD_LANG} {...props} />;
