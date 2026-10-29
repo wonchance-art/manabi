@@ -60,6 +60,17 @@ describe('두는 문절 — kuromoji가 맞는 곳은 손대지 않는다', () =
     expect(t.map((x) => x.text)).not.toContain('がくせい');   // 알려진 한계 — 문절 경계는 저자가 준다
   });
 
+  it('한자 단어에 붙은 가나 꼬리는 문절이 아니다 — 承知|しました·確保|したい·彼|はこの를 島·死体·箱으로 덮지 않는다(JLPT 예문 실측 2026-10-22 KST)', async () => {
+    expect(await brief('承知しました。')).not.toContain('島');
+    expect(await brief('確保したい。')).not.toContain('死体');
+    expect(await brief('彼はこの分野で有名だ。')).not.toContain('箱');
+    expect(await brief('彼はこの分野で有名だ。')).toContain('は/は[조사]');
+  });
+  it('띄어 쓴 する 활용(怪我を した · 確保 したい)은 조각이 아니다 — 下·死体로 덮지 않는다', async () => {
+    expect(await brief('怪我を した。')).toContain('する[동사]');
+    expect(await brief('怪我を した。')).not.toContain('下');
+    expect(await brief('それを したい。')).not.toContain('死体');
+  });
   it('한자 문장은 무관 — 가나 런이 조사뿐이라 덮일 게 없다', async () => {
     expect(await brief('私は学生です。')).toBe('私/私[명사] は/は[조사] 学生/学生[명사] です/です[조동사]');
   });

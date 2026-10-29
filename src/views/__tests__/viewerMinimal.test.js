@@ -27,7 +27,7 @@ const aCss = () => stripComments(sliceBetween(read('src/index.css'), '/* =======
 describe('① 본문 위에는 경로·제목·도구만 — 끝의 행동 0', () => {
   it('읽기 완료·오늘 학습·다음 범위 분석이 본문 위에 없다', () => {
     const a = above();
-    for (const s of ['markCompleteMutation.mutate', '읽기 완료', '이 글로 연습', 'nextRangeMutation.mutate', '리딩 테스트', 'openConversation']) {
+    for (const s of ['markCompleteMutation.mutate', '읽기 완료', '이 글로 연습', 'nextRangeMutation.mutate', '읽기 확인', 'openConversation']) {
       expect(a, `${s}이 본문 위로 되돌아왔다`).not.toContain(s);
     }
     // 예전 자리들 — 액션바·책 내비 바·PDF 카드가 되살아나지 않는다
@@ -60,7 +60,7 @@ describe('① 본문 위에는 경로·제목·도구만 — 끝의 행동 0', (
 describe('② 끝의 행동은 본문 아래 「다 읽었다면」 한 줄 + 다음 카드 하나', () => {
   it('읽기 완료 → 오늘 학습 → 리딩 테스트 → 회화 순서로 같은 옷', () => {
     const row = sliceBetween(below(), '<div className="post-reading-actions">', '{(isDone || isPending) && (() => {');
-    const order = ['markCompleteMutation.mutate()', '이 글로 연습', '리딩 테스트', 'onClick={openConversation}'] // 「대화」(v2-Z 이름 통일)
+    const order = ['markCompleteMutation.mutate()', '이 글로 연습', '읽기 확인")}</button>', 'onClick={openConversation}'] // 「리딩 테스트」 → 학습 창 · 창 제목과 같은 「읽기 확인」(뷰어 점검 2026-10-23) // 「대화」(v2-Z 이름 통일)
       .map((s) => { const i = row.indexOf(s); expect(i, `${s} 없음`).toBeGreaterThan(-1); return i; });
     expect([...order].sort((x, y) => x - y)).toEqual(order);
     expect((row.match(/className="post-reading-actions__btn/g) || []).length).toBe(5); // 완료 2상태 + 셋
@@ -101,7 +101,7 @@ describe('③ 안내문은 첫 자료에만, 데스크톱은 빈 패널이 대�
     expect((src().match(/className="reader-hint"/g) || []).length).toBe(1);
     // 게스트 배너가 같은 말을 하니 게스트에겐 두 번 말하지 않는다(배너는 ViewerGuestBanner — 미분석이면 원문 안내)
     expect(src()).toContain('{!user && <ViewerGuestBanner vt={vt} signInHref={signInHref} pending={isPending} />}');
-    expect(read('src/components/viewer/ViewerGuestBanner.jsx')).toContain("analyzed: '단어를 클릭해 뜻을 확인할 수 있어요.'");
+    expect(read('src/components/viewer/ViewerGuestBanner.jsx')).toContain("analyzed: '단어를 눌러 뜻을 확인할 수 있어요.'");
   });
 
   it('CSS: 기본 감춤 + 좌우 패널이 접히는 블록에서만 켬 — 새 뷰포트 쿼리 0', () => {

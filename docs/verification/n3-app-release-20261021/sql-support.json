@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "checks": [
+    "existing N5/N4 database rejects unpublished N3",
+    "unexpected function revision aborts and atomically preserves earlier table/function changes: public.library_target_accessible(text,text)",
+    "unexpected function revision aborts and atomically preserves earlier table/function changes: library_private.catalog_sources()",
+    "N5/N4 immutable editions and pointers, words and original sources survive",
+    "administrator publishes N3 through unchanged transactional RPC",
+    "unlisted course still fails the database allowlist",
+    "published N3 cannot be silently overwritten",
+    "normal learner cannot publish, edit releases or read administrator drafts",
+    "N3/N4/N5 bookmarks have correct titles/levels while missing editions fail",
+    "other learner cannot see this learner’s saved N3 library record",
+    "anonymous reads published N3 but cannot save or execute publication",
+    "reapplying the old precondition aborts instead of overwriting newer definitions"
+  ],
+  "scope": "Disposable PGlite, synthetic identities. No live account or production writes."
+}

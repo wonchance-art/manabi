@@ -5,7 +5,7 @@ import { exactSourceQuote } from './viewerLocalizedContext';
 import { compactBoundaryText, readBoundaryEdits } from './boundaryEdits';
 import { reapplyKoreanBoundaries } from './koreanBoundarySplit';
 import { clearRubyLockOnCorrection } from './aozoraRuby';
-import { CANONICAL_LITERATURE_EDIT_BLOCKED, isCanonicalLiteratureMaterial } from './literatureCanonical';
+import { CANONICAL_LITERATURE_EDIT_BLOCKED, isCanonicalLiteratureMaterial } from './literatureCanonicalProvider'; // 대조표 없는 판정(ROUTE-AUDIT-2 F5)
 import { isArtBookMaterial } from './artBookProvider';
 
 const tokenLine = id => analysisTokenLine(id) ?? NaN;
@@ -319,6 +319,8 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
   if (!completeAnalysis(json, rawText)) throw new Error('분석 연결을 확인하지 못했어요. 기존 원문과 분석은 그대로 있어요.');
   checkAbort();
   options.onCommitting?.();
-  const record = await replaceViewerAnalysis(client, material, rawText, json, attempt);
+  // options.replace — 저장 경로 바꾸기(서버 분석 작업은 사용자 세션이 없어 작업 확인 저장 canonical_analysis_save로 — CANON-SERVER-ANALYSIS-001).
+  // 같은 인자 · 같은 비교 저장(원문 · 분석이 읽은 때 그대로일 때만)이다.
+  const record = await (options.replace || replaceViewerAnalysis)(client, material, rawText, json, attempt);
   return record;
 }

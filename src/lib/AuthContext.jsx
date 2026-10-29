@@ -6,14 +6,13 @@ import { hasSupabaseSessionCookie } from './authCookie';
 import { whenDocumentParsed } from './documentParsed';
 import { authCallbackUrl } from './authRedirect';
 import { isRepeatedSignup } from './authErrors';
-import { migrateGuestDrillQueue } from './drillSrs';
 import { useToast } from './ToastContext';
 import { watchAccountMutations } from './accountQueryCache';
 import { REF_READ_KEYS, claimGuestRefProgress } from './refReadStore';
 import { clearAllStudySources } from './studySourceHandoff';
 import { syncScHintCookie } from './scFontHint';
 import { pullProgress } from './refProgress';
-import { createProfileReadOnlyRefresh, recordExplicitProfileLogin } from './learningActivity';
+import { activityAlreadyCounted, createProfileReadOnlyRefresh, recordExplicitProfileLogin } from './learningActivity';
 import { accountCacheReset, accountLeft, clearAccountQueries, noteAccount } from './accountQueryCache';
 
 const AuthContext = createContext(null);
@@ -130,6 +129,13 @@ export function AuthProvider({ children, queryClient, onAccountLeft }) {
     }
   }
   const fetchProfile = refreshProfileReadOnly;
+  // legacy 학습 활동(update_streak · 예전 채점 — 영수증 날 = 서버의 오늘) 뒤 재읽기 — 지금 프로필이 오늘(UTC)을 이미 셌으면 보내지 않고
+  // 그 프로필을 돌려준다(ACTIVITY-PROFILE-READ-001 — 근거 learningActivity.activityAlreadyCounted). FSRS 채점 · 설정 쓰기 뒤는 fetchProfile 그대로.
+  function refreshProfileAfterActivity(userId) {
+    const current = observedProfileRef.current;
+    if (actorRef.current === userId && activityAlreadyCounted(current, userId)) return Promise.resolve(current);
+    return readProfile(userId);
+  }
 
   // 실제 로그인만 접속 시각을 기록한다. streak/freeze는 학습 활동 트랜잭션만 변경한다.
   async function initializeLoginProfile(nextUser) {
@@ -168,16 +174,46 @@ export function AuthProvider({ children, queryClient, onAccountLeft }) {
   // 계정을 가로지른 mutation의 늦은 쓰기를 지운다(MUTATION-ACCOUNT-GEN-001 — lib/accountQueryCache.watchAccountMutations).
   useEffect(() => (queryClient ? watchAccountMutations(queryClient) : undefined), [queryClient]);
 
-  // 이동 시작을 표시 — bfcache 복원(persisted)까지 고려해 pageshow에서 되돌린다.
+  // bfcache 복원(문서 뒤로 가기) — 얼어 있던 동안 계정이 바뀌었을 수 있다(GUEST-STATIC-001 1단계, 2026-10-23 KST).
+  // Chrome은 no-store 문서만 「쿠키가 바뀌면 퇴출」한다 — 정적 문서(/profile · /japanese/vocab/*)는 A가 본 그대로 살아난다.
+  // 다른 탭의 로그인 · 로그아웃은 SDK 탭 사이 알림(BroadcastChannel)이 얼어 있는 페이지를 퇴출시키지만, 알림 없이 쿠키만 바뀌면
+  // (서버가 세션 쿠키를 지움 · 만료 등) A 화면이 손님에게 그대로 복원됐다(account-boundary e2e ⑨ 실측). 여기서는 판정만 다시 한다 —
+  // 정리는 늘 adoptUser(accountCacheReset · 서버 렌더 버리기)라는 한 관문이다. 같은 계정이면 아무것도 하지 않는다.
+  function recheckAccountOnRestore() {
+    if (typeof document === 'undefined' || !hasSupabaseSessionCookie(document.cookie)) {
+      if (actorRef.current === null) return;
+      hadSessionRef.current = false;
+      adoptUser(null);
+      setLoading(false);
+      return;
+    }
+    const generation = authGenerationRef.current;
+    getSupabase()
+      .then(async (client) => {
+        const { data: { session } } = await client.auth.getSession();
+        const next = session?.user ?? null;
+        if (!mountedRef.current || authGenerationRef.current !== generation || (next?.id ?? null) === actorRef.current) return;
+        if (next) await ensureAuthListener(); // 손님으로 얼었던 화면(SDK 없이 확정) — 이제 알림도 받는다
+        if (!mountedRef.current || authGenerationRef.current !== generation) return;
+        adoptUser(next);
+        setLoading(false);
+        if (next) { hadSessionRef.current = true; readSessionProfile(next.id); } else { hadSessionRef.current = false; setProfile(null); }
+      })
+      .catch(() => {});
+  }
+
+  // 이동 시작을 표시 — bfcache 복원(persisted)까지 고려해 pageshow에서 되돌린다. 복원이면 계정을 다시 확인한다(위).
   useEffect(() => {
     const onHide = () => { unloadingRef.current = true; };
-    const onShow = () => { unloadingRef.current = false; };
+    const onShow = (event) => { unloadingRef.current = false; if (event?.persisted) recheckAccountOnRestore(); };
     window.addEventListener('pagehide', onHide);
     window.addEventListener('pageshow', onShow);
     return () => {
       window.removeEventListener('pagehide', onHide);
       window.removeEventListener('pageshow', onShow);
     };
+    // 마운트 1회 등록. recheckAccountOnRestore는 매 렌더 새 함수지만 ref · setState만 쓴다(attachAuthListener와 같은 이유).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 세션 쿠키가 하나도 없으면 로그인 상태일 수 없다 — SDK(약 200 kB)를 받지 않고 게스트로 확정한다.
@@ -322,7 +358,8 @@ export function AuthProvider({ children, queryClient, onAccountLeft }) {
     pullProgress(user.id, REF_READ_KEYS, { force: true }).catch(() => {});
     // 게스트로 쌓은 드릴 복습 큐를 서버로 옮긴다 — 로그인했다고 기록이 사라지면 안 된다.
     // 서버에 이미 있는 카드는 건드리지 않고(다른 기기가 더 진행했을 수 있다), 없는 것만 넣는다.
-    migrateGuestDrillQueue(user.id).catch(() => {});
+    // 드릴 모듈(FSRS · 문형 큐 · 드릴 표)은 로그인한 뒤에만 쓰므로 그때 받는다 — 루트 레이아웃 첫 JS에서 뺐다(JS-CRIT-001).
+    import('./drillSrs').then((drill) => drill.migrateGuestDrillQueue(user.id)).catch(() => {});
   }, [user?.id]);
 
   // 이메일 회원가입
@@ -408,7 +445,8 @@ export function AuthProvider({ children, queryClient, onAccountLeft }) {
     resetPassword,
     resendConfirmation,
     fetchProfile,
-    refreshProfileReadOnly
+    refreshProfileReadOnly,
+    refreshProfileAfterActivity
   };
 
   return (

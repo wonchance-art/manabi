@@ -1,0 +1,98 @@
+{
+  "passed": true,
+  "scope": "Disposable local PGlite with synthetic administrator/old rows/full48 repeated-lesson candidate only; production SQL candidate is not generated or executed",
+  "checks": [
+    {
+      "label": "canonical UTF-8 SQL succeeds once, keeps N5/N4 complete rows and does not impersonate auth.uid; rerun aborts",
+      "passed": true
+    },
+    {
+      "label": "changed N5 published version aborts",
+      "passed": true
+    },
+    {
+      "label": "changed N5 publication pointer aborts",
+      "passed": true
+    },
+    {
+      "label": "changed N4 publication version aborts",
+      "passed": true
+    },
+    {
+      "label": "removed current administrator role aborts",
+      "passed": true
+    },
+    {
+      "label": "removed administrator profile aborts",
+      "passed": true
+    },
+    {
+      "label": "prior N3 draft aborts",
+      "passed": true
+    },
+    {
+      "label": "prior N3 edition aborts",
+      "passed": true
+    },
+    {
+      "label": "prior N3 release aborts",
+      "passed": true
+    },
+    {
+      "label": "changed old N5 artifact aborts",
+      "passed": true
+    },
+    {
+      "label": "changed old N4 artifact aborts",
+      "passed": true
+    },
+    {
+      "label": "old manuscript changed with unchanged hash aborts from full-row baseline",
+      "passed": true
+    },
+    {
+      "label": "missing old immutable edition aborts",
+      "passed": true
+    },
+    {
+      "label": "tampered canonical manuscript hash aborts",
+      "passed": true
+    },
+    {
+      "label": "tampered canonical assets hash aborts",
+      "passed": true
+    },
+    {
+      "label": "tampered QA verification hash aborts",
+      "passed": true
+    },
+    {
+      "label": "release INSERT failure rolls edition INSERT back atomically",
+      "passed": true
+    },
+    {
+      "label": "trigger side effect on N4 is detected and rolled back",
+      "passed": true
+    },
+    {
+      "label": "production generator rejects clearly marked synthetic-only QA receipt",
+      "passed": true
+    }
+  ],
+  "caseCount": 19,
+  "syntheticCandidate": {
+    "editionId": "ee7c1d452e1ef396b145bec3",
+    "contentHash": "ee7c1d452e1ef396b145bec329cd49186695777cc4b85c23eb4ea901d734f13f",
+    "bundleHash": "085b175ffe56b3c16eb54b88ffe34f8111771b2466ee2cac10cc92654501b3e5"
+  },
+  "templateSha256": "2468c74086f57a3ad468fd6afd1915f6c746a405b538485f3355964d32607945",
+  "exactOperationalSql": {
+    "performed": false,
+    "reason": "No final real-content candidate SQL has been generated yet"
+  },
+  "productionCandidateGenerated": false,
+  "productionWrites": false,
+  "actualAccountLoginVerified": false,
+  "impersonation": false,
+  "learnerWrites": false
+}

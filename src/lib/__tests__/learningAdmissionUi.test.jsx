@@ -234,12 +234,41 @@ describe('VOCAB-START-3 — 막 받은 입장 한도로 묻기(중복 GET 없음
     expect(load).toHaveBeenCalledTimes(1); expect(admit).not.toHaveBeenCalled();
     expect(value.getSnapshot().current.compatibility).toBe(true);
   });
-  it('창을 넘긴 한도는 지금처럼 다시 읽는다', async () => {
+  it('입장 모드 한도는 창을 넘겨도 같은 학습일 안이면 다시 읽지 않는다(F5① — 입장 POST가 서버에서 다시 검사)', async () => {
     const load = vi.fn(async () => status()), c = clock(0);
     const { value } = controller({ load, admit: async req => receipt({ ...req, operationId: 'q' }) }, { now: c.now });
     await value.refresh(); c.advance(60_000);
     await value.question(cardId, 's:0');
+    expect(load).toHaveBeenCalledTimes(1);
+  });
+  it('서버 시각으로 학습일(KST 04시)을 넘긴 한도는 다시 읽는다', async () => {
+    const load = vi.fn(async () => status({ now: '2026-10-04T18:59:00.000Z' })), c = clock(0);
+    const { value } = controller({ load, admit: async req => receipt({ ...req, operationId: 'q' }) }, { now: c.now });
+    await value.refresh(); c.advance(61_000);
+    await value.question(cardId, 's:0');
     expect(load).toHaveBeenCalledTimes(2);
+  });
+  it('호환(사전 활성) 한도는 창을 넘기면 지금처럼 다시 읽는다(활성 전환을 놓치지 않게)', async () => {
+    const load = vi.fn(async () => status({ enabled: false, active: false, fsrsEnabled: false, startsAt: null })), c = clock(0);
+    const { value } = controller({ load, admit: vi.fn() }, { now: c.now });
+    await value.refresh(); c.advance(60_000);
+    await value.question(cardId, 's:0');
+    expect(load).toHaveBeenCalledTimes(2);
+  });
+  it('정책 판이 그 사이 바뀌었으면(409) 다시 읽은 판으로 한 번만 다시 묻는다 · 또 어긋나면 오류', async () => {
+    const conflict = () => Object.assign(new Error('fsrs_admission_policy_conflict'), { code: 'fsrs_admission_policy_conflict', status: 409 });
+    const load = vi.fn().mockResolvedValueOnce(status()).mockResolvedValue(status({ policyRevision: 2 })), c = clock(0);
+    const admit = vi.fn().mockRejectedValueOnce(conflict()).mockImplementation(async req => receipt({ ...req, operationId: 'q' },
+      status({ policyRevision: 2, used: 1, remaining: 14, legacyUsed: 1, admittedLegacyCardIds: [cardId] })));
+    const { value } = controller({ load, admit }, { now: c.now });
+    await value.refresh(); c.advance(60_000);
+    expect(await value.question(cardId, 's:0')).toBe(true);
+    expect(admit.mock.calls.map(([req]) => req.expectedPolicyRevision)).toEqual([1, 2]);
+    expect(load).toHaveBeenCalledTimes(2);
+    admit.mockReset().mockRejectedValue(conflict()); value.leave();
+    expect(await value.question(actor, 's:1')).toBe(false);
+    expect(admit).toHaveBeenCalledTimes(2);
+    expect(value.getSnapshot().error?.code).toBe('fsrs_admission_policy_conflict');
   });
   it('한도가 없거나 오류 상태면 다시 읽는다(창 안이어도)', async () => {
     const load = vi.fn().mockRejectedValueOnce(Object.assign(new Error('offline'), { status: 503 })).mockResolvedValue(status()), c = clock(0);

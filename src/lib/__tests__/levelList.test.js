@@ -152,7 +152,7 @@ describe('⑷ 표기 규칙', () => {
     for (const lang of ['japanese', 'chinese']) {
       const data = await levelListData(lang, 'bunkei', LEVEL_LIST_LANGS[lang].levels[0]);
       for (const e of data.groups.flatMap((g) => g.entries)) {
-        expect(Object.keys(e).sort()).toEqual(['conn', 'exs', 'key', 'ko', 'note', 'pattern']);
+        expect(Object.keys(e).sort()).toEqual(['anchor', 'conn', 'exs', 'key', 'ko', 'note', 'pattern']);
       }
     }
   });
@@ -193,11 +193,13 @@ describe('⑹ O · X 빠른 암기 보기 옵션(LEVEL-OX-AN-001)', () => {
     expect(panel).toContain('role="switch"');
   });
 
-  it('화면 배선: 채점 · 입력창 없음, O = 아는 단어 토글, X = 저장(아는 단어면 먼저 풀고), 훈음 · 正日은 뷰어 부품', () => {
+  it('화면 배선: 채점 · 입력창 없음, O = 아는 단어 토글(공부 중인 단어는 바퀴 답만), X = 저장(아는 단어면 먼저 풀고), 훈음 · 正日은 뷰어 부품', () => {
     const page = read('src/views/LevelListPage.jsx');
     expect(page).not.toMatch(/<input(?![^>]*type="search")|<textarea|grade/);
-    expect(sliceBetween(page, 'const markO = ', ';\n')).toContain('knownSet.has(entry.key) ? unmark(entry.key) : exclude(entry)');
-    const markX = sliceBetween(page, 'const markX = ', '\n  };');
+    const markO = sliceBetween(page, 'const markO = ', '\n  };');
+    expect(markO).toContain('if (knownSet.has(key)) { unmark(key); return rounds.cancel(key, \'all\'); }');
+    expect(markO).toContain('if (!studying) return exclude(entry);');
+    const markX = sliceBetween(page, 'const studyX = ', '\n  };');
     expect(markX).toContain('return save(entry);');
     // 아는 단어면 서버가 풀어 준 뒤에만 담는다(낙관 갱신이라 화면 상태로 기다리지 않는다) — 풀지 못하면 담지 않는다.
     expect(markX).toMatch(/try \{ await known\.mutation\.mutateAsync\(unmarkRequest\(entry\.key\)\); \} catch \{ return undefined; \}\n\s*return save\(entry\);/);
@@ -273,7 +275,7 @@ describe('⑹ 진도 · 이어 하기 · 성조 색(LEVEL-FLOW-001 — 디자인
     writeLevelSnapshot(st, 'chinese', 'h1', { known: 182, studying: 47, total: 832, left: 603, view: 'meaning', at: 1 });
     writeLevelSnapshot(st, 'chinese', 'h2', { known: 3, studying: 0, total: 900, left: 897, view: 'all', at: 2 });
     const snap = readLevelSnapshot(st, 'chinese');
-    expect(snap.last).toEqual({ level: 'H2', view: 'all' });
+    expect(snap.last).toEqual({ level: 'H2', view: 'all', round: 1 });
     expect(snap.levels.H1).toMatchObject({ known: 182, studying: 47, total: 832 });
     expect(readLevelSnapshot(st, 'japanese')).toBeNull();
     st.setItem(LEVEL_SNAPSHOT_KEY, JSON.stringify({ chinese: { last: { level: '<x>' }, levels: {} } }));
@@ -290,6 +292,11 @@ describe('⑹ 진도 · 이어 하기 · 성조 색(LEVEL-FLOW-001 — 디자인
     writeLevelSnapshot(st, 'chinese', 'h3', { known: 0, studying: 0, total: 900, view: 'all', at: 2 });
     expect(levelResumeCard(readLevelSnapshot(st, 'chinese')).chips).toEqual(['알아요 0 / 900']);
     expect(levelResumeCard(null)).toBeNull();
+    // 2바퀴부터 제목에 바퀴(LEVEL-ROUND-001 ③) — 깨진 값은 1바퀴
+    writeLevelSnapshot(st, 'chinese', 'h1', { known: 1, studying: 0, total: 9, view: 'meaning', round: 2, at: 3 });
+    expect(levelResumeCard(readLevelSnapshot(st, 'chinese')).title).toBe('HSK 1 단어 · 두 바퀴째');
+    writeLevelSnapshot(st, 'chinese', 'h1', { known: 1, studying: 0, total: 9, view: 'all', round: 'x', at: 4 });
+    expect(levelResumeCard(readLevelSnapshot(st, 'chinese')).title).toBe('HSK 1 단어');
   });
 });
 

@@ -8,10 +8,11 @@ export const GEMINI_TIER = 'standard';
 export const SENTENCE_TX_TIER = 'light';
 
 // purpose = 측정용 용도 꼬리표(프록시 허용 목록만 route로 찍힌다). generationConfig로 새면 Gemini가 400을 낸다.
-async function callGeminiOnce(prompt, signal, { tier = GEMINI_TIER, model, purpose, ...generationConfig } = {}) {
+// transport — fetch 대신 쓸 (url, init) => Response(서버 분석 작업의 같은 프로세스 안 라우트 호출 — CANON-SERVER-ANALYSIS-001). 그때는 세션을 읽지 않는다.
+async function callGeminiOnce(prompt, signal, { tier = GEMINI_TIER, model, purpose, transport = null, ...generationConfig } = {}) {
   // Supabase 세션 토큰 첨부 (서버 측 인증용)
   let authHeader = {};
-  try {
+  if (!transport) try {
     const { supabase } = await import('./supabase');
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.access_token) {
@@ -19,7 +20,7 @@ async function callGeminiOnce(prompt, signal, { tier = GEMINI_TIER, model, purpo
     }
   } catch {}
 
-  const response = await fetch('/api/gemini', {
+  const response = await (transport || fetch)('/api/gemini', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeader },
     signal,

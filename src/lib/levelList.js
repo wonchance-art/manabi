@@ -3,6 +3,7 @@
 // 데이터 조립(무거운 콘텐츠 import)은 levelListData.js(서버 전용), 여기는 표기 · 대조 규칙만 둔다.
 import { normalizeKnownWord } from './knownWordControl';
 import { readCompleteLegacyRows } from './legacyReviewSync';
+import { roundLabel } from './levelRounds';
 import { zhHskLevelLabel } from './zhHskLevel';
 
 /** 주소의 언어 조각 → 화면 설정. 일본어 · 중국어만 연다(영어 AJ-2 · 프랑스어 FLELex 결정 전). */
@@ -83,6 +84,27 @@ export function levelEntry(entry) {
 }
 /** 화면이 받은 묶음 전체를 한 번에 되살린다(LevelListPage 진입점 한 곳). */
 export const levelGroupsOf = (groups) => (groups || []).map((g) => ({ ...g, entries: (g.entries || []).map(levelEntry) }));
+
+/** 단어 목록 표제어의 훈음 칸 크기(hunRubyCells 옵션) — 서버 자리 모양과 화면이 같은 값을 쓴다. */
+export const LEVEL_HUN_PX = Object.freeze({ glyphPx: 27, hunPx: 12 });
+/**
+ * 훈음 자리 모양(LEVEL-HUN-HOLD-001) — 훈음 표(약 400KB)는 화면이 늦게 받아, 받기 전 표제어가 훈음 없이 그려졌다가 붙으면
+ * 그 줄이 자라 카드가 밀렸다. 서버(정적 조립)가 글자마다 줄 수 · 칸 폭만 짧게 실어(「1@2.17,2w@3」, 훈음 없는 글자는 빈 칸) 그 자리를 먼저 잡는다.
+ */
+export function hunShapeOf(cells) {
+  if (!cells) return undefined;
+  return cells.map((c) => (c.label && c.lines?.length ? `${c.lines.length}${c.wrap ? 'w' : ''}@${c.hunN}` : '')).join(',');
+}
+/** 훈음 자리 모양 → 글자별 자리 칸(hold) — Headword가 HunCell 대신 같은 상자의 빈 칸을 그린다. 모양이 글자 수와 다르면 쓰지 않는다. */
+export function hunHoldCells(word, shape) {
+  if (typeof shape !== 'string' || !shape) return null;
+  const chars = [...String(word || '')], parts = shape.split(',');
+  if (parts.length !== chars.length) return null;
+  return chars.map((ch, i) => {
+    const m = /^([12])(w?)@(\d+(?:\.\d+)?)$/.exec(parts[i]);
+    return m ? { ch, hold: true, lines: Number(m[1]), wrap: !!m[2], hunN: Number(m[3]) } : { ch, hold: true, lines: 0 };
+  });
+}
 
 /** 일본어 표제어 표기 — N5 · N4는 가나 먼저 크게 + 한자 작게, N3부터 한자 위 읽기. */
 export function jaHeadMode(levelKey) {
@@ -251,7 +273,7 @@ export function writeLevelSnapshot(storage, lang, levelKey, snap) {
     const all = JSON.parse(storage.getItem(LEVEL_SNAPSHOT_KEY) || '{}') || {};
     const cur = all[lang] && typeof all[lang] === 'object' ? all[lang] : {};
     const key = String(levelKey).toUpperCase();
-    all[lang] = { last: { level: key, view: snap.view, at: snap.at }, levels: { ...(cur.levels || {}), [key]: { known: snap.known, studying: snap.studying, total: snap.total, at: snap.at } } };
+    all[lang] = { last: { level: key, view: snap.view, round: snap.round, at: snap.at }, levels: { ...(cur.levels || {}), [key]: { known: snap.known, studying: snap.studying, total: snap.total, at: snap.at } } };
     storage.setItem(LEVEL_SNAPSHOT_KEY, JSON.stringify(all));
   } catch { /* 저장소 없음 — 이어 하기 없이 */ }
 }
@@ -263,7 +285,8 @@ export function readLevelSnapshot(storage, lang) {
     for (const [k, l] of Object.entries(v.levels || {})) {
       if (/^[A-Z0-9]{2}$/.test(k) && [l?.known, l?.studying, l?.total].every((n) => Number.isInteger(n) && n >= 0)) levels[k] = l;
     }
-    return { last: { level: v.last.level, view: LEVEL_VIEWS.some((x) => x.id === v.last.view) ? v.last.view : 'all' }, levels };
+    const round = Number.isInteger(v.last.round) && v.last.round >= 1 ? v.last.round : 1;
+    return { last: { level: v.last.level, view: LEVEL_VIEWS.some((x) => x.id === v.last.view) ? v.last.view : 'all', round }, levels };
   } catch { return null; }
 }
 
@@ -275,7 +298,9 @@ export function levelResumeCard(snap, lang = 'chinese') {
   const level = snap?.last?.level;
   const l = level && snap.levels?.[level];
   if (!l || !LEVEL_LIST_LANGS[lang]?.levels.includes(level)) return null;
-  return { href: levelListHref(lang, 'vocab', level), title: `${levelLabel(level)} 단어`,
+  // 2바퀴부터는 「HSK 1 단어 · 두 바퀴째」(LEVEL-ROUND-001 ③) — 마지막 보기의 바퀴.
+  const round = snap.last.round > 1 ? ` · ${roundLabel(snap.last.round)}` : '';
+  return { href: levelListHref(lang, 'vocab', level), title: `${levelLabel(level)} 단어${round}`,
     chips: [`알아요 ${l.known.toLocaleString('en-US')} / ${l.total.toLocaleString('en-US')}`, ...(l.studying > 0 ? [`공부 중 ${l.studying.toLocaleString('en-US')}`] : [])],
     meta: '이어 하기 ↗' };
 }

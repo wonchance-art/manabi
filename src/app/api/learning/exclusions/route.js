@@ -1,4 +1,4 @@
-import { requireUser } from '@/lib/supabaseServer';
+import { requireUser, requireUserForRead } from '@/lib/supabaseServer';
 import { reply, errorReply, checkDb, fail, readBody, accessibleMaterial } from '@/lib/server/learningContext';
 import { koreanTokenContext, tokenContext, UUID } from '@/lib/learningSources';
 import { VOCABULARY_LANGUAGES, exclusionWord, loadVocabularyExclusions } from '@/lib/vocabularyExclusion';
@@ -7,7 +7,7 @@ import { isStudyNote } from '@/lib/studyNotes';
 
 export const dynamic = 'force-dynamic';
 export async function GET() {
-  const auth = await requireUser();
+  const auth = await requireUserForRead();
   if (auth.error) return reply({ error: auth.error }, auth.status);
   try {
     // PostgREST 응답 상한 때문에 1,000개 뒤의 제외 상태가 사라지지 않게 페이지를 모두 읽는다.

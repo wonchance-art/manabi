@@ -51,6 +51,7 @@ export default function DictationPanel({ sentence, lang, onClose, ttsOpts, draft
           onChange={(e) => setTyped(e.target.value)}
           aria-label="받아쓰기 입력"
           placeholder="들리는 대로 입력해 보세요"
+          autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
           rows={2}
           lang={lang === 'Japanese' ? 'ja' : lang === 'Chinese' ? 'zh' : lang === 'French' ? 'fr' : 'en'}
           style={{ width: '100%', margin: '12px 0 10px', resize: 'vertical', fontSize: '1rem', lineHeight: 1.6 }}

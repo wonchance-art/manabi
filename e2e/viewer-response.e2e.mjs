@@ -42,7 +42,7 @@ async function setup({ due = false, fail = false, failInsert = false, width = 14
     const url = new URL(r.request().url());
     if (url.searchParams.get('view') !== 'learning') return r.fallback();
     assert.equal(r.request().method(), 'GET', 'The learning snapshot is read only');
-    return respond(r, legacyLearningSnapshot({ actorId: owner, rows, known: [], exclusions: [], fields: url.searchParams.get('fields') }));
+    return respond(r, legacyLearningSnapshot({ actorId: owner, rows, known: [], exclusions: [], fields: url.searchParams.get('fields'), ids: url.searchParams.get('ids') }));
   });
   await f.context.route('**/rest/v1/vocabulary_with_exclusions*', r => respond(r, rows.map(row => ({ ...row, is_excluded: false }))));
   await f.context.route('**/api/tts?**', r => { speech.push(r.request().url()); return respond(r, { error: 'No server speech for immediate words' }, 500); });

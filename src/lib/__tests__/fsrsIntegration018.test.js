@@ -42,7 +42,7 @@ describe('persisted scheduler times and complete card bounds', () => {
   it.each([
     ['New elapsed history', () => ({ ...introduced(), elapsedDays: 1 })],
     ['Review zero days', () => ({ ...review(), scheduledDays: 0 })],
-    ['Review excessive days', () => ({ ...review(), scheduledDays: FSRS_POLICY.maximumInterval + 1 })],
+    ['Review excessive days', () => ({ ...review(), scheduledDays: FSRS_POLICY.storedIntervalLimit + 1 })],
     ['stability beyond engine bounds', () => ({ ...review(), stability: S_MAX + 1 })],
     ['very large finite stability', () => ({ ...review(), stability: 1e308 })],
     ['unsafe revision', () => ({ ...review(), revision: Number.MAX_SAFE_INTEGER + 1 })],

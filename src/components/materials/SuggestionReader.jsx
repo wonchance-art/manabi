@@ -1,7 +1,6 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/AuthContext';
@@ -20,11 +19,14 @@ async function fetchSuggestion(id, signal) {
   return response.json();
 }
 
-export default function SuggestionReader({ id }) {
-  const params = useSearchParams();
+// 돌아갈 곳(from)은 부르는 쪽이 넘긴다 — 판(/suggestions/[id] ISR)은 주소의 ?from=을 middleware가 고른 판 경로로 안다.
+// 여기서 searchParams를 읽으면 정적 판이 이 부품부터 통째로 브라우저 그리기로 밀려 본문이 첫 HTML에서 빠진다.
+// initial · initialAt = 판이 서버에서 읽어 둔 행과 그 시각(없으면 예전처럼 브라우저가 받는다).
+export default function SuggestionReader({ id, from: requestedFrom, initial, initialAt }) {
   const { user, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
-  const query = useQuery({ queryKey: ['suggestion-reading', id], queryFn: ({ signal }) => fetchSuggestion(id, signal), retry: false });
+  const query = useQuery({ queryKey: ['suggestion-reading', id], queryFn: ({ signal }) => fetchSuggestion(id, signal), retry: false,
+    ...(initial ? { initialData: initial, initialDataUpdatedAt: initialAt } : {}) });
   const [fontSize, setFontSize] = useState(20);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(null);
@@ -35,7 +37,7 @@ export default function SuggestionReader({ id }) {
   const source = s ? suggestionSource(s) : null;
   const license = source?.kind === 'video' ? attributionParts({ kind: 'youtube', channel: s.channel_name, url: source.url, license: licenseForSource(s.source) })?.license : '';
   const readable = canReadSuggestion(s);
-  const from = suggestionBackKey(params.get('from'));
+  const from = suggestionBackKey(requestedFrom);
   const { href: back, label: backLabel } = SUGGESTION_BACK[from];
   const savedId = saved?.ownerId === user?.id ? saved?.id : null;
   const studyId = savedId || s?.material_id;

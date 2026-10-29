@@ -148,6 +148,19 @@ group by 1 order by 1;
   않는다**(오너 「팀 화면 접근은 가능해도 정본 책 접근은 못하도록」 2026-10-16 KST): 팀 목차 · 장 열기 · 출처 · 사본 만들기가 같은
   판정 `isProtectedBookMetadata`(`src/lib/server/classIndex.js`)를 쓴다. 사용자가 만든 책으로 여는 수업은 무변경.
 
+### 4.2d 발행 기록 — 「진짜 정본」 판정 (오너 「권장대로 ㄱㄱ」 2026-10-22 KST, CANON-RELEASE-001)
+
+- 공개 자료의 metadata는 누구나 꾸밀 수 있다 — 로그인 사용자가 정본과 같은 book key를 단 공개 글을 만들 수 있고 DB는 막지 않는다.
+  그래서 공개 목록은 정본 표지 · 제목을 닫아 두었다(BOOK-GROUP-OWNER-001). 판정 = **발행 기록** `canonical_book_releases`
+  (book key · 발행한 관리자 = 장의 소유자 · 발행 때, `supabase/migrations/20261022081000_canonical_book_releases.sql`).
+- 쓰는 곳은 하나 — 관리자 「공개」(`bookPublishRoute` release)가 장을 공개로 바꾸기 **전에** 남긴다(멱등). 다른 관리자가 먼저 발행한
+  key면 409로 공개하지 않는다. 표는 누구나 읽고, 쓰기는 관리자 본인 이름으로만(RLS), 고치기 · 지우기는 화면에 없다(한 권 내리기는 SQL).
+- 읽는 곳 — `canonical_book_shelf()`: 기록이 있고 **그 관리자의** 공개 장이 있는 책만(key · 첫 장 id · 장 수). 같은 key를 단 남의 공개 글은
+  소유자가 달라 빠진다. 산책 「고전 명작」이 표시는 저장소 대조표에서, 「어느 자료를 열까」만 여기서 받는다.
+- 검증: 실제 PostgreSQL `supabase/tests/canonical-book-releases.mjs`(CI) · 문장 계약 `canonicalRelease.test.js` · 학습 지문 `post-observation-migrations.mjs`.
+- 운영 실측(2026-10-22 KST, 읽기만): 정본 key 행은 아오조라 6권(40장) · 그림 1권(8장) — 모두 관리자 소유 · **공개 0장**. 저장소 수록 85권(2,326장)은
+  아직 게시 · 분석 · 검수 · 공개 전이다 — 고전 명작에 책이 보이려면 관리자 화면에서 공개해야 한다(§9.6 4).
+
 ### 4.3 서버 백그라운드 분석 (인프라 — 별도 승인 필요)
 
 - 작업 표(`literature_jobs`: book key · 장 · 상태 · 시도 수) + 예약 실행(Vercel Cron 1분 간격)이 분석을 이어서 한다.
@@ -428,7 +441,29 @@ group by 1 order by 1;
 
 ### 9.2 카탈로그 규칙 (`scripts/lib/literature-catalog.mjs`)
 
-- **수록** 줄 = `{id, key, status, country}`만 — 사실은 작품 폴더 `entry.json`이 정본(두 곳에 적으면 갈린다). 가져오기가 끝나면 줄을 이 모양으로 줄인다.
+- **수록** 줄 = `{id, key, status, country, category}`만 — 사실은 작품 폴더 `entry.json`이 정본(두 곳에 적으면 갈린다). 가져오기가 끝나면 줄을 이 모양으로 줄인다.
+- **카테고리**(`category`, 오너 「문학 책 리스트 카테고리화해서 정리」 → 「큰 카테고리에서 작은 카테고리로 들어가게」 2026-10-21 KST) — 작품의 **형식**으로
+  고른다(주제 · 시대 아님). 큰 갈래(`CATALOG_GROUPS`) 셋 › 작은 갈래(`CATALOG_CATEGORIES`) 아홉, 줄에는 작은 갈래 key 하나(큰 갈래는 거기서 나온다 —
+  `categoryPath('fiction')` = 「문학 › 소설」). 모든 줄에 하나 — 분류는 카탈로그가 매기는 것이라 수록 줄에도 둔다(entry.json의 사실과 겹치지 않는다).
+
+  | 큰 갈래 | 작은 갈래 key | 이름 | 경계 · 예 | 342편 중 |
+  |---|---|---|---|---|
+  | 문학 | fiction | 소설 | 장편 · 중편 · 단편 · 단편집 — 길이로 가르지 않는다(홍루몽 · 마음 · 위대한 개츠비 · 산월기 · 노인과 바다 · 체호프 단편선) | 212 |
+  | 문학 | poetry | 시 | 시집 · 서사시(일리아스 · 신곡) · 산문시(예언자 · 플라테로와 나) | 25 |
+  | 문학 | drama | 희곡 | 무대 · 라디오 희곡(햄릿 · 인형의 집 · 밀크우드 아래에서) | 20 |
+  | 아동 · 청소년 | tale | 동화 · 우화 | 옛이야기 · 동화 · 우화 · 짧은 이야기 모음(미야자와 겐지 · 그림 · 안데르센 · 이솝 · 어린 왕자) | 24 |
+  | 아동 · 청소년 | youth | 아동 · 청소년 소설 | 어린 독자를 위한 긴 소설(앨리스 · 보물섬 · 작은 아씨들 · 빨간 머리 앤) | 22 |
+  | 비문학 | essay | 수필 · 기행 | 수필 · 기행 · 회고 수필(월든 · 背影 · 그늘에 대하여) | 11 |
+  | 비문학 | life | 자서전 · 일기 · 르포 | 프랭클린 자서전 · 안네의 일기 · 카탈로니아 찬가 | 5 |
+  | 비문학 | thought | 철학 · 사상 | 철학 · 윤리 · 고전 사상(논어 · 명상록 · 니체 · 시지프 신화) | 11 |
+  | 비문학 | society | 사회 · 정치 · 경제 | 정치 · 경제 · 사회 평론 · 선언서(국부론 · 자본론 · 군주론 · 기미독립선언서) | 12 |
+
+  **장편 · 중단편은 소설 하나로**(오너 「장편, 중단편은 그냥 소설로 통합」 2026-10-22 KST): 한때 분량 하한(4만 단어 · 10만 자)으로 둘을 갈랐으나,
+  고르는 사람에게 길이는 갈래가 아니라 책 정보(분량 · 장 수)로 이미 보인다 — 갈래는 형식만 남긴다. 옛 값 novel · short는 모르는 값으로 막는다.
+  보기: `import.mjs --list --by category [--category young]`(큰 갈래 key 또는 작은 갈래 key) · 고르기: `--next N --category drama`.
+  계약: 모든 줄에 알려진 작은 갈래 하나 · 큰 갈래 key나 옛 값(children · novel · short)은 막는다 · 갈래마다 책이 있다
+  (`literatureCatalog.test.js`). 갈래 정의의 정본은 `src/lib/literatureCategories.js`(산책 「고전 명작」도 같이 쓴다 — 카탈로그 규칙 모듈은 다시 내보내기만). 모르는 `--category` 값은 멈춘다(오타가 빈 목록으로 지나가지 않게).
+  목록 페이지(큰 갈래 지도 › 작은 갈래 태그 · 나라 · 상태 · 검색): https://claude.ai/artifact/MD6iMn7K5w8idmMuqxRoyA
 - **loadable** 줄 = 가져오기 입력 전부: 출처 위치 · 출판 연도 · 작가 몰년 · 원산국 · (번역자 기록) · 한국어 표기 · 레벨(그 언어 목록 — 한국어는 초급·중급·고급).
   계약: 오늘 한국 공개 가능(아오조라는 D5 — 일본 만료, 그 밖은 rightsKorea) · 표지 표기가 장정 규칙 통과 · key 폴더가 아직 없다.
 - **blocked** 줄 = 막힌 이유(보호기간 · 번역자 몰년 미확인 · 출처 없음 · 아오조라 新字旧仮名). 같은 나라 안은 인기 순 — `--next`가 이 순서로 고른다.
@@ -514,10 +549,13 @@ group by 1 order by 1;
 
 ### 9.6 한 편 넣기 — 순서
 
-1. `node scripts/literature/import.mjs --list --country KR --status loadable` → 고른다(또는 `--next 3 --country FR`).
+1. `node scripts/literature/import.mjs --list --country KR --status loadable` → 고른다(또는 `--next 3 --country FR` · 갈래로 `--next 3 --category drama`).
 2. `node scripts/literature/import.mjs <id>` — 권리 · 표지 검사 → 받기(판 고정 · 해시) → entry.json → 빌드 → 장 점검. 멈추면 그 줄이 무엇을 고칠지 말한다.
 3. `node scripts/literature/inspect.mjs <key>`(장 목록 · 분량) · `--chapter N`(장 전체)로 눈으로 한 번 → `npm test` → PR.
 4. 병합 뒤 관리자 화면 「준비 안 된 N편 모두 게시·분석」 → 묶음 검수 → 공개(§4).
+   대기열 차례(2026-10-23 KST, 오너 「수록된 것과 인기작부터 권장대로 공개」): 이미 준비를 시작한 책 → 나머지는 언어를 번갈아(일 · 영 · 프 · 중 · 한)
+   `src/content/literature/publish-order.json` 앞줄(대표작 · 짧은 장 먼저) 다음 카탈로그 차례(`classicsPublishRank`). 1차 25권 = 239장(라쇼몬 · 앨리스 · 어린 왕자 · 쿵이지 · 진달래꽃 …).
+   카탈로그의 수록 줄은 가져온 차례로 쌓여 인기 순이 아니다(영어 1 · 2번이 도덕감정론 · 국부론이었다) — 차례는 이 파일이 정한다.
 
 시뮬레이션(2026-10-17 KST, 실제 받기): 오즈의 마법사(SE) · 봄봄(ko) · 祝福(zh) · 풍차 방앗간 편지(fr) · 카탈로니아 찬가(PGA) · 야간 비행(Faded Page) —
 받기에서 공개까지(가짜 DB · 가짜 LLM) 모두 통과. 시뮬레이션이 잡아 고친 것: zh 본문 이름공간 문서의 머리 틀 · 자매 프로젝트 상자, PGA 판의 인용 상자 노래 ·

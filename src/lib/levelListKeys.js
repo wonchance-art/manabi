@@ -40,11 +40,12 @@ export function levelListMove(keys, from, delta, { canGrow = false } = {}) {
 }
 
 /** 화면 읽기 이름 — 그 보기에 보이는 것만(뜻 보기에서 글자를, 글자 보기에서 뜻을 미리 읽어 주지 않는다). */
-export function levelCardLabel(entry, view, { known = false, studying = false } = {}) {
+export function levelCardLabel(entry, view, { known = false, studying = false, keepReview = false } = {}) {
   const shown = view === 'word' ? entry.word
     : view === 'meaning' ? entry.meaning
       : view === 'sentence' ? (entry.ex?.text || '예문 없음')
         : view === 'audio' ? '소리 카드'
           : `${entry.word} — ${entry.meaning}`;
-  return [shown, known ? '아는 단어' : studying ? '공부 중' : null].filter(Boolean).join(' · ');
+  // keepReview — 공부 중인 단어에 이번 바퀴 O(아는 단어로 옮기지 않음, LEVEL-ROUND-001).
+  return [shown, known ? (keepReview ? '안다 · 복습은 그대로' : '아는 단어') : studying ? '공부 중' : null].filter(Boolean).join(' · ');
 }

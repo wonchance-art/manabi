@@ -1,22 +1,109 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
-import { legacyTextbookTarget } from './lib/bookNavigation';
+import { BOOK_SERIES, legacyTextbookTarget } from './lib/bookNavigation';
 import { hasLegacyArchivePath } from './lib/legacyArchiveRoutes';
 import { authEntryHref } from './lib/authRedirect';
 import { withoutServerSignOut } from './lib/authCookieGuard';
+import { SC_HINT_COOKIE } from './lib/scFontHint';
+import { hasSupabaseSessionInJar } from './lib/authCookie';
+import { isBundledEdition } from './lib/textbook/bundledEditions';
+import { suggestionBackKey } from './lib/suggestionBack';
+
+// 공유 캐시 갈래(GUEST-STATIC-001) — 쿼리 · 힌트 쿠키로 갈리던 화면을 갈래마다 한 판씩 정적(ISR)으로 굽고, 여기서 판을 고른다(주소창은 그대로).
+// 계정으로는 가르지 않는다: 판에는 계정 데이터가 없다. 이 갈래는 쿠키를 읽기만 하고(값 '1'인 힌트 하나) Supabase 클라이언트를 만들지 않는다.
+// 내부 판 경로(/discover/reading · /discover/sc · /lessons/lang/*)는 matcher에 넣지 않는다 — rewrite된 요청이 middleware를 다시 지나므로, 거기서 정본 주소로 돌려보내면
+// 판을 고른 요청까지 되돌아간다(e2e 빌드 실측: 307 루프). 바로 열어도 같은 판이고, 정본 주소는 canonical(/discover)이 알린다.
+const SUGGESTION_PATH = /^\/suggestions\/[^/]+$/;
+const COVER_PATHS = new Set(['/books/japanese-n5', '/books/japanese-n4', '/books/japanese-n3']);
+const rewriteTo = (request, pathname, dropQuery = false) => { const url = request.nextUrl.clone(); url.pathname = pathname; if (dropQuery) url.search = ''; return NextResponse.rewrite(url); };
+function guestStaticVariant(request) {
+  const { pathname, searchParams } = request.nextUrl;
+  // 산책: 「함께 읽는 글」(?view=reading)은 동적 화면, 간체 힌트 쿠키는 간체 판, 나머지는 기본 판(ISR 300).
+  if (pathname === '/discover') {
+    if (searchParams.get('view') === 'reading') return rewriteTo(request, '/discover/reading');
+    if (request.cookies.get(SC_HINT_COOKIE)?.value === '1') return rewriteTo(request, '/discover/sc');
+    return NextResponse.next();
+  }
+  // 책장(3단계): ?lang=<언어>(옛 링크 · 단어 목록 「← 교재」 · /japanese 등 리다이렉트)는 그 언어 판, 나머지는 기본 판(둘 다 ISR 3600).
+  // 모르는 언어는 기본 판(예전처럼 「전체 시리즈」). 판 경로 /lessons/lang/*는 matcher 밖이다(위 산책과 같은 이유).
+  if (pathname === '/lessons') {
+    const lang = searchParams.get('lang');
+    return BOOK_SERIES.some(series => series.language === lang) ? rewriteTo(request, `/lessons/lang/${lang}`) : NextResponse.next();
+  }
+  // 배움 · 교재 첫 화면(4단계): 세션 쿠키 **이름**(hasSupabaseSessionInJar — 값 · 계정은 읽지 않는다) 유무로 배치 판을 고른다(B1 · BOOKS-FLOW-002 —
+  // 첫 그림부터 로그인 배치). 판에는 계정 데이터가 없어 로그인한 모두가 같은 판을 받는다. 판 경로(/home/member · /home/sc · /home/member/sc ·
+  // /books/<책>/cover/* · /books/<책>/edition/*)는 matcher 밖이다(위 산책과 같은 이유).
+  if (pathname === '/home') {
+    const member = hasSupabaseSessionInJar(request.cookies), sc = request.cookies.get(SC_HINT_COOKIE)?.value === '1';
+    const variant = `/home${member ? '/member' : ''}${sc ? '/sc' : ''}`;
+    return variant === '/home' ? NextResponse.next() : rewriteTo(request, variant);
+  }
+  // 교재: 쿼리 없는 첫 화면은 표지 판(ISR). 쿼리가 `edition` 하나뿐이고 값이 그 책의 저장소 판본 id면(책장 · 배움 · 목차 링크, 책 안 이동 뒤
+  // 새로고침 · 북마크 — 5단계) 판본별 판(/books/<책>/edition/<id>/<판>, ISR)으로 — 주소의 판본을 그 id 그대로 그리므로 보이는 판본 · 진도 키 ·
+  // 앵커가 동적 화면과 같다. 판은 발행 도장이 있는 판본만 그리고, 없으면 동적 화면의 손님과 같은 안내다(미리보기 없음 — 공유 캐시).
+  // 관리자 미리보기는 표식(&preview=1 — 쿼리 둘)을 붙여 동적 화면으로 간다(BookEditor · 미리보기 안 링크). 표식 없는 옛 미리보기 주소(열어 둔 탭 ·
+  // 북마크)는 미발행 판본이면 안내가 된다 — 관리자에게만 생기는 변화이고, 편집기 「검수용 교재 열기」로 다시 연다. 그 밖(?reference · ?returnTo ·
+  // 모르는 id · 중복 키 · utm 등)은 지금 동적 화면 그대로. 판 경로의 쿼리는 비운다(판은 쿼리를 읽지 않는다). (_rsc는 Next가 middleware 앞에서 뗀다.)
+  if (COVER_PATHS.has(pathname)) {
+    const hint = hasSupabaseSessionInJar(request.cookies) ? 'member' : 'guest';
+    if (!searchParams.size) return rewriteTo(request, `${pathname}/cover/${hint}`);
+    const edition = searchParams.get('edition');
+    if (searchParams.size === 1 && isBundledEdition(pathname.slice('/books/'.length), edition)) return rewriteTo(request, `${pathname}/edition/${edition}/${hint}`, true);
+    return NextResponse.next();
+  }
+  // 추천 읽을거리 한 편(6단계 · FIELD-AUDIT F5): 본문을 실은 판(ISR 300)이 돌아갈 곳(?from=)마다 하나다. home · discover · reading은
+  // /suggestions/<id>/from/<from> 판으로, 나머지(없음 · materials · 목록 밖 값 — 리더가 예전에도 서재로 돌렸다)는 기본 판 그대로.
+  // 판은 쿼리를 읽지 않으므로 비운다. 판 경로는 matcher 밖이다(위 산책과 같은 이유). 쿠키 · 계정으로 가르지 않는다.
+  if (SUGGESTION_PATH.test(pathname)) {
+    const from = suggestionBackKey(searchParams.get('from'));
+    return from === 'materials' ? NextResponse.next() : rewriteTo(request, `${pathname}/from/${from}`, true);
+  }
+  return null;
+}
 
 // EMEA 오버월드 자산 가드는 #306 일반 공개(releaseEligible 릴리스 정합 전환)로 폐기했다.
 // 스테일 가드가 남아 비관리자 전원이 EMEA 지형 404를 받는 라이브 결함을 만들었음(2026-07-22
 // 게스트 라이브 검수 실측). 미출시 지역이 다시 생기면 git 이력의 프리픽스 가드 패턴으로 복원한다.
+// '/' → /home(ROOT-EDGE-REDIRECT-001, 2026-10-23 KST 현장 감사 F3): page.jsx의 redirect()는 동적 렌더라 첫 진입마다
+// 함수 호출 + 왕복이 붙었다(운영 cold TTFB 1328ms · LCP 4012ms vs /home 320 · 2704, warm에서도 912 vs 577 — SW는 리디렉트를 캐시하지 않는다).
+// 여기(엣지)에서 보내면 함수가 돌지 않는다. next.config redirects()는 쓰지 않는다 — 들어온 질의를 목적지에 그대로 붙여
+// (shared/lib/router/utils/prepare-destination.js: query = {...args.query, ...}) `/?utm=…`가 `/home?utm=…`이 된다.
+// 지금(page.jsx)은 질의를 버린다 — 그 동작을 그대로 지킨다. 로그인 결과(code · error · error_description)가 붙은 요청은
+// 손대지 않고 page.jsx로 넘긴다(교환 · 실패 분기는 그 파일 한 곳이 맡는다). 세션 쿠키는 읽지 않는다(guestLandingParity).
+const ROOT_AUTH_RESULT_KEYS = ['code', 'error', 'error_description'];
+const LANGUAGE_HOMES = { '/japanese': 'Japanese', '/chinese': 'Chinese', '/english': 'English', '/french': 'French' };
+
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
+  if (pathname === '/') {
+    const params = request.nextUrl.searchParams;
+    if (ROOT_AUTH_RESULT_KEYS.some((key) => params.has(key))) return NextResponse.next();
+    return NextResponse.redirect(new URL('/home', request.url));
+  }
+  // 옛 언어 첫 화면(/japanese · /chinese · /english · /french)은 그 언어의 책장으로(ROUTE-AUDIT-2 P2, 오너 「권장대로」 2026-10-26 KST).
+  // 예전엔 보관함 규칙에 걸려 손님은 「관리자 보관함 로그인」, 학습자는 3번 돌아 홈이었다 — 각 page.jsx의 redirect('/lessons?lang=…')는
+  // 닿지 않는 코드였다. 목적지는 그 page.jsx와 같다(질의 버림 · 세션 안 읽음). 장 주소(/japanese/grammar/…)는 아래 보관함 규칙 그대로.
+  const languageHome = LANGUAGE_HOMES[pathname.replace(/\/$/, '')];
+  if (languageHome) return NextResponse.redirect(new URL(`/lessons?lang=${languageHome}`, request.url));
   const archive = legacyTextbookTarget(pathname);
   if (archive) {
     const destination = request.nextUrl.clone();
     destination.pathname = archive;
     return NextResponse.redirect(destination);
   }
-  if (pathname === '/learn/course') return NextResponse.redirect(new URL('/lessons', request.url));
+  // 로그인(/auth)은 정적 판에 폼을 싣는다(ROUTE-AUDIT-2 P1). 메일 재설정 링크(?mode=reset) · 로그인 실패(?error=)만 첫 그림을 미루는 판으로 —
+  // 정적 로그인 폼이 잠깐 보였다가 재설정 · 오류 화면으로 바뀌지 않게. 질의는 그대로 둔다(화면이 마운트 뒤 주소에서 읽는다).
+  if (pathname === '/auth') {
+    const params = request.nextUrl.searchParams;
+    if (params.get('mode') === 'reset' || params.has('error')) return rewriteTo(request, '/auth/from-link');
+    return NextResponse.next();
+  }
+  const variant = guestStaticVariant(request);
+  if (variant) return variant;
+  // 옛 학습 대시보드 주소 둘(/learn · /learn/course)은 책장으로 — 엣지에서 보낸다(ROUTE-AUDIT-2 F1, 2026-10-25 KST).
+  // /learn은 page.jsx의 redirect()만 있던 정적 판이라 307이 아니라 200 HTML(22 kB) + `<meta refresh 1초>`가 나갔고, 브라우저는
+  // 앱 JS를 받아 하이드레이션한 뒤에야 클라이언트에서 /lessons로 옮겼다. 목적지 · 질의 버림은 page.jsx와 같다(계약 learnEdgeRedirect).
+  if (pathname === '/learn' || pathname === '/learn/course') return NextResponse.redirect(new URL('/lessons', request.url));
   if (!pathname.startsWith('/admin')) return NextResponse.next();
 
   const response = NextResponse.next();
@@ -48,8 +135,8 @@ export async function middleware(request) {
     .eq('id', user.id)
     .single();
 
-  // 어드민 아님 → 홈으로
-  if (profile?.role !== 'admin') return NextResponse.redirect(new URL('/', request.url));
+  // 어드민 아님 → 홈으로(바로 /home — '/'는 다시 /home으로 한 번 더 돌았다, ROUTE-AUDIT-2 P2)
+  if (profile?.role !== 'admin') return NextResponse.redirect(new URL('/home', request.url));
 
   // Decide before the archive's async page starts streaming; notFound() after the
   // shared loading boundary can otherwise render a 404 screen with HTTP 200.
@@ -64,5 +151,6 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/japanese/:path*', '/chinese/:path*', '/english/:path*', '/french/:path*', '/learn/course'],
+  matcher: ['/', '/auth', '/admin/:path*', '/japanese/:path*', '/chinese/:path*', '/english/:path*', '/french/:path*', '/learn', '/learn/course', '/discover', '/lessons',
+    '/home', '/books/japanese-n5', '/books/japanese-n4', '/books/japanese-n3', '/suggestions/:id'],
 };

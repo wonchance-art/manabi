@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "reviewer": "M00 /root",
+  "scope": "Direct inspection of two actual app attempt-005 images, separate from C 15-image review and192 automated geometry conditions.",
+  "editionId": "4978c146953f14140bcb49d2",
+  "images": [
+    {
+      "file": "n3-u46-options-320.png",
+      "sha256": "40f07dbc2bc75ca9d4b4a7a52db0462311e163bdf255cda4a1363a5ba85ec424"
+    },
+    {
+      "file": "desktop-n3-toc.png",
+      "sha256": "8fd7306ef5c75b753bb58baeacf5aae4da427dbc55012cd2b6fe127c6c0b68be"
+    }
+  ],
+  "observations": [
+    "320px u46: legible ruby/Korean, wrapped radio rows, distinct answer controls and usable fixed navigation.",
+    "Desktop N3 cover and48-lesson contents preserve the N5/N4 visual system and hierarchy."
+  ],
+  "actualOperatingLogin": false
+}

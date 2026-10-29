@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({ authenticate: vi.fn(), service: vi.fn() }));
-vi.mock('@/lib/supabaseServer', () => ({ requireUser: mocks.authenticate }));
+vi.mock('@/lib/supabaseServer', () => ({ requireUser: mocks.authenticate, requireUserForRead: mocks.authenticate }));
 vi.mock('@/lib/server/fsrsLearning', async original => ({ ...(await original()), fsrsServiceClient: mocks.service }));
 import { normalizeManualVocabularyRequest, readVocabularyLearningSnapshot, saveManualVocabulary, validateVocabularyLearningSnapshot } from '../server/fsrsVocabulary.js';
+import { compactVocabularySnapshot } from '../vocabularySnapshotLight.js';
 import { introduceFsrsCard, scheduleFsrsReview } from '../fsrsScheduler.js';
 import { GET, POST } from '../../app/api/learning/vocabulary/route.js';
 
@@ -32,6 +33,7 @@ beforeEach(() => {
   client = { rpc: vi.fn(async (name, args) => {
     if (databaseError) return { error: databaseError };
     if (name === 'fsrs_vocabulary_snapshot') return { data: clone(snapshot) };
+    if (name === 'fsrs_vocabulary_snapshot_light') return { data: compactVocabularySnapshot(clone(snapshot), { language: args.p_language, summary: args.p_summary }) };
     if (name !== 'fsrs_save_manual_vocabulary') throw Error('unexpected rpc');
     return { data: receipt || { version: 1, actorId: actor, operationId: args.p_request.operationId,
       requestedCardId: args.p_request.cardId, vocabularyId: args.p_request.cardId, created: true, enrolled: true, duplicate: false,
@@ -183,6 +185,8 @@ describe('vocabulary API new branches keep real authentication and old context c
     expect(data.rows[0]).toMatchObject({ id: cardId, user_id: actor, word_text: '책', meaning: '书' });
     expect(data.rows[0]).not.toHaveProperty('source_sentence'); expect(data.rows[0]).not.toHaveProperty('etymology');
     expect(data.rows[0]).not.toHaveProperty('source_paragraph'); expect(data.registry).toEqual(snapshot.registry);
+    // 요약은 가벼운 읽기 하나로 받는다(SNAPSHOT-LIGHT-001) — 전체 snapshot RPC를 부르지 않는다.
+    expect(client.rpc).toHaveBeenCalledExactlyOnceWith('fsrs_vocabulary_snapshot_light', { p_actor: actor, p_language: null, p_summary: true });
     expect((await GET(new Request('https://fixture.test/api/learning/vocabulary?view=learning&fields=anything'))).status).toBe(400);
   });
   it('rejects cross-origin/non-JSON/oversized save before service persistence', async () => {

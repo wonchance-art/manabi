@@ -54,7 +54,7 @@
 .discovery-filter-bar{display:grid;grid-template-columns:1fr 200px;gap:24px;background:var(--sheet);border:1px solid var(--rule);padding:22px}
 .discovery-filter-bar label{font-size:12px;color:var(--muted);display:block;min-width:0}
 .discovery-filter-bar form>div{display:flex;gap:12px;margin-top:8px}
-.discovery-filter-bar input,.discovery-filter-bar select{min-width:0;width:100%;font:inherit;color:var(--ink);min-height:44px;background:var(--sheet);border:1px solid var(--rule);border-radius:0;padding:10px 12px;font-size:14px}
+.discovery-filter-bar input,.discovery-filter-bar select{min-width:0;width:100%;font:inherit;color:var(--ink);min-height:44px;background:var(--sheet);border:1px solid var(--rule);border-radius:0;padding:10px 12px;font-size:max(var(--field-font-min),14px)}
 .discovery-filter-bar select{margin-top:8px}
 .discovery-filter-bar button{border:0;background:var(--ink);color:var(--sheet);font:inherit;font-size:13px;padding:10px 20px;white-space:nowrap;min-height:44px;cursor:pointer}
 .discovery-topic-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:18px 0;border-bottom:1px solid var(--rule)}

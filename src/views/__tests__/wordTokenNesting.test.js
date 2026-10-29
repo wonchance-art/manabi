@@ -17,7 +17,7 @@ describe('뷰어 단어 토큰 — 중첩 대화형 요소 금지', () => {
   const token = read('src/components/viewer/ReaderToken.jsx');
   const body = sliceBetween(token, 'function ReaderToken({', '\n}\n');
   const linePick = sliceBetween(body, 'const linePick = lineHeadText != null ? (', ') : null;');
-  const wordAction = sliceBetween(body, 'const wordAction = {', '};');
+  const wordAction = sliceBetween(body, 'const wordAction = !opensWordCard(token) ? {} : {', '};') // 문장부호는 버튼 역할 없음(뷰어 점검 2026-10-23);
   // 정상 토큰의 바깥 틀 = 여는 <div ref=부터 첫 자식 {linePick} 직전까지(속성 전부).
   const normal = sliceBetween(body, 'return (', '\n  );');
   const outerTag = sliceBetween(normal, '<div ref=', '{linePick}');

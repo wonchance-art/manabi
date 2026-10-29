@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-vi.mock('../supabaseServer',()=>({requireUser:vi.fn()}));
-import { requireUser } from '../supabaseServer';
+vi.mock('../supabaseServer',()=>({requireUserForRead:vi.fn()}));
+import { requireUserForRead } from '../supabaseServer';
 import { GET } from '../../app/api/learning/material-review/route';
 
 // 자료 범위 조회(REV-SCOPE-R1A §6-1 ①) — 읽기 전용 · 본인 행만 · source_material_id ∪ vocabulary_contexts.material_id.
@@ -8,7 +8,7 @@ let tables;
 function table(rows){const chain={select:vi.fn(),eq:vi.fn(),in:vi.fn(),order:vi.fn(),range:vi.fn().mockResolvedValue({data:rows,error:null})};for(const key of ['select','eq','in','order'])chain[key].mockReturnValue(chain);return chain;}
 beforeEach(()=>{
  tables={user_vocabulary:table([{id:'w1'},{id:'w2'}]),vocabulary_contexts:table([{id:'c1',user_vocabulary:{id:'w2',user_id:'owner'}},{id:'c2',user_vocabulary:{id:'w3',user_id:'owner'}}])};
- requireUser.mockResolvedValue({user:{id:'owner'},supabase:{from:vi.fn(name=>tables[name])}});
+ requireUserForRead.mockResolvedValue({user:{id:'owner'},supabase:{from:vi.fn(name=>tables[name])}});
 });
 describe('material review scope read API',()=>{
  it('unions saved-from and context sources of the owner only, deduplicated',async()=>{
@@ -36,7 +36,7 @@ describe('material review scope read API',()=>{
   expect(tables.user_vocabulary.select).not.toHaveBeenCalled();
  });
  it('rejects anonymous requests before any query',async()=>{
-  requireUser.mockResolvedValue({error:'login required',status:401});
+  requireUserForRead.mockResolvedValue({error:'login required',status:401});
   expect((await GET(new Request('https://local/api/learning/material-review?ids=91'))).status).toBe(401);
   expect(tables.user_vocabulary.select).not.toHaveBeenCalled();
  });

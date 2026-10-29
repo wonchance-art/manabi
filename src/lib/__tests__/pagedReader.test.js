@@ -566,7 +566,7 @@ describe('end boxes stay whole across page boundaries', () => {
     expect(links).toContain('<section className="learning-links learning-links--browse">');
     expect(links).toContain('<details className="learning-links" onToggle=');
     expect(read('src/views/ViewerComments.jsx')).toContain('<div className="card viewer-comments" style=');
-    expect(viewer).toContain('<MaterialChapterLinks lang={materialLang} kind="reading" materialId={id} />');
+    // 뷰어의 연결한 교재 단원 상자는 2026-10-23 KST 오너 지시로 뺐다(viewerAuditFollowup.test.js) — 규칙은 교재 쪽 상자에 남는다.
   });
 });
 
@@ -674,6 +674,21 @@ describe('paged sheet dock (A안 — 고른 단어의 반대편)', () => {
     expect(pagedSheetDock({ ...base, min: 440, tokenTop: 620, tokenBottom: 676 })).toEqual({ dock: 'top', top: 120, height: null }); // 자리 488 ≥ 원래 440
     expect(pagedSheetDock({ ...base, min: 359, tokenTop: 684, tokenBottom: 740 })).toEqual({ dock: 'top', top: 120, height: null });
   });
+  it('반대쪽 붙이기 · floor까지 낮추기(뷰어 점검 A1) — 바닥이 단어를 덮으면 위로, 어느 쪽도 핵심이 안 되면 floor가 되는 쪽(카드 안 스크롤)', () => {
+    const a1 = { ...base, sheetBottom: 836, floor: 200 };
+    // 위 절반 · 바닥 자리 836−300−12=524 ≥ 359 — 지금처럼 바닥
+    expect(pagedSheetDock({ ...a1, tokenTop: 250, tokenBottom: 300 })).toEqual({ dock: 'bottom' });
+    // 위 절반이지만 바닥 자리 836−560−12=264 < 359 · 위 자리 300−120=180 < 359 — 바닥이 floor(200)는 되니 바닥(낮춤)
+    expect(pagedSheetDock({ ...a1, viewportHeight: 1200, tokenTop: 300, tokenBottom: 560 })).toEqual({ dock: 'bottom' });
+    expect(compactSheetHeight({ tokenBottom: 560, sheetTop: 396, sheetBottom: 836, min: 359, floor: 200 })).toBe(264); // 핵심 359 아래로 낮춘다
+    expect(compactSheetHeight({ tokenBottom: 560, sheetTop: 396, sheetBottom: 836, min: 359 })).toBe(359); // floor 없으면 예전 그대로(덮는다)
+    // 위 절반 · 바닥 자리 836−700−12=124 < floor · 위 자리 600−120=480 ≥ 359 — 위에 선다
+    expect(pagedSheetDock({ ...a1, viewportHeight: 1600, tokenTop: 600, tokenBottom: 700 })).toEqual({ dock: 'top', top: 120, height: null }); // 원래 높이 440 ≤ 자리 468 — 120–560
+    // 아래 절반 · 위 자리 300 < 359(핵심)이지만 ≥ floor 200, 바닥 자리 836−700−12=124 < 200 — 위에 낮춰 세운다(단어를 덮지 않는다)
+    expect(pagedSheetDock({ ...a1, topLimit: 380, tokenTop: 680, tokenBottom: 700 })).toEqual({ dock: 'top', top: 380, height: 288 });
+    // 둘 다 floor도 안 되면 지금처럼 바닥
+    expect(pagedSheetDock({ ...a1, topLimit: 600, tokenTop: 700, tokenBottom: 760 })).toEqual({ dock: 'bottom' });
+  });
   it('배선: 쪽 넘김 경로에서만 정하고(바닥 낮추기와 한 갈래), 닫을 때 자리 표시를 지운다', () => {
     const hook = fs.readFileSync(path.resolve(__dirname, '../useReaderLayout.js'), 'utf8');
     const pagedBranch = sliceBetween(hook, 'function sheetViewport() {', 'export function useSelectedTokenVisibility');
@@ -686,7 +701,7 @@ describe('paged sheet dock (A안 — 고른 단어의 반대편)', () => {
     expect(sliceBetween(hook, 'function resetPagedSheet(panel) {', 'export function useSelectedTokenVisibility')).toContain('delete panel.dataset.compact; delete panel.dataset.dock; delete panel.dataset.placing;'); // 닫힘 · 스크롤 보기 전환
     expect(hook.split('pagedSheetDock(').length - 1).toBe(1); // 스크롤 보기 경로에는 없다
     // 처음 열 때 자리(시트를 보이게 한 DOM 변경)는 본문이 붙은 뒤에도 걸려야 한다 — 자료가 오기 전 마운트에는 본문이 없다.
-    expect(hook).toContain('  }, [readerRef, revision]); // 본문(readerRef)은 자료가 온 뒤에 붙는다');
+    expect(hook).toContain('  }, [readerRef, revision, mounted]); // 본문(readerRef)은 자료가 온 뒤에 붙는다');
   });
   it('CSS: 1119 이하 쪽 넘김에서만 위에 세운다 — 펼침 · 접힘 상태는 지금 그대로', () => {
     const css = fs.readFileSync(path.resolve(__dirname, '../../components/viewer/paged-reader.css'), 'utf8');

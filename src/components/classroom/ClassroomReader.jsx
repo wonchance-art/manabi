@@ -21,6 +21,7 @@ import {useClassSelectionVisibility} from '../../lib/useReaderLayout';
 import TeachingBoard from './TeachingBoard';
 import ConfirmModal from '../ConfirmModal';
 import {wordRecordKey,savedWordRecord,pendingWordRecord} from '../../lib/teachingWordRecord';
+import {hanjaTableNamesFor,preloadHanjaTables} from '../../lib/hanjaTables';
 
 export default function ClassroomReader({annotationContent,context,user,material,selection,selectionSignal,wordContent,sentenceContent,fallback,onSelectionClose,onActive,suppressed,onPresenting,toolbarTarget,boardTarget,boardHeaderTarget,onBoardRatio,vocabularyIndex,onBoardLayout}) {
   const root=useQuery({queryKey:['class-root',user?.id,context?.team],queryFn:()=>fetchTeamRoot(user.id,context.team),enabled:!!user?.id&&!!context});
@@ -35,6 +36,8 @@ function ClassReaderSession({fallback,onSelectionClose,toolbarTarget,boardTarget
   const router=useRouter(),queryClient=useQueryClient();
   const [boardOpen,setBoardOpen]=useState(false);
   const boardActions=useRef(null),[boardReady,setBoardReady]=useState(false);
+  // HANJA-LAZY-001: 판서 · 크게 보기 카드(TeachingWord)의 훈음 표를 첫 그림 뒤 유휴 시간에 받아 둔다 — 뷰어 수업 모드 · 수업 입력판 공통.
+  useEffect(()=>preloadHanjaTables(hanjaTableNamesFor(team.lang)),[team.lang]);
   useEffect(()=>{if(boardTarget&&new URLSearchParams(window.location.search).get('board')==='1')setBoardOpen(true);},[boardTarget]);
   const setBoard=useCallback(open=>{
     setBoardOpen(open);const url=new URL(window.location.href);

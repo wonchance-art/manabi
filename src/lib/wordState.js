@@ -14,6 +14,14 @@ export function isWordToken(token) {
   return /\p{L}/u.test(String(token.text || ''));
 }
 
+/** 단어 카드를 여는 토큰 — 문장부호(pos 기호)·글자도 숫자도 없는 토큰은 카드 · 평가 · 저장 대상이 아니다.
+ *  「，」를 누르면 「(뜻 없음)」 카드가 열리고 등급을 누르면 부호가 단어장에 저장됐다(뷰어 점검 2026-10-23).
+ *  isWordToken과 달리 숫자만인 토큰(2026)과 분석 실패 토큰은 카드를 연다 — 카드가 다시 시도 · 뜻을 맡는다. */
+export function opensWordCard(token) {
+  if (!token || token.pos === '기호' || token.pos === '개행') return false;
+  return /[\p{L}\p{N}]/u.test(String(token.text || ''));
+}
+
 /**
  * 상태 판정. 입력은 호출부가 기존 정본으로 계산한 불리언(판정 로직을 여기 한 곳에 고정).
  * @returns {'due'|'saved'|'known'|'met'|'new'|null} null = 비어휘(마킹 없음)

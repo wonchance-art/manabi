@@ -72,7 +72,7 @@ export function ReviewScopeNotice({ empty = false, scope, count, countFor, remai
   const practice = onPractice ? <button type="button" className="btn btn--ghost btn--sm review-scope-notice__practice" onClick={onPractice}>{empty ? '집중 연습' : '지금 집중 연습으로 보기'}</button> : null;
   if (empty) return <>
     {alternative ? <div className="review-scope-notice" role="status">
-      <p className="review-room-note">이 범위에는 지금 복습할 표현이 없어요 · {alternative.label}{objectParticle(alternative.label)} 빼면 {alternative.total}개</p>
+      <p className="review-room-note">이 범위에는 지금 복습할 표현이 없어요 · {alternative.label}{objectParticle(alternative.label)} 빼면 {alternative.total.toLocaleString('ko-KR')}개</p>
       <button type="button" className="btn btn--ghost btn--sm review-scope-notice__release" onClick={() => onChange(alternative.next)}>{RELEASE[alternative.axis]}</button>
       {practice}
     </div> : <><p className="review-room-note">{limit || fallback}</p>{practice && <div className="review-scope-notice">{practice}</div>}</>}
@@ -88,8 +88,9 @@ export function ReviewScopeNotice({ empty = false, scope, count, countFor, remai
   </>;
 }
 
-/** 범위 막대(§5-1) — 언어 칩(byLang) · 범위 칩(✕ = 그 축 풀기) · ＋ 범위(시트). */
-export default function ReviewScopeBar({ scope, languages, byLang = {}, countFor, allVocab, learningById, materialTitles, levels, onChange, onSelectLanguage }) {
+/** 범위 막대(§5-1) — 언어 칩(byLang) · 범위 칩(✕ = 그 축 풀기) · ＋ 범위(시트).
+ *  pending = 서버가 센 첫 화면 숫자만 있고 목록을 받는 중(VOCAB-FIRST-NUMBERS-001) — 시트는 목록이 있어야 세므로 「＋ 범위」를 잠근다. */
+export default function ReviewScopeBar({ scope, languages, byLang = {}, countFor, allVocab, learningById, materialTitles, levels, onChange, onSelectLanguage, pending = false }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef(null);
   const chips = scopeChips(scope, materialTitles);
@@ -113,9 +114,9 @@ export default function ReviewScopeBar({ scope, languages, byLang = {}, countFor
             <button type="button" className="review-scope__chip-clear" aria-label={`${chip.label} 범위 풀기`} onClick={() => onChange(clearScopeAxis(scope, chip.axis))}>✕</button>
           </span>
         ))}
-        <button type="button" className="review-scope__add" aria-haspopup="dialog" onClick={event => { triggerRef.current = event.currentTarget; setOpen(true); }}>＋ 범위</button>
+        <button type="button" className="review-scope__add" aria-haspopup="dialog" disabled={pending} onClick={event => { triggerRef.current = event.currentTarget; setOpen(true); }}>＋ 범위</button>
       </div>
-      {open && <ReviewScopeSheet scope={scope} countFor={countFor} allVocab={allVocab} learningById={learningById} materialTitles={materialTitles}
+      {open && !pending && <ReviewScopeSheet scope={scope} countFor={countFor} allVocab={allVocab} learningById={learningById} materialTitles={materialTitles}
         levels={levels} onApply={next => { setOpen(false); onChange(next); }} onClose={() => { setOpen(false); triggerRef.current?.focus?.(); }} />}
     </section>
   );
@@ -124,7 +125,7 @@ export default function ReviewScopeBar({ scope, languages, byLang = {}, countFor
 function Option({ active, disabled, onClick, children, count }) {
   return (
     <button type="button" className={`review-scope-option${active ? ' is-active' : ''}`} aria-pressed={active} disabled={disabled} onClick={onClick}>
-      {children}{count != null && <span className="review-scope__num">{count}</span>}
+      {children}{count != null && <span className="review-scope__num">{typeof count === 'number' ? count.toLocaleString('ko-KR') : count}</span>}
     </button>
   );
 }
@@ -181,7 +182,7 @@ function ReviewScopeSheet({ scope, countFor, allVocab, learningById, materialTit
           <h2 id="review-scope-sheet-title">범위 고르기 · {langLabel}</h2>
           <button type="button" className="review-scope-sheet__close" aria-label="범위 고르기 닫기" data-dialog-initial-focus onClick={onClose}>✕</button>
         </div>
-        <p className="review-scope-sheet__summary">{langLabel} 담은 표현 {langWords.length}개 · 이 범위 {draftCount.status === 'ready' ? `${draftCount.stored}개` : '확인 전'}(아는 단어 제외)</p>
+        <p className="review-scope-sheet__summary">{langLabel} 담은 표현 {langWords.length.toLocaleString('ko-KR')}개 · 이 범위 {draftCount.status === 'ready' ? `${draftCount.stored.toLocaleString('ko-KR')}개` : '확인 전'}(아는 단어 제외)</p>
 
         <fieldset className="review-scope-sheet__group">
           <legend>급수</legend>

@@ -2,7 +2,7 @@ import { headClause } from './meaningClean';
 import { loadVocabularyExclusions } from './vocabularyExclusion';
 import { loadPublishedRegistry } from './publishedChapter';
 import { fsrsServiceClient } from './server/fsrsLearning';
-import { readVocabularyLearningSnapshot } from './server/fsrsVocabulary';
+import { readVocabularyLearningSnapshotLight } from './server/fsrsVocabulary';
 import { selectLegacyReviewRows } from './vocabularyDueIndex';
 /**
  * 공부 모드 재료 조립 (서버 전용).
@@ -333,7 +333,9 @@ export function applyEncounterContextExamples(exampleByWord, contextRows) {
 export async function assembleStudyMaterials(supabase, userId, lang, { horizonHours = 0, interestGroup = null } = {}) {
   const [ref, exclusions, learning] = await Promise.all([loadPublishedRegistry(lang, getRefLang(lang)),
     loadVocabularyExclusions(supabase, userId),
-    readVocabularyLearningSnapshot({ serviceClient: fsrsServiceClient(), userId })]);
+    // 이 언어의 행만(SNAPSHOT-LIGHT-001 — 아래 읽기는 모두 language === lang 행만 쓴다: 로그인 감사 F8). 행은 snapshot과 같은 전체 칸이다
+    // (세션 카드 · 프리페치 대조가 읽기 · 품사 · 출처 문장까지 본다).
+    readVocabularyLearningSnapshotLight({ serviceClient: fsrsServiceClient(), userId, language: lang, summary: false })]);
   const excludedWords = new Set(exclusions.filter(row => row.language === lang).map(row => row.word_text));
   // due 기준 시각 — 프리페치는 now + horizonHours 로 미리 당겨 조회.
   const nowMs = Math.max(Date.now(), Date.parse(learning.now));
@@ -350,19 +352,22 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
     supabase.from('grammar_review')
       .select('*')
       .eq('user_id', userId).eq('lang', lang)
-      // 독해·단일 드릴 행(rt:/drill: 접두)은 챕터 복습이 아니다.
+      // 독해·단일 드릴·담은 패턴 행(rt:/drill:/bk: 접두)은 챕터 복습이 아니다.
       // 제외하지 않으면 특수 행이 limit(2) 슬롯을 잠식해 정작 due 인 챕터 복습을 굶기고,
       // 아래 ref.getChapter(row.slug) 도 실패해 그 슬롯이 통째로 버려진다.
       .not('slug', 'like', 'rt:%')
       .not('slug', 'like', 'drill:%')
+      .not('slug', 'like', 'bk:%')
       .lte('next_review_at', dueIso)
       .order('next_review_at', { ascending: true }).limit(2),
     supabase.from('user_ref_progress')
       .select('slug, passed')
       .eq('user_id', userId).eq('lang', lang),
+    // 활동 전용 출처(한자 넘기기 · 단어 목록 바퀴 답)는 빼고 읽는다 — 목록에서 수백 개를 누르면 최근 400행이 채점 기록을 밀어낸다(LEVEL-ROUND-001).
     supabase.from('review_events')
       .select('source, item_key, correct, detail, created_at')
       .eq('user_id', userId).eq('lang', lang)
+      .not('source', 'in', `(${[...ACTIVITY_ONLY_SOURCES].join(',')})`)
       .order('created_at', { ascending: false }).limit(400),
     // 만남 서버 정본(rfc-vocab-encounter §4.5) — 최근 만남 순. 미적용·게스트·빈 테이블이면
     // data가 비어 만남 슬롯이 조용히 0이 된다(무해성 계약 — rfc-adaptive-quiz §4.1).

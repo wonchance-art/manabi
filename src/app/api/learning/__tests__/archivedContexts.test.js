@@ -2,7 +2,7 @@
 // 홈으로 튕기는 /<lang>/grammar/<slug> 주소를 붙이던 결함. 행은 읽기만 하고, 링크 대신 보관 표시로 내려준다.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { authenticate } = vi.hoisted(() => ({ authenticate: vi.fn() }));
-vi.mock('@/lib/supabaseServer', () => ({ requireUser: authenticate }));
+vi.mock('@/lib/supabaseServer', () => ({ requireUser: authenticate, requireUserForRead: authenticate }));
 import { GET } from '../vocabulary/route';
 import { legacyTextbookTarget } from '@/lib/bookNavigation';
 

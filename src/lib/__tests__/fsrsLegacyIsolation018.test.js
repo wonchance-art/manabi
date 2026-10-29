@@ -7,7 +7,8 @@ describe('legacy full-state isolation boundary', () => {
   const request = { userId: 'boundary-alice', cardId: 'boundary-word', itemKey: 'word', language: 'English' };
   it('checks the real RPC actor and complete response before allowing a legacy write', async () => {
     const client = { rpc: vi.fn(async () => ({ data: { version: 1, actorId: request.userId, enrolled: false } })) };
-    await expect(assertLegacyFsrsAllowed(client, request)).resolves.toBeUndefined();
+    // 통과하면 같은 채점의 쓰기 묶음이 나눠 쓸 증거를 돌려준다(F5② — 카드 · 계정 · 표기 · 언어가 묶인다).
+    await expect(assertLegacyFsrsAllowed(client, request)).resolves.toMatchObject({ userId: request.userId, cardId: request.cardId, itemKey: 'word', language: 'English' });
     expect(client.rpc).toHaveBeenCalledWith('fsrs_legacy_boundary', { p_card_id: request.cardId, p_item_key: 'word', p_language: 'English' });
     client.rpc.mockResolvedValue({ data: { version: 1, actorId: 'different-account', enrolled: false } });
     await expect(assertLegacyFsrsAllowed(client, request)).rejects.toMatchObject({ code: 'fsrs_account_changed' });

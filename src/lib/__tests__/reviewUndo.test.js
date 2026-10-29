@@ -32,7 +32,8 @@ describe('복습 undo — SRS 복원 + 보상 이벤트 (VocabPage)', () => {
 
   it('undo 뒤 user_vocabulary 5필드가 스냅샷과 동일 — last_reviewed_at이 null이었으면 null(persistVocabGrade 4번째 인자)', () => {
     expect(undo).toContain("const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev;");
-    expect(undo).toContain('await persistVocabGrade(supabase, last.wordId, prevStats, prevReviewedAt);');
+    // 끝 인자 = 비교 후 쓰기(서버 행이 아직 이 채점일 때만 되돌린다 — 독립 리뷰 2026-10-25 KST)
+    expect(undo).toContain('await persistVocabGrade(supabase, last.wordId, prevStats, prevReviewedAt,\n            !last.skip && last.reviewedAt ? { expectedLastReviewedAt: last.reviewedAt } : undefined);');
   });
 
   it('세션 되감기 — reviewIdx·큐(재노출 제거)·introIds(신규 한도)·종료 화면이 채점 전으로', () => {
@@ -53,7 +54,7 @@ describe('복습 undo — SRS 복원 + 보상 이벤트 (VocabPage)', () => {
     expect(isGradedReviewEvent({ source: 'ui', correct: true })).toBe(false);
     expect(isGradedReviewEvent({ source: 'vocab', correct: true })).toBe(true);
     // 원 채점 시각은 progressStore가 결과에 동봉한다(가산 — 기존 ok/queued 유지)
-    expect(store).toContain('return { ok: true, reviewedAt };');
+    expect(store).toContain('return superseded ? { ok: true, reviewedAt, superseded: true } : { ok: true, reviewedAt };');
     expect(store).toContain('if (queued) return { ok: true, queued: true, reviewedAt };');
     expect(store).toContain("return queued ? { ok: true, queued: true, reviewedAt } : { ok: false, lost: true, error: new Error('offline-queue-unavailable') };");
   });
@@ -117,7 +118,7 @@ describe('복습 키 1~4·⌘Z — 화면의 4버튼 줄에 작용 (VocabPage·V
 
   it('힌트 — 숫자 배지(W R1 스타일 재사용)와 데스크톱 전용 안내 문구', () => {
     expect(review.match(/className="save-grade__key" aria-hidden="true"/g)).toHaveLength(4);
-    expect(review).toContain('<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span>');
+    expect(review).toContain('<span className="review-keys-hint">키 1~4 · 되돌리기 Ctrl/⌘+Z</span>');
     expect(css).toContain('@media (pointer: fine) { .review-keys-hint { display: inline; } }');
     expect(css).toContain('.review-keys-hint { display: none; }');
   });

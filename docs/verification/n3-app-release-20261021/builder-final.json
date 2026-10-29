@@ -1,0 +1,51 @@
+{
+  "status": "passed-final-full48-standalone-generation-structure-browser",
+  "checkedAt": "2026-10-21T11:54:56.159145+00:00",
+  "editionId": "4978c146953f14140bcb49d2",
+  "contentHash": "4978c146953f14140bcb49d21bc58d236195ad73d1568dc0d516c2546547aaf5",
+  "bundleHash": "1dfbabcd4369412ca5d80f5a3ba5c01070f9f233dc2dcd787f8235eef8dbad62",
+  "rawArtifact": "/workspace/scratch/n3-integration/team/builder/full-r2-a",
+  "reproducedArtifact": "/workspace/scratch/n3-integration/team/builder/full-r2-b",
+  "sourceSnapshot": "/workspace/scratch/n3-integration/team/builder/full-source-r2",
+  "lessons": 48,
+  "webSections": 198,
+  "answerKeys": 354,
+  "byteIdenticalFiles": 11,
+  "fontFacesWithActualCmapChecked": 5,
+  "requiredProductCodepoints": 1308,
+  "missingProductCodepoints": 0,
+  "browserObservations": 384,
+  "exactReadingComparisons": 192,
+  "exactRadioOptionComparisons": 192,
+  "hanInventoryUnitsIncludingGuides": 49,
+  "uncoveredHanNodes": 0,
+  "manualViewedScreenshots": 24,
+  "functional": {
+    "answerReload": true,
+    "meaningAndReadingToggles": true,
+    "referenceSearch": true,
+    "storageFailureVisible": true
+  },
+  "reports": {
+    "FULL-SNAPSHOT-R2.json": "72975208eb59c52f108ca278b0282692e84b9df8d5c76f45356d40f2dfa30cb0",
+    "FULL-REPRODUCIBILITY-R2.json": "df3537f862e91b7f1ee3974605faf43619751e304137bb3d93004cebc316ec55",
+    "FULL-STRUCTURE-R2.json": "df991ed2a4e3a6e494c9d4813374fe7b91a28226417b211ddf23e3f9d5cd03f1",
+    "FULL-LANGUAGE-SOURCE-BINDING-R2.json": "f3931d01e1cd23baa91b0ea286785bd16b62203aab4244ca0c7f0c63fd5bd66c",
+    "full-browser-r2/BROWSER.json": "b79663effc45c780b2363e73028952671dd26e9326cfd7059e4330bef6e4bac7",
+    "full-browser-r2-visual/VISUAL-DOM.json": "ce0bf72e72462dfa1a3ed1395d51110b9a583cbe0e97a55f0e48e5707b48a3f9",
+    "MANUAL-VISUAL-REVIEW-R2.json": "4a7191fb98527de0ab53abedccfdb338c64205ef20b4e0bfc4eb68e55783d819"
+  },
+  "sourceChangedDuringVerification": [],
+  "snapshotChangedDuringVerification": [],
+  "toolsChangedDuringVerification": [],
+  "releaseContractChangedDuringVerification": false,
+  "rawQaStillFalse": true,
+  "actualAccountLoginVerified": false,
+  "packagingPerformed": false,
+  "publicationPerformed": false,
+  "limitations": [
+    "Standalone loopback only; no actual account/app integration/deployment",
+    "Language acceptance is separately bound to 50-file curriculum freeze digest bc7568965e0d2e57f12f2b96cd9ee09d302cd96b3cc8d7273632743ce77b9230",
+    "Final packaging and M00 release acceptance remain root responsibility"
+  ]
+}

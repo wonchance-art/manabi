@@ -1,3 +1,4 @@
+import { BOOK_ID, BOOKS, isBookId, isBookPage } from './textbook/contract';
 // Public reading routes and device-local progress are independent of legacy chapters.
 export const BOOK_SERIES = [
   { language: 'Japanese', name: '일본어', native: '日本語', glyph: 'あ', color: '#994A5A', level: 'N5', id: 'japanese-n5' },
@@ -18,10 +19,13 @@ export function lessonGroups(lessons) {
 export const readingProgressKey = (edition, userId) => `manabi-book-progress:${edition}:${userId || 'guest'}`;
 export const readingDraftKey = (edition, userId) => `manabi-book-answers:${edition}:${userId || 'guest'}`;
 export const emptyReadingProgress = () => ({ page: 'u01-start', completed: [] });
-export function validReadingProgress(value) {
+/** 읽던 자리로 받는 쪽 id(u01 ~ u42, 꼬리 선택). 표지 이어 읽기 줄의 그리기 전 판정(bookEntryGate.resumeHintScript)도 같은 식을 쓴다. */
+export const READING_PAGE = /^u(0[1-9]|[1-3][0-9]|4[0-2])(?:-[a-z0-9_-]+)?$/;
+export const readingPagePattern = (bookId = BOOK_ID) => isBookId(bookId) ? new RegExp(`^u(?:${Array.from({length:BOOKS[bookId].lessons},(_,i)=>String(i+1).padStart(2,'0')).join('|')})(?:-[a-z0-9_-]+)?$`) : /(?!)/;
+export function validReadingProgress(value, bookId = BOOK_ID) {
   const source = value && typeof value === 'object' ? value : {};
-  const page = /^u(0[1-9]|[1-3][0-9]|4[0-2])(?:-[a-z0-9_-]+)?$/.test(source.page || '') ? source.page : 'u01-start';
-  return { page, completed: [...new Set((Array.isArray(source.completed) ? source.completed : []).filter(id => /^u(0[1-9]|[1-3][0-9]|4[0-2])$/.test(id)))] };
+  const page = isBookPage(bookId, source.page, {cover:false}) ? source.page : 'u01-start';
+  return { page, completed: [...new Set((Array.isArray(source.completed) ? source.completed : []).filter(id => /^u\d{2}$/.test(id) && isBookPage(bookId,id,{cover:false})))] };
 }
 
 // 일본어 · 중국어 레벨별 단어 · 문형 목록은 새 화면으로 다시 열었다(LEVEL-LIST-AJ-001) — 일 n5~n1 · 중 h1~h6(단어는 h7 = 7–9 통합 밴드까지), 중국어 「한자」 h1 · h2(HANZI-TAB-AL-001).
@@ -45,11 +49,11 @@ export function learnerHref(href) {
   return legacyTextbookTarget(href.replace(/[?#].*$/s, '')) ? null : href;
 }
 
-export function readingUnit(pageId, sectionIndex) {
+export function readingUnit(pageId, sectionIndex, bookId = BOOK_ID) {
   if (!pageId || pageId === 'cover' || pageId.startsWith('toc')) return 'cover';
   const exact = sectionIndex.find(section => section.id === pageId || section.anchors.includes(pageId));
   if (exact) return exact.unit;
-  if (/^u(0[1-9]|[1-3][0-9]|4[0-2])$/.test(pageId)) return pageId;
+  if (/^u\d{2}$/.test(pageId) && isBookPage(bookId,pageId,{cover:false})) return pageId;
   if (['guide', 'materials', 'reference'].includes(pageId)) return pageId;
   return null;
 }

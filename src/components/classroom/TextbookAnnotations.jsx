@@ -6,9 +6,10 @@ import TeachingPresentation from './TeachingPresentation';
 import './textbook-annotations.css';
 import { friendlyToastMessage } from '../../lib/errorMessage';
 
-export default function TextbookAnnotations({material,user,team,first,last,blocked,onClose,onPresenting,children}) {
+// active = 수업 모드에서만(오너 2026-10-29 KST 「뷰어에 '교재 설명' 없애줘」 — 일반 읽기는 칸 · 조회 · 자동 열림 모두 없음). 팀 페이지는 따로(ClassTextbookNotes).
+export default function TextbookAnnotations({material,user,team,first,last,blocked,onClose,onPresenting,active:classActive=false,children}) {
  const id=String(material?.id||''),json=material?.processed_json;
- const enabled=!!id&&!!json?.sequence?.length&&!!(json.metadata?.book||json.metadata?.source_ref||json.metadata?.team);
+ const enabled=classActive&&!!id&&!!json?.sequence?.length&&!!(json.metadata?.book||json.metadata?.source_ref||json.metadata?.team);
  const [active,setActive]=useState(null),[editor,setEditor]=useState(null),[presentation,setPresentation]=useState(null);
  const closeEditor=useCallback(()=>setEditor(null),[]);
  const {query,data,rows,canEdit,pending,busy,message,save,resolveConflict}=useTextbookAnnotations({materialId:id,team,user,enabled,local:!!material?.__local,localAnnotations:material?.textbookAnnotations,onSaved:closeEditor});
@@ -18,17 +19,17 @@ export default function TextbookAnnotations({material,user,team,first,last,block
  useEffect(()=>{onPresenting?.(!!presentation);return()=>onPresenting?.(false);},[presentation,onPresenting]);
  useEffect(()=>{if(anchor&&!editor&&!pending)setActive(anchor);},[anchor,editor,pending]);
  useEffect(()=>{
-  if(blocked||editor||pending||first)return;
+  if(!enabled||blocked||editor||pending||first)return;
   const valid=rows.filter(r=>!r.archived).map(r=>({row:r,location:resolveTextbookAnchor(json,r.anchor)})).filter(r=>r.location).sort((a,b)=>a.location.start-b.location.start);
   const observer=new IntersectionObserver(entries=>{for(const e of entries){if(!e.isIntersecting)continue;const target=valid.find(v=>v.location.first===e.target.dataset.tid);if(target&&!seen.current.has(target.row.id)){seen.current.add(target.row.id);setActive(target.row.anchor);break;}}},{rootMargin:'-140px 0px -45% 0px',threshold:.6});
   valid.forEach(v=>{const el=document.querySelector(`[data-tid="${CSS.escape(v.location.first)}"]`);if(el)observer.observe(el);});
   return()=>observer.disconnect();
- },[rows,json,blocked,editor,pending,first]);
+ },[enabled,rows,json,blocked,editor,pending,first]);
  const current=active===false?null:active||anchor,matching=rows.filter(r=>!r.archived&&sameTextbookAnchor(r.anchor,current));
  const hiddenCount=rows.filter(r=>!r.archived&&!resolveTextbookAnchor(json,r.anchor)).length;
  function submit(e){e.preventDefault();if(!editor?.body.trim()||busy||pending)return;save({operation:crypto.randomUUID(),annotation:{id:editor.id||crypto.randomUUID(),revision:editor.revision||0,anchor:editor.anchor,body:editor.body.trim(),archived:false}});}
  const close=()=>{if(!editor&&!pending){setActive(false);matching.forEach(r=>seen.current.add(r.id));}};
- const visible=!!editor||!!pending||matching.length>0;
+ const visible=enabled&&(!!editor||!!pending||matching.length>0);
  const content=enabled?<section className="textbook-notes" aria-label="교재 설명" onMouseUp={e=>e.stopPropagation()}>
   <header><b>교재 설명</b>{matching.length>0&&<small>{matching.length}</small>}{visible&&!editor&&!pending&&<button onClick={close}>접기</button>}{canEdit&&anchor&&!editor&&!pending&&<button onClick={()=>{setActive(anchor);setEditor({anchor,body:''});}}>설명 추가</button>}</header>
   {material?.__local?<small>받아 둔 교재의 주의점 · 수업 페이지에서 다시 받으면 최신 설명을 볼 수 있어요.</small>:query.isLoading?<p aria-busy="true">주의점 확인 중…</p>:query.error?<p role="status">{friendlyToastMessage(query.error)} <button onClick={()=>query.refetch()}>다시 시도</button></p>:null}

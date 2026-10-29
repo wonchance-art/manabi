@@ -9,8 +9,16 @@ import { JAPANESE_VOCAB_REF } from './japaneseVocabRegistry';
 import { getBunkei as getJaBunkei, countBunkei as countJaBunkei } from '../content/japanese';
 import { getVocab as getZhVocab, getBunkei as getZhBunkei, countBunkei as countZhBunkei, ZH_LEVEL_META, ZH_HSK79_VOCAB } from '../content/chinese';
 import { loadZhHskLevels, zhHskLevelOf } from './zhHskLevel';
-import { LEVEL_LIST_LANGS, compactLevelEntry, levelKinds, levelWordKey, shortMeaning } from './levelList';
+import { encodeExampleSeg, encodeFuri } from './levelExampleCode';
+import { patternAnchor } from './sentencePattern.js';
+import { LEVEL_HUN_PX, LEVEL_LIST_LANGS, compactLevelEntry, hunShapeOf, levelKinds, levelWordKey, shortMeaning } from './levelList';
+import { hunRubyCells } from './viewerHunRuby';
+import { HANJA_TABLE_NAMES, loadHanjaTables } from './hanjaTables';
 import { loadHanziTable } from './zhHanzi';
+import { alignFurigana } from './jaFurigana';
+import { splitKanjiReadings } from './jaKanjiReading';
+import { decodeJaPieces, jaExampleKey, jaExampleWords } from './jaExampleWords';
+import jaJeongja from './data/jaJeongja.json';
 
 const bunkeiOf = { japanese: getJaBunkei, chinese: getZhBunkei };
 const bunkeiCountOf = { japanese: countJaBunkei, chinese: countZhBunkei };
@@ -68,16 +76,199 @@ function chineseDictionary() {
   return map;
 }
 
+// 훈음 자리 모양(LEVEL-HUN-HOLD-001) — 화면과 같은 표 · 같은 함수(hunRubyCells, 정체 꼴로 찾기)로 서버에서 줄 수 · 칸 폭만 센다.
+// 표는 지연 로드 정본(hanjaTables.js)에서 — 표마다 요청 한 번 · 실패하면 다음에 다시 받는다.
+function loadHunTables() {
+  return loadHanjaTables(HANJA_TABLE_NAMES).then(({ koTable, hunTable, tradTable }) => ({ koTable, hunTable, tradTable }));
+}
+function hunShapeField(word, tables) {
+  const hun = hunShapeOf(hunRubyCells(word, tables, LEVEL_HUN_PX));
+  return hun ? { hun } : {};
+}
+
 async function chineseVocabGroups(levelKey) {
   const level = Number(String(levelKey).slice(1));
-  const table = await loadZhHskLevels();
+  const [table, hunTables] = await Promise.all([loadZhHskLevels(), loadHunTables()]);
   const groups = ZH_POS_GROUPS.map((g) => ({ name: g.name, entries: [] }));
   for (const [key, w] of chineseDictionary()) {
     if (zhHskLevelOf(key, table) !== level) continue;
-    groups[zhGroupOf(w.pos)].entries.push(compactLevelEntry({ key, word: w.zh, reading: w.pinyin || '', meaning: shortMeaning(w.ko), fullMeaning: w.ko || '', pos: w.pos || '', ex: zhExample(w.ex) }));
+    groups[zhGroupOf(w.pos)].entries.push(compactLevelEntry({ key, word: w.zh, reading: w.pinyin || '', meaning: shortMeaning(w.ko), fullMeaning: w.ko || '', pos: w.pos || '', ex: zhExample(w.ex),
+      ...hunShapeField(w.zh, hunTables) }));
   }
   for (const g of groups) g.entries.sort((a, b) => pinyinOrder(a.reading).localeCompare(pinyinOrder(b.reading)) || a.word.localeCompare(b.word, 'zh'));
   return groups.filter((g) => g.entries.length);
+}
+
+/**
+ * 예문 단어 나눔(HSK 단어 페이지 「예문 단어 창」) — 앱 분석기와 같은 분할(tokenizeZhLine = jieba-wasm + fixZhTagged)의 조각 길이(글자 수) 배열.
+ * 카드 단어는 분할이 갈라도 한 조각으로 묶는다(장미색 한 칸). 조각을 이어 붙여 원문이 안 되면(분할기가 글자를 건너뜀) null — 화면은 나누지 않고 그린다.
+ * 정적 조립(generateStaticParams)이라 빌드 때 한 번 돈다. 화면은 분석기를 받지 않는다.
+ */
+export function exampleSegments(text, word, pieces) {
+  const chars = [...String(text || '')];
+  if (!chars.length || !pieces?.length || pieces.join('') !== chars.join('')) return null;
+  const cuts = new Set([0, chars.length]);
+  let at = 0;
+  for (const p of pieces) { at += [...p].length; cuts.add(at); }
+  const w = [...String(word || '')];
+  if (w.length > 1) {
+    for (let i = 0; i + w.length <= chars.length; i++) {
+      if (w.every((c, j) => chars[i + j] === c)) {
+        for (let k = i + 1; k < i + w.length; k++) cuts.delete(k);
+        cuts.add(i); cuts.add(i + w.length);
+        i += w.length - 1;
+      }
+    }
+  }
+  const sorted = [...cuts].sort((a, b) => a - b);
+  const seg = sorted.slice(1).map((c, i) => c - sorted[i]);
+  return seg.length > 1 ? seg : null;
+}
+
+async function withExampleSegments(groups) {
+  const { tokenizeZhLine } = await import('./server/tokenizeZh');
+  return groups.map((g) => ({ ...g, entries: g.entries.map((e) => {
+    if (!e.ex?.text) return e;
+    const seg = exampleSegments(e.ex.text, e.word, tokenizeZhLine(e.ex.text).map((t) => t.text));
+    return seg ? { ...e, ex: { ...e.ex, ...encodeExampleSeg(seg) } } : e;
+  }) }));
+}
+
+// ── JLPT 단어 페이지(오너 확정 2026-10-19 KST · 문서 「일본어 판에서 달라지는 점」) — 빌드 때 계산해 싣는다 ──
+
+const JA_HAN = /[\p{Script=Han}々]/u;
+
+/** 글자별 읽기 문자열 — 표제어 글자마다 쉼표로(가나 자리는 빈 칸). 経験 → 「けい,けん」, 話し合い → 「はな,,あ,」. 없으면 undefined. */
+export function jaKanjiReadingField(word, reading, table) {
+  const parts = splitKanjiReadings(word, reading, table);
+  return parts ? parts.join(',') : undefined;
+}
+
+/** 예문 후리가나 — alignFurigana 결과를 [시작, 글자 수, 읽기](글자 = 코드 포인트) 목록으로. 맞추지 못하면 null. */
+export function jaExampleFurigana(text, reading) {
+  const parts = alignFurigana(text, reading);
+  if (!parts) return null;
+  const out = [];
+  let at = 0;
+  for (const p of parts) {
+    const n = [...p.text].length;
+    if (p.rt) out.push([at, n, p.rt]);
+    at += n;
+  }
+  return at === [...String(text)].length && out.length ? out : null;
+}
+
+/**
+ * 후리가나 한 칸이 예문 단어 경계를 넘으면(一切語 → 一切|語らなかった · 昨夜大 → 昨夜|大きな) 글자별 읽기로 나눠 단어마다 한 칸씩 —
+ * 그대로 두면 jaExampleWords가 두 단어를 한 조각으로 합쳐 카드 단어가 따로 서지 못한다. 못 나누면 그 칸은 그대로(합친다).
+ */
+export function splitFuriByPieces(text, furi, pieces, table, card = null) {
+  if (!furi || !pieces?.length) return furi;
+  const chars = [...String(text || '')];
+  const cuts = new Set();
+  let at = 0;
+  for (const p of pieces) { at += [...p.text].length; cuts.add(at); }
+  return furi.flatMap(([from, n, rt]) => {
+    const bounds = [from];
+    for (let k = from + 1; k < from + n; k++) if (cuts.has(k)) bounds.push(k);
+    if (bounds.length < 2) return [[from, n, rt]];
+    bounds.push(from + n);
+    const span = chars.slice(from, from + n).join('');
+    const each = splitKanjiReadings(span, rt, table);
+    if (each && !each.some((r) => !r)) return bounds.slice(0, -1).map((b, i) => [b, bounds[i + 1] - b, each.slice(b - from, bounds[i + 1] - from).join('')]);
+    // 숙자훈(去年 · 今朝 · 昨日)은 글자별로 못 나눈다 — 카드 단어가 칸 앞이나 뒤에 있으면 그 단어 읽기로 자른다(去年|日本 · 昨日交通|事故).
+    const w = [...String(card?.word || '')].length, yomi = String(card?.reading || '').split(/[;；]/)[0].trim();
+    if (w && yomi && w < n) {
+      if (span.startsWith(card.word) && cuts.has(from + w) && rt.startsWith(yomi) && rt.length > yomi.length) return [[from, w, yomi], [from + w, n - w, rt.slice(yomi.length)]];
+      if (span.endsWith(card.word) && cuts.has(from + n - w) && rt.endsWith(yomi) && rt.length > yomi.length) return [[from, n - w, rt.slice(0, -yomi.length)], [from + n - w, w, yomi]];
+    }
+    return [[from, n, rt]];
+  });
+}
+
+let jaReadingTable = null;
+async function loadJaReadingTable() {
+  jaReadingTable ||= import('./data/jaKanjiReadings.json').then((m) => (m.default || m).r)
+    .catch((error) => { jaReadingTable = null; throw error; });
+  return jaReadingTable;
+}
+
+/**
+ * JLPT 짧은 뜻 — 표제어를 그대로 되풀이한 한자 괄호를 뗀다(경의(敬意) → 경의 · 경영(經營) → 경영, 정자 꼴도 같다고 본다) · 끝 마침표도(시안 ⑳).
+ * 괄호 안이 표제어(또는 그 정자 꼴)와 같을 때만 떼고, 다른 한자를 밝히는 괄호는 남긴다. 뜻 원문(fullMeaning)은 그대로.
+ */
+export function jaPlainMeaning(meaning, word) {
+  const same = new Set([String(word || ''), [...String(word || '')].map((c) => jaJeongja.j[c] || c).join('')]);
+  return String(meaning || '')
+    .replace(/[(（]([\p{Script=Han}々]+)[)）]/gu, (m, inner) => (same.has(inner) ? '' : m))
+    .replace(/[.。]\s*$/u, '').trim();
+}
+
+const jaExtrasMemo = new Map();
+/**
+ * JLPT 단어 화면 묶음 — 글자별 읽기(kr) · 예문 후리가나(furi) · 예문 단어 나눔(seg · lem). 레벨마다 한 번(책장 타일 수와 화면이 같이 부른다).
+ * 예문 형태소 분석은 미리 만든 표(jaExampleWords.json — 시험이 만들고 신선도를 지킨다)를 쓴다. 표에 없는 예문은 나누지 않는다.
+ */
+function withJapaneseWordExtras(levelKey, groups) {
+  if (!jaExtrasMemo.has(levelKey)) {
+    jaExtrasMemo.set(levelKey, Promise.all([loadJaReadingTable(), import('./data/jaExampleWords.json')]).then(([table, words]) => {
+      const pieceTable = (words.default || words).v;
+      return groups.map((g) => ({ ...g, entries: g.entries.map((e) => {
+        const kr = jaKanjiReadingField(e.word, e.reading, table);
+        let ex = e.ex;
+        if (ex?.text) {
+          const pieces = decodeJaPieces(pieceTable[jaExampleKey(ex.text)], ex.text);
+          const furi = splitFuriByPieces(ex.text, jaExampleFurigana(ex.text, ex.reading), pieces, table, e);
+          const split = jaExampleWords(ex.text, e.word, pieces, furi);
+          ex = { ...ex, ...(furi ? { furi: encodeFuri(furi) } : {}), ...(split ? encodeExampleSeg(split.seg, split.lem) : {}) };
+        }
+        // 짧은 뜻만 다듬고 원문은 fullMeaning에 남긴다(줄인 꼴 계약 — 다르면 싣는다).
+        const meaning = jaPlainMeaning(e.meaning, e.word);
+        const plain = meaning === e.meaning ? {} : { meaning, fullMeaning: e.fullMeaning ?? e.meaning };
+        return { ...e, ...plain, ...(kr ? { kr } : {}), ...(ex ? { ex } : {}) };
+      }) }));
+    }).catch((error) => { jaExtrasMemo.delete(levelKey); throw error; }));
+  }
+  return jaExtrasMemo.get(levelKey);
+}
+
+/**
+ * 찾기 색인(JLPT) — N5–N1 단어 전부를 [표제어, 읽기, 짧은 뜻, 급수(5–1), 글자별 읽기?] 한 줄씩. 같은 표제어는 낮은 레벨(N5 쪽) 하나만.
+ * 레벨 목록과 같은 단어 · 같은 짧은 뜻이라 찾기 결과와 목록 칸이 갈리지 않는다.
+ */
+export async function japaneseLevelIndex() {
+  const table = await loadJaReadingTable();
+  const rows = [];
+  const seen = new Set();
+  for (const levelKey of LEVEL_LIST_LANGS.japanese.levels) {
+    for (const g of japaneseVocabGroups(levelKey) || []) {
+      for (const e of g.entries) {
+        const word = e.word;
+        if (seen.has(word) || (e.key && e.key !== word)) continue;
+        seen.add(word);
+        const kr = JA_HAN.test(word) ? jaKanjiReadingField(word, e.reading, table) : undefined;
+        const meaning = jaPlainMeaning(e.meaning, word);
+        rows.push(kr ? [word, e.reading, meaning, Number(levelKey.slice(1)), kr] : [word, e.reading, meaning, Number(levelKey.slice(1))]);
+      }
+    }
+  }
+  return rows;
+}
+
+/**
+ * 찾기 색인(HSK 단어 페이지 개편) — 우리 사전 중 HSK 2026 급수가 있는 단어 전부를 [표제어, 병음, 짧은 뜻, 급수] 한 줄씩.
+ * 레벨 목록과 같은 사전 · 같은 급수 표 · 같은 짧은 뜻이라 찾기 결과와 목록 칸이 갈리지 않는다. 급수 → 병음 순.
+ * 대조 키가 표제어와 다른 줄(괄호 · 쌍반점 표기)은 키로 싣는다 — 화면은 표제어를 대조 키로 쓴다.
+ */
+export async function chineseLevelIndex() {
+  const table = await loadZhHskLevels();
+  const rows = [];
+  for (const [key, w] of chineseDictionary()) {
+    const level = zhHskLevelOf(key, table);
+    if (!level) continue;
+    rows.push([key, w.pinyin || '', shortMeaning(w.ko), level]);
+  }
+  return rows.sort((a, b) => a[3] - b[3] || pinyinOrder(a[1]).localeCompare(pinyinOrder(b[1])) || a[0].localeCompare(b[0], 'zh'));
 }
 
 function bunkeiGroups(lang, levelKey) {
@@ -88,7 +279,8 @@ function bunkeiGroups(lang, levelKey) {
   return bunkei.themes.map((theme) => ({
     name: theme.name,
     entries: theme.items.map((item) => ({
-      key: `p${n++}`, pattern: item.pattern, ko: shortMeaning(item.ko), conn: item.conn || '', note: item.note || '',
+      // anchor = 뷰어 [문장] 탭 패턴 카드의 「문형 목록에서 보기」가 여는 항목(sentencePattern.patternListHref).
+      key: `p${n++}`, anchor: patternAnchor(item.pattern), pattern: item.pattern, ko: shortMeaning(item.ko), conn: item.conn || '', note: item.note || '',
       exs: [example(item.ex), example(item.ex2)].filter(Boolean),
     })),
   })).filter((g) => g.entries.length);
@@ -119,7 +311,21 @@ export async function levelListData(lang, kind, levelParam) {
     : kind === 'bunkei' ? bunkeiGroups(lang, levelKey)
     : lang === 'japanese' ? japaneseVocabGroups(levelKey) : await chineseVocabGroups(levelKey);
   if (!groups) return null;
+  // 예문 단어 나눔은 단어 화면만 쓴다(문형 · 한자는 분석기를 부르지 않는다). 일본어는 글자별 읽기 · 예문 후리가나도 같이.
+  if (lang === 'chinese' && kind === 'vocab') return { lang, kind, levelKey, groups: await withExampleSegments(groups) };
+  if (lang === 'japanese' && kind === 'vocab') return { lang, kind, levelKey, groups: await withJapaneseWordExtras(levelKey, groups) };
   return { lang, kind, levelKey, groups };
+}
+
+/** 레벨 글자 칸 묶음(/api/level-tiles) — 그 레벨 단어 화면과 같은 목록 · 같은 칸 계산(levelCharTiles · jaCharTiles). 없는 레벨이면 null. */
+export async function levelCharTilePack(lang, levelParam) {
+  const data = await levelListData(lang, 'vocab', levelParam);
+  if (!data) return null;
+  const { jaCharTiles, levelCharTiles, levelTilePack, loadJaCharTables, loadLevelCharTables } = await import('./levelCharTiles.js');
+  const ja = lang === 'japanese';
+  const tables = await (ja ? loadJaCharTables() : loadLevelCharTables());
+  const words = data.groups.flatMap((g) => g.entries.map((e) => e.word));
+  return levelTilePack(words, (word) => (ja ? jaCharTiles(word, null, tables) : levelCharTiles(word, tables)));
 }
 
 /** 책장 타일 숫자 — 언어별 [{ levelKey, vocab, bunkei }]. 목록과 같은 조립을 세므로 타일 = 목록 개수. */
@@ -130,12 +336,24 @@ export function levelTileCounts(lang) {
   if (!tileMemo.has(lang)) tileMemo.set(lang, countTiles(lang, conf).catch((error) => { tileMemo.delete(lang); throw error; }));
   return tileMemo.get(lang);
 }
+// 타일은 개수만 쓴다 — 예문 단어 나눔(jieba) · 후리가나 덧붙임(withExampleSegments · withJapaneseWordExtras)은 항목을 map만 하고
+// 늘리거나 빼지 않으므로 덧붙이기 전 묶음으로 센다. 중국어는 사전 표제어 하나가 그 레벨 항목 하나라(chineseVocabGroups) 훈 · 정렬 없이 센다.
+// 전에는 책장(/lessons) 한 번에 모든 레벨의 예문을 분석해 새 서버 인스턴스의 첫 응답이 2.4~6.1초 늦었다
+// (운영 실측 2026-10-23 KST — 브라우저 13회 중 5회). 개수 = 목록은 levelList.test가 지킨다.
+async function vocabCount(lang, levelKey) {
+  if (!levelKinds(lang, levelKey).includes('vocab')) return 0;
+  if (lang === 'japanese') return (japaneseVocabGroups(levelKey) || []).reduce((n, g) => n + g.entries.length, 0);
+  const level = Number(String(levelKey).slice(1));
+  const table = await loadZhHskLevels();
+  let n = 0;
+  for (const key of chineseDictionary().keys()) if (zhHskLevelOf(key, table) === level) n++;
+  return n;
+}
 function countTiles(lang, conf) {
   return Promise.all(conf.levels.map(async (levelKey) => {
-    const vocab = await levelListData(lang, 'vocab', levelKey);
     return {
       levelKey,
-      vocab: vocab ? vocab.groups.reduce((n, g) => n + g.entries.length, 0) : 0,
+      vocab: await vocabCount(lang, levelKey),
       ...(levelKinds(lang, levelKey).includes('bunkei') ? { bunkei: bunkeiCountOf[lang](levelKey) } : {}),
       ...(levelKinds(lang, levelKey).includes('hanzi')
         ? { hanzi: (await levelListData(lang, 'hanzi', levelKey))?.groups.reduce((n, g) => n + g.entries.length, 0) || 0 } : {}),

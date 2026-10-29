@@ -26,7 +26,6 @@ import { usePdfRangeMutation } from '../lib/usePdfRangeMutation';
 import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { readCompleteLegacyRows } from '../lib/legacyReviewSync';
 import SaveContextButton, { saveContext } from '../components/learning/SaveContextButton';
-import MaterialChapterLinks from '../components/learning/MaterialChapterLinks';
 import TokenPosLabel from './TokenPosLabel';
 
 async function fetchPdfInfo(pdfId) {
@@ -382,7 +381,7 @@ export default function PdfViewerPage() {
         </select>
       </div>
 
-      <div style={{padding:'0 16px'}}><MaterialChapterLinks lang={language} kind="pdf" materialId={id} />
+      <div style={{padding:'0 16px'}}>
         <label className="learning-links__muted">출처 쪽수 {usePdfJs ? '(현재 쪽)' : '(직접 입력)'} <input type="number" aria-label="출처 쪽수" min="1" max={pdfInfo?.page_count||100000} value={sourcePage} onChange={e=>setSourcePage(e.target.value)} style={{width:88,padding:8,fontSize:16}} /></label>
         <p className="learning-links__muted">복사한 문장의 쪽수를 입력하면 복습에서 해당 쪽으로 돌아올 수 있어요.</p>
       </div>

@@ -1,6 +1,7 @@
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { BOUNDARY_ACTORS, BOUNDARY_MARKER, BOUNDARY_MATERIAL_ID } from './fixtures/account-boundary-actors.mjs';
+import { SUGGESTION_FIXTURE } from './fixtures/suggestion-fixture.mjs';
 
 const supabaseURL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseOrigin = supabaseURL ? new URL(supabaseURL).origin : null;
@@ -113,6 +114,11 @@ function mockResponse(url, claims) {
     return json({ id: claims.sub, role });
   }
   if (url.pathname.endsWith('/rest/v1/user_ref_progress')) return json([]);
+  // 추천 읽을거리 한 편(id=eq.<id>) — 대역 글 하나만 있고 나머지 id는 없는 글이다(maybeSingle은 배열을 받아 0 · 1행으로 가른다).
+  // 날짜로 고르는 오늘의 추천 목록은 대역하지 않는다(예전처럼).
+  if (url.pathname.endsWith('/rest/v1/daily_suggestions') && url.searchParams.get('id')?.startsWith('eq.')) {
+    return json(url.searchParams.get('id') === `eq.${SUGGESTION_FIXTURE.id}` ? [SUGGESTION_FIXTURE] : []);
+  }
   // 레퍼런스 어휘 fixture에는 별도 문맥 행이 없다. 회상 카드의 출처 조회도 합성 서버 안에서 끝낸다.
   if (url.pathname.endsWith('/rest/v1/vocabulary_contexts')) {
     return claims?.sub ? json([]) : json({ message: 'missing e2e identity' }, 401);
@@ -120,10 +126,18 @@ function mockResponse(url, claims) {
   return null;
 }
 
+// 무거운 합성 계정 감사(e2e/fixtures/heavy-account.mjs)에서만 켠다 — E2E_HEAVY_BACKEND가 없으면 아래 경로는 한 줄도 돌지 않는다.
+// 판본 · 덮어쓰기 같은 콘텐츠 행은 지금처럼 이 파일이 답하고, 계정 행(인증 · 단어 · 자료 · 기록)은 합성 백엔드로 넘긴다.
+const heavyBackend = process.env.E2E_HEAVY_BACKEND ? new URL(process.env.E2E_HEAVY_BACKEND) : null;
+const heavyContent = (url) => /\/rest\/v1\/(content_overrides|textbook_book_releases|textbook_book_editions)$/.test(url.pathname);
+const heavyTarget = (url) => (heavyBackend && !heavyContent(url) ? new URL(`${url.pathname}${url.search}`, heavyBackend) : null);
+
 globalThis.fetch = async (input, init) => {
   const requestURL = input instanceof Request ? input.url : String(input);
   const url = new URL(requestURL);
   if (!supabaseOrigin || url.origin !== supabaseOrigin) return originalFetch(input, init);
+  const heavy = heavyTarget(url);
+  if (heavy) return originalFetch(input instanceof Request ? new Request(heavy, input) : heavy, init);
   return mockResponse(url, bearerClaims(input, init)) || originalFetch(input, init);
 };
 
@@ -144,6 +158,7 @@ if (supabaseOrigin) {
       return (options, handler) => {
         const url = new URL(options.path, options.origin);
         if (url.origin !== supabaseOrigin) return target.dispatch(options, handler);
+        if (heavyTarget(url)) return target.dispatch({ ...options, origin: heavyBackend.origin }, handler);
         const headers = new Headers();
         if (Array.isArray(options.headers)) {
           for (let i = 0; i < options.headers.length; i += 2) headers.append(String(options.headers[i]), String(options.headers[i + 1]));

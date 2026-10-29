@@ -64,11 +64,13 @@ describe('응답에 사용자 값이 없다', () => {
     expect(route).toContain('if (preview) return respond(body);');
   });
   it('장 목록(readingSections)은 판본 출력본에서만 만든다 — DB · 인증을 거치지 않는다', () => {
-    const lib = read('src/lib/server/bookReading.js');
-    const build = sliceBetween(lib, 'async function buildReadingSections(edition) {', 'export function readingCatalog');
+    // 장 목록 조립도 쿠키를 모르는 판본 정본(publishedBook.js)으로 옮겼다(GUEST-STATIC-001 4단계 — 교재 첫 화면 ISR 판이 같은 함수를 쓴다). 파일 끝까지다.
+    const lib = read('src/lib/server/publishedBook.js');
+    const build = sliceBetween(lib, 'async function buildReadingSections(edition, bookId) {');
     expect(build).toContain('const { bytes } = await verifiedReadingHtml(book);');
     expect(build).not.toMatch(/createSupabaseServerClient|requireAdmin|cookies|getUser|user/);
     // 판본 인증(미공개면 관리자)은 publishedReading이 맡고, 그 결과는 preview 하나로만 응답 방식을 가른다.
-    expect(sliceBetween(lib, 'export async function publishedReading', 'const sectionsByEdition')).toContain('return { book, preview: !published };');
+    expect(sliceBetween(lib, 'export async function publishedReadingWith', 'export function readingCatalog')).toContain('return { book, preview: !published };');
+    expect(read('src/lib/server/bookReading.js')).toContain('export { readingCatalog, readingSections };');
   });
 });

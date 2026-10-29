@@ -56,13 +56,12 @@ describe('입구와 머리 ⋯(정적 계약)', () => {
     expect(page).toContain('useLearnLanguage(profile)');
     expect(page).not.toMatch(/말 수준|conversationLevels/);
   });
-  it('홈·자료 추가에 「새 대화」 입구(서재에는 대화를 두지 않는다 — 2026-10-17)', () => {
-    expect(read('views/HomePage.jsx')).toContain("key: 'conversation', href: newConversationHref({ language: lang })");
+  it('자료 추가에 「새 대화」 입구(서재에는 대화를 두지 않는다 — 2026-10-17 · 배움 「말해 보기」 칸은 오너 지시로 뺐다 2026-10-25 KST — 하단 「대화」 탭이 남는다)', () => {
     expect(read('components/materials/MaterialEntry.jsx')).toContain('<Link href="/conversation/new">자료 없이 대화하기 ↗</Link>');
   });
   it('머리 ⋯ = 다른 대화방 · 새 대화 · 지우기(서재 휴지통, 무엇이 남는지 먼저)', () => {
     const thread = read('components/conversation/ConversationThread.jsx');
-    for (const label of ['다른 대화방', '새 대화', '지우기', '이 대화를 휴지통으로 옮길까요?', '담은 단어와 복습 일정은 단어장에 그대로 남아요.']) {
+    for (const label of ['다른 대화방', '새 대화', '지우기', '이 대화를 휴지통으로 옮길까요?', '담은 표현과 복습 일정은 단어장에 그대로 남아요.']) {
       expect(thread).toContain(label);
     }
     expect(read('lib/conversation/conversationClient.js')).toContain("runLibraryOperation(supabase, 'trash', [target])");

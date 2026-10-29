@@ -3,15 +3,15 @@
 // 日 줄 ⑵, CC BY-SA 4.0)를 미리 받아 둔다. 한국어·일본어·영어 자료는 부르지 않는다(호출부 조건).
 // 같은 표를 여러 번 불러도 요청은 한 번이다. 실패하면 캐시를 비워 다음 기회에 다시 받는다.
 
-let zhengPromise = null;
+import { loadHanjaTable, resetHanjaTablesForTest } from './hanjaTables';
+
 let jaWordsPromise = null;
 
 const settle = (p, reset) => p.then((m) => m.default || m).catch((err) => { reset(); throw err; });
 
-/** 정체 표(hanjaTrad.json — s2t·s2tw·모호 판정). */
+/** 정체 표(hanjaTrad.json — s2t·s2tw·모호 판정). 훈음 조회와 같은 표라 지연 로드 정본(hanjaTables.js)의 약속을 그대로 쓴다. */
 export function loadZhengTable() {
-  if (!zhengPromise) zhengPromise = settle(import('./data/hanjaTrad.json'), () => { zhengPromise = null; });
-  return zhengPromise;
+  return loadHanjaTable('trad');
 }
 
 /** 일본어 표기·요미 표(jaWords.json — JMdict 파생, CC BY-SA 4.0). */
@@ -48,6 +48,6 @@ export function prefetchGlyphTables({ timeout = 2000, scheduler, onLoad } = {}) 
 
 /** 테스트용 — 캐시를 비운다. */
 export function resetGlyphTablesForTest() {
-  zhengPromise = null;
+  resetHanjaTablesForTest();
   jaWordsPromise = null;
 }

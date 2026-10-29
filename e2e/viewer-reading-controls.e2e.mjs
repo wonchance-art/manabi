@@ -92,7 +92,7 @@ await context.route('**/api/learning/**',r=>{
  const learningUrl=new URL(r.request().url());
  // 뷰어의 단어 상태 색은 /api/learning/vocabulary?view=learning(fetchVocabularyLearningRows) snapshot에서 온다 — REST user_vocabulary 직접 조회가 아니다.
  if(r.request().method()==='GET'&&learningUrl.pathname==='/api/learning/vocabulary'&&learningUrl.searchParams.get('view')==='learning')
-  return r.fulfill({json:legacyLearningSnapshot({actorId:uid,rows:vocab,known,fields:learningUrl.searchParams.get('fields')})});
+  return r.fulfill({json:legacyLearningSnapshot({actorId:uid,rows:vocab,known,fields:learningUrl.searchParams.get('fields'),ids:learningUrl.searchParams.get('ids')})});
  if(r.request().method()==='POST'){
   const payload=r.request().postDataJSON();const word=vocab.find(v=>v.word_text===payload.word?.word_text)||vocab.at(-1);contexts.push({id:'context-1',user_id:uid,vocabulary_id:word?.id,material_id:payload.source?.materialId,quote:payload.source?.quote,locator:{tokenId:payload.source?.tokenId}});return r.fulfill({json:{ok:true,context:{id:'context-1'},vocabulary:{id:word?.id}}});
  }
@@ -260,7 +260,7 @@ try {
    const rgb=paint=>{const c=document.createElement('canvas');c.width=c.height=1;const x=c.getContext('2d');x.fillStyle=paint;x.fillRect(0,0,1,1);return [...x.getImageData(0,0,1,1).data].slice(0,3);};
    const lum=cs=>cs.map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((a,v,i)=>a+v*[.2126,.7152,.0722][i],0);
    const a=lum(rgb(getComputedStyle(surface).color)),b=lum(rgb(band.backgroundColor));
-   return {picked:getComputedStyle(picked).opacity,rest:getComputedStyle(rest).opacity,tokenBg:getComputedStyle(selected).backgroundColor,outline:getComputedStyle(selected).outlineStyle,shadow:band.boxShadow,frame:getComputedStyle(selected,"::before").borderTopStyle,band:parseFloat(band.height),cell:surface.getBoundingClientRect().height,contrast:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
+   return {picked:getComputedStyle(picked).opacity,rest:getComputedStyle(rest).opacity,tokenBg:getComputedStyle(selected).backgroundColor,outline:getComputedStyle(selected).outlineStyle,shadow:band.boxShadow,frame:getComputedStyle(selected.querySelector(".word-frame")).outlineStyle,band:parseFloat(band.height),cell:surface.getBoundingClientRect().height,contrast:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
   });
   assert.equal(focusRead.picked,'1');assert.equal(focusRead.rest,'0.5');assert(focusRead.contrast>=7,JSON.stringify(focusRead));
   assert.equal(focusRead.tokenBg,'rgba(0, 0, 0, 0)');assert.equal(focusRead.outline,'none');assert.equal(focusRead.frame,"solid");assert(!focusRead.shadow.includes("inset"),"R0 bug 6: the frame left the band");assert(focusRead.band<focusRead.cell*.55);

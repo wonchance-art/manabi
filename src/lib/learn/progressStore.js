@@ -22,6 +22,7 @@ import { normalizeSlug, slugAliases } from '../world/storageSchema.js';
 import { recordLessonActivity } from './learningActivity';
 import { withLegacyReviewOnlineLock } from '../legacyReviewSync';
 import { REF_READ_KEYS, refCheckKey, refReadKey } from '../refReadStore';
+import { isLegacyReviewSuperseded } from '../legacyReviewSupersede';
 
 export { normalizeSlug } from '../world/storageSchema.js';
 
@@ -142,8 +143,11 @@ export async function recordLessonCompleted(userId, lessonRef, options = {}) {
  *   - correct: true | false
  *   - detail: { word_id, meaning, rating, ... } (메타)
  * @param {Object} [nextStats] - FSRS 결과 { interval, ease_factor, repetitions, next_review_at } — DB 컬럼과 동일한 snake_case여야 한다(미지 컬럼이 섞이면 PostgREST가 UPDATE 전체를 거부한다)
+ * @param {{expectedLastReviewedAt?: string|null}} [options] - 어휘 일정 비교 후 쓰기의 바탕(이 채점을 계산한 행의 last_reviewed_at).
+ *   주면 서버 행이 그 값일 때만 일정을 바꾸고, 그 사이 다른 기기가 먼저 복습했으면 이벤트는 남기고 일정은 그대로 둔다(superseded: true).
+ *   보낼함에 담길 때도 같이 담겨 재생이 같은 규칙을 쓴다. 주지 않으면 지금처럼 무조건 쓴다.
  */
-export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
+export async function recordReviewCompleted(userId, reviewRef, nextStats = {}, { expectedLastReviewedAt } = {}) {
   if (!reviewRef || !reviewRef.type || !reviewRef.itemKey) return;
 
   const { type, itemKey, lang, correct, detail } = reviewRef;
@@ -168,7 +172,7 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
   // SRS는 실패)이 생길 여지를 없앤다. onLine===false는 '확실히 오프라인'만 뜻한다.
   if (typeof navigator !== 'undefined' && navigator.onLine === false) {
     const queued = await queueReviewOffline(
-      userId, { type, itemKey, lang, correct, detail }, nextStats, reviewedAt, false,
+      userId, { type, itemKey, lang, correct, detail }, nextStats, reviewedAt, false, expectedLastReviewedAt,
     );
     // 큐에 못 담았으면 그건 진짜 유실이다 — 성공이라 말하면 안 된다(사생활 모드 등).
     // reviewedAt 동봉(W R2) — undo가 outbox 항목(itemKey + reviewedAt)을 찾아 지우는 열쇠
@@ -181,14 +185,19 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
     const reviewKey = type === 'vocab' && detail?.word_id
       ? JSON.stringify(['vocab', detail.word_id]) : JSON.stringify([type, lang, itemKey]);
     return await withLegacyReviewOnlineLock(userId, reviewKey, async () => {
-      if (type === 'vocab') await assertLegacyFsrsAllowed(supabase, { userId, cardId: detail?.word_id, itemKey, language: lang });
+      // 이 채점의 경계 확인은 여기 한 번이다 — 같은 lock 안의 두 쓰기(이벤트 · 일정)가 이 답(boundary 증거)을 나눠 쓴다(F5②).
+      const boundary = type === 'vocab' ? await assertLegacyFsrsAllowed(supabase, { userId, cardId: detail?.word_id, itemKey, language: lang }) : undefined;
       // flush/undo의 조회→쓰기와 온라인 기록 전체가 같은 actor 경계를 공유한다.
       // 1. 진도 이벤트: review_events 적재
-      await recordReviewEventRemote(userId, { lang, source: type, item_key: itemKey, correct, detail, created_at: reviewedAt });
+      await recordReviewEventRemote(userId, { lang, source: type, item_key: itemKey, correct, detail, created_at: reviewedAt }, boundary);
 
       // 2. SRS: 어휘·문법·문형 다음 복습 스케줄
+      let superseded = false;
       if (type === 'vocab' && detail?.word_id && nextStats.next_review_at) {
-        await updateVocabNextReviewRemote(userId, detail.word_id, nextStats, reviewedAt);
+        // 비교 후 쓰기가 0행이면 다른 기기가 먼저 복습한 카드다 — 이벤트(기록)는 남기고 일정은 그 복습대로 둔다(보낼함 재생의
+        // shouldApplyGrade와 같은 층 구분: 기록은 잃지 않고, 상태는 더 최신 것을 덮지 않는다). 재시도할 일이 아니라 큐에 담지 않는다.
+        try { await updateVocabNextReviewRemote(userId, detail.word_id, nextStats, reviewedAt, boundary, expectedLastReviewedAt); }
+        catch (error) { if (!isLegacyReviewSuperseded(error)) throw error; superseded = true; }
       } else if (type === 'grammar' || type === 'pattern') {
         // 문법/문형은 기존 grammarSrs에서 처리 (이 함수는 진도만)
       }
@@ -197,17 +206,20 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
       await recordActivityRemote(userId, lang, 'review_completed', { type, correct });
       // reviewedAt 동봉(W R2) — 원 이벤트는 못 지우므로(RLS SELECT·INSERT뿐) undo 보상 이벤트가
       // detail.undo_of.reviewed_at으로 원 채점을 가리킨다
-      return { ok: true, reviewedAt };
+      return superseded ? { ok: true, reviewedAt, superseded: true } : { ok: true, reviewedAt };
     });
   } catch (err) {
     // 제외는 연결 장애가 아니다. 실패한 평가를 성공/오프라인 재시도로 위장하지 않는다.
-    if (isVocabularyExcludedError(err) || isLearningStorageUnavailableError(err) || isFsrsLegacyWriteError(err)) return { ok: false, error: err };
+    // 경계 확인 호출 자체의 실패(DB 시간 초과 · 연결 끊김)는 차단이 아니다 — 큐에 담고 flush가 경계를 다시 묻는다.
+    // 운영 실측 2026-10-23 KST: fsrs_legacy_boundary 57014로 채점이 큐에도 안 남고 버려졌다.
+    const transientBoundary = err?.code === 'fsrs_boundary_unavailable';
+    if (isVocabularyExcludedError(err) || isLearningStorageUnavailableError(err) || (isFsrsLegacyWriteError(err) && !transientBoundary)) return { ok: false, error: err };
     // 온라인인데 실패했다 — 서버가 죽었거나 연결이 방금 끊겼다. 큐에 넣어 살린다.
     // 이벤트가 이미 착지했을 수도 있는데, 온라인 경로도 같은 reviewedAt을 실어 보내므로
     // flush의 완전 일치 대조가 그 중복을 걸러낸다.
     // 온라인 lock이 해제된 뒤 enqueue 자체의 lock을 얻는다. 내부 재취득은 deadlock이다.
     const queued = await queueReviewOffline(
-      userId, { type, itemKey, lang, correct, detail }, nextStats, reviewedAt,
+      userId, { type, itemKey, lang, correct, detail }, nextStats, reviewedAt, true, expectedLastReviewedAt,
     );
     if (queued) return { ok: true, queued: true, reviewedAt };
     // 큐마저 못 쓰는 환경(사생활 모드 등)에서만 실패를 표면화한다 — 콘솔만 남기면
@@ -221,7 +233,7 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
  * 미전송 복습 큐로 보낸다(v2-N R2). 어휘가 아니거나 큐를 못 쓰면 false.
  * 동적 import — IndexedDB 계층을 로그인·온라인 정상 경로의 번들에서 떼어 놓는다.
  */
-async function queueReviewOffline(userId, ref, nextStats, reviewedAt, remoteAttempted = true) {
+async function queueReviewOffline(userId, ref, nextStats, reviewedAt, remoteAttempted = true, expectedLastReviewedAt) {
   try {
     const { enqueueReview } = await import('../reviewOutbox');
     return await enqueueReview({
@@ -235,6 +247,8 @@ async function queueReviewOffline(userId, ref, nextStats, reviewedAt, remoteAtte
       reviewedAt,
       // false은 위의 명시적 offline 무전송 분기에서만 온다. 온라인 응답 유실은 보수적으로 true다.
       remoteAttempted,
+      // 재생의 비교 후 쓰기 바탕(있을 때만 싣는다 — 없는 옛 항목 · 다른 호출부는 재생이 읽은 서버 값으로 비교한다).
+      ...(expectedLastReviewedAt !== undefined && nextStats?.next_review_at ? { expectedLastReviewedAt } : {}),
     });
   } catch {
     return false;
@@ -510,7 +524,7 @@ async function enqueueReviewRemote(userId, lang, slug) {
 /**
  * review_events 적재 (약점 진단 데이터)
  */
-async function recordReviewEventRemote(userId, event) {
+async function recordReviewEventRemote(userId, event, boundary) {
   if (!userId || !event) return;
 
   // 한국어 저장소 guard는 연결 장애가 아니다. 이벤트 실패도 호출부에 전달한다.
@@ -521,20 +535,21 @@ async function recordReviewEventRemote(userId, event) {
   }
 
   const { logReviewEvents } = await import('../reviewEvents');
-  return logReviewEvents(userId, [event], { strict: true });
+  return logReviewEvents(userId, [event], { strict: true, boundary });
 }
 
 /**
  * user_vocabulary next_review_at 갱신
  * 기존 VocabPage.scoreMutation 통합
  */
-async function updateVocabNextReviewRemote(userId, wordId, nextStats, reviewedAt) {
+async function updateVocabNextReviewRemote(userId, wordId, nextStats, reviewedAt, boundary, expectedLastReviewedAt) {
   if (!userId || !wordId) return;
   // 채점 저장 정본(fsrs.persistVocabGrade)으로 수렴 — 4중복 페이로드의 단일화.
   // reviewedAt을 그대로 실어 SRS last_reviewed_at = 이벤트 created_at = 큐 항목 시각(한 시계).
   // 안 실으면 persistVocabGrade가 제 시계를 찍어 undo 대조·큐 중복 제거의 열쇠가 ms만큼 어긋난다(W 후속 ③).
   const { persistVocabGrade } = await import('../fsrs');
-  return persistVocabGrade(supabase, wordId, nextStats, reviewedAt);
+  return persistVocabGrade(supabase, wordId, nextStats, reviewedAt,
+    expectedLastReviewedAt === undefined ? { boundary } : { boundary, expectedLastReviewedAt });
 }
 
 /**

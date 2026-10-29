@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import path from 'node:path';
 import {BOOK_ID,BOOKS,isBookId,bookHref,bookUnitSlug,EDITION_ID,canonical,manuscriptContent} from './contract';
 // 경로는 호출마다 끝까지 글자로 쓴다 — 디렉터리 상수를 두면 파일 추적기가 교재 폴더 전체(mp3 포함)를 모든 함수에 싣는다.
-export const contentHash=book=>createHash('sha256').update(JSON.stringify(canonical(book.bookId==='japanese-n4'?book:manuscriptContent(book)))).digest('hex');
+export const contentHash=book=>createHash('sha256').update(JSON.stringify(canonical(book.bookId&&book.bookId!==BOOK_ID?book:manuscriptContent(book)))).digest('hex');
 export const textbookError=(status,message)=>Object.assign(new Error(message),{status});
 function requireBook(bookId){if(!isBookId(bookId))throw textbookError(404,'교재를 찾을 수 없어요.');}
 export async function candidate(edition,bookId=BOOK_ID) {
@@ -27,7 +27,8 @@ export function cachedCandidate(edition,bookId=BOOK_ID){
 async function candidateIndex(bookId){
  requireBook(bookId);
  // Literal JSON paths keep the file tracer from bundling all fonts/audio in ordinary learning functions.
- return JSON.parse(await readFile(bookId===BOOK_ID?path.join(process.cwd(),'src/content/textbookEditions/index.json'):path.join(process.cwd(),'src/content/textbookEditions/japanese-n4/index.json'),'utf8'));
+ const file=bookId===BOOK_ID?path.join(process.cwd(),'src/content/textbookEditions/index.json'):bookId==='japanese-n4'?path.join(process.cwd(),'src/content/textbookEditions/japanese-n4/index.json'):path.join(process.cwd(),'src/content/textbookEditions/japanese-n3/index.json');
+ return JSON.parse(await readFile(file,'utf8'));
 }
 export async function currentCandidate(bookId=BOOK_ID){const index=await candidateIndex(bookId);return candidate(index.current,bookId)}
 // Curated editor choices are separate from the DB publication pointer and legacy fallback.

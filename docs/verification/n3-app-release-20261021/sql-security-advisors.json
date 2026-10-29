@@ -1,0 +1,9 @@
+{
+  "scope": "Supabase security advisors before/after additive N3 schema support; unrelated existing findings are not changed.",
+  "beforeCount": 5,
+  "afterCount": 5,
+  "addedCount": 0,
+  "addedRelatedCount": 0,
+  "addedRelated": [],
+  "passed": true
+}

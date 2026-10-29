@@ -69,7 +69,11 @@ describe('화면 배선', () => {
     expect(gate).toContain('<Link href={authEntryHref(`/viewer/${id}`)} className="btn btn--primary">{vt("로그인")}</Link>');
     expect(gate).not.toMatch(/processed_json|raw_text/u);
     expect(viewer.indexOf('if (guestBookGate && guestBook) {')).toBeLessThan(viewer.indexOf('  if (error) {\n    const isNotFound'));
-    expect(viewer).toContain("useEffect(() => { if (user?.id && error?.code === 'NOT_FOUND') refetch(); }, [user?.id, error?.code, refetch]);");
+    // 로그인하면 같은 장을 다시 읽는다 — 그 자료 · 그 계정으로 한 번만(볼 수 없는 자료에서 끝없이 다시 받던 것을 막는다)
+    const retry = sliceBetween(viewer, 'const notFoundRetried = useRef(null);', '}, [id, user?.id, error?.code, refetch]);');
+    expect(retry).toContain('const key = notFoundRetryKey(id, user?.id, error?.code);');
+    expect(retry).toContain('if (!key || notFoundRetried.current === key) return;');
+    expect(retry).toContain('refetch();');
   });
   it('뷰어 오프라인 사본: 로그아웃 뒤에는 책 장 사본을 열지 않는다', () => {
     const fetcher = sliceBetween(read('src/lib/viewerMaterial.js'), 'export async function fetchMaterial(id) {', '\n}\n'); // 조회 정본은 lib/viewerMaterial(VIEWER-ENTRY R1)

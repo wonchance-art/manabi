@@ -12,6 +12,7 @@ import { buildContextPrompt } from './grammarDetail.js';
 import { buildViewerSentencePrompt, parseViewerExplanation, formatViewerExplanation } from './viewerExplanation.js';
 import { callGemini, SENTENCE_TX_TIER } from './gemini.js';
 import { cleanLineText } from './sentenceNav.js';
+import { buildPatternPromptBlock } from './sentencePattern.js';
 
 export const SENTENCE_TX_QUERY = 'viewer-sentence-tx';
 export const SENTENCE_TX_GC_MS = 30 * 60 * 1000;
@@ -22,6 +23,8 @@ export const SENTENCE_PREFETCH_PER_MINUTE = 20;
  * 로그인 안내를 그린다. 결과 문자열 자리에 두어 「패널에 내용이 있다」 판정(leftActive 등)이 그대로 성립한다.
  */
 export const SENTENCE_TX_LOGIN_REQUIRED = '\u0000viewer-sentence:login-required';
+// 번역 실패 표식 — 번역 칸이 「번역을 가져오지 못했어요」와 [다시 시도]를 그린다(문자열 결과와 섞이지 않는 값).
+export const SENTENCE_TX_FAILED = '\u0000viewer-sentence:failed';
 
 /** 카드 문장 = 막대와 같은 정리(앞뒤 공백·`# ` 제목 표지)를 한 원문 줄. 여러 줄(드래그 문맥)은 그대로. */
 export function canonicalSentence(text) {
@@ -63,7 +66,7 @@ export function peekSentenceTranslationKey(scope, sentence) {
  */
 export async function fetchSentenceTranslation({
   sentence, locale, language, langName, cacheKey, storage, callAi = callGemini,
-  purpose = 'viewer-sentence', attempts, beforeAi, onAi,
+  purpose = 'viewer-sentence', attempts, beforeAi, onAi, patternCandidates,
 }) {
   if (cacheKey && storage) {
     let cached = null;
@@ -71,8 +74,10 @@ export async function fetchSentenceTranslation({
     if (cached) return { text: cached, source: 'cache' };
   }
   if (beforeAi && beforeAi() === false) throw new Error('SENTENCE_TX_SKIPPED');
+  // 문형 칸(목업 U 4판): 한국어 설명일 때 문형 사전 후보를 같은 요청에 싣는다. 후보를 못 모아도 번역은 그대로 간다.
+  const candidates = locale === 'ko' && patternCandidates ? await Promise.resolve().then(patternCandidates).catch(() => null) : null;
   const prompt = locale === 'ko'
-    ? buildContextPrompt(sentence, langName)
+    ? buildContextPrompt(sentence, langName, candidates ? buildPatternPromptBlock(language, candidates) : null)
     : buildViewerSentencePrompt({ text: sentence, language, locale });
   const started = Date.now();
   const raw = await callAi(prompt, undefined, { tier: SENTENCE_TX_TIER, purpose, ...(attempts ? { attempts } : {}) });

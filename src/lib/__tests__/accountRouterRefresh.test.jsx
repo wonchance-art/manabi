@@ -123,7 +123,8 @@ describe('배선 — 관문은 하나', () => {
     const walk = dir => { for (const e of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) { const rel = `${dir}/${e.name}`; if (e.isDirectory()) { if (e.name !== '__tests__') walk(rel); } else if (/\.(jsx?|mjs)$/.test(e.name)) files.push(rel); } };
     walk('src');
     const callers = files.filter(f => f !== 'src/lib/AuthContext.jsx' && /\bsignOut\(\)/.test(read(f))).sort();
-    expect(callers).toEqual(['src/app/embed/review/EmbedReviewClient.jsx', 'src/components/AccountSettings.jsx', 'src/views/MyPage.jsx']);
+    // 내 정보의 로그아웃 줄은 계정 묶음(AccountSettings)에 산다(PROFILE-REDESIGN-001) — 내 정보 화면 파일은 signOut을 넘기기만 한다.
+    expect(callers).toEqual(['src/app/embed/review/EmbedReviewClient.jsx', 'src/components/AccountSettings.jsx']);
     for (const file of callers) expect(read(file), file).not.toMatch(/router\.refresh\(/);
     // 로그인 상태 머리말에는 로그아웃 단추가 없다 — 머리말 단추(handleAuthClick)는 손님 갈래에만 있고 로그인 진입만 한다.
     const layout = read('src/components/Layout.jsx');
@@ -148,12 +149,15 @@ const ACCOUNT_SERVER_ROUTES = Object.freeze({
   'src/app/(app)/writing/page.jsx': '최근 장(recentChapters) — 자체 대조 없음. 관문이 버린다',
   'src/app/(app)/review/grammar/page.jsx': '문법 복습 항목 — 자체 대조 없음. 관문이 버린다',
   'src/app/(app)/japanese/reading/page.jsx': '읽기 트랙 통과 문항(viewerScope) — 어긋나면 스스로 router.refresh/replace(손님 → 계정도 덮음). 관문과 별개',
-  'src/app/(app)/viewer/[id]/page.jsx': '자료 제목(generateMetadata — 비공개 제목이 <title>에) — 관문이 버린다',
+  'src/app/(app)/discover/classics/page.jsx': '고전 명작 카드의 읽은 자리(리본 퍼센트 · ✓ — 자기 reading_progress) — 자체 대조 없음. 관문이 버리고 B로 다시 그린다',
+  'src/app/(app)/vocab/page.jsx': '복습방 첫 화면 숫자 · 목록 미리 받기(VOCAB-FIRST-NUMBERS-001) — 숫자에 센 계정 id를 싣고 지금 세션 계정과 같을 때만 쓴다(ownFirstScreen) · 목록은 계정 키(serverUserId)로만 받는다. 관문이 버리고 B로 다시 그린다',
+  'src/app/(app)/viewer/[id]/page.jsx': '자료 제목(generateMetadata — 비공개 제목이 <title>에) · 문서 요청의 본문(VIEWER-SEED-001 — 읽은 계정을 함께 싣고, 브라우저는 지금 세션 계정과 같을 때만 문서 하나에 한 번 쓴다 · 화면 이동/새로고침 관문의 RSC 요청에는 싣지 않는다) — 관문이 버린다',
   'src/app/(app)/admin/metrics/page.jsx': '관리자 지표 — 관리자 확인 뒤 서버 렌더. 관문이 B 권한으로 다시 그린다',
   'src/app/(app)/admin/llm-bench/page.jsx': '관리자 LLM 벤치 — 관문이 B 권한으로 다시 그린다',
   'src/app/(app)/admin/textbooks/page.jsx': '관리자 교재 편집 — 관문이 B 권한으로 다시 그린다',
   'src/app/(app)/admin/books/japanese-n5/page.jsx': '관리자 원고 편집 — 관문이 B 권한으로 다시 그린다',
   'src/app/(app)/admin/books/japanese-n4/page.jsx': '관리자 원고 편집 — 관문이 B 권한으로 다시 그린다',
+  'src/app/(app)/admin/books/japanese-n3/page.jsx': 'N3 관리자 원고 편집 — 기존 계정 전환 관문이 새 계정의 관리자 권한으로 다시 그린다',
   'src/app/(app)/admin/legacy-textbooks/[[...path]]/page.jsx': '관리자 기존 교재 보관함 — 관문이 B 권한으로 다시 그린다',
 });
 

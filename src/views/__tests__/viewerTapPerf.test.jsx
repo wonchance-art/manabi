@@ -11,7 +11,7 @@ import ReaderToken, { readerTokenPropsEqual, sameStyle } from '../../components/
 const read = (f) => fs.readFileSync(f, 'utf8');
 const base = () => ({
   tokenId: 'id_0_2', token: { text: '駅', furigana: 'えき', base_form: '駅', meaning: '역', pos: '명사' }, className: 'word-token  ', selected: false,
-  paceStyle: undefined, tokenRefs: { current: {} }, lineHeadText: null, lineHeadRawIdx: null, linePickLabel: '문장 전체 분석',
+  paceStyle: undefined, tokenRefs: { current: {} }, lineHeadText: null, lineHeadKey: null, linePickLabel: '문장 전체 분석',
   onLinePick: () => {}, onTokenClick: () => {}, pronDisplay: 'all', isKnown: false, isSaved: false, patternMark: false, zhGrid: false, showToneColors: false,
 });
 
@@ -40,12 +40,12 @@ describe('마크업 — 뷰어가 직접 그리던 것과 같다', () => {
   it('루비 낱말: 바깥 틀(data-* · 고름) · 단어 조작은 .surface · 요미 칸', () => {
     const html = renderToStaticMarkup(createElement(ReaderToken, { ...base(), selected: true, className: 'word-token word-token--saved ' }));
     expect(html).toBe('<div data-tid="id_0_2" data-source-token="id_0_2" data-source-text="駅" data-text="駅" data-selected="true" class="word-token word-token--saved ">'
-      + '<span class="surface" role="button" tabindex="0"><ruby data-yomi="1">駅<span class="rt-an">えき</span></ruby></span></div>');
+      + '<span class="surface" role="button" tabindex="0"><ruby data-yomi="1">駅<span class="rt-an">えき</span></ruby><span class="word-frame" aria-hidden="true"></span></span></div>');
   });
   it('줄 머리 막대 · 발음 가림 · 문형 밑줄', () => {
-    const html = renderToStaticMarkup(createElement(ReaderToken, { ...base(), lineHeadText: '駅で待つ', lineHeadRawIdx: 0, pronDisplay: 'unknown', isKnown: true, patternMark: true }));
+    const html = renderToStaticMarkup(createElement(ReaderToken, { ...base(), lineHeadText: "駅で待つ", lineHeadKey: "0:0", pronDisplay: 'unknown', isKnown: true, patternMark: true }));
     expect(html).toContain('<button class="line-pick" aria-label="문장 전체 분석" title="문장 전체 분석"></button><span class="surface surface--furi-off" role="button" tabindex="0">');
-    expect(html).toContain('<span class="pattern-mark" aria-hidden="true"></span></span></div>');
+    expect(html).toContain('<span class="pattern-mark" aria-hidden="true"></span><span class="word-frame" aria-hidden="true"></span></span></div>');
   });
   it('来 | ない — 바로 뒤 토큰 표기(nextText)로 こ를 고른다(뷰어 본문과 같은 splitRuby 인자)', () => {
     const html = renderToStaticMarkup(createElement(ReaderToken, { ...base(), token: { text: '来', furigana: 'くる', base_form: '来る', pos: '동사' }, nextText: 'ない' }));
@@ -53,7 +53,7 @@ describe('마크업 — 뷰어가 직접 그리던 것과 같다', () => {
   });
   it('읽기 없는 낱말은 루비 없이 글자 그대로', () => {
     const html = renderToStaticMarkup(createElement(ReaderToken, { ...base(), token: { text: 'で', furigana: '', base_form: 'で', pos: '조사' } }));
-    expect(html).toContain('<span class="surface" role="button" tabindex="0">で</span>');
+    expect(html).toContain('<span class="surface" role="button" tabindex="0">で<span class="word-frame" aria-hidden="true"></span></span>');
   });
 });
 

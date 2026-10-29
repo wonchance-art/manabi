@@ -40,7 +40,8 @@ async function fetchJson(url) {
     const wait = lastRequest + GAP_MS - Date.now();
     if (wait > 0) await sleep(wait);
     lastRequest = Date.now();
-    const response = await fetch(url, { headers: { Accept: 'application/json', 'User-Agent': USER_AGENT } });
+    // 시카고 미술관 API는 AIC-User-Agent(이용자 연락처) 머리를 요청한다 — 없으면 봇 차단(Cloudflare 403)에 걸린다(DISCOVER-ART-001 실측 2026-10-23 KST).
+    const response = await fetch(url, { headers: { Accept: 'application/json', 'User-Agent': USER_AGENT, 'AIC-User-Agent': USER_AGENT } });
     if (response.status === 429 && attempt < 3) {
       const retryAfter = Number(response.headers.get('retry-after'));
       await sleep(Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 2000 * 2 ** attempt);

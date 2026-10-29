@@ -81,6 +81,16 @@ const time = value => (typeof value === 'number' ? value : Date.parse(value));
 const empty = (status, reason) => ({ status, reason, engine: null, due: 0, newAllowed: 0, newLocked: 0, total: 0, deferred: 0,
   stored: 0, noMeaning: 0, backlog: null, queue: { items: [], ids: [], legacyIds: [], fsrsIds: [] }, scopedIds: [] });
 
+// 뜻이 있는지(hasMeaning — NFC 정규화)는 표현 객체 · 뜻 문자열이 같으면 같다. 계획마다 다시 정규화하지 않는다(뜻이 바뀌면 다시 본다).
+const MEANINGFUL = new WeakMap();
+function meaningful(word) {
+  const hit = MEANINGFUL.get(word);
+  if (hit && hit.meaning === word.meaning) return hit.value;
+  const value = hasMeaning(word);
+  MEANINGFUL.set(word, { meaning: word.meaning, value });
+  return value;
+}
+
 // 범위 안 학습 행(아는 단어 · 제외 · 지원 안 하는 언어 제외)과 상태 판정 — 개수와 FSRS 범위 id가 같은 판정을 쓴다.
 // 뜻이 없는 표현은 복습 줄에서 빼고(noMeaning으로 따로 센다) 목록에 「뜻 채우기」를 낸다(§5-6).
 // fragileIds = 지난 14일 집중 연습에서 「몰랐어요」 · 오답을 받은 표현(practiceEvents.practiceFragileIds) — 흐릿 범위에 더한다.
@@ -88,13 +98,20 @@ function scopedProjections({ snapshot, scope, now, levels, sourceIds, reviewSupp
   const matcher = createScopeMatcher(scope, { levels, sourceIds });
   if (!matcher.ready) return { ready: false, reason: matcher.reason };
   const at = time(now);
-  const clock = p => Math.max(at, Date.parse(p.review.evaluatedAt) || at);
+  // 평가 시각은 한 snapshot 안에서 거의 다 같은 문자열이다 — 직전 문자열의 풀이를 다시 쓴다(VOCAB-SCOPE-COUNT-001: 계획마다 표현 수 × 여러 번
+  // Date.parse가 이 계산의 가장 큰 몫이었다). 값은 그대로 Date.parse(…) || at.
+  let lastEvaluated, lastParsed;
+  const clock = p => {
+    const value = p.review.evaluatedAt;
+    if (value !== lastEvaluated) { lastEvaluated = value; lastParsed = Date.parse(value) || at; }
+    return Math.max(at, lastParsed);
+  };
   const practiced = new Set([...(fragileIds || [])].map(String));
   const fragile = p => practiced.has(String(p.vocabulary.id)) || (vocabularyRetrievability(p, clock(p)) ?? 1) < FRAGILE_RETRIEVABILITY;
   const stateOk = (p, isNew) => scope.state === 'new' ? isNew : scope.state === 'fragile' ? !isNew && fragile(p) : true;
   const stored = (snapshot?.projections || []).filter(p => p?.vocabulary && matcher.matches(p.vocabulary) && !p.review.known
     && !p.review.excluded && !p.vocabulary.is_excluded && !p.vocabulary.is_known && reviewSupported(p.vocabulary));
-  const inScope = stored.filter(p => hasMeaning(p.vocabulary));
+  const inScope = stored.filter(p => meaningful(p.vocabulary));
   const fsrsIds = inScope.filter(p => p.source === 'fsrs-v1' && isVocabularyReviewAvailable(p) && stateOk(p, isVocabularyUnreviewed(p)))
     .map(p => p.vocabulary.id);
   return { ready: true, at, clock, stateOk, stored, inScope, fsrsIds };
@@ -114,8 +131,11 @@ function sourceKeyOf(word, chapters) {
   return word.source_ref ? `ref:${word.source_ref}` : null;
 }
 
+// countOnly — 언어 칩 숫자(byLang) · 밀린 복습 판정(languageBacklog)은 개수만 쓴다. 줄 짜기(회상률 · 정렬 · 출처 띄우기)를 건너뛰고
+// due · total만 낸다 — total은 줄 길이와 같다(orderReviewQueue는 넣은 항목을 빼거나 더하지 않는다, 계약 reviewScopeCount).
+// 3,000단어 계정 첫 화면에서 이 계산이 언어마다 두 번씩 돌았다(VOCAB-SCOPE-COUNT-001).
 function planReviewScope({ snapshot, fsrsEntries, quota, scope, now, levels, sourceIds, chapters = null,
-  canLegacy = () => true, reviewSupported, fsrsEnabled, pendingIds = [], fragileIds = null, backlog = null }) {
+  canLegacy = () => true, reviewSupported, fsrsEnabled, pendingIds = [], fragileIds = null, backlog = null, countOnly = false }) {
   const scoped = scopedProjections({ snapshot, scope, now, levels, sourceIds, reviewSupported, fragileIds });
   if (!scoped.ready) return empty('pending', scoped.reason);
   const { at, clock, stateOk, inScope, stored } = scoped;
@@ -142,6 +162,14 @@ function planReviewScope({ snapshot, fsrsEntries, quota, scope, now, levels, sou
 
   // 밀린 복습 규칙 — 그 언어 전체의 기한 지난 복습이 기준의 2배를 넘으면 새 표현 0(계정 한도는 차감하지 않는다).
   const paused = !!backlog?.active;
+  if (countOnly) {
+    const due = legacyReviews.length + fsrsReviews.length;
+    if (paused) return { status: 'ready', due, total: due };
+    const resumedCount = legacyNew.filter(p => admitted.has(p.vocabulary.id)).length + fsrsNew.filter(e => e.firstQuestionAt).length;
+    const unseenCount = legacyNew.filter(p => !admitted.has(p.vocabulary.id)).length
+      + (fsrsOpen ? fsrsNew.filter(e => !e.firstQuestionAt).length : 0);
+    return { status: 'ready', due, total: due + resumedCount + Math.min(unseenCount, remaining) };
+  }
   const reviews = [
     ...legacyReviews.map(p => ({ id: p.vocabulary.id, engine: 'legacy', retrievability: retrievability(p),
       dueAt: time(p.review.nextQuestionAt) })),
@@ -179,13 +207,25 @@ function planReviewScope({ snapshot, fsrsEntries, quota, scope, now, levels, sou
       fsrsIds: scoped.fsrsIds } };
 }
 
+// 언어별 밀린 복습 기준(backlogBaseline)은 같은 projections · 같은 시각이면 같다 — 범위 시트 · 안내가 countReviewScope를 여러 번 불러도
+// 한 번만 잰다(VOCAB-SCOPE-COUNT-001). projections 배열이 바뀌면(새 snapshot · 채점 뒤 재투영) 새로 잰다.
+const BASELINES = new WeakMap();
+function languageBaseline(projections, lang, now) {
+  let byLang = BASELINES.get(projections);
+  if (!byLang) BASELINES.set(projections, byLang = new Map());
+  const hit = byLang.get(lang);
+  if (hit && Object.is(hit.now, now)) return hit.value;
+  const value = backlogBaseline(projections.filter(p => wordScopeLanguage(p?.vocabulary) === lang), { now });
+  byLang.set(lang, { now, value });
+  return value;
+}
+
 // 그 언어의 밀린 복습 상태 — 언어 전체(좁힌 범위와 무관)의 기한 지난 복습 수와 지난 14일 기준.
 function languageBacklog(shared, lang) {
   const plan = planReviewScope({ ...shared, quota: { active: false, remaining: 0, admittedLegacyCardIds: [] },
-    scope: { lang, level: null, source: null, state: 'due' }, sourceIds: null });
+    scope: { lang, level: null, source: null, state: 'due' }, sourceIds: null, countOnly: true });
   if (plan.status !== 'ready') return null;
-  const projections = (shared.snapshot?.projections || []).filter(p => wordScopeLanguage(p?.vocabulary) === lang);
-  const baseline = backlogBaseline(projections, { now: time(shared.now) });
+  const baseline = languageBaseline(shared.snapshot?.projections || [], lang, time(shared.now));
   return { overdue: plan.due, baseline, active: isBacklogged(plan.due, baseline) };
 }
 
@@ -237,7 +277,50 @@ export function countReviewScope({ snapshot, fsrsEntries, quota, scope, now = Da
   const byLang = {};
   for (const lang of REVIEW_SCOPE_LANGS) {
     if (!(snapshot?.projections || []).some(p => wordScopeLanguage(p?.vocabulary) === lang)) continue;
-    byLang[lang] = planReviewScope({ ...shared, scope: { lang, level: null, source: null, state: 'due' }, backlog: backlogOf(lang) }).total;
+    byLang[lang] = planReviewScope({ ...shared, scope: { lang, level: null, source: null, state: 'due' }, backlog: backlogOf(lang), countOnly: true }).total;
   }
   return { ...plan, grammarDue: scope?.lang ? grammarDueCount(grammar, scope.lang, time(now)) : 0, byLang };
+}
+
+/**
+ * 담은 표현의 언어별 수(언어 칩 · 범위 언어 기본값) — 순서는 표현이 처음 나온 순서. 복습방과 서버 첫 화면 숫자(reviewRoomFirstScreen)가
+ * 같은 함수를 쓴다(VOCAB-FIRST-NUMBERS-001 — 언어 칩 순서 · 기본 언어가 목록이 온 뒤에도 그대로여야 숫자가 튀지 않는다).
+ */
+export function reviewLanguageCounts(words) {
+  const counts = new Map();
+  for (const word of words || []) {
+    const lang = wordScopeLanguage(word);
+    if (REVIEW_SCOPE_LANGS.includes(lang)) counts.set(lang, (counts.get(lang) || 0) + 1);
+  }
+  return counts;
+}
+
+/** 프로필의 학습 언어(배움 언어 칩이 고른 첫 언어). */
+export function profileReviewLang(profile) {
+  return Array.isArray(profile?.learning_language) ? profile.learning_language[0] : profile?.learning_language;
+}
+
+/** 범위 언어 기본값 — 주소 · 저장값이 없으면 학습 언어, 그 언어에 담은 표현이 없으면 가장 많은 언어. */
+export function defaultReviewLang(profileLang, languageCounts) {
+  return languageCounts.has(profileLang) ? profileLang
+    : [...languageCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || (REVIEW_SCOPE_LANGS.includes(profileLang) ? profileLang : 'Japanese');
+}
+
+/**
+ * 집중 연습 대상(§6-1 ④) — 범위 안 표현 전체(기한과 무관). 새 표현만 · 흐릿 · 위험 범위는 그 상태만. 잊기 쉬운 순서.
+ * vocab = 범위 안 표현, learningById = 투영(id → projection), fragileIds = 지난 14일 집중 연습 「몰랐어요」 · 오답 표현.
+ */
+export function scopePracticeWords(vocab, learningById, { reviewSupported = () => true, state = 'due', fragileIds = [], now = Date.now() } = {}) {
+  const fragile = new Set(fragileIds);
+  const rows = [];
+  for (const word of vocab || []) {
+    const p = learningById.get(word.id);
+    if (!p || p.review.known || p.review.excluded || !reviewSupported(word) || !hasMeaning(word)) continue;
+    const r = vocabularyRetrievability(p, Math.max(now, Date.parse(p.review.evaluatedAt) || 0));
+    const isNew = isVocabularyUnreviewed(p);
+    if (state === 'new' && !isNew) continue;
+    if (state === 'fragile' && (isNew || !(fragile.has(String(word.id)) || (r ?? 1) < FRAGILE_RETRIEVABILITY))) continue;
+    rows.push({ word, r: r ?? 2 });
+  }
+  return rows.sort((a, b) => a.r - b.r).map(row => row.word);
 }

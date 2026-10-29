@@ -176,8 +176,8 @@ async function mockSupabaseSession(context, { role = 'admin', restRequests = nul
   await context.route('**/api/learning/exclusions', route => route.request().method() === 'GET' ? json(route, { items: [] }) : route.continue());
   await context.route('**/api/learning/vocabulary?view=learning*', route => {
     assert.equal(route.request().method(), 'GET', 'The installed inactive snapshot fixture accepts reads only');
-    const fields = new URL(route.request().url()).searchParams.get('fields');
-    return json(route, legacyLearningSnapshot({ actorId: session.user.id, rows: [], fields }));
+    const { searchParams } = new URL(route.request().url());
+    return json(route, legacyLearningSnapshot({ actorId: session.user.id, rows: [], fields: searchParams.get('fields'), ids: searchParams.get('ids') }));
   });
   await context.route('**/api/learning/fsrs', route => {
     assert.equal(route.request().method(), 'GET', 'Inactive FSRS fixture must not receive a mutation');
@@ -400,6 +400,29 @@ test.skip('reading: 관리자에게 글 1 본문·문항 UI를 렌더한다', { 
   });
 });
 
+test("root redirect: '/'는 엣지에서 /home으로, 로그인 결과는 지금처럼 교환 · 실패 화면으로 보낸다", { timeout: config.timeout }, async () => {
+  // ROOT-EDGE-REDIRECT-001 — 옮기기 전 page.jsx가 낸 Location과 같아야 한다(질의는 버린다 · code/error는 page.jsx가 맡는다).
+  const cases = [
+    ['/', '/home', 'middleware'],
+    ['/?utm_source=x&lang=ja', '/home', 'middleware'],
+    ['/?code=fixture-code', '/auth/callback?next=%2Fhome&code=fixture-code', 'page'],
+    ['/?error=access_denied&error_description=denied', '/auth?error=auth_callback_failed&from=%2Fhome', 'page'],
+  ];
+  for (const [input, expected, by] of cases) {
+    const response = await fetch(new URL(input, config.use.baseURL), { redirect: 'manual' });
+    assert.equal(response.status, 307, input);
+    const location = new URL(response.headers.get('location'), config.use.baseURL);
+    assert.equal(location.pathname + location.search, expected, input);
+    // 함수(page.jsx)를 탄 응답만 앱 렌더 머리(Vary: RSC …)를 단다 — middleware 리다이렉트에는 없다.
+    assert.equal(/\brsc\b/i.test(response.headers.get('vary') || ''), by === 'page', `${input}: ${by}`);
+  }
+  await runInFreshPage(async (page) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    assert.equal(new URL(page.url()).pathname, '/home');
+    await assertVisible(page.getByRole('heading', { name: '배움', exact: true }), 'root lands on learn');
+  });
+});
+
 test('world access: 비로그인 사용자는 로그인 안내 화면에서 차단한다', { timeout: config.timeout }, async () => {
   await runInFreshPage(async (page) => {
     await page.goto('/world', { waitUntil: 'domcontentloaded' });
@@ -589,45 +612,63 @@ test('chapter story: N5 이자카야 문화 도어의 장면과 산출 문항을
   });
 });
 
-test('vocab performance: N3 초기 DOM과 savedSet 요청을 예산 안에 유지한다', { timeout: config.timeout * 2 }, async () => {
+test('vocab performance: N3 초기 DOM과 단어장 읽기를 예산 안에 유지한다', { timeout: config.timeout * 2 }, async () => {
   await runInFreshPage(async (page, context) => {
     const restRequests = [];
+    const learningReads = [];
     await seedMockSessionCookie(context, 'admin', { restRequests });
+    page.on('request', (request) => {
+      const url = new URL(request.url());
+      if (request.method() === 'GET' && url.pathname === '/api/learning/vocabulary') learningReads.push(url.href);
+    });
     const startedAt = Date.now();
     await page.goto('/japanese/vocab/n3', { waitUntil: 'load', timeout: config.timeout * 2 });
-    // LEVEL-LIST-AJ-001: 옛 행(.fr-vrow) → 레벨 목록 카드(.lv-entry). 예산(150개 점진 · DOM · savedSet 분할)은 그대로.
-    await assertVisible(page.locator('.lv-entry').first(), 'N3 first vocabulary row');
+    // JLPT 단어 페이지(HSK와 같은 공통 화면 — 2026-10-19 KST): 옛 목록 카드(.lv-entry) → 리스트 모드 카드(.lw-card).
+    // 첫 화면은 한 단어 모드라 리스트로 바꿔 잰다. 리스트는 한 번에 20장(설정 10 · 20 · 50, 2026-10-20 KST)까지 펼치고,
+    // 새 단어는 복습 설정의 하루 새 단어 수(기본 15 — 시안 ⑧, 2026-10-21 KST)까지만 줄에 선다. 이 계정은 복습할 단어가 없어 15장.
+    await page.getByRole('button', { name: '리스트', exact: true }).click();
+    await assertVisible(page.locator('.lw-card').first(), 'N3 first vocabulary card');
     const elapsed = Date.now() - startedAt;
-    const rows = await page.locator('.lv-entry').count();
+    const rows = await page.locator('.lw-card').count();
     const nodes = await page.locator('*').count();
 
     assert.ok(elapsed < 8000, `N3 vocab load ${elapsed}ms exceeded 8000ms`);
-    assert.equal(rows, 150, `N3 initial rows should be progressive, got ${rows}`);
+    assert.equal(rows, 15, `N3 list should open today's 15 new cards, got ${rows}`);
     assert.ok(nodes < 10000, `N3 initial DOM ${nodes} nodes exceeded 10000`);
 
-    // a9dc9f51: 목록 전체 「저장됨」은 키 150개씩 표기 · 기본형으로 묻던 분할(N3 30요청) 대신 그 언어 단어장을
-    // id 순 1000행 page로 읽는다. 예산 = 키 목록을 주소에 싣는 요청 0 · 언어 단어장 읽기 1회 이상 · 주소 8000자 미만.
+    // 상태(오늘 · 복습 · 졸업)는 뷰어와 같은 단어장 snapshot(GET /api/learning/vocabulary?view=learning) 한 번으로 센다 —
+    // 레벨 키를 주소에 싣는 옛 분할 읽기(user_vocabulary?word_text=in.(…))는 0.
     const deadline = Date.now() + config.timeout;
-    const vocabReads = () => restRequests.filter(url => new URL(url).pathname.endsWith('/user_vocabulary'));
-    let savedRequests = [];
-    while (Date.now() < deadline) {
-      savedRequests = vocabReads().filter(url => new URL(url).searchParams.get('language') === 'eq.Japanese');
-      if (savedRequests.length > 0) break;
-      await page.waitForTimeout(50);
-    }
-    assert.ok(savedRequests.length > 0, 'savedSet should read the Japanese vocabulary list');
-    assert.ok(savedRequests.every(url => !new URL(url).searchParams.has('word_text')),
-      'savedSet must not put level keys into the URL (old per-chunk fan-out)');
-    assert.ok(savedRequests.length <= 3, `savedSet issued ${savedRequests.length} requests (budget 3)`);
-    assert.ok(
-      Math.max(...savedRequests.map(url => url.length)) < 8000,
-      `savedSet URL exceeded 8000 chars: ${Math.max(...savedRequests.map(url => url.length))}`
-    );
+    while (Date.now() < deadline && learningReads.length === 0) await page.waitForTimeout(50);
+    assert.ok(learningReads.length > 0, 'level word page should read the learning vocabulary snapshot');
+    assert.ok(learningReads.length <= 3, `learning snapshot read ${learningReads.length} times (budget 3)`);
+    const vocabReads = restRequests.filter(url => new URL(url).pathname.endsWith('/user_vocabulary'));
+    assert.ok(vocabReads.every(url => !new URL(url).searchParams.has('word_text')),
+      'level keys must not go into the URL (old per-chunk fan-out)');
 
-    // LEVEL-FLOW-001: 찾기 칸은 붙는 머리의 찾기 버튼을 눌러야 열린다.
-    await page.getByRole('button', { name: '찾기', exact: true }).click();
-    await page.getByRole('searchbox', { name: 'N3 단어에서 찾기' }).fill('頬');
-    await assertVisible(page.locator('.lv-entry').filter({ hasText: '頬' }), 'word beyond initial slice remains searchable');
+    // 설정은 두 곳(2026-10-21 KST): 제목 ▾ 시트 = 레벨 · 목록 · 보기(모드 · 보기 탭은 페이지 줄에만), 해 모양 창 없음.
+    assert.equal(await page.locator('.lw-top').getByRole('button', { name: '설정' }).count(), 0, 'no separate settings button in the top bar');
+    await page.getByRole('button', { name: '레벨 · 목록 · 보기', exact: true }).click();
+    const sheet = page.getByRole('dialog', { name: '레벨 · 목록 · 보기' });
+    await assertVisible(sheet, 'title sheet');
+    assert.deepEqual(await sheet.getByRole('group', { name: '목록' }).getByRole('link').allInnerTexts(), ['단어', '문형']);
+    assert.equal(await sheet.getByRole('switch', { name: '예문 후리가나' }).count(), 1, 'aid switch lives in the title sheet');
+    assert.equal(await sheet.getByRole('button', { name: '한 단어', exact: true }).count(), 0, 'mode stays on the page row only');
+    await page.keyboard.press('Escape');
+    // 연습 탭에서 첫 답을 내면 모드 · 보기 줄이 접히고, 제목을 누르면 시트 대신 줄이 다시 펼쳐진다.
+    await page.getByRole('button', { name: '한 단어', exact: true }).click();
+    await page.locator('.lw-tabs').getByRole('button', { name: '뜻', exact: true }).click();
+    await page.getByRole('button', { name: /정답 확인/ }).click();
+    await page.getByRole('button', { name: '알아요', exact: true }).click();
+    await page.waitForFunction(() => document.querySelector('.lw-rows')?.hidden === true, null, { timeout: config.timeout });
+    await page.getByRole('button', { name: 'JLPT N3 단어', exact: true }).click();
+    await page.waitForFunction(() => document.querySelector('.lw-rows')?.hidden === false, null, { timeout: config.timeout });
+    assert.equal(await page.getByRole('dialog').count(), 0, 'title tap on folded rows unfolds instead of opening the sheet');
+
+    // 찾기 — 머리의 찾기 단추로 열고, 첫 150개 밖 단어도 JLPT 전체 색인에서 찾는다.
+    await page.getByRole('button', { name: '단어 찾기', exact: true }).click();
+    await page.getByRole('searchbox', { name: 'JLPT N5–N1 전체에서 찾기' }).fill('頬'); // 시안 ⑨ — 찾는 범위를 읽어 준다
+    await assertVisible(page.locator('.lw-row').filter({ hasText: '頬' }).first(), 'word beyond initial slice remains searchable');
   });
 });
 

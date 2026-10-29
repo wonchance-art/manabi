@@ -68,12 +68,12 @@ test('learn review tile separates no expressions and failed data with retry, wit
 // 내려갔다 — /studies는 그대로. 언어별 행선지는 「함께 읽는 글」(/discover?view=reading&lang=…)의 언어 단추가 맡는다.
 test('discovery keeps reading-language destinations and browser return, guest library entry',async()=>{
  const f=await fixture({guest:true,width:390});try{
-  await go(f,'/discover');await f.page.getByRole('heading',{name:'발견',exact:true}).waitFor();
+  await go(f,'/discover');await f.page.getByRole('heading',{name:'산책',exact:true}).waitFor();
   assert.equal(await f.page.locator('.discovery-language-links, #reading-index').count(),0);await capture(f,'discover-390');
   await go(f,'/discover?view=reading&lang=Japanese');await f.page.getByRole('heading',{name:'함께 읽는 글',exact:true}).waitFor();
   const japanese=f.page.getByRole('button',{name:'일본어',exact:true});await japanese.waitFor();assert.equal(await japanese.getAttribute('aria-pressed'),'true');
-  const back=f.page.getByRole('link',{name:'← 발견',exact:true});assert.equal(await back.getAttribute('href'),'/discover');await capture(f,'discover-reading-390');
-  await back.click();await f.page.waitForURL(url=>url.pathname==='/discover'&&!url.search);await f.page.getByRole('heading',{name:'발견',exact:true}).waitFor();
+  const back=f.page.getByRole('link',{name:'← 산책',exact:true});assert.equal(await back.getAttribute('href'),'/discover');await capture(f,'discover-reading-390');
+  await back.click();await f.page.waitForURL(url=>url.pathname==='/discover'&&!url.search);await f.page.getByRole('heading',{name:'산책',exact:true}).waitFor();
   await f.page.goBack();await f.page.waitForURL(url=>url.searchParams.get('view')==='reading'&&url.searchParams.get('lang')==='Japanese');
   await f.page.getByRole('heading',{name:'함께 읽는 글',exact:true}).waitFor();assert.equal(await japanese.getAttribute('aria-pressed'),'true');
   await capture(f,'discover-return-390');assert.equal(f.analysisCalls,0);

@@ -212,7 +212,7 @@ async function mockAuthenticatedVocab(context, { readingMaterials = [], role = '
   await context.route('**/api/learning/vocabulary**', route => {
     const request = route.request(), url = new URL(request.url());
     if (request.method() === 'GET' && url.searchParams.get('view') === 'learning') {
-      return json(route, legacyLearningSnapshot({ actorId: session.user.id, rows: storedWords, fields: url.searchParams.get('fields') }));
+      return json(route, legacyLearningSnapshot({ actorId: session.user.id, rows: storedWords, fields: url.searchParams.get('fields'), ids: url.searchParams.get('ids') }));
     }
     if (request.method() === 'POST') assert.notEqual(request.postDataJSON()?.action, 'save', 'Inactive FSRS fixture must not receive an atomic manual save');
     return route.continue();
@@ -742,7 +742,7 @@ test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복�
     assert.equal(await page.getByText('가족', { exact: true }).count(), 0, 'recall answer stays hidden');
     await page.getByRole('button', { name: /정답 확인하기/ }).click();
     await assertVisible(page.getByText('가족', { exact: true }), 'saved word review answer');
-    await assertVisible(page.getByText('뜻을 못 떠올렸다면 다시', { exact: false }), 'meaning-only grading guide for French');
+    assert.equal(await page.getByText('못 떠올렸다면', { exact: false }).count(), 0, 'no grading guide line (owner 2026-10-26 KST)');
     assert.ok(speechRequests.includes('la famille'), 'revealing by pointer plays the expression once (sound on by default)');
 
     // ── 채점이 SRS 정본에 '올바른 컬럼명으로' 닿는지 ──
@@ -863,7 +863,7 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
     // 탭 뒤에 있고, 그 대체 경로가 실제로 닿는지를 아래에서 확인한다.
     assert.equal(await leftTab.getAttribute('aria-selected'), 'true', 'sentence drag opens the sentence tab');
     assert.equal(await rightTab.getAttribute('aria-selected'), 'false', 'sentence drag no longer opens both at once');
-    const contextText = sheet.locator('.pdf-context__text');
+    const contextText = sheet.locator('.reader-sentence__translation');
     await assertVisible(contextText, 'cached sentence translation');
     assert.match(await contextText.innerText(), /우리는 중국어를 배웁니다\./);
 

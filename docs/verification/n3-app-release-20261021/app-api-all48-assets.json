@@ -1,0 +1,465 @@
+{
+  "scope": "Actual local application HTTP routes against explicitly pinned packaged bytes; synthetic backend only",
+  "editionId": "4978c146953f14140bcb49d2",
+  "contentHash": "4978c146953f14140bcb49d21bc58d236195ad73d1568dc0d516c2546547aaf5",
+  "bundleHash": "1dfbabcd4369412ca5d80f5a3ba5c01070f9f233dc2dcd787f8235eef8dbad62",
+  "reading": [
+    {
+      "unit": "u01",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u02",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u03",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u04",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u05",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u06",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u07",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u08",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u09",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u10",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u11",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u12",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u13",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u14",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u15",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u16",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u17",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u18",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u19",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u20",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u21",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u22",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u23",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u24",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u25",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u26",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u27",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u28",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u29",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u30",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u31",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u32",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u33",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u34",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u35",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u36",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u37",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u38",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u39",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u40",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u41",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u42",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u43",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u44",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u45",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u46",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u47",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    },
+    {
+      "unit": "u48",
+      "status": 200,
+      "sections": 4,
+      "exactPackagedDom": true,
+      "cache304": true
+    }
+  ],
+  "assets": [
+    {
+      "file": "index.html",
+      "status": 200,
+      "sha256": "ef6827cbb30138b7cde33d8ce6a1e188e49b9e13e150f10b8bdb399c8f5c5080",
+      "anonymousAndSyntheticLearnerSame": true,
+      "immutable": true,
+      "cookieFree": true
+    },
+    {
+      "file": "style.css",
+      "status": 200,
+      "sha256": "6a781901d3d06cf33287edca85736d12c14a3398238c6674cd1a077593c5ab1a",
+      "anonymousAndSyntheticLearnerSame": true,
+      "immutable": true,
+      "cookieFree": true
+    },
+    {
+      "file": "app.js",
+      "status": 200,
+      "sha256": "cb4903faed46245933cc6c1bbf6267d994b295ad5a1e859c032fee25fc120e57",
+      "anonymousAndSyntheticLearnerSame": true,
+      "immutable": true,
+      "cookieFree": true
+    },
+    {
+      "file": "fonts/JP.woff",
+      "status": 200,
+      "sha256": "639fccc15b825074659a44375a520652f55d356eb0a8fb2edea1df5eba4adfcc",
+      "anonymousAndSyntheticLearnerSame": true,
+      "immutable": true,
+      "cookieFree": true
+    },
+    {
+      "file": "fonts/JPS.woff",
+      "status": 200,
+      "sha256": "bebd1007573edbd066650f54fc2b58b46888cc9df2f4f77e3017d4d6ac95a0ba",
+      "anonymousAndSyntheticLearnerSame": true,
+      "immutable": true,
+      "cookieFree": true
+    },
+    {
+      "file": "fonts/KR.woff",
+      "status": 200,
+      "sha256": "f0cf45400c156c5be72bc92d2f24fdd85a989858933afc93b0698b6c449ab3c6",
+      "anonymousAndSyntheticLearnerSame": true,
+      "immutable": true,
+      "cookieFree": true
+    },
+    {
+      "file": "fonts/KRB.woff",
+      "status": 200,
+      "sha256": "f25234ac6ae0efedb18d593197236b74d3e0144bfcb6107414906da61185780f",
+      "anonymousAndSyntheticLearnerSame": true,
+      "immutable": true,
+      "cookieFree": true
+    },
+    {
+      "file": "fonts/KRS.woff",
+      "status": 200,
+      "sha256": "f3131da101cf0d5ccef5f53aaff6aaab78dfbc02113a9fbcb43821dec48bed3d",
+      "anonymousAndSyntheticLearnerSame": true,
+      "immutable": true,
+      "cookieFree": true
+    },
+    {
+      "file": "font-licenses/NotoCJK-system-copyright.txt",
+      "status": 200,
+      "sha256": "849f4ea9c214fa4ac3593b770c699f387534b11ce671264c1b10d85bdcb5997b",
+      "anonymousAndSyntheticLearnerSame": true,
+      "immutable": true,
+      "cookieFree": true
+    },
+    {
+      "file": "font-audit.json",
+      "status": 200,
+      "sha256": "f9de31f7cdae556a9afebd056eb89a861173d6d5f8954d91d60a403090e4c546",
+      "anonymousAndSyntheticLearnerSame": true,
+      "immutable": true,
+      "cookieFree": true
+    }
+  ],
+  "boundaries": [
+    {
+      "label": "N3 u49",
+      "status": 400
+    },
+    {
+      "label": "N4 u43",
+      "status": 400
+    },
+    {
+      "label": "N5 u43",
+      "status": 400
+    },
+    {
+      "label": "N3 range49",
+      "status": 400
+    },
+    {
+      "label": "N4 range43",
+      "status": 400
+    },
+    {
+      "label": "unknown N2",
+      "status": 400
+    },
+    {
+      "label": "duplicate book",
+      "status": 400
+    },
+    {
+      "label": "n4 edition through N3",
+      "status": 403
+    },
+    {
+      "label": "n5 edition through N3",
+      "status": 403
+    }
+  ],
+  "passed": true
+}

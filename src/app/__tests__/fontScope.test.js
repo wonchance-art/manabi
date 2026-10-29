@@ -29,7 +29,7 @@ const SCOPE = 'src/components/fonts/TcFontScope.jsx';
 // TC를 거는 세그먼트 — 번체를 그리는 보이는 화면.
 const TC_SEGMENTS = ['src/app/(app)/viewer', 'src/app/(app)/pdf', 'src/app/(app)/suggestions', 'src/app/(app)/chinese'];
 // 번체를 그리는 화면 부품 — 이것을 여는 라우트는 TC 세그먼트 안에 있어야 한다.
-const TC_SCREENS = ['@/views/ViewerPage', '@/views/PdfViewerPage', '@/components/materials/SuggestionReader', '@/views/levelListRoute'];
+const TC_SCREENS = ['@/views/ViewerPage', '@/views/PdfViewerPage', '@/components/materials/SuggestionReader', '@/views/levelListRoute', '@/views/LevelListPage'];
 // 범위 밖으로 둔 라우트 — 이유와 함께. 여기서는 CSS 폴백(③)으로 시스템 TC · KR 글꼴에 떨어진다.
 const OUTSIDE = Object.freeze({
   'src/app/(app)/japanese': '일본어 레벨 목록 — LevelListPage의 正(zh-TW) 줄은 중국어 자료에만 나온다',
@@ -220,12 +220,29 @@ describe('간체 글꼴 범위 — Noto Sans SC', () => {
   });
 
   it('링크 세그먼트는 ScFontScope 없이 힌트 쿠키 부품만 두고, 이미 동적 라우트다(쿠키로 정적을 동적으로 바꾸지 않음)', () => {
-    for (const seg of SC_LINK_SEGMENTS) {
-      const layout = read(`${seg}/layout.jsx`);
-      expect(layout, seg).not.toMatch(/import ScFontScope|<ScFontScope>/);
-      expect(layout, seg).toContain("import ScFontCookieHint from '@/components/fonts/ScFontCookieHint'");
-      expect(layout, seg).toContain('<><ScFontCookieHint />{children}</>');
-      expect(read(`${seg}/page.jsx`), seg).toContain("export const dynamic = 'force-dynamic';");
+    // 배움(/home, GUEST-STATIC-001 4단계): 산책과 같은 판 나누기 — 판(ISR) · 세그먼트 layout은 쿠키를 읽지 않고, 힌트 쿠키 판정은 middleware가 해서
+    // 늘 링크를 싣는 간체 판(/home/sc · /home/member/sc)으로 넘긴다.
+    const home = 'src/app/(app)/home';
+    const homeLayout = read(`${home}/layout.jsx`).replace(/(^|[^:'"`])\/\/[^\n]*/g, '$1');
+    expect(homeLayout).not.toMatch(/import ScFontScope|<ScFontScope>/);
+    expect(homeLayout, '배움 세그먼트 layout이 쿠키를 읽으면 ISR 판이 동적이 된다').not.toMatch(/ScFontCookieHint|next\/headers|cookies\(/);
+    for (const f of ['(guest)/page.jsx', '(guest)/sc/page.jsx', 'member/page.jsx', 'member/sc/page.jsx']) expect(read(`${home}/${f}`), f).toContain('export const revalidate = 3600;');
+    expect(read(`${home}/(guest)/sc/page.jsx`)).toContain('<HomeVariant member={false} sc />');
+    expect(read(`${home}/member/sc/page.jsx`)).toContain('<HomeVariant member sc />');
+    expect(read('src/components/learn/HomeVariant.jsx')).toContain('return <>{sc && <ScFontLink />}<HomePage book={book} sessionHint={member} /></>;');
+    expect(read('src/middleware.js')).toContain("const variant = `/home${member ? '/member' : ''}${sc ? '/sc' : ''}`;");
+    // 산책(/discover, GUEST-STATIC-001 2단계): 같은 뜻(「쿠키로 정적을 동적으로 바꾸지 않음」)을 판 나누기로 지킨다 — 본 화면은 ISR이라 쿠키를 읽지 않고,
+    // 힌트 쿠키 판정은 middleware가 해서 늘 링크를 싣는 간체 판(/discover/sc, 역시 ISR)으로 넘긴다. 쿠키를 읽는 부품은 이미 동적인 잎 화면에만 둔다.
+    const discover = 'src/app/(app)/discover';
+    // 세그먼트 layout은 글꼴 미리 받기(빌드 값)만 둔다 — 쿠키를 읽는 부품이 들어오면 ISR 판이 동적이 된다.
+    expect(read(`${discover}/layout.jsx`), '산책 세그먼트 layout이 쿠키를 읽으면 ISR 판이 동적이 된다').not.toMatch(/ScFontCookieHint|ScFontScope|next\/headers|cookies\(/);
+    expect(read(`${discover}/page.jsx`)).toContain('export const revalidate = 300;');
+    expect(read(`${discover}/page.jsx`)).not.toMatch(/ScFontScope|ScFontCookieHint/);
+    expect(read(`${discover}/sc/page.jsx`)).toContain('return <><ScFontLink /><DiscoverPage /></>;');
+    expect(read('src/middleware.js')).toContain("if (request.cookies.get(SC_HINT_COOKIE)?.value === '1') return rewriteTo(request, '/discover/sc');");
+    for (const leaf of ['reading', 'classics']) {
+      expect(read(`${discover}/${leaf}/page.jsx`), leaf).toContain("export const dynamic = 'force-dynamic';");
+      expect(read(`${discover}/${leaf}/page.jsx`), leaf).toContain('<ScFontCookieHint />');
     }
     const hint = read('src/components/fonts/ScFontCookieHint.jsx');
     expect(hint).toContain('return scHintFromJar(await cookies()) ? <ScFontLink /> : null;');
@@ -237,7 +254,10 @@ describe('간체 글꼴 범위 — Noto Sans SC', () => {
 
   it('링크 세그먼트에서 열리는 부품의 lang을 데이터로 정하는 요소는 ZhSlot 안에 있다(SC로 그리지 않는 잎은 근거와 함께 밖)', () => {
     const { reach } = scGraph();
-    const reached = new Set(SC_LINK_SEGMENTS.flatMap(seg => ['page.jsx', 'layout.jsx', 'loading.jsx']
+    // 산책의 판 나누기(GUEST-STATIC-001 2단계) 뒤에도 같은 화면을 본다 — 「함께 읽는 글」 · 간체 판은 하위 경로의 page다.
+    // 배움 판(4단계)은 (guest) · member 아래 page · loading이다.
+    const reached = new Set(SC_LINK_SEGMENTS.flatMap(seg => ['page.jsx', 'layout.jsx', 'loading.jsx', 'reading/page.jsx', 'sc/page.jsx',
+      '(guest)/page.jsx', '(guest)/loading.jsx', '(guest)/sc/page.jsx', 'member/page.jsx', 'member/loading.jsx', 'member/sc/page.jsx']
       .map(f => `${seg}/${f}`).filter(f => fs.existsSync(path.join(ROOT, f))).flatMap(f => [...reach(f)])));
     const leaves = [], bare = [], notSc = [];
     for (const f of reached) {

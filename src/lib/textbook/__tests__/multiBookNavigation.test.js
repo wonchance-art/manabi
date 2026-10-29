@@ -11,11 +11,11 @@ const edition='a'.repeat(24);
 const reading=`/books/japanese-n4?edition=${edition}#u29-study1`;
 const bundle={bookId:'japanese-n4',editionId:edition,sourceIndex:{'u29-study1':{lesson:29,text:'午後五時までに、受付に来てください。'}}};
 
-describe('two-book selection and exact source return',()=>{
+describe('registered-book selection and exact source return',()=>{
  it('accepts only registered books and keeps N5/N4 chapter identities separate',()=>{
   expect(isBookId('constructor')).toBe(false);
-  expect(isBookId('japanese-n3')).toBe(false);
-  expect(Object.keys(BOOKS)).toEqual(['japanese-n5','japanese-n4']);
+  expect(isBookId('japanese-n2')).toBe(false);
+  expect(Object.keys(BOOKS)).toEqual(['japanese-n5','japanese-n4','japanese-n3']);
   expect(bookUnitSlug('japanese-n4',29)).toBe('n4-book-u29');
   expect(bookIdForChapter('n5-book-u29')).toBe('japanese-n5');
   expect(bookIdForChapter('n4-book-u29')).toBe('japanese-n4');
@@ -53,7 +53,7 @@ describe('two-book selection and exact source return',()=>{
   await readEditionStamp(db,edition,'japanese-n4');
   expect(eq.mock.calls).toEqual([['book_id','japanese-n4'],['edition_id',edition]]);
   expect(select.mock.calls[0][0]).not.toContain('manuscript');
-  await expect(readEditionStamp(db,edition,'japanese-n3')).rejects.toMatchObject({status:404});
+  await expect(readEditionStamp(db,edition,'japanese-n2')).rejects.toMatchObject({status:404});
  });
  it('keeps N4 full-manuscript hashes and immutable book identities while retaining N5 metadata hashing',()=>{
   const n4={bookId:'japanese-n4',level:'N4',source:{baseline:'one'},lessons:[]};

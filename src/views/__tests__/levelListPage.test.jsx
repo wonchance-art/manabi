@@ -18,7 +18,9 @@ vi.mock('next/dynamic', async () => {
   return { default: () => board.default };
 });
 
-const { default: LevelListPage, VocabCard } = await import('../LevelListPage.jsx');
+const { default: LevelListPage, VocabCard, SND_HOLD } = await import('../LevelListPage.jsx');
+const { LEVEL_HUN_PX, hunHoldCells, hunShapeOf } = await import('../../lib/levelList.js');
+const { levelListData: levelData } = await import('../../lib/levelListData.js');
 const { levelListData } = await import('../../lib/levelListData.js');
 const { normalizeLevelPrefs } = await import('../../lib/levelList.js');
 const { default: LevelTiles } = await import('../../components/levels/LevelTiles.jsx');
@@ -65,12 +67,14 @@ describe('단어 목록', () => {
   it('중국어: 병음은 옆 · 아래 작은 줄, 위 읽기 없음 · 2026 급수 기준 출처', async () => {
     const html = await render('chinese', 'vocab', 'h1');
     expect(html).toContain('<h1>HSK 1 단어</h1>');
-    expect(html).toMatch(/<span class="lv-hw" lang="zh-CN">[^<]+<\/span><span class="lv-py">/);
+    // 표제어는 훈음 자리(LEVEL-HUN-HOLD-001)와 함께 — 글자 칸 + 빈 훈음 칸, 그 뒤 병음
+    expect(html).toMatch(/<span class="lv-hw lv-hw--hun" lang="zh-CN">(<span class="lv-hc"><span class="lv-hc__ch">[^<]<\/span>(<span class="word-fit__hun lv-hun-hold"[^>]*>(<span class="word-fit__hun-line">\u00a0<\/span>)+<\/span>)?<\/span>)+<\/span><span class="lv-py">/);
     expect(html).toContain('class="lv-ex__py"');
     expect(html).not.toContain('<ruby>');
     expect(html).toContain('中文水平考试 HSK 考试大纲');
-    // 서버 렌더는 훈음 표가 없어 훈음 줄 0(하이드레이션 같음) — 표는 붙은 뒤 받는다
-    expect(html).not.toContain('word-fit__hun');
+    // 서버 렌더는 훈음 표가 없어 훈음 글 0(하이드레이션 같음) — 표는 붙은 뒤 받고, 그 전에는 같은 상자의 빈 자리만(LEVEL-HUN-HOLD-001)
+    expect(html).not.toContain('data-label=');
+    expect(html).toContain('lv-hun-hold');
   });
 
   it('레벨 알약 · 탭 · 「← 교재」 — 보관함 · 문법 링크 0', async () => {
@@ -246,9 +250,15 @@ describe('머리 · 진도 · X 펼침(LEVEL-FLOW-001 — 디자인 검토 2026-
     }
   });
 
-  it('진도 줄: 숫자는 「N개 남음」 하나 + 「복습하기 →」(숫자 없음) — 로그인 · 붙은 뒤에만, 서버 렌더엔 없다', async () => {
-    expect(await render('chinese', 'vocab', 'h1')).not.toContain('lv-prog');
-    const prog = sliceBetween(page, '{progress && <div className="lv-prog">', '</div>}');
+  it('진도 줄: 숫자는 「N개 남음」 하나 + 「복습하기 →」(숫자 없음) — 로그인 · 붙은 뒤에만, 서버 렌더엔 숫자 없이 빈 자리만', async () => {
+    // 서버(정적) 그림에는 진도 숫자 · 막대 채움이 없다 — 같은 높이의 빈 자리(.lv-prog--hold, aria-hidden · 평소 꺼짐)만 간다(LEVEL-PROG-HOLD-001).
+    const ssr = await render('chinese', 'vocab', 'h1');
+    expect(ssr).toContain('<div class="lv-prog lv-prog--hold" aria-hidden="true"><span class="lv-meter"></span></div>');
+    expect(ssr).not.toMatch(/lv-prog__left|lv-prog__review|lv-meter__[ks]|개 남음/);
+    expect(await render('japanese', 'bunkei', 'n5')).not.toContain('lv-prog'); // 진도는 단어 탭만
+    const prog = sliceBetween(page, ': progress && <div className="lv-prog">', '</div>}');
+    // 바퀴 끝 카드(LEVEL-ROUND-001 ②)는 진도 줄 자리의 요약이라 숫자를 둔다 — 공부 중 진도 줄은 여전히 숫자 하나.
+    expect(sliceBetween(page, '<section className="lv-end" aria-label="바퀴 끝">', '</section>')).toContain('모른 단어 ${progress.studying');
     expect([...prog.matchAll(/\$\{[^}]+\}개/g)].map((m) => m[0])).toEqual(["${progress.left.toLocaleString('en-US')}개"]);
     expect(prog).toContain('{progress.studying > 0 && <Link className="lv-prog__review" href={reviewHref} prefetch={false}>복습하기 →</Link>}');
     expect(prog).not.toMatch(/progress\.(known|studying|total)\}/); // 아는 · 공부 중 개수는 배움 입구 카드에만
@@ -261,18 +271,18 @@ describe('머리 · 진도 · X 펼침(LEVEL-FLOW-001 — 디자인 검토 2026-
     expect(normalizeLevelPrefs({ peekOnX: false }).peekOnX).toBe(false);
     const panel = sliceBetween(page, '<div className="lv-settings" id="lv-settings">', '</div>}');
     expect(panel).toContain("['peekOnX', 'X 누르면 답 펼치기', '단어 · 문장 · 뜻 · 소리 탭']");
-    // 펼치기는 markX 한 곳뿐 — 클릭 · 키보드 X가 모두 이 길을 지난다.
+    // 펼치기는 studyX 한 곳뿐 — 클릭 · 키보드 X가 모두 이 길을 지난다.
     expect([...page.matchAll(/openPeek\(entry\.key\)/g)]).toHaveLength(1);
   });
 
   it('탭 보기에서 X = 그 카드를 펼쳐 답을 본다 · 「복습하기」 알림은 KST 하루 한 번', () => {
-    const markX = sliceBetween(page, 'const markX = async (entry) => {', '};'); // 아는 단어 풀기를 기다리므로 async
+    const markX = sliceBetween(page, 'const studyX = async (entry) => {', '};'); // 아는 단어 풀기를 기다리므로 async — 전체 · 탭 X 공통
     expect(markX).toContain("if (prefs.view !== 'all' && prefs.peekOnX) openPeek(entry.key);");
     const nudge = sliceBetween(page, 'const nudgeReview = () => {', '};');
     expect(nudge).toContain('if (localStorage.getItem(NUDGE_KEY) === kstDay()) return; localStorage.setItem(NUDGE_KEY, kstDay());');
     expect(nudge).toContain("action: '복습하기'");
     expect(page).toContain('const kstDay = () => new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);');
-    expect(page).toMatch(/\{ nudgeReview\(\); return done\(true\); \}/); // 저장이 된 뒤에만
+    expect(page).toMatch(/\{\n\s*nudgeReview\(\);\n\s*noteDailyLoad\(userId\);\n\s*return done\(true\);/); // 저장이 된 뒤에만(하루 분량 알림도 — LEVEL-ROUND-001 ④)
   });
 });
 
@@ -348,5 +358,83 @@ describe('책장 타일', () => {
     expect(html).toContain('문형<b>77</b>');
     expect(html).not.toContain('→');
     expect(renderToStaticMarkup(<LevelTiles language="English" tiles={[{ levelKey: 'A1', vocab: 1, bunkei: 1 }]} />)).toBe('');
+  });
+});
+
+describe('진도 줄 자리(LEVEL-PROG-HOLD-001) — 세션 쿠키가 있으면 첫 그림부터 같은 높이', () => {
+  const css = fs.readFileSync('src/components/levels/level-list.css', 'utf8');
+  const page = fs.readFileSync('src/views/LevelListPage.jsx', 'utf8');
+  const run = async (cookie, existing = false) => {
+    const { default: vm } = await import('node:vm');
+    const { sessionHintScript } = await import('@/lib/authCookie');
+    const appended = [];
+    vm.runInNewContext(sessionHintScript('lv-prog-hold', '.lv-bar .lv-prog--hold{display:flex}'), { document: { cookie, getElementById: () => (existing ? {} : null), createElement: () => ({}), head: { appendChild: (n) => appended.push(n) } } });
+    return appended;
+  };
+  it('판정은 정본(SESSION_COOKIE)과 같다 — 세션 쿠키 · 조각 쿠키면 켜고, 손님 · code verifier면 그대로', async () => {
+    const { hasSupabaseSessionCookie } = await import('@/lib/authCookie');
+    for (const cookie of ['sb-proj-auth-token=x', 'theme=dark; sb-proj-auth-token.0=x', '', 'theme=dark', 'sb-proj-auth-token-code-verifier=x']) {
+      const nodes = await run(cookie);
+      expect(nodes.length, cookie).toBe(hasSupabaseSessionCookie(cookie) ? 1 : 0);
+      if (nodes.length) expect(nodes[0]).toEqual({ id: 'lv-prog-hold', textContent: '.lv-bar .lv-prog--hold{display:flex}' });
+    }
+    expect(await run('sb-proj-auth-token=x', true)).toHaveLength(0);
+  });
+  it('빈 자리는 평소 꺼짐 · 진도 줄과 같은 상자, 붙은 뒤 진도가 오면 그 자리에 진짜 줄 · 손님으로 확정되면 뺀다', () => {
+    expect(css).toContain('\n.lv-prog--hold{display:none}\n');
+    expect(css).toContain('.lv-prog{display:flex;align-items:center;gap:12px;font-size:12.5px;color:var(--muted);min-height:24px}');
+    expect(page).toContain("const LV_PROG_HOLD = sessionHintScript(LV_PROG_HOLD_ID, '.lv-bar .lv-prog--hold{display:flex}');");
+    expect(page).toContain('{vocab && !progress && (!mounted || authLoading || userId) && <><script dangerouslySetInnerHTML={{ __html: LV_PROG_HOLD }} />');
+  });
+});
+
+describe('듣기 단추 자리(LEVEL-SND-HOLD-001) — 붙기 전에도 같은 상자', () => {
+  const entry = { key: '学习', word: '学习', reading: 'xuéxí', meaning: '배우다', fullMeaning: '배우다', pos: '동사',
+    ex: { text: '我在学习汉语。', reading: 'wǒ zài xuéxí hànyǔ.', ko: '나는 중국어를 공부하고 있다.' } };
+  const card = (view, speak, peek) => renderToStaticMarkup(<VocabCard entry={entry} lang="chinese" levelKey="h1" view={view} peek={peek} onPeek={() => {}}
+    speak={speak} known={false} studying={false} saving={false} pendingKnown={false} onO={() => {}} onX={() => {}} />);
+  const shape = (html) => html.replace(/<button type="button" class="(lv-snd|lv-solo__play)"[^>]*>[\s\S]*?<\/button>/g, '[$1]').replace(/<i class="(lv-snd|lv-solo__play) lv-snd--hold"><\/i>/g, '[$1]');
+  it('자리는 진짜 단추와 같은 자리 · 같은 클래스(lv-snd)이고, 단추 · 이름 · 초점은 없다 — 모든 보기 · 펼침', () => {
+    for (const [view, peek] of [['all'], ['word', 'open'], ['sentence', 'open'], ['meaning', 'open'], ['sound', 'open']]) {
+      const held = card(view, SND_HOLD, peek), real = card(view, () => {}, peek);
+      expect(shape(held), view).toBe(shape(real));
+      expect(held, view).not.toMatch(/듣기|<button type="button" class="lv-snd/);
+    }
+    expect(card('all', SND_HOLD).match(/lv-snd--hold/g)).toHaveLength(2); // 표제어 · 예문
+    expect(card('all', null)).not.toContain('lv-snd'); // 소리를 못 내는 기기(붙은 뒤)는 자리도 없다
+  });
+  it('서버 그림 = 자리(붙기 전), 붙은 뒤 소리 가능하면 단추 · 못 내면 없음 — CSS는 보이지 않는 같은 상자', async () => {
+    const ssr = await render('japanese', 'vocab', 'n4');
+    expect(ssr).toContain('<i class="lv-snd lv-snd--hold"></i>');
+    expect(ssr).not.toMatch(/<button type="button" class="lv-snd"/);
+    expect(fs.readFileSync('src/views/LevelListPage.jsx', 'utf8')).toContain('const sndSpeak = speakOk ? say : mounted ? null : SND_HOLD;');
+    expect(fs.readFileSync('src/components/levels/level-list.css', 'utf8')).toContain('\n.lv-snd--hold{visibility:hidden;pointer-events:none}\n.lv-snd--hold::before{content:"";display:block;width:17px;height:17px}\n');
+  });
+});
+
+describe('훈음 자리(LEVEL-HUN-HOLD-001) — 표가 오기 전에도 같은 칸', () => {
+  const card = (entry, hunCells) => renderToStaticMarkup(<VocabCard entry={entry} lang="chinese" levelKey="h1" view="all" onPeek={() => {}}
+    speak={null} hunCells={hunCells} known={false} studying={false} saving={false} pendingKnown={false} onO={() => {}} onX={() => {}} />);
+  // 훈음 칸 = 같은 클래스 · 같은 --hun-n · 같은 data-wrap · 같은 줄 수. 글만 비었다(빈칸) — 줄 높이 · 칸 폭이 같다.
+  const shape = (html) => html.replace(/ data-label="[^"]*"| aria-hidden="true"/g, '').replace(/ lv-hun-hold/g, '')
+    .replace(/<span class="word-fit__hun-line">[^<]*<\/span>/g, '[line]');
+  it('서버가 실은 모양(hun)으로 그린 자리 = 표로 그린 진짜 훈음 칸의 상자 — HSK 1 전 단어', async () => {
+    const data = await levelData('chinese', 'vocab', 'h1');
+    const entries = data.groups.flatMap((g) => g.entries);
+    expect(entries.filter((e) => e.hun).length).toBeGreaterThan(entries.length * 0.9);
+    for (const e of entries) {
+      const real = hunRubyCells(e.word, tables, LEVEL_HUN_PX);
+      expect(e.hun, e.word).toBe(hunShapeOf(real));
+      if (!real) continue;
+      expect(shape(card({ ...e, key: e.key ?? e.word, fullMeaning: e.meaning }, hunHoldCells(e.word, e.hun))), e.word)
+        .toBe(shape(card({ ...e, key: e.key ?? e.word, fullMeaning: e.meaning }, real)));
+    }
+  });
+  it('모양이 글자 수와 다르거나 없으면 자리를 만들지 않는다 · 자리는 보이지 않는다', () => {
+    expect(hunHoldCells('爸爸', '1@2')).toBeNull();
+    expect(hunHoldCells('爸爸', undefined)).toBeNull();
+    expect(hunHoldCells('爸爸', '1@2.17,')).toEqual([{ ch: '爸', hold: true, lines: 1, wrap: false, hunN: 2.17 }, { ch: '爸', hold: true, lines: 0 }]);
+    expect(fs.readFileSync('src/components/levels/level-list.css', 'utf8')).toContain('\n.lv-hw .lv-hun-hold{visibility:hidden}\n');
+    expect(fs.readFileSync('src/views/LevelListPage.jsx', 'utf8')).toContain('hunCells={hunOf(e.word) || (hunHold ? hunHoldCells(e.word, e.hun) : null)}');
   });
 });

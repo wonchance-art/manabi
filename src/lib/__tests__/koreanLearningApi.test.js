@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({ auth: vi.fn(), resolve: vi.fn() }));
-vi.mock('@/lib/supabaseServer', () => ({ requireUser: mocks.auth }));
+vi.mock('@/lib/supabaseServer', () => ({ requireUser: mocks.auth, requireUserForRead: mocks.auth }));
 vi.mock('@/lib/server/learningContext', async () => ({
   ...(await vi.importActual('@/lib/server/learningContext')), resolveSave: mocks.resolve,
 }));

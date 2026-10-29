@@ -87,7 +87,7 @@ describe('더 알아보기(비슷한 말 · 자세한 설명) — 손님은 버�
     expect(learn).toBeTruthy();
     expect(learn).toContain(`<Link href={signInHref} className="reader-card-learn__login">{vt('${WORD_COPY}')}</Link>`);
     expect(learn).toContain("{!user && !authLoading && ((synAntEligible(selectedToken,materialLang) && !(synAnt && !synAnt.loading && !synAnt.error)) || !wordDetail?.detail)");
-    expect(viewer).toContain('const { user, profile, fetchProfile, isAdmin, loading: authLoading } = useAuth();');
+    expect(viewer).toContain('const { user, profile, refreshProfileAfterActivity, isAdmin, loading: authLoading } = useAuth();');
   });
 
   it('버튼 둘은 손님에게 숨김 — 캐시 내용(synAnt · wordDetail.detail) 분기는 그대로 앞에 둔다', () => {

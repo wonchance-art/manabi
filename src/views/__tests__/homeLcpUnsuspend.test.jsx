@@ -3,6 +3,9 @@
 // 대기 화면(loading.jsx) 뒤 스트리밍 조각(<div hidden id="S:…"> → $RC)으로 늦게 끼워졌다 — 절반의 측정에서 LCP가 FCP보다
 // 300–900ms 늦었다. 이제 판본은 약속(promise)으로 넘기고, 판본이 필요한 이어 읽기 칸 · 저장 불가 안내만 안쪽 Suspense에서 받는다.
 // 데이터 경로(publishedReading → readingCatalog, 실패 = null)와 탭 이동 골격(loading.jsx, LOADING-SKELETON-001)은 그대로다.
+// 다음 판(GUEST-STATIC-001 4단계, 2026-10-24 KST): /home은 ISR 판(손님 · 로그인 × 간체 힌트 넷)이다. HTML을 미리 구워 두므로 사람이 판본 조회를
+// 기다리지 않는다 — 서버 부품(HomeVariant)은 판본을 await해서 값(book)으로 넘긴다(다시 만들 때 실패면 던져 앞 판을 둔다). 화면(HomePage)의
+// 약속 경로 · 안쪽 Suspense는 그대로 둔다(이 파일의 렌더 검사가 지킨다) — 값도 약속도 같은 칸 배치를 그린다.
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
@@ -24,13 +27,25 @@ const SENTENCE = '駅前の小さなパン屋で、今日も同じパンを買�
 const never = () => new Promise(() => {});
 
 describe('/home 첫 HTML — 판본을 기다리지 않는다', () => {
-  it('page.jsx: 판본 조회를 await하지 않고 약속으로 넘긴다 — 조회 · 실패 처리(null)는 그대로', () => {
-    const page = code(read('src/app/(app)/home/page.jsx'));
-    expect(page).toContain('const bookPromise = publishedReading().then(published => readingCatalog(published.book))');
-    expect(page).toContain('.catch(() => null);');
-    expect(page).toContain('<HomePage bookPromise={bookPromise} sessionHint={sessionHint} />');
-    expect(page, '판본을 await하면 화면 전체가 다시 대기 화면 뒤 스트리밍 조각으로 밀린다').not.toMatch(/await\s+publishedReading/);
-    expect(page).not.toMatch(/book=\{/);
+  it('배움 판(ISR): 판본은 미리 구울 때 기다려 값으로 넘긴다 — 같은 작은 카탈로그(readingCatalog), 발행 안 함 = null', () => {
+    const variant = code(read('src/components/learn/HomeVariant.jsx'));
+    expect(variant).toContain('const published = await publishedOrNull(db => publishedReadingWith(db));');
+    expect(variant).toContain('const book = published ? readingCatalog(published.book) : null;');
+    expect(variant).toContain('<HomePage book={book} sessionHint={member} />');
+    // 판 넷이 모두 ISR(동적이면 await가 다시 첫 HTML을 막는다 — 빌드 대조 scripts/check-static-routes.mjs가 산출로 본다)
+    for (const f of ['(guest)/page.jsx', '(guest)/sc/page.jsx', 'member/page.jsx', 'member/sc/page.jsx']) {
+      expect(read(`src/app/(app)/home/${f}`), f).toContain('export const revalidate = 3600;');
+    }
+  });
+
+  it('값으로 받은 판본도 약속과 같은 첫 HTML 배치 — 손님 · 로그인', () => {
+    for (const sessionHint of [false, true]) {
+      const viaPromise = renderToString(createElement(HomePage, { bookPromise: never(), sessionHint }));
+      const viaValue = renderToString(createElement(HomePage, { book: null, sessionHint }));
+      const tiles = (html) => (html.match(/class="learn-[a-z-]+/g) || []).join(' ');
+      expect(tiles(viaValue), String(sessionHint)).toBe(tiles(viaPromise));
+      expect(tiles(viaValue)).toContain('learn-resume');
+    }
   });
 
   it('손님: 판본이 오지 않아도 맛보기 문장 · 로그인 칸이 첫 HTML에 있고, 이어 읽기 칸만 대기 골격이다', () => {
@@ -54,9 +69,9 @@ describe('/home 첫 HTML — 판본을 기다리지 않는다', () => {
 
   it('이어 읽기 칸의 대기 그림 = 배움 대기 화면(loading.jsx)의 그 칸 — 자리 · 모양이 같다', () => {
     const home = code(read('src/views/HomePage.jsx'));
-    expect(home).toContain('<Suspense fallback={<ResumeTile pending />}><ResumeSlot');
+    expect(home).toContain('<Suspense fallback={<ResumeTile pending glyph={pendingGlyph} />}><ResumeSlot');
     expect(home).toContain('<Suspense fallback={null}><StorageNote');
-    expect(code(read('src/app/(app)/home/loading.jsx'))).toContain('<ResumeTile pending />');
+    expect(code(read('src/components/learn/HomeSkeleton.jsx'))).toContain('<ResumeTile pending />'); // 로그인 배치(손님은 장식 글자 — homeResumeGlyph.test)
   });
 
   it('판본이 필요한 판단(읽은 위치 · 목적지 고정 · 추천)은 모두 ResumeSlot 안에 있다 — 화면 본체는 판본을 읽지 않는다', () => {
@@ -67,8 +82,8 @@ describe('/home 첫 HTML — 판본을 기다리지 않는다', () => {
     expect(body).not.toContain('use(bookPromise)');
     const slot = sliceBetween(home, 'function ResumeSlot(', 'function StorageNote(');
     for (const part of ['useBook(bookPromise, bookValue)', 'useReadingProgress(book?.edition)', 'chooseResume(bookForLang, local.updatedAt, material)',
-      'return <ResumeTile item={resumeItem} pending={resumePending} />;']) expect(slot).toContain(part);
+      'return <ResumeTile item={resumeItem} pending={resumePending} glyph={pendingGlyph} />;']) expect(slot).toContain(part);
     // 탭 이동 골격은 그대로(LOADING-SKELETON-001)
-    expect(fs.existsSync(path.join(ROOT, 'src/app/(app)/home/loading.jsx'))).toBe(true);
+    for (const f of ['(guest)/loading.jsx', 'member/loading.jsx']) expect(fs.existsSync(path.join(ROOT, 'src/app/(app)/home', f)), f).toBe(true);
   });
 });

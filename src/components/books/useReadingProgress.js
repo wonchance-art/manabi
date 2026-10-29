@@ -1,9 +1,10 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
+import { BOOK_ID } from '@/lib/textbook/contract';
 import { emptyReadingProgress, readingProgressKey, validReadingProgress } from '@/lib/bookNavigation';
 
-export default function useReadingProgress(edition) {
+export default function useReadingProgress(edition, bookId = BOOK_ID) {
   const { user, loading } = useAuth();
   const key = readingProgressKey(edition, user?.id);
   const [snapshot, setSnapshot] = useState(null);
@@ -15,7 +16,7 @@ export default function useReadingProgress(edition) {
       let stored = null;
       try { stored = localStorage.getItem(key); } catch { storageAvailable = false; }
       try { raw = JSON.parse(stored || 'null'); } catch { /* A damaged record starts fresh; storage can still work. */ }
-      const progress = validReadingProgress(raw);
+      const progress = validReadingProgress(raw, bookId);
       const next = { key, progress, hasProgress: !!raw && raw.page === progress.page, updatedAt: raw?.updatedAt || null, storageAvailable };
       current.current = next; setSnapshot(next);
     }
@@ -23,15 +24,15 @@ export default function useReadingProgress(edition) {
     const sync = event => { if (!event.key || event.key === key) restore(); };
     window.addEventListener('storage', sync);
     return () => { current.current = null; window.removeEventListener('storage', sync); };
-  }, [key, edition, loading]);
+  }, [key, edition, loading, bookId]);
   const update = useCallback(patch => {
     if (current.current?.key !== key) return;
-    const progress = validReadingProgress({ ...current.current.progress, ...patch });
+    const progress = validReadingProgress({ ...current.current.progress, ...patch }, bookId);
     const updatedAt = new Date().toISOString();
     const next = { key, progress, updatedAt, hasProgress: true, storageAvailable: true };
     try { localStorage.setItem(key, JSON.stringify({ ...progress, updatedAt })); } catch { next.storageAvailable = false; }
     current.current = next; setSnapshot(next);
-  }, [key]);
+  }, [key, bookId]);
   const ready = !loading && snapshot?.key === key;
   return { progress: ready ? snapshot.progress : emptyReadingProgress(), update, ready,
     hasProgress: ready && snapshot.hasProgress, updatedAt: ready ? snapshot.updatedAt : null,

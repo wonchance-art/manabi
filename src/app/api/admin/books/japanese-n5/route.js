@@ -1,3 +1,4 @@
+import {revalidatePath} from 'next/cache';
 import {requireAdmin} from '@/lib/supabaseServer';
 import {BOOK_ID,isBookId,validateManuscript,withCandidateMetadata} from '@/lib/textbook/contract';
 import {candidate,currentCandidate,editorCandidates,contentHash,readEdition,readRelease,respond,respondError,textbookError} from '@/lib/textbook/server';
@@ -33,5 +34,12 @@ export async function POST(request,{bookId=BOOK_ID}={}){const auth=await require
  if(body.action==='publish'){const draft=await readDraft(auth.supabase,bookId);if((draft?.version??null)!==body.expectedDraftVersion||(draft&&draft.content_hash!==ready.contentHash))throw textbookError(409,'현재 초안과 출력본이 달라요. 저장한 원고의 출력본 검수를 먼저 마쳐 주세요.');draftVersion=body.expectedDraftVersion;}
  else if(!await readEdition(auth.supabase,body.editionId,bookId))throw textbookError(404,'발행한 판본만 복원할 수 있어요.');
  const {data,error}=await auth.supabase.rpc('publish_textbook_book',{p_book_id:bookId,p_edition_id:ready.editionId,p_content_hash:ready.contentHash,p_manuscript:ready.manuscript,p_artifact_manifest:ready.artifactManifest,p_expected_draft_version:draftVersion,p_expected_release_version:body.expectedReleaseVersion,p_restore:body.action==='restore'});
- if(error){if(error.code==='40001')throw textbookError(409,'초안 또는 발행 정보가 바뀌었어요. 최신 상태를 확인해 주세요.');throw textbookError(503,'판본을 발행하지 못했어요.');}return respond({ok:true,release:Array.isArray(data)?data[0]:data});
+ if(error){if(error.code==='40001')throw textbookError(409,'초안 또는 발행 정보가 바뀌었어요. 최신 상태를 확인해 주세요.');throw textbookError(503,'판본을 발행하지 못했어요.');}
+ // 책장(/lessons · 언어 판)은 ISR 1시간이다(GUEST-STATIC-001 3단계) — 발행 · 복원이 그 수명을 기다리지 않게 바로 버린다(N3 · N4도 이 POST를 쓴다).
+ revalidatePath('/lessons');revalidatePath('/lessons/lang/[lang]', 'page');
+ // 교재 첫 화면 판(쿼리 없음 — /books/<책>/cover/*) · 배움 판(/home 아래 넷, 이어 읽기 칸이 N5 카탈로그를 싣는다)도 ISR 1시간이다(4단계).
+ revalidatePath(`/books/${bookId}/cover/[hint]`,'page');if(bookId===BOOK_ID)revalidatePath('/home','layout');
+ // 판본별 판(?edition=<저장소 판본 id> 하나뿐 — /books/<책>/edition/*, 5단계)도 — 도장 없이 구운 판(안내)이 발행 즉시 그 판본을 그리게.
+ revalidatePath(`/books/${bookId}/edition/[edition]/[hint]`,'page');
+ return respond({ok:true,release:Array.isArray(data)?data[0]:data});
  }catch(e){return respondError(e)}}

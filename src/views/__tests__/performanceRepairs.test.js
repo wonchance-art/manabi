@@ -57,26 +57,25 @@ describe('P1–P5 초기 전송 성능 수리 회귀', () => {
   });
 
   it('P4: 홈은 발행 교재의 작은 카탈로그만 전달하고 예전 30과 통계를 섞지 않는다', () => {
-    const page = read('src/app/(app)/home/page.jsx');
+    // 배움 판 넷(ISR — GUEST-STATIC-001 4단계)이 같은 서버 부품을 쓴다. 판이 아는 배치(B1)만 더한다 — 같은 작은 카탈로그(readingCatalog)다.
+    const page = read('src/components/learn/HomeVariant.jsx');
     const home = read('src/views/HomePage.jsx');
     expect(page).toContain('readingCatalog(published.book)');
-    // 세션 쿠키 이름 유무(B1)만 더한다. 판본은 약속으로 넘긴다(LCP-UNSUSPEND) — 같은 작은 카탈로그(readingCatalog)다.
-    expect(page).toContain('<HomePage bookPromise={bookPromise} sessionHint={sessionHint} />');
+    expect(page).toContain('<HomePage book={book} sessionHint={member} />');
     expect(page).not.toContain('buildContinueManifest');
     expect(home).not.toContain('ProfileStats');
     expect(home).not.toContain('pullProgress');
   });
 
-  it('P3: dynamic searchParams 구조를 유지한다 — 정적화하면 ?lang·?level이 안 먹는다', () => {
-    // 이 계약이 지키는 것은 **동적 구조**다. 함께 얼려 뒀던 `revalidate = 60`은
-    // 2026-08-31 실측에서 **런타임 효과가 0**으로 판명됐다(빌드 산출 `ƒ /lessons`,
-    // 응답 헤더가 제거 전후 모두 `private, no-cache, no-store, …`). 효과 없는 그 줄이
-    // "비로그인 옛 버전" 조사를 CDN 캐시 오진으로 이끌었기에 지웠다(#1077).
-    // 되살아나지 않는 것은 guestLandingParity가 따로 지킨다.
-    const page = read('src/app/(app)/lessons/page.jsx');
-
-    expect(page).toContain('export default async function Page({ searchParams })');
-    expect(page).toContain('const sp = await searchParams;');
-    expect(page).toContain('dynamic SSR');
+  it('P3: ?lang이 계속 먹는다 — 쿼리는 middleware가 언어 판으로 넘긴다(GUEST-STATIC-001 3단계)', () => {
+    // 옛 판: 이 계약은 **동적 구조**(searchParams를 await)를 지켰다 — 정적화하면 ?lang이 안 먹기 때문이다. 함께 얼려 뒀던
+    // `revalidate = 60`은 2026-08-31 실측에서 런타임 효과 0(빌드 산출 ƒ, 응답 no-store)이었고 #1077 오진을 낳아 지웠다.
+    // 새 판: 책장을 ISR(3600)로 굽되 ?lang은 화면이 읽지 않고 middleware가 /lessons/lang/<언어>(언어마다 구운 판)로 넘긴다.
+    // 지키는 뜻은 같다 — 「?lang 링크가 그 언어를 고른 첫 그림을 받는다」. 선언과 실제의 일치는 guestLandingParity · 빌드 대조가 본다.
+    const page = read('src/app/(app)/lessons/lang/[lang]/page.jsx');
+    expect(page).toContain('export function generateStaticParams() { return BOOK_SERIES.map(({ language }) => ({ lang: language })); }');
+    expect(page).toContain('return <LessonsShelf lang={lang} />;');
+    expect(read('src/components/books/LessonsShelf.jsx')).toContain('initialLang={lang}');
+    expect(read('src/middleware.js')).toContain('? rewriteTo(request, `/lessons/lang/${lang}`) : NextResponse.next();');
   });
 });

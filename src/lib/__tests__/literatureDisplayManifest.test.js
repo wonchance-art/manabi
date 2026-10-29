@@ -91,7 +91,11 @@ describe('표시 함수 — 표시용 대조표로 전과 같은 판정', () => 
 
 // 계약 ②: 클라이언트 화면 파일은 전체 대조표(manifest.generated.json)를 직접 · 간접 import하지 않는다.
 // 정적 import · re-export를 따라간다(동적 import()는 따로 쪼갠 청크라 그 화면 번들에 붙지 않는다 — 따라가지 않는다).
-const CLIENT_SCREENS = ['src/views/HomePage.jsx', 'src/lib/useRereadCandidate.js', 'src/views/MaterialsPage.jsx'];
+// 수업 · 노트(ROUTE-AUDIT-2 F5, 2026-10-25 KST): 원문 수정 차단 판정만 쓰는 재분석 보존 → 수업 모델 사슬로 /class · /class/* · /notes/[id] 첫 JS에
+// 전체 대조표(gz 67 kB)가 실렸다 — 판정은 대조표 없는 literatureCanonicalProvider에서 읽는다.
+// 뷰어도 이제 싣지 않는다(VIEWER-LIT-LAZY-001 — 대조 · 표시 표는 그 출처의 정본 장을 열 때 동적 import로).
+const CLIENT_SCREENS = ['src/views/HomePage.jsx', 'src/views/MaterialsPage.jsx', 'src/views/ClassHubPage.jsx', 'src/components/notes/StudyNotePage.jsx',
+  'src/lib/classroomModel.js', 'src/lib/reanalysisPreservation.js', 'src/views/ViewerPage.jsx', 'src/lib/useCanonicalLiterature.js'];
 const FULL_MANIFEST = /\/content\/literature\/[^/]+\/manifest\.generated\.json$/u;
 const STATIC_IMPORT = /(?:^|[\n;])\s*(?:import|export)\s+(?:[^'"]*?\sfrom\s*)?['"]([^'"]+)['"]/gu;
 
@@ -131,19 +135,44 @@ describe('화면 번들 — 전체 대조표를 싣지 않는다', () => {
     expect(fullManifestPaths(screen)).toEqual([]);
   });
 
-  it('검사기가 실제로 닿는 경로를 잡는다(뷰어는 해시 대조로 전체 대조표를 쓴다 — 음성 대조군)', () => {
+  it('검사기가 실제로 닿는 경로를 잡는다(해시 대조 모듈은 전체 대조표를 쓴다 — 음성 대조군)', () => {
     expect(fullManifestPaths('src/lib/literatureCanonical.js').length).toBeGreaterThan(0);
-    expect(fullManifestPaths('src/views/ViewerPage.jsx').some((chain) => chain.endsWith('aozora/manifest.generated.json'))).toBe(true);
+    expect(fullManifestPaths('src/lib/standardEbooksCanonical.js').some((chain) => chain.endsWith('aozora/manifest.generated.json'))).toBe(true);
+  });
+
+  it('뷰어는 대조 · 표시 표를 그 출처의 자료를 열 때만 동적 import로 받는다(VIEWER-LIT-LAZY-001 — 문학책 아닌 자료 첫 JS 851 KB)', () => {
+    const hook = read('src/lib/useCanonicalLiterature.js');
+    for (const mod of ['literatureCanonical', 'standardEbooksCanonical', 'wikisourceCanonical', 'pdSiteCanonical', 'literatureWorks']) {
+      expect(hook).toContain(`import('./${mod}')`);
+      expect(hook).not.toMatch(new RegExp(`from '\\./${mod}'`, 'u'));
+    }
+    // 받지 못하면 대조하지 않은 것과 같다(크레딧 없음 — fail-closed).
+    expect(hook).toContain('.then((value) => { if (live) setLiterature(value); }, () => {});');
+    const viewer = read('src/views/ViewerPage.jsx');
+    expect(viewer).toContain("import { isCanonicalLiteratureMaterial } from '../lib/literatureCanonicalProvider';");
+    expect(viewer).toContain('const literatureBook = useLiteratureWork(bookMeta?.key, !!canonicalLiterature);');
   });
 
   it('화면 파일은 표시 함수를 가벼운 모듈에서 직접 import한다', () => {
     expect(read('src/views/HomePage.jsx')).toContain("import { literatureDisplayTitle } from '@/lib/literatureWorks';");
-    expect(read('src/lib/useRereadCandidate.js')).toContain("import { literatureDisplayTitle } from './literatureWorks';");
     const materials = read('src/views/MaterialsPage.jsx');
     // 「다음 과 적기」 판정은 대조표 없는 isCanonicalBookKey(접두사 — canonicalBookKey.test.js) 몫이라 표지 함수만 가져온다
     expect(materials).toContain("import { literatureWorkOfBook } from '../lib/literatureWorks';");
     expect(materials).toContain("import { standardEbooksWorkOfBook } from '../lib/standardEbooksWorks';");
     expect(materials).not.toMatch(/from '\.\.\/lib\/(literatureCanonical|standardEbooksCanonical)'/u);
     expect(materials).toContain("import { literatureChapterIncipit } from '../lib/literatureIncipits';");
+  });
+});
+
+describe('VIEWER-LIT-LAZY-001 — 늦게 받는 대조 함수는 정적 import와 같은 함수', () => {
+  it('출처마다 같은 대조 함수로 풀리고, 모르는 출처 · 비어 있는 출처는 받지 않는다', async () => {
+    const { loadLiteratureVerifier } = await import('../useCanonicalLiterature.js');
+    const [aozora, se, ws, pd] = await Promise.all([import('../literatureCanonical.js'), import('../standardEbooksCanonical.js'),
+      import('../wikisourceCanonical.js'), import('../pdSiteCanonical.js')]);
+    expect(await loadLiteratureVerifier('aozora')).toBe(aozora.verifiedCanonicalLiterature);
+    expect(await loadLiteratureVerifier('standardebooks')).toBe(se.verifiedStandardEbooksLiterature);
+    expect(await loadLiteratureVerifier('wikisource')).toBe(ws.verifiedWikisourceLiterature);
+    expect(await loadLiteratureVerifier('pdsite')).toBe(pd.verifiedPdSiteLiterature);
+    for (const provider of [undefined, null, '', 'toString', '__proto__', 'gutenberg']) expect(loadLiteratureVerifier(provider)).toBeNull();
   });
 });

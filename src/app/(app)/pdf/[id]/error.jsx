@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect } from 'react';
+import { reloadOnceForChunkError } from '@/lib/chunkReload';
+import { retryRouteError } from '@/lib/chunkReload'; // 조각 오류의 「다시 시도」 = 문서 새로 받기
 
 // PDF 라우트 전용 에러 바운더리 — 원문·스택은 콘솔에만 남기고 화면에는 정해진 안내만 낸다(WALL-001).
 export default function PdfError({ error, reset }) {
-  useEffect(() => { console.error('PdfError:', error); }, [error]);
+  useEffect(() => { console.error('PdfError:', error); reloadOnceForChunkError(error); }, [error]);
 
   return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
@@ -14,7 +16,7 @@ export default function PdfError({ error, reset }) {
       <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto 24px' }}>
         잠시 후 다시 시도해 주세요.
       </p>
-      <button className="btn btn--primary btn--md" onClick={reset}>다시 시도</button>
+      <button className="btn btn--primary btn--md" onClick={() => retryRouteError(error, reset)}>다시 시도</button>
       {error?.digest && (
         <p style={{ marginTop: 20, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
           오류 ID: {error.digest}

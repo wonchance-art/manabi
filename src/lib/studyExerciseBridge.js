@@ -139,10 +139,10 @@ export async function recordStudyReviewCompleted(userId, {
   const reviewRefs = buildStudyReviewRefs({ correct, item, lang, rtMs, result, response });
   if (reviewRefs.length === 0) return;
 
-  let calculateFSRS = null;
+  let calculateVocabFSRS = null;
   if (userId && reviewRefs.some(ref => ref.type === 'vocab')) {
     try {
-      ({ calculateFSRS } = await import('./fsrs'));
+      ({ calculateVocabFSRS } = await import('./fsrs'));
     } catch {
       // 이벤트 기록은 FSRS 모듈 로드 실패와 독립적으로 유지한다.
     }
@@ -161,12 +161,14 @@ export async function recordStudyReviewCompleted(userId, {
       ? item.words.find(value => value.word_text === reviewRef.itemKey)
       : item.word;
     let nextStats = {};
-    if (calculateFSRS && word) {
-      nextStats = calculateFSRS(reviewRef.correct ? 3 : 1, {
+    if (calculateVocabFSRS && word) {
+      nextStats = calculateVocabFSRS(reviewRef.correct ? 3 : 1, {
         interval: word.interval ?? 0,
         ease_factor: word.ease_factor ?? 0,
         repetitions: word.repetitions ?? 0,
         next_review_at: word.next_review_at,
+        last_reviewed_at: word.last_reviewed_at,
+        created_at: word.created_at,
       });
     }
     const saved = await recordReviewCompleted(userId, reviewRef, nextStats);

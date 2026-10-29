@@ -1,0 +1,82 @@
+{
+  "scope": "Actual local Next browser and application API; synthetic learner + memory backend only",
+  "hostedAccount": false,
+  "hostedPublication": false,
+  "realPostgresRls": false,
+  "checks": [
+    "all 48 actual reading routes + exact packaged DOM/ETag/304 + every immutable cookie-free asset and course/edition boundaries",
+    "Japanese shelf → keyboard N3 entrance → all 48 lesson entries",
+    "reference search waits for loaded body, filters a real Japanese term, shows zero matching entries, then restores all entries",
+    "N3 answer survives actual reload without replacing the edition",
+    "DOM text selection → dialog → keyboard save → duplicate detection, with exact N3 source identifiers",
+    "saved expression list → actual new-tab same-edition original → reload, preserving primary N3/N4/N5 reading positions",
+    "N3 reader at 320/390/768 pixels with keyboard-operated mobile contents and no page overflow",
+    "N3 scoped review → first-question admission → reveal → one persisted SRS grade → original N3 edition return",
+    "saved-expression failure and empty response remain visibly distinct",
+    "N5 and N4 published readers remain available and their review lists exclude N3-only contexts",
+    "N3 expression-list return parameter for N4 cannot change review scope or original-book return",
+    "forged quote / cross-book edition / unsupported book / unsafe page reject before synthetic persistence",
+    "actual u43–u48 source saves → exact per-lesson/range scope; both owner predicates present, foreign source hidden, N5/N4 scopes empty",
+    "anonymous N3 save offers exact source login return; unauthenticated API write returns 401"
+  ],
+  "layouts": [
+    {
+      "label": "desktop-n3-toc",
+      "width": 1440,
+      "scroll": 1440
+    },
+    {
+      "label": "n3-reading-320",
+      "width": 320,
+      "scroll": 320
+    },
+    {
+      "label": "n3-reading-390",
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "label": "n3-reading-768",
+      "width": 768,
+      "scroll": 768
+    }
+  ],
+  "errors": [],
+  "startedAt": "2026-10-21T12:13:56.821Z",
+  "editions": {
+    "n3": "4978c146953f14140bcb49d2",
+    "n4": "f4a6411c0945bbd3f8767af7",
+    "n5": "7f572327dc67893e9453246c"
+  },
+  "n3Artifact": {
+    "editionId": "4978c146953f14140bcb49d2",
+    "contentHash": "4978c146953f14140bcb49d21bc58d236195ad73d1568dc0d516c2546547aaf5",
+    "bundleHash": "1dfbabcd4369412ca5d80f5a3ba5c01070f9f233dc2dcd787f8235eef8dbad62"
+  },
+  "blockedExternalRequests": [],
+  "reviewCohort": "Existing legacy vocabulary cohort, graded through production ts-fsrs adapter and synthetic HTTP persistence; no full-state FSRS enrollment claimed",
+  "rejections": [
+    {
+      "label": "forged quote",
+      "status": 400
+    },
+    {
+      "label": "mismatched N5 edition",
+      "status": 404
+    },
+    {
+      "label": "mismatched N4 edition",
+      "status": 404
+    },
+    {
+      "label": "unsupported book",
+      "status": 404
+    },
+    {
+      "label": "invalid page",
+      "status": 400
+    }
+  ],
+  "passed": true,
+  "finishedAt": "2026-10-21T12:15:24.962Z"
+}

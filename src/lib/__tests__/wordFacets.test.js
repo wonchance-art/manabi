@@ -57,14 +57,15 @@ describe('탭별 O · X 기록', () => {
     expect(o).toContain('allFacetsKnown(after, entry.key)');
     const x = sliceBetween(page, 'const markFacetX = ', '\n  };');
     expect(x).toContain("facets.mark({ wordText: entry.key, facet: facetView, mark: 'x' });");
-    expect(x).toContain('markX(entry);');
+    expect(x).toContain('studyX(entry);');
     expect(page).toContain("onO={() => (facetView ? markFacetO(e) : markO(e))} onX={() => (facetView ? markFacetX(e) : markX(e))}");
     // 표를 읽어 왔을 때만 탭별 기록 — 운영 미적용이면 모든 탭이 단어 단위 O · X(누를 때마다 저장 실패 금지)
     expect(page).toContain("const facetView = vocab && prefs.view !== 'all' && facets.available ? prefs.view : null;");
     expect(read('src/lib/useWordFacets.js')).toContain('available: query.isSuccess');
-    expect(page).toContain('splitKnown(g.entries, hiddenSet)');
+    expect(page).toContain('splitKnown(inRound, hiddenSet)'); // 새 바퀴면 범위 안 단어만(LEVEL-ROUND-001 ②)
     // 표에 직접 쓰는 곳은 wordFacets.js 하나
     expect(page).not.toContain("from('user_word_facets')");
-    expect(read('src/lib/wordFacets.js').match(/from\('user_word_facets'\)/g)).toHaveLength(2);
+    // 읽기 · 한 줄 쓰기 + 레벨 초기화의 여러 줄 지우기 · 되살리기(LEVEL-ROUND-001 ②)
+    expect(read('src/lib/wordFacets.js').match(/from\('user_word_facets'\)/g)).toHaveLength(4);
   });
 });

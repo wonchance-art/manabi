@@ -19,6 +19,8 @@
 /* 목록 화면 */
 /* 넓은 화면 균형(오너 2026-10-16 「1440에서 균형」) — 묶음은 가운데. 단어 목록은 목차 없이 680px 한 줄(폰과 같은 구조). */
 .lv-page>*{max-width:904px;margin-inline:auto}
+/* 하단 메뉴가 끝에서 당길 때 튕김에 끌려감(오너 지적 2026-10-21 KST) — 레벨 한자 · 문형 · 단어 목록이 열린 동안 문서 튕김을 끈다. 새 단어 페이지는 level-word.css. */
+html:has(.lv-page){overscroll-behavior-y:none}
 .lv-page--vocab>*{max-width:680px}
 .lv-crumb{margin:0;font-size:13px}
 .lv-crumb a{color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;min-height:44px}
@@ -55,6 +57,8 @@
 @keyframes lv-drop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.lv-bar--sticky :is(.lv-nav,.lv-settings,.lv-tools){animation:none}}
 .lv-prog{display:flex;align-items:center;gap:12px;font-size:12.5px;color:var(--muted);min-height:24px}
+/* 진도 줄 자리(LEVEL-PROG-HOLD-001) — 평소 꺼짐, 세션 쿠키가 있으면 그리기 전 한 줄(sessionHintScript)이 켠다. 같은 높이 · 빈 진도 막대. */
+.lv-prog--hold{display:none}
 .lv-meter{flex:1 1 auto;min-width:60px;height:6px;border-radius:999px;background:var(--lv-chip);display:flex;overflow:hidden}
 .lv-meter i{display:block;height:100%;transition:width .3s ease}
 .lv-meter__k{background:var(--lv-ok)}
@@ -71,7 +75,7 @@
 .lv-tabs a[aria-current=page]{color:var(--ink);font-weight:700;box-shadow:inset 0 -2px 0 var(--ink)}
 .lv-tools{display:flex;gap:10px;align-items:center}
 .lv-search{flex:1 1 auto;min-width:0;display:flex;gap:10px;align-items:center;height:44px;padding:0 16px;border-radius:12px;background:var(--lv-field);color:var(--lv-faint)}
-.lv-search input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:14px;color:var(--ink);height:100%;outline:0}
+.lv-search input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:max(var(--field-font-min),14px);color:var(--ink);height:100%;outline:0}
 .lv-search:focus-within{outline:2px solid var(--ja);outline-offset:2px}
 .lv-search svg{flex:none}
 .lv-gear{flex:none;width:44px;height:44px;border-radius:12px;border:0;background:var(--lv-field);color:var(--muted);display:inline-grid;place-items:center;cursor:pointer}
@@ -84,6 +88,23 @@
 .lv-switch i::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--lv-card);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 25%,transparent);transition:transform .15s ease}
 .lv-switch[aria-checked=true] i{background:var(--ink)}
 .lv-switch[aria-checked=true] i::after{transform:translateX(16px)}
+/* 바퀴(LEVEL-ROUND-001 ②) — ⚙ 맨 아래 「새 바퀴 시작」 · 「이 레벨 기록 초기화」, 진도 줄 자리의 끝 카드. */
+.lv-rounds{border-top:1px solid var(--lv-line)}
+.lv-rounds__btn{display:block;width:100%;min-height:52px;border:0;background:none;padding:0;font:inherit;font-size:14px;color:var(--ink);cursor:pointer;text-align:left}
+.lv-rounds__btn+.lv-rounds__btn{border-top:1px solid var(--lv-line)}
+.lv-rounds__btn small{display:block;font-size:12px;color:var(--muted);margin-top:1px}
+.lv-rounds__ask{border-top:1px solid var(--lv-line);padding:10px 0 12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.lv-rounds__ask p{flex:1 1 100%;margin:0;font-size:13px;color:var(--ink);line-height:1.5}
+.lv-rounds__ask button,.lv-end__acts button{min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--lv-line);background:var(--lv-card);font:inherit;font-size:14px;color:var(--ink);cursor:pointer}
+.lv-rounds__ask .lv-rounds__danger{background:var(--ink);border-color:var(--ink);color:var(--lv-card)}
+.lv-end{border:1px solid var(--lv-line);border-radius:12px;background:var(--lv-card);padding:12px 16px}
+.lv-end__head{margin:0;font-size:12.5px;color:var(--muted)}
+.lv-end__line{margin:2px 0 10px;font-size:15px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.lv-end__acts{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.lv-end__acts .lv-end__main{background:var(--ink);border-color:var(--ink);color:var(--lv-card)}
+.lv-end__acts .lv-prog__review{margin-block:0}
+.lv-end__next{margin:6px 0 0;font-size:13px;color:var(--muted)}
+.lv-end__acts+.lv-end__next{margin-top:10px}
 .lv-view{display:flex;gap:2px;padding:3px;border-radius:12px;background:var(--lv-chip)}
 .lv-view button{flex:1 1 0;min-height:40px;border:0;border-radius:9px;background:none;font:inherit;font-size:14px;color:var(--muted);cursor:pointer}
 .lv-view button:hover{color:var(--ink)}
@@ -142,6 +163,9 @@
 .lv-py{font:400 15px var(--font-noto-sans,'Noto Sans'),sans-serif;color:var(--muted);letter-spacing:.01em}
 .lv-snd{width:44px;height:44px;margin:-10px 0;border:0;background:none;color:var(--muted);display:inline-grid;place-items:center;border-radius:50%;vertical-align:middle;cursor:pointer;flex:none}
 .lv-snd:hover{color:var(--ink);background:var(--lv-chip)}
+/* 듣기 단추 자리(LEVEL-SND-HOLD-001) — 붙기 전 같은 상자, 보이지 않음 · 누름 없음. 아이콘(17px)과 같은 빈 칸을 넣어 기준선(표제어 줄 align-items:baseline)까지 같게. */
+.lv-snd--hold{visibility:hidden;pointer-events:none}
+.lv-snd--hold::before{content:"";display:block;width:17px;height:17px}
 .lv-mean{margin:6px 0 0;font-size:16px;color:var(--ink)}
 .lv-ex{margin:14px 0 0;padding:2px 0 2px 16px;border-left:2px solid var(--lv-ex-rule)}
 .lv-ex+.lv-ex{margin-top:10px}
@@ -152,7 +176,7 @@
 .lv-acts{display:flex;align-items:center;gap:10px;flex:none}
 .lv-fab{width:44px;height:44px;border-radius:50%;border:0;display:inline-grid;place-items:center;flex:none;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease,background .12s ease}
 .lv-fab--save{background:var(--ja);color:#fff;box-shadow:0 2px 6px color-mix(in srgb,var(--ja) 28%,transparent)}
-.lv-fab--save:hover{transform:translateY(-1px);box-shadow:0 4px 12px color-mix(in srgb,var(--ja) 34%,transparent)}
+@media (hover:hover){.lv-fab--save:hover{transform:translateY(-1px);box-shadow:0 4px 12px color-mix(in srgb,var(--ja) 34%,transparent)}}
 .lv-fab--save:active,.lv-fab--ex:active{transform:scale(.96)}
 .lv-fab--busy{background:var(--lv-busy);color:#fff;cursor:progress}
 .lv-fab--busy svg{animation:lv-spin 1s linear infinite}
@@ -173,12 +197,16 @@
 .lv-hc{display:inline-flex;flex-direction:column;align-items:center}
 .lv-hw .word-fit__hun{display:inline-flex;flex-direction:column;align-items:center;min-width:calc(var(--hun-n,0) * 1em);padding:0 2px;font-family:var(--font-noto-kr),sans-serif;font-size:12px;font-weight:400;line-height:1.35;letter-spacing:0;color:var(--muted);white-space:nowrap;text-align:center}
 .lv-hw .word-fit__hun[data-wrap]{max-width:calc(var(--hun-n,0) * 1em);white-space:normal;overflow-wrap:anywhere}
+/* 훈음 자리(LEVEL-HUN-HOLD-001) — 표가 오기 전 같은 상자 · 같은 줄 수의 빈 칸. */
+.lv-hw .lv-hun-hold{visibility:hidden}
 .lv-glyph{margin:6px 0 0;display:flex;flex-wrap:wrap;gap:4px 18px;font-size:15px;color:var(--ink)}
 .lv-glyph>span{display:inline-flex;align-items:baseline;gap:6px}
 .lv-glyph b{font-size:12px;font-weight:700;color:var(--muted)}
 .lv-glyph small{font-size:13px;color:var(--muted)}
 @keyframes lv-spin{to{transform:rotate(360deg)}}
 .lv-pat{padding:28px 0 30px;border-top:1px solid var(--lv-line)}
+.lv-pat:target{scroll-margin-top:calc(var(--gnb-height,78px) + 64px)}
+.lv-pat:target .lv-pat__head .lv-hw{box-shadow:inset 0 -.45em 0 var(--lv-have)}
 .lv-pat:first-child{border-top:0}
 .lv-pat__head{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
 .lv-pat__ko{font-size:15px;color:var(--muted)}
@@ -190,7 +218,7 @@
 .lv-more{margin:18px 0 0;display:flex;justify-content:center}
 .lv-more button{min-height:44px;padding:0 22px;border-radius:12px;border:1px solid var(--lv-line);background:var(--lv-card);font-weight:600;font-size:13px;color:var(--ink);cursor:pointer}
 .lv-src{margin:30px 0 0;font-size:11.5px;color:var(--lv-faint)}
-.lv-toast{position:fixed;left:50%;bottom:calc(var(--mobile-nav-height,0px) + 24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;gap:18px;align-items:center;background:var(--ink);color:var(--paper);border-radius:12px;padding:8px 10px 8px 18px;font-size:13.5px;box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 25%,transparent);max-width:calc(100vw - 32px);width:max-content}
+.lv-toast{position:fixed;left:50%;bottom:calc(var(--mobile-nav-height,0px) + 24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;gap:18px;align-items:center;background:var(--ink);color:var(--paper);border-radius:12px;padding:8px 10px 8px 18px;font-size:13.5px;box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 25%,transparent);max-width:calc(100vw - 32px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px));width:max-content}
 .lv-toast:empty{display:none}
 .lv-toast button,.lv-toast a{border:0;background:none;color:var(--lv-have);font:inherit;font-weight:700;min-height:44px;padding:0 8px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
 .lv-page :focus-visible,.lv-shelf :focus-visible{outline:2px solid var(--ja);outline-offset:2px}

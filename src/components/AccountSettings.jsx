@@ -1,10 +1,25 @@
 'use client';
 
+/**
+ * 내 정보의 계정 묶음 · 맨 아래 계정 삭제 (PROFILE-REDESIGN-001 시안 A).
+ *
+ *   계정
+ *   ┌ 비밀번호 바꾸기                        › ┐  → 시트(현재 비밀번호 확인 — AUTH-GUIDE-001 H)
+ *   └ 내 데이터 내보내기             JSON 파일 ↓ ┘  → 바로 내려받기(표 7개 정본 완전 조회) — 다음 화면이 아니라 파일이라 ↓
+ *   [              로그아웃              ]          → AuthContext 관문(AUTH-ROUTER-REFRESH-001). 값이 빠진 줄처럼 보여 따로 한 칸
+ *   …
+ *   계정 삭제                                     ← 맨 아래 따로. 확인창 「계정을 영구 삭제할까요?」 + 「삭제」 입력
+ *
+ * 이메일 · 로그인 방법은 위 「나」 칸에 한 번만 둔다. 줄 이름은 동작(바꾸기 · 내보내기), 값 자리는 지금 값만(PROFILE-POLISH-001 —
+ * 상태와 동작 이름이 값 자리에 섞였다). 위험 동작은 일상 동작과 떨어뜨려 맨 아래에 둔다(설계 P10).
+ */
 import { useEffect, useId, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { readCompleteLegacyRows } from '../lib/legacyReviewSync';
 import { failureMessage } from '../lib/errorMessage';
-import Button from './Button';
+import { isPasswordPwned } from '../lib/pwnedPassword';
+import { PWNED_PASSWORD_MESSAGE } from '../lib/authErrors';
+import { ProfileGroup, ProfileRow, ProfileSheet } from './profile/ProfileParts';
 
 const EXPORT_KEYS = ['profile', 'vocab', 'materials', 'progress', 'notes', 'writings', 'pdfs'];
 
@@ -41,47 +56,13 @@ export default function AccountSettings({ user, toast, signOut }) {
   const [newPw, setNewPw] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
-  const [deleteConfirm, setDeleteConfirm] = useState(false);
-  const [deleteText, setDeleteText] = useState('');
-  const [deleting, setDeleting] = useState(false);
   const [exportMsg, setExportMsg] = useState(null);
-  const deleteDialogRef = useRef(null);
-  const deletingRef = useRef(false);
-  const deleteTitleId = useId();
+  const pwAction = passwordLogin ? '바꾸기' : '만들기';
 
-  deletingRef.current = deleting;
-
-  useEffect(() => {
-    if (!deleteConfirm) return undefined;
-    const previousFocus = document.activeElement;
-    const dialog = deleteDialogRef.current;
-    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-    const focusInitial = window.setTimeout(() => dialog?.querySelector('[data-dialog-initial-focus]')?.focus(), 0);
-    function onKeyDown(event) {
-      if (event.key === 'Escape' && !deletingRef.current) {
-        event.preventDefault();
-        setDeleteConfirm(false);
-        return;
-      }
-      if (event.key !== 'Tab') return;
-      const focusable = [...(dialog?.querySelectorAll(focusableSelector) || [])].filter(el => !el.disabled);
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault(); last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault(); first.focus();
-      }
-    }
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      window.clearTimeout(focusInitial);
-      document.removeEventListener('keydown', onKeyDown);
-      previousFocus?.focus?.();
-    };
-  }, [deleteConfirm]);
+  function closePassword() {
+    setPwMode(false);
+    setCurrentPw(''); setNewPw(''); setConfirmPw('');
+  }
 
   async function handleChangePassword(e) {
     e.preventDefault();
@@ -92,6 +73,9 @@ export default function AccountSettings({ user, toast, signOut }) {
 
     setSubmitting(true);
     try {
+      // 유출 목록에 있는 새 비밀번호는 현재 비밀번호 확인 · 변경 전에 막는다(PWNED-PASSWORD-001). 입력은 그대로 둔다.
+      // 확인하지 못하면(null) 막지 않는다.
+      if (await isPasswordPwned(newPw) === true) { toast(PWNED_PASSWORD_MESSAGE, 'warning'); return; }
       // Supabase updateUser는 현재 비밀번호를 묻지 않는다 — 같은 계정으로 다시 로그인해 확인한다.
       if (passwordLogin) {
         const { error: reauthErr } = await supabase.auth.signInWithPassword({
@@ -106,9 +90,8 @@ export default function AccountSettings({ user, toast, signOut }) {
       }
       const { error } = await supabase.auth.updateUser({ password: newPw });
       if (error) throw error;
-      toast(passwordLogin ? '비밀번호가 변경됐어요' : '비밀번호를 만들었어요. 이제 이메일로도 로그인할 수 있어요', 'success');
-      setPwMode(false);
-      setCurrentPw(''); setNewPw(''); setConfirmPw('');
+      toast(passwordLogin ? '비밀번호를 바꿨어요' : '비밀번호를 만들었어요. 이제 이메일로도 로그인할 수 있어요', 'success');
+      closePassword();
     } catch (err) {
       toast(failureMessage(passwordLogin ? '비밀번호를 바꾸지 못했어요.' : '비밀번호를 만들지 못했어요.', err), 'error');
     } finally {
@@ -117,6 +100,7 @@ export default function AccountSettings({ user, toast, signOut }) {
   }
 
   async function handleExportMyData() {
+    if (exportMsg) return;
     setExportMsg('데이터 모으는 중…');
     try {
       const exportResults = await Promise.all([
@@ -152,6 +136,97 @@ export default function AccountSettings({ user, toast, signOut }) {
     }
   }
 
+  return (
+    <>
+      <ProfileGroup title="계정">
+        <ProfileRow label={`비밀번호 ${pwAction}`} dialog onClick={() => setPwMode(true)} ariaLabel={`비밀번호 ${pwAction}`} />
+        <ProfileRow label="내 데이터 내보내기" value={exportMsg || 'JSON 파일'} onClick={handleExportMyData} busy={!!exportMsg} icon="download"
+          ariaLabel={exportMsg ? `내 데이터 내보내기, ${exportMsg}` : '내 데이터 내보내기, JSON 파일'} />
+      </ProfileGroup>
+      <button type="button" className="pf-solo" onClick={() => signOut() /* 서버 렌더 버리기는 AuthContext 관문(AUTH-ROUTER-REFRESH-001) */}>
+        로그아웃
+      </button>
+
+      {pwMode && (
+        <ProfileSheet title={`비밀번호 ${pwAction}`} onClose={closePassword} busy={submitting}
+          lead={passwordLogin ? null : 'Google로 가입한 계정이에요. 비밀번호를 만들면 이메일로도 로그인할 수 있어요.'}
+          actions={<>
+            <button type="button" className="pf-pill" onClick={closePassword} disabled={submitting}>취소</button>
+            <button type="submit" form="pf-password-form" className="pf-pill pf-pill--fill" disabled={submitting}>
+              {submitting ? '저장 중…' : pwAction}
+            </button>
+          </>}>
+          <form id="pf-password-form" onSubmit={handleChangePassword}>
+            {/* 아이디 칸 — 비밀번호 관리자가 어느 계정의 비밀번호인지 알게(화면에는 숨김) */}
+            <input type="email" name="username" autoComplete="username" value={user.email || ''} readOnly hidden />
+            {passwordLogin && (
+              <div className="pf-field">
+                <label htmlFor="pf-current-password">현재 비밀번호</label>
+                <input id="pf-current-password" type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)}
+                  className="form-input" autoComplete="current-password" required />
+              </div>
+            )}
+            <div className="pf-field">
+              <label htmlFor="pf-new-password">새 비밀번호(8자 이상)</label>
+              <input id="pf-new-password" type="password" value={newPw} onChange={e => setNewPw(e.target.value)}
+                className="form-input" autoComplete="new-password" required minLength={8} />
+            </div>
+            <div className="pf-field">
+              <label htmlFor="pf-confirm-password">새 비밀번호 확인</label>
+              <input id="pf-confirm-password" type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)}
+                className="form-input" autoComplete="new-password" required />
+            </div>
+          </form>
+        </ProfileSheet>
+      )}
+    </>
+  );
+}
+
+/** 계정 삭제 — 화면 맨 아래 따로. 「삭제」를 입력해야 「영구 삭제」가 눌린다(약하게 하지 않는다). 삭제 뒤 같은 signOut 관문을 지난다. */
+export function AccountDelete({ toast, signOut }) {
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleteText, setDeleteText] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const deleteDialogRef = useRef(null);
+  const deletingRef = useRef(false);
+  const deleteTitleId = useId();
+  const deleteDescId = useId();
+  const deleteInputId = useId();
+
+  deletingRef.current = deleting;
+
+  useEffect(() => {
+    if (!deleteConfirm) return undefined;
+    const previousFocus = document.activeElement;
+    const dialog = deleteDialogRef.current;
+    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const focusInitial = window.setTimeout(() => dialog?.querySelector('[data-dialog-initial-focus]')?.focus(), 0);
+    function onKeyDown(event) {
+      if (event.key === 'Escape' && !deletingRef.current) {
+        event.preventDefault();
+        setDeleteConfirm(false);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = [...(dialog?.querySelectorAll(focusableSelector) || [])].filter(el => !el.disabled);
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault(); last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault(); first.focus();
+      }
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.clearTimeout(focusInitial);
+      document.removeEventListener('keydown', onKeyDown);
+      previousFocus?.focus?.();
+    };
+  }, [deleteConfirm]);
+
   async function handleDeleteAccount() {
     setDeleting(true);
     try {
@@ -175,130 +250,58 @@ export default function AccountSettings({ user, toast, signOut }) {
 
   return (
     <>
-      <div className="card mypage-section" style={{ marginBottom: 16 }}>
-        <h2 className="mypage-section__title" style={{ fontSize: '0.9rem', marginBottom: 10 }}>
-          계정
-        </h2>
-
-        <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 10 }}>
-          이메일: <strong style={{ color: 'var(--text-secondary)' }}>{user.email}</strong>
-        </div>
-
-        {!pwMode ? (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <Button size="sm" variant="secondary" onClick={() => setPwMode(true)}>
-              {passwordLogin ? '비밀번호 변경' : '비밀번호 만들기'}
-            </Button>
-            <Button size="sm" variant="ghost" onClick={handleExportMyData} disabled={!!exportMsg}>
-              내 데이터 내보내기
-            </Button>
-            <Button size="sm" variant="ghost" style={{ color: 'var(--danger)' }} onClick={() => setDeleteConfirm(true)}>
-              계정 삭제
-            </Button>
-          </div>
-        ) : (
-          <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {passwordLogin ? (
-              <input
-                type="password"
-                placeholder="현재 비밀번호"
-                aria-label="현재 비밀번호"
-                value={currentPw}
-                onChange={e => setCurrentPw(e.target.value)}
-                className="form-input"
-                autoComplete="current-password"
-                required
-              />
-            ) : (
-              <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                Google로 가입한 계정이에요. 비밀번호를 만들면 이메일로도 로그인할 수 있어요.
-              </p>
-            )}
-            <input
-              type="password"
-              placeholder="새 비밀번호 (8자 이상)"
-              value={newPw}
-              onChange={e => setNewPw(e.target.value)}
-              className="form-input"
-              autoComplete="new-password"
-              required
-              minLength={8}
-            />
-            <input
-              type="password"
-              placeholder="새 비밀번호 확인"
-              value={confirmPw}
-              onChange={e => setConfirmPw(e.target.value)}
-              className="form-input"
-              autoComplete="new-password"
-              required
-            />
-            <div style={{ display: 'flex', gap: 6 }}>
-              <Button type="submit" size="sm" disabled={submitting}>
-                {submitting ? '저장 중…' : passwordLogin ? '변경' : '만들기'}
-              </Button>
-              <Button
-                type="button" size="sm" variant="ghost"
-                onClick={() => { setPwMode(false); setCurrentPw(''); setNewPw(''); setConfirmPw(''); }}
-              >
-                취소
-              </Button>
-            </div>
-          </form>
-        )}
-
-        {exportMsg && (
-          <div style={{ fontSize: '0.78rem', color: 'var(--primary-light)', marginTop: 8 }}>
-            {exportMsg}
-          </div>
-        )}
-      </div>
+      <p className="pf-delete">
+        <button type="button" aria-haspopup="dialog" onClick={() => { setDeleteText(''); setDeleteConfirm(true); }}>계정 삭제</button>
+      </p>
 
       {/* 계정 삭제 확인 */}
       {deleteConfirm && (
         <div
-          className="modal-overlay"
+          className="scrim pf-scrim"
           onClick={() => !deleting && setDeleteConfirm(false)}
           role="presentation"
         >
           <div
             ref={deleteDialogRef}
-            className="modal"
+            className="pf-sheet"
             onClick={e => e.stopPropagation()}
-            style={{ maxWidth: 440 }}
             role="dialog"
             aria-modal="true"
             aria-labelledby={deleteTitleId}
+            aria-describedby={deleteDescId}
           >
-            <h3 id={deleteTitleId} style={{ margin: '0 0 8px', color: 'var(--danger)' }}>계정 삭제</h3>
-            <p style={{ fontSize: '0.88rem', lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: 14 }}>
-              이 작업은 <strong>되돌릴 수 없어요</strong>. 수집한 모든 단어, 자료, 기록이 영구 삭제돼요.
-              공용(public)으로 공유한 자료는 익명 사용자로 남을 수 있어요.
+            <div className="pf-sheet__head">
+              <h2 id={deleteTitleId} className="pf-danger-title">계정을 영구 삭제할까요?</h2>
+            </div>
+            <p id={deleteDescId} className="pf-sheet__lead">
+              담은 표현 · 자료 · 학습 기록이 모두 지워지고 되돌릴 수 없어요. 공개로 공유한 자료는 익명으로 남을 수 있어요.
             </p>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 10 }}>
-              계속하려면 아래에 <strong>삭제</strong>를 입력하세요:
-            </p>
-            <input
-              type="text"
-              value={deleteText}
-              onChange={e => setDeleteText(e.target.value)}
-              className="form-input"
-              placeholder="삭제"
-              style={{ marginBottom: 14 }}
-              autoFocus
-              data-dialog-initial-focus
-            />
-            <div style={{ display: 'flex', gap: 8 }}>
-              <Button variant="ghost" onClick={() => setDeleteConfirm(false)} disabled={deleting} style={{ flex: 1 }}>
+            <div className="pf-field">
+              <label htmlFor={deleteInputId}>확인을 위해 아래에 ‘삭제’를 입력해 주세요.</label>
+              <input
+                id={deleteInputId}
+                type="text"
+                value={deleteText}
+                onChange={e => setDeleteText(e.target.value)}
+                className="form-input"
+                placeholder="삭제"
+                autoComplete="off"
+                autoFocus
+                data-dialog-initial-focus
+              />
+            </div>
+            <div className="pf-sheet__actions">
+              <button type="button" className="pf-pill" onClick={() => setDeleteConfirm(false)} disabled={deleting}>
                 취소
-              </Button>
-              <Button
+              </button>
+              <button
+                type="button"
+                className="pf-pill pf-pill--danger"
                 onClick={handleDeleteAccount}
                 disabled={deleting || deleteText !== '삭제'}
-                style={{ flex: 2, background: 'var(--danger)' }}
               >
                 {deleting ? '삭제 중…' : '영구 삭제'}
-              </Button>
+              </button>
             </div>
           </div>
         </div>

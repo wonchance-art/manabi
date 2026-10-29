@@ -53,6 +53,17 @@ export function countRecentDone(rows, slugSet, { windowDays = PACE_WINDOW_DAYS, 
 }
 
 /**
+ * 목표일까지 남은 날(KST 자정 기준) — 'YYYY-MM-DD'가 아니면 null. 진행바(pace)와 내 정보의 목표 줄이 같은 계산을 쓴다.
+ * @returns {number|null} 오늘이면 0, 지났으면 음수
+ */
+export function daysLeftUntil(targetDate, now = Date.now()) {
+  if (!targetDate) return null;
+  const targetMs = Date.parse(`${targetDate}T00:00:00+09:00`);
+  if (!Number.isFinite(targetMs)) return null;
+  return Math.round((targetMs - kstDayStartMs(now)) / DAY_MS);
+}
+
+/**
  * 궤도 계산.
  *
  * @param {object} p
@@ -66,13 +77,10 @@ export function countRecentDone(rows, slugSet, { windowDays = PACE_WINDOW_DAYS, 
  *   verdict: '여유' | '적정' | '이탈' | null(최근 진도가 없어 예측 불가)
  */
 export function pace({ remaining, targetDate, recentDone = 0, windowDays = PACE_WINDOW_DAYS, now = Date.now() } = {}) {
-  if (!targetDate) return null;
+  const daysLeft = daysLeftUntil(targetDate, now);
+  if (daysLeft == null) return null;
   const targetMs = Date.parse(`${targetDate}T00:00:00+09:00`);
-  if (!Number.isFinite(targetMs)) return null;
   if (!Number.isFinite(remaining)) return null;
-
-  const todayMs = kstDayStartMs(now);
-  const daysLeft = Math.round((targetMs - todayMs) / DAY_MS);
 
   // 다 했으면 남은 계산이 전부 무의미하다 — 화면도 축하 한 줄이면 된다.
   if (remaining <= 0) {

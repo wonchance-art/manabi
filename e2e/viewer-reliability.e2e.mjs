@@ -85,7 +85,7 @@ await context.route('**/api/learning/**',r=>{
  // 이 고정 데이터가 그 GET에도 문맥 목록을 돌려줘 「저장한 단어를 불러오지 못했어요」가 떴다 — 공용 합성 snapshot(learning-snapshot.mjs)으로 답한다.
  const learningUrl=new URL(r.request().url());
  if(r.request().method()==='GET'&&learningUrl.pathname==='/api/learning/vocabulary'&&learningUrl.searchParams.get('view')==='learning')
-  return r.fulfill({json:legacyLearningSnapshot({actorId:uid,rows:vocab,fields:learningUrl.searchParams.get('fields')})});
+  return r.fulfill({json:legacyLearningSnapshot({actorId:uid,rows:vocab,fields:learningUrl.searchParams.get('fields'),ids:learningUrl.searchParams.get('ids')})});
  // 제외 상태도 같은 경로 아래다(learning-flow · korean-learning 고정 데이터와 같은 모양) — 문맥 목록을 받으면 items가 없어 채점 막대가 잠겼다.
  if(r.request().method()==='GET'&&learningUrl.pathname==='/api/learning/exclusions')return r.fulfill({json:{items:[]}});
  if(r.request().method()==='POST'){
@@ -187,9 +187,9 @@ try {
  await fresh(390,844);await tap(wordA());await page.locator('.reader-card-body').evaluate(e=>e.scrollTop=e.scrollHeight);await tap(wordB());await delay(200);
  assert.equal(await page.locator('.reader-card-body').evaluate(e=>e.scrollTop),0);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));pass('mobile new word resets real scroll container, no overflow');await shotAt('mobile-word');
  await fresh();analysisFail=true;await tap(page.locator('[data-tid="id_0_0_audit"] .line-pick'));await delay(1200);assert((await page.locator('.toast-container').innerText()).includes('단어 분석을 가져오지 못했어요'));assert(!(await page.locator('.viewer-inspector').innerText()).includes('단어 추출 중'));pass('failed sentence request ends loading visibly');
- await fresh();await page.getByRole('button',{name:'리딩 테스트',exact:true}).click();await page.locator('.reading-test__question').first().waitFor();
+ await fresh();await page.getByRole('button',{name:'읽기 확인',exact:true}).click();await page.locator('.reading-test__question').first().waitFor();
  assert.equal(await page.locator('.reading-test__question').count(),5);assert(readingPrompt.includes('질문과 선택지는 중국어'));assert.equal(await page.getByRole('heading',{name:'읽기 확인 · 전체 자료',exact:true}).count(),1);assert.equal(await page.getByRole('heading',{name:'읽기 확인',exact:true}).count(),0);assert.equal(await page.getByText('IELTS Reading Test',{exact:true}).count(),0);pass('Chinese reading check uses Chinese questions and source evidence');await shotAt('chinese-reading-check');
- await fresh();readingInvalid=true;await page.getByRole('button',{name:'리딩 테스트',exact:true}).click();await page.locator('.reading-test [role="alert"]').waitFor();assert.equal(await page.locator('.reading-test__question').count(),0);readingInvalid=false;await page.getByRole('button',{name:'다시 시도',exact:true}).click();await page.locator('.reading-test__question').first().waitFor();pass('malformed reading answer is rejected and retry recovers');
+ await fresh();readingInvalid=true;await page.getByRole('button',{name:'읽기 확인',exact:true}).click();await page.locator('.reading-test [role="alert"]').waitFor();assert.equal(await page.locator('.reading-test__question').count(),0);readingInvalid=false;await page.getByRole('button',{name:'다시 시도',exact:true}).click();await page.locator('.reading-test__question').first().waitFor();pass('malformed reading answer is rejected and retry recovers');
  await fresh();await page.getByRole('button',{name:'대화',exact:true}).click();await page.waitForURL(/\/viewer\/94002/);await page.getByRole('button',{name:'음성 입력',exact:true}).click();assert.equal(await page.evaluate(()=>window.__speechLang),'zh-CN');pass('Chinese speech input selects zh-CN without real recording');
  async function menu(){await page.getByRole('button',{name:'학습',exact:true}).click();await page.getByRole('dialog',{name:'학습'}).getByRole('button',{name:/^자료 관리/}).click();} // AD-R2 Q1 ③: ⋯ → 「학습」 창 항목
  const materialWrites=()=>writes.filter(w=>w.table==='reading_materials'||w.table==='viewer_replace_analysis');

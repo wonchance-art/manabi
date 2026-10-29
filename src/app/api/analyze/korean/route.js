@@ -1,28 +1,38 @@
 import { createClient } from '@supabase/supabase-js';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 import { analyzeKoreanLines, KoreanAnalysisError, validateKoreanRequest } from '@/lib/server/koreanAnalysis';
+import { isInternalAnalysisRequest } from '@/lib/server/internalAnalysisRequest';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-export async function POST(request) {
+// 로그인 · 사용자별 한도 — 막으면 그 응답, 통과면 null. 서버 분석 작업이 같은 프로세스 안에서 만든 요청(internalAnalysisRequest)은 건너뛴다.
+async function gate(request) {
   const authHeader = request.headers.get('authorization');
   if (!/^Bearer\s+\S+$/i.test(authHeader || '')) {
     return Response.json({ error: 'authentication_required' }, { status: 401 });
   }
+  const authClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    { auth: { persistSession: false } }
+  );
+  const { data: { user }, error } = await authClient.auth.getUser(authHeader.replace(/^Bearer\s+/i, ''));
+  if (error || !user) return Response.json({ error: 'authentication_required' }, { status: 401 });
+  // 기존 분석과 동일한 사용자 버킷 — 새 endpoint로 할당량을 우회하지 않는다.
+  const rl = rateLimit(getClientKey(request, user.id), { limit: 20, windowMs: 60_000 });
+  if (!rl.ok) return Response.json({ error: 'rate_limited' }, {
+    status: 429, headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) },
+  });
+  return null;
+}
+
+export async function POST(request) {
   try {
-    const authClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      { auth: { persistSession: false } }
-    );
-    const { data: { user }, error } = await authClient.auth.getUser(authHeader.replace(/^Bearer\s+/i, ''));
-    if (error || !user) return Response.json({ error: 'authentication_required' }, { status: 401 });
-    // 기존 분석과 동일한 사용자 버킷 — 새 endpoint로 할당량을 우회하지 않는다.
-    const rl = rateLimit(getClientKey(request, user.id), { limit: 20, windowMs: 60_000 });
-    if (!rl.ok) return Response.json({ error: 'rate_limited' }, {
-      status: 429, headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) },
-    });
+    if (!isInternalAnalysisRequest(request)) {
+      const denied = await gate(request);
+      if (denied) return denied;
+    }
     let body;
     try { body = await request.json(); }
     catch { return Response.json({ error: 'invalid_json' }, { status: 400 }); }

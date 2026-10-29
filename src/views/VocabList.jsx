@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
@@ -20,8 +20,95 @@ const LEVEL_OPTIONS = [
   { value: 'NONE', label: '미분류' },
 ];
 
+// 담은 표현 한 줄 — 「더 보기」 · 선택 · 부모 다시 그리기 때 바뀌지 않은 줄은 다시 그리지 않는다(LOGGED-IN-PERF F4, 2026-10-25 KST:
+// 줄이 목록 안 인라인 JSX라 탭마다 보이는 330줄을 전부 다시 만들어 모바일 INP 184 → 392 ms로 줄 수에 비례해 커졌다).
+// 처리기는 목록이 한 번 만든 안정 함수(단어를 인자로 받는다)라 memo가 맞는다. 마크업은 예전 인라인 줄 그대로다.
+const VocabRow = memo(function VocabRow({ v, learning, due, selected, selectMode, modifiable, ttsSupported, editable, refLevelOf,
+  onActivate, onSpeak, onEdit, onDelete }) {
+  const handleClick = () => onActivate(v);
+  const stage = learning ? wordStage(learning) : null;
+  const stageColor = stage?.key === 'mature' ? 'var(--accent)' : stage?.key === 'young' ? 'var(--warning)' : stage?.key === 'new' ? 'var(--text-muted)' : 'var(--danger)';
+  const stageLabel = learning?.review.excluded ? '제외' : stage?.label || '—';
+  const lc = LANG_CODE[v.language];
+  const refLevel = zhHskLevelLabel(refLevelOf?.(v));
+  return (
+    <div
+      className={`card vocab-row${selectMode ? ' vocab-row--sel' : ''}`}
+      style={{
+        cursor: 'pointer',
+        outline: selected ? '2px solid var(--primary)' : 'none',
+        background: selected ? 'var(--primary-glow)' : undefined,
+      }}
+      onClick={handleClick}
+    >
+      {selectMode && (
+        <span className="vocab-row__check" style={{
+          borderColor: selected ? 'var(--primary)' : 'var(--border)',
+          background: selected ? 'var(--primary)' : 'transparent',
+        }}>{selected ? '✓' : ''}</span>
+      )}
+
+      {/* 1행: 품사 · 듣기 · 단어 · 뜻 · 우측 / 2행: 발음 · 예문 */}
+      {v.pos
+        ? <span className="vocab-row__pos" title={v.pos}>{v.pos}</span>
+        : <span className="vocab-row__pos vocab-row__pos--empty" aria-hidden="true" />}
+
+      {ttsSupported && v.language !== 'Korean' ? (
+        <button type="button" className="vocab-row__tts" title="발음 듣기" aria-label={`${v.word_text} 발음 듣기`}
+          onClick={e => { e.stopPropagation(); onSpeak(v); }}>▷</button>
+      ) : <span className="vocab-row__tts vocab-row__tts--empty" aria-hidden="true" />}
+
+      <h3 className="vocab-row__word" lang={lc}>
+        <button
+          type="button"
+          className="vocab-row__word-button"
+          onClick={e => { e.stopPropagation(); handleClick(); }}
+          aria-label={`${v.word_text} — ${v.meaning}${selectMode ? (selected ? ' (선택됨)' : ' (선택 안 됨)') : ' 상세 열기'}`}
+          aria-pressed={selectMode ? selected : undefined}
+        >
+          {displayWord(v.word_text, v.pos)}
+        </button>
+      </h3>
+      {v.furigana && <span className="vocab-row__reading" lang={lc}>{v.furigana}</span>}
+
+      {String(v.meaning ?? '').trim() || !editable || selectMode
+        ? <p className="vocab-row__meaning">{v.meaning}</p>
+        // 뜻 없는 표현은 복습에서 빠진다(REV-SCOPE-R1B-1 §5-6) — 여기서 바로 뜻을 채운다.
+        : <button type="button" className="vocab-row__fill" disabled={!modifiable} onClick={e => { e.stopPropagation(); onEdit(v); }}
+          aria-label={`${v.word_text} 뜻 채우기`}>뜻 채우기</button>}
+      {(v.etym || v.hanja || v.source_sentence) && (
+        <div className="vocab-row__sub">
+          {(v.etym || v.hanja) && (
+            <p className="vocab-row__note">
+              <strong>{v.hanja ? '한자' : '어원'}</strong> · {refInline(v.etym || v.hanja)}
+            </p>
+          )}
+          {v.source_sentence && <p className="vocab-row__ex" lang={lc}>{v.source_sentence}</p>}
+        </div>
+      )}
+
+      <div className="vocab-row__right" onClick={e => e.stopPropagation()}>
+        {refLevel && <span className="vocab-row__level">{refLevel}</span>}
+        {due
+          ? <span className="vocab-row__due">복습</span>
+          : <span className="vocab-row__dot" style={{ background: stageColor }} title={stageLabel} aria-label={stageLabel} />}
+        {!selectMode && editable && (
+          <button type="button" className="vocab-row__act" title="편집" aria-label={`${v.word_text} 편집`}
+            disabled={!modifiable}
+            onClick={() => onEdit(v)}>✎</button>
+        )}
+        {!selectMode && (
+          <button type="button" className="vocab-row__act vocab-row__act--danger" title="삭제" aria-label={`${v.word_text} 삭제`}
+            disabled={!modifiable}
+            onClick={() => onDelete(v)}>✕</button>
+        )}
+      </div>
+    </div>
+  );
+});
+
 export default function VocabList({
-  vocab = [], filteredVocab, visibleCount, setVisibleCount,
+  vocab = [], filteredVocab, pageStore = null, pageToken = null,
   search, setSearch, sortBy, setSortBy, langFilter, setLangFilter, langAllOption = true, languages = null,
   levelFilter = 'all', setLevelFilter, showLevelFilter = false, refLevelOf,
   ttsSupported, speak, setConfirmAction, deleteMutation, onWordClick,
@@ -46,11 +133,18 @@ export default function VocabList({
   const [editOrigin, setEditOrigin] = useState(null); // 편집을 연 시점의 값 — 바뀐 입력 판정용
   const editDialogRef = useRef(null);
   const editingOpen = !!editing;
-  const openEdit = (v) => {
+  const openEdit = useCallback((v) => {
     const initial = { id: v.id, word_text: v.word_text, furigana: v.furigana || '', meaning: v.meaning || '', pos: v.pos || '' };
     setEditOrigin(initial);
     setEditing(initial);
-  };
+  }, []);
+  // 「더 보기」 펼침 수는 목록 안 상태다 — 탭할 때 작업 공간(VocabPage) 전체가 다시 돌지 않게(LOGGED-IN-PERF F4).
+  // 예전처럼 탭을 오가도 펼친 수를 기억하고(pageStore — 부모의 ref), 검색어 · 정렬 · 범위가 바뀌면(pageToken이 새 값) 30으로 돌아간다.
+  const [page, setPage] = useState(() => ({ token: pageToken, count: pageStore && pageStore.token === pageToken ? pageStore.count : 30 }));
+  if (page.token !== pageToken) setPage({ token: pageToken, count: 30 });
+  const visibleCount = page.token === pageToken ? page.count : 30;
+  useEffect(() => { if (pageStore) { pageStore.token = page.token; pageStore.count = page.count; } }, [pageStore, page]);
+  const showMore = useCallback(() => setPage(current => ({ ...current, count: current.count + 30 })), []);
   // 취소·Esc·배경 클릭이 고친 입력을 말없이 버리지 않게(WALL-STATES-001 ④) — 바뀐 게 있으면 한 번 묻는다.
   const discardEdit = useDiscardGuard({ dirty: hasUnsavedEdits(editOrigin, editing, EDIT_FIELDS), onClose: () => setEditing(null) });
   const requestEditClose = discardEdit.requestClose;
@@ -107,6 +201,25 @@ export default function VocabList({
     setSelectMode(false);
     setSelectedIds(new Set());
   };
+
+  // 줄 처리기 — 줄마다 새 함수를 만들지 않는다(memo 줄). 누른 그 순간의 최신 값(선택 모드 · 변경 함수)을 읽는다.
+  const latest = useRef(null);
+  latest.current = { selectMode, toggleSelect, onWordClick, speak, setConfirmAction, deleteMutation };
+  const activateRow = useCallback(v => {
+    const h = latest.current;
+    if (h.selectMode) h.toggleSelect(v.id);
+    else h.onWordClick?.(v);
+  }, []);
+  const speakRow = useCallback(v => latest.current.speak(v.word_text, v.language || detectLang(v.word_text)), []);
+  const confirmDelete = useCallback(v => {
+    const { setConfirmAction: confirm, deleteMutation: remove } = latest.current;
+    confirm({
+      title: `"${v.word_text}" 단어를 삭제할까요?`,
+      message: '삭제하면 되돌릴 수 없어요.',
+      onConfirm: () => { remove.mutate(v.id); confirm(null); },
+    });
+  }, []);
+  const nowMs = new Date(now).getTime();
 
   const confirmBulkDelete = () => {
     if (selectedIds.size === 0 || [...selectedIds].some(id => !canModify(vocab.find(word => word.id === id)))) return;
@@ -179,7 +292,7 @@ export default function VocabList({
             </button>
           ))}
         </div>
-          <span className="vocab-filter-row__count">{filteredVocab.length}개</span>
+          <span className="vocab-filter-row__count">{filteredVocab.length.toLocaleString('ko-KR')}개</span>
           {filteredVocab.length > 0 && (
             <button
               type="button"
@@ -227,96 +340,12 @@ export default function VocabList({
 
       <div className="vocab-list">
         {filteredVocab.length > 0 ? filteredVocab.slice(0, visibleCount).map(v => {
-          const selected = selectedIds.has(v.id);
-          const handleClick = () => {
-            if (selectMode) toggleSelect(v.id);
-            else onWordClick?.(v);
-          };
           const learning = learningById?.get(v.id);
-          const stage = learning ? wordStage(learning) : null;
-          const stageColor = stage?.key === 'mature' ? 'var(--accent)' : stage?.key === 'young' ? 'var(--warning)' : stage?.key === 'new' ? 'var(--text-muted)' : 'var(--danger)';
-          const stageLabel = learning?.review.excluded ? '제외' : stage?.label || '—';
-          const due = !!learning && isVocabularyReviewDue(learning, Math.max(new Date(now).getTime(), Date.parse(learning.review.evaluatedAt)));
-          const lc = LANG_CODE[v.language];
-          const refLevel = zhHskLevelLabel(refLevelOf?.(v));
+          const due = !!learning && isVocabularyReviewDue(learning, Math.max(nowMs, Date.parse(learning.review.evaluatedAt)));
           return (
-          <div
-            key={v.id}
-            className={`card vocab-row${selectMode ? ' vocab-row--sel' : ''}`}
-            style={{
-              cursor: 'pointer',
-              outline: selected ? '2px solid var(--primary)' : 'none',
-              background: selected ? 'var(--primary-glow)' : undefined,
-            }}
-            onClick={handleClick}
-          >
-            {selectMode && (
-              <span className="vocab-row__check" style={{
-                borderColor: selected ? 'var(--primary)' : 'var(--border)',
-                background: selected ? 'var(--primary)' : 'transparent',
-              }}>{selected ? '✓' : ''}</span>
-            )}
-
-            {/* 1행: 품사 · 듣기 · 단어 · 뜻 · 우측 / 2행: 발음 · 예문 */}
-            {v.pos
-              ? <span className="vocab-row__pos" title={v.pos}>{v.pos}</span>
-              : <span className="vocab-row__pos vocab-row__pos--empty" aria-hidden="true" />}
-
-            {ttsSupported && v.language !== 'Korean' ? (
-              <button type="button" className="vocab-row__tts" title="발음 듣기" aria-label={`${v.word_text} 발음 듣기`}
-                onClick={e => { e.stopPropagation(); speak(v.word_text, v.language || detectLang(v.word_text)); }}>▷</button>
-            ) : <span className="vocab-row__tts vocab-row__tts--empty" aria-hidden="true" />}
-
-            <h3 className="vocab-row__word" lang={lc}>
-              <button
-                type="button"
-                className="vocab-row__word-button"
-                onClick={e => { e.stopPropagation(); handleClick(); }}
-                aria-label={`${v.word_text} — ${v.meaning}${selectMode ? (selected ? ' (선택됨)' : ' (선택 안 됨)') : ' 상세 열기'}`}
-                aria-pressed={selectMode ? selected : undefined}
-              >
-                {displayWord(v.word_text, v.pos)}
-              </button>
-            </h3>
-            {v.furigana && <span className="vocab-row__reading" lang={lc}>{v.furigana}</span>}
-
-            {String(v.meaning ?? '').trim() || !updateVocabMutation || selectMode
-              ? <p className="vocab-row__meaning">{v.meaning}</p>
-              // 뜻 없는 표현은 복습에서 빠진다(REV-SCOPE-R1B-1 §5-6) — 여기서 바로 뜻을 채운다.
-              : <button type="button" className="vocab-row__fill" disabled={!canModify(v)} onClick={e => { e.stopPropagation(); openEdit(v); }}
-                aria-label={`${v.word_text} 뜻 채우기`}>뜻 채우기</button>}
-            {(v.etym || v.hanja || v.source_sentence) && (
-              <div className="vocab-row__sub">
-                {(v.etym || v.hanja) && (
-                  <p className="vocab-row__note">
-                    <strong>{v.hanja ? '한자' : '어원'}</strong> · {refInline(v.etym || v.hanja)}
-                  </p>
-                )}
-                {v.source_sentence && <p className="vocab-row__ex" lang={lc}>{v.source_sentence}</p>}
-              </div>
-            )}
-
-            <div className="vocab-row__right" onClick={e => e.stopPropagation()}>
-              {refLevel && <span className="vocab-row__level">{refLevel}</span>}
-              {due
-                ? <span className="vocab-row__due">복습</span>
-                : <span className="vocab-row__dot" style={{ background: stageColor }} title={stageLabel} aria-label={stageLabel} />}
-              {!selectMode && updateVocabMutation && (
-                <button type="button" className="vocab-row__act" title="편집" aria-label={`${v.word_text} 편집`}
-                  disabled={!canModify(v)}
-                  onClick={() => openEdit(v)}>✎</button>
-              )}
-              {!selectMode && (
-                <button type="button" className="vocab-row__act vocab-row__act--danger" title="삭제" aria-label={`${v.word_text} 삭제`}
-                  disabled={!canModify(v)}
-                  onClick={() => setConfirmAction({
-                    title: `"${v.word_text}" 단어를 삭제할까요?`,
-                    message: '삭제하면 되돌릴 수 없어요.',
-                    onConfirm: () => { deleteMutation.mutate(v.id); setConfirmAction(null); },
-                  })}>✕</button>
-              )}
-            </div>
-          </div>
+            <VocabRow key={v.id} v={v} learning={learning} due={due} selected={selectedIds.has(v.id)} selectMode={selectMode}
+              modifiable={canModify(v)} ttsSupported={ttsSupported} editable={!!updateVocabMutation} refLevelOf={refLevelOf}
+              onActivate={activateRow} onSpeak={speakRow} onEdit={openEdit} onDelete={confirmDelete} />
           );
         }) : (
           <div className="empty-state">
@@ -345,8 +374,8 @@ export default function VocabList({
       </div>
       {filteredVocab.length > visibleCount && (
         <div style={{ textAlign: 'center', marginTop: 16 }}>
-          <Button variant="secondary" onClick={() => setVisibleCount(c => c + 30)}>
-            더 보기 ({filteredVocab.length - visibleCount}개 남음)
+          <Button variant="secondary" onClick={showMore}>
+            더 보기 ({(filteredVocab.length - visibleCount).toLocaleString('ko-KR')}개 남음)
           </Button>
         </div>
       )}

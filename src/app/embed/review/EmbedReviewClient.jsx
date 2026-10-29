@@ -189,7 +189,8 @@ function LoginPanel({ onNewTab }) {
   };
 
   const inputStyle = {
-    fontFamily: GBC.font, fontSize: '0.86rem', color: GBC.ink,
+    // 터치 16px(NATIVE-FEEL-P2 — iOS 초점 확대). 인라인 style이라 미디어 쿼리 대신 --field-font-min(index.css)을 쓴다.
+    fontFamily: GBC.font, fontSize: 'max(var(--field-font-min), 0.86rem)', color: GBC.ink,
     background: GBC.creamHi, border: `2px solid ${GBC.creamShade}`, borderRadius: 2,
     padding: '9px 10px', width: '100%', boxSizing: 'border-box',
   };
@@ -202,7 +203,7 @@ function LoginPanel({ onNewTab }) {
       </p>
       {/* Google 로그인은 iframe에서 쓸 수 없다 — Google 가입자는 앱의 「비밀번호 만들기」로 이메일 로그인을 먼저 연다. */}
       <p style={{ fontSize: '0.7rem', color: GBC.inkSoft, margin: 0, lineHeight: 1.5 }}>
-        Google로 가입했다면 manabi 「내 계정」에서 「비밀번호 만들기」를 먼저 해 주세요.
+        Google로 가입했다면 manabi 「내 정보」에서 「비밀번호 만들기」를 먼저 해 주세요.
       </p>
       <input
         type="email" inputMode="email" autoComplete="email" placeholder="이메일"

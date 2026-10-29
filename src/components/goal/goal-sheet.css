@@ -1,0 +1,78 @@
+/* 목표 창(GOAL-SHEET-001 — 오너 승인 목업 2026-10-26 KST). 셸 토큰(web-shell.css)만 쓴다.
+   겉모양은 내 정보 편집 시트(profile.css .pf-sheet)와 같은 값이다 — 그 규칙은 내 정보 화면 컨테이너(.pf)에 묶여 있어 여기 따로 둔다.
+   휴대폰은 아래 시트, 600 이상은 가운데 창. 접힘은 어둠막(화면 전체) 컨테이너 기준 — 뷰포트 쿼리 신설 0(ui-conventions §2).
+   어둠막 칠 · 고정 · 뒤 화면 세우기는 공용 .scrim이 맡는다(nativeFeel ② · navMotion 목록에 이미 있다). */
+.scrim.gs-scrim{z-index:1100;align-items:flex-end;padding:0;container:gs/inline-size}
+.gs-sheet{width:100%;max-width:520px;max-height:calc(100dvh - 48px);overflow-y:auto;overscroll-behavior:contain;background:var(--sheet);color:var(--ink);border-radius:20px 20px 0 0;padding:10px 20px calc(24px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 20px color-mix(in srgb,var(--ink) 12%,transparent);text-align:left;animation:gsSheetUp .2s var(--ease-settle,ease-out) both}
+.gs-sheet:focus{outline:none}
+.gs-grip{width:36px;height:4px;border-radius:2px;background:var(--rule);margin:0 auto 12px}
+.gs-head{display:flex;justify-content:space-between;align-items:center;min-height:44px}
+.gs-head h2{margin:0;font-size:18px;font-weight:700}
+.gs-sheet .gs-x{width:44px;height:44px;display:grid;place-items:center;margin-right:-8px;padding:0;border:0;background:none;color:var(--muted);cursor:pointer;border-radius:50%}
+.gs-sheet .gs-x:focus-visible{outline:2px solid var(--ja);outline-offset:-2px}
+@container gs (min-width:600px){
+  .gs-sheet{align-self:center;margin:16px;border-radius:20px;padding-bottom:24px;max-height:calc(100dvh - 64px);box-shadow:0 10px 40px color-mix(in srgb,var(--ink) 15%,transparent)}
+  .gs-grip{display:none}
+}
+@keyframes gsSheetUp{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.gs-sheet{animation:none}}
+
+/* 지금 목표 — 장미 바탕 한 칸 */
+.gs-now{display:flex;align-items:center;gap:10px;background:color-mix(in srgb,var(--ja) 9%,var(--sheet));border-radius:14px;padding:12px 14px;margin:6px 0 4px}
+.gs-now__text{display:grid;gap:2px;min-width:0}
+.gs-now__text b{font-size:15px;font-weight:700;overflow-wrap:anywhere}
+.gs-now__text span{font-size:13px;color:var(--muted)}
+.gs-now__d{margin-left:auto;flex:none;font:700 15px/1 var(--font-manrope),var(--font-noto-kr),sans-serif;color:var(--ja);font-variant-numeric:tabular-nums}
+
+/* 단계 */
+.gs-sec{font-size:13px;font-weight:700;color:var(--muted);margin:20px 0 10px;padding:0}
+.gs-step{border:0;margin:0 0 16px;padding:0;min-width:0}
+.gs-step>legend{padding:0;margin:0 0 8px;font-size:13px;font-weight:700;color:var(--ink)}
+.gs-step__n{color:var(--ja);margin-right:6px}
+.gs-chips{display:flex;flex-wrap:wrap;gap:6px}
+.gs-sheet .gs-chip{min-height:44px;min-width:44px;padding:0 14px;border-radius:999px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);font:600 14px/1 var(--font-noto-kr),sans-serif;white-space:nowrap;cursor:pointer}
+.gs-sheet .gs-chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.gs-sheet .gs-chip--ghost{border-style:dashed;color:var(--muted)}
+.gs-sheet .gs-chip:focus-visible{outline:2px solid var(--ja);outline-offset:2px}
+.gs-sheet .gs-chip:disabled{opacity:.45;cursor:default}
+
+/* 날짜 카드 — 같은 날 IBT · PBT는 한 장(형식은 작은 꼬리표). 접수 기간은 싣지 않는다. */
+.gs-dates{display:grid;gap:8px}
+.gs-date{display:flex;align-items:center;gap:12px;min-height:58px;padding:10px 14px;border:1px solid var(--rule);border-radius:14px;background:var(--sheet);cursor:pointer}
+.gs-date:has(input:checked){border-color:var(--ink);box-shadow:inset 0 0 0 .5px var(--ink)}
+.gs-date:has(input:focus-visible){outline:2px solid var(--ja);outline-offset:2px}
+.gs-date input{width:20px;height:20px;margin:0;flex:none;accent-color:var(--ink);cursor:pointer}
+.gs-date input:focus-visible{outline:none}
+.gs-date__body{display:grid;gap:3px;flex:1;min-width:0}
+.gs-date__day{font-size:16px;font-weight:700;color:var(--ink)}
+.gs-date__other{font-size:14px;font-weight:600;color:var(--muted)}
+.gs-date--other{min-height:48px}
+.gs-date__sub{display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-size:12px;color:var(--muted)}
+.gs-tag{font:700 11px/1 var(--font-noto-kr),sans-serif;padding:3px 7px;border-radius:999px;background:color-mix(in srgb,var(--ink) 7%,var(--sheet));color:var(--muted)}
+.gs-date__d{margin-left:auto;flex:none;font:700 15px/1 var(--font-manrope),var(--font-noto-kr),sans-serif;color:var(--ja);font-variant-numeric:tabular-nums}
+.gs-note{font-size:12px;color:var(--muted);margin:8px 0 0 2px;line-height:1.6}
+.gs-note a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.gs-sheet .gs-link{min-height:44px;padding:0 4px;border:0;background:none;font:inherit;color:var(--ja);font-weight:700;text-decoration:underline;cursor:pointer}
+
+/* 직접 입력 — 16px(터치 초점 확대 하한) */
+.gs-fields{display:grid;gap:8px;margin-top:8px}
+.gs-sheet .gs-input{display:block;width:100%;min-width:0;min-height:48px;margin:0;padding:0 14px;border:1px solid var(--rule);border-radius:12px;background:color-mix(in srgb,var(--ink) 4%,var(--sheet));color:var(--ink);font:inherit;font-size:16px;box-sizing:border-box}
+.gs-sheet .gs-input::placeholder{color:var(--muted)}
+.gs-sheet .gs-input:focus-visible{outline:2px solid var(--ja);outline-offset:1px}
+
+/* 하루 목표 — 이름 · 막대 · 값 한 줄 */
+.gs-daily{border:0;border-top:1px solid var(--rule);margin:18px 0 0;padding:0;min-width:0}
+.gs-daily>legend.gs-sec{float:left;width:100%;margin:20px 0 6px}
+.gs-slider{clear:both;display:grid;grid-template-columns:72px minmax(0,1fr) 44px;align-items:center;gap:10px;min-height:44px;font-size:14px}
+.gs-slider input[type="range"]{width:100%;min-height:44px;margin:0;accent-color:var(--ja);cursor:pointer}
+.gs-slider input[type="range"]:focus-visible{outline:2px solid var(--ja);outline-offset:2px}
+.gs-slider output{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+
+/* 단추 */
+.gs-actions{display:flex;gap:8px;margin-top:20px}
+.gs-sheet .gs-pill{flex:1;min-height:48px;padding:0 16px;border-radius:999px;border:1px solid var(--ink);background:transparent;color:var(--ink);font:700 14px/1 var(--font-noto-kr),sans-serif;cursor:pointer}
+.gs-sheet .gs-pill--fill{background:var(--ink);color:var(--paper)}
+.gs-sheet .gs-pill:disabled{opacity:.45;cursor:default}
+.gs-sheet .gs-pill:focus-visible{outline:2px solid var(--ja);outline-offset:2px}
+.gs-sheet .gs-clear{display:block;min-height:44px;margin:6px auto 0;padding:0 8px;border:0;background:none;font:inherit;font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.gs-sheet .gs-clear:focus-visible{outline:2px solid var(--ja);outline-offset:2px}

@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { bcp47ForLanguage } from '../lib/speechLang';
+import { speechTagForLanguage } from '../lib/speechLang';
 import ActionIcon from './ActionIcon';
 import {t} from '../lib/viewerMessages';
 import { splitListenSentences } from '../lib/listenFollow';
+// 소리를 내지 못한 이유는 단어 발음과 같은 길(TTS-GAP-001)로 알린다 — 같은 조건 · 같은 문구(providers의 SpeechUnavailableNotice 토스트).
+import { nativeSpeechAvailable, notifySpeechUnavailable, speechCanceled } from '../lib/useTTS';
 
 // 재생 중 속도 칸의 글자 — 뷰어는 Aa 「재생 속도」와 같은 이름(1× 등)을 넘긴다. playbackRate는 Web Speech에 넣는 실제 값(보통 0.85)이라
 // 그대로 보이면 설정은 1×인데 막대는 0.85×로 서로 다른 말을 했다(뷰어 기능 감사 2026-10-17 KST).
@@ -14,7 +16,7 @@ export function listenRateText(playbackRate, rateLabel) {
 
 // onSentence(i) — 지금 읽기 시작한 문장 번호(splitListenSentences 순서), 멈추면 null. 뷰어가 쪽 따라가기에 쓴다(listenFollow.js).
 // followActive — 뷰어가 쪽 넘김 따라가기 중(본문이 읽는 줄을 강조) — 좁은 폭에서는 「지금 문장」 줄을 숨긴다(CSS, reader-controls.css).
-export default function ListenControls({ text, language = 'Japanese', stopSignal, playbackRate, rateLabel, onSentence, followActive = false, compact = false, uiLocale = 'ko' }) {
+export default function ListenControls({ text, language = 'Japanese', stopSignal, playbackRate, rateLabel, onRateCycle, onSentence, followActive = false, compact = false, uiLocale = 'ko' }) {
   const [supported, setSupported] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -24,6 +26,12 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
   const sentencesRef = useRef([]);
   const indexRef = useRef(0);
   const sessionRef = useRef(0);
+  const interruptedRef = useRef(false);
+  // 듣기 버튼과 재생 막대는 서로 갈아 끼워진다 — 누른 손의 초점을 바뀐 쪽으로 넘긴다(시작 → 일시정지, 정지 → 듣기).
+  // 넘기지 않으면 초점이 페이지 맨 앞으로 떨어졌다(뷰어 점검 2026-10-23).
+  const rootRef = useRef(null);
+  const focusAfter = useRef(false);
+  const holdFocus = () => { focusAfter.current = !!rootRef.current?.contains(document.activeElement); };
   const rateRef = useRef(rate);
   const languageRef = useRef(language);
   const onSentenceRef = useRef(onSentence);
@@ -56,7 +64,7 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
     onSentenceRef.current?.(null);
   }, []);
 
-  useEffect(()=>{sessionRef.current+=1;window.speechSynthesis?.cancel();setPlaying(false);setPaused(false);setCurrentSentence('');onSentenceRef.current?.(null);},[stopSignal]);
+  useEffect(()=>{sessionRef.current+=1;interruptedRef.current=false;window.speechSynthesis?.cancel();setPlaying(false);setPaused(false);setCurrentSentence('');onSentenceRef.current?.(null);},[stopSignal]);
 
   function speakNext(sessionId) {
     if (sessionRef.current !== sessionId) return;
@@ -70,27 +78,40 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
     setCurrentSentence(sentences[i]);
     onSentenceRef.current?.(i);
     const utter = new window.SpeechSynthesisUtterance(sentences[i]);
-    utter.lang = bcp47ForLanguage(languageRef.current);
+    utter.lang = speechTagForLanguage(languageRef.current); // 단어 발음과 같은 태그(Korean → ko-KR)
     utter.rate = rateRef.current;
     // 음성 오류(엔진 · 목소리 없음 등) — 이 세션이면 재생 상태와 뷰어 강조를 정리한다(stop → onSentence(null)).
+    // 취소 · 끊김(단어 발음이 이어받음 등)은 정리만, 그 밖의 실패는 단어 발음과 같은 'failed' 안내(TTS-GAP-001).
     // 취소(cancel)로 끝난 옛 세션의 오류는 세션 번호가 달라 무시된다.
-    utter.onerror = () => { if (sessionRef.current === sessionId) stop(); };
+    // 끊김(단어 발음이 이어받음)은 정지가 아니라 그 문장에서 멈춤이다 — ▶를 누르면 그 문장부터 다시 읽는다.
+    // 정지로 처리하면 단어 하나 듣는 데 듣던 자리를 잃고 처음부터였다(뷰어 점검 2026-10-23).
+    utter.onerror = (event) => { if (sessionRef.current === sessionId) { if (speechCanceled(event)) interrupt(); else fail('failed'); } };
     utter.onend = () => {
       if (sessionRef.current !== sessionId) return;
       indexRef.current += 1;
       if (indexRef.current < sentencesRef.current.length) speakNext(sessionId);
       else stop();
     };
-    window.speechSynthesis.speak(utter);
+    try { window.speechSynthesis.speak(utter); } catch { fail('failed'); } // 엔진이 발화를 바로 거절(iOS 등) — useTTS와 같다
   }
 
   function play() {
+    holdFocus();
+    if (paused && interruptedRef.current) {
+      interruptedRef.current = false;
+      const sessionId = ++sessionRef.current;
+      setPaused(false);
+      speakNext(sessionId);
+      return;
+    }
     if (paused) {
       window.speechSynthesis.resume();
       setPaused(false);
       return;
     }
     if (!sentencesRef.current.length) return;
+    // 이 기기에 그 언어의 목소리가 없으면(한국어 음성 없음) 시작하지 않고 단어 발음과 같은 'no-voice' 안내.
+    if (!nativeSpeechAvailable(languageRef.current)) { notifySpeechUnavailable('no-voice'); return; }
     const sessionId = ++sessionRef.current;
     indexRef.current = 0;
     setPlaying(true);
@@ -104,7 +125,15 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
     setPaused(true);
   }
 
+  function interrupt() {
+    sessionRef.current += 1;
+    interruptedRef.current = true;
+    setPaused(true);
+  }
+
   function stop() {
+    holdFocus();
+    interruptedRef.current = false;
     sessionRef.current += 1;
     window.speechSynthesis.cancel();
     onSentenceRef.current?.(null);
@@ -115,11 +144,23 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
     setCurrentSentence('');
   }
 
+  function fail(reason) {
+    stop();
+    notifySpeechUnavailable(reason);
+  }
+
+  useEffect(() => {
+    if (!focusAfter.current) return;
+    focusAfter.current = false;
+    if (rootRef.current?.contains(document.activeElement)) return;
+    rootRef.current?.querySelector('button')?.focus({ preventScroll: true });
+  }, [playing]);
+
   if (!supported || !text) return null;
   const label=key=>compact?t(uiLocale,key):key;
 
   return (
-    <div className={followActive ? 'listen-controls listen-controls--follow' : 'listen-controls'}>
+    <div ref={rootRef} className={followActive ? 'listen-controls listen-controls--follow' : 'listen-controls'}>
       {!playing ? (
         // 뷰어 툴바(compact)도 보이는 라벨을 단다(AD-R2 §5) — 접근 이름 「본문 전체 듣기」 안에 보이는 「듣기」가 든다.
         // 재생 중 컨트롤(▶/⏸/⏹)은 지금처럼 아이콘만이다(설계 §9.2 — 라벨은 정지 상태 버튼에만).
@@ -135,7 +176,10 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
           )}
           <button className="listen-controls__btn" onClick={stop} aria-label={label('정지')} title={label('정지')} data-icon-action={compact||undefined}>{compact?<ActionIcon name="stop"/>:'⏹'}</button>
           <span className="listen-controls__progress">{progress.current}/{progress.total}</span>
-          {playbackRate != null ? (
+          {/* 속도 칸은 누르면 도는 진짜 버튼(뷰어 점검 B) — 예전엔 버튼처럼 보이는 글자였다. 바뀐 값은 다음 문장부터 들린다(듣기는 끊지 않는다). */}
+          {playbackRate != null && onRateCycle ? (
+            <button type="button" className="listen-controls__rate" onClick={onRateCycle} aria-label={`${label('재생 속도')} ${listenRateText(playbackRate, rateLabel)}`} title={label('누를 때마다 0.75× · 1× · 1.25×')}>{listenRateText(playbackRate, rateLabel)}</button>
+          ) : playbackRate != null ? (
             <span className="listen-controls__rate" title={compact?label('재생 속도'):'Aa 읽기 설정에서 재생 속도를 바꿀 수 있어요'}>{listenRateText(playbackRate, rateLabel)}</span>
           ) : <select
             className="listen-controls__rate"

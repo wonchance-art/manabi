@@ -59,7 +59,7 @@ describe('하이라이트 글자 밴드 (index.css)', () => {
     expect(css).not.toMatch(/:is\(\.word-token--new, \.word-token--met\)[^{]*\.surface::before \{[^}]*background(?:-color)?:/);
     expect(css).toMatch(/\.reader-area--hl \.word-token:is\(\.word-token--new, \.word-token--met\):not\(\[data-selected="true"\]\) \.surface::before \{[^}]*border-bottom: 1\.5px solid var\(--ws-new-ln\);/s);
     expect(css).not.toMatch(/--ws-met/);
-    expect(css).toMatch(/\.word-token--saved \.surface::before \{\s*border-bottom: 2px solid var\(--primary-light\);/);
+    expect(css).toMatch(/\.word-token--saved \.surface::before \{\s*border-bottom: 1\.5px solid var\(--primary-light\);/); // C3(2026-10-23 KST): 흐림 없이 얇은 밑줄만
     expect(css).toMatch(/\.word-token--due \.surface::before \{[^}]*animation: due-pulse/s);
   });
 

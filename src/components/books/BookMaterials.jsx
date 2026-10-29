@@ -2,14 +2,15 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import MaterialChapterLinks from '@/components/learning/MaterialChapterLinks';
-import { BOOK_ID, bookHref as textbookHref } from '@/lib/textbook/contract';
+import { BOOK_ID, bookHref as textbookHref, previewBookHref } from '@/lib/textbook/contract';
 import useReadingProgress from './useReadingProgress';
 
 export default function BookMaterials({ book, preview = false }) {
   const bookId = book.bookId || BOOK_ID;
   const level = book.level || 'N5';
-  const bookHref = (edition, page = 'cover') => textbookHref(edition, page, bookId);
-  const { progress } = useReadingProgress(book.edition);
+  // 미리보기(관리자 · 발행 전)의 교재 주소는 표식을 붙여 동적 화면으로(previewBookHref — 판본별 정적 판에는 미리보기가 없다, GUEST-STATIC-001 5단계).
+  const bookHref = (edition, page = 'cover') => { const href = textbookHref(edition, page, bookId); return preview ? previewBookHref(href) : href; };
+  const { progress } = useReadingProgress(book.edition, bookId);
   const [selected, setSelected] = useState(null);
   const unit = selected || progress.page.slice(0, 3);
   return <div className="manabi-page"><p className="manabi-breadcrumb"><Link href="/lessons" prefetch={false}>교재</Link><span>/</span><Link href={bookHref(book.edition)}>일본어 {level}</Link><span>/</span>함께 읽기</p>

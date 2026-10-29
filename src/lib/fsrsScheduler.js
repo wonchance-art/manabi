@@ -4,7 +4,9 @@ import { FSRSAlgorithm, FSRSVersion, S_MIN, S_MAX, date_scheduler } from 'ts-fsr
 export const FSRS_POLICY = Object.freeze({
   version: 'anki-seconds-v1', engine: 'v5.3.2 using FSRS-6.0',
   learning: Object.freeze([30, 600]), relearning: Object.freeze([600]),
-  retention: 0.9, maximumInterval: 36500, timeZone: 'Asia/Seoul', rolloverHour: 4,
+  // 간격 상한 365일(HSK 단어 페이지 개편, 오너 확정 2026-10-19 KST) — 「졸업」한 단어도 1년 안에 한 번은 다시 만난다.
+  // 저장 상한(storedIntervalLimit)은 DB 검사(fsrs 카드 scheduledDays 1–36500)와 같다 — 상한을 낮추기 전에 생긴 긴 간격 카드도 그대로 읽힌다.
+  retention: 0.9, maximumInterval: 365, storedIntervalLimit: 36500, timeZone: 'Asia/Seoul', rolloverHour: 4,
 });
 // 학습 단계 정책(REV-SCOPE R1-B-2). 어느 정책으로 새 카드를 만들고 채점할지는 서버(fsrs_capabilities)가 정한다.
 // 두 정책 모두 학습 2단계 · 재학습 1단계라 단계 순번은 그대로 옮겨진다 — 학습 · 재학습 중인 카드는 다음 채점 때 새 정책으로 넘어간다.
@@ -23,7 +25,25 @@ const STATES = ['New', 'Learning', 'Review', 'Relearning'];
 const algorithm = new FSRSAlgorithm({ request_retention: FSRS_POLICY.retention,
   maximum_interval: FSRS_POLICY.maximumInterval, enable_fuzz: false, enable_short_term: true });
 
+// 같은 시각 문자열은 한 번만 푼다(TAP-INP-SCHED-001). 복습 줄 · 오늘 개수는 표현마다 이 함수를 세 번 부르고(묻는 시각 ·
+// 평가 시각 · 다음 질문 시각), 범위 · 언어별 개수마다 다시 계산한다 — 채점 한 번에 표현 412개 기준 수천 번 같은 문자열을
+// 정규식으로 풀어 탭 처리에 CPU×4 50ms 이상을 썼다(390 실측). 결과는 문자열만의 함수라 저장해 둔 값이 늘 같다. 잘못된
+// 문자열은 저장하지 않고 예전처럼 매번 던진다. 크기는 묶어 둔다(가득 차면 비우고 다시 쌓는다). 상한은 단어 3,000개 계정의 서로 다른
+// 시각 문자열(8,244개)이 다 들어가게 — 4,096이면 단어장 첫 화면에서 가득 차 비우기를 되풀이해 다시 풀었다(VOCAB-TBT-001, CPU×4 약 80ms).
+const PARSED_TIMES = new Map();
+const PARSED_TIMES_MAX = 16384;
 export function schedulerTime(value) {
+  if (typeof value === 'string') {
+    const hit = PARSED_TIMES.get(value);
+    if (hit !== undefined) return hit;
+    const ms = parseSchedulerTime(value);
+    if (PARSED_TIMES.size >= PARSED_TIMES_MAX) PARSED_TIMES.clear();
+    PARSED_TIMES.set(value, ms);
+    return ms;
+  }
+  return parseSchedulerTime(value);
+}
+function parseSchedulerTime(value) {
   // 밀리초보다 작은 정밀도나 잘못된 달력을 Date의 자동 보정으로 숨기지 않는다.
   let ms;
   if (value instanceof Date) ms = value.getTime();
@@ -47,18 +67,73 @@ export function schedulerTime(value) {
   return ms;
 }
 
+// 지역 달력 서식기는 시간대마다 한 번만 만든다(HOME-HYDRATION-001) — 만들기가 비싸(Node 실측: 새로 만들어 쓰기 452µs ·
+// 만들어 둔 것 쓰기 6.8µs) 카드마다 새로 만들면 카드 수에 비례해 주 스레드를 쓴다. 같은 옵션 · 같은 시간대면 결과가 같다.
+// 잘못된 시간대는 만들 때 RangeError — 저장하지 않으므로 예전처럼 매번 던진다.
+const DAY_FORMATS = new Map();
+// 서울은 1988-10-09 03:00 KDT(= 1988-10-08T18:00Z) 마지막 전환 뒤로 UTC+9 고정이다(IANA tzdata Asia/Seoul — 일광 절약 없음).
+// 그 뒤 시각은 서식기 없이 더해서 센다 — 페이지에서 처음 만드는 시간대 서식기는 ICU 시간대 자료를 여느라 한 번에
+// CPU×4 기준 150–360ms를 막았다(배움 로그인 첫 화면 LCP 전, useLearningAdmission → dayAt). 그 전 시각 · 다른 시간대는 지역 달력 그대로.
+// 결과가 같은지는 learningDayFormat.test가 Intl 결과와 대조한다(tzdata가 바뀌면 그 검사가 깨진다).
+const SEOUL_FIXED_FROM = Date.UTC(1988, 9, 8, 18);
+const SEOUL_OFFSET = 9 * 3600000;
+function dayFormat(timeZone) {
+  let format = DAY_FORMATS.get(timeZone);
+  if (!format) {
+    format = new Intl.DateTimeFormat('en-US', { timeZone, calendar: 'gregory', numberingSystem: 'latn',
+      era: 'short', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' });
+    DAY_FORMATS.set(timeZone, format);
+  }
+  return format;
+}
+
 // 학습 모델의 04시 경계다. 성장 통계의 KST 자정(growthStats)은 그대로 둔다.
 // 실제 시각에서 4시간을 빼면 DST 전환일에 잘못된 날짜가 되므로 지역 달력으로 계산한다.
 export function learningDay(value, timeZone = FSRS_POLICY.timeZone, rolloverHour = FSRS_POLICY.rolloverHour) {
   if (!Number.isInteger(rolloverHour) || rolloverHour < 0 || rolloverHour > 23) throw new Error('invalid_rollover');
-  const parts = new Intl.DateTimeFormat('en-US', { timeZone, calendar: 'gregory', numberingSystem: 'latn',
-    era: 'short', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' }).formatToParts(schedulerTime(value));
+  const ms = schedulerTime(value);
+  if (timeZone === 'Asia/Seoul' && ms >= SEOUL_FIXED_FROM) {
+    const local = ms + SEOUL_OFFSET, date = Math.floor(local / DAY);
+    return date - (Math.floor((local - date * DAY) / 3600000) < rolloverHour ? 1 : 0);
+  }
+  const parts = dayFormat(timeZone).formatToParts(ms);
   const fields = Object.fromEntries(parts.map(p => [p.type, p.value]));
   const year = fields.era === 'BC' ? 1 - Number(fields.year) : Number(fields.year);
   const day = new Date(0);
   day.setUTCFullYear(year, Number(fields.month) - 1, Number(fields.day));
   if (!Number.isFinite(day.getTime())) throw new Error('invalid_scheduler_time');
   return Math.floor(day.getTime() / DAY) - (Number(fields.hour) < rolloverHour ? 1 : 0);
+}
+
+/**
+ * 학습일 day가 시작하는 시각(ms) — learningDay(t) >= day인 가장 이른 t(서울 · 04시면 그날 04:00 KST).
+ * 날 단위 기한의 기준이다(Anki: 복습 기한은 날 번호로 두고 다음 날이 시작하면 연다 — rslib scheduler/timing.rs).
+ * 지역 시계에 그 시각이 없으면(일광 절약으로 건너뛴 시각) 그 뒤 첫 시각이다. 서울 고정 구간은 더해서 센다.
+ */
+export function learningDayStart(day, timeZone = FSRS_POLICY.timeZone, rolloverHour = FSRS_POLICY.rolloverHour) {
+  if (!Number.isInteger(rolloverHour) || rolloverHour < 0 || rolloverHour > 23) throw new Error('invalid_rollover');
+  if (!Number.isSafeInteger(day)) throw new Error('invalid_scheduler_time');
+  const wall = day * DAY + rolloverHour * 3600000;
+  if (timeZone === 'Asia/Seoul' && wall - SEOUL_OFFSET >= SEOUL_FIXED_FROM) return wall - SEOUL_OFFSET;
+  // 그 밖은 지역 달력으로 경계를 찾는다(시간대 차는 ±14시간 안이다).
+  let lo = wall - 36 * 3600000, hi = wall + 36 * 3600000;
+  if (!(learningDay(lo, timeZone, rolloverHour) < day && learningDay(hi, timeZone, rolloverHour) >= day)) throw new Error('invalid_scheduler_time');
+  while (hi - lo > 1) {
+    const mid = Math.floor((lo + hi) / 2);
+    if (learningDay(mid, timeZone, rolloverHour) >= day) hi = mid; else lo = mid;
+  }
+  return hi;
+}
+
+/**
+ * 날 단위 기한이면 from의 학습일부터 센 날 수, 아니면 null — 기한이 학습일 시작 시각일 때만 날 단위다
+ * (분 단위 학습 단계 · 날 경계 기한 전에 저장된 「채점 시각 + N×24시간」 기한은 null). 화면의 「N일」 글자가 쓴다.
+ */
+export function learningDaySpan(due, from, timeZone = FSRS_POLICY.timeZone, rolloverHour = FSRS_POLICY.rolloverHour) {
+  const at = schedulerTime(due), day = learningDay(at, timeZone, rolloverHour);
+  if (learningDayStart(day, timeZone, rolloverHour) !== at) return null;
+  const days = day - learningDay(from, timeZone, rolloverHour);
+  return days > 0 ? days : null;
 }
 
 export function validateFsrsCard(card) {
@@ -85,7 +160,7 @@ export function validateFsrsCard(card) {
   const steps = card.state === 'Learning' ? policy.learning : card.state === 'Relearning' ? policy.relearning : null;
   if ((steps && card.step >= steps.length) || (!steps && card.step !== 0) ||
       (card.state !== 'Review' && card.scheduledDays !== 0) ||
-      (card.state === 'Review' && (card.scheduledDays < 1 || card.scheduledDays > FSRS_POLICY.maximumInterval))) throw new Error('invalid_fsrs_step');
+      (card.state === 'Review' && (card.scheduledDays < 1 || card.scheduledDays > FSRS_POLICY.storedIntervalLimit))) throw new Error('invalid_fsrs_step');
   return card;
 }
 
@@ -114,18 +189,25 @@ function stepPlan(card, rating, policy) {
 /**
  * 같은 카드와 한 번 캡처한 시각으로 네 버튼의 실제 전이를 계산한다. 미리 복습하지 않는다.
  * policyVersion = 채점 뒤 카드의 정책(서버가 알린 지금 정책). 생략하면 카드의 정책을 그대로 쓴다.
+ * easyFloor = 학습 · 재학습의 쉬움을 알맞음 간격보다 하루 이상 길게(Anki 대조, 오너 승인 2026-10-23 KST).
+ * dayDue = 복습 단계 기한을 「채점한 학습일 + N일」이 시작하는 시각으로(Anki 날 경계, 오너 「Anki와 동일하게」 2026-10-25 KST —
+ * 23:00에 1일로 답하면 다음 날 04:00에 연다). false = 그 전의 「채점 시각 + N×24시간」.
+ * false는 그 전에 저장된 채점을 되돌릴 때 원래 계산을 다시 짓는 데만 쓴다(planFsrsUndo).
  */
-export function previewFsrsRatings(input, at, { policyVersion = input?.policyVersion } = {}) {
+export function previewFsrsRatings(input, at, { policyVersion = input?.policyVersion, easyFloor = true, dayDue = true } = {}) {
   const card = validateFsrsCard(input), now = schedulerTime(at), policy = fsrsPolicySteps(policyVersion);
   if (now < schedulerTime(card.due)) throw new Error('fsrs_card_not_due');
-  const elapsed = card.lastReview === null ? 0 : learningDay(now, card.timeZone, card.rolloverHour)
-    - learningDay(card.lastReview, card.timeZone, card.rolloverHour);
+  const today = learningDay(now, card.timeZone, card.rolloverHour);
+  const elapsed = card.lastReview === null ? 0 : today - learningDay(card.lastReview, card.timeZone, card.rolloverHour);
   if (elapsed < 0) throw new Error('scheduler_clock_reversed');
   const memory = [1, 2, 3, 4].map(rating => algorithm.next_state({ stability: card.stability, difficulty: card.difficulty }, elapsed, rating));
   const days = memory.map(m => algorithm.next_interval(m.stability, elapsed));
   if (card.state === 'Review') {
     days[1] = Math.min(days[1], days[2]);
     days[2] = Math.min(FSRS_POLICY.maximumInterval, Math.max(days[2], days[1] + 1));
+    days[3] = Math.min(FSRS_POLICY.maximumInterval, Math.max(days[3], days[2] + 1));
+  } else if (easyFloor) {
+    // Anki(rslib learning · relearning answer_easy)는 알맞음이 아직 단계여도 그 FSRS 간격 + 1일을 쉬움의 하한으로 둔다.
     days[3] = Math.min(FSRS_POLICY.maximumInterval, Math.max(days[3], days[2] + 1));
   }
   return Object.fromEntries([1, 2, 3, 4].map(rating => {
@@ -134,7 +216,9 @@ export function previewFsrsRatings(input, at, { policyVersion = input?.policyVer
       state: step?.state || 'Review', step: step?.step || 0, scheduledDays, elapsedDays: elapsed,
       reps: card.reps + 1, lapses: card.lapses + (card.state === 'Review' && rating === 1 ? 1 : 0),
       lastReview: new Date(now).toISOString(),
-      due: step ? new Date(now + step.seconds * 1000).toISOString() : date_scheduler(new Date(now), scheduledDays, true).toISOString() };
+      due: step ? new Date(now + step.seconds * 1000).toISOString()
+        : dayDue ? new Date(learningDayStart(today + scheduledDays, card.timeZone, card.rolloverHour)).toISOString()
+        : date_scheduler(new Date(now), scheduledDays, true).toISOString() };
     validateFsrsCard(next);
     return [rating, { card: next, log: { rating, reviewedAt: next.lastReview, policyVersion: card.policyVersion,
       previousRevision: card.revision, elapsedDays: elapsed, previousState: card.state,
@@ -146,4 +230,27 @@ export function previewFsrsRatings(input, at, { policyVersion = input?.policyVer
 export function scheduleFsrsReview(card, rating, at, options) {
   if (![1, 2, 3, 4].includes(rating)) throw new Error('invalid_fsrs_rating');
   return previewFsrsRatings(card, at, options)[rating];
+}
+
+/**
+ * 연습 기억(단어 페이지 네 영역 — 오너 승인 2026-10-21 KST) — 일정 카드 없이 「그날의 첫 답」만으로 같은 FSRS 엔진 · 같은 목표 기억률을 다시 돌린다.
+ * answers = 오래된 순 [{ day: learningDay, correct }]. 맞힘 = 알맞음(3), 놓침 = 다시(1). 하루 한 답이라 학습 단계(분 단위)는 없다.
+ * 반환: { stability, difficulty, lastDay, last } 또는 null(답 없음). 기억률은 practiceRecall로 잰다.
+ */
+export function replayPracticeMemory(answers) {
+  let memory = null, lastDay = null, last = null;
+  for (const a of answers || []) {
+    if (!Number.isInteger(a?.day) || typeof a.correct !== 'boolean') continue;
+    const elapsed = lastDay === null ? 0 : Math.max(0, a.day - lastDay);
+    memory = algorithm.next_state(memory, elapsed, a.correct ? 3 : 1);
+    lastDay = a.day;
+    last = a.correct;
+  }
+  return memory ? { stability: memory.stability, difficulty: memory.difficulty, lastDay, last } : null;
+}
+
+/** 지금 기억률(0–1) — 마지막 답 뒤 지난 학습일 수로 엔진의 망각 곡선을 읽는다. 목표(FSRS_POLICY.retention) 아래면 맞힘이 흐려진 것이다. */
+export function practiceRecall(memory, today) {
+  if (!memory || !Number.isFinite(memory.stability)) return 0;
+  return algorithm.forgetting_curve(Math.max(0, today - memory.lastDay), memory.stability);
 }

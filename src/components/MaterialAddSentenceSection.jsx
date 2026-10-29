@@ -212,7 +212,7 @@ export default function MaterialAddSentenceSection({
                 value={perChapter}
                 onChange={(e) => setPerChapter(e.target.value)}
                 style={{
-                  width: 72, padding: '6px 8px', fontSize: '0.9rem', textAlign: 'right',
+                  width: 72, padding: '6px 8px', fontSize: 'max(var(--field-font-min), 0.9rem)', textAlign: 'right',
                   fontVariantNumeric: 'tabular-nums',
                   background: 'var(--bg-secondary)', color: 'var(--text-primary)',
                   border: '1px solid var(--border, var(--text-muted))', borderRadius: 'var(--radius-sm, 6px)',

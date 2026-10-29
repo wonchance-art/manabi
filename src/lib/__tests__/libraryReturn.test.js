@@ -5,7 +5,7 @@ import path from 'node:path';
 import { sliceBetween } from './helpers/sliceBetween';
 const read = file => fs.readFileSync(path.resolve(__dirname, '../../..', file), 'utf8');
 
-// READER-RETURN-001 — 「함께 읽는 글 → 뷰어 → ← 발견」은 /materials?tab=public을 거치지 않고 곧장 /discover?view=reading으로 간다
+// READER-RETURN-001 — 「함께 읽는 글 → 뷰어 → ← 함께 읽는 글」은 /materials?tab=public을 거치지 않고 곧장 /discover?view=reading으로 간다
 // (경유하면 화면이 세 번 바뀌고 위치를 잃었다). 저장되는 returnTo는 그대로 /materials?tab=public…, 이동할 때만 바꾼다.
 describe('reader return link destination (readerReturnHref)', () => {
   it('공개 목록 복귀는 /discover?view=reading + 공개 목록 키만(고정 순서)', () => {
@@ -28,10 +28,10 @@ describe('reader return link destination (readerReturnHref)', () => {
   it.each(['https://evil.test/materials?tab=public', '//evil.test/materials?tab=public', 'javascript:alert(1)', '/discover?view=reading&q=x', '/discover', null])('악성 · 범위 밖 입력은 /materials: %s', value => {
     expect(readerReturnHref(value)).toBe('/materials');
   });
-  it('저장 주소 · 라벨은 바뀌지 않는다 — returnTo는 여전히 /materials?tab=public…, 라벨은 「← 발견」', () => {
+  it('저장 주소 · 라벨은 바뀌지 않는다 — returnTo는 여전히 /materials?tab=public…, 라벨은 「← 함께 읽는 글」(행선지 이름 — 「발견」 화면은 「산책」으로 바뀌었다, 2026-10-22 KST)', () => {
     const href = libraryReaderHref('/viewer/12', '/materials?tab=public&q=school', 520);
     expect(new URL(href, 'https://manabi.invalid').searchParams.get('returnTo')).toBe('/materials?tab=public&q=school&restoreY=520');
-    expect(readerReturnLabel('/materials?tab=public&q=school')).toBe('← 발견');
+    expect(readerReturnLabel('/materials?tab=public&q=school')).toBe('← 함께 읽는 글');
   });
   it('배선 — 복귀 링크 · 대화 지우기 뒤 이동이 readerReturnHref를 쓴다(라벨 · 맥락 판정은 back 기준)', () => {
     const link = sliceBetween(read('src/components/web/LibraryReturnLink.jsx'), 'export function LibraryReturnLink');
@@ -59,7 +59,7 @@ describe('reader return link destination (readerReturnHref)', () => {
 });
 describe('library navigation without mixing learning progress',()=>{
   it('names the validated destination, including public browsing and class history',()=>{
-    expect(readerReturnLabel('/materials?tab=public&q=school')).toBe('← 발견');
+    expect(readerReturnLabel('/materials?tab=public&q=school')).toBe('← 함께 읽는 글');
     expect(readerReturnLabel('/materials?view=owned&collection=folder')).toBe('← 내 서재');
     expect(readerReturnLabel('/class/class-a?view=history')).toBe('← 수업 기록');
     expect(readerReturnLabel('/class/class-a/live?day=2026-09-10')).toBe('← 수업 진행');
@@ -109,7 +109,7 @@ describe('guest reader return (readerReturnTarget)', () => {
     }
   });
   it('쓸 수 있는 returnTo가 있으면 손님도 그쪽이 우선 — 발견 · 그대로 받은 /materials · 수업', () => {
-    expect(readerReturnTarget('/materials?tab=public&q=school', { guest: true })).toEqual({ href: '/discover?view=reading&q=school', label: '← 발견', guestDefault: false });
+    expect(readerReturnTarget('/materials?tab=public&q=school', { guest: true })).toEqual({ href: '/discover?view=reading&q=school', label: '← 함께 읽는 글', guestDefault: false });
     expect(readerReturnTarget('/materials', { guest: true })).toEqual({ href: '/materials', label: '← 내 서재', guestDefault: false });
     expect(readerReturnTarget('/class/class-a?view=history', { guest: true }).label).toBe('← 수업 기록');
   });
@@ -120,7 +120,7 @@ describe('guest reader return (readerReturnTarget)', () => {
   });
   it('배선 — 뷰어의 「←」 넷이 확인된 손님 판정과 같은 목표를 쓰고, 아이콘(children)은 그대로 그린다', () => {
     const viewer = read('src/views/ViewerPage.jsx');
-    expect(viewer).toContain('const { user, profile, fetchProfile, isAdmin, loading: authLoading } = useAuth();');
+    expect(viewer).toContain('const { user, profile, refreshProfileAfterActivity, isAdmin, loading: authLoading } = useAuth();');
     expect(viewer).toContain('const guestReader = !user && !authLoading;');
     expect(viewer).toContain("const backTarget = readerReturnTarget(originalParams.get('returnTo'), { guest: guestReader });");
     expect(viewer.split('guest={guestReader} aria-label={vt(backTarget.label)}').length - 1).toBe(5); // 넷 + 대화방 머리 「←」(서재에서 연 대화, CONV-CHAT-001)

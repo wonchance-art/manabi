@@ -13,20 +13,18 @@
  * components/learn으로 떼어 냈다 — 홈은 이 파일을 불러오지 않는다(performanceRepairs P4).
  * 언어 칩은 레벨 어휘 · 기억 건강 · 아는 단어를 그 언어로 거른다. 복습 개수 칸은 없다(진입 링크만 범위 주소).
  * 휴대폰은 한 격자를 펴고 클래스 order로 순서를 정한다(진행바 → 오늘 목표 · 연속 → 이번 주 · 아는 단어 → 히트맵 → 레벨 어휘 → 기억 건강).
+ * 「목표 수정」 · 진행바 · 오늘 목표 칸 · 주소 ?goal=edit는 목표 창(components/goal/GoalSheet — GOAL-SHEET-001)을 연다.
  */
 import { usePathname } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
-import { useToast } from '../lib/ToastContext';
 import { buildWeeklyReport, weekRangeLabel } from '../lib/weeklyReport';
 import { fetchWeeklyReportRows } from '../lib/weeklyReportRows';
 import { topLabeledWeakness, weaknessLine, weaknessProfile } from '../lib/weaknessProfile';
 import { fetchKnownWords, knownWordsLang } from '../lib/knownWords';
-import { LANG_NAME_KO, detectLang } from '../lib/constants';
-import Button from '../components/Button';
+import { detectLang } from '../lib/constants';
 import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
 // 약점 칸 — import가 빠져 queryFn이 ReferenceError로 늘 실패했다(no-undef 전수, 2026-10-17 KST).
 import { fetchWeaknessRows } from '../lib/weaknessRows';
@@ -40,6 +38,7 @@ import MemoryHealthCard from '../components/learn/MemoryHealthCard';
 import '../components/learn/learn.css';
 import { authEntryHref } from '../lib/authRedirect';
 import { useDialogReturn } from '../lib/useDialogReturn';
+import GoalSheet from '../components/goal/GoalSheet';
 
 /** 히트맵 — 최근 24주(168일), 가장 오른쪽 아래가 오늘. */
 export const HEATMAP_DAYS = 168;
@@ -62,8 +61,9 @@ export default function ProfileStats() {
   // 로그인 뒤 지금 화면으로 돌아온다(맨 /auth는 /home으로 보낸다) — 대상 검증은 authEntryHref 규칙.
   const signInHref = authEntryHref(usePathname());
   const { user, profile, loading: authLoading } = useAuth();
-  const catalog = useGoalCatalog(!!user);
-  const [goalSignal, setGoalSignal] = useState(0);
+  // 목표 창이 열리기 전에 과정 목록을 받아 둔다(목표 창도 같은 쿼리 키 — 한 번만 받는다).
+  useGoalCatalog(!!user);
+  const [goalOpen, setGoalOpen] = useState(false);
 
   const { data, error, refetch } = useQuery({
     queryKey: ['profile-stats', user?.id],
@@ -97,10 +97,13 @@ export default function ProfileStats() {
     staleTime: 1000 * 60 * 5,
   });
 
-  // 배움의 「목표 정하기」(/progress?goal=edit)로 들어오면 프로필을 받은 뒤 목표 편집을 연다.
+  // 배움의 「목표 정하기」 · 오늘 목표 칸(/progress?goal=edit)으로 들어오면 프로필을 받은 뒤 목표 편집을 연다 — 들어올 때 한 번만.
+  // 저장하면 프로필을 다시 받아 profile이 바뀌는데, 그때마다 주소를 다시 읽으면 방금 닫은 창이 또 열렸다(PROFILE-REDESIGN-001 실화면 확인).
+  const goalParamRead = useRef(false);
   useEffect(() => {
-    if (!profile) return;
-    try { if (new URLSearchParams(window.location.search).get('goal') === 'edit') setGoalSignal(n => n + 1); } catch { /* 주소를 못 읽으면 닫힌 채로 */ }
+    if (!profile || goalParamRead.current) return;
+    goalParamRead.current = true;
+    try { if (new URLSearchParams(window.location.search).get('goal') === 'edit') setGoalOpen(true); } catch { /* 주소를 못 읽으면 닫힌 채로 */ }
   }, [profile]);
 
   if (!authLoading && !user) {
@@ -120,7 +123,7 @@ export default function ProfileStats() {
       <Link href="/home" prefetch={false} className="learn-crumb">← 배움</Link>
       <div className="learn-top">
         <div className="learn-top__title"><h1>현황</h1><LangChips langs={langs} lang={lang} onChange={choose} /></div>
-        <button type="button" className="learn-button-s" onClick={() => setGoalSignal(n => n + 1)}>목표 수정</button>
+        <button type="button" className="learn-button-s" onClick={() => setGoalOpen(true)} aria-haspopup="dialog">목표 수정</button>
       </div>
       {error && (
         <div className="manabi-inline-state" role="alert">
@@ -128,8 +131,8 @@ export default function ProfileStats() {
         </div>
       )}
       <div className="learn-grid learn-stats">
-        <GoalTrackTile className="learn-order-1" onOpen={() => setGoalSignal(n => n + 1)} />
-        <TodayGoalTile vocab={vocab} projections={projections} profile={profile} empty={!data} className="learn-order-2" />
+        <GoalTrackTile className="learn-order-1" onOpen={() => setGoalOpen(true)} />
+        <TodayGoalTile vocab={vocab} projections={projections} profile={profile} empty={!data} className="learn-order-2" onOpen={() => setGoalOpen(true)} />
         <StreakTile profile={profile} className="learn-order-3" />
         <HeatmapCard dayCounts={data?.heatmapDayCounts || {}} className="learn-order-6" />
         {/* 빈 주에도 칸은 자리를 지킨다(오너 확정 2026-08-30 "상시 표시") — 게이트는 로드 대기만, 로드 전은 같은 칸의 「–」. */}
@@ -138,7 +141,8 @@ export default function ProfileStats() {
         <LevelVocabCard lang={lang} vocab={vocab} projections={projections} knownRows={knownRows || []} className="learn-order-7" />
         <MemoryHealthCard lang={lang} projections={projections} now={data?.now || Date.now()} className="learn-order-8" />
       </div>
-      <GoalEditor catalog={catalog.data} openSignal={goalSignal} />
+      {/* 목표 창(GOAL-SHEET-001) — 닫혀 있어도 붙여 둔다(이 기기 목표를 서버로 한 번 끌어올린다). */}
+      <GoalSheet open={goalOpen} onClose={() => setGoalOpen(false)} />
     </div>
   );
 }
@@ -240,142 +244,6 @@ function WeakSpotLine({ weekStartMs }) {
     <div style={{ marginTop: 6, fontSize: '0.86rem', color: 'var(--text-muted)' }}>
       약한 곳 — {line}
     </div>
-  );
-}
-
-/* ── 목표 편집(목표 · D-Day 모달) — 목표일 설정 (서버 동기화, 비로그인·오프라인은 localStorage 폴백).
-     v2-D R2에서 '무엇을 향해 가는가'(언어·도달 레벨)가 여기 붙었다. 날짜 편집기와 과정을 한 모달에 모은다 —
-     목표가 두 곳으로 갈리지 않게, 목표를 고치는 자리는 현황의 「목표 수정」(배움의 「목표 정하기」도 여기로 온다) 하나다.
-     예전 D-Day 타일은 진행바 반쪽(D-58)으로 흡수됐다(LEARN-HOME-AK-001). ── */
-
-function GoalEditor({ catalog, openSignal = 0 }) {
-  const { user, profile, fetchProfile } = useAuth();
-  const toast = useToast();
-  const [local, setLocal] = useState(null);
-  const [mounted, setMounted] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [date, setDate] = useState('');
-  const [label, setLabel] = useState('');
-  const [goalLang, setGoalLang] = useState('');
-  const [goalLevel, setGoalLevel] = useState('');
-  const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    try { setLocal(JSON.parse(localStorage.getItem('as_dday') || 'null')); } catch {}
-  }, []);
-
-  // 서버 값 우선, 없으면 로컬 폴백. 매 렌더 새 객체면 아래 diff 메모가 매번 다시 계산되므로 메모한다.
-  const ddayDate = profile?.dday_date;
-  const ddayLabel = profile?.dday_label;
-  const dday = useMemo(
-    () => (ddayDate ? { date: ddayDate, label: ddayLabel || '' } : local),
-    [ddayDate, ddayLabel, local],
-  );
-
-  // 서버가 비어 있고 로컬에 있으면 1회 끌어올림 (기기 마이그레이션)
-  useEffect(() => {
-    if (!user?.id || !profile || profile.dday_date || !local?.date) return;
-    supabase.from('profiles')
-      .update({ dday_date: local.date, dday_label: local.label || null })
-      .eq('id', user.id)
-      .then(({ error }) => { if (!error) fetchProfile(user.id, user.user_metadata); }, () => {});
-    // 최초 1회
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, profile?.dday_date, local?.date]);
-
-  // 레벨은 그 언어에 챕터가 있는 것만 — 어휘 전용 레벨을 목표로 잡으면 계획이 빈다.
-  const levelOptions = ((catalog?.[goalLang]?.levels) || []).filter(lv => (lv.chapters || []).length > 0);
-
-  function openModal() {
-    setDate(dday?.date || '');
-    setLabel(dday?.label || '');
-    setGoalLang(profile?.goal_lang || '');
-    setGoalLevel(profile?.goal_level || '');
-    setOpen(true);
-  }
-  // 「목표 수정」 버튼 · ?goal=edit 진입이 신호를 올리면 연다(열 때마다 지금 값으로 채운다).
-  useEffect(() => {
-    if (openSignal > 0) openModal();
-    // openModal은 매 렌더 새 함수 — 신호가 바뀔 때만 연다.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openSignal]);
-
-  async function persist(nextDate, nextLabel, nextLang, nextLevel) {
-    if (busy) return;
-    setBusy(true);
-    // 로컬은 항상 기록 (오프라인 폴백)
-    try {
-      if (nextDate) localStorage.setItem('as_dday', JSON.stringify({ date: nextDate, label: nextLabel }));
-      else localStorage.removeItem('as_dday');
-    } catch {}
-    setLocal(nextDate ? { date: nextDate, label: nextLabel } : null);
-    if (user?.id) {
-      const base = { dday_date: nextDate || null, dday_label: nextLabel || null };
-      // 목표 2컬럼은 마이그레이션(20260831010000_profile_goal.sql) 적용 후 생긴다.
-      // 미적용 환경에서 미지 컬럼이 payload에 있으면 PostgREST가 요청 전체를 거부하므로,
-      // 컬럼 오류일 때만 목표를 빼고 재시도한다(profile_levels_fr_zh 폴백과 같은 패턴).
-      let { error } = await supabase.from('profiles')
-        .update({ ...base, goal_lang: nextLang || null, goal_level: nextLevel || null })
-        .eq('id', user.id);
-      if (error && /column|schema/i.test(error.message || '')) {
-        ({ error } = await supabase.from('profiles').update(base).eq('id', user.id));
-        // 조용히 삼키면 "과정을 골랐는데 궤도가 안 뜬다"가 된다 — 무엇이 저장됐는지 말한다.
-        if (!error && (nextLang || nextLevel)) toast('날짜는 저장했어요 — 목표 과정은 아직 준비 중이에요', 'info');
-      }
-      if (error) toast('동기화하지 못했어요. 이 기기에는 저장됐어요.', 'error');
-      else fetchProfile(user.id, user.user_metadata);
-    }
-    setBusy(false);
-    setOpen(false);
-  }
-
-  if (!mounted) return null;
-  return (
-    <>
-      {open && (
-        <TileModal title="목표 · D-Day" onClose={() => setOpen(false)}>
-          <div className="tile-modal__row">
-            <span>날짜</span>
-            <input type="date" className="form-input tile-modal__num" style={{ maxWidth: 160 }}
-              value={date} onChange={e => setDate(e.target.value)} />
-          </div>
-          <div className="tile-modal__row">
-            <span>이름</span>
-            <input className="form-input tile-modal__num" style={{ maxWidth: 160 }} maxLength={12}
-              placeholder="예: JLPT N3" value={label} onChange={e => setLabel(e.target.value)} />
-          </div>
-          {/* 과정을 고르면 그 날까지의 궤도(남은 챕터·필요 속도·예상 완료일)가 홈에 뜬다.
-              안 고르면 지금까지처럼 날짜 카운트다운만 — 목표는 강요가 아니다. */}
-          <div className="tile-modal__row">
-            <span>과정</span>
-            <span className="dday-goal">
-              <select className="form-input dday-goal__sel" aria-label="목표 언어"
-                value={goalLang} onChange={e => { setGoalLang(e.target.value); setGoalLevel(''); }}>
-                <option value="">선택 안 함</option>
-                {Object.keys(catalog || {}).filter(l => LANG_NAME_KO[l]).map(l => (
-                  <option key={l} value={l}>{LANG_NAME_KO[l]}</option>
-                ))}
-              </select>
-              <select className="form-input dday-goal__sel" aria-label="목표 레벨"
-                value={goalLevel} disabled={!goalLang} onChange={e => setGoalLevel(e.target.value)}>
-                <option value="">레벨</option>
-                {levelOptions.map(lv => (
-                  <option key={lv.key} value={lv.key}>{lv.short || lv.key}</option>
-                ))}
-              </select>
-            </span>
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <Button size="sm" onClick={() => persist(date, label.trim(), goalLang, goalLang ? goalLevel : '')}
-              disabled={!date || busy} style={{ flex: 1 }}>
-              {busy ? '저장 중…' : '저장'}
-            </Button>
-            {dday && <Button size="sm" variant="secondary" onClick={() => persist('', '', '', '')} disabled={busy} style={{ flex: 1 }}>삭제</Button>}
-          </div>
-        </TileModal>
-      )}
-    </>
   );
 }
 

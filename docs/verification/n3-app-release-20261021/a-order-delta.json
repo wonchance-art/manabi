@@ -1,0 +1,791 @@
+{
+  "status": "passed-independent-options-order-only-review",
+  "reviewer": "/root/n3_curriculum",
+  "author": "/root/n3_author_a",
+  "checkedAt": "2026-10-21T11:49:50.700361+00:00",
+  "scope": "A-owned u01-u16 checks[].options and listen_choices permutations only. All other source fields, including question, option strings, answer, why, contextual readings, word labels and recall, must remain identical to the exact full-language reviewed snapshot.",
+  "baseFullLanguageReceipt": "/workspace/scratch/n3-integration/team/curriculum/U01-U16-INDEPENDENT-REVIEW.json",
+  "baseReceiptSha256": "ebf422ba21fa98456cf81d50857f260e7f6ef6204ce1c26350fa4c14f0115fb7",
+  "units": {
+    "u01": {
+      "status": "passed-order-only-delta-on-accepted-source",
+      "baseSourceSha256": "6de044387febf5b81ac9106373e0ff3782845c8c738420724ea7d65b1ab189b1",
+      "sourceSha256": "183a1bc2fe2b4a8f5727fc276ce0c6410b97d5ad66c72e2a28e8fb432753e037",
+      "nonPermutationSourceIdentical": true,
+      "whyIdentical": true,
+      "changedExerciseCount": 2,
+      "changes": [
+        {
+          "fieldPath": "checks[1].options",
+          "before": [
+            "참가비가 없다는 점이에요.",
+            "행사 이름이 ‘무료’라는 점이에요.",
+            "모든 책을 무료로 준다는 점이에요."
+          ],
+          "after": [
+            "모든 책을 무료로 준다는 점이에요.",
+            "행사 이름이 ‘무료’라는 점이에요.",
+            "참가비가 없다는 점이에요."
+          ]
+        },
+        {
+          "fieldPath": "checks[2].options",
+          "before": [
+            "자기 책이 없어도 무료로 참가할 수 있어요.",
+            "첫날에는 자기 책을 반드시 한 권 가져와야 해요.",
+            "친구는 이미 준과 함께 오기로 했어요."
+          ],
+          "after": [
+            "첫날에는 자기 책을 반드시 한 권 가져와야 해요.",
+            "친구는 이미 준과 함께 오기로 했어요.",
+            "자기 책이 없어도 무료로 참가할 수 있어요."
+          ]
+        }
+      ]
+    },
+    "u02": {
+      "status": "passed-order-only-delta-on-accepted-source",
+      "baseSourceSha256": "2bdb06738013046df419da4f1c2abfc3fa422359a396019f447ea3c60a5c983c",
+      "sourceSha256": "918c9211736b799bd6e5f9179d1a2f3012ce37d2d0334828df66bcd1fd27d121",
+      "nonPermutationSourceIdentical": true,
+      "whyIdentical": true,
+      "changedExerciseCount": 2,
+      "changes": [
+        {
+          "fieldPath": "checks[0].options",
+          "before": [
+            "というのは",
+            "というのを",
+            "というのに"
+          ],
+          "after": [
+            "というのに",
+            "というのは",
+            "というのを"
+          ]
+        },
+        {
+          "fieldPath": "checks[2].options",
+          "before": [
+            "처음부터 모두 2층으로 바로 가요.",
+            "첫날 접수처에서 사용할 방을 확인해요.",
+            "집에 책이 없으면 참가를 취소해요."
+          ],
+          "after": [
+            "첫날 접수처에서 사용할 방을 확인해요.",
+            "처음부터 모두 2층으로 바로 가요.",
+            "집에 책이 없으면 참가를 취소해요."
+          ]
+        }
+      ]
+    },
+    "u03": {
+      "status": "passed-order-only-delta-on-accepted-source",
+      "baseSourceSha256": "0c47ffc83d0b604739c2474c56aeb5d34301bc02a7befb25a75aa326a4078815",
+      "sourceSha256": "88636b5e16e4f4c11d831fb30d93aa00cb7547120ac5a0799a02e60967fb7015",
+      "nonPermutationSourceIdentical": true,
+      "whyIdentical": true,
+      "changedExerciseCount": 4,
+      "changes": [
+        {
+          "fieldPath": "checks[0].options",
+          "before": [
+            "去年の記録によると、参加者は二十人だったそうです。",
+            "去年の記録にとると、参加者は二十人だったそうです。",
+            "去年の記録をよると、参加者は二十人だったそうです。"
+          ],
+          "after": [
+            "去年の記録にとると、参加者は二十人だったそうです。",
+            "去年の記録によると、参加者は二十人だったそうです。",
+            "去年の記録をよると、参加者は二十人だったそうです。"
+          ]
+        },
+        {
+          "fieldPath": "checks[1].options",
+          "before": [
+            "그렇게 알려져 있거나 말한다는 평가예요.",
+            "모든 참가자의 응답을 조사했다는 뜻이에요.",
+            "그 평가가 항상 사실이라는 보증이에요."
+          ],
+          "after": [
+            "모든 참가자의 응답을 조사했다는 뜻이에요.",
+            "그 평가가 항상 사실이라는 보증이에요.",
+            "그렇게 알려져 있거나 말한다는 평가예요."
+          ]
+        },
+        {
+          "fieldPath": "checks[2].options",
+          "before": [
+            "작년과 똑같이 스무 명으로 확정됐어요.",
+            "아직 정해지지 않았어요.",
+            "작년보다 반드시 많아요."
+          ],
+          "after": [
+            "작년과 똑같이 스무 명으로 확정됐어요.",
+            "작년보다 반드시 많아요.",
+            "아직 정해지지 않았어요."
+          ]
+        },
+        {
+          "fieldPath": "listen_choices",
+          "before": [
+            "작년 모임의 기록",
+            "참가자가 쓴 책 제목"
+          ],
+          "after": [
+            "참가자가 쓴 책 제목",
+            "작년 모임의 기록"
+          ]
+        }
+      ]
+    },
+    "u04": {
+      "status": "passed-order-only-delta-on-accepted-source",
+      "baseSourceSha256": "cee796554acbd1f4378c4e021ab5d4a30a5aea8acdb4177f5627669c02c66479",
+      "sourceSha256": "7d88c629d3d1506e2b7178749bcbb1fefb4a838cecb4ce025e28166ebf3ed43f",
+      "nonPermutationSourceIdentical": true,
+      "whyIdentical": true,
+      "changedExerciseCount": 3,
+      "changes": [
+        {
+          "fieldPath": "checks[0].options",
+          "before": [
+            "に関して",
+            "を関して",
+            "で関して"
+          ],
+          "after": [
+            "に関して",
+            "で関して",
+            "を関して"
+          ]
+        },
+        {
+          "fieldPath": "checks[1].options",
+          "before": [
+            "持ち物についての案内",
+            "持ち物についてを案内",
+            "持ち物についてに案内"
+          ],
+          "after": [
+            "持ち物についてに案内",
+            "持ち物についての案内",
+            "持ち物についてを案内"
+          ]
+        },
+        {
+          "fieldPath": "listen_choices",
+          "before": [
+            "참가 신청 방법과 준비물",
+            "행사장 건물의 역사와 주소"
+          ],
+          "after": [
+            "행사장 건물의 역사와 주소",
+            "참가 신청 방법과 준비물"
+          ]
+        }
+      ]
+    },
+    "u05": {
+      "status": "passed-order-only-delta-on-accepted-source",
+      "baseSourceSha256": "4e2f58d63938014b540fb33ed4db179a0cf6869bc9ab33f09d8c8040ea1832b4",
+      "sourceSha256": "abce057a931da5589d51bac5120fea98e397df914ad67812d36ca6800dc9596e",
+      "nonPermutationSourceIdentical": true,
+      "whyIdentical": true,
+      "changedExerciseCount": 4,
+      "changes": [
+        {
+          "fieldPath": "checks[0].options",
+          "before": [
+            "に対して",
+            "を対して",
+            "で対して"
+          ],
+          "after": [
+            "を対して",
+            "で対して",
+            "に対して"
+          ]
+        },
+        {
+          "fieldPath": "checks[1].options",
+          "before": [
+            "처음 오는 사람",
+            "지도에 그려진 건물",
+            "접수처를 전혀 이용하지 않는 모든 사람"
+          ],
+          "after": [
+            "지도에 그려진 건물",
+            "접수처를 전혀 이용하지 않는 모든 사람",
+            "처음 오는 사람"
+          ]
+        },
+        {
+          "fieldPath": "checks[2].options",
+          "before": [
+            "준이 읽으면 모든 참가자의 이해도까지 확인돼요.",
+            "준에게 읽어 달라고 하되 전원의 의견으로 확대하지 않아요.",
+            "지도는 안내자가 보기 쉬우면 점검할 필요가 없어요."
+          ],
+          "after": [
+            "지도는 안내자가 보기 쉬우면 점검할 필요가 없어요.",
+            "준이 읽으면 모든 참가자의 이해도까지 확인돼요.",
+            "준에게 읽어 달라고 하되 전원의 의견으로 확대하지 않아요."
+          ]
+        },
+        {
+          "fieldPath": "listen_choices",
+          "before": [
+            "입구와 접수처를 알 수 있는 지도",
+            "모든 책의 가격표"
+          ],
+          "after": [
+            "모든 책의 가격표",
+            "입구와 접수처를 알 수 있는 지도"
+          ]
+        }
+      ]
+    },
+    "u06": {
+      "status": "passed-order-only-delta-on-accepted-source",
+      "baseSourceSha256": "b5a0cd1e4fb90a73790ff50b7d3b9eeefca4f132531371a80188c5b56817e3d7",
+      "sourceSha256": "4b1925a767c1a5bbab6be1749ab10d63177fea3f7bc988b3c334b0ea10fde291",
+      "nonPermutationSourceIdentical": true,
+      "whyIdentical": true,
+      "changedExerciseCount": 2,
+      "changes": [
+        {
+          "fieldPath": "checks[1].options",
+          "before": [
+            "미오",
+            "리나",
+            "두 사람 중 누구인지 알 수 없어요."
+          ],
+          "after": [
+            "리나",
+            "미오",
+            "두 사람 중 누구인지 알 수 없어요."
+          ]
+        },
+        {
+          "fieldPath": "checks[2].options",
+          "before": [
+            "준이 질문을 모아 리나에게 전해요.",
+            "리나가 질문을 모아 준에게 접수를 부탁해요.",
+            "미오가 참가자 대표로서 준의 질문만 받아요."
+          ],
+          "after": [
+            "리나가 질문을 모아 준에게 접수를 부탁해요.",
+            "준이 질문을 모아 리나에게 전해요.",
+            "미오가 참가자 대표로서 준의 질문만 받아요."
+          ]
+        }
+      ]
+    },
+    "u07": {
+      "status": "passed-order-only-delta-on-accepted-source",
+      "baseSourceSha256": "7bd237ebcb0bfa9c1ed43f2f2ddbcd4c76c2fbd66a73eadc2eadfc0534d8200b",
+      "sourceSha256": "f192e767d2fb3f7c3204f1e520d889c0ff6dceae323cdcfda361af98f238874f",
+      "nonPermutationSourceIdentical": true,
+      "whyIdentical": true,
+      "changedExerciseCount": 3,
+      "changes": [
+        {
+          "fieldPath": "checks[0].options",
+          "before": [
+            "만들 때 초보자를 대상으로 삼았다는 점",
+            "만든 사람이 반드시 초보자라는 점",
+            "초보자 외에는 읽으면 안 된다는 금지"
+          ],
+          "after": [
+            "만들 때 초보자를 대상으로 삼았다는 점",
+            "초보자 외에는 읽으면 안 된다는 금지",
+            "만든 사람이 반드시 초보자라는 점"
+          ]
+        },
+        {
+          "fieldPath": "checks[1].options",
+          "before": [
+            "대상 표시가 있으면 누구에게나 쉬워서예요.",
+            "짧은 글, 큰 글자와 많은 그림을 보고 읽기 쉽다고 판단했기 때문이에요.",
+            "어른에게는 긴 책만 소개해야 하기 때문이에요."
+          ],
+          "after": [
+            "대상 표시가 있으면 누구에게나 쉬워서예요.",
+            "어른에게는 긴 책만 소개해야 하기 때문이에요.",
+            "짧은 글, 큰 글자와 많은 그림을 보고 읽기 쉽다고 판단했기 때문이에요."
+          ]
+        },
+        {
+          "fieldPath": "checks[2].options",
+          "before": [
+            "둘은 어떤 문맥에서도 서로 바꾸면 반드시 틀려요.",
+            "의도된 대상과 적합성에 초점을 두며, 둘 다 자연스러운 경우도 있어요.",
+            "向き는 누가 만들었는지만 알려 줘요."
+          ],
+          "after": [
+            "向き는 누가 만들었는지만 알려 줘요.",
+            "둘은 어떤 문맥에서도 서로 바꾸면 반드시 틀려요.",
+            "의도된 대상과 적합성에 초점을 두며, 둘 다 자연스러운 경우도 있어요."
+          ]
+        }
+      ]
+    },
+    "u08": {
+      "status": "passed-order-only-delta-on-accepted-source",
+      "baseSourceSha256": "d1719b2e3ca21d242471b1adf77e9c0d9f848ef5b5eeee44dc8adfaadc2bc645",
+      "sourceSha256": "899fc0786d7b5ca0ddda01df5da8f10c5e119ffaef3e59563f5de1ec3c847236",
+      "nonPermutationSourceIdentical": true,
+      "whyIdentical": true,
+      "changedExerciseCount": 4,
+      "changes": [
+        {
+          "fieldPath": "checks[0].options",
+          "before": [
+            "によって",
+            "をよって",
+            "でよって"
+          ],
+          "after": [
+            "でよって",
+            "によって",
+            "をよって"
+          ]
+        },
+        {
+          "fieldPath": "checks[1].options",
+          "before": [
+            "작년을 기준으로 자리 준비 계획을 비교해요.",
+            "올해 참가 인원이 이미 작년보다 많아졌어요.",
+            "작년과 올해 모든 조건이 같아요."
+          ],
+          "after": [
+            "작년과 올해 모든 조건이 같아요.",
+            "작년을 기준으로 자리 준비 계획을 비교해요.",
+            "올해 참가 인원이 이미 작년보다 많아졌어요."
+          ]
+        },
+        {
+          "fieldPath": "checks[2].options",
+          "before": [
+            "올해 참가자는 서른 명으로 확정됐어요.",
+            "서른 명분의 자리를 준비하지만 참가 인원은 미정이에요.",
+            "작년 참가자 수도 아직 몰라요."
+          ],
+          "after": [
+            "서른 명분의 자리를 준비하지만 참가 인원은 미정이에요.",
+            "작년 참가자 수도 아직 몰라요.",
+            "올해 참가자는 서른 명으로 확정됐어요."
+          ]
+        },
+        {
+          "fieldPath": "listen_choices",
+          "before": [
+            "자리 수",
+            "확정된 참가자 명단의 사람 수"
+          ],
+          "after": [
+            "확정된 참가자 명단의 사람 수",
+            "자리 수"
+          ]
+        }
+      ]
+    },
+    "u09": {
+      "status": "passed-order-only-delta-on-accepted-source",
+      "baseSourceSha256": "18f4460ac8e499396487c4a928266f6d3550a6608fd8ffb17abef58c253510ad",
+      "sourceSha256": "03e0015d3e2e2f5cd4b140188559c41393ea01c57b5eb2d2a1f9331d6c5a382a",
+      "nonPermutationSourceIdentical": true,
+      "whyIdentical": true,
+      "changedExerciseCount": 2,
+      "changes": [
+        {
+          "fieldPath": "checks[1].options",
+          "before": [
+            "전화 이야기가 진행 중일 때 리나가 왔어요.",
+            "리나가 돌아간 뒤 처음 전화를 걸었어요.",
+            "전화가 끝나고 자료도 모두 정리한 뒤 리나가 왔어요."
+          ],
+          "after": [
+            "리나가 돌아간 뒤 처음 전화를 걸었어요.",
+            "전화 이야기가 진행 중일 때 리나가 왔어요.",
+            "전화가 끝나고 자료도 모두 정리한 뒤 리나가 왔어요."
+          ]
+        },
+        {
+          "fieldPath": "checks[2].options",
+          "before": [
+            "책상 배치까지 모두 끝났어요.",
+            "책상 위치 지시를 듣고 메모했어요.",
+            "미오는 준에게 전화하지 않았어요."
+          ],
+          "after": [
+            "책상 위치 지시를 듣고 메모했어요.",
+            "미오는 준에게 전화하지 않았어요.",
+            "책상 배치까지 모두 끝났어요."
+          ]
+        }
+      ]
+    },
+    "u10": {
+      "status": "passed-order-only-delta-on-accepted-source",
+      "baseSourceSha256": "ef6a271742f76223486d64d1b64ff5bdc4b342720786a2ba9eb9f6d258f63a55",
+      "sourceSha256": "91ce278dc7e9bfc2ed0e39711f987e7ae2f5c215e9ddde18131dbb885b05fb33",
+      "nonPermutationSourceIdentical": true,
+      "whyIdentical": true,
+      "changedExerciseCount": 4,
+      "changes": [
+        {
+          "fieldPath": "checks[0].options",
+          "before": [
+            "잊기 전에 메모해요.",
+            "잊어버린 뒤에만 메모해요.",
+            "잊는 일과 메모가 반드시 동시에 시작해요."
+          ],
+          "after": [
+            "잊는 일과 메모가 반드시 동시에 시작해요.",
+            "잊어버린 뒤에만 메모해요.",
+            "잊기 전에 메모해요."
+          ]
+        },
+        {
+          "fieldPath": "checks[1].options",
+          "before": [
+            "행사장에 사람이 적은 상태",
+            "책을 모두 반납한 뒤의 시점",
+            "반드시 오후 세 시가 되는 순간"
+          ],
+          "after": [
+            "반드시 오후 세 시가 되는 순간",
+            "행사장에 사람이 적은 상태",
+            "책을 모두 반납한 뒤의 시점"
+          ]
+        },
+        {
+          "fieldPath": "checks[2].options",
+          "before": [
+            "리나는 벌써 책을 반납했고 미오도 촬영을 끝냈어요.",
+            "리나는 반납 전 읽기와 메모를 계획하고 있어요.",
+            "사진을 찍어야만 책을 반납할 수 있어요."
+          ],
+          "after": [
+            "사진을 찍어야만 책을 반납할 수 있어요.",
+            "리나는 벌써 책을 반납했고 미오도 촬영을 끝냈어요.",
+            "리나는 반납 전 읽기와 메모를 계획하고 있어요."
+          ]
+        },
+        {
+          "fieldPath": "listen_choices",
+          "before": [
+            "내용을 잊기 전에",
+            "책을 돌려준 뒤 내용을 모두 잊었을 때"
+          ],
+          "after": [
+            "책을 돌려준 뒤 내용을 모두 잊었을 때",
+            "내용을 잊기 전에"
+          ]
+        }
+      ]
+    },
+    "u11": {
+      "status": "passed-order-only-delta-on-accepted-source",
+      "baseSourceSha256": "001f6eb4a34fcf340457d7d326f57aa9b3ffc106610703d26ebec2b2380ae66c",
+      "sourceSha256": "18ed668acfa7f3164e7a4cd82db23037ce3904c77c9eb3572dedd60c26a95607",
+      "nonPermutationSourceIdentical": true,
+      "whyIdentical": true,
+      "changedExerciseCount": 3,
+      "changes": [
+        {
+          "fieldPath": "checks[0].options",
+          "before": [
+            "の",
+            "を",
+            "で"
+          ],
+          "after": [
+            "で",
+            "の",
+            "を"
+          ]
+        },
+        {
+          "fieldPath": "checks[1].options",
+          "before": [
+            "각 탁자에 안내 한 장을 놓아요.",
+            "모든 탁자를 합쳐 안내는 한 장만 놓아요.",
+            "한 탁자에 모든 안내를 모아 놓아요."
+          ],
+          "after": [
+            "한 탁자에 모든 안내를 모아 놓아요.",
+            "모든 탁자를 합쳐 안내는 한 장만 놓아요.",
+            "각 탁자에 안내 한 장을 놓아요."
+          ]
+        },
+        {
+          "fieldPath": "checks[2].options",
+          "before": [
+            "참가자 이름",
+            "30분이라는 시간 단위",
+            "책을 반납하는 날"
+          ],
+          "after": [
+            "30분이라는 시간 단위",
+            "참가자 이름",
+            "책을 반납하는 날"
+          ]
+        }
+      ]
+    },
+    "u12": {
+      "status": "passed-order-only-delta-on-accepted-source",
+      "baseSourceSha256": "35e95c0fdac4f7162ce091a2b959b7635a3c6256ceaf291389cd7b9ca434a773",
+      "sourceSha256": "0a379f33f34d64fed289f5fb0b652e789ec31ea0350dcf61534aae315ed80a7d",
+      "nonPermutationSourceIdentical": true,
+      "whyIdentical": true,
+      "changedExerciseCount": 4,
+      "changes": [
+        {
+          "fieldPath": "checks[0].options",
+          "before": [
+            "화요일",
+            "수요일",
+            "다음 월요일"
+          ],
+          "after": [
+            "다음 월요일",
+            "수요일",
+            "화요일"
+          ]
+        },
+        {
+          "fieldPath": "checks[1].options",
+          "before": [
+            "대략 월요일에서 금요일에 걸친다는 범위",
+            "그 기간의 모든 날에 반드시 배포한다는 사실",
+            "배포가 어느 기간에 걸치는지"
+          ],
+          "after": [
+            "배포가 어느 기간에 걸치는지",
+            "그 기간의 모든 날에 반드시 배포한다는 사실",
+            "대략 월요일에서 금요일에 걸친다는 범위"
+          ]
+        },
+        {
+          "fieldPath": "checks[2].options",
+          "before": [
+            "올해도 정확히 그 시간에만 붐빈다고 확정해요.",
+            "작년 기록임을 남기고 올해는 미확인이라고 구분해요.",
+            "과거 정보이므로 언제의 기록인지 지워요."
+          ],
+          "after": [
+            "과거 정보이므로 언제의 기록인지 지워요.",
+            "작년 기록임을 남기고 올해는 미확인이라고 구분해요.",
+            "올해도 정확히 그 시간에만 붐빈다고 확정해요."
+          ]
+        },
+        {
+          "fieldPath": "listen_choices",
+          "before": [
+            "수요일",
+            "화요일"
+          ],
+          "after": [
+            "화요일",
+            "수요일"
+          ]
+        }
+      ]
+    },
+    "u13": {
+      "status": "passed-order-only-delta-on-accepted-source",
+      "baseSourceSha256": "d659ad1646b48488a43942baed8e1f0970b8c0cfd082b3a2e29452038b693e8d",
+      "sourceSha256": "3e2f023689929e17907a94e3128fa892c7a642113ba4ebcedbae6daab776b555",
+      "nonPermutationSourceIdentical": true,
+      "whyIdentical": true,
+      "changedExerciseCount": 3,
+      "changes": [
+        {
+          "fieldPath": "checks[0].options",
+          "before": [
+            "開けた",
+            "開けて",
+            "開けます"
+          ],
+          "after": [
+            "開けて",
+            "開けます",
+            "開けた"
+          ]
+        },
+        {
+          "fieldPath": "checks[1].options",
+          "before": [
+            "앉아 본 뒤 비로소 문제를 알게 된 점",
+            "태어나서 처음 의자에 앉았다는 점",
+            "앉기 전에 이미 모든 문제를 해결한 점"
+          ],
+          "after": [
+            "앉기 전에 이미 모든 문제를 해결한 점",
+            "태어나서 처음 의자에 앉았다는 점",
+            "앉아 본 뒤 비로소 문제를 알게 된 점"
+          ]
+        },
+        {
+          "fieldPath": "listen_choices",
+          "before": [
+            "안내 글자가 작아 읽기 어렵다는 점",
+            "행사장이 이미 사람들로 가득 찼다는 점"
+          ],
+          "after": [
+            "행사장이 이미 사람들로 가득 찼다는 점",
+            "안내 글자가 작아 읽기 어렵다는 점"
+          ]
+        }
+      ]
+    },
+    "u14": {
+      "status": "passed-order-only-delta-on-accepted-source",
+      "baseSourceSha256": "478b832367919540c58973f45a4af0513a81a8467fba1fe49f3e9ae215072091",
+      "sourceSha256": "20ff36a1860e188d9793fc6fd05e952d506923d2014da393915c7403f5b22e1b",
+      "nonPermutationSourceIdentical": true,
+      "whyIdentical": true,
+      "changedExerciseCount": 2,
+      "changes": [
+        {
+          "fieldPath": "checks[0].options",
+          "before": [
+            "参加して",
+            "参加した",
+            "参加します"
+          ],
+          "after": [
+            "参加した",
+            "参加します",
+            "参加して"
+          ]
+        },
+        {
+          "fieldPath": "checks[1].options",
+          "before": [
+            "도서관에 책을 반납하는 일",
+            "포스터를 전달하는 일",
+            "집에서 기록을 모두 지우는 일"
+          ],
+          "after": [
+            "포스터를 전달하는 일",
+            "집에서 기록을 모두 지우는 일",
+            "도서관에 책을 반납하는 일"
+          ]
+        }
+      ]
+    },
+    "u15": {
+      "status": "passed-order-only-delta-on-accepted-source",
+      "baseSourceSha256": "0adbfaccfa94b918c0d40b0a6ea9b63db0ef742cf51a2259f8f6d92591bcfa12",
+      "sourceSha256": "5c0e225c1132a6af5fcac72187d53e46013c53ae751ea5650357e070932ad676",
+      "nonPermutationSourceIdentical": true,
+      "whyIdentical": true,
+      "changedExerciseCount": 3,
+      "changes": [
+        {
+          "fieldPath": "checks[0].options",
+          "before": [
+            "貼ろう",
+            "貼ります",
+            "貼って"
+          ],
+          "after": [
+            "貼ります",
+            "貼ろう",
+            "貼って"
+          ]
+        },
+        {
+          "fieldPath": "checks[1].options",
+          "before": [
+            "예전 파일 송신을 피했어요.",
+            "예전 파일을 이미 보냈어요.",
+            "앞으로 반드시 예전 파일을 보내요."
+          ],
+          "after": [
+            "앞으로 반드시 예전 파일을 보내요.",
+            "예전 파일 송신을 피했어요.",
+            "예전 파일을 이미 보냈어요."
+          ]
+        },
+        {
+          "fieldPath": "listen_choices",
+          "before": [
+            "아니요. 보내기 전에 오류를 발견해 멈췄어요.",
+            "네. 먼저 보낸 뒤 오류를 발견했어요."
+          ],
+          "after": [
+            "네. 먼저 보낸 뒤 오류를 발견했어요.",
+            "아니요. 보내기 전에 오류를 발견해 멈췄어요."
+          ]
+        }
+      ]
+    },
+    "u16": {
+      "status": "passed-order-only-delta-on-accepted-source",
+      "baseSourceSha256": "0b53941a8e5cbb19e0fba6b408ac099f6f779e45197c431771bfcfaa729e3f73",
+      "sourceSha256": "3297e6983c5337772dd64f6dc377bf49aa837f2f3c78ebeefe1c923c5fc1e962",
+      "nonPermutationSourceIdentical": true,
+      "whyIdentical": true,
+      "changedExerciseCount": 2,
+      "changes": [
+        {
+          "fieldPath": "checks[1].options",
+          "before": [
+            "읽기 시작했지만 아직 마치지 않은 안내",
+            "아직 종이로 인쇄하지 않은 안내",
+            "반드시 전부 다 읽은 안내"
+          ],
+          "after": [
+            "읽기 시작했지만 아직 마치지 않은 안내",
+            "반드시 전부 다 읽은 안내",
+            "아직 종이로 인쇄하지 않은 안내"
+          ]
+        },
+        {
+          "fieldPath": "checks[2].options",
+          "before": [
+            "비가 갑자기 시작했다는 점",
+            "준이 안내를 전부 읽지는 않았다는 점",
+            "비가 이미 그쳤다는 점"
+          ],
+          "after": [
+            "비가 갑자기 시작했다는 점",
+            "비가 이미 그쳤다는 점",
+            "준이 안내를 전부 읽지는 않았다는 점"
+          ]
+        }
+      ]
+    }
+  },
+  "unresolvedBlockers": [],
+  "limitations": [
+    "This receipt accepts only the option-order delta against already fully reviewed source; it does not replace that base review.",
+    "Rendered/browser/account/deployment gates are separate."
+  ],
+  "beforeAnswerPositions": [
+    31,
+    15,
+    2
+  ],
+  "afterAnswerPositions": [
+    16,
+    16,
+    16
+  ],
+  "beforeDialogueAnswerPositions": [
+    16,
+    0
+  ],
+  "afterDialogueAnswerPositions": [
+    8,
+    8
+  ],
+  "changedExerciseCount": 39,
+  "changedDialogueCount": 8
+}

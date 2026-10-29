@@ -1,7 +1,7 @@
 /* manabi v2: publication-like discovery, quiet reading. Language colors are shared with BOOK_SERIES.
    셸은 늘 밝은 화면이라, html의 data-theme(기본 dark)에서 물려받으면 안 되는 글자 토큰은 여기서 라이트 값으로 고정한다
    (--accent-text·--warning-text·--border-hover — COLOR-V2-UNIFY-001). */
-.manabi-app{--paper:#f6f4ee;--sheet:#fffefb;--ink:#252721;--muted:#65675f;--rule:#d7d5cd;--ja:#994a5a;--zh:#2a7657;--en:#906021;--fr:#3a68a2;--bg-primary:var(--paper);--bg-secondary:#eeece5;--bg-card:var(--sheet);--bg-elevated:#eeeae4;--text-primary:var(--ink);--text-secondary:var(--muted);--text-muted:var(--muted);--border:var(--rule);--gnb-bg:var(--paper);--border-hover:rgba(153,74,90,.4);--accent-text:#3a6d49;--warning-text:#7a4e0e;background:var(--paper);color:var(--ink)}
+.manabi-app{--paper:#f6f4ee;--sheet:#fffefb;--ink:#252721;--muted:#65675f;--rule:#d7d5cd;--ja:#994a5a;--zh:#2a7657;--en:#906021;--fr:#3a68a2;--bg-primary:var(--paper);--bg-secondary:#eeece5;--bg-card:var(--sheet);--bg-elevated:#eeeae4;--text-primary:var(--ink);--text-secondary:var(--muted);--text-muted:var(--muted);--border:var(--rule);--gnb-bg:var(--paper);--border-hover:rgba(153,74,90,.4);--accent-text:#3a6d49;--warning-text:#7a4e0e;--grade-again:#a3352b;--grade-again-bg:#f8e5e3;--grade-hard:#8a5a12;--grade-hard-bg:#f8f0e0;--grade-good:#2f6b4f;--grade-good-bg:#e6f0e9;--grade-easy:#2d5f8a;--grade-easy-bg:#e4ecf5;background:var(--paper);color:var(--ink)}
 /* 골격 칸(LOADING-SKELETON-001) — 셸 종이 위에서 보이는 회색. 셸이 --bg-secondary를 거의 종이색으로 다시 정의해서
    (reading-shell.css) 그대로 쓰면 칸이 사라진다. 글자 토큰에서 옅게 파생한다(색 리터럴 0). */
 .manabi-app .skeleton,.manabi-app .skeleton-line{background:color-mix(in srgb,var(--text-muted) 14%,transparent)}
@@ -30,6 +30,16 @@
 .manabi-app .mobile-nav__link{font-size:12px;min-width:0;min-height:54px;flex:1}
 .manabi-app .mobile-nav__link.active{background:transparent;color:var(--ja)}
 .manabi-app .mobile-nav__link.active::before{background:var(--ja);width:18px;height:2px}
+/* 노치 가로 화면의 좌우 안전 영역(PWA-SHELL-001) — viewport-fit=cover(layout.jsx)로 화면 끝까지 그리게 되면서 가로로 눕힌 노치 폰에서
+   글자가 노치 · 둥근 모서리 밑으로 들어간다. 본문은 안쪽 여백으로, 위 · 아래 고정 막대는 좌우 자리로 비켜 선다(막대 바탕 = 셸 종이라 띠가 보이지 않는다).
+   노치 없는 기기 · 세로 화면 · 데스크톱은 env()가 0이라 지금과 같다. */
+.manabi-app .app-layout{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+.manabi-app .gnb,.manabi-app .mobile-nav{left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px)}
+/* 셸 바깥 바탕(PWA-SHELL-001 ⑥) — body는 data-theme(저장값 없으면 OS 설정)의 --bg-primary라 OS가 어두우면 #1A1410이었다. 셸은 늘 밝아서
+   iOS 위 · 아래 당김(고무줄) · 셸 높이가 모자란 자리에 진한 갈색 띠가 비쳤다(390 OS 어둡게 실측: body rgb(26,20,16) · 셸 rgb(246,244,238)).
+   값 = .manabi-app --paper(셸 변수는 body까지 오지 않아 같은 값을 적는다 — brandAssets 계약의 화면 바탕). 어두운 읽기 테마의 body 규칙
+   (reader-controls.css, :has 안 선택자가 더 구체적)이 이 규칙을 이긴다. */
+body:has(.manabi-app){background-color:#f6f4ee}
 /* Today: one primary action, one open book, two distinct editorial areas. */
 .today-opening{display:grid;grid-template-columns:1fr 1.08fr;gap:34px;align-items:center;padding:17px 0 48px;min-height:530px}
 .today-copy{min-width:0;position:relative;z-index:1}
@@ -109,11 +119,15 @@
 .shelf-language-tabs{display:flex;gap:28px;border-bottom:1px solid var(--rule);margin:0 0 34px;overflow:auto}
 .shelf-language-tabs button{background:transparent;border:0;border-radius:0;white-space:nowrap;min-height:49px;padding:10px 0;color:var(--muted);font-size:13px!important}
 .shelf-language-tabs button[aria-pressed=true]{box-shadow:inset 0 -2px var(--series-color,var(--ink));color:var(--series-color,var(--ink));font-weight:700}
+/* 누르는 자리 넓히기(NATIVE-FEEL-001) — 글자 탭은 그리는 폭이 24~36px(「영어」 24px)라 손가락이 빗나갔다. 탭 사이 간격의 절반씩을 투명 판으로 더한다(모양 · 밑줄 그대로). 끝 탭은 오른쪽으로 넘치지 않게(가로 스크롤 칸). */
+.shelf-language-tabs button{position:relative}.shelf-language-tabs button::before{content:'';position:absolute;inset:0 -11px}.shelf-language-tabs button:last-child::before{right:0}
+/* 머리 글자 로고(홈으로)는 글자 높이 20px뿐이다 — 머리 줄(66~78px) 안에서 위아래로 넓힌다. */
+.manabi-app .gnb__logo{position:relative}.manabi-app .gnb__logo::before{content:'';position:absolute;inset:-12px -6px}
 .manabi-app .manabi-series-shelf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px;margin:0}
 .manabi-app .manabi-series-book{display:block;text-align:left;background:transparent;border:0;padding:0;min-width:0;color:var(--ink);border-radius:0}
 .shelf-series-number{font-size:10px;letter-spacing:1px;display:block;margin:0 0 13px;color:var(--muted)}
 .manabi-app .manabi-series-book .manabi-cover{max-width:none;transition:transform .22s ease}
-.manabi-app a.manabi-series-book:hover .manabi-cover{transform:translateY(-7px) rotate(-1deg)}
+@media (hover:hover){.manabi-app a.manabi-series-book:hover .manabi-cover{transform:translateY(-7px) rotate(-1deg)}}
 .manabi-app .manabi-series-caption{display:flex;align-items:center;position:relative;padding:21px 0 0;gap:8px;flex-wrap:wrap}
 .manabi-app .manabi-series-caption strong{font-size:18px}
 .manabi-app .manabi-series-caption small{font-size:11px;color:var(--muted)}
@@ -158,31 +172,88 @@
 .discover-topics strong{font-size:18px;font-weight:600}
 .discover-topics small{font-size:12px;color:var(--muted)}
 .discover-topics .discover-all{min-height:44px;padding:15px 0;font-size:13px}
-.discover-cultures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px}
-.discover-cultures>a{position:relative;border-top:1px solid var(--rule);padding-top:18px}
-.discover-cultures>a>span{display:block;color:var(--ja);font-size:45px;font-weight:400;letter-spacing:-2px;margin-bottom:20px}
-.discover-cultures small{font-size:11px;color:var(--muted)}
-.discover-cultures h3{font-size:20px;line-height:1.6;letter-spacing:-.7px;margin:10px 0}
-.discover-cultures p{font-size:13px;line-height:1.9;color:var(--muted)}
-.discover-cultures b{position:absolute;top:20px;right:0;font-size:23px;font-weight:400}
-/* 발견 서가(SHELF-001) — 칸마다 왼쪽 이름표 + 오른쪽 글 목록. 개인 서재의 .shelf-*와 이름을 나눈다. */
-.discover-shelf{margin-bottom:56px}
-.discover-shelf__row{display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px;border-top:1px solid var(--rule);padding:20px 0}
-.discover-shelf__label{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
-.discover-shelf__label h3{font-size:17px;letter-spacing:-.5px;margin:0}
-.discover-shelf__label small{font-size:12px;color:var(--muted)}
-.discover-shelf__label .manabi-link{margin-top:8px;font-size:13px;min-height:44px;display:inline-flex;align-items:center}
-.discover-shelf__items{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
-.discover-shelf__items a{display:flex;flex-direction:column;gap:6px;min-height:44px;color:var(--ink);text-decoration:none}
-.discover-shelf__items a:hover strong,.discover-shelf__items a:focus-visible strong{text-decoration:underline}
-.discover-shelf__items small{font-size:11px;color:var(--ja)}
-.discover-shelf__items strong{font-size:15px;line-height:1.6;font-weight:600;overflow-wrap:anywhere}
-.discover-shelf__items span{font-size:12px;color:var(--muted)}
-@container manabi-shell (max-width:900px){.discover-shelf__row{grid-template-columns:minmax(0,1fr);gap:12px}.discover-shelf__items{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@container manabi-shell (max-width:640px){.discover-shelf__items{grid-template-columns:minmax(0,1fr)}}
+/* 산책 큰 칸 셋(DISCOVER-CLASSICS-001) — 배움 이어 읽기 칸(.learn-resume)과 같은 몸: 색 머리 · 본문 · 아래 단추. 넓으면 가로 셋(정사각), 좁으면 세로(높이 236 — 배움 휴대폰 선례). */
+.discover-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:28px}
+.discover-tile{--tc:var(--ink);aspect-ratio:1;max-width:100%;display:flex;flex-direction:column;min-width:0;border-radius:20px;overflow:hidden;background:var(--sheet);border:1px solid var(--rule);box-shadow:0 1px 3px color-mix(in srgb,var(--ink) 6%,transparent);color:var(--ink);text-decoration:none;transition:background .15s ease}
+.discover-tile--news{--tc:var(--fr)}.discover-tile--classics{--tc:var(--ja)}.discover-tile--magazine{--tc:var(--zh)}
+a.discover-tile:hover{background:color-mix(in srgb,var(--ink) 4%,var(--sheet))}
+a.discover-tile:focus-visible{outline:3px solid var(--tc);outline-offset:3px}
+.discover-tile__head{display:flex;flex-direction:column;justify-content:space-between;height:124px;padding:20px 24px;background:var(--tc);color:#fff;flex:none}
+.discover-tile__kicker{font:700 12px/1.4 var(--font-noto-kr),sans-serif;letter-spacing:.02em;color:color-mix(in srgb,#fff 90%,transparent)}
+.discover-tile__big{font:700 32px/1 var(--font-serif-kr),serif;letter-spacing:-1px}
+.discover-tile__body{display:flex;flex-direction:column;gap:4px;padding:18px 24px 0;min-width:0}
+.discover-tile__title{display:-webkit-box;font:700 19px/1.5 var(--font-serif-kr),serif;overflow-wrap:anywhere;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.discover-tile__sub{font-size:13px;line-height:1.5;color:var(--muted);overflow-wrap:anywhere}
+.discover-tile__covers{display:flex;gap:12px;align-items:flex-end}
+.discover-tile__cover{display:block;zoom:1.4;flex:none}
+.discover-tile__cover--art{width:60px;height:84px;border-radius:2px;overflow:hidden;background:color-mix(in srgb,var(--ink) 8%,var(--sheet))}.discover-tile__cover--art img{display:block;width:100%;height:100%;object-fit:cover}
+.discover-tile__cover--blank{width:60px;height:84px;border-radius:1px 2px 2px 1px;background:color-mix(in srgb,var(--ink) 8%,var(--sheet))}
+.discover-tile__bottom{margin-top:auto;display:flex;align-items:center;gap:12px;padding:0 24px 22px}
+.discover-tile__spacer{flex:1}
+.discover-tile__pill{display:inline-flex;align-items:center;gap:12px;height:44px;padding:0 6px 0 18px;border-radius:999px;font-weight:700;font-size:14px;white-space:nowrap;background:var(--tc);color:#fff;flex:none}
+.discover-tile__pill i{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-style:normal;background:#fff;color:var(--tc)}
+div.discover-tile .discover-tile__title{color:var(--muted)}
+.discover-more{margin:0 0 40px}
+.discover-more .manabi-link{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:14px}
+@container manabi-shell (max-width:900px){.discover-tile__head{height:104px;padding:18px 20px}.discover-tile__body{padding:16px 20px 0}.discover-tile__bottom{padding:0 20px 18px}.discover-tile__cover{zoom:1}}
+@container manabi-shell (max-width:640px){.discover-tiles{grid-template-columns:minmax(0,1fr)}.discover-tile{aspect-ratio:auto;height:236px}.discover-tile__head{height:92px;padding:16px 22px}.discover-tile__big{font-size:28px}.discover-tile__body{padding:14px 22px 0}.discover-tile__title{font-size:18px}.discover-tile__bottom{padding:0 22px 18px}.discover-tile__cover{zoom:.8}div.discover-tile{height:auto;padding-bottom:18px}}
+@media (prefers-reduced-motion:reduce){.discover-tile{transition:none}}
+
+/* 고전 명작(DISCOVER-CLASSICS-001) — 칩 두 줄까지(언어 · 갈래) · 작가 줄 · 표지 격자. 표지는 60×84 그림을 zoom으로 키운다(글자 획까지 다시 그린다). */
+.classics-chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.classics-chip{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);font-size:14px;text-decoration:none}
+.classics-chip:hover{background:color-mix(in srgb,var(--ink) 4%,var(--sheet))}
+.classics-chip[aria-current=true]{background:var(--ink);border-color:var(--ink);color:var(--sheet);font-weight:600}
+.classics-chip:focus-visible,.classics-card a:focus-visible,.classics-author__clear:focus-visible{outline:3px solid var(--ja);outline-offset:2px}
+.classics-author{display:flex;align-items:center;gap:4px;margin:4px 0 16px;font-size:15px;font-weight:600}
+.classics-author__clear{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;color:var(--muted);text-decoration:none}
+.classics-author__clear:hover{background:color-mix(in srgb,var(--ink) 4%,var(--sheet));color:var(--ink)}
+.classics-state{margin:24px 0;font-size:15px;color:var(--muted)}
+.classics-grid{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:32px 20px}
+.classics-card{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.classics-card__open{display:flex;flex-direction:column;gap:2px;color:var(--ink);text-decoration:none;min-width:0;max-width:100%}
+/* 표지는 칸 폭을 거의 채운다(목업 8차 ② 「키우니까 훨씬 좋다」 2026-10-23 KST — 데스크톱 60×2.4=144px · 모바일 60×1.75=105px). */
+.classics-card__coverwrap{position:relative;display:block;align-self:flex-start;width:fit-content;margin-bottom:6px;line-height:0;transition:transform .15s ease}
+.classics-card__cover{display:block;zoom:2.4;flex:none}
+@media (hover:hover){.classics-card__open:hover .classics-card__coverwrap{transform:translateY(-2px)}}
+/* 읽은 자리(로그인 · 그 책을 연 적 있을 때만) — 위 오른쪽 가름끈 리본에 퍼센트, 다 읽으면 아래 오른쪽 둥근 ✓(둘은 함께 서지 않는다).
+   둘 다 종이색 테두리 — 빨간 천 장정 위에서도 읽힌다. 크기는 표지 폭의 약 20%(Kindle 서재 선례 ~18%, 퍼센트가 읽히는 10px 하한). */
+.card-ribbon{position:absolute;z-index:2;top:-2px;right:7px;padding:0 1px 1.5px;background:var(--sheet);clip-path:polygon(0 0,100% 0,100% 100%,50% calc(100% - 4px),0 100%);filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+.card-ribbon>span{display:block;min-width:26px;padding:6px 3px 8px;font-size:11px;line-height:11px;letter-spacing:-.2px;font-weight:700;text-align:center;color:#fff;background:linear-gradient(var(--primary-dark) 0 2px,var(--primary) 2px);clip-path:polygon(0 0,100% 0,100% 100%,50% calc(100% - 4px),0 100%)}
+.card-ribbon small{font-size:.7em;margin-left:.5px}
+.card-check{position:absolute;z-index:2;right:7px;bottom:7px;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 2px var(--sheet),0 1px 3px rgba(0,0,0,.3)}
+.card-check svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.classics-card__open>strong,.art-card__open>strong{display:-webkit-box;font-size:15px;line-height:1.45;font-weight:700;overflow-wrap:anywhere;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.classics-card__open:hover>strong{text-decoration:underline}
+.classics-card__open>span:not(.classics-card__coverwrap):not(.classics-card__tags){display:block;max-width:100%;font-size:13px;line-height:1.45;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.classics-card__author{display:block;min-height:44px;max-width:100%;line-height:44px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px;color:var(--ink);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
+.classics-card__author:hover,.classics-card__author[aria-current=true]{text-decoration-color:currentColor}
+@container manabi-shell (max-width:640px){.classics-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 12px}.classics-card__cover{zoom:1.75}.classics-chip{padding:0 14px}.card-ribbon{right:5px}.card-ribbon>span{min-width:19px;padding:5px 2px 7px;font-size:10px;line-height:10px}.card-check{right:5px;bottom:5px;width:20px;height:20px}.card-check svg{width:12px;height:12px}}
+@container manabi-shell (max-width:360px){.classics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (prefers-reduced-motion:reduce){.classics-card__coverwrap{transition:none}.classics-card__open:hover .classics-card__coverwrap{transform:none}}
+/* 고전 명작 구간 탭(책 · 그림) + 그림 구간(DISCOVER-ART-001) — 작품 한 점 = 정사각 그림 카드. */
+.classics-tabs{display:flex;gap:4px;margin:0 0 16px;border-bottom:1px solid var(--rule)}
+.classics-tabs a{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;margin-bottom:-1px;border-bottom:3px solid transparent;color:var(--muted);font-size:16px;font-weight:600;text-decoration:none}
+.classics-tabs a:hover{color:var(--ink)}
+.classics-tabs a[aria-current=page]{color:var(--ink);border-bottom-color:var(--ja)}
+.classics-tabs a:focus-visible,.art-card a:focus-visible{outline:3px solid var(--ja);outline-offset:2px}
+.art-grid{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:32px 20px}
+.art-card{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.art-card__open{display:flex;flex-direction:column;gap:8px;width:100%;min-width:0;color:var(--ink);text-decoration:none}
+.art-card__frame{position:relative;display:block;width:100%;max-width:100%;aspect-ratio:1;border-radius:12px;overflow:hidden;background:color-mix(in srgb,var(--ink) 6%,var(--sheet))}
+.art-card__frame img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .2s ease}
+@media (hover:hover){.art-card__open:hover img{transform:scale(1.03)}}
+.art-card__frame .card-check{right:8px;bottom:8px;width:28px;height:28px}.art-card__frame .card-check svg{width:16px;height:16px}
+.art-card__open:hover>strong{text-decoration:underline}
+/* 원어 제목 밑 한국어 부제 · 태그 한 줄(못 든 태그는 둘째 줄로 넘어가 가려진다 — 반쯤 잘린 태그를 보이지 않게). */
+.art-card__ko{display:block;max-width:100%;margin-top:-6px;font-size:13px;line-height:1.45;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.classics-card__tags{display:flex;flex-wrap:wrap;gap:4px;max-width:100%;height:22px;overflow:hidden;margin:2px 0}
+.classics-card__tags .tag{line-height:16px;white-space:nowrap}
+@container manabi-shell (max-width:640px){.art-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px}.classics-tabs a{padding:0 14px}}
+@media (prefers-reduced-motion:reduce){.art-card__frame img{transition:none}.art-card__open:hover img{transform:none}}
 @container manabi-shell (min-width:901px){.manabi-app .mobile-nav{display:none}}
 @container manabi-shell (max-width:1050px){.manabi-app .gnb__nav{margin-left:15px;gap:24px}.manabi-app .gnb{gap:17px}.manabi-app .manabi-series-shelf{gap:22px}.manabi-app .manabi-series-book .manabi-cover{padding:20px}.manabi-app .manabi-series-book .manabi-cover>strong{font-size:15px;margin-top:18px}.manabi-app .manabi-series-book .manabi-cover__glyph{font-size:90px}.today-opening{gap:22px}.today-open-page{padding:22px 19px}.today-bottom{gap:35px}}
-@container manabi-shell (max-width:900px){.manabi-app .app-layout{--gnb-height:66px;padding-top:66px}.manabi-app .gnb{height:66px;--gnb-height:66px;padding-inline:24px}.manabi-app .gnb__nav{display:none}.manabi-app .gnb__actions{margin-left:0}.manabi-search-link{margin-left:auto}.manabi-app .gnb__logo{font-size:32px}.manabi-app .mobile-nav{display:flex;height:calc(60px + env(safe-area-inset-bottom));padding-inline:10px}.manabi-app .app-layout{padding-bottom:calc(80px + env(safe-area-inset-bottom))}.manabi-app .manabi-page{padding-top:35px}.today-opening{min-height:470px}.today-copy h1{font-size:48px}.today-book-scene{padding-left:0}.manabi-app .today-open-book .manabi-cover>strong{font-size:12px}.manabi-app .today-open-book .manabi-cover__top{font-size:7px}.manabi-app .today-open-book .manabi-cover__bottom{font-size:9px}.today-open-page{padding:18px 15px}.today-page-quote small{font-size:10px}.today-page-quote p{font-size:23px}.today-page-top,.today-page-bottom{font-size:7px}.today-page-top i{top:-18px;height:38px;width:13px}.manabi-app .manabi-series-shelf{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px}.manabi-app .manabi-series-book .manabi-cover{padding:25px;max-width:none}.manabi-app .manabi-series-book .manabi-cover>strong{font-size:20px}.manabi-app .manabi-series-book .manabi-cover__glyph{font-size:125px}.manabi-app .manabi-book-hero{gap:35px;grid-template-columns:210px 1fr}.manabi-app .manabi-book-hero h1{font-size:35px}.discover-opening{grid-template-columns:1.4fr 1fr;gap:25px}.discover-feature{padding:25px;min-height:500px}.discover-glyph{font-size:90px}.discover-topics h2{font-size:29px}.discover-cultures{gap:20px}}
+@container manabi-shell (max-width:900px){.manabi-app .app-layout{--gnb-height:calc(66px + env(safe-area-inset-top,0px));padding-top:var(--gnb-height)}.manabi-app .gnb{--gnb-height:calc(66px + env(safe-area-inset-top,0px));height:var(--gnb-height);padding-inline:24px}.manabi-app .gnb__nav{display:none}.manabi-app .gnb__actions{margin-left:0}.manabi-search-link{margin-left:auto}.manabi-app .gnb__logo{font-size:32px}.manabi-app .mobile-nav{display:flex;height:calc(60px + env(safe-area-inset-bottom));padding-inline:10px}.manabi-app .app-layout{padding-bottom:calc(80px + env(safe-area-inset-bottom))}.manabi-app .manabi-page{padding-top:35px}.today-opening{min-height:470px}.today-copy h1{font-size:48px}.today-book-scene{padding-left:0}.manabi-app .today-open-book .manabi-cover>strong{font-size:12px}.manabi-app .today-open-book .manabi-cover__top{font-size:7px}.manabi-app .today-open-book .manabi-cover__bottom{font-size:9px}.today-open-page{padding:18px 15px}.today-page-quote small{font-size:10px}.today-page-quote p{font-size:23px}.today-page-top,.today-page-bottom{font-size:7px}.today-page-top i{top:-18px;height:38px;width:13px}.manabi-app .manabi-series-shelf{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px}.manabi-app .manabi-series-book .manabi-cover{padding:25px;max-width:none}.manabi-app .manabi-series-book .manabi-cover>strong{font-size:20px}.manabi-app .manabi-series-book .manabi-cover__glyph{font-size:125px}.manabi-app .manabi-book-hero{gap:35px;grid-template-columns:210px 1fr}.manabi-app .manabi-book-hero h1{font-size:35px}.discover-opening{grid-template-columns:1.4fr 1fr;gap:25px}.discover-feature{padding:25px;min-height:500px}.discover-glyph{font-size:90px}.discover-topics h2{font-size:29px}.discover-cultures{gap:20px}}
 @container manabi-shell (max-width:640px){.manabi-app .gnb{padding-inline:20px;gap:12px}.manabi-app .manabi-page{padding:29px 22px 35px}.manabi-app .manabi-page-heading{align-items:flex-start;gap:18px;flex-wrap:wrap}.manabi-app .manabi-page-heading h1{font-size:38px;letter-spacing:-1.8px}.manabi-app .manabi-eyebrow{font-size:10px;letter-spacing:1.25px}.manabi-search-link span{display:none}.today-opening{display:flex;flex-direction:column;align-items:stretch;gap:18px;padding:0 0 32px;min-height:0}.today-copy h1{font-size:43px;line-height:1.22;letter-spacing:-2px;margin:15px 0}.today-copy h1 br{display:none}.today-copy h1 em{display:block}.today-intro{font-size:12px;margin-bottom:18px}.today-location{padding:16px 0;gap:14px;min-height:94px}.today-location__number{font-size:37px}.today-location strong{font-size:16px}.today-record{font-size:10px;margin-top:12px}.today-copy .manabi-row{gap:18px}.today-book-scene{max-width:380px;width:100%;align-self:center;padding:17px 12px 0}.today-open-book{aspect-ratio:1.55;transform:rotate(-4deg)}.manabi-app .today-open-book .manabi-cover{padding:16px 12px}.manabi-app .today-open-book .manabi-cover>strong{font-size:12px;margin-top:12px}.manabi-app .today-open-book .manabi-cover__glyph{font-size:72px}.manabi-app .today-open-book .manabi-cover__bottom{padding-top:10px;font-size:9px}.today-open-page{padding:15px 12px}.today-page-top i{top:-15px;height:34px}.today-page-quote p{font-size:22px;line-height:1.75;margin:12px 0}.today-page-quote small,.today-page-quote>span{font-size:9px}.today-book-scene>p{font-size:9px;margin-top:23px}.today-page-bottom{letter-spacing:0;font-size:7px}.today-bottom{display:block;padding-top:27px}.today-review{border-right:0;border-bottom:1px solid var(--rule);padding:0 0 26px;margin-bottom:28px}.today-review h2{font-size:25px;margin:12px 0}.today-review h2 br{display:none}.today-review h2 b{font-size:41px}.today-growth{display:inline-block;margin:0 0 0 20px}.today-story{grid-template-columns:95px 1fr;gap:15px}.today-story h3{font-size:14px}.today-library-row{flex-wrap:wrap;gap:10px}.today-library-row strong{flex-basis:100%;order:1}.today-library-row>span:last-child{margin-left:auto}.shelf-intro{font-size:12px}.shelf-resume{padding:17px 15px;gap:13px;flex-wrap:wrap;margin:23px 0}.shelf-resume__mark{font-size:32px}.shelf-resume h2{font-size:15px}.shelf-resume p:last-child{font-size:10px}.shelf-resume .manabi-button{margin-left:0;width:100%;margin-top:3px}.shelf-language-tabs{gap:23px;margin-bottom:25px}.shelf-language-tabs button{font-size:12px!important}.manabi-app .manabi-series-shelf{gap:30px 20px}.shelf-series-number{font-size:9px;letter-spacing:.5px}.manabi-app .manabi-series-book .manabi-cover{padding:16px 12px}.manabi-app .manabi-series-book .manabi-cover__top{font-size:7px;letter-spacing:0}.manabi-app .manabi-series-book .manabi-cover>strong{font-size:12px;line-height:1.6;margin-top:15px}.manabi-app .manabi-series-book .manabi-cover__glyph{font-size:72px}.manabi-app .manabi-series-book .manabi-cover__bottom{font-size:9px;padding-top:11px}.manabi-app .manabi-series-caption{padding-top:16px;gap:5px}.manabi-app .manabi-series-caption strong{font-size:16px}.manabi-app .manabi-series-caption small{font-size:10px}.manabi-app .manabi-series-caption i{font-size:15px}.shelf-footnote{display:block;margin-top:42px;padding-top:24px}.shelf-footnote h2{font-size:25px}.shelf-footnote p:not(.manabi-eyebrow){font-size:13px}.manabi-app .manabi-book-hero{grid-template-columns:110px 1fr;gap:23px;padding:8px 0 28px;align-items:start}.manabi-app .manabi-book-hero .manabi-cover{padding:11px 9px;margin-top:5px}.manabi-app .manabi-book-hero .manabi-cover__top{font-size:6px}.manabi-app .manabi-book-hero .manabi-cover>strong{font-size:9px;margin-top:13px}.manabi-app .manabi-book-hero .manabi-cover__glyph{font-size:52px}.manabi-app .manabi-book-hero .manabi-cover__bottom{font-size:7px;padding-top:8px}.manabi-app .manabi-book-hero .manabi-cover__bottom small{display:none}.manabi-app .manabi-book-hero h1{font-size:26px;letter-spacing:-1.3px;margin:10px 0;line-height:1.45}.manabi-app .manabi-book-hero .manabi-muted{font-size:12px}.manabi-app .manabi-book-hero .manabi-eyebrow{font-size:9px;letter-spacing:.5px}.book-edition{font-size:10px;margin:15px 0}.manabi-app .manabi-book-hero .manabi-row{gap:5px}.manabi-app .manabi-book-hero .manabi-button{font-size:12px;padding:10px 15px;min-height:44px;white-space:normal;text-align:left}.manabi-app .manabi-book-body{display:block}.manabi-app .manabi-toc-group summary{padding:17px 12px;font-size:13px;gap:10px}.manabi-app .manabi-toc-group li a{padding:16px 12px;font-size:13px;gap:10px}.manabi-app .manabi-toc-group li small{font-size:10px}.manabi-app .manabi-book-tools{margin-top:30px}.manabi-app .manabi-section-heading h2{font-size:20px}.discover-opening{display:block;margin-top:24px}.discover-feature{min-height:440px;padding:25px}.discover-glyph{font-size:94px;padding:15px 0 30px}.discover-feature h2{font-size:25px}.discover-feature>div>p{font-size:12px}.discover-topics{margin-top:28px;padding-top:22px}.discover-topics h2{font-size:27px;margin:10px 0 20px}.discover-topics h2 br{display:none}.discover-topics>a{padding:18px 0;min-height:75px}.discover-cultures{display:block}.discover-cultures>a{display:block;padding:20px 0 18px 54px}.discover-cultures>a>span{position:absolute;top:17px;left:0;font-size:31px}.discover-cultures small{font-size:10px}.discover-cultures h3{font-size:18px;padding-right:20px}.discover-cultures b{font-size:20px}.manabi-app .manabi-series-notice{display:block;font-size:13px;line-height:1.8}.manabi-app .manabi-reader-toolbar{font-size:12px}}
 @container manabi-shell (max-width:360px){.manabi-app .manabi-page{padding-inline:18px}.manabi-app .manabi-series-shelf{gap:25px 16px}.manabi-app .manabi-series-book .manabi-cover>strong{font-size:11px}.manabi-app .manabi-series-book .manabi-cover__glyph{font-size:60px}.manabi-app .manabi-book-hero{grid-template-columns:90px 1fr;gap:17px}.manabi-app .manabi-book-hero h1{font-size:23px}.today-copy .manabi-row{gap:12px}.today-copy .manabi-button{padding-inline:17px}.today-location strong{font-size:14px}.manabi-app .today-open-book .manabi-cover>strong{font-size:11px}.today-page-quote p{font-size:20px}.today-story{grid-template-columns:80px 1fr;gap:12px}}
 @media(prefers-reduced-motion:reduce){.manabi-app .manabi-series-book .manabi-cover{transition:none}}
@@ -205,6 +276,10 @@
 .manabi-app .gnb .gnb__link[aria-current="page"],.manabi-app .gnb>.gnb__link.active{background:color-mix(in srgb,var(--ink) 6%,transparent);box-shadow:inset 0 -2px var(--ink)}
 .manabi-app .gnb [data-icon-action]:hover{background:color-mix(in srgb,var(--ink) 6%,transparent);transform:none}
 .manabi-app .gnb .gnb__profile-btn{display:flex;align-items:center;justify-content:center;background:transparent!important;border:0;border-radius:6px;font-size:13px;line-height:1.5}
+/* 내 정보 링크 — /profile에 있으면 둥근 테두리로 현재 위치(PROFILE-REDESIGN-001). 자리 · 크기는 그대로. */
+/* 내 정보에 있을 때 — 탭의 「지금 탭」과 같은 2px 먹색 밑줄(검토 #23: 굵은 원 테두리는 다른 문법이고 로고보다 무거웠다). */
+.manabi-app .gnb .gnb__profile-btn[aria-current="page"]{position:relative}
+.manabi-app .gnb .gnb__profile-btn[aria-current="page"]::after{content:'';position:absolute;left:10px;right:10px;bottom:4px;height:2px;background:var(--ink)}
 .manabi-app .gnb .gnb__actions{flex:none}
 .manabi-app .gnb .reader-site-menu summary{width:44px}
 .manabi-app [data-icon-action]{position:relative}
@@ -262,3 +337,42 @@ a:has(> .nav-pending--reader){position:relative}
 /* 같은 이유로 동작 뒤 초점 이어받기(FOCUS-AFTER-ACTION-001)가 초점을 두는 묶음(tabindex -1)도 — 복습 채점 막대 · 읽기 저장 줄.
    누르는 자리가 아니라 다음 Tab의 출발점이다. 안의 버튼은 각자의 :focus-visible 고리를 그대로 그린다. */
 .review-grade-bar[tabindex="-1"]:focus,.save-grade__saved[tabindex="-1"]:focus{outline:none}
+/* ========= 화면 이동 손맛(NAV-MOTION-001) — 새 화면이 도착한 순간 본문만 들어온다 =========
+   실행 = src/lib/useNavMotion.js(경로가 바뀐 커밋에서 html[data-nav-motion] — 옅어짐 navFadeIn이 끝나면 뗀다), 판정 = src/lib/navMotion.js.
+   메뉴 = 제자리 옅게 · 목록 → 상세 = 오른쪽에서 · 뒤로 = 왼쪽에서. 머리말 · 아래 메뉴는 #main-content 밖이라 그대로.
+   View Transitions를 쓰지 않는다(전환 중 탭 유실 · 사진 비용 — 목업 문서 §6). 옛 .page-container pageEnter는 JS가 끝 상태로 보낸다.
+   옅어짐과 밀림은 따로 건다: 본문에 transform이 걸리면 그 안의 position:fixed 요소가 화면 대신 본문 상자 기준이 되어(긴 화면을 스크롤한 채면
+   아래 고정 막대가 0.22초 동안 화면 밖으로 — 실측 top 788 → 823) 본문에 고정 요소가 있으면(:has — 커밋 뒤 늦게 붙어도) 밀림만 뗀다.
+   :has 목록 = src CSS의 position:fixed 선택자 중 본문 안에 올 수 있는 것 전부(계약이 일치를 본다).
+   0.3초 이하 · var(--ease-settle) · transform/opacity만 · 동작 줄이기면 시작하지 않고(JS) 여기서도 none. 계약 navMotion.test.js. */
+html[data-nav-motion="tab"] #main-content {
+  animation: navFadeIn 0.16s var(--ease-settle) both;
+}
+html[data-nav-motion="push"] #main-content {
+  animation: navFadeIn 0.22s var(--ease-settle) both, navFromRight 0.22s var(--ease-settle) both;
+}
+html[data-nav-motion="pop"] #main-content {
+  animation: navFadeIn 0.22s var(--ease-settle) both, navFromLeft 0.22s var(--ease-settle) both;
+}
+html:is([data-nav-motion="push"], [data-nav-motion="pop"]) #main-content:has(
+    .scrim, .vocab-detail-overlay, .sentence-nav, .modal-overlay, .pdf-detail-overlay, .pdf-detail-popup, .viewer-sheet-bar,
+    .viewer-sheet, .reading-test-overlay, .confirm-overlay, .viewer-progress-bar, .tile-modal__overlay, .lv-toast, .lw-gradebar,
+    .lw-undo, .lw-pop, .lw-dp, .lw-scrim, .lw-sheet, .original-position-notice.is-floating, .review-grade-bar, .review-known-undo,
+    .shelf-dialog, .personal-note, .note-recognition, .viewer-inspector, .viewer-inspector--board, .sentence-move-bar,
+    .viewer-pace-float, .class-reader-dock, .class-copy-overlay, .teaching-presentation-host,
+    .viewer-workspace-boundary[data-active="true"], .player, .manabi-selection-bar
+) {
+  animation: navFadeIn 0.22s var(--ease-settle) both;
+}
+@keyframes navFadeIn {
+  from { opacity: 0; }
+}
+@keyframes navFromRight {
+  from { transform: translateX(16px); }
+}
+@keyframes navFromLeft {
+  from { transform: translateX(-16px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-nav-motion] #main-content { animation: none !important; }
+}

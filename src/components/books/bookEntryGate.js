@@ -4,6 +4,9 @@
 //    표지를 끄고 함께 보내 둔 본문 골격(.book-entry-skeleton, 평소에는 꺼짐 — reading-shell.css)을 켠다.
 // ② 붙은 뒤: BookReader가 그리기 전(layout effect)에 첫 쪽을 정하고 그 그림에서 style을 뗀다.
 // 서버 · 하이드레이션 첫 그림은 늘 같은 마크업(표지 + 그 한 줄 + 꺼진 본문 골격)이라 불일치가 없다.
+import { READING_PAGE, readingPagePattern, readingProgressKey } from '@/lib/bookNavigation';
+import { BOOK_ID, EDITION_ID } from '@/lib/textbook/contract';
+
 export const HASH_GATE_ID = 'book-hash-gate';
 export const HASH_GATE_CSS = ':root .book-reader>.manabi-book-home,:root .manabi-book-home[aria-busy]{display:none}:root .book-entry-skeleton{display:block}';
 // 과가 아닌 쪽(책 사용법 guide- · 찾기 reference- · 문화 읽기 culture- …)은 과 머리에 부제 · 목표 · 과 번호가 없다 — 본문 골격의 그 칸을 뺀다.
@@ -104,4 +107,28 @@ export function hashGate(on) {
   const style = document.createElement('style');
   style.id = HASH_GATE_ID; style.textContent = HASH_GATE_CSS;
   document.head.appendChild(style);
+}
+
+// 표지 이어 읽기 줄 자리(BOOK-RESUME-HOLD-001). 읽던 자리는 이 브라우저(localStorage)에만 있어 서버 · 하이드레이션 첫 그림은 늘
+// 「읽기 열기 →」 한 칸이다. 읽던 기록이 과 첫머리가 아니면 붙은 뒤(useReadingProgress ready) 「NN과 이어 읽기 → · NN과 처음부터」 두 칸이
+// 되는데, 좁은 폭(390)에서는 둘째 칸이 다음 줄로 넘어가 책 머리가 49px 자라고 담기 버튼 · 목차가 밀렸다(N4 CLS 0.024–0.029 ·
+// N5 0.028–0.029, 빌드 실측 2026-10-18 KST). HASH_GATE처럼 표지보다 먼저 도는 한 줄이 같은 기록을 읽어, 두 칸이 될 기록이면 head에
+// style을 넣어 BookHome이 함께 보내 둔 보이지 않는 두 칸(.book-resume-ghost — 평소 꺼짐)을 켠다. 진짜 줄과 같은 칸에 겹쳐 그 높이를
+// 미리 잡고, ready가 되면 BookHome이 그 칸을 빼 진짜 두 칸이 같은 자리에 선다. DOM은 건드리지 않는다(하이드레이션 불일치 0).
+// 계정: 서버가 본 세션 쿠키(sessionHint — 이름만)가 없으면 손님 기록, 있으면 이 판본의 계정 기록이 하나일 때만 — 계정 id는 읽지 않는다.
+// 판정이 빗나가면(여러 계정 기록 · 만료 쿠키) 전과 같은 한 번의 밀림일 뿐 보이는 글은 같다. style은 판본별(data-edition)이라
+// 다른 책 · 판본으로 옮겨 가도 남은 style이 엉뚱한 자리를 잡지 않는다.
+export const RESUME_HINT_ID = 'book-resume-hint';
+export const resumeHintCss = (edition) => `.book-resume-hold>.book-resume-ghost[data-edition="${edition}"]{display:flex}`;
+/** 붙은 뒤(ready) 그 판본의 style을 뗀다 — 한 줄은 하드 로드에서만 돌아, 남겨 두면 클라이언트 이동으로 돌아온 표지가 그새 바뀐 기록에도
+ * 두 칸 자리를 잡았다가 줄어든다(역방향 밀림). 떼면 클라이언트 이동은 전과 같다(최대 한 번 밀림). */
+export function clearResumeHint(edition) {
+  if (typeof document !== 'undefined') document.getElementById(`${RESUME_HINT_ID}-${edition}`)?.remove();
+}
+export function resumeHintScript(edition, session = false, bookId = BOOK_ID) {
+  if (!EDITION_ID.test(edition || '')) return '';
+  const key = readingProgressKey(edition), prefix = key.slice(0, key.lastIndexOf(':') + 1);
+  const pagePattern = bookId === BOOK_ID ? READING_PAGE : readingPagePattern(bookId);
+  const pick = session ? `n!==${JSON.stringify(key)}` : `n===${JSON.stringify(key)}`;
+  return `(function(){try{var id='${RESUME_HINT_ID}-${edition}';if(document.getElementById(id))return;var k=[],i,n,r;for(i=0;i<localStorage.length;i++){n=localStorage.key(i);if(n&&n.indexOf(${JSON.stringify(prefix)})===0&&${pick})k.push(n)}if(k.length!==1)return;r=JSON.parse(localStorage.getItem(k[0]));if(!r||typeof r.page!=='string'||!/${pagePattern.source}/.test(r.page)||/^u\\d{2}-start$/.test(r.page))return;var g=document.createElement('style');g.id=id;g.textContent='${resumeHintCss(edition)}';document.head.appendChild(g)}catch(e){}})()`;
 }

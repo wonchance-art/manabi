@@ -155,9 +155,9 @@ async function pickSentence(page) {
   }, SENTENCE);
   await page.evaluate(() => document.fonts.ready);
   await page.locator('.line-pick').first().click();
-  // 좌측 패널은 넓은 화면의 aside와 좁은 화면의 시트 양쪽에 같은 내용을 렌더한다 —
-  // 레이아웃에 의존하지 않도록 첫 번째만 집는다.
-  await visible(page.getByRole('button', { name: '이 문장 받아쓰기' }).first(), 'dictation entry');
+  // [문장] 탭의 🎧는 없앴다(오너 10-24) — 지정 문장 받아쓰기는 「학습」 창의 「선택 문장 받아쓰기」 한 곳이다.
+  await page.getByRole('button', { name: '학습', exact: true }).click();
+  await visible(page.getByRole('button', { name: /^선택 문장 받아쓰기/ }).first(), 'dictation entry');
 }
 
 before(async () => {
@@ -182,7 +182,7 @@ test('받아쓰기: 지정 문장을 가린 채 입력·채점하고 diff와 원
     await context.route('**/api/analyze', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [{ sequence: ['a', 'b'], dictionary: { a: { text: 'Hello', base_form: 'hello', meaning: '안녕하세요' }, b: { text: 'world', base_form: 'world', meaning: '세계' } } }] }) }));
     await page.goto('/viewer/92001', { waitUntil: 'domcontentloaded' });
     await pickSentence(page);
-    await page.getByRole('button', { name: '이 문장 받아쓰기' }).first().click();
+    await page.getByRole('button', { name: /^선택 문장 받아쓰기/ }).first().click();
     const dialog = page.getByRole('dialog', { name: '받아쓰기' });
     await visible(dialog.getByPlaceholder('들리는 대로 입력해 보세요'), 'dictation input');
     assert.equal(await dialog.getByText(SENTENCE, { exact: false }).count(), 0, 'original stays hidden before reveal');
@@ -235,13 +235,15 @@ test('저장 등급: 뷰어 단어 시트에 4등급 저장 버튼이 복습 화
   });
 });
 
-test('fixture 데이터로 홈 재독 카드와 작문 산출 칩을 렌더한다', async () => {
+test('배움에는 재독 · 말해 보기 칸이 없고(오너 지시 2026-10-25 KST), 작문 산출 칩은 렌더한다', async () => {
   await fresh(async (page, context) => {
     await mockAccount(context, { reread: true, outputWords: true });
     await page.goto('/home', { waitUntil: 'domcontentloaded' });
-    // 재독은 '교재 이어서 학습'과 같은 부품(.lessons-continue)으로 통합됐다(오너 지시).
-    await visible(page.getByText('다시 읽기 · 두 번째는 훨씬 빨라요', { exact: true }), 'reread row');
-    await visible(page.getByText(/오래된 E2E 읽기/), 'reread fixture title');
+    await visible(page.locator('.learn-grid'), 'learn grid');
+    await page.waitForLoadState('networkidle').catch(() => {});
+    // 완독 14일 지난 자료(fixture)가 있어도 배움은 「다시 읽기」 · 「말해 보기」 칸을 그리지 않는다.
+    assert.equal(await page.getByText(/다시 읽기 · /).count(), 0);
+    assert.equal(await page.getByText('말해 보기', { exact: true }).count(), 0);
     await page.goto('/writing', { waitUntil: 'domcontentloaded' });
     await visible(page.getByText('✍️ 오늘 복습한 말 써먹기:', { exact: true }), 'output chip label');
     await visible(page.getByRole('button', { name: 'practice', exact: true }), 'output word chip');

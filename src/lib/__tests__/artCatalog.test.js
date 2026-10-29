@@ -116,9 +116,12 @@ describe('정본 카탈로그(src/content/art) — 실제 리포 데이터', () 
     }
   });
 
-  it('작품마다 일본어 해설이 하나 이상 — 읽기 자료가 되는 원문', () => {
+  it('작품마다 그 작품이 드는 큐레이션의 책 언어 해설이 있다 — 읽기 자료가 되는 원문(없으면 일본어)', () => {
     for (const work of ART_CATALOG.works) {
-      expect(work.descriptions.some((description) => description.language === 'ja'), work.id).toBe(true);
+      const languages = ART_CATALOG.curations.filter((curation) => curation.works.includes(work.id)).map((curation) => curation.language ?? 'ja');
+      for (const language of languages.length ? languages : ['ja']) {
+        expect(work.descriptions.some((description) => description.language === language), `${work.id} ${language}`).toBe(true);
+      }
     }
   });
 
@@ -341,12 +344,18 @@ describe('artCatalog 계약 — fail-closed', () => {
     expect(errors).toMatch(/date\.source/);
   });
 
-  it('핵심 용어는 일본어 해설에 실제로 나오는 말만', () => {
+  it('핵심 용어는 읽기 해설(첫 해설)에 실제로 나오는 말만', () => {
     const catalog = fixture();
     catalog.works[0].terms = ['構図', '浮世絵'];
     const errors = validateArtCatalog(catalog).join('\n');
-    expect(errors).toMatch(/「浮世絵」가 일본어 해설에 없다/);
+    expect(errors).toMatch(/「浮世絵」가 읽기 해설\(ja\)에 없다/);
     expect(errors).not.toMatch(/「構図」/);
+  });
+
+  it('합자 글자(ﬁ · ﬂ — 원문 추출 깨짐)가 섞인 해설은 싣지 않는다(AIC 「artiﬁ cial」 실측)', () => {
+    const catalog = fixture();
+    catalog.works[0].descriptions[0].text = 'combination of artiﬁ cial and natural effects';
+    expect(validateArtCatalog(catalog).join('\n')).toMatch(/works\[0\]\.descriptions\[0\]\.text: 합자 글자/);
   });
 
   it('그림이 없는 작품에는 찾아볼 것을 두지 않는다', () => {

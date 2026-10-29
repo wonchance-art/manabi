@@ -123,7 +123,7 @@ describe('이어 읽기 — 기존 목적지 선택 정본 보존', () => {
     expect(code).toContain('`/viewer/${m.id}`');
   });
   it('원어 제목이 비면 한국어 제목이 주 제목(대체 동작) — 원어 제목은 판 원고의 title_ja가 있을 때만', () => {
-    expect(read('src/lib/server/bookReading.js')).toContain('title_ja: titleJa');
+    expect(read('src/lib/server/publishedBook.js')).toContain('title_ja: titleJa'); // readingCatalog 정본(GUEST-STATIC-001 3단계에서 옮김)
     expect(code).toContain("title: titleJa || lesson.title, titleLang: titleJa ? 'ja' : 'ko', sub: titleJa ? lesson.title : lesson.subtitle,");
   });
   it('[진도 숫자][막대][버튼] — DOM 순서도 이대로', () => {
@@ -209,7 +209,7 @@ describe('목표 과정 목록 — 같은 정본의 투영이라 계획이 갈�
     expect(slim.levels.map(lv => lv.label)).toEqual(full.levels.map(lv => lv.label));
   });
   it('홈 페이지는 정본 투영을 싣지 않는다 — 목표가 있을 때만 정적 응답을 받는다(P4)', () => {
-    expect(read('src/app/(app)/home/page.jsx')).not.toContain('buildContinueManifest');
+    expect(read('src/components/learn/HomeVariant.jsx')).not.toContain('buildContinueManifest'); // 배움 판 넷이 같은 서버 부품(GUEST-STATIC-001 4단계)
     expect(read('src/app/api/goal-catalog/route.js')).toContain("export const dynamic = 'force-static';");
     expect(read('src/components/learn/GoalTrackTile.jsx')).toContain('const catalog = useGoalCatalog(hasGoal);');
   });

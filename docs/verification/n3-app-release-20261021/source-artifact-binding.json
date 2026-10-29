@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "checkedAt": "2026-10-21T11:53:42.632257+00:00",
+  "scope": "Binding independent curriculum final50 source hashes to actual full R2 generation input only; not a new language review",
+  "filesMatched": 50,
+  "curriculumSnapshotDigest": "bc7568965e0d2e57f12f2b96cd9ee09d302cd96b3cc8d7273632743ce77b9230",
+  "curriculumGateReceipt": "/workspace/scratch/n3-integration/team/curriculum/CURRICULUM-GATE-RESULT.json",
+  "curriculumGateReceiptSha256": "f3adc29e58992e7c72c5c421b37f0bb2023bcf3d6a5ecc9648a359ffb3d26ca5",
+  "snapshotFile": "FULL-SNAPSHOT-R2.json",
+  "editionId": "4978c146953f14140bcb49d2"
+}

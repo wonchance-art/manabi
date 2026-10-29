@@ -27,7 +27,8 @@ const PAGE = (body) => `<style>${CSS}\n${READER_CSS}</style><style>body{margin:0
 // 소스 쪽을, 이 파일이 결과 쪽을 지킨다)
 const zhSeg = (ch, py) => `<ruby data-pinyin="1">${ch}<span class="rt-an">${py}</span></ruby>`;
 const jaSeg = (k, r) => `<ruby data-yomi="1">${k}<span class="rt-an">${r}</span></ruby>`;
-const tok = (inner, off) => `<div class="word-token"><span class="surface${off ? ' surface--furi-off' : ''}">${inner}</span></div>`;
+// 본문 낱말과 같은 마크업 — .surface 마지막 칸은 선택 테두리 자리(.word-frame, ReaderToken · VIEWER-TAP-INP-002)
+const tok = (inner, off) => `<div class="word-token"><span class="surface${off ? ' surface--furi-off' : ''}">${inner}<span class="word-frame" aria-hidden="true"></span></span></div>`;
 
 // 최장 병음(chuāng·shuāng)을 인접시킨 최악 배치 포함
 const ZH = [['我', 'wǒ'], ['去', 'qù'], ['窗', 'chuāng'], ['双', 'shuāng'], ['前', 'qián'], ['广', 'guǎng'], ['州', 'zhōu']];
@@ -463,7 +464,9 @@ const HUN_CARD = () => `<div class="word-fit-wrap"><div class="word-fit" lang="z
 // 옛 별도 목록(.reader-hun) 대신 실제 셀 계산(hunRubyCells)으로 만든 루비 셀 마크업을 index.css·reader-controls.css
 // 실물로 그려, 긴 풀이 훈(弩)도 잘리지 않고 자기 칸 안에서 줄바꿈하며 이웃 칸·글자·뜻과 겹치지 않는지 잰다.
 const readData=f=>JSON.parse(fs.readFileSync(new URL(`../src/lib/data/${f}`,import.meta.url),'utf8'));
-const hunTables={koTable:readData('hanjaKo.json'),hunTable:readData('hanjaHun.json'),tradTable:readData('hanjaTrad.json')};
+// 긴 훈 가이드라인(2026-10-23 KST)으로 표의 弩는 「쇠뇌」로 짧아졌다 — 안전망(상한 칸 · 훈 한 줄 말줄임 + 음 한 줄)은
+// 표 밖의 긴 풀이에서도 지켜야 하므로 옛 libhangul 풀이를 그대로 넣어 잰다.
+const hunTables={koTable:readData('hanjaKo.json'),hunTable:{...readData('hanjaHun.json'),弩:'쇠뇌(여러 개의 화살이나 돌을 잇따라 쏘게 된 큰 활)'},tradTable:readData('hanjaTrad.json')};
 const longHun=hunTables.hunTable.弩+' 노';
 const hunCols=(word,readings)=>hunRubyCells(word,hunTables).map((cell,i)=>`<span class="word-fit__col"><ruby data-pinyin="1"><span class="reader-card-ruby-glyphs"><span class="word-fit__char">${cell.ch}</span></span><span class="rt-an">${readings[i]}</span></ruby><span class="word-fit__hunrow">${cell.label?`<span class="word-fit__hun" lang="ko" data-label="${cell.label}"${cell.wrap?' data-wrap="1"':''} style="--hun-n:${cell.hunN}">${cell.lines.map(l=>`<span class="word-fit__hun-line">${l}</span>`).join('')}</span>`:''}</span></span>`).join('');
 const longHunCard=`<div class="reader-card-headword"><div class="word-fit-wrap"><div class="word-fit word-fit--hun" lang="zh-Hans" style="--fit-n:2"><span class="surface">${hunCols('连弩',['lián','nǔ'])}</span></div></div></div><div class="word-detail-card__meaning">연발 쇠뇌</div>`;
@@ -476,6 +479,7 @@ for(const width of [170,300,680])for(const scale of [1,2]) {
    return {row:r(document.querySelector('#row')),meaning:r(document.querySelector('.word-detail-card__meaning')),
     cols:[...document.querySelectorAll('.word-fit__col')].map(col=>({col:r(col),glyph:ink(col.querySelector('.word-fit__char')),hun:r(col.querySelector('.word-fit__hun')),
      style:(s=>({position:s.position,overflow:s.overflow,textOverflow:s.textOverflow}))(getComputedStyle(col.querySelector('.word-fit__hun')))})),
+    lines:[...document.querySelectorAll('.word-fit__hun')].map(e=>[...e.querySelectorAll('.word-fit__hun-line')].map(l=>({h:l.getBoundingClientRect().height,cut:l.scrollWidth>l.clientWidth+.5}))),
     labels:[...document.querySelectorAll('.word-fit__hun')].map(e=>e.dataset.label),text:[...document.querySelectorAll('.word-fit__hun')].map(e=>e.textContent)};
   });
   assert.equal(g.cols.length,2);
@@ -493,7 +497,12 @@ for(const width of [170,300,680])for(const scale of [1,2]) {
   assert.ok(!overlap(a.hun,b.glyph)&&!overlap(b.hun,a.glyph),'a label never covers the neighbouring glyph');
   assert.deepEqual(g.labels,['연할 련(연)',longHun],'complete labels — nothing truncated');
   assert.ok(g.text[1].replace(/\s/g,'').includes(longHun.replace(/\s/g,'')),'the long gloss is fully rendered');
-  assert.ok(b.hun.height>a.hun.height,'the long gloss wraps inside its capped cell instead of widening without bound');
+  // 긴 훈 가이드라인(2026-10-23 KST): 상한 칸을 넘는 풀이는 훈 한 줄(말줄임) + 음 한 줄 — 칸이 끝없이 넓어지지도, 줄이 늘지도 않는다.
+  const [hunLine,eumLine]=g.lines[1];
+  assert.equal(g.lines[1].length,2,'long gloss = hun line + eum line');
+  assert.ok(hunLine.cut,'the long hun line is cut with an ellipsis inside its capped cell instead of widening without bound');
+  assert.ok(!eumLine.cut,'the eum line stays whole');
+  assert.ok(hunLine.h<1.6*eumLine.h,'the hun line stays one line');
  });
 }
 
@@ -673,7 +682,7 @@ const r0Area = ({ fs = 25.6, hl = false, theme = 'sepia', lang = 'zh-Hans', fami
 const r0Tok = (segs, { cls = '', selected = false, pattern = false, linePick = false, ja = false } = {}) =>
   `<div class="word-token${cls ? ` ${cls}` : ''}${pattern ? ' word-token--pattern' : ''}"${selected ? ' data-selected="true"' : ''}>${linePick ? '<button class="line-pick"></button>' : ''}<span class="surface">${
     segs.map(([c, r]) => (r ? `<ruby ${ja ? 'data-yomi' : 'data-pinyin'}="1">${c}<span class="rt-an">${r}</span></ruby>` : `<span>${c}</span>`)).join('')
-  }${pattern ? '<span class="pattern-mark" aria-hidden="true"></span>' : ''}</span></div>`;
+  }${pattern ? '<span class="pattern-mark" aria-hidden="true"></span>' : ''}<span class="word-frame" aria-hidden="true"></span></span></div>`;
 
 // 상태별 토큰 — 저장·복습·미저장 × 문형 유무, 줄 첫 토큰(막대), 새 단어·만난 말
 const R0_ZH = [
@@ -702,12 +711,14 @@ const r0Geometry = (p = page) => p.evaluate(() => [...document.querySelectorAll(
   const b = getComputedStyle(s, '::before');
   const bandTop = sr.top + px(b.top), bandBottom = bandTop + px(b.height), bb = px(b.borderBottomWidth);
   const boxBottom = b.boxSizing === 'content-box' ? bandBottom + px(b.paddingBottom) + bb : bandBottom;
-  const f = getComputedStyle(t, '::before');
+  // 선택 테두리 = .surface 안 .word-frame의 outline(VIEWER-TAP-INP-002). 선 바깥 = 상자 + (offset + 두께), 안쪽 = 상자 + offset.
+  const fe = s.querySelector(':scope > .word-frame'), f = fe && getComputedStyle(fe);
   let frame = null;
-  if (f.content && f.content !== 'none' && f.content !== 'normal' && f.position === 'absolute') {
-    const top = tr.top + px(f.top);
-    frame = { outerTop: top, innerTop: top + px(f.borderTopWidth), innerBottom: top + px(f.height) - px(f.borderBottomWidth),
-      outerBottom: top + px(f.height), left: tr.left + px(f.left), right: tr.right - px(f.right) };
+  if (f && f.outlineStyle !== 'none' && px(f.outlineWidth) > 0) {
+    // 세로는 계산값(줄 상자 위 = 글자 상자 위 + margin-top, height)으로 — 예전 ::before(top · height 계산값)와 같은 정밀도.
+    // getBoundingClientRect는 1/64px로 맞춰져 0.5px 여유 검사(밑줄 ↔ 테두리)에서 0.012px 차로 갈린다.
+    const r = fe.getBoundingClientRect(), o = px(f.outlineOffset), w = px(f.outlineWidth), top = sr.top + px(f.marginTop), bottom = top + px(f.height);
+    frame = { outerTop: top - (o + w), innerTop: top - o, innerBottom: bottom + o, outerBottom: bottom + o + w, left: r.left - (o + w), right: r.right + o + w };
   } else if (/inset/.test(b.boxShadow)) { // 옛 문법: 띠 안쪽 1.5px 그림자
     const padBottom = boxBottom - bb;
     frame = { outerTop: bandTop, innerTop: bandTop + 1.5, innerBottom: padBottom - 1.5, outerBottom: padBottom, left: sr.left, right: sr.right };
@@ -718,7 +729,8 @@ const r0Geometry = (p = page) => p.evaluate(() => [...document.querySelectorAll(
     name: t.dataset.name, fs: px(getComputedStyle(s).fontSize), ja: !!s.querySelector('ruby[data-yomi]'),
     token: { l: tr.left, r: tr.right }, surface: { l: sr.left, r: sr.right, top: sr.top },
     band: { top: bandTop, bottom: bandBottom, h: px(b.height), clip: b.backgroundClip },
-    underline: bb > 0 ? { top: boxBottom - bb, bottom: boxBottom } : null,
+    // 투명한 밑줄 자리는 밑줄이 아니다 — 고른 새 단어는 선만 지우고 자리(여백 · 두께)는 남긴다(VIEWER-TAP-INP-002, 고를 때 배치 0)
+    underline: bb > 0 && !/rgba\(\d+, \d+, \d+, 0\)/.test(b.borderBottomColor) ? { top: boxBottom - bb, bottom: boxBottom } : null,
     frame, rt: rt ? { top: rt.top, bottom: rt.bottom, l: rt.left, r: rt.right } : null,
     mark: mark && mark.height > 0 ? { top: mark.top, bottom: mark.bottom } : null,
   };
@@ -786,10 +798,10 @@ test('R0 버그 6 — 다음 줄 병음이 앞줄의 테두리·밑줄·문형�
     const rows = await page.evaluate(() => {
       const m = new Map();
       for (const t of document.querySelectorAll('.word-token')) {
-        const s = t.querySelector('.surface').getBoundingClientRect(), f = getComputedStyle(t, '::before'), tr = t.getBoundingClientRect();
+        const s = t.querySelector('.surface').getBoundingClientRect(), fr = t.querySelector('.surface > .word-frame').getBoundingClientRect();
         const k = Math.round(s.top), e = m.get(k) || { rtTop: Infinity, markBottom: -Infinity };
         for (const rt of t.querySelectorAll('.rt-an')) e.rtTop = Math.min(e.rtTop, rt.getBoundingClientRect().top);
-        e.markBottom = Math.max(e.markBottom, tr.top + parseFloat(f.top) + parseFloat(f.height));
+        e.markBottom = Math.max(e.markBottom, fr.bottom); // 테두리 바깥 아랫변(outline-offset −두께라 상자 아랫변)
         m.set(k, e);
       }
       return [...m.entries()].sort((a, b) => a[0] - b[0]).map((x) => x[1]);
@@ -811,10 +823,15 @@ test('R0 버그 6 — 요미가나는 테두리에 닿을 때만 올라간다(�
     await page.setContent(R0_PAGE(r0Area({ fs, lang: 'ja' }, r0Line(R0_JA, { ja: true, selected: true }))));
     const g = await r0Geometry();
     const fromTop = await page.evaluate(() => [...document.querySelectorAll('.rt-an')].map((rt) => rt.getBoundingClientRect().bottom - rt.closest('.surface').getBoundingClientRect().top));
+    // 요미 실제 크기 — 본문을 가장 작게 해도 10px 아래로 내려가지 않는다(뷰어 점검 F4, 오너 승인 2026-10-23 KST).
+    // 12.8px 본문에서는 0.5em(6.4px)이 아니라 10px이라, 잉크 추정 · 옛 자리 비교 모두 실제 크기로 잰다.
+    const yomiPx = await page.evaluate(() => [...document.querySelectorAll('.rt-an')].map((rt) => parseFloat(getComputedStyle(rt).fontSize)));
     g.forEach((t, i) => {
-      const inkBottom = t.rt.bottom - 0.55 * (fs / 2);
+      const inkBottom = t.rt.bottom - 0.55 * yomiPx[i];
+      assert.ok(yomiPx[i] >= 10 - 0.01, `${fs}px ${t.name}: 요미 ${yomiPx[i]}px < 10px 하한`);
       assert.ok(inkBottom <= t.frame.outerTop - 2.5 + 0.01, `${fs}px ${t.name}: 요미 잉크 추정 아래 끝 ${inkBottom.toFixed(2)} > 테두리 ${t.frame.outerTop.toFixed(2)} − 2.5`);
-      assert.ok(fromTop[i] <= 0.65 * fs + 0.01, `${fs}px ${t.name}: 요미가 옛 자리보다 내려갔다 ${fromTop[i]}`);
+      // 옛 자리(잉크 기준) — 요미가 커진 만큼 상자 아래 끝은 내려가도 잉크는 옛 자리보다 내려가지 않는다.
+      assert.ok(fromTop[i] - 0.55 * yomiPx[i] <= 0.65 * fs - 0.55 * (fs / 2) + 0.01, `${fs}px ${t.name}: 요미가 옛 자리보다 내려갔다 ${fromTop[i]}`);
       if (fs >= 25.6) assert.ok(Math.abs(fromTop[i] - 0.65 * fs) < 0.6, `${fs}px ${t.name}: 큰 글자에서 요미가 옛 기준점(0.65em)에서 움직였다: ${fromTop[i]}`);
     });
   }
@@ -826,8 +843,8 @@ test('R0 버그 6 — 터치 화면 줄 첫 토큰: 테두리가 문장 막대�
     const p = await context.newPage();
     await p.setContent(R0_PAGE(r0Area({ fs: 25.6 }, r0Line(R0_ZH.slice(0, 2), { selected: true }))));
     const out = await p.evaluate(() => {
-      const t = document.querySelector('.word-token'), f = getComputedStyle(t, '::before');
-      return { hoverNone: matchMedia('(hover: none)').matches, frameLeft: t.getBoundingClientRect().left + parseFloat(f.left), surfaceLeft: t.querySelector('.surface').getBoundingClientRect().left };
+      const t = document.querySelector('.word-token');
+      return { hoverNone: matchMedia('(hover: none)').matches, frameLeft: t.querySelector('.word-frame').getBoundingClientRect().left, surfaceLeft: t.querySelector('.surface').getBoundingClientRect().left };
     });
     assert.ok(out.hoverNone, '터치 컨텍스트가 (hover: none)이 아니다 — 전제가 무너졌다');
     assert.ok(Math.abs(out.frameLeft - out.surfaceLeft) < 0.5, `테두리 왼변 ${out.frameLeft} ≠ 글자 상자 왼변 ${out.surfaceLeft}`);
@@ -841,14 +858,14 @@ for (const gap of ['0rem', '.5rem']) test(`중국어 격자 — 터치 화면 �
   try {
     const p = await context.newPage();
     const cell = (c) => `<span class="zh-cell">${c}</span>`;
-    const word = (segs, { linePick = false, selected = false } = {}) => `<div class="word-token"${selected ? ' data-selected="true"' : ''}>${linePick ? '<button class="line-pick"></button>' : ''}<span class="surface">${segs.map(([c, r]) => (r ? `<ruby data-pinyin="1">${c}<span class="rt-an">${r}</span></ruby>` : cell(c))).join('')}</span></div>`;
+    const word = (segs, { linePick = false, selected = false } = {}) => `<div class="word-token"${selected ? ' data-selected="true"' : ''}>${linePick ? '<button class="line-pick"></button>' : ''}<span class="surface">${segs.map(([c, r]) => (r ? `<ruby data-pinyin="1">${c}<span class="rt-an">${r}</span></ruby>` : cell(c))).join('')}<span class="word-frame" aria-hidden="true"></span></span></div>`;
     const words = [word([['眼', 'yǎn'], ['前', 'qián']], { linePick: true, selected: true }), word([['的', 'de']]), word([['体', 'tǐ'], ['育', 'yù'], ['场', 'chǎng']]), word([['，']]),
       ...Array.from({ length: 12 }, () => word([['我', 'wǒ'], ['们', 'men']]))].join('');
     await p.setContent(R0_PAGE(r0Area({ fs: 25.6 }, words).replace('gap:15px .25rem;--char-gap:.25rem', `gap:15px 0;--char-gap:${gap};width:340px`)).replace('class="viewer-layout"', 'class="viewer-layout" data-language="Chinese"'));
     const out = await p.evaluate(() => {
       const cells = [...document.querySelectorAll('.surface > :is(ruby,.zh-cell)')].map((e) => { const b = e.getBoundingClientRect(); return { l: b.left, w: b.width, top: Math.round(e.closest('.surface').getBoundingClientRect().top) }; });
-      const t = document.querySelector('.word-token'), f = getComputedStyle(t, '::before');
-      return { hoverNone: matchMedia('(hover: none)').matches, cells, frameLeft: t.getBoundingClientRect().left + parseFloat(f.left), surfaceLeft: t.querySelector('.surface').getBoundingClientRect().left, areaLeft: document.querySelector('.reader-area').getBoundingClientRect().left + 16 };
+      const t = document.querySelector('.word-token');
+      return { hoverNone: matchMedia('(hover: none)').matches, cells, frameLeft: t.querySelector('.word-frame').getBoundingClientRect().left, surfaceLeft: t.querySelector('.surface').getBoundingClientRect().left, areaLeft: document.querySelector('.reader-area').getBoundingClientRect().left + 16 };
     });
     assert.ok(out.hoverNone, '터치 컨텍스트가 (hover: none)이 아니다 — 전제가 무너졌다');
     const pitch = out.cells[1].l - out.cells[0].l, tops = [...new Set(out.cells.map((c) => c.top))];
@@ -899,8 +916,8 @@ for (const theme of ['light', 'sepia', 'dark']) {
   test(`R0 버그 11 — 「만난 말」은 새 단어와 같은 표시다(${theme}: 칠·지정 혼색·선택 테두리)`, async () => {
     await page.setContent(R0_PAGE(r0Area({ fs: 25.6, hl: true, theme }, r0Line([R0_ZH[5], R0_ZH[6]]))));
     const read = () => page.evaluate(() => [...document.querySelectorAll('.word-token')].map((t) => {
-      const b = getComputedStyle(t.querySelector('.surface'), '::before'), f = getComputedStyle(t, '::before');
-      return { band: b.backgroundColor, line: `${b.borderBottomWidth} ${b.borderBottomColor}`, frame: f.content !== 'none' ? f.borderTopColor : b.boxShadow };
+      const b = getComputedStyle(t.querySelector('.surface'), '::before'), f = getComputedStyle(t.querySelector('.word-frame'));
+      return { band: b.backgroundColor, line: `${b.borderBottomWidth} ${b.borderBottomColor}`, frame: f.outlineStyle !== 'none' ? f.outlineColor : 'none' };
     }));
     const plain = await read();
     assert.deepEqual(plain[1], plain[0], `만난 말 칠 ${plain[1].band} ≠ 새 단어 칠 ${plain[0].band}`);

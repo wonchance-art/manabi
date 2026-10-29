@@ -163,7 +163,7 @@ function filterSuggestionsByProfile(suggestions, profile) {
   });
 }
 
-export default function MaterialsPage({ libraryView = null }) {
+export default function MaterialsPage({ libraryView = null, sessionHint = false }) {
   const { readerHref, openReader } = useLibraryReader();
   const { user, profile, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -211,6 +211,13 @@ export default function MaterialsPage({ libraryView = null }) {
   const [tabOverride, setTabOverride] = useState(() => searchParams.get('tab') === 'public' ? 'public' : null);
   const tab = libraryView ? (libraryView === 'public' ? 'public' : 'private') : tabOverride ?? (authLoading ? null : (user ? 'private' : 'public'));
   const setTab = setTabOverride;
+  // 로그인 사람의 고르기 줄(「안 읽은 것만」 칩 · 정렬 「내 수준 맞춤」)을 서버 HTML부터 그린다(DISCOVER-CHIP-CLS-001).
+  // sessionHint = 서버가 본 세션 쿠키(이름만 — hasSupabaseSessionInJar, 배움 B1 · 책 표지와 같은 판정). 서버 그림은 늘 로그인 확인 전이라
+  // 손님 줄로 그렸다가 확인 뒤 칩이 끼고 정렬이 넓어지며 390폭에서 셋째 줄로 접혀(+48px) 아래 목록을 밀었다. 쿠키가 없으면 지금 그대로다.
+  const signedInFilters = !!user || (authLoading && sessionHint === true);
+  // 같은 힌트로 확인 중 목록 자리는 기존 목록 골격이다(아래 isLoading) — 로그인 사람에게 손님 빈 상태(「로그인하고 자료 올리기」)가 잠깐 보였다.
+  // 쿠키 없는 손님은 지금 그대로(함께 읽는 글은 서버부터 빈 상태 · 서재 도구는 골격). 추천 칸도 목록이 정해진 뒤에만(LIBRARY-GUEST-CLS-001).
+  const signInPending = authLoading && sessionHint === true;
   const [testScores, setTestScores] = useState({});
 
   useEffect(() => {
@@ -374,9 +381,12 @@ export default function MaterialsPage({ libraryView = null }) {
     staleTime: 1000 * 60,
   });
 
-  // 🎯 자료 맞춤도(rfc-material-fit R2) — 담김 **전체** 인덱스(위 due 인덱스와 별개: 커버리지는
-  // 복습 대기 여부와 무관하게 "담아 본 말"인지가 기준). 게스트 무조회 — 줄·정렬 자체가 없다.
-  const { data: savedVocabIndex } = useQuery({
+  // 🎯 자료 맞춤도(rfc-material-fit R2) — 담김 **전체** 인덱스(커버리지는 복습 대기 여부와 무관하게 "담아 본 말"인지가 기준).
+  // 게스트 무조회 — 줄·정렬 자체가 없다. 위 due 인덱스가 같은 집합을 이미 들고 있다(ROUTE-AUDIT-2 F4, 2026-10-25 KST): 완전 snapshot은
+  // 내 user_vocabulary 행 전부이고(fsrs_vocabulary_snapshot WHERE v.user_id=p_actor — 제외 · 이미 앎 행 포함) buildVocabularyWordIndex가
+  // 모든 행의 word_text · base_form으로 surfaces · bases를 만든다. 같은 표를 1000행씩 차례로 다시 읽던 조회(3,000단어 = 3왕복 265 kB)는
+  // snapshot을 못 받았을 때만 돈다 — 그때도 맞춤도는 예전처럼 따로 뜬다.
+  const { data: savedVocabFallback } = useQuery({
     queryKey: ['saved-vocab-index', user?.id],
     queryFn: async () => {
       // PostgREST 기본 상한(1000행)에 잘리지 않게 정본 완전 조회(id 순 page · exact count)로 읽는다.
@@ -392,9 +402,10 @@ export default function MaterialsPage({ libraryView = null }) {
       }
       return { surfaces, bases };
     },
-    enabled: !!user,
+    enabled: !!user && !!dueVocabError,
     staleTime: 1000 * 60,
   });
+  const savedVocabIndex = dueVocabIndex || savedVocabFallback;
 
   // '이미 앎' 표기(목업 ⑤ — #1077-14): 커버리지 정밀화용 합집합 재료. 실패는 빈 배열(무해성).
   const { data: knownRows } = useQuery({
@@ -408,7 +419,7 @@ export default function MaterialsPage({ libraryView = null }) {
     return dueVocabError ? null : countVocabularyDueInMaterial(dueVocabIndex, material);
   }
 
-  const { data: materials = [], isLoading, isFetched: materialsFetched, error: materialsError, refetch: refetchMaterials } = useQuery({
+  const { data: materials = [], isLoading: materialsLoading, isFetched: materialsFetched, error: materialsError, refetch: refetchMaterials } = useQuery({
     queryKey: ['materials', tab, user?.id, langFilter, levelFilter, searchQuery, !!libraryView],
     queryFn: () => fetchMaterials({ tab, userId: user?.id, langFilter, levelFilter, searchQuery, includeOwnedPublic: !!libraryView }),
     // 기본 탭이 로그인 여부로 갈리므로 auth 확정 전에 쏘면 버릴 쿼리가 된다.
@@ -416,6 +427,8 @@ export default function MaterialsPage({ libraryView = null }) {
     // 한 번 그려지고 책 카탈로그 RPC를 한 번 더 부른다(리뷰 2026-10-17 KST). 확인이 끝난 뒤 한 번만 받는다.
     enabled: !!tab && !(libraryView === 'public' && authLoading),
   });
+  // 목록 자리가 아직 정해지지 않았다 = 조회 중 또는 세션 쿠키가 있는 사람의 로그인 확인 중(signInPending). 골격 · 추천 칸이 같은 값을 본다.
+  const isLoading = materialsLoading || signInPending;
 
   // 발견 서가 「오늘의 소식 · 전체 보기」(#today-news, B2 A안 — 오너 「권장대로」 2026-10-17 KST): 목록과 소식이 둘 다 들어온 뒤
   // 한 번만 그 칸 제목으로 내려가 초점을 둔다 — 위 목록이 늦게 들어오면 칸이 밀려 먼저 내려간 자리가 어긋난다.
@@ -652,7 +665,7 @@ export default function MaterialsPage({ libraryView = null }) {
           ))}
           {/* 「안 읽은 것만」(v2-F R3) — 완독분만 걷어낸다(읽는 중은 남긴다).
               게스트는 진도가 없어 칩 자체를 두지 않는다. */}
-          {user && (
+          {signedInFilters && (
             <button
               onClick={() => setUnreadOnly(v => !v)}
               aria-pressed={unreadOnly}
@@ -674,18 +687,6 @@ export default function MaterialsPage({ libraryView = null }) {
               받아둔 것만
             </button>
           )}
-          <select
-            value={sortBy}
-            onChange={e => setSortBy(e.target.value)}
-            className="chip chip--select"
-            aria-label="정렬"
-            style={{ marginLeft: 'auto' }}
-          >
-            <option value="newest">최신순</option>
-            {user && <option value="fit">내 수준 맞춤</option>}
-            <option value="level">쉬운순</option>
-            <option value="title">제목순</option>
-          </select>
         </div>
 
         {langFilter !== 'all' && (
@@ -709,12 +710,27 @@ export default function MaterialsPage({ libraryView = null }) {
             ))}
           </div>
         )}
+
+        {/* 정렬은 칩 줄 밖 자기 자리(NATIVE-FEEL-P1 ⓐ, 오너 「권장대로 진행」 2026-10-26 KST) — 칩 모양 선택 상자를 16px로 키우면
+            칩 줄이 깨져(13.1px 칩 사이 16px 상자), 칩은 그대로 두고 정렬만 글자 단추 꼴로 떼어 냈다. 터치 기기에서 16px(iOS 초점 확대 방지). */}
+        <select
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value)}
+          className="materials-sort"
+          aria-label="정렬"
+        >
+          <option value="newest">최신순</option>
+          {signedInFilters && <option value="fit">내 수준 맞춤</option>}
+          <option value="level">쉬운순</option>
+          <option value="title">제목순</option>
+        </select>
       </div>
 
       {dueVocabError && <div className="library-query-state" role="alert">표현을 불러오지 못했어요. <button type="button" onClick={() => refetchDueVocab()}>다시 시도</button></div>}
       {progressError && <div className="library-query-state" role="alert">읽음 기록을 불러오지 못했어요. <button type="button" onClick={() => refetchProgress()}>다시 시도</button></div>}
       {showPdfs && pdfsError && <div className="library-query-state" role="alert">PDF 목록을 불러오지 못했어요. <button type="button" onClick={() => refetchPdfs()}>다시 시도</button></div>}
-      {showPdfs && pdfsLoading && <p aria-busy="true">PDF 목록 확인 중…</p>}
+      {/* 확인 중(signInPending)에도 같은 줄을 둔다 — 확인 뒤 PDF 조회가 이 줄을 끼우며 아래 골격을 26px 밀었다(서재 도구 390폭). */}
+      {showPdfs && (pdfsLoading || signInPending) && <p aria-busy="true">PDF 목록 확인 중…</p>}
       {(!tab || isLoading) ? (
         <CardGridSkeleton />
       ) : materialsError ? (

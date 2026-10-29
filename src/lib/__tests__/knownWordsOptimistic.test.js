@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { MutationObserver, QueryClient } from '@tanstack/react-query';
+import { MutationObserver, QueryClient, QueryObserver } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // 계약: 아는 단어(O) 낙관 갱신 — 누른 순간 두 캐시에 반영, 실패하면 그 요청 몫만 되돌리고 알린다.
@@ -48,6 +48,25 @@ describe('낙관 반영 · 되돌리기', () => {
     expect(client.getQueryData(ja)).toEqual([{ lang: 'ja', word_text: '猫' }, { lang: 'ja', word_text: '犬' }]);
     expect(invalidate.mock.calls.map(([arg]) => arg.queryKey[0])).toEqual(expect.arrayContaining(['known-words', 'known-words-all', 'vocabulary-exclusions', 'due-vocab-index']));
     expect(toast).not.toHaveBeenCalled();
+  });
+
+  it('서버가 받으면 바로 끝난다 — 소비자 재조회(큰 목록)를 기다리느라 그 단어의 O · X가 잠기지 않는다', async () => {
+    const refetch = deferred();
+    const consumer = new QueryObserver(client, { queryKey: ['vocab', 'u1'], queryFn: () => refetch.promise });
+    const stop = consumer.subscribe(() => {});
+    refetch.resolve([]);
+    await flush();
+    const slow = deferred();
+    consumer.setOptions({ queryKey: ['vocab', 'u1'], queryFn: () => slow.promise });
+    let settled = false;
+    const done = observer().mutate({ accountId: 'u1', lang: 'ja', wordText: '犬', known: true }).then(() => { settled = true; });
+    await flush();
+    gates[0].resolve();
+    await flush(); await flush();
+    expect(settled).toBe(true);
+    slow.resolve([]);
+    await done;
+    stop();
   });
 
   it('쓰기가 나가 있는 동안만 track되고 응답 뒤(성공 · 실패) 빠진다', async () => {
@@ -156,7 +175,7 @@ describe('레벨 목록 배선', () => {
 
   it('「풀고 담기」와 옮김 토스트는 서버 응답을 기다린다 — 화면 상태(effect)로 기다리지 않는다', () => {
     expect(page).not.toMatch(/pendingStudy|pendingExclude/);
-    const markX = page.match(/const markX = async \(entry\) => \{[\s\S]*?\n {2}\};/)?.[0];
+    const markX = page.match(/const studyX = async \(entry\) => \{[\s\S]*?\n {2}\};/)?.[0]; // 전체 · 탭 X 공통 담기(LEVEL-ROUND-001)
     expect(markX).toMatch(/try \{ await known\.mutation\.mutateAsync\(unmarkRequest\(entry\.key\)\); \} catch \{ return undefined; \}\n\s*return save\(entry\);/);
     const exclude = page.match(/const exclude = \(entry\) => \{[\s\S]*?\n {2}\};/)?.[0];
     expect(exclude).toContain('known.mutation.mutateAsync({ lang: conf.langCode, wordText: key, known: true }).then(() => {');

@@ -137,7 +137,7 @@ const themes = {
         { zh: "项链", pinyin: "xiàngliàn", ko: "목걸이", pos: "명사", hanja: "항련(項鏈) — '項'은 목·항목 항, '鏈'은 쇠사슬 련.", ex: { zh: "她戴着一条金项链。", pinyin: "tā dài zhe yì tiáo jīn xiàngliàn", ko: "그녀는 금목걸이를 하고 있어요." } },
         { zh: "象棋", pinyin: "xiàngqí", ko: "장기 (중국 장기)", pos: "명사", hanja: "상기(象棋) — '象'은 코끼리 상, '棋'는 바둑 기.", ex: { zh: "我和爷爷下象棋。", pinyin: "wǒ hé yéye xià xiàngqí", ko: "저는 할아버지와 장기를 둬요." } },
         { zh: "橡皮", pinyin: "xiàngpí", ko: "지우개; 고무", pos: "명사", hanja: "상피(橡皮) — '橡'은 상수리나무 상, '皮'는 가죽 피.", ex: { zh: "请借我一块橡皮。", pinyin: "qǐng jiè wǒ yí kuài xiàngpí", ko: "지우개 하나 빌려주세요." } },
-        { zh: "小吃", pinyin: "xiǎochī", ko: "간식, 분식, 가벼운 먹거리", pos: "명사", hanja: "소흘(小吃) — '小'는 작을 소, '吃'은 먹을 흘.", ex: { zh: "这条街有很多小吃。", pinyin: "zhè tiáo jiē yǒu hěn duō xiǎochī", ko: "이 거리에는 먹거리가 많아요." } },
+        { zh: "小吃", pinyin: "xiǎochī", ko: "간식, 분식, 가벼운 먹거리", pos: "명사", hanja: "소끽(小喫) — '小'는 작을 소, '吃(喫)'은 먹을 끽.", ex: { zh: "这条街有很多小吃。", pinyin: "zhè tiáo jiē yǒu hěn duō xiǎochī", ko: "이 거리에는 먹거리가 많아요." } },
         { zh: "小伙子", pinyin: "xiǎohuǒzi", ko: "젊은이, 총각", pos: "명사", hanja: "소화자(小伙子) — '小伙'는 젊은 남자를 뜻해요.", ex: { zh: "那个小伙子很热情。", pinyin: "nàge xiǎohuǒzi hěn rèqíng", ko: "저 젊은이는 아주 친절해요." } },
         { zh: "小麦", pinyin: "xiǎomài", ko: "밀", pos: "명사", hanja: "소맥(小麥) — '小'는 작을 소, '麥'은 보리 맥.", ex: { zh: "这片地种着小麦。", pinyin: "zhè piàn dì zhòng zhe xiǎomài", ko: "이 밭에는 밀을 심어 놨어요." } },
         { zh: "小偷", pinyin: "xiǎotōu", ko: "도둑, 좀도둑", pos: "명사", hanja: "소투(小偷) — '小'는 작을 소, '偷'는 훔칠 투.", ex: { zh: "小偷被警察抓住了。", pinyin: "xiǎotōu bèi jǐngchá zhuāzhù le", ko: "도둑이 경찰에게 잡혔어요." } },

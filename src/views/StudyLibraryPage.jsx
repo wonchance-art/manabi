@@ -138,7 +138,7 @@ function MySourceComposer({ lang, langCode }) {
             maxLength={SOURCE_MAX}
             rows={4}
             placeholder="기사 한 토막, 좋아하는 문장, 수업 프린트… 붙여넣으면 오늘 문단의 글감이 돼요"
-            style={{ width: '100%', fontSize: '0.95rem', resize: 'vertical' }}
+            style={{ width: '100%', fontSize: 'max(var(--field-font-min), 0.95rem)', resize: 'vertical' }}
           />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
             <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{text.length}/{SOURCE_MAX}</span>

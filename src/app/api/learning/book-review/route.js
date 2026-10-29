@@ -1,24 +1,24 @@
-import { requireUser } from '@/lib/supabaseServer';
+import { requireUserForRead } from '@/lib/supabaseServer';
 import { reply, errorReply, checkDb, fail } from '@/lib/server/learningContext';
 import { sourceHref } from '@/lib/learningSources';
-import { BOOK_ID,isBookId,bookUnitSlug } from '@/lib/textbook/contract';
+import { BOOK_ID,BOOKS,isBookId,bookUnitSlug } from '@/lib/textbook/contract';
 
-const BOOK_LESSONS = 42;
 const LESSON = /^[1-9]\d?$/;
 
 // 과 범위(REV-SCOPE-R1A): from · to를 함께 주면 그 과(chapter_slug)에서 담은 문맥만. 둘 다 없으면 교재 전체 —
 // 전체는 지금처럼 과 조건을 걸지 않는다(과가 없는 옛 문맥도 교재 전체 범위에는 남는다).
 function lessonRange(params,bookId) {
   const from = params.get('from'), to = params.get('to');
+  const total=BOOKS[bookId].lessons;
   if (from === null && to === null) return null;
-  if (!LESSON.test(from || '') || !LESSON.test(to || '') || Number(from) > Number(to) || Number(to) > BOOK_LESSONS) fail(400, '과 범위를 확인해 주세요.');
-  if (Number(from) === 1 && Number(to) === BOOK_LESSONS) return null;
+  if (!LESSON.test(from || '') || !LESSON.test(to || '') || Number(from) > Number(to) || Number(to) > total) fail(400, '과 범위를 확인해 주세요.');
+  if (Number(from) === 1 && Number(to) === total) return null;
   return Array.from({ length: Number(to) - Number(from) + 1 }, (_, i) => bookUnitSlug(bookId,Number(from) + i));
 }
 
 export const dynamic = 'force-dynamic';
 export async function GET(request) {
-  const auth = await requireUser();
+  const auth = await requireUserForRead();
   if (auth.error) return reply({ error: auth.error }, auth.status);
   try {
     const params = new URL(request.url).searchParams;

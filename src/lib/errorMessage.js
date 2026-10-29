@@ -37,22 +37,39 @@ export const SPEECH_FAILED_MESSAGE = '소리를 재생하지 못했어요. 잠�
 
 // 안내는 기존 「서비스 설정」 문구(api key 패턴과 같은 말) 그대로 — 새 문구를 만들지 않는다.
 const SERVICE_CONFIG_MESSAGE = '서비스 설정에 문제가 있어요. 관리자에게 문의해 주세요.';
+// 실패 문장 뒤에 붙는 한 문장판(failureMessage — 표준 §3 「두 문장까지」, OFFLINE-SWEEP-001 P5).
+const SERVICE_CONFIG_CAUSE = '서비스 설정 문제라 관리자에게 문의해 주세요.';
+
+// 연결 끊김 표지 — 아래 안내 표와 isNetworkError가 같은 판정을 쓴다(끊긴 서재가 기기 사본 목록으로 바꿀지 볼 때, OFFLINE-SWEEP-001 P1).
+// 브라우저마다 fetch 연결 실패 문구가 다르다: Chromium 「Failed to fetch」 · Firefox 「NetworkError when attempting to fetch resource.」 ·
+// Safari 「Load failed」(Supabase는 「TypeError: Load failed」로 감싼다). Safari 문구는 문장 전체일 때만 — 「chunk load failed」 ·
+// 「sdk load failed」 같은 다른 실패를 연결 끊김으로 잡지 않게.
+const NETWORK_PATTERN = /failed to fetch|network|ERR_NETWORK|connection|\boffline\b|^(?:TypeError:\s*)?load failed\.?$/i;
+/** 연결이 끊겨 실패했나(응답을 못 받음) — 서버가 돌려준 오류(권한 · 없음 · 서버 오류)는 아니다. */
+export function isNetworkError(err) {
+  const technical = typeof err === 'string' ? err : (err?.message || '');
+  return NETWORK_PATTERN.test(technical);
+}
 
 const PATTERNS = [
   // 서비스 설정(결제 · 크레딧) — 용량 패턴보다 먼저 본다: 같은 문구가 429 · RESOURCE_EXHAUSTED로 와도 「붐빔」이 아니다.
-  { match: SERVICE_CONFIG_PATTERN, user: SERVICE_CONFIG_MESSAGE },
+  { match: SERVICE_CONFIG_PATTERN, user: SERVICE_CONFIG_MESSAGE, cause: SERVICE_CONFIG_CAUSE },
 
-  // 네트워크
-  { match: /failed to fetch|network|ERR_NETWORK|connection/i,
+  // 네트워크 — 「offline」은 대화 턴(conversationClient)이 연결 실패를 status 0으로 감싼 표지(OFFLINE-SWEEP-001: 새 대화 시작이
+  // 끊긴 채 「문제가 발생했어요」로 떴다).
+  { match: NETWORK_PATTERN,
     user: '인터넷 연결을 확인해 주세요. 잠시 후 다시 시도하면 대개 해결돼요.',
+    cause: '인터넷 연결을 확인해 주세요.',
     retry: true },
 
   // 용량/속도 제한
   { match: /high demand|overloaded|unavailable|resource_exhausted|503/i,
     user: 'AI 서비스가 잠시 붐비고 있어요. 잠시 후 다시 시도해 주세요.',
+    cause: 'AI 서비스가 붐비니 잠시 후 다시 시도해 주세요.',
     retry: true },
   { match: /rate|too many|429|요청이 너무/i,
     user: '요청이 너무 많아요. 1~2분 기다린 뒤 다시 시도해 주세요.',
+    cause: '요청이 많으니 1~2분 기다린 뒤 다시 시도해 주세요.',
     retry: true },
 
   // JSON 파싱 — 인증 패턴(/token/)보다 먼저 본다: 「Unexpected token」이 「로그인이 만료됐어요」로 오분류되던 문제.
@@ -60,11 +77,12 @@ const PATTERNS = [
   // 「서버 응답 형식 오류 (HTTP n)」·「Gemini 응답이 비어있습니다」)도 같은 안내로 받는다.
   { match: /unexpected token|not valid json|json parse|JSON 파싱|JSON 괄호|응답 형식 오류|응답이 비어/i,
     user: '응답을 읽지 못했어요. 다시 시도하면 대개 해결돼요.',
+    cause: '다시 시도하면 대개 해결돼요.',
     retry: true },
 
   // 인증
   { match: /unauthor|not authenticated|jwt|token/i,
-    user: '로그인이 만료됐어요. 다시 로그인해 주세요.' },
+    user: '로그인이 만료됐어요. 다시 로그인해 주세요.', cause: '로그인이 만료됐으니 다시 로그인해 주세요.' },
   { match: /admin access required|403|forbidden/i,
     user: '이 작업은 관리자만 할 수 있어요.' },
 
@@ -72,21 +90,21 @@ const PATTERNS = [
   { match: /duplicate key|already exists|23505/i,
     user: '이미 저장된 항목이에요.' },
   { match: /violates foreign key|23503/i,
-    user: '관련 항목이 없어서 저장하지 못했어요. 관련 항목을 먼저 확인해 주세요.' },
+    user: '관련 항목이 없어서 저장하지 못했어요. 관련 항목을 먼저 확인해 주세요.', cause: '관련 항목을 먼저 확인해 주세요.' },
   { match: /violates row-level security|42501/i,
-    user: '권한이 없어요. 본인의 항목만 수정·삭제할 수 있어요.' },
+    user: '권한이 없어요. 본인의 항목만 수정·삭제할 수 있어요.', cause: '본인의 항목만 수정·삭제할 수 있어요.' },
 
   // 파일/업로드
   { match: /too large|payload|413/i,
-    user: '파일이 너무 커요. 50MB 이하로 줄여 주세요.' },
+    user: '파일이 너무 커요. 50MB 이하로 줄여 주세요.', cause: '파일을 50MB 이하로 줄여 주세요.' },
   { match: /bucket not found|storage.*not found/i,
-    user: '저장소 설정에 문제가 있어요. 관리자에게 문의해 주세요.' },
+    user: '저장소 설정에 문제가 있어요. 관리자에게 문의해 주세요.', cause: '저장소 설정 문제라 관리자에게 문의해 주세요.' },
 
   // AI 특정
   { match: /no longer available|not found.*model|model.*404/i,
-    user: 'AI 모델 설정에 문제가 있어요. 관리자에게 문의해 주세요.' },
+    user: 'AI 모델 설정에 문제가 있어요. 관리자에게 문의해 주세요.', cause: 'AI 모델 설정 문제라 관리자에게 문의해 주세요.' },
   { match: /api key/i,
-    user: '서비스 설정에 문제가 있어요. 관리자에게 문의해 주세요.' },
+    user: '서비스 설정에 문제가 있어요. 관리자에게 문의해 주세요.', cause: SERVICE_CONFIG_CAUSE },
 ];
 
 // 매칭도 안 되고 우리 한국어 안내도 아닌 오류에 보여 주는 고정 문구 — 화면 문구 표준(docs/design/copy-standard.md §2)의
@@ -124,11 +142,11 @@ export function isUserFacingMessage(text) {
 export function friendlyError(err, { fallback } = {}) {
   const technical = typeof err === 'string' ? err : (err?.message || (err == null ? '' : String(err)));
   // 본문 없이 상태만 온 402(「API 요청 실패 (HTTP 402)」)도 서비스 설정이다.
-  if (err && typeof err === 'object' && err.status === 402) return { message: SERVICE_CONFIG_MESSAGE, retry: false, technical };
+  if (err && typeof err === 'object' && err.status === 402) return { message: SERVICE_CONFIG_MESSAGE, cause: SERVICE_CONFIG_CAUSE, retry: false, technical };
 
   for (const p of PATTERNS) {
     if (p.match.test(technical)) {
-      return { message: p.user, retry: !!p.retry, technical };
+      return { message: p.user, ...(p.cause ? { cause: p.cause } : {}), retry: !!p.retry, technical };
     }
   }
 
@@ -159,7 +177,9 @@ export const RETRY_LATER_MESSAGE = '잠시 후 다시 시도해 주세요.';
  * @param {Error|string} err
  */
 export function failureMessage(head, err) {
-  return `${head} ${friendlyToastMessage(err, RETRY_LATER_MESSAGE)}`;
+  // 정해 둔 안내가 두 문장이면 한 문장판(cause)을 붙인다 — 실패 문장 + 원인 두 문장이 세 문장이 되던 것(표준 §3, P5).
+  const { message, cause } = friendlyError(err, { fallback: RETRY_LATER_MESSAGE });
+  return `${head} ${cause || message}`;
 }
 
 // 관리자 역할 변경 실패(public.admin_set_user_role RPC 오류 코드 → 안내). 화면마다 짓지 않도록 여기 둔다.

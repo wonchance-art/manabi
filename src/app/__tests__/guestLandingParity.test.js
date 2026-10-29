@@ -60,19 +60,42 @@ describe('/home — 게스트가 와도 빈 벽이 아니다', () => {
   });
 });
 
-describe('/lessons — 효과 없던 revalidate가 되살아나지 않는다', () => {
+describe('/lessons — 캐시 선언은 실제로 효과가 있을 때만 단다(#1077 판정의 다음 판)', () => {
+  // 옛 판(2026-08-31): /lessons는 searchParams를 await해 동적(ƒ)이었고 응답은 no-store였다. revalidate 한 줄은 아무 효과가 없으면서
+  // CDN 캐시 용의자로 오해만 샀다(「옛 버전이 뜬다」 조사 오진). 그래서 「동적 라우트에 캐시 선언을 달지 않는다 · 판정 근거를 주석으로 남긴다」를 지켰다.
+  // 그 계약의 뜻은 둘이다 — ⑴ 선언과 실제가 어긋나지 않는다 ⑵ 다음 조사자가 무엇을 먼저 볼지 안다.
+  // 새 판(GUEST-STATIC-001 3단계, 2026-10-23 KST): 동적 재료(쿠키 세션 조회 · searchParams)를 걷어 내 ISR이 실제로 효과가 있다. 같은 뜻을 이렇게 지킨다.
   const lessons = read('src/app/(app)/lessons/page.jsx');
+  const shelf = read('src/components/books/LessonsShelf.jsx');
+  const langPage = read('src/app/(app)/lessons/lang/[lang]/page.jsx');
 
-  it('dynamic 라우트에 캐시 선언을 달지 않는다 — 그 한 줄이 조사를 오진으로 이끌었다', () => {
-    // 실측: searchParams를 await하므로 빌드 산출이 `ƒ /lessons`(Dynamic)이고 응답은
-    // no-store다. revalidate는 아무 효과가 없으면서 CDN 캐시 용의자로 오해만 샀다.
-    expect(codeOf(lessons), 'revalidate가 되살아나면 같은 오진이 반복된다')
-      .not.toMatch(/export const revalidate/);
-    expect(lessons).toContain('await searchParams');   // 동적 판정의 근거가 사라지면 전제가 바뀐다
+  it('⑴ 선언(revalidate 3600)과 빌드 산출 대조표가 같은 값이고, 대조가 CI에서 돈다 — 선언만 있고 효과가 없는 상태를 산출로 막는다', async () => {
+    const { STATIC_ROUTES } = await import('@/lib/staticRoutes');
+    expect(codeOf(lessons)).toMatch(/export const revalidate = 3600;/);
+    expect(codeOf(langPage)).toMatch(/export const revalidate = 3600;/);
+    expect(STATIC_ROUTES).toContainEqual({ route: '/lessons', revalidate: 3600 });
+    expect(STATIC_ROUTES).toContainEqual({ route: '/lessons/lang/[lang]', revalidate: 3600 });
+    expect(read('.github/workflows/ci.yml')).toContain('run: node scripts/check-static-routes.mjs');
   });
 
-  it('판정 근거를 주석으로 남긴다 — 세 번째 조사자가 또 캐시를 의심하지 않게', () => {
-    expect(lessons).toContain('no-store');
+  it('⑴ 동적 재료를 읽지 않는다 — 읽는 순간 선언이 다시 무효가 된다(옛 오진의 조건)', () => {
+    for (const [name, src] of [['page', lessons], ['LessonsShelf', shelf], ['lang page', langPage]]) {
+      expect(codeOf(src), name).not.toMatch(/searchParams|next\/headers|force-dynamic|createSupabaseServerClient/);
+    }
+    // 발행 판본은 쿠키 없는 공개 클라이언트로(발행 · 판본 표는 RLS using (true) — 누구에게나 같은 행)
+    expect(shelf).toContain('const client = createSupabasePublicClient();');
+    expect(shelf).toContain('publishedReadingWith(client, undefined, false, bookId)');
+    // 옛 ?lang 링크 · 단어 목록의 「← 교재」는 언어 판으로 — 첫 그림부터 그 언어가 골라져 있다(쿼리를 화면이 읽지 않는다)
+    expect(read('src/middleware.js')).toContain('? rewriteTo(request, `/lessons/lang/${lang}`) : NextResponse.next();');
+    expect(langPage).toContain('return <LessonsShelf lang={lang} />;');
+  });
+
+  it('⑵ 판정 근거를 주석으로 남긴다 — 「옛 버전」 보고가 오면 판 수명(1시간)과 발행 즉시 무효화를 먼저 본다', () => {
     expect(lessons).toContain('#1077');
+    expect(lessons).toContain('revalidatePath');
+    // 발행 · 복원하면 책장 판(기본 · 언어)을 바로 버린다 — 판 수명 1시간이 발행 반영을 늦추지 않게
+    const publish = read('src/app/api/admin/books/japanese-n5/route.js');
+    expect(publish).toContain("revalidatePath('/lessons');");
+    expect(publish).toContain("revalidatePath('/lessons/lang/[lang]', 'page');");
   });
 });

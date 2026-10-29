@@ -101,7 +101,8 @@ describe('메뉴 배선', () => {
     expect(intent).toEqual(['/home', '/conversation/new', '/discover']);
     for (const item of MAIN_NAV) expect(item.prefetch, item.href).toBe(false);
     // 받을 것이 있어야 의미가 있다 — 대기 화면(loading.jsx)이 있거나(골격까지), 정적 화면이라 auto가 화면을 통째로 받거나.
-    for (const route of ['home', 'discover']) expect(fs.existsSync(`src/app/(app)/${route}/loading.jsx`)).toBe(true);
+    // 배움은 판마다 대기 화면이 있다(GUEST-STATIC-001 4단계 — 손님 (guest) · 로그인 member, 둘 다 ISR이라 auto가 화면을 통째로 받는다).
+    for (const f of ['home/(guest)/loading.jsx', 'home/member/loading.jsx', 'discover/loading.jsx']) expect(fs.existsSync(`src/app/(app)/${f}`), f).toBe(true);
   });
 
   it('대화(CONV-INTENT-001)는 대기 화면 없이 정적 화면이라서 의도 prefetch가 이득이다 — 동적으로 바뀌면 이 근거가 사라진다', () => {

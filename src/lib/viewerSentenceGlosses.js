@@ -7,7 +7,7 @@
 import { tokenDictKeyOf } from './tokenDictPrefetch.js';
 import { composeRangeText } from './useTokenRangeSelect.js';
 import { cleanLineText } from './sentenceNav.js';
-import { locateLineTokens, clipSentenceToBudget } from './viewerSentenceLine.js';
+import { VIEWER_MESSAGES, VIEWER_MESSAGE_LOCALES } from './viewerMessages.js';
 
 // 드래그 단어 목록과 같은 기호 판정(ViewerPage runSelectedSentence) — 글자 없는 토큰은 뜻 목록에 넣지 않는다.
 const PUNCT_ONLY = /^[\s。、！？!?,.:;""''（）()「」『』【】…·\-/]+$/u;
@@ -19,14 +19,16 @@ const PUNCT_ONLY = /^[\s。、！？!?,.:;""''（）()「」『』【】…·\-/
  * 읽기: 중국어 = 토큰 병음의 음절 공백을 뺀 표기(합친 이합사는 조각 병음이라 비운다), 일본어 = 표면과 다른 요미.
  * @param {Record<string, object>} dictionary processed_json.dictionary
  * @param {string[]} tokenIds 이 문장의 토큰 id(본문 순서)
- * @returns {Array<{key:string, text:string, reading:string, meaning:string}>}
+ * tokenId = 그 어휘가 처음 나온 토큰(단어 ☆ 담기 · 문맥 출처가 이 자리를 쓴다).
+ * @returns {Array<{key:string, text:string, reading:string, meaning:string, tokenId:string}>}
  */
 export function sentenceWordGlosses(dictionary, tokenIds, { language } = {}) {
   const out = [];
   const seen = new Set();
   for (const id of tokenIds || []) {
     const token = dictionary?.[id];
-    if (!token || token.pos === '개행' || token.pos === '기호') continue;
+    // 조사(的 · 了 · を)는 단어 줄에 두지 않는다 — 문장 속 쓰임은 패턴 카드가 말한다(목업 U 4판 「조사 · 문장부호 빼기」).
+    if (!token || token.pos === '개행' || token.pos === '기호' || token.pos === '조사') continue;
     const surface = String(token.text || '').trim();
     if (!surface || PUNCT_ONLY.test(surface)) continue;
     const meaning = String(token.meaning || '').trim();
@@ -39,7 +41,7 @@ export function sentenceWordGlosses(dictionary, tokenIds, { language } = {}) {
     let reading = '';
     if (language === 'Chinese' && !merged) reading = String(token.furigana || '').replace(/\s+/gu, '');
     else if (language === 'Japanese' && token.furigana && token.furigana !== surface) reading = String(token.furigana);
-    out.push({ key, text, reading, meaning });
+    out.push({ key, text, reading, meaning, tokenId: id });
   }
   return out;
 }
@@ -49,17 +51,21 @@ export function sentenceWordGlosses(dictionary, tokenIds, { language } = {}) {
  * ① 드래그 범위가 있고 그 합성 텍스트가 탭 문장과 같으면 그 범위 ② 아니면 탭 문장의 각 줄과 (막대·카드와 같은 정리로)
  * 같은 원문 줄의 토큰. 못 찾은 줄(부분 문자열 등)은 건너뛴다 — 칸이 비면 그리지 않는다.
  * @param {{text:string, rawLines?:string[], lineTokens?:Map<number, Array<{id:string}>>, sequence?:string[],
- *   dictionary?:object, range?:{start:number,end:number}|null}} input
+ *   dictionary?:object, range?:{start:number,end:number}|null, sentences?:Array<{key:string,text:string,tokenIds:string[]}>|null}} input
  * @returns {string[]}
  */
-export function sentencePanelTokenIds({ text, rawLines = [], lineTokens, sequence, dictionary, range = null } = {}) {
+export function sentencePanelTokenIds({ text, rawLines = [], lineTokens, sequence, dictionary, range = null, sentences = null } = {}) {
   if (!text) return [];
   if (range && Array.isArray(sequence) && composeRangeText(sequence, dictionary, range.start, range.end).trim() === text) {
     return sequence.slice(range.start, range.end + 1);
   }
   const ids = [];
   const used = new Set();
+  const usedSentences = new Set();
   for (const segment of String(text).split('\n').map((s) => s.trim()).filter(Boolean)) {
+    // 마침표까지 한 문장(지정 · 카드 [문장] 탭)은 그 문장 토큰만 — 줄 전체가 아니다.
+    const sentence = (sentences || []).find((s) => !usedSentences.has(s.key) && s.text === segment);
+    if (sentence) { usedSentences.add(sentence.key); ids.push(...sentence.tokenIds); continue; }
     const line = rawLines.findIndex((raw, i) => !used.has(i) && cleanLineText(raw) === segment);
     if (line < 0) continue;
     used.add(line);
@@ -69,26 +75,29 @@ export function sentencePanelTokenIds({ text, rawLines = [], lineTokens, sequenc
 }
 
 /**
- * 원문 줄 + 누른 자리 — 줄 전체(자르지 않음)에서 누른 토큰 위치를 토큰 순서로 찾아 칠한다(같은 단어가 여러 번 나와도
- * 누른 곳 하나). 3줄 예산을 넘으면 AE-R1 문장 줄과 같은 예산 함수로 단어 앞뒤만 남긴다(설계서 §3.1·§9.2).
- * 누른 토큰이 없거나 못 찾으면 줄 전체를 칠 없이 그대로(막대·드래그로 연 경우).
- * @returns {{before:string, term:string, after:string}}
+ * 번역 결과 → 번역 줄과 회색 줄(목업 U 4판: 번역 16px, 말투 · 교재 표시는 그 아래 13px 회색 한 덩이. 맥락은 그리지 않는다).
+ * 제목 줄(**번역** · **맥락** …)은 그리지 않는다 — 위치와 크기가 이미 구분한다. 굵게 표시는 걷어 낸다.
+ * @returns {{translation:string[], notes:string[]}}
  */
-export function sentencePanelOriginal({ text, tokens = [], tokenId = null } = {}) {
-  const s = String(text ?? '');
-  const index = tokenId ? tokens.findIndex((t) => t.id === tokenId) : -1;
-  const at = index >= 0 ? locateLineTokens(s, tokens)[index] : null;
-  if (!at) return { before: s, term: '', after: '' };
-  const { before, term, after } = clipSentenceToBudget({ before: s.slice(0, at.start), term: s.slice(at.start, at.end), after: s.slice(at.end) });
-  return { before, term, after };
-}
+// 설명 언어별 「맥락」 제목(중국어 설명은 formatViewerExplanation이 语境 · 語境으로 단다).
+const CONTEXT_HEADINGS = new Set(VIEWER_MESSAGE_LOCALES.map((locale) => VIEWER_MESSAGES[locale]['맥락']));
 
-/**
- * 문형 칸 — 문형 스캔(visibleScan.hits) 중 이 문장 토큰에 걸린 것, 본문 순서. 문법 표시를 끄면 스캔이 없어 빈 목록.
- * @returns {Array<object>} hits 원소 그대로(PatternCard가 받는 모양)
- */
-export function sentencePatternHits(scan, tokenIds) {
-  if (!scan?.hits?.length || !tokenIds?.length) return [];
-  const ids = new Set(tokenIds);
-  return scan.hits.filter((hit) => (hit.tokenIds || []).some((id) => ids.has(id)));
+export function sentenceTranslationParts(text) {
+  const sections = [];
+  let current = null;
+  for (const raw of String(text || '').split('\n')) {
+    const heading = /^\s*\*\*(.+?)\*\*\s*$/u.exec(raw);
+    if (heading) { current = { name: heading[1].trim(), lines: [] }; sections.push(current); continue; }
+    if (!current) { current = { lines: [] }; sections.push(current); }
+    const line = raw.replace(/\*\*/gu, '').trim();
+    if (line && line !== '-') current.lines.push(line);
+  }
+  // 맥락(배경 설명) 줄은 그리지 않는다(오너 10-24 「… 장면이에요 문구 제거」) — 캐시에 남은 옛 결과도 같다.
+  const filled = sections.filter((section) => section.lines.length && !CONTEXT_HEADINGS.has(section.name));
+  const first = filled[0]?.lines || [];
+  const book = first.filter((line) => line.startsWith('📘'));
+  return {
+    translation: first.filter((line) => !line.startsWith('📘')),
+    notes: [...filled.slice(1).flatMap((section) => section.lines), ...book],
+  };
 }

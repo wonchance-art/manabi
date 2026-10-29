@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { applyFsrsRequest, readFsrsStatus, parseFsrsRequest, fsrsError } from '../fsrsLearning.js';
+import { applyFsrsRequest, readFsrsStatus, parseFsrsRequest, fsrsError, resetFsrsCapabilityCache, FSRS_CAPABILITY_TTL_MS } from '../fsrsLearning.js';
 import { introduceFsrsCard, learningDay } from '../../fsrsScheduler.js';
 
 const owner = '10000000-0000-0000-0000-000000000001';
@@ -17,6 +17,7 @@ function request(action, extra = {}, now = instant(30)) {
 }
 
 beforeEach(() => {
+  resetFsrsCapabilityCache();
   enabled = true; applyError = null; operations = new Map(); databaseAt = instant(30); policyLimit = 15; policyVersion = 'anki-seconds-v1';
   stored = { cardId: id, userId: owner, card: introduceFsrsCard(introducedAt), attempt: null,
     enrolled: true, excluded: false, eligible: true, firstQuestionAt: null };
@@ -58,14 +59,14 @@ describe('새 FSRS 서버 경계', () => {
     expect(status).toMatchObject({ enabled: false, registryAvailable: true, cards: [{ cardId: id, enrolled: true, excluded: true, eligible: false }] });
     await expect(request('question')).rejects.toMatchObject({ status: 503 });
     expect(serviceClient.rpc.mock.calls.filter(([name]) => name === 'fsrs_apply_learning_operation')).toHaveLength(0);
-    authClient.rpc.mockResolvedValue({ data: { version: 2, enabled: true, policyVersion: 'anki-seconds-v1' } });
+    authClient.rpc.mockResolvedValue({ data: { version: 2, enabled: true, policyVersion: 'anki-seconds-v1' } }); resetFsrsCapabilityCache(); // 능력 15초 공유(FSRS-CAPABILITY-CACHE-001)가 지난 것과 같다
     await expect(request('question')).rejects.toMatchObject({ status: 503 });
   });
 
   it('등록 목록/능력 읽기 실패를 빈 목록·기존 저장 허용으로 바꾸지 않는다', async () => {
     serviceClient.rpc.mockResolvedValue({ error: { code: 'PGRST202', message: 'private SQL detail' } });
     await expect(readFsrsStatus({ authClient, serviceClient, userId: owner })).rejects.toMatchObject({ code: 'fsrs_storage_unavailable' });
-    authClient.rpc.mockRejectedValue(new Error('private auth token'));
+    authClient.rpc.mockRejectedValue(new Error('private auth token')); resetFsrsCapabilityCache(); // 능력 15초 공유(FSRS-CAPABILITY-CACHE-001)가 지난 것과 같다
     await expect(request('question')).rejects.toMatchObject({ code: 'fsrs_storage_unavailable' });
   });
 
@@ -75,7 +76,7 @@ describe('새 FSRS 서버 경계', () => {
     expect(failed).toMatchObject({ code: 'fsrs_storage_unavailable', status: 503,
       detail: 'fsrs_list_states: 57014 canceling statement due to statement timeout' });
     expect(fsrsError(failed).body).toEqual({ ok: false, code: 'fsrs_storage_unavailable' });
-    authClient.rpc.mockRejectedValue(new TypeError('fetch failed'));
+    authClient.rpc.mockRejectedValue(new TypeError('fetch failed')); resetFsrsCapabilityCache(); // 능력 15초 공유(FSRS-CAPABILITY-CACHE-001)가 지난 것과 같다
     await expect(readFsrsStatus({ authClient, serviceClient, userId: owner }))
       .rejects.toMatchObject({ detail: 'fsrs_capabilities threw: TypeError fetch failed' });
   });
@@ -105,7 +106,7 @@ describe('새 FSRS 서버 경계', () => {
   });
 
   it('학습 단계 정책은 서버가 알린 값을 따른다 — anki-v2 등록 1분 · 예전 카드는 다음 채점에 같은 단계로 넘어감 · 모르는 정책은 거절(R1-B-2)', async () => {
-    policyVersion = 'anki-v2';
+    policyVersion = 'anki-v2'; resetFsrsCapabilityCache(); // 능력 15초 공유(FSRS-CAPABILITY-CACHE-001)가 지난 것과 같다
     // 예전 정책(30초) New 카드: 그대로 묻고, 채점 결과부터 새 정책 단계(1분 · 10분)를 쓴다.
     const question = await request('question');
     expect(question.previews[1].due).toBe(instant(90));
@@ -115,7 +116,7 @@ describe('새 FSRS 서버 경계', () => {
     stored = null;
     const enrolled = await request('enroll', {}, instant(100));
     expect(enrolled.card).toMatchObject({ policyVersion: 'anki-v2', state: 'New', due: instant(160) });
-    policyVersion = 'future-policy';
+    policyVersion = 'future-policy'; resetFsrsCapabilityCache(); // 능력 15초 공유(FSRS-CAPABILITY-CACHE-001)가 지난 것과 같다
     await expect(request('question', {}, instant(200))).rejects.toMatchObject({ code: 'fsrs_storage_unavailable' });
   });
 
@@ -271,5 +272,138 @@ describe('새 FSRS 서버 경계', () => {
   it('SQL·토큰·학습 내용이 오류 응답에 노출되지 않는다', () => {
     expect(fsrsError({ message: 'secret and private meaning', details: 'owner-email', status: 400 })).toEqual({ status: 503, body: { ok: false, code: 'fsrs_storage_unavailable' } });
     expect(() => parseFsrsRequest({ action: 'unknown' }, owner)).toThrow('fsrs_invalid_request');
+  });
+});
+
+describe('FSRS-APPLY-PARALLEL-001 — 반영 전 읽기 넷은 서로 기다리지 않고, 오류 판정 순서는 순차일 때 그대로', () => {
+  it('능력 응답 전에 입장 · 연산 · 상태 읽기가 이미 나간다(반영은 판정 뒤에만)', async () => {
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    const original = authClient.rpc;
+    authClient.rpc = vi.fn(async (...args) => { await gate; return original(...args); });
+    const pending = request('question');
+    await new Promise(resolve => setTimeout(resolve, 0));
+    const before = serviceClient.rpc.mock.calls.map(([name]) => name);
+    expect(before).toEqual(expect.arrayContaining(['fsrs_read_operation', 'fsrs_read_state']));
+    expect(before).not.toContain('fsrs_apply_learning_operation');
+    release();
+    const body = await pending;
+    expect(body.ok).toBe(true);
+    expect(serviceClient.rpc.mock.calls.map(([name]) => name)).toContain('fsrs_apply_learning_operation');
+  });
+  it('능력이 꺼져 있으면 다른 읽기가 실패해도 fsrs_storage_unavailable(순차일 때와 같은 첫 판정), 반영 없음', async () => {
+    enabled = false;
+    const original = serviceClient.rpc;
+    serviceClient.rpc = vi.fn(async (name, args) => (name === 'fsrs_read_state' ? { error: { message: 'boom' } } : original(name, args)));
+    await expect(request('question')).rejects.toMatchObject({ code: 'fsrs_storage_unavailable' });
+    expect(serviceClient.rpc.mock.calls.map(([name]) => name)).not.toContain('fsrs_apply_learning_operation');
+  });
+  it('입장 상태 실패가 상태 읽기 실패보다 먼저 판정된다', async () => {
+    const original = serviceClient.rpc;
+    serviceClient.rpc = vi.fn(async (name, args) => {
+      if (name === 'learning_admission_status') return { error: { code: 'XX000', message: 'admission down' } };
+      if (name === 'fsrs_read_state') return { error: { message: 'state down' } };
+      return original(name, args);
+    });
+    const error = await request('question').catch(e => e);
+    // 입장 상태 오류(learningAdmission의 reject — fsrs_admission_unavailable 503, detail에 RPC 이름)가 먼저다. 상태 읽기 오류가 아니다.
+    expect(error).toMatchObject({ code: 'fsrs_admission_unavailable', status: 503 });
+    expect(String(error.detail)).toContain('learning_admission_status');
+    expect(serviceClient.rpc.mock.calls.map(([name]) => name)).not.toContain('fsrs_apply_learning_operation');
+  });
+});
+
+describe('FSRS-ADMISSION-REREAD-001 — 반영 뒤 입장 재조회는 첫 문제(question)만', () => {
+  const admissionReads = () => serviceClient.rpc.mock.calls.filter(([name]) => name === 'learning_admission_status').length;
+  it('question은 반영 뒤 다시 읽어 소모된 새 단어 한도(used 1)를 돌려준다', async () => {
+    const response = await request('question');
+    expect(admissionReads()).toBe(2);
+    expect(response.admission).toMatchObject({ used: 1, remaining: 14 });
+  });
+  it('보이기 · 채점은 반영 전에 읽은 입장 상태를 그대로 돌려준다(입장 읽기 한 번, 값은 재조회와 같다)', async () => {
+    await request('question');
+    serviceClient.rpc.mockClear();
+    const revealed = await request('reveal', { attemptId: 'question' }, instant(40));
+    expect(admissionReads()).toBe(1);
+    expect(revealed.admission).toMatchObject({ used: 1, remaining: 14, installed: true });
+    serviceClient.rpc.mockClear();
+    const graded = await request('grade', { attemptId: 'question', rating: 3 }, instant(50));
+    expect(admissionReads()).toBe(1);
+    expect(graded.admission).toMatchObject({ used: 1, remaining: 14 });
+  });
+});
+
+describe('FSRS-ADMISSION-QUOTA-001 — 반영 응답의 입장 상태(quota)를 쓰고, 보이기 · 채점은 반영 전 입장을 읽지 않는다', () => {
+  const admissionReads = () => serviceClient.rpc.mock.calls.filter(([name]) => name === 'learning_admission_status').length;
+  // 운영 반영 함수처럼 응답에 같은 트랜잭션의 입장 상태(admission_status)를 붙인다.
+  const withQuota = (alter = q => q) => {
+    const original = serviceClient.rpc.getMockImplementation();
+    serviceClient.rpc.mockImplementation(async (name, args) => {
+      const response = await original(name, args);
+      if (name !== 'fsrs_apply_learning_operation' || response.error) return response;
+      const quota = (await original('learning_admission_status', { p_actor: owner })).data;
+      return { data: { ...response.data, quota: alter({ ...quota, policyRevision: 0 }) } };
+    });
+  };
+  it('question은 반영 전에 한 번만 읽고(정책 대조), 응답은 반영 함수가 붙인 반영 뒤 상태 — 다시 읽지 않는다', async () => {
+    withQuota();
+    const response = await request('question');
+    expect(admissionReads()).toBe(1);
+    expect(response.admission).toMatchObject({ used: 1, remaining: 14 });
+  });
+  it('보이기 · 채점은 입장 상태를 한 번도 읽지 않고 반영 응답의 것을 돌려준다', async () => {
+    withQuota();
+    await request('question');
+    serviceClient.rpc.mockClear();
+    const revealed = await request('reveal', { attemptId: 'question' }, instant(40));
+    const graded = await request('grade', { attemptId: 'question', rating: 3 }, instant(50));
+    expect(admissionReads()).toBe(0);
+    expect(revealed.admission).toMatchObject({ used: 1, remaining: 14, installed: true });
+    expect(graded.admission).toMatchObject({ used: 1, remaining: 14 });
+  });
+  it('quota 모양이 다르거나(다른 계정 · FSRS 켜짐 불일치) 없으면 지금처럼 읽는다', async () => {
+    withQuota(q => ({ ...q, actorId: stranger }));
+    await request('question');
+    expect(admissionReads()).toBe(2);
+    serviceClient.rpc.mockClear();
+    withQuota(q => ({ ...q, fsrsEnabled: false }));
+    const revealed = await request('reveal', { attemptId: 'question' }, instant(40));
+    expect(admissionReads()).toBe(1);
+    expect(revealed.admission).toMatchObject({ fsrsEnabled: true, installed: true });
+  });
+  it('보이기의 무결성 실패는 반영 함수가 DB에서 거절한다 — 입장을 읽지 않아도 성공으로 바꾸지 않는다', async () => {
+    await request('question');
+    applyError = { code: '55000', message: 'learning_admission_unavailable' };
+    await expect(request('reveal', { attemptId: 'question' }, instant(40))).rejects.toMatchObject({ code: 'fsrs_storage_unavailable', status: 503 });
+  });
+});
+
+describe('FSRS-CAPABILITY-CACHE-001 — 능력(전역 설정)은 15초 나눠 쓰고, 꺼짐은 DB가 최종 거절', () => {
+  const capabilityReads = () => authClient.rpc.mock.calls.filter(([name]) => name === 'fsrs_capabilities').length;
+  it('단어 한 장(문제 · 보이기 · 채점)에 능력 읽기는 한 번 — 15초가 지나면 다시 읽는다', async () => {
+    const t0 = Date.now();
+    const now = vi.spyOn(Date, 'now').mockReturnValue(t0);
+    try {
+      await request('question');
+      await request('reveal', { attemptId: 'question' }, instant(40));
+      await request('grade', { attemptId: 'question', rating: 3 }, instant(50));
+      expect(capabilityReads()).toBe(1);
+      now.mockReturnValue(t0 + FSRS_CAPABILITY_TTL_MS);
+      await readFsrsStatus({ authClient, serviceClient, userId: owner, now: instant(60) });
+      expect(capabilityReads()).toBe(2);
+    } finally { now.mockRestore(); }
+  });
+  it('실패한 능력 읽기는 담지 않는다 — 다음 요청이 다시 읽는다', async () => {
+    authClient.rpc.mockRejectedValueOnce(new TypeError('fetch failed'));
+    await expect(request('question')).rejects.toMatchObject({ code: 'fsrs_storage_unavailable' });
+    await expect(request('question')).resolves.toMatchObject({ ok: true });
+    expect(capabilityReads()).toBe(2);
+  });
+  it('담아 둔 동안 FSRS가 꺼지면 반영 함수가 DB에서 거절한다(fsrs_storage_disabled → 503) — 성공으로 바꾸지 않는다', async () => {
+    await request('question');
+    enabled = false;
+    applyError = { code: '55000', message: 'fsrs_storage_disabled' };
+    await expect(request('reveal', { attemptId: 'question' }, instant(40))).rejects.toMatchObject({ code: 'fsrs_storage_unavailable', status: 503 });
+    expect(capabilityReads()).toBe(1);
   });
 });

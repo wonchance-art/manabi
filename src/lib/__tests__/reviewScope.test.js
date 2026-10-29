@@ -173,12 +173,12 @@ describe('호출 지점 — 개수는 countReviewScope 하나, 시작은 같은 
   const bar = read('src/components/vocab/ReviewScopeBar.jsx');
   it('복습방 숫자 · 언어 칩 · 시트 숫자가 countReviewScope에서 나온다', () => {
     expect(page.match(/countReviewScope\(/g)).toHaveLength(1);
-    expect(page).toContain('const scopeCount = useMemo(() => (admission.quota && learningAvailable ? countFor(scope) : null)');
+    expect(page).toContain('const scopeCount = useRoomMemo(inSession, () => (admission.quota && learningAvailable ? countFor(scope) : null)');
     expect(page).toContain('byLang={session.byLang} countFor={countFor}');
-    expect(page).toContain('<strong className="vocab-hero__num">{session.total}</strong>');
+    expect(page).toContain(`<strong className="vocab-hero__num">{session.total.toLocaleString('ko-KR')}</strong>`);
     // 세션 길이 칩(R1-B-1): 버튼 숫자 = 시작하는 줄 길이 = 같은 계산의 queue를 앞에서 자른 길이.
     expect(page).toContain('const sessionCards = sliceSession(session.queue.items, activeLength);');
-    expect(page).toContain('`표현 ${sessionCards.length}개 복습 →`');
+    expect(page).toContain("`표현 ${sessionCards.length.toLocaleString('ko-KR')}개 복습 →`");
     expect(bar).not.toContain('countReviewScope(');
     expect(bar).not.toMatch(/isVocabularyReviewDue|vocabularyRetrievability/);
   });
@@ -261,7 +261,7 @@ describe('R1-B-1 줄 규칙 — countReviewScope가 줄과 개수를 함께 낸�
   const zh = { lang: 'Chinese', level: null, source: null, state: 'due' };
   const reviewedFsrs = (daysAgo, rating = 3) => scheduleFsrsReview(introduceFsrsCard(NOW - daysAgo * DAY), rating, NOW - daysAgo * DAY + 60_000).card;
 
-  it('두 엔진이 한 줄 — 기억 확률이 낮은 순, 새 표현은 복습 3장마다, 엔진마다 원래 저장 경로(engine 표시)', () => {
+  it('두 엔진이 한 줄 — 기억 확률이 낮은 순, 새 표현은 복습 사이에 고르게(Anki 비율), 엔진마다 원래 저장 경로(engine 표시)', () => {
     const rows = [
       legacyRow('L1', { interval: 2, last_reviewed_at: iso(NOW - 40 * DAY) }),   // 아주 흐림
       legacyRow('L2', { interval: 50, last_reviewed_at: iso(NOW - 3 * DAY) }),   // 선명
@@ -274,8 +274,9 @@ describe('R1-B-1 줄 규칙 — countReviewScope가 줄과 개수를 함께 낸�
     const items = count.queue.items;
     expect(count.total).toBe(items.length);
     expect(count).toMatchObject({ due: 4, newAllowed: 2, engine: 'mixed' });
-    expect(items.slice(0, 3).every(item => !item.isNew)).toBe(true);
-    expect(items[3]).toMatchObject({ id: 'N1', engine: 'legacy', isNew: true, introduced: false });
+    // 학습 단계 F1이 맨 앞, 남은 복습 3 · 새 2를 Anki 비율로 → R N R N R.
+    expect(items.map(item => item.isNew)).toEqual([false, false, true, false, true, false]);
+    expect(items[2]).toMatchObject({ id: 'N1', engine: 'legacy', isNew: true, introduced: false });
     // F1은 첫 답 「알맞음」으로 학습 단계(10분)에 남은 카드 — 짧은 단계가 밀리지 않게 맨 앞, 그다음 기억 확률이 낮은 순.
     expect(items[0]).toMatchObject({ id: 'F1', engine: 'fsrs' });
     expect(items[1].id).toBe('L1');
@@ -345,5 +346,36 @@ describe('R1-B-1 줄 규칙 — countReviewScope가 줄과 개수를 함께 낸�
     const fragile = { ...zh, state: 'fragile' };
     expect(countReviewScope({ snapshot: snap, quota: quota(), scope: fragile, now: NOW }).queue.ids).toEqual([]);
     expect(countReviewScope({ snapshot: snap, quota: quota(), scope: fragile, now: NOW, fragileIds: ['sharp', 'notdue'] }).queue.ids).toEqual(['sharp']);
+  });
+});
+
+describe('VOCAB-SCOPE-COUNT-001 — 언어 칩 · 밀린 복습은 개수만 세도 줄을 짠 값과 같다', () => {
+  const langScope = lang => ({ lang, level: null, source: null, state: 'due' });
+  const inactive = { active: false, remaining: 0, admittedLegacyCardIds: [] };
+  it('byLang[언어] = 그 언어만 고른 범위의 줄 길이 · backlog.overdue = 한도 닫고 센 기한 복습 — 한도 · 엔진 · 밀린 복습 조합마다', () => {
+    const cases = [];
+    for (const fsrs of [true, false]) for (const enabled of [true, false]) for (const q of [quota(0), quota(1), quota(10), inactive,
+      { active: true, remaining: 10, admittedLegacyCardIds: ['c2', 'j2'] }]) cases.push({ snap: snapshot({ fsrs, enabled }), q });
+    for (const { snap, q } of cases) for (const lang of ['Chinese', 'Japanese', 'French']) {
+      const count = countReviewScope({ snapshot: snap, quota: q, scope: langScope(lang), now: NOW });
+      expect(count.byLang[lang]).toBe(count.total);
+      expect(count.byLang[lang]).toBe(count.queue.items.length);
+      expect(count.backlog.overdue).toBe(countReviewScope({ snapshot: snap, quota: inactive, scope: langScope(lang), now: NOW }).due);
+    }
+  });
+
+  it('뜻을 고치면(같은 표현 객체라도) 다시 본다 · 새 projections면 밀린 복습 기준을 새로 잰다', () => {
+    const snap = snapshot();
+    const zh = langScope('Chinese');
+    const before = countReviewScope({ snapshot: snap, quota: quota(), scope: zh, now: NOW });
+    const word = snap.projections.find(p => p.vocabulary.id === 'c1').vocabulary;
+    const meaning = word.meaning;
+    word.meaning = '   ';
+    expect(countReviewScope({ snapshot: snap, quota: quota(), scope: zh, now: NOW }).noMeaning).toBe(before.noMeaning + 1);
+    word.meaning = meaning;
+    expect(countReviewScope({ snapshot: snap, quota: quota(), scope: zh, now: NOW }).noMeaning).toBe(before.noMeaning);
+    // 같은 projections · 다른 시각이면 기준을 다시 잰다(14일 창이 움직인다)
+    const later = countReviewScope({ snapshot: snap, quota: quota(), scope: zh, now: NOW + 30 * DAY });
+    expect(later.backlog.baseline).toBe(countReviewScope({ snapshot: { ...snap, projections: snap.projections.slice() }, quota: quota(), scope: zh, now: NOW + 30 * DAY }).backlog.baseline);
   });
 });

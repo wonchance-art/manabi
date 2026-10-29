@@ -124,7 +124,7 @@ async function open(m,{width=390,height=844,own=true,saved=[],pendingAll=false,s
  await f.context.route('**/api/learning/vocabulary**',route=>{
   const url=new URL(route.request().url());
   if(route.request().method()!=='GET'||url.searchParams.get('view')!=='learning')return route.fallback();
-  return route.fulfill({contentType:'application/json',body:JSON.stringify(legacyLearningSnapshot({actorId:owner,rows:saved,fields:url.searchParams.get('fields')}))});
+  return route.fulfill({contentType:'application/json',body:JSON.stringify(legacyLearningSnapshot({actorId:owner,rows:saved,fields:url.searchParams.get('fields'),ids:url.searchParams.get('ids')}))});
  });
  f.rows.push({id:ID,user_id:owner,...(own?{owner_id:owner}:{}),title:'단어 경계 검수',raw_text:m.raw,source_type:'text',created_at:new Date().toISOString(),processed_json:structuredClone(m.json)});
  await f.page.goto(`/viewer/${ID}`,{waitUntil:'domcontentloaded',timeout:120000});
@@ -184,7 +184,7 @@ test('390 owner zh: 드래그 → [한 단어로 묶기] → 확인 줄(이 자�
   assert.equal(await merge.isEnabled(),true);
   const box=await merge.boundingBox();assert.ok(box.height>=44,`merge target ≥ 44px: ${box.height}`);
   // 자리: 문장 원문 줄 아래, 번역 위(목업)
-  const order=await f.page.evaluate(()=>{const p=[...document.querySelectorAll('#inspector-sentence')].find(e=>e.getClientRects().length);const y=s=>p.querySelector(s)?.getBoundingClientRect().top??null;return {orig:y('.pdf-context__original'),merge:y('.viewer-boundary-merge'),text:y('.pdf-context__text')};});
+  const order=await f.page.evaluate(()=>{const p=[...document.querySelectorAll('#inspector-sentence')].find(e=>e.getClientRects().length);const y=s=>p.querySelector(s)?.getBoundingClientRect().top??null;return {orig:y('.reader-sentence__original'),merge:y('.viewer-boundary-merge'),text:y('.reader-sentence__translation')};});
   if(order.orig!==null)assert.ok(order.orig<order.merge,'below the sentence');
   if(order.text!==null)assert.ok(order.merge<order.text,'above the translation');
   await shot(f,'boundary-merge-row-390');
@@ -338,7 +338,7 @@ test('진입점 0: 비소유자(드래그·⋯·카드) · 한국어 자료(소�
  const viewer=await open(mergedZh(),{own:false});
  try{
   await drag(viewer,'id_0_0','id_0_1');
-  await sentencePanel(viewer).locator('.pdf-context__text, .pdf-side__empty').first().waitFor();
+  await sentencePanel(viewer).locator('.reader-sentence__translation, .pdf-side__empty').first().waitFor();
   assert.equal(await viewer.page.getByRole('button',{name:'한 단어로 묶기'}).count(),0,'no merge for a non-owner');
   await closeSheet(viewer);
   await viewer.page.locator('[data-source-token="id_0_e2_seed0001"]').click();

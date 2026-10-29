@@ -85,7 +85,11 @@ describe('F R3 — 「안 읽은 것만」', () => {
 
   it('게스트에겐 칩이 없다 — 진도가 없어 항상 빈 결과가 되기 때문', () => {
     const chip = sliceBetween(source(), '안 읽은 것만', '</button>');
-    expect(source()).toMatch(/\{user && \([\s\S]{0,400}안 읽은 것만/);
+    // 칩은 로그인 사람 줄(signedInFilters)에만 있다. 확인 중에는 서버가 본 세션 쿠키(sessionHint === true)일 때만 미리 그린다
+    // (DISCOVER-CHIP-CLS-001) — 쿠키 없는 손님은 서버 그림부터 칩이 없다. 정렬 「내 수준 맞춤」도 같은 판정이다.
+    expect(source()).toContain('const signedInFilters = !!user || (authLoading && sessionHint === true);');
+    expect(source()).toMatch(/\{signedInFilters && \([\s\S]{0,400}안 읽은 것만/);
+    expect(source()).toContain('{signedInFilters && <option value="fit">내 수준 맞춤</option>}');
     expect(chip).toBeTruthy();
   });
 

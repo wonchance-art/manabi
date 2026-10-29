@@ -7,7 +7,7 @@ import { authEntryHref } from '@/lib/authRedirect';
 import { useAuth } from '@/lib/AuthContext';
 import SaveContextButton from '@/components/learning/SaveContextButton';
 import MaterialChapterLinks from '@/components/learning/MaterialChapterLinks';
-import { BOOK_ID, bookHref as textbookHref } from '@/lib/textbook/contract';
+import { BOOK_ID, bookHref as textbookHref, previewBookHref } from '@/lib/textbook/contract';
 import { bookReferenceHref, bookReviewHref } from '@/lib/bookReviewNavigation';
 import { readingDraftKey, readingUnit } from '@/lib/bookNavigation';
 import useReadingProgress from './useReadingProgress';
@@ -18,7 +18,7 @@ import { HASH_GATE, announceFragmentUrl, coverPage, hashGate, pageFromHash, reme
 import { BOOK_COVER_PLACE_KEY, bookCoverPlaceOf, lessonPage, withBookCoverPlace } from './bookEntryGate';
 import './reading-content.css';
 import useLibraryActivity from '@/components/library/useLibraryActivity';
-import {LibraryReturnLink} from '@/components/web/LibraryReturnLink';
+import {LibraryReturnLinkTo} from '@/components/web/LibraryReturnLink';
 import {safeLibraryReturn, libraryReaderHref} from '@/lib/libraryReturn';
 import { friendlyToastMessage } from '@/lib/errorMessage';
 import { loadUnit, prefetchUnit, rememberedUnit } from './unitMemory';
@@ -42,14 +42,21 @@ const openTocParts = node => [...(node?.querySelectorAll('.manabi-book-home deta
 
 // 본문 위치로 바로 열기 — 첫 쪽 판정 · 하드 로드 감춤 한 줄 · 본문 골격은 bookEntryGate · BookReaderSkeleton(BOOK-HASH-ENTRY-001 · BOOK-ENTRY-SKELETON-001).
 
-export default function BookReader({ book, sectionIndex, preview = false, reference = false, sessionHint = false }) {
+// 「돌아가기」 맥락(?returnTo)은 주소에서 읽는다 — 쿼리가 붙은 교재 화면(동적 갈래)이 이 부품을 쓴다.
+// 쿼리 없는 표지 판(ISR, GUEST-STATIC-001 4단계)은 BookReaderView를 returnTo 없이 직접 쓴다: 정적으로 굽는 화면이 useSearchParams를 부르면
+// 가까운 Suspense까지 서버 HTML이 비어(CSR bailout) 표지가 붙은 뒤에야 그려진다. 그 판은 middleware가 쿼리 없는 요청에만 고르므로 returnTo가 늘 없다.
+// 책 안 이동(go)은 주소의 returnTo를 그대로 옮겨 적으므로(window.location) 한 문서 안에서 맥락이 바뀌지 않는다.
+export default function BookReader(props) {
+  const params = useSearchParams();
+  return <BookReaderView {...props} returnTo={params.get('returnTo')} />;
+}
+
+export function BookReaderView({ book, sectionIndex, preview = false, reference = false, sessionHint = false, returnTo = null }) {
   const bookId = book.bookId || BOOK_ID;
   const level = book.level || 'N5';
   const bookHref = useCallback((edition, page = 'cover') => textbookHref(edition, page, bookId), [bookId]);
   const { user, loading: authLoading } = useAuth();
-  const params = useSearchParams();
-  const returnTo = params.get('returnTo');
-  const { progress, update, storageAvailable, hasProgress, ready } = useReadingProgress(book.edition);
+  const { progress, update, storageAvailable, hasProgress, ready } = useReadingProgress(book.edition, book.bookId || BOOK_ID);
   const content = useRef(null), root = useRef(null), toolbar = useRef(null), referenceMenu = useRef(null), dialog = useRef(null), dialogOrigin = useRef(null), pendingAnchor = useRef(null), pendingPosition = useRef(null);
   // 책 안 이동(목차 → 과 · 다음 과 · ← 책 목차 · 뒤로 · 앞으로)은 pathname이 같아 전역 되찾기(Layout · routeFocus)가 건너뛴다 —
   // 누른 링크가 새 쪽에서 사라지면 초점이 body로 떨어졌다(키보드 둘러보기 Preview 8d2b681 실측). 첫 진입(새로 열기)은 옮기지 않는다.
@@ -60,7 +67,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
   const [sections, setSections] = useState([]), [loading, setLoading] = useState(false), [error, setError] = useState('');
   const [focus, setFocus] = useState(false), [selection, setSelection] = useState(null), [expression, setExpression] = useState(''), [meaning, setMeaning] = useState('');
   const [examples, setExamples] = useState([]), [panel, setPanel] = useState('selection'), [query, setQuery] = useState(''), [searchCount, setSearchCount] = useState(0), [draftStatus, setDraftStatus] = useState('');
-  const unit = readingUnit(pageId, sectionIndex);
+  const unit = readingUnit(pageId, sectionIndex, bookId);
   // 표지 자리(BOOK-HOME-RESTORE-001)에 쓰는 값 — 전체 목차 펼침은 표지가 다시 붙어도(다른 화면에서 뒤로) 이어진다.
   const [tocAll, setTocAll] = useState(false), [tocOpen, setTocOpen] = useState(null);
   const unitRef = useRef(unit), tocAllRef = useRef(tocAll);
@@ -69,7 +76,9 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
   const pendingCover = useRef(null), coverHold = useRef(null);
   unitRef.current = unit; tocAllRef.current = tocAll;
   const lesson = book.lessons.find(item => item.id === unit);
-  useLibraryActivity({target_kind:'edition',target_id:book.edition,context:{bookId,page:active.startsWith(`${unit}-`)?active:pageId}},!reference&&!preview&&!loading&&!error&&!!lesson&&!!sections.length&&sections[0].unit===unit);
+  // 판본 읽기 기록의 context는 page 하나 — DB 트리거(validate_library_activity)가 판본에는 page만 받는다. bookId를 함께 보내 10-17(#1510)부터
+  // 교재 읽기 기록이 모두 400(22023 invalid_library_page)이었다(운영 edge 로그 2026-10-26 KST: 36번 중 34번). 책은 서재 RPC가 판본에서 급수로 내려 준다.
+  useLibraryActivity({target_kind:'edition',target_id:book.edition,context:{page:active.startsWith(`${unit}-`)?active:pageId}},!reference&&!preview&&!loading&&!error&&!!lesson&&!!sections.length&&sections[0].unit===unit);
   const unitSections = sectionIndex.filter(section => section.unit === unit);
   const draftKey = readingDraftKey(book.edition, user?.id);
   // Keep this object stable: React must not replace imperative answer fields and portal mounts on progress updates.
@@ -383,10 +392,10 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
 
   useEffect(() => {
     const search = query.trim().toLocaleLowerCase();
-    const cards = [...(content.current?.querySelectorAll('.lex-card,.kanji-card,.grammar-recall,.n4-reference > [data-search]') || [])];
+    const cards = [...(content.current?.querySelectorAll('.lex-card,.kanji-card,.grammar-recall,.n4-reference > [data-search],.n3-reference > [data-search]') || [])];
     cards.forEach(card => { card.hidden = !!search && !String(card.dataset.search || card.textContent).toLocaleLowerCase().includes(search); });
     setSearchCount(cards.filter(card => !card.hidden).length);
-    if (unit === 'reference') content.current?.querySelectorAll('article').forEach(article => { article.hidden = !!search && !article.querySelector('.lex-card:not([hidden]),.kanji-card:not([hidden]),.grammar-recall:not([hidden]),.n4-reference > [data-search]:not([hidden])'); });
+    if (unit === 'reference') content.current?.querySelectorAll('article').forEach(article => { article.hidden = !!search && !article.querySelector('.lex-card:not([hidden]),.kanji-card:not([hidden]),.grammar-recall:not([hidden]),.n4-reference > [data-search]:not([hidden]),.n3-reference > [data-search]:not([hidden])'); });
   }, [query, sections, unit]);
 
   const go = useCallback((id, originAnchor) => {
@@ -398,6 +407,8 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     const destination=new URL(bookHref(book.edition,id),window.location.origin);
     if(back)destination.searchParams.set('returnTo',safeLibraryReturn(back));
     if(reference)destination.searchParams.set('reference','1');
+    // 미리보기는 책 안 이동 뒤 새로고침도 동적 화면에 남는다(표식 — previewBookHref, GUEST-STATIC-001 5단계). 학습자 주소는 그대로.
+    if(preview)destination.searchParams.set('preview','1');
     // Return from a reading link to the exact card, including after a search.
     if (originAnchor && unit === 'reference') {
       const origin = new URL(window.location.href); origin.hash = originAnchor;
@@ -412,7 +423,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     focusAfterMove.current = true;
     setAnchorRequest(request => request + 1);
     if (!reference && /^u\d{2}/.test(id)) update({ page: id });
-  }, [book.edition, bookHref, unit, update, reference, rememberPosition]);
+  }, [book.edition, bookHref, unit, update, reference, preview, rememberPosition]);
 
   function interact(event) {
     const anchor = event.target.closest('a[href]');
@@ -448,7 +459,8 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
   function openPanel(next, origin) { dialogOrigin.current = origin || null; setPanel(next); dialog.current?.showModal(); }
   const readerHref = id => {
     const href = reference ? bookReferenceHref(bookHref(book.edition, id)) : bookHref(book.edition, id);
-    return returnTo ? libraryReaderHref(href, returnTo) : href;
+    const linked = returnTo ? libraryReaderHref(href, returnTo) : href;
+    return preview ? previewBookHref(linked) : linked;
   };
   const next = lesson && book.lessons.find(item => item.number === lesson.number + 1);
   // 다음 과 미리 받기(BOOKS-FLOW-002) — 과 끝 줄(「NN과로 →」)이 화면 가까이 오면 다음 과 본문을 받아 기억해 둔다. 「다음 과」를 누르면
@@ -465,15 +477,15 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     observer.observe(node);
     return () => observer.disconnect();
   }, [bookId, book.edition, nextUnit, preview, sections]); // sections: 과 끝 줄은 본문을 다 받은 뒤에 붙는다
-  const title = lesson ? lesson.title : ({ guide: level === 'N4' ? '문장을 이어 갈 준비' : '첫 문장 전에, 가볍게 준비', reference: level === 'N4' ? '단어·문형 찾아보기' : '단어·문형·한자 찾기', materials: '일본어로 넓히는 일상' }[unit] || '교재 위치를 찾지 못했어요');
+  const title = lesson ? lesson.title : ({ guide: level === 'N3' ? '상황과 생각을 전할 준비' : level === 'N4' ? '문장을 이어 갈 준비' : '첫 문장 전에, 가볍게 준비', reference: level !== 'N5' ? '단어·문형 찾아보기' : '단어·문형·한자 찾기', materials: '일본어로 넓히는 일상' }[unit] || '교재 위치를 찾지 못했어요');
   return <div ref={root} data-book-id={bookId} className={`book-reader${focus ? ' is-focused' : ''}`} onClick={interact}>
     <BookEditionFonts book={book} />
     {reference && <div className="manabi-preview-note" role="note"><strong>복습 원문 참고</strong><p>읽던 위치는 바뀌지 않아요. 확인 후 복습하던 탭으로 돌아가세요.</p><a data-reading-resume className="manabi-link" href={bookHref(book.edition, active || pageId)}>여기부터 이어읽기 →</a></div>}
     {preview && <p className="manabi-preview-note">관리자 미리보기 · 발행 전 원고예요.</p>}
     {unit === 'cover' && !entryDecided && <><script dangerouslySetInnerHTML={{ __html: HASH_GATE }} /><BookReaderSkeleton gated /></>}
     {/* 과를 받는 동안은 본문 첫 그림 골격(BOOK-ENTRY-SKELETON-001 부품 그대로) — 빈 본문 · 상태 줄 대신 같은 자리 모양을 둔다(BOOKS-FLOW-002). */}
-    {unit === 'cover' ? <BookHome book={book} preview={preview} progress={progress} hasProgress={hasProgress} ready={ready} showAll={tocAll} onShowAll={setTocAll} openParts={tocOpen} sessionHint={sessionHint} /> : loading ? <BookReaderSkeleton announce lesson={lessonPage(pageId)} level={level} /> : <div className="manabi-reader-page">
-      <div ref={toolbar} className="manabi-reader-toolbar"><LibraryReturnLink onlyWithContext/><a href={readerHref('cover')}>← 책 목차</a><span>일본어 · {level}{lesson ? ` / ${String(lesson.number).padStart(2, '0')}과` : ''}</span><div><Link prefetch={false} href={bookReviewHref(bookHref(book.edition, reference ? progress.page : active || pageId))}>담은 표현</Link><details ref={referenceMenu} className="manabi-reference-menu" onBlur={leaveReferenceMenu} onKeyDown={event => { if (event.key === 'Escape') { event.currentTarget.open = false; event.currentTarget.querySelector('summary').focus(); } }}><summary>참고 자료</summary><nav aria-label="교재 참고 자료"><a href={readerHref('reference-start')}>어휘·문형·한자</a>{lesson && <button type="button" onClick={event => { const menu = event.currentTarget.closest('details'); menu.open = false; openPanel('materials', menu.querySelector('summary')); }}>이 과의 연결 자료</button>}<Link prefetch={false} href={`/books/${bookId}/materials?edition=${book.edition}`}>{book.cultures?.length ? '문화 읽기' : '내 자료 연결'}</Link></nav></details><button type="button" aria-pressed={focus} onClick={() => setFocus(!focus)}>{focus ? '기본 보기' : '집중 읽기'}</button></div></div>
+    {unit === 'cover' ? <BookHome book={book} preview={preview} progress={progress} hasProgress={hasProgress} ready={ready} showAll={tocAll} onShowAll={setTocAll} openParts={tocOpen} sessionHint={sessionHint} returnTo={returnTo} /> : loading ? <BookReaderSkeleton announce lesson={lessonPage(pageId)} level={level} /> : <div className="manabi-reader-page">
+      <div ref={toolbar} className="manabi-reader-toolbar"><LibraryReturnLinkTo returnTo={returnTo} onlyWithContext/><a href={readerHref('cover')}>← 책 목차</a><span>일본어 · {level}{lesson ? ` / ${String(lesson.number).padStart(2, '0')}과` : ''}</span><div><Link prefetch={false} href={bookReviewHref(bookHref(book.edition, reference ? progress.page : active || pageId))}>담은 표현</Link><details ref={referenceMenu} className="manabi-reference-menu" onBlur={leaveReferenceMenu} onKeyDown={event => { if (event.key === 'Escape') { event.currentTarget.open = false; event.currentTarget.querySelector('summary').focus(); } }}><summary>참고 자료</summary><nav aria-label="교재 참고 자료"><a href={readerHref('reference-start')}>어휘·문형·한자</a>{lesson && <button type="button" onClick={event => { const menu = event.currentTarget.closest('details'); menu.open = false; openPanel('materials', menu.querySelector('summary')); }}>이 과의 연결 자료</button>}<Link prefetch={false} href={`/books/${bookId}/materials?edition=${book.edition}`}>{book.cultures?.length ? '문화 읽기' : '내 자료 연결'}</Link></nav></details><button type="button" aria-pressed={focus} onClick={() => setFocus(!focus)}>{focus ? '기본 보기' : '집중 읽기'}</button></div></div>
       <div className="manabi-reader-grid"><aside className="manabi-reader-outline"><p className="manabi-eyebrow">{lesson ? `${String(lesson.number).padStart(2, '0')}과 · 목차` : '목차'}</p><nav aria-label="과 안의 목차">{unitSections.map(section => <a key={section.id} href={readerHref(section.id)} aria-current={active === section.id ? 'location' : undefined}>{section.title}</a>)}</nav></aside>
         <div className="manabi-reader-main"><details className="manabi-mobile-toc"><summary>이 과의 목차</summary><nav aria-label="모바일 과 목차">{unitSections.map(section => <a key={section.id} href={readerHref(section.id)} onClick={event => event.currentTarget.closest('details').removeAttribute('open')}>{section.title}</a>)}</nav></details>
           <header className="manabi-chapter-opening"><div><p className="manabi-eyebrow">{lesson?.part || `JAPANESE · ${level}`}</p>{lesson?.subtitle && <p className="manabi-chapter-subtitle">{lesson.subtitle}</p>}<h1>{title}</h1>{lesson && <p className="manabi-chapter-goal">{lesson.goal}</p>}</div>{lesson && <span className="manabi-chapter-number" aria-hidden="true">{String(lesson.number).padStart(2, '0')}</span>}</header>

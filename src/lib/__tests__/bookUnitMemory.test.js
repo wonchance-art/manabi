@@ -97,7 +97,10 @@ describe('표지 담기 버튼 자리 — 로그인 확인 중 미리 잡기', (
       expect(src, page).toContain('const sessionHint = hasSupabaseSessionInJar(await cookies());');
       expect(src, page).toContain('sessionHint={sessionHint}');
     }
-    expect(reader).toContain('sessionHint={sessionHint} />');
+    expect(reader).toContain('sessionHint={sessionHint} returnTo={returnTo} />');
+    // 쿼리 없는 첫 화면 판(ISR — GUEST-STATIC-001 4단계)은 middleware가 같은 판정으로 고른 판(member)을 넘긴다 — 쿠키는 읽지 않는다.
+    expect(read('src/components/books/BookCoverStatic.jsx')).toContain('sessionHint={member}');
+    for (const book of ['n5', 'n4', 'n3']) expect(read(`src/app/(app)/books/japanese-${book}/cover/[hint]/page.jsx`)).toContain("member={hint === 'member'}");
   });
   it('쿠키가 있으면 확인 중(loading)에 자리를 잡고, 끝나면 버튼(또는 손님이면 접힘) — 쿠키 없는 손님은 자리 자체가 없다', () => {
     expect(home).toContain("sessionHint ? <div className=\"book-library-slot\" data-pending={authLoading ? '' : undefined}><LibrarySaveButton");

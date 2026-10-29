@@ -18,6 +18,7 @@ import { chromium } from 'playwright-core';
 import config from '../playwright.config.mjs';
 import { legacyLearningSnapshot, inactiveFsrsStatus, inactiveLearningAdmission } from './fixtures/learning-snapshot.mjs';
 import { BOUNDARY_ACTORS, BOUNDARY_MARKER, BOUNDARY_MATERIAL_ID } from './fixtures/account-boundary-actors.mjs';
+import { SUGGESTION_FIXTURE } from './fixtures/suggestion-fixture.mjs';
 
 const base = process.env.QA_BASE;
 assert.ok(base, 'QA_BASE must identify the integration owner\'s isolated app server');
@@ -71,8 +72,8 @@ let browser;
 before(async () => { browser = await chromium.launch(config.use.launchOptions); });
 after(async () => { await browser?.close(); });
 
-async function boundaryContext({ actor = 'A', width = 390, height = 844, expiresIn } = {}) {
-  const context = await browser.newContext({ baseURL: base, viewport: { width, height }, serviceWorkers: 'block', reducedMotion: 'reduce' });
+async function boundaryContext({ actor = 'A', width = 390, height = 844, expiresIn, engine = browser } = {}) {
+  const context = await engine.newContext({ baseURL: base, viewport: { width, height }, serviceWorkers: 'block', reducedMotion: 'reduce' });
   // dataOffline: Supabase(REST · Auth)만 끊는다 — 뷰어의 오프라인 폴백(기기 캐시)을 타는 조건. 앱 서버(RSC)는 그대로라 화면 이동은 된다.
   const stats = { refreshGrants: 0, deletes: 0, rsc: [], bodiesAfterWatch: [], reviewInserts: [], dataOffline: false };
   const json = (route, value, status = 200, headers = {}) => route.fulfill({ status, contentType: 'application/json', headers: { ...cors, ...headers }, body: JSON.stringify(value) });
@@ -128,7 +129,7 @@ async function boundaryContext({ actor = 'A', width = 390, height = 844, expires
   });
   await context.route('**/api/learning/vocabulary**', route => {
     const sub = actorSub(route.request());
-    return sub ? json(route, legacyLearningSnapshot({ actorId: sub, rows: [], fields: new URL(route.request().url()).searchParams.get('fields') })) : json(route, { ok: false, code: 'fsrs_auth_required' }, 401);
+    return sub ? json(route, legacyLearningSnapshot({ actorId: sub, rows: [], fields: new URL(route.request().url()).searchParams.get('fields'), ids: new URL(route.request().url()).searchParams.get('ids') })) : json(route, { ok: false, code: 'fsrs_auth_required' }, 401);
   });
   await context.route('**/api/learning/fsrs', route => { const sub = actorSub(route.request()); return sub ? json(route, inactiveFsrsStatus({ actorId: sub })) : json(route, { ok: false, code: 'fsrs_auth_required' }, 401); });
   await context.route('**/api/learning/admission', route => { const sub = actorSub(route.request()); return sub ? json(route, inactiveLearningAdmission({ actorId: sub })) : json(route, { ok: false, code: 'fsrs_auth_required' }, 401); });
@@ -484,6 +485,120 @@ test('⑧ A의 안 보낸 채점은 B 세션 요청에 실리지 않고, A 재�
     assert.equal(Date.parse(row.created_at), Date.parse(reviewedAt), '채점 시각 그대로');
     await page.waitForTimeout(500);
     assert.equal((await idbKeys(page, 'anatomy-offline-cache', 'outbox')).filter(r => r.owner === BOUNDARY_ACTORS.A).length, 0, '보낸 뒤 대기에서 빠진다');
+    assert.deepEqual(errors, []);
+  } finally { await context.close(); }
+});
+
+// ── ⑨ 문서 bfcache 복원(GUEST-STATIC-001 1단계, 2026-10-23 KST) ─────────────────────────────────────────────
+// ②③⑤의 뒤로 가기는 앱 안 이동(RSC 라우터 캐시)이다. 문서 단위 뒤로 가기는 브라우저가 얼려 둔 페이지(bfcache)를 그대로 되살린다.
+// Chrome은 no-store 문서만 「쿠키가 바뀌면 퇴출」한다 — 이미 정적인 화면(/profile · /japanese/vocab/n5, `public` 문서)은 그 안전장치가 없다.
+// 실측(가드 전 빌드): 다른 탭 로그인 · 앱 화면 이동은 SDK 탭 사이 알림이 얼어 있는 페이지를 퇴출시켰다(notRestoredReasons
+// broadcastchannel-message). 알림 없이 쿠키만 바뀌면(서버가 세션 쿠키를 지움 · 만료 등) 복원됐고, 쿠키가 지워진 갈래는 A 화면이 손님에게
+// 그대로 남았다(/profile · /japanese/vocab/n5 둘 다). 그래서 이 장면은 알림이 없는 길을 일부러 만든다: 앱이 아닌 문서(/favicon.svg)로 떠나고,
+// 쿠키만 바꾼 뒤(cookie = B 세션, clear = 지움) 뒤로 간다. 양성 대조 둘: 떠나기 전 A 표식이 보인다 · 매 갈래가 실제로 bfcache에서 복원됐다.
+// Playwright 기본 인자 --disable-back-forward-cache를 빼고 띄운 브라우저로 본다.
+const BF_ARGS = ['--disable-back-forward-cache'];
+const aFingerprint = page => page.evaluate(([marker, email]) => document.documentElement.outerHTML.includes(marker) || document.documentElement.outerHTML.includes(email), [BOUNDARY_MARKER, EMAIL.A]);
+
+test('⑨ 얼어 있는 동안 쿠키만 바뀐 뒤 문서 뒤로 가기(bfcache 복원) — 정적 화면에서 A 표식 0', { timeout: 240000 }, async () => {
+  const bfBrowser = await chromium.launch({ ...config.use.launchOptions, ignoreDefaultArgs: BF_ARGS });
+  const results = [];
+  try {
+    // 배움(/home)은 4단계부터 ISR 판(세션 쿠키 유무로 middleware가 고른다) — 얼어 있던 로그인 판이 손님 · B에게 되살아나도 같은 관문이 정리한다.
+    // 판본 하나뿐인 교재 주소(?edition=<저장소 판본>)는 5단계부터 판본별 ISR 판(로그인 판) — 같은 관문.
+    // 추천 읽을거리 한 편은 6단계부터 본문을 실은 ISR 판(손님 · 로그인 같은 판, 돌아갈 곳 판은 middleware) — 서재 담기 칸 · 머리말은 브라우저가 그린다.
+    for (const path of ['/profile', '/japanese/vocab/n5', '/home', '/books/japanese-n5?edition=8a8c1c1fd452773810abaf8c', `/suggestions/${SUGGESTION_FIXTURE.id}?from=reading`]) {
+      for (const via of ['cookie', 'clear']) {
+        const { context, page, errors } = await boundaryContext({ actor: 'A', engine: bfBrowser });
+        try {
+          // 프로필 이름에 A 표식 — 내 정보(제목) · 모든 화면 머리말(내 계정 단추 title)에 그려진다. B는 표식 없는 이름.
+          await context.route('**/rest/v1/profiles**', route => {
+            const request = route.request();
+            if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
+            const sub = bearerSub(request);
+            const display = sub === BOUNDARY_ACTORS.A ? `${BOUNDARY_MARKER} 프로필` : '표식 B 프로필';
+            return route.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify(sub ? { id: sub, display_name: display, role: 'learner', onboarded: true, last_login_at: new Date().toISOString(), streak_count: 1 } : null) });
+          });
+          await context.addInitScript(() => { addEventListener('pageshow', e => { try { const log = JSON.parse(sessionStorage.getItem('__bfShows') || '[]'); log.push({ path: location.pathname + location.search, persisted: e.persisted }); sessionStorage.setItem('__bfShows', JSON.stringify(log)); } catch { /* 저장소 차단 */ } }); });
+          // 전제: 이 장면의 화면은 공유 캐시 판(정적 · ISR)이다. no-store 문서는 Chrome이 쿠키가 바뀌면 bfcache에서 퇴출해
+          // 아래 양성 대조가 「복원 안 됨(response-cache-control-no-store)」으로 깨진다 — 장면 결함이 아니라 서버 빌드(.next)가 이 파일보다
+          // 낡은 경우다(실측 2026-10-25 KST: #1559 앞 빌드의 /suggestions/[id]는 동적 ƒ라 no-store). 원인을 바로 말하도록 먼저 본다.
+          const documentCache = (await page.goto(path))?.headers()['cache-control'] || '';
+          assert.doesNotMatch(documentCache, /no-store/, `전제: ${path} 문서는 공유 캐시 판이어야 한다(받은 Cache-Control: ${documentCache}) — 서버 빌드가 이 테스트보다 낡지 않았는지(npm run e2e:build 다시) 확인`);
+          await page.waitForFunction(([marker, email]) => document.documentElement.outerHTML.includes(marker) || document.documentElement.outerHTML.includes(email), [BOUNDARY_MARKER, EMAIL.A], { timeout: 20000 });
+          await settle(page);
+          await page.goto('/favicon.svg'); // 앱이 아닌 문서 — SDK 알림이 없다. 지금 화면은 bfcache로 들어간다.
+          if (via === 'clear') await context.clearCookies();
+          else await context.addCookies([{ name: 'sb-e2e-auth-token', value: `base64-${enc(sessionFor('B'))}`, url: base, sameSite: 'Lax' }]);
+          // bfcache 복원은 load를 다시 내지 않는다 — commit까지만 기다리고 pageshow 기록으로 복원 여부를 본다.
+          await page.goBack({ waitUntil: 'commit' });
+          await page.waitForFunction(p => JSON.parse(sessionStorage.getItem('__bfShows') || '[]').at(-1)?.path === p && document.readyState !== 'loading', path, { timeout: 20000 });
+          const restored = await page.evaluate(() => JSON.parse(sessionStorage.getItem('__bfShows') || '[]').at(-1)?.persisted === true);
+          const reasons = restored ? null : await page.evaluate(() => JSON.stringify(performance.getEntriesByType('navigation')[0]?.notRestoredReasons || null));
+          // 복원 뒤 계정 재확인 → 같은 관문(adoptUser)으로 정리 — 5초 안에 A가 사라지고, 다시 나타나지 않는다.
+          let gone = false;
+          for (let i = 0; i < 50 && !gone; i++) { gone = !(await aFingerprint(page)); if (!gone) await page.waitForTimeout(100); }
+          await settle(page);
+          const after = await aFingerprint(page);
+          results.push({ path, via, restored, gone, after, reasons });
+          assert.equal(restored, true, `양성 대조: ${path} · ${via}가 bfcache에서 복원돼야 장면이 의미가 있다 — ${reasons}`);
+          assert.equal(gone && !after, true, `${path} · ${via}: bfcache 복원 뒤 A 표식이 남았다`);
+          assert.deepEqual(errors, []);
+        } finally { await context.close(); }
+      }
+    }
+    console.log(JSON.stringify({ bfcacheScene: results }));
+  } finally { await bfBrowser.close(); }
+});
+
+test('⑩ 끊긴 서재(Supabase 끊김) — 「이 기기에 받아 둔 자료」는 지금 계정 것만: A는 자기 사본을 보고 열며, B는 A 제목 없이 빈 안내', { timeout: 150000 }, async () => {
+  // OFFLINE-SWEEP-001 P1. 서재 목록이 연결 실패로 끝나면 세 칸 실패 대신 기기 사본 목록(listDeviceMaterials)을 보인다. ⑥과 같은 이유로
+  // Supabase만 끊는다(앱 서버 RSC는 그대로 — 서비스 워커 없이도 서재 · 뷰어 화면이 선다). 브라우저 끊김(navigator.onLine)은 단위 계약이 본다.
+  const { context, page, stats, errors } = await boundaryContext({ actor: 'A' });
+  const shelfHeading = p => p.getByRole('heading', { name: '이 기기에 받아 둔 자료' });
+  const threeFailures = p => p.getByText(/^(읽던 곳|폴더|자료 목록) · 불러오지 못했어요/);
+  try {
+    // A: 자료실 도구 화면에서 X를 받아 둔다(⑥과 같은 길) — 계정이 바뀌어도 지우지 않고 숨기는 기록이라 B 장면이 공허하지 않다.
+    const keyA = `acct:${BOUNDARY_ACTORS.A}:${X}`;
+    await page.goto('/materials?tools=1');
+    await page.getByText(privateRow.title).first().waitFor();
+    await page.getByLabel('자료 메뉴').first().click();
+    await page.getByRole('menuitemcheckbox', { name: /받아두기/ }).first().click();
+    await page.locator('.tag', { hasText: '받아둠' }).first().waitFor();
+    assert.ok((await idbKeys(page, 'anatomy-offline-cache', 'materials')).some(r => r.key === keyA && r.pinned), 'A의 계정 키로 받아 둠');
+    // A · 끊김: 서재 → 기기 사본 목록에 X(양성 대조 — A는 자기 제목을 본다) · 세 칸 실패 안내 0
+    stats.dataOffline = true;
+    await nav(page, '/materials');
+    await shelfHeading(page).waitFor({ timeout: 20000 });
+    const row = page.locator('.shelf-device a[href^="/viewer/"]', { hasText: privateRow.title });
+    await row.waitFor();
+    assert.ok(await row.getByText('일본어 · 받아둠').isVisible(), 'A: 받아 둔 표시');
+    assert.equal(await threeFailures(page).count(), 0, 'A 끊김: 세 칸 실패 안내 대신 기기 사본');
+    assert.ok(await page.getByText('서재 목록을 불러오지 못했어요. 연결되면 다시 불러와요.').isVisible());
+    // 누르면 같은 여는 길(서재 링크 → 뷰어의 기기 사본 폴백)로 본문이 선다.
+    await row.click();
+    await page.waitForURL(url => new URL(url).pathname === `/viewer/${X}`);
+    await page.locator('[data-source-token="id_0_0"]').waitFor({ timeout: 15000 });
+    await nav(page, '/materials');
+    await shelfHeading(page).waitFor({ timeout: 20000 });
+    // 연결되면 다시 읽기 — 새로 고침 없이 보통 서재(목록의 X 행)로 바뀐다.
+    stats.dataOffline = false;
+    await page.evaluate(() => dispatchEvent(new Event('online')));
+    await page.locator('.shelf-list-section').getByText(privateRow.title).first().waitFor({ timeout: 15000 });
+    assert.equal(await shelfHeading(page).count(), 0, '연결 뒤: 기기 사본 칸이 보통 서재로 바뀐다');
+    // A → 손님 → B · 끊김: B의 기기 사본 목록은 비어 있고 A 표식이 한 번도 그려지지 않는다.
+    await logoutFromProfile(page);
+    await loginThroughForm(page, 'B', '/home', { inApp: true });
+    await startWatch(page);
+    assert.ok((await idbKeys(page, 'anatomy-offline-cache', 'materials')).some(r => r.key === keyA && r.pinned), 'A의 받아 둔 기록은 지우지 않고 숨긴다(양성 조건)');
+    stats.dataOffline = true;
+    await nav(page, '/materials');
+    await shelfHeading(page).waitFor({ timeout: 20000 });
+    await page.getByText('아직 이 기기에 받아 둔 자료가 없어요.', { exact: false }).waitFor();
+    assert.equal(await page.locator('.shelf-device a[href^="/viewer/"]').count(), 0, 'B 끊김: 기기 사본 0');
+    await assertNoMarker(page, 'B 끊김 /materials');
+    stats.dataOffline = false;
+    assert.equal(await leak(page), null, 'B에게 A 표식');
     assert.deepEqual(errors, []);
   } finally { await context.close(); }
 });

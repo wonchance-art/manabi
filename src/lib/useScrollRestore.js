@@ -44,9 +44,13 @@ export function useScrollRestore({ user, materialId, material, readingProgress, 
     writerRef.current = { key, writer };
     const flush = () => writer.flush();
     window.addEventListener('pagehide', flush);
+    // 끊긴 동안 못 쓴 위치는 writer가 보류한다 — 연결이 돌아오면 바로 다시 보낸다(「다시 저장」을 누르지 않아도 안내가 걷힌다,
+    // OFFLINE-SWEEP-001: 다시 연결 뒤에도 「읽기 위치를 저장하지 못했어요」가 남아 있었다).
+    window.addEventListener('online', flush);
     return () => {
       alive = false;
       window.removeEventListener('pagehide', flush);
+      window.removeEventListener('online', flush);
       writer.close(ownerRef.current === owner);
       writerRef.current = null;
     };

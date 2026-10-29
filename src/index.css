@@ -84,8 +84,8 @@
   --mobile-nav-bg: rgba(35, 28, 21, 0.97);
   --card-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.5);
 
-  /* Layout */
-  --gnb-height: 64px;
+  /* Layout — 머리 높이는 상태 표시줄 자리(설치 앱에서만 0보다 크다)를 포함한다(PWA-SHELL-001 ⑧) */
+  --gnb-height: calc(64px + env(safe-area-inset-top,0px));
   --sidebar-width: 240px;
   --content-max-width: 1200px;
   --font-serif: var(--font-serif-kr, 'Noto Serif KR'), 'Noto Serif KR', serif;
@@ -248,6 +248,53 @@ input, textarea, [contenteditable]:not([contenteditable="false"]) {
 /* 이미지 드래그 고스트 차단(webkit) — 앱 UI에서 이미지가 끌려나오지 않게 */
 img { -webkit-user-drag: none; }
 
+/* ── 휴대폰 손맛(PWA-SHELL-001 ③ — 화면 배치는 바꾸지 않는다) ──
+   ① 글자 크기 부풀리기 끔: iOS는 가로로 눕히면 본문 글자를 제멋대로 키운다. 100%라 사용자 글자 크기 설정 · 확대는 그대로.
+   ② 두 번 탭 확대 끔(누르는 것만): O · X · 채점을 빨리 두 번 누르면 화면이 확대됐다. 두 손가락 확대 · 스크롤은 그대로(manipulation).
+      제스처를 직접 받는 곳(그립 · 시트 손잡이 · 쪽 넘김)은 클래스 규칙이 이 요소 규칙을 이긴다.
+   ③ 탭 하이라이트(누르면 덮이는 회색/파란 상자)는 자기 눌림(:active)이 있는 것만 끈다 — 눌림이 없는 단추는 이 상자가 유일한 반응이라 둔다.
+      하단 메뉴는 대기 밑줄(NavPendingMark)과 지금 탭 색이 반응이다. 목록은 계약(pwaShell.test.js)이 :active 짝과 함께 지킨다.
+      하이라이트 색은 상속되므로 안에 단추를 품은 카드(.lw-card · .lv-entry--solo)는 넣지 않는다. */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+a, button, input, select, textarea, label, summary, [role="button"] { touch-action: manipulation; }
+/* ④ 입력칸 글자 하한(NATIVE-FEEL-001): iOS Safari · Chrome은 글자가 16px보다 작은 입력칸 · 선택 상자에 초점이 가면 화면을 확대하고
+      돌아오지 않는다(로그인 이메일 14.4px · 서재 검색 14px 실측). 터치 기기(pointer: coarse)에서만 하한 16px — 데스크톱 크기는 그대로.
+      작게 적은 입력칸은 font-size: max(var(--field-font-min), 원래 값)으로 쓴다(인라인 style도 같은 꼴 — 미디어 쿼리는 인라인을 못 덮는다).
+      글자 크기를 적지 않은 입력칸(브라우저 기본 13.33px)은 클래스를 달아 아래 터치 블록에 더한다 — 전역 :where(input …) 한 줄은
+      스타일 없는 폼(함께 읽기 그룹 만들기)의 줄바꿈까지 바꿔(실측) 화면마다 따로 고치기로 했다(오너 2026-10-26 KST).
+      font: inherit로 작은 부모 글자(라벨 12px 등)를 물려받는 입력칸은 그 규칙에 font-size: max(var(--field-font-min), 1em)를 단다
+      (1em = 물려받던 크기 그대로 — 데스크톱은 바뀌지 않는다).
+      손가락 확대를 막는 viewport 값(maximum-scale)은 쓰지 않는다(접근성 — pwaShell ②). 계약: nativeFeel.test.js */
+:root { --field-font-min: 0px; }
+.group-goal-target { width: 90px; } /* 함께 읽기 주간 목표 수 — 터치에서는 아래 76px(16px 글자로 커진 축 선택 상자와 한 줄을 지킨다) */
+@media (pointer: coarse) {
+  :root { --field-font-min: 16px; }
+  .drill-answer { font-size: 16px; } /* 교재 챕터 연습 답칸(ChapterDrills) — 스타일 없이 브라우저 기본 크기였다 */
+  /* NATIVE-FEEL-P1 ⓓ(오너 「권장대로 진행」 2026-10-26 KST) — 화면마다 따로: 표현 목록 · 댓글 검색칸, 설명판 수업 과 선택. */
+  .search-input, .board-class-navigation select { font-size: 16px; }
+  /* 함께 읽기 그룹 폼 — 입력칸의 최소 폭(min-width: auto)은 글자 크기를 따라 커져 이름칸이 196 → 312px로 줄을 밀었다(실측) — 0으로 둔다. */
+  .group-field { font-size: 16px; min-width: 0; }
+  .group-goal-target { width: 76px; } /* 「100000」 여섯 자리가 16px로 들어가는 폭 */
+}
+/* ⑤ 모달 · 어둠막이 떠 있는 동안 뒤 화면을 세운다(NATIVE-FEEL-001): 시트 위를 손가락으로 쓸면 어둠막 뒤 페이지가 대신 움직였다
+      (단어장 「범위 고르기」 · 「단어 직접 추가」 · 단어 상세 · 내 정보 시트 — 390 터치 실측 scrollY 0 → 1488). 터치 기기만 —
+      마우스 화면은 html overflow:hidden이 스크롤 막대를 걷어 본문이 옆으로 밀린다. overscroll-behavior: none은 시트 위 당겨서 새로 고침 차단.
+      목록은 계약(nativeFeel.test.js)이 「스크림을 칠하는 전면 고정 막」 전수와 맞춘다 — 새 어둠막은 여기에 더한다. */
+@media (pointer: coarse) {
+  html:has(:is(dialog:modal, .scrim, .modal-overlay, .confirm-overlay, .tile-modal__overlay, .vocab-detail-overlay, .onboarding-overlay, .reading-test-overlay, .class-copy-overlay, .lw-scrim)) {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+}
+.btn, .review-score-btn, .auth-google-btn, .auth-submit, .sentence-nav__btn, .viewer-sheet-bar__btn--nav,
+.lv-fab--save, .lv-fab--ex, .lv-fab--o, .lv-fab--x, .lw-grade, .lw-two__btn, .lw-one__reveal, .mobile-nav__link,
+.manabi-app a.learn-tile, .manabi-app .lv-view button, .manabi-app .lv-chips a, .manabi-app .manabi-toc-group li > a {
+  -webkit-tap-highlight-color: transparent;
+}
+
 a {
   text-decoration: none;
   color: inherit;
@@ -318,7 +365,8 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  /* 위 여백 = 상태 표시줄 자리 — 머리 바탕이 표시줄 뒤까지 칠해지고 글자 · 단추는 그 아래에 선다(보통 탭에서는 0) */
+  padding: env(safe-area-inset-top,0px) 24px 0;
 }
 
 .gnb__logo {
@@ -500,8 +548,10 @@ button {
   transition: transform var(--transition-fast);
 }
 
-.gnb__profile-btn:hover {
-  transform: scale(1.1);
+@media (hover: hover) {
+  .gnb__profile-btn:hover {
+    transform: scale(1.1);
+  }
 }
 
 /* ========= Focus / Accessibility ========= */
@@ -557,16 +607,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.82rem;
 }
 
+/* 본문(main) 맨 위 흐름 안 — 덮지 않고 민다(Layout 주석 · OFFLINE-SWEEP-001). */
 .offline-banner {
-  position: fixed;
-  top: var(--gnb-height);
-  left: 0;
-  right: 0;
-  z-index: 999;
+  position: relative;
   background: var(--warning);
   color: #fff;
   text-align: center;
   padding: 8px 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
   font-size: 0.85rem;
   font-weight: 600;
   animation: slideDown 0.3s ease-out;
@@ -674,26 +723,35 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: #fff;
   box-shadow: 0 4px 15px var(--primary-glow);
 }
-.btn--primary:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 20px var(--primary-glow); }
+/* 호버 들림은 마우스 기기만(PWA-SHELL-001 ④) — 터치는 누른 뒤에도 :hover가 남아 단추가 들린 채 있었다(390 탭 실측 translateY(-1px) · brightness 1.1 잔류). */
+@media (hover: hover) {
+  .btn--primary:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 20px var(--primary-glow); }
+}
 
 .btn--secondary {
   background: var(--bg-elevated);
   color: var(--text-primary);
   border: 1px solid var(--border);
 }
-.btn--secondary:hover:not(:disabled) { border-color: var(--border-hover); transform: translateY(-1px); }
+@media (hover: hover) {
+  .btn--secondary:hover:not(:disabled) { border-color: var(--border-hover); transform: translateY(-1px); }
+}
 
 .btn--danger {
   background: var(--danger);
   color: #fff;
 }
-.btn--danger:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+@media (hover: hover) {
+  .btn--danger:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+}
 
 .btn--ghost {
   background: transparent;
   color: var(--text-secondary);
 }
-.btn--ghost:hover:not(:disabled) { color: var(--text-primary); background: var(--bg-elevated); transform: translateY(-1px); }
+@media (hover: hover) {
+  .btn--ghost:hover:not(:disabled) { color: var(--text-primary); background: var(--bg-elevated); transform: translateY(-1px); }
+}
 
 /* ========= Page Header ========= */
 .page-header {
@@ -772,7 +830,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border: 1px solid var(--border);
   color: var(--text-primary);
   outline: none;
-  font-size: 0.95rem;
+  font-size: max(var(--field-font-min), 0.95rem);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
@@ -888,6 +946,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   align-items: center;
   justify-content: center;
   padding: 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 .scrim--bottom { align-items: flex-end; padding: 0; }
 
@@ -1200,18 +1260,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.68rem; font-weight: 700; color: var(--warning);
   background: color-mix(in srgb, var(--warning-bright) 16%, transparent); padding: 2px 8px; border-radius: var(--radius-full); white-space: nowrap;
 }
-/* [자세히] 인라인 문법 해설 — 시트 좌측 번역·맥락 아래로 펼친다 */
-.grammar-detail__toggle { width: 100%; margin-top: 10px; }
-.grammar-detail { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; }
-.grammar-detail__loading { font-size: 0.82rem; color: var(--text-muted); }
-.grammar-detail__ref {
-  display: inline-block; margin-top: 8px; font-size: 0.8rem;
-  color: var(--primary-light); text-decoration: none;
-}
-.grammar-detail__ref:hover { text-decoration: underline; }
-.grammar-detail__save { margin-top: 8px; }
-.grammar-detail__ask { display: flex; gap: 6px; margin-top: 10px; }
-.grammar-detail__ask .form-input { flex: 1; min-width: 0; font-size: 0.82rem; }
 /* 상세 설명 예문의 병음 줄(표시 시점 합성 — 예문/병음/뜻 3줄) */
 .pdf-detail-pinyin { color: var(--text-muted); font-size: 0.85em; }
 /* 급수 뱃지(②) — 레퍼런스 사전에서 표시 시점 계산(HSK n / 생활) */
@@ -1249,6 +1297,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   align-items: center;
   justify-content: center;
   padding: 20px;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
   animation: celebOverlayIn 0.2s ease;
 }
 .vocab-detail-card {
@@ -1615,10 +1665,12 @@ body.is-review-chrome .page-container { padding-top: 8px; }
   transform: scale(0.95);
 }
 
-.review-score-btn:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+@media (hover: hover) {
+  .review-score-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
 }
 
 /* ========= Forecast Chart ========= */
@@ -2398,7 +2450,7 @@ a.viewer-badge:hover {
   border-radius: 8px;
   background: var(--bg-card);
   color: var(--text-primary);
-  font-size: 0.88rem;
+  font-size: max(var(--field-font-min), 0.88rem);
   padding: 7px 10px;
   margin-bottom: 4px;
 }
@@ -2561,6 +2613,26 @@ a.viewer-badge:hover {
 .viewer-h2 + .line-break,
 .viewer-h3 + .line-break {
   margin-bottom: 4px;
+}
+/* 원문 한 줄의 상자(VIEWER-PAGED-RENDER-001 A안, 오너 승인 2026-10-25 KST, ViewerPage) — 상자는 혼자 한 flex 줄(100%)을
+   차지하고, 안에서 본문과 같은 간격(gap: inherit — 본문 상자의 gap) · 기준선 정렬로 감는다. 줄 사이 간격도 같다(예전: 낱말 줄 ·
+   간격 · 줄바꿈 칸(0) · 간격 → 지금: 상자 안 낱말 줄 · 간격 · 줄바꿈 칸 / 상자 사이 간격). min-width 0 — 긴 낱말이 상자를 넓혀
+   다른 줄의 감김을 바꾸지 않게(예전에도 넘친 낱말만 넘쳤다).
+   왜: 쪽 넘김(다단)은 그리기 준비(PrePaint)가 단마다 본문 상자의 직속 항목을 모두 훑는다 — 낱말 수천 개 → 줄 수백 개
+   (300줄 390 · CPU 4배: PrePaint 127 → 12ms).
+   보이는 변화(승인됨): 스크롤 보기 · 쪽 안에 들어가는 문단 · 768은 화소까지 같다. 쪽 넘김에서 쪽 경계에 걸쳐 나뉜 문단 바로 다음
+   문단만 (줄 간격 − 그 단 끝 남은 자리)만큼, 최대 줄 간격 하나(≈9~15px) 내려간다 — Chromium의 중첩 flex 조각나기가 끊긴 자리의
+   줄 간격을 다음 단 상자에 이월한다. 그래서 쪽 수가 조금 늘 수 있다(중국어 긴 문단 390: 37 → 38쪽).
+   쪽에 걸친 문단은 그대로 쪽을 넘어 나뉜다 — 이 상자에 break-inside: avoid를 걸지 말 것(문단이 통째로 다음 쪽으로 밀린다).
+   헤딩 클래스(.viewer-h1~3 — display:contents)를 함께 달기 때문에 상자 규칙은 더 구체적인 선택자로 둔다. */
+.reader-area > .reader-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  align-items: baseline;
+  flex: 0 1 100%;
+  min-width: 0;
+  gap: inherit;
 }
 
 .word-token {
@@ -2843,7 +2915,7 @@ a.viewer-badge:hover {
    기존 --mobile-nav-height 선례를 따른다. */
 .sentence-nav {
   position: fixed;
-  right: 14px;
+  right: calc(14px + env(safe-area-inset-right, 0px));
   bottom: calc(var(--mobile-nav-height, 0px) + 24px + env(safe-area-inset-bottom, 0px));
   z-index: 40;
   display: flex;
@@ -2946,16 +3018,26 @@ a.viewer-badge:hover {
 }
 /* 연속 지정 구간 — 안쪽 모서리만 죽인다(버튼 그룹 관용구, 안 A 2026-09-02). 양 끝
    바깥 모서리는 둥근 채라 구간이 「하나의 긴 알약」으로 읽힌다 — 낱개(상태)와 구간(지정)의
-   뜻 차이는 형태가 아니라 이음으로만 남는다. 뒤 규칙의 :has(.surface)는 항상 참 —
-   목적은 :has 미지원 엔진에서 두 규칙과 이음매가 함께 빠지는 것(토큰마다 온전한 알약 +
-   자간 틈으로 남아 글자·밴드는 온전, 이음매만 생략). */
-.word-token--picked:has(+ .word-token--picked) .surface::before {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+   뜻 차이는 형태가 아니라 이음으로만 남는다.
+   이음 신호(TAP-INP-HAS-002): :has는 칠할 ::before의 조상 칸이 아니라 토큰 자신(맨 오른쪽 칸)에 걸고, 토큰은 변수만
+   얻는다. 「토큰:has(…) .surface」처럼 :has 뒤에 .surface가 남으면 Blink가 그 클래스를 모든 :has 무효화에 합쳐, 앱
+   바깥 틀(.manabi-app · .viewer-layout) 안에 요소가 하나 붙을 때마다 본문의 .surface 전부(낱말 수만큼)를 다시
+   계산했다(뷰어 390 실측: 요소 하나 붙이는 데 782 → 14개). 뒤 규칙의 :has(.surface)는 항상 참 — 목적은 :has 미지원
+   엔진에서 신호와 이음매가 함께 빠지는 것(변수가 없으면 모서리는 비지정과 같은 5px, 이음매 content는 none —
+   토큰마다 온전한 알약 + 자간 틈으로 남아 글자·밴드는 온전, 이음매만 생략). */
+.word-token--picked:has(+ .word-token--picked) {
+  --picked-join-end: 0;
+  --picked-seam: '';
 }
-.word-token--picked + .word-token--picked:has(.surface) .surface::before {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
+.word-token--picked + .word-token--picked:has(.surface) {
+  --picked-join-start: 0;
+}
+/* 모서리 — 신호가 없으면 기반 ::before와 같은 5px(낱개 지정은 색만 바뀐다). 신호가 있는 쪽만 0. */
+.word-token--picked .surface::before {
+  border-top-left-radius: var(--picked-join-start, 5px);
+  border-bottom-left-radius: var(--picked-join-start, 5px);
+  border-top-right-radius: var(--picked-join-end, 5px);
+  border-bottom-right-radius: var(--picked-join-end, 5px);
 }
 /* 자간 이음매 — 항상 '지정색' 전용 조각(T1 정정판, 오너 확정 2026-08-29).
    단어의 칠(::before)은 비지정과 같은 확장 0 그대로 두고 자간만 이 조각이 채운다:
@@ -2965,10 +3047,10 @@ a.viewer-badge:hover {
    밑에 깔리고, 뒤 토큰은 문맥째 나중에 그려져 그 위를 덮는다. 칠의 확장이 0이라
    조각이 스스로 양쪽 1px씩 밴드 밑으로 물려(안 A) 실금이 없고, 노출부(기본 자간
    4px)는 색 경계마다 중립 이음매가 되어 이웃 글리프를 침범할 수 없다(#1013 원칙
-   승계). :has 미지원 엔진은 이음매만 생략 — 그 자리는 지면색 틈으로 남을 뿐
-   글자·밴드는 온전하다. */
-.word-token--picked:has(+ .word-token--picked) .surface::after {
-  content: '';
+   승계). 조각은 다음 토큰도 지정일 때(이음 신호 --picked-seam)만 생긴다 — :has 미지원
+   엔진은 이음매만 생략, 그 자리는 지면색 틈으로 남을 뿐 글자·밴드는 온전하다. */
+.word-token--picked .surface::after {
+  content: var(--picked-seam, none);
   position: absolute;
   z-index: -2;
   right: calc(-1 * var(--char-gap, 0.25rem) - 1px);
@@ -3048,11 +3130,13 @@ a.viewer-badge:hover {
    붙었지만, inline-block 승격 후 surface 테두리는 2.2em 상자 밑(글자에서 먼 곳)이라
    ::before(밴드 하단 = 글자 바로 밑 1.62em)로 옮기는 것이 위치·레이아웃 양쪽에서 정답.
    ※ 밑줄은 띠 **밖**에 그린다(VIEWER-R0 버그 6b) — 아래 「밑줄 자리」 규칙. */
+/* 「단어 상태」를 꺼도 저장 단어를 흐리지 않는다(뷰어 점검 C3 — 오너 승인 2026-10-23 KST). 예전 0.6 흐림은 병음 대비를
+   2.5:1로 떨어뜨렸다. 표시는 얇은 밑줄만 남긴다. */
 .word-token--saved .surface {
-  opacity: 0.6;
+  opacity: 1;
 }
 .word-token--saved .surface::before {
-  border-bottom: 2px solid var(--primary-light);
+  border-bottom: 1.5px solid var(--primary-light);
 }
 /* 담는 순간(앱 손맛 ①) — 방금 담은 그 토큰 하나만 형광펜이 왼쪽에서 오른쪽으로 그어진다.
    띠(::before)의 좌표(top·height·left·right·밑줄 칸)는 위 규칙들 그대로이고 scaleX만 움직인다 —
@@ -3077,7 +3161,7 @@ a.viewer-badge:hover {
   opacity: 1;
 }
 .word-token--due .surface::before {
-  border-bottom: 2px solid var(--warning);
+  border-bottom: 1.5px solid var(--warning);
   animation: due-pulse 2.5s ease-in-out infinite;
 }
 .word-token--due:hover .surface::before {
@@ -3095,14 +3179,18 @@ a.viewer-badge:hover {
    수정): 처음 여는 자료는 대부분 새 단어라 파란 칠이 화면을 덮었다.
    .reader-area--hl가 붙을 때만 발동(툴바 🖍 토글 — 옵트인 기본 꺼짐). 색은 테마별
    변수(--picked-bg 선례). :not(--picked) 가드 — 문장/단어 지정 배경이 항상 이긴다. */
+/* 학습 중 = 옅은 노랑, 복습 = 진한 주황 + 오른쪽 위 점(뷰어 점검 C2 — 오너 승인 2026-10-23 KST). 예전 두 띠는
+   서로 대비 1.08:1로 같은 베이지였다. 색만으로 가르지 않게(WCAG 1.4.1) 복습에는 점을 더한다 — 아래 「복습 점」. */
 .reader-area--light,
 .reader-area--sepia {
-  --ws-learn: rgba(212, 160, 8, 0.18);
-  --ws-due: rgba(212, 150, 42, 0.26);
+  --ws-learn: rgba(212, 160, 8, 0.16);
+  --ws-due: rgba(234, 120, 20, 0.40);
+  --ws-due-dot: #c2410c;
 }
 .reader-area--dark {
-  --ws-learn: rgba(227, 185, 60, 0.20);
-  --ws-due: rgba(232, 169, 79, 0.30);
+  --ws-learn: rgba(227, 185, 60, 0.18);
+  --ws-due: rgba(240, 140, 50, 0.42);
+  --ws-due-dot: #f59e5b;
 }
 /* 「만난 말」은 새 단어와 같은 표시다(VIEWER-R0 버그 11 — 오너 확정 2026-10-07). 따로 둔
    옅은 파랑(알파 0.07)은 바탕 대비 1.10:1(종이)·1.18:1(어둡게)로 사실상 안 보였다.
@@ -3118,6 +3206,20 @@ a.viewer-badge:hover {
 .reader-area--hl .word-token--due:not(.word-token--picked) .surface::before {
   background: var(--ws-due);
   border-bottom-color: transparent;
+}
+/* 복습 점 — 띠 오른쪽 위. 비지정 토큰의 .surface::after는 비어 있다(이음매는 지정 토큰만 쓴다). 범례 견본도 같은 규칙을 탄다. */
+.reader-area--hl .word-token--due:not(.word-token--picked) .surface::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  right: -3px;
+  top: calc(var(--hl-band-top, 0.3em) - 2px);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ws-due-dot);
+  box-shadow: 0 0 0 1.5px var(--reader-paper, var(--bg-primary));
+  pointer-events: none;
 }
 /* 상태 알약(오너 확정 2026-08-30, 3본 비교 렌더 검증)은 이제 기반 ::before의 공통
    문법이다(안 A 2026-09-02) — 여기 있던 --hl 전용 기하 오버라이드(left/right 0·5px)는
@@ -3183,6 +3285,17 @@ a.viewer-badge:hover {
 .reader-area--hl .word-token--pattern:is(.word-token--new, .word-token--met):not([data-selected="true"]) .surface::before {
   padding-bottom: calc(var(--hl-mark-gap) * 2 + 1.5px);
 }
+/* 선택 중에도 밑줄 자리(여백 · 1.5px 두께)는 그대로 두고 선만 투명하게 지운다(VIEWER-TAP-INP-002). 띠는 absolute라
+   고를 때 그 크기가 바뀌면 쪽 넘김(다단) 본문 전체가 다시 배치됐다 — 칠 범위(content-box)는 두 경우 같다. */
+.reader-area--hl .word-token:is(.word-token--new, .word-token--met)[data-selected="true"] .surface::before {
+  box-sizing: content-box;
+  padding-bottom: var(--hl-mark-gap);
+  background-clip: content-box;
+  border-bottom: 1.5px solid transparent;
+}
+.reader-area--hl .word-token--pattern:is(.word-token--new, .word-token--met)[data-selected="true"] .surface::before {
+  padding-bottom: calc(var(--hl-mark-gap) * 2 + 1.5px);
+}
 
 /* failed 토큰 전용 빈 furigana 영역 */
 .furigana {
@@ -3205,6 +3318,8 @@ a.viewer-badge:hover {
   justify-content: center;
   align-items: center;
   z-index: 1100;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
 }
 
 .modal {
@@ -3244,6 +3359,7 @@ a.viewer-badge:hover {
 .modal__body {
   padding: 25px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   color: var(--text-primary);
   line-height: 1.7;
 }
@@ -3276,6 +3392,8 @@ a.viewer-badge:hover {
   justify-content: center;
   z-index: 1000;
   padding: 20px;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
   animation: fadeIn 0.2s;
 }
 
@@ -3319,171 +3437,7 @@ a.viewer-badge:hover {
   gap: 20px;
 }
 
-/* ========= MyPage ========= */
-
-.mypage-avatar {
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  color: #fff;
-  box-shadow: 0 8px 25px var(--primary-glow);
-  flex-shrink: 0;
-}
-
-/* ── MyPage (profile settings) ── */
-.mypage-noauth {
-  text-align: center;
-  padding-top: 80px;
-}
-.mypage-noauth__title {
-  margin-bottom: 16px;
-  font-size: 1.3rem;
-}
-.mypage-profile-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 28px;
-}
-.mypage-profile-header .mypage-avatar {
-  width: 52px;
-  height: 52px;
-  font-size: 1.4rem;
-  background: var(--primary-glow);
-  border: 2px solid var(--primary);
-  color: var(--primary-light);
-}
-.mypage-profile-info { flex: 1; min-width: 0; }
-.mypage-profile-info__name {
-  font-size: 1.15rem;
-  font-weight: 700;
-  margin: 0;
-}
-.mypage-profile-info__email {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin: 0;
-}
-.mypage-section {
-  padding: 20px;
-  margin-bottom: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.mypage-section__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.mypage-section__title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-/* 접기/펴기 collapsible (프로필/목표/알림) */
-.mypage-collapse {
-  border-top: 1px solid var(--border);
-  margin-top: 10px;
-}
-.mypage-collapse:first-of-type { border-top: none; margin-top: 14px; }
-.mypage-collapse__summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 2px;
-  cursor: pointer;
-  font-size: 0.88rem;
-  color: var(--text-secondary);
-  list-style: none;
-  user-select: none;
-  gap: 8px;
-}
-.mypage-collapse__summary::-webkit-details-marker { display: none; }
-.mypage-collapse__summary:hover { color: var(--text-primary); }
-.mypage-collapse__chevron {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  transition: transform 0.2s;
-}
-.mypage-collapse[open] .mypage-collapse__chevron { transform: rotate(180deg); }
-.mypage-collapse__body {
-  padding: 4px 2px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  animation: fadeInUp 0.2s ease;
-}
-
-.mypage-goal-slider { margin-bottom: 4px; }
-.mypage-goal-slider__head {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 5px;
-  font-size: 0.875rem;
-}
-.mypage-goal-slider__value {
-  font-weight: 600;
-  color: var(--accent-text);
-}
-.mypage-range {
-  width: 100%;
-  accent-color: var(--accent);
-  cursor: pointer;
-}
-.mypage-range:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-.mypage-goal-slider__minmax {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.72rem;
-  color: var(--text-muted);
-}
-.mypage-goal-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.mypage-reminder-blocked {
-  font-size: 0.8rem;
-  color: var(--warning);
-  background: color-mix(in srgb, var(--warning) 10%, transparent);
-  padding: 8px 12px;
-  border-radius: 8px;
-  margin-bottom: 12px;
-}
-.mypage-reminder-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.mypage-reminder-btn {
-  padding: 8px 16px;
-  border-radius: 10px;
-  border: 1.5px solid var(--border);
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-.mypage-reminder-btn:hover {
-  border-color: var(--primary);
-}
-.mypage-reminder-btn--active {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-}
+/* 내 정보(/profile) 스타일은 src/components/profile/profile.css(셸 토큰 · @container — PROFILE-REDESIGN-001)로 옮겼다. */
 
 /* ── badge gallery ── */
 
@@ -3515,10 +3469,12 @@ a.viewer-badge:hover {
   transition: border-color var(--transition-smooth), transform var(--transition-smooth), box-shadow var(--transition-smooth);
 }
 
-.step:hover {
-  border-color: var(--border-hover);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+@media (hover: hover) {
+  .step:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  }
 }
 
 .step__num {
@@ -3659,15 +3615,31 @@ a.viewer-badge:hover {
   border-color: var(--primary);
   color: #fff;
 }
-.chip--select {
+/* 함께 읽는 글 · 서재 도구의 정렬(NATIVE-FEEL-P1 ⓐ — 오너 「권장대로 진행」 2026-10-26 KST): 칩 줄에서 떼어 낸 자기 자리의
+   글자 단추 꼴 선택 상자(테두리 · 바탕 없이 「최신순 ▾」). 데스크톱은 칩 글자 크기(0.82rem) 그대로, 터치 기기는 16px(index.css ④ — iOS 초점 확대). */
+.materials-sort {
+  align-self: flex-end;
   appearance: none;
   -webkit-appearance: none;
-  padding-right: 28px;
+  field-sizing: content; /* 가장 긴 선택지(「내 수준 맞춤」)가 아니라 고른 글자만큼 — 「최신순」과 ▾ 사이가 벌어지지 않게(미지원 브라우저는 오른쪽 맞춤) */
+  text-align-last: right;
+  min-height: 44px;
+  padding: 0 22px 0 10px;
+  font: inherit;
+  font-size: max(var(--field-font-min), 0.82rem);
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
   background-image: linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%), linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
-  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+  background-position: calc(100% - 13px) 50%, calc(100% - 8px) 50%;
   background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
 }
+.materials-sort:hover { color: var(--text-primary); }
+.materials-sort:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ========= Admin ========= */
 .admin-table-wrap {
@@ -3753,28 +3725,6 @@ a.viewer-badge:hover {
 .role-badge--public  { background: var(--accent-glow);    color: var(--accent-text); }
 .role-badge--private { background: var(--primary-glow);   color: var(--primary-light); }
 
-/* ========= Theme Toggle Button ========= */
-.theme-toggle {
-  /* 고정 바 안의 단독 아이콘 버튼 — 키워도 정보 밀도에 영향이 없어 44로 맞춘다 */
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-full);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  flex-shrink: 0;
-}
-
-.theme-toggle:hover {
-  border-color: var(--border-hover);
-  transform: scale(1.1);
-}
-
 /* ========= Light theme page-header gradient ========= */
 [data-theme="light"] .page-header__title {
   background: linear-gradient(135deg, var(--primary-dark), var(--primary));
@@ -3786,12 +3736,12 @@ a.viewer-badge:hover {
 /* ========= Responsive ========= */
 @media (max-width: 768px) {
   :root {
-    --gnb-height: 56px;
+    --gnb-height: calc(56px + env(safe-area-inset-top,0px));
     --mobile-nav-height: 64px;
   }
 
   .gnb {
-    padding: 0 16px;
+    padding: env(safe-area-inset-top,0px) 16px 0;
     height: var(--gnb-height);
   }
 
@@ -4745,7 +4695,7 @@ a.viewer-badge:hover {
   width: 100%;
   min-height: 45vh;
   resize: vertical;
-  font-size: 0.92rem;
+  font-size: max(var(--field-font-min), 0.92rem);
   line-height: 1.7;
   background: var(--bg-secondary);
   color: var(--text-primary);
@@ -4794,6 +4744,7 @@ a.viewer-badge:hover {
     border-top: 1px solid var(--border);
     box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
     padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    padding-left: max(10px, env(safe-area-inset-left, 0px)); padding-right: max(10px, env(safe-area-inset-right, 0px));
   }
   .viewer-sheet-bar__btn {
     flex: 1;
@@ -4851,7 +4802,7 @@ a.viewer-badge:hover {
     display: flex;
     flex-direction: column;
     position: fixed;
-    bottom: 0; left: 0; right: 0;
+    bottom: 0; left: env(safe-area-inset-left, 0px); right: env(safe-area-inset-right, 0px); /* 노치 가로: 시트가 좌우 안전 영역만큼 비킨다 */
     max-height: 70vh;
     max-height: 60svh;
     /* 지정 단어 글자 = 4rem(64px) 고정 — 데스크톱과 동일 크기, 시트 폭에선 5자까지 무축소.
@@ -4935,6 +4886,8 @@ a.viewer-badge:hover {
   align-items: center;
   justify-content: center;
   padding: 20px;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
 }
 .reading-test {
   background: var(--bg-card);
@@ -5363,159 +5316,6 @@ a.viewer-badge:hover {
 
 /* 회화 — A/B 턴 시각 분리 + 자동재생 + 가리기 토글 */
 
-/* ========= TTS Voice Picker ========= */
-.tts-voice {
-  position: relative;
-  display: inline-flex;
-}
-.tts-voice__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: border-color var(--lp-trans-fast), background var(--lp-trans-fast);
-  font-family: system-ui, sans-serif;
-}
-.tts-voice__btn:hover {
-  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
-  background: var(--bg-elevated);
-}
-.tts-voice__name {
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-.tts-voice__chev {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-}
-.tts-voice__popover {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  min-width: 280px;
-  max-width: 340px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  z-index: 80;
-  overflow: hidden;
-}
-.tts-voice__head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  background: var(--bg-elevated);
-}
-.tts-voice__sample {
-  background: transparent;
-  border: 1px solid var(--border);
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-.tts-voice__sample:hover { color: var(--primary-light); border-color: var(--primary); }
-.tts-voice__list {
-  list-style: none;
-  padding: 6px 0;
-  margin: 0;
-  max-height: 260px;
-  overflow-y: auto;
-}
-.tts-voice__option {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  transition: background var(--lp-trans-fast);
-}
-.tts-voice__option:hover {
-  background: var(--bg-elevated);
-}
-.tts-voice__option.is-selected {
-  background: color-mix(in srgb, var(--primary) 10%, transparent);
-}
-.tts-voice__option.is-selected::before {
-  content: '✓';
-  color: var(--primary-light);
-  font-weight: 700;
-  margin-right: 4px;
-}
-.tts-voice__option-name {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 0.88rem;
-  color: var(--text-primary);
-  font-weight: 600;
-  overflow: hidden;
-}
-.tts-voice__option-meta {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  font-weight: 400;
-}
-.tts-voice__play {
-  flex-shrink: 0;
-  background: transparent;
-  border: 1px solid var(--border);
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-  transition: all var(--lp-trans-fast);
-}
-.tts-voice__play:hover {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
-}
-.tts-voice__hint {
-  padding: 10px 14px;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  line-height: 1.5;
-  background: var(--bg-elevated);
-  border-top: 1px solid var(--border);
-}
-
-@media (max-width: 600px) {
-  .tts-voice__popover {
-    min-width: 240px;
-    right: -8px;
-  }
-  .tts-voice__name {
-    max-width: 80px;
-  }
-}
-
 /* ========= Lesson Vocab (오늘의 단어 미니 사전) ========= */
 
 /* ========= JaText 시각 강조 (vocab 단어 + 조사 「は」) ========= */
@@ -5613,6 +5413,7 @@ a.viewer-badge:hover {
   justify-content: center;
   align-items: center;
   min-height: calc(100vh - var(--gnb-height));
+  min-height: calc(100dvh - var(--gnb-height)); /* 주소창이 보이는 휴대폰 탭에서 100vh(큰 높이)만 두면 로그인 화면이 주소창만큼 스크롤된다(NATIVE-FEEL-001 · 셸 선례 PWA-SHELL ②) */
   padding: 24px 16px;
 }
 .auth-card {
@@ -5660,9 +5461,11 @@ a.viewer-badge:hover {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
-.auth-google-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+@media (hover: hover) {
+  .auth-google-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
 }
 .auth-google-btn:active {
   transform: scale(0.98);
@@ -5698,7 +5501,7 @@ a.viewer-badge:hover {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   color: var(--text-primary);
-  font-size: 0.9rem;
+  font-size: max(var(--field-font-min), 0.9rem);
   outline: none;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
@@ -5769,10 +5572,12 @@ a.viewer-badge:hover {
   box-shadow: 0 4px 15px var(--primary-glow);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast);
 }
-.auth-submit:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px var(--primary-glow);
-  filter: brightness(1.1);
+@media (hover: hover) {
+  .auth-submit:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px var(--primary-glow);
+    filter: brightness(1.1);
+  }
 }
 .auth-submit:active:not(:disabled) {
   transform: scale(0.98);
@@ -5795,8 +5600,8 @@ a.viewer-badge:hover {
 /* ========= Toast Notifications ========= */
 .toast-container {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: max(24px, env(safe-area-inset-bottom, 0px));
+  right: max(24px, env(safe-area-inset-right, 0px));
   z-index: 9999;
   display: flex;
   flex-direction: column;
@@ -5866,9 +5671,10 @@ a.viewer-badge:hover {
 
 @media (max-width: 768px) {
   .toast-container {
-    bottom: calc(var(--mobile-nav-height, 64px) + 12px);
-    right: 12px;
-    left: 12px;
+    /* 하단 메뉴는 홈 막대 자리(env)만큼 키가 커진다 — 토스트도 그만큼 올라야 메뉴에 걸치지 않는다(PWA-SHELL-001). */
+    bottom: calc(var(--mobile-nav-height, 64px) + 12px + env(safe-area-inset-bottom, 0px));
+    right: max(12px, env(safe-area-inset-right, 0px));
+    left: max(12px, env(safe-area-inset-left, 0px));
   }
   .toast { max-width: 100%; }
 }
@@ -5903,14 +5709,18 @@ a.viewer-badge:hover {
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.suggestion-card:hover {
-  border-color: var(--border-hover);
-  box-shadow: var(--card-shadow-hover);
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .suggestion-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--card-shadow-hover);
+    transform: translateY(-2px);
+  }
 }
 
-.suggestion-card:hover .suggestion-card__thumb {
-  transform: scale(1.05);
+@media (hover: hover) {
+  .suggestion-card:hover .suggestion-card__thumb {
+    transform: scale(1.05);
+  }
 }
 
 .suggestion-card__thumb-wrap {
@@ -6049,6 +5859,8 @@ a.viewer-badge:hover {
   justify-content: center;
   animation: fadeIn 0.15s;
   padding: 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 .confirm-modal {
   background: var(--bg-elevated);
@@ -6316,6 +6128,8 @@ a.viewer-badge:hover {
   color: var(--text-primary);
   cursor: pointer;
 }
+/* 재생 속도 선택 상자만 터치 16px(NATIVE-FEEL-P2) — 같은 이름의 글자 단추 · 표시(span)는 입력칸이 아니라 그대로. */
+select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 .listen-controls__current {
   margin-top: 8px;
   padding: 8px 12px;
@@ -6381,9 +6195,11 @@ a.viewer-badge:hover {
   border-radius: var(--radius-md);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
-.guide-cta__btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px color-mix(in srgb, var(--primary) 40%, transparent);
+@media (hover: hover) {
+  .guide-cta__btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--primary) 40%, transparent);
+  }
 }
 
 @keyframes celebOverlayIn {
@@ -6472,10 +6288,12 @@ a.viewer-badge:hover {
   text-align: left;
   color: inherit;
 }
-.review-done__card:hover {
-  border-color: var(--primary-light);
-  background: var(--bg-elevated);
-  transform: translateX(4px);
+@media (hover: hover) {
+  .review-done__card:hover {
+    border-color: var(--primary-light);
+    background: var(--bg-elevated);
+    transform: translateX(4px);
+  }
 }
 
 .review-done__card-text {
@@ -6501,11 +6319,13 @@ a.viewer-badge:hover {
   transition: all var(--transition-fast);
   position: relative;
 }
-.completion-next-card:hover {
-  background: var(--bg-elevated);
-  border-style: solid;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(124,92,252,0.15);
+@media (hover: hover) {
+  .completion-next-card:hover {
+    background: var(--bg-elevated);
+    border-style: solid;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(124,92,252,0.15);
+  }
 }
 .completion-next-card__badge {
   position: absolute; top: -8px; left: 14px;
@@ -6527,8 +6347,10 @@ a.viewer-badge:hover {
   font-size: 1rem; color: var(--primary-light); flex-shrink: 0;
   transition: transform var(--transition-fast);
 }
-.completion-next-card:hover .completion-next-card__arrow {
-  transform: translateX(4px);
+@media (hover: hover) {
+  .completion-next-card:hover .completion-next-card__arrow {
+    transform: translateX(4px);
+  }
 }
 
 /* ═══════════════════════════════════════════════
@@ -7085,7 +6907,7 @@ a.viewer-badge:hover {
   min-width: 44px; min-height: 44px;
   opacity: 0.75; transition: opacity 0.15s ease, transform 0.15s ease;
 }
-.fr-vrow__save:hover:not(:disabled) { opacity: 1; transform: scale(1.15); }
+@media (hover: hover) { .fr-vrow__save:hover:not(:disabled) { opacity: 1; transform: scale(1.15); } } /* 터치에서 별이 커진 채 남지 않게(PWA-SHELL-001 ④) */
 .fr-vrow__save.is-saved { opacity: 0.55; cursor: default; color: var(--accent-text); }
 
 /* 가리기 자가 채점 — 공개 직후 "기억났어/몰랐어" (.fr-check__grade* 버튼 스타일 재사용) */
@@ -7815,20 +7637,14 @@ a.viewer-badge:hover {
   background: var(--scrim);
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
 }
 .tile-modal { width: 100%; max-width: 340px; padding: 20px; }
 .tile-modal__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .tile-modal__title { font-family: var(--font-serif); font-size: 1.05rem; font-weight: 700; margin: 0; }
 .tile-modal__close { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.9rem; padding: 4px; }
-.tile-modal__row {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; margin-bottom: 12px; font-size: 0.88rem;
-}
-.tile-modal__num { max-width: 90px; text-align: right; }
-
-/* 목표 과정 — 언어·레벨 두 칸(D-Day 모달). 좁은 화면에서 두 칸이 한 줄에 들어오도록 폭을 나눈다. */
-.dday-goal { display: flex; gap: 6px; min-width: 0; }
-.dday-goal__sel { flex: 1 1 0; min-width: 0; padding: 6px 8px; font-size: 0.85rem; }
+/* 목표 편집(예전 .tile-modal__row · .dday-*)은 목표 창(components/goal/goal-sheet.css)으로 옮겼다 — GOAL-SHEET-001. */
 
 /* ── 궤도 줄 (v2-D R2) — 목표를 세운 사람에게만 뜨는 홈 머리 한 줄 ── */
 /* 카드 전체가 버튼이다(탭하면 상세 모달 — DdayTile·WeeklyTile의 타일→모달 정본 재사용).
@@ -7948,9 +7764,10 @@ a.viewer-badge:hover {
   font-size: 0.8rem; color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
+/* 터치에서 16px(iOS 초점 확대 — NATIVE-FEEL-P2, 오너 「권장대로」). 데스크톱은 0.8rem 그대로. */
 .vocab-sort {
   min-height: 44px; padding: 0 28px 0 13px;
-  font-size: 0.8rem; font-weight: 600;
+  font-size: max(var(--field-font-min), 0.8rem); font-weight: 600;
   color: var(--text-secondary);
   background: var(--bg-secondary);
   border: 1px solid var(--border);
@@ -8358,7 +8175,8 @@ a.viewer-badge:hover {
   transform-box: fill-box;
   transform-origin: center;
 }
-.jpmap-pin:hover, .jpmap-pin:focus-visible { transform: scale(1.35); }
+.jpmap-pin:focus-visible { transform: scale(1.35); }
+@media (hover: hover) { .jpmap-pin:hover { transform: scale(1.35); } } /* 터치에서 핀이 커진 채 남지 않게(PWA-SHELL-001 ④) */
 /* 마우스 클릭의 기본 사각 아웃라인 제거 — 키보드 포커스는 활성 링과 확대가 이미 표시한다 */
 .jpmap-pin:focus { outline: none; }
 .jpmap-pin:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }

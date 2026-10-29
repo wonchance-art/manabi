@@ -92,10 +92,11 @@ function InputDrill({ drill, lang, onResult, done, dictation }) {
         <p id={promptId} style={{ fontSize: '0.95rem', marginBottom: 6 }}>{drill.prompt}<HintToggle hint={drill.hint} /></p>
       )}
       <div style={{ display: 'flex', gap: 8 }}>
-        <input value={value} disabled={done} onChange={(e) => setValue(e.target.value)}
+        <input className="drill-answer" value={value} disabled={done} onChange={(e) => setValue(e.target.value)}
           aria-labelledby={promptId}
           style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}
-          placeholder={dictation ? '들리는 대로…' : '정답 입력'} lang={dictation ? undefined : 'fr'} />
+          placeholder={dictation ? '들리는 대로…' : '정답 입력'} lang={dictation ? undefined : 'fr'}
+          autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} />
         <button type="button" className="btn btn--sm drill-action" disabled={done || !value.trim()}
           onClick={() => onResult(matches(value, dictation ? drill.sentence : drill.answer, drill.accepts))}>
           확인

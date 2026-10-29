@@ -76,7 +76,11 @@ test('a paged outline stays open after next/previous chapters and return to the 
   assert.equal(await f.page.getByRole('button',{name:/목차 접기/}).getAttribute('aria-expanded'),'true');
   await f.page.waitForFunction(y=>Math.abs(scrollY-y)<=2,y);
   assert.equal(await f.page.getByLabel('제목·파일명 검색').inputValue(),'HSK');
-  assert.equal(await f.page.getByLabel('정렬',{exact:true}).inputValue(),'title');
-  await capture(f,'library-return-expanded-390');assert.equal(f.analysisCalls,0);assert.deepEqual(f.errors,[]);
+  await capture(f,'library-return-expanded-390');
+  // 정렬은 「필터」 시트 안 라디오(NATIVE-FEEL-P1 ⓑ) — 돌아온 주소의 sort=title이 그대로 골라져 있다.
+  await f.page.getByRole('button',{name:'자료 필터',exact:true}).click();
+  assert.equal(await f.page.getByRole('radio',{name:'제목순',exact:true}).isChecked(),true);
+  await f.page.getByRole('button',{name:'닫기',exact:true}).click();
+  assert.equal(f.analysisCalls,0);assert.deepEqual(f.errors,[]);
  }finally{await f.close();}
 });

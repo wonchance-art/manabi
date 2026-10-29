@@ -16,8 +16,10 @@ export const MAIN_NAV = Object.freeze([
   { href: '/discover', label: '산책', icon: 'compass', prefetch: false, intentPrefetch: true },
 ]);
 // Only the text reader uses this shell; PDF and book readers keep their own controls.
+// 추천 읽을거리의 돌아갈 곳 판(/suggestions/<id>/from/home|discover|reading, GUEST-STATIC-001 6단계)은 주소창이 늘 /suggestions/<id>지만,
+// 미리 구운 서버 HTML은 판 경로로 그린다 — 같은 집중 화면이어야 서버 HTML과 첫 그림이 같다(어긋나면 하이드레이션 불일치 #418 → 통째로 다시 그림, e2e 빌드 실측).
 export function isFocusedReadingRoute(pathname) {
-  return /^\/(?:viewer|suggestions)\/[^/]+\/?$/.test(pathname || '');
+  return /^\/(?:viewer\/[^/]+|suggestions\/[^/]+(?:\/from\/(?:home|discover|reading))?)\/?$/.test(pathname || '');
 }
 export function navigationOwner(pathname) {
   if (/^\/study\/library(?:\/|$)/.test(pathname)) return '/materials';
@@ -27,7 +29,9 @@ export function navigationOwner(pathname) {
   // 작문은 배움(학습 순환의 산출 — 단어장 · 오늘 학습에서 연다), 빠른 분석은 서재(자료 추가로 이어진다) 소속(오너 「권장대로」 2026-10-17 KST).
   if (/^\/(?:lessons|books|vocab|review|study|learn|progress|writing)(?:\/|$)/.test(pathname)) return '/home';
   if (/^\/(?:materials|viewer|library|pdf|epub|groups|quick)(?:\/|$)/.test(pathname)) return '/materials';
-  return pathname === '/home' ? '/home' : null;
+  // 배움 판(/home/member · /home/sc …, GUEST-STATIC-001 4단계)은 주소창이 늘 /home이지만, 미리 구운 서버 HTML은 판 경로로 그린다 —
+  // 같은 메뉴를 가리켜야 서버 HTML과 첫 그림(주소 /home)이 같다(aria-current 하이드레이션 불일치 방지).
+  return /^\/home(?:\/|$)/.test(pathname || '') ? '/home' : null;
 }
 // Published-book reading counts never incorporate legacy quizzes or vocabulary schedules.
 export function bookResume(book, progress, hasProgress = false) {

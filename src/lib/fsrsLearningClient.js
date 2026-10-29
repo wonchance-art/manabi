@@ -29,6 +29,22 @@ export function createFsrsLearningClient({ accountId, getAccountId = () => accou
   eventTarget = globalThis.window, requestTimeout = 15000, readRetryDelay = 800 } = {}) {
   const listeners = new Set(), receipts = new Map(), controllers = new Set();
   let disposed = false, started = false, flushing = null, rerun = false, generation = 0;
+  // 한 줄의 전송이 끝났음(성공 · 보류 · 실패 표시)을 기다리는 쪽 — 큐 전체가 비기를 기다리지 않게(뒤 저장이 앞 저장을 붙잡지 않음).
+  const waiters = new Map();
+  const touched = operationId => { waiters.get(operationId)?.forEach(resolve => resolve()); waiters.delete(operationId); };
+  // 제 줄을 지나간 순간 또는 이번 flush가 끝나는 순간 중 이른 쪽. flush 실패(계정 변경 등)는 그대로 던진다.
+  const flushUntil = async operationId => {
+    let done;
+    const own = new Promise(resolve => { done = resolve; });
+    if (!waiters.has(operationId)) waiters.set(operationId, new Set());
+    waiters.get(operationId).add(done);
+    try { await Promise.race([flush(), own]); }
+    finally {
+      const set = waiters.get(operationId);
+      set?.delete(done);
+      if (set && !set.size) waiters.delete(operationId);
+    }
+  };
   const assertOwner = () => {
     if (disposed) throw problem('fsrs_client_disposed');
     if (typeof accountId !== 'string' || !accountId) throw problem('fsrs_invalid_account');
@@ -161,10 +177,11 @@ export function createFsrsLearningClient({ accountId, getAccountId = () => accou
       const held = new Set();
       for (const entry of entries) {
         assertOwner();
-        if (held.has(entry.cardId)) continue;
+        if (held.has(entry.cardId)) { touched(entry.operationId); continue; }
         if (entry.status !== 'queued') {
           held.add(entry.cardId);
           outcomes.push(pendingResult(entry));
+          touched(entry.operationId);
           continue;
         }
         let response;
@@ -191,6 +208,7 @@ export function createFsrsLearningClient({ accountId, getAccountId = () => accou
             outcomes.push({ queued: true, operationId: entry.operationId, status: 'pending', blockReason: 'fsrs_receipt_write_failed' });
             emit({ type: 'error', operationId: entry.operationId, error: storageError });
           }
+          touched(entry.operationId);
           continue;
         }
         assertOwner();
@@ -200,12 +218,14 @@ export function createFsrsLearningClient({ accountId, getAccountId = () => accou
           held.add(entry.cardId);
           outcomes.push({ queued: true, operationId: entry.operationId, status: 'pending', blockReason: 'fsrs_receipt_write_failed' });
           emit({ type: 'error', operationId: entry.operationId, error });
+          touched(entry.operationId);
           continue;
         }
         if (saved.response?.enrolled === true) rememberFsrsEnrollments(accountId, [saved.response.vocabularyId]);
         const result = pendingResult(saved);
         outcomes.push(result);
         emit({ type: 'change', ...result });
+        touched(entry.operationId);
       }
     } while (rerun);
     return outcomes;
@@ -227,7 +247,7 @@ export function createFsrsLearningClient({ accountId, getAccountId = () => accou
     assertOwner();
     emit({ type: 'change', ...pendingResult(entry) });
     rerun = true;
-    await flush();
+    await flushUntil(normalized.operationId);
     const persisted = (await readPending({ includeSettled: true })).find(row => row.operationId === normalized.operationId);
     if (!persisted) throw problem('fsrs_outbox_identity_conflict');
     return persisted.status === 'settled' ? persisted.response : { ...pendingResult(persisted),
@@ -277,7 +297,7 @@ export function createFsrsLearningClient({ accountId, getAccountId = () => accou
       assertOwner();
       emit({ type: 'change', ...pendingResult(entry) });
       rerun = true;
-      await flush();
+      await flushUntil(normalized.operationId);
       const settled = (await readPending({ includeSettled: true })).find(row => row.operationId === normalized.operationId);
       if (!settled) throw problem('fsrs_outbox_identity_conflict');
       return settled.status === 'settled' ? settled.response : { ...pendingResult(settled), cardId: normalized.cardId };

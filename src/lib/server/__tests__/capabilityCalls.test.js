@@ -1,10 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sliceBetween } from '../../__tests__/helpers/sliceBetween.js';
 import { readLearningAdmissionStatus } from '../learningAdmission.js';
-import { readFsrsStatus } from '../fsrsLearning.js';
+import { readFsrsStatus, resetFsrsCapabilityCache } from '../fsrsLearning.js';
 import { introduceFsrsCard } from '../../fsrsScheduler.js';
+
+// 능력은 서버 인스턴스에서 15초 나눠 쓴다(FSRS-CAPABILITY-CACHE-001) — 테스트마다 새로 읽게 비운다.
+beforeEach(() => { resetFsrsCapabilityCache(); });
 
 // 능력 RPC 중복 조사(2026-10-17 KST, 운영 pg_stat_statements: fsrs_capabilities 평균 ~570ms · learning_language_capabilities ~1s ·
 // learning_admission_status ~750ms) — 캐시(신선도)는 바꾸지 않고, 한 화면 이동에서 같은 함수가 두 번 나가지 않게 · 서로 기다리지 않게.
@@ -75,9 +78,10 @@ const users = (pattern) => files.filter(([, src]) => pattern.test(src)).map(([re
 describe('② 화면 배선 — 한 화면 이동에 같은 읽기는 하나', () => {
   it('단어장(/vocab): 첫 입장 한도에는 FSRS 목록을 다시 읽지 않는다(마운트 읽기가 이미 같은 상태) — 바뀐 한도 · 첫 읽기 실패만', () => {
     const page = read('src/views/VocabPage.jsx');
-    const onQuota = sliceBetween(page, 'const admission = useLearningAdmission({ accountId: user?.id, onQuota: quota => {', '} });');
+    const onQuota = sliceBetween(page, 'const admission = useLearningAdmission({ accountId: user?.id, onQuota: (quota, meta) => {', '} });');
     expect(onQuota).toMatch(/if \(quotaOwner\.current !== quota\.actorId\) \{\s*quotaOwner\.current = quota\.actorId; quotaSignature\.current = signature;\s*if \(fsrsControllerRef\.current\?\.getSnapshot\?\.\(\)\.status === 'error'\) fsrsControllerRef\.current\.refresh\(\);\s*return;\s*\}/u);
-    expect(onQuota).toMatch(/if \(signature !== quotaSignature\.current\) \{\s*quotaSignature\.current = signature;\s*fsrsControllerRef\.current\?\.refresh\(\);/u);
+    // 이 기기 입장 응답(source admit)의 한도는 FSRS 줄이 GET 없이 받고(F5①), 받지 못하면(날 · 판 · 활성 변화) 지금처럼 다시 읽는다.
+    expect(onQuota).toMatch(/if \(signature !== quotaSignature\.current\) \{\s*quotaSignature\.current = signature;\s*if \(meta\?\.source === 'admit' && fsrsControllerRef\.current\?\.adoptAdmission\?\.\(quota\)\) return;\s*fsrsControllerRef\.current\?\.refresh\(\);/u);
   });
   it('입장 한도 · FSRS 목록 훅은 화면마다 한 번만 만든다(배움 1 · 단어장 1 / 단어장 1)', () => {
     expect(users(/(?<!function )\buseLearningAdmission\(\{/u)).toEqual(['src/views/HomePage.jsx', 'src/views/VocabPage.jsx']);

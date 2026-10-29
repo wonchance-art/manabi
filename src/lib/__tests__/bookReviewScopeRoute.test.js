@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-vi.mock('../supabaseServer',()=>({requireUser:vi.fn()}));
-import { requireUser } from '../supabaseServer';
+vi.mock('../supabaseServer',()=>({requireUserForRead:vi.fn()}));
+import { requireUserForRead } from '../supabaseServer';
 import { GET } from '../../app/api/learning/book-review/route';
 let chain;
 beforeEach(()=>{
  chain={select:vi.fn(),eq:vi.fn(),in:vi.fn(),order:vi.fn(),range:vi.fn()};
  for(const key of ['select','eq','in','order'])chain[key].mockReturnValue(chain);
  chain.range.mockResolvedValue({data:Array.from({length:201},(_,i)=>({id:`ctx${i}`,user_vocabulary:{id:Math.floor(i/2),user_id:'owner'}})),error:null});
- requireUser.mockResolvedValue({user:{id:'owner'},supabase:{from:vi.fn(()=>chain)}});
+ requireUserForRead.mockResolvedValue({user:{id:'owner'},supabase:{from:vi.fn(()=>chain)}});
 });
 describe('N5 vocabulary scope read API',()=>{
  it('keeps both ownership constraints and all editions, with bounded pagination',async()=>{
@@ -33,7 +33,7 @@ describe('N5 vocabulary scope read API',()=>{
   expect(chain.select).not.toHaveBeenCalled();
  });
  it('rejects anonymous requests before any query',async()=>{
-  requireUser.mockResolvedValue({error:'login required',status:401});
+  requireUserForRead.mockResolvedValue({error:'login required',status:401});
   expect((await GET(new Request('https://local/api/learning/book-review?scope=1'))).status).toBe(401);
   expect(chain.select).not.toHaveBeenCalled();
  });

@@ -274,9 +274,9 @@ export default function ConversationThread({
   // 무엇이 남고 무엇이 지워지는지 먼저(시안 「지우기」). 담은 단어 수는 조회가 끝나면 붙는다.
   const deleteMessage = confirm ? (
     <>
-      {[conversation.topic, langKo, `말풍선 ${items.length}개`, confirm.words != null ? `담은 단어 ${confirm.words}개` : null].filter(Boolean).join(' · ')}
-      <br />담은 단어와 복습 일정은 단어장에 그대로 남아요.
-      <br />서재 휴지통에서 되돌릴 수 있어요. 영구 삭제하면 복습 카드의 「대화로」 출처 문장도 함께 지워져요.
+      {[conversation.topic, langKo, `말풍선 ${items.length}개`, confirm.words != null ? `담은 표현 ${confirm.words}개` : null].filter(Boolean).join(' · ')}
+      <br />담은 표현과 복습 일정은 단어장에 그대로 남아요.
+      <br />휴지통에서 되돌릴 수 있어요. 영구 삭제하면 복습 카드의 「대화로」 출처 문장도 함께 지워져요.
     </>
   ) : null;
 

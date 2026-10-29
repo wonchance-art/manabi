@@ -242,7 +242,7 @@ describe('hash 기록에 같은 문서 tree를 함께 찍는다(BOOK-HASH-RACE-0
   });
 
   it('go()는 지금 기록의 Next 표지 · tree를 그대로 옮기고 읽던 자리만 뺀다', () => {
-    const go = sliceBetween(source, 'const go = useCallback(', '}, [book.edition, bookHref, unit, update, reference, rememberPosition]);');
+    const go = sliceBetween(source, 'const go = useCallback(', '}, [book.edition, bookHref, unit, update, reference, preview, rememberPosition]);');
     expect(go).toContain('const navigationState = { ...window.history.state };');
     expect(go).toContain('delete navigationState.manabiBookPosition;');
     expect(go).not.toMatch(/delete navigationState\.(?:__NA|__PRIVATE_NEXTJS_INTERNALS_TREE)/);

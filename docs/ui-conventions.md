@@ -86,7 +86,7 @@ min-width : 760 · 900
 ```
 
 목록 밖의 값을 새로 쓰면 `uiConventions.test.js`가 잡는다. 총 쿼리 개수에도 상한이
-있어(**현재 25** — 계약의 `VIEWPORT_QUERY_CAP`과 같은 값이다. 28에서 줄었다: 죽은 CSS를 걷어내니 **아무도 안 쓰던 @media 블록 둘이 통째로 비었다**. 26→25는 예전 홈 메트로 `.bento`의 600 블록 — 배움 · 현황 격자가 셸 컨테이너 쿼리로 옮겨 가며 비었다, LEARN-HOME-AK-001) **뷰포트 쿼리를 새로
+있어(**현재 24** — 계약의 `VIEWPORT_QUERY_CAP`과 같은 값이다. 28에서 줄었다: 죽은 CSS를 걷어내니 **아무도 안 쓰던 @media 블록 둘이 통째로 비었다**. 26→25는 예전 홈 메트로 `.bento`의 600 블록 — 배움 · 현황 격자가 셸 컨테이너 쿼리로 옮겨 가며 비었다, LEARN-HOME-AK-001. 25→24는 어디서도 쓰지 않던 음성 선택기(TtsVoicePicker) 삭제로 `.tts-voice`의 600 블록이 비었다, 2026-10-18 KST) **뷰포트 쿼리를 새로
 추가하는 것 자체가 막혀 있다.** 분포(R3 2차 실측):
 
 ```
@@ -222,7 +222,8 @@ R3에서 `myplan` 격자를 실제로 옮겨 그 차이를 실측했다 — 260p
 
 | 이름 | 값 | 같은 값을 쓰는 곳 |
 |---|---|---|
-| manabi 로즈 | `#994A5A` | `.manabi-app --primary` = `theme-color` meta = manifest `theme_color` = 아이콘 바탕 = 글자 로고 점 |
+| manabi 로즈 | `#994A5A` | `.manabi-app --primary` = 아이콘 바탕 = 글자 로고 점 |
+| 화면 바탕 | `#F6F4EE` | `.manabi-app --paper` = `theme-color` meta = manifest `theme_color`(휴대폰 상태 표시줄 · 주소창 — 오너 지시 2026-10-19 KST). iOS 표시줄은 `default`(투명 `black-translucent` 금지 — 시각 · 배터리가 머리 위에 겹친다) |
 | 크림 | `#FFF4E6` | 아이콘의 m |
 | 해바라기 | `#FFD04D` | 아이콘의 점 |
 | 종이 | `#FFFDF9` | `.manabi-app` 바탕 = manifest `background_color`(설치 앱 첫 화면) = 공유 미리보기 바탕 |

@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { introduceFsrsCard } from '../fsrsScheduler';
+import { compactVocabularySnapshot } from '../vocabularySnapshotLight';
 import { sliceBetween } from './helpers/sliceBetween';
 // /study 조립(assembleStudyMaterials)의 DB 읽기 묶음(PERF-STUDY-001) — 최근 주제 · 최근 사용 문단은 첫 병렬 묶음에서 함께 읽는다.
 // 읽기만 앞당긴다: 같은 재료(avoidThemes · 연재 prevArc/episode), 조회 실패는 지금처럼 조용히 빈 값.
@@ -66,7 +67,8 @@ const read = file => fs.readFileSync(path.resolve(__dirname, '../../..', file), 
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(NOW);
   env.snapshot = snapshot(); env.captured = {};
-  env.client.rpc.mockReset().mockImplementation(async () => ({ data: env.snapshot }));
+  env.client.rpc.mockReset().mockImplementation(async (name, args) => ({ data: name === 'fsrs_vocabulary_snapshot_light'
+    ? compactVocabularySnapshot(env.snapshot, { language: args.p_language, summary: args.p_summary }) : env.snapshot }));
   env.ref = { ALL_CHAPTERS: [], LEVEL_META: [{ key: 'N5' }], langCode: 'ja', base: '/japanese', getChapter: () => null, isIntroLevel: () => false,
     getVocab: () => ({ themes: [{ words: [] }] }) };
 });

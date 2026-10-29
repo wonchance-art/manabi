@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { seededShuffle } from '../lib/seededShuffle';
 import Button from '../components/Button';
@@ -16,8 +17,8 @@ import { addRefRead, setRefCheck } from '../lib/refReadStore';
 import { clearStudySource, readStudySource } from '../lib/studySourceHandoff';
 import { useToast } from '../lib/ToastContext';
 import { createGrammarRetry, gradeGrammarReview, ratingFromScore, sendGrammarGradeKeepalive } from '../lib/grammarSrs';
-import { sessionTokenFor } from '../lib/keepalive';
-import { createReviewEventBatcher, logReviewEvents } from '../lib/reviewEvents';
+import { sessionTokenFor, keepaliveTokenUsable } from '../lib/keepalive';
+import { createReviewEventBatcher, logReviewEvents, sendReviewEventsOnHide } from '../lib/reviewEvents';
 import { hasVapidKey, isPushSupported, isIosNeedsInstall, getSubscriptionState, subscribePush } from '../lib/push';
 import { sentenceIncludesWord } from '../lib/skillRung';
 import { recordActivity } from '../lib/streak';
@@ -68,7 +69,7 @@ export default function StudySessionPage({
   const kanjiCare = band === 'beginner' && langCode === 'ja';
   // 문단 발음 상시 노출은 입문에 한정 — 비입문은 문장 탭으로 지연 공개(한자 읽기 인출 기회 확보).
   const alwaysShowPron = band === 'beginner';
-  const { user, fetchProfile, loading: authLoading } = useAuth();
+  const { user, fetchProfile, refreshProfileAfterActivity, loading: authLoading } = useAuth();
   // 세션 계정 — 서버가 확인한 사용자로 시작할 때 고정한다. 도중에 로그아웃하거나 다른 계정이 되면 기록을 멈추고
   // 로그인을 안내한다(로그인 없는 기록은 기기 로컬로 새고, 다른 계정이면 남의 기록이 된다). 기록하는 곳은 recorderRef만 본다.
   const sessionUserRef = useRef(sessionUserId || null);
@@ -76,6 +77,12 @@ export default function StudySessionPage({
   const authLost = !!sessionUserRef.current && !authLoading && user?.id !== sessionUserRef.current;
   const recorderRef = useRef(null);
   recorderRef.current = authLost ? null : sessionUserRef.current;
+  // 이 화면의 채점 · 새 단어 저장은 뷰어의 저장 · 만기 색인(['vocab-words'], 신선도 2분 — VOCAB_WORDS_STALE_MS)을 무효화하지 않는다.
+  // 떠날 때 세션 계정의 것을 낡음으로만 표시한다 — 다시 읽지 않는다(요청 0). 다음에 뷰어를 열면 그때 새로 받는다(로그인 감사 F3③).
+  const queryClient = useQueryClient();
+  useEffect(() => () => {
+    if (sessionUserRef.current) queryClient.invalidateQueries({ queryKey: ['vocab-words', sessionUserRef.current], refetchType: 'none' });
+  }, [queryClient]);
   const [lostRecordUid, setLostRecordUid] = useState(null); // 큐에도 못 담은 문항(첫 시도 uid — 재출제 -r에는 다시 띄우지 않는다) — 인라인 한 줄
   const [grammarGaveUp, setGrammarGaveUp] = useState(false); // 문법 일정 재시도 상한을 넘겨 버렸다 — 한 줄 알림
   const toast = useToast();
@@ -423,12 +430,12 @@ export default function StudySessionPage({
       // 화면에는 「로그인이 필요해요」 배너가 떠 있다. 문구를 바꾸려면 오너 목업이 먼저라 지금은 동작만 이대로 둔다.
       const recorder = recorderRef.current;
       if (!recorder) return;
-      batcherRef.current?.flush();
+      beaconPendingEvents(recorder);
       beaconPendingGrammar(recorder);
       // 1문항 이상 답변했고 아직 fireEffects 전이면 활동 기록 시도(스트릭 RPC는 멱등).
       if (!streakSentRef.current && recordedRef.current.size > 0) {
         streakSentRef.current = true;
-        recordActivity(recorder, () => fetchProfile?.(recorder));
+        recordActivity(recorder, () => refreshProfileAfterActivity?.(recorder));
       }
     }
     window.addEventListener('pagehide', onPageHide);
@@ -529,6 +536,8 @@ export default function StudySessionPage({
     // 로그인이 풀렸거나 계정이 바뀌었다 — 보내지 않고 멈춰 둔다(같은 세션 계정이 돌아오면 복귀 효과가 보낸다).
     if (!recorder) return sessionUserRef.current ? heldEventsBox : null;
     if (!batcherRef.current) batcherRef.current = createReviewEventBatcher(recorder, { size: 4 });
+    // 탭이 닫힐 때 남은 묶음을 keepalive로 보내려면 토큰을 미리 받아 둬야 한다(pagehide에서는 기다릴 수 없다) — 문법 보류분과 같은 토큰.
+    rememberGrammarToken(recorder);
     return batcherRef.current;
   }
   const heldEventsBox = { add: event => { if (event) heldEventsRef.current.push(event); } };
@@ -911,10 +920,19 @@ export default function StudySessionPage({
     }, () => {});
   }
 
+  /** 페이지가 닫힐 때 남은 이벤트 묶음을 keepalive로(경계 확인이 필요한 어휘 행 · 토큰 없음은 보통 전송). 세션 계정 몫만. */
+  function beaconPendingEvents(owner) {
+    const events = batcherRef.current?.drain() || [];
+    if (!events.length) return;
+    const held = grammarTokenRef.current;
+    // 만료됐거나 곧 만료될 토큰이면 keepalive가 401로 조용히 사라진다 — 보통 전송으로 돌린다.
+    sendReviewEventsOnHide(owner, events, { accessToken: held?.userId === owner && keepaliveTokenUsable(held.token) ? held.token : null });
+  }
+
   /** 페이지가 닫힐 때 문법 보류분을 keepalive로 — 토큰이 없으면 보통 재시도로. 둘 다 세션 계정 몫만. */
   function beaconPendingGrammar(owner) {
     const held = grammarTokenRef.current;
-    if (held?.userId !== owner) { retryPendingGrammar(); return; }
+    if (held?.userId !== owner || !keepaliveTokenUsable(held.token)) { retryPendingGrammar(); return; }
     pendingGrammarRef.current.beacon(row => row.user_id === owner,
       (row, rating, { reviewedAt }) => sendGrammarGradeKeepalive(row, rating, { reviewedAt, accessToken: held.token }))
       .catch(() => {});
@@ -1010,7 +1028,7 @@ export default function StudySessionPage({
     return (
       <div className="page-container" style={{ maxWidth: 640 }}>
         <div style={{ display: 'flex', alignItems: 'center', margin: '10px 0 20px' }}>
-          <Link href="/home" aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem', padding: '6px 10px', margin: '-6px -10px' }}>✕</Link>
+          <Link href="/home" prefetch={false} aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem', padding: '6px 10px', margin: '-6px -10px' }}>✕</Link>
         </div>
         <div style={{ textAlign: 'center', paddingTop: 60 }}>
           <h1 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 8 }}>문단 마무리 중…</h1>
@@ -1215,7 +1233,7 @@ export default function StudySessionPage({
       {authBanner}
       {/* 헤더 — 나가기 · 진행바 · 언어 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '10px 0 20px' }}>
-        <Link href="/home" aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem', padding: '6px 10px', margin: '-6px -4px -6px -10px' }}>✕</Link>
+        <Link href="/home" prefetch={false} aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem', padding: '6px 10px', margin: '-6px -4px -6px -10px' }}>✕</Link>
         <div className="study-progress" role="progressbar" aria-label="세션 진행" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPct}
           aria-valuetext={`${progressDone}/${progressTotal}`}>
           <div className="study-progress__fill" style={{ width: `${progressPct}%` }} />
@@ -1433,6 +1451,8 @@ export default function StudySessionPage({
             onChange={e => setTyping(e.target.value)} disabled={phase === 'feedback'}
             placeholder={langName + '로 입력'} aria-describedby={headId}
             enterKeyHint="go"
+            // 채점하는 답칸 — 휴대폰 자동 고침 · 첫 글자 대문자 · 맞춤법 밑줄이 답을 대신 고치거나 틀린 곳을 알려 주지 않게(KanaTest 선례, NATIVE-FEEL-001)
+            autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
             onKeyDown={e => {
               if (e.key !== 'Enter') return;
               // IME 조합 중(일본어·중국어 변환 확정) Enter는 미확정 텍스트로 채점되므로 무시.

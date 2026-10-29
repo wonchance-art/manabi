@@ -31,6 +31,48 @@ export function buildVocabularyWordIndex(snapshot, at) {
     registryById: new Map(checked.registry.map(entry => [entry.cardId, entry])) };
 }
 
+/**
+ * 카드 몇 장의 snapshot(SNAPSHOT-CARDS-001 — fsrs_vocabulary_snapshot_cards, 같은 판정 · 같은 모양)을 이미 만든 색인에 붙인다.
+ * 결과 = 전체 snapshot(그 카드만 새 값)으로 buildVocabularyWordIndex를 다시 부른 것과 같다(계약 vocabWordsCardsPatch.test.js):
+ * 행 · 투영 · 등록 정보는 그 카드만 바꾸고, 열쇠는 build의 순서 규칙을 id로 되짚는다 — 행은 id 오름차순(SQL ORDER BY id; 소문자 UUID 문자열 순서 =
+ * uuid 순서)이라 표면 열쇠(surface: · 언어:surface:)는 가장 큰 id, 기본형 열쇠(base: · 언어:base:)는 가장 작은 id가 갖는다.
+ * 되짚을 수 없으면 null(호출부가 전체를 다시 받는다): 색인이 불완전 · 다른 계정 · FSRS 켜짐이 다름 · 요청한 카드가 응답에 없는데 색인에 있음(지워짐) ·
+ * 이미 있던 카드의 표기 · 기본형 · 언어가 바뀜(옛 열쇠를 누가 이어받을지 색인만으로는 모른다).
+ * 평가 전송 중 행(__pendingReview)은 여기서 다루지 않는다 — 호출부가 preservePendingVocabularyReviews로 지킨다(전체 받기와 같은 길).
+ */
+export function mergeVocabularyWordIndexCards(index, cards, { ids = [], at } = {}) {
+  if (!index?.byKey || index.complete !== true || index.registryAvailable !== true || cards?.actorId !== index.actorId) return null;
+  let checked;
+  try { checked = completeAt(cards, at ?? index.now); } catch { return null; }
+  if (checked.enabled !== index.enabled) return null;
+  const fresh = new Map(checked.rows.map(row => [row.id, row]));
+  const held = new Map();
+  for (const row of index.byKey.values()) if (row?.id && !held.has(row.id)) held.set(row.id, row);
+  for (const wanted of ids) if (!fresh.has(wanted) && (held.has(wanted) || index.projectionsById?.has(wanted))) return null;
+  for (const row of checked.rows) {
+    const old = held.get(row.id) || index.projectionsById?.get(row.id)?.vocabulary;
+    if (old && (old.word_text !== row.word_text || old.base_form !== row.base_form || old.language !== row.language)) return null;
+  }
+  const byKey = new Map([...index.byKey].map(([key, row]) => [key, fresh.get(row?.id) || row]));
+  const surfaces = new Set(index.surfaces), bases = new Set(index.bases);
+  const claim = (key, row, wins) => { const current = byKey.get(key); if (!current || current.id === row.id || wins(current.id)) byKey.set(key, row); };
+  for (const row of checked.rows) {
+    if (row.word_text) {
+      surfaces.add(row.word_text);
+      for (const key of [`surface:${row.word_text}`, `${row.language}:surface:${row.word_text}`]) claim(key, row, other => other < row.id);
+    }
+    if (row.base_form) {
+      bases.add(row.base_form);
+      for (const key of [`base:${row.base_form}`, `${row.language}:base:${row.base_form}`]) claim(key, row, other => row.id < other);
+    }
+  }
+  const projectionsById = new Map(index.projectionsById), registryById = new Map(index.registryById);
+  for (const projection of checked.projections) projectionsById.set(projection.vocabulary.id, projection);
+  for (const entry of checked.registry) registryById.set(entry.cardId, entry);
+  return { ...index, byKey, surfaces, bases, projectionsById, registryById,
+    now: new Date(Math.max(schedulerTime(index.now), schedulerTime(checked.now))).toISOString() };
+}
+
 export function findIndexedVocabulary(index, token, language) {
   if (!token) return null;
   const base = token.sep_link || token.base_form;
@@ -42,7 +84,7 @@ export function findIndexedVocabulary(index, token, language) {
 }
 
 // 카드 한 장의 현재 projection — legacy의 성공/undo/오프라인 캐시 패치만 반영한다. FSRS cohort와 registry는 고정한다.
-function currentIndexedProjection(index, row, now) {
+export function currentIndexedProjection(index, row, now = Date.now()) {
   if (!row || index?.complete !== true || index.registryAvailable !== true) return null;
   let projection = index.projectionsById?.get(row.id);
   if (!projection || row.user_id !== index.actorId || row.__pendingReview) return null;

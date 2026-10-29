@@ -87,7 +87,7 @@ describe('Korean outbox capability and rollback isolation', () => {
     expect(f.rpc).toHaveBeenCalledWith('learning_language_capabilities');
     expect(f.insert.mock.calls[0][0].map(row => row.lang)).toEqual(['Japanese']);
     expect(f.remove).toHaveBeenCalledWith([1]); expect(f.state.pending).toEqual([entry(2, 'Korean')]);
-    expect(f.persist).toHaveBeenCalledWith(f.client, 'Japanese-card', stats, reviewedAt);
+    expect(f.persist).toHaveBeenCalledWith(f.client, 'Japanese-card', stats, reviewedAt, expect.objectContaining({ boundary: expect.objectContaining({ cardId: 'Japanese-card' }) }));
     expect(f.scopes.filter(([, field]) => field === 'user_id').every(([, , user]) => user === 'alice')).toBe(true);
   });
   it('treats unavailable capability RPC as blocked Korean without interrupting legacy sync', async () => {

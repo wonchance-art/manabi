@@ -174,7 +174,8 @@ describe('조회 — 이미 쌓이는 것을 읽기만 한다', () => {
 });
 
 describe('§2 저장 — dday_date 재사용 + 2컬럼, 그리고 적용 전 무해', () => {
-  const stats = read('src/views/ProfileStats.jsx');
+  // 저장 길은 목표 창(GOAL-SHEET-001)으로 옮겼다 — 현황은 창을 열기만 한다. 두 파일 다 날짜 열을 새로 만들지 않는다.
+  const stats = read('src/components/goal/GoalSheet.jsx') + read('src/views/ProfileStats.jsx');
 
   it('마이그레이션은 컬럼 2개뿐 — 날짜 컬럼을 새로 만들지 않는다', () => {
     const sql = read('supabase/migrations/20260831010000_profile_goal.sql');
@@ -221,13 +222,33 @@ describe('배선 — 목표를 세운 사람에게만, 세울 곳은 한 군데'
     expect(stats).not.toMatch(/\{\s*\w+\s*&&\s*<GoalTrackTile/);
   });
 
-  it('목표를 고치는 자리는 현황의 목표 · D-Day 모달 하나 — 날짜와 과정이 두 화면으로 갈리지 않는다', () => {
-    expect(stats).toContain('목표 · D-Day');
-    expect(stats).toContain('setGoalLang(');
-    expect(stats).toContain('setGoalLevel(');
-    expect(stats).toContain('<GoalEditor catalog={catalog.data} openSignal={goalSignal} />');
+  it('목표를 고치는 자리는 목표 창(GoalSheet) 하나 — 현황은 그 창을 열고, 날짜와 과정이 두 화면으로 갈리지 않는다', () => {
+    const sheet = read('src/components/goal/GoalSheet.jsx');
+    expect(sheet).toContain('<h2 id={titleId}>목표</h2>');
+    expect(sheet).toContain("{exam ? '시험' : '목표 수준'}");
+    expect(stats).toContain("import GoalSheet from '../components/goal/GoalSheet';");
+    expect(stats).toContain('<GoalSheet open={goalOpen} onClose={() => setGoalOpen(false)} />');
+    // 「목표 수정」 · 진행바 · 오늘 목표 칸 · ?goal=edit 넷이 같은 창을 연다
+    expect(stats).toContain('onClick={() => setGoalOpen(true)} aria-haspopup="dialog">목표 수정</button>');
+    expect(stats.match(/onOpen=\{\(\) => setGoalOpen\(true\)\}/g)).toHaveLength(2);
+    expect(stats).toContain("get('goal') === 'edit') setGoalOpen(true);");
+    expect(stats).not.toMatch(/GoalEditor|ExamPicker|from\('profiles'\)/);
     expect(tile).toContain("editHref = '/progress?goal=edit'");
-    expect(home).not.toContain('목표 · D-Day');
+    expect(home).not.toContain('GoalSheet');
+  });
+
+  it('하루 목표(복습 · 담기)도 같은 창에서 고친다 — 내 정보는 편집기를 따로 두지 않고 요약 줄에서 같은 GoalSheet를 연다(PROFILE-REDESIGN-001 D2 · GOAL-SHEET-001)', () => {
+    const editor = read('src/components/goal/GoalSheet.jsx');
+    expect(editor).toContain('<legend className="gs-sec">하루 목표</legend>');
+    expect(editor).toMatch(/const base = \{ dday_date: nextDate \|\| null, dday_label: nextLabel \|\| null, \.\.\.daily \};/);
+    const mine = fs.readFileSync(path.join(process.cwd(), 'src/views/MyPage.jsx'), 'utf8');
+    expect(mine).not.toMatch(/goal_review|goal_words|type="range"/);
+    expect(mine).toContain('<ProfileRow label="목표" dialog onClick={() => setGoalOpen(true)}');
+    expect(mine).toContain("import GoalSheet from '../components/goal/GoalSheet';");
+    expect(mine).toContain('<GoalSheet open={goalOpen} onClose={() => setGoalOpen(false)} />');
+    expect(mine).not.toContain('/progress?goal=edit');
+    // 오늘 목표 칸도 같은 창으로 — 계정 화면이 아니다
+    expect(fs.readFileSync(path.join(process.cwd(), 'src/components/learn/LearnTiles.jsx'), 'utf8')).toContain('label="오늘 목표" href="/progress?goal=edit"');
   });
 
   it('궤도는 순수 함수가 계산한다 — 화면이 날짜 산수를 다시 하지 않는다', () => {

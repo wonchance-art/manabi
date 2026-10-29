@@ -5,11 +5,11 @@
 .manabi-app .manabi-page.learn-page{max-width:720px;padding:40px 24px 64px}
 .learn-page{--learn-track:color-mix(in srgb,var(--rule) 55%,var(--sheet));--learn-soft:color-mix(in srgb,var(--ink) 4%,var(--sheet));--learn-rose-1:color-mix(in srgb,var(--ja) 28%,var(--sheet));--learn-rose-2:color-mix(in srgb,var(--ja) 58%,var(--sheet));--learn-rose-4:color-mix(in srgb,var(--ja) 62%,var(--ink));--learn-go:var(--accent-text);--learn-stop:var(--danger)}
 .learn-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px;min-width:0}
-.learn-top__title{display:flex;align-items:center;gap:14px;min-width:0}
+.learn-top__title{display:flex;align-items:center;gap:14px}
 .learn-page .learn-top h1{font:700 34px/1.2 var(--font-manrope),var(--font-noto-kr),sans-serif;letter-spacing:-1.2px;margin:0;white-space:nowrap}
 .learn-toplink{font-size:13px;font-weight:700;color:var(--ink);min-height:44px;display:inline-flex;align-items:center;white-space:nowrap}
 .learn-crumb{display:inline-flex;align-items:center;min-height:44px;font-size:13px;font-weight:700;color:var(--muted);margin:-12px 0 0}
-.learn-chips{display:flex;gap:4px;align-items:center}
+.learn-chips{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-width:0;min-height:44px}
 .learn-chip{display:inline-flex;align-items:center;min-height:44px;padding:0;border:0;background:transparent;font:inherit;cursor:pointer}
 .learn-chip>span{font-size:12.5px;font-weight:600;line-height:1.4;padding:4px 12px;border-radius:999px;border:1px solid var(--rule);color:var(--muted);white-space:nowrap;background:var(--sheet)}
 .learn-chip.is-on>span{background:var(--ink);border-color:var(--ink);color:var(--paper)}
@@ -54,6 +54,14 @@ a.learn-tile:hover{background:var(--learn-soft)}
 @media (prefers-reduced-motion:reduce){.learn-paragraph__cycle{transition:none}}
 .learn-paragraph__sentence{font:700 19px/1.65 var(--font-serif-kr),serif;max-width:15em;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
 .learn-paragraph__words{font:700 20px/1.4 var(--font-serif-kr),serif;overflow-wrap:anywhere}
+/* 일본어 문장 · 표현 · 복습 단어는 일본어 글꼴로 그린다(FIELD-AUDIT 2026-10-23 KST — 운영 /home 실측). Noto Serif KR로 그리면 한자가 한국 자형이고,
+   한자가 흩어진 unicode-range 조각을 17개(743KB) 받아 LCP가 2.7~4.0초였다. 이미 받는 Noto Sans JP(:lang(ja) 전역 규칙과 같은 순서)로 그린다. */
+.learn-paragraph__sentence:lang(ja),.learn-paragraph__words:lang(ja),.learn-review__word:lang(ja){font-family:var(--font-noto-jp,'Noto Sans JP'),var(--font-noto-kr,'Noto Sans KR'),sans-serif}
+/* 중국어도 같다 — 세리프 KR이면 한자가 한국 자형이고 한자 조각 17개(800KB)를 받는다. 이 칸은 이미 ZhSlot이 간체 독립 스타일시트(SC-LINK-001)를
+   걸고 기다리므로 그 Noto Sans SC로 그린다(폴백 이름 — 변수가 없는 배움 세그먼트에서도 웹폰트 이름으로 찾는다). 전역 :lang(zh)와 달리 Noto Sans KR을
+   뒤에 두지 않는다: 스타일시트를 기다리는 동안(visibility: hidden으로 자리만 지킬 때도 배치는 한다) 'Noto Sans SC'가 아직 없어 KR 한자 조각
+   11개(396KB)를 더 받았다. 시스템 글꼴로 자리만 잡고 SC가 오면 그린다(로컬 빌드 실측 2026-10-23 KST — 글꼴 1141 → 841KB). */
+.learn-paragraph__sentence:lang(zh),.learn-paragraph__words:lang(zh),.learn-review__word:lang(zh){font-family:var(--font-noto-sc, 'Noto Sans SC'),sans-serif}
 .learn-paragraph__cap{font-size:12.5px;color:var(--muted)}
 
 /* 이어 읽기 — 시안 C(위아래 나눔). 머리 = 언어 색, 옅은 색은 언어 색 9% + 종이(새 값 없음). */
@@ -174,6 +182,16 @@ a.learn-memory__bucket:hover{background:color-mix(in srgb,var(--ink) 8%,var(--sh
   .learn-memory__fc{gap:6px;padding:0}
   .learn-stats .learn-order-1{order:1}.learn-stats .learn-order-2{order:2}.learn-stats .learn-order-3{order:3}.learn-stats .learn-order-4{order:4}
   .learn-stats .learn-order-5{order:5}.learn-stats .learn-order-6{order:6}.learn-stats .learn-order-7{order:7}.learn-stats .learn-order-8{order:8}
+}
+/* 머리 줄 — 셸 폭 480 이하: 칩이 「배움 · 현황 전체 →」 한 줄에 다 들어가지 않는다(4개 언어 칩 267px · 320 화면 본문 288px).
+   제목 · 오른쪽 링크(또는 단추)가 첫 줄, 칩이 둘째 줄 전체 폭(오너 실기 2026-10-25 KST — 칩이 「현황 전체」 위에 겹쳤다).
+   칩 줄 높이(44)는 대기 화면도 같은 자리를 비워 둔다(HomeSkeleton) — 붙은 뒤 줄이 생겨 아래가 밀리지 않게. */
+@container manabi-shell (max-width:480px){
+  .learn-top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:12px}
+  .learn-top__title{display:contents}
+  .learn-page .learn-top h1{grid-column:1;grid-row:1}
+  .learn-top>:not(.learn-top__title){grid-column:2;grid-row:1}
+  .learn-top .learn-chips{grid-column:1/-1;grid-row:2}
 }
 @container manabi-shell (max-width:360px){.learn-resume__count{display:none}.learn-top__title{gap:6px}.learn-page .learn-top h1{font-size:26px}}
 button.learn-tile{font:inherit;text-align:left;cursor:pointer}

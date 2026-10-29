@@ -8,10 +8,18 @@
  */
 import { LANG_NAME_KO, detectLang } from './constants.js';
 import { kstDayStartMs } from './growthStats.js';
-import { perDayLabel } from './goalPace.js';
+import { daysLeftUntil, perDayLabel } from './goalPace.js';
 
 export const LEARN_LANGS = Object.freeze(Object.keys(LANG_NAME_KO));
 export const LEARN_LANG_KEY = 'learn_lang';
+
+/**
+ * 이어 읽기 칸의 장식 글자(learn-resume__glyph) — 언어별 한 글자, 언어를 모르면 「文」.
+ * 손님은 학습 언어가 늘 일본어라(learnLanguages(null) = ['Japanese']) 손님 글자는 서버도 안다 — 대기 골격이 같은 글자를
+ * 첫 그림부터 그린다(HOME-GLYPH-LCP-001). 대기 화면(loading.jsx · 서버 컴포넌트)도 같은 값을 써서 평범한 모듈에 둔다.
+ */
+export const RESUME_GLYPH = Object.freeze({ Japanese: 'あ', Chinese: '汉', English: 'A', French: 'É' });
+export const GUEST_RESUME_GLYPH = RESUME_GLYPH.Japanese;
 
 /**
  * 학습 언어 칩 목록 — 프로필 학습 언어(배열 · 문자열) 중 이름이 있는 언어. 학습 언어가 비어 있으면 담은 표현이 많은
@@ -61,6 +69,15 @@ export function shortDateLabel(date, { weekday = true } = {}) {
   return `${+match[2]}/${+match[3]}${weekday ? `(${WEEKDAYS[day]})` : ''}`;
 }
 
+/** 남은 날 → 「D-42」 · 「D-Day」 · 「D+3」. 진행바 칸과 내 정보의 목표 줄이 같은 표기를 쓴다. */
+export const dDayText = daysLeft => (daysLeft > 0 ? `D-${daysLeft}` : daysLeft === 0 ? 'D-Day' : `D+${Math.abs(daysLeft)}`);
+
+/** 목표일('YYYY-MM-DD', KST)의 D 표기 — 날짜가 없거나 깨졌으면 null. */
+export function dDayLabel(targetDate, now = Date.now()) {
+  const days = daysLeftUntil(targetDate, now);
+  return days == null ? null : dDayText(days);
+}
+
 /**
  * 진행바 반쪽 칸의 표시 재료. marked = markProgress 산출, p = pace 산출.
  * 신호: 예상 완주일이 목표일 이전·당일이면 청(여유), 늦으면 적(「N일 늦음」). 예측할 수 없으면 신호 없음.
@@ -70,7 +87,7 @@ export function goalTrackView({ marked, p, goalName, goalDate }) {
   if (!marked || !p) return null;
   const date = shortDateLabel(goalDate);
   const head = [date, goalName].filter(Boolean).join(' ');
-  const dLabel = p.daysLeft > 0 ? `D-${p.daysLeft}` : p.daysLeft === 0 ? 'D-Day' : `D+${Math.abs(p.daysLeft)}`;
+  const dLabel = dDayText(p.daysLeft);
   const count = { done: marked.done, total: marked.total };
   const pct = marked.total > 0 ? Math.min(100, (marked.done / marked.total) * 100) : 0;
   if (p.done) {

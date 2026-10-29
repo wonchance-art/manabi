@@ -263,4 +263,28 @@ describe('manual save review controller', () => {
     env.emit({ type: 'change', status: 'applied', action: 'save', accountId: otherActor, response: success(request()) });
     expect(env.applied).not.toHaveBeenCalled(); env.controller.dispose();
   });
+  // 단어 목록 X를 연달아 누르면 저장이 줄을 선다 — 앞 저장은 제 줄이 끝나면 돌아와야 한다(뒤 저장이 끝날 때까지 돌지 않게).
+  it('resolves a save once its own entry settles, not after later saves drain the queue', async () => {
+    const outbox = storage(), gates = new Map(), second = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+    const fetchImpl = vi.fn(async (_url, options) => {
+      const input = JSON.parse(options.body), gate = deferred();
+      gates.set(input.operationId, gate);
+      await gate.promise;
+      return http(success(input));
+    });
+    const client = createFsrsLearningClient({ accountId: actor, outbox, fetchImpl });
+    let firstDone = false;
+    const first = client.save(request('save-a')).then((r) => { firstDone = true; return r; });
+    await vi.waitFor(() => expect(gates.has('save-a')).toBe(true));
+    const later = client.save(request('save-b', second));
+    await vi.waitFor(() => expect(outbox.rows).toHaveLength(2));
+    gates.get('save-a').resolve();
+    await vi.waitFor(() => expect(gates.has('save-b')).toBe(true));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(firstDone).toBe(true);
+    expect(await first).toMatchObject({ ok: true, operationId: 'save-a' });
+    gates.get('save-b').resolve();
+    expect(await later).toMatchObject({ ok: true, operationId: 'save-b', vocabularyId: second });
+    client.dispose();
+  });
 });

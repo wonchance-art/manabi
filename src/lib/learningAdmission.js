@@ -16,6 +16,13 @@ function time(value) {
   catch { reject(); }
 }
 
+/**
+ * 연결이 끊겨 서버 입장을 받을 수 없는 카드(F9, 오너 승인 2026-10-25 KST 「권장대로」). 이미 받은 카드는 이 오류 없이 열린다.
+ * 화면은 「복습을 준비하지 못했어요」 대신 끊김 안내(OfflineNotice REVIEW_CARD_OFFLINE_TITLE)를 보이고, 연결되면 같은 카드를 다시 묻는다.
+ */
+export const LEARNING_ADMISSION_OFFLINE = 'learning_admission_offline';
+export const isAdmissionOfflineError = error => error?.code === LEARNING_ADMISSION_OFFLINE;
+
 export function normalizeAdmissionRequest(body, actorId) {
   if (!id(actorId)) reject('fsrs_auth_required', 401);
   if (!object(body) || !['admit', 'configure'].includes(body.action)) reject('fsrs_invalid_request', 400);
