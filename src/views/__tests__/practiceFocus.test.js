@@ -67,11 +67,15 @@ describe('WRITING-FOCUS-001 — 작문 첨삭 전후 초점', () => {
   });
 });
 
-describe('CONV-FOCUS-001 — 새 대화 시작 실패 뒤 다시 누를 자리', () => {
+describe('CONV-FOCUS-001 — 방을 열다 실패한 뒤 다시 누를 자리(방 목록판)', () => {
   const conv = read('src/views/NewConversationPage.jsx');
-  it('오류가 나고 잠김이 풀리면 「대화 시작」으로(다른 곳의 초점은 그대로)', () => {
-    const effect = sliceBetween(conv, 'const startRef = useRef(null);', '}, [error, starting]);');
-    expect(effect).toContain("if (error && !starting) focusIfFree(startRef.current, startRef.current?.closest('.conv-new'));");
-    expect(conv).toContain('<button ref={startRef} type="button" className="manabi-button" disabled={!settled || !ready || starting} onClick={start}>');
+  it('오류가 나고 잠김이 풀리면 누른 줄(내 주제면 그 칸)로 — 다른 곳의 초점은 그대로', () => {
+    const effect = sliceBetween(conv, 'const failedTopic = useRef(\'\');', '}, [error, opening]);');
+    expect(effect).toContain('if (!error || opening || !failedTopic.current) return;');
+    expect(effect).toContain(".find((b) => b.dataset.topic === failedTopic.current)");
+    expect(effect).toContain("|| list?.querySelector('.conv-rooms__own input');");
+    expect(effect).toContain('focusIfFree(row, list);');
+    expect(conv).toContain("setOpening(chosen); setError(''); failedTopic.current = chosen;");
+    expect(conv).toContain('data-topic={room.topic} disabled={!!opening}');
   });
 });

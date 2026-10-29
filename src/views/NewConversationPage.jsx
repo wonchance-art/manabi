@@ -1,7 +1,11 @@
 'use client';
-// 새 대화(자료 없이) — v2-Z Z-R2, 시안 conv.html 「새 대화」.
-// 주제·언어·수준을 고르면 서버 대화 턴 경로가 비공개 대화 자료를 만들고 수준에 맞춘 첫 질문까지 받아 온다.
-// 「써 볼 말」은 오늘 복습한 말(useOutputWords) 표시만이다 — 첫 질문 프롬프트에 함께 넘긴다.
+// 대화 — 방 목록(CONV-CHAT-001 2차, 오너 지시 2026-10-15 「대화창을 누르면 대화방을 고르는 영역 — 옵션 설정 없이 주제로 들어가게」).
+// 메신저 「채팅」 탭처럼 한 줄 = 한 방이다. 이야기한 방은 마지막 말·시각이 보이고, 처음 여는 주제는 누르면 튜터가 첫 말을 건다.
+// - 언어는 배움에서 고른 학습 언어(useLearnLanguage, 같은 저장 키), 수준은 내 학습 수준 정본(recommendedLevel)으로 정한다.
+//   언어·수준을 고르는 칸은 없다. 언어가 둘 이상이면 머리의 칩으로만 바꾼다.
+// - 한 주제 = 한 방: 같은 주제(·자료)의 대화가 여럿이면 가장 최근 것 하나만 방으로 보인다. 나머지는 서재 「대화」 묶음에 그대로 있다.
+// - 맨 위에는 모두의 대화방(CONV-LOBBY-001) — 같은 언어를 배우는 사람끼리의 방. 마지막 말·시각이 보인다.
+// - 「써 볼 말」은 화면에 따로 늘어놓지 않고 첫 질문 프롬프트에만 넘긴다(표시 전용이던 칸 — 목록을 방으로 비운다).
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -10,182 +14,195 @@ import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { langNameKo, profileLevel } from '@/lib/constants';
 import { useOutputWords } from '@/lib/useOutputWords';
+import useLearnLanguage from '@/components/learn/useLearnLanguage';
 import { CONVERSATION_ERRORS, CONVERSATION_LANGUAGES, CONVERSATION_MAX_TOPIC_CHARS } from '@/lib/conversation/turnModel';
 import { startTopicConversation } from '@/lib/conversation/conversationClient';
-import { fetchConversations, fetchConversationTurns, conversationHref, conversationShelfMeta } from '@/lib/conversation/conversationLibrary';
-import { conversationCorrections } from '@/lib/conversation/conversationLoop';
-import {
-  CONVERSATION_TOPICS, canStartConversation, conversationLevels, newConversationDefaults, preferredConversationLanguage, recommendedLevel,
-} from '@/lib/conversation/newConversation';
-import { safeReaderReturn } from '@/lib/libraryReturn';
+import { fetchConversationRooms, conversationHref } from '@/lib/conversation/conversationLibrary';
+import { CONVERSATION_TOPICS, recommendedLevel } from '@/lib/conversation/newConversation';
+import { conversationRooms, roomTimeLabel } from '@/lib/conversation/chatView';
+import { fetchLobby, isLobbyMissing, lobbyHref, lobbyKey } from '@/lib/conversation/lobby';
+import { isMuted } from '@/lib/world/muteStore';
 import { friendlyToastMessage } from '@/lib/errorMessage';
 import { focusIfFree } from '@/lib/focusAfterAction';
 import { hasSupabaseSessionCookie } from '@/lib/authCookie';
 import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
+import PhoneFrame from '@/components/conversation/PhoneFrame';
 import '@/components/conversation/conversation.css';
-
-const RECENT = 3;
 
 export default function NewConversationPage() {
   const { user, profile, loading, profileLoading } = useAuth();
-  // 로그인 확인 중에도 머리글 · 선택지를 먼저(CONV-SHELL-001 — 오너 「권장대로」 목업 A, 2026-10-17 KST). 예전에는 확인이 끝날 때까지
-  // 「대화 불러오는 중…」 한 줄뿐이라 클릭 → 제목이 약 0.4초였다. 주제 칩은 상수라 바로 누를 수 있고, 언어 칩(상수 4개)은 그려 두되
-  // 선택 표시 · 누름은 확인 뒤에 켠다(프로필 첫 학습 언어가 들어올 때 선택만 붙고 자리는 그대로). 수준은 지금 언어의 칩 수 · 폭 그대로 글을 숨긴 골격(CONV-LEVEL-HOLD-001 — 예전 3칸 한 줄은 390에서 실제 칩 3줄로 바뀌며 아래를 104px 밀었다).
-  // 손님은 세션 쿠키가 없으면 처음부터 손님 화면(배움과 같은 판정 함수). 쿠키가 남았는데 세션이 끝났으면 골격 뒤 같은 손님 화면.
+  // 로그인 확인 중에도 머리 · 방 줄을 먼저 그린다(CONV-SHELL-001 오너 「권장대로」 목업 A 2026-10-17 KST의 방 목록판).
+  // 주제 방은 상수라 줄 자리가 그대로이고, 확인이 끝나면 미리보기 · 시각만 채워지며 누를 수 있게 된다(언어가 옮겨 붙지 않게
+  // 프로필까지 기다린다). 손님은 세션 쿠키가 없으면 처음부터 손님 화면, 쿠키가 남았는데 세션이 끝났으면 확인 뒤 같은 손님 화면.
   // 이 화면은 useSearchParams로 클라이언트에서만 그려지므로 첫 그림에서 쿠키를 읽어도 서버 그림과 어긋나지 않는다.
   const [guestGuess] = useState(() => typeof document !== 'undefined' && !hasSupabaseSessionCookie(document.cookie));
   const settled = !loading && !profileLoading;
   const router = useRouter();
   const params = useSearchParams();
-  const initial = useMemo(() => newConversationDefaults(params, {
-    profileLevelOf: (l) => profileLevel(profile, l), fallbackLanguage: preferredConversationLanguage(profile),
-  }), [params, profile]);
-  const [language, setLanguage] = useState(initial.language);
-  const [level, setLevel] = useState(initial.level);
-  const [topic, setTopic] = useState(CONVERSATION_TOPICS.includes(initial.topic) ? initial.topic : '');
-  const [ownTopic, setOwnTopic] = useState(CONVERSATION_TOPICS.includes(initial.topic) ? '' : initial.topic);
-  const [writing, setWriting] = useState(!!ownTopic);
-  // 프로필은 첫 그림 뒤에 올 수 있다 — 아직 직접 고르지 않았으면 처음 선택(언어 · 수준)을 프로필 기준으로 맞춘다. 고른 뒤에는 덮지 않는다.
-  // 그림 중에 맞춘다(effect가 아니라) — effect면 확인이 끝난 첫 그림이 기본(중국어) 수준 칩 3줄로 한 번 그려진 뒤 프로필 언어(일본어 2줄)로
-  // 줄어 「대화 시작」이 내려갔다 올라왔다(CONV-LEVEL-HOLD-001 실측, 프로필 일본어 · 영어에서 3회 중 1회).
-  const [picked, setPicked] = useState(false);
-  if (!picked && (language !== initial.language || level !== initial.level)) {
-    setLanguage(initial.language);
-    setLevel(initial.level);
-  }
-  const [starting, setStarting] = useState(false);
+  const { langs, lang: learnLang, choose } = useLearnLanguage(profile);
+  const chatLangs = langs.filter((l) => CONVERSATION_LANGUAGES.includes(l));
+  const asked = params.get('lang');
+  const language = chatLangs.includes(learnLang) ? learnLang
+    : chatLangs[0] || (CONVERSATION_LANGUAGES.includes(asked) ? asked : CONVERSATION_LANGUAGES[0]);
+  const level = recommendedLevel(language, profileLevel(profile, language));
+  const [opening, setOpening] = useState(''); // 여는 중인 방(주제)
+  const [writing, setWriting] = useState(false);
+  const [ownTopic, setOwnTopic] = useState('');
   const [error, setError] = useState('');
   const outputWords = useOutputWords(language, { enabled: !!user });
-  // 시작 실패 뒤 「대화 시작」으로 초점(CONV-FOCUS-001) — 누르는 동안 잠겨(disabled) 초점이 body로 떨어졌다. 알림(role=alert)과 함께
-  // 다시 누를 자리를 준다. 다른 곳에 살아 있는 초점은 뺏지 않는다.
-  const startRef = useRef(null);
+  const roomsQuery = useQuery({
+    queryKey: ['conversation-rooms', user?.id], enabled: !!user, staleTime: 15000,
+    queryFn: () => fetchConversationRooms(supabase, user.id),
+  });
+  // 모두의 대화방 미리보기 — 마지막 말 하나만 읽는다(방에 들어가면 100개).
+  const lobbyQuery = useQuery({
+    queryKey: [...lobbyKey(language), 'last'], enabled: !!user, staleTime: 15000,
+    retry: (count, cause) => !isLobbyMissing(cause) && count < 2,
+    queryFn: () => fetchLobby(supabase, language, { limit: 1 }),
+  });
+  const lobbySoon = isLobbyMissing(lobbyQuery.error);
+  const lobbyLast = (lobbyQuery.data || []).find((row) => row.user_id === user?.id || !isMuted(row.user_id)) || null;
+  const rooms = useMemo(() => conversationRooms(roomsQuery.data || [], { language, topics: CONVERSATION_TOPICS }),
+    [roomsQuery.data, language]);
+  const now = Date.now();
+  // 방을 열다 실패하면 누른 줄(또는 내 주제 칸)로 초점을 돌려 다시 누를 수 있게 한다(CONV-FOCUS-001의 방 목록판 — 여는 동안
+  // 줄이 잠겨 초점이 body로 빠진다). 다른 곳에 초점이 가 있으면 그대로 둔다.
+  const listRef = useRef(null);
+  const failedTopic = useRef('');
   useEffect(() => {
-    if (error && !starting) focusIfFree(startRef.current, startRef.current?.closest('.conv-new'));
-  }, [error, starting]);
-  const recent = useQuery({
-    queryKey: ['library-conversations', user?.id], enabled: !!user, staleTime: 30000,
-    queryFn: () => fetchConversations(supabase, user.id),
-  });
-  // 지난번 고친 말(Z-R3) — 내 최근 대화의 고친 문장(같은 언어, 최신 3개). 표시만이고, 튜터는 서버가 하루 지난 문형을 골라 다시 묻는다.
-  const past = useQuery({
-    queryKey: ['conversation-turns', user?.id], enabled: !!user, staleTime: 60000,
-    queryFn: () => fetchConversationTurns(supabase, user.id),
-  });
-  const pastFixes = [...new Set((past.data || []).filter((row) => row.language === language)
-    .flatMap((row) => conversationCorrections({ turns: row.turns }).map((c) => c.to)))].slice(0, 3);
-  const returnTo = safeReaderReturn(params.get('returnTo'));
-  const chosenTopic = writing ? ownTopic.trim() : topic;
-  const ready = canStartConversation({ topic: chosenTopic, language, level });
+    if (!error || opening || !failedTopic.current) return;
+    const list = listRef.current;
+    const row = [...(list?.querySelectorAll('button[data-topic]') || [])].find((b) => b.dataset.topic === failedTopic.current)
+      || list?.querySelector('.conv-rooms__own input');
+    focusIfFree(row, list);
+  }, [error, opening]);
 
-  function pickLanguage(next) {
-    setPicked(true);
-    setLanguage(next);
-    setLevel(recommendedLevel(next, profileLevel(profile, next)));
-    setError('');
-  }
-
-  async function start() {
-    if (!ready || starting) return;
-    setStarting(true); setError('');
+  async function openTopic(topic) {
+    const chosen = String(topic || '').trim().slice(0, CONVERSATION_MAX_TOPIC_CHARS);
+    if (!chosen || opening) return;
+    setOpening(chosen); setError(''); failedTopic.current = chosen;
     try {
-      const id = await startTopicConversation({ topic: chosenTopic, language, level, outputWords: outputWords.map((w) => w.word_text) });
-      router.push(`${conversationHref(id)}?returnTo=${encodeURIComponent(returnTo)}`);
+      const id = await startTopicConversation({ topic: chosen, language, level, outputWords: outputWords.map((w) => w.word_text) });
+      router.push(conversationHref(id));
     } catch (cause) {
       setError(cause?.code === 'daily_limit' ? CONVERSATION_ERRORS.dailyLimit : friendlyToastMessage(cause));
-      setStarting(false);
+      setOpening('');
     }
   }
 
-  if (!user && (!loading || guestGuess)) {
+  if (!user && (guestGuess || settled)) {
     return (
-      <div className="manabi-page conv-new">
-        <h1>새 대화</h1>
-        <p>대화는 내 서재에 비공개로 남아요. 로그인하고 시작해 주세요.</p>
-        <Link className="manabi-button" href="/auth?from=/conversation/new">로그인</Link>
-      </div>
+      <PhoneFrame>
+        <div className="manabi-page conv-rooms">
+          <h1 className="conv-rooms__title">대화</h1>
+          <p>AI 튜터와 주제별 방에서 이야기해요. 로그인하고 시작해 주세요.</p>
+          <Link className="manabi-button" href="/auth?from=/conversation/new">로그인</Link>
+        </div>
+      </PhoneFrame>
     );
   }
 
-  const recentRows = (recent.data || []).slice(0, RECENT);
-  return (
-    <div className="manabi-page conv-new">
-      <header className="conv-new__head">
-        <h1>새 대화</h1>
-        <p className="conv-new__lede">AI 튜터와 목표어로 이야기해요</p>
-      </header>
-
-      <section className="conv-new__group" aria-labelledby="conv-new-topic">
-        <h2 id="conv-new-topic">무엇에 대해 이야기할까요?</h2>
-        <div className="conv-new__chips">
-          {CONVERSATION_TOPICS.map((t) => (
-            <button key={t} type="button" className="conv-chip" aria-pressed={!writing && topic === t}
-              onClick={() => { setTopic(t); setWriting(false); setError(''); }}>{t}</button>
-          ))}
-          <button type="button" className="conv-chip" aria-pressed={writing} onClick={() => setWriting(true)}>+ 직접 적기</button>
-        </div>
-        {writing && (
-          <label className="conv-new__own">
-            <span className="conv-sr">대화 주제 직접 적기</span>
-            <input type="text" value={ownTopic} maxLength={CONVERSATION_MAX_TOPIC_CHARS} placeholder="예: 좋아하는 영화"
-              onChange={(e) => setOwnTopic(e.target.value)} autoFocus />
-          </label>
-        )}
-      </section>
-
-      <section className="conv-new__group" aria-labelledby="conv-new-lang">
-        <h2 id="conv-new-lang">언어</h2>
-        <div className="conv-new__chips">
-          {CONVERSATION_LANGUAGES.map((l) => (
-            <button key={l} type="button" className="conv-chip" aria-pressed={settled && language === l} aria-disabled={!settled || undefined}
-              onClick={() => { if (settled) pickLanguage(l); }}>{langNameKo(l)}</button>
-          ))}
-        </div>
-      </section>
-
-      <section className="conv-new__group" aria-labelledby="conv-new-level">
-        <h2 id="conv-new-level">말 수준 <small>{!settled ? <SkeletonLine width="7em" /> : profileLevel(profile, language) ? '내 학습 수준 기준 추천' : '처음 단계부터'}</small></h2>
-        {settled ? <div className="conv-new__chips">
-          {conversationLevels(language).map((lv) => (
-            <button key={lv} type="button" className="conv-chip" aria-pressed={level === lv} onClick={() => { setPicked(true); setLevel(lv); }}>{lv}</button>
-          ))}
-        </div> : <SkeletonRegion className="conv-new__chips" label="대화" announce>
-          {/* 칸 수 · 폭은 지금 언어(주소 lang 또는 기본)의 실제 칩 그대로 — 같은 button 상자(.manabi-page button의 글꼴까지)에 글은 숨겨
-              폭만 잡아 390에서 줄바꿈이 같다(CONV-LEVEL-HOLD-001). 초점 · 누름 없음(tabIndex -1 · aria-hidden · 동작 없음). */}
-          {conversationLevels(language).map((lv) => <button key={lv} type="button" tabIndex={-1} className="conv-chip conv-chip--skeleton" aria-hidden="true"><SkeletonLine width="calc(100% - 24px)" height="1em" /><span className="conv-chip__size">{lv}</span></button>)}
-        </SkeletonRegion>}
-      </section>
-
-      {(outputWords.length > 0 || pastFixes.length > 0) && (
-        <section className="conv-new__group" aria-labelledby="conv-new-words">
-          <h2 id="conv-new-words">이번 대화에서 써 볼 말 <small>오늘 복습한 말 · 지난번에 고친 말</small></h2>
-          {outputWords.length > 0 && <p className="conv-new__words" lang="und">{outputWords.map((w) => w.word_text).join(' · ')}</p>}
-          {pastFixes.map((to) => <p key={to} className="conv-new__words conv-new__fix" lang="und">{to}</p>)}
-        </section>
-      )}
-
-      <div className="conv-new__start">
-        <button ref={startRef} type="button" className="manabi-button" disabled={!settled || !ready || starting} onClick={start}>
-          {starting ? '첫 질문을 받는 중…' : '대화 시작'}
-        </button>
-        <p className="conv-new__note">대화는 내 서재에 비공개로 남아요. 언제든 지울 수 있어요.</p>
-        {error && <p className="conv-new__error" role="alert">{error}</p>}
-      </div>
-
-      {recentRows.length > 0 && (
-        <section className="conv-new__group" aria-labelledby="conv-new-recent">
-          <h2 id="conv-new-recent">이어 하기</h2>
-          <ul className="conv-new__recent">
-            {recentRows.map((row) => (
-              <li key={row.id}>
-                <Link href={`${conversationHref(row.id)}?returnTo=${encodeURIComponent(returnTo)}`}>
-                  <b>{row.title}</b>
-                  <small>{conversationShelfMeta(row, { languageName: langNameKo })}</small>
-                </Link>
+  if (!user || !settled) {
+    return (
+      <PhoneFrame>
+        <div className="manabi-page conv-rooms">
+          <header className="conv-rooms__head"><h1 className="conv-rooms__title">대화</h1></header>
+          <SkeletonRegion as="ul" className="conv-rooms__list" label="대화" announce>
+            <li>
+              <div className="conv-rooms__row conv-rooms__row--lobby">
+                <span className="conv-rooms__avatar conv-rooms__avatar--lobby" aria-hidden="true">👥</span>
+                <span className="conv-rooms__text"><span className="conv-rooms__name">모두의 대화방</span><span className="conv-rooms__preview"><SkeletonLine width="70%" /></span></span>
+              </div>
+            </li>
+            {conversationRooms([], { topics: CONVERSATION_TOPICS }).map((room) => (
+              <li key={room.key}>
+                <div className="conv-rooms__row">
+                  <span className="conv-rooms__avatar" aria-hidden="true">{room.icon}</span>
+                  <span className="conv-rooms__text"><span className="conv-rooms__name">{room.name}</span><span className="conv-rooms__preview"><SkeletonLine width="55%" /></span></span>
+                </div>
               </li>
             ))}
-          </ul>
-        </section>
-      )}
+          </SkeletonRegion>
+        </div>
+      </PhoneFrame>
+    );
+  }
+
+  return (
+    <PhoneFrame>
+    <div className="manabi-page conv-rooms">
+      <header className="conv-rooms__head">
+        <h1 className="conv-rooms__title">대화</h1>
+        {chatLangs.length > 1 && (
+          <label className="conv-rooms__lang">
+            <span className="conv-sr">대화 언어</span>
+            <select value={language} onChange={(e) => choose(e.target.value)}>
+              {chatLangs.map((l) => <option key={l} value={l}>{langNameKo(l)}</option>)}
+            </select>
+          </label>
+        )}
+      </header>
+      {error && <p className="conv-new__error" role="alert">{error}</p>}
+      <ul ref={listRef} className="conv-rooms__list" aria-label={`${langNameKo(language)} 대화방`} aria-busy={roomsQuery.isLoading || undefined}>
+        <li>
+          <Link className="conv-rooms__row conv-rooms__row--lobby" href={lobbyHref(language)}>
+            <span className="conv-rooms__avatar conv-rooms__avatar--lobby" aria-hidden="true">👥</span>
+            <span className="conv-rooms__text">
+              <span className="conv-rooms__name">모두의 대화방</span>
+              <span className="conv-rooms__preview" lang={lobbyLast ? 'und' : 'ko'}>
+                {lobbyLast ? `${String(lobbyLast.author?.display_name || '').trim() || '학습자'}: ${lobbyLast.body.replace(/\s+/g, ' ')}`
+                  : lobbySoon ? '곧 열려요' : `${langNameKo(language)}를 배우는 사람들과 이야기해요`}
+              </span>
+            </span>
+            {lobbyLast && <span className="conv-rooms__time">{roomTimeLabel(lobbyLast.created_at, now)}</span>}
+          </Link>
+        </li>
+        {rooms.map((room) => {
+          const busy = opening && opening === room.topic;
+          const body = (
+            <>
+              <span className="conv-rooms__avatar" aria-hidden="true">{room.icon}</span>
+              <span className="conv-rooms__text">
+                <span className="conv-rooms__name">{room.name}</span>
+                <span className="conv-rooms__preview" lang={room.id ? 'und' : 'ko'}>
+                  {busy ? '튜터가 말을 거는 중…' : room.preview || '튜터가 먼저 말을 걸어요'}
+                </span>
+              </span>
+              {room.lastAt && <span className="conv-rooms__time">{roomTimeLabel(room.lastAt, now)}</span>}
+            </>
+          );
+          return (
+            <li key={room.key}>
+              {room.id
+                ? <Link className="conv-rooms__row" href={conversationHref(room.id)}>{body}</Link>
+                : <button type="button" className="conv-rooms__row" data-topic={room.topic} disabled={!!opening} onClick={() => openTopic(room.topic)}>{body}</button>}
+            </li>
+          );
+        })}
+        <li>
+          {writing ? (
+            <form className="conv-rooms__row conv-rooms__own" onSubmit={(e) => { e.preventDefault(); openTopic(ownTopic); }}>
+              <span className="conv-rooms__avatar" aria-hidden="true">＋</span>
+              <label className="conv-rooms__text">
+                <span className="conv-sr">내 주제</span>
+                <input type="text" value={ownTopic} maxLength={CONVERSATION_MAX_TOPIC_CHARS} placeholder="예: 좋아하는 영화" enterKeyHint="go"
+                  onChange={(e) => setOwnTopic(e.target.value)} autoFocus disabled={!!opening} />
+              </label>
+              <button type="submit" className="conv__icon conv__icon--send" aria-label="이 주제로 이야기하기" disabled={!ownTopic.trim() || !!opening}>➤</button>
+            </form>
+          ) : (
+            <button type="button" className="conv-rooms__row" onClick={() => setWriting(true)}>
+              <span className="conv-rooms__avatar" aria-hidden="true">＋</span>
+              <span className="conv-rooms__text">
+                <span className="conv-rooms__name">내 주제로 이야기하기</span>
+                <span className="conv-rooms__preview">적은 주제로 새 방을 열어요</span>
+              </span>
+            </button>
+          )}
+        </li>
+      </ul>
+      <p className="conv-new__note">튜터와의 대화는 나만 볼 수 있고, 이 목록에 남아요. {langNameKo(language)} · {level}</p>
     </div>
+    </PhoneFrame>
   );
 }

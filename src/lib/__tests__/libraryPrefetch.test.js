@@ -6,7 +6,7 @@ import { QueryClient, hashKey, hydrate } from '@tanstack/react-query';
 vi.mock('next/headers', () => ({ cookies: async () => ({ getAll: () => [], set: () => {} }) }));
 
 import { prefetchLibraryShelf, shelfQueries } from '../server/libraryPrefetch';
-import { libraryCollectionsQuery, libraryConversationsQuery, libraryListQuery, libraryRecentQuery } from '../libraryShelfQueries';
+import { libraryCollectionsQuery, libraryListQuery, libraryRecentQuery } from '../libraryShelfQueries';
 import { libraryFilters } from '../personalLibrary';
 
 // LIBRARY-PREFETCH-001 — 서재 첫 화면을 서버가 미리 받는다(「읽던 곳 없음」 접힘 · 대화 묶음 밀림은 서버가 이미 안다).
@@ -33,11 +33,12 @@ describe('⑴ 같은 키 · 같은 가져오기 함수', () => {
   it('브라우저 화면들과 서버 미리 받기가 모두 정본(libraryShelfQueries)에서 쿼리를 만든다', () => {
     const shelf = read('src/components/library/LibraryShelf.jsx');
     expect(shelf).toContain('const recent=useQuery(libraryRecentQuery(supabase,user.id));');
-    expect(shelf).toContain('const conversations=useQuery(libraryConversationsQuery(supabase,user.id));');
+    // 튜터 대화는 서재에 두지 않는다(CONV-CHAT-001 8차) — 대화 묶음 쿼리가 없다.
+    expect(shelf).not.toMatch(/libraryConversationsQuery|ConversationShelf/);
     expect(shelf).toContain('const listQuery=libraryListQuery(supabase,user.id,filters,pinned.data)');
     expect(read('src/components/library/LibraryCollections.jsx')).toContain('return useQuery(libraryCollectionsQuery(supabase,ownerId));');
     const server = read('src/lib/server/libraryPrefetch.js');
-    expect(server).toContain("import { libraryCollectionsQuery, libraryConversationsQuery, libraryListQuery, libraryRecentQuery } from '@/lib/libraryShelfQueries';");
+    expect(server).toContain("import { libraryCollectionsQuery, libraryListQuery, libraryRecentQuery } from '@/lib/libraryShelfQueries';");
     // 가져오기 로직은 정본 한 곳 — 화면 · 서버 어디에도 직접 부르는 자리가 없다.
     for (const file of ['src/components/library/LibraryShelf.jsx', 'src/components/library/LibraryCollections.jsx', 'src/lib/server/libraryPrefetch.js']) {
       expect(read(file), file).not.toMatch(/fetchLibraryPage\(|fetchConversations\(|fetchCollections\(/);
@@ -47,18 +48,17 @@ describe('⑴ 같은 키 · 같은 가져오기 함수', () => {
     const result = await prefetchLibraryShelf({}, { auth: signedIn(fakeClient()) });
     expect(result.userId).toBe('u1');
     const filters = libraryFilters(new URLSearchParams());
-    const keys = [libraryRecentQuery(null, 'u1'), libraryConversationsQuery(null, 'u1'), libraryCollectionsQuery(null, 'u1'), libraryListQuery(null, 'u1', filters, undefined)]
+    const keys = [libraryRecentQuery(null, 'u1'), libraryCollectionsQuery(null, 'u1'), libraryListQuery(null, 'u1', filters, undefined)]
       .map((q) => q.queryKey);
     expect(result.state.queries.map((q) => q.queryHash).sort()).toEqual(keys.map(hashKey).sort());
     const browser = new QueryClient();
     hydrate(browser, JSON.parse(JSON.stringify(result.state))); // RSC 경계를 건너는 직렬화
     expect(browser.getQueryData(keys[0])).toEqual(RECENT);
-    expect(browser.getQueryData(keys[3]).pages[0]).toEqual(PAGE);
-    expect(browser.getQueryData(keys[1])).toEqual([]); // 대화 없음도 「아는 것」 — 묶음이 처음부터 입구 + 안내로 그려진다
+    expect(browser.getQueryData(keys[2]).pages[0]).toEqual(PAGE);
   });
-  it('화면이 실제로 부르는 것만: 좁힌 조건은 읽던 곳 · 대화 없음, ?pinned=1은 목록 없음(기기 목록이 키에 든다)', () => {
+  it('화면이 실제로 부르는 것만: 좁힌 조건은 읽던 곳 없음, ?pinned=1은 목록 없음(기기 목록이 키에 든다)', () => {
     const names = (params) => shelfQueries(null, 'u1', new URLSearchParams(params)).map((q) => q.queryKey[0]);
-    expect(names('')).toEqual(['library-collections', 'library-recent', 'library-conversations', 'personal-library']);
+    expect(names('')).toEqual(['library-collections', 'library-recent', 'personal-library']);
     expect(names('q=駅')).toEqual(['library-collections', 'personal-library']);
     expect(names('pinned=1')).toEqual(['library-collections']);
   });
@@ -95,11 +95,11 @@ describe('⑶ 페이지를 막지 않는다 — 예산 안에서 끝난 것만',
       vi.useRealTimers();
     }
   }
-  it('목록 RPC가 멈춰도 예산(여기선 60ms) 안에 돌아오고, 끝난 폴더 · 대화만 싣는다', async () => {
+  it('목록 RPC가 멈춰도 예산(여기선 60ms) 안에 돌아오고, 끝난 폴더만 싣는다', async () => {
     const stuck = fakeClient({ rpc: () => new Promise(() => {}) });
     const { done, value: result } = await settleWithin(60, () => prefetchLibraryShelf({}, { auth: signedIn(stuck), budgetMs: 60 }));
     expect(done).toBe(true);
-    expect(result.state.queries.map((q) => q.queryKey[0]).sort()).toEqual(['library-collections', 'library-conversations']);
+    expect(result.state.queries.map((q) => q.queryKey[0]).sort()).toEqual(['library-collections']);
   });
   it('인증이 예산을 넘기면 null', async () => {
     const outcome = await settleWithin(40, () => prefetchLibraryShelf({}, { auth: () => new Promise(() => {}), budgetMs: 40 }));

@@ -41,11 +41,9 @@ describe('F10 출처 제목 묶음 — 함께 받되 결과는 차례 받기와 
 });
 
 describe('F10 진입 직후 받을 것 없는 링크 — 화면 진입 prefetch 끄기(메뉴 prefetch:false 관례)', () => {
-  it('서재 「자료 추가」 · 「새 대화」, 오늘 학습 「✕」(→ /home)', () => {
+  it('서재 「자료 추가」(대화 칸은 서재에서 빠졌다 — CONV-CHAT-001 8차), 오늘 학습 「✕」(→ /home)', () => {
     const shelf = read('src/components/library/LibraryShelf.jsx');
     expect(shelf.match(/href=\{libraryComposerHref\(returnTo,filters\.collection\)\} prefetch=\{false\}>자료 추가<\/Link>/g)).toHaveLength(2);
-    expect(read('src/components/library/ConversationShelf.jsx').match(/href="\/conversation\/new\?returnTo=%2Fmaterials" prefetch=\{false\}>새 대화/g)).toHaveLength(2);
-    expect(read('src/components/library/LibrarySkeleton.jsx')).toContain('href="/conversation/new?returnTo=%2Fmaterials" prefetch={false}>새 대화</Link>');
     expect(read('src/views/StudySessionPage.jsx').match(/<Link href="\/home" prefetch=\{false\} aria-label="나가기"/g)).toHaveLength(2);
   });
   it('읽기 화면 「←」는 서재(/materials)로 갈 때만 끈다 — 산책 등 다른 행선지는 지금 그대로', () => {

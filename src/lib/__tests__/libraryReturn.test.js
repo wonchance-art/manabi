@@ -123,7 +123,7 @@ describe('guest reader return (readerReturnTarget)', () => {
     expect(viewer).toContain('const { user, profile, refreshProfileAfterActivity, isAdmin, loading: authLoading } = useAuth();');
     expect(viewer).toContain('const guestReader = !user && !authLoading;');
     expect(viewer).toContain("const backTarget = readerReturnTarget(originalParams.get('returnTo'), { guest: guestReader });");
-    expect(viewer.split('guest={guestReader} aria-label={vt(backTarget.label)}').length - 1).toBe(4);
+    expect(viewer.split('guest={guestReader} aria-label={vt(backTarget.label)}').length - 1).toBe(5); // 넷 + 대화방 머리 「←」(서재에서 연 대화, CONV-CHAT-001)
     expect(sliceBetween(viewer, '<LibraryReturnLink className="viewer-back-link viewer-back-link--icon"', '</LibraryReturnLink>'))
       .toContain('title={vt(backTarget.label)} data-icon-action><ActionIcon name="back"/>');
     expect(viewer).not.toContain('readerReturnLabel(');

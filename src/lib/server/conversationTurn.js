@@ -2,12 +2,14 @@
 // 새 이음새는 이 경로 하나뿐이다(새 표·새 이벤트 0). 순서: 검증 → 한도 → 프롬프트 → AI 1회 → 검증 →
 // 교정 상태 머신(서버 강제) → 새 문단 분석(예산 2.5초) → 낙관 잠금 기록 → 새 문단 토큰만 응답.
 // 의존성(supabase·callLLM·analyzeLines)은 주입받는다 — 단위 테스트가 네트워크 없이 전 경로를 돈다.
+import { ROOM_PREVIEW_CHARS } from '../conversation/chatView';
 import {
   CONVERSATION_VERSION, CONVERSATION_DAILY_TURN_LIMIT, CONVERSATION_MAX_TURNS, CONVERSATION_RECENT_TURNS,
   CONVERSATION_EXCERPT_CHARS, CONVERSATION_MAX_INPUT_CHARS, CONVERSATION_MAX_TOPIC_CHARS, CONVERSATION_ANALYZE_BUDGET_MS,
-  CONVERSATION_ANALYZED_LANGUAGES, CONVERSATION_LANGUAGES, CONVERSATION_ERRORS, CONVERSATION_RESPONSE_SCHEMA,
+  CONVERSATION_ANALYZED_LANGUAGES, CONVERSATION_LANGUAGES, CONVERSATION_FILL_BUDGET_MS, CONVERSATION_FILL_MAX_LINES, CONVERSATION_ERRORS, CONVERSATION_RESPONSE_SCHEMA,
   conversationOf, countMyTurns, countTodayMyTurns, openRetryOf, parseTutorResponse, applyCorrectionPolicy,
   appendConversationParagraph, appendParagraphTokens, buildTurnPrompt, judgePoliticalTopic,
+  missingConversationLines, fillConversationLines,
 } from '../conversation/turnModel.js';
 import { conversationSafetyRules } from '../conversation/safety.js';
 import { kstDateString } from '../growthStats.js';
@@ -151,7 +153,13 @@ export function promptForTurn({ conv, rawText, text, inputMode = 'text', action 
   });
 }
 
-function nextConversation(conv, { meTurn, closeRetry, tutorTurn, now }) {
+// 방 목록 미리보기(CONV-CHAT-001 2차) — 튜터의 마지막 말 한 줄. 목록이 대화 본문(raw_text)을 읽지 않게 메타에 남긴다.
+function tutorPreview(lines) {
+  const last = [...(lines || [])].reverse().find((l) => String(l || '').trim());
+  return last ? String(last).trim().slice(0, ROOM_PREVIEW_CHARS) : '';
+}
+
+function nextConversation(conv, { meTurn, closeRetry, tutorTurn, now, preview }) {
   const turns = (conv.turns || []).map((t, i) => (closeRetry && i === closeRetry.index && t.focus
     ? { ...t, focus: { ...t.focus, state: closeRetry.state } }
     : t));
@@ -162,6 +170,8 @@ function nextConversation(conv, { meTurn, closeRetry, tutorTurn, now }) {
     ...conv,
     turns,
     turnCount: (conv.turnCount || 0) + 1,
+    ...(preview ? { preview } : {}),
+    lastAt: tutorTurn?.at ?? now,
     day: today,
     dayTurns: countTodayMyTurns(turns, now),
   };
@@ -176,9 +186,61 @@ function nextConversation(conv, { meTurn, closeRetry, tutorTurn, now }) {
  * @param {AbortSignal} [p.signal]
  * @returns {Promise<{status: number, body: object}>}
  */
-export async function runConversationTurn({ userId, body, deps, now = Date.now(), signal, budgetMs = CONVERSATION_ANALYZE_BUDGET_MS }) {
+/**
+ * 못 한 줄 자동 채우기(CONV-CHAT-001) — 2.5초 예산을 넘겨 평문으로 남은 튜터 줄을 화면이 알아서 다시 맡긴다.
+ * 사용자가 누르는 「다시 분석」이 없다. 턴 수·하루 한도는 깎지 않는다(새 말이 아니다).
+ * 기록은 턴 경로와 같은 낙관 잠금(turnCount)이다 — 그사이 새 턴이 들어오면 다시 읽어 한 번 더 끼운다.
+ * 실패 토큰 자리만 바꾸므로 같은 요청이 두 번 와도 결과가 같다.
+ */
+async function fillMissingLines({ userId, body, supabase, analyzeLines, now, budgetMs }) {
+  const materialId = String(body.materialId ?? '');
+  if (!/^[0-9]{1,18}$/.test(materialId)) return fail(400, 'materialId invalid');
+  const read = async () => {
+    const { data, error } = await supabase.from('reading_materials').select(MATERIAL_COLUMNS).eq('id', materialId).maybeSingle();
+    if (error) return { error };
+    return { material: data };
+  };
+  let { material, error } = await read();
+  if (error) return fail(500, 'Internal Server Error');
+  const conv = conversationOf(material);
+  if (!material || material.owner_id !== userId || !conv) return fail(404, 'conversation not found');
+  const language = conv.language;
+  const lineNos = missingConversationLines(material.processed_json).slice(-CONVERSATION_FILL_MAX_LINES);
+  if (!lineNos.length) return { status: 200, body: { materialId, analysis: 'ok', filled: {}, dictionary: {}, missing: [] } };
+  const rawLines = String(material.raw_text || '').split('\n');
+  const lines = lineNos.map((n) => rawLines[n] ?? '');
+  const { results, analysis } = await analyzeWithinBudget(analyzeLines, { lines, language, supabase, budgetMs });
+  if (!results) {
+    console.warn('[conversation/fill] analysis', analysis, 'lines', lineNos.length);
+    return { status: 200, body: { materialId, analysis, filled: {}, dictionary: {}, missing: lineNos } };
+  }
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const turnCount = String(conversationOf(material)?.turnCount || 0);
+    const out = fillConversationLines(material.processed_json, { lineNos, lines, results, ts: now, language });
+    const missing = missingConversationLines(out.json);
+    if (!Object.keys(out.filled).length) {
+      console.warn('[conversation/fill] coverage rejected', 'lines', lineNos.length);
+      return { status: 200, body: { materialId, analysis: 'rejected', filled: {}, dictionary: {}, missing } };
+    }
+    const { data: written, error: writeError } = await supabase.from('reading_materials')
+      .update({ processed_json: out.json })
+      .eq('id', materialId).eq('owner_id', userId)
+      .eq('processed_json->metadata->conversation->>turnCount', turnCount)
+      .select('id');
+    if (writeError) return fail(500, 'Internal Server Error');
+    if (written?.length) {
+      return { status: 200, body: { materialId, analysis: missing.length ? 'partial' : 'ok', filled: out.filled, dictionary: out.dictionary, missing } };
+    }
+    ({ material, error } = await read());
+    if (error || !conversationOf(material)) return fail(500, 'Internal Server Error');
+  }
+  return { status: 409, body: { error: CONVERSATION_ERRORS.conflict, code: 'conflict' } };
+}
+
+export async function runConversationTurn({ userId, body, deps, now = Date.now(), signal, budgetMs = CONVERSATION_ANALYZE_BUDGET_MS, fillBudgetMs = CONVERSATION_FILL_BUDGET_MS }) {
   const { supabase, callLLM, analyzeLines } = deps;
   if (!body || typeof body !== 'object') return fail(400, 'Bad JSON');
+  if (body.action === 'analyze') return fillMissingLines({ userId, body, supabase, analyzeLines, now, budgetMs: fillBudgetMs });
   const action = body.action === 'reveal' ? 'reveal' : null;
   const inputMode = body.inputMode === 'voice' ? 'voice' : 'text';
   const outputWords = cleanWords(body.outputWords);
@@ -221,6 +283,8 @@ export async function runConversationTurn({ userId, body, deps, now = Date.now()
       ...(parent ? { parentId: String(parent.id) } : {}),
       turnCount: 1, day: kstDateString(now), dayTurns: 0,
       turns: [{ who: 'tutor', lines: lines.map((_, i) => startLine + i), at: now }],
+      preview: tutorPreview(lines),
+      lastAt: now,
       ...(reask ? { reask: [{ ...reask, ok: null }] } : {}),
     };
     const translations = Object.fromEntries(ai.lines.filter((l) => l.ko).map((l) => [l.t, l.ko]));
@@ -309,7 +373,7 @@ export async function runConversationTurn({ userId, body, deps, now = Date.now()
   };
   const reaskNow = pendingReask(conv);
   const reaskOk = !!reaskNow && !!policy.meTurn && reaskSucceeded(reaskNow, text, policy.meTurn);
-  let conversation = nextConversation(conv, { meTurn: policy.meTurn, closeRetry: policy.closeRetry, tutorTurn, now });
+  let conversation = nextConversation(conv, { meTurn: policy.meTurn, closeRetry: policy.closeRetry, tutorTurn, now, preview: tutorPreview(tutorTexts) });
   if (reaskOk) conversation = { ...conversation, reask: (conv.reask || []).map((r) => (r === reaskNow ? { ...r, ok: true, at: now } : r)) };
   const newTranslations = Object.fromEntries(ai.lines.filter((l) => l.ko).map((l) => [l.t, l.ko]));
   const prevJson = material.processed_json || {};

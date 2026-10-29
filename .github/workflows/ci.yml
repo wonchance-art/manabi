@@ -52,6 +52,7 @@ jobs:
       - run: node supabase/tests/korean-source-passage.mjs
       - run: node supabase/tests/learning-contract-catalog.mjs
       - run: node supabase/tests/fsrs-anki-v2-policy.mjs
+      - run: node supabase/tests/conversation-lobby.mjs
       - run: node supabase/tests/fsrs-day-boundary-due.mjs
       - run: node supabase/tests/anon-book-catalog.mjs
       - run: node supabase/tests/canonical-book-releases.mjs
