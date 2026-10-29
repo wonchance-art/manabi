@@ -1254,6 +1254,13 @@
   공개 SELECT만 anon · service_role) + 시퀀스 USAGE 마이그레이션 `20261029060000` — 운영엔 이미 같거나 넓은 권한이라 적용해도 무변화(review_events는
   한국어 학습 지문 범위라 운영 relacl 재현 PGlite에서 aclitem 불변 확인). 새 DB 검증 supabase/tests/explicit-data-api-grants.mjs(CI) · 계약
   scripts/data-api-grants.test.js(이후 새 테이블은 같은 파일에 GRANT). 운영 적용은 하지 않음(무변화 · 기록 정합만 — 오너 판단).
+  → **#1602 squash `9e72f914`(15:11 KST, 저장소 전용 — 배포 없음)**. 같은 날 오너가 Supabase Pro + Micro 전환(14:42 KST 재시작 확인 —
+  effective_cache_size 384 → 768MB, shared_buffers 224 → 256MB). 전후 비교 기준: review_events insert 누적 2,581회 · 평균 224.9 ms · 최대 7.7 s,
+  user_word_facets insert 1,722회 · 평균 103.8 ms · 최대 5.5 s(10/15~10/29 Nano).
+- **VOCAB-SCOPE-COUNT-001 단어장 오늘 개수 계산 덜기 (2026-10-29 KST, 「5분 무반응이면 다음 작업」)**: countReviewScope가 언어마다 밀린 복습 판정 ·
+  언어 칩 숫자를 위해 계획을 두 번씩 끝까지 짰다(회상률 · 정렬 · 출처 띄우기). 그 둘은 개수만(countOnly — total = 줄 길이), 평가 시각 풀이 ·
+  뜻 판정(NFC) · 언어별 밀린 복습 기준 재사용. 결과 바이트 동일(3,000단어 × 언어 2 × 상태 3). 한 번 8.8 → 4.7 ms(node). 390 · CPU×4 · 4G
+  번갈아 A/B 4회: TBT 263~310 → 239~274 ms · 가장 긴 작업 137~165 → 118~129 ms · LCP 잡음 안.
 - **NATIVE-FEEL-P1 입력칸 하한 미뤄 둔 네 곳 (2026-10-26 KST, 오너 「권장대로 진행」)**: ⓐ 함께 읽는 글 정렬을 칩 줄 밖 한 줄(오른쪽 · 글자 단추 · 44px,
   터치 16px) ⓑ 서재 정렬 선택 상자를 「필터」 시트 안 라디오(묶음 제목 「정렬」 · 16px · 줄 44px)로 — 값 · sort= 주소 · 급수순(옛 주소 전용) 그대로, 바꾼 때만 주소에
   ⓒ 노트 단어 카드 터치에서 표기 24 / 읽기 16 / 뜻 16 ⓓ 크기 없는 칸 화면별 — 그룹 폼 7칸 · 검색 칸 · 수업 과 선택 16px(min-width 0으로 줄바꿈 무변화),
