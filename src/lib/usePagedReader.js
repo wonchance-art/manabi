@@ -215,6 +215,8 @@ export function createPagedController(pages, options = () => ({})) {
   /** user=true면 기준 토큰을 그 쪽의 첫 토큰으로 바꾸고 위치 저장 콜백을 부른다. */
   function goTo(target, { user = false, animate = false } = {}) {
     if (destroyed || !ready) return page;
+    // 구간 끝을 넘는 사람의 넘김(VIEWER-SECTIONS-001) — 뷰어가 다음 · 앞 구간으로 바꿔 끼우면(true) 여기서는 옮기지 않는다.
+    if (user && (target > count - 1 || target < 0) && opt().onEdge?.(target > count - 1 ? 1 : -1)) return page;
     const next = clampPage(target, count);
     scrollToPage(next, animate);
     page = next; readPage = next; autoHeld = false;
@@ -415,6 +417,7 @@ export function createPagedController(pages, options = () => ({})) {
     prev: (o = { user: true, animate: true }) => goTo(page - 1, o),
     first: (o = { user: true, animate: true }) => goTo(0, o),
     last: (o = { user: true, animate: true }) => goTo(count - 1, o),
+    get pressed() { return pressed; }, // 본문을 누르는 중 — 다른 구간으로 가는 자동 이동(듣기 따라가기)도 이때는 진다(VIEWER-SECTIONS-001)
     get anchor() { return anchor; },
     set anchor(value) { anchor = value || { kind: 'start' }; autoHeld = false; },
     get state() { return snapshot(); },
@@ -468,11 +471,11 @@ const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayout
  * @returns {{page,count,ready,progress,readProgress,label,next,prev,first,last,goTo,reveal}}
  * progress = 지금 쪽의 위치(쪽 막대 표시), readProgress = 읽기 진도(자동 이동 제외 — 진행 막대 · 그룹 같이 읽기 push).
  */
-export function usePagedReader({ enabled, pages, barRef, layoutKey, resetKey, onUserPage, canSwipe, canKey, canAutoReveal, captureAnchor, anchorSelector, focusSelector, initialAnchor, bottomGap, topInset }) {
+export function usePagedReader({ enabled, pages, barRef, layoutKey, resetKey, onUserPage, onEdge, canSwipe, canKey, canAutoReveal, captureAnchor, anchorSelector, focusSelector, initialAnchor, bottomGap, topInset }) {
   const [state, setState] = useState({ page: 0, count: 1, ready: false, progress: 0, readProgress: 0, label: pageLabel(0, 1) });
   const controller = useRef(null);
   const latest = useRef({});
-  latest.current = { onUserPage, canSwipe, canKey, canAutoReveal, captureAnchor, anchorSelector, focusSelector, initialAnchor, bottomGap, topInset, bar: () => barRef?.current || null, reducedMotion };
+  latest.current = { onUserPage, onEdge, canSwipe, canKey, canAutoReveal, captureAnchor, anchorSelector, focusSelector, initialAnchor, bottomGap, topInset, bar: () => barRef?.current || null, reducedMotion };
   useIsoLayoutEffect(() => {
     if (!enabled || !pages) return undefined;
     const pager = createPagedController(pages, () => latest.current);

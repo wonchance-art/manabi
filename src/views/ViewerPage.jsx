@@ -23,6 +23,7 @@ import ViewerReferenceExample from '../components/viewer/ViewerReferenceExample'
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
+import { buildReaderSections, lineIndexOfTokens, readerLineGroups, sectionOfLine, sectionedPagePosition, sectionedPercent } from '../lib/readerSections';
 import { buildVocabularyWordIndex, countVocabularyDueInMaterial, findIndexedVocabulary, isIndexedVocabularyDue } from '../lib/vocabularyDueIndex';
 import { writeStudySource } from '../lib/studySourceHandoff';
 import SaveContextButton, { saveContext } from '../components/learning/SaveContextButton';
@@ -936,15 +937,40 @@ export default function ViewerPage({ seed } = {}) {
   const [listenTokens, setListenTokens] = useState(null);
   const [listenStopped, setListenStopped] = useState(false);
   const listenActive = useRef(false), listenFollowOff = useRef(false), listenIndex = useRef(null);
+  // 긴 글의 쪽 넘김은 구간 단위로 그린다(VIEWER-SECTIONS-001, 설계 · 쪽 막대 목업 오너 승인 2026-10-29 KST). 본문 칸 수에 비례해 느려지므로
+  // (3,619칸 LCP 5.3 s · 낱말 누름 0.76 s 실측) 지금 구간의 줄만 그리고, 구간 끝에서 넘기면 다음 · 앞 구간으로 바꿔 끼운다(전자책 리더가 한 장씩
+  // 그리는 방식). 줄은 문장 목록과 같은 규칙(readerLineGroups). 짧은 글(1,200칸 미만) · 스크롤 보기 · 수업은 지금 그대로 전부 그린다.
+  const readerLines = useMemo(() => readerLineGroups(material?.processed_json?.sequence, material?.processed_json?.dictionary), [material?.processed_json]);
+  const allSections = useMemo(() => buildReaderSections(readerLines), [readerLines]);
+  const readerSections = pagedActive ? allSections : null;
+  const tokenLine = useMemo(() => lineIndexOfTokens(readerLines), [readerLines]);
+  const [sectionIdx, setSectionIdx] = useState(0);
+  const section = readerSections ? Math.min(sectionIdx, readerSections.length - 1) : 0;
+  const sectionOfToken = useCallback(tokenId => (allSections && tokenLine.has(tokenId) ? sectionOfLine(allSections, tokenLine.get(tokenId)) : null), [allSections, tokenLine]);
+  const [sectionPageCounts, setSectionPageCounts] = useState([]);
+  // sectionMoved = 사람이 구간을 옮겼다(그 뒤로는 읽던 곳 · 본문 귀환의 첫 구간 고르기가 끼어들지 않는다). sectionAnchor = 바꿔 끼운 구간에서 설 자리.
+  // sectionWaiters = 다른 구간의 낱말을 기다리는 이동(본문 귀환 · 듣기 따라가기 · 문장 이동) — 그 구간을 그린 직후 낱말 요소를 넘긴다.
+  const sectionMoved = useRef(false), sectionAnchor = useRef(null), sectionWaiters = useRef([]);
+  useEffect(() => { setSectionIdx(0); setSectionPageCounts([]); sectionMoved.current = false; }, [id]);
   const pager = usePagedReader({
     enabled: pagedActive, pages: pagesEl, barRef: pageBarRef, resetKey: id,
-    layoutKey: `${fontSize}|${lineGap}|${charGap}|${fontFamily}|${pronDisplay}|${pinyinSize}|${pinyinCell}|${fontStatus}|${uiLocale}|${wordStateHl}|${showPatterns}|${sentenceReserve}`,
+    layoutKey: `${fontSize}|${lineGap}|${charGap}|${fontFamily}|${pronDisplay}|${pinyinSize}|${pinyinCell}|${fontStatus}|${uiLocale}|${wordStateHl}|${showPatterns}|${sentenceReserve}|${section}`,
     initialAnchor: () => { const el = pagedInitialAnchor.current; pagedInitialAnchor.current = null; return el?.isConnected ? { kind: 'element', el } : null; },
     onUserPage: anchor => {
       // 듣는 중에 손으로 넘겼다 — 이번 듣기 동안 따라가기 · 강조를 멈춘다(듣기 자체는 계속).
       if (listenActive.current) { listenFollowOff.current = true; setListenTokens(null); setListenStopped(true); }
       const tokenId = anchor?.el?.dataset?.sourceToken, index = tokenId ? material?.processed_json?.sequence?.indexOf(tokenId) : -1;
       if (index >= 0) saveScrollPosition(index);
+    },
+    // 구간 끝을 넘는 넘김 — 다음 구간은 첫 쪽, 앞 구간은 마지막 쪽에 선다(그 쪽 첫 낱말을 읽던 곳으로 남긴다).
+    onEdge: dir => {
+      if (!readerSections) return false;
+      const next = section + dir;
+      if (next < 0 || next >= readerSections.length) return false;
+      sectionMoved.current = true;
+      sectionAnchor.current = { anchor: dir > 0 ? { kind: 'start' } : { kind: 'tail', fromEnd: 0 }, save: true };
+      setSectionIdx(next);
+      return true;
     },
     // 밀기는 글자를 끌어 고르는 중이거나 단어창·보조 패널이 열려 있으면 무시한다(설계 §2).
     canSwipe: () => !pagedGuard.current.dragging && !pagedGuard.current.sheetOpen,
@@ -962,7 +988,54 @@ export default function ViewerPage({ seed } = {}) {
   });
   // 진행률 소비처(진행 막대·그룹 같이 읽기 push)는 같은 값을 받는다 — 쪽 넘김이면 쪽 기준(설계 §4).
   // 쪽 넘김의 진도는 readProgress — 듣기 따라가기의 자동 이동은 진도를 올리지 않는다(따라가기 전 듣기는 쪽을 안 옮겨 진도 불변).
-  const readProgress = pagedActive ? pager.readProgress : scrollReadProgress;
+  const readProgress = pagedActive
+    ? (readerSections ? Math.round(sectionedPercent(readerSections, section, pager.readProgress)) : pager.readProgress)
+    : scrollReadProgress;
+  // 구간을 바꿔 끼운 직후 — 설 자리를 쪽 제어기에 넘기고 같은 틱에 다시 잰다(다음 프레임으로 미루면 옛 쪽 위치에 새 구간이 한 번 그려진다).
+  // 사람이 넘긴 것이면 그 쪽 첫 낱말을 읽던 곳으로 남기고, 그 구간을 기다리던 이동에는 낱말 요소를 준다(이동은 그 뒤 자기 쪽으로 — reveal).
+  useLayoutEffect(() => {
+    const controller = pager.controller?.();
+    const pending = sectionAnchor.current; sectionAnchor.current = null;
+    if (controller) {
+      if (pending) controller.anchor = pending.anchor;
+      controller.relayout();
+      if (pending?.save) controller.goTo(controller.state.page, { user: true });
+    }
+    for (const waiter of sectionWaiters.current.splice(0)) { const el = tokenRefs.current[waiter.tokenId]; waiter.resolve(el?.isConnected ? el : null); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [section]);
+  // 지나온 구간의 쪽 수 — 쪽 막대 「N쪽」 · 「N / 전체쪽」(목업 승인).
+  // 쪽 수는 제어기에서 읽는다 — 구간을 바꾼 첫 그리기의 pager.count는 아직 앞 구간 값이다(제어기는 위 배치 효과에서 이미 다시 쟀다).
+  useEffect(() => {
+    const state = readerSections ? pager.controller?.()?.state : null;
+    if (!state?.ready) return;
+    setSectionPageCounts(prev => (prev[section] === state.count ? prev : Object.assign([...prev], { [section]: state.count })));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readerSections, pager.ready, pager.count, section]);
+  // 다른 구간의 낱말 요소 — 지금 구간이면 바로, 다른 구간이면 그 구간을 그린 뒤. 없으면 null.
+  const sectionTokenElement = useCallback(tokenId => {
+    const el = tokenRefs.current[tokenId];
+    if (el?.isConnected) return Promise.resolve(el);
+    const target = readerSections ? sectionOfToken(tokenId) : null;
+    if (target == null || target === section) return Promise.resolve(null);
+    sectionMoved.current = true;
+    return new Promise(resolve => { sectionWaiters.current.push({ tokenId, resolve }); setSectionIdx(target); });
+  }, [readerSections, sectionOfToken, section, tokenRefs]);
+  // 첫 구간 고르기 — 본문 귀환(sourceToken) · 읽던 곳(last_token_idx)의 낱말이 든 구간에서 연다(사람이 구간을 옮기기 전까지).
+  useEffect(() => {
+    if (!allSections || sectionMoved.current || typeof window === 'undefined') return;
+    const seq = material?.processed_json?.sequence, idx = readingProgress?.last_token_idx;
+    const tokenId = [new URLSearchParams(window.location.search).get('sourceToken'), Number.isInteger(idx) ? seq?.[idx] : null].find(t => t && tokenLine.has(t));
+    if (tokenId) setSectionIdx(sectionOfToken(tokenId) ?? 0);
+  }, [allSections, readingProgress, material?.processed_json, tokenLine, sectionOfToken]);
+  // 쪽 막대 — 구간이 있으면 앞 · 뒤 구간까지 넘길 수 있고, 표시는 글 전체 기준(목업 승인).
+  const pageBarPager = (() => {
+    if (!readerSections) return pager;
+    const pos = sectionedPagePosition({ section, page: pager.page, counts: readerSections.map((_, i) => sectionPageCounts[i]),
+      percent: sectionedPercent(readerSections, section, pager.progress) });
+    return { ...pager, hasPrev: pager.page > 0 || section > 0, hasNext: pager.page < pager.count - 1 || section < readerSections.length - 1,
+      labelText: pos.count ? vt('{page} / {count}쪽 · {percent}%', pos) : pos.page ? vt('{page}쪽 · {percent}%', pos) : `${pos.percent}%` };
+  })();
   // 그룹 같이 읽기 진도 push(§4.3) — 이번 주 지정 자료일 때만, 실패 조용히
   useGroupReadPush(material?.id, user?.id, readProgress);
   // 보기 전환 — 스크롤 → 쪽이면 지금 화면 맨 위 글자를 첫 기준으로 넘긴다(쪽 → 스크롤은 훅이 기준 글자를 가운데로 데려온다).
@@ -982,6 +1055,9 @@ export default function ViewerPage({ seed } = {}) {
       viewSwitchAnchor.current = null;
       pagedInitialAnchor.current = (rect && rect.bottom > bounds.top && rect.top < bounds.bottom ? kept : null)
         || captureReadingAnchor(readerRef.current, bounds.top, bounds.bottom)?.element || null;
+      // 긴 글이면 그 글자가 든 구간부터 그린다(VIEWER-SECTIONS-001) — 같은 줄 상자(key = 글 전체 줄 번호)가 남아 기준 글자도 그대로다.
+      const anchorSection = sectionOfToken(pagedInitialAnchor.current?.closest?.('[data-source-token]')?.dataset?.sourceToken);
+      if (anchorSection != null) { sectionMoved.current = true; setSectionIdx(anchorSection); }
     }
     settings.setReaderView(next);
   };
@@ -1211,23 +1287,7 @@ export default function ViewerPage({ seed } = {}) {
     const dict = material?.processed_json?.dictionary;
     if (!seq?.length || !dict) return [];
     const rawLines = material?.raw_text?.split('\n') ?? [];
-    const lineGroups = [];
-    let curGroup = { rawIdx: 0, tokenIds: [] };
-    for (const tokenId of seq) {
-      const token = dict[tokenId];
-      if (!token) continue;
-      if (token.pos === '개행') {
-        lineGroups.push(curGroup);
-        const m = tokenId.match(/^(?:id|br|failed)_(\d+)_/);
-        curGroup = { rawIdx: m ? parseInt(m[1]) + 1 : curGroup.rawIdx + 1, tokenIds: [] };
-      } else {
-        const m = tokenId.match(/^(?:id|failed)_(\d+)_/);
-        if (m && curGroup.tokenIds.length === 0) curGroup.rawIdx = parseInt(m[1]);
-        curGroup.tokenIds.push(tokenId);
-      }
-    }
-    if (curGroup.tokenIds.length) lineGroups.push(curGroup);
-    return pickableSentenceUnits(lineGroups, rawLines, { dictionary: dict, language: materialLang });
+    return pickableSentenceUnits(readerLineGroups(seq, dict), rawLines, { dictionary: dict, language: materialLang });
   }, [material?.processed_json, material?.raw_text, materialLang]);
   // 토큰 → 그 토큰이 든 문장(지정 · 단어 카드 문맥 · 저장 출처 문장이 같은 문장을 쓴다).
   const sentenceOfToken = useMemo(() => {
@@ -1539,24 +1599,38 @@ export default function ViewerPage({ seed } = {}) {
     if (!listenFollowable || listenFollowOff.current) { setListenTokens(null); return; }
     const ids = listenSentenceTokens(listenRanges[index], line => listenLineTokens.get(line));
     const el = ids.length ? tokenRefs.current[ids[0]] : null;
+    // 다른 구간의 문장(VIEWER-SECTIONS-001) — 자동 이동이 허락될 때만(시트 · 범위 지정 · 키 차단 · 누르는 중이 아니면) 그 구간을 그리고 따라간다.
+    if (!el?.isConnected && ids.length && sectionOfToken(ids[0]) != null && pager.active) {
+      const g = pagedGuard.current;
+      setListenTokens(null);
+      if (g.sheetOpen || g.dragging || g.blocked || pager.controller?.()?.pressed) return;
+      sectionTokenElement(ids[0]).then(next => {
+        const p = next && pagerFor(next);
+        if (p && listenIndex.current === index && !listenFollowOff.current && p.reveal(next, { auto: true })) flushSync(() => setListenTokens(new Set(ids)));
+      });
+      return;
+    }
     const paged = el && pagerFor(el);
     if (!paged || !el.isConnected) { setListenTokens(null); return; }
     // 같은 틱에서 옮기고 밑줄을 단다 — 한 프레임 미루면 머리줄의 지금 문장과 밑줄이 그 사이 어긋나 보였다(실측 24회 중 2회).
     // 쪽 이동(scrollLeft)은 즉시라 밑줄도 flushSync로 바로 그린다 — 새 쪽에 옛 문장 밑줄이 남는 틈(실측 24회 중 1회)을 없앤다.
     if (paged.reveal(el, { auto: true })) flushSync(() => setListenTokens(new Set(ids)));
     else setListenTokens(null);
-  }, [listenRanges, listenLineTokens, listenFollowable, tokenRefs]);
+  }, [listenRanges, listenLineTokens, listenFollowable, tokenRefs, sectionOfToken, sectionTokenElement, pager.active, pager.controller]);
   // [지금 문장으로](목업 listen-resume B안) — 사람이 누른 이동이라 auto가 아니다(시트가 열려 있어도 옮긴다). 듣는 자리로 가는 것이라
   // 읽은 위치로 저장하지 않는다(user 아님). 따라가기를 다시 켜고 지금 문장에 밑줄.
   const resumeListenFollow = () => {
     listenFollowOff.current = false;
     setListenStopped(false);
     const ids = listenSentenceTokens(listenRanges[listenIndex.current], line => listenLineTokens.get(line));
-    const el = ids.length ? tokenRefs.current[ids[0]] : null;
-    const paged = el && pagerFor(el);
-    if (!paged) return;
-    paged.reveal(el);
-    flushSync(() => setListenTokens(new Set(ids)));
+    if (!ids.length) return;
+    // 다른 구간이면 그 구간을 그린 뒤(VIEWER-SECTIONS-001).
+    sectionTokenElement(ids[0]).then(el => {
+      const paged = el && pagerFor(el);
+      if (!paged) return;
+      paged.reveal(el);
+      flushSync(() => setListenTokens(new Set(ids)));
+    });
   };
 
   // 어휘 커버리지 배지(#1077-2) — 서재 카드와 **같은 엔진·같은 인덱스**(materialFit ←
@@ -1628,7 +1702,11 @@ export default function ViewerPage({ seed } = {}) {
     if (focusMode) clearAnalysisPanels();
     else runSelectionAnalysis(target.text);
     const el = tokenRefs.current[target.firstTokenId];
-    // 쪽 넘김 보기: 다음 문장이 다른 쪽이면 그 쪽으로 넘긴다(설계 §4) — 세로 스크롤은 없다.
+    // 쪽 넘김 보기: 다음 문장이 다른 쪽이면 그 쪽으로 넘긴다(설계 §4) — 세로 스크롤은 없다. 다른 구간이면 그 구간을 그린 뒤(VIEWER-SECTIONS-001).
+    if (!el?.isConnected && pager.active && sectionOfToken(target.firstTokenId) != null) {
+      sectionTokenElement(target.firstTokenId).then(next => { const p = next && pagerFor(next); if (p) p.reveal(next, { user: true }); });
+      return;
+    }
     const paged = el && pagerFor(el);
     if (paged) { requestAnimationFrame(() => { if (el.isConnected) paged.reveal(el, { user: true }); }); return; }
     if (el) {
@@ -4142,7 +4220,8 @@ export default function ViewerPage({ seed } = {}) {
       {/* 쪽 넘김 보기(READER-PAGED-001)의 흐름 — 상단 막대 아래 전부(제목·본문·「다 읽었다면」·다음 편·토론)가 쪽으로
           나뉜다. 스크롤 보기(data-reader-pages="scroll")에서는 아무 규칙도 없는 평범한 블록이다(지금 그대로). */}
       <div className="reader-pages-frame">
-      <div ref={setPagesEl} className="reader-pages" data-reader-pages={pagedActive?'paged':'scroll'}>
+      <div ref={setPagesEl} className="reader-pages" data-reader-pages={pagedActive?'paged':'scroll'}
+        data-section-head={readerSections && section > 0 ? 'off' : undefined} data-section-tail={readerSections && section < readerSections.length - 1 ? 'off' : undefined}>
       {(originalParams.has('sourceEntry')||originalParams.has('sourceQuote'))&&<ClassSourceFocus material={material} user={user} params={originalParams} tokenRefs={tokenRefs} onResolve={(target,source)=>{
         closeWordCard();clearAnalysisPanels();tokenRange.clearRange();setPickedKey(null);setSelectedRangeText(source.quote);
         if(target.first===target.last&&json.dictionary[target.first]?.text===source.quote){setSelectedToken({...json.dictionary[target.first],id:target.first});setIsSheetOpen(true);setRightSheetSignal(v=>v+1);}
@@ -4227,7 +4306,7 @@ export default function ViewerPage({ seed } = {}) {
           </p>
         )}
       </header>}
-      {!originalParams.get('sourceEntry')&&!originalParams.get('sourceQuote')&&<ReadingSourceFocus rawText={material?.raw_text} materialId={id} ready={!!material?.processed_json?.sequence?.length} json={material?.processed_json} onTarget={setSourceFocusId} />}
+      {!originalParams.get('sourceEntry')&&!originalParams.get('sourceQuote')&&<ReadingSourceFocus rawText={material?.raw_text} materialId={id} ready={!!material?.processed_json?.sequence?.length} json={material?.processed_json} onTarget={setSourceFocusId} resolveToken={sectionTokenElement} />}
       {/* 위치 저장 실패 알림 — 영역은 늘 두고 내용만 넣는다. 보이는 줄의 글은 한 번만 읽히게 숨기고 「다시 저장」이 이유를 가리킨다. */}
       <span className="sr-only" role="status" id="viewer-position-notice">{positionError ? vt("읽기 위치를 저장하지 못했어요.") : ''}</span>
       {positionError && <div className="error-banner"><span aria-hidden="true">{vt("읽기 위치를 저장하지 못했어요.")}</span><button type="button" className="btn btn--ghost" aria-describedby="viewer-position-notice" onClick={retryPosition}>{vt("다시 저장")}</button></div>}
@@ -4546,7 +4625,7 @@ export default function ViewerPage({ seed } = {}) {
                 />
               ) : null;
               return (
-                <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
+                <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; else delete tokenRefs.current[tokenId]; }}
                   data-tid={tokenId}
                 data-source-token={tokenId}
                 data-source-text={token.text}
@@ -4627,24 +4706,12 @@ export default function ViewerPage({ seed } = {}) {
 
           // 분석 완료 후: 줄 단위로 그룹핑 → 헤딩 감지
           // tokenId에서 원본 줄 idx 추출 (id_{lineIdx}_{tokenIdx}_...)
-          const lineGroups = []; // [{rawIdx, tokenIds}]
-          let curGroup = { rawIdx: 0, tokenIds: [] };
-          for (const tokenId of json.sequence) {
-            const token = json.dictionary[tokenId];
-            if (!token) continue;
-            if (token.pos === '개행') {
-              lineGroups.push(curGroup);
-              const m = tokenId.match(/^(?:id|br|failed)_(\d+)_/);
-              curGroup = { rawIdx: m ? parseInt(m[1]) + 1 : curGroup.rawIdx + 1, tokenIds: [] };
-            } else {
-              const m = tokenId.match(/^(?:id|failed)_(\d+)_/);
-              if (m && curGroup.tokenIds.length === 0) curGroup.rawIdx = parseInt(m[1]);
-              curGroup.tokenIds.push(tokenId);
-            }
-          }
-          if (curGroup.tokenIds.length) lineGroups.push(curGroup);
+          const lineGroups = readerLines; // [{rawIdx, tokenIds}] — 문장 목록(sentences)과 같은 규칙
+          // 긴 글의 쪽 넘김은 지금 구간의 줄만(VIEWER-SECTIONS-001) — gi는 글 전체의 줄 번호 그대로(key · 줄 바꿈 표시가 구간마다 같다).
+          const from = readerSections ? readerSections[section].start : 0, to = readerSections ? readerSections[section].end : lineGroups.length;
 
-          return lineGroups.map((group, gi) => {
+          return lineGroups.slice(from, to).map((group, li) => {
+            const gi = from + li;
             const rawIdx = group.rawIdx;
             const lineTokenIds = group.tokenIds;
 
@@ -4855,10 +4922,10 @@ export default function ViewerPage({ seed } = {}) {
 
       <div data-page-end aria-hidden="true" />
       </div>{/* reader-pages end */}
-      {pagedActive&&<PageStrips pager={pager} tr={vt}/>}
+      {pagedActive&&<PageStrips pager={pageBarPager} tr={vt}/>}
       </div>
       {/* 시트(옆 · 아래)가 열린 동안은 칩을 숨긴다 — 누르면 시트가 보여 주는 단어의 쪽을 떠나고, 시트 동안 자동 이동은 거절돼 밑줄도 사라진다. */}
-      {pagedActive&&<PageBar pager={pager} barRef={pageBarRef} tr={vt} extra={listenFollowable && listenStopped && !pagedSheetOpen ? (
+      {pagedActive&&<PageBar pager={pageBarPager} barRef={pageBarRef} tr={vt} extra={listenFollowable && listenStopped && !pagedSheetOpen ? (
         <button type="button" className="viewer-pace-float__btn reader-pagebar__resume" title={vt('듣고 있는 문장의 쪽으로 가고 다시 따라가요')} onClick={resumeListenFollow}>
           <ActionIcon name="headphones"/><span>{vt('지금 문장으로')}</span>
         </button>) : null}/>}

@@ -624,7 +624,8 @@ describe('auto reveal yields to people (listen follow)', () => {
   });
   it('배선 — 쪽 넘김 진도는 readProgress(진행 막대 · 그룹 push), 쪽 막대 글은 progress', () => {
     const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
-    expect(viewer).toContain('const readProgress = pagedActive ? pager.readProgress : scrollReadProgress;');
+    // 긴 글의 구간 그리기(VIEWER-SECTIONS-001)면 앞 구간 칸 + 지금 구간 안의 readProgress — 글 전체 기준.
+    expect(viewer).toContain('const readProgress = pagedActive\n    ? (readerSections ? Math.round(sectionedPercent(readerSections, section, pager.readProgress)) : pager.readProgress)\n    : scrollReadProgress;');
     expect(viewer).not.toContain('pagedActive ? pager.progress');
     expect(viewer).toContain('useGroupReadPush(material?.id, user?.id, readProgress);');
   });
@@ -641,7 +642,7 @@ describe('auto reveal yields to people (listen follow)', () => {
       .toContain("if (auto && (pressed || opt().canAutoReveal?.() === false)) return ready && pageOf(target) === page;");
     // 훅이 뷰어의 판정을 컨트롤러로 넘긴다 — 빠지면 시트가 열려 있어도 듣기가 쪽을 옮긴다.
     expect(sliceBetween(hook, 'export function usePagedReader({', '}) {')).toContain('canAutoReveal');
-    expect(hook).toContain('latest.current = { onUserPage, canSwipe, canKey, canAutoReveal,');
+    expect(hook).toContain('latest.current = { onUserPage, onEdge, canSwipe, canKey, canAutoReveal,');
   });
 });
 
@@ -712,5 +713,27 @@ describe('paged sheet dock (A안 — 고른 단어의 반대편)', () => {
     const placing = css.split('\n').filter(line => line.includes('[data-placing="true"]') && line.includes('{'));
     expect(placing).toEqual(['    .viewer-layout[data-reader-view="paged"] .viewer-inspector[data-placing="true"] { opacity: 0; pointer-events: none; }']);
     expect(narrow).toContain(placing[0]);
+  });
+});
+
+describe('section edges (VIEWER-SECTIONS-001)', () => {
+  it('a person turning past the first or last page asks the viewer for the next section; it stays put when the viewer swaps', () => {
+    const reader = fakeReader({ tokens: 30, perPage: 10 });
+    const edges = [];
+    let swap = true;
+    const c = controller(reader, { onEdge: dir => { edges.push(dir); return swap; } });
+    expect(c.state.count).toBe(3);
+    c.goTo(2, { user: true });
+    expect(c.next()).toBe(2); // 마지막 쪽에서 다음 → 뷰어가 다음 구간으로 바꿔 끼운다(여기서는 옮기지 않는다)
+    c.goTo(0, { user: true });
+    expect(c.prev()).toBe(0);
+    expect(edges).toEqual([1, -1]);
+    // 자동 이동 · 범위 안 넘김은 묻지 않는다. 뷰어가 거절하면(구간 없음 · 끝 구간) 지금처럼 끝 쪽에 멈춘다.
+    c.goTo(5);
+    c.goTo(1, { user: true });
+    swap = false;
+    c.goTo(2, { user: true });
+    expect(c.next()).toBe(2);
+    expect(edges).toEqual([1, -1, 1]);
   });
 });

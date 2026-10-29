@@ -6,12 +6,14 @@ import { learningSourceRevision, readingSourceTarget, UUID } from '../../lib/lea
 import { revealInReader } from '../../lib/usePagedReader';
 import { friendlyToastMessage } from '../../lib/errorMessage';
 
-export default function ReadingSourceFocus({ materialId, ready, json, rawText, onTarget }) {
+// resolveToken(tokenId) → Promise<요소|null> — 긴 글의 쪽 넘김이 다른 구간의 낱말을 그려서 넘긴다(VIEWER-SECTIONS-001). 없으면 화면에서 찾는다.
+export default function ReadingSourceFocus({ materialId, ready, json, rawText, onTarget, resolveToken }) {
   const {user,loading}=useAuth();
   const userId=user?.id;
   const params=useSearchParams(),search=params.toString();
   const [message,setMessage]=useState(''),[retry,setRetry]=useState(0),[failed,setFailed]=useState(false);
   const completed=useRef(null);
+  const resolver=useRef(resolveToken);resolver.current=resolveToken;
   useEffect(()=>{
     const source=new URLSearchParams(search),contextId=source.get('sourceContext');
     const scope=`${userId || 'guest'}:${materialId}:${search}:${retry}`;
@@ -41,7 +43,8 @@ export default function ReadingSourceFocus({ materialId, ready, json, rawText, o
       if(request.signal.aborted || interacted) return;
       completed.current={scope,json,rawText};
       const tokenId=readingSourceTarget(json,context,options);
-      const target=tokenId?[...document.querySelectorAll('[data-source-token]')].find(el=>el.dataset.sourceToken===tokenId):null;
+      const target=tokenId?((resolver.current?await resolver.current(tokenId):null)||[...document.querySelectorAll('[data-source-token]')].find(el=>el.dataset.sourceToken===tokenId)):null;
+      if(request.signal.aborted) return;
       if(!target) {setMessage('예문의 위치가 바뀌었거나 같은 표현이 여러 곳에 있어요. 저장한 문맥과 함께 확인해 주세요.');return;}
       onTarget(tokenId);
       revealInReader(target,{block:'center'}); // 쪽 넘김 보기면 그 토큰의 쪽으로(READER-PAGED-001)
