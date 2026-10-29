@@ -247,6 +247,19 @@ export function useSelectedTokenVisibility(readerRef, tokenRefs, tokenId, enable
   }, [readerRef, revision, mounted]); // 본문(readerRef)은 자료가 온 뒤에 붙는다 — 자료가 바뀌거나 본문이 늦게 붙으면(mounted, READER-MOUNT-001) 다시 건다
 }
 
+// A mobile keyboard changes the visual viewport, not necessarily 100dvh.
+// 읽기를 먼저 다 하고 쓴다. 두 값은 .viewer-layout에서 상속되는 사용자 속성이라 바뀌면 본문 낱말 전부의 스타일을 다시 계산한다
+// (단어 3,000 · CPU×4 실측: 본문이 그려진 직후 한 번 0.14~0.23초 — VIEWER-LAYOUT-VARS-001). 키보드가 한 번도 열리지 않았으면 CSS 기본값
+// (100dvh · 0px)과 같으므로 쓰지 않고, 쓴 뒤에도 같은 값은 다시 쓰지 않는다.
+export function applyReaderViewportVars(root,viewport,innerHeight) {
+  if(viewport.scale!==1)return;
+  const height=`${viewport.height}px`,inset=`${Math.max(0,innerHeight-viewport.height-viewport.offsetTop)}px`,open=String(parseFloat(inset)>100);
+  if(root.dataset.keyboardOpen!==open)root.dataset.keyboardOpen=open;
+  if(open==='false'&&!root.style.getPropertyValue('--reader-visual-height'))return;
+  if(root.style.getPropertyValue('--reader-visual-height')!==height)root.style.setProperty('--reader-visual-height',height);
+  if(root.style.getPropertyValue('--reader-keyboard-inset')!==inset)root.style.setProperty('--reader-keyboard-inset',inset);
+}
+
 export function useReaderLayout(readerRef,revision,mounted) {
   const operation=useRef(null),[layoutVersion,setLayoutVersion]=useState(0);
   const cancel=useCallback(()=>{operation.current?.();operation.current=null;},[]);
@@ -259,14 +272,7 @@ export function useReaderLayout(readerRef,revision,mounted) {
   useEffect(()=>{
     const root=readerRef.current?.closest('.viewer-layout'),viewport=window.visualViewport;
     if(!root||!viewport)return;
-    const update=()=>{
-      // A mobile keyboard changes the visual viewport, not necessarily 100dvh.
-      if(viewport.scale!==1)return;
-      root.style.setProperty('--reader-visual-height',`${viewport.height}px`);
-      const inset=Math.max(0,window.innerHeight-viewport.height-viewport.offsetTop);
-      root.style.setProperty('--reader-keyboard-inset',`${inset}px`);
-      root.dataset.keyboardOpen=String(inset>100);
-    };
+    const update=()=>applyReaderViewportVars(root,viewport,window.innerHeight);
     update();viewport.addEventListener('resize',update);viewport.addEventListener('scroll',update);
     return ()=>{viewport.removeEventListener('resize',update);viewport.removeEventListener('scroll',update);root.style.removeProperty('--reader-visual-height');root.style.removeProperty('--reader-keyboard-inset');delete root.dataset.keyboardOpen;};
   },[readerRef,revision,mounted]); // mounted = 본문 요소 — 자료보다 늦게 붙으면 그때 건다(READER-MOUNT-001)
