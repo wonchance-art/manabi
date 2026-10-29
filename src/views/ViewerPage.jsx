@@ -4845,7 +4845,7 @@ export default function ViewerPage({ seed } = {}) {
         team={studyContext?.team||/^\/class\/([a-z0-9-]+)(?:\?|$)/.exec(originalParams.get('returnTo')||'')?.[1]}
         first={tokenRange.range?json.sequence[tokenRange.range.start]:isSheetOpen?selectedToken?.id:pickedSentence?.firstTokenId}
         last={tokenRange.range?json.sequence[tokenRange.range.end]:undefined}
-        blocked={modalBlocked} onClose={closeWordCard} onPresenting={setClassPresenting}>
+        blocked={modalBlocked} onClose={closeWordCard} onPresenting={setClassPresenting} active={classStudyActive}>
       {(annotationContent,annotationOpen,closeWordCard)=><ClassroomReader toolbarTarget={classToolbarTarget} boardTarget={classBoardTarget} boardHeaderTarget={classBoardHeaderTarget} onBoardRatio={setClassBoardRatio} vocabularyIndex={savedWords} onBoardLayout={setClassBoardLayout} annotationContent={annotationContent} context={studyContext} user={user} material={material}
         selection={classSelection} selectionSignal={rightSheetSignal}
         wordContent={(dragTokens!==null||(selectedToken&&isSheetOpen))?renderRightPanelContent:null}
