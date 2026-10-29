@@ -29,3 +29,17 @@ describe('오른쪽 패널(단어 카드) — 쓰는 자리에서만 짓는다',
     expect(fn).toContain('"단어 클릭 → 상세"');
   });
 });
+
+describe('일반 읽기에는 교재 설명이 없다(오너 2026-10-29 KST 「뷰어에 \'교재 설명\' 없애줘」) — 수업 모드만', () => {
+  const notes = fs.readFileSync('src/components/classroom/TextbookAnnotations.jsx', 'utf8');
+  it('뷰어는 수업 모드일 때만 교재 설명을 켠다', () => {
+    expect(code).toContain('onPresenting={setClassPresenting} active={classStudyActive}>');
+  });
+  it('켜지지 않으면 칸 · 조회 · 자동 열림(보이는 곳 감시)이 모두 없다', () => {
+    expect(notes).toContain('active:classActive=false');
+    expect(notes).toMatch(/const enabled=classActive&&/);
+    expect(notes).toContain('const visible=enabled&&(');
+    expect(notes).toContain('if(!enabled||blocked||editor||pending||first)return;');
+    expect(notes).toMatch(/const content=enabled\?/);
+  });
+});
