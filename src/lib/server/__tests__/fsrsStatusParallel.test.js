@@ -1,6 +1,9 @@
-import { describe, expect, it, vi } from 'vitest';
-import { readFsrsStatus } from '../fsrsLearning.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { readFsrsStatus, resetFsrsCapabilityCache } from '../fsrsLearning.js';
 import { introduceFsrsCard } from '../../fsrsScheduler.js';
+
+// 능력은 서버 인스턴스에서 15초 나눠 쓴다(FSRS-CAPABILITY-CACHE-001) — 테스트마다 새로 읽게 비운다.
+beforeEach(() => { resetFsrsCapabilityCache(); });
 
 // readFsrsStatus(PERF-FSRS-001) — 능력(fsrs_capabilities)과 등록 목록(fsrs_list_states)은 서로 기다리지 않는다.
 // 둘 다 받은 뒤 능력 오류를 먼저 판정한다(오류 우선순위는 순차 때와 같다).
