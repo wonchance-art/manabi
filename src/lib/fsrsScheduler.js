@@ -28,9 +28,10 @@ const algorithm = new FSRSAlgorithm({ request_retention: FSRS_POLICY.retention,
 // 같은 시각 문자열은 한 번만 푼다(TAP-INP-SCHED-001). 복습 줄 · 오늘 개수는 표현마다 이 함수를 세 번 부르고(묻는 시각 ·
 // 평가 시각 · 다음 질문 시각), 범위 · 언어별 개수마다 다시 계산한다 — 채점 한 번에 표현 412개 기준 수천 번 같은 문자열을
 // 정규식으로 풀어 탭 처리에 CPU×4 50ms 이상을 썼다(390 실측). 결과는 문자열만의 함수라 저장해 둔 값이 늘 같다. 잘못된
-// 문자열은 저장하지 않고 예전처럼 매번 던진다. 크기는 묶어 둔다(가득 차면 비우고 다시 쌓는다).
+// 문자열은 저장하지 않고 예전처럼 매번 던진다. 크기는 묶어 둔다(가득 차면 비우고 다시 쌓는다). 상한은 단어 3,000개 계정의 서로 다른
+// 시각 문자열(8,244개)이 다 들어가게 — 4,096이면 단어장 첫 화면에서 가득 차 비우기를 되풀이해 다시 풀었다(VOCAB-TBT-001, CPU×4 약 80ms).
 const PARSED_TIMES = new Map();
-const PARSED_TIMES_MAX = 4096;
+const PARSED_TIMES_MAX = 16384;
 export function schedulerTime(value) {
   if (typeof value === 'string') {
     const hit = PARSED_TIMES.get(value);

@@ -335,10 +335,14 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
   const learningById = useMemo(() => new Map(projections.map(row => [row.vocabulary.id, row])), [projections]);
   const deckFor = useCallback(word => deckOf({ ...word, reading_materials: { title: materialTitles.get(word.source_material_id) } }), [materialTitles]);
   const reviewAvailable = useCallback(word => learningAvailable && isVocabularyReviewAvailable(learningById.get(word.id)), [learningAvailable, learningById]);
-  const reviewDueAt = useCallback(word => {
-    const projection = learningById.get(word.id);
-    return projection?.review.available && projection.review.nextQuestionAt ? Date.parse(projection.review.nextQuestionAt) : Infinity;
-  }, [learningById]);
+  // 다음 복습 시각은 snapshot이 바뀔 때 한 번만 푼다(VOCAB-TBT-001) — 「다음 복습」 다섯 줄 · 기한순 정렬이 비교마다 Date.parse를 다시 해
+  // 단어 3,000개에서 그릴 때마다 수만 번(CPU×4 약 140ms)이었다. 값은 그대로(풀 수 없는 문자열은 예전처럼 NaN).
+  const dueAtById = useMemo(() => {
+    const due = new Map();
+    for (const row of projections) if (row.review.available && row.review.nextQuestionAt) due.set(row.vocabulary.id, Date.parse(row.review.nextQuestionAt));
+    return due;
+  }, [projections]);
+  const reviewDueAt = useCallback(word => (dueAtById.has(word.id) ? dueAtById.get(word.id) : Infinity), [dueAtById]);
   const mutationGuard = useRef(null);
   mutationGuard.current = { accountId: user?.id, koreanSave: koreanCapabilities.save, rows: allVocab };
   const canMutateWords = ids => {

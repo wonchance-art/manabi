@@ -37,15 +37,16 @@ describe('schedulerTime 문자열 저장(TAP-INP-SCHED-001)', () => {
     expect(() => schedulerTime(1.5)).toThrow('invalid_scheduler_time');
   });
 
-  it('서로 다른 문자열이 상한(4096)을 넘어도 값이 맞다 — 가득 차면 비우고 다시 쌓는다', () => {
+  it('서로 다른 문자열이 상한(16384)을 넘어도 값이 맞다 — 가득 차면 비우고 다시 쌓는다', () => {
     const base = Date.UTC(2020, 0, 1);
-    for (let i = 0; i < 9000; i++) {
+    for (let i = 0; i < 17000; i++) {
       const ms = base + i * 1000;
       expect(schedulerTime(new Date(ms).toISOString())).toBe(ms);
     }
     expect(schedulerTime(new Date(base).toISOString())).toBe(base);
     const src = fs.readFileSync(path.join(process.cwd(), 'src/lib/fsrsScheduler.js'), 'utf8');
-    expect(src).toContain('const PARSED_TIMES_MAX = 4096;');
+    // 단어 3,000개 계정의 서로 다른 시각 문자열 8,244개가 다 들어가는 크기(VOCAB-TBT-001).
+    expect(src).toContain('const PARSED_TIMES_MAX = 16384;');
     expect(src).toContain('if (PARSED_TIMES.size >= PARSED_TIMES_MAX) PARSED_TIMES.clear();');
   });
 });
