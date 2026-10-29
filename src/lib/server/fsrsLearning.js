@@ -5,6 +5,7 @@ import { beginFsrsAttempt, revealFsrsAttempt, finishFsrsAttempt, planFsrsUndo } 
 import { UUID } from '../learningSources.js';
 import { DEFAULT_NEW_PER_DAY, NEW_PER_DAY_OPTIONS } from '../vocabStudy.js';
 import { readLearningAdmissionStatus } from './learningAdmission.js';
+import { normalizeAdmissionStatus } from '../learningAdmission.js';
 
 const identity = value => typeof value === 'string' && /^[A-Za-z0-9_.:-]{1,200}$/.test(value);
 const canonical = value => JSON.stringify(value, Object.keys(value).sort());
@@ -215,9 +216,13 @@ export async function applyFsrsRequest({ authClient, serviceClient, userId, body
   // 능력 · 입장 상태 · 이 연산 · 카드 상태는 모두 읽기라 서로 기다리지 않는다(readFsrsStatus PERF-FSRS-001과 같은 결 — FSRS-APPLY-PARALLEL-001).
   // 순차일 때 연산 하나 = 왕복 넷 + 반영 + 입장 재조회(운영 평균 합 약 1.3 s, 2026-10-26 KST edge 로그). 오류 판정은 순차일 때의 순서
   // (능력 → 켜짐 → 입장 → 설치 → 연산 → 상태) 그대로 — 모두 받은 뒤 그 순서로 던진다. 반영(쓰기)은 그 판정을 다 통과한 뒤에만.
+  // 반영 전 입장 상태는 첫 문제(question) 정책 대조와 등록 · 폐기 같은 그 밖의 연산에만 읽는다. 보이기 · 채점 · 되돌리기 · 폐기는
+  // 입장 상태를 쓰지 않고, 무결성(require_admission_integrity)은 반영 함수가 DB 안에서 다시 본다 — 그 읽기(무결성 해시 넷)를 덜어 낸다
+  // (FSRS-ADMISSION-QUOTA-001 — 운영 평균 약 0.5 s로 가장 무거운 읽기, 단어 한 장당 세 번 → 한 번).
+  const preAdmission = !['reveal', 'grade', 'undo', 'abandon'].includes(request.action);
   const contractPromise = capabilities(authClient);
   const [contractRead, admissionRead, previousRead, rawRead] = await Promise.allSettled([contractPromise,
-    readLearningAdmissionStatus({ authClient, serviceClient, userId, knownFsrsEnabled: contractPromise.then(c => c.enabled), now }),
+    preAdmission ? readLearningAdmissionStatus({ authClient, serviceClient, userId, knownFsrsEnabled: contractPromise.then(c => c.enabled), now }) : null,
     rpc(serviceClient, 'fsrs_read_operation', { p_actor: userId, p_card_id: request.cardId, p_operation_id: request.operationId }),
     rpc(serviceClient, 'fsrs_read_state', { p_actor: userId, p_card_id: request.cardId })]);
   if (contractRead.status === 'rejected') throw contractRead.reason;
@@ -225,12 +230,22 @@ export async function applyFsrsRequest({ authClient, serviceClient, userId, body
   if (!contract.enabled) reject('fsrs_storage_unavailable');
   if (admissionRead.status === 'rejected') throw admissionRead.reason;
   const admission = admissionRead.value;
-  if (!admission.installed) reject('fsrs_admission_unavailable');
-  // 반영 뒤 입장 상태는 첫 문제(question)만 바뀐다(fsrs_new_receipts는 question만 쓴다). 보이기 · 채점 · 되돌리기는 위에서 읽은 것을
-  // 그대로 돌려준다 — 연산마다 입장 재조회(learning_admission_status, 운영 평균 약 0.5 s · 무결성 해시 넷)를 하나 덜어 낸다(FSRS-ADMISSION-REREAD-001).
-  const currentResult = async (current, duplicate) => ({ ...result(current, userId, at, request.operationId, duplicate, contract.policyVersion),
-    admission: request.action === 'question'
-      ? await readLearningAdmissionStatus({ authClient, serviceClient, userId, knownFsrsEnabled: contract.enabled, now }) : admission });
+  if (preAdmission && !admission.installed) reject('fsrs_admission_unavailable');
+  // 응답의 입장 상태 — 반영 함수가 같은 트랜잭션에서 붙여 주는 반영 뒤 상태(quota = admission_status)를 그대로 쓴다. 모양이 맞지 않거나
+  // 반영을 거치지 않은 재전송이면, 첫 문제가 아닌 연산은 반영 전에 읽은 것을(입장 상태는 첫 문제만 바꾼다 — FSRS-ADMISSION-REREAD-001),
+  // 그 밖에는 지금처럼 다시 읽는다.
+  const admissionAfter = async (raw) => {
+    if (raw?.quota) {
+      try {
+        const status = normalizeAdmissionStatus(raw.quota, { actorId: userId });
+        if (status.installed && status.fsrsEnabled === contract.enabled) return status;
+      } catch { /* 아래에서 읽는다 */ }
+    }
+    if (admission && request.action !== 'question') return admission;
+    return readLearningAdmissionStatus({ authClient, serviceClient, userId, knownFsrsEnabled: contract.enabled, now });
+  };
+  const currentResult = async (current, duplicate, raw = null) => ({ ...result(current, userId, at, request.operationId, duplicate, contract.policyVersion),
+    admission: await admissionAfter(raw) });
   if (previousRead.status === 'rejected') throw previousRead.reason;
   const previous = previousRead.value;
   if (rawRead.status === 'rejected') throw rawRead.reason;
@@ -271,7 +286,7 @@ export async function applyFsrsRequest({ authClient, serviceClient, userId, body
   if (!applied || applied.operationId !== request.operationId || applied.cardId !== request.cardId) reject('fsrs_storage_unavailable');
   if (applied.duplicate === true) {
     const current = await rpc(serviceClient, 'fsrs_read_state', { p_actor: userId, p_card_id: request.cardId });
-    return currentResult(checkedState(current, userId, request.cardId), true);
+    return currentResult(checkedState(current, userId, request.cardId), true, applied);
   }
-  return currentResult(applied, applied.duplicate === true);
+  return currentResult(applied, applied.duplicate === true, applied);
 }
