@@ -437,11 +437,26 @@ export function overlayOrigin(reader) {
   const rect = pages.getBoundingClientRect();
   return { left: rect.left + (pages.clientLeft || 0) - (pages.scrollLeft || 0), top: rect.top + (pages.clientTop || 0) - (pages.scrollTop || 0) };
 }
-/** 대상을 보이게 — 쪽 넘김이면 그 쪽으로, 스크롤 보기면 원래 scrollIntoView. */
+/**
+ * 스크롤 보기에서 멀리 뛸 때(VIEWER-CV-SCROLL-001) — 화면 밖 줄은 배치를 건너뛰어 어림 높이로 서 있으므로, 뛰는 그 순간만 본문 전부를
+ * 그려(data-reader-full) 대상의 실제 자리로 간다. 두 프레임 뒤 되돌리면 그린 줄은 실제 높이를 기억한다. 겹쳐 불러도 마지막이 끝날 때 푼다.
+ */
+const fullHolds = new WeakMap();
+export function withFullReader(target, run) {
+  const area = target?.closest?.('.reader-area') || null;
+  if (area) { fullHolds.set(area, (fullHolds.get(area) || 0) + 1); area.dataset.readerFull = 'true'; }
+  try { return run(); } finally {
+    if (area) {
+      const release = () => { const n = (fullHolds.get(area) || 1) - 1; fullHolds.set(area, n); if (n <= 0) delete area.dataset.readerFull; };
+      if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => requestAnimationFrame(release)); else release();
+    }
+  }
+}
+/** 대상을 보이게 — 쪽 넘김이면 그 쪽으로, 스크롤 보기면 원래 scrollIntoView(그 순간 본문 전부를 그려서). */
 export function revealInReader(target, scrollOptions = { block: 'center' }, revealOptions) {
   const pager = pagerFor(target);
   if (pager) return pager.reveal(target, revealOptions);
-  target?.scrollIntoView?.(scrollOptions);
+  withFullReader(target, () => target?.scrollIntoView?.(scrollOptions));
   return !!target;
 }
 
@@ -475,7 +490,7 @@ export function usePagedReader({ enabled, pages, barRef, layoutKey, resetKey, on
       if (target && typeof requestAnimationFrame === 'function') requestAnimationFrame(() => requestAnimationFrame(() => {
         if (!connected(target) || pagerFor(pages)) return;
         const el = target.nodeType === 1 ? target : target.startContainer?.parentElement;
-        el?.scrollIntoView?.({ block: 'center', behavior: 'instant' });
+        withFullReader(el, () => el?.scrollIntoView?.({ block: 'center', behavior: 'instant' }));
       }));
     };
   }, [enabled, pages]);

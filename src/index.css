@@ -2634,6 +2634,26 @@ a.viewer-badge:hover {
   min-width: 0;
   gap: inherit;
 }
+/* 스크롤 보기: 화면 밖 줄은 배치 · 그리기를 건너뛴다(VIEWER-CV-SCROLL-001, 오너 「둘 다 ㄱㄱ」 2026-10-29 KST). 낱말 3,600개 글(390 · CPU×4)에서
+   첫 배치가 약 3초였다 — 낱말 칸 수에 비례(칸 구조를 바꿔도 거의 그대로, 실측). 선례: 단어 레벨 목록 .lv-group.
+   · 줄 상자가 그리기 경계가 되므로(contain: paint) 첫 행 위로 나온 후리가나 · 병음, 왼쪽 여백에 나간 문장 막대(.line-pick −30px)가 잘린다
+     → 위 2em · 아래 .75em · 왼쪽 32px를 상자 안으로 넓히고 같은 만큼 바깥 여백을 당겨(폭 기준 100% + 32px) 배치는 화소까지 그대로다(토큰 위치 실측 동일).
+     오른쪽은 넓히지 않는다 — 오른쪽으로 나간 상자는 390에서 가로 넘침(가로 스크롤)이 된다(e2e viewer-focus-move 실측). 넓힌 자리가 이웃 줄 낱말을 덮어 누름을 가로채지 않게 줄 상자는 누름을 통과시킨다.
+   · 어림 높이 8em = 실측 줄 높이 중앙값(일본어 · 중국어 8.4em). 한 번 그린 줄은 실제 높이를 기억한다(auto).
+   · 멀리 뛰는 이동(읽던 곳 복원 · 본문 귀환 · 글자 크기 바꿈)은 그 순간만 전부 그려(data-reader-full · layoutRestoring · selectionRevealing)
+     자리가 어림 높이로 어긋나지 않게 한다. 쪽 넘김(다단)은 어림 높이가 쪽 수를 바꿔(실측 99 → 37쪽) 쓰지 않는다. 수업 보기도 그대로다. */
+.viewer-layout[data-reader-view="scroll"]:not([data-class-study="true"]) .reader-area > .reader-line {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 8em;
+  padding: 2em 0 .75em 32px;
+  margin: -2em 0 -.75em -32px;
+  flex-basis: calc(100% + 32px);
+  pointer-events: none;
+}
+.viewer-layout[data-reader-view="scroll"]:not([data-class-study="true"]) .reader-area > .reader-line > * { pointer-events: auto; }
+.viewer-layout[data-reader-view="scroll"] .reader-area:is([data-reader-full], [data-layout-restoring], [data-selection-revealing]) > .reader-line {
+  content-visibility: visible;
+}
 
 .word-token {
   display: inline;

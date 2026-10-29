@@ -39,7 +39,7 @@ describe('paged view keeps the token-index position (READER-PAGED-001)', async (
   const viewer = readFileSync(new URL('../../views/ViewerPage.jsx', import.meta.url), 'utf8');
   it('restores the saved token on its page instead of scrolling, and never records vertical positions there', () => {
     expect(restore).toContain('if (pager) pager.reveal(el);');
-    expect(restore).toContain("else el.scrollIntoView({ behavior: 'instant', block: 'center' });");
+    expect(restore).toContain("else withFullReader(el, () => el.scrollIntoView({ behavior: 'instant', block: 'center' }));"); // 스크롤 보기 — 뛰는 순간 본문 전부(VIEWER-CV-SCROLL-001)
     expect(restore).toContain('if (pagerFor(readerRef?.current)) return;');
   });
   it('saves the first token of a turned-to page through the same writer; the stored value is a token index', () => {
