@@ -348,3 +348,34 @@ describe('R1-B-1 줄 규칙 — countReviewScope가 줄과 개수를 함께 낸�
     expect(countReviewScope({ snapshot: snap, quota: quota(), scope: fragile, now: NOW, fragileIds: ['sharp', 'notdue'] }).queue.ids).toEqual(['sharp']);
   });
 });
+
+describe('VOCAB-SCOPE-COUNT-001 — 언어 칩 · 밀린 복습은 개수만 세도 줄을 짠 값과 같다', () => {
+  const langScope = lang => ({ lang, level: null, source: null, state: 'due' });
+  const inactive = { active: false, remaining: 0, admittedLegacyCardIds: [] };
+  it('byLang[언어] = 그 언어만 고른 범위의 줄 길이 · backlog.overdue = 한도 닫고 센 기한 복습 — 한도 · 엔진 · 밀린 복습 조합마다', () => {
+    const cases = [];
+    for (const fsrs of [true, false]) for (const enabled of [true, false]) for (const q of [quota(0), quota(1), quota(10), inactive,
+      { active: true, remaining: 10, admittedLegacyCardIds: ['c2', 'j2'] }]) cases.push({ snap: snapshot({ fsrs, enabled }), q });
+    for (const { snap, q } of cases) for (const lang of ['Chinese', 'Japanese', 'French']) {
+      const count = countReviewScope({ snapshot: snap, quota: q, scope: langScope(lang), now: NOW });
+      expect(count.byLang[lang]).toBe(count.total);
+      expect(count.byLang[lang]).toBe(count.queue.items.length);
+      expect(count.backlog.overdue).toBe(countReviewScope({ snapshot: snap, quota: inactive, scope: langScope(lang), now: NOW }).due);
+    }
+  });
+
+  it('뜻을 고치면(같은 표현 객체라도) 다시 본다 · 새 projections면 밀린 복습 기준을 새로 잰다', () => {
+    const snap = snapshot();
+    const zh = langScope('Chinese');
+    const before = countReviewScope({ snapshot: snap, quota: quota(), scope: zh, now: NOW });
+    const word = snap.projections.find(p => p.vocabulary.id === 'c1').vocabulary;
+    const meaning = word.meaning;
+    word.meaning = '   ';
+    expect(countReviewScope({ snapshot: snap, quota: quota(), scope: zh, now: NOW }).noMeaning).toBe(before.noMeaning + 1);
+    word.meaning = meaning;
+    expect(countReviewScope({ snapshot: snap, quota: quota(), scope: zh, now: NOW }).noMeaning).toBe(before.noMeaning);
+    // 같은 projections · 다른 시각이면 기준을 다시 잰다(14일 창이 움직인다)
+    const later = countReviewScope({ snapshot: snap, quota: quota(), scope: zh, now: NOW + 30 * DAY });
+    expect(later.backlog.baseline).toBe(countReviewScope({ snapshot: { ...snap, projections: snap.projections.slice() }, quota: quota(), scope: zh, now: NOW + 30 * DAY }).backlog.baseline);
+  });
+});
