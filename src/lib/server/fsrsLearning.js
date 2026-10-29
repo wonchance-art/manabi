@@ -92,7 +92,23 @@ export function parseFsrsRequest(body, userId) {
   return request;
 }
 
-async function capabilities(client) {
+// 능력(fsrs_capabilities)은 계정과 무관한 전역 설정이다. 연산마다 읽던 것을(운영 평균 0.54 s · 단어 한 장당 세 번) 같은 서버
+// 인스턴스에서 15초 나눠 쓴다 — 진행 중인 읽기도 같이 쓴다(FSRS-CAPABILITY-CACHE-001). 실패는 담지 않는다. 최종 권한은 DB다:
+// 반영 함수(fsrs_apply_operation)가 settings.enabled · 계약 해시를 FOR SHARE로 다시 보고 꺼졌으면 거절한다(fsrs_storage_disabled → 503).
+export const FSRS_CAPABILITY_TTL_MS = 15000;
+let capabilityCache = null;
+export function resetFsrsCapabilityCache() { capabilityCache = null; }
+
+function capabilities(client, now = Date.now()) {
+  if (capabilityCache && now - capabilityCache.at >= 0 && now - capabilityCache.at < FSRS_CAPABILITY_TTL_MS) return capabilityCache.promise;
+  const promise = readCapabilities(client);
+  const entry = { at: now, promise };
+  capabilityCache = entry;
+  promise.catch(() => { if (capabilityCache === entry) capabilityCache = null; });
+  return promise;
+}
+
+async function readCapabilities(client) {
   // 설치 부재와 읽기 장애를 '등록 카드 없음'으로 변환하지 않는다.
   const raw = await rpc(client, 'fsrs_capabilities');
   // 학습 단계 정책은 서버가 정한다(REV-SCOPE R1-B-2 anki-v2). 모르는 정책값이면 추측하지 않고 멈춘다.

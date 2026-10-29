@@ -1,10 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sliceBetween } from '../../__tests__/helpers/sliceBetween.js';
 import { readLearningAdmissionStatus } from '../learningAdmission.js';
-import { readFsrsStatus } from '../fsrsLearning.js';
+import { readFsrsStatus, resetFsrsCapabilityCache } from '../fsrsLearning.js';
 import { introduceFsrsCard } from '../../fsrsScheduler.js';
+
+// 능력은 서버 인스턴스에서 15초 나눠 쓴다(FSRS-CAPABILITY-CACHE-001) — 테스트마다 새로 읽게 비운다.
+beforeEach(() => { resetFsrsCapabilityCache(); });
 
 // 능력 RPC 중복 조사(2026-10-17 KST, 운영 pg_stat_statements: fsrs_capabilities 평균 ~570ms · learning_language_capabilities ~1s ·
 // learning_admission_status ~750ms) — 캐시(신선도)는 바꾸지 않고, 한 화면 이동에서 같은 함수가 두 번 나가지 않게 · 서로 기다리지 않게.
