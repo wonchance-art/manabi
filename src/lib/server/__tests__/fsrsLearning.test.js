@@ -331,3 +331,48 @@ describe('FSRS-ADMISSION-REREAD-001 — 반영 뒤 입장 재조회는 첫 문�
     expect(graded.admission).toMatchObject({ used: 1, remaining: 14 });
   });
 });
+
+describe('FSRS-ADMISSION-QUOTA-001 — 반영 응답의 입장 상태(quota)를 쓰고, 보이기 · 채점은 반영 전 입장을 읽지 않는다', () => {
+  const admissionReads = () => serviceClient.rpc.mock.calls.filter(([name]) => name === 'learning_admission_status').length;
+  // 운영 반영 함수처럼 응답에 같은 트랜잭션의 입장 상태(admission_status)를 붙인다.
+  const withQuota = (alter = q => q) => {
+    const original = serviceClient.rpc.getMockImplementation();
+    serviceClient.rpc.mockImplementation(async (name, args) => {
+      const response = await original(name, args);
+      if (name !== 'fsrs_apply_learning_operation' || response.error) return response;
+      const quota = (await original('learning_admission_status', { p_actor: owner })).data;
+      return { data: { ...response.data, quota: alter({ ...quota, policyRevision: 0 }) } };
+    });
+  };
+  it('question은 반영 전에 한 번만 읽고(정책 대조), 응답은 반영 함수가 붙인 반영 뒤 상태 — 다시 읽지 않는다', async () => {
+    withQuota();
+    const response = await request('question');
+    expect(admissionReads()).toBe(1);
+    expect(response.admission).toMatchObject({ used: 1, remaining: 14 });
+  });
+  it('보이기 · 채점은 입장 상태를 한 번도 읽지 않고 반영 응답의 것을 돌려준다', async () => {
+    withQuota();
+    await request('question');
+    serviceClient.rpc.mockClear();
+    const revealed = await request('reveal', { attemptId: 'question' }, instant(40));
+    const graded = await request('grade', { attemptId: 'question', rating: 3 }, instant(50));
+    expect(admissionReads()).toBe(0);
+    expect(revealed.admission).toMatchObject({ used: 1, remaining: 14, installed: true });
+    expect(graded.admission).toMatchObject({ used: 1, remaining: 14 });
+  });
+  it('quota 모양이 다르거나(다른 계정 · FSRS 켜짐 불일치) 없으면 지금처럼 읽는다', async () => {
+    withQuota(q => ({ ...q, actorId: stranger }));
+    await request('question');
+    expect(admissionReads()).toBe(2);
+    serviceClient.rpc.mockClear();
+    withQuota(q => ({ ...q, fsrsEnabled: false }));
+    const revealed = await request('reveal', { attemptId: 'question' }, instant(40));
+    expect(admissionReads()).toBe(1);
+    expect(revealed.admission).toMatchObject({ fsrsEnabled: true, installed: true });
+  });
+  it('보이기의 무결성 실패는 반영 함수가 DB에서 거절한다 — 입장을 읽지 않아도 성공으로 바꾸지 않는다', async () => {
+    await request('question');
+    applyError = { code: '55000', message: 'learning_admission_unavailable' };
+    await expect(request('reveal', { attemptId: 'question' }, instant(40))).rejects.toMatchObject({ code: 'fsrs_storage_unavailable', status: 503 });
+  });
+});
