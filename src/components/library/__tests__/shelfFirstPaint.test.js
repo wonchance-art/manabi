@@ -1,5 +1,5 @@
-// REVIEW-SHELF-CLS-001 (2026-10-18 KST, 목업 A안 scratchpad/mockups/cls-vocab-materials.md) — 서버 미리 받기를 놓친 서재는 읽던 곳 · 대화 ·
-// 목록 첫 쪽이 정해진 뒤 세 칸을 한 번에. 칸마다 풀리며 읽던 곳 골격(157px)이 사라지고 대화 골격이 줄어 목록을 끌어올리던 것(390 CLS 0.14–0.15 → 0).
+// REVIEW-SHELF-CLS-001 (2026-10-18 KST, 목업 A안 scratchpad/mockups/cls-vocab-materials.md) — 서버 미리 받기를 놓친 서재는 읽던 곳 ·
+// 목록 첫 쪽이 정해진 뒤 한 번에(대화 칸은 CONV-CHAT-001 8차로 서재에서 빠졌다). 칸마다 풀리며 읽던 곳 골격(157px)이 사라지고 대화 골격이 줄어 목록을 끌어올리던 것(390 CLS 0.14–0.15 → 0).
 // 흔들림 · 실패 칸 경로는 e2e library-management가 본다. 여기서는 미리 받은 서재 무변화 · 실패=정해짐 · 상한 · 같은 골격 한 벌을 지킨다.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -15,7 +15,7 @@ describe('서재 몸 첫 그림(REVIEW-SHELF-CLS-001)', () => {
   });
   it('한 칸의 첫 실패도 정해진 것 — 다시 받기(retry)를 기다리며 다른 칸을 막지 않는다', () => {
     expect(shelf).toContain('const settling=query=>query.isPending&&query.failureCount===0;');
-    expect(shelf).toContain('const bodyLoading=shelfBody&&(settling(recent)||settling(conversations)||settling(list));');
+    expect(shelf).toContain('const bodyLoading=shelfBody&&(settling(recent)||settling(list));');
   });
   it('읽던 곳은 RecentReads와 같은 쿼리 정본(같은 키 — 요청 하나)', () => {
     expect(shelf).toContain('const recent=useQuery({...libraryRecentQuery(supabase,user.id),enabled:shelfBody});');

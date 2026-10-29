@@ -96,19 +96,19 @@ describe('화면 계약', () => {
   });
 });
 
-describe('fetchLobby — 작성자 이름은 profiles에서 따로', () => {
-  it('대화방 행에 profiles 이름을 붙이고, 표 조회에는 profiles 임베드를 쓰지 않는다', async () => {
+describe('fetchLobby — 작성자 이름은 public_profiles에서 따로', () => {
+  it('대화방 행에 public_profiles 이름을 붙이고(남의 행은 profiles 본인 정책 밖 — profilesPrivacy), 표 조회에는 profiles 임베드를 쓰지 않는다', async () => {
     const calls = [];
     const chain = (table, result) => {
       const q = { select: (s) => { calls.push([table, s]); return q; }, eq: () => q, order: () => q, limit: () => Promise.resolve(result), in: () => Promise.resolve(result) };
       return q;
     };
-    const client = { from: (t) => chain(t, t === 'profiles'
+    const client = { from: (t) => chain(t, t === 'public_profiles'
       ? { data: [{ id: 'u1', display_name: '민지' }], error: null }
       : { data: [{ id: 1, user_id: 'u1', body: 'hi' }, { id: 2, user_id: 'u2', body: 'yo' }], error: null }) };
     const rows = await fetchLobby(client, 'Japanese');
     expect(rows.map((r) => r.author.display_name)).toEqual(['민지', '']);
     expect(calls[0][1]).not.toMatch(/profiles/);
-    expect(calls[1]).toEqual(['profiles', 'id,display_name']);
+    expect(calls[1]).toEqual(['public_profiles', 'id,display_name']);
   });
 });

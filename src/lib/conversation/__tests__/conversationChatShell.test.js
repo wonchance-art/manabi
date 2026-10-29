@@ -62,7 +62,7 @@ describe('화면 틀', () => {
     expect(viewer).toContain('{!conversation&&<header className="page-header viewer-header">');
     // 분석 · 복구 배너(「이어서 분석」)는 대화 화면에서 숨긴다 — 못 한 줄은 화면이 알아서 채운다.
     expect(read('components/conversation/conversation.css')).toContain('.manabi-app .viewer-layout[data-chat="true"] .analyzing-banner { display: none; }');
-    expect(viewer).toContain('!conversation && <MaterialChapterLinks');
+    expect(viewer).not.toContain('<MaterialChapterLinks'); // 교재 단원 칸은 뷰어 일반 읽기에서도 빠졌다(VIEWER-NO-TEXTBOOK-NOTES-001)
   });
   it('전체 높이 껍데기 — 입력창은 고정 배치가 아니라 맨 아래 줄, 전역 메뉴·하단 탭은 대화에서만 숨긴다', () => {
     const css = read('components/conversation/conversation.css');

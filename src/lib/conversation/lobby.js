@@ -92,7 +92,7 @@ export async function fetchLobby(client, language, { limit = LOBBY_PAGE } = {}) 
   const rows = data || [];
   const ids = [...new Set(rows.map((r) => r.user_id).filter(Boolean))];
   if (!ids.length) return rows;
-  const { data: people } = await client.from('profiles').select('id,display_name').in('id', ids);
+  const { data: people } = await client.from('public_profiles').select('id,display_name').in('id', ids);
   const names = new Map((people || []).map((p) => [p.id, p.display_name]));
   return rows.map((r) => ({ ...r, author: { display_name: names.get(r.user_id) || '' } }));
 }

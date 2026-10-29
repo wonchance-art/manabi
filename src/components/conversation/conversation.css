@@ -189,7 +189,7 @@
 .conv-rooms { display: flex; flex-direction: column; gap: 4px; max-width: 720px; margin-inline: auto; padding-inline: 0; }
 .conv-rooms__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 52px; padding: 0 16px; }
 .conv-rooms__title { margin: 0; font-size: 1.35rem; color: var(--text-primary); }
-.conv-rooms__lang select { min-height: 44px; padding: 0 12px; border: 1px solid var(--border); border-radius: 999px; background: var(--bg-card); color: var(--text-primary); font: inherit; font-size: 0.9rem; }
+.conv-rooms__lang select { min-height: 44px; padding: 0 12px; border: 1px solid var(--border); border-radius: 999px; background: var(--bg-card); color: var(--text-primary); font: inherit; font-size: max(var(--field-font-min), 0.9rem); }
 .conv-rooms__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .conv-rooms__row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 8px 16px; border: 0; background: none; color: var(--text-primary); font: inherit; text-align: left; text-decoration: none; cursor: pointer; }
 .conv-rooms__row:hover, .conv-rooms__row:focus-visible { background: var(--bg-secondary); }
