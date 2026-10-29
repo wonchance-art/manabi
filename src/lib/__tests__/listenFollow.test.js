@@ -6,7 +6,7 @@ import { listenSentenceLines, listenSentenceRanges, listenSentenceTokens, splitL
 // 듣기 따라가기(뷰어 기능 감사 목업 6 · 1단계, 2026-10-17 KST) + 리뷰(a775) 차단 2 · 비차단 3 반영.
 const read = (p) => readFileSync(new URL(`../../../${p}`, import.meta.url), 'utf8');
 const viewer = () => read('src/views/ViewerPage.jsx');
-const handler = () => sliceBetween(viewer(), 'const handleListenSentence = useCallback((index) => {', '}, [listenRanges, listenLineTokens, listenFollowable, tokenRefs]);');
+const handler = () => sliceBetween(viewer(), 'const handleListenSentence = useCallback((index) => {', '}, [listenRanges, listenLineTokens, listenFollowable, tokenRefs, sectionOfToken, sectionTokenElement, pager.active, pager.controller]);');
 
 describe('듣기 문장 → 원문 자리 → 토큰(문장 단위)', () => {
   it('나누기 규칙은 듣기와 같다 — 줄바꿈 묶음은 공백 하나, 문장부호 뒤에서', () => {
@@ -122,7 +122,7 @@ describe('2단계 [지금 문장으로](목업 listen-resume B안)', () => {
   });
   it('멈춘 동안에만 쪽 막대 가운데 칩 — 버튼 모양은 자동 진행 단독 버튼 재사용, 보이는 글자 = 접근 이름(aria-label 없음), 단축키 없음', () => {
     const v = viewer();
-    const chip = sliceBetween(v, '{pagedActive&&<PageBar pager={pager} barRef={pageBarRef} tr={vt} extra={listenFollowable && listenStopped && !pagedSheetOpen ? (', ') : null}/>}');
+    const chip = sliceBetween(v, '{pagedActive&&<PageBar pager={pageBarPager} barRef={pageBarRef} tr={vt} extra={listenFollowable && listenStopped && !pagedSheetOpen ? (', ') : null}/>}');
     expect(chip).toContain('className="viewer-pace-float__btn reader-pagebar__resume"');
     expect(chip).toContain("<span>{vt('지금 문장으로')}</span>");
     expect(chip).toContain("title={vt('듣고 있는 문장의 쪽으로 가고 다시 따라가요')}");

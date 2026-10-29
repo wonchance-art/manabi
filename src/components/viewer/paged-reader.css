@@ -16,6 +16,11 @@
   touch-action: pan-y pinch-zoom; /* 가로 밀기는 쪽 넘김이 받는다 — 세로·확대는 브라우저 몫 그대로 */
 }
 [data-reader-pages="paged"] .reader-area { position: static; min-height: 0; }
+/* 긴 글의 구간 그리기(VIEWER-SECTIONS-001) — 첫 구간만 머리(제목 · 출처 · 작품 카드), 마지막 구간만 꼬리(다 읽었다면 · 다음 · 토론).
+   가운데 구간은 본문 줄만이라 구간을 바꿔 끼워도 쪽마다 머리 · 꼬리가 되풀이되지 않는다. 앞의 .viewer-layout은 우선순위 — 머리글의
+   display:block(.manabi-app .viewer-layout .viewer-header, reader-controls.css)을 이긴다(실측: 빠지면 가운데 구간에도 제목이 보였다). */
+.viewer-layout [data-reader-pages="paged"][data-section-head="off"] > :is(.page-header, .viewer-attribution, .viewer-art-card) { display: none; }
+.viewer-layout [data-reader-pages="paged"][data-section-tail="off"] > .reader-area ~ :not([data-page-end]) { display: none; }
 /* 호버 기기의 문장 막대(.line-pick)는 줄 왼쪽 여백(−28px)에 나간다 — 상자가 잘라 내지 않게 안쪽 여백을 두고,
    넓은 화면에서는 같은 만큼 밖으로 내어 본문 단의 자리를 그대로 둔다(폰은 막대가 줄 안 인라인이라 필요 없다). */
 @media (hover: hover) {
