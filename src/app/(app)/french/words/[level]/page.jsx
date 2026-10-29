@@ -1,32 +1,33 @@
 // 프랑스어 단어 페이지(오너 2026-10-26 KST — 몇 단어로 먼저 연다) — 레퍼런스 어휘(/french/vocab)는 그대로 두고 새 화면을 옆 주소에 둔다.
+// 항목은 조각 밖 정적 묶음(/api/level-words/french/{레벨}) — HSK · JLPT 단어 화면(levelListRoute)과 같은 길. 조립은 src/lib/latinWordsData.js.
 import { notFound } from 'next/navigation';
 import LatinWordPage from '@/views/LatinWordPage';
-import { latinSampleGroups } from '@/lib/latinLevelWords';
-import a1 from '@/content/french/vocab/a1';
-import notes from '@/content/french/wordNotes';
+import LevelWordsPreload from '@/components/levels/LevelWordsPreload';
+import { LATIN_WORD_LEVELS } from '@/lib/latinLevelWords';
+import { levelWordsUrl } from '@/lib/levelWordsPayload';
 
 const NAME = '프랑스어';
-// 테마 순번 — 가족 · 일상 필수 동사 · 음식 · 기초 형용사, 테마마다 앞 두 단어.
-const LEVELS = { A1: () => latinSampleGroups(a1, { lang: 'fr', picks: [[0, 2], [1, 2], [2, 2], [5, 2]], notes }) };
+const levelOf = (level) => {
+  const key = String(level || '').toUpperCase();
+  return LATIN_WORD_LEVELS.french.includes(key) ? key : null;
+};
 
 export const dynamicParams = false;
 export function generateStaticParams() {
-  return Object.keys(LEVELS).map((key) => ({ level: key.toLowerCase() }));
+  return LATIN_WORD_LEVELS.french.map((key) => ({ level: key.toLowerCase() }));
 }
 
 export async function generateMetadata({ params }) {
-  const { level } = await params;
-  const key = String(level || '').toUpperCase();
-  if (!LEVELS[key]) return {};
-  const title = `${key} 단어 | ${NAME}`;
+  const key = levelOf((await params).level);
+  if (!key) return {};
   // 몇 단어로 먼저 연 화면이라 검색에 싣지 않는다.
-  return { title, robots: { index: false, follow: false } };
+  return { title: `${key} 단어 | ${NAME}`, robots: { index: false, follow: false } };
 }
 
 export default async function Page({ params }) {
-  const { level } = await params;
-  const key = String(level || '').toUpperCase();
-  const groups = LEVELS[key]?.();
-  if (!groups) notFound();
-  return <LatinWordPage lang="french" levelKey={key} groups={groups} />;
+  const key = levelOf((await params).level);
+  if (!key) notFound();
+  const wordsUrl = levelWordsUrl('french', key);
+  return <><LevelWordsPreload href={wordsUrl} />
+    <LatinWordPage lang="french" levelKey={key} wordsUrl={wordsUrl} /></>;
 }

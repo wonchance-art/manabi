@@ -7,6 +7,11 @@ import { LEVEL_WORDS_BUILD, LEVEL_WORDS_CACHE, fetchLevelWords, levelWordsUrl, r
 import LevelWordsPreload from '../../components/levels/LevelWordsPreload.jsx';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { GET, generateStaticParams } from '../../app/api/level-words/[lang]/[level]/route.js';
+import { LATIN_WORD_LEVELS } from '../latinLevelWords.js';
+import { latinWordsData } from '../latinWordsData.js';
+import LatinWordPage from '../../views/LatinWordPage.jsx';
+import EnglishWordsPage from '../../app/(app)/english/words/[level]/page.jsx';
+import FrenchWordsPage from '../../app/(app)/french/words/[level]/page.jsx';
 
 // 레벨 단어 목록 조각 감량(LEVEL-LIST-RSC-001, 2026-10-26 KST) — 단어 화면의 항목 전체가 화면 조각(RSC)에 실려
 // N3 207 KB · H7 542 KB(gz)였고, 책장 레벨 타일 미리 받기 7–15개가 0.6–0.9 MB를 받았다. 항목은 조각 밖 정적 묶음으로 옮기고
@@ -51,9 +56,24 @@ describe('레벨 단어 화면 — 항목은 조각 밖 정적 묶음', () => {
   it('③ 굽는 묶음 = 단어 페이지 주소 전부(빠진 레벨 없이)', () => {
     const pages = Object.entries(LEVEL_LIST_LANGS).flatMap(([lang, conf]) => conf.levels.filter((k) => levelKinds(lang, k).includes('vocab'))
       .map((k) => `${lang}/${k.toLowerCase()}`));
-    expect(generateStaticParams().map((p) => `${p.lang}/${p.level}`)).toEqual(pages);
+    const latin = Object.entries(LATIN_WORD_LEVELS).flatMap(([lang, levels]) => levels.map((k) => `${lang}/${k.toLowerCase()}`));
+    expect(generateStaticParams().map((p) => `${p.lang}/${p.level}`)).toEqual([...pages, ...latin]);
     expect(pages).toHaveLength(12);
+    expect(latin).toEqual(['english/a1', 'french/a1']);
   });
+
+  // 영어 · 프랑스어 단어 페이지도 같은 길(준비 검토 ② 2026-10-29 KST) — 다 채우면 프랑스어 B2가 약 300 KB라 조각에 싣지 않는다.
+  it.each([['english', EnglishWordsPage], ['french', FrenchWordsPage]])('⑥ %s — 화면 props는 묶음 주소만 · 묶음 = latinWordsData', async (lang, Page) => {
+    const nodes = flat(await Page({ params: Promise.resolve({ level: 'a1' }) }));
+    const view = nodes.find((n) => n?.type === LatinWordPage);
+    const url = levelWordsUrl(lang, 'A1');
+    expect(view.props).toEqual({ lang, levelKey: 'A1', wordsUrl: url });
+    expect(nodes.find((n) => n?.type === LevelWordsPreload).props).toEqual({ href: url });
+    const res = await GET(new Request(`http://x${url}`), { params: Promise.resolve({ lang, level: 'a1' }) });
+    expect(await res.json()).toEqual({ version: 1, groups: latinWordsData(lang, 'a1').groups });
+    expect(latinWordsData(lang, 'a1').groups.flatMap((g) => g.entries)).toHaveLength(8);
+    expect((await GET(new Request('http://x'), { params: Promise.resolve({ lang, level: 'b2' }) })).status).toBe(404);
+  }, 60000);
 
   it('④ 문형 · 한자 목록은 그대로 항목을 싣는다(서버 그림의 줄 — 찾기 · 화면 읽기)', async () => {
     const { view, link } = await pageOf('japanese', 'bunkei', 'n5');
