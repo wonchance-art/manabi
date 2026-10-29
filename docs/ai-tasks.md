@@ -1247,6 +1247,13 @@
   가득 차 비우기 반복(parseSchedulerTime 약 80 ms). 다음 복습 시각을 snapshot마다 한 번 Map으로, 캐시 상한 16,384. 같은 기계 번갈아 A/B 4회:
   TBT 393~430 → 284~294 ms · 가장 긴 작업 208~224 → 150~156 ms · LCP 1.41~1.57 → 1.26~1.42 s. 남은 후보: countReviewScope가 언어마다 계획을 다시
   (약 190 ms CPU×4, 계약 촘촘 — 구조 손질 필요).
+  → **#1601 squash `ed34a042`(14:14 KST, 운영 16/16 · 오류 0)**.
+- **GRANTS-EXPLICIT-001 Data API 권한 명시 (2026-10-29 KST, 오너 전달 「10/30 새 테이블 권한 변경 대비」)**: Supabase가 10/30부터 기존 프로젝트에도
+  public 새 테이블 자동 권한을 끈다(discussions/45329, 기존 테이블 권한 유지). 전달은 복습 둘(grammar_review · review_events)이었으나 전수 대조하니
+  마이그레이션 27개 테이블이 자동 권한에만 기댐(review_events는 anon · TRUNCATE 회수만 있었음). 운영 RLS 정책 기준 명령별 GRANT(authenticated ·
+  공개 SELECT만 anon · service_role) + 시퀀스 USAGE 마이그레이션 `20261029060000` — 운영엔 이미 같거나 넓은 권한이라 적용해도 무변화(review_events는
+  한국어 학습 지문 범위라 운영 relacl 재현 PGlite에서 aclitem 불변 확인). 새 DB 검증 supabase/tests/explicit-data-api-grants.mjs(CI) · 계약
+  scripts/data-api-grants.test.js(이후 새 테이블은 같은 파일에 GRANT). 운영 적용은 하지 않음(무변화 · 기록 정합만 — 오너 판단).
 - **NATIVE-FEEL-P1 입력칸 하한 미뤄 둔 네 곳 (2026-10-26 KST, 오너 「권장대로 진행」)**: ⓐ 함께 읽는 글 정렬을 칩 줄 밖 한 줄(오른쪽 · 글자 단추 · 44px,
   터치 16px) ⓑ 서재 정렬 선택 상자를 「필터」 시트 안 라디오(묶음 제목 「정렬」 · 16px · 줄 44px)로 — 값 · sort= 주소 · 급수순(옛 주소 전용) 그대로, 바꾼 때만 주소에
   ⓒ 노트 단어 카드 터치에서 표기 24 / 읽기 16 / 뜻 16 ⓓ 크기 없는 칸 화면별 — 그룹 폼 7칸 · 검색 칸 · 수업 과 선택 16px(min-width 0으로 줄바꿈 무변화),
