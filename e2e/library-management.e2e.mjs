@@ -36,9 +36,9 @@ test('all filtered results include unloaded rows but exclude newly arriving matc
  }finally{await f.close();}
 });
 
-// REVIEW-SHELF-CLS-001: 서버 미리 받기를 놓친 서재(e2e는 늘 이 경로)는 읽던 곳 · 대화 · 목록 첫 쪽이 정해진 뒤 세 칸을 한 번에 그린다 —
-// 칸마다 풀리면 읽던 곳 골격(157px)이 사라지고 대화 골격이 줄며 목록을 끌어올렸다(390 CLS 0.14–0.15). 한 칸이 실패해도 나머지는 막히지 않는다.
-test('shelf body appears at once after recent, conversations and first page settle; a failed section does not block the rest at 390px',async()=>{
+// REVIEW-SHELF-CLS-001: 서버 미리 받기를 놓친 서재(e2e는 늘 이 경로)는 읽던 곳 · 목록 첫 쪽이 정해진 뒤 한 번에 그린다 —
+// 칸마다 풀리면 읽던 곳 골격(157px)이 사라지며 목록을 끌어올렸다(390 CLS 0.14–0.15). 한 칸이 실패해도 나머지는 막히지 않는다.
+test('shelf body appears at once after recent and first page settle; a failed section does not block the rest at 390px',async()=>{
  for(const failRecent of [false,true]){
   const f=await fixture({management:true,width:390,reducedMotion:'no-preference'});try{
    seed(f,5);f.setRecentFailure(failRecent);
@@ -46,7 +46,7 @@ test('shelf body appears at once after recent, conversations and first page sett
    await enter(f);await f.page.locator('.shelf-row').nth(4).waitFor();
    if(failRecent)await f.page.locator('.shelf-query-error').getByText('읽던 곳',{exact:false}).waitFor();
    await f.page.waitForTimeout(600);
-   assert.equal(await f.page.locator('.shelf-row').count(),5);assert.equal(await f.page.locator('.shelf-conversations').count(),1);
+   assert.equal(await f.page.locator('.shelf-row').count(),5);assert.equal(await f.page.locator('.shelf-conversations').count(),0); // 대화는 서재에 없다(CONV-CHAT-001 8차)
    assert.equal(await f.page.locator('.shelf-content .skeleton').count(),0,'no skeleton left');
    if(!failRecent)assert.deepEqual(await f.page.evaluate(()=>window.__bodyShifts),[],'shelf body moved after first paint');
    await overflow(f);
