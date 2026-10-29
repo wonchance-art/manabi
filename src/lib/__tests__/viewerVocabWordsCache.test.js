@@ -64,3 +64,17 @@ describe('F3③ 뷰어 저장 · 만기 색인 — 단어장과 같은 snapshot 
     expect(study).toContain('useEffect(() => () => {');
   });
 });
+
+describe('VIEWER-VOCAB-AFTER-PAINT-001 — 첫 화면 색인은 본문이 그려진 다음에', () => {
+  it('저장 · 만기 색인 조회는 자료가 온(또는 실패한) 뒤 한 프레임 다음에 켜진다 · 캐시(initialData)는 그대로 바로 쓴다', () => {
+    const viewer = read('src/views/ViewerPage.jsx');
+    const q = sliceBetween(viewer, "queryKey: ['vocab-words', user?.id],", '});');
+    expect(q).toContain('enabled: !!user && vocabAfterPaint,');
+    expect(q).toContain('initialData: () => vocabWordsFromLearningCache(queryClient, user?.id),');
+    const gate = sliceBetween(viewer, 'const [vocabAfterPaint, setVocabAfterPaint] = useState(false);', "queryKey: ['vocab-words', user?.id],");
+    expect(gate).toContain('if (vocabAfterPaint || (!materialReady && !error)) return;');
+    expect(gate).toMatch(/requestAnimationFrame\(\(\) => \{ timer = setTimeout\(\(\) => setVocabAfterPaint\(true\), 0\); \}\)/);
+    // 한 번 켜지면 다시 끄지 않는다(교정 · 분석 폴링으로 자료가 다시 와도 색인을 다시 미루지 않음)
+    expect(viewer).not.toMatch(/setVocabAfterPaint\(false\)/);
+  });
+});

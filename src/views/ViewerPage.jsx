@@ -552,11 +552,21 @@ export default function ViewerPage({ seed } = {}) {
 
   // 저장 · 만기 색인 — 단어장 글자 칸과 같은 키 · 같은 신선도(VOCAB_WORDS_STALE_MS, 앱 기본 2분). 단어장이 막 받은 같은 snapshot이 있으면
   // 그것으로 시작한다(vocabWordsFromLearningCache — 신선할 때만, 받은 시각 그대로). 서재에서 자료를 하나씩 열 때 다시 받지 않는다(F3③).
+  // 첫 화면에서는 본문이 그려진 다음에 받는다(VIEWER-VOCAB-AFTER-PAINT-001) — 단어 3,000개 계정은 이 색인 만들기(투영)가 CPU×4 약 0.11초로,
+  // 자료 요청 · 제목 · 본문 그리기와 같은 바쁜 구간(하이드레이션 1.3~2.6초)에 끼어 제목이 늦었다. 저장 표시는 본문 뒤 한 프레임 늦게 붙는다.
+  // 일찍 보낸 읽기(VOCAB-EARLY-001)는 그대로 날아가 있고(15초 안에 넘겨받는다), 캐시에 있으면(initialData) 지금처럼 바로 쓴다.
+  const [vocabAfterPaint, setVocabAfterPaint] = useState(false);
+  useEffect(() => {
+    if (vocabAfterPaint || (!materialReady && !error)) return;
+    let timer;
+    const frame = requestAnimationFrame(() => { timer = setTimeout(() => setVocabAfterPaint(true), 0); });
+    return () => { cancelAnimationFrame(frame); clearTimeout(timer); };
+  }, [vocabAfterPaint, materialReady, error]);
   const { data: savedWordsData, error: savedWordsError, refetch: refetchSavedWords } = useQuery({
     queryKey: ['vocab-words', user?.id],
     queryFn: async ({ signal }) => preservePendingVocabularyReviews(await fetchUserVocabWords(user.id, signal),
       queryClient.getQueryData(['vocab-words', user.id])),
-    enabled: !!user,
+    enabled: !!user && vocabAfterPaint,
     staleTime: VOCAB_WORDS_STALE_MS,
     initialData: () => vocabWordsFromLearningCache(queryClient, user?.id),
     initialDataUpdatedAt: () => queryClient.getQueryState(['vocab', user?.id, 'learning'])?.dataUpdatedAt, // 위 색인을 만든 snapshot의 받은 시각
