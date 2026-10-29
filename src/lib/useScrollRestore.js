@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { createPositionWriter } from './readingPositionWriter';
-import { pagerFor } from './usePagedReader';
+import { pagerFor, withFullReader } from './usePagedReader';
 
 /**
  * 자료 재진입 시 마지막 읽은 위치로 자동 스크롤 복원 + 스크롤 위치 저장 (debounce 2s).
@@ -83,7 +83,7 @@ export function useScrollRestore({ user, materialId, material, readingProgress, 
       if (el) {
         const pager = pagerFor(el);
         if (pager) pager.reveal(el);
-        else el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        else withFullReader(el, () => el.scrollIntoView({ behavior: 'instant', block: 'center' }));
         restoredKey.current = key;
       }
     }, 300);

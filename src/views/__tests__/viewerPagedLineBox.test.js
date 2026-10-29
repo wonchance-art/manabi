@@ -63,7 +63,10 @@ describe('줄 상자 CSS — 감김 · 간격 · 기준선은 본문 상자와 �
   it('쪽에 걸친 문단은 쪽을 넘어 나뉜다 — 줄 상자에 break-inside · contain · content-visibility · overflow를 걸지 않는다', () => {
     for (const src of [css, pagedCss, read('src/components/viewer/reader-controls.css')]) {
       for (const m of src.matchAll(/([^{}]*\.reader-line\b[^{}]*)\{([^}]*)\}/g)) {
-        expect(m[2], m[1]).not.toMatch(/break-inside|break-before|break-after|contain\s*:|content-visibility|overflow|position\s*:/);
+        // 스크롤 보기 전용 화면 밖 줄 생략(VIEWER-CV-SCROLL-001)만 content-visibility · 안쪽 넓힘을 쓴다 — 다단(쪽 넘김)이 아니라 나뉠 쪽이 없다.
+        // 쪽을 나누는 속성(break-* · contain: · overflow · position)은 그 규칙에도 없다.
+        const scrollOnly = /data-reader-view="scroll"/.test(m[1]);
+        expect(m[2], m[1]).not.toMatch(scrollOnly ? /break-inside|break-before|break-after|contain\s*:|overflow|position\s*:/ : /break-inside|break-before|break-after|contain\s*:|content-visibility|overflow|position\s*:/);
       }
     }
     expect(pagedCss.match(/break-inside:\s*avoid/g)).toHaveLength(1); // 끝 상자 묶음 하나뿐(NEXT-CARD-SPLIT-001)
@@ -81,7 +84,11 @@ describe('낱말은 본문 상자의 손자다 — 직속 자식 가정 금지',
       const src = read(f);
       for (const m of src.matchAll(/[^\n]*>\s*(?:\.word-token|\.line-break|\[data-source-token|\.reader-line)\b[^\n]*/g)) hits.push(`${f}: ${m[0].trim()}`);
     }
-    expect(hits).toEqual(['src/index.css: .reader-area > .reader-line {']);
+    // 스크롤 보기 화면 밖 줄 생략(VIEWER-CV-SCROLL-001)의 같은 줄 상자 규칙 셋 — 줄 상자(> .reader-line)와 그 안 항목의 누름(> *)만 고른다.
+    expect(hits).toEqual(['src/index.css: .reader-area > .reader-line {',
+      'src/index.css: .viewer-layout[data-reader-view="scroll"]:not([data-class-study="true"]) .reader-area > .reader-line {',
+      'src/index.css: .viewer-layout[data-reader-view="scroll"]:not([data-class-study="true"]) .reader-area > .reader-line > * { pointer-events: auto; }',
+      'src/index.css: .viewer-layout[data-reader-view="scroll"] .reader-area:is([data-reader-full], [data-layout-restoring], [data-selection-revealing]) > .reader-line {']);
   });
   it('본문 상자의 자식 수 · 순서에 기대는 셀렉터가 없다 — 낱말 사이 이웃 규칙은 한 문장(한 줄) 안에서만 닿는다', () => {
     for (const f of files.filter((p) => p.endsWith('.css'))) {
