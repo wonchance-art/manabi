@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { buildEnv, VENDORED_FONT_RESPONSES } from './next-build.mjs';
+import { BUILD_HEAP_MB, buildEnv, VENDORED_FONT_RESPONSES } from './next-build.mjs';
 
 const require = createRequire(import.meta.url);
 const VENDOR = path.resolve('vendor/google-fonts');
@@ -51,6 +51,17 @@ describe('next-build: Google Fonts를 저장소 사본에서 읽는다', () => {
     expect(fs.existsSync(VENDORED_FONT_RESPONSES)).toBe(true);
     expect(buildEnv({ NEXT_FONT_GOOGLE_MOCKED_RESPONSES: '/x.cjs' }).NEXT_FONT_GOOGLE_MOCKED_RESPONSES).toBe('/x.cjs');
     expect(buildEnv({ FOO: '1' }).FOO).toBe('1');
+  });
+
+  it('빌드 힙을 4GB로 묶는다 — 다른 상한은 덮고 나머지 옵션은 남긴다(BUILD-OOM-001)', () => {
+    expect(BUILD_HEAP_MB).toBe(4096);
+    expect(buildEnv({}).NODE_OPTIONS).toBe('--max-old-space-size=4096');
+    expect(buildEnv({ NODE_OPTIONS: '--max-old-space-size=8192 --enable-source-maps' }).NODE_OPTIONS)
+      .toBe('--enable-source-maps --max-old-space-size=4096');
+    expect(buildEnv({ NODE_OPTIONS: '--import=./x.mjs', MANABI_BUILD_HEAP_MB: '6144' }).NODE_OPTIONS)
+      .toBe('--import=./x.mjs --max-old-space-size=6144');
+    const config = fs.readFileSync('next.config.mjs', 'utf8');
+    expect(config, '서버 압축을 다시 켜면 빌드 워커가 0.2GB 더 쓴다').toMatch(/serverMinification:\s*false/);
   });
 
   it('배포 빌드 스크립트가 이 진입점을 쓰고, e2e 빌드는 대역을 유지한다', () => {
