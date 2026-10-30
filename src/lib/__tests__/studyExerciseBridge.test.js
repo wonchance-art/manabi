@@ -108,6 +108,25 @@ describe('studyExerciseBridge', () => {
     );
   });
 
+  it('예전 일정 어휘 채점은 채점 직전 카드 간격(detail.prev_interval_days)을 덧붙인다 — 다른 칸은 그대로(TRUE-RET-001)', async () => {
+    const item = {
+      uid: 'v-2',
+      type: 'vocab-choice',
+      word: {
+        id: 'word-2', word_text: 'merci', meaning: '고마워요', interval: 20, ease_factor: 4, repetitions: 3,
+        last_reviewed_at: '2026-10-05T19:00:00.000Z', next_review_at: '2026-10-29T19:00:00.000Z', // 04시 KST 경계 기한 — 24학습일
+      },
+      effect: { kind: 'vocab', wordId: 'word-2' },
+    };
+    await recordStudyReviewCompleted('user-1', { correct: true, item, lang: 'French', rtMs: 700 });
+    expect(recordReviewCompleted).toHaveBeenCalledWith('user-1', {
+      type: 'vocab', itemKey: 'merci', lang: 'French', correct: true,
+      detail: { word_id: 'word-2', meaning: '고마워요', mode: 'study', qtype: 'choice', rt_ms: 700, prev_interval_days: 24 },
+    }, expect.any(Object));
+    // 순수 변환(buildStudyReviewRefs)은 그대로 — 일정 길에서만 덧붙인다
+    expect(buildStudyReviewRef({ correct: true, item, lang: 'French', rtMs: 700 }).detail).not.toHaveProperty('prev_interval_days');
+  });
+
   it('게스트도 같은 F2 경계를 거쳐 로컬 폴백에 위임한다', async () => {
     const item = {
       uid: 'v-guest',

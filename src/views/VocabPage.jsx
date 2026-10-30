@@ -48,7 +48,7 @@ import { knownWordsLang } from '../lib/knownWords';
 import ReviewScopeBar, { ReviewScopeNotice } from '../components/vocab/ReviewScopeBar';
 import { useVocabData, usePrefetchVocabLearning, invalidateVocabularyLearning, patchVocabularyLearningRow, REVIEW_ROOM_DEFERRED } from '../lib/useVocabData';
 import { isVocabularyReviewAvailable, isVocabularyUnreviewed } from '../lib/vocabularyLearningRead';
-import { wordStage } from '../lib/growthStats';
+import { prevIntervalDetail, wordStage } from '../lib/growthStats';
 import { confusedVocabWords, CONFUSED_MIN, CONFUSED_SINCE_DAYS } from '../lib/confusedQueue';
 import { dropUndoneEvents } from '../lib/undoneReviews';
 import { fetchUndoMarkers } from '../lib/undoneReviewsRows';
@@ -894,7 +894,8 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
       itemKey: currentWord.word_text,
       lang: currentWord.language || detectLang(currentWord.word_text),
       correct: rating > 1,
-      detail: { word_id: currentWord.id, meaning: currentWord.meaning, rating, mode: effectiveMode, qtype },
+      // prev_interval_days — 채점 직전 카드 간격(growthStats.prevIntervalDetail). 실제 기억률(trueRetention)이 학습일 추정 대신 쓴다.
+      detail: { word_id: currentWord.id, meaning: currentWord.meaning, rating, mode: effectiveMode, qtype, ...prevIntervalDetail(currentWord) },
     }, {
       // calculateVocabFSRS 반환 키를 그대로 쓴다 — DB 컬럼과 동일(snake_case).
       // 이전엔 easeFactor(비존재 컬럼)를 보내고 repetitions를 빠뜨려, PostgREST가 UPDATE 전체를

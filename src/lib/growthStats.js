@@ -39,6 +39,15 @@ export function cardIntervalDays(row) {
   }
   return legacyGapDays(stamp(row?.next_review_at), stamp(row?.last_reviewed_at));
 }
+/**
+ * 예전 일정 채점 이벤트의 detail 보강(TRUE-RET-001) — 채점 직전 카드 간격(cardIntervalDays). 실제 기억률(trueRetention)이
+ * 학습일 추정 대신 이 값을 쓴다. 잴 수 없으면(첫 채점 · 기한 없음) 빈 객체 — 그때 detail 모양은 예전 그대로다(덧붙이는 칸 하나뿐).
+ * 쓰는 곳: VocabPage · useInlineReview · QuestReview · studyExerciseBridge(예전 일정 채점 4곳). 새 일정은 연산의 previousCard가 진다.
+ */
+export function prevIntervalDetail(row) {
+  const days = cardIntervalDays(row);
+  return days == null ? {} : { prev_interval_days: days };
+}
 // 날 경계 기한(학습일 시작 시각, 2026-10-25 KST)은 학습일 수로 센다 — 23:00에 1일로 답한 카드는 5시간 뒤가 기한이어도 간격 1일.
 function legacyGapDays(due, last) {
   const gap = due - last;

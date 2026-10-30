@@ -1334,6 +1334,14 @@
   ⓑ 오늘 새 단어 수 · 남은 몫 · 한도 = 서버 입장 한도(levelNewSlots — reviewScopeQuota 재사용), 호환 모드 · 못 읽음(4초)은 기기 셈 그대로.
   ⓒ 한도 안내 [한도 늘리기](/vocab#review-settings) [연습만 하기](그 단어 하나 문장 연습 — 일정 · 몫 무관) · 8초.
   계약 levelSavedTag 6 · levelWordStatus/PageContract/NewLimit/WordsPayload 갱신.
+  → **#1616 squash `ed31dfa5`(16:13 KST 운영 16/16 · 오류 0)**.
+- **TRUE-RET-001 현황 실제 기억률 (2026-10-30 KST, 오너 「anki 참고할 부분」 → 권장 ③ · 「권장대로 ㄱㄱ. 기억 건강 칸에 한 줄로.」)**: Anki 24.11
+  True Retention과 같은 규칙(익숙 = 간격 21일 이상 · 「다시」만 실패 · 직전 간격 1일 미만 · 연습 · 되돌린 답 제외 — 코드는 AGPL이라 규칙만).
+  기억 건강 칸 맨 아래 한 줄 「실제 기억률 · 지난 30일 91% (목표 90%) ›」(답 10개 미만 「—」 · 색 · 화살표 없음 · 언어 칩) → TileModal 표
+  (오늘 · 어제 · 7일 · 30일 · 1년 · 전체 × 익히는 중 · 익숙 · 전체). 조회: 진입 때 30학습일만(review_events vocab · undo 마커 · fsrs_operations
+  grade/undo의 previousCard 상태 · 간격만 — 본인 RLS SELECT, 운영 카탈로그로 칼럼 · 정책 · JSON 키 확인), 1년 · 전체는 모달을 열 때만.
+  예전 일정 쓰기 4곳(VocabPage · useInlineReview · QuestReview · studyExerciseBridge)에 detail.prev_interval_days(cardIntervalDays) 추가 —
+  그 전 기록은 지난 날짜로 어림(estimated 줄). 계약 trueRetention 18 · trueRetentionUi 20. 설계 `docs/design/true-retention.md`.
 - **NATIVE-FEEL-P1 입력칸 하한 미뤄 둔 네 곳 (2026-10-26 KST, 오너 「권장대로 진행」)**: ⓐ 함께 읽는 글 정렬을 칩 줄 밖 한 줄(오른쪽 · 글자 단추 · 44px,
   터치 16px) ⓑ 서재 정렬 선택 상자를 「필터」 시트 안 라디오(묶음 제목 「정렬」 · 16px · 줄 44px)로 — 값 · sort= 주소 · 급수순(옛 주소 전용) 그대로, 바꾼 때만 주소에
   ⓒ 노트 단어 카드 터치에서 표기 24 / 읽기 16 / 뜻 16 ⓓ 크기 없는 칸 화면별 — 그룹 폼 7칸 · 검색 칸 · 수업 과 선택 16px(min-width 0으로 줄바꿈 무변화),

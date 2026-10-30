@@ -25,7 +25,8 @@ describe('퀘스트 복습 R3㉯ — 4등급 정렬·undo·키 (QuestReview)', (
   it('정렬 뒤에도 correct = rating > 1 · qtype flash 규약 불변(rung 비대칭 신뢰 승계)', () => {
     const g = sliceBetween(quest, 'const grade = async (rating) => {', '\n  };');
     expect(g).toContain('const correct = rating > 1;');
-    expect(g).toContain("detail: { word_id: current.id, meaning: current.meaning, rating, mode: 'world', qtype: 'flash' },");
+    // 예전 일정 채점 직전 간격 한 칸만 덧붙였다(TRUE-RET-001 — growthStats.prevIntervalDetail). 다른 칸 · qtype은 그대로.
+    expect(g).toContain("detail: { word_id: current.id, meaning: current.meaning, rating, mode: 'world', qtype: 'flash', ...prevIntervalDetail(current) },");
     // W 후속 ③: 저장은 복습 화면과 같은 한 길(recordReviewCompleted) — 시각·이벤트·큐를 정본이 맡는다
     expect(g).toContain('r = await recordReviewCompleted(userId, {');
     // 스냅샷은 저장(또는 큐 적재) 성공 뒤에만 유효
