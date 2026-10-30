@@ -1,5 +1,6 @@
 import { recordReviewCompleted } from './learn/progressStore';
 import { qtypeForItem } from './studySession';
+import { prevIntervalDetail } from './growthStats';
 
 /**
  * StudySession 문항을 F2 progressStore 복습 계약으로 변환한다.
@@ -171,7 +172,9 @@ export async function recordStudyReviewCompleted(userId, {
         created_at: word.created_at,
       });
     }
-    const saved = await recordReviewCompleted(userId, reviewRef, nextStats);
+    // 예전 일정 채점 — 채점 직전 카드 간격을 덧붙인다(growthStats.prevIntervalDetail, 실제 기억률이 읽는다 · 다른 칸은 그대로).
+    const scheduledRef = word ? { ...reviewRef, detail: { ...reviewRef.detail, ...prevIntervalDetail(word) } } : reviewRef;
+    const saved = await recordReviewCompleted(userId, scheduledRef, nextStats);
     if (saved?.lost) { lost = saved; continue; }
     if (saved?.ok === false) throw saved.error || new Error('review-save-failed');
   }

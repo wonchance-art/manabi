@@ -35,6 +35,10 @@ import GoalTrackTile, { useGoalCatalog } from '../components/learn/GoalTrackTile
 import { StatTile, StreakTile, TodayGoalTile } from '../components/learn/LearnTiles';
 import LevelVocabCard from '../components/learn/LevelVocabCard';
 import MemoryHealthCard from '../components/learn/MemoryHealthCard';
+import TrueRetentionTable from '../components/learn/TrueRetentionTable';
+import { buildTrueRetention } from '../lib/trueRetention';
+import { fetchTrueRetentionRows, trueRetentionQueryKey } from '../lib/trueRetentionRows';
+import { serializeReviewScope } from '../lib/reviewScope';
 import '../components/learn/learn.css';
 import { authEntryHref } from '../lib/authRedirect';
 import { useDialogReturn } from '../lib/useDialogReturn';
@@ -97,6 +101,25 @@ export default function ProfileStats() {
     staleTime: 1000 * 60 * 5,
   });
 
+  // 실제 기억률(TRUE-RET-001) — 진입 때는 지난 30일만(칸 한 줄), 1년 · 전체는 표를 열 때만 받는다(1년 ≈ 15쪽 — 첫 화면에 얹지 않는다).
+  // 긴 조회가 끝나면 칸 줄도 그것으로 센다(30일 밖의 직전 채점까지 보여 예전 일정 추정이 맞아진다 — 표와 칸이 같은 값).
+  const [retentionOpen, setRetentionOpen] = useState(false);
+  const recentRetention = useQuery({
+    queryKey: trueRetentionQueryKey(user?.id, 'recent'),
+    queryFn: () => fetchTrueRetentionRows(user.id, { range: 'recent' }),
+    enabled: !!user,
+    staleTime: 1000 * 60,
+  });
+  const longRetention = useQuery({
+    queryKey: trueRetentionQueryKey(user?.id, 'all'),
+    queryFn: () => fetchTrueRetentionRows(user.id, { range: 'all' }),
+    enabled: !!user && retentionOpen,
+    staleTime: 1000 * 60 * 5,
+  });
+  const retentionRows = longRetention.data || recentRetention.data;
+  const retention = useMemo(() => (retentionRows ? buildTrueRetention({ ...retentionRows, lang }) : null), [retentionRows, lang]);
+  const longRetentionStatus = longRetention.data ? 'ready' : longRetention.isError ? 'error' : 'loading';
+
   // 배움의 「목표 정하기」 · 오늘 목표 칸(/progress?goal=edit)으로 들어오면 프로필을 받은 뒤 목표 편집을 연다 — 들어올 때 한 번만.
   // 저장하면 프로필을 다시 받아 profile이 바뀌는데, 그때마다 주소를 다시 읽으면 방금 닫은 창이 또 열렸다(PROFILE-REDESIGN-001 실화면 확인).
   const goalParamRead = useRef(false);
@@ -139,8 +162,17 @@ export default function ProfileStats() {
         {weekly ? <WeeklyTile weekly={weekly} className="learn-order-4" /> : <StatTile value="–" label="이번 주" className="learn-order-4" />}
         <StatTile value={Array.isArray(knownRows) ? knownRows.length.toLocaleString('ko-KR') : '–'} label="아는 단어" className="learn-order-5" />
         <LevelVocabCard lang={lang} vocab={vocab} projections={projections} knownRows={knownRows || []} className="learn-order-7" />
-        <MemoryHealthCard lang={lang} projections={projections} now={data?.now || Date.now()} className="learn-order-8" />
+        <MemoryHealthCard lang={lang} projections={projections} now={data?.now || Date.now()} className="learn-order-8"
+          trueRetention={user ? { table: retention, loading: !retention && !recentRetention.isError } : null}
+          onOpenTrueRetention={() => setRetentionOpen(true)} />
       </div>
+      {retentionOpen && (
+        <TileModal title="실제 기억률" className="tile-modal--wide" onClose={() => setRetentionOpen(false)}>
+          <TrueRetentionTable table={retention} longStatus={longRetentionStatus} failed={!retention && recentRetention.isError}
+            onRetry={() => { if (!retention) recentRetention.refetch(); longRetention.refetch(); }}
+            reviewHref={serializeReviewScope({ lang })} />
+        </TileModal>
+      )}
       {/* 목표 창(GOAL-SHEET-001) — 닫혀 있어도 붙여 둔다(이 기기 목표를 서버로 한 번 끌어올린다). */}
       <GoalSheet open={goalOpen} onClose={() => setGoalOpen(false)} />
     </div>
@@ -248,12 +280,12 @@ function WeakSpotLine({ weekStartMs }) {
 }
 
 /** 타일 공용 미니 모달 */
-function TileModal({ title, onClose, children }) {
+function TileModal({ title, onClose, children, className = '' }) {
   // 열면 창 안으로 · Esc로 닫기 · 닫으면 연 타일로 포커스(useDialogReturn — ConfirmModal 선례).
   const dialogRef = useDialogReturn(onClose);
   return (
     <div className="tile-modal__overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label={title} ref={dialogRef} tabIndex={-1}>
-      <div className="card tile-modal" onClick={e => e.stopPropagation()}>
+      <div className={`card tile-modal ${className}`.trim()} onClick={e => e.stopPropagation()}>
         <div className="tile-modal__head">
           <h3 className="tile-modal__title">{title}</h3>
           <button type="button" className="tile-modal__close" onClick={onClose} aria-label="닫기">✕</button>

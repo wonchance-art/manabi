@@ -1,4 +1,4 @@
-# 실제 기억률 표 (TRUE-RET-001 · 제안 · 2026-10-30 KST)
+# 실제 기억률 표 (TRUE-RET-001 · 오너 확정 · 2026-10-30 KST)
 
 **무엇:** 복습 단계 단어를 다시 만났을 때 기억해 낸 비율(측정값)을 기간별 · 익히는 중/익숙별로 목표 90%와 나란히 보인다. **순환 정거장:** 자료 읽기 순환의 「FSRS 복습」 뒤 진단(받침: 동기 · 진단). 일정 · 기록은 바꾸지 않는 읽기 전용.
 **계산 정본:** `src/lib/trueRetention.js`(`buildTrueRetention`) — 채점 판정 `isGradedReviewEvent` · 되돌림 `dropUndoneEvents` · 학습일
@@ -56,5 +56,12 @@
 | 코드 이식 | 배제 | AGPL-3.0(rslib) · Rust/Svelte라 결합 불가. 규칙만 옮겨 순수 JS로 새로 씀 |
 근거: docs.ankiweb.net/stats.html · github.com/ankitects/anki/releases/tag/24.11(#3425) · rslib/src/stats/graphs/retention.rs · ts/routes/graphs/true-retention.ts
 
-## 오너 확인
-1. 자리: 기억 건강 칸 한 줄 + 모달(권장) vs 현황에 새 칸 · 2. 이름 「실제 기억률」 · 3. 예전 일정 기록 보강(쓰기 4곳 — VocabPage 포함) 착수 여부.
+## 오너 결정 (2026-10-30 KST 「권장대로 ㄱㄱ. 기억 건강 칸에 한 줄로.」)
+1. 자리: 기억 건강 칸 한 줄 + `TileModal` 표(격자 무변경) · 2. 이름 「실제 기억률」 · 3. 예전 일정 기록 보강 착수 — 쓰기 4곳이
+   `...prevIntervalDetail(row)`(growthStats — `cardIntervalDays` 정본을 감쌈, 잴 수 없으면 칸 없음)를 detail에 덧붙인다.
+
+## 구현 (계약 `trueRetentionUi.test.jsx`)
+- 조회 `src/lib/trueRetentionRows.js`: 진입 때 `recent`(30학습일 — review_events 완전 조회 · undo 마커 · fsrs_operations grade/undo) = 최소 3요청,
+  모달을 열 때 `all`(창 없음) 한 벌 더. detail · operation은 경로로 필요한 칸만 받는다. 긴 조회가 끝나면 칸 줄도 그것으로 센다(표와 같은 값).
+- 화면: `MemoryHealthCard` 맨 아래 44px 단추 한 줄 → `ProfileStats`의 `TileModal`(제목 「실제 기억률」) 안 `TrueRetentionTable`.
+  1년 · 전체 줄은 긴 조회 전 「…」, 실패면 「—」 + 다시 시도. 손님은 줄 없음.

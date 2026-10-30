@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sliceBetween } from '../../lib/__tests__/helpers/sliceBetween.js';
 import { withLegacyReviewLock } from '../../lib/legacyReviewSync';
+import { prevIntervalDetail } from '../../lib/growthStats';
 
 // 실제 VocabPage 핸들러를 실행한다. React/네트워크 경계만 주입해 ref와 수명주기를 관측한다.
 const source = readFileSync(new URL('../VocabPage.jsx', import.meta.url), 'utf8');
@@ -36,7 +37,7 @@ function fixture(extra = {}) {
     setReviewSessionId: vi.fn(), setReviewIdx: vi.fn(), setShowAnswer: vi.fn(), setContextSelected: vi.fn(),
     setTypingAnswer: vi.fn(), setReviewFinished: vi.fn(), friendlyToastMessage: error => error.message, failureMessage: (head, error) => `${head} ${error.message}`,
     questionKey: 'session:0', currentWord: { id: 'card-a', word_text: '猫', language: 'Japanese', meaning: '고양이' },
-    reviewSupported: () => true, isNewWord: () => false, detectLang: () => 'Japanese',
+    reviewSupported: () => true, isNewWord: () => false, detectLang: () => 'Japanese', prevIntervalDetail,
     SRS_FIELDS: ['interval', 'ease_factor', 'repetitions', 'next_review_at', 'last_reviewed_at'],
     reviewIdx: 0, effectiveMode: 'flash', reviewMode: 'flash', recordReviewCompleted,
     refreshProfileAfterActivity: vi.fn(async () => {}), registerNewIntro: vi.fn(), goNextReview: vi.fn(),

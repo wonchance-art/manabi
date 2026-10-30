@@ -4,6 +4,7 @@ import { failureMessage } from './errorMessage';
 import { detectLang } from './constants';
 import { recordReviewCompleted } from './learn/progressStore';
 import { calculateVocabFSRS } from './fsrs';
+import { prevIntervalDetail } from './growthStats';
 import { beginVocabularyReview, settleVocabularyReview } from './viewerVocabularyCache';
 import { assertCachedLegacyFsrsAllowed } from './fsrsLegacyBoundary';
 
@@ -68,7 +69,8 @@ export function useInlineReview({ user: account, fetchProfile, toast }) {
         itemKey: vocab.word_text,
         lang: vocab.language || detectLang(vocab.word_text),
         correct: rating > 1,
-        detail: { word_id: vocab.id, meaning: vocab.meaning, rating, qtype: 'flash' },
+        // prev_interval_days — 채점 직전 카드 간격(growthStats.prevIntervalDetail, 실제 기억률이 읽는다).
+        detail: { word_id: vocab.id, meaning: vocab.meaning, rating, qtype: 'flash', ...prevIntervalDetail(vocab) },
       }, {
         // calculateVocabFSRS 반환 키 그대로 — DB 컬럼과 동일(snake_case, VocabPage 페이로드 계약과 같다)
         interval: nextStats.interval ?? 0,

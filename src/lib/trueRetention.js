@@ -149,3 +149,46 @@ export function buildTrueRetention({ events, undoMarkers, operations, lang, now 
     estimated,
   };
 }
+
+// ── 화면 규칙(현황 기억 건강 칸 한 줄 · 표 모달 — 오너 결정 2026-10-30 KST 「기억 건강 칸에 한 줄로」) ──
+/** 칸 줄은 답이 이보다 적으면 「—」 — 몇 개 답의 비율은 크게 흔들린다. 표 칸은 답 수를 괄호로 함께 보여 1개부터 적는다. */
+export const TRUE_RETENTION_MIN_ANSWERS = 10;
+/** 표 줄 이름 — TRUE_RETENTION_PERIODS 순서와 같은 키. */
+export const TRUE_RETENTION_LABELS = Object.freeze({
+  today: '오늘', yesterday: '어제', week: '지난 7일', month: '지난 30일', year: '지난 1년', all: '전체',
+});
+/** 표 열 — 익히는 중 · 익숙 · 전체(growthStats 카드 단계 이름과 같다). */
+export const TRUE_RETENTION_COLUMNS = Object.freeze([
+  Object.freeze({ key: 'young', label: '익히는 중' }),
+  Object.freeze({ key: 'mature', label: '익숙' }),
+  Object.freeze({ key: 'all', label: '전체' }),
+]);
+/** 짧은 창(현황 진입 때 받는 대표 기간)만으로 맞게 셀 수 있는 줄 — 1년 · 전체는 긴 조회를 받은 뒤에만 숫자를 적는다. */
+export const TRUE_RETENTION_RECENT_KEYS = Object.freeze(['today', 'yesterday', 'week', 'month']);
+/** 짧은 창의 폭(학습일) — 대표 기간과 같다. 조회 쪽(trueRetentionRows)이 이 값으로 창을 연다. */
+export const TRUE_RETENTION_RECENT_DAYS = TRUE_RETENTION_PERIODS.find(p => p.key === TRUE_RETENTION_HEADLINE).fromDay + 1;
+
+const percent = rate => `${Math.round(rate * 100)}%`;
+/** 표 칸 글자 — 답이 없으면 「—」, 있으면 「88% (22)」. */
+export function formatRetentionCell(cell) {
+  if (!cell || !(cell.total > 0) || cell.rate == null) return '—';
+  return `${percent(cell.rate)} (${cell.total.toLocaleString('ko-KR')})`;
+}
+/** 목표 글자 — 「목표 90%」(FSRS_POLICY.retention 정본). */
+export const retentionTargetLabel = target => `목표 ${percent(target ?? FSRS_POLICY.retention)}`;
+
+/**
+ * 칸 줄 — 대표 기간(지난 30일)의 전체 칸. 답이 TRUE_RETENTION_MIN_ANSWERS보다 적거나 표가 아직 없으면 값은 「—」, 목표 괄호도 뺀다.
+ * 목표 대비 색 · 화살표는 없다(이번 주 카드 「거울이지 성적표가 아니다」).
+ * @returns {{ value: string, target: string|null, total: number, measured: boolean }}
+ */
+export function trueRetentionLine(table) {
+  const cell = table?.periods?.find(p => p.key === TRUE_RETENTION_HEADLINE)?.all;
+  const measured = !!cell && cell.total >= TRUE_RETENTION_MIN_ANSWERS && cell.rate != null;
+  return {
+    value: measured ? percent(cell.rate) : '—',
+    target: measured ? retentionTargetLabel(table.target) : null,
+    total: cell?.total ?? 0,
+    measured,
+  };
+}

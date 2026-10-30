@@ -22,6 +22,7 @@ import { selectLegacyReviewRows } from '../../lib/vocabularyDueIndex';
 import { logReviewEvents as writeReviewEvents } from '../../lib/reviewEvents';
 import { detectLang, displayWord } from '../../lib/constants';
 import { persistVocabGrade } from '../../lib/fsrs';
+import { prevIntervalDetail } from '../../lib/growthStats';
 import { recordReviewCompleted } from '../../lib/learn/progressStore';
 import { SAVE_GRADES } from '../../lib/vocabIO';
 import bus from './bus';
@@ -183,7 +184,8 @@ export default function QuestReview({ userId, onClose }) {
         itemKey: current.word_text,
         lang,
         correct,
-        detail: { word_id: current.id, meaning: current.meaning, rating, mode: 'world', qtype: 'flash' },
+        // prev_interval_days — 채점 직전 카드 간격(growthStats.prevIntervalDetail, 실제 기억률이 읽는다).
+        detail: { word_id: current.id, meaning: current.meaning, rating, mode: 'world', qtype: 'flash', ...prevIntervalDetail(current) },
       }, {
         interval: nextStats.interval ?? 0,
         ease_factor: nextStats.ease_factor ?? 0,

@@ -144,6 +144,30 @@ a.learn-memory__bucket:hover{background:color-mix(in srgb,var(--ink) 8%,var(--sh
 .learn-memory__area i{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--learn-rose-2)}
 .learn-memory__col:first-child .learn-memory__area i{background:var(--ja)}
 .learn-memory__l{font-size:11.2px;color:var(--muted);white-space:nowrap}
+/* 실제 기억률 한 줄(TRUE-RET-001) — 칸 맨 아래, 44px 단추. 색은 잉크 · 흐림 둘뿐(목표 대비 색 없음). */
+.learn-memory__true{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;margin-top:auto;padding:10px 4px 0;border:0;border-top:1px solid var(--rule);background:transparent;color:var(--ink);font:inherit;font-size:13px;text-align:left;cursor:pointer;font-variant-numeric:tabular-nums}
+.learn-memory__true:hover .learn-memory__true-k{color:var(--ink)}
+.learn-memory__true:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:6px}
+.learn-memory__true-k{color:var(--muted);white-space:nowrap;margin-right:auto}
+.learn-memory__true-v{font-size:15px;font-weight:700}
+.learn-memory__true-t{font-size:12px;color:var(--muted);white-space:nowrap}
+.learn-memory__true-go{font-size:16px;color:var(--muted)}
+/* 실제 기억률 표(모달) — 좁은 화면(390)에서 넉 칸이 한 줄에 들도록 창만 조금 넓힌다. */
+.tile-modal.tile-modal--wide{max-width:400px}
+.learn-true{font-variant-numeric:tabular-nums}
+.learn-true__lead{margin:0 0 12px;font-size:13px;line-height:1.6;color:var(--muted)}
+.learn-true__table{width:100%;border-collapse:collapse;font-size:12.5px}
+.learn-true__table th,.learn-true__table td{padding:6px 4px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--rule)}
+.learn-true__table thead th{font-size:11.5px;font-weight:600;color:var(--muted)}
+.learn-true__table tbody th{text-align:left;font-weight:600;color:var(--ink)}
+.learn-true__table td{color:var(--ink)}
+.learn-true__note{margin:8px 0 0;font-size:11.8px;line-height:1.6;color:var(--muted)}
+.learn-true__retry{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:8px}
+.learn-true__retry .learn-true__note{margin:0}
+.learn-true__state{margin:0;font-size:13px;color:var(--muted)}
+.learn-true__empty{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.learn-true__empty p{margin:0;font-size:13.5px;color:var(--ink)}
+.learn-true__empty .learn-button-s{min-height:44px}
 
 @media (prefers-reduced-motion:reduce){.learn-review__cycle{animation:none}.learn-tile{transition:none}}
 
