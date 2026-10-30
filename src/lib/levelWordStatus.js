@@ -180,9 +180,11 @@ export function gradePreviews({ projection, row, at = Date.now() } = {}) {
     return out;
   }
   if (projection.source === 'fsrs-v1') {
-    if (!fsrsGradable(projection, at)) return null;
+    const wait = fsrsGradeWait(projection, at);
+    if (wait === null) return null;
     try {
-      const previews = previewFsrsRatings(fsrsCardOf(projection), new Date(now).toISOString());
+      // 곧 차례인 카드(되돌린 직후 등)는 보낼 시각 기준 미리보기 — 서버도 그 시각에 채점한다.
+      const previews = previewFsrsRatings(fsrsCardOf(projection), new Date(now + wait).toISOString());
       for (const g of SAVE_GRADES) {
         out[g.grade] = previewOf(previews[g.grade].card.due, now);
       }
@@ -207,10 +209,23 @@ export function fsrsGradable(projection, at = Date.now()) {
   return next !== null && schedulerTime(next) <= schedulerTime(at);
 }
 
+/**
+ * 곧 차례가 오는 FSRS 카드의 채점 대기(LEVEL-UNDO-REGRADE-001). 서버는 되돌린 카드를 30초 뒤에야 다시 묻고(next_question_at = 되돌린 시각 + 30초),
+ * 1분 학습 단계 카드도 기한 전에는 묻지 않는다. 단어 페이지는 그동안 「복습 차례에만」으로 막아 되돌린 뒤 다시 채점할 수 없었다.
+ * 이 창(60초) 안이면 채점을 받아 두었다가 차례가 오면 보낸다(Anki도 학습 카드는 기본 20분 일찍 답하게 한다 — learn ahead).
+ * 반환 = 기다릴 ms(0 = 지금), 창 밖이면 null.
+ */
+export const FSRS_GRADE_WAIT_MS = 60000;
+export function fsrsGradeWait(projection, at = Date.now()) {
+  if (fsrsGradable(projection, at)) return 0;
+  if (!fsrsGradable(projection, at + FSRS_GRADE_WAIT_MS)) return null;
+  return schedulerTime(projection.review.nextQuestionAt) - schedulerTime(at);
+}
+
 /** 이 단어를 지금 네 칸으로 채점할 수 있는가 — 'save'(담으면서) · 'legacy' · 'fsrs' · null(지금은 못 함). */
 export function gradeEngine({ projection, row, at = Date.now() } = {}) {
   if (!projection || !row) return 'save';
-  if (projection.source === 'fsrs-v1') return fsrsGradable(projection, at) ? 'fsrs' : null;
+  if (projection.source === 'fsrs-v1') return fsrsGradeWait(projection, at) !== null ? 'fsrs' : null;
   if (projection.review.known || projection.review.excluded || !projection.review.eligible) return null;
   return 'legacy';
 }
