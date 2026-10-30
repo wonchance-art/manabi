@@ -1302,6 +1302,13 @@
   되돌리기는 기다리는 채점 뒤, 서버 시계 어긋남이면 한 번 더 기다림) · 미리보기는 보낼 시각 기준. 1분 학습 단계 카드도 같은 창(Anki learn ahead).
   같이 확인(오너 「矿泉水 꼬인 데이터」): 행 1 · 중복 0 · FSRS New · 첫 문제 0 · 제외/아는 단어 아님 — 데이터 정상, 오늘 새 단어 몫(15/15) 소진으로
   막힌 것(10-19 담기만 한 단어). 계약 levelUndoRegrade 3건.
+  → **#1612 squash `ffce6ea1`** — 운영 빌드 두 번 메모리 초과(아래 BUILD-OOM-001)로 미배포, 그 수리와 함께 나간다.
+- **BUILD-OOM-001 운영 빌드 메모리 초과 (2026-10-30 KST)**: #1611 첫 빌드 · #1612 빌드와 재배포가 Vercel 빌드 컨테이너(8GB)에서 SIGKILL. 원인 —
+  문학 chapters.json 33MB가 `src/content/literature/*/index.generated.js`로 publishBooks · 관리자 문학 경로에 정적 import → 서버 묶음 25MB,
+  webpack 빌드 워커 힙 상한 없음(로컬 측정 최대 7.3GB). 시험: 병렬 4 → 7.05GB · 서버 압축 끔 → 6.86GB · **힙 4GB 상한 + 서버 압축 끔 → 총 5.6GB
+  (단일 5.4GB) · 컴파일 109초 통과**. 수리 = `scripts/next-build.mjs`가 NODE_OPTIONS에 `--max-old-space-size=4096`(다른 상한은 덮음, 로컬 실험만
+  MANABI_BUILD_HEAP_MB) · next.config `serverMinification: false`. 계약 next-build. 9-12 #1302 때의 「빌드 전용 4GB」는 코드에 남지 않았던 것 —
+  이번엔 진입점에 박는다. 근본 후보(남김): chapters를 묶음 밖에서 실행 중 읽기.
 - **NATIVE-FEEL-P1 입력칸 하한 미뤄 둔 네 곳 (2026-10-26 KST, 오너 「권장대로 진행」)**: ⓐ 함께 읽는 글 정렬을 칩 줄 밖 한 줄(오른쪽 · 글자 단추 · 44px,
   터치 16px) ⓑ 서재 정렬 선택 상자를 「필터」 시트 안 라디오(묶음 제목 「정렬」 · 16px · 줄 44px)로 — 값 · sort= 주소 · 급수순(옛 주소 전용) 그대로, 바꾼 때만 주소에
   ⓒ 노트 단어 카드 터치에서 표기 24 / 읽기 16 / 뜻 16 ⓓ 크기 없는 칸 화면별 — 그룹 폼 7칸 · 검색 칸 · 수업 과 선택 16px(min-width 0으로 줄바꿈 무변화),
