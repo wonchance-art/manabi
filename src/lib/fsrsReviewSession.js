@@ -27,6 +27,15 @@ function validateAttempt(attempt) {
   return attempt;
 }
 
+/**
+ * 단어 페이지의 한 번 채점(answer — GRADE-ONE-REQUEST-001). 탭 하나 = 요청 하나지만, 서버는 묻기 · 보이기 · 채점을 각자의 연산으로
+ * 반영한다. 세 연산 ID는 탭 ID에서 정해진다 — 같은 탭의 재전송은 같은 세 ID(멱등), 다른 탭은 다른 셋.
+ */
+export const FSRS_ANSWER_ID_MAX = 190;
+export function fsrsAnswerStepIds(operationId) {
+  return { question: `${operationId}:question`, reveal: `${operationId}:reveal`, grade: `${operationId}:grade` };
+}
+
 export function beginFsrsAttempt(card, { id, userId, cardId, at, answerVisible = false }) {
   validateFsrsCard(card);
   if (![id, userId, cardId].every(identity)) throw new Error('invalid_attempt_identity');

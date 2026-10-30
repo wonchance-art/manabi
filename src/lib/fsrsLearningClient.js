@@ -1,6 +1,7 @@
 'use client';
 
-import { createFsrsOperationOutbox, normalizeFsrsRequest } from './fsrsOperationOutbox';
+import { createFsrsOperationOutbox, normalizeFsrsAnswerRequest, normalizeFsrsRequest } from './fsrsOperationOutbox';
+import { fsrsAnswerStepIds } from './fsrsReviewSession';
 import { rememberFsrsEnrollments } from './fsrsLegacyBoundary';
 import { createAdmissionIntentStore } from './useLearningAdmission';
 import { normalizeAdmissionStatus } from './learningAdmission';
@@ -21,6 +22,14 @@ export function fsrsFailureStatus(error) {
   if ([400, 404, 409, 422].includes(error?.status)) return 'blocked';
   return 'queued';
 }
+
+// 한 번 채점의 거절 안내(서버 fsrsError의 refusalReply) — 오늘 새 단어 한도 · 다음 질문 시각만 옮긴다.
+const answerRefusal = body => ({
+  ...(body?.limit === null || Number.isInteger(body?.limit) ? { limit: body.limit } : {}),
+  ...(typeof body?.nextQuestionAt === 'string' ? { nextQuestionAt: body.nextQuestionAt } : {}),
+});
+// 응답을 받지 못한 것(연결 끊김 · 시간 초과)과 5xx만 같은 탭 ID로 다시 보낸다 — 서버가 반영된 단계를 건너뛴다(멱등).
+const transient = error => error?.status >= 500 || (!Number.isInteger(error?.status) && !/^fsrs_/.test(String(error?.code ?? '')));
 
 /** 계정별 단일 전송자. question/reveal은 온라인 영수증이 있어야 회상으로 진행한다. */
 export function createFsrsLearningClient({ accountId, getAccountId = () => accountId,
@@ -84,7 +93,8 @@ export function createFsrsLearningClient({ accountId, getAccountId = () => accou
       catch { throw problem('fsrs_invalid_response', { status: response.status }); }
       assertOwner();
       if (requestGeneration !== generation) throw problem('fsrs_client_disposed');
-      if (!response.ok || body?.ok === false) throw problem(body?.code || 'fsrs_request_failed', { status: response.status });
+      if (!response.ok || body?.ok === false) throw problem(body?.code || 'fsrs_request_failed', { status: response.status,
+        ...(payload?.action === 'answer' ? answerRefusal(body) : {}) });
       if (body?.version !== 1) throw problem('fsrs_invalid_response');
       if (payload?.action === 'save') {
         if (body.ok !== true || body.actorId !== accountId || body.operationId !== payload.operationId ||
@@ -97,6 +107,12 @@ export function createFsrsLearningClient({ accountId, getAccountId = () => accou
             (body.enrolled ? !Number.isSafeInteger(body.state.card?.revision) || body.state.card.revision < 0 : body.state.card !== null)) {
           throw problem('fsrs_invalid_response');
         }
+      } else if (payload?.action === 'answer') {
+        // 한 번 채점의 영수증 — 이 탭의 채점 연산이 반영됐고(재전송이면 전에) 되돌리기에 쓸 판본이 있다.
+        if (body.ok !== true || body.actorId !== accountId || body.operationId !== payload.operationId || body.cardId !== payload.cardId ||
+            !Number.isSafeInteger(body.card?.revision) || body.grade?.operationId !== fsrsAnswerStepIds(payload.operationId).grade ||
+            !Number.isSafeInteger(body.grade.revision) || body.grade.revision < 1 || typeof body.duplicate !== 'boolean' ||
+            (body.duplicate !== true && body.card.revision !== body.grade.revision)) throw problem('fsrs_invalid_response');
       } else if (payload) {
         const minimumRevision = payload.expectedRevision + (['grade', 'undo'].includes(payload.action) ? 1 : 0);
         if (body.ok !== true || body.operationId !== payload.operationId || body.cardId !== payload.cardId ||
@@ -313,6 +329,22 @@ export function createFsrsLearningClient({ accountId, getAccountId = () => accou
       return save(entry.payload);
     },
     question, confirmQuestion,
+    /**
+     * 단어 페이지의 한 번 채점 — POST 하나(GRADE-ONE-REQUEST-001). 묻기 · 보이기 · 채점은 서버가 차례로 한다. 보낼함에 넣지 않는다:
+     * 끊기면 실패로 돌려준다(채점을 조용히 버리지 않는다). 응답을 받지 못하면 같은 탭 ID로 한 번 더 보낸다(이미 반영됐으면 재전송 영수증).
+     */
+    async answer(payload) {
+      assertOwner();
+      const normalized = normalizeFsrsAnswerRequest(payload, accountId);
+      for (let attempt = 0; ; attempt++) {
+        try { return await request(normalized); }
+        catch (error) {
+          if (!transient(error) || attempt >= 1) throw error;
+          await new Promise(resolve => setTimeout(resolve, readRetryDelay));
+          assertOwner();
+        }
+      }
+    },
     reveal: payload => online('reveal', payload),
     abandon: payload => online('abandon', payload),
     async submit(payload) {

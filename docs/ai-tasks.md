@@ -1316,6 +1316,17 @@
   운영 일치 확인 · 정책 0행)에서만 · 재실행 no-op · core/admission 지문 재게시(manual/profile 불변). 복원 SQL · PGlite 8건(CI 추가) ·
   post-observation 하네스가 docs/sql로 들어간 anki-v2(10-15경)를 운영 순서대로 재생. 화면: 서버 한도를 기기 설정과 맞춤 · 「하루 N개」 안내에서
   9999는 숫자 대신 일반 문구. 계약 newPerDayUnlimited.
+  → **#1614 squash `d8a2ab5a`**.
+- **GRADE-ONE-REQUEST-001 단어 페이지 채점 — 한 장 = 요청 한 번 (2026-10-30 KST, 오너 「묶거나 … 검토해봐」 → 권장안 「한 장 = 요청 한 번」 · 「권장대로 ㄱㄱ」)**:
+  전에는 복습실 컨트롤러로 묻기 · 보이기 · 채점을 따로 보내고 단계마다 카드 목록 전체를 다시 읽어 한 장에 HTTP 6 · DB/인증 약 19
+  (list_states 3 · 입장 4 · getUser 3 …, 운영 로그 실측). 이제 `POST /api/learning/fsrs {action:'answer', cardId, operationId, rating}` 하나 —
+  서버(applyFsrsAnswer)가 단건 연산과 같은 검증 · 전이 · 반영(commitOperation 공유)으로 세 연산을 차례로, 단계마다 서버 시계 · 정책값은
+  서버가 막 읽은 입장 상태(DB가 같은 트랜잭션에서 재검). 한 장 DB/인증 6~7(메모리 대역 실측). 같은 탭 ID 재전송 = 반영된 단계 건너뜀(멱등) ·
+  다른 평점 = 충돌 · 열린 시도는 이어서. 새 단어 몫 소진 = fsrs_new_budget_exhausted(+limit) → 「new-limit」 안내 유지 · 곧 차례 =
+  fsrs_card_not_due(+nextQuestionAt) → 기다렸다 같은 ID로(#1612 유지). 보낼함에 넣지 않음(전에도 묻기 · 보이기는 연결 필요) — 끊기면 실패를
+  알리고 5xx · 연결 끊김만 같은 ID로 한 번 재시도. 되돌리기 = 보낼함 undo(채점 연산 ID · 채점 뒤 판본). 복습실 · DB 무변경.
+  계약 fsrsAnswer 15 · gradeOneRequest 6(실제 클라이언트 · 경로 · 서버, DB만 대역) · levelNewLimit/UndoRegrade/FsrsSerial은 같은 단언을 새 경로로.
+  설계 메모 `docs/design/grade-one-request.md`.
 - **NATIVE-FEEL-P1 입력칸 하한 미뤄 둔 네 곳 (2026-10-26 KST, 오너 「권장대로 진행」)**: ⓐ 함께 읽는 글 정렬을 칩 줄 밖 한 줄(오른쪽 · 글자 단추 · 44px,
   터치 16px) ⓑ 서재 정렬 선택 상자를 「필터」 시트 안 라디오(묶음 제목 「정렬」 · 16px · 줄 44px)로 — 값 · sort= 주소 · 급수순(옛 주소 전용) 그대로, 바꾼 때만 주소에
   ⓒ 노트 단어 카드 터치에서 표기 24 / 읽기 16 / 뜻 16 ⓓ 크기 없는 칸 화면별 — 그룹 폼 7칸 · 검색 칸 · 수업 과 선택 16px(min-width 0으로 줄바꿈 무변화),

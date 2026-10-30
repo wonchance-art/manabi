@@ -70,6 +70,19 @@ export function normalizeFsrsRequest(input, accountId) {
     .map(key => [key, key === 'accountId' ? accountId : input[key]]));
 }
 
+/**
+ * 단어 페이지의 한 번 채점(answer — GRADE-ONE-REQUEST-001). 카드 · 평점 · 탭 ID만 — 시각 · 판본 · 시도 · 입장 정책은 서버가 정한다.
+ * 묻기 · 보이기를 서버가 받는 순간의 시계로 하므로 보낼함에 넣지 않는다(끊기면 지금처럼 실패를 알린다 — append가 거절한다).
+ */
+export function normalizeFsrsAnswerRequest(input, accountId) {
+  const keys = ['action', 'accountId', 'cardId', 'operationId', 'rating'];
+  if (!input || typeof input !== 'object' || Array.isArray(input) || input.action !== 'answer' ||
+      Object.keys(input).some(key => !keys.includes(key)) || !identity(accountId) ||
+      (input.accountId !== undefined && input.accountId !== accountId) || !uuid.test(input.cardId || '') ||
+      !/^[A-Za-z0-9_.:-]{1,190}$/.test(input.operationId || '') || ![1, 2, 3, 4].includes(input.rating)) throw problem('fsrs_invalid_request');
+  return { action: 'answer', accountId, cardId: input.cardId, operationId: input.operationId, rating: input.rating };
+}
+
 /** 요청 성공 이벤트가 아닌 트랜잭션 COMMIT만 성공으로 반환한다. */
 function transact(db, mode, work) {
   return new Promise((resolve, reject) => {

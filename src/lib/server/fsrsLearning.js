@@ -1,7 +1,7 @@
 /** 서버가 검증한 사용자·시각·저장 상태만 새 FSRS 전이에 사용할 수 있다. */
 import { createClient } from '@supabase/supabase-js';
 import { FSRS_POLICIES, FSRS_RETRY_SECONDS, introduceFsrsCard, learningDay, previewFsrsRatings, schedulerTime, validateFsrsCard } from '../fsrsScheduler.js';
-import { beginFsrsAttempt, revealFsrsAttempt, finishFsrsAttempt, planFsrsUndo } from '../fsrsReviewSession.js';
+import { beginFsrsAttempt, revealFsrsAttempt, finishFsrsAttempt, planFsrsUndo, fsrsAnswerStepIds, FSRS_ANSWER_ID_MAX } from '../fsrsReviewSession.js';
 import { UUID } from '../learningSources.js';
 import { DEFAULT_NEW_PER_DAY, NEW_PER_DAY_OPTIONS } from '../vocabStudy.js';
 import { readLearningAdmissionStatus } from './learningAdmission.js';
@@ -35,8 +35,18 @@ export function fsrsError(error) {
   const known = Number.isInteger(error?.status) && error.status >= 400 && error.status <= 599
     && /^fsrs_[a-z_]+$/.test(error.code || '');
   return { status: known ? error.status : 503, body: { ok: false,
-    code: known ? error.code : 'fsrs_storage_unavailable' } };
+    code: known ? error.code : 'fsrs_storage_unavailable', ...(known ? refusalReply(error.reply) : {}) } };
 }
+
+// 한 번 채점(answer)의 거절에만 붙는 안내 — 오늘 새 단어 한도(limit) · 다음 질문 시각(nextQuestionAt). 단건 연산의 오류 본문은 그대로다.
+function refusalReply(reply) {
+  if (!reply || typeof reply !== 'object') return {};
+  const out = {};
+  if (reply.limit === null || NEW_PER_DAY_OPTIONS.includes(reply.limit)) out.limit = reply.limit;
+  if (typeof reply.nextQuestionAt === 'string' && Number.isFinite(Date.parse(reply.nextQuestionAt))) out.nextQuestionAt = reply.nextQuestionAt;
+  return out;
+}
+const refuse = (code, status, reply) => { throw Object.assign(new Error(code), { code, status, reply }); };
 
 function databaseError(error, name = 'rpc') {
   if (!error) return;
@@ -226,8 +236,12 @@ function transition(state, request, userId, at, policyVersion) {
   return { ...planFsrsUndo(target, state.card, { operationId: request.operationId, userId, cardId: request.cardId, at }), request };
 }
 
-export async function applyFsrsRequest({ authClient, serviceClient, userId, body, now = new Date() }) {
+export async function applyFsrsRequest({ authClient, serviceClient, userId, body, now }) {
   if (!UUID.test(userId || '')) reject('fsrs_auth_required', 401);
+  // 한 번 채점은 단계마다 서버 시계를 다시 읽는다(시각을 주면 그 시각 — 계약 테스트).
+  if (body?.action === 'answer') return applyFsrsAnswer({ authClient, serviceClient, userId, body,
+    now: now === undefined || typeof now === 'function' ? now : () => now });
+  now = typeof now === 'function' ? now() : now ?? new Date();
   const request = parseFsrsRequest(body, userId), at = new Date(schedulerTime(now)).toISOString();
   // 능력 · 입장 상태 · 이 연산 · 카드 상태는 모두 읽기라 서로 기다리지 않는다(readFsrsStatus PERF-FSRS-001과 같은 결 — FSRS-APPLY-PARALLEL-001).
   // 순차일 때 연산 하나 = 왕복 넷 + 반영 + 입장 재조회(운영 평균 합 약 1.3 s, 2026-10-26 KST edge 로그). 오류 판정은 순차일 때의 순서
@@ -279,8 +293,15 @@ export async function applyFsrsRequest({ authClient, serviceClient, userId, body
     const target = await rpc(serviceClient, 'fsrs_read_operation', { p_actor: userId, p_card_id: request.cardId, p_operation_id: request.targetOperationId });
     if (target) state.operations = [...(state.operations || []), target];
   }
+  const outcome = await commitOperation({ serviceClient, userId, request, state, at, policyVersion: contract.policyVersion });
+  return currentResult(outcome.state, outcome.duplicate, outcome.raw);
+}
+
+// 연산 하나의 전이(transition) → 반영(fsrs_apply_learning_operation) → 동시 재전송 확인. 단건 요청(applyFsrsRequest)과 한 번 채점
+// (applyFsrsAnswer)의 각 단계가 같은 코드를 쓴다. state = 반영 뒤 상태(새로 반영했으면 반영 응답 그대로, 재전송이면 다시 읽은 것).
+async function commitOperation({ serviceClient, userId, request, state, at, policyVersion }) {
   let operation;
-  try { operation = transition(state, request, userId, at, contract.policyVersion); } catch (error) {
+  try { operation = transition(state, request, userId, at, policyVersion); } catch (error) {
     if (error?.code) throw error;
     const messages = { fsrs_card_not_due: ['fsrs_card_not_due', 409], recall_not_eligible: ['fsrs_recall_not_eligible', 422],
       answer_not_revealed: ['fsrs_answer_not_revealed', 409], invalid_attempt_phase: ['fsrs_attempt_conflict', 409],
@@ -297,12 +318,118 @@ export async function applyFsrsRequest({ authClient, serviceClient, userId, body
     if (!committed || committed.userId !== userId || committed.cardId !== request.cardId || committed.id !== request.operationId
         || !committed.request || !same(committed.request, request)) throw error;
     const current = await rpc(serviceClient, 'fsrs_read_state', { p_actor: userId, p_card_id: request.cardId });
-    return currentResult(checkedState(current, userId, request.cardId), true);
+    return { state: checkedState(current, userId, request.cardId), duplicate: true, raw: null };
   }
   if (!applied || applied.operationId !== request.operationId || applied.cardId !== request.cardId) reject('fsrs_storage_unavailable');
   if (applied.duplicate === true) {
     const current = await rpc(serviceClient, 'fsrs_read_state', { p_actor: userId, p_card_id: request.cardId });
-    return currentResult(checkedState(current, userId, request.cardId), true, applied);
+    return { state: checkedState(current, userId, request.cardId), duplicate: true, raw: applied };
   }
-  return currentResult(applied, applied.duplicate === true, applied);
+  return { state: applied, duplicate: false, raw: applied };
+}
+
+/**
+ * 한 번 채점(answer — GRADE-ONE-REQUEST-001) 입력. 브라우저는 「이 카드를 이 평점으로」와 탭 ID만 보낸다 — 시각 · 판본 · 시도 ·
+ * 입장 정책은 서버가 읽은 값이다(단건 연산과 같은 서버 권한). 탭 ID는 세 단계 ID의 바탕이라 길이를 남겨 둔다(FSRS_ANSWER_ID_MAX).
+ */
+export function parseFsrsAnswerRequest(body, userId) {
+  if (!body || typeof body !== 'object' || Array.isArray(body) || body.action !== 'answer') reject('fsrs_invalid_request', 400);
+  const allowed = new Set(['action', 'accountId', 'cardId', 'operationId', 'rating']);
+  if (Object.keys(body).some(key => !allowed.has(key))) reject('fsrs_invalid_request', 400);
+  if (body.accountId !== userId) reject('fsrs_account_changed', 409);
+  if (!UUID.test(body.cardId || '') || !identity(body.operationId) || body.operationId.length > FSRS_ANSWER_ID_MAX
+      || ![1, 2, 3, 4].includes(body.rating)) reject('fsrs_invalid_request', 400);
+  return { action: 'answer', accountId: userId, cardId: body.cardId, operationId: body.operationId, rating: body.rating };
+}
+
+/**
+ * 한 번 채점 — 단어 페이지의 탭 하나 = 요청 하나(GRADE-ONE-REQUEST-001). 서버가 묻기(question) → 보이기(reveal) → 채점(grade)을
+ * 차례로, 단계마다 자기 시계로 · 단건 연산과 같은 검증(parseFsrsRequest) · 전이(transition) · 반영 RPC(commitOperation)로 한다.
+ * DB에는 지금처럼 연산 셋이 각자의 ID로 남는다(fsrsAnswerStepIds) — 같은 탭의 재전송은 반영된 단계를 건너뛰고 잇는다(멱등).
+ * 반영 전 읽기는 한 번씩: 능력(15초 공유) · 입장 상태 · 카드 상태(최근 연산 이력 포함 — 반영된 단계를 여기서 찾는다).
+ * 열린 시도(다른 화면 · 끊긴 앞 탭)가 있으면 그 시도를 잇는다 — 컨트롤러의 question()이 하던 것과 같다.
+ */
+export async function applyFsrsAnswer({ authClient, serviceClient, userId, body, now = () => new Date() }) {
+  if (!UUID.test(userId || '')) reject('fsrs_auth_required', 401);
+  const answer = parseFsrsAnswerRequest(body, userId), ids = fsrsAnswerStepIds(answer.operationId);
+  let latest = -Infinity;
+  // 단계마다 서버 시계 — 거꾸로 가지 않게만 붙든다(보이기 ≥ 묻기 · 채점 시각 = 보이기 시각은 전이가 정한다).
+  const clock = () => { latest = Math.max(latest, schedulerTime(now())); return new Date(latest).toISOString(); };
+  const startedAt = clock();
+  const contractPromise = capabilities(authClient);
+  const [contractRead, admissionRead, rawRead] = await Promise.allSettled([contractPromise,
+    readLearningAdmissionStatus({ authClient, serviceClient, userId, knownFsrsEnabled: contractPromise.then(c => c.enabled), now: startedAt }),
+    rpc(serviceClient, 'fsrs_read_state', { p_actor: userId, p_card_id: answer.cardId })]);
+  // 오류 판정 순서는 단건 연산과 같다: 능력 → 켜짐 → 입장 → 상태.
+  if (contractRead.status === 'rejected') throw contractRead.reason;
+  const contract = contractRead.value;
+  if (!contract.enabled) reject('fsrs_storage_unavailable');
+  if (admissionRead.status === 'rejected') throw admissionRead.reason;
+  const admission = admissionRead.value;
+  if (rawRead.status === 'rejected') throw rawRead.reason;
+  let state = checkedState(rawRead.value, userId, answer.cardId);
+  if (!state) reject('fsrs_card_not_found', 404);
+
+  // 이 탭의 단계 중 이미 반영된 것(재전송). 상태 읽기의 최근 연산 이력(100개)에서 찾고, 이력이 꽉 찼을 때만 따로 묻는다.
+  const history = Array.isArray(state.operations) ? state.operations : [];
+  const find = id => history.find(operation => operation?.id === id)
+    || (history.length >= 100 ? rpc(serviceClient, 'fsrs_read_operation', { p_actor: userId, p_card_id: answer.cardId, p_operation_id: id }) : null);
+  const [storedQuestion, storedReveal, storedGrade] = await Promise.all([find(ids.question), find(ids.reveal), find(ids.grade)]);
+  // 같은 ID의 다른 요청(다른 평점 · 다른 카드 · 다른 사람)은 단건 연산처럼 충돌이다.
+  const own = (operation, kind, check) => {
+    if (!operation) return null;
+    const request = operation.request;
+    if (operation.userId !== userId || operation.cardId !== answer.cardId || operation.id !== ids[kind] || operation.kind !== kind
+        || !request || request.action !== kind || request.operationId !== ids[kind] || request.accountId !== userId
+        || request.cardId !== answer.cardId || !identity(request.attemptId) || !check(request)) reject('fsrs_operation_conflict', 409);
+    return operation;
+  };
+  const question = own(storedQuestion, 'question', r => r.attemptId === ids.question && r.answerVisible === false);
+  const reveal = own(storedReveal, 'reveal', r => r.hint === false && (!question || r.attemptId === ids.question));
+  const grade = own(storedGrade, 'grade', r => r.rating === answer.rating
+    && r.attemptId === (reveal?.request.attemptId ?? (question ? ids.question : r.attemptId)));
+
+  let raw = null, duplicate = true, asked = false, gradedFrom = grade?.request.expectedRevision;
+  const step = async fields => {
+    const request = parseFsrsRequest({ accountId: userId, cardId: answer.cardId, expectedRevision: state.card.revision, ...fields }, userId);
+    const outcome = await commitOperation({ serviceClient, userId, request, state, at: clock(), policyVersion: contract.policyVersion });
+    state = checkedState(outcome.state, userId, answer.cardId);
+    if (outcome.raw) raw = outcome.raw;
+    return { request, duplicate: outcome.duplicate };
+  };
+  if (!grade) {
+    const open = !!state.attempt && ['question', 'revealed'].includes(state.attempt.phase);
+    const attemptId = reveal?.request.attemptId ?? (question || !open ? ids.question : state.attempt.id);
+    // 묻기 — 열린 시도가 없을 때만. 한 번도 공부하지 않은 카드(New)는 첫 문제 때 하루 새 단어 몫을 쓴다: 몫이 없으면 묻지 않는다
+    // (복습실 줄과 같은 조건). 반영 함수가 같은 트랜잭션에서 거절한 것(경합)도 같은 이름이다 — 단어 페이지의 'new-limit'.
+    if (!question && !open) {
+      if (!admission.installed) reject('fsrs_admission_unavailable');
+      const firstQuestion = state.card.state === 'New' && !state.firstQuestionAt, limit = { limit: admission.limit };
+      if (firstQuestion && !(admission.active && admission.remaining > 0)) refuse('fsrs_new_budget_exhausted', 409, limit);
+      try {
+        asked = !(await step({ action: 'question', operationId: ids.question, attemptId: ids.question, answerVisible: false,
+          dailyNewLimit: admission.limit, expectedPolicyRevision: admission.policyRevision })).duplicate;
+      } catch (error) {
+        if (firstQuestion && ['fsrs_new_budget_exhausted', 'fsrs_admission_pending'].includes(error?.code)) refuse('fsrs_new_budget_exhausted', 409, limit);
+        // 곧 차례인 카드(되돌린 뒤 30초 · 학습 단계)는 다음 질문 시각을 함께 — 단어 페이지가 그만큼만 기다렸다 다시 보낸다.
+        if (error?.code === 'fsrs_card_not_due') refuse('fsrs_card_not_due', 409, { nextQuestionAt: state.nextQuestionAt ?? state.card.due });
+        throw error;
+      }
+    }
+    if (!reveal && state.attempt?.phase === 'question') await step({ action: 'reveal', operationId: ids.reveal, attemptId, hint: false });
+    const graded = await step({ action: 'grade', operationId: ids.grade, attemptId, rating: answer.rating });
+    duplicate = graded.duplicate; gradedFrom = graded.request.expectedRevision;
+  }
+  // 응답의 입장 상태 — 마지막 반영이 붙여 준 반영 뒤 상태(quota). 없으면 첫 문제를 이 요청에서 반영했을 때만 다시 읽는다.
+  let after = null;
+  if (raw?.quota) {
+    try {
+      const status = normalizeAdmissionStatus(raw.quota, { actorId: userId });
+      if (status.installed && status.fsrsEnabled === contract.enabled) after = status;
+    } catch { /* 아래에서 */ }
+  }
+  after ??= asked ? await readLearningAdmissionStatus({ authClient, serviceClient, userId, knownFsrsEnabled: contract.enabled, now: clock() }) : admission;
+  // 되돌리기에 쓰는 것 — 채점 연산 ID와 채점 뒤 판본(채점은 판본을 하나 올린다 · 되돌리기의 expectedRevision).
+  return { ...result(state, userId, clock(), answer.operationId, duplicate, contract.policyVersion), admission: after,
+    grade: { operationId: ids.grade, revision: gradedFrom + 1 } };
 }
