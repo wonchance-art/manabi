@@ -4,32 +4,33 @@
 import fs from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-let snapshot = {};
-vi.mock('../useFsrsReview', () => ({ createFsrsReviewController: () => ({
-  start() {}, dispose() {}, setWords() {},
-  getSnapshot: () => snapshot,
-  async question() { return false; }, async reveal() { return true; }, async grade() { return true; },
+// 한 번 채점(GRADE-ONE-REQUEST-001) 뒤로는 「몫이 남았나 · 이미 시작한 카드인가」를 서버가 판정한다(fsrsAnswer.test.js가 그 조건을 지킨다).
+// 여기서는 단어 페이지가 서버의 거절(fsrs_new_budget_exhausted · 한도)을 'new-limit'으로, 그 밖의 거절은 실패로 옮기는지만 본다.
+let refusal = null;
+vi.mock('../fsrsLearningClient', () => ({ createFsrsLearningClient: () => ({
+  start() {}, dispose() {},
+  async answer(payload) { if (refusal) throw refusal; return { ok: true, grade: { operationId: `${payload.operationId}:grade`, revision: 1 } }; },
 }) }));
-vi.mock('../fsrsLearningClient', () => ({ createFsrsLearningClient: () => ({}) }));
+const refused = (code, extra = {}) => Object.assign(new Error(code), { code, status: 409, ...extra });
 
 const { gradeLevelFsrs, disposeLevelFsrs } = await import('../levelFsrsGrade');
 const owner = '10000000-0000-4000-8000-000000000001';
-afterEach(() => disposeLevelFsrs());
-const card = (state, firstQuestionAt = null) => ({ cardId: 'A', card: { state }, firstQuestionAt });
+afterEach(() => { disposeLevelFsrs(); refusal = null; });
 
 describe('LEVEL-NEW-LIMIT-001 — 오늘 새 단어 몫을 다 쓴 새 카드는 저장 실패가 아니다', () => {
   it('새 카드 · 몫 0이면 new-limit(한도 함께)', async () => {
-    snapshot = { cards: [card('New')], admission: { active: true, remaining: 0, limit: 15 }, error: null };
+    refusal = refused('fsrs_new_budget_exhausted', { limit: 15 });
     expect(await gradeLevelFsrs({ accountId: owner, row: { id: 'A' }, rating: 3 })).toEqual({ ok: false, reason: 'new-limit', limit: 15 });
+    refusal = refused('fsrs_new_budget_exhausted'); // 한도를 싣지 않은 거절(옛 서버) — 한도 없이 안내
+    expect(await gradeLevelFsrs({ accountId: owner, row: { id: 'A' }, rating: 3 })).toEqual({ ok: false, reason: 'new-limit', limit: null });
   });
   it('몫이 남았거나 · 이미 시작한 카드 · 복습 카드는 지금처럼 실패(다른 이유)', async () => {
-    for (const [cards, admission] of [[[card('New')], { active: true, remaining: 3, limit: 15 }],
-      [[card('New', '2026-10-30T03:00:00Z')], { active: true, remaining: 0, limit: 15 }],
-      [[card('Review')], { active: true, remaining: 0, limit: 15 }]]) {
-      snapshot = { cards, admission, error: null };
+    for (const code of ['fsrs_card_not_due', 'fsrs_attempt_conflict', 'fsrs_admission_pending', 'fsrs_storage_unavailable']) {
+      refusal = refused(code);
       const result = await gradeLevelFsrs({ accountId: owner, row: { id: 'A' }, rating: 3 });
       expect(result.ok).toBe(false);
       expect(result.reason).toBeUndefined();
+      expect(result.error.code).toBe(code);
     }
   });
   it('단어 페이지는 new-limit을 오류 알림이 아닌 안내로 — 그 학습일 동안 새 카드는 넘기지 않고 안내(세 번째마다 서버에 다시 묻는다)', () => {

@@ -6,18 +6,20 @@ import { FSRS_GRADE_WAIT_MS, fsrsGradeWait, gradeEngine } from '../levelWordStat
 
 const log = [];
 let ready = () => true;
-vi.mock('../useFsrsReview', () => ({ createFsrsReviewController: () => {
-  let current = null, last = null;
-  return {
-    start() {}, dispose() {}, setWords() {},
-    getSnapshot: () => ({ current, cards: [], error: null }),
-    async question(id) { if (!ready()) { log.push(`refused:${id}`); return false; } log.push(`question:${id}`); current = { cardId: id, phase: 'question' }; return true; },
-    async reveal() { current = { ...current, phase: 'revealed' }; return true; },
-    async grade(r) { log.push(`grade:${current.cardId}:${r}`); last = current.cardId; current = null; return true; },
-    async undo() { if (!last) return false; log.push(`undo:${last}`); last = null; return true; },
-  };
-} }));
-vi.mock('../fsrsLearningClient', () => ({ createFsrsLearningClient: () => ({}) }));
+// 한 번 채점(GRADE-ONE-REQUEST-001) — 단어 페이지는 탭마다 answer 하나, 되돌리기는 보낼함의 undo(마지막 채점의 연산 ID를 겨눈다).
+vi.mock('../fsrsLearningClient', () => ({ createFsrsLearningClient: () => ({
+  start() {}, dispose() {},
+  async answer({ cardId, rating, operationId }) {
+    if (!ready()) { log.push(`refused:${cardId}`); throw Object.assign(new Error('fsrs_card_not_due'), { code: 'fsrs_card_not_due', status: 409 }); }
+    log.push(`grade:${cardId}:${rating}`);
+    return { ok: true, grade: { operationId: `${operationId}:grade`, revision: 1 } };
+  },
+  async submit(payload) {
+    log.push(`undo:${payload.cardId}`);
+    expect(payload).toMatchObject({ action: 'undo', expectedRevision: 1, targetOperationId: expect.stringMatching(/:grade$/) });
+    return { queued: true, status: 'pending', operationId: payload.operationId };
+  },
+}) }));
 const { gradeLevelFsrs, undoLevelFsrs, disposeLevelFsrs } = await import('../levelFsrsGrade');
 const owner = '10000000-0000-4000-8000-000000000001';
 afterEach(() => { disposeLevelFsrs(); log.length = 0; vi.useRealTimers(); ready = () => true; });
@@ -39,10 +41,10 @@ describe('LEVEL-UNDO-REGRADE-001 — 곧 차례인 카드(되돌린 뒤 30초 ·
     const b = gradeLevelFsrs({ accountId: owner, row: { id: 'B' }, rating: 4 });
     await vi.advanceTimersByTimeAsync(100);
     expect(await b).toEqual({ ok: true });
-    expect(log).toEqual(['question:B', 'grade:B:4']);
+    expect(log).toEqual(['grade:B:4']);
     await vi.advanceTimersByTimeAsync(32000);
     expect(await a).toEqual({ ok: true });
-    expect(log).toEqual(['question:B', 'grade:B:4', 'question:A', 'grade:A:3']);
+    expect(log).toEqual(['grade:B:4', 'grade:A:3']);
   });
   it('되돌리기는 기다리는 채점이 보내진 뒤에 — 그 채점을 되돌린다', async () => {
     vi.useFakeTimers();
@@ -50,6 +52,6 @@ describe('LEVEL-UNDO-REGRADE-001 — 곧 차례인 카드(되돌린 뒤 30초 ·
     const u = undoLevelFsrs({ accountId: owner });
     await vi.advanceTimersByTimeAsync(25000);
     await a; await u;
-    expect(log).toEqual(['question:A', 'grade:A:2', 'undo:A']);
+    expect(log).toEqual(['grade:A:2', 'undo:A']);
   });
 });
