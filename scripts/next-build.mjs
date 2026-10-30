@@ -19,9 +19,25 @@ export const VENDORED_FONT_RESPONSES = path.resolve(
   '../vendor/google-fonts/responses.cjs',
 );
 
-/** `next build` 환경 — 다른 값이 이미 지정돼 있으면(로컬 실험) 그대로 둔다. */
+// 빌드 힙 상한(BUILD-OOM-001, 2026-10-30 실측): 문학 chapters.json(33MB)이 서버 묶음에 정적으로 들어가 webpack 빌드
+// 워커가 상한 없이 7.3GB까지 커졌고, Vercel 빌드 컨테이너(8GB)에서 #1611·#1612 운영 빌드가 메모리 초과로 죽었다.
+// 4GB로 묶으면 V8이 일찍 GC해 같은 빌드가 총 5.6GB(단일 프로세스 5.4GB)로 통과한다. 이미 걸린 다른 상한
+// (플랫폼 기본값 포함)은 덮는다 — 남겨 두면 그 값이 이긴다. 로컬 실험만 MANABI_BUILD_HEAP_MB로 바꾼다.
+export const BUILD_HEAP_MB = 4096;
+
+function buildNodeOptions(env) {
+  const heap = Number(env.MANABI_BUILD_HEAP_MB) || BUILD_HEAP_MB;
+  const rest = (env.NODE_OPTIONS || '').split(/\s+/).filter((flag) => flag && !/^--max-old-space-size(=|$)/.test(flag));
+  return [...rest, `--max-old-space-size=${heap}`].join(' ');
+}
+
+/** `next build` 환경 — 글꼴 사본은 다른 값이 이미 지정돼 있으면(로컬 실험) 그대로 둔다. */
 export function buildEnv(env = process.env) {
-  return { ...env, NEXT_FONT_GOOGLE_MOCKED_RESPONSES: env.NEXT_FONT_GOOGLE_MOCKED_RESPONSES || VENDORED_FONT_RESPONSES };
+  return {
+    ...env,
+    NEXT_FONT_GOOGLE_MOCKED_RESPONSES: env.NEXT_FONT_GOOGLE_MOCKED_RESPONSES || VENDORED_FONT_RESPONSES,
+    NODE_OPTIONS: buildNodeOptions(env),
+  };
 }
 
 function runNextBuild(args) {
