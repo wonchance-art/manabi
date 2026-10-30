@@ -21,7 +21,7 @@ const nextConfig = {
 
   // Keep the production compiler below the 8 GB build-container limit. This changes
   // Webpack's build-time memory management, not the served content or font selection.
-  experimental: { webpackMemoryOptimizations: true, webpackBuildWorker: true },
+  experimental: { webpackMemoryOptimizations: true, webpackBuildWorker: true, serverMinification: false },
 
   // The source-only Vercel compiler exceeded its memory limit. Production builds
   // trade compiler cache reuse for lower retained memory;
