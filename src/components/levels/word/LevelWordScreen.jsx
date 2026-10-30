@@ -18,6 +18,7 @@ import { knownWordKeys, knownWordSetOf, normalizeKnownWord } from '@/lib/knownWo
 import { authEntryHref } from '@/lib/authRedirect';
 import { failureMessage } from '@/lib/errorMessage';
 import { reducedMotion } from '@/lib/reducedMotion';
+import { learningDay, schedulerTime } from '@/lib/fsrsScheduler';
 import { fetchVocabularyLearningRows } from '@/lib/vocabularyLearningRows';
 import { buildVocabularyWordIndex } from '@/lib/vocabularyDueIndex';
 import { preservePendingVocabularyReviews } from '@/lib/viewerVocabularyCache';
@@ -486,12 +487,23 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
 
   // ── 채점 ──
   const inFlight = useRef(new Set());
+  // 오늘 새 단어 몫을 다 쓴 학습일(LEVEL-NEW-LIMIT-001) — 한 번도 공부하지 않은 카드(담기만 한 단어 포함)는 서버가 첫 문제 때 하루 새 단어
+  // 몫을 쓴다. 다 쓴 뒤에는 그런 카드를 넘기지 않고(튕김 없이) 안내만 한다. 몫을 늘리면(단어장 설정) 다음 시도에서 다시 서버에 묻는다.
+  const newLimitHit = useRef(null);
+  const newLimitNotice = (limit) => setNotice({ id: Date.now(), text: limit ? `오늘 새 단어 ${limit}개를 다 했어요 — 내일 이어서 나와요` : '오늘 새 단어를 다 했어요 — 내일 이어서 나와요',
+    href: '/vocab', action: '단어장 설정', ms: 6000 });
   const onGrade = useCallback(async (entry, rating, opts = {}) => {
     if (!userId) return askLogin(entry.key);
     if (!ready || inFlight.current.has(entry.key) || leaving.current) return undefined;
     const info = cardInfo(entry.key);
     if (info.known && rating > 1) {
       setNotice({ id: Date.now(), text: '졸업한 단어예요. 「다시」를 누르면 복습으로 돌아와요', ms: 4000 });
+      return undefined;
+    }
+    const hit = newLimitHit.current;
+    if (hit && hit.day === learningDay(schedulerTime(Date.now())) && hit.tries++ % 3 !== 2
+        && info.projection?.source === 'fsrs-v1' && info.projection.memory?.state === 'New') {
+      newLimitNotice(hit.limit); // 세 번째마다는 서버에 다시 묻는다 — 그사이 설정에서 몫을 늘렸을 수 있다
       return undefined;
     }
     inFlight.current.add(entry.key);
@@ -528,6 +540,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
       if (!res.ok) {
         if (advance) { setSession((cur) => revertLevelGrade(cur, before, moved, entry.key, rating)); setHeadKey(head); }
         if (res.reason === 'not-due') setNotice({ id: Date.now(), text: '복습실 카드라 복습 차례에만 채점할 수 있어요', href: '/review', action: '복습실', ms: 5000 });
+        if (res.reason === 'new-limit') { newLimitHit.current = { day: learningDay(schedulerTime(Date.now())), limit: res.limit, tries: 0 }; newLimitNotice(res.limit); }
         return undefined;
       }
       setClock(Date.now());

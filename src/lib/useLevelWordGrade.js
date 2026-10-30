@@ -65,7 +65,7 @@ export function useLevelWordGrade({ user, fetchProfile, language = 'Chinese', on
   }, [inline, userId]);
 
   /**
-   * 채점 — { ok, undo, reason }. reason: 'not-due'(FSRS 카드 · 복습 차례 아님) · 'failed'.
+   * 채점 — { ok, undo, reason }. reason: 'not-due'(FSRS 카드 · 복습 차례 아님) · 'new-limit'(오늘 새 단어 몫을 다 씀 — limit) · 'failed'.
    * undo는 UNDO_MS 안에만 쓸 수 있다(뷰어 담기 되돌리기와 같은 창).
    */
   const grade = useCallback(async (entry, rating) => {
@@ -88,6 +88,7 @@ export function useLevelWordGrade({ user, fetchProfile, language = 'Chinese', on
       }
       if (engine === 'fsrs') {
         const result = await gradeLevelFsrs({ accountId: userId, row, rating });
+        if (!result.ok && result.reason === 'new-limit') return { ok: false, reason: 'new-limit', limit: result.limit };
         if (!result.ok) throw result.error;
         void refreshVocabWordsCards(queryClient, userId, [row.id]);
         return { ok: true, undo: { kind: 'fsrs', expiresAt: Date.now() + UNDO_MS } };
