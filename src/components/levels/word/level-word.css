@@ -90,6 +90,8 @@ html:has(.lw-page){overscroll-behavior-y:none}
 .lw-status{isolation:isolate}
 .lw-status--new{color:var(--lw-rose);font-size:20px;cursor:pointer}
 .lw-status--new[aria-busy]{opacity:.5}
+/* 담음(LEVEL-SAVED-TAG-001) — 담기만 한 새 단어. ☆와 같은 새 단어 색, 테두리만(채워진 「오늘」과 구별). */
+.lw-status--saved{color:var(--lw-rose)}.lw-status--saved::before{border-color:var(--lw-today-line)}
 .lw-status--today{color:var(--lw-today)}.lw-status--today::before{background:var(--lw-today-bg);border-color:var(--lw-today-line)}
 .lw-status--review{color:var(--lw-review)}.lw-status--review::before{border-color:var(--rule)}
 .lw-status--grad{color:var(--grade-good)}.lw-status--grad::before{background:var(--lw-grad-bg);border-color:var(--lw-grad-line)}
@@ -323,6 +325,8 @@ button.lw-tile__glyph[aria-expanded=true]{background:color-mix(in srgb,var(--lw-
 .lw-undo--quiet [lang]{color:var(--ink)}
 .lw-undo--quiet u{text-decoration:none;color:var(--lw-rose);font-weight:600}
 .lw-page:has(.lw-undo--quiet) .lw-gradebar__guide{visibility:hidden}
+/* 단추 둘 안내(새 단어 몫 — [한도 늘리기] [연습만 하기]) — 좁으면 단추 묶음이 다음 줄 오른쪽으로. */
+.lw-undo--two{flex-wrap:wrap}.lw-undo--two>span:first-child{flex:1 1 14em}.lw-undo__acts{display:flex;margin-left:auto}
 .lw-undo button,.lw-undo a{min-height:44px;border:0;background:none;color:var(--lw-rose);font-size:13px;font-weight:700;padding:0 12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
 
 /* 찾기 결과 · 줄 형식 */

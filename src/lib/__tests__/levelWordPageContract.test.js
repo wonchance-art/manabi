@@ -13,9 +13,9 @@ const PAGE_FILES = [
   'src/lib/useLevelWordGrade.js', 'src/lib/levelFsrsGrade.js', 'src/lib/levelWordStatus.js', 'src/lib/levelWordSession.js', 'src/lib/levelCharTiles.js',
 ];
 
-describe('상태 칸 — ☆ · 오늘 · 복습 · 졸업', () => {
+describe('상태 칸 — ☆ · 담음 · 오늘 · 복습 · 졸업', () => {
   it('보이는 글자는 두 글자 이내, 화면 읽기 이름은 따로', () => {
-    expect(Object.values(LEVEL_WORD_STATUS).map((s) => s.short)).toEqual(['☆', '오늘', '복습', '졸업']);
+    expect(Object.values(LEVEL_WORD_STATUS).map((s) => s.short)).toEqual(['☆', '담음', '오늘', '복습', '졸업']);
     for (const s of Object.values(LEVEL_WORD_STATUS)) {
       expect([...s.short].length).toBeLessThanOrEqual(2);
       expect(s.label.length).toBeGreaterThan(s.short.length);

@@ -157,10 +157,13 @@ function Notice({ notice, onDone }) {
         <span lang={lang}>{word}</span>{what} · <u>되돌리기</u></button>}
     </div>;
   }
-  return <div className={`lw-undo${leaving ? ' is-leaving' : ''}`} role="status" onPointerEnter={pause} onPointerLeave={resume} onFocus={pause} onBlur={resume}>
+  const act = (run) => () => { clearTimeout(timer.current); onDone(); run(); };
+  const first = <>{notice.href && <Link href={notice.href}>{notice.action}</Link>}
+    {notice.onAction && <button type="button" onClick={act(notice.onAction)}>{notice.action}</button>}</>;
+  // also = 두 번째 단추(LEVEL-SAVED-TAG-001 — 새 단어 몫 안내의 [한도 늘리기] [연습만 하기]). 좁은 화면에서는 단추 둘이 다음 줄 오른쪽으로.
+  return <div className={`lw-undo${notice.also ? ' lw-undo--two' : ''}${leaving ? ' is-leaving' : ''}`} role="status" onPointerEnter={pause} onPointerLeave={resume} onFocus={pause} onBlur={resume}>
     <span>{notice.text}</span>
-    {notice.href && <Link href={notice.href}>{notice.action}</Link>}
-    {notice.onAction && <button type="button" onClick={() => { clearTimeout(timer.current); onDone(); notice.onAction(); }}>{notice.action}</button>}
+    {notice.also ? <span className="lw-undo__acts">{first}<button type="button" onClick={act(notice.also.onAction)}>{notice.also.action}</button></span> : first}
   </div>;
 }
 
@@ -208,6 +211,17 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
     staleTime: 30_000,
   });
   const index = indexQuery.data;
+  // 오늘 새 단어 몫 — 서버 입장 한도가 정본(LEVEL-SAVED-TAG-001 · levelNewSlots). 한도 모듈은 첫 그림에 싣지 않는다(import()).
+  // 손님 · 호환 모드 · 못 읽음이면 null → 지금처럼 기기 셈(newStartedToday). 줄은 이 값을 받은 뒤(늦으면 4초 뒤 기기 셈으로) 세운다.
+  const slotsQuery = useQuery({
+    queryKey: ['level-new-slots', userId],
+    queryFn: () => Promise.race([import('@/lib/levelDailyLoad').then((m) => m.levelNewSlots(userId)),
+      new Promise((resolve) => { setTimeout(() => resolve(null), 4000); })]).catch(() => null),
+    enabled: mounted && !!userId,
+    staleTime: 30_000,
+  });
+  const slots = userId ? slotsQuery.data ?? null : null;
+  const slotsSettled = !userId || slotsQuery.isFetched;
   const known = useKnownWords(cfg.code, mounted && !!userId);
   const knownSet = useMemo(() => (userId ? knownWordSetOf(known.rows, [], cfg.code) : new Set()), [userId, known.rows, cfg.code]);
   // 상태를 셀 수 있는가 — 손님은 로그인 확인이 끝난 뒤(모두 ☆), 로그인은 단어장을 받은 뒤. 받기 전에는 상태 칸 자리만.
@@ -306,7 +320,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
   }, [pathname]);
 
   const grader = useLevelWordGrade({ user, fetchProfile: refreshProfileAfterActivity, language, onError: (message) => toast(message, 'error') });
-  const [pops, setPops] = useState(() => new Set()); // 막 ☆ → 오늘이 된 단어(한 번 튀어오름)
+  const [pops, setPops] = useState(() => new Set()); // 막 ☆ → 담음이 된 단어(한 번 튀어오름)
   const [saving, setSaving] = useState(null);
   const popKey = (key) => setPops((s) => new Set(s).add(key));
 
@@ -322,14 +336,15 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
   const scope = `${userId || 'guest'}:${levelKey}`;
   const startedFor = useRef(null);
   useEffect(() => {
-    if (!ready || !loaded || startedFor.current === scope) return;
+    if (!ready || !loaded || !slotsSettled || startedFor.current === scope) return;
     startedFor.current = scope;
     // 하루 새 단어(시안 ⑦-1 추천) — 복습실과 같은 숫자(복습 설정 · vocab_new_per_day)에서 오늘 이미 시작한 수를 뺀 만큼만 줄에 세운다.
+    // 서버 몫을 읽었으면 그 남은 수 · 한도 그대로(LEVEL-SAVED-TAG-001 — 담음 단어도 새 단어로 이 몫 안에 선다).
     const perDay = userId ? loadNewPerDay() : null;
-    const newCap = perDay === null ? Infinity : perDay - newStartedToday(index, language, Date.now());
+    const newCap = perDay === null ? Infinity : slots ? slots.remaining : perDay - newStartedToday(index, language, Date.now());
     let next = startLevelSession(allEntries, (k) => table.get(k)?.status, (k) => nextDueMs(table.get(k)?.projection), Date.now(),
       { newCap, learningOf: (k) => inLearningStep(table.get(k) || {}) });
-    setNewPerDay(perDay);
+    setNewPerDay(slots ? slots.limit : perDay);
     // 로그인 · 다른 레벨 단어 카드에서 돌아오면 보던 카드부터(한도 뒤에 남긴 새 단어여도).
     const back = readJson(sessionStorage, RETURN_KEY);
     const wanted = back?.path === pathname ? back.key : new URLSearchParams(window.location.search).get('w');
@@ -340,7 +355,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
     setHeadKey(wanted && next.queue.includes(wanted) ? wanted : null);
     setRevealed(false);
     if (wanted && byKey.has(wanted)) setJumpTo(wanted);
-  }, [ready, loaded, scope, allEntries, table, pathname, byKey, userId, index, language]);
+  }, [ready, loaded, slotsSettled, slots, scope, allEntries, table, pathname, byKey, userId, index, language]);
   // 기다리던 카드의 시각이 되면 다시 그린다(맨 위로 올라온다).
   const nextAt = sessionNextAt(session, clock);
   useEffect(() => {
@@ -357,11 +372,12 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
   const current = currentKey ? byKey.get(currentKey) : null;
   const done = sessionDone(session);
   // 한도 뒤에 남긴 새 단어 — 그사이 다른 곳에서 채점한 단어는 빼고 센다. 「새 단어 N개 더」는 하루 몫만큼(0개로 둔 사람은 기본 15개).
-  const stillNew = useCallback((k) => table.get(k)?.status === 'new', [table]);
+  const stillNew = useCallback((k) => ['new', 'saved'].includes(table.get(k)?.status), [table]); // 담음 = 담기만 한 새 단어
   const heldCount = useMemo(() => (session?.held?.length ? session.held.filter(stillNew).length : 0), [session, stillNew]);
   const moreBatch = Math.min(heldCount, newPerDay || DEFAULT_NEW_PER_DAY);
   const moreNew = () => { setSession((cur) => moreLevelSession(cur, moreBatch, stillNew)); setRevealed(false); };
-  const startedToday = useMemo(() => (heldCount ? newStartedToday(index, language, clock) : 0), [heldCount, index, language, clock]);
+  // 오늘 시작한 새 단어 — 서버 몫의 쓴 수(전에 담고 오늘 처음 공부한 단어 포함), 못 읽으면 기기 셈.
+  const startedToday = useMemo(() => (!heldCount ? 0 : slots ? slots.used : newStartedToday(index, language, clock)), [heldCount, slots, index, language, clock]);
 
   // ── 연습 탭(문장 · 뜻 · 소리) — 두 칸, 한 번에 page장. 순서 = 놓침 → 흐려진 맞힘 → 처음 → 맞힘, 오늘 이미 본 단어는 맨 뒤 ──
   const viewArea = areaOfView(prefs.view);
@@ -490,8 +506,11 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
   // 오늘 새 단어 몫을 다 쓴 학습일(LEVEL-NEW-LIMIT-001) — 한 번도 공부하지 않은 카드(담기만 한 단어 포함)는 서버가 첫 문제 때 하루 새 단어
   // 몫을 쓴다. 다 쓴 뒤에는 그런 카드를 넘기지 않고(튕김 없이) 안내만 한다. 몫을 늘리면(단어장 설정) 다음 시도에서 다시 서버에 묻는다.
   const newLimitHit = useRef(null);
-  const newLimitNotice = (limit) => setNotice({ id: Date.now(), text: limit ? `오늘 새 단어 ${limit}개를 다 했어요 — 내일 이어서 나와요` : '오늘 새 단어를 다 했어요 — 내일 이어서 나와요',
-    href: '/vocab', action: '단어장 설정', ms: 6000 });
+  const practiceOnlyRef = useRef(null);
+  // 단추 둘(LEVEL-SAVED-TAG-001): [한도 늘리기] = 단어장 복습 설정(하루 새 표현 한도)을 펼친 채로(#review-settings — 내 정보 시트와 같은 길),
+  // [연습만 하기] = 그 단어 하나로 문장 연습(일정 · 몫에 닿지 않는다 — practiceOnlyRef).
+  const newLimitNotice = (limit, entry) => setNotice({ id: Date.now(), text: limit ? `오늘 새 단어 ${limit}개를 다 했어요 — 내일 이어서 나와요` : '오늘 새 단어를 다 했어요 — 내일 이어서 나와요',
+    href: '/vocab#review-settings', action: '한도 늘리기', also: entry ? { action: '연습만 하기', onAction: () => practiceOnlyRef.current?.(entry) } : null, ms: 8000 });
   const onGrade = useCallback(async (entry, rating, opts = {}) => {
     if (!userId) return askLogin(entry.key);
     if (!ready || inFlight.current.has(entry.key) || leaving.current) return undefined;
@@ -503,7 +522,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
     const hit = newLimitHit.current;
     if (hit && hit.day === learningDay(schedulerTime(Date.now())) && hit.tries++ % 3 !== 2
         && info.projection?.source === 'fsrs-v1' && info.projection.memory?.state === 'New') {
-      newLimitNotice(hit.limit); // 세 번째마다는 서버에 다시 묻는다 — 그사이 설정에서 몫을 늘렸을 수 있다
+      newLimitNotice(hit.limit, entry); // 세 번째마다는 서버에 다시 묻는다 — 그사이 설정에서 몫을 늘렸을 수 있다
       return undefined;
     }
     inFlight.current.add(entry.key);
@@ -540,10 +559,11 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
       if (!res.ok) {
         if (advance) { setSession((cur) => revertLevelGrade(cur, before, moved, entry.key, rating)); setHeadKey(head); }
         if (res.reason === 'not-due') setNotice({ id: Date.now(), text: '복습실 카드라 복습 차례에만 채점할 수 있어요', href: '/review', action: '복습실', ms: 5000 });
-        if (res.reason === 'new-limit') { newLimitHit.current = { day: learningDay(schedulerTime(Date.now())), limit: res.limit, tries: 0 }; newLimitNotice(res.limit); }
+        if (res.reason === 'new-limit') { newLimitHit.current = { day: learningDay(schedulerTime(Date.now())), limit: res.limit, tries: 0 }; newLimitNotice(res.limit, entry); }
         return undefined;
       }
       setClock(Date.now());
+      if (!info.graded) queryClient.invalidateQueries({ queryKey: ['level-new-slots', userId] }); // 첫 채점 — 서버 몫의 쓴 수를 다시 읽는다
       noteAreaGrade(entry.key, rating);
       if (info.status === 'new') popKey(entry.key);
       setNotice({ id: Date.now(), quiet: { word: cfg.head(entry).hw, lang: cfg.hw, what: gradeToastText(rating, null) }, text: gradeToastText(rating, info.previews?.[rating]), action: grader.undoable(res.undo) ? '되돌리기' : null,
@@ -631,7 +651,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
     setClock(Date.now());
     popKey(entry.key);
     lastRef.current = res.undo ? { undo: res.undo, sessionBefore: null, key: entry.key } : null;
-    setNotice({ id: Date.now(), quiet: { word: cfg.head(entry).hw, lang: cfg.hw, what: '담음' }, text: '담았어요 · 오늘 복습', action: res.undo ? '되돌리기' : null,
+    setNotice({ id: Date.now(), quiet: { word: cfg.head(entry).hw, lang: cfg.hw, what: '담음' }, text: '담았어요 · 새 단어로 나와요', action: res.undo ? '되돌리기' : null,
       onAction: res.undo ? () => undoRef.current?.({ undo: res.undo, sessionBefore: null, key: entry.key }) : null });
     return undefined;
   }, [userId, askLogin, saving, grader, cfg]);
@@ -727,6 +747,9 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
     const go = () => flushSync(() => setPrefs({ view }));
     if (typeof document !== 'undefined' && document.startViewTransition && !reducedMotion()) document.startViewTransition(go); else go();
   };
+  // 「연습만 하기」(LEVEL-SAVED-TAG-001) — 몫이 찬 날의 새 카드를 그 단어 하나짜리 문장 연습으로(두 칸 · 기록은 활동 전용, 일정 · 몫 그대로).
+  // 줄을 먼저 세워 두면 탭이 바뀐 뒤 연습 시작 효과가 page장 묶음으로 덮지 않는다(round.area === practice).
+  practiceOnlyRef.current = (entry) => { startPractice('sentence', [entry.key]); switchView('sentence'); };
   // 탭 밑줄 — 고른 탭의 자리 · 너비를 재서 막대 하나를 옮긴다(탭 글자 폭이 달라 칸 수로는 못 정한다). 글꼴이 늦게 와도 다시 잰다.
   const tabsRef = useRef(null);
   const [tabBar, setTabBar] = useState(null);

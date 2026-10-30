@@ -2,7 +2,7 @@
 // 순수 모듈: 화면(LevelWordPage)과 계약 테스트가 같은 판정을 쓴다. 새 표 · 새 카운터 없음 — 단어장 행의 학습 투영
 // (vocabularyLearningRead projection — 옛 일정 칸과 FSRS 카드를 한 모양으로 읽는 정본)과 아는 단어 표시만 읽는다.
 //
-// 상태 칸(문서 「단어 설명 형식」): ☆ 담지 않음 · 오늘(오늘 복습) · 복습(복습 중) · 졸업(졸업한 단어).
+// 상태 칸(문서 「단어 설명 형식」): ☆ 담지 않음 · 담음(담기만 한 새 단어) · 오늘(오늘 복습) · 복습(복습 중) · 졸업(졸업한 단어).
 //   졸업 = 다음 복습까지 90일 이상 + 기존 「아는 단어」 표시(복습 제외 포함). 졸업한 단어도 365일 안에 돌아온다(간격 상한).
 //   두 글자 이내 · 같은 폭 칸. 화면 읽기에는 온전한 말(aria).
 import { calculateVocabFSRS, vocabStepPhase } from './fsrs.js';
@@ -16,6 +16,7 @@ const DAY = 86400000;
 
 export const LEVEL_WORD_STATUS = Object.freeze({
   new: Object.freeze({ id: 'new', short: '☆', label: '담기' }),
+  saved: Object.freeze({ id: 'saved', short: '담음', label: '담은 새 단어' }),
   today: Object.freeze({ id: 'today', short: '오늘', label: '오늘 복습' }),
   review: Object.freeze({ id: 'review', short: '복습', label: '복습 중' }),
   grad: Object.freeze({ id: 'grad', short: '졸업', label: '졸업한 단어' }),
@@ -23,13 +24,17 @@ export const LEVEL_WORD_STATUS = Object.freeze({
 
 /**
  * 상태 — projection = 이 단어의 단어장 행 학습 투영(없으면 null), known = 아는 단어 표시.
- * 오늘 = 다음 복습이 오늘 학습일(04시 경계) 안. 일정이 없는 담긴 단어(막 ☆로 담음)도 오늘.
+ * 담음 = 담기만 하고 한 번도 채점하지 않은 단어(LEVEL-SAVED-TAG-001 · 오너 승인 2026-10-30 KST). FSRS 카드는 New 상태 · 옛 행은
+ * 채점 흔적(마지막 채점 · 간격)이 없는 행 — levelWordGraded와 같은 판정. 서버는 이 카드의 첫 문제에서 하루 새 단어 몫을 쓰는데(Anki 규칙),
+ * 전에는 담은 직후의 기한(nextQuestionAt = 담은 시각)만 보고 「오늘」로 보여 몫이 다 찬 날 채점이 거절됐다(10-19 담고 10-30 채점 실측).
+ * 줄 · 몫 셈에서는 새 단어와 같이 다룬다(levelWordSession). 오늘 = 다음 복습이 오늘 학습일(04시 경계) 안.
  */
 export function levelWordStatus({ projection, known = false, at = Date.now() } = {}) {
   if (known) return 'grad';
   if (!projection) return 'new';
   const review = projection.review;
   if (review.known || review.excluded) return 'grad';
+  if (!levelWordGraded({ projection })) return 'saved';
   const next = review.nextQuestionAt;
   if (next === null) return 'today';
   const nextMs = schedulerTime(next), now = schedulerTime(at);
@@ -243,6 +248,7 @@ export function gradeToastText(grade, preview) {
 /**
  * 오늘 새로 시작한 단어 수 — 그 언어의 단어장 행 중 오늘 학습일(04시 경계)에 생겼고 채점한 것.
  * 레벨 단어 페이지의 하루 새 단어 한도(복습 설정의 하루 새 단어 수)에서 뺀다 — 레벨을 옮기거나 다시 열어도 같은 하루 몫.
+ * 서버 몫(levelDailyLoad levelNewSlots)을 읽지 못한 때(호환 모드 · 실패)의 기기 셈이다 — 전에 담고 오늘 처음 공부한 단어는 세지 못한다.
  * 뷰어에서 등급과 함께 담은 단어도 센다(같은 하루 몫). ☆로만 담은 단어는 채점 흔적이 없어 세지 않는다.
  */
 export function newStartedToday(index, language, at = Date.now()) {
