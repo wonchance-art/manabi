@@ -50,6 +50,14 @@ const EXPECTED_BREAKS = {
   },
 };
 
+/**
+ * 마이그레이션이 아니라 docs/sql로 운영에 들어간 변경 — 운영과 같은 순서로 그 자리에서 적용한다(before = 이 버전 이상 파일 앞).
+ * 없으면 그 뒤 「운영 본문 md5」를 사전 검사하는 마이그레이션(예: LEVEL-NEW-UNLIMITED-001)이 관측 본문을 만나 거절한다.
+ */
+const OUT_OF_BAND = [
+  { before: '20261016000000', sql: '../../docs/sql/fsrs-anki-v2-policy.sql', ticket: 'REV-SCOPE-R1B-2 — 운영 10-15경 적용 · 10-19 KST 확인' },
+];
+
 // 적용해 보지 못하는 마이그레이션 — fixture는 학습 계약 범위만 담는다(대화 · 커뮤니티 등은 없다). 정의되지 않은 대상 오류만
 // 「범위 밖 · 건너뜀」으로 보고, 마이그레이션 자신의 검사(RAISE) 등 다른 오류는 실패다.
 const OUT_OF_FIXTURE = new Set(['42P01', '42883', '42704', '3F000']);
@@ -128,7 +136,13 @@ try {
   assert.ok(files.includes('20261016150000_anon_book_catalog.sql'), '대상 마이그레이션 목록(빈 목록 통과 방지)');
   let broken = null; // { file, state }
   const seen = new Set(), resolved = [];
+  const outOfBand = [...OUT_OF_BAND];
   for (const file of files) {
+    while (outOfBand.length && file.split('/').pop().slice(0, 14) >= outOfBand[0].before) {
+      const { sql: path, ticket } = outOfBand.shift();
+      await db.exec(await read(path));
+      console.log(`OUT-OF-BAND ${path.split('/').pop()} — ${ticket}`);
+    }
     const raw = await readFile(candidates.includes(file) ? file : new URL(file, MIGRATIONS), 'utf8');
     // 운영 상태를 상수로 박은 수리 마이그레이션(예: 191500 재게시)은 그 여섯 상수만 같은 순간의 fixture 값으로 바꿔 실행한다.
     const sql = containsProductionConstants(raw) ? localize(raw, await localConstants(db)) : raw;

@@ -18,8 +18,12 @@ export function usableVocabReviewMode(mode, word, options) {
   return mode;
 }
 
-// 하루 새 단어 한도 — Anki식 신규 큐 제한 (0 = 복습만)
-export const NEW_PER_DAY_OPTIONS = [0, 5, 10, 15, 20, 30, 40];
+// 하루 새 단어 한도 — Anki식 신규 큐 제한 (0 = 복습만). 9999 = 「제한 없음」(Anki 상한과 같은 값 — 사실상 끔, LEVEL-NEW-UNLIMITED-001 ·
+// 오너 결정 2026-10-30 KST). 서버(learning_configure_admission · fsrs_apply_operation · 정책 CHECK)도 같은 목록이다.
+export const NEW_PER_DAY_UNLIMITED = 9999;
+export const NEW_PER_DAY_OPTIONS = [0, 5, 10, 15, 20, 30, 40, NEW_PER_DAY_UNLIMITED];
+/** 설정 · 안내의 한도 글 — 0 = 「없음 (복습만)」, 9999 = 「제한 없음」. */
+export const newPerDayLabel = (n) => (n === 0 ? '없음 (복습만)' : n === NEW_PER_DAY_UNLIMITED ? '제한 없음' : `${n}개`);
 export const DEFAULT_NEW_PER_DAY = 15;
 
 const INTRO_KEY = 'vocab_new_intro';

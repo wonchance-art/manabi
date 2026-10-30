@@ -1309,6 +1309,13 @@
   (단일 5.4GB) · 컴파일 109초 통과**. 수리 = `scripts/next-build.mjs`가 NODE_OPTIONS에 `--max-old-space-size=4096`(다른 상한은 덮음, 로컬 실험만
   MANABI_BUILD_HEAP_MB) · next.config `serverMinification: false`. 계약 next-build. 9-12 #1302 때의 「빌드 전용 4GB」는 코드에 남지 않았던 것 —
   이번엔 진입점에 박는다. 근본 후보(남김): chapters를 묶음 밖에서 실행 중 읽기.
+  → **#1613 squash `bdca6841`**.
+- **LEVEL-NEW-UNLIMITED-001 하루 새 단어 「제한 없음」 (2026-10-30 KST, 오너 「이거 한도 없으면 안되는 건가?」 → 「1로 ㄱㄱ」)**: 설정 목록에
+  9999(Anki 상한과 같은 값 — 사실상 끔)를 더하고 글은 「제한 없음」, 기본값 15 그대로. 서버 세 곳(learning_configure_admission · fsrs_apply_operation
+  허용 목록 · admission_policies CHECK)에 9999 하나만 더하는 마이그레이션 — 검토한 운영 본문 md5(737c2d4c · 0a1a8c99, 05:0x KST 카탈로그 조회로
+  운영 일치 확인 · 정책 0행)에서만 · 재실행 no-op · core/admission 지문 재게시(manual/profile 불변). 복원 SQL · PGlite 8건(CI 추가) ·
+  post-observation 하네스가 docs/sql로 들어간 anki-v2(10-15경)를 운영 순서대로 재생. 화면: 서버 한도를 기기 설정과 맞춤 · 「하루 N개」 안내에서
+  9999는 숫자 대신 일반 문구. 계약 newPerDayUnlimited.
 - **NATIVE-FEEL-P1 입력칸 하한 미뤄 둔 네 곳 (2026-10-26 KST, 오너 「권장대로 진행」)**: ⓐ 함께 읽는 글 정렬을 칩 줄 밖 한 줄(오른쪽 · 글자 단추 · 44px,
   터치 16px) ⓑ 서재 정렬 선택 상자를 「필터」 시트 안 라디오(묶음 제목 「정렬」 · 16px · 줄 44px)로 — 값 · sort= 주소 · 급수순(옛 주소 전용) 그대로, 바꾼 때만 주소에
   ⓒ 노트 단어 카드 터치에서 표기 24 / 읽기 16 / 뜻 16 ⓓ 크기 없는 칸 화면별 — 그룹 폼 7칸 · 검색 칸 · 수업 과 선택 16px(min-width 0으로 줄바꿈 무변화),
