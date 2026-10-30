@@ -35,7 +35,15 @@ export function gradeLevelFsrs(args) {
 async function gradeOnce({ accountId, row, rating }) {
   const controller = await controllerFor(accountId);
   controller.setWords([row], [row.id]);
-  if (!(await controller.question(row.id))) return { ok: false, error: controller.getSnapshot().error || new Error('fsrs_card_not_due') };
+  if (!(await controller.question(row.id))) {
+    // 한 번도 공부하지 않은 카드(New)는 첫 문제 때 하루 새 단어 몫을 쓴다(Anki와 같은 서버 규칙). 몫이 다 찼으면 출제하지 않으므로
+    // 저장 실패가 아니라 「오늘 새 단어 다 함」이다(LEVEL-NEW-LIMIT-001 — 담기만 한 단어가 「오늘 복습」으로 보여 튕기던 것).
+    const snap = controller.getSnapshot(), entry = snap.cards?.find((c) => c.cardId === row.id), admission = snap.admission;
+    if (entry?.card?.state === 'New' && !entry.firstQuestionAt && !(admission?.active && admission.remaining > 0)) {
+      return { ok: false, reason: 'new-limit', limit: Number.isInteger(admission?.limit) ? admission.limit : null };
+    }
+    return { ok: false, error: snap.error || new Error('fsrs_card_not_due') };
+  }
   if (controller.getSnapshot().current?.phase !== 'revealed' && !(await controller.reveal())) {
     return { ok: false, error: controller.getSnapshot().error || new Error('fsrs_reveal_failed') };
   }
