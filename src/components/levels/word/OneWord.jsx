@@ -6,6 +6,7 @@
 import { CharTiles, CountUp, GradeButtons, Listen, Reading } from './WordParts';
 import { Example } from './WordCard';
 import { useWordLang } from './wordLang';
+import { NEW_PER_DAY_UNLIMITED } from '@/lib/vocabStudy';
 
 export function OneWordCard({ entry: e, view, info, tiles, speak, tone, revealed, onReveal, onWord, openKey, turnKey }) {
   const L = useWordLang();
@@ -61,7 +62,8 @@ export function MoreNewButton({ more, onMore, primary = false }) {
 }
 /** 「더」의 대가 — 단추 안이 아니라 아래 회색 한 줄(시안 ⑪ · 단추는 모두 한 줄 48px). */
 export function MoreNewNote({ perDay }) {
-  return <p className="lw-done__note">{perDay > 0 ? `하루 ${perDay}개를 넘기면 내일 복습이 그만큼 늘어요` : '새 단어를 더 하면 내일 복습이 그만큼 늘어요'}</p>;
+  // 「제한 없음」(9999)은 숫자로 쓰지 않는다.
+  return <p className="lw-done__note">{perDay > 0 && perDay < NEW_PER_DAY_UNLIMITED ? `하루 ${perDay}개를 넘기면 내일 복습이 그만큼 늘어요` : '새 단어를 더 하면 내일 복습이 그만큼 늘어요'}</p>;
 }
 export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabel, soundCount = 0, onSound, more = 0, perDay = 0, started = 0, onMore, onBrowse }) {
   const cells = [[1, 'again', '다시'], [2, 'hard', '어려움'], [3, 'good', '알맞음'], [4, 'easy', '쉬움']];

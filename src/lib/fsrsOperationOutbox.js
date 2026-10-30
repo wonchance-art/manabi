@@ -1,6 +1,7 @@
 'use client';
 
 import { openDb, STORE_OUTBOX } from './offlineCache';
+import { NEW_PER_DAY_OPTIONS } from './vocabStudy';
 
 /** 복습 원본: 캐시의 TTL/LRU나 구형 날짜 기반 채점 큐에서 소비하지 않는다. */
 export const FSRS_OPERATION_KIND = 'fsrs-operation-v1';
@@ -61,7 +62,7 @@ export function normalizeFsrsRequest(input, accountId) {
       (input.action === 'undo' && (!identity(input.targetOperationId) || input.targetOperationId === input.operationId)) ||
       (input.attemptId !== undefined && !identity(input.attemptId)) ||
       (input.expectedPolicyRevision !== undefined && (!Number.isSafeInteger(input.expectedPolicyRevision) || input.expectedPolicyRevision < 0 || input.expectedPolicyRevision >= Number.MAX_SAFE_INTEGER)) ||
-      (input.dailyNewLimit !== undefined && (input.action !== 'question' || ![0, 5, 10, 15, 20, 30, 40].includes(input.dailyNewLimit))) ||
+      (input.dailyNewLimit !== undefined && (input.action !== 'question' || !NEW_PER_DAY_OPTIONS.includes(input.dailyNewLimit))) ||
       ['answerVisible', 'hint'].some(key => input[key] !== undefined && typeof input[key] !== 'boolean')) {
     throw problem('fsrs_invalid_request');
   }
