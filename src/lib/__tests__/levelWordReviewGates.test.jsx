@@ -15,7 +15,7 @@ const counts = { 1: 2, 2: 1, 3: 9, 4: 3 };
 
 describe('① 하루 새 단어 — 복습 설정과 같은 수 · 더 단추(시안 ⑧)', () => {
   it('줄은 복습 설정의 하루 새 단어 수에서 오늘 이미 시작한 수를 뺀 만큼', () => {
-    expect(screen).toContain("import { DEFAULT_NEW_PER_DAY, loadNewPerDay } from '@/lib/vocabStudy'");
+    expect(screen).toContain("import { DEFAULT_NEW_PER_DAY, NEW_PER_DAY_UNLIMITED, loadNewPerDay } from '@/lib/vocabStudy'");
     expect(screen).toMatch(/perDay - newStartedToday\(index, language, Date\.now\(\)\)/);
     expect(screen).toMatch(/startLevelSession\([^;]*\{ newCap, learningOf: \(k\) => inLearningStep\(/);
     expect(screen).toContain('newPerDay || DEFAULT_NEW_PER_DAY');
