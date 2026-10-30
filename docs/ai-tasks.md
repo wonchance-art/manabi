@@ -1342,6 +1342,11 @@
   grade/undo의 previousCard 상태 · 간격만 — 본인 RLS SELECT, 운영 카탈로그로 칼럼 · 정책 · JSON 키 확인), 1년 · 전체는 모달을 열 때만.
   예전 일정 쓰기 4곳(VocabPage · useInlineReview · QuestReview · studyExerciseBridge)에 detail.prev_interval_days(cardIntervalDays) 추가 —
   그 전 기록은 지난 날짜로 어림(estimated 줄). 계약 trueRetention 18 · trueRetentionUi 20. 설계 `docs/design/true-retention.md`.
+  → **#1617 squash `f9486d0f`(16:59 KST 운영 16/16 · 오류 0)**.
+- **DESIGN-FIX-1030 디자인 검수 반영 (2026-10-30 KST, 오너 검수 아티팩트 「애매하게 줄바꿈 되는 거 문구 수정 … 가독성 최고로」 · 「퍼센테이지 위치가 세로로 일정」)**:
+  ⓐ 새 단어 몫 안내 문장을 「오늘 새 단어 N개를 다 했어요」 하나로(「— 내일 이어서 나와요」 삭제, 9999 · 한도 없음은 숫자 없이) · 안내 문장
+  keep-all(어절 단위 줄바꿈) · 두 단추 안내는 14px/600 — 단추와 한 줄이 모자라면 문장은 그대로, 단추만 다음 줄. ⓑ 실제 기억률 표 칸을
+  퍼센트(4ch 오른쪽) + 답 수(8ch 왼쪽) 두 조각으로 — 줄마다 퍼센트가 같은 세로선(retentionCellParts · 읽기 글은 「88% (22)」 그대로).
 - **NATIVE-FEEL-P1 입력칸 하한 미뤄 둔 네 곳 (2026-10-26 KST, 오너 「권장대로 진행」)**: ⓐ 함께 읽는 글 정렬을 칩 줄 밖 한 줄(오른쪽 · 글자 단추 · 44px,
   터치 16px) ⓑ 서재 정렬 선택 상자를 「필터」 시트 안 라디오(묶음 제목 「정렬」 · 16px · 줄 44px)로 — 값 · sort= 주소 · 급수순(옛 주소 전용) 그대로, 바꾼 때만 주소에
   ⓒ 노트 단어 카드 터치에서 표기 24 / 읽기 16 / 뜻 16 ⓓ 크기 없는 칸 화면별 — 그룹 폼 7칸 · 검색 칸 · 수업 과 선택 16px(min-width 0으로 줄바꿈 무변화),
