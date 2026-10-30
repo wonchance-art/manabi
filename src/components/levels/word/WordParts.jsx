@@ -50,8 +50,8 @@ export function Listen({ speak, text, label = '듣기', className = 'lw-listen' 
 }
 
 /**
- * 상태 칸(44px) — ☆(누르면 바로 담기) · 오늘 · 복습 · 졸업. 글자는 두 글자 이내, 화면 읽기에는 온전한 말.
- * pop = 막 담김(☆ → 오늘) — 한 번 튀어오름(vocabCounterPop).
+ * 상태 칸(44px) — ☆(누르면 바로 담기) · 담음 · 오늘 · 복습 · 졸업. 글자는 두 글자 이내, 화면 읽기에는 온전한 말.
+ * pop = 막 담김(☆ → 담음) — 한 번 튀어오름(vocabCounterPop).
  */
 export function StatusPill({ status, onSave, busy = false, pop = false, saveLabel = '단어장에 담기' }) {
   if (!status) return <i className="lw-status" aria-hidden="true" />; // 단어장을 받기 전 — 자리만(☆가 먼저 보였다 바뀌지 않게)

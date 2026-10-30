@@ -7,7 +7,7 @@
 // 채점해서 다음 차례가 오늘 안(다시 1분 · 어려움 6분 …)이면 그 시각까지 ③에서 기다리고, 내일 이후면 줄에서 빠진다.
 // 줄에 기다리는 카드만 남으면 한 단어 모드는 가장 먼저 될 카드를 앞당겨 이어간다. 둘 다 비면 끝(「오늘 이 레벨 끝」).
 // 되돌리기는 직전 상태로 — 화면이 기록 되돌리기와 같이 부른다.
-// 하루 새 단어(시안 ⑦-1 추천 · 2026-10-21 KST): ② 중 담지 않은 새 단어는 newCap개까지만 줄에 서고 나머지는 held에 남는다.
+// 하루 새 단어(시안 ⑦-1 추천 · 2026-10-21 KST): ② 중 새 단어(담지 않은 단어 · 담기만 한 담음 단어)는 newCap개까지만 줄에 서고 나머지는 held에 남는다.
 // 줄이 비면 끝 화면이 「새 단어 N개 더」로 held에서 꺼낸다(막지 않는다). 복습할 때가 된 카드는 한도와 상관없이 다 선다.
 
 import { intersperseNew } from './reviewQueue.js';
@@ -15,7 +15,9 @@ import { intersperseNew } from './reviewQueue.js';
 const byAt = (a, b) => a.at - b.at;
 
 /**
- * 세션 시작 — entries = 범위 단어(목록 순), statusOf(key) = 'new' | 'today' | 'review' | 'grad',
+ * 세션 시작 — entries = 범위 단어(목록 순), statusOf(key) = 'new' | 'saved' | 'today' | 'review' | 'grad',
+ * 'saved'(담음 — 담기만 하고 한 번도 채점하지 않은 단어)는 새 단어와 같이 하루 몫(newCap) 안에 선다 — 서버가 첫 문제에서 새 단어 몫을
+ * 쓰는 카드라서다(LEVEL-SAVED-TAG-001). 전에는 「오늘 복습」으로 몫 밖에 서서 몫이 찬 날 채점이 거절됐다.
  * dueAtOf(key) = 다음 차례 시각(ms, 없으면 0). 오늘 복습인데 아직 시각이 안 된 카드(오늘 앞서 채점한 카드)는 기다리는 카드로.
  * learningOf(key) = 분 단위 학습 · 재학습 단계 카드인가 — 이미 차례가 됐으면 섞지 않고 맨 앞(먼저 된 것부터).
  */
@@ -28,7 +30,7 @@ export function startLevelSession(entries, statusOf, dueAtOf = () => 0, at = Dat
       if (due > at) waiting.push({ key: e.key, at: due });
       else if (learningOf(e.key)) learning.push({ key: e.key, at: due });
       else today.push(e.key);
-    } else if (s === 'new') fresh.push(e.key);
+    } else if (s === 'new' || s === 'saved') fresh.push(e.key);
   }
   waiting.sort(byAt);
   learning.sort(byAt);

@@ -39,7 +39,7 @@ describe('HSK 단어 페이지 상태 칸', () => {
       expect([...s.short].length).toBeLessThanOrEqual(2);
       expect(s.label.length).toBeGreaterThan(s.short.length - 1);
     }
-    expect(Object.keys(LEVEL_WORD_STATUS)).toEqual(['new', 'today', 'review', 'grad']);
+    expect(Object.keys(LEVEL_WORD_STATUS)).toEqual(['new', 'saved', 'today', 'review', 'grad']);
   });
 
   it('담지 않음 → ☆ · 아는 단어 표시 → 졸업', () => {
@@ -48,13 +48,30 @@ describe('HSK 단어 페이지 상태 칸', () => {
     expect(levelWordStatus({ projection: legacy({}, { known: true, eligible: false }).projection, at })).toBe('grad');
   });
 
-  it('오늘 = 일정 없음 또는 오늘 학습일(04시 경계) 안 · 복습 = 그 뒤 · 졸업 = 90일 이상', () => {
-    expect(levelWordStatus({ projection: legacy().projection, at })).toBe('today');
+  it('오늘 = 일정 없음 또는 오늘 학습일(04시 경계) 안 · 복습 = 그 뒤 · 졸업 = 90일 이상(채점한 단어)', () => {
+    const seen = { last_reviewed_at: '2026-10-18T03:00:00.000Z' };
+    expect(levelWordStatus({ projection: legacy(seen).projection, at })).toBe('today');
     // 다음날 03:00 KST는 아직 오늘 학습일(04시 경계).
-    expect(levelWordStatus({ projection: legacy({ next_review_at: '2026-10-19T18:00:00.000Z' }).projection, at })).toBe('today');
-    expect(levelWordStatus({ projection: legacy({ next_review_at: '2026-10-19T20:00:00.000Z' }).projection, at })).toBe('review');
-    expect(levelWordStatus({ projection: legacy({ next_review_at: iso(at + (GRAD_DAYS - 1) * DAY) }).projection, at })).toBe('review');
-    expect(levelWordStatus({ projection: legacy({ next_review_at: iso(at + GRAD_DAYS * DAY) }).projection, at })).toBe('grad');
+    expect(levelWordStatus({ projection: legacy({ ...seen, next_review_at: '2026-10-19T18:00:00.000Z' }).projection, at })).toBe('today');
+    expect(levelWordStatus({ projection: legacy({ ...seen, next_review_at: '2026-10-19T20:00:00.000Z' }).projection, at })).toBe('review');
+    expect(levelWordStatus({ projection: legacy({ ...seen, next_review_at: iso(at + (GRAD_DAYS - 1) * DAY) }).projection, at })).toBe('review');
+    expect(levelWordStatus({ projection: legacy({ ...seen, next_review_at: iso(at + GRAD_DAYS * DAY) }).projection, at })).toBe('grad');
+  });
+
+  it('LEVEL-SAVED-TAG-001 — 담기만 하고 채점하지 않은 단어는 「오늘」이 아니라 담음(새 단어)', () => {
+    // 10-19에 담고 10-30에 처음 연 FSRS 카드 — 기한(담은 직후)이 지나 전에는 「오늘」로 보였다. 서버는 첫 문제에서 새 단어 몫을 쓴다.
+    const saved = introduceFsrsCard('2026-10-08T03:00:00.000Z');
+    expect(levelWordStatus({ projection: enrolled(saved).projection, at })).toBe('saved');
+    // 옛 행 ☆ · 원탭 담기(일정 = 담은 시각 · 채점 흔적 없음)도 담음.
+    expect(levelWordStatus({ projection: legacy().projection, at })).toBe('saved');
+    expect(levelWordStatus({ projection: legacy({ next_review_at: '2026-10-19T02:00:00.000Z' }).projection, at })).toBe('saved');
+    // 첫 채점과 함께 담은 단어 · 한 번이라도 채점한 카드는 지금처럼 오늘 · 복습.
+    expect(levelWordStatus({ projection: legacy({ interval: 0.0007, ease_factor: 2, next_review_at: '2026-10-19T03:01:00.000Z' }).projection, at })).toBe('today');
+    const graded = scheduleFsrsReview(saved, 1, '2026-10-19T02:59:00.000Z').card;
+    expect(levelWordStatus({ projection: enrolled(graded).projection, at })).toBe('today');
+    // 아는 단어 표시 · 뺀 단어는 담음보다 앞(졸업).
+    expect(levelWordStatus({ projection: enrolled(saved).projection, known: true, at })).toBe('grad');
+    expect(LEVEL_WORD_STATUS.saved.short).toBe('담음');
   });
 
   it('진행 = 한 번이라도 채점(첫 채점과 함께 담은 단어 포함) · 담기만 한 단어는 아직', () => {
