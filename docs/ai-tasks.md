@@ -1327,6 +1327,13 @@
   알리고 5xx · 연결 끊김만 같은 ID로 한 번 재시도. 되돌리기 = 보낼함 undo(채점 연산 ID · 채점 뒤 판본). 복습실 · DB 무변경.
   계약 fsrsAnswer 15 · gradeOneRequest 6(실제 클라이언트 · 경로 · 서버, DB만 대역) · levelNewLimit/UndoRegrade/FsrsSerial은 같은 단언을 새 경로로.
   설계 메모 `docs/design/grade-one-request.md`.
+  → **#1615 squash `24a3ef18`**.
+- **LEVEL-SAVED-TAG-001 단어 페이지 [담음] · 새 단어 몫을 서버 수로 · 한도 안내 두 단추 (2026-10-30 KST, 오너 「권장대로 ㄱㄱ. [담음] 으로만 표시」)**:
+  ⓐ 담기만 하고 한 번도 채점하지 않은 단어(FSRS New · 채점 흔적 없는 옛 행 — levelWordGraded)는 「오늘」 대신 [담음](rose 글자 · 테두리만,
+  채운 「오늘」과 구분) — 줄 · 몫 셈은 새 단어와 같이(levelWordSession). 뷰어 문장 칸도 같은 상태 모듈이라 함께. ☆ 뒤 읽기 글 「새 단어로 나와요」.
+  ⓑ 오늘 새 단어 수 · 남은 몫 · 한도 = 서버 입장 한도(levelNewSlots — reviewScopeQuota 재사용), 호환 모드 · 못 읽음(4초)은 기기 셈 그대로.
+  ⓒ 한도 안내 [한도 늘리기](/vocab#review-settings) [연습만 하기](그 단어 하나 문장 연습 — 일정 · 몫 무관) · 8초.
+  계약 levelSavedTag 6 · levelWordStatus/PageContract/NewLimit/WordsPayload 갱신.
 - **NATIVE-FEEL-P1 입력칸 하한 미뤄 둔 네 곳 (2026-10-26 KST, 오너 「권장대로 진행」)**: ⓐ 함께 읽는 글 정렬을 칩 줄 밖 한 줄(오른쪽 · 글자 단추 · 44px,
   터치 16px) ⓑ 서재 정렬 선택 상자를 「필터」 시트 안 라디오(묶음 제목 「정렬」 · 16px · 줄 44px)로 — 값 · sort= 주소 · 급수순(옛 주소 전용) 그대로, 바꾼 때만 주소에
   ⓒ 노트 단어 카드 터치에서 표기 24 / 읽기 16 / 뜻 16 ⓓ 크기 없는 칸 화면별 — 그룹 폼 7칸 · 검색 칸 · 수업 과 선택 16px(min-width 0으로 줄바꿈 무변화),
