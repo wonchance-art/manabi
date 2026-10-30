@@ -169,10 +169,15 @@ export const TRUE_RETENTION_RECENT_KEYS = Object.freeze(['today', 'yesterday', '
 export const TRUE_RETENTION_RECENT_DAYS = TRUE_RETENTION_PERIODS.find(p => p.key === TRUE_RETENTION_HEADLINE).fromDay + 1;
 
 const percent = rate => `${Math.round(rate * 100)}%`;
-/** 표 칸 글자 — 답이 없으면 「—」, 있으면 「88% (22)」. */
+/** 표 칸 두 조각 — { rate: '88%', count: '(22)' }, 답이 없으면 { rate: '—', count: '' }. 표는 두 조각을 따로 맞춰 퍼센트가 세로로 한 줄에 선다. */
+export function retentionCellParts(cell) {
+  if (!cell || !(cell.total > 0) || cell.rate == null) return { rate: '—', count: '' };
+  return { rate: percent(cell.rate), count: `(${cell.total.toLocaleString('ko-KR')})` };
+}
+/** 표 칸 글자 — 답이 없으면 「—」, 있으면 「88% (22)」(읽기 글 · 계약). */
 export function formatRetentionCell(cell) {
-  if (!cell || !(cell.total > 0) || cell.rate == null) return '—';
-  return `${percent(cell.rate)} (${cell.total.toLocaleString('ko-KR')})`;
+  const { rate, count } = retentionCellParts(cell);
+  return count ? `${rate} ${count}` : rate;
 }
 /** 목표 글자 — 「목표 90%」(FSRS_POLICY.retention 정본). */
 export const retentionTargetLabel = target => `목표 ${percent(target ?? FSRS_POLICY.retention)}`;

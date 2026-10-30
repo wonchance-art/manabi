@@ -36,6 +36,7 @@ vi.mock('../supabase', () => {
   return { supabase: { from: query } };
 });
 
+const cellText = html => html.replace(/<!-- -->/g, '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
 const { buildTrueRetention, formatRetentionCell, trueRetentionLine, TRUE_RETENTION_MIN_ANSWERS, TRUE_RETENTION_LABELS } = await import('../trueRetention');
 const { ALL_TIME_FROM, fetchTrueRetentionRows, trueRetentionSinceIso, TRUE_RETENTION_EVENT_COLUMNS, TRUE_RETENTION_OPERATION_COLUMNS } = await import('../trueRetentionRows');
 const { prevIntervalDetail } = await import('../growthStats');
@@ -107,9 +108,9 @@ describe('② 표 — 오늘 · 어제 · 지난 7일 · 지난 30일 · 지난 
     const cols = [...html.matchAll(/<th scope="col">(?:<span class="sr-only">)?([^<]+)/g)].map(m => m[1]);
     expect(cols).toEqual(['기간', '익히는 중', '익숙', '전체']);
     const yesterday = sliceBetween(html, '<th scope="row">어제</th>', '</tr>');
-    expect([...yesterday.matchAll(/<td>([^<]*)<\/td>/g)].map(m => m[1])).toEqual(['80% (5)', '90% (20)', '88% (25)']);
+    expect([...yesterday.matchAll(/<td>(.*?)<\/td>/g)].map(m => cellText(m[1]))).toEqual(['80% (5)', '90% (20)', '88% (25)']);
     const today = sliceBetween(html, '<th scope="row">오늘</th>', '</tr>');
-    expect([...today.matchAll(/<td>([^<]*)<\/td>/g)].map(m => m[1])).toEqual(['—', '—', '—']);
+    expect([...today.matchAll(/<td>(.*?)<\/td>/g)].map(m => cellText(m[1]))).toEqual(['—', '—', '—']);
     expect(html).toContain('복습 단계 단어를 다시 만났을 때 기억해 낸 비율이에요. 「다시」를 누른 답만 못 떠올린 것으로 세요.');
     expect(html).toContain('목표 90% — 오래 보면 이 근처에 모여요. 하루 값은 흔들리니 30일 줄을 보세요.');
     expect(html).toContain('익숙 = 간격 21일 이상 · 괄호 = 답 수 · 연습 · 되돌린 답 · 학습 단계 답은 빼요.');
@@ -129,11 +130,11 @@ describe('② 표 — 오늘 · 어제 · 지난 7일 · 지난 30일 · 지난 
     const loading = modal({ table: t, longStatus: 'loading' });
     expect(loading).toContain('aria-busy="true"');
     const year = sliceBetween(loading, '<th scope="row">지난 1년</th>', '</tr>');
-    expect([...year.matchAll(/<td>([^<]*)<\/td>/g)].map(m => m[1])).toEqual(['…', '…', '…']);
+    expect([...year.matchAll(/<td>(.*?)<\/td>/g)].map(m => cellText(m[1]))).toEqual(['…', '…', '…']);
     const month = sliceBetween(loading, '<th scope="row">지난 30일</th>', '</tr>');
-    expect(month).toContain('90% (20)');
+    expect(cellText(month)).toContain('90% (20)');
     const failed = modal({ table: t, longStatus: 'error' });
-    expect([...sliceBetween(failed, '<th scope="row">전체</th>', '</tr>').matchAll(/<td>([^<]*)<\/td>/g)].map(m => m[1])).toEqual(['—', '—', '—']);
+    expect([...sliceBetween(failed, '<th scope="row">전체</th>', '</tr>').matchAll(/<td>(.*?)<\/td>/g)].map(m => cellText(m[1]))).toEqual(['—', '—', '—']);
     expect(failed).toContain('지난 1년 · 전체를 불러오지 못했어요.');
     expect(failed).toMatch(/<button type="button" class="learn-button-s">다시 시도<\/button>/);
   });
@@ -256,5 +257,18 @@ describe('④ 조회 — 진입 땐 30일, 1년 · 전체는 모달을 열 때�
     expect(h.calls.find(c => c.table === 'review_events' && c.eq.source === 'ui').limit).toBe(1000);
     const t = buildTrueRetention({ ...rows });
     expect(cellOf(t, 'all', 'all').total).toBe(0); // 되돌린 채점은 빠진다
+  });
+});
+
+describe('표 칸 정렬 — 퍼센트가 세로로 같은 자리(오너 2026-10-30)', () => {
+  it('칸은 퍼센트 · 답 수 두 조각이고 각자 고정 폭', async () => {
+    const { retentionCellParts } = await import('../trueRetention');
+    expect(retentionCellParts({ total: 25, rate: 0.88 })).toEqual({ rate: '88%', count: '(25)' });
+    expect(retentionCellParts({ total: 0, rate: null })).toEqual({ rate: '—', count: '' });
+    const fs = await import('node:fs');
+    const css = fs.readFileSync('src/components/learn/learn.css', 'utf8');
+    expect(css).toMatch(/\.learn-true__rate\{display:inline-block;min-width:4ch;text-align:right/);
+    expect(css).toMatch(/\.learn-true__count\{display:inline-block;min-width:8ch;text-align:left/);
+    expect(fs.readFileSync('src/components/learn/TrueRetentionTable.jsx', 'utf8')).toContain('retentionCellParts(period[col.key])');
   });
 });

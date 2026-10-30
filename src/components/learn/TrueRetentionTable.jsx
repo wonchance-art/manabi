@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { MATURE_MIN_INTERVAL } from '@/lib/growthStats';
 import {
   TRUE_RETENTION_COLUMNS, TRUE_RETENTION_LABELS, TRUE_RETENTION_RECENT_KEYS,
-  formatRetentionCell, retentionTargetLabel,
+  retentionCellParts, retentionTargetLabel,
 } from '@/lib/trueRetention';
 
 /**
@@ -58,7 +58,7 @@ export default function TrueRetentionTable({ table, longStatus, failed = false, 
               <th scope="row">{TRUE_RETENTION_LABELS[period.key]}</th>
               {TRUE_RETENTION_COLUMNS.map(col => (
                 <td key={col.key}>
-                  {shown(period.key) ? formatRetentionCell(period[col.key]) : longStatus === 'loading' ? '…' : '—'}
+                  <RetentionCell parts={shown(period.key) ? retentionCellParts(period[col.key]) : { rate: longStatus === 'loading' ? '…' : '—', count: '' }} />
                 </td>
               ))}
             </tr>
@@ -78,4 +78,9 @@ export default function TrueRetentionTable({ table, longStatus, failed = false, 
       )}
     </div>
   );
+}
+
+// 퍼센트 · 답 수를 각자 고정 폭 칸에 — 「88% (22)」와 「91% (1,113)」의 퍼센트가 세로로 같은 자리(오너 2026-10-30 「퍼센테이지 위치가 세로로 일정」).
+function RetentionCell({ parts }) {
+  return <><span className="learn-true__rate">{parts.rate}</span>{parts.count ? ' ' : null}<span className="learn-true__count">{parts.count}</span></>;
 }
