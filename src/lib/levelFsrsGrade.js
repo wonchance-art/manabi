@@ -27,15 +27,37 @@ function serial(work) {
   return run;
 }
 
-/** row = 단어장 행(id = 카드 id). 결과 { ok, error }. */
-export function gradeLevelFsrs(args) {
-  return serial(() => gradeOnce(args));
+/**
+ * row = 단어장 행(id = 카드 id). 결과 { ok, error }. waitMs = 차례가 올 때까지(되돌린 뒤 30초 · 곧 오는 학습 단계 — fsrsGradeWait).
+ * 기다림은 줄 밖에서 한다 — 다른 카드의 채점을 붙잡지 않는다. 화면을 떠나도(같은 탭) 기다린 뒤 보낸다(제어기는 다시 만든다).
+ */
+export function gradeLevelFsrs({ waitMs = 0, ...args }) {
+  if (!(waitMs > 0)) return serial(() => gradeOnce(args));
+  const run = new Promise((resolve) => setTimeout(resolve, waitMs + WAIT_SLACK_MS)).then(() => serial(() => gradeOnce(args)));
+  waiting.add(run);
+  run.finally(() => waiting.delete(run)).catch(() => {});
+  return run;
+}
+// 기다리는 채점 — 되돌리기는 이것들이 보내진 뒤에 한다(기다리는 동안 누른 「되돌리기」가 되돌릴 것이 없다고 실패하지 않게).
+const waiting = new Set();
+// 브라우저 시계와 서버 시계의 어긋남 · 응답 지연을 덮는 여유. 그래도 이르면 한 번 더 기다린다(gradeOnce).
+const WAIT_SLACK_MS = 1500;
+
+// 서버 기준으로 아직 몇 초 이른가(다음 질문 시각이 곧) — 그때만 한 번 더 기다린다.
+function waitedEarly(snap, cardId) {
+  const entry = snap.cards?.find((c) => c.cardId === cardId), next = Date.parse(entry?.nextQuestionAt || '');
+  return Number.isFinite(next) && next - Date.now() < WAIT_SLACK_MS * 4 && next - Date.now() > -WAIT_SLACK_MS * 4;
 }
 
 async function gradeOnce({ accountId, row, rating }) {
   const controller = await controllerFor(accountId);
   controller.setWords([row], [row.id]);
-  if (!(await controller.question(row.id))) {
+  let asked = await controller.question(row.id);
+  if (!asked && waitedEarly(controller.getSnapshot(), row.id)) {
+    await new Promise((resolve) => setTimeout(resolve, WAIT_SLACK_MS * 2));
+    asked = await controller.question(row.id);
+  }
+  if (!asked) {
     // 한 번도 공부하지 않은 카드(New)는 첫 문제 때 하루 새 단어 몫을 쓴다(Anki와 같은 서버 규칙). 몫이 다 찼으면 출제하지 않으므로
     // 저장 실패가 아니라 「오늘 새 단어 다 함」이다(LEVEL-NEW-LIMIT-001 — 담기만 한 단어가 「오늘 복습」으로 보여 튕기던 것).
     const snap = controller.getSnapshot(), entry = snap.cards?.find((c) => c.cardId === row.id), admission = snap.admission;
@@ -51,7 +73,8 @@ async function gradeOnce({ accountId, row, rating }) {
   return { ok: true };
 }
 
-export function undoLevelFsrs({ accountId }) {
+export async function undoLevelFsrs({ accountId }) {
+  await Promise.allSettled([...waiting]);
   return serial(async () => {
     const controller = await controllerFor(accountId);
     if (!(await controller.undo())) throw controller.getSnapshot().error || new Error('되돌릴 수 있는 채점이 없어요.');

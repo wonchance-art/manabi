@@ -14,7 +14,7 @@ import { prepareViewerSaveUndo, undoViewerSave } from './viewerSaveUndo';
 import { patchVocabWordsCache, useInlineReview } from './useInlineReview';
 import { revertInlineGrade } from './inlineGradeUndo';
 import { recordActivity } from './streak';
-import { entryKeys, gradeEngine, levelRowProjection } from './levelWordStatus';
+import { entryKeys, fsrsGradeWait, gradeEngine, levelRowProjection } from './levelWordStatus';
 import { disposeLevelFsrs, gradeLevelFsrs, undoLevelFsrs } from './levelFsrsGrade';
 
 const UNDO_MS = 8000;
@@ -87,7 +87,7 @@ export function useLevelWordGrade({ user, fetchProfile, language = 'Chinese', on
         return done ? { ok: true, undo: { ...done, expiresAt: Date.now() + UNDO_MS } } : { ok: false, reason: 'failed' };
       }
       if (engine === 'fsrs') {
-        const result = await gradeLevelFsrs({ accountId: userId, row, rating });
+        const result = await gradeLevelFsrs({ accountId: userId, row, rating, waitMs: fsrsGradeWait(projection) || 0 });
         if (!result.ok && result.reason === 'new-limit') return { ok: false, reason: 'new-limit', limit: result.limit };
         if (!result.ok) throw result.error;
         void refreshVocabWordsCards(queryClient, userId, [row.id]);
