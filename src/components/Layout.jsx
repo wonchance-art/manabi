@@ -9,6 +9,7 @@ import OnboardingModal from './OnboardingModal';
 import './books/reading-shell.css';
 import './web/web-shell.css';
 import { MAIN_NAV, navigationOwner, isFocusedReadingRoute } from '@/lib/webNavigation';
+import { useGnbAutoHide } from '@/lib/useGnbAutoHide';
 import './web/focused-reader.css';
 import { librarySearchHref } from '@/lib/libraryReturn';
 import { authEntryHref } from '@/lib/authRedirect';
@@ -61,6 +62,7 @@ export default function Layout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const focusedReading = isFocusedReadingRoute(pathname);
+  const gnbHidden = useGnbAutoHide(pathname);
   const isNavActive = href => navigationOwner(pathname) === href;
   // 셸은 늘 밝은 화면이다 — 예전 테마 토글은 셸 CSS가 숨겨 누를 수 없는 죽은 단추라 지웠다(PROFILE-REDESIGN-001 D5).
   // 테마 속성 부착(저장값 · OS 설정)은 그대로 둔다 — 셸 밖 규칙이 html[data-theme]을 읽는다.
@@ -183,7 +185,7 @@ export default function Layout({ children }) {
   const mobileNavLinks = MAIN_NAV;
 
   return (
-    <div className={`manabi-app${focusedReading ? ' manabi-app--reading' : ''}`}>
+    <div className={`manabi-app${focusedReading ? ' manabi-app--reading' : ''}`} data-gnb-hidden={gnbHidden || undefined}>
       <a href="#main-content" className="skip-link">본문으로 건너뛰기</a>
       <header className="gnb" role="banner">
         <Link href="/home" prefetch={false} className="gnb__logo" aria-label="manabi 배움">

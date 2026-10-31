@@ -160,6 +160,7 @@ describe('PWA-SHELL-001 ⑦ 고정 막대는 안전 영역을 진다(viewport-fi
     '.gnb': 'web-shell.css의 .manabi-app .gnb 규칙이 좌우 자리를 비킨다(②)',
     '.mobile-nav': '같은 규칙(②)',
     '.lw-scrim': '바탕만 칠하는 어둠막 — 글자가 없다',
+    '.manabi-app[data-gnb-hidden]::before': '머리를 숨겼을 때 상태 표시줄 칸만 칠하는 바탕 띠 — 글자가 없다(GNB-AUTOHIDE-001)',
     '.pdf-detail-overlay': '투명 클릭 받이 — 그리는 것이 없다',
     '.manabi-app.hz-portal': '투명 그릇(pointer-events:none) — 안쪽 .hz-overlay가 진다',
     '.viewer-progress-bar': '2px 진행선 — 글자가 없다',
