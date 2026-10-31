@@ -34,7 +34,6 @@ export function jlptWordLang(levelKey) {
     placeholder: '가나 · 한자 · 뜻',
     searchHint: '가나(けいけん) · 한자 · 한국어 뜻으로 JLPT N5–N1 전체에서 찾아요',
     noneHint: '읽기를 줄이거나(けい) 한국어 뜻(경험)으로 찾아 보세요.',
-    aidLabel: '예문 후리가나',
     Reading: Kana,
     // N5 · N4는 가나 표제어 + 한자는 읽기 줄(jaHeadMode — 옛 목록과 같은 규칙). 한자가 없는 단어는 표제어만.
     head: (e) => (kana && HAN.test(e.word) && e.reading ? { hw: e.reading, sub: e.word } : { hw: e.word, sub: e.reading }),
