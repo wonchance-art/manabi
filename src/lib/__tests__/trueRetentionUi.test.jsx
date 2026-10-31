@@ -65,18 +65,18 @@ describe('① 칸 줄 — 지난 30일 전체 칸, 답 10개 미만이면 「—
     expect(trueRetentionLine(null)).toMatchObject({ value: '—', target: null, measured: false });
   });
 
-  it('줄 글자: 「실제 기억률 · 지난 30일   91%  (목표 90%)   ›」 — 단추 · 이름표 · 창 표시, 색 · 화살표 없음', () => {
+  it('줄 글자: 이름 「실제 기억률」 · 조건 「지난 30일 · 목표 90%」 두 줄 + 값 · › — 단추 · 이름표 · 창 표시, 색 · 화살표 없음', () => {
     const html = card({ table: table(answers(100, 91)), loading: false });
     const line = sliceBetween(html, '<button type="button" class="learn-memory__true"', '</button>');
     expect(line).toContain('aria-haspopup="dialog"');
     expect(line).toContain('aria-label="실제 기억률 지난 30일 91%, 목표 90% · 기간별 표 보기"');
-    expect(line.replace(/<[^>]+>/g, '')).toBe('실제 기억률 · 지난 30일91%(목표 90%)›');
+    expect(line.replace(/<[^>]+>/g, '')).toBe('실제 기억률지난 30일 · 목표 90%91%›');
     expect(line).not.toMatch(/style=|var\(--(danger|warning|success)|[▲▼↑↓]/);
   });
 
   it('빈 상태 · 불러오는 중은 「—」 · 손님(trueRetention 없음)은 줄 자체가 없다', () => {
     const empty = sliceBetween(card({ table: table([]), loading: false }), 'class="learn-memory__true"', '</button>');
-    expect(empty.replace(/<[^>]+>/g, '').replace(/^[^>]*>/, '')).toBe('실제 기억률 · 지난 30일—›');
+    expect(empty.replace(/<[^>]+>/g, '').replace(/^[^>]*>/, '')).toBe('실제 기억률지난 30일—›');
     expect(empty).toContain('아직 없음');
     expect(card({ table: null, loading: true })).toContain('aria-busy="true"');
     expect(card(null)).not.toContain('learn-memory__true');
@@ -85,7 +85,7 @@ describe('① 칸 줄 — 지난 30일 전체 칸, 답 10개 미만이면 「—
   it('줄은 44px 단추 · 토큰 색만', () => {
     const css = read('src/components/learn/learn.css');
     const rule = css.match(/\.learn-memory__true\{[^}]*\}/)?.[0];
-    expect(rule).toContain('min-height:44px');
+    expect(rule).toMatch(/min-height:(4[4-9]|5\d)px/); // 44px 이상(두 줄 구조라 52px)
     const block = sliceBetween(css, '/* 실제 기억률 한 줄', '.learn-true__empty .learn-button-s');
     expect(block).not.toMatch(/#[0-9a-f]{3,8}\b|rgba?\(/i);
     expect(css).toMatch(/\.learn-true__empty \.learn-button-s\{min-height:44px\}/);
@@ -108,21 +108,21 @@ describe('② 표 — 오늘 · 어제 · 지난 7일 · 지난 30일 · 지난 
     const cols = [...html.matchAll(/<th scope="col">(?:<span class="sr-only">)?([^<]+)/g)].map(m => m[1]);
     expect(cols).toEqual(['기간', '익히는 중', '익숙', '전체']);
     const yesterday = sliceBetween(html, '<th scope="row">어제</th>', '</tr>');
-    expect([...yesterday.matchAll(/<td>(.*?)<\/td>/g)].map(m => cellText(m[1]))).toEqual(['80% (5)', '90% (20)', '88% (25)']);
+    expect([...yesterday.matchAll(/<td>(.*?)<\/td>/g)].map(m => cellText(m[1]))).toEqual(['80%답 5', '90%답 20', '88%답 25']); // 퍼센트 위 · 답 수 아래(화면 읽기 「답 N」)
     const today = sliceBetween(html, '<th scope="row">오늘</th>', '</tr>');
     expect([...today.matchAll(/<td>(.*?)<\/td>/g)].map(m => cellText(m[1]))).toEqual(['—', '—', '—']);
-    expect(html).toContain('복습 단계 단어를 다시 만났을 때 기억해 낸 비율이에요. 「다시」를 누른 답만 못 떠올린 것으로 세요.');
-    expect(html).toContain('목표 90% — 오래 보면 이 근처에 모여요. 하루 값은 흔들리니 30일 줄을 보세요.');
-    expect(html).toContain('익숙 = 간격 21일 이상 · 괄호 = 답 수 · 연습 · 되돌린 답 · 학습 단계 답은 빼요.');
+    const plain = cellText(html.replace(/<\/(li|span)>/g, '</$1> '));
+    for (const sentence of ['복습 단어를 다시 만났을 때 기억해 낸 비율이에요.', '「다시」를 누른 답만 못 떠올린 것으로 쳐요.', '목표는 90%예요.',
+      '하루 값은 흔들리니 30일 줄을 보세요.', '익숙은 간격 21일 이상, 작은 숫자는 답 수예요.', '연습 · 되돌린 답 · 학습 단계 답은 빼요.']) expect(plain).toContain(sentence);
     expect(html).not.toContain('어림했어요'); // 기록된 직전 간격만 — 추정 0이면 그 줄이 없다
   });
 
-  it('추정한 답이 있을 때만 그 줄 — 「예전 일정 단어 답 N개는 간격을 지난 날짜로 어림했어요.」', () => {
+  it('추정한 답이 있을 때만 그 줄 — 「예전 일정 단어 답 N개는 간격을 어림했어요.」', () => {
     const legacy = (at) => ({ lang: 'Japanese', source: 'vocab', item_key: '食べる', correct: true, created_at: kst(at),
       detail: { word_id: 'w', rating: 3, mode: 'flash', qtype: 'flash' } });
     const t = table([legacy('2026-10-01T09:00:00'), legacy('2026-10-29T09:00:00')]);
     expect(t.estimated).toBe(1);
-    expect(modal({ table: t, longStatus: 'ready' })).toContain('예전 일정 단어 답 1개는 간격을 지난 날짜로 어림했어요.');
+    expect(modal({ table: t, longStatus: 'ready' })).toContain('<span class="learn-true__ph">예전 일정 단어 답 1개는</span> <span class="learn-true__ph">간격을 어림했어요.</span>');
   });
 
   it('긴 조회 전에는 1년 · 전체 칸을 「…」(실패면 「—」 + 다시 시도) — 짧은 창 숫자를 1년 값처럼 적지 않는다', () => {
@@ -132,7 +132,7 @@ describe('② 표 — 오늘 · 어제 · 지난 7일 · 지난 30일 · 지난 
     const year = sliceBetween(loading, '<th scope="row">지난 1년</th>', '</tr>');
     expect([...year.matchAll(/<td>(.*?)<\/td>/g)].map(m => cellText(m[1]))).toEqual(['…', '…', '…']);
     const month = sliceBetween(loading, '<th scope="row">지난 30일</th>', '</tr>');
-    expect(cellText(month)).toContain('90% (20)');
+    expect(cellText(month)).toContain('90%답 20');
     const failed = modal({ table: t, longStatus: 'error' });
     expect([...sliceBetween(failed, '<th scope="row">전체</th>', '</tr>').matchAll(/<td>(.*?)<\/td>/g)].map(m => cellText(m[1]))).toEqual(['—', '—', '—']);
     expect(failed).toContain('지난 1년 · 전체를 불러오지 못했어요.');
@@ -263,12 +263,14 @@ describe('④ 조회 — 진입 땐 30일, 1년 · 전체는 모달을 열 때�
 describe('표 칸 정렬 — 퍼센트가 세로로 같은 자리(오너 2026-10-30)', () => {
   it('칸은 퍼센트 · 답 수 두 조각이고 각자 고정 폭', async () => {
     const { retentionCellParts } = await import('../trueRetention');
-    expect(retentionCellParts({ total: 25, rate: 0.88 })).toEqual({ rate: '88%', count: '(25)' });
+    expect(retentionCellParts({ total: 25, rate: 0.88 })).toEqual({ rate: '88%', count: '25' });
     expect(retentionCellParts({ total: 0, rate: null })).toEqual({ rate: '—', count: '' });
     const fs = await import('node:fs');
     const css = fs.readFileSync('src/components/learn/learn.css', 'utf8');
-    expect(css).toMatch(/\.learn-true__rate\{display:inline-block;min-width:4ch;text-align:right/);
-    expect(css).toMatch(/\.learn-true__count\{display:inline-block;min-width:8ch;text-align:left/);
+    // 퍼센트 위 · 답 수 아래로 쌓고 칸은 오른쪽 끝 맞춤 — 열 폭과 무관하게 퍼센트가 같은 세로선(320px에서도 창 안).
+    expect(css).toMatch(/\.learn-true__rate,\.learn-true__count\{display:block\}/);
+    expect(css).toMatch(/\.learn-true__table th,\.learn-true__table td\{[^}]*text-align:right;white-space:nowrap/);
+    expect(css).toMatch(/\.learn-true__ph\{display:inline-block\}/);
     expect(fs.readFileSync('src/components/learn/TrueRetentionTable.jsx', 'utf8')).toContain('retentionCellParts(period[col.key])');
   });
 });

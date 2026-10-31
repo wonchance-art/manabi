@@ -1,7 +1,7 @@
 'use client';
 /**
  * 실제 기억률 표(TRUE-RET-001 · docs/design/true-retention.md 목업) — 현황 기억 건강 칸의 한 줄을 누르면 TileModal 안에 편다.
- * 줄: 오늘 · 어제 · 지난 7일 · 지난 30일 · 지난 1년 · 전체 / 열: 익히는 중 · 익숙 · 전체 / 칸: 「88% (22)」 또는 「—」.
+ * 줄: 오늘 · 어제 · 지난 7일 · 지난 30일 · 지난 1년 · 전체 / 열: 익히는 중 · 익숙 · 전체 / 칸: 퍼센트 위 · 답 수 아래 작은 줄, 없으면 「—」.
  * 1년 · 전체 줄은 긴 조회(모달을 열 때 받는다)가 끝나야 숫자를 적는다 — 그 전에는 「…」, 실패면 「—」와 다시 시도.
  * 목표 대비 색 · 화살표는 없다(거울이지 성적표가 아니다). 계산 · 문구 규칙은 lib/trueRetention 정본.
  */
@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { MATURE_MIN_INTERVAL } from '@/lib/growthStats';
 import {
   TRUE_RETENTION_COLUMNS, TRUE_RETENTION_LABELS, TRUE_RETENTION_RECENT_KEYS,
-  retentionCellParts, retentionTargetLabel,
+  retentionCellParts, retentionTargetPercent,
 } from '@/lib/trueRetention';
 
 /**
@@ -44,7 +44,10 @@ export default function TrueRetentionTable({ table, longStatus, failed = false, 
   const shown = key => longReady || TRUE_RETENTION_RECENT_KEYS.includes(key);
   return (
     <div className="learn-true">
-      <p className="learn-true__lead">복습 단계 단어를 다시 만났을 때 기억해 낸 비율이에요. 「다시」를 누른 답만 못 떠올린 것으로 세요.</p>
+      <p className="learn-true__lead">
+        <span><Ph>복습 단어를 다시 만났을 때</Ph> <Ph>기억해 낸 비율이에요.</Ph></span>{' '}
+        <span><Ph>「다시」를 누른 답만</Ph> <Ph>못 떠올린 것으로 쳐요.</Ph></span>
+      </p>
       <table className="learn-true__table" aria-busy={longStatus === 'loading' || undefined}>
         <thead>
           <tr>
@@ -71,16 +74,27 @@ export default function TrueRetentionTable({ table, longStatus, failed = false, 
           <button type="button" className="learn-button-s" onClick={onRetry}>다시 시도</button>
         </div>
       )}
-      <p className="learn-true__note">{retentionTargetLabel(table.target)} — 오래 보면 이 근처에 모여요. 하루 값은 흔들리니 30일 줄을 보세요.</p>
-      <p className="learn-true__note">익숙 = 간격 {MATURE_MIN_INTERVAL}일 이상 · 괄호 = 답 수 · 연습 · 되돌린 답 · 학습 단계 답은 빼요.</p>
-      {table.estimated > 0 && (
-        <p className="learn-true__note">예전 일정 단어 답 {table.estimated.toLocaleString('ko-KR')}개는 간격을 지난 날짜로 어림했어요.</p>
-      )}
+      <ul className="learn-true__notes">
+        <li><Ph>목표는 {retentionTargetPercent(table.target)}예요.</Ph></li>
+        <li><Ph>하루 값은 흔들리니</Ph> <Ph>30일 줄을 보세요.</Ph></li>
+        <li><Ph>익숙은 간격 {MATURE_MIN_INTERVAL}일 이상,</Ph> <Ph>작은 숫자는 답 수예요.</Ph></li>
+        <li><Ph>연습 · 되돌린 답 ·</Ph> <Ph>학습 단계 답은 빼요.</Ph></li>
+        {table.estimated > 0 && <li><Ph>예전 일정 단어 답 {table.estimated.toLocaleString('ko-KR')}개는</Ph> <Ph>간격을 어림했어요.</Ph></li>}
+      </ul>
     </div>
   );
 }
 
-// 퍼센트 · 답 수를 각자 고정 폭 칸에 — 「88% (22)」와 「91% (1,113)」의 퍼센트가 세로로 같은 자리(오너 2026-10-30 「퍼센테이지 위치가 세로로 일정」).
+// 퍼센트(위) · 답 수(아래 작은 줄)를 쌓아 오른쪽 끝을 맞춘다 — 퍼센트가 세로로 같은 자리(오너 2026-10-30 「퍼센테이지 위치가 세로로 일정」),
+// 답 수 자리가 비어도 줄 높이는 같다. 화면 읽기는 「88% 답 22」.
 function RetentionCell({ parts }) {
-  return <><span className="learn-true__rate">{parts.rate}</span>{parts.count ? ' ' : null}<span className="learn-true__count">{parts.count}</span></>;
+  return <>
+    <span className="learn-true__rate">{parts.rate}</span>
+    <span className="learn-true__count">{parts.count && <><span className="sr-only">답 </span>{parts.count}</>}</span>
+  </>;
+}
+
+// 의미 구절 하나 — 구절 안에서는 끊지 않고 구절 사이에서만 줄을 바꾼다(「만났을 / 때」 · 줄머리 「·」 같은 끊김 없음, DESIGN-FIX-1030).
+function Ph({ children }) {
+  return <span className="learn-true__ph">{children}</span>;
 }
