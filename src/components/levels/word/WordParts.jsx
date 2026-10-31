@@ -73,14 +73,9 @@ export function StatusPill({ status, onSave, busy = false, pop = false, saveLabe
  */
 export const releasePointerFocus = (event) => { if (event.detail > 0) event.currentTarget.blur(); };
 
-// 2단 평가(LEVEL-STUDY-OPTIONS-001 — 오너 2026-10-31 KST): 다시(1) · 알맞음(3)만. 같은 단추 · 같은 치수(56px · 13px), 격자만 두 칸.
-// 서버 채점 길은 그대로다(1 · 3은 원래 있는 등급).
-export const TWO_GRADES = Object.freeze([1, 3]);
-
-export function GradeButtons({ previews, onGrade, disabled = false, note = null, className = '', two = false }) {
-  const grades = two ? SAVE_GRADES.filter((g) => TWO_GRADES.includes(g.grade)) : SAVE_GRADES;
-  return <div className={['lw-grades', two && 'lw-grades--two', className].filter(Boolean).join(' ')} role="group" aria-label="얼마나 기억났나요">
-    {grades.map((g) => {
+export function GradeButtons({ previews, onGrade, disabled = false, note = null, className = '' }) {
+  return <div className={`lw-grades ${className}`} role="group" aria-label="얼마나 기억났나요">
+    {SAVE_GRADES.map((g) => {
       const p = previews?.[g.grade];
       return <button key={g.grade} type="button" className={`lw-grade lw-grade--${g.cls}`} disabled={disabled || !previews}
         aria-keyshortcuts={g.key} aria-label={p?.label ? `${g.label}, ${p.label === '오늘' ? '오늘 다시' : `${p.label} 뒤`}` : g.label}

@@ -22,7 +22,7 @@ const rowLabels = (html) => [...html.matchAll(/<div class="lw-sheet__row"><span[
 const pressed = (html, label) => [...sliceBetween(html, `>${label}</span>`, '</div></div>').matchAll(/aria-pressed="true"[^>]*>([^<]+)</g)].map((m) => m[1]);
 const css = fs.readFileSync('src/components/levels/word/level-word.css', 'utf8');
 
-describe('제목 시트 — 레벨 · 목록 | 순서 · 분량 · 세부', () => {
+describe('제목 시트 — 레벨 · 목록 | 순서 · 분량', () => {
   it('1급: 목록은 단어 · 한자 · 문형 순, 지금 단어', () => {
     const html = render('H1');
     expect(html).toContain('aria-label="레벨 · 목록 · 학습 옵션"');
@@ -34,9 +34,10 @@ describe('제목 시트 — 레벨 · 목록 | 순서 · 분량 · 세부', () =
     expect(render('H7')).not.toContain('>목록<');
     expect(render('H1')).toContain('>목록<');
   });
-  it('줄 차례 · 이름표 두 글자 — 레벨 · 목록 · 가는 선 · 순서 · 분량 · 세부, 「보기」 줄은 없다', () => {
+  it('줄 차례 · 이름표 두 글자 — 레벨 · 목록 · 가는 선 · 순서 · 분량, 「보기」 · 「세부」 줄은 없다', () => {
     const html = render('H1');
-    expect(rowLabels(html)).toEqual(['레벨', '목록', '순서', '분량', '세부']);
+    expect(rowLabels(html)).toEqual(['레벨', '목록', '순서', '분량']);
+    expect(html).not.toMatch(/role="switch"|2단 평가|>세부</);
     for (const label of rowLabels(html)) expect([...label]).toHaveLength(2);
     expect(html.indexOf('>목록<')).toBeLessThan(html.indexOf('lw-sheet__sep'));
     expect(html.indexOf('lw-sheet__sep')).toBeLessThan(html.indexOf('>순서<'));
@@ -55,19 +56,13 @@ describe('제목 시트 — 레벨 · 목록 | 순서 · 분량 · 세부', () =
     expect(sliceBetween(html, '>분량</span>', '</div></div>')).toContain('--n:3');
     expect(html).not.toContain('<small>');
   });
-  it('기본값 = 예전 동작: 혼합 · 전체 · 2단 평가 끔', () => {
+  it('기본값 = 예전 동작: 혼합 · 전체(∞)', () => {
     const html = render('H1');
     expect(pressed(html, '순서')).toEqual(['혼합']);
     expect(pressed(html, '분량')).toEqual(['∞']);
-    expect(html).toMatch(/role="switch" class="lw-switch" aria-checked="false">2단 평가<i/);
-    const on = render('H1', { order: 'review-first', amount: 10, two: true });
+    const on = render('H1', { order: 'review-first', amount: 10 });
     expect(pressed(on, '순서')).toEqual(['복습 먼저']);
     expect(pressed(on, '분량')).toEqual(['10개']);
-    expect(on).toMatch(/role="switch" class="lw-switch" aria-checked="true">2단 평가<i/);
-  });
-  it('세부 카드에는 스위치 하나(2단 평가)뿐', () => {
-    const view = sliceBetween(render('H1'), '>세부</span>', '</div></div>');
-    expect(view.match(/role="switch"/g)).toHaveLength(1);
   });
   it('이름표 40px 열 그대로 · 손잡이는 가운데 · 가는 선 · 줄 안 글자는 넘기지 않는다', () => {
     expect(css).toMatch(/\.lw-sheet__row\{display:grid;grid-template-columns:40px minmax\(0,1fr\)/);
@@ -79,9 +74,8 @@ describe('제목 시트 — 레벨 · 목록 | 순서 · 분량 · 세부', () =
     // 320px 화면(줄 폭 288px)은 칸 글자를 줄인다 — 줄바꿈 대신 크기(뷰포트 쿼리 신설 없이 컨테이너 쿼리).
     expect(css).toMatch(/\.lw-sheet__rows\{[^}]*container-type:inline-size/);
     expect(css).toContain('@container (max-width:300px){.lw-sheet .lw-seg button,.lw-sheet .lw-seg a{font-size:13px}}');
-    expect(css).toMatch(/\.lw-switch\{[^}]*white-space:nowrap/);
     // 예전 보기 줄의 부품은 남기지 않는다(죽은 CSS).
-    expect(css).not.toMatch(/\.lw-mini|\.lw-sheet__page|\.lw-sheet__row--top|\.lw-aid-ex/);
+    expect(css).not.toMatch(/\.lw-mini|\.lw-sheet__page|\.lw-sheet__row--top|\.lw-aid-ex|\.lw-switch|\.lw-sheet__view/);
   });
   it('위쪽에는 홈 · 제목 · ▾ · 찾기만 — 해 모양 설정 창 없음', () => {
     const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');

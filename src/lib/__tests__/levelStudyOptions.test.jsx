@@ -190,47 +190,13 @@ describe('끝 화면 — 분량에서 멈춤은 「이번 분량 끝」 + 「이
   });
 });
 
-describe('2단 평가 — 다시 · 알맞음만, 같은 단추 · 같은 치수, 격자만 두 칸', () => {
-  const wrap = (node) => renderToStaticMarkup(<WordLangContext.Provider value={L}>{node}</WordLangContext.Provider>);
-  const previews = { 1: { label: '1분' }, 2: { label: '6분' }, 3: { label: '10분' }, 4: { label: '4일' } };
-  const names = (html) => [...html.matchAll(/class="lw-grade__name">([^<]+)</g)].map((m) => m[1]);
-  it('한 단어 · 리스트 아래 네 칸 자리', () => {
-    const two = wrap(<GradeBar previews={previews} onGrade={() => {}} two />);
-    expect(names(two)).toEqual(['다시', '알맞음']);
-    expect(two).toContain('class="lw-grades lw-grades--two"');
-    expect(two).toMatch(/class="lw-grade lw-grade--again"[^>]*aria-keyshortcuts="1"/);
-    expect(two).toMatch(/class="lw-grade lw-grade--good"[^>]*aria-keyshortcuts="3"/);
-    const four = wrap(<GradeBar previews={previews} onGrade={() => {}} />);
-    expect(names(four)).toEqual(['다시', '어려움', '알맞음', '쉬움']);
-    expect(four).not.toContain('lw-grades--two');
-  });
-  it('단어 카드 창(카드 안 네 칸)도 같은 설정', () => {
-    const html = wrap(<WordCard entry={ENTRY} level="N3" view="all" info={{ status: 'today', previews }} grades two onGrade={() => {}} />);
-    expect(names(html)).toEqual(['다시', '알맞음']);
-  });
-  it('CSS — 두 칸 격자만 더하고 단추 치수(56px · 13px)는 네 칸과 같은 규칙', () => {
-    const css = fs.readFileSync('src/components/levels/word/level-word.css', 'utf8');
-    expect(css).toContain('.lw-grades--two{grid-template-columns:repeat(2,minmax(0,1fr))}');
-    expect(css).not.toMatch(/\.lw-grades--two \.lw-grade/);
-    expect(css).toMatch(/\.lw-grade\{min-height:56px/);
-  });
-  it('키 — 2단에서는 1 · 3만, 2 · 4는 아무 일도 하지 않는다 · 서버 채점 길은 그대로', () => {
-    const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
-    expect(screen).toContain("const keys = h.two ? ['1', '3'] : ['1', '2', '3', '4'];");
-    expect(screen).toContain('if (h.mode === \'list\') { if (h.focus && keys.includes(event.key))');
-    expect(screen).toContain('if (keys.includes(event.key)) { event.preventDefault(); h.onGrade(h.current, Number(event.key)); }');
-    expect(screen).toContain('two: prefs.two,');
-    expect(screen.match(/two=\{prefs\.two\}/g)).toHaveLength(4); // 한 단어 막대 · 리스트 막대 · 카드 시트 · 끝 화면
-  });
-});
-
-describe('진행 줄 칩 — 기본이 아닌 것만, 차례 고정(순서 · 분량 · 2단 평가)', () => {
+describe('진행 줄 칩 — 기본이 아닌 것만, 차례 고정(순서 · 분량)', () => {
   it('문구', () => {
     expect(levelStudyChip(LEVEL_WORD_PREFS)).toBeNull();
-    expect(levelStudyChip({ order: 'new-first', amount: 10, two: true })).toBe('새 단어 먼저 · 10개 · 2단 평가');
-    expect(levelStudyChip({ order: 'review-first', amount: 'all', two: false })).toBe('복습 먼저');
-    expect(levelStudyChip({ order: 'mix', amount: 20, two: false })).toBe('20개');
-    expect(levelStudyChip({ order: 'mix', amount: 'all', two: true })).toBe('2단 평가');
+    expect(levelStudyChip({ order: 'new-first', amount: 10 })).toBe('새 단어 먼저 · 10개');
+    expect(levelStudyChip({ order: 'review-first', amount: 'all' })).toBe('복습 먼저');
+    expect(levelStudyChip({ order: 'mix', amount: 20 })).toBe('20개');
+    expect(levelStudyChip({ order: 'mix', amount: 'all', two: true })).toBeNull(); // 2단 평가는 뺐다(옛 저장값 무시)
   });
   it('% 앞 흐린 한 줄(넘기지 않는다) · 칩이 있을 때만', () => {
     const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
@@ -250,11 +216,12 @@ describe('설정 값 — 보기 줄은 고정 기본값(tone 켬 · page 20), �
     expect(normalizeLevelWordPrefs({ tone: false, page: 10, v: 2 })).toMatchObject({ tone: true, page: 20 });
     expect(normalizeLevelWordPrefs(null)).toEqual(LEVEL_WORD_PREFS);
   });
-  it('기본값 = 예전 동작(혼합 · 전체 · 끔) · 모르는 값은 기본으로', () => {
-    expect(LEVEL_WORD_PREFS).toMatchObject({ order: 'mix', amount: 'all', two: false });
-    expect(normalizeLevelWordPrefs({ order: 'weak', amount: 50, two: 'yes' })).toMatchObject({ order: 'mix', amount: 'all', two: false });
+  it('기본값 = 예전 동작(혼합 · 전체) · 모르는 값은 기본으로 · 2단 평가 저장값은 버린다', () => {
+    expect(LEVEL_WORD_PREFS).toMatchObject({ order: 'mix', amount: 'all' });
+    expect(LEVEL_WORD_PREFS).not.toHaveProperty('two');
+    expect(normalizeLevelWordPrefs({ order: 'weak', amount: 50 })).toMatchObject({ order: 'mix', amount: 'all' });
     expect(normalizeLevelWordPrefs({ order: 'review-first', amount: 10, two: true, mode: 'list', view: 'sound', v: 2 }))
-      .toEqual({ mode: 'list', view: 'sound', tone: true, page: 20, order: 'review-first', amount: 10, two: true, v: 2 });
+      .toEqual({ mode: 'list', view: 'sound', tone: true, page: 20, order: 'review-first', amount: 10, v: 2 });
   });
   it('세션 옵션 — 전체 = 끝없음', () => {
     expect(levelStudyOptions({ order: 'new-first', amount: 'all' })).toEqual({ order: 'new-first', amount: Infinity });
@@ -265,7 +232,9 @@ describe('설정 값 — 보기 줄은 고정 기본값(tone 켬 · page 20), �
     expect(screen).toContain('writeJson(localStorage, cfg.prefsKey, next)');
     expect(screen).toContain('normalizeLevelWordPrefs(readJson(localStorage, cfg.prefsKey))');
     const prefs = fs.readFileSync('src/lib/levelWordPrefs.js', 'utf8');
-    expect(prefs).not.toMatch(/shuffle|retrievab|sort:/);
+    expect(prefs).not.toMatch(/shuffle|retrievab|sort:|two:/);
+    const parts = fs.readFileSync('src/components/levels/word/WordParts.jsx', 'utf8');
+    expect(parts).not.toMatch(/TWO_GRADE|lw-grades--two/); // 2단 평가는 뺐다(오너 2026-10-31 KST)
   });
 });
 
@@ -304,16 +273,3 @@ it('sessionOrder는 rest를 넣지 않는다 — 분량 밖 단어는 지금 차
   expect(sessionOrder(s, T0)).toEqual(['L1', 'r1', 'r2']);
 });
 
-describe('2단 평가 끝 화면 — 누른 칸 둘만', () => {
-  it('다시 · 알맞음만, 도중에 어려움 · 쉬움을 눌렀으면 넷 다', async () => {
-    const { renderToStaticMarkup } = await import('react-dom/server');
-    const { OneWordDone } = await import('@/components/levels/word/OneWord');
-    const done = (counts, two) => renderToStaticMarkup(<OneWordDone graded={3} tomorrow={0} counts={counts} two={two} onList={() => {}} />);
-    const two = done({ 1: 1, 2: 0, 3: 2, 4: 0 }, true);
-    expect(two).toContain('lw-done__counts lw-done__counts--two');
-    expect(two).not.toContain('어려움');
-    expect(two).not.toContain('쉬움');
-    expect(done({ 1: 1, 2: 1, 3: 2, 4: 0 }, true)).toContain('어려움');
-    expect(done({ 1: 1, 2: 0, 3: 2, 4: 0 }, false)).toContain('쉬움');
-  });
-});

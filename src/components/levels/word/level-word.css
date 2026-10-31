@@ -102,7 +102,6 @@ html:has(.lw-page){overscroll-behavior-y:none}
 
 /* 네 칸 — 등급 이름 + 다음 간격(굵은 색). 색은 복습실과 같은 등급 토큰(web-shell --grade-*). */
 .lw-grades{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-.lw-grades--two{grid-template-columns:repeat(2,minmax(0,1fr))}
 .lw-grade{min-height:56px;border:1px solid var(--rule);border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;padding:4px 2px;transition:transform .12s var(--ease-settle)}
 .lw-grade:active:not(:disabled){transform:scale(.985)}
 .lw-grade:disabled{cursor:default;opacity:.55}
@@ -437,18 +436,11 @@ button.lw-tile__glyph[aria-expanded=true]{background:color-mix(in srgb,var(--lw-
 .lw-sheet .lw-seg a[aria-current=page]{background:var(--lw-card);color:var(--ink);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 14%,transparent)}
 /* 좁은 폰(줄 폭 300px 이하 — 320px 화면)에서는 칸 글자를 13px로 — 「새 단어 먼저」(굵게)가 칸 끝에 닿지 않게. 넘기지 않고 크기를 바꾼다. */
 @container (max-width:300px){.lw-sheet .lw-seg button,.lw-sheet .lw-seg a{font-size:13px}}
-/* 세부 — 켜고 끄는 스위치 카드(2단 평가). 예전 보기 줄(도움 스위치 · 리스트 한 번에)의 카드 모양을 그대로 쓴다(오너 2026-10-31 KST). */
-.lw-sheet__view{border-radius:12px;background:var(--lw-card);border:1px solid var(--lw-line);padding:0 4px 0 12px}
-.lw-switch{display:flex;width:100%;justify-content:space-between;align-items:center;gap:16px;min-height:48px;border:0;background:none;padding:0 8px 0 0;font:inherit;font-size:14px;color:var(--ink);cursor:pointer;text-align:left;white-space:nowrap}
-.lw-switch i{flex:none;width:40px;height:24px;border-radius:999px;background:var(--lw-chip);position:relative;transition:background .15s var(--ease-settle)}
-.lw-switch i::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--paper);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 25%,transparent);transition:transform .15s var(--ease-settle)}
-.lw-switch[aria-checked=true] i{background:var(--ink)}
-.lw-switch[aria-checked=true] i::after{transform:translateX(16px)}
 .lw-sheet .lw-card{border:0;padding:0;background:none}
 @keyframes lwFade{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){
   .lw-top--search .lw-searchbox,.lw-rows.is-height-settling,.lw-bar i,.lw-status.is-popping,.lw-grade,.lw-two__btn,.lw-card,.lw-card__more,.lw-one__card.is-turning,
-  .lw-switch i,.lw-switch i::after,.lw-seg[data-thumb]::before,.lw-tabs__bar,.lw-card__more[data-closing],.lw-done__n,.lw-scrim.is-closing,.lw-pop.is-closing,.lw-sheet.is-closing,.lw-one__back,.lw-done,.lw-undo,.lw-pop,.lw-dp,.lw-dp.is-closing,.lw-scrim,.lw-sheet,.lw-prog,.lw-card.is-arrived,.lw-card.is-arrived .lw-time,.lw-conj__caret{animation:none;transition:none}
+  .lw-seg[data-thumb]::before,.lw-tabs__bar,.lw-card__more[data-closing],.lw-done__n,.lw-scrim.is-closing,.lw-pop.is-closing,.lw-sheet.is-closing,.lw-one__back,.lw-done,.lw-undo,.lw-pop,.lw-dp,.lw-dp.is-closing,.lw-scrim,.lw-sheet,.lw-prog,.lw-card.is-arrived,.lw-card.is-arrived .lw-time,.lw-conj__caret{animation:none;transition:none}
   .lw-grade:active:not(:disabled),.lw-two__btn:active:not(:disabled),.lw-card:active:not(:has(button:active)),.lw-one__reveal:active{transform:none}
 }
 /* 모드 전환(한 단어 ↔ 리스트) — View Transitions API(없는 브라우저는 바로 바뀜). 0.2초 겹침. */

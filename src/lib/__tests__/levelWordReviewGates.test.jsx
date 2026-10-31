@@ -65,7 +65,8 @@ describe('② 앞면에서도 채점 — 「확인 전 채점 막기」는 넣�
     expect(css).not.toContain('data-locked');
     expect(screen).toContain('<GradeBar previews={currentInfo.previews} onGrade={(r) => onGrade(current, r)}');
     expect(screen).toContain('<PracticeBar onAnswer={(ok) => onPractice(practiceEntry, ok)}');
-    expect(screen).toContain("if (keys.includes(event.key)) { event.preventDefault(); h.onGrade(h.current, Number(event.key)); }");
+    expect(screen).toContain("if (rating) { event.preventDefault(); h.onGrade(h.current, rating); }");
+    expect(screen).not.toContain("if (keys.includes(event.key)) { event.preventDefault(); h.onGrade(h.current, Number(event.key)); }");
     expect(screen).not.toMatch(/revealed \? onGrade|opened\.has\(/);
   });
 });

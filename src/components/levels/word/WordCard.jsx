@@ -87,7 +87,7 @@ export function Example({ ex, word, speak, onWord, openKey, showText = true, ton
  * onOpen = 펼침(같은 날 규칙 — 이 기기에서 이 단어를 펼쳐 봤다).
  */
 export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, tone, onGrade, onSave, saving, pop, onWord, openKey, note,
-  grades: inline = false, two = false, search = false, focused = false, onPick, onOpen, due = false, wait = null, later = null, areas = null, next = null }) {
+  grades: inline = false, search = false, focused = false, onPick, onOpen, due = false, wait = null, later = null, areas = null, next = null }) {
   const L = useWordLang();
   const [open, setOpen] = useState(false); // false | true | 'closing'(접히는 0.2초 — 오너 2026-10-21 KST ⑥-2)
   const { hw, sub } = L.head(e);
@@ -109,7 +109,7 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
   const meanLine = (tail) => (tail ? <p className="lw-card__mean lw-tailrow"><span>{e.meaning}</span>{tail}</p> : <p className="lw-card__mean">{e.meaning}</p>);
   const mean = meanLine(null);
   const ex = <Example ex={e.ex} word={e.word} speak={speak} onWord={onWord} openKey={openKey} tone={tone} />;
-  const grades = inline ? <GradeButtons previews={info.previews} onGrade={onGrade} note={note} two={two} /> : null;
+  const grades = inline ? <GradeButtons previews={info.previews} onGrade={onGrade} note={note} /> : null;
   const pick = (event) => { if (!event.target.closest('button, a')) onPick?.(); };
   const attrs = { 'data-key': e.key, 'data-focus': focused || undefined };
   const areaRow = <AreaRow areas={areas} next={next} />;

@@ -100,10 +100,6 @@ export function TitleSheet({ levels, levelKey, kinds, prefs, onPrefs, onClose })
       <div className="lw-sheet__sep" role="presentation" />
       <Seg label="순서" value={prefs.order} items={LEVEL_STUDY_ORDERS} onPick={(order) => onPrefs({ order })} />
       <Seg label="분량" value={prefs.amount} items={LEVEL_STUDY_AMOUNTS} onPick={(amount) => onPrefs({ amount })} />
-      <div className="lw-sheet__row"><span>세부</span>
-        <div className="lw-sheet__view">
-          <button type="button" role="switch" className="lw-switch" aria-checked={!!prefs.two} onClick={() => onPrefs({ two: !prefs.two })}>2단 평가<i aria-hidden="true" /></button>
-        </div></div>
     </div>
   </Sheet>;
 }

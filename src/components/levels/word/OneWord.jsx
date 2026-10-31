@@ -39,10 +39,10 @@ export function OneWordCard({ entry: e, view, info, tiles, speak, tone, revealed
  * 리스트 모드만 label(지금 채점할 카드의 단어 — 準備)을 그 자리에 둔다. 자리는 늘 잡아 네 칸이 움직이지 않는다.
  * 앞면에서도 바로 누를 수 있다(답을 펼치지 않고 채점 — 오너 결정, 2026-10-21 KST 재확인: 시안 ⑦-2 「확인 전 채점 막기」는 넣지 않는다).
  */
-export function GradeBar({ previews, onGrade, disabled, note, label = null, two = false }) {
+export function GradeBar({ previews, onGrade, disabled, note, label = null }) {
   return <div className="lw-gradebar"><div className="lw-gradebar__in">
     <p className="lw-gradebar__guide" aria-hidden={!label || undefined}>{label}</p>
-    <GradeButtons previews={previews} onGrade={onGrade} disabled={disabled} note={note} two={two} />
+    <GradeButtons previews={previews} onGrade={onGrade} disabled={disabled} note={note} />
   </div></div>;
 }
 
@@ -70,11 +70,8 @@ export function MoreNewNote({ perDay }) {
   return <p className="lw-done__note">{perDay > 0 && perDay < NEW_PER_DAY_UNLIMITED ? `하루 ${perDay}개를 넘기면 내일 복습이 그만큼 늘어요` : '새 단어를 더 하면 내일 복습이 그만큼 늘어요'}</p>;
 }
 export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabel, soundCount = 0, onSound, more = 0, perDay = 0, started = 0, onMore, onBrowse,
-  cont = 0, onContinue, two = false }) {
-  // 2단 평가면 누른 칸 둘(다시 · 알맞음)만 — 이번 세션에 어려움 · 쉬움을 누른 적이 있으면(도중에 바꿈) 넷 다 보인다.
-  const all = [[1, 'again', '다시'], [2, 'hard', '어려움'], [3, 'good', '알맞음'], [4, 'easy', '쉬움']];
-  const pair = two && !(counts?.[2] > 0) && !(counts?.[4] > 0);
-  const cells = pair ? all.filter(([n]) => n === 1 || n === 3) : all;
+  cont = 0, onContinue }) {
+  const cells = [[1, 'again', '다시'], [2, 'hard', '어려움'], [3, 'good', '알맞음'], [4, 'easy', '쉬움']];
   // 분량에서 멈춤(cont — 남은 오늘 단어)이 하루 몫에서 멈춤(more)보다 먼저다: 남은 단어가 오늘 할 일이고, 몫 뒤 새 단어는 그다음이다.
   const paused = cont > 0;
   const capped = !paused && more > 0;
@@ -85,7 +82,7 @@ export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabe
         <span className="lw-done__n"><b><CountUp n={graded} /></b><small>학습</small></span>
         <span className="lw-done__n"><b><CountUp n={tomorrow} /></b><small>내일</small></span>
       </div>
-      <div className={`lw-done__counts${pair ? ' lw-done__counts--two' : ''}`} aria-label="누른 횟수">
+      <div className="lw-done__counts" aria-label="누른 횟수">
         {cells.map(([n, cls, label]) => <span key={n} className={`lw-done__n lw-grade--${cls}`}><b><CountUp n={counts[n]} /></b><small>{label}</small></span>)}
       </div>
     </> : <p className="lw-done__sum">지금 복습할 단어가 없어요</p>}
