@@ -169,13 +169,23 @@ export const TRUE_RETENTION_RECENT_KEYS = Object.freeze(['today', 'yesterday', '
 export const TRUE_RETENTION_RECENT_DAYS = TRUE_RETENTION_PERIODS.find(p => p.key === TRUE_RETENTION_HEADLINE).fromDay + 1;
 
 const percent = rate => `${Math.round(rate * 100)}%`;
-/** 표 칸 글자 — 답이 없으면 「—」, 있으면 「88% (22)」. */
+/**
+ * 표 칸 두 조각 — { rate: '88%', count: '22' }, 답이 없으면 { rate: '—', count: '' }. 표는 퍼센트를 위, 답 수를 아래 작은 줄로 쌓아
+ * 오른쪽 끝을 맞춘다 — 퍼센트가 세로로 한 줄에 서고, 320px에서도 열이 창 밖으로 나가지 않는다(DESIGN-FIX-1030).
+ */
+export function retentionCellParts(cell) {
+  if (!cell || !(cell.total > 0) || cell.rate == null) return { rate: '—', count: '' };
+  return { rate: percent(cell.rate), count: cell.total.toLocaleString('ko-KR') };
+}
+/** 표 칸 글자 — 답이 없으면 「—」, 있으면 「88% (22)」(한 줄로 쓸 때 · 계약). */
 export function formatRetentionCell(cell) {
-  if (!cell || !(cell.total > 0) || cell.rate == null) return '—';
-  return `${percent(cell.rate)} (${cell.total.toLocaleString('ko-KR')})`;
+  const { rate, count } = retentionCellParts(cell);
+  return count ? `${rate} (${count})` : rate;
 }
 /** 목표 글자 — 「목표 90%」(FSRS_POLICY.retention 정본). */
 export const retentionTargetLabel = target => `목표 ${percent(target ?? FSRS_POLICY.retention)}`;
+/** 표 꼬리 첫 줄의 목표 값 — 「90%」. */
+export const retentionTargetPercent = target => percent(target ?? FSRS_POLICY.retention);
 
 /**
  * 칸 줄 — 대표 기간(지난 30일)의 전체 칸. 답이 TRUE_RETENTION_MIN_ANSWERS보다 적거나 표가 아직 없으면 값은 「—」, 목표 괄호도 뺀다.

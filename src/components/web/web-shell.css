@@ -337,6 +337,15 @@ a:has(> .nav-pending--reader){position:relative}
 /* 같은 이유로 동작 뒤 초점 이어받기(FOCUS-AFTER-ACTION-001)가 초점을 두는 묶음(tabindex -1)도 — 복습 채점 막대 · 읽기 저장 줄.
    누르는 자리가 아니라 다음 Tab의 출발점이다. 안의 버튼은 각자의 :focus-visible 고리를 그대로 그린다. */
 .review-grade-bar[tabindex="-1"]:focus,.save-grade__saved[tabindex="-1"]:focus{outline:none}
+/* GNB-PHONE-001 (A, 오너 2026-10-31 KST 「권장대로 A+B」) — 휴대폰 폭 머리 66 → 52px(+ 상태 표시줄). 아이폰 기본 막대(44pt)에 가깝게,
+   로고(20px) · 검색 · 로그인 크기는 그대로 두고 위아래 여백만 줄인다(단추 44px 하한 유지). 집중 읽기 머리(56px)는 따로 정해져 있어 건드리지 않는다. */
+@container manabi-shell (max-width:680px){.manabi-app:not(.manabi-app--reading) .app-layout{--gnb-height:calc(52px + env(safe-area-inset-top,0px))}.manabi-app:not(.manabi-app--reading) .gnb{--gnb-height:calc(52px + env(safe-area-inset-top,0px));height:var(--gnb-height)}}
+/* GNB-AUTOHIDE-001 (B) — 긴 글 화면(교재 · 지역학)에서 내려 읽으면 머리를 위로 숨긴다(useGnbAutoHide · 휴대폰 폭만). 상태 표시줄 칸은
+   머리 바탕색 띠로 남겨 시각 · 배터리 밑으로 글이 비치지 않게 한다. 자리(본문 위 여백)는 그대로라 글이 튀지 않는다. */
+.manabi-app .gnb{transition:transform .22s var(--ease-settle,ease)}
+.manabi-app[data-gnb-hidden] .gnb{transform:translateY(-100%);box-shadow:none}
+.manabi-app[data-gnb-hidden]::before{content:'';position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--gnb-bg,var(--paper));z-index:1001}
+@media (prefers-reduced-motion:reduce){.manabi-app .gnb{transition:none}}
 /* ========= 화면 이동 손맛(NAV-MOTION-001) — 새 화면이 도착한 순간 본문만 들어온다 =========
    실행 = src/lib/useNavMotion.js(경로가 바뀐 커밋에서 html[data-nav-motion] — 옅어짐 navFadeIn이 끝나면 뗀다), 판정 = src/lib/navMotion.js.
    메뉴 = 제자리 옅게 · 목록 → 상세 = 오른쪽에서 · 뒤로 = 왼쪽에서. 머리말 · 아래 메뉴는 #main-content 밖이라 그대로.

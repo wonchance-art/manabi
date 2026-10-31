@@ -58,9 +58,9 @@ function TrueRetentionLine({ table, loading = false, onOpen }) {
   const spoken = `실제 기억률 지난 30일 ${line.measured ? line.value : '아직 없음'}${line.target ? `, ${line.target}` : ''} · 기간별 표 보기`;
   return (
     <button type="button" className="learn-memory__true" onClick={onOpen} aria-haspopup="dialog" aria-label={spoken} aria-busy={loading || undefined}>
-      <span className="learn-memory__true-k">실제 기억률 · 지난 30일</span>
+      {/* 이름 · 조건을 두 줄로 미리 나눠 둔다 — 좁은 칸에서 한 줄을 억지로 늘이거나 아무 데서나 끊지 않는다(DESIGN-FIX-1030). */}
+      <span className="learn-memory__true-k"><span>실제 기억률</span><small>지난 30일{line.target ? ` · ${line.target}` : ''}</small></span>
       <b className="learn-memory__true-v">{line.value}</b>
-      {line.target && <span className="learn-memory__true-t">({line.target})</span>}
       <span className="learn-memory__true-go" aria-hidden="true">›</span>
     </button>
   );

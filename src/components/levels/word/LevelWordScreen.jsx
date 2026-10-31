@@ -27,7 +27,7 @@ import {
   HARD_LAPSES, dueTomorrowCount, gradePreviews, gradeToastText, dueAmount, inLearningStep, lapsesOf, laterDueText,
   entryKeys, levelProgressPercent, levelRowProjection, levelWordGraded, levelWordStatus, newStartedToday, nextDueMs, todayAgainAt,
 } from '@/lib/levelWordStatus';
-import { DEFAULT_NEW_PER_DAY, loadNewPerDay } from '@/lib/vocabStudy';
+import { DEFAULT_NEW_PER_DAY, NEW_PER_DAY_UNLIMITED, loadNewPerDay } from '@/lib/vocabStudy';
 import {
   areaOfView, levelWordAreas, practiceCounts, practiceOrder, seenTodayElsewhere, soundCheckKeys, wordGradedOn,
 } from '@/lib/levelWordAreas';
@@ -509,7 +509,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
   const practiceOnlyRef = useRef(null);
   // 단추 둘(LEVEL-SAVED-TAG-001): [한도 늘리기] = 단어장 복습 설정(하루 새 표현 한도)을 펼친 채로(#review-settings — 내 정보 시트와 같은 길),
   // [연습만 하기] = 그 단어 하나로 문장 연습(일정 · 몫에 닿지 않는다 — practiceOnlyRef).
-  const newLimitNotice = (limit, entry) => setNotice({ id: Date.now(), text: limit ? `오늘 새 단어 ${limit}개를 다 했어요 — 내일 이어서 나와요` : '오늘 새 단어를 다 했어요 — 내일 이어서 나와요',
+  const newLimitNotice = (limit, entry) => setNotice({ id: Date.now(), text: limit && limit < NEW_PER_DAY_UNLIMITED ? `오늘 새 단어 ${limit}개를 다 했어요` : '오늘 새 단어를 다 했어요',
     href: '/vocab#review-settings', action: '한도 늘리기', also: entry ? { action: '연습만 하기', onAction: () => practiceOnlyRef.current?.(entry) } : null, ms: 8000 });
   const onGrade = useCallback(async (entry, rating, opts = {}) => {
     if (!userId) return askLogin(entry.key);

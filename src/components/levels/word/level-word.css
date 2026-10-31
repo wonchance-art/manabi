@@ -327,6 +327,8 @@ button.lw-tile__glyph[aria-expanded=true]{background:color-mix(in srgb,var(--lw-
 .lw-page:has(.lw-undo--quiet) .lw-gradebar__guide{visibility:hidden}
 /* 단추 둘 안내(새 단어 몫 — [한도 늘리기] [연습만 하기]) — 좁으면 단추 묶음이 다음 줄 오른쪽으로. */
 .lw-undo--two{flex-wrap:wrap}.lw-undo--two>span:first-child{flex:1 1 14em}.lw-undo__acts{display:flex;margin-left:auto}
+/* 두 단추 안내는 문장을 한 단계 굵고 크게 — 단추와 같은 줄이 모자라면 단추가 다음 줄로(오너 2026-10-30 「가독성 최고로」). 어절 단위 줄바꿈은 정본 블록(lineBreak)이 맡는다. */
+.lw-undo>span:first-child{line-height:1.45}.lw-undo--two{row-gap:0}.lw-undo--two>span:first-child{font-size:14px;font-weight:600;padding-block:10px 4px;white-space:nowrap}
 .lw-undo button,.lw-undo a{min-height:44px;border:0;background:none;color:var(--lw-rose);font-size:13px;font-weight:700;padding:0 12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
 
 /* 찾기 결과 · 줄 형식 */
