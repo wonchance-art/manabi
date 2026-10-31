@@ -87,10 +87,12 @@ export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabe
       </div>
     </> : <p className="lw-done__sum">지금 복습할 단어가 없어요</p>}
     <div className="lw-done__actions">
-      {soundCount > 0 && <button type="button" className="lw-btn lw-btn--primary" onClick={onSound}>소리로 확인할 단어 {soundCount}개</button>}
+      {/* 분량에서 멈춤 = 오늘 할 단어가 남았다 — 「이어서」가 맨 위 주 단추, 소리 확인은 아래 줄 보조(오너 검토 2026-10-31 KST). */}
+      {paused ? <ContinueButton count={cont} onContinue={onContinue} primary />
+        : soundCount > 0 && <button type="button" className="lw-btn lw-btn--primary" onClick={onSound}>소리로 확인할 단어 {soundCount}개</button>}
       <div className="lw-done__row">
         {paused ? <>
-          <ContinueButton count={cont} onContinue={onContinue} primary={soundCount === 0} />
+          {soundCount > 0 && <button type="button" className="lw-btn" onClick={onSound}>소리 확인 {soundCount}개</button>}
           {onList && <button type="button" className="lw-btn" onClick={onList}>리스트로</button>}
         </> : capped ? <>
           <MoreNewButton more={more} onMore={onMore} primary={soundCount === 0} />

@@ -273,3 +273,16 @@ it('sessionOrder는 rest를 넣지 않는다 — 분량 밖 단어는 지금 차
   expect(sessionOrder(s, T0)).toEqual(['L1', 'r1', 'r2']);
 });
 
+
+describe('끝 화면 — 분량에서 멈춤이면 「이어서」가 주 단추(소리 확인이 있어도)', () => {
+  it('이어서 = 맨 위 주 단추 · 소리 확인은 아래 줄 보조', async () => {
+    const { renderToStaticMarkup } = await import('react-dom/server');
+    const { OneWordDone } = await import('@/components/levels/word/OneWord');
+    const html = renderToStaticMarkup(<OneWordDone graded={10} tomorrow={6} counts={{ 1: 2, 2: 1, 3: 6, 4: 1 }} onList={() => {}}
+      cont={10} onContinue={() => {}} soundCount={3} onSound={() => {}} />);
+    expect(html).toContain('class="lw-btn lw-btn--primary">이어서 10개</button>');
+    expect(html).toContain('class="lw-btn">소리 확인 3개</button>');
+    expect(html.indexOf('이어서 10개')).toBeLessThan(html.indexOf('lw-done__row'));
+    expect(html).not.toContain('lw-btn--primary">소리로 확인할 단어');
+  });
+});
