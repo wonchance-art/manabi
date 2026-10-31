@@ -61,7 +61,8 @@ function ExampleWords({ ex, word, onWord, openKey, tone = true }) {
 /**
  * 예문 — 빌드 때 나눈 단어 길이(seg)로 단어마다 점선 밑줄, 카드 단어는 장미색. 누르면 예문 단어 창(찾는 말 = 원형 lem, 없으면 조각 그대로).
  * lem(일본어) = 0 누르지 않음(조사 · 기호) · 1 조각 그대로 · '원형'(して → する). lem이 없으면(중국어) 한자 조각만 누른다.
- * 후리가나(furi)는 tone(설정의 「예문 후리가나」)이 켜졌을 때만. 후리가나를 맞추지 못한 예문 · 본문을 따로 그린 예문(문장 탭)은 읽기 줄을 보인다.
+ * 후리가나(furi)는 tone이 켜졌을 때만 — tone은 고정(늘 켬, 설정 스위치는 2026-10-31 KST에 없앴다). 후리가나를 맞추지 못한 예문 · 본문을 따로 그린 예문(문장 탭)은 읽기 줄을 보인다.
+ * 후리가나 규칙(오너 2026-10-31 KST): 문제 면(한 단어 앞면 · 리스트 접힌 문장)에는 넣지 않고(맨 글자), 답 면(펼침 · 뒷면 — 이 Example)에는 늘 넣는다.
  */
 export function Example({ ex, word, speak, onWord, openKey, showText = true, tone = true, tail = null }) {
   const L = useWordLang();
@@ -86,7 +87,7 @@ export function Example({ ex, word, speak, onWord, openKey, showText = true, ton
  * onOpen = 펼침(같은 날 규칙 — 이 기기에서 이 단어를 펼쳐 봤다).
  */
 export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, tone, onGrade, onSave, saving, pop, onWord, openKey, note,
-  grades: inline = false, search = false, focused = false, onPick, onOpen, due = false, wait = null, later = null, areas = null, next = null }) {
+  grades: inline = false, two = false, search = false, focused = false, onPick, onOpen, due = false, wait = null, later = null, areas = null, next = null }) {
   const L = useWordLang();
   const [open, setOpen] = useState(false); // false | true | 'closing'(접히는 0.2초 — 오너 2026-10-21 KST ⑥-2)
   const { hw, sub } = L.head(e);
@@ -108,7 +109,7 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
   const meanLine = (tail) => (tail ? <p className="lw-card__mean lw-tailrow"><span>{e.meaning}</span>{tail}</p> : <p className="lw-card__mean">{e.meaning}</p>);
   const mean = meanLine(null);
   const ex = <Example ex={e.ex} word={e.word} speak={speak} onWord={onWord} openKey={openKey} tone={tone} />;
-  const grades = inline ? <GradeButtons previews={info.previews} onGrade={onGrade} note={note} /> : null;
+  const grades = inline ? <GradeButtons previews={info.previews} onGrade={onGrade} note={note} two={two} /> : null;
   const pick = (event) => { if (!event.target.closest('button, a')) onPick?.(); };
   const attrs = { 'data-key': e.key, 'data-focus': focused || undefined };
   const areaRow = <AreaRow areas={areas} next={next} />;

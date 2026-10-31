@@ -51,7 +51,7 @@ describe('① 하루 새 단어 — 복습 설정과 같은 수 · 더 단추(�
     expect(screen).toContain('{done && allEntries.length > 0 && doneScreen()}');
     expect(screen).toContain("{session && done && doneScreen({ onList: () => switchMode('list') })}");
     expect(screen).not.toContain('오늘 이 레벨은 다 봤어요');
-    expect(screen).toMatch(/!listed\.active\.length && listed\.waiting\.length > 0 && moreBatch > 0 && <div className="lw-capped"/);
+    expect(screen).toMatch(/!listed\.active\.length && listed\.waiting\.length > 0 && !contBatch && moreBatch > 0 && <div className="lw-capped"/);
     expect(screen).toMatch(/lw-capped[\s\S]{0,400}<MoreNewButton[\s\S]{0,200}전체 훑어보기/);
     const inList = wrap(<OneWordDone graded={3} tomorrow={0} counts={counts} onNext={() => {}} nextLabel="HSK 4" />);
     expect(inList).not.toContain('리스트로');
@@ -65,7 +65,7 @@ describe('② 앞면에서도 채점 — 「확인 전 채점 막기」는 넣�
     expect(css).not.toContain('data-locked');
     expect(screen).toContain('<GradeBar previews={currentInfo.previews} onGrade={(r) => onGrade(current, r)}');
     expect(screen).toContain('<PracticeBar onAnswer={(ok) => onPractice(practiceEntry, ok)}');
-    expect(screen).toContain("if (['1', '2', '3', '4'].includes(event.key)) { event.preventDefault(); h.onGrade(h.current, Number(event.key)); }");
+    expect(screen).toContain("if (keys.includes(event.key)) { event.preventDefault(); h.onGrade(h.current, Number(event.key)); }");
     expect(screen).not.toMatch(/revealed \? onGrade|opened\.has\(/);
   });
 });

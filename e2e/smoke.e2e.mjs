@@ -646,13 +646,17 @@ test('vocab performance: N3 초기 DOM과 단어장 읽기를 예산 안에 유�
     assert.ok(vocabReads.every(url => !new URL(url).searchParams.has('word_text')),
       'level keys must not go into the URL (old per-chunk fan-out)');
 
-    // 설정은 두 곳(2026-10-21 KST): 제목 ▾ 시트 = 레벨 · 목록 · 보기(모드 · 보기 탭은 페이지 줄에만), 해 모양 창 없음.
+    // 설정은 두 곳(2026-10-21 KST): 제목 ▾ 시트 = 레벨 · 목록 · 학습 옵션(모드 · 보기 탭은 페이지 줄에만), 해 모양 창 없음.
+    // 학습 옵션(2026-10-31 KST): 순서 · 분량 · 세부(2단 평가) — 예전 보기 줄(도움 스위치 · 리스트 한 번에)은 없다.
     assert.equal(await page.locator('.lw-top').getByRole('button', { name: '설정' }).count(), 0, 'no separate settings button in the top bar');
-    await page.getByRole('button', { name: '레벨 · 목록 · 보기', exact: true }).click();
-    const sheet = page.getByRole('dialog', { name: '레벨 · 목록 · 보기' });
+    await page.getByRole('button', { name: '레벨 · 목록 · 학습 옵션', exact: true }).click();
+    const sheet = page.getByRole('dialog', { name: '레벨 · 목록 · 학습 옵션' });
     await assertVisible(sheet, 'title sheet');
     assert.deepEqual(await sheet.getByRole('group', { name: '목록' }).getByRole('link').allInnerTexts(), ['단어', '문형']);
-    assert.equal(await sheet.getByRole('switch', { name: '예문 후리가나' }).count(), 1, 'aid switch lives in the title sheet');
+    assert.deepEqual(await sheet.getByRole('group', { name: '순서' }).getByRole('button').allInnerTexts(), ['혼합', '새 단어 먼저', '복습 먼저']);
+    assert.deepEqual(await sheet.getByRole('group', { name: '분량' }).getByRole('button').allInnerTexts(), ['10개', '20개', '전체']);
+    assert.equal(await sheet.getByRole('switch', { name: '2단 평가' }).count(), 1, 'two-grade switch lives in the title sheet');
+    assert.equal(await sheet.getByRole('switch', { name: '예문 후리가나' }).count(), 0, 'aid switch is gone (furigana fixed on)');
     assert.equal(await sheet.getByRole('button', { name: '한 단어', exact: true }).count(), 0, 'mode stays on the page row only');
     await page.keyboard.press('Escape');
     // 연습 탭에서 첫 답을 내면 모드 · 보기 줄이 접히고, 제목을 누르면 시트 대신 줄이 다시 펼쳐진다.

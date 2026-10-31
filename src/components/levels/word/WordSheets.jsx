@@ -8,6 +8,7 @@ import { hanjaPanelModel, normalizePinyin, selectSameHanjaTiles, splitPinyinSyll
 import { jaKanjiReadingRows, kanaPerChar, loadJaReadingTables } from '@/lib/jaKanjiReadingRows';
 import { CharTiles, WordRow } from './WordParts';
 import { useWordLang } from './wordLang';
+import { LEVEL_STUDY_AMOUNTS, LEVEL_STUDY_ORDERS } from '@/lib/levelWordPrefs';
 
 const CLOSE_DRAG_PX = 80;
 const JA_MIN_BELOW = 200; // 읽기 표 창을 아래에 둘 최소 높이(머리 + 읽기 약 3줄)
@@ -85,22 +86,23 @@ function Seg({ label, items, value, onPick }) {
 }
 
 /**
- * 제목 ▾ 시트 — 레벨 · 목록 · 보기(오너 2026-10-21 KST 「두 곳」 안: 페이지 줄 = 지금 공부하는 방식, 제목 = 나머지 전부).
- * 모드 · 보기 탭은 페이지 줄에만 둔다(시트에 또 두면 겹친다). 목록은 그 레벨에 있는 것만(한자 1 · 2급, 7–9급은 단어뿐이라 줄 없음).
+ * 제목 ▾ 시트 — 레벨 · 목록 | 순서 · 분량 · 세부(오너 2026-10-21 KST 「두 곳」 안: 페이지 줄 = 지금 공부하는 방식, 제목 = 나머지 전부 ·
+ * 학습 옵션 LEVEL-STUDY-OPTIONS-001, 오너 2026-10-31 KST 시안 4차 · 단순화). 모드 · 보기 탭은 페이지 줄에만 둔다(시트에 또 두면 겹친다).
+ * 목록은 그 레벨에 있는 것만(한자 1 · 2급, 7–9급은 단어뿐이라 줄 없음). 찾아가기(레벨 · 목록)와 오늘 공부(순서 · 분량 · 세부)는 묶음 제목 없이 가는 선 하나로 나눈다.
+ * 이름표는 모두 두 글자(40px 열 그대로) · 고르는 줄은 모두 세 칸이라 칸 경계가 목록 줄과 같은 세로선에 선다. 예전 「보기」 줄(도움 스위치 · 리스트 한 번에)은 없앴다(고정 기본값).
  */
-export function TitleSheet({ levels, levelKey, kinds, aidLabel, aid, page, pageSizes, onAid, onPage, onClose }) {
+export function TitleSheet({ levels, levelKey, kinds, prefs, onPrefs, onClose }) {
   const L = useWordLang();
-  return <Sheet label="레벨 · 목록 · 보기" onClose={onClose}>
+  return <Sheet label="레벨 · 목록 · 학습 옵션" onClose={onClose}>
     <div className="lw-sheet__rows">
       <Seg label="레벨" value={levelKey} items={levels.map((k) => ({ id: k, label: L.levelPill(k), aria: L.tag(L.levelOf(k)), href: L.levelHref(k) }))} />
       {kinds.length > 1 && <Seg label="목록" value="vocab" items={kinds} />}
-      <div className="lw-sheet__row lw-sheet__row--top"><span>보기</span>
+      <div className="lw-sheet__sep" role="presentation" />
+      <Seg label="순서" value={prefs.order} items={LEVEL_STUDY_ORDERS} onPick={(order) => onPrefs({ order })} />
+      <Seg label="분량" value={prefs.amount} items={LEVEL_STUDY_AMOUNTS} onPick={(amount) => onPrefs({ amount })} />
+      <div className="lw-sheet__row"><span>세부</span>
         <div className="lw-sheet__view">
-          {aidLabel && <button type="button" role="switch" className="lw-switch" aria-checked={aid} onClick={() => onAid(!aid)}>{aidLabel}<i aria-hidden="true" /></button>}
-          <div className="lw-sheet__page"><span id="lw-page-size">리스트 한 번에</span>
-            <span className="lw-mini" role="group" aria-labelledby="lw-page-size" data-thumb="" style={{ '--i': Math.max(0, pageSizes.indexOf(page)) }}>
-              {pageSizes.map((n) => <button key={n} type="button" aria-pressed={page === n} onClick={() => onPage(n)}>{n}</button>)}
-            </span></div>
+          <button type="button" role="switch" className="lw-switch" aria-checked={!!prefs.two} onClick={() => onPrefs({ two: !prefs.two })}>2단 평가<i aria-hidden="true" /></button>
         </div></div>
     </div>
   </Sheet>;

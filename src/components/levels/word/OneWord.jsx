@@ -39,10 +39,10 @@ export function OneWordCard({ entry: e, view, info, tiles, speak, tone, revealed
  * 리스트 모드만 label(지금 채점할 카드의 단어 — 準備)을 그 자리에 둔다. 자리는 늘 잡아 네 칸이 움직이지 않는다.
  * 앞면에서도 바로 누를 수 있다(답을 펼치지 않고 채점 — 오너 결정, 2026-10-21 KST 재확인: 시안 ⑦-2 「확인 전 채점 막기」는 넣지 않는다).
  */
-export function GradeBar({ previews, onGrade, disabled, note, label = null }) {
+export function GradeBar({ previews, onGrade, disabled, note, label = null, two = false }) {
   return <div className="lw-gradebar"><div className="lw-gradebar__in">
     <p className="lw-gradebar__guide" aria-hidden={!label || undefined}>{label}</p>
-    <GradeButtons previews={previews} onGrade={onGrade} disabled={disabled} note={note} />
+    <GradeButtons previews={previews} onGrade={onGrade} disabled={disabled} note={note} two={two} />
   </div></div>;
 }
 
@@ -60,16 +60,23 @@ export function NewDayTitle({ started }) {
 export function MoreNewButton({ more, onMore, primary = false }) {
   return <button type="button" className={`lw-btn${primary ? ' lw-btn--primary' : ''}`} onClick={onMore}>새 단어 {more}개 더</button>;
 }
+/** 분량(학습 옵션)에서 멈춘 뒤 남은 오늘 단어를 다음 분량만큼 — 「새 단어 N개 더」(하루 몫 뒤)와 다른 칸(rest)이다. */
+export function ContinueButton({ count, onContinue, primary = false }) {
+  return <button type="button" className={`lw-btn${primary ? ' lw-btn--primary' : ''}`} onClick={onContinue}>이어서 {count}개</button>;
+}
 /** 「더」의 대가 — 단추 안이 아니라 아래 회색 한 줄(시안 ⑪ · 단추는 모두 한 줄 48px). */
 export function MoreNewNote({ perDay }) {
   // 「제한 없음」(9999)은 숫자로 쓰지 않는다.
   return <p className="lw-done__note">{perDay > 0 && perDay < NEW_PER_DAY_UNLIMITED ? `하루 ${perDay}개를 넘기면 내일 복습이 그만큼 늘어요` : '새 단어를 더 하면 내일 복습이 그만큼 늘어요'}</p>;
 }
-export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabel, soundCount = 0, onSound, more = 0, perDay = 0, started = 0, onMore, onBrowse }) {
+export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabel, soundCount = 0, onSound, more = 0, perDay = 0, started = 0, onMore, onBrowse,
+  cont = 0, onContinue }) {
   const cells = [[1, 'again', '다시'], [2, 'hard', '어려움'], [3, 'good', '알맞음'], [4, 'easy', '쉬움']];
-  const capped = more > 0;
+  // 분량에서 멈춤(cont — 남은 오늘 단어)이 하루 몫에서 멈춤(more)보다 먼저다: 남은 단어가 오늘 할 일이고, 몫 뒤 새 단어는 그다음이다.
+  const paused = cont > 0;
+  const capped = !paused && more > 0;
   return <section className="lw-done" aria-labelledby="lw-done-title">
-    <h2 id="lw-done-title" tabIndex={-1}>{capped ? <NewDayTitle started={started} /> : '오늘 이 레벨 끝'}</h2>
+    <h2 id="lw-done-title" tabIndex={-1}>{paused ? '이번 분량 끝' : capped ? <NewDayTitle started={started} /> : '오늘 이 레벨 끝'}</h2>
     {graded > 0 ? <>
       <div className="lw-done__big">
         <span className="lw-done__n"><b><CountUp n={graded} /></b><small>학습</small></span>
@@ -82,7 +89,10 @@ export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabe
     <div className="lw-done__actions">
       {soundCount > 0 && <button type="button" className="lw-btn lw-btn--primary" onClick={onSound}>소리로 확인할 단어 {soundCount}개</button>}
       <div className="lw-done__row">
-        {capped ? <>
+        {paused ? <>
+          <ContinueButton count={cont} onContinue={onContinue} primary={soundCount === 0} />
+          {onList && <button type="button" className="lw-btn" onClick={onList}>리스트로</button>}
+        </> : capped ? <>
           <MoreNewButton more={more} onMore={onMore} primary={soundCount === 0} />
           <button type="button" className="lw-btn" onClick={onBrowse}>전체 훑어보기</button>
         </> : <>

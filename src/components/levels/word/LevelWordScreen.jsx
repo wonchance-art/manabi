@@ -34,9 +34,10 @@ import {
 import { useLevelWordAreas } from '@/lib/useLevelWordAreas';
 import { levelPackTiles } from '@/lib/levelCharTiles';
 import {
-  gradeLevelSession, moreLevelSession, nextLevelKey, pullLevelSession, sessionCurrent, sessionDone, sessionDue, sessionNextAt, sessionOrder,
-  revertLevelGrade, sessionWaiting, splitLaterEntries, startLevelSession,
+  arrangeLevelSession, continueLevelSession, gradeLevelSession, moreLevelSession, nextLevelKey, pullLevelSession, sessionCurrent, sessionDone, sessionDue,
+  sessionNextAt, sessionOrder, revertLevelGrade, sessionWaiting, splitLaterEntries, startLevelSession,
 } from '@/lib/levelWordSession';
+import { LEVEL_WORD_PREFS, LEVEL_WORD_VIEWS, levelStudyChip, levelStudyOptions, normalizeLevelWordPrefs } from '@/lib/levelWordPrefs';
 import { indexEntry, searchLevelIndex } from '@/lib/levelWordIndex';
 import { useLevelWordGrade } from '@/lib/useLevelWordGrade';
 import { useLevelWords } from '@/lib/useLevelWords';
@@ -45,7 +46,7 @@ import { recordActivity } from '@/lib/streak';
 import { useHeightSettle } from '@/lib/useHeightSettle';
 import { BackIcon, CaretIcon, CharTiles, ClearIcon, PieceDrillContext, SearchIcon, WaitChip, WordRow } from '@/components/levels/word/WordParts';
 import { WordCard } from '@/components/levels/word/WordCard';
-import { GradeBar, MoreNewButton, MoreNewNote, NewDayTitle, OneWordCard, OneWordDone } from '@/components/levels/word/OneWord';
+import { ContinueButton, GradeBar, MoreNewButton, MoreNewNote, NewDayTitle, OneWordCard, OneWordDone } from '@/components/levels/word/OneWord';
 import { BrowseBar, PracticeBar, PracticeDone, PracticeIntro } from '@/components/levels/word/WordAreas';
 import { PiecePopup, Sheet, TitleSheet, WordPopup } from '@/components/levels/word/WordSheets';
 import { WordSearchResults } from '@/components/levels/word/WordSearch';
@@ -104,30 +105,9 @@ function playArrive(el) {
   }, () => { el.style.overflow = ''; });
 }
 
-// 보기 탭(네 영역 체크 — 오너 승인 2026-10-21 KST): [단어]가 기본이고 실제 복습 일정(네 칸)은 이 탭만 바꾼다.
-// 문장 · 뜻 · 소리는 스스로 더 다지고 싶은 사람의 연습(두 칸 · 일정 없음), 전체는 훑어보기(채점 없음).
-export const LEVEL_WORD_VIEWS = Object.freeze([
-  { id: 'word', label: '단어' }, { id: 'sentence', label: '문장' }, { id: 'meaning', label: '뜻' }, { id: 'sound', label: '소리' }, { id: 'all', label: '전체' },
-]);
-// 한 단어 모드가 기본. 품사 범위(전체 ▾)는 없앴다 — 늘 레벨 전체(오너 2026-10-20 KST 「그 기능은 아예 없애」).
-// 리스트는 아직 채점하지 않은 카드를 한 번에 page장까지 펼친다(오너 2026-10-20 KST — 설정에서 10 · 20 · 50, 기본 20).
+// 보기 탭 · 기기 설정(모드 · 보기 · 학습 옵션)의 정본은 levelWordPrefs — 리스트는 아직 채점하지 않은 카드를 한 번에 page장(20 고정)까지 펼친다.
 // 채점하면 아래 카드가 올라와 다시 page장 · 기다리는 카드와 접힌 두 줄(복습 예정 · 새 단어)은 세지 않는다 · 시간이 된 카드는 그 위에 더한다.
-export const LEVEL_WORD_PAGE_SIZES = Object.freeze([10, 20, 50]);
-export const LEVEL_WORD_PREFS = Object.freeze({ mode: 'one', view: 'word', tone: true, page: 20, v: 2 });
 const NOTICE_MS = 8000;
-
-export function normalizeLevelWordPrefs(raw) {
-  const p = raw && typeof raw === 'object' ? raw : {};
-  // v2 전에 저장된 「전체」는 그때의 기본값이라 새 기본(단어)으로 옮긴다 — 전체가 채점 없는 훑기로 바뀌었다.
-  const view = p.v !== 2 && p.view === 'all' ? 'word' : p.view;
-  return {
-    mode: p.mode === 'list' ? 'list' : 'one',
-    view: LEVEL_WORD_VIEWS.some((v) => v.id === view) ? view : 'word',
-    tone: p.tone !== false,
-    page: LEVEL_WORD_PAGE_SIZES.includes(p.page) ? p.page : LEVEL_WORD_PREFS.page,
-    v: 2,
-  };
-}
 
 const readJson = (store, key) => { try { return JSON.parse(store.getItem(key) || 'null'); } catch { return null; } };
 const writeJson = (store, key, value) => { try { store.setItem(key, JSON.stringify(value)); } catch { /* 저장소 없음 — 이번 화면만 */ } };
@@ -190,7 +170,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
   // 하이드레이션: 서버 렌더와 첫 화면을 같게 — 계정 상태 · 기기 설정은 붙은 뒤에만.
   const [mounted, setMounted] = useState(false);
   const [prefs, setPrefsState] = useState(LEVEL_WORD_PREFS);
-  // 기기 설정은 언어마다 따로(cfg.prefsKey) — HSK 「성조 색」과 JLPT 「예문 후리가나」가 같은 칸(tone)이라 서로 끄지 않게.
+  // 기기 설정은 언어마다 따로(cfg.prefsKey) — HSK와 JLPT의 학습 옵션(순서 · 분량 · 2단 평가)이 서로 바꾸지 않게.
   useLayoutEffect(() => { setPrefsState(normalizeLevelWordPrefs(readJson(localStorage, cfg.prefsKey))); setMounted(true); }, [cfg.prefsKey]);
   const setPrefs = useCallback((patch) => setPrefsState((cur) => {
     const next = normalizeLevelWordPrefs({ ...cur, ...patch });
@@ -335,6 +315,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
   const leaving = useRef(false); // 나가는 움직임 동안은 다음 채점을 받지 않는다(줄이 어긋나지 않게)
   const scope = `${userId || 'guest'}:${levelKey}`;
   const startedFor = useRef(null);
+  const studyOpts = useMemo(() => levelStudyOptions(prefs), [prefs.order, prefs.amount]); // eslint-disable-line react-hooks/exhaustive-deps -- 순서 · 분량만
   useEffect(() => {
     if (!ready || !loaded || !slotsSettled || startedFor.current === scope) return;
     startedFor.current = scope;
@@ -343,7 +324,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
     const perDay = userId ? loadNewPerDay() : null;
     const newCap = perDay === null ? Infinity : slots ? slots.remaining : perDay - newStartedToday(index, language, Date.now());
     let next = startLevelSession(allEntries, (k) => table.get(k)?.status, (k) => nextDueMs(table.get(k)?.projection), Date.now(),
-      { newCap, learningOf: (k) => inLearningStep(table.get(k) || {}) });
+      { newCap, learningOf: (k) => inLearningStep(table.get(k) || {}), ...studyOpts });
     setNewPerDay(slots ? slots.limit : perDay);
     // 로그인 · 다른 레벨 단어 카드에서 돌아오면 보던 카드부터(한도 뒤에 남긴 새 단어여도).
     const back = readJson(sessionStorage, RETURN_KEY);
@@ -355,7 +336,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
     setHeadKey(wanted && next.queue.includes(wanted) ? wanted : null);
     setRevealed(false);
     if (wanted && byKey.has(wanted)) setJumpTo(wanted);
-  }, [ready, loaded, slotsSettled, slots, scope, allEntries, table, pathname, byKey, userId, index, language]);
+  }, [ready, loaded, slotsSettled, slots, scope, allEntries, table, pathname, byKey, userId, index, language, studyOpts]);
   // 기다리던 카드의 시각이 되면 다시 그린다(맨 위로 올라온다).
   const nextAt = sessionNextAt(session, clock);
   useEffect(() => {
@@ -368,6 +349,13 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
   const [headKey, setHeadKey] = useState(null);
   const head = !session ? null : sessionOrder(session, clock).includes(headKey) ? headKey : sessionCurrent(session, clock);
   useEffect(() => { if (head !== headKey) setHeadKey(head); }, [head, headKey]);
+  // 학습 옵션(순서 · 분량)을 바꾸면 아직 채점하지 않은 몫만 다시 짠다 — 채점 수 · 누른 횟수 · 기다리는 카드 · 되돌리기 기록은 그대로.
+  // 되돌리기 · 저장 실패 복구가 옛 옵션으로 짠 줄(sessionBefore)을 돌려놓아도 여기서 지금 옵션으로 다시 짠다(보던 카드는 ② 맨 앞에 남는다).
+  useLayoutEffect(() => {
+    if (!session) return;
+    const next = arrangeLevelSession(session, studyOpts, { pin: head });
+    if (next !== session) setSession(next);
+  }, [session, studyOpts, head]);
   const currentKey = head;
   const current = currentKey ? byKey.get(currentKey) : null;
   const done = sessionDone(session);
@@ -376,6 +364,11 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
   const heldCount = useMemo(() => (session?.held?.length ? session.held.filter(stillNew).length : 0), [session, stillNew]);
   const moreBatch = Math.min(heldCount, newPerDay || DEFAULT_NEW_PER_DAY);
   const moreNew = () => { setSession((cur) => moreLevelSession(cur, moreBatch, stillNew)); setRevealed(false); };
+  // 분량에서 멈춘 남은 단어(rest) — 「이어서 N개」는 분량만큼. 그사이 다른 곳에서 채점해 오늘 할 일이 아닌 단어는 빼고 센다.
+  const stillToday = useCallback((k) => ['today', 'new', 'saved'].includes(table.get(k)?.status), [table]);
+  const restCount = useMemo(() => (session?.rest?.length ? session.rest.filter(stillToday).length : 0), [session, stillToday]);
+  const contBatch = Math.min(restCount, Number.isFinite(studyOpts.amount) ? studyOpts.amount : restCount);
+  const continueRest = () => { setSession((cur) => continueLevelSession(cur, contBatch, stillToday)); setRevealed(false); };
   // 오늘 시작한 새 단어 — 서버 몫의 쓴 수(전에 담고 오늘 처음 공부한 단어 포함), 못 읽으면 기기 셈.
   const startedToday = useMemo(() => (!heldCount ? 0 : slots ? slots.used : newStartedToday(index, language, clock)), [heldCount, slots, index, language, clock]);
 
@@ -433,7 +426,8 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
     const order = sessionOrder(session, clock);
     const active = pick(order.includes(head) ? [head, ...order.filter((k) => k !== head)] : order);
     // 줄에 있는 열쇠는 한 번 모아 둔다 — 단어마다 sessionHas(줄 전체 훑기)를 부르면 손님 줄(레벨 전체)에서 N²(H7 5,562장 = 약 3천만 번).
-    const inLine = new Set([...session.queue, ...session.waiting.map((w) => w.key)]);
+    // 분량 뒤에 남긴 단어(rest)도 오늘 줄이다 — 접힌 두 줄(복습 예정 · 새 단어)에 내려 보이지 않는다.
+    const inLine = new Set([...session.queue, ...session.waiting.map((w) => w.key), ...(session.rest || [])]);
     const { review, fresh } = splitLaterEntries(allEntries, inLine, (k) => table.get(k)?.graded, (k) => table.get(k)?.projection?.review?.nextQuestionAt);
     return { active, due: new Set(due), waiting: waiting.map((w) => ({ entry: byKey.get(w.key), at: w.at })).filter((w) => w.entry),
       later: { review: review.map((r) => r.entry), fresh }, laterNext: new Map(review.map((r) => [r.entry.key, r.next])) };
@@ -720,7 +714,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
   }, [pieceOpen, dict, allEntries, level, cfg.mode]);
   const pieceSaved = useMemo(() => (pieceOpen && index ? [...new Set(index.byKey.values())].filter((r) => r.language === language) : []), [pieceOpen, index, language]);
 
-  // ── 상단 · 제목 시트(레벨 · 목록 · 보기 — 해 모양 설정 창은 여기로 합쳤다, 오너 2026-10-21 KST) ──
+  // ── 상단 · 제목 시트(레벨 · 목록 · 학습 옵션 — 해 모양 설정 창은 여기로 합쳤다, 오너 2026-10-21 KST · 학습 옵션 2026-10-31 KST) ──
   const [sheetOpen, setSheetOpen] = useState(false);
   const progRef = useRef(null);
   const [stuck, setStuck] = useState(false);
@@ -777,7 +771,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
 
   // ── 키보드 — Space 정답 확인 · 1–4 채점(리스트는 아래 네 칸의 대상 카드) · Ctrl/⌘+Z 되돌리기(복습실과 같은 키) ──
   const keyState = useRef({});
-  keyState.current = { current, revealed, mode: prefs.mode, blocked: searchOpen || sheetOpen || !!card, onGrade, undo, focus: focusEntry,
+  keyState.current = { current, revealed, mode: prefs.mode, blocked: searchOpen || sheetOpen || !!card, onGrade, undo, focus: focusEntry, two: prefs.two,
     practice: roundOn ? (prefs.mode === 'one' ? practiceEntry : practiceFocus) : null, onPractice, browse,
     // 다음 카드를 펼치면 직전 채점의 조용한 되돌리기는 거둔다(뒷면 안내 줄과 겹치지 않게 — Ctrl/⌘+Z는 창 안이면 그대로).
     reveal: () => { const k = roundOn ? practiceEntry?.key : current?.key; if (k) areaRec.noteOpen(k, practice || 'word'); setRevealed(true); setNotice((n) => (n?.quiet ? null : n)); },
@@ -799,10 +793,12 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
         if (event.key === '1' || event.key === '2') { event.preventDefault(); h.onPractice(h.practice, event.key === '2'); }
         return;
       }
-      if (h.mode === 'list') { if (h.focus && ['1', '2', '3', '4'].includes(event.key)) { event.preventDefault(); h.onGrade(h.focus, Number(event.key), { next: true }); } return; }
+      // 2단 평가(다시 · 알맞음)에서는 1 · 3만 받는다 — 2 · 4는 아무 일도 하지 않는다(보이지 않는 칸을 누르지 않게).
+      const keys = h.two ? ['1', '3'] : ['1', '2', '3', '4'];
+      if (h.mode === 'list') { if (h.focus && keys.includes(event.key)) { event.preventDefault(); h.onGrade(h.focus, Number(event.key), { next: true }); } return; }
       if (h.mode !== 'one' || !h.current) return;
       if ((event.key === ' ' || event.key === 'Enter') && !h.revealed && !event.target.closest?.('button, a')) { event.preventDefault(); h.reveal(); return; }
-      if (['1', '2', '3', '4'].includes(event.key)) { event.preventDefault(); h.onGrade(h.current, Number(event.key)); }
+      if (keys.includes(event.key)) { event.preventDefault(); h.onGrade(h.current, Number(event.key)); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -813,6 +809,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
   useEffect(() => { if (roundDone) document.getElementById('lw-done-title')?.focus({ preventScroll: true }); }, [roundDone]);
 
   const title = cfg.title(level);
+  const optChip = levelStudyChip(prefs); // 기본이 아닌 학습 옵션만(순서 · 분량 · 2단 평가)
   const tone = prefs.tone;
   const currentInfo = current ? cardInfo(current.key) : null;
   // 복습실(FSRS) 카드는 서버 규칙상 차례 전에는 채점할 수 없다 — 기다리는 카드만 남아 앞당겨 보여도 남은 시간을 세며 기다린다.
@@ -830,7 +827,8 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
   const doneScreen = ({ onList = null } = {}) => <OneWordDone graded={session.graded} tomorrow={tomorrow} counts={session.counts}
     onNext={next ? goNext : null} nextLabel={next ? cfg.tag(cfg.levelOf(next)) : null}
     onList={onList} soundCount={soundKeys.length} onSound={openSound}
-    more={moreBatch} perDay={newPerDay || 0} started={startedToday} onMore={moreNew} onBrowse={() => switchView('all')} />;
+    more={moreBatch} perDay={newPerDay || 0} started={startedToday} onMore={moreNew} onBrowse={() => switchView('all')}
+    cont={contBatch} onContinue={continueRest} />;
   const nextBatch = roundDone ? practiceBatch(round.area).filter((k) => !touchedToday(k)).length : 0;
   const practiceDone = roundDone && <PracticeDone area={round.area} hits={[...round.answers.values()].filter((a) => a.correct).length}
     misses={[...round.answers.values()].filter((a) => !a.correct).length}
@@ -863,8 +861,8 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/favicon.svg" alt="" width={32} height={32} />
         </Link>
-        <h1 className="lw-title"><button type="button" onClick={onTitle} title="맨 위로 · 레벨 · 목록 · 보기">{title}</button></h1>
-        <button type="button" className="lw-title__caret lw-icon" aria-label="레벨 · 목록 · 보기" aria-haspopup="dialog" onClick={() => setSheetOpen(true)}><CaretIcon /></button>
+        <h1 className="lw-title"><button type="button" onClick={onTitle} title="맨 위로 · 레벨 · 목록 · 학습 옵션">{title}</button></h1>
+        <button type="button" className="lw-title__caret lw-icon" aria-label="레벨 · 목록 · 학습 옵션" aria-haspopup="dialog" onClick={() => setSheetOpen(true)}><CaretIcon /></button>
         <button type="button" className="lw-icon" aria-label="단어 찾기" onClick={openSearch}><SearchIcon /></button>
       </header>}
 
@@ -882,6 +880,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
       {userId && <div className="lw-prog" ref={progRef} data-stuck={stuck || undefined}>
         {ready && loaded ? <>
           <div className="lw-bar" role="progressbar" aria-label="이 레벨에서 채점한 단어" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}><i style={{ '--p': percent / 100 }} /></div>
+          {optChip && <span className="lw-optchip" title="학습 옵션">{optChip}</span>}
           <span className="lw-pct">{percent}%</span>
         </> : <span className="lw-bar lw-bar--off" aria-hidden="true" style={{ visibility: 'hidden' }} />}
       </div>}
@@ -933,7 +932,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
           {session && current && <OneWordCard entry={current} view={prefs.view} info={currentInfo} tiles={tilesOf(current.word, current.kr)}
             speak={speak} tone={tone} revealed={revealed} onReveal={() => keyState.current.reveal()} turnKey={turn ? `${turn}:${current.key}` : null}
             onWord={onExampleWord} openKey={pop?.id} />}
-          {session && current && <GradeBar previews={currentInfo.previews} onGrade={(r) => onGrade(current, r)} disabled={!ready} note={gradeNote(currentInfo)} />}
+          {session && current && <GradeBar previews={currentInfo.previews} onGrade={(r) => onGrade(current, r)} disabled={!ready} note={gradeNote(currentInfo)} two={prefs.two} />}
         </div>
         : <>
           {!listed && pending}
@@ -944,7 +943,15 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
             {listed.waiting.length > 0 && <ul className="lw-list" data-main="" aria-label="기다리는 카드">{listed.waiting.map((w) => listCard(w.entry, { wait: w.at }))}</ul>}
             {/* 리스트도 다 끝나면 한 단어와 같은 끝 화면(시안 「단어 페이지 손질」 정리) · 기다리는 카드가 남았으면 그 위에 더 단추만 */}
             {done && allEntries.length > 0 && doneScreen()}
-            {!listed.active.length && listed.waiting.length > 0 && moreBatch > 0 && <div className="lw-capped" role="status">
+            {!listed.active.length && listed.waiting.length > 0 && contBatch > 0 && <div className="lw-capped" role="status">
+              <p className="lw-capped__t">이번 분량 끝</p>
+              <p className="lw-capped__s">기다리는 카드는 시간이 되면 위로 올라와요</p>
+              <div className="lw-done__row">
+                <ContinueButton count={contBatch} onContinue={continueRest} />
+                <button type="button" className="lw-btn" onClick={() => switchView('all')}>전체 훑어보기</button>
+              </div>
+            </div>}
+            {!listed.active.length && listed.waiting.length > 0 && !contBatch && moreBatch > 0 && <div className="lw-capped" role="status">
               <p className="lw-capped__t"><NewDayTitle started={startedToday} /></p>
               <p className="lw-capped__s">기다리는 카드는 시간이 되면 위로 올라와요</p>
               <div className="lw-done__row">
@@ -969,7 +976,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
           </>}
           {loaded && !allEntries.length && <p className="lw-empty">이 레벨에는 단어가 없어요</p>}
           {focusEntry && <GradeBar previews={focusInfo.previews} onGrade={(r) => onGrade(focusEntry, r, { next: true })} note={gradeNote(focusInfo)}
-            disabled={!ready} label={<b lang={cfg.hw}>{cfg.head(focusEntry).hw}</b>} />}
+            disabled={!ready} label={<b lang={cfg.hw}>{cfg.head(focusEntry).hw}</b>} two={prefs.two} />}
         </>}
 
     {piece && <PiecePopup key={piece.id} req={piece} tables={charTables} refIndex={pieceRefIndex} savedRows={pieceSaved} tone={tone} onClose={() => setPiece(null)} />}
@@ -982,7 +989,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
       {cardEntry
         ? <ul className="lw-list"><WordCard entry={cardEntry} level={level} view="all" info={cardInfo(cardEntry.key)} tiles={tilesOf(cardEntry.word, cardEntry.kr)}
           speak={speak} tone={tone} onGrade={(r) => onGrade(cardEntry, r)} onSave={() => onStar(cardEntry)} saving={saving === cardEntry.key}
-          pop={pops.has(cardEntry.key)} note={gradeNote(cardInfo(cardEntry.key))} grades search areas={areasOf(cardEntry.key)} next={nextLine(cardEntry.key)} /></ul>
+          pop={pops.has(cardEntry.key)} note={gradeNote(cardInfo(cardEntry.key))} grades two={prefs.two} search areas={areasOf(cardEntry.key)} next={nextLine(cardEntry.key)} /></ul>
         : <div className="lw-card">
           <WordRow word={card.row.word} reading={card.row.reading} meaning={card.row.meaning || '사전에 없는 단어예요'} level={card.row.level}
             status={statusOfWord(card.row.word)} tone={tone} onSave={() => onStar(entryOfRow(card.row))} saving={saving === card.row.word} pop={pops.has(card.row.word)} />
@@ -991,8 +998,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
         </div>}
     </Sheet>}
 
-    {sheetOpen && <TitleSheet levels={levels} levelKey={levelKey} kinds={kindLinks} aidLabel={cfg.aidLabel} aid={tone}
-      page={prefs.page} pageSizes={LEVEL_WORD_PAGE_SIZES} onAid={(v) => setPrefs({ tone: v })} onPage={(n) => setPrefs({ page: n })} onClose={() => setSheetOpen(false)} />}
+    {sheetOpen && <TitleSheet levels={levels} levelKey={levelKey} kinds={kindLinks} prefs={prefs} onPrefs={setPrefs} onClose={() => setSheetOpen(false)} />}
 
     {notice && <Notice key={notice.id} notice={notice} onDone={dropNotice} />}
   </div></PieceDrillContext.Provider></WordLangContext.Provider>;

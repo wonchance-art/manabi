@@ -32,7 +32,6 @@ export const HSK_WORD_LANG = Object.freeze({
   placeholder: '한자 · 병음 · 뜻',
   searchHint: '한자 · 병음(jingyan · jing1yan4) · 한국어 뜻으로 HSK 1–9 전체에서 찾아요',
   noneHint: '철자를 줄이거나(jing) 한국어 뜻(경험)으로 찾아 보세요.',
-  aidLabel: '성조 색',
   Reading: Pinyin,
   head: (e) => ({ hw: e.word, sub: e.reading }),
   loadTiles: loadLevelCharTables,
