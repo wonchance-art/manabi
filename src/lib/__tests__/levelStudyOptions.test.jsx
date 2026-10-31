@@ -220,7 +220,7 @@ describe('2단 평가 — 다시 · 알맞음만, 같은 단추 · 같은 치수
     expect(screen).toContain('if (h.mode === \'list\') { if (h.focus && keys.includes(event.key))');
     expect(screen).toContain('if (keys.includes(event.key)) { event.preventDefault(); h.onGrade(h.current, Number(event.key)); }');
     expect(screen).toContain('two: prefs.two,');
-    expect(screen.match(/two=\{prefs\.two\}/g)).toHaveLength(3);
+    expect(screen.match(/two=\{prefs\.two\}/g)).toHaveLength(4); // 한 단어 막대 · 리스트 막대 · 카드 시트 · 끝 화면
   });
 });
 
@@ -302,4 +302,18 @@ describe('후리가나 — 문제 면 없음 · 답 면 있음', () => {
 it('sessionOrder는 rest를 넣지 않는다 — 분량 밖 단어는 지금 차례가 아니다', () => {
   const s = start({ order: 'review-first', amount: 2 });
   expect(sessionOrder(s, T0)).toEqual(['L1', 'r1', 'r2']);
+});
+
+describe('2단 평가 끝 화면 — 누른 칸 둘만', () => {
+  it('다시 · 알맞음만, 도중에 어려움 · 쉬움을 눌렀으면 넷 다', async () => {
+    const { renderToStaticMarkup } = await import('react-dom/server');
+    const { OneWordDone } = await import('@/components/levels/word/OneWord');
+    const done = (counts, two) => renderToStaticMarkup(<OneWordDone graded={3} tomorrow={0} counts={counts} two={two} onList={() => {}} />);
+    const two = done({ 1: 1, 2: 0, 3: 2, 4: 0 }, true);
+    expect(two).toContain('lw-done__counts lw-done__counts--two');
+    expect(two).not.toContain('어려움');
+    expect(two).not.toContain('쉬움');
+    expect(done({ 1: 1, 2: 1, 3: 2, 4: 0 }, true)).toContain('어려움');
+    expect(done({ 1: 1, 2: 0, 3: 2, 4: 0 }, false)).toContain('쉬움');
+  });
 });

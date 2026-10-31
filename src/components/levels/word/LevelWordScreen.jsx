@@ -824,7 +824,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
     [done, areaTable, allEntries, table, areasOf, clock, prefs.page]);
   const openSound = () => { startPractice('audio', soundKeys); setPrefs({ view: 'sound' }); };
   // 단어 탭 끝 화면 — 한 단어 · 리스트 공통(리스트에서는 「리스트로」가 없다).
-  const doneScreen = ({ onList = null } = {}) => <OneWordDone graded={session.graded} tomorrow={tomorrow} counts={session.counts}
+  const doneScreen = ({ onList = null } = {}) => <OneWordDone graded={session.graded} tomorrow={tomorrow} counts={session.counts} two={prefs.two}
     onNext={next ? goNext : null} nextLabel={next ? cfg.tag(cfg.levelOf(next)) : null}
     onList={onList} soundCount={soundKeys.length} onSound={openSound}
     more={moreBatch} perDay={newPerDay || 0} started={startedToday} onMore={moreNew} onBrowse={() => switchView('all')}
