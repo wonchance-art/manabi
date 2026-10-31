@@ -49,7 +49,8 @@ describe('제목 시트 — 레벨 · 목록 | 순서 · 분량 · 세부', () =
     const html = render('H1');
     const items = (label) => [...sliceBetween(html, `>${label}</span>`, '</div></div>').matchAll(/<button[^>]*>([^<]+)<\/button>/g)].map((m) => m[1]);
     expect(items('순서')).toEqual(['혼합', '새 단어 먼저', '복습 먼저']);
-    expect(items('분량')).toEqual(['10개', '20개', '전체']);
+    expect(items('분량')).toEqual(['10개', '20개', '∞']); // 전체 = ∞(화면 읽기는 「전체」)
+    expect(html).toContain('aria-label="전체" data-sym="true"');
     expect(sliceBetween(html, '>순서</span>', '</div></div>')).toContain('--n:3');
     expect(sliceBetween(html, '>분량</span>', '</div></div>')).toContain('--n:3');
     expect(html).not.toContain('<small>');
@@ -57,7 +58,7 @@ describe('제목 시트 — 레벨 · 목록 | 순서 · 분량 · 세부', () =
   it('기본값 = 예전 동작: 혼합 · 전체 · 2단 평가 끔', () => {
     const html = render('H1');
     expect(pressed(html, '순서')).toEqual(['혼합']);
-    expect(pressed(html, '분량')).toEqual(['전체']);
+    expect(pressed(html, '분량')).toEqual(['∞']);
     expect(html).toMatch(/role="switch" class="lw-switch" aria-checked="false">2단 평가<i/);
     const on = render('H1', { order: 'review-first', amount: 10, two: true });
     expect(pressed(on, '순서')).toEqual(['복습 먼저']);

@@ -21,7 +21,8 @@ export const LEVEL_STUDY_ORDERS = Object.freeze([
 export const LEVEL_STUDY_AMOUNTS = Object.freeze([
   Object.freeze({ id: 10, label: '10개' }),
   Object.freeze({ id: 20, label: '20개' }),
-  Object.freeze({ id: 'all', label: '전체' }),
+  // 「전체」는 기호 ∞로 짧게(오너 2026-10-31 KST) — 화면 읽기에는 「전체」로 읽힌다(aria).
+  Object.freeze({ id: 'all', label: '∞', aria: '전체', sym: true }),
 ]);
 
 // 한 단어 모드가 기본. 리스트는 아직 채점하지 않은 카드를 한 번에 page장(20)까지 펼친다 — 고르는 칸은 없앴다(고정).

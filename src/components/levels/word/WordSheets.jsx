@@ -81,7 +81,7 @@ function Seg({ label, items, value, onPick }) {
     <div className="lw-seg" role="group" aria-labelledby={`lw-seg-${label}`} style={{ '--n': items.length }}>
       {items.map((it) => (it.href
         ? <Link key={it.id} href={it.href} aria-current={it.id === value ? 'page' : undefined} aria-label={it.aria || it.label}>{it.label}</Link>
-        : <button key={it.id} type="button" aria-pressed={it.id === value} onClick={() => onPick(it.id)}>{it.label}</button>))}
+        : <button key={it.id} type="button" aria-pressed={it.id === value} aria-label={it.aria} data-sym={it.sym || undefined} onClick={() => onPick(it.id)}>{it.label}</button>))}
     </div></div>;
 }
 

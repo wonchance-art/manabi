@@ -654,7 +654,7 @@ test('vocab performance: N3 초기 DOM과 단어장 읽기를 예산 안에 유�
     await assertVisible(sheet, 'title sheet');
     assert.deepEqual(await sheet.getByRole('group', { name: '목록' }).getByRole('link').allInnerTexts(), ['단어', '문형']);
     assert.deepEqual(await sheet.getByRole('group', { name: '순서' }).getByRole('button').allInnerTexts(), ['혼합', '새 단어 먼저', '복습 먼저']);
-    assert.deepEqual(await sheet.getByRole('group', { name: '분량' }).getByRole('button').allInnerTexts(), ['10개', '20개', '전체']);
+    assert.deepEqual(await sheet.getByRole('group', { name: '분량' }).getByRole('button').allInnerTexts(), ['10개', '20개', '∞']);
     assert.equal(await sheet.getByRole('switch', { name: '2단 평가' }).count(), 1, 'two-grade switch lives in the title sheet');
     assert.equal(await sheet.getByRole('switch', { name: '예문 후리가나' }).count(), 0, 'aid switch is gone (furigana fixed on)');
     assert.equal(await sheet.getByRole('button', { name: '한 단어', exact: true }).count(), 0, 'mode stays on the page row only');
