@@ -171,8 +171,18 @@ describe('학습 그룹 배선 계약', () => {
     const src = read('src/views/GroupsPage.jsx');
     expect(src).toContain('등수 없음');
     expect(src).toContain("['weekly-report', user?.id]");
-    expect(src).toContain('pushGroupSnapshots');
+    expect(src).toContain('useGroupSnapshotPush(user?.id, myWeekly)');
     expect(src).not.toMatch(/순위|랭킹/); // 압박 배제 결
+  });
+
+  it('스냅샷 push는 훅 하나 — 그룹 화면과 현황이 같이 써서 현황만 보는 멤버도 합계에 든다(STATS-MAP-001)', () => {
+    const hook = read('src/lib/useGroupSnapshotPush.js');
+    expect(hook).toContain('pushGroupSnapshots(');
+    expect(hook).toContain("queryKey: ['study-groups', userId]");
+    expect(read('src/views/ProfileStats.jsx')).toContain('useGroupSnapshotPush(user?.id, weekly)');
+    for (const f of ['src/views/GroupsPage.jsx', 'src/views/ProfileStats.jsx']) {
+      expect(read(f), `${f}: push를 직접 부르지 않는다`).not.toMatch(/pushGroupSnapshots\(/);
+    }
   });
 
   it('홈 진입 카드(§9-5)가 홈에 배선되어 있다', () => {

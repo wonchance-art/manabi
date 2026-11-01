@@ -43,6 +43,7 @@ import '../components/learn/learn.css';
 import { authEntryHref } from '../lib/authRedirect';
 import { useDialogReturn } from '../lib/useDialogReturn';
 import GoalSheet from '../components/goal/GoalSheet';
+import { useGroupSnapshotPush } from '../lib/useGroupSnapshotPush';
 
 /** 히트맵 — 최근 24주(168일), 가장 오른쪽 아래가 오늘. */
 export const HEATMAP_DAYS = 168;
@@ -88,6 +89,8 @@ export default function ProfileStats() {
     staleTime: 1000 * 60 * 5,
   });
   const weekly = useMemo(() => (weeklyRows ? buildWeeklyReport(weeklyRows) : null), [weeklyRows]);
+  // 그룹이 있으면 이 주간 값을 그룹 합계에도 올린다 — /groups를 안 여는 멤버가 「이번 주 우리」에서 빠지지 않게(STATS-MAP-001).
+  useGroupSnapshotPush(user?.id, weekly);
 
   // 아는 단어 — 칩 언어의 「이미 앎」 표시. 미적용 · 실패는 조용히(칸만 「–」).
   const knownLang = knownWordsLang(lang);
