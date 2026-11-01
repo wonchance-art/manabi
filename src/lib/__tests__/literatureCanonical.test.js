@@ -11,9 +11,12 @@ import {
 } from '../literatureCanonical.js';
 import { runPreservedReanalysis } from '../reanalysisPreservation';
 import { literatureAttributionParts } from '../videoAttribution.js';
-import { LITERATURE_BOOKS } from '../../content/literature/aozora/index.generated.js';
+import { LITERATURE_BOOK_KEYS } from '../../content/literature/aozora/index.generated.js';
+import { literatureBook } from '../server/literatureBooks.js';
 import manifest from '../../content/literature/aozora/manifest.generated.json';
 import { sliceBetween } from './helpers/sliceBetween';
+// 장 원문은 번들이 아니라 작품 폴더 chapters.json에서 읽는다(BUILD-OOM-001) — 서버와 같은 읽기.
+const LITERATURE_BOOKS = LITERATURE_BOOK_KEYS.map(literatureBook);
 
 // 정본 문학책 대조(AOZORA-P0-2) — ① 출처 줄은 정본 대조표 크레딧을 원문 해시가 맞을 때만 ② 정본 원문 수정 차단.
 // 실물 「鼻」 1장을 게시 행 모양({raw_text, processed_json.metadata})으로 만들어 확인한다.

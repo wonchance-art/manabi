@@ -11,8 +11,10 @@ import { watchAccountMutations } from './accountQueryCache';
 import { REF_READ_KEYS, claimGuestRefProgress } from './refReadStore';
 import { clearAllStudySources } from './studySourceHandoff';
 import { syncScHintCookie } from './scFontHint';
-import { pullProgress } from './refProgress';
-import { activityAlreadyCounted, createProfileReadOnlyRefresh, recordExplicitProfileLogin } from './learningActivity';
+// 루트 레이아웃 첫 JS(모든 화면)에 실리는 모듈이다 — 정적 import는 첫 그림 · 세션 판정에 필요한 가벼운 것만 둔다(FIRSTLOAD-AUTH-001,
+// 2026-11-01 KST · 계약 authFirstLoad.test.js). 로그인한 뒤에만 쓰는 레퍼런스 진도 동기화(refProgress → readingProgress · grammarSrs)와
+// 활동일 판정 · 명시적 로그인 기록(learningActivity → fsrsScheduler → ts-fsrs)은 쓸 때 받는다. Supabase SDK는 원래부터 lib/supabase가 늦게 받는다.
+import { createProfileReadOnlyRefresh } from './profileReadOnly';
 import { accountCacheReset, accountLeft, clearAccountQueries, noteAccount } from './accountQueryCache';
 
 const AuthContext = createContext(null);
@@ -131,10 +133,14 @@ export function AuthProvider({ children, queryClient, onAccountLeft }) {
   const fetchProfile = refreshProfileReadOnly;
   // legacy 학습 활동(update_streak · 예전 채점 — 영수증 날 = 서버의 오늘) 뒤 재읽기 — 지금 프로필이 오늘(UTC)을 이미 셌으면 보내지 않고
   // 그 프로필을 돌려준다(ACTIVITY-PROFILE-READ-001 — 근거 learningActivity.activityAlreadyCounted). FSRS 채점 · 설정 쓰기 뒤는 fetchProfile 그대로.
+  // 판정 모듈(learningActivity)은 이때 받는다 — 활동 뒤에만 불리고 그 화면이 이미 받아 둔 경우가 대부분이다. 같은 계정 프로필이 없으면
+  // 판정은 늘 거짓이라(activityAlreadyCounted는 profile.id === actorId부터 본다) 기다리지 않고 바로 읽는다.
   function refreshProfileAfterActivity(userId) {
     const current = observedProfileRef.current;
-    if (actorRef.current === userId && activityAlreadyCounted(current, userId)) return Promise.resolve(current);
-    return readProfile(userId);
+    if (actorRef.current !== userId || current?.id !== userId) return readProfile(userId);
+    return import('./learningActivity')
+      .then((activity) => (actorRef.current === userId && activity.activityAlreadyCounted(current, userId) ? current : readProfile(userId)))
+      .catch(() => readProfile(userId));
   }
 
   // 실제 로그인만 접속 시각을 기록한다. streak/freeze는 학습 활동 트랜잭션만 변경한다.
@@ -144,6 +150,8 @@ export function AuthProvider({ children, queryClient, onAccountLeft }) {
     loginActorRef.current = userId;
     const current = () => mountedRef.current && actorRef.current === userId && authGenerationRef.current === generation;
     try {
+      // 기록 모듈은 이때 받는다(명시적 로그인 직후 한 번 — 루트 첫 JS 밖). 받는 사이 계정이 바뀌면 isCurrent가 쓰기 전에 멈춘다.
+      const { recordExplicitProfileLogin } = await import('./learningActivity');
       if (await recordExplicitProfileLogin({ client: supabase, user: nextUser, isCurrent: current })) {
         await refreshProfileReadOnly(userId);
       }
@@ -355,7 +363,8 @@ export function AuthProvider({ children, queryClient, onAccountLeft }) {
   // user.id 변경(로그인/앱 진입) 시 1회만 도므로 force로 throttle 무시 — 다른 기기가 방금 올린 진도를 확실히 끌어온다.
   useEffect(() => {
     if (!user?.id) return;
-    pullProgress(user.id, REF_READ_KEYS, { force: true }).catch(() => {});
+    // 동기화 모듈(refProgress → readingProgress · grammarSrs)은 로그인한 뒤에만 쓰므로 그때 받는다 — 루트 첫 JS 밖(FIRSTLOAD-AUTH-001).
+    import('./refProgress').then((ref) => ref.pullProgress(user.id, REF_READ_KEYS, { force: true })).catch(() => {});
     // 게스트로 쌓은 드릴 복습 큐를 서버로 옮긴다 — 로그인했다고 기록이 사라지면 안 된다.
     // 서버에 이미 있는 카드는 건드리지 않고(다른 기기가 더 진행했을 수 있다), 없는 것만 넣는다.
     // 드릴 모듈(FSRS · 문형 큐 · 드릴 표)은 로그인한 뒤에만 쓰므로 그때 받는다 — 루트 레이아웃 첫 JS에서 뺐다(JS-CRIT-001).

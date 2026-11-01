@@ -71,8 +71,10 @@ describe('build-literature — 게시 목록·뷰어 대조표(AOZORA-P0-2)', ()
   it('작품 폴더에서 index.generated.js(서버 게시용) · manifest.generated.json(뷰어 대조용) · 표시용 표 둘(화면 표지·제목 · 장 첫 문장)을 만든다', async () => {
     const root = workspace([sample()]);
     await buildLiterature({ root });
-    expect(readFileSync(path.join(root, LITERATURE_OUTPUTS.index), 'utf8'))
-      .toContain("import book0 from './aozora-000001-000001/chapters.json';");
+    // 목록은 key만 싣는다 — 장 원문을 import하면 서버 묶음에 33MB가 들어가 배포 빌드가 메모리를 넘긴다(BUILD-OOM-001)
+    const index = readFileSync(path.join(root, LITERATURE_OUTPUTS.index), 'utf8');
+    expect(index).toContain("export const LITERATURE_BOOK_KEYS = Object.freeze([\n  'aozora-000001-000001',\n]);");
+    expect(index).not.toMatch(/\bimport\b|chapters\.json'/);
     const manifest = JSON.parse(readFileSync(path.join(root, LITERATURE_OUTPUTS.manifest), 'utf8'));
     const chapters = JSON.parse(readFileSync(path.join(root, 'aozora-000001-000001', LITERATURE_FILES.chapters), 'utf8')).chapters;
     expect(manifest.works['aozora-000001-000001'].chapters).toEqual(chapters.map((chapter) => ({ order: chapter.order, title: chapter.title,

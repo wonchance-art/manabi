@@ -4,12 +4,18 @@ const { authenticate } = vi.hoisted(() => ({ authenticate: vi.fn() }));
 vi.mock('@/lib/supabaseServer', () => ({ requireAdmin: authenticate }));
 
 import { GET, POST } from '../route';
-import { LITERATURE_BOOKS } from '../../../../../content/literature/aozora/index.generated.js';
-import { STANDARD_EBOOKS_BOOKS } from '../../../../../content/literature/standardebooks/index.generated.js';
-import { WIKISOURCE_BOOKS } from '../../../../../content/literature/wikisource/index.generated.js';
-import { PDSITE_BOOKS } from '../../../../../content/literature/pdsite/index.generated.js';
+import { LITERATURE_BOOK_KEYS } from '../../../../../content/literature/aozora/index.generated.js';
+import { STANDARD_EBOOKS_BOOK_KEYS } from '../../../../../content/literature/standardebooks/index.generated.js';
+import { WIKISOURCE_BOOK_KEYS } from '../../../../../content/literature/wikisource/index.generated.js';
+import { PDSITE_BOOK_KEYS } from '../../../../../content/literature/pdsite/index.generated.js';
+import { literatureBook } from '../../../../../lib/server/literatureBooks.js';
 import { releaseState, releasesTable } from '../../../../../lib/__tests__/helpers/canonicalReleasesMock.js';
 import { sortByPublishRank } from '../../../../../lib/classicsShelf.js';
+// 장 원문은 번들이 아니라 작품 폴더 chapters.json에서 읽는다(BUILD-OOM-001) — 서버와 같은 읽기.
+const LITERATURE_BOOKS = LITERATURE_BOOK_KEYS.map(literatureBook);
+const STANDARD_EBOOKS_BOOKS = STANDARD_EBOOKS_BOOK_KEYS.map(literatureBook);
+const WIKISOURCE_BOOKS = WIKISOURCE_BOOK_KEYS.map(literatureBook);
+const PDSITE_BOOKS = PDSITE_BOOK_KEYS.map(literatureBook);
 
 // 관리자 정본 문학책 게시 API(AOZORA-P0-2 · P0-3 · P0-4) — 권한·준비(비공개) 멱등·충돌 시 무게시·장 검수·분석과 검수를 마친 뒤에만 공개·원문은 리포 산출물에서만.
 

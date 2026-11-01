@@ -172,16 +172,37 @@ export function restoreResume(resume, { scopeKey, now = Date.now(), reviewedAt =
  * 표현이 14일이 안 됐으면(기록이 14일에 못 미침) 기본값 20을 쓴다.
  */
 export function backlogBaseline(projections, { now = Date.now() } = {}) {
-  const since = now - BACKLOG_WINDOW_DAYS * 86400000;
-  let reviewed = 0, oldest = Infinity;
+  return backlogBaselineIndex(projections)(now);
+}
+
+// 첫 칸 위치 — sorted[i]가 test를 처음 만족하는 i(없으면 길이). test는 정렬 순서로 거짓 → 참 한 번만 바뀐다.
+function firstIndex(sorted, test) {
+  let lo = 0, hi = sorted.length;
+  while (lo < hi) { const mid = (lo + hi) >>> 1; if (test(sorted[mid])) hi = mid; else lo = mid + 1; }
+  return lo;
+}
+
+/**
+ * backlogBaseline의 시각 독립 부분(가장 오래된 담은 시각 · 마지막 채점 시각 정렬)을 한 번만 풀어 둔다 — 반환 함수(now) = backlogBaseline 값.
+ * 오늘 개수는 그릴 때마다 지금 시각이 달라 같은 projections를 시각마다 다시 훑었다(Date.parse × 단어 수 × 2, VOCAB-SCOPE-PERF-001).
+ * 판정은 그대로: since ≤ 마지막 채점 ≤ now인 카드 수(이분 탐색), 가장 오래된 표현이 since보다 늦거나 0장이면 기본값.
+ */
+export function backlogBaselineIndex(projections) {
+  let oldest = Infinity;
+  const lasts = [];
   for (const p of projections || []) {
     const created = Date.parse(p?.vocabulary?.created_at);
     if (Number.isFinite(created)) oldest = Math.min(oldest, created);
     const last = Date.parse(p?.memory?.lastReview);
-    if (Number.isFinite(last) && last >= since && last <= now) reviewed++;
+    if (Number.isFinite(last)) lasts.push(last);
   }
-  if (!(oldest <= since) || reviewed === 0) return BACKLOG_DEFAULT_BASELINE;
-  return reviewed / BACKLOG_WINDOW_DAYS;
+  lasts.sort((a, b) => a - b);
+  return now => {
+    const since = now - BACKLOG_WINDOW_DAYS * 86400000;
+    const reviewed = Math.max(0, firstIndex(lasts, last => last > now) - firstIndex(lasts, last => last >= since));
+    if (!(oldest <= since) || reviewed === 0) return BACKLOG_DEFAULT_BASELINE;
+    return reviewed / BACKLOG_WINDOW_DAYS;
+  };
 }
 
 export function isBacklogged(overdue, baseline) {

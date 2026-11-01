@@ -3,7 +3,8 @@
 // 그 잎은 스타일시트가 올 때까지 자리만 지킨다. 중국어 학습자는 거의 매번 그 기다림을 겪으므로, 학습 언어에 중국어가
 // 있으면 이 기기에 표식 쿠키를 남기고 두 세그먼트의 서버 렌더가 스타일시트를 미리(첫 그림 전에) 건다.
 // 값은 '1' 하나(학습 언어 목록 자체는 쿠키에 싣지 않는다). 힌트일 뿐이다 — 틀려도 잎이 스스로 건다(없으면 기다림, 남으면 CSS 한 벌).
-import { learnLanguages, LEARN_LANGS } from './learnDashboard.js';
+// learnDashboard가 아니라 그 안의 가벼운 모듈에서 — 이 파일은 AuthContext(루트 첫 JS)가 부른다(FIRSTLOAD-AUTH-001).
+import { learnLanguages, LEARN_LANGS } from './learnLangChips.js';
 
 export const SC_HINT_COOKIE = 'manabi_sc';
 const MAX_AGE = 60 * 60 * 24 * 180;

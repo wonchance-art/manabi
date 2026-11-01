@@ -14,7 +14,7 @@ import { detectLangConfident } from './constants.js';
 import { zhHskLevelLabel, zhHskLevelOf } from './zhHskLevel.js';
 import { isVocabularyReviewAvailable, isVocabularyReviewDue, isVocabularyUnreviewed, vocabularyRetrievability } from './vocabularyLearningRead.js';
 import { expressionKind, hasMeaning } from './reviewCard.js';
-import { backlogBaseline, isBacklogged, orderReviewQueue } from './reviewQueue.js';
+import { backlogBaselineIndex, isBacklogged, orderReviewQueue } from './reviewQueue.js';
 import { cardKindOf, cardVocabularyId, pickSiblings } from './fsrsCardKinds.js';
 
 export * from './reviewScopeUrl.js';
@@ -79,6 +79,18 @@ export function fsrsEntriesFromSnapshot(snapshot) {
 }
 
 const time = value => (typeof value === 'number' ? value : Date.parse(value));
+// FSRS 항목의 묻는 시각 = max(기한, 다음 질문 시각). 항목 객체 · 두 문자열이 같으면 같은 값이다 — 계획마다 Date.parse를 다시 하지 않는다
+// (VOCAB-SCOPE-PERF-001). 같은 객체라도 두 시각 문자열 중 하나가 바뀌면 다시 푼다.
+const DUE_AT = new WeakMap();
+function entryDueAt(e) {
+  const due = e?.card?.due, next = e?.nextQuestionAt;
+  const cacheable = typeof e === 'object' && e !== null;
+  const hit = cacheable ? DUE_AT.get(e) : undefined;
+  if (hit && hit.due === due && hit.next === next) return hit.value;
+  const value = Math.max(time(due), next ? time(next) : -Infinity);
+  if (cacheable) DUE_AT.set(e, { due, next, value });
+  return value;
+}
 const empty = (status, reason) => ({ status, reason, engine: null, due: 0, newAllowed: 0, newLocked: 0, total: 0, deferred: 0,
   stored: 0, noMeaning: 0, backlog: null, queue: { items: [], ids: [], legacyIds: [], fsrsIds: [] }, scopedIds: [] });
 
@@ -133,8 +145,9 @@ function sourceKeyOf(word, chapters) {
 }
 
 // countOnly — 언어 칩 숫자(byLang) · 밀린 복습 판정(languageBacklog)은 개수만 쓴다. 줄 짜기(회상률 · 정렬 · 출처 띄우기)를 건너뛰고
-// due · total만 낸다 — total은 줄 길이와 같다(orderReviewQueue는 넣은 항목을 빼거나 더하지 않는다, 계약 reviewScopeCount).
-// 3,000단어 계정 첫 화면에서 이 계산이 언어마다 두 번씩 돌았다(VOCAB-SCOPE-COUNT-001).
+// due · resumed · unseen 수만 낸다 — 줄 길이 = languageTotal(…)(orderReviewQueue는 넣은 항목을 빼거나 더하지 않는다, 계약 reviewScopeCount).
+// 3,000단어 계정 첫 화면에서 이 계산이 언어마다 두 번씩 돌았다(VOCAB-SCOPE-COUNT-001). 한도 · 밀린 복습은 호출부가 얹는다 —
+// due는 한도와 무관해 밀린 복습과 언어 칩이 같은 셈 하나를 나눠 쓴다(VOCAB-SCOPE-PERF-001).
 function planReviewScope({ snapshot, fsrsEntries, quota, scope, now, levels, sourceIds, chapters = null,
   canLegacy = () => true, reviewSupported, fsrsEnabled, pendingIds = [], fragileIds = null, backlog = null, countOnly = false }) {
   const scoped = scopedProjections({ snapshot, scope, now, levels, sourceIds, reviewSupported, fragileIds });
@@ -158,7 +171,7 @@ function planReviewScope({ snapshot, fsrsEntries, quota, scope, now, levels, sou
   const pending = new Set(pendingIds), fsrsIds = new Set(scoped.fsrsIds);
   const entries = enabled ? (fsrsEntries ?? fsrsEntriesFromSnapshot(snapshot)) : [];
   const fsrsScoped = entries.filter(e => fsrsIds.has(cardVocabularyId(e)) && e.resting !== true && e.eligible !== false && !e.known && !e.excluded && !pending.has(e.cardId));
-  const dueAt = e => Math.max(time(e.card?.due), e.nextQuestionAt ? time(e.nextQuestionAt) : -Infinity);
+  const dueAt = entryDueAt;
   const fsrsDue = pickSiblings(fsrsScoped.filter(e => dueAt(e) <= at), { cards: entries, at });
   const fsrsOpen = quota?.active === true && remaining > 0;
   const fresh = e => cardKindOf(e) === 'recognition' && e.card?.state === 'New';
@@ -168,12 +181,10 @@ function planReviewScope({ snapshot, fsrsEntries, quota, scope, now, levels, sou
   // 밀린 복습 규칙 — 그 언어 전체의 기한 지난 복습이 기준의 2배를 넘으면 새 표현 0(계정 한도는 차감하지 않는다).
   const paused = !!backlog?.active;
   if (countOnly) {
-    const due = legacyReviews.length + fsrsReviews.length;
-    if (paused) return { status: 'ready', due, total: due };
-    const resumedCount = legacyNew.filter(p => admitted.has(p.vocabulary.id)).length + fsrsNew.filter(e => e.firstQuestionAt).length;
-    const unseenCount = legacyNew.filter(p => !admitted.has(p.vocabulary.id)).length
+    const resumed = legacyNew.filter(p => admitted.has(p.vocabulary.id)).length + fsrsNew.filter(e => e.firstQuestionAt).length;
+    const unseen = legacyNew.filter(p => !admitted.has(p.vocabulary.id)).length
       + (fsrsOpen ? fsrsNew.filter(e => !e.firstQuestionAt).length : 0);
-    return { status: 'ready', due, total: due + resumedCount + Math.min(unseenCount, remaining) };
+    return { status: 'ready', due: legacyReviews.length + fsrsReviews.length, resumed, unseen, remaining };
   }
   const reviews = [
     ...legacyReviews.map(p => ({ id: p.vocabulary.id, engine: 'legacy', retrievability: retrievability(p),
@@ -212,26 +223,33 @@ function planReviewScope({ snapshot, fsrsEntries, quota, scope, now, levels, sou
       fsrsIds: scoped.fsrsIds } };
 }
 
-// 언어별 밀린 복습 기준(backlogBaseline)은 같은 projections · 같은 시각이면 같다 — 범위 시트 · 안내가 countReviewScope를 여러 번 불러도
-// 한 번만 잰다(VOCAB-SCOPE-COUNT-001). projections 배열이 바뀌면(새 snapshot · 채점 뒤 재투영) 새로 잰다.
+// 언어별 밀린 복습 기준(backlogBaseline)의 시각 독립 부분은 같은 projections면 같다 — 그릴 때마다 지금 시각이 달라도 다시 훑지 않고
+// 이분 탐색으로 그 시각의 값을 낸다(VOCAB-SCOPE-COUNT-001 · VOCAB-SCOPE-PERF-001). projections 배열이 바뀌면(새 snapshot · 채점 뒤 재투영) 새로 푼다.
 const BASELINES = new WeakMap();
 function languageBaseline(projections, lang, now) {
   let byLang = BASELINES.get(projections);
   if (!byLang) BASELINES.set(projections, byLang = new Map());
-  const hit = byLang.get(lang);
-  if (hit && Object.is(hit.now, now)) return hit.value;
-  const value = backlogBaseline(projections.filter(p => wordScopeLanguage(p?.vocabulary) === lang), { now });
-  byLang.set(lang, { now, value });
-  return value;
+  if (!byLang.has(lang)) byLang.set(lang, backlogBaselineIndex(projections.filter(p => wordScopeLanguage(p?.vocabulary) === lang)));
+  return byLang.get(lang)(now);
 }
 
-// 그 언어의 밀린 복습 상태 — 언어 전체(좁힌 범위와 무관)의 기한 지난 복습 수와 지난 14일 기준.
-function languageBacklog(shared, lang) {
-  const plan = planReviewScope({ ...shared, quota: { active: false, remaining: 0, admittedLegacyCardIds: [] },
-    scope: { lang, level: null, source: null, state: 'due' }, sourceIds: null, countOnly: true });
-  if (plan.status !== 'ready') return null;
+// 그 언어 전체(좁힌 범위와 무관 — 언어만 고른 범위)의 개수 셈. 밀린 복습(due)과 언어 칩(total)이 이 셈 하나를 쓴다.
+const languageScope = lang => ({ lang, level: null, source: null, state: 'due' });
+function languageTally(shared, lang) {
+  return planReviewScope({ ...shared, scope: languageScope(lang), sourceIds: null, countOnly: true });
+}
+
+// 그 언어의 밀린 복습 상태 — 언어 전체의 기한 지난 복습 수(한도와 무관)와 지난 14일 기준.
+function languageBacklog(shared, tally, lang) {
+  if (tally.status !== 'ready') return null;
   const baseline = languageBaseline(shared.snapshot?.projections || [], lang, time(shared.now));
-  return { overdue: plan.due, baseline, active: isBacklogged(plan.due, baseline) };
+  return { overdue: tally.due, baseline, active: isBacklogged(tally.due, baseline) };
+}
+
+// 언어 칩 숫자 = 그 언어만 고른 범위의 줄 길이(밀린 복습이면 기한 된 복습만, 아니면 + 시작한 새 표현 + 한도 안의 처음 보는 표현).
+function languageTotal(tally, backlog) {
+  if (tally.status !== 'ready') return 0;
+  return backlog?.active ? tally.due : tally.due + tally.resumed + Math.min(tally.unseen, tally.remaining);
 }
 
 /**
@@ -280,16 +298,20 @@ function grammarDueCount(grammar, lang, at) {
 export function countReviewScope({ snapshot, fsrsEntries, quota, scope, now = Date.now(), grammar = null,
   levels = null, sourceIds = null, chapters = null, canLegacy, reviewSupported, fsrsEnabled, pendingIds, fragileIds = null } = {}) {
   const shared = { snapshot, fsrsEntries, quota, now, levels, canLegacy, reviewSupported, fsrsEnabled, pendingIds, fragileIds };
-  const backlogs = new Map();
-  const backlogOf = lang => {
-    if (!backlogs.has(lang)) backlogs.set(lang, languageBacklog(shared, lang));
-    return backlogs.get(lang);
+  const languages = new Map();
+  const languageOf = lang => {
+    if (!languages.has(lang)) {
+      const tally = languageTally(shared, lang);
+      languages.set(lang, { tally, backlog: languageBacklog(shared, tally, lang) });
+    }
+    return languages.get(lang);
   };
-  const plan = planReviewScope({ ...shared, scope, sourceIds, chapters, backlog: scope?.lang ? backlogOf(scope.lang) : null });
+  const plan = planReviewScope({ ...shared, scope, sourceIds, chapters, backlog: scope?.lang ? languageOf(scope.lang).backlog : null });
   const byLang = {};
   for (const lang of REVIEW_SCOPE_LANGS) {
     if (!(snapshot?.projections || []).some(p => wordScopeLanguage(p?.vocabulary) === lang)) continue;
-    byLang[lang] = planReviewScope({ ...shared, scope: { lang, level: null, source: null, state: 'due' }, backlog: backlogOf(lang), countOnly: true }).total;
+    const { tally, backlog } = languageOf(lang);
+    byLang[lang] = languageTotal(tally, backlog);
   }
   return { ...plan, grammarDue: scope?.lang ? grammarDueCount(grammar, scope.lang, time(now)) : 0, byLang };
 }

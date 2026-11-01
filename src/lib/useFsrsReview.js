@@ -61,13 +61,32 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
     listeners.forEach(listener => listener());
   };
   // 보이는 단어 — 카드가 묻는 단어(단어 → 뜻은 카드 id = 단어 id, 종류 카드는 vocabularyId — CARD-TYPES-001 4단계)가 이 화면 범위에 있나.
-  const visibleWord = wordId => words.find(word => word.id === wordId && !word.is_excluded && !word.is_known
-    && (!allowedIds || allowedIds.has(wordId)));
+  // 단어 목록은 id로 한 번 묶어 둔다(words가 바뀔 때만) — 줄 짜기는 카드마다 묻는데 배열 find면 카드 수 × 단어 수였다(VOCAB-SCOPE-PERF-001).
+  // 판정은 그대로: 같은 id의 단어 중 목록 순서로 첫 번째 「제외 · 아는 단어가 아닌」 것, 범위 id가 있으면 그 안만.
+  let wordIndex = null;
+  const wordsWithId = wordId => {
+    if (wordIndex?.words !== words) {
+      const byId = new Map();
+      for (const word of words) {
+        const list = byId.get(word.id);
+        if (list) list.push(word); else byId.set(word.id, [word]);
+      }
+      wordIndex = { words, byId };
+    }
+    return wordIndex.byId.get(wordId);
+  };
+  const visibleWord = wordId => (wordId === wordId && (!allowedIds || allowedIds.has(wordId))
+    ? wordsWithId(wordId)?.find(word => !word.is_excluded && !word.is_known) : undefined);
   const wordOf = entry => visibleWord(cardVocabularyId(entry));
   const pendingPatch = entries => {
     const pending = entries || [], pendingSaves = pending.filter(entry => entry.payload?.action === 'save');
     return { pending, pendingSaves,
       saveFailures: pendingSaves.filter(entry => ['blocked', 'conflict', 'stale'].includes(entry.status)) };
+  };
+  let enrolledIndex = null;
+  const enrolledSet = () => {
+    if (enrolledIndex?.ids !== state.enrolledIds) enrolledIndex = { ids: state.enrolledIds, set: new Set(state.enrolledIds) };
+    return enrolledIndex.set;
   };
   const pendingEnrolledIds = entries => (entries || []).filter(entry => entry.payload?.action !== 'save').map(entry => entry.cardId);
   const notifyApplied = event => {
@@ -510,7 +529,8 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
       queue();
       return true;
     },
-    canLegacy(cardId) { return state.registryAvailable && !state.enrolledIds.includes(cardId) && !state.pending.some(entry => entry.cardId === cardId); },
+    // 오늘 개수는 예전 일정 표현마다 이 판정을 묻는다 — 등록 id는 묶음으로(배열이 바뀔 때만 다시, VOCAB-SCOPE-PERF-001). 대기 연산은 몇 개뿐이라 그대로.
+    canLegacy(cardId) { return state.registryAvailable && !enrolledSet().has(cardId) && !state.pending.some(entry => entry.cardId === cardId); },
     refresh, question, reveal, grade, undo, enrollInserted, saveVocabulary, retrySave,
     async retrySync() { try { await client.flush(); } catch (error) { publish({ error }); } return refresh(); },
     leave() { if (!locked) publish({ current: null }); },

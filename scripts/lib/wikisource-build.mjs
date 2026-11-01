@@ -1,12 +1,13 @@
 // Wikisource 정본 책 빌드(LIT-SRC-WS-1) — src/content/literature/wikisource/<key>/{entry.json, source/*.html} → chapters.json.
 // Standard Ebooks 빌드와 같은 원칙: 결정적(같은 입력 → 같은 바이트), --check는 쓰지 않고 차이만 실패로 낸다, 한 편이라도 실패하면
 // 목록·대조표를 다시 쓰지 않는다. 쪽 조각 해시가 entry.files와 다르면 그 작품은 실패(원문이 바뀌었다).
-// 루트 산출물: index.generated.js(관리자 게시 API — 장 원문 포함, 서버 전용) · manifest.generated.json(뷰어 대조 — 원문 없음).
+// 루트 산출물: index.generated.js(관리자 게시 API — 책 key 목록, 장 원문은 서버가 chapters.json에서 읽는다) · manifest.generated.json(뷰어 대조 — 원문 없음).
 import { createDisplayManifest } from './literature-display-build.mjs';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { LITERATURE_BOUNDARY_FILE, withBoundaryMerges } from './literature-boundaries.mjs';
+import { serializeBookKeyIndex } from './literature-index-build.mjs';
 
 export const WIKISOURCE_ROOT = 'src/content/literature/wikisource';
 export const WIKISOURCE_FILES = Object.freeze({ entry: 'entry.json', source: 'source', chapters: 'chapters.json' });
@@ -16,14 +17,7 @@ const sha256 = (value) => createHash('sha256').update(value).digest('hex');
 const serialize = (value) => `${JSON.stringify(value, null, 2)}\n`;
 
 export function serializeWikisourceIndex(keys) {
-  const lines = [
-    '// 자동 생성 — node scripts/build-literature.mjs. 손으로 고치지 않는다(--check가 낡음을 잡는다).',
-    '// Wikisource 정본 책 장 원문을 싣는다 — 서버(관리자 게시 API)에서만 import한다. 뷰어는 manifest.generated.json을 쓴다.',
-    ...keys.map((key, index) => `import book${index} from './${key}/${WIKISOURCE_FILES.chapters}';`),
-    '',
-    `export const WIKISOURCE_BOOKS = Object.freeze([${keys.map((_, index) => `book${index}`).join(', ')}]);`,
-  ];
-  return `${lines.join('\n')}\n`;
+  return serializeBookKeyIndex('WIKISOURCE_BOOK_KEYS', 'Wikisource 정본 책', keys);
 }
 
 

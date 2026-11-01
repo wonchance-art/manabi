@@ -10,8 +10,10 @@ import { LANG_NAME_KO, detectLang } from './constants.js';
 import { learningDayStartMs } from './growthStats.js';
 import { daysLeftUntil, perDayLabel } from './goalPace.js';
 import { liveStreakCount } from './learningActivity.js';
+// 학습 언어 목록은 가벼운 모듈에 있다(루트 첫 JS의 간체 글꼴 힌트가 이것만 부른다 — learnLangChips.js 머리말).
+import { LEARN_LANGS, learnLanguages } from './learnLangChips.js';
 
-export const LEARN_LANGS = Object.freeze(Object.keys(LANG_NAME_KO));
+export { LEARN_LANGS, learnLanguages };
 export const LEARN_LANG_KEY = 'learn_lang';
 
 /**
@@ -21,19 +23,6 @@ export const LEARN_LANG_KEY = 'learn_lang';
  */
 export const RESUME_GLYPH = Object.freeze({ Japanese: 'あ', Chinese: '汉', English: 'A', French: 'É' });
 export const GUEST_RESUME_GLYPH = RESUME_GLYPH.Japanese;
-
-/**
- * 학습 언어 칩 목록 — 프로필 학습 언어(배열 · 문자열) 중 이름이 있는 언어. 학습 언어가 비어 있으면 담은 표현이 많은
- * 언어 순(복습방 기본 언어 규칙 — REV-SCOPE-R1A §9-4와 같은 결), 그것도 없으면 일본어.
- */
-export function learnLanguages(profile, vocabCounts = null) {
-  const raw = profile?.learning_language;
-  const list = (Array.isArray(raw) ? raw : raw ? [raw] : []).filter(lang => LEARN_LANGS.includes(lang));
-  if (list.length) return [...new Set(list)];
-  const saved = Object.entries(vocabCounts || {}).filter(([lang, n]) => LEARN_LANGS.includes(lang) && n > 0)
-    .sort((a, b) => b[1] - a[1]).map(([lang]) => lang);
-  return saved.length ? saved : ['Japanese'];
-}
 
 /** 언어 칩 글자 — 정본 이름 사전 하나(새 이름 사전 금지). */
 export const learnLangLabel = lang => LANG_NAME_KO[lang] || lang;
