@@ -336,6 +336,25 @@ describe('complete legacy history', () => {
     },
   );
 
+  // id 칸 없는 복합 키 표(아는 단어 · 만난 말 · 챕터 진도) — 내보내기가 1000행에 잘리지 않게(STATS-MAP-001).
+  it('reads composite-key tables across the cap in key order and rejects duplicate or missing keys', async () => {
+    const source = Array.from({ length: 1001 }, (_, index) => ({ lang: index % 2 ? 'ja' : 'zh', word_text: `w${String(index).padStart(4, '0')}` }));
+    const f = pages(source);
+    const rows = await readCompleteLegacyRows(f.makeQuery, { key: ['lang', 'word_text'] });
+    expect(rows).toHaveLength(1001);
+    expect(new Set(rows.map(row => `${row.lang}/${row.word_text}`)).size).toBe(1001);
+    expect(f.requests.map(({ from, to, ordering }) => [from, to, ordering.map(([column]) => column)]))
+      .toEqual([[0, 999, ['lang', 'word_text']], [1000, 1999, ['lang', 'word_text']]]);
+    const dup = pages([{ lang: 'ja', word_text: 'a' }, { lang: 'ja', word_text: 'b' }, { lang: 'ja', word_text: 'c' }], { cap: 2, respond(response, page) {
+      return page === 2 ? { ...response, data: [{ lang: 'ja', word_text: 'b' }] } : response;
+    } });
+    await expect(readCompleteLegacyRows(dup.makeQuery, { key: ['lang', 'word_text'] })).rejects.toThrow('legacy_review_incomplete');
+    const missing = pages([{ lang: 'ja' }]);
+    await expect(readCompleteLegacyRows(missing.makeQuery, { key: ['lang', 'word_text'] })).rejects.toThrow('legacy_review_incomplete');
+    // 키를 안 주면 예전 그대로 — id 없는 행은 page 읽기에서 거절한다.
+    await expect(readCompleteLegacyRows(pages([{ lang: 'ja', word_text: 'a' }]).makeQuery)).rejects.toThrow('legacy_review_incomplete');
+  });
+
   it('returns an exact empty result but rejects malformed or explicitly partial data', async () => {
     const f = pages([]);
     expect(await readCompleteLegacyRows(f.makeQuery)).toEqual([]);
