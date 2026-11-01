@@ -34,8 +34,9 @@ export function normalizeFsrsSaveRequest(input, accountId) {
   vocabulary.language = vocab.language;
   return { action: 'save', accountId, operationId: input.operationId, cardId: input.cardId.toLowerCase(), vocabulary };
 }
+// 등록의 선택 칸(CARD-TYPES-001 단계 2): 종류 카드 = 새 카드 id + 그 단어(vocabularyId) · 듣기는 예문 주장(hasExample). 없으면 단어 → 뜻 카드.
 const actionFields = {
-  enroll: [], question: ['attemptId', 'answerVisible', 'dailyNewLimit', 'expectedPolicyRevision'],
+  enroll: ['cardKind', 'vocabularyId', 'hasExample'], question: ['attemptId', 'answerVisible', 'dailyNewLimit', 'expectedPolicyRevision'],
   reveal: ['attemptId', 'hint'], grade: ['attemptId', 'rating'],
   undo: ['targetOperationId'], abandon: ['attemptId'],
 };
@@ -44,7 +45,7 @@ const actionFields = {
 export function normalizeFsrsRequest(input, accountId) {
   if (input?.action === 'save') return normalizeFsrsSaveRequest(input, accountId);
   const keys = ['action', 'cardId', 'operationId', 'expectedRevision', 'attemptId', 'rating',
-    'targetOperationId', 'answerVisible', 'hint', 'dailyNewLimit', 'expectedPolicyRevision', 'accountId'];
+    'targetOperationId', 'answerVisible', 'hint', 'dailyNewLimit', 'expectedPolicyRevision', 'cardKind', 'vocabularyId', 'hasExample', 'accountId'];
   if (!input || typeof input !== 'object' || Array.isArray(input) ||
       Object.keys(input).some(key => !keys.includes(key)) || !identity(accountId) ||
       (input.accountId !== undefined && input.accountId !== accountId) ||
@@ -63,7 +64,11 @@ export function normalizeFsrsRequest(input, accountId) {
       (input.attemptId !== undefined && !identity(input.attemptId)) ||
       (input.expectedPolicyRevision !== undefined && (!Number.isSafeInteger(input.expectedPolicyRevision) || input.expectedPolicyRevision < 0 || input.expectedPolicyRevision >= Number.MAX_SAFE_INTEGER)) ||
       (input.dailyNewLimit !== undefined && (input.action !== 'question' || !isNewPerDayValue(input.dailyNewLimit))) ||
-      ['answerVisible', 'hint'].some(key => input[key] !== undefined && typeof input[key] !== 'boolean')) {
+      ['answerVisible', 'hint'].some(key => input[key] !== undefined && typeof input[key] !== 'boolean') ||
+      (['cardKind', 'vocabularyId', 'hasExample'].some(key => input[key] !== undefined) &&
+        (!['production', 'listening'].includes(input.cardKind) || !uuid.test(input.vocabularyId || '') || !uuid.test(input.cardId) ||
+          input.vocabularyId.toLowerCase() === input.cardId.toLowerCase() ||
+          (input.hasExample !== undefined && (input.cardKind !== 'listening' || typeof input.hasExample !== 'boolean'))))) {
     throw problem('fsrs_invalid_request');
   }
   return Object.fromEntries(keys.filter(key => key === 'accountId' || input[key] !== undefined)

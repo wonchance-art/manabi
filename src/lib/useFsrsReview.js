@@ -5,6 +5,7 @@ import { createFsrsLearningClient } from './fsrsLearningClient';
 import { fsrsLearnsAhead, learningDaySpan, previewFsrsRatings, validateFsrsCard } from './fsrsScheduler';
 import { fsrsQuestionBound, fsrsQueueState } from './fsrsReviewSession';
 import { normalizeFsrsSaveRequest } from './fsrsOperationOutbox';
+import { fsrsTakesNewQuota, pickSiblings } from './fsrsCardKinds';
 import { normalizeAdmissionStatus } from './learningAdmission';
 import { logLearningFailure } from './useLearningAdmission';
 
@@ -76,11 +77,14 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
     if (timer !== null) clearTimer(timer);
     timer = null;
     const pendingIds = new Set(state.pending.map(row => row.cardId));
-    const entries = state.enabled && state.registryAvailable ? state.cards.filter(entry =>
-      visibleWord(entry.cardId) && entry.eligible !== false && !entry.known && !entry.excluded && !pendingIds.has(entry.cardId)
-      && (entry.card.state !== 'New' || entry.firstQuestionAt || (state.admission?.active && state.admission.remaining > 0))
-    ).map(entry => ({ ...entry, id: entry.cardId, userId: accountId })) : [];
     const time = now() + offset;
+    // 카드 종류(CARD-TYPES-001 단계 2): 하루 새 단어 몫은 단어 → 뜻의 첫 질문만(fsrsTakesNewQuota) · 같은 단어의 카드는 학습일에 한 장(pickSiblings —
+    // 형제는 카드 전부로 본다). 이 화면은 아직 단어 → 뜻만 그린다 — 보이는 카드 = 카드 id가 단어 id인 카드(visibleWord)라 종류 카드는 3단계 화면 전까지
+    // 줄에 서지 않는다. 단어마다 카드가 한 장이면 두 규칙 모두 지금 줄 그대로다(계약 테스트).
+    const entries = state.enabled && state.registryAvailable ? pickSiblings(state.cards.filter(entry =>
+      visibleWord(entry.cardId) && entry.eligible !== false && !entry.known && !entry.excluded && !pendingIds.has(entry.cardId)
+      && (!fsrsTakesNewQuota(entry) || (state.admission?.active && state.admission.remaining > 0))
+    ).map(entry => ({ ...entry, id: entry.cardId, userId: accountId })), { cards: state.cards, at: time }) : [];
     const cooldowns = entries.map(entry => Date.parse(entry.nextQuestionAt)).filter(value => value > time);
     const next = fsrsQueueState(entries.filter(entry => !entry.nextQuestionAt || Date.parse(entry.nextQuestionAt) <= time), accountId, time);
     // 미리 학습(LEARN-AHEAD-001 · 오너 승인 2026-11-01 KST — Anki 「learn ahead limit」 20분) — 아직 차례가 아닌 학습 · 재학습 카드 중 지금 물을 수
