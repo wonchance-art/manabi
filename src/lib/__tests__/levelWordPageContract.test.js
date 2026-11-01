@@ -115,11 +115,12 @@ describe('예문 단어 나눔(빌드 때) — exampleSegments', () => {
   });
 });
 
-describe('리스트 한 번에 — 설정 10 · 20 · 50, 기본 20(오너 2026-10-20 KST)', () => {
+// 고르는 칸(10 · 20 · 50)은 없앴다 — 20 고정(학습 옵션 LEVEL-STUDY-OPTIONS-001, 오너 2026-10-31 KST). 값 고정은 levelStudyOptions.test.jsx.
+describe('리스트 한 번에 — 20장 고정(오너 2026-10-20 KST 기본값 · 2026-10-31 KST 고정)', () => {
   const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
-  it('고르는 수와 기본값', () => {
-    expect(screen).toMatch(/LEVEL_WORD_PAGE_SIZES = Object\.freeze\(\[10, 20, 50\]\)/);
-    expect(screen).toMatch(/LEVEL_WORD_PREFS = Object\.freeze\(\{[^}]*page: 20\b/);
+  it('기본값 20 · 고르는 수는 없다', () => {
+    expect(screen).not.toContain('LEVEL_WORD_PAGE_SIZES');
+    expect(fs.readFileSync('src/lib/levelWordPrefs.js', 'utf8')).toMatch(/LEVEL_WORD_PREFS = Object\.freeze\(\{[^}]*page: 20\b/);
   });
   // 첫 리스트 = page장(20)과 하루 새 단어 몫(기본 15 — 시안 ⑧, 2026-10-21 KST) 중 작은 쪽. smoke N3 계정은 복습할 단어가 없어 15장.
   it('시간이 된 카드는 page장 위에 더한다 · 첫 리스트 예산은 하루 새 단어 몫 15장', () => {

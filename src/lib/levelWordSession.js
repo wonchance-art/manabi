@@ -9,6 +9,14 @@
 // 되돌리기는 직전 상태로 — 화면이 기록 되돌리기와 같이 부른다.
 // 하루 새 단어(시안 ⑦-1 추천 · 2026-10-21 KST): ② 중 새 단어(담지 않은 단어 · 담기만 한 담음 단어)는 newCap개까지만 줄에 서고 나머지는 held에 남는다.
 // 줄이 비면 끝 화면이 「새 단어 N개 더」로 held에서 꺼낸다(막지 않는다). 복습할 때가 된 카드는 한도와 상관없이 다 선다.
+//
+// 학습 옵션(LEVEL-STUDY-OPTIONS-001 — 오너 2026-10-31 KST): ② 줄은 「순서」와 「분량」으로 짠다(arrangeLine).
+// 순서 = 혼합(위 intersperseNew · 기본) · 새 단어 먼저([새 단어…, 복습…] — Anki 「복습 전에」) · 복습 먼저([복습…, 새 단어…] — 「복습 뒤에」).
+// 어느 순서든 거르지 않는다 — 하루 몫 안의 새 단어와 오늘 복습이 모두 서고, 배우는 중인 카드(시작 때 차례가 된 학습 단계 ①)는 맨 앞,
+// 기다리는 카드(③)는 그대로. 분량(N) = 짠 ② 줄의 앞 N장만 줄에 세우고 나머지는 rest에 둔다(버리지 않는다) — 끝 화면 「이어서 N개」가
+// rest에서 다음 N장을 꺼낸다(continueLevelSession). held(하루 몫 뒤 새 단어 · 「새 단어 N개 더」)와는 다른 칸이다.
+// 옵션을 바꾸면 아직 채점하지 않은 몫(줄 + rest)만 다시 짠다(arrangeLevelSession) — 채점 수 · 누른 횟수 · history · 기다리는 카드는 그대로.
+// 다시 짤 때 복습 · 새 단어는 각자 처음 차례(rank — 목록 순)로 돌아가므로, 옵션을 바꿨다 되돌리면 같은 줄이 된다.
 
 import { intersperseNew } from './reviewQueue.js';
 
@@ -21,22 +29,71 @@ const byAt = (a, b) => a.at - b.at;
  * dueAtOf(key) = 다음 차례 시각(ms, 없으면 0). 오늘 복습인데 아직 시각이 안 된 카드(오늘 앞서 채점한 카드)는 기다리는 카드로.
  * learningOf(key) = 분 단위 학습 · 재학습 단계 카드인가 — 이미 차례가 됐으면 섞지 않고 맨 앞(먼저 된 것부터).
  */
-export function startLevelSession(entries, statusOf, dueAtOf = () => 0, at = Date.now(), { newCap = Infinity, learningOf = () => false } = {}) {
+export function startLevelSession(entries, statusOf, dueAtOf = () => 0, at = Date.now(),
+  { newCap = Infinity, learningOf = () => false, order = 'mix', amount = Infinity } = {}) {
   const today = [], learning = [], fresh = [], waiting = [];
-  for (const e of entries || []) {
+  const kind = {}, rank = {};
+  (entries || []).forEach((e, i) => {
     const s = statusOf(e.key);
     if (s === 'today') {
       const due = Number(dueAtOf(e.key)) || 0;
       if (due > at) waiting.push({ key: e.key, at: due });
-      else if (learningOf(e.key)) learning.push({ key: e.key, at: due });
-      else today.push(e.key);
-    } else if (s === 'new' || s === 'saved') fresh.push(e.key);
-  }
+      else if (learningOf(e.key)) { learning.push({ key: e.key, at: due }); kind[e.key] = 'learn'; rank[e.key] = i; }
+      else { today.push(e.key); kind[e.key] = 'review'; rank[e.key] = i; }
+    } else if (s === 'new' || s === 'saved') { fresh.push(e.key); kind[e.key] = 'new'; rank[e.key] = i; }
+  });
   waiting.sort(byAt);
   learning.sort(byAt);
   const cap = Math.max(0, Math.min(fresh.length, newCap));
-  return { queue: [...learning.map((l) => l.key), ...intersperseNew(today, fresh.slice(0, cap))], held: fresh.slice(cap), waiting,
-    graded: 0, counts: { 1: 0, 2: 0, 3: 0, 4: 0 }, history: [], total: today.length + learning.length + cap + waiting.length };
+  const opts = studyOpts({ order, amount });
+  const line = arrangeLine(today, fresh.slice(0, cap), opts);
+  return { queue: [...learning.map((l) => l.key), ...line.queue], rest: line.rest, held: fresh.slice(cap), waiting,
+    graded: 0, counts: { 1: 0, 2: 0, 3: 0, 4: 0 }, history: [], total: today.length + learning.length + cap + waiting.length, kind, rank, opts };
+}
+
+export const LEVEL_SESSION_ORDERS = Object.freeze(['mix', 'new-first', 'review-first']);
+const studyOpts = ({ order = 'mix', amount = Infinity } = {}) => ({
+  order: LEVEL_SESSION_ORDERS.includes(order) ? order : 'mix',
+  amount: Number.isInteger(amount) && amount > 0 ? amount : Infinity,
+});
+const sameOpts = (a, b) => !!a && !!b && a.order === b.order && a.amount === b.amount;
+
+/**
+ * ② 줄 짜기 — reviews · fresh는 각자 차례대로(복습 = 목록 순 · 새 단어 = 목록 순). 순서대로 합친 뒤 분량(amount)만큼 queue, 나머지 rest.
+ * @returns {{ queue: string[], rest: string[] }}
+ */
+export function arrangeLine(reviews, fresh, { order = 'mix', amount = Infinity } = {}) {
+  const line = order === 'new-first' ? [...fresh, ...reviews] : order === 'review-first' ? [...reviews, ...fresh] : intersperseNew(reviews, fresh);
+  const n = Number.isInteger(amount) && amount >= 0 ? amount : line.length;
+  return { queue: line.slice(0, n), rest: line.slice(n) };
+}
+
+/**
+ * 옵션을 바꾼 뒤 — 아직 채점하지 않은 몫(줄 + rest)만 다시 짠다. 배우는 중인 카드(learn)는 맨 앞 그대로, 복습 · 새 단어는 처음 차례(rank)로 모아
+ * arrangeLine. pin = 지금 보고 있는 카드(②에 있으면 ② 맨 앞에 남긴다 — 보던 카드가 옵션을 바꿨다고 사라지지 않게, 되돌리기로 돌아온 카드 포함).
+ * 채점 수 · 누른 횟수 · history · 기다리는 카드 · held는 그대로. 옵션이 같으면 그대로 돌려준다(되돌리기 · 실패 복구가 부른다).
+ */
+export function arrangeLevelSession(session, options, { pin = null } = {}) {
+  if (!session) return session;
+  const opts = studyOpts(options);
+  if (sameOpts(session.opts, opts)) return session;
+  const kind = session.kind || {}, rank = session.rank || {};
+  const pool = [...session.queue, ...(session.rest || [])];
+  const byRank = (a, b) => (rank[a] ?? Infinity) - (rank[b] ?? Infinity);
+  const learn = pool.filter((k) => kind[k] === 'learn');
+  const reviews = pool.filter((k) => kind[k] !== 'learn' && kind[k] !== 'new').sort(byRank);
+  const fresh = pool.filter((k) => kind[k] === 'new').sort(byRank);
+  const pinned = pin && !learn.includes(pin) && pool.includes(pin) ? pin : null;
+  const amount = pinned && Number.isFinite(opts.amount) ? opts.amount - 1 : opts.amount; // 보던 카드도 분량 한 장
+  const line = arrangeLine(reviews.filter((k) => k !== pinned), fresh.filter((k) => k !== pinned), { order: opts.order, amount });
+  return { ...session, queue: [...learn, ...(pinned ? [pinned] : []), ...line.queue], rest: line.rest, opts };
+}
+
+/** 분량에서 멈춘 끝 화면의 「이어서 N개」 — rest에서 n장을 줄 끝에 세운다. keep = 그사이 다른 곳에서 채점해 오늘 할 일이 아닌 단어는 건너뛴다. */
+export function continueLevelSession(session, n, keep = () => true) {
+  const rest = (session?.rest || []).filter(keep);
+  if (!rest.length || !(n > 0)) return session?.rest?.length && !rest.length ? { ...session, rest: [] } : session;
+  return { ...session, queue: [...session.queue, ...rest.slice(0, n)], rest: rest.slice(n) };
 }
 
 /** 「새 단어 N개 더」 — 하루 한도 뒤에 남긴 새 단어를 n개 줄 끝에 세운다. stillNew = 그사이 다른 곳(다음에 볼 단어 · 뷰어)에서 채점한 단어는 건너뛴다. */
@@ -63,10 +120,11 @@ export const sessionNextAt = (session, at = Date.now()) => sessionWaiting(sessio
 /** 지금 카드(한 단어 모드) — 줄 맨 앞, 기다리는 카드만 남았으면 가장 먼저 될 카드를 앞당겨. */
 export const sessionCurrent = (session, at = Date.now()) => sessionOrder(session, at)[0] ?? session?.waiting?.[0]?.key ?? null;
 export const sessionDone = (session) => !!session && session.queue.length === 0 && session.waiting.length === 0;
-export const sessionHas = (session, key) => !!session && (session.queue.includes(key) || session.waiting.some((w) => w.key === key));
+export const sessionHas = (session, key) => !!session && (session.queue.includes(key) || session.waiting.some((w) => w.key === key)
+  || (session.rest || []).includes(key));
 
 const without = (session, key) => ({ queue: session.queue.filter((k) => k !== key), waiting: session.waiting.filter((w) => w.key !== key),
-  held: (session.held || []).filter((k) => k !== key) });
+  held: (session.held || []).filter((k) => k !== key), rest: (session.rest || []).filter((k) => k !== key) });
 
 /**
  * 카드 하나 채점 — 줄 어디에 있든(리스트는 아무 카드나 누를 수 있다). againAt = 다음 차례가 오늘 안이면 그 시각(ms), 아니면 null.
@@ -76,9 +134,9 @@ export function gradeLevelSession(session, key, rating, againAt = null) {
   if (!session || ![1, 2, 3, 4].includes(rating)) return session;
   const inLine = sessionHas(session, key);
   if (!inLine && !againAt) return session;
-  const { queue, waiting, held } = without(session, key);
+  const { queue, waiting, held, rest } = without(session, key);
   const { history, ...prev } = session;
-  return { ...session, queue, held, waiting: againAt ? [...waiting, { key, at: againAt }].sort(byAt) : waiting,
+  return { ...session, queue, held, rest, waiting: againAt ? [...waiting, { key, at: againAt }].sort(byAt) : waiting,
     graded: session.graded + 1, counts: { ...session.counts, [rating]: session.counts[rating] + 1 }, history: [...history.slice(-19), prev] };
 }
 
@@ -94,6 +152,7 @@ export function revertLevelGrade(current, before, moved, key, rating) {
     queue: before.queue.includes(key) ? [key, ...rest.queue] : rest.queue,
     waiting: waited ? [...rest.waiting, waited].sort(byAt) : rest.waiting,
     held: (before.held || []).includes(key) ? [...rest.held, key] : rest.held,
+    rest: (before.rest || []).includes(key) ? [key, ...rest.rest] : rest.rest,
     graded: Math.max(0, current.graded - 1), counts: { ...current.counts, [rating]: Math.max(0, current.counts[rating] - 1) } };
 }
 
