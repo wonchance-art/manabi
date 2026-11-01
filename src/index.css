@@ -1673,48 +1673,6 @@ body.is-review-chrome .page-container { padding-top: 8px; }
   }
 }
 
-/* ========= Forecast Chart ========= */
-.forecast-chart {
-  display: flex;
-  align-items: stretch;
-  justify-content: space-between;
-  height: 150px;
-  gap: 12px;
-  padding: 0 10px;
-}
-
-.forecast-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-/* 개수(위) — 막대(가운데, 아래 정렬) — 날짜(아래 한 줄) */
-.forecast-bar-area {
-  flex: 1;
-  width: 100%;
-  display: flex;
-  align-items: flex-end;
-}
-
-.forecast-bar {
-  width: 100%;
-  border-radius: 4px 4px 0 0;
-  transition: height 0.5s ease;
-}
-
-.forecast-label {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-}
-
-.forecast-count {
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
 /* ========= Feature Placeholder ========= */
 .feature-grid {
   display: grid;
@@ -6396,25 +6354,8 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 }
 
 /* ═══════════════════════════════════════════════
-   Retention Buckets + Weekly Report
+   Weekly Report
    ═══════════════════════════════════════════════ */
-.retention-buckets {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
-}
-.retention-bucket {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 2px; padding: 10px 0;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-}
-.retention-bucket__count {
-  font-size: 1.3rem; font-weight: 800;
-}
-.retention-bucket__label {
-  font-size: 0.7rem; color: var(--text-muted);
-  text-transform: uppercase; letter-spacing: 0.04em;
-}
-
 /* Weekly report */
 .weekly-report__grid {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
