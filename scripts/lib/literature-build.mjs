@@ -6,12 +6,13 @@ import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from '
 import path from 'node:path';
 import { LITERATURE_BOUNDARY_FILE, withBoundaryMerges } from './literature-boundaries.mjs';
 import { createDisplayManifest, createIncipitManifest } from './literature-display-build.mjs';
+import { serializeBookKeyIndex } from './literature-index-build.mjs';
 
 export const LITERATURE_ROOT = 'src/content/literature/aozora';
 export const LITERATURE_FILES = Object.freeze({ source: 'source.txt', entry: 'entry.json', chapters: 'chapters.json', review: 'review.json' });
 /**
  * 루트에 같이 만드는 산출물(AOZORA-P0-2) — 작품 폴더 목록에서 결정적으로 나온다. 손으로 고치지 않는다.
- *   index  관리자 게시 API가 정적 import하는 책 목록(장 원문 포함 — 서버 전용)
+ *   index  관리자 게시 API · 서버 분석 작업이 쓰는 책 key 목록(장 원문은 싣지 않는다 — 서버가 필요한 책의 chapters.json만 읽는다)
  *   manifest 뷰어가 쓰는 정본 대조표(장 원문 SHA-256 + 출처 크레딧). 원문은 싣지 않는다.
  *   display  화면 표지 · 제목용 — manifest에서 파생(해시 · 크레딧 · 첫 문장 없음, literature-display-build.mjs). 홈 · 서재가 import한다.
  *   incipits 장 첫 문장 — manifest에서 파생. 서재 책 카드 목차 줄만 import한다.
@@ -38,16 +39,9 @@ function withReviewHints(draft, review, resolveReviewHints) {
   };
 }
 
-/** 책 목록 모듈 — 작품 폴더의 chapters.json을 정적 import한다(Next·vitest 둘 다 JSON import를 푼다). */
+/** 책 목록 모듈 — 작품 key만 싣는다(장 원문은 서버가 필요한 책만 읽는다 — literature-index-build.mjs). */
 export function serializeIndex(keys) {
-  const lines = [
-    '// 자동 생성 — node scripts/build-literature.mjs. 손으로 고치지 않는다(--check가 낡음을 잡는다).',
-    '// 정본 문학책 장 원문을 싣는다 — 서버(관리자 게시 API)에서만 import한다. 뷰어는 manifest.generated.json을 쓴다.',
-    ...keys.map((key, index) => `import book${index} from './${key}/${LITERATURE_FILES.chapters}';`),
-    '',
-    `export const LITERATURE_BOOKS = Object.freeze([${keys.map((_, index) => `book${index}`).join(', ')}]);`,
-  ];
-  return `${lines.join('\n')}\n`;
+  return serializeBookKeyIndex('LITERATURE_BOOK_KEYS', '정본 문학책(青空文庫)', keys);
 }
 
 /**
