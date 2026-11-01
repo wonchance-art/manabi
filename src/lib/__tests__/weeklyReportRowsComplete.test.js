@@ -11,6 +11,7 @@ vi.mock('../supabase', () => {
       eq(col, v) { state.eq[col] = v; return q; },
       gte(col, v) { state.gte = v; return q; },
       lte(col, v) { state.lte = v; return q; },
+      not() { return q; },
       order(col, opts) { state.order.push([col, opts?.ascending]); return q; },
       limit() { return q; },
       range(from, to) { state.range = [from, to]; return q; },

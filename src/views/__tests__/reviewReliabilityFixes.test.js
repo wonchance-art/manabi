@@ -170,7 +170,7 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     const pdfSection = read('src/views/MaterialAddPdfSection.jsx');
     // heatmap과 vocabulary가 이제 동일한 검증 완료 snapshot을 사용한다. 실패는 호출자 오류 UI로 전파한다.
     expect(profile).toContain("await fetchVocabularyLearningRows(userId, { fields: 'summary' })");
-    expect(profile).toContain('for (const v of learning.rows)');
+    expect(profile).toContain('studyDayCounts({ saved: learning.rows, sinceMs: heatmapStart })'); // 공부한 날(STATS-MAP-001) — 같은 snapshot의 담은 말 몫
     expect(profile).toContain('projections: learning.projections');
     expect(profile).toContain('학습 통계를 불러오지 못했어요.');
     expect(pdfSection).toContain('.then(({ count, error }) => {');

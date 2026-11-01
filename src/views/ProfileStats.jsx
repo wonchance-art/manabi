@@ -6,13 +6,13 @@
  *   ← 배움
  *   현황 [언어 칩]                                    [목표 수정]
  *   [ 진행바 반쪽 2×1   ][ 오늘 목표 ][ 연속      ]
- *   [ 히트맵 24주 2×1   ][ 이번 주   ][ 아는 단어 ]
+ *   [ 공부한 날 24주 2×1 ][ 이번 주   ][ 이미 아는 단어 ]
  *   [ 레벨 어휘 2×2     ][ 기억 건강 2×2          ]
  *
  * 예전 홈 메트로 대시보드(어느 경로에도 마운트돼 있지 않던 이 파일)를 현황으로 되살렸다. 배움(홈)과 함께 쓰는 칸은
  * components/learn으로 떼어 냈다 — 홈은 이 파일을 불러오지 않는다(performanceRepairs P4).
  * 언어 칩은 레벨 어휘 · 기억 건강 · 아는 단어를 그 언어로 거른다. 복습 개수 칸은 없다(진입 링크만 범위 주소).
- * 휴대폰은 한 격자를 펴고 클래스 order로 순서를 정한다(진행바 → 오늘 목표 · 연속 → 이번 주 · 아는 단어 → 히트맵 → 레벨 어휘 → 기억 건강).
+ * 휴대폰은 한 격자를 펴고 클래스 order로 순서를 정한다(진행바 → 오늘 목표 · 연속 → 이번 주 · 이미 아는 단어 → 공부한 날 → 레벨 어휘 → 기억 건강).
  * 「목표 수정」 · 진행바 · 오늘 목표 칸 · 주소 ?goal=edit는 목표 창(components/goal/GoalSheet — GOAL-SHEET-001)을 연다.
  */
 import { usePathname } from 'next/navigation';
@@ -20,7 +20,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../lib/AuthContext';
-import { buildWeeklyReport, weekRangeLabel } from '../lib/weeklyReport';
+import { SAVED_SOURCES, buildWeeklyReport, weekRangeLabel } from '../lib/weeklyReport';
 import { fetchWeeklyReportRows } from '../lib/weeklyReportRows';
 import { topLabeledWeakness, weaknessLine, weaknessProfile } from '../lib/weaknessProfile';
 import { fetchKnownWords, knownWordsLang } from '../lib/knownWords';
@@ -44,23 +44,19 @@ import { authEntryHref } from '../lib/authRedirect';
 import { useDialogReturn } from '../lib/useDialogReturn';
 import GoalSheet from '../components/goal/GoalSheet';
 import { useGroupSnapshotPush } from '../lib/useGroupSnapshotPush';
+import { STUDY_DAYS_SPAN, fetchStudyAnswerRows, studyDayCounts, studyDayLabel } from '../lib/studyDays';
 import { METRICS } from '../lib/metrics/registry';
 
-/** 히트맵 — 최근 24주(168일), 가장 오른쪽 아래가 오늘. */
-export const HEATMAP_DAYS = 168;
+/** 공부한 날(히트맵) — 최근 24주(168일), 가장 오른쪽 아래가 오늘. */
+export const HEATMAP_DAYS = STUDY_DAYS_SPAN;
 const DAY_MS = 24 * 3600 * 1000;
 
 export async function fetchProfileStats(userId, now = Date.now()) {
   const learning = await fetchVocabularyLearningRows(userId, { fields: 'summary' });
   const heatmapStart = learningDayStartMs(now) - (HEATMAP_DAYS - 1) * DAY_MS;
-  const heatmapDayCounts = {};
-  for (const v of learning.rows) {
-    const created = Date.parse(v.created_at);
-    if (!Number.isFinite(created) || created < heatmapStart) continue;
-    const day = learningDateString(created);
-    heatmapDayCounts[day] = (heatmapDayCounts[day] || 0) + 1;
-  }
-  return { vocab: learning.rows, projections: learning.projections, now: learning.now, heatmapDayCounts };
+  // 공부한 날 칸의 「담은 말」 몫 — 답 몫은 화면이 따로 늦게 받는다(첫 칸들을 기다리게 하지 않게).
+  const heatmapDayCounts = studyDayCounts({ saved: learning.rows, sinceMs: heatmapStart });
+  return { vocab: learning.rows, projections: learning.projections, now: learning.now, heatmapStart, heatmapDayCounts };
 }
 
 export default function ProfileStats() {
@@ -81,6 +77,26 @@ export default function ProfileStats() {
     const key = v.language || detectLang(v.word_text || ''); all[key] = (all[key] || 0) + 1; return all;
   }, {}), [data?.vocab]);
   const { langs, lang, choose } = useLearnLanguage(profile, vocabCounts);
+
+  // 공부한 날 — 답 몫(review_events 24주). 첫 칸들이 뜬 뒤에 받고, 실패하면 담은 말만으로 칸을 그린다.
+  const { data: answerRows } = useQuery({
+    queryKey: ['study-days', user?.id, data?.heatmapStart],
+    queryFn: () => fetchStudyAnswerRows(user.id, new Date(data.heatmapStart).toISOString()),
+    enabled: !!user && !!data?.heatmapStart,
+    staleTime: 1000 * 60 * 5,
+  });
+  const studyDays = useMemo(() => {
+    if (!data) return {};
+    const answers = studyDayCounts({ answers: answerRows || [], sinceMs: data.heatmapStart });
+    const merged = {};
+    for (const source of [data.heatmapDayCounts || {}, answers]) {
+      for (const [day, c] of Object.entries(source)) {
+        const cell = (merged[day] ||= { answers: 0, saved: 0 });
+        cell.answers += c.answers; cell.saved += c.saved;
+      }
+    }
+    return merged;
+  }, [data, answerRows]);
 
   // 이번 주 카드(rfc-weekly-report 목업 A) — 실패·빈 주는 카드 생략으로 조용히.
   const { data: weeklyRows } = useQuery({
@@ -161,7 +177,7 @@ export default function ProfileStats() {
         <GoalTrackTile className="learn-order-1" onOpen={() => setGoalOpen(true)} />
         <TodayGoalTile vocab={vocab} projections={projections} profile={profile} empty={!data} className="learn-order-2" onOpen={() => setGoalOpen(true)} />
         <StreakTile profile={profile} className="learn-order-3" />
-        <HeatmapCard dayCounts={data?.heatmapDayCounts || {}} className="learn-order-6" />
+        <HeatmapCard dayCounts={studyDays} className="learn-order-6" />
         {/* 빈 주에도 칸은 자리를 지킨다(오너 확정 2026-08-30 "상시 표시") — 게이트는 로드 대기만, 로드 전은 같은 칸의 「–」. */}
         {weekly ? <WeeklyTile weekly={weekly} className="learn-order-4" /> : <StatTile value="–" label="이번 주" className="learn-order-4" />}
         <StatTile value={Array.isArray(knownRows) ? knownRows.length.toLocaleString('ko-KR') : '–'} label={METRICS.knownMarked.label} className="learn-order-5" />
@@ -195,6 +211,7 @@ function WeeklyTile({ weekly, className = '' }) {
   const [value, label] = weekly.reviews.total > 0
     ? [`${weekly.reviews.total}`, `이번 주 복습${acc != null ? ` · ${acc}%` : ''}`]
     : weekly.newWords > 0 ? [`${weekly.newWords}`, '이번 주 담은 말']
+    : weekly.conversation?.turns > 0 ? [`${weekly.conversation.turns}`, '이번 주 대화'] // 복습 없이 대화만 한 주(오너 「권장대로」 — 담은 말 다음)
     : weekly.metWords > 0 ? [`${weekly.metWords}`, '이번 주 만난 말']
     : weekly.readsCompleted > 0 ? [`${weekly.readsCompleted}`, '이번 주 완독']
     : ['–', '이번 주'];
@@ -213,6 +230,9 @@ function WeeklyTile({ weekly, className = '' }) {
   );
 }
 
+/** 담은 곳 이름 — SAVED_SOURCES 순서 그대로. */
+const SAVED_SOURCE_LABEL = Object.freeze({ reading: '읽기', conversation: '대화', level: '단어 목록', study: '오늘 학습', manual: '직접' });
+
 /* ── 이번 주 카드(rfc-weekly-report 목업 A) — 거울이지 성적표가 아니다:
      지난주는 회색 병기만(증감 화살표·색상 없음), 0인 축은 그리지 않는다. ── */
 function WeeklyReportCard({ weekly, header = true, showWeakness = false }) {
@@ -223,6 +243,14 @@ function WeeklyReportCard({ weekly, header = true, showWeakness = false }) {
   if (weekly.newWords > 0) parts.push(`새로 담은 말 ${weekly.newWords}`);
   if (weekly.metWords > 0) parts.push(`만난 말 ${weekly.metWords}`);
   if (weekly.readsCompleted > 0) parts.push(`완독 ${weekly.readsCompleted}편`);
+  // 대화 성과 · 담은 곳(STATS-MAP-001 S7 — 2차 목업 02 「권장대로」). 0인 항목은 쓰지 않는다.
+  const conv = weekly.conversation || {};
+  const convParts = [];
+  if (conv.turns > 0) convParts.push(`대화 ${conv.turns}마디`);
+  if (conv.fixed > 0) convParts.push(`스스로 고친 문장 ${conv.fixed}`);
+  if (conv.reaskOk > 0) convParts.push(`다시 쓴 문형 ${conv.reaskOk}`);
+  const sourceParts = SAVED_SOURCES.filter(key => weekly.savedBySource?.[key] > 0)
+    .map(key => `${SAVED_SOURCE_LABEL[key]} ${weekly.savedBySource[key]}`);
   return (
     <div style={{ fontVariantNumeric: 'tabular-nums' }}>
       {header && (
@@ -242,9 +270,19 @@ function WeeklyReportCard({ weekly, header = true, showWeakness = false }) {
           )}
         </div>
       )}
+      {convParts.length > 0 && (
+        <div style={{ marginTop: 4, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+          {convParts.join(' · ')}
+        </div>
+      )}
       {parts.length > 0 && (
         <div style={{ marginTop: 4, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
           {parts.join(' · ')}
+        </div>
+      )}
+      {weekly.newWords > 0 && sourceParts.length > 0 && (
+        <div style={{ marginTop: 4, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+          담은 곳 — {sourceParts.join(' · ')}
         </div>
       )}
       {showWeakness && <WeakSpotLine weekStartMs={weekly.week.startMs} />}
@@ -300,27 +338,25 @@ function TileModal({ title, onClose, children, className = '' }) {
   );
 }
 
-/* ── 히트맵 반쪽(2×1) — 최근 24주, 칸 10px · 간격 2px, 범례 없음(칸마다 개수 툴팁). 좌→우로 시간이 흐르고 맨 오른쪽 아래가 오늘. ── */
+/* ── 공부한 날 반쪽(2×1, 오너 결정 3 · 2026-11-01 KST) — 최근 24주, 칸 10px · 간격 2px, 범례 없음(칸마다 설명).
+     좌→우로 시간이 흐르고 맨 오른쪽 아래가 오늘. 한 칸 = 학습일(04시) 하나 = 답한 문항 + 담은 말. 색은 그 기간 최대 대비 4단계(A안). ── */
 
 function HeatmapCard({ dayCounts, className = '' }) {
   const todayStart = learningDayStartMs(Date.now());
   const days = Array.from({ length: HEATMAP_DAYS }, (_, i) => learningDateString(todayStart - (HEATMAP_DAYS - 1 - i) * DAY_MS));
-  const maxCount = Math.max(1, ...Object.values(dayCounts));
-  const shown = days.filter(key => dayCounts[key] > 0);
-  const totalWords = shown.reduce((sum, key) => sum + dayCounts[key], 0);
+  const total = key => (dayCounts[key]?.answers || 0) + (dayCounts[key]?.saved || 0);
+  const maxCount = Math.max(1, ...days.map(total));
+  const studied = days.filter(key => total(key) > 0).length;
   const levelOf = n => (!n ? '' : `l${Math.min(4, Math.max(1, Math.ceil((n / maxCount) * 4)))}`);
 
   return (
     <div className={`learn-tile learn-heatmap ${className}`.trim()}>
       <div className="learn-sec-head">
-        <h2 className="learn-sec-title">히트맵</h2>
-        {shown.length > 0 && <span className="learn-sec-meta">{shown.length}일 · {totalWords.toLocaleString('ko-KR')}개</span>}
+        <h2 className="learn-sec-title">공부한 날</h2>
+        {studied > 0 && <span className="learn-sec-meta">{studied}일 · 지난 24주</span>}
       </div>
       <div className="learn-heatmap__strip">
-        {days.map(key => {
-          const n = dayCounts[key] || 0;
-          return <i key={key} className={levelOf(n) || undefined} title={`${Number(key.slice(5, 7))}월 ${Number(key.slice(8))}일 · ${n}개`} />;
-        })}
+        {days.map(key => <i key={key} className={levelOf(total(key)) || undefined} title={studyDayLabel(key, dayCounts[key])} />)}
       </div>
     </div>
   );
