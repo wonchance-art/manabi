@@ -179,10 +179,9 @@ describe('연습 순서', () => {
 });
 
 describe('기록 — 새 표 · 새 열 없음, 바퀴 답과 같은 모양(활동 전용)', () => {
-  const hook = fs.readFileSync('src/lib/useLevelWordAreas.js', 'utf8');
-  it('쓰기는 levelAnswerEvent · logReviewEvents뿐, 탭 표시 표는 읽기만', () => {
-    expect(hook).toMatch(/levelAnswerEvent\(/);
-    expect(hook).not.toMatch(/setWordFacet|\.upsert\(|\.insert\(/);
+  it('연습 탭(쓰는 곳 useLevelWordAreas)은 없앴다 — 지난 연습 답(source level)은 지우지 않고 활동 전용 역사로 남는다(CARD-TYPES-001 A안)', () => {
+    expect(fs.existsSync('src/lib/useLevelWordAreas.js')).toBe(false);
+    expect(fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8')).not.toMatch(/levelAnswerEvent|logReviewEvents|useLevelWordAreas/);
     expect(fs.readFileSync('src/lib/weeklyReport.js', 'utf8')).toMatch(/ACTIVITY_ONLY_SOURCES = Object\.freeze\(new Set\(\[[^\]]*'level'/);
   });
   it('연습 기억은 일정과 같은 FSRS 엔진 · 같은 목표 기억률(엔진을 따로 만들지 않는다)', () => {

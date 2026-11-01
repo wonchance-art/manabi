@@ -109,7 +109,7 @@ describe('한 단어 — 기다리는 카드만 남고 아직 채점할 수 없�
     expect(renderToStaticMarkup(<OneWordWait at={Date.now() - 1} onList={() => {}} />)).toContain('다음 카드가 곧 와요');
   });
   it('화면 — 줄이 비고 가장 빠른 카드도 채점할 수 없을 때만 · 카드 · 네 칸 대신 · 숫자 키도 받지 않는다 · 시간이 되면 카드가 저절로', () => {
-    expect(screen).toMatch(/const oneWait = !!session && !!current && !practice && !browse && prefs\.mode === 'one' && !sessionOrder\(session, clock\)\.length\n\s+&& !!nextAt && !currentInfo\?\.previews;/);
+    expect(screen).toMatch(/const oneWait = !!session && !!current && !browse && prefs\.mode === 'one' && !sessionOrder\(session, clock\)\.length\n\s+&& !!nextAt && !currentInfo\?\.previews;/);
     expect(screen).toContain("{oneWait && <OneWordWait at={comesAt} onList={() => switchMode('list')} />}");
     expect(screen).toContain('{session && current && !oneWait && <OneWordCard');
     expect(screen).toContain('{session && current && !oneWait && <GradeBar');

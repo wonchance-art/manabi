@@ -646,7 +646,7 @@ test('vocab performance: N3 초기 DOM과 단어장 읽기를 예산 안에 유�
     assert.ok(vocabReads.every(url => !new URL(url).searchParams.has('word_text')),
       'level keys must not go into the URL (old per-chunk fan-out)');
 
-    // 설정은 두 곳(2026-10-21 KST): 제목 ▾ 시트 = 레벨 · 목록 · 학습 옵션(모드 · 보기 탭은 페이지 줄에만), 해 모양 창 없음.
+    // 설정은 두 곳(2026-10-21 KST): 제목 ▾ 시트 = 레벨 · 목록 · 학습 옵션(모드 칸은 페이지 줄에만 · 보기 탭은 CARD-TYPES-001 A안으로 없앴다), 해 모양 창 없음.
     // 학습 옵션(2026-10-31 KST): 순서 · 하루(2026-11-01 KST — 분량 자리) — 예전 보기 줄(도움 스위치 · 리스트 한 번에)은 없다.
     assert.equal(await page.locator('.lw-top').getByRole('button', { name: '설정' }).count(), 0, 'no separate settings button in the top bar');
     await page.getByRole('button', { name: '레벨 · 목록 · 학습 옵션', exact: true }).click();
@@ -660,15 +660,25 @@ test('vocab performance: N3 초기 DOM과 단어장 읽기를 예산 안에 유�
     assert.equal(await sheet.getByRole('switch', { name: '예문 후리가나' }).count(), 0, 'aid switch is gone (furigana fixed on)');
     assert.equal(await sheet.getByRole('button', { name: '한 단어', exact: true }).count(), 0, 'mode stays on the page row only');
     await page.keyboard.press('Escape');
-    // 연습 탭에서 첫 답을 내면 모드 · 보기 줄이 접히고, 제목을 누르면 시트 대신 줄이 다시 펼쳐진다.
+    // 보기 탭(단어 · 문장 · 뜻 · 소리 · 전체)은 없앴다(CARD-TYPES-001 A안) — 카드 종류가 연습 탭을 흡수했다.
+    assert.equal(await page.locator('.lw-tabs').count(), 0, 'view tabs are gone');
+    // 첫 채점을 내면 모드 줄이 접히고, 제목을 누르면 시트 대신 줄이 다시 펼쳐진다. 이 계정의 담기 저장은 이 확인 동안 붙잡아 둔다
+    // (낙관 전진으로 줄이 접힌 상태를 본다 — 저장 실패 되돌리기가 접힘을 먼저 풀지 않게).
+    let releaseSave;
+    const saveHeld = new Promise((resolve) => { releaseSave = resolve; });
+    await context.route('**/rest/v1/user_vocabulary**', async (route) => {
+      if (route.request().method() !== 'POST') { await route.fallback(); return; }
+      await saveHeld;
+      await route.abort();
+    });
     await page.getByRole('button', { name: '한 단어', exact: true }).click();
-    await page.locator('.lw-tabs').getByRole('button', { name: '뜻', exact: true }).click();
     await page.getByRole('button', { name: /정답 확인/ }).click();
-    await page.getByRole('button', { name: '알아요', exact: true }).click();
+    await page.locator('.lw-gradebar').getByRole('button', { name: /^알맞음/ }).click();
     await page.waitForFunction(() => document.querySelector('.lw-rows')?.hidden === true, null, { timeout: config.timeout });
     await page.getByRole('button', { name: 'JLPT N3 단어', exact: true }).click();
     await page.waitForFunction(() => document.querySelector('.lw-rows')?.hidden === false, null, { timeout: config.timeout });
     assert.equal(await page.getByRole('dialog').count(), 0, 'title tap on folded rows unfolds instead of opening the sheet');
+    releaseSave();
 
     // 찾기 — 머리의 찾기 단추로 열고, 첫 150개 밖 단어도 JLPT 전체 색인에서 찾는다.
     await page.getByRole('button', { name: '단어 찾기', exact: true }).click();

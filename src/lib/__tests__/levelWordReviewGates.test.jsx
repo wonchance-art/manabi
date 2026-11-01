@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { GradeBar, OneWordDone } from '@/components/levels/word/OneWord';
-import { PracticeBar } from '@/components/levels/word/WordAreas';
 import { WordLangContext } from '@/components/levels/word/wordLang';
 
 // 계약: 시안 ⑦ 추천(오너 2026-10-21 KST) — ① 하루 새 단어는 복습 설정과 같은 수 + 「더」 단추(시안 ⑧), ③ 소리 탭 자동 읽기.
@@ -62,22 +61,20 @@ describe('① 하루 새 단어 — 복습 설정과 같은 수 · 더 단추(�
 });
 
 describe('② 앞면에서도 채점 — 「확인 전 채점 막기」는 넣지 않는다(오너 결정 재확인 2026-10-21 KST)', () => {
-  it('네 칸 · 두 칸은 펼치지 않아도 그대로 누르고, 흐림 표시가 없다', () => {
+  it('네 칸은 펼치지 않아도 그대로 누르고, 흐림 표시가 없다', () => {
     expect(wrap(<GradeBar previews={null} onGrade={() => {}} />)).not.toContain('data-locked');
-    expect(wrap(<PracticeBar onAnswer={() => {}} />)).not.toContain('data-locked');
     expect(css).not.toContain('data-locked');
     expect(screen).toContain('<GradeBar previews={currentInfo.previews} onGrade={(r) => onGrade(current, r)}');
-    expect(screen).toContain('<PracticeBar onAnswer={(ok) => onPractice(practiceEntry, ok)}');
     expect(screen).toContain("if (rating) { event.preventDefault(); h.onGrade(h.current, rating); }");
     expect(screen).not.toContain("if (keys.includes(event.key)) { event.preventDefault(); h.onGrade(h.current, Number(event.key)); }");
     expect(screen).not.toMatch(/revealed \? onGrade|opened\.has\(/);
   });
 });
 
-describe('③ 소리 탭 자동 읽기', () => {
-  it('한 단어는 카드가 나올 때, 리스트는 답할 카드가 바뀔 때 한 번', () => {
-    expect(screen).toContain("const sayKey = practice === 'audio' && roundOn ? (prefs.mode === 'one' ? practiceEntry?.key : practiceFocus?.key) ?? null : null;");
-    expect(screen).toContain('useEffect(() => { if (sayKey && speak) speak(byKey.get(sayKey)?.word || sayKey); }, [sayKey, sayTurn, speak, byKey]);');
+describe('③ 듣기 카드 자동 읽기(예전 소리 탭 — CARD-TYPES-001)', () => {
+  it('한 단어는 문제 면이 나올 때, 리스트는 채점 대상이 바뀔 때 한 번 · 예문(없으면 단어)', () => {
+    expect(screen).toContain("const sayEntry = browse ? null : prefs.mode === 'one' ? (current?.kind === 'listening' && !revealed ? current : null) : (focusEntry?.kind === 'listening' ? focusEntry : null);");
+    expect(screen).toContain('if (sayKey && speak) { const e = byCard.get(sayKey); if (e) speak(e.ex?.text || e.word); }');
   });
 });
 
@@ -88,9 +85,9 @@ describe('시안 · 설계 문서 대조 후속(2026-10-21 KST)', () => {
     expect(screen).toContain('const { user, loading: authLoading, refreshProfileAfterActivity } = useAuth();');
     expect(screen).toContain('const ready = mounted && !authLoading && (!userId || !!index || indexQuery.isError);');
   });
-  it('문장 탭 펼친 카드는 예문 단어를 바로 누른다(시안 ⑦) · 접힌 줄은 글자 그대로', () => {
-    expect(card).toMatch(/open === true \? soloLine\('lw-card__solo', <ExampleWords /);
-    expect(css).toContain('.lw-card__solo .lw-ex__text{font-size:inherit;line-height:inherit}');
+  it('문장 탭(접힌 문장 줄)은 없앴다 — 접힌 줄은 카드의 문제 면 하나(CARD-TYPES-001 A안)', () => {
+    expect(card).not.toMatch(/view === 'sentence'|lw-card__solo/);
+    expect(css).not.toContain('.lw-card__solo');
   });
   it('끝 화면 칸 차례 — 마지막 칸 늦춤 + 길이가 0.3초 안', () => {
     const dur = Number(css.match(/\.lw-done__n\{animation:settleIn (\.\d+)s/)[1]);
@@ -143,7 +140,7 @@ describe('재검수 손질(2026-10-22 KST) — 키보드 · 되돌리기', () =>
   const one = fs.readFileSync('src/components/levels/word/OneWord.jsx', 'utf8');
   it('눌러 채점한 단추는 초점을 놓는다 — 남으면 다음 카드에서 Space가 그 단추를 눌러 보지 않은 카드를 채점한다', () => {
     expect(parts).toContain('releasePointerFocus(e); onGrade(g.grade);');
-    expect(areas.match(/releasePointerFocus\(e\); onAnswer/g)).toHaveLength(2);
+    expect(areas).not.toContain('onAnswer'); // 연습 두 칸은 없앴다(CARD-TYPES-001 A안)
   });
   it('정답 확인 단추가 사라지면 초점은 카드로 · 시트는 Tab이 안에서 돈다 · 예문 단어 창은 열리면 창 안, 닫히면 누른 단어로', () => {
     expect(one).toMatch(/onReveal\(\); card\?\.focus/);
@@ -151,8 +148,8 @@ describe('재검수 손질(2026-10-22 KST) — 키보드 · 되돌리기', () =>
     expect(sheets).toContain("el?.querySelector('button')?.focus");
     expect(screen).toContain('returnTo={card.from}');
   });
-  it('Ctrl/⌘+Z는 연습 답도 되돌린다 · 되돌리기 창이 지났으면 말없이 넘기지 않는다 · 알림 단추는 닫고 실행', () => {
-    expect(screen).toContain('lastRef.current = { practice: [entry.key, which, row] }');
+  it('Ctrl/⌘+Z · 되돌리기 창이 지났으면 말없이 넘기지 않는다 · 알림 단추는 닫고 실행', () => {
+    expect(screen).not.toContain('practice: [entry.key'); // 연습 답은 없앴다
     expect(screen).toContain('되돌릴 수 있는 시간이 지났어요');
     expect(screen).toContain('onDone(); notice.onAction();');
   });
@@ -165,10 +162,9 @@ describe('재검수 손질(2026-10-22 KST) — 키보드 · 되돌리기', () =>
 describe('평소 채점은 창 없이 되돌리기만(오너 2026-10-22 KST 「단어 처리 될 때마다 창 떠야겠나?」)', () => {
   const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
   const css = fs.readFileSync('src/components/levels/word/level-word.css', 'utf8');
-  it('네 칸 채점 · ☆ 담기 · 연습 답은 네 칸 위 가운데 한 줄 — 같은 날 규칙 안내만 창 · 다음 카드를 펼치면 거둔다', () => {
+  it('네 칸 채점 · ☆ 담기는 네 칸 위 가운데 한 줄 — 다음 카드를 펼치면 거둔다', () => {
     expect(screen).toContain('quiet: { word: cfg.head(entry).hw, lang: cfg.hw, what: gradeToastText(rating, null) }');
     expect(screen).toContain("quiet: { word: cfg.head(entry).hw, lang: cfg.hw, what: '담음' }");
-    expect(screen).toContain("quiet: correct && sameDay ? null : { word: cfg.head(entry).hw, what: correct ? '알아요' : '다시 볼래요' }");
     expect(screen).toContain('<span lang={lang}>{word}</span>{what} · <u>되돌리기</u>');
     expect(screen).toContain('setNotice((n) => (n?.quiet ? null : n))');
     expect(css).toContain('.lw-undo--quiet,.lw-page[data-mode] .lw-undo--quiet{bottom:calc(66px + env(safe-area-inset-bottom,0px));background:none;border:0;box-shadow:none;padding:0;justify-content:center;');
@@ -178,7 +174,7 @@ describe('평소 채점은 창 없이 되돌리기만(오너 2026-10-22 KST 「�
 
 describe('아래 고정 칸은 페이지를 굴리지 않는다(오너 2026-10-27 KST 「네 칸을 눌렀는데 스크롤이 돼서 불편」)', () => {
   const css = fs.readFileSync('src/components/levels/word/level-word.css', 'utf8');
-  it('네 칸 · 연습 두 칸 · 넘기기 줄이 함께 쓰는 .lw-gradebar에서 시작한 손가락 움직임은 팬하지 않는다', () => {
+  it('네 칸 · 넘기기 줄이 함께 쓰는 .lw-gradebar에서 시작한 손가락 움직임은 팬하지 않는다', () => {
     const bar = css.match(/^\.lw-gradebar\{[^}]*\}/m)?.[0] || '';
     expect(bar).toContain('position:fixed');
     expect(bar).toContain('touch-action:none');
@@ -188,13 +184,13 @@ describe('아래 고정 칸은 페이지를 굴리지 않는다(오너 2026-10-2
 
 describe('리스트에서 화면 위 카드를 채점해도 보이는 카드가 움직이지 않는다(오너 2026-10-27 KST 「아직도 똑같은 현상」 — iOS Safari엔 스크롤 고정이 없다)', () => {
   const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
-  it('화면 위 카드는 접는 움직임 없이 빼고, 보이는 첫 카드가 어긋난 만큼 즉시 되돌린다(채점 · 연습 답 둘 다)', () => {
+  it('화면 위 카드는 접는 움직임 없이 빼고, 보이는 첫 카드가 어긋난 만큼 즉시 되돌린다', () => {
     expect(screen).toContain('if (!el || el.getBoundingClientRect().bottom > top) return null;');
     expect(screen).toContain("if (Math.abs(moved) >= 1) window.scrollBy({ top: moved, behavior: 'instant' });");
-    expect(screen.match(/const keep = one \? null : holdViewIfAbove\(cardEl\(entry\.key\)\);/g)).toHaveLength(2);
-    expect(screen.match(/const el = keep \|\| reducedMotion\(\) \? null/g)).toHaveLength(2);
+    expect(screen.match(/const keep = one \? null : holdViewIfAbove\(cardEl\(entry\.key\)\);/g)).toHaveLength(1);
+    expect(screen.match(/const el = keep \|\| reducedMotion\(\) \? null/g)).toHaveLength(1);
     // 줄에서 뺀 다음(flushSync 뒤)에 잰다 — 그전에 재면 차이가 늘 0이다.
     expect(screen.indexOf('keep?.();')).toBeGreaterThan(screen.indexOf('if (anim) { anim.cancel(); el.style.overflow = \'\'; }'));
-    expect(screen.match(/keep\?\.\(\);/g)).toHaveLength(2);
+    expect(screen.match(/keep\?\.\(\);/g)).toHaveLength(1);
   });
 });

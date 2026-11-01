@@ -49,7 +49,39 @@ export function startLevelSession(entries, statusOf, dueAtOf = () => 0, at = Dat
   const opts = studyOpts({ order });
   const line = arrangeLine(today, fresh.slice(0, cap), opts);
   return { queue: [...learning.map((l) => l.key), ...line], held: fresh.slice(cap), waiting,
-    graded: 0, counts: { 1: 0, 2: 0, 3: 0, 4: 0 }, history: [], total: today.length + learning.length + cap + waiting.length, kind, rank, opts };
+    graded: 0, counts: { 1: 0, 2: 0, 3: 0, 4: 0 }, history: [], total: today.length + learning.length + cap + waiting.length, kind, rank, opts,
+    seen: [...today, ...learning.map((l) => l.key), ...fresh, ...waiting.map((w) => w.key)] };
+}
+
+/**
+ * 줄을 세운 뒤에 생긴 카드를 더한다(CARD-TYPES-001 3단계 — 「카드」 줄로 종류를 켰거나 종류 카드를 막 붙였다). items = [{ key, at(차례 시각 ms · 0 = 지금),
+ * learning(학습 단계인가), rank }] — 이 세션에 한 번도 선 적 없는 카드만(seen — 채점해 줄에서 빠진 카드를 다시 세우지 않는다).
+ * 차례가 된 카드는 줄(② 끝 — 복습과 같이, 하루 새 단어 몫 밖), 오늘 안 다른 시각이면 기다리는 카드로. 채점 수 · 기록은 그대로.
+ */
+export function addLevelSessionKeys(session, items, at = Date.now()) {
+  if (!session || !items?.length) return session;
+  const seen = new Set(session.seen || []);
+  const fresh = items.filter((it) => it?.key && !seen.has(it.key));
+  if (!fresh.length) return session;
+  const kind = { ...session.kind }, rank = { ...session.rank };
+  const queue = [...session.queue], waiting = [...session.waiting];
+  for (const it of fresh) {
+    rank[it.key] = it.rank ?? Infinity;
+    if (it.at > at) waiting.push({ key: it.key, at: it.at });
+    else { kind[it.key] = it.learning ? 'learn' : 'review'; queue.push(it.key); }
+  }
+  return { ...session, queue, waiting: waiting.sort(byAt), kind, rank, total: session.total + fresh.length, seen: [...seen, ...fresh.map((it) => it.key)] };
+}
+
+/** 쉬게 된 카드(「카드」 줄에서 끈 종류)를 줄에서 뺀다 — 채점 수 · 기록은 그대로. keep(key) = 남길 카드인가. 다시 켜면 addLevelSessionKeys로 다시 선다. */
+export function dropLevelSessionKeys(session, keep) {
+  if (!session) return session;
+  const queue = session.queue.filter(keep), waiting = session.waiting.filter((w) => keep(w.key));
+  if (queue.length === session.queue.length && waiting.length === session.waiting.length) return session;
+  // 뺀 카드는 「선 적 없음」으로 돌린다 — 그 종류를 다시 켜면 다시 선다(addLevelSessionKeys).
+  const dropped = new Set([...session.queue.filter((k) => !keep(k)), ...session.waiting.filter((w) => !keep(w.key)).map((w) => w.key)]);
+  return { ...session, queue, waiting, seen: (session.seen || []).filter((k) => !dropped.has(k)),
+    total: Math.max(0, session.total - (session.queue.length - queue.length) - (session.waiting.length - waiting.length)) };
 }
 
 export const LEVEL_SESSION_ORDERS = Object.freeze(['mix', 'new-first', 'review-first']);

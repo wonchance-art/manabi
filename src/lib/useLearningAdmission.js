@@ -45,7 +45,8 @@ export function createAdmissionIntentStore({ indexedDB = globalThis.indexedDB, d
         read.onsuccess = () => {
           const existing = read.result.find(row => row.scope === requestScope(request) && row.status === 'pending');
           if (existing) {
-            if (request.action === 'configure' && existing.request.dailyNewLimit !== request.dailyNewLimit) {
+            if (request.action === 'configure' && (existing.request.dailyNewLimit !== request.dailyNewLimit
+              || JSON.stringify(existing.request.cardKinds ?? null) !== JSON.stringify(request.cardKinds ?? null))) {
               fail(problem('learning_admission_pending_configuration')); return;
             }
             done(existing.request); return;
@@ -128,7 +129,9 @@ export function createLearningAdmissionClient({ accountId, getAccountId = () => 
   return {
     load: async () => normalizeAdmissionStatus(await send(), { actorId: accountId }),
     admit: ({ cardId, expectedPolicyRevision }) => perform({ action: 'admit', cardId, expectedPolicyRevision }),
-    configure: ({ dailyNewLimit, expectedPolicyRevision }) => perform({ action: 'configure', dailyNewLimit, expectedPolicyRevision }),
+    // cardKinds = 켜진 카드 종류(CARD-TYPES-001 — 같은 configure · 같은 판본, 생략하면 그대로).
+    configure: ({ dailyNewLimit, expectedPolicyRevision, cardKinds }) => perform({ action: 'configure', dailyNewLimit, expectedPolicyRevision,
+      ...(cardKinds ? { cardKinds } : {}) }),
     pending: () => { owner(); return store.pending(accountId); },
     cancel() { requests.forEach(request => request.abort()); requests.clear(); },
   };
@@ -277,11 +280,11 @@ export function createLearningAdmissionController({ accountId, client, onQuota =
     })();
     working = { key: questionKey, promise }; return promise;
   }
-  async function configure(dailyNewLimit) {
+  async function configure(dailyNewLimit, { cardKinds } = {}) {
     if (disposed || state.busy || !state.quota || canUseLegacyAdmissionCompatibility(state.quota)) return false;
     const token = generation; publish({ busy: true, error: null });
     try {
-      const response = await client.configure({ dailyNewLimit, expectedPolicyRevision: state.quota.policyRevision });
+      const response = await client.configure({ dailyNewLimit, expectedPolicyRevision: state.quota.policyRevision, ...(cardKinds ? { cardKinds } : {}) });
       if (disposed || token !== generation) return false;
       readGeneration++; loading = null;
       applyQuota(response.quota, 'configure'); return true;
@@ -306,7 +309,7 @@ export function createLearningAdmissionController({ accountId, client, onQuota =
     async retryConfiguration() {
       const entries = await client.pending();
       const pending = entries.find(entry => entry.request.action === 'configure');
-      if (pending) return configure(pending.request.dailyNewLimit);
+      if (pending) return configure(pending.request.dailyNewLimit, pending.request.cardKinds ? { cardKinds: pending.request.cardKinds } : {});
       const result = await refresh();
       if (result) publish({ error: null });
       return result;

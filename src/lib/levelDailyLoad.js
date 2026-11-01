@@ -4,6 +4,7 @@ import { canUseLegacyAdmissionCompatibility } from './learningAdmission';
 import { reviewScopeQuota } from './reviewScope';
 import { createLearningAdmissionClient, createLearningAdmissionController } from './useLearningAdmission';
 import { isNewPerDayValue, loadIntroIds, loadNewPerDay } from './vocabStudy';
+import { admissionCardKinds, normalizeCardKinds } from './fsrsCardKinds';
 
 const FRESH_MS = 60_000;
 let cached = null;
@@ -31,7 +32,9 @@ export function levelNewSlots(accountId) {
   if (!accountId) return Promise.resolve(null);
   return createLearningAdmissionClient({ accountId }).load().then((quota) => {
     if (canUseLegacyAdmissionCompatibility(quota) || !Number.isInteger(quota?.used) || !Number.isInteger(quota.limit)) return null;
-    return { limit: quota.limit, used: quota.used, remaining: reviewScopeQuota({ quota, compatibility: false }).remaining };
+    // cardKinds = 켜진 카드 종류(CARD-TYPES-001 3단계 — 「카드」 줄 · 종류 카드 그리기). 칸이 없으면 단어 → 뜻 하나(「모르면 지금처럼」).
+    return { limit: quota.limit, used: quota.used, remaining: reviewScopeQuota({ quota, compatibility: false }).remaining,
+      cardKinds: [...admissionCardKinds(quota)] };
   }).catch(() => null);
 }
 
@@ -52,5 +55,26 @@ export async function levelSetNewPerDay(accountId, limit) {
     try { localStorage.setItem('vocab_new_per_day', String(limit)); } catch { /* 저장소 차단 — 서버 한도는 이미 바뀌었다 */ }
     cached = null; // 위 1분 묶음(levelNewQuota)이 옛 한도를 내지 않게
     return { ok: true, limit };
+  } finally { controller.dispose(); }
+}
+
+/**
+ * 「카드」 줄(학습 옵션 시트 · CARD-TYPES-001 3단계)이 켜진 카드 종류를 바꾼다 — 하루 새 단어 수와 같은 길(입장 configure · 같은 판본 +1)에
+ * cardKinds 칸만 더한다(하루 새 단어 수는 지금 값 그대로 보낸다). 새 설정 · 새 표를 만들지 않는다(설계 §4 「입장 정책 행에 열 하나」).
+ * 호환(사전 활성) 모드에는 서버 입장 정책이 없어 바꾸지 않는다(ok false — 화면은 그 모드에서 줄을 그리지 않는다).
+ * 반환 = { ok, cardKinds } — ok false면 화면이 앞 값으로 되돌린다.
+ */
+export async function levelSetCardKinds(accountId, kinds) {
+  let cardKinds;
+  try { cardKinds = [...normalizeCardKinds(kinds)]; } catch { return { ok: false }; }
+  if (!accountId) return { ok: false };
+  const controller = createLearningAdmissionController({ accountId, client: createLearningAdmissionClient({ accountId }) });
+  try {
+    if (!(await controller.refresh())) return { ok: false };
+    const { quota } = controller.getSnapshot();
+    if (!quota || canUseLegacyAdmissionCompatibility(quota)) return { ok: false };
+    if (!(await controller.configure(quota.limit, { cardKinds }))) return { ok: false };
+    const saved = admissionCardKinds(controller.getSnapshot().quota);
+    return { ok: true, cardKinds: [...saved] };
   } finally { controller.dispose(); }
 }

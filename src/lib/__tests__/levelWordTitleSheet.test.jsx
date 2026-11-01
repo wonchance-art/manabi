@@ -95,8 +95,8 @@ describe('제목 시트 — 레벨 · 목록 | 순서 · 하루', () => {
     const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
     expect(screen).not.toMatch(/SunIcon|lw-settings|settingsOpen/);
     expect(screen).toMatch(/if \(folded\) setUnfoldedAt\(foldKey\)/);
-    // 연습 탭은 바퀴가 없을 때도 열린다 — 접힘 열쇠가 빈 바퀴를 읽지 않는다(로컬 확인에서 잡은 오류).
-    expect(screen).toContain('`p${roundOn ? round.answers.size : 0}`');
+    // 접힘 열쇠는 채점 수 하나(연습 탭 · 바퀴는 CARD-TYPES-001 A안으로 없앴다).
+    expect(screen).toContain('const foldKey = `g${session?.graded ?? 0}`;');
     // 판(cfg)에 도움 스위치 이름이 남지 않는다 — 시트가 더는 읽지 않는다.
     for (const f of ['src/views/LevelWordPage.jsx', 'src/views/JlptWordPage.jsx', 'src/views/LatinWordPage.jsx']) expect(fs.readFileSync(f, 'utf8')).not.toContain('aidLabel');
   });
@@ -167,10 +167,10 @@ describe('움직임 ⑥ — 닫힘 · 미끄러짐 · 끝 화면', () => {
     expect(read('src/components/levels/word/WordCard.jsx')).toMatch(/setOpen\(reducedMotion\(\) \? false : 'closing'\)/);
     expect(css).toMatch(/\.lw-card__more\[data-closing\]\{[^}]*animation:lwMoreClose/);
   });
-  it('모드 칸 · 탭 밑줄은 고른 표시가 미끄러진다', () => {
+  it('모드 칸은 고른 표시가 미끄러진다 · 보기 탭(밑줄 막대)은 없앴다(CARD-TYPES-001 A안)', () => {
     expect(css).toMatch(/\.lw-seg\[data-thumb\]::before\{[^}]*transition:transform/);
-    expect(css).toMatch(/\.lw-tabs__bar\{[^}]*transition:transform/);
-    expect(read('src/components/levels/word/LevelWordScreen.jsx')).toMatch(/onClick=\{\(\) => switchView\(v\.id\)\}/);
+    expect(css).not.toMatch(/\.lw-tabs/);
+    expect(read('src/components/levels/word/LevelWordScreen.jsx')).not.toMatch(/lw-tabs|switchView/);
   });
   it('끝 화면 숫자 — 화면 읽기는 처음부터 최종 값', async () => {
     const { CountUp } = await import('@/components/levels/word/WordParts');
