@@ -1401,6 +1401,11 @@
   card_id 독립 + vocabulary_id · kind 열(안 A) · 5단계. 실렌더 시안 artifact 「카드 세 종류 실렌더」. → **#1622 squash `738eca66`(15:03 KST 운영 16/16 · fsrs_apply_operation 9bf0c861 · 계약 넷 일치)**.
   1단계 스키마(20261101090000 — vocabulary_id 생성 열 · kind · CHECK 둘 · FK · UNIQUE · 함수 본문 무변경, core · admission 재게시,
   운영 표 모양 = 검토한 OLD 13줄 일치 확인 · 스냅샷 출력 동일 사후 검사 · PGlite 14) · §4.2 단계 2 인벤토리(함수 14 + 클라이언트).
+  → **#1624 squash `469e054d`(15:51 KST 운영 16/16 · 카드 333/333 recognition · 계약 넷 일치)**.
+  2단계(20261101120000 — 기본 꺼짐 `admission_settings.default_card_kinds = {recognition}`): 함수 12 본문 교체(운영 md5 = 검토 전 값 12개 일치 확인) ·
+  새 함수 둘(card_kinds · variant_enrollment_open) · vocabulary_id 생성식 해제 · 옛 card_id FK 삭제 · 종류 카드 등록 조건(졸업 다음 학습일 · 단어당 하루 하나 ·
+  듣기는 예문 · 몫은 recognition만) · 형제 하루 한 장(pickSiblings) · 옛 일정 트리거 가드 둘은 한국어 capability 지문 때문에 그대로(동치 근거 §4.3) ·
+  복원은 종류 카드 · 선택 없을 때만. 스위치는 3 · 4단계 화면 뒤 데이터 UPDATE 하나.
 - **OFFLINE-GRADE-001 단어 페이지 오프라인 채점 — 보류(오너 2026-10-31 KST 「일단 내용 저장만 해둬」)**: 카드당 요청 구조는 유지(실측 서버
   0.16 s · 생각 7 s, 묶음 · 로컬 우선 배제). 빈틈 = 연결 끊김 시 채점 실패 · 미보관. 1단계(DB 무변경) 기기 보낼함 + 연결 시 순서대로 전송 ·
   오프라인 중 새 단어 미출제, 2단계(DB · 별도 승인) 누른 시각 수용. 설계 `docs/design/offline-level-grade.md`. 착수 전 오너 확인.
