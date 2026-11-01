@@ -1398,7 +1398,9 @@
   운영 원문 치환으로 확인) · next_question_at 무변경 · 되돌리기/중단 30초 엄격 · core 재게시 · 복원 SQL · PGlite 행동 검사 14(CI 편입).
   남음: 옛 일정 카드의 복습실 미리 학습(learning_admit_legacy — 입장 계약 변경이라 보류).
 - **CARD-TYPES-001 설계 (2026-11-01 KST)**: `docs/design/card-types.md` — 카드 셋 · 형제 하루 한 장 · 차례로 붙이기 · 켜고 끄기 · 보기 탭 제거(A안) ·
-  card_id 독립 + vocabulary_id · kind 열(안 A) · 5단계. 실렌더 시안 artifact 「카드 세 종류 실렌더」. 다음: 1단계 스키마(동작 무변경).
+  card_id 독립 + vocabulary_id · kind 열(안 A) · 5단계. 실렌더 시안 artifact 「카드 세 종류 실렌더」. → **#1622 squash `738eca66`(15:03 KST 운영 16/16 · fsrs_apply_operation 9bf0c861 · 계약 넷 일치)**.
+  1단계 스키마(20261101090000 — vocabulary_id 생성 열 · kind · CHECK 둘 · FK · UNIQUE · 함수 본문 무변경, core · admission 재게시,
+  운영 표 모양 = 검토한 OLD 13줄 일치 확인 · 스냅샷 출력 동일 사후 검사 · PGlite 14) · §4.2 단계 2 인벤토리(함수 14 + 클라이언트).
 - **OFFLINE-GRADE-001 단어 페이지 오프라인 채점 — 보류(오너 2026-10-31 KST 「일단 내용 저장만 해둬」)**: 카드당 요청 구조는 유지(실측 서버
   0.16 s · 생각 7 s, 묶음 · 로컬 우선 배제). 빈틈 = 연결 끊김 시 채점 실패 · 미보관. 1단계(DB 무변경) 기기 보낼함 + 연결 시 순서대로 전송 ·
   오프라인 중 새 단어 미출제, 2단계(DB · 별도 승인) 누른 시각 수용. 설계 `docs/design/offline-level-grade.md`. 착수 전 오너 확인.
