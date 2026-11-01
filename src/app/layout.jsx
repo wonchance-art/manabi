@@ -122,12 +122,14 @@ export default function RootLayout({ children }) {
             새로 맺느라 389ms를 썼다(운영 /viewer/45 실측, 2026-10-17 KST). supabase-js는 자격 증명 없이 보내므로 crossOrigin="anonymous"여야
             그 연결을 다시 쓴다. */}
         {SUPABASE_ORIGIN && <link rel="preconnect" href={SUPABASE_ORIGIN} crossOrigin="anonymous" />}
-        {/* 설치 이벤트 보관(맨 앞 — 아래 localStorage가 막혀도 받는다, src/lib/installPrompt.js) + 테마 깜빡임 방지 + SW 등록 */}
+        {/* 설치 이벤트 보관(맨 앞 — 아래 localStorage가 막혀도 받는다, src/lib/installPrompt.js) + 테마 깜빡임 방지 + SW 등록.
+            테마는 useTheme과 같은 규칙이다(저장값 dark · light가 정본, 없으면 OS prefers-color-scheme) — 예전엔 저장값이 없으면 늘 dark라
+            OS 라이트 사용자는 붙기(hydration) 뒤 light로 바뀌며 매번 페이지 전체 스타일을 다시 계산했다(THEME-INIT-001 · 계약 themeInit.test.js). */}
         <script
           dangerouslySetInnerHTML={{
             /* SW는 프로덕션에서만 등록 — dev에서는 옛 번들 캐시 서빙으로 Fast Refresh·검수를 깨뜨려
                기존 등록까지 적극 해제한다(스테일 번들 사고 2회 재발 방지, 2026-07-22). */
-            __html: `(function(){${VOCAB_EARLY_SCRIPT}${INSTALL_CAPTURE_SCRIPT}var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);${
+            __html: `(function(){${VOCAB_EARLY_SCRIPT}${INSTALL_CAPTURE_SCRIPT}var t=localStorage.getItem('theme');if(t!=='dark'&&t!=='light')t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.setAttribute('data-theme',t);${
               process.env.NODE_ENV === 'production'
                 ? "if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js')})}"
                 : "if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister()})});if(window.caches){caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})})}}"
