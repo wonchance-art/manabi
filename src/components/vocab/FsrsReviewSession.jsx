@@ -7,6 +7,7 @@ import { isCardRevealClick, revealTrigger } from '../../lib/reviewCard';
 import { ReviewBack, ReviewCardMeta, ReviewHeadword, useGradeBarFocus, useRevealFocus, useScoreArmed } from './ReviewCardParts';
 import { ListenFace, MeaningFace } from '../cards/CardFaces';
 import { detectLang } from '../../lib/constants';
+import { listenText, useListenExample } from './listenExample';
 
 const RATINGS = [
   { rating: 1, label: '다시', style: 'again' },
@@ -25,14 +26,18 @@ const RATINGS = [
 // ahead = 미리 학습 단계(LEARN-AHEAD-001 — 복습방이 줄을 다 푼 뒤 끼운 20분 안의 학습 · 재학습 카드). 차례 전이어도 그 카드를 연다.
 //
 // 카드 세 종류(CARD-TYPES-001 4단계 · 오너 결정 2026-11-01 KST) — 문제 면은 단어 페이지와 같은 부품(CardFaces)이다: 단어 → 뜻 = 표제어,
-// 뜻 → 단어 = 뜻(표제어 자리 · 같은 칸), 듣기 = 소리 단추만(저장한 원문 문장 source_sentence, 없으면 그 단어). 종류 글씨는 없다. 답 면은 이 방의
+// 뜻 → 단어 = 뜻(표제어 자리 · 같은 칸), 듣기 = 소리 단추만. 종류 글씨는 없다. 답 면은 이 방의
 // 답 면 그대로(표제어 루비 · 뜻 · 읽기 · 소리 · 원문) — 듣기는 소리 단추가 그 자리에 남아 다시 들을 수 있다.
-/** 문제 면 — current.kind가 고른다. headwordId = 「정답 확인하기」가 함께 읽는 이름(답을 흘리지 않는 면만). */
-export function FsrsQuestionFace({ kind = 'recognition', word, revealed, id, speak, ttsSupported }) {
+// 듣기 = 예문(오너 승인 2026-11-01 KST): 저장한 원문 문장(source_sentence) > 그 단어의 레벨 예문(단어 페이지에서 붙인 카드 — listenExample) > 단어.
+// 레벨 예문으로 읽은 카드는 답 면 소리 단추 아래에 그 예문(후리가나 · 해석 — 단어 페이지 답 면과 같은 부품 RoomLevelExample)을 보인다.
+/** 문제 면 — current.kind가 고른다. headwordId = 「정답 확인하기」가 함께 읽는 이름(답을 흘리지 않는 면만). example = useListenExample 결과. */
+export function FsrsQuestionFace({ kind = 'recognition', word, revealed, id, speak, ttsSupported, example = null }) {
   if (kind === 'listening') {
     const say = ttsSupported && speak ? text => speak(text, word.language || detectLang(word.word_text)) : null;
+    const LevelExample = !word.source_sentence && example?.ex ? example.View : null;
     return <>
-      <div className="review-card__play" id={id}><ListenFace speak={say} text={word.source_sentence || word.word_text} /></div>
+      <div className="review-card__play" id={id}><ListenFace speak={say} text={listenText(word, example?.ex)} /></div>
+      {revealed && LevelExample && <LevelExample ex={example.ex} word={word} />}
       {revealed && <ReviewHeadword word={word} revealed />}
     </>;
   }
@@ -94,13 +99,18 @@ export default function FsrsReviewSession({ review, onExit, embedded = false, ca
     return () => document.removeEventListener('keydown', keydown);
   }, [busy, lastGrade, controller, embedded]);
   const word = current?.word && (!embedded || current.cardId === cardId) ? current.word : null;
+  const example = useListenExample(word, current?.kind === 'listening'); // 원문 문장이 없는 듣기 카드만 레벨 예문을 찾는다(동적 import)
   // 듣기 카드 자동 1회(오너 2026-11-01 KST 권장대로 — 단어 페이지와 같다): 문제 면이 처음 뜰 때(시도마다 한 번) 문제 소리를 들려준다.
-  // 소리 = 문제 면 단추와 같은 글(저장한 원문 문장, 없으면 단어). 소리를 쓸 수 없으면 아무것도 하지 않는다 · 첫 소리는 브라우저 규칙상 누른 뒤.
+  // 소리 = 문제 면 단추와 같은 글(listenText — 원문 문장 > 레벨 예문 > 단어). 레벨 예문을 찾는 동안은 기다렸다가 한 번.
+  // 소리를 쓸 수 없으면 아무것도 하지 않는다 · 첫 소리는 브라우저 규칙상 누른 뒤.
   const sayAttempt = word && current?.kind === 'listening' && current.phase === 'question' && ttsSupported && speak ? current.attempt?.id || current.cardId : null;
+  const sayText = sayAttempt && !example.pending ? listenText(word, example.ex) : null;
+  const said = useRef(null);
   useEffect(() => {
-    if (!sayAttempt || !word) return;
-    speak(word.source_sentence || word.word_text, word.language || detectLang(word.word_text));
-  }, [sayAttempt]); // eslint-disable-line react-hooks/exhaustive-deps -- 시도마다 한 번만
+    if (!sayAttempt || sayText == null || said.current === sayAttempt) return;
+    said.current = sayAttempt;
+    speak(sayText, word.language || detectLang(word.word_text));
+  }, [sayAttempt, sayText]); // eslint-disable-line react-hooks/exhaustive-deps -- 시도마다 한 번만(said)
   const leave = () => { controller.leave(); onExit(); };
   const disabled = busy || !review.registryAvailable || !review.enabled;
   return <div className="review-room-session">
@@ -122,7 +132,7 @@ export default function FsrsReviewSession({ review, onExit, embedded = false, ca
         <div className={`review-card__body${revealed ? '' : ' review-card__body--front'}`}
           onClick={event => { if (!revealed && !disabled && current.attempt && isCardRevealClick(event)) reveal(revealTrigger(event)); }}>
           <ReviewCardMeta label="복습" word={word} />
-          <FsrsQuestionFace kind={current.kind} word={word} revealed={revealed} id={headwordId} speak={speak} ttsSupported={ttsSupported} />
+          <FsrsQuestionFace kind={current.kind} word={word} revealed={revealed} id={headwordId} speak={speak} ttsSupported={ttsSupported} example={example} />
           {revealed ? <ReviewBack word={word} speak={speak} ttsSupported={ttsSupported} meaning={current.kind !== 'production'} />
             : <Button ref={revealRef} variant="secondary" size="lg" disabled={disabled || !current.attempt} className="review-reveal-btn"
               aria-describedby={headwordId} onClick={event => reveal(revealTrigger(event))}>정답 확인하기<span className="review-keys-hint review-keys-hint--space" aria-hidden="true"> · Space</span></Button>}

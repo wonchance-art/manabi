@@ -216,3 +216,7 @@ body:has(.review-grade-bar) .review-known-undo { bottom:calc(140px + env(safe-ar
 @media (prefers-reduced-motion: reduce) {
   .review-done__bar { animation:none; animation-delay:0s; transform:none; }
 }
+/* 듣기 카드 답 면의 레벨 예문(CARD-TYPES-001 「듣기 = 예문」 — RoomLevelExample = 단어 페이지 Example · level-word.css 그대로).
+   카드 가운데 맞춤을 풀어 단어 페이지 답 면처럼 왼쪽 선 · 왼쪽 맞춤, 일본어 루비 줄 높이도 단어 페이지와 같다(.lw-page[data-language=ja]). */
+.manabi-review-room .review-card__level-ex { text-align:left; }
+.manabi-review-room .review-card__level-ex[data-language=ja] .lw-ex__text { line-height:2.1; }

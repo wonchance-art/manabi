@@ -140,7 +140,7 @@ describe('② 줄 — 종류 카드가 선다 · 형제 규칙 · 쉬는 카드 
     expect(page).toContain('const fsrsWordIdOf = useCallback(id => cardVocabularyId(fsrsReview.cards.find(entry => entry.cardId === id) || { cardId: id }), [fsrsReview.cards]);');
     expect(page).toContain('vocab.find(v => v.id === fsrsWordIdOf(currentStep.id))');
     const session = fs.readFileSync('src/components/vocab/FsrsReviewSession.jsx', 'utf8');
-    expect(session).toContain('<FsrsQuestionFace kind={current.kind} word={word} revealed={revealed} id={headwordId} speak={speak} ttsSupported={ttsSupported} />');
+    expect(session).toContain('<FsrsQuestionFace kind={current.kind} word={word} revealed={revealed} id={headwordId} speak={speak} ttsSupported={ttsSupported} example={example} />');
     expect(session).toContain("import { ListenFace, MeaningFace } from '../cards/CardFaces';");
   });
 });
@@ -188,10 +188,10 @@ describe('④ 기본값(단어 → 뜻 하나) — 지금 줄 · 요청 그대�
 });
 
 describe('복습실 듣기 카드 자동 1회 (오너 2026-11-01 KST 권장대로)', () => {
-  it('문제 면이 처음 뜰 때 시도마다 한 번 · 문제 면과 같은 글(원문 문장 → 단어) · 소리를 못 쓰면 하지 않는다', async () => {
+  it('문제 면이 처음 뜰 때 시도마다 한 번 · 문제 면과 같은 글(원문 문장 → 레벨 예문 → 단어 — cardTypesRoomListenExample) · 소리를 못 쓰면 하지 않는다', async () => {
     const src = (await import('node:fs')).readFileSync('src/components/vocab/FsrsReviewSession.jsx', 'utf8');
     expect(src).toContain("current?.kind === 'listening' && current.phase === 'question' && ttsSupported && speak ? current.attempt?.id || current.cardId : null");
-    expect(src).toContain('speak(word.source_sentence || word.word_text, word.language || detectLang(word.word_text));');
-    expect(src).toMatch(/\}, \[sayAttempt\]\);/);
+    expect(src).toContain('speak(sayText, word.language || detectLang(word.word_text));');
+    expect(src).toMatch(/\}, \[sayAttempt, sayText\]\);/);
   });
 });
