@@ -22,9 +22,10 @@ export function OneWordCard({ entry: e, kind = 'recognition', view = 'word', inf
   const face = view === 'all' ? 'recognition' : kind;
   // 표제어 — 판이 따로 그리면(영어 · 프랑스어: 폭 기준 크기 · 관사 매달기) 그것으로.
   const word = L.Headword ? <L.Headword entry={e} size="one" tone={tone} /> : <span className="lw-one__hw" lang={L.hw} style={{ '--n': [...hw].length }}>{hw}</span>;
-  // 문제 면 — 듣기는 답 면에서도 단추가 그 자리에 남는다(다시 듣기). 뜻 → 단어는 답 면에서 표제어로 바뀐다(같은 자리).
+  // 문제 면은 답 면에서도 그 자리에 남는다(Anki 「앞면 + 뒷면」 — 오너 2026-11-01 KST 「갑자기 뜻이 사라지는 거?」): 듣기는 단추(다시 듣기),
+  // 뜻 → 단어는 뜻 그대로 위에 두고 답(표제어)은 점선 아래 첫 줄에 — 묻는 말과 답을 맞대어 본다.
   const top = face === 'listening' ? <ListenFace speak={speak} text={e.ex?.text || e.word} />
-    : face === 'production' && !revealed ? <MeaningFace meaning={e.meaning} className="lw-one__hw" /> : word;
+    : face === 'production' ? <MeaningFace meaning={e.meaning} className="lw-one__hw" /> : word;
   const label = face === 'recognition' ? `${e.word} 카드` : '카드';
   const example = <Example ex={e.ex} word={e.word} speak={speak} onWord={onWord} openKey={openKey} tone={tone} />;
   return <section className={`lw-one__card${turnKey ? ' is-turning' : ''}`} key={turnKey || e.key} aria-label={label} tabIndex={-1}>
@@ -39,6 +40,7 @@ export function OneWordCard({ entry: e, kind = 'recognition', view = 'word', inf
       </div>
     </div>}
     {revealed && face !== 'listening' && <div className="lw-one__back">
+      {face === 'production' && <div className="lw-one__answer">{word}</div>}
       <div className="lw-one__meta"><Reading text={sub} word={hw} tone={tone} /><Listen speak={speak} text={e.word} /></div>
       {info.hard ? <div className="lw-one__chips"><span className="lw-chip">자주 틀린 단어 · {info.hard}번</span></div> : null}
       {face === 'recognition' && <p className="lw-one__mean">{e.meaning}{L.MeanTag && <L.MeanTag entry={e} tone={tone} />}</p>}

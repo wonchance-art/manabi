@@ -72,11 +72,12 @@ describe('② 답 면 — 예문은 모든 답 면(후리가나) · 듣기 답 �
       for (const label of KIND_LABELS) expect(textOf(html), label).not.toContain(label);
     }
   });
-  it('뜻 → 단어 답 면 — 문제 면 자리에 표제어 · 읽기 · 예문(뜻 줄은 문제였으니 다시 쓰지 않는다)', () => {
+  it('뜻 → 단어 답 면 — 묻는 뜻은 위에 그대로, 답(표제어)은 점선 아래 첫 줄 · 읽기 · 예문(오너 2026-11-01 KST 「갑자기 뜻이 사라지는 거?」)', () => {
     const html = one('production', true);
-    expect(html).toContain('<div class="lw-one__front"><span class="lw-one__hw" lang="ja" style="--n:2">約束</span>');
+    expect(html).toMatch(/<div class="lw-one__front"><span class="lw-one__hw cf-meaning"[^>]*>약속<\/span>/);
+    expect(html).toContain('<div class="lw-one__back"><div class="lw-one__answer"><span class="lw-one__hw" lang="ja" style="--n:2">約束</span></div>');
     expect(html).toContain('やくそく');
-    expect(html).not.toContain('lw-one__mean');
+    expect(html).not.toContain('lw-one__mean'); // 뜻 줄을 아래에 또 쓰지 않는다 — 위에 이미 있다
   });
   it('듣기 답 면 — 단추는 그 자리(다시 듣기) · 예문 · 해석 · 표제어 줄(표제어 · 읽기 · 뜻 · 단어 듣기)', () => {
     const html = one('listening', true);
