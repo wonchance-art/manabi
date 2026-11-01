@@ -94,6 +94,13 @@ export default function FsrsReviewSession({ review, onExit, embedded = false, ca
     return () => document.removeEventListener('keydown', keydown);
   }, [busy, lastGrade, controller, embedded]);
   const word = current?.word && (!embedded || current.cardId === cardId) ? current.word : null;
+  // 듣기 카드 자동 1회(오너 2026-11-01 KST 권장대로 — 단어 페이지와 같다): 문제 면이 처음 뜰 때(시도마다 한 번) 문제 소리를 들려준다.
+  // 소리 = 문제 면 단추와 같은 글(저장한 원문 문장, 없으면 단어). 소리를 쓸 수 없으면 아무것도 하지 않는다 · 첫 소리는 브라우저 규칙상 누른 뒤.
+  const sayAttempt = word && current?.kind === 'listening' && current.phase === 'question' && ttsSupported && speak ? current.attempt?.id || current.cardId : null;
+  useEffect(() => {
+    if (!sayAttempt || !word) return;
+    speak(word.source_sentence || word.word_text, word.language || detectLang(word.word_text));
+  }, [sayAttempt]); // eslint-disable-line react-hooks/exhaustive-deps -- 시도마다 한 번만
   const leave = () => { controller.leave(); onExit(); };
   const disabled = busy || !review.registryAvailable || !review.enabled;
   return <div className="review-room-session">

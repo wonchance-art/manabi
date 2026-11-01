@@ -186,3 +186,12 @@ describe('④ 기본값(단어 → 뜻 하나) — 지금 줄 · 요청 그대�
     }
   });
 });
+
+describe('복습실 듣기 카드 자동 1회 (오너 2026-11-01 KST 권장대로)', () => {
+  it('문제 면이 처음 뜰 때 시도마다 한 번 · 문제 면과 같은 글(원문 문장 → 단어) · 소리를 못 쓰면 하지 않는다', async () => {
+    const src = (await import('node:fs')).readFileSync('src/components/vocab/FsrsReviewSession.jsx', 'utf8');
+    expect(src).toContain("current?.kind === 'listening' && current.phase === 'question' && ttsSupported && speak ? current.attempt?.id || current.cardId : null");
+    expect(src).toContain('speak(word.source_sentence || word.word_text, word.language || detectLang(word.word_text));');
+    expect(src).toMatch(/\}, \[sayAttempt\]\);/);
+  });
+});
